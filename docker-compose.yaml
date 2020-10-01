@@ -1,0 +1,63 @@
+version: '3'
+
+services:
+  neoshowcase:
+    build: ./
+    entrypoint: dockerize -timeout 60s -wait tcp://mysql:3306
+    command: ./neoshowcase
+    ports:
+      - "5555:8080"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - ./local-dev/neoshowcase:/data
+    depends_on:
+      - mysql
+
+  registry:
+    image: registry:2
+    restart: always
+    ports:
+      - "5000:5000"
+    volumes:
+      - ./local-dev/registry/cert:/certs
+    environment:
+      REGISTRY_STORAGE_DELETE_ENABLED: "true"
+      REGISTRY_HTTP_TLS_CERTIFICATE: /certs/domain.crt
+      REGISTRY_HTTP_TLS_KEY: /certs/domain.key
+
+  registry-frontend:
+    image: konradkleine/docker-registry-frontend:v2
+    restart: always
+    ports:
+      - "5003:80"
+    environment:
+      ENV_DOCKER_REGISTRY_HOST: registry
+      ENV_DOCKER_REGISTRY_PORT: 5000
+      ENV_DOCKER_REGISTRY_USE_SSL: 1
+
+  buildkitd:
+    image: moby/buildkit:latest
+    restart: always
+    privileged: true
+    ports:
+      - "5002:1234"
+    command: --addr tcp://0.0.0.0:1234
+    volumes:
+      - ./local-dev/registry/cert/domain.crt:/etc/ssl/certs/registry.crt
+
+  mysql:
+    image: mariadb:10.0.19
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: password
+      MYSQL_DATABASE: neoshowcase
+    command: mysqld --character-set-server=utf8 --collation-server=utf8_general_ci
+
+  adminer:
+    image: adminer:4.7.5
+    restart: always
+    environment:
+      ADMINER_DEFAULT_SERVER: mysql
+      ADMINER_DESIGN: nette
+    ports:
+      - "5001:8080"

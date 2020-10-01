@@ -1,0 +1,14 @@
+/.idea/
+/.git/
+/docs/
+/local-dev/
+/manifests/
+
+.dockerignore
+.gitignore
+docker-compose.yaml
+Dockerfile
+LICENSE
+README.md
+
+.DS_Store
