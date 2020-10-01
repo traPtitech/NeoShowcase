@@ -150,16 +150,16 @@ func example2() {
 	*/
 	// ビルドステージを構成
 	builder := llb.Image("docker.io/library/node:14.11.0-alpine"). // FROM node:14.11.0-alpine as builder
-									Dir("/app"). // WORKDIR /app
-									File(llb.Copy(llb.Local("local-src"), "package*.json", "./", &llb.CopyInfo{
+		Dir("/app"). // WORKDIR /app
+		File(llb.Copy(llb.Local("local-src"), "package*.json", "./", &llb.CopyInfo{
 			AllowWildcard:  true,
 			CreateDestPath: true,
-		})).                     // COPY package*.json ./
+		})). // COPY package*.json ./
 		Run(llb.Shlex("npm i")). // RUN npm i
 		File(llb.Copy(llb.Local("local-src"), ".", ".", &llb.CopyInfo{
 			AllowWildcard:  true,
 			CreateDestPath: true,
-		})).                                                                   // COPY . .
+		})). // COPY . .
 		Run(llb.Shlex("npm run build"), llb.AddEnv("NODE_ENV", "production")). // RUN NODE_ENV=production npm run build
 		Root()
 	// ビルドで生成された静的ファイルのみを含むScratchイメージを構成
