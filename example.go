@@ -108,17 +108,16 @@ func example() {
 		Config: &docker.Config{
 			Image: imageName,
 			Labels: map[string]string{
-				"neoshowcase.trap.jp/app": "true",
+				"neoshowcase.trap.jp/app":                                         "true",
+				"traefik.enable":                                                  "true",
+				"traefik.http.routers.ns_testcontainer.rule":                      "Host(`test.ns.localhost`)",
+				"traefik.http.services.ns_testcontainer.loadbalancer.server.port": "80",
 			},
 		},
 		HostConfig: &docker.HostConfig{
-			PortBindings: map[docker.Port][]docker.PortBinding{
-				"80/tcp": {{
-					HostPort: "12345", // ホストの12345番ポートをコンテナの80番ポートに接続
-				}},
-			},
 			RestartPolicy: docker.AlwaysRestart(),
 		},
+		NetworkingConfig: &docker.NetworkingConfig{EndpointsConfig: map[string]*docker.EndpointConfig{"neoshowcase_apps": {}}},
 	})
 	if err != nil {
 		log.Fatal(err)

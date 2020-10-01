@@ -5,13 +5,17 @@ services:
     build: ./
     entrypoint: dockerize -timeout 60s -wait tcp://mysql:3306
     command: ./neoshowcase
-    ports:
-      - "5555:8080"
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
       - ./local-dev/neoshowcase:/data
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.ns_admin.rule=Host(`localhost`)"
+      - "traefik.http.services.ns_admin.loadbalancer.server.port=8080"
     depends_on:
       - mysql
+    networks:
+      - default
 
   registry:
     image: registry:2
@@ -24,6 +28,8 @@ services:
       REGISTRY_STORAGE_DELETE_ENABLED: "true"
       REGISTRY_HTTP_TLS_CERTIFICATE: /certs/domain.crt
       REGISTRY_HTTP_TLS_KEY: /certs/domain.key
+    networks:
+      - default
 
   registry-frontend:
     image: konradkleine/docker-registry-frontend:v2
@@ -34,6 +40,8 @@ services:
       ENV_DOCKER_REGISTRY_HOST: registry
       ENV_DOCKER_REGISTRY_PORT: 5000
       ENV_DOCKER_REGISTRY_USE_SSL: 1
+    networks:
+      - default
 
   buildkitd:
     image: moby/buildkit:latest
@@ -44,6 +52,8 @@ services:
     command: --addr tcp://0.0.0.0:1234
     volumes:
       - ./local-dev/registry/cert/domain.crt:/etc/ssl/certs/registry.crt
+    networks:
+      - default
 
   mysql:
     image: mariadb:10.0.19
@@ -52,6 +62,10 @@ services:
       MYSQL_ROOT_PASSWORD: password
       MYSQL_DATABASE: neoshowcase
     command: mysqld --character-set-server=utf8 --collation-server=utf8_general_ci
+    ports:
+      - "5004:3306"
+    networks:
+      - default
 
   adminer:
     image: adminer:4.7.5
@@ -61,3 +75,22 @@ services:
       ADMINER_DESIGN: nette
     ports:
       - "5001:8080"
+    networks:
+      - default
+
+  traefik:
+    image: traefik:v2.3
+    restart: always
+    command: --api.insecure=true --providers.docker --providers.docker.exposedByDefault=false
+    ports:
+      - "8888:80"
+      - "8080:8080"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    networks:
+      - default
+      - apps
+
+networks:
+  default: {}
+  apps: {}
