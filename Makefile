@@ -19,15 +19,15 @@ db-gen-docs:
 	@if [ -d "./docs/dbschema" ]; then \
 		rm -r ./docs/dbschema; \
 	fi
-	docker run --rm --net=host -v $$PWD:/work k1low/tbls:$(TBLS_VERSION) doc
+	@docker run --rm --net=host -v $$PWD:/work k1low/tbls:$(TBLS_VERSION) doc
 
 .PHONY: db-diff-docs
 db-diff-docs:
-	docker run --rm --net=host -v $$PWD:/work k1low/tbls:$(TBLS_VERSION) diff
+	@docker run --rm --net=host -v $$PWD:/work k1low/tbls:$(TBLS_VERSION) diff
 
 .PHONY: db-lint
 db-lint:
-	docker run --rm --net=host -v $$PWD:/work k1low/tbls:$(TBLS_VERSION) lint
+	@docker run --rm --net=host -v $$PWD:/work k1low/tbls:$(TBLS_VERSION) lint
 
 .PHONY: swagger-lint
 swagger-lint:
@@ -36,3 +36,11 @@ swagger-lint:
 .PHONY: golangci-lint
 golangci-lint:
 	@golangci-lint run
+
+.PHONY: migrate-up
+migrate-up:
+	@sql-migrate up
+
+.PHONY: migrate-down
+migrate-down:
+	@sql-migrate down
