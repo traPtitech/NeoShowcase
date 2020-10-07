@@ -7,7 +7,8 @@ COPY . .
 
 ARG APP_VERSION=dev
 ARG APP_REVISION=local
-RUN CGO_ENABLED=0 go build -o /neoshowcase -ldflags "-s -w -X main.version=$APP_VERSION -X main.revision=$APP_REVISION"
+ENV CGO_ENABLED 0
+RUN go build -o /app/ns -ldflags "-s -w -X main.version=$APP_VERSION -X main.revision=$APP_REVISION" ./cmd/ns
 
 FROM alpine:3.12.0
 WORKDIR /app
@@ -21,8 +22,6 @@ RUN wget https://github.com/jwilder/dockerize/releases/download/$DOCKERIZE_VERSI
     && tar -C /usr/local/bin -xzvf dockerize-alpine-linux-amd64-$DOCKERIZE_VERSION.tar.gz \
     && rm dockerize-alpine-linux-amd64-$DOCKERIZE_VERSION.tar.gz
 
-EXPOSE 8080
+COPY --from=build /app/* ./
 
-COPY --from=build /neoshowcase ./
-
-ENTRYPOINT ./neoshowcase
+ENTRYPOINT ./ns

@@ -8,14 +8,25 @@ import (
 	"github.com/moby/buildkit/client"
 	"github.com/moby/buildkit/client/llb"
 	"github.com/moby/buildkit/util/progress/progressui"
+	log "github.com/sirupsen/logrus"
 	"golang.org/x/sync/errgroup"
 	"io"
 	"io/ioutil"
-	"log"
 	"os"
 	"path/filepath"
 	"time"
 )
+
+var (
+	version  = "UNKNOWN"
+	revision = "UNKNOWN"
+)
+
+func main() {
+	log.Println(version, revision)
+	example2()
+	example()
+}
 
 func example() {
 	/*

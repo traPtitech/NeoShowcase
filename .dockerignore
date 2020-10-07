@@ -1,14 +1,18 @@
 /.idea/
 /.git/
+/api/
 /docs/
 /local-dev/
-/manifests/
+/migrations/
 
 .dockerignore
 .gitignore
+.tbls.yml
+dbconfig.yml
 docker-compose.yaml
 Dockerfile
 LICENSE
 README.md
+sqlboiler.toml
 
 .DS_Store

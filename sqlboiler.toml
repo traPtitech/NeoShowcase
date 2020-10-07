@@ -1,0 +1,11 @@
+output = "pkg/models"
+wipe = true
+
+[mysql]
+dbname = "neoshowcase"
+host = "localhost"
+port = 5004
+user = "root"
+pass = "password"
+sslmode = "false"
+blacklist = ["migrations"]

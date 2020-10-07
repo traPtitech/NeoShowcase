@@ -1,10 +1,12 @@
 version: '3'
 
 services:
-  neoshowcase:
-    build: ./
+  ns:
+    build:
+      context: .
+      dockerfile: cmd/ns/Dockerfile
     entrypoint: dockerize -timeout 60s -wait tcp://mysql:3306
-    command: ./neoshowcase
+    command: ./ns
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
       - ./local-dev/neoshowcase:/data
@@ -14,6 +16,23 @@ services:
       - "traefik.http.services.ns_admin.loadbalancer.server.port=8080"
     depends_on:
       - mysql
+    networks:
+      - default
+
+  ns-mc:
+    build:
+      context: .
+      dockerfile: cmd/ns-mc/Dockerfile
+    command: serve
+    ports:
+      - "5005:8081"
+    networks:
+      - default
+
+  ns-ssgen:
+    build:
+      context: .
+      dockerfile: cmd/ns-ssgen/Dockerfile
     networks:
       - default
 

@@ -1,0 +1,5 @@
+development:
+  dialect: mysql
+  dir: migrations
+  datasource: root:password@tcp(localhost:5004)/neoshowcase?parseTime=true
+  table: migrations

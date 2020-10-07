@@ -1,0 +1,60 @@
+syntax = "proto3";
+package neoshowcase.proto.entities;
+option go_package = "github.com/traPtitech/neoshowcase/pkg/apiserver/grpc/entitypb";
+
+import "google/protobuf/timestamp.proto";
+
+enum SiteType {
+    Static = 0;
+    Dynamic = 1;
+}
+
+message Application {
+    string id = 1;
+    string owner = 2;
+    string name = 3;
+    string repository_id = 4;
+    string created_at = 5;
+    string updated_at = 6;
+}
+
+message Repository {
+    string id = 1;
+    string remote = 2;
+    string refs = 3;
+}
+
+message Site {
+    string id = 1;
+    string fqdn = 2;
+    string path_prefix = 3;
+    SiteType type = 4;
+    string application_id = 5;
+    google.protobuf.Timestamp created_at = 6;
+    google.protobuf.Timestamp updated_at = 7;
+}
+
+message BuildLog {
+    string id = 1;
+    string application_id = 2;
+    string result = 3;
+    google.protobuf.Timestamp started_at = 4;
+    google.protobuf.Timestamp finished_at = 5;
+}
+
+message Artifact {
+    string id = 1;
+    string build_log_id = 2;
+    int64 size = 3;
+    google.protobuf.Timestamp created_at = 4;
+    google.protobuf.Timestamp deleted_at = 5;
+}
+
+message StaticSiteDetail {
+    string site_id = 1;
+    string artifact_id = 2;
+}
+
+message DynamicSiteDetail {
+    string site_id = 1;
+}
