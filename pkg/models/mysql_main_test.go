@@ -18,8 +18,8 @@ import (
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/kat-co/vala"
 	"github.com/spf13/viper"
-	"github.com/volatiletech/sqlboiler/drivers/sqlboiler-mysql/driver"
-	"github.com/volatiletech/sqlboiler/randomize"
+	"github.com/volatiletech/randomize"
+	"github.com/volatiletech/sqlboiler/v4/drivers/sqlboiler-mysql/driver"
 )
 
 var rgxMySQLkey = regexp.MustCompile(`(?m)((,\n)?\s+CONSTRAINT.*?FOREIGN KEY.*?\n)+`)
@@ -132,8 +132,10 @@ func (m *mysqlTester) sslMode(mode string) string {
 		return "REQUIRED"
 	case "false":
 		return "DISABLED"
+	case "PREFERRED":
+		return ""
 	default:
-		return "PREFERRED"
+		return mode
 	}
 }
 
@@ -162,7 +164,9 @@ func (m *mysqlTester) makeOptionFile() error {
 	if len(m.pass) != 0 {
 		fmt.Fprintf(tmp, "password=%s\n", m.pass)
 	}
-	fmt.Fprintf(tmp, "ssl-mode=%s\n", m.sslMode(m.sslmode))
+	if mode := m.sslMode(m.sslmode); mode != "" {
+		fmt.Fprintf(tmp, "ssl-mode=%s\n", mode)
+	}
 	if isTCP {
 		fmt.Fprintln(tmp, "protocol=tcp")
 	}
@@ -174,7 +178,9 @@ func (m *mysqlTester) makeOptionFile() error {
 	if len(m.pass) != 0 {
 		fmt.Fprintf(tmp, "password=%s\n", m.pass)
 	}
-	fmt.Fprintf(tmp, "ssl-mode=%s\n", m.sslMode(m.sslmode))
+	if mode := m.sslMode(m.sslmode); mode != "" {
+		fmt.Fprintf(tmp, "ssl-mode=%s\n", mode)
+	}
 	if isTCP {
 		fmt.Fprintln(tmp, "protocol=tcp")
 	}
