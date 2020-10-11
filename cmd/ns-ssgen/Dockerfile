@@ -24,4 +24,5 @@ RUN wget https://github.com/jwilder/dockerize/releases/download/$DOCKERIZE_VERSI
 
 COPY --from=build /app/* ./
 
-ENTRYPOINT ./ns-ssgen
+ENTRYPOINT ["/app/ns-ssgen"]
+CMD ["run"]

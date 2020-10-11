@@ -1,0 +1,6 @@
+syntax = "proto3";
+package neoshowcase.proto.services.staticsitegen;
+option go_package = "github.com/traPtitech/neoshowcase/pkg/staticsitegen/api";
+
+service StaticSiteGenService {
+}

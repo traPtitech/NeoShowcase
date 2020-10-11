@@ -1,7 +1,7 @@
 package generator
 
 import (
-	"github.com/traPtitech/neoshowcase/pkg/apiserver/grpc/api"
+	"github.com/traPtitech/neoshowcase/pkg/apiserver/api"
 )
 
 type Engine interface {
