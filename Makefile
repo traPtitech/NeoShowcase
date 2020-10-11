@@ -1,10 +1,15 @@
 TBLS_VERSION := 1.43.1
 SPECTRAL_VERSION := 5.6.0
 
+GO_REPO_ROOT_PACKAGE := "github.com/traPtitech/neoshowcase"
+PROTOC_OPTS := -I ./api/proto --go_out=. --go_opt=module=$(GO_REPO_ROOT_PACKAGE) --go-grpc_out=. --go-grpc_opt=module=$(GO_REPO_ROOT_PACKAGE)
+PROTOC_SOURCES ?= $(shell find ./api/proto/neoshowcase -type f -name "*.proto" -print)
+
 .PHONY: init
 init:
 	go mod download
 	go install google.golang.org/protobuf/cmd/protoc-gen-go
+	go get google.golang.org/grpc/cmd/protoc-gen-go-grpc@v1.0
 	go install github.com/markbates/pkger/cmd/pkger
 	go install github.com/volatiletech/sqlboiler/v4
 	go install github.com/volatiletech/sqlboiler/v4/drivers/sqlboiler-mysql
@@ -13,6 +18,10 @@ init:
 .PHONY: gogen
 gogen:
 	go generate ./...
+
+.PHONY: protoc
+protoc:
+	protoc $(PROTOC_OPTS) $(PROTOC_SOURCES)
 
 .PHONY: db-gen-docs
 db-gen-docs:

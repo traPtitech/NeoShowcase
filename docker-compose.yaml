@@ -23,7 +23,6 @@ services:
     build:
       context: .
       dockerfile: cmd/ns-mc/Dockerfile
-    command: serve
     ports:
       - "5005:8081"
     networks:
@@ -33,6 +32,18 @@ services:
     build:
       context: .
       dockerfile: cmd/ns-ssgen/Dockerfile
+    networks:
+      - default
+
+  ns-builder:
+    build:
+      context: .
+      dockerfile: cmd/ns-builder/Dockerfile
+    environment:
+      NS_BUILDER_BUILDKIT_ADDRESS: "tcp://buildkitd:1234"
+      NS_BUILDER_DB_HOST: "mysql"
+    ports:
+      - "5006:10000"
     networks:
       - default
 

@@ -18,3 +18,4 @@ EXPOSE 8081
 COPY --from=build /app/* ./
 
 ENTRYPOINT ./ns-mc
+CMD serve
