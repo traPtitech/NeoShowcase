@@ -1,12 +1,15 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	_ "github.com/go-sql-driver/mysql"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
-	"strings"
+	"github.com/traPtitech/neoshowcase/pkg/apiserver"
+	"github.com/traPtitech/neoshowcase/pkg/cliutil"
+	"time"
 )
 
 var (
@@ -16,6 +19,7 @@ var (
 
 var (
 	configFilePath string
+	c              apiserver.Config
 )
 
 var rootCommand = &cobra.Command{
@@ -25,34 +29,55 @@ var rootCommand = &cobra.Command{
 }
 
 func runCommand() *cobra.Command {
-	cmd := cobra.Command{
+	cmd := &cobra.Command{
 		Use: "run",
 		RunE: func(cmd *cobra.Command, args []string) error {
-			return nil
+			service, err := apiserver.New(c)
+			if err != nil {
+				return err
+			}
+
+			go func() {
+				err := service.Start(context.Background())
+				if err != nil {
+					log.Fatal(err)
+				}
+			}()
+
+			log.Info("NeoShowcase ApiServer started")
+			cliutil.WaitSIGINT()
+			ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+			defer cancel()
+			return service.Shutdown(ctx)
 		},
 	}
-	return &cmd
+	return cmd
 }
 
 func init() {
-	cobra.OnInitialize(func() {
-		viper.SetConfigFile(configFilePath)
-		viper.SetEnvKeyReplacer(strings.NewReplacer(".", "_"))
-		viper.SetEnvPrefix("NS")
-		viper.AutomaticEnv()
-		if err := viper.ReadInConfig(); err != nil {
-			if _, ok := err.(viper.ConfigFileNotFoundError); !ok {
-				log.Fatalf("failed to read config file: %v", err)
-			}
-		}
-	})
+	cobra.OnInitialize(cliutil.CobraOnInitializeFunc(&configFilePath, "NS_APISERVER", &c))
 
 	rootCommand.AddCommand(
 		runCommand(),
+		cliutil.PrintConfCommand(&c),
 	)
 
 	flags := rootCommand.PersistentFlags()
-	flags.StringVarP(&configFilePath, "config", "c", "./config.yaml", "config file path")
+	flags.StringVarP(&configFilePath, "config", "c", "", "config file path")
+
+	viper.SetDefault("builder.addr", "")
+	viper.SetDefault("builder.insecure", false)
+	viper.SetDefault("ssgen.addr", "")
+	viper.SetDefault("ssgen.insecure", false)
+	viper.SetDefault("grpc.port", 10000)
+	viper.SetDefault("db.host", "127.0.0.1")
+	viper.SetDefault("db.port", 3306)
+	viper.SetDefault("db.username", "root")
+	viper.SetDefault("db.password", "password")
+	viper.SetDefault("db.database", "neoshowcase")
+	viper.SetDefault("db.connection.maxOpen", 0)
+	viper.SetDefault("db.connection.maxIdle", 2)
+	viper.SetDefault("db.connection.lifetime", 0)
 }
 
 func main() {

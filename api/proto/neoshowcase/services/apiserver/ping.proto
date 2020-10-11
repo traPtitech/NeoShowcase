@@ -1,0 +1,15 @@
+syntax = "proto3";
+package neoshowcase.proto.services.apiserver;
+option go_package = "github.com/traPtitech/neoshowcase/pkg/apiserver/api";
+
+message PingRequest {
+    string msg = 1;
+}
+
+message PingResponse {
+    string msg = 2;
+}
+
+service Ping {
+    rpc Ping (PingRequest) returns (PingResponse);
+}

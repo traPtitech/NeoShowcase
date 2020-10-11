@@ -5,8 +5,15 @@ services:
     build:
       context: .
       dockerfile: cmd/ns/Dockerfile
-    entrypoint: dockerize -timeout 60s -wait tcp://mysql:3306
-    command: ./ns
+    entrypoint: dockerize -timeout 60s -wait tcp://mysql:3306 -wait tcp://ns-builder:10000 -wait tcp://ns-ssgen:10000
+    command: /app/ns run
+    restart: always
+    environment:
+      NS_APISERVER_DB_HOST: "mysql"
+      NS_APISERVER_BUILDER_ADDR: "ns-builder:10000"
+      NS_APISERVER_BUILDER_INSECURE: "true"
+      NS_APISERVER_SSGEN_ADDR: "ns-ssgen:10000"
+      NS_APISERVER_SSGEN_INSECURE: "true"
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
       - ./local-dev/neoshowcase:/data
@@ -16,6 +23,8 @@ services:
       - "traefik.http.services.ns_admin.loadbalancer.server.port=8080"
     depends_on:
       - mysql
+      - ns-builder
+      - ns-ssgen
     networks:
       - default
 
