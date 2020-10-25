@@ -4,14 +4,11 @@ import (
 	"errors"
 	"github.com/dgrijalva/jwt-go"
 	"github.com/labstack/echo/v4"
+	"net/http"
 	"strings"
 )
 
-func (s *Service) authenticate(c echo.Context) error {
-	panic("TODO")
-}
-
-func ExtractTrapExtTokenFromCookie(c echo.Context) string {
+func ExtractTokenFromCookie(c echo.Context) string {
 	token, err := c.Cookie("traP_ext_token")
 	if err != nil {
 		return ""
@@ -19,11 +16,10 @@ func ExtractTrapExtTokenFromCookie(c echo.Context) string {
 	return token.Value
 }
 
-func (s *Service) AuthorizeMemberByToken(c echo.Context) {
-	tokenString := ExtractTrapExtTokenFromCookie(c)
+func (s *Service) authenticate(c echo.Context) error {
+	tokenString := ExtractTokenFromCookie(c)
 	if len(tokenString) == 0 {
-		Unauthorized(c)
-		return
+		return unauthorized(c)
 	}
 
 	token, err := jwt.Parse(tokenString, func(token *jwt.Token) (i interface{}, e error) {
@@ -34,8 +30,8 @@ func (s *Service) AuthorizeMemberByToken(c echo.Context) {
 	})
 
 	if err != nil || !token.Valid {
-		Unauthorized(c)
-		return
+		return unauthorized(c)
+
 	}
 
 	claims := token.Claims.(jwt.MapClaims)
@@ -43,19 +39,20 @@ func (s *Service) AuthorizeMemberByToken(c echo.Context) {
 	if nameI, ok := claims["name"]; ok {
 		c.Response().Header().Set("X-Showcase-User", nameI.(string))
 	} else {
-		Unauthorized(c)
+		return unauthorized(c)
 	}
+	return c.String(http.StatusOK, "")
 }
 
-func Unauthorized(c echo.Context) {
+func unauthorized(c echo.Context) error {
 	q := c.Request().URL.Query().Get("type")
 	switch strings.ToLower(q) {
 	case "soft":
 		c.Response().Header().Set("X-Showcase-User", "-")
-		c.Response().WriteHeader(200)
+		return c.String(http.StatusOK, "")
 	case "hard":
-		c.Response().WriteHeader(403)
+		return c.NoContent(http.StatusForbidden)
 	default:
-		c.Response().WriteHeader(403)
+		return c.NoContent(http.StatusForbidden)
 	}
 }
