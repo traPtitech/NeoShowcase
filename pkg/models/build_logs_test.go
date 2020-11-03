@@ -830,7 +830,7 @@ func testBuildLogsSelect(t *testing.T) {
 }
 
 var (
-	buildLogDBTypes = map[string]string{`ID`: `varchar`, `ApplicationID`: `varchar`, `Result`: `varchar`, `StartedAt`: `datetime`, `FinishedAt`: `datetime`}
+	buildLogDBTypes = map[string]string{`ID`: `varchar`, `ApplicationID`: `varchar`, `Result`: `enum('BUILDING','SUCCEEDED','FAILED','CANCELED')`, `StartedAt`: `datetime`, `FinishedAt`: `datetime`}
 	_               = bytes.MinRead
 )
 

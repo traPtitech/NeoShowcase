@@ -53,3 +53,11 @@ migrate-up:
 .PHONY: migrate-down
 migrate-down:
 	@sql-migrate down
+
+.PHONY: ns-builder-evans
+ns-builder-evans:
+	@evans --host localhost -p 5006 -r repl
+
+.PHONY: ns-builder-rebuild
+ns-builder-rebuild:
+	@docker-compose up -d --build ns-builder

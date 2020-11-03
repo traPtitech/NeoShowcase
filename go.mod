@@ -17,6 +17,7 @@ require (
 	github.com/improbable-eng/grpc-web v0.13.0
 	github.com/kat-co/vala v0.0.0-20170210184112-42e1d8b61f12
 	github.com/labstack/echo/v4 v4.1.17
+	github.com/leandro-lugaresi/hub v1.1.1
 	github.com/magiconair/properties v1.8.4 // indirect
 	github.com/markbates/pkger v0.17.1
 	github.com/mitchellh/mapstructure v1.3.3 // indirect

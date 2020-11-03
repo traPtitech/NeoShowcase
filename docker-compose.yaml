@@ -43,10 +43,11 @@ services:
       context: .
       dockerfile: cmd/ns-builder/Dockerfile
     entrypoint: dockerize -timeout 60s -wait tcp://mysql:3306 -wait tcp://buildkitd:1234
-    command: /app/ns-builder run
+    command: /app/ns-builder run --debug
     restart: always
     environment:
       NS_BUILDER_BUILDKIT_ADDRESS: "tcp://buildkitd:1234"
+      NS_BUILDER_BUILDKIT_REGISTRY: "registry:5000"
       NS_BUILDER_DB_HOST: "mysql"
     ports:
       - "5006:10000"
@@ -147,5 +148,5 @@ services:
       - apps
 
 networks:
-  default: {}
-  apps: {}
+  default: { }
+  apps: { }

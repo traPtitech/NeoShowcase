@@ -13,17 +13,48 @@ enum BuilderStatus {
 
 message GetStatusResponse {
     BuilderStatus status = 1;
+    string build_id = 2;
 }
 
-message BuildImageRequest {
+message StartBuildImageTaskRequest {
     string image_name = 1;
+    string repository_url = 2;
+    string application_id = 3;
 }
 
-message BuildImageResponse {
+message StartBuildImageTaskResponse {
+    string build_id = 1;
+}
 
+message StartBuildStaticTaskRequest {
+    string repository_url = 1;
+    string application_id = 2;
+}
+
+message StartBuildStaticTaskResponse {
+    string build_id = 1;
+}
+
+message CancelTaskResponse {
+    bool canceled = 1;
+    string build_id = 2;
+}
+
+message Event {
+    enum Type {
+        CONNECTED = 0;
+        BUILD_STARTED = 1;
+        BUILD_SUCCEEDED = 2;
+        BUILD_FAILED = 3;
+        BUILD_CANCELED = 4;
+    }
+    Type type = 1;
 }
 
 service BuilderService {
     rpc GetStatus (google.protobuf.Empty) returns (GetStatusResponse);
-    rpc BuildImage (BuildImageRequest) returns (BuildImageResponse);
+    rpc ConnectEventStream (google.protobuf.Empty) returns (stream Event);
+    rpc StartBuildImageTask (StartBuildImageTaskRequest) returns (StartBuildImageTaskResponse);
+    rpc StartBuildStaticTask (StartBuildStaticTaskRequest) returns (StartBuildStaticTaskResponse);
+    rpc CancelTask (google.protobuf.Empty) returns (CancelTaskResponse);
 }

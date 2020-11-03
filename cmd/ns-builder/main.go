@@ -64,8 +64,10 @@ func init() {
 
 	flags := rootCommand.PersistentFlags()
 	flags.StringVarP(&configFilePath, "config", "c", "", "config file path")
+	cliutil.SetupDebugFlag(flags)
 
 	viper.SetDefault("buildkit.address", appdefaults.Address)
+	viper.SetDefault("buildkit.registry", "localhost:5000")
 	viper.SetDefault("grpc.port", 10000)
 	viper.SetDefault("db.host", "127.0.0.1")
 	viper.SetDefault("db.port", 3306)

@@ -42,10 +42,10 @@ CREATE TABLE `sites`
 
 CREATE TABLE `build_logs`
 (
-    `id`             VARCHAR(22) NOT NULL COMMENT 'ビルドログID',
-    `application_id` VARCHAR(22) NOT NULL COMMENT 'アプリケーションID',
-    `result`         VARCHAR(20) NOT NULL COMMENT 'ビルド結果',
-    `started_at`     DATETIME(6) NOT NULL COMMENT 'ビルド開始日時',
+    `id`             VARCHAR(22)                                          NOT NULL COMMENT 'ビルドログID',
+    `application_id` VARCHAR(22)                                          NOT NULL COMMENT 'アプリケーションID',
+    `result`         ENUM ('BUILDING', 'SUCCEEDED', 'FAILED', 'CANCELED') NOT NULL COMMENT 'ビルド結果',
+    `started_at`     DATETIME(6)                                          NOT NULL COMMENT 'ビルド開始日時',
     `finished_at`    DATETIME(6) COMMENT 'ビルド終了日時',
     PRIMARY KEY (`id`),
     CONSTRAINT fk_build_logs_application_id FOREIGN KEY (`application_id`) REFERENCES applications (`id`) ON UPDATE RESTRICT ON DELETE RESTRICT
