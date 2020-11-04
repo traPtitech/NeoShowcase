@@ -45,7 +45,7 @@ func (s *Service) authenticate(c echo.Context) error {
 }
 
 func unauthorized(c echo.Context) error {
-	q := c.Request().URL.Query().Get("type")
+	q := c.QueryParam("type")
 	switch strings.ToLower(q) {
 	case "soft":
 		c.Response().Header().Set("X-Showcase-User", "-")
