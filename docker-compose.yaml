@@ -49,6 +49,9 @@ services:
       NS_BUILDER_BUILDKIT_ADDRESS: "tcp://buildkitd:1234"
       NS_BUILDER_BUILDKIT_REGISTRY: "registry:5000"
       NS_BUILDER_DB_HOST: "mysql"
+    volumes:
+      - ./local-dev/neoshowcase/artifacts:/neoshowcase/artifacts
+      - ./local-dev/neoshowcase/buildlogs:/neoshowcase/buildlogs
     ports:
       - "5006:10000"
     depends_on:

@@ -2,11 +2,9 @@ package builder
 
 import (
 	"context"
-	"github.com/leandro-lugaresi/hub"
 	"github.com/traPtitech/neoshowcase/pkg/builder/api"
 	"github.com/traPtitech/neoshowcase/pkg/idgen"
 	"github.com/traPtitech/neoshowcase/pkg/models"
-	"github.com/volatiletech/sqlboiler/v4/boil"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/types/known/emptypb"
@@ -52,13 +50,10 @@ func (s *Service) ConnectEventStream(_ *emptypb.Empty, stream api.BuilderService
 
 func (s *Service) StartBuildImageTask(ctx context.Context, req *api.StartBuildImageTaskRequest) (*api.StartBuildImageTaskResponse, error) {
 	s.stateLock.Lock()
-	state := s.state
-	if state != api.BuilderStatus_WAITING {
+	if s.state != api.BuilderStatus_WAITING {
 		s.stateLock.Unlock()
-		return nil, status.Errorf(codes.Unavailable, "status: %s", state.String())
+		return nil, status.Errorf(codes.Unavailable, "status: %s", s.state.String())
 	}
-	s.state = api.BuilderStatus_BUILDING
-	s.stateLock.Unlock()
 
 	t := &Task{
 		BuildID:       idgen.New(),
@@ -70,20 +65,42 @@ func (s *Service) StartBuildImageTask(ctx context.Context, req *api.StartBuildIm
 			StartedAt:     time.Now(),
 		},
 	}
-	t.BuildLogM.ID = t.BuildID
-	if err := t.BuildLogM.Insert(ctx, s.db, boil.Infer()); err != nil {
-		return nil, status.Errorf(codes.Internal, "failed to insert build_log entry: %v", err)
+	if err := t.startAsync(ctx, s); err != nil {
+		s.stateLock.Unlock()
+		return nil, status.Errorf(codes.Internal, "%v", err)
 	}
 
-	t.Ctx, t.CancelFunc = context.WithCancel(context.Background())
-	go s.processTask(t)
-	s.bus.Publish(hub.Message{
-		Name: IEventBuildStarted,
-		Fields: hub.Fields{
-			"task": t,
-		},
-	})
+	s.state = api.BuilderStatus_BUILDING
+	s.stateLock.Unlock()
 	return &api.StartBuildImageTaskResponse{BuildId: t.BuildID}, nil
+}
+
+func (s *Service) StartBuildStaticTask(ctx context.Context, req *api.StartBuildStaticTaskRequest) (*api.StartBuildStaticTaskResponse, error) {
+	s.stateLock.Lock()
+	if s.state != api.BuilderStatus_WAITING {
+		s.stateLock.Unlock()
+		return nil, status.Errorf(codes.Unavailable, "status: %s", s.state.String())
+	}
+
+	t := &Task{
+		Static:        true,
+		BuildID:       idgen.New(),
+		RepositoryURL: req.GetRepositoryUrl(),
+		BuildLogM: models.BuildLog{
+			ApplicationID: req.GetApplicationId(),
+			Result:        models.BuildLogsResultBUILDING,
+			StartedAt:     time.Now(),
+		},
+	}
+
+	if err := t.startAsync(ctx, s); err != nil {
+		s.stateLock.Unlock()
+		return nil, status.Errorf(codes.Internal, "%v", err)
+	}
+
+	s.state = api.BuilderStatus_BUILDING
+	s.stateLock.Unlock()
+	return &api.StartBuildStaticTaskResponse{BuildId: t.BuildID}, nil
 }
 
 func (s *Service) CancelTask(_ context.Context, _ *emptypb.Empty) (*api.CancelTaskResponse, error) {
@@ -97,6 +114,6 @@ func (s *Service) CancelTask(_ context.Context, _ *emptypb.Empty) (*api.CancelTa
 
 	s.taskLock.Lock()
 	defer s.taskLock.Unlock()
-	s.task.CancelFunc()
+	s.task.cancelFunc()
 	return &api.CancelTaskResponse{Canceled: true, BuildId: s.task.BuildID}, nil
 }

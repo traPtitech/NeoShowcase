@@ -4,20 +4,16 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
-	"github.com/go-git/go-git/v5"
 	"github.com/leandro-lugaresi/hub"
 	buildkit "github.com/moby/buildkit/client"
+	"github.com/moby/buildkit/client/llb"
 	log "github.com/sirupsen/logrus"
 	"github.com/traPtitech/neoshowcase/pkg/builder/api"
 	"github.com/traPtitech/neoshowcase/pkg/models"
-	"github.com/volatiletech/null/v8"
-	"github.com/volatiletech/sqlboiler/v4/boil"
 	"golang.org/x/sync/errgroup"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/reflection"
-	"io/ioutil"
 	"net"
-	"os"
 	"sync"
 	"time"
 )
@@ -99,119 +95,84 @@ func (s *Service) Shutdown(ctx context.Context) error {
 }
 
 func (s *Service) processTask(t *Task) {
-	s.taskLock.Lock()
-	s.task = t
-	s.taskLock.Unlock()
+	s.setTask(t)
 
-	var f *os.File
 	result := models.BuildLogsResultFAILED
 	// 後処理関数
 	defer func() {
-		log.WithField("buildID", t.BuildID).
-			WithField("result", result).
-			Debugf("task finished")
-
-		// イベント発行
-		switch result {
-		case models.BuildLogsResultFAILED:
-			s.bus.Publish(hub.Message{
-				Name: IEventBuildFailed,
-				Fields: hub.Fields{
-					"task": t,
-				},
-			})
-		case models.BuildLogsResultCANCELED:
-			s.bus.Publish(hub.Message{
-				Name: IEventBuildCanceled,
-				Fields: hub.Fields{
-					"task": t,
-				},
-			})
-		case models.BuildLogsResultSUCCEEDED:
-			s.bus.Publish(hub.Message{
-				Name: IEventBuildSucceeded,
-				Fields: hub.Fields{
-					"task": t,
-				},
-			})
-		default:
-			panic(result)
-		}
-
 		// タスク破棄
-		s.taskLock.Lock()
-		s.task = nil
-		s.taskLock.Unlock()
-		t.dispose()
+		s.setTask(nil)
+
+		t.postProcess(s, result)
+
 		s.stateLock.Lock()
 		s.state = api.BuilderStatus_WAITING
 		s.stateLock.Unlock()
-
-		// BuildLog更新
-		t.BuildLogM.Result = result
-		t.BuildLogM.FinishedAt = null.TimeFrom(time.Now())
-		if _, err := t.BuildLogM.Update(context.Background(), s.db, boil.Infer()); err != nil {
-			log.WithError(err).Errorf("failed to update build_log entry (%d)", t.BuildID)
-		}
-
-		// ログファイルの保存 TODO
-		if f != nil {
-			_ = f.Close()
-			_ = os.Remove(f.Name())
-		}
 	}()
 
-	// ログ用一時ファイル作成
-	f, err := ioutil.TempFile("", "buildlog")
-	if err != nil {
-		log.WithError(err).Errorf("failed to create temporary log file (buildID: %d)", t.BuildID)
-		return
-	}
-
-	// リポジトリをクローン
-	dir, err := ioutil.TempDir("", "repo")
-	if err != nil {
-		result = models.BuildLogsResultFAILED
-		log.WithError(err).Errorf("failed to create temporary repository directory (buildID: %d)", t.BuildID)
-		_, _ = fmt.Fprintln(f, "[INTERNAL ERROR OCCURRED]")
-		return
-	}
-	defer os.RemoveAll(dir)
-
-	_, _ = fmt.Fprint(f, "CLONE REPOSITORY...")
-	_, err = git.PlainCloneContext(t.Ctx, dir, false, &git.CloneOptions{URL: t.RepositoryURL, Depth: 1})
-	if err != nil {
-		log.Debug(err)
-		if err == context.Canceled || err == context.DeadlineExceeded {
-			result = models.BuildLogsResultCANCELED
-			_, _ = fmt.Fprintln(f, "CANCELED")
-			return
-		}
-		result = models.BuildLogsResultFAILED
-		_, _ = fmt.Fprintln(f, "ERROR")
-		_, _ = fmt.Fprintln(f, err.Error())
-		return
-	}
-	_, _ = fmt.Fprintln(f, "SUCCESS")
-
 	// ビルド
-	_, _ = fmt.Fprintln(f, "START BUILDING")
-	if err := s.buildkit.BuildImage(t.Ctx, BuildImageArgs{
-		ImageName:  s.config.Buildkit.Registry + "/" + t.ImageName,
-		ContextDir: dir,
-	}, f); err != nil {
+	t.writeLog("START BUILDING")
+	var err error
+	if t.Static {
+		// 静的ファイルビルド
+
+		// TODO ビルドステージの構成を何らかの形で指定できるようにする
+		builder := llb.Image("docker.io/library/node:14.11.0-alpine"). // FROM node:14.11.0-alpine as builder
+			Dir("/app"). // WORKDIR /app
+			File(llb.Copy(llb.Local("local-src"), "package*.json", "./", &llb.CopyInfo{
+				AllowWildcard:  true,
+				CreateDestPath: true,
+			})). // COPY package*.json ./
+			Run(llb.Shlex("npm i")). // RUN npm i
+			File(llb.Copy(llb.Local("local-src"), ".", ".", &llb.CopyInfo{
+				AllowWildcard:  true,
+				CreateDestPath: true,
+			})). // COPY . .
+			Run(llb.Shlex("npm run build"), llb.AddEnv("NODE_ENV", "production")). // RUN NODE_ENV=production npm run build
+			Root()
+
+		// ビルドで生成された静的ファイルのみを含むScratchイメージを構成
+		def, _ := llb.
+			Scratch(). // FROM scratch
+			File(llb.Copy(builder, "/app/dist", "/", &llb.CopyInfo{
+				CopyDirContentsOnly: true,
+				CreateDestPath:      true,
+				AllowWildcard:       true,
+			})). // COPY --from=builder /app/dist /
+			Marshal(context.Background())
+
+		// ビルド
+		err = s.buildkit.BuildStatic(t.ctx, BuildStaticArgs{
+			Output:     t.artifactWriter(),
+			ContextDir: t.repositoryTempDir,
+			LLB:        def,
+		}, t.buildLogWriter())
+	} else {
+		// DockerImageビルド
+		err = s.buildkit.BuildImage(t.ctx, BuildImageArgs{
+			ImageName:  s.config.Buildkit.Registry + "/" + t.ImageName,
+			ContextDir: t.repositoryTempDir,
+		}, t.buildLogWriter())
+	}
+	if err != nil {
 		log.Debug(err)
 		if err == context.Canceled || err == context.DeadlineExceeded {
 			result = models.BuildLogsResultCANCELED
-			_, _ = fmt.Fprintln(f, "CANCELED")
+			t.writeLog("CANCELED")
 			return
 		}
-		_, _ = fmt.Fprintln(f, err.Error())
+		result = models.BuildLogsResultFAILED
 		return
 	}
 
 	// 成功
-	_, _ = fmt.Fprintln(f, "BUILD SUCCESSFUL")
+	t.writeLog("BUILD SUCCESSFUL")
 	result = models.BuildLogsResultSUCCEEDED
 	return
+}
+
+func (s *Service) setTask(t *Task) {
+	s.taskLock.Lock()
+	s.task = t
+	s.taskLock.Unlock()
 }
