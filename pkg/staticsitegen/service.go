@@ -4,10 +4,15 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
+	"github.com/traPtitech/neoshowcase/pkg/models"
 	"github.com/traPtitech/neoshowcase/pkg/staticsitegen/api"
 	"github.com/traPtitech/neoshowcase/pkg/staticsitegen/generator"
+	"github.com/volatiletech/sqlboiler/v4/queries/qm"
 	"golang.org/x/sync/errgroup"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/reflection"
+	"google.golang.org/grpc/status"
 	"net"
 )
 
@@ -26,10 +31,14 @@ func New(c Config) (*Service, error) {
 		config: c,
 	}
 	api.RegisterStaticSiteGenServiceServer(s.server, s)
+	reflection.Register(s.server)
 
 	engine, err := c.GetEngine()
 	if err != nil {
 		return nil, err
+	}
+	if err := engine.Init(); err != nil {
+		return nil, fmt.Errorf("failed to init engine: %w", err)
 	}
 	s.engine = engine
 
@@ -63,4 +72,37 @@ func (s *Service) Shutdown(ctx context.Context) error {
 	})
 
 	return eg.Wait()
+}
+
+func (s *Service) Reload(ctx context.Context, _ *api.ReloadRequest) (*api.ReloadResponse, error) {
+	err := s.reload(ctx)
+	if err != nil {
+		return nil, status.Errorf(codes.Internal, err.Error())
+	}
+	return &api.ReloadResponse{}, nil
+}
+
+func (s *Service) reload(ctx context.Context) error {
+	sites, err := models.StaticSiteDetails(
+		qm.Load("Site"),
+		qm.Load("Artifact"),
+	).All(ctx, s.db)
+	if err != nil {
+		return err
+	}
+
+	var data []*generator.Site
+	for _, site := range sites {
+		if site.ArtifactID.Valid {
+			data = append(data, &generator.Site{
+				ID:            site.SiteID,
+				FQDN:          site.R.Site.FQDN,
+				PathPrefix:    site.R.Site.PathPrefix,
+				ArtifactID:    site.ArtifactID.String,
+				ApplicationID: site.R.Site.ApplicationID,
+			})
+		}
+	}
+
+	return s.engine.Reconcile(data)
 }

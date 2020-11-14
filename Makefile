@@ -61,3 +61,11 @@ ns-builder-evans:
 .PHONY: ns-builder-rebuild
 ns-builder-rebuild:
 	@docker-compose up -d --build ns-builder
+
+.PHONY: ns-ssgen-evans
+ns-ssgen-evans:
+	@evans --host localhost -p 5007 -r repl
+
+.PHONY: ns-ssgen-rebuild
+ns-ssgen-rebuild:
+	@docker-compose up -d --build ns-ssgen

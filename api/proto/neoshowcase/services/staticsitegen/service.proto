@@ -2,5 +2,12 @@ syntax = "proto3";
 package neoshowcase.proto.services.staticsitegen;
 option go_package = "github.com/traPtitech/neoshowcase/pkg/staticsitegen/api";
 
+message ReloadRequest {
+}
+
+message ReloadResponse {
+}
+
 service StaticSiteGenService {
+    rpc Reload (ReloadRequest) returns (ReloadResponse);
 }

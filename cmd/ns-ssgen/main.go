@@ -63,8 +63,12 @@ func init() {
 
 	flags := rootCommand.PersistentFlags()
 	flags.StringVarP(&configFilePath, "config", "c", "", "config file path")
+	cliutil.SetupDebugFlag(flags)
 
-	viper.SetDefault("server", "nginx")
+	viper.SetDefault("server", "caddy")
+	viper.SetDefault("artifactsRoot", "/srv/artifacts")
+	viper.SetDefault("generatedConfDir", "/srv/config")
+	viper.SetDefault("caddy.adminEndpoint", "http://localhost:2019")
 	viper.SetDefault("grpc.port", 10000)
 	viper.SetDefault("db.host", "127.0.0.1")
 	viper.SetDefault("db.port", 3306)

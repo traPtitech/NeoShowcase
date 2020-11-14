@@ -3,7 +3,10 @@
 package api
 
 import (
+	context "context"
 	grpc "google.golang.org/grpc"
+	codes "google.golang.org/grpc/codes"
+	status "google.golang.org/grpc/status"
 )
 
 // This is a compile-time assertion to ensure that this generated file
@@ -14,6 +17,7 @@ const _ = grpc.SupportPackageIsVersion7
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type StaticSiteGenServiceClient interface {
+	Reload(ctx context.Context, in *ReloadRequest, opts ...grpc.CallOption) (*ReloadResponse, error)
 }
 
 type staticSiteGenServiceClient struct {
@@ -24,10 +28,20 @@ func NewStaticSiteGenServiceClient(cc grpc.ClientConnInterface) StaticSiteGenSer
 	return &staticSiteGenServiceClient{cc}
 }
 
+func (c *staticSiteGenServiceClient) Reload(ctx context.Context, in *ReloadRequest, opts ...grpc.CallOption) (*ReloadResponse, error) {
+	out := new(ReloadResponse)
+	err := c.cc.Invoke(ctx, "/neoshowcase.proto.services.staticsitegen.StaticSiteGenService/Reload", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // StaticSiteGenServiceServer is the server API for StaticSiteGenService service.
 // All implementations must embed UnimplementedStaticSiteGenServiceServer
 // for forward compatibility
 type StaticSiteGenServiceServer interface {
+	Reload(context.Context, *ReloadRequest) (*ReloadResponse, error)
 	mustEmbedUnimplementedStaticSiteGenServiceServer()
 }
 
@@ -35,6 +49,9 @@ type StaticSiteGenServiceServer interface {
 type UnimplementedStaticSiteGenServiceServer struct {
 }
 
+func (UnimplementedStaticSiteGenServiceServer) Reload(context.Context, *ReloadRequest) (*ReloadResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method Reload not implemented")
+}
 func (UnimplementedStaticSiteGenServiceServer) mustEmbedUnimplementedStaticSiteGenServiceServer() {}
 
 // UnsafeStaticSiteGenServiceServer may be embedded to opt out of forward compatibility for this service.
@@ -48,10 +65,33 @@ func RegisterStaticSiteGenServiceServer(s *grpc.Server, srv StaticSiteGenService
 	s.RegisterService(&_StaticSiteGenService_serviceDesc, srv)
 }
 
+func _StaticSiteGenService_Reload_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ReloadRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(StaticSiteGenServiceServer).Reload(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/neoshowcase.proto.services.staticsitegen.StaticSiteGenService/Reload",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(StaticSiteGenServiceServer).Reload(ctx, req.(*ReloadRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 var _StaticSiteGenService_serviceDesc = grpc.ServiceDesc{
 	ServiceName: "neoshowcase.proto.services.staticsitegen.StaticSiteGenService",
 	HandlerType: (*StaticSiteGenServiceServer)(nil),
-	Methods:     []grpc.MethodDesc{},
-	Streams:     []grpc.StreamDesc{},
-	Metadata:    "neoshowcase/services/staticsitegen/service.proto",
+	Methods: []grpc.MethodDesc{
+		{
+			MethodName: "Reload",
+			Handler:    _StaticSiteGenService_Reload_Handler,
+		},
+	},
+	Streams:  []grpc.StreamDesc{},
+	Metadata: "neoshowcase/services/staticsitegen/service.proto",
 }

@@ -8,16 +8,23 @@ import (
 )
 
 type Config struct {
-	Server      string            `mapstructure:"server" yaml:"server"`
-	NginxConfig generator.Nginx   `mapstructure:"nginx" yaml:"nginx"`
-	GRPC        common.GRPCConfig `mapstructure:"grpc" yaml:"grpc"`
-	DB          common.DBConfig   `mapstructure:"db" yaml:"db"`
+	Server           string `mapstructure:"server" yaml:"server"`
+	ArtifactsRoot    string `mapstructure:"artifactsRoot" yaml:"artifactsRoot"`
+	GeneratedConfDir string `mapstructure:"generatedConfDir" yaml:"generatedConfDir"`
+	Caddy            struct {
+		AdminEndpoint string `mapstructure:"adminEndpoint" yaml:"adminEndpoint"`
+	} `mapstructure:"caddy" yaml:"caddy"`
+	GRPC common.GRPCConfig `mapstructure:"grpc" yaml:"grpc"`
+	DB   common.DBConfig   `mapstructure:"db" yaml:"db"`
 }
 
 func (c *Config) GetEngine() (generator.Engine, error) {
 	switch strings.ToLower(c.Server) {
-	case "nginx":
-		return &c.NginxConfig, nil
+	case "caddy":
+		return &generator.Caddy{
+			ArtifactsRootPath: c.ArtifactsRoot,
+			AdminEndpoint:     c.Caddy.AdminEndpoint,
+		}, nil
 	default:
 		return nil, fmt.Errorf("unknown server type: %s", c.Server)
 	}

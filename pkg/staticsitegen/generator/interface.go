@@ -1,9 +1,14 @@
 package generator
 
-import (
-	"github.com/traPtitech/neoshowcase/pkg/apiserver/api"
-)
-
 type Engine interface {
-	Generate(sites []api.StaticSite) error
+	Init() error
+	Reconcile(sites []*Site) error
+}
+
+type Site struct {
+	ID            string
+	FQDN          string
+	PathPrefix    string
+	ArtifactID    string
+	ApplicationID string
 }
