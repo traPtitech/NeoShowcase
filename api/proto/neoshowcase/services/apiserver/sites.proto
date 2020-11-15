@@ -3,7 +3,6 @@ package neoshowcase.proto.services.apiserver;
 option go_package = "github.com/traPtitech/neoshowcase/pkg/apiserver/api";
 
 import "google/protobuf/timestamp.proto";
-import "neoshowcase/entities/entity.proto";
 
 message GetAllStaticSitesRequest {
 }
