@@ -3,6 +3,7 @@ package dockerimpl
 import (
 	"context"
 	"fmt"
+
 	docker "github.com/fsouza/go-dockerclient"
 	"github.com/leandro-lugaresi/hub"
 	log "github.com/sirupsen/logrus"
@@ -13,6 +14,7 @@ const (
 	appNetwork                     = "neoshowcase_apps"
 	appContainerLabel              = "neoshowcase.trap.jp/app"
 	appContainerApplicationIDLabel = "neoshowcase.trap.jp/appId"
+	timeout                        = 5
 )
 
 type Manager struct {
