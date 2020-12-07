@@ -6,7 +6,7 @@ services:
       context: .
       dockerfile: cmd/ns/Dockerfile
     entrypoint: dockerize -timeout 60s -wait tcp://mysql:3306 -wait tcp://ns-builder:10000 -wait tcp://ns-ssgen:10000
-    command: /app/ns run
+    command: /app/ns run --debug
     restart: always
     environment:
       NS_APISERVER_DB_HOST: "mysql"

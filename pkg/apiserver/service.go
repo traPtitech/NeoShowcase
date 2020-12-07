@@ -4,21 +4,25 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
-	"github.com/improbable-eng/grpc-web/go/grpcweb"
-	"github.com/traPtitech/neoshowcase/pkg/apiserver/api"
+	"github.com/leandro-lugaresi/hub"
 	builderApi "github.com/traPtitech/neoshowcase/pkg/builder/api"
+	"github.com/traPtitech/neoshowcase/pkg/container"
+	"github.com/traPtitech/neoshowcase/pkg/container/dockerimpl"
 	ssgenApi "github.com/traPtitech/neoshowcase/pkg/staticsitegen/api"
 	"golang.org/x/sync/errgroup"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/reflection"
 	"net"
 )
 
 type Service struct {
 	server *grpc.Server
 	db     *sql.DB
+	bus    *hub.Hub
 
-	builderConn *grpc.ClientConn
-	ssgenConn   *grpc.ClientConn
+	builderConn      *grpc.ClientConn
+	ssgenConn        *grpc.ClientConn
+	containerManager container.Manager
 
 	config Config
 }
@@ -27,11 +31,10 @@ func New(c Config) (*Service, error) {
 	s := &Service{
 		server: grpc.NewServer(),
 		config: c,
+		bus:    hub.New(),
 	}
 
-	api.RegisterPingServer(s.server, &PingService{})
-
-	grpcweb.WrapServer(s.server)
+	reflection.Register(s.server)
 
 	// DBに接続
 	db, err := c.DB.Connect()
@@ -53,6 +56,13 @@ func New(c Config) (*Service, error) {
 		return nil, fmt.Errorf("failed to connect ssgen service: %w", err)
 	}
 	s.ssgenConn = ssgenConn
+
+	// コンテナマネージャー生成
+	connM, err := dockerimpl.NewManager(s.bus)
+	if err != nil {
+		return nil, fmt.Errorf("failed to init container manager: %w", err)
+	}
+	s.containerManager = connM
 
 	return s, nil
 }
@@ -80,6 +90,9 @@ func (s *Service) Shutdown(ctx context.Context) error {
 	})
 	eg.Go(func() error {
 		return s.ssgenConn.Close()
+	})
+	eg.Go(func() error {
+		return s.containerManager.Dispose(ctx)
 	})
 
 	return eg.Wait()

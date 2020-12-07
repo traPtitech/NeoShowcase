@@ -6,11 +6,12 @@ import (
 
 type Manager interface {
 	Create(ctx context.Context, args CreateArgs) (*CreateResult, error)
-	// TODO Start(ctx context.Context, )
-	// TODO Stop(ctx context.Context, )
-	// TODO Restart(ctx context.Context, )
+	// TODO Start(ctx context.Context, ) k8sではCreateと同じ
+	// TODO Stop(ctx context.Context, ) k8sではDestroyと同じ
+	// TODO Restart(ctx context.Context, ) k8sではCreateと同じ
 	Destroy(ctx context.Context, args DestroyArgs) (*DestroyResult, error)
 	List(ctx context.Context) (*ListResult, error)
+	Dispose(ctx context.Context) error
 }
 
 type CreateArgs struct {
@@ -18,11 +19,13 @@ type CreateArgs struct {
 	ImageName     string
 	ImageTag      string
 	Labels        map[string]string
+	HTTPProxy     *HTTPProxy
+	NoStart       bool
+}
 
-	Domain   string
-	HTTPPort int
-
-	NoStart bool
+type HTTPProxy struct {
+	Domain string
+	Port   int
 }
 
 type CreateResult struct {

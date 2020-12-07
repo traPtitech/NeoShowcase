@@ -18,18 +18,25 @@ func (m *Manager) Create(ctx context.Context, args container.CreateArgs) (*conta
 		return nil, fmt.Errorf("failed to pull image: %w", err)
 	}
 
+	labels := util.MergeLabels(args.Labels, map[string]string{
+		appContainerLabel:              "true",
+		appContainerApplicationIDLabel: args.ApplicationID,
+	})
+
+	if args.HTTPProxy != nil {
+		labels = util.MergeLabels(labels, map[string]string{
+			"traefik.enable": "true",
+			fmt.Sprintf("traefik.http.routers.nsapp-%s.rule", args.ApplicationID):                      fmt.Sprintf("Host(`%s`)", args.HTTPProxy.Domain),
+			fmt.Sprintf("traefik.http.services.nsapp-%s.loadbalancer.server.port", args.ApplicationID): fmt.Sprintf("%d", args.HTTPProxy.Port),
+		})
+	}
+
 	// ビルドしたイメージのコンテナを作成
 	cont, err := m.c.CreateContainer(docker.CreateContainerOptions{
 		Name: containerName(args.ApplicationID),
 		Config: &docker.Config{
-			Image: args.ImageName + ":" + args.ImageTag,
-			Labels: util.MergeLabels(args.Labels, map[string]string{
-				appContainerLabel:              "true",
-				appContainerApplicationIDLabel: args.ApplicationID,
-				"traefik.enable":               "true",
-				fmt.Sprintf("traefik.http.routers.nsapp-%s.rule", args.ApplicationID):                      fmt.Sprintf("Host(`%s`)", args.Domain),
-				fmt.Sprintf("traefik.http.services.nsapp-%s.loadbalancer.server.port", args.ApplicationID): fmt.Sprintf("%d", args.HTTPPort),
-			}),
+			Image:  args.ImageName + ":" + args.ImageTag,
+			Labels: labels,
 		},
 		HostConfig: &docker.HostConfig{
 			RestartPolicy: docker.RestartOnFailure(5),

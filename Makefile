@@ -69,3 +69,7 @@ ns-ssgen-evans:
 .PHONY: ns-ssgen-rebuild
 ns-ssgen-rebuild:
 	@docker-compose up -d --build ns-ssgen
+
+.PHONY: ns-rebuild
+ns-rebuild:
+	@docker-compose up -d --build ns

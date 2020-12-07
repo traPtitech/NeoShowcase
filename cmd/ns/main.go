@@ -64,6 +64,7 @@ func init() {
 
 	flags := rootCommand.PersistentFlags()
 	flags.StringVarP(&configFilePath, "config", "c", "", "config file path")
+	cliutil.SetupDebugFlag(flags)
 
 	viper.SetDefault("builder.addr", "")
 	viper.SetDefault("builder.insecure", false)
