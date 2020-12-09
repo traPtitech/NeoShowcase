@@ -7,8 +7,8 @@ import (
 type Manager interface {
 	Create(ctx context.Context, args CreateArgs) (*CreateResult, error)
 	// TODO Start(ctx context.Context, ) k8sではCreateと同じ
-	// TODO Stop(ctx context.Context, ) k8sではDestroyと同じ
-	// TODO Restart(ctx context.Context, ) k8sではCreateと同じ
+	Stop(ctx context.Context, args StopArgs) (*StopResult, error)          // k8sではDestroyと同じ
+	Restart(ctx context.Context, args RestartArgs) (*RestartResult, error) // k8sではCreateと同じ
 	Destroy(ctx context.Context, args DestroyArgs) (*DestroyResult, error)
 	List(ctx context.Context) (*ListResult, error)
 	Dispose(ctx context.Context) error
@@ -36,6 +36,20 @@ type DestroyArgs struct {
 }
 
 type DestroyResult struct {
+}
+
+type StopArgs struct {
+	ApplicationID string
+}
+
+type StopResult struct {
+}
+
+type RestartArgs struct {
+	ApplicationID string
+}
+
+type RestartResult struct {
 }
 
 type ListResult struct {
