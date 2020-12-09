@@ -1,10 +1,16 @@
 package storage
 
 import (
+	"context"
+	"database/sql"
 	"fmt"
 	"io"
 	"os"
 	"path/filepath"
+	"time"
+
+	"github.com/traPtitech/neoshowcase/pkg/models"
+	"github.com/volatiletech/sqlboiler/v4/boil"
 )
 
 type LocalStorage struct {
@@ -77,6 +83,36 @@ func (ls *LocalStorage) Move(sourcePath, destPath string) error {
 func (ls *LocalStorage) FileExists(filename string) bool {
 	_, err := os.Stat(filename)
 	return err == nil
+}
+
+func (ls *LocalStorage) SaveDirToTar(filename string, dstpath string, db *sql.DB, buildid string, sid string) error {
+	// filename: ローカルにおけるファイルの名前
+	// dstpath: ローカルにおけるファイルのパス
+	stat, _ := os.Stat(filename)
+	artifact := models.Artifact{
+		ID:         sid,
+		BuildLogID: buildid,
+		Size:       stat.Size(),
+		CreatedAt:  time.Now(),
+	}
+
+	if err := ls.Move(filename, filepath.Join("/neoshowcase/artifacts", fmt.Sprintf("%s.tar", sid))); err != nil {
+		return fmt.Errorf("failed to save artifact tar file: %w", err)
+	}
+
+	if err := artifact.Insert(context.Background(), db, boil.Infer()); err != nil {
+		return fmt.Errorf("failed to insert artifact entry: %w", err)
+	}
+	return nil
+}
+
+func (ls *LocalStorage) SaveLogFile(filename string, dstpath string, buildid string) error {
+	// filename: ローカルにおけるファイルの名前
+	// dstpath: ローカルにおけるファイルのパス
+	if err := ls.Move(filename, dstpath); err != nil {
+		fmt.Errorf("failed to move build log: %w", err)
+	}
+	return nil
 }
 
 func (ls *LocalStorage) getFilePath(filename string) string {
