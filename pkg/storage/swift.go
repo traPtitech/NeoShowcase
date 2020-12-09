@@ -114,7 +114,7 @@ func (ss *SwiftStorage) SaveLogFile(filename string, dstpath string, buildid str
 	// filename: ローカルにおけるファイルの名前
 	// dstpath: SwiftStorageにおけるファイルのパス(階層構造ではないのでファイル名)
 	if err := ss.Move(filename, dstpath); err != nil {
-		fmt.Errorf("failed to move build log: %w", err)
+		return fmt.Errorf("failed to move build log: %w", err)
 	}
 	return nil
 }
