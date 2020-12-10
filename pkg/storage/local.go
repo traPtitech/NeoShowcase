@@ -113,7 +113,7 @@ func (ls *LocalStorage) SaveLogFile(filename string, dstpath string, buildid str
 	// filename: ローカルにおけるファイルの名前
 	// dstpath: ローカルにおけるファイルのパス
 	if err := ls.Move(filename, dstpath); err != nil {
-		fmt.Errorf("failed to move build log: %w", err)
+		return fmt.Errorf("failed to move build log: %w", err)
 	}
 	return nil
 }
