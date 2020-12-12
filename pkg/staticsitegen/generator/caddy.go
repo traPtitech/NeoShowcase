@@ -50,7 +50,7 @@ func (engine *Caddy) Reconcile(sites []*Site) error {
 		// 静的ファイルの配置
 		artifactDir := filepath.Join(engine.ArtifactsRootPath, site.ArtifactID)
 		if !strg.FileExists(artifactDir) {
-			if err := strg.ExtractTarToDir(filepath.Join("/neoshowcase/artifacts", site.ArtifactID+".tar"), artifactDir); err != nil {
+			if err := storage.ExtractTarToDir(strg, filepath.Join("/neoshowcase/artifacts", site.ArtifactID+".tar"), artifactDir); err != nil {
 				return fmt.Errorf("failed to extract artifact tar: %w", err)
 			}
 		}

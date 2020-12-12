@@ -109,7 +109,7 @@ func (t *Task) postProcess(s *Service, result string) error {
 
 	// ログファイルの保存
 	_ = t.logTempFile.Close()
-	if err := strg.SaveLogFile(t.logTempFile.Name(), filepath.Join("/neoshowcase/buildlogs", t.BuildID), t.BuildID); err != nil {
+	if err := storage.SaveLogFile(strg, t.logTempFile.Name(), filepath.Join("/neoshowcase/buildlogs", t.BuildID), t.BuildID); err != nil {
 		log.WithError(err).Errorf("failed to save build log (%s)", t.BuildID)
 	}
 
@@ -118,7 +118,7 @@ func (t *Task) postProcess(s *Service, result string) error {
 		if result == models.BuildLogsResultSUCCEEDED {
 			// 生成物tarの保存
 			sid := idgen.New()
-			err := strg.SaveFileAsTar(t.artifactTempFile.Name(), filepath.Join("/neoshowcase/artifacts", fmt.Sprintf("%s.tar", sid)), s.db, t.BuildID, sid)
+			err := storage.SaveFileAsTar(strg, t.artifactTempFile.Name(), filepath.Join("/neoshowcase/artifacts", fmt.Sprintf("%s.tar", sid)), s.db, t.BuildID, sid)
 			if err != nil {
 				log.WithError(err).Errorf("failed to save directory to tar (BuildID: %s, ArtifactID: %s)", t.BuildID, sid)
 			}
