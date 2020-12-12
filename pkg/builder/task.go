@@ -101,7 +101,7 @@ func (t *Task) startAsync(ctx context.Context, s *Service) error {
 
 func (t *Task) postProcess(s *Service, result string) error {
 	var strg storage.Storage
-	strg = &storage.LocalStorage{LocalDir: "./"}
+	strg = &storage.LocalStorage{}
 	log.WithField("buildID", t.BuildID).
 		WithField("result", result).
 		Debugf("task finished")
@@ -123,12 +123,12 @@ func (t *Task) postProcess(s *Service, result string) error {
 				log.WithError(err).Errorf("failed to save directory to tar (BuildID: %s, ArtifactID: %s)", t.BuildID, sid)
 			}
 		} else {
-			_ = strg.Delete(t.artifactTempFile.Name())
+			_ = os.Remove(t.artifactTempFile.Name())
 		}
 	}
 
 	// 一時リポジトリディレクトリの削除
-	_ = strg.DeleteAll(t.repositoryTempDir)
+	_ = os.RemoveAll(t.repositoryTempDir)
 
 	// BuildLog更新
 	t.BuildLogM.Result = result

@@ -4,15 +4,12 @@ import (
 	"fmt"
 	"io"
 	"os"
-	"path/filepath"
 )
 
-type LocalStorage struct {
-	LocalDir string
-}
+type LocalStorage struct{}
 
 func (ls *LocalStorage) Save(filename string, src io.Reader) error {
-	file, err := os.Create(ls.getFilePath(filename))
+	file, err := os.Create(filename)
 	if err != nil {
 		return err
 	}
@@ -23,7 +20,7 @@ func (ls *LocalStorage) Save(filename string, src io.Reader) error {
 }
 
 func (ls *LocalStorage) Open(filename string) (io.ReadCloser, error) {
-	r, err := os.Open(ls.getFilePath(filename))
+	r, err := os.Open(filename)
 	if err != nil {
 		return nil, fmt.Errorf("not found: %w", err)
 	}
@@ -31,19 +28,10 @@ func (ls *LocalStorage) Open(filename string) (io.ReadCloser, error) {
 }
 
 func (ls *LocalStorage) Delete(filename string) error {
-	path := ls.getFilePath(filename)
-	if _, err := os.Stat(path); err != nil {
+	if _, err := os.Stat(filename); err != nil {
 		return fmt.Errorf("not found: %w", err)
 	}
-	return os.Remove(path)
-}
-
-func (ls *LocalStorage) DeleteAll(dirname string) error {
-	path := ls.getFilePath(dirname)
-	if _, err := os.Stat(path); err != nil {
-		return fmt.Errorf("not found: %w", err)
-	}
-	return os.RemoveAll(path)
+	return os.Remove(filename)
 }
 
 func (ls *LocalStorage) Move(sourcePath, destPath string) error {
@@ -68,13 +56,4 @@ func (ls *LocalStorage) Move(sourcePath, destPath string) error {
 		return fmt.Errorf("failed removing original file: %w", err)
 	}
 	return nil
-}
-
-func (ls *LocalStorage) FileExists(filename string) bool {
-	_, err := os.Stat(filename)
-	return err == nil
-}
-
-func (ls *LocalStorage) getFilePath(filename string) string {
-	return filepath.Join(ls.LocalDir, filename)
 }

@@ -10,6 +10,7 @@ import (
 
 	log "github.com/sirupsen/logrus"
 	"github.com/traPtitech/neoshowcase/pkg/storage"
+	"github.com/traPtitech/neoshowcase/pkg/util"
 )
 
 type Caddy struct {
@@ -39,7 +40,7 @@ http://{{ .FQDN }} {
 
 func (engine *Caddy) Reconcile(sites []*Site) error {
 	var strg storage.Storage
-	strg = &storage.LocalStorage{LocalDir: "./"}
+	strg = &storage.LocalStorage{}
 	var sitesData []map[string]interface{}
 	for _, site := range sites {
 		sitesData = append(sitesData, map[string]interface{}{
@@ -49,7 +50,7 @@ func (engine *Caddy) Reconcile(sites []*Site) error {
 
 		// 静的ファイルの配置
 		artifactDir := filepath.Join(engine.ArtifactsRootPath, site.ArtifactID)
-		if !strg.FileExists(artifactDir) {
+		if !util.FileExists(artifactDir) {
 			if err := storage.ExtractTarToDir(strg, filepath.Join("/neoshowcase/artifacts", site.ArtifactID+".tar"), artifactDir); err != nil {
 				return fmt.Errorf("failed to extract artifact tar: %w", err)
 			}

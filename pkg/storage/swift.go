@@ -58,8 +58,3 @@ func (ss *SwiftStorage) Move(sourcePath, destPath string) error {
 	}
 	return nil
 }
-
-func (ss *SwiftStorage) FileExists(filename string) bool {
-	_, _, err := ss.Conn.Object(ss.Container, filename)
-	return err == nil
-}

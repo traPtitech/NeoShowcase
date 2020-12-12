@@ -19,14 +19,10 @@ type Storage interface {
 	Save(filename string, src io.Reader) error
 	Open(filename string) (io.ReadCloser, error)
 	Delete(filename string) error
-	DeleteAll(dirname string) error
-	Move(sourcePath, destPath string) error // LocalDir to Storage
-	FileExists(filename string) bool
+	Move(sourcePath, destPath string) error // LocalFile to Storage
 }
 
 func SaveFileAsTar(strg Storage, filename string, dstpath string, db *sql.DB, buildid string, sid string) error {
-	// filename: ローカルにおけるファイルの名前
-	// dstpath: SwiftStorageにおけるファイルのパス(階層構造ではないのでファイル名)
 	stat, _ := os.Stat(filename)
 	artifact := models.Artifact{
 		ID:         sid,
@@ -46,8 +42,6 @@ func SaveFileAsTar(strg Storage, filename string, dstpath string, db *sql.DB, bu
 }
 
 func SaveLogFile(strg Storage, filename string, dstpath string, buildid string) error {
-	// filename: ローカルにおけるファイルの名前
-	// dstpath: SwiftStorageにおけるファイルのパス(階層構造ではないのでファイル名)
 	if err := strg.Move(filename, dstpath); err != nil {
 		return fmt.Errorf("failed to move build log: %w", err)
 	}
@@ -55,8 +49,6 @@ func SaveLogFile(strg Storage, filename string, dstpath string, buildid string) 
 }
 
 func ExtractTarToDir(strg Storage, sourcePath, destPath string) error {
-	// filename: SwiftStorageにおけるファイルのパス(階層構造ではないのでファイル名)
-	// dstpath: ローカルにおけるファイルの名前
 	inputFile, err := strg.Open(sourcePath)
 	if err != nil {
 		return fmt.Errorf("couldn't open source file: %w", err)
