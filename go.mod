@@ -4,6 +4,7 @@ go 1.15
 
 require (
 	github.com/Microsoft/hcsshim v0.8.10 // indirect
+	github.com/aws/aws-sdk-go v1.27.1
 	github.com/containerd/containerd v1.4.1 // indirect
 	github.com/containerd/continuity v0.0.0-20200928162600-f2cc35102c2a // indirect
 	github.com/desertbit/timer v0.0.0-20180107155436-c41aec40b27f // indirect
