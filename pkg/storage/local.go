@@ -17,19 +17,7 @@ import (
 )
 
 type LocalStorage struct {
-	localDir string
-}
-
-func NewLocalStorage(dir string) (LocalStorage, error) {
-	fi, err := os.Stat(dir)
-	if err != nil {
-		return LocalStorage{}, fmt.Errorf("dir doesn't exist: %w", err)
-	}
-	if !fi.IsDir() {
-		return LocalStorage{}, fmt.Errorf("dir is not a directory: %w", err)
-	}
-
-	return LocalStorage{localDir: dir}, nil
+	LocalDir string
 }
 
 func (ls *LocalStorage) Save(filename string, src io.Reader) error {
@@ -57,6 +45,14 @@ func (ls *LocalStorage) Delete(filename string) error {
 		return fmt.Errorf("not found: %w", err)
 	}
 	return os.Remove(path)
+}
+
+func (ls *LocalStorage) DeleteAll(dirname string) error {
+	path := ls.getFilePath(dirname)
+	if _, err := os.Stat(path); err != nil {
+		return fmt.Errorf("not found: %w", err)
+	}
+	return os.RemoveAll(path)
 }
 
 func (ls *LocalStorage) Move(sourcePath, destPath string) error {
@@ -88,7 +84,7 @@ func (ls *LocalStorage) FileExists(filename string) bool {
 	return err == nil
 }
 
-func (ls *LocalStorage) SaveDirToTar(filename string, dstpath string, db *sql.DB, buildid string, sid string) error {
+func (ls *LocalStorage) SaveFileAsTar(filename string, dstpath string, db *sql.DB, buildid string, sid string) error {
 	// filename: ローカルにおけるファイルの名前
 	// dstpath: ローカルにおけるファイルのパス
 	stat, _ := os.Stat(filename)
@@ -119,7 +115,7 @@ func (ls *LocalStorage) SaveLogFile(filename string, dstpath string, buildid str
 }
 
 func (ls *LocalStorage) getFilePath(filename string) string {
-	return filepath.Join(ls.localDir, filename)
+	return filepath.Join(ls.LocalDir, filename)
 }
 
 func (ls *LocalStorage) ExtractTarToDir(sourcePath, destPath string) error {

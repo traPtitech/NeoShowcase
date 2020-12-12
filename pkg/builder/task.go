@@ -100,10 +100,8 @@ func (t *Task) startAsync(ctx context.Context, s *Service) error {
 }
 
 func (t *Task) postProcess(s *Service, result string) error {
-	storage, err := storage.NewLocalStorage("./")
-	if err != nil {
-		log.WithError(err).Errorf("failed to initialize storage (%s)", t.BuildID)
-	}
+	var strg storage.Storage
+	strg = &storage.LocalStorage{LocalDir: "./"}
 	log.WithField("buildID", t.BuildID).
 		WithField("result", result).
 		Debugf("task finished")
@@ -111,7 +109,7 @@ func (t *Task) postProcess(s *Service, result string) error {
 
 	// ログファイルの保存
 	_ = t.logTempFile.Close()
-	if err := storage.SaveLogFile(t.logTempFile.Name(), filepath.Join("/neoshowcase/buildlogs", t.BuildID), t.BuildID); err != nil {
+	if err := strg.SaveLogFile(t.logTempFile.Name(), filepath.Join("/neoshowcase/buildlogs", t.BuildID), t.BuildID); err != nil {
 		log.WithError(err).Errorf("failed to save build log (%s)", t.BuildID)
 	}
 
@@ -120,17 +118,17 @@ func (t *Task) postProcess(s *Service, result string) error {
 		if result == models.BuildLogsResultSUCCEEDED {
 			// 生成物tarの保存
 			sid := idgen.New()
-			err := storage.SaveDirToTar(t.artifactTempFile.Name(), filepath.Join("/neoshowcase/artifacts", fmt.Sprintf("%s.tar", sid)), s.db, t.BuildID, sid)
+			err := strg.SaveFileAsTar(t.artifactTempFile.Name(), filepath.Join("/neoshowcase/artifacts", fmt.Sprintf("%s.tar", sid)), s.db, t.BuildID, sid)
 			if err != nil {
 				log.WithError(err).Errorf("failed to save directory to tar (BuildID: %s, ArtifactID: %s)", t.BuildID, sid)
 			}
 		} else {
-			_ = storage.Delete(t.artifactTempFile.Name())
+			_ = strg.Delete(t.artifactTempFile.Name())
 		}
 	}
 
 	// 一時リポジトリディレクトリの削除
-	_ = os.RemoveAll(t.repositoryTempDir)
+	_ = strg.DeleteAll(t.repositoryTempDir)
 
 	// BuildLog更新
 	t.BuildLogM.Result = result

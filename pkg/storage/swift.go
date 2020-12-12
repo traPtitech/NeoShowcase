@@ -17,42 +17,17 @@ import (
 )
 
 type SwiftStorage struct {
-	container string
-	conn      *swift.Connection
-}
-
-func NewSwiftStorage(container, userName, apiKey, tenant, tenantID, authURL string) (SwiftStorage, error) {
-	conn := &swift.Connection{
-		AuthUrl:  authURL,
-		UserName: userName,
-		ApiKey:   apiKey,
-		Tenant:   tenant,
-		TenantId: tenantID,
-	}
-
-	if err := conn.Authenticate(); err != nil {
-		return SwiftStorage{}, err
-	}
-
-	if _, _, err := conn.Container(container); err != nil {
-		return SwiftStorage{}, err
-	}
-
-	s := SwiftStorage{
-		container: container,
-		conn:      conn,
-	}
-
-	return s, nil
+	Container string
+	Conn      *swift.Connection
 }
 
 func (ss *SwiftStorage) Save(filename string, src io.Reader) error {
-	_, err := ss.conn.ObjectPut(ss.container, filename, src, true, "", "", swift.Headers{})
+	_, err := ss.Conn.ObjectPut(ss.Container, filename, src, true, "", "", swift.Headers{})
 	return err
 }
 
 func (ss *SwiftStorage) Open(filename string) (io.ReadCloser, error) {
-	file, _, err := ss.conn.ObjectOpen(ss.container, filename, true, nil)
+	file, _, err := ss.Conn.ObjectOpen(ss.Container, filename, true, nil)
 	if err != nil {
 		if err == swift.ObjectNotFound {
 			return nil, fmt.Errorf("not found: %w", err)
@@ -63,7 +38,7 @@ func (ss *SwiftStorage) Open(filename string) (io.ReadCloser, error) {
 }
 
 func (ss *SwiftStorage) Delete(filename string) error {
-	err := ss.conn.ObjectDelete(ss.container, filename)
+	err := ss.Conn.ObjectDelete(ss.Container, filename)
 	if err != nil {
 		if err == swift.ObjectNotFound {
 			return fmt.Errorf("not found: %w", err)
@@ -79,7 +54,7 @@ func (ss *SwiftStorage) Move(sourcePath, destPath string) error {
 	if err != nil {
 		return fmt.Errorf("couldn't open source file: %w", err)
 	}
-	_, err = ss.conn.ObjectPut(ss.container, destPath, inputFile, true, "", "", swift.Headers{})
+	_, err = ss.Conn.ObjectPut(ss.Container, destPath, inputFile, true, "", "", swift.Headers{})
 	inputFile.Close()
 	if err != nil {
 		return fmt.Errorf("writing to output file failed: %w", err)
@@ -92,7 +67,7 @@ func (ss *SwiftStorage) Move(sourcePath, destPath string) error {
 	return nil
 }
 
-func (ss *SwiftStorage) SaveDirToTar(filename string, dstpath string, db *sql.DB, buildid string, sid string) error {
+func (ss *SwiftStorage) SaveFileAsTar(filename string, dstpath string, db *sql.DB, buildid string, sid string) error {
 	// filename: ローカルにおけるファイルの名前
 	// dstpath: SwiftStorageにおけるファイルのパス(階層構造ではないのでファイル名)
 	stat, _ := os.Stat(filename)
@@ -123,7 +98,7 @@ func (ss *SwiftStorage) SaveLogFile(filename string, dstpath string, buildid str
 }
 
 func (ss *SwiftStorage) FileExists(filename string) bool {
-	_, _, err := ss.conn.Object(ss.container, filename)
+	_, _, err := ss.Conn.Object(ss.Container, filename)
 	return err == nil
 }
 

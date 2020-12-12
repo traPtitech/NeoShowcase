@@ -38,10 +38,8 @@ http://{{ .FQDN }} {
 }
 
 func (engine *Caddy) Reconcile(sites []*Site) error {
-	storage, err := storage.NewLocalStorage("./")
-	if err != nil {
-		return fmt.Errorf("failed to initialize storage: %w", err)
-	}
+	var strg storage.Storage
+	strg = &storage.LocalStorage{LocalDir: "./"}
 	var sitesData []map[string]interface{}
 	for _, site := range sites {
 		sitesData = append(sitesData, map[string]interface{}{
@@ -51,8 +49,8 @@ func (engine *Caddy) Reconcile(sites []*Site) error {
 
 		// 静的ファイルの配置
 		artifactDir := filepath.Join(engine.ArtifactsRootPath, site.ArtifactID)
-		if !storage.FileExists(artifactDir) {
-			if err := storage.ExtractTarToDir(filepath.Join("/neoshowcase/artifacts", site.ArtifactID+".tar"), artifactDir); err != nil {
+		if !strg.FileExists(artifactDir) {
+			if err := strg.ExtractTarToDir(filepath.Join("/neoshowcase/artifacts", site.ArtifactID+".tar"), artifactDir); err != nil {
 				return fmt.Errorf("failed to extract artifact tar: %w", err)
 			}
 		}
