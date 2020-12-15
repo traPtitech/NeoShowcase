@@ -152,6 +152,19 @@ services:
       - "5004:3306"
     networks:
       - default
+      - apps
+
+  mongo:
+    image: mongo
+    restart: always
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: root
+      MONGO_INITDB_ROOT_PASSWORD: password
+    ports:
+      - "5010:27017"
+    networks:
+      - default
+      - apps
 
   adminer:
     image: adminer:4.7.5
