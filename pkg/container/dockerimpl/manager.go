@@ -3,11 +3,11 @@ package dockerimpl
 import (
 	"context"
 	"fmt"
+	"github.com/traPtitech/neoshowcase/pkg/event"
 
 	docker "github.com/fsouza/go-dockerclient"
 	"github.com/leandro-lugaresi/hub"
 	log "github.com/sirupsen/logrus"
-	"github.com/traPtitech/neoshowcase/pkg/container"
 )
 
 const (
@@ -61,7 +61,7 @@ func (m *Manager) eventListener() {
 				appID, ok := ev.Actor.Attributes[appContainerApplicationIDLabel]
 				if ok {
 					m.bus.Publish(hub.Message{
-						Name: container.EventAppStarted,
+						Name: event.ContainerAppStarted,
 						Fields: map[string]interface{}{
 							"appId": appID,
 						},
@@ -71,7 +71,7 @@ func (m *Manager) eventListener() {
 				appID, ok := ev.Actor.Attributes[appContainerApplicationIDLabel]
 				if ok {
 					m.bus.Publish(hub.Message{
-						Name: container.EventAppStopped,
+						Name: event.ContainerAppStopped,
 						Fields: map[string]interface{}{
 							"appId": appID,
 						},
