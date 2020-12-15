@@ -29,9 +29,7 @@ type MongoManager interface {
 type CreateArgs struct {
 	// Database データベース名
 	Database string
-	// User ユーザー名
-	User string
-	// Password ユーザーパスワード
+	// Password アクセスパスワード
 	Password string
 }
 
@@ -39,6 +37,4 @@ type CreateArgs struct {
 type DeleteArgs struct {
 	// Database データベース名
 	Database string
-	// User ユーザー名
-	User string
 }
