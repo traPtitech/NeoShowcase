@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"github.com/leandro-lugaresi/hub"
 	"github.com/traPtitech/neoshowcase/pkg/apiserver/httpserver"
+	"github.com/traPtitech/neoshowcase/pkg/appmanager"
 	builderApi "github.com/traPtitech/neoshowcase/pkg/builder/api"
 	"github.com/traPtitech/neoshowcase/pkg/container"
 	"github.com/traPtitech/neoshowcase/pkg/container/dockerimpl"
@@ -15,9 +16,10 @@ import (
 )
 
 type Service struct {
-	server *httpserver.Server
-	db     *sql.DB
-	bus    *hub.Hub
+	server     *httpserver.Server
+	db         *sql.DB
+	bus        *hub.Hub
+	appmanager appmanager.Manager
 
 	builderConn      *grpc.ClientConn
 	ssgenConn        *grpc.ClientConn
@@ -62,11 +64,25 @@ func New(c Config) (*Service, error) {
 
 	// HTTP APIサーバー生成
 	e := httpserver.New(httpserver.Config{
-		Debug: c.HTTP.Debug,
-		Port:  c.HTTP.Port,
-		Bus:   s.bus,
+		Debug:      c.HTTP.Debug,
+		Port:       c.HTTP.Port,
+		Bus:        s.bus,
+		AppManager: s.appmanager,
 	})
 	s.server = e
+
+	// appmanger生成
+	am, err := appmanager.NewManager(
+		db,
+		s.bus,
+		builderApi.NewBuilderServiceClient(builderConn),
+		ssgenApi.NewStaticSiteGenServiceClient(ssgenConn),
+		connM,
+	)
+	if err != nil {
+		return nil, fmt.Errorf("failed to init app manager: %w", err)
+	}
+	s.appmanager = am
 
 	return s, nil
 }
@@ -92,6 +108,9 @@ func (s *Service) Shutdown(ctx context.Context) error {
 	})
 	eg.Go(func() error {
 		return s.containerManager.Dispose(ctx)
+	})
+	eg.Go(func() error {
+		return s.appmanager.Shutdown(ctx)
 	})
 
 	return eg.Wait()

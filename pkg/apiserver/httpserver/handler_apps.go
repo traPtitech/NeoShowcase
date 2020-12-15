@@ -7,6 +7,6 @@ import (
 
 // GetApp GET /apps/:appId
 func (s *Server) GetApp(c echo.Context) error {
-	// TODO
-	return c.JSON(http.StatusOK, &AppDetail{Id: getRequestParamAppId(c)})
+	app := getRequestParamApp(c)
+	return c.JSON(http.StatusOK, &AppDetail{Id: app.GetID()}) // TODO
 }

@@ -7,6 +7,7 @@ import (
 	"github.com/labstack/echo/v4/middleware"
 	"github.com/leandro-lugaresi/hub"
 	"github.com/traPtitech/neoshowcase/pkg/apiserver/httpserver/webhook"
+	"github.com/traPtitech/neoshowcase/pkg/appmanager"
 )
 
 type Server struct {
@@ -15,9 +16,10 @@ type Server struct {
 }
 
 type Config struct {
-	Debug bool
-	Port  int
-	Bus   *hub.Hub
+	Debug      bool
+	Port       int
+	Bus        *hub.Hub
+	AppManager appmanager.Manager
 }
 
 func New(config Config) *Server {
@@ -41,7 +43,15 @@ func New(config Config) *Server {
 		api.Use(authenticateMiddleware())
 	}
 
-	api.GET("/apps/:appId", s.GetApp)
+	{
+		apiApps := api.Group("/apps")
+		{
+			apiAppsAppId := apiApps.Group("/:appId", paramAppMiddleware(config.AppManager)) // TODO アクセス権限チェック
+			{
+				apiAppsAppId.GET("", s.GetApp)
+			}
+		}
+	}
 
 	apiNoAuth := e.Group("")
 	apiNoAuth.POST("/_webhook", webhook.NewReceiver(config.Bus, s).Handler)
