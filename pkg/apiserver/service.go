@@ -64,6 +64,7 @@ func New(c Config) (*Service, error) {
 	e := httpserver.New(httpserver.Config{
 		Debug: c.HTTP.Debug,
 		Port:  c.HTTP.Port,
+		Bus:   s.bus,
 	})
 	s.server = e
 

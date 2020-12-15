@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
+	"github.com/leandro-lugaresi/hub"
+	"github.com/traPtitech/neoshowcase/pkg/apiserver/httpserver/webhook"
 )
 
 type Server struct {
@@ -15,6 +17,7 @@ type Server struct {
 type Config struct {
 	Debug bool
 	Port  int
+	Bus   *hub.Hub
 }
 
 func New(config Config) *Server {
@@ -40,6 +43,9 @@ func New(config Config) *Server {
 
 	api.GET("/apps/:appId", s.GetApp)
 
+	apiNoAuth := e.Group("")
+	apiNoAuth.POST("/_webhook", webhook.NewReceiver(config.Bus, s).Handler)
+
 	return s
 }
 
@@ -49,4 +55,8 @@ func (s *Server) Start() error {
 
 func (s *Server) Shutdown(ctx context.Context) error {
 	return s.e.Shutdown(ctx)
+}
+
+func (s *Server) GetWebhookSecretKeys(repositoryUrl string) ([]string, error) {
+	return []string{""}, nil // TODO
 }
