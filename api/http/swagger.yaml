@@ -1,0 +1,392 @@
+openapi: 3.0.0
+servers: [ ]
+info:
+  description: NeoShowcase HTTP API
+  version: 1.0.0
+  title: NeoShowcase
+  contact: { }
+  license:
+    name: MIT
+paths:
+  /apps:
+    get:
+      summary: アプリ一覧を取得
+      tags: [ ]
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Apps'
+      operationId: get-apps
+      description: アプリ一覧を取得します
+    post:
+      summary: アプリを作成
+      operationId: post-apps
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AppDetail'
+        '400':
+          description: Bad Request
+      description: アプリを作成します
+  '/apps/{appId}':
+    parameters:
+      - $ref: '#/components/parameters/appid'
+    get:
+      summary: アプリ詳細情報を取得
+      tags: [ ]
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AppDetail'
+        '404':
+          description: Not Found
+      operationId: get-apps-userId
+      description: アプリ詳細情報を取得します
+    delete:
+      summary: アプリを削除
+      operationId: delete-apps-appId
+      responses:
+        '204':
+          description: No Content
+        '404':
+          description: Not Found
+      description: アプリを削除します
+  '/apps/{appId}/builds':
+    parameters:
+      - $ref: '#/components/parameters/appid'
+    get:
+      summary: ビルドログ一覧を取得
+      tags: [ ]
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BuildLogs'
+        '404':
+          description: Not Found
+      operationId: get-apps-appId-builds
+      description: アプリのビルドログ一覧を取得します
+  '/apps/{appId}/builds/{buildId}':
+    parameters:
+      - $ref: '#/components/parameters/appid'
+      - $ref: '#/components/parameters/buildid'
+    get:
+      summary: ビルド情報を取得
+      tags: [ ]
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BuildLog'
+        '404':
+          description: Not Found
+      operationId: get-apps-appId-builds-buildId
+      description: 指定したIDのビルド情報を取得します
+  '/apps/{appId}/builds/{buildId}/log':
+    parameters:
+      - $ref: '#/components/parameters/appid'
+      - $ref: '#/components/parameters/buildid'
+    get:
+      summary: ビルドログを取得
+      tags: [ ]
+      responses:
+        '200':
+          description: OK
+          content:
+            text/plain:
+              schema:
+                type: string
+        '404':
+          description: Not Found
+      operationId: get-apps-appId-builds-buildId-log
+      description: ビルドログを取得します
+  '/apps/{appId}/builds/{buildId}/artifact':
+    parameters:
+      - $ref: '#/components/parameters/appid'
+      - $ref: '#/components/parameters/buildid'
+    get:
+      summary: ビルド生成物をダウンロード
+      tags: [ ]
+      operationId: get-apps-appId-builds-buildId-artifact
+      description: ビルド生成物をダウンロードします
+      responses:
+        '200':
+          description: OK
+          content:
+            application/x-tar:
+              schema:
+                type: string
+                format: binary
+        '404':
+          description: Not Found
+  '/apps/{appId}/envvars':
+    parameters:
+      - $ref: '#/components/parameters/appid'
+    get:
+      summary: アプリ環境変数を取得
+      tags: [ ]
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EnvVars'
+        '404':
+          description: Not Found
+      operationId: get-apps-appId-envvars
+      description: アプリに渡す環境変数を取得します
+    put:
+      summary: アプリ環境変数を設定
+      operationId: put-apps-appId-envvars
+      responses:
+        '204':
+          description: No Content
+        '404':
+          description: Not Found
+      description: アプリに渡す環境変数を設定します
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/EnvVars'
+        description: ''
+  '/apps/{appId}/out':
+    parameters:
+      - $ref: '#/components/parameters/appid'
+    get:
+      summary: アプリの出力を取得
+      tags: [ ]
+      responses:
+        '200':
+          description: OK
+          content:
+            text/plain:
+              schema:
+                type: string
+        '404':
+          description: Not Found
+      operationId: get-apps-appId-out
+      description: アプリの標準出力/標準エラー出力を取得します
+  '/apps/{appId}/action/restart':
+    parameters:
+      - $ref: '#/components/parameters/appid'
+    post:
+      summary: アプリを再起動
+      operationId: post-apps-appId-action-restart
+      responses:
+        '202':
+          description: Accepted
+        '400':
+          description: Bad Request
+        '404':
+          description: Not Found
+      description: アプリを再起動します
+  '/apps/{appId}/action/stop':
+    parameters:
+      - $ref: '#/components/parameters/appid'
+    post:
+      summary: アプリを停止
+      operationId: post-apps-appId-action-stop
+      responses:
+        '202':
+          description: Accepted
+        '400':
+          description: Bad Request
+        '404':
+          description: Not Found
+      description: アプリを停止します
+  '/apps/{appId}/action/start':
+    parameters:
+      - $ref: '#/components/parameters/appid'
+    post:
+      summary: アプリを起動
+      operationId: post-apps-appId-action-start
+      responses:
+        '202':
+          description: Accepted
+        '400':
+          description: Bad Request
+        '404':
+          description: Not Found
+      description: アプリを起動します
+  '/apps/{appId}/keys':
+    parameters:
+      - $ref: '#/components/parameters/appid'
+    get:
+      summary: アプリの各種鍵を取得
+      tags: [ ]
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AppKeys'
+        '404':
+          description: Not Found
+      operationId: get-apps-appId-keys
+      description: アプリの各種鍵(DB接続情報等)を取得します
+components:
+  schemas:
+    EnvVar:
+      title: EnvVar
+      type: object
+      properties:
+        key:
+          type: string
+          description: ''
+        value:
+          type: string
+      required:
+        - key
+        - value
+      description: 環境変数キーバリューペア
+    EnvVars:
+      title: EnvVars
+      type: array
+      items:
+        $ref: '#/components/schemas/EnvVar'
+      description: 環境変数
+    AppKeys:
+      title: AppKeys
+      type: object
+      description: アプリキー
+      properties:
+        mariadb:
+          $ref: '#/components/schemas/MariaDbKey'
+        mongo:
+          $ref: '#/components/schemas/MongoKey'
+    MariaDbKey:
+      title: MariaDbKey
+      type: object
+      description: MariaDB接続情報
+      properties:
+        host:
+          type: string
+          description: ホスト名
+        database:
+          type: string
+          description: データベース名
+        user:
+          type: string
+          description: 接続ユーザー名
+        password:
+          type: string
+          description: 接続ユーザーパスワード
+      required:
+        - host
+        - database
+        - user
+        - password
+    MongoKey:
+      title: MongoKey
+      type: object
+      description: Mongo接続情報
+      properties:
+        host:
+          type: string
+          description: ホスト名
+        user:
+          type: string
+          description: 接続ユーザー名
+        password:
+          type: string
+          description: 接続ユーザーパスワード
+        database:
+          type: string
+          description: データベース名
+      required:
+        - host
+        - user
+        - password
+        - database
+    BuildLog:
+      title: BuildLog
+      type: object
+      description: ビルドログ情報
+      properties:
+        id:
+          type: string
+          description: ビルドID
+        status:
+          type: string
+          description: ビルドステータス
+          enum:
+            - BUILDING
+            - SUCCEEDED
+            - FAILED
+            - CANCELED
+        startedAt:
+          type: string
+          description: 開始時間
+          format: date-time
+        finishedAt:
+          type: string
+          format: date-time
+          description: 完了時間
+      required:
+        - id
+        - status
+        - startedAt
+    BuildLogs:
+      title: BuildLogs
+      type: array
+      description: ビルドログ情報の配列
+      items:
+        $ref: '#/components/schemas/BuildLog'
+    App:
+      title: App
+      type: object
+      description: アプリ
+      properties:
+        id:
+          type: string
+          description: アプリID
+      required:
+        - id
+    AppDetail:
+      title: AppDetail
+      type: object
+      description: アプリ詳細情報
+      properties:
+        id:
+          type: string
+          description: アプリID
+      required:
+        - id
+    Apps:
+      title: Apps
+      type: array
+      description: アプリ一覧
+      items:
+        $ref: '#/components/schemas/App'
+  parameters:
+    appid:
+      name: appId
+      in: path
+      required: true
+      schema:
+        type: string
+      description: アプリケーションID
+    buildid:
+      name: buildId
+      in: path
+      required: true
+      schema:
+        type: string
+      description: ビルドID
+  responses: { }
