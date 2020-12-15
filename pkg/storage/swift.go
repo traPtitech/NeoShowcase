@@ -8,53 +8,89 @@ import (
 	"github.com/ncw/swift"
 )
 
+// SwiftStorage OpenStack Swiftストレージ
 type SwiftStorage struct {
-	Container string
-	Conn      *swift.Connection
+	container string
+	conn      *swift.Connection
+	cacheDir  string
 }
 
+// NewSwiftStorage 引数の情報でOpenStack Swiftストレージを生成する
+func NewSwiftStorage(container, userName, apiKey, tenant, tenantID, authURL, cacheDir string) (*SwiftStorage, error) {
+	conn := &swift.Connection{
+		AuthUrl:  authURL,
+		UserName: userName,
+		ApiKey:   apiKey,
+		Tenant:   tenant,
+		TenantId: tenantID,
+	}
+
+	if err := conn.Authenticate(); err != nil {
+		return &SwiftStorage{}, err
+	}
+
+	if _, _, err := conn.Container(container); err != nil {
+		return &SwiftStorage{}, err
+	}
+
+	s := SwiftStorage{
+		container: container,
+		conn:      conn,
+		cacheDir:  cacheDir,
+	}
+	return &s, nil
+}
+
+// Save ファイルを保存する
 func (ss *SwiftStorage) Save(filename string, src io.Reader) error {
-	_, err := ss.Conn.ObjectPut(ss.Container, filename, src, true, "", "", swift.Headers{})
+	_, err := ss.conn.ObjectPut(ss.container, filename, src, true, "", "", swift.Headers{})
 	return err
 }
 
+// Open ファイルを取得する
 func (ss *SwiftStorage) Open(filename string) (io.ReadCloser, error) {
-	file, _, err := ss.Conn.ObjectOpen(ss.Container, filename, true, nil)
+	file, _, err := ss.conn.ObjectOpen(ss.container, filename, true, nil)
 	if err != nil {
 		if err == swift.ObjectNotFound {
-			return nil, fmt.Errorf("not found: %w", err)
+			return nil, ErrFileNotFound
 		}
 		return nil, err
 	}
 	return file, nil
 }
 
+// Delete ファイルを削除する
 func (ss *SwiftStorage) Delete(filename string) error {
-	err := ss.Conn.ObjectDelete(ss.Container, filename)
+	err := ss.conn.ObjectDelete(ss.container, filename)
 	if err != nil {
 		if err == swift.ObjectNotFound {
-			return fmt.Errorf("not found: %w", err)
+			return ErrFileNotFound
 		}
 		return err
 	}
 	return nil
 }
 
-func (ss *SwiftStorage) Move(sourcePath, destPath string) error {
-	// Move LocalDir to Swift Storage
-	inputFile, err := os.Open(sourcePath)
+// Move 指定したローカルのファイルをストレージのdestPathへ移動する
+func (ss *SwiftStorage) Move(filename, destPath string) error {
+	path := ss.getCacheFilePath(filename)
+	inputFile, err := os.Open(path)
 	if err != nil {
 		return fmt.Errorf("couldn't open source file: %w", err)
 	}
-	_, err = ss.Conn.ObjectPut(ss.Container, destPath, inputFile, true, "", "", swift.Headers{})
+	_, err = ss.conn.ObjectPut(ss.container, destPath, inputFile, true, "", "", swift.Headers{})
 	inputFile.Close()
 	if err != nil {
 		return fmt.Errorf("writing to output file failed: %w", err)
 	}
 	// The copy was successful, so now delete the original file
-	err = os.Remove(sourcePath)
+	err = os.Remove(path)
 	if err != nil {
 		return fmt.Errorf("failed removing original file: %w", err)
 	}
 	return nil
+}
+
+func (ss *SwiftStorage) getCacheFilePath(key string) string {
+	return ss.cacheDir + "/" + key
 }

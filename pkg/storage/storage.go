@@ -4,6 +4,7 @@ import (
 	"archive/tar"
 	"context"
 	"database/sql"
+	"errors"
 	"fmt"
 	"io"
 	"os"
@@ -15,14 +16,21 @@ import (
 	"github.com/volatiletech/sqlboiler/v4/boil"
 )
 
+var (
+	// ErrFileNotFound ファイルが存在しない
+	ErrFileNotFound = errors.New("not found")
+)
+
+// Storage ストレージインターフェース
 type Storage interface {
 	Save(filename string, src io.Reader) error
 	Open(filename string) (io.ReadCloser, error)
 	Delete(filename string) error
-	Move(sourcePath, destPath string) error // LocalFile to Storage
+	Move(filename, destPath string) error // LocalFile to Storage
 }
 
-func SaveFileAsTar(strg Storage, filename string, dstpath string, db *sql.DB, buildid string, sid string) error {
+// SaveArtifact Artifactをtar形式で保存する
+func SaveArtifact(strg Storage, filename string, dstpath string, db *sql.DB, buildid string, sid string) error {
 	stat, _ := os.Stat(filename)
 	artifact := models.Artifact{
 		ID:         sid,
@@ -41,6 +49,7 @@ func SaveFileAsTar(strg Storage, filename string, dstpath string, db *sql.DB, bu
 	return nil
 }
 
+// SaveLogFile ログファイルを保存する
 func SaveLogFile(strg Storage, filename string, dstpath string, buildid string) error {
 	if err := strg.Move(filename, dstpath); err != nil {
 		return fmt.Errorf("failed to move build log: %w", err)
@@ -48,6 +57,7 @@ func SaveLogFile(strg Storage, filename string, dstpath string, buildid string) 
 	return nil
 }
 
+// ExtractTarToDir tarファイルをディレクトリに展開する
 func ExtractTarToDir(strg Storage, sourcePath, destPath string) error {
 	inputFile, err := strg.Open(sourcePath)
 	if err != nil {

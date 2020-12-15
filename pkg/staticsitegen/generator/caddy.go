@@ -40,7 +40,11 @@ http://{{ .FQDN }} {
 
 func (engine *Caddy) Reconcile(sites []*Site) error {
 	var strg storage.Storage
-	strg = &storage.LocalStorage{}
+	localdir := ""
+	strg, err := storage.NewLocalStorage(localdir)
+	if err != nil {
+		return fmt.Errorf("failed to initialize storage: %w", err)
+	}
 	var sitesData []map[string]interface{}
 	for _, site := range sites {
 		sitesData = append(sitesData, map[string]interface{}{

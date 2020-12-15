@@ -1,15 +1,33 @@
 package storage
 
 import (
+	"errors"
 	"fmt"
 	"io"
 	"os"
 )
 
-type LocalStorage struct{}
+// LocalStorage ローカルストレージ
+type LocalStorage struct {
+	localDir string
+}
 
+// NewLocalStorage LocalStorageを生成する。指定したディレクトリはすでに存在している必要がある。
+func NewLocalStorage(dir string) (*LocalStorage, error) {
+	fi, err := os.Stat(dir)
+	if err != nil {
+		return &LocalStorage{}, errors.New("dir doesn't exist")
+	}
+	if !fi.IsDir() {
+		return &LocalStorage{}, errors.New("dir is not a directory")
+	}
+
+	return &LocalStorage{localDir: dir}, nil
+}
+
+// Save ファイルを保存する
 func (ls *LocalStorage) Save(filename string, src io.Reader) error {
-	file, err := os.Create(filename)
+	file, err := os.Create(ls.getFilePath(filename))
 	if err != nil {
 		return err
 	}
@@ -19,22 +37,27 @@ func (ls *LocalStorage) Save(filename string, src io.Reader) error {
 	return err
 }
 
+// Open ファイルを取得する
 func (ls *LocalStorage) Open(filename string) (io.ReadCloser, error) {
-	r, err := os.Open(filename)
+	r, err := os.Open(ls.getFilePath(filename))
 	if err != nil {
-		return nil, fmt.Errorf("not found: %w", err)
+		return nil, ErrFileNotFound
 	}
 	return r, nil
 }
 
+// Delete ファイルを削除する
 func (ls *LocalStorage) Delete(filename string) error {
-	if _, err := os.Stat(filename); err != nil {
-		return fmt.Errorf("not found: %w", err)
+	path := ls.getFilePath(filename)
+	if _, err := os.Stat(path); err != nil {
+		return ErrFileNotFound
 	}
-	return os.Remove(filename)
+	return os.Remove(path)
 }
 
-func (ls *LocalStorage) Move(sourcePath, destPath string) error {
+// Move ファイルをdestPathへ移動する
+func (ls *LocalStorage) Move(filename, destPath string) error {
+	sourcePath := ls.getFilePath(filename)
 	inputFile, err := os.Open(sourcePath)
 	if err != nil {
 		return fmt.Errorf("couldn't open source file: %w", err)
@@ -56,4 +79,8 @@ func (ls *LocalStorage) Move(sourcePath, destPath string) error {
 		return fmt.Errorf("failed removing original file: %w", err)
 	}
 	return nil
+}
+
+func (ls *LocalStorage) getFilePath(filename string) string {
+	return ls.localDir + "/" + filename
 }
