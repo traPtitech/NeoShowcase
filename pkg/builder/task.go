@@ -3,19 +3,20 @@ package builder
 import (
 	"context"
 	"fmt"
-	"github.com/go-git/go-git/v5"
-	"github.com/leandro-lugaresi/hub"
-	log "github.com/sirupsen/logrus"
-	"github.com/traPtitech/neoshowcase/pkg/idgen"
-	"github.com/traPtitech/neoshowcase/pkg/models"
-	"github.com/traPtitech/neoshowcase/pkg/util"
-	"github.com/volatiletech/null/v8"
-	"github.com/volatiletech/sqlboiler/v4/boil"
 	"io"
 	"io/ioutil"
 	"os"
 	"path/filepath"
 	"time"
+
+	"github.com/go-git/go-git/v5"
+	"github.com/leandro-lugaresi/hub"
+	log "github.com/sirupsen/logrus"
+	"github.com/traPtitech/neoshowcase/pkg/idgen"
+	"github.com/traPtitech/neoshowcase/pkg/models"
+	"github.com/traPtitech/neoshowcase/pkg/storage"
+	"github.com/volatiletech/null/v8"
+	"github.com/volatiletech/sqlboiler/v4/boil"
 )
 
 type Task struct {
@@ -99,6 +100,12 @@ func (t *Task) startAsync(ctx context.Context, s *Service) error {
 }
 
 func (t *Task) postProcess(s *Service, result string) error {
+	var strg storage.Storage
+	localdir := ""
+	strg, err := storage.NewLocalStorage(localdir)
+	if err != nil {
+		log.WithError(err).Errorf("failed to initialize storage")
+	}
 	log.WithField("buildID", t.BuildID).
 		WithField("result", result).
 		Debugf("task finished")
@@ -106,32 +113,18 @@ func (t *Task) postProcess(s *Service, result string) error {
 
 	// ログファイルの保存
 	_ = t.logTempFile.Close()
-	// TODO ログファイルの保存実装をStorageインターフェースで抽象化する
-	if err := util.MoveFile(t.logTempFile.Name(), filepath.Join("/neoshowcase/buildlogs", t.BuildID)); err != nil {
+	if err := storage.SaveLogFile(strg, t.logTempFile.Name(), filepath.Join("/neoshowcase/buildlogs", t.BuildID), t.BuildID); err != nil {
 		log.WithError(err).Errorf("failed to save build log (%s)", t.BuildID)
 	}
 
 	if t.Static {
 		_ = t.artifactTempFile.Close()
 		if result == models.BuildLogsResultSUCCEEDED {
-			sid := idgen.New()
-
 			// 生成物tarの保存
-			stat, _ := os.Stat(t.artifactTempFile.Name())
-			artifact := models.Artifact{
-				ID:         sid,
-				BuildLogID: t.BuildID,
-				Size:       stat.Size(),
-				CreatedAt:  time.Now(),
-			}
-
-			// TODO 生成物tarの保存をStorageインターフェースで抽象化する
-			if err := util.MoveFile(t.artifactTempFile.Name(), filepath.Join("/neoshowcase/artifacts", fmt.Sprintf("%s.tar", sid))); err != nil {
-				log.WithError(err).Errorf("failed to save artifact tar file (BuildID: %s, ArtifactID: %s)", t.BuildID, sid)
-			}
-
-			if err := artifact.Insert(context.Background(), s.db, boil.Infer()); err != nil {
-				log.WithError(err).Errorf("failed to insert artifact entry (BuildID: %s, ArtifactID: %s)", t.BuildID, sid)
+			sid := idgen.New()
+			err := storage.SaveArtifact(strg, t.artifactTempFile.Name(), filepath.Join("/neoshowcase/artifacts", fmt.Sprintf("%s.tar", sid)), s.db, t.BuildID, sid)
+			if err != nil {
+				log.WithError(err).Errorf("failed to save directory to tar (BuildID: %s, ArtifactID: %s)", t.BuildID, sid)
 			}
 		} else {
 			_ = os.Remove(t.artifactTempFile.Name())
