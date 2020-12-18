@@ -1,8 +1,10 @@
 package webhook
 
 import (
-	"errors"
+	"crypto/sha256"
+	"encoding/json"
 	"io/ioutil"
+	"net/http"
 	"strings"
 
 	"github.com/labstack/echo/v4"
@@ -12,24 +14,31 @@ import (
 
 func (r *Receiver) giteaHandler(c echo.Context) error {
 	if c.Request().Header.Get("X-Gitea-Event") != "push" {
-		return errors.New("Webhook event isn't push event")
+		return c.NoContent(http.StatusBadRequest)
 	}
-	var body PushEvent
-	if err := c.Bind(body); err != nil {
-		return errors.New("Couldn't bind request body")
+	// b: []byte形式のbody
+	b, err := ioutil.ReadAll(c.Request().Body)
+	if err != nil {
+		return c.NoContent(http.StatusBadRequest)
+	}
+	body := &PushEvent{}
+	if err := json.Unmarshal(b, body); err != nil {
+		return c.NoContent(http.StatusBadRequest)
 	}
 	repoURL := body.Repo.HTMLURL
 	secrets, err := r.keyLoader.GetWebhookSecretKeys(repoURL)
 	if err != nil {
-		return errors.New("Couldn't get webhook secret keys")
+		return c.NoContent(http.StatusInternalServerError)
 	}
 	signature := c.Request().Header.Get("X-Gitea-Signature")
-	b, err := ioutil.ReadAll(c.Request().Body)
-	if err != nil {
-		return errors.New("Couldn't read request body")
+
+	// シグネチャの検証(secretsのうちひとつでもtrueならOK)
+	vS := false
+	for _, secret := range secrets {
+		vS = vS || verifySignature(sha256.New, b, []byte(secret), signature)
 	}
-	if !verifySignature([]byte(signature), secrets[0], b) {
-		return errors.New("Invalid signature")
+	if !vS {
+		return c.NoContent(http.StatusBadRequest)
 	}
 	branch := strings.Trim(body.Ref, "refs/heads/")
 	r.bus.Publish(hub.Message{
@@ -39,5 +48,5 @@ func (r *Receiver) giteaHandler(c echo.Context) error {
 			"branch":         branch,
 		},
 	})
-	return nil
+	return c.NoContent(http.StatusNoContent)
 }

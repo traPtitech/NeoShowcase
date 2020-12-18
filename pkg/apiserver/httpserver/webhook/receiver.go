@@ -2,22 +2,22 @@ package webhook
 
 import (
 	"crypto/hmac"
-	"crypto/sha1"
 	"encoding/hex"
+	"hash"
 	"net/http"
-	"strings"
 
 	"github.com/labstack/echo/v4"
 	"github.com/leandro-lugaresi/hub"
 )
 
 type PushEvent struct {
-	Ref  string              `json:"ref,omitempty"`
-	Repo PushEventRepository `json:"repository,omitempty"`
+	Secret string              `json:"secret"`
+	Ref    string              `json:"ref"`
+	Repo   PushEventRepository `json:"repository"`
 }
 
 type PushEventRepository struct {
-	HTMLURL string `json:"html_url,omitempty"`
+	HTMLURL string `json:"html_url"`
 }
 
 // Receiver Webhookレシーバー
@@ -47,23 +47,20 @@ func (r *Receiver) Handler(c echo.Context) error {
 		return c.NoContent(http.StatusBadRequest)
 	}
 }
-func signBody(secret, body []byte) []byte {
-	computed := hmac.New(sha1.New, secret)
-	computed.Write(body)
-	return []byte(computed.Sum(nil))
-}
 
-func verifySignature(secret []byte, signature string, body []byte) bool {
-
-	const signaturePrefix = "sha1="
-	const signatureLength = 45 // len(SignaturePrefix) + len(hex(sha1))
-
-	if len(signature) != signatureLength || !strings.HasPrefix(signature, signaturePrefix) {
+// Validate checks the hmac signature of the message
+// using a hex encoded signature.
+func verifySignature(h func() hash.Hash, message, key []byte, signature string) bool {
+	decoded, err := hex.DecodeString(signature)
+	if err != nil {
 		return false
 	}
+	return validate(h, message, key, decoded)
+}
 
-	actual := make([]byte, 20)
-	hex.Decode(actual, []byte(signature[5:]))
-
-	return hmac.Equal(signBody(secret, body), actual)
+func validate(h func() hash.Hash, message, key, signature []byte) bool {
+	mac := hmac.New(h, key)
+	mac.Write(message)
+	sum := mac.Sum(nil)
+	return hmac.Equal(signature, sum)
 }

@@ -7,8 +7,10 @@ require (
 	github.com/containerd/containerd v1.4.1 // indirect
 	github.com/containerd/continuity v0.0.0-20200928162600-f2cc35102c2a // indirect
 	github.com/dgrijalva/jwt-go v3.2.0+incompatible
+	github.com/drone/go-scm v1.7.2
 	github.com/friendsofgo/errors v0.9.2
 	github.com/fsouza/go-dockerclient v1.6.5
+	github.com/gavv/httpexpect/v2 v2.1.0
 	github.com/go-git/go-git/v5 v5.1.0
 	github.com/go-sql-driver/mysql v1.5.0
 	github.com/golang/protobuf v1.4.2

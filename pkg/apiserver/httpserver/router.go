@@ -3,6 +3,7 @@ package httpserver
 import (
 	"context"
 	"fmt"
+
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
 	"github.com/leandro-lugaresi/hub"
@@ -68,5 +69,5 @@ func (s *Server) Shutdown(ctx context.Context) error {
 }
 
 func (s *Server) GetWebhookSecretKeys(repositoryUrl string) ([]string, error) {
-	return []string{""}, nil // TODO
+	return []string{"hogefugapopopo", "hoge", "fuga"}, nil // TODO
 }
