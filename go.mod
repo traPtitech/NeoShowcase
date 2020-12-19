@@ -7,7 +7,6 @@ require (
 	github.com/containerd/containerd v1.4.1 // indirect
 	github.com/containerd/continuity v0.0.0-20200928162600-f2cc35102c2a // indirect
 	github.com/dgrijalva/jwt-go v3.2.0+incompatible
-	github.com/drone/go-scm v1.7.2
 	github.com/friendsofgo/errors v0.9.2
 	github.com/fsouza/go-dockerclient v1.6.5
 	github.com/gavv/httpexpect/v2 v2.1.0
@@ -46,9 +45,6 @@ require (
 	google.golang.org/protobuf v1.25.0
 	gopkg.in/ini.v1 v1.61.0 // indirect
 	gopkg.in/yaml.v2 v2.3.0
-	k8s.io/api v0.19.0
-	k8s.io/apimachinery v0.19.0
-	k8s.io/client-go v0.19.0
 )
 
 replace github.com/jaguilar/vt100 => github.com/tonistiigi/vt100 v0.0.0-20190402012908-ad4c4a574305
