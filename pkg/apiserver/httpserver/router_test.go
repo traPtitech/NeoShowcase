@@ -11,6 +11,7 @@ import (
 )
 
 func testWebhookGitea(e *httpexpect.Expect) {
+	// true secret: "fuga"
 	var HeadersForGitea map[string]string = map[string]string{
 		"Content-Type":      "application/json",
 		"X-Gitea-Delivery":  "fae3fa5e-221d-4368-bdbe-08e14f6fb926",
@@ -254,6 +255,7 @@ func testWebhookGitea(e *httpexpect.Expect) {
 }
 
 func testWebhookGithub(e *httpexpect.Expect) {
+	// true secret: "hogefugapopopo"
 	var HeadersForGithub map[string]string = map[string]string{
 		"content-length":                         "6941",
 		"user-agent":                             "GitHub-Hookshot/bb50ca3",
