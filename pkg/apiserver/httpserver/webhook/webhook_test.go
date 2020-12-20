@@ -1,19 +1,13 @@
 package webhook
 
 import (
-	"context"
-	"fmt"
 	"net/http"
 	"net/http/httptest"
 	"testing"
 
 	"github.com/gavv/httpexpect/v2"
 	"github.com/labstack/echo/v4"
-	"github.com/labstack/echo/v4/middleware"
 	"github.com/leandro-lugaresi/hub"
-	log "github.com/sirupsen/logrus"
-	"github.com/traPtitech/neoshowcase/pkg/appmanager"
-	"github.com/traPtitech/neoshowcase/pkg/common"
 )
 
 const (
@@ -294,16 +288,13 @@ func testWebhookGithub(e *httpexpect.Expect) {
 
 // TestWebhook サーバーを新たに立てて、そこにPOSTすることでテスト
 func TestWebhook(t *testing.T) {
-	var c apiServerConfig
-	server := New(Config{
-		Debug: c.HTTP.Debug,
-		Port:  c.HTTP.Port,
-		Bus:   hub.New(),
-	})
-	httpserver := httptest.NewServer(server.e)
+	e := echo.New()
+	bus := hub.New()
+	e.POST("/_webhook", NewReceiver(bus, &testSecretKeyLoader{}).Handler)
+	httpserver := httptest.NewServer(e)
 	defer httpserver.Close()
 
-	e := httpexpect.WithConfig(httpexpect.Config{
+	exp := httpexpect.WithConfig(httpexpect.Config{
 		BaseURL:  httpserver.URL,
 		Reporter: httpexpect.NewAssertReporter(t),
 		Printers: []httpexpect.Printer{
@@ -312,117 +303,14 @@ func TestWebhook(t *testing.T) {
 	})
 
 	// Giteaからのレスポンスのテスト
-	testWebhookGitea(e)
+	testWebhookGitea(exp)
 	// GitHubからのレスポンスのテスト
-	testWebhookGithub(e)
+	testWebhookGithub(exp)
 }
 
-// Structs
-type apiServerConfig struct {
-	Builder common.GRPCClientConfig `mapstructure:"builder" yaml:"builder"`
-	SSGen   common.GRPCClientConfig `mapstructure:"ssgen" yaml:"ssgen"`
-	GRPC    common.GRPCConfig       `mapstructure:"grpc" yaml:"grpc"`
-	DB      common.DBConfig         `mapstructure:"db" yaml:"db"`
-	HTTP    struct {
-		Debug bool `mapstructure:"debug" yaml:"debug"`
-		Port  int  `mapstructure:"port" yaml:"port"`
-	} `mapstructure:"http" yaml:"http"`
-}
-
-type Server struct {
-	e      *echo.Echo
-	config Config
-}
-
-type Config struct {
-	Debug      bool
-	Port       int
-	Bus        *hub.Hub
-	AppManager appmanager.Manager
-}
-
-// Server settings
-func New(config Config) *Server {
-	s := &Server{
-		e:      echo.New(),
-		config: config,
-	}
-	e := s.e
-	e.HideBanner = true
-	e.HidePort = true
-
-	e.Use(middleware.Recover())
-	e.Use(middleware.Logger())
-	e.Use(middleware.Secure())
-	e.Use(middleware.RequestID())
-
-	api := e.Group("")
-	if config.Debug {
-		api.Use(debugMiddleware())
-	} else {
-		api.Use(authenticateMiddleware())
-	}
-
-	apiNoAuth := e.Group("")
-	apiNoAuth.POST("/_webhook", NewReceiver(config.Bus, s).Handler)
-
-	return s
-}
-
-func (s *Server) Start() error {
-	return s.e.Start(fmt.Sprintf(":%d", s.config.Port))
-}
-
-func (s *Server) Shutdown(ctx context.Context) error {
-	return s.e.Shutdown(ctx)
-}
+type testSecretKeyLoader struct{}
 
 // add tmp strings
-func (s *Server) GetWebhookSecretKeys(repositoryUrl string) ([]string, error) {
+func (tkl *testSecretKeyLoader) GetWebhookSecretKeys(repositoryUrl string) ([]string, error) {
 	return []string{"hogefugapopopo", "hoge", "fuga"}, nil
-}
-
-// Middlewares
-// debugMiddleware デバッグ用ミドルウェア
-func debugMiddleware() echo.MiddlewareFunc {
-	return func(next echo.HandlerFunc) echo.HandlerFunc {
-		return func(c echo.Context) error {
-			c.Set(contextRequestUserID, "__DEBUG")
-			return next(c)
-		}
-	}
-}
-
-// authenticateMiddleware TODO ユーザー認証ミドルウェア
-func authenticateMiddleware() echo.MiddlewareFunc {
-	return func(next echo.HandlerFunc) echo.HandlerFunc {
-		return func(c echo.Context) error {
-			return echo.NewHTTPError(http.StatusNotImplemented, "authenticator is not implemented")
-		}
-	}
-}
-
-// paramAppMiddleware リクエストURLの:appIdパラメーターからAppをロードするミドルウェア
-func paramAppMiddleware(am appmanager.Manager) echo.MiddlewareFunc {
-	return func(next echo.HandlerFunc) echo.HandlerFunc {
-		return func(c echo.Context) error {
-			appID := getRequestParamAppId(c)
-			app, err := am.GetApp(appID)
-			if err != nil {
-				if err == appmanager.ErrNotFound {
-					return echo.NewHTTPError(http.StatusNotFound)
-				}
-
-				log.WithError(err).Errorf("internal error")
-				return echo.NewHTTPError(http.StatusInternalServerError)
-			}
-			c.Set(contextParamApp, app)
-			return next(c)
-		}
-	}
-}
-
-// getRequestParamAppId リクエストパスの:appIdパラメーターを取得
-func getRequestParamAppId(c echo.Context) string {
-	return c.Param("appId")
 }
