@@ -1,18 +1,52 @@
 package webhook
 
 import (
+	"crypto/sha256"
+	"encoding/json"
+	"io/ioutil"
+	"net/http"
+	"strings"
+
 	"github.com/labstack/echo/v4"
+	"github.com/leandro-lugaresi/hub"
+	"github.com/traPtitech/neoshowcase/pkg/event"
 )
 
 func (r *Receiver) giteaHandler(c echo.Context) error {
-	panic("implemented me") // TODO
+	if c.Request().Header.Get("X-Gitea-Event") != "push" {
+		return c.NoContent(http.StatusBadRequest)
+	}
+	// b: []byte形式のbody
+	b, err := ioutil.ReadAll(c.Request().Body)
+	if err != nil {
+		return c.NoContent(http.StatusBadRequest)
+	}
+	body := &PushEvent{}
+	if err := json.Unmarshal(b, body); err != nil {
+		return c.NoContent(http.StatusBadRequest)
+	}
+	repoURL := body.Repo.HTMLURL
+	secrets, err := r.keyLoader.GetWebhookSecretKeys(repoURL)
+	if err != nil {
+		return c.NoContent(http.StatusInternalServerError)
+	}
+	signature := c.Request().Header.Get("X-Gitea-Signature")
 
-	// 正規のPUSHイベントだったら、以下の内部イベントを発生させて、204 NoContentを返す
-	// r.bus.Publish(hub.Message{
-	// 	Name: event.WebhookRepositoryPush,
-	// 	Fields: hub.Fields{
-	// 		"repository_url": "リポジトリのURL",
-	// 		"branch":         "プッシュがあったブランチ名",
-	// 	},
-	// })
+	// シグネチャの検証(secretsのうちひとつでもtrueならOK)
+	vS := false
+	for _, secret := range secrets {
+		vS = vS || verifySignature(sha256.New, b, []byte(secret), signature)
+	}
+	if !vS {
+		return c.NoContent(http.StatusBadRequest)
+	}
+	branch := strings.Trim(body.Ref, "refs/heads/")
+	r.bus.Publish(hub.Message{
+		Name: event.WebhookRepositoryPush,
+		Fields: hub.Fields{
+			"repository_url": repoURL,
+			"branch":         branch,
+		},
+	})
+	return c.NoContent(http.StatusNoContent)
 }

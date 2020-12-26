@@ -1,16 +1,55 @@
 package webhook
 
-import "github.com/labstack/echo/v4"
+import (
+	"crypto/sha256"
+	"encoding/json"
+	"io/ioutil"
+	"net/http"
+	"strings"
+
+	"github.com/labstack/echo/v4"
+	"github.com/leandro-lugaresi/hub"
+	"github.com/traPtitech/neoshowcase/pkg/event"
+)
 
 func (r *Receiver) githubHandler(c echo.Context) error {
-	panic("implemented me") // TODO
-
-	// 正規のPUSHイベントだったら、以下の内部イベントを発生させて、204 NoContentを返す
-	// r.bus.Publish(hub.Message{
-	// 	Name: event.WebhookRepositoryPush,
-	// 	Fields: hub.Fields{
-	// 		"repository_url": "リポジトリのURL",
-	// 		"branch":         "プッシュがあったブランチ名",
-	// 	},
-	// })
+	if c.Request().Header.Get("X-GitHub-Event") != "push" {
+		return c.NoContent(http.StatusBadRequest)
+	}
+	// b: []byte形式のbody
+	b, err := ioutil.ReadAll(c.Request().Body)
+	if err != nil {
+		return c.NoContent(http.StatusBadRequest)
+	}
+	body := &PushEvent{}
+	if err := json.Unmarshal(b, body); err != nil {
+		return c.NoContent(http.StatusBadRequest)
+	}
+	repoURL := body.Repo.HTMLURL
+	secrets, err := r.keyLoader.GetWebhookSecretKeys(repoURL)
+	if err != nil {
+		return c.NoContent(http.StatusInternalServerError)
+	}
+	signature := c.Request().Header.Get("X-Hub-Signature-256")
+	parts := strings.Split(signature, "=")
+	if len(parts) < 2 {
+		return c.NoContent(http.StatusBadRequest)
+	}
+	// シグネチャの検証(secretsのうちひとつでもtrueならOK)
+	vS := false
+	for _, secret := range secrets {
+		vS = vS || verifySignature(sha256.New, b, []byte(secret), parts[1])
+	}
+	if !vS {
+		return c.NoContent(http.StatusBadRequest)
+	}
+	branch := strings.Trim(body.Ref, "refs/heads/")
+	r.bus.Publish(hub.Message{
+		Name: event.WebhookRepositoryPush,
+		Fields: hub.Fields{
+			"repository_url": repoURL,
+			"branch":         branch,
+		},
+	})
+	return c.NoContent(http.StatusNoContent)
 }
