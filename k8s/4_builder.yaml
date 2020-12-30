@@ -1,0 +1,107 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: builder
+  namespace: neoshowcase
+  labels:
+    app: builder
+spec:
+  ports:
+    - port: 10000
+      targetPort: grpc
+  clusterIP: None
+  selector:
+    app: builder
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  labels:
+    app: builder
+    neoshowcase.trap.jp/component-type: "builder"
+  name: builder
+  namespace: neoshowcase
+spec:
+  serviceName: builder
+  podManagementPolicy: Parallel
+  replicas: 1
+  selector:
+    matchLabels:
+      app: builder
+      neoshowcase.trap.jp/component-type: "builder"
+  template:
+    metadata:
+      labels:
+        app: builder
+        neoshowcase.trap.jp/component-type: "builder"
+    spec:
+      containers:
+        - name: buildkitd
+          image: moby/buildkit
+          args:
+            - --addr
+            - unix:///run/buildkit/buildkitd.sock
+          readinessProbe:
+            exec:
+              command:
+                - buildctl
+                - debug
+                - workers
+            initialDelaySeconds: 5
+            periodSeconds: 30
+          livenessProbe:
+            exec:
+              command:
+                - buildctl
+                - debug
+                - workers
+            initialDelaySeconds: 5
+            periodSeconds: 30
+          securityContext:
+            privileged: true
+          volumeMounts:
+            - mountPath: /run/buildkit
+              name: socket
+        - name: builder
+          image: ghcr.io/traptitech/ns-builder:master
+          env:
+            - name: NS_BUILDER_BUILDKIT_ADDRESS
+              value: unix:///run/buildkit/buildkitd.sock
+            - name: NS_BUILDER_BUILDKIT_REGISTRY
+              valueFrom:
+                configMapKeyRef:
+                  key: ImageRegistoryHost
+                  name: neoshowcase
+            - name: NS_BUILDER_DB_HOST
+              valueFrom:
+                configMapKeyRef:
+                  key: AdminDBHost
+                  name: neoshowcase
+            - name: NS_BUILDER_DB_USERNAME
+              valueFrom:
+                configMapKeyRef:
+                  key: AdminDBUser
+                  name: neoshowcase
+            - name: NS_BUILDER_DB_PASSWORD
+              valueFrom:
+                configMapKeyRef:
+                  key: AdminDBPassword
+                  name: neoshowcase
+            - name: NS_BUILDER_DB_DATABASE
+              valueFrom:
+                configMapKeyRef:
+                  key: AdminDBName
+                  name: neoshowcase
+          ports:
+            - containerPort: 10000
+              name: grpc
+          volumeMounts:
+            - mountPath: /run/buildkit
+              name: socket
+      volumes:
+        - name: socket
+          emptyDir: { }
+      nodeSelector:
+        neoshowcase.trap.jp/builder-node: "true"
+      imagePullSecrets:
+        - name: ghregistry

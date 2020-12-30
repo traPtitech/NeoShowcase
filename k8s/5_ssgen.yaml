@@ -1,0 +1,93 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: staticsite
+  namespace: neoshowcase
+  labels:
+    app: staticsite
+spec:
+  ports:
+    - port: 10000
+      targetPort: grpc
+      name: grpc
+    - port: 80
+      targetPort: http
+      name: http
+  clusterIP: None
+  selector:
+    app: staticsite
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  labels:
+    app: staticsite
+    neoshowcase.trap.jp/component-type: "ssgen"
+  name: staticsite
+  namespace: neoshowcase
+spec:
+  serviceName: staticsite
+  replicas: 1
+  selector:
+    matchLabels:
+      app: staticsite
+      neoshowcase.trap.jp/component-type: "ssgen"
+  template:
+    metadata:
+      labels:
+        app: staticsite
+        neoshowcase.trap.jp/component-type: "ssgen"
+    spec:
+      containers:
+        - name: caddy
+          image: caddy:2.2.1-alpine
+          command:
+            - caddy
+            - run
+            - --resume
+          volumeMounts:
+            - mountPath: /artifacts
+              name: artifacts
+          ports:
+            - containerPort: 80
+              name: http
+        - name: ssgen
+          image: ghcr.io/traptitech/ns-ssgen:master
+          env:
+            - name: NS_SSGEN_SERVER
+              value: caddy
+            - name: NS_SSGEN_ARTIFACTSROOT
+              value: /artifacts
+            - name: NS_SSGEN_CADDY_ADMINENDPOINT
+              value: http://127.0.0.1:2019
+            - name: NS_SSGEN_DB_HOST
+              valueFrom:
+                configMapKeyRef:
+                  key: AdminDBHost
+                  name: neoshowcase
+            - name: NS_SSGEN_DB_USERNAME
+              valueFrom:
+                configMapKeyRef:
+                  key: AdminDBUser
+                  name: neoshowcase
+            - name: NS_SSGEN_DB_PASSWORD
+              valueFrom:
+                configMapKeyRef:
+                  key: AdminDBPassword
+                  name: neoshowcase
+            - name: NS_SSGEN_DB_DATABASE
+              valueFrom:
+                configMapKeyRef:
+                  key: AdminDBName
+                  name: neoshowcase
+          volumeMounts:
+            - mountPath: /artifacts
+              name: artifacts
+          ports:
+            - containerPort: 10000
+              name: grpc
+      volumes:
+        - name: artifacts
+          emptyDir: { }
+      imagePullSecrets:
+        - name: ghregistry
