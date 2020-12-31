@@ -1,0 +1,56 @@
+name: master
+
+on:
+  push:
+    branches:
+      - master
+
+jobs:
+  build-images:
+    name: Build Images
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        component:
+          - ns
+          - ns-builder
+          - ns-mc
+          - ns-migrate
+          - ns-ssgen
+    steps:
+      - name: Set APP_VERSION env
+        run: echo "APP_VERSION=master-SNAPSHOT" >> $GITHUB_ENV
+      - name: Set APP_REVISION env
+        run: echo "APP_REVISION=$(git rev-parse --short HEAD)" >> $GITHUB_ENV
+
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v1
+        with:
+          platforms: all
+      - name: Set up Docker Buildx
+        id: buildx
+        uses: docker/setup-buildx-action@v1
+        with:
+          version: latest
+      - name: Builder instance name
+        run: echo ${{ steps.buildx.outputs.name }}
+      - name: Available platforms
+        run: echo ${{ steps.buildx.outputs.platforms }}
+
+      - name: Login to GitHub Packages Docker Registry
+        uses: docker/login-action@v1
+        with:
+          registry: docker.pkg.github.com
+          username: ${{ github.repository_owner }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build and push
+        uses: docker/build-push-action@v2
+        with:
+          file: ./cmd/${{ matrix.component }}/Dockerfile
+          platforms: linux/amd64
+          push: true
+          build-args: |
+            APP_VERSION=${APP_VERSION}
+            APP_REVISION=${APP_REVISION}
+          tags: docker.pkg.github.com/traptitech/neoshowcase/${{ matrix.component }}:master
