@@ -1,10 +1,12 @@
 package dbmanager
 
 import (
+	"context"
+	"testing"
+
 	"github.com/stretchr/testify/assert"
 	"github.com/traPtitech/neoshowcase/pkg/cliutil"
 	"go.mongodb.org/mongo-driver/mongo"
-	"testing"
 )
 
 func TestNewMongoManager(t *testing.T) {
@@ -25,21 +27,32 @@ func TestNewMongoManager(t *testing.T) {
 func TestMongoManagerImpl_Create(t *testing.T) {
 	skipOrDo(t)
 	t.Parallel()
-	m, client := initMongoManager(t)
+	m, _ := initMongoManager(t)
 
-	t.Skip("TODO") // TODO
-	_ = m
-	_ = client
+	a := CreateArgs{
+		Database: "test",
+		Password: "test",
+	}
+	ctx := context.Background()
+	m.Create(ctx, a)
 }
 
 func TestMongoManagerImpl_Delete(t *testing.T) {
 	skipOrDo(t)
 	t.Parallel()
-	m, client := initMongoManager(t)
+	m, _ := initMongoManager(t)
 
-	t.Skip("TODO") // TODO
-	_ = m
-	_ = client
+	a := CreateArgs{
+		Database: "test",
+		Password: "test",
+	}
+	ctx := context.Background()
+	m.Create(ctx, a)
+
+	da := DeleteArgs{
+		Database: "test",
+	}
+	m.Delete(ctx, da)
 }
 
 func initMongoManager(t *testing.T) (*mongoManagerImpl, *mongo.Client) {
