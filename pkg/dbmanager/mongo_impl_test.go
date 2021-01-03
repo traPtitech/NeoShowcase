@@ -24,6 +24,7 @@ func TestNewMongoManager(t *testing.T) {
 }
 
 func TestMongoManagerImpl_Create(t *testing.T) {
+	skipOrDo(t)
 	t.Parallel()
 	m, _ := initMongoManager(t)
 
@@ -37,6 +38,7 @@ func TestMongoManagerImpl_Create(t *testing.T) {
 }
 
 func TestMongoManagerImpl_Delete(t *testing.T) {
+	skipOrDo(t)
 	t.Parallel()
 	m, _ := initMongoManager(t)
 
