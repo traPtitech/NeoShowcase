@@ -42,15 +42,10 @@ func (m *mongoManagerImpl) Create(ctx context.Context, args CreateArgs) error {
 	client := m.client
 	_, cancel := context.WithTimeout(ctx, 20*time.Second)
 	defer cancel()
-	err := client.Connect(ctx)
-	if err != nil {
-		return err
-	}
-	r := client.Database(args.Database).RunCommand(ctx, bson.D{{"createUser", args.Database}, {"pwd", args.Password}, {"roles", []bson.M{{"role": "dbAdminAnyDatabase", "db": args.Database}}}})
+	r := client.Database(args.Database).RunCommand(ctx, bson.D{{"createUser", args.Database}, {"pwd", args.Password}, {"roles", []bson.M{{"role": "dbOwner", "db": args.Database}}}})
 	if r.Err() != nil {
 		return r.Err()
 	}
-	defer client.Disconnect(ctx)
 	return nil
 }
 
@@ -58,19 +53,14 @@ func (m *mongoManagerImpl) Delete(ctx context.Context, args DeleteArgs) error {
 	client := m.client
 	_, cancel := context.WithTimeout(ctx, 20*time.Second)
 	defer cancel()
-	err := client.Connect(ctx)
+	r := client.Database(args.Database).RunCommand(ctx, bson.D{{"dropUser", args.Database}})
+	if r.Err() != nil {
+		return r.Err()
+	}
+	err := client.Database(args.Database).Drop(ctx)
 	if err != nil {
 		return err
 	}
-	r := client.Database(args.Database).RunCommand(ctx, bson.D{{"removeUser", args.Database}})
-	if r.Err() != nil {
-		return r.Err()
-	}
-	r = client.Database(args.Database).RunCommand(ctx, "dropDatabase")
-	if r.Err() != nil {
-		return r.Err()
-	}
-	defer client.Disconnect(ctx)
 	return nil
 }
 

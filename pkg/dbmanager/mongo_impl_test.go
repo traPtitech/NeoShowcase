@@ -10,7 +10,6 @@ import (
 )
 
 func TestNewMongoManager(t *testing.T) {
-	skipOrDo(t)
 	t.Parallel()
 
 	c := MongoConfig{
@@ -25,34 +24,34 @@ func TestNewMongoManager(t *testing.T) {
 }
 
 func TestMongoManagerImpl_Create(t *testing.T) {
-	skipOrDo(t)
 	t.Parallel()
 	m, _ := initMongoManager(t)
 
 	a := CreateArgs{
-		Database: "test",
-		Password: "test",
+		Database: "testCreate",
+		Password: "testCreate",
 	}
 	ctx := context.Background()
-	m.Create(ctx, a)
+	err := m.Create(ctx, a)
+	assert.NoError(t, err)
 }
 
 func TestMongoManagerImpl_Delete(t *testing.T) {
-	skipOrDo(t)
 	t.Parallel()
 	m, _ := initMongoManager(t)
 
 	a := CreateArgs{
-		Database: "test",
-		Password: "test",
+		Database: "testDelete",
+		Password: "testDelete",
 	}
 	ctx := context.Background()
-	m.Create(ctx, a)
+	_ = m.Create(ctx, a)
 
 	da := DeleteArgs{
-		Database: "test",
+		Database: "testDelete",
 	}
-	m.Delete(ctx, da)
+	err := m.Delete(ctx, da)
+	assert.NoError(t, err)
 }
 
 func initMongoManager(t *testing.T) (*mongoManagerImpl, *mongo.Client) {
