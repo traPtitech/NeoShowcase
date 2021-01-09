@@ -10,6 +10,7 @@ import (
 )
 
 func TestNewMongoManager(t *testing.T) {
+	skipOrDo(t)
 	t.Parallel()
 
 	c := MongoConfig{
