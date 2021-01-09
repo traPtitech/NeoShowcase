@@ -35,7 +35,7 @@ func TestMariaDBManagerImpl_Create(t *testing.T) {
 	ctx := context.Background()
 	err := m.Create(ctx, a)
 	if err != nil {
-		panic(err)
+		assert.NoError(t, err)
 	}
 }
 
@@ -49,7 +49,7 @@ func TestMariaDBManagerImpl_Delete(t *testing.T) {
 	ctx := context.Background()
 	err := m.Delete(ctx, a)
 	if err != nil {
-		panic(err)
+		assert.NoError(t, err)
 	}
 }
 
