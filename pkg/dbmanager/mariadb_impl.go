@@ -45,15 +45,15 @@ func NewMariaDBManager(c MariaDBConfig) (MariaDBManager, error) {
 
 func (m *mariaDBManagerImpl) Create(ctx context.Context, args CreateArgs) error {
 	db := m.db
-	_, err := db.Exec(fmt.Sprintf("CREATE DATABASE %s", args.Database))
+	_, err := db.ExecContext(ctx, fmt.Sprintf("CREATE DATABASE %s", args.Database))
 	if err != nil {
 		return err
 	}
-	_, err = db.Exec((fmt.Sprintf("CREATE USER %s IDENTIFIED BY '%s'", args.Database, args.Password)))
+	_, err = db.ExecContext(ctx, (fmt.Sprintf("CREATE USER %s IDENTIFIED BY '%s'", args.Database, args.Password)))
 	if err != nil {
 		return err
 	}
-	_, err = db.Exec((fmt.Sprintf("GRANT ALL ON %s.* TO %s", args.Database, args.Database)))
+	_, err = db.ExecContext(ctx, (fmt.Sprintf("GRANT ALL ON %s.* TO %s", args.Database, args.Database)))
 	if err != nil {
 		return err
 	}
@@ -62,11 +62,11 @@ func (m *mariaDBManagerImpl) Create(ctx context.Context, args CreateArgs) error 
 
 func (m *mariaDBManagerImpl) Delete(ctx context.Context, args DeleteArgs) error {
 	db := m.db
-	_, err := db.Exec(fmt.Sprintf("DROP DATABASE %s", args.Database))
+	_, err := db.ExecContext(ctx, fmt.Sprintf("DROP DATABASE %s", args.Database))
 	if err != nil {
 		return err
 	}
-	_, err = db.Exec(fmt.Sprintf("DROP USER %s", args.Database))
+	_, err = db.ExecContext(ctx, fmt.Sprintf("DROP USER %s", args.Database))
 	if err != nil {
 		return err
 	}
