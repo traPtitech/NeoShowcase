@@ -40,7 +40,7 @@ func NewMongoManager(config MongoConfig) (MongoManager, error) {
 
 func (m *mongoManagerImpl) Create(ctx context.Context, args CreateArgs) error {
 	client := m.client
-	_, cancel := context.WithTimeout(ctx, 20*time.Second)
+	ctx, cancel := context.WithTimeout(ctx, 20*time.Second)
 	defer cancel()
 	r := client.Database(args.Database).RunCommand(ctx, bson.D{{Key: "createUser", Value: args.Database}, {Key: "pwd", Value: args.Password}, {Key: "roles", Value: []bson.M{{"role": "dbOwner", "db": args.Database}}}})
 	if r.Err() != nil {
@@ -51,7 +51,7 @@ func (m *mongoManagerImpl) Create(ctx context.Context, args CreateArgs) error {
 
 func (m *mongoManagerImpl) Delete(ctx context.Context, args DeleteArgs) error {
 	client := m.client
-	_, cancel := context.WithTimeout(ctx, 20*time.Second)
+	ctx, cancel := context.WithTimeout(ctx, 20*time.Second)
 	defer cancel()
 	r := client.Database(args.Database).RunCommand(ctx, bson.D{{Key: "dropUser", Value: args.Database}})
 	if r.Err() != nil {
