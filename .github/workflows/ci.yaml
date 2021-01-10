@@ -73,6 +73,8 @@ jobs:
     name: Test
     runs-on: ubuntu-latest
     needs: [ mod ]
+    env:
+      ENABLE_DB_TESTS: "true"
     services:
       mysql:
         image: mariadb:10.0.19
@@ -82,6 +84,13 @@ jobs:
           MYSQL_DATABASE: neoshowcase
         ports:
           - 5004:3306
+      mongo:
+        image: mongo
+        env:
+          MONGO_INITDB_ROOT_USERNAME: root
+          MONGO_INITDB_ROOT_PASSWORD: password
+        ports:
+          - 5010:27017
     steps:
       - uses: actions/setup-go@v2
         with:
@@ -101,6 +110,8 @@ jobs:
   tbls:
     name: TBLS
     runs-on: ubuntu-latest
+    env:
+      TBLS_VERSION: v1.46.0
     services:
       mysql:
         image: mariadb:10.0.19
