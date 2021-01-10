@@ -14,7 +14,11 @@ type StorageConfig struct {
 	} `mapstructure:"local" yaml:"local"`
 	S3 struct {
 		// Bucket バケット名
-		Bucket string `mapstructure:"bucket" yaml:"bucket"`
+		Bucket       string `mapstructure:"bucket" yaml:"bucket"`
+		Endpoint     string `mapstructure:"endpoint" yaml:"endpoint"`
+		Region       string `mapstructure:"region" yaml:"region"`
+		AccessKey    string `mapstructure:"accessKey" yaml:"accessKey"`
+		AccessSecret string `mapstructure:"accessSecret" yaml:"accessSecret"`
 	} `mapstructure:"s3" yaml:"s3"`
 	Swift struct {
 		// UserName ユーザー名
@@ -37,7 +41,7 @@ func (c *StorageConfig) InitStorage() (storage.Storage, error) {
 	case "local":
 		return storage.NewLocalStorage(c.Local.Dir)
 	case "s3":
-		return storage.NewS3Storage(c.S3.Bucket)
+		return storage.NewS3Storage(c.S3.Bucket, c.S3.AccessKey, c.S3.AccessSecret, c.S3.Region, c.S3.Endpoint)
 	case "swift":
 		return storage.NewSwiftStorage(c.Swift.Container, c.Swift.UserName, c.Swift.APIKey, c.Swift.TenantName, c.Swift.TenantID, c.Swift.AuthURL)
 	default:
