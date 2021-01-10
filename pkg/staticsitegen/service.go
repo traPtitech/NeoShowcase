@@ -7,6 +7,7 @@ import (
 	"github.com/traPtitech/neoshowcase/pkg/models"
 	"github.com/traPtitech/neoshowcase/pkg/staticsitegen/api"
 	"github.com/traPtitech/neoshowcase/pkg/staticsitegen/generator"
+	"github.com/traPtitech/neoshowcase/pkg/storage"
 	"github.com/volatiletech/sqlboiler/v4/queries/qm"
 	"golang.org/x/sync/errgroup"
 	"google.golang.org/grpc"
@@ -17,9 +18,10 @@ import (
 )
 
 type Service struct {
-	server *grpc.Server
-	engine generator.Engine
-	db     *sql.DB
+	server  *grpc.Server
+	engine  generator.Engine
+	db      *sql.DB
+	storage storage.Storage
 
 	config Config
 	api.UnimplementedStaticSiteGenServiceServer
@@ -33,11 +35,19 @@ func New(c Config) (*Service, error) {
 	api.RegisterStaticSiteGenServiceServer(s.server, s)
 	reflection.Register(s.server)
 
+	// Storageに接続
+	storage, err := c.Storage.InitStorage()
+	if err != nil {
+		return nil, fmt.Errorf("failed to initialize storage: %w", err)
+	}
+	s.storage = storage
+
+	// Engine初期化
 	engine, err := c.GetEngine()
 	if err != nil {
 		return nil, err
 	}
-	if err := engine.Init(); err != nil {
+	if err := engine.Init(storage); err != nil {
 		return nil, fmt.Errorf("failed to init engine: %w", err)
 	}
 	s.engine = engine

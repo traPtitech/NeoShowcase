@@ -10,6 +10,7 @@ import (
 	log "github.com/sirupsen/logrus"
 	"github.com/traPtitech/neoshowcase/pkg/builder/api"
 	"github.com/traPtitech/neoshowcase/pkg/models"
+	"github.com/traPtitech/neoshowcase/pkg/storage"
 	"golang.org/x/sync/errgroup"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/reflection"
@@ -23,6 +24,7 @@ type Service struct {
 	buildkit BuildkitWrapper
 	db       *sql.DB
 	bus      *hub.Hub
+	storage  storage.Storage
 
 	config Config
 	api.UnimplementedBuilderServiceServer
@@ -58,6 +60,13 @@ func New(c Config) (*Service, error) {
 		return nil, fmt.Errorf("failed to connect db: %w", err)
 	}
 	s.db = db
+
+	// Storageに接続
+	storage, err := c.Storage.InitStorage()
+	if err != nil {
+		return nil, fmt.Errorf("failed to initialize storage: %w", err)
+	}
+	s.storage = storage
 
 	return s, nil
 }

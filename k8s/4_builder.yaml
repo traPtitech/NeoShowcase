@@ -64,6 +64,7 @@ spec:
               name: socket
         - name: builder
           image: ghcr.io/traptitech/ns-builder:master
+          imagePullPolicy: Always
           env:
             - name: NS_BUILDER_BUILDKIT_ADDRESS
               value: unix:///run/buildkit/buildkitd.sock
@@ -91,6 +92,27 @@ spec:
               valueFrom:
                 configMapKeyRef:
                   key: AdminDBName
+                  name: neoshowcase
+            - name: NS_BUILDER_STORAGE_TYPE
+              value: "s3"
+            - name: NS_BUILDER_STORAGE_S3_BUCKET
+              value: "neoshowcase"
+            - name: NS_BUILDER_STORAGE_S3_ACCESSKEY
+              valueFrom:
+                configMapKeyRef:
+                  key: S3AccessKey
+                  name: neoshowcase
+            - name: NS_BUILDER_STORAGE_S3_ACCESSSECRET
+              valueFrom:
+                configMapKeyRef:
+                  key: S3AccessSecret
+                  name: neoshowcase
+            - name: NS_BUILDER_STORAGE_S3_REGION
+              value: us-east-1
+            - name: NS_BUILDER_STORAGE_S3_ENDPOINT
+              valueFrom:
+                configMapKeyRef:
+                  key: S3Endpoint
                   name: neoshowcase
           ports:
             - containerPort: 10000

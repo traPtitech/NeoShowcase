@@ -7,6 +7,7 @@ type Config struct {
 		Address  string `mapstructure:"address" yaml:"address"`
 		Registry string `mapstructure:"registry" yaml:"registry"`
 	} `mapstructure:"buildkit" yaml:"buildkit"`
-	GRPC common.GRPCConfig `mapstructure:"grpc" yaml:"grpc"`
-	DB   common.DBConfig   `mapstructure:"db" yaml:"db"`
+	GRPC    common.GRPCConfig    `mapstructure:"grpc" yaml:"grpc"`
+	DB      common.DBConfig      `mapstructure:"db" yaml:"db"`
+	Storage common.StorageConfig `mapstructure:"storage" yaml:"storage"`
 }

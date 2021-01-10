@@ -110,6 +110,7 @@ spec:
       containers:
         - name: apiserver
           image: ghcr.io/traptitech/ns:master
+          imagePullPolicy: Always
           env:
             - name: NS_APISERVER_MODE
               value: k8s

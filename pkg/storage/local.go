@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"path/filepath"
 )
 
 // LocalStorage ローカルストレージ
@@ -57,12 +58,11 @@ func (ls *LocalStorage) Delete(filename string) error {
 
 // Move ファイルをdestPathへ移動する
 func (ls *LocalStorage) Move(filename, destPath string) error {
-	sourcePath := ls.getFilePath(filename)
-	inputFile, err := os.Open(sourcePath)
+	inputFile, err := os.Open(filename)
 	if err != nil {
 		return fmt.Errorf("couldn't open source file: %w", err)
 	}
-	outputFile, err := os.Create(destPath)
+	outputFile, err := os.Create(ls.getFilePath(destPath))
 	if err != nil {
 		inputFile.Close()
 		return fmt.Errorf("couldn't open dest file: %w", err)
@@ -74,7 +74,7 @@ func (ls *LocalStorage) Move(filename, destPath string) error {
 		return fmt.Errorf("writing to output file failed: %w", err)
 	}
 	// The copy was successful, so now delete the original file
-	err = os.Remove(sourcePath)
+	err = os.Remove(filename)
 	if err != nil {
 		return fmt.Errorf("failed removing original file: %w", err)
 	}
@@ -82,5 +82,5 @@ func (ls *LocalStorage) Move(filename, destPath string) error {
 }
 
 func (ls *LocalStorage) getFilePath(filename string) string {
-	return ls.localDir + "/" + filename
+	return filepath.Join(ls.localDir, filename)
 }

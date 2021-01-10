@@ -2,6 +2,7 @@ package storage
 
 import (
 	"fmt"
+	"github.com/aws/aws-sdk-go/aws/credentials"
 	"io"
 	"os"
 
@@ -18,8 +19,17 @@ type S3Storage struct {
 }
 
 // NewS3Storage S3Storageを生成する。指定したBucketはすでに存在している必要がある。
-func NewS3Storage(bucket string) (*S3Storage, error) {
-	sess := session.Must(session.NewSession())
+func NewS3Storage(bucket, accessKey, accessSecret, region, endpoint string) (*S3Storage, error) {
+	s3Config := &aws.Config{
+		Credentials:      credentials.NewStaticCredentials(accessKey, accessSecret, ""),
+		Endpoint:         aws.String(endpoint),
+		Region:           aws.String(region),
+		S3ForcePathStyle: aws.Bool(true),
+	}
+	sess, err := session.NewSession(s3Config)
+	if err != nil {
+		return nil, fmt.Errorf("failed to new session: %w", err)
+	}
 	s := S3Storage{
 		sess:   sess,
 		bucket: bucket,

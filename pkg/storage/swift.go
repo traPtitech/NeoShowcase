@@ -12,11 +12,10 @@ import (
 type SwiftStorage struct {
 	container string
 	conn      *swift.Connection
-	cacheDir  string
 }
 
 // NewSwiftStorage 引数の情報でOpenStack Swiftストレージを生成する
-func NewSwiftStorage(container, userName, apiKey, tenant, tenantID, authURL, cacheDir string) (*SwiftStorage, error) {
+func NewSwiftStorage(container, userName, apiKey, tenant, tenantID, authURL string) (*SwiftStorage, error) {
 	conn := &swift.Connection{
 		AuthUrl:  authURL,
 		UserName: userName,
@@ -36,7 +35,6 @@ func NewSwiftStorage(container, userName, apiKey, tenant, tenantID, authURL, cac
 	s := SwiftStorage{
 		container: container,
 		conn:      conn,
-		cacheDir:  cacheDir,
 	}
 	return &s, nil
 }
@@ -73,8 +71,7 @@ func (ss *SwiftStorage) Delete(filename string) error {
 
 // Move 指定したローカルのファイルをストレージのdestPathへ移動する
 func (ss *SwiftStorage) Move(filename, destPath string) error {
-	path := ss.getCacheFilePath(filename)
-	inputFile, err := os.Open(path)
+	inputFile, err := os.Open(filename)
 	if err != nil {
 		return fmt.Errorf("couldn't open source file: %w", err)
 	}
@@ -84,13 +81,9 @@ func (ss *SwiftStorage) Move(filename, destPath string) error {
 		return fmt.Errorf("writing to output file failed: %w", err)
 	}
 	// The copy was successful, so now delete the original file
-	err = os.Remove(path)
+	err = os.Remove(filename)
 	if err != nil {
 		return fmt.Errorf("failed removing original file: %w", err)
 	}
 	return nil
-}
-
-func (ss *SwiftStorage) getCacheFilePath(key string) string {
-	return ss.cacheDir + "/" + key
 }

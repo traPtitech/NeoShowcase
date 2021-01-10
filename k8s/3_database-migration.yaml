@@ -11,6 +11,7 @@ spec:
       containers:
         - name: migrate
           image: ghcr.io/traptitech/ns-migrate:master
+          imagePullPolicy: Always
           command:
             - ./ns-migrate
             - up
