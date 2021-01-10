@@ -1,10 +1,12 @@
 package dbmanager
 
 import (
+	"context"
 	"database/sql"
+	"testing"
+
 	"github.com/stretchr/testify/assert"
 	"github.com/traPtitech/neoshowcase/pkg/cliutil"
-	"testing"
 )
 
 func TestNewMariaDBManager(t *testing.T) {
@@ -25,21 +27,26 @@ func TestNewMariaDBManager(t *testing.T) {
 func TestMariaDBManagerImpl_Create(t *testing.T) {
 	skipOrDo(t)
 	t.Parallel()
-	m, db := initMariaDBManager(t)
-
-	t.Skip("TODO") // TODO
-	_ = m
-	_ = db
+	m, _ := initMariaDBManager(t)
+	a := CreateArgs{
+		Database: "TestMariaCreate",
+		Password: "TestMariaCreate",
+	}
+	ctx := context.Background()
+	err := m.Create(ctx, a)
+	assert.NoError(t, err)
 }
 
 func TestMariaDBManagerImpl_Delete(t *testing.T) {
 	skipOrDo(t)
 	t.Parallel()
-	m, db := initMariaDBManager(t)
-
-	t.Skip("TODO") // TODO
-	_ = m
-	_ = db
+	m, _ := initMariaDBManager(t)
+	a := DeleteArgs{
+		Database: "TestMariaDelete",
+	}
+	ctx := context.Background()
+	err := m.Delete(ctx, a)
+	assert.NoError(t, err)
 }
 
 func initMariaDBManager(t *testing.T) (*mariaDBManagerImpl, *sql.DB) {

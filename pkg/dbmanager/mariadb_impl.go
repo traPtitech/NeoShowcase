@@ -44,11 +44,33 @@ func NewMariaDBManager(c MariaDBConfig) (MariaDBManager, error) {
 }
 
 func (m *mariaDBManagerImpl) Create(ctx context.Context, args CreateArgs) error {
-	panic("implement me") // TODO
+	db := m.db
+	_, err := db.ExecContext(ctx, fmt.Sprintf("CREATE DATABASE %s", args.Database))
+	if err != nil {
+		return err
+	}
+	_, err = db.ExecContext(ctx, (fmt.Sprintf("CREATE USER %s IDENTIFIED BY '%s'", args.Database, args.Password)))
+	if err != nil {
+		return err
+	}
+	_, err = db.ExecContext(ctx, (fmt.Sprintf("GRANT ALL ON %s.* TO %s", args.Database, args.Database)))
+	if err != nil {
+		return err
+	}
+	return nil
 }
 
 func (m *mariaDBManagerImpl) Delete(ctx context.Context, args DeleteArgs) error {
-	panic("implement me") // TODO
+	db := m.db
+	_, err := db.ExecContext(ctx, fmt.Sprintf("DROP DATABASE %s", args.Database))
+	if err != nil {
+		return err
+	}
+	_, err = db.ExecContext(ctx, fmt.Sprintf("DROP USER %s", args.Database))
+	if err != nil {
+		return err
+	}
+	return nil
 }
 
 func (m *mariaDBManagerImpl) Close(ctx context.Context) error {
