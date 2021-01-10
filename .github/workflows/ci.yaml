@@ -110,6 +110,8 @@ jobs:
   tbls:
     name: TBLS
     runs-on: ubuntu-latest
+    env:
+      TBLS_VERSION: v1.46.0
     services:
       mysql:
         image: mariadb:10.0.19
