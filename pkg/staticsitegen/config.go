@@ -14,8 +14,9 @@ type Config struct {
 	Caddy            struct {
 		AdminEndpoint string `mapstructure:"adminEndpoint" yaml:"adminEndpoint"`
 	} `mapstructure:"caddy" yaml:"caddy"`
-	GRPC common.GRPCConfig `mapstructure:"grpc" yaml:"grpc"`
-	DB   common.DBConfig   `mapstructure:"db" yaml:"db"`
+	GRPC    common.GRPCConfig    `mapstructure:"grpc" yaml:"grpc"`
+	DB      common.DBConfig      `mapstructure:"db" yaml:"db"`
+	Storage common.StorageConfig `mapstructure:"storage" yaml:"storage"`
 }
 
 func (c *Config) GetEngine() (generator.Engine, error) {

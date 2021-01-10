@@ -1,7 +1,9 @@
 package generator
 
+import "github.com/traPtitech/neoshowcase/pkg/storage"
+
 type Engine interface {
-	Init() error
+	Init(s storage.Storage) error
 	Reconcile(sites []*Site) error
 }
 
