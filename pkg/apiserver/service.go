@@ -5,14 +5,18 @@ import (
 	"database/sql"
 	"fmt"
 	"github.com/leandro-lugaresi/hub"
+	log "github.com/sirupsen/logrus"
 	"github.com/traPtitech/neoshowcase/pkg/apiserver/httpserver"
 	"github.com/traPtitech/neoshowcase/pkg/appmanager"
 	builderApi "github.com/traPtitech/neoshowcase/pkg/builder/api"
 	"github.com/traPtitech/neoshowcase/pkg/container"
 	"github.com/traPtitech/neoshowcase/pkg/container/dockerimpl"
+	"github.com/traPtitech/neoshowcase/pkg/container/k8simpl"
 	ssgenApi "github.com/traPtitech/neoshowcase/pkg/staticsitegen/api"
 	"golang.org/x/sync/errgroup"
 	"google.golang.org/grpc"
+	"k8s.io/client-go/kubernetes"
+	"k8s.io/client-go/rest"
 )
 
 type Service struct {
@@ -24,6 +28,8 @@ type Service struct {
 	builderConn      *grpc.ClientConn
 	ssgenConn        *grpc.ClientConn
 	containerManager container.Manager
+
+	k8sCSet *kubernetes.Clientset
 
 	config Config
 }
@@ -41,48 +47,99 @@ func New(c Config) (*Service, error) {
 	}
 	s.db = db
 
-	// Builderに接続
-	builderConn, err := c.Builder.Connect()
-	if err != nil {
-		return nil, fmt.Errorf("failed to connect builder service: %w", err)
-	}
-	s.builderConn = builderConn
+	switch c.GetMode() {
+	case ModeDocker:
+		// Builderに接続
+		builderConn, err := c.Builder.Connect()
+		if err != nil {
+			return nil, fmt.Errorf("failed to connect builder service: %w", err)
+		}
+		s.builderConn = builderConn
 
-	// SSGenに接続
-	ssgenConn, err := c.SSGen.Connect()
-	if err != nil {
-		return nil, fmt.Errorf("failed to connect ssgen service: %w", err)
-	}
-	s.ssgenConn = ssgenConn
+		// SSGenに接続
+		ssgenConn, err := c.SSGen.Connect()
+		if err != nil {
+			return nil, fmt.Errorf("failed to connect ssgen service: %w", err)
+		}
+		s.ssgenConn = ssgenConn
 
-	// コンテナマネージャー生成
-	connM, err := dockerimpl.NewManager(s.bus)
-	if err != nil {
-		return nil, fmt.Errorf("failed to init container manager: %w", err)
+		// コンテナマネージャー生成
+		connM, err := dockerimpl.NewManager(s.bus)
+		if err != nil {
+			return nil, fmt.Errorf("failed to init container manager: %w", err)
+		}
+		s.containerManager = connM
+
+		// appmanger生成
+		am, err := appmanager.NewManager(
+			db,
+			s.bus,
+			builderApi.NewBuilderServiceClient(builderConn),
+			ssgenApi.NewStaticSiteGenServiceClient(ssgenConn),
+			connM,
+		)
+		if err != nil {
+			return nil, fmt.Errorf("failed to init app manager: %w", err)
+		}
+		s.appmanager = am
+
+	case ModeK8s:
+		// Builderに接続
+		builderConn, err := c.Builder.Connect()
+		if err != nil {
+			return nil, fmt.Errorf("failed to connect builder service: %w", err)
+		}
+		s.builderConn = builderConn
+
+		// SSGenに接続
+		ssgenConn, err := c.SSGen.Connect()
+		if err != nil {
+			return nil, fmt.Errorf("failed to connect ssgen service: %w", err)
+		}
+		s.ssgenConn = ssgenConn
+
+		// k8s接続
+		kubeconf, err := rest.InClusterConfig()
+		if err != nil {
+			return nil, fmt.Errorf("failed to load kubeconfig: %w", err)
+		}
+		clientset, err := kubernetes.NewForConfig(kubeconf)
+		if err != nil {
+			return nil, fmt.Errorf("failed to create clientset: %w", err)
+		}
+		s.k8sCSet = clientset
+
+		// コンテナマネージャー生成
+		connM, err := k8simpl.NewManager(s.bus, clientset)
+		if err != nil {
+			return nil, fmt.Errorf("failed to init container manager: %w", err)
+		}
+		s.containerManager = connM
+
+		// appmanger生成
+		am, err := appmanager.NewManager(
+			db,
+			s.bus,
+			builderApi.NewBuilderServiceClient(builderConn),
+			ssgenApi.NewStaticSiteGenServiceClient(ssgenConn),
+			connM,
+		)
+		if err != nil {
+			return nil, fmt.Errorf("failed to init app manager: %w", err)
+		}
+		s.appmanager = am
+
+	default:
+		log.Fatalf("unknown mode: %s", c.Mode)
 	}
-	s.containerManager = connM
 
 	// HTTP APIサーバー生成
-	e := httpserver.New(httpserver.Config{
+	s.server = httpserver.New(httpserver.Config{
 		Debug:      c.HTTP.Debug,
 		Port:       c.HTTP.Port,
 		Bus:        s.bus,
 		AppManager: s.appmanager,
 	})
-	s.server = e
-
-	// appmanger生成
-	am, err := appmanager.NewManager(
-		db,
-		s.bus,
-		builderApi.NewBuilderServiceClient(builderConn),
-		ssgenApi.NewStaticSiteGenServiceClient(ssgenConn),
-		connM,
-	)
-	if err != nil {
-		return nil, fmt.Errorf("failed to init app manager: %w", err)
-	}
-	s.appmanager = am
 
 	return s, nil
 }

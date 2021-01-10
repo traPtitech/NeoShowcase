@@ -1,0 +1,195 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: mongo
+  namespace: neoshowcase
+  labels:
+    app: mongo
+spec:
+  ports:
+    - name: mongo
+      port: 27017
+  clusterIP: None
+  selector:
+    app: mongo
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mongo
+  namespace: neoshowcase
+  labels:
+    app: mongo
+spec:
+  selector:
+    matchLabels:
+      app: mongo
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        app: mongo
+    spec:
+      containers:
+        - name: mongo
+          image: mongo:4.4.2
+          env:
+            - name: MONGO_INITDB_ROOT_USERNAME
+              valueFrom:
+                configMapKeyRef:
+                  key: AdminDBUser
+                  name: neoshowcase
+            - name: MONGO_INITDB_ROOT_PASSWORD
+              valueFrom:
+                configMapKeyRef:
+                  key: AdminDBPassword
+                  name: neoshowcase
+          args:
+            - "mongod"
+            - "--auth"
+            - "--bind_ip_all"
+          ports:
+            - name: mongo
+              containerPort: 27017
+          volumeMounts:
+            - name: mongodb-data
+              mountPath: /data/db
+          resources:
+            limits:
+              memory: 512Mi
+      nodeSelector:
+        neoshowcase.trap.jp/db-node: "true"
+      volumes:
+        - name: mongodb-data
+          hostPath:
+            path: /opt/mongo
+            type: Directory
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: mariadb
+  namespace: neoshowcase
+  labels:
+    app: mariadb
+spec:
+  ports:
+    - port: 3306
+      targetPort: 3306
+  clusterIP: None
+  selector:
+    app: mariadb
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mariadb
+  namespace: neoshowcase
+  labels:
+    app: mariadb
+spec:
+  selector:
+    matchLabels:
+      app: mariadb
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        app: mariadb
+    spec:
+      containers:
+        - name: mariadb
+          image: mariadb:10.5.5
+          args:
+            - --character-set-server=utf8mb4
+            - --collation-server=utf8mb4_unicode_ci
+          env:
+            - name: MYSQL_ROOT_PASSWORD
+              valueFrom:
+                configMapKeyRef:
+                  key: AdminDBPassword
+                  name: neoshowcase
+            - name: MYSQL_DATABASE
+              valueFrom:
+                configMapKeyRef:
+                  key: AdminDBName
+                  name: neoshowcase
+          ports:
+            - name: mysql
+              containerPort: 3306
+          volumeMounts:
+            - mountPath: /var/lib/mysql
+              name: mysqldata
+          resources:
+            limits:
+              memory: 512Mi
+      nodeSelector:
+        neoshowcase.trap.jp/db-node: "true"
+      volumes:
+        - name: mysqldata
+          hostPath:
+            path: /opt/mysql
+            type: Directory
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: adminer
+  namespace: neoshowcase
+  labels:
+    app: adminer
+spec:
+  selector:
+    matchLabels:
+      app: adminer
+  template:
+    metadata:
+      labels:
+        app: adminer
+    spec:
+      containers:
+        - name: adminer
+          image: adminer:4.7.7
+          env:
+            - name: ADMINER_DEFAULT_SERVER
+              value: mariadb
+            - name: ADMINER_DESIGN
+              value: nette
+          ports:
+            - name: http
+              containerPort: 8080
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: adminer
+  namespace: neoshowcase
+  labels:
+    app: adminer
+spec:
+  selector:
+    app: adminer
+  ports:
+    - protocol: TCP
+      port: 8080
+      targetPort: 8080
+---
+apiVersion: networking.k8s.io/v1beta1
+kind: Ingress
+metadata:
+  name: adminer
+  namespace: neoshowcase
+  labels:
+    app: adminer
+  annotations:
+    traefik.ingress.kubernetes.io/router.entrypoints: web, websecure
+spec:
+  rules:
+    - host: adminer.dev.wtks.work
+      http:
+        paths:
+          - backend:
+              serviceName: adminer
+              servicePort: 8080
