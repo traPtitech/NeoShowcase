@@ -29,8 +29,8 @@ func TestMariaDBManagerImpl_Create(t *testing.T) {
 	t.Parallel()
 	m, _ := initMariaDBManager(t)
 	a := CreateArgs{
-		Database: "test",
-		Password: "test",
+		Database: "TestMariaCreate",
+		Password: "TestMariaCreate",
 	}
 	ctx := context.Background()
 	err := m.Create(ctx, a)
@@ -42,7 +42,7 @@ func TestMariaDBManagerImpl_Delete(t *testing.T) {
 	t.Parallel()
 	m, _ := initMariaDBManager(t)
 	a := DeleteArgs{
-		Database: "test",
+		Database: "TestMariaDelete",
 	}
 	ctx := context.Background()
 	err := m.Delete(ctx, a)
