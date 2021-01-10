@@ -3,9 +3,11 @@ package dbmanager
 import (
 	"context"
 	"fmt"
+	"time"
+
+	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
-	"time"
 )
 
 type mongoManagerImpl struct {
@@ -37,11 +39,29 @@ func NewMongoManager(config MongoConfig) (MongoManager, error) {
 }
 
 func (m *mongoManagerImpl) Create(ctx context.Context, args CreateArgs) error {
-	panic("implement me") // TODO
+	client := m.client
+	ctx, cancel := context.WithTimeout(ctx, 20*time.Second)
+	defer cancel()
+	r := client.Database(args.Database).RunCommand(ctx, bson.D{{Key: "createUser", Value: args.Database}, {Key: "pwd", Value: args.Password}, {Key: "roles", Value: []bson.M{{"role": "dbOwner", "db": args.Database}}}})
+	if r.Err() != nil {
+		return r.Err()
+	}
+	return nil
 }
 
 func (m *mongoManagerImpl) Delete(ctx context.Context, args DeleteArgs) error {
-	panic("implement me") // TODO
+	client := m.client
+	ctx, cancel := context.WithTimeout(ctx, 20*time.Second)
+	defer cancel()
+	r := client.Database(args.Database).RunCommand(ctx, bson.D{{Key: "dropUser", Value: args.Database}})
+	if r.Err() != nil {
+		return r.Err()
+	}
+	err := client.Database(args.Database).Drop(ctx)
+	if err != nil {
+		return err
+	}
+	return nil
 }
 
 func (m *mongoManagerImpl) Close(ctx context.Context) error {
