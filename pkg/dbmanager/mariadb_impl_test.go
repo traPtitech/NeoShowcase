@@ -41,11 +41,19 @@ func TestMariaDBManagerImpl_Delete(t *testing.T) {
 	skipOrDo(t)
 	t.Parallel()
 	m, _ := initMariaDBManager(t)
-	a := DeleteArgs{
+
+	a := CreateArgs{
 		Database: "TestMariaDelete",
+		Password: "TestMariaDelete",
 	}
 	ctx := context.Background()
-	err := m.Delete(ctx, a)
+	err := m.Create(ctx, a)
+	assert.NoError(t, err)
+
+	da := DeleteArgs{
+		Database: "TestMariaDelete",
+	}
+	err = m.Delete(ctx, da)
 	assert.NoError(t, err)
 }
 
