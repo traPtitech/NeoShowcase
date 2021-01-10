@@ -89,5 +89,3 @@ spec:
       volumes:
         - name: artifacts
           emptyDir: { }
-      imagePullSecrets:
-        - name: ghregistry

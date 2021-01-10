@@ -103,5 +103,3 @@ spec:
           emptyDir: { }
       nodeSelector:
         neoshowcase.trap.jp/builder-node: "true"
-      imagePullSecrets:
-        - name: ghregistry

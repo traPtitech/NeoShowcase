@@ -66,6 +66,7 @@ func init() {
 	flags.StringVarP(&configFilePath, "config", "c", "", "config file path")
 	cliutil.SetupDebugFlag(flags)
 
+	viper.SetDefault("mode", "docker")
 	viper.SetDefault("builder.addr", "")
 	viper.SetDefault("builder.insecure", false)
 	viper.SetDefault("ssgen.addr", "")

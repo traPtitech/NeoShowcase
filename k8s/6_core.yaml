@@ -38,6 +38,25 @@ spec:
               name: http
 ---
 apiVersion: v1
+kind: ServiceAccount
+metadata:
+  namespace: neoshowcase
+  name: apiserver
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: neoshowcase-apiserver
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: edit
+subjects:
+  - kind: ServiceAccount
+    namespace: neoshowcase
+    name: apiserver
+---
+apiVersion: v1
 kind: Service
 metadata:
   name: apiserver
@@ -87,10 +106,13 @@ spec:
       labels:
         app: apiserver
     spec:
+      serviceAccountName: apiserver
       containers:
         - name: apiserver
           image: ghcr.io/traptitech/ns:master
           env:
+            - name: NS_APISERVER_MODE
+              value: k8s
             - name: NS_APISERVER_DB_HOST
               valueFrom:
                 configMapKeyRef:
@@ -126,5 +148,3 @@ spec:
           ports:
             - containerPort: 8080
               name: http
-      imagePullSecrets:
-        - name: ghregistry

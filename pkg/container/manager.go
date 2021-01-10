@@ -6,9 +6,9 @@ import (
 
 type Manager interface {
 	Create(ctx context.Context, args CreateArgs) (*CreateResult, error)
-	// TODO Start(ctx context.Context, ) k8sではCreateと同じ
-	Stop(ctx context.Context, args StopArgs) (*StopResult, error)          // k8sではDestroyと同じ
-	Restart(ctx context.Context, args RestartArgs) (*RestartResult, error) // k8sではCreateと同じ
+	Start(ctx context.Context, args StartArgs) (*StartResult, error)
+	Stop(ctx context.Context, args StopArgs) (*StopResult, error)
+	Restart(ctx context.Context, args RestartArgs) (*RestartResult, error)
 	Destroy(ctx context.Context, args DestroyArgs) (*DestroyResult, error)
 	List(ctx context.Context) (*ListResult, error)
 	Dispose(ctx context.Context) error
@@ -29,6 +29,13 @@ type HTTPProxy struct {
 }
 
 type CreateResult struct {
+}
+
+type StartArgs struct {
+	ApplicationID string
+}
+
+type StartResult struct {
 }
 
 type DestroyArgs struct {

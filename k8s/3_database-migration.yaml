@@ -36,5 +36,3 @@ spec:
                   key: AdminDBPassword
                   name: neoshowcase
       restartPolicy: Never
-      imagePullSecrets:
-        - name: ghregistry
