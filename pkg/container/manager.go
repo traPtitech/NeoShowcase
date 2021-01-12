@@ -19,6 +19,7 @@ type CreateArgs struct {
 	ImageName     string
 	ImageTag      string
 	Labels        map[string]string
+	Envs          map[string]string
 	HTTPProxy     *HTTPProxy
 	NoStart       bool
 }

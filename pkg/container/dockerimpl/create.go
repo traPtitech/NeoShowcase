@@ -3,6 +3,7 @@ package dockerimpl
 import (
 	"context"
 	"fmt"
+
 	docker "github.com/fsouza/go-dockerclient"
 	"github.com/traPtitech/neoshowcase/pkg/container"
 	"github.com/traPtitech/neoshowcase/pkg/util"
@@ -31,12 +32,19 @@ func (m *Manager) Create(ctx context.Context, args container.CreateArgs) (*conta
 		})
 	}
 
+	var envs []string
+
+	for name, value := range args.Envs {
+		envs = append(envs, name+"="+value)
+	}
+
 	// ビルドしたイメージのコンテナを作成
 	cont, err := m.c.CreateContainer(docker.CreateContainerOptions{
 		Name: containerName(args.ApplicationID),
 		Config: &docker.Config{
 			Image:  args.ImageName + ":" + args.ImageTag,
 			Labels: labels,
+			Env:    envs,
 		},
 		HostConfig: &docker.HostConfig{
 			RestartPolicy: docker.RestartOnFailure(5),
