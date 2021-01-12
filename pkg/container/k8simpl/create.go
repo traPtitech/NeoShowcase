@@ -23,7 +23,7 @@ func (m *Manager) Create(ctx context.Context, args container.CreateArgs) (*conta
 	var envs []apiv1.EnvVar
 
 	for _, env := range args.Envs {
-		envs = append(envs, apiv1.EnvVar{Name: strings.Split(env, "=")[0], Value: strings.Split(env, "=")[1]})
+		envs = append(envs, apiv1.EnvVar{Name: strings.SplitN(env, "=", 2)[0], Value: strings.SplitN(env, "=", 2)[1]})
 	}
 
 	cont := apiv1.Container{
