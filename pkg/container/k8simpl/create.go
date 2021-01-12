@@ -3,7 +3,6 @@ package k8simpl
 import (
 	"context"
 	"fmt"
-	"strings"
 
 	"github.com/traPtitech/neoshowcase/pkg/container"
 	"github.com/traPtitech/neoshowcase/pkg/util"
@@ -22,8 +21,8 @@ func (m *Manager) Create(ctx context.Context, args container.CreateArgs) (*conta
 
 	var envs []apiv1.EnvVar
 
-	for _, env := range args.Envs {
-		envs = append(envs, apiv1.EnvVar{Name: strings.SplitN(env, "=", 2)[0], Value: strings.SplitN(env, "=", 2)[1]})
+	for name, value := range args.Envs {
+		envs = append(envs, apiv1.EnvVar{Name: name, Value: value})
 	}
 
 	cont := apiv1.Container{

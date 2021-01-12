@@ -32,13 +32,19 @@ func (m *Manager) Create(ctx context.Context, args container.CreateArgs) (*conta
 		})
 	}
 
+	var envs []string
+
+	for name, value := range args.Envs {
+		envs = append(envs, name+"="+value)
+	}
+
 	// ビルドしたイメージのコンテナを作成
 	cont, err := m.c.CreateContainer(docker.CreateContainerOptions{
 		Name: containerName(args.ApplicationID),
 		Config: &docker.Config{
 			Image:  args.ImageName + ":" + args.ImageTag,
 			Labels: labels,
-			Env:    args.Envs,
+			Env:    envs,
 		},
 		HostConfig: &docker.HostConfig{
 			RestartPolicy: docker.RestartOnFailure(5),
