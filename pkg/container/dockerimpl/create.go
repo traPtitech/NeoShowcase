@@ -3,6 +3,7 @@ package dockerimpl
 import (
 	"context"
 	"fmt"
+
 	docker "github.com/fsouza/go-dockerclient"
 	"github.com/traPtitech/neoshowcase/pkg/container"
 	"github.com/traPtitech/neoshowcase/pkg/util"
@@ -37,6 +38,7 @@ func (m *Manager) Create(ctx context.Context, args container.CreateArgs) (*conta
 		Config: &docker.Config{
 			Image:  args.ImageName + ":" + args.ImageTag,
 			Labels: labels,
+			Env:    args.Envs,
 		},
 		HostConfig: &docker.HostConfig{
 			RestartPolicy: docker.RestartOnFailure(5),

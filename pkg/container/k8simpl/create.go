@@ -3,6 +3,8 @@ package k8simpl
 import (
 	"context"
 	"fmt"
+	"strings"
+
 	"github.com/traPtitech/neoshowcase/pkg/container"
 	"github.com/traPtitech/neoshowcase/pkg/util"
 	appsv1 "k8s.io/api/apps/v1"
@@ -18,9 +20,16 @@ func (m *Manager) Create(ctx context.Context, args container.CreateArgs) (*conta
 		appContainerApplicationIDLabel: args.ApplicationID,
 	})
 
+	var envs []apiv1.EnvVar
+
+	for _, env := range args.Envs {
+		envs = append(envs, apiv1.EnvVar{Name: strings.Split(env, "=")[0], Value: strings.Split(env, "=")[1]})
+	}
+
 	cont := apiv1.Container{
 		Name:  "app",
 		Image: args.ImageName + ":" + args.ImageTag,
+		Env:   envs,
 	}
 	if args.HTTPProxy != nil {
 		cont.Ports = []apiv1.ContainerPort{
