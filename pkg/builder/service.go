@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"github.com/leandro-lugaresi/hub"
 	buildkit "github.com/moby/buildkit/client"
-	"github.com/moby/buildkit/client/llb"
 	log "github.com/sirupsen/logrus"
 	"github.com/traPtitech/neoshowcase/pkg/builder/api"
 	"github.com/traPtitech/neoshowcase/pkg/models"
@@ -21,7 +20,7 @@ import (
 
 type Service struct {
 	server   *grpc.Server
-	buildkit BuildkitWrapper
+	buildkit *buildkit.Client
 	db       *sql.DB
 	bus      *hub.Hub
 	storage  storage.Storage
@@ -52,7 +51,7 @@ func New(c Config) (*Service, error) {
 	if err != nil {
 		return nil, fmt.Errorf("failed to initialize Buildkit Client: %w", err)
 	}
-	s.buildkit.client = client
+	s.buildkit = client
 
 	// DBに接続
 	db, err := c.DB.Connect()
@@ -97,7 +96,7 @@ func (s *Service) Shutdown(ctx context.Context) error {
 		return s.db.Close()
 	})
 	eg.Go(func() error {
-		return s.buildkit.client.Close()
+		return s.buildkit.Close()
 	})
 
 	return eg.Wait()
@@ -124,44 +123,10 @@ func (s *Service) processTask(t *Task) {
 	var err error
 	if t.Static {
 		// 静的ファイルビルド
-
-		// TODO ビルドステージの構成を何らかの形で指定できるようにする
-		builder := llb.Image("docker.io/library/node:14.11.0-alpine"). // FROM node:14.11.0-alpine as builder
-			Dir("/app"). // WORKDIR /app
-			File(llb.Copy(llb.Local("local-src"), "package*.json", "./", &llb.CopyInfo{
-				AllowWildcard:  true,
-				CreateDestPath: true,
-			})). // COPY package*.json ./
-			Run(llb.Shlex("npm i")). // RUN npm i
-			File(llb.Copy(llb.Local("local-src"), ".", ".", &llb.CopyInfo{
-				AllowWildcard:  true,
-				CreateDestPath: true,
-			})). // COPY . .
-			Run(llb.Shlex("npm run build"), llb.AddEnv("NODE_ENV", "production")). // RUN NODE_ENV=production npm run build
-			Root()
-
-		// ビルドで生成された静的ファイルのみを含むScratchイメージを構成
-		def, _ := llb.
-			Scratch(). // FROM scratch
-			File(llb.Copy(builder, "/app/dist", "/", &llb.CopyInfo{
-				CopyDirContentsOnly: true,
-				CreateDestPath:      true,
-				AllowWildcard:       true,
-			})). // COPY --from=builder /app/dist /
-			Marshal(context.Background())
-
-		// ビルド
-		err = s.buildkit.BuildStatic(t.ctx, BuildStaticArgs{
-			Output:     t.artifactWriter(),
-			ContextDir: t.repositoryTempDir,
-			LLB:        def,
-		}, t.buildLogWriter())
+		err = t.buildStatic(s)
 	} else {
 		// DockerImageビルド
-		err = s.buildkit.BuildImage(t.ctx, BuildImageArgs{
-			ImageName:  s.config.Buildkit.Registry + "/" + t.ImageName,
-			ContextDir: t.repositoryTempDir,
-		}, t.buildLogWriter())
+		err = t.buildImage(s)
 	}
 	if err != nil {
 		log.Debug(err)
