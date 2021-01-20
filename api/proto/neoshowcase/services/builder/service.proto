@@ -16,22 +16,35 @@ message GetStatusResponse {
     string build_id = 2;
 }
 
-message StartBuildImageTaskRequest {
-    string image_name = 1;
-    string repository_url = 2;
-    string application_id = 3;
+message BuildSource {
+    string repository_url = 1;
 }
 
-message StartBuildImageTaskResponse {
+message BuildOptions {
+    string base_image_name = 1;
+    string entrypoint_cmd = 2;
+    string startup_cmd = 3;
+    string artifact_path = 4;
+}
+
+message StartBuildImageRequest {
+    string image_name = 1;
+    BuildSource source = 2;
+    BuildOptions options = 3;
+    string application_id = 4;
+}
+
+message StartBuildImageResponse {
     string build_id = 1;
 }
 
-message StartBuildStaticTaskRequest {
-    string repository_url = 1;
-    string application_id = 2;
+message StartBuildStaticRequest {
+    BuildSource source = 1;
+    BuildOptions options = 2;
+    string application_id = 3;
 }
 
-message StartBuildStaticTaskResponse {
+message StartBuildStaticResponse {
     string build_id = 1;
 }
 
@@ -54,7 +67,7 @@ message Event {
 service BuilderService {
     rpc GetStatus (google.protobuf.Empty) returns (GetStatusResponse);
     rpc ConnectEventStream (google.protobuf.Empty) returns (stream Event);
-    rpc StartBuildImageTask (StartBuildImageTaskRequest) returns (StartBuildImageTaskResponse);
-    rpc StartBuildStaticTask (StartBuildStaticTaskRequest) returns (StartBuildStaticTaskResponse);
+    rpc StartBuildImage (StartBuildImageRequest) returns (StartBuildImageResponse);
+    rpc StartBuildStatic (StartBuildStaticRequest) returns (StartBuildStaticResponse);
     rpc CancelTask (google.protobuf.Empty) returns (CancelTaskResponse);
 }

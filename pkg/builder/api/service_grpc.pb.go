@@ -20,8 +20,8 @@ const _ = grpc.SupportPackageIsVersion7
 type BuilderServiceClient interface {
 	GetStatus(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (*GetStatusResponse, error)
 	ConnectEventStream(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (BuilderService_ConnectEventStreamClient, error)
-	StartBuildImageTask(ctx context.Context, in *StartBuildImageTaskRequest, opts ...grpc.CallOption) (*StartBuildImageTaskResponse, error)
-	StartBuildStaticTask(ctx context.Context, in *StartBuildStaticTaskRequest, opts ...grpc.CallOption) (*StartBuildStaticTaskResponse, error)
+	StartBuildImage(ctx context.Context, in *StartBuildImageRequest, opts ...grpc.CallOption) (*StartBuildImageResponse, error)
+	StartBuildStatic(ctx context.Context, in *StartBuildStaticRequest, opts ...grpc.CallOption) (*StartBuildStaticResponse, error)
 	CancelTask(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (*CancelTaskResponse, error)
 }
 
@@ -74,18 +74,18 @@ func (x *builderServiceConnectEventStreamClient) Recv() (*Event, error) {
 	return m, nil
 }
 
-func (c *builderServiceClient) StartBuildImageTask(ctx context.Context, in *StartBuildImageTaskRequest, opts ...grpc.CallOption) (*StartBuildImageTaskResponse, error) {
-	out := new(StartBuildImageTaskResponse)
-	err := c.cc.Invoke(ctx, "/neoshowcase.proto.services.builder.BuilderService/StartBuildImageTask", in, out, opts...)
+func (c *builderServiceClient) StartBuildImage(ctx context.Context, in *StartBuildImageRequest, opts ...grpc.CallOption) (*StartBuildImageResponse, error) {
+	out := new(StartBuildImageResponse)
+	err := c.cc.Invoke(ctx, "/neoshowcase.proto.services.builder.BuilderService/StartBuildImage", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
 	return out, nil
 }
 
-func (c *builderServiceClient) StartBuildStaticTask(ctx context.Context, in *StartBuildStaticTaskRequest, opts ...grpc.CallOption) (*StartBuildStaticTaskResponse, error) {
-	out := new(StartBuildStaticTaskResponse)
-	err := c.cc.Invoke(ctx, "/neoshowcase.proto.services.builder.BuilderService/StartBuildStaticTask", in, out, opts...)
+func (c *builderServiceClient) StartBuildStatic(ctx context.Context, in *StartBuildStaticRequest, opts ...grpc.CallOption) (*StartBuildStaticResponse, error) {
+	out := new(StartBuildStaticResponse)
+	err := c.cc.Invoke(ctx, "/neoshowcase.proto.services.builder.BuilderService/StartBuildStatic", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -107,8 +107,8 @@ func (c *builderServiceClient) CancelTask(ctx context.Context, in *emptypb.Empty
 type BuilderServiceServer interface {
 	GetStatus(context.Context, *emptypb.Empty) (*GetStatusResponse, error)
 	ConnectEventStream(*emptypb.Empty, BuilderService_ConnectEventStreamServer) error
-	StartBuildImageTask(context.Context, *StartBuildImageTaskRequest) (*StartBuildImageTaskResponse, error)
-	StartBuildStaticTask(context.Context, *StartBuildStaticTaskRequest) (*StartBuildStaticTaskResponse, error)
+	StartBuildImage(context.Context, *StartBuildImageRequest) (*StartBuildImageResponse, error)
+	StartBuildStatic(context.Context, *StartBuildStaticRequest) (*StartBuildStaticResponse, error)
 	CancelTask(context.Context, *emptypb.Empty) (*CancelTaskResponse, error)
 	mustEmbedUnimplementedBuilderServiceServer()
 }
@@ -123,11 +123,11 @@ func (UnimplementedBuilderServiceServer) GetStatus(context.Context, *emptypb.Emp
 func (UnimplementedBuilderServiceServer) ConnectEventStream(*emptypb.Empty, BuilderService_ConnectEventStreamServer) error {
 	return status.Errorf(codes.Unimplemented, "method ConnectEventStream not implemented")
 }
-func (UnimplementedBuilderServiceServer) StartBuildImageTask(context.Context, *StartBuildImageTaskRequest) (*StartBuildImageTaskResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method StartBuildImageTask not implemented")
+func (UnimplementedBuilderServiceServer) StartBuildImage(context.Context, *StartBuildImageRequest) (*StartBuildImageResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method StartBuildImage not implemented")
 }
-func (UnimplementedBuilderServiceServer) StartBuildStaticTask(context.Context, *StartBuildStaticTaskRequest) (*StartBuildStaticTaskResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method StartBuildStaticTask not implemented")
+func (UnimplementedBuilderServiceServer) StartBuildStatic(context.Context, *StartBuildStaticRequest) (*StartBuildStaticResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method StartBuildStatic not implemented")
 }
 func (UnimplementedBuilderServiceServer) CancelTask(context.Context, *emptypb.Empty) (*CancelTaskResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method CancelTask not implemented")
@@ -184,38 +184,38 @@ func (x *builderServiceConnectEventStreamServer) Send(m *Event) error {
 	return x.ServerStream.SendMsg(m)
 }
 
-func _BuilderService_StartBuildImageTask_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(StartBuildImageTaskRequest)
+func _BuilderService_StartBuildImage_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(StartBuildImageRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(BuilderServiceServer).StartBuildImageTask(ctx, in)
+		return srv.(BuilderServiceServer).StartBuildImage(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/neoshowcase.proto.services.builder.BuilderService/StartBuildImageTask",
+		FullMethod: "/neoshowcase.proto.services.builder.BuilderService/StartBuildImage",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(BuilderServiceServer).StartBuildImageTask(ctx, req.(*StartBuildImageTaskRequest))
+		return srv.(BuilderServiceServer).StartBuildImage(ctx, req.(*StartBuildImageRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
-func _BuilderService_StartBuildStaticTask_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(StartBuildStaticTaskRequest)
+func _BuilderService_StartBuildStatic_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(StartBuildStaticRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(BuilderServiceServer).StartBuildStaticTask(ctx, in)
+		return srv.(BuilderServiceServer).StartBuildStatic(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/neoshowcase.proto.services.builder.BuilderService/StartBuildStaticTask",
+		FullMethod: "/neoshowcase.proto.services.builder.BuilderService/StartBuildStatic",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(BuilderServiceServer).StartBuildStaticTask(ctx, req.(*StartBuildStaticTaskRequest))
+		return srv.(BuilderServiceServer).StartBuildStatic(ctx, req.(*StartBuildStaticRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -247,12 +247,12 @@ var _BuilderService_serviceDesc = grpc.ServiceDesc{
 			Handler:    _BuilderService_GetStatus_Handler,
 		},
 		{
-			MethodName: "StartBuildImageTask",
-			Handler:    _BuilderService_StartBuildImageTask_Handler,
+			MethodName: "StartBuildImage",
+			Handler:    _BuilderService_StartBuildImage_Handler,
 		},
 		{
-			MethodName: "StartBuildStaticTask",
-			Handler:    _BuilderService_StartBuildStaticTask_Handler,
+			MethodName: "StartBuildStatic",
+			Handler:    _BuilderService_StartBuildStatic_Handler,
 		},
 		{
 			MethodName: "CancelTask",

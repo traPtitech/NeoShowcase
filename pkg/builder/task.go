@@ -3,6 +3,12 @@ package builder
 import (
 	"context"
 	"fmt"
+	"github.com/moby/buildkit/client"
+	"github.com/moby/buildkit/client/llb"
+	"github.com/moby/buildkit/frontend/dockerfile/builder"
+	"github.com/moby/buildkit/util/progress/progressui"
+	"github.com/traPtitech/neoshowcase/pkg/builder/api"
+	"golang.org/x/sync/errgroup"
 	"io"
 	"io/ioutil"
 	"os"
@@ -20,11 +26,12 @@ import (
 )
 
 type Task struct {
-	Static        bool
-	BuildID       string
-	RepositoryURL string
-	ImageName     string
-	BuildLogM     models.BuildLog
+	Static       bool
+	BuildID      string
+	BuildSource  *api.BuildSource
+	BuildOptions *api.BuildOptions
+	ImageName    string
+	BuildLogM    models.BuildLog
 
 	ctx               context.Context
 	cancelFunc        func()
@@ -73,17 +80,17 @@ func (t *Task) startAsync(ctx context.Context, s *Service) error {
 	t.repositoryTempDir = dir
 
 	// リポジトリをクローン
-	_, err = git.PlainCloneContext(ctx, t.repositoryTempDir, false, &git.CloneOptions{URL: t.RepositoryURL, Depth: 1})
+	_, err = git.PlainCloneContext(ctx, t.repositoryTempDir, false, &git.CloneOptions{URL: t.BuildSource.RepositoryUrl, Depth: 1})
 	if err != nil {
 		_ = os.RemoveAll(t.repositoryTempDir)
-		log.WithError(err).Errorf("failed to clone repository: %s", t.RepositoryURL)
+		log.WithError(err).Errorf("failed to clone repository: %s", t.BuildSource.RepositoryUrl)
 		return err
 	}
 
 	// ビルドログのエントリをDBに挿入
 	t.BuildLogM.ID = t.BuildID
 	if err := t.BuildLogM.Insert(ctx, s.db, boil.Infer()); err != nil {
-		log.WithError(err).Errorf("failed to insert build_log entry (buildID: %d)", t.BuildID)
+		log.WithError(err).Errorf("failed to insert build_log entry (buildID: %s)", t.BuildID)
 		return err
 	}
 
@@ -112,9 +119,9 @@ func (t *Task) postProcess(s *Service, result string) error {
 	}
 
 	if t.Static {
+		// 生成物tarの保存
 		_ = t.artifactTempFile.Close()
 		if result == models.BuildLogsResultSUCCEEDED {
-			// 生成物tarの保存
 			sid := idgen.New()
 			err := storage.SaveArtifact(s.storage, t.artifactTempFile.Name(), filepath.Join("artifacts", fmt.Sprintf("%s.tar", sid)), s.db, t.BuildID, sid)
 			if err != nil {
@@ -163,4 +170,136 @@ func (t *Task) postProcess(s *Service, result string) error {
 	}
 
 	return nil
+}
+
+func (t *Task) buildImage(s *Service) error {
+	logWriter := t.buildLogWriter()
+	if logWriter == nil {
+		logWriter = ioutil.Discard // ログを破棄
+	}
+
+	ch := make(chan *client.SolveStatus)
+	eg, ctx := errgroup.WithContext(t.ctx)
+	eg.Go(func() (err error) {
+		// イメージの出力先設定
+		exportAttrs := map[string]string{}
+		if len(t.ImageName) == 0 {
+			// ImageNameの指定がない場合はビルドするだけで、イメージを保存しない
+			exportAttrs["name"] = "build-" + t.BuildID
+		} else {
+			exportAttrs["name"] = s.config.Buildkit.Registry + "/" + t.ImageName
+			exportAttrs["push"] = "true"
+		}
+
+		if len(t.BuildOptions.BaseImageName) == 0 {
+			// リポジトリルートのDockerfileを使用
+			// entrypoint, startupコマンドは無視
+			_, err = s.buildkit.Solve(ctx, nil, client.SolveOpt{
+				Exports: []client.ExportEntry{{
+					Type:  client.ExporterImage,
+					Attrs: exportAttrs,
+				}},
+				LocalDirs: map[string]string{
+					builder.DefaultLocalNameContext:    t.repositoryTempDir,
+					builder.DefaultLocalNameDockerfile: t.repositoryTempDir,
+				},
+				Frontend:      "dockerfile.v0",
+				FrontendAttrs: map[string]string{"filename": "Dockerfile"},
+			}, ch)
+		} else {
+			// 指定したベースイメージを使用
+
+			// TODO Dockerfileの検証
+			dockerfile := fmt.Sprintf(`
+FROM %s
+COPY . .
+RUN %s
+ENTRYPOINT %s
+`, t.BuildOptions.BaseImageName, t.BuildOptions.StartupCmd, t.BuildOptions.EntrypointCmd)
+
+			var tmp *os.File
+			tmp, err = ioutil.TempFile("", "Dockerfile")
+			if err != nil {
+				return err
+			}
+			defer tmp.Close()
+			defer os.Remove(tmp.Name())
+			if _, err := tmp.WriteString(dockerfile); err != nil {
+				return err
+			}
+
+			_, err = s.buildkit.Solve(ctx, nil, client.SolveOpt{
+				Exports: []client.ExportEntry{{
+					Type:  client.ExporterImage,
+					Attrs: exportAttrs,
+				}},
+				LocalDirs: map[string]string{
+					builder.DefaultLocalNameContext:    t.repositoryTempDir,
+					builder.DefaultLocalNameDockerfile: filepath.Dir(tmp.Name()),
+				},
+				Frontend:      "dockerfile.v0",
+				FrontendAttrs: map[string]string{"filename": filepath.Base(tmp.Name())},
+			}, ch)
+		}
+		return err
+	})
+	eg.Go(func() error {
+		// ビルドログを収集
+		return progressui.DisplaySolveStatus(ctx, "", nil, logWriter, ch)
+	})
+
+	return eg.Wait()
+}
+
+func (t *Task) buildStatic(s *Service) error {
+	logWriter := t.buildLogWriter()
+	if logWriter == nil {
+		logWriter = ioutil.Discard // ログを破棄
+	}
+
+	ch := make(chan *client.SolveStatus)
+	eg, ctx := errgroup.WithContext(t.ctx)
+	eg.Go(func() (err error) {
+		if len(t.BuildOptions.BaseImageName) == 0 {
+			// リポジトリルートのDockerfileを使用
+			// entrypoint, startupコマンドは無視
+			// TODO
+			panic("not implemented")
+		} else {
+			// 指定したベースイメージを使用
+			b := llb.Image(t.BuildOptions.BaseImageName).
+				File(llb.Copy(llb.Local("local-src"), ".", ".", &llb.CopyInfo{
+					AllowWildcard:  true,
+					CreateDestPath: true,
+				})).
+				Run(llb.Shlex(t.BuildOptions.StartupCmd)).
+				Root()
+			// ビルドで生成された静的ファイルのみを含むScratchイメージを構成
+			def, _ := llb.
+				Scratch().
+				File(llb.Copy(b, t.BuildOptions.ArtifactPath, "/", &llb.CopyInfo{
+					CopyDirContentsOnly: true,
+					CreateDestPath:      true,
+					AllowWildcard:       true,
+				})).
+				Marshal(context.Background())
+
+			_, err = s.buildkit.Solve(ctx, def, client.SolveOpt{
+				Exports: []client.ExportEntry{{
+					Type:   client.ExporterTar,
+					Output: func(_ map[string]string) (io.WriteCloser, error) { return t.artifactWriter(), nil },
+				}},
+				LocalDirs: map[string]string{
+					"local-src": t.repositoryTempDir,
+				},
+			}, ch)
+		}
+		return err
+	})
+	eg.Go(func() error {
+		// ビルドログを収集
+		return progressui.DisplaySolveStatus(ctx, "", nil, logWriter, ch)
+	})
+
+	return eg.Wait()
 }

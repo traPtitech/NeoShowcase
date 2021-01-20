@@ -5,6 +5,7 @@ import (
 	"github.com/traPtitech/neoshowcase/pkg/builder/api"
 	"github.com/traPtitech/neoshowcase/pkg/idgen"
 	"github.com/traPtitech/neoshowcase/pkg/models"
+	"github.com/volatiletech/null/v8"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/types/known/emptypb"
@@ -48,23 +49,28 @@ func (s *Service) ConnectEventStream(_ *emptypb.Empty, stream api.BuilderService
 	}
 }
 
-func (s *Service) StartBuildImageTask(ctx context.Context, req *api.StartBuildImageTaskRequest) (*api.StartBuildImageTaskResponse, error) {
+func (s *Service) StartBuildImage(ctx context.Context, req *api.StartBuildImageRequest) (*api.StartBuildImageResponse, error) {
 	s.stateLock.Lock()
 	if s.state != api.BuilderStatus_WAITING {
 		s.stateLock.Unlock()
-		return nil, status.Errorf(codes.Unavailable, "status: %s", s.state.String())
+		return nil, status.Errorf(codes.Unavailable, "status: %s", s.state)
 	}
 
 	t := &Task{
-		BuildID:       idgen.New(),
-		RepositoryURL: req.GetRepositoryUrl(),
-		ImageName:     req.GetImageName(),
+		BuildID:      idgen.New(),
+		BuildSource:  req.GetSource(),
+		BuildOptions: req.GetOptions(),
+		ImageName:    req.GetImageName(),
 		BuildLogM: models.BuildLog{
-			ApplicationID: req.GetApplicationId(),
-			Result:        models.BuildLogsResultBUILDING,
-			StartedAt:     time.Now(),
+			Result:    models.BuildLogsResultBUILDING,
+			StartedAt: time.Now(),
 		},
 	}
+	// アプリケーションIDが指定されていない場合はデバッグビルド
+	if len(req.ApplicationId) > 0 {
+		t.BuildLogM.ApplicationID = null.StringFrom(req.GetApplicationId())
+	}
+
 	if err := t.startAsync(ctx, s); err != nil {
 		s.stateLock.Unlock()
 		return nil, status.Errorf(codes.Internal, "%v", err)
@@ -72,25 +78,29 @@ func (s *Service) StartBuildImageTask(ctx context.Context, req *api.StartBuildIm
 
 	s.state = api.BuilderStatus_BUILDING
 	s.stateLock.Unlock()
-	return &api.StartBuildImageTaskResponse{BuildId: t.BuildID}, nil
+	return &api.StartBuildImageResponse{BuildId: t.BuildID}, nil
 }
 
-func (s *Service) StartBuildStaticTask(ctx context.Context, req *api.StartBuildStaticTaskRequest) (*api.StartBuildStaticTaskResponse, error) {
+func (s *Service) StartBuildStatic(ctx context.Context, req *api.StartBuildStaticRequest) (*api.StartBuildStaticResponse, error) {
 	s.stateLock.Lock()
 	if s.state != api.BuilderStatus_WAITING {
 		s.stateLock.Unlock()
-		return nil, status.Errorf(codes.Unavailable, "status: %s", s.state.String())
+		return nil, status.Errorf(codes.Unavailable, "status: %s", s.state)
 	}
 
 	t := &Task{
-		Static:        true,
-		BuildID:       idgen.New(),
-		RepositoryURL: req.GetRepositoryUrl(),
+		Static:       true,
+		BuildID:      idgen.New(),
+		BuildSource:  req.GetSource(),
+		BuildOptions: req.GetOptions(),
 		BuildLogM: models.BuildLog{
-			ApplicationID: req.GetApplicationId(),
-			Result:        models.BuildLogsResultBUILDING,
-			StartedAt:     time.Now(),
+			Result:    models.BuildLogsResultBUILDING,
+			StartedAt: time.Now(),
 		},
+	}
+	// アプリケーションIDが指定されていない場合はデバッグビルド
+	if len(req.ApplicationId) > 0 {
+		t.BuildLogM.ApplicationID = null.StringFrom(req.GetApplicationId())
 	}
 
 	if err := t.startAsync(ctx, s); err != nil {
@@ -100,7 +110,7 @@ func (s *Service) StartBuildStaticTask(ctx context.Context, req *api.StartBuildS
 
 	s.state = api.BuilderStatus_BUILDING
 	s.stateLock.Unlock()
-	return &api.StartBuildStaticTaskResponse{BuildId: t.BuildID}, nil
+	return &api.StartBuildStaticResponse{BuildId: t.BuildID}, nil
 }
 
 func (s *Service) CancelTask(_ context.Context, _ *emptypb.Empty) (*api.CancelTaskResponse, error) {
