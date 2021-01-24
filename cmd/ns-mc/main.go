@@ -23,9 +23,10 @@ var (
 )
 
 var rootCommand = &cobra.Command{
-	Use:     "ns-mc",
-	Short:   "NeoShowcase MemberCheckerServer",
-	Version: fmt.Sprintf("%s (%s)", version, revision),
+	Use:              "ns-mc",
+	Short:            "NeoShowcase MemberCheckerServer",
+	Version:          fmt.Sprintf("%s (%s)", version, revision),
+	PersistentPreRun: cliutil.PrintVersion,
 }
 
 func serveCommand() *cobra.Command {
@@ -71,6 +72,9 @@ func init() {
 		serveCommand(),
 	)
 	flags := rootCommand.PersistentFlags()
+	cliutil.SetupDebugFlag(flags)
+	cliutil.SetupLogLevelFlag(flags)
+
 	flags.IntVarP(&port, "port", "p", cliutil.GetIntEnvOrDefault("NS_MC_PORT", 8081), "port num")
 	flags.StringVarP(&pubkeyFilePath, "pubkey-file", "k", cliutil.GetEnvOrDefault("NS_MC_PUBKEY_FILE", ""), "public key PEM file path")
 }

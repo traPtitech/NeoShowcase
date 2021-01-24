@@ -27,9 +27,10 @@ var (
 )
 
 var rootCommand = &cobra.Command{
-	Use:     "ns-migrate",
-	Short:   "NeoShowcase DB Migration Tool",
-	Version: fmt.Sprintf("%s (%s)", version, revision),
+	Use:              "ns-migrate",
+	Short:            "NeoShowcase DB Migration Tool",
+	Version:          fmt.Sprintf("%s (%s)", version, revision),
+	PersistentPreRun: cliutil.PrintVersion,
 }
 
 func upCommand() *cobra.Command {
@@ -138,6 +139,9 @@ func init() {
 		listMigrationsCommand(),
 	)
 	flags := rootCommand.PersistentFlags()
+	cliutil.SetupDebugFlag(flags)
+	cliutil.SetupLogLevelFlag(flags)
+
 	flags.StringVarP(&dbHost, "dbhost", "H", cliutil.GetEnvOrDefault("DB_HOST", "localhost"), "database host name")
 	flags.IntVarP(&dbPort, "dbport", "P", cliutil.GetIntEnvOrDefault("DB_PORT", 3306), "database port number")
 	flags.StringVarP(&dbName, "dbname", "n", cliutil.GetEnvOrDefault("DB_NAME", "neoshowcase"), "database name")

@@ -23,9 +23,10 @@ var (
 )
 
 var rootCommand = &cobra.Command{
-	Use:     "ns",
-	Short:   "NeoShowcase Core API Server",
-	Version: fmt.Sprintf("%s (%s)", version, revision),
+	Use:              "ns",
+	Short:            "NeoShowcase Core API Server",
+	Version:          fmt.Sprintf("%s (%s)", version, revision),
+	PersistentPreRun: cliutil.PrintVersion,
 }
 
 func runCommand() *cobra.Command {
@@ -65,6 +66,7 @@ func init() {
 	flags := rootCommand.PersistentFlags()
 	flags.StringVarP(&configFilePath, "config", "c", "", "config file path")
 	cliutil.SetupDebugFlag(flags)
+	cliutil.SetupLogLevelFlag(flags)
 
 	viper.SetDefault("mode", "docker")
 	viper.SetDefault("builder.addr", "")

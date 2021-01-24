@@ -22,9 +22,10 @@ var (
 )
 
 var rootCommand = &cobra.Command{
-	Use:     "ns-ssgen",
-	Short:   "NeoShowcase StaticSiteGenerator",
-	Version: fmt.Sprintf("%s (%s)", version, revision),
+	Use:              "ns-ssgen",
+	Short:            "NeoShowcase StaticSiteGenerator",
+	Version:          fmt.Sprintf("%s (%s)", version, revision),
+	PersistentPreRun: cliutil.PrintVersion,
 }
 
 func runCommand() *cobra.Command {
@@ -64,6 +65,7 @@ func init() {
 	flags := rootCommand.PersistentFlags()
 	flags.StringVarP(&configFilePath, "config", "c", "", "config file path")
 	cliutil.SetupDebugFlag(flags)
+	cliutil.SetupLogLevelFlag(flags)
 
 	viper.SetDefault("server", "caddy")
 	viper.SetDefault("artifactsRoot", "/srv/artifacts")
