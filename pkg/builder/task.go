@@ -6,6 +6,8 @@ import (
 	"github.com/moby/buildkit/client"
 	"github.com/moby/buildkit/client/llb"
 	"github.com/moby/buildkit/frontend/dockerfile/builder"
+	"github.com/moby/buildkit/session"
+	"github.com/moby/buildkit/session/auth/authprovider"
 	"github.com/moby/buildkit/util/progress/progressui"
 	"github.com/traPtitech/neoshowcase/pkg/builder/api"
 	"golang.org/x/sync/errgroup"
@@ -205,6 +207,7 @@ func (t *Task) buildImage(s *Service) error {
 				},
 				Frontend:      "dockerfile.v0",
 				FrontendAttrs: map[string]string{"filename": "Dockerfile"},
+				Session:       []session.Attachable{authprovider.NewDockerAuthProvider(ioutil.Discard)},
 			}, ch)
 		} else {
 			// 指定したベースイメージを使用
@@ -239,6 +242,7 @@ ENTRYPOINT %s
 				},
 				Frontend:      "dockerfile.v0",
 				FrontendAttrs: map[string]string{"filename": filepath.Base(tmp.Name())},
+				Session:       []session.Attachable{authprovider.NewDockerAuthProvider(ioutil.Discard)},
 			}, ch)
 		}
 		return err
