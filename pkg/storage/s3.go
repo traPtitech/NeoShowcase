@@ -97,7 +97,7 @@ func (s3s *S3Storage) Move(filename, destPath string) error {
 	uploader := s3manager.NewUploader(s3s.sess)
 	_, err = uploader.Upload(&s3manager.UploadInput{
 		Bucket: aws.String(s3s.bucket),
-		Key:    aws.String(filename),
+		Key:    aws.String(destPath),
 		Body:   inputFile,
 	})
 	inputFile.Close()
