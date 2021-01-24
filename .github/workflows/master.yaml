@@ -53,6 +53,6 @@ jobs:
           platforms: linux/amd64
           push: true
           build-args: |
-            APP_VERSION=${APP_VERSION}
-            APP_REVISION=${APP_REVISION}
+            APP_VERSION=${{ env.APP_VERSION }}
+            APP_REVISION=${{ env.APP_REVISION }}
           tags: ghcr.io/traptitech/${{ matrix.component }}:master
