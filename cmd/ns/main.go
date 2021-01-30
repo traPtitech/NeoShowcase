@@ -69,6 +69,8 @@ func init() {
 	cliutil.SetupLogLevelFlag(flags)
 
 	viper.SetDefault("mode", "docker")
+	viper.SetDefault("image.registry", "")
+	viper.SetDefault("image.namePrefix", "ns-apps/")
 	viper.SetDefault("builder.addr", "")
 	viper.SetDefault("builder.insecure", false)
 	viper.SetDefault("ssgen.addr", "")

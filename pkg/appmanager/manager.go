@@ -12,5 +12,7 @@ var ErrNotFound = errors.New("not found")
 type Manager interface {
 	// GetApp 指定したIDのアプリを取得します
 	GetApp(appID string) (App, error)
+	// GetAppByRepository 指定したリポジトリURLのアプリを取得します
+	GetAppByRepository(repo string) (App, error)
 	Shutdown(ctx context.Context) error
 }
