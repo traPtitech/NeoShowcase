@@ -73,3 +73,6 @@ ns-ssgen-rebuild:
 .PHONY: ns-rebuild
 ns-rebuild:
 	@docker-compose up -d --build ns
+
+.PHONY: db-update
+db-update: migrate-up gogen db-gen-docs
