@@ -22,7 +22,7 @@ services:
       - ./local-dev/neoshowcase:/data
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.ns_admin.rule=Host(`localhost`)"
+      - "traefik.http.routers.ns_admin.rule=Host(`local.wtks.work`)"
       - "traefik.http.services.ns_admin.loadbalancer.server.port=8080"
     depends_on:
       - mysql
