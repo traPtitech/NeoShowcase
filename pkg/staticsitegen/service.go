@@ -107,7 +107,6 @@ func (s *Service) reload(ctx context.Context) error {
 			data = append(data, &generator.Site{
 				ID:            site.SiteID,
 				FQDN:          site.R.Site.FQDN,
-				PathPrefix:    site.R.Site.PathPrefix,
 				ArtifactID:    site.ArtifactID.String,
 				ApplicationID: site.R.Site.ApplicationID,
 			})
