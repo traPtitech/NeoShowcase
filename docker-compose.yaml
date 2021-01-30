@@ -189,6 +189,21 @@ services:
       - default
       - apps
 
+  swagger-ui:
+    image: swaggerapi/swagger-ui
+    volumes:
+      - ./api/http/swagger.yaml:/swagger.yaml
+    environment:
+      SWAGGER_JSON: /swagger.yaml
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.ns_swagger.rule=Host(`swagger.local.wtks.work`)"
+      - "traefik.http.services.ns_swagger.loadbalancer.server.port=8080"
+    depends_on:
+      - mysql
+    networks:
+      - default
+
 networks:
   default: { }
   apps: { }
