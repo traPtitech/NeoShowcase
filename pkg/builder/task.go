@@ -190,7 +190,7 @@ func (t *Task) buildImage(s *Service) error {
 			// ImageNameの指定がない場合はビルドするだけで、イメージを保存しない
 			exportAttrs["name"] = "build-" + t.BuildID
 		} else {
-			exportAttrs["name"] = s.config.Buildkit.Registry + "/" + t.ImageName
+			exportAttrs["name"] = s.config.Buildkit.Registry + "/" + t.ImageName + ":" + t.BuildID
 			exportAttrs["push"] = "true"
 		}
 
