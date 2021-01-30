@@ -112,6 +112,7 @@ func (m *managerImpl) getImageName(app App) string {
 func (m *managerImpl) GetApp(appID string) (App, error) {
 	app, err := models.Applications(
 		qm.Load(models.ApplicationRels.Repository),
+		models.ApplicationWhere.DeletedAt.IsNull(),
 		models.ApplicationWhere.ID.EQ(appID),
 	).One(context.Background(), m.db)
 	if err != nil {
@@ -138,6 +139,7 @@ func (m *managerImpl) GetAppByRepository(repo string) (App, error) {
 
 	app, err := models.Applications(
 		qm.Load(models.ApplicationRels.Repository),
+		models.ApplicationWhere.DeletedAt.IsNull(),
 		models.ApplicationWhere.RepositoryID.EQ(repoModel.ID),
 	).One(context.Background(), m.db)
 	if err != nil {

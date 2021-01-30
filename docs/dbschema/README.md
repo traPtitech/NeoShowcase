@@ -7,10 +7,8 @@
 | [applications](applications.md) | 8 | アプリテーブル | BASE TABLE |
 | [artifacts](artifacts.md) | 5 | 静的ファイル生成物テーブル | BASE TABLE |
 | [build_logs](build_logs.md) | 5 | ビルドログテーブル | BASE TABLE |
-| [dynamic_site_details](dynamic_site_details.md) | 1 | 動的サイト詳細テーブル | BASE TABLE |
 | [repositories](repositories.md) | 3 | Gitリポジトリテーブル | BASE TABLE |
-| [sites](sites.md) | 7 | サイトテーブル | BASE TABLE |
-| [static_site_details](static_site_details.md) | 2 | 静的サイト詳細テーブル | BASE TABLE |
+| [websites](websites.md) | 7 | Webサイトテーブル | BASE TABLE |
 
 ## Relations
 

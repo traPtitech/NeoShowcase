@@ -93,23 +93,31 @@ func (s *Service) Reload(ctx context.Context, _ *api.ReloadRequest) (*api.Reload
 }
 
 func (s *Service) reload(ctx context.Context) error {
-	sites, err := models.StaticSiteDetails(
-		qm.Load("Site"),
-		qm.Load("Artifact"),
+	apps, err := models.Applications(
+		models.ApplicationWhere.BuildType.EQ(models.ApplicationsBuildTypeStatic),
+		models.ApplicationWhere.DeletedAt.IsNull(),
+		qm.Load(qm.Rels(models.ApplicationRels.Website, models.WebsiteRels.Build, models.BuildLogRels.Artifact)),
 	).All(ctx, s.db)
 	if err != nil {
 		return err
 	}
 
 	var data []*generator.Site
-	for _, site := range sites {
-		if site.ArtifactID.Valid {
-			data = append(data, &generator.Site{
-				ID:            site.SiteID,
-				FQDN:          site.R.Site.FQDN,
-				ArtifactID:    site.ArtifactID.String,
-				ApplicationID: site.R.Site.ApplicationID,
-			})
+	for _, app := range apps {
+		if app.R.Website != nil {
+			website := app.R.Website
+			if website.R.Build != nil {
+				build := website.R.Build
+				if build.R.Artifact != nil {
+					artifact := build.R.Artifact
+					data = append(data, &generator.Site{
+						ID:            website.ID,
+						FQDN:          website.FQDN,
+						ArtifactID:    artifact.ID,
+						ApplicationID: app.ID,
+					})
+				}
+			}
 		}
 	}
 

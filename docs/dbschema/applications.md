@@ -29,7 +29,7 @@ CREATE TABLE `applications` (
 
 | Name | Type | Default | Nullable | Children | Parents | Comment |
 | ---- | ---- | ------- | -------- | -------- | ------- | ------- |
-| id | varchar(22) |  | false | [build_logs](build_logs.md) [sites](sites.md) |  | アプリID |
+| id | varchar(22) |  | false | [build_logs](build_logs.md) [websites](websites.md) |  | アプリID |
 | owner | varchar(100) |  | false |  |  | アプリ所有者 |
 | name | varchar(100) |  | false |  |  | アプリ名 |
 | repository_id | varchar(22) |  | false |  | [repositories](repositories.md) | アプリのリポジトリID |

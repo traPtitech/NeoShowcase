@@ -8,6 +8,8 @@ import (
 	builderApi "github.com/traPtitech/neoshowcase/pkg/builder/api"
 	"github.com/traPtitech/neoshowcase/pkg/container"
 	"github.com/traPtitech/neoshowcase/pkg/models"
+	"github.com/volatiletech/null/v8"
+	"github.com/volatiletech/sqlboiler/v4/boil"
 	"github.com/volatiletech/sqlboiler/v4/queries/qm"
 )
 
@@ -51,15 +53,34 @@ func (app *appImpl) Start(args AppStartArgs) error {
 			}
 		}
 
+		// HTTP公開設定があれば取得
+		var httpProxy *container.HTTPProxy
+		website, err := app.dbmodel.Website().One(context.Background(), app.m.db)
+		if err == nil {
+			httpProxy = &container.HTTPProxy{
+				Domain: website.FQDN,
+				Port:   website.HTTPPort,
+			}
+		} else if err != sql.ErrNoRows {
+			return fmt.Errorf("failed to query website: %w", err)
+		}
+
 		// TODO 既に存在する場合はCreateせずにStartするようにする
-		_, err := app.m.cm.Create(context.Background(), container.CreateArgs{
+		_, err = app.m.cm.Create(context.Background(), container.CreateArgs{
 			ApplicationID: app.GetID(),
 			ImageName:     app.m.getFullImageName(app),
 			ImageTag:      args.BuildID,
-			HTTPProxy:     nil,
+			HTTPProxy:     httpProxy,
 		})
 		if err != nil {
 			return fmt.Errorf("failed to Create container: %w", err)
+		}
+
+		if website != nil {
+			website.BuildID = null.StringFrom(args.BuildID)
+			if _, err := website.Update(context.Background(), app.m.db, boil.Infer()); err != nil {
+				return fmt.Errorf("failed to Update website: %w", err)
+			}
 		}
 
 	case models.ApplicationsBuildTypeStatic:

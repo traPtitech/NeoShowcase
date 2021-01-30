@@ -15,7 +15,7 @@ CREATE TABLE `artifacts` (
   `created_at` datetime(6) NOT NULL COMMENT '作成日時',
   `deleted_at` datetime(6) DEFAULT NULL COMMENT '削除日時',
   PRIMARY KEY (`id`),
-  KEY `fk_artifacts_buildlog_id` (`build_log_id`),
+  UNIQUE KEY `uk_build_log_id` (`build_log_id`),
   CONSTRAINT `fk_artifacts_buildlog_id` FOREIGN KEY (`build_log_id`) REFERENCES `build_logs` (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='静的ファイル生成物テーブル'
 ```
@@ -26,7 +26,7 @@ CREATE TABLE `artifacts` (
 
 | Name | Type | Default | Nullable | Children | Parents | Comment |
 | ---- | ---- | ------- | -------- | -------- | ------- | ------- |
-| id | varchar(22) |  | false | [static_site_details](static_site_details.md) |  | 生成物ID |
+| id | varchar(22) |  | false |  |  | 生成物ID |
 | build_log_id | varchar(22) |  | false |  | [build_logs](build_logs.md) | ビルドログID |
 | size | bigint(20) |  | false |  |  | 生成物ファイルサイズ(tar) |
 | created_at | datetime(6) |  | false |  |  | 作成日時 |
@@ -38,13 +38,14 @@ CREATE TABLE `artifacts` (
 | ---- | ---- | ---------- |
 | fk_artifacts_buildlog_id | FOREIGN KEY | FOREIGN KEY (build_log_id) REFERENCES build_logs (id) |
 | PRIMARY | PRIMARY KEY | PRIMARY KEY (id) |
+| uk_build_log_id | UNIQUE | UNIQUE KEY uk_build_log_id (build_log_id) |
 
 ## Indexes
 
 | Name | Definition |
 | ---- | ---------- |
-| fk_artifacts_buildlog_id | KEY fk_artifacts_buildlog_id (build_log_id) USING BTREE |
 | PRIMARY | PRIMARY KEY (id) USING BTREE |
+| uk_build_log_id | UNIQUE KEY uk_build_log_id (build_log_id) USING BTREE |
 
 ## Relations
 

@@ -15,110 +15,88 @@ func TestParent(t *testing.T) {
 	t.Run("Applications", testApplications)
 	t.Run("Artifacts", testArtifacts)
 	t.Run("BuildLogs", testBuildLogs)
-	t.Run("DynamicSiteDetails", testDynamicSiteDetails)
 	t.Run("Repositories", testRepositories)
-	t.Run("Sites", testSites)
-	t.Run("StaticSiteDetails", testStaticSiteDetails)
+	t.Run("Websites", testWebsites)
 }
 
 func TestDelete(t *testing.T) {
 	t.Run("Applications", testApplicationsDelete)
 	t.Run("Artifacts", testArtifactsDelete)
 	t.Run("BuildLogs", testBuildLogsDelete)
-	t.Run("DynamicSiteDetails", testDynamicSiteDetailsDelete)
 	t.Run("Repositories", testRepositoriesDelete)
-	t.Run("Sites", testSitesDelete)
-	t.Run("StaticSiteDetails", testStaticSiteDetailsDelete)
+	t.Run("Websites", testWebsitesDelete)
 }
 
 func TestQueryDeleteAll(t *testing.T) {
 	t.Run("Applications", testApplicationsQueryDeleteAll)
 	t.Run("Artifacts", testArtifactsQueryDeleteAll)
 	t.Run("BuildLogs", testBuildLogsQueryDeleteAll)
-	t.Run("DynamicSiteDetails", testDynamicSiteDetailsQueryDeleteAll)
 	t.Run("Repositories", testRepositoriesQueryDeleteAll)
-	t.Run("Sites", testSitesQueryDeleteAll)
-	t.Run("StaticSiteDetails", testStaticSiteDetailsQueryDeleteAll)
+	t.Run("Websites", testWebsitesQueryDeleteAll)
 }
 
 func TestSliceDeleteAll(t *testing.T) {
 	t.Run("Applications", testApplicationsSliceDeleteAll)
 	t.Run("Artifacts", testArtifactsSliceDeleteAll)
 	t.Run("BuildLogs", testBuildLogsSliceDeleteAll)
-	t.Run("DynamicSiteDetails", testDynamicSiteDetailsSliceDeleteAll)
 	t.Run("Repositories", testRepositoriesSliceDeleteAll)
-	t.Run("Sites", testSitesSliceDeleteAll)
-	t.Run("StaticSiteDetails", testStaticSiteDetailsSliceDeleteAll)
+	t.Run("Websites", testWebsitesSliceDeleteAll)
 }
 
 func TestExists(t *testing.T) {
 	t.Run("Applications", testApplicationsExists)
 	t.Run("Artifacts", testArtifactsExists)
 	t.Run("BuildLogs", testBuildLogsExists)
-	t.Run("DynamicSiteDetails", testDynamicSiteDetailsExists)
 	t.Run("Repositories", testRepositoriesExists)
-	t.Run("Sites", testSitesExists)
-	t.Run("StaticSiteDetails", testStaticSiteDetailsExists)
+	t.Run("Websites", testWebsitesExists)
 }
 
 func TestFind(t *testing.T) {
 	t.Run("Applications", testApplicationsFind)
 	t.Run("Artifacts", testArtifactsFind)
 	t.Run("BuildLogs", testBuildLogsFind)
-	t.Run("DynamicSiteDetails", testDynamicSiteDetailsFind)
 	t.Run("Repositories", testRepositoriesFind)
-	t.Run("Sites", testSitesFind)
-	t.Run("StaticSiteDetails", testStaticSiteDetailsFind)
+	t.Run("Websites", testWebsitesFind)
 }
 
 func TestBind(t *testing.T) {
 	t.Run("Applications", testApplicationsBind)
 	t.Run("Artifacts", testArtifactsBind)
 	t.Run("BuildLogs", testBuildLogsBind)
-	t.Run("DynamicSiteDetails", testDynamicSiteDetailsBind)
 	t.Run("Repositories", testRepositoriesBind)
-	t.Run("Sites", testSitesBind)
-	t.Run("StaticSiteDetails", testStaticSiteDetailsBind)
+	t.Run("Websites", testWebsitesBind)
 }
 
 func TestOne(t *testing.T) {
 	t.Run("Applications", testApplicationsOne)
 	t.Run("Artifacts", testArtifactsOne)
 	t.Run("BuildLogs", testBuildLogsOne)
-	t.Run("DynamicSiteDetails", testDynamicSiteDetailsOne)
 	t.Run("Repositories", testRepositoriesOne)
-	t.Run("Sites", testSitesOne)
-	t.Run("StaticSiteDetails", testStaticSiteDetailsOne)
+	t.Run("Websites", testWebsitesOne)
 }
 
 func TestAll(t *testing.T) {
 	t.Run("Applications", testApplicationsAll)
 	t.Run("Artifacts", testArtifactsAll)
 	t.Run("BuildLogs", testBuildLogsAll)
-	t.Run("DynamicSiteDetails", testDynamicSiteDetailsAll)
 	t.Run("Repositories", testRepositoriesAll)
-	t.Run("Sites", testSitesAll)
-	t.Run("StaticSiteDetails", testStaticSiteDetailsAll)
+	t.Run("Websites", testWebsitesAll)
 }
 
 func TestCount(t *testing.T) {
 	t.Run("Applications", testApplicationsCount)
 	t.Run("Artifacts", testArtifactsCount)
 	t.Run("BuildLogs", testBuildLogsCount)
-	t.Run("DynamicSiteDetails", testDynamicSiteDetailsCount)
 	t.Run("Repositories", testRepositoriesCount)
-	t.Run("Sites", testSitesCount)
-	t.Run("StaticSiteDetails", testStaticSiteDetailsCount)
+	t.Run("Websites", testWebsitesCount)
 }
 
 func TestHooks(t *testing.T) {
 	t.Run("Applications", testApplicationsHooks)
 	t.Run("Artifacts", testArtifactsHooks)
 	t.Run("BuildLogs", testBuildLogsHooks)
-	t.Run("DynamicSiteDetails", testDynamicSiteDetailsHooks)
 	t.Run("Repositories", testRepositoriesHooks)
-	t.Run("Sites", testSitesHooks)
-	t.Run("StaticSiteDetails", testStaticSiteDetailsHooks)
+	t.Run("Websites", testWebsitesHooks)
 }
 
 func TestInsert(t *testing.T) {
@@ -128,14 +106,10 @@ func TestInsert(t *testing.T) {
 	t.Run("Artifacts", testArtifactsInsertWhitelist)
 	t.Run("BuildLogs", testBuildLogsInsert)
 	t.Run("BuildLogs", testBuildLogsInsertWhitelist)
-	t.Run("DynamicSiteDetails", testDynamicSiteDetailsInsert)
-	t.Run("DynamicSiteDetails", testDynamicSiteDetailsInsertWhitelist)
 	t.Run("Repositories", testRepositoriesInsert)
 	t.Run("Repositories", testRepositoriesInsertWhitelist)
-	t.Run("Sites", testSitesInsert)
-	t.Run("Sites", testSitesInsertWhitelist)
-	t.Run("StaticSiteDetails", testStaticSiteDetailsInsert)
-	t.Run("StaticSiteDetails", testStaticSiteDetailsInsertWhitelist)
+	t.Run("Websites", testWebsitesInsert)
+	t.Run("Websites", testWebsitesInsertWhitelist)
 }
 
 // TestToOne tests cannot be run in parallel
@@ -144,26 +118,22 @@ func TestToOne(t *testing.T) {
 	t.Run("ApplicationToRepositoryUsingRepository", testApplicationToOneRepositoryUsingRepository)
 	t.Run("ArtifactToBuildLogUsingBuildLog", testArtifactToOneBuildLogUsingBuildLog)
 	t.Run("BuildLogToApplicationUsingApplication", testBuildLogToOneApplicationUsingApplication)
-	t.Run("DynamicSiteDetailToSiteUsingSite", testDynamicSiteDetailToOneSiteUsingSite)
-	t.Run("SiteToApplicationUsingApplication", testSiteToOneApplicationUsingApplication)
-	t.Run("StaticSiteDetailToArtifactUsingArtifact", testStaticSiteDetailToOneArtifactUsingArtifact)
-	t.Run("StaticSiteDetailToSiteUsingSite", testStaticSiteDetailToOneSiteUsingSite)
+	t.Run("WebsiteToApplicationUsingApplication", testWebsiteToOneApplicationUsingApplication)
+	t.Run("WebsiteToBuildLogUsingBuild", testWebsiteToOneBuildLogUsingBuild)
 }
 
 // TestOneToOne tests cannot be run in parallel
 // or deadlocks can occur.
 func TestOneToOne(t *testing.T) {
-	t.Run("SiteToDynamicSiteDetailUsingDynamicSiteDetail", testSiteOneToOneDynamicSiteDetailUsingDynamicSiteDetail)
-	t.Run("SiteToStaticSiteDetailUsingStaticSiteDetail", testSiteOneToOneStaticSiteDetailUsingStaticSiteDetail)
+	t.Run("ApplicationToWebsiteUsingWebsite", testApplicationOneToOneWebsiteUsingWebsite)
+	t.Run("BuildLogToArtifactUsingArtifact", testBuildLogOneToOneArtifactUsingArtifact)
 }
 
 // TestToMany tests cannot be run in parallel
 // or deadlocks can occur.
 func TestToMany(t *testing.T) {
 	t.Run("ApplicationToBuildLogs", testApplicationToManyBuildLogs)
-	t.Run("ApplicationToSites", testApplicationToManySites)
-	t.Run("ArtifactToStaticSiteDetails", testArtifactToManyStaticSiteDetails)
-	t.Run("BuildLogToArtifacts", testBuildLogToManyArtifacts)
+	t.Run("BuildLogToBuildWebsites", testBuildLogToManyBuildWebsites)
 	t.Run("RepositoryToApplications", testRepositoryToManyApplications)
 }
 
@@ -171,26 +141,24 @@ func TestToMany(t *testing.T) {
 // or deadlocks can occur.
 func TestToOneSet(t *testing.T) {
 	t.Run("ApplicationToRepositoryUsingApplications", testApplicationToOneSetOpRepositoryUsingRepository)
-	t.Run("ArtifactToBuildLogUsingArtifacts", testArtifactToOneSetOpBuildLogUsingBuildLog)
+	t.Run("ArtifactToBuildLogUsingArtifact", testArtifactToOneSetOpBuildLogUsingBuildLog)
 	t.Run("BuildLogToApplicationUsingBuildLogs", testBuildLogToOneSetOpApplicationUsingApplication)
-	t.Run("DynamicSiteDetailToSiteUsingDynamicSiteDetail", testDynamicSiteDetailToOneSetOpSiteUsingSite)
-	t.Run("SiteToApplicationUsingSites", testSiteToOneSetOpApplicationUsingApplication)
-	t.Run("StaticSiteDetailToArtifactUsingStaticSiteDetails", testStaticSiteDetailToOneSetOpArtifactUsingArtifact)
-	t.Run("StaticSiteDetailToSiteUsingStaticSiteDetail", testStaticSiteDetailToOneSetOpSiteUsingSite)
+	t.Run("WebsiteToApplicationUsingWebsite", testWebsiteToOneSetOpApplicationUsingApplication)
+	t.Run("WebsiteToBuildLogUsingBuildWebsites", testWebsiteToOneSetOpBuildLogUsingBuild)
 }
 
 // TestToOneRemove tests cannot be run in parallel
 // or deadlocks can occur.
 func TestToOneRemove(t *testing.T) {
 	t.Run("BuildLogToApplicationUsingBuildLogs", testBuildLogToOneRemoveOpApplicationUsingApplication)
-	t.Run("StaticSiteDetailToArtifactUsingStaticSiteDetails", testStaticSiteDetailToOneRemoveOpArtifactUsingArtifact)
+	t.Run("WebsiteToBuildLogUsingBuildWebsites", testWebsiteToOneRemoveOpBuildLogUsingBuild)
 }
 
 // TestOneToOneSet tests cannot be run in parallel
 // or deadlocks can occur.
 func TestOneToOneSet(t *testing.T) {
-	t.Run("SiteToDynamicSiteDetailUsingDynamicSiteDetail", testSiteOneToOneSetOpDynamicSiteDetailUsingDynamicSiteDetail)
-	t.Run("SiteToStaticSiteDetailUsingStaticSiteDetail", testSiteOneToOneSetOpStaticSiteDetailUsingStaticSiteDetail)
+	t.Run("ApplicationToWebsiteUsingWebsite", testApplicationOneToOneSetOpWebsiteUsingWebsite)
+	t.Run("BuildLogToArtifactUsingArtifact", testBuildLogOneToOneSetOpArtifactUsingArtifact)
 }
 
 // TestOneToOneRemove tests cannot be run in parallel
@@ -201,9 +169,7 @@ func TestOneToOneRemove(t *testing.T) {}
 // or deadlocks can occur.
 func TestToManyAdd(t *testing.T) {
 	t.Run("ApplicationToBuildLogs", testApplicationToManyAddOpBuildLogs)
-	t.Run("ApplicationToSites", testApplicationToManyAddOpSites)
-	t.Run("ArtifactToStaticSiteDetails", testArtifactToManyAddOpStaticSiteDetails)
-	t.Run("BuildLogToArtifacts", testBuildLogToManyAddOpArtifacts)
+	t.Run("BuildLogToBuildWebsites", testBuildLogToManyAddOpBuildWebsites)
 	t.Run("RepositoryToApplications", testRepositoryToManyAddOpApplications)
 }
 
@@ -211,62 +177,52 @@ func TestToManyAdd(t *testing.T) {
 // or deadlocks can occur.
 func TestToManySet(t *testing.T) {
 	t.Run("ApplicationToBuildLogs", testApplicationToManySetOpBuildLogs)
-	t.Run("ArtifactToStaticSiteDetails", testArtifactToManySetOpStaticSiteDetails)
+	t.Run("BuildLogToBuildWebsites", testBuildLogToManySetOpBuildWebsites)
 }
 
 // TestToManyRemove tests cannot be run in parallel
 // or deadlocks can occur.
 func TestToManyRemove(t *testing.T) {
 	t.Run("ApplicationToBuildLogs", testApplicationToManyRemoveOpBuildLogs)
-	t.Run("ArtifactToStaticSiteDetails", testArtifactToManyRemoveOpStaticSiteDetails)
+	t.Run("BuildLogToBuildWebsites", testBuildLogToManyRemoveOpBuildWebsites)
 }
 
 func TestReload(t *testing.T) {
 	t.Run("Applications", testApplicationsReload)
 	t.Run("Artifacts", testArtifactsReload)
 	t.Run("BuildLogs", testBuildLogsReload)
-	t.Run("DynamicSiteDetails", testDynamicSiteDetailsReload)
 	t.Run("Repositories", testRepositoriesReload)
-	t.Run("Sites", testSitesReload)
-	t.Run("StaticSiteDetails", testStaticSiteDetailsReload)
+	t.Run("Websites", testWebsitesReload)
 }
 
 func TestReloadAll(t *testing.T) {
 	t.Run("Applications", testApplicationsReloadAll)
 	t.Run("Artifacts", testArtifactsReloadAll)
 	t.Run("BuildLogs", testBuildLogsReloadAll)
-	t.Run("DynamicSiteDetails", testDynamicSiteDetailsReloadAll)
 	t.Run("Repositories", testRepositoriesReloadAll)
-	t.Run("Sites", testSitesReloadAll)
-	t.Run("StaticSiteDetails", testStaticSiteDetailsReloadAll)
+	t.Run("Websites", testWebsitesReloadAll)
 }
 
 func TestSelect(t *testing.T) {
 	t.Run("Applications", testApplicationsSelect)
 	t.Run("Artifacts", testArtifactsSelect)
 	t.Run("BuildLogs", testBuildLogsSelect)
-	t.Run("DynamicSiteDetails", testDynamicSiteDetailsSelect)
 	t.Run("Repositories", testRepositoriesSelect)
-	t.Run("Sites", testSitesSelect)
-	t.Run("StaticSiteDetails", testStaticSiteDetailsSelect)
+	t.Run("Websites", testWebsitesSelect)
 }
 
 func TestUpdate(t *testing.T) {
 	t.Run("Applications", testApplicationsUpdate)
 	t.Run("Artifacts", testArtifactsUpdate)
 	t.Run("BuildLogs", testBuildLogsUpdate)
-	t.Run("DynamicSiteDetails", testDynamicSiteDetailsUpdate)
 	t.Run("Repositories", testRepositoriesUpdate)
-	t.Run("Sites", testSitesUpdate)
-	t.Run("StaticSiteDetails", testStaticSiteDetailsUpdate)
+	t.Run("Websites", testWebsitesUpdate)
 }
 
 func TestSliceUpdateAll(t *testing.T) {
 	t.Run("Applications", testApplicationsSliceUpdateAll)
 	t.Run("Artifacts", testArtifactsSliceUpdateAll)
 	t.Run("BuildLogs", testBuildLogsSliceUpdateAll)
-	t.Run("DynamicSiteDetails", testDynamicSiteDetailsSliceUpdateAll)
 	t.Run("Repositories", testRepositoriesSliceUpdateAll)
-	t.Run("Sites", testSitesSliceUpdateAll)
-	t.Run("StaticSiteDetails", testStaticSiteDetailsSliceUpdateAll)
+	t.Run("Websites", testWebsitesSliceUpdateAll)
 }

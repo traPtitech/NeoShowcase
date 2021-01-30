@@ -89,17 +89,20 @@ var BuildLogWhere = struct {
 
 // BuildLogRels is where relationship names are stored.
 var BuildLogRels = struct {
-	Application string
-	Artifacts   string
+	Application   string
+	Artifact      string
+	BuildWebsites string
 }{
-	Application: "Application",
-	Artifacts:   "Artifacts",
+	Application:   "Application",
+	Artifact:      "Artifact",
+	BuildWebsites: "BuildWebsites",
 }
 
 // buildLogR is where relationships are stored.
 type buildLogR struct {
-	Application *Application  `boil:"Application" json:"Application" toml:"Application" yaml:"Application"`
-	Artifacts   ArtifactSlice `boil:"Artifacts" json:"Artifacts" toml:"Artifacts" yaml:"Artifacts"`
+	Application   *Application `boil:"Application" json:"Application" toml:"Application" yaml:"Application"`
+	Artifact      *Artifact    `boil:"Artifact" json:"Artifact" toml:"Artifact" yaml:"Artifact"`
+	BuildWebsites WebsiteSlice `boil:"BuildWebsites" json:"BuildWebsites" toml:"BuildWebsites" yaml:"BuildWebsites"`
 }
 
 // NewStruct creates a new relationship struct
@@ -406,22 +409,36 @@ func (o *BuildLog) Application(mods ...qm.QueryMod) applicationQuery {
 	return query
 }
 
-// Artifacts retrieves all the artifact's Artifacts with an executor.
-func (o *BuildLog) Artifacts(mods ...qm.QueryMod) artifactQuery {
+// Artifact pointed to by the foreign key.
+func (o *BuildLog) Artifact(mods ...qm.QueryMod) artifactQuery {
+	queryMods := []qm.QueryMod{
+		qm.Where("`build_log_id` = ?", o.ID),
+	}
+
+	queryMods = append(queryMods, mods...)
+
+	query := Artifacts(queryMods...)
+	queries.SetFrom(query.Query, "`artifacts`")
+
+	return query
+}
+
+// BuildWebsites retrieves all the website's Websites with an executor via build_id column.
+func (o *BuildLog) BuildWebsites(mods ...qm.QueryMod) websiteQuery {
 	var queryMods []qm.QueryMod
 	if len(mods) != 0 {
 		queryMods = append(queryMods, mods...)
 	}
 
 	queryMods = append(queryMods,
-		qm.Where("`artifacts`.`build_log_id`=?", o.ID),
+		qm.Where("`websites`.`build_id`=?", o.ID),
 	)
 
-	query := Artifacts(queryMods...)
-	queries.SetFrom(query.Query, "`artifacts`")
+	query := Websites(queryMods...)
+	queries.SetFrom(query.Query, "`websites`")
 
 	if len(queries.GetSelect(query.Query)) == 0 {
-		queries.SetSelect(query.Query, []string{"`artifacts`.*"})
+		queries.SetSelect(query.Query, []string{"`websites`.*"})
 	}
 
 	return query
@@ -535,9 +552,9 @@ func (buildLogL) LoadApplication(ctx context.Context, e boil.ContextExecutor, si
 	return nil
 }
 
-// LoadArtifacts allows an eager lookup of values, cached into the
-// loaded structs of the objects. This is for a 1-M or N-M relationship.
-func (buildLogL) LoadArtifacts(ctx context.Context, e boil.ContextExecutor, singular bool, maybeBuildLog interface{}, mods queries.Applicator) error {
+// LoadArtifact allows an eager lookup of values, cached into the
+// loaded structs of the objects. This is for a 1-1 relationship.
+func (buildLogL) LoadArtifact(ctx context.Context, e boil.ContextExecutor, singular bool, maybeBuildLog interface{}, mods queries.Applicator) error {
 	var slice []*BuildLog
 	var object *BuildLog
 
@@ -584,22 +601,123 @@ func (buildLogL) LoadArtifacts(ctx context.Context, e boil.ContextExecutor, sing
 
 	results, err := query.QueryContext(ctx, e)
 	if err != nil {
-		return errors.Wrap(err, "failed to eager load artifacts")
+		return errors.Wrap(err, "failed to eager load Artifact")
 	}
 
 	var resultSlice []*Artifact
 	if err = queries.Bind(results, &resultSlice); err != nil {
-		return errors.Wrap(err, "failed to bind eager loaded slice artifacts")
+		return errors.Wrap(err, "failed to bind eager loaded slice Artifact")
 	}
 
 	if err = results.Close(); err != nil {
-		return errors.Wrap(err, "failed to close results in eager load on artifacts")
+		return errors.Wrap(err, "failed to close results of eager load for artifacts")
 	}
 	if err = results.Err(); err != nil {
 		return errors.Wrap(err, "error occurred during iteration of eager loaded relations for artifacts")
 	}
 
-	if len(artifactAfterSelectHooks) != 0 {
+	if len(buildLogAfterSelectHooks) != 0 {
+		for _, obj := range resultSlice {
+			if err := obj.doAfterSelectHooks(ctx, e); err != nil {
+				return err
+			}
+		}
+	}
+
+	if len(resultSlice) == 0 {
+		return nil
+	}
+
+	if singular {
+		foreign := resultSlice[0]
+		object.R.Artifact = foreign
+		if foreign.R == nil {
+			foreign.R = &artifactR{}
+		}
+		foreign.R.BuildLog = object
+	}
+
+	for _, local := range slice {
+		for _, foreign := range resultSlice {
+			if local.ID == foreign.BuildLogID {
+				local.R.Artifact = foreign
+				if foreign.R == nil {
+					foreign.R = &artifactR{}
+				}
+				foreign.R.BuildLog = local
+				break
+			}
+		}
+	}
+
+	return nil
+}
+
+// LoadBuildWebsites allows an eager lookup of values, cached into the
+// loaded structs of the objects. This is for a 1-M or N-M relationship.
+func (buildLogL) LoadBuildWebsites(ctx context.Context, e boil.ContextExecutor, singular bool, maybeBuildLog interface{}, mods queries.Applicator) error {
+	var slice []*BuildLog
+	var object *BuildLog
+
+	if singular {
+		object = maybeBuildLog.(*BuildLog)
+	} else {
+		slice = *maybeBuildLog.(*[]*BuildLog)
+	}
+
+	args := make([]interface{}, 0, 1)
+	if singular {
+		if object.R == nil {
+			object.R = &buildLogR{}
+		}
+		args = append(args, object.ID)
+	} else {
+	Outer:
+		for _, obj := range slice {
+			if obj.R == nil {
+				obj.R = &buildLogR{}
+			}
+
+			for _, a := range args {
+				if queries.Equal(a, obj.ID) {
+					continue Outer
+				}
+			}
+
+			args = append(args, obj.ID)
+		}
+	}
+
+	if len(args) == 0 {
+		return nil
+	}
+
+	query := NewQuery(
+		qm.From(`websites`),
+		qm.WhereIn(`websites.build_id in ?`, args...),
+	)
+	if mods != nil {
+		mods.Apply(query)
+	}
+
+	results, err := query.QueryContext(ctx, e)
+	if err != nil {
+		return errors.Wrap(err, "failed to eager load websites")
+	}
+
+	var resultSlice []*Website
+	if err = queries.Bind(results, &resultSlice); err != nil {
+		return errors.Wrap(err, "failed to bind eager loaded slice websites")
+	}
+
+	if err = results.Close(); err != nil {
+		return errors.Wrap(err, "failed to close results in eager load on websites")
+	}
+	if err = results.Err(); err != nil {
+		return errors.Wrap(err, "error occurred during iteration of eager loaded relations for websites")
+	}
+
+	if len(websiteAfterSelectHooks) != 0 {
 		for _, obj := range resultSlice {
 			if err := obj.doAfterSelectHooks(ctx, e); err != nil {
 				return err
@@ -607,24 +725,24 @@ func (buildLogL) LoadArtifacts(ctx context.Context, e boil.ContextExecutor, sing
 		}
 	}
 	if singular {
-		object.R.Artifacts = resultSlice
+		object.R.BuildWebsites = resultSlice
 		for _, foreign := range resultSlice {
 			if foreign.R == nil {
-				foreign.R = &artifactR{}
+				foreign.R = &websiteR{}
 			}
-			foreign.R.BuildLog = object
+			foreign.R.Build = object
 		}
 		return nil
 	}
 
 	for _, foreign := range resultSlice {
 		for _, local := range slice {
-			if local.ID == foreign.BuildLogID {
-				local.R.Artifacts = append(local.R.Artifacts, foreign)
+			if queries.Equal(local.ID, foreign.BuildID) {
+				local.R.BuildWebsites = append(local.R.BuildWebsites, foreign)
 				if foreign.R == nil {
-					foreign.R = &artifactR{}
+					foreign.R = &websiteR{}
 				}
-				foreign.R.BuildLog = local
+				foreign.R.Build = local
 				break
 			}
 		}
@@ -713,23 +831,74 @@ func (o *BuildLog) RemoveApplication(ctx context.Context, exec boil.ContextExecu
 	return nil
 }
 
-// AddArtifacts adds the given related objects to the existing relationships
+// SetArtifact of the buildLog to the related item.
+// Sets o.R.Artifact to related.
+// Adds o to related.R.BuildLog.
+func (o *BuildLog) SetArtifact(ctx context.Context, exec boil.ContextExecutor, insert bool, related *Artifact) error {
+	var err error
+
+	if insert {
+		related.BuildLogID = o.ID
+
+		if err = related.Insert(ctx, exec, boil.Infer()); err != nil {
+			return errors.Wrap(err, "failed to insert into foreign table")
+		}
+	} else {
+		updateQuery := fmt.Sprintf(
+			"UPDATE `artifacts` SET %s WHERE %s",
+			strmangle.SetParamNames("`", "`", 0, []string{"build_log_id"}),
+			strmangle.WhereClause("`", "`", 0, artifactPrimaryKeyColumns),
+		)
+		values := []interface{}{o.ID, related.ID}
+
+		if boil.IsDebug(ctx) {
+			writer := boil.DebugWriterFrom(ctx)
+			fmt.Fprintln(writer, updateQuery)
+			fmt.Fprintln(writer, values)
+		}
+		if _, err = exec.ExecContext(ctx, updateQuery, values...); err != nil {
+			return errors.Wrap(err, "failed to update foreign table")
+		}
+
+		related.BuildLogID = o.ID
+
+	}
+
+	if o.R == nil {
+		o.R = &buildLogR{
+			Artifact: related,
+		}
+	} else {
+		o.R.Artifact = related
+	}
+
+	if related.R == nil {
+		related.R = &artifactR{
+			BuildLog: o,
+		}
+	} else {
+		related.R.BuildLog = o
+	}
+	return nil
+}
+
+// AddBuildWebsites adds the given related objects to the existing relationships
 // of the build_log, optionally inserting them as new records.
-// Appends related to o.R.Artifacts.
-// Sets related.R.BuildLog appropriately.
-func (o *BuildLog) AddArtifacts(ctx context.Context, exec boil.ContextExecutor, insert bool, related ...*Artifact) error {
+// Appends related to o.R.BuildWebsites.
+// Sets related.R.Build appropriately.
+func (o *BuildLog) AddBuildWebsites(ctx context.Context, exec boil.ContextExecutor, insert bool, related ...*Website) error {
 	var err error
 	for _, rel := range related {
 		if insert {
-			rel.BuildLogID = o.ID
+			queries.Assign(&rel.BuildID, o.ID)
 			if err = rel.Insert(ctx, exec, boil.Infer()); err != nil {
 				return errors.Wrap(err, "failed to insert into foreign table")
 			}
 		} else {
 			updateQuery := fmt.Sprintf(
-				"UPDATE `artifacts` SET %s WHERE %s",
-				strmangle.SetParamNames("`", "`", 0, []string{"build_log_id"}),
-				strmangle.WhereClause("`", "`", 0, artifactPrimaryKeyColumns),
+				"UPDATE `websites` SET %s WHERE %s",
+				strmangle.SetParamNames("`", "`", 0, []string{"build_id"}),
+				strmangle.WhereClause("`", "`", 0, websitePrimaryKeyColumns),
 			)
 			values := []interface{}{o.ID, rel.ID}
 
@@ -742,27 +911,97 @@ func (o *BuildLog) AddArtifacts(ctx context.Context, exec boil.ContextExecutor, 
 				return errors.Wrap(err, "failed to update foreign table")
 			}
 
-			rel.BuildLogID = o.ID
+			queries.Assign(&rel.BuildID, o.ID)
 		}
 	}
 
 	if o.R == nil {
 		o.R = &buildLogR{
-			Artifacts: related,
+			BuildWebsites: related,
 		}
 	} else {
-		o.R.Artifacts = append(o.R.Artifacts, related...)
+		o.R.BuildWebsites = append(o.R.BuildWebsites, related...)
 	}
 
 	for _, rel := range related {
 		if rel.R == nil {
-			rel.R = &artifactR{
-				BuildLog: o,
+			rel.R = &websiteR{
+				Build: o,
 			}
 		} else {
-			rel.R.BuildLog = o
+			rel.R.Build = o
 		}
 	}
+	return nil
+}
+
+// SetBuildWebsites removes all previously related items of the
+// build_log replacing them completely with the passed
+// in related items, optionally inserting them as new records.
+// Sets o.R.Build's BuildWebsites accordingly.
+// Replaces o.R.BuildWebsites with related.
+// Sets related.R.Build's BuildWebsites accordingly.
+func (o *BuildLog) SetBuildWebsites(ctx context.Context, exec boil.ContextExecutor, insert bool, related ...*Website) error {
+	query := "update `websites` set `build_id` = null where `build_id` = ?"
+	values := []interface{}{o.ID}
+	if boil.IsDebug(ctx) {
+		writer := boil.DebugWriterFrom(ctx)
+		fmt.Fprintln(writer, query)
+		fmt.Fprintln(writer, values)
+	}
+	_, err := exec.ExecContext(ctx, query, values...)
+	if err != nil {
+		return errors.Wrap(err, "failed to remove relationships before set")
+	}
+
+	if o.R != nil {
+		for _, rel := range o.R.BuildWebsites {
+			queries.SetScanner(&rel.BuildID, nil)
+			if rel.R == nil {
+				continue
+			}
+
+			rel.R.Build = nil
+		}
+
+		o.R.BuildWebsites = nil
+	}
+	return o.AddBuildWebsites(ctx, exec, insert, related...)
+}
+
+// RemoveBuildWebsites relationships from objects passed in.
+// Removes related items from R.BuildWebsites (uses pointer comparison, removal does not keep order)
+// Sets related.R.Build.
+func (o *BuildLog) RemoveBuildWebsites(ctx context.Context, exec boil.ContextExecutor, related ...*Website) error {
+	var err error
+	for _, rel := range related {
+		queries.SetScanner(&rel.BuildID, nil)
+		if rel.R != nil {
+			rel.R.Build = nil
+		}
+		if _, err = rel.Update(ctx, exec, boil.Whitelist("build_id")); err != nil {
+			return err
+		}
+	}
+	if o.R == nil {
+		return nil
+	}
+
+	for _, rel := range related {
+		for i, ri := range o.R.BuildWebsites {
+			if rel != ri {
+				continue
+			}
+
+			ln := len(o.R.BuildWebsites)
+			if ln > 1 && i < ln-1 {
+				o.R.BuildWebsites[i] = o.R.BuildWebsites[ln-1]
+			}
+			o.R.BuildWebsites = o.R.BuildWebsites[:ln-1]
+			break
+		}
+	}
+
 	return nil
 }
 

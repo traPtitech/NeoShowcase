@@ -64,9 +64,3 @@ const (
 	BuildLogsResultFAILED    = "FAILED"
 	BuildLogsResultCANCELED  = "CANCELED"
 )
-
-// Enum values for sites.type
-const (
-	SitesTypeStatic  = "static"
-	SitesTypeDynamic = "dynamic"
-)
