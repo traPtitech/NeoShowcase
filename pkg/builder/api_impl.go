@@ -3,6 +3,7 @@ package builder
 import (
 	"context"
 	"github.com/traPtitech/neoshowcase/pkg/builder/api"
+	"github.com/traPtitech/neoshowcase/pkg/event"
 	"github.com/traPtitech/neoshowcase/pkg/idgen"
 	"github.com/traPtitech/neoshowcase/pkg/models"
 	"github.com/volatiletech/null/v8"
@@ -36,13 +37,13 @@ func (s *Service) ConnectEventStream(_ *emptypb.Empty, stream api.BuilderService
 			return nil
 		case ev := <-sub.Receiver:
 			switch ev.Name {
-			case IEventBuildStarted:
+			case event.BuilderBuildStarted:
 
-			case IEventBuildSucceeded:
+			case event.BuilderBuildFailed:
 
-			case IEventBuildFailed:
+			case event.BuilderBuildSucceeded:
 
-			case IEventBuildCanceled:
+			case event.BuilderBuildCanceled:
 
 			}
 		}

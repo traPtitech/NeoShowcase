@@ -10,6 +10,7 @@ import (
 	"github.com/moby/buildkit/session/auth/authprovider"
 	"github.com/moby/buildkit/util/progress/progressui"
 	"github.com/traPtitech/neoshowcase/pkg/builder/api"
+	"github.com/traPtitech/neoshowcase/pkg/event"
 	"golang.org/x/sync/errgroup"
 	"io"
 	"io/ioutil"
@@ -100,7 +101,7 @@ func (t *Task) startAsync(ctx context.Context, s *Service) error {
 	t.ctx, t.cancelFunc = context.WithCancel(context.Background())
 	go s.processTask(t)
 	s.bus.Publish(hub.Message{
-		Name: IEventBuildStarted,
+		Name: event.BuilderBuildStarted,
 		Fields: hub.Fields{
 			"task": t,
 		},
@@ -148,21 +149,21 @@ func (t *Task) postProcess(s *Service, result string) error {
 	switch result {
 	case models.BuildLogsResultFAILED:
 		s.bus.Publish(hub.Message{
-			Name: IEventBuildFailed,
+			Name: event.BuilderBuildFailed,
 			Fields: hub.Fields{
 				"task": t,
 			},
 		})
 	case models.BuildLogsResultCANCELED:
 		s.bus.Publish(hub.Message{
-			Name: IEventBuildCanceled,
+			Name: event.BuilderBuildCanceled,
 			Fields: hub.Fields{
 				"task": t,
 			},
 		})
 	case models.BuildLogsResultSUCCEEDED:
 		s.bus.Publish(hub.Message{
-			Name: IEventBuildSucceeded,
+			Name: event.BuilderBuildSucceeded,
 			Fields: hub.Fields{
 				"task": t,
 			},
