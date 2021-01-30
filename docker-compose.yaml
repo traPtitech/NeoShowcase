@@ -26,8 +26,6 @@ services:
       - "traefik.http.services.ns_admin.loadbalancer.server.port=8080"
     depends_on:
       - mysql
-      - ns-builder
-      - ns-ssgen
     networks:
       - default
 

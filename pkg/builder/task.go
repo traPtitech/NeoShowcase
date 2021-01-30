@@ -194,7 +194,7 @@ func (t *Task) buildImage(s *Service) error {
 			exportAttrs["push"] = "true"
 		}
 
-		if len(t.BuildOptions.BaseImageName) == 0 {
+		if t.BuildOptions == nil || len(t.BuildOptions.BaseImageName) == 0 {
 			// リポジトリルートのDockerfileを使用
 			// entrypoint, startupコマンドは無視
 			_, err = s.buildkit.Solve(ctx, nil, client.SolveOpt{
@@ -265,7 +265,7 @@ func (t *Task) buildStatic(s *Service) error {
 	ch := make(chan *client.SolveStatus)
 	eg, ctx := errgroup.WithContext(t.ctx)
 	eg.Go(func() (err error) {
-		if len(t.BuildOptions.BaseImageName) == 0 {
+		if t.BuildOptions == nil || len(t.BuildOptions.BaseImageName) == 0 {
 			// リポジトリルートのDockerfileを使用
 			// entrypoint, startupコマンドは無視
 			// TODO

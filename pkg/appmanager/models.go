@@ -1,5 +1,7 @@
 package appmanager
 
+import "context"
+
 // App アプリモデル
 type App interface {
 	// GetID アプリIDを返します
@@ -9,6 +11,7 @@ type App interface {
 
 	// Start アプリを起動します
 	Start(args AppStartArgs) error
+	RequestBuild(ctx context.Context) error
 }
 
 type AppStartArgs struct {

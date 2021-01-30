@@ -93,8 +93,8 @@ func (app *appImpl) Start(args AppStartArgs) error {
 	return nil
 }
 
-// requestBuild builderにappのビルドをリクエストする
-func (app *appImpl) requestBuild(ctx context.Context) error {
+// RequestBuild builderにappのビルドをリクエストする
+func (app *appImpl) RequestBuild(ctx context.Context) error {
 	switch app.dbmodel.BuildType {
 	case models.ApplicationsBuildTypeImage:
 		_, err := app.m.builder.StartBuildImage(ctx, &builderApi.StartBuildImageRequest{
@@ -102,7 +102,7 @@ func (app *appImpl) requestBuild(ctx context.Context) error {
 			Source: &builderApi.BuildSource{
 				RepositoryUrl: app.dbmodel.R.Repository.Remote, // TODO ブランチ・タグ指定に対応
 			},
-			Options:       nil, // TODO 汎用ベースイメージビルドに対応させる
+			Options:       &builderApi.BuildOptions{}, // TODO 汎用ベースイメージビルドに対応させる
 			ApplicationId: app.GetID(),
 		})
 		if err != nil {
