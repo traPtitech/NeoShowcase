@@ -24,14 +24,14 @@ import (
 
 // Application is an object representing the database table.
 type Application struct {
-	ID           string      `boil:"id" json:"id" toml:"id" yaml:"id"`
-	Owner        string      `boil:"owner" json:"owner" toml:"owner" yaml:"owner"`
-	Name         string      `boil:"name" json:"name" toml:"name" yaml:"name"`
-	RepositoryID string      `boil:"repository_id" json:"repository_id" toml:"repository_id" yaml:"repository_id"`
-	CreatedAt    time.Time   `boil:"created_at" json:"created_at" toml:"created_at" yaml:"created_at"`
-	UpdatedAt    time.Time   `boil:"updated_at" json:"updated_at" toml:"updated_at" yaml:"updated_at"`
-	DeletedAt    null.Time   `boil:"deleted_at" json:"deleted_at,omitempty" toml:"deleted_at" yaml:"deleted_at,omitempty"`
-	BuildType    null.String `boil:"build_type" json:"build_type,omitempty" toml:"build_type" yaml:"build_type,omitempty"`
+	ID           string    `boil:"id" json:"id" toml:"id" yaml:"id"`
+	Owner        string    `boil:"owner" json:"owner" toml:"owner" yaml:"owner"`
+	Name         string    `boil:"name" json:"name" toml:"name" yaml:"name"`
+	RepositoryID string    `boil:"repository_id" json:"repository_id" toml:"repository_id" yaml:"repository_id"`
+	CreatedAt    time.Time `boil:"created_at" json:"created_at" toml:"created_at" yaml:"created_at"`
+	UpdatedAt    time.Time `boil:"updated_at" json:"updated_at" toml:"updated_at" yaml:"updated_at"`
+	DeletedAt    null.Time `boil:"deleted_at" json:"deleted_at,omitempty" toml:"deleted_at" yaml:"deleted_at,omitempty"`
+	BuildType    string    `boil:"build_type" json:"build_type" toml:"build_type" yaml:"build_type"`
 
 	R *applicationR `boil:"-" json:"-" toml:"-" yaml:"-"`
 	L applicationL  `boil:"-" json:"-" toml:"-" yaml:"-"`
@@ -126,29 +126,6 @@ func (w whereHelpernull_Time) GTE(x null.Time) qm.QueryMod {
 	return qmhelper.Where(w.field, qmhelper.GTE, x)
 }
 
-type whereHelpernull_String struct{ field string }
-
-func (w whereHelpernull_String) EQ(x null.String) qm.QueryMod {
-	return qmhelper.WhereNullEQ(w.field, false, x)
-}
-func (w whereHelpernull_String) NEQ(x null.String) qm.QueryMod {
-	return qmhelper.WhereNullEQ(w.field, true, x)
-}
-func (w whereHelpernull_String) IsNull() qm.QueryMod    { return qmhelper.WhereIsNull(w.field) }
-func (w whereHelpernull_String) IsNotNull() qm.QueryMod { return qmhelper.WhereIsNotNull(w.field) }
-func (w whereHelpernull_String) LT(x null.String) qm.QueryMod {
-	return qmhelper.Where(w.field, qmhelper.LT, x)
-}
-func (w whereHelpernull_String) LTE(x null.String) qm.QueryMod {
-	return qmhelper.Where(w.field, qmhelper.LTE, x)
-}
-func (w whereHelpernull_String) GT(x null.String) qm.QueryMod {
-	return qmhelper.Where(w.field, qmhelper.GT, x)
-}
-func (w whereHelpernull_String) GTE(x null.String) qm.QueryMod {
-	return qmhelper.Where(w.field, qmhelper.GTE, x)
-}
-
 var ApplicationWhere = struct {
 	ID           whereHelperstring
 	Owner        whereHelperstring
@@ -157,7 +134,7 @@ var ApplicationWhere = struct {
 	CreatedAt    whereHelpertime_Time
 	UpdatedAt    whereHelpertime_Time
 	DeletedAt    whereHelpernull_Time
-	BuildType    whereHelpernull_String
+	BuildType    whereHelperstring
 }{
 	ID:           whereHelperstring{field: "`applications`.`id`"},
 	Owner:        whereHelperstring{field: "`applications`.`owner`"},
@@ -166,7 +143,7 @@ var ApplicationWhere = struct {
 	CreatedAt:    whereHelpertime_Time{field: "`applications`.`created_at`"},
 	UpdatedAt:    whereHelpertime_Time{field: "`applications`.`updated_at`"},
 	DeletedAt:    whereHelpernull_Time{field: "`applications`.`deleted_at`"},
-	BuildType:    whereHelpernull_String{field: "`applications`.`build_type`"},
+	BuildType:    whereHelperstring{field: "`applications`.`build_type`"},
 }
 
 // ApplicationRels is where relationship names are stored.
