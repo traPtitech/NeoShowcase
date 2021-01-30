@@ -125,6 +125,10 @@ services:
       ENV_DOCKER_REGISTRY_HOST: registry
       ENV_DOCKER_REGISTRY_PORT: 5000
       ENV_DOCKER_REGISTRY_USE_SSL: 1
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.registry_frontend.rule=Host(`registry.local.wtks.work`)"
+      - "traefik.http.services.registry_frontend.loadbalancer.server.port=80"
     networks:
       - default
 
@@ -173,6 +177,10 @@ services:
       ADMINER_DESIGN: nette
     ports:
       - "5001:8080"
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.adminer.rule=Host(`adminer.local.wtks.work`)"
+      - "traefik.http.services.adminer.loadbalancer.server.port=8080"
     networks:
       - default
 
