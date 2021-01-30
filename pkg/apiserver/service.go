@@ -71,13 +71,15 @@ func New(c Config) (*Service, error) {
 		s.containerManager = connM
 
 		// appmanger生成
-		am, err := appmanager.NewManager(
-			db,
-			s.bus,
-			builderApi.NewBuilderServiceClient(builderConn),
-			ssgenApi.NewStaticSiteGenServiceClient(ssgenConn),
-			connM,
-		)
+		am, err := appmanager.NewManager(appmanager.Config{
+			DB:              db,
+			Hub:             s.bus,
+			Builder:         builderApi.NewBuilderServiceClient(builderConn),
+			SSGen:           ssgenApi.NewStaticSiteGenServiceClient(ssgenConn),
+			CM:              connM,
+			ImageRegistry:   c.Image.Registry,
+			ImageNamePrefix: c.Image.NamePrefix,
+		})
 		if err != nil {
 			return nil, fmt.Errorf("failed to init app manager: %w", err)
 		}
@@ -117,13 +119,15 @@ func New(c Config) (*Service, error) {
 		s.containerManager = connM
 
 		// appmanger生成
-		am, err := appmanager.NewManager(
-			db,
-			s.bus,
-			builderApi.NewBuilderServiceClient(builderConn),
-			ssgenApi.NewStaticSiteGenServiceClient(ssgenConn),
-			connM,
-		)
+		am, err := appmanager.NewManager(appmanager.Config{
+			DB:              db,
+			Hub:             s.bus,
+			Builder:         builderApi.NewBuilderServiceClient(builderConn),
+			SSGen:           ssgenApi.NewStaticSiteGenServiceClient(ssgenConn),
+			CM:              connM,
+			ImageRegistry:   c.Image.Registry,
+			ImageNamePrefix: c.Image.NamePrefix,
+		})
 		if err != nil {
 			return nil, fmt.Errorf("failed to init app manager: %w", err)
 		}

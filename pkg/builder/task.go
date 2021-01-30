@@ -10,6 +10,7 @@ import (
 	"github.com/moby/buildkit/session/auth/authprovider"
 	"github.com/moby/buildkit/util/progress/progressui"
 	"github.com/traPtitech/neoshowcase/pkg/builder/api"
+	"github.com/traPtitech/neoshowcase/pkg/event"
 	"golang.org/x/sync/errgroup"
 	"io"
 	"io/ioutil"
@@ -100,7 +101,7 @@ func (t *Task) startAsync(ctx context.Context, s *Service) error {
 	t.ctx, t.cancelFunc = context.WithCancel(context.Background())
 	go s.processTask(t)
 	s.bus.Publish(hub.Message{
-		Name: IEventBuildStarted,
+		Name: event.BuilderBuildStarted,
 		Fields: hub.Fields{
 			"task": t,
 		},
@@ -148,21 +149,21 @@ func (t *Task) postProcess(s *Service, result string) error {
 	switch result {
 	case models.BuildLogsResultFAILED:
 		s.bus.Publish(hub.Message{
-			Name: IEventBuildFailed,
+			Name: event.BuilderBuildFailed,
 			Fields: hub.Fields{
 				"task": t,
 			},
 		})
 	case models.BuildLogsResultCANCELED:
 		s.bus.Publish(hub.Message{
-			Name: IEventBuildCanceled,
+			Name: event.BuilderBuildCanceled,
 			Fields: hub.Fields{
 				"task": t,
 			},
 		})
 	case models.BuildLogsResultSUCCEEDED:
 		s.bus.Publish(hub.Message{
-			Name: IEventBuildSucceeded,
+			Name: event.BuilderBuildSucceeded,
 			Fields: hub.Fields{
 				"task": t,
 			},
@@ -189,11 +190,11 @@ func (t *Task) buildImage(s *Service) error {
 			// ImageNameの指定がない場合はビルドするだけで、イメージを保存しない
 			exportAttrs["name"] = "build-" + t.BuildID
 		} else {
-			exportAttrs["name"] = s.config.Buildkit.Registry + "/" + t.ImageName
+			exportAttrs["name"] = s.config.Buildkit.Registry + "/" + t.ImageName + ":" + t.BuildID
 			exportAttrs["push"] = "true"
 		}
 
-		if len(t.BuildOptions.BaseImageName) == 0 {
+		if t.BuildOptions == nil || len(t.BuildOptions.BaseImageName) == 0 {
 			// リポジトリルートのDockerfileを使用
 			// entrypoint, startupコマンドは無視
 			_, err = s.buildkit.Solve(ctx, nil, client.SolveOpt{
@@ -264,7 +265,7 @@ func (t *Task) buildStatic(s *Service) error {
 	ch := make(chan *client.SolveStatus)
 	eg, ctx := errgroup.WithContext(t.ctx)
 	eg.Go(func() (err error) {
-		if len(t.BuildOptions.BaseImageName) == 0 {
+		if t.BuildOptions == nil || len(t.BuildOptions.BaseImageName) == 0 {
 			// リポジトリルートのDockerfileを使用
 			// entrypoint, startupコマンドは無視
 			// TODO

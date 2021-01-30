@@ -51,16 +51,16 @@ func makeCacheKey(cols boil.Columns, nzDefaults []string) string {
 	return str
 }
 
+// Enum values for applications.build_type
+const (
+	ApplicationsBuildTypeImage  = "image"
+	ApplicationsBuildTypeStatic = "static"
+)
+
 // Enum values for build_logs.result
 const (
 	BuildLogsResultBUILDING  = "BUILDING"
 	BuildLogsResultSUCCEEDED = "SUCCEEDED"
 	BuildLogsResultFAILED    = "FAILED"
 	BuildLogsResultCANCELED  = "CANCELED"
-)
-
-// Enum values for sites.type
-const (
-	SitesTypeStatic  = "static"
-	SitesTypeDynamic = "dynamic"
 )

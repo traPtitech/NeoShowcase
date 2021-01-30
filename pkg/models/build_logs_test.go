@@ -494,14 +494,127 @@ func testBuildLogsInsertWhitelist(t *testing.T) {
 	}
 }
 
-func testBuildLogToManyArtifacts(t *testing.T) {
+func testBuildLogOneToOneArtifactUsingArtifact(t *testing.T) {
+	ctx := context.Background()
+	tx := MustTx(boil.BeginTx(ctx, nil))
+	defer func() { _ = tx.Rollback() }()
+
+	var foreign Artifact
+	var local BuildLog
+
+	seed := randomize.NewSeed()
+	if err := randomize.Struct(seed, &foreign, artifactDBTypes, true, artifactColumnsWithDefault...); err != nil {
+		t.Errorf("Unable to randomize Artifact struct: %s", err)
+	}
+	if err := randomize.Struct(seed, &local, buildLogDBTypes, true, buildLogColumnsWithDefault...); err != nil {
+		t.Errorf("Unable to randomize BuildLog struct: %s", err)
+	}
+
+	if err := local.Insert(ctx, tx, boil.Infer()); err != nil {
+		t.Fatal(err)
+	}
+
+	foreign.BuildLogID = local.ID
+	if err := foreign.Insert(ctx, tx, boil.Infer()); err != nil {
+		t.Fatal(err)
+	}
+
+	check, err := local.Artifact().One(ctx, tx)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if check.BuildLogID != foreign.BuildLogID {
+		t.Errorf("want: %v, got %v", foreign.BuildLogID, check.BuildLogID)
+	}
+
+	slice := BuildLogSlice{&local}
+	if err = local.L.LoadArtifact(ctx, tx, false, (*[]*BuildLog)(&slice), nil); err != nil {
+		t.Fatal(err)
+	}
+	if local.R.Artifact == nil {
+		t.Error("struct should have been eager loaded")
+	}
+
+	local.R.Artifact = nil
+	if err = local.L.LoadArtifact(ctx, tx, true, &local, nil); err != nil {
+		t.Fatal(err)
+	}
+	if local.R.Artifact == nil {
+		t.Error("struct should have been eager loaded")
+	}
+}
+
+func testBuildLogOneToOneSetOpArtifactUsingArtifact(t *testing.T) {
 	var err error
+
 	ctx := context.Background()
 	tx := MustTx(boil.BeginTx(ctx, nil))
 	defer func() { _ = tx.Rollback() }()
 
 	var a BuildLog
 	var b, c Artifact
+
+	seed := randomize.NewSeed()
+	if err = randomize.Struct(seed, &a, buildLogDBTypes, false, strmangle.SetComplement(buildLogPrimaryKeyColumns, buildLogColumnsWithoutDefault)...); err != nil {
+		t.Fatal(err)
+	}
+	if err = randomize.Struct(seed, &b, artifactDBTypes, false, strmangle.SetComplement(artifactPrimaryKeyColumns, artifactColumnsWithoutDefault)...); err != nil {
+		t.Fatal(err)
+	}
+	if err = randomize.Struct(seed, &c, artifactDBTypes, false, strmangle.SetComplement(artifactPrimaryKeyColumns, artifactColumnsWithoutDefault)...); err != nil {
+		t.Fatal(err)
+	}
+
+	if err := a.Insert(ctx, tx, boil.Infer()); err != nil {
+		t.Fatal(err)
+	}
+	if err = b.Insert(ctx, tx, boil.Infer()); err != nil {
+		t.Fatal(err)
+	}
+
+	for i, x := range []*Artifact{&b, &c} {
+		err = a.SetArtifact(ctx, tx, i != 0, x)
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		if a.R.Artifact != x {
+			t.Error("relationship struct not set to correct value")
+		}
+		if x.R.BuildLog != &a {
+			t.Error("failed to append to foreign relationship struct")
+		}
+
+		if a.ID != x.BuildLogID {
+			t.Error("foreign key was wrong value", a.ID)
+		}
+
+		zero := reflect.Zero(reflect.TypeOf(x.BuildLogID))
+		reflect.Indirect(reflect.ValueOf(&x.BuildLogID)).Set(zero)
+
+		if err = x.Reload(ctx, tx); err != nil {
+			t.Fatal("failed to reload", err)
+		}
+
+		if a.ID != x.BuildLogID {
+			t.Error("foreign key was wrong value", a.ID, x.BuildLogID)
+		}
+
+		if _, err = x.Delete(ctx, tx); err != nil {
+			t.Fatal("failed to delete x", err)
+		}
+	}
+}
+
+func testBuildLogToManyBuildWebsites(t *testing.T) {
+	var err error
+	ctx := context.Background()
+	tx := MustTx(boil.BeginTx(ctx, nil))
+	defer func() { _ = tx.Rollback() }()
+
+	var a BuildLog
+	var b, c Website
 
 	seed := randomize.NewSeed()
 	if err = randomize.Struct(seed, &a, buildLogDBTypes, true, buildLogColumnsWithDefault...); err != nil {
@@ -512,16 +625,15 @@ func testBuildLogToManyArtifacts(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	if err = randomize.Struct(seed, &b, artifactDBTypes, false, artifactColumnsWithDefault...); err != nil {
+	if err = randomize.Struct(seed, &b, websiteDBTypes, false, websiteColumnsWithDefault...); err != nil {
 		t.Fatal(err)
 	}
-	if err = randomize.Struct(seed, &c, artifactDBTypes, false, artifactColumnsWithDefault...); err != nil {
+	if err = randomize.Struct(seed, &c, websiteDBTypes, false, websiteColumnsWithDefault...); err != nil {
 		t.Fatal(err)
 	}
 
-	b.BuildLogID = a.ID
-	c.BuildLogID = a.ID
-
+	queries.Assign(&b.BuildID, a.ID)
+	queries.Assign(&c.BuildID, a.ID)
 	if err = b.Insert(ctx, tx, boil.Infer()); err != nil {
 		t.Fatal(err)
 	}
@@ -529,17 +641,17 @@ func testBuildLogToManyArtifacts(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	check, err := a.Artifacts().All(ctx, tx)
+	check, err := a.BuildWebsites().All(ctx, tx)
 	if err != nil {
 		t.Fatal(err)
 	}
 
 	bFound, cFound := false, false
 	for _, v := range check {
-		if v.BuildLogID == b.BuildLogID {
+		if queries.Equal(v.BuildID, b.BuildID) {
 			bFound = true
 		}
-		if v.BuildLogID == c.BuildLogID {
+		if queries.Equal(v.BuildID, c.BuildID) {
 			cFound = true
 		}
 	}
@@ -552,18 +664,18 @@ func testBuildLogToManyArtifacts(t *testing.T) {
 	}
 
 	slice := BuildLogSlice{&a}
-	if err = a.L.LoadArtifacts(ctx, tx, false, (*[]*BuildLog)(&slice), nil); err != nil {
+	if err = a.L.LoadBuildWebsites(ctx, tx, false, (*[]*BuildLog)(&slice), nil); err != nil {
 		t.Fatal(err)
 	}
-	if got := len(a.R.Artifacts); got != 2 {
+	if got := len(a.R.BuildWebsites); got != 2 {
 		t.Error("number of eager loaded records wrong, got:", got)
 	}
 
-	a.R.Artifacts = nil
-	if err = a.L.LoadArtifacts(ctx, tx, true, &a, nil); err != nil {
+	a.R.BuildWebsites = nil
+	if err = a.L.LoadBuildWebsites(ctx, tx, true, &a, nil); err != nil {
 		t.Fatal(err)
 	}
-	if got := len(a.R.Artifacts); got != 2 {
+	if got := len(a.R.BuildWebsites); got != 2 {
 		t.Error("number of eager loaded records wrong, got:", got)
 	}
 
@@ -572,7 +684,7 @@ func testBuildLogToManyArtifacts(t *testing.T) {
 	}
 }
 
-func testBuildLogToManyAddOpArtifacts(t *testing.T) {
+func testBuildLogToManyAddOpBuildWebsites(t *testing.T) {
 	var err error
 
 	ctx := context.Background()
@@ -580,15 +692,15 @@ func testBuildLogToManyAddOpArtifacts(t *testing.T) {
 	defer func() { _ = tx.Rollback() }()
 
 	var a BuildLog
-	var b, c, d, e Artifact
+	var b, c, d, e Website
 
 	seed := randomize.NewSeed()
 	if err = randomize.Struct(seed, &a, buildLogDBTypes, false, strmangle.SetComplement(buildLogPrimaryKeyColumns, buildLogColumnsWithoutDefault)...); err != nil {
 		t.Fatal(err)
 	}
-	foreigners := []*Artifact{&b, &c, &d, &e}
+	foreigners := []*Website{&b, &c, &d, &e}
 	for _, x := range foreigners {
-		if err = randomize.Struct(seed, x, artifactDBTypes, false, strmangle.SetComplement(artifactPrimaryKeyColumns, artifactColumnsWithoutDefault)...); err != nil {
+		if err = randomize.Struct(seed, x, websiteDBTypes, false, strmangle.SetComplement(websitePrimaryKeyColumns, websiteColumnsWithoutDefault)...); err != nil {
 			t.Fatal(err)
 		}
 	}
@@ -603,13 +715,13 @@ func testBuildLogToManyAddOpArtifacts(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	foreignersSplitByInsertion := [][]*Artifact{
+	foreignersSplitByInsertion := [][]*Website{
 		{&b, &c},
 		{&d, &e},
 	}
 
 	for i, x := range foreignersSplitByInsertion {
-		err = a.AddArtifacts(ctx, tx, i != 0, x...)
+		err = a.AddBuildWebsites(ctx, tx, i != 0, x...)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -617,28 +729,28 @@ func testBuildLogToManyAddOpArtifacts(t *testing.T) {
 		first := x[0]
 		second := x[1]
 
-		if a.ID != first.BuildLogID {
-			t.Error("foreign key was wrong value", a.ID, first.BuildLogID)
+		if !queries.Equal(a.ID, first.BuildID) {
+			t.Error("foreign key was wrong value", a.ID, first.BuildID)
 		}
-		if a.ID != second.BuildLogID {
-			t.Error("foreign key was wrong value", a.ID, second.BuildLogID)
+		if !queries.Equal(a.ID, second.BuildID) {
+			t.Error("foreign key was wrong value", a.ID, second.BuildID)
 		}
 
-		if first.R.BuildLog != &a {
+		if first.R.Build != &a {
 			t.Error("relationship was not added properly to the foreign slice")
 		}
-		if second.R.BuildLog != &a {
+		if second.R.Build != &a {
 			t.Error("relationship was not added properly to the foreign slice")
 		}
 
-		if a.R.Artifacts[i*2] != first {
+		if a.R.BuildWebsites[i*2] != first {
 			t.Error("relationship struct slice not set to correct value")
 		}
-		if a.R.Artifacts[i*2+1] != second {
+		if a.R.BuildWebsites[i*2+1] != second {
 			t.Error("relationship struct slice not set to correct value")
 		}
 
-		count, err := a.Artifacts().Count(ctx, tx)
+		count, err := a.BuildWebsites().Count(ctx, tx)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -647,6 +759,182 @@ func testBuildLogToManyAddOpArtifacts(t *testing.T) {
 		}
 	}
 }
+
+func testBuildLogToManySetOpBuildWebsites(t *testing.T) {
+	var err error
+
+	ctx := context.Background()
+	tx := MustTx(boil.BeginTx(ctx, nil))
+	defer func() { _ = tx.Rollback() }()
+
+	var a BuildLog
+	var b, c, d, e Website
+
+	seed := randomize.NewSeed()
+	if err = randomize.Struct(seed, &a, buildLogDBTypes, false, strmangle.SetComplement(buildLogPrimaryKeyColumns, buildLogColumnsWithoutDefault)...); err != nil {
+		t.Fatal(err)
+	}
+	foreigners := []*Website{&b, &c, &d, &e}
+	for _, x := range foreigners {
+		if err = randomize.Struct(seed, x, websiteDBTypes, false, strmangle.SetComplement(websitePrimaryKeyColumns, websiteColumnsWithoutDefault)...); err != nil {
+			t.Fatal(err)
+		}
+	}
+
+	if err = a.Insert(ctx, tx, boil.Infer()); err != nil {
+		t.Fatal(err)
+	}
+	if err = b.Insert(ctx, tx, boil.Infer()); err != nil {
+		t.Fatal(err)
+	}
+	if err = c.Insert(ctx, tx, boil.Infer()); err != nil {
+		t.Fatal(err)
+	}
+
+	err = a.SetBuildWebsites(ctx, tx, false, &b, &c)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	count, err := a.BuildWebsites().Count(ctx, tx)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if count != 2 {
+		t.Error("count was wrong:", count)
+	}
+
+	err = a.SetBuildWebsites(ctx, tx, true, &d, &e)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	count, err = a.BuildWebsites().Count(ctx, tx)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if count != 2 {
+		t.Error("count was wrong:", count)
+	}
+
+	if !queries.IsValuerNil(b.BuildID) {
+		t.Error("want b's foreign key value to be nil")
+	}
+	if !queries.IsValuerNil(c.BuildID) {
+		t.Error("want c's foreign key value to be nil")
+	}
+	if !queries.Equal(a.ID, d.BuildID) {
+		t.Error("foreign key was wrong value", a.ID, d.BuildID)
+	}
+	if !queries.Equal(a.ID, e.BuildID) {
+		t.Error("foreign key was wrong value", a.ID, e.BuildID)
+	}
+
+	if b.R.Build != nil {
+		t.Error("relationship was not removed properly from the foreign struct")
+	}
+	if c.R.Build != nil {
+		t.Error("relationship was not removed properly from the foreign struct")
+	}
+	if d.R.Build != &a {
+		t.Error("relationship was not added properly to the foreign struct")
+	}
+	if e.R.Build != &a {
+		t.Error("relationship was not added properly to the foreign struct")
+	}
+
+	if a.R.BuildWebsites[0] != &d {
+		t.Error("relationship struct slice not set to correct value")
+	}
+	if a.R.BuildWebsites[1] != &e {
+		t.Error("relationship struct slice not set to correct value")
+	}
+}
+
+func testBuildLogToManyRemoveOpBuildWebsites(t *testing.T) {
+	var err error
+
+	ctx := context.Background()
+	tx := MustTx(boil.BeginTx(ctx, nil))
+	defer func() { _ = tx.Rollback() }()
+
+	var a BuildLog
+	var b, c, d, e Website
+
+	seed := randomize.NewSeed()
+	if err = randomize.Struct(seed, &a, buildLogDBTypes, false, strmangle.SetComplement(buildLogPrimaryKeyColumns, buildLogColumnsWithoutDefault)...); err != nil {
+		t.Fatal(err)
+	}
+	foreigners := []*Website{&b, &c, &d, &e}
+	for _, x := range foreigners {
+		if err = randomize.Struct(seed, x, websiteDBTypes, false, strmangle.SetComplement(websitePrimaryKeyColumns, websiteColumnsWithoutDefault)...); err != nil {
+			t.Fatal(err)
+		}
+	}
+
+	if err := a.Insert(ctx, tx, boil.Infer()); err != nil {
+		t.Fatal(err)
+	}
+
+	err = a.AddBuildWebsites(ctx, tx, true, foreigners...)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	count, err := a.BuildWebsites().Count(ctx, tx)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if count != 4 {
+		t.Error("count was wrong:", count)
+	}
+
+	err = a.RemoveBuildWebsites(ctx, tx, foreigners[:2]...)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	count, err = a.BuildWebsites().Count(ctx, tx)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if count != 2 {
+		t.Error("count was wrong:", count)
+	}
+
+	if !queries.IsValuerNil(b.BuildID) {
+		t.Error("want b's foreign key value to be nil")
+	}
+	if !queries.IsValuerNil(c.BuildID) {
+		t.Error("want c's foreign key value to be nil")
+	}
+
+	if b.R.Build != nil {
+		t.Error("relationship was not removed properly from the foreign struct")
+	}
+	if c.R.Build != nil {
+		t.Error("relationship was not removed properly from the foreign struct")
+	}
+	if d.R.Build != &a {
+		t.Error("relationship to a should have been preserved")
+	}
+	if e.R.Build != &a {
+		t.Error("relationship to a should have been preserved")
+	}
+
+	if len(a.R.BuildWebsites) != 2 {
+		t.Error("should have preserved two relationships")
+	}
+
+	// Removal doesn't do a stable deletion for performance so we have to flip the order
+	if a.R.BuildWebsites[1] != &d {
+		t.Error("relationship to d should have been preserved")
+	}
+	if a.R.BuildWebsites[0] != &e {
+		t.Error("relationship to e should have been preserved")
+	}
+}
+
 func testBuildLogToOneApplicationUsingApplication(t *testing.T) {
 	ctx := context.Background()
 	tx := MustTx(boil.BeginTx(ctx, nil))

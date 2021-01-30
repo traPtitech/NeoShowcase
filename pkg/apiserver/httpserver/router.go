@@ -40,6 +40,8 @@ func New(config Config) *Server {
 	api := e.Group("")
 	if config.Debug {
 		api.Use(debugMiddleware())
+		api.GET("/_debug/1", s.GetDebug1)
+		api.GET("/_debug/2", s.GetDebug2)
 	} else {
 		api.Use(authenticateMiddleware())
 	}

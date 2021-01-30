@@ -19,6 +19,10 @@ type Config struct {
 		Debug bool `mapstructure:"debug" yaml:"debug"`
 		Port  int  `mapstructure:"port" yaml:"port"`
 	} `mapstructure:"http" yaml:"http"`
+	Image struct {
+		Registry   string `mapstructure:"registry" yaml:"registry"`
+		NamePrefix string `mapstructure:"namePrefix" yaml:"namePrefix"`
+	} `mapstructure:"image" yaml:"image"`
 }
 
 func (c *Config) GetMode() int {

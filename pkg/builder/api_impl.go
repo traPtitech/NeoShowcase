@@ -3,8 +3,10 @@ package builder
 import (
 	"context"
 	"github.com/traPtitech/neoshowcase/pkg/builder/api"
+	"github.com/traPtitech/neoshowcase/pkg/event"
 	"github.com/traPtitech/neoshowcase/pkg/idgen"
 	"github.com/traPtitech/neoshowcase/pkg/models"
+	"github.com/traPtitech/neoshowcase/pkg/util"
 	"github.com/volatiletech/null/v8"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -36,13 +38,53 @@ func (s *Service) ConnectEventStream(_ *emptypb.Empty, stream api.BuilderService
 			return nil
 		case ev := <-sub.Receiver:
 			switch ev.Name {
-			case IEventBuildStarted:
+			case event.BuilderBuildStarted:
+				task := ev.Fields["task"].(*Task)
+				if err := stream.Send(&api.Event{
+					Type: api.Event_BUILD_STARTED,
+					Body: util.ToJSON(map[string]interface{}{
+						"application_id": task.BuildLogM.ApplicationID.String,
+						"build_id":       task.BuildID,
+					}),
+				}); err != nil {
+					return err
+				}
 
-			case IEventBuildSucceeded:
+			case event.BuilderBuildFailed:
+				task := ev.Fields["task"].(*Task)
+				if err := stream.Send(&api.Event{
+					Type: api.Event_BUILD_FAILED,
+					Body: util.ToJSON(map[string]interface{}{
+						"application_id": task.BuildLogM.ApplicationID.String,
+						"build_id":       task.BuildID,
+					}),
+				}); err != nil {
+					return err
+				}
 
-			case IEventBuildFailed:
+			case event.BuilderBuildSucceeded:
+				task := ev.Fields["task"].(*Task)
+				if err := stream.Send(&api.Event{
+					Type: api.Event_BUILD_SUCCEEDED,
+					Body: util.ToJSON(map[string]interface{}{
+						"application_id": task.BuildLogM.ApplicationID.String,
+						"build_id":       task.BuildID,
+					}),
+				}); err != nil {
+					return err
+				}
 
-			case IEventBuildCanceled:
+			case event.BuilderBuildCanceled:
+				task := ev.Fields["task"].(*Task)
+				if err := stream.Send(&api.Event{
+					Type: api.Event_BUILD_CANCELED,
+					Body: util.ToJSON(map[string]interface{}{
+						"application_id": task.BuildLogM.ApplicationID.String,
+						"build_id":       task.BuildID,
+					}),
+				}); err != nil {
+					return err
+				}
 
 			}
 		}

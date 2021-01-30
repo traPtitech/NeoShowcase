@@ -10,7 +10,6 @@ type Engine interface {
 type Site struct {
 	ID            string
 	FQDN          string
-	PathPrefix    string
 	ArtifactID    string
 	ApplicationID string
 }

@@ -12,11 +12,7 @@ func TestUpsert(t *testing.T) {
 
 	t.Run("BuildLogs", testBuildLogsUpsert)
 
-	t.Run("DynamicSiteDetails", testDynamicSiteDetailsUpsert)
-
 	t.Run("Repositories", testRepositoriesUpsert)
 
-	t.Run("Sites", testSitesUpsert)
-
-	t.Run("StaticSiteDetails", testStaticSiteDetailsUpsert)
+	t.Run("Websites", testWebsitesUpsert)
 }

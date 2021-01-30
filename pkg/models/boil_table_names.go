@@ -4,19 +4,15 @@
 package models
 
 var TableNames = struct {
-	Applications       string
-	Artifacts          string
-	BuildLogs          string
-	DynamicSiteDetails string
-	Repositories       string
-	Sites              string
-	StaticSiteDetails  string
+	Applications string
+	Artifacts    string
+	BuildLogs    string
+	Repositories string
+	Websites     string
 }{
-	Applications:       "applications",
-	Artifacts:          "artifacts",
-	BuildLogs:          "build_logs",
-	DynamicSiteDetails: "dynamic_site_details",
-	Repositories:       "repositories",
-	Sites:              "sites",
-	StaticSiteDetails:  "static_site_details",
+	Applications: "applications",
+	Artifacts:    "artifacts",
+	BuildLogs:    "build_logs",
+	Repositories: "repositories",
+	Websites:     "websites",
 }

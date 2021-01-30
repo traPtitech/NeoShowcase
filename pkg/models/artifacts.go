@@ -89,17 +89,14 @@ var ArtifactWhere = struct {
 
 // ArtifactRels is where relationship names are stored.
 var ArtifactRels = struct {
-	BuildLog          string
-	StaticSiteDetails string
+	BuildLog string
 }{
-	BuildLog:          "BuildLog",
-	StaticSiteDetails: "StaticSiteDetails",
+	BuildLog: "BuildLog",
 }
 
 // artifactR is where relationships are stored.
 type artifactR struct {
-	BuildLog          *BuildLog             `boil:"BuildLog" json:"BuildLog" toml:"BuildLog" yaml:"BuildLog"`
-	StaticSiteDetails StaticSiteDetailSlice `boil:"StaticSiteDetails" json:"StaticSiteDetails" toml:"StaticSiteDetails" yaml:"StaticSiteDetails"`
+	BuildLog *BuildLog `boil:"BuildLog" json:"BuildLog" toml:"BuildLog" yaml:"BuildLog"`
 }
 
 // NewStruct creates a new relationship struct
@@ -406,27 +403,6 @@ func (o *Artifact) BuildLog(mods ...qm.QueryMod) buildLogQuery {
 	return query
 }
 
-// StaticSiteDetails retrieves all the static_site_detail's StaticSiteDetails with an executor.
-func (o *Artifact) StaticSiteDetails(mods ...qm.QueryMod) staticSiteDetailQuery {
-	var queryMods []qm.QueryMod
-	if len(mods) != 0 {
-		queryMods = append(queryMods, mods...)
-	}
-
-	queryMods = append(queryMods,
-		qm.Where("`static_site_details`.`artifact_id`=?", o.ID),
-	)
-
-	query := StaticSiteDetails(queryMods...)
-	queries.SetFrom(query.Query, "`static_site_details`")
-
-	if len(queries.GetSelect(query.Query)) == 0 {
-		queries.SetSelect(query.Query, []string{"`static_site_details`.*"})
-	}
-
-	return query
-}
-
 // LoadBuildLog allows an eager lookup of values, cached into the
 // loaded structs of the objects. This is for an N-1 relationship.
 func (artifactL) LoadBuildLog(ctx context.Context, e boil.ContextExecutor, singular bool, maybeArtifact interface{}, mods queries.Applicator) error {
@@ -511,7 +487,7 @@ func (artifactL) LoadBuildLog(ctx context.Context, e boil.ContextExecutor, singu
 		if foreign.R == nil {
 			foreign.R = &buildLogR{}
 		}
-		foreign.R.Artifacts = append(foreign.R.Artifacts, object)
+		foreign.R.Artifact = object
 		return nil
 	}
 
@@ -521,104 +497,6 @@ func (artifactL) LoadBuildLog(ctx context.Context, e boil.ContextExecutor, singu
 				local.R.BuildLog = foreign
 				if foreign.R == nil {
 					foreign.R = &buildLogR{}
-				}
-				foreign.R.Artifacts = append(foreign.R.Artifacts, local)
-				break
-			}
-		}
-	}
-
-	return nil
-}
-
-// LoadStaticSiteDetails allows an eager lookup of values, cached into the
-// loaded structs of the objects. This is for a 1-M or N-M relationship.
-func (artifactL) LoadStaticSiteDetails(ctx context.Context, e boil.ContextExecutor, singular bool, maybeArtifact interface{}, mods queries.Applicator) error {
-	var slice []*Artifact
-	var object *Artifact
-
-	if singular {
-		object = maybeArtifact.(*Artifact)
-	} else {
-		slice = *maybeArtifact.(*[]*Artifact)
-	}
-
-	args := make([]interface{}, 0, 1)
-	if singular {
-		if object.R == nil {
-			object.R = &artifactR{}
-		}
-		args = append(args, object.ID)
-	} else {
-	Outer:
-		for _, obj := range slice {
-			if obj.R == nil {
-				obj.R = &artifactR{}
-			}
-
-			for _, a := range args {
-				if queries.Equal(a, obj.ID) {
-					continue Outer
-				}
-			}
-
-			args = append(args, obj.ID)
-		}
-	}
-
-	if len(args) == 0 {
-		return nil
-	}
-
-	query := NewQuery(
-		qm.From(`static_site_details`),
-		qm.WhereIn(`static_site_details.artifact_id in ?`, args...),
-	)
-	if mods != nil {
-		mods.Apply(query)
-	}
-
-	results, err := query.QueryContext(ctx, e)
-	if err != nil {
-		return errors.Wrap(err, "failed to eager load static_site_details")
-	}
-
-	var resultSlice []*StaticSiteDetail
-	if err = queries.Bind(results, &resultSlice); err != nil {
-		return errors.Wrap(err, "failed to bind eager loaded slice static_site_details")
-	}
-
-	if err = results.Close(); err != nil {
-		return errors.Wrap(err, "failed to close results in eager load on static_site_details")
-	}
-	if err = results.Err(); err != nil {
-		return errors.Wrap(err, "error occurred during iteration of eager loaded relations for static_site_details")
-	}
-
-	if len(staticSiteDetailAfterSelectHooks) != 0 {
-		for _, obj := range resultSlice {
-			if err := obj.doAfterSelectHooks(ctx, e); err != nil {
-				return err
-			}
-		}
-	}
-	if singular {
-		object.R.StaticSiteDetails = resultSlice
-		for _, foreign := range resultSlice {
-			if foreign.R == nil {
-				foreign.R = &staticSiteDetailR{}
-			}
-			foreign.R.Artifact = object
-		}
-		return nil
-	}
-
-	for _, foreign := range resultSlice {
-		for _, local := range slice {
-			if queries.Equal(local.ID, foreign.ArtifactID) {
-				local.R.StaticSiteDetails = append(local.R.StaticSiteDetails, foreign)
-				if foreign.R == nil {
-					foreign.R = &staticSiteDetailR{}
 				}
 				foreign.R.Artifact = local
 				break
@@ -631,7 +509,7 @@ func (artifactL) LoadStaticSiteDetails(ctx context.Context, e boil.ContextExecut
 
 // SetBuildLog of the artifact to the related item.
 // Sets o.R.BuildLog to related.
-// Adds o to related.R.Artifacts.
+// Adds o to related.R.Artifact.
 func (o *Artifact) SetBuildLog(ctx context.Context, exec boil.ContextExecutor, insert bool, related *BuildLog) error {
 	var err error
 	if insert {
@@ -667,133 +545,10 @@ func (o *Artifact) SetBuildLog(ctx context.Context, exec boil.ContextExecutor, i
 
 	if related.R == nil {
 		related.R = &buildLogR{
-			Artifacts: ArtifactSlice{o},
+			Artifact: o,
 		}
 	} else {
-		related.R.Artifacts = append(related.R.Artifacts, o)
-	}
-
-	return nil
-}
-
-// AddStaticSiteDetails adds the given related objects to the existing relationships
-// of the artifact, optionally inserting them as new records.
-// Appends related to o.R.StaticSiteDetails.
-// Sets related.R.Artifact appropriately.
-func (o *Artifact) AddStaticSiteDetails(ctx context.Context, exec boil.ContextExecutor, insert bool, related ...*StaticSiteDetail) error {
-	var err error
-	for _, rel := range related {
-		if insert {
-			queries.Assign(&rel.ArtifactID, o.ID)
-			if err = rel.Insert(ctx, exec, boil.Infer()); err != nil {
-				return errors.Wrap(err, "failed to insert into foreign table")
-			}
-		} else {
-			updateQuery := fmt.Sprintf(
-				"UPDATE `static_site_details` SET %s WHERE %s",
-				strmangle.SetParamNames("`", "`", 0, []string{"artifact_id"}),
-				strmangle.WhereClause("`", "`", 0, staticSiteDetailPrimaryKeyColumns),
-			)
-			values := []interface{}{o.ID, rel.SiteID}
-
-			if boil.IsDebug(ctx) {
-				writer := boil.DebugWriterFrom(ctx)
-				fmt.Fprintln(writer, updateQuery)
-				fmt.Fprintln(writer, values)
-			}
-			if _, err = exec.ExecContext(ctx, updateQuery, values...); err != nil {
-				return errors.Wrap(err, "failed to update foreign table")
-			}
-
-			queries.Assign(&rel.ArtifactID, o.ID)
-		}
-	}
-
-	if o.R == nil {
-		o.R = &artifactR{
-			StaticSiteDetails: related,
-		}
-	} else {
-		o.R.StaticSiteDetails = append(o.R.StaticSiteDetails, related...)
-	}
-
-	for _, rel := range related {
-		if rel.R == nil {
-			rel.R = &staticSiteDetailR{
-				Artifact: o,
-			}
-		} else {
-			rel.R.Artifact = o
-		}
-	}
-	return nil
-}
-
-// SetStaticSiteDetails removes all previously related items of the
-// artifact replacing them completely with the passed
-// in related items, optionally inserting them as new records.
-// Sets o.R.Artifact's StaticSiteDetails accordingly.
-// Replaces o.R.StaticSiteDetails with related.
-// Sets related.R.Artifact's StaticSiteDetails accordingly.
-func (o *Artifact) SetStaticSiteDetails(ctx context.Context, exec boil.ContextExecutor, insert bool, related ...*StaticSiteDetail) error {
-	query := "update `static_site_details` set `artifact_id` = null where `artifact_id` = ?"
-	values := []interface{}{o.ID}
-	if boil.IsDebug(ctx) {
-		writer := boil.DebugWriterFrom(ctx)
-		fmt.Fprintln(writer, query)
-		fmt.Fprintln(writer, values)
-	}
-	_, err := exec.ExecContext(ctx, query, values...)
-	if err != nil {
-		return errors.Wrap(err, "failed to remove relationships before set")
-	}
-
-	if o.R != nil {
-		for _, rel := range o.R.StaticSiteDetails {
-			queries.SetScanner(&rel.ArtifactID, nil)
-			if rel.R == nil {
-				continue
-			}
-
-			rel.R.Artifact = nil
-		}
-
-		o.R.StaticSiteDetails = nil
-	}
-	return o.AddStaticSiteDetails(ctx, exec, insert, related...)
-}
-
-// RemoveStaticSiteDetails relationships from objects passed in.
-// Removes related items from R.StaticSiteDetails (uses pointer comparison, removal does not keep order)
-// Sets related.R.Artifact.
-func (o *Artifact) RemoveStaticSiteDetails(ctx context.Context, exec boil.ContextExecutor, related ...*StaticSiteDetail) error {
-	var err error
-	for _, rel := range related {
-		queries.SetScanner(&rel.ArtifactID, nil)
-		if rel.R != nil {
-			rel.R.Artifact = nil
-		}
-		if _, err = rel.Update(ctx, exec, boil.Whitelist("artifact_id")); err != nil {
-			return err
-		}
-	}
-	if o.R == nil {
-		return nil
-	}
-
-	for _, rel := range related {
-		for i, ri := range o.R.StaticSiteDetails {
-			if rel != ri {
-				continue
-			}
-
-			ln := len(o.R.StaticSiteDetails)
-			if ln > 1 && i < ln-1 {
-				o.R.StaticSiteDetails[i] = o.R.StaticSiteDetails[ln-1]
-			}
-			o.R.StaticSiteDetails = o.R.StaticSiteDetails[:ln-1]
-			break
-		}
+		related.R.Artifact = o
 	}
 
 	return nil
@@ -1063,6 +818,7 @@ func (o ArtifactSlice) UpdateAll(ctx context.Context, exec boil.ContextExecutor,
 
 var mySQLArtifactUniqueColumns = []string{
 	"id",
+	"build_log_id",
 }
 
 // Upsert attempts an insert using an executor, and does an update or ignore on conflict.
