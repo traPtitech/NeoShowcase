@@ -6,7 +6,7 @@ services:
       context: .
       dockerfile: cmd/ns/Dockerfile
     entrypoint: dockerize -timeout 60s -wait tcp://mysql:3306 -wait tcp://ns-builder:10000 -wait tcp://ns-ssgen:10000
-    command: /app/ns run --debug
+    command: /app/ns run --debug --loglevel=trace
     restart: always
     environment:
       NS_APISERVER_DB_HOST: "mysql"
@@ -16,7 +16,7 @@ services:
       NS_APISERVER_SSGEN_INSECURE: "true"
       NS_APISERVER_HTTP_PORT: "8080"
       NS_APISERVER_HTTP_DEBUG: "true"
-      NS_APISERVER_IMAGE_REGISTRY: "registry:5000"
+      NS_APISERVER_IMAGE_REGISTRY: "localhost:5000"
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
       - ./local-dev/neoshowcase:/data
@@ -44,7 +44,7 @@ services:
       context: .
       dockerfile: cmd/ns-builder/Dockerfile
     entrypoint: dockerize -timeout 60s -wait tcp://mysql:3306 -wait tcp://buildkitd:1234
-    command: /app/ns-builder run --debug
+    command: /app/ns-builder run --debug --loglevel=trace
     restart: always
     environment:
       NS_BUILDER_BUILDKIT_ADDRESS: "tcp://buildkitd:1234"
@@ -66,7 +66,7 @@ services:
       context: .
       dockerfile: cmd/ns-ssgen/Dockerfile
     entrypoint: dockerize -timeout 60s -wait tcp://mysql:3306
-    command: /app/ns-ssgen run --debug
+    command: /app/ns-ssgen run --debug --loglevel=trace
     restart: always
     environment:
       NS_SSGEN_DB_HOST: "mysql"
