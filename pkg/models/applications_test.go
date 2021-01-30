@@ -1158,7 +1158,7 @@ func testApplicationsSelect(t *testing.T) {
 }
 
 var (
-	applicationDBTypes = map[string]string{`ID`: `varchar`, `Owner`: `varchar`, `Name`: `varchar`, `RepositoryID`: `varchar`, `CreatedAt`: `datetime`, `UpdatedAt`: `datetime`, `DeletedAt`: `datetime`}
+	applicationDBTypes = map[string]string{`ID`: `varchar`, `Owner`: `varchar`, `Name`: `varchar`, `RepositoryID`: `varchar`, `CreatedAt`: `datetime`, `UpdatedAt`: `datetime`, `DeletedAt`: `datetime`, `BuildType`: `enum('image','static')`}
 	_                  = bytes.MinRead
 )
 

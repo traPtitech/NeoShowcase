@@ -4,7 +4,7 @@
 
 | Name | Columns | Comment | Type |
 | ---- | ------- | ------- | ---- |
-| [applications](applications.md) | 7 | アプリテーブル | BASE TABLE |
+| [applications](applications.md) | 8 | アプリテーブル | BASE TABLE |
 | [artifacts](artifacts.md) | 5 | 静的ファイル生成物テーブル | BASE TABLE |
 | [build_logs](build_logs.md) | 5 | ビルドログテーブル | BASE TABLE |
 | [dynamic_site_details](dynamic_site_details.md) | 1 | 動的サイト詳細テーブル | BASE TABLE |
