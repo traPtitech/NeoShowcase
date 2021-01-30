@@ -22,7 +22,7 @@ func SetupDebugFlag(flags *pflag.FlagSet) {
 }
 
 func SetupLogLevelFlag(flags *pflag.FlagSet) {
-	flags.BoolVar(&Debug, "loglevel", false, "log level (trace, debug, info, warn, error)")
+	flags.String("loglevel", "info", "log level (trace, debug, info, warn, error)")
 	BindPFlag(flags, "loglevel")
 	viper.SetDefault("loglevel", "info")
 	cobra.OnInitialize(func() {
