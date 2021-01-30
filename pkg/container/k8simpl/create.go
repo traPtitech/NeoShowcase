@@ -118,7 +118,6 @@ func (m *Manager) Create(ctx context.Context, args container.CreateArgs) (*conta
 					Labels:    labels,
 				},
 				Spec: apiv1.PodSpec{
-					RestartPolicy: "OnFailure",
 					Containers:    []apiv1.Container{cont},
 				},
 			},
