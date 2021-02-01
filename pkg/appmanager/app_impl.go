@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
+
 	log "github.com/sirupsen/logrus"
 	builderApi "github.com/traPtitech/neoshowcase/pkg/builder/api"
 	"github.com/traPtitech/neoshowcase/pkg/container"
@@ -111,8 +112,17 @@ func (app *appImpl) RequestBuild(ctx context.Context) error {
 		return nil
 
 	case models.ApplicationsBuildTypeStatic:
-		// TODO 実装
-		log.Fatalf("NOT IMPLEMENTED")
+		_, err := app.m.builder.StartBuildStatic(ctx, &builderApi.StartBuildStaticRequest{
+			Source: &builderApi.BuildSource{
+				RepositoryUrl: app.dbmodel.R.Repository.Remote, // TODO ブランチ・タグ指定に対応
+			},
+			Options:       &builderApi.BuildOptions{}, // TODO 汎用ベースイメージビルドに対応させる
+			ApplicationId: app.GetID(),
+		})
+		if err != nil {
+			return fmt.Errorf("builder failed to start build static: %w", err)
+		}
+		return nil
 
 	default:
 		log.Fatalf("unknown build type: %s", app.dbmodel.BuildType)
