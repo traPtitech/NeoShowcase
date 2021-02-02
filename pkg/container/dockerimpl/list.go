@@ -21,6 +21,7 @@ func (m *Manager) List(ctx context.Context) (*container.ListResult, error) {
 	for _, apiContainers := range containers {
 		result = append(result, container.Container{
 			ApplicationID: apiContainers.Labels[appContainerApplicationIDLabel],
+			EnvironmentID: apiContainers.Labels[appContainerEnvironmentIDLabel],
 			State:         apiContainers.State, // TODO
 		})
 	}

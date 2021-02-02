@@ -78,32 +78,32 @@
                 [varchar(22)]
             </text>
             <polygon fill="none" stroke="#000000" points="158,-132.5 158,-162.5 577,-162.5 577,-132.5 158,-132.5"/>
-            <text text-anchor="start" x="165" y="-143.9" font-family="Arial" font-size="14.00" fill="#000000">
-                application_id
-            </text>
-            <text text-anchor="start" x="254.4684" y="-143.9" font-family="Arial" font-size="14.00" fill="#666666">
-                [varchar(22)]
-            </text>
-            <polygon fill="none" stroke="#000000" points="158,-102.5 158,-132.5 577,-132.5 577,-102.5 158,-102.5"/>
-            <text text-anchor="start" x="164.5742" y="-113.9" font-family="Arial" font-size="14.00" fill="#000000">
+            <text text-anchor="start" x="164.5742" y="-143.9" font-family="Arial" font-size="14.00" fill="#000000">
                 result
             </text>
-            <text text-anchor="start" x="202.6878" y="-113.9" font-family="Arial" font-size="14.00" fill="#666666">
+            <text text-anchor="start" x="202.6878" y="-143.9" font-family="Arial" font-size="14.00" fill="#666666">
                 [enum(&#39;BUILDING&#39;,&#39;SUCCEEDED&#39;,&#39;FAILED&#39;,&#39;CANCELED&#39;)]
+            </text>
+            <polygon fill="none" stroke="#000000" points="158,-102.5 158,-132.5 577,-132.5 577,-102.5 158,-102.5"/>
+            <text text-anchor="start" x="165" y="-113.9" font-family="Arial" font-size="14.00" fill="#000000">
+                started_at
+            </text>
+            <text text-anchor="start" x="231.136" y="-113.9" font-family="Arial" font-size="14.00" fill="#666666">
+                [datetime(6)]
             </text>
             <polygon fill="none" stroke="#000000" points="158,-72.5 158,-102.5 577,-102.5 577,-72.5 158,-72.5"/>
             <text text-anchor="start" x="165" y="-83.9" font-family="Arial" font-size="14.00" fill="#000000">
-                started_at
+                finished_at
             </text>
-            <text text-anchor="start" x="231.136" y="-83.9" font-family="Arial" font-size="14.00" fill="#666666">
+            <text text-anchor="start" x="236.5806" y="-83.9" font-family="Arial" font-size="14.00" fill="#666666">
                 [datetime(6)]
             </text>
             <polygon fill="none" stroke="#000000" points="158,-42.5 158,-72.5 577,-72.5 577,-42.5 158,-42.5"/>
             <text text-anchor="start" x="165" y="-53.9" font-family="Arial" font-size="14.00" fill="#000000">
-                finished_at
+                environment_id
             </text>
-            <text text-anchor="start" x="236.5806" y="-53.9" font-family="Arial" font-size="14.00" fill="#666666">
-                [datetime(6)]
+            <text text-anchor="start" x="264.5764" y="-53.9" font-family="Arial" font-size="14.00" fill="#666666">
+                [varchar(22)]
             </text>
         </g>
         <!-- artifacts&#45;&gt;build_logs -->

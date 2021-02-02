@@ -9,7 +9,7 @@ import (
 
 func (m *Manager) Destroy(ctx context.Context, args container.DestroyArgs) (*container.DestroyResult, error) {
 	err := m.c.RemoveContainer(docker.RemoveContainerOptions{
-		ID:            containerName(args.ApplicationID),
+		ID:            containerName(args.ApplicationID, args.EnvironmentID),
 		RemoveVolumes: true,
 		Force:         true,
 		Context:       ctx,

@@ -11,10 +11,12 @@ type App interface {
 
 	// Start アプリを起動します
 	Start(args AppStartArgs) error
-	RequestBuild(ctx context.Context) error
+	RequestBuild(ctx context.Context, envID string) error
 }
 
 type AppStartArgs struct {
+	// 操作したい環境ID
+	EnvironmentID string
 	// 起動したいビルドID
 	BuildID string
 }

@@ -11,17 +11,17 @@ Webサイトテーブル
 CREATE TABLE `websites` (
   `id` varchar(22) NOT NULL COMMENT 'サイトID',
   `fqdn` varchar(50) NOT NULL COMMENT 'サイトURLのFQDN',
-  `application_id` varchar(22) NOT NULL COMMENT 'アプリケーションID',
   `build_id` varchar(22) DEFAULT NULL COMMENT '稼働中のサイトのビルドID',
   `http_port` int(11) NOT NULL DEFAULT '80' COMMENT 'HTTPポート番号',
   `created_at` datetime(6) NOT NULL COMMENT '作成日時',
   `updated_at` datetime(6) NOT NULL COMMENT '更新日時',
+  `environment_id` varchar(22) NOT NULL COMMENT '環境ID',
   PRIMARY KEY (`id`),
   UNIQUE KEY `fqdn` (`fqdn`),
-  UNIQUE KEY `application_id` (`application_id`),
+  UNIQUE KEY `uk_environment_id` (`environment_id`),
   KEY `fk_websites_build_id` (`build_id`),
-  CONSTRAINT `fk_websites_application_id` FOREIGN KEY (`application_id`) REFERENCES `applications` (`id`),
-  CONSTRAINT `fk_websites_build_id` FOREIGN KEY (`build_id`) REFERENCES `build_logs` (`id`)
+  CONSTRAINT `fk_websites_build_id` FOREIGN KEY (`build_id`) REFERENCES `build_logs` (`id`),
+  CONSTRAINT `fk_websites_environment_id` FOREIGN KEY (`environment_id`) REFERENCES `environments` (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='Webサイトテーブル'
 ```
 
@@ -33,21 +33,21 @@ CREATE TABLE `websites` (
 | ---- | ---- | ------- | -------- | -------- | ------- | ------- |
 | id | varchar(22) |  | false |  |  | サイトID |
 | fqdn | varchar(50) |  | false |  |  | サイトURLのFQDN |
-| application_id | varchar(22) |  | false |  | [applications](applications.md) | アプリケーションID |
 | build_id | varchar(22) |  | true |  | [build_logs](build_logs.md) | 稼働中のサイトのビルドID |
 | http_port | int(11) | 80 | false |  |  | HTTPポート番号 |
 | created_at | datetime(6) |  | false |  |  | 作成日時 |
 | updated_at | datetime(6) |  | false |  |  | 更新日時 |
+| environment_id | varchar(22) |  | false |  | [environments](environments.md) | 環境ID |
 
 ## Constraints
 
 | Name | Type | Definition |
 | ---- | ---- | ---------- |
-| application_id | UNIQUE | UNIQUE KEY application_id (application_id) |
-| fk_websites_application_id | FOREIGN KEY | FOREIGN KEY (application_id) REFERENCES applications (id) |
 | fk_websites_build_id | FOREIGN KEY | FOREIGN KEY (build_id) REFERENCES build_logs (id) |
+| fk_websites_environment_id | FOREIGN KEY | FOREIGN KEY (environment_id) REFERENCES environments (id) |
 | fqdn | UNIQUE | UNIQUE KEY fqdn (fqdn) |
 | PRIMARY | PRIMARY KEY | PRIMARY KEY (id) |
+| uk_environment_id | UNIQUE | UNIQUE KEY uk_environment_id (environment_id) |
 
 ## Indexes
 
@@ -55,8 +55,8 @@ CREATE TABLE `websites` (
 | ---- | ---------- |
 | fk_websites_build_id | KEY fk_websites_build_id (build_id) USING BTREE |
 | PRIMARY | PRIMARY KEY (id) USING BTREE |
-| application_id | UNIQUE KEY application_id (application_id) USING BTREE |
 | fqdn | UNIQUE KEY fqdn (fqdn) USING BTREE |
+| uk_environment_id | UNIQUE KEY uk_environment_id (environment_id) USING BTREE |
 
 ## Relations
 

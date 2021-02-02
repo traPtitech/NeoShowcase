@@ -22,13 +22,14 @@ func (m *Manager) Create(ctx context.Context, args container.CreateArgs) (*conta
 	labels := util.MergeLabels(args.Labels, map[string]string{
 		appContainerLabel:              "true",
 		appContainerApplicationIDLabel: args.ApplicationID,
+		appContainerEnvironmentIDLabel: args.EnvironmentID,
 	})
 
 	if args.HTTPProxy != nil {
 		labels = util.MergeLabels(labels, map[string]string{
 			"traefik.enable": "true",
-			fmt.Sprintf("traefik.http.routers.nsapp-%s.rule", args.ApplicationID):                      fmt.Sprintf("Host(`%s`)", args.HTTPProxy.Domain),
-			fmt.Sprintf("traefik.http.services.nsapp-%s.loadbalancer.server.port", args.ApplicationID): fmt.Sprintf("%d", args.HTTPProxy.Port),
+			fmt.Sprintf("traefik.http.routers.nsapp-%s-%s.rule", args.ApplicationID, args.EnvironmentID):                      fmt.Sprintf("Host(`%s`)", args.HTTPProxy.Domain),
+			fmt.Sprintf("traefik.http.services.nsapp-%s-%s.loadbalancer.server.port", args.ApplicationID, args.EnvironmentID): fmt.Sprintf("%d", args.HTTPProxy.Port),
 		})
 	}
 
@@ -40,7 +41,7 @@ func (m *Manager) Create(ctx context.Context, args container.CreateArgs) (*conta
 
 	// ビルドしたイメージのコンテナを作成
 	cont, err := m.c.CreateContainer(docker.CreateContainerOptions{
-		Name: containerName(args.ApplicationID),
+		Name: containerName(args.ApplicationID, args.EnvironmentID),
 		Config: &docker.Config{
 			Image:  args.ImageName + ":" + args.ImageTag,
 			Labels: labels,

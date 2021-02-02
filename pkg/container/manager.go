@@ -16,6 +16,7 @@ type Manager interface {
 
 type CreateArgs struct {
 	ApplicationID string
+	EnvironmentID string
 	ImageName     string
 	ImageTag      string
 	Labels        map[string]string
@@ -34,6 +35,7 @@ type CreateResult struct {
 
 type StartArgs struct {
 	ApplicationID string
+	EnvironmentID string
 }
 
 type StartResult struct {
@@ -41,6 +43,7 @@ type StartResult struct {
 
 type DestroyArgs struct {
 	ApplicationID string
+	EnvironmentID string
 }
 
 type DestroyResult struct {
@@ -48,6 +51,7 @@ type DestroyResult struct {
 
 type StopArgs struct {
 	ApplicationID string
+	EnvironmentID string
 }
 
 type StopResult struct {
@@ -55,6 +59,7 @@ type StopResult struct {
 
 type RestartArgs struct {
 	ApplicationID string
+	EnvironmentID string
 }
 
 type RestartResult struct {
@@ -66,5 +71,6 @@ type ListResult struct {
 
 type Container struct {
 	ApplicationID string
+	EnvironmentID string
 	State         string
 }

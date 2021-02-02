@@ -28,11 +28,22 @@ func (app *appImpl) GetName() string {
 }
 
 func (app *appImpl) Start(args AppStartArgs) error {
-	switch app.dbmodel.BuildType {
-	case models.ApplicationsBuildTypeImage:
+	var env *models.Environment
+	for _, _env := range app.dbmodel.R.Environments {
+		if _env.ID == args.EnvironmentID {
+			env = _env
+			break
+		}
+	}
+	if env == nil {
+		return fmt.Errorf("environtment not found: %s", args.EnvironmentID)
+	}
+
+	switch env.BuildType {
+	case models.EnvironmentsBuildTypeImage:
 		if args.BuildID == "" {
 			// buildIDの指定がない場合は最新のビルドを使用
-			build, err := app.dbmodel.BuildLogs(
+			build, err := env.BuildLogs(
 				qm.OrderBy(fmt.Sprintf("%s DESC", models.BuildLogColumns.StartedAt)),
 				models.BuildLogWhere.Result.EQ(models.BuildLogsResultSUCCEEDED),
 			).One(context.Background(), app.m.db)
@@ -56,7 +67,7 @@ func (app *appImpl) Start(args AppStartArgs) error {
 
 		// HTTP公開設定があれば取得
 		var httpProxy *container.HTTPProxy
-		website, err := app.dbmodel.Website().One(context.Background(), app.m.db)
+		website, err := env.Website().One(context.Background(), app.m.db)
 		if err == nil {
 			httpProxy = &container.HTTPProxy{
 				Domain: website.FQDN,
@@ -84,48 +95,57 @@ func (app *appImpl) Start(args AppStartArgs) error {
 			}
 		}
 
-	case models.ApplicationsBuildTypeStatic:
+	case models.EnvironmentsBuildTypeStatic:
 		// TODO 実装
 		log.Fatalf("NOT IMPLEMENTED")
 
 	default:
-		log.Fatalf("unknown build type: %s", app.dbmodel.BuildType)
+		return fmt.Errorf("unknown build type: %s", env.BuildType)
 	}
 	return nil
 }
 
 // RequestBuild builderにappのビルドをリクエストする
-func (app *appImpl) RequestBuild(ctx context.Context) error {
-	switch app.dbmodel.BuildType {
-	case models.ApplicationsBuildTypeImage:
+func (app *appImpl) RequestBuild(ctx context.Context, envID string) error {
+	var env *models.Environment
+	for _, _env := range app.dbmodel.R.Environments {
+		if _env.ID == envID {
+			env = _env
+			break
+		}
+	}
+	if env == nil {
+		return fmt.Errorf("environtment not found: %s", envID)
+	}
+
+	switch env.BuildType {
+	case models.EnvironmentsBuildTypeImage:
 		_, err := app.m.builder.StartBuildImage(ctx, &builderApi.StartBuildImageRequest{
 			ImageName: app.m.getImageName(app),
 			Source: &builderApi.BuildSource{
 				RepositoryUrl: app.dbmodel.R.Repository.Remote, // TODO ブランチ・タグ指定に対応
 			},
 			Options:       &builderApi.BuildOptions{}, // TODO 汎用ベースイメージビルドに対応させる
-			ApplicationId: app.GetID(),
+			EnvironmentId: env.ID,
 		})
 		if err != nil {
 			return fmt.Errorf("builder failed to start build image: %w", err)
 		}
-		return nil
 
-	case models.ApplicationsBuildTypeStatic:
+	case models.EnvironmentsBuildTypeStatic:
 		_, err := app.m.builder.StartBuildStatic(ctx, &builderApi.StartBuildStaticRequest{
 			Source: &builderApi.BuildSource{
 				RepositoryUrl: app.dbmodel.R.Repository.Remote, // TODO ブランチ・タグ指定に対応
 			},
 			Options:       &builderApi.BuildOptions{}, // TODO 汎用ベースイメージビルドに対応させる
-			ApplicationId: app.GetID(),
+			EnvironmentId: env.ID,
 		})
 		if err != nil {
 			return fmt.Errorf("builder failed to start build static: %w", err)
 		}
-		return nil
 
 	default:
-		log.Fatalf("unknown build type: %s", app.dbmodel.BuildType)
+		return fmt.Errorf("unknown build type: %s", env.BuildType)
 	}
 	return nil
 }

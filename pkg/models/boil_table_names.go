@@ -7,12 +7,14 @@ var TableNames = struct {
 	Applications string
 	Artifacts    string
 	BuildLogs    string
+	Environments string
 	Repositories string
 	Websites     string
 }{
 	Applications: "applications",
 	Artifacts:    "artifacts",
 	BuildLogs:    "build_logs",
+	Environments: "environments",
 	Repositories: "repositories",
 	Websites:     "websites",
 }

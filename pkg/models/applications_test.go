@@ -494,127 +494,14 @@ func testApplicationsInsertWhitelist(t *testing.T) {
 	}
 }
 
-func testApplicationOneToOneWebsiteUsingWebsite(t *testing.T) {
-	ctx := context.Background()
-	tx := MustTx(boil.BeginTx(ctx, nil))
-	defer func() { _ = tx.Rollback() }()
-
-	var foreign Website
-	var local Application
-
-	seed := randomize.NewSeed()
-	if err := randomize.Struct(seed, &foreign, websiteDBTypes, true, websiteColumnsWithDefault...); err != nil {
-		t.Errorf("Unable to randomize Website struct: %s", err)
-	}
-	if err := randomize.Struct(seed, &local, applicationDBTypes, true, applicationColumnsWithDefault...); err != nil {
-		t.Errorf("Unable to randomize Application struct: %s", err)
-	}
-
-	if err := local.Insert(ctx, tx, boil.Infer()); err != nil {
-		t.Fatal(err)
-	}
-
-	foreign.ApplicationID = local.ID
-	if err := foreign.Insert(ctx, tx, boil.Infer()); err != nil {
-		t.Fatal(err)
-	}
-
-	check, err := local.Website().One(ctx, tx)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	if check.ApplicationID != foreign.ApplicationID {
-		t.Errorf("want: %v, got %v", foreign.ApplicationID, check.ApplicationID)
-	}
-
-	slice := ApplicationSlice{&local}
-	if err = local.L.LoadWebsite(ctx, tx, false, (*[]*Application)(&slice), nil); err != nil {
-		t.Fatal(err)
-	}
-	if local.R.Website == nil {
-		t.Error("struct should have been eager loaded")
-	}
-
-	local.R.Website = nil
-	if err = local.L.LoadWebsite(ctx, tx, true, &local, nil); err != nil {
-		t.Fatal(err)
-	}
-	if local.R.Website == nil {
-		t.Error("struct should have been eager loaded")
-	}
-}
-
-func testApplicationOneToOneSetOpWebsiteUsingWebsite(t *testing.T) {
-	var err error
-
-	ctx := context.Background()
-	tx := MustTx(boil.BeginTx(ctx, nil))
-	defer func() { _ = tx.Rollback() }()
-
-	var a Application
-	var b, c Website
-
-	seed := randomize.NewSeed()
-	if err = randomize.Struct(seed, &a, applicationDBTypes, false, strmangle.SetComplement(applicationPrimaryKeyColumns, applicationColumnsWithoutDefault)...); err != nil {
-		t.Fatal(err)
-	}
-	if err = randomize.Struct(seed, &b, websiteDBTypes, false, strmangle.SetComplement(websitePrimaryKeyColumns, websiteColumnsWithoutDefault)...); err != nil {
-		t.Fatal(err)
-	}
-	if err = randomize.Struct(seed, &c, websiteDBTypes, false, strmangle.SetComplement(websitePrimaryKeyColumns, websiteColumnsWithoutDefault)...); err != nil {
-		t.Fatal(err)
-	}
-
-	if err := a.Insert(ctx, tx, boil.Infer()); err != nil {
-		t.Fatal(err)
-	}
-	if err = b.Insert(ctx, tx, boil.Infer()); err != nil {
-		t.Fatal(err)
-	}
-
-	for i, x := range []*Website{&b, &c} {
-		err = a.SetWebsite(ctx, tx, i != 0, x)
-		if err != nil {
-			t.Fatal(err)
-		}
-
-		if a.R.Website != x {
-			t.Error("relationship struct not set to correct value")
-		}
-		if x.R.Application != &a {
-			t.Error("failed to append to foreign relationship struct")
-		}
-
-		if a.ID != x.ApplicationID {
-			t.Error("foreign key was wrong value", a.ID)
-		}
-
-		zero := reflect.Zero(reflect.TypeOf(x.ApplicationID))
-		reflect.Indirect(reflect.ValueOf(&x.ApplicationID)).Set(zero)
-
-		if err = x.Reload(ctx, tx); err != nil {
-			t.Fatal("failed to reload", err)
-		}
-
-		if a.ID != x.ApplicationID {
-			t.Error("foreign key was wrong value", a.ID, x.ApplicationID)
-		}
-
-		if _, err = x.Delete(ctx, tx); err != nil {
-			t.Fatal("failed to delete x", err)
-		}
-	}
-}
-
-func testApplicationToManyBuildLogs(t *testing.T) {
+func testApplicationToManyEnvironments(t *testing.T) {
 	var err error
 	ctx := context.Background()
 	tx := MustTx(boil.BeginTx(ctx, nil))
 	defer func() { _ = tx.Rollback() }()
 
 	var a Application
-	var b, c BuildLog
+	var b, c Environment
 
 	seed := randomize.NewSeed()
 	if err = randomize.Struct(seed, &a, applicationDBTypes, true, applicationColumnsWithDefault...); err != nil {
@@ -625,15 +512,16 @@ func testApplicationToManyBuildLogs(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	if err = randomize.Struct(seed, &b, buildLogDBTypes, false, buildLogColumnsWithDefault...); err != nil {
+	if err = randomize.Struct(seed, &b, environmentDBTypes, false, environmentColumnsWithDefault...); err != nil {
 		t.Fatal(err)
 	}
-	if err = randomize.Struct(seed, &c, buildLogDBTypes, false, buildLogColumnsWithDefault...); err != nil {
+	if err = randomize.Struct(seed, &c, environmentDBTypes, false, environmentColumnsWithDefault...); err != nil {
 		t.Fatal(err)
 	}
 
-	queries.Assign(&b.ApplicationID, a.ID)
-	queries.Assign(&c.ApplicationID, a.ID)
+	b.ApplicationID = a.ID
+	c.ApplicationID = a.ID
+
 	if err = b.Insert(ctx, tx, boil.Infer()); err != nil {
 		t.Fatal(err)
 	}
@@ -641,17 +529,17 @@ func testApplicationToManyBuildLogs(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	check, err := a.BuildLogs().All(ctx, tx)
+	check, err := a.Environments().All(ctx, tx)
 	if err != nil {
 		t.Fatal(err)
 	}
 
 	bFound, cFound := false, false
 	for _, v := range check {
-		if queries.Equal(v.ApplicationID, b.ApplicationID) {
+		if v.ApplicationID == b.ApplicationID {
 			bFound = true
 		}
-		if queries.Equal(v.ApplicationID, c.ApplicationID) {
+		if v.ApplicationID == c.ApplicationID {
 			cFound = true
 		}
 	}
@@ -664,18 +552,18 @@ func testApplicationToManyBuildLogs(t *testing.T) {
 	}
 
 	slice := ApplicationSlice{&a}
-	if err = a.L.LoadBuildLogs(ctx, tx, false, (*[]*Application)(&slice), nil); err != nil {
+	if err = a.L.LoadEnvironments(ctx, tx, false, (*[]*Application)(&slice), nil); err != nil {
 		t.Fatal(err)
 	}
-	if got := len(a.R.BuildLogs); got != 2 {
+	if got := len(a.R.Environments); got != 2 {
 		t.Error("number of eager loaded records wrong, got:", got)
 	}
 
-	a.R.BuildLogs = nil
-	if err = a.L.LoadBuildLogs(ctx, tx, true, &a, nil); err != nil {
+	a.R.Environments = nil
+	if err = a.L.LoadEnvironments(ctx, tx, true, &a, nil); err != nil {
 		t.Fatal(err)
 	}
-	if got := len(a.R.BuildLogs); got != 2 {
+	if got := len(a.R.Environments); got != 2 {
 		t.Error("number of eager loaded records wrong, got:", got)
 	}
 
@@ -684,7 +572,7 @@ func testApplicationToManyBuildLogs(t *testing.T) {
 	}
 }
 
-func testApplicationToManyAddOpBuildLogs(t *testing.T) {
+func testApplicationToManyAddOpEnvironments(t *testing.T) {
 	var err error
 
 	ctx := context.Background()
@@ -692,15 +580,15 @@ func testApplicationToManyAddOpBuildLogs(t *testing.T) {
 	defer func() { _ = tx.Rollback() }()
 
 	var a Application
-	var b, c, d, e BuildLog
+	var b, c, d, e Environment
 
 	seed := randomize.NewSeed()
 	if err = randomize.Struct(seed, &a, applicationDBTypes, false, strmangle.SetComplement(applicationPrimaryKeyColumns, applicationColumnsWithoutDefault)...); err != nil {
 		t.Fatal(err)
 	}
-	foreigners := []*BuildLog{&b, &c, &d, &e}
+	foreigners := []*Environment{&b, &c, &d, &e}
 	for _, x := range foreigners {
-		if err = randomize.Struct(seed, x, buildLogDBTypes, false, strmangle.SetComplement(buildLogPrimaryKeyColumns, buildLogColumnsWithoutDefault)...); err != nil {
+		if err = randomize.Struct(seed, x, environmentDBTypes, false, strmangle.SetComplement(environmentPrimaryKeyColumns, environmentColumnsWithoutDefault)...); err != nil {
 			t.Fatal(err)
 		}
 	}
@@ -715,13 +603,13 @@ func testApplicationToManyAddOpBuildLogs(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	foreignersSplitByInsertion := [][]*BuildLog{
+	foreignersSplitByInsertion := [][]*Environment{
 		{&b, &c},
 		{&d, &e},
 	}
 
 	for i, x := range foreignersSplitByInsertion {
-		err = a.AddBuildLogs(ctx, tx, i != 0, x...)
+		err = a.AddEnvironments(ctx, tx, i != 0, x...)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -729,10 +617,10 @@ func testApplicationToManyAddOpBuildLogs(t *testing.T) {
 		first := x[0]
 		second := x[1]
 
-		if !queries.Equal(a.ID, first.ApplicationID) {
+		if a.ID != first.ApplicationID {
 			t.Error("foreign key was wrong value", a.ID, first.ApplicationID)
 		}
-		if !queries.Equal(a.ID, second.ApplicationID) {
+		if a.ID != second.ApplicationID {
 			t.Error("foreign key was wrong value", a.ID, second.ApplicationID)
 		}
 
@@ -743,14 +631,14 @@ func testApplicationToManyAddOpBuildLogs(t *testing.T) {
 			t.Error("relationship was not added properly to the foreign slice")
 		}
 
-		if a.R.BuildLogs[i*2] != first {
+		if a.R.Environments[i*2] != first {
 			t.Error("relationship struct slice not set to correct value")
 		}
-		if a.R.BuildLogs[i*2+1] != second {
+		if a.R.Environments[i*2+1] != second {
 			t.Error("relationship struct slice not set to correct value")
 		}
 
-		count, err := a.BuildLogs().Count(ctx, tx)
+		count, err := a.Environments().Count(ctx, tx)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -759,182 +647,6 @@ func testApplicationToManyAddOpBuildLogs(t *testing.T) {
 		}
 	}
 }
-
-func testApplicationToManySetOpBuildLogs(t *testing.T) {
-	var err error
-
-	ctx := context.Background()
-	tx := MustTx(boil.BeginTx(ctx, nil))
-	defer func() { _ = tx.Rollback() }()
-
-	var a Application
-	var b, c, d, e BuildLog
-
-	seed := randomize.NewSeed()
-	if err = randomize.Struct(seed, &a, applicationDBTypes, false, strmangle.SetComplement(applicationPrimaryKeyColumns, applicationColumnsWithoutDefault)...); err != nil {
-		t.Fatal(err)
-	}
-	foreigners := []*BuildLog{&b, &c, &d, &e}
-	for _, x := range foreigners {
-		if err = randomize.Struct(seed, x, buildLogDBTypes, false, strmangle.SetComplement(buildLogPrimaryKeyColumns, buildLogColumnsWithoutDefault)...); err != nil {
-			t.Fatal(err)
-		}
-	}
-
-	if err = a.Insert(ctx, tx, boil.Infer()); err != nil {
-		t.Fatal(err)
-	}
-	if err = b.Insert(ctx, tx, boil.Infer()); err != nil {
-		t.Fatal(err)
-	}
-	if err = c.Insert(ctx, tx, boil.Infer()); err != nil {
-		t.Fatal(err)
-	}
-
-	err = a.SetBuildLogs(ctx, tx, false, &b, &c)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	count, err := a.BuildLogs().Count(ctx, tx)
-	if err != nil {
-		t.Fatal(err)
-	}
-	if count != 2 {
-		t.Error("count was wrong:", count)
-	}
-
-	err = a.SetBuildLogs(ctx, tx, true, &d, &e)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	count, err = a.BuildLogs().Count(ctx, tx)
-	if err != nil {
-		t.Fatal(err)
-	}
-	if count != 2 {
-		t.Error("count was wrong:", count)
-	}
-
-	if !queries.IsValuerNil(b.ApplicationID) {
-		t.Error("want b's foreign key value to be nil")
-	}
-	if !queries.IsValuerNil(c.ApplicationID) {
-		t.Error("want c's foreign key value to be nil")
-	}
-	if !queries.Equal(a.ID, d.ApplicationID) {
-		t.Error("foreign key was wrong value", a.ID, d.ApplicationID)
-	}
-	if !queries.Equal(a.ID, e.ApplicationID) {
-		t.Error("foreign key was wrong value", a.ID, e.ApplicationID)
-	}
-
-	if b.R.Application != nil {
-		t.Error("relationship was not removed properly from the foreign struct")
-	}
-	if c.R.Application != nil {
-		t.Error("relationship was not removed properly from the foreign struct")
-	}
-	if d.R.Application != &a {
-		t.Error("relationship was not added properly to the foreign struct")
-	}
-	if e.R.Application != &a {
-		t.Error("relationship was not added properly to the foreign struct")
-	}
-
-	if a.R.BuildLogs[0] != &d {
-		t.Error("relationship struct slice not set to correct value")
-	}
-	if a.R.BuildLogs[1] != &e {
-		t.Error("relationship struct slice not set to correct value")
-	}
-}
-
-func testApplicationToManyRemoveOpBuildLogs(t *testing.T) {
-	var err error
-
-	ctx := context.Background()
-	tx := MustTx(boil.BeginTx(ctx, nil))
-	defer func() { _ = tx.Rollback() }()
-
-	var a Application
-	var b, c, d, e BuildLog
-
-	seed := randomize.NewSeed()
-	if err = randomize.Struct(seed, &a, applicationDBTypes, false, strmangle.SetComplement(applicationPrimaryKeyColumns, applicationColumnsWithoutDefault)...); err != nil {
-		t.Fatal(err)
-	}
-	foreigners := []*BuildLog{&b, &c, &d, &e}
-	for _, x := range foreigners {
-		if err = randomize.Struct(seed, x, buildLogDBTypes, false, strmangle.SetComplement(buildLogPrimaryKeyColumns, buildLogColumnsWithoutDefault)...); err != nil {
-			t.Fatal(err)
-		}
-	}
-
-	if err := a.Insert(ctx, tx, boil.Infer()); err != nil {
-		t.Fatal(err)
-	}
-
-	err = a.AddBuildLogs(ctx, tx, true, foreigners...)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	count, err := a.BuildLogs().Count(ctx, tx)
-	if err != nil {
-		t.Fatal(err)
-	}
-	if count != 4 {
-		t.Error("count was wrong:", count)
-	}
-
-	err = a.RemoveBuildLogs(ctx, tx, foreigners[:2]...)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	count, err = a.BuildLogs().Count(ctx, tx)
-	if err != nil {
-		t.Fatal(err)
-	}
-	if count != 2 {
-		t.Error("count was wrong:", count)
-	}
-
-	if !queries.IsValuerNil(b.ApplicationID) {
-		t.Error("want b's foreign key value to be nil")
-	}
-	if !queries.IsValuerNil(c.ApplicationID) {
-		t.Error("want c's foreign key value to be nil")
-	}
-
-	if b.R.Application != nil {
-		t.Error("relationship was not removed properly from the foreign struct")
-	}
-	if c.R.Application != nil {
-		t.Error("relationship was not removed properly from the foreign struct")
-	}
-	if d.R.Application != &a {
-		t.Error("relationship to a should have been preserved")
-	}
-	if e.R.Application != &a {
-		t.Error("relationship to a should have been preserved")
-	}
-
-	if len(a.R.BuildLogs) != 2 {
-		t.Error("should have preserved two relationships")
-	}
-
-	// Removal doesn't do a stable deletion for performance so we have to flip the order
-	if a.R.BuildLogs[1] != &d {
-		t.Error("relationship to d should have been preserved")
-	}
-	if a.R.BuildLogs[0] != &e {
-		t.Error("relationship to e should have been preserved")
-	}
-}
-
 func testApplicationToOneRepositoryUsingRepository(t *testing.T) {
 	ctx := context.Background()
 	tx := MustTx(boil.BeginTx(ctx, nil))
@@ -1118,7 +830,7 @@ func testApplicationsSelect(t *testing.T) {
 }
 
 var (
-	applicationDBTypes = map[string]string{`ID`: `varchar`, `Owner`: `varchar`, `Name`: `varchar`, `RepositoryID`: `varchar`, `CreatedAt`: `datetime`, `UpdatedAt`: `datetime`, `DeletedAt`: `datetime`, `BuildType`: `enum('image','static')`}
+	applicationDBTypes = map[string]string{`ID`: `varchar`, `Owner`: `varchar`, `Name`: `varchar`, `RepositoryID`: `varchar`, `CreatedAt`: `datetime`, `UpdatedAt`: `datetime`, `DeletedAt`: `datetime`}
 	_                  = bytes.MinRead
 )
 

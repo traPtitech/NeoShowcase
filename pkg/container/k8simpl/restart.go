@@ -22,7 +22,7 @@ func (m *Manager) Restart(ctx context.Context, args container.RestartArgs) (*con
 			},
 		},
 	})
-	_, err := m.clientset.AppsV1().Deployments(appNamespace).Patch(ctx, deploymentName(args.ApplicationID), types.MergePatchType, data, metav1.PatchOptions{})
+	_, err := m.clientset.AppsV1().Deployments(appNamespace).Patch(ctx, deploymentName(args.ApplicationID, args.EnvironmentID), types.MergePatchType, data, metav1.PatchOptions{})
 	if err != nil {
 		return nil, fmt.Errorf("failed to restart deployment: %w", err)
 	}

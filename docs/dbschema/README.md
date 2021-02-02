@@ -4,10 +4,11 @@
 
 | Name | Columns | Comment | Type |
 | ---- | ------- | ------- | ---- |
-| [applications](applications.md) | 8 | アプリテーブル | BASE TABLE |
+| [applications](applications.md) | 7 | アプリテーブル | BASE TABLE |
 | [artifacts](artifacts.md) | 5 | 静的ファイル生成物テーブル | BASE TABLE |
 | [build_logs](build_logs.md) | 5 | ビルドログテーブル | BASE TABLE |
-| [repositories](repositories.md) | 3 | Gitリポジトリテーブル | BASE TABLE |
+| [environments](environments.md) | 6 | アプリ環境テーブル | BASE TABLE |
+| [repositories](repositories.md) | 2 | Gitリポジトリテーブル | BASE TABLE |
 | [websites](websites.md) | 7 | Webサイトテーブル | BASE TABLE |
 
 ## Relations

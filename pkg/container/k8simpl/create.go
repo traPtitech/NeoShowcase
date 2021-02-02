@@ -17,6 +17,7 @@ func (m *Manager) Create(ctx context.Context, args container.CreateArgs) (*conta
 	labels := util.MergeLabels(args.Labels, map[string]string{
 		appContainerLabel:              "true",
 		appContainerApplicationIDLabel: args.ApplicationID,
+		appContainerEnvironmentIDLabel: args.EnvironmentID,
 	})
 
 	var envs []apiv1.EnvVar
@@ -40,7 +41,7 @@ func (m *Manager) Create(ctx context.Context, args container.CreateArgs) (*conta
 		}
 		svc := &apiv1.Service{
 			ObjectMeta: metav1.ObjectMeta{
-				Name:      deploymentName(args.ApplicationID),
+				Name:      deploymentName(args.ApplicationID, args.EnvironmentID),
 				Namespace: appNamespace,
 				Labels:    labels,
 			},
@@ -49,6 +50,7 @@ func (m *Manager) Create(ctx context.Context, args container.CreateArgs) (*conta
 				Selector: map[string]string{
 					appContainerLabel:              "true",
 					appContainerApplicationIDLabel: args.ApplicationID,
+					appContainerEnvironmentIDLabel: args.EnvironmentID,
 				},
 				Ports: []apiv1.ServicePort{
 					{
@@ -61,7 +63,7 @@ func (m *Manager) Create(ctx context.Context, args container.CreateArgs) (*conta
 		}
 		ingress := &networkingv1beta1.Ingress{
 			ObjectMeta: metav1.ObjectMeta{
-				Name:      deploymentName(args.ApplicationID),
+				Name:      deploymentName(args.ApplicationID, args.EnvironmentID),
 				Namespace: appNamespace,
 				Labels:    labels,
 				Annotations: map[string]string{
@@ -78,7 +80,7 @@ func (m *Manager) Create(ctx context.Context, args container.CreateArgs) (*conta
 									{
 										Path: "/",
 										Backend: networkingv1beta1.IngressBackend{
-											ServiceName: deploymentName(args.ApplicationID),
+											ServiceName: deploymentName(args.ApplicationID, args.EnvironmentID),
 											ServicePort: intstr.FromInt(80),
 										},
 									},
@@ -100,7 +102,7 @@ func (m *Manager) Create(ctx context.Context, args container.CreateArgs) (*conta
 
 	deployment := &appsv1.Deployment{
 		ObjectMeta: metav1.ObjectMeta{
-			Name:      deploymentName(args.ApplicationID),
+			Name:      deploymentName(args.ApplicationID, args.EnvironmentID),
 			Namespace: appNamespace,
 			Labels:    labels,
 		},
@@ -110,6 +112,7 @@ func (m *Manager) Create(ctx context.Context, args container.CreateArgs) (*conta
 				MatchLabels: map[string]string{
 					appContainerLabel:              "true",
 					appContainerApplicationIDLabel: args.ApplicationID,
+					appContainerEnvironmentIDLabel: args.EnvironmentID,
 				},
 			},
 			Template: apiv1.PodTemplateSpec{
@@ -118,7 +121,7 @@ func (m *Manager) Create(ctx context.Context, args container.CreateArgs) (*conta
 					Labels:    labels,
 				},
 				Spec: apiv1.PodSpec{
-					Containers:    []apiv1.Container{cont},
+					Containers: []apiv1.Container{cont},
 				},
 			},
 			Strategy: appsv1.DeploymentStrategy{

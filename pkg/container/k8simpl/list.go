@@ -20,7 +20,8 @@ func (m *Manager) List(ctx context.Context) (*container.ListResult, error) {
 	var result []container.Container
 	for _, item := range list.Items {
 		result = append(result, container.Container{
-			ApplicationID: item.Name,
+			ApplicationID: item.Labels[appContainerApplicationIDLabel],
+			EnvironmentID: item.Labels[appContainerEnvironmentIDLabel],
 			State:         item.Status.String(), // TODO
 		})
 	}

@@ -31,7 +31,6 @@ type Application struct {
 	CreatedAt    time.Time `boil:"created_at" json:"created_at" toml:"created_at" yaml:"created_at"`
 	UpdatedAt    time.Time `boil:"updated_at" json:"updated_at" toml:"updated_at" yaml:"updated_at"`
 	DeletedAt    null.Time `boil:"deleted_at" json:"deleted_at,omitempty" toml:"deleted_at" yaml:"deleted_at,omitempty"`
-	BuildType    string    `boil:"build_type" json:"build_type" toml:"build_type" yaml:"build_type"`
 
 	R *applicationR `boil:"-" json:"-" toml:"-" yaml:"-"`
 	L applicationL  `boil:"-" json:"-" toml:"-" yaml:"-"`
@@ -45,7 +44,6 @@ var ApplicationColumns = struct {
 	CreatedAt    string
 	UpdatedAt    string
 	DeletedAt    string
-	BuildType    string
 }{
 	ID:           "id",
 	Owner:        "owner",
@@ -54,7 +52,6 @@ var ApplicationColumns = struct {
 	CreatedAt:    "created_at",
 	UpdatedAt:    "updated_at",
 	DeletedAt:    "deleted_at",
-	BuildType:    "build_type",
 }
 
 // Generated where
@@ -134,7 +131,6 @@ var ApplicationWhere = struct {
 	CreatedAt    whereHelpertime_Time
 	UpdatedAt    whereHelpertime_Time
 	DeletedAt    whereHelpernull_Time
-	BuildType    whereHelperstring
 }{
 	ID:           whereHelperstring{field: "`applications`.`id`"},
 	Owner:        whereHelperstring{field: "`applications`.`owner`"},
@@ -143,25 +139,21 @@ var ApplicationWhere = struct {
 	CreatedAt:    whereHelpertime_Time{field: "`applications`.`created_at`"},
 	UpdatedAt:    whereHelpertime_Time{field: "`applications`.`updated_at`"},
 	DeletedAt:    whereHelpernull_Time{field: "`applications`.`deleted_at`"},
-	BuildType:    whereHelperstring{field: "`applications`.`build_type`"},
 }
 
 // ApplicationRels is where relationship names are stored.
 var ApplicationRels = struct {
-	Repository string
-	Website    string
-	BuildLogs  string
+	Repository   string
+	Environments string
 }{
-	Repository: "Repository",
-	Website:    "Website",
-	BuildLogs:  "BuildLogs",
+	Repository:   "Repository",
+	Environments: "Environments",
 }
 
 // applicationR is where relationships are stored.
 type applicationR struct {
-	Repository *Repository   `boil:"Repository" json:"Repository" toml:"Repository" yaml:"Repository"`
-	Website    *Website      `boil:"Website" json:"Website" toml:"Website" yaml:"Website"`
-	BuildLogs  BuildLogSlice `boil:"BuildLogs" json:"BuildLogs" toml:"BuildLogs" yaml:"BuildLogs"`
+	Repository   *Repository      `boil:"Repository" json:"Repository" toml:"Repository" yaml:"Repository"`
+	Environments EnvironmentSlice `boil:"Environments" json:"Environments" toml:"Environments" yaml:"Environments"`
 }
 
 // NewStruct creates a new relationship struct
@@ -173,8 +165,8 @@ func (*applicationR) NewStruct() *applicationR {
 type applicationL struct{}
 
 var (
-	applicationAllColumns            = []string{"id", "owner", "name", "repository_id", "created_at", "updated_at", "deleted_at", "build_type"}
-	applicationColumnsWithoutDefault = []string{"id", "owner", "name", "repository_id", "created_at", "updated_at", "deleted_at", "build_type"}
+	applicationAllColumns            = []string{"id", "owner", "name", "repository_id", "created_at", "updated_at", "deleted_at"}
+	applicationColumnsWithoutDefault = []string{"id", "owner", "name", "repository_id", "created_at", "updated_at", "deleted_at"}
 	applicationColumnsWithDefault    = []string{}
 	applicationPrimaryKeyColumns     = []string{"id"}
 )
@@ -468,36 +460,22 @@ func (o *Application) Repository(mods ...qm.QueryMod) repositoryQuery {
 	return query
 }
 
-// Website pointed to by the foreign key.
-func (o *Application) Website(mods ...qm.QueryMod) websiteQuery {
-	queryMods := []qm.QueryMod{
-		qm.Where("`application_id` = ?", o.ID),
-	}
-
-	queryMods = append(queryMods, mods...)
-
-	query := Websites(queryMods...)
-	queries.SetFrom(query.Query, "`websites`")
-
-	return query
-}
-
-// BuildLogs retrieves all the build_log's BuildLogs with an executor.
-func (o *Application) BuildLogs(mods ...qm.QueryMod) buildLogQuery {
+// Environments retrieves all the environment's Environments with an executor.
+func (o *Application) Environments(mods ...qm.QueryMod) environmentQuery {
 	var queryMods []qm.QueryMod
 	if len(mods) != 0 {
 		queryMods = append(queryMods, mods...)
 	}
 
 	queryMods = append(queryMods,
-		qm.Where("`build_logs`.`application_id`=?", o.ID),
+		qm.Where("`environments`.`application_id`=?", o.ID),
 	)
 
-	query := BuildLogs(queryMods...)
-	queries.SetFrom(query.Query, "`build_logs`")
+	query := Environments(queryMods...)
+	queries.SetFrom(query.Query, "`environments`")
 
 	if len(queries.GetSelect(query.Query)) == 0 {
-		queries.SetSelect(query.Query, []string{"`build_logs`.*"})
+		queries.SetSelect(query.Query, []string{"`environments`.*"})
 	}
 
 	return query
@@ -607,9 +585,9 @@ func (applicationL) LoadRepository(ctx context.Context, e boil.ContextExecutor, 
 	return nil
 }
 
-// LoadWebsite allows an eager lookup of values, cached into the
-// loaded structs of the objects. This is for a 1-1 relationship.
-func (applicationL) LoadWebsite(ctx context.Context, e boil.ContextExecutor, singular bool, maybeApplication interface{}, mods queries.Applicator) error {
+// LoadEnvironments allows an eager lookup of values, cached into the
+// loaded structs of the objects. This is for a 1-M or N-M relationship.
+func (applicationL) LoadEnvironments(ctx context.Context, e boil.ContextExecutor, singular bool, maybeApplication interface{}, mods queries.Applicator) error {
 	var slice []*Application
 	var object *Application
 
@@ -647,8 +625,8 @@ func (applicationL) LoadWebsite(ctx context.Context, e boil.ContextExecutor, sin
 	}
 
 	query := NewQuery(
-		qm.From(`websites`),
-		qm.WhereIn(`websites.application_id in ?`, args...),
+		qm.From(`environments`),
+		qm.WhereIn(`environments.application_id in ?`, args...),
 	)
 	if mods != nil {
 		mods.Apply(query)
@@ -656,123 +634,22 @@ func (applicationL) LoadWebsite(ctx context.Context, e boil.ContextExecutor, sin
 
 	results, err := query.QueryContext(ctx, e)
 	if err != nil {
-		return errors.Wrap(err, "failed to eager load Website")
+		return errors.Wrap(err, "failed to eager load environments")
 	}
 
-	var resultSlice []*Website
+	var resultSlice []*Environment
 	if err = queries.Bind(results, &resultSlice); err != nil {
-		return errors.Wrap(err, "failed to bind eager loaded slice Website")
+		return errors.Wrap(err, "failed to bind eager loaded slice environments")
 	}
 
 	if err = results.Close(); err != nil {
-		return errors.Wrap(err, "failed to close results of eager load for websites")
+		return errors.Wrap(err, "failed to close results in eager load on environments")
 	}
 	if err = results.Err(); err != nil {
-		return errors.Wrap(err, "error occurred during iteration of eager loaded relations for websites")
+		return errors.Wrap(err, "error occurred during iteration of eager loaded relations for environments")
 	}
 
-	if len(applicationAfterSelectHooks) != 0 {
-		for _, obj := range resultSlice {
-			if err := obj.doAfterSelectHooks(ctx, e); err != nil {
-				return err
-			}
-		}
-	}
-
-	if len(resultSlice) == 0 {
-		return nil
-	}
-
-	if singular {
-		foreign := resultSlice[0]
-		object.R.Website = foreign
-		if foreign.R == nil {
-			foreign.R = &websiteR{}
-		}
-		foreign.R.Application = object
-	}
-
-	for _, local := range slice {
-		for _, foreign := range resultSlice {
-			if local.ID == foreign.ApplicationID {
-				local.R.Website = foreign
-				if foreign.R == nil {
-					foreign.R = &websiteR{}
-				}
-				foreign.R.Application = local
-				break
-			}
-		}
-	}
-
-	return nil
-}
-
-// LoadBuildLogs allows an eager lookup of values, cached into the
-// loaded structs of the objects. This is for a 1-M or N-M relationship.
-func (applicationL) LoadBuildLogs(ctx context.Context, e boil.ContextExecutor, singular bool, maybeApplication interface{}, mods queries.Applicator) error {
-	var slice []*Application
-	var object *Application
-
-	if singular {
-		object = maybeApplication.(*Application)
-	} else {
-		slice = *maybeApplication.(*[]*Application)
-	}
-
-	args := make([]interface{}, 0, 1)
-	if singular {
-		if object.R == nil {
-			object.R = &applicationR{}
-		}
-		args = append(args, object.ID)
-	} else {
-	Outer:
-		for _, obj := range slice {
-			if obj.R == nil {
-				obj.R = &applicationR{}
-			}
-
-			for _, a := range args {
-				if queries.Equal(a, obj.ID) {
-					continue Outer
-				}
-			}
-
-			args = append(args, obj.ID)
-		}
-	}
-
-	if len(args) == 0 {
-		return nil
-	}
-
-	query := NewQuery(
-		qm.From(`build_logs`),
-		qm.WhereIn(`build_logs.application_id in ?`, args...),
-	)
-	if mods != nil {
-		mods.Apply(query)
-	}
-
-	results, err := query.QueryContext(ctx, e)
-	if err != nil {
-		return errors.Wrap(err, "failed to eager load build_logs")
-	}
-
-	var resultSlice []*BuildLog
-	if err = queries.Bind(results, &resultSlice); err != nil {
-		return errors.Wrap(err, "failed to bind eager loaded slice build_logs")
-	}
-
-	if err = results.Close(); err != nil {
-		return errors.Wrap(err, "failed to close results in eager load on build_logs")
-	}
-	if err = results.Err(); err != nil {
-		return errors.Wrap(err, "error occurred during iteration of eager loaded relations for build_logs")
-	}
-
-	if len(buildLogAfterSelectHooks) != 0 {
+	if len(environmentAfterSelectHooks) != 0 {
 		for _, obj := range resultSlice {
 			if err := obj.doAfterSelectHooks(ctx, e); err != nil {
 				return err
@@ -780,10 +657,10 @@ func (applicationL) LoadBuildLogs(ctx context.Context, e boil.ContextExecutor, s
 		}
 	}
 	if singular {
-		object.R.BuildLogs = resultSlice
+		object.R.Environments = resultSlice
 		for _, foreign := range resultSlice {
 			if foreign.R == nil {
-				foreign.R = &buildLogR{}
+				foreign.R = &environmentR{}
 			}
 			foreign.R.Application = object
 		}
@@ -792,10 +669,10 @@ func (applicationL) LoadBuildLogs(ctx context.Context, e boil.ContextExecutor, s
 
 	for _, foreign := range resultSlice {
 		for _, local := range slice {
-			if queries.Equal(local.ID, foreign.ApplicationID) {
-				local.R.BuildLogs = append(local.R.BuildLogs, foreign)
+			if local.ID == foreign.ApplicationID {
+				local.R.Environments = append(local.R.Environments, foreign)
 				if foreign.R == nil {
-					foreign.R = &buildLogR{}
+					foreign.R = &environmentR{}
 				}
 				foreign.R.Application = local
 				break
@@ -853,74 +730,23 @@ func (o *Application) SetRepository(ctx context.Context, exec boil.ContextExecut
 	return nil
 }
 
-// SetWebsite of the application to the related item.
-// Sets o.R.Website to related.
-// Adds o to related.R.Application.
-func (o *Application) SetWebsite(ctx context.Context, exec boil.ContextExecutor, insert bool, related *Website) error {
-	var err error
-
-	if insert {
-		related.ApplicationID = o.ID
-
-		if err = related.Insert(ctx, exec, boil.Infer()); err != nil {
-			return errors.Wrap(err, "failed to insert into foreign table")
-		}
-	} else {
-		updateQuery := fmt.Sprintf(
-			"UPDATE `websites` SET %s WHERE %s",
-			strmangle.SetParamNames("`", "`", 0, []string{"application_id"}),
-			strmangle.WhereClause("`", "`", 0, websitePrimaryKeyColumns),
-		)
-		values := []interface{}{o.ID, related.ID}
-
-		if boil.IsDebug(ctx) {
-			writer := boil.DebugWriterFrom(ctx)
-			fmt.Fprintln(writer, updateQuery)
-			fmt.Fprintln(writer, values)
-		}
-		if _, err = exec.ExecContext(ctx, updateQuery, values...); err != nil {
-			return errors.Wrap(err, "failed to update foreign table")
-		}
-
-		related.ApplicationID = o.ID
-
-	}
-
-	if o.R == nil {
-		o.R = &applicationR{
-			Website: related,
-		}
-	} else {
-		o.R.Website = related
-	}
-
-	if related.R == nil {
-		related.R = &websiteR{
-			Application: o,
-		}
-	} else {
-		related.R.Application = o
-	}
-	return nil
-}
-
-// AddBuildLogs adds the given related objects to the existing relationships
+// AddEnvironments adds the given related objects to the existing relationships
 // of the application, optionally inserting them as new records.
-// Appends related to o.R.BuildLogs.
+// Appends related to o.R.Environments.
 // Sets related.R.Application appropriately.
-func (o *Application) AddBuildLogs(ctx context.Context, exec boil.ContextExecutor, insert bool, related ...*BuildLog) error {
+func (o *Application) AddEnvironments(ctx context.Context, exec boil.ContextExecutor, insert bool, related ...*Environment) error {
 	var err error
 	for _, rel := range related {
 		if insert {
-			queries.Assign(&rel.ApplicationID, o.ID)
+			rel.ApplicationID = o.ID
 			if err = rel.Insert(ctx, exec, boil.Infer()); err != nil {
 				return errors.Wrap(err, "failed to insert into foreign table")
 			}
 		} else {
 			updateQuery := fmt.Sprintf(
-				"UPDATE `build_logs` SET %s WHERE %s",
+				"UPDATE `environments` SET %s WHERE %s",
 				strmangle.SetParamNames("`", "`", 0, []string{"application_id"}),
-				strmangle.WhereClause("`", "`", 0, buildLogPrimaryKeyColumns),
+				strmangle.WhereClause("`", "`", 0, environmentPrimaryKeyColumns),
 			)
 			values := []interface{}{o.ID, rel.ID}
 
@@ -933,97 +759,27 @@ func (o *Application) AddBuildLogs(ctx context.Context, exec boil.ContextExecuto
 				return errors.Wrap(err, "failed to update foreign table")
 			}
 
-			queries.Assign(&rel.ApplicationID, o.ID)
+			rel.ApplicationID = o.ID
 		}
 	}
 
 	if o.R == nil {
 		o.R = &applicationR{
-			BuildLogs: related,
+			Environments: related,
 		}
 	} else {
-		o.R.BuildLogs = append(o.R.BuildLogs, related...)
+		o.R.Environments = append(o.R.Environments, related...)
 	}
 
 	for _, rel := range related {
 		if rel.R == nil {
-			rel.R = &buildLogR{
+			rel.R = &environmentR{
 				Application: o,
 			}
 		} else {
 			rel.R.Application = o
 		}
 	}
-	return nil
-}
-
-// SetBuildLogs removes all previously related items of the
-// application replacing them completely with the passed
-// in related items, optionally inserting them as new records.
-// Sets o.R.Application's BuildLogs accordingly.
-// Replaces o.R.BuildLogs with related.
-// Sets related.R.Application's BuildLogs accordingly.
-func (o *Application) SetBuildLogs(ctx context.Context, exec boil.ContextExecutor, insert bool, related ...*BuildLog) error {
-	query := "update `build_logs` set `application_id` = null where `application_id` = ?"
-	values := []interface{}{o.ID}
-	if boil.IsDebug(ctx) {
-		writer := boil.DebugWriterFrom(ctx)
-		fmt.Fprintln(writer, query)
-		fmt.Fprintln(writer, values)
-	}
-	_, err := exec.ExecContext(ctx, query, values...)
-	if err != nil {
-		return errors.Wrap(err, "failed to remove relationships before set")
-	}
-
-	if o.R != nil {
-		for _, rel := range o.R.BuildLogs {
-			queries.SetScanner(&rel.ApplicationID, nil)
-			if rel.R == nil {
-				continue
-			}
-
-			rel.R.Application = nil
-		}
-
-		o.R.BuildLogs = nil
-	}
-	return o.AddBuildLogs(ctx, exec, insert, related...)
-}
-
-// RemoveBuildLogs relationships from objects passed in.
-// Removes related items from R.BuildLogs (uses pointer comparison, removal does not keep order)
-// Sets related.R.Application.
-func (o *Application) RemoveBuildLogs(ctx context.Context, exec boil.ContextExecutor, related ...*BuildLog) error {
-	var err error
-	for _, rel := range related {
-		queries.SetScanner(&rel.ApplicationID, nil)
-		if rel.R != nil {
-			rel.R.Application = nil
-		}
-		if _, err = rel.Update(ctx, exec, boil.Whitelist("application_id")); err != nil {
-			return err
-		}
-	}
-	if o.R == nil {
-		return nil
-	}
-
-	for _, rel := range related {
-		for i, ri := range o.R.BuildLogs {
-			if rel != ri {
-				continue
-			}
-
-			ln := len(o.R.BuildLogs)
-			if ln > 1 && i < ln-1 {
-				o.R.BuildLogs[i] = o.R.BuildLogs[ln-1]
-			}
-			o.R.BuildLogs = o.R.BuildLogs[:ln-1]
-			break
-		}
-	}
-
 	return nil
 }
 
