@@ -14,6 +14,7 @@ import "testing"
 func TestParent(t *testing.T) {
 	t.Run("Applications", testApplications)
 	t.Run("Artifacts", testArtifacts)
+	t.Run("AvailableDomains", testAvailableDomains)
 	t.Run("BuildLogs", testBuildLogs)
 	t.Run("Environments", testEnvironments)
 	t.Run("Repositories", testRepositories)
@@ -23,6 +24,7 @@ func TestParent(t *testing.T) {
 func TestDelete(t *testing.T) {
 	t.Run("Applications", testApplicationsDelete)
 	t.Run("Artifacts", testArtifactsDelete)
+	t.Run("AvailableDomains", testAvailableDomainsDelete)
 	t.Run("BuildLogs", testBuildLogsDelete)
 	t.Run("Environments", testEnvironmentsDelete)
 	t.Run("Repositories", testRepositoriesDelete)
@@ -32,6 +34,7 @@ func TestDelete(t *testing.T) {
 func TestQueryDeleteAll(t *testing.T) {
 	t.Run("Applications", testApplicationsQueryDeleteAll)
 	t.Run("Artifacts", testArtifactsQueryDeleteAll)
+	t.Run("AvailableDomains", testAvailableDomainsQueryDeleteAll)
 	t.Run("BuildLogs", testBuildLogsQueryDeleteAll)
 	t.Run("Environments", testEnvironmentsQueryDeleteAll)
 	t.Run("Repositories", testRepositoriesQueryDeleteAll)
@@ -41,6 +44,7 @@ func TestQueryDeleteAll(t *testing.T) {
 func TestSliceDeleteAll(t *testing.T) {
 	t.Run("Applications", testApplicationsSliceDeleteAll)
 	t.Run("Artifacts", testArtifactsSliceDeleteAll)
+	t.Run("AvailableDomains", testAvailableDomainsSliceDeleteAll)
 	t.Run("BuildLogs", testBuildLogsSliceDeleteAll)
 	t.Run("Environments", testEnvironmentsSliceDeleteAll)
 	t.Run("Repositories", testRepositoriesSliceDeleteAll)
@@ -50,6 +54,7 @@ func TestSliceDeleteAll(t *testing.T) {
 func TestExists(t *testing.T) {
 	t.Run("Applications", testApplicationsExists)
 	t.Run("Artifacts", testArtifactsExists)
+	t.Run("AvailableDomains", testAvailableDomainsExists)
 	t.Run("BuildLogs", testBuildLogsExists)
 	t.Run("Environments", testEnvironmentsExists)
 	t.Run("Repositories", testRepositoriesExists)
@@ -59,6 +64,7 @@ func TestExists(t *testing.T) {
 func TestFind(t *testing.T) {
 	t.Run("Applications", testApplicationsFind)
 	t.Run("Artifacts", testArtifactsFind)
+	t.Run("AvailableDomains", testAvailableDomainsFind)
 	t.Run("BuildLogs", testBuildLogsFind)
 	t.Run("Environments", testEnvironmentsFind)
 	t.Run("Repositories", testRepositoriesFind)
@@ -68,6 +74,7 @@ func TestFind(t *testing.T) {
 func TestBind(t *testing.T) {
 	t.Run("Applications", testApplicationsBind)
 	t.Run("Artifacts", testArtifactsBind)
+	t.Run("AvailableDomains", testAvailableDomainsBind)
 	t.Run("BuildLogs", testBuildLogsBind)
 	t.Run("Environments", testEnvironmentsBind)
 	t.Run("Repositories", testRepositoriesBind)
@@ -77,6 +84,7 @@ func TestBind(t *testing.T) {
 func TestOne(t *testing.T) {
 	t.Run("Applications", testApplicationsOne)
 	t.Run("Artifacts", testArtifactsOne)
+	t.Run("AvailableDomains", testAvailableDomainsOne)
 	t.Run("BuildLogs", testBuildLogsOne)
 	t.Run("Environments", testEnvironmentsOne)
 	t.Run("Repositories", testRepositoriesOne)
@@ -86,6 +94,7 @@ func TestOne(t *testing.T) {
 func TestAll(t *testing.T) {
 	t.Run("Applications", testApplicationsAll)
 	t.Run("Artifacts", testArtifactsAll)
+	t.Run("AvailableDomains", testAvailableDomainsAll)
 	t.Run("BuildLogs", testBuildLogsAll)
 	t.Run("Environments", testEnvironmentsAll)
 	t.Run("Repositories", testRepositoriesAll)
@@ -95,6 +104,7 @@ func TestAll(t *testing.T) {
 func TestCount(t *testing.T) {
 	t.Run("Applications", testApplicationsCount)
 	t.Run("Artifacts", testArtifactsCount)
+	t.Run("AvailableDomains", testAvailableDomainsCount)
 	t.Run("BuildLogs", testBuildLogsCount)
 	t.Run("Environments", testEnvironmentsCount)
 	t.Run("Repositories", testRepositoriesCount)
@@ -104,6 +114,7 @@ func TestCount(t *testing.T) {
 func TestHooks(t *testing.T) {
 	t.Run("Applications", testApplicationsHooks)
 	t.Run("Artifacts", testArtifactsHooks)
+	t.Run("AvailableDomains", testAvailableDomainsHooks)
 	t.Run("BuildLogs", testBuildLogsHooks)
 	t.Run("Environments", testEnvironmentsHooks)
 	t.Run("Repositories", testRepositoriesHooks)
@@ -115,6 +126,8 @@ func TestInsert(t *testing.T) {
 	t.Run("Applications", testApplicationsInsertWhitelist)
 	t.Run("Artifacts", testArtifactsInsert)
 	t.Run("Artifacts", testArtifactsInsertWhitelist)
+	t.Run("AvailableDomains", testAvailableDomainsInsert)
+	t.Run("AvailableDomains", testAvailableDomainsInsertWhitelist)
 	t.Run("BuildLogs", testBuildLogsInsert)
 	t.Run("BuildLogs", testBuildLogsInsertWhitelist)
 	t.Run("Environments", testEnvironmentsInsert)
@@ -207,6 +220,7 @@ func TestToManyRemove(t *testing.T) {
 func TestReload(t *testing.T) {
 	t.Run("Applications", testApplicationsReload)
 	t.Run("Artifacts", testArtifactsReload)
+	t.Run("AvailableDomains", testAvailableDomainsReload)
 	t.Run("BuildLogs", testBuildLogsReload)
 	t.Run("Environments", testEnvironmentsReload)
 	t.Run("Repositories", testRepositoriesReload)
@@ -216,6 +230,7 @@ func TestReload(t *testing.T) {
 func TestReloadAll(t *testing.T) {
 	t.Run("Applications", testApplicationsReloadAll)
 	t.Run("Artifacts", testArtifactsReloadAll)
+	t.Run("AvailableDomains", testAvailableDomainsReloadAll)
 	t.Run("BuildLogs", testBuildLogsReloadAll)
 	t.Run("Environments", testEnvironmentsReloadAll)
 	t.Run("Repositories", testRepositoriesReloadAll)
@@ -225,6 +240,7 @@ func TestReloadAll(t *testing.T) {
 func TestSelect(t *testing.T) {
 	t.Run("Applications", testApplicationsSelect)
 	t.Run("Artifacts", testArtifactsSelect)
+	t.Run("AvailableDomains", testAvailableDomainsSelect)
 	t.Run("BuildLogs", testBuildLogsSelect)
 	t.Run("Environments", testEnvironmentsSelect)
 	t.Run("Repositories", testRepositoriesSelect)
@@ -234,6 +250,7 @@ func TestSelect(t *testing.T) {
 func TestUpdate(t *testing.T) {
 	t.Run("Applications", testApplicationsUpdate)
 	t.Run("Artifacts", testArtifactsUpdate)
+	t.Run("AvailableDomains", testAvailableDomainsUpdate)
 	t.Run("BuildLogs", testBuildLogsUpdate)
 	t.Run("Environments", testEnvironmentsUpdate)
 	t.Run("Repositories", testRepositoriesUpdate)
@@ -243,6 +260,7 @@ func TestUpdate(t *testing.T) {
 func TestSliceUpdateAll(t *testing.T) {
 	t.Run("Applications", testApplicationsSliceUpdateAll)
 	t.Run("Artifacts", testArtifactsSliceUpdateAll)
+	t.Run("AvailableDomains", testAvailableDomainsSliceUpdateAll)
 	t.Run("BuildLogs", testBuildLogsSliceUpdateAll)
 	t.Run("Environments", testEnvironmentsSliceUpdateAll)
 	t.Run("Repositories", testRepositoriesSliceUpdateAll)

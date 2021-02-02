@@ -4,17 +4,19 @@
 package models
 
 var TableNames = struct {
-	Applications string
-	Artifacts    string
-	BuildLogs    string
-	Environments string
-	Repositories string
-	Websites     string
+	Applications     string
+	Artifacts        string
+	AvailableDomains string
+	BuildLogs        string
+	Environments     string
+	Repositories     string
+	Websites         string
 }{
-	Applications: "applications",
-	Artifacts:    "artifacts",
-	BuildLogs:    "build_logs",
-	Environments: "environments",
-	Repositories: "repositories",
-	Websites:     "websites",
+	Applications:     "applications",
+	Artifacts:        "artifacts",
+	AvailableDomains: "available_domains",
+	BuildLogs:        "build_logs",
+	Environments:     "environments",
+	Repositories:     "repositories",
+	Websites:         "websites",
 }
