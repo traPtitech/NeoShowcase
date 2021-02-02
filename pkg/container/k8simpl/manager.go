@@ -14,6 +14,7 @@ const (
 	appNamespace                   = "neoshowcase-apps"
 	appContainerLabel              = "neoshowcase.trap.jp/app"
 	appContainerApplicationIDLabel = "neoshowcase.trap.jp/appId"
+	appContainerEnvironmentIDLabel = "neoshowcase.trap.jp/envId"
 	deploymentRestartAnnotation    = "neoshowcase.trap.jp/restartedAt"
 )
 

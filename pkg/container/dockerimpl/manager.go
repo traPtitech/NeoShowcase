@@ -14,6 +14,7 @@ const (
 	appNetwork                     = "neoshowcase_apps"
 	appContainerLabel              = "neoshowcase.trap.jp/app"
 	appContainerApplicationIDLabel = "neoshowcase.trap.jp/appId"
+	appContainerEnvironmentIDLabel = "neoshowcase.trap.jp/envId"
 	timeout                        = 5
 )
 
@@ -58,22 +59,22 @@ func (m *Manager) eventListener() {
 		case "container":
 			switch ev.Action {
 			case "start":
-				appID, ok := ev.Actor.Attributes[appContainerApplicationIDLabel]
-				if ok {
+				if ev.Actor.Attributes[appContainerLabel] == "true" {
 					m.bus.Publish(hub.Message{
 						Name: event.ContainerAppStarted,
 						Fields: map[string]interface{}{
-							"appId": appID,
+							"application_id": ev.Actor.Attributes[appContainerApplicationIDLabel],
+							"environment_id": ev.Actor.Attributes[appContainerEnvironmentIDLabel],
 						},
 					})
 				}
 			case "stop":
-				appID, ok := ev.Actor.Attributes[appContainerApplicationIDLabel]
-				if ok {
+				if ev.Actor.Attributes[appContainerLabel] == "true" {
 					m.bus.Publish(hub.Message{
 						Name: event.ContainerAppStopped,
 						Fields: map[string]interface{}{
-							"appId": appID,
+							"application_id": ev.Actor.Attributes[appContainerApplicationIDLabel],
+							"environment_id": ev.Actor.Attributes[appContainerEnvironmentIDLabel],
 						},
 					})
 				}
@@ -105,6 +106,6 @@ func initNetworks(c *docker.Client) error {
 	return err
 }
 
-func containerName(appID string) string {
-	return fmt.Sprintf("nsapp-%s", appID)
+func containerName(appID, envID string) string {
+	return fmt.Sprintf("nsapp-%s-%s", appID, envID)
 }

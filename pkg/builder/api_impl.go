@@ -43,7 +43,7 @@ func (s *Service) ConnectEventStream(_ *emptypb.Empty, stream api.BuilderService
 				if err := stream.Send(&api.Event{
 					Type: api.Event_BUILD_STARTED,
 					Body: util.ToJSON(map[string]interface{}{
-						"application_id": task.BuildLogM.ApplicationID.String,
+						"environment_id": task.BuildLogM.EnvironmentID.String,
 						"build_id":       task.BuildID,
 					}),
 				}); err != nil {
@@ -55,7 +55,7 @@ func (s *Service) ConnectEventStream(_ *emptypb.Empty, stream api.BuilderService
 				if err := stream.Send(&api.Event{
 					Type: api.Event_BUILD_FAILED,
 					Body: util.ToJSON(map[string]interface{}{
-						"application_id": task.BuildLogM.ApplicationID.String,
+						"environment_id": task.BuildLogM.EnvironmentID.String,
 						"build_id":       task.BuildID,
 					}),
 				}); err != nil {
@@ -67,7 +67,7 @@ func (s *Service) ConnectEventStream(_ *emptypb.Empty, stream api.BuilderService
 				if err := stream.Send(&api.Event{
 					Type: api.Event_BUILD_SUCCEEDED,
 					Body: util.ToJSON(map[string]interface{}{
-						"application_id": task.BuildLogM.ApplicationID.String,
+						"environment_id": task.BuildLogM.EnvironmentID.String,
 						"build_id":       task.BuildID,
 					}),
 				}); err != nil {
@@ -79,7 +79,7 @@ func (s *Service) ConnectEventStream(_ *emptypb.Empty, stream api.BuilderService
 				if err := stream.Send(&api.Event{
 					Type: api.Event_BUILD_CANCELED,
 					Body: util.ToJSON(map[string]interface{}{
-						"application_id": task.BuildLogM.ApplicationID.String,
+						"environment_id": task.BuildLogM.EnvironmentID.String,
 						"build_id":       task.BuildID,
 					}),
 				}); err != nil {
@@ -108,9 +108,9 @@ func (s *Service) StartBuildImage(ctx context.Context, req *api.StartBuildImageR
 			StartedAt: time.Now(),
 		},
 	}
-	// アプリケーションIDが指定されていない場合はデバッグビルド
-	if len(req.ApplicationId) > 0 {
-		t.BuildLogM.ApplicationID = null.StringFrom(req.GetApplicationId())
+	// 環境IDが指定されていない場合はデバッグビルド
+	if len(req.EnvironmentId) > 0 {
+		t.BuildLogM.EnvironmentID = null.StringFrom(req.GetEnvironmentId())
 	}
 
 	if err := t.startAsync(ctx, s); err != nil {
@@ -141,8 +141,8 @@ func (s *Service) StartBuildStatic(ctx context.Context, req *api.StartBuildStati
 		},
 	}
 	// アプリケーションIDが指定されていない場合はデバッグビルド
-	if len(req.ApplicationId) > 0 {
-		t.BuildLogM.ApplicationID = null.StringFrom(req.GetApplicationId())
+	if len(req.EnvironmentId) > 0 {
+		t.BuildLogM.EnvironmentID = null.StringFrom(req.GetEnvironmentId())
 	}
 
 	if err := t.startAsync(ctx, s); err != nil {
