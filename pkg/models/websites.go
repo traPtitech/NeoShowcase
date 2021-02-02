@@ -26,11 +26,11 @@ import (
 type Website struct {
 	ID            string      `boil:"id" json:"id" toml:"id" yaml:"id"`
 	FQDN          string      `boil:"fqdn" json:"fqdn" toml:"fqdn" yaml:"fqdn"`
-	ApplicationID string      `boil:"application_id" json:"application_id" toml:"application_id" yaml:"application_id"`
 	BuildID       null.String `boil:"build_id" json:"build_id,omitempty" toml:"build_id" yaml:"build_id,omitempty"`
 	HTTPPort      int         `boil:"http_port" json:"http_port" toml:"http_port" yaml:"http_port"`
 	CreatedAt     time.Time   `boil:"created_at" json:"created_at" toml:"created_at" yaml:"created_at"`
 	UpdatedAt     time.Time   `boil:"updated_at" json:"updated_at" toml:"updated_at" yaml:"updated_at"`
+	EnvironmentID string      `boil:"environment_id" json:"environment_id" toml:"environment_id" yaml:"environment_id"`
 
 	R *websiteR `boil:"-" json:"-" toml:"-" yaml:"-"`
 	L websiteL  `boil:"-" json:"-" toml:"-" yaml:"-"`
@@ -39,19 +39,19 @@ type Website struct {
 var WebsiteColumns = struct {
 	ID            string
 	FQDN          string
-	ApplicationID string
 	BuildID       string
 	HTTPPort      string
 	CreatedAt     string
 	UpdatedAt     string
+	EnvironmentID string
 }{
 	ID:            "id",
 	FQDN:          "fqdn",
-	ApplicationID: "application_id",
 	BuildID:       "build_id",
 	HTTPPort:      "http_port",
 	CreatedAt:     "created_at",
 	UpdatedAt:     "updated_at",
+	EnvironmentID: "environment_id",
 }
 
 // Generated where
@@ -82,34 +82,34 @@ func (w whereHelperint) NIN(slice []int) qm.QueryMod {
 var WebsiteWhere = struct {
 	ID            whereHelperstring
 	FQDN          whereHelperstring
-	ApplicationID whereHelperstring
 	BuildID       whereHelpernull_String
 	HTTPPort      whereHelperint
 	CreatedAt     whereHelpertime_Time
 	UpdatedAt     whereHelpertime_Time
+	EnvironmentID whereHelperstring
 }{
 	ID:            whereHelperstring{field: "`websites`.`id`"},
 	FQDN:          whereHelperstring{field: "`websites`.`fqdn`"},
-	ApplicationID: whereHelperstring{field: "`websites`.`application_id`"},
 	BuildID:       whereHelpernull_String{field: "`websites`.`build_id`"},
 	HTTPPort:      whereHelperint{field: "`websites`.`http_port`"},
 	CreatedAt:     whereHelpertime_Time{field: "`websites`.`created_at`"},
 	UpdatedAt:     whereHelpertime_Time{field: "`websites`.`updated_at`"},
+	EnvironmentID: whereHelperstring{field: "`websites`.`environment_id`"},
 }
 
 // WebsiteRels is where relationship names are stored.
 var WebsiteRels = struct {
-	Application string
 	Build       string
+	Environment string
 }{
-	Application: "Application",
 	Build:       "Build",
+	Environment: "Environment",
 }
 
 // websiteR is where relationships are stored.
 type websiteR struct {
-	Application *Application `boil:"Application" json:"Application" toml:"Application" yaml:"Application"`
 	Build       *BuildLog    `boil:"Build" json:"Build" toml:"Build" yaml:"Build"`
+	Environment *Environment `boil:"Environment" json:"Environment" toml:"Environment" yaml:"Environment"`
 }
 
 // NewStruct creates a new relationship struct
@@ -121,8 +121,8 @@ func (*websiteR) NewStruct() *websiteR {
 type websiteL struct{}
 
 var (
-	websiteAllColumns            = []string{"id", "fqdn", "application_id", "build_id", "http_port", "created_at", "updated_at"}
-	websiteColumnsWithoutDefault = []string{"id", "fqdn", "application_id", "build_id", "created_at", "updated_at"}
+	websiteAllColumns            = []string{"id", "fqdn", "build_id", "http_port", "created_at", "updated_at", "environment_id"}
+	websiteColumnsWithoutDefault = []string{"id", "fqdn", "build_id", "created_at", "updated_at", "environment_id"}
 	websiteColumnsWithDefault    = []string{"http_port"}
 	websitePrimaryKeyColumns     = []string{"id"}
 )
@@ -402,20 +402,6 @@ func (q websiteQuery) Exists(ctx context.Context, exec boil.ContextExecutor) (bo
 	return count > 0, nil
 }
 
-// Application pointed to by the foreign key.
-func (o *Website) Application(mods ...qm.QueryMod) applicationQuery {
-	queryMods := []qm.QueryMod{
-		qm.Where("`id` = ?", o.ApplicationID),
-	}
-
-	queryMods = append(queryMods, mods...)
-
-	query := Applications(queryMods...)
-	queries.SetFrom(query.Query, "`applications`")
-
-	return query
-}
-
 // Build pointed to by the foreign key.
 func (o *Website) Build(mods ...qm.QueryMod) buildLogQuery {
 	queryMods := []qm.QueryMod{
@@ -430,108 +416,18 @@ func (o *Website) Build(mods ...qm.QueryMod) buildLogQuery {
 	return query
 }
 
-// LoadApplication allows an eager lookup of values, cached into the
-// loaded structs of the objects. This is for an N-1 relationship.
-func (websiteL) LoadApplication(ctx context.Context, e boil.ContextExecutor, singular bool, maybeWebsite interface{}, mods queries.Applicator) error {
-	var slice []*Website
-	var object *Website
-
-	if singular {
-		object = maybeWebsite.(*Website)
-	} else {
-		slice = *maybeWebsite.(*[]*Website)
+// Environment pointed to by the foreign key.
+func (o *Website) Environment(mods ...qm.QueryMod) environmentQuery {
+	queryMods := []qm.QueryMod{
+		qm.Where("`id` = ?", o.EnvironmentID),
 	}
 
-	args := make([]interface{}, 0, 1)
-	if singular {
-		if object.R == nil {
-			object.R = &websiteR{}
-		}
-		args = append(args, object.ApplicationID)
+	queryMods = append(queryMods, mods...)
 
-	} else {
-	Outer:
-		for _, obj := range slice {
-			if obj.R == nil {
-				obj.R = &websiteR{}
-			}
+	query := Environments(queryMods...)
+	queries.SetFrom(query.Query, "`environments`")
 
-			for _, a := range args {
-				if a == obj.ApplicationID {
-					continue Outer
-				}
-			}
-
-			args = append(args, obj.ApplicationID)
-
-		}
-	}
-
-	if len(args) == 0 {
-		return nil
-	}
-
-	query := NewQuery(
-		qm.From(`applications`),
-		qm.WhereIn(`applications.id in ?`, args...),
-	)
-	if mods != nil {
-		mods.Apply(query)
-	}
-
-	results, err := query.QueryContext(ctx, e)
-	if err != nil {
-		return errors.Wrap(err, "failed to eager load Application")
-	}
-
-	var resultSlice []*Application
-	if err = queries.Bind(results, &resultSlice); err != nil {
-		return errors.Wrap(err, "failed to bind eager loaded slice Application")
-	}
-
-	if err = results.Close(); err != nil {
-		return errors.Wrap(err, "failed to close results of eager load for applications")
-	}
-	if err = results.Err(); err != nil {
-		return errors.Wrap(err, "error occurred during iteration of eager loaded relations for applications")
-	}
-
-	if len(websiteAfterSelectHooks) != 0 {
-		for _, obj := range resultSlice {
-			if err := obj.doAfterSelectHooks(ctx, e); err != nil {
-				return err
-			}
-		}
-	}
-
-	if len(resultSlice) == 0 {
-		return nil
-	}
-
-	if singular {
-		foreign := resultSlice[0]
-		object.R.Application = foreign
-		if foreign.R == nil {
-			foreign.R = &applicationR{}
-		}
-		foreign.R.Website = object
-		return nil
-	}
-
-	for _, local := range slice {
-		for _, foreign := range resultSlice {
-			if local.ApplicationID == foreign.ID {
-				local.R.Application = foreign
-				if foreign.R == nil {
-					foreign.R = &applicationR{}
-				}
-				foreign.R.Website = local
-				break
-			}
-		}
-	}
-
-	return nil
+	return query
 }
 
 // LoadBuild allows an eager lookup of values, cached into the
@@ -642,48 +538,105 @@ func (websiteL) LoadBuild(ctx context.Context, e boil.ContextExecutor, singular 
 	return nil
 }
 
-// SetApplication of the website to the related item.
-// Sets o.R.Application to related.
-// Adds o to related.R.Website.
-func (o *Website) SetApplication(ctx context.Context, exec boil.ContextExecutor, insert bool, related *Application) error {
-	var err error
-	if insert {
-		if err = related.Insert(ctx, exec, boil.Infer()); err != nil {
-			return errors.Wrap(err, "failed to insert into foreign table")
+// LoadEnvironment allows an eager lookup of values, cached into the
+// loaded structs of the objects. This is for an N-1 relationship.
+func (websiteL) LoadEnvironment(ctx context.Context, e boil.ContextExecutor, singular bool, maybeWebsite interface{}, mods queries.Applicator) error {
+	var slice []*Website
+	var object *Website
+
+	if singular {
+		object = maybeWebsite.(*Website)
+	} else {
+		slice = *maybeWebsite.(*[]*Website)
+	}
+
+	args := make([]interface{}, 0, 1)
+	if singular {
+		if object.R == nil {
+			object.R = &websiteR{}
+		}
+		args = append(args, object.EnvironmentID)
+
+	} else {
+	Outer:
+		for _, obj := range slice {
+			if obj.R == nil {
+				obj.R = &websiteR{}
+			}
+
+			for _, a := range args {
+				if a == obj.EnvironmentID {
+					continue Outer
+				}
+			}
+
+			args = append(args, obj.EnvironmentID)
+
 		}
 	}
 
-	updateQuery := fmt.Sprintf(
-		"UPDATE `websites` SET %s WHERE %s",
-		strmangle.SetParamNames("`", "`", 0, []string{"application_id"}),
-		strmangle.WhereClause("`", "`", 0, websitePrimaryKeyColumns),
+	if len(args) == 0 {
+		return nil
+	}
+
+	query := NewQuery(
+		qm.From(`environments`),
+		qm.WhereIn(`environments.id in ?`, args...),
 	)
-	values := []interface{}{related.ID, o.ID}
-
-	if boil.IsDebug(ctx) {
-		writer := boil.DebugWriterFrom(ctx)
-		fmt.Fprintln(writer, updateQuery)
-		fmt.Fprintln(writer, values)
-	}
-	if _, err = exec.ExecContext(ctx, updateQuery, values...); err != nil {
-		return errors.Wrap(err, "failed to update local table")
+	if mods != nil {
+		mods.Apply(query)
 	}
 
-	o.ApplicationID = related.ID
-	if o.R == nil {
-		o.R = &websiteR{
-			Application: related,
+	results, err := query.QueryContext(ctx, e)
+	if err != nil {
+		return errors.Wrap(err, "failed to eager load Environment")
+	}
+
+	var resultSlice []*Environment
+	if err = queries.Bind(results, &resultSlice); err != nil {
+		return errors.Wrap(err, "failed to bind eager loaded slice Environment")
+	}
+
+	if err = results.Close(); err != nil {
+		return errors.Wrap(err, "failed to close results of eager load for environments")
+	}
+	if err = results.Err(); err != nil {
+		return errors.Wrap(err, "error occurred during iteration of eager loaded relations for environments")
+	}
+
+	if len(websiteAfterSelectHooks) != 0 {
+		for _, obj := range resultSlice {
+			if err := obj.doAfterSelectHooks(ctx, e); err != nil {
+				return err
+			}
 		}
-	} else {
-		o.R.Application = related
 	}
 
-	if related.R == nil {
-		related.R = &applicationR{
-			Website: o,
+	if len(resultSlice) == 0 {
+		return nil
+	}
+
+	if singular {
+		foreign := resultSlice[0]
+		object.R.Environment = foreign
+		if foreign.R == nil {
+			foreign.R = &environmentR{}
 		}
-	} else {
-		related.R.Website = o
+		foreign.R.Website = object
+		return nil
+	}
+
+	for _, local := range slice {
+		for _, foreign := range resultSlice {
+			if local.EnvironmentID == foreign.ID {
+				local.R.Environment = foreign
+				if foreign.R == nil {
+					foreign.R = &environmentR{}
+				}
+				foreign.R.Website = local
+				break
+			}
+		}
 	}
 
 	return nil
@@ -766,6 +719,53 @@ func (o *Website) RemoveBuild(ctx context.Context, exec boil.ContextExecutor, re
 		related.R.BuildWebsites = related.R.BuildWebsites[:ln-1]
 		break
 	}
+	return nil
+}
+
+// SetEnvironment of the website to the related item.
+// Sets o.R.Environment to related.
+// Adds o to related.R.Website.
+func (o *Website) SetEnvironment(ctx context.Context, exec boil.ContextExecutor, insert bool, related *Environment) error {
+	var err error
+	if insert {
+		if err = related.Insert(ctx, exec, boil.Infer()); err != nil {
+			return errors.Wrap(err, "failed to insert into foreign table")
+		}
+	}
+
+	updateQuery := fmt.Sprintf(
+		"UPDATE `websites` SET %s WHERE %s",
+		strmangle.SetParamNames("`", "`", 0, []string{"environment_id"}),
+		strmangle.WhereClause("`", "`", 0, websitePrimaryKeyColumns),
+	)
+	values := []interface{}{related.ID, o.ID}
+
+	if boil.IsDebug(ctx) {
+		writer := boil.DebugWriterFrom(ctx)
+		fmt.Fprintln(writer, updateQuery)
+		fmt.Fprintln(writer, values)
+	}
+	if _, err = exec.ExecContext(ctx, updateQuery, values...); err != nil {
+		return errors.Wrap(err, "failed to update local table")
+	}
+
+	o.EnvironmentID = related.ID
+	if o.R == nil {
+		o.R = &websiteR{
+			Environment: related,
+		}
+	} else {
+		o.R.Environment = related
+	}
+
+	if related.R == nil {
+		related.R = &environmentR{
+			Website: o,
+		}
+	} else {
+		related.R.Website = o
+	}
+
 	return nil
 }
 
@@ -1043,7 +1043,7 @@ func (o WebsiteSlice) UpdateAll(ctx context.Context, exec boil.ContextExecutor, 
 var mySQLWebsiteUniqueColumns = []string{
 	"id",
 	"fqdn",
-	"application_id",
+	"environment_id",
 }
 
 // Upsert attempts an insert using an executor, and does an update or ignore on conflict.

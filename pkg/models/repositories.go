@@ -25,7 +25,6 @@ import (
 type Repository struct {
 	ID     string `boil:"id" json:"id" toml:"id" yaml:"id"`
 	Remote string `boil:"remote" json:"remote" toml:"remote" yaml:"remote"`
-	Refs   string `boil:"refs" json:"refs" toml:"refs" yaml:"refs"`
 
 	R *repositoryR `boil:"-" json:"-" toml:"-" yaml:"-"`
 	L repositoryL  `boil:"-" json:"-" toml:"-" yaml:"-"`
@@ -34,11 +33,9 @@ type Repository struct {
 var RepositoryColumns = struct {
 	ID     string
 	Remote string
-	Refs   string
 }{
 	ID:     "id",
 	Remote: "remote",
-	Refs:   "refs",
 }
 
 // Generated where
@@ -46,11 +43,9 @@ var RepositoryColumns = struct {
 var RepositoryWhere = struct {
 	ID     whereHelperstring
 	Remote whereHelperstring
-	Refs   whereHelperstring
 }{
 	ID:     whereHelperstring{field: "`repositories`.`id`"},
 	Remote: whereHelperstring{field: "`repositories`.`remote`"},
-	Refs:   whereHelperstring{field: "`repositories`.`refs`"},
 }
 
 // RepositoryRels is where relationship names are stored.
@@ -74,8 +69,8 @@ func (*repositoryR) NewStruct() *repositoryR {
 type repositoryL struct{}
 
 var (
-	repositoryAllColumns            = []string{"id", "remote", "refs"}
-	repositoryColumnsWithoutDefault = []string{"id", "remote", "refs"}
+	repositoryAllColumns            = []string{"id", "remote"}
+	repositoryColumnsWithoutDefault = []string{"id", "remote"}
 	repositoryColumnsWithDefault    = []string{}
 	repositoryPrimaryKeyColumns     = []string{"id"}
 )

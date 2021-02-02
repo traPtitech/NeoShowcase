@@ -722,7 +722,7 @@ func testRepositoriesSelect(t *testing.T) {
 }
 
 var (
-	repositoryDBTypes = map[string]string{`ID`: `varchar`, `Remote`: `text`, `Refs`: `text`}
+	repositoryDBTypes = map[string]string{`ID`: `varchar`, `Remote`: `text`}
 	_                 = bytes.MinRead
 )
 

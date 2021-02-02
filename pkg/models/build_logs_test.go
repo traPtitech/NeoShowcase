@@ -935,32 +935,32 @@ func testBuildLogToManyRemoveOpBuildWebsites(t *testing.T) {
 	}
 }
 
-func testBuildLogToOneApplicationUsingApplication(t *testing.T) {
+func testBuildLogToOneEnvironmentUsingEnvironment(t *testing.T) {
 	ctx := context.Background()
 	tx := MustTx(boil.BeginTx(ctx, nil))
 	defer func() { _ = tx.Rollback() }()
 
 	var local BuildLog
-	var foreign Application
+	var foreign Environment
 
 	seed := randomize.NewSeed()
 	if err := randomize.Struct(seed, &local, buildLogDBTypes, true, buildLogColumnsWithDefault...); err != nil {
 		t.Errorf("Unable to randomize BuildLog struct: %s", err)
 	}
-	if err := randomize.Struct(seed, &foreign, applicationDBTypes, false, applicationColumnsWithDefault...); err != nil {
-		t.Errorf("Unable to randomize Application struct: %s", err)
+	if err := randomize.Struct(seed, &foreign, environmentDBTypes, false, environmentColumnsWithDefault...); err != nil {
+		t.Errorf("Unable to randomize Environment struct: %s", err)
 	}
 
 	if err := foreign.Insert(ctx, tx, boil.Infer()); err != nil {
 		t.Fatal(err)
 	}
 
-	queries.Assign(&local.ApplicationID, foreign.ID)
+	queries.Assign(&local.EnvironmentID, foreign.ID)
 	if err := local.Insert(ctx, tx, boil.Infer()); err != nil {
 		t.Fatal(err)
 	}
 
-	check, err := local.Application().One(ctx, tx)
+	check, err := local.Environment().One(ctx, tx)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -970,23 +970,23 @@ func testBuildLogToOneApplicationUsingApplication(t *testing.T) {
 	}
 
 	slice := BuildLogSlice{&local}
-	if err = local.L.LoadApplication(ctx, tx, false, (*[]*BuildLog)(&slice), nil); err != nil {
+	if err = local.L.LoadEnvironment(ctx, tx, false, (*[]*BuildLog)(&slice), nil); err != nil {
 		t.Fatal(err)
 	}
-	if local.R.Application == nil {
+	if local.R.Environment == nil {
 		t.Error("struct should have been eager loaded")
 	}
 
-	local.R.Application = nil
-	if err = local.L.LoadApplication(ctx, tx, true, &local, nil); err != nil {
+	local.R.Environment = nil
+	if err = local.L.LoadEnvironment(ctx, tx, true, &local, nil); err != nil {
 		t.Fatal(err)
 	}
-	if local.R.Application == nil {
+	if local.R.Environment == nil {
 		t.Error("struct should have been eager loaded")
 	}
 }
 
-func testBuildLogToOneSetOpApplicationUsingApplication(t *testing.T) {
+func testBuildLogToOneSetOpEnvironmentUsingEnvironment(t *testing.T) {
 	var err error
 
 	ctx := context.Background()
@@ -994,16 +994,16 @@ func testBuildLogToOneSetOpApplicationUsingApplication(t *testing.T) {
 	defer func() { _ = tx.Rollback() }()
 
 	var a BuildLog
-	var b, c Application
+	var b, c Environment
 
 	seed := randomize.NewSeed()
 	if err = randomize.Struct(seed, &a, buildLogDBTypes, false, strmangle.SetComplement(buildLogPrimaryKeyColumns, buildLogColumnsWithoutDefault)...); err != nil {
 		t.Fatal(err)
 	}
-	if err = randomize.Struct(seed, &b, applicationDBTypes, false, strmangle.SetComplement(applicationPrimaryKeyColumns, applicationColumnsWithoutDefault)...); err != nil {
+	if err = randomize.Struct(seed, &b, environmentDBTypes, false, strmangle.SetComplement(environmentPrimaryKeyColumns, environmentColumnsWithoutDefault)...); err != nil {
 		t.Fatal(err)
 	}
-	if err = randomize.Struct(seed, &c, applicationDBTypes, false, strmangle.SetComplement(applicationPrimaryKeyColumns, applicationColumnsWithoutDefault)...); err != nil {
+	if err = randomize.Struct(seed, &c, environmentDBTypes, false, strmangle.SetComplement(environmentPrimaryKeyColumns, environmentColumnsWithoutDefault)...); err != nil {
 		t.Fatal(err)
 	}
 
@@ -1014,37 +1014,37 @@ func testBuildLogToOneSetOpApplicationUsingApplication(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	for i, x := range []*Application{&b, &c} {
-		err = a.SetApplication(ctx, tx, i != 0, x)
+	for i, x := range []*Environment{&b, &c} {
+		err = a.SetEnvironment(ctx, tx, i != 0, x)
 		if err != nil {
 			t.Fatal(err)
 		}
 
-		if a.R.Application != x {
+		if a.R.Environment != x {
 			t.Error("relationship struct not set to correct value")
 		}
 
 		if x.R.BuildLogs[0] != &a {
 			t.Error("failed to append to foreign relationship struct")
 		}
-		if !queries.Equal(a.ApplicationID, x.ID) {
-			t.Error("foreign key was wrong value", a.ApplicationID)
+		if !queries.Equal(a.EnvironmentID, x.ID) {
+			t.Error("foreign key was wrong value", a.EnvironmentID)
 		}
 
-		zero := reflect.Zero(reflect.TypeOf(a.ApplicationID))
-		reflect.Indirect(reflect.ValueOf(&a.ApplicationID)).Set(zero)
+		zero := reflect.Zero(reflect.TypeOf(a.EnvironmentID))
+		reflect.Indirect(reflect.ValueOf(&a.EnvironmentID)).Set(zero)
 
 		if err = a.Reload(ctx, tx); err != nil {
 			t.Fatal("failed to reload", err)
 		}
 
-		if !queries.Equal(a.ApplicationID, x.ID) {
-			t.Error("foreign key was wrong value", a.ApplicationID, x.ID)
+		if !queries.Equal(a.EnvironmentID, x.ID) {
+			t.Error("foreign key was wrong value", a.EnvironmentID, x.ID)
 		}
 	}
 }
 
-func testBuildLogToOneRemoveOpApplicationUsingApplication(t *testing.T) {
+func testBuildLogToOneRemoveOpEnvironmentUsingEnvironment(t *testing.T) {
 	var err error
 
 	ctx := context.Background()
@@ -1052,13 +1052,13 @@ func testBuildLogToOneRemoveOpApplicationUsingApplication(t *testing.T) {
 	defer func() { _ = tx.Rollback() }()
 
 	var a BuildLog
-	var b Application
+	var b Environment
 
 	seed := randomize.NewSeed()
 	if err = randomize.Struct(seed, &a, buildLogDBTypes, false, strmangle.SetComplement(buildLogPrimaryKeyColumns, buildLogColumnsWithoutDefault)...); err != nil {
 		t.Fatal(err)
 	}
-	if err = randomize.Struct(seed, &b, applicationDBTypes, false, strmangle.SetComplement(applicationPrimaryKeyColumns, applicationColumnsWithoutDefault)...); err != nil {
+	if err = randomize.Struct(seed, &b, environmentDBTypes, false, strmangle.SetComplement(environmentPrimaryKeyColumns, environmentColumnsWithoutDefault)...); err != nil {
 		t.Fatal(err)
 	}
 
@@ -1066,15 +1066,15 @@ func testBuildLogToOneRemoveOpApplicationUsingApplication(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	if err = a.SetApplication(ctx, tx, true, &b); err != nil {
+	if err = a.SetEnvironment(ctx, tx, true, &b); err != nil {
 		t.Fatal(err)
 	}
 
-	if err = a.RemoveApplication(ctx, tx, &b); err != nil {
+	if err = a.RemoveEnvironment(ctx, tx, &b); err != nil {
 		t.Error("failed to remove relationship")
 	}
 
-	count, err := a.Application().Count(ctx, tx)
+	count, err := a.Environment().Count(ctx, tx)
 	if err != nil {
 		t.Error(err)
 	}
@@ -1082,11 +1082,11 @@ func testBuildLogToOneRemoveOpApplicationUsingApplication(t *testing.T) {
 		t.Error("want no relationships remaining")
 	}
 
-	if a.R.Application != nil {
+	if a.R.Environment != nil {
 		t.Error("R struct entry should be nil")
 	}
 
-	if !queries.IsValuerNil(a.ApplicationID) {
+	if !queries.IsValuerNil(a.EnvironmentID) {
 		t.Error("foreign key value should be nil")
 	}
 
@@ -1169,7 +1169,7 @@ func testBuildLogsSelect(t *testing.T) {
 }
 
 var (
-	buildLogDBTypes = map[string]string{`ID`: `varchar`, `ApplicationID`: `varchar`, `Result`: `enum('BUILDING','SUCCEEDED','FAILED','CANCELED')`, `StartedAt`: `datetime`, `FinishedAt`: `datetime`}
+	buildLogDBTypes = map[string]string{`ID`: `varchar`, `Result`: `enum('BUILDING','SUCCEEDED','FAILED','CANCELED')`, `StartedAt`: `datetime`, `FinishedAt`: `datetime`, `EnvironmentID`: `varchar`}
 	_               = bytes.MinRead
 )
 

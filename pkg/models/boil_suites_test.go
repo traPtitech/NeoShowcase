@@ -15,6 +15,7 @@ func TestParent(t *testing.T) {
 	t.Run("Applications", testApplications)
 	t.Run("Artifacts", testArtifacts)
 	t.Run("BuildLogs", testBuildLogs)
+	t.Run("Environments", testEnvironments)
 	t.Run("Repositories", testRepositories)
 	t.Run("Websites", testWebsites)
 }
@@ -23,6 +24,7 @@ func TestDelete(t *testing.T) {
 	t.Run("Applications", testApplicationsDelete)
 	t.Run("Artifacts", testArtifactsDelete)
 	t.Run("BuildLogs", testBuildLogsDelete)
+	t.Run("Environments", testEnvironmentsDelete)
 	t.Run("Repositories", testRepositoriesDelete)
 	t.Run("Websites", testWebsitesDelete)
 }
@@ -31,6 +33,7 @@ func TestQueryDeleteAll(t *testing.T) {
 	t.Run("Applications", testApplicationsQueryDeleteAll)
 	t.Run("Artifacts", testArtifactsQueryDeleteAll)
 	t.Run("BuildLogs", testBuildLogsQueryDeleteAll)
+	t.Run("Environments", testEnvironmentsQueryDeleteAll)
 	t.Run("Repositories", testRepositoriesQueryDeleteAll)
 	t.Run("Websites", testWebsitesQueryDeleteAll)
 }
@@ -39,6 +42,7 @@ func TestSliceDeleteAll(t *testing.T) {
 	t.Run("Applications", testApplicationsSliceDeleteAll)
 	t.Run("Artifacts", testArtifactsSliceDeleteAll)
 	t.Run("BuildLogs", testBuildLogsSliceDeleteAll)
+	t.Run("Environments", testEnvironmentsSliceDeleteAll)
 	t.Run("Repositories", testRepositoriesSliceDeleteAll)
 	t.Run("Websites", testWebsitesSliceDeleteAll)
 }
@@ -47,6 +51,7 @@ func TestExists(t *testing.T) {
 	t.Run("Applications", testApplicationsExists)
 	t.Run("Artifacts", testArtifactsExists)
 	t.Run("BuildLogs", testBuildLogsExists)
+	t.Run("Environments", testEnvironmentsExists)
 	t.Run("Repositories", testRepositoriesExists)
 	t.Run("Websites", testWebsitesExists)
 }
@@ -55,6 +60,7 @@ func TestFind(t *testing.T) {
 	t.Run("Applications", testApplicationsFind)
 	t.Run("Artifacts", testArtifactsFind)
 	t.Run("BuildLogs", testBuildLogsFind)
+	t.Run("Environments", testEnvironmentsFind)
 	t.Run("Repositories", testRepositoriesFind)
 	t.Run("Websites", testWebsitesFind)
 }
@@ -63,6 +69,7 @@ func TestBind(t *testing.T) {
 	t.Run("Applications", testApplicationsBind)
 	t.Run("Artifacts", testArtifactsBind)
 	t.Run("BuildLogs", testBuildLogsBind)
+	t.Run("Environments", testEnvironmentsBind)
 	t.Run("Repositories", testRepositoriesBind)
 	t.Run("Websites", testWebsitesBind)
 }
@@ -71,6 +78,7 @@ func TestOne(t *testing.T) {
 	t.Run("Applications", testApplicationsOne)
 	t.Run("Artifacts", testArtifactsOne)
 	t.Run("BuildLogs", testBuildLogsOne)
+	t.Run("Environments", testEnvironmentsOne)
 	t.Run("Repositories", testRepositoriesOne)
 	t.Run("Websites", testWebsitesOne)
 }
@@ -79,6 +87,7 @@ func TestAll(t *testing.T) {
 	t.Run("Applications", testApplicationsAll)
 	t.Run("Artifacts", testArtifactsAll)
 	t.Run("BuildLogs", testBuildLogsAll)
+	t.Run("Environments", testEnvironmentsAll)
 	t.Run("Repositories", testRepositoriesAll)
 	t.Run("Websites", testWebsitesAll)
 }
@@ -87,6 +96,7 @@ func TestCount(t *testing.T) {
 	t.Run("Applications", testApplicationsCount)
 	t.Run("Artifacts", testArtifactsCount)
 	t.Run("BuildLogs", testBuildLogsCount)
+	t.Run("Environments", testEnvironmentsCount)
 	t.Run("Repositories", testRepositoriesCount)
 	t.Run("Websites", testWebsitesCount)
 }
@@ -95,6 +105,7 @@ func TestHooks(t *testing.T) {
 	t.Run("Applications", testApplicationsHooks)
 	t.Run("Artifacts", testArtifactsHooks)
 	t.Run("BuildLogs", testBuildLogsHooks)
+	t.Run("Environments", testEnvironmentsHooks)
 	t.Run("Repositories", testRepositoriesHooks)
 	t.Run("Websites", testWebsitesHooks)
 }
@@ -106,6 +117,8 @@ func TestInsert(t *testing.T) {
 	t.Run("Artifacts", testArtifactsInsertWhitelist)
 	t.Run("BuildLogs", testBuildLogsInsert)
 	t.Run("BuildLogs", testBuildLogsInsertWhitelist)
+	t.Run("Environments", testEnvironmentsInsert)
+	t.Run("Environments", testEnvironmentsInsertWhitelist)
 	t.Run("Repositories", testRepositoriesInsert)
 	t.Run("Repositories", testRepositoriesInsertWhitelist)
 	t.Run("Websites", testWebsitesInsert)
@@ -117,23 +130,25 @@ func TestInsert(t *testing.T) {
 func TestToOne(t *testing.T) {
 	t.Run("ApplicationToRepositoryUsingRepository", testApplicationToOneRepositoryUsingRepository)
 	t.Run("ArtifactToBuildLogUsingBuildLog", testArtifactToOneBuildLogUsingBuildLog)
-	t.Run("BuildLogToApplicationUsingApplication", testBuildLogToOneApplicationUsingApplication)
-	t.Run("WebsiteToApplicationUsingApplication", testWebsiteToOneApplicationUsingApplication)
+	t.Run("BuildLogToEnvironmentUsingEnvironment", testBuildLogToOneEnvironmentUsingEnvironment)
+	t.Run("EnvironmentToApplicationUsingApplication", testEnvironmentToOneApplicationUsingApplication)
 	t.Run("WebsiteToBuildLogUsingBuild", testWebsiteToOneBuildLogUsingBuild)
+	t.Run("WebsiteToEnvironmentUsingEnvironment", testWebsiteToOneEnvironmentUsingEnvironment)
 }
 
 // TestOneToOne tests cannot be run in parallel
 // or deadlocks can occur.
 func TestOneToOne(t *testing.T) {
-	t.Run("ApplicationToWebsiteUsingWebsite", testApplicationOneToOneWebsiteUsingWebsite)
 	t.Run("BuildLogToArtifactUsingArtifact", testBuildLogOneToOneArtifactUsingArtifact)
+	t.Run("EnvironmentToWebsiteUsingWebsite", testEnvironmentOneToOneWebsiteUsingWebsite)
 }
 
 // TestToMany tests cannot be run in parallel
 // or deadlocks can occur.
 func TestToMany(t *testing.T) {
-	t.Run("ApplicationToBuildLogs", testApplicationToManyBuildLogs)
+	t.Run("ApplicationToEnvironments", testApplicationToManyEnvironments)
 	t.Run("BuildLogToBuildWebsites", testBuildLogToManyBuildWebsites)
+	t.Run("EnvironmentToBuildLogs", testEnvironmentToManyBuildLogs)
 	t.Run("RepositoryToApplications", testRepositoryToManyApplications)
 }
 
@@ -142,23 +157,24 @@ func TestToMany(t *testing.T) {
 func TestToOneSet(t *testing.T) {
 	t.Run("ApplicationToRepositoryUsingApplications", testApplicationToOneSetOpRepositoryUsingRepository)
 	t.Run("ArtifactToBuildLogUsingArtifact", testArtifactToOneSetOpBuildLogUsingBuildLog)
-	t.Run("BuildLogToApplicationUsingBuildLogs", testBuildLogToOneSetOpApplicationUsingApplication)
-	t.Run("WebsiteToApplicationUsingWebsite", testWebsiteToOneSetOpApplicationUsingApplication)
+	t.Run("BuildLogToEnvironmentUsingBuildLogs", testBuildLogToOneSetOpEnvironmentUsingEnvironment)
+	t.Run("EnvironmentToApplicationUsingEnvironments", testEnvironmentToOneSetOpApplicationUsingApplication)
 	t.Run("WebsiteToBuildLogUsingBuildWebsites", testWebsiteToOneSetOpBuildLogUsingBuild)
+	t.Run("WebsiteToEnvironmentUsingWebsite", testWebsiteToOneSetOpEnvironmentUsingEnvironment)
 }
 
 // TestToOneRemove tests cannot be run in parallel
 // or deadlocks can occur.
 func TestToOneRemove(t *testing.T) {
-	t.Run("BuildLogToApplicationUsingBuildLogs", testBuildLogToOneRemoveOpApplicationUsingApplication)
+	t.Run("BuildLogToEnvironmentUsingBuildLogs", testBuildLogToOneRemoveOpEnvironmentUsingEnvironment)
 	t.Run("WebsiteToBuildLogUsingBuildWebsites", testWebsiteToOneRemoveOpBuildLogUsingBuild)
 }
 
 // TestOneToOneSet tests cannot be run in parallel
 // or deadlocks can occur.
 func TestOneToOneSet(t *testing.T) {
-	t.Run("ApplicationToWebsiteUsingWebsite", testApplicationOneToOneSetOpWebsiteUsingWebsite)
 	t.Run("BuildLogToArtifactUsingArtifact", testBuildLogOneToOneSetOpArtifactUsingArtifact)
+	t.Run("EnvironmentToWebsiteUsingWebsite", testEnvironmentOneToOneSetOpWebsiteUsingWebsite)
 }
 
 // TestOneToOneRemove tests cannot be run in parallel
@@ -168,29 +184,31 @@ func TestOneToOneRemove(t *testing.T) {}
 // TestToManyAdd tests cannot be run in parallel
 // or deadlocks can occur.
 func TestToManyAdd(t *testing.T) {
-	t.Run("ApplicationToBuildLogs", testApplicationToManyAddOpBuildLogs)
+	t.Run("ApplicationToEnvironments", testApplicationToManyAddOpEnvironments)
 	t.Run("BuildLogToBuildWebsites", testBuildLogToManyAddOpBuildWebsites)
+	t.Run("EnvironmentToBuildLogs", testEnvironmentToManyAddOpBuildLogs)
 	t.Run("RepositoryToApplications", testRepositoryToManyAddOpApplications)
 }
 
 // TestToManySet tests cannot be run in parallel
 // or deadlocks can occur.
 func TestToManySet(t *testing.T) {
-	t.Run("ApplicationToBuildLogs", testApplicationToManySetOpBuildLogs)
 	t.Run("BuildLogToBuildWebsites", testBuildLogToManySetOpBuildWebsites)
+	t.Run("EnvironmentToBuildLogs", testEnvironmentToManySetOpBuildLogs)
 }
 
 // TestToManyRemove tests cannot be run in parallel
 // or deadlocks can occur.
 func TestToManyRemove(t *testing.T) {
-	t.Run("ApplicationToBuildLogs", testApplicationToManyRemoveOpBuildLogs)
 	t.Run("BuildLogToBuildWebsites", testBuildLogToManyRemoveOpBuildWebsites)
+	t.Run("EnvironmentToBuildLogs", testEnvironmentToManyRemoveOpBuildLogs)
 }
 
 func TestReload(t *testing.T) {
 	t.Run("Applications", testApplicationsReload)
 	t.Run("Artifacts", testArtifactsReload)
 	t.Run("BuildLogs", testBuildLogsReload)
+	t.Run("Environments", testEnvironmentsReload)
 	t.Run("Repositories", testRepositoriesReload)
 	t.Run("Websites", testWebsitesReload)
 }
@@ -199,6 +217,7 @@ func TestReloadAll(t *testing.T) {
 	t.Run("Applications", testApplicationsReloadAll)
 	t.Run("Artifacts", testArtifactsReloadAll)
 	t.Run("BuildLogs", testBuildLogsReloadAll)
+	t.Run("Environments", testEnvironmentsReloadAll)
 	t.Run("Repositories", testRepositoriesReloadAll)
 	t.Run("Websites", testWebsitesReloadAll)
 }
@@ -207,6 +226,7 @@ func TestSelect(t *testing.T) {
 	t.Run("Applications", testApplicationsSelect)
 	t.Run("Artifacts", testArtifactsSelect)
 	t.Run("BuildLogs", testBuildLogsSelect)
+	t.Run("Environments", testEnvironmentsSelect)
 	t.Run("Repositories", testRepositoriesSelect)
 	t.Run("Websites", testWebsitesSelect)
 }
@@ -215,6 +235,7 @@ func TestUpdate(t *testing.T) {
 	t.Run("Applications", testApplicationsUpdate)
 	t.Run("Artifacts", testArtifactsUpdate)
 	t.Run("BuildLogs", testBuildLogsUpdate)
+	t.Run("Environments", testEnvironmentsUpdate)
 	t.Run("Repositories", testRepositoriesUpdate)
 	t.Run("Websites", testWebsitesUpdate)
 }
@@ -223,6 +244,7 @@ func TestSliceUpdateAll(t *testing.T) {
 	t.Run("Applications", testApplicationsSliceUpdateAll)
 	t.Run("Artifacts", testArtifactsSliceUpdateAll)
 	t.Run("BuildLogs", testBuildLogsSliceUpdateAll)
+	t.Run("Environments", testEnvironmentsSliceUpdateAll)
 	t.Run("Repositories", testRepositoriesSliceUpdateAll)
 	t.Run("Websites", testWebsitesSliceUpdateAll)
 }

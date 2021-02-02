@@ -11,7 +11,6 @@ Gitリポジトリテーブル
 CREATE TABLE `repositories` (
   `id` varchar(22) NOT NULL COMMENT 'リポジトリID',
   `remote` text NOT NULL COMMENT 'Git Remote URL',
-  `refs` text NOT NULL COMMENT '使用するGit Ref',
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='Gitリポジトリテーブル'
 ```
@@ -24,7 +23,6 @@ CREATE TABLE `repositories` (
 | ---- | ---- | ------- | -------- | -------- | ------- | ------- |
 | id | varchar(22) |  | false | [applications](applications.md) |  | リポジトリID |
 | remote | text |  | false |  |  | Git Remote URL |
-| refs | text |  | false |  |  | 使用するGit Ref |
 
 ## Constraints
 

@@ -494,57 +494,6 @@ func testWebsitesInsertWhitelist(t *testing.T) {
 	}
 }
 
-func testWebsiteToOneApplicationUsingApplication(t *testing.T) {
-	ctx := context.Background()
-	tx := MustTx(boil.BeginTx(ctx, nil))
-	defer func() { _ = tx.Rollback() }()
-
-	var local Website
-	var foreign Application
-
-	seed := randomize.NewSeed()
-	if err := randomize.Struct(seed, &local, websiteDBTypes, false, websiteColumnsWithDefault...); err != nil {
-		t.Errorf("Unable to randomize Website struct: %s", err)
-	}
-	if err := randomize.Struct(seed, &foreign, applicationDBTypes, false, applicationColumnsWithDefault...); err != nil {
-		t.Errorf("Unable to randomize Application struct: %s", err)
-	}
-
-	if err := foreign.Insert(ctx, tx, boil.Infer()); err != nil {
-		t.Fatal(err)
-	}
-
-	local.ApplicationID = foreign.ID
-	if err := local.Insert(ctx, tx, boil.Infer()); err != nil {
-		t.Fatal(err)
-	}
-
-	check, err := local.Application().One(ctx, tx)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	if check.ID != foreign.ID {
-		t.Errorf("want: %v, got %v", foreign.ID, check.ID)
-	}
-
-	slice := WebsiteSlice{&local}
-	if err = local.L.LoadApplication(ctx, tx, false, (*[]*Website)(&slice), nil); err != nil {
-		t.Fatal(err)
-	}
-	if local.R.Application == nil {
-		t.Error("struct should have been eager loaded")
-	}
-
-	local.R.Application = nil
-	if err = local.L.LoadApplication(ctx, tx, true, &local, nil); err != nil {
-		t.Fatal(err)
-	}
-	if local.R.Application == nil {
-		t.Error("struct should have been eager loaded")
-	}
-}
-
 func testWebsiteToOneBuildLogUsingBuild(t *testing.T) {
 	ctx := context.Background()
 	tx := MustTx(boil.BeginTx(ctx, nil))
@@ -596,63 +545,57 @@ func testWebsiteToOneBuildLogUsingBuild(t *testing.T) {
 	}
 }
 
-func testWebsiteToOneSetOpApplicationUsingApplication(t *testing.T) {
-	var err error
-
+func testWebsiteToOneEnvironmentUsingEnvironment(t *testing.T) {
 	ctx := context.Background()
 	tx := MustTx(boil.BeginTx(ctx, nil))
 	defer func() { _ = tx.Rollback() }()
 
-	var a Website
-	var b, c Application
+	var local Website
+	var foreign Environment
 
 	seed := randomize.NewSeed()
-	if err = randomize.Struct(seed, &a, websiteDBTypes, false, strmangle.SetComplement(websitePrimaryKeyColumns, websiteColumnsWithoutDefault)...); err != nil {
-		t.Fatal(err)
+	if err := randomize.Struct(seed, &local, websiteDBTypes, false, websiteColumnsWithDefault...); err != nil {
+		t.Errorf("Unable to randomize Website struct: %s", err)
 	}
-	if err = randomize.Struct(seed, &b, applicationDBTypes, false, strmangle.SetComplement(applicationPrimaryKeyColumns, applicationColumnsWithoutDefault)...); err != nil {
-		t.Fatal(err)
-	}
-	if err = randomize.Struct(seed, &c, applicationDBTypes, false, strmangle.SetComplement(applicationPrimaryKeyColumns, applicationColumnsWithoutDefault)...); err != nil {
-		t.Fatal(err)
+	if err := randomize.Struct(seed, &foreign, environmentDBTypes, false, environmentColumnsWithDefault...); err != nil {
+		t.Errorf("Unable to randomize Environment struct: %s", err)
 	}
 
-	if err := a.Insert(ctx, tx, boil.Infer()); err != nil {
-		t.Fatal(err)
-	}
-	if err = b.Insert(ctx, tx, boil.Infer()); err != nil {
+	if err := foreign.Insert(ctx, tx, boil.Infer()); err != nil {
 		t.Fatal(err)
 	}
 
-	for i, x := range []*Application{&b, &c} {
-		err = a.SetApplication(ctx, tx, i != 0, x)
-		if err != nil {
-			t.Fatal(err)
-		}
+	local.EnvironmentID = foreign.ID
+	if err := local.Insert(ctx, tx, boil.Infer()); err != nil {
+		t.Fatal(err)
+	}
 
-		if a.R.Application != x {
-			t.Error("relationship struct not set to correct value")
-		}
+	check, err := local.Environment().One(ctx, tx)
+	if err != nil {
+		t.Fatal(err)
+	}
 
-		if x.R.Website != &a {
-			t.Error("failed to append to foreign relationship struct")
-		}
-		if a.ApplicationID != x.ID {
-			t.Error("foreign key was wrong value", a.ApplicationID)
-		}
+	if check.ID != foreign.ID {
+		t.Errorf("want: %v, got %v", foreign.ID, check.ID)
+	}
 
-		zero := reflect.Zero(reflect.TypeOf(a.ApplicationID))
-		reflect.Indirect(reflect.ValueOf(&a.ApplicationID)).Set(zero)
+	slice := WebsiteSlice{&local}
+	if err = local.L.LoadEnvironment(ctx, tx, false, (*[]*Website)(&slice), nil); err != nil {
+		t.Fatal(err)
+	}
+	if local.R.Environment == nil {
+		t.Error("struct should have been eager loaded")
+	}
 
-		if err = a.Reload(ctx, tx); err != nil {
-			t.Fatal("failed to reload", err)
-		}
-
-		if a.ApplicationID != x.ID {
-			t.Error("foreign key was wrong value", a.ApplicationID, x.ID)
-		}
+	local.R.Environment = nil
+	if err = local.L.LoadEnvironment(ctx, tx, true, &local, nil); err != nil {
+		t.Fatal(err)
+	}
+	if local.R.Environment == nil {
+		t.Error("struct should have been eager loaded")
 	}
 }
+
 func testWebsiteToOneSetOpBuildLogUsingBuild(t *testing.T) {
 	var err error
 
@@ -762,6 +705,64 @@ func testWebsiteToOneRemoveOpBuildLogUsingBuild(t *testing.T) {
 	}
 }
 
+func testWebsiteToOneSetOpEnvironmentUsingEnvironment(t *testing.T) {
+	var err error
+
+	ctx := context.Background()
+	tx := MustTx(boil.BeginTx(ctx, nil))
+	defer func() { _ = tx.Rollback() }()
+
+	var a Website
+	var b, c Environment
+
+	seed := randomize.NewSeed()
+	if err = randomize.Struct(seed, &a, websiteDBTypes, false, strmangle.SetComplement(websitePrimaryKeyColumns, websiteColumnsWithoutDefault)...); err != nil {
+		t.Fatal(err)
+	}
+	if err = randomize.Struct(seed, &b, environmentDBTypes, false, strmangle.SetComplement(environmentPrimaryKeyColumns, environmentColumnsWithoutDefault)...); err != nil {
+		t.Fatal(err)
+	}
+	if err = randomize.Struct(seed, &c, environmentDBTypes, false, strmangle.SetComplement(environmentPrimaryKeyColumns, environmentColumnsWithoutDefault)...); err != nil {
+		t.Fatal(err)
+	}
+
+	if err := a.Insert(ctx, tx, boil.Infer()); err != nil {
+		t.Fatal(err)
+	}
+	if err = b.Insert(ctx, tx, boil.Infer()); err != nil {
+		t.Fatal(err)
+	}
+
+	for i, x := range []*Environment{&b, &c} {
+		err = a.SetEnvironment(ctx, tx, i != 0, x)
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		if a.R.Environment != x {
+			t.Error("relationship struct not set to correct value")
+		}
+
+		if x.R.Website != &a {
+			t.Error("failed to append to foreign relationship struct")
+		}
+		if a.EnvironmentID != x.ID {
+			t.Error("foreign key was wrong value", a.EnvironmentID)
+		}
+
+		zero := reflect.Zero(reflect.TypeOf(a.EnvironmentID))
+		reflect.Indirect(reflect.ValueOf(&a.EnvironmentID)).Set(zero)
+
+		if err = a.Reload(ctx, tx); err != nil {
+			t.Fatal("failed to reload", err)
+		}
+
+		if a.EnvironmentID != x.ID {
+			t.Error("foreign key was wrong value", a.EnvironmentID, x.ID)
+		}
+	}
+}
+
 func testWebsitesReload(t *testing.T) {
 	t.Parallel()
 
@@ -836,7 +837,7 @@ func testWebsitesSelect(t *testing.T) {
 }
 
 var (
-	websiteDBTypes = map[string]string{`ID`: `varchar`, `FQDN`: `varchar`, `ApplicationID`: `varchar`, `BuildID`: `varchar`, `HTTPPort`: `int`, `CreatedAt`: `datetime`, `UpdatedAt`: `datetime`}
+	websiteDBTypes = map[string]string{`ID`: `varchar`, `FQDN`: `varchar`, `BuildID`: `varchar`, `HTTPPort`: `int`, `CreatedAt`: `datetime`, `UpdatedAt`: `datetime`, `EnvironmentID`: `varchar`}
 	_              = bytes.MinRead
 )
 

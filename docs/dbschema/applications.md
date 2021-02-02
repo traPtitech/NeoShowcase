@@ -16,7 +16,6 @@ CREATE TABLE `applications` (
   `created_at` datetime(6) NOT NULL COMMENT '作成日時',
   `updated_at` datetime(6) NOT NULL COMMENT '更新日時',
   `deleted_at` datetime(6) DEFAULT NULL COMMENT '削除日時',
-  `build_type` enum('image','static') NOT NULL COMMENT 'ビルドタイプ',
   PRIMARY KEY (`id`),
   KEY `fk_applications_repository_id` (`repository_id`),
   CONSTRAINT `fk_applications_repository_id` FOREIGN KEY (`repository_id`) REFERENCES `repositories` (`id`)
@@ -29,14 +28,13 @@ CREATE TABLE `applications` (
 
 | Name | Type | Default | Nullable | Children | Parents | Comment |
 | ---- | ---- | ------- | -------- | -------- | ------- | ------- |
-| id | varchar(22) |  | false | [build_logs](build_logs.md) [websites](websites.md) |  | アプリID |
+| id | varchar(22) |  | false | [environments](environments.md) |  | アプリID |
 | owner | varchar(100) |  | false |  |  | アプリ所有者 |
 | name | varchar(100) |  | false |  |  | アプリ名 |
 | repository_id | varchar(22) |  | false |  | [repositories](repositories.md) | アプリのリポジトリID |
 | created_at | datetime(6) |  | false |  |  | 作成日時 |
 | updated_at | datetime(6) |  | false |  |  | 更新日時 |
 | deleted_at | datetime(6) |  | true |  |  | 削除日時 |
-| build_type | enum('image','static') |  | false |  |  | ビルドタイプ |
 
 ## Constraints
 
