@@ -95,7 +95,8 @@ func (s *Service) Reload(ctx context.Context, _ *api.ReloadRequest) (*api.Reload
 func (s *Service) reload(ctx context.Context) error {
 	envs, err := models.Environments(
 		models.EnvironmentWhere.BuildType.EQ(models.EnvironmentsBuildTypeStatic),
-		qm.Load(qm.Rels(models.EnvironmentRels.Website, models.WebsiteRels.Build, models.BuildLogRels.Artifact)),
+		qm.Load(models.EnvironmentRels.Website),
+		qm.Load(qm.Rels(models.EnvironmentRels.Build, models.BuildLogRels.Artifact)),
 	).All(ctx, s.db)
 	if err != nil {
 		return err
@@ -105,8 +106,8 @@ func (s *Service) reload(ctx context.Context) error {
 	for _, env := range envs {
 		if env.R.Website != nil {
 			website := env.R.Website
-			if website.R.Build != nil {
-				build := website.R.Build
+			if env.R.Build != nil {
+				build := env.R.Build
 				if build.R.Artifact != nil {
 					artifact := build.R.Artifact
 					data = append(data, &generator.Site{

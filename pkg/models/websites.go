@@ -14,7 +14,6 @@ import (
 	"time"
 
 	"github.com/friendsofgo/errors"
-	"github.com/volatiletech/null/v8"
 	"github.com/volatiletech/sqlboiler/v4/boil"
 	"github.com/volatiletech/sqlboiler/v4/queries"
 	"github.com/volatiletech/sqlboiler/v4/queries/qm"
@@ -24,13 +23,12 @@ import (
 
 // Website is an object representing the database table.
 type Website struct {
-	ID            string      `boil:"id" json:"id" toml:"id" yaml:"id"`
-	FQDN          string      `boil:"fqdn" json:"fqdn" toml:"fqdn" yaml:"fqdn"`
-	BuildID       null.String `boil:"build_id" json:"build_id,omitempty" toml:"build_id" yaml:"build_id,omitempty"`
-	HTTPPort      int         `boil:"http_port" json:"http_port" toml:"http_port" yaml:"http_port"`
-	CreatedAt     time.Time   `boil:"created_at" json:"created_at" toml:"created_at" yaml:"created_at"`
-	UpdatedAt     time.Time   `boil:"updated_at" json:"updated_at" toml:"updated_at" yaml:"updated_at"`
-	EnvironmentID string      `boil:"environment_id" json:"environment_id" toml:"environment_id" yaml:"environment_id"`
+	ID            string    `boil:"id" json:"id" toml:"id" yaml:"id"`
+	FQDN          string    `boil:"fqdn" json:"fqdn" toml:"fqdn" yaml:"fqdn"`
+	HTTPPort      int       `boil:"http_port" json:"http_port" toml:"http_port" yaml:"http_port"`
+	CreatedAt     time.Time `boil:"created_at" json:"created_at" toml:"created_at" yaml:"created_at"`
+	UpdatedAt     time.Time `boil:"updated_at" json:"updated_at" toml:"updated_at" yaml:"updated_at"`
+	EnvironmentID string    `boil:"environment_id" json:"environment_id" toml:"environment_id" yaml:"environment_id"`
 
 	R *websiteR `boil:"-" json:"-" toml:"-" yaml:"-"`
 	L websiteL  `boil:"-" json:"-" toml:"-" yaml:"-"`
@@ -39,7 +37,6 @@ type Website struct {
 var WebsiteColumns = struct {
 	ID            string
 	FQDN          string
-	BuildID       string
 	HTTPPort      string
 	CreatedAt     string
 	UpdatedAt     string
@@ -47,7 +44,6 @@ var WebsiteColumns = struct {
 }{
 	ID:            "id",
 	FQDN:          "fqdn",
-	BuildID:       "build_id",
 	HTTPPort:      "http_port",
 	CreatedAt:     "created_at",
 	UpdatedAt:     "updated_at",
@@ -82,7 +78,6 @@ func (w whereHelperint) NIN(slice []int) qm.QueryMod {
 var WebsiteWhere = struct {
 	ID            whereHelperstring
 	FQDN          whereHelperstring
-	BuildID       whereHelpernull_String
 	HTTPPort      whereHelperint
 	CreatedAt     whereHelpertime_Time
 	UpdatedAt     whereHelpertime_Time
@@ -90,7 +85,6 @@ var WebsiteWhere = struct {
 }{
 	ID:            whereHelperstring{field: "`websites`.`id`"},
 	FQDN:          whereHelperstring{field: "`websites`.`fqdn`"},
-	BuildID:       whereHelpernull_String{field: "`websites`.`build_id`"},
 	HTTPPort:      whereHelperint{field: "`websites`.`http_port`"},
 	CreatedAt:     whereHelpertime_Time{field: "`websites`.`created_at`"},
 	UpdatedAt:     whereHelpertime_Time{field: "`websites`.`updated_at`"},
@@ -99,16 +93,13 @@ var WebsiteWhere = struct {
 
 // WebsiteRels is where relationship names are stored.
 var WebsiteRels = struct {
-	Build       string
 	Environment string
 }{
-	Build:       "Build",
 	Environment: "Environment",
 }
 
 // websiteR is where relationships are stored.
 type websiteR struct {
-	Build       *BuildLog    `boil:"Build" json:"Build" toml:"Build" yaml:"Build"`
 	Environment *Environment `boil:"Environment" json:"Environment" toml:"Environment" yaml:"Environment"`
 }
 
@@ -121,8 +112,8 @@ func (*websiteR) NewStruct() *websiteR {
 type websiteL struct{}
 
 var (
-	websiteAllColumns            = []string{"id", "fqdn", "build_id", "http_port", "created_at", "updated_at", "environment_id"}
-	websiteColumnsWithoutDefault = []string{"id", "fqdn", "build_id", "created_at", "updated_at", "environment_id"}
+	websiteAllColumns            = []string{"id", "fqdn", "http_port", "created_at", "updated_at", "environment_id"}
+	websiteColumnsWithoutDefault = []string{"id", "fqdn", "created_at", "updated_at", "environment_id"}
 	websiteColumnsWithDefault    = []string{"http_port"}
 	websitePrimaryKeyColumns     = []string{"id"}
 )
@@ -402,20 +393,6 @@ func (q websiteQuery) Exists(ctx context.Context, exec boil.ContextExecutor) (bo
 	return count > 0, nil
 }
 
-// Build pointed to by the foreign key.
-func (o *Website) Build(mods ...qm.QueryMod) buildLogQuery {
-	queryMods := []qm.QueryMod{
-		qm.Where("`id` = ?", o.BuildID),
-	}
-
-	queryMods = append(queryMods, mods...)
-
-	query := BuildLogs(queryMods...)
-	queries.SetFrom(query.Query, "`build_logs`")
-
-	return query
-}
-
 // Environment pointed to by the foreign key.
 func (o *Website) Environment(mods ...qm.QueryMod) environmentQuery {
 	queryMods := []qm.QueryMod{
@@ -428,114 +405,6 @@ func (o *Website) Environment(mods ...qm.QueryMod) environmentQuery {
 	queries.SetFrom(query.Query, "`environments`")
 
 	return query
-}
-
-// LoadBuild allows an eager lookup of values, cached into the
-// loaded structs of the objects. This is for an N-1 relationship.
-func (websiteL) LoadBuild(ctx context.Context, e boil.ContextExecutor, singular bool, maybeWebsite interface{}, mods queries.Applicator) error {
-	var slice []*Website
-	var object *Website
-
-	if singular {
-		object = maybeWebsite.(*Website)
-	} else {
-		slice = *maybeWebsite.(*[]*Website)
-	}
-
-	args := make([]interface{}, 0, 1)
-	if singular {
-		if object.R == nil {
-			object.R = &websiteR{}
-		}
-		if !queries.IsNil(object.BuildID) {
-			args = append(args, object.BuildID)
-		}
-
-	} else {
-	Outer:
-		for _, obj := range slice {
-			if obj.R == nil {
-				obj.R = &websiteR{}
-			}
-
-			for _, a := range args {
-				if queries.Equal(a, obj.BuildID) {
-					continue Outer
-				}
-			}
-
-			if !queries.IsNil(obj.BuildID) {
-				args = append(args, obj.BuildID)
-			}
-
-		}
-	}
-
-	if len(args) == 0 {
-		return nil
-	}
-
-	query := NewQuery(
-		qm.From(`build_logs`),
-		qm.WhereIn(`build_logs.id in ?`, args...),
-	)
-	if mods != nil {
-		mods.Apply(query)
-	}
-
-	results, err := query.QueryContext(ctx, e)
-	if err != nil {
-		return errors.Wrap(err, "failed to eager load BuildLog")
-	}
-
-	var resultSlice []*BuildLog
-	if err = queries.Bind(results, &resultSlice); err != nil {
-		return errors.Wrap(err, "failed to bind eager loaded slice BuildLog")
-	}
-
-	if err = results.Close(); err != nil {
-		return errors.Wrap(err, "failed to close results of eager load for build_logs")
-	}
-	if err = results.Err(); err != nil {
-		return errors.Wrap(err, "error occurred during iteration of eager loaded relations for build_logs")
-	}
-
-	if len(websiteAfterSelectHooks) != 0 {
-		for _, obj := range resultSlice {
-			if err := obj.doAfterSelectHooks(ctx, e); err != nil {
-				return err
-			}
-		}
-	}
-
-	if len(resultSlice) == 0 {
-		return nil
-	}
-
-	if singular {
-		foreign := resultSlice[0]
-		object.R.Build = foreign
-		if foreign.R == nil {
-			foreign.R = &buildLogR{}
-		}
-		foreign.R.BuildWebsites = append(foreign.R.BuildWebsites, object)
-		return nil
-	}
-
-	for _, local := range slice {
-		for _, foreign := range resultSlice {
-			if queries.Equal(local.BuildID, foreign.ID) {
-				local.R.Build = foreign
-				if foreign.R == nil {
-					foreign.R = &buildLogR{}
-				}
-				foreign.R.BuildWebsites = append(foreign.R.BuildWebsites, local)
-				break
-			}
-		}
-	}
-
-	return nil
 }
 
 // LoadEnvironment allows an eager lookup of values, cached into the
@@ -639,86 +508,6 @@ func (websiteL) LoadEnvironment(ctx context.Context, e boil.ContextExecutor, sin
 		}
 	}
 
-	return nil
-}
-
-// SetBuild of the website to the related item.
-// Sets o.R.Build to related.
-// Adds o to related.R.BuildWebsites.
-func (o *Website) SetBuild(ctx context.Context, exec boil.ContextExecutor, insert bool, related *BuildLog) error {
-	var err error
-	if insert {
-		if err = related.Insert(ctx, exec, boil.Infer()); err != nil {
-			return errors.Wrap(err, "failed to insert into foreign table")
-		}
-	}
-
-	updateQuery := fmt.Sprintf(
-		"UPDATE `websites` SET %s WHERE %s",
-		strmangle.SetParamNames("`", "`", 0, []string{"build_id"}),
-		strmangle.WhereClause("`", "`", 0, websitePrimaryKeyColumns),
-	)
-	values := []interface{}{related.ID, o.ID}
-
-	if boil.IsDebug(ctx) {
-		writer := boil.DebugWriterFrom(ctx)
-		fmt.Fprintln(writer, updateQuery)
-		fmt.Fprintln(writer, values)
-	}
-	if _, err = exec.ExecContext(ctx, updateQuery, values...); err != nil {
-		return errors.Wrap(err, "failed to update local table")
-	}
-
-	queries.Assign(&o.BuildID, related.ID)
-	if o.R == nil {
-		o.R = &websiteR{
-			Build: related,
-		}
-	} else {
-		o.R.Build = related
-	}
-
-	if related.R == nil {
-		related.R = &buildLogR{
-			BuildWebsites: WebsiteSlice{o},
-		}
-	} else {
-		related.R.BuildWebsites = append(related.R.BuildWebsites, o)
-	}
-
-	return nil
-}
-
-// RemoveBuild relationship.
-// Sets o.R.Build to nil.
-// Removes o from all passed in related items' relationships struct (Optional).
-func (o *Website) RemoveBuild(ctx context.Context, exec boil.ContextExecutor, related *BuildLog) error {
-	var err error
-
-	queries.SetScanner(&o.BuildID, nil)
-	if _, err = o.Update(ctx, exec, boil.Whitelist("build_id")); err != nil {
-		return errors.Wrap(err, "failed to update local table")
-	}
-
-	if o.R != nil {
-		o.R.Build = nil
-	}
-	if related == nil || related.R == nil {
-		return nil
-	}
-
-	for i, ri := range related.R.BuildWebsites {
-		if queries.Equal(o.BuildID, ri.BuildID) {
-			continue
-		}
-
-		ln := len(related.R.BuildWebsites)
-		if ln > 1 && i < ln-1 {
-			related.R.BuildWebsites[i] = related.R.BuildWebsites[ln-1]
-		}
-		related.R.BuildWebsites = related.R.BuildWebsites[:ln-1]
-		break
-	}
 	return nil
 }
 

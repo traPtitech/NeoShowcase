@@ -26,7 +26,7 @@ CREATE TABLE `build_logs` (
 
 | Name | Type | Default | Nullable | Children | Parents | Comment |
 | ---- | ---- | ------- | -------- | -------- | ------- | ------- |
-| id | varchar(22) |  | false | [artifacts](artifacts.md) [websites](websites.md) |  | ビルドログID |
+| id | varchar(22) |  | false | [artifacts](artifacts.md) [environments](environments.md) |  | ビルドログID |
 | result | enum('BUILDING','SUCCEEDED','FAILED','CANCELED') |  | false |  |  | ビルド結果 |
 | started_at | datetime(6) |  | false |  |  | ビルド開始日時 |
 | finished_at | datetime(6) |  | true |  |  | ビルド終了日時 |

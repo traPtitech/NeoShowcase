@@ -14,6 +14,7 @@ import (
 	"time"
 
 	"github.com/friendsofgo/errors"
+	"github.com/volatiletech/null/v8"
 	"github.com/volatiletech/sqlboiler/v4/boil"
 	"github.com/volatiletech/sqlboiler/v4/queries"
 	"github.com/volatiletech/sqlboiler/v4/queries/qm"
@@ -23,12 +24,13 @@ import (
 
 // Environment is an object representing the database table.
 type Environment struct {
-	ID            string    `boil:"id" json:"id" toml:"id" yaml:"id"`
-	ApplicationID string    `boil:"application_id" json:"application_id" toml:"application_id" yaml:"application_id"`
-	BranchName    string    `boil:"branch_name" json:"branch_name" toml:"branch_name" yaml:"branch_name"`
-	BuildType     string    `boil:"build_type" json:"build_type" toml:"build_type" yaml:"build_type"`
-	CreatedAt     time.Time `boil:"created_at" json:"created_at" toml:"created_at" yaml:"created_at"`
-	UpdatedAt     time.Time `boil:"updated_at" json:"updated_at" toml:"updated_at" yaml:"updated_at"`
+	ID            string      `boil:"id" json:"id" toml:"id" yaml:"id"`
+	ApplicationID string      `boil:"application_id" json:"application_id" toml:"application_id" yaml:"application_id"`
+	BranchName    string      `boil:"branch_name" json:"branch_name" toml:"branch_name" yaml:"branch_name"`
+	BuildType     string      `boil:"build_type" json:"build_type" toml:"build_type" yaml:"build_type"`
+	CreatedAt     time.Time   `boil:"created_at" json:"created_at" toml:"created_at" yaml:"created_at"`
+	UpdatedAt     time.Time   `boil:"updated_at" json:"updated_at" toml:"updated_at" yaml:"updated_at"`
+	BuildID       null.String `boil:"build_id" json:"build_id,omitempty" toml:"build_id" yaml:"build_id,omitempty"`
 
 	R *environmentR `boil:"-" json:"-" toml:"-" yaml:"-"`
 	L environmentL  `boil:"-" json:"-" toml:"-" yaml:"-"`
@@ -41,6 +43,7 @@ var EnvironmentColumns = struct {
 	BuildType     string
 	CreatedAt     string
 	UpdatedAt     string
+	BuildID       string
 }{
 	ID:            "id",
 	ApplicationID: "application_id",
@@ -48,6 +51,7 @@ var EnvironmentColumns = struct {
 	BuildType:     "build_type",
 	CreatedAt:     "created_at",
 	UpdatedAt:     "updated_at",
+	BuildID:       "build_id",
 }
 
 // Generated where
@@ -59,6 +63,7 @@ var EnvironmentWhere = struct {
 	BuildType     whereHelperstring
 	CreatedAt     whereHelpertime_Time
 	UpdatedAt     whereHelpertime_Time
+	BuildID       whereHelpernull_String
 }{
 	ID:            whereHelperstring{field: "`environments`.`id`"},
 	ApplicationID: whereHelperstring{field: "`environments`.`application_id`"},
@@ -66,15 +71,18 @@ var EnvironmentWhere = struct {
 	BuildType:     whereHelperstring{field: "`environments`.`build_type`"},
 	CreatedAt:     whereHelpertime_Time{field: "`environments`.`created_at`"},
 	UpdatedAt:     whereHelpertime_Time{field: "`environments`.`updated_at`"},
+	BuildID:       whereHelpernull_String{field: "`environments`.`build_id`"},
 }
 
 // EnvironmentRels is where relationship names are stored.
 var EnvironmentRels = struct {
 	Application string
+	Build       string
 	Website     string
 	BuildLogs   string
 }{
 	Application: "Application",
+	Build:       "Build",
 	Website:     "Website",
 	BuildLogs:   "BuildLogs",
 }
@@ -82,6 +90,7 @@ var EnvironmentRels = struct {
 // environmentR is where relationships are stored.
 type environmentR struct {
 	Application *Application  `boil:"Application" json:"Application" toml:"Application" yaml:"Application"`
+	Build       *BuildLog     `boil:"Build" json:"Build" toml:"Build" yaml:"Build"`
 	Website     *Website      `boil:"Website" json:"Website" toml:"Website" yaml:"Website"`
 	BuildLogs   BuildLogSlice `boil:"BuildLogs" json:"BuildLogs" toml:"BuildLogs" yaml:"BuildLogs"`
 }
@@ -95,8 +104,8 @@ func (*environmentR) NewStruct() *environmentR {
 type environmentL struct{}
 
 var (
-	environmentAllColumns            = []string{"id", "application_id", "branch_name", "build_type", "created_at", "updated_at"}
-	environmentColumnsWithoutDefault = []string{"id", "application_id", "branch_name", "build_type", "created_at", "updated_at"}
+	environmentAllColumns            = []string{"id", "application_id", "branch_name", "build_type", "created_at", "updated_at", "build_id"}
+	environmentColumnsWithoutDefault = []string{"id", "application_id", "branch_name", "build_type", "created_at", "updated_at", "build_id"}
 	environmentColumnsWithDefault    = []string{}
 	environmentPrimaryKeyColumns     = []string{"id"}
 )
@@ -390,6 +399,20 @@ func (o *Environment) Application(mods ...qm.QueryMod) applicationQuery {
 	return query
 }
 
+// Build pointed to by the foreign key.
+func (o *Environment) Build(mods ...qm.QueryMod) buildLogQuery {
+	queryMods := []qm.QueryMod{
+		qm.Where("`id` = ?", o.BuildID),
+	}
+
+	queryMods = append(queryMods, mods...)
+
+	query := BuildLogs(queryMods...)
+	queries.SetFrom(query.Query, "`build_logs`")
+
+	return query
+}
+
 // Website pointed to by the foreign key.
 func (o *Environment) Website(mods ...qm.QueryMod) websiteQuery {
 	queryMods := []qm.QueryMod{
@@ -521,6 +544,114 @@ func (environmentL) LoadApplication(ctx context.Context, e boil.ContextExecutor,
 					foreign.R = &applicationR{}
 				}
 				foreign.R.Environments = append(foreign.R.Environments, local)
+				break
+			}
+		}
+	}
+
+	return nil
+}
+
+// LoadBuild allows an eager lookup of values, cached into the
+// loaded structs of the objects. This is for an N-1 relationship.
+func (environmentL) LoadBuild(ctx context.Context, e boil.ContextExecutor, singular bool, maybeEnvironment interface{}, mods queries.Applicator) error {
+	var slice []*Environment
+	var object *Environment
+
+	if singular {
+		object = maybeEnvironment.(*Environment)
+	} else {
+		slice = *maybeEnvironment.(*[]*Environment)
+	}
+
+	args := make([]interface{}, 0, 1)
+	if singular {
+		if object.R == nil {
+			object.R = &environmentR{}
+		}
+		if !queries.IsNil(object.BuildID) {
+			args = append(args, object.BuildID)
+		}
+
+	} else {
+	Outer:
+		for _, obj := range slice {
+			if obj.R == nil {
+				obj.R = &environmentR{}
+			}
+
+			for _, a := range args {
+				if queries.Equal(a, obj.BuildID) {
+					continue Outer
+				}
+			}
+
+			if !queries.IsNil(obj.BuildID) {
+				args = append(args, obj.BuildID)
+			}
+
+		}
+	}
+
+	if len(args) == 0 {
+		return nil
+	}
+
+	query := NewQuery(
+		qm.From(`build_logs`),
+		qm.WhereIn(`build_logs.id in ?`, args...),
+	)
+	if mods != nil {
+		mods.Apply(query)
+	}
+
+	results, err := query.QueryContext(ctx, e)
+	if err != nil {
+		return errors.Wrap(err, "failed to eager load BuildLog")
+	}
+
+	var resultSlice []*BuildLog
+	if err = queries.Bind(results, &resultSlice); err != nil {
+		return errors.Wrap(err, "failed to bind eager loaded slice BuildLog")
+	}
+
+	if err = results.Close(); err != nil {
+		return errors.Wrap(err, "failed to close results of eager load for build_logs")
+	}
+	if err = results.Err(); err != nil {
+		return errors.Wrap(err, "error occurred during iteration of eager loaded relations for build_logs")
+	}
+
+	if len(environmentAfterSelectHooks) != 0 {
+		for _, obj := range resultSlice {
+			if err := obj.doAfterSelectHooks(ctx, e); err != nil {
+				return err
+			}
+		}
+	}
+
+	if len(resultSlice) == 0 {
+		return nil
+	}
+
+	if singular {
+		foreign := resultSlice[0]
+		object.R.Build = foreign
+		if foreign.R == nil {
+			foreign.R = &buildLogR{}
+		}
+		foreign.R.BuildEnvironments = append(foreign.R.BuildEnvironments, object)
+		return nil
+	}
+
+	for _, local := range slice {
+		for _, foreign := range resultSlice {
+			if queries.Equal(local.BuildID, foreign.ID) {
+				local.R.Build = foreign
+				if foreign.R == nil {
+					foreign.R = &buildLogR{}
+				}
+				foreign.R.BuildEnvironments = append(foreign.R.BuildEnvironments, local)
 				break
 			}
 		}
@@ -772,6 +903,86 @@ func (o *Environment) SetApplication(ctx context.Context, exec boil.ContextExecu
 		related.R.Environments = append(related.R.Environments, o)
 	}
 
+	return nil
+}
+
+// SetBuild of the environment to the related item.
+// Sets o.R.Build to related.
+// Adds o to related.R.BuildEnvironments.
+func (o *Environment) SetBuild(ctx context.Context, exec boil.ContextExecutor, insert bool, related *BuildLog) error {
+	var err error
+	if insert {
+		if err = related.Insert(ctx, exec, boil.Infer()); err != nil {
+			return errors.Wrap(err, "failed to insert into foreign table")
+		}
+	}
+
+	updateQuery := fmt.Sprintf(
+		"UPDATE `environments` SET %s WHERE %s",
+		strmangle.SetParamNames("`", "`", 0, []string{"build_id"}),
+		strmangle.WhereClause("`", "`", 0, environmentPrimaryKeyColumns),
+	)
+	values := []interface{}{related.ID, o.ID}
+
+	if boil.IsDebug(ctx) {
+		writer := boil.DebugWriterFrom(ctx)
+		fmt.Fprintln(writer, updateQuery)
+		fmt.Fprintln(writer, values)
+	}
+	if _, err = exec.ExecContext(ctx, updateQuery, values...); err != nil {
+		return errors.Wrap(err, "failed to update local table")
+	}
+
+	queries.Assign(&o.BuildID, related.ID)
+	if o.R == nil {
+		o.R = &environmentR{
+			Build: related,
+		}
+	} else {
+		o.R.Build = related
+	}
+
+	if related.R == nil {
+		related.R = &buildLogR{
+			BuildEnvironments: EnvironmentSlice{o},
+		}
+	} else {
+		related.R.BuildEnvironments = append(related.R.BuildEnvironments, o)
+	}
+
+	return nil
+}
+
+// RemoveBuild relationship.
+// Sets o.R.Build to nil.
+// Removes o from all passed in related items' relationships struct (Optional).
+func (o *Environment) RemoveBuild(ctx context.Context, exec boil.ContextExecutor, related *BuildLog) error {
+	var err error
+
+	queries.SetScanner(&o.BuildID, nil)
+	if _, err = o.Update(ctx, exec, boil.Whitelist("build_id")); err != nil {
+		return errors.Wrap(err, "failed to update local table")
+	}
+
+	if o.R != nil {
+		o.R.Build = nil
+	}
+	if related == nil || related.R == nil {
+		return nil
+	}
+
+	for i, ri := range related.R.BuildEnvironments {
+		if queries.Equal(o.BuildID, ri.BuildID) {
+			continue
+		}
+
+		ln := len(related.R.BuildEnvironments)
+		if ln > 1 && i < ln-1 {
+			related.R.BuildEnvironments[i] = related.R.BuildEnvironments[ln-1]
+		}
+		related.R.BuildEnvironments = related.R.BuildEnvironments[:ln-1]
+		break
+	}
 	return nil
 }
 

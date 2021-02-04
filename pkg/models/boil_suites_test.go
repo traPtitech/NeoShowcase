@@ -145,7 +145,7 @@ func TestToOne(t *testing.T) {
 	t.Run("ArtifactToBuildLogUsingBuildLog", testArtifactToOneBuildLogUsingBuildLog)
 	t.Run("BuildLogToEnvironmentUsingEnvironment", testBuildLogToOneEnvironmentUsingEnvironment)
 	t.Run("EnvironmentToApplicationUsingApplication", testEnvironmentToOneApplicationUsingApplication)
-	t.Run("WebsiteToBuildLogUsingBuild", testWebsiteToOneBuildLogUsingBuild)
+	t.Run("EnvironmentToBuildLogUsingBuild", testEnvironmentToOneBuildLogUsingBuild)
 	t.Run("WebsiteToEnvironmentUsingEnvironment", testWebsiteToOneEnvironmentUsingEnvironment)
 }
 
@@ -160,7 +160,7 @@ func TestOneToOne(t *testing.T) {
 // or deadlocks can occur.
 func TestToMany(t *testing.T) {
 	t.Run("ApplicationToEnvironments", testApplicationToManyEnvironments)
-	t.Run("BuildLogToBuildWebsites", testBuildLogToManyBuildWebsites)
+	t.Run("BuildLogToBuildEnvironments", testBuildLogToManyBuildEnvironments)
 	t.Run("EnvironmentToBuildLogs", testEnvironmentToManyBuildLogs)
 	t.Run("RepositoryToApplications", testRepositoryToManyApplications)
 }
@@ -172,7 +172,7 @@ func TestToOneSet(t *testing.T) {
 	t.Run("ArtifactToBuildLogUsingArtifact", testArtifactToOneSetOpBuildLogUsingBuildLog)
 	t.Run("BuildLogToEnvironmentUsingBuildLogs", testBuildLogToOneSetOpEnvironmentUsingEnvironment)
 	t.Run("EnvironmentToApplicationUsingEnvironments", testEnvironmentToOneSetOpApplicationUsingApplication)
-	t.Run("WebsiteToBuildLogUsingBuildWebsites", testWebsiteToOneSetOpBuildLogUsingBuild)
+	t.Run("EnvironmentToBuildLogUsingBuildEnvironments", testEnvironmentToOneSetOpBuildLogUsingBuild)
 	t.Run("WebsiteToEnvironmentUsingWebsite", testWebsiteToOneSetOpEnvironmentUsingEnvironment)
 }
 
@@ -180,7 +180,7 @@ func TestToOneSet(t *testing.T) {
 // or deadlocks can occur.
 func TestToOneRemove(t *testing.T) {
 	t.Run("BuildLogToEnvironmentUsingBuildLogs", testBuildLogToOneRemoveOpEnvironmentUsingEnvironment)
-	t.Run("WebsiteToBuildLogUsingBuildWebsites", testWebsiteToOneRemoveOpBuildLogUsingBuild)
+	t.Run("EnvironmentToBuildLogUsingBuildEnvironments", testEnvironmentToOneRemoveOpBuildLogUsingBuild)
 }
 
 // TestOneToOneSet tests cannot be run in parallel
@@ -198,7 +198,7 @@ func TestOneToOneRemove(t *testing.T) {}
 // or deadlocks can occur.
 func TestToManyAdd(t *testing.T) {
 	t.Run("ApplicationToEnvironments", testApplicationToManyAddOpEnvironments)
-	t.Run("BuildLogToBuildWebsites", testBuildLogToManyAddOpBuildWebsites)
+	t.Run("BuildLogToBuildEnvironments", testBuildLogToManyAddOpBuildEnvironments)
 	t.Run("EnvironmentToBuildLogs", testEnvironmentToManyAddOpBuildLogs)
 	t.Run("RepositoryToApplications", testRepositoryToManyAddOpApplications)
 }
@@ -206,14 +206,14 @@ func TestToManyAdd(t *testing.T) {
 // TestToManySet tests cannot be run in parallel
 // or deadlocks can occur.
 func TestToManySet(t *testing.T) {
-	t.Run("BuildLogToBuildWebsites", testBuildLogToManySetOpBuildWebsites)
+	t.Run("BuildLogToBuildEnvironments", testBuildLogToManySetOpBuildEnvironments)
 	t.Run("EnvironmentToBuildLogs", testEnvironmentToManySetOpBuildLogs)
 }
 
 // TestToManyRemove tests cannot be run in parallel
 // or deadlocks can occur.
 func TestToManyRemove(t *testing.T) {
-	t.Run("BuildLogToBuildWebsites", testBuildLogToManyRemoveOpBuildWebsites)
+	t.Run("BuildLogToBuildEnvironments", testBuildLogToManyRemoveOpBuildEnvironments)
 	t.Run("EnvironmentToBuildLogs", testEnvironmentToManyRemoveOpBuildLogs)
 }
 

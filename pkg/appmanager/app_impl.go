@@ -88,11 +88,9 @@ func (app *appImpl) Start(args AppStartArgs) error {
 			return fmt.Errorf("failed to Create container: %w", err)
 		}
 
-		if website != nil {
-			website.BuildID = null.StringFrom(args.BuildID)
-			if _, err := website.Update(context.Background(), app.m.db, boil.Infer()); err != nil {
-				return fmt.Errorf("failed to Update website: %w", err)
-			}
+		env.BuildID = null.StringFrom(args.BuildID)
+		if _, err := env.Update(context.Background(), app.m.db, boil.Infer()); err != nil {
+			return fmt.Errorf("failed to Update website: %w", err)
 		}
 
 	case models.EnvironmentsBuildTypeStatic:
