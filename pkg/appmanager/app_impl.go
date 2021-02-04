@@ -4,10 +4,10 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
-
 	log "github.com/sirupsen/logrus"
 	builderApi "github.com/traPtitech/neoshowcase/pkg/builder/api"
 	"github.com/traPtitech/neoshowcase/pkg/container"
+	"github.com/traPtitech/neoshowcase/pkg/idgen"
 	"github.com/traPtitech/neoshowcase/pkg/models"
 	"github.com/volatiletech/null/v8"
 	"github.com/volatiletech/sqlboiler/v4/boil"
@@ -15,7 +15,8 @@ import (
 )
 
 type appImpl struct {
-	m       *managerImpl
+	m *managerImpl
+	// dbmodelはEnvironments.WebsiteとRepositoryがプレロードされてる事
 	dbmodel *models.Application
 }
 
@@ -25,6 +26,37 @@ func (app *appImpl) GetID() string {
 
 func (app *appImpl) GetName() string {
 	return app.dbmodel.Name
+}
+
+func (app *appImpl) GetEnvs() []Env {
+	result := make([]Env, 0)
+	for _, env := range app.dbmodel.R.Environments {
+		result = append(result, &envImpl{
+			m:       app.m,
+			dbmodel: env,
+		})
+	}
+	return result
+}
+
+func (app *appImpl) CreateEnv(branchName string, buildType BuildType) (Env, error) {
+	// 指定したブランチの環境が存在しないことを確認
+	for _, env := range app.dbmodel.R.Environments {
+		if env.BranchName == branchName {
+			return nil, fmt.Errorf("the environment for branch `%s` has already existed", branchName)
+		}
+	}
+
+	env := &models.Environment{
+		ID:         idgen.New(),
+		BranchName: branchName,
+		BuildType:  buildType.String(),
+	}
+	env.R = env.R.NewStruct()
+	if err := app.dbmodel.AddEnvironments(context.Background(), app.m.db, true, env); err != nil {
+		return nil, fmt.Errorf("failed to AddEnvironments: %w", err)
+	}
+	return &envImpl{m: app.m, dbmodel: env}, nil
 }
 
 func (app *appImpl) Start(args AppStartArgs) error {
@@ -103,7 +135,6 @@ func (app *appImpl) Start(args AppStartArgs) error {
 	return nil
 }
 
-// RequestBuild builderにappのビルドをリクエストする
 func (app *appImpl) RequestBuild(ctx context.Context, envID string) error {
 	var env *models.Environment
 	for _, _env := range app.dbmodel.R.Environments {
