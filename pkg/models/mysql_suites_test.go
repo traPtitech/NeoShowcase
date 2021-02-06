@@ -10,6 +10,8 @@ func TestUpsert(t *testing.T) {
 
 	t.Run("Artifacts", testArtifactsUpsert)
 
+	t.Run("AvailableDomains", testAvailableDomainsUpsert)
+
 	t.Run("BuildLogs", testBuildLogsUpsert)
 
 	t.Run("Environments", testEnvironmentsUpsert)

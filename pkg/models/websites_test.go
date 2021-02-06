@@ -494,57 +494,6 @@ func testWebsitesInsertWhitelist(t *testing.T) {
 	}
 }
 
-func testWebsiteToOneBuildLogUsingBuild(t *testing.T) {
-	ctx := context.Background()
-	tx := MustTx(boil.BeginTx(ctx, nil))
-	defer func() { _ = tx.Rollback() }()
-
-	var local Website
-	var foreign BuildLog
-
-	seed := randomize.NewSeed()
-	if err := randomize.Struct(seed, &local, websiteDBTypes, true, websiteColumnsWithDefault...); err != nil {
-		t.Errorf("Unable to randomize Website struct: %s", err)
-	}
-	if err := randomize.Struct(seed, &foreign, buildLogDBTypes, false, buildLogColumnsWithDefault...); err != nil {
-		t.Errorf("Unable to randomize BuildLog struct: %s", err)
-	}
-
-	if err := foreign.Insert(ctx, tx, boil.Infer()); err != nil {
-		t.Fatal(err)
-	}
-
-	queries.Assign(&local.BuildID, foreign.ID)
-	if err := local.Insert(ctx, tx, boil.Infer()); err != nil {
-		t.Fatal(err)
-	}
-
-	check, err := local.Build().One(ctx, tx)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	if !queries.Equal(check.ID, foreign.ID) {
-		t.Errorf("want: %v, got %v", foreign.ID, check.ID)
-	}
-
-	slice := WebsiteSlice{&local}
-	if err = local.L.LoadBuild(ctx, tx, false, (*[]*Website)(&slice), nil); err != nil {
-		t.Fatal(err)
-	}
-	if local.R.Build == nil {
-		t.Error("struct should have been eager loaded")
-	}
-
-	local.R.Build = nil
-	if err = local.L.LoadBuild(ctx, tx, true, &local, nil); err != nil {
-		t.Fatal(err)
-	}
-	if local.R.Build == nil {
-		t.Error("struct should have been eager loaded")
-	}
-}
-
 func testWebsiteToOneEnvironmentUsingEnvironment(t *testing.T) {
 	ctx := context.Background()
 	tx := MustTx(boil.BeginTx(ctx, nil))
@@ -593,115 +542,6 @@ func testWebsiteToOneEnvironmentUsingEnvironment(t *testing.T) {
 	}
 	if local.R.Environment == nil {
 		t.Error("struct should have been eager loaded")
-	}
-}
-
-func testWebsiteToOneSetOpBuildLogUsingBuild(t *testing.T) {
-	var err error
-
-	ctx := context.Background()
-	tx := MustTx(boil.BeginTx(ctx, nil))
-	defer func() { _ = tx.Rollback() }()
-
-	var a Website
-	var b, c BuildLog
-
-	seed := randomize.NewSeed()
-	if err = randomize.Struct(seed, &a, websiteDBTypes, false, strmangle.SetComplement(websitePrimaryKeyColumns, websiteColumnsWithoutDefault)...); err != nil {
-		t.Fatal(err)
-	}
-	if err = randomize.Struct(seed, &b, buildLogDBTypes, false, strmangle.SetComplement(buildLogPrimaryKeyColumns, buildLogColumnsWithoutDefault)...); err != nil {
-		t.Fatal(err)
-	}
-	if err = randomize.Struct(seed, &c, buildLogDBTypes, false, strmangle.SetComplement(buildLogPrimaryKeyColumns, buildLogColumnsWithoutDefault)...); err != nil {
-		t.Fatal(err)
-	}
-
-	if err := a.Insert(ctx, tx, boil.Infer()); err != nil {
-		t.Fatal(err)
-	}
-	if err = b.Insert(ctx, tx, boil.Infer()); err != nil {
-		t.Fatal(err)
-	}
-
-	for i, x := range []*BuildLog{&b, &c} {
-		err = a.SetBuild(ctx, tx, i != 0, x)
-		if err != nil {
-			t.Fatal(err)
-		}
-
-		if a.R.Build != x {
-			t.Error("relationship struct not set to correct value")
-		}
-
-		if x.R.BuildWebsites[0] != &a {
-			t.Error("failed to append to foreign relationship struct")
-		}
-		if !queries.Equal(a.BuildID, x.ID) {
-			t.Error("foreign key was wrong value", a.BuildID)
-		}
-
-		zero := reflect.Zero(reflect.TypeOf(a.BuildID))
-		reflect.Indirect(reflect.ValueOf(&a.BuildID)).Set(zero)
-
-		if err = a.Reload(ctx, tx); err != nil {
-			t.Fatal("failed to reload", err)
-		}
-
-		if !queries.Equal(a.BuildID, x.ID) {
-			t.Error("foreign key was wrong value", a.BuildID, x.ID)
-		}
-	}
-}
-
-func testWebsiteToOneRemoveOpBuildLogUsingBuild(t *testing.T) {
-	var err error
-
-	ctx := context.Background()
-	tx := MustTx(boil.BeginTx(ctx, nil))
-	defer func() { _ = tx.Rollback() }()
-
-	var a Website
-	var b BuildLog
-
-	seed := randomize.NewSeed()
-	if err = randomize.Struct(seed, &a, websiteDBTypes, false, strmangle.SetComplement(websitePrimaryKeyColumns, websiteColumnsWithoutDefault)...); err != nil {
-		t.Fatal(err)
-	}
-	if err = randomize.Struct(seed, &b, buildLogDBTypes, false, strmangle.SetComplement(buildLogPrimaryKeyColumns, buildLogColumnsWithoutDefault)...); err != nil {
-		t.Fatal(err)
-	}
-
-	if err = a.Insert(ctx, tx, boil.Infer()); err != nil {
-		t.Fatal(err)
-	}
-
-	if err = a.SetBuild(ctx, tx, true, &b); err != nil {
-		t.Fatal(err)
-	}
-
-	if err = a.RemoveBuild(ctx, tx, &b); err != nil {
-		t.Error("failed to remove relationship")
-	}
-
-	count, err := a.Build().Count(ctx, tx)
-	if err != nil {
-		t.Error(err)
-	}
-	if count != 0 {
-		t.Error("want no relationships remaining")
-	}
-
-	if a.R.Build != nil {
-		t.Error("R struct entry should be nil")
-	}
-
-	if !queries.IsValuerNil(a.BuildID) {
-		t.Error("foreign key value should be nil")
-	}
-
-	if len(b.R.BuildWebsites) != 0 {
-		t.Error("failed to remove a from b's relationships")
 	}
 }
 
@@ -837,7 +677,7 @@ func testWebsitesSelect(t *testing.T) {
 }
 
 var (
-	websiteDBTypes = map[string]string{`ID`: `varchar`, `FQDN`: `varchar`, `BuildID`: `varchar`, `HTTPPort`: `int`, `CreatedAt`: `datetime`, `UpdatedAt`: `datetime`, `EnvironmentID`: `varchar`}
+	websiteDBTypes = map[string]string{`ID`: `varchar`, `FQDN`: `varchar`, `HTTPPort`: `int`, `CreatedAt`: `datetime`, `UpdatedAt`: `datetime`, `EnvironmentID`: `varchar`}
 	_              = bytes.MinRead
 )
 

@@ -14,5 +14,14 @@ type Manager interface {
 	GetApp(appID string) (App, error)
 	// GetAppByRepository 指定したリポジトリURLのアプリを取得します
 	GetAppByRepository(repo string) (App, error)
+	CreateApp(args CreateAppArgs) (App, error)
 	Shutdown(ctx context.Context) error
+}
+
+type CreateAppArgs struct {
+	Owner         string
+	Name          string
+	RepositoryURL string
+	BranchName    string
+	BuildType     BuildType
 }

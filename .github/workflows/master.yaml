@@ -49,7 +49,7 @@ jobs:
         uses: docker/build-push-action@v2
         with:
           context: .
-          file: ./cmd/${{ matrix.component }}/Dockerfile
+          target: ${{ matrix.component }}
           platforms: linux/amd64
           push: true
           build-args: |

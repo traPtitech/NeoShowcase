@@ -15,9 +15,12 @@ CREATE TABLE `environments` (
   `build_type` enum('image','static') NOT NULL COMMENT 'ビルドタイプ',
   `created_at` datetime(6) NOT NULL COMMENT '作成日時',
   `updated_at` datetime(6) NOT NULL COMMENT '更新日時',
+  `build_id` varchar(22) DEFAULT NULL COMMENT '稼働中のビルドID',
   PRIMARY KEY (`id`),
   UNIQUE KEY `application_id` (`application_id`,`branch_name`),
-  CONSTRAINT `fk_environments_application_id` FOREIGN KEY (`application_id`) REFERENCES `applications` (`id`)
+  KEY `fk_environments_build_id` (`build_id`),
+  CONSTRAINT `fk_environments_application_id` FOREIGN KEY (`application_id`) REFERENCES `applications` (`id`),
+  CONSTRAINT `fk_environments_build_id` FOREIGN KEY (`build_id`) REFERENCES `build_logs` (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='アプリ環境テーブル'
 ```
 
@@ -33,6 +36,7 @@ CREATE TABLE `environments` (
 | build_type | enum('image','static') |  | false |  |  | ビルドタイプ |
 | created_at | datetime(6) |  | false |  |  | 作成日時 |
 | updated_at | datetime(6) |  | false |  |  | 更新日時 |
+| build_id | varchar(22) |  | true |  | [build_logs](build_logs.md) | 稼働中のビルドID |
 
 ## Constraints
 
@@ -40,12 +44,14 @@ CREATE TABLE `environments` (
 | ---- | ---- | ---------- |
 | application_id | UNIQUE | UNIQUE KEY application_id (application_id, branch_name) |
 | fk_environments_application_id | FOREIGN KEY | FOREIGN KEY (application_id) REFERENCES applications (id) |
+| fk_environments_build_id | FOREIGN KEY | FOREIGN KEY (build_id) REFERENCES build_logs (id) |
 | PRIMARY | PRIMARY KEY | PRIMARY KEY (id) |
 
 ## Indexes
 
 | Name | Definition |
 | ---- | ---------- |
+| fk_environments_build_id | KEY fk_environments_build_id (build_id) USING BTREE |
 | PRIMARY | PRIMARY KEY (id) USING BTREE |
 | application_id | UNIQUE KEY application_id (application_id, branch_name) USING BTREE |
 

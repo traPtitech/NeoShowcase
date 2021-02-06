@@ -3,16 +3,13 @@ package appmanager
 import (
 	"context"
 	"database/sql"
-	"fmt"
 	"github.com/leandro-lugaresi/hub"
 	log "github.com/sirupsen/logrus"
 	builderApi "github.com/traPtitech/neoshowcase/pkg/builder/api"
 	"github.com/traPtitech/neoshowcase/pkg/container"
 	"github.com/traPtitech/neoshowcase/pkg/event"
-	"github.com/traPtitech/neoshowcase/pkg/models"
 	ssgenApi "github.com/traPtitech/neoshowcase/pkg/staticsitegen/api"
 	"github.com/traPtitech/neoshowcase/pkg/util"
-	"github.com/volatiletech/sqlboiler/v4/queries/qm"
 	"google.golang.org/protobuf/types/known/emptypb"
 	"io"
 )
@@ -107,54 +104,6 @@ func (m *managerImpl) getFullImageName(app App) string {
 // getImageName イメージ名を返す
 func (m *managerImpl) getImageName(app App) string {
 	return m.config.ImageNamePrefix + app.GetID()
-}
-
-func (m *managerImpl) GetApp(appID string) (App, error) {
-	app, err := models.Applications(
-		qm.Load(models.ApplicationRels.Repository),
-		qm.Load(models.ApplicationRels.Environments),
-		models.ApplicationWhere.DeletedAt.IsNull(),
-		models.ApplicationWhere.ID.EQ(appID),
-	).One(context.Background(), m.db)
-	if err != nil {
-		if err == sql.ErrNoRows {
-			return nil, ErrNotFound
-		}
-		return nil, fmt.Errorf("failed to GetApp: %w", err)
-	}
-
-	return &appImpl{
-		m:       m,
-		dbmodel: app,
-	}, nil
-}
-
-func (m *managerImpl) GetAppByRepository(repo string) (App, error) {
-	repoModel, err := models.Repositories(models.RepositoryWhere.Remote.EQ(repo)).One(context.Background(), m.db)
-	if err != nil {
-		if err == sql.ErrNoRows {
-			return nil, ErrNotFound
-		}
-		return nil, fmt.Errorf("failed to GetAppByRepository: %w", err)
-	}
-
-	app, err := models.Applications(
-		qm.Load(models.ApplicationRels.Repository),
-		qm.Load(models.ApplicationRels.Environments),
-		models.ApplicationWhere.DeletedAt.IsNull(),
-		models.ApplicationWhere.RepositoryID.EQ(repoModel.ID),
-	).One(context.Background(), m.db)
-	if err != nil {
-		if err == sql.ErrNoRows {
-			return nil, ErrNotFound
-		}
-		return nil, fmt.Errorf("failed to GetApp: %w", err)
-	}
-
-	return &appImpl{
-		m:       m,
-		dbmodel: app,
-	}, nil
 }
 
 func (m *managerImpl) Shutdown(ctx context.Context) error {

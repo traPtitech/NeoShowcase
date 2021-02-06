@@ -11,7 +11,6 @@ Webサイトテーブル
 CREATE TABLE `websites` (
   `id` varchar(22) NOT NULL COMMENT 'サイトID',
   `fqdn` varchar(50) NOT NULL COMMENT 'サイトURLのFQDN',
-  `build_id` varchar(22) DEFAULT NULL COMMENT '稼働中のサイトのビルドID',
   `http_port` int(11) NOT NULL DEFAULT '80' COMMENT 'HTTPポート番号',
   `created_at` datetime(6) NOT NULL COMMENT '作成日時',
   `updated_at` datetime(6) NOT NULL COMMENT '更新日時',
@@ -19,8 +18,6 @@ CREATE TABLE `websites` (
   PRIMARY KEY (`id`),
   UNIQUE KEY `fqdn` (`fqdn`),
   UNIQUE KEY `uk_environment_id` (`environment_id`),
-  KEY `fk_websites_build_id` (`build_id`),
-  CONSTRAINT `fk_websites_build_id` FOREIGN KEY (`build_id`) REFERENCES `build_logs` (`id`),
   CONSTRAINT `fk_websites_environment_id` FOREIGN KEY (`environment_id`) REFERENCES `environments` (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='Webサイトテーブル'
 ```
@@ -33,7 +30,6 @@ CREATE TABLE `websites` (
 | ---- | ---- | ------- | -------- | -------- | ------- | ------- |
 | id | varchar(22) |  | false |  |  | サイトID |
 | fqdn | varchar(50) |  | false |  |  | サイトURLのFQDN |
-| build_id | varchar(22) |  | true |  | [build_logs](build_logs.md) | 稼働中のサイトのビルドID |
 | http_port | int(11) | 80 | false |  |  | HTTPポート番号 |
 | created_at | datetime(6) |  | false |  |  | 作成日時 |
 | updated_at | datetime(6) |  | false |  |  | 更新日時 |
@@ -43,7 +39,6 @@ CREATE TABLE `websites` (
 
 | Name | Type | Definition |
 | ---- | ---- | ---------- |
-| fk_websites_build_id | FOREIGN KEY | FOREIGN KEY (build_id) REFERENCES build_logs (id) |
 | fk_websites_environment_id | FOREIGN KEY | FOREIGN KEY (environment_id) REFERENCES environments (id) |
 | fqdn | UNIQUE | UNIQUE KEY fqdn (fqdn) |
 | PRIMARY | PRIMARY KEY | PRIMARY KEY (id) |
@@ -53,7 +48,6 @@ CREATE TABLE `websites` (
 
 | Name | Definition |
 | ---- | ---------- |
-| fk_websites_build_id | KEY fk_websites_build_id (build_id) USING BTREE |
 | PRIMARY | PRIMARY KEY (id) USING BTREE |
 | fqdn | UNIQUE KEY fqdn (fqdn) USING BTREE |
 | uk_environment_id | UNIQUE KEY uk_environment_id (environment_id) USING BTREE |
