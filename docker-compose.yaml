@@ -4,7 +4,7 @@ services:
   ns:
     build:
       context: .
-      dockerfile: cmd/ns/Dockerfile
+      target: ns
     entrypoint: dockerize -timeout 60s -wait tcp://mysql:3306 -wait tcp://ns-builder:10000 -wait tcp://ns-ssgen:10000
     command: /app/ns run --debug --loglevel=trace
     restart: always
@@ -32,7 +32,7 @@ services:
   ns-mc:
     build:
       context: .
-      dockerfile: cmd/ns-mc/Dockerfile
+      target: ns-mc
     restart: always
     ports:
       - "5005:8081"
@@ -42,7 +42,7 @@ services:
   ns-builder:
     build:
       context: .
-      dockerfile: cmd/ns-builder/Dockerfile
+      target: ns-builder
     entrypoint: dockerize -timeout 60s -wait tcp://mysql:3306 -wait tcp://buildkitd:1234
     command: /app/ns-builder run --debug --loglevel=trace
     restart: always
@@ -64,7 +64,7 @@ services:
   ns-ssgen:
     build:
       context: .
-      dockerfile: cmd/ns-ssgen/Dockerfile
+      target: ns-ssgen
     entrypoint: dockerize -timeout 60s -wait tcp://mysql:3306
     command: /app/ns-ssgen run --debug --loglevel=trace
     restart: always
