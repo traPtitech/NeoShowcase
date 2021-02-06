@@ -20,8 +20,12 @@ func (s *Server) GetDebug1(c echo.Context) error {
 		log.Error(err)
 		return echo.NewHTTPError(http.StatusBadRequest, err)
 	}
-	envID := app.GetEnvs()[0].GetID()
-	if err := app.RequestBuild(context.Background(), envID); err != nil {
+	env := app.GetEnvs()[0]
+	if err := env.SetupWebsite("", 0); err != nil {
+		log.Error(err)
+		return echo.NewHTTPError(http.StatusBadRequest, err)
+	}
+	if err := app.RequestBuild(context.Background(), env.GetID()); err != nil {
 		log.Error(err)
 		return echo.NewHTTPError(http.StatusBadRequest, err)
 	}

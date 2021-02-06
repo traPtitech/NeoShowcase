@@ -202,6 +202,7 @@ func (app *appImpl) Start(args AppStartArgs) error {
 		// TODO 既に存在する場合はCreateせずにStartするようにする
 		_, err = app.m.cm.Create(context.Background(), container.CreateArgs{
 			ApplicationID: app.GetID(),
+			EnvironmentID: env.ID,
 			ImageName:     app.m.getFullImageName(app),
 			ImageTag:      args.BuildID,
 			HTTPProxy:     httpProxy,
