@@ -14,6 +14,96 @@ import (
 	"github.com/volatiletech/sqlboiler/v4/queries/qm"
 )
 
+func (m *managerImpl) GetApp(appID string) (App, error) {
+	app, err := models.Applications(
+		qm.Load(models.ApplicationRels.Repository),
+		qm.Load(qm.Rels(models.ApplicationRels.Environments, models.EnvironmentRels.Website)),
+		models.ApplicationWhere.DeletedAt.IsNull(),
+		models.ApplicationWhere.ID.EQ(appID),
+	).One(context.Background(), m.db)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return nil, ErrNotFound
+		}
+		return nil, fmt.Errorf("failed to GetApp: %w", err)
+	}
+
+	return &appImpl{
+		m:       m,
+		dbmodel: app,
+	}, nil
+}
+
+func (m *managerImpl) GetAppByRepository(repo string) (App, error) {
+	repoModel, err := models.Repositories(models.RepositoryWhere.Remote.EQ(repo)).One(context.Background(), m.db)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return nil, ErrNotFound
+		}
+		return nil, fmt.Errorf("failed to GetAppByRepository: %w", err)
+	}
+
+	app, err := models.Applications(
+		qm.Load(models.ApplicationRels.Repository),
+		qm.Load(qm.Rels(models.ApplicationRels.Environments, models.EnvironmentRels.Website)),
+		models.ApplicationWhere.DeletedAt.IsNull(),
+		models.ApplicationWhere.RepositoryID.EQ(repoModel.ID),
+	).One(context.Background(), m.db)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return nil, ErrNotFound
+		}
+		return nil, fmt.Errorf("failed to GetApp: %w", err)
+	}
+
+	return &appImpl{
+		m:       m,
+		dbmodel: app,
+	}, nil
+}
+
+func (m *managerImpl) CreateApp(args CreateAppArgs) (App, error) {
+	// リポジトリ情報を設定
+	repo, err := models.Repositories(models.RepositoryWhere.Remote.EQ(args.RepositoryURL)).One(context.Background(), m.db)
+	if err != nil && err != sql.ErrNoRows {
+		return nil, fmt.Errorf("failed to get repository: %w", err)
+	} else if repo == nil {
+		repo = &models.Repository{
+			ID:     idgen.New(),
+			Remote: args.RepositoryURL,
+		}
+		if err := repo.Insert(context.Background(), m.db, boil.Infer()); err != nil {
+			return nil, fmt.Errorf("failed to insert repository: %w", err)
+		}
+	}
+
+	// アプリケーション作成
+	app := &models.Application{
+		ID:           idgen.New(),
+		Owner:        args.Owner,
+		Name:         args.Name,
+		RepositoryID: repo.ID,
+	}
+	if err := app.Insert(context.Background(), m.db, boil.Infer()); err != nil {
+		return nil, fmt.Errorf("failed to insert application: %w", err)
+	}
+	if err := app.SetRepository(context.Background(), m.db, false, repo); err != nil {
+		return nil, fmt.Errorf("failed to associate repository: %w", err)
+	}
+
+	log.WithField("appID", app.ID).Info("app created")
+	appI := &appImpl{
+		m:       m,
+		dbmodel: app,
+	}
+
+	// 初期Env作成
+	if _, err := appI.CreateEnv(args.BranchName, args.BuildType); err != nil {
+		return nil, err
+	}
+	return appI, nil
+}
+
 type appImpl struct {
 	m *managerImpl
 	// dbmodelはEnvironments.WebsiteとRepositoryがプレロードされてる事
@@ -52,10 +142,10 @@ func (app *appImpl) CreateEnv(branchName string, buildType BuildType) (Env, erro
 		BranchName: branchName,
 		BuildType:  buildType.String(),
 	}
-	env.R = env.R.NewStruct()
 	if err := app.dbmodel.AddEnvironments(context.Background(), app.m.db, true, env); err != nil {
-		return nil, fmt.Errorf("failed to AddEnvironments: %w", err)
+		return nil, fmt.Errorf("failed to create environment: %w", err)
 	}
+	log.WithField("appID", env.ApplicationID).WithField("envID", env.ID).Info("env created")
 	return &envImpl{m: app.m, dbmodel: env}, nil
 }
 
