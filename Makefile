@@ -76,3 +76,16 @@ ns-rebuild:
 
 .PHONY: db-update
 db-update: migrate-up gogen db-gen-docs
+
+.PHONY: dind-up
+dind-up:
+	docker run -it -d --privileged --name ns-test-dind -p 5555:2376 -e DOCKER_TLS_CERTDIR=/certs -v $$PWD/local-dev/dind:/certs docker:dind
+
+.PHONY: dind-down
+dind-down:
+	docker rm -vf ns-test-dind
+
+.PHONY: docker-test
+docker-test:
+	@docker container inspect ns-test-dind > /dev/null || make dind-up
+	ENABLE_DOCKER_TESTS=true DOCKER_HOST=tcp://localhost:5555 DOCKER_CERT_PATH=$$PWD/local-dev/dind/client DOCKER_TLS_VERIFY=true go test -v ./pkg/container/dockerimpl

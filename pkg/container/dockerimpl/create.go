@@ -10,6 +10,10 @@ import (
 )
 
 func (m *Manager) Create(ctx context.Context, args container.CreateArgs) (*container.CreateResult, error) {
+	if args.ImageTag == "" {
+		args.ImageTag = "latest"
+	}
+
 	// ビルドしたイメージをリポジトリからPull
 	if err := m.c.PullImage(docker.PullImageOptions{
 		Repository: args.ImageName,

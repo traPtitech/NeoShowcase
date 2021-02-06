@@ -75,6 +75,7 @@ jobs:
     needs: [ mod ]
     env:
       ENABLE_DB_TESTS: "true"
+      ENABLE_DOCKER_TESTS: "true"
     services:
       mysql:
         image: mariadb:10.0.19
