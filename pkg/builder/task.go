@@ -3,6 +3,12 @@ package builder
 import (
 	"context"
 	"fmt"
+	"io"
+	"io/ioutil"
+	"os"
+	"path/filepath"
+	"time"
+
 	"github.com/moby/buildkit/client"
 	"github.com/moby/buildkit/client/llb"
 	"github.com/moby/buildkit/frontend/dockerfile/builder"
@@ -12,13 +18,9 @@ import (
 	"github.com/traPtitech/neoshowcase/pkg/builder/api"
 	"github.com/traPtitech/neoshowcase/pkg/event"
 	"golang.org/x/sync/errgroup"
-	"io"
-	"io/ioutil"
-	"os"
-	"path/filepath"
-	"time"
 
 	"github.com/go-git/go-git/v5"
+	"github.com/go-git/go-git/v5/plumbing"
 	"github.com/leandro-lugaresi/hub"
 	log "github.com/sirupsen/logrus"
 	"github.com/traPtitech/neoshowcase/pkg/idgen"
@@ -83,7 +85,11 @@ func (t *Task) startAsync(ctx context.Context, s *Service) error {
 	t.repositoryTempDir = dir
 
 	// リポジトリをクローン
-	_, err = git.PlainCloneContext(ctx, t.repositoryTempDir, false, &git.CloneOptions{URL: t.BuildSource.RepositoryUrl, Depth: 1})
+	refName := plumbing.HEAD
+	if t.BuildSource.Ref != "" {
+		refName = plumbing.ReferenceName("refs/" + t.BuildSource.Ref)
+	}
+	_, err = git.PlainCloneContext(ctx, t.repositoryTempDir, false, &git.CloneOptions{URL: t.BuildSource.RepositoryUrl, Depth: 1, ReferenceName: refName})
 	if err != nil {
 		_ = os.RemoveAll(t.repositoryTempDir)
 		log.WithError(err).Errorf("failed to clone repository: %s", t.BuildSource.RepositoryUrl)

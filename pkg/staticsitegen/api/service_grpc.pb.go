@@ -11,6 +11,7 @@ import (
 
 // This is a compile-time assertion to ensure that this generated file
 // is compatible with the grpc package it is being compiled against.
+// Requires gRPC-Go v1.32.0 or later.
 const _ = grpc.SupportPackageIsVersion7
 
 // StaticSiteGenServiceClient is the client API for StaticSiteGenService service.
@@ -61,8 +62,8 @@ type UnsafeStaticSiteGenServiceServer interface {
 	mustEmbedUnimplementedStaticSiteGenServiceServer()
 }
 
-func RegisterStaticSiteGenServiceServer(s *grpc.Server, srv StaticSiteGenServiceServer) {
-	s.RegisterService(&_StaticSiteGenService_serviceDesc, srv)
+func RegisterStaticSiteGenServiceServer(s grpc.ServiceRegistrar, srv StaticSiteGenServiceServer) {
+	s.RegisterService(&StaticSiteGenService_ServiceDesc, srv)
 }
 
 func _StaticSiteGenService_Reload_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
@@ -83,7 +84,10 @@ func _StaticSiteGenService_Reload_Handler(srv interface{}, ctx context.Context, 
 	return interceptor(ctx, in, info, handler)
 }
 
-var _StaticSiteGenService_serviceDesc = grpc.ServiceDesc{
+// StaticSiteGenService_ServiceDesc is the grpc.ServiceDesc for StaticSiteGenService service.
+// It's only intended for direct use with grpc.RegisterService,
+// and not to be introspected or modified (even as a copy)
+var StaticSiteGenService_ServiceDesc = grpc.ServiceDesc{
 	ServiceName: "neoshowcase.proto.services.staticsitegen.StaticSiteGenService",
 	HandlerType: (*StaticSiteGenServiceServer)(nil),
 	Methods: []grpc.MethodDesc{
