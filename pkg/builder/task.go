@@ -85,11 +85,11 @@ func (t *Task) startAsync(ctx context.Context, s *Service) error {
 	t.repositoryTempDir = dir
 
 	// リポジトリをクローン
+	refName := plumbing.HEAD
 	if t.BuildSource.Ref != "" {
-		_, err = git.PlainCloneContext(ctx, t.repositoryTempDir, false, &git.CloneOptions{URL: t.BuildSource.RepositoryUrl, Depth: 1, ReferenceName: plumbing.ReferenceName("refs/" + t.BuildSource.Ref)})
-	} else {
-		_, err = git.PlainCloneContext(ctx, t.repositoryTempDir, false, &git.CloneOptions{URL: t.BuildSource.RepositoryUrl, Depth: 1})
+		refName = plumbing.ReferenceName("refs/" + t.BuildSource.Ref)
 	}
+	_, err = git.PlainCloneContext(ctx, t.repositoryTempDir, false, &git.CloneOptions{URL: t.BuildSource.RepositoryUrl, Depth: 1, ReferenceName: refName})
 	if err != nil {
 		_ = os.RemoveAll(t.repositoryTempDir)
 		log.WithError(err).Errorf("failed to clone repository: %s", t.BuildSource.RepositoryUrl)
