@@ -102,6 +102,10 @@ func (m *managerImpl) appDeployLoop() {
 			repoURL := ev.Fields["repository_url"].(string)
 			branch := ev.Fields["branch"].(string)
 
+			log.WithField("repo", repoURL).
+				WithField("refs", branch).
+				Info("push event received")
+
 			app, err := m.GetAppByRepository(repoURL)
 			if err != nil {
 				if err != ErrNotFound {
