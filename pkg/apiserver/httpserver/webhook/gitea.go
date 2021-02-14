@@ -25,7 +25,7 @@ func (r *Receiver) giteaHandler(c echo.Context) error {
 	if err := json.Unmarshal(b, body); err != nil {
 		return c.NoContent(http.StatusBadRequest)
 	}
-	repoURL := body.Repo.HTMLURL
+	repoURL := body.Repo.CloneURL
 	secrets, err := r.keyLoader.GetWebhookSecretKeys(repoURL)
 	if err != nil {
 		return c.NoContent(http.StatusInternalServerError)
@@ -40,7 +40,7 @@ func (r *Receiver) giteaHandler(c echo.Context) error {
 	if !vS {
 		return c.NoContent(http.StatusBadRequest)
 	}
-	branch := strings.Trim(body.Ref, "refs/")
+	branch := strings.TrimPrefix(body.Ref, "refs/")
 	r.bus.Publish(hub.Message{
 		Name: event.WebhookRepositoryPush,
 		Fields: hub.Fields{
