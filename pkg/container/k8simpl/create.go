@@ -6,7 +6,6 @@ import (
 
 	"github.com/traPtitech/neoshowcase/pkg/container"
 	"github.com/traPtitech/neoshowcase/pkg/util"
-	appsv1 "k8s.io/api/apps/v1"
 	apiv1 "k8s.io/api/core/v1"
 	networkingv1beta1 "k8s.io/api/networking/v1beta1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -14,6 +13,10 @@ import (
 )
 
 func (m *Manager) Create(ctx context.Context, args container.CreateArgs) (*container.CreateResult, error) {
+	if args.ImageTag == "" {
+		args.ImageTag = "latest"
+	}
+
 	labels := util.MergeLabels(args.Labels, map[string]string{
 		appContainerLabel:              "true",
 		appContainerApplicationIDLabel: args.ApplicationID,
@@ -100,39 +103,20 @@ func (m *Manager) Create(ctx context.Context, args container.CreateArgs) (*conta
 		}
 	}
 
-	deployment := &appsv1.Deployment{
+	pod := &apiv1.Pod{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      deploymentName(args.ApplicationID, args.EnvironmentID),
 			Namespace: appNamespace,
 			Labels:    labels,
 		},
-		Spec: appsv1.DeploymentSpec{
-			Replicas: int32Ptr(1),
-			Selector: &metav1.LabelSelector{
-				MatchLabels: map[string]string{
-					appContainerLabel:              "true",
-					appContainerApplicationIDLabel: args.ApplicationID,
-					appContainerEnvironmentIDLabel: args.EnvironmentID,
-				},
-			},
-			Template: apiv1.PodTemplateSpec{
-				ObjectMeta: metav1.ObjectMeta{
-					Namespace: appNamespace,
-					Labels:    labels,
-				},
-				Spec: apiv1.PodSpec{
-					Containers: []apiv1.Container{cont},
-				},
-			},
-			Strategy: appsv1.DeploymentStrategy{
-				Type: "Recreate",
-			},
+		Spec: apiv1.PodSpec{
+			Containers: []apiv1.Container{cont},
 		},
 	}
 
-	_, err := m.clientset.AppsV1().Deployments(appNamespace).Create(ctx, deployment, metav1.CreateOptions{})
+	_, err := m.clientset.CoreV1().Pods(appNamespace).Create(ctx, pod, metav1.CreateOptions{})
 	if err != nil {
-		return nil, fmt.Errorf("failed to create deployment: %w", err)
+		return nil, fmt.Errorf("failed to create pod: %w", err)
 	}
 
 	return &container.CreateResult{}, nil

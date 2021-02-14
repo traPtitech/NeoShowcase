@@ -22,11 +22,30 @@ func (m *Manager) List(ctx context.Context) (*container.ListResult, error) {
 		result = append(result, container.Container{
 			ApplicationID: apiContainers.Labels[appContainerApplicationIDLabel],
 			EnvironmentID: apiContainers.Labels[appContainerEnvironmentIDLabel],
-			State:         apiContainers.State, // TODO
+			State:         getContainerState(apiContainers.State),
 		})
 	}
 
 	return &container.ListResult{
 		Containers: result,
 	}, nil
+}
+
+func getContainerState(state string) container.State {
+	switch state {
+	case "Created":
+		return container.StateStopped
+	case "Restarting":
+		return container.StateRestarting
+	case "Running":
+		return container.StateRunning
+	case "Paused":
+		return container.StateOther
+	case "Exited":
+		return container.StateStopped
+	case "Dead":
+		return container.StateOther
+	default:
+		return container.StateOther
+	}
 }
