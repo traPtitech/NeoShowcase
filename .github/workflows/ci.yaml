@@ -108,6 +108,46 @@ jobs:
       - run: sql-migrate up
       - name: Run tests
         run: go test ./... -race -vet=off
+  k8s-test:
+    name: Test (k8s)
+    runs-on: ubuntu-latest
+    needs: [ mod ]
+    env:
+      ENABLE_K8S_TESTS: "true"
+    steps:
+      - uses: actions/setup-go@v2
+        with:
+          go-version: 1.15
+      - uses: AbsaOSS/k3d-action@v1.1.0
+        id: single-cluster
+        name: "Create Single Cluster"
+        with:
+          cluster-name: "test-cluster"
+          args: >-
+            --agents 1
+            --no-lb
+            --k3s-server-arg "--no-deploy=traefik,servicelb,metrics-server"
+      - name: Cluster info
+        run: |
+          echo ${{ steps.single-cluster.outputs.network }} ${{ steps.single-cluster.outputs.subnet-CIDR }}
+          echo
+          kubectl cluster-info --context k3d-test-cluster
+      - name: Nodes
+        # hack, wait until agents are ready...
+        run: |
+          docker ps -a
+          sleep 10
+          kubectl config use-context k3d-test-cluster
+          kubectl get nodes -o wide
+      - uses: actions/checkout@v2
+      - uses: actions/cache@v2
+        with:
+          path: ~/go/pkg/mod
+          key: ${{ runner.os }}-gomod-${{ hashFiles('**/go.sum') }}
+          restore-keys: |
+            ${{ runner.os }}-gomod-
+      - name: Run tests
+        run: go test ./pkg/container/k8simpl -vet=off
   tbls:
     name: TBLS
     runs-on: ubuntu-latest
