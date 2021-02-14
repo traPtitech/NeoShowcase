@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"github.com/leandro-lugaresi/hub"
 	log "github.com/sirupsen/logrus"
+	"github.com/traPtitech/neoshowcase/pkg/event"
+	apiv1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/watch"
 	"k8s.io/client-go/kubernetes"
@@ -19,14 +21,15 @@ const (
 )
 
 type Manager struct {
-	clientset *kubernetes.Clientset
-
+	clientset  *kubernetes.Clientset
+	bus        *hub.Hub
 	podWatcher watch.Interface
 }
 
 func NewManager(eventbus *hub.Hub, k8sCSet *kubernetes.Clientset) (*Manager, error) {
 	m := &Manager{
 		clientset: k8sCSet,
+		bus:       eventbus,
 	}
 
 	var err error
@@ -47,6 +50,36 @@ func NewManager(eventbus *hub.Hub, k8sCSet *kubernetes.Clientset) (*Manager, err
 func (m *Manager) eventListener() {
 	for ev := range m.podWatcher.ResultChan() {
 		log.Debug(ev)
+
+		p, ok := ev.Object.(*apiv1.Pod)
+		if !ok {
+			log.Warnf("unexpected type: %v", ev)
+			continue
+		}
+		if p.Labels[appContainerLabel] != "true" {
+			continue
+		}
+
+		switch ev.Type {
+		case watch.Modified:
+			if p.Status.Phase == apiv1.PodRunning {
+				m.bus.Publish(hub.Message{
+					Name: event.ContainerAppStarted,
+					Fields: map[string]interface{}{
+						"application_id": p.Labels[appContainerApplicationIDLabel],
+						"environment_id": p.Labels[appContainerEnvironmentIDLabel],
+					},
+				})
+			}
+		case watch.Deleted:
+			m.bus.Publish(hub.Message{
+				Name: event.ContainerAppStopped,
+				Fields: map[string]interface{}{
+					"application_id": p.Labels[appContainerApplicationIDLabel],
+					"environment_id": p.Labels[appContainerEnvironmentIDLabel],
+				},
+			})
+		}
 	}
 }
 

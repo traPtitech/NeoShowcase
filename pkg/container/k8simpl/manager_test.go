@@ -52,6 +52,9 @@ func prepareManager(t *testing.T) (*Manager, *kubernetes.Clientset, *hub.Hub) {
 
 	m, err := NewManager(bus, clientset)
 	require.NoError(t, err)
+	t.Cleanup(func() {
+		m.Dispose(context.Background())
+	})
 
 	return m, clientset, bus
 }
