@@ -139,6 +139,7 @@ jobs:
           sleep 10
           kubectl config use-context k3d-test-cluster
           kubectl get nodes -o wide
+          kubectl create ns neoshowcase-apps
       - uses: actions/checkout@v2
       - uses: actions/cache@v2
         with:
