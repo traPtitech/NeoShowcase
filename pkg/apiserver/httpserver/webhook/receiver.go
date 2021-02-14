@@ -17,7 +17,7 @@ type PushEvent struct {
 }
 
 type PushEventRepository struct {
-	HTMLURL string `json:"html_url"`
+	CloneURL string `json:"clone_url"`
 }
 
 // Receiver Webhookレシーバー
