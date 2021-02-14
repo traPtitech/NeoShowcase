@@ -72,5 +72,14 @@ type ListResult struct {
 type Container struct {
 	ApplicationID string
 	EnvironmentID string
-	State         string
+	State         State
 }
+
+type State int
+
+const (
+	StateRunning State = iota
+	StateRestarting
+	StateStopped
+	StateOther
+)
