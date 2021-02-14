@@ -75,7 +75,7 @@ func (m *managerImpl) GetAppByEnvironment(envID string) (App, error) {
 		qm.Load(models.ApplicationRels.Repository),
 		qm.Load(qm.Rels(models.ApplicationRels.Environments, models.EnvironmentRels.Website)),
 		models.ApplicationWhere.DeletedAt.IsNull(),
-		models.ApplicationWhere.RepositoryID.EQ(env.ID),
+		models.ApplicationWhere.ID.EQ(env.ID),
 	).One(context.Background(), m.db)
 	if err != nil {
 		if err == sql.ErrNoRows {
