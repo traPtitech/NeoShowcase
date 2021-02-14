@@ -51,6 +51,7 @@ func NewManager(config Config) (Manager, error) {
 		config:  config,
 		stream:  stream,
 	}
+	go m.appDeployLoop()
 	go m.receiveBuilderEvents()
 	return m, nil
 }
@@ -91,6 +92,39 @@ func (m *managerImpl) receiveBuilderEvents() error {
 		}
 	}
 	return nil
+}
+
+func (m *managerImpl) appDeployLoop() {
+	sub := m.bus.Subscribe(10, event.BuilderBuildSucceeded)
+	for ev := range sub.Receiver {
+		switch ev.Name {
+		case event.BuilderBuildSucceeded:
+			envID := ev.Fields["environment_id"].(string)
+			buildID := ev.Fields["build_id"].(string)
+			if len(envID) == 0 {
+				// envIDが無い場合はテストビルド
+				continue
+			}
+
+			app, err := m.GetAppByEnvironment(envID)
+			if err != nil {
+				log.WithError(err).WithField("envID", envID).Error("failed to GetAppByEnvironment")
+				continue
+			}
+
+			// 自動デプロイ
+			err = app.Start(AppStartArgs{
+				EnvironmentID: envID,
+				BuildID:       buildID,
+			})
+			if err != nil {
+				log.WithError(err).
+					WithField("envID", envID).
+					WithField("buildID", buildID).
+					Error("failed to Start Application")
+			}
+		}
+	}
 }
 
 // getFullImageName registryのhost付きのイメージ名を返す

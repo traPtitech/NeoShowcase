@@ -62,6 +62,34 @@ func (m *managerImpl) GetAppByRepository(repo string) (App, error) {
 	}, nil
 }
 
+func (m *managerImpl) GetAppByEnvironment(envID string) (App, error) {
+	env, err := models.FindEnvironment(context.Background(), m.db, envID)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return nil, ErrNotFound
+		}
+		return nil, fmt.Errorf("failed to GetAppByEnvironment: %w", err)
+	}
+
+	app, err := models.Applications(
+		qm.Load(models.ApplicationRels.Repository),
+		qm.Load(qm.Rels(models.ApplicationRels.Environments, models.EnvironmentRels.Website)),
+		models.ApplicationWhere.DeletedAt.IsNull(),
+		models.ApplicationWhere.RepositoryID.EQ(env.ID),
+	).One(context.Background(), m.db)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return nil, ErrNotFound
+		}
+		return nil, fmt.Errorf("failed to GetApp: %w", err)
+	}
+
+	return &appImpl{
+		m:       m,
+		dbmodel: app,
+	}, nil
+}
+
 func (m *managerImpl) CreateApp(args CreateAppArgs) (App, error) {
 	// リポジトリ情報を設定
 	repo, err := models.Repositories(models.RepositoryWhere.Remote.EQ(args.RepositoryURL)).One(context.Background(), m.db)
