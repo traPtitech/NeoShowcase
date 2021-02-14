@@ -199,13 +199,13 @@ func (app *appImpl) Start(args AppStartArgs) error {
 			return fmt.Errorf("failed to query website: %w", err)
 		}
 
-		// TODO 既に存在する場合はCreateせずにStartするようにする
 		_, err = app.m.cm.Create(context.Background(), container.CreateArgs{
 			ApplicationID: app.GetID(),
 			EnvironmentID: env.ID,
 			ImageName:     app.m.getFullImageName(app),
 			ImageTag:      args.BuildID,
 			HTTPProxy:     httpProxy,
+			Recreate:      true,
 		})
 		if err != nil {
 			return fmt.Errorf("failed to Create container: %w", err)

@@ -3,6 +3,8 @@ package k8simpl
 import (
 	"context"
 	"fmt"
+	"k8s.io/apimachinery/pkg/api/errors"
+	"time"
 
 	"github.com/traPtitech/neoshowcase/pkg/container"
 	"github.com/traPtitech/neoshowcase/pkg/util"
@@ -96,10 +98,25 @@ func (m *Manager) Create(ctx context.Context, args container.CreateArgs) (*conta
 		}
 
 		if _, err := m.clientset.CoreV1().Services(appNamespace).Create(ctx, svc, metav1.CreateOptions{}); err != nil {
-			return nil, fmt.Errorf("failed to create service: %w", err)
+			if args.Recreate && errors.IsAlreadyExists(err) {
+				if err = m.clientset.CoreV1().Services(appNamespace).Delete(ctx, svc.Name, metav1.DeleteOptions{}); err != nil {
+					return nil, fmt.Errorf("failed to delete service: %w", err)
+				}
+				if _, err := m.clientset.CoreV1().Services(appNamespace).Create(ctx, svc, metav1.CreateOptions{}); err != nil {
+					return nil, fmt.Errorf("failed to create service: %w", err)
+				}
+			} else {
+				return nil, fmt.Errorf("failed to create service: %w", err)
+			}
 		}
 		if _, err := m.clientset.NetworkingV1beta1().Ingresses(appNamespace).Create(ctx, ingress, metav1.CreateOptions{}); err != nil {
-			return nil, fmt.Errorf("failed to create ingress: %w", err)
+			if args.Recreate && errors.IsAlreadyExists(err) {
+				if _, err = m.clientset.NetworkingV1beta1().Ingresses(appNamespace).Update(ctx, ingress, metav1.UpdateOptions{}); err != nil {
+					return nil, fmt.Errorf("failed to update ingress: %w", err)
+				}
+			} else {
+				return nil, fmt.Errorf("failed to create ingress: %w", err)
+			}
 		}
 	}
 
@@ -116,7 +133,27 @@ func (m *Manager) Create(ctx context.Context, args container.CreateArgs) (*conta
 
 	_, err := m.clientset.CoreV1().Pods(appNamespace).Create(ctx, pod, metav1.CreateOptions{})
 	if err != nil {
-		return nil, fmt.Errorf("failed to create pod: %w", err)
+		if args.Recreate && errors.IsAlreadyExists(err) {
+			// TODO いい感じにしたい
+			if err = m.clientset.CoreV1().Pods(appNamespace).Delete(ctx, pod.Name, metav1.DeleteOptions{}); err != nil {
+				return nil, fmt.Errorf("failed to delete pod: %w", err)
+			}
+			for {
+				_, err := m.clientset.CoreV1().Pods(appNamespace).Get(ctx, pod.Name, metav1.GetOptions{})
+				if err != nil {
+					if errors.IsNotFound(err) {
+						break
+					}
+					return nil, fmt.Errorf("failed to delete pod: %w", err)
+				}
+				time.Sleep(500 * time.Millisecond)
+			}
+			if _, err := m.clientset.CoreV1().Pods(appNamespace).Create(ctx, pod, metav1.CreateOptions{}); err != nil {
+				return nil, fmt.Errorf("failed to create pod: %w", err)
+			}
+		} else {
+			return nil, fmt.Errorf("failed to create pod: %w", err)
+		}
 	}
 
 	return &container.CreateResult{}, nil

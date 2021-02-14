@@ -22,7 +22,7 @@ type CreateArgs struct {
 	Labels        map[string]string
 	Envs          map[string]string
 	HTTPProxy     *HTTPProxy
-	NoStart       bool
+	Recreate      bool
 }
 
 type HTTPProxy struct {
