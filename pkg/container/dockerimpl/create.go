@@ -43,6 +43,21 @@ func (m *Manager) Create(ctx context.Context, args container.CreateArgs) (*conta
 		envs = append(envs, name+"="+value)
 	}
 
+	if args.Recreate {
+		// 前のものが起動中の場合は削除する
+		err := m.c.RemoveContainer(docker.RemoveContainerOptions{
+			ID:            containerName(args.ApplicationID, args.EnvironmentID),
+			RemoveVolumes: true,
+			Force:         true,
+			Context:       ctx,
+		})
+		if err != nil {
+			if _, ok := err.(*docker.NoSuchContainer); !ok {
+				return nil, fmt.Errorf("failed to remove old container: %w", err)
+			}
+		}
+	}
+
 	// ビルドしたイメージのコンテナを作成
 	cont, err := m.c.CreateContainer(docker.CreateContainerOptions{
 		Name: containerName(args.ApplicationID, args.EnvironmentID),
@@ -61,11 +76,10 @@ func (m *Manager) Create(ctx context.Context, args container.CreateArgs) (*conta
 		return nil, fmt.Errorf("failed to create container: %w", err)
 	}
 
-	if !args.NoStart {
-		// コンテナを起動
-		if err := m.c.StartContainer(cont.ID, nil); err != nil {
-			return nil, fmt.Errorf("failed to start container: %w", err)
-		}
+	// コンテナを起動
+	if err := m.c.StartContainer(cont.ID, nil); err != nil {
+		return nil, fmt.Errorf("failed to start container: %w", err)
 	}
+
 	return &container.CreateResult{}, nil
 }

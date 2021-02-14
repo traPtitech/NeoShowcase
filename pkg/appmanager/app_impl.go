@@ -62,6 +62,34 @@ func (m *managerImpl) GetAppByRepository(repo string) (App, error) {
 	}, nil
 }
 
+func (m *managerImpl) GetAppByEnvironment(envID string) (App, error) {
+	env, err := models.FindEnvironment(context.Background(), m.db, envID)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return nil, ErrNotFound
+		}
+		return nil, fmt.Errorf("failed to GetAppByEnvironment: %w", err)
+	}
+
+	app, err := models.Applications(
+		qm.Load(models.ApplicationRels.Repository),
+		qm.Load(qm.Rels(models.ApplicationRels.Environments, models.EnvironmentRels.Website)),
+		models.ApplicationWhere.DeletedAt.IsNull(),
+		models.ApplicationWhere.ID.EQ(env.ApplicationID),
+	).One(context.Background(), m.db)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return nil, ErrNotFound
+		}
+		return nil, fmt.Errorf("failed to GetApp: %w", err)
+	}
+
+	return &appImpl{
+		m:       m,
+		dbmodel: app,
+	}, nil
+}
+
 func (m *managerImpl) CreateApp(args CreateAppArgs) (App, error) {
 	// リポジトリ情報を設定
 	repo, err := models.Repositories(models.RepositoryWhere.Remote.EQ(args.RepositoryURL)).One(context.Background(), m.db)
@@ -127,6 +155,18 @@ func (app *appImpl) GetEnvs() []Env {
 		})
 	}
 	return result
+}
+
+func (app *appImpl) GetEnvByBranchName(branch string) (Env, error) {
+	for _, env := range app.dbmodel.R.Environments {
+		if env.BranchName == branch {
+			return &envImpl{
+				m:       app.m,
+				dbmodel: env,
+			}, nil
+		}
+	}
+	return nil, ErrNotFound
 }
 
 func (app *appImpl) CreateEnv(branchName string, buildType BuildType) (Env, error) {
@@ -199,13 +239,13 @@ func (app *appImpl) Start(args AppStartArgs) error {
 			return fmt.Errorf("failed to query website: %w", err)
 		}
 
-		// TODO 既に存在する場合はCreateせずにStartするようにする
 		_, err = app.m.cm.Create(context.Background(), container.CreateArgs{
 			ApplicationID: app.GetID(),
 			EnvironmentID: env.ID,
 			ImageName:     app.m.getFullImageName(app),
 			ImageTag:      args.BuildID,
 			HTTPProxy:     httpProxy,
+			Recreate:      true,
 		})
 		if err != nil {
 			return fmt.Errorf("failed to Create container: %w", err)

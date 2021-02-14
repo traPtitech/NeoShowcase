@@ -14,6 +14,7 @@ type Manager interface {
 	GetApp(appID string) (App, error)
 	// GetAppByRepository 指定したリポジトリURLのアプリを取得します
 	GetAppByRepository(repo string) (App, error)
+	GetAppByEnvironment(envID string) (App, error)
 	CreateApp(args CreateAppArgs) (App, error)
 	Shutdown(ctx context.Context) error
 }

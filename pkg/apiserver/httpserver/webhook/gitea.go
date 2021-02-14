@@ -40,7 +40,7 @@ func (r *Receiver) giteaHandler(c echo.Context) error {
 	if !vS {
 		return c.NoContent(http.StatusBadRequest)
 	}
-	branch := strings.Trim(body.Ref, "refs/heads/")
+	branch := strings.Trim(body.Ref, "refs/")
 	r.bus.Publish(hub.Message{
 		Name: event.WebhookRepositoryPush,
 		Fields: hub.Fields{

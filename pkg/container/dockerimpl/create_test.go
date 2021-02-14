@@ -20,16 +20,16 @@ func TestManager_Create(t *testing.T) {
 		assert.Error(t, err)
 	})
 
-	t.Run("コンテナを正常に作成", func(t *testing.T) {
+	t.Run("コンテナを正常に作成して起動", func(t *testing.T) {
 		t.Parallel()
-		image := "hello-world"
-		appID := "afiowjiodncx"
-		envID := "adhihpillomo"
+		image := "tianon/sleeping-beauty"
+		appID := "pjpjpjoijion"
+		envID := "fewwfadsface"
+
 		_, err := m.Create(context.Background(), container.CreateArgs{
 			ImageName:     image,
 			ApplicationID: appID,
 			EnvironmentID: envID,
-			NoStart:       true,
 		})
 		if assert.NoError(t, err) {
 			cont, err := c.InspectContainerWithOptions(docker.InspectContainerOptions{
@@ -50,16 +50,25 @@ func TestManager_Create(t *testing.T) {
 		}
 	})
 
-	t.Run("コンテナを正常に作成して起動", func(t *testing.T) {
+	t.Run("コンテナを正常に作成して起動 (Recreate)", func(t *testing.T) {
 		t.Parallel()
 		image := "tianon/sleeping-beauty"
-		appID := "pjpjpjoijion"
-		envID := "fewwfadsface"
+		appID := "pij0bij90j20"
+		envID := "9ahef98kjdla"
 
 		_, err := m.Create(context.Background(), container.CreateArgs{
 			ImageName:     image,
 			ApplicationID: appID,
 			EnvironmentID: envID,
+			Recreate:      true,
+		})
+		require.NoError(t, err)
+
+		_, err = m.Create(context.Background(), container.CreateArgs{
+			ImageName:     image,
+			ApplicationID: appID,
+			EnvironmentID: envID,
+			Recreate:      true,
 		})
 		if assert.NoError(t, err) {
 			cont, err := c.InspectContainerWithOptions(docker.InspectContainerOptions{

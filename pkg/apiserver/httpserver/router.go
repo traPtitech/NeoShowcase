@@ -71,5 +71,5 @@ func (s *Server) Shutdown(ctx context.Context) error {
 }
 
 func (s *Server) GetWebhookSecretKeys(repositoryUrl string) ([]string, error) {
-	return []string{""}, nil // TODO
+	return []string{"__test"}, nil // TODO
 }
