@@ -89,3 +89,7 @@ dind-down:
 docker-test:
 	@docker container inspect ns-test-dind > /dev/null || make dind-up
 	ENABLE_DOCKER_TESTS=true DOCKER_HOST=tcp://localhost:5555 DOCKER_CERT_PATH=$$PWD/local-dev/dind/client DOCKER_TLS_VERIFY=true go test -v ./pkg/container/dockerimpl
+
+.PHONY: k8s-test
+k8s-test:
+	ENABLE_K8S_TESTS=true go test -v ./pkg/container/k8simpl

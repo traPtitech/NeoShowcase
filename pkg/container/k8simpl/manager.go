@@ -21,7 +21,7 @@ const (
 type Manager struct {
 	clientset *kubernetes.Clientset
 
-	deploymentWatcher watch.Interface
+	podWatcher watch.Interface
 }
 
 func NewManager(eventbus *hub.Hub, k8sCSet *kubernetes.Clientset) (*Manager, error) {
@@ -30,13 +30,13 @@ func NewManager(eventbus *hub.Hub, k8sCSet *kubernetes.Clientset) (*Manager, err
 	}
 
 	var err error
-	m.deploymentWatcher, err = k8sCSet.AppsV1().Deployments(appNamespace).Watch(context.Background(), metav1.ListOptions{
+	m.podWatcher, err = k8sCSet.CoreV1().Pods(appNamespace).Watch(context.Background(), metav1.ListOptions{
 		LabelSelector: metav1.FormatLabelSelector(&metav1.LabelSelector{MatchLabels: map[string]string{
 			appContainerLabel: "true",
 		}}),
 	})
 	if err != nil {
-		return nil, fmt.Errorf("failed to watch deployments: %w", err)
+		return nil, fmt.Errorf("failed to watch pods: %w", err)
 	}
 
 	go m.eventListener()
@@ -45,12 +45,12 @@ func NewManager(eventbus *hub.Hub, k8sCSet *kubernetes.Clientset) (*Manager, err
 }
 
 func (m *Manager) eventListener() {
-	for ev := range m.deploymentWatcher.ResultChan() {
+	for ev := range m.podWatcher.ResultChan() {
 		log.Debug(ev)
 	}
 }
 
 func (m *Manager) Dispose(ctx context.Context) error {
-	m.deploymentWatcher.Stop()
+	m.podWatcher.Stop()
 	return nil
 }
