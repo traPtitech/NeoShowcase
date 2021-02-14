@@ -157,6 +157,18 @@ func (app *appImpl) GetEnvs() []Env {
 	return result
 }
 
+func (app *appImpl) GetEnvByBranchName(branch string) (Env, error) {
+	for _, env := range app.dbmodel.R.Environments {
+		if env.BranchName == branch {
+			return &envImpl{
+				m:       app.m,
+				dbmodel: env,
+			}, nil
+		}
+	}
+	return nil, ErrNotFound
+}
+
 func (app *appImpl) CreateEnv(branchName string, buildType BuildType) (Env, error) {
 	// 指定したブランチの環境が存在しないことを確認
 	for _, env := range app.dbmodel.R.Environments {

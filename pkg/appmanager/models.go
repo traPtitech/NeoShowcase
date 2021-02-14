@@ -14,6 +14,7 @@ type App interface {
 	GetName() string
 	// GetEnvs アプリの全ての環境の配列を返します
 	GetEnvs() []Env
+	GetEnvByBranchName(branch string) (Env, error)
 
 	CreateEnv(branchName string, buildType BuildType) (Env, error)
 

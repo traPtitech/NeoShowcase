@@ -95,9 +95,36 @@ func (m *managerImpl) receiveBuilderEvents() error {
 }
 
 func (m *managerImpl) appDeployLoop() {
-	sub := m.bus.Subscribe(10, event.BuilderBuildSucceeded)
+	sub := m.bus.Subscribe(10, event.BuilderBuildSucceeded, event.WebhookRepositoryPush)
 	for ev := range sub.Receiver {
 		switch ev.Name {
+		case event.WebhookRepositoryPush:
+			repoURL := ev.Fields["repository_url"].(string)
+			branch := ev.Fields["branch"].(string)
+
+			app, err := m.GetAppByRepository(repoURL)
+			if err != nil {
+				if err != ErrNotFound {
+					log.WithError(err).WithField("repoURL", repoURL).Error("failed to GetAppByRepository")
+				}
+				continue
+			}
+
+			env, err := app.GetEnvByBranchName(branch)
+			if err != nil {
+				if err != ErrNotFound {
+					log.WithError(err).WithField("repoURL", repoURL).Error("failed to GetAppByRepository")
+				}
+				continue
+			}
+
+			if err := app.RequestBuild(context.Background(), env.GetID()); err != nil {
+				log.WithError(err).
+					WithField("appID", app.GetID()).
+					WithField("envID", env.GetID()).
+					Error("failed to RequestBuild")
+			}
+
 		case event.BuilderBuildSucceeded:
 			envID := ev.Fields["environment_id"].(string)
 			buildID := ev.Fields["build_id"].(string)
