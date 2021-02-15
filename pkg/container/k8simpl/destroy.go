@@ -19,7 +19,7 @@ func (m *Manager) Destroy(ctx context.Context, args container.DestroyArgs) (*con
 		return nil, fmt.Errorf("failed to delete service: %w", err)
 	}
 
-	err = m.clientset.NetworkingV1beta1().Ingresses(appNamespace).Delete(ctx, deploymentName(args.ApplicationID, args.EnvironmentID), metav1.DeleteOptions{})
+	err = m.clientset.NetworkingV1().Ingresses(appNamespace).Delete(ctx, deploymentName(args.ApplicationID, args.EnvironmentID), metav1.DeleteOptions{})
 	if err != nil && !errors.IsNotFound(err) {
 		return nil, fmt.Errorf("failed to delete ingress: %w", err)
 	}

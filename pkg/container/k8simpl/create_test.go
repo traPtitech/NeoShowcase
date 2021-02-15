@@ -48,7 +48,7 @@ func TestManager_Create(t *testing.T) {
 			waitPodRunning(t, c, deploymentName(appID, envID))
 			require.NoError(t, c.CoreV1().Pods(appNamespace).Delete(context.Background(), deploymentName(appID, envID), metav1.DeleteOptions{}))
 			require.NoError(t, c.CoreV1().Services(appNamespace).Delete(context.Background(), deploymentName(appID, envID), metav1.DeleteOptions{}))
-			require.NoError(t, c.NetworkingV1beta1().Ingresses(appNamespace).Delete(context.Background(), deploymentName(appID, envID), metav1.DeleteOptions{}))
+			require.NoError(t, c.NetworkingV1().Ingresses(appNamespace).Delete(context.Background(), deploymentName(appID, envID), metav1.DeleteOptions{}))
 		}
 	})
 
@@ -86,7 +86,7 @@ func TestManager_Create(t *testing.T) {
 			waitPodRunning(t, c, deploymentName(appID, envID))
 			require.NoError(t, c.CoreV1().Pods(appNamespace).Delete(context.Background(), deploymentName(appID, envID), metav1.DeleteOptions{}))
 			require.NoError(t, c.CoreV1().Services(appNamespace).Delete(context.Background(), deploymentName(appID, envID), metav1.DeleteOptions{}))
-			require.NoError(t, c.NetworkingV1beta1().Ingresses(appNamespace).Delete(context.Background(), deploymentName(appID, envID), metav1.DeleteOptions{}))
+			require.NoError(t, c.NetworkingV1().Ingresses(appNamespace).Delete(context.Background(), deploymentName(appID, envID), metav1.DeleteOptions{}))
 		}
 	})
 
