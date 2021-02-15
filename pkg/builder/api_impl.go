@@ -23,7 +23,7 @@ func (s *Service) GetStatus(_ context.Context, _ *emptypb.Empty) (*api.GetStatus
 func (s *Service) ConnectEventStream(_ *emptypb.Empty, stream api.BuilderService_ConnectEventStreamServer) error {
 	sub := s.bus.Subscribe(10, "builder.*")
 
-	if err := stream.Send(&api.Event{Type: api.Event_CONNECTED}); err != nil {
+	if err := stream.Send(&api.Event{Type: api.Event_CONNECTED, Body: util.ToJSON(map[string]interface{}{})}); err != nil {
 		return err
 	}
 
