@@ -49,8 +49,6 @@ func NewManager(eventbus *hub.Hub, k8sCSet *kubernetes.Clientset) (*Manager, err
 
 func (m *Manager) eventListener() {
 	for ev := range m.podWatcher.ResultChan() {
-		log.Debug(ev)
-
 		p, ok := ev.Object.(*apiv1.Pod)
 		if !ok {
 			log.Warnf("unexpected type: %v", ev)

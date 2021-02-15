@@ -61,33 +61,41 @@ func (m *managerImpl) receiveBuilderEvents() error {
 	for {
 		ev, err := m.stream.Recv()
 		if err == io.EOF {
+			log.Debug("builder event stream was closed: EOF")
 			break
 		}
 		if err != nil {
+			log.WithError(err).
+				Debug("builder event stream was disconnected with error")
 			return err
 		}
 
-		log.WithField("payload", ev.String()).Debug("builder event was received")
+		payload := util.FromJSON(ev.Body)
+
+		log.WithField("type", ev.Type).
+			WithField("payload", payload).
+			Info("builder event received")
+
 		switch ev.Type {
 		case builderApi.Event_BUILD_STARTED:
 			m.bus.Publish(hub.Message{
 				Name:   event.BuilderBuildStarted,
-				Fields: util.FromJSON(ev.Body),
+				Fields: payload,
 			})
 		case builderApi.Event_BUILD_SUCCEEDED:
 			m.bus.Publish(hub.Message{
 				Name:   event.BuilderBuildSucceeded,
-				Fields: util.FromJSON(ev.Body),
+				Fields: payload,
 			})
 		case builderApi.Event_BUILD_FAILED:
 			m.bus.Publish(hub.Message{
 				Name:   event.BuilderBuildFailed,
-				Fields: util.FromJSON(ev.Body),
+				Fields: payload,
 			})
 		case builderApi.Event_BUILD_CANCELED:
 			m.bus.Publish(hub.Message{
 				Name:   event.BuilderBuildCanceled,
-				Fields: util.FromJSON(ev.Body),
+				Fields: payload,
 			})
 		}
 	}
@@ -104,7 +112,7 @@ func (m *managerImpl) appDeployLoop() {
 
 			log.WithField("repo", repoURL).
 				WithField("refs", branch).
-				Info("push event received")
+				Info("repository push event received")
 
 			app, err := m.GetAppByRepository(repoURL)
 			if err != nil {
@@ -144,6 +152,9 @@ func (m *managerImpl) appDeployLoop() {
 			}
 
 			// 自動デプロイ
+			log.WithField("envID", envID).
+				WithField("buildID", buildID).
+				Error("starting application")
 			err = app.Start(AppStartArgs{
 				EnvironmentID: envID,
 				BuildID:       buildID,

@@ -2,7 +2,12 @@ package idgen
 
 import (
 	"math/rand"
+	"time"
 )
+
+func init() {
+	rand.Seed(time.Now().UnixNano())
+}
 
 // New 22文字のランダムな文字列を生成
 func New() string {

@@ -185,7 +185,9 @@ func (app *appImpl) CreateEnv(branchName string, buildType BuildType) (Env, erro
 	if err := app.dbmodel.AddEnvironments(context.Background(), app.m.db, true, env); err != nil {
 		return nil, fmt.Errorf("failed to create environment: %w", err)
 	}
-	log.WithField("appID", env.ApplicationID).WithField("envID", env.ID).Info("env created")
+	log.WithField("appID", env.ApplicationID).
+		WithField("envID", env.ID).
+		Info("env created")
 	return &envImpl{m: app.m, dbmodel: env}, nil
 }
 
@@ -307,5 +309,9 @@ func (app *appImpl) RequestBuild(ctx context.Context, envID string) error {
 	default:
 		return fmt.Errorf("unknown build type: %s", env.BuildType)
 	}
+
+	log.WithField("envID", envID).
+		Info("build requested")
+
 	return nil
 }
