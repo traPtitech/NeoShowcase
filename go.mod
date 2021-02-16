@@ -17,7 +17,7 @@ require (
 	github.com/golang/protobuf v1.4.2
 	github.com/imdario/mergo v0.3.11 // indirect
 	github.com/kat-co/vala v0.0.0-20170210184112-42e1d8b61f12
-	github.com/labstack/echo/v4 v4.1.17
+	github.com/labstack/echo/v4 v4.2.0
 	github.com/leandro-lugaresi/hub v1.1.1
 	github.com/magiconair/properties v1.8.4 // indirect
 	github.com/markbates/pkger v0.17.1
