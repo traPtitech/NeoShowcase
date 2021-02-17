@@ -218,14 +218,46 @@ func (t *Task) buildImage(s *Service) error {
 			}, ch)
 		} else {
 			// 指定したベースイメージを使用
+			var startup, entrypoint *os.File
+			startup, err := ioutil.TempFile("", "startup.sh")
+			if err != nil {
+				return err
+			}
+			cmd := fmt.Sprintf(`
+#!/bin/sh
+
+%s
+`, t.BuildOptions.StartupCmd)
+			_, err = startup.WriteString(cmd)
+			if err != nil {
+				return err
+			}
+			defer startup.Close()
+			defer os.Remove(startup.Name())
+
+			entrypoint, err = ioutil.TempFile("", "entrypoint.sh")
+			if err != nil {
+				return err
+			}
+			cmd = fmt.Sprintf(`
+#!/bin/sh
+
+%s
+`, t.BuildOptions.EntrypointCmd)
+			_, err = entrypoint.WriteString(cmd)
+			if err != nil {
+				return err
+			}
+			defer entrypoint.Close()
+			defer os.Remove(entrypoint.Name())
 
 			// TODO Dockerfileの検証
 			dockerfile := fmt.Sprintf(`
 FROM %s
 COPY . .
-RUN %s
-ENTRYPOINT %s
-`, t.BuildOptions.BaseImageName, t.BuildOptions.StartupCmd, t.BuildOptions.EntrypointCmd)
+RUN ./startup.sh
+ENTRYPOINT ./entrypoint.sh
+`, t.BuildOptions.BaseImageName)
 
 			var tmp *os.File
 			tmp, err = ioutil.TempFile("", "Dockerfile")
