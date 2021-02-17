@@ -36,7 +36,7 @@ require (
 	github.com/stretchr/testify v1.6.1
 	github.com/volatiletech/null/v8 v8.1.1
 	github.com/volatiletech/randomize v0.0.1
-	github.com/volatiletech/sqlboiler/v4 v4.2.0
+	github.com/volatiletech/sqlboiler/v4 v4.4.0
 	github.com/volatiletech/strmangle v0.0.1
 	go.mongodb.org/mongo-driver v1.4.6
 	golang.org/x/sync v0.0.0-20201008141435-b3e1573b7520
