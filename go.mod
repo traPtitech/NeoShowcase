@@ -14,7 +14,7 @@ require (
 	github.com/gavv/httpexpect/v2 v2.1.0
 	github.com/go-git/go-git/v5 v5.1.0
 	github.com/go-sql-driver/mysql v1.5.0
-	github.com/golang/protobuf v1.4.2
+	github.com/golang/protobuf v1.4.3
 	github.com/imdario/mergo v0.3.11 // indirect
 	github.com/kat-co/vala v0.0.0-20170210184112-42e1d8b61f12
 	github.com/labstack/echo/v4 v4.2.0
@@ -40,7 +40,6 @@ require (
 	github.com/volatiletech/strmangle v0.0.1
 	go.mongodb.org/mongo-driver v1.4.6
 	golang.org/x/sync v0.0.0-20201008141435-b3e1573b7520
-	golang.org/x/sys v0.0.0-20201009025420-dfb3f7c4e634 // indirect
 	golang.org/x/xerrors v0.0.0-20200804184101-5ec99f83aff1 // indirect
 	google.golang.org/genproto v0.0.0-20201008135153-289734e2e40c // indirect
 	google.golang.org/grpc v1.35.0
@@ -48,7 +47,7 @@ require (
 	gopkg.in/ini.v1 v1.61.0 // indirect
 	gopkg.in/yaml.v2 v2.4.0
 	k8s.io/api v0.19.0
-	k8s.io/apimachinery v0.19.0
+	k8s.io/apimachinery v0.20.2
 	k8s.io/client-go v0.19.0
 )
 
