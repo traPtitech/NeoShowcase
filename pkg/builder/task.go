@@ -228,12 +228,11 @@ func (t *Task) buildImage(s *Service) error {
 			if err != nil {
 				return err
 			}
-			cmd := fmt.Sprintf(`
+			scmd := fmt.Sprintf(`
 #!/bin/sh
-
 %s
 `, t.BuildOptions.StartupCmd)
-			_, err = fs.WriteString(cmd)
+			_, err = fs.WriteString(scmd)
 			if err != nil {
 				return err
 			}
@@ -244,12 +243,11 @@ func (t *Task) buildImage(s *Service) error {
 			if err != nil {
 				return err
 			}
-			cmd = fmt.Sprintf(`
+			ecmd := fmt.Sprintf(`
 #!/bin/sh
-
 %s
 `, t.BuildOptions.EntrypointCmd)
-			_, err = fe.WriteString(cmd)
+			_, err = fe.WriteString(ecmd)
 			if err != nil {
 				return err
 			}
