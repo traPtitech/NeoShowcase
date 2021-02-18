@@ -30,6 +30,11 @@ import (
 	"github.com/volatiletech/sqlboiler/v4/boil"
 )
 
+const (
+	startupScriptName    = "shell.sh"
+	entryPointScriptName = "entrypoint.sh"
+)
+
 type Task struct {
 	Static       bool
 	BuildID      string
@@ -218,8 +223,8 @@ func (t *Task) buildImage(s *Service) error {
 			}, ch)
 		} else {
 			// 指定したベースイメージを使用
-			var startup, entrypoint *os.File
-			startup, err := ioutil.TempFile("", "startup.sh")
+			var fs, fe *os.File
+			fs, err := ioutil.TempFile("", startupScriptName)
 			if err != nil {
 				return err
 			}
@@ -228,14 +233,14 @@ func (t *Task) buildImage(s *Service) error {
 
 %s
 `, t.BuildOptions.StartupCmd)
-			_, err = startup.WriteString(cmd)
+			_, err = fs.WriteString(cmd)
 			if err != nil {
 				return err
 			}
-			defer startup.Close()
-			defer os.Remove(startup.Name())
+			defer fs.Close()
+			defer os.Remove(fs.Name())
 
-			entrypoint, err = ioutil.TempFile("", "entrypoint.sh")
+			fe, err = ioutil.TempFile("", entryPointScriptName)
 			if err != nil {
 				return err
 			}
@@ -244,14 +249,13 @@ func (t *Task) buildImage(s *Service) error {
 
 %s
 `, t.BuildOptions.EntrypointCmd)
-			_, err = entrypoint.WriteString(cmd)
+			_, err = fe.WriteString(cmd)
 			if err != nil {
 				return err
 			}
-			defer entrypoint.Close()
-			defer os.Remove(entrypoint.Name())
+			defer fe.Close()
+			defer os.Remove(fe.Name())
 
-			// TODO Dockerfileの検証
 			dockerfile := fmt.Sprintf(`
 FROM %s
 COPY . .
