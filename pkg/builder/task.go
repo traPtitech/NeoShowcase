@@ -257,10 +257,10 @@ func (t *Task) buildImage(s *Service) error {
 			dockerfile := fmt.Sprintf(`
 FROM %s
 COPY . .
+ADD %s %s ./
 RUN ./startup.sh
 ENTRYPOINT ./entrypoint.sh
-`, t.BuildOptions.BaseImageName)
-
+`, t.BuildOptions.BaseImageName, fs.Name(), fe.Name())
 			var tmp *os.File
 			tmp, err = ioutil.TempFile("", "Dockerfile")
 			if err != nil {
