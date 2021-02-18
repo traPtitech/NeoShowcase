@@ -224,7 +224,8 @@ func (t *Task) buildImage(s *Service) error {
 		} else {
 			// 指定したベースイメージを使用
 			var fs, fe *os.File
-			fs, err := ioutil.TempFile("", startupScriptName)
+			fspath := filepath.Join(t.repositoryTempDir, startupScriptName)
+			fs, err := os.Create(fspath)
 			if err != nil {
 				return err
 			}
@@ -239,7 +240,8 @@ func (t *Task) buildImage(s *Service) error {
 			defer fs.Close()
 			defer os.Remove(fs.Name())
 
-			fe, err = ioutil.TempFile("", entryPointScriptName)
+			fepath := filepath.Join(t.repositoryTempDir, entryPointScriptName)
+			fe, err = os.Create(fepath)
 			if err != nil {
 				return err
 			}
@@ -257,9 +259,8 @@ func (t *Task) buildImage(s *Service) error {
 			dockerfile := fmt.Sprintf(`
 FROM %s
 COPY . .
-ADD %s %s ./
-RUN ./startup.sh
-ENTRYPOINT ./entrypoint.sh
+RUN ./%s
+ENTRYPOINT ./%s
 `, t.BuildOptions.BaseImageName, fs.Name(), fe.Name())
 			var tmp *os.File
 			tmp, err = ioutil.TempFile("", "Dockerfile")
