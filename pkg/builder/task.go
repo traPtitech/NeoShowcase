@@ -33,7 +33,7 @@ import (
 const (
 	startupScriptName    = "shell.sh"
 	entryPointScriptName = "entrypoint.sh"
-	filePermission       = 711
+	filePermission       = 755
 )
 
 type Task struct {
@@ -226,7 +226,6 @@ func (t *Task) buildImage(s *Service) error {
 			// 指定したベースイメージを使用
 			var fs, fe *os.File
 			fs, err := os.OpenFile(filepath.Join(t.repositoryTempDir, startupScriptName), os.O_RDWR, filePermission)
-
 			if err != nil {
 				return err
 			}
