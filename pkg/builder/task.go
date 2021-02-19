@@ -33,6 +33,7 @@ import (
 const (
 	startupScriptName    = "shell.sh"
 	entryPointScriptName = "entrypoint.sh"
+	filePermission = 711
 )
 
 type Task struct {
@@ -224,13 +225,10 @@ func (t *Task) buildImage(s *Service) error {
 		} else {
 			// 指定したベースイメージを使用
 			var fs, fe *os.File
-			fspath := filepath.Join(t.repositoryTempDir, startupScriptName)
-			fs, err := os.Create(fspath)
-			if err != nil {
+			fs, err := os.OpenFile(filepath.Join(t.repositoryTempDir, startupScriptName), filePermission, os.O_RDWR)
 				return err
 			}
-			scmd := fmt.Sprintf(`
-#!/bin/sh
+			scmd := fmt.Sprintf(`#!/bin/sh
 %s
 `, t.BuildOptions.StartupCmd)
 			_, err = fs.WriteString(scmd)
@@ -239,14 +237,11 @@ func (t *Task) buildImage(s *Service) error {
 			}
 			defer fs.Close()
 			defer os.Remove(fs.Name())
-
-			fepath := filepath.Join(t.repositoryTempDir, entryPointScriptName)
-			fe, err = os.Create(fepath)
+			fe, err = os.Create(filepath.Join(t.repositoryTempDir, entryPointScriptName), filePermission, os.O_RDWR)
 			if err != nil {
 				return err
 			}
-			ecmd := fmt.Sprintf(`
-#!/bin/sh
+			ecmd := fmt.Sprintf(`#!/bin/sh
 %s
 `, t.BuildOptions.EntrypointCmd)
 			_, err = fe.WriteString(ecmd)
@@ -261,7 +256,7 @@ FROM %s
 COPY . .
 RUN ./%s
 ENTRYPOINT ./%s
-`, t.BuildOptions.BaseImageName, fs.Name(), fe.Name())
+`, t.BuildOptions.BaseImageName, startupScriptName, entryPointScriptName)
 			var tmp *os.File
 			tmp, err = ioutil.TempFile("", "Dockerfile")
 			if err != nil {
