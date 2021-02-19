@@ -33,7 +33,7 @@ import (
 const (
 	startupScriptName    = "shell.sh"
 	entryPointScriptName = "entrypoint.sh"
-	filePermission = 711
+	filePermission       = 711
 )
 
 type Task struct {
@@ -225,7 +225,9 @@ func (t *Task) buildImage(s *Service) error {
 		} else {
 			// 指定したベースイメージを使用
 			var fs, fe *os.File
-			fs, err := os.OpenFile(filepath.Join(t.repositoryTempDir, startupScriptName), filePermission, os.O_RDWR)
+			fs, err := os.OpenFile(filepath.Join(t.repositoryTempDir, startupScriptName), os.O_RDWR, filePermission)
+
+			if err != nil {
 				return err
 			}
 			scmd := fmt.Sprintf(`#!/bin/sh
@@ -237,7 +239,8 @@ func (t *Task) buildImage(s *Service) error {
 			}
 			defer fs.Close()
 			defer os.Remove(fs.Name())
-			fe, err = os.Create(filepath.Join(t.repositoryTempDir, entryPointScriptName), filePermission, os.O_RDWR)
+
+			fe, err = os.OpenFile(filepath.Join(t.repositoryTempDir, entryPointScriptName), os.O_RDWR, filePermission)
 			if err != nil {
 				return err
 			}
