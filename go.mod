@@ -1,6 +1,6 @@
 module github.com/traPtitech/neoshowcase
 
-go 1.15
+go 1.16
 
 require (
 	github.com/Microsoft/hcsshim v0.8.10 // indirect
@@ -20,13 +20,12 @@ require (
 	github.com/labstack/echo/v4 v4.2.0
 	github.com/leandro-lugaresi/hub v1.1.1
 	github.com/magiconair/properties v1.8.4 // indirect
-	github.com/markbates/pkger v0.17.1
 	github.com/mitchellh/mapstructure v1.3.3 // indirect
 	github.com/moby/buildkit v0.7.1-0.20200925001807-2b6cccb9b3e9
 	github.com/moby/term v0.0.0-20200915141129-7f0af18e79f2 // indirect
 	github.com/ncw/swift v1.0.53
 	github.com/pelletier/go-toml v1.8.1 // indirect
-	github.com/rubenv/sql-migrate v0.0.0-20200616145509-8d140a17f351
+	github.com/rubenv/sql-migrate v0.0.0-20210215143335-f84234893558
 	github.com/sirupsen/logrus v1.8.0
 	github.com/spf13/afero v1.4.0 // indirect
 	github.com/spf13/cobra v1.1.3
