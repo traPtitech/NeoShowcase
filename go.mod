@@ -40,7 +40,6 @@ require (
 	github.com/volatiletech/strmangle v0.0.1
 	go.mongodb.org/mongo-driver v1.4.6
 	golang.org/x/sync v0.0.0-20201008141435-b3e1573b7520
-	golang.org/x/xerrors v0.0.0-20200804184101-5ec99f83aff1 // indirect
 	google.golang.org/genproto v0.0.0-20201008135153-289734e2e40c // indirect
 	google.golang.org/grpc v1.35.0
 	google.golang.org/protobuf v1.25.0
