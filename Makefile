@@ -10,7 +10,6 @@ init:
 	go mod download
 	go install google.golang.org/protobuf/cmd/protoc-gen-go
 	go get google.golang.org/grpc/cmd/protoc-gen-go-grpc@v1.0
-	go install github.com/markbates/pkger/cmd/pkger
 	go install github.com/volatiletech/sqlboiler/v4
 	go install github.com/volatiletech/sqlboiler/v4/drivers/sqlboiler-mysql
 	go install github.com/rubenv/sql-migrate/sql-migrate

@@ -4,11 +4,12 @@ import (
 	"database/sql"
 	"fmt"
 	"github.com/go-sql-driver/mysql"
-	"github.com/markbates/pkger"
 	migrate "github.com/rubenv/sql-migrate"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
+	"github.com/traPtitech/neoshowcase/migrations"
 	"github.com/traPtitech/neoshowcase/pkg/cliutil"
+	"net/http"
 )
 
 var (
@@ -17,7 +18,7 @@ var (
 )
 
 var (
-	ms         = &migrate.HttpFileSystemMigrationSource{FileSystem: pkger.Dir("/migrations")}
+	ms         = &migrate.HttpFileSystemMigrationSource{FileSystem: http.FS(migrations.FS)}
 	dbHost     string
 	dbPort     int
 	dbName     string
