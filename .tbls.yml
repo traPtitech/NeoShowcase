@@ -1,4 +1,4 @@
-dsn: mysql://root:password@localhost:5004/neoshowcase
+dsn: mariadb://root:password@localhost:5004/neoshowcase
 docPath: docs/dbschema
 er:
   format: svg

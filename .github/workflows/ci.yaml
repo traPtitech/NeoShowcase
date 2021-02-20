@@ -156,7 +156,7 @@ jobs:
     name: TBLS
     runs-on: ubuntu-latest
     env:
-      TBLS_VERSION: v1.46.0
+      TBLS_VERSION: v1.49.6
     services:
       mysql:
         image: mariadb:10.0.19
@@ -179,7 +179,7 @@ jobs:
           source <(curl -sL https://git.io/use-tbls)
           tbls lint
         env:
-          TBLS_DSN: "mysql://root:password@127.0.0.1:5004/neoshowcase"
+          TBLS_DSN: "mariadb://root:password@127.0.0.1:5004/neoshowcase"
   spectral:
     name: Spectral
     runs-on: ubuntu-latest

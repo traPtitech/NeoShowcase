@@ -3,7 +3,6 @@
 /api/
 /docs/
 /local-dev/
-/migrations/
 
 .dockerignore
 .gitignore
