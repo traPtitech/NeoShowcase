@@ -225,7 +225,7 @@ func (t *Task) buildImage(s *Service) error {
 		} else {
 			// 指定したベースイメージを使用
 			var fs, fe *os.File
-			fs, err := os.OpenFile(filepath.Join(t.repositoryTempDir, startupScriptName), os.O_RDWR, filePermission)
+			fs, err := os.OpenFile(filepath.Join(t.repositoryTempDir, startupScriptName), os.O_RDWR|os.O_CREATE|os.O_TRUNC, filePermission)
 			if err != nil {
 				return err
 			}
@@ -239,7 +239,7 @@ func (t *Task) buildImage(s *Service) error {
 			defer fs.Close()
 			defer os.Remove(fs.Name())
 
-			fe, err = os.OpenFile(filepath.Join(t.repositoryTempDir, entryPointScriptName), os.O_RDWR, filePermission)
+			fe, err = os.OpenFile(filepath.Join(t.repositoryTempDir, entryPointScriptName), os.O_RDWR|os.O_CREATE|os.O_TRUNC, filePermission)
 			if err != nil {
 				return err
 			}
