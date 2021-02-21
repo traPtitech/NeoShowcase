@@ -30,6 +30,12 @@ import (
 	"github.com/volatiletech/sqlboiler/v4/boil"
 )
 
+const (
+	startupScriptName    = "shell.sh"
+	entryPointScriptName = "entrypoint.sh"
+	filePermission       = 755
+)
+
 type Task struct {
 	Static       bool
 	BuildID      string
@@ -218,15 +224,41 @@ func (t *Task) buildImage(s *Service) error {
 			}, ch)
 		} else {
 			// 指定したベースイメージを使用
+			var fs, fe *os.File
+			fs, err := os.OpenFile(filepath.Join(t.repositoryTempDir, startupScriptName), os.O_RDWR|os.O_CREATE|os.O_TRUNC, filePermission)
+			if err != nil {
+				return err
+			}
+			scmd := fmt.Sprintf(`#!/bin/sh
+%s
+`, t.BuildOptions.StartupCmd)
+			_, err = fs.WriteString(scmd)
+			if err != nil {
+				return err
+			}
+			defer fs.Close()
+			defer os.Remove(fs.Name())
 
-			// TODO Dockerfileの検証
+			fe, err = os.OpenFile(filepath.Join(t.repositoryTempDir, entryPointScriptName), os.O_RDWR|os.O_CREATE|os.O_TRUNC, filePermission)
+			if err != nil {
+				return err
+			}
+			ecmd := fmt.Sprintf(`#!/bin/sh
+%s
+`, t.BuildOptions.EntrypointCmd)
+			_, err = fe.WriteString(ecmd)
+			if err != nil {
+				return err
+			}
+			defer fe.Close()
+			defer os.Remove(fe.Name())
+
 			dockerfile := fmt.Sprintf(`
 FROM %s
 COPY . .
-RUN %s
-ENTRYPOINT %s
-`, t.BuildOptions.BaseImageName, t.BuildOptions.StartupCmd, t.BuildOptions.EntrypointCmd)
-
+RUN ./%s
+ENTRYPOINT ./%s
+`, t.BuildOptions.BaseImageName, startupScriptName, entryPointScriptName)
 			var tmp *os.File
 			tmp, err = ioutil.TempFile("", "Dockerfile")
 			if err != nil {
