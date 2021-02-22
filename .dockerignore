@@ -1,11 +1,16 @@
+/.github/
 /.idea/
 /.git/
+/.vscode/
 /api/
 /docs/
+/img/
 /local-dev/
 
 .dockerignore
 .gitignore
+.golangci.yml
+.spectral.yml
 .tbls.yml
 dbconfig.yml
 docker-compose.yaml
