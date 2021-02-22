@@ -44,4 +44,7 @@ require (
 	k8s.io/client-go v0.20.4
 )
 
-replace github.com/containerd/containerd => github.com/containerd/containerd v1.4.1-0.20201215193253-e922d5553d12
+replace (
+	github.com/containerd/containerd => github.com/containerd/containerd v1.4.1-0.20201215193253-e922d5553d12
+	github.com/jaguilar/vt100 => github.com/tonistiigi/vt100 v0.0.0-20190402012908-ad4c4a574305
+)
