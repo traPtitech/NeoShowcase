@@ -11,7 +11,7 @@ require (
 	github.com/dustinkirkland/golang-petname v0.0.0-20191129215211-8e5a1ed0cff0
 	github.com/friendsofgo/errors v0.9.2
 	github.com/fsouza/go-dockerclient v1.6.5
-	github.com/gavv/httpexpect/v2 v2.1.0
+	github.com/gavv/httpexpect/v2 v2.2.0
 	github.com/go-git/go-git/v5 v5.2.0
 	github.com/go-sql-driver/mysql v1.5.0
 	github.com/golang/protobuf v1.4.3
