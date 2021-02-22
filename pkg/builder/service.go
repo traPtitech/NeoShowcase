@@ -3,7 +3,12 @@ package builder
 import (
 	"context"
 	"database/sql"
+	"errors"
 	"fmt"
+	"net"
+	"sync"
+	"time"
+
 	"github.com/leandro-lugaresi/hub"
 	buildkit "github.com/moby/buildkit/client"
 	log "github.com/sirupsen/logrus"
@@ -13,9 +18,7 @@ import (
 	"golang.org/x/sync/errgroup"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/reflection"
-	"net"
-	"sync"
-	"time"
+	"google.golang.org/grpc/status"
 )
 
 type Service struct {
@@ -130,7 +133,7 @@ func (s *Service) processTask(t *Task) {
 	}
 	if err != nil {
 		log.Debug(err)
-		if err == context.Canceled || err == context.DeadlineExceeded {
+		if err == context.Canceled || err == context.DeadlineExceeded || errors.Is(err, status.FromContextError(context.Canceled).Err()) {
 			result = models.BuildLogsResultCANCELED
 			t.writeLog("CANCELED")
 			return

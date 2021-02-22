@@ -288,7 +288,7 @@ ENTRYPOINT ./%s
 	})
 	eg.Go(func() error {
 		// ビルドログを収集
-		return progressui.DisplaySolveStatus(ctx, "", nil, logWriter, ch)
+		return progressui.DisplaySolveStatus(context.TODO(), "", nil, logWriter, ch)
 	})
 
 	return eg.Wait()
@@ -341,7 +341,7 @@ func (t *Task) buildStatic(s *Service) error {
 	})
 	eg.Go(func() error {
 		// ビルドログを収集
-		return progressui.DisplaySolveStatus(ctx, "", nil, logWriter, ch)
+		return progressui.DisplaySolveStatus(context.TODO(), "", nil, logWriter, ch)
 	})
 
 	return eg.Wait()
