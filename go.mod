@@ -18,7 +18,7 @@ require (
 	github.com/leandro-lugaresi/hub v1.1.1
 	github.com/magiconair/properties v1.8.4 // indirect
 	github.com/mitchellh/mapstructure v1.3.3 // indirect
-	github.com/moby/buildkit v0.8.1
+	github.com/moby/buildkit v0.8.2
 	github.com/ncw/swift v1.0.53
 	github.com/pelletier/go-toml v1.8.1 // indirect
 	github.com/rubenv/sql-migrate v0.0.0-20210215143335-f84234893558
