@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"github.com/traPtitech/neoshowcase/pkg/models"
 	"github.com/traPtitech/neoshowcase/pkg/staticsitegen/api"
-	"github.com/traPtitech/neoshowcase/pkg/staticsitegen/generator"
+	"github.com/traPtitech/neoshowcase/pkg/staticsitegen/webserver"
 	"github.com/traPtitech/neoshowcase/pkg/storage"
 	"github.com/volatiletech/sqlboiler/v4/queries/qm"
 	"golang.org/x/sync/errgroup"
@@ -19,7 +19,7 @@ import (
 
 type Service struct {
 	server  *grpc.Server
-	engine  generator.Engine
+	engine  webserver.Engine
 	db      *sql.DB
 	storage storage.Storage
 
@@ -67,6 +67,10 @@ func (s *Service) Start(ctx context.Context) error {
 	if err != nil {
 		return fmt.Errorf("failed to start service: %w", err)
 	}
+
+	if err := s.engine.Start(ctx); err != nil {
+		return fmt.Errorf("failed to start engine: %w", err)
+	}
 	return s.server.Serve(listener)
 }
 
@@ -77,9 +81,8 @@ func (s *Service) Shutdown(ctx context.Context) error {
 		s.server.GracefulStop()
 		return nil
 	})
-	eg.Go(func() error {
-		return s.db.Close()
-	})
+	eg.Go(func() error { return s.db.Close() })
+	eg.Go(func() error { return s.engine.Close(ctx) })
 
 	return eg.Wait()
 }
@@ -102,7 +105,7 @@ func (s *Service) reload(ctx context.Context) error {
 		return err
 	}
 
-	var data []*generator.Site
+	var data []*webserver.Site
 	for _, env := range envs {
 		if env.R.Website != nil {
 			website := env.R.Website
@@ -110,7 +113,7 @@ func (s *Service) reload(ctx context.Context) error {
 				build := env.R.Build
 				if build.R.Artifact != nil {
 					artifact := build.R.Artifact
-					data = append(data, &generator.Site{
+					data = append(data, &webserver.Site{
 						ID:            website.ID,
 						FQDN:          website.FQDN,
 						ArtifactID:    artifact.ID,

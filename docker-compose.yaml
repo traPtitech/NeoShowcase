@@ -70,37 +70,21 @@ services:
     restart: always
     environment:
       NS_SSGEN_DB_HOST: "mysql"
-      NS_SSGEN_SERVER: "caddy"
       NS_SSGEN_ARTIFACTSROOT: "/srv/artifacts"
-      NS_SSGEN_CADDY_ADMINENDPOINT: "http://staticsite:2019"
     volumes:
       - ./local-dev/staticsite/artifacts:/srv/artifacts
       - ./local-dev/neoshowcase/artifacts:/neoshowcase/artifacts
     ports:
       - "5007:10000"
+      - "5008:80"
     depends_on:
       - mysql
-      - staticsite
-    networks:
-      - default
-
-  staticsite:
-    image: caddy:2.1.1-alpine
-    restart: always
-    command: [ "caddy", "run", "--config", "/etc/caddy/Caddyfile", "--adapter", "caddyfile", "--resume" ]
-    volumes:
-      - ./local-dev/staticsite/artifacts:/srv/artifacts
-      - ./local-dev/Caddyfile:/etc/caddy/Caddyfile:ro
-    ports:
-      - "5008:80"
-      - "5009:2019"
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.ss.rule=PathPrefix(`/`)"
       - "traefik.http.services.ss.loadbalancer.server.port=80"
     networks:
       - default
-      - apps
 
   registry:
     image: registry:2

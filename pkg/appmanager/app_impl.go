@@ -9,6 +9,7 @@ import (
 	"github.com/traPtitech/neoshowcase/pkg/container"
 	"github.com/traPtitech/neoshowcase/pkg/idgen"
 	"github.com/traPtitech/neoshowcase/pkg/models"
+	ssgenApi "github.com/traPtitech/neoshowcase/pkg/staticsitegen/api"
 	"github.com/volatiletech/null/v8"
 	"github.com/volatiletech/sqlboiler/v4/boil"
 	"github.com/volatiletech/sqlboiler/v4/queries/qm"
@@ -203,32 +204,32 @@ func (app *appImpl) Start(args AppStartArgs) error {
 		return fmt.Errorf("environtment not found: %s", args.EnvironmentID)
 	}
 
+	if args.BuildID == "" {
+		// buildIDの指定がない場合は最新のビルドを使用
+		build, err := env.BuildLogs(
+			qm.OrderBy(fmt.Sprintf("%s DESC", models.BuildLogColumns.StartedAt)),
+			models.BuildLogWhere.Result.EQ(models.BuildLogsResultSUCCEEDED),
+		).One(context.Background(), app.m.db)
+		if err != nil {
+			if err == sql.ErrNoRows {
+				return fmt.Errorf("no successful build exists")
+			}
+			return fmt.Errorf("failed to get BuildLogs: %w", err)
+		}
+		args.BuildID = build.ID
+	} else {
+		// buildIDのビルドが存在するかどうか確認
+		ok, err := models.BuildLogExists(context.Background(), app.m.db, args.BuildID)
+		if err != nil {
+			return fmt.Errorf("failed to BuildLogExists: %w", err)
+		}
+		if !ok {
+			return fmt.Errorf("build (%s) was not found", args.BuildID)
+		}
+	}
+
 	switch env.BuildType {
 	case models.EnvironmentsBuildTypeImage:
-		if args.BuildID == "" {
-			// buildIDの指定がない場合は最新のビルドを使用
-			build, err := env.BuildLogs(
-				qm.OrderBy(fmt.Sprintf("%s DESC", models.BuildLogColumns.StartedAt)),
-				models.BuildLogWhere.Result.EQ(models.BuildLogsResultSUCCEEDED),
-			).One(context.Background(), app.m.db)
-			if err != nil {
-				if err == sql.ErrNoRows {
-					return fmt.Errorf("no successful build exists")
-				}
-				return fmt.Errorf("failed to get BuildLogs: %w", err)
-			}
-			args.BuildID = build.ID
-		} else {
-			// buildIDのビルドが存在するかどうか確認
-			ok, err := models.BuildLogExists(context.Background(), app.m.db, args.BuildID)
-			if err != nil {
-				return fmt.Errorf("failed to BuildLogExists: %w", err)
-			}
-			if !ok {
-				return fmt.Errorf("build (%s) was not found", args.BuildID)
-			}
-		}
-
 		// HTTP公開設定があれば取得
 		var httpProxy *container.HTTPProxy
 		website, err := env.Website().One(context.Background(), app.m.db)
@@ -259,9 +260,14 @@ func (app *appImpl) Start(args AppStartArgs) error {
 		}
 
 	case models.EnvironmentsBuildTypeStatic:
-		// TODO 実装
-		log.Fatalf("NOT IMPLEMENTED")
+		env.BuildID = null.StringFrom(args.BuildID)
+		if _, err := env.Update(context.Background(), app.m.db, boil.Infer()); err != nil {
+			return fmt.Errorf("failed to Update website: %w", err)
+		}
 
+		if _, err := app.m.ssgen.Reload(context.Background(), &ssgenApi.ReloadRequest{}); err != nil {
+			return fmt.Errorf("failed to Reload ssgen: %w", err)
+		}
 	default:
 		return fmt.Errorf("unknown build type: %s", env.BuildType)
 	}
