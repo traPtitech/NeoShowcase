@@ -67,10 +67,11 @@ func init() {
 	cliutil.SetupDebugFlag(flags)
 	cliutil.SetupLogLevelFlag(flags)
 
-	viper.SetDefault("server", "caddy")
+	viper.SetDefault("server", "builtin")
 	viper.SetDefault("artifactsRoot", "/srv/artifacts")
 	viper.SetDefault("generatedConfDir", "/srv/config")
 	viper.SetDefault("caddy.adminEndpoint", "http://localhost:2019")
+	viper.SetDefault("builtin.port", 80)
 	viper.SetDefault("grpc.port", 10000)
 	viper.SetDefault("db.host", "127.0.0.1")
 	viper.SetDefault("db.port", 3306)

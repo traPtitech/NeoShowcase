@@ -1,16 +1,15 @@
-package generator
+package webserver
 
 import (
 	"bytes"
+	"context"
 	"fmt"
 	"net/http"
-	"path/filepath"
 	"strings"
 	"text/template"
 
 	log "github.com/sirupsen/logrus"
 	"github.com/traPtitech/neoshowcase/pkg/storage"
-	"github.com/traPtitech/neoshowcase/pkg/util"
 )
 
 type Caddy struct {
@@ -40,6 +39,10 @@ http://{{ .FQDN }} {
 	return
 }
 
+func (engine *Caddy) Start(ctx context.Context) error {
+	return nil
+}
+
 func (engine *Caddy) Reconcile(sites []*Site) error {
 	var sitesData []map[string]interface{}
 	for _, site := range sites {
@@ -48,13 +51,6 @@ func (engine *Caddy) Reconcile(sites []*Site) error {
 			"FQDN":       site.FQDN,
 		})
 
-		// 静的ファイルの配置
-		artifactDir := filepath.Join(engine.ArtifactsRootPath, site.ArtifactID)
-		if !util.FileExists(artifactDir) {
-			if err := storage.ExtractTarToDir(engine.storage, filepath.Join("artifacts", site.ArtifactID+".tar"), artifactDir); err != nil {
-				return fmt.Errorf("failed to extract artifact tar: %w", err)
-			}
-		}
 	}
 
 	// 設定ファイル生成
@@ -75,5 +71,9 @@ func (engine *Caddy) Reconcile(sites []*Site) error {
 	defer resp.Body.Close()
 	log.Debug(resp.StatusCode)
 
+	return nil
+}
+
+func (engine *Caddy) Close(ctx context.Context) error {
 	return nil
 }
