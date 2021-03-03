@@ -197,3 +197,19 @@ func (m *managerImpl) getImageName(app App) string {
 func (m *managerImpl) Shutdown(ctx context.Context) error {
 	return nil
 }
+
+func (b *buildTaskList) push(ctx context.Context, app App, env Env) *buildTask {
+	t := &buildTask{
+		ctx: ctx,
+		app: app,
+		env: env,
+	}
+	b.list.PushBack(t)
+	return t
+}
+
+func (b *buildTaskList) pop() *buildTask {
+	t := b.list.Front()
+	b.list.Remove(t)
+	return t.Value.(*buildTask)
+}
