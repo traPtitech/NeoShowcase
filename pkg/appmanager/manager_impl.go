@@ -198,18 +198,22 @@ func (m *managerImpl) Shutdown(ctx context.Context) error {
 	return nil
 }
 
-func (b *buildTaskList) push(ctx context.Context, app App, env Env) *buildTask {
-	t := &buildTask{
+func (b *buildTaskList) push(ctx context.Context, app App, env Env) *list.Element {
+	e := b.list.PushBack(&buildTask{
 		ctx: ctx,
 		app: app,
 		env: env,
-	}
-	b.list.PushBack(t)
-	return t
+	})
+	return e
 }
 
 func (b *buildTaskList) pop() *buildTask {
 	t := b.list.Front()
-	b.list.Remove(t)
-	return t.Value.(*buildTask)
+	r := b.list.Remove(t)
+	return r.(*buildTask)
+}
+
+func (b *buildTaskList) cancel(e *list.Element) *buildTask {
+	r := b.list.Remove(e)
+	return r.(*buildTask)
 }
