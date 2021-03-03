@@ -1,8 +1,11 @@
 package appmanager
 
 import (
+	"container/list"
 	"context"
 	"database/sql"
+	"io"
+
 	"github.com/leandro-lugaresi/hub"
 	log "github.com/sirupsen/logrus"
 	builderApi "github.com/traPtitech/neoshowcase/pkg/builder/api"
@@ -11,7 +14,6 @@ import (
 	ssgenApi "github.com/traPtitech/neoshowcase/pkg/staticsitegen/api"
 	"github.com/traPtitech/neoshowcase/pkg/util"
 	"google.golang.org/protobuf/types/known/emptypb"
-	"io"
 )
 
 type managerImpl struct {
@@ -24,6 +26,16 @@ type managerImpl struct {
 	config Config
 
 	stream builderApi.BuilderService_ConnectEventStreamClient
+}
+
+type buildTaskList struct {
+	list list.List
+}
+
+type buildTask struct {
+	ctx context.Context
+	app App
+	env Env
 }
 
 type Config struct {
