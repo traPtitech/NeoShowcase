@@ -27,7 +27,7 @@ type managerImpl struct {
 
 	config Config
 
-	buildQueue list.List
+	queue buildQueue
 
 	stream builderApi.BuilderService_ConnectEventStreamClient
 }
@@ -36,6 +36,10 @@ type buildTask struct {
 	ctx  context.Context
 	in   *builderApi.StartBuildImageRequest
 	opts []grpc.CallOption
+}
+
+type buildQueue struct {
+	queue list.List
 }
 
 type Config struct {
@@ -182,6 +186,15 @@ func (m *managerImpl) appDeployLoop() {
 	}
 }
 
+func (m *managerImpl) sendBuildRequest() error {
+	req, err := m.queue.PopQueue()
+	if err != nil {
+		return err
+	}
+	v := req.Value.(buildTask)
+	m.builder.StartBuildImage(v.ctx, v.in, v.opts...)
+}
+
 // getFullImageName registryのhost付きのイメージ名を返す
 func (m *managerImpl) getFullImageName(app App) string {
 	if m.config.ImageRegistry == "" {
@@ -200,7 +213,7 @@ func (m *managerImpl) Shutdown(ctx context.Context) error {
 }
 
 // PushQueue ビルドキューにアイテムを追加する
-func (m *managerImpl) PushQueue(ctx context.Context, in *builderApi.StartBuildImageRequest, opts ...grpc.CallOption) (*list.Element, error) {
+func (b *buildQueue) PushQueue(ctx context.Context, in *builderApi.StartBuildImageRequest, opts ...grpc.CallOption) (*list.Element, error) {
 	//TODO:staticbuildも対応
 	t := &buildTask{
 		ctx:  ctx,
@@ -208,22 +221,22 @@ func (m *managerImpl) PushQueue(ctx context.Context, in *builderApi.StartBuildIm
 		opts: opts,
 	}
 	// 重複チェック
-	for e := m.buildQueue.Front(); e != nil; e = e.Next() {
+	for e := b.queue.Front(); e != nil; e = e.Next() {
 		if e.Value.(*buildTask) == t {
 			log.Error("Already Existed")
 			return e, errors.New("Already Existed")
 		}
 	}
-	r := m.buildQueue.PushBack(t)
+	r := b.queue.PushBack(t)
 	return r, nil
 }
 
 // PushQueue ビルドキューから先頭のアイテムを取り出す
-func (m *managerImpl) PopQueue() (*list.Element, error) {
-	if m.buildQueue.Len() == 0 {
+func (b *buildQueue) PopQueue() (*list.Element, error) {
+	if b.queue.Len() == 0 {
 		return nil, errors.New("No Elements")
 	}
-	r := m.buildQueue.Front()
-	m.buildQueue.Remove(r)
+	r := b.queue.Front()
+	b.queue.Remove(r)
 	return r, nil
 }
