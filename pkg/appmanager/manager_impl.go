@@ -4,6 +4,7 @@ import (
 	"container/list"
 	"context"
 	"database/sql"
+	"errors"
 	"io"
 
 	"github.com/leandro-lugaresi/hub"
@@ -13,6 +14,7 @@ import (
 	"github.com/traPtitech/neoshowcase/pkg/event"
 	ssgenApi "github.com/traPtitech/neoshowcase/pkg/staticsitegen/api"
 	"github.com/traPtitech/neoshowcase/pkg/util"
+	"google.golang.org/grpc"
 	"google.golang.org/protobuf/types/known/emptypb"
 )
 
@@ -25,17 +27,15 @@ type managerImpl struct {
 
 	config Config
 
+	buildQueue list.List
+
 	stream builderApi.BuilderService_ConnectEventStreamClient
 }
 
-type buildTaskList struct {
-	list list.List
-}
-
 type buildTask struct {
-	ctx context.Context
-	app App
-	env Env
+	ctx  context.Context
+	in   *builderApi.StartBuildImageRequest
+	opts []grpc.CallOption
 }
 
 type Config struct {
@@ -152,6 +152,7 @@ func (m *managerImpl) appDeployLoop() {
 		case event.BuilderBuildSucceeded:
 			envID := ev.Fields["environment_id"].(string)
 			buildID := ev.Fields["build_id"].(string)
+
 			if len(envID) == 0 {
 				// envIDが無い場合はテストビルド
 				continue
@@ -198,22 +199,28 @@ func (m *managerImpl) Shutdown(ctx context.Context) error {
 	return nil
 }
 
-func (b *buildTaskList) push(ctx context.Context, app App, env Env) *list.Element {
-	e := b.list.PushBack(&buildTask{
-		ctx: ctx,
-		app: app,
-		env: env,
-	})
-	return e
+func (m *managerImpl) PushQueue(ctx context.Context, in builderApi.StartBuildImageRequest, opts ...grpc.CallOption) (*list.Element, error) {
+	t := &buildTask{
+		ctx:  ctx,
+		in:   in,
+		opts: opts,
+	}
+	// 重複チェック
+	for e := m.buildQueue.Front(); e != nil; e = e.Next() {
+		if e.Value.(*buildTask) == t {
+			log.Error("Already Existed")
+			return e, errors.New("Already Existed")
+		}
+	}
+	r := m.buildQueue.PushBack(t)
+	return r, nil
 }
 
-func (b *buildTaskList) pop() *buildTask {
-	t := b.list.Front()
-	r := b.list.Remove(t)
-	return r.(*buildTask)
-}
-
-func (b *buildTaskList) cancel(e *list.Element) *buildTask {
-	r := b.list.Remove(e)
-	return r.(*buildTask)
+func (m *managerImpl) PopQueue() (*list.Element, error) {
+	if m.buildQueue.Len() == 0 {
+		return nil, errors.New("No Elements")
+	}
+	r := m.buildQueue.Front()
+	m.buildQueue.Remove(r)
+	return r, nil
 }
