@@ -289,7 +289,7 @@ func (app *appImpl) RequestBuild(ctx context.Context, envID string) error {
 
 	switch env.BuildType {
 	case models.EnvironmentsBuildTypeImage:
-		_, err := app.m.builder.StartBuildImage(ctx, &builderApi.StartBuildImageRequest{
+		_, err := app.m.PushQueue(ctx, &builderApi.StartBuildImageRequest{
 			ImageName: app.m.getImageName(app),
 			Source: &builderApi.BuildSource{
 				RepositoryUrl: app.dbmodel.R.Repository.Remote, // TODO ブランチ・タグ指定に対応

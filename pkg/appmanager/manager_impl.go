@@ -199,7 +199,9 @@ func (m *managerImpl) Shutdown(ctx context.Context) error {
 	return nil
 }
 
-func (m *managerImpl) PushQueue(ctx context.Context, in builderApi.StartBuildImageRequest, opts ...grpc.CallOption) (*list.Element, error) {
+// PushQueue ビルドキューにアイテムを追加する
+func (m *managerImpl) PushQueue(ctx context.Context, in *builderApi.StartBuildImageRequest, opts ...grpc.CallOption) (*list.Element, error) {
+	//TODO:staticbuildも対応
 	t := &buildTask{
 		ctx:  ctx,
 		in:   in,
@@ -216,6 +218,7 @@ func (m *managerImpl) PushQueue(ctx context.Context, in builderApi.StartBuildIma
 	return r, nil
 }
 
+// PushQueue ビルドキューから先頭のアイテムを取り出す
 func (m *managerImpl) PopQueue() (*list.Element, error) {
 	if m.buildQueue.Len() == 0 {
 		return nil, errors.New("No Elements")
