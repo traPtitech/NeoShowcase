@@ -152,7 +152,13 @@ func (m *managerImpl) appDeployLoop() {
 					WithField("envID", env.GetID()).
 					Error("failed to RequestBuild")
 			}
-
+			if m.queue.queue.Len() > 0 { //TODO:builderの状態確認
+				_, err = m.sendBuildRequest()
+				if err != nil {
+					log.WithError(err).
+						Error("failed to sendRequestBuild")
+				}
+			}
 		case event.BuilderBuildSucceeded:
 			envID := ev.Fields["environment_id"].(string)
 			buildID := ev.Fields["build_id"].(string)
@@ -181,6 +187,13 @@ func (m *managerImpl) appDeployLoop() {
 					WithField("envID", envID).
 					WithField("buildID", buildID).
 					Error("failed to Start Application")
+			}
+			if m.queue.queue.Len() > 0 {
+				_, err = m.sendBuildRequest()
+				if err != nil {
+					log.WithError(err).
+						Error("failed to sendRequestBuild")
+				}
 			}
 		}
 	}
