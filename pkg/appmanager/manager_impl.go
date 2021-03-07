@@ -188,7 +188,7 @@ func (m *managerImpl) appDeployLoop() {
 					WithField("buildID", buildID).
 					Error("failed to Start Application")
 			}
-			if m.queue.queue.Len() > 0 {
+			if m.queue.queue.Len() > 0 { //TODO:builderの状態確認
 				_, err = m.sendBuildRequest()
 				if err != nil {
 					log.WithError(err).
