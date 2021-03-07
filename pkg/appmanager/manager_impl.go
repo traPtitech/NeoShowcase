@@ -9,6 +9,7 @@ import (
 
 	"github.com/leandro-lugaresi/hub"
 	log "github.com/sirupsen/logrus"
+	"github.com/traPtitech/neoshowcase/pkg/builder/api"
 	builderApi "github.com/traPtitech/neoshowcase/pkg/builder/api"
 	"github.com/traPtitech/neoshowcase/pkg/container"
 	"github.com/traPtitech/neoshowcase/pkg/event"
@@ -152,11 +153,18 @@ func (m *managerImpl) appDeployLoop() {
 					WithField("envID", env.GetID()).
 					Error("failed to RequestBuild")
 			}
-			if m.queue.queue.Len() > 0 { //TODO:builderの状態確認
-				_, err = m.sendBuildRequest()
-				if err != nil {
-					log.WithError(err).
-						Error("failed to sendRequestBuild")
+			stat, err := m.builder.GetStatus(context.Background(), &emptypb.Empty{})
+			if err != nil {
+				log.WithError(err).
+					Error("failed to builder.Getstatus")
+			}
+			if m.queue.queue.Len() > 0 {
+				if stat.GetStatus() == api.BuilderStatus_WAITING { //TODO:複数builderに対応
+					_, err = m.sendBuildRequest()
+					if err != nil {
+						log.WithError(err).
+							Error("failed to sendRequestBuild")
+					}
 				}
 			}
 		case event.BuilderBuildSucceeded:
@@ -188,11 +196,18 @@ func (m *managerImpl) appDeployLoop() {
 					WithField("buildID", buildID).
 					Error("failed to Start Application")
 			}
-			if m.queue.queue.Len() > 0 { //TODO:builderの状態確認
-				_, err = m.sendBuildRequest()
-				if err != nil {
-					log.WithError(err).
-						Error("failed to sendRequestBuild")
+			stat, err := m.builder.GetStatus(context.Background(), &emptypb.Empty{})
+			if err != nil {
+				log.WithError(err).
+					Error("failed to builder.Getstatus")
+			}
+			if m.queue.queue.Len() > 0 { //TODO:複数builderに対応
+				if stat.GetStatus() == api.BuilderStatus_WAITING {
+					_, err = m.sendBuildRequest()
+					if err != nil {
+						log.WithError(err).
+							Error("failed to sendRequestBuild")
+					}
 				}
 			}
 		}
