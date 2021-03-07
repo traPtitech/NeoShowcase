@@ -186,13 +186,17 @@ func (m *managerImpl) appDeployLoop() {
 	}
 }
 
-func (m *managerImpl) sendBuildRequest() error {
+func (m *managerImpl) sendBuildRequest() (*builderApi.StartBuildImageResponse, error) {
 	req, err := m.queue.PopQueue()
 	if err != nil {
-		return err
+		return nil, err
 	}
 	v := req.Value.(buildTask)
-	m.builder.StartBuildImage(v.ctx, v.in, v.opts...)
+	res, err := m.builder.StartBuildImage(v.ctx, v.in, v.opts...)
+	if err != nil {
+		return nil, err
+	}
+	return res, nil
 }
 
 // getFullImageName registryのhost付きのイメージ名を返す
