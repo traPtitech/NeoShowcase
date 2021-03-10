@@ -3,7 +3,7 @@ module github.com/traPtitech/neoshowcase
 go 1.16
 
 require (
-	github.com/aws/aws-sdk-go v1.37.15
+	github.com/aws/aws-sdk-go v1.37.27
 	github.com/dgrijalva/jwt-go v3.2.0+incompatible
 	github.com/dustinkirkland/golang-petname v0.0.0-20191129215211-8e5a1ed0cff0
 	github.com/friendsofgo/errors v0.9.2
