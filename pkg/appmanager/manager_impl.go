@@ -5,6 +5,7 @@ import (
 	"context"
 	"database/sql"
 	"errors"
+	"fmt"
 	"io"
 
 	"github.com/leandro-lugaresi/hub"
@@ -13,6 +14,7 @@ import (
 	builderApi "github.com/traPtitech/neoshowcase/pkg/builder/api"
 	"github.com/traPtitech/neoshowcase/pkg/container"
 	"github.com/traPtitech/neoshowcase/pkg/event"
+	"github.com/traPtitech/neoshowcase/pkg/models"
 	ssgenApi "github.com/traPtitech/neoshowcase/pkg/staticsitegen/api"
 	"github.com/traPtitech/neoshowcase/pkg/util"
 	"google.golang.org/grpc"
@@ -34,9 +36,10 @@ type managerImpl struct {
 }
 
 type buildTask struct {
-	ctx  context.Context
-	in   *builderApi.StartBuildImageRequest
-	opts []grpc.CallOption
+	ctx       context.Context
+	in        interface{}
+	opts      []grpc.CallOption
+	buildType string
 }
 
 type buildQueue struct {
@@ -214,17 +217,29 @@ func (m *managerImpl) appDeployLoop() {
 	}
 }
 
-func (m *managerImpl) sendBuildRequest() (*builderApi.StartBuildImageResponse, error) {
+func (m *managerImpl) sendBuildRequest() (interface{}, error) {
 	req, err := m.queue.PopQueue()
 	if err != nil {
 		return nil, err
 	}
 	v := req.Value.(buildTask)
-	res, err := m.builder.StartBuildImage(v.ctx, v.in, v.opts...)
-	if err != nil {
-		return nil, err
+	switch v.buildType {
+	case models.EnvironmentsBuildTypeImage:
+		res, err := m.builder.StartBuildImage(v.ctx, v.in.(*builderApi.StartBuildImageRequest), v.opts...)
+		if err != nil {
+			return nil, err
+		}
+		return res, nil
+	case models.EnvironmentsBuildTypeStatic:
+		res, err := m.builder.StartBuildStatic(v.ctx, v.in.(*builderApi.StartBuildStaticRequest), v.opts...)
+		if err != nil {
+			return nil, err
+		}
+		return res, nil
+	default:
+		return nil, fmt.Errorf("unknown build type: %s", v.buildType)
 	}
-	return res, nil
+
 }
 
 // getFullImageName registryのhost付きのイメージ名を返す
@@ -245,12 +260,13 @@ func (m *managerImpl) Shutdown(ctx context.Context) error {
 }
 
 // PushQueue ビルドキューにアイテムを追加する
-func (b *buildQueue) PushQueue(ctx context.Context, in *builderApi.StartBuildImageRequest, opts ...grpc.CallOption) (*list.Element, error) {
+func (b *buildQueue) PushQueue(ctx context.Context, in interface{}, buildType string, opts ...grpc.CallOption) (*list.Element, error) {
 	//TODO:staticbuildも対応
 	t := &buildTask{
-		ctx:  ctx,
-		in:   in,
-		opts: opts,
+		ctx:       ctx,
+		in:        in,
+		opts:      opts,
+		buildType: buildType,
 	}
 	// 重複チェック
 	for e := b.queue.Front(); e != nil; e = e.Next() {

@@ -296,19 +296,19 @@ func (app *appImpl) RequestBuild(ctx context.Context, envID string) error {
 			},
 			Options:       &builderApi.BuildOptions{}, // TODO 汎用ベースイメージビルドに対応させる
 			EnvironmentId: env.ID,
-		})
+		}, env.BuildType)
 		if err != nil {
 			return fmt.Errorf("builder failed to start build image: %w", err)
 		}
 
 	case models.EnvironmentsBuildTypeStatic:
-		_, err := app.m.builder.StartBuildStatic(ctx, &builderApi.StartBuildStaticRequest{
+		_, err := app.m.queue.PushQueue(ctx, &builderApi.StartBuildStaticRequest{
 			Source: &builderApi.BuildSource{
 				RepositoryUrl: app.dbmodel.R.Repository.Remote, // TODO ブランチ・タグ指定に対応
 			},
 			Options:       &builderApi.BuildOptions{}, // TODO 汎用ベースイメージビルドに対応させる
 			EnvironmentId: env.ID,
-		})
+		}, env.BuildType)
 		if err != nil {
 			return fmt.Errorf("builder failed to start build static: %w", err)
 		}
@@ -318,7 +318,7 @@ func (app *appImpl) RequestBuild(ctx context.Context, envID string) error {
 	}
 
 	log.WithField("envID", envID).
-		Info("build requested")
+		Info("build request pushed")
 
 	return nil
 }
