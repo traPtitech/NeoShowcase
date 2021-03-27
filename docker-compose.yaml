@@ -129,7 +129,7 @@ services:
       - default
 
   mysql:
-    image: mariadb:10.0.19
+    image: mariadb
     restart: always
     environment:
       MYSQL_ROOT_PASSWORD: password
