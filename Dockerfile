@@ -26,13 +26,13 @@ FROM builder as builder-ns-ssgen
 RUN go build -o /app/ns-ssgen -ldflags "-s -w -X main.version=$APP_VERSION -X main.revision=$APP_REVISION" ./cmd/ns-ssgen
 
 # artifact base image
-FROM alpine:3.13.2 as dockerize
+FROM alpine:3.13.5 as dockerize
 ENV DOCKERIZE_VERSION v0.6.1
 RUN wget https://github.com/jwilder/dockerize/releases/download/$DOCKERIZE_VERSION/dockerize-alpine-linux-amd64-$DOCKERIZE_VERSION.tar.gz \
     && tar -C /usr/local/bin -xzvf dockerize-alpine-linux-amd64-$DOCKERIZE_VERSION.tar.gz \
     && rm dockerize-alpine-linux-amd64-$DOCKERIZE_VERSION.tar.gz
 
-FROM alpine:3.13.2 as base
+FROM alpine:3.13.5 as base
 WORKDIR /app
 RUN apk add --update ca-certificates && \
     update-ca-certificates && \
