@@ -222,13 +222,10 @@ func (t *Task) buildImage(s *Service) error {
 				FrontendAttrs: map[string]string{"filename": "Dockerfile"},
 				Session:       []session.Attachable{authprovider.NewDockerAuthProvider(ioutil.Discard)},
 			}, ch)
-			if err != nil {
-				return err
-			}
 		} else {
 			// 指定したベースイメージを使用
 			var fs, fe *os.File
-			fs, err := os.OpenFile(filepath.Join(t.repositoryTempDir, startupScriptName), os.O_RDWR|os.O_CREATE|os.O_TRUNC, filePermission)
+			fs, err = os.OpenFile(filepath.Join(t.repositoryTempDir, startupScriptName), os.O_RDWR|os.O_CREATE|os.O_TRUNC, filePermission)
 			if err != nil {
 				return err
 			}
@@ -286,9 +283,6 @@ ENTRYPOINT ./%s
 				FrontendAttrs: map[string]string{"filename": filepath.Base(tmp.Name())},
 				Session:       []session.Attachable{authprovider.NewDockerAuthProvider(ioutil.Discard)},
 			}, ch)
-			if err != nil {
-				return err
-			}
 		}
 		return err
 	})
