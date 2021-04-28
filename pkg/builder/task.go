@@ -266,7 +266,7 @@ ENTRYPOINT ./%s
 			}
 			defer tmp.Close()
 			defer os.Remove(tmp.Name())
-			if _, err := tmp.WriteString(dockerfile); err != nil {
+			if _, err = tmp.WriteString(dockerfile); err != nil {
 				return err
 			}
 
