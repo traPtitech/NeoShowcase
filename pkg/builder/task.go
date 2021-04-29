@@ -225,7 +225,7 @@ func (t *Task) buildImage(s *Service) error {
 		} else {
 			// 指定したベースイメージを使用
 			var fs, fe *os.File
-			fs, err := os.OpenFile(filepath.Join(t.repositoryTempDir, startupScriptName), os.O_RDWR|os.O_CREATE|os.O_TRUNC, filePermission)
+			fs, err = os.OpenFile(filepath.Join(t.repositoryTempDir, startupScriptName), os.O_RDWR|os.O_CREATE|os.O_TRUNC, filePermission)
 			if err != nil {
 				return err
 			}
@@ -266,7 +266,7 @@ ENTRYPOINT ./%s
 			}
 			defer tmp.Close()
 			defer os.Remove(tmp.Name())
-			if _, err := tmp.WriteString(dockerfile); err != nil {
+			if _, err = tmp.WriteString(dockerfile); err != nil {
 				return err
 			}
 
