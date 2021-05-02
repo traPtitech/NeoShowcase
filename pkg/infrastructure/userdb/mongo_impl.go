@@ -5,8 +5,6 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/traPtitech/neoshowcase/pkg/interface/userdb"
-
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
@@ -23,7 +21,7 @@ type MongoConfig struct {
 	AdminPassword string
 }
 
-func NewMongoManager(config MongoConfig) (userdb.MongoManager, error) {
+func NewMongoManager(config MongoConfig) (MongoManager, error) {
 	// DB接続
 	client, err := mongo.NewClient(
 		options.Client().ApplyURI(fmt.Sprintf("mongodb://%s:%s@%s:%d", config.AdminUser, config.AdminPassword, config.Host, config.Port)),
@@ -40,7 +38,7 @@ func NewMongoManager(config MongoConfig) (userdb.MongoManager, error) {
 	return &mongoManagerImpl{client: client}, nil
 }
 
-func (m *mongoManagerImpl) Create(ctx context.Context, args userdb.CreateArgs) error {
+func (m *mongoManagerImpl) Create(ctx context.Context, args CreateArgs) error {
 	client := m.client
 	ctx, cancel := context.WithTimeout(ctx, 20*time.Second)
 	defer cancel()
@@ -51,7 +49,7 @@ func (m *mongoManagerImpl) Create(ctx context.Context, args userdb.CreateArgs) e
 	return nil
 }
 
-func (m *mongoManagerImpl) Delete(ctx context.Context, args userdb.DeleteArgs) error {
+func (m *mongoManagerImpl) Delete(ctx context.Context, args DeleteArgs) error {
 	client := m.client
 	ctx, cancel := context.WithTimeout(ctx, 20*time.Second)
 	defer cancel()

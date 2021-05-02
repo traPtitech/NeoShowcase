@@ -4,8 +4,6 @@ import (
 	"context"
 	"testing"
 
-	"github.com/traPtitech/neoshowcase/pkg/interface/userdb"
-
 	"github.com/stretchr/testify/assert"
 	"github.com/traPtitech/neoshowcase/pkg/cliutil"
 	"go.mongodb.org/mongo-driver/mongo"
@@ -31,7 +29,7 @@ func TestMongoManagerImpl_Create(t *testing.T) {
 	t.Parallel()
 	m, _ := initMongoManager(t)
 
-	a := userdb.CreateArgs{
+	a := CreateArgs{
 		Database: "testCreate",
 		Password: "testCreate",
 	}
@@ -45,14 +43,14 @@ func TestMongoManagerImpl_Delete(t *testing.T) {
 	t.Parallel()
 	m, _ := initMongoManager(t)
 
-	a := userdb.CreateArgs{
+	a := CreateArgs{
 		Database: "testDelete",
 		Password: "testDelete",
 	}
 	ctx := context.Background()
 	_ = m.Create(ctx, a)
 
-	da := userdb.DeleteArgs{
+	da := DeleteArgs{
 		Database: "testDelete",
 	}
 	err := m.Delete(ctx, da)

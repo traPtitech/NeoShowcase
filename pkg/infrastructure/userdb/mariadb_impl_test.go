@@ -5,8 +5,6 @@ import (
 	"database/sql"
 	"testing"
 
-	"github.com/traPtitech/neoshowcase/pkg/interface/userdb"
-
 	"github.com/stretchr/testify/assert"
 	"github.com/traPtitech/neoshowcase/pkg/cliutil"
 )
@@ -30,7 +28,7 @@ func TestMariaDBManagerImpl_Create(t *testing.T) {
 	skipOrDo(t)
 	t.Parallel()
 	m, _ := initMariaDBManager(t)
-	a := userdb.CreateArgs{
+	a := CreateArgs{
 		Database: "TestMariaCreate",
 		Password: "TestMariaCreate",
 	}
@@ -44,7 +42,7 @@ func TestMariaDBManagerImpl_Delete(t *testing.T) {
 	t.Parallel()
 	m, _ := initMariaDBManager(t)
 
-	a := userdb.CreateArgs{
+	a := CreateArgs{
 		Database: "TestMariaDelete",
 		Password: "TestMariaDelete",
 	}
@@ -52,7 +50,7 @@ func TestMariaDBManagerImpl_Delete(t *testing.T) {
 	err := m.Create(ctx, a)
 	assert.NoError(t, err)
 
-	da := userdb.DeleteArgs{
+	da := DeleteArgs{
 		Database: "TestMariaDelete",
 	}
 	err = m.Delete(ctx, da)
