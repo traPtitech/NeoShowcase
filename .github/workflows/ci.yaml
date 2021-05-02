@@ -81,7 +81,7 @@ jobs:
       ENABLE_DOCKER_TESTS: "true"
     services:
       mysql:
-        image: mariadb:10.0.19
+        image: mysql:8
         options: --health-cmd="mysqladmin ping" --health-interval=5s --health-timeout=2s --health-retries=3
         env:
           MYSQL_ROOT_PASSWORD: password
@@ -99,8 +99,6 @@ jobs:
       - uses: actions/setup-go@v2
         with:
           go-version: ${{ env.GO_VERSION }}
-      - name: Install sql-migrate
-        run: go get -v github.com/rubenv/sql-migrate/...
       - uses: actions/checkout@v2
       - uses: actions/cache@v2
         with:
@@ -108,7 +106,8 @@ jobs:
           key: ${{ runner.os }}-gomod-${{ hashFiles('**/go.sum') }}
           restore-keys: |
             ${{ runner.os }}-gomod-
-      - run: sql-migrate up
+      - name: sql-migrate up
+        run: go run ./cmd/ns-migrate up -P 5004
       - name: Run tests
         run: go test ./... -race -vet=off
   k8s-test:
