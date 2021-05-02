@@ -2,16 +2,17 @@ package builder
 
 import (
 	"context"
+	"time"
+
 	"github.com/traPtitech/neoshowcase/pkg/builder/api"
+	"github.com/traPtitech/neoshowcase/pkg/domain"
 	"github.com/traPtitech/neoshowcase/pkg/event"
-	"github.com/traPtitech/neoshowcase/pkg/idgen"
 	"github.com/traPtitech/neoshowcase/pkg/models"
 	"github.com/traPtitech/neoshowcase/pkg/util"
 	"github.com/volatiletech/null/v8"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/types/known/emptypb"
-	"time"
 )
 
 func (s *Service) GetStatus(_ context.Context, _ *emptypb.Empty) (*api.GetStatusResponse, error) {
@@ -99,7 +100,7 @@ func (s *Service) StartBuildImage(ctx context.Context, req *api.StartBuildImageR
 	}
 
 	t := &Task{
-		BuildID:      idgen.New(),
+		BuildID:      domain.NewID(),
 		BuildSource:  req.GetSource(),
 		BuildOptions: req.GetOptions(),
 		ImageName:    req.GetImageName(),
@@ -132,7 +133,7 @@ func (s *Service) StartBuildStatic(ctx context.Context, req *api.StartBuildStati
 
 	t := &Task{
 		Static:       true,
-		BuildID:      idgen.New(),
+		BuildID:      domain.NewID(),
 		BuildSource:  req.GetSource(),
 		BuildOptions: req.GetOptions(),
 		BuildLogM: models.BuildLog{

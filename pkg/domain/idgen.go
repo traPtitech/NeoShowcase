@@ -1,4 +1,4 @@
-package idgen
+package domain
 
 import (
 	"math/rand"
@@ -9,8 +9,8 @@ func init() {
 	rand.Seed(time.Now().UnixNano())
 }
 
-// New 22文字のランダムな文字列を生成
-func New() string {
+// NewID 22文字のランダムな文字列を生成
+func NewID() string {
 	const chars = "0123456789abcdefghijklmnopqrstuvwxyz"
 	str := make([]byte, 22)
 	for i := 0; i < 22; i++ {

@@ -4,10 +4,11 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
+
 	log "github.com/sirupsen/logrus"
 	builderApi "github.com/traPtitech/neoshowcase/pkg/builder/api"
 	"github.com/traPtitech/neoshowcase/pkg/container"
-	"github.com/traPtitech/neoshowcase/pkg/idgen"
+	"github.com/traPtitech/neoshowcase/pkg/domain"
 	"github.com/traPtitech/neoshowcase/pkg/models"
 	ssgenApi "github.com/traPtitech/neoshowcase/pkg/staticsitegen/api"
 	"github.com/volatiletech/null/v8"
@@ -98,7 +99,7 @@ func (m *managerImpl) CreateApp(args CreateAppArgs) (App, error) {
 		return nil, fmt.Errorf("failed to get repository: %w", err)
 	} else if repo == nil {
 		repo = &models.Repository{
-			ID:     idgen.New(),
+			ID:     domain.NewID(),
 			Remote: args.RepositoryURL,
 		}
 		if err := repo.Insert(context.Background(), m.db, boil.Infer()); err != nil {
@@ -108,7 +109,7 @@ func (m *managerImpl) CreateApp(args CreateAppArgs) (App, error) {
 
 	// アプリケーション作成
 	app := &models.Application{
-		ID:           idgen.New(),
+		ID:           domain.NewID(),
 		Owner:        args.Owner,
 		Name:         args.Name,
 		RepositoryID: repo.ID,
@@ -179,7 +180,7 @@ func (app *appImpl) CreateEnv(branchName string, buildType BuildType) (Env, erro
 	}
 
 	env := &models.Environment{
-		ID:         idgen.New(),
+		ID:         domain.NewID(),
 		BranchName: branchName,
 		BuildType:  buildType.String(),
 	}

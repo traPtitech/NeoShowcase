@@ -16,6 +16,7 @@ import (
 	"github.com/moby/buildkit/session/auth/authprovider"
 	"github.com/moby/buildkit/util/progress/progressui"
 	"github.com/traPtitech/neoshowcase/pkg/builder/api"
+	"github.com/traPtitech/neoshowcase/pkg/domain"
 	"github.com/traPtitech/neoshowcase/pkg/event"
 	"golang.org/x/sync/errgroup"
 
@@ -23,7 +24,6 @@ import (
 	"github.com/go-git/go-git/v5/plumbing"
 	"github.com/leandro-lugaresi/hub"
 	log "github.com/sirupsen/logrus"
-	"github.com/traPtitech/neoshowcase/pkg/idgen"
 	"github.com/traPtitech/neoshowcase/pkg/models"
 	"github.com/traPtitech/neoshowcase/pkg/storage"
 	"github.com/volatiletech/null/v8"
@@ -137,7 +137,7 @@ func (t *Task) postProcess(s *Service, result string) error {
 		// 生成物tarの保存
 		_ = t.artifactTempFile.Close()
 		if result == models.BuildLogsResultSUCCEEDED {
-			sid := idgen.New()
+			sid := domain.NewID()
 			err := storage.SaveArtifact(s.storage, t.artifactTempFile.Name(), filepath.Join("artifacts", fmt.Sprintf("%s.tar", sid)), s.db, t.BuildID, sid)
 			if err != nil {
 				log.WithError(err).Errorf("failed to save directory to tar (BuildID: %s, ArtifactID: %s)", t.BuildID, sid)
