@@ -1,4 +1,4 @@
-package dbmanager
+package userdb
 
 import (
 	"os"
