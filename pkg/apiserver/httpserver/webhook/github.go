@@ -9,7 +9,7 @@ import (
 
 	"github.com/labstack/echo/v4"
 	"github.com/leandro-lugaresi/hub"
-	"github.com/traPtitech/neoshowcase/pkg/event"
+	event2 "github.com/traPtitech/neoshowcase/pkg/domain/event"
 )
 
 func (r *Receiver) githubHandler(c echo.Context) error {
@@ -45,7 +45,7 @@ func (r *Receiver) githubHandler(c echo.Context) error {
 	}
 	branch := strings.TrimPrefix(body.Ref, "refs/")
 	r.bus.Publish(hub.Message{
-		Name: event.WebhookRepositoryPush,
+		Name: event2.WebhookRepositoryPush,
 		Fields: hub.Fields{
 			"repository_url": repoURL,
 			"branch":         branch,

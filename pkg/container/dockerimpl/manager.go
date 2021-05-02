@@ -3,11 +3,11 @@ package dockerimpl
 import (
 	"context"
 	"fmt"
-	"github.com/traPtitech/neoshowcase/pkg/event"
 
 	docker "github.com/fsouza/go-dockerclient"
 	"github.com/leandro-lugaresi/hub"
 	log "github.com/sirupsen/logrus"
+	event2 "github.com/traPtitech/neoshowcase/pkg/domain/event"
 )
 
 const (
@@ -61,7 +61,7 @@ func (m *Manager) eventListener() {
 			case "start":
 				if ev.Actor.Attributes[appContainerLabel] == "true" {
 					m.bus.Publish(hub.Message{
-						Name: event.ContainerAppStarted,
+						Name: event2.ContainerAppStarted,
 						Fields: map[string]interface{}{
 							"application_id": ev.Actor.Attributes[appContainerApplicationIDLabel],
 							"environment_id": ev.Actor.Attributes[appContainerEnvironmentIDLabel],
@@ -71,7 +71,7 @@ func (m *Manager) eventListener() {
 			case "stop":
 				if ev.Actor.Attributes[appContainerLabel] == "true" {
 					m.bus.Publish(hub.Message{
-						Name: event.ContainerAppStopped,
+						Name: event2.ContainerAppStopped,
 						Fields: map[string]interface{}{
 							"application_id": ev.Actor.Attributes[appContainerApplicationIDLabel],
 							"environment_id": ev.Actor.Attributes[appContainerEnvironmentIDLabel],

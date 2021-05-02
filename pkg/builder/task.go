@@ -17,7 +17,7 @@ import (
 	"github.com/moby/buildkit/util/progress/progressui"
 	"github.com/traPtitech/neoshowcase/pkg/builder/api"
 	"github.com/traPtitech/neoshowcase/pkg/domain"
-	"github.com/traPtitech/neoshowcase/pkg/event"
+	event2 "github.com/traPtitech/neoshowcase/pkg/domain/event"
 	"golang.org/x/sync/errgroup"
 
 	"github.com/go-git/go-git/v5"
@@ -113,7 +113,7 @@ func (t *Task) startAsync(ctx context.Context, s *Service) error {
 	t.ctx, t.cancelFunc = context.WithCancel(context.Background())
 	go s.processTask(t)
 	s.bus.Publish(hub.Message{
-		Name: event.BuilderBuildStarted,
+		Name: event2.BuilderBuildStarted,
 		Fields: hub.Fields{
 			"task": t,
 		},
@@ -161,21 +161,21 @@ func (t *Task) postProcess(s *Service, result string) error {
 	switch result {
 	case models.BuildLogsResultFAILED:
 		s.bus.Publish(hub.Message{
-			Name: event.BuilderBuildFailed,
+			Name: event2.BuilderBuildFailed,
 			Fields: hub.Fields{
 				"task": t,
 			},
 		})
 	case models.BuildLogsResultCANCELED:
 		s.bus.Publish(hub.Message{
-			Name: event.BuilderBuildCanceled,
+			Name: event2.BuilderBuildCanceled,
 			Fields: hub.Fields{
 				"task": t,
 			},
 		})
 	case models.BuildLogsResultSUCCEEDED:
 		s.bus.Publish(hub.Message{
-			Name: event.BuilderBuildSucceeded,
+			Name: event2.BuilderBuildSucceeded,
 			Fields: hub.Fields{
 				"task": t,
 			},

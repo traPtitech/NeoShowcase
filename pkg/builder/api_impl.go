@@ -6,7 +6,7 @@ import (
 
 	"github.com/traPtitech/neoshowcase/pkg/builder/api"
 	"github.com/traPtitech/neoshowcase/pkg/domain"
-	"github.com/traPtitech/neoshowcase/pkg/event"
+	event2 "github.com/traPtitech/neoshowcase/pkg/domain/event"
 	"github.com/traPtitech/neoshowcase/pkg/models"
 	"github.com/traPtitech/neoshowcase/pkg/util"
 	"github.com/volatiletech/null/v8"
@@ -39,7 +39,7 @@ func (s *Service) ConnectEventStream(_ *emptypb.Empty, stream api.BuilderService
 			return nil
 		case ev := <-sub.Receiver:
 			switch ev.Name {
-			case event.BuilderBuildStarted:
+			case event2.BuilderBuildStarted:
 				task := ev.Fields["task"].(*Task)
 				if err := stream.Send(&api.Event{
 					Type: api.Event_BUILD_STARTED,
@@ -51,7 +51,7 @@ func (s *Service) ConnectEventStream(_ *emptypb.Empty, stream api.BuilderService
 					return err
 				}
 
-			case event.BuilderBuildFailed:
+			case event2.BuilderBuildFailed:
 				task := ev.Fields["task"].(*Task)
 				if err := stream.Send(&api.Event{
 					Type: api.Event_BUILD_FAILED,
@@ -63,7 +63,7 @@ func (s *Service) ConnectEventStream(_ *emptypb.Empty, stream api.BuilderService
 					return err
 				}
 
-			case event.BuilderBuildSucceeded:
+			case event2.BuilderBuildSucceeded:
 				task := ev.Fields["task"].(*Task)
 				if err := stream.Send(&api.Event{
 					Type: api.Event_BUILD_SUCCEEDED,
@@ -75,7 +75,7 @@ func (s *Service) ConnectEventStream(_ *emptypb.Empty, stream api.BuilderService
 					return err
 				}
 
-			case event.BuilderBuildCanceled:
+			case event2.BuilderBuildCanceled:
 				task := ev.Fields["task"].(*Task)
 				if err := stream.Send(&api.Event{
 					Type: api.Event_BUILD_CANCELED,

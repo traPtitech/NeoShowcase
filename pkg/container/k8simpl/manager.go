@@ -3,9 +3,10 @@ package k8simpl
 import (
 	"context"
 	"fmt"
+
 	"github.com/leandro-lugaresi/hub"
 	log "github.com/sirupsen/logrus"
-	"github.com/traPtitech/neoshowcase/pkg/event"
+	event2 "github.com/traPtitech/neoshowcase/pkg/domain/event"
 	apiv1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/watch"
@@ -62,7 +63,7 @@ func (m *Manager) eventListener() {
 		case watch.Modified:
 			if p.Status.Phase == apiv1.PodRunning {
 				m.bus.Publish(hub.Message{
-					Name: event.ContainerAppStarted,
+					Name: event2.ContainerAppStarted,
 					Fields: map[string]interface{}{
 						"application_id": p.Labels[appContainerApplicationIDLabel],
 						"environment_id": p.Labels[appContainerEnvironmentIDLabel],
@@ -71,7 +72,7 @@ func (m *Manager) eventListener() {
 			}
 		case watch.Deleted:
 			m.bus.Publish(hub.Message{
-				Name: event.ContainerAppStopped,
+				Name: event2.ContainerAppStopped,
 				Fields: map[string]interface{}{
 					"application_id": p.Labels[appContainerApplicationIDLabel],
 					"environment_id": p.Labels[appContainerEnvironmentIDLabel],

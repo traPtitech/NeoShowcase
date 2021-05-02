@@ -3,15 +3,16 @@ package appmanager
 import (
 	"context"
 	"database/sql"
+	"io"
+
 	"github.com/leandro-lugaresi/hub"
 	log "github.com/sirupsen/logrus"
 	builderApi "github.com/traPtitech/neoshowcase/pkg/builder/api"
 	"github.com/traPtitech/neoshowcase/pkg/container"
-	"github.com/traPtitech/neoshowcase/pkg/event"
+	event2 "github.com/traPtitech/neoshowcase/pkg/domain/event"
 	ssgenApi "github.com/traPtitech/neoshowcase/pkg/staticsitegen/api"
 	"github.com/traPtitech/neoshowcase/pkg/util"
 	"google.golang.org/protobuf/types/known/emptypb"
-	"io"
 )
 
 type managerImpl struct {
@@ -79,22 +80,22 @@ func (m *managerImpl) receiveBuilderEvents() error {
 		switch ev.Type {
 		case builderApi.Event_BUILD_STARTED:
 			m.bus.Publish(hub.Message{
-				Name:   event.BuilderBuildStarted,
+				Name:   event2.BuilderBuildStarted,
 				Fields: payload,
 			})
 		case builderApi.Event_BUILD_SUCCEEDED:
 			m.bus.Publish(hub.Message{
-				Name:   event.BuilderBuildSucceeded,
+				Name:   event2.BuilderBuildSucceeded,
 				Fields: payload,
 			})
 		case builderApi.Event_BUILD_FAILED:
 			m.bus.Publish(hub.Message{
-				Name:   event.BuilderBuildFailed,
+				Name:   event2.BuilderBuildFailed,
 				Fields: payload,
 			})
 		case builderApi.Event_BUILD_CANCELED:
 			m.bus.Publish(hub.Message{
-				Name:   event.BuilderBuildCanceled,
+				Name:   event2.BuilderBuildCanceled,
 				Fields: payload,
 			})
 		}
@@ -103,10 +104,10 @@ func (m *managerImpl) receiveBuilderEvents() error {
 }
 
 func (m *managerImpl) appDeployLoop() {
-	sub := m.bus.Subscribe(10, event.BuilderBuildSucceeded, event.WebhookRepositoryPush)
+	sub := m.bus.Subscribe(10, event2.BuilderBuildSucceeded, event2.WebhookRepositoryPush)
 	for ev := range sub.Receiver {
 		switch ev.Name {
-		case event.WebhookRepositoryPush:
+		case event2.WebhookRepositoryPush:
 			repoURL := ev.Fields["repository_url"].(string)
 			branch := ev.Fields["branch"].(string)
 
@@ -137,7 +138,7 @@ func (m *managerImpl) appDeployLoop() {
 					Error("failed to RequestBuild")
 			}
 
-		case event.BuilderBuildSucceeded:
+		case event2.BuilderBuildSucceeded:
 			envID := ev.Fields["environment_id"].(string)
 			buildID := ev.Fields["build_id"].(string)
 			if len(envID) == 0 {
