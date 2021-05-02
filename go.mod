@@ -7,7 +7,7 @@ require (
 	github.com/dgrijalva/jwt-go v3.2.0+incompatible
 	github.com/dustinkirkland/golang-petname v0.0.0-20191129215211-8e5a1ed0cff0
 	github.com/friendsofgo/errors v0.9.2
-	github.com/fsouza/go-dockerclient v1.7.1
+	github.com/fsouza/go-dockerclient v1.7.2
 	github.com/gavv/httpexpect/v2 v2.2.0
 	github.com/go-git/go-git/v5 v5.2.0
 	github.com/go-sql-driver/mysql v1.5.0
