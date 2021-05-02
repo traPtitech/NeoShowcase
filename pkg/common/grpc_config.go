@@ -4,9 +4,6 @@ import "google.golang.org/grpc"
 
 type GRPCConfig struct {
 	Port int `mapstructure:"port" yaml:"port"`
-	Web  struct {
-		Port int `mapstructure:"port" yaml:"port"`
-	} `mapstructure:"web" yaml:"web"`
 }
 
 func (c *GRPCConfig) GetPort() int {

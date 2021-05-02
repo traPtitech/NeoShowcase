@@ -8,11 +8,11 @@ import (
 	"github.com/leandro-lugaresi/hub"
 	log "github.com/sirupsen/logrus"
 	"github.com/traPtitech/neoshowcase/pkg/appmanager"
-	builderApi "github.com/traPtitech/neoshowcase/pkg/builder/api"
 	"github.com/traPtitech/neoshowcase/pkg/container"
 	"github.com/traPtitech/neoshowcase/pkg/container/dockerimpl"
 	"github.com/traPtitech/neoshowcase/pkg/container/k8simpl"
 	"github.com/traPtitech/neoshowcase/pkg/infrastructure/web"
+	"github.com/traPtitech/neoshowcase/pkg/interface/grpc/pb"
 	ssgenApi "github.com/traPtitech/neoshowcase/pkg/staticsitegen/api"
 	"golang.org/x/sync/errgroup"
 	"google.golang.org/grpc"
@@ -67,7 +67,7 @@ func NewServer(c Config, webserver *web.Server, db *sql.DB, bus *hub.Hub) (*Serv
 		am, err := appmanager.NewManager(appmanager.Config{
 			DB:              db,
 			Hub:             s.bus,
-			Builder:         builderApi.NewBuilderServiceClient(builderConn),
+			Builder:         pb.NewBuilderServiceClient(builderConn),
 			SSGen:           ssgenApi.NewStaticSiteGenServiceClient(ssgenConn),
 			CM:              connM,
 			ImageRegistry:   c.Image.Registry,
@@ -115,7 +115,7 @@ func NewServer(c Config, webserver *web.Server, db *sql.DB, bus *hub.Hub) (*Serv
 		am, err := appmanager.NewManager(appmanager.Config{
 			DB:              db,
 			Hub:             s.bus,
-			Builder:         builderApi.NewBuilderServiceClient(builderConn),
+			Builder:         pb.NewBuilderServiceClient(builderConn),
 			SSGen:           ssgenApi.NewStaticSiteGenServiceClient(ssgenConn),
 			CM:              connM,
 			ImageRegistry:   c.Image.Registry,

@@ -7,9 +7,9 @@ import (
 
 	"github.com/leandro-lugaresi/hub"
 	log "github.com/sirupsen/logrus"
-	builderApi "github.com/traPtitech/neoshowcase/pkg/builder/api"
 	"github.com/traPtitech/neoshowcase/pkg/container"
 	event2 "github.com/traPtitech/neoshowcase/pkg/domain/event"
+	"github.com/traPtitech/neoshowcase/pkg/interface/grpc/pb"
 	ssgenApi "github.com/traPtitech/neoshowcase/pkg/staticsitegen/api"
 	"github.com/traPtitech/neoshowcase/pkg/util"
 	"google.golang.org/protobuf/types/known/emptypb"
@@ -18,19 +18,19 @@ import (
 type managerImpl struct {
 	db      *sql.DB
 	bus     *hub.Hub
-	builder builderApi.BuilderServiceClient
+	builder pb.BuilderServiceClient
 	ssgen   ssgenApi.StaticSiteGenServiceClient
 	cm      container.Manager
 
 	config Config
 
-	stream builderApi.BuilderService_ConnectEventStreamClient
+	stream pb.BuilderService_ConnectEventStreamClient
 }
 
 type Config struct {
 	DB              *sql.DB
 	Hub             *hub.Hub
-	Builder         builderApi.BuilderServiceClient
+	Builder         pb.BuilderServiceClient
 	SSGen           ssgenApi.StaticSiteGenServiceClient
 	CM              container.Manager
 	ImageRegistry   string
@@ -78,22 +78,22 @@ func (m *managerImpl) receiveBuilderEvents() error {
 			Info("builder event received")
 
 		switch ev.Type {
-		case builderApi.Event_BUILD_STARTED:
+		case pb.Event_BUILD_STARTED:
 			m.bus.Publish(hub.Message{
 				Name:   event2.BuilderBuildStarted,
 				Fields: payload,
 			})
-		case builderApi.Event_BUILD_SUCCEEDED:
+		case pb.Event_BUILD_SUCCEEDED:
 			m.bus.Publish(hub.Message{
 				Name:   event2.BuilderBuildSucceeded,
 				Fields: payload,
 			})
-		case builderApi.Event_BUILD_FAILED:
+		case pb.Event_BUILD_FAILED:
 			m.bus.Publish(hub.Message{
 				Name:   event2.BuilderBuildFailed,
 				Fields: payload,
 			})
-		case builderApi.Event_BUILD_CANCELED:
+		case pb.Event_BUILD_CANCELED:
 			m.bus.Publish(hub.Message{
 				Name:   event2.BuilderBuildCanceled,
 				Fields: payload,

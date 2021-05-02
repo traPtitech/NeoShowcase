@@ -1,4 +1,4 @@
-package builder
+package main
 
 import (
 	"github.com/traPtitech/neoshowcase/pkg/common"

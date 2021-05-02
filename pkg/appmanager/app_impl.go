@@ -6,9 +6,9 @@ import (
 	"fmt"
 
 	log "github.com/sirupsen/logrus"
-	builderApi "github.com/traPtitech/neoshowcase/pkg/builder/api"
 	"github.com/traPtitech/neoshowcase/pkg/container"
 	"github.com/traPtitech/neoshowcase/pkg/domain"
+	"github.com/traPtitech/neoshowcase/pkg/interface/grpc/pb"
 	"github.com/traPtitech/neoshowcase/pkg/models"
 	ssgenApi "github.com/traPtitech/neoshowcase/pkg/staticsitegen/api"
 	"github.com/volatiletech/null/v8"
@@ -289,12 +289,12 @@ func (app *appImpl) RequestBuild(ctx context.Context, envID string) error {
 
 	switch env.BuildType {
 	case models.EnvironmentsBuildTypeImage:
-		_, err := app.m.builder.StartBuildImage(ctx, &builderApi.StartBuildImageRequest{
+		_, err := app.m.builder.StartBuildImage(ctx, &pb.StartBuildImageRequest{
 			ImageName: app.m.getImageName(app),
-			Source: &builderApi.BuildSource{
+			Source: &pb.BuildSource{
 				RepositoryUrl: app.dbmodel.R.Repository.Remote, // TODO ブランチ・タグ指定に対応
 			},
-			Options:       &builderApi.BuildOptions{}, // TODO 汎用ベースイメージビルドに対応させる
+			Options:       &pb.BuildOptions{}, // TODO 汎用ベースイメージビルドに対応させる
 			EnvironmentId: env.ID,
 		})
 		if err != nil {
@@ -302,11 +302,11 @@ func (app *appImpl) RequestBuild(ctx context.Context, envID string) error {
 		}
 
 	case models.EnvironmentsBuildTypeStatic:
-		_, err := app.m.builder.StartBuildStatic(ctx, &builderApi.StartBuildStaticRequest{
-			Source: &builderApi.BuildSource{
+		_, err := app.m.builder.StartBuildStatic(ctx, &pb.StartBuildStaticRequest{
+			Source: &pb.BuildSource{
 				RepositoryUrl: app.dbmodel.R.Repository.Remote, // TODO ブランチ・タグ指定に対応
 			},
-			Options:       &builderApi.BuildOptions{}, // TODO 汎用ベースイメージビルドに対応させる
+			Options:       &pb.BuildOptions{}, // TODO 汎用ベースイメージビルドに対応させる
 			EnvironmentId: env.ID,
 		})
 		if err != nil {
