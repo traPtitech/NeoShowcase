@@ -3,12 +3,14 @@ package main
 import (
 	"context"
 	"fmt"
+	"math/rand"
+	"time"
+
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 	"github.com/traPtitech/neoshowcase/pkg/cliutil"
 	"github.com/traPtitech/neoshowcase/pkg/staticsitegen"
-	"time"
 )
 
 var (
@@ -55,6 +57,7 @@ func runCommand() *cobra.Command {
 }
 
 func init() {
+	rand.Seed(time.Now().UnixNano())
 	cobra.OnInitialize(cliutil.CobraOnInitializeFunc(&configFilePath, "NS_SSGEN", &c))
 
 	rootCommand.AddCommand(

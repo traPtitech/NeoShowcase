@@ -3,13 +3,16 @@ package main
 import (
 	"database/sql"
 	"fmt"
+	"math/rand"
+	"net/http"
+	"time"
+
 	"github.com/go-sql-driver/mysql"
 	migrate "github.com/rubenv/sql-migrate"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 	"github.com/traPtitech/neoshowcase/migrations"
 	"github.com/traPtitech/neoshowcase/pkg/cliutil"
-	"net/http"
 )
 
 var (
@@ -134,6 +137,7 @@ func connectDB() (*sql.DB, error) {
 }
 
 func init() {
+	rand.Seed(time.Now().UnixNano())
 	rootCommand.AddCommand(
 		upCommand(),
 		downCommand(),

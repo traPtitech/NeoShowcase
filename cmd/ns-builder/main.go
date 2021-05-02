@@ -3,13 +3,15 @@ package main
 import (
 	"context"
 	"fmt"
+	"math/rand"
+	"time"
+
 	"github.com/moby/buildkit/util/appdefaults"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 	"github.com/traPtitech/neoshowcase/pkg/builder"
 	"github.com/traPtitech/neoshowcase/pkg/cliutil"
-	"time"
 )
 
 var (
@@ -56,6 +58,7 @@ func runCommand() *cobra.Command {
 }
 
 func init() {
+	rand.Seed(time.Now().UnixNano())
 	cobra.OnInitialize(cliutil.CobraOnInitializeFunc(&configFilePath, "NS_BUILDER", &c))
 
 	rootCommand.AddCommand(

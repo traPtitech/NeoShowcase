@@ -3,13 +3,15 @@ package main
 import (
 	"context"
 	"fmt"
+	"io/ioutil"
+	"math/rand"
+	"net/http"
+	"time"
+
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 	"github.com/traPtitech/neoshowcase/pkg/cliutil"
 	"github.com/traPtitech/neoshowcase/pkg/memberchecker"
-	"io/ioutil"
-	"net/http"
-	"time"
 )
 
 var (
@@ -68,6 +70,7 @@ func serveCommand() *cobra.Command {
 }
 
 func init() {
+	rand.Seed(time.Now().UnixNano())
 	rootCommand.AddCommand(
 		serveCommand(),
 	)

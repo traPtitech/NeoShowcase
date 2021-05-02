@@ -3,13 +3,15 @@ package main
 import (
 	"context"
 	"fmt"
+	"math/rand"
+	"time"
+
 	_ "github.com/go-sql-driver/mysql"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 	"github.com/traPtitech/neoshowcase/pkg/apiserver"
 	"github.com/traPtitech/neoshowcase/pkg/cliutil"
-	"time"
 )
 
 var (
@@ -56,6 +58,7 @@ func runCommand() *cobra.Command {
 }
 
 func init() {
+	rand.Seed(time.Now().UnixNano())
 	cobra.OnInitialize(cliutil.CobraOnInitializeFunc(&configFilePath, "NS_APISERVER", &c))
 
 	rootCommand.AddCommand(

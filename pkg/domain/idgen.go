@@ -2,12 +2,7 @@ package domain
 
 import (
 	"math/rand"
-	"time"
 )
-
-func init() {
-	rand.Seed(time.Now().UnixNano())
-}
 
 // NewID 22文字のランダムな文字列を生成
 func NewID() string {
