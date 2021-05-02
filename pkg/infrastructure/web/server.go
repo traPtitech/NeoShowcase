@@ -24,7 +24,7 @@ func NewServer(conf Config) *Server {
 	e.Use(middleware.Secure())
 	e.Use(middleware.RequestID())
 
-	e.Use(wrapContextMiddleware())
+	e.Use(WrapContextMiddleware())
 	conf.Router.SetupRoute(e)
 
 	return &Server{echo: e, conf: conf}

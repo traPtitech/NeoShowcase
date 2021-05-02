@@ -1,4 +1,4 @@
-package apiserver
+package main
 
 import (
 	"context"
@@ -7,13 +7,12 @@ import (
 
 	"github.com/leandro-lugaresi/hub"
 	log "github.com/sirupsen/logrus"
-	"github.com/traPtitech/neoshowcase/pkg/apiserver/httpserver"
 	"github.com/traPtitech/neoshowcase/pkg/appmanager"
 	builderApi "github.com/traPtitech/neoshowcase/pkg/builder/api"
 	"github.com/traPtitech/neoshowcase/pkg/container"
 	"github.com/traPtitech/neoshowcase/pkg/container/dockerimpl"
 	"github.com/traPtitech/neoshowcase/pkg/container/k8simpl"
-	"github.com/traPtitech/neoshowcase/pkg/infrastructure/admindb"
+	"github.com/traPtitech/neoshowcase/pkg/infrastructure/web"
 	ssgenApi "github.com/traPtitech/neoshowcase/pkg/staticsitegen/api"
 	"golang.org/x/sync/errgroup"
 	"google.golang.org/grpc"
@@ -21,8 +20,8 @@ import (
 	"k8s.io/client-go/rest"
 )
 
-type Service struct {
-	server     *httpserver.Server
+type Server struct {
+	webserver  *web.Server
 	db         *sql.DB
 	bus        *hub.Hub
 	appmanager appmanager.Manager
@@ -32,22 +31,14 @@ type Service struct {
 	containerManager container.Manager
 
 	k8sCSet *kubernetes.Clientset
-
-	config Config
 }
 
-func New(c Config) (*Service, error) {
-	s := &Service{
-		config: c,
-		bus:    hub.New(),
+func NewServer(c Config, webserver *web.Server, db *sql.DB, bus *hub.Hub) (*Server, error) {
+	s := &Server{
+		webserver: webserver,
+		db:        db,
+		bus:       bus,
 	}
-
-	// DBに接続
-	db, err := admindb.New(c.DB)
-	if err != nil {
-		return nil, fmt.Errorf("failed to connect db: %w", err)
-	}
-	s.db = db
 
 	switch c.GetMode() {
 	case ModeDocker:
@@ -139,26 +130,18 @@ func New(c Config) (*Service, error) {
 		log.Fatalf("unknown mode: %s", c.Mode)
 	}
 
-	// HTTP APIサーバー生成
-	s.server = httpserver.New(httpserver.Config{
-		Debug:      c.HTTP.Debug,
-		Port:       c.HTTP.Port,
-		Bus:        s.bus,
-		AppManager: s.appmanager,
-	})
-
 	return s, nil
 }
 
-func (s *Service) Start(ctx context.Context) error {
-	return s.server.Start()
+func (s *Server) Start(ctx context.Context) error {
+	return s.webserver.Start(ctx)
 }
 
-func (s *Service) Shutdown(ctx context.Context) error {
+func (s *Server) Shutdown(ctx context.Context) error {
 	eg, ctx := errgroup.WithContext(ctx)
 
 	eg.Go(func() error {
-		return s.server.Shutdown(ctx)
+		return s.webserver.Shutdown(ctx)
 	})
 	eg.Go(func() error {
 		return s.db.Close()
@@ -177,12 +160,4 @@ func (s *Service) Shutdown(ctx context.Context) error {
 	})
 
 	return eg.Wait()
-}
-
-func (s *Service) builder() builderApi.BuilderServiceClient {
-	return builderApi.NewBuilderServiceClient(s.builderConn)
-}
-
-func (s *Service) ssgen() ssgenApi.StaticSiteGenServiceClient {
-	return ssgenApi.NewStaticSiteGenServiceClient(s.ssgenConn)
 }

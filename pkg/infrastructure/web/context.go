@@ -31,7 +31,7 @@ func wrapContext(c echo.Context) *Context {
 	return &Context{Context: c}
 }
 
-func wrapContextMiddleware() echo.MiddlewareFunc {
+func WrapContextMiddleware() echo.MiddlewareFunc {
 	return func(next echo.HandlerFunc) echo.HandlerFunc {
 		return func(c echo.Context) error {
 			return next(wrapContext(c))
