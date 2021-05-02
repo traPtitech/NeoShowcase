@@ -13,8 +13,8 @@ import (
 	buildkit "github.com/moby/buildkit/client"
 	log "github.com/sirupsen/logrus"
 	"github.com/traPtitech/neoshowcase/pkg/builder/api"
+	storage2 "github.com/traPtitech/neoshowcase/pkg/infrastructure/storage"
 	"github.com/traPtitech/neoshowcase/pkg/models"
-	"github.com/traPtitech/neoshowcase/pkg/storage"
 	"golang.org/x/sync/errgroup"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/reflection"
@@ -26,7 +26,7 @@ type Service struct {
 	buildkit *buildkit.Client
 	db       *sql.DB
 	bus      *hub.Hub
-	storage  storage.Storage
+	storage  storage2.Storage
 
 	config Config
 	api.UnimplementedBuilderServiceServer

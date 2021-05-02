@@ -4,24 +4,25 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
+	"net"
+
+	storage2 "github.com/traPtitech/neoshowcase/pkg/infrastructure/storage"
 	"github.com/traPtitech/neoshowcase/pkg/models"
 	"github.com/traPtitech/neoshowcase/pkg/staticsitegen/api"
 	"github.com/traPtitech/neoshowcase/pkg/staticsitegen/webserver"
-	"github.com/traPtitech/neoshowcase/pkg/storage"
 	"github.com/volatiletech/sqlboiler/v4/queries/qm"
 	"golang.org/x/sync/errgroup"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/reflection"
 	"google.golang.org/grpc/status"
-	"net"
 )
 
 type Service struct {
 	server  *grpc.Server
 	engine  webserver.Engine
 	db      *sql.DB
-	storage storage.Storage
+	storage storage2.Storage
 
 	config Config
 	api.UnimplementedStaticSiteGenServiceServer

@@ -2,8 +2,9 @@ package common
 
 import (
 	"fmt"
-	"github.com/traPtitech/neoshowcase/pkg/storage"
 	"strings"
+
+	storage2 "github.com/traPtitech/neoshowcase/pkg/infrastructure/storage"
 )
 
 type StorageConfig struct {
@@ -36,14 +37,14 @@ type StorageConfig struct {
 	} `mapstructure:"swift" yaml:"swift"`
 }
 
-func (c *StorageConfig) InitStorage() (storage.Storage, error) {
+func (c *StorageConfig) InitStorage() (storage2.Storage, error) {
 	switch strings.ToLower(c.Type) {
 	case "local":
-		return storage.NewLocalStorage(c.Local.Dir)
+		return storage2.NewLocalStorage(c.Local.Dir)
 	case "s3":
-		return storage.NewS3Storage(c.S3.Bucket, c.S3.AccessKey, c.S3.AccessSecret, c.S3.Region, c.S3.Endpoint)
+		return storage2.NewS3Storage(c.S3.Bucket, c.S3.AccessKey, c.S3.AccessSecret, c.S3.Region, c.S3.Endpoint)
 	case "swift":
-		return storage.NewSwiftStorage(c.Swift.Container, c.Swift.UserName, c.Swift.APIKey, c.Swift.TenantName, c.Swift.TenantID, c.Swift.AuthURL)
+		return storage2.NewSwiftStorage(c.Swift.Container, c.Swift.UserName, c.Swift.APIKey, c.Swift.TenantName, c.Swift.TenantID, c.Swift.AuthURL)
 	default:
 		return nil, fmt.Errorf("unknown storage: %s", c.Type)
 	}

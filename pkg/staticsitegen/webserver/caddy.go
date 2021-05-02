@@ -9,17 +9,17 @@ import (
 	"text/template"
 
 	log "github.com/sirupsen/logrus"
-	"github.com/traPtitech/neoshowcase/pkg/storage"
+	storage2 "github.com/traPtitech/neoshowcase/pkg/infrastructure/storage"
 )
 
 type Caddy struct {
 	ArtifactsRootPath string
 	AdminEndpoint     string
 	tmpls             *template.Template
-	storage           storage.Storage
+	storage           storage2.Storage
 }
 
-func (engine *Caddy) Init(s storage.Storage) (err error) {
+func (engine *Caddy) Init(s storage2.Storage) (err error) {
 	engine.tmpls, err = template.New("caddyfile").Parse(`
 {
   auto_https off

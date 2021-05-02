@@ -18,6 +18,7 @@ import (
 	"github.com/traPtitech/neoshowcase/pkg/builder/api"
 	"github.com/traPtitech/neoshowcase/pkg/domain"
 	event2 "github.com/traPtitech/neoshowcase/pkg/domain/event"
+	storage2 "github.com/traPtitech/neoshowcase/pkg/infrastructure/storage"
 	"golang.org/x/sync/errgroup"
 
 	"github.com/go-git/go-git/v5"
@@ -25,7 +26,6 @@ import (
 	"github.com/leandro-lugaresi/hub"
 	log "github.com/sirupsen/logrus"
 	"github.com/traPtitech/neoshowcase/pkg/models"
-	"github.com/traPtitech/neoshowcase/pkg/storage"
 	"github.com/volatiletech/null/v8"
 	"github.com/volatiletech/sqlboiler/v4/boil"
 )
@@ -129,7 +129,7 @@ func (t *Task) postProcess(s *Service, result string) error {
 
 	// ログファイルの保存
 	_ = t.logTempFile.Close()
-	if err := storage.SaveLogFile(s.storage, t.logTempFile.Name(), filepath.Join("buildlogs", t.BuildID), t.BuildID); err != nil {
+	if err := storage2.SaveLogFile(s.storage, t.logTempFile.Name(), filepath.Join("buildlogs", t.BuildID), t.BuildID); err != nil {
 		log.WithError(err).Errorf("failed to save build log (%s)", t.BuildID)
 	}
 
@@ -138,7 +138,7 @@ func (t *Task) postProcess(s *Service, result string) error {
 		_ = t.artifactTempFile.Close()
 		if result == models.BuildLogsResultSUCCEEDED {
 			sid := domain.NewID()
-			err := storage.SaveArtifact(s.storage, t.artifactTempFile.Name(), filepath.Join("artifacts", fmt.Sprintf("%s.tar", sid)), s.db, t.BuildID, sid)
+			err := storage2.SaveArtifact(s.storage, t.artifactTempFile.Name(), filepath.Join("artifacts", fmt.Sprintf("%s.tar", sid)), s.db, t.BuildID, sid)
 			if err != nil {
 				log.WithError(err).Errorf("failed to save directory to tar (BuildID: %s, ArtifactID: %s)", t.BuildID, sid)
 			}

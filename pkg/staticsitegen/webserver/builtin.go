@@ -3,21 +3,22 @@ package webserver
 import (
 	"context"
 	"fmt"
-	"github.com/labstack/echo/v4"
-	"github.com/labstack/echo/v4/middleware"
-	log "github.com/sirupsen/logrus"
-	"github.com/traPtitech/neoshowcase/pkg/storage"
-	"github.com/traPtitech/neoshowcase/pkg/util"
 	"net/http"
 	"path/filepath"
 	"sync"
+
+	"github.com/labstack/echo/v4"
+	"github.com/labstack/echo/v4/middleware"
+	log "github.com/sirupsen/logrus"
+	storage2 "github.com/traPtitech/neoshowcase/pkg/infrastructure/storage"
+	"github.com/traPtitech/neoshowcase/pkg/util"
 )
 
 type BuiltIn struct {
 	ArtifactsRootPath string
 	Port              int
 
-	storage   storage.Storage
+	storage   storage2.Storage
 	server    *echo.Echo
 	sites     map[string]*builtInHost
 	sitesLock sync.RWMutex
@@ -28,7 +29,7 @@ type builtInHost struct {
 	Site *Site
 }
 
-func (b *BuiltIn) Init(s storage.Storage) error {
+func (b *BuiltIn) Init(s storage2.Storage) error {
 	b.storage = s
 	b.sites = map[string]*builtInHost{}
 
@@ -83,7 +84,7 @@ func (b *BuiltIn) Reconcile(sites []*Site) error {
 
 		// 静的ファイルの配置
 		if !util.FileExists(artifactDir) {
-			if err := storage.ExtractTarToDir(b.storage, filepath.Join("artifacts", site.ArtifactID+".tar"), artifactDir); err != nil {
+			if err := storage2.ExtractTarToDir(b.storage, filepath.Join("artifacts", site.ArtifactID+".tar"), artifactDir); err != nil {
 				return fmt.Errorf("failed to extract artifact tar: %w", err)
 			}
 		}
