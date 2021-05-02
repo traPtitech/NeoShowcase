@@ -12,6 +12,7 @@ require (
 	github.com/go-git/go-git/v5 v5.3.0
 	github.com/go-sql-driver/mysql v1.5.0
 	github.com/golang/protobuf v1.5.2
+	github.com/google/wire v0.5.0
 	github.com/kat-co/vala v0.0.0-20170210184112-42e1d8b61f12
 	github.com/labstack/echo/v4 v4.2.2
 	github.com/leandro-lugaresi/hub v1.1.1
