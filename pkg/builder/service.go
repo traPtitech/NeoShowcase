@@ -13,6 +13,7 @@ import (
 	buildkit "github.com/moby/buildkit/client"
 	log "github.com/sirupsen/logrus"
 	"github.com/traPtitech/neoshowcase/pkg/builder/api"
+	"github.com/traPtitech/neoshowcase/pkg/infrastructure/admindb"
 	storage2 "github.com/traPtitech/neoshowcase/pkg/infrastructure/storage"
 	"github.com/traPtitech/neoshowcase/pkg/models"
 	"golang.org/x/sync/errgroup"
@@ -57,7 +58,7 @@ func New(c Config) (*Service, error) {
 	s.buildkit = client
 
 	// DBに接続
-	db, err := c.DB.Connect()
+	db, err := admindb.New(c.DB)
 	if err != nil {
 		return nil, fmt.Errorf("failed to connect db: %w", err)
 	}

@@ -2,6 +2,8 @@ package apiserver
 
 import (
 	"github.com/traPtitech/neoshowcase/pkg/common"
+	"github.com/traPtitech/neoshowcase/pkg/infrastructure/admindb"
+
 	"strings"
 )
 
@@ -14,7 +16,7 @@ type Config struct {
 	Mode    string                  `mapstructure:"mode" yaml:"mode"`
 	Builder common.GRPCClientConfig `mapstructure:"builder" yaml:"builder"`
 	SSGen   common.GRPCClientConfig `mapstructure:"ssgen" yaml:"ssgen"`
-	DB      common.DBConfig         `mapstructure:"db" yaml:"db"`
+	DB      admindb.Config          `mapstructure:"db" yaml:"db"`
 	HTTP    struct {
 		Debug bool `mapstructure:"debug" yaml:"debug"`
 		Port  int  `mapstructure:"port" yaml:"port"`

@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"net"
 
+	"github.com/traPtitech/neoshowcase/pkg/infrastructure/admindb"
 	storage2 "github.com/traPtitech/neoshowcase/pkg/infrastructure/storage"
 	"github.com/traPtitech/neoshowcase/pkg/models"
 	"github.com/traPtitech/neoshowcase/pkg/staticsitegen/api"
@@ -54,7 +55,7 @@ func New(c Config) (*Service, error) {
 	s.engine = engine
 
 	// DBに接続
-	db, err := c.DB.Connect()
+	db, err := admindb.New(c.DB)
 	if err != nil {
 		return nil, fmt.Errorf("failed to connect db: %w", err)
 	}

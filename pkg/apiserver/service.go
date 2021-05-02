@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
+
 	"github.com/leandro-lugaresi/hub"
 	log "github.com/sirupsen/logrus"
 	"github.com/traPtitech/neoshowcase/pkg/apiserver/httpserver"
@@ -12,6 +13,7 @@ import (
 	"github.com/traPtitech/neoshowcase/pkg/container"
 	"github.com/traPtitech/neoshowcase/pkg/container/dockerimpl"
 	"github.com/traPtitech/neoshowcase/pkg/container/k8simpl"
+	"github.com/traPtitech/neoshowcase/pkg/infrastructure/admindb"
 	ssgenApi "github.com/traPtitech/neoshowcase/pkg/staticsitegen/api"
 	"golang.org/x/sync/errgroup"
 	"google.golang.org/grpc"
@@ -41,7 +43,7 @@ func New(c Config) (*Service, error) {
 	}
 
 	// DBに接続
-	db, err := c.DB.Connect()
+	db, err := admindb.New(c.DB)
 	if err != nil {
 		return nil, fmt.Errorf("failed to connect db: %w", err)
 	}
