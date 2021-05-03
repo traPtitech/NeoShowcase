@@ -13,7 +13,6 @@ import (
 	"github.com/traPtitech/neoshowcase/pkg/container/k8simpl"
 	"github.com/traPtitech/neoshowcase/pkg/infrastructure/web"
 	"github.com/traPtitech/neoshowcase/pkg/interface/grpc/pb"
-	ssgenApi "github.com/traPtitech/neoshowcase/pkg/staticsitegen/api"
 	"golang.org/x/sync/errgroup"
 	"google.golang.org/grpc"
 	"k8s.io/client-go/kubernetes"
@@ -68,7 +67,7 @@ func NewServer(c Config, webserver *web.Server, db *sql.DB, bus *hub.Hub) (*Serv
 			DB:              db,
 			Hub:             s.bus,
 			Builder:         pb.NewBuilderServiceClient(builderConn),
-			SS:              ssgenApi.NewStaticSiteGenServiceClient(ssgenConn),
+			SS:              pb.NewStaticSiteServiceClient(ssgenConn),
 			CM:              connM,
 			ImageRegistry:   c.Image.Registry,
 			ImageNamePrefix: c.Image.NamePrefix,
@@ -116,7 +115,7 @@ func NewServer(c Config, webserver *web.Server, db *sql.DB, bus *hub.Hub) (*Serv
 			DB:              db,
 			Hub:             s.bus,
 			Builder:         pb.NewBuilderServiceClient(builderConn),
-			SS:              ssgenApi.NewStaticSiteGenServiceClient(ssgenConn),
+			SS:              pb.NewStaticSiteServiceClient(ssgenConn),
 			CM:              connM,
 			ImageRegistry:   c.Image.Registry,
 			ImageNamePrefix: c.Image.NamePrefix,
