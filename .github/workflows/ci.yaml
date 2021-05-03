@@ -150,7 +150,7 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-gomod-
       - name: Run tests
-        run: go test ./pkg/container/k8simpl -vet=off
+        run: go test ./pkg/infrastructure/backend/k8simpl -vet=off
   tbls:
     name: TBLS
     runs-on: ubuntu-latest
