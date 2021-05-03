@@ -3,13 +3,20 @@ package main
 import (
 	"context"
 	"fmt"
+	"math/rand"
+	"strings"
+	"time"
+
+	buildkit "github.com/moby/buildkit/client"
 	"github.com/moby/buildkit/util/appdefaults"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
-	"github.com/traPtitech/neoshowcase/pkg/builder"
 	"github.com/traPtitech/neoshowcase/pkg/cliutil"
-	"time"
+	"github.com/traPtitech/neoshowcase/pkg/domain/builder"
+	"github.com/traPtitech/neoshowcase/pkg/infrastructure/admindb"
+	"github.com/traPtitech/neoshowcase/pkg/infrastructure/storage"
+	"github.com/traPtitech/neoshowcase/pkg/interface/grpc"
 )
 
 var (
@@ -19,7 +26,7 @@ var (
 
 var (
 	configFilePath string
-	c              builder.Config
+	c              Config
 )
 
 var rootCommand = &cobra.Command{
@@ -33,7 +40,7 @@ func runCommand() *cobra.Command {
 	cmd := &cobra.Command{
 		Use: "run",
 		RunE: func(cmd *cobra.Command, args []string) error {
-			service, err := builder.New(c)
+			service, err := New(c)
 			if err != nil {
 				return err
 			}
@@ -55,7 +62,8 @@ func runCommand() *cobra.Command {
 	return cmd
 }
 
-func init() {
+func main() {
+	rand.Seed(time.Now().UnixNano())
 	cobra.OnInitialize(cliutil.CobraOnInitializeFunc(&configFilePath, "NS_BUILDER", &c))
 
 	rootCommand.AddCommand(
@@ -92,10 +100,47 @@ func init() {
 	viper.SetDefault("storage.swift.tenantId", "")
 	viper.SetDefault("storage.swift.container", "neoshowcase")
 	viper.SetDefault("storage.swift.authUrl", "")
-}
 
-func main() {
 	if err := rootCommand.Execute(); err != nil {
 		log.Fatal(err)
 	}
+}
+
+func provideAdminDBConfig(c Config) admindb.Config {
+	return c.DB
+}
+
+func provideStorageConfig(c Config) storage.Config {
+	return c.Storage
+}
+
+func provideGRPCPort(c Config) grpc.TCPListenPort {
+	return grpc.TCPListenPort(c.GRPC.Port)
+}
+
+func provideDockerImageRegistry(c Config) builder.DockerImageRegistryString {
+	return builder.DockerImageRegistryString(c.Buildkit.Registry)
+}
+
+func initStorage(c storage.Config) (storage.Storage, error) {
+	switch strings.ToLower(c.Type) {
+	case "local":
+		return storage.NewLocalStorage(c.Local.Dir)
+	case "s3":
+		return storage.NewS3Storage(c.S3.Bucket, c.S3.AccessKey, c.S3.AccessSecret, c.S3.Region, c.S3.Endpoint)
+	case "swift":
+		return storage.NewSwiftStorage(c.Swift.Container, c.Swift.UserName, c.Swift.APIKey, c.Swift.TenantName, c.Swift.TenantID, c.Swift.AuthURL)
+	default:
+		return nil, fmt.Errorf("unknown storage: %s", c.Type)
+	}
+}
+
+func initBuildkitClient(c Config) (*buildkit.Client, error) {
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+	client, err := buildkit.New(ctx, c.Buildkit.Address)
+	if err != nil {
+		return nil, fmt.Errorf("failed to initialize Buildkit Client: %w", err)
+	}
+	return client, nil
 }

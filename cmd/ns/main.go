@@ -3,13 +3,19 @@ package main
 import (
 	"context"
 	"fmt"
+	"math/rand"
+	"time"
+
 	_ "github.com/go-sql-driver/mysql"
+	"github.com/google/wire"
+	"github.com/labstack/echo/v4"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
-	"github.com/traPtitech/neoshowcase/pkg/apiserver"
 	"github.com/traPtitech/neoshowcase/pkg/cliutil"
-	"time"
+	"github.com/traPtitech/neoshowcase/pkg/infrastructure/admindb"
+	"github.com/traPtitech/neoshowcase/pkg/infrastructure/web"
+	"github.com/traPtitech/neoshowcase/pkg/interface/handler"
 )
 
 var (
@@ -19,7 +25,7 @@ var (
 
 var (
 	configFilePath string
-	c              apiserver.Config
+	c              Config
 )
 
 var rootCommand = &cobra.Command{
@@ -33,7 +39,7 @@ func runCommand() *cobra.Command {
 	cmd := &cobra.Command{
 		Use: "run",
 		RunE: func(cmd *cobra.Command, args []string) error {
-			service, err := apiserver.New(c)
+			service, err := New(c)
 			if err != nil {
 				return err
 			}
@@ -55,7 +61,8 @@ func runCommand() *cobra.Command {
 	return cmd
 }
 
-func init() {
+func main() {
+	rand.Seed(time.Now().UnixNano())
 	cobra.OnInitialize(cliutil.CobraOnInitializeFunc(&configFilePath, "NS_APISERVER", &c))
 
 	rootCommand.AddCommand(
@@ -85,10 +92,32 @@ func init() {
 	viper.SetDefault("db.connection.maxOpen", 0)
 	viper.SetDefault("db.connection.maxIdle", 2)
 	viper.SetDefault("db.connection.lifetime", 0)
-}
 
-func main() {
 	if err := rootCommand.Execute(); err != nil {
 		log.Fatal(err)
 	}
+}
+
+var handlerSet = wire.NewSet(
+	handler.NewWebhookReceiverHandler,
+)
+
+type Router struct {
+	wr handler.WebhookReceiverHandler
+}
+
+func (r *Router) SetupRoute(e *echo.Echo) {
+	apiNoAuth := e.Group("")
+	apiNoAuth.POST("/_webhook", web.UnwrapHandler(r.wr))
+}
+
+func provideWebServerConfig(router web.Router) web.Config {
+	return web.Config{
+		Port:   c.HTTP.Port,
+		Router: router,
+	}
+}
+
+func provideAdminDBConfig() admindb.Config {
+	return c.DB
 }

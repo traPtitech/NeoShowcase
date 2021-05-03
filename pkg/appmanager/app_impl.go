@@ -4,12 +4,11 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
+
 	log "github.com/sirupsen/logrus"
-	builderApi "github.com/traPtitech/neoshowcase/pkg/builder/api"
-	"github.com/traPtitech/neoshowcase/pkg/container"
-	"github.com/traPtitech/neoshowcase/pkg/idgen"
+	"github.com/traPtitech/neoshowcase/pkg/domain"
+	"github.com/traPtitech/neoshowcase/pkg/interface/grpc/pb"
 	"github.com/traPtitech/neoshowcase/pkg/models"
-	ssgenApi "github.com/traPtitech/neoshowcase/pkg/staticsitegen/api"
 	"github.com/volatiletech/null/v8"
 	"github.com/volatiletech/sqlboiler/v4/boil"
 	"github.com/volatiletech/sqlboiler/v4/queries/qm"
@@ -98,7 +97,7 @@ func (m *managerImpl) CreateApp(args CreateAppArgs) (App, error) {
 		return nil, fmt.Errorf("failed to get repository: %w", err)
 	} else if repo == nil {
 		repo = &models.Repository{
-			ID:     idgen.New(),
+			ID:     domain.NewID(),
 			Remote: args.RepositoryURL,
 		}
 		if err := repo.Insert(context.Background(), m.db, boil.Infer()); err != nil {
@@ -108,7 +107,7 @@ func (m *managerImpl) CreateApp(args CreateAppArgs) (App, error) {
 
 	// アプリケーション作成
 	app := &models.Application{
-		ID:           idgen.New(),
+		ID:           domain.NewID(),
 		Owner:        args.Owner,
 		Name:         args.Name,
 		RepositoryID: repo.ID,
@@ -179,7 +178,7 @@ func (app *appImpl) CreateEnv(branchName string, buildType BuildType) (Env, erro
 	}
 
 	env := &models.Environment{
-		ID:         idgen.New(),
+		ID:         domain.NewID(),
 		BranchName: branchName,
 		BuildType:  buildType.String(),
 	}
@@ -231,10 +230,10 @@ func (app *appImpl) Start(args AppStartArgs) error {
 	switch env.BuildType {
 	case models.EnvironmentsBuildTypeImage:
 		// HTTP公開設定があれば取得
-		var httpProxy *container.HTTPProxy
+		var httpProxy *domain.ContainerHTTPProxy
 		website, err := env.Website().One(context.Background(), app.m.db)
 		if err == nil {
-			httpProxy = &container.HTTPProxy{
+			httpProxy = &domain.ContainerHTTPProxy{
 				Domain: website.FQDN,
 				Port:   website.HTTPPort,
 			}
@@ -242,7 +241,7 @@ func (app *appImpl) Start(args AppStartArgs) error {
 			return fmt.Errorf("failed to query website: %w", err)
 		}
 
-		_, err = app.m.cm.Create(context.Background(), container.CreateArgs{
+		err = app.m.backend.CreateContainer(context.Background(), domain.ContainerCreateArgs{
 			ApplicationID: app.GetID(),
 			EnvironmentID: env.ID,
 			ImageName:     app.m.getFullImageName(app),
@@ -265,8 +264,8 @@ func (app *appImpl) Start(args AppStartArgs) error {
 			return fmt.Errorf("failed to Update website: %w", err)
 		}
 
-		if _, err := app.m.ssgen.Reload(context.Background(), &ssgenApi.ReloadRequest{}); err != nil {
-			return fmt.Errorf("failed to Reload ssgen: %w", err)
+		if _, err := app.m.ss.Reload(context.Background(), &pb.ReloadRequest{}); err != nil {
+			return fmt.Errorf("failed to Reload ss: %w", err)
 		}
 	default:
 		return fmt.Errorf("unknown build type: %s", env.BuildType)
@@ -288,12 +287,12 @@ func (app *appImpl) RequestBuild(ctx context.Context, envID string) error {
 
 	switch env.BuildType {
 	case models.EnvironmentsBuildTypeImage:
-		_, err := app.m.builder.StartBuildImage(ctx, &builderApi.StartBuildImageRequest{
+		_, err := app.m.builder.StartBuildImage(ctx, &pb.StartBuildImageRequest{
 			ImageName: app.m.getImageName(app),
-			Source: &builderApi.BuildSource{
+			Source: &pb.BuildSource{
 				RepositoryUrl: app.dbmodel.R.Repository.Remote, // TODO ブランチ・タグ指定に対応
 			},
-			Options:       &builderApi.BuildOptions{}, // TODO 汎用ベースイメージビルドに対応させる
+			Options:       &pb.BuildOptions{}, // TODO 汎用ベースイメージビルドに対応させる
 			EnvironmentId: env.ID,
 		})
 		if err != nil {
@@ -301,11 +300,11 @@ func (app *appImpl) RequestBuild(ctx context.Context, envID string) error {
 		}
 
 	case models.EnvironmentsBuildTypeStatic:
-		_, err := app.m.builder.StartBuildStatic(ctx, &builderApi.StartBuildStaticRequest{
-			Source: &builderApi.BuildSource{
+		_, err := app.m.builder.StartBuildStatic(ctx, &pb.StartBuildStaticRequest{
+			Source: &pb.BuildSource{
 				RepositoryUrl: app.dbmodel.R.Repository.Remote, // TODO ブランチ・タグ指定に対応
 			},
-			Options:       &builderApi.BuildOptions{}, // TODO 汎用ベースイメージビルドに対応させる
+			Options:       &pb.BuildOptions{}, // TODO 汎用ベースイメージビルドに対応させる
 			EnvironmentId: env.ID,
 		})
 		if err != nil {

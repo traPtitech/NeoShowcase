@@ -3,7 +3,8 @@ package appmanager
 import (
 	"context"
 	"fmt"
-	"github.com/traPtitech/neoshowcase/pkg/idgen"
+
+	"github.com/traPtitech/neoshowcase/pkg/domain"
 	"github.com/traPtitech/neoshowcase/pkg/models"
 	"github.com/volatiletech/sqlboiler/v4/boil"
 )
@@ -51,7 +52,7 @@ func (env *envImpl) SetupWebsite(fqdn string, httpPort int) error {
 
 	// Websiteをテーブルに挿入
 	ws = &models.Website{
-		ID:       idgen.New(),
+		ID:       domain.NewID(),
 		FQDN:     fqdn,
 		HTTPPort: httpPort,
 	}

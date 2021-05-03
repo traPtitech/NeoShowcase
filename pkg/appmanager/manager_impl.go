@@ -3,35 +3,35 @@ package appmanager
 import (
 	"context"
 	"database/sql"
-	"github.com/leandro-lugaresi/hub"
+	"io"
+
 	log "github.com/sirupsen/logrus"
-	builderApi "github.com/traPtitech/neoshowcase/pkg/builder/api"
-	"github.com/traPtitech/neoshowcase/pkg/container"
-	"github.com/traPtitech/neoshowcase/pkg/event"
-	ssgenApi "github.com/traPtitech/neoshowcase/pkg/staticsitegen/api"
+	"github.com/traPtitech/neoshowcase/pkg/domain/event"
+	"github.com/traPtitech/neoshowcase/pkg/infrastructure/backend"
+	"github.com/traPtitech/neoshowcase/pkg/infrastructure/eventbus"
+	"github.com/traPtitech/neoshowcase/pkg/interface/grpc/pb"
 	"github.com/traPtitech/neoshowcase/pkg/util"
 	"google.golang.org/protobuf/types/known/emptypb"
-	"io"
 )
 
 type managerImpl struct {
 	db      *sql.DB
-	bus     *hub.Hub
-	builder builderApi.BuilderServiceClient
-	ssgen   ssgenApi.StaticSiteGenServiceClient
-	cm      container.Manager
+	bus     eventbus.Bus
+	builder pb.BuilderServiceClient
+	ss      pb.StaticSiteServiceClient
+	backend backend.Backend
 
 	config Config
 
-	stream builderApi.BuilderService_ConnectEventStreamClient
+	stream pb.BuilderService_ConnectEventStreamClient
 }
 
 type Config struct {
 	DB              *sql.DB
-	Hub             *hub.Hub
-	Builder         builderApi.BuilderServiceClient
-	SSGen           ssgenApi.StaticSiteGenServiceClient
-	CM              container.Manager
+	Hub             eventbus.Bus
+	Builder         pb.BuilderServiceClient
+	SS              pb.StaticSiteServiceClient
+	Backend         backend.Backend
 	ImageRegistry   string
 	ImageNamePrefix string
 }
@@ -46,8 +46,8 @@ func NewManager(config Config) (Manager, error) {
 		db:      config.DB,
 		bus:     config.Hub,
 		builder: config.Builder,
-		ssgen:   config.SSGen,
-		cm:      config.CM,
+		ss:      config.SS,
+		backend: config.Backend,
 		config:  config,
 		stream:  stream,
 	}
@@ -77,38 +77,27 @@ func (m *managerImpl) receiveBuilderEvents() error {
 			Info("builder event received")
 
 		switch ev.Type {
-		case builderApi.Event_BUILD_STARTED:
-			m.bus.Publish(hub.Message{
-				Name:   event.BuilderBuildStarted,
-				Fields: payload,
-			})
-		case builderApi.Event_BUILD_SUCCEEDED:
-			m.bus.Publish(hub.Message{
-				Name:   event.BuilderBuildSucceeded,
-				Fields: payload,
-			})
-		case builderApi.Event_BUILD_FAILED:
-			m.bus.Publish(hub.Message{
-				Name:   event.BuilderBuildFailed,
-				Fields: payload,
-			})
-		case builderApi.Event_BUILD_CANCELED:
-			m.bus.Publish(hub.Message{
-				Name:   event.BuilderBuildCanceled,
-				Fields: payload,
-			})
+		case pb.Event_BUILD_STARTED:
+			m.bus.Publish(event.BuilderBuildStarted, payload)
+		case pb.Event_BUILD_SUCCEEDED:
+			m.bus.Publish(event.BuilderBuildSucceeded, payload)
+		case pb.Event_BUILD_FAILED:
+			m.bus.Publish(event.BuilderBuildFailed, payload)
+		case pb.Event_BUILD_CANCELED:
+			m.bus.Publish(event.BuilderBuildCanceled, payload)
 		}
 	}
 	return nil
 }
 
 func (m *managerImpl) appDeployLoop() {
-	sub := m.bus.Subscribe(10, event.BuilderBuildSucceeded, event.WebhookRepositoryPush)
-	for ev := range sub.Receiver {
-		switch ev.Name {
+	sub := m.bus.Subscribe(event.BuilderBuildSucceeded, event.WebhookRepositoryPush)
+	defer sub.Unsubscribe()
+	for ev := range sub.Chan() {
+		switch ev.Type {
 		case event.WebhookRepositoryPush:
-			repoURL := ev.Fields["repository_url"].(string)
-			branch := ev.Fields["branch"].(string)
+			repoURL := ev.Body["repository_url"].(string)
+			branch := ev.Body["branch"].(string)
 
 			log.WithField("repo", repoURL).
 				WithField("refs", branch).
@@ -138,8 +127,8 @@ func (m *managerImpl) appDeployLoop() {
 			}
 
 		case event.BuilderBuildSucceeded:
-			envID := ev.Fields["environment_id"].(string)
-			buildID := ev.Fields["build_id"].(string)
+			envID := ev.Body["environment_id"].(string)
+			buildID := ev.Body["build_id"].(string)
 			if len(envID) == 0 {
 				// envIDが無い場合はテストビルド
 				continue
