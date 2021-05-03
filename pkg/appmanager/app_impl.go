@@ -6,7 +6,6 @@ import (
 	"fmt"
 
 	log "github.com/sirupsen/logrus"
-	"github.com/traPtitech/neoshowcase/pkg/container"
 	"github.com/traPtitech/neoshowcase/pkg/domain"
 	"github.com/traPtitech/neoshowcase/pkg/interface/grpc/pb"
 	"github.com/traPtitech/neoshowcase/pkg/models"
@@ -231,10 +230,10 @@ func (app *appImpl) Start(args AppStartArgs) error {
 	switch env.BuildType {
 	case models.EnvironmentsBuildTypeImage:
 		// HTTP公開設定があれば取得
-		var httpProxy *container.HTTPProxy
+		var httpProxy *domain.ContainerHTTPProxy
 		website, err := env.Website().One(context.Background(), app.m.db)
 		if err == nil {
-			httpProxy = &container.HTTPProxy{
+			httpProxy = &domain.ContainerHTTPProxy{
 				Domain: website.FQDN,
 				Port:   website.HTTPPort,
 			}
@@ -242,7 +241,7 @@ func (app *appImpl) Start(args AppStartArgs) error {
 			return fmt.Errorf("failed to query website: %w", err)
 		}
 
-		_, err = app.m.cm.Create(context.Background(), container.CreateArgs{
+		err = app.m.backend.CreateContainer(context.Background(), domain.ContainerCreateArgs{
 			ApplicationID: app.GetID(),
 			EnvironmentID: env.ID,
 			ImageName:     app.m.getFullImageName(app),

@@ -37,7 +37,7 @@ func New(c2 Config) (*Server, error) {
 	}
 	webConfig := provideWebServerConfig(router)
 	server := web.NewServer(webConfig)
-	mainServer, err := NewServer(c2, server, db, hubHub)
+	mainServer, err := NewServer(c2, server, db, bus)
 	if err != nil {
 		return nil, err
 	}

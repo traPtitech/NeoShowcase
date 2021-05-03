@@ -5,12 +5,13 @@ import (
 	"database/sql"
 	"fmt"
 
-	"github.com/leandro-lugaresi/hub"
+	docker "github.com/fsouza/go-dockerclient"
 	log "github.com/sirupsen/logrus"
 	"github.com/traPtitech/neoshowcase/pkg/appmanager"
-	"github.com/traPtitech/neoshowcase/pkg/container"
-	"github.com/traPtitech/neoshowcase/pkg/container/dockerimpl"
-	"github.com/traPtitech/neoshowcase/pkg/container/k8simpl"
+	"github.com/traPtitech/neoshowcase/pkg/infrastructure/backend"
+	"github.com/traPtitech/neoshowcase/pkg/infrastructure/backend/dockerimpl"
+	"github.com/traPtitech/neoshowcase/pkg/infrastructure/backend/k8simpl"
+	"github.com/traPtitech/neoshowcase/pkg/infrastructure/eventbus"
 	"github.com/traPtitech/neoshowcase/pkg/infrastructure/web"
 	"github.com/traPtitech/neoshowcase/pkg/interface/grpc/pb"
 	"golang.org/x/sync/errgroup"
@@ -22,17 +23,17 @@ import (
 type Server struct {
 	webserver  *web.Server
 	db         *sql.DB
-	bus        *hub.Hub
+	bus        eventbus.Bus
 	appmanager appmanager.Manager
 
-	builderConn      *grpc.ClientConn
-	ssgenConn        *grpc.ClientConn
-	containerManager container.Manager
+	builderConn *grpc.ClientConn
+	ssgenConn   *grpc.ClientConn
+	backend     backend.Backend
 
 	k8sCSet *kubernetes.Clientset
 }
 
-func NewServer(c Config, webserver *web.Server, db *sql.DB, bus *hub.Hub) (*Server, error) {
+func NewServer(c Config, webserver *web.Server, db *sql.DB, bus eventbus.Bus) (*Server, error) {
 	s := &Server{
 		webserver: webserver,
 		db:        db,
@@ -55,12 +56,18 @@ func NewServer(c Config, webserver *web.Server, db *sql.DB, bus *hub.Hub) (*Serv
 		}
 		s.ssgenConn = ssgenConn
 
+		// Dockerデーモンに接続 (DooD)
+		dc, err := docker.NewClientFromEnv()
+		if err != nil {
+			return nil, fmt.Errorf("failed to create docker client: %w", err)
+		}
+
 		// コンテナマネージャー生成
-		connM, err := dockerimpl.NewManager(s.bus)
+		connM, err := dockerimpl.NewDockerBackend(dc, s.bus)
 		if err != nil {
 			return nil, fmt.Errorf("failed to init container manager: %w", err)
 		}
-		s.containerManager = connM
+		s.backend = connM
 
 		// appmanger生成
 		am, err := appmanager.NewManager(appmanager.Config{
@@ -68,7 +75,7 @@ func NewServer(c Config, webserver *web.Server, db *sql.DB, bus *hub.Hub) (*Serv
 			Hub:             s.bus,
 			Builder:         pb.NewBuilderServiceClient(builderConn),
 			SS:              pb.NewStaticSiteServiceClient(ssgenConn),
-			CM:              connM,
+			Backend:         connM,
 			ImageRegistry:   c.Image.Registry,
 			ImageNamePrefix: c.Image.NamePrefix,
 		})
@@ -104,11 +111,11 @@ func NewServer(c Config, webserver *web.Server, db *sql.DB, bus *hub.Hub) (*Serv
 		s.k8sCSet = clientset
 
 		// コンテナマネージャー生成
-		connM, err := k8simpl.NewManager(s.bus, clientset)
+		connM, err := k8simpl.NewK8SBackend(s.bus, clientset)
 		if err != nil {
 			return nil, fmt.Errorf("failed to init container manager: %w", err)
 		}
-		s.containerManager = connM
+		s.backend = connM
 
 		// appmanger生成
 		am, err := appmanager.NewManager(appmanager.Config{
@@ -116,7 +123,7 @@ func NewServer(c Config, webserver *web.Server, db *sql.DB, bus *hub.Hub) (*Serv
 			Hub:             s.bus,
 			Builder:         pb.NewBuilderServiceClient(builderConn),
 			SS:              pb.NewStaticSiteServiceClient(ssgenConn),
-			CM:              connM,
+			Backend:         connM,
 			ImageRegistry:   c.Image.Registry,
 			ImageNamePrefix: c.Image.NamePrefix,
 		})
@@ -152,10 +159,13 @@ func (s *Server) Shutdown(ctx context.Context) error {
 		return s.ssgenConn.Close()
 	})
 	eg.Go(func() error {
-		return s.containerManager.Dispose(ctx)
+		return s.backend.Dispose(ctx)
 	})
 	eg.Go(func() error {
 		return s.appmanager.Shutdown(ctx)
+	})
+	eg.Go(func() error {
+		return s.bus.Close(ctx)
 	})
 
 	return eg.Wait()
