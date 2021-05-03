@@ -11,7 +11,6 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 	"github.com/traPtitech/neoshowcase/pkg/cliutil"
-	"github.com/traPtitech/neoshowcase/pkg/common"
 	"github.com/traPtitech/neoshowcase/pkg/infrastructure/admindb"
 	"github.com/traPtitech/neoshowcase/pkg/infrastructure/staticserver"
 	"github.com/traPtitech/neoshowcase/pkg/infrastructure/storage"
@@ -109,7 +108,7 @@ func provideAdminDBConfig(c Config) admindb.Config {
 	return c.DB
 }
 
-func provideStorageConfig(c Config) common.StorageConfig {
+func provideStorageConfig(c Config) storage.Config {
 	return c.Storage
 }
 
@@ -125,7 +124,7 @@ func provideWebServerDocumentRootPath(c Config) staticserver.WebServerDocumentRo
 	return staticserver.WebServerDocumentRootPath(c.ArtifactsRoot)
 }
 
-func initStorage(c common.StorageConfig) (storage.Storage, error) {
+func initStorage(c storage.Config) (storage.Storage, error) {
 	switch strings.ToLower(c.Type) {
 	case "local":
 		return storage.NewLocalStorage(c.Local.Dir)

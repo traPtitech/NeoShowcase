@@ -1,8 +1,8 @@
 package main
 
 import (
-	"github.com/traPtitech/neoshowcase/pkg/common"
 	"github.com/traPtitech/neoshowcase/pkg/infrastructure/admindb"
+	"github.com/traPtitech/neoshowcase/pkg/infrastructure/storage"
 )
 
 type Config struct {
@@ -10,7 +10,9 @@ type Config struct {
 	BuiltIn       struct {
 		Port int `mapstructure:"port" yaml:"port"`
 	} `mapstructure:"builtIn" yaml:"builtIn"`
-	GRPC    common.GRPCConfig    `mapstructure:"grpc" yaml:"grpc"`
-	DB      admindb.Config       `mapstructure:"db" yaml:"db"`
-	Storage common.StorageConfig `mapstructure:"storage" yaml:"storage"`
+	GRPC struct {
+		Port int `mapstructure:"port" yaml:"port"`
+	} `mapstructure:"grpc" yaml:"grpc"`
+	DB      admindb.Config `mapstructure:"db" yaml:"db"`
+	Storage storage.Config `mapstructure:"storage" yaml:"storage"`
 }
