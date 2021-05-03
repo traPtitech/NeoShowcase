@@ -10,7 +10,6 @@ import (
 	"github.com/traPtitech/neoshowcase/pkg/container"
 	event2 "github.com/traPtitech/neoshowcase/pkg/domain/event"
 	"github.com/traPtitech/neoshowcase/pkg/interface/grpc/pb"
-	ssgenApi "github.com/traPtitech/neoshowcase/pkg/staticsitegen/api"
 	"github.com/traPtitech/neoshowcase/pkg/util"
 	"google.golang.org/protobuf/types/known/emptypb"
 )
@@ -19,7 +18,7 @@ type managerImpl struct {
 	db      *sql.DB
 	bus     *hub.Hub
 	builder pb.BuilderServiceClient
-	ssgen   ssgenApi.StaticSiteGenServiceClient
+	ss      pb.StaticSiteServiceClient
 	cm      container.Manager
 
 	config Config
@@ -31,7 +30,7 @@ type Config struct {
 	DB              *sql.DB
 	Hub             *hub.Hub
 	Builder         pb.BuilderServiceClient
-	SSGen           ssgenApi.StaticSiteGenServiceClient
+	SS              pb.StaticSiteServiceClient
 	CM              container.Manager
 	ImageRegistry   string
 	ImageNamePrefix string
@@ -47,7 +46,7 @@ func NewManager(config Config) (Manager, error) {
 		db:      config.DB,
 		bus:     config.Hub,
 		builder: config.Builder,
-		ssgen:   config.SSGen,
+		ss:      config.SS,
 		cm:      config.CM,
 		config:  config,
 		stream:  stream,

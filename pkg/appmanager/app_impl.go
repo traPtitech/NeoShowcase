@@ -10,7 +10,6 @@ import (
 	"github.com/traPtitech/neoshowcase/pkg/domain"
 	"github.com/traPtitech/neoshowcase/pkg/interface/grpc/pb"
 	"github.com/traPtitech/neoshowcase/pkg/models"
-	ssgenApi "github.com/traPtitech/neoshowcase/pkg/staticsitegen/api"
 	"github.com/volatiletech/null/v8"
 	"github.com/volatiletech/sqlboiler/v4/boil"
 	"github.com/volatiletech/sqlboiler/v4/queries/qm"
@@ -266,8 +265,8 @@ func (app *appImpl) Start(args AppStartArgs) error {
 			return fmt.Errorf("failed to Update website: %w", err)
 		}
 
-		if _, err := app.m.ssgen.Reload(context.Background(), &ssgenApi.ReloadRequest{}); err != nil {
-			return fmt.Errorf("failed to Reload ssgen: %w", err)
+		if _, err := app.m.ss.Reload(context.Background(), &pb.ReloadRequest{}); err != nil {
+			return fmt.Errorf("failed to Reload ss: %w", err)
 		}
 	default:
 		return fmt.Errorf("unknown build type: %s", env.BuildType)
