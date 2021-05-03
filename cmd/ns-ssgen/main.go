@@ -4,13 +4,18 @@ import (
 	"context"
 	"fmt"
 	"math/rand"
+	"strings"
 	"time"
 
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 	"github.com/traPtitech/neoshowcase/pkg/cliutil"
-	"github.com/traPtitech/neoshowcase/pkg/staticsitegen"
+	"github.com/traPtitech/neoshowcase/pkg/common"
+	"github.com/traPtitech/neoshowcase/pkg/infrastructure/admindb"
+	"github.com/traPtitech/neoshowcase/pkg/infrastructure/staticserver"
+	"github.com/traPtitech/neoshowcase/pkg/infrastructure/storage"
+	"github.com/traPtitech/neoshowcase/pkg/interface/grpc"
 )
 
 var (
@@ -20,7 +25,7 @@ var (
 
 var (
 	configFilePath string
-	c              staticsitegen.Config
+	c              Config
 )
 
 var rootCommand = &cobra.Command{
@@ -34,13 +39,13 @@ func runCommand() *cobra.Command {
 	cmd := &cobra.Command{
 		Use: "run",
 		RunE: func(cmd *cobra.Command, args []string) error {
-			service, err := staticsitegen.New(c)
+			server, err := New(c)
 			if err != nil {
 				return err
 			}
 
 			go func() {
-				err := service.Start(context.Background())
+				err := server.Start(context.Background())
 				if err != nil {
 					log.Fatal(err)
 				}
@@ -50,13 +55,13 @@ func runCommand() *cobra.Command {
 			cliutil.WaitSIGINT()
 			ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 			defer cancel()
-			return service.Shutdown(ctx)
+			return server.Shutdown(ctx)
 		},
 	}
 	return cmd
 }
 
-func init() {
+func main() {
 	rand.Seed(time.Now().UnixNano())
 	cobra.OnInitialize(cliutil.CobraOnInitializeFunc(&configFilePath, "NS_SSGEN", &c))
 
@@ -70,10 +75,7 @@ func init() {
 	cliutil.SetupDebugFlag(flags)
 	cliutil.SetupLogLevelFlag(flags)
 
-	viper.SetDefault("server", "builtin")
 	viper.SetDefault("artifactsRoot", "/srv/artifacts")
-	viper.SetDefault("generatedConfDir", "/srv/config")
-	viper.SetDefault("caddy.adminEndpoint", "http://localhost:2019")
 	viper.SetDefault("builtin.port", 80)
 	viper.SetDefault("grpc.port", 10000)
 	viper.SetDefault("db.host", "127.0.0.1")
@@ -97,10 +99,41 @@ func init() {
 	viper.SetDefault("storage.swift.tenantId", "")
 	viper.SetDefault("storage.swift.container", "neoshowcase")
 	viper.SetDefault("storage.swift.authUrl", "")
-}
 
-func main() {
 	if err := rootCommand.Execute(); err != nil {
 		log.Fatal(err)
+	}
+}
+
+func provideAdminDBConfig(c Config) admindb.Config {
+	return c.DB
+}
+
+func provideStorageConfig(c Config) common.StorageConfig {
+	return c.Storage
+}
+
+func provideGRPCPort(c Config) grpc.TCPListenPort {
+	return grpc.TCPListenPort(c.GRPC.Port)
+}
+
+func provideWebServerPort(c Config) staticserver.WebServerPort {
+	return staticserver.WebServerPort(c.BuiltIn.Port)
+}
+
+func provideWebServerDocumentRootPath(c Config) staticserver.WebServerDocumentRootPath {
+	return staticserver.WebServerDocumentRootPath(c.ArtifactsRoot)
+}
+
+func initStorage(c common.StorageConfig) (storage.Storage, error) {
+	switch strings.ToLower(c.Type) {
+	case "local":
+		return storage.NewLocalStorage(c.Local.Dir)
+	case "s3":
+		return storage.NewS3Storage(c.S3.Bucket, c.S3.AccessKey, c.S3.AccessSecret, c.S3.Region, c.S3.Endpoint)
+	case "swift":
+		return storage.NewSwiftStorage(c.Swift.Container, c.Swift.UserName, c.Swift.APIKey, c.Swift.TenantName, c.Swift.TenantID, c.Swift.AuthURL)
+	default:
+		return nil, fmt.Errorf("unknown storage: %s", c.Type)
 	}
 }
