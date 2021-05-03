@@ -35,7 +35,7 @@ require (
 	go.mongodb.org/mongo-driver v1.5.1
 	golang.org/x/sync v0.0.0-20201020160332-67f06af15bc9
 	google.golang.org/genproto v0.0.0-20201008135153-289734e2e40c // indirect
-	google.golang.org/grpc v1.35.0
+	google.golang.org/grpc v1.37.0
 	google.golang.org/protobuf v1.26.0
 	gopkg.in/ini.v1 v1.61.0 // indirect
 	gopkg.in/yaml.v2 v2.4.0
