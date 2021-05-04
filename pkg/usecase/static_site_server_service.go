@@ -10,25 +10,25 @@ import (
 	"github.com/volatiletech/sqlboiler/v4/queries/qm"
 )
 
-type StaticSiteService interface {
+type StaticSiteServerService interface {
 	Reload(ctx context.Context) error
 }
 
-type staticSiteService struct {
+type staticSiteServerService struct {
 	engine staticserver.Engine
 
 	// TODO 後で消す
 	db *sql.DB
 }
 
-func NewStaticSiteService(engine staticserver.Engine, db *sql.DB) StaticSiteService {
-	return &staticSiteService{
+func NewStaticSiteServerService(engine staticserver.Engine, db *sql.DB) StaticSiteServerService {
+	return &staticSiteServerService{
 		engine: engine,
 		db:     db,
 	}
 }
 
-func (s *staticSiteService) Reload(ctx context.Context) error {
+func (s *staticSiteServerService) Reload(ctx context.Context) error {
 	envs, err := models.Environments(
 		models.EnvironmentWhere.BuildType.EQ(models.EnvironmentsBuildTypeStatic),
 		qm.Load(models.EnvironmentRels.Website),
