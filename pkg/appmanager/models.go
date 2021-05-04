@@ -2,7 +2,8 @@ package appmanager
 
 import (
 	"fmt"
-	"github.com/traPtitech/neoshowcase/pkg/models"
+
+	"github.com/traPtitech/neoshowcase/pkg/infrastructure/admindb/models"
 )
 
 type BuildType int

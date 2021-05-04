@@ -1,4 +1,4 @@
-output = "pkg/models"
+output = "pkg/infrastructure/admindb/models"
 wipe = true
 
 [mysql]

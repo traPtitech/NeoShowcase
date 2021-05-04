@@ -6,7 +6,7 @@ import (
 	"fmt"
 
 	petname "github.com/dustinkirkland/golang-petname"
-	"github.com/traPtitech/neoshowcase/pkg/models"
+	"github.com/traPtitech/neoshowcase/pkg/infrastructure/admindb/models"
 )
 
 // generateRandomDomain ランダムなドメインを生成する

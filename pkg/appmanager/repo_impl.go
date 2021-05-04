@@ -4,7 +4,8 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
-	"github.com/traPtitech/neoshowcase/pkg/models"
+
+	"github.com/traPtitech/neoshowcase/pkg/infrastructure/admindb/models"
 )
 
 func (m *managerImpl) GetRepoByURL(url string) (Repo, error) {

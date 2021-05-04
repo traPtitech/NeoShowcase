@@ -5,7 +5,7 @@ import (
 	"fmt"
 
 	"github.com/traPtitech/neoshowcase/pkg/domain"
-	"github.com/traPtitech/neoshowcase/pkg/models"
+	"github.com/traPtitech/neoshowcase/pkg/infrastructure/admindb/models"
 	"github.com/volatiletech/sqlboiler/v4/boil"
 )
 
