@@ -63,7 +63,7 @@ func NewServer(c Config, webserver *web.Server, db *sql.DB, bus eventbus.Bus) (*
 		}
 
 		// コンテナマネージャー生成
-		connM, err := dockerimpl.NewDockerBackend(dc, s.bus)
+		connM, err := dockerimpl.NewDockerBackend(dc, s.bus, "/opt/traefik/conf")
 		if err != nil {
 			return nil, fmt.Errorf("failed to init container manager: %w", err)
 		}

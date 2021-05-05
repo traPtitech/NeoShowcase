@@ -22,7 +22,7 @@ http:
     nsapp-{{.AppID}}-{{.EnvID}}:
       loadBalancer:
         servers:
-        - url: http://{{.Destination}:{{.Port}}
+        - url: http://{{.Destination}}:{{.Port}}
 `
 
 func (b *dockerBackend) RegisterIngress(ctx context.Context, appID string, envID string, host string, destination null.String, port null.Int) error {
