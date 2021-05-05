@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"database/sql"
 	"fmt"
 	"math/rand"
 	"time"
@@ -12,9 +13,12 @@ import (
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
+	"github.com/traPtitech/neoshowcase/pkg/appmanager"
 	"github.com/traPtitech/neoshowcase/pkg/cliutil"
-	"github.com/traPtitech/neoshowcase/pkg/infrastructure/admindb"
+	"github.com/traPtitech/neoshowcase/pkg/infrastructure/backend"
+	"github.com/traPtitech/neoshowcase/pkg/infrastructure/eventbus"
 	"github.com/traPtitech/neoshowcase/pkg/infrastructure/web"
+	"github.com/traPtitech/neoshowcase/pkg/interface/grpc/pb"
 	"github.com/traPtitech/neoshowcase/pkg/interface/handler"
 )
 
@@ -118,6 +122,14 @@ func provideWebServerConfig(router web.Router) web.Config {
 	}
 }
 
-func provideAdminDBConfig() admindb.Config {
-	return c.DB
+func provideAppManagerConfig(db *sql.DB, bus eventbus.Bus, builder pb.BuilderServiceClient, ss pb.StaticSiteServiceClient, backend backend.Backend, c Config) appmanager.Config {
+	return appmanager.Config{
+		DB:              db,
+		Hub:             bus,
+		Builder:         builder,
+		SS:              ss,
+		Backend:         backend,
+		ImageRegistry:   c.Image.Registry,
+		ImageNamePrefix: c.Image.NamePrefix,
+	}
 }

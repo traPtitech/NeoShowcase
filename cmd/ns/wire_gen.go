@@ -6,13 +6,23 @@
 package main
 
 import (
+	"fmt"
+	"github.com/fsouza/go-dockerclient"
+	"github.com/google/wire"
 	"github.com/leandro-lugaresi/hub"
+	"github.com/traPtitech/neoshowcase/pkg/appmanager"
 	"github.com/traPtitech/neoshowcase/pkg/infrastructure/admindb"
+	"github.com/traPtitech/neoshowcase/pkg/infrastructure/backend/dockerimpl"
+	"github.com/traPtitech/neoshowcase/pkg/infrastructure/backend/k8simpl"
 	"github.com/traPtitech/neoshowcase/pkg/infrastructure/eventbus"
 	"github.com/traPtitech/neoshowcase/pkg/infrastructure/web"
+	"github.com/traPtitech/neoshowcase/pkg/interface/broker"
+	"github.com/traPtitech/neoshowcase/pkg/interface/grpc"
 	"github.com/traPtitech/neoshowcase/pkg/interface/handler"
 	"github.com/traPtitech/neoshowcase/pkg/interface/repository"
 	"github.com/traPtitech/neoshowcase/pkg/usecase"
+	"k8s.io/client-go/kubernetes"
+	"k8s.io/client-go/rest"
 )
 
 import (
@@ -21,10 +31,10 @@ import (
 
 // Injectors from wire.go:
 
-func New(c2 Config) (*Server, error) {
+func NewWithDocker(c2 Config) (*Server, error) {
 	hubHub := hub.New()
 	bus := eventbus.NewLocal(hubHub)
-	config := provideAdminDBConfig()
+	config := c2.DB
 	db, err := admindb.New(config)
 	if err != nil {
 		return nil, err
@@ -37,9 +47,129 @@ func New(c2 Config) (*Server, error) {
 	}
 	webConfig := provideWebServerConfig(router)
 	server := web.NewServer(webConfig)
-	mainServer, err := NewServer(c2, server, db, bus)
+	builderServiceClientConfig := c2.Builder
+	builderServiceClientConn, err := grpc.NewBuilderServiceClientConn(builderServiceClientConfig)
 	if err != nil {
 		return nil, err
 	}
+	staticSiteServiceClientConfig := c2.SSGen
+	staticSiteServiceClientConn, err := grpc.NewStaticSiteServiceClientConn(staticSiteServiceClientConfig)
+	if err != nil {
+		return nil, err
+	}
+	client, err := docker.NewClientFromEnv()
+	if err != nil {
+		return nil, err
+	}
+	ingressConfDirPath := _wireIngressConfDirPathValue
+	backend, err := dockerimpl.NewDockerBackend(client, bus, ingressConfDirPath)
+	if err != nil {
+		return nil, err
+	}
+	builderServiceClient := grpc.NewBuilderServiceClient(builderServiceClientConn)
+	staticSiteServiceClient := grpc.NewStaticSiteServiceClient(staticSiteServiceClientConn)
+	appmanagerConfig := provideAppManagerConfig(db, bus, builderServiceClient, staticSiteServiceClient, backend, c2)
+	manager, err := appmanager.NewManager(appmanagerConfig)
+	if err != nil {
+		return nil, err
+	}
+	builderEventsBroker, err := broker.NewBuilderEventsBroker(builderServiceClient, bus)
+	if err != nil {
+		return nil, err
+	}
+	mainServer := &Server{
+		webserver:           server,
+		db:                  db,
+		builderConn:         builderServiceClientConn,
+		ssgenConn:           staticSiteServiceClientConn,
+		backend:             backend,
+		appmanager:          manager,
+		bus:                 bus,
+		builderEventsBroker: builderEventsBroker,
+	}
 	return mainServer, nil
+}
+
+var (
+	_wireIngressConfDirPathValue = dockerimpl.IngressConfDirPath("/opt/traefik/conf")
+)
+
+func NewWithK8S(c2 Config) (*Server, error) {
+	hubHub := hub.New()
+	bus := eventbus.NewLocal(hubHub)
+	config := c2.DB
+	db, err := admindb.New(config)
+	if err != nil {
+		return nil, err
+	}
+	webhookSecretRepository := repository.NewWebhookSecretRepository(db)
+	gitPushWebhookService := usecase.NewGitPushWebhookService(webhookSecretRepository)
+	webhookReceiverHandler := handler.NewWebhookReceiverHandler(bus, gitPushWebhookService)
+	router := &Router{
+		wr: webhookReceiverHandler,
+	}
+	webConfig := provideWebServerConfig(router)
+	server := web.NewServer(webConfig)
+	builderServiceClientConfig := c2.Builder
+	builderServiceClientConn, err := grpc.NewBuilderServiceClientConn(builderServiceClientConfig)
+	if err != nil {
+		return nil, err
+	}
+	staticSiteServiceClientConfig := c2.SSGen
+	staticSiteServiceClientConn, err := grpc.NewStaticSiteServiceClientConn(staticSiteServiceClientConfig)
+	if err != nil {
+		return nil, err
+	}
+	restConfig, err := rest.InClusterConfig()
+	if err != nil {
+		return nil, err
+	}
+	clientset, err := kubernetes.NewForConfig(restConfig)
+	if err != nil {
+		return nil, err
+	}
+	backend, err := k8simpl.NewK8SBackend(bus, clientset)
+	if err != nil {
+		return nil, err
+	}
+	builderServiceClient := grpc.NewBuilderServiceClient(builderServiceClientConn)
+	staticSiteServiceClient := grpc.NewStaticSiteServiceClient(staticSiteServiceClientConn)
+	appmanagerConfig := provideAppManagerConfig(db, bus, builderServiceClient, staticSiteServiceClient, backend, c2)
+	manager, err := appmanager.NewManager(appmanagerConfig)
+	if err != nil {
+		return nil, err
+	}
+	builderEventsBroker, err := broker.NewBuilderEventsBroker(builderServiceClient, bus)
+	if err != nil {
+		return nil, err
+	}
+	mainServer := &Server{
+		webserver:           server,
+		db:                  db,
+		builderConn:         builderServiceClientConn,
+		ssgenConn:           staticSiteServiceClientConn,
+		backend:             backend,
+		appmanager:          manager,
+		bus:                 bus,
+		builderEventsBroker: builderEventsBroker,
+	}
+	return mainServer, nil
+}
+
+// wire.go:
+
+var commonSet = wire.NewSet(web.NewServer, appmanager.NewManager, usecase.NewGitPushWebhookService, repository.NewWebhookSecretRepository, broker.NewBuilderEventsBroker, eventbus.NewLocal, admindb.New, handlerSet,
+	provideWebServerConfig,
+	provideAppManagerConfig, hub.New, grpc.NewBuilderServiceClientConn, grpc.NewStaticSiteServiceClientConn, grpc.NewBuilderServiceClient, grpc.NewStaticSiteServiceClient, wire.FieldsOf(new(Config), "Builder", "SSGen", "DB"), wire.Struct(new(Router), "*"), wire.Bind(new(web.Router), new(*Router)), wire.Struct(new(Server), "*"),
+)
+
+func New(c2 Config) (*Server, error) {
+	switch c2.GetMode() {
+	case ModeDocker:
+		return NewWithDocker(c2)
+	case ModeK8s:
+		return NewWithK8S(c2)
+	default:
+		return nil, fmt.Errorf("unknown mode: %s", c2.Mode)
+	}
 }
