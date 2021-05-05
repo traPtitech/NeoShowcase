@@ -13,9 +13,9 @@ import (
 	"github.com/traPtitech/neoshowcase/pkg/infrastructure/backend/k8simpl"
 	"github.com/traPtitech/neoshowcase/pkg/infrastructure/eventbus"
 	"github.com/traPtitech/neoshowcase/pkg/infrastructure/web"
-	"github.com/traPtitech/neoshowcase/pkg/interface/grpc/pb"
+	"github.com/traPtitech/neoshowcase/pkg/interface/broker"
+	igrpc "github.com/traPtitech/neoshowcase/pkg/interface/grpc"
 	"golang.org/x/sync/errgroup"
-	"google.golang.org/grpc"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
 )
@@ -26,11 +26,12 @@ type Server struct {
 	bus        eventbus.Bus
 	appmanager appmanager.Manager
 
-	builderConn *grpc.ClientConn
-	ssgenConn   *grpc.ClientConn
+	builderConn *igrpc.BuilderServiceClientConn
+	ssgenConn   *igrpc.StaticSiteServiceClientConn
 	backend     backend.Backend
 
-	k8sCSet *kubernetes.Clientset
+	k8sCSet             *kubernetes.Clientset
+	builderEventsBroker broker.BuilderEventsBroker
 }
 
 func NewServer(c Config, webserver *web.Server, db *sql.DB, bus eventbus.Bus) (*Server, error) {
@@ -40,22 +41,22 @@ func NewServer(c Config, webserver *web.Server, db *sql.DB, bus eventbus.Bus) (*
 		bus:       bus,
 	}
 
+	// Builderに接続
+	builderConn, err := igrpc.NewBuilderServiceClientConn(c.Builder)
+	if err != nil {
+		return nil, fmt.Errorf("failed to connect builder service: %w", err)
+	}
+	s.builderConn = builderConn
+
+	// SSGenに接続
+	ssgenConn, err := igrpc.NewStaticSiteServiceClientConn(c.SSGen)
+	if err != nil {
+		return nil, fmt.Errorf("failed to connect ssgen service: %w", err)
+	}
+	s.ssgenConn = ssgenConn
+
 	switch c.GetMode() {
 	case ModeDocker:
-		// Builderに接続
-		builderConn, err := c.Builder.Connect()
-		if err != nil {
-			return nil, fmt.Errorf("failed to connect builder service: %w", err)
-		}
-		s.builderConn = builderConn
-
-		// SSGenに接続
-		ssgenConn, err := c.SSGen.Connect()
-		if err != nil {
-			return nil, fmt.Errorf("failed to connect ssgen service: %w", err)
-		}
-		s.ssgenConn = ssgenConn
-
 		// Dockerデーモンに接続 (DooD)
 		dc, err := docker.NewClientFromEnv()
 		if err != nil {
@@ -73,8 +74,8 @@ func NewServer(c Config, webserver *web.Server, db *sql.DB, bus eventbus.Bus) (*
 		am, err := appmanager.NewManager(appmanager.Config{
 			DB:              db,
 			Hub:             s.bus,
-			Builder:         pb.NewBuilderServiceClient(builderConn),
-			SS:              pb.NewStaticSiteServiceClient(ssgenConn),
+			Builder:         igrpc.NewBuilderServiceClient(builderConn),
+			SS:              igrpc.NewStaticSiteServiceClient(ssgenConn),
 			Backend:         connM,
 			ImageRegistry:   c.Image.Registry,
 			ImageNamePrefix: c.Image.NamePrefix,
@@ -85,20 +86,6 @@ func NewServer(c Config, webserver *web.Server, db *sql.DB, bus eventbus.Bus) (*
 		s.appmanager = am
 
 	case ModeK8s:
-		// Builderに接続
-		builderConn, err := c.Builder.Connect()
-		if err != nil {
-			return nil, fmt.Errorf("failed to connect builder service: %w", err)
-		}
-		s.builderConn = builderConn
-
-		// SSGenに接続
-		ssgenConn, err := c.SSGen.Connect()
-		if err != nil {
-			return nil, fmt.Errorf("failed to connect ssgen service: %w", err)
-		}
-		s.ssgenConn = ssgenConn
-
 		// k8s接続
 		kubeconf, err := rest.InClusterConfig()
 		if err != nil {
@@ -121,8 +108,8 @@ func NewServer(c Config, webserver *web.Server, db *sql.DB, bus eventbus.Bus) (*
 		am, err := appmanager.NewManager(appmanager.Config{
 			DB:              db,
 			Hub:             s.bus,
-			Builder:         pb.NewBuilderServiceClient(builderConn),
-			SS:              pb.NewStaticSiteServiceClient(ssgenConn),
+			Builder:         igrpc.NewBuilderServiceClient(builderConn),
+			SS:              igrpc.NewStaticSiteServiceClient(ssgenConn),
 			Backend:         connM,
 			ImageRegistry:   c.Image.Registry,
 			ImageNamePrefix: c.Image.NamePrefix,

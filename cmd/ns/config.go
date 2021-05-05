@@ -1,10 +1,10 @@
 package main
 
 import (
-	"github.com/traPtitech/neoshowcase/pkg/infrastructure/admindb"
-	"google.golang.org/grpc"
-
 	"strings"
+
+	"github.com/traPtitech/neoshowcase/pkg/infrastructure/admindb"
+	"github.com/traPtitech/neoshowcase/pkg/interface/grpc"
 )
 
 const (
@@ -13,10 +13,10 @@ const (
 )
 
 type Config struct {
-	Mode    string           `mapstructure:"mode" yaml:"mode"`
-	Builder GRPCClientConfig `mapstructure:"builder" yaml:"builder"`
-	SSGen   GRPCClientConfig `mapstructure:"ssgen" yaml:"ssgen"`
-	DB      admindb.Config   `mapstructure:"db" yaml:"db"`
+	Mode    string                             `mapstructure:"mode" yaml:"mode"`
+	Builder grpc.BuilderServiceClientConfig    `mapstructure:"builder" yaml:"builder"`
+	SSGen   grpc.StaticSiteServiceClientConfig `mapstructure:"ssgen" yaml:"ssgen"`
+	DB      admindb.Config                     `mapstructure:"db" yaml:"db"`
 	HTTP    struct {
 		Debug bool `mapstructure:"debug" yaml:"debug"`
 		Port  int  `mapstructure:"port" yaml:"port"`
@@ -36,18 +36,4 @@ func (c *Config) GetMode() int {
 	default:
 		return ModeDocker
 	}
-}
-
-type GRPCClientConfig struct {
-	Insecure bool   `mapstructure:"insecure" yaml:"insecure"`
-	Addr     string `mapstructure:"addr" yaml:"addr"`
-}
-
-func (c *GRPCClientConfig) Connect() (*grpc.ClientConn, error) {
-	var opts []grpc.DialOption
-	if c.Insecure {
-		opts = append(opts, grpc.WithInsecure())
-	}
-
-	return grpc.Dial(c.Addr, opts...)
 }
