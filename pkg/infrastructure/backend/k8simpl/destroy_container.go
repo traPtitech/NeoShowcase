@@ -20,10 +20,5 @@ func (b *k8sBackend) DestroyContainer(ctx context.Context, appID string, envID s
 		return fmt.Errorf("failed to delete service: %w", err)
 	}
 
-	err = b.clientset.NetworkingV1().Ingresses(appNamespace).Delete(ctx, name, metav1.DeleteOptions{})
-	if err != nil && !errors.IsNotFound(err) {
-		return fmt.Errorf("failed to delete ingress: %w", err)
-	}
-
 	return nil
 }

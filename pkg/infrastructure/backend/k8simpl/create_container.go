@@ -8,7 +8,6 @@ import (
 	"github.com/traPtitech/neoshowcase/pkg/domain"
 	"github.com/traPtitech/neoshowcase/pkg/util"
 	apiv1 "k8s.io/api/core/v1"
-	networkingv1 "k8s.io/api/networking/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/intstr"
@@ -66,41 +65,6 @@ func (b *k8sBackend) CreateContainer(ctx context.Context, args domain.ContainerC
 				},
 			},
 		}
-		ingress := &networkingv1.Ingress{
-			ObjectMeta: metav1.ObjectMeta{
-				Name:      deploymentName(args.ApplicationID, args.EnvironmentID),
-				Namespace: appNamespace,
-				Labels:    labels,
-				Annotations: map[string]string{
-					"traefik.ingress.kubernetes.io/router.entrypoints": "web, websecure", // TODO HTTPS可能かどうかを判断
-				},
-			},
-			Spec: networkingv1.IngressSpec{
-				Rules: []networkingv1.IngressRule{
-					{
-						Host: args.HTTPProxy.Domain,
-						IngressRuleValue: networkingv1.IngressRuleValue{
-							HTTP: &networkingv1.HTTPIngressRuleValue{
-								Paths: []networkingv1.HTTPIngressPath{
-									{
-										Path:     "/",
-										PathType: pathTypePtr(networkingv1.PathTypePrefix),
-										Backend: networkingv1.IngressBackend{
-											Service: &networkingv1.IngressServiceBackend{
-												Name: deploymentName(args.ApplicationID, args.EnvironmentID),
-												Port: networkingv1.ServiceBackendPort{
-													Number: 80,
-												},
-											},
-										},
-									},
-								},
-							},
-						},
-					},
-				},
-			},
-		}
 
 		if _, err := b.clientset.CoreV1().Services(appNamespace).Create(ctx, svc, metav1.CreateOptions{}); err != nil {
 			if args.Recreate && errors.IsAlreadyExists(err) {
@@ -112,15 +76,6 @@ func (b *k8sBackend) CreateContainer(ctx context.Context, args domain.ContainerC
 				}
 			} else {
 				return fmt.Errorf("failed to create service: %w", err)
-			}
-		}
-		if _, err := b.clientset.NetworkingV1().Ingresses(appNamespace).Create(ctx, ingress, metav1.CreateOptions{}); err != nil {
-			if args.Recreate && errors.IsAlreadyExists(err) {
-				if _, err = b.clientset.NetworkingV1().Ingresses(appNamespace).Update(ctx, ingress, metav1.UpdateOptions{}); err != nil {
-					return fmt.Errorf("failed to update ingress: %w", err)
-				}
-			} else {
-				return fmt.Errorf("failed to create ingress: %w", err)
 			}
 		}
 	}
