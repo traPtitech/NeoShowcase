@@ -3,6 +3,7 @@ package main
 import (
 	"strings"
 
+	"github.com/traPtitech/neoshowcase/pkg/domain/builder"
 	"github.com/traPtitech/neoshowcase/pkg/infrastructure/admindb"
 	"github.com/traPtitech/neoshowcase/pkg/interface/grpc"
 )
@@ -22,8 +23,8 @@ type Config struct {
 		Port  int  `mapstructure:"port" yaml:"port"`
 	} `mapstructure:"http" yaml:"http"`
 	Image struct {
-		Registry   string `mapstructure:"registry" yaml:"registry"`
-		NamePrefix string `mapstructure:"namePrefix" yaml:"namePrefix"`
+		Registry   builder.DockerImageRegistryString   `mapstructure:"registry" yaml:"registry"`
+		NamePrefix builder.DockerImageNamePrefixString `mapstructure:"namePrefix" yaml:"namePrefix"`
 	} `mapstructure:"image" yaml:"image"`
 }
 
@@ -36,4 +37,12 @@ func (c *Config) GetMode() int {
 	default:
 		return ModeDocker
 	}
+}
+
+func provideImageRegistry(c Config) builder.DockerImageRegistryString {
+	return c.Image.Registry
+}
+
+func provideImagePrefix(c Config) builder.DockerImageNamePrefixString {
+	return c.Image.NamePrefix
 }

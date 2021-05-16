@@ -4,12 +4,12 @@ import (
 	"context"
 	"database/sql"
 
-	"github.com/traPtitech/neoshowcase/pkg/appmanager"
 	"github.com/traPtitech/neoshowcase/pkg/infrastructure/backend"
 	"github.com/traPtitech/neoshowcase/pkg/infrastructure/eventbus"
 	"github.com/traPtitech/neoshowcase/pkg/infrastructure/web"
 	"github.com/traPtitech/neoshowcase/pkg/interface/broker"
 	"github.com/traPtitech/neoshowcase/pkg/interface/grpc"
+	"github.com/traPtitech/neoshowcase/pkg/usecase"
 	"golang.org/x/sync/errgroup"
 )
 
@@ -19,13 +19,14 @@ type Server struct {
 	builderConn         *grpc.BuilderServiceClientConn
 	ssgenConn           *grpc.StaticSiteServiceClientConn
 	backend             backend.Backend
-	appmanager          appmanager.Manager
 	bus                 eventbus.Bus
 	builderEventsBroker broker.BuilderEventsBroker
+	cdService           usecase.ContinuousDeploymentService
 }
 
 func (s *Server) Start(ctx context.Context) error {
 	go s.builderEventsBroker.Run()
+	go s.cdService.Run()
 	return s.webserver.Start(ctx)
 }
 
@@ -48,10 +49,10 @@ func (s *Server) Shutdown(ctx context.Context) error {
 		return s.backend.Dispose(ctx)
 	})
 	eg.Go(func() error {
-		return s.appmanager.Shutdown(ctx)
+		return s.bus.Close(ctx)
 	})
 	eg.Go(func() error {
-		return s.bus.Close(ctx)
+		return s.cdService.Stop(ctx)
 	})
 
 	return eg.Wait()

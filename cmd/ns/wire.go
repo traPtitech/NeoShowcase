@@ -8,7 +8,6 @@ import (
 	docker "github.com/fsouza/go-dockerclient"
 	"github.com/google/wire"
 	"github.com/leandro-lugaresi/hub"
-	"github.com/traPtitech/neoshowcase/pkg/appmanager"
 	"github.com/traPtitech/neoshowcase/pkg/infrastructure/admindb"
 	"github.com/traPtitech/neoshowcase/pkg/infrastructure/backend/dockerimpl"
 	"github.com/traPtitech/neoshowcase/pkg/infrastructure/backend/k8simpl"
@@ -24,15 +23,19 @@ import (
 
 var commonSet = wire.NewSet(
 	web.NewServer,
-	appmanager.NewManager,
 	usecase.NewGitPushWebhookService,
+	usecase.NewAppBuildService,
+	usecase.NewAppDeployService,
+	usecase.NewContinuousDeploymentService,
 	repository.NewWebhookSecretRepository,
+	repository.NewApplicationRepository,
 	broker.NewBuilderEventsBroker,
 	eventbus.NewLocal,
 	admindb.New,
 	handlerSet,
 	provideWebServerConfig,
-	provideAppManagerConfig,
+	provideImagePrefix,
+	provideImageRegistry,
 	hub.New,
 	grpc.NewBuilderServiceClientConn,
 	grpc.NewStaticSiteServiceClientConn,

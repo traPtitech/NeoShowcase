@@ -10,7 +10,6 @@ import (
 	"github.com/fsouza/go-dockerclient"
 	"github.com/google/wire"
 	"github.com/leandro-lugaresi/hub"
-	"github.com/traPtitech/neoshowcase/pkg/appmanager"
 	"github.com/traPtitech/neoshowcase/pkg/infrastructure/admindb"
 	"github.com/traPtitech/neoshowcase/pkg/infrastructure/backend/dockerimpl"
 	"github.com/traPtitech/neoshowcase/pkg/infrastructure/backend/k8simpl"
@@ -67,25 +66,26 @@ func NewWithDocker(c2 Config) (*Server, error) {
 		return nil, err
 	}
 	builderServiceClient := grpc.NewBuilderServiceClient(builderServiceClientConn)
-	staticSiteServiceClient := grpc.NewStaticSiteServiceClient(staticSiteServiceClientConn)
-	appmanagerConfig := provideAppManagerConfig(db, bus, builderServiceClient, staticSiteServiceClient, backend, c2)
-	manager, err := appmanager.NewManager(appmanagerConfig)
-	if err != nil {
-		return nil, err
-	}
 	builderEventsBroker, err := broker.NewBuilderEventsBroker(builderServiceClient, bus)
 	if err != nil {
 		return nil, err
 	}
+	applicationRepository := repository.NewApplicationRepository(db)
+	staticSiteServiceClient := grpc.NewStaticSiteServiceClient(staticSiteServiceClientConn)
+	dockerImageRegistryString := provideImageRegistry(c2)
+	dockerImageNamePrefixString := provideImagePrefix(c2)
+	appDeployService := usecase.NewAppDeployService(backend, staticSiteServiceClient, dockerImageRegistryString, dockerImageNamePrefixString, db)
+	appBuildService := usecase.NewAppBuildService(applicationRepository, builderServiceClient, dockerImageRegistryString, dockerImageNamePrefixString)
+	continuousDeploymentService := usecase.NewContinuousDeploymentService(bus, applicationRepository, appDeployService, appBuildService)
 	mainServer := &Server{
 		webserver:           server,
 		db:                  db,
 		builderConn:         builderServiceClientConn,
 		ssgenConn:           staticSiteServiceClientConn,
 		backend:             backend,
-		appmanager:          manager,
 		bus:                 bus,
 		builderEventsBroker: builderEventsBroker,
+		cdService:           continuousDeploymentService,
 	}
 	return mainServer, nil
 }
@@ -133,34 +133,36 @@ func NewWithK8S(c2 Config) (*Server, error) {
 		return nil, err
 	}
 	builderServiceClient := grpc.NewBuilderServiceClient(builderServiceClientConn)
-	staticSiteServiceClient := grpc.NewStaticSiteServiceClient(staticSiteServiceClientConn)
-	appmanagerConfig := provideAppManagerConfig(db, bus, builderServiceClient, staticSiteServiceClient, backend, c2)
-	manager, err := appmanager.NewManager(appmanagerConfig)
-	if err != nil {
-		return nil, err
-	}
 	builderEventsBroker, err := broker.NewBuilderEventsBroker(builderServiceClient, bus)
 	if err != nil {
 		return nil, err
 	}
+	applicationRepository := repository.NewApplicationRepository(db)
+	staticSiteServiceClient := grpc.NewStaticSiteServiceClient(staticSiteServiceClientConn)
+	dockerImageRegistryString := provideImageRegistry(c2)
+	dockerImageNamePrefixString := provideImagePrefix(c2)
+	appDeployService := usecase.NewAppDeployService(backend, staticSiteServiceClient, dockerImageRegistryString, dockerImageNamePrefixString, db)
+	appBuildService := usecase.NewAppBuildService(applicationRepository, builderServiceClient, dockerImageRegistryString, dockerImageNamePrefixString)
+	continuousDeploymentService := usecase.NewContinuousDeploymentService(bus, applicationRepository, appDeployService, appBuildService)
 	mainServer := &Server{
 		webserver:           server,
 		db:                  db,
 		builderConn:         builderServiceClientConn,
 		ssgenConn:           staticSiteServiceClientConn,
 		backend:             backend,
-		appmanager:          manager,
 		bus:                 bus,
 		builderEventsBroker: builderEventsBroker,
+		cdService:           continuousDeploymentService,
 	}
 	return mainServer, nil
 }
 
 // wire.go:
 
-var commonSet = wire.NewSet(web.NewServer, appmanager.NewManager, usecase.NewGitPushWebhookService, repository.NewWebhookSecretRepository, broker.NewBuilderEventsBroker, eventbus.NewLocal, admindb.New, handlerSet,
+var commonSet = wire.NewSet(web.NewServer, usecase.NewGitPushWebhookService, usecase.NewAppBuildService, usecase.NewAppDeployService, usecase.NewContinuousDeploymentService, repository.NewWebhookSecretRepository, repository.NewApplicationRepository, broker.NewBuilderEventsBroker, eventbus.NewLocal, admindb.New, handlerSet,
 	provideWebServerConfig,
-	provideAppManagerConfig, hub.New, grpc.NewBuilderServiceClientConn, grpc.NewStaticSiteServiceClientConn, grpc.NewBuilderServiceClient, grpc.NewStaticSiteServiceClient, wire.FieldsOf(new(Config), "Builder", "SSGen", "DB"), wire.Struct(new(Router), "*"), wire.Bind(new(web.Router), new(*Router)), wire.Struct(new(Server), "*"),
+	provideImagePrefix,
+	provideImageRegistry, hub.New, grpc.NewBuilderServiceClientConn, grpc.NewStaticSiteServiceClientConn, grpc.NewBuilderServiceClient, grpc.NewStaticSiteServiceClient, wire.FieldsOf(new(Config), "Builder", "SSGen", "DB"), wire.Struct(new(Router), "*"), wire.Bind(new(web.Router), new(*Router)), wire.Struct(new(Server), "*"),
 )
 
 func New(c2 Config) (*Server, error) {

@@ -1,4 +1,4 @@
-package appmanager
+package usecase
 
 import (
 	"context"
@@ -9,11 +9,22 @@ import (
 	"github.com/traPtitech/neoshowcase/pkg/infrastructure/admindb/models"
 )
 
-// generateRandomDomain ランダムなドメインを生成する
-func (m *managerImpl) generateRandomDomain() (string, error) {
+type VirtualHostService interface {
+	GenerateRandomDomain(ctx context.Context) (string, error)
+}
+
+type virtualHostService struct {
+	db *sql.DB
+}
+
+func NewVirtualHostService(db *sql.DB) VirtualHostService {
+	return &virtualHostService{db: db}
+}
+
+func (s *virtualHostService) GenerateRandomDomain(ctx context.Context) (string, error) {
 	d, err := models.AvailableDomains(
 		models.AvailableDomainWhere.Subdomain.EQ(true),
-	).One(context.Background(), m.db)
+	).One(context.Background(), s.db)
 	if err != nil {
 		if err == sql.ErrNoRows {
 			// DBに親ドメインが登録されてないと生成できない
@@ -26,7 +37,7 @@ func (m *managerImpl) generateRandomDomain() (string, error) {
 	var candidate string
 	for {
 		candidate = petname.Generate(3, "-") + "." + d.Domain
-		ng, err := models.Websites(models.WebsiteWhere.FQDN.EQ(candidate)).Exists(context.Background(), m.db)
+		ng, err := models.Websites(models.WebsiteWhere.FQDN.EQ(candidate)).Exists(context.Background(), s.db)
 		if err != nil {
 			return "", fmt.Errorf("db error: %w", err)
 		}
