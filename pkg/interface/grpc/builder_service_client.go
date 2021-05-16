@@ -10,11 +10,19 @@ type BuilderServiceClientConn struct {
 }
 
 type BuilderServiceClientConfig struct {
-	ClientConfig
+	Insecure bool   `mapstructure:"insecure" yaml:"insecure"`
+	Addr     string `mapstructure:"addr" yaml:"addr"`
+}
+
+func (c *BuilderServiceClientConfig) provideClientConfig() ClientConfig {
+	return ClientConfig{
+		Insecure: c.Insecure,
+		Addr:     c.Addr,
+	}
 }
 
 func NewBuilderServiceClientConn(c BuilderServiceClientConfig) (*BuilderServiceClientConn, error) {
-	conn, err := NewClient(c.ClientConfig)
+	conn, err := NewClient(c.provideClientConfig())
 	if err != nil {
 		return nil, err
 	}

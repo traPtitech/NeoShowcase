@@ -10,11 +10,19 @@ type StaticSiteServiceClientConn struct {
 }
 
 type StaticSiteServiceClientConfig struct {
-	ClientConfig
+	Insecure bool   `mapstructure:"insecure" yaml:"insecure"`
+	Addr     string `mapstructure:"addr" yaml:"addr"`
+}
+
+func (c *StaticSiteServiceClientConfig) provideClientConfig() ClientConfig {
+	return ClientConfig{
+		Insecure: c.Insecure,
+		Addr:     c.Addr,
+	}
 }
 
 func NewStaticSiteServiceClientConn(c StaticSiteServiceClientConfig) (*StaticSiteServiceClientConn, error) {
-	conn, err := NewClient(c.ClientConfig)
+	conn, err := NewClient(c.provideClientConfig())
 	if err != nil {
 		return nil, err
 	}
