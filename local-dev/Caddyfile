@@ -1,4 +1,0 @@
-{
-  auto_https off
-  admin 0.0.0.0:2019
-}

@@ -10,12 +10,12 @@ import (
 )
 
 type StaticSiteService struct {
-	svc usecase.StaticSiteService
+	svc usecase.StaticSiteServerService
 
 	pb.UnimplementedStaticSiteServiceServer
 }
 
-func NewStaticSiteServiceServer(svc usecase.StaticSiteService) *StaticSiteService {
+func NewStaticSiteServiceServer(svc usecase.StaticSiteServerService) *StaticSiteService {
 	return &StaticSiteService{svc: svc}
 }
 

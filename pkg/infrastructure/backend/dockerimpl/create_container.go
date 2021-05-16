@@ -29,14 +29,6 @@ func (b *dockerBackend) CreateContainer(ctx context.Context, args domain.Contain
 		appContainerEnvironmentIDLabel: args.EnvironmentID,
 	})
 
-	if args.HTTPProxy != nil {
-		labels = util.MergeLabels(labels, map[string]string{
-			"traefik.enable": "true",
-			fmt.Sprintf("traefik.http.routers.nsapp-%s-%s.rule", args.ApplicationID, args.EnvironmentID):                      fmt.Sprintf("Host(`%s`)", args.HTTPProxy.Domain),
-			fmt.Sprintf("traefik.http.services.nsapp-%s-%s.loadbalancer.server.port", args.ApplicationID, args.EnvironmentID): fmt.Sprintf("%d", args.HTTPProxy.Port),
-		})
-	}
-
 	var envs []string
 
 	for name, value := range args.Envs {

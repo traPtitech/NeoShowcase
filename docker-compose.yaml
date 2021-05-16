@@ -5,8 +5,7 @@ services:
     build:
       context: .
       target: ns
-    entrypoint: dockerize -timeout 60s -wait tcp://mysql:3306 -wait tcp://ns-builder:10000 -wait tcp://ns-ssgen:10000
-    command: /app/ns run --debug --loglevel=trace
+    command: run --debug --loglevel=trace
     restart: always
     environment:
       NS_APISERVER_DB_HOST: "mysql"
@@ -20,6 +19,7 @@ services:
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
       - ./local-dev/neoshowcase:/data
+      - ./local-dev/traefik:/opt/traefik/conf
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.ns_admin.rule=Host(`local.wtks.work`)"
@@ -43,8 +43,7 @@ services:
     build:
       context: .
       target: ns-builder
-    entrypoint: dockerize -timeout 60s -wait tcp://mysql:3306 -wait tcp://buildkitd:1234
-    command: /app/ns-builder run --debug --loglevel=trace
+    command: run --debug --loglevel=trace
     restart: always
     environment:
       NS_BUILDER_BUILDKIT_ADDRESS: "tcp://buildkitd:1234"
@@ -65,8 +64,7 @@ services:
     build:
       context: .
       target: ns-ssgen
-    entrypoint: dockerize -timeout 60s -wait tcp://mysql:3306
-    command: /app/ns-ssgen run --debug --loglevel=trace
+    command: run --debug --loglevel=trace
     restart: always
     environment:
       NS_SSGEN_DB_HOST: "mysql"
@@ -79,10 +77,6 @@ services:
       - "5008:80"
     depends_on:
       - mysql
-    labels:
-      - "traefik.enable=true"
-      - "traefik.http.routers.ss.rule=PathPrefix(`/`)"
-      - "traefik.http.services.ss.loadbalancer.server.port=80"
     networks:
       - default
 
@@ -171,30 +165,21 @@ services:
   traefik:
     image: traefik:v2.3
     restart: always
-    command: --api.insecure=true --providers.docker --providers.docker.exposedByDefault=false
+    command:
+      - --api.insecure=true
+      - --providers.docker
+      - --providers.docker.exposedByDefault=false
+      - --providers.file
+      - --providers.file.directory=/opt/neoshowcase/conf
     ports:
       - "8888:80"
       - "8080:8080"
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
+      - ./local-dev/traefik:/opt/neoshowcase/conf
     networks:
       - default
       - apps
-
-  swagger-ui:
-    image: swaggerapi/swagger-ui
-    volumes:
-      - ./api/http/swagger.yaml:/swagger.yaml
-    environment:
-      SWAGGER_JSON: /swagger.yaml
-    labels:
-      - "traefik.enable=true"
-      - "traefik.http.routers.ns_swagger.rule=Host(`swagger.local.wtks.work`)"
-      - "traefik.http.services.ns_swagger.loadbalancer.server.port=8080"
-    depends_on:
-      - mysql
-    networks:
-      - default
 
 networks:
   default: { }

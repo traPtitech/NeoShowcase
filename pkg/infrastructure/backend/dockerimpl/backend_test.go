@@ -22,7 +22,7 @@ func prepareManager(t *testing.T, bus eventbus.Bus) (*dockerBackend, *docker.Cli
 		t.Fatal(err)
 	}
 
-	m, err := NewDockerBackend(c, bus)
+	m, err := NewDockerBackend(c, bus, "./local-dev/traefik")
 	if err != nil {
 		t.Fatal(err)
 	}

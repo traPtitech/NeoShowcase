@@ -12,10 +12,10 @@ import (
 	"github.com/labstack/echo/v4"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
-	"github.com/traPtitech/neoshowcase/pkg/cliutil"
 	"github.com/traPtitech/neoshowcase/pkg/infrastructure/web"
 	"github.com/traPtitech/neoshowcase/pkg/interface/handler"
 	"github.com/traPtitech/neoshowcase/pkg/usecase"
+	"github.com/traPtitech/neoshowcase/pkg/util/cli"
 )
 
 var (
@@ -32,7 +32,7 @@ var rootCommand = &cobra.Command{
 	Use:              "ns-mc",
 	Short:            "NeoShowcase MemberCheckerServer",
 	Version:          fmt.Sprintf("%s (%s)", version, revision),
-	PersistentPreRun: cliutil.PrintVersion,
+	PersistentPreRun: cli.PrintVersion,
 }
 
 func serveCommand() *cobra.Command {
@@ -51,7 +51,7 @@ func serveCommand() *cobra.Command {
 				}
 			}()
 
-			cliutil.WaitSIGINT()
+			cli.WaitSIGINT()
 			ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 			defer cancel()
 			return server.Shutdown(ctx)
@@ -66,17 +66,18 @@ func main() {
 		serveCommand(),
 	)
 	flags := rootCommand.PersistentFlags()
-	cliutil.SetupDebugFlag(flags)
-	cliutil.SetupLogLevelFlag(flags)
+	cli.SetupDebugFlag(flags)
+	cli.SetupLogLevelFlag(flags)
 
-	flags.IntVarP(&port, "port", "p", cliutil.GetIntEnvOrDefault("NS_MC_PORT", 8081), "port num")
-	flags.StringVarP(&pubkeyFilePath, "pubkey-file", "k", cliutil.GetEnvOrDefault("NS_MC_PUBKEY_FILE", ""), "public key PEM file path")
+	flags.IntVarP(&port, "port", "p", cli.GetIntEnvOrDefault("NS_MC_PORT", 8081), "port num")
+	flags.StringVarP(&pubkeyFilePath, "pubkey-file", "k", cli.GetEnvOrDefault("NS_MC_PUBKEY_FILE", ""), "public key PEM file path")
 
 	if err := rootCommand.Execute(); err != nil {
 		log.Fatal(err)
 	}
 }
 
+//nolint
 var handlerSet = wire.NewSet(
 	handler.NewMemberCheckHandler,
 )

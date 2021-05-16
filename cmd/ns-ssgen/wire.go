@@ -14,7 +14,7 @@ func New(c Config) (*Server, error) {
 	wire.Build(
 		grpc.NewServer,
 		grpc.NewStaticSiteServiceServer,
-		usecase.NewStaticSiteService,
+		usecase.NewStaticSiteServerService,
 		admindb.New,
 		staticserver.NewBuiltIn,
 		provideGRPCPort,

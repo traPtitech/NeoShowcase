@@ -1,10 +1,11 @@
 package main
 
 import (
-	"github.com/traPtitech/neoshowcase/pkg/infrastructure/admindb"
-	"google.golang.org/grpc"
-
 	"strings"
+
+	"github.com/traPtitech/neoshowcase/pkg/domain/builder"
+	"github.com/traPtitech/neoshowcase/pkg/infrastructure/admindb"
+	"github.com/traPtitech/neoshowcase/pkg/interface/grpc"
 )
 
 const (
@@ -13,17 +14,17 @@ const (
 )
 
 type Config struct {
-	Mode    string           `mapstructure:"mode" yaml:"mode"`
-	Builder GRPCClientConfig `mapstructure:"builder" yaml:"builder"`
-	SSGen   GRPCClientConfig `mapstructure:"ssgen" yaml:"ssgen"`
-	DB      admindb.Config   `mapstructure:"db" yaml:"db"`
+	Mode    string                             `mapstructure:"mode" yaml:"mode"`
+	Builder grpc.BuilderServiceClientConfig    `mapstructure:"builder" yaml:"builder"`
+	SSGen   grpc.StaticSiteServiceClientConfig `mapstructure:"ssgen" yaml:"ssgen"`
+	DB      admindb.Config                     `mapstructure:"db" yaml:"db"`
 	HTTP    struct {
 		Debug bool `mapstructure:"debug" yaml:"debug"`
 		Port  int  `mapstructure:"port" yaml:"port"`
 	} `mapstructure:"http" yaml:"http"`
 	Image struct {
-		Registry   string `mapstructure:"registry" yaml:"registry"`
-		NamePrefix string `mapstructure:"namePrefix" yaml:"namePrefix"`
+		Registry   builder.DockerImageRegistryString   `mapstructure:"registry" yaml:"registry"`
+		NamePrefix builder.DockerImageNamePrefixString `mapstructure:"namePrefix" yaml:"namePrefix"`
 	} `mapstructure:"image" yaml:"image"`
 }
 
@@ -38,16 +39,10 @@ func (c *Config) GetMode() int {
 	}
 }
 
-type GRPCClientConfig struct {
-	Insecure bool   `mapstructure:"insecure" yaml:"insecure"`
-	Addr     string `mapstructure:"addr" yaml:"addr"`
+func provideImageRegistry(c Config) builder.DockerImageRegistryString {
+	return c.Image.Registry
 }
 
-func (c *GRPCClientConfig) Connect() (*grpc.ClientConn, error) {
-	var opts []grpc.DialOption
-	if c.Insecure {
-		opts = append(opts, grpc.WithInsecure())
-	}
-
-	return grpc.Dial(c.Addr, opts...)
+func provideImagePrefix(c Config) builder.DockerImageNamePrefixString {
+	return c.Image.NamePrefix
 }

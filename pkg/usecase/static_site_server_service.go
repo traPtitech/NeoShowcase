@@ -5,30 +5,30 @@ import (
 	"database/sql"
 
 	"github.com/traPtitech/neoshowcase/pkg/domain"
+	"github.com/traPtitech/neoshowcase/pkg/infrastructure/admindb/models"
 	"github.com/traPtitech/neoshowcase/pkg/infrastructure/staticserver"
-	"github.com/traPtitech/neoshowcase/pkg/models"
 	"github.com/volatiletech/sqlboiler/v4/queries/qm"
 )
 
-type StaticSiteService interface {
+type StaticSiteServerService interface {
 	Reload(ctx context.Context) error
 }
 
-type staticSiteService struct {
+type staticSiteServerService struct {
 	engine staticserver.Engine
 
 	// TODO 後で消す
 	db *sql.DB
 }
 
-func NewStaticSiteService(engine staticserver.Engine, db *sql.DB) StaticSiteService {
-	return &staticSiteService{
+func NewStaticSiteServerService(engine staticserver.Engine, db *sql.DB) StaticSiteServerService {
+	return &staticSiteServerService{
 		engine: engine,
 		db:     db,
 	}
 }
 
-func (s *staticSiteService) Reload(ctx context.Context) error {
+func (s *staticSiteServerService) Reload(ctx context.Context) error {
 	envs, err := models.Environments(
 		models.EnvironmentWhere.BuildType.EQ(models.EnvironmentsBuildTypeStatic),
 		qm.Load(models.EnvironmentRels.Website),

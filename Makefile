@@ -6,12 +6,13 @@ PROTOC_OPTS := -I ./api/proto --go_out=. --go_opt=module=$(GO_REPO_ROOT_PACKAGE)
 PROTOC_SOURCES ?= $(shell find ./api/proto/neoshowcase -type f -name "*.proto" -print)
 
 SQL_MIGRATE_CMD := go run github.com/rubenv/sql-migrate/sql-migrate
+EVANS_CMD := go run github.com/ktr0731/evans
 
 .PHONY: init
 init:
 	go mod download
 	go install google.golang.org/protobuf/cmd/protoc-gen-go
-	go get google.golang.org/grpc/cmd/protoc-gen-go-grpc@v1.0
+	go install google.golang.org/grpc/cmd/protoc-gen-go-grpc
 	go install github.com/volatiletech/sqlboiler/v4
 	go install github.com/volatiletech/sqlboiler/v4/drivers/sqlboiler-mysql
 
@@ -56,23 +57,23 @@ migrate-down:
 
 .PHONY: ns-builder-evans
 ns-builder-evans:
-	@evans --host localhost -p 5006 -r repl
+	@$(EVANS_CMD) --host localhost -p 5006 -r repl
 
 .PHONY: ns-builder-rebuild
 ns-builder-rebuild:
-	@docker-compose up -d --build ns-builder
+	@docker compose up -d --build ns-builder
 
 .PHONY: ns-ssgen-evans
 ns-ssgen-evans:
-	@evans --host localhost -p 5007 -r repl
+	@$(EVANS_CMD) --host localhost -p 5007 -r repl
 
 .PHONY: ns-ssgen-rebuild
 ns-ssgen-rebuild:
-	@docker-compose up -d --build ns-ssgen
+	@docker compose up -d --build ns-ssgen
 
 .PHONY: ns-rebuild
 ns-rebuild:
-	@docker-compose up -d --build ns
+	@docker compose up -d --build ns
 
 .PHONY: db-update
 db-update: migrate-up gogen db-gen-docs
@@ -88,7 +89,7 @@ dind-down:
 .PHONY: docker-test
 docker-test:
 	@docker container inspect ns-test-dind > /dev/null || make dind-up
-	ENABLE_DOCKER_TESTS=true DOCKER_HOST=tcp://localhost:5555 DOCKER_CERT_PATH=$$PWD/local-dev/dind/client DOCKER_TLS_VERIFY=true go test -v ./pkg/container/dockerimpl
+	ENABLE_DOCKER_TESTS=true DOCKER_HOST=tcp://localhost:5555 DOCKER_CERT_PATH=$$PWD/local-dev/dind/client DOCKER_TLS_VERIFY=true go test -v ./pkg/infrastructure/backend/dockerimpl
 
 .PHONY: k3d-up
 k3d-up:
@@ -100,4 +101,4 @@ k3d-down:
 
 .PHONY: k8s-test
 k8s-test:
-	ENABLE_K8S_TESTS=true K8S_TESTS_CLUSTER_CONTEXT=k3d-ns-test go test -v ./pkg/container/k8simpl
+	ENABLE_K8S_TESTS=true K8S_TESTS_CLUSTER_CONTEXT=k3d-ns-test go test -v ./pkg/infrastructure/backend/k8simpl

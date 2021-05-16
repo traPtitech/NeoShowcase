@@ -12,10 +12,9 @@ import (
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
-	"github.com/traPtitech/neoshowcase/pkg/cliutil"
-	"github.com/traPtitech/neoshowcase/pkg/infrastructure/admindb"
 	"github.com/traPtitech/neoshowcase/pkg/infrastructure/web"
 	"github.com/traPtitech/neoshowcase/pkg/interface/handler"
+	"github.com/traPtitech/neoshowcase/pkg/util/cli"
 )
 
 var (
@@ -32,7 +31,7 @@ var rootCommand = &cobra.Command{
 	Use:              "ns",
 	Short:            "NeoShowcase Core API Server",
 	Version:          fmt.Sprintf("%s (%s)", version, revision),
-	PersistentPreRun: cliutil.PrintVersion,
+	PersistentPreRun: cli.PrintVersion,
 }
 
 func runCommand() *cobra.Command {
@@ -52,7 +51,7 @@ func runCommand() *cobra.Command {
 			}()
 
 			log.Info("NeoShowcase ApiServer started")
-			cliutil.WaitSIGINT()
+			cli.WaitSIGINT()
 			ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 			defer cancel()
 			return service.Shutdown(ctx)
@@ -63,17 +62,17 @@ func runCommand() *cobra.Command {
 
 func main() {
 	rand.Seed(time.Now().UnixNano())
-	cobra.OnInitialize(cliutil.CobraOnInitializeFunc(&configFilePath, "NS_APISERVER", &c))
+	cobra.OnInitialize(cli.CobraOnInitializeFunc(&configFilePath, "NS_APISERVER", &c))
 
 	rootCommand.AddCommand(
 		runCommand(),
-		cliutil.PrintConfCommand(&c),
+		cli.PrintConfCommand(&c),
 	)
 
 	flags := rootCommand.PersistentFlags()
 	flags.StringVarP(&configFilePath, "config", "c", "", "config file path")
-	cliutil.SetupDebugFlag(flags)
-	cliutil.SetupLogLevelFlag(flags)
+	cli.SetupDebugFlag(flags)
+	cli.SetupLogLevelFlag(flags)
 
 	viper.SetDefault("mode", "docker")
 	viper.SetDefault("image.registry", "")
@@ -116,8 +115,4 @@ func provideWebServerConfig(router web.Router) web.Config {
 		Port:   c.HTTP.Port,
 		Router: router,
 	}
-}
-
-func provideAdminDBConfig() admindb.Config {
-	return c.DB
 }

@@ -11,6 +11,8 @@ import (
 	"github.com/traPtitech/neoshowcase/pkg/infrastructure/eventbus"
 )
 
+type IngressConfDirPath string
+
 const (
 	appNetwork                     = "neoshowcase_apps"
 	appContainerLabel              = "neoshowcase.trap.jp/app"
@@ -20,21 +22,23 @@ const (
 )
 
 type dockerBackend struct {
-	c           *docker.Client
-	bus         eventbus.Bus
-	dockerEvent chan *docker.APIEvents
+	c              *docker.Client
+	bus            eventbus.Bus
+	dockerEvent    chan *docker.APIEvents
+	ingressConfDir string
 }
 
-func NewDockerBackend(c *docker.Client, bus eventbus.Bus) (backend.Backend, error) {
+func NewDockerBackend(c *docker.Client, bus eventbus.Bus, path IngressConfDirPath) (backend.Backend, error) {
 	// showcase用のネットワークを用意
 	if err := initNetworks(c); err != nil {
 		return nil, fmt.Errorf("failed to init networks: %w", err)
 	}
 
 	b := &dockerBackend{
-		c:           c,
-		bus:         bus,
-		dockerEvent: make(chan *docker.APIEvents, 10),
+		c:              c,
+		bus:            bus,
+		dockerEvent:    make(chan *docker.APIEvents, 10),
+		ingressConfDir: string(path),
 	}
 
 	if err := c.AddEventListener(b.dockerEvent); err != nil {

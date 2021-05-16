@@ -6,7 +6,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
-	"github.com/traPtitech/neoshowcase/pkg/cliutil"
+	"github.com/traPtitech/neoshowcase/pkg/util/cli"
 )
 
 func TestNewMariaDBManager(t *testing.T) {
@@ -14,10 +14,10 @@ func TestNewMariaDBManager(t *testing.T) {
 	t.Parallel()
 
 	c := MariaDBConfig{
-		Host:          cliutil.GetEnvOrDefault("TEST_APP_MARIADB_HOST", "localhost"),
-		Port:          cliutil.GetIntEnvOrDefault("TEST_APP_MARIADB_PORT", 5004),
-		AdminUser:     cliutil.GetEnvOrDefault("TEST_APP_MARIADB_USER", "root"),
-		AdminPassword: cliutil.GetEnvOrDefault("TEST_APP_MARIADB_PASSWORD", "password"),
+		Host:          cli.GetEnvOrDefault("TEST_APP_MARIADB_HOST", "localhost"),
+		Port:          cli.GetIntEnvOrDefault("TEST_APP_MARIADB_PORT", 5004),
+		AdminUser:     cli.GetEnvOrDefault("TEST_APP_MARIADB_USER", "root"),
+		AdminPassword: cli.GetEnvOrDefault("TEST_APP_MARIADB_PASSWORD", "password"),
 	}
 
 	_, err := NewMariaDBManager(c)
@@ -61,10 +61,10 @@ func initMariaDBManager(t *testing.T) (*mariaDBManagerImpl, *sql.DB) {
 	t.Helper()
 
 	c := MariaDBConfig{
-		Host:          cliutil.GetEnvOrDefault("TEST_APP_MARIADB_HOST", "localhost"),
-		Port:          cliutil.GetIntEnvOrDefault("TEST_APP_MARIADB_PORT", 5004),
-		AdminUser:     cliutil.GetEnvOrDefault("TEST_APP_MARIADB_USER", "root"),
-		AdminPassword: cliutil.GetEnvOrDefault("TEST_APP_MARIADB_PASSWORD", "password"),
+		Host:          cli.GetEnvOrDefault("TEST_APP_MARIADB_HOST", "localhost"),
+		Port:          cli.GetIntEnvOrDefault("TEST_APP_MARIADB_PORT", 5004),
+		AdminUser:     cli.GetEnvOrDefault("TEST_APP_MARIADB_USER", "root"),
+		AdminPassword: cli.GetEnvOrDefault("TEST_APP_MARIADB_PASSWORD", "password"),
 	}
 
 	m, err := NewMariaDBManager(c)
