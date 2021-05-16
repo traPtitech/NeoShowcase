@@ -77,6 +77,7 @@ func main() {
 	}
 }
 
+//nolint
 var handlerSet = wire.NewSet(
 	handler.NewMemberCheckHandler,
 )

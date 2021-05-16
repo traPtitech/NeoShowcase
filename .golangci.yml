@@ -2,4 +2,4 @@ run:
   skip-files:
     - ".*\\.pb\\.go$"
   skip-dirs:
-    - pkg/models
+    - pkg/infrastructure/admindb/models
