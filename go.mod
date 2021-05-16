@@ -10,7 +10,7 @@ require (
 	github.com/fsouza/go-dockerclient v1.7.2
 	github.com/gavv/httpexpect/v2 v2.2.0
 	github.com/go-git/go-git/v5 v5.3.0
-	github.com/go-sql-driver/mysql v1.5.0
+	github.com/go-sql-driver/mysql v1.6.0
 	github.com/golang/mock v1.5.0
 	github.com/golang/protobuf v1.5.2 // indirect
 	github.com/google/wire v0.5.0
