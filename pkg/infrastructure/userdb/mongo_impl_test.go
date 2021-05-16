@@ -5,7 +5,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
-	"github.com/traPtitech/neoshowcase/pkg/cliutil"
+	"github.com/traPtitech/neoshowcase/pkg/util/cli"
 	"go.mongodb.org/mongo-driver/mongo"
 )
 
@@ -14,10 +14,10 @@ func TestNewMongoManager(t *testing.T) {
 	t.Parallel()
 
 	c := MongoConfig{
-		Host:          cliutil.GetEnvOrDefault("TEST_APP_MONGO_HOST", "localhost"),
-		Port:          cliutil.GetIntEnvOrDefault("TEST_APP_MONGO_PORT", 5010),
-		AdminUser:     cliutil.GetEnvOrDefault("TEST_APP_MONGO_USER", "root"),
-		AdminPassword: cliutil.GetEnvOrDefault("TEST_APP_MONGO_PASSWORD", "password"),
+		Host:          cli.GetEnvOrDefault("TEST_APP_MONGO_HOST", "localhost"),
+		Port:          cli.GetIntEnvOrDefault("TEST_APP_MONGO_PORT", 5010),
+		AdminUser:     cli.GetEnvOrDefault("TEST_APP_MONGO_USER", "root"),
+		AdminPassword: cli.GetEnvOrDefault("TEST_APP_MONGO_PASSWORD", "password"),
 	}
 
 	_, err := NewMongoManager(c)
@@ -61,10 +61,10 @@ func initMongoManager(t *testing.T) (*mongoManagerImpl, *mongo.Client) {
 	t.Helper()
 
 	c := MongoConfig{
-		Host:          cliutil.GetEnvOrDefault("TEST_APP_MONGO_HOST", "localhost"),
-		Port:          cliutil.GetIntEnvOrDefault("TEST_APP_MONGO_PORT", 5010),
-		AdminUser:     cliutil.GetEnvOrDefault("TEST_APP_MONGO_USER", "root"),
-		AdminPassword: cliutil.GetEnvOrDefault("TEST_APP_MONGO_PASSWORD", "password"),
+		Host:          cli.GetEnvOrDefault("TEST_APP_MONGO_HOST", "localhost"),
+		Port:          cli.GetIntEnvOrDefault("TEST_APP_MONGO_PORT", 5010),
+		AdminUser:     cli.GetEnvOrDefault("TEST_APP_MONGO_USER", "root"),
+		AdminPassword: cli.GetEnvOrDefault("TEST_APP_MONGO_PASSWORD", "password"),
 	}
 
 	m, err := NewMongoManager(c)

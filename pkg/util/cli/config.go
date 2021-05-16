@@ -1,10 +1,11 @@
-package cliutil
+package cli
 
 import (
+	"strings"
+
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/pflag"
 	"github.com/spf13/viper"
-	"strings"
 )
 
 func BindPFlag(flags *pflag.FlagSet, key string, flag ...string) {

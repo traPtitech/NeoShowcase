@@ -10,11 +10,11 @@ import (
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
-	"github.com/traPtitech/neoshowcase/pkg/cliutil"
 	"github.com/traPtitech/neoshowcase/pkg/infrastructure/admindb"
 	"github.com/traPtitech/neoshowcase/pkg/infrastructure/staticserver"
 	"github.com/traPtitech/neoshowcase/pkg/infrastructure/storage"
 	"github.com/traPtitech/neoshowcase/pkg/interface/grpc"
+	"github.com/traPtitech/neoshowcase/pkg/util/cli"
 )
 
 var (
@@ -31,7 +31,7 @@ var rootCommand = &cobra.Command{
 	Use:              "ns-ssgen",
 	Short:            "NeoShowcase StaticSiteGenerator",
 	Version:          fmt.Sprintf("%s (%s)", version, revision),
-	PersistentPreRun: cliutil.PrintVersion,
+	PersistentPreRun: cli.PrintVersion,
 }
 
 func runCommand() *cobra.Command {
@@ -51,7 +51,7 @@ func runCommand() *cobra.Command {
 			}()
 
 			log.Info("NeoShowcase StaticSiteGenerator started")
-			cliutil.WaitSIGINT()
+			cli.WaitSIGINT()
 			ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 			defer cancel()
 			return server.Shutdown(ctx)
@@ -62,17 +62,17 @@ func runCommand() *cobra.Command {
 
 func main() {
 	rand.Seed(time.Now().UnixNano())
-	cobra.OnInitialize(cliutil.CobraOnInitializeFunc(&configFilePath, "NS_SSGEN", &c))
+	cobra.OnInitialize(cli.CobraOnInitializeFunc(&configFilePath, "NS_SSGEN", &c))
 
 	rootCommand.AddCommand(
 		runCommand(),
-		cliutil.PrintConfCommand(&c),
+		cli.PrintConfCommand(&c),
 	)
 
 	flags := rootCommand.PersistentFlags()
 	flags.StringVarP(&configFilePath, "config", "c", "", "config file path")
-	cliutil.SetupDebugFlag(flags)
-	cliutil.SetupLogLevelFlag(flags)
+	cli.SetupDebugFlag(flags)
+	cli.SetupLogLevelFlag(flags)
 
 	viper.SetDefault("artifactsRoot", "/srv/artifacts")
 	viper.SetDefault("builtin.port", 80)

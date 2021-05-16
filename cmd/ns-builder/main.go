@@ -12,11 +12,11 @@ import (
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
-	"github.com/traPtitech/neoshowcase/pkg/cliutil"
 	"github.com/traPtitech/neoshowcase/pkg/domain/builder"
 	"github.com/traPtitech/neoshowcase/pkg/infrastructure/admindb"
 	"github.com/traPtitech/neoshowcase/pkg/infrastructure/storage"
 	"github.com/traPtitech/neoshowcase/pkg/interface/grpc"
+	"github.com/traPtitech/neoshowcase/pkg/util/cli"
 )
 
 var (
@@ -33,7 +33,7 @@ var rootCommand = &cobra.Command{
 	Use:              "ns-builder",
 	Short:            "NeoShowcase BuilderService",
 	Version:          fmt.Sprintf("%s (%s)", version, revision),
-	PersistentPreRun: cliutil.PrintVersion,
+	PersistentPreRun: cli.PrintVersion,
 }
 
 func runCommand() *cobra.Command {
@@ -53,7 +53,7 @@ func runCommand() *cobra.Command {
 			}()
 
 			log.Info("NeoShowcase BuilderService started")
-			cliutil.WaitSIGINT()
+			cli.WaitSIGINT()
 			ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 			defer cancel()
 			return service.Shutdown(ctx)
@@ -64,17 +64,17 @@ func runCommand() *cobra.Command {
 
 func main() {
 	rand.Seed(time.Now().UnixNano())
-	cobra.OnInitialize(cliutil.CobraOnInitializeFunc(&configFilePath, "NS_BUILDER", &c))
+	cobra.OnInitialize(cli.CobraOnInitializeFunc(&configFilePath, "NS_BUILDER", &c))
 
 	rootCommand.AddCommand(
 		runCommand(),
-		cliutil.PrintConfCommand(&c),
+		cli.PrintConfCommand(&c),
 	)
 
 	flags := rootCommand.PersistentFlags()
 	flags.StringVarP(&configFilePath, "config", "c", "", "config file path")
-	cliutil.SetupDebugFlag(flags)
-	cliutil.SetupLogLevelFlag(flags)
+	cli.SetupDebugFlag(flags)
+	cli.SetupLogLevelFlag(flags)
 
 	viper.SetDefault("buildkit.address", appdefaults.Address)
 	viper.SetDefault("buildkit.registry", "localhost:5000")

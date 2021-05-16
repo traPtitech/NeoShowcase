@@ -12,7 +12,7 @@ import (
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 	"github.com/traPtitech/neoshowcase/migrations"
-	"github.com/traPtitech/neoshowcase/pkg/cliutil"
+	"github.com/traPtitech/neoshowcase/pkg/util/cli"
 )
 
 var (
@@ -34,7 +34,7 @@ var rootCommand = &cobra.Command{
 	Use:              "ns-migrate",
 	Short:            "NeoShowcase DB Migration Tool",
 	Version:          fmt.Sprintf("%s (%s)", version, revision),
-	PersistentPreRun: cliutil.PrintVersion,
+	PersistentPreRun: cli.PrintVersion,
 }
 
 func upCommand() *cobra.Command {
@@ -144,14 +144,14 @@ func init() {
 		listMigrationsCommand(),
 	)
 	flags := rootCommand.PersistentFlags()
-	cliutil.SetupDebugFlag(flags)
-	cliutil.SetupLogLevelFlag(flags)
+	cli.SetupDebugFlag(flags)
+	cli.SetupLogLevelFlag(flags)
 
-	flags.StringVarP(&dbHost, "dbhost", "H", cliutil.GetEnvOrDefault("DB_HOST", "localhost"), "database host name")
-	flags.IntVarP(&dbPort, "dbport", "P", cliutil.GetIntEnvOrDefault("DB_PORT", 3306), "database port number")
-	flags.StringVarP(&dbName, "dbname", "n", cliutil.GetEnvOrDefault("DB_NAME", "neoshowcase"), "database name")
-	flags.StringVarP(&dbUser, "dbuser", "u", cliutil.GetEnvOrDefault("DB_USER", "root"), "database user name")
-	flags.StringVarP(&dbPassword, "dbpassword", "p", cliutil.GetEnvOrDefault("DB_PASS", "password"), "database user password")
+	flags.StringVarP(&dbHost, "dbhost", "H", cli.GetEnvOrDefault("DB_HOST", "localhost"), "database host name")
+	flags.IntVarP(&dbPort, "dbport", "P", cli.GetIntEnvOrDefault("DB_PORT", 3306), "database port number")
+	flags.StringVarP(&dbName, "dbname", "n", cli.GetEnvOrDefault("DB_NAME", "neoshowcase"), "database name")
+	flags.StringVarP(&dbUser, "dbuser", "u", cli.GetEnvOrDefault("DB_USER", "root"), "database user name")
+	flags.StringVarP(&dbPassword, "dbpassword", "p", cli.GetEnvOrDefault("DB_PASS", "password"), "database user password")
 	flags.BoolVarP(&dryrun, "dryrun", "d", false, "dry run")
 	migrate.SetTable("migrations")
 }
