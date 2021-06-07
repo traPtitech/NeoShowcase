@@ -1,6 +1,7 @@
 package usecase
 
 import (
+	"container/list"
 	"context"
 	"fmt"
 
@@ -19,8 +20,15 @@ type appBuildService struct {
 	repo    repository.ApplicationRepository
 	builder pb.BuilderServiceClient
 
+	queue           list.List
 	imageRegistry   string
 	imageNamePrefix string
+}
+
+type buildQueueItem struct {
+	ctx context.Context
+	app *domain.Application
+	env *domain.Environment
 }
 
 func NewAppBuildService(repo repository.ApplicationRepository, builder pb.BuilderServiceClient, registry builder.DockerImageRegistryString, prefix builder.DockerImageNamePrefixString) AppBuildService {
@@ -40,6 +48,15 @@ func (s *appBuildService) QueueBuild(ctx context.Context, env *domain.Environmen
 
 	// TODO キューに入れて、非同期で処理する
 	return s.requestBuild(ctx, app, env)
+}
+
+func (s *appBuildService) pushQueue(ctx context.Context, app *domain.Application, env *domain.Environment) {
+	s.queue.PushBack(&buildQueueItem{
+		ctx: ctx,
+		app: app,
+		env: env,
+	})
+	//gorutineが回ってなかったら回す
 }
 
 func (s *appBuildService) requestBuild(ctx context.Context, app *domain.Application, env *domain.Environment) error {
