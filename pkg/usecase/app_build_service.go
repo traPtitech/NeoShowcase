@@ -1,7 +1,6 @@
 package usecase
 
 import (
-	"container/list"
 	"context"
 	"fmt"
 
@@ -21,7 +20,7 @@ type appBuildService struct {
 	repo    repository.ApplicationRepository
 	builder pb.BuilderServiceClient
 
-	queue           *list.List
+	queue           chan *buildQueueItem
 	imageRegistry   string
 	imageNamePrefix string
 }
@@ -36,11 +35,11 @@ func NewAppBuildService(repo repository.ApplicationRepository, builder pb.Builde
 	s := &appBuildService{
 		repo:            repo,
 		builder:         builder,
-		queue:           list.New(),
+		queue:           make(chan *buildQueueItem),
 		imageRegistry:   string(registry),
 		imageNamePrefix: string(prefix),
 	}
-	go s.proxyBuildRequest()
+	go s.proxyBuildRequest(s.queue)
 	return s
 }
 
@@ -50,27 +49,22 @@ func (s *appBuildService) QueueBuild(ctx context.Context, env *domain.Environmen
 		return fmt.Errorf("failed to QueueBuild: %w", err)
 	}
 
-	s.pushQueue(ctx, app, env)
-	return nil
-}
-
-func (s *appBuildService) pushQueue(ctx context.Context, app *domain.Application, env *domain.Environment) {
-	s.queue.PushBack(&buildQueueItem{
+	s.queue <- &buildQueueItem{
 		Context: ctx,
 		App:     app,
 		Env:     env,
-	})
+	}
+	return nil
 }
 
-func (s *appBuildService) proxyBuildRequest() error {
-	for s.queue.Len() > 0 {
+func (s *appBuildService) proxyBuildRequest(c chan *buildQueueItem) error {
+	for v := range c {
 		stat, err := s.builder.GetStatus(context.Background(), &emptypb.Empty{})
 		if err != nil {
 			return err
 		}
 		if stat.GetStatus() == pb.BuilderStatus_WAITING {
-			i := s.queue.Remove(s.queue.Front()).(buildQueueItem)
-			s.requestBuild(i.Context, i.App, i.Env)
+			s.requestBuild(v.Context, v.App, v.Env)
 			continue
 		}
 	}
