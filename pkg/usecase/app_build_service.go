@@ -10,6 +10,7 @@ import (
 	"github.com/traPtitech/neoshowcase/pkg/domain/builder"
 	"github.com/traPtitech/neoshowcase/pkg/interface/grpc/pb"
 	"github.com/traPtitech/neoshowcase/pkg/interface/repository"
+	"google.golang.org/protobuf/types/known/emptypb"
 )
 
 type AppBuildService interface {
@@ -20,24 +21,27 @@ type appBuildService struct {
 	repo    repository.ApplicationRepository
 	builder pb.BuilderServiceClient
 
-	queue           list.List
+	queue           *list.List
 	imageRegistry   string
 	imageNamePrefix string
 }
 
 type buildQueueItem struct {
-	ctx context.Context
-	app *domain.Application
-	env *domain.Environment
+	Context context.Context
+	App     *domain.Application
+	Env     *domain.Environment
 }
 
 func NewAppBuildService(repo repository.ApplicationRepository, builder pb.BuilderServiceClient, registry builder.DockerImageRegistryString, prefix builder.DockerImageNamePrefixString) AppBuildService {
-	return &appBuildService{
+	s := &appBuildService{
 		repo:            repo,
 		builder:         builder,
+		queue:           list.New(),
 		imageRegistry:   string(registry),
 		imageNamePrefix: string(prefix),
 	}
+	go s.proxyBuildRequest()
+	return s
 }
 
 func (s *appBuildService) QueueBuild(ctx context.Context, env *domain.Environment) error {
@@ -46,17 +50,31 @@ func (s *appBuildService) QueueBuild(ctx context.Context, env *domain.Environmen
 		return fmt.Errorf("failed to QueueBuild: %w", err)
 	}
 
-	// TODO キューに入れて、非同期で処理する
-	return s.requestBuild(ctx, app, env)
+	s.pushQueue(ctx, app, env)
+	return nil
 }
 
 func (s *appBuildService) pushQueue(ctx context.Context, app *domain.Application, env *domain.Environment) {
 	s.queue.PushBack(&buildQueueItem{
-		ctx: ctx,
-		app: app,
-		env: env,
+		Context: ctx,
+		App:     app,
+		Env:     env,
 	})
-	//gorutineが回ってなかったら回す
+}
+
+func (s *appBuildService) proxyBuildRequest() error {
+	for s.queue.Len() > 0 {
+		stat, err := s.builder.GetStatus(context.Background(), &emptypb.Empty{})
+		if err != nil {
+			return err
+		}
+		if stat.GetStatus() == pb.BuilderStatus_WAITING {
+			i := s.queue.Remove(s.queue.Front()).(buildQueueItem)
+			s.requestBuild(i.Context, i.App, i.Env)
+			continue
+		}
+	}
+	return nil
 }
 
 func (s *appBuildService) requestBuild(ctx context.Context, app *domain.Application, env *domain.Environment) error {
