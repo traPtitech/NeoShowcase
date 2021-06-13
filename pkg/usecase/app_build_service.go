@@ -63,9 +63,11 @@ func (s *appBuildService) proxyBuildRequest(c chan *buildQueueItem) error {
 		if err != nil {
 			return err
 		}
-		if stat.GetStatus() == pb.BuilderStatus_WAITING {
-			s.requestBuild(v.Context, v.App, v.Env)
-			continue
+		for {
+			if stat.GetStatus() == pb.BuilderStatus_WAITING {
+				s.requestBuild(v.Context, v.App, v.Env)
+				break
+			}
 		}
 	}
 	return nil
