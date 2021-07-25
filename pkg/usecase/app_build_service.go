@@ -3,6 +3,7 @@ package usecase
 import (
 	"context"
 	"fmt"
+	"time"
 
 	log "github.com/sirupsen/logrus"
 	"github.com/traPtitech/neoshowcase/pkg/domain"
@@ -68,6 +69,7 @@ func (s *appBuildService) proxyBuildRequest(c chan *buildQueueItem) error {
 				s.requestBuild(v.Context, v.App, v.Env)
 				break
 			}
+			time.Sleep(10 * time.Second)
 		}
 	}
 	return nil
