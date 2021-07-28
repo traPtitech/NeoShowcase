@@ -1,4 +1,4 @@
-package userdb
+package dbmanager
 
 import (
 	"context"
@@ -6,6 +6,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/traPtitech/neoshowcase/pkg/domain"
 	"github.com/traPtitech/neoshowcase/pkg/util/cli"
 )
 
@@ -28,7 +29,7 @@ func TestMariaDBManagerImpl_Create(t *testing.T) {
 	skipOrDo(t)
 	t.Parallel()
 	m, _ := initMariaDBManager(t)
-	a := CreateArgs{
+	a := domain.CreateArgs{
 		Database: "TestMariaCreate",
 		Password: "TestMariaCreate",
 	}
@@ -42,7 +43,7 @@ func TestMariaDBManagerImpl_Delete(t *testing.T) {
 	t.Parallel()
 	m, _ := initMariaDBManager(t)
 
-	a := CreateArgs{
+	a := domain.CreateArgs{
 		Database: "TestMariaDelete",
 		Password: "TestMariaDelete",
 	}
@@ -50,7 +51,7 @@ func TestMariaDBManagerImpl_Delete(t *testing.T) {
 	err := m.Create(ctx, a)
 	assert.NoError(t, err)
 
-	da := DeleteArgs{
+	da := domain.DeleteArgs{
 		Database: "TestMariaDelete",
 	}
 	err = m.Delete(ctx, da)

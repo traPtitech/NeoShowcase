@@ -5,12 +5,12 @@ import (
 	"io"
 	"os"
 
-	"github.com/aws/aws-sdk-go/aws/credentials"
-
 	"github.com/aws/aws-sdk-go/aws"
+	"github.com/aws/aws-sdk-go/aws/credentials"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/s3"
 	"github.com/aws/aws-sdk-go/service/s3/s3manager"
+	"github.com/traPtitech/neoshowcase/pkg/domain"
 )
 
 // S3Storage AmazonS3ストレージ
@@ -69,7 +69,7 @@ func (s3s *S3Storage) Open(filename string) (io.ReadCloser, error) {
 	}
 	result, err := svc.GetObject(input)
 	if err != nil {
-		return nil, ErrFileNotFound
+		return nil, domain.ErrFileNotFound
 	}
 	return result.Body, nil
 }

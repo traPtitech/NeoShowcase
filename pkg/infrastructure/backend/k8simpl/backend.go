@@ -5,9 +5,8 @@ import (
 	"fmt"
 
 	log "github.com/sirupsen/logrus"
+	"github.com/traPtitech/neoshowcase/pkg/domain"
 	"github.com/traPtitech/neoshowcase/pkg/domain/event"
-	"github.com/traPtitech/neoshowcase/pkg/infrastructure/backend"
-	"github.com/traPtitech/neoshowcase/pkg/infrastructure/eventbus"
 	apiv1 "k8s.io/api/core/v1"
 	networkingv1 "k8s.io/api/networking/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -25,11 +24,11 @@ const (
 
 type k8sBackend struct {
 	clientset  *kubernetes.Clientset
-	eventbus   eventbus.Bus
+	eventbus   domain.Bus
 	podWatcher watch.Interface
 }
 
-func NewK8SBackend(eventbus eventbus.Bus, k8sCSet *kubernetes.Clientset) (backend.Backend, error) {
+func NewK8SBackend(eventbus domain.Bus, k8sCSet *kubernetes.Clientset) (domain.Backend, error) {
 	b := &k8sBackend{
 		clientset: k8sCSet,
 		eventbus:  eventbus,
@@ -64,13 +63,13 @@ func (b *k8sBackend) eventListener() {
 		switch ev.Type {
 		case watch.Modified:
 			if p.Status.Phase == apiv1.PodRunning {
-				b.eventbus.Publish(event.ContainerAppStarted, eventbus.Fields{
+				b.eventbus.Publish(event.ContainerAppStarted, domain.Fields{
 					"application_id": p.Labels[appContainerApplicationIDLabel],
 					"environment_id": p.Labels[appContainerEnvironmentIDLabel],
 				})
 			}
 		case watch.Deleted:
-			b.eventbus.Publish(event.ContainerAppStopped, eventbus.Fields{
+			b.eventbus.Publish(event.ContainerAppStopped, domain.Fields{
 				"application_id": p.Labels[appContainerApplicationIDLabel],
 				"environment_id": p.Labels[appContainerEnvironmentIDLabel],
 			})

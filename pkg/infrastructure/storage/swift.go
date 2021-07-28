@@ -6,6 +6,7 @@ import (
 	"os"
 
 	"github.com/ncw/swift"
+	"github.com/traPtitech/neoshowcase/pkg/domain"
 )
 
 // SwiftStorage OpenStack Swiftストレージ
@@ -50,7 +51,7 @@ func (ss *SwiftStorage) Open(filename string) (io.ReadCloser, error) {
 	file, _, err := ss.conn.ObjectOpen(ss.container, filename, true, nil)
 	if err != nil {
 		if err == swift.ObjectNotFound {
-			return nil, ErrFileNotFound
+			return nil, domain.ErrFileNotFound
 		}
 		return nil, err
 	}
@@ -62,7 +63,7 @@ func (ss *SwiftStorage) Delete(filename string) error {
 	err := ss.conn.ObjectDelete(ss.container, filename)
 	if err != nil {
 		if err == swift.ObjectNotFound {
-			return ErrFileNotFound
+			return domain.ErrFileNotFound
 		}
 		return err
 	}

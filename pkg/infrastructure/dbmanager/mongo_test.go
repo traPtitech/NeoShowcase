@@ -1,10 +1,11 @@
-package userdb
+package dbmanager
 
 import (
 	"context"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/traPtitech/neoshowcase/pkg/domain"
 	"github.com/traPtitech/neoshowcase/pkg/util/cli"
 	"go.mongodb.org/mongo-driver/mongo"
 )
@@ -29,7 +30,7 @@ func TestMongoManagerImpl_Create(t *testing.T) {
 	t.Parallel()
 	m, _ := initMongoManager(t)
 
-	a := CreateArgs{
+	a := domain.CreateArgs{
 		Database: "testCreate",
 		Password: "testCreate",
 	}
@@ -43,14 +44,14 @@ func TestMongoManagerImpl_Delete(t *testing.T) {
 	t.Parallel()
 	m, _ := initMongoManager(t)
 
-	a := CreateArgs{
+	a := domain.CreateArgs{
 		Database: "testDelete",
 		Password: "testDelete",
 	}
 	ctx := context.Background()
 	_ = m.Create(ctx, a)
 
-	da := DeleteArgs{
+	da := domain.DeleteArgs{
 		Database: "testDelete",
 	}
 	err := m.Delete(ctx, da)

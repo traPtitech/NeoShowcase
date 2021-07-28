@@ -8,7 +8,7 @@ import (
 	"net/http"
 
 	log "github.com/sirupsen/logrus"
-	"github.com/traPtitech/neoshowcase/pkg/infrastructure/staticserver"
+	"github.com/traPtitech/neoshowcase/pkg/domain"
 	igrpc "github.com/traPtitech/neoshowcase/pkg/interface/grpc"
 	"github.com/traPtitech/neoshowcase/pkg/interface/grpc/pb"
 	"golang.org/x/sync/errgroup"
@@ -18,7 +18,7 @@ import (
 type Server struct {
 	db         *sql.DB
 	grpcServer *grpc.Server
-	engine     staticserver.Engine
+	engine     domain.Engine
 	sss        *igrpc.StaticSiteService
 	port       igrpc.TCPListenPort
 }

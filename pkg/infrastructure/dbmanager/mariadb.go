@@ -1,4 +1,4 @@
-package userdb
+package dbmanager
 
 import (
 	"context"
@@ -6,6 +6,7 @@ import (
 	"fmt"
 
 	"github.com/go-sql-driver/mysql"
+	"github.com/traPtitech/neoshowcase/pkg/domain"
 )
 
 type mariaDBManagerImpl struct {
@@ -19,7 +20,7 @@ type MariaDBConfig struct {
 	AdminPassword string
 }
 
-func NewMariaDBManager(c MariaDBConfig) (MariaDBManager, error) {
+func NewMariaDBManager(c MariaDBConfig) (domain.MariaDBManager, error) {
 	conf := mysql.NewConfig()
 	conf.Net = "tcp"
 	conf.Addr = fmt.Sprintf("%s:%d", c.Host, c.Port)
@@ -44,7 +45,7 @@ func NewMariaDBManager(c MariaDBConfig) (MariaDBManager, error) {
 	return &mariaDBManagerImpl{db: db}, nil
 }
 
-func (m *mariaDBManagerImpl) Create(ctx context.Context, args CreateArgs) error {
+func (m *mariaDBManagerImpl) Create(ctx context.Context, args domain.CreateArgs) error {
 	db := m.db
 	_, err := db.ExecContext(ctx, fmt.Sprintf("CREATE DATABASE %s", args.Database))
 	if err != nil {
@@ -61,7 +62,7 @@ func (m *mariaDBManagerImpl) Create(ctx context.Context, args CreateArgs) error 
 	return nil
 }
 
-func (m *mariaDBManagerImpl) Delete(ctx context.Context, args DeleteArgs) error {
+func (m *mariaDBManagerImpl) Delete(ctx context.Context, args domain.DeleteArgs) error {
 	db := m.db
 	_, err := db.ExecContext(ctx, fmt.Sprintf("DROP DATABASE %s", args.Database))
 	if err != nil {

@@ -6,6 +6,8 @@ import (
 	"io"
 	"os"
 	"path/filepath"
+
+	"github.com/traPtitech/neoshowcase/pkg/domain"
 )
 
 // LocalStorage ローカルストレージ
@@ -42,7 +44,7 @@ func (ls *LocalStorage) Save(filename string, src io.Reader) error {
 func (ls *LocalStorage) Open(filename string) (io.ReadCloser, error) {
 	r, err := os.Open(ls.getFilePath(filename))
 	if err != nil {
-		return nil, ErrFileNotFound
+		return nil, domain.ErrFileNotFound
 	}
 	return r, nil
 }
@@ -51,7 +53,7 @@ func (ls *LocalStorage) Open(filename string) (io.ReadCloser, error) {
 func (ls *LocalStorage) Delete(filename string) error {
 	path := ls.getFilePath(filename)
 	if _, err := os.Stat(path); err != nil {
-		return ErrFileNotFound
+		return domain.ErrFileNotFound
 	}
 	return os.Remove(path)
 }
