@@ -23,12 +23,12 @@ type appBuildService struct {
 	repo    repository.ApplicationRepository
 	builder pb.BuilderServiceClient
 
-	queue           chan *buildQueueItem
+	queue           chan *job
 	imageRegistry   string
 	imageNamePrefix string
 }
 
-type buildQueueItem struct {
+type job struct {
 	App *domain.Application
 	Env *domain.Environment
 }
@@ -37,11 +37,11 @@ func NewAppBuildService(repo repository.ApplicationRepository, builder pb.Builde
 	s := &appBuildService{
 		repo:            repo,
 		builder:         builder,
-		queue:           make(chan *buildQueueItem, queueBufferSize),
+		queue:           make(chan *job, queueBufferSize),
 		imageRegistry:   string(registry),
 		imageNamePrefix: string(prefix),
 	}
-	go s.proxyBuildRequest(s.queue)
+	go s.startQueueManager()
 	return s
 }
 
@@ -51,28 +51,30 @@ func (s *appBuildService) QueueBuild(ctx context.Context, env *domain.Environmen
 		return fmt.Errorf("failed to QueueBuild: %w", err)
 	}
 
-	s.queue <- &buildQueueItem{
+	s.queue <- &job{
 		App: app,
 		Env: env,
 	}
 	return nil
 }
 
-func (s *appBuildService) proxyBuildRequest(c chan *buildQueueItem) error {
-	for v := range c {
+func (s *appBuildService) startQueueManager() {
+	for v := range s.queue {
 		stat, err := s.builder.GetStatus(context.Background(), &emptypb.Empty{})
 		if err != nil {
-			return err
+			log.WithError(err).Error("failed to get status")
 		}
 		for {
 			if stat.GetStatus() == pb.BuilderStatus_WAITING {
-				s.requestBuild(context.Background(), v.App, v.Env)
+				err := s.requestBuild(context.Background(), v.App, v.Env)
+				if err != nil {
+					log.WithError(err).Error("failed to request build")
+				}
 				break
 			}
 			time.Sleep(10 * time.Second)
 		}
 	}
-	return nil
 }
 
 func (s *appBuildService) requestBuild(ctx context.Context, app *domain.Application, env *domain.Environment) error {
