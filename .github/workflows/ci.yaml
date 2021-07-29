@@ -109,7 +109,9 @@ jobs:
       - name: sql-migrate up
         run: go run ./cmd/ns-migrate up -P 5004
       - name: Run tests
-        run: go test ./... -race -vet=off
+        run: go test ./... -v -race -coverprofile=coverage.out -covermode=atomic -vet=off
+      - name: Upload coverage to Codecov
+        run: bash <(curl -s https://codecov.io/bash)
   k8s-test:
     name: Test (k8s)
     runs-on: ubuntu-latest
@@ -150,7 +152,9 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-gomod-
       - name: Run tests
-        run: go test ./pkg/infrastructure/backend/k8simpl -vet=off
+        run: go test ./pkg/infrastructure/backend/k8simpl -v -coverprofile=coverage.out -covermode=atomic -vet=off
+      - name: Upload coverage to Codecov
+        run: bash <(curl -s https://codecov.io/bash)
   tbls:
     name: TBLS
     runs-on: ubuntu-latest
