@@ -7,7 +7,7 @@ import (
 	"net"
 
 	buildkit "github.com/moby/buildkit/client"
-	"github.com/traPtitech/neoshowcase/pkg/infrastructure/eventbus"
+	"github.com/traPtitech/neoshowcase/pkg/domain"
 	igrpc "github.com/traPtitech/neoshowcase/pkg/interface/grpc"
 	"github.com/traPtitech/neoshowcase/pkg/interface/grpc/pb"
 	"golang.org/x/sync/errgroup"
@@ -16,7 +16,7 @@ import (
 
 type Server struct {
 	db         *sql.DB
-	eventbus   eventbus.Bus
+	eventbus   domain.Bus
 	grpcServer *grpc.Server
 	buildkit   *buildkit.Client
 

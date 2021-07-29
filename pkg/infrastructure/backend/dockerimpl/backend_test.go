@@ -7,10 +7,10 @@ import (
 
 	docker "github.com/fsouza/go-dockerclient"
 	"github.com/stretchr/testify/require"
-	"github.com/traPtitech/neoshowcase/pkg/infrastructure/eventbus"
+	"github.com/traPtitech/neoshowcase/pkg/domain"
 )
 
-func prepareManager(t *testing.T, bus eventbus.Bus) (*dockerBackend, *docker.Client) {
+func prepareManager(t *testing.T, bus domain.Bus) (*dockerBackend, *docker.Client) {
 	t.Helper()
 	if ok, _ := strconv.ParseBool(os.Getenv("ENABLE_DOCKER_TESTS")); !ok {
 		t.SkipNow()

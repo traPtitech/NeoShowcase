@@ -7,19 +7,19 @@ import (
 	"strings"
 
 	"github.com/labstack/echo/v4"
+	"github.com/traPtitech/neoshowcase/pkg/domain"
 	"github.com/traPtitech/neoshowcase/pkg/domain/event"
-	"github.com/traPtitech/neoshowcase/pkg/infrastructure/eventbus"
 	"github.com/traPtitech/neoshowcase/pkg/usecase"
 )
 
 type WebhookReceiverHandler Handler
 
 type webhookReceiverHandler struct {
-	eventbus eventbus.Bus
+	eventbus domain.Bus
 	verifier usecase.GitPushWebhookService
 }
 
-func NewWebhookReceiverHandler(eventbus eventbus.Bus, verifier usecase.GitPushWebhookService) WebhookReceiverHandler {
+func NewWebhookReceiverHandler(eventbus domain.Bus, verifier usecase.GitPushWebhookService) WebhookReceiverHandler {
 	return &webhookReceiverHandler{
 		eventbus: eventbus,
 		verifier: verifier,
@@ -44,7 +44,7 @@ func (h *webhookReceiverHandler) HandleRequest(c Context) error {
 		return err
 	}
 
-	h.eventbus.Publish(event.WebhookRepositoryPush, eventbus.Fields{
+	h.eventbus.Publish(event.WebhookRepositoryPush, domain.Fields{
 		"repository_url": repoURL,
 		"branch":         branch,
 	})

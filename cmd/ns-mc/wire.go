@@ -4,7 +4,7 @@ package main
 
 import (
 	"github.com/google/wire"
-	"github.com/traPtitech/neoshowcase/pkg/infrastructure/web"
+	"github.com/traPtitech/neoshowcase/pkg/domain/web"
 	"github.com/traPtitech/neoshowcase/pkg/usecase"
 )
 

@@ -1,6 +1,8 @@
 package handler_test
 
 import (
+	"github.com/traPtitech/neoshowcase/pkg/domain"
+
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -9,15 +11,14 @@ import (
 	"github.com/golang/mock/gomock"
 	"github.com/labstack/echo/v4"
 	"github.com/traPtitech/neoshowcase/pkg/domain/event"
-	"github.com/traPtitech/neoshowcase/pkg/infrastructure/eventbus"
-	mock_eventbus "github.com/traPtitech/neoshowcase/pkg/infrastructure/eventbus/mock"
-	"github.com/traPtitech/neoshowcase/pkg/infrastructure/web"
+	mock_eventbus "github.com/traPtitech/neoshowcase/pkg/domain/mock"
+	"github.com/traPtitech/neoshowcase/pkg/domain/web"
 	"github.com/traPtitech/neoshowcase/pkg/interface/handler"
 	mock_repository "github.com/traPtitech/neoshowcase/pkg/interface/repository/mock"
 	"github.com/traPtitech/neoshowcase/pkg/usecase"
 )
 
-func newWebhookReceiverHandlerExp(t *testing.T, eventbus eventbus.Bus, verifier usecase.GitPushWebhookService) *httpexpect.Expect {
+func newWebhookReceiverHandlerExp(t *testing.T, eventbus domain.Bus, verifier usecase.GitPushWebhookService) *httpexpect.Expect {
 	t.Helper()
 
 	h := handler.NewWebhookReceiverHandler(eventbus, verifier)
@@ -42,7 +43,7 @@ func TestWebhookReceiverHandler_HandleRequest(t *testing.T) {
 
 		bus := mock_eventbus.NewMockBus(mockCtrl)
 		bus.EXPECT().
-			Publish(event.WebhookRepositoryPush, eventbus.Fields{
+			Publish(event.WebhookRepositoryPush, domain.Fields{
 				"repository_url": "https://git.trap.jp/xxpoxx/test_repo.git",
 				"branch":         "heads/master",
 			}).
@@ -311,7 +312,7 @@ func TestWebhookReceiverHandler_HandleRequest(t *testing.T) {
 
 		bus := mock_eventbus.NewMockBus(mockCtrl)
 		bus.EXPECT().
-			Publish(event.WebhookRepositoryPush, eventbus.Fields{
+			Publish(event.WebhookRepositoryPush, domain.Fields{
 				"repository_url": "https://github.com/cskd8/test_repo.git",
 				"branch":         "heads/main",
 			}).

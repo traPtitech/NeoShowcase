@@ -10,8 +10,8 @@ import (
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
+	"github.com/traPtitech/neoshowcase/pkg/domain"
 	"github.com/traPtitech/neoshowcase/pkg/infrastructure/admindb"
-	"github.com/traPtitech/neoshowcase/pkg/infrastructure/staticserver"
 	"github.com/traPtitech/neoshowcase/pkg/infrastructure/storage"
 	"github.com/traPtitech/neoshowcase/pkg/interface/grpc"
 	"github.com/traPtitech/neoshowcase/pkg/util/cli"
@@ -108,7 +108,7 @@ func provideAdminDBConfig(c Config) admindb.Config {
 	return c.DB
 }
 
-func provideStorageConfig(c Config) storage.Config {
+func provideStorageConfig(c Config) domain.StorageConfig {
 	return c.Storage
 }
 
@@ -116,15 +116,15 @@ func provideGRPCPort(c Config) grpc.TCPListenPort {
 	return grpc.TCPListenPort(c.GRPC.Port)
 }
 
-func provideWebServerPort(c Config) staticserver.WebServerPort {
-	return staticserver.WebServerPort(c.BuiltIn.Port)
+func provideWebServerPort(c Config) domain.WebServerPort {
+	return domain.WebServerPort(c.BuiltIn.Port)
 }
 
-func provideWebServerDocumentRootPath(c Config) staticserver.WebServerDocumentRootPath {
-	return staticserver.WebServerDocumentRootPath(c.ArtifactsRoot)
+func provideWebServerDocumentRootPath(c Config) domain.WebServerDocumentRootPath {
+	return domain.WebServerDocumentRootPath(c.ArtifactsRoot)
 }
 
-func initStorage(c storage.Config) (storage.Storage, error) {
+func initStorage(c domain.StorageConfig) (domain.Storage, error) {
 	switch strings.ToLower(c.Type) {
 	case "local":
 		return storage.NewLocalStorage(c.Local.Dir)

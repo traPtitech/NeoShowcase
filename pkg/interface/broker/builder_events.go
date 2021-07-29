@@ -6,8 +6,8 @@ import (
 	"io"
 
 	log "github.com/sirupsen/logrus"
+	"github.com/traPtitech/neoshowcase/pkg/domain"
 	"github.com/traPtitech/neoshowcase/pkg/domain/event"
-	"github.com/traPtitech/neoshowcase/pkg/infrastructure/eventbus"
 	"github.com/traPtitech/neoshowcase/pkg/interface/grpc/pb"
 	"github.com/traPtitech/neoshowcase/pkg/util"
 	"google.golang.org/protobuf/types/known/emptypb"
@@ -18,11 +18,11 @@ type BuilderEventsBroker interface {
 }
 
 type builderEventsBroker struct {
-	bus    eventbus.Bus
+	bus    domain.Bus
 	client pb.BuilderServiceClient
 }
 
-func NewBuilderEventsBroker(client pb.BuilderServiceClient, bus eventbus.Bus) (BuilderEventsBroker, error) {
+func NewBuilderEventsBroker(client pb.BuilderServiceClient, bus domain.Bus) (BuilderEventsBroker, error) {
 	return &builderEventsBroker{
 		bus:    bus,
 		client: client,

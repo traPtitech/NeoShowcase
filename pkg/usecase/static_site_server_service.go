@@ -6,7 +6,6 @@ import (
 
 	"github.com/traPtitech/neoshowcase/pkg/domain"
 	"github.com/traPtitech/neoshowcase/pkg/infrastructure/admindb/models"
-	"github.com/traPtitech/neoshowcase/pkg/infrastructure/staticserver"
 	"github.com/volatiletech/sqlboiler/v4/queries/qm"
 )
 
@@ -15,13 +14,13 @@ type StaticSiteServerService interface {
 }
 
 type staticSiteServerService struct {
-	engine staticserver.Engine
+	engine domain.Engine
 
 	// TODO 後で消す
 	db *sql.DB
 }
 
-func NewStaticSiteServerService(engine staticserver.Engine, db *sql.DB) StaticSiteServerService {
+func NewStaticSiteServerService(engine domain.Engine, db *sql.DB) StaticSiteServerService {
 	return &staticSiteServerService{
 		engine: engine,
 		db:     db,

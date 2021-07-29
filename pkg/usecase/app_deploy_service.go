@@ -10,7 +10,6 @@ import (
 	"github.com/traPtitech/neoshowcase/pkg/domain"
 	"github.com/traPtitech/neoshowcase/pkg/domain/builder"
 	"github.com/traPtitech/neoshowcase/pkg/infrastructure/admindb/models"
-	"github.com/traPtitech/neoshowcase/pkg/infrastructure/backend"
 	"github.com/traPtitech/neoshowcase/pkg/interface/grpc/pb"
 	"github.com/volatiletech/null/v8"
 	"github.com/volatiletech/sqlboiler/v4/boil"
@@ -22,7 +21,7 @@ type AppDeployService interface {
 }
 
 type appDeployService struct {
-	backend backend.Backend
+	backend domain.Backend
 	ss      pb.StaticSiteServiceClient
 
 	imageRegistry   string
@@ -32,7 +31,7 @@ type appDeployService struct {
 	db *sql.DB
 }
 
-func NewAppDeployService(backend backend.Backend, ss pb.StaticSiteServiceClient, registry builder.DockerImageRegistryString, prefix builder.DockerImageNamePrefixString, db *sql.DB) AppDeployService {
+func NewAppDeployService(backend domain.Backend, ss pb.StaticSiteServiceClient, registry builder.DockerImageRegistryString, prefix builder.DockerImageNamePrefixString, db *sql.DB) AppDeployService {
 	return &appDeployService{
 		backend:         backend,
 		ss:              ss,

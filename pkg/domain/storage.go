@@ -1,4 +1,4 @@
-package storage
+package domain
 
 import (
 	"archive/tar"
@@ -30,7 +30,7 @@ type Storage interface {
 }
 
 // SaveArtifact Artifactをtar形式で保存する
-func SaveArtifact(strg Storage, filename string, dstpath string, db *sql.DB, buildid string, sid string) error {
+func SaveArtifact(s Storage, filename string, dstpath string, db *sql.DB, buildid string, sid string) error {
 	stat, _ := os.Stat(filename)
 	artifact := models.Artifact{
 		ID:         sid,
@@ -39,7 +39,7 @@ func SaveArtifact(strg Storage, filename string, dstpath string, db *sql.DB, bui
 		CreatedAt:  time.Now(),
 	}
 
-	if err := strg.Move(filename, dstpath); err != nil {
+	if err := s.Move(filename, dstpath); err != nil {
 		return fmt.Errorf("failed to save artifact tar file: %w", err)
 	}
 
@@ -50,16 +50,16 @@ func SaveArtifact(strg Storage, filename string, dstpath string, db *sql.DB, bui
 }
 
 // SaveLogFile ログファイルを保存する
-func SaveLogFile(strg Storage, filename string, dstpath string, buildid string) error {
-	if err := strg.Move(filename, dstpath); err != nil {
+func SaveLogFile(s Storage, filename string, dstpath string, buildid string) error {
+	if err := s.Move(filename, dstpath); err != nil {
 		return fmt.Errorf("failed to move build log: %w", err)
 	}
 	return nil
 }
 
 // ExtractTarToDir tarファイルをディレクトリに展開する
-func ExtractTarToDir(strg Storage, sourcePath, destPath string) error {
-	inputFile, err := strg.Open(sourcePath)
+func ExtractTarToDir(s Storage, sourcePath, destPath string) error {
+	inputFile, err := s.Open(sourcePath)
 	if err != nil {
 		return fmt.Errorf("couldn't open source file: %w", err)
 	}
@@ -103,7 +103,7 @@ func ExtractTarToDir(strg Storage, sourcePath, destPath string) error {
 	return nil
 }
 
-type Config struct {
+type StorageConfig struct {
 	Type  string `mapstructure:"type" yaml:"type"`
 	Local struct {
 		// Dir 保存ディレクトリ

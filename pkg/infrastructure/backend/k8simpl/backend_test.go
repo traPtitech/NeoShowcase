@@ -9,7 +9,6 @@ import (
 
 	"github.com/stretchr/testify/require"
 	"github.com/traPtitech/neoshowcase/pkg/domain"
-	"github.com/traPtitech/neoshowcase/pkg/infrastructure/eventbus"
 	v1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -19,7 +18,7 @@ import (
 	clientcmdapi "k8s.io/client-go/tools/clientcmd/api"
 )
 
-func prepareManager(t *testing.T, bus eventbus.Bus) (*k8sBackend, *kubernetes.Clientset) {
+func prepareManager(t *testing.T, bus domain.Bus) (*k8sBackend, *kubernetes.Clientset) {
 	t.Helper()
 	if ok, _ := strconv.ParseBool(os.Getenv("ENABLE_K8S_TESTS")); !ok {
 		t.SkipNow()

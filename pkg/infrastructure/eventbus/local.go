@@ -4,6 +4,7 @@ import (
 	"context"
 
 	"github.com/leandro-lugaresi/hub"
+	"github.com/traPtitech/neoshowcase/pkg/domain"
 )
 
 type local struct {
@@ -13,7 +14,7 @@ type local struct {
 type localSubscription struct {
 	local *local
 	sub   hub.Subscription
-	c     chan *Event
+	c     chan *domain.Event
 	close chan struct{}
 }
 
@@ -21,7 +22,7 @@ func newLocalSubscription(local *local, sub hub.Subscription) *localSubscription
 	s := &localSubscription{
 		local: local,
 		sub:   sub,
-		c:     make(chan *Event),
+		c:     make(chan *domain.Event),
 		close: make(chan struct{}),
 	}
 	go s.relay()
@@ -36,12 +37,12 @@ func (s *localSubscription) relay() {
 			close(s.c)
 			return
 		case ev := <-s.sub.Receiver:
-			s.c <- &Event{Type: ev.Name, Body: Fields(ev.Fields)}
+			s.c <- &domain.Event{Type: ev.Name, Body: domain.Fields(ev.Fields)}
 		}
 	}
 }
 
-func (s *localSubscription) Chan() <-chan *Event {
+func (s *localSubscription) Chan() <-chan *domain.Event {
 	return s.c
 }
 
@@ -49,18 +50,18 @@ func (s *localSubscription) Unsubscribe() {
 	close(s.close)
 }
 
-func NewLocal(hub *hub.Hub) Bus {
+func NewLocal(hub *hub.Hub) domain.Bus {
 	return &local{bus: hub}
 }
 
-func (l *local) Publish(eventType string, body Fields) {
+func (l *local) Publish(eventType string, body domain.Fields) {
 	l.bus.Publish(hub.Message{
 		Name:   eventType,
 		Fields: hub.Fields(body),
 	})
 }
 
-func (l *local) Subscribe(events ...string) Subscription {
+func (l *local) Subscribe(events ...string) domain.Subscription {
 	sub := l.bus.Subscribe(100, events...)
 	return newLocalSubscription(l, sub)
 }

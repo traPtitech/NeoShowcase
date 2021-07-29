@@ -9,14 +9,13 @@ import (
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
 	"github.com/traPtitech/neoshowcase/pkg/domain"
-	"github.com/traPtitech/neoshowcase/pkg/infrastructure/storage"
 	"github.com/traPtitech/neoshowcase/pkg/util"
 )
 
 type BuiltIn struct {
 	docsRoot  string
 	port      int
-	storage   storage.Storage
+	storage   domain.Storage
 	server    *echo.Echo
 	sites     map[string]*builtInHost
 	sitesLock sync.RWMutex
@@ -27,7 +26,7 @@ type builtInHost struct {
 	Site *domain.Site
 }
 
-func NewBuiltIn(storage storage.Storage, path WebServerDocumentRootPath, port WebServerPort) Engine {
+func NewBuiltIn(storage domain.Storage, path domain.WebServerDocumentRootPath, port domain.WebServerPort) domain.Engine {
 	b := &BuiltIn{
 		docsRoot: string(path),
 		port:     int(port),
@@ -85,7 +84,7 @@ func (b *BuiltIn) Reconcile(sites []*domain.Site) error {
 
 		// 静的ファイルの配置
 		if !util.FileExists(artifactDir) {
-			if err := storage.ExtractTarToDir(b.storage, filepath.Join("artifacts", site.ArtifactID+".tar"), artifactDir); err != nil {
+			if err := domain.ExtractTarToDir(b.storage, filepath.Join("artifacts", site.ArtifactID+".tar"), artifactDir); err != nil {
 				return fmt.Errorf("failed to extract artifact tar: %w", err)
 			}
 		}

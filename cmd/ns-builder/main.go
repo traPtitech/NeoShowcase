@@ -12,6 +12,7 @@ import (
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
+	"github.com/traPtitech/neoshowcase/pkg/domain"
 	"github.com/traPtitech/neoshowcase/pkg/domain/builder"
 	"github.com/traPtitech/neoshowcase/pkg/infrastructure/admindb"
 	"github.com/traPtitech/neoshowcase/pkg/infrastructure/storage"
@@ -110,7 +111,7 @@ func provideAdminDBConfig(c Config) admindb.Config {
 	return c.DB
 }
 
-func provideStorageConfig(c Config) storage.Config {
+func provideStorageConfig(c Config) domain.StorageConfig {
 	return c.Storage
 }
 
@@ -122,7 +123,7 @@ func provideDockerImageRegistry(c Config) builder.DockerImageRegistryString {
 	return builder.DockerImageRegistryString(c.Buildkit.Registry)
 }
 
-func initStorage(c storage.Config) (storage.Storage, error) {
+func initStorage(c domain.StorageConfig) (domain.Storage, error) {
 	switch strings.ToLower(c.Type) {
 	case "local":
 		return storage.NewLocalStorage(c.Local.Dir)

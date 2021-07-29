@@ -24,8 +24,6 @@ import (
 	"github.com/traPtitech/neoshowcase/pkg/domain/builder"
 	"github.com/traPtitech/neoshowcase/pkg/domain/event"
 	"github.com/traPtitech/neoshowcase/pkg/infrastructure/admindb/models"
-	"github.com/traPtitech/neoshowcase/pkg/infrastructure/eventbus"
-	"github.com/traPtitech/neoshowcase/pkg/infrastructure/storage"
 	"github.com/volatiletech/null/v8"
 	"github.com/volatiletech/sqlboiler/v4/boil"
 	"golang.org/x/sync/errgroup"
@@ -39,7 +37,7 @@ const (
 
 type BuilderService interface {
 	GetStatus() builder.State
-	StreamEvents() eventbus.Subscription
+	StreamEvents() domain.Subscription
 	StartBuild(ctx context.Context, task *builder.Task) (buildID string, err error)
 	CancelBuild(ctx context.Context) (buildID string, err error)
 	Shutdown(ctx context.Context) error
@@ -47,8 +45,8 @@ type BuilderService interface {
 
 type builderService struct {
 	buildkit *buildkit.Client
-	storage  storage.Storage
-	eventbus eventbus.Bus
+	storage  domain.Storage
+	eventbus domain.Bus
 
 	// TODO 後で消す
 	db *sql.DB
@@ -63,7 +61,7 @@ type builderService struct {
 	statusLock sync.RWMutex
 }
 
-func NewBuilderService(buildkit *buildkit.Client, storage storage.Storage, eventbus eventbus.Bus, db *sql.DB, registry builder.DockerImageRegistryString) BuilderService {
+func NewBuilderService(buildkit *buildkit.Client, storage domain.Storage, eventbus domain.Bus, db *sql.DB, registry builder.DockerImageRegistryString) BuilderService {
 	return &builderService{
 		buildkit: buildkit,
 		storage:  storage,
@@ -81,7 +79,7 @@ func (s *builderService) GetStatus() builder.State {
 	return s.status
 }
 
-func (s *builderService) StreamEvents() eventbus.Subscription {
+func (s *builderService) StreamEvents() domain.Subscription {
 	return s.eventbus.Subscribe(event.BuilderBuildStarted, event.BuilderBuildFailed, event.BuilderBuildCanceled, event.BuilderBuildSucceeded)
 }
 
@@ -192,7 +190,7 @@ func (s *builderService) initializeTask(ctx context.Context, task *builder.Task)
 
 	intState.ctx, intState.cancelFunc = context.WithCancel(context.Background())
 	go s.processTask(task, intState)
-	s.eventbus.Publish(event.BuilderBuildStarted, eventbus.Fields{
+	s.eventbus.Publish(event.BuilderBuildStarted, domain.Fields{
 		"task": task,
 	})
 	return nil
@@ -220,7 +218,7 @@ func (s *builderService) processTask(task *builder.Task, intState *internalTaskS
 
 		// ログファイルの保存
 		_ = intState.logTempFile.Close()
-		if err := storage.SaveLogFile(s.storage, intState.logTempFile.Name(), filepath.Join("buildlogs", task.BuildID), task.BuildID); err != nil {
+		if err := domain.SaveLogFile(s.storage, intState.logTempFile.Name(), filepath.Join("buildlogs", task.BuildID), task.BuildID); err != nil {
 			log.WithError(err).Errorf("failed to save build log (%s)", task.BuildID)
 		}
 
@@ -229,7 +227,7 @@ func (s *builderService) processTask(task *builder.Task, intState *internalTaskS
 			_ = intState.artifactTempFile.Close()
 			if result == models.BuildLogsResultSUCCEEDED {
 				sid := domain.NewID()
-				err := storage.SaveArtifact(s.storage, intState.artifactTempFile.Name(), filepath.Join("artifacts", fmt.Sprintf("%s.tar", sid)), s.db, task.BuildID, sid)
+				err := domain.SaveArtifact(s.storage, intState.artifactTempFile.Name(), filepath.Join("artifacts", fmt.Sprintf("%s.tar", sid)), s.db, task.BuildID, sid)
 				if err != nil {
 					log.WithError(err).Errorf("failed to save directory to tar (BuildID: %s, ArtifactID: %s)", task.BuildID, sid)
 				}
@@ -251,15 +249,15 @@ func (s *builderService) processTask(task *builder.Task, intState *internalTaskS
 		// イベント発行
 		switch result {
 		case models.BuildLogsResultFAILED:
-			s.eventbus.Publish(event.BuilderBuildFailed, eventbus.Fields{
+			s.eventbus.Publish(event.BuilderBuildFailed, domain.Fields{
 				"task": task,
 			})
 		case models.BuildLogsResultCANCELED:
-			s.eventbus.Publish(event.BuilderBuildCanceled, eventbus.Fields{
+			s.eventbus.Publish(event.BuilderBuildCanceled, domain.Fields{
 				"task": task,
 			})
 		case models.BuildLogsResultSUCCEEDED:
-			s.eventbus.Publish(event.BuilderBuildSucceeded, eventbus.Fields{
+			s.eventbus.Publish(event.BuilderBuildSucceeded, domain.Fields{
 				"task": task,
 			})
 		}

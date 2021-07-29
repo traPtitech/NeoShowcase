@@ -4,9 +4,8 @@ import (
 	"context"
 	"database/sql"
 
-	"github.com/traPtitech/neoshowcase/pkg/infrastructure/backend"
-	"github.com/traPtitech/neoshowcase/pkg/infrastructure/eventbus"
-	"github.com/traPtitech/neoshowcase/pkg/infrastructure/web"
+	"github.com/traPtitech/neoshowcase/pkg/domain"
+	"github.com/traPtitech/neoshowcase/pkg/domain/web"
 	"github.com/traPtitech/neoshowcase/pkg/interface/broker"
 	"github.com/traPtitech/neoshowcase/pkg/interface/grpc"
 	"github.com/traPtitech/neoshowcase/pkg/usecase"
@@ -18,8 +17,8 @@ type Server struct {
 	db                  *sql.DB
 	builderConn         *grpc.BuilderServiceClientConn
 	ssgenConn           *grpc.StaticSiteServiceClientConn
-	backend             backend.Backend
-	bus                 eventbus.Bus
+	backend             domain.Backend
+	bus                 domain.Bus
 	builderEventsBroker broker.BuilderEventsBroker
 	cdService           usecase.ContinuousDeploymentService
 }

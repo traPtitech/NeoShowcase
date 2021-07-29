@@ -4,8 +4,8 @@ import (
 	"context"
 
 	log "github.com/sirupsen/logrus"
+	"github.com/traPtitech/neoshowcase/pkg/domain"
 	"github.com/traPtitech/neoshowcase/pkg/domain/event"
-	"github.com/traPtitech/neoshowcase/pkg/infrastructure/eventbus"
 	"github.com/traPtitech/neoshowcase/pkg/interface/repository"
 )
 
@@ -15,13 +15,13 @@ type ContinuousDeploymentService interface {
 }
 
 type continuousDeploymentService struct {
-	bus      eventbus.Bus
+	bus      domain.Bus
 	repo     repository.ApplicationRepository
 	deployer AppDeployService
 	builder  AppBuildService
 }
 
-func NewContinuousDeploymentService(bus eventbus.Bus, repo repository.ApplicationRepository, deployer AppDeployService, builder AppBuildService) ContinuousDeploymentService {
+func NewContinuousDeploymentService(bus domain.Bus, repo repository.ApplicationRepository, deployer AppDeployService, builder AppBuildService) ContinuousDeploymentService {
 	return &continuousDeploymentService{
 		bus:      bus,
 		repo:     repo,

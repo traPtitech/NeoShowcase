@@ -6,9 +6,8 @@ import (
 
 	docker "github.com/fsouza/go-dockerclient"
 	log "github.com/sirupsen/logrus"
+	"github.com/traPtitech/neoshowcase/pkg/domain"
 	"github.com/traPtitech/neoshowcase/pkg/domain/event"
-	"github.com/traPtitech/neoshowcase/pkg/infrastructure/backend"
-	"github.com/traPtitech/neoshowcase/pkg/infrastructure/eventbus"
 )
 
 type IngressConfDirPath string
@@ -23,12 +22,12 @@ const (
 
 type dockerBackend struct {
 	c              *docker.Client
-	bus            eventbus.Bus
+	bus            domain.Bus
 	dockerEvent    chan *docker.APIEvents
 	ingressConfDir string
 }
 
-func NewDockerBackend(c *docker.Client, bus eventbus.Bus, path IngressConfDirPath) (backend.Backend, error) {
+func NewDockerBackend(c *docker.Client, bus domain.Bus, path IngressConfDirPath) (domain.Backend, error) {
 	// showcase用のネットワークを用意
 	if err := initNetworks(c); err != nil {
 		return nil, fmt.Errorf("failed to init networks: %w", err)
@@ -59,14 +58,14 @@ func (b *dockerBackend) eventListener() {
 			switch ev.Action {
 			case "start":
 				if ev.Actor.Attributes[appContainerLabel] == "true" {
-					b.bus.Publish(event.ContainerAppStarted, eventbus.Fields{
+					b.bus.Publish(event.ContainerAppStarted, domain.Fields{
 						"application_id": ev.Actor.Attributes[appContainerApplicationIDLabel],
 						"environment_id": ev.Actor.Attributes[appContainerEnvironmentIDLabel],
 					})
 				}
 			case "stop":
 				if ev.Actor.Attributes[appContainerLabel] == "true" {
-					b.bus.Publish(event.ContainerAppStopped, eventbus.Fields{
+					b.bus.Publish(event.ContainerAppStopped, domain.Fields{
 						"application_id": ev.Actor.Attributes[appContainerApplicationIDLabel],
 						"environment_id": ev.Actor.Attributes[appContainerEnvironmentIDLabel],
 					})
