@@ -13,6 +13,8 @@ import (
 	"google.golang.org/protobuf/types/known/emptypb"
 )
 
+const queueBufferSize = 10
+
 type AppBuildService interface {
 	QueueBuild(ctx context.Context, env *domain.Environment) error
 }
@@ -27,16 +29,15 @@ type appBuildService struct {
 }
 
 type buildQueueItem struct {
-	Context context.Context
-	App     *domain.Application
-	Env     *domain.Environment
+	App *domain.Application
+	Env *domain.Environment
 }
 
 func NewAppBuildService(repo repository.ApplicationRepository, builder pb.BuilderServiceClient, registry builder.DockerImageRegistryString, prefix builder.DockerImageNamePrefixString) AppBuildService {
 	s := &appBuildService{
 		repo:            repo,
 		builder:         builder,
-		queue:           make(chan *buildQueueItem),
+		queue:           make(chan *buildQueueItem, queueBufferSize),
 		imageRegistry:   string(registry),
 		imageNamePrefix: string(prefix),
 	}
@@ -51,9 +52,8 @@ func (s *appBuildService) QueueBuild(ctx context.Context, env *domain.Environmen
 	}
 
 	s.queue <- &buildQueueItem{
-		Context: ctx,
-		App:     app,
-		Env:     env,
+		App: app,
+		Env: env,
 	}
 	return nil
 }
@@ -66,7 +66,7 @@ func (s *appBuildService) proxyBuildRequest(c chan *buildQueueItem) error {
 		}
 		for {
 			if stat.GetStatus() == pb.BuilderStatus_WAITING {
-				s.requestBuild(v.Context, v.App, v.Env)
+				s.requestBuild(context.Background(), v.App, v.Env)
 				break
 			}
 			time.Sleep(10 * time.Second)
