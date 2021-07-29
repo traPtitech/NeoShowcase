@@ -23,12 +23,12 @@ type appBuildService struct {
 	repo    repository.ApplicationRepository
 	builder pb.BuilderServiceClient
 
-	queue           chan *job
+	queue           chan *buildJob
 	imageRegistry   string
 	imageNamePrefix string
 }
 
-type job struct {
+type buildJob struct {
 	App *domain.Application
 	Env *domain.Environment
 }
@@ -37,7 +37,7 @@ func NewAppBuildService(repo repository.ApplicationRepository, builder pb.Builde
 	s := &appBuildService{
 		repo:            repo,
 		builder:         builder,
-		queue:           make(chan *job, queueBufferSize),
+		queue:           make(chan *buildJob, queueBufferSize),
 		imageRegistry:   string(registry),
 		imageNamePrefix: string(prefix),
 	}
@@ -51,7 +51,7 @@ func (s *appBuildService) QueueBuild(ctx context.Context, env *domain.Environmen
 		return fmt.Errorf("failed to QueueBuild: %w", err)
 	}
 
-	s.queue <- &job{
+	s.queue <- &buildJob{
 		App: app,
 		Env: env,
 	}
