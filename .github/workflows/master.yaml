@@ -3,7 +3,7 @@ name: master
 on:
   push:
     branches:
-      - master
+      - main
 
 jobs:
   build-images:
@@ -20,7 +20,7 @@ jobs:
     steps:
       - uses: actions/checkout@v2
       - name: Set APP_VERSION env
-        run: echo "APP_VERSION=master-SNAPSHOT" >> $GITHUB_ENV
+        run: echo "APP_VERSION=main-SNAPSHOT" >> $GITHUB_ENV
       - name: Set APP_REVISION env
         run: echo "APP_REVISION=$(git rev-parse --short HEAD)" >> $GITHUB_ENV
 
@@ -55,4 +55,4 @@ jobs:
           build-args: |
             APP_VERSION=${{ env.APP_VERSION }}
             APP_REVISION=${{ env.APP_REVISION }}
-          tags: ghcr.io/traptitech/${{ matrix.component }}:master
+          tags: ghcr.io/traptitech/${{ matrix.component }}:main
