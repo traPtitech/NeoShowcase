@@ -13,6 +13,7 @@ import (
 	"github.com/volatiletech/sqlboiler/v4/queries/qm"
 )
 
+//go:generate go run github.com/golang/mock/mockgen -source=$GOFILE -package=mock_$GOPACKAGE -destination=./mock/$GOFILE
 type ApplicationRepository interface {
 	CreateApplication(ctx context.Context, args CreateApplicationArgs) (*domain.Application, error)
 	GetApplicationByID(ctx context.Context, id string) (*domain.Application, error)
