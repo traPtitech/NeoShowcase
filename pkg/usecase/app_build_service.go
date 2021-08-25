@@ -3,6 +3,7 @@ package usecase
 import (
 	"context"
 	"fmt"
+	"sync"
 	"time"
 
 	log "github.com/sirupsen/logrus"
@@ -13,10 +14,14 @@ import (
 	"google.golang.org/protobuf/types/known/emptypb"
 )
 
-const queueBufferSize = 10
+const (
+	queueBufferSize = 10
+	requestInterval = 10 * time.Second
+)
 
 type AppBuildService interface {
 	QueueBuild(ctx context.Context, env *domain.Environment) error
+	Shutdown()
 }
 
 type appBuildService struct {
@@ -24,6 +29,7 @@ type appBuildService struct {
 	builder pb.BuilderServiceClient
 
 	queue           chan *buildJob
+	queueWait       sync.WaitGroup
 	imageRegistry   string
 	imageNamePrefix string
 }
@@ -50,7 +56,7 @@ func (s *appBuildService) QueueBuild(ctx context.Context, env *domain.Environmen
 	if err != nil {
 		return fmt.Errorf("failed to QueueBuild: %w", err)
 	}
-
+	s.queueWait.Add(1)
 	s.queue <- &buildJob{
 		App: app,
 		Env: env,
@@ -58,21 +64,28 @@ func (s *appBuildService) QueueBuild(ctx context.Context, env *domain.Environmen
 	return nil
 }
 
+func (s *appBuildService) Shutdown() {
+	s.queueWait.Wait()
+	close(s.queue)
+}
+
 func (s *appBuildService) startQueueManager() {
 	for v := range s.queue {
-		stat, err := s.builder.GetStatus(context.Background(), &emptypb.Empty{})
-		if err != nil {
-			log.WithError(err).Error("failed to get status")
-		}
 		for {
+			stat, err := s.builder.GetStatus(context.Background(), &emptypb.Empty{})
+			if err != nil {
+				log.WithError(err).Error("failed to get status")
+				break
+			}
 			if stat.GetStatus() == pb.BuilderStatus_WAITING {
 				err := s.requestBuild(context.Background(), v.App, v.Env)
 				if err != nil {
 					log.WithError(err).Error("failed to request build")
 				}
+				s.queueWait.Done()
 				break
 			}
-			time.Sleep(10 * time.Second)
+			time.Sleep(requestInterval)
 		}
 	}
 }
@@ -81,7 +94,7 @@ func (s *appBuildService) requestBuild(ctx context.Context, app *domain.Applicat
 	switch env.BuildType {
 	case builder.BuildTypeImage:
 		_, err := s.builder.StartBuildImage(ctx, &pb.StartBuildImageRequest{
-			ImageName: builder.GetImageName(s.imageNamePrefix, s.imageNamePrefix, env.ApplicationID),
+			ImageName: builder.GetImageName(s.imageRegistry, s.imageNamePrefix, env.ApplicationID),
 			Source: &pb.BuildSource{
 				RepositoryUrl: app.Repository.RemoteURL, // TODO ブランチ・タグ指定に対応
 			},
