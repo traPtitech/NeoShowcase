@@ -10,7 +10,7 @@
   </p>
   <p>
     <a href="https://github.com/traPtitech/NeoShowcase/actions/workflows/ci.yaml"><img src="https://github.com/traPtitech/NeoShowcase/actions/workflows/ci.yaml/badge.svg"></a>
-    <a href="https://github.com/traPtitech/NeoShowcase/actions/workflows/master.yaml"><img src="https://github.com/traPtitech/NeoShowcase/actions/workflows/master.yaml/badge.svg"></a>
+    <a href="https://github.com/traPtitech/NeoShowcase/actions/workflows/main.yaml"><img src="https://github.com/traPtitech/NeoShowcase/actions/workflows/main.yaml/badge.svg"></a>
     <a href="https://codecov.io/gh/traPtitech/NeoShowcase"><img src="https://codecov.io/gh/traPtitech/NeoShowcase/branch/master/graph/badge.svg"></a>
   </p>
 </div>
