@@ -72,12 +72,12 @@ func (s *appBuildService) Shutdown() {
 func (s *appBuildService) startQueueManager() {
 	for v := range s.queue {
 		for {
-			stat, err := s.builder.GetStatus(context.Background(), &emptypb.Empty{})
+			res, err := s.builder.GetStatus(context.Background(), &emptypb.Empty{})
 			if err != nil {
 				log.WithError(err).Error("failed to get status")
 				break
 			}
-			if stat.GetStatus() == pb.BuilderStatus_WAITING {
+			if res.GetStatus() == pb.BuilderStatus_WAITING {
 				err := s.requestBuild(context.Background(), v.App, v.Env)
 				if err != nil {
 					log.WithError(err).Error("failed to request build")
