@@ -5,7 +5,6 @@ ALTER TABLE `environments`
 
 ALTER TABLE `build_logs`
     DROP FOREIGN KEY `fk_build_logs_environment_id`,
-    DROP INDEX `fk_build_logs_environment_id`,
     CHANGE `environment_id` `branch_id` varchar(22) COLLATE 'utf8mb4_general_ci' NULL COMMENT 'ブランチID' AFTER `finished_at`,
     ADD CONSTRAINT `fk_build_logs_branch_id` FOREIGN KEY (`branch_id`) REFERENCES `branches` (`id`) ON UPDATE RESTRICT ON DELETE RESTRICT;
 
@@ -36,7 +35,6 @@ ALTER TABLE `websites`
 
 ALTER TABLE `build_logs`
     DROP FOREIGN KEY `fk_build_logs_branch_id`,
-    DROP INDEX `fk_build_logs_branch_id`,
     CHANGE `branch_id` `environment_id` varchar(22) COLLATE 'utf8mb4_general_ci' NULL COMMENT '環境ID' AFTER `finished_at`,
     ADD CONSTRAINT `fk_build_logs_environment_id` FOREIGN KEY (`environment_id`) REFERENCES `branches` (`id`) ON UPDATE RESTRICT ON DELETE RESTRICT;
 
