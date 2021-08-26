@@ -11,14 +11,14 @@ Webサイトテーブル
 CREATE TABLE `websites` (
   `id` varchar(22) NOT NULL COMMENT 'サイトID',
   `fqdn` varchar(50) NOT NULL COMMENT 'サイトURLのFQDN',
-  `http_port` int(11) NOT NULL DEFAULT '80' COMMENT 'HTTPポート番号',
+  `http_port` int(11) NOT NULL DEFAULT 80 COMMENT 'HTTPポート番号',
   `created_at` datetime(6) NOT NULL COMMENT '作成日時',
   `updated_at` datetime(6) NOT NULL COMMENT '更新日時',
-  `environment_id` varchar(22) NOT NULL COMMENT '環境ID',
+  `branch_id` varchar(22) NOT NULL COMMENT 'ブランチID',
   PRIMARY KEY (`id`),
   UNIQUE KEY `fqdn` (`fqdn`),
-  UNIQUE KEY `uk_environment_id` (`environment_id`),
-  CONSTRAINT `fk_websites_environment_id` FOREIGN KEY (`environment_id`) REFERENCES `environments` (`id`)
+  UNIQUE KEY `branch_id` (`branch_id`),
+  CONSTRAINT `websites_ibfk_1` FOREIGN KEY (`branch_id`) REFERENCES `branches` (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='Webサイトテーブル'
 ```
 
@@ -33,24 +33,24 @@ CREATE TABLE `websites` (
 | http_port | int(11) | 80 | false |  |  | HTTPポート番号 |
 | created_at | datetime(6) |  | false |  |  | 作成日時 |
 | updated_at | datetime(6) |  | false |  |  | 更新日時 |
-| environment_id | varchar(22) |  | false |  | [environments](environments.md) | 環境ID |
+| branch_id | varchar(22) |  | false |  | [branches](branches.md) | ブランチID |
 
 ## Constraints
 
 | Name | Type | Definition |
 | ---- | ---- | ---------- |
-| fk_websites_environment_id | FOREIGN KEY | FOREIGN KEY (environment_id) REFERENCES environments (id) |
+| branch_id | UNIQUE | UNIQUE KEY branch_id (branch_id) |
 | fqdn | UNIQUE | UNIQUE KEY fqdn (fqdn) |
 | PRIMARY | PRIMARY KEY | PRIMARY KEY (id) |
-| uk_environment_id | UNIQUE | UNIQUE KEY uk_environment_id (environment_id) |
+| websites_ibfk_1 | FOREIGN KEY | FOREIGN KEY (branch_id) REFERENCES branches (id) |
 
 ## Indexes
 
 | Name | Definition |
 | ---- | ---------- |
 | PRIMARY | PRIMARY KEY (id) USING BTREE |
+| branch_id | UNIQUE KEY branch_id (branch_id) USING BTREE |
 | fqdn | UNIQUE KEY fqdn (fqdn) USING BTREE |
-| uk_environment_id | UNIQUE KEY uk_environment_id (environment_id) USING BTREE |
 
 ## Relations
 

@@ -11,7 +11,7 @@
 CREATE TABLE `available_domains` (
   `id` varchar(22) NOT NULL COMMENT 'テンプレートID',
   `domain` varchar(100) NOT NULL COMMENT 'ドメイン',
-  `subdomain` tinyint(1) NOT NULL DEFAULT '0' COMMENT 'サブドメインが利用可能か',
+  `subdomain` tinyint(1) NOT NULL DEFAULT 0 COMMENT 'サブドメインが利用可能か',
   PRIMARY KEY (`id`),
   UNIQUE KEY `domain` (`domain`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='利用可能ドメインテーブル'
