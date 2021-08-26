@@ -17,8 +17,8 @@ CREATE TABLE `websites` (
   `branch_id` varchar(22) NOT NULL COMMENT 'ブランチID',
   PRIMARY KEY (`id`),
   UNIQUE KEY `fqdn` (`fqdn`),
-  UNIQUE KEY `branch_id` (`branch_id`),
-  CONSTRAINT `websites_ibfk_1` FOREIGN KEY (`branch_id`) REFERENCES `branches` (`id`)
+  UNIQUE KEY `uk_branch_id` (`branch_id`),
+  CONSTRAINT `fk_websites_branch_id` FOREIGN KEY (`branch_id`) REFERENCES `branches` (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='Webサイトテーブル'
 ```
 
@@ -39,18 +39,18 @@ CREATE TABLE `websites` (
 
 | Name | Type | Definition |
 | ---- | ---- | ---------- |
-| branch_id | UNIQUE | UNIQUE KEY branch_id (branch_id) |
+| fk_websites_branch_id | FOREIGN KEY | FOREIGN KEY (branch_id) REFERENCES branches (id) |
 | fqdn | UNIQUE | UNIQUE KEY fqdn (fqdn) |
 | PRIMARY | PRIMARY KEY | PRIMARY KEY (id) |
-| websites_ibfk_1 | FOREIGN KEY | FOREIGN KEY (branch_id) REFERENCES branches (id) |
+| uk_branch_id | UNIQUE | UNIQUE KEY uk_branch_id (branch_id) |
 
 ## Indexes
 
 | Name | Definition |
 | ---- | ---------- |
 | PRIMARY | PRIMARY KEY (id) USING BTREE |
-| branch_id | UNIQUE KEY branch_id (branch_id) USING BTREE |
 | fqdn | UNIQUE KEY fqdn (fqdn) USING BTREE |
+| uk_branch_id | UNIQUE KEY uk_branch_id (branch_id) USING BTREE |
 
 ## Relations
 

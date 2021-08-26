@@ -15,8 +15,8 @@ CREATE TABLE `build_logs` (
   `finished_at` datetime(6) DEFAULT NULL COMMENT 'ビルド終了日時',
   `branch_id` varchar(22) DEFAULT NULL COMMENT 'ブランチID',
   PRIMARY KEY (`id`),
-  KEY `branch_id` (`branch_id`),
-  CONSTRAINT `build_logs_ibfk_1` FOREIGN KEY (`branch_id`) REFERENCES `branches` (`id`)
+  KEY `fk_build_logs_branch_id` (`branch_id`),
+  CONSTRAINT `fk_build_logs_branch_id` FOREIGN KEY (`branch_id`) REFERENCES `branches` (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='ビルドログテーブル'
 ```
 
@@ -36,14 +36,14 @@ CREATE TABLE `build_logs` (
 
 | Name | Type | Definition |
 | ---- | ---- | ---------- |
-| build_logs_ibfk_1 | FOREIGN KEY | FOREIGN KEY (branch_id) REFERENCES branches (id) |
+| fk_build_logs_branch_id | FOREIGN KEY | FOREIGN KEY (branch_id) REFERENCES branches (id) |
 | PRIMARY | PRIMARY KEY | PRIMARY KEY (id) |
 
 ## Indexes
 
 | Name | Definition |
 | ---- | ---------- |
-| branch_id | KEY branch_id (branch_id) USING BTREE |
+| fk_build_logs_branch_id | KEY fk_build_logs_branch_id (branch_id) USING BTREE |
 | PRIMARY | PRIMARY KEY (id) USING BTREE |
 
 ## Relations

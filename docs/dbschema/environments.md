@@ -13,8 +13,8 @@ CREATE TABLE `environments` (
   `branch_id` varchar(22) NOT NULL COMMENT 'ブランチID',
   `key` varchar(100) NOT NULL COMMENT '環境変数のキー',
   `value` text NOT NULL COMMENT '環境変数の値',
-  KEY `branch_id` (`branch_id`),
-  CONSTRAINT `environments_ibfk_1` FOREIGN KEY (`branch_id`) REFERENCES `branches` (`id`)
+  KEY `fk_environments_branch_id` (`branch_id`),
+  CONSTRAINT `fk_environments_branch_id` FOREIGN KEY (`branch_id`) REFERENCES `branches` (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='環境変数テーブル'
 ```
 
@@ -33,13 +33,13 @@ CREATE TABLE `environments` (
 
 | Name | Type | Definition |
 | ---- | ---- | ---------- |
-| environments_ibfk_1 | FOREIGN KEY | FOREIGN KEY (branch_id) REFERENCES branches (id) |
+| fk_environments_branch_id | FOREIGN KEY | FOREIGN KEY (branch_id) REFERENCES branches (id) |
 
 ## Indexes
 
 | Name | Definition |
 | ---- | ---------- |
-| branch_id | KEY branch_id (branch_id) USING BTREE |
+| fk_environments_branch_id | KEY fk_environments_branch_id (branch_id) USING BTREE |
 
 ## Relations
 
