@@ -28,13 +28,13 @@ CREATE TABLE `applications` (
 
 | Name | Type | Default | Nullable | Children | Parents | Comment |
 | ---- | ---- | ------- | -------- | -------- | ------- | ------- |
-| id | varchar(22) |  | false | [environments](environments.md) |  | アプリID |
+| id | varchar(22) |  | false | [branches](branches.md) |  | アプリID |
 | owner | varchar(100) |  | false |  |  | アプリ所有者 |
 | name | varchar(100) |  | false |  |  | アプリ名 |
 | repository_id | varchar(22) |  | false |  | [repositories](repositories.md) | アプリのリポジトリID |
 | created_at | datetime(6) |  | false |  |  | 作成日時 |
 | updated_at | datetime(6) |  | false |  |  | 更新日時 |
-| deleted_at | datetime(6) |  | true |  |  | 削除日時 |
+| deleted_at | datetime(6) | NULL | true |  |  | 削除日時 |
 
 ## Constraints
 

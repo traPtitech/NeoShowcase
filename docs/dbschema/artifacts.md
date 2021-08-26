@@ -30,7 +30,7 @@ CREATE TABLE `artifacts` (
 | build_log_id | varchar(22) |  | false |  | [build_logs](build_logs.md) | ビルドログID |
 | size | bigint(20) |  | false |  |  | 生成物ファイルサイズ(tar) |
 | created_at | datetime(6) |  | false |  |  | 作成日時 |
-| deleted_at | datetime(6) |  | true |  |  | 削除日時 |
+| deleted_at | datetime(6) | NULL | true |  |  | 削除日時 |
 
 ## Constraints
 

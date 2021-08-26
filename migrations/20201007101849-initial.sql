@@ -35,7 +35,7 @@ CREATE TABLE `sites`
     `updated_at`     DATETIME(6)                NOT NULL COMMENT '更新日時',
     PRIMARY KEY (`id`),
     UNIQUE KEY (`fqdn`, `path_prefix`),
-    CONSTRAINT fk_sites_application_id FOREIGN KEY (`application_id`) REFERENCES applications (`id`) ON UPDATE RESTRICT ON DELETE RESTRICT
+    CONSTRAINT `fk_sites_application_id` FOREIGN KEY (`application_id`) REFERENCES `applications` (`id`) ON UPDATE RESTRICT ON DELETE RESTRICT
 ) ENGINE = InnoDB
   DEFAULT CHARACTER SET = utf8mb4
     COMMENT = 'サイトテーブル';
@@ -48,7 +48,7 @@ CREATE TABLE `build_logs`
     `started_at`     DATETIME(6)                                          NOT NULL COMMENT 'ビルド開始日時',
     `finished_at`    DATETIME(6) COMMENT 'ビルド終了日時',
     PRIMARY KEY (`id`),
-    CONSTRAINT fk_build_logs_application_id FOREIGN KEY (`application_id`) REFERENCES applications (`id`) ON UPDATE RESTRICT ON DELETE RESTRICT
+    CONSTRAINT `fk_build_logs_application_id` FOREIGN KEY (`application_id`) REFERENCES `applications` (`id`) ON UPDATE RESTRICT ON DELETE RESTRICT
 ) ENGINE = InnoDB
   DEFAULT CHARACTER SET = utf8mb4
     COMMENT = 'ビルドログテーブル';
@@ -61,7 +61,7 @@ CREATE TABLE `artifacts`
     `created_at`   DATETIME(6) NOT NULL COMMENT '作成日時',
     `deleted_at`   DATETIME(6) COMMENT '削除日時',
     PRIMARY KEY (`id`),
-    CONSTRAINT fk_artifacts_buildlog_id FOREIGN KEY (`build_log_id`) REFERENCES build_logs (`id`) ON UPDATE RESTRICT ON DELETE RESTRICT
+    CONSTRAINT `fk_artifacts_buildlog_id` FOREIGN KEY (`build_log_id`) REFERENCES `build_logs` (`id`) ON UPDATE RESTRICT ON DELETE RESTRICT
 ) ENGINE = InnoDB
   DEFAULT CHARACTER SET = utf8mb4
     COMMENT = '静的ファイル生成物テーブル';
@@ -71,8 +71,8 @@ CREATE TABLE `static_site_details`
     `site_id`     VARCHAR(22) NOT NULL COMMENT 'サイトID',
     `artifact_id` VARCHAR(22) COMMENT '配信する静的ファイル生成物のID',
     PRIMARY KEY (`site_id`),
-    CONSTRAINT fk_static_site_details_site_id FOREIGN KEY (`site_id`) REFERENCES sites (`id`) ON UPDATE CASCADE ON DELETE CASCADE,
-    CONSTRAINT fk_static_site_details_artifact_id FOREIGN KEY (`artifact_id`) REFERENCES artifacts (`id`) ON UPDATE RESTRICT ON DELETE RESTRICT
+    CONSTRAINT `fk_static_site_details_site_id` FOREIGN KEY (`site_id`) REFERENCES `sites` (`id`) ON UPDATE CASCADE ON DELETE CASCADE,
+    CONSTRAINT `fk_static_site_details_artifact_id` FOREIGN KEY (`artifact_id`) REFERENCES `artifacts` (`id`) ON UPDATE RESTRICT ON DELETE RESTRICT
 ) ENGINE = InnoDB
   DEFAULT CHARACTER SET = utf8mb4
     COMMENT = '静的サイト詳細テーブル';
@@ -81,16 +81,16 @@ CREATE TABLE `dynamic_site_details`
 (
     `site_id` VARCHAR(22) NOT NULL COMMENT 'サイトID',
     PRIMARY KEY (`site_id`),
-    CONSTRAINT fk_dynamic_site_details_site_id FOREIGN KEY (`site_id`) REFERENCES sites (`id`) ON UPDATE CASCADE ON DELETE CASCADE
+    CONSTRAINT `fk_dynamic_site_details_site_id` FOREIGN KEY (`site_id`) REFERENCES `sites` (`id`) ON UPDATE CASCADE ON DELETE CASCADE
 ) ENGINE = InnoDB
   DEFAULT CHARACTER SET = utf8mb4
     COMMENT = '動的サイト詳細テーブル';
 
 -- +migrate Down
-DROP TABLE dynamic_site_details;
-DROP TABLE static_site_details;
-DROP TABLE artifacts;
-DROP TABLE build_logs;
-DROP TABLE sites;
-DROP TABLE applications;
-DROP TABLE repositories;
+DROP TABLE `dynamic_site_details`;
+DROP TABLE `static_site_details`;
+DROP TABLE `artifacts`;
+DROP TABLE `build_logs`;
+DROP TABLE `sites`;
+DROP TABLE `applications`;
+DROP TABLE `repositories`;
