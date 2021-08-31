@@ -32,11 +32,8 @@ func TestDockerBackend_GetContainerLog(t *testing.T) {
 				Force:         true,
 			})
 		})
-		opts := LogOptions{
-			Stdout: true,
-			Stderr: true,
-		}
-		result, err := m.GetContainerLog(context.Background(), appID, envID, opts)
+		opts := LogOptions{}
+		result, err := m.GetContainerStdOut(context.Background(), appID, envID, opts)
 		if assert.NoError(t, err) {
 			assert.NotEmpty(t, result)
 		}
