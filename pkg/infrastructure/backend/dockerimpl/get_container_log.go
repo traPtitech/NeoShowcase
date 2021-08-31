@@ -14,7 +14,7 @@ type LogOptions struct {
 	Since  int64
 }
 
-func (d *dockerBackend) GetContainerLog(ctx context.Context, appID string, envID string, opt LogOptions) (string, error) {
+func (b *dockerBackend) GetContainerLog(ctx context.Context, appID string, envID string, opt LogOptions) (string, error) {
 	str := &bytes.Buffer{}
 	logopts := docker.LogsOptions{
 		Context:      ctx,
@@ -26,7 +26,7 @@ func (d *dockerBackend) GetContainerLog(ctx context.Context, appID string, envID
 		Since:        opt.Since,
 		RawTerminal:  true,
 	}
-	err := d.c.Logs(logopts)
+	err := b.c.Logs(logopts)
 	if err != nil {
 		return "", err
 	}
