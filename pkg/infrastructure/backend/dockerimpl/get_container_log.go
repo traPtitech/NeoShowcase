@@ -7,12 +7,12 @@ import (
 	docker "github.com/fsouza/go-dockerclient"
 )
 
-type LogOptions struct {
+type LogsOptions struct {
 	Tail  string
 	Since int64
 }
 
-func (b *dockerBackend) GetContainerStdOut(ctx context.Context, appID string, envID string, opt LogOptions) (string, error) {
+func (b *dockerBackend) GetContainerStdOut(ctx context.Context, appID string, envID string, opt LogsOptions) (string, error) {
 	str := &bytes.Buffer{}
 	logopts := docker.LogsOptions{
 		Context:      ctx,
