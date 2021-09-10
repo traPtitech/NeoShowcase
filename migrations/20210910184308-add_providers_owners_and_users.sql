@@ -16,8 +16,8 @@ CREATE TABLE `owners`
   `user_id` CHAR(26) NOT NULL COMMENT 'ユーザID',
   `app_id` CHAR(26) NOT NULL COMMENT 'アプリID',
   PRIMARY KEY (`user_id`, `app_id`),
-  CONSTRAINTS `fk_owners_user_id` FOREIGN KEY (`user_id`) REFERENCES `users`(`id`) ON UPDATE RESTRICT ON DELETE RESTRICT,
-  CONSTRAINTS `fk_owners_app_id` FOREIGN KEY (`app_id`) REFERENCES `applications`(`id`) ON UPDATE RESTRICT ON DELETE RESTRICT
+  CONSTRAINT `fk_owners_user_id` FOREIGN KEY (`user_id`) REFERENCES `users`(`id`) ON UPDATE RESTRICT ON DELETE RESTRICT,
+  CONSTRAINT `fk_owners_app_id` FOREIGN KEY (`app_id`) REFERENCES `applications`(`id`) ON UPDATE RESTRICT ON DELETE RESTRICT
 ) ENGINE = InnoDB 
   DEFAULT CHARACTER SET = utf8mb4
     COMMENT = 'アプリケーション所有者テーブル';
