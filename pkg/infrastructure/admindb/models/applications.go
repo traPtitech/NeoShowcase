@@ -143,17 +143,17 @@ var ApplicationWhere = struct {
 
 // ApplicationRels is where relationship names are stored.
 var ApplicationRels = struct {
-	Repository   string
-	Environments string
+	Repository string
+	Branches   string
 }{
-	Repository:   "Repository",
-	Environments: "Environments",
+	Repository: "Repository",
+	Branches:   "Branches",
 }
 
 // applicationR is where relationships are stored.
 type applicationR struct {
-	Repository   *Repository      `boil:"Repository" json:"Repository" toml:"Repository" yaml:"Repository"`
-	Environments EnvironmentSlice `boil:"Environments" json:"Environments" toml:"Environments" yaml:"Environments"`
+	Repository *Repository `boil:"Repository" json:"Repository" toml:"Repository" yaml:"Repository"`
+	Branches   BranchSlice `boil:"Branches" json:"Branches" toml:"Branches" yaml:"Branches"`
 }
 
 // NewStruct creates a new relationship struct
@@ -460,22 +460,22 @@ func (o *Application) Repository(mods ...qm.QueryMod) repositoryQuery {
 	return query
 }
 
-// Environments retrieves all the environment's Environments with an executor.
-func (o *Application) Environments(mods ...qm.QueryMod) environmentQuery {
+// Branches retrieves all the branch's Branches with an executor.
+func (o *Application) Branches(mods ...qm.QueryMod) branchQuery {
 	var queryMods []qm.QueryMod
 	if len(mods) != 0 {
 		queryMods = append(queryMods, mods...)
 	}
 
 	queryMods = append(queryMods,
-		qm.Where("`environments`.`application_id`=?", o.ID),
+		qm.Where("`branches`.`application_id`=?", o.ID),
 	)
 
-	query := Environments(queryMods...)
-	queries.SetFrom(query.Query, "`environments`")
+	query := Branches(queryMods...)
+	queries.SetFrom(query.Query, "`branches`")
 
 	if len(queries.GetSelect(query.Query)) == 0 {
-		queries.SetSelect(query.Query, []string{"`environments`.*"})
+		queries.SetSelect(query.Query, []string{"`branches`.*"})
 	}
 
 	return query
@@ -585,9 +585,9 @@ func (applicationL) LoadRepository(ctx context.Context, e boil.ContextExecutor, 
 	return nil
 }
 
-// LoadEnvironments allows an eager lookup of values, cached into the
+// LoadBranches allows an eager lookup of values, cached into the
 // loaded structs of the objects. This is for a 1-M or N-M relationship.
-func (applicationL) LoadEnvironments(ctx context.Context, e boil.ContextExecutor, singular bool, maybeApplication interface{}, mods queries.Applicator) error {
+func (applicationL) LoadBranches(ctx context.Context, e boil.ContextExecutor, singular bool, maybeApplication interface{}, mods queries.Applicator) error {
 	var slice []*Application
 	var object *Application
 
@@ -625,8 +625,8 @@ func (applicationL) LoadEnvironments(ctx context.Context, e boil.ContextExecutor
 	}
 
 	query := NewQuery(
-		qm.From(`environments`),
-		qm.WhereIn(`environments.application_id in ?`, args...),
+		qm.From(`branches`),
+		qm.WhereIn(`branches.application_id in ?`, args...),
 	)
 	if mods != nil {
 		mods.Apply(query)
@@ -634,22 +634,22 @@ func (applicationL) LoadEnvironments(ctx context.Context, e boil.ContextExecutor
 
 	results, err := query.QueryContext(ctx, e)
 	if err != nil {
-		return errors.Wrap(err, "failed to eager load environments")
+		return errors.Wrap(err, "failed to eager load branches")
 	}
 
-	var resultSlice []*Environment
+	var resultSlice []*Branch
 	if err = queries.Bind(results, &resultSlice); err != nil {
-		return errors.Wrap(err, "failed to bind eager loaded slice environments")
+		return errors.Wrap(err, "failed to bind eager loaded slice branches")
 	}
 
 	if err = results.Close(); err != nil {
-		return errors.Wrap(err, "failed to close results in eager load on environments")
+		return errors.Wrap(err, "failed to close results in eager load on branches")
 	}
 	if err = results.Err(); err != nil {
-		return errors.Wrap(err, "error occurred during iteration of eager loaded relations for environments")
+		return errors.Wrap(err, "error occurred during iteration of eager loaded relations for branches")
 	}
 
-	if len(environmentAfterSelectHooks) != 0 {
+	if len(branchAfterSelectHooks) != 0 {
 		for _, obj := range resultSlice {
 			if err := obj.doAfterSelectHooks(ctx, e); err != nil {
 				return err
@@ -657,10 +657,10 @@ func (applicationL) LoadEnvironments(ctx context.Context, e boil.ContextExecutor
 		}
 	}
 	if singular {
-		object.R.Environments = resultSlice
+		object.R.Branches = resultSlice
 		for _, foreign := range resultSlice {
 			if foreign.R == nil {
-				foreign.R = &environmentR{}
+				foreign.R = &branchR{}
 			}
 			foreign.R.Application = object
 		}
@@ -670,9 +670,9 @@ func (applicationL) LoadEnvironments(ctx context.Context, e boil.ContextExecutor
 	for _, foreign := range resultSlice {
 		for _, local := range slice {
 			if local.ID == foreign.ApplicationID {
-				local.R.Environments = append(local.R.Environments, foreign)
+				local.R.Branches = append(local.R.Branches, foreign)
 				if foreign.R == nil {
-					foreign.R = &environmentR{}
+					foreign.R = &branchR{}
 				}
 				foreign.R.Application = local
 				break
@@ -730,11 +730,11 @@ func (o *Application) SetRepository(ctx context.Context, exec boil.ContextExecut
 	return nil
 }
 
-// AddEnvironments adds the given related objects to the existing relationships
+// AddBranches adds the given related objects to the existing relationships
 // of the application, optionally inserting them as new records.
-// Appends related to o.R.Environments.
+// Appends related to o.R.Branches.
 // Sets related.R.Application appropriately.
-func (o *Application) AddEnvironments(ctx context.Context, exec boil.ContextExecutor, insert bool, related ...*Environment) error {
+func (o *Application) AddBranches(ctx context.Context, exec boil.ContextExecutor, insert bool, related ...*Branch) error {
 	var err error
 	for _, rel := range related {
 		if insert {
@@ -744,9 +744,9 @@ func (o *Application) AddEnvironments(ctx context.Context, exec boil.ContextExec
 			}
 		} else {
 			updateQuery := fmt.Sprintf(
-				"UPDATE `environments` SET %s WHERE %s",
+				"UPDATE `branches` SET %s WHERE %s",
 				strmangle.SetParamNames("`", "`", 0, []string{"application_id"}),
-				strmangle.WhereClause("`", "`", 0, environmentPrimaryKeyColumns),
+				strmangle.WhereClause("`", "`", 0, branchPrimaryKeyColumns),
 			)
 			values := []interface{}{o.ID, rel.ID}
 
@@ -765,15 +765,15 @@ func (o *Application) AddEnvironments(ctx context.Context, exec boil.ContextExec
 
 	if o.R == nil {
 		o.R = &applicationR{
-			Environments: related,
+			Branches: related,
 		}
 	} else {
-		o.R.Environments = append(o.R.Environments, related...)
+		o.R.Branches = append(o.R.Branches, related...)
 	}
 
 	for _, rel := range related {
 		if rel.R == nil {
-			rel.R = &environmentR{
+			rel.R = &branchR{
 				Application: o,
 			}
 		} else {

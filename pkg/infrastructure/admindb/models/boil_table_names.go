@@ -7,6 +7,7 @@ var TableNames = struct {
 	Applications     string
 	Artifacts        string
 	AvailableDomains string
+	Branches         string
 	BuildLogs        string
 	Environments     string
 	Repositories     string
@@ -15,6 +16,7 @@ var TableNames = struct {
 	Applications:     "applications",
 	Artifacts:        "artifacts",
 	AvailableDomains: "available_domains",
+	Branches:         "branches",
 	BuildLogs:        "build_logs",
 	Environments:     "environments",
 	Repositories:     "repositories",
