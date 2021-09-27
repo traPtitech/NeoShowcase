@@ -1,6 +1,6 @@
 -- +migrate Up
 CREATE TABLE `providers` (
-  `id` CHAR(26) NOT NULL COMMENT 'プロバイダID',
+  `id` CHAR(36) NOT NULL COMMENT 'プロバイダID',
   `name` VARCHAR(16) NOT NULL COMMENT 'プロバイダ名',
   `secret` BINARY(60) NOT NULL COMMENT 'Webhookシークレット',
   PRIMARY KEY (`id`)
