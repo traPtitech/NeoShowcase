@@ -9,16 +9,16 @@ CREATE TABLE `providers` (
     COMMENT = 'プロバイダテーブル';
 
 CREATE TABLE `users` (
-  `id` CHAR(26) NOT NULL COMMENT 'ユーザID',
-  `name` VARCHAR(255) NOT NULL COMMENT 'ユーザ名',
+  `id` CHAR(36) NOT NULL COMMENT 'ユーザーID',
+  `name` VARCHAR(255) NOT NULL COMMENT 'ユーザー名',
   PRIMARY KEY (`id`)
 ) ENGINE = InnoDB 
   DEFAULT CHARACTER SET = utf8mb4 
-    COMMENT = 'ユーザテーブル';
+    COMMENT = 'ユーザーテーブル';
 
 CREATE TABLE `owners` (
-  `user_id` CHAR(26) NOT NULL COMMENT 'ユーザID',
-  `app_id` CHAR(26) NOT NULL COMMENT 'アプリID',
+  `user_id` CHAR(36) NOT NULL COMMENT 'ユーザーID',
+  `app_id` CHAR(36) NOT NULL COMMENT 'アプリID',
   PRIMARY KEY (`user_id`, `app_id`),
   CONSTRAINT `fk_owners_user_id` FOREIGN KEY (`user_id`) REFERENCES `users`(`id`) ON UPDATE RESTRICT ON DELETE RESTRICT,
   CONSTRAINT `fk_owners_app_id` FOREIGN KEY (`app_id`) REFERENCES `applications`(`id`) ON UPDATE RESTRICT ON DELETE RESTRICT
