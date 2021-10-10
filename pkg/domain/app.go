@@ -23,4 +23,11 @@ type Branch struct {
 type Repository struct {
 	ID        string
 	RemoteURL string
+	Provider  Provider
+}
+
+type Provider struct {
+	ID     string
+	Name   string
+	Secret []byte
 }
