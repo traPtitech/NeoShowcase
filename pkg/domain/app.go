@@ -28,6 +28,10 @@ type Repository struct {
 
 type Provider struct {
 	ID     string
-	Name   string
 	Secret []byte
+}
+
+type User struct {
+	ID   string
+	Name string
 }
