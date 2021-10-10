@@ -8,7 +8,7 @@ import (
 	"github.com/traPtitech/neoshowcase/pkg/infrastructure/admindb/models"
 )
 
-//go:generate go run github.com/golang/mock/mockgen -source=$GOFILE -package=mock_$GOPACKAGE -destination=./mock/$GOFILE
+//go:generate go run github.com/golang/mock/mockgen@latest -source=$GOFILE -package=mock_$GOPACKAGE -destination=./mock/$GOFILE
 
 type WebhookSecretRepository interface {
 	// GetWebhookSecretKeys 指定したリポジトリのWebhookシークレットキーを取得します
