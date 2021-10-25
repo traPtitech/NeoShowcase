@@ -2,10 +2,13 @@ package usecase
 
 import (
 	"context"
+	"math/rand"
+	"strings"
 
 	log "github.com/sirupsen/logrus"
 	"github.com/traPtitech/neoshowcase/pkg/domain"
 	"github.com/traPtitech/neoshowcase/pkg/domain/event"
+	"github.com/traPtitech/neoshowcase/pkg/infrastructure/dbmanager"
 	"github.com/traPtitech/neoshowcase/pkg/interface/repository"
 )
 
@@ -55,12 +58,58 @@ func (cd *continuousDeploymentService) loop() {
 	}
 }
 
+func generateRandomString(length int) string {
+	lowerCharSet := "abcdedfghijklmnopqrst"
+	upperCharSet := "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+	symbolCharSet := "!@#$%&*"
+	numberSet := "0123456789"
+	allCharSet := lowerCharSet + upperCharSet + symbolCharSet + numberSet
+
+	var payload strings.Builder
+	for i := 0; i < length; i++ {
+		random := rand.Intn(len(allCharSet))
+		payload.WriteByte(allCharSet[random])
+	}
+
+	return payload.String()
+}
+
 func (cd *continuousDeploymentService) handleWebhookRepositoryPush(repoURL string, branchName string) {
 	log.WithField("repo", repoURL).
 		WithField("refs", branchName).
 		Info("repository push event received")
 
-	branch, err := cd.repo.GetBranchByRepoAndBranchName(context.Background(), repoURL, branchName)
+	dbAdminUser := repoURL
+	dbAdminPassword := generateRandomString(32)
+	dbConfig := dbmanager.MariaDBConfig{
+		"host",
+		3307,
+		dbAdminUser,
+		dbAdminPassword,
+	}
+
+	db, err := dbmanager.NewMariaDBManager(dbConfig)
+	if err != nil {
+		log.WithError(err).
+			WithField("Host", "host").
+			WithField("Port", 3307).
+			WithField("AdminUser", dbAdminUser).
+			WithField("AdminPass", dbAdminPassword)
+		return
+	}
+
+	dbSetting := domain.CreateArgs{
+		Database: dbAdminUser,
+		Password: dbAdminPassword,
+	}
+	err = db.Create(context.Background(), dbSetting)
+	if err != nil {
+		log.WithError(err).
+			WithField("Database", dbSetting.Database).
+			WithField("Password", dbSetting.Password)
+	}
+
+	branch, err := cd.repo.GetEnvironmentByRepoAndBranch(context.Background(), repoURL, branchName)
 	if err != nil {
 		if err == repository.ErrNotFound {
 			return
