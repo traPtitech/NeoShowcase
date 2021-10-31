@@ -16,7 +16,7 @@ const (
 	appNetwork                     = "neoshowcase_apps"
 	appContainerLabel              = "neoshowcase.trap.jp/app"
 	appContainerApplicationIDLabel = "neoshowcase.trap.jp/appId"
-	appContainerEnvironmentIDLabel = "neoshowcase.trap.jp/envId"
+	appContainerEnvironmentIDLabel = "neoshowcase.trap.jp/envId" // ここも変えるべきなんですがこのラベル何由来かわからないです
 	timeout                        = 5
 )
 

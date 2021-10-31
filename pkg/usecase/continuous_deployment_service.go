@@ -48,55 +48,55 @@ func (cd *continuousDeploymentService) loop() {
 			branch := ev.Body["branch"].(string)
 			cd.handleWebhookRepositoryPush(repoURL, branch)
 		case event.BuilderBuildSucceeded:
-			envID := ev.Body["environment_id"].(string)
+			branchID := ev.Body["branch_id"].(string)
 			buildID := ev.Body["build_id"].(string)
-			cd.handleBuilderBuildSucceeded(envID, buildID)
+			cd.handleBuilderBuildSucceeded(branchID, buildID)
 		}
 	}
 }
 
-func (cd *continuousDeploymentService) handleWebhookRepositoryPush(repoURL string, branch string) {
+func (cd *continuousDeploymentService) handleWebhookRepositoryPush(repoURL string, branchName string) {
 	log.WithField("repo", repoURL).
-		WithField("refs", branch).
+		WithField("refs", branchName).
 		Info("repository push event received")
 
-	env, err := cd.repo.GetBranchByRepoAndBranchName(context.Background(), repoURL, branch)
+	branch, err := cd.repo.GetBranchByRepoAndBranchName(context.Background(), repoURL, branchName)
 	if err != nil {
 		if err == repository.ErrNotFound {
 			return
 		}
 		log.WithError(err).
 			WithField("repo", repoURL).
-			WithField("refs", branch).
-			Error("failed to GetEnvironmentByRepoAndBranch")
+			WithField("refs", branchName).
+			Error("failed to GetBranchByRepoAndBranchName")
 		return
 	}
 
-	err = cd.builder.QueueBuild(context.Background(), env)
+	err = cd.builder.QueueBuild(context.Background(), branch)
 	if err != nil {
 		log.WithError(err).
-			WithField("appID", env.ApplicationID).
-			WithField("envID", env.ID).
+			WithField("appID", branch.ApplicationID).
+			WithField("branchID", branch.ID).
 			Error("failed to RequestBuild")
 		return
 	}
 }
 
-func (cd *continuousDeploymentService) handleBuilderBuildSucceeded(envID string, buildID string) {
-	if envID == "" {
-		// envIDが無い場合はテストビルド
+func (cd *continuousDeploymentService) handleBuilderBuildSucceeded(branchID string, buildID string) {
+	if branchID == "" {
+		// branchIDが無い場合はテストビルド
 		return
 	}
 
 	// 自動デプロイ
-	log.WithField("envID", envID).
+	log.WithField("branchID", branchID).
 		WithField("buildID", buildID).
 		Error("starting application")
-	err := cd.deployer.QueueDeployment(context.Background(), envID, buildID)
+	err := cd.deployer.QueueDeployment(context.Background(), branchID, buildID)
 	if err != nil {
 		// TODO エラー処理
 		log.WithError(err).
-			WithField("envID", envID).
+			WithField("branchID", branchID).
 			WithField("buildID", buildID).
 			Error("failed to Start Application")
 	}

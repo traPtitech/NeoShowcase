@@ -20,7 +20,7 @@ type ApplicationRepository interface {
 	CreateBranch(ctx context.Context, appID string, branchName string, buildType builder.BuildType) (*domain.Branch, error)
 	GetBranchByID(ctx context.Context, id string) (*domain.Branch, error)
 	GetBranchByRepoAndBranchName(ctx context.Context, repoURL string, branch string) (*domain.Branch, error)
-	SetWebsite(ctx context.Context, envID string, fqdn string, httpPort int) error
+	SetWebsite(ctx context.Context, branchID string, fqdn string, httpPort int) error
 }
 
 type applicationRepository struct {
@@ -72,19 +72,19 @@ func (r *applicationRepository) CreateApplication(ctx context.Context, args Crea
 	log.WithField("appID", app.ID).
 		Info("app created")
 
-	// 初期Env作成
-	env := &models.Branch{
+	// 初期Branch作成
+	branch := &models.Branch{
 		ID:         domain.NewID(),
 		BranchName: args.BranchName,
 		BuildType:  args.BuildType.String(),
 	}
-	if err := app.AddBranches(ctx, r.db, true, env); err != nil {
+	if err := app.AddBranches(ctx, r.db, true, branch); err != nil {
 		return nil, fmt.Errorf(errMsg, err)
 	}
 
 	log.WithField("appID", app.ID).
-		WithField("envID", env.ID).
-		Info("env created")
+		WithField("branchID", branch.ID).
+		Info("branch created")
 
 	return &domain.Application{
 		ID: app.ID,
@@ -215,12 +215,12 @@ func (r *applicationRepository) GetBranchByRepoAndBranchName(ctx context.Context
 	return nil, ErrNotFound
 }
 
-func (r *applicationRepository) SetWebsite(ctx context.Context, envID string, fqdn string, httpPort int) error {
+func (r *applicationRepository) SetWebsite(ctx context.Context, branchID string, fqdn string, httpPort int) error {
 	const errMsg = "failed to SetWebsite: %w"
 
 	branch, err := models.Branches(
 		qm.Load(models.BranchRels.Website),
-		models.EnvironmentWhere.ID.EQ(envID),
+		models.BranchWhere.ID.EQ(branchID),
 	).One(ctx, r.db)
 	if err != nil {
 		if err == sql.ErrNoRows {

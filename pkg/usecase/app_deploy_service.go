@@ -17,7 +17,7 @@ import (
 )
 
 type AppDeployService interface {
-	QueueDeployment(ctx context.Context, envID string, buildID string) error
+	QueueDeployment(ctx context.Context, branchID string, buildID string) error
 }
 
 type appDeployService struct {
@@ -131,7 +131,7 @@ func (s *appDeployService) deploy(entry *appDeployment) {
 				WithField("buildID", entry.BuildID).
 				WithField("queuedAt", entry.QueuedAt).
 				WithError(err).
-				Errorf("failed to update env")
+				Errorf("failed to update branch")
 			return
 		}
 

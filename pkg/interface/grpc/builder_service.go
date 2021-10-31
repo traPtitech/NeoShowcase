@@ -49,8 +49,8 @@ func (s *BuilderService) ConnectEventStream(empty *emptypb.Empty, stream pb.Buil
 				if err := stream.Send(&pb.Event{
 					Type: pb.Event_BUILD_STARTED,
 					Body: util.ToJSON(map[string]interface{}{
-						"environment_id": task.BranchID.String,
-						"build_id":       task.BuildID,
+						"branch_id": task.BranchID.String,
+						"build_id":  task.BuildID,
 					}),
 				}); err != nil {
 					return err
@@ -60,8 +60,8 @@ func (s *BuilderService) ConnectEventStream(empty *emptypb.Empty, stream pb.Buil
 				if err := stream.Send(&pb.Event{
 					Type: pb.Event_BUILD_FAILED,
 					Body: util.ToJSON(map[string]interface{}{
-						"environment_id": task.BranchID.String,
-						"build_id":       task.BuildID,
+						"branch_id": task.BranchID.String,
+						"build_id":  task.BuildID,
 					}),
 				}); err != nil {
 					return err
@@ -71,8 +71,8 @@ func (s *BuilderService) ConnectEventStream(empty *emptypb.Empty, stream pb.Buil
 				if err := stream.Send(&pb.Event{
 					Type: pb.Event_BUILD_SUCCEEDED,
 					Body: util.ToJSON(map[string]interface{}{
-						"environment_id": task.BranchID.String,
-						"build_id":       task.BuildID,
+						"branch_id": task.BranchID.String,
+						"build_id":  task.BuildID,
 					}),
 				}); err != nil {
 					return err
@@ -82,8 +82,8 @@ func (s *BuilderService) ConnectEventStream(empty *emptypb.Empty, stream pb.Buil
 				if err := stream.Send(&pb.Event{
 					Type: pb.Event_BUILD_CANCELED,
 					Body: util.ToJSON(map[string]interface{}{
-						"environment_id": task.BranchID.String,
-						"build_id":       task.BuildID,
+						"branch_id": task.BranchID.String,
+						"build_id":  task.BuildID,
 					}),
 				}); err != nil {
 					return err

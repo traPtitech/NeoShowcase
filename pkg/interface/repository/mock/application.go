@@ -113,15 +113,15 @@ func (mr *MockApplicationRepositoryMockRecorder) GetBranchByRepoAndBranchName(ct
 }
 
 // SetWebsite mocks base method.
-func (m *MockApplicationRepository) SetWebsite(ctx context.Context, envID, fqdn string, httpPort int) error {
+func (m *MockApplicationRepository) SetWebsite(ctx context.Context, branchID, fqdn string, httpPort int) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "SetWebsite", ctx, envID, fqdn, httpPort)
+	ret := m.ctrl.Call(m, "SetWebsite", ctx, branchID, fqdn, httpPort)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // SetWebsite indicates an expected call of SetWebsite.
-func (mr *MockApplicationRepositoryMockRecorder) SetWebsite(ctx, envID, fqdn, httpPort interface{}) *gomock.Call {
+func (mr *MockApplicationRepositoryMockRecorder) SetWebsite(ctx, branchID, fqdn, httpPort interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SetWebsite", reflect.TypeOf((*MockApplicationRepository)(nil).SetWebsite), ctx, envID, fqdn, httpPort)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SetWebsite", reflect.TypeOf((*MockApplicationRepository)(nil).SetWebsite), ctx, branchID, fqdn, httpPort)
 }
