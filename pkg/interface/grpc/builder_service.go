@@ -49,7 +49,7 @@ func (s *BuilderService) ConnectEventStream(empty *emptypb.Empty, stream pb.Buil
 				if err := stream.Send(&pb.Event{
 					Type: pb.Event_BUILD_STARTED,
 					Body: util.ToJSON(map[string]interface{}{
-						"environment_id": task.EnvironmentID.String,
+						"environment_id": task.BranchID.String,
 						"build_id":       task.BuildID,
 					}),
 				}); err != nil {
@@ -60,7 +60,7 @@ func (s *BuilderService) ConnectEventStream(empty *emptypb.Empty, stream pb.Buil
 				if err := stream.Send(&pb.Event{
 					Type: pb.Event_BUILD_FAILED,
 					Body: util.ToJSON(map[string]interface{}{
-						"environment_id": task.EnvironmentID.String,
+						"environment_id": task.BranchID.String,
 						"build_id":       task.BuildID,
 					}),
 				}); err != nil {
@@ -71,7 +71,7 @@ func (s *BuilderService) ConnectEventStream(empty *emptypb.Empty, stream pb.Buil
 				if err := stream.Send(&pb.Event{
 					Type: pb.Event_BUILD_SUCCEEDED,
 					Body: util.ToJSON(map[string]interface{}{
-						"environment_id": task.EnvironmentID.String,
+						"environment_id": task.BranchID.String,
 						"build_id":       task.BuildID,
 					}),
 				}); err != nil {
@@ -82,7 +82,7 @@ func (s *BuilderService) ConnectEventStream(empty *emptypb.Empty, stream pb.Buil
 				if err := stream.Send(&pb.Event{
 					Type: pb.Event_BUILD_CANCELED,
 					Body: util.ToJSON(map[string]interface{}{
-						"environment_id": task.EnvironmentID.String,
+						"environment_id": task.BranchID.String,
 						"build_id":       task.BuildID,
 					}),
 				}); err != nil {
@@ -100,9 +100,9 @@ func (s *BuilderService) StartBuildImage(ctx context.Context, request *pb.StartB
 		BuildOptions: convertBuildOptionsFromPB(request.Options),
 		ImageName:    request.ImageName,
 	}
-	// 環境IDが指定されていない場合はデバッグビルド
-	if len(request.EnvironmentId) > 0 {
-		task.EnvironmentID = null.StringFrom(request.EnvironmentId)
+	// ブランチIDが指定されていない場合はデバッグビルド
+	if len(request.BranchId) > 0 {
+		task.BranchID = null.StringFrom(request.BranchId)
 	}
 
 	id, err := s.svc.StartBuild(ctx, task)
@@ -119,8 +119,8 @@ func (s *BuilderService) StartBuildStatic(ctx context.Context, request *pb.Start
 		BuildOptions: convertBuildOptionsFromPB(request.Options),
 	}
 	// 環境IDが指定されていない場合はデバッグビルド
-	if len(request.EnvironmentId) > 0 {
-		task.EnvironmentID = null.StringFrom(request.EnvironmentId)
+	if len(request.BranchId) > 0 {
+		task.BranchID = null.StringFrom(request.BranchId)
 	}
 
 	id, err := s.svc.StartBuild(ctx, task)
