@@ -20,7 +20,7 @@ const (
 )
 
 type AppBuildService interface {
-	QueueBuild(ctx context.Context, env *domain.Environment) error
+	QueueBuild(ctx context.Context, branch *domain.Branch) error
 	Shutdown()
 }
 
@@ -35,8 +35,8 @@ type appBuildService struct {
 }
 
 type buildJob struct {
-	App *domain.Application
-	Env *domain.Environment
+	App    *domain.Application
+	Branch *domain.Branch
 }
 
 func NewAppBuildService(repo repository.ApplicationRepository, builder pb.BuilderServiceClient, registry builder.DockerImageRegistryString, prefix builder.DockerImageNamePrefixString) AppBuildService {
@@ -51,15 +51,15 @@ func NewAppBuildService(repo repository.ApplicationRepository, builder pb.Builde
 	return s
 }
 
-func (s *appBuildService) QueueBuild(ctx context.Context, env *domain.Environment) error {
-	app, err := s.repo.GetApplicationByID(ctx, env.ApplicationID)
+func (s *appBuildService) QueueBuild(ctx context.Context, branch *domain.Branch) error {
+	app, err := s.repo.GetApplicationByID(ctx, branch.ApplicationID)
 	if err != nil {
 		return fmt.Errorf("failed to QueueBuild: %w", err)
 	}
 	s.queueWait.Add(1)
 	s.queue <- &buildJob{
-		App: app,
-		Env: env,
+		App:    app,
+		Branch: branch,
 	}
 	return nil
 }
@@ -78,7 +78,7 @@ func (s *appBuildService) startQueueManager() {
 				break
 			}
 			if res.GetStatus() == pb.BuilderStatus_WAITING {
-				err := s.requestBuild(context.Background(), v.App, v.Env)
+				err := s.requestBuild(context.Background(), v.App, v.Branch)
 				if err != nil {
 					log.WithError(err).Error("failed to request build")
 				}
@@ -90,16 +90,16 @@ func (s *appBuildService) startQueueManager() {
 	}
 }
 
-func (s *appBuildService) requestBuild(ctx context.Context, app *domain.Application, env *domain.Environment) error {
-	switch env.BuildType {
+func (s *appBuildService) requestBuild(ctx context.Context, app *domain.Application, branch *domain.Branch) error {
+	switch branch.BuildType {
 	case builder.BuildTypeImage:
 		_, err := s.builder.StartBuildImage(ctx, &pb.StartBuildImageRequest{
-			ImageName: builder.GetImageName(s.imageRegistry, s.imageNamePrefix, env.ApplicationID),
+			ImageName: builder.GetImageName(s.imageRegistry, s.imageNamePrefix, branch.ApplicationID),
 			Source: &pb.BuildSource{
 				RepositoryUrl: app.Repository.RemoteURL, // TODO ブランチ・タグ指定に対応
 			},
-			Options:       &pb.BuildOptions{}, // TODO 汎用ベースイメージビルドに対応させる
-			EnvironmentId: env.ID,
+			Options:  &pb.BuildOptions{}, // TODO 汎用ベースイメージビルドに対応させる
+			BranchId: branch.ID,
 		})
 		if err != nil {
 			return fmt.Errorf("builder failed to start build image: %w", err)
@@ -110,18 +110,18 @@ func (s *appBuildService) requestBuild(ctx context.Context, app *domain.Applicat
 			Source: &pb.BuildSource{
 				RepositoryUrl: app.Repository.RemoteURL, // TODO ブランチ・タグ指定に対応
 			},
-			Options:       &pb.BuildOptions{}, // TODO 汎用ベースイメージビルドに対応させる
-			EnvironmentId: env.ID,
+			Options:  &pb.BuildOptions{}, // TODO 汎用ベースイメージビルドに対応させる
+			BranchId: branch.ID,
 		})
 		if err != nil {
 			return fmt.Errorf("builder failed to start build static: %w", err)
 		}
 
 	default:
-		return fmt.Errorf("unknown build type: %s", env.BuildType)
+		return fmt.Errorf("unknown build type: %s", branch.BuildType)
 	}
 
-	log.WithField("envID", env.ID).
+	log.WithField("branchID", branch.ID).
 		Info("build requested")
 	return nil
 }

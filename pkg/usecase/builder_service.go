@@ -137,10 +137,10 @@ func (s *builderService) Shutdown(ctx context.Context) error {
 func (s *builderService) initializeTask(ctx context.Context, task *builder.Task) error {
 	intState := &internalTaskState{
 		BuildLogM: models.BuildLog{
-			ID:            task.BuildID,
-			Result:        models.BuildLogsResultBUILDING,
-			StartedAt:     time.Now(),
-			EnvironmentID: task.EnvironmentID,
+			ID:        task.BuildID,
+			Result:    models.BuildLogsResultBUILDING,
+			StartedAt: time.Now(),
+			BranchID:  task.BranchID.String,
 		},
 	}
 
