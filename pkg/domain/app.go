@@ -30,8 +30,3 @@ type Provider struct {
 	ID     string
 	Secret []byte
 }
-
-type User struct {
-	ID   string
-	Name string
-}
