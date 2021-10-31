@@ -1,8 +1,8 @@
 -- +migrate Up
 ALTER TABLE `repositories` 
   CHANGE COLUMN `remote` `url` TEXT NOT NULL COMMENT 'Git remote URL',
-  ADD COLUMN `owner` varchar(255) NOT NULL COMMENT 'リポジトリのオーナー' AFTER `id`,
-  ADD COLUMN `name` varchar(255) NOT NULL  COMMENT 'リポジトリ名' AFTER `owner`,
+  ADD COLUMN `owner` varchar(256) NOT NULL COMMENT 'リポジトリのオーナー' AFTER `id`,
+  ADD COLUMN `name` varchar(256) NOT NULL  COMMENT 'リポジトリ名' AFTER `owner`,
   ADD COLUMN `provider_id` char(36) NOT NULL COMMENT 'プロバイダID' AFTER `url`,
   ADD CONSTRAINT `fk_repositories_provider_id` FOREIGN KEY (`provider_id`) REFERENCES `providers` (`id`) ON UPDATE RESTRICT ON DELETE RESTRICT;
 

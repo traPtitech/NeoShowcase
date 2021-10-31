@@ -1,8 +1,8 @@
 -- +migrate Up
 CREATE TABLE `providers` (
   `id` CHAR(36) NOT NULL COMMENT 'プロバイダID',
-  `name` VARCHAR(16) NOT NULL COMMENT 'プロバイダ名',
-  `secret` BINARY(60) NOT NULL COMMENT 'Webhookシークレット',
+  `domain` VARCHAR(128) NOT NULL COMMENT 'プロバイダのドメイン',
+  `secret` VARCHAR(128) NOT NULL COMMENT 'Webhookシークレット',
   PRIMARY KEY (`id`)
 ) ENGINE = InnoDB 
   DEFAULT CHARACTER SET = utf8mb4 
