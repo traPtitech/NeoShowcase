@@ -37,9 +37,9 @@ type appBuildService struct {
 
 type JobID uuid.UUID
 type buildJob struct {
-	JobID  JobID
-	App    *domain.Application
-	Branch *domain.Branch
+	jobID  JobID
+	app    *domain.Application
+	branch *domain.Branch
 }
 
 var ErrQueueFull = fmt.Errorf("queue is full")
@@ -69,9 +69,9 @@ func (s *appBuildService) QueueBuild(ctx context.Context, branch *domain.Branch)
 	s.queueWait.Add(1)
 	select {
 	case s.queue <- &buildJob{
-		JobID: JobID(id),
-		App:   app,
-		Branch:   branch,
+		jobID:  JobID(id),
+		app:    app,
+		branch: branch,
 	}:
 	default:
 		return ErrQueueFull
@@ -94,7 +94,7 @@ func (s *appBuildService) startQueueManager() {
 				break
 			}
 			if res.GetStatus() == pb.BuilderStatus_WAITING {
-				err := s.requestBuild(context.Background(), v.App, v.Branch)
+				err := s.requestBuild(context.Background(), v.app, v.branch)
 				if err != nil {
 					log.WithError(err).Error("failed to request build")
 				}
