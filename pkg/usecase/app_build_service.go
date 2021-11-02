@@ -21,7 +21,8 @@ const (
 )
 
 type AppBuildService interface {
-	QueueBuild(ctx context.Context, branch *domain.Branch) error
+	QueueBuild(ctx context.Context, env *domain.Branch) error
+	CancelBuild(ctx context.Context, jobID JobID) error
 	Shutdown()
 }
 
@@ -31,6 +32,7 @@ type appBuildService struct {
 
 	queue           chan *buildJob
 	queueWait       sync.WaitGroup
+	canceledJobList []JobID
 	imageRegistry   string
 	imageNamePrefix string
 }
@@ -49,6 +51,7 @@ func NewAppBuildService(repo repository.ApplicationRepository, builder pb.Builde
 		repo:            repo,
 		builder:         builder,
 		queue:           make(chan *buildJob, queueBufferSize),
+		canceledJobList: []JobID{},
 		imageRegistry:   string(registry),
 		imageNamePrefix: string(prefix),
 	}
@@ -83,6 +86,11 @@ func (s *appBuildService) QueueBuild(ctx context.Context, branch *domain.Branch)
 func (s *appBuildService) Shutdown() {
 	s.queueWait.Wait()
 	close(s.queue)
+}
+
+func (s *appBuildService) CancelBuild(ctx context.Context, jobID JobID) error {
+	s.canceledJobList = append(s.canceledJobList, jobID)
+	return nil
 }
 
 func (s *appBuildService) startQueueManager() {
