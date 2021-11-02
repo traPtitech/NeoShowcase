@@ -44,7 +44,9 @@ type buildJob struct {
 	branch *domain.Branch
 }
 
-var ErrQueueFull = fmt.Errorf("queue is full")
+var (
+	ErrQueueFull = fmt.Errorf("queue is full")
+)
 
 func NewAppBuildService(repo repository.ApplicationRepository, builder pb.BuilderServiceClient, registry builder.DockerImageRegistryString, prefix builder.DockerImageNamePrefixString) AppBuildService {
 	s := &appBuildService{
@@ -85,6 +87,7 @@ func (s *appBuildService) QueueBuild(ctx context.Context, branch *domain.Branch)
 
 func (s *appBuildService) Shutdown() {
 	s.queueWait.Wait()
+	// TODO: shutdown後にキューにジョブが追加されないことを保証しないといけない(でないとclosed channelにpushしようとしてpanicする)
 	close(s.queue)
 }
 
