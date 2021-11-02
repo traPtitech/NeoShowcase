@@ -59,11 +59,19 @@ func (s *appBuildService) QueueBuild(ctx context.Context, branch *domain.Branch)
 	if err != nil {
 		return fmt.Errorf("failed to QueueBuild: %w", err)
 	}
+	id, err := uuid.NewRandom()
+	if err != nil {
+		return err
+	}
+
 	s.queueWait.Add(1)
+
 	s.queue <- &buildJob{
+		JobID:  JobID(id),
 		App:    app,
 		Branch: branch,
 	}
+
 	return nil
 }
 
