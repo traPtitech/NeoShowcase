@@ -103,4 +103,50 @@ func TestAppBuildService_QueueBuild(t *testing.T) {
 		s.Shutdown()
 		require.Nil(t, err)
 	})
+	t.Run("追加されたジョブのキャンセル", func(t *testing.T) {
+		t.Parallel()
+		mockCtrl := gomock.NewController(t)
+		defer mockCtrl.Finish()
+
+		repo := mock_repository.NewMockApplicationRepository(mockCtrl)
+		c := mock_pb.NewMockBuilderServiceClient(mockCtrl)
+		s := NewAppBuildService(repo, c, "TestRegistry", "TestPrefix")
+		env := &domain.Environment{
+			ID:            "1d9cc06d-813f-4cf7-947e-546e1a814fed",
+			ApplicationID: "d563e2de-7905-4267-8a9c-51520aac02b3",
+			BranchName:    "develop",
+			BuildType:     builder.BuildTypeStatic,
+		}
+		res := &domain.Application{
+			Repository: domain.Repository{
+				RemoteURL: "https://git.trap.jp/hijiki51/git-test",
+			},
+		}
+
+		repo.EXPECT().
+			GetApplicationByID(context.Background(), env.ApplicationID).Return(res, nil)
+
+		c.EXPECT().
+			GetStatus(context.Background(), &emptypb.Empty{}).
+			Return(&pb.GetStatusResponse{Status: pb.BuilderStatus_WAITING}, nil).
+			AnyTimes()
+
+		c.EXPECT().
+			StartBuildStatic(context.Background(), &pb.StartBuildStaticRequest{
+				Source: &pb.BuildSource{
+					RepositoryUrl: res.Repository.RemoteURL,
+				},
+				Options:       &pb.BuildOptions{},
+				EnvironmentId: env.ID,
+			}).
+			Return(&pb.StartBuildStaticResponse{}, nil)
+
+		id, err := s.QueueBuild(context.Background(), env)
+		if err != nil {
+			t.Fatal(err)
+		}
+		err = s.CancelBuild(context.Background(), id)
+		s.Shutdown()
+		require.Nil(t, err)
+	})
 }
