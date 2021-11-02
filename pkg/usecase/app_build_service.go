@@ -95,6 +95,10 @@ func (s *appBuildService) CancelBuild(ctx context.Context, jobID JobID) error {
 
 func (s *appBuildService) startQueueManager() {
 	for v := range s.queue {
+		// キャンセルされたタスクならスキップ
+		if s.isCanceled(v.jobID) {
+			continue
+		}
 		for {
 			res, err := s.builder.GetStatus(context.Background(), &emptypb.Empty{})
 			if err != nil {
@@ -148,4 +152,13 @@ func (s *appBuildService) requestBuild(ctx context.Context, app *domain.Applicat
 	log.WithField("branchID", branch.ID).
 		Info("build requested")
 	return nil
+}
+
+func (s *appBuildService) isCanceled(jobID JobID) bool {
+	for _, v := range s.canceledJobList {
+		if v == jobID {
+			return true
+		}
+	}
+	return false
 }
