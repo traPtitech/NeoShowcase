@@ -21,7 +21,7 @@ const (
 )
 
 type AppBuildService interface {
-	QueueBuild(ctx context.Context, env *domain.Branch) error
+	QueueBuild(ctx context.Context, branch *domain.Branch) (JobID, error)
 	CancelBuild(ctx context.Context, jobID JobID) error
 	Shutdown()
 }
@@ -59,14 +59,14 @@ func NewAppBuildService(repo repository.ApplicationRepository, builder pb.Builde
 	return s
 }
 
-func (s *appBuildService) QueueBuild(ctx context.Context, branch *domain.Branch) error {
+func (s *appBuildService) QueueBuild(ctx context.Context, branch *domain.Branch) (JobID, error) {
 	app, err := s.repo.GetApplicationByID(ctx, branch.ApplicationID)
 	if err != nil {
-		return fmt.Errorf("Failed to QueueBuild: %w", err)
+		return JobID(uuid.Nil), fmt.Errorf("Failed to QueueBuild: %w", err)
 	}
 	id, err := uuid.NewRandom()
 	if err != nil {
-		return err
+		return JobID(uuid.Nil), err
 	}
 
 	s.queueWait.Add(1)
@@ -77,10 +77,10 @@ func (s *appBuildService) QueueBuild(ctx context.Context, branch *domain.Branch)
 		branch: branch,
 	}:
 	default:
-		return ErrQueueFull
+		return JobID(uuid.Nil), ErrQueueFull
 	}
 
-	return nil
+	return JobID(id), nil
 }
 
 func (s *appBuildService) Shutdown() {

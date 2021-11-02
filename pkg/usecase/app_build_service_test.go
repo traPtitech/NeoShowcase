@@ -56,7 +56,7 @@ func TestAppBuildService_QueueBuild(t *testing.T) {
 			}).
 			Return(&pb.StartBuildImageResponse{}, nil)
 
-		err := s.QueueBuild(context.Background(), branch)
+		_, err := s.QueueBuild(context.Background(), branch)
 		s.Shutdown()
 		require.Nil(t, err)
 	})
@@ -99,7 +99,7 @@ func TestAppBuildService_QueueBuild(t *testing.T) {
 			}).
 			Return(&pb.StartBuildStaticResponse{}, nil)
 
-		err := s.QueueBuild(context.Background(), branch)
+		_, err := s.QueueBuild(context.Background(), branch)
 		s.Shutdown()
 		require.Nil(t, err)
 	})
