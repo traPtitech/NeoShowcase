@@ -42,6 +42,8 @@ type buildJob struct {
 	Branch *domain.Branch
 }
 
+var ErrQueueFull = fmt.Errorf("queue is full")
+
 func NewAppBuildService(repo repository.ApplicationRepository, builder pb.BuilderServiceClient, registry builder.DockerImageRegistryString, prefix builder.DockerImageNamePrefixString) AppBuildService {
 	s := &appBuildService{
 		repo:            repo,
@@ -57,7 +59,7 @@ func NewAppBuildService(repo repository.ApplicationRepository, builder pb.Builde
 func (s *appBuildService) QueueBuild(ctx context.Context, branch *domain.Branch) error {
 	app, err := s.repo.GetApplicationByID(ctx, branch.ApplicationID)
 	if err != nil {
-		return fmt.Errorf("failed to QueueBuild: %w", err)
+		return fmt.Errorf("Failed to QueueBuild: %w", err)
 	}
 	id, err := uuid.NewRandom()
 	if err != nil {
@@ -65,11 +67,14 @@ func (s *appBuildService) QueueBuild(ctx context.Context, branch *domain.Branch)
 	}
 
 	s.queueWait.Add(1)
-
-	s.queue <- &buildJob{
-		JobID:  JobID(id),
-		App:    app,
-		Branch: branch,
+	select {
+	case s.queue <- &buildJob{
+		JobID: JobID(id),
+		App:   app,
+		Branch:   branch,
+	}:
+	default:
+		return ErrQueueFull
 	}
 
 	return nil
