@@ -6,6 +6,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/google/uuid"
 	log "github.com/sirupsen/logrus"
 	"github.com/traPtitech/neoshowcase/pkg/domain"
 	"github.com/traPtitech/neoshowcase/pkg/domain/builder"
@@ -34,7 +35,9 @@ type appBuildService struct {
 	imageNamePrefix string
 }
 
+type JobID uuid.UUID
 type buildJob struct {
+	JobID  JobID
 	App    *domain.Application
 	Branch *domain.Branch
 }
