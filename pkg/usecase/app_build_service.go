@@ -92,15 +92,23 @@ func (s *appBuildService) Shutdown() {
 }
 
 func (s *appBuildService) CancelBuild(ctx context.Context, jobID JobID) error {
-	s.canceledJobList = append(s.canceledJobList, jobID)
-	return nil
+	if !s.isCanceled(jobID) {
+		s.canceledJobList = append(s.canceledJobList, jobID)
+		return nil
+	}
+	return fmt.Errorf("job is already canceled")
 }
 
 func (s *appBuildService) startQueueManager() {
 	for v := range s.queue {
 		// キャンセルされたタスクならスキップ
 		if s.isCanceled(v.jobID) {
-			continue
+			for i, id := range s.canceledJobList {
+				if id == v.jobID {
+					s.canceledJobList = append(s.canceledJobList[:i], s.canceledJobList[i+1:]...)
+					continue
+				}
+			}
 		}
 		for {
 			res, err := s.builder.GetStatus(context.Background(), &emptypb.Empty{})
