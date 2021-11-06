@@ -19,16 +19,16 @@ func TestK8sBackend_CreateContainer(t *testing.T) {
 		t.Parallel()
 		image := "tianon/sleeping-beauty"
 		appID := "pjpjpjoijion"
-		envID := "fewwfadsface"
+		branchID := "fewwfadsface"
 
 		err := m.CreateContainer(context.Background(), domain.ContainerCreateArgs{
 			ImageName:     image,
 			ApplicationID: appID,
-			EnvironmentID: envID,
+			BranchID:      branchID,
 		})
 		if assert.NoError(t, err) {
-			waitPodRunning(t, c, deploymentName(appID, envID))
-			require.NoError(t, c.CoreV1().Pods(appNamespace).Delete(context.Background(), deploymentName(appID, envID), metav1.DeleteOptions{}))
+			waitPodRunning(t, c, deploymentName(appID, branchID))
+			require.NoError(t, c.CoreV1().Pods(appNamespace).Delete(context.Background(), deploymentName(appID, branchID), metav1.DeleteOptions{}))
 		}
 	})
 
@@ -36,21 +36,21 @@ func TestK8sBackend_CreateContainer(t *testing.T) {
 		t.Parallel()
 		image := "chussenot/tiny-server"
 		appID := "pijojopjnnna"
-		envID := "2io3isaoioij"
+		branchID := "2io3isaoioij"
 
 		err := m.CreateContainer(context.Background(), domain.ContainerCreateArgs{
 			ImageName:     image,
 			ApplicationID: appID,
-			EnvironmentID: envID,
+			BranchID:      branchID,
 			HTTPProxy: &domain.ContainerHTTPProxy{
 				Domain: "test.localhost",
 				Port:   80,
 			},
 		})
 		if assert.NoError(t, err) {
-			waitPodRunning(t, c, deploymentName(appID, envID))
-			require.NoError(t, c.CoreV1().Pods(appNamespace).Delete(context.Background(), deploymentName(appID, envID), metav1.DeleteOptions{}))
-			require.NoError(t, c.CoreV1().Services(appNamespace).Delete(context.Background(), deploymentName(appID, envID), metav1.DeleteOptions{}))
+			waitPodRunning(t, c, deploymentName(appID, branchID))
+			require.NoError(t, c.CoreV1().Pods(appNamespace).Delete(context.Background(), deploymentName(appID, branchID), metav1.DeleteOptions{}))
+			require.NoError(t, c.CoreV1().Services(appNamespace).Delete(context.Background(), deploymentName(appID, branchID), metav1.DeleteOptions{}))
 		}
 	})
 
@@ -58,12 +58,12 @@ func TestK8sBackend_CreateContainer(t *testing.T) {
 		t.Parallel()
 		image := "chussenot/tiny-server"
 		appID := "98ygtfjfjhgj"
-		envID := "wertyuyui987"
+		branchID := "wertyuyui987"
 
 		err := m.CreateContainer(context.Background(), domain.ContainerCreateArgs{
 			ImageName:     image,
 			ApplicationID: appID,
-			EnvironmentID: envID,
+			BranchID:      branchID,
 			HTTPProxy: &domain.ContainerHTTPProxy{
 				Domain: "ji9876fgoh.localhost",
 				Port:   80,
@@ -71,13 +71,13 @@ func TestK8sBackend_CreateContainer(t *testing.T) {
 			Recreate: true,
 		})
 		if assert.NoError(t, err) {
-			waitPodRunning(t, c, deploymentName(appID, envID))
+			waitPodRunning(t, c, deploymentName(appID, branchID))
 		}
 
 		err = m.CreateContainer(context.Background(), domain.ContainerCreateArgs{
 			ImageName:     image,
 			ApplicationID: appID,
-			EnvironmentID: envID,
+			BranchID:      branchID,
 			HTTPProxy: &domain.ContainerHTTPProxy{
 				Domain: "bbbbbb.localhost",
 				Port:   80,
@@ -85,9 +85,9 @@ func TestK8sBackend_CreateContainer(t *testing.T) {
 			Recreate: true,
 		})
 		if assert.NoError(t, err) {
-			waitPodRunning(t, c, deploymentName(appID, envID))
-			require.NoError(t, c.CoreV1().Pods(appNamespace).Delete(context.Background(), deploymentName(appID, envID), metav1.DeleteOptions{}))
-			require.NoError(t, c.CoreV1().Services(appNamespace).Delete(context.Background(), deploymentName(appID, envID), metav1.DeleteOptions{}))
+			waitPodRunning(t, c, deploymentName(appID, branchID))
+			require.NoError(t, c.CoreV1().Pods(appNamespace).Delete(context.Background(), deploymentName(appID, branchID), metav1.DeleteOptions{}))
+			require.NoError(t, c.CoreV1().Services(appNamespace).Delete(context.Background(), deploymentName(appID, branchID), metav1.DeleteOptions{}))
 		}
 	})
 }

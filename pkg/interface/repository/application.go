@@ -17,10 +17,10 @@ import (
 type ApplicationRepository interface {
 	CreateApplication(ctx context.Context, args CreateApplicationArgs) (*domain.Application, error)
 	GetApplicationByID(ctx context.Context, id string) (*domain.Application, error)
-	CreateEnvironment(ctx context.Context, appID string, branchName string, buildType builder.BuildType) (*domain.Environment, error)
-	GetEnvironmentByID(ctx context.Context, id string) (*domain.Environment, error)
-	GetEnvironmentByRepoAndBranch(ctx context.Context, repoURL string, branch string) (*domain.Environment, error)
-	SetWebsite(ctx context.Context, envID string, fqdn string, httpPort int) error
+	CreateBranch(ctx context.Context, appID string, branchName string, buildType builder.BuildType) (*domain.Branch, error)
+	GetBranchByID(ctx context.Context, id string) (*domain.Branch, error)
+	GetBranchByRepoAndBranchName(ctx context.Context, repoURL string, branch string) (*domain.Branch, error)
+	SetWebsite(ctx context.Context, branchID string, fqdn string, httpPort int) error
 }
 
 type applicationRepository struct {
@@ -72,19 +72,19 @@ func (r *applicationRepository) CreateApplication(ctx context.Context, args Crea
 	log.WithField("appID", app.ID).
 		Info("app created")
 
-	// 初期Env作成
-	env := &models.Environment{
+	// 初期Branch作成
+	branch := &models.Branch{
 		ID:         domain.NewID(),
 		BranchName: args.BranchName,
 		BuildType:  args.BuildType.String(),
 	}
-	if err := app.AddEnvironments(ctx, r.db, true, env); err != nil {
+	if err := app.AddBranches(ctx, r.db, true, branch); err != nil {
 		return nil, fmt.Errorf(errMsg, err)
 	}
 
 	log.WithField("appID", app.ID).
-		WithField("envID", env.ID).
-		Info("env created")
+		WithField("branchID", branch.ID).
+		Info("branch created")
 
 	return &domain.Application{
 		ID: app.ID,
@@ -119,11 +119,11 @@ func (r *applicationRepository) GetApplicationByID(ctx context.Context, id strin
 	}, nil
 }
 
-func (r *applicationRepository) CreateEnvironment(ctx context.Context, appID string, branchName string, buildType builder.BuildType) (*domain.Environment, error) {
-	const errMsg = "failed to CreateEnvironment: %w"
+func (r *applicationRepository) CreateBranch(ctx context.Context, appID string, branchName string, buildType builder.BuildType) (*domain.Branch, error) {
+	const errMsg = "failed to CreateBranch: %w"
 
 	app, err := models.Applications(
-		qm.Load(models.ApplicationRels.Environments, models.EnvironmentWhere.BranchName.EQ(branchName)),
+		qm.Load(models.ApplicationRels.Branches, models.BranchWhere.BranchName.EQ(branchName)),
 		models.ApplicationWhere.ID.EQ(appID),
 		models.ApplicationWhere.DeletedAt.IsNull(),
 	).One(ctx, r.db)
@@ -134,36 +134,36 @@ func (r *applicationRepository) CreateEnvironment(ctx context.Context, appID str
 		return nil, fmt.Errorf(errMsg, err)
 	}
 
-	// 指定したブランチのEnvironmentが存在しないことを確認
-	if len(app.R.Environments) > 0 {
-		return nil, fmt.Errorf("the environment for branch `%s` has already existed", branchName)
+	// 指定したブランチが存在しないことを確認
+	if len(app.R.Branches) > 0 {
+		return nil, fmt.Errorf("the branch `%s` has already existed", branchName)
 	}
 
-	env := &models.Environment{
+	branch := &models.Branch{
 		ID:         domain.NewID(),
 		BranchName: branchName,
 		BuildType:  buildType.String(),
 	}
-	if err := app.AddEnvironments(ctx, r.db, true, env); err != nil {
+	if err := app.AddBranches(ctx, r.db, true, branch); err != nil {
 		return nil, fmt.Errorf(errMsg, err)
 	}
 
-	log.WithField("appID", env.ApplicationID).
-		WithField("envID", env.ID).
-		Info("env created")
+	log.WithField("appID", branch.ApplicationID).
+		WithField("branchID", branch.ID).
+		Info("branch created")
 
-	return &domain.Environment{
-		ID:            env.ID,
-		ApplicationID: env.ApplicationID,
-		BranchName:    env.BranchName,
-		BuildType:     builder.BuildTypeFromString(env.BuildType),
+	return &domain.Branch{
+		ID:            branch.ID,
+		ApplicationID: branch.ApplicationID,
+		BranchName:    branch.BranchName,
+		BuildType:     builder.BuildTypeFromString(branch.BuildType),
 	}, nil
 }
 
-func (r *applicationRepository) GetEnvironmentByID(ctx context.Context, id string) (*domain.Environment, error) {
-	const errMsg = "failed to GetEnvironmentByID: %w"
+func (r *applicationRepository) GetBranchByID(ctx context.Context, id string) (*domain.Branch, error) {
+	const errMsg = "failed to GetBranchByID: %w"
 
-	env, err := models.FindEnvironment(ctx, r.db, id)
+	branch, err := models.FindBranch(ctx, r.db, id)
 	if err != nil {
 		if err == sql.ErrNoRows {
 			return nil, ErrNotFound
@@ -171,16 +171,16 @@ func (r *applicationRepository) GetEnvironmentByID(ctx context.Context, id strin
 		return nil, fmt.Errorf(errMsg, err)
 	}
 
-	return &domain.Environment{
-		ID:            env.ID,
-		ApplicationID: env.ApplicationID,
-		BranchName:    env.BranchName,
-		BuildType:     builder.BuildTypeFromString(env.BuildType),
+	return &domain.Branch{
+		ID:            branch.ID,
+		ApplicationID: branch.ApplicationID,
+		BranchName:    branch.BranchName,
+		BuildType:     builder.BuildTypeFromString(branch.BuildType),
 	}, nil
 }
 
-func (r *applicationRepository) GetEnvironmentByRepoAndBranch(ctx context.Context, repoURL string, branch string) (*domain.Environment, error) {
-	const errMsg = "failed to GetEnvironmentByRepoAndBranch: %w"
+func (r *applicationRepository) GetBranchByRepoAndBranchName(ctx context.Context, repoURL string, branch string) (*domain.Branch, error) {
+	const errMsg = "failed to GetBranchByRepoAndBranchName: %w"
 
 	repo, err := models.Repositories(
 		models.RepositoryWhere.Remote.EQ(repoURL),
@@ -193,7 +193,7 @@ func (r *applicationRepository) GetEnvironmentByRepoAndBranch(ctx context.Contex
 	}
 
 	app, err := repo.Applications(
-		qm.Load(models.ApplicationRels.Environments, models.EnvironmentWhere.BranchName.EQ(branch)),
+		qm.Load(models.ApplicationRels.Branches, models.BranchWhere.BranchName.EQ(branch)),
 		models.ApplicationWhere.DeletedAt.IsNull(),
 	).One(ctx, r.db)
 	if err != nil {
@@ -203,24 +203,24 @@ func (r *applicationRepository) GetEnvironmentByRepoAndBranch(ctx context.Contex
 		return nil, fmt.Errorf(errMsg, err)
 	}
 
-	if len(app.R.Environments) > 0 {
-		env := app.R.Environments[0]
-		return &domain.Environment{
-			ID:            env.ID,
-			ApplicationID: env.ApplicationID,
-			BranchName:    env.BranchName,
-			BuildType:     builder.BuildTypeFromString(env.BuildType),
+	if len(app.R.Branches) > 0 {
+		branch := app.R.Branches[0]
+		return &domain.Branch{
+			ID:            branch.ID,
+			ApplicationID: branch.ApplicationID,
+			BranchName:    branch.BranchName,
+			BuildType:     builder.BuildTypeFromString(branch.BuildType),
 		}, nil
 	}
 	return nil, ErrNotFound
 }
 
-func (r *applicationRepository) SetWebsite(ctx context.Context, envID string, fqdn string, httpPort int) error {
+func (r *applicationRepository) SetWebsite(ctx context.Context, branchID string, fqdn string, httpPort int) error {
 	const errMsg = "failed to SetWebsite: %w"
 
-	env, err := models.Environments(
-		qm.Load(models.EnvironmentRels.Website),
-		models.EnvironmentWhere.ID.EQ(envID),
+	branch, err := models.Branches(
+		qm.Load(models.BranchRels.Website),
+		models.BranchWhere.ID.EQ(branchID),
 	).One(ctx, r.db)
 	if err != nil {
 		if err == sql.ErrNoRows {
@@ -229,7 +229,7 @@ func (r *applicationRepository) SetWebsite(ctx context.Context, envID string, fq
 		return fmt.Errorf(errMsg, err)
 	}
 
-	ws := env.R.Website
+	ws := branch.R.Website
 	if ws != nil {
 		// テーブルの情報を更新
 		ws.FQDN = fqdn
@@ -246,7 +246,7 @@ func (r *applicationRepository) SetWebsite(ctx context.Context, envID string, fq
 		FQDN:     fqdn,
 		HTTPPort: httpPort,
 	}
-	if err := env.SetWebsite(ctx, r.db, true, ws); err != nil {
+	if err := branch.SetWebsite(ctx, r.db, true, ws); err != nil {
 		return fmt.Errorf(errMsg, err)
 	}
 	return nil

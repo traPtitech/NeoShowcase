@@ -18,7 +18,7 @@ const (
 	appNamespace                   = "neoshowcase-apps"
 	appContainerLabel              = "neoshowcase.trap.jp/app"
 	appContainerApplicationIDLabel = "neoshowcase.trap.jp/appId"
-	appContainerEnvironmentIDLabel = "neoshowcase.trap.jp/envId"
+	appContainerBranchIDLabel      = "neoshowcase.trap.jp/branchID"
 	deploymentRestartAnnotation    = "neoshowcase.trap.jp/restartedAt"
 )
 
@@ -65,13 +65,13 @@ func (b *k8sBackend) eventListener() {
 			if p.Status.Phase == apiv1.PodRunning {
 				b.eventbus.Publish(event.ContainerAppStarted, domain.Fields{
 					"application_id": p.Labels[appContainerApplicationIDLabel],
-					"environment_id": p.Labels[appContainerEnvironmentIDLabel],
+					"environment_id": p.Labels[appContainerBranchIDLabel],
 				})
 			}
 		case watch.Deleted:
 			b.eventbus.Publish(event.ContainerAppStopped, domain.Fields{
 				"application_id": p.Labels[appContainerApplicationIDLabel],
-				"environment_id": p.Labels[appContainerEnvironmentIDLabel],
+				"environment_id": p.Labels[appContainerBranchIDLabel],
 			})
 		}
 	}
@@ -85,6 +85,6 @@ func (b *k8sBackend) Dispose(ctx context.Context) error {
 func int32Ptr(i int32) *int32                                           { return &i }
 func pathTypePtr(pathType networkingv1.PathType) *networkingv1.PathType { return &pathType }
 
-func deploymentName(appID, envID string) string {
-	return fmt.Sprintf("nsapp-%s-%s", appID, envID)
+func deploymentName(appID, branchID string) string {
+	return fmt.Sprintf("nsapp-%s-%s", appID, branchID)
 }
