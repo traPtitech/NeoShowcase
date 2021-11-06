@@ -12,6 +12,8 @@ func TestUpsert(t *testing.T) {
 
 	t.Run("AvailableDomains", testAvailableDomainsUpsert)
 
+	t.Run("Branches", testBranchesUpsert)
+
 	t.Run("BuildLogs", testBuildLogsUpsert)
 
 	t.Run("Environments", testEnvironmentsUpsert)

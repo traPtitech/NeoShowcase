@@ -8,8 +8,8 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
-func (b *k8sBackend) DestroyContainer(ctx context.Context, appID string, envID string) error {
-	name := deploymentName(appID, envID)
+func (b *k8sBackend) DestroyContainer(ctx context.Context, appID string, branchID string) error {
+	name := deploymentName(appID, branchID)
 	err := b.clientset.CoreV1().Pods(appNamespace).Delete(ctx, name, metav1.DeleteOptions{})
 	if err != nil && !errors.IsNotFound(err) {
 		return fmt.Errorf("failed to delete pod: %w", err)

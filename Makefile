@@ -1,5 +1,5 @@
-TBLS_VERSION := 1.49.6
-SPECTRAL_VERSION := 5.6.0
+TBLS_VERSION := 1.50.0
+SPECTRAL_VERSION := 5.9.1
 
 GO_REPO_ROOT_PACKAGE := "github.com/traPtitech/neoshowcase"
 PROTOC_OPTS := -I ./api/proto --go_out=. --go_opt=module=$(GO_REPO_ROOT_PACKAGE) --go-grpc_out=. --go-grpc_opt=module=$(GO_REPO_ROOT_PACKAGE)
@@ -29,15 +29,15 @@ db-gen-docs:
 	@if [ -d "./docs/dbschema" ]; then \
 		rm -r ./docs/dbschema; \
 	fi
-	@docker run --rm --net=host -v $$PWD:/work k1low/tbls:$(TBLS_VERSION) doc
+	@docker run --rm --net=host -v $$PWD:/work ghcr.io/k1low/tbls:$(TBLS_VERSION) doc
 
 .PHONY: db-diff-docs
 db-diff-docs:
-	@docker run --rm --net=host -v $$PWD:/work k1low/tbls:$(TBLS_VERSION) diff
+	@docker run --rm --net=host -v $$PWD:/work ghcr.io/k1low/tbls:$(TBLS_VERSION) diff
 
 .PHONY: db-lint
 db-lint:
-	@docker run --rm --net=host -v $$PWD:/work k1low/tbls:$(TBLS_VERSION) lint
+	@docker run --rm --net=host -v $$PWD:/work ghcr.io/k1low/tbls:$(TBLS_VERSION) lint
 
 .PHONY: swagger-lint
 swagger-lint:

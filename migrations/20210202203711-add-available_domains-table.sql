@@ -11,7 +11,7 @@ CREATE TABLE `available_domains`
     COMMENT = '利用可能ドメインテーブル';
 
 INSERT INTO `available_domains`
-VALUES ('WKKbSIz9WiKN6EDhfHU2uT', 'local.wtks.work', true);
+VALUES ('WKKbSIz9WiKN6EDhfHU2uT', 'local.tokyotech.org', true);
 
 -- +migrate Down
 DROP TABLE `available_domains`;

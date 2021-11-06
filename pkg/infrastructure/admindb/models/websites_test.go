@@ -494,32 +494,32 @@ func testWebsitesInsertWhitelist(t *testing.T) {
 	}
 }
 
-func testWebsiteToOneEnvironmentUsingEnvironment(t *testing.T) {
+func testWebsiteToOneBranchUsingBranch(t *testing.T) {
 	ctx := context.Background()
 	tx := MustTx(boil.BeginTx(ctx, nil))
 	defer func() { _ = tx.Rollback() }()
 
 	var local Website
-	var foreign Environment
+	var foreign Branch
 
 	seed := randomize.NewSeed()
 	if err := randomize.Struct(seed, &local, websiteDBTypes, false, websiteColumnsWithDefault...); err != nil {
 		t.Errorf("Unable to randomize Website struct: %s", err)
 	}
-	if err := randomize.Struct(seed, &foreign, environmentDBTypes, false, environmentColumnsWithDefault...); err != nil {
-		t.Errorf("Unable to randomize Environment struct: %s", err)
+	if err := randomize.Struct(seed, &foreign, branchDBTypes, false, branchColumnsWithDefault...); err != nil {
+		t.Errorf("Unable to randomize Branch struct: %s", err)
 	}
 
 	if err := foreign.Insert(ctx, tx, boil.Infer()); err != nil {
 		t.Fatal(err)
 	}
 
-	local.EnvironmentID = foreign.ID
+	local.BranchID = foreign.ID
 	if err := local.Insert(ctx, tx, boil.Infer()); err != nil {
 		t.Fatal(err)
 	}
 
-	check, err := local.Environment().One(ctx, tx)
+	check, err := local.Branch().One(ctx, tx)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -529,23 +529,23 @@ func testWebsiteToOneEnvironmentUsingEnvironment(t *testing.T) {
 	}
 
 	slice := WebsiteSlice{&local}
-	if err = local.L.LoadEnvironment(ctx, tx, false, (*[]*Website)(&slice), nil); err != nil {
+	if err = local.L.LoadBranch(ctx, tx, false, (*[]*Website)(&slice), nil); err != nil {
 		t.Fatal(err)
 	}
-	if local.R.Environment == nil {
+	if local.R.Branch == nil {
 		t.Error("struct should have been eager loaded")
 	}
 
-	local.R.Environment = nil
-	if err = local.L.LoadEnvironment(ctx, tx, true, &local, nil); err != nil {
+	local.R.Branch = nil
+	if err = local.L.LoadBranch(ctx, tx, true, &local, nil); err != nil {
 		t.Fatal(err)
 	}
-	if local.R.Environment == nil {
+	if local.R.Branch == nil {
 		t.Error("struct should have been eager loaded")
 	}
 }
 
-func testWebsiteToOneSetOpEnvironmentUsingEnvironment(t *testing.T) {
+func testWebsiteToOneSetOpBranchUsingBranch(t *testing.T) {
 	var err error
 
 	ctx := context.Background()
@@ -553,16 +553,16 @@ func testWebsiteToOneSetOpEnvironmentUsingEnvironment(t *testing.T) {
 	defer func() { _ = tx.Rollback() }()
 
 	var a Website
-	var b, c Environment
+	var b, c Branch
 
 	seed := randomize.NewSeed()
 	if err = randomize.Struct(seed, &a, websiteDBTypes, false, strmangle.SetComplement(websitePrimaryKeyColumns, websiteColumnsWithoutDefault)...); err != nil {
 		t.Fatal(err)
 	}
-	if err = randomize.Struct(seed, &b, environmentDBTypes, false, strmangle.SetComplement(environmentPrimaryKeyColumns, environmentColumnsWithoutDefault)...); err != nil {
+	if err = randomize.Struct(seed, &b, branchDBTypes, false, strmangle.SetComplement(branchPrimaryKeyColumns, branchColumnsWithoutDefault)...); err != nil {
 		t.Fatal(err)
 	}
-	if err = randomize.Struct(seed, &c, environmentDBTypes, false, strmangle.SetComplement(environmentPrimaryKeyColumns, environmentColumnsWithoutDefault)...); err != nil {
+	if err = randomize.Struct(seed, &c, branchDBTypes, false, strmangle.SetComplement(branchPrimaryKeyColumns, branchColumnsWithoutDefault)...); err != nil {
 		t.Fatal(err)
 	}
 
@@ -573,32 +573,32 @@ func testWebsiteToOneSetOpEnvironmentUsingEnvironment(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	for i, x := range []*Environment{&b, &c} {
-		err = a.SetEnvironment(ctx, tx, i != 0, x)
+	for i, x := range []*Branch{&b, &c} {
+		err = a.SetBranch(ctx, tx, i != 0, x)
 		if err != nil {
 			t.Fatal(err)
 		}
 
-		if a.R.Environment != x {
+		if a.R.Branch != x {
 			t.Error("relationship struct not set to correct value")
 		}
 
 		if x.R.Website != &a {
 			t.Error("failed to append to foreign relationship struct")
 		}
-		if a.EnvironmentID != x.ID {
-			t.Error("foreign key was wrong value", a.EnvironmentID)
+		if a.BranchID != x.ID {
+			t.Error("foreign key was wrong value", a.BranchID)
 		}
 
-		zero := reflect.Zero(reflect.TypeOf(a.EnvironmentID))
-		reflect.Indirect(reflect.ValueOf(&a.EnvironmentID)).Set(zero)
+		zero := reflect.Zero(reflect.TypeOf(a.BranchID))
+		reflect.Indirect(reflect.ValueOf(&a.BranchID)).Set(zero)
 
 		if err = a.Reload(ctx, tx); err != nil {
 			t.Fatal("failed to reload", err)
 		}
 
-		if a.EnvironmentID != x.ID {
-			t.Error("foreign key was wrong value", a.EnvironmentID, x.ID)
+		if a.BranchID != x.ID {
+			t.Error("foreign key was wrong value", a.BranchID, x.ID)
 		}
 	}
 }
@@ -677,7 +677,7 @@ func testWebsitesSelect(t *testing.T) {
 }
 
 var (
-	websiteDBTypes = map[string]string{`ID`: `varchar`, `FQDN`: `varchar`, `HTTPPort`: `int`, `CreatedAt`: `datetime`, `UpdatedAt`: `datetime`, `EnvironmentID`: `varchar`}
+	websiteDBTypes = map[string]string{`ID`: `varchar`, `FQDN`: `varchar`, `HTTPPort`: `int`, `CreatedAt`: `datetime`, `UpdatedAt`: `datetime`, `BranchID`: `varchar`}
 	_              = bytes.MinRead
 )
 

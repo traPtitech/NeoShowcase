@@ -6,6 +6,7 @@ import (
 
 	docker "github.com/fsouza/go-dockerclient"
 	log "github.com/sirupsen/logrus"
+
 	"github.com/traPtitech/neoshowcase/pkg/domain"
 	"github.com/traPtitech/neoshowcase/pkg/domain/event"
 )
@@ -16,7 +17,7 @@ const (
 	appNetwork                     = "neoshowcase_apps"
 	appContainerLabel              = "neoshowcase.trap.jp/app"
 	appContainerApplicationIDLabel = "neoshowcase.trap.jp/appId"
-	appContainerEnvironmentIDLabel = "neoshowcase.trap.jp/envId"
+	appContainerBranchIDLabel      = "neoshowcase.trap.jp/branchId" // ここも変えるべきなんですがこのラベル何由来かわからないです
 	timeout                        = 5
 )
 
@@ -60,14 +61,14 @@ func (b *dockerBackend) eventListener() {
 				if ev.Actor.Attributes[appContainerLabel] == "true" {
 					b.bus.Publish(event.ContainerAppStarted, domain.Fields{
 						"application_id": ev.Actor.Attributes[appContainerApplicationIDLabel],
-						"environment_id": ev.Actor.Attributes[appContainerEnvironmentIDLabel],
+						"environment_id": ev.Actor.Attributes[appContainerBranchIDLabel],
 					})
 				}
 			case "stop":
 				if ev.Actor.Attributes[appContainerLabel] == "true" {
 					b.bus.Publish(event.ContainerAppStopped, domain.Fields{
 						"application_id": ev.Actor.Attributes[appContainerApplicationIDLabel],
-						"environment_id": ev.Actor.Attributes[appContainerEnvironmentIDLabel],
+						"environment_id": ev.Actor.Attributes[appContainerBranchIDLabel],
 					})
 				}
 			}
@@ -98,6 +99,6 @@ func initNetworks(c *docker.Client) error {
 	return err
 }
 
-func containerName(appID, envID string) string {
-	return fmt.Sprintf("nsapp-%s-%s", appID, envID)
+func containerName(appID, branchID string) string {
+	return fmt.Sprintf("nsapp-%s-%s", appID, branchID)
 }

@@ -494,14 +494,14 @@ func testApplicationsInsertWhitelist(t *testing.T) {
 	}
 }
 
-func testApplicationToManyEnvironments(t *testing.T) {
+func testApplicationToManyBranches(t *testing.T) {
 	var err error
 	ctx := context.Background()
 	tx := MustTx(boil.BeginTx(ctx, nil))
 	defer func() { _ = tx.Rollback() }()
 
 	var a Application
-	var b, c Environment
+	var b, c Branch
 
 	seed := randomize.NewSeed()
 	if err = randomize.Struct(seed, &a, applicationDBTypes, true, applicationColumnsWithDefault...); err != nil {
@@ -512,10 +512,10 @@ func testApplicationToManyEnvironments(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	if err = randomize.Struct(seed, &b, environmentDBTypes, false, environmentColumnsWithDefault...); err != nil {
+	if err = randomize.Struct(seed, &b, branchDBTypes, false, branchColumnsWithDefault...); err != nil {
 		t.Fatal(err)
 	}
-	if err = randomize.Struct(seed, &c, environmentDBTypes, false, environmentColumnsWithDefault...); err != nil {
+	if err = randomize.Struct(seed, &c, branchDBTypes, false, branchColumnsWithDefault...); err != nil {
 		t.Fatal(err)
 	}
 
@@ -529,7 +529,7 @@ func testApplicationToManyEnvironments(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	check, err := a.Environments().All(ctx, tx)
+	check, err := a.Branches().All(ctx, tx)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -552,18 +552,18 @@ func testApplicationToManyEnvironments(t *testing.T) {
 	}
 
 	slice := ApplicationSlice{&a}
-	if err = a.L.LoadEnvironments(ctx, tx, false, (*[]*Application)(&slice), nil); err != nil {
+	if err = a.L.LoadBranches(ctx, tx, false, (*[]*Application)(&slice), nil); err != nil {
 		t.Fatal(err)
 	}
-	if got := len(a.R.Environments); got != 2 {
+	if got := len(a.R.Branches); got != 2 {
 		t.Error("number of eager loaded records wrong, got:", got)
 	}
 
-	a.R.Environments = nil
-	if err = a.L.LoadEnvironments(ctx, tx, true, &a, nil); err != nil {
+	a.R.Branches = nil
+	if err = a.L.LoadBranches(ctx, tx, true, &a, nil); err != nil {
 		t.Fatal(err)
 	}
-	if got := len(a.R.Environments); got != 2 {
+	if got := len(a.R.Branches); got != 2 {
 		t.Error("number of eager loaded records wrong, got:", got)
 	}
 
@@ -572,7 +572,7 @@ func testApplicationToManyEnvironments(t *testing.T) {
 	}
 }
 
-func testApplicationToManyAddOpEnvironments(t *testing.T) {
+func testApplicationToManyAddOpBranches(t *testing.T) {
 	var err error
 
 	ctx := context.Background()
@@ -580,15 +580,15 @@ func testApplicationToManyAddOpEnvironments(t *testing.T) {
 	defer func() { _ = tx.Rollback() }()
 
 	var a Application
-	var b, c, d, e Environment
+	var b, c, d, e Branch
 
 	seed := randomize.NewSeed()
 	if err = randomize.Struct(seed, &a, applicationDBTypes, false, strmangle.SetComplement(applicationPrimaryKeyColumns, applicationColumnsWithoutDefault)...); err != nil {
 		t.Fatal(err)
 	}
-	foreigners := []*Environment{&b, &c, &d, &e}
+	foreigners := []*Branch{&b, &c, &d, &e}
 	for _, x := range foreigners {
-		if err = randomize.Struct(seed, x, environmentDBTypes, false, strmangle.SetComplement(environmentPrimaryKeyColumns, environmentColumnsWithoutDefault)...); err != nil {
+		if err = randomize.Struct(seed, x, branchDBTypes, false, strmangle.SetComplement(branchPrimaryKeyColumns, branchColumnsWithoutDefault)...); err != nil {
 			t.Fatal(err)
 		}
 	}
@@ -603,13 +603,13 @@ func testApplicationToManyAddOpEnvironments(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	foreignersSplitByInsertion := [][]*Environment{
+	foreignersSplitByInsertion := [][]*Branch{
 		{&b, &c},
 		{&d, &e},
 	}
 
 	for i, x := range foreignersSplitByInsertion {
-		err = a.AddEnvironments(ctx, tx, i != 0, x...)
+		err = a.AddBranches(ctx, tx, i != 0, x...)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -631,14 +631,14 @@ func testApplicationToManyAddOpEnvironments(t *testing.T) {
 			t.Error("relationship was not added properly to the foreign slice")
 		}
 
-		if a.R.Environments[i*2] != first {
+		if a.R.Branches[i*2] != first {
 			t.Error("relationship struct slice not set to correct value")
 		}
-		if a.R.Environments[i*2+1] != second {
+		if a.R.Branches[i*2+1] != second {
 			t.Error("relationship struct slice not set to correct value")
 		}
 
-		count, err := a.Environments().Count(ctx, tx)
+		count, err := a.Branches().Count(ctx, tx)
 		if err != nil {
 			t.Fatal(err)
 		}

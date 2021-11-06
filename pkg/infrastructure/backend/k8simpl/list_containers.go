@@ -23,7 +23,7 @@ func (b *k8sBackend) ListContainers(ctx context.Context) ([]domain.Container, er
 	for _, item := range list.Items {
 		result = append(result, domain.Container{
 			ApplicationID: item.Labels[appContainerApplicationIDLabel],
-			EnvironmentID: item.Labels[appContainerEnvironmentIDLabel],
+			BranchID:      item.Labels[appContainerBranchIDLabel],
 			State:         getContainerState(item.Status),
 		})
 	}

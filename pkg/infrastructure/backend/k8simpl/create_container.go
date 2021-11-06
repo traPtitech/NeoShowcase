@@ -21,7 +21,7 @@ func (b *k8sBackend) CreateContainer(ctx context.Context, args domain.ContainerC
 	labels := util.MergeLabels(args.Labels, map[string]string{
 		appContainerLabel:              "true",
 		appContainerApplicationIDLabel: args.ApplicationID,
-		appContainerEnvironmentIDLabel: args.EnvironmentID,
+		appContainerBranchIDLabel:      args.BranchID,
 	})
 
 	var envs []apiv1.EnvVar
@@ -45,7 +45,7 @@ func (b *k8sBackend) CreateContainer(ctx context.Context, args domain.ContainerC
 		}
 		svc := &apiv1.Service{
 			ObjectMeta: metav1.ObjectMeta{
-				Name:      deploymentName(args.ApplicationID, args.EnvironmentID),
+				Name:      deploymentName(args.ApplicationID, args.BranchID),
 				Namespace: appNamespace,
 				Labels:    labels,
 			},
@@ -54,7 +54,7 @@ func (b *k8sBackend) CreateContainer(ctx context.Context, args domain.ContainerC
 				Selector: map[string]string{
 					appContainerLabel:              "true",
 					appContainerApplicationIDLabel: args.ApplicationID,
-					appContainerEnvironmentIDLabel: args.EnvironmentID,
+					appContainerBranchIDLabel:      args.BranchID,
 				},
 				Ports: []apiv1.ServicePort{
 					{
@@ -82,7 +82,7 @@ func (b *k8sBackend) CreateContainer(ctx context.Context, args domain.ContainerC
 
 	pod := &apiv1.Pod{
 		ObjectMeta: metav1.ObjectMeta{
-			Name:      deploymentName(args.ApplicationID, args.EnvironmentID),
+			Name:      deploymentName(args.ApplicationID, args.BranchID),
 			Namespace: appNamespace,
 			Labels:    labels,
 		},

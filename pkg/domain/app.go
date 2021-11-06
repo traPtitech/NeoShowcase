@@ -7,13 +7,19 @@ type Application struct {
 	Repository Repository
 }
 
-type Environment struct {
+type Branch struct {
 	ID            string
 	ApplicationID string
 	BranchName    string
 	BuildType     builder.BuildType
 }
 
+// type Environment struct {
+// 	ID       string
+// 	BranchID string
+// 	Key      string
+// 	Value    string
+// }
 type Repository struct {
 	ID        string
 	RemoteURL string

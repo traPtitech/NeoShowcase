@@ -23,31 +23,31 @@ import (
 
 // Website is an object representing the database table.
 type Website struct {
-	ID            string    `boil:"id" json:"id" toml:"id" yaml:"id"`
-	FQDN          string    `boil:"fqdn" json:"fqdn" toml:"fqdn" yaml:"fqdn"`
-	HTTPPort      int       `boil:"http_port" json:"http_port" toml:"http_port" yaml:"http_port"`
-	CreatedAt     time.Time `boil:"created_at" json:"created_at" toml:"created_at" yaml:"created_at"`
-	UpdatedAt     time.Time `boil:"updated_at" json:"updated_at" toml:"updated_at" yaml:"updated_at"`
-	EnvironmentID string    `boil:"environment_id" json:"environment_id" toml:"environment_id" yaml:"environment_id"`
+	ID        string    `boil:"id" json:"id" toml:"id" yaml:"id"`
+	FQDN      string    `boil:"fqdn" json:"fqdn" toml:"fqdn" yaml:"fqdn"`
+	HTTPPort  int       `boil:"http_port" json:"http_port" toml:"http_port" yaml:"http_port"`
+	CreatedAt time.Time `boil:"created_at" json:"created_at" toml:"created_at" yaml:"created_at"`
+	UpdatedAt time.Time `boil:"updated_at" json:"updated_at" toml:"updated_at" yaml:"updated_at"`
+	BranchID  string    `boil:"branch_id" json:"branch_id" toml:"branch_id" yaml:"branch_id"`
 
 	R *websiteR `boil:"-" json:"-" toml:"-" yaml:"-"`
 	L websiteL  `boil:"-" json:"-" toml:"-" yaml:"-"`
 }
 
 var WebsiteColumns = struct {
-	ID            string
-	FQDN          string
-	HTTPPort      string
-	CreatedAt     string
-	UpdatedAt     string
-	EnvironmentID string
+	ID        string
+	FQDN      string
+	HTTPPort  string
+	CreatedAt string
+	UpdatedAt string
+	BranchID  string
 }{
-	ID:            "id",
-	FQDN:          "fqdn",
-	HTTPPort:      "http_port",
-	CreatedAt:     "created_at",
-	UpdatedAt:     "updated_at",
-	EnvironmentID: "environment_id",
+	ID:        "id",
+	FQDN:      "fqdn",
+	HTTPPort:  "http_port",
+	CreatedAt: "created_at",
+	UpdatedAt: "updated_at",
+	BranchID:  "branch_id",
 }
 
 // Generated where
@@ -76,31 +76,31 @@ func (w whereHelperint) NIN(slice []int) qm.QueryMod {
 }
 
 var WebsiteWhere = struct {
-	ID            whereHelperstring
-	FQDN          whereHelperstring
-	HTTPPort      whereHelperint
-	CreatedAt     whereHelpertime_Time
-	UpdatedAt     whereHelpertime_Time
-	EnvironmentID whereHelperstring
+	ID        whereHelperstring
+	FQDN      whereHelperstring
+	HTTPPort  whereHelperint
+	CreatedAt whereHelpertime_Time
+	UpdatedAt whereHelpertime_Time
+	BranchID  whereHelperstring
 }{
-	ID:            whereHelperstring{field: "`websites`.`id`"},
-	FQDN:          whereHelperstring{field: "`websites`.`fqdn`"},
-	HTTPPort:      whereHelperint{field: "`websites`.`http_port`"},
-	CreatedAt:     whereHelpertime_Time{field: "`websites`.`created_at`"},
-	UpdatedAt:     whereHelpertime_Time{field: "`websites`.`updated_at`"},
-	EnvironmentID: whereHelperstring{field: "`websites`.`environment_id`"},
+	ID:        whereHelperstring{field: "`websites`.`id`"},
+	FQDN:      whereHelperstring{field: "`websites`.`fqdn`"},
+	HTTPPort:  whereHelperint{field: "`websites`.`http_port`"},
+	CreatedAt: whereHelpertime_Time{field: "`websites`.`created_at`"},
+	UpdatedAt: whereHelpertime_Time{field: "`websites`.`updated_at`"},
+	BranchID:  whereHelperstring{field: "`websites`.`branch_id`"},
 }
 
 // WebsiteRels is where relationship names are stored.
 var WebsiteRels = struct {
-	Environment string
+	Branch string
 }{
-	Environment: "Environment",
+	Branch: "Branch",
 }
 
 // websiteR is where relationships are stored.
 type websiteR struct {
-	Environment *Environment `boil:"Environment" json:"Environment" toml:"Environment" yaml:"Environment"`
+	Branch *Branch `boil:"Branch" json:"Branch" toml:"Branch" yaml:"Branch"`
 }
 
 // NewStruct creates a new relationship struct
@@ -112,8 +112,8 @@ func (*websiteR) NewStruct() *websiteR {
 type websiteL struct{}
 
 var (
-	websiteAllColumns            = []string{"id", "fqdn", "http_port", "created_at", "updated_at", "environment_id"}
-	websiteColumnsWithoutDefault = []string{"id", "fqdn", "created_at", "updated_at", "environment_id"}
+	websiteAllColumns            = []string{"id", "fqdn", "http_port", "created_at", "updated_at", "branch_id"}
+	websiteColumnsWithoutDefault = []string{"id", "fqdn", "created_at", "updated_at", "branch_id"}
 	websiteColumnsWithDefault    = []string{"http_port"}
 	websitePrimaryKeyColumns     = []string{"id"}
 )
@@ -393,23 +393,23 @@ func (q websiteQuery) Exists(ctx context.Context, exec boil.ContextExecutor) (bo
 	return count > 0, nil
 }
 
-// Environment pointed to by the foreign key.
-func (o *Website) Environment(mods ...qm.QueryMod) environmentQuery {
+// Branch pointed to by the foreign key.
+func (o *Website) Branch(mods ...qm.QueryMod) branchQuery {
 	queryMods := []qm.QueryMod{
-		qm.Where("`id` = ?", o.EnvironmentID),
+		qm.Where("`id` = ?", o.BranchID),
 	}
 
 	queryMods = append(queryMods, mods...)
 
-	query := Environments(queryMods...)
-	queries.SetFrom(query.Query, "`environments`")
+	query := Branches(queryMods...)
+	queries.SetFrom(query.Query, "`branches`")
 
 	return query
 }
 
-// LoadEnvironment allows an eager lookup of values, cached into the
+// LoadBranch allows an eager lookup of values, cached into the
 // loaded structs of the objects. This is for an N-1 relationship.
-func (websiteL) LoadEnvironment(ctx context.Context, e boil.ContextExecutor, singular bool, maybeWebsite interface{}, mods queries.Applicator) error {
+func (websiteL) LoadBranch(ctx context.Context, e boil.ContextExecutor, singular bool, maybeWebsite interface{}, mods queries.Applicator) error {
 	var slice []*Website
 	var object *Website
 
@@ -424,7 +424,7 @@ func (websiteL) LoadEnvironment(ctx context.Context, e boil.ContextExecutor, sin
 		if object.R == nil {
 			object.R = &websiteR{}
 		}
-		args = append(args, object.EnvironmentID)
+		args = append(args, object.BranchID)
 
 	} else {
 	Outer:
@@ -434,12 +434,12 @@ func (websiteL) LoadEnvironment(ctx context.Context, e boil.ContextExecutor, sin
 			}
 
 			for _, a := range args {
-				if a == obj.EnvironmentID {
+				if a == obj.BranchID {
 					continue Outer
 				}
 			}
 
-			args = append(args, obj.EnvironmentID)
+			args = append(args, obj.BranchID)
 
 		}
 	}
@@ -449,8 +449,8 @@ func (websiteL) LoadEnvironment(ctx context.Context, e boil.ContextExecutor, sin
 	}
 
 	query := NewQuery(
-		qm.From(`environments`),
-		qm.WhereIn(`environments.id in ?`, args...),
+		qm.From(`branches`),
+		qm.WhereIn(`branches.id in ?`, args...),
 	)
 	if mods != nil {
 		mods.Apply(query)
@@ -458,19 +458,19 @@ func (websiteL) LoadEnvironment(ctx context.Context, e boil.ContextExecutor, sin
 
 	results, err := query.QueryContext(ctx, e)
 	if err != nil {
-		return errors.Wrap(err, "failed to eager load Environment")
+		return errors.Wrap(err, "failed to eager load Branch")
 	}
 
-	var resultSlice []*Environment
+	var resultSlice []*Branch
 	if err = queries.Bind(results, &resultSlice); err != nil {
-		return errors.Wrap(err, "failed to bind eager loaded slice Environment")
+		return errors.Wrap(err, "failed to bind eager loaded slice Branch")
 	}
 
 	if err = results.Close(); err != nil {
-		return errors.Wrap(err, "failed to close results of eager load for environments")
+		return errors.Wrap(err, "failed to close results of eager load for branches")
 	}
 	if err = results.Err(); err != nil {
-		return errors.Wrap(err, "error occurred during iteration of eager loaded relations for environments")
+		return errors.Wrap(err, "error occurred during iteration of eager loaded relations for branches")
 	}
 
 	if len(websiteAfterSelectHooks) != 0 {
@@ -487,9 +487,9 @@ func (websiteL) LoadEnvironment(ctx context.Context, e boil.ContextExecutor, sin
 
 	if singular {
 		foreign := resultSlice[0]
-		object.R.Environment = foreign
+		object.R.Branch = foreign
 		if foreign.R == nil {
-			foreign.R = &environmentR{}
+			foreign.R = &branchR{}
 		}
 		foreign.R.Website = object
 		return nil
@@ -497,10 +497,10 @@ func (websiteL) LoadEnvironment(ctx context.Context, e boil.ContextExecutor, sin
 
 	for _, local := range slice {
 		for _, foreign := range resultSlice {
-			if local.EnvironmentID == foreign.ID {
-				local.R.Environment = foreign
+			if local.BranchID == foreign.ID {
+				local.R.Branch = foreign
 				if foreign.R == nil {
-					foreign.R = &environmentR{}
+					foreign.R = &branchR{}
 				}
 				foreign.R.Website = local
 				break
@@ -511,10 +511,10 @@ func (websiteL) LoadEnvironment(ctx context.Context, e boil.ContextExecutor, sin
 	return nil
 }
 
-// SetEnvironment of the website to the related item.
-// Sets o.R.Environment to related.
+// SetBranch of the website to the related item.
+// Sets o.R.Branch to related.
 // Adds o to related.R.Website.
-func (o *Website) SetEnvironment(ctx context.Context, exec boil.ContextExecutor, insert bool, related *Environment) error {
+func (o *Website) SetBranch(ctx context.Context, exec boil.ContextExecutor, insert bool, related *Branch) error {
 	var err error
 	if insert {
 		if err = related.Insert(ctx, exec, boil.Infer()); err != nil {
@@ -524,7 +524,7 @@ func (o *Website) SetEnvironment(ctx context.Context, exec boil.ContextExecutor,
 
 	updateQuery := fmt.Sprintf(
 		"UPDATE `websites` SET %s WHERE %s",
-		strmangle.SetParamNames("`", "`", 0, []string{"environment_id"}),
+		strmangle.SetParamNames("`", "`", 0, []string{"branch_id"}),
 		strmangle.WhereClause("`", "`", 0, websitePrimaryKeyColumns),
 	)
 	values := []interface{}{related.ID, o.ID}
@@ -538,17 +538,17 @@ func (o *Website) SetEnvironment(ctx context.Context, exec boil.ContextExecutor,
 		return errors.Wrap(err, "failed to update local table")
 	}
 
-	o.EnvironmentID = related.ID
+	o.BranchID = related.ID
 	if o.R == nil {
 		o.R = &websiteR{
-			Environment: related,
+			Branch: related,
 		}
 	} else {
-		o.R.Environment = related
+		o.R.Branch = related
 	}
 
 	if related.R == nil {
-		related.R = &environmentR{
+		related.R = &branchR{
 			Website: o,
 		}
 	} else {
@@ -832,7 +832,7 @@ func (o WebsiteSlice) UpdateAll(ctx context.Context, exec boil.ContextExecutor, 
 var mySQLWebsiteUniqueColumns = []string{
 	"id",
 	"fqdn",
-	"environment_id",
+	"branch_id",
 }
 
 // Upsert attempts an insert using an executor, and does an update or ignore on conflict.

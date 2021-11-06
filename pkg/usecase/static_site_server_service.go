@@ -28,28 +28,28 @@ func NewStaticSiteServerService(engine domain.Engine, db *sql.DB) StaticSiteServ
 }
 
 func (s *staticSiteServerService) Reload(ctx context.Context) error {
-	envs, err := models.Environments(
-		models.EnvironmentWhere.BuildType.EQ(models.EnvironmentsBuildTypeStatic),
-		qm.Load(models.EnvironmentRels.Website),
-		qm.Load(qm.Rels(models.EnvironmentRels.Build, models.BuildLogRels.Artifact)),
+	branches, err := models.Branches(
+		models.BranchWhere.BuildType.EQ(models.BranchesBuildTypeStatic),
+		qm.Load(models.BranchRels.Website),
+		qm.Load(qm.Rels(models.BranchRels.Build, models.BuildLogRels.Artifact)),
 	).All(ctx, s.db)
 	if err != nil {
 		return err
 	}
 
 	var data []*domain.Site
-	for _, env := range envs {
-		if env.R.Website != nil {
-			website := env.R.Website
-			if env.R.Build != nil {
-				build := env.R.Build
+	for _, branch := range branches {
+		if branch.R.Website != nil {
+			website := branch.R.Website
+			if branch.R.Build != nil {
+				build := branch.R.Build
 				if build.R.Artifact != nil {
 					artifact := build.R.Artifact
 					data = append(data, &domain.Site{
 						ID:            website.ID,
 						FQDN:          website.FQDN,
 						ArtifactID:    artifact.ID,
-						ApplicationID: env.ApplicationID,
+						ApplicationID: branch.ApplicationID,
 					})
 				}
 			}

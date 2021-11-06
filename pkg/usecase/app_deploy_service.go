@@ -17,7 +17,7 @@ import (
 )
 
 type AppDeployService interface {
-	QueueDeployment(ctx context.Context, envID string, buildID string) error
+	QueueDeployment(ctx context.Context, branchID string, buildID string) error
 }
 
 type appDeployService struct {
@@ -41,19 +41,19 @@ func NewAppDeployService(backend domain.Backend, ss pb.StaticSiteServiceClient, 
 	}
 }
 
-func (s *appDeployService) QueueDeployment(ctx context.Context, envID string, buildID string) error {
-	env, err := models.Environments(
-		qm.Load(models.EnvironmentRels.Website),
-		models.EnvironmentWhere.ID.EQ(envID),
+func (s *appDeployService) QueueDeployment(ctx context.Context, branchID string, buildID string) error {
+	branch, err := models.Branches(
+		qm.Load(models.BranchRels.Website),
+		models.BranchWhere.ID.EQ(branchID),
 	).One(ctx, s.db)
 	if err != nil {
 		if err == sql.ErrNoRows {
-			return fmt.Errorf("environment (%s) was not found", envID)
+			return fmt.Errorf("branch (%s) was not found", branchID)
 		}
-		return fmt.Errorf("failed to get Environment: %w", err)
+		return fmt.Errorf("failed to get Branch: %w", err)
 	}
 
-	ok, err := env.BuildLogs(
+	ok, err := branch.BuildLogs(
 		models.BuildLogWhere.ID.EQ(buildID),
 		models.BuildLogWhere.Result.EQ(models.BuildLogsResultSUCCEEDED),
 	).Exists(ctx, s.db)
@@ -65,10 +65,10 @@ func (s *appDeployService) QueueDeployment(ctx context.Context, envID string, bu
 	}
 
 	entry := &appDeployment{
-		EnvID:    envID,
+		BranchID: branchID,
 		BuildID:  buildID,
 		QueuedAt: time.Now(),
-		env:      env,
+		branch:   branch,
 	}
 	// TODO ちゃんとキューに入れて非同期処理する
 	go s.deploy(entry)
@@ -76,18 +76,18 @@ func (s *appDeployService) QueueDeployment(ctx context.Context, envID string, bu
 }
 
 type appDeployment struct {
-	EnvID    string
+	BranchID string
 	BuildID  string
 	QueuedAt time.Time
-	env      *models.Environment
+	branch   *models.Branch
 }
 
 func (s *appDeployService) deploy(entry *appDeployment) {
-	env := entry.env
-	website := env.R.Website
+	branch := entry.branch
+	website := branch.R.Website
 
 	// TODO Ingressの設定がここでする必要があるかどうか確認する
-	switch builder.BuildTypeFromString(env.BuildType) {
+	switch builder.BuildTypeFromString(branch.BuildType) {
 	case builder.BuildTypeImage:
 		var httpProxy *domain.ContainerHTTPProxy
 		if website != nil {
@@ -98,15 +98,15 @@ func (s *appDeployService) deploy(entry *appDeployment) {
 		}
 
 		err := s.backend.CreateContainer(context.Background(), domain.ContainerCreateArgs{
-			ApplicationID: env.ApplicationID,
-			EnvironmentID: env.ID,
-			ImageName:     builder.GetImageName(s.imageRegistry, s.imageNamePrefix, env.ApplicationID),
+			ApplicationID: branch.ApplicationID,
+			BranchID:      branch.ID,
+			ImageName:     builder.GetImageName(s.imageRegistry, s.imageNamePrefix, branch.ApplicationID),
 			ImageTag:      entry.BuildID,
 			HTTPProxy:     httpProxy,
 			Recreate:      true,
 		})
 		if err != nil {
-			log.WithField("envID", entry.EnvID).
+			log.WithField("BranchID", entry.BranchID).
 				WithField("buildID", entry.BuildID).
 				WithField("queuedAt", entry.QueuedAt).
 				WithError(err).
@@ -114,29 +114,29 @@ func (s *appDeployService) deploy(entry *appDeployment) {
 			return
 		}
 
-		env.BuildID = null.StringFrom(entry.BuildID)
-		if _, err := env.Update(context.Background(), s.db, boil.Infer()); err != nil {
-			log.WithField("envID", entry.EnvID).
+		branch.BuildID = null.StringFrom(entry.BuildID)
+		if _, err := branch.Update(context.Background(), s.db, boil.Infer()); err != nil {
+			log.WithField("branchID", entry.BranchID).
 				WithField("buildID", entry.BuildID).
 				WithField("queuedAt", entry.QueuedAt).
 				WithError(err).
-				Errorf("failed to update env")
+				Errorf("failed to update branch")
 			return
 		}
 
 	case builder.BuildTypeStatic:
-		env.BuildID = null.StringFrom(entry.BuildID)
-		if _, err := env.Update(context.Background(), s.db, boil.Infer()); err != nil {
-			log.WithField("envID", entry.EnvID).
+		branch.BuildID = null.StringFrom(entry.BuildID)
+		if _, err := branch.Update(context.Background(), s.db, boil.Infer()); err != nil {
+			log.WithField("branchID", entry.BranchID).
 				WithField("buildID", entry.BuildID).
 				WithField("queuedAt", entry.QueuedAt).
 				WithError(err).
-				Errorf("failed to update env")
+				Errorf("failed to update branch")
 			return
 		}
 
 		if _, err := s.ss.Reload(context.Background(), &pb.ReloadRequest{}); err != nil {
-			log.WithField("envID", entry.EnvID).
+			log.WithField("branchID", entry.BranchID).
 				WithField("buildID", entry.BuildID).
 				WithField("queuedAt", entry.QueuedAt).
 				WithError(err).

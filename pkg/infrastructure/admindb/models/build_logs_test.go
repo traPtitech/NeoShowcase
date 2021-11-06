@@ -607,14 +607,14 @@ func testBuildLogOneToOneSetOpArtifactUsingArtifact(t *testing.T) {
 	}
 }
 
-func testBuildLogToManyBuildEnvironments(t *testing.T) {
+func testBuildLogToManyBuildBranches(t *testing.T) {
 	var err error
 	ctx := context.Background()
 	tx := MustTx(boil.BeginTx(ctx, nil))
 	defer func() { _ = tx.Rollback() }()
 
 	var a BuildLog
-	var b, c Environment
+	var b, c Branch
 
 	seed := randomize.NewSeed()
 	if err = randomize.Struct(seed, &a, buildLogDBTypes, true, buildLogColumnsWithDefault...); err != nil {
@@ -625,10 +625,10 @@ func testBuildLogToManyBuildEnvironments(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	if err = randomize.Struct(seed, &b, environmentDBTypes, false, environmentColumnsWithDefault...); err != nil {
+	if err = randomize.Struct(seed, &b, branchDBTypes, false, branchColumnsWithDefault...); err != nil {
 		t.Fatal(err)
 	}
-	if err = randomize.Struct(seed, &c, environmentDBTypes, false, environmentColumnsWithDefault...); err != nil {
+	if err = randomize.Struct(seed, &c, branchDBTypes, false, branchColumnsWithDefault...); err != nil {
 		t.Fatal(err)
 	}
 
@@ -641,7 +641,7 @@ func testBuildLogToManyBuildEnvironments(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	check, err := a.BuildEnvironments().All(ctx, tx)
+	check, err := a.BuildBranches().All(ctx, tx)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -664,18 +664,18 @@ func testBuildLogToManyBuildEnvironments(t *testing.T) {
 	}
 
 	slice := BuildLogSlice{&a}
-	if err = a.L.LoadBuildEnvironments(ctx, tx, false, (*[]*BuildLog)(&slice), nil); err != nil {
+	if err = a.L.LoadBuildBranches(ctx, tx, false, (*[]*BuildLog)(&slice), nil); err != nil {
 		t.Fatal(err)
 	}
-	if got := len(a.R.BuildEnvironments); got != 2 {
+	if got := len(a.R.BuildBranches); got != 2 {
 		t.Error("number of eager loaded records wrong, got:", got)
 	}
 
-	a.R.BuildEnvironments = nil
-	if err = a.L.LoadBuildEnvironments(ctx, tx, true, &a, nil); err != nil {
+	a.R.BuildBranches = nil
+	if err = a.L.LoadBuildBranches(ctx, tx, true, &a, nil); err != nil {
 		t.Fatal(err)
 	}
-	if got := len(a.R.BuildEnvironments); got != 2 {
+	if got := len(a.R.BuildBranches); got != 2 {
 		t.Error("number of eager loaded records wrong, got:", got)
 	}
 
@@ -684,7 +684,7 @@ func testBuildLogToManyBuildEnvironments(t *testing.T) {
 	}
 }
 
-func testBuildLogToManyAddOpBuildEnvironments(t *testing.T) {
+func testBuildLogToManyAddOpBuildBranches(t *testing.T) {
 	var err error
 
 	ctx := context.Background()
@@ -692,15 +692,15 @@ func testBuildLogToManyAddOpBuildEnvironments(t *testing.T) {
 	defer func() { _ = tx.Rollback() }()
 
 	var a BuildLog
-	var b, c, d, e Environment
+	var b, c, d, e Branch
 
 	seed := randomize.NewSeed()
 	if err = randomize.Struct(seed, &a, buildLogDBTypes, false, strmangle.SetComplement(buildLogPrimaryKeyColumns, buildLogColumnsWithoutDefault)...); err != nil {
 		t.Fatal(err)
 	}
-	foreigners := []*Environment{&b, &c, &d, &e}
+	foreigners := []*Branch{&b, &c, &d, &e}
 	for _, x := range foreigners {
-		if err = randomize.Struct(seed, x, environmentDBTypes, false, strmangle.SetComplement(environmentPrimaryKeyColumns, environmentColumnsWithoutDefault)...); err != nil {
+		if err = randomize.Struct(seed, x, branchDBTypes, false, strmangle.SetComplement(branchPrimaryKeyColumns, branchColumnsWithoutDefault)...); err != nil {
 			t.Fatal(err)
 		}
 	}
@@ -715,13 +715,13 @@ func testBuildLogToManyAddOpBuildEnvironments(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	foreignersSplitByInsertion := [][]*Environment{
+	foreignersSplitByInsertion := [][]*Branch{
 		{&b, &c},
 		{&d, &e},
 	}
 
 	for i, x := range foreignersSplitByInsertion {
-		err = a.AddBuildEnvironments(ctx, tx, i != 0, x...)
+		err = a.AddBuildBranches(ctx, tx, i != 0, x...)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -743,14 +743,14 @@ func testBuildLogToManyAddOpBuildEnvironments(t *testing.T) {
 			t.Error("relationship was not added properly to the foreign slice")
 		}
 
-		if a.R.BuildEnvironments[i*2] != first {
+		if a.R.BuildBranches[i*2] != first {
 			t.Error("relationship struct slice not set to correct value")
 		}
-		if a.R.BuildEnvironments[i*2+1] != second {
+		if a.R.BuildBranches[i*2+1] != second {
 			t.Error("relationship struct slice not set to correct value")
 		}
 
-		count, err := a.BuildEnvironments().Count(ctx, tx)
+		count, err := a.BuildBranches().Count(ctx, tx)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -760,7 +760,7 @@ func testBuildLogToManyAddOpBuildEnvironments(t *testing.T) {
 	}
 }
 
-func testBuildLogToManySetOpBuildEnvironments(t *testing.T) {
+func testBuildLogToManySetOpBuildBranches(t *testing.T) {
 	var err error
 
 	ctx := context.Background()
@@ -768,15 +768,15 @@ func testBuildLogToManySetOpBuildEnvironments(t *testing.T) {
 	defer func() { _ = tx.Rollback() }()
 
 	var a BuildLog
-	var b, c, d, e Environment
+	var b, c, d, e Branch
 
 	seed := randomize.NewSeed()
 	if err = randomize.Struct(seed, &a, buildLogDBTypes, false, strmangle.SetComplement(buildLogPrimaryKeyColumns, buildLogColumnsWithoutDefault)...); err != nil {
 		t.Fatal(err)
 	}
-	foreigners := []*Environment{&b, &c, &d, &e}
+	foreigners := []*Branch{&b, &c, &d, &e}
 	for _, x := range foreigners {
-		if err = randomize.Struct(seed, x, environmentDBTypes, false, strmangle.SetComplement(environmentPrimaryKeyColumns, environmentColumnsWithoutDefault)...); err != nil {
+		if err = randomize.Struct(seed, x, branchDBTypes, false, strmangle.SetComplement(branchPrimaryKeyColumns, branchColumnsWithoutDefault)...); err != nil {
 			t.Fatal(err)
 		}
 	}
@@ -791,12 +791,12 @@ func testBuildLogToManySetOpBuildEnvironments(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	err = a.SetBuildEnvironments(ctx, tx, false, &b, &c)
+	err = a.SetBuildBranches(ctx, tx, false, &b, &c)
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	count, err := a.BuildEnvironments().Count(ctx, tx)
+	count, err := a.BuildBranches().Count(ctx, tx)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -804,12 +804,12 @@ func testBuildLogToManySetOpBuildEnvironments(t *testing.T) {
 		t.Error("count was wrong:", count)
 	}
 
-	err = a.SetBuildEnvironments(ctx, tx, true, &d, &e)
+	err = a.SetBuildBranches(ctx, tx, true, &d, &e)
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	count, err = a.BuildEnvironments().Count(ctx, tx)
+	count, err = a.BuildBranches().Count(ctx, tx)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -843,15 +843,15 @@ func testBuildLogToManySetOpBuildEnvironments(t *testing.T) {
 		t.Error("relationship was not added properly to the foreign struct")
 	}
 
-	if a.R.BuildEnvironments[0] != &d {
+	if a.R.BuildBranches[0] != &d {
 		t.Error("relationship struct slice not set to correct value")
 	}
-	if a.R.BuildEnvironments[1] != &e {
+	if a.R.BuildBranches[1] != &e {
 		t.Error("relationship struct slice not set to correct value")
 	}
 }
 
-func testBuildLogToManyRemoveOpBuildEnvironments(t *testing.T) {
+func testBuildLogToManyRemoveOpBuildBranches(t *testing.T) {
 	var err error
 
 	ctx := context.Background()
@@ -859,15 +859,15 @@ func testBuildLogToManyRemoveOpBuildEnvironments(t *testing.T) {
 	defer func() { _ = tx.Rollback() }()
 
 	var a BuildLog
-	var b, c, d, e Environment
+	var b, c, d, e Branch
 
 	seed := randomize.NewSeed()
 	if err = randomize.Struct(seed, &a, buildLogDBTypes, false, strmangle.SetComplement(buildLogPrimaryKeyColumns, buildLogColumnsWithoutDefault)...); err != nil {
 		t.Fatal(err)
 	}
-	foreigners := []*Environment{&b, &c, &d, &e}
+	foreigners := []*Branch{&b, &c, &d, &e}
 	for _, x := range foreigners {
-		if err = randomize.Struct(seed, x, environmentDBTypes, false, strmangle.SetComplement(environmentPrimaryKeyColumns, environmentColumnsWithoutDefault)...); err != nil {
+		if err = randomize.Struct(seed, x, branchDBTypes, false, strmangle.SetComplement(branchPrimaryKeyColumns, branchColumnsWithoutDefault)...); err != nil {
 			t.Fatal(err)
 		}
 	}
@@ -876,12 +876,12 @@ func testBuildLogToManyRemoveOpBuildEnvironments(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	err = a.AddBuildEnvironments(ctx, tx, true, foreigners...)
+	err = a.AddBuildBranches(ctx, tx, true, foreigners...)
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	count, err := a.BuildEnvironments().Count(ctx, tx)
+	count, err := a.BuildBranches().Count(ctx, tx)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -889,12 +889,12 @@ func testBuildLogToManyRemoveOpBuildEnvironments(t *testing.T) {
 		t.Error("count was wrong:", count)
 	}
 
-	err = a.RemoveBuildEnvironments(ctx, tx, foreigners[:2]...)
+	err = a.RemoveBuildBranches(ctx, tx, foreigners[:2]...)
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	count, err = a.BuildEnvironments().Count(ctx, tx)
+	count, err = a.BuildBranches().Count(ctx, tx)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -922,71 +922,71 @@ func testBuildLogToManyRemoveOpBuildEnvironments(t *testing.T) {
 		t.Error("relationship to a should have been preserved")
 	}
 
-	if len(a.R.BuildEnvironments) != 2 {
+	if len(a.R.BuildBranches) != 2 {
 		t.Error("should have preserved two relationships")
 	}
 
 	// Removal doesn't do a stable deletion for performance so we have to flip the order
-	if a.R.BuildEnvironments[1] != &d {
+	if a.R.BuildBranches[1] != &d {
 		t.Error("relationship to d should have been preserved")
 	}
-	if a.R.BuildEnvironments[0] != &e {
+	if a.R.BuildBranches[0] != &e {
 		t.Error("relationship to e should have been preserved")
 	}
 }
 
-func testBuildLogToOneEnvironmentUsingEnvironment(t *testing.T) {
+func testBuildLogToOneBranchUsingBranch(t *testing.T) {
 	ctx := context.Background()
 	tx := MustTx(boil.BeginTx(ctx, nil))
 	defer func() { _ = tx.Rollback() }()
 
 	var local BuildLog
-	var foreign Environment
+	var foreign Branch
 
 	seed := randomize.NewSeed()
-	if err := randomize.Struct(seed, &local, buildLogDBTypes, true, buildLogColumnsWithDefault...); err != nil {
+	if err := randomize.Struct(seed, &local, buildLogDBTypes, false, buildLogColumnsWithDefault...); err != nil {
 		t.Errorf("Unable to randomize BuildLog struct: %s", err)
 	}
-	if err := randomize.Struct(seed, &foreign, environmentDBTypes, false, environmentColumnsWithDefault...); err != nil {
-		t.Errorf("Unable to randomize Environment struct: %s", err)
+	if err := randomize.Struct(seed, &foreign, branchDBTypes, false, branchColumnsWithDefault...); err != nil {
+		t.Errorf("Unable to randomize Branch struct: %s", err)
 	}
 
 	if err := foreign.Insert(ctx, tx, boil.Infer()); err != nil {
 		t.Fatal(err)
 	}
 
-	queries.Assign(&local.EnvironmentID, foreign.ID)
+	local.BranchID = foreign.ID
 	if err := local.Insert(ctx, tx, boil.Infer()); err != nil {
 		t.Fatal(err)
 	}
 
-	check, err := local.Environment().One(ctx, tx)
+	check, err := local.Branch().One(ctx, tx)
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	if !queries.Equal(check.ID, foreign.ID) {
+	if check.ID != foreign.ID {
 		t.Errorf("want: %v, got %v", foreign.ID, check.ID)
 	}
 
 	slice := BuildLogSlice{&local}
-	if err = local.L.LoadEnvironment(ctx, tx, false, (*[]*BuildLog)(&slice), nil); err != nil {
+	if err = local.L.LoadBranch(ctx, tx, false, (*[]*BuildLog)(&slice), nil); err != nil {
 		t.Fatal(err)
 	}
-	if local.R.Environment == nil {
+	if local.R.Branch == nil {
 		t.Error("struct should have been eager loaded")
 	}
 
-	local.R.Environment = nil
-	if err = local.L.LoadEnvironment(ctx, tx, true, &local, nil); err != nil {
+	local.R.Branch = nil
+	if err = local.L.LoadBranch(ctx, tx, true, &local, nil); err != nil {
 		t.Fatal(err)
 	}
-	if local.R.Environment == nil {
+	if local.R.Branch == nil {
 		t.Error("struct should have been eager loaded")
 	}
 }
 
-func testBuildLogToOneSetOpEnvironmentUsingEnvironment(t *testing.T) {
+func testBuildLogToOneSetOpBranchUsingBranch(t *testing.T) {
 	var err error
 
 	ctx := context.Background()
@@ -994,16 +994,16 @@ func testBuildLogToOneSetOpEnvironmentUsingEnvironment(t *testing.T) {
 	defer func() { _ = tx.Rollback() }()
 
 	var a BuildLog
-	var b, c Environment
+	var b, c Branch
 
 	seed := randomize.NewSeed()
 	if err = randomize.Struct(seed, &a, buildLogDBTypes, false, strmangle.SetComplement(buildLogPrimaryKeyColumns, buildLogColumnsWithoutDefault)...); err != nil {
 		t.Fatal(err)
 	}
-	if err = randomize.Struct(seed, &b, environmentDBTypes, false, strmangle.SetComplement(environmentPrimaryKeyColumns, environmentColumnsWithoutDefault)...); err != nil {
+	if err = randomize.Struct(seed, &b, branchDBTypes, false, strmangle.SetComplement(branchPrimaryKeyColumns, branchColumnsWithoutDefault)...); err != nil {
 		t.Fatal(err)
 	}
-	if err = randomize.Struct(seed, &c, environmentDBTypes, false, strmangle.SetComplement(environmentPrimaryKeyColumns, environmentColumnsWithoutDefault)...); err != nil {
+	if err = randomize.Struct(seed, &c, branchDBTypes, false, strmangle.SetComplement(branchPrimaryKeyColumns, branchColumnsWithoutDefault)...); err != nil {
 		t.Fatal(err)
 	}
 
@@ -1014,84 +1014,33 @@ func testBuildLogToOneSetOpEnvironmentUsingEnvironment(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	for i, x := range []*Environment{&b, &c} {
-		err = a.SetEnvironment(ctx, tx, i != 0, x)
+	for i, x := range []*Branch{&b, &c} {
+		err = a.SetBranch(ctx, tx, i != 0, x)
 		if err != nil {
 			t.Fatal(err)
 		}
 
-		if a.R.Environment != x {
+		if a.R.Branch != x {
 			t.Error("relationship struct not set to correct value")
 		}
 
 		if x.R.BuildLogs[0] != &a {
 			t.Error("failed to append to foreign relationship struct")
 		}
-		if !queries.Equal(a.EnvironmentID, x.ID) {
-			t.Error("foreign key was wrong value", a.EnvironmentID)
+		if a.BranchID != x.ID {
+			t.Error("foreign key was wrong value", a.BranchID)
 		}
 
-		zero := reflect.Zero(reflect.TypeOf(a.EnvironmentID))
-		reflect.Indirect(reflect.ValueOf(&a.EnvironmentID)).Set(zero)
+		zero := reflect.Zero(reflect.TypeOf(a.BranchID))
+		reflect.Indirect(reflect.ValueOf(&a.BranchID)).Set(zero)
 
 		if err = a.Reload(ctx, tx); err != nil {
 			t.Fatal("failed to reload", err)
 		}
 
-		if !queries.Equal(a.EnvironmentID, x.ID) {
-			t.Error("foreign key was wrong value", a.EnvironmentID, x.ID)
+		if a.BranchID != x.ID {
+			t.Error("foreign key was wrong value", a.BranchID, x.ID)
 		}
-	}
-}
-
-func testBuildLogToOneRemoveOpEnvironmentUsingEnvironment(t *testing.T) {
-	var err error
-
-	ctx := context.Background()
-	tx := MustTx(boil.BeginTx(ctx, nil))
-	defer func() { _ = tx.Rollback() }()
-
-	var a BuildLog
-	var b Environment
-
-	seed := randomize.NewSeed()
-	if err = randomize.Struct(seed, &a, buildLogDBTypes, false, strmangle.SetComplement(buildLogPrimaryKeyColumns, buildLogColumnsWithoutDefault)...); err != nil {
-		t.Fatal(err)
-	}
-	if err = randomize.Struct(seed, &b, environmentDBTypes, false, strmangle.SetComplement(environmentPrimaryKeyColumns, environmentColumnsWithoutDefault)...); err != nil {
-		t.Fatal(err)
-	}
-
-	if err = a.Insert(ctx, tx, boil.Infer()); err != nil {
-		t.Fatal(err)
-	}
-
-	if err = a.SetEnvironment(ctx, tx, true, &b); err != nil {
-		t.Fatal(err)
-	}
-
-	if err = a.RemoveEnvironment(ctx, tx, &b); err != nil {
-		t.Error("failed to remove relationship")
-	}
-
-	count, err := a.Environment().Count(ctx, tx)
-	if err != nil {
-		t.Error(err)
-	}
-	if count != 0 {
-		t.Error("want no relationships remaining")
-	}
-
-	if a.R.Environment != nil {
-		t.Error("R struct entry should be nil")
-	}
-
-	if !queries.IsValuerNil(a.EnvironmentID) {
-		t.Error("foreign key value should be nil")
-	}
-
-	if len(b.R.BuildLogs) != 0 {
-		t.Error("failed to remove a from b's relationships")
 	}
 }
 
@@ -1169,7 +1118,7 @@ func testBuildLogsSelect(t *testing.T) {
 }
 
 var (
-	buildLogDBTypes = map[string]string{`ID`: `varchar`, `Result`: `enum('BUILDING','SUCCEEDED','FAILED','CANCELED')`, `StartedAt`: `datetime`, `FinishedAt`: `datetime`, `EnvironmentID`: `varchar`}
+	buildLogDBTypes = map[string]string{`ID`: `varchar`, `Result`: `enum('BUILDING','SUCCEEDED','FAILED','CANCELED')`, `StartedAt`: `datetime`, `FinishedAt`: `datetime`, `BranchID`: `varchar`}
 	_               = bytes.MinRead
 )
 

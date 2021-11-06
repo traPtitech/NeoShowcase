@@ -13,7 +13,7 @@ CREATE TABLE `build_logs` (
   `result` enum('BUILDING','SUCCEEDED','FAILED','CANCELED') NOT NULL COMMENT 'ビルド結果',
   `started_at` datetime(6) NOT NULL COMMENT 'ビルド開始日時',
   `finished_at` datetime(6) DEFAULT NULL COMMENT 'ビルド終了日時',
-  `branch_id` varchar(22) DEFAULT NULL COMMENT 'ブランチID',
+  `branch_id` varchar(22) NOT NULL COMMENT 'ブランチID',
   PRIMARY KEY (`id`),
   KEY `fk_build_logs_branch_id` (`branch_id`),
   CONSTRAINT `fk_build_logs_branch_id` FOREIGN KEY (`branch_id`) REFERENCES `branches` (`id`)
@@ -30,7 +30,7 @@ CREATE TABLE `build_logs` (
 | result | enum('BUILDING','SUCCEEDED','FAILED','CANCELED') |  | false |  |  | ビルド結果 |
 | started_at | datetime(6) |  | false |  |  | ビルド開始日時 |
 | finished_at | datetime(6) | NULL | true |  |  | ビルド終了日時 |
-| branch_id | varchar(22) | NULL | true |  | [branches](branches.md) | ブランチID |
+| branch_id | varchar(22) |  | false |  | [branches](branches.md) | ブランチID |
 
 ## Constraints
 

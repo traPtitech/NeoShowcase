@@ -32,7 +32,7 @@ message StartBuildImageRequest {
   string image_name = 1;
   BuildSource source = 2;
   BuildOptions options = 3;
-  string environment_id = 5;
+  string branch_id = 5;
 }
 
 message StartBuildImageResponse {
@@ -42,7 +42,7 @@ message StartBuildImageResponse {
 message StartBuildStaticRequest {
   BuildSource source = 1;
   BuildOptions options = 2;
-  string environment_id = 4;
+  string branch_id = 4;
 }
 
 message StartBuildStaticResponse {

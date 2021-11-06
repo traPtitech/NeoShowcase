@@ -10,7 +10,7 @@ import (
 	"k8s.io/apimachinery/pkg/types"
 )
 
-func (b *k8sBackend) RestartContainer(ctx context.Context, appID string, envID string) error {
+func (b *k8sBackend) RestartContainer(ctx context.Context, appID string, branchID string) error {
 	data, _ := json.Marshal(map[string]interface{}{
 		"metadata": map[string]interface{}{
 			"annotations": map[string]interface{}{
@@ -18,7 +18,7 @@ func (b *k8sBackend) RestartContainer(ctx context.Context, appID string, envID s
 			},
 		},
 	})
-	_, err := b.clientset.CoreV1().Pods(appNamespace).Patch(ctx, deploymentName(appID, envID), types.MergePatchType, data, metav1.PatchOptions{})
+	_, err := b.clientset.CoreV1().Pods(appNamespace).Patch(ctx, deploymentName(appID, branchID), types.MergePatchType, data, metav1.PatchOptions{})
 	if err != nil {
 		return fmt.Errorf("failed to restart pod: %w", err)
 	}
