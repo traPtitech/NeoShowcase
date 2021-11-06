@@ -8,7 +8,7 @@ import (
 
 type ContainerCreateArgs struct {
 	ApplicationID string
-	EnvironmentID string
+	BranchID      string
 	ImageName     string
 	ImageTag      string
 	Labels        map[string]string
@@ -24,7 +24,7 @@ type ContainerHTTPProxy struct {
 
 type Container struct {
 	ApplicationID string
-	EnvironmentID string
+	BranchID      string
 	State         ContainerState
 }
 
@@ -39,10 +39,10 @@ const (
 
 type Backend interface {
 	CreateContainer(ctx context.Context, args ContainerCreateArgs) error
-	RestartContainer(ctx context.Context, appID string, envID string) error
-	DestroyContainer(ctx context.Context, appID string, envID string) error
+	RestartContainer(ctx context.Context, appID string, branchID string) error
+	DestroyContainer(ctx context.Context, appID string, branchID string) error
 	ListContainers(ctx context.Context) ([]Container, error)
-	RegisterIngress(ctx context.Context, appID string, envID string, host string, destination null.String, port null.Int) error
-	UnregisterIngress(ctx context.Context, appID string, envID string) error
+	RegisterIngress(ctx context.Context, appID string, branchID string, host string, destination null.String, port null.Int) error
+	UnregisterIngress(ctx context.Context, appID string, branchID string) error
 	Dispose(ctx context.Context) error
 }

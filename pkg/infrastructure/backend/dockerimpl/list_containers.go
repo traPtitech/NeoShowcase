@@ -22,7 +22,7 @@ func (b *dockerBackend) ListContainers(ctx context.Context) ([]domain.Container,
 	for _, apiContainers := range containers {
 		result = append(result, domain.Container{
 			ApplicationID: apiContainers.Labels[appContainerApplicationIDLabel],
-			EnvironmentID: apiContainers.Labels[appContainerEnvironmentIDLabel],
+			BranchID:      apiContainers.Labels[appContainerBranchIDLabel],
 			State:         getContainerState(apiContainers.State),
 		})
 	}

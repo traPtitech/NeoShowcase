@@ -26,7 +26,7 @@ func (b *dockerBackend) CreateContainer(ctx context.Context, args domain.Contain
 	labels := util.MergeLabels(args.Labels, map[string]string{
 		appContainerLabel:              "true",
 		appContainerApplicationIDLabel: args.ApplicationID,
-		appContainerEnvironmentIDLabel: args.EnvironmentID,
+		appContainerBranchIDLabel:      args.BranchID,
 	})
 
 	var envs []string
@@ -38,7 +38,7 @@ func (b *dockerBackend) CreateContainer(ctx context.Context, args domain.Contain
 	if args.Recreate {
 		// 前のものが起動中の場合は削除する
 		err := b.c.RemoveContainer(docker.RemoveContainerOptions{
-			ID:            containerName(args.ApplicationID, args.EnvironmentID),
+			ID:            containerName(args.ApplicationID, args.BranchID),
 			RemoveVolumes: true,
 			Force:         true,
 			Context:       ctx,
@@ -52,7 +52,7 @@ func (b *dockerBackend) CreateContainer(ctx context.Context, args domain.Contain
 
 	// ビルドしたイメージのコンテナを作成
 	cont, err := b.c.CreateContainer(docker.CreateContainerOptions{
-		Name: containerName(args.ApplicationID, args.EnvironmentID),
+		Name: containerName(args.ApplicationID, args.BranchID),
 		Config: &docker.Config{
 			Image:  args.ImageName + ":" + args.ImageTag,
 			Labels: labels,

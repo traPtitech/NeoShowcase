@@ -23,25 +23,25 @@ func TestDockerBackend_DestroyContainer(t *testing.T) {
 	t.Run("コンテナを正常に削除", func(t *testing.T) {
 		t.Parallel()
 		appID := "ojoionaonidp"
-		envID := "bhhfkadajlkh"
+		branchID := "bhhfkadajlkh"
 		_, err := c.CreateContainer(docker.CreateContainerOptions{
-			Name: containerName(appID, envID),
+			Name: containerName(appID, branchID),
 			Config: &docker.Config{
 				Image: "alpine:latest",
 			},
 		})
 		require.NoError(t, err)
 
-		err = m.DestroyContainer(context.Background(), appID, envID)
+		err = m.DestroyContainer(context.Background(), appID, branchID)
 		assert.NoError(t, err)
 	})
 
 	t.Run("稼働中のコンテナを削除", func(t *testing.T) {
 		t.Parallel()
 		appID := "pjipjjijoinn"
-		envID := "wefadsnaiomo"
+		branchID := "wefadsnaiomo"
 		cont, err := c.CreateContainer(docker.CreateContainerOptions{
-			Name: containerName(appID, envID),
+			Name: containerName(appID, branchID),
 			Config: &docker.Config{
 				Image: "alpine:latest",
 				Cmd:   []string{"sleep", "100"},
@@ -50,7 +50,7 @@ func TestDockerBackend_DestroyContainer(t *testing.T) {
 		require.NoError(t, err)
 		require.NoError(t, c.StartContainer(cont.ID, nil))
 
-		err = m.DestroyContainer(context.Background(), appID, envID)
+		err = m.DestroyContainer(context.Background(), appID, branchID)
 		assert.NoError(t, err)
 	})
 }

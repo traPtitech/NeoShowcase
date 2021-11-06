@@ -99,7 +99,7 @@ func (s *appDeployService) deploy(entry *appDeployment) {
 
 		err := s.backend.CreateContainer(context.Background(), domain.ContainerCreateArgs{
 			ApplicationID: branch.ApplicationID,
-			EnvironmentID: branch.ID,
+			BranchID:      branch.ID,
 			ImageName:     builder.GetImageName(s.imageRegistry, s.imageNamePrefix, branch.ApplicationID),
 			ImageTag:      entry.BuildID,
 			HTTPProxy:     httpProxy,
