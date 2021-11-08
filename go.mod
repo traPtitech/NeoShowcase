@@ -31,7 +31,7 @@ require (
 	github.com/volatiletech/sqlboiler/v4 v4.5.0
 	github.com/volatiletech/strmangle v0.0.1
 	github.com/ziutek/mymysql v1.5.4 // indirect
-	go.mongodb.org/mongo-driver v1.5.1
+	go.mongodb.org/mongo-driver v1.7.4
 	golang.org/x/sync v0.0.0-20201020160332-67f06af15bc9
 	google.golang.org/grpc v1.40.0
 	google.golang.org/grpc/cmd/protoc-gen-go-grpc v1.1.0
@@ -112,7 +112,7 @@ require (
 	github.com/juju/ansiterm v0.0.0-20180109212912-720a0952cc2a // indirect
 	github.com/k0kubun/pp v3.0.1+incompatible // indirect
 	github.com/kevinburke/ssh_config v0.0.0-20201106050909-4977a11b4351 // indirect
-	github.com/klauspost/compress v1.11.3 // indirect
+	github.com/klauspost/compress v1.13.6 // indirect
 	github.com/ktr0731/go-multierror v0.0.0-20171204182908-b7773ae21874 // indirect
 	github.com/ktr0731/go-prompt v0.2.2-0.20190609072126-7894cc3f2925 // indirect
 	github.com/ktr0731/go-shellstring v0.1.3 // indirect
