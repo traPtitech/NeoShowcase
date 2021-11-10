@@ -24,7 +24,7 @@ func NewWebhookSecretRepository(db *sql.DB) WebhookSecretRepository {
 }
 
 func (r *webhookSecretRepository) GetWebhookSecretKeys(ctx context.Context, repositoryUrl string) ([]string, error) {
-	_, err := models.Repositories(models.RepositoryWhere.Remote.EQ(repositoryUrl)).
+	_, err := models.Repositories(models.RepositoryWhere.URL.EQ(repositoryUrl)).
 		One(ctx, r.db)
 	if err != nil {
 		if err == sql.ErrNoRows {
