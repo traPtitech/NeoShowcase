@@ -23,10 +23,26 @@ jobs:
           path: ~/go/pkg/mod
           key: ${{ runner.os }}-gomod-${{ hashFiles('**/go.sum') }}
       - run: go mod download
+  tools: 
+    name: Go install tools
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/setup-go@v2
+        with:
+          go-version: ${{ env.GO_VERSION }}
+      - uses: actions/checkout@v2
+      - uses: actions/cache@v2
+        with:
+          path: ~/go/bin
+          key: ${{ runner.os }}-goinstall-${{ env.GO_VERSION }}
+      - name: Install dependency modules
+        run: |
+          go install google.golang.org/protobuf/cmd/protoc-gen-go@latest
+          go install google.golang.org/grpc/cmd/protoc-gen-go-grpc@latest
   protoc: 
     name: Genarate Code From Proto
     runs-on: ubuntu-latest
-    needs: [ mod ]
+    needs: [ tools ]
     steps:
       - uses: actions/setup-go@v2
         with:
@@ -38,11 +54,7 @@ jobs:
       - uses: actions/cache@v2
         with:
           path: ./pkg/interface/grpc/pb
-          key: ${{ runner.os }}-gomod-${{ hashFiles('**/*.proto') }}
-      - name: Install dependency modules
-        run: |
-          go install google.golang.org/protobuf/cmd/protoc-gen-go@latest
-          go install google.golang.org/grpc/cmd/protoc-gen-go-grpc@latest
+          key: ${{ runner.os }}-proto-${{ hashFiles('**/*.proto') }}
       - name: Generate code
         run: |
           protoc -I ./api/proto --go_out=. \
