@@ -35,6 +35,10 @@ jobs:
       - uses: arduino/setup-protoc@v1
         with:
           version: '3.6.1'
+      - uses: actions/cache@v2
+        with:
+          path: ./pkg/interface/grpc/pb
+          key: ${{ runner.os }}-gomod-${{ hashFiles('**/*.proto') }}
       - name: Install dependency modules
         run: |
           go install google.golang.org/protobuf/cmd/protoc-gen-go@latest
