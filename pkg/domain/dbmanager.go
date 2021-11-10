@@ -22,6 +22,8 @@ type MariaDBManager interface {
 	Create(ctx context.Context, args CreateArgs) error
 	// Delete データベースが存在する場合、削除します
 	Delete(ctx context.Context, args DeleteArgs) error
+	// Poll データベースが存在するか確認します
+	Poll(ctx context.Context) error
 	Close(ctx context.Context) error
 }
 
@@ -31,5 +33,7 @@ type MongoManager interface {
 	Create(ctx context.Context, args CreateArgs) error
 	// Delete データベースが存在する場合、削除します
 	Delete(ctx context.Context, args DeleteArgs) error
+	// Poll データベースが存在するか確認します
+	Poll(ctx context.Context) error
 	Close(ctx context.Context) error
 }

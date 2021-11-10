@@ -65,6 +65,14 @@ func (m *mongoManagerImpl) Delete(ctx context.Context, args domain.DeleteArgs) e
 	return nil
 }
 
+func (m *mongoManagerImpl) Poll(ctx context.Context) error {
+	err := m.client.Ping(ctx, nil)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
 func (m *mongoManagerImpl) Close(ctx context.Context) error {
 	return m.client.Disconnect(ctx)
 }

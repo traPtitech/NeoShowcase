@@ -8,7 +8,6 @@ import (
 	log "github.com/sirupsen/logrus"
 	"github.com/traPtitech/neoshowcase/pkg/domain"
 	"github.com/traPtitech/neoshowcase/pkg/domain/event"
-	"github.com/traPtitech/neoshowcase/pkg/infrastructure/dbmanager"
 	"github.com/traPtitech/neoshowcase/pkg/interface/repository"
 )
 
@@ -18,18 +17,20 @@ type ContinuousDeploymentService interface {
 }
 
 type continuousDeploymentService struct {
-	bus      domain.Bus
-	repo     repository.ApplicationRepository
-	deployer AppDeployService
-	builder  AppBuildService
+	bus       domain.Bus
+	repo      repository.ApplicationRepository
+	deployer  AppDeployService
+	builder   AppBuildService
+	dbmanager domain.MariaDBManager
 }
 
-func NewContinuousDeploymentService(bus domain.Bus, repo repository.ApplicationRepository, deployer AppDeployService, builder AppBuildService) ContinuousDeploymentService {
+func NewContinuousDeploymentService(bus domain.Bus, repo repository.ApplicationRepository, deployer AppDeployService, builder AppBuildService, dbmanager domain.MariaDBManager) ContinuousDeploymentService {
 	return &continuousDeploymentService{
-		bus:      bus,
-		repo:     repo,
-		deployer: deployer,
-		builder:  builder,
+		bus:       bus,
+		repo:      repo,
+		deployer:  deployer,
+		builder:   builder,
+		dbmanager: dbmanager,
 	}
 }
 
@@ -79,34 +80,22 @@ func (cd *continuousDeploymentService) handleWebhookRepositoryPush(repoURL strin
 		WithField("refs", branchName).
 		Info("repository push event received")
 
-	dbAdminUser := repoURL
-	dbAdminPassword := generateRandomString(32)
-	dbConfig := dbmanager.MariaDBConfig{
-		"host",
-		3307,
-		dbAdminUser,
-		dbAdminPassword,
-	}
+	applicationNeedsDB := true
+	err := cd.dbmanager.Poll(context.Background())
+	if applicationNeedsDB && err != nil {
+		dbUser := repoURL
+		dbPassword := generateRandomString(32)
+		dbSetting := domain.CreateArgs{
+			Database: dbUser,
+			Password: dbPassword,
+		}
 
-	db, err := dbmanager.NewMariaDBManager(dbConfig)
-	if err != nil {
-		log.WithError(err).
-			WithField("Host", "host").
-			WithField("Port", 3307).
-			WithField("AdminUser", dbAdminUser).
-			WithField("AdminPass", dbAdminPassword)
-		return
-	}
-
-	dbSetting := domain.CreateArgs{
-		Database: dbAdminUser,
-		Password: dbAdminPassword,
-	}
-	err = db.Create(context.Background(), dbSetting)
-	if err != nil {
-		log.WithError(err).
-			WithField("Database", dbSetting.Database).
-			WithField("Password", dbSetting.Password)
+		err := cd.dbmanager.Create(context.Background(), dbSetting)
+		if err != nil {
+			log.WithError(err).
+				WithField("Database", dbSetting.Database).
+				WithField("Password", dbSetting.Password)
+		}
 	}
 
 	branch, err := cd.repo.GetEnvironmentByRepoAndBranch(context.Background(), repoURL, branchName)
