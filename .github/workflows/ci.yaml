@@ -55,6 +55,10 @@ jobs:
         with:
           path: ./pkg/interface/grpc/pb
           key: ${{ runner.os }}-proto-${{ hashFiles('**/*.proto') }}
+      - uses: actions/cache@v2
+        with:
+          path: ~/go/bin
+          key: ${{ runner.os }}-goinstall-${{ env.GO_VERSION }}
       - name: Generate code
         run: |
           protoc -I ./api/proto --go_out=. \
@@ -87,6 +91,10 @@ jobs:
           key: ${{ runner.os }}-gomod-${{ hashFiles('**/go.sum') }}
           restore-keys: |
             ${{ runner.os }}-gomod-
+      - uses: actions/cache@v2
+        with:
+          path: ./pkg/interface/grpc/pb
+          key: ${{ runner.os }}-proto-${{ hashFiles('**/*.proto') }}
       - run: go build ./cmd/${{ matrix.component }}
   lint:
     name: Lint
@@ -109,6 +117,10 @@ jobs:
           key: ${{ runner.os }}-gomod-${{ hashFiles('**/go.sum') }}
           restore-keys: |
             ${{ runner.os }}-gomod-
+      - uses: actions/cache@v2
+        with:
+          path: ./pkg/interface/grpc/pb
+          key: ${{ runner.os }}-proto-${{ hashFiles('**/*.proto') }}
       - name: golangci-lint
         run: golangci-lint run --out-format=line-number | reviewdog -f=golangci-lint -name=golangci-lint -reporter=github-check
         env:
@@ -147,6 +159,10 @@ jobs:
           key: ${{ runner.os }}-gomod-${{ hashFiles('**/go.sum') }}
           restore-keys: |
             ${{ runner.os }}-gomod-
+      - uses: actions/cache@v2
+        with:
+          path: ./pkg/interface/grpc/pb
+          key: ${{ runner.os }}-proto-${{ hashFiles('**/*.proto') }}
       - name: sql-migrate up
         run: go run ./cmd/ns-migrate up -P 5004
       - name: Run tests
@@ -192,6 +208,10 @@ jobs:
           key: ${{ runner.os }}-gomod-${{ hashFiles('**/go.sum') }}
           restore-keys: |
             ${{ runner.os }}-gomod-
+      - uses: actions/cache@v2
+        with:
+          path: ./pkg/interface/grpc/pb
+          key: ${{ runner.os }}-proto-${{ hashFiles('**/*.proto') }}
       - name: Run tests
         run: go test ./pkg/infrastructure/backend/k8simpl -v -coverprofile=coverage.out -covermode=atomic -vet=off
       - name: Upload coverage to Codecov
