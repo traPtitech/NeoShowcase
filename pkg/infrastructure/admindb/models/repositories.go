@@ -23,40 +23,58 @@ import (
 
 // Repository is an object representing the database table.
 type Repository struct {
-	ID     string `boil:"id" json:"id" toml:"id" yaml:"id"`
-	Remote string `boil:"remote" json:"remote" toml:"remote" yaml:"remote"`
+	ID         string `boil:"id" json:"id" toml:"id" yaml:"id"`
+	Owner      string `boil:"owner" json:"owner" toml:"owner" yaml:"owner"`
+	Name       string `boil:"name" json:"name" toml:"name" yaml:"name"`
+	URL        string `boil:"url" json:"url" toml:"url" yaml:"url"`
+	ProviderID string `boil:"provider_id" json:"provider_id" toml:"provider_id" yaml:"provider_id"`
 
 	R *repositoryR `boil:"-" json:"-" toml:"-" yaml:"-"`
 	L repositoryL  `boil:"-" json:"-" toml:"-" yaml:"-"`
 }
 
 var RepositoryColumns = struct {
-	ID     string
-	Remote string
+	ID         string
+	Owner      string
+	Name       string
+	URL        string
+	ProviderID string
 }{
-	ID:     "id",
-	Remote: "remote",
+	ID:         "id",
+	Owner:      "owner",
+	Name:       "name",
+	URL:        "url",
+	ProviderID: "provider_id",
 }
 
 // Generated where
 
 var RepositoryWhere = struct {
-	ID     whereHelperstring
-	Remote whereHelperstring
+	ID         whereHelperstring
+	Owner      whereHelperstring
+	Name       whereHelperstring
+	URL        whereHelperstring
+	ProviderID whereHelperstring
 }{
-	ID:     whereHelperstring{field: "`repositories`.`id`"},
-	Remote: whereHelperstring{field: "`repositories`.`remote`"},
+	ID:         whereHelperstring{field: "`repositories`.`id`"},
+	Owner:      whereHelperstring{field: "`repositories`.`owner`"},
+	Name:       whereHelperstring{field: "`repositories`.`name`"},
+	URL:        whereHelperstring{field: "`repositories`.`url`"},
+	ProviderID: whereHelperstring{field: "`repositories`.`provider_id`"},
 }
 
 // RepositoryRels is where relationship names are stored.
 var RepositoryRels = struct {
+	Provider     string
 	Applications string
 }{
+	Provider:     "Provider",
 	Applications: "Applications",
 }
 
 // repositoryR is where relationships are stored.
 type repositoryR struct {
+	Provider     *Provider        `boil:"Provider" json:"Provider" toml:"Provider" yaml:"Provider"`
 	Applications ApplicationSlice `boil:"Applications" json:"Applications" toml:"Applications" yaml:"Applications"`
 }
 
@@ -69,8 +87,8 @@ func (*repositoryR) NewStruct() *repositoryR {
 type repositoryL struct{}
 
 var (
-	repositoryAllColumns            = []string{"id", "remote"}
-	repositoryColumnsWithoutDefault = []string{"id", "remote"}
+	repositoryAllColumns            = []string{"id", "owner", "name", "url", "provider_id"}
+	repositoryColumnsWithoutDefault = []string{"id", "owner", "name", "url", "provider_id"}
 	repositoryColumnsWithDefault    = []string{}
 	repositoryPrimaryKeyColumns     = []string{"id"}
 )
@@ -350,6 +368,20 @@ func (q repositoryQuery) Exists(ctx context.Context, exec boil.ContextExecutor) 
 	return count > 0, nil
 }
 
+// Provider pointed to by the foreign key.
+func (o *Repository) Provider(mods ...qm.QueryMod) providerQuery {
+	queryMods := []qm.QueryMod{
+		qm.Where("`id` = ?", o.ProviderID),
+	}
+
+	queryMods = append(queryMods, mods...)
+
+	query := Providers(queryMods...)
+	queries.SetFrom(query.Query, "`providers`")
+
+	return query
+}
+
 // Applications retrieves all the application's Applications with an executor.
 func (o *Repository) Applications(mods ...qm.QueryMod) applicationQuery {
 	var queryMods []qm.QueryMod
@@ -369,6 +401,110 @@ func (o *Repository) Applications(mods ...qm.QueryMod) applicationQuery {
 	}
 
 	return query
+}
+
+// LoadProvider allows an eager lookup of values, cached into the
+// loaded structs of the objects. This is for an N-1 relationship.
+func (repositoryL) LoadProvider(ctx context.Context, e boil.ContextExecutor, singular bool, maybeRepository interface{}, mods queries.Applicator) error {
+	var slice []*Repository
+	var object *Repository
+
+	if singular {
+		object = maybeRepository.(*Repository)
+	} else {
+		slice = *maybeRepository.(*[]*Repository)
+	}
+
+	args := make([]interface{}, 0, 1)
+	if singular {
+		if object.R == nil {
+			object.R = &repositoryR{}
+		}
+		args = append(args, object.ProviderID)
+
+	} else {
+	Outer:
+		for _, obj := range slice {
+			if obj.R == nil {
+				obj.R = &repositoryR{}
+			}
+
+			for _, a := range args {
+				if a == obj.ProviderID {
+					continue Outer
+				}
+			}
+
+			args = append(args, obj.ProviderID)
+
+		}
+	}
+
+	if len(args) == 0 {
+		return nil
+	}
+
+	query := NewQuery(
+		qm.From(`providers`),
+		qm.WhereIn(`providers.id in ?`, args...),
+	)
+	if mods != nil {
+		mods.Apply(query)
+	}
+
+	results, err := query.QueryContext(ctx, e)
+	if err != nil {
+		return errors.Wrap(err, "failed to eager load Provider")
+	}
+
+	var resultSlice []*Provider
+	if err = queries.Bind(results, &resultSlice); err != nil {
+		return errors.Wrap(err, "failed to bind eager loaded slice Provider")
+	}
+
+	if err = results.Close(); err != nil {
+		return errors.Wrap(err, "failed to close results of eager load for providers")
+	}
+	if err = results.Err(); err != nil {
+		return errors.Wrap(err, "error occurred during iteration of eager loaded relations for providers")
+	}
+
+	if len(repositoryAfterSelectHooks) != 0 {
+		for _, obj := range resultSlice {
+			if err := obj.doAfterSelectHooks(ctx, e); err != nil {
+				return err
+			}
+		}
+	}
+
+	if len(resultSlice) == 0 {
+		return nil
+	}
+
+	if singular {
+		foreign := resultSlice[0]
+		object.R.Provider = foreign
+		if foreign.R == nil {
+			foreign.R = &providerR{}
+		}
+		foreign.R.Repositories = append(foreign.R.Repositories, object)
+		return nil
+	}
+
+	for _, local := range slice {
+		for _, foreign := range resultSlice {
+			if local.ProviderID == foreign.ID {
+				local.R.Provider = foreign
+				if foreign.R == nil {
+					foreign.R = &providerR{}
+				}
+				foreign.R.Repositories = append(foreign.R.Repositories, local)
+				break
+			}
+		}
+	}
+
+	return nil
 }
 
 // LoadApplications allows an eager lookup of values, cached into the
@@ -464,6 +600,53 @@ func (repositoryL) LoadApplications(ctx context.Context, e boil.ContextExecutor,
 				break
 			}
 		}
+	}
+
+	return nil
+}
+
+// SetProvider of the repository to the related item.
+// Sets o.R.Provider to related.
+// Adds o to related.R.Repositories.
+func (o *Repository) SetProvider(ctx context.Context, exec boil.ContextExecutor, insert bool, related *Provider) error {
+	var err error
+	if insert {
+		if err = related.Insert(ctx, exec, boil.Infer()); err != nil {
+			return errors.Wrap(err, "failed to insert into foreign table")
+		}
+	}
+
+	updateQuery := fmt.Sprintf(
+		"UPDATE `repositories` SET %s WHERE %s",
+		strmangle.SetParamNames("`", "`", 0, []string{"provider_id"}),
+		strmangle.WhereClause("`", "`", 0, repositoryPrimaryKeyColumns),
+	)
+	values := []interface{}{related.ID, o.ID}
+
+	if boil.IsDebug(ctx) {
+		writer := boil.DebugWriterFrom(ctx)
+		fmt.Fprintln(writer, updateQuery)
+		fmt.Fprintln(writer, values)
+	}
+	if _, err = exec.ExecContext(ctx, updateQuery, values...); err != nil {
+		return errors.Wrap(err, "failed to update local table")
+	}
+
+	o.ProviderID = related.ID
+	if o.R == nil {
+		o.R = &repositoryR{
+			Provider: related,
+		}
+	} else {
+		o.R.Provider = related
+	}
+
+	if related.R == nil {
+		related.R = &providerR{
+			Repositories: RepositorySlice{o},
+		}
+	} else {
+		related.R.Repositories = append(related.R.Repositories, o)
 	}
 
 	return nil
