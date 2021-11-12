@@ -17,7 +17,7 @@ type GitrepositoryRepository interface {
 	RegisterRepository(ctx context.Context, args *RegisterRepositoryArgs) (*domain.Repository, error)
 	GetRepositoryByID(ctx context.Context, id string) (*domain.Repository, error)
 	GetRepositoryByOwnerAndName(ctx context.Context, owner, name string) (*domain.Repository, error)
-	CreateProvider(ctx context.Context, args *CreateProviderArgs) (*domain.Provider, error)
+	RegisterProvider(ctx context.Context, args *RegisterProviderArgs) (*domain.Provider, error)
 	GetProviderByID(ctx context.Context, id string) (*domain.Provider, error)
 	GetProvierByDomain(ctx context.Context, domain string) (*domain.Provider, error)
 }
@@ -33,8 +33,7 @@ type RegisterRepositoryArgs struct {
 	ProviderID      string // TODO: providerid型を作る
 }
 
-type CreateProviderArgs struct {
-	Name   string
+type RegisterProviderArgs struct {
 	Domain string
 	Secret string
 }
@@ -127,5 +126,39 @@ func (r *gitrepositoryRepository) GetRepositoryByOwnerAndName(ctx context.Contex
 			ID:     prov.ID,
 			Secret: prov.Secret,
 		},
+	}, nil
+}
+
+func (r *gitrepositoryRepository) RegisterProvider(ctx context.Context, args RegisterProviderArgs) (*domain.Provider, error) {
+	const errMsg = "failed to RegisterProvider: %w"
+
+	prov, err := models.Providers(models.ProviderWhere.Domain.EQ(args.Domain)).One(ctx, r.db)
+	if err != nil && err != sql.ErrNoRows {
+		return nil, fmt.Errorf(errMsg, err)
+	} else if prov != nil {
+		return nil, fmt.Errorf(errMsg, errors.New("provider already exists"))
+	} else {
+		id, err := uuid.NewRandom()
+		if err != nil {
+			return nil, fmt.Errorf(errMsg, err)
+		}
+		prov = &models.Provider{
+			ID:     id.String(),
+			Domain: args.Domain,
+			Secret: args.Secret,
+		}
+		if err := prov.Insert(ctx, r.db, boil.Infer()); err != nil {
+			return nil, fmt.Errorf(errMsg, err)
+		}
+
+	}
+
+	log.WithField("providerID", prov.ID).
+		WithField("domain", prov.Domain).
+		Info("registered provider")
+
+	return &domain.Provider{
+		ID:     prov.ID,
+		Secret: prov.Secret,
 	}, nil
 }
