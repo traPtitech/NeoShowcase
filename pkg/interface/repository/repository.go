@@ -162,3 +162,31 @@ func (r *gitrepositoryRepository) RegisterProvider(ctx context.Context, args Reg
 		Secret: prov.Secret,
 	}, nil
 }
+
+func (r *gitrepositoryRepository) GetProviderByID(ctx context.Context, id string) (*domain.Provider, error) {
+	const errMsg = "failed to GetProviderByID: %w"
+
+	prov, err := models.Providers(models.ProviderWhere.ID.EQ(id)).One(ctx, r.db)
+	if err != nil {
+		return nil, fmt.Errorf(errMsg, err)
+	}
+
+	return &domain.Provider{
+		ID:     prov.ID,
+		Secret: prov.Secret,
+	}, nil
+}
+
+func (r *gitrepositoryRepository) GetProviderByDomain(ctx context.Context, domainName string) (*domain.Provider, error) {
+	const errMsg = "failed to GetProviderByDomain: %w"
+
+	prov, err := models.Providers(models.ProviderWhere.Domain.EQ(domainName)).One(ctx, r.db)
+	if err != nil {
+		return nil, fmt.Errorf(errMsg, err)
+	}
+
+	return &domain.Provider{
+		ID:     prov.ID,
+		Secret: prov.Secret,
+	}, nil
+}
