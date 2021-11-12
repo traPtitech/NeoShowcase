@@ -28,5 +28,5 @@ type Repository struct {
 
 type Provider struct {
 	ID     string
-	Secret []byte
+	Secret string
 }
