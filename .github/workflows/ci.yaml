@@ -63,7 +63,7 @@ jobs:
           path: ~/go/bin
           key: ${{ runner.os }}-goinstall-${{ env.GO_VERSION }}
       - name: Generate code
-#         if: steps.go-proto-cache.outputs.cache-hit != 'true'
+        if: steps.go-proto-cache.outputs.cache-hit != 'true'
         run: make protoc
         env:
           GO_REPO_ROOT_PACKAGE: github.com/traPtitech/neoshowcase
