@@ -64,12 +64,7 @@ jobs:
           key: ${{ runner.os }}-goinstall-${{ env.GO_VERSION }}
       - name: Generate code
         if: steps.go-proto-cache.outputs.cache-hit != 'true'
-        run: |
-          protoc -I ./api/proto --go_out=. \
-          --go_opt=module=$GO_REPO_ROOT_PACKAGE \
-          --go-grpc_out=. \
-          --go-grpc_opt=module=$GO_REPO_ROOT_PACKAGE \
-          $(find ./api/proto/neoshowcase -type f -name "*.proto" -print)
+        run: make protoc
         env:
           GO_REPO_ROOT_PACKAGE: github.com/traPtitech/neoshowcase
   build:
