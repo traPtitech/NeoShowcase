@@ -111,7 +111,7 @@ func TestAppBuildService_QueueBuild(t *testing.T) {
 		repo := mock_repository.NewMockApplicationRepository(mockCtrl)
 		c := mock_pb.NewMockBuilderServiceClient(mockCtrl)
 		s := NewAppBuildService(repo, c, "TestRegistry", "TestPrefix")
-		env := &domain.Environment{
+		branch := &domain.Branch{
 			ID:            "1d9cc06d-813f-4cf7-947e-546e1a814fed",
 			ApplicationID: "d563e2de-7905-4267-8a9c-51520aac02b3",
 			BranchName:    "develop",
@@ -124,7 +124,7 @@ func TestAppBuildService_QueueBuild(t *testing.T) {
 		}
 
 		repo.EXPECT().
-			GetApplicationByID(context.Background(), env.ApplicationID).Return(res, nil)
+			GetApplicationByID(context.Background(), branch.ApplicationID).Return(res, nil)
 
 		c.EXPECT().
 			GetStatus(context.Background(), &emptypb.Empty{}).
@@ -137,11 +137,11 @@ func TestAppBuildService_QueueBuild(t *testing.T) {
 					RepositoryUrl: res.Repository.RemoteURL,
 				},
 				Options:       &pb.BuildOptions{},
-				EnvironmentId: env.ID,
+				BranchId: branch.ID,
 			}).
 			Return(&pb.StartBuildStaticResponse{}, nil)
 
-		id, err := s.QueueBuild(context.Background(), env)
+		id, err := s.QueueBuild(context.Background(), branch)
 		if err != nil {
 			t.Fatal(err)
 		}
