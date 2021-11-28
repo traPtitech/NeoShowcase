@@ -96,11 +96,17 @@ func (r *gitrepositoryRepository) GetRepositoryByID(ctx context.Context, id stri
 
 	repo, err := models.Repositories(models.RepositoryWhere.ID.EQ(id)).One(ctx, r.db)
 	if err != nil {
+		if err == sql.ErrNoRows {
+			return nil, ErrNotFound
+		}
 		return nil, fmt.Errorf(errMsg, err)
 	}
 
 	prov, err := models.Providers(models.ProviderWhere.ID.EQ(repo.ProviderID)).One(ctx, r.db)
 	if err != nil {
+		if err == sql.ErrNoRows {
+			return nil, ErrNotFound
+		}
 		return nil, fmt.Errorf(errMsg, err)
 	}
 	return &domain.Repository{
@@ -181,6 +187,9 @@ func (r *gitrepositoryRepository) GetProviderByID(ctx context.Context, id string
 
 	prov, err := models.Providers(models.ProviderWhere.ID.EQ(id)).One(ctx, r.db)
 	if err != nil {
+		if err == sql.ErrNoRows {
+			return nil, ErrNotFound
+		}
 		return nil, fmt.Errorf(errMsg, err)
 	}
 
@@ -195,6 +204,9 @@ func (r *gitrepositoryRepository) GetProviderByDomain(ctx context.Context, domai
 
 	prov, err := models.Providers(models.ProviderWhere.Domain.EQ(domainName)).One(ctx, r.db)
 	if err != nil {
+		if err == sql.ErrNoRows {
+			return nil, ErrNotFound
+		}
 		return nil, fmt.Errorf(errMsg, err)
 	}
 
