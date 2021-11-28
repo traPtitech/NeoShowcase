@@ -6,6 +6,7 @@ import (
 	"context"
 	"crypto/sha256"
 	"fmt"
+	"net/url"
 
 	"github.com/traPtitech/neoshowcase/pkg/domain"
 	"github.com/traPtitech/neoshowcase/pkg/interface/repository"
@@ -13,48 +14,58 @@ import (
 
 type GitPushWebhookService interface {
 	VerifySignature(ctx context.Context, repoURL string, signature string, body []byte) (valid bool, err error)
-	CheckRepositoryExists(ctx context.Context, args CheckRepositoryExistsArgs) (exists bool, err error)
+	CheckRepositoryExists(ctx context.Context, repoURL, owner, name string) (bool, error)
 }
 
 type gitPushWebhookService struct {
-	gitRepo    repository.GitrepositoryRepository
-	secretRepo repository.WebhookSecretRepository
+	repo repository.GitrepositoryRepository
 }
 
-type CheckRepositoryExistsArgs struct {
-	ProviderID string
-	Owner      string
-	RepoName   string
-}
+var ErrProviderNotFound = fmt.Errorf("provider not found")
 
-func NewGitPushWebhookService(secretRepo repository.WebhookSecretRepository, gitRepo repository.GitrepositoryRepository) GitPushWebhookService {
+func NewGitPushWebhookService(repo repository.GitrepositoryRepository) GitPushWebhookService {
 	return &gitPushWebhookService{
-		secretRepo: secretRepo,
-		gitRepo:    gitRepo,
+		repo: repo,
 	}
 }
 
 func (s *gitPushWebhookService) VerifySignature(ctx context.Context, repoURL string, signature string, body []byte) (bool, error) {
-	secrets, err := s.secretRepo.GetWebhookSecretKeys(ctx, repoURL)
+	u, err := url.Parse(repoURL)
+
 	if err != nil {
-		return false, fmt.Errorf("failed to GetWebhookSecretKeys: %w", err)
+		return false, err
 	}
 
-	// シグネチャの検証(secretsのうちひとつでもtrueならOK)
-	valid := false
-	for _, secret := range secrets {
-		valid = valid || domain.VerifySignature(sha256.New, body, []byte(secret), signature)
+	prov, err := s.repo.GetProvierByHost(ctx, u.Host)
+	if err != nil {
+		return false, ErrProviderNotFound
 	}
+
+	// シグネチャの検証
+	valid := domain.VerifySignature(sha256.New, body, []byte(prov.Secret), signature)
+
 	return valid, nil
 }
 
-func (s *gitPushWebhookService) CheckRepositoryExists(ctx context.Context, args CheckRepositoryExistsArgs) (bool, error) {
-	r := repository.GetRepositoryArgs{
-		ProviderID: args.ProviderID,
-		Owner:      args.Owner,
-		Name:       args.RepoName,
+func (s *gitPushWebhookService) CheckRepositoryExists(ctx context.Context, repoURL, owner, name string) (bool, error) {
+	u, err := url.Parse(repoURL)
+
+	if err != nil {
+		return false, err
 	}
-	_, err := s.gitRepo.GetRepository(ctx, r)
+
+	prov, err := s.repo.GetProvierByHost(ctx, u.Host)
+
+	if err != nil {
+		return false, ErrProviderNotFound
+	}
+	r := repository.GetRepositoryArgs{
+		ProviderID: prov.ID,
+		Owner:      owner,
+		Name:       name,
+	}
+
+	_, err = s.repo.GetRepository(ctx, r)
 
 	if err != nil {
 		if err == repository.ErrNotFound {
