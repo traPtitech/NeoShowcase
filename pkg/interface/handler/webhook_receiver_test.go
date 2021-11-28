@@ -14,6 +14,7 @@ import (
 	mock_eventbus "github.com/traPtitech/neoshowcase/pkg/domain/mock"
 	"github.com/traPtitech/neoshowcase/pkg/domain/web"
 	"github.com/traPtitech/neoshowcase/pkg/interface/handler"
+	"github.com/traPtitech/neoshowcase/pkg/interface/repository"
 	mock_repository "github.com/traPtitech/neoshowcase/pkg/interface/repository/mock"
 	"github.com/traPtitech/neoshowcase/pkg/usecase"
 )
@@ -44,103 +45,123 @@ func TestWebhookReceiverHandler_HandleRequest(t *testing.T) {
 		bus := mock_eventbus.NewMockBus(mockCtrl)
 		bus.EXPECT().
 			Publish(event.WebhookRepositoryPush, domain.Fields{
-				"repository_url": "https://git.trap.jp/xxpoxx/test_repo.git",
+				"repository_url": "https://git.trap.jp/hijiki51/git-test.git",
 				"branch":         "heads/master",
 			}).
 			Times(1)
-		repo := mock_repository.NewMockWebhookSecretRepository(mockCtrl)
+		repo := mock_repository.NewMockGitrepositoryRepository(mockCtrl)
 		repo.EXPECT().
-			GetWebhookSecretKeys(gomock.Any(), "https://git.trap.jp/xxpoxx/test_repo.git").
-			Return([]string{"hogefugapopopo", "hoge", "fuga"}, nil).
+			GetProviderByHost(gomock.Any(), "git.trap.jp").
+			Return(&domain.Provider{
+				ID:     "11ca352c-2556-4b8f-bcbf-1f873d3bb540",
+				Secret: "ThisIsSecret",
+			}, nil).
 			AnyTimes()
+		repo.EXPECT().GetRepository(gomock.Any(), repository.GetRepositoryArgs{
+			ProviderID: "11ca352c-2556-4b8f-bcbf-1f873d3bb540",
+			Owner:      "hijiki51",
+			Name:       "git-test",
+		}).Return(&domain.Repository{
+			ID:        "9cf4d26d-0f35-474c-a4f2-18c3c7a9ffbf",
+			RemoteURL: "https://git.trap.jp/hijiki51/git-test.git",
+			Provider: domain.Provider{
+				ID:     "11ca352c-2556-4b8f-bcbf-1f873d3bb540",
+				Secret: "ThisIsSecret",
+			},
+		}, nil).AnyTimes()
 		verifier := usecase.NewGitPushWebhookService(repo)
 		e := newWebhookReceiverHandlerExp(t, bus, verifier)
 
 		headers := map[string]string{
 			"Content-Type":      "application/json",
-			"X-Gitea-Delivery":  "fae3fa5e-221d-4368-bdbe-08e14f6fb926",
-			"X-GitHub-Delivery": "fae3fa5e-221d-4368-bdbe-08e14f6fb926",
+			"X-Gitea-Delivery":  "e5e0b97b-740b-4c8b-8424-102333d9a977",
+			"X-GitHub-Delivery": "e5e0b97b-740b-4c8b-8424-102333d9a977",
 			"X-GitHub-Event":    "push",
 			"X-Gitea-Event":     "push",
-			"X-Gitea-Signature": "ef2b2cbe1a2a9c32317df9b4f3de549dd997743e3e082755e214d5bd34c80dfc",
+			"X-Gitea-Signature": "947e313360746f96ba332ea9d5c546bfbeb65e2472ea233f59477b13e03d380b",
 		}
 
 		e.POST("/_webhook").
 			WithHeaders(headers).
 			WithBytes([]byte(`{
-  "secret": "fuga",
   "ref": "refs/heads/master",
-  "before": "0b4fb88e00b0d80b62abce08eb7034b70cfc9704",
-  "after": "4b724983e8de8c00227d5f14aa1da5d3e3682d00",
-  "compare_url": "https://git.trap.jp/xxpoxx/test_repo/compare/0b4fb88e00b0d80b62abce08eb7034b70cfc9704...4b724983e8de8c00227d5f14aa1da5d3e3682d00",
+  "before": "aa9b56409f28fc6f8304ddd9313829284d22250b",
+  "after": "aa9b56409f28fc6f8304ddd9313829284d22250b",
+  "compare_url": "",
   "commits": [
     {
-      "id": "4b724983e8de8c00227d5f14aa1da5d3e3682d00",
-      "message": "'README.md' を更新\n",
-      "url": "https://git.trap.jp/xxpoxx/test_repo/commit/4b724983e8de8c00227d5f14aa1da5d3e3682d00",
+      "id": "aa9b56409f28fc6f8304ddd9313829284d22250b",
+      "message": "Update 'README.md'\n",
+      "url": "https://git.trap.jp/hijiki51/git-test/commit/aa9b56409f28fc6f8304ddd9313829284d22250b",
       "author": {
-        "name": "Hiroki Sugiyama",
-        "email": "xxpoxx@trap.jp",
-        "username": "xxpoxx"
+        "name": "Hibiki Seki",
+        "email": "hibiki0719euph@gmail.com",
+        "username": ""
       },
       "committer": {
-        "name": "Hiroki Sugiyama",
-        "email": "xxpoxx@trap.jp",
-        "username": "xxpoxx"
+        "name": "Hibiki Seki",
+        "email": "hibiki0719euph@gmail.com",
+        "username": ""
       },
       "verification": null,
-      "timestamp": "2020-12-18T00:04:30+09:00",
-      "added": [],
-      "removed": [],
-      "modified": [
-        "README.md"
-      ]
+      "timestamp": "0001-01-01T00:00:00Z",
+      "added": null,
+      "removed": null,
+      "modified": null
     }
   ],
-  "head_commit": null,
-  "repository": {
-    "id": 2062,
-    "owner": {
-      "id": 391,
-      "login": "xxpoxx",
-      "full_name": "Hiroki Sugiyama",
-      "email": "xxpoxx@trap.jp",
-      "avatar_url": "https://git.trap.jp/user/avatar/xxpoxx/-1",
-      "language": "ja-JP",
-      "is_admin": false,
-      "last_login": "2020-12-17T11:08:46+09:00",
-      "created": "2019-05-07T17:28:05+09:00",
-      "username": "xxpoxx"
+  "head_commit": {
+    "id": "aa9b56409f28fc6f8304ddd9313829284d22250b",
+    "message": "Update 'README.md'\n",
+    "url": "https://git.trap.jp/hijiki51/git-test/commit/aa9b56409f28fc6f8304ddd9313829284d22250b",
+    "author": {
+      "name": "Hibiki Seki",
+      "email": "hibiki0719euph@gmail.com",
+      "username": ""
     },
-    "name": "test_repo",
-    "full_name": "xxpoxx/test_repo",
-    "description": "hoge",
+    "committer": {
+      "name": "Hibiki Seki",
+      "email": "hibiki0719euph@gmail.com",
+      "username": ""
+    },
+    "verification": null,
+    "timestamp": "0001-01-01T00:00:00Z",
+    "added": null,
+    "removed": null,
+    "modified": null
+  },
+  "repository": {
+    "id": 2186,
+    "owner": {"id":538,"login":"hijiki51","full_name":"Hibiki Seki","email":"hibiki0719euph@gmail.com","avatar_url":"https://git.trap.jp/user/avatar/hijiki51/-1","language":"","is_admin":false,"last_login":"0001-01-01T00:00:00Z","created":"2020-05-12T11:15:51+09:00","restricted":false,"active":false,"prohibit_login":false,"location":"","website":"","description":"","visibility":"public","followers_count":0,"following_count":0,"starred_repos_count":2,"username":"hijiki51"},
+    "name": "git-test",
+    "full_name": "hijiki51/git-test",
+    "description": "",
     "empty": false,
     "private": false,
     "fork": false,
     "template": false,
     "parent": null,
     "mirror": false,
-    "size": 22,
-    "html_url": "https://git.trap.jp/xxpoxx/test_repo",
-    "ssh_url": "ssh://git@git.trap.jp:2200/xxpoxx/test_repo.git",
-    "clone_url": "https://git.trap.jp/xxpoxx/test_repo.git",
+    "size": 26,
+    "html_url": "https://git.trap.jp/hijiki51/git-test",
+    "ssh_url": "ssh://git@git.trap.jp:2200/hijiki51/git-test.git",
+    "clone_url": "https://git.trap.jp/hijiki51/git-test.git",
     "original_url": "",
     "website": "",
     "stars_count": 0,
     "forks_count": 0,
     "watchers_count": 1,
     "open_issues_count": 0,
-    "open_pr_counter": 0,
+    "open_pr_counter": 1,
     "release_counter": 0,
     "default_branch": "master",
     "archived": false,
-    "created_at": "2020-12-17T18:43:36+09:00",
-    "updated_at": "2020-12-18T00:04:31+09:00",
+    "created_at": "2021-05-09T14:53:03+09:00",
+    "updated_at": "2021-06-17T00:04:16+09:00",
     "permissions": {
-      "admin": true,
-      "push": true,
-      "pull": true
+      "admin": false,
+      "push": false,
+      "pull": false
     },
     "has_issues": true,
     "internal_tracker": {
@@ -150,37 +171,19 @@ func TestWebhookReceiverHandler_HandleRequest(t *testing.T) {
     },
     "has_wiki": false,
     "has_pull_requests": true,
+    "has_projects": false,
     "ignore_whitespace_conflicts": false,
     "allow_merge_commits": true,
     "allow_rebase": true,
     "allow_rebase_explicit": true,
     "allow_squash_merge": true,
-    "avatar_url": ""
+    "default_merge_style": "merge",
+    "avatar_url": "",
+    "internal": false,
+    "mirror_interval": ""
   },
-  "pusher": {
-    "id": 391,
-    "login": "xxpoxx",
-    "full_name": "Hiroki Sugiyama",
-    "email": "xxpoxx@trap.jp",
-    "avatar_url": "https://git.trap.jp/user/avatar/xxpoxx/-1",
-    "language": "ja-JP",
-    "is_admin": false,
-    "last_login": "2020-12-17T11:08:46+09:00",
-    "created": "2019-05-07T17:28:05+09:00",
-    "username": "xxpoxx"
-  },
-  "sender": {
-    "id": 391,
-    "login": "xxpoxx",
-    "full_name": "Hiroki Sugiyama",
-    "email": "xxpoxx@trap.jp",
-    "avatar_url": "https://git.trap.jp/user/avatar/xxpoxx/-1",
-    "language": "ja-JP",
-    "is_admin": false,
-    "last_login": "2020-12-17T11:08:46+09:00",
-    "created": "2019-05-07T17:28:05+09:00",
-    "username": "xxpoxx"
-  }
+  "pusher": {"id":538,"login":"hijiki51","full_name":"Hibiki Seki","email":"hibiki0719euph@gmail.com","avatar_url":"https://git.trap.jp/user/avatar/hijiki51/-1","language":"","is_admin":false,"last_login":"0001-01-01T00:00:00Z","created":"2020-05-12T11:15:51+09:00","restricted":false,"active":false,"prohibit_login":false,"location":"","website":"","description":"","visibility":"public","followers_count":0,"following_count":0,"starred_repos_count":2,"username":"hijiki51"},
+  "sender": {"id":538,"login":"hijiki51","full_name":"Hibiki Seki","email":"hibiki0719euph@gmail.com","avatar_url":"https://git.trap.jp/user/avatar/hijiki51/-1","language":"","is_admin":false,"last_login":"0001-01-01T00:00:00Z","created":"2020-05-12T11:15:51+09:00","restricted":false,"active":false,"prohibit_login":false,"location":"","website":"","description":"","visibility":"public","followers_count":0,"following_count":0,"starred_repos_count":2,"username":"hijiki51"}
 }`)).
 			Expect().
 			Status(http.StatusNoContent)
@@ -188,79 +191,84 @@ func TestWebhookReceiverHandler_HandleRequest(t *testing.T) {
 		e.POST("/_webhook").
 			WithHeaders(headers).
 			WithBytes([]byte(`{
-  "secret": "po",
-  "ref": "refs/heads/master",
-  "before": "0b4fb88e00b0d80b62abce08eb7034b70cfc9704",
-  "after": "4b724983e8de8c00227d5f14aa1da5d3e3682d00",
-  "compare_url": "https://git.trap.jp/xxpoxx/test_repo/compare/0b4fb88e00b0d80b62abce08eb7034b70cfc9704...4b724983e8de8c00227d5f14aa1da5d3e3682d00",
+  "ref": "refs/heads/master_hoge",
+  "before": "aa9b56409f28fc6f8304ddd9313829284d22250b",
+  "after": "aa9b56409f28fc6f8304ddd9313829284d22250b",
+  "compare_url": "",
   "commits": [
     {
-      "id": "4b724983e8de8c00227d5f14aa1da5d3e3682d00",
-      "message": "'README.md' を更新\n",
-      "url": "https://git.trap.jp/xxpoxx/test_repo/commit/4b724983e8de8c00227d5f14aa1da5d3e3682d00",
+      "id": "aa9b56409f28fc6f8304ddd9313829284d22250b",
+      "message": "Update 'README.md'\n",
+      "url": "https://git.trap.jp/hijiki51/git-test/commit/aa9b56409f28fc6f8304ddd9313829284d22250b",
       "author": {
-        "name": "Hiroki Sugiyama",
-        "email": "xxpoxx@trap.jp",
-        "username": "xxpoxx"
+        "name": "Hibiki Seki",
+        "email": "hibiki0719euph@gmail.com",
+        "username": ""
       },
       "committer": {
-        "name": "Hiroki Sugiyama",
-        "email": "xxpoxx@trap.jp",
-        "username": "xxpoxx"
+        "name": "Hibiki Seki",
+        "email": "hibiki0719euph@gmail.com",
+        "username": ""
       },
       "verification": null,
-      "timestamp": "2020-12-18T00:04:30+09:00",
-      "added": [],
-      "removed": [],
-      "modified": [
-        "README.md"
-      ]
+      "timestamp": "0001-01-01T00:00:00Z",
+      "added": null,
+      "removed": null,
+      "modified": null
     }
   ],
-  "head_commit": null,
-  "repository": {
-    "id": 2062,
-    "owner": {
-      "id": 391,
-      "login": "xxpoxx",
-      "full_name": "Hiroki Sugiyama",
-      "email": "xxpoxx@trap.jp",
-      "avatar_url": "https://git.trap.jp/user/avatar/xxpoxx/-1",
-      "language": "ja-JP",
-      "is_admin": false,
-      "last_login": "2020-12-17T11:08:46+09:00",
-      "created": "2019-05-07T17:28:05+09:00",
-      "username": "xxpoxx"
+  "head_commit": {
+    "id": "aa9b56409f28fc6f8304ddd9313829284d22250b",
+    "message": "Update 'README.md'\n",
+    "url": "https://git.trap.jp/hijiki51/git-test/commit/aa9b56409f28fc6f8304ddd9313829284d22250b",
+    "author": {
+      "name": "Hibiki Seki",
+      "email": "hibiki0719euph@gmail.com",
+      "username": ""
     },
-    "name": "test_repo",
-    "full_name": "xxpoxx/test_repo",
-    "description": "hoge",
+    "committer": {
+      "name": "Hibiki Seki",
+      "email": "hibiki0719euph@gmail.com",
+      "username": ""
+    },
+    "verification": null,
+    "timestamp": "0001-01-01T00:00:00Z",
+    "added": null,
+    "removed": null,
+    "modified": null
+  },
+  "repository": {
+    "id": 2186,
+    "owner": {"id":538,"login":"hijiki51","full_name":"Hibiki Seki","email":"hibiki0719euph@gmail.com","avatar_url":"https://git.trap.jp/user/avatar/hijiki51/-1","language":"","is_admin":false,"last_login":"0001-01-01T00:00:00Z","created":"2020-05-12T11:15:51+09:00","restricted":false,"active":false,"prohibit_login":false,"location":"","website":"","description":"","visibility":"public","followers_count":0,"following_count":0,"starred_repos_count":2,"username":"hijiki51"},
+    "name": "git-test",
+    "full_name": "hijiki51/git-test",
+    "description": "",
     "empty": false,
     "private": false,
     "fork": false,
     "template": false,
     "parent": null,
     "mirror": false,
-    "size": 22,
-    "html_url": "https://git.trap.jp/xxpoxx/test_repo",
-    "ssh_url": "ssh://git@git.trap.jp:2200/xxpoxx/test_repo.git",
-    "clone_url": "https://git.trap.jp/xxpoxx/test_repo.git",
+    "size": 26,
+    "html_url": "https://git.trap.jp/hijiki51/git-test",
+    "ssh_url": "ssh://git@git.trap.jp:2200/hijiki51/git-test.git",
+    "clone_url": "https://git.trap.jp/hijiki51/git-test.git",
     "original_url": "",
     "website": "",
     "stars_count": 0,
     "forks_count": 0,
     "watchers_count": 1,
     "open_issues_count": 0,
-    "open_pr_counter": 0,
+    "open_pr_counter": 1,
     "release_counter": 0,
     "default_branch": "master",
     "archived": false,
-    "created_at": "2020-12-17T18:43:36+09:00",
-    "updated_at": "2020-12-18T00:04:31+09:00",
+    "created_at": "2021-05-09T14:53:03+09:00",
+    "updated_at": "2021-06-17T00:04:16+09:00",
     "permissions": {
-      "admin": true,
-      "push": true,
-      "pull": true
+      "admin": false,
+      "push": false,
+      "pull": false
     },
     "has_issues": true,
     "internal_tracker": {
@@ -270,37 +278,19 @@ func TestWebhookReceiverHandler_HandleRequest(t *testing.T) {
     },
     "has_wiki": false,
     "has_pull_requests": true,
+    "has_projects": false,
     "ignore_whitespace_conflicts": false,
     "allow_merge_commits": true,
     "allow_rebase": true,
     "allow_rebase_explicit": true,
     "allow_squash_merge": true,
-    "avatar_url": ""
+    "default_merge_style": "merge",
+    "avatar_url": "",
+    "internal": false,
+    "mirror_interval": ""
   },
-  "pusher": {
-    "id": 391,
-    "login": "xxpoxx",
-    "full_name": "Hiroki Sugiyama",
-    "email": "xxpoxx@trap.jp",
-    "avatar_url": "https://git.trap.jp/user/avatar/xxpoxx/-1",
-    "language": "ja-JP",
-    "is_admin": false,
-    "last_login": "2020-12-17T11:08:46+09:00",
-    "created": "2019-05-07T17:28:05+09:00",
-    "username": "xxpoxx"
-  },
-  "sender": {
-    "id": 391,
-    "login": "xxpoxx",
-    "full_name": "Hiroki Sugiyama",
-    "email": "xxpoxx@trap.jp",
-    "avatar_url": "https://git.trap.jp/user/avatar/xxpoxx/-1",
-    "language": "ja-JP",
-    "is_admin": false,
-    "last_login": "2020-12-17T11:08:46+09:00",
-    "created": "2019-05-07T17:28:05+09:00",
-    "username": "xxpoxx"
-  }
+  "pusher": {"id":538,"login":"hijiki51","full_name":"Hibiki Seki","email":"hibiki0719euph@gmail.com","avatar_url":"https://git.trap.jp/user/avatar/hijiki51/-1","language":"","is_admin":false,"last_login":"0001-01-01T00:00:00Z","created":"2020-05-12T11:15:51+09:00","restricted":false,"active":false,"prohibit_login":false,"location":"","website":"","description":"","visibility":"public","followers_count":0,"following_count":0,"starred_repos_count":2,"username":"hijiki51"},
+  "sender": {"id":538,"login":"hijiki51","full_name":"Hibiki Seki","email":"hibiki0719euph@gmail.com","avatar_url":"https://git.trap.jp/user/avatar/hijiki51/-1","language":"","is_admin":false,"last_login":"0001-01-01T00:00:00Z","created":"2020-05-12T11:15:51+09:00","restricted":false,"active":false,"prohibit_login":false,"location":"","website":"","description":"","visibility":"public","followers_count":0,"following_count":0,"starred_repos_count":2,"username":"hijiki51"}
 }`)).
 			Expect().
 			Status(http.StatusBadRequest)
@@ -317,11 +307,26 @@ func TestWebhookReceiverHandler_HandleRequest(t *testing.T) {
 				"branch":         "heads/main",
 			}).
 			Times(1)
-		repo := mock_repository.NewMockWebhookSecretRepository(mockCtrl)
+		repo := mock_repository.NewMockGitrepositoryRepository(mockCtrl)
 		repo.EXPECT().
-			GetWebhookSecretKeys(gomock.Any(), "https://github.com/cskd8/test_repo.git").
-			Return([]string{"hogefugapopopo", "hoge", "fuga"}, nil).
+			GetProviderByHost(gomock.Any(), "github.com").
+			Return(&domain.Provider{
+				ID:     "6404c950-9bb8-4e5d-8151-5d053a724011",
+				Secret: "hogefugapopopo",
+			}, nil).
 			AnyTimes()
+		repo.EXPECT().GetRepository(gomock.Any(), repository.GetRepositoryArgs{
+			ProviderID: "6404c950-9bb8-4e5d-8151-5d053a724011",
+			Owner:      "cskd8",
+			Name:       "test_repo",
+		}).Return(&domain.Repository{
+			ID:        "9cf4d26d-0f35-474c-a4f2-18c3c7a9ffbf",
+			RemoteURL: "https://github.com/cskd8/test_repo.git",
+			Provider: domain.Provider{
+				ID:     "11ca352c-2556-4b8f-bcbf-1f873d3bb540",
+				Secret: "hogefugapopopo",
+			},
+		}, nil).AnyTimes()
 		verifier := usecase.NewGitPushWebhookService(repo)
 		e := newWebhookReceiverHandlerExp(t, bus, verifier)
 

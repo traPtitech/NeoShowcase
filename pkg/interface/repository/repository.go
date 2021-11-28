@@ -13,6 +13,7 @@ import (
 	"github.com/volatiletech/sqlboiler/v4/boil"
 )
 
+//go:generate go run github.com/golang/mock/mockgen@latest -source=$GOFILE -package=mock_$GOPACKAGE -destination=./mock/$GOFILE
 type GitrepositoryRepository interface {
 	RegisterRepository(ctx context.Context, args RegisterRepositoryArgs) (*domain.Repository, error)
 	GetRepositoryByID(ctx context.Context, id string) (*domain.Repository, error)
