@@ -25,6 +25,12 @@ type CreateUserArgs struct {
 	Name string
 }
 
+func NewUserRepository(db *sql.DB) UserRepository {
+	return &userRepository{
+		db: db,
+	}
+}
+
 func (u *userRepository) CreateUser(ctx context.Context, args CreateUserArgs) (*domain.User, error) {
 	const errMsg = "failed to create user: %w"
 
