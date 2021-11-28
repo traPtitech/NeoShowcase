@@ -80,4 +80,93 @@ func TestGitPushWebhookService_VerifySignature(t *testing.T) {
 		assert.Equal(t, err, fmt.Errorf("provider not found"))
 		assert.False(t, valid)
 	})
+
+	t.Run("CheckRepositoryExists(Success)", func(t *testing.T) {
+		t.Parallel()
+
+		mockCtrl := gomock.NewController(t)
+		repo := mock_repository.NewMockGitrepositoryRepository(mockCtrl)
+		s := NewGitPushWebhookService(repo)
+		repo.EXPECT().
+			GetProviderByHost(gomock.Any(), "github.com").
+			Return(&domain.Provider{
+				ID:     "6404c950-9bb8-4e5d-8151-5d053a724011",
+				Secret: "ThisIsSecret",
+			}, nil).
+			AnyTimes()
+		repo.EXPECT().
+			GetRepository(context.Background(), repository.GetRepositoryArgs{
+				ProviderID: "6404c950-9bb8-4e5d-8151-5d053a724011",
+				Owner:      "hijiki51",
+				Name:       "test_repo",
+			}).
+			Return(&domain.Repository{
+				ID:        "9cf4d26d-0f35-474c-a4f2-18c3c7a9ffbf",
+				RemoteURL: "https://github.com/hijiki51/test_repo.git",
+				Provider: domain.Provider{
+					ID:     "11ca352c-2556-4b8f-bcbf-1f873d3bb540",
+					Secret: "ThisIsSecret",
+				},
+			}, nil).
+			AnyTimes()
+		exist, err := s.CheckRepositoryExists(
+			context.Background(),
+			"https://github.com/hijiki51/test_repo.git",
+			"hijiki51",
+			"test_repo",
+		)
+		assert.Nil(t, err)
+		assert.True(t, exist)
+	})
+
+	t.Run("CheckRepositoryExists(Repository Not Found)", func(t *testing.T) {
+		t.Parallel()
+
+		mockCtrl := gomock.NewController(t)
+		repo := mock_repository.NewMockGitrepositoryRepository(mockCtrl)
+		s := NewGitPushWebhookService(repo)
+		repo.EXPECT().
+			GetProviderByHost(gomock.Any(), "github.com").
+			Return(&domain.Provider{
+				ID:     "6404c950-9bb8-4e5d-8151-5d053a724011",
+				Secret: "ThisIsSecret",
+			}, nil).
+			AnyTimes()
+		repo.EXPECT().
+			GetRepository(context.Background(), repository.GetRepositoryArgs{
+				ProviderID: "6404c950-9bb8-4e5d-8151-5d053a724011",
+				Owner:      "hijiki51",
+				Name:       "test_repo",
+			}).
+			Return(nil, repository.ErrNotFound).
+			AnyTimes()
+		exist, err := s.CheckRepositoryExists(
+			context.Background(),
+			"https://github.com/hijiki51/test_repo.git",
+			"hijiki51",
+			"test_repo",
+		)
+		assert.Nil(t, err)
+		assert.False(t, exist)
+	})
+
+	t.Run("CheckRepositoryExists(Provider Not found)", func(t *testing.T) {
+		t.Parallel()
+
+		mockCtrl := gomock.NewController(t)
+		repo := mock_repository.NewMockGitrepositoryRepository(mockCtrl)
+		s := NewGitPushWebhookService(repo)
+		repo.EXPECT().
+			GetProviderByHost(gomock.Any(), "github.com").
+			Return(nil, repository.ErrNotFound).
+			AnyTimes()
+		exist, err := s.CheckRepositoryExists(
+			context.Background(),
+			"https://github.com/hijiki51/test_repo.git",
+			"hijiki51",
+			"test_repo",
+		)
+		assert.Equal(t, err, fmt.Errorf("provider not found"))
+		assert.False(t, exist)
+	})
 }
