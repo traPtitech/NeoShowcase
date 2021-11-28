@@ -64,6 +64,10 @@ func (h *webhookReceiverHandler) extractFromGitea(c Context) (string, string, er
 	var body struct {
 		Ref  string `json:"ref"`
 		Repo struct {
+			Name  string `json:"name"`
+			Owner struct {
+				Login string `json:"login"`
+			} `json:"owner"`
 			CloneURL string `json:"clone_url"`
 		} `json:"repository"`
 	}
@@ -82,6 +86,17 @@ func (h *webhookReceiverHandler) extractFromGitea(c Context) (string, string, er
 	if !valid {
 		return "", "", echo.NewHTTPError(http.StatusBadRequest)
 	}
+	name := body.Repo.Name
+	owner := body.Repo.Owner.Login
+
+	exists, err := h.verifier.CheckRepositoryExists(c.Request().Context(), repoURL, owner, name)
+
+	if err != nil {
+		return "", "", echo.NewHTTPError(http.StatusInternalServerError)
+	}
+	if !exists {
+		return "", "", echo.NewHTTPError(http.StatusNotFound)
+	}
 	return repoURL, branch, nil
 }
 
@@ -98,6 +113,10 @@ func (h *webhookReceiverHandler) extractFromGitHub(c Context) (string, string, e
 	var body struct {
 		Ref  string `json:"ref"`
 		Repo struct {
+			Name  string `json:"name"`
+			Owner struct {
+				Login string `json:"login"`
+			} `json:"owner"`
 			CloneURL string `json:"clone_url"`
 		} `json:"repository"`
 	}
@@ -118,6 +137,18 @@ func (h *webhookReceiverHandler) extractFromGitHub(c Context) (string, string, e
 	}
 	if !valid {
 		return "", "", echo.NewHTTPError(http.StatusBadRequest)
+	}
+
+	name := body.Repo.Name
+	owner := body.Repo.Owner.Login
+
+	exists, err := h.verifier.CheckRepositoryExists(c.Request().Context(), repoURL, owner, name)
+
+	if err != nil {
+		return "", "", echo.NewHTTPError(http.StatusInternalServerError)
+	}
+	if !exists {
+		return "", "", echo.NewHTTPError(http.StatusNotFound)
 	}
 	return repoURL, branch, nil
 }
