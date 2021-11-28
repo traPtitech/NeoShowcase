@@ -16,7 +16,7 @@ import (
 type GitrepositoryRepository interface {
 	RegisterRepository(ctx context.Context, args *RegisterRepositoryArgs) (*domain.Repository, error)
 	GetRepositoryByID(ctx context.Context, id string) (*domain.Repository, error)
-	GetRepositoryByOwnerAndName(ctx context.Context, owner, name string) (*domain.Repository, error)
+	GetRepository(ctx context.Context, args GetRepositoryArgs) (*domain.Repository, error)
 	RegisterProvider(ctx context.Context, args *RegisterProviderArgs) (*domain.Provider, error)
 	GetProviderByID(ctx context.Context, id string) (*domain.Provider, error)
 	GetProvierByDomain(ctx context.Context, domain string) (*domain.Provider, error)
@@ -36,6 +36,12 @@ type RegisterRepositoryArgs struct {
 type RegisterProviderArgs struct {
 	Domain string
 	Secret string
+}
+
+type GetRepositoryArgs struct {
+	ProviderID string
+	Owner      string
+	Name       string
 }
 
 func (r *gitrepositoryRepository) RegisterRepository(ctx context.Context, args RegisterRepositoryArgs) (*domain.Repository, error) {
@@ -107,18 +113,25 @@ func (r *gitrepositoryRepository) GetRepositoryByID(ctx context.Context, id stri
 	}, nil
 }
 
-func (r *gitrepositoryRepository) GetRepositoryByOwnerAndName(ctx context.Context, owner, name string) (*domain.Repository, error) {
-	const errMsg = "failed to GetRepositoryByOwnerAndName: %w"
+func (r *gitrepositoryRepository) GetRepository(ctx context.Context, args GetRepositoryArgs) (*domain.Repository, error) {
+	const errMsg = "failed to GetRepository: %w"
 
-	repo, err := models.Repositories(models.RepositoryWhere.Owner.EQ(owner), models.RepositoryWhere.Name.EQ(name)).One(ctx, r.db)
+	prov, err := models.Providers(models.ProviderWhere.ID.EQ(args.ProviderID)).One(ctx, r.db)
 	if err != nil {
+		if err == sql.ErrNoRows {
+			return nil, ErrNotFound
+		}
 		return nil, fmt.Errorf(errMsg, err)
 	}
 
-	prov, err := models.Providers(models.ProviderWhere.ID.EQ(repo.ProviderID)).One(ctx, r.db)
+	repo, err := models.Repositories(models.RepositoryWhere.ProviderID.EQ(args.ProviderID), models.RepositoryWhere.Owner.EQ(args.Owner), models.RepositoryWhere.Name.EQ(args.Name)).One(ctx, r.db)
 	if err != nil {
+		if err == sql.ErrNoRows {
+			return nil, ErrNotFound
+		}
 		return nil, fmt.Errorf(errMsg, err)
 	}
+
 	return &domain.Repository{
 		ID:        repo.ID,
 		RemoteURL: repo.URL,
