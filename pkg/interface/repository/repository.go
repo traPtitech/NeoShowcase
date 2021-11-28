@@ -14,12 +14,12 @@ import (
 )
 
 type GitrepositoryRepository interface {
-	RegisterRepository(ctx context.Context, args *RegisterRepositoryArgs) (*domain.Repository, error)
+	RegisterRepository(ctx context.Context, args RegisterRepositoryArgs) (*domain.Repository, error)
 	GetRepositoryByID(ctx context.Context, id string) (*domain.Repository, error)
 	GetRepository(ctx context.Context, args GetRepositoryArgs) (*domain.Repository, error)
-	RegisterProvider(ctx context.Context, args *RegisterProviderArgs) (*domain.Provider, error)
+	RegisterProvider(ctx context.Context, args RegisterProviderArgs) (*domain.Provider, error)
 	GetProviderByID(ctx context.Context, id string) (*domain.Provider, error)
-	GetProvierByHost(ctx context.Context, host string) (*domain.Provider, error)
+	GetProviderByHost(ctx context.Context, host string) (*domain.Provider, error)
 }
 
 type gitrepositoryRepository struct {
@@ -42,6 +42,12 @@ type GetRepositoryArgs struct {
 	ProviderID string
 	Owner      string
 	Name       string
+}
+
+func NewGitrepositoryRepository(db *sql.DB) GitrepositoryRepository {
+	return &gitrepositoryRepository{
+		db: db,
+	}
 }
 
 func (r *gitrepositoryRepository) RegisterRepository(ctx context.Context, args RegisterRepositoryArgs) (*domain.Repository, error) {

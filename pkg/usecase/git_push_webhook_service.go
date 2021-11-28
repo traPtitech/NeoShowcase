@@ -36,7 +36,7 @@ func (s *gitPushWebhookService) VerifySignature(ctx context.Context, repoURL str
 		return false, err
 	}
 
-	prov, err := s.repo.GetProvierByHost(ctx, u.Host)
+	prov, err := s.repo.GetProviderByHost(ctx, u.Host)
 	if err != nil {
 		return false, ErrProviderNotFound
 	}
@@ -54,7 +54,7 @@ func (s *gitPushWebhookService) CheckRepositoryExists(ctx context.Context, repoU
 		return false, err
 	}
 
-	prov, err := s.repo.GetProvierByHost(ctx, u.Host)
+	prov, err := s.repo.GetProviderByHost(ctx, u.Host)
 
 	if err != nil {
 		return false, ErrProviderNotFound
