@@ -19,7 +19,7 @@ type GitrepositoryRepository interface {
 	GetRepository(ctx context.Context, args GetRepositoryArgs) (*domain.Repository, error)
 	RegisterProvider(ctx context.Context, args *RegisterProviderArgs) (*domain.Provider, error)
 	GetProviderByID(ctx context.Context, id string) (*domain.Provider, error)
-	GetProvierByDomain(ctx context.Context, domain string) (*domain.Provider, error)
+	GetProvierByHost(ctx context.Context, host string) (*domain.Provider, error)
 }
 
 type gitrepositoryRepository struct {
@@ -199,10 +199,10 @@ func (r *gitrepositoryRepository) GetProviderByID(ctx context.Context, id string
 	}, nil
 }
 
-func (r *gitrepositoryRepository) GetProviderByDomain(ctx context.Context, domainName string) (*domain.Provider, error) {
-	const errMsg = "failed to GetProviderByDomain: %w"
+func (r *gitrepositoryRepository) GetProviderByHost(ctx context.Context, host string) (*domain.Provider, error) {
+	const errMsg = "failed to GetProviderByHost: %w"
 
-	prov, err := models.Providers(models.ProviderWhere.Domain.EQ(domainName)).One(ctx, r.db)
+	prov, err := models.Providers(models.ProviderWhere.Domain.EQ(host)).One(ctx, r.db)
 	if err != nil {
 		if err == sql.ErrNoRows {
 			return nil, ErrNotFound
