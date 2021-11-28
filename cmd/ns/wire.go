@@ -1,4 +1,5 @@
-//+build wireinject
+//go:build wireinject
+// +build wireinject
 
 package main
 
@@ -27,8 +28,8 @@ var commonSet = wire.NewSet(
 	usecase.NewAppBuildService,
 	usecase.NewAppDeployService,
 	usecase.NewContinuousDeploymentService,
-	repository.NewWebhookSecretRepository,
 	repository.NewApplicationRepository,
+	repository.NewGitrepositoryRepository,
 	broker.NewBuilderEventsBroker,
 	eventbus.NewLocal,
 	admindb.New,
