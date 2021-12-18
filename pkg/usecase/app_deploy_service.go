@@ -55,7 +55,7 @@ func (s *appDeployService) QueueDeployment(ctx context.Context, branchID string,
 
 	ok, err := branch.BuildLogs(
 		models.BuildLogWhere.ID.EQ(buildID),
-		models.BuildLogWhere.Result.EQ(models.BuildLogsResultSUCCEEDED),
+		models.BuildLogWhere.Result.EQ(builder.BuildStatusSucceeded),
 	).Exists(ctx, s.db)
 	if err != nil {
 		return fmt.Errorf("failed to BuildLogExists: %w", err)

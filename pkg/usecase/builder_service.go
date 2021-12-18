@@ -138,7 +138,7 @@ func (s *builderService) initializeTask(ctx context.Context, task *builder.Task)
 	intState := &internalTaskState{
 		BuildLogM: models.BuildLog{
 			ID:        task.BuildID,
-			Result:    models.BuildLogsResultBUILDING,
+			Result:    builder.BuildStatusBuilding,
 			StartedAt: time.Now(),
 			BranchID:  task.BranchID.String,
 		},
@@ -202,7 +202,7 @@ func (s *builderService) processTask(task *builder.Task, intState *internalTaskS
 	s.internalTaskState = intState
 	s.taskLock.Unlock()
 
-	result := models.BuildLogsResultFAILED
+	result := builder.BuildStatusFailed
 	// 後処理関数
 	defer func() {
 		// タスク破棄
@@ -225,7 +225,7 @@ func (s *builderService) processTask(task *builder.Task, intState *internalTaskS
 		if task.Static {
 			// 生成物tarの保存
 			_ = intState.artifactTempFile.Close()
-			if result == models.BuildLogsResultSUCCEEDED {
+			if result == builder.BuildStatusSucceeded {
 				sid := domain.NewID()
 				err := domain.SaveArtifact(s.storage, intState.artifactTempFile.Name(), filepath.Join("artifacts", fmt.Sprintf("%s.tar", sid)), s.db, task.BuildID, sid)
 				if err != nil {
@@ -248,15 +248,15 @@ func (s *builderService) processTask(task *builder.Task, intState *internalTaskS
 
 		// イベント発行
 		switch result {
-		case models.BuildLogsResultFAILED:
+		case builder.BuildStatusFailed:
 			s.eventbus.Publish(event.BuilderBuildFailed, domain.Fields{
 				"task": task,
 			})
-		case models.BuildLogsResultCANCELED:
+		case builder.BuildStatusCanceled:
 			s.eventbus.Publish(event.BuilderBuildCanceled, domain.Fields{
 				"task": task,
 			})
-		case models.BuildLogsResultSUCCEEDED:
+		case builder.BuildStatusSucceeded:
 			s.eventbus.Publish(event.BuilderBuildSucceeded, domain.Fields{
 				"task": task,
 			})
@@ -280,17 +280,17 @@ func (s *builderService) processTask(task *builder.Task, intState *internalTaskS
 	if err != nil {
 		log.Debug(err)
 		if err == context.Canceled || err == context.DeadlineExceeded || errors.Is(err, status.FromContextError(context.Canceled).Err()) {
-			result = models.BuildLogsResultCANCELED
+			result = builder.BuildStatusCanceled
 			intState.writeLog("CANCELED")
 			return
 		}
-		result = models.BuildLogsResultFAILED
+		result = builder.BuildStatusFailed
 		return
 	}
 
 	// 成功
 	intState.writeLog("BUILD SUCCESSFUL")
-	result = models.BuildLogsResultSUCCEEDED
+	result = builder.BuildStatusSucceeded
 }
 
 func (s *builderService) buildImage(t *builder.Task, intState *internalTaskState) error {
