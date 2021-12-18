@@ -10,13 +10,15 @@
 ```sql
 CREATE TABLE `build_logs` (
   `id` varchar(22) NOT NULL COMMENT 'ビルドログID',
-  `result` enum('BUILDING','SUCCEEDED','FAILED','CANCELED') NOT NULL COMMENT 'ビルド結果',
+  `result` varchar(10) NOT NULL COMMENT 'ビルド結果',
   `started_at` datetime(6) NOT NULL COMMENT 'ビルド開始日時',
   `finished_at` datetime(6) DEFAULT NULL COMMENT 'ビルド終了日時',
   `branch_id` varchar(22) NOT NULL COMMENT 'ブランチID',
   PRIMARY KEY (`id`),
   KEY `fk_build_logs_branch_id` (`branch_id`),
-  CONSTRAINT `fk_build_logs_branch_id` FOREIGN KEY (`branch_id`) REFERENCES `branches` (`id`)
+  KEY `fk_build_logs_result` (`result`),
+  CONSTRAINT `fk_build_logs_branch_id` FOREIGN KEY (`branch_id`) REFERENCES `branches` (`id`),
+  CONSTRAINT `fk_build_logs_result` FOREIGN KEY (`result`) REFERENCES `build_status` (`status`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='ビルドログテーブル'
 ```
 
@@ -27,7 +29,7 @@ CREATE TABLE `build_logs` (
 | Name | Type | Default | Nullable | Children | Parents | Comment |
 | ---- | ---- | ------- | -------- | -------- | ------- | ------- |
 | id | varchar(22) |  | false | [artifacts](artifacts.md) [branches](branches.md) |  | ビルドログID |
-| result | enum('BUILDING','SUCCEEDED','FAILED','CANCELED') |  | false |  |  | ビルド結果 |
+| result | varchar(10) |  | false |  | [build_status](build_status.md) | ビルド結果 |
 | started_at | datetime(6) |  | false |  |  | ビルド開始日時 |
 | finished_at | datetime(6) | NULL | true |  |  | ビルド終了日時 |
 | branch_id | varchar(22) |  | false |  | [branches](branches.md) | ブランチID |
@@ -37,6 +39,7 @@ CREATE TABLE `build_logs` (
 | Name | Type | Definition |
 | ---- | ---- | ---------- |
 | fk_build_logs_branch_id | FOREIGN KEY | FOREIGN KEY (branch_id) REFERENCES branches (id) |
+| fk_build_logs_result | FOREIGN KEY | FOREIGN KEY (result) REFERENCES build_status (status) |
 | PRIMARY | PRIMARY KEY | PRIMARY KEY (id) |
 
 ## Indexes
@@ -44,6 +47,7 @@ CREATE TABLE `build_logs` (
 | Name | Definition |
 | ---- | ---------- |
 | fk_build_logs_branch_id | KEY fk_build_logs_branch_id (branch_id) USING BTREE |
+| fk_build_logs_result | KEY fk_build_logs_result (result) USING BTREE |
 | PRIMARY | PRIMARY KEY (id) USING BTREE |
 
 ## Relations
