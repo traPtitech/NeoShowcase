@@ -29,15 +29,15 @@ db-gen-docs:
 	@if [ -d "./docs/dbschema" ]; then \
 		rm -r ./docs/dbschema; \
 	fi
-	@docker run --rm --net=host -v $$PWD:/work ghcr.io/k1low/tbls:$(TBLS_VERSION) doc
+	@docker run --rm --net=host -v $$PWD:/work ghcr.io/k1low/tbls:v$(TBLS_VERSION) doc
 
 .PHONY: db-diff-docs
 db-diff-docs:
-	@docker run --rm --net=host -v $$PWD:/work ghcr.io/k1low/tbls:$(TBLS_VERSION) diff
+	@docker run --rm --net=host -v $$PWD:/work ghcr.io/k1low/tbls:v$(TBLS_VERSION) diff
 
 .PHONY: db-lint
 db-lint:
-	@docker run --rm --net=host -v $$PWD:/work ghcr.io/k1low/tbls:$(TBLS_VERSION) lint
+	@docker run --rm --net=host -v $$PWD:/work ghcr.io/k1low/tbls:v$(TBLS_VERSION) lint
 
 .PHONY: swagger-lint
 swagger-lint:
