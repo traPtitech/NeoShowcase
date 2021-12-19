@@ -6,7 +6,6 @@ import (
 	"sync"
 	"time"
 
-	"github.com/google/uuid"
 	log "github.com/sirupsen/logrus"
 	"github.com/traPtitech/neoshowcase/pkg/domain"
 	"github.com/traPtitech/neoshowcase/pkg/domain/builder"
@@ -21,8 +20,8 @@ const (
 )
 
 type AppBuildService interface {
-	QueueBuild(ctx context.Context, branch *domain.Branch) (JobID, error)
-	CancelBuild(ctx context.Context, jobID JobID) error
+	QueueBuild(ctx context.Context, branch *domain.Branch) (string, error)
+	CancelBuild(ctx context.Context, buildID string) error
 	Shutdown()
 }
 
@@ -32,16 +31,15 @@ type appBuildService struct {
 
 	queue           chan *buildJob
 	queueWait       sync.WaitGroup
-	canceledJobList []JobID
+	canceledJobList []string
 	imageRegistry   string
 	imageNamePrefix string
 }
 
-type JobID uuid.UUID
 type buildJob struct {
-	jobID  JobID
-	app    *domain.Application
-	branch *domain.Branch
+	buildID string
+	app     *domain.Application
+	branch  *domain.Branch
 }
 
 var (
@@ -53,7 +51,7 @@ func NewAppBuildService(repo repository.ApplicationRepository, builder pb.Builde
 		repo:            repo,
 		builder:         builder,
 		queue:           make(chan *buildJob, queueBufferSize),
-		canceledJobList: []JobID{},
+		canceledJobList: []string{},
 		imageRegistry:   string(registry),
 		imageNamePrefix: string(prefix),
 	}
@@ -61,31 +59,27 @@ func NewAppBuildService(repo repository.ApplicationRepository, builder pb.Builde
 	return s
 }
 
-func (s *appBuildService) QueueBuild(ctx context.Context, branch *domain.Branch) (JobID, error) {
+func (s *appBuildService) QueueBuild(ctx context.Context, branch *domain.Branch) (string, error) {
 	app, err := s.repo.GetApplicationByID(ctx, branch.ApplicationID)
 	if err != nil {
-		return JobID(uuid.Nil), fmt.Errorf("Failed to QueueBuild: %w", err)
-	}
-	id, err := uuid.NewRandom()
-	if err != nil {
-		return JobID(uuid.Nil), err
+		return "", fmt.Errorf("Failed to QueueBuild: %w", err)
 	}
 
-	// buildID := domain.NewID()
+	buildID := domain.NewID()
 	// TODO: このタイミングでDBに入れる
 
 	s.queueWait.Add(1)
 	select {
 	case s.queue <- &buildJob{
-		jobID:  JobID(id),
-		app:    app,
-		branch: branch,
+		buildID: buildID,
+		app:     app,
+		branch:  branch,
 	}:
 	default:
-		return JobID(uuid.Nil), ErrQueueFull
+		return "", ErrQueueFull
 	}
 
-	return JobID(id), nil
+	return buildID, nil
 }
 
 func (s *appBuildService) Shutdown() {
@@ -94,9 +88,9 @@ func (s *appBuildService) Shutdown() {
 	close(s.queue)
 }
 
-func (s *appBuildService) CancelBuild(ctx context.Context, jobID JobID) error {
-	if !s.isCanceled(jobID) {
-		s.canceledJobList = append(s.canceledJobList, jobID)
+func (s *appBuildService) CancelBuild(ctx context.Context, buildID string) error {
+	if !s.isCanceled(buildID) {
+		s.canceledJobList = append(s.canceledJobList, buildID)
 		return nil
 	}
 	return fmt.Errorf("job is already canceled")
@@ -105,9 +99,9 @@ func (s *appBuildService) CancelBuild(ctx context.Context, jobID JobID) error {
 func (s *appBuildService) startQueueManager() {
 	for v := range s.queue {
 		// キャンセルされたタスクならスキップ
-		if s.isCanceled(v.jobID) {
+		if s.isCanceled(v.buildID) {
 			for i, id := range s.canceledJobList {
-				if id == v.jobID {
+				if id == v.buildID {
 					s.canceledJobList = append(s.canceledJobList[:i], s.canceledJobList[i+1:]...)
 					continue
 				}
@@ -120,7 +114,7 @@ func (s *appBuildService) startQueueManager() {
 				break
 			}
 			if res.GetStatus() == pb.BuilderStatus_WAITING {
-				err := s.requestBuild(context.Background(), v.app, v.branch)
+				err := s.requestBuild(context.Background(), v.app, v.branch, v.buildID)
 				if err != nil {
 					log.WithError(err).Error("failed to request build")
 				}
@@ -132,7 +126,7 @@ func (s *appBuildService) startQueueManager() {
 	}
 }
 
-func (s *appBuildService) requestBuild(ctx context.Context, app *domain.Application, branch *domain.Branch) error {
+func (s *appBuildService) requestBuild(ctx context.Context, app *domain.Application, branch *domain.Branch, buildID string) error {
 	switch branch.BuildType {
 	case builder.BuildTypeImage:
 		_, err := s.builder.StartBuildImage(ctx, &pb.StartBuildImageRequest{
@@ -142,7 +136,7 @@ func (s *appBuildService) requestBuild(ctx context.Context, app *domain.Applicat
 			},
 			Options:  &pb.BuildOptions{}, // TODO 汎用ベースイメージビルドに対応させる
 			BranchId: branch.ID,
-			BuildId: "", // TODO 値を入れる
+			BuildId:  buildID,
 		})
 		if err != nil {
 			return fmt.Errorf("builder failed to start build image: %w", err)
@@ -155,7 +149,7 @@ func (s *appBuildService) requestBuild(ctx context.Context, app *domain.Applicat
 			},
 			Options:  &pb.BuildOptions{}, // TODO 汎用ベースイメージビルドに対応させる
 			BranchId: branch.ID,
-			BuildId: "", // TODO 値を入れる
+			BuildId:  buildID,
 		})
 		if err != nil {
 			return fmt.Errorf("builder failed to start build static: %w", err)
@@ -170,9 +164,9 @@ func (s *appBuildService) requestBuild(ctx context.Context, app *domain.Applicat
 	return nil
 }
 
-func (s *appBuildService) isCanceled(jobID JobID) bool {
+func (s *appBuildService) isCanceled(buildID string) bool {
 	for _, v := range s.canceledJobList {
-		if v == jobID {
+		if v == buildID {
 			return true
 		}
 	}
