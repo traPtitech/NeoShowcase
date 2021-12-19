@@ -32,21 +32,21 @@ message StartBuildImageRequest {
   string image_name = 1;
   BuildSource source = 2;
   BuildOptions options = 3;
+  string build_id = 4;
   string branch_id = 5;
 }
 
 message StartBuildImageResponse {
-  string build_id = 1;
 }
 
 message StartBuildStaticRequest {
   BuildSource source = 1;
   BuildOptions options = 2;
+  string build_id = 3;
   string branch_id = 4;
 }
 
 message StartBuildStaticResponse {
-  string build_id = 1;
 }
 
 message CancelTaskResponse {
