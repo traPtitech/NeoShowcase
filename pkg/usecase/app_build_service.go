@@ -71,6 +71,9 @@ func (s *appBuildService) QueueBuild(ctx context.Context, branch *domain.Branch)
 		return JobID(uuid.Nil), err
 	}
 
+	// buildID := domain.NewID()
+	// TODO: このタイミングでDBに入れる
+
 	s.queueWait.Add(1)
 	select {
 	case s.queue <- &buildJob{
@@ -139,6 +142,7 @@ func (s *appBuildService) requestBuild(ctx context.Context, app *domain.Applicat
 			},
 			Options:  &pb.BuildOptions{}, // TODO 汎用ベースイメージビルドに対応させる
 			BranchId: branch.ID,
+			BuildId: "", // TODO 値を入れる
 		})
 		if err != nil {
 			return fmt.Errorf("builder failed to start build image: %w", err)
@@ -151,6 +155,7 @@ func (s *appBuildService) requestBuild(ctx context.Context, app *domain.Applicat
 			},
 			Options:  &pb.BuildOptions{}, // TODO 汎用ベースイメージビルドに対応させる
 			BranchId: branch.ID,
+			BuildId: "", // TODO 値を入れる
 		})
 		if err != nil {
 			return fmt.Errorf("builder failed to start build static: %w", err)

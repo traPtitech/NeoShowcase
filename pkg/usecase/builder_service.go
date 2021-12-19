@@ -38,7 +38,7 @@ const (
 type BuilderService interface {
 	GetStatus() builder.State
 	StreamEvents() domain.Subscription
-	StartBuild(ctx context.Context, task *builder.Task) (buildID string, err error)
+	StartBuild(ctx context.Context, task *builder.Task) error
 	CancelBuild(ctx context.Context) (buildID string, err error)
 	Shutdown(ctx context.Context) error
 }
@@ -83,21 +83,20 @@ func (s *builderService) StreamEvents() domain.Subscription {
 	return s.eventbus.Subscribe(event.BuilderBuildStarted, event.BuilderBuildFailed, event.BuilderBuildCanceled, event.BuilderBuildSucceeded)
 }
 
-func (s *builderService) StartBuild(ctx context.Context, task *builder.Task) (buildID string, err error) {
+func (s *builderService) StartBuild(ctx context.Context, task *builder.Task) error {
 	s.statusLock.Lock()
 	if s.status != builder.StateWaiting {
 		s.statusLock.Unlock()
-		return "", fmt.Errorf("builder unavailable")
+		return fmt.Errorf("builder unavailable")
 	}
 
-	task.BuildID = domain.NewID()
 	if err := s.initializeTask(ctx, task); err != nil {
-		return "", fmt.Errorf("failed to initialize Task: %w", err)
+		return fmt.Errorf("failed to initialize Task: %w", err)
 	}
 
 	s.status = builder.StateBuilding
 	s.statusLock.Unlock()
-	return task.BuildID, nil
+	return nil
 }
 
 func (s *builderService) CancelBuild(ctx context.Context) (string, error) {
@@ -182,6 +181,7 @@ func (s *builderService) initializeTask(ctx context.Context, task *builder.Task)
 		return fmt.Errorf("failed to clone repository: %w", err)
 	}
 
+	// TODO: QueueBuildに移す
 	// ビルドログのエントリをDBに挿入
 	if err := intState.BuildLogM.Insert(ctx, s.db, boil.Infer()); err != nil {
 		log.WithError(err).Errorf("failed to insert build_log entry (buildID: %s)", task.BuildID)
