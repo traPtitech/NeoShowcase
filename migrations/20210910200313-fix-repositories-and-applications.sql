@@ -11,12 +11,14 @@ ALTER TABLE `applications`
   DROP COLUMN `name`;
 
 -- +migrate Down
+
+ALTER TABLE `applications`
+  ADD COLUMN `owner` varchar(100) NOT NULL COMMENT 'アプリケーションのオーナー' AFTER `id`,
+  ADD COLUMN `name` varchar(100) NOT NULL  COMMENT 'アプリケーション名' AFTER `owner`;
+
 ALTER TABLE `repositories`
   DROP FOREIGN KEY `fk_repositories_provider_id`,
   DROP COLUMN `provider_id`,
   DROP COLUMN `owner`,
   DROP COLUMN `name`;
 
-ALTER TABLE `applications`
-  ADD COLUMN `owner` varchar(100) NOT NULL COMMENT 'アプリケーションのオーナー' AFTER `id`,
-  ADD COLUMN `name` varchar(100) NOT NULL  COMMENT 'アプリケーション名' AFTER `owner`;
