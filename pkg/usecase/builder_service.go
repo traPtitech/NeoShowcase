@@ -137,7 +137,7 @@ func (s *builderService) initializeTask(ctx context.Context, task *builder.Task)
 	intState := &internalTaskState{
 		BuildLogM: models.BuildLog{
 			ID:        task.BuildID,
-			Result:    builder.BuildStatusBuilding,
+			Result:    builder.BuildStatusBuilding.String(),
 			StartedAt: time.Now(),
 			BranchID:  task.BranchID.String,
 		},
@@ -240,7 +240,7 @@ func (s *builderService) processTask(task *builder.Task, intState *internalTaskS
 		_ = os.RemoveAll(intState.repositoryTempDir)
 
 		// BuildLog更新
-		intState.BuildLogM.Result = result
+		intState.BuildLogM.Result = result.String()
 		intState.BuildLogM.FinishedAt = null.TimeFrom(time.Now())
 		if _, err := intState.BuildLogM.Update(context.Background(), s.db, boil.Infer()); err != nil {
 			log.WithError(err).Errorf("failed to update build_log entry (%s)", task.BuildID)
