@@ -14,7 +14,7 @@ import (
 )
 
 //go:generate go run github.com/golang/mock/mockgen@latest -source=$GOFILE -package=mock_$GOPACKAGE -destination=./mock/$GOFILE
-type GitrepositoryRepository interface {
+type GitRepositoryRepository interface {
 	RegisterRepository(ctx context.Context, args RegisterRepositoryArgs) (*domain.Repository, error)
 	GetRepositoryByID(ctx context.Context, id string) (*domain.Repository, error)
 	GetRepository(ctx context.Context, args GetRepositoryArgs) (*domain.Repository, error)
@@ -45,7 +45,7 @@ type GetRepositoryArgs struct {
 	Name       string
 }
 
-func NewGitrepositoryRepository(db *sql.DB) GitrepositoryRepository {
+func NewGitRepositoryRepository(db *sql.DB) GitRepositoryRepository {
 	return &gitrepositoryRepository{
 		db: db,
 	}

@@ -39,7 +39,7 @@ func NewWithDocker(c2 Config) (*Server, error) {
 	if err != nil {
 		return nil, err
 	}
-	gitrepositoryRepository := repository.NewGitrepositoryRepository(db)
+	gitrepositoryRepository := repository.NewGitRepositoryRepository(db)
 	gitPushWebhookService := usecase.NewGitPushWebhookService(gitrepositoryRepository)
 	webhookReceiverHandler := handler.NewWebhookReceiverHandler(bus, gitPushWebhookService)
 	router := &Router{
@@ -103,7 +103,7 @@ func NewWithK8S(c2 Config) (*Server, error) {
 	if err != nil {
 		return nil, err
 	}
-	gitrepositoryRepository := repository.NewGitrepositoryRepository(db)
+	gitrepositoryRepository := repository.NewGitRepositoryRepository(db)
 	gitPushWebhookService := usecase.NewGitPushWebhookService(gitrepositoryRepository)
 	webhookReceiverHandler := handler.NewWebhookReceiverHandler(bus, gitPushWebhookService)
 	router := &Router{
@@ -160,7 +160,7 @@ func NewWithK8S(c2 Config) (*Server, error) {
 
 // wire.go:
 
-var commonSet = wire.NewSet(web.NewServer, usecase.NewGitPushWebhookService, usecase.NewAppBuildService, usecase.NewAppDeployService, usecase.NewContinuousDeploymentService, repository.NewApplicationRepository, repository.NewGitrepositoryRepository, broker.NewBuilderEventsBroker, eventbus.NewLocal, admindb.New, handlerSet,
+var commonSet = wire.NewSet(web.NewServer, usecase.NewGitPushWebhookService, usecase.NewAppBuildService, usecase.NewAppDeployService, usecase.NewContinuousDeploymentService, repository.NewApplicationRepository, repository.NewGitRepositoryRepository, broker.NewBuilderEventsBroker, eventbus.NewLocal, admindb.New, handlerSet,
 	provideWebServerConfig,
 	provideImagePrefix,
 	provideImageRegistry, hub.New, grpc.NewBuilderServiceClientConn, grpc.NewStaticSiteServiceClientConn, grpc.NewBuilderServiceClient, grpc.NewStaticSiteServiceClient, wire.FieldsOf(new(Config), "Builder", "SSGen", "DB"), wire.Struct(new(Router), "*"), wire.Bind(new(web.Router), new(*Router)), wire.Struct(new(Server), "*"),

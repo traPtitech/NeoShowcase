@@ -18,12 +18,12 @@ type GitPushWebhookService interface {
 }
 
 type gitPushWebhookService struct {
-	repo repository.GitrepositoryRepository
+	repo repository.GitRepositoryRepository
 }
 
 var ErrProviderNotFound = fmt.Errorf("provider not found")
 
-func NewGitPushWebhookService(repo repository.GitrepositoryRepository) GitPushWebhookService {
+func NewGitPushWebhookService(repo repository.GitRepositoryRepository) GitPushWebhookService {
 	return &gitPushWebhookService{
 		repo: repo,
 	}
