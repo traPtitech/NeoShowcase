@@ -5,7 +5,7 @@ ALTER TABLE `repositories`
   ADD COLUMN `name` varchar(256) NOT NULL  COMMENT 'リポジトリ名' AFTER `owner`,
   ADD COLUMN `provider_id` char(36) NOT NULL COMMENT 'プロバイダID' AFTER `url`,
   ADD CONSTRAINT `fk_repositories_provider_id` FOREIGN KEY (`provider_id`) REFERENCES `providers` (`id`) ON UPDATE RESTRICT ON DELETE RESTRICT;
-
+  ADD UNIQUE (`url`);
 ALTER TABLE `applications`
   DROP COLUMN `owner`,
   DROP COLUMN `name`;
