@@ -14,12 +14,19 @@ type Branch struct {
 	BuildType     builder.BuildType
 }
 
+type BuildLog struct {
+	ID       string
+	Result   builder.BuildStatus
+	BranchID string
+}
+
 type Environment struct {
 	ID       string
 	BranchID string
 	Key      string
 	Value    string
 }
+
 type Repository struct {
 	ID        string
 	RemoteURL string
