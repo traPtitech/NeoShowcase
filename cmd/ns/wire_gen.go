@@ -39,8 +39,8 @@ func NewWithDocker(c2 Config) (*Server, error) {
 	if err != nil {
 		return nil, err
 	}
-	gitrepositoryRepository := repository.NewGitRepositoryRepository(db)
-	gitPushWebhookService := usecase.NewGitPushWebhookService(gitrepositoryRepository)
+	gitRepositoryRepository := repository.NewGitRepositoryRepository(db)
+	gitPushWebhookService := usecase.NewGitPushWebhookService(gitRepositoryRepository)
 	webhookReceiverHandler := handler.NewWebhookReceiverHandler(bus, gitPushWebhookService)
 	router := &Router{
 		wr: webhookReceiverHandler,
@@ -103,8 +103,8 @@ func NewWithK8S(c2 Config) (*Server, error) {
 	if err != nil {
 		return nil, err
 	}
-	gitrepositoryRepository := repository.NewGitRepositoryRepository(db)
-	gitPushWebhookService := usecase.NewGitPushWebhookService(gitrepositoryRepository)
+	gitRepositoryRepository := repository.NewGitRepositoryRepository(db)
+	gitPushWebhookService := usecase.NewGitPushWebhookService(gitRepositoryRepository)
 	webhookReceiverHandler := handler.NewWebhookReceiverHandler(bus, gitPushWebhookService)
 	router := &Router{
 		wr: webhookReceiverHandler,
