@@ -180,14 +180,6 @@ func (s *builderService) initializeTask(ctx context.Context, task *builder.Task)
 		return fmt.Errorf("failed to clone repository: %w", err)
 	}
 
-	// TODO: QueueBuildに移す
-	// ビルドログのエントリをDBに挿入
-	_, err = s.repo.CreateBuildLog(ctx, task.BranchID.String)
-	if err != nil {
-		log.WithError(err).Errorf("failed to create build log: %s", task.BranchID.String)
-		return fmt.Errorf("failed to create build log: %w", err)
-	}
-
 	// BuildLog.ResultをBuildingに変更
 	args := repository.UpdateBuildLogArgs{
 		ID:       intState.BuildLog.ID,

@@ -22,9 +22,10 @@ func TestAppBuildService_QueueBuild(t *testing.T) {
 		mockCtrl := gomock.NewController(t)
 		defer mockCtrl.Finish()
 
-		repo := mock_repository.NewMockApplicationRepository(mockCtrl)
+		appRepo := mock_repository.NewMockApplicationRepository(mockCtrl)
+		buildLogRepo := mock_repository.NewMockBuildLogRepository(mockCtrl)
 		c := mock_pb.NewMockBuilderServiceClient(mockCtrl)
-		s := NewAppBuildService(repo, c, "TestRegistry", "TestPrefix")
+		s := NewAppBuildService(appRepo, buildLogRepo, c, "TestRegistry", "TestPrefix")
 		branch := &domain.Branch{
 			ID:            "5f34b184-9ae1-4969-95c0-0a016921d153",
 			ApplicationID: "bee2466e-9d46-45e5-a6c4-4d359504c10c",
@@ -36,13 +37,23 @@ func TestAppBuildService_QueueBuild(t *testing.T) {
 				RemoteURL: "https://git.trap.jp/hijiki51/git-test",
 			},
 		}
+		buildLog := &domain.BuildLog{
+			ID:       "f01691dd-985a-48c9-8b47-205af468431a",
+			Result:   builder.BuildStatusQueued,
+			BranchID: branch.ID,
+		}
 
-		repo.EXPECT().
+		appRepo.EXPECT().
 			GetApplicationByID(context.Background(), branch.ApplicationID).Return(res, nil)
+
+		buildLogRepo.EXPECT().CreateBuildLog(context.Background(), branch.ID).Return(buildLog, nil)
 
 		c.EXPECT().
 			GetStatus(context.Background(), &emptypb.Empty{}).
-			Return(&pb.GetStatusResponse{Status: pb.BuilderStatus_WAITING}, nil).
+			Return(&pb.GetStatusResponse{
+				Status:  pb.BuilderStatus_WAITING,
+				BuildId: buildLog.ID,
+			}, nil).
 			AnyTimes()
 
 		c.EXPECT().
@@ -52,6 +63,7 @@ func TestAppBuildService_QueueBuild(t *testing.T) {
 					RepositoryUrl: res.Repository.RemoteURL,
 				},
 				Options:  &pb.BuildOptions{},
+				BuildId:  buildLog.ID,
 				BranchId: branch.ID,
 			}).
 			Return(&pb.StartBuildImageResponse{}, nil)
@@ -66,9 +78,10 @@ func TestAppBuildService_QueueBuild(t *testing.T) {
 		mockCtrl := gomock.NewController(t)
 		defer mockCtrl.Finish()
 
-		repo := mock_repository.NewMockApplicationRepository(mockCtrl)
+		appRepo := mock_repository.NewMockApplicationRepository(mockCtrl)
+		buildLogRepo := mock_repository.NewMockBuildLogRepository(mockCtrl)
 		c := mock_pb.NewMockBuilderServiceClient(mockCtrl)
-		s := NewAppBuildService(repo, c, "TestRegistry", "TestPrefix")
+		s := NewAppBuildService(appRepo, buildLogRepo, c, "TestRegistry", "TestPrefix")
 		branch := &domain.Branch{
 			ID:            "1d9cc06d-813f-4cf7-947e-546e1a814fed",
 			ApplicationID: "d563e2de-7905-4267-8a9c-51520aac02b3",
@@ -80,13 +93,23 @@ func TestAppBuildService_QueueBuild(t *testing.T) {
 				RemoteURL: "https://git.trap.jp/hijiki51/git-test",
 			},
 		}
+		buildLog := &domain.BuildLog{
+			ID:       "f01691dd-985a-48c9-8b47-205af468431a",
+			Result:   builder.BuildStatusQueued,
+			BranchID: branch.ID,
+		}
 
-		repo.EXPECT().
+		appRepo.EXPECT().
 			GetApplicationByID(context.Background(), branch.ApplicationID).Return(res, nil)
+
+		buildLogRepo.EXPECT().CreateBuildLog(context.Background(), branch.ID).Return(buildLog, nil)
 
 		c.EXPECT().
 			GetStatus(context.Background(), &emptypb.Empty{}).
-			Return(&pb.GetStatusResponse{Status: pb.BuilderStatus_WAITING}, nil).
+			Return(&pb.GetStatusResponse{
+				Status:  pb.BuilderStatus_WAITING,
+				BuildId: buildLog.ID,
+			}, nil).
 			AnyTimes()
 
 		c.EXPECT().
@@ -95,6 +118,7 @@ func TestAppBuildService_QueueBuild(t *testing.T) {
 					RepositoryUrl: res.Repository.RemoteURL,
 				},
 				Options:  &pb.BuildOptions{},
+				BuildId:  buildLog.ID,
 				BranchId: branch.ID,
 			}).
 			Return(&pb.StartBuildStaticResponse{}, nil)
@@ -108,9 +132,10 @@ func TestAppBuildService_QueueBuild(t *testing.T) {
 		mockCtrl := gomock.NewController(t)
 		defer mockCtrl.Finish()
 
-		repo := mock_repository.NewMockApplicationRepository(mockCtrl)
+		appRepo := mock_repository.NewMockApplicationRepository(mockCtrl)
+		buildLogRepo := mock_repository.NewMockBuildLogRepository(mockCtrl)
 		c := mock_pb.NewMockBuilderServiceClient(mockCtrl)
-		s := NewAppBuildService(repo, c, "TestRegistry", "TestPrefix")
+		s := NewAppBuildService(appRepo, buildLogRepo, c, "TestRegistry", "TestPrefix")
 		branch := &domain.Branch{
 			ID:            "1d9cc06d-813f-4cf7-947e-546e1a814fed",
 			ApplicationID: "d563e2de-7905-4267-8a9c-51520aac02b3",
@@ -122,13 +147,23 @@ func TestAppBuildService_QueueBuild(t *testing.T) {
 				RemoteURL: "https://git.trap.jp/hijiki51/git-test",
 			},
 		}
+		buildLog := &domain.BuildLog{
+			ID:       "f01691dd-985a-48c9-8b47-205af468431a",
+			Result:   builder.BuildStatusQueued,
+			BranchID: branch.ID,
+		}
 
-		repo.EXPECT().
+		appRepo.EXPECT().
 			GetApplicationByID(context.Background(), branch.ApplicationID).Return(res, nil)
+
+		buildLogRepo.EXPECT().CreateBuildLog(context.Background(), branch.ID).Return(buildLog, nil)
 
 		c.EXPECT().
 			GetStatus(context.Background(), &emptypb.Empty{}).
-			Return(&pb.GetStatusResponse{Status: pb.BuilderStatus_WAITING}, nil).
+			Return(&pb.GetStatusResponse{
+				Status:  pb.BuilderStatus_WAITING,
+				BuildId: buildLog.ID,
+			}, nil).
 			AnyTimes()
 
 		c.EXPECT().
@@ -136,7 +171,8 @@ func TestAppBuildService_QueueBuild(t *testing.T) {
 				Source: &pb.BuildSource{
 					RepositoryUrl: res.Repository.RemoteURL,
 				},
-				Options:       &pb.BuildOptions{},
+				Options:  &pb.BuildOptions{},
+				BuildId:  buildLog.ID,
 				BranchId: branch.ID,
 			}).
 			Return(&pb.StartBuildStaticResponse{}, nil)

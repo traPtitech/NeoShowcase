@@ -26,8 +26,9 @@ type AppBuildService interface {
 }
 
 type appBuildService struct {
-	repo    repository.ApplicationRepository
-	builder pb.BuilderServiceClient
+	appRepo      repository.ApplicationRepository
+	buildLogRepo repository.BuildLogRepository
+	builder      pb.BuilderServiceClient
 
 	queue           chan *buildJob
 	queueWait       sync.WaitGroup
@@ -46,9 +47,10 @@ var (
 	ErrQueueFull = fmt.Errorf("queue is full")
 )
 
-func NewAppBuildService(repo repository.ApplicationRepository, builder pb.BuilderServiceClient, registry builder.DockerImageRegistryString, prefix builder.DockerImageNamePrefixString) AppBuildService {
+func NewAppBuildService(appRepo repository.ApplicationRepository, buildLogRepo repository.BuildLogRepository, builder pb.BuilderServiceClient, registry builder.DockerImageRegistryString, prefix builder.DockerImageNamePrefixString) AppBuildService {
 	s := &appBuildService{
-		repo:            repo,
+		appRepo:         appRepo,
+		buildLogRepo:    buildLogRepo,
 		builder:         builder,
 		queue:           make(chan *buildJob, queueBufferSize),
 		canceledJobList: []string{},
@@ -60,18 +62,22 @@ func NewAppBuildService(repo repository.ApplicationRepository, builder pb.Builde
 }
 
 func (s *appBuildService) QueueBuild(ctx context.Context, branch *domain.Branch) (string, error) {
-	app, err := s.repo.GetApplicationByID(ctx, branch.ApplicationID)
+	app, err := s.appRepo.GetApplicationByID(ctx, branch.ApplicationID)
 	if err != nil {
 		return "", fmt.Errorf("Failed to QueueBuild: %w", err)
 	}
 
-	buildID := domain.NewID()
-	// TODO: このタイミングでDBに入れる
+	// ビルドログのエントリをDBに挿入
+	buildLog, err := s.buildLogRepo.CreateBuildLog(ctx, branch.ID)
+	if err != nil {
+		log.WithError(err).Errorf("failed to create build log: %s", branch.ID)
+		return "", fmt.Errorf("failed to create build log: %w", err)
+	}
 
 	s.queueWait.Add(1)
 	select {
 	case s.queue <- &buildJob{
-		buildID: buildID,
+		buildID: buildLog.ID,
 		app:     app,
 		branch:  branch,
 	}:
@@ -79,7 +85,7 @@ func (s *appBuildService) QueueBuild(ctx context.Context, branch *domain.Branch)
 		return "", ErrQueueFull
 	}
 
-	return buildID, nil
+	return buildLog.ID, nil
 }
 
 func (s *appBuildService) Shutdown() {
