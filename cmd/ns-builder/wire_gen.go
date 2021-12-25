@@ -11,6 +11,7 @@ import (
 	"github.com/traPtitech/neoshowcase/pkg/infrastructure/admindb"
 	"github.com/traPtitech/neoshowcase/pkg/infrastructure/eventbus"
 	"github.com/traPtitech/neoshowcase/pkg/interface/grpc"
+	"github.com/traPtitech/neoshowcase/pkg/interface/repository"
 	"github.com/traPtitech/neoshowcase/pkg/usecase"
 )
 
@@ -35,8 +36,9 @@ func New(c2 Config) (*Server, error) {
 	if err != nil {
 		return nil, err
 	}
+	buildLogRepository := repository.NewBuildLogRepository(db)
 	dockerImageRegistryString := provideDockerImageRegistry(c2)
-	builderService := usecase.NewBuilderService(client, storage, bus, db, dockerImageRegistryString)
+	builderService := usecase.NewBuilderService(client, storage, bus, db, buildLogRepository, dockerImageRegistryString)
 	grpcBuilderService := grpc.NewBuilderServiceServer(builderService)
 	mainServer := &Server{
 		db:         db,

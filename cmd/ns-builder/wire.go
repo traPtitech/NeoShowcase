@@ -9,6 +9,7 @@ import (
 	"github.com/traPtitech/neoshowcase/pkg/infrastructure/admindb"
 	"github.com/traPtitech/neoshowcase/pkg/infrastructure/eventbus"
 	"github.com/traPtitech/neoshowcase/pkg/interface/grpc"
+	"github.com/traPtitech/neoshowcase/pkg/interface/repository"
 	"github.com/traPtitech/neoshowcase/pkg/usecase"
 )
 
@@ -17,6 +18,7 @@ func New(c Config) (*Server, error) {
 		grpc.NewServer,
 		grpc.NewBuilderServiceServer,
 		usecase.NewBuilderService,
+		repository.NewBuildLogRepository,
 		eventbus.NewLocal,
 		admindb.New,
 		hub.New,

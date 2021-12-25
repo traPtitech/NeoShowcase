@@ -10,7 +10,6 @@ import (
 	"os"
 	"path/filepath"
 	"sync"
-	"time"
 
 	"github.com/go-git/go-git/v5"
 	"github.com/go-git/go-git/v5/plumbing"
@@ -23,9 +22,7 @@ import (
 	"github.com/traPtitech/neoshowcase/pkg/domain"
 	"github.com/traPtitech/neoshowcase/pkg/domain/builder"
 	"github.com/traPtitech/neoshowcase/pkg/domain/event"
-	"github.com/traPtitech/neoshowcase/pkg/infrastructure/admindb/models"
-	"github.com/volatiletech/null/v8"
-	"github.com/volatiletech/sqlboiler/v4/boil"
+	"github.com/traPtitech/neoshowcase/pkg/interface/repository"
 	"golang.org/x/sync/errgroup"
 	"google.golang.org/grpc/status"
 )
@@ -51,6 +48,8 @@ type builderService struct {
 	// TODO 後で消す
 	db *sql.DB
 
+	repo repository.BuildLogRepository
+
 	registry string
 
 	task              *builder.Task
@@ -61,12 +60,13 @@ type builderService struct {
 	statusLock sync.RWMutex
 }
 
-func NewBuilderService(buildkit *buildkit.Client, storage domain.Storage, eventbus domain.Bus, db *sql.DB, registry builder.DockerImageRegistryString) BuilderService {
+func NewBuilderService(buildkit *buildkit.Client, storage domain.Storage, eventbus domain.Bus, db *sql.DB, repo repository.BuildLogRepository, registry builder.DockerImageRegistryString) BuilderService {
 	return &builderService{
 		buildkit: buildkit,
 		storage:  storage,
 		eventbus: eventbus,
 		db:       db,
+		repo:     repo,
 		registry: string(registry),
 
 		status: builder.StateWaiting,
@@ -135,11 +135,10 @@ func (s *builderService) Shutdown(ctx context.Context) error {
 
 func (s *builderService) initializeTask(ctx context.Context, task *builder.Task) error {
 	intState := &internalTaskState{
-		BuildLogM: models.BuildLog{
-			ID:        task.BuildID,
-			Result:    builder.BuildStatusBuilding.String(),
-			StartedAt: time.Now(),
-			BranchID:  task.BranchID.String,
+		BuildLog: domain.BuildLog{
+			ID:       task.BuildID,
+			Result:   builder.BuildStatusBuilding,
+			BranchID: task.BranchID.String,
 		},
 	}
 
@@ -183,8 +182,20 @@ func (s *builderService) initializeTask(ctx context.Context, task *builder.Task)
 
 	// TODO: QueueBuildに移す
 	// ビルドログのエントリをDBに挿入
-	if err := intState.BuildLogM.Insert(ctx, s.db, boil.Infer()); err != nil {
-		log.WithError(err).Errorf("failed to insert build_log entry (buildID: %s)", task.BuildID)
+	_, err = s.repo.CreateBuildLog(ctx, task.BranchID.String)
+	if err != nil {
+		log.WithError(err).Errorf("failed to create build log: %s", task.BranchID.String)
+		return fmt.Errorf("failed to create build log: %w", err)
+	}
+
+	// BuildLog.ResultをBuildingに変更
+	args := repository.UpdateBuildLogArgs{
+		ID:       intState.BuildLog.ID,
+		Result:   intState.BuildLog.Result,
+		Finished: false,
+	}
+	if err := s.repo.UpdateBuildLog(ctx, args); err != nil {
+		log.WithError(err).Errorf("failed to update build_log entry (buildID: %s)", task.BuildID)
 		return fmt.Errorf("failed to save BuildLog: %w", err)
 	}
 
@@ -240,9 +251,13 @@ func (s *builderService) processTask(task *builder.Task, intState *internalTaskS
 		_ = os.RemoveAll(intState.repositoryTempDir)
 
 		// BuildLog更新
-		intState.BuildLogM.Result = result.String()
-		intState.BuildLogM.FinishedAt = null.TimeFrom(time.Now())
-		if _, err := intState.BuildLogM.Update(context.Background(), s.db, boil.Infer()); err != nil {
+		intState.BuildLog.Result = result
+		args := repository.UpdateBuildLogArgs{
+			ID:       intState.BuildLog.ID,
+			Result:   intState.BuildLog.Result,
+			Finished: true,
+		}
+		if err := s.repo.UpdateBuildLog(context.Background(), args); err != nil {
 			log.WithError(err).Errorf("failed to update build_log entry (%s)", task.BuildID)
 		}
 
@@ -442,7 +457,7 @@ func (s *builderService) buildStatic(t *builder.Task, intState *internalTaskStat
 }
 
 type internalTaskState struct {
-	BuildLogM         models.BuildLog
+	BuildLog          domain.BuildLog
 	ctx               context.Context
 	cancelFunc        func()
 	repositoryTempDir string
