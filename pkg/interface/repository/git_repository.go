@@ -58,25 +58,23 @@ func (r *gitrepositoryRepository) RegisterRepository(ctx context.Context, args R
 
 	if err != nil && err != sql.ErrNoRows {
 		return nil, fmt.Errorf(errMsg, err)
-	} else {
-		if repo != nil {
-			return nil, fmt.Errorf(errMsg, errors.New("repository already exists"))
-		}
-		id, err := uuid.NewRandom()
-		if err != nil {
-			return nil, fmt.Errorf(errMsg, err)
-		}
-		repo = &models.Repository{
-			ID:         id.String(),
-			Owner:      args.RepositoryOwner,
-			Name:       args.RepositoryName,
-			URL:        args.URL,
-			ProviderID: args.ProviderID,
-		}
-		if err := repo.Insert(ctx, r.db, boil.Infer()); err != nil {
-			return nil, fmt.Errorf(errMsg, err)
-		}
-
+	}
+	if repo != nil {
+		return nil, fmt.Errorf(errMsg, errors.New("repository already exists"))
+	}
+	id, err := uuid.NewRandom()
+	if err != nil {
+		return nil, fmt.Errorf(errMsg, err)
+	}
+	repo = &models.Repository{
+		ID:         id.String(),
+		Owner:      args.RepositoryOwner,
+		Name:       args.RepositoryName,
+		URL:        args.URL,
+		ProviderID: args.ProviderID,
+	}
+	if err := repo.Insert(ctx, r.db, boil.Infer()); err != nil {
+		return nil, fmt.Errorf(errMsg, err)
 	}
 
 	prov, err := models.Providers(models.ProviderWhere.ID.EQ(args.ProviderID)).One(ctx, r.db)
@@ -162,23 +160,21 @@ func (r *gitrepositoryRepository) RegisterProvider(ctx context.Context, args Reg
 	prov, err := models.Providers(models.ProviderWhere.Domain.EQ(args.Domain)).One(ctx, r.db)
 	if err != nil && err != sql.ErrNoRows {
 		return nil, fmt.Errorf(errMsg, err)
-	} else {
-		if prov != nil {
-			return nil, fmt.Errorf(errMsg, errors.New("provider already exists"))
-		}
-		id, err := uuid.NewRandom()
-		if err != nil {
-			return nil, fmt.Errorf(errMsg, err)
-		}
-		prov = &models.Provider{
-			ID:     id.String(),
-			Domain: args.Domain,
-			Secret: args.Secret,
-		}
-		if err := prov.Insert(ctx, r.db, boil.Infer()); err != nil {
-			return nil, fmt.Errorf(errMsg, err)
-		}
-
+	}
+	if prov != nil {
+		return nil, fmt.Errorf(errMsg, errors.New("provider already exists"))
+	}
+	id, err := uuid.NewRandom()
+	if err != nil {
+		return nil, fmt.Errorf(errMsg, err)
+	}
+	prov = &models.Provider{
+		ID:     id.String(),
+		Domain: args.Domain,
+		Secret: args.Secret,
+	}
+	if err := prov.Insert(ctx, r.db, boil.Infer()); err != nil {
+		return nil, fmt.Errorf(errMsg, err)
 	}
 
 	log.WithField("providerID", prov.ID).

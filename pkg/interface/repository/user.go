@@ -33,22 +33,22 @@ func NewUserRepository(db *sql.DB) UserRepository {
 func (u *userRepository) CreateUser(ctx context.Context, args CreateUserArgs) (*domain.User, error) {
 	const errMsg = "failed to create user: %w"
 
-	user, err := models.Users(models.UserWhere.Name.EQ(args.Name)).One(ctx, u.db)
+	_, err := models.Users(models.UserWhere.Name.EQ(args.Name)).One(ctx, u.db)
 	if err != nil && err != sql.ErrNoRows {
 		return nil, fmt.Errorf(errMsg, err)
-	} else {
-		id, err := uuid.NewRandom()
-		if err != nil {
-			return nil, fmt.Errorf(errMsg, err)
-		}
-		user = &models.User{
-			ID:   id.String(),
-			Name: args.Name,
-		}
-		if err := user.Insert(ctx, u.db, boil.Infer()); err != nil {
-			return nil, fmt.Errorf(errMsg, err)
-		}
 	}
+	id, err := uuid.NewRandom()
+	if err != nil {
+		return nil, fmt.Errorf(errMsg, err)
+	}
+	user := &models.User{
+		ID:   id.String(),
+		Name: args.Name,
+	}
+	if err := user.Insert(ctx, u.db, boil.Infer()); err != nil {
+		return nil, fmt.Errorf(errMsg, err)
+	}
+
 	return &domain.User{
 		ID:   user.ID,
 		Name: user.Name,
