@@ -48,24 +48,8 @@ func (s *gitPushWebhookService) VerifySignature(ctx context.Context, repoURL str
 }
 
 func (s *gitPushWebhookService) CheckRepositoryExists(ctx context.Context, repoURL, owner, name string) (bool, error) {
-	u, err := url.Parse(repoURL)
 
-	if err != nil {
-		return false, err
-	}
-
-	prov, err := s.repo.GetProviderByHost(ctx, u.Host)
-
-	if err != nil {
-		return false, ErrProviderNotFound
-	}
-	r := repository.GetRepositoryArgs{
-		ProviderID: prov.ID,
-		Owner:      owner,
-		Name:       name,
-	}
-
-	_, err = s.repo.GetRepository(ctx, r)
+	_, err := s.repo.GetRepository(ctx, repoURL)
 
 	if err != nil {
 		if err == repository.ErrNotFound {

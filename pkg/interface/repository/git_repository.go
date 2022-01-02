@@ -18,7 +18,7 @@ import (
 type GitRepositoryRepository interface {
 	RegisterRepository(ctx context.Context, args RegisterRepositoryArgs) (*domain.Repository, error)
 	GetRepositoryByID(ctx context.Context, id string) (*domain.Repository, error)
-	GetRepository(ctx context.Context, args GetRepositoryArgs) (*domain.Repository, error)
+	GetRepository(ctx context.Context, rawurl string) (*domain.Repository, error)
 	RegisterProvider(ctx context.Context, args RegisterProviderArgs) (*domain.Provider, error)
 	GetProviderByID(ctx context.Context, id string) (*domain.Provider, error)
 	GetProviderByHost(ctx context.Context, host string) (*domain.Provider, error)

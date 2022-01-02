@@ -43,9 +43,10 @@ func TestWebhookReceiverHandler_HandleRequest(t *testing.T) {
 		defer mockCtrl.Finish()
 
 		bus := mock_eventbus.NewMockBus(mockCtrl)
+		rawurl := "https://git.trap.jp/hijiki51/git-test.git"
 		bus.EXPECT().
 			Publish(event.WebhookRepositoryPush, domain.Fields{
-				"repository_url": "https://git.trap.jp/hijiki51/git-test.git",
+				"repository_url": rawurl,
 				"branch":         "heads/master",
 			}).
 			Times(1)
@@ -58,13 +59,9 @@ func TestWebhookReceiverHandler_HandleRequest(t *testing.T) {
 			}, nil).
 			AnyTimes()
 		repo.EXPECT().
-			GetRepository(gomock.Any(), repository.GetRepositoryArgs{
-				ProviderID: "11ca352c-2556-4b8f-bcbf-1f873d3bb540",
-				Owner:      "hijiki51",
-				Name:       "git-test",
-			}).Return(&domain.Repository{
+			GetRepository(gomock.Any(), rawurl).Return(&domain.Repository{
 			ID:        "9cf4d26d-0f35-474c-a4f2-18c3c7a9ffbf",
-			RemoteURL: "https://git.trap.jp/hijiki51/git-test.git",
+			RemoteURL: rawurl,
 			Provider: domain.Provider{
 				ID:     "11ca352c-2556-4b8f-bcbf-1f873d3bb540",
 				Secret: "ThisIsSecret",
@@ -304,11 +301,7 @@ func TestWebhookReceiverHandler_HandleRequest(t *testing.T) {
 			"X-Gitea-Signature": "66abe18cdc2dc36f39ebf715c8792cec1c466a26d333d6c7c28fa29966debb02",
 		}
 		repo.EXPECT().
-			GetRepository(gomock.Any(), repository.GetRepositoryArgs{
-				ProviderID: "11ca352c-2556-4b8f-bcbf-1f873d3bb540",
-				Owner:      "hijiki51",
-				Name:       "git-lecture",
-			}).Return(nil, repository.ErrNotFound).AnyTimes()
+			GetRepository(gomock.Any(), rawurl).Return(nil, repository.ErrNotFound).AnyTimes()
 		e.POST("/_webhook").
 			WithHeaders(headers).
 			WithBytes([]byte(`{
@@ -420,11 +413,11 @@ func TestWebhookReceiverHandler_HandleRequest(t *testing.T) {
 		t.Parallel()
 		mockCtrl := gomock.NewController(t)
 		defer mockCtrl.Finish()
-
+		rawurl := "https://github.com/hijiki51/test_repo.git"
 		bus := mock_eventbus.NewMockBus(mockCtrl)
 		bus.EXPECT().
 			Publish(event.WebhookRepositoryPush, domain.Fields{
-				"repository_url": "https://github.com/hijiki51/test_repo.git",
+				"repository_url": rawurl,
 				"branch":         "heads/main",
 			}).
 			Times(1)
@@ -437,13 +430,9 @@ func TestWebhookReceiverHandler_HandleRequest(t *testing.T) {
 			}, nil).
 			AnyTimes()
 		repo.EXPECT().
-			GetRepository(gomock.Any(), repository.GetRepositoryArgs{
-				ProviderID: "6404c950-9bb8-4e5d-8151-5d053a724011",
-				Owner:      "hijiki51",
-				Name:       "test_repo",
-			}).Return(&domain.Repository{
+			GetRepository(gomock.Any(), rawurl).Return(&domain.Repository{
 			ID:        "9cf4d26d-0f35-474c-a4f2-18c3c7a9ffbf",
-			RemoteURL: "https://github.com/hijiki51/test_repo.git",
+			RemoteURL: rawurl,
 			Provider: domain.Provider{
 				ID:     "11ca352c-2556-4b8f-bcbf-1f873d3bb540",
 				Secret: "ThisIsSecret",
@@ -479,11 +468,7 @@ func TestWebhookReceiverHandler_HandleRequest(t *testing.T) {
 			Status(http.StatusBadRequest)
 
 		repo.EXPECT().
-			GetRepository(gomock.Any(), repository.GetRepositoryArgs{
-				ProviderID: "6404c950-9bb8-4e5d-8151-5d053a724011",
-				Owner:      "hijiki51",
-				Name:       "git-lecture",
-			}).
+			GetRepository(gomock.Any(), rawurl).
 			Return(nil, repository.ErrNotFound).AnyTimes()
 
 		headers = map[string]string{

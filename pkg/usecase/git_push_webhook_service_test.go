@@ -95,11 +95,7 @@ func TestGitPushWebhookService_VerifySignature(t *testing.T) {
 			}, nil).
 			AnyTimes()
 		repo.EXPECT().
-			GetRepository(context.Background(), repository.GetRepositoryArgs{
-				ProviderID: "6404c950-9bb8-4e5d-8151-5d053a724011",
-				Owner:      "hijiki51",
-				Name:       "test_repo",
-			}).
+			GetRepository(context.Background(), "https://github.com/hijiki51/test_repo.git").
 			Return(&domain.Repository{
 				ID:        "9cf4d26d-0f35-474c-a4f2-18c3c7a9ffbf",
 				RemoteURL: "https://github.com/hijiki51/test_repo.git",
@@ -133,11 +129,7 @@ func TestGitPushWebhookService_VerifySignature(t *testing.T) {
 			}, nil).
 			AnyTimes()
 		repo.EXPECT().
-			GetRepository(context.Background(), repository.GetRepositoryArgs{
-				ProviderID: "6404c950-9bb8-4e5d-8151-5d053a724011",
-				Owner:      "hijiki51",
-				Name:       "test_repo",
-			}).
+			GetRepository(context.Background(), "https://github.com/hijiki51/test_repo.git").
 			Return(nil, repository.ErrNotFound).
 			AnyTimes()
 		exist, err := s.CheckRepositoryExists(
