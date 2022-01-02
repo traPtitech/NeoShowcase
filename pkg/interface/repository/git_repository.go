@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
+	"net/url"
 
 	"github.com/google/uuid"
 	log "github.com/sirupsen/logrus"
@@ -37,12 +38,6 @@ type RegisterRepositoryArgs struct {
 type RegisterProviderArgs struct {
 	Domain string
 	Secret string
-}
-
-type GetRepositoryArgs struct {
-	ProviderID string
-	Owner      string
-	Name       string
 }
 
 func NewGitRepositoryRepository(db *sql.DB) GitRepositoryRepository {
@@ -125,18 +120,20 @@ func (r *gitrepositoryRepository) GetRepositoryByID(ctx context.Context, id stri
 	}, nil
 }
 
-func (r *gitrepositoryRepository) GetRepository(ctx context.Context, args GetRepositoryArgs) (*domain.Repository, error) {
+func (r *gitrepositoryRepository) GetRepository(ctx context.Context, rawurl string) (*domain.Repository, error) {
 	const errMsg = "failed to GetRepository: %w"
-
-	prov, err := models.Providers(models.ProviderWhere.ID.EQ(args.ProviderID)).One(ctx, r.db)
+	url, err := url.Parse(rawurl)
+	if err != nil {
+		return nil, fmt.Errorf(errMsg, err)
+	}
+	prov, err := models.Providers(models.ProviderWhere.Domain.EQ(url.Host)).One(ctx, r.db)
 	if err != nil {
 		if err == sql.ErrNoRows {
 			return nil, ErrNotFound
 		}
 		return nil, fmt.Errorf(errMsg, err)
 	}
-
-	repo, err := models.Repositories(models.RepositoryWhere.ProviderID.EQ(args.ProviderID), models.RepositoryWhere.Owner.EQ(args.Owner), models.RepositoryWhere.Name.EQ(args.Name)).One(ctx, r.db)
+	repo, err := models.Repositories(models.RepositoryWhere.URL.EQ(rawurl)).One(ctx, r.db)
 	if err != nil {
 		if err == sql.ErrNoRows {
 			return nil, ErrNotFound
