@@ -3,7 +3,6 @@ package repository
 import (
 	"context"
 	"database/sql"
-	"errors"
 	"fmt"
 
 	"github.com/google/uuid"
@@ -37,8 +36,6 @@ func (u *userRepository) CreateUser(ctx context.Context, args CreateUserArgs) (*
 	user, err := models.Users(models.UserWhere.Name.EQ(args.Name)).One(ctx, u.db)
 	if err != nil && err != sql.ErrNoRows {
 		return nil, fmt.Errorf(errMsg, err)
-	} else if user != nil {
-		return nil, fmt.Errorf(errMsg, errors.New("user already exists"))
 	} else {
 		id, err := uuid.NewRandom()
 		if err != nil {

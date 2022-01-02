@@ -58,9 +58,10 @@ func (r *gitrepositoryRepository) RegisterRepository(ctx context.Context, args R
 
 	if err != nil && err != sql.ErrNoRows {
 		return nil, fmt.Errorf(errMsg, err)
-	} else if repo != nil {
-		return nil, fmt.Errorf(errMsg, errors.New("repository already exists"))
 	} else {
+		if repo != nil {
+			return nil, fmt.Errorf(errMsg, errors.New("repository already exists"))
+		}
 		id, err := uuid.NewRandom()
 		if err != nil {
 			return nil, fmt.Errorf(errMsg, err)
@@ -161,9 +162,10 @@ func (r *gitrepositoryRepository) RegisterProvider(ctx context.Context, args Reg
 	prov, err := models.Providers(models.ProviderWhere.Domain.EQ(args.Domain)).One(ctx, r.db)
 	if err != nil && err != sql.ErrNoRows {
 		return nil, fmt.Errorf(errMsg, err)
-	} else if prov != nil {
-		return nil, fmt.Errorf(errMsg, errors.New("provider already exists"))
 	} else {
+		if prov != nil {
+			return nil, fmt.Errorf(errMsg, errors.New("provider already exists"))
+		}
 		id, err := uuid.NewRandom()
 		if err != nil {
 			return nil, fmt.Errorf(errMsg, err)
