@@ -37,10 +37,10 @@ func (m *MockGitRepositoryRepository) EXPECT() *MockGitRepositoryRepositoryMockR
 }
 
 // GetProviderByHost mocks base method.
-func (m *MockGitRepositoryRepository) GetProviderByHost(ctx context.Context, host string) (*domain.Provider, error) {
+func (m *MockGitRepositoryRepository) GetProviderByHost(ctx context.Context, host string) (domain.Provider, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetProviderByHost", ctx, host)
-	ret0, _ := ret[0].(*domain.Provider)
+	ret0, _ := ret[0].(domain.Provider)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -52,10 +52,10 @@ func (mr *MockGitRepositoryRepositoryMockRecorder) GetProviderByHost(ctx, host i
 }
 
 // GetProviderByID mocks base method.
-func (m *MockGitRepositoryRepository) GetProviderByID(ctx context.Context, id string) (*domain.Provider, error) {
+func (m *MockGitRepositoryRepository) GetProviderByID(ctx context.Context, id string) (domain.Provider, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetProviderByID", ctx, id)
-	ret0, _ := ret[0].(*domain.Provider)
+	ret0, _ := ret[0].(domain.Provider)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -67,10 +67,10 @@ func (mr *MockGitRepositoryRepositoryMockRecorder) GetProviderByID(ctx, id inter
 }
 
 // GetRepository mocks base method.
-func (m *MockGitRepositoryRepository) GetRepository(ctx context.Context, rawurl string) (*domain.Repository, error) {
+func (m *MockGitRepositoryRepository) GetRepository(ctx context.Context, rawurl string) (domain.Repository, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetRepository", ctx, rawurl)
-	ret0, _ := ret[0].(*domain.Repository)
+	ret0, _ := ret[0].(domain.Repository)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -82,10 +82,10 @@ func (mr *MockGitRepositoryRepositoryMockRecorder) GetRepository(ctx, rawurl int
 }
 
 // GetRepositoryByID mocks base method.
-func (m *MockGitRepositoryRepository) GetRepositoryByID(ctx context.Context, id string) (*domain.Repository, error) {
+func (m *MockGitRepositoryRepository) GetRepositoryByID(ctx context.Context, id string) (domain.Repository, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetRepositoryByID", ctx, id)
-	ret0, _ := ret[0].(*domain.Repository)
+	ret0, _ := ret[0].(domain.Repository)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -97,10 +97,10 @@ func (mr *MockGitRepositoryRepositoryMockRecorder) GetRepositoryByID(ctx, id int
 }
 
 // RegisterProvider mocks base method.
-func (m *MockGitRepositoryRepository) RegisterProvider(ctx context.Context, args repository.RegisterProviderArgs) (*domain.Provider, error) {
+func (m *MockGitRepositoryRepository) RegisterProvider(ctx context.Context, args repository.RegisterProviderArgs) (domain.Provider, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "RegisterProvider", ctx, args)
-	ret0, _ := ret[0].(*domain.Provider)
+	ret0, _ := ret[0].(domain.Provider)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -112,10 +112,10 @@ func (mr *MockGitRepositoryRepositoryMockRecorder) RegisterProvider(ctx, args in
 }
 
 // RegisterRepository mocks base method.
-func (m *MockGitRepositoryRepository) RegisterRepository(ctx context.Context, args repository.RegisterRepositoryArgs) (*domain.Repository, error) {
+func (m *MockGitRepositoryRepository) RegisterRepository(ctx context.Context, args repository.RegisterRepositoryArgs) (domain.Repository, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "RegisterRepository", ctx, args)
-	ret0, _ := ret[0].(*domain.Repository)
+	ret0, _ := ret[0].(domain.Repository)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }

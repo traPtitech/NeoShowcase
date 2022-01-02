@@ -16,12 +16,12 @@ import (
 
 //go:generate go run github.com/golang/mock/mockgen@latest -source=$GOFILE -package=mock_$GOPACKAGE -destination=./mock/$GOFILE
 type GitRepositoryRepository interface {
-	RegisterRepository(ctx context.Context, args RegisterRepositoryArgs) (*domain.Repository, error)
-	GetRepositoryByID(ctx context.Context, id string) (*domain.Repository, error)
-	GetRepository(ctx context.Context, rawurl string) (*domain.Repository, error)
-	RegisterProvider(ctx context.Context, args RegisterProviderArgs) (*domain.Provider, error)
-	GetProviderByID(ctx context.Context, id string) (*domain.Provider, error)
-	GetProviderByHost(ctx context.Context, host string) (*domain.Provider, error)
+	RegisterRepository(ctx context.Context, args RegisterRepositoryArgs) (domain.Repository, error)
+	GetRepositoryByID(ctx context.Context, id string) (domain.Repository, error)
+	GetRepository(ctx context.Context, rawurl string) (domain.Repository, error)
+	RegisterProvider(ctx context.Context, args RegisterProviderArgs) (domain.Provider, error)
+	GetProviderByID(ctx context.Context, id string) (domain.Provider, error)
+	GetProviderByHost(ctx context.Context, host string) (domain.Provider, error)
 }
 
 type gitrepositoryRepository struct {
@@ -46,20 +46,20 @@ func NewGitRepositoryRepository(db *sql.DB) GitRepositoryRepository {
 	}
 }
 
-func (r *gitrepositoryRepository) RegisterRepository(ctx context.Context, args RegisterRepositoryArgs) (*domain.Repository, error) {
+func (r *gitrepositoryRepository) RegisterRepository(ctx context.Context, args RegisterRepositoryArgs) (domain.Repository, error) {
 	const errMsg = "failed to RegisterRepository: %w"
 
 	repo, err := models.Repositories(models.RepositoryWhere.URL.EQ(args.URL)).One(ctx, r.db)
 
 	if err != nil && err != sql.ErrNoRows {
-		return nil, fmt.Errorf(errMsg, err)
+		return domain.Repository{}, fmt.Errorf(errMsg, err)
 	}
 	if repo != nil {
-		return nil, fmt.Errorf(errMsg, errors.New("repository already exists"))
+		return domain.Repository{}, fmt.Errorf(errMsg, errors.New("repository already exists"))
 	}
 	id, err := uuid.NewRandom()
 	if err != nil {
-		return nil, fmt.Errorf(errMsg, err)
+		return domain.Repository{}, fmt.Errorf(errMsg, err)
 	}
 	repo = &models.Repository{
 		ID:         id.String(),
@@ -69,19 +69,19 @@ func (r *gitrepositoryRepository) RegisterRepository(ctx context.Context, args R
 		ProviderID: args.ProviderID,
 	}
 	if err := repo.Insert(ctx, r.db, boil.Infer()); err != nil {
-		return nil, fmt.Errorf(errMsg, err)
+		return domain.Repository{}, fmt.Errorf(errMsg, err)
 	}
 
 	prov, err := models.Providers(models.ProviderWhere.ID.EQ(args.ProviderID)).One(ctx, r.db)
 	if err != nil {
-		return nil, fmt.Errorf(errMsg, err)
+		return domain.Repository{}, fmt.Errorf(errMsg, err)
 	}
 
 	log.WithField("repositoryID", repo.ID).
 		WithField("providerID", prov.ID).
 		Info("registered repository")
 
-	return &domain.Repository{
+	return domain.Repository{
 		ID:        repo.ID,
 		RemoteURL: repo.URL,
 		Provider: domain.Provider{
@@ -92,25 +92,25 @@ func (r *gitrepositoryRepository) RegisterRepository(ctx context.Context, args R
 
 }
 
-func (r *gitrepositoryRepository) GetRepositoryByID(ctx context.Context, id string) (*domain.Repository, error) {
+func (r *gitrepositoryRepository) GetRepositoryByID(ctx context.Context, id string) (domain.Repository, error) {
 	const errMsg = "failed to GetRepositoryByID: %w"
 
 	repo, err := models.Repositories(models.RepositoryWhere.ID.EQ(id)).One(ctx, r.db)
 	if err != nil {
 		if err == sql.ErrNoRows {
-			return nil, ErrNotFound
+			return domain.Repository{}, ErrNotFound
 		}
-		return nil, fmt.Errorf(errMsg, err)
+		return domain.Repository{}, fmt.Errorf(errMsg, err)
 	}
 
 	prov, err := models.Providers(models.ProviderWhere.ID.EQ(repo.ProviderID)).One(ctx, r.db)
 	if err != nil {
 		if err == sql.ErrNoRows {
-			return nil, ErrNotFound
+			return domain.Repository{}, ErrNotFound
 		}
-		return nil, fmt.Errorf(errMsg, err)
+		return domain.Repository{}, fmt.Errorf(errMsg, err)
 	}
-	return &domain.Repository{
+	return domain.Repository{
 		ID:        repo.ID,
 		RemoteURL: repo.URL,
 		Provider: domain.Provider{
@@ -120,28 +120,28 @@ func (r *gitrepositoryRepository) GetRepositoryByID(ctx context.Context, id stri
 	}, nil
 }
 
-func (r *gitrepositoryRepository) GetRepository(ctx context.Context, rawurl string) (*domain.Repository, error) {
+func (r *gitrepositoryRepository) GetRepository(ctx context.Context, rawurl string) (domain.Repository, error) {
 	const errMsg = "failed to GetRepository: %w"
 	url, err := url.Parse(rawurl)
 	if err != nil {
-		return nil, fmt.Errorf(errMsg, err)
+		return domain.Repository{}, fmt.Errorf(errMsg, err)
 	}
 	prov, err := models.Providers(models.ProviderWhere.Domain.EQ(url.Host)).One(ctx, r.db)
 	if err != nil {
 		if err == sql.ErrNoRows {
-			return nil, ErrNotFound
+			return domain.Repository{}, ErrNotFound
 		}
-		return nil, fmt.Errorf(errMsg, err)
+		return domain.Repository{}, fmt.Errorf(errMsg, err)
 	}
 	repo, err := models.Repositories(models.RepositoryWhere.URL.EQ(rawurl)).One(ctx, r.db)
 	if err != nil {
 		if err == sql.ErrNoRows {
-			return nil, ErrNotFound
+			return domain.Repository{}, ErrNotFound
 		}
-		return nil, fmt.Errorf(errMsg, err)
+		return domain.Repository{}, fmt.Errorf(errMsg, err)
 	}
 
-	return &domain.Repository{
+	return domain.Repository{
 		ID:        repo.ID,
 		RemoteURL: repo.URL,
 		Provider: domain.Provider{
@@ -151,19 +151,19 @@ func (r *gitrepositoryRepository) GetRepository(ctx context.Context, rawurl stri
 	}, nil
 }
 
-func (r *gitrepositoryRepository) RegisterProvider(ctx context.Context, args RegisterProviderArgs) (*domain.Provider, error) {
+func (r *gitrepositoryRepository) RegisterProvider(ctx context.Context, args RegisterProviderArgs) (domain.Provider, error) {
 	const errMsg = "failed to RegisterProvider: %w"
 
 	prov, err := models.Providers(models.ProviderWhere.Domain.EQ(args.Domain)).One(ctx, r.db)
 	if err != nil && err != sql.ErrNoRows {
-		return nil, fmt.Errorf(errMsg, err)
+		return domain.Provider{}, fmt.Errorf(errMsg, err)
 	}
 	if prov != nil {
-		return nil, fmt.Errorf(errMsg, errors.New("provider already exists"))
+		return domain.Provider{}, fmt.Errorf(errMsg, errors.New("provider already exists"))
 	}
 	id, err := uuid.NewRandom()
 	if err != nil {
-		return nil, fmt.Errorf(errMsg, err)
+		return domain.Provider{}, fmt.Errorf(errMsg, err)
 	}
 	prov = &models.Provider{
 		ID:     id.String(),
@@ -171,48 +171,48 @@ func (r *gitrepositoryRepository) RegisterProvider(ctx context.Context, args Reg
 		Secret: args.Secret,
 	}
 	if err := prov.Insert(ctx, r.db, boil.Infer()); err != nil {
-		return nil, fmt.Errorf(errMsg, err)
+		return domain.Provider{}, fmt.Errorf(errMsg, err)
 	}
 
 	log.WithField("providerID", prov.ID).
 		WithField("domain", prov.Domain).
 		Info("registered provider")
 
-	return &domain.Provider{
+	return domain.Provider{
 		ID:     prov.ID,
 		Secret: prov.Secret,
 	}, nil
 }
 
-func (r *gitrepositoryRepository) GetProviderByID(ctx context.Context, id string) (*domain.Provider, error) {
+func (r *gitrepositoryRepository) GetProviderByID(ctx context.Context, id string) (domain.Provider, error) {
 	const errMsg = "failed to GetProviderByID: %w"
 
 	prov, err := models.Providers(models.ProviderWhere.ID.EQ(id)).One(ctx, r.db)
 	if err != nil {
 		if err == sql.ErrNoRows {
-			return nil, ErrNotFound
+			return domain.Provider{}, ErrNotFound
 		}
-		return nil, fmt.Errorf(errMsg, err)
+		return domain.Provider{}, fmt.Errorf(errMsg, err)
 	}
 
-	return &domain.Provider{
+	return domain.Provider{
 		ID:     prov.ID,
 		Secret: prov.Secret,
 	}, nil
 }
 
-func (r *gitrepositoryRepository) GetProviderByHost(ctx context.Context, host string) (*domain.Provider, error) {
+func (r *gitrepositoryRepository) GetProviderByHost(ctx context.Context, host string) (domain.Provider, error) {
 	const errMsg = "failed to GetProviderByHost: %w"
 
 	prov, err := models.Providers(models.ProviderWhere.Domain.EQ(host)).One(ctx, r.db)
 	if err != nil {
 		if err == sql.ErrNoRows {
-			return nil, ErrNotFound
+			return domain.Provider{}, ErrNotFound
 		}
-		return nil, fmt.Errorf(errMsg, err)
+		return domain.Provider{}, fmt.Errorf(errMsg, err)
 	}
 
-	return &domain.Provider{
+	return domain.Provider{
 		ID:     prov.ID,
 		Secret: prov.Secret,
 	}, nil
