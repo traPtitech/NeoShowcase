@@ -18,7 +18,7 @@ func TestGitPushWebhookService_VerifySignature(t *testing.T) {
 	t.Run("VarifySignature(Success)", func(t *testing.T) {
 		t.Parallel()
 		mockCtrl := gomock.NewController(t)
-		repo := mock_repository.NewMockGitrepositoryRepository(mockCtrl)
+		repo := mock_repository.NewMockGitRepositoryRepository(mockCtrl)
 		s := NewGitPushWebhookService(repo)
 		repo.EXPECT().
 			GetProviderByHost(gomock.Any(), "github.com").
@@ -41,7 +41,7 @@ func TestGitPushWebhookService_VerifySignature(t *testing.T) {
 	t.Run("VarifySignature(Invalid)", func(t *testing.T) {
 		t.Parallel()
 		mockCtrl := gomock.NewController(t)
-		repo := mock_repository.NewMockGitrepositoryRepository(mockCtrl)
+		repo := mock_repository.NewMockGitRepositoryRepository(mockCtrl)
 		s := NewGitPushWebhookService(repo)
 		repo.EXPECT().
 			GetProviderByHost(gomock.Any(), "github.com").
@@ -64,7 +64,7 @@ func TestGitPushWebhookService_VerifySignature(t *testing.T) {
 	t.Run("VarifySignature(Provider Not found)", func(t *testing.T) {
 		t.Parallel()
 		mockCtrl := gomock.NewController(t)
-		repo := mock_repository.NewMockGitrepositoryRepository(mockCtrl)
+		repo := mock_repository.NewMockGitRepositoryRepository(mockCtrl)
 		s := NewGitPushWebhookService(repo)
 		repo.EXPECT().
 			GetProviderByHost(gomock.Any(), "github.com").
@@ -85,7 +85,7 @@ func TestGitPushWebhookService_VerifySignature(t *testing.T) {
 		t.Parallel()
 
 		mockCtrl := gomock.NewController(t)
-		repo := mock_repository.NewMockGitrepositoryRepository(mockCtrl)
+		repo := mock_repository.NewMockGitRepositoryRepository(mockCtrl)
 		s := NewGitPushWebhookService(repo)
 		repo.EXPECT().
 			GetProviderByHost(gomock.Any(), "github.com").
@@ -119,7 +119,7 @@ func TestGitPushWebhookService_VerifySignature(t *testing.T) {
 		t.Parallel()
 
 		mockCtrl := gomock.NewController(t)
-		repo := mock_repository.NewMockGitrepositoryRepository(mockCtrl)
+		repo := mock_repository.NewMockGitRepositoryRepository(mockCtrl)
 		s := NewGitPushWebhookService(repo)
 		repo.EXPECT().
 			GetProviderByHost(gomock.Any(), "github.com").
@@ -146,7 +146,7 @@ func TestGitPushWebhookService_VerifySignature(t *testing.T) {
 		t.Parallel()
 
 		mockCtrl := gomock.NewController(t)
-		repo := mock_repository.NewMockGitrepositoryRepository(mockCtrl)
+		repo := mock_repository.NewMockGitRepositoryRepository(mockCtrl)
 		s := NewGitPushWebhookService(repo)
 		repo.EXPECT().
 			GetProviderByHost(gomock.Any(), "github.com").

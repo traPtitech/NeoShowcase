@@ -50,7 +50,7 @@ func TestWebhookReceiverHandler_HandleRequest(t *testing.T) {
 				"branch":         "heads/master",
 			}).
 			Times(1)
-		repo := mock_repository.NewMockGitrepositoryRepository(mockCtrl)
+		repo := mock_repository.NewMockGitRepositoryRepository(mockCtrl)
 		repo.EXPECT().
 			GetProviderByHost(gomock.Any(), "git.trap.jp").
 			Return(&domain.Provider{
@@ -421,7 +421,7 @@ func TestWebhookReceiverHandler_HandleRequest(t *testing.T) {
 				"branch":         "heads/main",
 			}).
 			Times(1)
-		repo := mock_repository.NewMockGitrepositoryRepository(mockCtrl)
+		repo := mock_repository.NewMockGitRepositoryRepository(mockCtrl)
 		repo.EXPECT().
 			GetProviderByHost(gomock.Any(), "github.com").
 			Return(&domain.Provider{
