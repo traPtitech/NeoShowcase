@@ -22,7 +22,7 @@ func TestGitPushWebhookService_VerifySignature(t *testing.T) {
 		s := NewGitPushWebhookService(repo)
 		repo.EXPECT().
 			GetProviderByHost(gomock.Any(), "github.com").
-			Return(&domain.Provider{
+			Return(domain.Provider{
 				ID:     "6404c950-9bb8-4e5d-8151-5d053a724011",
 				Secret: "ThisIsSecret",
 			}, nil).
@@ -45,7 +45,7 @@ func TestGitPushWebhookService_VerifySignature(t *testing.T) {
 		s := NewGitPushWebhookService(repo)
 		repo.EXPECT().
 			GetProviderByHost(gomock.Any(), "github.com").
-			Return(&domain.Provider{
+			Return(domain.Provider{
 				ID:     "6404c950-9bb8-4e5d-8151-5d053a724011",
 				Secret: "ThisIsSecret",
 			}, nil).
@@ -68,7 +68,7 @@ func TestGitPushWebhookService_VerifySignature(t *testing.T) {
 		s := NewGitPushWebhookService(repo)
 		repo.EXPECT().
 			GetProviderByHost(gomock.Any(), "github.com").
-			Return(nil, repository.ErrNotFound).
+			Return(domain.Provider{}, repository.ErrNotFound).
 			AnyTimes()
 
 		valid, err := s.VerifySignature(
@@ -89,14 +89,14 @@ func TestGitPushWebhookService_VerifySignature(t *testing.T) {
 		s := NewGitPushWebhookService(repo)
 		repo.EXPECT().
 			GetProviderByHost(gomock.Any(), "github.com").
-			Return(&domain.Provider{
+			Return(domain.Provider{
 				ID:     "6404c950-9bb8-4e5d-8151-5d053a724011",
 				Secret: "ThisIsSecret",
 			}, nil).
 			AnyTimes()
 		repo.EXPECT().
 			GetRepository(context.Background(), "https://github.com/hijiki51/test_repo.git").
-			Return(&domain.Repository{
+			Return(domain.Repository{
 				ID:        "9cf4d26d-0f35-474c-a4f2-18c3c7a9ffbf",
 				RemoteURL: "https://github.com/hijiki51/test_repo.git",
 				Provider: domain.Provider{
@@ -123,14 +123,14 @@ func TestGitPushWebhookService_VerifySignature(t *testing.T) {
 		s := NewGitPushWebhookService(repo)
 		repo.EXPECT().
 			GetProviderByHost(gomock.Any(), "github.com").
-			Return(&domain.Provider{
+			Return(domain.Provider{
 				ID:     "6404c950-9bb8-4e5d-8151-5d053a724011",
 				Secret: "ThisIsSecret",
 			}, nil).
 			AnyTimes()
 		repo.EXPECT().
 			GetRepository(context.Background(), "https://github.com/hijiki51/test_repo.git").
-			Return(nil, repository.ErrNotFound).
+			Return(domain.Repository{}, repository.ErrNotFound).
 			AnyTimes()
 		exist, err := s.CheckRepositoryExists(
 			context.Background(),
@@ -150,7 +150,7 @@ func TestGitPushWebhookService_VerifySignature(t *testing.T) {
 		s := NewGitPushWebhookService(repo)
 		repo.EXPECT().
 			GetProviderByHost(gomock.Any(), "github.com").
-			Return(nil, repository.ErrNotFound).
+			Return(domain.Provider{}, repository.ErrNotFound).
 			AnyTimes()
 		exist, err := s.CheckRepositoryExists(
 			context.Background(),

@@ -53,13 +53,13 @@ func TestWebhookReceiverHandler_HandleRequest(t *testing.T) {
 		repo := mock_repository.NewMockGitRepositoryRepository(mockCtrl)
 		repo.EXPECT().
 			GetProviderByHost(gomock.Any(), "git.trap.jp").
-			Return(&domain.Provider{
+			Return(domain.Provider{
 				ID:     "11ca352c-2556-4b8f-bcbf-1f873d3bb540",
 				Secret: "ThisIsSecret",
 			}, nil).
 			AnyTimes()
 		repo.EXPECT().
-			GetRepository(gomock.Any(), rawurl).Return(&domain.Repository{
+			GetRepository(gomock.Any(), rawurl).Return(domain.Repository{
 			ID:        "9cf4d26d-0f35-474c-a4f2-18c3c7a9ffbf",
 			RemoteURL: rawurl,
 			Provider: domain.Provider{
@@ -301,7 +301,7 @@ func TestWebhookReceiverHandler_HandleRequest(t *testing.T) {
 			"X-Gitea-Signature": "66abe18cdc2dc36f39ebf715c8792cec1c466a26d333d6c7c28fa29966debb02",
 		}
 		repo.EXPECT().
-			GetRepository(gomock.Any(), rawurl).Return(nil, repository.ErrNotFound).AnyTimes()
+			GetRepository(gomock.Any(), rawurl).Return(domain.Repository{}, repository.ErrNotFound).AnyTimes()
 		e.POST("/_webhook").
 			WithHeaders(headers).
 			WithBytes([]byte(`{
@@ -424,13 +424,13 @@ func TestWebhookReceiverHandler_HandleRequest(t *testing.T) {
 		repo := mock_repository.NewMockGitRepositoryRepository(mockCtrl)
 		repo.EXPECT().
 			GetProviderByHost(gomock.Any(), "github.com").
-			Return(&domain.Provider{
+			Return(domain.Provider{
 				ID:     "6404c950-9bb8-4e5d-8151-5d053a724011",
 				Secret: "ThisIsSecret",
 			}, nil).
 			AnyTimes()
 		repo.EXPECT().
-			GetRepository(gomock.Any(), rawurl).Return(&domain.Repository{
+			GetRepository(gomock.Any(), rawurl).Return(domain.Repository{
 			ID:        "9cf4d26d-0f35-474c-a4f2-18c3c7a9ffbf",
 			RemoteURL: rawurl,
 			Provider: domain.Provider{
@@ -469,7 +469,7 @@ func TestWebhookReceiverHandler_HandleRequest(t *testing.T) {
 
 		repo.EXPECT().
 			GetRepository(gomock.Any(), rawurl).
-			Return(nil, repository.ErrNotFound).AnyTimes()
+			Return(domain.Repository{}, repository.ErrNotFound).AnyTimes()
 
 		headers = map[string]string{
 			"user-agent":                             "GitHub-Hookshot/e32936c",
