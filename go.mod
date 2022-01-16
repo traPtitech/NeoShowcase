@@ -4,6 +4,7 @@ go 1.19
 
 require (
 	github.com/aws/aws-sdk-go v1.44.83
+	github.com/coreos/go-oidc/v3 v3.2.0
 	github.com/dgrijalva/jwt-go v3.2.0+incompatible
 	github.com/dustinkirkland/golang-petname v0.0.0-20191129215211-8e5a1ed0cff0
 	github.com/friendsofgo/errors v0.9.2
@@ -30,6 +31,7 @@ require (
 	github.com/volatiletech/sqlboiler/v4 v4.12.0
 	github.com/volatiletech/strmangle v0.0.4
 	go.mongodb.org/mongo-driver v1.10.1
+	golang.org/x/oauth2 v0.0.0-20220411215720-9780585627b5
 	golang.org/x/sync v0.0.0-20220819030929-7fc1605a5dde
 	google.golang.org/grpc v1.48.0
 	google.golang.org/protobuf v1.28.1
@@ -150,7 +152,6 @@ require (
 	golang.org/x/crypto v0.0.0-20220622213112-05595931fe9d // indirect
 	golang.org/x/mod v0.4.2 // indirect
 	golang.org/x/net v0.0.0-20220520000938-2e3eb7b945c2 // indirect
-	golang.org/x/oauth2 v0.0.0-20220411215720-9780585627b5 // indirect
 	golang.org/x/sys v0.0.0-20220715151400-c0bba94af5f8 // indirect
 	golang.org/x/term v0.0.0-20220526004731-065cf7ba2467 // indirect
 	golang.org/x/text v0.3.7 // indirect
@@ -161,6 +162,7 @@ require (
 	google.golang.org/genproto v0.0.0-20220519153652-3a47de7e79bd // indirect
 	gopkg.in/inf.v0 v0.9.1 // indirect
 	gopkg.in/ini.v1 v1.66.4 // indirect
+	gopkg.in/square/go-jose.v2 v2.5.1 // indirect
 	gopkg.in/warnings.v0 v0.1.2 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 	k8s.io/klog/v2 v2.60.1 // indirect
