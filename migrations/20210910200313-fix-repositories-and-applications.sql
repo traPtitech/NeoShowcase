@@ -1,6 +1,6 @@
 -- +migrate Up
 ALTER TABLE `repositories` 
-  CHANGE COLUMN `remote` `url` TEXT(255) NOT NULL COMMENT 'Git remote URL',
+  CHANGE COLUMN `remote` `url` varchar(256) NOT NULL COMMENT 'Git remote URL',
   ADD COLUMN `owner` varchar(256) NOT NULL COMMENT 'リポジトリのオーナー' AFTER `id`,
   ADD COLUMN `name` varchar(256) NOT NULL  COMMENT 'リポジトリ名' AFTER `owner`,
   ADD COLUMN `provider_id` char(36) NOT NULL COMMENT 'プロバイダID' AFTER `url`,
