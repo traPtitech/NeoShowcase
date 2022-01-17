@@ -9,7 +9,7 @@ require (
 	github.com/friendsofgo/errors v0.9.2
 	github.com/fsouza/go-dockerclient v1.7.2
 	github.com/gavv/httpexpect/v2 v2.3.1
-	github.com/go-git/go-git/v5 v5.3.0
+	github.com/go-git/go-git/v5 v5.4.2
 	github.com/go-sql-driver/mysql v1.6.0
 	github.com/golang/mock v1.5.0
 	github.com/golang/protobuf v1.5.2 // indirect
@@ -44,6 +44,8 @@ require (
 	github.com/Azure/go-ansiterm v0.0.0-20170929234023-d6e3b3328b78 // indirect
 	github.com/Microsoft/go-winio v0.4.16 // indirect
 	github.com/Microsoft/hcsshim v0.8.14 // indirect
+	github.com/ProtonMail/go-crypto v0.0.0-20210428141323-04723f9f07d7 // indirect
+	github.com/acomagu/bufpipe v1.0.3 // indirect
 	github.com/ajg/form v1.5.1 // indirect
 	github.com/andybalholm/brotli v1.0.2 // indirect
 	github.com/containerd/cgroups v0.0.0-20200710171044-318312a37340 // indirect
@@ -62,7 +64,7 @@ require (
 	github.com/fatih/structs v1.0.0 // indirect
 	github.com/fsnotify/fsnotify v1.4.9 // indirect
 	github.com/go-git/gcfg v1.5.0 // indirect
-	github.com/go-git/go-billy/v5 v5.1.0 // indirect
+	github.com/go-git/go-billy/v5 v5.3.1 // indirect
 	github.com/go-logr/logr v0.4.0 // indirect
 	github.com/go-stack/stack v1.8.0 // indirect
 	github.com/gofrs/flock v0.8.0 // indirect
