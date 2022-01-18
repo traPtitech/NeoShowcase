@@ -10,7 +10,10 @@ var TableNames = struct {
 	Branches         string
 	BuildLogs        string
 	Environments     string
+	Owners           string
+	Providers        string
 	Repositories     string
+	Users            string
 	Websites         string
 }{
 	Applications:     "applications",
@@ -19,6 +22,9 @@ var TableNames = struct {
 	Branches:         "branches",
 	BuildLogs:        "build_logs",
 	Environments:     "environments",
+	Owners:           "owners",
+	Providers:        "providers",
 	Repositories:     "repositories",
+	Users:            "users",
 	Websites:         "websites",
 }

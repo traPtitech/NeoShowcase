@@ -6,6 +6,7 @@ import (
 	"context"
 	"crypto/sha256"
 	"fmt"
+	"net/url"
 
 	"github.com/traPtitech/neoshowcase/pkg/domain"
 	"github.com/traPtitech/neoshowcase/pkg/interface/repository"
@@ -13,26 +14,50 @@ import (
 
 type GitPushWebhookService interface {
 	VerifySignature(ctx context.Context, repoURL string, signature string, body []byte) (valid bool, err error)
+	CheckRepositoryExists(ctx context.Context, repoURL, owner, name string) (bool, error)
 }
 
 type gitPushWebhookService struct {
-	repository.WebhookSecretRepository
+	repo repository.GitRepositoryRepository
 }
 
-func NewGitPushWebhookService(repo repository.WebhookSecretRepository) GitPushWebhookService {
-	return &gitPushWebhookService{WebhookSecretRepository: repo}
+var ErrProviderNotFound = fmt.Errorf("provider not found")
+
+func NewGitPushWebhookService(repo repository.GitRepositoryRepository) GitPushWebhookService {
+	return &gitPushWebhookService{
+		repo: repo,
+	}
 }
 
 func (s *gitPushWebhookService) VerifySignature(ctx context.Context, repoURL string, signature string, body []byte) (bool, error) {
-	secrets, err := s.GetWebhookSecretKeys(ctx, repoURL)
+	u, err := url.Parse(repoURL)
+
 	if err != nil {
-		return false, fmt.Errorf("failed to GetWebhookSecretKeys: %w", err)
+		return false, err
 	}
 
-	// シグネチャの検証(secretsのうちひとつでもtrueならOK)
-	valid := false
-	for _, secret := range secrets {
-		valid = valid || domain.VerifySignature(sha256.New, body, []byte(secret), signature)
+	prov, err := s.repo.GetProviderByHost(ctx, u.Host)
+	if err != nil {
+		return false, ErrProviderNotFound
 	}
+
+	// シグネチャの検証
+	valid := domain.VerifySignature(sha256.New, body, []byte(prov.Secret), signature)
+
 	return valid, nil
+}
+
+func (s *gitPushWebhookService) CheckRepositoryExists(ctx context.Context, repoURL, owner, name string) (bool, error) {
+
+	_, err := s.repo.GetRepository(ctx, repoURL)
+
+	if err != nil {
+		if err == repository.ErrNotFound {
+			return false, nil
+		}
+		return false, fmt.Errorf("failed to GetRepository: %w", err)
+	}
+
+	return true, nil
+
 }

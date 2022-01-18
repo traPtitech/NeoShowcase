@@ -222,7 +222,7 @@ jobs:
       TBLS_VERSION: v1.49.6
     services:
       mysql:
-        image: mariadb:10.0.19
+        image: mariadb:10.6.4
         options: --health-cmd="mysqladmin ping" --health-interval=5s --health-timeout=2s --health-retries=3
         env:
           MYSQL_ROOT_PASSWORD: password

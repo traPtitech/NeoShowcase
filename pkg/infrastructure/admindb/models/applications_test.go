@@ -572,6 +572,90 @@ func testApplicationToManyBranches(t *testing.T) {
 	}
 }
 
+func testApplicationToManyUsers(t *testing.T) {
+	var err error
+	ctx := context.Background()
+	tx := MustTx(boil.BeginTx(ctx, nil))
+	defer func() { _ = tx.Rollback() }()
+
+	var a Application
+	var b, c User
+
+	seed := randomize.NewSeed()
+	if err = randomize.Struct(seed, &a, applicationDBTypes, true, applicationColumnsWithDefault...); err != nil {
+		t.Errorf("Unable to randomize Application struct: %s", err)
+	}
+
+	if err := a.Insert(ctx, tx, boil.Infer()); err != nil {
+		t.Fatal(err)
+	}
+
+	if err = randomize.Struct(seed, &b, userDBTypes, false, userColumnsWithDefault...); err != nil {
+		t.Fatal(err)
+	}
+	if err = randomize.Struct(seed, &c, userDBTypes, false, userColumnsWithDefault...); err != nil {
+		t.Fatal(err)
+	}
+
+	if err = b.Insert(ctx, tx, boil.Infer()); err != nil {
+		t.Fatal(err)
+	}
+	if err = c.Insert(ctx, tx, boil.Infer()); err != nil {
+		t.Fatal(err)
+	}
+
+	_, err = tx.Exec("insert into `owners` (`app_id`, `user_id`) values (?, ?)", a.ID, b.ID)
+	if err != nil {
+		t.Fatal(err)
+	}
+	_, err = tx.Exec("insert into `owners` (`app_id`, `user_id`) values (?, ?)", a.ID, c.ID)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	check, err := a.Users().All(ctx, tx)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	bFound, cFound := false, false
+	for _, v := range check {
+		if v.ID == b.ID {
+			bFound = true
+		}
+		if v.ID == c.ID {
+			cFound = true
+		}
+	}
+
+	if !bFound {
+		t.Error("expected to find b")
+	}
+	if !cFound {
+		t.Error("expected to find c")
+	}
+
+	slice := ApplicationSlice{&a}
+	if err = a.L.LoadUsers(ctx, tx, false, (*[]*Application)(&slice), nil); err != nil {
+		t.Fatal(err)
+	}
+	if got := len(a.R.Users); got != 2 {
+		t.Error("number of eager loaded records wrong, got:", got)
+	}
+
+	a.R.Users = nil
+	if err = a.L.LoadUsers(ctx, tx, true, &a, nil); err != nil {
+		t.Fatal(err)
+	}
+	if got := len(a.R.Users); got != 2 {
+		t.Error("number of eager loaded records wrong, got:", got)
+	}
+
+	if t.Failed() {
+		t.Logf("%#v", check)
+	}
+}
+
 func testApplicationToManyAddOpBranches(t *testing.T) {
 	var err error
 
@@ -647,6 +731,234 @@ func testApplicationToManyAddOpBranches(t *testing.T) {
 		}
 	}
 }
+func testApplicationToManyAddOpUsers(t *testing.T) {
+	var err error
+
+	ctx := context.Background()
+	tx := MustTx(boil.BeginTx(ctx, nil))
+	defer func() { _ = tx.Rollback() }()
+
+	var a Application
+	var b, c, d, e User
+
+	seed := randomize.NewSeed()
+	if err = randomize.Struct(seed, &a, applicationDBTypes, false, strmangle.SetComplement(applicationPrimaryKeyColumns, applicationColumnsWithoutDefault)...); err != nil {
+		t.Fatal(err)
+	}
+	foreigners := []*User{&b, &c, &d, &e}
+	for _, x := range foreigners {
+		if err = randomize.Struct(seed, x, userDBTypes, false, strmangle.SetComplement(userPrimaryKeyColumns, userColumnsWithoutDefault)...); err != nil {
+			t.Fatal(err)
+		}
+	}
+
+	if err := a.Insert(ctx, tx, boil.Infer()); err != nil {
+		t.Fatal(err)
+	}
+	if err = b.Insert(ctx, tx, boil.Infer()); err != nil {
+		t.Fatal(err)
+	}
+	if err = c.Insert(ctx, tx, boil.Infer()); err != nil {
+		t.Fatal(err)
+	}
+
+	foreignersSplitByInsertion := [][]*User{
+		{&b, &c},
+		{&d, &e},
+	}
+
+	for i, x := range foreignersSplitByInsertion {
+		err = a.AddUsers(ctx, tx, i != 0, x...)
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		first := x[0]
+		second := x[1]
+
+		if first.R.AppApplications[0] != &a {
+			t.Error("relationship was not added properly to the slice")
+		}
+		if second.R.AppApplications[0] != &a {
+			t.Error("relationship was not added properly to the slice")
+		}
+
+		if a.R.Users[i*2] != first {
+			t.Error("relationship struct slice not set to correct value")
+		}
+		if a.R.Users[i*2+1] != second {
+			t.Error("relationship struct slice not set to correct value")
+		}
+
+		count, err := a.Users().Count(ctx, tx)
+		if err != nil {
+			t.Fatal(err)
+		}
+		if want := int64((i + 1) * 2); count != want {
+			t.Error("want", want, "got", count)
+		}
+	}
+}
+
+func testApplicationToManySetOpUsers(t *testing.T) {
+	var err error
+
+	ctx := context.Background()
+	tx := MustTx(boil.BeginTx(ctx, nil))
+	defer func() { _ = tx.Rollback() }()
+
+	var a Application
+	var b, c, d, e User
+
+	seed := randomize.NewSeed()
+	if err = randomize.Struct(seed, &a, applicationDBTypes, false, strmangle.SetComplement(applicationPrimaryKeyColumns, applicationColumnsWithoutDefault)...); err != nil {
+		t.Fatal(err)
+	}
+	foreigners := []*User{&b, &c, &d, &e}
+	for _, x := range foreigners {
+		if err = randomize.Struct(seed, x, userDBTypes, false, strmangle.SetComplement(userPrimaryKeyColumns, userColumnsWithoutDefault)...); err != nil {
+			t.Fatal(err)
+		}
+	}
+
+	if err = a.Insert(ctx, tx, boil.Infer()); err != nil {
+		t.Fatal(err)
+	}
+	if err = b.Insert(ctx, tx, boil.Infer()); err != nil {
+		t.Fatal(err)
+	}
+	if err = c.Insert(ctx, tx, boil.Infer()); err != nil {
+		t.Fatal(err)
+	}
+
+	err = a.SetUsers(ctx, tx, false, &b, &c)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	count, err := a.Users().Count(ctx, tx)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if count != 2 {
+		t.Error("count was wrong:", count)
+	}
+
+	err = a.SetUsers(ctx, tx, true, &d, &e)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	count, err = a.Users().Count(ctx, tx)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if count != 2 {
+		t.Error("count was wrong:", count)
+	}
+
+	// The following checks cannot be implemented since we have no handle
+	// to these when we call Set(). Leaving them here as wishful thinking
+	// and to let people know there's dragons.
+	//
+	// if len(b.R.AppApplications) != 0 {
+	// 	t.Error("relationship was not removed properly from the slice")
+	// }
+	// if len(c.R.AppApplications) != 0 {
+	// 	t.Error("relationship was not removed properly from the slice")
+	// }
+	if d.R.AppApplications[0] != &a {
+		t.Error("relationship was not added properly to the slice")
+	}
+	if e.R.AppApplications[0] != &a {
+		t.Error("relationship was not added properly to the slice")
+	}
+
+	if a.R.Users[0] != &d {
+		t.Error("relationship struct slice not set to correct value")
+	}
+	if a.R.Users[1] != &e {
+		t.Error("relationship struct slice not set to correct value")
+	}
+}
+
+func testApplicationToManyRemoveOpUsers(t *testing.T) {
+	var err error
+
+	ctx := context.Background()
+	tx := MustTx(boil.BeginTx(ctx, nil))
+	defer func() { _ = tx.Rollback() }()
+
+	var a Application
+	var b, c, d, e User
+
+	seed := randomize.NewSeed()
+	if err = randomize.Struct(seed, &a, applicationDBTypes, false, strmangle.SetComplement(applicationPrimaryKeyColumns, applicationColumnsWithoutDefault)...); err != nil {
+		t.Fatal(err)
+	}
+	foreigners := []*User{&b, &c, &d, &e}
+	for _, x := range foreigners {
+		if err = randomize.Struct(seed, x, userDBTypes, false, strmangle.SetComplement(userPrimaryKeyColumns, userColumnsWithoutDefault)...); err != nil {
+			t.Fatal(err)
+		}
+	}
+
+	if err := a.Insert(ctx, tx, boil.Infer()); err != nil {
+		t.Fatal(err)
+	}
+
+	err = a.AddUsers(ctx, tx, true, foreigners...)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	count, err := a.Users().Count(ctx, tx)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if count != 4 {
+		t.Error("count was wrong:", count)
+	}
+
+	err = a.RemoveUsers(ctx, tx, foreigners[:2]...)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	count, err = a.Users().Count(ctx, tx)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if count != 2 {
+		t.Error("count was wrong:", count)
+	}
+
+	if len(b.R.AppApplications) != 0 {
+		t.Error("relationship was not removed properly from the slice")
+	}
+	if len(c.R.AppApplications) != 0 {
+		t.Error("relationship was not removed properly from the slice")
+	}
+	if d.R.AppApplications[0] != &a {
+		t.Error("relationship was not added properly to the foreign struct")
+	}
+	if e.R.AppApplications[0] != &a {
+		t.Error("relationship was not added properly to the foreign struct")
+	}
+
+	if len(a.R.Users) != 2 {
+		t.Error("should have preserved two relationships")
+	}
+
+	// Removal doesn't do a stable deletion for performance so we have to flip the order
+	if a.R.Users[1] != &d {
+		t.Error("relationship to d should have been preserved")
+	}
+	if a.R.Users[0] != &e {
+		t.Error("relationship to e should have been preserved")
+	}
+}
+
 func testApplicationToOneRepositoryUsingRepository(t *testing.T) {
 	ctx := context.Background()
 	tx := MustTx(boil.BeginTx(ctx, nil))
@@ -830,7 +1142,7 @@ func testApplicationsSelect(t *testing.T) {
 }
 
 var (
-	applicationDBTypes = map[string]string{`ID`: `varchar`, `Owner`: `varchar`, `Name`: `varchar`, `RepositoryID`: `varchar`, `CreatedAt`: `datetime`, `UpdatedAt`: `datetime`, `DeletedAt`: `datetime`}
+	applicationDBTypes = map[string]string{`ID`: `varchar`, `RepositoryID`: `varchar`, `CreatedAt`: `datetime`, `UpdatedAt`: `datetime`, `DeletedAt`: `datetime`}
 	_                  = bytes.MinRead
 )
 

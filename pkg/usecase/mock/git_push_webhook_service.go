@@ -34,6 +34,21 @@ func (m *MockGitPushWebhookService) EXPECT() *MockGitPushWebhookServiceMockRecor
 	return m.recorder
 }
 
+// CheckRepositoryExists mocks base method.
+func (m *MockGitPushWebhookService) CheckRepositoryExists(ctx context.Context, repoURL, owner, name string) (bool, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CheckRepositoryExists", ctx, repoURL, owner, name)
+	ret0, _ := ret[0].(bool)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// CheckRepositoryExists indicates an expected call of CheckRepositoryExists.
+func (mr *MockGitPushWebhookServiceMockRecorder) CheckRepositoryExists(ctx, repoURL, owner, name interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CheckRepositoryExists", reflect.TypeOf((*MockGitPushWebhookService)(nil).CheckRepositoryExists), ctx, repoURL, owner, name)
+}
+
 // VerifySignature mocks base method.
 func (m *MockGitPushWebhookService) VerifySignature(ctx context.Context, repoURL, signature string, body []byte) (bool, error) {
 	m.ctrl.T.Helper()

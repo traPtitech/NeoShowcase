@@ -18,7 +18,9 @@ func TestParent(t *testing.T) {
 	t.Run("Branches", testBranches)
 	t.Run("BuildLogs", testBuildLogs)
 	t.Run("Environments", testEnvironments)
+	t.Run("Providers", testProviders)
 	t.Run("Repositories", testRepositories)
+	t.Run("Users", testUsers)
 	t.Run("Websites", testWebsites)
 }
 
@@ -29,7 +31,9 @@ func TestDelete(t *testing.T) {
 	t.Run("Branches", testBranchesDelete)
 	t.Run("BuildLogs", testBuildLogsDelete)
 	t.Run("Environments", testEnvironmentsDelete)
+	t.Run("Providers", testProvidersDelete)
 	t.Run("Repositories", testRepositoriesDelete)
+	t.Run("Users", testUsersDelete)
 	t.Run("Websites", testWebsitesDelete)
 }
 
@@ -40,7 +44,9 @@ func TestQueryDeleteAll(t *testing.T) {
 	t.Run("Branches", testBranchesQueryDeleteAll)
 	t.Run("BuildLogs", testBuildLogsQueryDeleteAll)
 	t.Run("Environments", testEnvironmentsQueryDeleteAll)
+	t.Run("Providers", testProvidersQueryDeleteAll)
 	t.Run("Repositories", testRepositoriesQueryDeleteAll)
+	t.Run("Users", testUsersQueryDeleteAll)
 	t.Run("Websites", testWebsitesQueryDeleteAll)
 }
 
@@ -51,7 +57,9 @@ func TestSliceDeleteAll(t *testing.T) {
 	t.Run("Branches", testBranchesSliceDeleteAll)
 	t.Run("BuildLogs", testBuildLogsSliceDeleteAll)
 	t.Run("Environments", testEnvironmentsSliceDeleteAll)
+	t.Run("Providers", testProvidersSliceDeleteAll)
 	t.Run("Repositories", testRepositoriesSliceDeleteAll)
+	t.Run("Users", testUsersSliceDeleteAll)
 	t.Run("Websites", testWebsitesSliceDeleteAll)
 }
 
@@ -62,7 +70,9 @@ func TestExists(t *testing.T) {
 	t.Run("Branches", testBranchesExists)
 	t.Run("BuildLogs", testBuildLogsExists)
 	t.Run("Environments", testEnvironmentsExists)
+	t.Run("Providers", testProvidersExists)
 	t.Run("Repositories", testRepositoriesExists)
+	t.Run("Users", testUsersExists)
 	t.Run("Websites", testWebsitesExists)
 }
 
@@ -73,7 +83,9 @@ func TestFind(t *testing.T) {
 	t.Run("Branches", testBranchesFind)
 	t.Run("BuildLogs", testBuildLogsFind)
 	t.Run("Environments", testEnvironmentsFind)
+	t.Run("Providers", testProvidersFind)
 	t.Run("Repositories", testRepositoriesFind)
+	t.Run("Users", testUsersFind)
 	t.Run("Websites", testWebsitesFind)
 }
 
@@ -84,7 +96,9 @@ func TestBind(t *testing.T) {
 	t.Run("Branches", testBranchesBind)
 	t.Run("BuildLogs", testBuildLogsBind)
 	t.Run("Environments", testEnvironmentsBind)
+	t.Run("Providers", testProvidersBind)
 	t.Run("Repositories", testRepositoriesBind)
+	t.Run("Users", testUsersBind)
 	t.Run("Websites", testWebsitesBind)
 }
 
@@ -95,7 +109,9 @@ func TestOne(t *testing.T) {
 	t.Run("Branches", testBranchesOne)
 	t.Run("BuildLogs", testBuildLogsOne)
 	t.Run("Environments", testEnvironmentsOne)
+	t.Run("Providers", testProvidersOne)
 	t.Run("Repositories", testRepositoriesOne)
+	t.Run("Users", testUsersOne)
 	t.Run("Websites", testWebsitesOne)
 }
 
@@ -106,7 +122,9 @@ func TestAll(t *testing.T) {
 	t.Run("Branches", testBranchesAll)
 	t.Run("BuildLogs", testBuildLogsAll)
 	t.Run("Environments", testEnvironmentsAll)
+	t.Run("Providers", testProvidersAll)
 	t.Run("Repositories", testRepositoriesAll)
+	t.Run("Users", testUsersAll)
 	t.Run("Websites", testWebsitesAll)
 }
 
@@ -117,7 +135,9 @@ func TestCount(t *testing.T) {
 	t.Run("Branches", testBranchesCount)
 	t.Run("BuildLogs", testBuildLogsCount)
 	t.Run("Environments", testEnvironmentsCount)
+	t.Run("Providers", testProvidersCount)
 	t.Run("Repositories", testRepositoriesCount)
+	t.Run("Users", testUsersCount)
 	t.Run("Websites", testWebsitesCount)
 }
 
@@ -128,7 +148,9 @@ func TestHooks(t *testing.T) {
 	t.Run("Branches", testBranchesHooks)
 	t.Run("BuildLogs", testBuildLogsHooks)
 	t.Run("Environments", testEnvironmentsHooks)
+	t.Run("Providers", testProvidersHooks)
 	t.Run("Repositories", testRepositoriesHooks)
+	t.Run("Users", testUsersHooks)
 	t.Run("Websites", testWebsitesHooks)
 }
 
@@ -145,8 +167,12 @@ func TestInsert(t *testing.T) {
 	t.Run("BuildLogs", testBuildLogsInsertWhitelist)
 	t.Run("Environments", testEnvironmentsInsert)
 	t.Run("Environments", testEnvironmentsInsertWhitelist)
+	t.Run("Providers", testProvidersInsert)
+	t.Run("Providers", testProvidersInsertWhitelist)
 	t.Run("Repositories", testRepositoriesInsert)
 	t.Run("Repositories", testRepositoriesInsertWhitelist)
+	t.Run("Users", testUsersInsert)
+	t.Run("Users", testUsersInsertWhitelist)
 	t.Run("Websites", testWebsitesInsert)
 	t.Run("Websites", testWebsitesInsertWhitelist)
 }
@@ -160,6 +186,7 @@ func TestToOne(t *testing.T) {
 	t.Run("BranchToBuildLogUsingBuild", testBranchToOneBuildLogUsingBuild)
 	t.Run("BuildLogToBranchUsingBranch", testBuildLogToOneBranchUsingBranch)
 	t.Run("EnvironmentToBranchUsingBranch", testEnvironmentToOneBranchUsingBranch)
+	t.Run("RepositoryToProviderUsingProvider", testRepositoryToOneProviderUsingProvider)
 	t.Run("WebsiteToBranchUsingBranch", testWebsiteToOneBranchUsingBranch)
 }
 
@@ -174,10 +201,13 @@ func TestOneToOne(t *testing.T) {
 // or deadlocks can occur.
 func TestToMany(t *testing.T) {
 	t.Run("ApplicationToBranches", testApplicationToManyBranches)
+	t.Run("ApplicationToUsers", testApplicationToManyUsers)
 	t.Run("BranchToBuildLogs", testBranchToManyBuildLogs)
 	t.Run("BranchToEnvironments", testBranchToManyEnvironments)
 	t.Run("BuildLogToBuildBranches", testBuildLogToManyBuildBranches)
+	t.Run("ProviderToRepositories", testProviderToManyRepositories)
 	t.Run("RepositoryToApplications", testRepositoryToManyApplications)
+	t.Run("UserToAppApplications", testUserToManyAppApplications)
 }
 
 // TestToOneSet tests cannot be run in parallel
@@ -189,6 +219,7 @@ func TestToOneSet(t *testing.T) {
 	t.Run("BranchToBuildLogUsingBuildBranches", testBranchToOneSetOpBuildLogUsingBuild)
 	t.Run("BuildLogToBranchUsingBuildLogs", testBuildLogToOneSetOpBranchUsingBranch)
 	t.Run("EnvironmentToBranchUsingEnvironments", testEnvironmentToOneSetOpBranchUsingBranch)
+	t.Run("RepositoryToProviderUsingRepositories", testRepositoryToOneSetOpProviderUsingProvider)
 	t.Run("WebsiteToBranchUsingWebsite", testWebsiteToOneSetOpBranchUsingBranch)
 }
 
@@ -213,22 +244,29 @@ func TestOneToOneRemove(t *testing.T) {}
 // or deadlocks can occur.
 func TestToManyAdd(t *testing.T) {
 	t.Run("ApplicationToBranches", testApplicationToManyAddOpBranches)
+	t.Run("ApplicationToUsers", testApplicationToManyAddOpUsers)
 	t.Run("BranchToBuildLogs", testBranchToManyAddOpBuildLogs)
 	t.Run("BranchToEnvironments", testBranchToManyAddOpEnvironments)
 	t.Run("BuildLogToBuildBranches", testBuildLogToManyAddOpBuildBranches)
+	t.Run("ProviderToRepositories", testProviderToManyAddOpRepositories)
 	t.Run("RepositoryToApplications", testRepositoryToManyAddOpApplications)
+	t.Run("UserToAppApplications", testUserToManyAddOpAppApplications)
 }
 
 // TestToManySet tests cannot be run in parallel
 // or deadlocks can occur.
 func TestToManySet(t *testing.T) {
+	t.Run("ApplicationToUsers", testApplicationToManySetOpUsers)
 	t.Run("BuildLogToBuildBranches", testBuildLogToManySetOpBuildBranches)
+	t.Run("UserToAppApplications", testUserToManySetOpAppApplications)
 }
 
 // TestToManyRemove tests cannot be run in parallel
 // or deadlocks can occur.
 func TestToManyRemove(t *testing.T) {
+	t.Run("ApplicationToUsers", testApplicationToManyRemoveOpUsers)
 	t.Run("BuildLogToBuildBranches", testBuildLogToManyRemoveOpBuildBranches)
+	t.Run("UserToAppApplications", testUserToManyRemoveOpAppApplications)
 }
 
 func TestReload(t *testing.T) {
@@ -238,7 +276,9 @@ func TestReload(t *testing.T) {
 	t.Run("Branches", testBranchesReload)
 	t.Run("BuildLogs", testBuildLogsReload)
 	t.Run("Environments", testEnvironmentsReload)
+	t.Run("Providers", testProvidersReload)
 	t.Run("Repositories", testRepositoriesReload)
+	t.Run("Users", testUsersReload)
 	t.Run("Websites", testWebsitesReload)
 }
 
@@ -249,7 +289,9 @@ func TestReloadAll(t *testing.T) {
 	t.Run("Branches", testBranchesReloadAll)
 	t.Run("BuildLogs", testBuildLogsReloadAll)
 	t.Run("Environments", testEnvironmentsReloadAll)
+	t.Run("Providers", testProvidersReloadAll)
 	t.Run("Repositories", testRepositoriesReloadAll)
+	t.Run("Users", testUsersReloadAll)
 	t.Run("Websites", testWebsitesReloadAll)
 }
 
@@ -260,7 +302,9 @@ func TestSelect(t *testing.T) {
 	t.Run("Branches", testBranchesSelect)
 	t.Run("BuildLogs", testBuildLogsSelect)
 	t.Run("Environments", testEnvironmentsSelect)
+	t.Run("Providers", testProvidersSelect)
 	t.Run("Repositories", testRepositoriesSelect)
+	t.Run("Users", testUsersSelect)
 	t.Run("Websites", testWebsitesSelect)
 }
 
@@ -271,7 +315,9 @@ func TestUpdate(t *testing.T) {
 	t.Run("Branches", testBranchesUpdate)
 	t.Run("BuildLogs", testBuildLogsUpdate)
 	t.Run("Environments", testEnvironmentsUpdate)
+	t.Run("Providers", testProvidersUpdate)
 	t.Run("Repositories", testRepositoriesUpdate)
+	t.Run("Users", testUsersUpdate)
 	t.Run("Websites", testWebsitesUpdate)
 }
 
@@ -282,6 +328,8 @@ func TestSliceUpdateAll(t *testing.T) {
 	t.Run("Branches", testBranchesSliceUpdateAll)
 	t.Run("BuildLogs", testBuildLogsSliceUpdateAll)
 	t.Run("Environments", testEnvironmentsSliceUpdateAll)
+	t.Run("Providers", testProvidersSliceUpdateAll)
 	t.Run("Repositories", testRepositoriesSliceUpdateAll)
+	t.Run("Users", testUsersSliceUpdateAll)
 	t.Run("Websites", testWebsitesSliceUpdateAll)
 }

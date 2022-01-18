@@ -34,8 +34,7 @@ func NewApplicationRepository(db *sql.DB) ApplicationRepository {
 }
 
 type CreateApplicationArgs struct {
-	Owner         string
-	Name          string
+	OwnerID       string // TODO: UserID型にする
 	RepositoryURL string
 	BranchName    string
 	BuildType     builder.BuildType
@@ -45,13 +44,13 @@ func (r *applicationRepository) CreateApplication(ctx context.Context, args Crea
 	const errMsg = "failed to CreateApplication: %w"
 
 	// リポジトリ情報を設定
-	repo, err := models.Repositories(models.RepositoryWhere.Remote.EQ(args.RepositoryURL)).One(ctx, r.db)
+	repo, err := models.Repositories(models.RepositoryWhere.URL.EQ(args.RepositoryURL)).One(ctx, r.db)
 	if err != nil && err != sql.ErrNoRows {
 		return nil, fmt.Errorf(errMsg, err)
 	} else if repo == nil {
 		repo = &models.Repository{
-			ID:     domain.NewID(),
-			Remote: args.RepositoryURL,
+			ID:  domain.NewID(),
+			URL: args.RepositoryURL,
 		}
 		if err := repo.Insert(ctx, r.db, boil.Infer()); err != nil {
 			return nil, fmt.Errorf(errMsg, err)
@@ -61,11 +60,17 @@ func (r *applicationRepository) CreateApplication(ctx context.Context, args Crea
 	// アプリケーション作成
 	app := &models.Application{
 		ID:           domain.NewID(),
-		Owner:        args.Owner,
-		Name:         args.Name,
 		RepositoryID: repo.ID,
 	}
 	if err := app.Insert(ctx, r.db, boil.Infer()); err != nil {
+		return nil, fmt.Errorf(errMsg, err)
+	}
+	// 初期Ownerを設定
+	user, err := models.Users(models.UserWhere.ID.EQ(args.OwnerID)).One(ctx, r.db)
+	if err != nil {
+		return nil, fmt.Errorf(errMsg, err)
+	}
+	if err := app.AddUsers(ctx, r.db, false, user); err != nil {
 		return nil, fmt.Errorf(errMsg, err)
 	}
 
@@ -90,7 +95,7 @@ func (r *applicationRepository) CreateApplication(ctx context.Context, args Crea
 		ID: app.ID,
 		Repository: domain.Repository{
 			ID:        repo.ID,
-			RemoteURL: repo.Remote,
+			RemoteURL: repo.URL,
 		},
 	}, nil
 }
@@ -114,7 +119,7 @@ func (r *applicationRepository) GetApplicationByID(ctx context.Context, id strin
 		ID: app.ID,
 		Repository: domain.Repository{
 			ID:        app.R.Repository.ID,
-			RemoteURL: app.R.Repository.Remote,
+			RemoteURL: app.R.Repository.URL,
 		},
 	}, nil
 }
@@ -183,7 +188,7 @@ func (r *applicationRepository) GetBranchByRepoAndBranchName(ctx context.Context
 	const errMsg = "failed to GetBranchByRepoAndBranchName: %w"
 
 	repo, err := models.Repositories(
-		models.RepositoryWhere.Remote.EQ(repoURL),
+		models.RepositoryWhere.URL.EQ(repoURL),
 	).One(ctx, r.db)
 	if err != nil {
 		if err == sql.ErrNoRows {
