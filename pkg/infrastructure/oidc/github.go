@@ -20,7 +20,7 @@ func NewGitHubOIDCProvider(clientID, clientSecret string) (*oauth2.Config, *oidc
 			AuthURL:  "https://github.com/login/oauth/authorize",
 			TokenURL: "https://github.com/login/oauth/access_token",
 		},
-		Scopes: []string{string(github.ScopePublicRepo), string(github.ScopeUser), string(github.ScopeDeleteRepo)},
+		Scopes: []string{oidc.ScopeOpenID, string(github.ScopePublicRepo), string(github.ScopeUser), string(github.ScopeDeleteRepo)},
 	}
 
 	verifier := provider.Verifier(&oidc.Config{
