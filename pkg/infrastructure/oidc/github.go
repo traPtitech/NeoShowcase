@@ -7,8 +7,8 @@ import (
 	"golang.org/x/oauth2"
 )
 
-func NewGitHubOIDCProvider(clientID, clientSecret string) (*oauth2.Config, *oidc.IDTokenVerifier, error) {
-	provider, err := oidc.NewProvider(context.TODO(), "https://github.com/")
+func NewGitHubOIDCProvider(ctx context.Context, clientID, clientSecret string) (*oauth2.Config, *oidc.IDTokenVerifier, error) {
+	provider, err := oidc.NewProvider(ctx, "https://github.com/")
 	if err != nil {
 		return nil, nil, err
 	}
