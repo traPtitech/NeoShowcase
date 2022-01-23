@@ -1,6 +1,8 @@
 package domain
 
 import (
+	_ "github.com/coreos/go-oidc/v3/oidc"
+	oidc2 "github.com/coreos/go-oidc/v3/oidc"
 	"github.com/traPtitech/neoshowcase/pkg/infrastructure/oidc"
 	"math/rand"
 	"net/http"
@@ -13,26 +15,33 @@ type LoginHandler struct {
 	clientSecret string
 }
 
-func NewLogin() *LoginHandler {
+func newLoginHandler() *LoginHandler {
 	clientID := os.Getenv("clientID")
 	clientSecret := os.Getenv("clientSecret")
 	return &LoginHandler{clientID: clientID, clientSecret: clientSecret}
 }
 
 func (l *LoginHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	panic("implement me")
-}
-
-func NewLoginHandler(w http.ResponseWriter, r *http.Request) http.Handler {
-	// TODO: Provider等の必要なものを受け取って、各プロバイダー向けのログイン用ハンドラを返す関数
-
-	l := NewLogin()
-	config, verifier, err := oidc.NewGoogleOIDCProvider(r.Context(), l.clientID, l.clientSecret)
+	config, _, err := oidc.NewGoogleOIDCProvider(r.Context(), l.clientID, l.clientSecret)
 	if err != nil {
-		return nil
+		return
 	}
 
-	return http.NotFoundHandler()
+	state := randomString(64)
+	nonce := randomString(64)
+
+	setCallbackCookie(w, r, "state", state)
+	setCallbackCookie(w, r, "nonce", nonce)
+
+	http.Redirect(w, r, config.AuthCodeURL(state, oidc2.Nonce(nonce)), http.StatusFound)
+}
+
+func NewLoginHandler() http.Handler {
+	// TODO: Provider等の必要なものを受け取って、各プロバイダー向けのログイン用ハンドラを返す関数
+
+	l := newLoginHandler()
+
+	return l
 }
 
 func NewCallbackHandler(w http.ResponseWriter, r *http.Request) http.Handler {
