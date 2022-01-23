@@ -1,9 +1,11 @@
 package domain
 
 import (
+	"encoding/json"
 	_ "github.com/coreos/go-oidc/v3/oidc"
 	oidc2 "github.com/coreos/go-oidc/v3/oidc"
 	"github.com/traPtitech/neoshowcase/pkg/infrastructure/oidc"
+	"golang.org/x/oauth2"
 	"math/rand"
 	"net/http"
 	"os"
@@ -44,9 +46,79 @@ func NewLoginHandler() http.Handler {
 	return l
 }
 
-func NewCallbackHandler(w http.ResponseWriter, r *http.Request) http.Handler {
+type callbackHandler struct {
+	clientID     string
+	clientSecret string
+}
+
+func newCallbackHandler() *callbackHandler {
+	clientID := os.Getenv("clientID")
+	clientSecret := os.Getenv("clientSecret")
+
+	return &callbackHandler{clientID: clientID, clientSecret: clientSecret}
+}
+
+func (c *callbackHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	config, verifier, err := oidc.NewGoogleOIDCProvider(r.Context(), c.clientID, c.clientSecret)
+	if err != nil {
+		return
+	}
+
+	state, err := r.Cookie("state")
+	if err != nil {
+		return
+	}
+	if r.URL.Query().Get("state") != state.Value {
+		return
+	}
+
+	token, err := config.Exchange(r.Context(), r.URL.Query().Get("code"))
+	if err != nil {
+		return
+	}
+
+	rawIDToken, ok := token.Extra("id_token").(string)
+	if !ok {
+		return
+	}
+	idToken, err := verifier.Verify(r.Context(), rawIDToken)
+	if err != nil {
+		return
+	}
+
+	nonce, err := r.Cookie("nonce")
+	if err != nil {
+		return
+	}
+
+	if idToken.Nonce != nonce.Value {
+		return
+	}
+
+	resp := struct {
+		OAuth2Token   *oauth2.Token
+		IDTokenClaims *json.RawMessage
+	}{token, new(json.RawMessage)}
+
+	if err = idToken.Claims(&resp.IDTokenClaims); err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	data, err := json.MarshalIndent(resp, "", "    ")
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	_, err = w.Write(data)
+	if err != nil {
+		return
+	}
+}
+
+func NewCallbackHandler() http.Handler {
 	// TODO: Provider等の必要なものを受け取って、各プロバイダー向けのコールバック用ハンドラを返す関数
-	return http.NotFoundHandler()
+	h := newCallbackHandler()
+	return h
 }
 
 func setCallbackCookie(w http.ResponseWriter, r *http.Request, name, value string) {
