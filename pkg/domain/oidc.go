@@ -8,7 +8,6 @@ import (
 	"golang.org/x/oauth2"
 	"math/rand"
 	"net/http"
-	"os"
 	"time"
 )
 
@@ -17,9 +16,7 @@ type LoginHandler struct {
 	clientSecret string
 }
 
-func newLoginHandler() *LoginHandler {
-	clientID := os.Getenv("clientID")
-	clientSecret := os.Getenv("clientSecret")
+func newLoginHandler(clientID, clientSecret string) *LoginHandler {
 	return &LoginHandler{clientID: clientID, clientSecret: clientSecret}
 }
 
@@ -38,10 +35,10 @@ func (l *LoginHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	http.Redirect(w, r, config.AuthCodeURL(state, oidc2.Nonce(nonce)), http.StatusFound)
 }
 
-func NewLoginHandler() http.Handler {
+func NewLoginHandler(clientID, clientSecret string) http.Handler {
 	// TODO: Provider等の必要なものを受け取って、各プロバイダー向けのログイン用ハンドラを返す関数
 
-	l := newLoginHandler()
+	l := newLoginHandler(clientID, clientSecret)
 
 	return l
 }
@@ -51,10 +48,7 @@ type callbackHandler struct {
 	clientSecret string
 }
 
-func newCallbackHandler() *callbackHandler {
-	clientID := os.Getenv("clientID")
-	clientSecret := os.Getenv("clientSecret")
-
+func newCallbackHandler(clientID, clientSecret string) *callbackHandler {
 	return &callbackHandler{clientID: clientID, clientSecret: clientSecret}
 }
 
@@ -115,9 +109,9 @@ func (c *callbackHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func NewCallbackHandler() http.Handler {
+func NewCallbackHandler(clientID, clientSecret string) http.Handler {
 	// TODO: Provider等の必要なものを受け取って、各プロバイダー向けのコールバック用ハンドラを返す関数
-	h := newCallbackHandler()
+	h := newCallbackHandler(clientID, clientSecret)
 	return h
 }
 
