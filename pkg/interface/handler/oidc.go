@@ -1,26 +1,32 @@
-package domain
+package handler
 
 import (
 	"encoding/json"
-	_ "github.com/coreos/go-oidc/v3/oidc"
-	oidc2 "github.com/coreos/go-oidc/v3/oidc"
-	"github.com/traPtitech/neoshowcase/pkg/infrastructure/oidc"
-	"golang.org/x/oauth2"
 	"math/rand"
 	"net/http"
 	"time"
+
+	_ "github.com/coreos/go-oidc/v3/oidc"
+	oidc2 "github.com/coreos/go-oidc/v3/oidc"
+	"golang.org/x/oauth2"
+
+	"github.com/traPtitech/neoshowcase/pkg/domain/web"
+	"github.com/traPtitech/neoshowcase/pkg/infrastructure/oidc"
 )
 
-type LoginHandler struct {
+type LoginHandler web.Handler
+
+type loginHandler struct {
 	clientID     string
 	clientSecret string
 }
 
-func newLoginHandler(clientID, clientSecret string) *LoginHandler {
-	return &LoginHandler{clientID: clientID, clientSecret: clientSecret}
+// TODO: Provider等の必要なものを受け取って、各プロバイダー向けのログイン用ハンドラを返す関数
+func NewLoginHandler(clientID, clientSecret string) LoginHandler {
+	return &loginHandler{clientID: clientID, clientSecret: clientSecret}
 }
 
-func (l *LoginHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+func (l *loginHandler) HandleRequest(c web.Context) {
 	config, _, err := oidc.NewGoogleOIDCProvider(r.Context(), l.clientID, l.clientSecret)
 	if err != nil {
 		return
@@ -35,24 +41,19 @@ func (l *LoginHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	http.Redirect(w, r, config.AuthCodeURL(state, oidc2.Nonce(nonce)), http.StatusFound)
 }
 
-func NewLoginHandler(clientID, clientSecret string) http.Handler {
-	// TODO: Provider等の必要なものを受け取って、各プロバイダー向けのログイン用ハンドラを返す関数
-
-	l := newLoginHandler(clientID, clientSecret)
-
-	return l
-}
+type CallbackHandler web.Handler
 
 type callbackHandler struct {
 	clientID     string
 	clientSecret string
 }
 
-func newCallbackHandler(clientID, clientSecret string) *callbackHandler {
+// TODO: Provider等の必要なものを受け取って、各プロバイダー向けのコールバック用ハンドラを返す関数
+func newCallbackHandler(clientID, clientSecret string) CallbackHandler {
 	return &callbackHandler{clientID: clientID, clientSecret: clientSecret}
 }
 
-func (c *callbackHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+func (c *callbackHandler) HandleRequest(c web.Context) {
 	config, verifier, err := oidc.NewGoogleOIDCProvider(r.Context(), c.clientID, c.clientSecret)
 	if err != nil {
 		return
@@ -107,12 +108,6 @@ func (c *callbackHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		return
 	}
-}
-
-func NewCallbackHandler(clientID, clientSecret string) http.Handler {
-	// TODO: Provider等の必要なものを受け取って、各プロバイダー向けのコールバック用ハンドラを返す関数
-	h := newCallbackHandler(clientID, clientSecret)
-	return h
 }
 
 func setCallbackCookie(w http.ResponseWriter, r *http.Request, name, value string) {

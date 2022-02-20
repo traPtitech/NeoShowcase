@@ -2,6 +2,7 @@ package oidc
 
 import (
 	"context"
+
 	"github.com/coreos/go-oidc/v3/oidc"
 	"golang.org/x/oauth2"
 )
@@ -15,8 +16,8 @@ func NewGoogleOIDCProvider(ctx context.Context, clientID, clientSecret string) (
 	config := &oauth2.Config{
 		ClientID:     clientID,
 		ClientSecret: clientSecret,
-		Endpoint: provider.Endpoint(),
-		Scopes: []string{oidc.ScopeOpenID,"profile"},
+		Endpoint:     provider.Endpoint(),
+		Scopes:       []string{oidc.ScopeOpenID, "profile"},
 	}
 
 	verifier := provider.Verifier(&oidc.Config{
