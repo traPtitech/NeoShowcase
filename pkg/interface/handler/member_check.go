@@ -4,10 +4,11 @@ import (
 	"net/http"
 	"strings"
 
+	"github.com/traPtitech/neoshowcase/pkg/domain/web"
 	"github.com/traPtitech/neoshowcase/pkg/usecase"
 )
 
-type MemberCheckHandler Handler
+type MemberCheckHandler web.Handler
 
 type memberCheckHandler struct {
 	s usecase.MemberCheckService
@@ -17,7 +18,7 @@ func NewMemberCheckHandler(s usecase.MemberCheckService) MemberCheckHandler {
 	return &memberCheckHandler{s: s}
 }
 
-func (h *memberCheckHandler) HandleRequest(c Context) error {
+func (h *memberCheckHandler) HandleRequest(c web.Context) error {
 	unauthorized := func() error {
 		q := c.QueryParam("type")
 		switch strings.ToLower(q) {
@@ -31,7 +32,7 @@ func (h *memberCheckHandler) HandleRequest(c Context) error {
 		}
 	}
 
-	tokenString := c.CookieValue("traP_ext_token")
+	tokenString, err := c.CookieValue("traP_ext_token")
 	if len(tokenString) == 0 {
 		return unauthorized()
 	}

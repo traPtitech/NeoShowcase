@@ -5,8 +5,8 @@ GO_REPO_ROOT_PACKAGE := "github.com/traPtitech/neoshowcase"
 PROTOC_OPTS := -I ./api/proto --go_out=. --go_opt=module=$(GO_REPO_ROOT_PACKAGE) --go-grpc_out=. --go-grpc_opt=module=$(GO_REPO_ROOT_PACKAGE)
 PROTOC_SOURCES ?= $(shell find ./api/proto/neoshowcase -type f -name "*.proto" -print)
 
-SQL_MIGRATE_CMD := go run github.com/rubenv/sql-migrate/sql-migrate@latest
-EVANS_CMD := go run github.com/ktr0731/evans@latest
+SQL_MIGRATE_CMD := go run github.com/rubenv/sql-migrate/sql-migrate
+EVANS_CMD := go run github.com/ktr0731/evans
 
 .PHONY: init
 init:
@@ -93,7 +93,7 @@ docker-test:
 
 .PHONY: k3d-up
 k3d-up:
-	k3d cluster create ns-test --kubeconfig-switch-context=false --no-lb --k3s-server-arg "--no-deploy=traefik,servicelb,metrics-server"
+	k3d cluster create ns-test --kubeconfig-switch-context=false --no-lb --k3s-arg "--no-deploy=traefik,servicelb,metrics-server"
 
 .PHONY: k3d-down
 k3d-down:

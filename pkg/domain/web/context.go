@@ -2,33 +2,34 @@ package web
 
 import (
 	"github.com/labstack/echo/v4"
-	"github.com/traPtitech/neoshowcase/pkg/interface/handler"
 )
 
-type Context struct {
+type Context interface {
+	echo.Context
+	CookieValue(name string) (string, error)
+}
+
+type DefaultContext struct {
 	echo.Context
 }
 
-func (c *Context) CookieValue(name string) string {
+func (c *DefaultContext) CookieValue(name string) (string, error) {
 	token, err := c.Cookie(name)
-	if err != nil {
-		return ""
-	}
-	return token.Value
+	return token.Value, err
 }
 
-func UnwrapHandler(h handler.Handler) echo.HandlerFunc {
+func UnwrapHandler(h Handler) echo.HandlerFunc {
 	return UnwrapHandlerFunc(h.HandleRequest)
 }
 
-func UnwrapHandlerFunc(f func(ctx handler.Context) error) echo.HandlerFunc {
+func UnwrapHandlerFunc(f func(ctx Context) error) echo.HandlerFunc {
 	return func(c echo.Context) error {
-		return f(c.(*Context))
+		return f(c.(*DefaultContext))
 	}
 }
 
-func wrapContext(c echo.Context) *Context {
-	return &Context{Context: c}
+func wrapContext(c echo.Context) Context {
+	return &DefaultContext{Context: c}
 }
 
 func WrapContextMiddleware() echo.MiddlewareFunc {

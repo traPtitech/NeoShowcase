@@ -7,12 +7,14 @@ import (
 	"strings"
 
 	"github.com/labstack/echo/v4"
+
 	"github.com/traPtitech/neoshowcase/pkg/domain"
 	"github.com/traPtitech/neoshowcase/pkg/domain/event"
+	"github.com/traPtitech/neoshowcase/pkg/domain/web"
 	"github.com/traPtitech/neoshowcase/pkg/usecase"
 )
 
-type WebhookReceiverHandler Handler
+type WebhookReceiverHandler web.Handler
 
 type webhookReceiverHandler struct {
 	eventbus domain.Bus
@@ -26,7 +28,7 @@ func NewWebhookReceiverHandler(eventbus domain.Bus, verifier usecase.GitPushWebh
 	}
 }
 
-func (h *webhookReceiverHandler) HandleRequest(c Context) error {
+func (h *webhookReceiverHandler) HandleRequest(c web.Context) error {
 	var (
 		repoURL string
 		branch  string
@@ -51,7 +53,7 @@ func (h *webhookReceiverHandler) HandleRequest(c Context) error {
 	return c.NoContent(http.StatusNoContent)
 }
 
-func (h *webhookReceiverHandler) extractFromGitea(c Context) (string, string, error) {
+func (h *webhookReceiverHandler) extractFromGitea(c web.Context) (string, string, error) {
 	if c.Request().Header.Get("X-Gitea-Event") != "push" {
 		return "", "", echo.NewHTTPError(http.StatusBadRequest)
 	}
@@ -100,7 +102,7 @@ func (h *webhookReceiverHandler) extractFromGitea(c Context) (string, string, er
 	return repoURL, branch, nil
 }
 
-func (h *webhookReceiverHandler) extractFromGitHub(c Context) (string, string, error) {
+func (h *webhookReceiverHandler) extractFromGitHub(c web.Context) (string, string, error) {
 	if c.Request().Header.Get("X-GitHub-Event") != "push" {
 		return "", "", echo.NewHTTPError(http.StatusBadRequest)
 	}
