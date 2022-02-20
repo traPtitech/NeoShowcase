@@ -1,8 +1,6 @@
 package handler_test
 
 import (
-	"github.com/traPtitech/neoshowcase/pkg/domain"
-
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -10,6 +8,8 @@ import (
 	"github.com/gavv/httpexpect/v2"
 	"github.com/golang/mock/gomock"
 	"github.com/labstack/echo/v4"
+
+	"github.com/traPtitech/neoshowcase/pkg/domain"
 	"github.com/traPtitech/neoshowcase/pkg/domain/event"
 	mock_eventbus "github.com/traPtitech/neoshowcase/pkg/domain/mock"
 	"github.com/traPtitech/neoshowcase/pkg/domain/web"

@@ -9,12 +9,13 @@ import (
 
 	"github.com/google/uuid"
 	log "github.com/sirupsen/logrus"
+	"github.com/volatiletech/sqlboiler/v4/boil"
+
 	"github.com/traPtitech/neoshowcase/pkg/domain"
 	"github.com/traPtitech/neoshowcase/pkg/infrastructure/admindb/models"
-	"github.com/volatiletech/sqlboiler/v4/boil"
 )
 
-//go:generate go run github.com/golang/mock/mockgen@latest -source=$GOFILE -package=mock_$GOPACKAGE -destination=./mock/$GOFILE
+//go:generate go run github.com/golang/mock/mockgen -source=$GOFILE -package=mock_$GOPACKAGE -destination=./mock/$GOFILE
 type GitRepositoryRepository interface {
 	RegisterRepository(ctx context.Context, args RegisterRepositoryArgs) (domain.Repository, error)
 	GetRepositoryByID(ctx context.Context, id string) (domain.Repository, error)
