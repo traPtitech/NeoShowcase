@@ -15,7 +15,6 @@ import (
 )
 
 const (
-	queueBufferSize = 10
 	requestInterval = 10 * time.Second
 )
 
@@ -30,7 +29,7 @@ type appBuildService struct {
 	buildLogRepo repository.BuildLogRepository
 	builder      pb.BuilderServiceClient
 
-	queue           chan *buildJob
+	queue           queue
 	queueWait       sync.WaitGroup
 	canceledJobList []string
 	imageRegistry   string
@@ -43,16 +42,12 @@ type buildJob struct {
 	branch  *domain.Branch
 }
 
-var (
-	ErrQueueFull = fmt.Errorf("queue is full")
-)
-
 func NewAppBuildService(appRepo repository.ApplicationRepository, buildLogRepo repository.BuildLogRepository, builder pb.BuilderServiceClient, registry builder.DockerImageRegistryString, prefix builder.DockerImageNamePrefixString) AppBuildService {
 	s := &appBuildService{
 		appRepo:         appRepo,
 		buildLogRepo:    buildLogRepo,
 		builder:         builder,
-		queue:           make(chan *buildJob, queueBufferSize),
+		queue:           newQueue(),
 		canceledJobList: []string{},
 		imageRegistry:   string(registry),
 		imageNamePrefix: string(prefix),
@@ -75,23 +70,17 @@ func (s *appBuildService) QueueBuild(ctx context.Context, branch *domain.Branch)
 	}
 
 	s.queueWait.Add(1)
-	select {
-	case s.queue <- &buildJob{
+	s.queue.Push(&buildJob{
 		buildID: buildLog.ID,
 		app:     app,
 		branch:  branch,
-	}:
-	default:
-		return "", ErrQueueFull
-	}
+	})
 
 	return buildLog.ID, nil
 }
 
 func (s *appBuildService) Shutdown() {
 	s.queueWait.Wait()
-	// TODO: shutdown後にキューにジョブが追加されないことを保証しないといけない(でないとclosed channelにpushしようとしてpanicする)
-	close(s.queue)
 }
 
 func (s *appBuildService) CancelBuild(ctx context.Context, buildID string) error {
@@ -103,31 +92,38 @@ func (s *appBuildService) CancelBuild(ctx context.Context, buildID string) error
 }
 
 func (s *appBuildService) startQueueManager() {
-	for v := range s.queue {
+	for {
+		time.Sleep(requestInterval)
+
+		v := s.queue.Top()
+		if v == nil {
+			continue
+		}
+
 		// キャンセルされたタスクならスキップ
 		if s.isCanceled(v.buildID) {
 			for i, id := range s.canceledJobList {
 				if id == v.buildID {
 					s.canceledJobList = append(s.canceledJobList[:i], s.canceledJobList[i+1:]...)
+					s.queue.Pop()
 					continue
 				}
 			}
 		}
-		for {
-			res, err := s.builder.GetStatus(context.Background(), &emptypb.Empty{})
+
+		res, err := s.builder.GetStatus(context.Background(), &emptypb.Empty{})
+		if err != nil {
+			log.WithError(err).Error("failed to get status")
+			break
+		}
+		if res.GetStatus() == pb.BuilderStatus_WAITING {
+			s.queue.Pop()
+			err := s.requestBuild(context.Background(), v.app, v.branch, v.buildID)
 			if err != nil {
-				log.WithError(err).Error("failed to get status")
-				break
+				log.WithError(err).Error("failed to request build")
 			}
-			if res.GetStatus() == pb.BuilderStatus_WAITING {
-				err := s.requestBuild(context.Background(), v.app, v.branch, v.buildID)
-				if err != nil {
-					log.WithError(err).Error("failed to request build")
-				}
-				s.queueWait.Done()
-				break
-			}
-			time.Sleep(requestInterval)
+			s.queueWait.Done()
+			break
 		}
 	}
 }
@@ -177,4 +173,40 @@ func (s *appBuildService) isCanceled(buildID string) bool {
 		}
 	}
 	return false
+}
+
+type queue struct {
+	data  []*buildJob
+	mutex *sync.RWMutex
+}
+
+func newQueue() queue {
+	return queue{
+		data:  []*buildJob{},
+		mutex: &sync.RWMutex{},
+	}
+}
+
+func (q *queue) Push(job *buildJob) {
+	q.mutex.Lock()
+	defer q.mutex.Unlock()
+	q.data = append(q.data, job)
+}
+
+func (q *queue) Top() *buildJob {
+	q.mutex.RLock()
+	defer q.mutex.RUnlock()
+	if len(q.data) == 0 {
+		return nil
+	}
+	return q.data[0]
+}
+
+func (q *queue) Pop() {
+	q.mutex.Lock()
+	defer q.mutex.Unlock()
+	if len(q.data) == 0 {
+		return
+	}
+	q.data = q.data[1:]
 }
