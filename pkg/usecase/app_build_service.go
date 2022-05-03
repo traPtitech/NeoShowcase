@@ -15,7 +15,8 @@ import (
 )
 
 const (
-	requestInterval = 10 * time.Second
+	queueCheckInterval = 1 * time.Second
+	requestInterval    = 10 * time.Second
 )
 
 type AppBuildService interface {
@@ -92,26 +93,28 @@ func (s *appBuildService) CancelBuild(ctx context.Context, buildID string) error
 
 func (s *appBuildService) startQueueManager() {
 	for {
-		time.Sleep(requestInterval)
-
 		v := s.queue.Top()
 		if v == nil {
+			time.Sleep(queueCheckInterval)
 			continue
 		}
-
-		res, err := s.builder.GetStatus(context.Background(), &emptypb.Empty{})
-		if err != nil {
-			log.WithError(err).Error("failed to get status")
-			continue
-		}
-		if res.GetStatus() == pb.BuilderStatus_WAITING {
-			s.queue.Pop()
-			err := s.requestBuild(context.Background(), v.app, v.branch, v.buildID)
+		for {
+			res, err := s.builder.GetStatus(context.Background(), &emptypb.Empty{})
 			if err != nil {
-				log.WithError(err).Error("failed to request build")
+				log.WithError(err).Error("failed to get status")
+				break
 			}
-			s.queueWait.Done()
-			continue
+			if res.GetStatus() == pb.BuilderStatus_WAITING {
+				s.queue.Pop()
+				err := s.requestBuild(context.Background(), v.app, v.branch, v.buildID)
+				if err != nil {
+					log.WithError(err).Error("failed to request build")
+				}
+				s.queueWait.Done()
+				break
+			}
+
+			time.Sleep(requestInterval)
 		}
 	}
 }
