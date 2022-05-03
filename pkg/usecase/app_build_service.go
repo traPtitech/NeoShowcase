@@ -32,6 +32,7 @@ type appBuildService struct {
 
 	queue           queue
 	queueWait       sync.WaitGroup
+	cancel          context.CancelFunc
 	imageRegistry   string
 	imageNamePrefix string
 }
@@ -43,15 +44,18 @@ type buildJob struct {
 }
 
 func NewAppBuildService(appRepo repository.ApplicationRepository, buildLogRepo repository.BuildLogRepository, builder pb.BuilderServiceClient, registry builder.DockerImageRegistryString, prefix builder.DockerImageNamePrefixString) AppBuildService {
+	ctx, cancel := context.WithCancel(context.Background())
+
 	s := &appBuildService{
 		appRepo:         appRepo,
 		buildLogRepo:    buildLogRepo,
 		builder:         builder,
 		queue:           newQueue(),
+		cancel:          cancel,
 		imageRegistry:   string(registry),
 		imageNamePrefix: string(prefix),
 	}
-	go s.startQueueManager()
+	go s.startQueueManager(ctx)
 	return s
 }
 
@@ -80,6 +84,7 @@ func (s *appBuildService) QueueBuild(ctx context.Context, branch *domain.Branch)
 
 func (s *appBuildService) Shutdown() {
 	s.queueWait.Wait()
+	s.cancel()
 }
 
 func (s *appBuildService) CancelBuild(ctx context.Context, buildID string) error {
@@ -91,30 +96,40 @@ func (s *appBuildService) CancelBuild(ctx context.Context, buildID string) error
 	return nil
 }
 
-func (s *appBuildService) startQueueManager() {
+func (s *appBuildService) startQueueManager(ctx context.Context) {
 	for {
-		v := s.queue.Top()
-		if v == nil {
-			time.Sleep(queueCheckInterval)
-			continue
-		}
-		for {
-			res, err := s.builder.GetStatus(context.Background(), &emptypb.Empty{})
-			if err != nil {
-				log.WithError(err).Error("failed to get status")
-				break
+		select {
+		case <-ctx.Done():
+			return
+		default:
+			v := s.queue.Top()
+			if v == nil {
+				time.Sleep(queueCheckInterval)
+				continue
 			}
-			if res.GetStatus() == pb.BuilderStatus_WAITING {
-				s.queue.Pop()
-				err := s.requestBuild(context.Background(), v.app, v.branch, v.buildID)
-				if err != nil {
-					log.WithError(err).Error("failed to request build")
-				}
-				s.queueWait.Done()
-				break
-			}
+			for {
+				select {
+				case <-ctx.Done():
+					return
+				default:
+					res, err := s.builder.GetStatus(context.Background(), &emptypb.Empty{})
+					if err != nil {
+						log.WithError(err).Error("failed to get status")
+						break
+					}
+					if res.GetStatus() == pb.BuilderStatus_WAITING {
+						s.queue.Pop()
+						err := s.requestBuild(context.Background(), v.app, v.branch, v.buildID)
+						if err != nil {
+							log.WithError(err).Error("failed to request build")
+						}
+						s.queueWait.Done()
+						break
+					}
 
-			time.Sleep(requestInterval)
+					time.Sleep(requestInterval)
+				}
+			}
 		}
 	}
 }
