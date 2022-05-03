@@ -166,17 +166,6 @@ func TestAppBuildService_QueueBuild(t *testing.T) {
 			}, nil).
 			AnyTimes()
 
-		c.EXPECT().
-			StartBuildStatic(context.Background(), &pb.StartBuildStaticRequest{
-				Source: &pb.BuildSource{
-					RepositoryUrl: res.Repository.RemoteURL,
-				},
-				Options:  &pb.BuildOptions{},
-				BuildId:  buildLog.ID,
-				BranchId: branch.ID,
-			}).
-			Return(&pb.StartBuildStaticResponse{}, nil)
-
 		id, err := s.QueueBuild(context.Background(), branch)
 		if err != nil {
 			t.Fatal(err)

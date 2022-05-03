@@ -31,7 +31,6 @@ type appBuildService struct {
 
 	queue           queue
 	queueWait       sync.WaitGroup
-	canceledJobList []string
 	imageRegistry   string
 	imageNamePrefix string
 }
@@ -48,7 +47,6 @@ func NewAppBuildService(appRepo repository.ApplicationRepository, buildLogRepo r
 		buildLogRepo:    buildLogRepo,
 		builder:         builder,
 		queue:           newQueue(),
-		canceledJobList: []string{},
 		imageRegistry:   string(registry),
 		imageNamePrefix: string(prefix),
 	}
@@ -84,11 +82,12 @@ func (s *appBuildService) Shutdown() {
 }
 
 func (s *appBuildService) CancelBuild(ctx context.Context, buildID string) error {
-	if !s.isCanceled(buildID) {
-		s.canceledJobList = append(s.canceledJobList, buildID)
-		return nil
+	if ok := s.queue.DeleteById(buildID); !ok {
+		return fmt.Errorf("job is already canceled")
 	}
-	return fmt.Errorf("job is already canceled")
+
+	s.queueWait.Done()
+	return nil
 }
 
 func (s *appBuildService) startQueueManager() {
@@ -100,21 +99,10 @@ func (s *appBuildService) startQueueManager() {
 			continue
 		}
 
-		// キャンセルされたタスクならスキップ
-		if s.isCanceled(v.buildID) {
-			for i, id := range s.canceledJobList {
-				if id == v.buildID {
-					s.canceledJobList = append(s.canceledJobList[:i], s.canceledJobList[i+1:]...)
-					s.queue.Pop()
-					continue
-				}
-			}
-		}
-
 		res, err := s.builder.GetStatus(context.Background(), &emptypb.Empty{})
 		if err != nil {
 			log.WithError(err).Error("failed to get status")
-			break
+			continue
 		}
 		if res.GetStatus() == pb.BuilderStatus_WAITING {
 			s.queue.Pop()
@@ -123,7 +111,7 @@ func (s *appBuildService) startQueueManager() {
 				log.WithError(err).Error("failed to request build")
 			}
 			s.queueWait.Done()
-			break
+			continue
 		}
 	}
 }
@@ -166,15 +154,6 @@ func (s *appBuildService) requestBuild(ctx context.Context, app *domain.Applicat
 	return nil
 }
 
-func (s *appBuildService) isCanceled(buildID string) bool {
-	for _, v := range s.canceledJobList {
-		if v == buildID {
-			return true
-		}
-	}
-	return false
-}
-
 type queue struct {
 	data  []*buildJob
 	mutex *sync.RWMutex
@@ -209,4 +188,16 @@ func (q *queue) Pop() {
 		return
 	}
 	q.data = q.data[1:]
+}
+
+func (q *queue) DeleteById(buildId string) bool {
+	q.mutex.Lock()
+	defer q.mutex.Unlock()
+	for i, v := range q.data {
+		if v.buildID == buildId {
+			q.data = append(q.data[:i], q.data[i+1:]...)
+			return true
+		}
+	}
+	return false
 }
