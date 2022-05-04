@@ -107,6 +107,8 @@ func (s *appBuildService) startQueueManager(ctx context.Context) {
 				time.Sleep(queueCheckInterval)
 				continue
 			}
+
+		requestLoop:
 			for {
 				select {
 				case <-ctx.Done():
@@ -115,7 +117,7 @@ func (s *appBuildService) startQueueManager(ctx context.Context) {
 					res, err := s.builder.GetStatus(context.Background(), &emptypb.Empty{})
 					if err != nil {
 						log.WithError(err).Error("failed to get status")
-						break
+						break requestLoop
 					}
 					if res.GetStatus() == pb.BuilderStatus_WAITING {
 						s.queue.Pop()
@@ -124,7 +126,7 @@ func (s *appBuildService) startQueueManager(ctx context.Context) {
 							log.WithError(err).Error("failed to request build")
 						}
 						s.queueWait.Done()
-						break
+						break requestLoop
 					}
 
 					time.Sleep(requestInterval)
