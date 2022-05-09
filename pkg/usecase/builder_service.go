@@ -10,6 +10,7 @@ import (
 	"os"
 	"path/filepath"
 	"sync"
+	"time"
 
 	"github.com/go-git/go-git/v5"
 	"github.com/go-git/go-git/v5/plumbing"
@@ -22,7 +23,9 @@ import (
 	"github.com/traPtitech/neoshowcase/pkg/domain"
 	"github.com/traPtitech/neoshowcase/pkg/domain/builder"
 	"github.com/traPtitech/neoshowcase/pkg/domain/event"
+	"github.com/traPtitech/neoshowcase/pkg/infrastructure/admindb/models"
 	"github.com/traPtitech/neoshowcase/pkg/interface/repository"
+	"github.com/volatiletech/sqlboiler/v4/boil"
 	"golang.org/x/sync/errgroup"
 	"google.golang.org/grpc/status"
 )
@@ -182,8 +185,8 @@ func (s *builderService) initializeTask(ctx context.Context, task *builder.Task)
 
 	// BuildLog.ResultをBuildingに変更
 	args := repository.UpdateBuildLogArgs{
-		ID:       intState.BuildLog.ID,
-		Result:   intState.BuildLog.Result,
+		ID:     intState.BuildLog.ID,
+		Result: intState.BuildLog.Result,
 	}
 	if err := s.repo.UpdateBuildLog(ctx, args); err != nil {
 		log.WithError(err).Errorf("failed to update build_log entry (buildID: %s)", task.BuildID)
@@ -229,9 +232,21 @@ func (s *builderService) processTask(task *builder.Task, intState *internalTaskS
 			_ = intState.artifactTempFile.Close()
 			if result == builder.BuildStatusSucceeded {
 				sid := domain.NewID()
-				err := domain.SaveArtifact(s.storage, intState.artifactTempFile.Name(), filepath.Join("artifacts", fmt.Sprintf("%s.tar", sid)), s.db, task.BuildID, sid)
+				filename := intState.artifactTempFile.Name()
+				err := domain.SaveArtifact(s.storage, filename, filepath.Join("artifacts", fmt.Sprintf("%s.tar", sid)))
 				if err != nil {
 					log.WithError(err).Errorf("failed to save directory to tar (BuildID: %s, ArtifactID: %s)", task.BuildID, sid)
+				}
+
+				stat, _ := os.Stat(filename)
+				artifact := models.Artifact{
+					ID:         sid,
+					BuildLogID: task.BuildID,
+					Size:       stat.Size(),
+					CreatedAt:  time.Now(),
+				}
+				if err := artifact.Insert(context.Background(), s.db, boil.Infer()); err != nil {
+					log.Errorf("failed to insert artifact entry: %w", err)
 				}
 			} else {
 				_ = os.Remove(intState.artifactTempFile.Name())
@@ -244,8 +259,8 @@ func (s *builderService) processTask(task *builder.Task, intState *internalTaskS
 		// BuildLog更新
 		intState.BuildLog.Result = result
 		args := repository.UpdateBuildLogArgs{
-			ID:       intState.BuildLog.ID,
-			Result:   intState.BuildLog.Result,
+			ID:     intState.BuildLog.ID,
+			Result: intState.BuildLog.Result,
 		}
 		if err := s.repo.UpdateBuildLog(context.Background(), args); err != nil {
 			log.WithError(err).Errorf("failed to update build_log entry (%s)", task.BuildID)

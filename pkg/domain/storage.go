@@ -2,18 +2,13 @@ package domain
 
 import (
 	"archive/tar"
-	"context"
-	"database/sql"
 	"errors"
 	"fmt"
 	"io"
 	"os"
 	"path/filepath"
-	"time"
 
 	log "github.com/sirupsen/logrus"
-	"github.com/traPtitech/neoshowcase/pkg/infrastructure/admindb/models"
-	"github.com/volatiletech/sqlboiler/v4/boil"
 )
 
 var (
@@ -30,22 +25,11 @@ type Storage interface {
 }
 
 // SaveArtifact Artifactをtar形式で保存する
-func SaveArtifact(s Storage, filename string, dstpath string, db *sql.DB, buildid string, sid string) error {
-	stat, _ := os.Stat(filename)
-	artifact := models.Artifact{
-		ID:         sid,
-		BuildLogID: buildid,
-		Size:       stat.Size(),
-		CreatedAt:  time.Now(),
-	}
-
+func SaveArtifact(s Storage, filename string, dstpath string) error {
 	if err := s.Move(filename, dstpath); err != nil {
 		return fmt.Errorf("failed to save artifact tar file: %w", err)
 	}
 
-	if err := artifact.Insert(context.Background(), db, boil.Infer()); err != nil {
-		return fmt.Errorf("failed to insert artifact entry: %w", err)
-	}
 	return nil
 }
 
