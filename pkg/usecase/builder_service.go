@@ -2,7 +2,6 @@ package usecase
 
 import (
 	"context"
-	"database/sql"
 	"errors"
 	"fmt"
 	"io"
@@ -10,7 +9,6 @@ import (
 	"os"
 	"path/filepath"
 	"sync"
-	"time"
 
 	"github.com/go-git/go-git/v5"
 	"github.com/go-git/go-git/v5/plumbing"
@@ -23,9 +21,7 @@ import (
 	"github.com/traPtitech/neoshowcase/pkg/domain"
 	"github.com/traPtitech/neoshowcase/pkg/domain/builder"
 	"github.com/traPtitech/neoshowcase/pkg/domain/event"
-	"github.com/traPtitech/neoshowcase/pkg/infrastructure/admindb/models"
 	"github.com/traPtitech/neoshowcase/pkg/interface/repository"
-	"github.com/volatiletech/sqlboiler/v4/boil"
 	"golang.org/x/sync/errgroup"
 	"google.golang.org/grpc/status"
 )
@@ -48,10 +44,8 @@ type builderService struct {
 	storage  domain.Storage
 	eventbus domain.Bus
 
-	// TODO 後で消す
-	db *sql.DB
-
-	repo repository.BuildLogRepository
+	artifactRepo repository.ArtifactRepository
+	repo         repository.BuildLogRepository
 
 	registry string
 
@@ -63,14 +57,14 @@ type builderService struct {
 	statusLock sync.RWMutex
 }
 
-func NewBuilderService(buildkit *buildkit.Client, storage domain.Storage, eventbus domain.Bus, db *sql.DB, repo repository.BuildLogRepository, registry builder.DockerImageRegistryString) BuilderService {
+func NewBuilderService(buildkit *buildkit.Client, storage domain.Storage, eventbus domain.Bus, artifactRepo repository.ArtifactRepository, repo repository.BuildLogRepository, registry builder.DockerImageRegistryString) BuilderService {
 	return &builderService{
-		buildkit: buildkit,
-		storage:  storage,
-		eventbus: eventbus,
-		db:       db,
-		repo:     repo,
-		registry: string(registry),
+		buildkit:     buildkit,
+		storage:      storage,
+		eventbus:     eventbus,
+		artifactRepo: artifactRepo,
+		repo:         repo,
+		registry:     string(registry),
 
 		status: builder.StateWaiting,
 	}
@@ -238,15 +232,9 @@ func (s *builderService) processTask(task *builder.Task, intState *internalTaskS
 					log.WithError(err).Errorf("failed to save directory to tar (BuildID: %s, ArtifactID: %s)", task.BuildID, sid)
 				}
 
-				stat, _ := os.Stat(filename)
-				artifact := models.Artifact{
-					ID:         sid,
-					BuildLogID: task.BuildID,
-					Size:       stat.Size(),
-					CreatedAt:  time.Now(),
-				}
-				if err := artifact.Insert(context.Background(), s.db, boil.Infer()); err != nil {
-					log.Errorf("failed to insert artifact entry: %w", err)
+				err = s.artifactRepo.CreateArtifact(context.Background(), filename, task.BuildID, sid)
+				if err != nil {
+					log.WithError(err).Errorf("failed to create artifact (BuildID: %s, ArtifactID: %s)", task.BuildID, sid)
 				}
 			} else {
 				_ = os.Remove(intState.artifactTempFile.Name())
