@@ -18,6 +18,7 @@ func New(c Config) (*Server, error) {
 		grpc.NewServer,
 		grpc.NewBuilderServiceServer,
 		usecase.NewBuilderService,
+		repository.NewArtifactRepository,
 		repository.NewBuildLogRepository,
 		eventbus.NewLocal,
 		admindb.New,
