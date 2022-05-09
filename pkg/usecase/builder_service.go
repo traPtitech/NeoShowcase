@@ -45,7 +45,7 @@ type builderService struct {
 	eventbus domain.Bus
 
 	artifactRepo repository.ArtifactRepository
-	repo         repository.BuildLogRepository
+	buildLogRepo repository.BuildLogRepository
 
 	registry string
 
@@ -57,13 +57,13 @@ type builderService struct {
 	statusLock sync.RWMutex
 }
 
-func NewBuilderService(buildkit *buildkit.Client, storage domain.Storage, eventbus domain.Bus, artifactRepo repository.ArtifactRepository, repo repository.BuildLogRepository, registry builder.DockerImageRegistryString) BuilderService {
+func NewBuilderService(buildkit *buildkit.Client, storage domain.Storage, eventbus domain.Bus, artifactRepo repository.ArtifactRepository, buildLogRepo repository.BuildLogRepository, registry builder.DockerImageRegistryString) BuilderService {
 	return &builderService{
 		buildkit:     buildkit,
 		storage:      storage,
 		eventbus:     eventbus,
 		artifactRepo: artifactRepo,
-		repo:         repo,
+		buildLogRepo: buildLogRepo,
 		registry:     string(registry),
 
 		status: builder.StateWaiting,
@@ -182,7 +182,7 @@ func (s *builderService) initializeTask(ctx context.Context, task *builder.Task)
 		ID:     intState.BuildLog.ID,
 		Result: intState.BuildLog.Result,
 	}
-	if err := s.repo.UpdateBuildLog(ctx, args); err != nil {
+	if err := s.buildLogRepo.UpdateBuildLog(ctx, args); err != nil {
 		log.WithError(err).Errorf("failed to update build_log entry (buildID: %s)", task.BuildID)
 		return fmt.Errorf("failed to save BuildLog: %w", err)
 	}
@@ -250,7 +250,7 @@ func (s *builderService) processTask(task *builder.Task, intState *internalTaskS
 			ID:     intState.BuildLog.ID,
 			Result: intState.BuildLog.Result,
 		}
-		if err := s.repo.UpdateBuildLog(context.Background(), args); err != nil {
+		if err := s.buildLogRepo.UpdateBuildLog(context.Background(), args); err != nil {
 			log.WithError(err).Errorf("failed to update build_log entry (%s)", task.BuildID)
 		}
 
