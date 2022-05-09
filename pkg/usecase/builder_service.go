@@ -184,7 +184,6 @@ func (s *builderService) initializeTask(ctx context.Context, task *builder.Task)
 	args := repository.UpdateBuildLogArgs{
 		ID:       intState.BuildLog.ID,
 		Result:   intState.BuildLog.Result,
-		Finished: false,
 	}
 	if err := s.repo.UpdateBuildLog(ctx, args); err != nil {
 		log.WithError(err).Errorf("failed to update build_log entry (buildID: %s)", task.BuildID)
@@ -247,7 +246,6 @@ func (s *builderService) processTask(task *builder.Task, intState *internalTaskS
 		args := repository.UpdateBuildLogArgs{
 			ID:       intState.BuildLog.ID,
 			Result:   intState.BuildLog.Result,
-			Finished: true,
 		}
 		if err := s.repo.UpdateBuildLog(context.Background(), args); err != nil {
 			log.WithError(err).Errorf("failed to update build_log entry (%s)", task.BuildID)

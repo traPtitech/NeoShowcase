@@ -49,3 +49,12 @@ func BuildStatusFromString(str string) BuildStatus {
 		panic(fmt.Errorf("UNKNOWN BUILD STATUS: %s", str))
 	}
 }
+
+func (t BuildStatus) IsFinished() bool {
+	switch t {
+	case BuildStatusSucceeded, BuildStatusFailed, BuildStatusCanceled, BuildStatusSkipped:
+		return true
+	default:
+		return false
+	}
+}

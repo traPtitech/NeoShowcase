@@ -53,7 +53,6 @@ func (r *buildLogRepository) CreateBuildLog(ctx context.Context, branchID string
 type UpdateBuildLogArgs struct {
 	ID       string
 	Result   builder.BuildStatus
-	Finished bool
 }
 
 func (r *buildLogRepository) UpdateBuildLog(ctx context.Context, args UpdateBuildLogArgs) error {
@@ -69,7 +68,7 @@ func (r *buildLogRepository) UpdateBuildLog(ctx context.Context, args UpdateBuil
 	}
 
 	buildLog.Result = args.Result.String()
-	if args.Finished {
+	if args.Result.IsFinished() {
 		buildLog.FinishedAt = null.TimeFrom(time.Now())
 	}
 
