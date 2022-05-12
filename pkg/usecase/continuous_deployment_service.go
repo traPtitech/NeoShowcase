@@ -98,7 +98,7 @@ func (cd *continuousDeploymentService) handleWebhookRepositoryPush(repoURL strin
 		}
 	}
 
-	branch, err := cd.repo.GetEnvironmentByRepoAndBranch(context.Background(), repoURL, branchName)
+	branch, err := cd.repo.GetBranchByRepoAndBranchName(context.Background(), repoURL, branchName)
 	if err != nil {
 		if err == repository.ErrNotFound {
 			return

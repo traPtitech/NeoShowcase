@@ -70,6 +70,14 @@ func (m *mongoManagerImpl) Poll(ctx context.Context) error {
 	if err != nil {
 		return err
 	}
+
+	dbNames, err := m.client.ListDatabaseNames(ctx, bson.D{{}})
+	for _, dbName := range dbNames {
+		r := m.client.Database(dbName).RunCommand(ctx, bson.D{{Key: "ping", Value: 1}})
+		if r.Err() != nil {
+			return r.Err()
+		}
+	}
 	return nil
 }
 

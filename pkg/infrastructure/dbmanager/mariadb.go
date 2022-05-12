@@ -75,6 +75,20 @@ func (m *mariaDBManagerImpl) Delete(ctx context.Context, args domain.DeleteArgs)
 	return nil
 }
 
+func (m *mariaDBManagerImpl) Poll(ctx context.Context) error {
+	db := m.db
+	err := db.PingContext(ctx)
+	if err != nil {
+		return err
+	}
+
+	err = db.QueryRowContext(ctx, "SELECT 1 LIMIT 1").Scan(new(int))
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
 func (m *mariaDBManagerImpl) Close(_ context.Context) error {
 	return m.db.Close()
 }
