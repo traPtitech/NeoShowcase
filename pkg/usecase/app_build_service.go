@@ -102,7 +102,7 @@ func (s *appBuildService) startQueueManager(ctx context.Context) {
 		case <-ctx.Done():
 			return
 		default:
-			v := s.queue.Top()
+			v := s.queue.Pop()
 			if v == nil {
 				time.Sleep(queueCheckInterval)
 				continue
@@ -120,7 +120,6 @@ func (s *appBuildService) startQueueManager(ctx context.Context) {
 						break requestLoop
 					}
 					if res.GetStatus() == pb.BuilderStatus_WAITING {
-						s.queue.Pop()
 						err := s.requestBuild(context.Background(), v.app, v.branch, v.buildID)
 						if err != nil {
 							log.WithError(err).Error("failed to request build")
@@ -192,22 +191,16 @@ func (q *queue) Push(job *buildJob) {
 	q.data = append(q.data, job)
 }
 
-func (q *queue) Top() *buildJob {
-	q.mutex.RLock()
-	defer q.mutex.RUnlock()
-	if len(q.data) == 0 {
-		return nil
-	}
-	return q.data[0]
-}
-
-func (q *queue) Pop() {
+func (q *queue) Pop() *buildJob {
 	q.mutex.Lock()
 	defer q.mutex.Unlock()
 	if len(q.data) == 0 {
-		return
+		return nil
 	}
+	res := q.data[0]
 	q.data = q.data[1:]
+
+	return res
 }
 
 func (q *queue) DeleteById(buildId string) bool {
