@@ -4,7 +4,6 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
-	"os"
 	"time"
 
 	"github.com/traPtitech/neoshowcase/pkg/infrastructure/admindb/models"
@@ -12,7 +11,7 @@ import (
 )
 
 type ArtifactRepository interface {
-	CreateArtifact(ctx context.Context, filename string, buildID string, sid string) error
+	CreateArtifact(ctx context.Context, size int64, buildID string, sid string) error
 }
 
 type artifactRepository struct {
@@ -25,12 +24,11 @@ func NewArtifactRepository(db *sql.DB) ArtifactRepository {
 	}
 }
 
-func (r *artifactRepository) CreateArtifact(ctx context.Context, filename string, buildID string, sid string) error {
-	stat, _ := os.Stat(filename)
+func (r *artifactRepository) CreateArtifact(ctx context.Context, size int64, buildID string, sid string) error {
 	artifact := models.Artifact{
 		ID:         sid,
 		BuildLogID: buildID,
-		Size:       stat.Size(),
+		Size:       size,
 		CreatedAt:  time.Now(),
 	}
 

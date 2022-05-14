@@ -232,7 +232,9 @@ func (s *builderService) processTask(task *builder.Task, intState *internalTaskS
 					log.WithError(err).Errorf("failed to save directory to tar (BuildID: %s, ArtifactID: %s)", task.BuildID, sid)
 				}
 
-				err = s.artifactRepo.CreateArtifact(context.Background(), filename, task.BuildID, sid)
+				stat, _ := os.Stat(filename)
+				size := stat.Size()
+				err = s.artifactRepo.CreateArtifact(context.Background(), size, task.BuildID, sid)
 				if err != nil {
 					log.WithError(err).Errorf("failed to create artifact (BuildID: %s, ArtifactID: %s)", task.BuildID, sid)
 				}
