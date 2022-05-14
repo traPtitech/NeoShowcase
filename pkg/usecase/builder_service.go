@@ -44,6 +44,7 @@ type builderService struct {
 	storage  domain.Storage
 	eventbus domain.Bus
 
+	// TODO: 後で消す
 	artifactRepo repository.ArtifactRepository
 	buildLogRepo repository.BuildLogRepository
 
@@ -232,6 +233,7 @@ func (s *builderService) processTask(task *builder.Task, intState *internalTaskS
 					log.WithError(err).Errorf("failed to save directory to tar (BuildID: %s, ArtifactID: %s)", task.BuildID, sid)
 				}
 
+				// TODO: エラー処理
 				stat, _ := os.Stat(filename)
 				size := stat.Size()
 				err = s.artifactRepo.CreateArtifact(context.Background(), size, task.BuildID, sid)
