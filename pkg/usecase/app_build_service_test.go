@@ -136,6 +136,7 @@ func TestAppBuildService_QueueBuild(t *testing.T) {
 		buildLogRepo := mock_repository.NewMockBuildLogRepository(mockCtrl)
 		c := mock_pb.NewMockBuilderServiceClient(mockCtrl)
 		s := NewAppBuildService(appRepo, buildLogRepo, c, "TestRegistry", "TestPrefix")
+		queue := &s.(*appBuildService).queue
 		branch := &domain.Branch{
 			ID:            "1d9cc06d-813f-4cf7-947e-546e1a814fed",
 			ApplicationID: "d563e2de-7905-4267-8a9c-51520aac02b3",
@@ -170,7 +171,16 @@ func TestAppBuildService_QueueBuild(t *testing.T) {
 		if err != nil {
 			t.Fatal(err)
 		}
+		require.Equal(t, len(queue.data), 1)
+		require.Equal(t, *queue.data[0], buildJob{
+			buildID: buildLog.ID,
+			app:     res,
+			branch:  branch,
+		})
+
 		err = s.CancelBuild(context.Background(), id)
+		require.Equal(t, len(queue.data), 0)
+
 		s.Shutdown()
 		require.Nil(t, err)
 	})
