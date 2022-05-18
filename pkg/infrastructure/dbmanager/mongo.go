@@ -65,20 +65,17 @@ func (m *mongoManagerImpl) Delete(ctx context.Context, args domain.DeleteArgs) e
 	return nil
 }
 
-func (m *mongoManagerImpl) Poll(ctx context.Context) error {
-	err := m.client.Ping(ctx, nil)
+func (m *mongoManagerImpl) IsExist(ctx context.Context, dbName string) (bool, error) {
+	dbNames, err := m.client.ListDatabaseNames(ctx, bson.D{})
 	if err != nil {
-		return err
+		return false, err
 	}
-
-	dbNames, err := m.client.ListDatabaseNames(ctx, bson.D{{}})
-	for _, dbName := range dbNames {
-		r := m.client.Database(dbName).RunCommand(ctx, bson.D{{Key: "ping", Value: 1}})
-		if r.Err() != nil {
-			return r.Err()
+	for _, name := range dbNames {
+		if name == dbName {
+			return true, nil
 		}
 	}
-	return nil
+	return false, nil
 }
 
 func (m *mongoManagerImpl) Close(ctx context.Context) error {

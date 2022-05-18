@@ -75,18 +75,21 @@ func (m *mariaDBManagerImpl) Delete(ctx context.Context, args domain.DeleteArgs)
 	return nil
 }
 
-func (m *mariaDBManagerImpl) Poll(ctx context.Context) error {
-	db := m.db
-	err := db.PingContext(ctx)
+func (m *mariaDBManagerImpl) IsExist(ctx context.Context, dbName string) (bool, error) {
+	rows, err := m.db.QueryContext(ctx, "SHOW DATABASES")
 	if err != nil {
-		return err
+		return false, err
 	}
+	defer rows.Close()
 
-	err = db.QueryRowContext(ctx, "SELECT 1 LIMIT 1").Scan(new(int))
-	if err != nil {
-		return err
+	for rows.Next() {
+		var databaseName string
+		rows.Scan(&databaseName)
+		if databaseName == dbName {
+			return true, nil
+		}
 	}
-	return nil
+	return false, nil
 }
 
 func (m *mariaDBManagerImpl) Close(_ context.Context) error {
