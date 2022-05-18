@@ -18,7 +18,8 @@ type Config struct {
 	Builder grpc.BuilderServiceClientConfig    `mapstructure:"builder" yaml:"builder"`
 	SSGen   grpc.StaticSiteServiceClientConfig `mapstructure:"ssgen" yaml:"ssgen"`
 	DB      admindb.Config                     `mapstructure:"db" yaml:"db"`
-	HTTP    struct {
+	// TODO DBMS
+	HTTP struct {
 		Debug bool `mapstructure:"debug" yaml:"debug"`
 		Port  int  `mapstructure:"port" yaml:"port"`
 	} `mapstructure:"http" yaml:"http"`

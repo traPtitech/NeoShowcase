@@ -24,6 +24,8 @@ import (
 
 var commonSet = wire.NewSet(
 	web.NewServer,
+	dbmanager.NewMariaDBManager,
+	dbmanager.NewMongoManager,
 	usecase.NewGitPushWebhookService,
 	usecase.NewAppBuildService,
 	usecase.NewAppDeployService,

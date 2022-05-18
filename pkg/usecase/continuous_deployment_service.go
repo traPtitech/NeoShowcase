@@ -17,20 +17,22 @@ type ContinuousDeploymentService interface {
 }
 
 type continuousDeploymentService struct {
-	bus       domain.Bus
-	repo      repository.ApplicationRepository
-	deployer  AppDeployService
-	builder   AppBuildService
-	dbmanager domain.MariaDBManager
+	bus            domain.Bus
+	repo           repository.ApplicationRepository
+	deployer       AppDeployService
+	builder        AppBuildService
+	mariadbmanager domain.MariaDBManager
+	mongodbmanager domain.MongoManager
 }
 
-func NewContinuousDeploymentService(bus domain.Bus, repo repository.ApplicationRepository, deployer AppDeployService, builder AppBuildService, dbmanager domain.MariaDBManager) ContinuousDeploymentService {
+func NewContinuousDeploymentService(bus domain.Bus, repo repository.ApplicationRepository, deployer AppDeployService, builder AppBuildService, mariadbmanager domain.MariaDBManager, mongodbmanager domain.MongoManager) ContinuousDeploymentService {
 	return &continuousDeploymentService{
-		bus:       bus,
-		repo:      repo,
-		deployer:  deployer,
-		builder:   builder,
-		dbmanager: dbmanager,
+		bus:            bus,
+		repo:           repo,
+		deployer:       deployer,
+		builder:        builder,
+		mariadbmanager: mariadbmanager,
+		mongodbmanager: mongodbmanager,
 	}
 }
 
@@ -80,32 +82,66 @@ func (cd *continuousDeploymentService) handleWebhookRepositoryPush(repoURL strin
 		WithField("refs", branchName).
 		Info("repository push event received")
 
-	dbName := repoURL + branchName
-	// TODO: アプリケーションの状態の取得
-	applicationNeedsDB := true
-	dbExists, err := cd.dbmanager.IsExist(context.Background(), dbName)
-	if err != nil {
-		log.WithError(err).
-			WithField("repo", repoURL).
-			WithField("refs", branchName).
-			Error("failed to check if database exists")
-		return
-	}
 	ctx := context.Background()
-	if applicationNeedsDB && !dbExists {
-		// TODO dbUser, dbSettingを設定から取得する
-		dbUser := repoURL
-		dbPassword := generateRandomString(32)
-		dbSetting := domain.CreateArgs{
-			Database: dbUser,
-			Password: dbPassword,
-		}
 
-		err := cd.dbmanager.Create(ctx, dbSetting)
+	dbName := repoURL + branchName
+	// TODO: アプリケーションの設定の取得
+	applicationNeedsMariaDB := true
+	if applicationNeedsMariaDB {
+		dbExists, err := cd.mariadbmanager.IsExist(context.Background(), dbName)
 		if err != nil {
 			log.WithError(err).
-				WithField("Database", dbSetting.Database).
-				WithField("Password", dbSetting.Password)
+				WithField("repo", repoURL).
+				WithField("refs", branchName).
+				Error("failed to check if database exists")
+			return
+		}
+
+		if !dbExists {
+			// TODO dbUser, dbSettingを設定から取得する
+			dbUser := repoURL
+			dbPassword := generateRandomString(32)
+			dbSetting := domain.CreateArgs{
+				Database: dbUser,
+				Password: dbPassword,
+			}
+
+			err := cd.mariadbmanager.Create(ctx, dbSetting)
+			if err != nil {
+				log.WithError(err).
+					WithField("Database", dbSetting.Database).
+					WithField("Password", dbSetting.Password)
+			}
+		}
+	}
+
+	// TODO: アプリケーションの設定の取得
+	applicationNeedsMongoDB := true
+	if applicationNeedsMongoDB {
+		dbExists, err := cd.mongodbmanager.IsExist(context.Background(), dbName)
+		if err != nil {
+			log.WithError(err).
+				WithField("repo", repoURL).
+				WithField("refs", branchName).
+				Error("failed to check if database exists")
+			return
+		}
+
+		if !dbExists {
+			// TODO dbUser, dbSettingを設定から取得する
+			dbUser := repoURL
+			dbPassword := generateRandomString(32)
+			dbSetting := domain.CreateArgs{
+				Database: dbUser,
+				Password: dbPassword,
+			}
+
+			err := cd.mongodbmanager.Create(ctx, dbSetting)
+			if err != nil {
+				log.WithError(err).
+					WithField("Database", dbSetting.Database).
+					WithField("Password", dbSetting.Password)
+			}
 		}
 	}
 
