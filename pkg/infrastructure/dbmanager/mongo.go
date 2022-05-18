@@ -16,10 +16,10 @@ type mongoManagerImpl struct {
 }
 
 type MongoConfig struct {
-	Host          string
-	Port          int
-	AdminUser     string
-	AdminPassword string
+	Host          string `mapstructure:"host" yaml:"host"`
+	Port          int    `mapstructure:"port" yaml:"port"`
+	AdminUser     string `mapstructure:"adminUser" yaml:"adminUser"`
+	AdminPassword string `mapstructure:"adminPassword" yaml:"adminPassword"`
 }
 
 func NewMongoManager(config MongoConfig) (domain.MongoManager, error) {

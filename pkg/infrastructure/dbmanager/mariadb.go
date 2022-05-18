@@ -14,10 +14,10 @@ type mariaDBManagerImpl struct {
 }
 
 type MariaDBConfig struct {
-	Host          string
-	Port          int
-	AdminUser     string
-	AdminPassword string
+	Host          string `mapstructure:"host" yaml:"host"`
+	Port          int    `mapstructure:"port" yaml:"port"`
+	AdminUser     string `mapstructure:"adminUser" yaml:"adminUser"`
+	AdminPassword string `mapstructure:"adminPassword" yaml:"adminPassword"`
 }
 
 func NewMariaDBManager(c MariaDBConfig) (domain.MariaDBManager, error) {

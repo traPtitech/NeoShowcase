@@ -15,6 +15,7 @@ import (
 	"github.com/traPtitech/neoshowcase/pkg/infrastructure/admindb"
 	"github.com/traPtitech/neoshowcase/pkg/infrastructure/backend/dockerimpl"
 	"github.com/traPtitech/neoshowcase/pkg/infrastructure/backend/k8simpl"
+	"github.com/traPtitech/neoshowcase/pkg/infrastructure/dbmanager"
 	"github.com/traPtitech/neoshowcase/pkg/infrastructure/eventbus"
 	"github.com/traPtitech/neoshowcase/pkg/interface/broker"
 	"github.com/traPtitech/neoshowcase/pkg/interface/grpc"
@@ -78,7 +79,17 @@ func NewWithDocker(c2 Config) (*Server, error) {
 	appDeployService := usecase.NewAppDeployService(backend, staticSiteServiceClient, dockerImageRegistryString, dockerImageNamePrefixString, db)
 	buildLogRepository := repository.NewBuildLogRepository(db)
 	appBuildService := usecase.NewAppBuildService(applicationRepository, buildLogRepository, builderServiceClient, dockerImageRegistryString, dockerImageNamePrefixString)
-	continuousDeploymentService := usecase.NewContinuousDeploymentService(bus, applicationRepository, appDeployService, appBuildService)
+	mariaDBConfig := c2.MariaDB
+	mariaDBManager, err := dbmanager.NewMariaDBManager(mariaDBConfig)
+	if err != nil {
+		return nil, err
+	}
+	mongoConfig := c2.Mongo
+	mongoManager, err := dbmanager.NewMongoManager(mongoConfig)
+	if err != nil {
+		return nil, err
+	}
+	continuousDeploymentService := usecase.NewContinuousDeploymentService(bus, applicationRepository, appDeployService, appBuildService, mariaDBManager, mongoManager)
 	mainServer := &Server{
 		webserver:           server,
 		db:                  db,
@@ -146,7 +157,17 @@ func NewWithK8S(c2 Config) (*Server, error) {
 	appDeployService := usecase.NewAppDeployService(backend, staticSiteServiceClient, dockerImageRegistryString, dockerImageNamePrefixString, db)
 	buildLogRepository := repository.NewBuildLogRepository(db)
 	appBuildService := usecase.NewAppBuildService(applicationRepository, buildLogRepository, builderServiceClient, dockerImageRegistryString, dockerImageNamePrefixString)
-	continuousDeploymentService := usecase.NewContinuousDeploymentService(bus, applicationRepository, appDeployService, appBuildService)
+	mariaDBConfig := c2.MariaDB
+	mariaDBManager, err := dbmanager.NewMariaDBManager(mariaDBConfig)
+	if err != nil {
+		return nil, err
+	}
+	mongoConfig := c2.Mongo
+	mongoManager, err := dbmanager.NewMongoManager(mongoConfig)
+	if err != nil {
+		return nil, err
+	}
+	continuousDeploymentService := usecase.NewContinuousDeploymentService(bus, applicationRepository, appDeployService, appBuildService, mariaDBManager, mongoManager)
 	mainServer := &Server{
 		webserver:           server,
 		db:                  db,
@@ -162,10 +183,10 @@ func NewWithK8S(c2 Config) (*Server, error) {
 
 // wire.go:
 
-var commonSet = wire.NewSet(web.NewServer, usecase.NewGitPushWebhookService, usecase.NewAppBuildService, usecase.NewAppDeployService, usecase.NewContinuousDeploymentService, repository.NewApplicationRepository, repository.NewGitRepositoryRepository, repository.NewBuildLogRepository, broker.NewBuilderEventsBroker, eventbus.NewLocal, admindb.New, handlerSet,
+var commonSet = wire.NewSet(web.NewServer, dbmanager.NewMariaDBManager, dbmanager.NewMongoManager, usecase.NewGitPushWebhookService, usecase.NewAppBuildService, usecase.NewAppDeployService, usecase.NewContinuousDeploymentService, repository.NewApplicationRepository, repository.NewGitRepositoryRepository, repository.NewBuildLogRepository, eventbus.NewLocal, admindb.New, handlerSet,
 	provideWebServerConfig,
 	provideImagePrefix,
-	provideImageRegistry, hub.New, grpc.NewBuilderServiceClientConn, grpc.NewStaticSiteServiceClientConn, grpc.NewBuilderServiceClient, grpc.NewStaticSiteServiceClient, wire.FieldsOf(new(Config), "Builder", "SSGen", "DB"), wire.Struct(new(Router), "*"), wire.Bind(new(web.Router), new(*Router)), wire.Struct(new(Server), "*"),
+	provideImageRegistry, hub.New, grpc.NewBuilderServiceClientConn, grpc.NewStaticSiteServiceClientConn, grpc.NewBuilderServiceClient, grpc.NewStaticSiteServiceClient, wire.FieldsOf(new(Config), "Builder", "SSGen", "DB", "MariaDB", "Mongo"), wire.Struct(new(Router), "*"), wire.Bind(new(web.Router), new(*Router)), wire.Struct(new(Server), "*"),
 )
 
 func New(c2 Config) (*Server, error) {

@@ -13,6 +13,7 @@ import (
 	"github.com/traPtitech/neoshowcase/pkg/infrastructure/admindb"
 	"github.com/traPtitech/neoshowcase/pkg/infrastructure/backend/dockerimpl"
 	"github.com/traPtitech/neoshowcase/pkg/infrastructure/backend/k8simpl"
+	"github.com/traPtitech/neoshowcase/pkg/infrastructure/dbmanager"
 	"github.com/traPtitech/neoshowcase/pkg/infrastructure/eventbus"
 	"github.com/traPtitech/neoshowcase/pkg/interface/broker"
 	"github.com/traPtitech/neoshowcase/pkg/interface/grpc"
@@ -45,7 +46,7 @@ var commonSet = wire.NewSet(
 	grpc.NewStaticSiteServiceClientConn,
 	grpc.NewBuilderServiceClient,
 	grpc.NewStaticSiteServiceClient,
-	wire.FieldsOf(new(Config), "Builder", "SSGen", "DB"),
+	wire.FieldsOf(new(Config), "Builder", "SSGen", "DB", "MariaDB", "Mongo"),
 	wire.Struct(new(Router), "*"),
 	wire.Bind(new(web.Router), new(*Router)),
 	wire.Struct(new(Server), "*"),

@@ -5,6 +5,7 @@ import (
 
 	"github.com/traPtitech/neoshowcase/pkg/domain/builder"
 	"github.com/traPtitech/neoshowcase/pkg/infrastructure/admindb"
+	"github.com/traPtitech/neoshowcase/pkg/infrastructure/dbmanager"
 	"github.com/traPtitech/neoshowcase/pkg/interface/grpc"
 )
 
@@ -18,8 +19,9 @@ type Config struct {
 	Builder grpc.BuilderServiceClientConfig    `mapstructure:"builder" yaml:"builder"`
 	SSGen   grpc.StaticSiteServiceClientConfig `mapstructure:"ssgen" yaml:"ssgen"`
 	DB      admindb.Config                     `mapstructure:"db" yaml:"db"`
-	// TODO DBMS
-	HTTP struct {
+	MariaDB dbmanager.MariaDBConfig            `mapstructure:"mariadb" yaml:"mariadb"`
+	Mongo   dbmanager.MongoConfig              `mapstructure:"mongo" yaml:"mongo"`
+	HTTP    struct {
 		Debug bool `mapstructure:"debug" yaml:"debug"`
 		Port  int  `mapstructure:"port" yaml:"port"`
 	} `mapstructure:"http" yaml:"http"`
