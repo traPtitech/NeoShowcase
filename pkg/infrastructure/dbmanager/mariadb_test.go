@@ -58,6 +58,26 @@ func TestMariaDBManagerImpl_Delete(t *testing.T) {
 	assert.NoError(t, err)
 }
 
+func TestMariaDBManagerImpl_Exist(t *testing.T) {
+	skipOrDo(t)
+	t.Parallel()
+	m, _ := initMariaDBManager(t)
+
+	a := domain.CreateArgs{
+		Database: "testExist",
+		Password: "testExist",
+	}
+
+	dbExists, _ := m.IsExist(context.Background(), a.Database)
+	assert.Equal(t, false, dbExists)
+
+	ctx := context.Background()
+	_ = m.Create(ctx, a)
+
+	dbExists, _ = m.IsExist(ctx, a.Database)
+	assert.Equal(t, true, dbExists)
+}
+
 func initMariaDBManager(t *testing.T) (*mariaDBManagerImpl, *sql.DB) {
 	t.Helper()
 

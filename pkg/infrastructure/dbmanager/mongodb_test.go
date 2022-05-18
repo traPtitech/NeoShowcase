@@ -58,6 +58,26 @@ func TestMongoDBManagerImpl_Delete(t *testing.T) {
 	assert.NoError(t, err)
 }
 
+func TestMongoDBManagerImpl_Exist(t *testing.T) {
+	skipOrDo(t)
+	t.Parallel()
+	m, _ := initMongoDBManager(t)
+
+	a := domain.CreateArgs{
+		Database: "testExist",
+		Password: "testExist",
+	}
+
+	dbExists, _ := m.IsExist(context.Background(), a.Database)
+	assert.Equal(t, false, dbExists)
+
+	ctx := context.Background()
+	_ = m.Create(ctx, a)
+
+	dbExists, _ = m.IsExist(ctx, a.Database)
+	assert.Equal(t, true, dbExists)
+}
+
 func initMongoDBManager(t *testing.T) (*mongoDBManagerImpl, *mongo.Client) {
 	t.Helper()
 
