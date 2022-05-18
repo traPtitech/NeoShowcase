@@ -75,7 +75,7 @@ func (m *mariaDBManagerImpl) Delete(ctx context.Context, args domain.DeleteArgs)
 	return nil
 }
 
-func (m *mariaDBManagerImpl) IsExist(ctx context.Context, dbName string) (bool, error) {
+func (m *mariaDBManagerImpl) IsExist(ctx context.Context, name string) (bool, error) {
 	rows, err := m.db.QueryContext(ctx, "SHOW DATABASES")
 	if err != nil {
 		return false, err
@@ -83,9 +83,9 @@ func (m *mariaDBManagerImpl) IsExist(ctx context.Context, dbName string) (bool, 
 	defer rows.Close()
 
 	for rows.Next() {
-		var databaseName string
-		rows.Scan(&databaseName)
-		if databaseName == dbName {
+		var dbName string
+		rows.Scan(&dbName)
+		if dbName == name {
 			return true, nil
 		}
 	}
