@@ -27,8 +27,8 @@ type MariaDBManager interface {
 	Close(ctx context.Context) error
 }
 
-// MongoManager Mongoマネージャー
-type MongoManager interface {
+// MongoDBManager Mongoマネージャー
+type MongoDBManager interface {
 	// Create データベースが存在しない場合、作成します
 	Create(ctx context.Context, args CreateArgs) error
 	// Delete データベースが存在する場合、削除します

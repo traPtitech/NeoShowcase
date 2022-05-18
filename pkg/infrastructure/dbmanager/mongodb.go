@@ -11,18 +11,18 @@ import (
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
-type mongoManagerImpl struct {
+type mongoDBManagerImpl struct {
 	client *mongo.Client
 }
 
-type MongoConfig struct {
+type MongoDBConfig struct {
 	Host          string `mapstructure:"host" yaml:"host"`
 	Port          int    `mapstructure:"port" yaml:"port"`
 	AdminUser     string `mapstructure:"adminUser" yaml:"adminUser"`
 	AdminPassword string `mapstructure:"adminPassword" yaml:"adminPassword"`
 }
 
-func NewMongoManager(config MongoConfig) (domain.MongoManager, error) {
+func NewMongoDBManager(config MongoDBConfig) (domain.MongoDBManager, error) {
 	// DB接続
 	client, err := mongo.NewClient(
 		options.Client().ApplyURI(fmt.Sprintf("mongodb://%s:%s@%s:%d", config.AdminUser, config.AdminPassword, config.Host, config.Port)),
@@ -36,10 +36,10 @@ func NewMongoManager(config MongoConfig) (domain.MongoManager, error) {
 		return nil, fmt.Errorf("failed to connect: %w", err)
 	}
 
-	return &mongoManagerImpl{client: client}, nil
+	return &mongoDBManagerImpl{client: client}, nil
 }
 
-func (m *mongoManagerImpl) Create(ctx context.Context, args domain.CreateArgs) error {
+func (m *mongoDBManagerImpl) Create(ctx context.Context, args domain.CreateArgs) error {
 	client := m.client
 	ctx, cancel := context.WithTimeout(ctx, 20*time.Second)
 	defer cancel()
@@ -50,7 +50,7 @@ func (m *mongoManagerImpl) Create(ctx context.Context, args domain.CreateArgs) e
 	return nil
 }
 
-func (m *mongoManagerImpl) Delete(ctx context.Context, args domain.DeleteArgs) error {
+func (m *mongoDBManagerImpl) Delete(ctx context.Context, args domain.DeleteArgs) error {
 	client := m.client
 	ctx, cancel := context.WithTimeout(ctx, 20*time.Second)
 	defer cancel()
@@ -65,7 +65,7 @@ func (m *mongoManagerImpl) Delete(ctx context.Context, args domain.DeleteArgs) e
 	return nil
 }
 
-func (m *mongoManagerImpl) IsExist(ctx context.Context, name string) (bool, error) {
+func (m *mongoDBManagerImpl) IsExist(ctx context.Context, name string) (bool, error) {
 	dbNames, err := m.client.ListDatabaseNames(ctx, bson.D{})
 	if err != nil {
 		return false, err
@@ -78,6 +78,6 @@ func (m *mongoManagerImpl) IsExist(ctx context.Context, name string) (bool, erro
 	return false, nil
 }
 
-func (m *mongoManagerImpl) Close(ctx context.Context) error {
+func (m *mongoDBManagerImpl) Close(ctx context.Context) error {
 	return m.client.Disconnect(ctx)
 }

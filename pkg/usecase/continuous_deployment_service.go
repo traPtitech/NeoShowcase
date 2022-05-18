@@ -22,10 +22,10 @@ type continuousDeploymentService struct {
 	deployer       AppDeployService
 	builder        AppBuildService
 	mariadbmanager domain.MariaDBManager
-	mongodbmanager domain.MongoManager
+	mongodbmanager domain.MongoDBManager
 }
 
-func NewContinuousDeploymentService(bus domain.Bus, repo repository.ApplicationRepository, deployer AppDeployService, builder AppBuildService, mariadbmanager domain.MariaDBManager, mongodbmanager domain.MongoManager) ContinuousDeploymentService {
+func NewContinuousDeploymentService(bus domain.Bus, repo repository.ApplicationRepository, deployer AppDeployService, builder AppBuildService, mariadbmanager domain.MariaDBManager, mongodbmanager domain.MongoDBManager) ContinuousDeploymentService {
 	return &continuousDeploymentService{
 		bus:            bus,
 		repo:           repo,

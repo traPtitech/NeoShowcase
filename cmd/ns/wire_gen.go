@@ -84,12 +84,12 @@ func NewWithDocker(c2 Config) (*Server, error) {
 	if err != nil {
 		return nil, err
 	}
-	mongoConfig := c2.Mongo
-	mongoManager, err := dbmanager.NewMongoManager(mongoConfig)
+	mongoDBConfig := c2.MongoDB
+	mongoDBManager, err := dbmanager.NewMongoDBManager(mongoDBConfig)
 	if err != nil {
 		return nil, err
 	}
-	continuousDeploymentService := usecase.NewContinuousDeploymentService(bus, applicationRepository, appDeployService, appBuildService, mariaDBManager, mongoManager)
+	continuousDeploymentService := usecase.NewContinuousDeploymentService(bus, applicationRepository, appDeployService, appBuildService, mariaDBManager, mongoDBManager)
 	mainServer := &Server{
 		webserver:           server,
 		db:                  db,
@@ -162,12 +162,12 @@ func NewWithK8S(c2 Config) (*Server, error) {
 	if err != nil {
 		return nil, err
 	}
-	mongoConfig := c2.Mongo
-	mongoManager, err := dbmanager.NewMongoManager(mongoConfig)
+	mongoDBConfig := c2.MongoDB
+	mongoDBManager, err := dbmanager.NewMongoDBManager(mongoDBConfig)
 	if err != nil {
 		return nil, err
 	}
-	continuousDeploymentService := usecase.NewContinuousDeploymentService(bus, applicationRepository, appDeployService, appBuildService, mariaDBManager, mongoManager)
+	continuousDeploymentService := usecase.NewContinuousDeploymentService(bus, applicationRepository, appDeployService, appBuildService, mariaDBManager, mongoDBManager)
 	mainServer := &Server{
 		webserver:           server,
 		db:                  db,
@@ -183,10 +183,10 @@ func NewWithK8S(c2 Config) (*Server, error) {
 
 // wire.go:
 
-var commonSet = wire.NewSet(web.NewServer, dbmanager.NewMariaDBManager, dbmanager.NewMongoManager, usecase.NewGitPushWebhookService, usecase.NewAppBuildService, usecase.NewAppDeployService, usecase.NewContinuousDeploymentService, repository.NewApplicationRepository, repository.NewGitRepositoryRepository, repository.NewBuildLogRepository, eventbus.NewLocal, admindb.New, handlerSet,
+var commonSet = wire.NewSet(web.NewServer, dbmanager.NewMariaDBManager, dbmanager.NewMongoDBManager, usecase.NewGitPushWebhookService, usecase.NewAppBuildService, usecase.NewAppDeployService, usecase.NewContinuousDeploymentService, repository.NewApplicationRepository, repository.NewGitRepositoryRepository, repository.NewBuildLogRepository, broker.NewBuilderEventsBroker, eventbus.NewLocal, admindb.New, handlerSet,
 	provideWebServerConfig,
 	provideImagePrefix,
-	provideImageRegistry, hub.New, grpc.NewBuilderServiceClientConn, grpc.NewStaticSiteServiceClientConn, grpc.NewBuilderServiceClient, grpc.NewStaticSiteServiceClient, wire.FieldsOf(new(Config), "Builder", "SSGen", "DB", "MariaDB", "Mongo"), wire.Struct(new(Router), "*"), wire.Bind(new(web.Router), new(*Router)), wire.Struct(new(Server), "*"),
+	provideImageRegistry, hub.New, grpc.NewBuilderServiceClientConn, grpc.NewStaticSiteServiceClientConn, grpc.NewBuilderServiceClient, grpc.NewStaticSiteServiceClient, wire.FieldsOf(new(Config), "Builder", "SSGen", "DB", "MariaDB", "MongoDB"), wire.Struct(new(Router), "*"), wire.Bind(new(web.Router), new(*Router)), wire.Struct(new(Server), "*"),
 )
 
 func New(c2 Config) (*Server, error) {

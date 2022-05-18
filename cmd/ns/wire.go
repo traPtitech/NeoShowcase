@@ -26,7 +26,7 @@ import (
 var commonSet = wire.NewSet(
 	web.NewServer,
 	dbmanager.NewMariaDBManager,
-	dbmanager.NewMongoManager,
+	dbmanager.NewMongoDBManager,
 	usecase.NewGitPushWebhookService,
 	usecase.NewAppBuildService,
 	usecase.NewAppDeployService,
@@ -46,7 +46,7 @@ var commonSet = wire.NewSet(
 	grpc.NewStaticSiteServiceClientConn,
 	grpc.NewBuilderServiceClient,
 	grpc.NewStaticSiteServiceClient,
-	wire.FieldsOf(new(Config), "Builder", "SSGen", "DB", "MariaDB", "Mongo"),
+	wire.FieldsOf(new(Config), "Builder", "SSGen", "DB", "MariaDB", "MongoDB"),
 	wire.Struct(new(Router), "*"),
 	wire.Bind(new(web.Router), new(*Router)),
 	wire.Struct(new(Server), "*"),

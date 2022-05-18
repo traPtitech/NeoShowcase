@@ -20,7 +20,7 @@ type Config struct {
 	SSGen   grpc.StaticSiteServiceClientConfig `mapstructure:"ssgen" yaml:"ssgen"`
 	DB      admindb.Config                     `mapstructure:"db" yaml:"db"`
 	MariaDB dbmanager.MariaDBConfig            `mapstructure:"mariadb" yaml:"mariadb"`
-	Mongo   dbmanager.MongoConfig              `mapstructure:"mongo" yaml:"mongo"`
+	MongoDB dbmanager.MongoDBConfig            `mapstructure:"mongodb" yaml:"mongodb"`
 	HTTP    struct {
 		Debug bool `mapstructure:"debug" yaml:"debug"`
 		Port  int  `mapstructure:"port" yaml:"port"`
