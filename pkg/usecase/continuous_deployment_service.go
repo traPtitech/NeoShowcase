@@ -91,7 +91,9 @@ func (cd *continuousDeploymentService) handleWebhookRepositoryPush(repoURL strin
 			Error("failed to check if database exists")
 		return
 	}
+	ctx := context.Background()
 	if applicationNeedsDB && !dbExists {
+		// TODO dbUser, dbSettingを設定から取得する
 		dbUser := repoURL
 		dbPassword := generateRandomString(32)
 		dbSetting := domain.CreateArgs{
@@ -99,7 +101,7 @@ func (cd *continuousDeploymentService) handleWebhookRepositoryPush(repoURL strin
 			Password: dbPassword,
 		}
 
-		err := cd.dbmanager.Create(context.Background(), dbSetting)
+		err := cd.dbmanager.Create(ctx, dbSetting)
 		if err != nil {
 			log.WithError(err).
 				WithField("Database", dbSetting.Database).
@@ -107,7 +109,7 @@ func (cd *continuousDeploymentService) handleWebhookRepositoryPush(repoURL strin
 		}
 	}
 
-	branch, err := cd.repo.GetBranchByRepoAndBranchName(context.Background(), repoURL, branchName)
+	branch, err := cd.repo.GetBranchByRepoAndBranchName(ctx, repoURL, branchName)
 	if err != nil {
 		if err == repository.ErrNotFound {
 			return
@@ -119,7 +121,7 @@ func (cd *continuousDeploymentService) handleWebhookRepositoryPush(repoURL strin
 		return
 	}
 
-	_, err = cd.builder.QueueBuild(context.Background(), branch)
+	_, err = cd.builder.QueueBuild(ctx, branch)
 	if err != nil {
 		log.WithError(err).
 			WithField("appID", branch.ApplicationID).
