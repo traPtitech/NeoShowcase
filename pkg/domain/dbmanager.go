@@ -23,7 +23,7 @@ type MariaDBManager interface {
 	// Delete データベースが存在する場合、削除します
 	Delete(ctx context.Context, args DeleteArgs) error
 	// IsExist データベースが存在するか確認します
-	IsExist(ctx context.Context) (bool, error)
+	IsExist(ctx context.Context, dbname string) (bool, error)
 	Close(ctx context.Context) error
 }
 
@@ -34,6 +34,6 @@ type MongoManager interface {
 	// Delete データベースが存在する場合、削除します
 	Delete(ctx context.Context, args DeleteArgs) error
 	// IsExist データベースが存在するか確認します
-	IsExist(ctx context.Context) (bool, error)
+	IsExist(ctx context.Context, dbname string) (bool, error)
 	Close(ctx context.Context) error
 }

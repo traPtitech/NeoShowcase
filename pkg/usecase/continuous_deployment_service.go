@@ -80,9 +80,17 @@ func (cd *continuousDeploymentService) handleWebhookRepositoryPush(repoURL strin
 		WithField("refs", branchName).
 		Info("repository push event received")
 
+	dbName := repoURL + branchName
 	applicationNeedsDB := true
-	existDB, err := cd.dbmanager.IsExist(context.Background())
-	if applicationNeedsDB && existDB {
+	existDB, err := cd.dbmanager.IsExist(context.Background(), dbName)
+	if err != nil {
+		log.WithError(err).
+			WithField("repo", repoURL).
+			WithField("refs", branchName).
+			Error("failed to check if database exists")
+		return
+	}
+	if applicationNeedsDB && !existDB {
 		dbUser := repoURL
 		dbPassword := generateRandomString(32)
 		dbSetting := domain.CreateArgs{
