@@ -66,9 +66,12 @@ func (m *mongoDBManagerImpl) Delete(ctx context.Context, args domain.DeleteArgs)
 }
 
 func (m *mongoDBManagerImpl) IsExist(ctx context.Context, name string) (bool, error) {
-	dbNames, err := m.client.ListDatabaseNames(ctx, bson.D{})
+	dbNames, err := m.client.ListDatabaseNames(ctx, bson.D{{}})
 	if err != nil {
 		return false, err
+	}
+	if len(dbNames) == 1 {
+		return true, nil
 	}
 	for _, dbName := range dbNames {
 		if dbName == name {

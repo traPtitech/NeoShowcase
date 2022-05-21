@@ -68,13 +68,15 @@ func TestMariaDBManagerImpl_Exist(t *testing.T) {
 		Password: "testExist",
 	}
 
-	dbExists, _ := m.IsExist(context.Background(), a.Database)
+	dbExists, err := m.IsExist(context.Background(), a.Database)
+	assert.NoError(t, err)
 	assert.Equal(t, false, dbExists)
 
 	ctx := context.Background()
 	_ = m.Create(ctx, a)
 
-	dbExists, _ = m.IsExist(ctx, a.Database)
+	dbExists, err = m.IsExist(ctx, a.Database)
+	assert.NoError(t, err)
 	assert.Equal(t, true, dbExists)
 }
 
