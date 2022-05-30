@@ -3,6 +3,7 @@ package usecase
 import (
 	"context"
 	"testing"
+	"time"
 
 	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/require"
@@ -137,51 +138,74 @@ func TestAppBuildService_QueueBuild(t *testing.T) {
 		c := mock_pb.NewMockBuilderServiceClient(mockCtrl)
 		s := NewAppBuildService(appRepo, buildLogRepo, c, "TestRegistry", "TestPrefix")
 		queue := &s.(*appBuildService).queue
-		branch := &domain.Branch{
+
+		branch1 := &domain.Branch{
 			ID:            "1d9cc06d-813f-4cf7-947e-546e1a814fed",
 			ApplicationID: "d563e2de-7905-4267-8a9c-51520aac02b3",
 			BranchName:    "develop",
 			BuildType:     builder.BuildTypeStatic,
 		}
-		res := &domain.Application{
+		branch2 := &domain.Branch{
+			ID:            "3a874dab-432e-45ec-b574-c347ee5ae935",
+			ApplicationID: "19005490-5119-40ef-95e2-24a193e64a38",
+			BranchName:    "main",
+			BuildType:     builder.BuildTypeStatic,
+		}
+		res1 := &domain.Application{
 			Repository: domain.Repository{
 				RemoteURL: "https://git.trap.jp/hijiki51/git-test",
 			},
 		}
-		buildLog := &domain.BuildLog{
+		res2 := &domain.Application{
+			Repository: domain.Repository{
+				RemoteURL: "https://git.trap.jp/hijiki51/git-test",
+			},
+		}
+		buildLog1 := &domain.BuildLog{
 			ID:       "f01691dd-985a-48c9-8b47-205af468431a",
 			Result:   builder.BuildStatusQueued,
-			BranchID: branch.ID,
+			BranchID: branch1.ID,
+		}
+		buildLog2 := &domain.BuildLog{
+			ID:       "4bd30598-2962-416a-86b5-635899a96a65",
+			Result:   builder.BuildStatusQueued,
+			BranchID: branch2.ID,
 		}
 
 		appRepo.EXPECT().
-			GetApplicationByID(context.Background(), branch.ApplicationID).Return(res, nil)
+			GetApplicationByID(context.Background(), branch1.ApplicationID).Return(res1, nil)
+		appRepo.EXPECT().
+			GetApplicationByID(context.Background(), branch2.ApplicationID).Return(res2, nil)
 
-		buildLogRepo.EXPECT().CreateBuildLog(context.Background(), branch.ID).Return(buildLog, nil)
+		buildLogRepo.EXPECT().CreateBuildLog(context.Background(), branch1.ID).Return(buildLog1, nil)
+		buildLogRepo.EXPECT().CreateBuildLog(context.Background(), branch2.ID).Return(buildLog2, nil)
 
 		c.EXPECT().
 			GetStatus(context.Background(), &emptypb.Empty{}).
 			Return(&pb.GetStatusResponse{
-				Status:  pb.BuilderStatus_WAITING,
-				BuildId: buildLog.ID,
+				Status:  pb.BuilderStatus_UNAVAILABLE,
+				BuildId: "",
 			}, nil).
 			AnyTimes()
 
-		id, err := s.QueueBuild(context.Background(), branch)
+		id1, err := s.QueueBuild(context.Background(), branch1)
 		if err != nil {
 			t.Fatal(err)
 		}
+		id2, err := s.QueueBuild(context.Background(), branch2)
+		if err != nil {
+			t.Fatal(err)
+		}
+		time.Sleep(queueCheckInterval * 2)
+
 		require.Equal(t, len(queue.data), 1)
-		require.Equal(t, *queue.data[0], buildJob{
-			buildID: buildLog.ID,
-			app:     res,
-			branch:  branch,
-		})
 
-		err = s.CancelBuild(context.Background(), id)
+		err = s.CancelBuild(context.Background(), id1)
+		require.Equal(t, len(queue.data), 1)
+		require.NotNil(t, err)
+
+		err = s.CancelBuild(context.Background(), id2)
 		require.Equal(t, len(queue.data), 0)
-
-		s.Shutdown()
 		require.Nil(t, err)
 	})
 }
