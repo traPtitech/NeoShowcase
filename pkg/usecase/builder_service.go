@@ -235,8 +235,7 @@ func (s *builderService) processTask(task *builder.Task, intState *internalTaskS
 
 				// TODO: エラー処理
 				stat, _ := os.Stat(filename)
-				size := stat.Size()
-				err = s.artifactRepo.CreateArtifact(context.Background(), size, task.BuildID, sid)
+				err = s.artifactRepo.CreateArtifact(context.Background(), stat.Size(), task.BuildID, sid)
 				if err != nil {
 					log.WithError(err).Errorf("failed to create artifact (BuildID: %s, ArtifactID: %s)", task.BuildID, sid)
 				}
