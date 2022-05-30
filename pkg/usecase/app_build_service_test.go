@@ -197,15 +197,20 @@ func TestAppBuildService_QueueBuild(t *testing.T) {
 			t.Fatal(err)
 		}
 		time.Sleep(queueCheckInterval * 2)
-
+		queue.mutex.RLock()
 		require.Equal(t, len(queue.data), 1)
+		queue.mutex.RUnlock()
 
 		err = s.CancelBuild(context.Background(), id1)
+		queue.mutex.RLock()
 		require.Equal(t, len(queue.data), 1)
+		queue.mutex.RUnlock()
 		require.NotNil(t, err)
 
 		err = s.CancelBuild(context.Background(), id2)
+		queue.mutex.RLock()
 		require.Equal(t, len(queue.data), 0)
+		queue.mutex.RUnlock()
 		require.Nil(t, err)
 	})
 }
