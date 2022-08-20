@@ -180,6 +180,7 @@ func TestAppBuildService_QueueBuild(t *testing.T) {
 		buildLogRepo.EXPECT().CreateBuildLog(context.Background(), branch1.ID).Return(buildLog1, nil)
 		buildLogRepo.EXPECT().CreateBuildLog(context.Background(), branch2.ID).Return(buildLog2, nil)
 
+		// stop processing queue
 		c.EXPECT().
 			GetStatus(context.Background(), &emptypb.Empty{}).
 			Return(&pb.GetStatusResponse{
@@ -196,17 +197,22 @@ func TestAppBuildService_QueueBuild(t *testing.T) {
 		if err != nil {
 			t.Fatal(err)
 		}
+
+		// wait for the Pop() of first item
 		time.Sleep(queueCheckInterval * 2)
+
 		queue.mutex.RLock()
 		require.Equal(t, len(queue.data), 1)
 		queue.mutex.RUnlock()
 
+		// could not cancel the latest one for now
 		err = s.CancelBuild(context.Background(), id1)
 		queue.mutex.RLock()
 		require.Equal(t, len(queue.data), 1)
 		queue.mutex.RUnlock()
 		require.NotNil(t, err)
 
+		// cancel waiting job
 		err = s.CancelBuild(context.Background(), id2)
 		queue.mutex.RLock()
 		require.Equal(t, len(queue.data), 0)
