@@ -99,17 +99,18 @@ func (s *BuilderService) StartBuildImage(ctx context.Context, request *pb.StartB
 		BuildSource:  convertBuildSourceFromPB(request.Source),
 		BuildOptions: convertBuildOptionsFromPB(request.Options),
 		ImageName:    request.ImageName,
+		BuildID:      request.BuildId,
 	}
 	// ブランチIDが指定されていない場合はデバッグビルド
 	if len(request.BranchId) > 0 {
 		task.BranchID = null.StringFrom(request.BranchId)
 	}
 
-	id, err := s.svc.StartBuild(ctx, task)
+	err := s.svc.StartBuild(ctx, task)
 	if err != nil {
 		return nil, status.Errorf(codes.Internal, "%v", err)
 	}
-	return &pb.StartBuildImageResponse{BuildId: id}, nil
+	return &pb.StartBuildImageResponse{}, nil
 }
 
 func (s *BuilderService) StartBuildStatic(ctx context.Context, request *pb.StartBuildStaticRequest) (*pb.StartBuildStaticResponse, error) {
@@ -123,11 +124,11 @@ func (s *BuilderService) StartBuildStatic(ctx context.Context, request *pb.Start
 		task.BranchID = null.StringFrom(request.BranchId)
 	}
 
-	id, err := s.svc.StartBuild(ctx, task)
+	err := s.svc.StartBuild(ctx, task)
 	if err != nil {
 		return nil, status.Errorf(codes.Internal, "%v", err)
 	}
-	return &pb.StartBuildStaticResponse{BuildId: id}, nil
+	return &pb.StartBuildStaticResponse{}, nil
 }
 
 func (s *BuilderService) CancelTask(ctx context.Context, _ *emptypb.Empty) (*pb.CancelTaskResponse, error) {

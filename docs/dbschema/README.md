@@ -9,6 +9,7 @@
 | [available_domains](available_domains.md) | 3 | 利用可能ドメインテーブル | BASE TABLE |
 | [branches](branches.md) | 7 | アプリ環境テーブル | BASE TABLE |
 | [build_logs](build_logs.md) | 5 | ビルドログテーブル | BASE TABLE |
+| [build_status](build_status.md) | 1 | ビルドの状態 | BASE TABLE |
 | [environments](environments.md) | 4 | 環境変数テーブル | BASE TABLE |
 | [repositories](repositories.md) | 2 | Gitリポジトリテーブル | BASE TABLE |
 | [websites](websites.md) | 6 | Webサイトテーブル | BASE TABLE |

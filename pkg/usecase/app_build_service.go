@@ -15,82 +15,127 @@ import (
 )
 
 const (
-	queueBufferSize = 10
-	requestInterval = 10 * time.Second
+	queueCheckInterval = 1 * time.Second
+	requestInterval    = 10 * time.Second
 )
 
 type AppBuildService interface {
-	QueueBuild(ctx context.Context, branch *domain.Branch) error
+	QueueBuild(ctx context.Context, branch *domain.Branch) (string, error)
+	CancelBuild(ctx context.Context, buildID string) error
 	Shutdown()
 }
 
 type appBuildService struct {
-	repo    repository.ApplicationRepository
-	builder pb.BuilderServiceClient
+	appRepo      repository.ApplicationRepository
+	buildLogRepo repository.BuildLogRepository
+	builder      pb.BuilderServiceClient
 
-	queue           chan *buildJob
+	queue           queue
 	queueWait       sync.WaitGroup
+	cancel          context.CancelFunc
 	imageRegistry   string
 	imageNamePrefix string
 }
 
 type buildJob struct {
-	App    *domain.Application
-	Branch *domain.Branch
+	buildID string
+	app     *domain.Application
+	branch  *domain.Branch
 }
 
-func NewAppBuildService(repo repository.ApplicationRepository, builder pb.BuilderServiceClient, registry builder.DockerImageRegistryString, prefix builder.DockerImageNamePrefixString) AppBuildService {
+func NewAppBuildService(appRepo repository.ApplicationRepository, buildLogRepo repository.BuildLogRepository, builder pb.BuilderServiceClient, registry builder.DockerImageRegistryString, prefix builder.DockerImageNamePrefixString) AppBuildService {
+	ctx, cancel := context.WithCancel(context.Background())
+
 	s := &appBuildService{
-		repo:            repo,
+		appRepo:         appRepo,
+		buildLogRepo:    buildLogRepo,
 		builder:         builder,
-		queue:           make(chan *buildJob, queueBufferSize),
+		queue:           newQueue(),
+		cancel:          cancel,
 		imageRegistry:   string(registry),
 		imageNamePrefix: string(prefix),
 	}
-	go s.startQueueManager()
+	go s.startQueueManager(ctx)
 	return s
 }
 
-func (s *appBuildService) QueueBuild(ctx context.Context, branch *domain.Branch) error {
-	app, err := s.repo.GetApplicationByID(ctx, branch.ApplicationID)
+func (s *appBuildService) QueueBuild(ctx context.Context, branch *domain.Branch) (string, error) {
+	app, err := s.appRepo.GetApplicationByID(ctx, branch.ApplicationID)
 	if err != nil {
-		return fmt.Errorf("failed to QueueBuild: %w", err)
+		return "", fmt.Errorf("Failed to QueueBuild: %w", err)
 	}
+
+	// ビルドログのエントリをDBに挿入
+	buildLog, err := s.buildLogRepo.CreateBuildLog(ctx, branch.ID)
+	if err != nil {
+		log.WithError(err).Errorf("failed to create build log: %s", branch.ID)
+		return "", fmt.Errorf("failed to create build log: %w", err)
+	}
+
 	s.queueWait.Add(1)
-	s.queue <- &buildJob{
-		App:    app,
-		Branch: branch,
-	}
-	return nil
+	s.queue.Push(&buildJob{
+		buildID: buildLog.ID,
+		app:     app,
+		branch:  branch,
+	})
+
+	return buildLog.ID, nil
 }
 
 func (s *appBuildService) Shutdown() {
 	s.queueWait.Wait()
-	close(s.queue)
+	s.cancel()
 }
 
-func (s *appBuildService) startQueueManager() {
-	for v := range s.queue {
-		for {
-			res, err := s.builder.GetStatus(context.Background(), &emptypb.Empty{})
-			if err != nil {
-				log.WithError(err).Error("failed to get status")
-				break
+func (s *appBuildService) CancelBuild(ctx context.Context, buildID string) error {
+	if ok := s.queue.DeleteById(buildID); !ok {
+		return fmt.Errorf("job is already canceled")
+	}
+
+	s.queueWait.Done()
+	return nil
+}
+
+func (s *appBuildService) startQueueManager(ctx context.Context) {
+	for {
+		select {
+		case <-ctx.Done():
+			return
+		default:
+			v := s.queue.Pop()
+			if v == nil {
+				time.Sleep(queueCheckInterval)
+				continue
 			}
-			if res.GetStatus() == pb.BuilderStatus_WAITING {
-				err := s.requestBuild(context.Background(), v.App, v.Branch)
-				if err != nil {
-					log.WithError(err).Error("failed to request build")
+
+		requestLoop:
+			for {
+				select {
+				case <-ctx.Done():
+					return
+				default:
+					res, err := s.builder.GetStatus(context.Background(), &emptypb.Empty{})
+					if err != nil {
+						log.WithError(err).Error("failed to get status")
+						break requestLoop
+					}
+					if res.GetStatus() == pb.BuilderStatus_WAITING {
+						err := s.requestBuild(context.Background(), v.app, v.branch, v.buildID)
+						if err != nil {
+							log.WithError(err).Error("failed to request build")
+						}
+						s.queueWait.Done()
+						break requestLoop
+					}
+
+					time.Sleep(requestInterval)
 				}
-				s.queueWait.Done()
-				break
 			}
-			time.Sleep(requestInterval)
 		}
 	}
 }
 
-func (s *appBuildService) requestBuild(ctx context.Context, app *domain.Application, branch *domain.Branch) error {
+func (s *appBuildService) requestBuild(ctx context.Context, app *domain.Application, branch *domain.Branch, buildID string) error {
 	switch branch.BuildType {
 	case builder.BuildTypeImage:
 		_, err := s.builder.StartBuildImage(ctx, &pb.StartBuildImageRequest{
@@ -100,6 +145,7 @@ func (s *appBuildService) requestBuild(ctx context.Context, app *domain.Applicat
 			},
 			Options:  &pb.BuildOptions{}, // TODO 汎用ベースイメージビルドに対応させる
 			BranchId: branch.ID,
+			BuildId:  buildID,
 		})
 		if err != nil {
 			return fmt.Errorf("builder failed to start build image: %w", err)
@@ -112,6 +158,7 @@ func (s *appBuildService) requestBuild(ctx context.Context, app *domain.Applicat
 			},
 			Options:  &pb.BuildOptions{}, // TODO 汎用ベースイメージビルドに対応させる
 			BranchId: branch.ID,
+			BuildId:  buildID,
 		})
 		if err != nil {
 			return fmt.Errorf("builder failed to start build static: %w", err)
@@ -124,4 +171,46 @@ func (s *appBuildService) requestBuild(ctx context.Context, app *domain.Applicat
 	log.WithField("branchID", branch.ID).
 		Info("build requested")
 	return nil
+}
+
+type queue struct {
+	data  []*buildJob
+	mutex *sync.RWMutex
+}
+
+func newQueue() queue {
+	return queue{
+		data:  []*buildJob{},
+		mutex: &sync.RWMutex{},
+	}
+}
+
+func (q *queue) Push(job *buildJob) {
+	q.mutex.Lock()
+	defer q.mutex.Unlock()
+	q.data = append(q.data, job)
+}
+
+func (q *queue) Pop() *buildJob {
+	q.mutex.Lock()
+	defer q.mutex.Unlock()
+	if len(q.data) == 0 {
+		return nil
+	}
+	res := q.data[0]
+	q.data = q.data[1:]
+
+	return res
+}
+
+func (q *queue) DeleteById(buildId string) bool {
+	q.mutex.Lock()
+	defer q.mutex.Unlock()
+	for i, v := range q.data {
+		if v.buildID == buildId {
+			q.data = append(q.data[:i], q.data[i+1:]...)
+			return true
+		}
+	}
+	return false
 }

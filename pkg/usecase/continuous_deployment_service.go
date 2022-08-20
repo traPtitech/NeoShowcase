@@ -72,7 +72,7 @@ func (cd *continuousDeploymentService) handleWebhookRepositoryPush(repoURL strin
 		return
 	}
 
-	err = cd.builder.QueueBuild(context.Background(), branch)
+	_, err = cd.builder.QueueBuild(context.Background(), branch)
 	if err != nil {
 		log.WithError(err).
 			WithField("appID", branch.ApplicationID).

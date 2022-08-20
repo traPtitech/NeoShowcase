@@ -30,6 +30,7 @@ var commonSet = wire.NewSet(
 	usecase.NewContinuousDeploymentService,
 	repository.NewApplicationRepository,
 	repository.NewGitRepositoryRepository,
+	repository.NewBuildLogRepository,
 	broker.NewBuilderEventsBroker,
 	eventbus.NewLocal,
 	admindb.New,
