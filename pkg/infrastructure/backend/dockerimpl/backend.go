@@ -5,8 +5,6 @@ import (
 	"fmt"
 
 	docker "github.com/fsouza/go-dockerclient"
-	log "github.com/sirupsen/logrus"
-
 	"github.com/traPtitech/neoshowcase/pkg/domain"
 	"github.com/traPtitech/neoshowcase/pkg/domain/event"
 )
@@ -29,6 +27,11 @@ type dockerBackend struct {
 }
 
 func NewDockerBackend(c *docker.Client, bus domain.Bus, path IngressConfDirPath) (domain.Backend, error) {
+	// workaround for data race caused by internal call of checkAPIVersion()
+	if _, err := c.Version(); err != nil {
+		return nil, fmt.Errorf("failed to check docker api version: %w", err)
+	}
+
 	// showcase用のネットワークを用意
 	if err := initNetworks(c); err != nil {
 		return nil, fmt.Errorf("failed to init networks: %w", err)
@@ -52,7 +55,6 @@ func NewDockerBackend(c *docker.Client, bus domain.Bus, path IngressConfDirPath)
 
 func (b *dockerBackend) eventListener() {
 	for ev := range b.dockerEvent {
-		log.Debug(ev)
 		// https://docs.docker.com/engine/reference/commandline/events/
 		switch ev.Type {
 		case "container":
