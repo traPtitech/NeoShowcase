@@ -400,7 +400,9 @@ ENTRYPOINT ./%s
 	})
 	eg.Go(func() error {
 		// ビルドログを収集
-		return progressui.DisplaySolveStatus(context.TODO(), "", nil, intState.getLogWriter(), ch)
+		// TODO: VertexWarningを使う (LLBのどのvertexに問題があったか)
+		_, err := progressui.DisplaySolveStatus(context.TODO(), "", nil, intState.getLogWriter(), ch)
+		return err
 	})
 	return eg.Wait()
 }
@@ -447,7 +449,9 @@ func (s *builderService) buildStatic(t *builder.Task, intState *internalTaskStat
 	})
 	eg.Go(func() error {
 		// ビルドログを収集
-		return progressui.DisplaySolveStatus(context.TODO(), "", nil, intState.getLogWriter(), ch)
+		// TODO: VertexWarningを使う (LLBのどのvertexに問題があったか)
+		_, err := progressui.DisplaySolveStatus(context.TODO(), "", nil, intState.getLogWriter(), ch)
+		return err
 	})
 	return eg.Wait()
 }
