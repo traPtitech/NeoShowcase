@@ -6,62 +6,39 @@ on:
       - 'main'
   pull_request:
 
-env:
-  GO_VERSION: 1.17.7
-
 jobs:
   mod:
-    name: Mod
+    name: Modules
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/setup-go@v2
+      - uses: actions/checkout@v3
+      - uses: actions/setup-go@v3
         with:
-          go-version: ${{ env.GO_VERSION }}
-      - uses: actions/checkout@v2
-      - uses: actions/cache@v2
-        with:
-          path: ~/go/pkg/mod
-          key: ${{ runner.os }}-gomod-${{ hashFiles('**/go.sum') }}
+          go-version-file: ./go.mod
+          cache: true
       - run: go mod download
-  tools:
-    name: Go install tools
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/setup-go@v2
-        with:
-          go-version: ${{ env.GO_VERSION }}
-      - uses: actions/checkout@v2
-      - uses: actions/cache@v2
-        id: go-tools-cache
-        with:
-          path: ~/go/bin
-          key: ${{ runner.os }}-goinstall-${{ env.GO_VERSION }}
-      - name: Install dependency modules
-        if: steps.go-tools-cache.outputs.cache-hit != 'true'
-        run: |
-          go install google.golang.org/protobuf/cmd/protoc-gen-go@latest
-          go install google.golang.org/grpc/cmd/protoc-gen-go-grpc@latest
   protoc:
-    name: Genarate Code From Proto
+    name: Proto
     runs-on: ubuntu-latest
-    needs: [ tools ]
     steps:
-      - uses: actions/setup-go@v2
+      - uses: actions/checkout@v3
+      - uses: actions/setup-go@v3
         with:
-          go-version: ${{ env.GO_VERSION }}
-      - uses: actions/checkout@v2
+          go-version-file: ./go.mod
+          cache: true
       - uses: arduino/setup-protoc@v1
         with:
           version: '3.6.1'
-      - uses: actions/cache@v2
+      - name: Load cache of generated codes
+        uses: actions/cache@v3
         id: go-proto-cache
         with:
           path: ./pkg/interface/grpc/pb
           key: ${{ runner.os }}-proto-${{ hashFiles('**/*.proto') }}
-      - uses: actions/cache@v2
-        with:
-          path: ~/go/bin
-          key: ${{ runner.os }}-goinstall-${{ env.GO_VERSION }}
+      - name: Install proto tools
+        run: |
+          go install google.golang.org/protobuf/cmd/protoc-gen-go@latest
+          go install google.golang.org/grpc/cmd/protoc-gen-go-grpc@latest
       - name: Generate code
         if: steps.go-proto-cache.outputs.cache-hit != 'true'
         run: make protoc
@@ -80,17 +57,13 @@ jobs:
           - ns-migrate
           - ns-ssgen
     steps:
-      - uses: actions/setup-go@v2
+      - uses: actions/checkout@v3
+      - uses: actions/setup-go@v3
         with:
-          go-version: ${{ env.GO_VERSION }}
-      - uses: actions/checkout@v2
-      - uses: actions/cache@v2
-        with:
-          path: ~/go/pkg/mod
-          key: ${{ runner.os }}-gomod-${{ hashFiles('**/go.sum') }}
-          restore-keys: |
-            ${{ runner.os }}-gomod-
-      - uses: actions/cache@v2
+          go-version-file: ./go.mod
+          cache: true
+      - name: Use generated codes
+        uses: actions/cache@v3
         with:
           path: ./pkg/interface/grpc/pb
           key: ${{ runner.os }}-proto-${{ hashFiles('**/*.proto') }}
@@ -100,27 +73,21 @@ jobs:
     runs-on: ubuntu-latest
     needs: [ mod, protoc ]
     steps:
-      - uses: actions/setup-go@v2
+      - uses: actions/checkout@v3
+      - uses: actions/setup-go@v3
         with:
-          go-version: ${{ env.GO_VERSION }}
+          go-version-file: ./go.mod
+          cache: true
       - name: Install reviewdog
         run: curl -sfL https://raw.githubusercontent.com/reviewdog/reviewdog/master/install.sh | sh -s -- -b $(go env GOPATH)/bin
       - name: Install golangci-lint
-        run: curl -sfL https://install.goreleaser.com/github.com/golangci/golangci-lint.sh | sh -s --  -b $(go env GOPATH)/bin
-      - name: Add PATH
-        run: echo "$(go env GOPATH)/bin" >> $GITHUB_PATH
-      - uses: actions/checkout@v2
-      - uses: actions/cache@v2
-        with:
-          path: ~/go/pkg/mod
-          key: ${{ runner.os }}-gomod-${{ hashFiles('**/go.sum') }}
-          restore-keys: |
-            ${{ runner.os }}-gomod-
-      - uses: actions/cache@v2
+        run: curl -sfL https://install.goreleaser.com/github.com/golangci/golangci-lint.sh | sh -s -- -b $(go env GOPATH)/bin
+      - name: Use generated codes
+        uses: actions/cache@v3
         with:
           path: ./pkg/interface/grpc/pb
           key: ${{ runner.os }}-proto-${{ hashFiles('**/*.proto') }}
-      - name: golangci-lint
+      - name: Run golangci-lint
         run: golangci-lint run --out-format=line-number | reviewdog -f=golangci-lint -name=golangci-lint -reporter=github-check
         env:
           REVIEWDOG_GITHUB_API_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -131,6 +98,7 @@ jobs:
     env:
       ENABLE_DB_TESTS: "true"
       ENABLE_DOCKER_TESTS: "true"
+      DOCKER_API_VERSION: "1.41"
     services:
       mysql:
         image: mysql:8
@@ -148,21 +116,17 @@ jobs:
         ports:
           - 5010:27017
     steps:
-      - uses: actions/setup-go@v2
+      - uses: actions/checkout@v3
+      - uses: actions/setup-go@v3
         with:
-          go-version: ${{ env.GO_VERSION }}
-      - uses: actions/checkout@v2
-      - uses: actions/cache@v2
-        with:
-          path: ~/go/pkg/mod
-          key: ${{ runner.os }}-gomod-${{ hashFiles('**/go.sum') }}
-          restore-keys: |
-            ${{ runner.os }}-gomod-
-      - uses: actions/cache@v2
+          go-version-file: ./go.mod
+          cache: true
+      - name: Use generated codes
+        uses: actions/cache@v3
         with:
           path: ./pkg/interface/grpc/pb
           key: ${{ runner.os }}-proto-${{ hashFiles('**/*.proto') }}
-      - name: sql-migrate up
+      - name: Run ns-migrate up
         run: go run ./cmd/ns-migrate up -P 5004
       - name: Run tests
         run: go test ./... -v -race -coverprofile=coverage.out -covermode=atomic -vet=off
@@ -175,24 +139,31 @@ jobs:
     env:
       ENABLE_K8S_TESTS: "true"
     steps:
-      - uses: actions/setup-go@v2
+      - uses: actions/checkout@v3
+      - uses: actions/setup-go@v3
         with:
-          go-version: ${{ env.GO_VERSION }}
-      - uses: AbsaOSS/k3d-action@v1.5.0
+          go-version-file: ./go.mod
+          cache: true
+      - name: Use generated codes
+        uses: actions/cache@v3
+        with:
+          path: ./pkg/interface/grpc/pb
+          key: ${{ runner.os }}-proto-${{ hashFiles('**/*.proto') }}
+      - name: Create single cluster
+        uses: AbsaOSS/k3d-action@v1.5.0
         id: single-cluster
-        name: "Create Single Cluster"
         with:
           cluster-name: "test-cluster"
           args: >-
             --agents 1
             --no-lb
             --k3s-server-arg "--no-deploy=traefik,servicelb,metrics-server"
-      - name: Cluster info
+      - name: Show cluster info
         run: |
           echo ${{ steps.single-cluster.outputs.network }} ${{ steps.single-cluster.outputs.subnet-CIDR }}
           echo
           kubectl cluster-info --context k3d-test-cluster
-      - name: Nodes
+      - name: Show nodes
         # hack, wait until agents are ready...
         run: |
           docker ps -a
@@ -200,17 +171,6 @@ jobs:
           kubectl config use-context k3d-test-cluster
           kubectl get nodes -o wide
           kubectl create ns neoshowcase-apps
-      - uses: actions/checkout@v2
-      - uses: actions/cache@v2
-        with:
-          path: ~/go/pkg/mod
-          key: ${{ runner.os }}-gomod-${{ hashFiles('**/go.sum') }}
-          restore-keys: |
-            ${{ runner.os }}-gomod-
-      - uses: actions/cache@v2
-        with:
-          path: ./pkg/interface/grpc/pb
-          key: ${{ runner.os }}-proto-${{ hashFiles('**/*.proto') }}
       - name: Run tests
         run: go test ./pkg/infrastructure/backend/k8simpl -v -coverprofile=coverage.out -covermode=atomic -vet=off
       - name: Upload coverage to Codecov
@@ -230,13 +190,12 @@ jobs:
         ports:
           - 5004:3306
     steps:
-      - uses: actions/setup-go@v2
+      - uses: actions/checkout@v3
+      - uses: actions/setup-go@v3
         with:
-          go-version: ${{ env.GO_VERSION }}
-      - name: Install sql-migrate
-        run: go get -v github.com/rubenv/sql-migrate/...
-      - uses: actions/checkout@v2
-      - run: sql-migrate up
+          go-version-file: ./go.mod
+      - name: Run ns-migrate up
+        run: go run ./cmd/ns-migrate up -P 5004
       - name: Lint
         run: |
           source <(curl -sL https://git.io/use-tbls)
@@ -247,7 +206,7 @@ jobs:
     name: Spectral
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - name: Spectral checks
         uses: stoplightio/spectral-action@v0.8.8
         with:

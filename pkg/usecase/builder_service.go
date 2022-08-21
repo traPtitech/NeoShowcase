@@ -5,7 +5,6 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"os"
 	"path/filepath"
 	"sync"
@@ -18,12 +17,13 @@ import (
 	"github.com/moby/buildkit/session/auth/authprovider"
 	"github.com/moby/buildkit/util/progress/progressui"
 	log "github.com/sirupsen/logrus"
+	"golang.org/x/sync/errgroup"
+	"google.golang.org/grpc/status"
+
 	"github.com/traPtitech/neoshowcase/pkg/domain"
 	"github.com/traPtitech/neoshowcase/pkg/domain/builder"
 	"github.com/traPtitech/neoshowcase/pkg/domain/event"
 	"github.com/traPtitech/neoshowcase/pkg/interface/repository"
-	"golang.org/x/sync/errgroup"
-	"google.golang.org/grpc/status"
 )
 
 const (
@@ -141,7 +141,7 @@ func (s *builderService) initializeTask(ctx context.Context, task *builder.Task)
 	}
 
 	// ログ用一時ファイル作成
-	logF, err := ioutil.TempFile("", "buildlog")
+	logF, err := os.CreateTemp("", "buildlog")
 	if err != nil {
 		log.WithError(err).Errorf("failed to create temporary log file")
 		return fmt.Errorf("failed to create tmp log file: %w", err)
@@ -150,7 +150,7 @@ func (s *builderService) initializeTask(ctx context.Context, task *builder.Task)
 
 	// 成果物tarの一時保存先作成
 	if task.Static {
-		artF, err := ioutil.TempFile("", "artifacts")
+		artF, err := os.CreateTemp("", "artifacts")
 		if err != nil {
 			log.WithError(err).Errorf("failed to create temporary artifact file")
 			return fmt.Errorf("failed to create tmp artifact file: %w", err)
@@ -159,7 +159,7 @@ func (s *builderService) initializeTask(ctx context.Context, task *builder.Task)
 	}
 
 	// リポジトリクローン用の一時ディレクトリ作成
-	dir, err := ioutil.TempDir("", "repo")
+	dir, err := os.MkdirTemp("", "repo")
 	if err != nil {
 		log.WithError(err).Errorf("failed to create temporary repository directory")
 		return fmt.Errorf("failed to create tmp repository dir: %w", err)
@@ -332,7 +332,7 @@ func (s *builderService) buildImage(t *builder.Task, intState *internalTaskState
 				},
 				Frontend:      "dockerfile.v0",
 				FrontendAttrs: map[string]string{"filename": "Dockerfile"},
-				Session:       []session.Attachable{authprovider.NewDockerAuthProvider(ioutil.Discard)},
+				Session:       []session.Attachable{authprovider.NewDockerAuthProvider(io.Discard)},
 			}, ch)
 		} else {
 			// 指定したベースイメージを使用
@@ -372,7 +372,7 @@ RUN ./%s
 ENTRYPOINT ./%s
 `, t.BuildOptions.BaseImageName, startupScriptName, entryPointScriptName)
 			var tmp *os.File
-			tmp, err = ioutil.TempFile("", "Dockerfile")
+			tmp, err = os.CreateTemp("", "Dockerfile")
 			if err != nil {
 				return err
 			}
@@ -393,14 +393,16 @@ ENTRYPOINT ./%s
 				},
 				Frontend:      "dockerfile.v0",
 				FrontendAttrs: map[string]string{"filename": filepath.Base(tmp.Name())},
-				Session:       []session.Attachable{authprovider.NewDockerAuthProvider(ioutil.Discard)},
+				Session:       []session.Attachable{authprovider.NewDockerAuthProvider(io.Discard)},
 			}, ch)
 		}
 		return err
 	})
 	eg.Go(func() error {
 		// ビルドログを収集
-		return progressui.DisplaySolveStatus(context.TODO(), "", nil, intState.getLogWriter(), ch)
+		// TODO: VertexWarningを使う (LLBのどのvertexに問題があったか)
+		_, err := progressui.DisplaySolveStatus(context.TODO(), "", nil, intState.getLogWriter(), ch)
+		return err
 	})
 	return eg.Wait()
 }
@@ -447,7 +449,9 @@ func (s *builderService) buildStatic(t *builder.Task, intState *internalTaskStat
 	})
 	eg.Go(func() error {
 		// ビルドログを収集
-		return progressui.DisplaySolveStatus(context.TODO(), "", nil, intState.getLogWriter(), ch)
+		// TODO: VertexWarningを使う (LLBのどのvertexに問題があったか)
+		_, err := progressui.DisplaySolveStatus(context.TODO(), "", nil, intState.getLogWriter(), ch)
+		return err
 	})
 	return eg.Wait()
 }

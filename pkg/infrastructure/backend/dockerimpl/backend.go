@@ -27,11 +27,6 @@ type dockerBackend struct {
 }
 
 func NewDockerBackend(c *docker.Client, bus domain.Bus, path IngressConfDirPath) (domain.Backend, error) {
-	// workaround for data race caused by internal call of checkAPIVersion()
-	if _, err := c.Version(); err != nil {
-		return nil, fmt.Errorf("failed to check docker api version: %w", err)
-	}
-
 	// showcase用のネットワークを用意
 	if err := initNetworks(c); err != nil {
 		return nil, fmt.Errorf("failed to init networks: %w", err)
