@@ -126,9 +126,7 @@ jobs:
         with:
           path: ./pkg/interface/grpc/pb
           key: ${{ runner.os }}-proto-${{ hashFiles('**/*.proto') }}
-      - name: Install sql-migrate
-        run: go install github.com/rubenv/sql-migrate
-      - name: Run sql-migrate up
+      - name: Run ns-migrate up
         run: go run ./cmd/ns-migrate up -P 5004
       - name: Run tests
         run: go test ./... -v -race -coverprofile=coverage.out -covermode=atomic -vet=off
@@ -196,10 +194,8 @@ jobs:
       - uses: actions/setup-go@v3
         with:
           go-version-file: ./go.mod
-      - name: Install sql-migrate
-        run: go install github.com/rubenv/sql-migrate
-      - name: Run sql-migrate up
-        run: sql-migrate up
+      - name: Run ns-migrate up
+        run: go run ./cmd/ns-migrate up -P 5004
       - name: Lint
         run: |
           source <(curl -sL https://git.io/use-tbls)
