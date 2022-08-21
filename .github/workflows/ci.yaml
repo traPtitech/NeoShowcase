@@ -8,7 +8,7 @@ on:
 
 jobs:
   mod:
-    name: Install modules
+    name: Modules
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
@@ -18,7 +18,7 @@ jobs:
           cache: true
       - run: go mod download
   protoc:
-    name: Generate code from .proto
+    name: Proto
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
@@ -98,6 +98,7 @@ jobs:
     env:
       ENABLE_DB_TESTS: "true"
       ENABLE_DOCKER_TESTS: "true"
+      DOCKER_API_VERSION: "1.41"
     services:
       mysql:
         image: mysql:8
@@ -195,7 +196,10 @@ jobs:
       - uses: actions/setup-go@v3
         with:
           go-version-file: ./go.mod
-      - run: sql-migrate up
+      - name: Install sql-migrate
+        run: go install github.com/rubenv/sql-migrate
+      - name: Run sql-migrate up
+        run: sql-migrate up
       - name: Lint
         run: |
           source <(curl -sL https://git.io/use-tbls)
