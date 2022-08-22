@@ -73,6 +73,7 @@ func NewWithDocker(c2 Config) (*Server, error) {
 		return nil, err
 	}
 	applicationRepository := repository.NewApplicationRepository(db)
+	environmentRepository := repository.NewEnvironmentRepository(db)
 	staticSiteServiceClient := grpc.NewStaticSiteServiceClient(staticSiteServiceClientConn)
 	dockerImageRegistryString := provideImageRegistry(c2)
 	dockerImageNamePrefixString := provideImagePrefix(c2)
@@ -89,7 +90,7 @@ func NewWithDocker(c2 Config) (*Server, error) {
 	if err != nil {
 		return nil, err
 	}
-	continuousDeploymentService := usecase.NewContinuousDeploymentService(bus, applicationRepository, appDeployService, appBuildService, mariaDBManager, mongoDBManager)
+	continuousDeploymentService := usecase.NewContinuousDeploymentService(bus, applicationRepository, environmentRepository, appDeployService, appBuildService, mariaDBManager, mongoDBManager)
 	mainServer := &Server{
 		webserver:           server,
 		db:                  db,
@@ -151,6 +152,7 @@ func NewWithK8S(c2 Config) (*Server, error) {
 		return nil, err
 	}
 	applicationRepository := repository.NewApplicationRepository(db)
+	environmentRepository := repository.NewEnvironmentRepository(db)
 	staticSiteServiceClient := grpc.NewStaticSiteServiceClient(staticSiteServiceClientConn)
 	dockerImageRegistryString := provideImageRegistry(c2)
 	dockerImageNamePrefixString := provideImagePrefix(c2)
@@ -167,7 +169,7 @@ func NewWithK8S(c2 Config) (*Server, error) {
 	if err != nil {
 		return nil, err
 	}
-	continuousDeploymentService := usecase.NewContinuousDeploymentService(bus, applicationRepository, appDeployService, appBuildService, mariaDBManager, mongoDBManager)
+	continuousDeploymentService := usecase.NewContinuousDeploymentService(bus, applicationRepository, environmentRepository, appDeployService, appBuildService, mariaDBManager, mongoDBManager)
 	mainServer := &Server{
 		webserver:           server,
 		db:                  db,
@@ -183,10 +185,10 @@ func NewWithK8S(c2 Config) (*Server, error) {
 
 // wire.go:
 
-var commonSet = wire.NewSet(web.NewServer, dbmanager.NewMariaDBManager, dbmanager.NewMongoDBManager, usecase.NewGitPushWebhookService, usecase.NewAppBuildService, usecase.NewAppDeployService, usecase.NewContinuousDeploymentService, repository.NewApplicationRepository, repository.NewGitRepositoryRepository, repository.NewBuildLogRepository, broker.NewBuilderEventsBroker, eventbus.NewLocal, admindb.New, handlerSet,
+var commonSet = wire.NewSet(web.NewServer, hub.New, eventbus.NewLocal, admindb.New, dbmanager.NewMariaDBManager, dbmanager.NewMongoDBManager, repository.NewApplicationRepository, repository.NewGitRepositoryRepository, repository.NewEnvironmentRepository, repository.NewBuildLogRepository, grpc.NewBuilderServiceClientConn, grpc.NewStaticSiteServiceClientConn, grpc.NewBuilderServiceClient, grpc.NewStaticSiteServiceClient, broker.NewBuilderEventsBroker, usecase.NewGitPushWebhookService, usecase.NewAppBuildService, usecase.NewAppDeployService, usecase.NewContinuousDeploymentService, handlerSet,
 	provideWebServerConfig,
 	provideImagePrefix,
-	provideImageRegistry, hub.New, grpc.NewBuilderServiceClientConn, grpc.NewStaticSiteServiceClientConn, grpc.NewBuilderServiceClient, grpc.NewStaticSiteServiceClient, wire.FieldsOf(new(Config), "Builder", "SSGen", "DB", "MariaDB", "MongoDB"), wire.Struct(new(Router), "*"), wire.Bind(new(web.Router), new(*Router)), wire.Struct(new(Server), "*"),
+	provideImageRegistry, wire.FieldsOf(new(Config), "Builder", "SSGen", "DB", "MariaDB", "MongoDB"), wire.Struct(new(Router), "*"), wire.Bind(new(web.Router), new(*Router)), wire.Struct(new(Server), "*"),
 )
 
 func New(c2 Config) (*Server, error) {

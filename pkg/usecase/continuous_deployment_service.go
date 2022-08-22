@@ -2,10 +2,13 @@ package usecase
 
 import (
 	"context"
+	"errors"
+	"fmt"
 	"math/rand"
 	"strings"
 
 	log "github.com/sirupsen/logrus"
+
 	"github.com/traPtitech/neoshowcase/pkg/domain"
 	"github.com/traPtitech/neoshowcase/pkg/domain/event"
 	"github.com/traPtitech/neoshowcase/pkg/interface/repository"
@@ -18,17 +21,19 @@ type ContinuousDeploymentService interface {
 
 type continuousDeploymentService struct {
 	bus            domain.Bus
-	repo           repository.ApplicationRepository
+	appRepo        repository.ApplicationRepository
+	envRepo        repository.EnvironmentRepository
 	deployer       AppDeployService
 	builder        AppBuildService
 	mariadbmanager domain.MariaDBManager
 	mongodbmanager domain.MongoDBManager
 }
 
-func NewContinuousDeploymentService(bus domain.Bus, repo repository.ApplicationRepository, deployer AppDeployService, builder AppBuildService, mariadbmanager domain.MariaDBManager, mongodbmanager domain.MongoDBManager) ContinuousDeploymentService {
+func NewContinuousDeploymentService(bus domain.Bus, appRepo repository.ApplicationRepository, envRepo repository.EnvironmentRepository, deployer AppDeployService, builder AppBuildService, mariadbmanager domain.MariaDBManager, mongodbmanager domain.MongoDBManager) ContinuousDeploymentService {
 	return &continuousDeploymentService{
 		bus:            bus,
-		repo:           repo,
+		appRepo:        appRepo,
+		envRepo:        envRepo,
 		deployer:       deployer,
 		builder:        builder,
 		mariadbmanager: mariadbmanager,
@@ -84,11 +89,24 @@ func (cd *continuousDeploymentService) handleWebhookRepositoryPush(repoURL strin
 
 	ctx := context.Background()
 
-	dbName := repoURL + branchName
+	branch, err := cd.appRepo.GetBranchByRepoAndBranchName(ctx, repoURL, branchName)
+	if err != nil {
+		if errors.Is(err, repository.ErrNotFound) {
+			return
+		}
+		log.WithError(err).
+			WithField("repo", repoURL).
+			WithField("refs", branchName).
+			Error("failed to GetBranchByRepoAndBranchName")
+		return
+	}
+
+	// TODO dbSettingを設定から取得する
+	dbName := fmt.Sprintf("%s_%s", repoURL, branchName)
 	// TODO: アプリケーションの設定の取得
 	applicationNeedsMariaDB := true
 	if applicationNeedsMariaDB {
-		dbExists, err := cd.mariadbmanager.IsExist(context.Background(), dbName)
+		dbExists, err := cd.mariadbmanager.IsExist(ctx, dbName)
 		if err != nil {
 			log.WithError(err).
 				WithField("repo", repoURL).
@@ -98,19 +116,32 @@ func (cd *continuousDeploymentService) handleWebhookRepositoryPush(repoURL strin
 		}
 
 		if !dbExists {
-			// TODO dbUser, dbSettingを設定から取得する
-			dbUser := repoURL
 			dbPassword := generateRandomString(32)
 			dbSetting := domain.CreateArgs{
-				Database: dbUser,
+				Database: dbName,
 				Password: dbPassword,
 			}
 
-			err := cd.mariadbmanager.Create(ctx, dbSetting)
-			if err != nil {
+			if err := cd.mariadbmanager.Create(ctx, dbSetting); err != nil {
 				log.WithError(err).
 					WithField("Database", dbSetting.Database).
 					WithField("Password", dbSetting.Password)
+				return
+			}
+
+			if err := cd.envRepo.SetEnv(ctx, branch.ID, domain.EnvMySQLDatabaseKey, dbName); err != nil {
+				log.WithError(err).
+					WithField("BranchID", branch.ID).
+					WithField("BranchName", branchName).
+					WithField("Key", domain.EnvMySQLDatabaseKey)
+				return
+			}
+			if err := cd.envRepo.SetEnv(ctx, branch.ID, domain.EnvMySQLPasswordKey, dbPassword); err != nil {
+				log.WithError(err).
+					WithField("BranchID", branch.ID).
+					WithField("BranchName", branchName).
+					WithField("Key", domain.EnvMySQLPasswordKey)
+				return
 			}
 		}
 	}
@@ -118,7 +149,7 @@ func (cd *continuousDeploymentService) handleWebhookRepositoryPush(repoURL strin
 	// TODO: アプリケーションの設定の取得
 	applicationNeedsMongoDB := true
 	if applicationNeedsMongoDB {
-		dbExists, err := cd.mongodbmanager.IsExist(context.Background(), dbName)
+		dbExists, err := cd.mongodbmanager.IsExist(ctx, dbName)
 		if err != nil {
 			log.WithError(err).
 				WithField("repo", repoURL).
@@ -128,11 +159,9 @@ func (cd *continuousDeploymentService) handleWebhookRepositoryPush(repoURL strin
 		}
 
 		if !dbExists {
-			// TODO dbUser, dbSettingを設定から取得する
-			dbUser := repoURL
 			dbPassword := generateRandomString(32)
 			dbSetting := domain.CreateArgs{
-				Database: dbUser,
+				Database: dbName,
 				Password: dbPassword,
 			}
 
@@ -142,19 +171,22 @@ func (cd *continuousDeploymentService) handleWebhookRepositoryPush(repoURL strin
 					WithField("Database", dbSetting.Database).
 					WithField("Password", dbSetting.Password)
 			}
-		}
-	}
 
-	branch, err := cd.repo.GetBranchByRepoAndBranchName(ctx, repoURL, branchName)
-	if err != nil {
-		if err == repository.ErrNotFound {
-			return
+			if err := cd.envRepo.SetEnv(ctx, branch.ID, domain.EnvMongoDBDatabaseKey, dbName); err != nil {
+				log.WithError(err).
+					WithField("BranchID", branch.ID).
+					WithField("BranchName", branchName).
+					WithField("Key", domain.EnvMongoDBDatabaseKey)
+				return
+			}
+			if err := cd.envRepo.SetEnv(ctx, branch.ID, domain.EnvMongoDBPasswordKey, dbPassword); err != nil {
+				log.WithError(err).
+					WithField("BranchID", branch.ID).
+					WithField("BranchName", branchName).
+					WithField("Key", domain.EnvMongoDBPasswordKey)
+				return
+			}
 		}
-		log.WithError(err).
-			WithField("repo", repoURL).
-			WithField("refs", branchName).
-			Error("failed to GetBranchByRepoAndBranchName")
-		return
 	}
 
 	_, err = cd.builder.QueueBuild(ctx, branch)
