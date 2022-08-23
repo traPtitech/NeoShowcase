@@ -2,8 +2,13 @@ package usecase
 
 import (
 	"context"
+	"errors"
+	"fmt"
+	"math/rand"
+	"strings"
 
 	log "github.com/sirupsen/logrus"
+
 	"github.com/traPtitech/neoshowcase/pkg/domain"
 	"github.com/traPtitech/neoshowcase/pkg/domain/event"
 	"github.com/traPtitech/neoshowcase/pkg/interface/repository"
@@ -15,18 +20,24 @@ type ContinuousDeploymentService interface {
 }
 
 type continuousDeploymentService struct {
-	bus      domain.Bus
-	repo     repository.ApplicationRepository
-	deployer AppDeployService
-	builder  AppBuildService
+	bus            domain.Bus
+	appRepo        repository.ApplicationRepository
+	envRepo        repository.EnvironmentRepository
+	deployer       AppDeployService
+	builder        AppBuildService
+	mariadbmanager domain.MariaDBManager
+	mongodbmanager domain.MongoDBManager
 }
 
-func NewContinuousDeploymentService(bus domain.Bus, repo repository.ApplicationRepository, deployer AppDeployService, builder AppBuildService) ContinuousDeploymentService {
+func NewContinuousDeploymentService(bus domain.Bus, appRepo repository.ApplicationRepository, envRepo repository.EnvironmentRepository, deployer AppDeployService, builder AppBuildService, mariadbmanager domain.MariaDBManager, mongodbmanager domain.MongoDBManager) ContinuousDeploymentService {
 	return &continuousDeploymentService{
-		bus:      bus,
-		repo:     repo,
-		deployer: deployer,
-		builder:  builder,
+		bus:            bus,
+		appRepo:        appRepo,
+		envRepo:        envRepo,
+		deployer:       deployer,
+		builder:        builder,
+		mariadbmanager: mariadbmanager,
+		mongodbmanager: mongodbmanager,
 	}
 }
 
@@ -55,14 +66,32 @@ func (cd *continuousDeploymentService) loop() {
 	}
 }
 
+func generateRandomString(length int) string {
+	lowerCharSet := "abcdedfghijklmnopqrst"
+	upperCharSet := "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+	symbolCharSet := "!@#$%&*"
+	numberSet := "0123456789"
+	allCharSet := lowerCharSet + upperCharSet + symbolCharSet + numberSet
+
+	var payload strings.Builder
+	for i := 0; i < length; i++ {
+		random := rand.Intn(len(allCharSet))
+		payload.WriteByte(allCharSet[random])
+	}
+
+	return payload.String()
+}
+
 func (cd *continuousDeploymentService) handleWebhookRepositoryPush(repoURL string, branchName string) {
 	log.WithField("repo", repoURL).
 		WithField("refs", branchName).
 		Info("repository push event received")
 
-	branch, err := cd.repo.GetBranchByRepoAndBranchName(context.Background(), repoURL, branchName)
+	ctx := context.Background()
+
+	branch, err := cd.appRepo.GetBranchByRepoAndBranchName(ctx, repoURL, branchName)
 	if err != nil {
-		if err == repository.ErrNotFound {
+		if errors.Is(err, repository.ErrNotFound) {
 			return
 		}
 		log.WithError(err).
@@ -72,7 +101,113 @@ func (cd *continuousDeploymentService) handleWebhookRepositoryPush(repoURL strin
 		return
 	}
 
-	_, err = cd.builder.QueueBuild(context.Background(), branch)
+	// TODO dbSettingを設定から取得する
+	dbName := fmt.Sprintf("%s_%s", repoURL, branchName)
+	// TODO: アプリケーションの設定の取得
+	applicationNeedsMariaDB := true
+	if applicationNeedsMariaDB {
+		dbExists, err := cd.mariadbmanager.IsExist(ctx, dbName)
+		if err != nil {
+			log.WithError(err).
+				WithField("repo", repoURL).
+				WithField("refs", branchName).
+				Error("failed to check if database exists")
+			return
+		}
+
+		if !dbExists {
+			dbPassword := generateRandomString(32)
+			dbSetting := domain.CreateArgs{
+				Database: dbName,
+				Password: dbPassword,
+			}
+
+			if err := cd.mariadbmanager.Create(ctx, dbSetting); err != nil {
+				log.WithError(err).
+					WithField("Database", dbSetting.Database).
+					WithField("Password", dbSetting.Password)
+				return
+			}
+
+			if err := cd.envRepo.SetEnv(ctx, branch.ID, domain.EnvMySQLUserKey, dbName); err != nil {
+				log.WithError(err).
+					WithField("BranchID", branch.ID).
+					WithField("BranchName", branchName).
+					WithField("Key", domain.EnvMySQLUserKey).
+					WithField("Value", dbName)
+				return
+			}
+			if err := cd.envRepo.SetEnv(ctx, branch.ID, domain.EnvMySQLPasswordKey, dbPassword); err != nil {
+				log.WithError(err).
+					WithField("BranchID", branch.ID).
+					WithField("BranchName", branchName).
+					WithField("Key", domain.EnvMySQLPasswordKey)
+				return
+			}
+			if err := cd.envRepo.SetEnv(ctx, branch.ID, domain.EnvMySQLDatabaseKey, dbName); err != nil {
+				log.WithError(err).
+					WithField("BranchID", branch.ID).
+					WithField("BranchName", branchName).
+					WithField("Key", domain.EnvMySQLDatabaseKey).
+					WithField("Value", dbName)
+				return
+			}
+		}
+	}
+
+	// TODO: アプリケーションの設定の取得
+	applicationNeedsMongoDB := true
+	if applicationNeedsMongoDB {
+		dbExists, err := cd.mongodbmanager.IsExist(ctx, dbName)
+		if err != nil {
+			log.WithError(err).
+				WithField("repo", repoURL).
+				WithField("refs", branchName).
+				Error("failed to check if database exists")
+			return
+		}
+
+		if !dbExists {
+			dbPassword := generateRandomString(32)
+			dbSetting := domain.CreateArgs{
+				Database: dbName,
+				Password: dbPassword,
+			}
+
+			err := cd.mongodbmanager.Create(ctx, dbSetting)
+			if err != nil {
+				log.WithError(err).
+					WithField("Database", dbSetting.Database).
+					WithField("Password", dbSetting.Password)
+			}
+
+			if err := cd.envRepo.SetEnv(ctx, branch.ID, domain.EnvMongoDBUserKey, dbName); err != nil {
+				log.WithError(err).
+					WithField("BranchID", branch.ID).
+					WithField("BranchName", branchName).
+					WithField("Key", domain.EnvMongoDBUserKey).
+					WithField("Value", dbName)
+				return
+			}
+			if err := cd.envRepo.SetEnv(ctx, branch.ID, domain.EnvMongoDBPasswordKey, dbPassword); err != nil {
+				log.WithError(err).
+					WithField("BranchID", branch.ID).
+					WithField("BranchName", branchName).
+					WithField("Key", domain.EnvMongoDBPasswordKey)
+				return
+			}
+			if err := cd.envRepo.SetEnv(ctx, branch.ID, domain.EnvMongoDBDatabaseKey, dbName); err != nil {
+				log.WithError(err).
+					WithField("BranchID", branch.ID).
+					WithField("BranchName", branchName).
+					WithField("Key", domain.EnvMongoDBDatabaseKey).
+					WithField("Value", dbName)
+				return
+			}
+		}
+	}
+
+	_, err = cd.builder.QueueBuild(ctx, branch)
 	if err != nil {
 		log.WithError(err).
 			WithField("appID", branch.ApplicationID).

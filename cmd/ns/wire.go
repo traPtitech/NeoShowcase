@@ -9,41 +9,46 @@ import (
 	docker "github.com/fsouza/go-dockerclient"
 	"github.com/google/wire"
 	"github.com/leandro-lugaresi/hub"
+	"k8s.io/client-go/kubernetes"
+	"k8s.io/client-go/rest"
+
 	"github.com/traPtitech/neoshowcase/pkg/domain/web"
 	"github.com/traPtitech/neoshowcase/pkg/infrastructure/admindb"
 	"github.com/traPtitech/neoshowcase/pkg/infrastructure/backend/dockerimpl"
 	"github.com/traPtitech/neoshowcase/pkg/infrastructure/backend/k8simpl"
+	"github.com/traPtitech/neoshowcase/pkg/infrastructure/dbmanager"
 	"github.com/traPtitech/neoshowcase/pkg/infrastructure/eventbus"
 	"github.com/traPtitech/neoshowcase/pkg/interface/broker"
 	"github.com/traPtitech/neoshowcase/pkg/interface/grpc"
 	"github.com/traPtitech/neoshowcase/pkg/interface/repository"
 	"github.com/traPtitech/neoshowcase/pkg/usecase"
-	"k8s.io/client-go/kubernetes"
-	"k8s.io/client-go/rest"
 )
 
 var commonSet = wire.NewSet(
 	web.NewServer,
-	usecase.NewGitPushWebhookService,
-	usecase.NewAppBuildService,
-	usecase.NewAppDeployService,
-	usecase.NewContinuousDeploymentService,
-	repository.NewApplicationRepository,
-	repository.NewGitRepositoryRepository,
-	repository.NewBuildLogRepository,
-	broker.NewBuilderEventsBroker,
+	hub.New,
 	eventbus.NewLocal,
 	admindb.New,
-	handlerSet,
-	provideWebServerConfig,
-	provideImagePrefix,
-	provideImageRegistry,
-	hub.New,
+	dbmanager.NewMariaDBManager,
+	dbmanager.NewMongoDBManager,
+	repository.NewApplicationRepository,
+	repository.NewGitRepositoryRepository,
+	repository.NewEnvironmentRepository,
+	repository.NewBuildLogRepository,
 	grpc.NewBuilderServiceClientConn,
 	grpc.NewStaticSiteServiceClientConn,
 	grpc.NewBuilderServiceClient,
 	grpc.NewStaticSiteServiceClient,
-	wire.FieldsOf(new(Config), "Builder", "SSGen", "DB"),
+	broker.NewBuilderEventsBroker,
+	usecase.NewGitPushWebhookService,
+	usecase.NewAppBuildService,
+	usecase.NewAppDeployService,
+	usecase.NewContinuousDeploymentService,
+	handlerSet,
+	provideWebServerConfig,
+	provideImagePrefix,
+	provideImageRegistry,
+	wire.FieldsOf(new(Config), "Builder", "SSGen", "DB", "MariaDB", "MongoDB"),
 	wire.Struct(new(Router), "*"),
 	wire.Bind(new(web.Router), new(*Router)),
 	wire.Struct(new(Server), "*"),

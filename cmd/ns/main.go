@@ -43,6 +43,7 @@ func runCommand() *cobra.Command {
 				return err
 			}
 
+			// TODO: context
 			go func() {
 				err := service.Start(context.Background())
 				if err != nil {
