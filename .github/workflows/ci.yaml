@@ -199,9 +199,7 @@ jobs:
       - name: Install TBLS
         run: go install github.com/k1LoW/tbls@main
       - name: Lint
-        run: |
-          source <(curl -sL https://git.io/use-tbls)
-          tbls lint
+        run: tbls lint
         env:
           TBLS_DSN: "mariadb://root:password@127.0.0.1:5004/neoshowcase"
   spectral:
