@@ -196,10 +196,10 @@ jobs:
           go-version-file: ./go.mod
       - name: Run ns-migrate up
         run: go run ./cmd/ns-migrate up -P 5004
-      - name: Install TBLS
-        run: go install github.com/k1LoW/tbls@main
       - name: Lint
-        run: tbls lint
+        run: |
+          source <(curl https://raw.githubusercontent.com/k1LoW/tbls/main/use)
+          tbls lint
         env:
           TBLS_DSN: "mariadb://root:password@127.0.0.1:5004/neoshowcase"
   spectral:
