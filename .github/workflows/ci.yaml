@@ -198,7 +198,7 @@ jobs:
         run: go run ./cmd/ns-migrate up -P 5004
       - name: Lint
         run: |
-          source <(curl -sL https://git.io/use-tbls)
+          source <(curl https://raw.githubusercontent.com/k1LoW/tbls/main/use)
           tbls lint
         env:
           TBLS_DSN: "mariadb://root:password@127.0.0.1:5004/neoshowcase"
