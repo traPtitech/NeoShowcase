@@ -129,11 +129,12 @@ func (cd *continuousDeploymentService) handleWebhookRepositoryPush(repoURL strin
 				return
 			}
 
-			if err := cd.envRepo.SetEnv(ctx, branch.ID, domain.EnvMySQLDatabaseKey, dbName); err != nil {
+			if err := cd.envRepo.SetEnv(ctx, branch.ID, domain.EnvMySQLUserKey, dbName); err != nil {
 				log.WithError(err).
 					WithField("BranchID", branch.ID).
 					WithField("BranchName", branchName).
-					WithField("Key", domain.EnvMySQLDatabaseKey)
+					WithField("Key", domain.EnvMySQLUserKey).
+					WithField("Value", dbName)
 				return
 			}
 			if err := cd.envRepo.SetEnv(ctx, branch.ID, domain.EnvMySQLPasswordKey, dbPassword); err != nil {
@@ -141,6 +142,14 @@ func (cd *continuousDeploymentService) handleWebhookRepositoryPush(repoURL strin
 					WithField("BranchID", branch.ID).
 					WithField("BranchName", branchName).
 					WithField("Key", domain.EnvMySQLPasswordKey)
+				return
+			}
+			if err := cd.envRepo.SetEnv(ctx, branch.ID, domain.EnvMySQLDatabaseKey, dbName); err != nil {
+				log.WithError(err).
+					WithField("BranchID", branch.ID).
+					WithField("BranchName", branchName).
+					WithField("Key", domain.EnvMySQLDatabaseKey).
+					WithField("Value", dbName)
 				return
 			}
 		}
@@ -172,11 +181,12 @@ func (cd *continuousDeploymentService) handleWebhookRepositoryPush(repoURL strin
 					WithField("Password", dbSetting.Password)
 			}
 
-			if err := cd.envRepo.SetEnv(ctx, branch.ID, domain.EnvMongoDBDatabaseKey, dbName); err != nil {
+			if err := cd.envRepo.SetEnv(ctx, branch.ID, domain.EnvMongoDBUserKey, dbName); err != nil {
 				log.WithError(err).
 					WithField("BranchID", branch.ID).
 					WithField("BranchName", branchName).
-					WithField("Key", domain.EnvMongoDBDatabaseKey)
+					WithField("Key", domain.EnvMongoDBUserKey).
+					WithField("Value", dbName)
 				return
 			}
 			if err := cd.envRepo.SetEnv(ctx, branch.ID, domain.EnvMongoDBPasswordKey, dbPassword); err != nil {
@@ -184,6 +194,14 @@ func (cd *continuousDeploymentService) handleWebhookRepositoryPush(repoURL strin
 					WithField("BranchID", branch.ID).
 					WithField("BranchName", branchName).
 					WithField("Key", domain.EnvMongoDBPasswordKey)
+				return
+			}
+			if err := cd.envRepo.SetEnv(ctx, branch.ID, domain.EnvMongoDBDatabaseKey, dbName); err != nil {
+				log.WithError(err).
+					WithField("BranchID", branch.ID).
+					WithField("BranchName", branchName).
+					WithField("Key", domain.EnvMongoDBDatabaseKey).
+					WithField("Value", dbName)
 				return
 			}
 		}

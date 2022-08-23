@@ -5,9 +5,10 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"go.mongodb.org/mongo-driver/mongo"
+
 	"github.com/traPtitech/neoshowcase/pkg/domain"
 	"github.com/traPtitech/neoshowcase/pkg/util/cli"
-	"go.mongodb.org/mongo-driver/mongo"
 )
 
 func TestNewMongoDBManager(t *testing.T) {
@@ -25,60 +26,39 @@ func TestNewMongoDBManager(t *testing.T) {
 	assert.NoError(t, err)
 }
 
-func TestMongoDBManagerImpl_Create(t *testing.T) {
-	skipOrDo(t)
+func TestMongoDBManagerImpl_CreateDeleteExist(t *testing.T) {
+	//skipOrDo(t)
 	t.Parallel()
 	m, _ := initMongoDBManager(t)
 
-	a := domain.CreateArgs{
-		Database: "testCreate",
-		Password: "testCreate",
-	}
 	ctx := context.Background()
-	err := m.Create(ctx, a)
-	assert.NoError(t, err)
-}
 
-func TestMongoDBManagerImpl_Delete(t *testing.T) {
-	skipOrDo(t)
-	t.Parallel()
-	m, _ := initMongoDBManager(t)
+	dbName := "testCreateDeleteExist"
 
-	a := domain.CreateArgs{
-		Database: "testDelete",
-		Password: "testDelete",
-	}
-	ctx := context.Background()
-	_ = m.Create(ctx, a)
-
-	da := domain.DeleteArgs{
-		Database: "testDelete",
-	}
-	err := m.Delete(ctx, da)
-	assert.NoError(t, err)
-}
-
-func TestMongoDBManagerImpl_Exist(t *testing.T) {
-	skipOrDo(t)
-	t.Parallel()
-	m, _ := initMongoDBManager(t)
-
-	a := domain.CreateArgs{
-		Database: "testExist",
-		Password: "testExist",
-	}
-
-	dbExists, err := m.IsExist(context.Background(), a.Database)
+	dbExists, err := m.IsExist(ctx, dbName)
 	assert.NoError(t, err)
 	assert.Equal(t, false, dbExists)
 
-	ctx := context.Background()
-	err = m.Create(ctx, a)
+	cArgs := domain.CreateArgs{
+		Database: dbName,
+		Password: dbName,
+	}
+	err = m.Create(ctx, cArgs)
 	assert.NoError(t, err)
 
-	dbExists, err = m.IsExist(ctx, a.Database)
+	dbExists, err = m.IsExist(ctx, dbName)
 	assert.NoError(t, err)
 	assert.Equal(t, true, dbExists)
+
+	dArgs := domain.DeleteArgs{
+		Database: dbName,
+	}
+	err = m.Delete(ctx, dArgs)
+	assert.NoError(t, err)
+
+	dbExists, err = m.IsExist(ctx, dbName)
+	assert.NoError(t, err)
+	assert.Equal(t, false, dbExists)
 }
 
 func initMongoDBManager(t *testing.T) (*mongoDBManagerImpl, *mongo.Client) {

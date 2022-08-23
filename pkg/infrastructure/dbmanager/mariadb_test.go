@@ -26,59 +26,39 @@ func TestNewMariaDBManager(t *testing.T) {
 	assert.NoError(t, err)
 }
 
-func TestMariaDBManagerImpl_Create(t *testing.T) {
+func TestMariaDBManagerImpl_CreateDeleteExist(t *testing.T) {
 	skipOrDo(t)
 	t.Parallel()
 	m, _ := initMariaDBManager(t)
-	a := domain.CreateArgs{
-		Database: "TestMariaCreate",
-		Password: "TestMariaCreate",
-	}
+
 	ctx := context.Background()
-	err := m.Create(ctx, a)
-	assert.NoError(t, err)
-}
 
-func TestMariaDBManagerImpl_Delete(t *testing.T) {
-	skipOrDo(t)
-	t.Parallel()
-	m, _ := initMariaDBManager(t)
+	dbName := "testCreateDeleteExist"
 
-	a := domain.CreateArgs{
-		Database: "TestMariaDelete",
-		Password: "TestMariaDelete",
-	}
-	ctx := context.Background()
-	err := m.Create(ctx, a)
-	assert.NoError(t, err)
-
-	da := domain.DeleteArgs{
-		Database: "TestMariaDelete",
-	}
-	err = m.Delete(ctx, da)
-	assert.NoError(t, err)
-}
-
-func TestMariaDBManagerImpl_Exist(t *testing.T) {
-	skipOrDo(t)
-	t.Parallel()
-	m, _ := initMariaDBManager(t)
-
-	a := domain.CreateArgs{
-		Database: "testExist",
-		Password: "testExist",
-	}
-
-	dbExists, err := m.IsExist(context.Background(), a.Database)
+	dbExists, err := m.IsExist(ctx, dbName)
 	assert.NoError(t, err)
 	assert.Equal(t, false, dbExists)
 
-	ctx := context.Background()
-	_ = m.Create(ctx, a)
+	cArgs := domain.CreateArgs{
+		Database: dbName,
+		Password: dbName,
+	}
+	err = m.Create(ctx, cArgs)
+	assert.NoError(t, err)
 
-	dbExists, err = m.IsExist(ctx, a.Database)
+	dbExists, err = m.IsExist(ctx, dbName)
 	assert.NoError(t, err)
 	assert.Equal(t, true, dbExists)
+
+	dArgs := domain.DeleteArgs{
+		Database: dbName,
+	}
+	err = m.Delete(ctx, dArgs)
+	assert.NoError(t, err)
+
+	dbExists, err = m.IsExist(ctx, dbName)
+	assert.NoError(t, err)
+	assert.Equal(t, false, dbExists)
 }
 
 func initMariaDBManager(t *testing.T) (*mariaDBManagerImpl, *sql.DB) {

@@ -4,8 +4,11 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
+	"strings"
+	"time"
 
 	"github.com/go-sql-driver/mysql"
+
 	"github.com/traPtitech/neoshowcase/pkg/domain"
 )
 
@@ -31,6 +34,7 @@ func NewMariaDBManager(c MariaDBConfig) (domain.MariaDBManager, error) {
 	}
 	conf.Collation = "utf8mb4_general_ci"
 	conf.ParseTime = true
+	conf.InterpolateParams = true
 
 	// DB接続
 	connector, err := mysql.NewConnector(conf)
@@ -41,54 +45,53 @@ func NewMariaDBManager(c MariaDBConfig) (domain.MariaDBManager, error) {
 	if err := db.Ping(); err != nil {
 		return nil, fmt.Errorf("failed to ping db: %w", err)
 	}
+	db.SetMaxOpenConns(1024)
+	db.SetMaxIdleConns(1024)
+	db.SetConnMaxLifetime(0)
+	db.SetConnMaxIdleTime(time.Minute)
 
 	return &mariaDBManagerImpl{db: db}, nil
 }
 
 func (m *mariaDBManagerImpl) Create(ctx context.Context, args domain.CreateArgs) error {
-	db := m.db
-	_, err := db.ExecContext(ctx, fmt.Sprintf("CREATE DATABASE %s", args.Database))
-	if err != nil {
+	if strings.ContainsRune(args.Database, '`') {
+		return fmt.Errorf("backtick(`) in database name are not permitted")
+	}
+	if _, err := m.db.ExecContext(ctx, fmt.Sprintf("CREATE DATABASE IF NOT EXISTS `%s`", args.Database)); err != nil {
 		return err
 	}
-	_, err = db.ExecContext(ctx, fmt.Sprintf("CREATE USER %s IDENTIFIED BY '%s'", args.Database, args.Password))
-	if err != nil {
+	if _, err := m.db.ExecContext(ctx, "CREATE USER IF NOT EXISTS ? IDENTIFIED BY ?", args.Database, args.Password); err != nil {
 		return err
 	}
-	_, err = db.ExecContext(ctx, fmt.Sprintf("GRANT ALL ON %s.* TO %s", args.Database, args.Database))
-	if err != nil {
+	if _, err := m.db.ExecContext(ctx, fmt.Sprintf("GRANT ALL ON `%s`.* TO ?", args.Database), args.Database); err != nil {
 		return err
 	}
 	return nil
 }
 
 func (m *mariaDBManagerImpl) Delete(ctx context.Context, args domain.DeleteArgs) error {
-	db := m.db
-	_, err := db.ExecContext(ctx, fmt.Sprintf("DROP DATABASE %s", args.Database))
-	if err != nil {
+	if strings.ContainsRune(args.Database, '`') {
+		return fmt.Errorf("backtick(`) in database name are not permitted")
+	}
+	if _, err := m.db.ExecContext(ctx, fmt.Sprintf("DROP DATABASE IF EXISTS `%s`", args.Database)); err != nil {
 		return err
 	}
-	_, err = db.ExecContext(ctx, fmt.Sprintf("DROP USER %s", args.Database))
-	if err != nil {
+	if _, err := m.db.ExecContext(ctx, "DROP USER IF EXISTS ?", args.Database); err != nil {
 		return err
 	}
 	return nil
 }
 
 func (m *mariaDBManagerImpl) IsExist(ctx context.Context, name string) (bool, error) {
-	rows, err := m.db.QueryContext(ctx, "SHOW DATABASES")
+	rows, err := m.db.QueryContext(ctx, "SHOW DATABASES WHERE `Database` = ?", name)
 	if err != nil {
 		return false, err
 	}
-	defer rows.Close()
 
 	for rows.Next() {
-		var dbName string
-		rows.Scan(&dbName)
-		if dbName == name {
-			return true, nil
-		}
+		return true, nil
 	}
+
 	return false, nil
 }
 

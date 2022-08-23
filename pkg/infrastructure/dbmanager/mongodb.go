@@ -5,10 +5,11 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/traPtitech/neoshowcase/pkg/domain"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
+
+	"github.com/traPtitech/neoshowcase/pkg/domain"
 )
 
 type mongoDBManagerImpl struct {
@@ -40,43 +41,48 @@ func NewMongoDBManager(config MongoDBConfig) (domain.MongoDBManager, error) {
 }
 
 func (m *mongoDBManagerImpl) Create(ctx context.Context, args domain.CreateArgs) error {
-	client := m.client
 	ctx, cancel := context.WithTimeout(ctx, 20*time.Second)
 	defer cancel()
-	r := client.Database(args.Database).RunCommand(ctx, bson.D{{Key: "createUser", Value: args.Database}, {Key: "pwd", Value: args.Password}, {Key: "roles", Value: []bson.M{{"role": "dbOwner", "db": args.Database}}}})
-	if r.Err() != nil {
+
+	cmd := bson.D{
+		{Key: "createUser", Value: args.Database},
+		{Key: "pwd", Value: args.Password},
+		{Key: "roles", Value: []bson.M{{"role": "dbOwner", "db": args.Database}}},
+	}
+
+	// NOTE: the database is created only after first write operation
+	if r := m.client.Database(args.Database).RunCommand(ctx, cmd); r.Err() != nil {
 		return r.Err()
 	}
+
 	return nil
 }
 
 func (m *mongoDBManagerImpl) Delete(ctx context.Context, args domain.DeleteArgs) error {
-	client := m.client
 	ctx, cancel := context.WithTimeout(ctx, 20*time.Second)
 	defer cancel()
-	r := client.Database(args.Database).RunCommand(ctx, bson.D{{Key: "dropUser", Value: args.Database}})
-	if r.Err() != nil {
+
+	cmd := bson.D{{Key: "dropUser", Value: args.Database}}
+
+	if r := m.client.Database(args.Database).RunCommand(ctx, cmd); r.Err() != nil {
 		return r.Err()
 	}
-	err := client.Database(args.Database).Drop(ctx)
-	if err != nil {
+	if err := m.client.Database(args.Database).Drop(ctx); err != nil {
 		return err
 	}
 	return nil
 }
 
 func (m *mongoDBManagerImpl) IsExist(ctx context.Context, name string) (bool, error) {
-	dbNames, err := m.client.ListDatabaseNames(ctx, bson.D{{}})
+	ctx, cancel := context.WithTimeout(ctx, 20*time.Second)
+	defer cancel()
+
+	cur, err := m.client.Database("admin").Collection("system.users").Find(ctx, bson.D{{"db", name}})
 	if err != nil {
 		return false, err
 	}
-	if len(dbNames) == 1 {
+	for cur.TryNext(ctx) {
 		return true, nil
-	}
-	for _, dbName := range dbNames {
-		if dbName == name {
-			return true, nil
-		}
 	}
 	return false, nil
 }
