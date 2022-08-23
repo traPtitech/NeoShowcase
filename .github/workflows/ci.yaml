@@ -28,7 +28,7 @@ jobs:
           cache: true
       - uses: arduino/setup-protoc@v1
         with:
-          version: '3.6.1'
+          version: '3.9.1'
       - name: Load cache of generated codes
         uses: actions/cache@v3
         id: go-proto-cache
@@ -150,14 +150,14 @@ jobs:
           path: ./pkg/interface/grpc/pb
           key: ${{ runner.os }}-proto-${{ hashFiles('**/*.proto') }}
       - name: Create single cluster
-        uses: AbsaOSS/k3d-action@v1.5.0
+        uses: AbsaOSS/k3d-action@v2.3.0
         id: single-cluster
         with:
           cluster-name: "test-cluster"
           args: >-
             --agents 1
             --no-lb
-            --k3s-server-arg "--no-deploy=traefik,servicelb,metrics-server"
+            --k3s-arg "--disable=traefik,servicelb,metrics-server@server:0"
       - name: Show cluster info
         run: |
           echo ${{ steps.single-cluster.outputs.network }} ${{ steps.single-cluster.outputs.subnet-CIDR }}
@@ -179,10 +179,10 @@ jobs:
     name: TBLS
     runs-on: ubuntu-latest
     env:
-      TBLS_VERSION: v1.49.6
+      TBLS_VERSION: v1.56.1
     services:
       mysql:
-        image: mariadb:10.6.4
+        image: mariadb:10.8.3
         options: --health-cmd="mysqladmin ping" --health-interval=5s --health-timeout=2s --health-retries=3
         env:
           MYSQL_ROOT_PASSWORD: password
