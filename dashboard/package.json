@@ -1,0 +1,26 @@
+{
+  "name": "neoshowcase",
+  "version": "0.0.0",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "serve": "vite preview",
+    "fmt": "rome format src --write",
+    "lint": "rome check src --apply"
+  },
+  "license": "MIT",
+  "devDependencies": {
+    "@types/node": "^18.11.17",
+    "@vanilla-extract/vite-plugin": "^3.7.0",
+    "rome": "^11.0.0",
+    "typescript": "^4.8.2",
+    "vite": "^3.0.9",
+    "vite-plugin-solid": "^2.3.0"
+  },
+  "dependencies": {
+    "@solidjs/router": "^0.6.0",
+    "@vanilla-extract/css": "^1.9.2",
+    "solid-icons": "^1.0.4",
+    "solid-js": "^1.5.1"
+  }
+}
