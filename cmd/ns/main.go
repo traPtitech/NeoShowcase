@@ -12,6 +12,7 @@ import (
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
+
 	"github.com/traPtitech/neoshowcase/pkg/domain/web"
 	"github.com/traPtitech/neoshowcase/pkg/interface/handler"
 	"github.com/traPtitech/neoshowcase/pkg/util/cli"
@@ -92,6 +93,14 @@ func main() {
 	viper.SetDefault("db.connection.maxOpen", 0)
 	viper.SetDefault("db.connection.maxIdle", 2)
 	viper.SetDefault("db.connection.lifetime", 0)
+	viper.SetDefault("mariadb.host", "127.0.0.1")
+	viper.SetDefault("mariadb.port", 3306)
+	viper.SetDefault("mariadb.adminUser", "root")
+	viper.SetDefault("mariadb.adminPassword", "password")
+	viper.SetDefault("mongodb.host", "127.0.0.1")
+	viper.SetDefault("mongodb.port", 27017)
+	viper.SetDefault("mongodb.adminUser", "root")
+	viper.SetDefault("mongodb.adminPassword", "password")
 
 	if err := rootCommand.Execute(); err != nil {
 		log.Fatal(err)
