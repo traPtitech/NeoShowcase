@@ -1,5 +1,6 @@
 import { style } from '@vanilla-extract/css'
 import { vars } from '/@/theme.css'
+import { mulish } from '/@/font.css'
 
 export const headerContainer = style({
   display: 'flex',
@@ -10,6 +11,7 @@ export const headerContainer = style({
   padding: '20px 36px',
   backgroundColor: vars.color.bg.black1,
   borderRadius: '16px',
+  fontFamily: mulish,
 })
 
 export const leftContainer = style({

@@ -20,5 +20,8 @@
         "src/*"
       ]
     },
+    "types": [
+      "vite/client"
+    ]
   }
 }
