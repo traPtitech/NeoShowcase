@@ -9,7 +9,7 @@ export const headerContainer = style({
   justifyContent: 'space-between',
 
   padding: '20px 36px',
-  backgroundColor: vars.color.bg.black1,
+  backgroundColor: vars.bg.black1,
   borderRadius: '16px',
   fontFamily: mulish,
 })
@@ -30,11 +30,11 @@ export const navContainer = style({
 })
 
 export const navActive = style({
-  color: vars.color.text.white1,
+  color: vars.text.white1,
 })
 
 export const navInactive = style({
-  color: vars.color.text.black4,
+  color: vars.text.black4,
 })
 
 export const rightContainer = style({
@@ -50,7 +50,7 @@ export const icon = style({
 })
 
 export const accountName = style({
-  color: vars.color.text.white1,
+  color: vars.text.white1,
   fontSize: '20px',
   marginLeft: '20px',
 })

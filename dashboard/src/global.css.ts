@@ -12,5 +12,5 @@ globalStyle('a', {
 
 globalStyle('body', {
   margin: '0',
-  backgroundColor: vars.color.bg.white2,
+  backgroundColor: vars.bg.white2,
 })
