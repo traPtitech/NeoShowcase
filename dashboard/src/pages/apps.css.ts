@@ -38,6 +38,7 @@ export const sidebarSection = style({
 
 export const sidebarTitle = style({
   fontSize: '24px',
+  fontWeight: 500,
   color: vars.text.black1,
 })
 
@@ -45,7 +46,24 @@ export const sidebarOptions = style({
   display: 'flex',
   flexDirection: 'column',
   gap: '12px',
+
+  fontSize: '20px',
   color: vars.text.black1,
+})
+
+export const statusCheckboxContainer = style({
+  display: 'flex',
+  flexDirection: 'row',
+  justifyContent: 'space-between',
+  alignItems: 'center',
+  width: '100%',
+})
+
+export const statusCheckboxContainerLeft = style({
+  display: 'flex',
+  flexDirection: 'row',
+  gap: '8px',
+  alignItems: 'center',
 })
 
 export const mainContentContainer = style({

@@ -27,6 +27,7 @@ export const headerLeft = style({
 
 export const repoName = style({
   fontSize: '16px',
+  fontWeight: 500,
   color: vars.text.black1,
 })
 
@@ -73,6 +74,7 @@ export const appDetail = style({
 
 export const appName = style({
   fontSize: '14px',
+  fontWeight: 500,
   color: vars.text.black1,
 })
 

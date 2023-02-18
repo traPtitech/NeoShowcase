@@ -13,8 +13,15 @@ import {
   sidebarOptions,
   sidebarSection,
   sidebarTitle,
+  statusCheckboxContainer,
+  statusCheckboxContainerLeft,
 } from '/@/pages/apps.css'
 import { Props as RepositoryProps, Repository } from '/@/components/Repository'
+import { Checkbox } from '/@/components/Checkbox'
+import { Status, StatusIcon } from '/@/components/StatusIcon'
+import { JSXElement } from 'solid-js'
+import { titleCase } from '/@/libs/casing'
+import { Radio, RadioItem } from '/@/components/Radio'
 
 const testReposData: RepositoryProps[] = [
   {
@@ -69,6 +76,28 @@ const testReposData: RepositoryProps[] = [
   },
 ]
 
+const sortItems: RadioItem[] = [
+  { value: 'desc', title: '最新順' },
+  { value: 'asc', title: '古い順' },
+]
+
+interface StatusCheckboxProps {
+  status: Status
+  num: number
+}
+const StatusCheckbox = ({ status, num }: StatusCheckboxProps): JSXElement => {
+  const title = titleCase(status)
+  return (
+    <div class={statusCheckboxContainer}>
+      <div class={statusCheckboxContainerLeft}>
+        <StatusIcon status={status} />
+        <div>{title}</div>
+      </div>
+      <div>{num}</div>
+    </div>
+  )
+}
+
 export default () => {
   return (
     <div class={container}>
@@ -79,19 +108,31 @@ export default () => {
           <div class={sidebarSection}>
             <div class={sidebarTitle}>Status</div>
             <div class={sidebarOptions}>
-              <div>Running</div>
-              <div>Static</div>
-              <div>Deploying</div>
-              <div>Error</div>
+              <Checkbox>
+                <StatusCheckbox status='running' num={24} />
+              </Checkbox>
+              <Checkbox>
+                <StatusCheckbox status='static' num={6} />
+              </Checkbox>
+              <Checkbox>
+                <StatusCheckbox status='deploying' num={1} />
+              </Checkbox>
+              <Checkbox>
+                <StatusCheckbox status='error' num={3} />
+              </Checkbox>
             </div>
           </div>
           <div class={sidebarSection}>
             <div class={sidebarTitle}>Provider</div>
             <div class={sidebarOptions}>
-              <div>GitHub</div>
-              <div>Gitea</div>
-              <div>GitLab</div>
+              <Checkbox>GitHub</Checkbox>
+              <Checkbox>Gitea</Checkbox>
+              <Checkbox>GitLab</Checkbox>
             </div>
+          </div>
+          <div class={sidebarOptions}>
+            <div class={sidebarTitle}>Sort</div>
+            <Radio items={sortItems} />
           </div>
         </div>
         <div class={mainContentContainer}>

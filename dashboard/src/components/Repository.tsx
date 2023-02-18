@@ -53,7 +53,9 @@ export const Repository = ({ name, provider, apps }: Props): JSXElement => {
         <div class={headerLeft}>
           {providerToIcon(provider)}
           <div class={repoName}>{name}</div>
-          <div class={appsCount}>{apps.length} {apps.length === 1 ? 'app' : 'apps'}</div>
+          <div class={appsCount}>
+            {apps.length} {apps.length === 1 ? 'app' : 'apps'}
+          </div>
         </div>
         <div class={addBranchButton}>
           <div>Add&nbsp;branch</div>
