@@ -7,6 +7,8 @@ services:
     restart: always
     environment:
       NS_APISERVER_DB_HOST: "mysql"
+      NS_APISERVER_MARIADB_HOST: "mysql"
+      NS_APISERVER_MONGODB_HOST: "mongo"
       NS_APISERVER_BUILDER_ADDR: "ns-builder:10000"
       NS_APISERVER_BUILDER_INSECURE: "true"
       NS_APISERVER_SSGEN_ADDR: "ns-ssgen:10000"

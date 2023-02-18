@@ -5,8 +5,8 @@ GO_REPO_ROOT_PACKAGE := "github.com/traPtitech/neoshowcase"
 PROTOC_OPTS := -I ./api/proto --go_out=. --go_opt=module=$(GO_REPO_ROOT_PACKAGE) --go-grpc_out=. --go-grpc_opt=module=$(GO_REPO_ROOT_PACKAGE)
 PROTOC_SOURCES ?= $(shell find ./api/proto/neoshowcase -type f -name "*.proto" -print)
 
-SQL_MIGRATE_CMD := go run github.com/rubenv/sql-migrate/sql-migrate
-EVANS_CMD := go run github.com/ktr0731/evans
+SQL_MIGRATE_CMD := sql-migrate
+EVANS_CMD := evans
 
 .PHONY: init
 init:
@@ -15,6 +15,8 @@ init:
 	go install google.golang.org/grpc/cmd/protoc-gen-go-grpc@latest
 	go install github.com/volatiletech/sqlboiler/v4@latest
 	go install github.com/volatiletech/sqlboiler/v4/drivers/sqlboiler-mysql@latest
+	go install github.com/rubenv/sql-migrate/sql-migrate@latest
+	go install github.com/ktr0731/evans@latest
 
 .PHONY: gogen
 gogen:
