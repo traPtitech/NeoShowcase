@@ -1,6 +1,6 @@
-import { Router } from "@solidjs/router";
-import type { Component } from "solid-js";
-import Routes from "/@/routes";
+import { Router } from '@solidjs/router'
+import type { Component } from 'solid-js'
+import Routes from '/@/routes'
 
 const App: Component = () => {
   return (
@@ -9,7 +9,7 @@ const App: Component = () => {
         <Routes />
       </Router>
     </>
-  );
-};
+  )
+}
 
-export default App;
+export default App
