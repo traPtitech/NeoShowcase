@@ -1,0 +1,54 @@
+name: Dashboard-CI
+
+defaults:
+  run:
+    working-directory: dashboard
+
+on:
+  push:
+    branches:
+      - 'main'
+    paths:
+      - 'dashboard/**'
+  pull_request:
+    paths:
+      - 'dashboard/**'
+
+jobs:
+  packages:
+    name: Install Packages
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-node@v3
+        with:
+          node-version: 18
+          cache: yarn
+          cache-dependency-path: dashboard/yarn.lock
+      - run: yarn install --frozen-lockfile
+  rome:
+    name: Format and Lint
+    runs-on: ubuntu-latest
+    needs: [packages]
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-node@v3
+        with:
+          node-version: 18
+          cache: yarn
+          cache-dependency-path: dashboard/yarn.lock
+      - run: yarn install --frozen-lockfile
+      - run: yarn ci
+  build:
+    name: Build
+    runs-on: ubuntu-latest
+    needs: [packages]
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-node@v3
+        with:
+          node-version: 18
+          cache: yarn
+          cache-dependency-path: dashboard/yarn.lock
+      - run: yarn install --frozen-lockfile
+      - run: yarn build

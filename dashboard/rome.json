@@ -1,7 +1,8 @@
 {
   "formatter": {
     "enabled": true,
-    "indentStyle": "tab",
+    "indentStyle": "space",
+    "indentSize": 2,
     "lineWidth": 120
   },
   "javascript": {
