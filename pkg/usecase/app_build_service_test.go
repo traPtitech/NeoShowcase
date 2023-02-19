@@ -7,12 +7,13 @@ import (
 
 	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/require"
+	"google.golang.org/protobuf/types/known/emptypb"
+
 	"github.com/traPtitech/neoshowcase/pkg/domain"
 	"github.com/traPtitech/neoshowcase/pkg/domain/builder"
 	"github.com/traPtitech/neoshowcase/pkg/interface/grpc/pb"
 	mock_pb "github.com/traPtitech/neoshowcase/pkg/interface/grpc/pb/mock"
 	mock_repository "github.com/traPtitech/neoshowcase/pkg/interface/repository/mock"
-	"google.golang.org/protobuf/types/known/emptypb"
 )
 
 func TestAppBuildService_QueueBuild(t *testing.T) {
@@ -24,36 +25,33 @@ func TestAppBuildService_QueueBuild(t *testing.T) {
 		defer mockCtrl.Finish()
 
 		appRepo := mock_repository.NewMockApplicationRepository(mockCtrl)
-		buildLogRepo := mock_repository.NewMockBuildLogRepository(mockCtrl)
+		buildRepo := mock_repository.NewMockBuildRepository(mockCtrl)
 		c := mock_pb.NewMockBuilderServiceClient(mockCtrl)
-		s := NewAppBuildService(appRepo, buildLogRepo, c, "TestRegistry", "TestPrefix")
-		branch := &domain.Branch{
-			ID:            "5f34b184-9ae1-4969-95c0-0a016921d153",
-			ApplicationID: "bee2466e-9d46-45e5-a6c4-4d359504c10c",
-			BranchName:    "main",
-			BuildType:     builder.BuildTypeImage,
-		}
-		res := &domain.Application{
+		s := NewAppBuildService(appRepo, buildRepo, c, "TestRegistry", "TestPrefix")
+		app := &domain.Application{
+			ID: "bee2466e-9d46-45e5-a6c4-4d359504c10c",
 			Repository: domain.Repository{
-				RemoteURL: "https://git.trap.jp/hijiki51/git-test",
+				URL: "https://git.trap.jp/hijiki51/git-test",
 			},
+			BranchName: "main",
+			BuildType:  builder.BuildTypeImage,
 		}
-		buildLog := &domain.BuildLog{
-			ID:       "f01691dd-985a-48c9-8b47-205af468431a",
-			Result:   builder.BuildStatusQueued,
-			BranchID: branch.ID,
+		build := &domain.Build{
+			ID:            "f01691dd-985a-48c9-8b47-205af468431a",
+			Status:        builder.BuildStatusQueued,
+			ApplicationID: app.ID,
 		}
 
 		appRepo.EXPECT().
-			GetApplicationByID(context.Background(), branch.ApplicationID).Return(res, nil)
+			GetApplicationByID(context.Background(), app.ID).Return(app, nil)
 
-		buildLogRepo.EXPECT().CreateBuildLog(context.Background(), branch.ID).Return(buildLog, nil)
+		buildRepo.EXPECT().CreateBuild(context.Background(), app.ID).Return(build, nil)
 
 		c.EXPECT().
 			GetStatus(context.Background(), &emptypb.Empty{}).
 			Return(&pb.GetStatusResponse{
 				Status:  pb.BuilderStatus_WAITING,
-				BuildId: buildLog.ID,
+				BuildId: build.ID,
 			}, nil).
 			AnyTimes()
 
@@ -61,15 +59,15 @@ func TestAppBuildService_QueueBuild(t *testing.T) {
 			StartBuildImage(context.Background(), &pb.StartBuildImageRequest{
 				ImageName: "TestRegistry/TestPrefixbee2466e-9d46-45e5-a6c4-4d359504c10c",
 				Source: &pb.BuildSource{
-					RepositoryUrl: res.Repository.RemoteURL,
+					RepositoryUrl: app.Repository.URL,
 				},
-				Options:  &pb.BuildOptions{},
-				BuildId:  buildLog.ID,
-				BranchId: branch.ID,
+				Options:       &pb.BuildOptions{},
+				BuildId:       build.ID,
+				ApplicationId: app.ID,
 			}).
 			Return(&pb.StartBuildImageResponse{}, nil)
 
-		_, err := s.QueueBuild(context.Background(), branch)
+		_, err := s.QueueBuild(context.Background(), app)
 		s.Shutdown()
 		require.Nil(t, err)
 	})
@@ -80,51 +78,48 @@ func TestAppBuildService_QueueBuild(t *testing.T) {
 		defer mockCtrl.Finish()
 
 		appRepo := mock_repository.NewMockApplicationRepository(mockCtrl)
-		buildLogRepo := mock_repository.NewMockBuildLogRepository(mockCtrl)
+		buildRepo := mock_repository.NewMockBuildRepository(mockCtrl)
 		c := mock_pb.NewMockBuilderServiceClient(mockCtrl)
-		s := NewAppBuildService(appRepo, buildLogRepo, c, "TestRegistry", "TestPrefix")
-		branch := &domain.Branch{
-			ID:            "1d9cc06d-813f-4cf7-947e-546e1a814fed",
-			ApplicationID: "d563e2de-7905-4267-8a9c-51520aac02b3",
-			BranchName:    "develop",
-			BuildType:     builder.BuildTypeStatic,
-		}
-		res := &domain.Application{
+		s := NewAppBuildService(appRepo, buildRepo, c, "TestRegistry", "TestPrefix")
+		app := &domain.Application{
+			ID: "d563e2de-7905-4267-8a9c-51520aac02b3",
 			Repository: domain.Repository{
-				RemoteURL: "https://git.trap.jp/hijiki51/git-test",
+				URL: "https://git.trap.jp/hijiki51/git-test",
 			},
+			BranchName: "develop",
+			BuildType:  builder.BuildTypeStatic,
 		}
-		buildLog := &domain.BuildLog{
-			ID:       "f01691dd-985a-48c9-8b47-205af468431a",
-			Result:   builder.BuildStatusQueued,
-			BranchID: branch.ID,
+		build := &domain.Build{
+			ID:            "f01691dd-985a-48c9-8b47-205af468431a",
+			Status:        builder.BuildStatusQueued,
+			ApplicationID: app.ID,
 		}
 
 		appRepo.EXPECT().
-			GetApplicationByID(context.Background(), branch.ApplicationID).Return(res, nil)
+			GetApplicationByID(context.Background(), app.ID).Return(app, nil)
 
-		buildLogRepo.EXPECT().CreateBuildLog(context.Background(), branch.ID).Return(buildLog, nil)
+		buildRepo.EXPECT().CreateBuild(context.Background(), build.ID).Return(build, nil)
 
 		c.EXPECT().
 			GetStatus(context.Background(), &emptypb.Empty{}).
 			Return(&pb.GetStatusResponse{
 				Status:  pb.BuilderStatus_WAITING,
-				BuildId: buildLog.ID,
+				BuildId: build.ID,
 			}, nil).
 			AnyTimes()
 
 		c.EXPECT().
 			StartBuildStatic(context.Background(), &pb.StartBuildStaticRequest{
 				Source: &pb.BuildSource{
-					RepositoryUrl: res.Repository.RemoteURL,
+					RepositoryUrl: app.Repository.URL,
 				},
-				Options:  &pb.BuildOptions{},
-				BuildId:  buildLog.ID,
-				BranchId: branch.ID,
+				Options:       &pb.BuildOptions{},
+				BuildId:       build.ID,
+				ApplicationId: app.ID,
 			}).
 			Return(&pb.StartBuildStaticResponse{}, nil)
 
-		_, err := s.QueueBuild(context.Background(), branch)
+		_, err := s.QueueBuild(context.Background(), app)
 		s.Shutdown()
 		require.Nil(t, err)
 	})
@@ -134,51 +129,45 @@ func TestAppBuildService_QueueBuild(t *testing.T) {
 		defer mockCtrl.Finish()
 
 		appRepo := mock_repository.NewMockApplicationRepository(mockCtrl)
-		buildLogRepo := mock_repository.NewMockBuildLogRepository(mockCtrl)
+		buildLog := mock_repository.NewMockBuildRepository(mockCtrl)
 		c := mock_pb.NewMockBuilderServiceClient(mockCtrl)
-		s := NewAppBuildService(appRepo, buildLogRepo, c, "TestRegistry", "TestPrefix")
+		s := NewAppBuildService(appRepo, buildLog, c, "TestRegistry", "TestPrefix")
 		queue := &s.(*appBuildService).queue
 
-		branch1 := &domain.Branch{
-			ID:            "1d9cc06d-813f-4cf7-947e-546e1a814fed",
-			ApplicationID: "d563e2de-7905-4267-8a9c-51520aac02b3",
-			BranchName:    "develop",
-			BuildType:     builder.BuildTypeStatic,
-		}
-		branch2 := &domain.Branch{
-			ID:            "3a874dab-432e-45ec-b574-c347ee5ae935",
-			ApplicationID: "19005490-5119-40ef-95e2-24a193e64a38",
-			BranchName:    "main",
-			BuildType:     builder.BuildTypeStatic,
-		}
-		res1 := &domain.Application{
+		app1 := &domain.Application{
+			ID: "d563e2de-7905-4267-8a9c-51520aac02b3",
 			Repository: domain.Repository{
-				RemoteURL: "https://git.trap.jp/hijiki51/git-test",
+				URL: "https://git.trap.jp/hijiki51/git-test",
 			},
+			BranchName: "develop",
+			BuildType:  builder.BuildTypeStatic,
 		}
-		res2 := &domain.Application{
+		app2 := &domain.Application{
+			ID: "19005490-5119-40ef-95e2-24a193e64a38",
 			Repository: domain.Repository{
-				RemoteURL: "https://git.trap.jp/hijiki51/git-test",
+				URL: "https://git.trap.jp/hijiki51/git-test",
 			},
+			BranchName: "main",
+			BuildType:  builder.BuildTypeStatic,
 		}
-		buildLog1 := &domain.BuildLog{
-			ID:       "f01691dd-985a-48c9-8b47-205af468431a",
-			Result:   builder.BuildStatusQueued,
-			BranchID: branch1.ID,
+		build1 := &domain.Build{
+			ID:            "f01691dd-985a-48c9-8b47-205af468431a",
+			Status:        builder.BuildStatusQueued,
+			ApplicationID: app1.ID,
 		}
-		buildLog2 := &domain.BuildLog{
-			ID:       "4bd30598-2962-416a-86b5-635899a96a65",
-			Result:   builder.BuildStatusQueued,
-			BranchID: branch2.ID,
+		build2 := &domain.Build{
+			ID:            "4bd30598-2962-416a-86b5-635899a96a65",
+			Status:        builder.BuildStatusQueued,
+			ApplicationID: app2.ID,
 		}
 
 		appRepo.EXPECT().
-			GetApplicationByID(context.Background(), branch1.ApplicationID).Return(res1, nil)
+			GetApplicationByID(context.Background(), app1.ID).Return(app1, nil)
 		appRepo.EXPECT().
-			GetApplicationByID(context.Background(), branch2.ApplicationID).Return(res2, nil)
+			GetApplicationByID(context.Background(), app2.ID).Return(app2, nil)
 
-		buildLogRepo.EXPECT().CreateBuildLog(context.Background(), branch1.ID).Return(buildLog1, nil)
-		buildLogRepo.EXPECT().CreateBuildLog(context.Background(), branch2.ID).Return(buildLog2, nil)
+		buildLog.EXPECT().CreateBuild(context.Background(), app1.ID).Return(build1, nil)
+		buildLog.EXPECT().CreateBuild(context.Background(), app2.ID).Return(build2, nil)
 
 		// stop processing queue
 		c.EXPECT().
@@ -189,11 +178,11 @@ func TestAppBuildService_QueueBuild(t *testing.T) {
 			}, nil).
 			AnyTimes()
 
-		id1, err := s.QueueBuild(context.Background(), branch1)
+		id1, err := s.QueueBuild(context.Background(), app1)
 		if err != nil {
 			t.Fatal(err)
 		}
-		id2, err := s.QueueBuild(context.Background(), branch2)
+		id2, err := s.QueueBuild(context.Background(), app2)
 		if err != nil {
 			t.Fatal(err)
 		}

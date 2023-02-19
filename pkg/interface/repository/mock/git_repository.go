@@ -36,49 +36,19 @@ func (m *MockGitRepositoryRepository) EXPECT() *MockGitRepositoryRepositoryMockR
 	return m.recorder
 }
 
-// GetProviderByHost mocks base method.
-func (m *MockGitRepositoryRepository) GetProviderByHost(ctx context.Context, host string) (domain.Provider, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetProviderByHost", ctx, host)
-	ret0, _ := ret[0].(domain.Provider)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// GetProviderByHost indicates an expected call of GetProviderByHost.
-func (mr *MockGitRepositoryRepositoryMockRecorder) GetProviderByHost(ctx, host interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetProviderByHost", reflect.TypeOf((*MockGitRepositoryRepository)(nil).GetProviderByHost), ctx, host)
-}
-
-// GetProviderByID mocks base method.
-func (m *MockGitRepositoryRepository) GetProviderByID(ctx context.Context, id string) (domain.Provider, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetProviderByID", ctx, id)
-	ret0, _ := ret[0].(domain.Provider)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// GetProviderByID indicates an expected call of GetProviderByID.
-func (mr *MockGitRepositoryRepositoryMockRecorder) GetProviderByID(ctx, id interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetProviderByID", reflect.TypeOf((*MockGitRepositoryRepository)(nil).GetProviderByID), ctx, id)
-}
-
 // GetRepository mocks base method.
-func (m *MockGitRepositoryRepository) GetRepository(ctx context.Context, rawurl string) (domain.Repository, error) {
+func (m *MockGitRepositoryRepository) GetRepository(ctx context.Context, rawURL string) (domain.Repository, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetRepository", ctx, rawurl)
+	ret := m.ctrl.Call(m, "GetRepository", ctx, rawURL)
 	ret0, _ := ret[0].(domain.Repository)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // GetRepository indicates an expected call of GetRepository.
-func (mr *MockGitRepositoryRepositoryMockRecorder) GetRepository(ctx, rawurl interface{}) *gomock.Call {
+func (mr *MockGitRepositoryRepositoryMockRecorder) GetRepository(ctx, rawURL interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetRepository", reflect.TypeOf((*MockGitRepositoryRepository)(nil).GetRepository), ctx, rawurl)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetRepository", reflect.TypeOf((*MockGitRepositoryRepository)(nil).GetRepository), ctx, rawURL)
 }
 
 // GetRepositoryByID mocks base method.
@@ -94,21 +64,6 @@ func (m *MockGitRepositoryRepository) GetRepositoryByID(ctx context.Context, id 
 func (mr *MockGitRepositoryRepositoryMockRecorder) GetRepositoryByID(ctx, id interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetRepositoryByID", reflect.TypeOf((*MockGitRepositoryRepository)(nil).GetRepositoryByID), ctx, id)
-}
-
-// RegisterProvider mocks base method.
-func (m *MockGitRepositoryRepository) RegisterProvider(ctx context.Context, args repository.RegisterProviderArgs) (domain.Provider, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "RegisterProvider", ctx, args)
-	ret0, _ := ret[0].(domain.Provider)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// RegisterProvider indicates an expected call of RegisterProvider.
-func (mr *MockGitRepositoryRepositoryMockRecorder) RegisterProvider(ctx, args interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RegisterProvider", reflect.TypeOf((*MockGitRepositoryRepository)(nil).RegisterProvider), ctx, args)
 }
 
 // RegisterRepository mocks base method.

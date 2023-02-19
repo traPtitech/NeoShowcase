@@ -4,9 +4,10 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/traPtitech/neoshowcase/pkg/domain"
 	apiv1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+
+	"github.com/traPtitech/neoshowcase/pkg/domain"
 )
 
 func (b *k8sBackend) ListContainers(ctx context.Context) ([]domain.Container, error) {
@@ -23,7 +24,6 @@ func (b *k8sBackend) ListContainers(ctx context.Context) ([]domain.Container, er
 	for _, item := range list.Items {
 		result = append(result, domain.Container{
 			ApplicationID: item.Labels[appContainerApplicationIDLabel],
-			BranchID:      item.Labels[appContainerBranchIDLabel],
 			State:         getContainerState(item.Status),
 		})
 	}

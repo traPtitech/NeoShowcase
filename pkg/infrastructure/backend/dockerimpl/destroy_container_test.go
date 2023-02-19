@@ -8,6 +8,7 @@ import (
 	"github.com/leandro-lugaresi/hub"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+
 	"github.com/traPtitech/neoshowcase/pkg/infrastructure/eventbus"
 )
 
@@ -16,32 +17,30 @@ func TestDockerBackend_DestroyContainer(t *testing.T) {
 
 	t.Run("存在しないコンテナを指定", func(t *testing.T) {
 		t.Parallel()
-		err := m.DestroyContainer(context.Background(), "notfound", "notfound")
+		err := m.DestroyContainer(context.Background(), "notfound")
 		assert.Error(t, err)
 	})
 
 	t.Run("コンテナを正常に削除", func(t *testing.T) {
 		t.Parallel()
 		appID := "ojoionaonidp"
-		branchID := "bhhfkadajlkh"
 		_, err := c.CreateContainer(docker.CreateContainerOptions{
-			Name: containerName(appID, branchID),
+			Name: containerName(appID),
 			Config: &docker.Config{
 				Image: "alpine:latest",
 			},
 		})
 		require.NoError(t, err)
 
-		err = m.DestroyContainer(context.Background(), appID, branchID)
+		err = m.DestroyContainer(context.Background(), appID)
 		assert.NoError(t, err)
 	})
 
 	t.Run("稼働中のコンテナを削除", func(t *testing.T) {
 		t.Parallel()
 		appID := "pjipjjijoinn"
-		branchID := "wefadsnaiomo"
 		cont, err := c.CreateContainer(docker.CreateContainerOptions{
-			Name: containerName(appID, branchID),
+			Name: containerName(appID),
 			Config: &docker.Config{
 				Image: "alpine:latest",
 				Cmd:   []string{"sleep", "100"},
@@ -50,7 +49,7 @@ func TestDockerBackend_DestroyContainer(t *testing.T) {
 		require.NoError(t, err)
 		require.NoError(t, c.StartContainer(cont.ID, nil))
 
-		err = m.DestroyContainer(context.Background(), appID, branchID)
+		err = m.DestroyContainer(context.Background(), appID)
 		assert.NoError(t, err)
 	})
 }

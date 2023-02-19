@@ -5,6 +5,7 @@ import (
 	"fmt"
 
 	docker "github.com/fsouza/go-dockerclient"
+
 	"github.com/traPtitech/neoshowcase/pkg/domain"
 )
 
@@ -22,7 +23,6 @@ func (b *dockerBackend) ListContainers(ctx context.Context) ([]domain.Container,
 	for _, apiContainers := range containers {
 		result = append(result, domain.Container{
 			ApplicationID: apiContainers.Labels[appContainerApplicationIDLabel],
-			BranchID:      apiContainers.Labels[appContainerBranchIDLabel],
 			State:         getContainerState(apiContainers.State),
 		})
 	}

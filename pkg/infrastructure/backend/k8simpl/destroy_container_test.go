@@ -7,6 +7,7 @@ import (
 	"github.com/leandro-lugaresi/hub"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+
 	"github.com/traPtitech/neoshowcase/pkg/domain"
 	"github.com/traPtitech/neoshowcase/pkg/infrastructure/eventbus"
 )
@@ -18,17 +19,15 @@ func TestK8sBackend_DestroyContainer(t *testing.T) {
 		t.Parallel()
 		image := "tianon/sleeping-beauty"
 		appID := "ap8ajievpjap"
-		branchID := "24j0jadlskfj"
 
 		err := m.CreateContainer(context.Background(), domain.ContainerCreateArgs{
 			ImageName:     image,
 			ApplicationID: appID,
-			BranchID:      branchID,
 		})
 		require.NoError(t, err)
-		waitPodRunning(t, c, deploymentName(appID, branchID))
+		waitPodRunning(t, c, deploymentName(appID))
 
-		err = m.DestroyContainer(context.Background(), appID, branchID)
+		err = m.DestroyContainer(context.Background(), appID)
 		assert.NoError(t, err)
 	})
 
@@ -36,21 +35,19 @@ func TestK8sBackend_DestroyContainer(t *testing.T) {
 		t.Parallel()
 		image := "chussenot/tiny-server"
 		appID := "pjpoi2efeioji"
-		branchID := "908uyoinkasdf"
 
 		err := m.CreateContainer(context.Background(), domain.ContainerCreateArgs{
 			ImageName:     image,
 			ApplicationID: appID,
-			BranchID:      branchID,
 			HTTPProxy: &domain.ContainerHTTPProxy{
 				Domain: "test.localhost",
 				Port:   80,
 			},
 		})
 		require.NoError(t, err)
-		waitPodRunning(t, c, deploymentName(appID, branchID))
+		waitPodRunning(t, c, deploymentName(appID))
 
-		err = m.DestroyContainer(context.Background(), appID, branchID)
+		err = m.DestroyContainer(context.Background(), appID)
 		assert.NoError(t, err)
 	})
 }

@@ -40,7 +40,6 @@ var commonSet = wire.NewSet(
 	grpc.NewBuilderServiceClient,
 	grpc.NewStaticSiteServiceClient,
 	broker.NewBuilderEventsBroker,
-	usecase.NewGitPushWebhookService,
 	usecase.NewAppBuildService,
 	usecase.NewAppDeployService,
 	usecase.NewContinuousDeploymentService,

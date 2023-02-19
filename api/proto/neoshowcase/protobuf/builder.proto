@@ -33,7 +33,7 @@ message StartBuildImageRequest {
   BuildSource source = 2;
   BuildOptions options = 3;
   string build_id = 4;
-  string branch_id = 5;
+  string application_id = 5;
 }
 
 message StartBuildImageResponse {
@@ -43,7 +43,7 @@ message StartBuildStaticRequest {
   BuildSource source = 1;
   BuildOptions options = 2;
   string build_id = 3;
-  string branch_id = 4;
+  string application_id = 4;
 }
 
 message StartBuildStaticResponse {

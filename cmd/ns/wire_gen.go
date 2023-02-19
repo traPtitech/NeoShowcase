@@ -19,7 +19,6 @@ import (
 	"github.com/traPtitech/neoshowcase/pkg/infrastructure/eventbus"
 	"github.com/traPtitech/neoshowcase/pkg/interface/broker"
 	"github.com/traPtitech/neoshowcase/pkg/interface/grpc"
-	"github.com/traPtitech/neoshowcase/pkg/interface/handler"
 	"github.com/traPtitech/neoshowcase/pkg/interface/repository"
 	"github.com/traPtitech/neoshowcase/pkg/usecase"
 	"k8s.io/client-go/kubernetes"
@@ -33,21 +32,14 @@ import (
 // Injectors from wire.go:
 
 func NewWithDocker(c2 Config) (*Server, error) {
-	hubHub := hub.New()
-	bus := eventbus.NewLocal(hubHub)
-	config := c2.DB
-	db, err := admindb.New(config)
+	router := &Router{}
+	config := provideWebServerConfig(router)
+	server := web.NewServer(config)
+	admindbConfig := c2.DB
+	db, err := admindb.New(admindbConfig)
 	if err != nil {
 		return nil, err
 	}
-	gitRepositoryRepository := repository.NewGitRepositoryRepository(db)
-	gitPushWebhookService := usecase.NewGitPushWebhookService(gitRepositoryRepository)
-	webhookReceiverHandler := handler.NewWebhookReceiverHandler(bus, gitPushWebhookService)
-	router := &Router{
-		wr: webhookReceiverHandler,
-	}
-	webConfig := provideWebServerConfig(router)
-	server := web.NewServer(webConfig)
 	builderServiceClientConfig := c2.Builder
 	builderServiceClientConn, err := grpc.NewBuilderServiceClientConn(builderServiceClientConfig)
 	if err != nil {
@@ -62,6 +54,8 @@ func NewWithDocker(c2 Config) (*Server, error) {
 	if err != nil {
 		return nil, err
 	}
+	hubHub := hub.New()
+	bus := eventbus.NewLocal(hubHub)
 	ingressConfDirPath := _wireIngressConfDirPathValue
 	backend, err := dockerimpl.NewDockerBackend(client, bus, ingressConfDirPath)
 	if err != nil {
@@ -78,8 +72,8 @@ func NewWithDocker(c2 Config) (*Server, error) {
 	dockerImageRegistryString := provideImageRegistry(c2)
 	dockerImageNamePrefixString := provideImagePrefix(c2)
 	appDeployService := usecase.NewAppDeployService(backend, staticSiteServiceClient, dockerImageRegistryString, dockerImageNamePrefixString, db)
-	buildLogRepository := repository.NewBuildLogRepository(db)
-	appBuildService := usecase.NewAppBuildService(applicationRepository, buildLogRepository, builderServiceClient, dockerImageRegistryString, dockerImageNamePrefixString)
+	buildRepository := repository.NewBuildLogRepository(db)
+	appBuildService := usecase.NewAppBuildService(applicationRepository, buildRepository, builderServiceClient, dockerImageRegistryString, dockerImageNamePrefixString)
 	mariaDBConfig := c2.MariaDB
 	mariaDBManager, err := dbmanager.NewMariaDBManager(mariaDBConfig)
 	if err != nil {
@@ -109,21 +103,14 @@ var (
 )
 
 func NewWithK8S(c2 Config) (*Server, error) {
-	hubHub := hub.New()
-	bus := eventbus.NewLocal(hubHub)
-	config := c2.DB
-	db, err := admindb.New(config)
+	router := &Router{}
+	config := provideWebServerConfig(router)
+	server := web.NewServer(config)
+	admindbConfig := c2.DB
+	db, err := admindb.New(admindbConfig)
 	if err != nil {
 		return nil, err
 	}
-	gitRepositoryRepository := repository.NewGitRepositoryRepository(db)
-	gitPushWebhookService := usecase.NewGitPushWebhookService(gitRepositoryRepository)
-	webhookReceiverHandler := handler.NewWebhookReceiverHandler(bus, gitPushWebhookService)
-	router := &Router{
-		wr: webhookReceiverHandler,
-	}
-	webConfig := provideWebServerConfig(router)
-	server := web.NewServer(webConfig)
 	builderServiceClientConfig := c2.Builder
 	builderServiceClientConn, err := grpc.NewBuilderServiceClientConn(builderServiceClientConfig)
 	if err != nil {
@@ -134,6 +121,8 @@ func NewWithK8S(c2 Config) (*Server, error) {
 	if err != nil {
 		return nil, err
 	}
+	hubHub := hub.New()
+	bus := eventbus.NewLocal(hubHub)
 	restConfig, err := rest.InClusterConfig()
 	if err != nil {
 		return nil, err
@@ -157,8 +146,8 @@ func NewWithK8S(c2 Config) (*Server, error) {
 	dockerImageRegistryString := provideImageRegistry(c2)
 	dockerImageNamePrefixString := provideImagePrefix(c2)
 	appDeployService := usecase.NewAppDeployService(backend, staticSiteServiceClient, dockerImageRegistryString, dockerImageNamePrefixString, db)
-	buildLogRepository := repository.NewBuildLogRepository(db)
-	appBuildService := usecase.NewAppBuildService(applicationRepository, buildLogRepository, builderServiceClient, dockerImageRegistryString, dockerImageNamePrefixString)
+	buildRepository := repository.NewBuildLogRepository(db)
+	appBuildService := usecase.NewAppBuildService(applicationRepository, buildRepository, builderServiceClient, dockerImageRegistryString, dockerImageNamePrefixString)
 	mariaDBConfig := c2.MariaDB
 	mariaDBManager, err := dbmanager.NewMariaDBManager(mariaDBConfig)
 	if err != nil {
@@ -185,7 +174,7 @@ func NewWithK8S(c2 Config) (*Server, error) {
 
 // wire.go:
 
-var commonSet = wire.NewSet(web.NewServer, hub.New, eventbus.NewLocal, admindb.New, dbmanager.NewMariaDBManager, dbmanager.NewMongoDBManager, repository.NewApplicationRepository, repository.NewGitRepositoryRepository, repository.NewEnvironmentRepository, repository.NewBuildLogRepository, grpc.NewBuilderServiceClientConn, grpc.NewStaticSiteServiceClientConn, grpc.NewBuilderServiceClient, grpc.NewStaticSiteServiceClient, broker.NewBuilderEventsBroker, usecase.NewGitPushWebhookService, usecase.NewAppBuildService, usecase.NewAppDeployService, usecase.NewContinuousDeploymentService, handlerSet,
+var commonSet = wire.NewSet(web.NewServer, hub.New, eventbus.NewLocal, admindb.New, dbmanager.NewMariaDBManager, dbmanager.NewMongoDBManager, repository.NewApplicationRepository, repository.NewGitRepositoryRepository, repository.NewEnvironmentRepository, repository.NewBuildLogRepository, grpc.NewBuilderServiceClientConn, grpc.NewStaticSiteServiceClientConn, grpc.NewBuilderServiceClient, grpc.NewStaticSiteServiceClient, broker.NewBuilderEventsBroker, usecase.NewAppBuildService, usecase.NewAppDeployService, usecase.NewContinuousDeploymentService, handlerSet,
 	provideWebServerConfig,
 	provideImagePrefix,
 	provideImageRegistry, wire.FieldsOf(new(Config), "Builder", "SSGen", "DB", "MariaDB", "MongoDB"), wire.Struct(new(Router), "*"), wire.Bind(new(web.Router), new(*Router)), wire.Struct(new(Server), "*"),

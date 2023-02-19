@@ -25,19 +25,19 @@ type continuousDeploymentService struct {
 	envRepo        repository.EnvironmentRepository
 	deployer       AppDeployService
 	builder        AppBuildService
-	mariadbmanager domain.MariaDBManager
-	mongodbmanager domain.MongoDBManager
+	mariaDBManager domain.MariaDBManager
+	mongoDBManager domain.MongoDBManager
 }
 
-func NewContinuousDeploymentService(bus domain.Bus, appRepo repository.ApplicationRepository, envRepo repository.EnvironmentRepository, deployer AppDeployService, builder AppBuildService, mariadbmanager domain.MariaDBManager, mongodbmanager domain.MongoDBManager) ContinuousDeploymentService {
+func NewContinuousDeploymentService(bus domain.Bus, appRepo repository.ApplicationRepository, envRepo repository.EnvironmentRepository, deployer AppDeployService, builder AppBuildService, mariaDBManager domain.MariaDBManager, mongoDBManager domain.MongoDBManager) ContinuousDeploymentService {
 	return &continuousDeploymentService{
 		bus:            bus,
 		appRepo:        appRepo,
 		envRepo:        envRepo,
 		deployer:       deployer,
 		builder:        builder,
-		mariadbmanager: mariadbmanager,
-		mongodbmanager: mongodbmanager,
+		mariaDBManager: mariaDBManager,
+		mongoDBManager: mongoDBManager,
 	}
 }
 
@@ -54,63 +54,60 @@ func (cd *continuousDeploymentService) loop() {
 	defer sub.Unsubscribe()
 	for ev := range sub.Chan() {
 		switch ev.Type {
-		case event.WebhookRepositoryPush:
-			repoURL := ev.Body["repository_url"].(string)
-			branch := ev.Body["branch"].(string)
-			cd.handleWebhookRepositoryPush(repoURL, branch)
+		case event.FetcherRequestApplicationBuild:
+			applicationID := ev.Body["application_id"].(string)
+			cd.handleNewBuildRequest(applicationID)
 		case event.BuilderBuildSucceeded:
-			branchID := ev.Body["branch_id"].(string)
+			branchID := ev.Body["application_id"].(string)
 			buildID := ev.Body["build_id"].(string)
 			cd.handleBuilderBuildSucceeded(branchID, buildID)
 		}
 	}
 }
 
-func generateRandomString(length int) string {
-	lowerCharSet := "abcdedfghijklmnopqrst"
-	upperCharSet := "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
-	symbolCharSet := "!@#$%&*"
-	numberSet := "0123456789"
-	allCharSet := lowerCharSet + upperCharSet + symbolCharSet + numberSet
+const (
+	lowerCharSet  = "abcdefghijklmnopqrstuvwxyz"
+	upperCharSet  = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+	symbolCharSet = "!@#$%&*"
+	numberSet     = "0123456789"
+	allCharSet    = lowerCharSet + upperCharSet + symbolCharSet + numberSet
+)
 
+func generateRandomString(length int) string {
 	var payload strings.Builder
 	for i := 0; i < length; i++ {
 		random := rand.Intn(len(allCharSet))
 		payload.WriteByte(allCharSet[random])
 	}
-
 	return payload.String()
 }
 
-func (cd *continuousDeploymentService) handleWebhookRepositoryPush(repoURL string, branchName string) {
-	log.WithField("repo", repoURL).
-		WithField("refs", branchName).
-		Info("repository push event received")
+func (cd *continuousDeploymentService) handleNewBuildRequest(applicationID string) {
+	log.WithField("applicationID", applicationID).
+		Info("application build request event received")
 
 	ctx := context.Background()
 
-	branch, err := cd.appRepo.GetBranchByRepoAndBranchName(ctx, repoURL, branchName)
+	app, err := cd.appRepo.GetApplicationByID(ctx, applicationID)
 	if err != nil {
 		if errors.Is(err, repository.ErrNotFound) {
 			return
 		}
 		log.WithError(err).
-			WithField("repo", repoURL).
-			WithField("refs", branchName).
-			Error("failed to GetBranchByRepoAndBranchName")
+			WithField("applicationID", applicationID).
+			Error("failed to GetApplicationByID")
 		return
 	}
 
 	// TODO dbSettingを設定から取得する
-	dbName := fmt.Sprintf("%s_%s", repoURL, branchName)
+	dbName := fmt.Sprintf("%s_%s", app.Repository, app.ID)
 	// TODO: アプリケーションの設定の取得
 	applicationNeedsMariaDB := true
 	if applicationNeedsMariaDB {
-		dbExists, err := cd.mariadbmanager.IsExist(ctx, dbName)
+		dbExists, err := cd.mariaDBManager.IsExist(ctx, dbName)
 		if err != nil {
 			log.WithError(err).
-				WithField("repo", repoURL).
-				WithField("refs", branchName).
+				WithField("applicationID", applicationID).
 				Error("failed to check if database exists")
 			return
 		}
@@ -122,32 +119,29 @@ func (cd *continuousDeploymentService) handleWebhookRepositoryPush(repoURL strin
 				Password: dbPassword,
 			}
 
-			if err := cd.mariadbmanager.Create(ctx, dbSetting); err != nil {
+			if err := cd.mariaDBManager.Create(ctx, dbSetting); err != nil {
 				log.WithError(err).
 					WithField("Database", dbSetting.Database).
 					WithField("Password", dbSetting.Password)
 				return
 			}
 
-			if err := cd.envRepo.SetEnv(ctx, branch.ID, domain.EnvMySQLUserKey, dbName); err != nil {
+			if err := cd.envRepo.SetEnv(ctx, app.ID, domain.EnvMySQLUserKey, dbName); err != nil {
 				log.WithError(err).
-					WithField("BranchID", branch.ID).
-					WithField("BranchName", branchName).
+					WithField("applicationID", app.ID).
 					WithField("Key", domain.EnvMySQLUserKey).
 					WithField("Value", dbName)
 				return
 			}
-			if err := cd.envRepo.SetEnv(ctx, branch.ID, domain.EnvMySQLPasswordKey, dbPassword); err != nil {
+			if err := cd.envRepo.SetEnv(ctx, app.ID, domain.EnvMySQLPasswordKey, dbPassword); err != nil {
 				log.WithError(err).
-					WithField("BranchID", branch.ID).
-					WithField("BranchName", branchName).
+					WithField("applicationID", app.ID).
 					WithField("Key", domain.EnvMySQLPasswordKey)
 				return
 			}
-			if err := cd.envRepo.SetEnv(ctx, branch.ID, domain.EnvMySQLDatabaseKey, dbName); err != nil {
+			if err := cd.envRepo.SetEnv(ctx, app.ID, domain.EnvMySQLDatabaseKey, dbName); err != nil {
 				log.WithError(err).
-					WithField("BranchID", branch.ID).
-					WithField("BranchName", branchName).
+					WithField("applicationID", app.ID).
 					WithField("Key", domain.EnvMySQLDatabaseKey).
 					WithField("Value", dbName)
 				return
@@ -158,11 +152,11 @@ func (cd *continuousDeploymentService) handleWebhookRepositoryPush(repoURL strin
 	// TODO: アプリケーションの設定の取得
 	applicationNeedsMongoDB := true
 	if applicationNeedsMongoDB {
-		dbExists, err := cd.mongodbmanager.IsExist(ctx, dbName)
+		dbExists, err := cd.mongoDBManager.IsExist(ctx, dbName)
 		if err != nil {
 			log.WithError(err).
-				WithField("repo", repoURL).
-				WithField("refs", branchName).
+				WithField("applicationID", app.ID).
+				WithField("dbName", dbName).
 				Error("failed to check if database exists")
 			return
 		}
@@ -174,32 +168,29 @@ func (cd *continuousDeploymentService) handleWebhookRepositoryPush(repoURL strin
 				Password: dbPassword,
 			}
 
-			err := cd.mongodbmanager.Create(ctx, dbSetting)
+			err := cd.mongoDBManager.Create(ctx, dbSetting)
 			if err != nil {
 				log.WithError(err).
 					WithField("Database", dbSetting.Database).
 					WithField("Password", dbSetting.Password)
 			}
 
-			if err := cd.envRepo.SetEnv(ctx, branch.ID, domain.EnvMongoDBUserKey, dbName); err != nil {
+			if err := cd.envRepo.SetEnv(ctx, app.ID, domain.EnvMongoDBUserKey, dbName); err != nil {
 				log.WithError(err).
-					WithField("BranchID", branch.ID).
-					WithField("BranchName", branchName).
+					WithField("applicationID", app.ID).
 					WithField("Key", domain.EnvMongoDBUserKey).
 					WithField("Value", dbName)
 				return
 			}
-			if err := cd.envRepo.SetEnv(ctx, branch.ID, domain.EnvMongoDBPasswordKey, dbPassword); err != nil {
+			if err := cd.envRepo.SetEnv(ctx, app.ID, domain.EnvMongoDBPasswordKey, dbPassword); err != nil {
 				log.WithError(err).
-					WithField("BranchID", branch.ID).
-					WithField("BranchName", branchName).
+					WithField("applicationID", app.ID).
 					WithField("Key", domain.EnvMongoDBPasswordKey)
 				return
 			}
-			if err := cd.envRepo.SetEnv(ctx, branch.ID, domain.EnvMongoDBDatabaseKey, dbName); err != nil {
+			if err := cd.envRepo.SetEnv(ctx, app.ID, domain.EnvMongoDBDatabaseKey, dbName); err != nil {
 				log.WithError(err).
-					WithField("BranchID", branch.ID).
-					WithField("BranchName", branchName).
+					WithField("applicationID", app.ID).
 					WithField("Key", domain.EnvMongoDBDatabaseKey).
 					WithField("Value", dbName)
 				return
@@ -207,11 +198,10 @@ func (cd *continuousDeploymentService) handleWebhookRepositoryPush(repoURL strin
 		}
 	}
 
-	_, err = cd.builder.QueueBuild(ctx, branch)
+	_, err = cd.builder.QueueBuild(ctx, app)
 	if err != nil {
 		log.WithError(err).
-			WithField("appID", branch.ApplicationID).
-			WithField("branchID", branch.ID).
+			WithField("appID", app.ID).
 			Error("failed to RequestBuild")
 		return
 	}
@@ -227,6 +217,7 @@ func (cd *continuousDeploymentService) handleBuilderBuildSucceeded(branchID stri
 	log.WithField("branchID", branchID).
 		WithField("buildID", buildID).
 		Error("starting application")
+
 	err := cd.deployer.QueueDeployment(context.Background(), branchID, buildID)
 	if err != nil {
 		// TODO エラー処理

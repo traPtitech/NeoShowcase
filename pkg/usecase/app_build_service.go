@@ -7,11 +7,12 @@ import (
 	"time"
 
 	log "github.com/sirupsen/logrus"
+	"google.golang.org/protobuf/types/known/emptypb"
+
 	"github.com/traPtitech/neoshowcase/pkg/domain"
 	"github.com/traPtitech/neoshowcase/pkg/domain/builder"
 	"github.com/traPtitech/neoshowcase/pkg/interface/grpc/pb"
 	"github.com/traPtitech/neoshowcase/pkg/interface/repository"
-	"google.golang.org/protobuf/types/known/emptypb"
 )
 
 const (
@@ -20,15 +21,15 @@ const (
 )
 
 type AppBuildService interface {
-	QueueBuild(ctx context.Context, branch *domain.Branch) (string, error)
+	QueueBuild(ctx context.Context, application *domain.Application) (string, error)
 	CancelBuild(ctx context.Context, buildID string) error
 	Shutdown()
 }
 
 type appBuildService struct {
-	appRepo      repository.ApplicationRepository
-	buildLogRepo repository.BuildLogRepository
-	builder      pb.BuilderServiceClient
+	appRepo   repository.ApplicationRepository
+	buildRepo repository.BuildRepository
+	builder   pb.BuilderServiceClient
 
 	queue           queue
 	queueWait       sync.WaitGroup
@@ -40,15 +41,14 @@ type appBuildService struct {
 type buildJob struct {
 	buildID string
 	app     *domain.Application
-	branch  *domain.Branch
 }
 
-func NewAppBuildService(appRepo repository.ApplicationRepository, buildLogRepo repository.BuildLogRepository, builder pb.BuilderServiceClient, registry builder.DockerImageRegistryString, prefix builder.DockerImageNamePrefixString) AppBuildService {
+func NewAppBuildService(appRepo repository.ApplicationRepository, buildRepo repository.BuildRepository, builder pb.BuilderServiceClient, registry builder.DockerImageRegistryString, prefix builder.DockerImageNamePrefixString) AppBuildService {
 	ctx, cancel := context.WithCancel(context.Background())
 
 	s := &appBuildService{
 		appRepo:         appRepo,
-		buildLogRepo:    buildLogRepo,
+		buildRepo:       buildRepo,
 		builder:         builder,
 		queue:           newQueue(),
 		cancel:          cancel,
@@ -59,24 +59,23 @@ func NewAppBuildService(appRepo repository.ApplicationRepository, buildLogRepo r
 	return s
 }
 
-func (s *appBuildService) QueueBuild(ctx context.Context, branch *domain.Branch) (string, error) {
-	app, err := s.appRepo.GetApplicationByID(ctx, branch.ApplicationID)
+func (s *appBuildService) QueueBuild(ctx context.Context, application *domain.Application) (string, error) {
+	app, err := s.appRepo.GetApplicationByID(ctx, application.ID)
 	if err != nil {
-		return "", fmt.Errorf("Failed to QueueBuild: %w", err)
+		return "", fmt.Errorf("failed to QueueBuild: %w", err)
 	}
 
-	// ビルドログのエントリをDBに挿入
-	buildLog, err := s.buildLogRepo.CreateBuildLog(ctx, branch.ID)
+	// ビルドのエントリをDBに挿入
+	buildLog, err := s.buildRepo.CreateBuild(ctx, application.ID)
 	if err != nil {
-		log.WithError(err).Errorf("failed to create build log: %s", branch.ID)
-		return "", fmt.Errorf("failed to create build log: %w", err)
+		log.WithError(err).Errorf("failed to create build: %s", application.ID)
+		return "", fmt.Errorf("failed to create build: %w", err)
 	}
 
 	s.queueWait.Add(1)
 	s.queue.Push(&buildJob{
 		buildID: buildLog.ID,
 		app:     app,
-		branch:  branch,
 	})
 
 	return buildLog.ID, nil
@@ -120,7 +119,7 @@ func (s *appBuildService) startQueueManager(ctx context.Context) {
 						break requestLoop
 					}
 					if res.GetStatus() == pb.BuilderStatus_WAITING {
-						err := s.requestBuild(context.Background(), v.app, v.branch, v.buildID)
+						err := s.requestBuild(context.Background(), v.app, v.buildID)
 						if err != nil {
 							log.WithError(err).Error("failed to request build")
 						}
@@ -135,17 +134,16 @@ func (s *appBuildService) startQueueManager(ctx context.Context) {
 	}
 }
 
-func (s *appBuildService) requestBuild(ctx context.Context, app *domain.Application, branch *domain.Branch, buildID string) error {
-	switch branch.BuildType {
+func (s *appBuildService) requestBuild(ctx context.Context, app *domain.Application, buildID string) error {
+	switch app.BuildType {
 	case builder.BuildTypeImage:
 		_, err := s.builder.StartBuildImage(ctx, &pb.StartBuildImageRequest{
-			ImageName: builder.GetImageName(s.imageRegistry, s.imageNamePrefix, branch.ApplicationID),
+			ImageName: builder.GetImageName(s.imageRegistry, s.imageNamePrefix, app.ID),
 			Source: &pb.BuildSource{
-				RepositoryUrl: app.Repository.RemoteURL, // TODO ブランチ・タグ指定に対応
+				RepositoryUrl: app.Repository.URL, // TODO ブランチ・タグ指定に対応
 			},
-			Options:  &pb.BuildOptions{}, // TODO 汎用ベースイメージビルドに対応させる
-			BranchId: branch.ID,
-			BuildId:  buildID,
+			Options: &pb.BuildOptions{}, // TODO 汎用ベースイメージビルドに対応させる
+			BuildId: buildID,
 		})
 		if err != nil {
 			return fmt.Errorf("builder failed to start build image: %w", err)
@@ -154,21 +152,20 @@ func (s *appBuildService) requestBuild(ctx context.Context, app *domain.Applicat
 	case builder.BuildTypeStatic:
 		_, err := s.builder.StartBuildStatic(ctx, &pb.StartBuildStaticRequest{
 			Source: &pb.BuildSource{
-				RepositoryUrl: app.Repository.RemoteURL, // TODO ブランチ・タグ指定に対応
+				RepositoryUrl: app.Repository.URL, // TODO ブランチ・タグ指定に対応
 			},
-			Options:  &pb.BuildOptions{}, // TODO 汎用ベースイメージビルドに対応させる
-			BranchId: branch.ID,
-			BuildId:  buildID,
+			Options: &pb.BuildOptions{}, // TODO 汎用ベースイメージビルドに対応させる
+			BuildId: buildID,
 		})
 		if err != nil {
 			return fmt.Errorf("builder failed to start build static: %w", err)
 		}
 
 	default:
-		return fmt.Errorf("unknown build type: %s", branch.BuildType)
+		return fmt.Errorf("unknown build type: %s", app.BuildType)
 	}
 
-	log.WithField("branchID", branch.ID).
+	log.WithField("applicationID", app.ID).
 		Info("build requested")
 	return nil
 }

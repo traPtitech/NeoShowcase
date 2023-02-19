@@ -5,20 +5,20 @@ import (
 	"fmt"
 
 	log "github.com/sirupsen/logrus"
-	"github.com/traPtitech/neoshowcase/pkg/domain"
-	"github.com/traPtitech/neoshowcase/pkg/domain/event"
 	apiv1 "k8s.io/api/core/v1"
 	networkingv1 "k8s.io/api/networking/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/watch"
 	"k8s.io/client-go/kubernetes"
+
+	"github.com/traPtitech/neoshowcase/pkg/domain"
+	"github.com/traPtitech/neoshowcase/pkg/domain/event"
 )
 
 const (
 	appNamespace                   = "neoshowcase-apps"
 	appContainerLabel              = "neoshowcase.trap.jp/app"
 	appContainerApplicationIDLabel = "neoshowcase.trap.jp/appId"
-	appContainerBranchIDLabel      = "neoshowcase.trap.jp/branchID"
 	deploymentRestartAnnotation    = "neoshowcase.trap.jp/restartedAt"
 )
 
@@ -65,13 +65,11 @@ func (b *k8sBackend) eventListener() {
 			if p.Status.Phase == apiv1.PodRunning {
 				b.eventbus.Publish(event.ContainerAppStarted, domain.Fields{
 					"application_id": p.Labels[appContainerApplicationIDLabel],
-					"environment_id": p.Labels[appContainerBranchIDLabel],
 				})
 			}
 		case watch.Deleted:
 			b.eventbus.Publish(event.ContainerAppStopped, domain.Fields{
 				"application_id": p.Labels[appContainerApplicationIDLabel],
-				"environment_id": p.Labels[appContainerBranchIDLabel],
 			})
 		}
 	}
@@ -85,6 +83,6 @@ func (b *k8sBackend) Dispose(ctx context.Context) error {
 func int32Ptr(i int32) *int32                                           { return &i }
 func pathTypePtr(pathType networkingv1.PathType) *networkingv1.PathType { return &pathType }
 
-func deploymentName(appID, branchID string) string {
-	return fmt.Sprintf("nsapp-%s-%s", appID, branchID)
+func deploymentName(appID string) string {
+	return fmt.Sprintf("nsapp-%s", appID)
 }

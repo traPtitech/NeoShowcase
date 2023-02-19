@@ -10,7 +10,6 @@ import (
 
 	gomock "github.com/golang/mock/gomock"
 	domain "github.com/traPtitech/neoshowcase/pkg/domain"
-	builder "github.com/traPtitech/neoshowcase/pkg/domain/builder"
 	repository "github.com/traPtitech/neoshowcase/pkg/interface/repository"
 )
 
@@ -52,21 +51,6 @@ func (mr *MockApplicationRepositoryMockRecorder) CreateApplication(ctx, args int
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateApplication", reflect.TypeOf((*MockApplicationRepository)(nil).CreateApplication), ctx, args)
 }
 
-// CreateBranch mocks base method.
-func (m *MockApplicationRepository) CreateBranch(ctx context.Context, appID, branchName string, buildType builder.BuildType) (*domain.Branch, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "CreateBranch", ctx, appID, branchName, buildType)
-	ret0, _ := ret[0].(*domain.Branch)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// CreateBranch indicates an expected call of CreateBranch.
-func (mr *MockApplicationRepositoryMockRecorder) CreateBranch(ctx, appID, branchName, buildType interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateBranch", reflect.TypeOf((*MockApplicationRepository)(nil).CreateBranch), ctx, appID, branchName, buildType)
-}
-
 // GetApplicationByID mocks base method.
 func (m *MockApplicationRepository) GetApplicationByID(ctx context.Context, id string) (*domain.Application, error) {
 	m.ctrl.T.Helper()
@@ -80,36 +64,6 @@ func (m *MockApplicationRepository) GetApplicationByID(ctx context.Context, id s
 func (mr *MockApplicationRepositoryMockRecorder) GetApplicationByID(ctx, id interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetApplicationByID", reflect.TypeOf((*MockApplicationRepository)(nil).GetApplicationByID), ctx, id)
-}
-
-// GetBranchByID mocks base method.
-func (m *MockApplicationRepository) GetBranchByID(ctx context.Context, id string) (*domain.Branch, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetBranchByID", ctx, id)
-	ret0, _ := ret[0].(*domain.Branch)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// GetBranchByID indicates an expected call of GetBranchByID.
-func (mr *MockApplicationRepositoryMockRecorder) GetBranchByID(ctx, id interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetBranchByID", reflect.TypeOf((*MockApplicationRepository)(nil).GetBranchByID), ctx, id)
-}
-
-// GetBranchByRepoAndBranchName mocks base method.
-func (m *MockApplicationRepository) GetBranchByRepoAndBranchName(ctx context.Context, repoURL, branch string) (*domain.Branch, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetBranchByRepoAndBranchName", ctx, repoURL, branch)
-	ret0, _ := ret[0].(*domain.Branch)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// GetBranchByRepoAndBranchName indicates an expected call of GetBranchByRepoAndBranchName.
-func (mr *MockApplicationRepositoryMockRecorder) GetBranchByRepoAndBranchName(ctx, repoURL, branch interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetBranchByRepoAndBranchName", reflect.TypeOf((*MockApplicationRepository)(nil).GetBranchByRepoAndBranchName), ctx, repoURL, branch)
 }
 
 // SetWebsite mocks base method.

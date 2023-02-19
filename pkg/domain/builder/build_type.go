@@ -16,19 +16,19 @@ const (
 func (t BuildType) String() string {
 	switch t {
 	case BuildTypeImage:
-		return models.BranchesBuildTypeImage
+		return models.ApplicationsBuildTypeImage
 	case BuildTypeStatic:
-		return models.BranchesBuildTypeStatic
+		return models.ApplicationsBuildTypeStatic
 	}
 	return ""
 }
 
 func BuildTypeFromString(str string) BuildType {
 	switch str {
-	case models.BranchesBuildTypeStatic:
-		return BuildTypeStatic
-	case models.BranchesBuildTypeImage:
+	case models.ApplicationsBuildTypeImage:
 		return BuildTypeImage
+	case models.ApplicationsBuildTypeStatic:
+		return BuildTypeStatic
 	default:
 		panic(fmt.Errorf("UNKNOWN BUILD TYPE: %s", str))
 	}

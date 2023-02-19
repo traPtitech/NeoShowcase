@@ -7,9 +7,9 @@ import (
 	docker "github.com/fsouza/go-dockerclient"
 )
 
-func (b *dockerBackend) DestroyContainer(ctx context.Context, appID string, branchID string) error {
+func (b *dockerBackend) DestroyContainer(ctx context.Context, appID string) error {
 	err := b.c.RemoveContainer(docker.RemoveContainerOptions{
-		ID:            containerName(appID, branchID),
+		ID:            containerName(appID),
 		RemoveVolumes: true,
 		Force:         true,
 		Context:       ctx,

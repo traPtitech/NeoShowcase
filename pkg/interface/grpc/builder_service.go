@@ -3,15 +3,15 @@ package grpc
 import (
 	"context"
 
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
+	"google.golang.org/protobuf/types/known/emptypb"
+
 	"github.com/traPtitech/neoshowcase/pkg/domain/builder"
 	"github.com/traPtitech/neoshowcase/pkg/domain/event"
 	"github.com/traPtitech/neoshowcase/pkg/interface/grpc/pb"
 	"github.com/traPtitech/neoshowcase/pkg/usecase"
 	"github.com/traPtitech/neoshowcase/pkg/util"
-	"github.com/volatiletech/null/v8"
-	"google.golang.org/grpc/codes"
-	"google.golang.org/grpc/status"
-	"google.golang.org/protobuf/types/known/emptypb"
 )
 
 type BuilderService struct {
@@ -49,8 +49,8 @@ func (s *BuilderService) ConnectEventStream(empty *emptypb.Empty, stream pb.Buil
 				if err := stream.Send(&pb.Event{
 					Type: pb.Event_BUILD_STARTED,
 					Body: util.ToJSON(map[string]interface{}{
-						"branch_id": task.BranchID.String,
-						"build_id":  task.BuildID,
+						"application_id": task.ApplicationID,
+						"build_id":       task.BuildID,
 					}),
 				}); err != nil {
 					return err
@@ -60,8 +60,8 @@ func (s *BuilderService) ConnectEventStream(empty *emptypb.Empty, stream pb.Buil
 				if err := stream.Send(&pb.Event{
 					Type: pb.Event_BUILD_FAILED,
 					Body: util.ToJSON(map[string]interface{}{
-						"branch_id": task.BranchID.String,
-						"build_id":  task.BuildID,
+						"application_id": task.ApplicationID,
+						"build_id":       task.BuildID,
 					}),
 				}); err != nil {
 					return err
@@ -71,8 +71,8 @@ func (s *BuilderService) ConnectEventStream(empty *emptypb.Empty, stream pb.Buil
 				if err := stream.Send(&pb.Event{
 					Type: pb.Event_BUILD_SUCCEEDED,
 					Body: util.ToJSON(map[string]interface{}{
-						"branch_id": task.BranchID.String,
-						"build_id":  task.BuildID,
+						"application_id": task.ApplicationID,
+						"build_id":       task.BuildID,
 					}),
 				}); err != nil {
 					return err
@@ -82,8 +82,8 @@ func (s *BuilderService) ConnectEventStream(empty *emptypb.Empty, stream pb.Buil
 				if err := stream.Send(&pb.Event{
 					Type: pb.Event_BUILD_CANCELED,
 					Body: util.ToJSON(map[string]interface{}{
-						"branch_id": task.BranchID.String,
-						"build_id":  task.BuildID,
+						"application_id": task.ApplicationID,
+						"build_id":       task.BuildID,
 					}),
 				}); err != nil {
 					return err
@@ -95,15 +95,12 @@ func (s *BuilderService) ConnectEventStream(empty *emptypb.Empty, stream pb.Buil
 
 func (s *BuilderService) StartBuildImage(ctx context.Context, request *pb.StartBuildImageRequest) (*pb.StartBuildImageResponse, error) {
 	task := &builder.Task{
-		Static:       false,
-		BuildSource:  convertBuildSourceFromPB(request.Source),
-		BuildOptions: convertBuildOptionsFromPB(request.Options),
-		ImageName:    request.ImageName,
-		BuildID:      request.BuildId,
-	}
-	// ブランチIDが指定されていない場合はデバッグビルド
-	if len(request.BranchId) > 0 {
-		task.BranchID = null.StringFrom(request.BranchId)
+		Static:        false,
+		BuildSource:   convertBuildSourceFromPB(request.Source),
+		BuildOptions:  convertBuildOptionsFromPB(request.Options),
+		ImageName:     request.ImageName,
+		BuildID:       request.BuildId,
+		ApplicationID: request.ApplicationId,
 	}
 
 	err := s.svc.StartBuild(ctx, task)
@@ -115,13 +112,11 @@ func (s *BuilderService) StartBuildImage(ctx context.Context, request *pb.StartB
 
 func (s *BuilderService) StartBuildStatic(ctx context.Context, request *pb.StartBuildStaticRequest) (*pb.StartBuildStaticResponse, error) {
 	task := &builder.Task{
-		Static:       true,
-		BuildSource:  convertBuildSourceFromPB(request.Source),
-		BuildOptions: convertBuildOptionsFromPB(request.Options),
-	}
-	// 環境IDが指定されていない場合はデバッグビルド
-	if len(request.BranchId) > 0 {
-		task.BranchID = null.StringFrom(request.BranchId)
+		Static:        true,
+		BuildSource:   convertBuildSourceFromPB(request.Source),
+		BuildOptions:  convertBuildOptionsFromPB(request.Options),
+		BuildID:       request.BuildId,
+		ApplicationID: request.ApplicationId,
 	}
 
 	err := s.svc.StartBuild(ctx, task)
