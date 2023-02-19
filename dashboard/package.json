@@ -23,6 +23,8 @@
   "dependencies": {
     "@solidjs/router": "0.7.0",
     "@vanilla-extract/css": "1.9.5",
+    "google-protobuf": "3.21.2",
+    "grpc-web": "1.4.2",
     "solid-icons": "1.0.4",
     "solid-js": "1.6.11"
   }

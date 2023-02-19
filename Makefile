@@ -3,7 +3,9 @@ SPECTRAL_VERSION := 6.4.0
 
 GO_REPO_ROOT_PACKAGE := "github.com/traPtitech/neoshowcase"
 PROTOC_OPTS := -I ./api/proto --go_out=. --go_opt=module=$(GO_REPO_ROOT_PACKAGE) --go-grpc_out=. --go-grpc_opt=module=$(GO_REPO_ROOT_PACKAGE)
+PROTOC_OPTS_CLIENT := -I ./api/proto --grpc-web_out=import_style=typescript,mode=grpcwebtext:./dashboard/src/api
 PROTOC_SOURCES ?= $(shell find ./api/proto/neoshowcase -type f -name "*.proto" -print)
+PROTOC_SOURCES_CLIENT := ./api/proto/neoshowcase/protobuf/apiserver.proto
 
 SQL_MIGRATE_CMD := sql-migrate
 EVANS_CMD := evans
@@ -25,6 +27,7 @@ gogen:
 .PHONY: protoc
 protoc:
 	protoc $(PROTOC_OPTS) $(PROTOC_SOURCES)
+	protoc $(PROTOC_OPTS_CLIENT) $(PROTOC_SOURCES_CLIENT)
 
 .PHONY: db-gen-docs
 db-gen-docs:

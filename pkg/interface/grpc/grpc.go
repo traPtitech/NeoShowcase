@@ -2,6 +2,7 @@ package grpc
 
 import (
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/credentials/insecure"
 	"google.golang.org/grpc/reflection"
 )
 
@@ -21,7 +22,7 @@ type ClientConfig struct {
 func NewClient(c ClientConfig) (*grpc.ClientConn, error) {
 	var opts []grpc.DialOption
 	if c.Insecure {
-		opts = append(opts, grpc.WithInsecure())
+		opts = append(opts, grpc.WithTransportCredentials(insecure.NewCredentials()))
 	}
 	return grpc.Dial(c.Addr, opts...)
 }
