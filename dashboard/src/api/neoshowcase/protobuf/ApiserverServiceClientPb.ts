@@ -21,7 +21,7 @@ import * as google_protobuf_empty_pb from 'google-protobuf/google/protobuf/empty
 import * as neoshowcase_protobuf_apiserver_pb from '../../neoshowcase/protobuf/apiserver_pb';
 
 
-export class AppsServiceClient {
+export class ApplicationServiceClient {
   client_: grpcWeb.AbstractClientBase;
   hostname_: string;
   credentials_: null | { [index: string]: string; };
@@ -40,47 +40,176 @@ export class AppsServiceClient {
     this.options_ = options;
   }
 
-  methodDescriptorGetApps = new grpcWeb.MethodDescriptor(
-    '/neoshowcase.protobuf.AppsService/GetApps',
+  methodDescriptorGetApplications = new grpcWeb.MethodDescriptor(
+    '/neoshowcase.protobuf.ApplicationService/GetApplications',
     grpcWeb.MethodType.UNARY,
     google_protobuf_empty_pb.Empty,
-    neoshowcase_protobuf_apiserver_pb.GetAppsResponse,
+    neoshowcase_protobuf_apiserver_pb.GetApplicationsResponse,
     (request: google_protobuf_empty_pb.Empty) => {
       return request.serializeBinary();
     },
-    neoshowcase_protobuf_apiserver_pb.GetAppsResponse.deserializeBinary
+    neoshowcase_protobuf_apiserver_pb.GetApplicationsResponse.deserializeBinary
   );
 
-  getApps(
+  getApplications(
     request: google_protobuf_empty_pb.Empty,
-    metadata: grpcWeb.Metadata | null): Promise<neoshowcase_protobuf_apiserver_pb.GetAppsResponse>;
+    metadata: grpcWeb.Metadata | null): Promise<neoshowcase_protobuf_apiserver_pb.GetApplicationsResponse>;
 
-  getApps(
+  getApplications(
     request: google_protobuf_empty_pb.Empty,
     metadata: grpcWeb.Metadata | null,
     callback: (err: grpcWeb.RpcError,
-               response: neoshowcase_protobuf_apiserver_pb.GetAppsResponse) => void): grpcWeb.ClientReadableStream<neoshowcase_protobuf_apiserver_pb.GetAppsResponse>;
+               response: neoshowcase_protobuf_apiserver_pb.GetApplicationsResponse) => void): grpcWeb.ClientReadableStream<neoshowcase_protobuf_apiserver_pb.GetApplicationsResponse>;
 
-  getApps(
+  getApplications(
     request: google_protobuf_empty_pb.Empty,
     metadata: grpcWeb.Metadata | null,
     callback?: (err: grpcWeb.RpcError,
-               response: neoshowcase_protobuf_apiserver_pb.GetAppsResponse) => void) {
+               response: neoshowcase_protobuf_apiserver_pb.GetApplicationsResponse) => void) {
     if (callback !== undefined) {
       return this.client_.rpcCall(
         this.hostname_ +
-          '/neoshowcase.protobuf.AppsService/GetApps',
+          '/neoshowcase.protobuf.ApplicationService/GetApplications',
         request,
         metadata || {},
-        this.methodDescriptorGetApps,
+        this.methodDescriptorGetApplications,
         callback);
     }
     return this.client_.unaryCall(
     this.hostname_ +
-      '/neoshowcase.protobuf.AppsService/GetApps',
+      '/neoshowcase.protobuf.ApplicationService/GetApplications',
     request,
     metadata || {},
-    this.methodDescriptorGetApps);
+    this.methodDescriptorGetApplications);
+  }
+
+  methodDescriptorCreateApplication = new grpcWeb.MethodDescriptor(
+    '/neoshowcase.protobuf.ApplicationService/CreateApplication',
+    grpcWeb.MethodType.UNARY,
+    neoshowcase_protobuf_apiserver_pb.CreateApplicationRequest,
+    neoshowcase_protobuf_apiserver_pb.Application,
+    (request: neoshowcase_protobuf_apiserver_pb.CreateApplicationRequest) => {
+      return request.serializeBinary();
+    },
+    neoshowcase_protobuf_apiserver_pb.Application.deserializeBinary
+  );
+
+  createApplication(
+    request: neoshowcase_protobuf_apiserver_pb.CreateApplicationRequest,
+    metadata: grpcWeb.Metadata | null): Promise<neoshowcase_protobuf_apiserver_pb.Application>;
+
+  createApplication(
+    request: neoshowcase_protobuf_apiserver_pb.CreateApplicationRequest,
+    metadata: grpcWeb.Metadata | null,
+    callback: (err: grpcWeb.RpcError,
+               response: neoshowcase_protobuf_apiserver_pb.Application) => void): grpcWeb.ClientReadableStream<neoshowcase_protobuf_apiserver_pb.Application>;
+
+  createApplication(
+    request: neoshowcase_protobuf_apiserver_pb.CreateApplicationRequest,
+    metadata: grpcWeb.Metadata | null,
+    callback?: (err: grpcWeb.RpcError,
+               response: neoshowcase_protobuf_apiserver_pb.Application) => void) {
+    if (callback !== undefined) {
+      return this.client_.rpcCall(
+        this.hostname_ +
+          '/neoshowcase.protobuf.ApplicationService/CreateApplication',
+        request,
+        metadata || {},
+        this.methodDescriptorCreateApplication,
+        callback);
+    }
+    return this.client_.unaryCall(
+    this.hostname_ +
+      '/neoshowcase.protobuf.ApplicationService/CreateApplication',
+    request,
+    metadata || {},
+    this.methodDescriptorCreateApplication);
+  }
+
+  methodDescriptorGetApplication = new grpcWeb.MethodDescriptor(
+    '/neoshowcase.protobuf.ApplicationService/GetApplication',
+    grpcWeb.MethodType.UNARY,
+    neoshowcase_protobuf_apiserver_pb.GetApplicationRequest,
+    neoshowcase_protobuf_apiserver_pb.Application,
+    (request: neoshowcase_protobuf_apiserver_pb.GetApplicationRequest) => {
+      return request.serializeBinary();
+    },
+    neoshowcase_protobuf_apiserver_pb.Application.deserializeBinary
+  );
+
+  getApplication(
+    request: neoshowcase_protobuf_apiserver_pb.GetApplicationRequest,
+    metadata: grpcWeb.Metadata | null): Promise<neoshowcase_protobuf_apiserver_pb.Application>;
+
+  getApplication(
+    request: neoshowcase_protobuf_apiserver_pb.GetApplicationRequest,
+    metadata: grpcWeb.Metadata | null,
+    callback: (err: grpcWeb.RpcError,
+               response: neoshowcase_protobuf_apiserver_pb.Application) => void): grpcWeb.ClientReadableStream<neoshowcase_protobuf_apiserver_pb.Application>;
+
+  getApplication(
+    request: neoshowcase_protobuf_apiserver_pb.GetApplicationRequest,
+    metadata: grpcWeb.Metadata | null,
+    callback?: (err: grpcWeb.RpcError,
+               response: neoshowcase_protobuf_apiserver_pb.Application) => void) {
+    if (callback !== undefined) {
+      return this.client_.rpcCall(
+        this.hostname_ +
+          '/neoshowcase.protobuf.ApplicationService/GetApplication',
+        request,
+        metadata || {},
+        this.methodDescriptorGetApplication,
+        callback);
+    }
+    return this.client_.unaryCall(
+    this.hostname_ +
+      '/neoshowcase.protobuf.ApplicationService/GetApplication',
+    request,
+    metadata || {},
+    this.methodDescriptorGetApplication);
+  }
+
+  methodDescriptorDeleteApplication = new grpcWeb.MethodDescriptor(
+    '/neoshowcase.protobuf.ApplicationService/DeleteApplication',
+    grpcWeb.MethodType.UNARY,
+    neoshowcase_protobuf_apiserver_pb.DeleteApplicationRequest,
+    google_protobuf_empty_pb.Empty,
+    (request: neoshowcase_protobuf_apiserver_pb.DeleteApplicationRequest) => {
+      return request.serializeBinary();
+    },
+    google_protobuf_empty_pb.Empty.deserializeBinary
+  );
+
+  deleteApplication(
+    request: neoshowcase_protobuf_apiserver_pb.DeleteApplicationRequest,
+    metadata: grpcWeb.Metadata | null): Promise<google_protobuf_empty_pb.Empty>;
+
+  deleteApplication(
+    request: neoshowcase_protobuf_apiserver_pb.DeleteApplicationRequest,
+    metadata: grpcWeb.Metadata | null,
+    callback: (err: grpcWeb.RpcError,
+               response: google_protobuf_empty_pb.Empty) => void): grpcWeb.ClientReadableStream<google_protobuf_empty_pb.Empty>;
+
+  deleteApplication(
+    request: neoshowcase_protobuf_apiserver_pb.DeleteApplicationRequest,
+    metadata: grpcWeb.Metadata | null,
+    callback?: (err: grpcWeb.RpcError,
+               response: google_protobuf_empty_pb.Empty) => void) {
+    if (callback !== undefined) {
+      return this.client_.rpcCall(
+        this.hostname_ +
+          '/neoshowcase.protobuf.ApplicationService/DeleteApplication',
+        request,
+        metadata || {},
+        this.methodDescriptorDeleteApplication,
+        callback);
+    }
+    return this.client_.unaryCall(
+    this.hostname_ +
+      '/neoshowcase.protobuf.ApplicationService/DeleteApplication',
+    request,
+    metadata || {},
+    this.methodDescriptorDeleteApplication);
   }
 
 }

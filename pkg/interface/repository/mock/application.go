@@ -66,16 +66,45 @@ func (mr *MockApplicationRepositoryMockRecorder) GetApplicationByID(ctx, id inte
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetApplicationByID", reflect.TypeOf((*MockApplicationRepository)(nil).GetApplicationByID), ctx, id)
 }
 
-// SetWebsite mocks base method.
-func (m *MockApplicationRepository) SetWebsite(ctx context.Context, branchID, fqdn string, httpPort int) error {
+// GetApplicationsByUserID mocks base method.
+func (m *MockApplicationRepository) GetApplicationsByUserID(ctx context.Context, userID string) ([]*domain.Application, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "SetWebsite", ctx, branchID, fqdn, httpPort)
+	ret := m.ctrl.Call(m, "GetApplicationsByUserID", ctx, userID)
+	ret0, _ := ret[0].([]*domain.Application)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetApplicationsByUserID indicates an expected call of GetApplicationsByUserID.
+func (mr *MockApplicationRepositoryMockRecorder) GetApplicationsByUserID(ctx, userID interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetApplicationsByUserID", reflect.TypeOf((*MockApplicationRepository)(nil).GetApplicationsByUserID), ctx, userID)
+}
+
+// RegisterApplicationOwner mocks base method.
+func (m *MockApplicationRepository) RegisterApplicationOwner(ctx context.Context, applicationID, userID string) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "RegisterApplicationOwner", ctx, applicationID, userID)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// RegisterApplicationOwner indicates an expected call of RegisterApplicationOwner.
+func (mr *MockApplicationRepositoryMockRecorder) RegisterApplicationOwner(ctx, applicationID, userID interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RegisterApplicationOwner", reflect.TypeOf((*MockApplicationRepository)(nil).RegisterApplicationOwner), ctx, applicationID, userID)
+}
+
+// SetWebsite mocks base method.
+func (m *MockApplicationRepository) SetWebsite(ctx context.Context, applicationID, fqdn string, httpPort int) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "SetWebsite", ctx, applicationID, fqdn, httpPort)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // SetWebsite indicates an expected call of SetWebsite.
-func (mr *MockApplicationRepositoryMockRecorder) SetWebsite(ctx, branchID, fqdn, httpPort interface{}) *gomock.Call {
+func (mr *MockApplicationRepositoryMockRecorder) SetWebsite(ctx, applicationID, fqdn, httpPort interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SetWebsite", reflect.TypeOf((*MockApplicationRepository)(nil).SetWebsite), ctx, branchID, fqdn, httpPort)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SetWebsite", reflect.TypeOf((*MockApplicationRepository)(nil).SetWebsite), ctx, applicationID, fqdn, httpPort)
 }

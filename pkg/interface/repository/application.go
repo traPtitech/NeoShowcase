@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"fmt"
 
+	"github.com/samber/lo"
 	log "github.com/sirupsen/logrus"
 	"github.com/volatiletech/sqlboiler/v4/boil"
 	"github.com/volatiletech/sqlboiler/v4/queries/qm"
@@ -16,9 +17,11 @@ import (
 
 //go:generate go run github.com/golang/mock/mockgen -source=$GOFILE -package=mock_$GOPACKAGE -destination=./mock/$GOFILE
 type ApplicationRepository interface {
+	GetApplicationsByUserID(ctx context.Context, userID string) ([]*domain.Application, error)
 	CreateApplication(ctx context.Context, args CreateApplicationArgs) (*domain.Application, error)
+	RegisterApplicationOwner(ctx context.Context, applicationID string, userID string) error
 	GetApplicationByID(ctx context.Context, id string) (*domain.Application, error)
-	SetWebsite(ctx context.Context, branchID string, fqdn string, httpPort int) error
+	SetWebsite(ctx context.Context, applicationID string, fqdn string, httpPort int) error
 }
 
 type applicationRepository struct {
@@ -32,77 +35,82 @@ func NewApplicationRepository(db *sql.DB) ApplicationRepository {
 }
 
 type CreateApplicationArgs struct {
-	OwnerID       string // TODO: UserID型にする
-	RepositoryURL string
-	BranchName    string
-	BuildType     builder.BuildType
+	RepositoryID string
+	BranchName   string
+	BuildType    builder.BuildType
+}
+
+func (r *applicationRepository) GetApplicationsByUserID(ctx context.Context, userID string) ([]*domain.Application, error) {
+	applications, err := models.Applications(
+		qm.Load(models.ApplicationRels.Repository),
+		qm.Load(models.ApplicationRels.Users),
+		models.UserWhere.ID.EQ(userID),
+	).All(ctx, r.db)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get applications: %w", err)
+	}
+
+	return lo.Map(applications, func(app *models.Application, i int) *domain.Application {
+		return toDomainApplication(app, toDomainRepository(app.R.Repository))
+	}), nil
 }
 
 func (r *applicationRepository) CreateApplication(ctx context.Context, args CreateApplicationArgs) (*domain.Application, error) {
-	const errMsg = "failed to CreateApplication: %w"
-
-	// リポジトリ情報を設定
-	repo, err := models.Repositories(models.RepositoryWhere.URL.EQ(args.RepositoryURL)).One(ctx, r.db)
-	if err != nil && err != sql.ErrNoRows {
-		return nil, fmt.Errorf(errMsg, err)
-	} else if repo == nil {
-		repo = &models.Repository{
-			ID:  domain.NewID(),
-			URL: args.RepositoryURL,
-		}
-		if err := repo.Insert(ctx, r.db, boil.Infer()); err != nil {
-			return nil, fmt.Errorf(errMsg, err)
-		}
-	}
-
-	// アプリケーション作成
 	app := &models.Application{
 		ID:           domain.NewID(),
-		RepositoryID: repo.ID,
+		RepositoryID: args.RepositoryID,
 		BranchName:   args.BranchName,
 		BuildType:    args.BuildType.String(),
 	}
 	if err := app.Insert(ctx, r.db, boil.Infer()); err != nil {
-		return nil, fmt.Errorf(errMsg, err)
-	}
-	// 初期Ownerを設定
-	user, err := models.Users(models.UserWhere.ID.EQ(args.OwnerID)).One(ctx, r.db)
-	if err != nil {
-		return nil, fmt.Errorf(errMsg, err)
-	}
-	if err := app.AddUsers(ctx, r.db, false, user); err != nil {
-		return nil, fmt.Errorf(errMsg, err)
+		return nil, fmt.Errorf("failed to create application: %w", err)
 	}
 
 	log.WithField("appID", app.ID).
 		Info("app created")
 
-	return toDomainApplication(app, toDomainRepository(repo)), nil
-}
-
-func (r *applicationRepository) GetApplicationByID(ctx context.Context, id string) (*domain.Application, error) {
-	const errMsg = "failed to GetApplicationByID: %w"
-
-	app, err := models.Applications(
-		qm.Load(models.ApplicationRels.Repository),
-		models.ApplicationWhere.ID.EQ(id),
-	).One(ctx, r.db)
-	if err != nil {
-		if err == sql.ErrNoRows {
-			return nil, ErrNotFound
-		}
-		return nil, fmt.Errorf(errMsg, err)
+	if err := app.L.LoadRepository(ctx, r.db, true, app, nil); err != nil {
+		return nil, fmt.Errorf("failed to load repository: %w", err)
 	}
 
 	return toDomainApplication(app, toDomainRepository(app.R.Repository)), nil
 }
 
-func (r *applicationRepository) SetWebsite(ctx context.Context, branchID string, fqdn string, httpPort int) error {
+func (r *applicationRepository) RegisterApplicationOwner(ctx context.Context, applicationID string, userID string) error {
+	app, err := models.Applications(models.ApplicationWhere.ID.EQ(applicationID)).One(ctx, r.db)
+	if err != nil {
+		return fmt.Errorf("failed to find application: %w", err)
+	}
+	user, err := models.Users(models.UserWhere.ID.EQ(userID)).One(ctx, r.db)
+	if err != nil {
+		return fmt.Errorf("failed to find user: %w", err)
+	}
+	if err := app.AddUsers(ctx, r.db, false, user); err != nil {
+		return fmt.Errorf("failed to register owner: %w", err)
+	}
+	return nil
+}
+
+func (r *applicationRepository) GetApplicationByID(ctx context.Context, id string) (*domain.Application, error) {
+	app, err := models.Applications(
+		models.ApplicationWhere.ID.EQ(id),
+		qm.Load(models.ApplicationRels.Repository),
+	).One(ctx, r.db)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return nil, ErrNotFound
+		}
+		return nil, fmt.Errorf("failed to get application: %w", err)
+	}
+	return toDomainApplication(app, toDomainRepository(app.R.Repository)), nil
+}
+
+func (r *applicationRepository) SetWebsite(ctx context.Context, applicationID string, fqdn string, httpPort int) error {
 	const errMsg = "failed to SetWebsite: %w"
 
 	branch, err := models.Applications(
 		qm.Load(models.ApplicationRels.Website),
-		models.ApplicationWhere.ID.EQ(branchID),
+		models.ApplicationWhere.ID.EQ(applicationID),
 	).One(ctx, r.db)
 	if err != nil {
 		if err == sql.ErrNoRows {

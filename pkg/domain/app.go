@@ -1,6 +1,11 @@
 package domain
 
-import "github.com/traPtitech/neoshowcase/pkg/domain/builder"
+import (
+	"net/url"
+	"strings"
+
+	"github.com/traPtitech/neoshowcase/pkg/domain/builder"
+)
 
 type Application struct {
 	ID         string
@@ -25,4 +30,15 @@ type Environment struct {
 type Repository struct {
 	ID  string
 	URL string
+}
+
+func ExtractNameFromRepositoryURL(repositoryURL string) (string, error) {
+	u, err := url.Parse(repositoryURL)
+	if err != nil {
+		return "", err
+	}
+	path := u.Path
+	path = strings.TrimPrefix(path, "/")
+	path = strings.TrimSuffix(path, ".git")
+	return path, nil
 }
