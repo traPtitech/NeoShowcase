@@ -142,8 +142,9 @@ func (s *appBuildService) requestBuild(ctx context.Context, app *domain.Applicat
 			Source: &pb.BuildSource{
 				RepositoryUrl: app.Repository.URL, // TODO ブランチ・タグ指定に対応
 			},
-			Options: &pb.BuildOptions{}, // TODO 汎用ベースイメージビルドに対応させる
-			BuildId: buildID,
+			Options:       &pb.BuildOptions{}, // TODO 汎用ベースイメージビルドに対応させる
+			BuildId:       buildID,
+			ApplicationId: app.ID,
 		})
 		if err != nil {
 			return fmt.Errorf("builder failed to start build image: %w", err)
@@ -154,8 +155,9 @@ func (s *appBuildService) requestBuild(ctx context.Context, app *domain.Applicat
 			Source: &pb.BuildSource{
 				RepositoryUrl: app.Repository.URL, // TODO ブランチ・タグ指定に対応
 			},
-			Options: &pb.BuildOptions{}, // TODO 汎用ベースイメージビルドに対応させる
-			BuildId: buildID,
+			Options:       &pb.BuildOptions{}, // TODO 汎用ベースイメージビルドに対応させる
+			BuildId:       buildID,
+			ApplicationId: app.ID,
 		})
 		if err != nil {
 			return fmt.Errorf("builder failed to start build static: %w", err)

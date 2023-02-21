@@ -45,7 +45,8 @@ func TestAppBuildService_QueueBuild(t *testing.T) {
 		appRepo.EXPECT().
 			GetApplicationByID(context.Background(), app.ID).Return(app, nil)
 
-		buildRepo.EXPECT().CreateBuild(context.Background(), app.ID).Return(build, nil)
+		buildRepo.EXPECT().
+			CreateBuild(context.Background(), app.ID).Return(build, nil)
 
 		c.EXPECT().
 			GetStatus(context.Background(), &emptypb.Empty{}).
@@ -98,7 +99,8 @@ func TestAppBuildService_QueueBuild(t *testing.T) {
 		appRepo.EXPECT().
 			GetApplicationByID(context.Background(), app.ID).Return(app, nil)
 
-		buildRepo.EXPECT().CreateBuild(context.Background(), build.ID).Return(build, nil)
+		buildRepo.EXPECT().
+			CreateBuild(context.Background(), app.ID).Return(build, nil)
 
 		c.EXPECT().
 			GetStatus(context.Background(), &emptypb.Empty{}).
