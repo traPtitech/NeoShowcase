@@ -14,12 +14,12 @@ CREATE TABLE `websites` (
   `http_port` int(11) NOT NULL DEFAULT 80 COMMENT 'HTTPポート番号',
   `created_at` datetime(6) NOT NULL COMMENT '作成日時',
   `updated_at` datetime(6) NOT NULL COMMENT '更新日時',
-  `branch_id` varchar(22) NOT NULL COMMENT 'ブランチID',
+  `application_id` varchar(22) NOT NULL COMMENT 'アプリケーションID',
   PRIMARY KEY (`id`),
   UNIQUE KEY `fqdn` (`fqdn`),
-  UNIQUE KEY `uk_branch_id` (`branch_id`),
-  CONSTRAINT `fk_websites_branch_id` FOREIGN KEY (`branch_id`) REFERENCES `branches` (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='Webサイトテーブル'
+  UNIQUE KEY `application_id` (`application_id`),
+  CONSTRAINT `fk_websites_application_id` FOREIGN KEY (`application_id`) REFERENCES `applications` (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci COMMENT='Webサイトテーブル'
 ```
 
 </details>
@@ -33,24 +33,24 @@ CREATE TABLE `websites` (
 | http_port | int(11) | 80 | false |  |  | HTTPポート番号 |
 | created_at | datetime(6) |  | false |  |  | 作成日時 |
 | updated_at | datetime(6) |  | false |  |  | 更新日時 |
-| branch_id | varchar(22) |  | false |  | [branches](branches.md) | ブランチID |
+| application_id | varchar(22) |  | false |  | [applications](applications.md) | アプリケーションID |
 
 ## Constraints
 
 | Name | Type | Definition |
 | ---- | ---- | ---------- |
-| fk_websites_branch_id | FOREIGN KEY | FOREIGN KEY (branch_id) REFERENCES branches (id) |
+| application_id | UNIQUE | UNIQUE KEY application_id (application_id) |
+| fk_websites_application_id | FOREIGN KEY | FOREIGN KEY (application_id) REFERENCES applications (id) |
 | fqdn | UNIQUE | UNIQUE KEY fqdn (fqdn) |
 | PRIMARY | PRIMARY KEY | PRIMARY KEY (id) |
-| uk_branch_id | UNIQUE | UNIQUE KEY uk_branch_id (branch_id) |
 
 ## Indexes
 
 | Name | Definition |
 | ---- | ---------- |
 | PRIMARY | PRIMARY KEY (id) USING BTREE |
+| application_id | UNIQUE KEY application_id (application_id) USING BTREE |
 | fqdn | UNIQUE KEY fqdn (fqdn) USING BTREE |
-| uk_branch_id | UNIQUE KEY uk_branch_id (branch_id) USING BTREE |
 
 ## Relations
 

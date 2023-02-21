@@ -11,7 +11,7 @@
 CREATE TABLE `build_status` (
   `status` varchar(10) NOT NULL COMMENT 'ビルドの状態',
   PRIMARY KEY (`status`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='ビルドの状態'
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci COMMENT='ビルドの状態'
 ```
 
 </details>
@@ -20,7 +20,7 @@ CREATE TABLE `build_status` (
 
 | Name | Type | Default | Nullable | Children | Parents | Comment |
 | ---- | ---- | ------- | -------- | -------- | ------- | ------- |
-| status | varchar(10) |  | false | [build_logs](build_logs.md) |  | ビルドの状態 |
+| status | varchar(10) |  | false | [builds](builds.md) |  | ビルドの状態 |
 
 ## Constraints
 

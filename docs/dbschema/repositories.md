@@ -10,9 +10,11 @@ Gitリポジトリテーブル
 ```sql
 CREATE TABLE `repositories` (
   `id` varchar(22) NOT NULL COMMENT 'リポジトリID',
-  `remote` text NOT NULL COMMENT 'Git Remote URL',
-  PRIMARY KEY (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='Gitリポジトリテーブル'
+  `name` varchar(256) NOT NULL COMMENT 'リポジトリ名',
+  `url` varchar(256) NOT NULL COMMENT 'Git Remote URL',
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `url` (`url`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci COMMENT='Gitリポジトリテーブル'
 ```
 
 </details>
@@ -22,19 +24,22 @@ CREATE TABLE `repositories` (
 | Name | Type | Default | Nullable | Children | Parents | Comment |
 | ---- | ---- | ------- | -------- | -------- | ------- | ------- |
 | id | varchar(22) |  | false | [applications](applications.md) |  | リポジトリID |
-| remote | text |  | false |  |  | Git Remote URL |
+| name | varchar(256) |  | false |  |  | リポジトリ名 |
+| url | varchar(256) |  | false |  |  | Git Remote URL |
 
 ## Constraints
 
 | Name | Type | Definition |
 | ---- | ---- | ---------- |
 | PRIMARY | PRIMARY KEY | PRIMARY KEY (id) |
+| url | UNIQUE | UNIQUE KEY url (url) |
 
 ## Indexes
 
 | Name | Definition |
 | ---- | ---------- |
 | PRIMARY | PRIMARY KEY (id) USING BTREE |
+| url | UNIQUE KEY url (url) USING BTREE |
 
 ## Relations
 
