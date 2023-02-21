@@ -1,4 +1,4 @@
-TBLS_VERSION := 1.50.0
+TBLS_VERSION := 1.62.1
 SPECTRAL_VERSION := 6.4.0
 
 GO_REPO_ROOT_PACKAGE := "github.com/traPtitech/neoshowcase"
@@ -7,6 +7,8 @@ PROTOC_OPTS_CLIENT := -I ./api/proto --grpc-web_out=import_style=typescript,mode
 PROTOC_SOURCES ?= $(shell find ./api/proto/neoshowcase -type f -name "*.proto" -print)
 PROTOC_SOURCES_CLIENT := ./api/proto/neoshowcase/protobuf/apiserver.proto
 
+TBLS_CMD := docker run --rm --net=host -v $$(pwd):/work --workdir /work -u $$(id -u):$$(id -g) ghcr.io/k1low/tbls:v$(TBLS_VERSION)
+SPECTRAL_CMD := docker run --rm -it -v $$(pwd):/tmp stoplight/spectral:$(SPECTRAL_VERSION)
 SQL_MIGRATE_CMD := sql-migrate
 EVANS_CMD := evans
 
@@ -34,19 +36,19 @@ db-gen-docs:
 	@if [ -d "./docs/dbschema" ]; then \
 		rm -r ./docs/dbschema; \
 	fi
-	@docker run --rm --net=host -v $$PWD:/work ghcr.io/k1low/tbls:v$(TBLS_VERSION) doc
+	@$(TBLS_CMD) doc
 
 .PHONY: db-diff-docs
 db-diff-docs:
-	@docker run --rm --net=host -v $$PWD:/work ghcr.io/k1low/tbls:v$(TBLS_VERSION) diff
+	@$(TBLS_CMD) diff
 
 .PHONY: db-lint
 db-lint:
-	@docker run --rm --net=host -v $$PWD:/work ghcr.io/k1low/tbls:v$(TBLS_VERSION) lint
+	@$(TBLS_CMD) lint
 
 .PHONY: swagger-lint
 swagger-lint:
-	@docker run --rm -it -v $$PWD:/tmp stoplight/spectral:$(SPECTRAL_VERSION) lint -r /tmp/.spectral.yml -q /tmp/api/http/swagger.yaml
+	@$(SPECTRAL_CMD) lint -r /tmp/.spectral.yml -q /tmp/api/http/swagger.yaml
 
 .PHONY: golangci-lint
 golangci-lint:
