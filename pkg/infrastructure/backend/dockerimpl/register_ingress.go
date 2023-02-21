@@ -15,24 +15,23 @@ var ingressTmpl = template.Must(template.New("ingress").Parse(ingressTmplString)
 const ingressTmplString = `
 http:
   routers:
-    nsapp-{{.AppID}}-{{.branchID}}:
-      service: "nsapp-{{.AppID}}-{{.branchID}}"
+    nsapp-{{.AppID}}:
+      service: "nsapp-{{.AppID}}"
       rule: "Host('{{.Host}}')"
   services:
-    nsapp-{{.AppID}}-{{.branchID}}:
+    nsapp-{{.AppID}}:
       loadBalancer:
         servers:
         - url: http://{{.Destination}}:{{.Port}}
 `
 
-func (b *dockerBackend) RegisterIngress(ctx context.Context, appID string, branchID string, host string, destination null.String, port null.Int) error {
-	conf := filepath.Join(b.ingressConfDir, containerName(appID, branchID)+".yaml")
+func (b *dockerBackend) RegisterIngress(ctx context.Context, appID string, host string, destination null.String, port null.Int) error {
+	conf := filepath.Join(b.ingressConfDir, containerName(appID)+".yaml")
 
 	data := map[string]interface{}{
 		"AppID":       appID,
-		"BranchID":    branchID,
 		"Host":        host,
-		"Destination": containerName(appID, branchID),
+		"Destination": containerName(appID),
 		"Port":        80,
 	}
 	if destination.Valid {

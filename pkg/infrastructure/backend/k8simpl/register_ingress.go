@@ -10,15 +10,14 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
-func (b *k8sBackend) RegisterIngress(ctx context.Context, appID string, branchID string, host string, destination null.String, port null.Int) error {
+func (b *k8sBackend) RegisterIngress(ctx context.Context, appID string, host string, destination null.String, port null.Int) error {
 	labels := map[string]string{
 		appContainerLabel:              "true",
 		appContainerApplicationIDLabel: appID,
-		appContainerBranchIDLabel:      branchID,
 	}
 
 	svc := &networkingv1.IngressServiceBackend{
-		Name: deploymentName(appID, branchID),
+		Name: deploymentName(appID),
 		Port: networkingv1.ServiceBackendPort{
 			Number: 80,
 		},
@@ -32,7 +31,7 @@ func (b *k8sBackend) RegisterIngress(ctx context.Context, appID string, branchID
 
 	ingress := &networkingv1.Ingress{
 		ObjectMeta: metav1.ObjectMeta{
-			Name:      deploymentName(appID, branchID),
+			Name:      deploymentName(appID),
 			Namespace: appNamespace,
 			Labels:    labels,
 		},

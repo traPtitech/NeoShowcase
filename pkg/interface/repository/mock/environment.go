@@ -35,15 +35,15 @@ func (m *MockEnvironmentRepository) EXPECT() *MockEnvironmentRepositoryMockRecor
 }
 
 // SetEnv mocks base method.
-func (m *MockEnvironmentRepository) SetEnv(ctx context.Context, branchID, key, value string) error {
+func (m *MockEnvironmentRepository) SetEnv(ctx context.Context, applicationID, key, value string) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "SetEnv", ctx, branchID, key, value)
+	ret := m.ctrl.Call(m, "SetEnv", ctx, applicationID, key, value)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // SetEnv indicates an expected call of SetEnv.
-func (mr *MockEnvironmentRepositoryMockRecorder) SetEnv(ctx, branchID, key, value interface{}) *gomock.Call {
+func (mr *MockEnvironmentRepositoryMockRecorder) SetEnv(ctx, applicationID, key, value interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SetEnv", reflect.TypeOf((*MockEnvironmentRepository)(nil).SetEnv), ctx, branchID, key, value)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SetEnv", reflect.TypeOf((*MockEnvironmentRepository)(nil).SetEnv), ctx, applicationID, key, value)
 }

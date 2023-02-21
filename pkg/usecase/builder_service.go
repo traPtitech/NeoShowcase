@@ -18,7 +18,7 @@ import (
 	"github.com/moby/buildkit/util/progress/progressui"
 	log "github.com/sirupsen/logrus"
 	"golang.org/x/sync/errgroup"
-	"google.golang.org/grpc/status"
+	gstatus "google.golang.org/grpc/status"
 
 	"github.com/traPtitech/neoshowcase/pkg/domain"
 	"github.com/traPtitech/neoshowcase/pkg/domain/builder"
@@ -46,7 +46,7 @@ type builderService struct {
 
 	// TODO: 後で消す
 	artifactRepo repository.ArtifactRepository
-	buildLogRepo repository.BuildLogRepository
+	buildRepo    repository.BuildRepository
 
 	registry string
 
@@ -58,13 +58,13 @@ type builderService struct {
 	statusLock sync.RWMutex
 }
 
-func NewBuilderService(buildkit *buildkit.Client, storage domain.Storage, eventbus domain.Bus, artifactRepo repository.ArtifactRepository, buildLogRepo repository.BuildLogRepository, registry builder.DockerImageRegistryString) BuilderService {
+func NewBuilderService(buildkit *buildkit.Client, storage domain.Storage, eventbus domain.Bus, artifactRepo repository.ArtifactRepository, buildRepo repository.BuildRepository, registry builder.DockerImageRegistryString) BuilderService {
 	return &builderService{
 		buildkit:     buildkit,
 		storage:      storage,
 		eventbus:     eventbus,
 		artifactRepo: artifactRepo,
-		buildLogRepo: buildLogRepo,
+		buildRepo:    buildRepo,
 		registry:     string(registry),
 
 		status: builder.StateWaiting,
@@ -133,10 +133,10 @@ func (s *builderService) Shutdown(ctx context.Context) error {
 
 func (s *builderService) initializeTask(ctx context.Context, task *builder.Task) error {
 	intState := &internalTaskState{
-		BuildLog: domain.BuildLog{
-			ID:       task.BuildID,
-			Result:   builder.BuildStatusBuilding,
-			BranchID: task.BranchID.String,
+		Build: domain.Build{
+			ID:            task.BuildID,
+			Status:        builder.BuildStatusBuilding,
+			ApplicationID: task.ApplicationID,
 		},
 	}
 
@@ -178,14 +178,14 @@ func (s *builderService) initializeTask(ctx context.Context, task *builder.Task)
 		return fmt.Errorf("failed to clone repository: %w", err)
 	}
 
-	// BuildLog.ResultをBuildingに変更
-	args := repository.UpdateBuildLogArgs{
-		ID:     intState.BuildLog.ID,
-		Result: intState.BuildLog.Result,
+	// Status を Building に変更
+	args := repository.UpdateBuildArgs{
+		ID:     intState.Build.ID,
+		Status: intState.Build.Status,
 	}
-	if err := s.buildLogRepo.UpdateBuildLog(ctx, args); err != nil {
+	if err := s.buildRepo.UpdateBuild(ctx, args); err != nil {
 		log.WithError(err).Errorf("failed to update build_log entry (buildID: %s)", task.BuildID)
-		return fmt.Errorf("failed to save BuildLog: %w", err)
+		return fmt.Errorf("failed to save Build: %w", err)
 	}
 
 	intState.ctx, intState.cancelFunc = context.WithCancel(context.Background())
@@ -202,7 +202,7 @@ func (s *builderService) processTask(task *builder.Task, intState *internalTaskS
 	s.internalTaskState = intState
 	s.taskLock.Unlock()
 
-	result := builder.BuildStatusFailed
+	status := builder.BuildStatusFailed
 	// 後処理関数
 	defer func() {
 		// タスク破棄
@@ -212,7 +212,7 @@ func (s *builderService) processTask(task *builder.Task, intState *internalTaskS
 		s.taskLock.Unlock()
 
 		log.WithField("buildID", task.BuildID).
-			WithField("result", result).
+			WithField("status", status).
 			Debugf("task finished")
 		intState.cancelFunc()
 
@@ -225,7 +225,7 @@ func (s *builderService) processTask(task *builder.Task, intState *internalTaskS
 		if task.Static {
 			// 生成物tarの保存
 			_ = intState.artifactTempFile.Close()
-			if result == builder.BuildStatusSucceeded {
+			if status == builder.BuildStatusSucceeded {
 				sid := domain.NewID()
 				filename := intState.artifactTempFile.Name()
 				err := domain.SaveArtifact(s.storage, filename, filepath.Join("artifacts", fmt.Sprintf("%s.tar", sid)))
@@ -248,17 +248,17 @@ func (s *builderService) processTask(task *builder.Task, intState *internalTaskS
 		_ = os.RemoveAll(intState.repositoryTempDir)
 
 		// BuildLog更新
-		intState.BuildLog.Result = result
-		args := repository.UpdateBuildLogArgs{
-			ID:     intState.BuildLog.ID,
-			Result: intState.BuildLog.Result,
+		intState.Build.Status = status
+		args := repository.UpdateBuildArgs{
+			ID:     intState.Build.ID,
+			Status: intState.Build.Status,
 		}
-		if err := s.buildLogRepo.UpdateBuildLog(context.Background(), args); err != nil {
+		if err := s.buildRepo.UpdateBuild(context.Background(), args); err != nil {
 			log.WithError(err).Errorf("failed to update build_log entry (%s)", task.BuildID)
 		}
 
 		// イベント発行
-		switch result {
+		switch status {
 		case builder.BuildStatusFailed:
 			s.eventbus.Publish(event.BuilderBuildFailed, domain.Fields{
 				"task": task,
@@ -290,18 +290,18 @@ func (s *builderService) processTask(task *builder.Task, intState *internalTaskS
 	}
 	if err != nil {
 		log.Debug(err)
-		if err == context.Canceled || err == context.DeadlineExceeded || errors.Is(err, status.FromContextError(context.Canceled).Err()) {
-			result = builder.BuildStatusCanceled
+		if err == context.Canceled || err == context.DeadlineExceeded || errors.Is(err, gstatus.FromContextError(context.Canceled).Err()) {
+			status = builder.BuildStatusCanceled
 			intState.writeLog("CANCELED")
 			return
 		}
-		result = builder.BuildStatusFailed
+		status = builder.BuildStatusFailed
 		return
 	}
 
 	// 成功
 	intState.writeLog("BUILD SUCCESSFUL")
-	result = builder.BuildStatusSucceeded
+	status = builder.BuildStatusSucceeded
 }
 
 func (s *builderService) buildImage(t *builder.Task, intState *internalTaskState) error {
@@ -457,7 +457,7 @@ func (s *builderService) buildStatic(t *builder.Task, intState *internalTaskStat
 }
 
 type internalTaskState struct {
-	BuildLog          domain.BuildLog
+	Build             domain.Build
 	ctx               context.Context
 	cancelFunc        func()
 	repositoryTempDir string

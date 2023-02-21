@@ -13,7 +13,7 @@ import (
 
 //go:generate go run github.com/golang/mock/mockgen -source=$GOFILE -package=mock_$GOPACKAGE -destination=./mock/$GOFILE
 type EnvironmentRepository interface {
-	SetEnv(ctx context.Context, branchID, key, value string) error
+	SetEnv(ctx context.Context, applicationID, key, value string) error
 }
 
 type environmentRepository struct {
@@ -24,14 +24,14 @@ func NewEnvironmentRepository(db *sql.DB) EnvironmentRepository {
 	return &environmentRepository{db: db}
 }
 
-func (r *environmentRepository) SetEnv(ctx context.Context, branchID, key, value string) error {
+func (r *environmentRepository) SetEnv(ctx context.Context, applicationID, key, value string) error {
 	const errMsg = "failed to SetEnv: %w"
 
 	env := models.Environment{
-		ID:       domain.NewID(),
-		BranchID: branchID,
-		Key:      key,
-		Value:    value,
+		ID:            domain.NewID(),
+		ApplicationID: applicationID,
+		Key:           key,
+		Value:         value,
 	}
 
 	if err := env.Upsert(ctx, r.db, boil.Infer(), boil.Infer()); err != nil {

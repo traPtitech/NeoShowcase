@@ -4,9 +4,11 @@ import (
 	"context"
 	"database/sql"
 
-	"github.com/traPtitech/neoshowcase/pkg/domain"
-	"github.com/traPtitech/neoshowcase/pkg/infrastructure/admindb/models"
 	"github.com/volatiletech/sqlboiler/v4/queries/qm"
+
+	"github.com/traPtitech/neoshowcase/pkg/domain"
+	"github.com/traPtitech/neoshowcase/pkg/domain/builder"
+	"github.com/traPtitech/neoshowcase/pkg/infrastructure/admindb/models"
 )
 
 type StaticSiteServerService interface {
@@ -28,32 +30,44 @@ func NewStaticSiteServerService(engine domain.Engine, db *sql.DB) StaticSiteServ
 }
 
 func (s *staticSiteServerService) Reload(ctx context.Context) error {
-	branches, err := models.Branches(
-		models.BranchWhere.BuildType.EQ(models.BranchesBuildTypeStatic),
-		qm.Load(models.BranchRels.Website),
-		qm.Load(qm.Rels(models.BranchRels.Build, models.BuildLogRels.Artifact)),
+	applications, err := models.Applications(
+		models.ApplicationWhere.BuildType.EQ(models.ApplicationsBuildTypeStatic),
+		qm.Load(models.ApplicationRels.Website),
 	).All(ctx, s.db)
 	if err != nil {
 		return err
 	}
 
 	var data []*domain.Site
-	for _, branch := range branches {
-		if branch.R.Website != nil {
-			website := branch.R.Website
-			if branch.R.Build != nil {
-				build := branch.R.Build
-				if build.R.Artifact != nil {
-					artifact := build.R.Artifact
-					data = append(data, &domain.Site{
-						ID:            website.ID,
-						FQDN:          website.FQDN,
-						ArtifactID:    artifact.ID,
-						ApplicationID: branch.ApplicationID,
-					})
-				}
-			}
+	for _, app := range applications {
+		website := app.R.Website
+		if website == nil {
+			continue
 		}
+
+		build, err := models.Builds(
+			models.BuildWhere.ApplicationID.EQ(app.ID),
+			models.BuildWhere.Status.EQ(builder.BuildStatusSucceeded.String()),
+			qm.OrderBy(models.BuildColumns.FinishedAt+" desc"),
+			qm.Load(models.BuildRels.Artifact),
+		).One(ctx, s.db)
+		if err != nil && err != sql.ErrNoRows {
+			return err
+		}
+		if err == sql.ErrNoRows {
+			continue
+		}
+
+		artifact := build.R.Artifact
+		if artifact == nil {
+			continue
+		}
+		data = append(data, &domain.Site{
+			ID:            website.ID,
+			FQDN:          website.FQDN,
+			ArtifactID:    artifact.ID,
+			ApplicationID: app.ID,
+		})
 	}
 
 	return s.engine.Reconcile(data)

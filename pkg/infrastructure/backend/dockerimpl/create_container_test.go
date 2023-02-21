@@ -8,6 +8,7 @@ import (
 	"github.com/leandro-lugaresi/hub"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+
 	"github.com/traPtitech/neoshowcase/pkg/domain"
 	"github.com/traPtitech/neoshowcase/pkg/infrastructure/eventbus"
 )
@@ -27,26 +28,23 @@ func TestDockerBackend_CreateContainer(t *testing.T) {
 		t.Parallel()
 		image := "tianon/sleeping-beauty"
 		appID := "pjpjpjoijion"
-		branchID := "fewwfadsface"
 
 		err := m.CreateContainer(context.Background(), domain.ContainerCreateArgs{
 			ImageName:     image,
 			ApplicationID: appID,
-			BranchID:      branchID,
 		})
 		if assert.NoError(t, err) {
 			cont, err := c.InspectContainerWithOptions(docker.InspectContainerOptions{
-				ID: containerName(appID, branchID),
+				ID: containerName(appID),
 			})
 			require.NoError(t, err)
 
 			assert.Equal(t, cont.Config.Image, image+":latest")
 			assert.Equal(t, cont.Config.Labels[appContainerLabel], "true")
 			assert.Equal(t, cont.Config.Labels[appContainerApplicationIDLabel], appID)
-			assert.Equal(t, cont.Config.Labels[appContainerBranchIDLabel], branchID)
 
 			require.NoError(t, c.RemoveContainer(docker.RemoveContainerOptions{
-				ID:            containerName(appID, branchID),
+				ID:            containerName(appID),
 				RemoveVolumes: true,
 				Force:         true,
 			}))
@@ -57,12 +55,10 @@ func TestDockerBackend_CreateContainer(t *testing.T) {
 		t.Parallel()
 		image := "tianon/sleeping-beauty"
 		appID := "pij0bij90j20"
-		branchID := "9ahef98kjdla"
 
 		err := m.CreateContainer(context.Background(), domain.ContainerCreateArgs{
 			ImageName:     image,
 			ApplicationID: appID,
-			BranchID:      branchID,
 			Recreate:      true,
 		})
 		require.NoError(t, err)
@@ -70,22 +66,20 @@ func TestDockerBackend_CreateContainer(t *testing.T) {
 		err = m.CreateContainer(context.Background(), domain.ContainerCreateArgs{
 			ImageName:     image,
 			ApplicationID: appID,
-			BranchID:      branchID,
 			Recreate:      true,
 		})
 		if assert.NoError(t, err) {
 			cont, err := c.InspectContainerWithOptions(docker.InspectContainerOptions{
-				ID: containerName(appID, branchID),
+				ID: containerName(appID),
 			})
 			require.NoError(t, err)
 
 			assert.Equal(t, cont.Config.Image, image+":latest")
 			assert.Equal(t, cont.Config.Labels[appContainerLabel], "true")
 			assert.Equal(t, cont.Config.Labels[appContainerApplicationIDLabel], appID)
-			assert.Equal(t, cont.Config.Labels[appContainerBranchIDLabel], branchID)
 
 			require.NoError(t, c.RemoveContainer(docker.RemoveContainerOptions{
-				ID:            containerName(appID, branchID),
+				ID:            containerName(appID),
 				RemoveVolumes: true,
 				Force:         true,
 			}))

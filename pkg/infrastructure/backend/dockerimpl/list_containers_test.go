@@ -9,6 +9,7 @@ import (
 	"github.com/leandro-lugaresi/hub"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+
 	"github.com/traPtitech/neoshowcase/pkg/domain"
 	"github.com/traPtitech/neoshowcase/pkg/infrastructure/eventbus"
 )
@@ -26,19 +27,17 @@ func TestDockerBackend_ListContainers(t *testing.T) {
 	t.Run("正常", func(t *testing.T) {
 		image := "hello-world"
 		appID := "afiowjiodncx"
-		branchID := "adhihpillomo"
 		n := 5
 		for i := 0; i < n; i++ {
 			i := i
 			err := m.CreateContainer(context.Background(), domain.ContainerCreateArgs{
 				ImageName:     image,
 				ApplicationID: appID + strconv.Itoa(i),
-				BranchID:      branchID + strconv.Itoa(i),
 			})
 			require.NoError(t, err)
 			t.Cleanup(func() {
 				_ = c.RemoveContainer(docker.RemoveContainerOptions{
-					ID:            containerName(appID+strconv.Itoa(i), branchID+strconv.Itoa(i)),
+					ID:            containerName(appID + strconv.Itoa(i)),
 					RemoveVolumes: true,
 					Force:         true,
 				})

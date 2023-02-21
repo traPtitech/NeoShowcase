@@ -7,17 +7,16 @@ import (
 	"time"
 
 	log "github.com/sirupsen/logrus"
+	"github.com/volatiletech/sqlboiler/v4/queries/qm"
+
 	"github.com/traPtitech/neoshowcase/pkg/domain"
 	"github.com/traPtitech/neoshowcase/pkg/domain/builder"
 	"github.com/traPtitech/neoshowcase/pkg/infrastructure/admindb/models"
 	"github.com/traPtitech/neoshowcase/pkg/interface/grpc/pb"
-	"github.com/volatiletech/null/v8"
-	"github.com/volatiletech/sqlboiler/v4/boil"
-	"github.com/volatiletech/sqlboiler/v4/queries/qm"
 )
 
 type AppDeployService interface {
-	QueueDeployment(ctx context.Context, branchID string, buildID string) error
+	QueueDeployment(ctx context.Context, applicationID string, buildID string) error
 }
 
 type appDeployService struct {
@@ -41,34 +40,34 @@ func NewAppDeployService(backend domain.Backend, ss pb.StaticSiteServiceClient, 
 	}
 }
 
-func (s *appDeployService) QueueDeployment(ctx context.Context, branchID string, buildID string) error {
-	branch, err := models.Branches(
-		qm.Load(models.BranchRels.Website),
-		models.BranchWhere.ID.EQ(branchID),
+func (s *appDeployService) QueueDeployment(ctx context.Context, applicationID string, buildID string) error {
+	app, err := models.Applications(
+		qm.Load(models.ApplicationRels.Website),
+		models.ApplicationWhere.ID.EQ(applicationID),
 	).One(ctx, s.db)
 	if err != nil {
 		if err == sql.ErrNoRows {
-			return fmt.Errorf("branch (%s) was not found", branchID)
+			return fmt.Errorf("application (%s) not found", applicationID)
 		}
-		return fmt.Errorf("failed to get Branch: %w", err)
+		return fmt.Errorf("failed to get Application: %w", err)
 	}
 
-	ok, err := branch.BuildLogs(
-		models.BuildLogWhere.ID.EQ(buildID),
-		models.BuildLogWhere.Result.EQ(builder.BuildStatusSucceeded.String()),
+	ok, err := app.Builds(
+		models.BuildWhere.ID.EQ(buildID),
+		models.BuildWhere.Status.EQ(builder.BuildStatusSucceeded.String()),
 	).Exists(ctx, s.db)
 	if err != nil {
-		return fmt.Errorf("failed to BuildLogExists: %w", err)
+		return fmt.Errorf("failed to BuildExists: %w", err)
 	}
 	if !ok {
-		return fmt.Errorf("build (%s) was not found", buildID)
+		return fmt.Errorf("build (%s) not found", buildID)
 	}
 
 	entry := &appDeployment{
-		BranchID: branchID,
-		BuildID:  buildID,
-		QueuedAt: time.Now(),
-		branch:   branch,
+		ApplicationID: applicationID,
+		BuildID:       buildID,
+		QueuedAt:      time.Now(),
+		app:           app,
 	}
 	// TODO ちゃんとキューに入れて非同期処理する
 	go s.deploy(entry)
@@ -76,18 +75,18 @@ func (s *appDeployService) QueueDeployment(ctx context.Context, branchID string,
 }
 
 type appDeployment struct {
-	BranchID string
-	BuildID  string
-	QueuedAt time.Time
-	branch   *models.Branch
+	ApplicationID string
+	BuildID       string
+	QueuedAt      time.Time
+	app           *models.Application
 }
 
 func (s *appDeployService) deploy(entry *appDeployment) {
-	branch := entry.branch
-	website := branch.R.Website
+	app := entry.app
+	website := app.R.Website
 
 	// TODO Ingressの設定がここでする必要があるかどうか確認する
-	switch builder.BuildTypeFromString(branch.BuildType) {
+	switch builder.BuildTypeFromString(app.BuildType) {
 	case builder.BuildTypeImage:
 		var httpProxy *domain.ContainerHTTPProxy
 		if website != nil {
@@ -98,15 +97,14 @@ func (s *appDeployService) deploy(entry *appDeployment) {
 		}
 
 		err := s.backend.CreateContainer(context.Background(), domain.ContainerCreateArgs{
-			ApplicationID: branch.ApplicationID,
-			BranchID:      branch.ID,
-			ImageName:     builder.GetImageName(s.imageRegistry, s.imageNamePrefix, branch.ApplicationID),
+			ApplicationID: app.ID,
+			ImageName:     builder.GetImageName(s.imageRegistry, s.imageNamePrefix, app.ID),
 			ImageTag:      entry.BuildID,
 			HTTPProxy:     httpProxy,
 			Recreate:      true,
 		})
 		if err != nil {
-			log.WithField("BranchID", entry.BranchID).
+			log.WithField("applicationID", entry.ApplicationID).
 				WithField("buildID", entry.BuildID).
 				WithField("queuedAt", entry.QueuedAt).
 				WithError(err).
@@ -114,29 +112,9 @@ func (s *appDeployService) deploy(entry *appDeployment) {
 			return
 		}
 
-		branch.BuildID = null.StringFrom(entry.BuildID)
-		if _, err := branch.Update(context.Background(), s.db, boil.Infer()); err != nil {
-			log.WithField("branchID", entry.BranchID).
-				WithField("buildID", entry.BuildID).
-				WithField("queuedAt", entry.QueuedAt).
-				WithError(err).
-				Errorf("failed to update branch")
-			return
-		}
-
 	case builder.BuildTypeStatic:
-		branch.BuildID = null.StringFrom(entry.BuildID)
-		if _, err := branch.Update(context.Background(), s.db, boil.Infer()); err != nil {
-			log.WithField("branchID", entry.BranchID).
-				WithField("buildID", entry.BuildID).
-				WithField("queuedAt", entry.QueuedAt).
-				WithError(err).
-				Errorf("failed to update branch")
-			return
-		}
-
 		if _, err := s.ss.Reload(context.Background(), &pb.ReloadRequest{}); err != nil {
-			log.WithField("branchID", entry.BranchID).
+			log.WithField("applicationID", entry.ApplicationID).
 				WithField("buildID", entry.BuildID).
 				WithField("queuedAt", entry.QueuedAt).
 				WithError(err).

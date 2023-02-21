@@ -14,7 +14,6 @@ import (
 	"github.com/spf13/viper"
 
 	"github.com/traPtitech/neoshowcase/pkg/domain/web"
-	"github.com/traPtitech/neoshowcase/pkg/interface/handler"
 	"github.com/traPtitech/neoshowcase/pkg/util/cli"
 )
 
@@ -107,17 +106,13 @@ func main() {
 	}
 }
 
-var handlerSet = wire.NewSet(
-	handler.NewWebhookReceiverHandler,
-)
+var handlerSet = wire.NewSet()
 
 type Router struct {
-	wr handler.WebhookReceiverHandler
 }
 
 func (r *Router) SetupRoute(e *echo.Echo) {
-	apiNoAuth := e.Group("")
-	apiNoAuth.POST("/_webhook", web.UnwrapHandler(r.wr))
+	_ = e.Group("")
 }
 
 func provideWebServerConfig(router web.Router) web.Config {

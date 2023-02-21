@@ -5,12 +5,13 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/traPtitech/neoshowcase/pkg/domain"
-	"github.com/traPtitech/neoshowcase/pkg/util"
 	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/intstr"
+
+	"github.com/traPtitech/neoshowcase/pkg/domain"
+	"github.com/traPtitech/neoshowcase/pkg/util"
 )
 
 func (b *k8sBackend) CreateContainer(ctx context.Context, args domain.ContainerCreateArgs) error {
@@ -21,7 +22,6 @@ func (b *k8sBackend) CreateContainer(ctx context.Context, args domain.ContainerC
 	labels := util.MergeLabels(args.Labels, map[string]string{
 		appContainerLabel:              "true",
 		appContainerApplicationIDLabel: args.ApplicationID,
-		appContainerBranchIDLabel:      args.BranchID,
 	})
 
 	var envs []apiv1.EnvVar
@@ -45,7 +45,7 @@ func (b *k8sBackend) CreateContainer(ctx context.Context, args domain.ContainerC
 		}
 		svc := &apiv1.Service{
 			ObjectMeta: metav1.ObjectMeta{
-				Name:      deploymentName(args.ApplicationID, args.BranchID),
+				Name:      deploymentName(args.ApplicationID),
 				Namespace: appNamespace,
 				Labels:    labels,
 			},
@@ -54,7 +54,6 @@ func (b *k8sBackend) CreateContainer(ctx context.Context, args domain.ContainerC
 				Selector: map[string]string{
 					appContainerLabel:              "true",
 					appContainerApplicationIDLabel: args.ApplicationID,
-					appContainerBranchIDLabel:      args.BranchID,
 				},
 				Ports: []apiv1.ServicePort{
 					{
@@ -82,7 +81,7 @@ func (b *k8sBackend) CreateContainer(ctx context.Context, args domain.ContainerC
 
 	pod := &apiv1.Pod{
 		ObjectMeta: metav1.ObjectMeta{
-			Name:      deploymentName(args.ApplicationID, args.BranchID),
+			Name:      deploymentName(args.ApplicationID),
 			Namespace: appNamespace,
 			Labels:    labels,
 		},

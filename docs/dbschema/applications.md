@@ -2,24 +2,23 @@
 
 ## Description
 
-アプリテーブル
+アプリケーションテーブル
 
 <details>
 <summary><strong>Table Definition</strong></summary>
 
 ```sql
 CREATE TABLE `applications` (
-  `id` varchar(22) NOT NULL COMMENT 'アプリID',
-  `owner` varchar(100) NOT NULL COMMENT 'アプリ所有者',
-  `name` varchar(100) NOT NULL COMMENT 'アプリ名',
-  `repository_id` varchar(22) NOT NULL COMMENT 'アプリのリポジトリID',
+  `id` varchar(22) NOT NULL COMMENT 'アプリケーションID',
+  `repository_id` varchar(22) NOT NULL COMMENT 'リポジトリID',
+  `branch_name` varchar(100) NOT NULL COMMENT 'Gitブランチ・タグ名',
+  `build_type` enum('image','static') NOT NULL COMMENT 'ビルドタイプ',
   `created_at` datetime(6) NOT NULL COMMENT '作成日時',
   `updated_at` datetime(6) NOT NULL COMMENT '更新日時',
-  `deleted_at` datetime(6) DEFAULT NULL COMMENT '削除日時',
   PRIMARY KEY (`id`),
-  KEY `fk_applications_repository_id` (`repository_id`),
+  UNIQUE KEY `repository_id` (`repository_id`,`branch_name`),
   CONSTRAINT `fk_applications_repository_id` FOREIGN KEY (`repository_id`) REFERENCES `repositories` (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='アプリテーブル'
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci COMMENT='アプリケーションテーブル'
 ```
 
 </details>
@@ -28,13 +27,12 @@ CREATE TABLE `applications` (
 
 | Name | Type | Default | Nullable | Children | Parents | Comment |
 | ---- | ---- | ------- | -------- | -------- | ------- | ------- |
-| id | varchar(22) |  | false | [branches](branches.md) |  | アプリID |
-| owner | varchar(100) |  | false |  |  | アプリ所有者 |
-| name | varchar(100) |  | false |  |  | アプリ名 |
-| repository_id | varchar(22) |  | false |  | [repositories](repositories.md) | アプリのリポジトリID |
+| id | varchar(22) |  | false | [builds](builds.md) [environments](environments.md) [owners](owners.md) [websites](websites.md) |  | アプリケーションID |
+| repository_id | varchar(22) |  | false |  | [repositories](repositories.md) | リポジトリID |
+| branch_name | varchar(100) |  | false |  |  | Gitブランチ・タグ名 |
+| build_type | enum('image','static') |  | false |  |  | ビルドタイプ |
 | created_at | datetime(6) |  | false |  |  | 作成日時 |
 | updated_at | datetime(6) |  | false |  |  | 更新日時 |
-| deleted_at | datetime(6) | NULL | true |  |  | 削除日時 |
 
 ## Constraints
 
@@ -42,13 +40,14 @@ CREATE TABLE `applications` (
 | ---- | ---- | ---------- |
 | fk_applications_repository_id | FOREIGN KEY | FOREIGN KEY (repository_id) REFERENCES repositories (id) |
 | PRIMARY | PRIMARY KEY | PRIMARY KEY (id) |
+| repository_id | UNIQUE | UNIQUE KEY repository_id (repository_id, branch_name) |
 
 ## Indexes
 
 | Name | Definition |
 | ---- | ---------- |
-| fk_applications_repository_id | KEY fk_applications_repository_id (repository_id) USING BTREE |
 | PRIMARY | PRIMARY KEY (id) USING BTREE |
+| repository_id | UNIQUE KEY repository_id (repository_id, branch_name) USING BTREE |
 
 ## Relations
 
