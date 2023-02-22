@@ -2,7 +2,9 @@ syntax = "proto3";
 package neoshowcase.protobuf;
 option go_package = "github.com/traPtitech/neoshowcase/pkg/interface/grpc/pb";
 
+import "google/protobuf/timestamp.proto";
 import "google/protobuf/empty.proto";
+import "neoshowcase/protobuf/null.proto";
 
 enum BuildType {
   IMAGE = 0;
@@ -16,6 +18,59 @@ message Application {
   BuildType build_type = 4;
 }
 
+message ApplicationEnvironmentVariable {
+  string key = 1;
+  string value = 2;
+}
+
+message ApplicationEnvironmentVariables {
+  repeated ApplicationEnvironmentVariables variables = 1;
+}
+
+message MariaDbKey {
+  string host = 1;
+  string database = 2;
+  string user = 3;
+  string password = 4;
+}
+
+message MongoKey {
+  string host = 1;
+  string database = 2;
+  string user = 3;
+  string password = 4;
+}
+
+message ApplicationKeys {
+  MariaDbKey mariaDbKey = 1;
+  MongoKey mongoKey = 2;
+}
+
+message ApplicationBuildArtifact {
+  string url = 1;
+}
+
+message ApplicationOutput {
+  string output = 1;
+}
+
+message Build {
+  enum BuildStatus {
+    BUILDING = 0;
+    SUCCEEDED = 1;
+    FAILED = 2;
+    CANCELLED = 3;
+  }
+  string id = 1;
+  BuildStatus status = 2;
+  google.protobuf.Timestamp started_at = 3;
+  neoshowcase.protobuf.NullTimestamp finished_at = 4;
+}
+
+message BuildLog {
+  string output = 1;
+}
+
 message GetApplicationsResponse {
   repeated Application applications = 1;
 }
@@ -26,17 +81,44 @@ message CreateApplicationRequest {
   BuildType build_type = 3;
 }
 
-message GetApplicationRequest {
+message ApplicationIdRequest {
   string id = 1;
 }
 
-message DeleteApplicationRequest {
-  string id = 1;
+message GetApplicationBuildsResponse {
+  repeated Build builds = 1;
+}
+
+message GetApplicationBuildRequest {
+  string application_id = 1;
+  string build_id = 2;
+}
+
+message GetApplicationBuildLogRequest {
+  string application_id = 1;
+  string build_id = 2;
+}
+
+message SetApplicationEnvironmentVariableRequest {
+  string application_id = 1;
+  string key = 2;
+  string value = 3;
 }
 
 service ApplicationService {
   rpc GetApplications(google.protobuf.Empty) returns (GetApplicationsResponse);
   rpc CreateApplication(CreateApplicationRequest) returns (Application);
-  rpc GetApplication(GetApplicationRequest) returns (Application);
-  rpc DeleteApplication(DeleteApplicationRequest) returns (google.protobuf.Empty);
+  rpc GetApplication(ApplicationIdRequest) returns (Application);
+  rpc DeleteApplication(ApplicationIdRequest) returns (google.protobuf.Empty);
+  rpc GetApplicationBuilds(ApplicationIdRequest) returns (GetApplicationBuildsResponse);
+  rpc GetApplicationBuild(GetApplicationBuildRequest) returns (Build);
+  rpc GetApplicationBuildLog(GetApplicationBuildLogRequest) returns (BuildLog);
+  rpc GetApplicationBuildArtifact(ApplicationIdRequest) returns (ApplicationBuildArtifact);
+  rpc GetApplicationEnvironmentVariables(ApplicationIdRequest) returns (ApplicationEnvironmentVariables);
+  rpc SetApplicationEnvironmentVariable(SetApplicationEnvironmentVariableRequest) returns (google.protobuf.Empty);
+  rpc GetApplicationOutput(ApplicationIdRequest) returns (ApplicationOutput);
+  rpc GetApplicationKeys(ApplicationIdRequest) returns (ApplicationKeys);
+  rpc StartApplication(ApplicationIdRequest) returns (google.protobuf.Empty);
+  rpc RestartApplication(ApplicationIdRequest) returns (google.protobuf.Empty);
+  rpc StopApplication(ApplicationIdRequest) returns (google.protobuf.Empty);
 }

@@ -50,7 +50,7 @@ func (s *ApplicationService) CreateApplication(ctx context.Context, req *pb.Crea
 	return convertToPBApplication(application), nil
 }
 
-func (s *ApplicationService) GetApplication(ctx context.Context, req *pb.GetApplicationRequest) (*pb.Application, error) {
+func (s *ApplicationService) GetApplication(ctx context.Context, req *pb.ApplicationIdRequest) (*pb.Application, error) {
 	application, err := s.svc.GetApplication(ctx, req.Id)
 	if err != nil {
 		return nil, status.Errorf(codes.Internal, "%v", err)
@@ -58,12 +58,56 @@ func (s *ApplicationService) GetApplication(ctx context.Context, req *pb.GetAppl
 	return convertToPBApplication(application), nil
 }
 
-func (s *ApplicationService) DeleteApplication(ctx context.Context, req *pb.DeleteApplicationRequest) (*emptypb.Empty, error) {
+func (s *ApplicationService) DeleteApplication(ctx context.Context, req *pb.ApplicationIdRequest) (*emptypb.Empty, error) {
 	err := s.svc.DeleteApplication(ctx, req.Id)
 	if err != nil {
 		return nil, status.Errorf(codes.Internal, "%v", err)
 	}
 	return &emptypb.Empty{}, nil
+}
+
+func (s *ApplicationService) GetApplicationBuilds(context.Context, *pb.ApplicationIdRequest) (*pb.GetApplicationBuildsResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetApplicationBuilds not implemented")
+}
+
+func (s *ApplicationService) GetApplicationBuild(context.Context, *pb.GetApplicationBuildRequest) (*pb.Build, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetApplicationBuild not implemented")
+}
+
+func (s *ApplicationService) GetApplicationBuildLog(context.Context, *pb.GetApplicationBuildLogRequest) (*pb.BuildLog, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetApplicationBuildLog not implemented")
+}
+
+func (s *ApplicationService) GetApplicationBuildArtifact(context.Context, *pb.ApplicationIdRequest) (*pb.ApplicationBuildArtifact, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetApplicationBuildArtifact not implemented")
+}
+
+func (s *ApplicationService) GetApplicationEnvironmentVariables(context.Context, *pb.ApplicationIdRequest) (*pb.ApplicationEnvironmentVariables, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetApplicationEnvironmentVariables not implemented")
+}
+
+func (s *ApplicationService) SetApplicationEnvironmentVariable(context.Context, *pb.SetApplicationEnvironmentVariableRequest) (*emptypb.Empty, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method SetApplicationEnvironmentVariable not implemented")
+}
+
+func (s *ApplicationService) GetApplicationOutput(context.Context, *pb.ApplicationIdRequest) (*pb.ApplicationOutput, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetApplicationOutput not implemented")
+}
+
+func (s *ApplicationService) GetApplicationKeys(context.Context, *pb.ApplicationIdRequest) (*pb.ApplicationKeys, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetApplicationKeys not implemented")
+}
+
+func (s *ApplicationService) StartApplication(context.Context, *pb.ApplicationIdRequest) (*emptypb.Empty, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method StartApplication not implemented")
+}
+
+func (s *ApplicationService) RestartApplication(context.Context, *pb.ApplicationIdRequest) (*emptypb.Empty, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method RestartApplication not implemented")
+}
+
+func (s *ApplicationService) StopApplication(context.Context, *pb.ApplicationIdRequest) (*emptypb.Empty, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method StopApplication not implemented")
 }
 
 func convertFromPBBuildType(buildType pb.BuildType) builder.BuildType {
