@@ -9,6 +9,7 @@ import (
 	"github.com/samber/lo"
 	"github.com/volatiletech/null/v8"
 	"github.com/volatiletech/sqlboiler/v4/boil"
+	"github.com/volatiletech/sqlboiler/v4/queries/qm"
 
 	"github.com/traPtitech/neoshowcase/pkg/domain"
 	"github.com/traPtitech/neoshowcase/pkg/domain/builder"
@@ -19,6 +20,7 @@ import (
 type BuildRepository interface {
 	GetBuilds(ctx context.Context, applicationID string) ([]*domain.Build, error)
 	GetBuild(ctx context.Context, buildID string) (*domain.Build, error)
+	GetLastSuccessBuild(ctx context.Context, applicationID string) (*domain.Build, error)
 	CreateBuild(ctx context.Context, applicationID string) (*domain.Build, error)
 	UpdateBuild(ctx context.Context, args UpdateBuildArgs) error
 }
@@ -33,9 +35,17 @@ func NewBuildRepository(db *sql.DB) BuildRepository {
 	}
 }
 
+func (r *buildRepository) getBuild(ctx context.Context, id string) (*models.Build, error) {
+	return models.Builds(
+		models.BuildWhere.ID.EQ(id),
+		qm.Load(models.BuildRels.Artifact),
+	).One(ctx, r.db)
+}
+
 func (r *buildRepository) GetBuilds(ctx context.Context, applicationID string) ([]*domain.Build, error) {
 	builds, err := models.Builds(
 		models.BuildWhere.ApplicationID.EQ(applicationID),
+		qm.Load(models.BuildRels.Artifact),
 	).All(ctx, r.db)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get builds: %w", err)
@@ -46,7 +56,7 @@ func (r *buildRepository) GetBuilds(ctx context.Context, applicationID string) (
 }
 
 func (r *buildRepository) GetBuild(ctx context.Context, buildID string) (*domain.Build, error) {
-	build, err := models.FindBuild(ctx, r.db, buildID)
+	build, err := r.getBuild(ctx, buildID)
 	if err != nil {
 		if isNoRowsErr(err) {
 			return nil, ErrNotFound
@@ -54,6 +64,22 @@ func (r *buildRepository) GetBuild(ctx context.Context, buildID string) (*domain
 		return nil, fmt.Errorf("failed to find build: %w", err)
 	}
 	return toDomainBuild(build), nil
+}
+
+func (r *buildRepository) GetLastSuccessBuild(ctx context.Context, applicationID string) (*domain.Build, error) {
+	build, err := models.Builds(
+		models.BuildWhere.ApplicationID.EQ(applicationID),
+		models.BuildWhere.Status.EQ(builder.BuildStatusSucceeded.String()),
+		qm.OrderBy(models.BuildColumns.FinishedAt+" desc"),
+		qm.Load(models.BuildRels.Artifact),
+	).One(ctx, r.db)
+	if err != nil {
+		if isNoRowsErr(err) {
+			return nil, ErrNotFound
+		}
+		return nil, fmt.Errorf("failed to find build: %w", err)
+	}
+	return toDomainBuild(build), err
 }
 
 func (r *buildRepository) CreateBuild(ctx context.Context, applicationID string) (*domain.Build, error) {
@@ -81,8 +107,7 @@ type UpdateBuildArgs struct {
 func (r *buildRepository) UpdateBuild(ctx context.Context, args UpdateBuildArgs) error {
 	const errMsg = "failed to UpdateBuildStatus: %w"
 
-	build, err := models.FindBuild(ctx, r.db, args.ID)
-
+	build, err := r.getBuild(ctx, args.ID)
 	if err != nil {
 		if isNoRowsErr(err) {
 			return ErrNotFound

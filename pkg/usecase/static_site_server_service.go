@@ -7,8 +7,8 @@ import (
 	"github.com/volatiletech/sqlboiler/v4/queries/qm"
 
 	"github.com/traPtitech/neoshowcase/pkg/domain"
-	"github.com/traPtitech/neoshowcase/pkg/domain/builder"
 	"github.com/traPtitech/neoshowcase/pkg/infrastructure/admindb/models"
+	"github.com/traPtitech/neoshowcase/pkg/interface/repository"
 )
 
 type StaticSiteServerService interface {
@@ -16,16 +16,22 @@ type StaticSiteServerService interface {
 }
 
 type staticSiteServerService struct {
-	engine domain.Engine
+	buildRepo repository.BuildRepository
+	engine    domain.Engine
 
 	// TODO 後で消す
 	db *sql.DB
 }
 
-func NewStaticSiteServerService(engine domain.Engine, db *sql.DB) StaticSiteServerService {
+func NewStaticSiteServerService(
+	buildRepo repository.BuildRepository,
+	engine domain.Engine,
+	db *sql.DB,
+) StaticSiteServerService {
 	return &staticSiteServerService{
-		engine: engine,
-		db:     db,
+		buildRepo: buildRepo,
+		engine:    engine,
+		db:        db,
 	}
 }
 
@@ -45,27 +51,21 @@ func (s *staticSiteServerService) Reload(ctx context.Context) error {
 			continue
 		}
 
-		build, err := models.Builds(
-			models.BuildWhere.ApplicationID.EQ(app.ID),
-			models.BuildWhere.Status.EQ(builder.BuildStatusSucceeded.String()),
-			qm.OrderBy(models.BuildColumns.FinishedAt+" desc"),
-			qm.Load(models.BuildRels.Artifact),
-		).One(ctx, s.db)
-		if err != nil && err != sql.ErrNoRows {
+		build, err := s.buildRepo.GetLastSuccessBuild(ctx, app.ID)
+		if err != nil && err != repository.ErrNotFound {
 			return err
 		}
-		if err == sql.ErrNoRows {
+		if err == repository.ErrNotFound {
 			continue
 		}
 
-		artifact := build.R.Artifact
-		if artifact == nil {
+		if !build.Artifact.Valid {
 			continue
 		}
 		data = append(data, &domain.Site{
 			ID:            website.ID,
 			FQDN:          website.FQDN,
-			ArtifactID:    artifact.ID,
+			ArtifactID:    build.Artifact.V.ID,
 			ApplicationID: app.ID,
 		})
 	}

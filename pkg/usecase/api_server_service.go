@@ -39,6 +39,9 @@ type APIServerService interface {
 	GetApplicationBuild(ctx context.Context, buildID string) (*domain.Build, error)
 	SetApplicationEnvironmentVariable(ctx context.Context, applicationID string, key string, value string) error
 	GetApplicationEnvironmentVariables(ctx context.Context, applicationID string) ([]*domain.Environment, error)
+	StartApplication(ctx context.Context, id string) error
+	RestartApplication(ctx context.Context, id string) error
+	StopApplication(ctx context.Context, id string) error
 }
 
 type apiServerService struct {
@@ -46,6 +49,8 @@ type apiServerService struct {
 	buildRepo repository.BuildRepository
 	envRepo   repository.EnvironmentRepository
 	gitRepo   repository.GitRepositoryRepository
+	deploySvc AppDeployService
+	backend   domain.Backend
 }
 
 func NewAPIServerService(
@@ -53,12 +58,16 @@ func NewAPIServerService(
 	buildRepo repository.BuildRepository,
 	envRepo repository.EnvironmentRepository,
 	gitRepo repository.GitRepositoryRepository,
+	deploySvc AppDeployService,
+	backend domain.Backend,
 ) APIServerService {
 	return &apiServerService{
 		appRepo:   appRepo,
 		buildRepo: buildRepo,
 		envRepo:   envRepo,
 		gitRepo:   gitRepo,
+		deploySvc: deploySvc,
+		backend:   backend,
 	}
 }
 
@@ -125,4 +134,23 @@ func (s *apiServerService) GetApplicationEnvironmentVariables(ctx context.Contex
 
 func (s *apiServerService) SetApplicationEnvironmentVariable(ctx context.Context, applicationID string, key string, value string) error {
 	return s.envRepo.SetEnv(ctx, applicationID, key, value)
+}
+
+func (s *apiServerService) StartApplication(ctx context.Context, id string) error {
+	build, err := s.buildRepo.GetLastSuccessBuild(ctx, id)
+	if err != nil {
+		if err == repository.ErrNotFound {
+			return ErrNotFound
+		}
+		return err
+	}
+	return s.deploySvc.QueueDeployment(ctx, id, build.ID)
+}
+
+func (s *apiServerService) RestartApplication(ctx context.Context, id string) error {
+	return s.backend.RestartContainer(ctx, id)
+}
+
+func (s *apiServerService) StopApplication(ctx context.Context, id string) error {
+	return s.backend.DestroyContainer(ctx, id)
 }

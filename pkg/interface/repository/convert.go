@@ -24,13 +24,22 @@ func toDomainApplication(app *models.Application, repo domain.Repository) *domai
 }
 
 func toDomainBuild(build *models.Build) *domain.Build {
-	return &domain.Build{
+	ret := &domain.Build{
 		ID:            build.ID,
 		Status:        builder.BuildStatusFromString(build.Status),
 		ApplicationID: build.ApplicationID,
 		StartedAt:     build.StartedAt,
 		FinishedAt:    optional.New(build.FinishedAt.Time, build.FinishedAt.Valid),
 	}
+	artifact := build.R.Artifact
+	if artifact != nil {
+		ret.Artifact = optional.From(domain.Artifact{
+			ID:        artifact.ID,
+			Size:      artifact.Size,
+			CreatedAt: artifact.CreatedAt,
+		})
+	}
+	return ret
 }
 
 func toDomainEnvironment(env *models.Environment) *domain.Environment {

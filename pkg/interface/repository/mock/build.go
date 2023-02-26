@@ -81,6 +81,21 @@ func (mr *MockBuildRepositoryMockRecorder) GetBuilds(ctx, applicationID interfac
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetBuilds", reflect.TypeOf((*MockBuildRepository)(nil).GetBuilds), ctx, applicationID)
 }
 
+// GetLastSuccessBuild mocks base method.
+func (m *MockBuildRepository) GetLastSuccessBuild(ctx context.Context, applicationID string) (*domain.Build, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetLastSuccessBuild", ctx, applicationID)
+	ret0, _ := ret[0].(*domain.Build)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetLastSuccessBuild indicates an expected call of GetLastSuccessBuild.
+func (mr *MockBuildRepositoryMockRecorder) GetLastSuccessBuild(ctx, applicationID interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetLastSuccessBuild", reflect.TypeOf((*MockBuildRepository)(nil).GetLastSuccessBuild), ctx, applicationID)
+}
+
 // UpdateBuild mocks base method.
 func (m *MockBuildRepository) UpdateBuild(ctx context.Context, args repository.UpdateBuildArgs) error {
 	m.ctrl.T.Helper()

@@ -129,16 +129,28 @@ func (s *ApplicationService) GetApplicationKeys(context.Context, *pb.Application
 	return nil, status.Errorf(codes.Unimplemented, "method GetApplicationKeys not implemented")
 }
 
-func (s *ApplicationService) StartApplication(context.Context, *pb.ApplicationIdRequest) (*emptypb.Empty, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method StartApplication not implemented")
+func (s *ApplicationService) StartApplication(ctx context.Context, req *pb.ApplicationIdRequest) (*emptypb.Empty, error) {
+	err := s.svc.StartApplication(ctx, req.Id)
+	if err != nil {
+		return nil, status.Errorf(codes.Internal, "%v", err)
+	}
+	return &emptypb.Empty{}, nil
 }
 
-func (s *ApplicationService) RestartApplication(context.Context, *pb.ApplicationIdRequest) (*emptypb.Empty, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method RestartApplication not implemented")
+func (s *ApplicationService) RestartApplication(ctx context.Context, req *pb.ApplicationIdRequest) (*emptypb.Empty, error) {
+	err := s.svc.RestartApplication(ctx, req.Id)
+	if err != nil {
+		return nil, status.Errorf(codes.Internal, "%v", err)
+	}
+	return &emptypb.Empty{}, nil
 }
 
-func (s *ApplicationService) StopApplication(context.Context, *pb.ApplicationIdRequest) (*emptypb.Empty, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method StopApplication not implemented")
+func (s *ApplicationService) StopApplication(ctx context.Context, req *pb.ApplicationIdRequest) (*emptypb.Empty, error) {
+	err := s.svc.StopApplication(ctx, req.Id)
+	if err != nil {
+		return nil, status.Errorf(codes.Internal, "%v", err)
+	}
+	return &emptypb.Empty{}, nil
 }
 
 func convertFromPBBuildType(buildType pb.BuildType) builder.BuildType {

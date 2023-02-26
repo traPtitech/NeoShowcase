@@ -16,12 +16,19 @@ type Application struct {
 	BuildType  builder.BuildType
 }
 
+type Artifact struct {
+	ID        string
+	Size      int64
+	CreatedAt time.Time
+}
+
 type Build struct {
 	ID            string
 	Status        builder.BuildStatus
 	ApplicationID string
 	StartedAt     time.Time
 	FinishedAt    optional.Of[time.Time]
+	Artifact      optional.Of[Artifact]
 }
 
 type Environment struct {
