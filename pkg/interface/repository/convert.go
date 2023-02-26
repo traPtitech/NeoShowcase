@@ -4,6 +4,7 @@ import (
 	"github.com/traPtitech/neoshowcase/pkg/domain"
 	"github.com/traPtitech/neoshowcase/pkg/domain/builder"
 	"github.com/traPtitech/neoshowcase/pkg/infrastructure/admindb/models"
+	"github.com/traPtitech/neoshowcase/pkg/util/optional"
 )
 
 func toDomainRepository(repo *models.Repository) domain.Repository {
@@ -27,5 +28,7 @@ func toDomainBuild(build *models.Build) *domain.Build {
 		ID:            build.ID,
 		Status:        builder.BuildStatusFromString(build.Status),
 		ApplicationID: build.ApplicationID,
+		StartedAt:     build.StartedAt,
+		FinishedAt:    optional.New(build.FinishedAt.Time, build.FinishedAt.Valid),
 	}
 }

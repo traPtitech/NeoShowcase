@@ -34,7 +34,7 @@ var commonSet = wire.NewSet(
 	repository.NewApplicationRepository,
 	repository.NewGitRepositoryRepository,
 	repository.NewEnvironmentRepository,
-	repository.NewBuildLogRepository,
+	repository.NewBuildRepository,
 	grpc.NewBuilderServiceClientConn,
 	grpc.NewStaticSiteServiceClientConn,
 	grpc.NewBuilderServiceClient,

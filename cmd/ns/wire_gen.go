@@ -72,7 +72,7 @@ func NewWithDocker(c2 Config) (*Server, error) {
 	dockerImageRegistryString := provideImageRegistry(c2)
 	dockerImageNamePrefixString := provideImagePrefix(c2)
 	appDeployService := usecase.NewAppDeployService(backend, staticSiteServiceClient, dockerImageRegistryString, dockerImageNamePrefixString, db)
-	buildRepository := repository.NewBuildLogRepository(db)
+	buildRepository := repository.NewBuildRepository(db)
 	appBuildService := usecase.NewAppBuildService(applicationRepository, buildRepository, builderServiceClient, dockerImageRegistryString, dockerImageNamePrefixString)
 	mariaDBConfig := c2.MariaDB
 	mariaDBManager, err := dbmanager.NewMariaDBManager(mariaDBConfig)
@@ -146,7 +146,7 @@ func NewWithK8S(c2 Config) (*Server, error) {
 	dockerImageRegistryString := provideImageRegistry(c2)
 	dockerImageNamePrefixString := provideImagePrefix(c2)
 	appDeployService := usecase.NewAppDeployService(backend, staticSiteServiceClient, dockerImageRegistryString, dockerImageNamePrefixString, db)
-	buildRepository := repository.NewBuildLogRepository(db)
+	buildRepository := repository.NewBuildRepository(db)
 	appBuildService := usecase.NewAppBuildService(applicationRepository, buildRepository, builderServiceClient, dockerImageRegistryString, dockerImageNamePrefixString)
 	mariaDBConfig := c2.MariaDB
 	mariaDBManager, err := dbmanager.NewMariaDBManager(mariaDBConfig)
@@ -174,7 +174,7 @@ func NewWithK8S(c2 Config) (*Server, error) {
 
 // wire.go:
 
-var commonSet = wire.NewSet(web.NewServer, hub.New, eventbus.NewLocal, admindb.New, dbmanager.NewMariaDBManager, dbmanager.NewMongoDBManager, repository.NewApplicationRepository, repository.NewGitRepositoryRepository, repository.NewEnvironmentRepository, repository.NewBuildLogRepository, grpc.NewBuilderServiceClientConn, grpc.NewStaticSiteServiceClientConn, grpc.NewBuilderServiceClient, grpc.NewStaticSiteServiceClient, broker.NewBuilderEventsBroker, usecase.NewAppBuildService, usecase.NewAppDeployService, usecase.NewContinuousDeploymentService, handlerSet,
+var commonSet = wire.NewSet(web.NewServer, hub.New, eventbus.NewLocal, admindb.New, dbmanager.NewMariaDBManager, dbmanager.NewMongoDBManager, repository.NewApplicationRepository, repository.NewGitRepositoryRepository, repository.NewEnvironmentRepository, repository.NewBuildRepository, grpc.NewBuilderServiceClientConn, grpc.NewStaticSiteServiceClientConn, grpc.NewBuilderServiceClient, grpc.NewStaticSiteServiceClient, broker.NewBuilderEventsBroker, usecase.NewAppBuildService, usecase.NewAppDeployService, usecase.NewContinuousDeploymentService, handlerSet,
 	provideWebServerConfig,
 	provideImagePrefix,
 	provideImageRegistry, wire.FieldsOf(new(Config), "Builder", "SSGen", "DB", "MariaDB", "MongoDB"), wire.Struct(new(Router), "*"), wire.Bind(new(web.Router), new(*Router)), wire.Struct(new(Server), "*"),

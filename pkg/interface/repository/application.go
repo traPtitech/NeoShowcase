@@ -97,7 +97,7 @@ func (r *applicationRepository) GetApplicationByID(ctx context.Context, id strin
 		qm.Load(models.ApplicationRels.Repository),
 	).One(ctx, r.db)
 	if err != nil {
-		if err == sql.ErrNoRows {
+		if isNoRowsErr(err) {
 			return nil, ErrNotFound
 		}
 		return nil, fmt.Errorf("failed to get application: %w", err)
@@ -113,7 +113,7 @@ func (r *applicationRepository) SetWebsite(ctx context.Context, applicationID st
 		models.ApplicationWhere.ID.EQ(applicationID),
 	).One(ctx, r.db)
 	if err != nil {
-		if err == sql.ErrNoRows {
+		if isNoRowsErr(err) {
 			return ErrNotFound
 		}
 		return fmt.Errorf(errMsg, err)

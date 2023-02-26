@@ -8,6 +8,7 @@ import (
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/types/known/emptypb"
+	"google.golang.org/protobuf/types/known/timestamppb"
 
 	"github.com/traPtitech/neoshowcase/pkg/domain"
 	"github.com/traPtitech/neoshowcase/pkg/domain/builder"
@@ -53,6 +54,9 @@ func (s *ApplicationService) CreateApplication(ctx context.Context, req *pb.Crea
 func (s *ApplicationService) GetApplication(ctx context.Context, req *pb.ApplicationIdRequest) (*pb.Application, error) {
 	application, err := s.svc.GetApplication(ctx, req.Id)
 	if err != nil {
+		if err == usecase.ErrNotFound {
+			return nil, status.Errorf(codes.NotFound, "not found")
+		}
 		return nil, status.Errorf(codes.Internal, "%v", err)
 	}
 	return convertToPBApplication(application), nil
@@ -66,12 +70,27 @@ func (s *ApplicationService) DeleteApplication(ctx context.Context, req *pb.Appl
 	return &emptypb.Empty{}, nil
 }
 
-func (s *ApplicationService) GetApplicationBuilds(context.Context, *pb.ApplicationIdRequest) (*pb.GetApplicationBuildsResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method GetApplicationBuilds not implemented")
+func (s *ApplicationService) GetApplicationBuilds(ctx context.Context, req *pb.ApplicationIdRequest) (*pb.GetApplicationBuildsResponse, error) {
+	builds, err := s.svc.GetApplicationBuilds(ctx, req.Id)
+	if err != nil {
+		return nil, status.Errorf(codes.Internal, "%v", err)
+	}
+	return &pb.GetApplicationBuildsResponse{
+		Builds: lo.Map(builds, func(build *domain.Build, i int) *pb.Build {
+			return convertToPBBuild(build)
+		}),
+	}, nil
 }
 
-func (s *ApplicationService) GetApplicationBuild(context.Context, *pb.GetApplicationBuildRequest) (*pb.Build, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method GetApplicationBuild not implemented")
+func (s *ApplicationService) GetApplicationBuild(ctx context.Context, req *pb.GetApplicationBuildRequest) (*pb.Build, error) {
+	build, err := s.svc.GetApplicationBuild(ctx, req.BuildId)
+	if err != nil {
+		if err == usecase.ErrNotFound {
+			return nil, status.Errorf(codes.NotFound, "not found")
+		}
+		return nil, status.Errorf(codes.Internal, "%v", err)
+	}
+	return convertToPBBuild(build), nil
 }
 
 func (s *ApplicationService) GetApplicationBuildLog(context.Context, *pb.GetApplicationBuildLogRequest) (*pb.BuildLog, error) {
@@ -138,5 +157,36 @@ func convertToPBApplication(app *domain.Application) *pb.Application {
 		RepositoryUrl: app.Repository.URL,
 		BranchName:    app.BranchName,
 		BuildType:     convertToPBBuildType(app.BuildType),
+	}
+}
+
+func convertToPBBuildStatus(status builder.BuildStatus) pb.Build_BuildStatus {
+	switch status {
+	case builder.BuildStatusBuilding:
+		return pb.Build_BUILDING
+	case builder.BuildStatusSucceeded:
+		return pb.Build_SUCCEEDED
+	case builder.BuildStatusFailed:
+		return pb.Build_FAILED
+	case builder.BuildStatusCanceled:
+		return pb.Build_CANCELLED
+	case builder.BuildStatusQueued:
+		return pb.Build_QUEUED
+	case builder.BuildStatusSkipped:
+		return pb.Build_SKIPPED
+	default:
+		panic(fmt.Sprintf("unknown build status: %v", status))
+	}
+}
+
+func convertToPBBuild(build *domain.Build) *pb.Build {
+	return &pb.Build{
+		Id:        build.ID,
+		Status:    convertToPBBuildStatus(build.Status),
+		StartedAt: timestamppb.New(build.StartedAt),
+		FinishedAt: &pb.NullTimestamp{
+			Timestamp: timestamppb.New(build.FinishedAt.V),
+			Valid:     build.FinishedAt.Valid,
+		},
 	}
 }

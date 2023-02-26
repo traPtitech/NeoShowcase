@@ -3,8 +3,10 @@ package domain
 import (
 	"net/url"
 	"strings"
+	"time"
 
 	"github.com/traPtitech/neoshowcase/pkg/domain/builder"
+	"github.com/traPtitech/neoshowcase/pkg/util/optional"
 )
 
 type Application struct {
@@ -18,6 +20,8 @@ type Build struct {
 	ID            string
 	Status        builder.BuildStatus
 	ApplicationID string
+	StartedAt     time.Time
+	FinishedAt    optional.Of[time.Time]
 }
 
 type Environment struct {

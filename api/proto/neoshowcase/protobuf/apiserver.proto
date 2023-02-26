@@ -60,6 +60,8 @@ message Build {
     SUCCEEDED = 1;
     FAILED = 2;
     CANCELLED = 3;
+    QUEUED = 4;
+    SKIPPED = 5;
   }
   string id = 1;
   BuildStatus status = 2;
@@ -90,13 +92,11 @@ message GetApplicationBuildsResponse {
 }
 
 message GetApplicationBuildRequest {
-  string application_id = 1;
-  string build_id = 2;
+  string build_id = 1;
 }
 
 message GetApplicationBuildLogRequest {
-  string application_id = 1;
-  string build_id = 2;
+  string build_id = 1;
 }
 
 message SetApplicationEnvironmentVariableRequest {

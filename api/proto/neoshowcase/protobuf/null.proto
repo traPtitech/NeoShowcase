@@ -5,6 +5,6 @@ option go_package = "github.com/traPtitech/neoshowcase/pkg/interface/grpc/pb";
 import "google/protobuf/timestamp.proto";
 
 message NullTimestamp {
-  bool valid = 1;
-  google.protobuf.Timestamp timestamp = 2;
+  google.protobuf.Timestamp timestamp = 1;
+  bool valid = 2;
 }

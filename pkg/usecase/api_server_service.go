@@ -2,12 +2,26 @@ package usecase
 
 import (
 	"context"
+	"errors"
 	"fmt"
 
 	"github.com/traPtitech/neoshowcase/pkg/domain"
 	"github.com/traPtitech/neoshowcase/pkg/domain/builder"
 	"github.com/traPtitech/neoshowcase/pkg/interface/repository"
 )
+
+var (
+	ErrNotFound = errors.New("not found")
+)
+
+func handleRepoError[T any](entity T, err error) (T, error) {
+	switch err {
+	case repository.ErrNotFound:
+		return entity, ErrNotFound
+	default:
+		return entity, err
+	}
+}
 
 type CreateApplicationArgs struct {
 	UserID        string
@@ -21,17 +35,25 @@ type APIServerService interface {
 	CreateApplication(ctx context.Context, args CreateApplicationArgs) (*domain.Application, error)
 	GetApplication(ctx context.Context, id string) (*domain.Application, error)
 	DeleteApplication(ctx context.Context, id string) error
+	GetApplicationBuilds(ctx context.Context, applicationID string) ([]*domain.Build, error)
+	GetApplicationBuild(ctx context.Context, buildID string) (*domain.Build, error)
 }
 
 type apiServerService struct {
-	appRepo repository.ApplicationRepository
-	gitRepo repository.GitRepositoryRepository
+	appRepo   repository.ApplicationRepository
+	buildRepo repository.BuildRepository
+	gitRepo   repository.GitRepositoryRepository
 }
 
-func NewAPIServerService(appRepo repository.ApplicationRepository, gitRepo repository.GitRepositoryRepository) APIServerService {
+func NewAPIServerService(
+	appRepo repository.ApplicationRepository,
+	buildRepo repository.BuildRepository,
+	gitRepo repository.GitRepositoryRepository,
+) APIServerService {
 	return &apiServerService{
-		appRepo: appRepo,
-		gitRepo: gitRepo,
+		appRepo:   appRepo,
+		buildRepo: buildRepo,
+		gitRepo:   gitRepo,
 	}
 }
 
@@ -74,10 +96,20 @@ func (s *apiServerService) CreateApplication(ctx context.Context, args CreateApp
 }
 
 func (s *apiServerService) GetApplication(ctx context.Context, id string) (*domain.Application, error) {
-	return s.appRepo.GetApplicationByID(ctx, id)
+	application, err := s.appRepo.GetApplicationByID(ctx, id)
+	return handleRepoError(application, err)
 }
 
 func (s *apiServerService) DeleteApplication(ctx context.Context, id string) error {
 	// TODO implement me
 	panic("implement me")
+}
+
+func (s *apiServerService) GetApplicationBuilds(ctx context.Context, applicationID string) ([]*domain.Build, error) {
+	return s.buildRepo.GetBuilds(ctx, applicationID)
+}
+
+func (s *apiServerService) GetApplicationBuild(ctx context.Context, buildID string) (*domain.Build, error) {
+	build, err := s.buildRepo.GetBuild(ctx, buildID)
+	return handleRepoError(build, err)
 }

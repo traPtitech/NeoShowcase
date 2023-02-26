@@ -237,6 +237,8 @@ export namespace Build {
     SUCCEEDED = 1,
     FAILED = 2,
     CANCELLED = 3,
+    QUEUED = 4,
+    SKIPPED = 5,
   }
 }
 
@@ -343,9 +345,6 @@ export namespace GetApplicationBuildsResponse {
 }
 
 export class GetApplicationBuildRequest extends jspb.Message {
-  getApplicationId(): string;
-  setApplicationId(value: string): GetApplicationBuildRequest;
-
   getBuildId(): string;
   setBuildId(value: string): GetApplicationBuildRequest;
 
@@ -359,15 +358,11 @@ export class GetApplicationBuildRequest extends jspb.Message {
 
 export namespace GetApplicationBuildRequest {
   export type AsObject = {
-    applicationId: string,
     buildId: string,
   }
 }
 
 export class GetApplicationBuildLogRequest extends jspb.Message {
-  getApplicationId(): string;
-  setApplicationId(value: string): GetApplicationBuildLogRequest;
-
   getBuildId(): string;
   setBuildId(value: string): GetApplicationBuildLogRequest;
 
@@ -381,7 +376,6 @@ export class GetApplicationBuildLogRequest extends jspb.Message {
 
 export namespace GetApplicationBuildLogRequest {
   export type AsObject = {
-    applicationId: string,
     buildId: string,
   }
 }
