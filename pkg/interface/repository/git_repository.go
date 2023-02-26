@@ -67,7 +67,7 @@ func (r *gitRepositoryRepository) GetRepositoryByID(ctx context.Context, id stri
 
 	repo, err := models.Repositories(models.RepositoryWhere.ID.EQ(id)).One(ctx, r.db)
 	if err != nil {
-		if err == sql.ErrNoRows {
+		if isNoRowsErr(err) {
 			return domain.Repository{}, ErrNotFound
 		}
 		return domain.Repository{}, fmt.Errorf(errMsg, err)
@@ -81,7 +81,7 @@ func (r *gitRepositoryRepository) GetRepository(ctx context.Context, rawURL stri
 
 	repo, err := models.Repositories(models.RepositoryWhere.URL.EQ(rawURL)).One(ctx, r.db)
 	if err != nil {
-		if err == sql.ErrNoRows {
+		if isNoRowsErr(err) {
 			return domain.Repository{}, ErrNotFound
 		}
 		return domain.Repository{}, fmt.Errorf(errMsg, err)

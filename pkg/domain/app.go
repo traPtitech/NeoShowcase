@@ -1,6 +1,13 @@
 package domain
 
-import "github.com/traPtitech/neoshowcase/pkg/domain/builder"
+import (
+	"net/url"
+	"strings"
+	"time"
+
+	"github.com/traPtitech/neoshowcase/pkg/domain/builder"
+	"github.com/traPtitech/neoshowcase/pkg/util/optional"
+)
 
 type Application struct {
 	ID         string
@@ -9,10 +16,19 @@ type Application struct {
 	BuildType  builder.BuildType
 }
 
+type Artifact struct {
+	ID        string
+	Size      int64
+	CreatedAt time.Time
+}
+
 type Build struct {
 	ID            string
 	Status        builder.BuildStatus
 	ApplicationID string
+	StartedAt     time.Time
+	FinishedAt    optional.Of[time.Time]
+	Artifact      optional.Of[Artifact]
 }
 
 type Environment struct {
@@ -25,4 +41,15 @@ type Environment struct {
 type Repository struct {
 	ID  string
 	URL string
+}
+
+func ExtractNameFromRepositoryURL(repositoryURL string) (string, error) {
+	u, err := url.Parse(repositoryURL)
+	if err != nil {
+		return "", err
+	}
+	path := u.Path
+	path = strings.TrimPrefix(path, "/")
+	path = strings.TrimSuffix(path, ".git")
+	return path, nil
 }

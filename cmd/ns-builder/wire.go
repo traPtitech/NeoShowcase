@@ -6,6 +6,7 @@ package main
 import (
 	"github.com/google/wire"
 	"github.com/leandro-lugaresi/hub"
+
 	"github.com/traPtitech/neoshowcase/pkg/infrastructure/admindb"
 	"github.com/traPtitech/neoshowcase/pkg/infrastructure/eventbus"
 	"github.com/traPtitech/neoshowcase/pkg/interface/grpc"
@@ -19,7 +20,7 @@ func New(c Config) (*Server, error) {
 		grpc.NewBuilderServiceServer,
 		usecase.NewBuilderService,
 		repository.NewArtifactRepository,
-		repository.NewBuildLogRepository,
+		repository.NewBuildRepository,
 		eventbus.NewLocal,
 		admindb.New,
 		hub.New,

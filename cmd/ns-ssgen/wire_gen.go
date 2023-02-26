@@ -10,6 +10,7 @@ import (
 	"github.com/traPtitech/neoshowcase/pkg/infrastructure/admindb"
 	"github.com/traPtitech/neoshowcase/pkg/infrastructure/staticserver"
 	"github.com/traPtitech/neoshowcase/pkg/interface/grpc"
+	"github.com/traPtitech/neoshowcase/pkg/interface/repository"
 	"github.com/traPtitech/neoshowcase/pkg/usecase"
 )
 
@@ -30,7 +31,8 @@ func New(c2 Config) (*Server, error) {
 	webServerDocumentRootPath := provideWebServerDocumentRootPath(c2)
 	webServerPort := provideWebServerPort(c2)
 	engine := staticserver.NewBuiltIn(storage, webServerDocumentRootPath, webServerPort)
-	staticSiteServerService := usecase.NewStaticSiteServerService(engine, db)
+	buildRepository := repository.NewBuildRepository(db)
+	staticSiteServerService := usecase.NewStaticSiteServerService(buildRepository, engine, db)
 	staticSiteService := grpc.NewStaticSiteServiceServer(staticSiteServerService)
 	tcpListenPort := provideGRPCPort(c2)
 	mainServer := &Server{

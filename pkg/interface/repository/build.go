@@ -6,8 +6,10 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/samber/lo"
 	"github.com/volatiletech/null/v8"
 	"github.com/volatiletech/sqlboiler/v4/boil"
+	"github.com/volatiletech/sqlboiler/v4/queries/qm"
 
 	"github.com/traPtitech/neoshowcase/pkg/domain"
 	"github.com/traPtitech/neoshowcase/pkg/domain/builder"
@@ -16,21 +18,71 @@ import (
 
 //go:generate go run github.com/golang/mock/mockgen@latest -source=$GOFILE -package=mock_$GOPACKAGE -destination=./mock/$GOFILE
 type BuildRepository interface {
+	GetBuilds(ctx context.Context, applicationID string) ([]*domain.Build, error)
+	GetBuild(ctx context.Context, buildID string) (*domain.Build, error)
+	GetLastSuccessBuild(ctx context.Context, applicationID string) (*domain.Build, error)
 	CreateBuild(ctx context.Context, applicationID string) (*domain.Build, error)
 	UpdateBuild(ctx context.Context, args UpdateBuildArgs) error
 }
 
-type buildLogRepository struct {
+type buildRepository struct {
 	db *sql.DB
 }
 
-func NewBuildLogRepository(db *sql.DB) BuildRepository {
-	return &buildLogRepository{
+func NewBuildRepository(db *sql.DB) BuildRepository {
+	return &buildRepository{
 		db: db,
 	}
 }
 
-func (r *buildLogRepository) CreateBuild(ctx context.Context, applicationID string) (*domain.Build, error) {
+func (r *buildRepository) getBuild(ctx context.Context, id string) (*models.Build, error) {
+	return models.Builds(
+		models.BuildWhere.ID.EQ(id),
+		qm.Load(models.BuildRels.Artifact),
+	).One(ctx, r.db)
+}
+
+func (r *buildRepository) GetBuilds(ctx context.Context, applicationID string) ([]*domain.Build, error) {
+	builds, err := models.Builds(
+		models.BuildWhere.ApplicationID.EQ(applicationID),
+		qm.Load(models.BuildRels.Artifact),
+	).All(ctx, r.db)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get builds: %w", err)
+	}
+	return lo.Map(builds, func(b *models.Build, i int) *domain.Build {
+		return toDomainBuild(b)
+	}), nil
+}
+
+func (r *buildRepository) GetBuild(ctx context.Context, buildID string) (*domain.Build, error) {
+	build, err := r.getBuild(ctx, buildID)
+	if err != nil {
+		if isNoRowsErr(err) {
+			return nil, ErrNotFound
+		}
+		return nil, fmt.Errorf("failed to find build: %w", err)
+	}
+	return toDomainBuild(build), nil
+}
+
+func (r *buildRepository) GetLastSuccessBuild(ctx context.Context, applicationID string) (*domain.Build, error) {
+	build, err := models.Builds(
+		models.BuildWhere.ApplicationID.EQ(applicationID),
+		models.BuildWhere.Status.EQ(builder.BuildStatusSucceeded.String()),
+		qm.OrderBy(models.BuildColumns.FinishedAt+" desc"),
+		qm.Load(models.BuildRels.Artifact),
+	).One(ctx, r.db)
+	if err != nil {
+		if isNoRowsErr(err) {
+			return nil, ErrNotFound
+		}
+		return nil, fmt.Errorf("failed to find build: %w", err)
+	}
+	return toDomainBuild(build), err
+}
+
+func (r *buildRepository) CreateBuild(ctx context.Context, applicationID string) (*domain.Build, error) {
 	const errMsg = "failed to CreateBuildLog: %w"
 
 	build := &models.Build{
@@ -52,24 +104,23 @@ type UpdateBuildArgs struct {
 	Status builder.BuildStatus
 }
 
-func (r *buildLogRepository) UpdateBuild(ctx context.Context, args UpdateBuildArgs) error {
+func (r *buildRepository) UpdateBuild(ctx context.Context, args UpdateBuildArgs) error {
 	const errMsg = "failed to UpdateBuildStatus: %w"
 
-	buildLog, err := models.FindBuild(ctx, r.db, args.ID)
-
+	build, err := r.getBuild(ctx, args.ID)
 	if err != nil {
-		if err == sql.ErrNoRows {
+		if isNoRowsErr(err) {
 			return ErrNotFound
 		}
 		return fmt.Errorf(errMsg, err)
 	}
 
-	buildLog.Status = args.Status.String()
+	build.Status = args.Status.String()
 	if args.Status.IsFinished() {
-		buildLog.FinishedAt = null.TimeFrom(time.Now())
+		build.FinishedAt = null.TimeFrom(time.Now())
 	}
 
-	if _, err := buildLog.Update(ctx, r.db, boil.Infer()); err != nil {
+	if _, err := build.Update(ctx, r.db, boil.Infer()); err != nil {
 		return fmt.Errorf(errMsg, err)
 	}
 
