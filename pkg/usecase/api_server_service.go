@@ -37,22 +37,27 @@ type APIServerService interface {
 	DeleteApplication(ctx context.Context, id string) error
 	GetApplicationBuilds(ctx context.Context, applicationID string) ([]*domain.Build, error)
 	GetApplicationBuild(ctx context.Context, buildID string) (*domain.Build, error)
+	SetApplicationEnvironmentVariable(ctx context.Context, applicationID string, key string, value string) error
+	GetApplicationEnvironmentVariables(ctx context.Context, applicationID string) ([]*domain.Environment, error)
 }
 
 type apiServerService struct {
 	appRepo   repository.ApplicationRepository
 	buildRepo repository.BuildRepository
+	envRepo   repository.EnvironmentRepository
 	gitRepo   repository.GitRepositoryRepository
 }
 
 func NewAPIServerService(
 	appRepo repository.ApplicationRepository,
 	buildRepo repository.BuildRepository,
+	envRepo repository.EnvironmentRepository,
 	gitRepo repository.GitRepositoryRepository,
 ) APIServerService {
 	return &apiServerService{
 		appRepo:   appRepo,
 		buildRepo: buildRepo,
+		envRepo:   envRepo,
 		gitRepo:   gitRepo,
 	}
 }
@@ -112,4 +117,12 @@ func (s *apiServerService) GetApplicationBuilds(ctx context.Context, application
 func (s *apiServerService) GetApplicationBuild(ctx context.Context, buildID string) (*domain.Build, error) {
 	build, err := s.buildRepo.GetBuild(ctx, buildID)
 	return handleRepoError(build, err)
+}
+
+func (s *apiServerService) GetApplicationEnvironmentVariables(ctx context.Context, applicationID string) ([]*domain.Environment, error) {
+	return s.envRepo.GetEnv(ctx, applicationID)
+}
+
+func (s *apiServerService) SetApplicationEnvironmentVariable(ctx context.Context, applicationID string, key string, value string) error {
+	return s.envRepo.SetEnv(ctx, applicationID, key, value)
 }

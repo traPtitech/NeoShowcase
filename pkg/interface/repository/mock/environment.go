@@ -9,6 +9,7 @@ import (
 	reflect "reflect"
 
 	gomock "github.com/golang/mock/gomock"
+	domain "github.com/traPtitech/neoshowcase/pkg/domain"
 )
 
 // MockEnvironmentRepository is a mock of EnvironmentRepository interface.
@@ -32,6 +33,21 @@ func NewMockEnvironmentRepository(ctrl *gomock.Controller) *MockEnvironmentRepos
 // EXPECT returns an object that allows the caller to indicate expected use.
 func (m *MockEnvironmentRepository) EXPECT() *MockEnvironmentRepositoryMockRecorder {
 	return m.recorder
+}
+
+// GetEnv mocks base method.
+func (m *MockEnvironmentRepository) GetEnv(ctx context.Context, applicationID string) ([]*domain.Environment, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetEnv", ctx, applicationID)
+	ret0, _ := ret[0].([]*domain.Environment)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetEnv indicates an expected call of GetEnv.
+func (mr *MockEnvironmentRepositoryMockRecorder) GetEnv(ctx, applicationID interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetEnv", reflect.TypeOf((*MockEnvironmentRepository)(nil).GetEnv), ctx, applicationID)
 }
 
 // SetEnv mocks base method.

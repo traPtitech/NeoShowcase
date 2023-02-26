@@ -24,7 +24,7 @@ message ApplicationEnvironmentVariable {
 }
 
 message ApplicationEnvironmentVariables {
-  repeated ApplicationEnvironmentVariables variables = 1;
+  repeated ApplicationEnvironmentVariable variables = 1;
 }
 
 message MariaDbKey {

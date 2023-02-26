@@ -58,10 +58,10 @@ export namespace ApplicationEnvironmentVariable {
 }
 
 export class ApplicationEnvironmentVariables extends jspb.Message {
-  getVariablesList(): Array<ApplicationEnvironmentVariables>;
-  setVariablesList(value: Array<ApplicationEnvironmentVariables>): ApplicationEnvironmentVariables;
+  getVariablesList(): Array<ApplicationEnvironmentVariable>;
+  setVariablesList(value: Array<ApplicationEnvironmentVariable>): ApplicationEnvironmentVariables;
   clearVariablesList(): ApplicationEnvironmentVariables;
-  addVariables(value?: ApplicationEnvironmentVariables, index?: number): ApplicationEnvironmentVariables;
+  addVariables(value?: ApplicationEnvironmentVariable, index?: number): ApplicationEnvironmentVariable;
 
   serializeBinary(): Uint8Array;
   toObject(includeInstance?: boolean): ApplicationEnvironmentVariables.AsObject;
@@ -73,7 +73,7 @@ export class ApplicationEnvironmentVariables extends jspb.Message {
 
 export namespace ApplicationEnvironmentVariables {
   export type AsObject = {
-    variablesList: Array<ApplicationEnvironmentVariables.AsObject>,
+    variablesList: Array<ApplicationEnvironmentVariable.AsObject>,
   }
 }
 

@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"fmt"
 
+	"github.com/samber/lo"
 	"github.com/volatiletech/sqlboiler/v4/boil"
 
 	"github.com/traPtitech/neoshowcase/pkg/domain"
@@ -13,6 +14,7 @@ import (
 
 //go:generate go run github.com/golang/mock/mockgen -source=$GOFILE -package=mock_$GOPACKAGE -destination=./mock/$GOFILE
 type EnvironmentRepository interface {
+	GetEnv(ctx context.Context, applicationID string) ([]*domain.Environment, error)
 	SetEnv(ctx context.Context, applicationID, key, value string) error
 }
 
@@ -22,6 +24,18 @@ type environmentRepository struct {
 
 func NewEnvironmentRepository(db *sql.DB) EnvironmentRepository {
 	return &environmentRepository{db: db}
+}
+
+func (r *environmentRepository) GetEnv(ctx context.Context, applicationID string) ([]*domain.Environment, error) {
+	environments, err := models.Environments(
+		models.EnvironmentWhere.ApplicationID.EQ(applicationID),
+	).All(ctx, r.db)
+	if err != nil {
+		return nil, err
+	}
+	return lo.Map(environments, func(env *models.Environment, i int) *domain.Environment {
+		return toDomainEnvironment(env)
+	}), nil
 }
 
 func (r *environmentRepository) SetEnv(ctx context.Context, applicationID, key, value string) error {

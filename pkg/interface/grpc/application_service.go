@@ -101,12 +101,24 @@ func (s *ApplicationService) GetApplicationBuildArtifact(context.Context, *pb.Ap
 	return nil, status.Errorf(codes.Unimplemented, "method GetApplicationBuildArtifact not implemented")
 }
 
-func (s *ApplicationService) GetApplicationEnvironmentVariables(context.Context, *pb.ApplicationIdRequest) (*pb.ApplicationEnvironmentVariables, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method GetApplicationEnvironmentVariables not implemented")
+func (s *ApplicationService) GetApplicationEnvironmentVariables(ctx context.Context, req *pb.ApplicationIdRequest) (*pb.ApplicationEnvironmentVariables, error) {
+	environments, err := s.svc.GetApplicationEnvironmentVariables(ctx, req.Id)
+	if err != nil {
+		return nil, status.Errorf(codes.Internal, "%v", err)
+	}
+	return &pb.ApplicationEnvironmentVariables{
+		Variables: lo.Map(environments, func(env *domain.Environment, i int) *pb.ApplicationEnvironmentVariable {
+			return convertToPBEnvironment(env)
+		}),
+	}, nil
 }
 
-func (s *ApplicationService) SetApplicationEnvironmentVariable(context.Context, *pb.SetApplicationEnvironmentVariableRequest) (*emptypb.Empty, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method SetApplicationEnvironmentVariable not implemented")
+func (s *ApplicationService) SetApplicationEnvironmentVariable(ctx context.Context, req *pb.SetApplicationEnvironmentVariableRequest) (*emptypb.Empty, error) {
+	err := s.svc.SetApplicationEnvironmentVariable(ctx, req.ApplicationId, req.Key, req.Value)
+	if err != nil {
+		return nil, status.Errorf(codes.Internal, "%v", err)
+	}
+	return &emptypb.Empty{}, nil
 }
 
 func (s *ApplicationService) GetApplicationOutput(context.Context, *pb.ApplicationIdRequest) (*pb.ApplicationOutput, error) {
@@ -188,5 +200,12 @@ func convertToPBBuild(build *domain.Build) *pb.Build {
 			Timestamp: timestamppb.New(build.FinishedAt.V),
 			Valid:     build.FinishedAt.Valid,
 		},
+	}
+}
+
+func convertToPBEnvironment(env *domain.Environment) *pb.ApplicationEnvironmentVariable {
+	return &pb.ApplicationEnvironmentVariable{
+		Key:   env.Key,
+		Value: env.Value,
 	}
 }

@@ -32,3 +32,12 @@ func toDomainBuild(build *models.Build) *domain.Build {
 		FinishedAt:    optional.New(build.FinishedAt.Time, build.FinishedAt.Valid),
 	}
 }
+
+func toDomainEnvironment(env *models.Environment) *domain.Environment {
+	return &domain.Environment{
+		ID:            env.ID,
+		ApplicationID: env.ApplicationID,
+		Key:           env.Key,
+		Value:         env.Value,
+	}
+}
