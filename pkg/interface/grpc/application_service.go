@@ -22,6 +22,12 @@ type ApplicationService struct {
 	pb.UnimplementedApplicationServiceServer
 }
 
+func NewApplicationServiceServer(svc usecase.APIServerService) *ApplicationService {
+	return &ApplicationService{
+		svc: svc,
+	}
+}
+
 func getUserID() string {
 	return "tmp-user" // TODO: implement auth
 }

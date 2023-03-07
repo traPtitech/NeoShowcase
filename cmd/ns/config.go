@@ -21,7 +21,10 @@ type Config struct {
 	DB      admindb.Config                     `mapstructure:"db" yaml:"db"`
 	MariaDB dbmanager.MariaDBConfig            `mapstructure:"mariadb" yaml:"mariadb"`
 	MongoDB dbmanager.MongoDBConfig            `mapstructure:"mongodb" yaml:"mongodb"`
-	HTTP    struct {
+	GRPC    struct {
+		Port int `mapstructure:"port" yaml:"port"`
+	} `mapstructure:"grpc" yaml:"grpc"`
+	HTTP struct {
 		Debug bool `mapstructure:"debug" yaml:"debug"`
 		Port  int  `mapstructure:"port" yaml:"port"`
 	} `mapstructure:"http" yaml:"http"`

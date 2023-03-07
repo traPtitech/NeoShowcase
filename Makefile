@@ -78,6 +78,10 @@ ns-ssgen-evans:
 ns-ssgen-rebuild:
 	@docker compose up -d --build ns-ssgen
 
+.PHONY: ns-evans
+ns-evans:
+	@$(EVANS_CMD) --host localhost -p 5009 -r repl
+
 .PHONY: ns-rebuild
 ns-rebuild:
 	@docker compose up -d --build ns

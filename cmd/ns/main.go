@@ -14,6 +14,7 @@ import (
 	"github.com/spf13/viper"
 
 	"github.com/traPtitech/neoshowcase/pkg/domain/web"
+	"github.com/traPtitech/neoshowcase/pkg/interface/grpc"
 	"github.com/traPtitech/neoshowcase/pkg/util/cli"
 )
 
@@ -82,6 +83,7 @@ func main() {
 	viper.SetDefault("builder.insecure", false)
 	viper.SetDefault("ssgen.addr", "")
 	viper.SetDefault("ssgen.insecure", false)
+	viper.SetDefault("grpc.port", 5000)
 	viper.SetDefault("http.port", 10000)
 	viper.SetDefault("http.debug", false)
 	viper.SetDefault("db.host", "127.0.0.1")
@@ -113,6 +115,10 @@ type Router struct {
 
 func (r *Router) SetupRoute(e *echo.Echo) {
 	_ = e.Group("")
+}
+
+func provideGRPCPort(c Config) grpc.TCPListenPort {
+	return grpc.TCPListenPort(c.GRPC.Port)
 }
 
 func provideWebServerConfig(router web.Router) web.Config {
