@@ -54,6 +54,26 @@ swagger-lint:
 golangci-lint:
 	@golangci-lint run
 
+.PHONY: up
+up:
+	@docker compose up -d --build
+
+.PHONY: up-ns
+up-ns:
+	@docker compose up -d --build ns
+
+.PHONY: up-ns-builder
+up-ns-builder:
+	@docker compose up -d --build ns-builder
+
+.PHONY: up-ns-ssgem
+up-ns-ssgen:
+	@docker compose up -d --build ns-ssgen
+
+.PHONY: down
+down:
+	@docker compose down
+
 .PHONY: migrate-up
 migrate-up:
 	@$(SQL_MIGRATE_CMD) up
@@ -62,29 +82,17 @@ migrate-up:
 migrate-down:
 	@$(SQL_MIGRATE_CMD) down
 
-.PHONY: ns-builder-evans
-ns-builder-evans:
-	@$(EVANS_CMD) --host localhost -p 5006 -r repl
-
-.PHONY: ns-builder-rebuild
-ns-builder-rebuild:
-	@docker compose up -d --build ns-builder
-
-.PHONY: ns-ssgen-evans
-ns-ssgen-evans:
-	@$(EVANS_CMD) --host localhost -p 5007 -r repl
-
-.PHONY: ns-ssgen-rebuild
-ns-ssgen-rebuild:
-	@docker compose up -d --build ns-ssgen
-
 .PHONY: ns-evans
 ns-evans:
 	@$(EVANS_CMD) --host localhost -p 5009 -r repl
 
-.PHONY: ns-rebuild
-ns-rebuild:
-	@docker compose up -d --build ns
+.PHONY: ns-builder-evans
+ns-builder-evans:
+	@$(EVANS_CMD) --host localhost -p 5006 -r repl
+
+.PHONY: ns-ssgen-evans
+ns-ssgen-evans:
+	@$(EVANS_CMD) --host localhost -p 5007 -r repl
 
 .PHONY: db-update
 db-update: migrate-up gogen db-gen-docs
