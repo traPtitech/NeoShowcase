@@ -3,7 +3,6 @@ package usecase
 import (
 	"context"
 	"errors"
-	"fmt"
 	"math/rand"
 	"strings"
 
@@ -20,24 +19,20 @@ type ContinuousDeploymentService interface {
 }
 
 type continuousDeploymentService struct {
-	bus            domain.Bus
-	appRepo        repository.ApplicationRepository
-	envRepo        repository.EnvironmentRepository
-	deployer       AppDeployService
-	builder        AppBuildService
-	mariaDBManager domain.MariaDBManager
-	mongoDBManager domain.MongoDBManager
+	bus      domain.Bus
+	appRepo  repository.ApplicationRepository
+	envRepo  repository.EnvironmentRepository
+	deployer AppDeployService
+	builder  AppBuildService
 }
 
-func NewContinuousDeploymentService(bus domain.Bus, appRepo repository.ApplicationRepository, envRepo repository.EnvironmentRepository, deployer AppDeployService, builder AppBuildService, mariaDBManager domain.MariaDBManager, mongoDBManager domain.MongoDBManager) ContinuousDeploymentService {
+func NewContinuousDeploymentService(bus domain.Bus, appRepo repository.ApplicationRepository, envRepo repository.EnvironmentRepository, deployer AppDeployService, builder AppBuildService) ContinuousDeploymentService {
 	return &continuousDeploymentService{
-		bus:            bus,
-		appRepo:        appRepo,
-		envRepo:        envRepo,
-		deployer:       deployer,
-		builder:        builder,
-		mariaDBManager: mariaDBManager,
-		mongoDBManager: mongoDBManager,
+		bus:      bus,
+		appRepo:  appRepo,
+		envRepo:  envRepo,
+		deployer: deployer,
+		builder:  builder,
 	}
 }
 
@@ -97,105 +92,6 @@ func (cd *continuousDeploymentService) handleNewBuildRequest(applicationID strin
 			WithField("applicationID", applicationID).
 			Error("failed to GetApplicationByID")
 		return
-	}
-
-	// TODO dbSettingを設定から取得する
-	dbName := fmt.Sprintf("%s_%s", app.Repository, app.ID)
-	// TODO: アプリケーションの設定の取得
-	applicationNeedsMariaDB := true
-	if applicationNeedsMariaDB {
-		dbExists, err := cd.mariaDBManager.IsExist(ctx, dbName)
-		if err != nil {
-			log.WithError(err).
-				WithField("applicationID", applicationID).
-				Error("failed to check if database exists")
-			return
-		}
-
-		if !dbExists {
-			dbPassword := generateRandomString(32)
-			dbSetting := domain.CreateArgs{
-				Database: dbName,
-				Password: dbPassword,
-			}
-
-			if err := cd.mariaDBManager.Create(ctx, dbSetting); err != nil {
-				log.WithError(err).
-					WithField("Database", dbSetting.Database).
-					WithField("Password", dbSetting.Password)
-				return
-			}
-
-			if err := cd.envRepo.SetEnv(ctx, app.ID, domain.EnvMySQLUserKey, dbName); err != nil {
-				log.WithError(err).
-					WithField("applicationID", app.ID).
-					WithField("Key", domain.EnvMySQLUserKey).
-					WithField("Value", dbName)
-				return
-			}
-			if err := cd.envRepo.SetEnv(ctx, app.ID, domain.EnvMySQLPasswordKey, dbPassword); err != nil {
-				log.WithError(err).
-					WithField("applicationID", app.ID).
-					WithField("Key", domain.EnvMySQLPasswordKey)
-				return
-			}
-			if err := cd.envRepo.SetEnv(ctx, app.ID, domain.EnvMySQLDatabaseKey, dbName); err != nil {
-				log.WithError(err).
-					WithField("applicationID", app.ID).
-					WithField("Key", domain.EnvMySQLDatabaseKey).
-					WithField("Value", dbName)
-				return
-			}
-		}
-	}
-
-	// TODO: アプリケーションの設定の取得
-	applicationNeedsMongoDB := true
-	if applicationNeedsMongoDB {
-		dbExists, err := cd.mongoDBManager.IsExist(ctx, dbName)
-		if err != nil {
-			log.WithError(err).
-				WithField("applicationID", app.ID).
-				WithField("dbName", dbName).
-				Error("failed to check if database exists")
-			return
-		}
-
-		if !dbExists {
-			dbPassword := generateRandomString(32)
-			dbSetting := domain.CreateArgs{
-				Database: dbName,
-				Password: dbPassword,
-			}
-
-			err := cd.mongoDBManager.Create(ctx, dbSetting)
-			if err != nil {
-				log.WithError(err).
-					WithField("Database", dbSetting.Database).
-					WithField("Password", dbSetting.Password)
-			}
-
-			if err := cd.envRepo.SetEnv(ctx, app.ID, domain.EnvMongoDBUserKey, dbName); err != nil {
-				log.WithError(err).
-					WithField("applicationID", app.ID).
-					WithField("Key", domain.EnvMongoDBUserKey).
-					WithField("Value", dbName)
-				return
-			}
-			if err := cd.envRepo.SetEnv(ctx, app.ID, domain.EnvMongoDBPasswordKey, dbPassword); err != nil {
-				log.WithError(err).
-					WithField("applicationID", app.ID).
-					WithField("Key", domain.EnvMongoDBPasswordKey)
-				return
-			}
-			if err := cd.envRepo.SetEnv(ctx, app.ID, domain.EnvMongoDBDatabaseKey, dbName); err != nil {
-				log.WithError(err).
-					WithField("applicationID", app.ID).
-					WithField("Key", domain.EnvMongoDBDatabaseKey).
-					WithField("Value", dbName)
-				return
-			}
-		}
 	}
 
 	_, err = cd.builder.QueueBuild(ctx, app)

@@ -63,7 +63,17 @@ func NewWithDocker(c2 Config) (*Server, error) {
 	dockerImageRegistryString := provideImageRegistry(c2)
 	dockerImageNamePrefixString := provideImagePrefix(c2)
 	appDeployService := usecase.NewAppDeployService(backend, staticSiteServiceClient, dockerImageRegistryString, dockerImageNamePrefixString, db)
-	apiServerService := usecase.NewAPIServerService(applicationRepository, buildRepository, environmentRepository, gitRepositoryRepository, appDeployService, backend)
+	mariaDBConfig := c2.MariaDB
+	mariaDBManager, err := dbmanager.NewMariaDBManager(mariaDBConfig)
+	if err != nil {
+		return nil, err
+	}
+	mongoDBConfig := c2.MongoDB
+	mongoDBManager, err := dbmanager.NewMongoDBManager(mongoDBConfig)
+	if err != nil {
+		return nil, err
+	}
+	apiServerService := usecase.NewAPIServerService(applicationRepository, buildRepository, environmentRepository, gitRepositoryRepository, appDeployService, backend, mariaDBManager, mongoDBManager)
 	applicationService := grpc.NewApplicationServiceServer(apiServerService)
 	router := &Router{}
 	webConfig := provideWebServerConfig(router)
@@ -79,17 +89,7 @@ func NewWithDocker(c2 Config) (*Server, error) {
 		return nil, err
 	}
 	appBuildService := usecase.NewAppBuildService(applicationRepository, buildRepository, builderServiceClient, dockerImageRegistryString, dockerImageNamePrefixString)
-	mariaDBConfig := c2.MariaDB
-	mariaDBManager, err := dbmanager.NewMariaDBManager(mariaDBConfig)
-	if err != nil {
-		return nil, err
-	}
-	mongoDBConfig := c2.MongoDB
-	mongoDBManager, err := dbmanager.NewMongoDBManager(mongoDBConfig)
-	if err != nil {
-		return nil, err
-	}
-	continuousDeploymentService := usecase.NewContinuousDeploymentService(bus, applicationRepository, environmentRepository, appDeployService, appBuildService, mariaDBManager, mongoDBManager)
+	continuousDeploymentService := usecase.NewContinuousDeploymentService(bus, applicationRepository, environmentRepository, appDeployService, appBuildService)
 	mainServer := &Server{
 		grpcServer:          server,
 		grpcPort:            tcpListenPort,
@@ -145,7 +145,17 @@ func NewWithK8S(c2 Config) (*Server, error) {
 	dockerImageRegistryString := provideImageRegistry(c2)
 	dockerImageNamePrefixString := provideImagePrefix(c2)
 	appDeployService := usecase.NewAppDeployService(backend, staticSiteServiceClient, dockerImageRegistryString, dockerImageNamePrefixString, db)
-	apiServerService := usecase.NewAPIServerService(applicationRepository, buildRepository, environmentRepository, gitRepositoryRepository, appDeployService, backend)
+	mariaDBConfig := c2.MariaDB
+	mariaDBManager, err := dbmanager.NewMariaDBManager(mariaDBConfig)
+	if err != nil {
+		return nil, err
+	}
+	mongoDBConfig := c2.MongoDB
+	mongoDBManager, err := dbmanager.NewMongoDBManager(mongoDBConfig)
+	if err != nil {
+		return nil, err
+	}
+	apiServerService := usecase.NewAPIServerService(applicationRepository, buildRepository, environmentRepository, gitRepositoryRepository, appDeployService, backend, mariaDBManager, mongoDBManager)
 	applicationService := grpc.NewApplicationServiceServer(apiServerService)
 	router := &Router{}
 	webConfig := provideWebServerConfig(router)
@@ -161,17 +171,7 @@ func NewWithK8S(c2 Config) (*Server, error) {
 		return nil, err
 	}
 	appBuildService := usecase.NewAppBuildService(applicationRepository, buildRepository, builderServiceClient, dockerImageRegistryString, dockerImageNamePrefixString)
-	mariaDBConfig := c2.MariaDB
-	mariaDBManager, err := dbmanager.NewMariaDBManager(mariaDBConfig)
-	if err != nil {
-		return nil, err
-	}
-	mongoDBConfig := c2.MongoDB
-	mongoDBManager, err := dbmanager.NewMongoDBManager(mongoDBConfig)
-	if err != nil {
-		return nil, err
-	}
-	continuousDeploymentService := usecase.NewContinuousDeploymentService(bus, applicationRepository, environmentRepository, appDeployService, appBuildService, mariaDBManager, mongoDBManager)
+	continuousDeploymentService := usecase.NewContinuousDeploymentService(bus, applicationRepository, environmentRepository, appDeployService, appBuildService)
 	mainServer := &Server{
 		grpcServer:          server,
 		grpcPort:            tcpListenPort,

@@ -46,12 +46,14 @@ type APIServerService interface {
 }
 
 type apiServerService struct {
-	appRepo   repository.ApplicationRepository
-	buildRepo repository.BuildRepository
-	envRepo   repository.EnvironmentRepository
-	gitRepo   repository.GitRepositoryRepository
-	deploySvc AppDeployService
-	backend   domain.Backend
+	appRepo        repository.ApplicationRepository
+	buildRepo      repository.BuildRepository
+	envRepo        repository.EnvironmentRepository
+	gitRepo        repository.GitRepositoryRepository
+	deploySvc      AppDeployService
+	backend        domain.Backend
+	mariaDBManager domain.MariaDBManager
+	mongoDBManager domain.MongoDBManager
 }
 
 func NewAPIServerService(
@@ -61,14 +63,18 @@ func NewAPIServerService(
 	gitRepo repository.GitRepositoryRepository,
 	deploySvc AppDeployService,
 	backend domain.Backend,
+	mariaDBManager domain.MariaDBManager,
+	mongoDBManager domain.MongoDBManager,
 ) APIServerService {
 	return &apiServerService{
-		appRepo:   appRepo,
-		buildRepo: buildRepo,
-		envRepo:   envRepo,
-		gitRepo:   gitRepo,
-		deploySvc: deploySvc,
-		backend:   backend,
+		appRepo:        appRepo,
+		buildRepo:      buildRepo,
+		envRepo:        envRepo,
+		gitRepo:        gitRepo,
+		deploySvc:      deploySvc,
+		backend:        backend,
+		mariaDBManager: mariaDBManager,
+		mongoDBManager: mongoDBManager,
 	}
 }
 
@@ -113,7 +119,65 @@ func (s *apiServerService) CreateApplication(ctx context.Context, args CreateApp
 		return nil, err
 	}
 
+	err = s.createApplicationDatabase(ctx, application)
+	if err != nil {
+		return nil, err
+	}
+
 	return application, nil
+}
+
+func (s *apiServerService) createApplicationDatabase(ctx context.Context, app *domain.Application) error {
+	dbName := fmt.Sprintf("%s_%s", app.Repository, app.ID)
+
+	// TODO: アプリケーションの設定の取得
+	applicationNeedsMariaDB := true
+	if applicationNeedsMariaDB {
+		dbPassword := generateRandomString(32)
+		dbSetting := domain.CreateArgs{
+			Database: dbName,
+			Password: dbPassword,
+		}
+		if err := s.mariaDBManager.Create(ctx, dbSetting); err != nil {
+			return err
+		}
+
+		if err := s.envRepo.SetEnv(ctx, app.ID, domain.EnvMySQLUserKey, dbName); err != nil {
+			return err
+		}
+		if err := s.envRepo.SetEnv(ctx, app.ID, domain.EnvMySQLPasswordKey, dbPassword); err != nil {
+			return err
+		}
+		if err := s.envRepo.SetEnv(ctx, app.ID, domain.EnvMySQLDatabaseKey, dbName); err != nil {
+			return err
+		}
+	}
+
+	// TODO: アプリケーションの設定の取得
+	applicationNeedsMongoDB := true
+	if applicationNeedsMongoDB {
+		dbPassword := generateRandomString(32)
+		dbSetting := domain.CreateArgs{
+			Database: dbName,
+			Password: dbPassword,
+		}
+		err := s.mongoDBManager.Create(ctx, dbSetting)
+		if err != nil {
+			return err
+		}
+
+		if err := s.envRepo.SetEnv(ctx, app.ID, domain.EnvMongoDBUserKey, dbName); err != nil {
+			return err
+		}
+		if err := s.envRepo.SetEnv(ctx, app.ID, domain.EnvMongoDBPasswordKey, dbPassword); err != nil {
+			return err
+		}
+		if err := s.envRepo.SetEnv(ctx, app.ID, domain.EnvMongoDBDatabaseKey, dbName); err != nil {
+			return err
+		}
+	}
+
+	return nil
 }
 
 func (s *apiServerService) GetApplication(ctx context.Context, id string) (*domain.Application, error) {
@@ -122,6 +186,17 @@ func (s *apiServerService) GetApplication(ctx context.Context, id string) (*doma
 }
 
 func (s *apiServerService) DeleteApplication(ctx context.Context, id string) error {
+	// TODO implement me
+	panic("implement me")
+	// delete artifacts
+	// delete builds
+	// delete websites
+	// delete environments
+	// delete owners
+	// s.deleteApplicationDatabase()
+}
+
+func (s *apiServerService) deleteApplicationDatabase(ctx context.Context, app *domain.Application) error {
 	// TODO implement me
 	panic("implement me")
 }
