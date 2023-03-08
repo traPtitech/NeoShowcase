@@ -15,6 +15,7 @@ const (
 )
 
 type Config struct {
+	Debug   bool                               `mapstructure:"debug" yaml:"debug"`
 	Mode    string                             `mapstructure:"mode" yaml:"mode"`
 	Builder grpc.BuilderServiceClientConfig    `mapstructure:"builder" yaml:"builder"`
 	SSGen   grpc.StaticSiteServiceClientConfig `mapstructure:"ssgen" yaml:"ssgen"`

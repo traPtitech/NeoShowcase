@@ -6,6 +6,7 @@ services:
     command: run --debug --loglevel=trace
     restart: always
     environment:
+      NS_APISERVER_DEBUG: "true"
       NS_APISERVER_DB_HOST: "mysql"
       NS_APISERVER_MARIADB_HOST: "mysql"
       NS_APISERVER_MONGODB_HOST: "mongo"

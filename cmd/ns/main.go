@@ -12,6 +12,7 @@ import (
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
+	"github.com/volatiletech/sqlboiler/v4/boil"
 
 	"github.com/traPtitech/neoshowcase/pkg/domain/web"
 	"github.com/traPtitech/neoshowcase/pkg/interface/grpc"
@@ -42,6 +43,10 @@ func runCommand() *cobra.Command {
 			service, err := New(c)
 			if err != nil {
 				return err
+			}
+
+			if c.Debug {
+				boil.DebugMode = true
 			}
 
 			// TODO: context
@@ -76,6 +81,7 @@ func main() {
 	cli.SetupDebugFlag(flags)
 	cli.SetupLogLevelFlag(flags)
 
+	viper.SetDefault("debug", false)
 	viper.SetDefault("mode", "docker")
 	viper.SetDefault("image.registry", "")
 	viper.SetDefault("image.namePrefix", "ns-apps/")
