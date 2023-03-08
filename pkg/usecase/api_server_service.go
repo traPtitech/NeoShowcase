@@ -11,7 +11,8 @@ import (
 )
 
 var (
-	ErrNotFound = errors.New("not found")
+	ErrNotFound      = errors.New("not found")
+	ErrAlreadyExists = errors.New("already exists")
 )
 
 func handleRepoError[T any](entity T, err error) (T, error) {
@@ -100,6 +101,12 @@ func (s *apiServerService) CreateApplication(ctx context.Context, args CreateApp
 		BranchName:   args.BranchName,
 		BuildType:    args.BuildType,
 	})
+	if err != nil {
+		if err == repository.ErrDuplicate {
+			return nil, ErrAlreadyExists
+		}
+		return nil, err
+	}
 
 	err = s.appRepo.RegisterApplicationOwner(ctx, application.ID, args.UserID)
 	if err != nil {

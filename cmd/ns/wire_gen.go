@@ -32,24 +32,17 @@ import (
 // Injectors from wire.go:
 
 func NewWithDocker(c2 Config) (*Server, error) {
-	router := &Router{}
-	config := provideWebServerConfig(router)
-	server := web.NewServer(config)
-	admindbConfig := c2.DB
-	db, err := admindb.New(admindbConfig)
+	server := grpc.NewServer()
+	tcpListenPort := provideGRPCPort(c2)
+	config := c2.DB
+	db, err := admindb.New(config)
 	if err != nil {
 		return nil, err
 	}
-	builderServiceClientConfig := c2.Builder
-	builderServiceClientConn, err := grpc.NewBuilderServiceClientConn(builderServiceClientConfig)
-	if err != nil {
-		return nil, err
-	}
-	staticSiteServiceClientConfig := c2.SSGen
-	staticSiteServiceClientConn, err := grpc.NewStaticSiteServiceClientConn(staticSiteServiceClientConfig)
-	if err != nil {
-		return nil, err
-	}
+	applicationRepository := repository.NewApplicationRepository(db)
+	buildRepository := repository.NewBuildRepository(db)
+	environmentRepository := repository.NewEnvironmentRepository(db)
+	gitRepositoryRepository := repository.NewGitRepositoryRepository(db)
 	client, err := docker.NewClientFromEnv()
 	if err != nil {
 		return nil, err
@@ -61,18 +54,30 @@ func NewWithDocker(c2 Config) (*Server, error) {
 	if err != nil {
 		return nil, err
 	}
+	staticSiteServiceClientConfig := c2.SSGen
+	staticSiteServiceClientConn, err := grpc.NewStaticSiteServiceClientConn(staticSiteServiceClientConfig)
+	if err != nil {
+		return nil, err
+	}
+	staticSiteServiceClient := grpc.NewStaticSiteServiceClient(staticSiteServiceClientConn)
+	dockerImageRegistryString := provideImageRegistry(c2)
+	dockerImageNamePrefixString := provideImagePrefix(c2)
+	appDeployService := usecase.NewAppDeployService(backend, staticSiteServiceClient, dockerImageRegistryString, dockerImageNamePrefixString, db)
+	apiServerService := usecase.NewAPIServerService(applicationRepository, buildRepository, environmentRepository, gitRepositoryRepository, appDeployService, backend)
+	applicationService := grpc.NewApplicationServiceServer(apiServerService)
+	router := &Router{}
+	webConfig := provideWebServerConfig(router)
+	webServer := web.NewServer(webConfig)
+	builderServiceClientConfig := c2.Builder
+	builderServiceClientConn, err := grpc.NewBuilderServiceClientConn(builderServiceClientConfig)
+	if err != nil {
+		return nil, err
+	}
 	builderServiceClient := grpc.NewBuilderServiceClient(builderServiceClientConn)
 	builderEventsBroker, err := broker.NewBuilderEventsBroker(builderServiceClient, bus)
 	if err != nil {
 		return nil, err
 	}
-	applicationRepository := repository.NewApplicationRepository(db)
-	environmentRepository := repository.NewEnvironmentRepository(db)
-	staticSiteServiceClient := grpc.NewStaticSiteServiceClient(staticSiteServiceClientConn)
-	dockerImageRegistryString := provideImageRegistry(c2)
-	dockerImageNamePrefixString := provideImagePrefix(c2)
-	appDeployService := usecase.NewAppDeployService(backend, staticSiteServiceClient, dockerImageRegistryString, dockerImageNamePrefixString, db)
-	buildRepository := repository.NewBuildRepository(db)
 	appBuildService := usecase.NewAppBuildService(applicationRepository, buildRepository, builderServiceClient, dockerImageRegistryString, dockerImageNamePrefixString)
 	mariaDBConfig := c2.MariaDB
 	mariaDBManager, err := dbmanager.NewMariaDBManager(mariaDBConfig)
@@ -86,7 +91,10 @@ func NewWithDocker(c2 Config) (*Server, error) {
 	}
 	continuousDeploymentService := usecase.NewContinuousDeploymentService(bus, applicationRepository, environmentRepository, appDeployService, appBuildService, mariaDBManager, mongoDBManager)
 	mainServer := &Server{
-		webserver:           server,
+		grpcServer:          server,
+		grpcPort:            tcpListenPort,
+		appService:          applicationService,
+		webserver:           webServer,
 		db:                  db,
 		builderConn:         builderServiceClientConn,
 		ssgenConn:           staticSiteServiceClientConn,
@@ -103,24 +111,17 @@ var (
 )
 
 func NewWithK8S(c2 Config) (*Server, error) {
-	router := &Router{}
-	config := provideWebServerConfig(router)
-	server := web.NewServer(config)
-	admindbConfig := c2.DB
-	db, err := admindb.New(admindbConfig)
+	server := grpc.NewServer()
+	tcpListenPort := provideGRPCPort(c2)
+	config := c2.DB
+	db, err := admindb.New(config)
 	if err != nil {
 		return nil, err
 	}
-	builderServiceClientConfig := c2.Builder
-	builderServiceClientConn, err := grpc.NewBuilderServiceClientConn(builderServiceClientConfig)
-	if err != nil {
-		return nil, err
-	}
-	staticSiteServiceClientConfig := c2.SSGen
-	staticSiteServiceClientConn, err := grpc.NewStaticSiteServiceClientConn(staticSiteServiceClientConfig)
-	if err != nil {
-		return nil, err
-	}
+	applicationRepository := repository.NewApplicationRepository(db)
+	buildRepository := repository.NewBuildRepository(db)
+	environmentRepository := repository.NewEnvironmentRepository(db)
+	gitRepositoryRepository := repository.NewGitRepositoryRepository(db)
 	hubHub := hub.New()
 	bus := eventbus.NewLocal(hubHub)
 	restConfig, err := rest.InClusterConfig()
@@ -135,18 +136,30 @@ func NewWithK8S(c2 Config) (*Server, error) {
 	if err != nil {
 		return nil, err
 	}
+	staticSiteServiceClientConfig := c2.SSGen
+	staticSiteServiceClientConn, err := grpc.NewStaticSiteServiceClientConn(staticSiteServiceClientConfig)
+	if err != nil {
+		return nil, err
+	}
+	staticSiteServiceClient := grpc.NewStaticSiteServiceClient(staticSiteServiceClientConn)
+	dockerImageRegistryString := provideImageRegistry(c2)
+	dockerImageNamePrefixString := provideImagePrefix(c2)
+	appDeployService := usecase.NewAppDeployService(backend, staticSiteServiceClient, dockerImageRegistryString, dockerImageNamePrefixString, db)
+	apiServerService := usecase.NewAPIServerService(applicationRepository, buildRepository, environmentRepository, gitRepositoryRepository, appDeployService, backend)
+	applicationService := grpc.NewApplicationServiceServer(apiServerService)
+	router := &Router{}
+	webConfig := provideWebServerConfig(router)
+	webServer := web.NewServer(webConfig)
+	builderServiceClientConfig := c2.Builder
+	builderServiceClientConn, err := grpc.NewBuilderServiceClientConn(builderServiceClientConfig)
+	if err != nil {
+		return nil, err
+	}
 	builderServiceClient := grpc.NewBuilderServiceClient(builderServiceClientConn)
 	builderEventsBroker, err := broker.NewBuilderEventsBroker(builderServiceClient, bus)
 	if err != nil {
 		return nil, err
 	}
-	applicationRepository := repository.NewApplicationRepository(db)
-	environmentRepository := repository.NewEnvironmentRepository(db)
-	staticSiteServiceClient := grpc.NewStaticSiteServiceClient(staticSiteServiceClientConn)
-	dockerImageRegistryString := provideImageRegistry(c2)
-	dockerImageNamePrefixString := provideImagePrefix(c2)
-	appDeployService := usecase.NewAppDeployService(backend, staticSiteServiceClient, dockerImageRegistryString, dockerImageNamePrefixString, db)
-	buildRepository := repository.NewBuildRepository(db)
 	appBuildService := usecase.NewAppBuildService(applicationRepository, buildRepository, builderServiceClient, dockerImageRegistryString, dockerImageNamePrefixString)
 	mariaDBConfig := c2.MariaDB
 	mariaDBManager, err := dbmanager.NewMariaDBManager(mariaDBConfig)
@@ -160,7 +173,10 @@ func NewWithK8S(c2 Config) (*Server, error) {
 	}
 	continuousDeploymentService := usecase.NewContinuousDeploymentService(bus, applicationRepository, environmentRepository, appDeployService, appBuildService, mariaDBManager, mongoDBManager)
 	mainServer := &Server{
-		webserver:           server,
+		grpcServer:          server,
+		grpcPort:            tcpListenPort,
+		appService:          applicationService,
+		webserver:           webServer,
 		db:                  db,
 		builderConn:         builderServiceClientConn,
 		ssgenConn:           staticSiteServiceClientConn,
@@ -174,7 +190,8 @@ func NewWithK8S(c2 Config) (*Server, error) {
 
 // wire.go:
 
-var commonSet = wire.NewSet(web.NewServer, hub.New, eventbus.NewLocal, admindb.New, dbmanager.NewMariaDBManager, dbmanager.NewMongoDBManager, repository.NewApplicationRepository, repository.NewGitRepositoryRepository, repository.NewEnvironmentRepository, repository.NewBuildRepository, grpc.NewBuilderServiceClientConn, grpc.NewStaticSiteServiceClientConn, grpc.NewBuilderServiceClient, grpc.NewStaticSiteServiceClient, broker.NewBuilderEventsBroker, usecase.NewAppBuildService, usecase.NewAppDeployService, usecase.NewContinuousDeploymentService, handlerSet,
+var commonSet = wire.NewSet(web.NewServer, hub.New, eventbus.NewLocal, admindb.New, dbmanager.NewMariaDBManager, dbmanager.NewMongoDBManager, repository.NewApplicationRepository, repository.NewGitRepositoryRepository, repository.NewEnvironmentRepository, repository.NewBuildRepository, grpc.NewServer, grpc.NewApplicationServiceServer, grpc.NewBuilderServiceClientConn, grpc.NewStaticSiteServiceClientConn, grpc.NewBuilderServiceClient, grpc.NewStaticSiteServiceClient, broker.NewBuilderEventsBroker, usecase.NewAPIServerService, usecase.NewAppBuildService, usecase.NewAppDeployService, usecase.NewContinuousDeploymentService, handlerSet,
+	provideGRPCPort,
 	provideWebServerConfig,
 	provideImagePrefix,
 	provideImageRegistry, wire.FieldsOf(new(Config), "Builder", "SSGen", "DB", "MariaDB", "MongoDB"), wire.Struct(new(Router), "*"), wire.Bind(new(web.Router), new(*Router)), wire.Struct(new(Server), "*"),

@@ -43,8 +43,15 @@ type CreateApplicationArgs struct {
 func (r *applicationRepository) GetApplicationsByUserID(ctx context.Context, userID string) ([]*domain.Application, error) {
 	applications, err := models.Applications(
 		qm.Load(models.ApplicationRels.Repository),
-		qm.Load(models.ApplicationRels.Users),
-		models.UserWhere.ID.EQ(userID),
+		qm.InnerJoin(fmt.Sprintf(
+			"%s ON %s.%s = %s.%s",
+			models.TableNames.Owners,
+			models.TableNames.Owners,
+			"application_id",
+			models.TableNames.Applications,
+			models.ApplicationColumns.ID,
+		)),
+		qm.Where(fmt.Sprintf("%s.%s = ?", models.TableNames.Owners, "user_id"), userID),
 	).All(ctx, r.db)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get applications: %w", err)

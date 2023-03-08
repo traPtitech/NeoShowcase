@@ -22,6 +22,12 @@ type ApplicationService struct {
 	pb.UnimplementedApplicationServiceServer
 }
 
+func NewApplicationServiceServer(svc usecase.APIServerService) *ApplicationService {
+	return &ApplicationService{
+		svc: svc,
+	}
+}
+
 func getUserID() string {
 	return "tmp-user" // TODO: implement auth
 }
@@ -45,8 +51,13 @@ func (s *ApplicationService) CreateApplication(ctx context.Context, req *pb.Crea
 		BranchName:    req.BranchName,
 		BuildType:     convertFromPBBuildType(req.BuildType),
 	})
-	if err != nil { // TODO: handle possible user errors
-		return nil, status.Errorf(codes.Internal, "%v", err)
+	if err != nil {
+		switch err {
+		case usecase.ErrAlreadyExists:
+			return nil, status.Errorf(codes.AlreadyExists, "app already exists")
+		default:
+			return nil, status.Errorf(codes.Internal, "%v", err)
+		}
 	}
 	return convertToPBApplication(application), nil
 }

@@ -12,8 +12,10 @@ import (
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
+	"github.com/volatiletech/sqlboiler/v4/boil"
 
 	"github.com/traPtitech/neoshowcase/pkg/domain/web"
+	"github.com/traPtitech/neoshowcase/pkg/interface/grpc"
 	"github.com/traPtitech/neoshowcase/pkg/util/cli"
 )
 
@@ -41,6 +43,10 @@ func runCommand() *cobra.Command {
 			service, err := New(c)
 			if err != nil {
 				return err
+			}
+
+			if c.Debug {
+				boil.DebugMode = true
 			}
 
 			// TODO: context
@@ -75,6 +81,7 @@ func main() {
 	cli.SetupDebugFlag(flags)
 	cli.SetupLogLevelFlag(flags)
 
+	viper.SetDefault("debug", false)
 	viper.SetDefault("mode", "docker")
 	viper.SetDefault("image.registry", "")
 	viper.SetDefault("image.namePrefix", "ns-apps/")
@@ -82,6 +89,7 @@ func main() {
 	viper.SetDefault("builder.insecure", false)
 	viper.SetDefault("ssgen.addr", "")
 	viper.SetDefault("ssgen.insecure", false)
+	viper.SetDefault("grpc.port", 5000)
 	viper.SetDefault("http.port", 10000)
 	viper.SetDefault("http.debug", false)
 	viper.SetDefault("db.host", "127.0.0.1")
@@ -113,6 +121,10 @@ type Router struct {
 
 func (r *Router) SetupRoute(e *echo.Echo) {
 	_ = e.Group("")
+}
+
+func provideGRPCPort(c Config) grpc.TCPListenPort {
+	return grpc.TCPListenPort(c.GRPC.Port)
 }
 
 func provideWebServerConfig(router web.Router) web.Config {

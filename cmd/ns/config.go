@@ -15,13 +15,17 @@ const (
 )
 
 type Config struct {
+	Debug   bool                               `mapstructure:"debug" yaml:"debug"`
 	Mode    string                             `mapstructure:"mode" yaml:"mode"`
 	Builder grpc.BuilderServiceClientConfig    `mapstructure:"builder" yaml:"builder"`
 	SSGen   grpc.StaticSiteServiceClientConfig `mapstructure:"ssgen" yaml:"ssgen"`
 	DB      admindb.Config                     `mapstructure:"db" yaml:"db"`
 	MariaDB dbmanager.MariaDBConfig            `mapstructure:"mariadb" yaml:"mariadb"`
 	MongoDB dbmanager.MongoDBConfig            `mapstructure:"mongodb" yaml:"mongodb"`
-	HTTP    struct {
+	GRPC    struct {
+		Port int `mapstructure:"port" yaml:"port"`
+	} `mapstructure:"grpc" yaml:"grpc"`
+	HTTP struct {
 		Debug bool `mapstructure:"debug" yaml:"debug"`
 		Port  int  `mapstructure:"port" yaml:"port"`
 	} `mapstructure:"http" yaml:"http"`

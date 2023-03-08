@@ -6,6 +6,7 @@ services:
     command: run --debug --loglevel=trace
     restart: always
     environment:
+      NS_APISERVER_DEBUG: "true"
       NS_APISERVER_DB_HOST: "mysql"
       NS_APISERVER_MARIADB_HOST: "mysql"
       NS_APISERVER_MONGODB_HOST: "mongo"
@@ -13,6 +14,7 @@ services:
       NS_APISERVER_BUILDER_INSECURE: "true"
       NS_APISERVER_SSGEN_ADDR: "ns-ssgen:10000"
       NS_APISERVER_SSGEN_INSECURE: "true"
+      NS_APISERVER_GRPC_PORT: "5000"
       NS_APISERVER_HTTP_PORT: "8080"
       NS_APISERVER_HTTP_DEBUG: "true"
       NS_APISERVER_IMAGE_REGISTRY: "localhost:5000"
@@ -20,10 +22,14 @@ services:
       - /var/run/docker.sock:/var/run/docker.sock
       - ./local-dev/neoshowcase:/data
       - ./local-dev/traefik:/opt/traefik/conf
+    ports:
+      - "5009:5000"
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.ns_admin.rule=Host(`local.tokyotech.org`)"
       - "traefik.http.services.ns_admin.loadbalancer.server.port=8080"
+      - "traefik.http.routers.ns_grpc.rule=Host(`grpc.local.tokyotech.org`)"
+      - "traefik.http.services.ns_grpc.loadbalancer.server.port=5000"
     depends_on:
       - mysql
     networks:
