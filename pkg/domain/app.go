@@ -1,6 +1,7 @@
 package domain
 
 import (
+	"fmt"
 	"net/url"
 	"strings"
 	"time"
@@ -9,11 +10,53 @@ import (
 	"github.com/traPtitech/neoshowcase/pkg/util/optional"
 )
 
+type ApplicationState int
+
+const (
+	ApplicationStateIdle ApplicationState = iota
+	ApplicationStateStarting
+	ApplicationStateRunning
+	ApplicationStateErrored
+)
+
+func (s ApplicationState) String() string {
+	switch s {
+	case ApplicationStateIdle:
+		return "IDLE"
+	case ApplicationStateStarting:
+		return "STARTING"
+	case ApplicationStateRunning:
+		return "RUNNING"
+	case ApplicationStateErrored:
+		return "ERRORED"
+	default:
+		return ""
+	}
+}
+
+func ApplicationStateFromString(str string) ApplicationState {
+	switch str {
+	case "IDLE":
+		return ApplicationStateIdle
+	case "STARTING":
+		return ApplicationStateStarting
+	case "RUNNING":
+		return ApplicationStateRunning
+	case "ERRORED":
+		return ApplicationStateErrored
+	default:
+		panic(fmt.Sprintf("unknown application state: %v", str))
+	}
+}
+
 type Application struct {
-	ID         string
-	Repository Repository
-	BranchName string
-	BuildType  builder.BuildType
+	ID            string
+	Repository    Repository
+	BranchName    string
+	BuildType     builder.BuildType
+	State         ApplicationState
+	CurrentCommit string
+	WantCommit    string
 }
 
 type Artifact struct {
@@ -24,6 +67,7 @@ type Artifact struct {
 
 type Build struct {
 	ID            string
+	Commit        string
 	Status        builder.BuildStatus
 	ApplicationID string
 	StartedAt     time.Time

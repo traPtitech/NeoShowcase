@@ -8,6 +8,7 @@ import (
 	"github.com/traPtitech/neoshowcase/pkg/domain"
 	"github.com/traPtitech/neoshowcase/pkg/domain/builder"
 	"github.com/traPtitech/neoshowcase/pkg/interface/repository"
+	"github.com/traPtitech/neoshowcase/pkg/util/random"
 )
 
 var (
@@ -133,7 +134,7 @@ func (s *apiServerService) createApplicationDatabase(ctx context.Context, app *d
 	// TODO: アプリケーションの設定の取得
 	applicationNeedsMariaDB := true
 	if applicationNeedsMariaDB {
-		dbPassword := generateRandomString(32)
+		dbPassword := random.SecureGeneratePassword(32)
 		dbSetting := domain.CreateArgs{
 			Database: dbName,
 			Password: dbPassword,
@@ -156,7 +157,7 @@ func (s *apiServerService) createApplicationDatabase(ctx context.Context, app *d
 	// TODO: アプリケーションの設定の取得
 	applicationNeedsMongoDB := true
 	if applicationNeedsMongoDB {
-		dbPassword := generateRandomString(32)
+		dbPassword := random.SecureGeneratePassword(32)
 		dbSetting := domain.CreateArgs{
 			Database: dbName,
 			Password: dbPassword,
@@ -226,13 +227,13 @@ func (s *apiServerService) StartApplication(ctx context.Context, id string) erro
 		}
 		return err
 	}
-	return s.deploySvc.QueueDeployment(ctx, id, build.ID)
+	return s.deploySvc.QueueDeployment(ctx, id, build.ID) // TODO: call cd service instead
 }
 
 func (s *apiServerService) RestartApplication(ctx context.Context, id string) error {
-	return s.backend.RestartContainer(ctx, id)
+	return s.backend.RestartContainer(ctx, id) // TODO: call cd service instead
 }
 
 func (s *apiServerService) StopApplication(ctx context.Context, id string) error {
-	return s.backend.DestroyContainer(ctx, id)
+	return s.backend.DestroyContainer(ctx, id) // TODO: call cd service instead
 }

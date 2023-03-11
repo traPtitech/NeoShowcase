@@ -89,7 +89,7 @@ func NewWithDocker(c2 Config) (*Server, error) {
 		return nil, err
 	}
 	appBuildService := usecase.NewAppBuildService(applicationRepository, buildRepository, builderServiceClient, dockerImageRegistryString, dockerImageNamePrefixString)
-	continuousDeploymentService := usecase.NewContinuousDeploymentService(bus, applicationRepository, environmentRepository, appDeployService, appBuildService)
+	continuousDeploymentService := usecase.NewContinuousDeploymentService(bus, applicationRepository, buildRepository, environmentRepository, appDeployService, appBuildService)
 	mainServer := &Server{
 		grpcServer:          server,
 		grpcPort:            tcpListenPort,
@@ -171,7 +171,7 @@ func NewWithK8S(c2 Config) (*Server, error) {
 		return nil, err
 	}
 	appBuildService := usecase.NewAppBuildService(applicationRepository, buildRepository, builderServiceClient, dockerImageRegistryString, dockerImageNamePrefixString)
-	continuousDeploymentService := usecase.NewContinuousDeploymentService(bus, applicationRepository, environmentRepository, appDeployService, appBuildService)
+	continuousDeploymentService := usecase.NewContinuousDeploymentService(bus, applicationRepository, buildRepository, environmentRepository, appDeployService, appBuildService)
 	mainServer := &Server{
 		grpcServer:          server,
 		grpcPort:            tcpListenPort,

@@ -12,6 +12,7 @@ import "testing"
 // It does NOT run each operation group in parallel.
 // Separating the tests thusly grants avoidance of Postgres deadlocks.
 func TestParent(t *testing.T) {
+	t.Run("ApplicationStates", testApplicationStates)
 	t.Run("Applications", testApplications)
 	t.Run("Artifacts", testArtifacts)
 	t.Run("AvailableDomains", testAvailableDomains)
@@ -24,6 +25,7 @@ func TestParent(t *testing.T) {
 }
 
 func TestDelete(t *testing.T) {
+	t.Run("ApplicationStates", testApplicationStatesDelete)
 	t.Run("Applications", testApplicationsDelete)
 	t.Run("Artifacts", testArtifactsDelete)
 	t.Run("AvailableDomains", testAvailableDomainsDelete)
@@ -36,6 +38,7 @@ func TestDelete(t *testing.T) {
 }
 
 func TestQueryDeleteAll(t *testing.T) {
+	t.Run("ApplicationStates", testApplicationStatesQueryDeleteAll)
 	t.Run("Applications", testApplicationsQueryDeleteAll)
 	t.Run("Artifacts", testArtifactsQueryDeleteAll)
 	t.Run("AvailableDomains", testAvailableDomainsQueryDeleteAll)
@@ -48,6 +51,7 @@ func TestQueryDeleteAll(t *testing.T) {
 }
 
 func TestSliceDeleteAll(t *testing.T) {
+	t.Run("ApplicationStates", testApplicationStatesSliceDeleteAll)
 	t.Run("Applications", testApplicationsSliceDeleteAll)
 	t.Run("Artifacts", testArtifactsSliceDeleteAll)
 	t.Run("AvailableDomains", testAvailableDomainsSliceDeleteAll)
@@ -60,6 +64,7 @@ func TestSliceDeleteAll(t *testing.T) {
 }
 
 func TestExists(t *testing.T) {
+	t.Run("ApplicationStates", testApplicationStatesExists)
 	t.Run("Applications", testApplicationsExists)
 	t.Run("Artifacts", testArtifactsExists)
 	t.Run("AvailableDomains", testAvailableDomainsExists)
@@ -72,6 +77,7 @@ func TestExists(t *testing.T) {
 }
 
 func TestFind(t *testing.T) {
+	t.Run("ApplicationStates", testApplicationStatesFind)
 	t.Run("Applications", testApplicationsFind)
 	t.Run("Artifacts", testArtifactsFind)
 	t.Run("AvailableDomains", testAvailableDomainsFind)
@@ -84,6 +90,7 @@ func TestFind(t *testing.T) {
 }
 
 func TestBind(t *testing.T) {
+	t.Run("ApplicationStates", testApplicationStatesBind)
 	t.Run("Applications", testApplicationsBind)
 	t.Run("Artifacts", testArtifactsBind)
 	t.Run("AvailableDomains", testAvailableDomainsBind)
@@ -96,6 +103,7 @@ func TestBind(t *testing.T) {
 }
 
 func TestOne(t *testing.T) {
+	t.Run("ApplicationStates", testApplicationStatesOne)
 	t.Run("Applications", testApplicationsOne)
 	t.Run("Artifacts", testArtifactsOne)
 	t.Run("AvailableDomains", testAvailableDomainsOne)
@@ -108,6 +116,7 @@ func TestOne(t *testing.T) {
 }
 
 func TestAll(t *testing.T) {
+	t.Run("ApplicationStates", testApplicationStatesAll)
 	t.Run("Applications", testApplicationsAll)
 	t.Run("Artifacts", testArtifactsAll)
 	t.Run("AvailableDomains", testAvailableDomainsAll)
@@ -120,6 +129,7 @@ func TestAll(t *testing.T) {
 }
 
 func TestCount(t *testing.T) {
+	t.Run("ApplicationStates", testApplicationStatesCount)
 	t.Run("Applications", testApplicationsCount)
 	t.Run("Artifacts", testArtifactsCount)
 	t.Run("AvailableDomains", testAvailableDomainsCount)
@@ -132,6 +142,7 @@ func TestCount(t *testing.T) {
 }
 
 func TestHooks(t *testing.T) {
+	t.Run("ApplicationStates", testApplicationStatesHooks)
 	t.Run("Applications", testApplicationsHooks)
 	t.Run("Artifacts", testArtifactsHooks)
 	t.Run("AvailableDomains", testAvailableDomainsHooks)
@@ -144,6 +155,8 @@ func TestHooks(t *testing.T) {
 }
 
 func TestInsert(t *testing.T) {
+	t.Run("ApplicationStates", testApplicationStatesInsert)
+	t.Run("ApplicationStates", testApplicationStatesInsertWhitelist)
 	t.Run("Applications", testApplicationsInsert)
 	t.Run("Applications", testApplicationsInsertWhitelist)
 	t.Run("Artifacts", testArtifactsInsert)
@@ -168,6 +181,7 @@ func TestInsert(t *testing.T) {
 // or deadlocks can occur.
 func TestToOne(t *testing.T) {
 	t.Run("ApplicationToRepositoryUsingRepository", testApplicationToOneRepositoryUsingRepository)
+	t.Run("ApplicationToApplicationStateUsingStateApplicationState", testApplicationToOneApplicationStateUsingStateApplicationState)
 	t.Run("ArtifactToBuildUsingBuild", testArtifactToOneBuildUsingBuild)
 	t.Run("BuildToApplicationUsingApplication", testBuildToOneApplicationUsingApplication)
 	t.Run("BuildToBuildStatusUsingStatusBuildStatus", testBuildToOneBuildStatusUsingStatusBuildStatus)
@@ -185,6 +199,7 @@ func TestOneToOne(t *testing.T) {
 // TestToMany tests cannot be run in parallel
 // or deadlocks can occur.
 func TestToMany(t *testing.T) {
+	t.Run("ApplicationStateToStateApplications", testApplicationStateToManyStateApplications)
 	t.Run("ApplicationToBuilds", testApplicationToManyBuilds)
 	t.Run("ApplicationToEnvironments", testApplicationToManyEnvironments)
 	t.Run("ApplicationToUsers", testApplicationToManyUsers)
@@ -197,6 +212,7 @@ func TestToMany(t *testing.T) {
 // or deadlocks can occur.
 func TestToOneSet(t *testing.T) {
 	t.Run("ApplicationToRepositoryUsingApplications", testApplicationToOneSetOpRepositoryUsingRepository)
+	t.Run("ApplicationToApplicationStateUsingStateApplications", testApplicationToOneSetOpApplicationStateUsingStateApplicationState)
 	t.Run("ArtifactToBuildUsingArtifact", testArtifactToOneSetOpBuildUsingBuild)
 	t.Run("BuildToApplicationUsingBuilds", testBuildToOneSetOpApplicationUsingApplication)
 	t.Run("BuildToBuildStatusUsingStatusBuilds", testBuildToOneSetOpBuildStatusUsingStatusBuildStatus)
@@ -222,6 +238,7 @@ func TestOneToOneRemove(t *testing.T) {}
 // TestToManyAdd tests cannot be run in parallel
 // or deadlocks can occur.
 func TestToManyAdd(t *testing.T) {
+	t.Run("ApplicationStateToStateApplications", testApplicationStateToManyAddOpStateApplications)
 	t.Run("ApplicationToBuilds", testApplicationToManyAddOpBuilds)
 	t.Run("ApplicationToEnvironments", testApplicationToManyAddOpEnvironments)
 	t.Run("ApplicationToUsers", testApplicationToManyAddOpUsers)
@@ -245,6 +262,7 @@ func TestToManyRemove(t *testing.T) {
 }
 
 func TestReload(t *testing.T) {
+	t.Run("ApplicationStates", testApplicationStatesReload)
 	t.Run("Applications", testApplicationsReload)
 	t.Run("Artifacts", testArtifactsReload)
 	t.Run("AvailableDomains", testAvailableDomainsReload)
@@ -257,6 +275,7 @@ func TestReload(t *testing.T) {
 }
 
 func TestReloadAll(t *testing.T) {
+	t.Run("ApplicationStates", testApplicationStatesReloadAll)
 	t.Run("Applications", testApplicationsReloadAll)
 	t.Run("Artifacts", testArtifactsReloadAll)
 	t.Run("AvailableDomains", testAvailableDomainsReloadAll)
@@ -269,6 +288,7 @@ func TestReloadAll(t *testing.T) {
 }
 
 func TestSelect(t *testing.T) {
+	t.Run("ApplicationStates", testApplicationStatesSelect)
 	t.Run("Applications", testApplicationsSelect)
 	t.Run("Artifacts", testArtifactsSelect)
 	t.Run("AvailableDomains", testAvailableDomainsSelect)
@@ -281,6 +301,7 @@ func TestSelect(t *testing.T) {
 }
 
 func TestUpdate(t *testing.T) {
+	t.Run("ApplicationStates", testApplicationStatesUpdate)
 	t.Run("Applications", testApplicationsUpdate)
 	t.Run("Artifacts", testArtifactsUpdate)
 	t.Run("AvailableDomains", testAvailableDomainsUpdate)
@@ -293,6 +314,7 @@ func TestUpdate(t *testing.T) {
 }
 
 func TestSliceUpdateAll(t *testing.T) {
+	t.Run("ApplicationStates", testApplicationStatesSliceUpdateAll)
 	t.Run("Applications", testApplicationsSliceUpdateAll)
 	t.Run("Artifacts", testArtifactsSliceUpdateAll)
 	t.Run("AvailableDomains", testAvailableDomainsSliceUpdateAll)

@@ -16,16 +16,20 @@ func toDomainRepository(repo *models.Repository) domain.Repository {
 
 func toDomainApplication(app *models.Application, repo domain.Repository) *domain.Application {
 	return &domain.Application{
-		ID:         app.ID,
-		Repository: repo,
-		BranchName: app.BranchName,
-		BuildType:  builder.BuildTypeFromString(app.BuildType),
+		ID:            app.ID,
+		Repository:    repo,
+		BranchName:    app.BranchName,
+		BuildType:     builder.BuildTypeFromString(app.BuildType),
+		State:         domain.ApplicationStateFromString(app.State),
+		CurrentCommit: app.CurrentCommit,
+		WantCommit:    app.WantCommit,
 	}
 }
 
 func toDomainBuild(build *models.Build) *domain.Build {
 	ret := &domain.Build{
 		ID:            build.ID,
+		Commit:        build.Commit,
 		Status:        builder.BuildStatusFromString(build.Status),
 		ApplicationID: build.ApplicationID,
 		StartedAt:     build.StartedAt,

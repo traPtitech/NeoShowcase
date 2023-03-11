@@ -18,7 +18,7 @@ message GetStatusResponse {
 
 message BuildSource {
   string repository_url = 1;
-  string ref = 2;
+  string commit = 2;
 }
 
 message BuildOptions {

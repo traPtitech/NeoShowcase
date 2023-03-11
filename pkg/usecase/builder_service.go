@@ -10,6 +10,7 @@ import (
 	"sync"
 
 	"github.com/go-git/go-git/v5"
+	"github.com/go-git/go-git/v5/config"
 	"github.com/go-git/go-git/v5/plumbing"
 	buildkit "github.com/moby/buildkit/client"
 	"github.com/moby/buildkit/client/llb"
@@ -167,15 +168,52 @@ func (s *builderService) initializeTask(ctx context.Context, task *builder.Task)
 	intState.repositoryTempDir = dir
 
 	// リポジトリをクローン
-	refName := plumbing.HEAD
-	if task.BuildSource.Ref != "" {
-		refName = plumbing.ReferenceName("refs/" + task.BuildSource.Ref)
+	repo, err := git.PlainInit(intState.repositoryTempDir, false)
+	if err != nil {
+		_ = os.RemoveAll(intState.repositoryTempDir)
+		log.WithError(err).Errorf("failed to init repository: %s", intState.repositoryTempDir)
+		return fmt.Errorf("failed to init repository: %w", err)
 	}
-	_, err = git.PlainCloneContext(ctx, intState.repositoryTempDir, false, &git.CloneOptions{URL: task.BuildSource.RepositoryUrl, Depth: 1, ReferenceName: refName})
+	remote, err := repo.CreateRemote(&config.RemoteConfig{
+		Name: "origin",
+		URLs: []string{task.BuildSource.RepositoryUrl},
+	})
+	if err != nil {
+		_ = os.RemoveAll(intState.repositoryTempDir)
+		log.WithError(err).Errorf("failed to add remote: %s", task.BuildSource.RepositoryUrl)
+		return fmt.Errorf("failed to add remote: %w", err)
+	}
+	refName := plumbing.HEAD
+	if task.BuildSource.Commit != "" {
+		refName = plumbing.ReferenceName(task.BuildSource.Commit)
+	}
+	err = remote.FetchContext(ctx, &git.FetchOptions{
+		RemoteName: "origin",
+		RefSpecs:   []config.RefSpec{config.RefSpec(refName)},
+		Depth:      1,
+	})
 	if err != nil {
 		_ = os.RemoveAll(intState.repositoryTempDir)
 		log.WithError(err).Errorf("failed to clone repository: %s", task.BuildSource.RepositoryUrl)
 		return fmt.Errorf("failed to clone repository: %w", err)
+	}
+	wt, err := repo.Worktree()
+	if err != nil {
+		_ = os.RemoveAll(intState.repositoryTempDir)
+		log.WithError(err).Errorf("failed to get worktree: %s", intState.repositoryTempDir)
+		return fmt.Errorf("failed to get worktree: %w", err)
+	}
+	var checkoutOptions git.CheckoutOptions
+	if refName == plumbing.HEAD {
+		checkoutOptions = git.CheckoutOptions{Branch: "FETCH_HEAD"}
+	} else {
+		checkoutOptions = git.CheckoutOptions{Hash: plumbing.NewHash(task.BuildSource.Commit)}
+	}
+	err = wt.Checkout(&checkoutOptions)
+	if err != nil {
+		_ = os.RemoveAll(intState.repositoryTempDir)
+		log.WithError(err).Errorf("failed to checkout: %s", intState.repositoryTempDir)
+		return fmt.Errorf("failed to checkout: %w", err)
 	}
 
 	// Status を Building に変更

@@ -11,11 +11,21 @@ enum BuildType {
   STATIC = 1;
 }
 
+enum ApplicationState {
+  IDLE = 0;
+  STARTING = 1;
+  RUNNING = 2;
+  ERRORED = 3;
+}
+
 message Application {
   string id = 1;
   string repository_url = 2;
   string branch_name = 3;
   BuildType build_type = 4;
+  ApplicationState state = 5;
+  string current_commit = 6;
+  string want_commit = 7;
 }
 
 message ApplicationEnvironmentVariable {
@@ -64,9 +74,10 @@ message Build {
     SKIPPED = 5;
   }
   string id = 1;
-  BuildStatus status = 2;
-  google.protobuf.Timestamp started_at = 3;
-  neoshowcase.protobuf.NullTimestamp finished_at = 4;
+  string commit = 2;
+  BuildStatus status = 3;
+  google.protobuf.Timestamp started_at = 4;
+  neoshowcase.protobuf.NullTimestamp finished_at = 5;
 }
 
 message BuildLog {

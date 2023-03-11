@@ -10,6 +10,7 @@
 ```sql
 CREATE TABLE `builds` (
   `id` varchar(22) NOT NULL COMMENT 'ビルドID',
+  `commit` char(40) NOT NULL COMMENT 'コミットハッシュ',
   `status` varchar(10) NOT NULL COMMENT 'ビルドの状態',
   `started_at` datetime(6) NOT NULL COMMENT 'ビルド開始日時',
   `finished_at` datetime(6) DEFAULT NULL COMMENT 'ビルド終了日時',
@@ -29,6 +30,7 @@ CREATE TABLE `builds` (
 | Name | Type | Default | Nullable | Children | Parents | Comment |
 | ---- | ---- | ------- | -------- | -------- | ------- | ------- |
 | id | varchar(22) |  | false | [artifacts](artifacts.md) |  | ビルドID |
+| commit | char(40) |  | false |  |  | コミットハッシュ |
 | status | varchar(10) |  | false |  | [build_status](build_status.md) | ビルドの状態 |
 | started_at | datetime(6) |  | false |  |  | ビルド開始日時 |
 | finished_at | datetime(6) | NULL | true |  |  | ビルド終了日時 |

@@ -4,6 +4,7 @@
 package models
 
 var TableNames = struct {
+	ApplicationState string
 	Applications     string
 	Artifacts        string
 	AvailableDomains string
@@ -15,6 +16,7 @@ var TableNames = struct {
 	Users            string
 	Websites         string
 }{
+	ApplicationState: "application_state",
 	Applications:     "applications",
 	Artifacts:        "artifacts",
 	AvailableDomains: "available_domains",

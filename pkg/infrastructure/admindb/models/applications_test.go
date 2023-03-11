@@ -1296,6 +1296,67 @@ func testApplicationToOneRepositoryUsingRepository(t *testing.T) {
 	}
 }
 
+func testApplicationToOneApplicationStateUsingStateApplicationState(t *testing.T) {
+	ctx := context.Background()
+	tx := MustTx(boil.BeginTx(ctx, nil))
+	defer func() { _ = tx.Rollback() }()
+
+	var local Application
+	var foreign ApplicationState
+
+	seed := randomize.NewSeed()
+	if err := randomize.Struct(seed, &local, applicationDBTypes, false, applicationColumnsWithDefault...); err != nil {
+		t.Errorf("Unable to randomize Application struct: %s", err)
+	}
+	if err := randomize.Struct(seed, &foreign, applicationStateDBTypes, false, applicationStateColumnsWithDefault...); err != nil {
+		t.Errorf("Unable to randomize ApplicationState struct: %s", err)
+	}
+
+	if err := foreign.Insert(ctx, tx, boil.Infer()); err != nil {
+		t.Fatal(err)
+	}
+
+	local.State = foreign.State
+	if err := local.Insert(ctx, tx, boil.Infer()); err != nil {
+		t.Fatal(err)
+	}
+
+	check, err := local.StateApplicationState().One(ctx, tx)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if check.State != foreign.State {
+		t.Errorf("want: %v, got %v", foreign.State, check.State)
+	}
+
+	ranAfterSelectHook := false
+	AddApplicationStateHook(boil.AfterSelectHook, func(ctx context.Context, e boil.ContextExecutor, o *ApplicationState) error {
+		ranAfterSelectHook = true
+		return nil
+	})
+
+	slice := ApplicationSlice{&local}
+	if err = local.L.LoadStateApplicationState(ctx, tx, false, (*[]*Application)(&slice), nil); err != nil {
+		t.Fatal(err)
+	}
+	if local.R.StateApplicationState == nil {
+		t.Error("struct should have been eager loaded")
+	}
+
+	local.R.StateApplicationState = nil
+	if err = local.L.LoadStateApplicationState(ctx, tx, true, &local, nil); err != nil {
+		t.Fatal(err)
+	}
+	if local.R.StateApplicationState == nil {
+		t.Error("struct should have been eager loaded")
+	}
+
+	if !ranAfterSelectHook {
+		t.Error("failed to run AfterSelect hook for relationship")
+	}
+}
+
 func testApplicationToOneSetOpRepositoryUsingRepository(t *testing.T) {
 	var err error
 
@@ -1350,6 +1411,63 @@ func testApplicationToOneSetOpRepositoryUsingRepository(t *testing.T) {
 
 		if a.RepositoryID != x.ID {
 			t.Error("foreign key was wrong value", a.RepositoryID, x.ID)
+		}
+	}
+}
+func testApplicationToOneSetOpApplicationStateUsingStateApplicationState(t *testing.T) {
+	var err error
+
+	ctx := context.Background()
+	tx := MustTx(boil.BeginTx(ctx, nil))
+	defer func() { _ = tx.Rollback() }()
+
+	var a Application
+	var b, c ApplicationState
+
+	seed := randomize.NewSeed()
+	if err = randomize.Struct(seed, &a, applicationDBTypes, false, strmangle.SetComplement(applicationPrimaryKeyColumns, applicationColumnsWithoutDefault)...); err != nil {
+		t.Fatal(err)
+	}
+	if err = randomize.Struct(seed, &b, applicationStateDBTypes, false, strmangle.SetComplement(applicationStatePrimaryKeyColumns, applicationStateColumnsWithoutDefault)...); err != nil {
+		t.Fatal(err)
+	}
+	if err = randomize.Struct(seed, &c, applicationStateDBTypes, false, strmangle.SetComplement(applicationStatePrimaryKeyColumns, applicationStateColumnsWithoutDefault)...); err != nil {
+		t.Fatal(err)
+	}
+
+	if err := a.Insert(ctx, tx, boil.Infer()); err != nil {
+		t.Fatal(err)
+	}
+	if err = b.Insert(ctx, tx, boil.Infer()); err != nil {
+		t.Fatal(err)
+	}
+
+	for i, x := range []*ApplicationState{&b, &c} {
+		err = a.SetStateApplicationState(ctx, tx, i != 0, x)
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		if a.R.StateApplicationState != x {
+			t.Error("relationship struct not set to correct value")
+		}
+
+		if x.R.StateApplications[0] != &a {
+			t.Error("failed to append to foreign relationship struct")
+		}
+		if a.State != x.State {
+			t.Error("foreign key was wrong value", a.State)
+		}
+
+		zero := reflect.Zero(reflect.TypeOf(a.State))
+		reflect.Indirect(reflect.ValueOf(&a.State)).Set(zero)
+
+		if err = a.Reload(ctx, tx); err != nil {
+			t.Fatal("failed to reload", err)
+		}
+
+		if a.State != x.State {
+			t.Error("foreign key was wrong value", a.State, x.State)
 		}
 	}
 }
@@ -1428,7 +1546,7 @@ func testApplicationsSelect(t *testing.T) {
 }
 
 var (
-	applicationDBTypes = map[string]string{`ID`: `varchar`, `RepositoryID`: `varchar`, `BranchName`: `varchar`, `BuildType`: `enum('image','static')`, `CreatedAt`: `datetime`, `UpdatedAt`: `datetime`}
+	applicationDBTypes = map[string]string{`ID`: `varchar`, `RepositoryID`: `varchar`, `BranchName`: `varchar`, `BuildType`: `enum('image','static')`, `State`: `varchar`, `CurrentCommit`: `char`, `WantCommit`: `char`, `CreatedAt`: `datetime`, `UpdatedAt`: `datetime`}
 	_                  = bytes.MinRead
 )
 

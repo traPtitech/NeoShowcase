@@ -186,12 +186,30 @@ func convertToPBBuildType(buildType builder.BuildType) pb.BuildType {
 	}
 }
 
+func convertToPBApplicationState(state domain.ApplicationState) pb.ApplicationState {
+	switch state {
+	case domain.ApplicationStateIdle:
+		return pb.ApplicationState_IDLE
+	case domain.ApplicationStateStarting:
+		return pb.ApplicationState_STARTING
+	case domain.ApplicationStateRunning:
+		return pb.ApplicationState_RUNNING
+	case domain.ApplicationStateErrored:
+		return pb.ApplicationState_ERRORED
+	default:
+		panic(fmt.Sprintf("unknown application state: %v", state))
+	}
+}
+
 func convertToPBApplication(app *domain.Application) *pb.Application {
 	return &pb.Application{
 		Id:            app.ID,
 		RepositoryUrl: app.Repository.URL,
 		BranchName:    app.BranchName,
 		BuildType:     convertToPBBuildType(app.BuildType),
+		State:         convertToPBApplicationState(app.State),
+		CurrentCommit: app.CurrentCommit,
+		WantCommit:    app.WantCommit,
 	}
 }
 
@@ -217,6 +235,7 @@ func convertToPBBuildStatus(status builder.BuildStatus) pb.Build_BuildStatus {
 func convertToPBBuild(build *domain.Build) *pb.Build {
 	return &pb.Build{
 		Id:        build.ID,
+		Commit:    build.Commit,
 		Status:    convertToPBBuildStatus(build.Status),
 		StartedAt: timestamppb.New(build.StartedAt),
 		FinishedAt: &pb.NullTimestamp{

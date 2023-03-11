@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
+	"strings"
 
 	"github.com/samber/lo"
 	log "github.com/sirupsen/logrus"
@@ -17,6 +18,8 @@ import (
 
 //go:generate go run github.com/golang/mock/mockgen -source=$GOFILE -package=mock_$GOPACKAGE -destination=./mock/$GOFILE
 type ApplicationRepository interface {
+	GetApplications(ctx context.Context) ([]*domain.Application, error)
+	GetApplicationsOutOfSync(ctx context.Context) ([]*domain.Application, error)
 	GetApplicationsByUserID(ctx context.Context, userID string) ([]*domain.Application, error)
 	CreateApplication(ctx context.Context, args CreateApplicationArgs) (*domain.Application, error)
 	RegisterApplicationOwner(ctx context.Context, applicationID string, userID string) error
@@ -32,6 +35,31 @@ func NewApplicationRepository(db *sql.DB) ApplicationRepository {
 	return &applicationRepository{
 		db: db,
 	}
+}
+
+func (r *applicationRepository) GetApplications(ctx context.Context) ([]*domain.Application, error) {
+	applications, err := models.Applications(
+		qm.Load(models.ApplicationRels.Repository),
+	).All(ctx, r.db)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get applications: %w", err)
+	}
+	return lo.Map(applications, func(app *models.Application, i int) *domain.Application {
+		return toDomainApplication(app, toDomainRepository(app.R.Repository))
+	}), nil
+}
+
+func (r *applicationRepository) GetApplicationsOutOfSync(ctx context.Context) ([]*domain.Application, error) {
+	applications, err := models.Applications(
+		qm.Load(models.ApplicationRels.Repository),
+		qm.Where(fmt.Sprintf("%s != %s", models.ApplicationColumns.WantCommit, models.ApplicationColumns.CurrentCommit)),
+	).All(ctx, r.db)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get applications: %w", err)
+	}
+	return lo.Map(applications, func(app *models.Application, i int) *domain.Application {
+		return toDomainApplication(app, toDomainRepository(app.R.Repository))
+	}), nil
 }
 
 type CreateApplicationArgs struct {
@@ -64,10 +92,13 @@ func (r *applicationRepository) GetApplicationsByUserID(ctx context.Context, use
 
 func (r *applicationRepository) CreateApplication(ctx context.Context, args CreateApplicationArgs) (*domain.Application, error) {
 	app := &models.Application{
-		ID:           domain.NewID(),
-		RepositoryID: args.RepositoryID,
-		BranchName:   args.BranchName,
-		BuildType:    args.BuildType.String(),
+		ID:            domain.NewID(),
+		RepositoryID:  args.RepositoryID,
+		BranchName:    args.BranchName,
+		BuildType:     args.BuildType.String(),
+		State:         domain.ApplicationStateIdle.String(),
+		CurrentCommit: strings.Repeat("0", 40),
+		WantCommit:    strings.Repeat("0", 40),
 	}
 	if err := app.Insert(ctx, r.db, boil.Infer()); err != nil {
 		return nil, fmt.Errorf("failed to create application: %w", err)

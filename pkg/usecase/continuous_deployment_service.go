@@ -2,13 +2,16 @@ package usecase
 
 import (
 	"context"
-	"errors"
-	"math/rand"
-	"strings"
+	"fmt"
+	"sync"
+	"time"
 
+	"github.com/samber/lo"
 	log "github.com/sirupsen/logrus"
+	"golang.org/x/exp/slices"
 
 	"github.com/traPtitech/neoshowcase/pkg/domain"
+	"github.com/traPtitech/neoshowcase/pkg/domain/builder"
 	"github.com/traPtitech/neoshowcase/pkg/domain/event"
 	"github.com/traPtitech/neoshowcase/pkg/interface/repository"
 )
@@ -19,107 +22,151 @@ type ContinuousDeploymentService interface {
 }
 
 type continuousDeploymentService struct {
-	bus      domain.Bus
-	appRepo  repository.ApplicationRepository
-	envRepo  repository.EnvironmentRepository
-	deployer AppDeployService
-	builder  AppBuildService
+	bus       domain.Bus
+	appRepo   repository.ApplicationRepository
+	buildRepo repository.BuildRepository
+	envRepo   repository.EnvironmentRepository
+	deployer  AppDeployService
+	builder   AppBuildService
+
+	run       func()
+	runOnce   sync.Once
+	close     func()
+	closeOnce sync.Once
 }
 
-func NewContinuousDeploymentService(bus domain.Bus, appRepo repository.ApplicationRepository, envRepo repository.EnvironmentRepository, deployer AppDeployService, builder AppBuildService) ContinuousDeploymentService {
-	return &continuousDeploymentService{
-		bus:      bus,
-		appRepo:  appRepo,
-		envRepo:  envRepo,
-		deployer: deployer,
-		builder:  builder,
+func NewContinuousDeploymentService(
+	bus domain.Bus,
+	appRepo repository.ApplicationRepository,
+	buildRepo repository.BuildRepository,
+	envRepo repository.EnvironmentRepository,
+	deployer AppDeployService,
+	builder AppBuildService,
+) ContinuousDeploymentService {
+	cd := &continuousDeploymentService{
+		bus:       bus,
+		appRepo:   appRepo,
+		buildRepo: buildRepo,
+		envRepo:   envRepo,
+		deployer:  deployer,
+		builder:   builder,
 	}
+
+	syncBuildCloser := make(chan struct{})
+	syncDeployCloser := make(chan struct{})
+	cd.run = func() {
+		go cd.syncBuildLoop(syncBuildCloser)
+		go cd.syncDeployLoop(syncDeployCloser)
+	}
+	cd.close = func() {
+		close(syncBuildCloser)
+		close(syncDeployCloser)
+	}
+
+	return cd
 }
 
 func (cd *continuousDeploymentService) Run() {
-	cd.loop()
+	cd.runOnce.Do(cd.run)
 }
 
-func (cd *continuousDeploymentService) Stop(ctx context.Context) error {
+func (cd *continuousDeploymentService) Stop(_ context.Context) error {
+	cd.closeOnce.Do(cd.close)
 	return nil
 }
 
-func (cd *continuousDeploymentService) loop() {
-	sub := cd.bus.Subscribe(event.BuilderBuildSucceeded, event.WebhookRepositoryPush)
+func (cd *continuousDeploymentService) syncBuildLoop(closer <-chan struct{}) {
+	sub := cd.bus.Subscribe(event.FetcherFetchComplete)
 	defer sub.Unsubscribe()
-	for ev := range sub.Chan() {
-		switch ev.Type {
-		case event.FetcherRequestApplicationBuild:
-			applicationID := ev.Body["application_id"].(string)
-			cd.handleNewBuildRequest(applicationID)
-		case event.BuilderBuildSucceeded:
-			branchID := ev.Body["application_id"].(string)
-			buildID := ev.Body["build_id"].(string)
-			cd.handleBuilderBuildSucceeded(branchID, buildID)
-		}
-	}
-}
+	ticker := time.NewTicker(3 * time.Minute)
+	defer ticker.Stop()
 
-const (
-	lowerCharSet  = "abcdefghijklmnopqrstuvwxyz"
-	upperCharSet  = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
-	symbolCharSet = "!@#$%&*"
-	numberSet     = "0123456789"
-	allCharSet    = lowerCharSet + upperCharSet + symbolCharSet + numberSet
-)
-
-func generateRandomString(length int) string {
-	var payload strings.Builder
-	for i := 0; i < length; i++ {
-		random := rand.Intn(len(allCharSet))
-		payload.WriteByte(allCharSet[random])
-	}
-	return payload.String()
-}
-
-func (cd *continuousDeploymentService) handleNewBuildRequest(applicationID string) {
-	log.WithField("applicationID", applicationID).
-		Info("application build request event received")
-
-	ctx := context.Background()
-
-	app, err := cd.appRepo.GetApplicationByID(ctx, applicationID)
-	if err != nil {
-		if errors.Is(err, repository.ErrNotFound) {
+	for {
+		select {
+		case <-ticker.C:
+			if err := cd.kickoffBuilds(); err != nil {
+				log.WithError(err).Error("failed to kickoff builds")
+			}
+		case <-sub.Chan():
+			if err := cd.kickoffBuilds(); err != nil {
+				log.WithError(err).Error("failed to kickoff builds")
+			}
+		case <-closer:
 			return
 		}
-		log.WithError(err).
-			WithField("applicationID", applicationID).
-			Error("failed to GetApplicationByID")
-		return
-	}
-
-	_, err = cd.builder.QueueBuild(ctx, app)
-	if err != nil {
-		log.WithError(err).
-			WithField("appID", app.ID).
-			Error("failed to RequestBuild")
-		return
 	}
 }
 
-func (cd *continuousDeploymentService) handleBuilderBuildSucceeded(branchID string, buildID string) {
-	if branchID == "" {
-		// branchIDが無い場合はテストビルド
-		return
+func (cd *continuousDeploymentService) syncDeployLoop(closer <-chan struct{}) {
+	sub := cd.bus.Subscribe(event.BuilderBuildSucceeded)
+	defer sub.Unsubscribe()
+	ticker := time.NewTicker(3 * time.Minute)
+	defer ticker.Stop()
+
+	for {
+		select {
+		case <-ticker.C:
+			if err := cd.syncDeployments(); err != nil {
+				log.WithError(err).Error("failed to sync deployments")
+			}
+		case <-sub.Chan():
+			if err := cd.syncDeployments(); err != nil {
+				log.WithError(err).Error("failed to sync deployments")
+			}
+		case <-closer:
+			return
+		}
 	}
+}
 
-	// 自動デプロイ
-	log.WithField("branchID", branchID).
-		WithField("buildID", buildID).
-		Error("starting application")
-
-	err := cd.deployer.QueueDeployment(context.Background(), branchID, buildID)
+func (cd *continuousDeploymentService) kickoffBuilds() error {
+	ctx := context.Background()
+	applications, err := cd.appRepo.GetApplications(ctx)
 	if err != nil {
-		// TODO エラー処理
-		log.WithError(err).
-			WithField("branchID", branchID).
-			WithField("buildID", buildID).
-			Error("failed to Start Application")
+		return err
 	}
+	commits := lo.Map(applications, func(app *domain.Application, i int) string { return app.WantCommit })
+	builds, err := cd.buildRepo.GetBuildsInCommit(ctx, commits)
+	if err != nil {
+		return err
+	}
+	buildExistsForCommit := lo.SliceToMap(builds, func(b *domain.Build) (string, bool) { return b.Commit, true })
+	for _, app := range applications {
+		if buildExistsForCommit[app.WantCommit] {
+			continue
+		}
+		_, err := cd.builder.QueueBuild(ctx, app, app.WantCommit)
+		if err != nil {
+			return fmt.Errorf("failed to queue build: %w", err)
+		}
+	}
+	return nil
+}
+
+func (cd *continuousDeploymentService) syncDeployments() error {
+	ctx := context.Background()
+	applications, err := cd.appRepo.GetApplicationsOutOfSync(ctx)
+	if err != nil {
+		return err
+	}
+	commits := lo.Map(applications, func(app *domain.Application, i int) string { return app.WantCommit })
+	builds, err := cd.buildRepo.GetBuildsInCommit(ctx, commits)
+	if err != nil {
+		return err
+	}
+
+	// Last succeeded builds for each commit
+	builds = lo.Filter(builds, func(build *domain.Build, i int) bool { return build.Status == builder.BuildStatusSucceeded })
+	slices.SortFunc(builds, func(a, b *domain.Build) bool { return a.StartedAt.Before(b.StartedAt) })
+	commitToBuild := lo.SliceToMap(builds, func(b *domain.Build) (string, *domain.Build) { return b.Commit, b })
+
+	for _, app := range applications {
+		if build, ok := commitToBuild[app.WantCommit]; ok {
+			err := cd.deployer.QueueDeployment(ctx, build.ApplicationID, build.ID)
+			if err != nil {
+				return fmt.Errorf("failed to queue deployment: %w", err)
+			}
+		}
+	}
+	return nil
 }

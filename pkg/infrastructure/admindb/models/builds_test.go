@@ -928,7 +928,7 @@ func testBuildsSelect(t *testing.T) {
 }
 
 var (
-	buildDBTypes = map[string]string{`ID`: `varchar`, `Status`: `varchar`, `StartedAt`: `datetime`, `FinishedAt`: `datetime`, `ApplicationID`: `varchar`}
+	buildDBTypes = map[string]string{`ID`: `varchar`, `Commit`: `char`, `Status`: `varchar`, `StartedAt`: `datetime`, `FinishedAt`: `datetime`, `ApplicationID`: `varchar`}
 	_            = bytes.MinRead
 )
 

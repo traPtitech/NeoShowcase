@@ -157,7 +157,7 @@ func convertBuildSourceFromPB(source *pb.BuildSource) *builder.BuildSource {
 	}
 	return &builder.BuildSource{
 		RepositoryUrl: source.RepositoryUrl,
-		Ref:           source.Ref,
+		Commit:        source.Commit,
 	}
 }
 

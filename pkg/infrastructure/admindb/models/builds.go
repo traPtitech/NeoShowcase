@@ -25,6 +25,8 @@ import (
 // Build is an object representing the database table.
 type Build struct { // ビルドID
 	ID string `boil:"id" json:"id" toml:"id" yaml:"id"`
+	// コミットハッシュ
+	Commit string `boil:"commit" json:"commit" toml:"commit" yaml:"commit"`
 	// ビルドの状態
 	Status string `boil:"status" json:"status" toml:"status" yaml:"status"`
 	// ビルド開始日時
@@ -40,12 +42,14 @@ type Build struct { // ビルドID
 
 var BuildColumns = struct {
 	ID            string
+	Commit        string
 	Status        string
 	StartedAt     string
 	FinishedAt    string
 	ApplicationID string
 }{
 	ID:            "id",
+	Commit:        "commit",
 	Status:        "status",
 	StartedAt:     "started_at",
 	FinishedAt:    "finished_at",
@@ -54,12 +58,14 @@ var BuildColumns = struct {
 
 var BuildTableColumns = struct {
 	ID            string
+	Commit        string
 	Status        string
 	StartedAt     string
 	FinishedAt    string
 	ApplicationID string
 }{
 	ID:            "builds.id",
+	Commit:        "builds.commit",
 	Status:        "builds.status",
 	StartedAt:     "builds.started_at",
 	FinishedAt:    "builds.finished_at",
@@ -70,12 +76,14 @@ var BuildTableColumns = struct {
 
 var BuildWhere = struct {
 	ID            whereHelperstring
+	Commit        whereHelperstring
 	Status        whereHelperstring
 	StartedAt     whereHelpertime_Time
 	FinishedAt    whereHelpernull_Time
 	ApplicationID whereHelperstring
 }{
 	ID:            whereHelperstring{field: "`builds`.`id`"},
+	Commit:        whereHelperstring{field: "`builds`.`commit`"},
 	Status:        whereHelperstring{field: "`builds`.`status`"},
 	StartedAt:     whereHelpertime_Time{field: "`builds`.`started_at`"},
 	FinishedAt:    whereHelpernull_Time{field: "`builds`.`finished_at`"},
@@ -130,8 +138,8 @@ func (r *buildR) GetArtifact() *Artifact {
 type buildL struct{}
 
 var (
-	buildAllColumns            = []string{"id", "status", "started_at", "finished_at", "application_id"}
-	buildColumnsWithoutDefault = []string{"id", "status", "started_at", "finished_at", "application_id"}
+	buildAllColumns            = []string{"id", "commit", "status", "started_at", "finished_at", "application_id"}
+	buildColumnsWithoutDefault = []string{"id", "commit", "status", "started_at", "finished_at", "application_id"}
 	buildColumnsWithDefault    = []string{}
 	buildPrimaryKeyColumns     = []string{"id"}
 	buildGeneratedColumns      = []string{}
