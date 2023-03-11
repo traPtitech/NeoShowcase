@@ -138,3 +138,17 @@ func (mr *MockApplicationRepositoryMockRecorder) SetWebsite(ctx, applicationID, 
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SetWebsite", reflect.TypeOf((*MockApplicationRepository)(nil).SetWebsite), ctx, applicationID, fqdn, httpPort)
 }
+
+// UpdateApplication mocks base method.
+func (m *MockApplicationRepository) UpdateApplication(ctx context.Context, id string, args repository.UpdateApplicationArgs) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "UpdateApplication", ctx, id, args)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// UpdateApplication indicates an expected call of UpdateApplication.
+func (mr *MockApplicationRepositoryMockRecorder) UpdateApplication(ctx, id, args interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateApplication", reflect.TypeOf((*MockApplicationRepository)(nil).UpdateApplication), ctx, id, args)
+}
