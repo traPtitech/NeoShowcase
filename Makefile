@@ -114,7 +114,7 @@ docker-test: ## Run docker tests
 
 .PHONY: k3d-up
 k3d-up: ## Setup k3s environment
-	k3d cluster create ns-test --kubeconfig-switch-context=false --no-lb --k3s-arg "--no-deploy=traefik,servicelb,metrics-server"
+	k3d cluster create ns-test --kubeconfig-switch-context=false --no-lb --k3s-arg "--disable=traefik,servicelb,metrics-server"
 
 .PHONY: k3d-down
 k3d-down: ## Tear down k3s environment
