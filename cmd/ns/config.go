@@ -7,6 +7,7 @@ import (
 	"github.com/traPtitech/neoshowcase/pkg/infrastructure/admindb"
 	"github.com/traPtitech/neoshowcase/pkg/infrastructure/dbmanager"
 	"github.com/traPtitech/neoshowcase/pkg/interface/grpc"
+	"github.com/traPtitech/neoshowcase/pkg/usecase"
 )
 
 const (
@@ -29,6 +30,9 @@ type Config struct {
 		Debug bool `mapstructure:"debug" yaml:"debug"`
 		Port  int  `mapstructure:"port" yaml:"port"`
 	} `mapstructure:"http" yaml:"http"`
+	Repository struct {
+		CacheDir string `mapstructure:"cacheDir" yaml:"cacheDir"`
+	} `mapstructure:"repository" yaml:"repository"`
 	Image struct {
 		Registry   builder.DockerImageRegistryString   `mapstructure:"registry" yaml:"registry"`
 		NamePrefix builder.DockerImageNamePrefixString `mapstructure:"namePrefix" yaml:"namePrefix"`
@@ -52,4 +56,8 @@ func provideImageRegistry(c Config) builder.DockerImageRegistryString {
 
 func provideImagePrefix(c Config) builder.DockerImageNamePrefixString {
 	return c.Image.NamePrefix
+}
+
+func provideRepositoryFetcherCacheDir(c Config) usecase.RepositoryFetcherCacheDir {
+	return usecase.RepositoryFetcherCacheDir(c.Repository.CacheDir)
 }

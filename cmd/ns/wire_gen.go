@@ -90,6 +90,11 @@ func NewWithDocker(c2 Config) (*Server, error) {
 	}
 	appBuildService := usecase.NewAppBuildService(applicationRepository, buildRepository, builderServiceClient, dockerImageRegistryString, dockerImageNamePrefixString)
 	continuousDeploymentService := usecase.NewContinuousDeploymentService(bus, applicationRepository, buildRepository, environmentRepository, appDeployService, appBuildService)
+	repositoryFetcherCacheDir := provideRepositoryFetcherCacheDir(c2)
+	repositoryFetcherService, err := usecase.NewRepositoryFetcherService(bus, applicationRepository, repositoryFetcherCacheDir)
+	if err != nil {
+		return nil, err
+	}
 	mainServer := &Server{
 		grpcServer:          server,
 		grpcPort:            tcpListenPort,
@@ -102,6 +107,7 @@ func NewWithDocker(c2 Config) (*Server, error) {
 		bus:                 bus,
 		builderEventsBroker: builderEventsBroker,
 		cdService:           continuousDeploymentService,
+		fetcherService:      repositoryFetcherService,
 	}
 	return mainServer, nil
 }
@@ -172,6 +178,11 @@ func NewWithK8S(c2 Config) (*Server, error) {
 	}
 	appBuildService := usecase.NewAppBuildService(applicationRepository, buildRepository, builderServiceClient, dockerImageRegistryString, dockerImageNamePrefixString)
 	continuousDeploymentService := usecase.NewContinuousDeploymentService(bus, applicationRepository, buildRepository, environmentRepository, appDeployService, appBuildService)
+	repositoryFetcherCacheDir := provideRepositoryFetcherCacheDir(c2)
+	repositoryFetcherService, err := usecase.NewRepositoryFetcherService(bus, applicationRepository, repositoryFetcherCacheDir)
+	if err != nil {
+		return nil, err
+	}
 	mainServer := &Server{
 		grpcServer:          server,
 		grpcPort:            tcpListenPort,
@@ -184,17 +195,19 @@ func NewWithK8S(c2 Config) (*Server, error) {
 		bus:                 bus,
 		builderEventsBroker: builderEventsBroker,
 		cdService:           continuousDeploymentService,
+		fetcherService:      repositoryFetcherService,
 	}
 	return mainServer, nil
 }
 
 // wire.go:
 
-var commonSet = wire.NewSet(web.NewServer, hub.New, eventbus.NewLocal, admindb.New, dbmanager.NewMariaDBManager, dbmanager.NewMongoDBManager, repository.NewApplicationRepository, repository.NewGitRepositoryRepository, repository.NewEnvironmentRepository, repository.NewBuildRepository, grpc.NewServer, grpc.NewApplicationServiceServer, grpc.NewBuilderServiceClientConn, grpc.NewStaticSiteServiceClientConn, grpc.NewBuilderServiceClient, grpc.NewStaticSiteServiceClient, broker.NewBuilderEventsBroker, usecase.NewAPIServerService, usecase.NewAppBuildService, usecase.NewAppDeployService, usecase.NewContinuousDeploymentService, handlerSet,
+var commonSet = wire.NewSet(web.NewServer, hub.New, eventbus.NewLocal, admindb.New, dbmanager.NewMariaDBManager, dbmanager.NewMongoDBManager, repository.NewApplicationRepository, repository.NewGitRepositoryRepository, repository.NewEnvironmentRepository, repository.NewBuildRepository, grpc.NewServer, grpc.NewApplicationServiceServer, grpc.NewBuilderServiceClientConn, grpc.NewStaticSiteServiceClientConn, grpc.NewBuilderServiceClient, grpc.NewStaticSiteServiceClient, broker.NewBuilderEventsBroker, usecase.NewAPIServerService, usecase.NewAppBuildService, usecase.NewAppDeployService, usecase.NewContinuousDeploymentService, usecase.NewRepositoryFetcherService, handlerSet,
 	provideGRPCPort,
 	provideWebServerConfig,
 	provideImagePrefix,
-	provideImageRegistry, wire.FieldsOf(new(Config), "Builder", "SSGen", "DB", "MariaDB", "MongoDB"), wire.Struct(new(Router), "*"), wire.Bind(new(web.Router), new(*Router)), wire.Struct(new(Server), "*"),
+	provideImageRegistry,
+	provideRepositoryFetcherCacheDir, wire.FieldsOf(new(Config), "Builder", "SSGen", "DB", "MariaDB", "MongoDB"), wire.Struct(new(Router), "*"), wire.Bind(new(web.Router), new(*Router)), wire.Struct(new(Server), "*"),
 )
 
 func New(c2 Config) (*Server, error) {
