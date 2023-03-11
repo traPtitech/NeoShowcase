@@ -1,5 +1,6 @@
 output = "pkg/infrastructure/admindb/models"
 wipe = true
+no-tests = true
 
 [mysql]
 dbname = "neoshowcase"
