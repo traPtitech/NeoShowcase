@@ -73,6 +73,8 @@ func (r *repositoryFetcherService) Run() {
 }
 
 func (r *repositoryFetcherService) fetchLoop(closer <-chan struct{}) {
+	sub := r.bus.Subscribe(event.FetcherFetchRequest)
+	defer sub.Unsubscribe()
 	ticker := time.NewTicker(3 * time.Minute)
 	defer ticker.Stop()
 
@@ -90,6 +92,8 @@ func (r *repositoryFetcherService) fetchLoop(closer <-chan struct{}) {
 
 	for {
 		select {
+		case <-sub.Chan():
+			doSync()
 		case <-ticker.C:
 			doSync()
 		case <-closer:

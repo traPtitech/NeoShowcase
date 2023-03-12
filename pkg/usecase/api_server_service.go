@@ -7,6 +7,7 @@ import (
 
 	"github.com/traPtitech/neoshowcase/pkg/domain"
 	"github.com/traPtitech/neoshowcase/pkg/domain/builder"
+	"github.com/traPtitech/neoshowcase/pkg/domain/event"
 	"github.com/traPtitech/neoshowcase/pkg/interface/repository"
 	"github.com/traPtitech/neoshowcase/pkg/util/random"
 )
@@ -47,6 +48,7 @@ type APIServerService interface {
 }
 
 type apiServerService struct {
+	bus            domain.Bus
 	appRepo        repository.ApplicationRepository
 	buildRepo      repository.BuildRepository
 	envRepo        repository.EnvironmentRepository
@@ -58,6 +60,7 @@ type apiServerService struct {
 }
 
 func NewAPIServerService(
+	bus domain.Bus,
 	appRepo repository.ApplicationRepository,
 	buildRepo repository.BuildRepository,
 	envRepo repository.EnvironmentRepository,
@@ -68,6 +71,7 @@ func NewAPIServerService(
 	mongoDBManager domain.MongoDBManager,
 ) APIServerService {
 	return &apiServerService{
+		bus:            bus,
 		appRepo:        appRepo,
 		buildRepo:      buildRepo,
 		envRepo:        envRepo,
@@ -124,6 +128,8 @@ func (s *apiServerService) CreateApplication(ctx context.Context, args CreateApp
 	if err != nil {
 		return nil, err
 	}
+
+	s.bus.Publish(event.FetcherFetchRequest, nil)
 
 	return application, nil
 }
