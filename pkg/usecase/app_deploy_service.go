@@ -3,6 +3,7 @@ package usecase
 import (
 	"context"
 	"fmt"
+	"time"
 
 	log "github.com/sirupsen/logrus"
 
@@ -53,6 +54,7 @@ func (s *appDeployService) StartDeployment(ctx context.Context, app *domain.Appl
 }
 
 func (s *appDeployService) deployAndHandleError(app *domain.Application, build *domain.Build) {
+	start := time.Now()
 	ctx := context.Background()
 	err := s.deploy(ctx, app, build)
 	if err != nil {
@@ -62,7 +64,9 @@ func (s *appDeployService) deployAndHandleError(app *domain.Application, build *
 		if err != nil {
 			log.WithError(err).Error("failed to update application state back")
 		}
+		return
 	}
+	log.WithField("application", app.ID).WithField("build", build.ID).Infof("deploy succeeded in %v", time.Since(start))
 }
 
 func (s *appDeployService) deploy(ctx context.Context, app *domain.Application, build *domain.Build) error {
