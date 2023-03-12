@@ -81,16 +81,21 @@ func (cd *continuousDeploymentService) syncBuildLoop(closer <-chan struct{}) {
 	ticker := time.NewTicker(3 * time.Minute)
 	defer ticker.Stop()
 
+	doSync := func() {
+		start := time.Now()
+		if err := cd.kickoffBuilds(); err != nil {
+			log.WithError(err).Error("failed to kickoff builds")
+			return
+		}
+		log.Infof("Synced builds in %v", time.Since(start))
+	}
+
 	for {
 		select {
 		case <-ticker.C:
-			if err := cd.kickoffBuilds(); err != nil {
-				log.WithError(err).Error("failed to kickoff builds")
-			}
+			doSync()
 		case <-sub.Chan():
-			if err := cd.kickoffBuilds(); err != nil {
-				log.WithError(err).Error("failed to kickoff builds")
-			}
+			doSync()
 		case <-closer:
 			return
 		}
@@ -103,16 +108,21 @@ func (cd *continuousDeploymentService) syncDeployLoop(closer <-chan struct{}) {
 	ticker := time.NewTicker(3 * time.Minute)
 	defer ticker.Stop()
 
+	doSync := func() {
+		start := time.Now()
+		if err := cd.syncDeployments(); err != nil {
+			log.WithError(err).Error("failed to sync deployments")
+			return
+		}
+		log.Infof("Synced deployments in %v", time.Since(start))
+	}
+
 	for {
 		select {
 		case <-ticker.C:
-			if err := cd.syncDeployments(); err != nil {
-				log.WithError(err).Error("failed to sync deployments")
-			}
+			doSync()
 		case <-sub.Chan():
-			if err := cd.syncDeployments(); err != nil {
-				log.WithError(err).Error("failed to sync deployments")
-			}
+			doSync()
 		case <-closer:
 			return
 		}

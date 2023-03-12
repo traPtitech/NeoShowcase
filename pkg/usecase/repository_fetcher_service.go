@@ -76,13 +76,20 @@ func (r *repositoryFetcherService) fetchLoop(closer <-chan struct{}) {
 	ticker := time.NewTicker(3 * time.Minute)
 	defer ticker.Stop()
 
+	doSync := func() {
+		start := time.Now()
+		if err := r.fetchAll(); err != nil {
+			log.WithError(err).Error("failed to fetch repositories")
+			return
+		}
+		log.Infof("Fetched repositories in %v", time.Since(start))
+		r.bus.Publish(event.FetcherFetchComplete, nil)
+	}
+
 	for {
 		select {
 		case <-ticker.C:
-			if err := r.fetchAll(); err != nil {
-				log.WithError(err).Error("failed to fetch repositories")
-			}
-			r.bus.Publish(event.FetcherFetchComplete, nil)
+			doSync()
 		case <-closer:
 			return
 		}
