@@ -144,6 +144,10 @@ CREATE TABLE `users`
   DEFAULT CHARACTER SET = `utf8mb4`
     COMMENT 'ユーザーテーブル';
 
+# TODO: delete once user setup / auth is implemented
+INSERT INTO `users`
+VALUES ('tmp-user', 'toki');
+
 CREATE TABLE `owners`
 (
     `user_id`        CHAR(36) NOT NULL COMMENT 'ユーザーID',
