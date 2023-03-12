@@ -70,12 +70,7 @@ func (s *appDeployService) deployAndHandleError(app *domain.Application, build *
 }
 
 func (s *appDeployService) deploy(ctx context.Context, app *domain.Application, build *domain.Build) error {
-	err := s.shutdown(ctx, app)
-	if err != nil {
-		return err
-	}
-
-	err = s.create(ctx, app, build)
+	err := s.recreate(ctx, app, build)
 	if err != nil {
 		return err
 	}
@@ -90,22 +85,7 @@ func (s *appDeployService) deploy(ctx context.Context, app *domain.Application, 
 	return nil
 }
 
-func (s *appDeployService) shutdown(ctx context.Context, app *domain.Application) error {
-	if app.BuildType != builder.BuildTypeImage {
-		return nil
-	}
-
-	_, err := s.backend.GetContainer(ctx, app.ID)
-	if err == domain.ErrContainerNotFound {
-		return nil
-	}
-	if err != nil {
-		return err
-	}
-	return s.backend.DestroyContainer(ctx, app.ID)
-}
-
-func (s *appDeployService) create(ctx context.Context, app *domain.Application, build *domain.Build) error {
+func (s *appDeployService) recreate(ctx context.Context, app *domain.Application, build *domain.Build) error {
 	website, err := s.appRepo.GetWebsite(ctx, app.ID)
 	if err != nil && err != repository.ErrNotFound {
 		return fmt.Errorf("failed to get website: %w", err)
