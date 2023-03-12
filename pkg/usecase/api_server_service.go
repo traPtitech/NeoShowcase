@@ -129,7 +129,7 @@ func (s *apiServerService) CreateApplication(ctx context.Context, args CreateApp
 }
 
 func (s *apiServerService) createApplicationDatabase(ctx context.Context, app *domain.Application) error {
-	dbName := fmt.Sprintf("%s_%s", app.Repository, app.ID)
+	dbName := fmt.Sprintf("ns_app_%s", app.ID)
 
 	// TODO: アプリケーションの設定の取得
 	applicationNeedsMariaDB := true
