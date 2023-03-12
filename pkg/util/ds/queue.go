@@ -34,7 +34,7 @@ func (q *Queue[T]) Pop() (elt T) {
 	return
 }
 
-func (q *Queue[T]) DeleteIf(predicate func(elt T) bool) (deleted bool) {
+func (q *Queue[T]) DeleteIf(predicate func(elt T) bool) (deleted int) {
 	q.mutex.Lock()
 	defer q.mutex.Unlock()
 
@@ -42,7 +42,7 @@ func (q *Queue[T]) DeleteIf(predicate func(elt T) bool) (deleted bool) {
 	q.data = lo.Filter(q.data, func(elt T, i int) bool {
 		return !predicate(elt)
 	})
-	return lenBefore != len(q.data)
+	return lenBefore - len(q.data)
 }
 
 func (q *Queue[T]) Len() int {

@@ -90,11 +90,12 @@ func (s *appBuildService) Shutdown() {
 }
 
 func (s *appBuildService) CancelBuild(ctx context.Context, buildID string) error {
-	if ok := s.queue.DeleteIf(func(j *buildJob) bool { return j.buildID == buildID }); !ok {
+	deleted := s.queue.DeleteIf(func(j *buildJob) bool { return j.buildID == buildID })
+	if deleted == 0 {
 		return fmt.Errorf("job is already canceled")
 	}
 
-	s.queueWait.Done()
+	s.queueWait.Add(-deleted)
 	return nil
 }
 
