@@ -44,3 +44,10 @@ func (q *Queue[T]) DeleteIf(predicate func(elt T) bool) (deleted bool) {
 	})
 	return lenBefore != len(q.data)
 }
+
+func (q *Queue[T]) Len() int {
+	q.mutex.RLock()
+	defer q.mutex.RUnlock()
+
+	return len(q.data)
+}

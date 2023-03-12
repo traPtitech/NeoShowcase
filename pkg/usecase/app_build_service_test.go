@@ -138,7 +138,7 @@ func TestAppBuildService_QueueBuild(t *testing.T) {
 		buildLog := mock_repository.NewMockBuildRepository(mockCtrl)
 		c := mock_pb.NewMockBuilderServiceClient(mockCtrl)
 		s := NewAppBuildService(appRepo, buildLog, c, "TestRegistry", "TestPrefix")
-		queue := &s.(*appBuildService).queue
+		queue := s.(*appBuildService).queue
 
 		app1 := &domain.Application{
 			ID: "d563e2de-7905-4267-8a9c-51520aac02b3",
@@ -198,22 +198,16 @@ func TestAppBuildService_QueueBuild(t *testing.T) {
 		// wait for the Pop() of first item
 		time.Sleep(queueCheckInterval * 2)
 
-		queue.mutex.RLock()
-		require.Equal(t, len(queue.data), 1)
-		queue.mutex.RUnlock()
+		require.Equal(t, queue.Len(), 1)
 
 		// could not cancel the latest one for now
 		err = s.CancelBuild(context.Background(), id1)
-		queue.mutex.RLock()
-		require.Equal(t, len(queue.data), 1)
-		queue.mutex.RUnlock()
+		require.Equal(t, queue.Len(), 1)
 		require.NotNil(t, err)
 
 		// cancel waiting job
 		err = s.CancelBuild(context.Background(), id2)
-		queue.mutex.RLock()
-		require.Equal(t, len(queue.data), 0)
-		queue.mutex.RUnlock()
+		require.Equal(t, queue.Len(), 0)
 		require.Nil(t, err)
 	})
 }
