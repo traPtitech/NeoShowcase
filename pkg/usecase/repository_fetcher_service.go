@@ -86,6 +86,8 @@ func (r *repositoryFetcherService) fetchLoop(closer <-chan struct{}) {
 		r.bus.Publish(event.FetcherFetchComplete, nil)
 	}
 
+	doSync()
+
 	for {
 		select {
 		case <-ticker.C:
