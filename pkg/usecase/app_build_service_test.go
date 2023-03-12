@@ -60,6 +60,7 @@ func TestAppBuildService_QueueBuild(t *testing.T) {
 		c.EXPECT().
 			StartBuildImage(context.Background(), &pb.StartBuildImageRequest{
 				ImageName: "TestRegistry/TestPrefixbee2466e-9d46-45e5-a6c4-4d359504c10c",
+				ImageTag:  build.ID,
 				Source: &pb.BuildSource{
 					RepositoryUrl: app.Repository.URL,
 					Commit:        build.Commit,
