@@ -34,6 +34,8 @@ import (
 func NewWithDocker(c2 Config) (*Server, error) {
 	server := grpc.NewServer()
 	tcpListenPort := provideGRPCPort(c2)
+	hubHub := hub.New()
+	bus := eventbus.NewLocal(hubHub)
 	config := c2.DB
 	db, err := admindb.New(config)
 	if err != nil {
@@ -47,8 +49,6 @@ func NewWithDocker(c2 Config) (*Server, error) {
 	if err != nil {
 		return nil, err
 	}
-	hubHub := hub.New()
-	bus := eventbus.NewLocal(hubHub)
 	ingressConfDirPath := _wireIngressConfDirPathValue
 	backend, err := dockerimpl.NewDockerBackend(client, bus, ingressConfDirPath)
 	if err != nil {
@@ -73,7 +73,7 @@ func NewWithDocker(c2 Config) (*Server, error) {
 	if err != nil {
 		return nil, err
 	}
-	apiServerService := usecase.NewAPIServerService(applicationRepository, buildRepository, environmentRepository, gitRepositoryRepository, appDeployService, backend, mariaDBManager, mongoDBManager)
+	apiServerService := usecase.NewAPIServerService(bus, applicationRepository, buildRepository, environmentRepository, gitRepositoryRepository, appDeployService, backend, mariaDBManager, mongoDBManager)
 	applicationService := grpc.NewApplicationServiceServer(apiServerService)
 	router := &Router{}
 	webConfig := provideWebServerConfig(router)
@@ -119,6 +119,8 @@ var (
 func NewWithK8S(c2 Config) (*Server, error) {
 	server := grpc.NewServer()
 	tcpListenPort := provideGRPCPort(c2)
+	hubHub := hub.New()
+	bus := eventbus.NewLocal(hubHub)
 	config := c2.DB
 	db, err := admindb.New(config)
 	if err != nil {
@@ -128,8 +130,6 @@ func NewWithK8S(c2 Config) (*Server, error) {
 	buildRepository := repository.NewBuildRepository(db)
 	environmentRepository := repository.NewEnvironmentRepository(db)
 	gitRepositoryRepository := repository.NewGitRepositoryRepository(db)
-	hubHub := hub.New()
-	bus := eventbus.NewLocal(hubHub)
 	restConfig, err := rest.InClusterConfig()
 	if err != nil {
 		return nil, err
@@ -161,7 +161,7 @@ func NewWithK8S(c2 Config) (*Server, error) {
 	if err != nil {
 		return nil, err
 	}
-	apiServerService := usecase.NewAPIServerService(applicationRepository, buildRepository, environmentRepository, gitRepositoryRepository, appDeployService, backend, mariaDBManager, mongoDBManager)
+	apiServerService := usecase.NewAPIServerService(bus, applicationRepository, buildRepository, environmentRepository, gitRepositoryRepository, appDeployService, backend, mariaDBManager, mongoDBManager)
 	applicationService := grpc.NewApplicationServiceServer(apiServerService)
 	router := &Router{}
 	webConfig := provideWebServerConfig(router)

@@ -88,15 +88,13 @@ services:
   registry:
     image: registry:2
     restart: always
-    ports:
-      - "5000:443"
-    volumes:
-      - ./local-dev/registry/cert:/certs
     environment:
       REGISTRY_STORAGE_DELETE_ENABLED: "true"
-      REGISTRY_HTTP_ADDR: :443
-      REGISTRY_HTTP_TLS_CERTIFICATE: /certs/domain.crt
-      REGISTRY_HTTP_TLS_KEY: /certs/domain.key
+      REGISTRY_HTTP_ADDR: :80
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.registry.rule=Host(`registry.local.tokyotech.org`)"
+      - "traefik.http.services.registry.loadbalancer.server.port=80"
     networks:
       default:
         aliases:
@@ -109,8 +107,7 @@ services:
       - "5003:80"
     environment:
       ENV_DOCKER_REGISTRY_HOST: registry.local.tokyotech.org
-      ENV_DOCKER_REGISTRY_PORT: 443
-      ENV_DOCKER_REGISTRY_USE_SSL: 1
+      ENV_DOCKER_REGISTRY_PORT: 80
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.registry_frontend.rule=Host(`registry-frontend.local.tokyotech.org`)"
@@ -126,7 +123,7 @@ services:
       - "5002:1234"
     command: --addr tcp://0.0.0.0:1234
     volumes:
-      - ./local-dev/registry/cert/domain.crt:/etc/ssl/certs/registry.crt
+      - ./local-dev/buildkitd/buildkitd.toml:/etc/buildkit/buildkitd.toml
     networks:
       - default
 
@@ -180,7 +177,7 @@ services:
       - --providers.file
       - --providers.file.directory=/opt/neoshowcase/conf
     ports:
-      - "8888:80"
+      - "80:80"
       - "8080:8080"
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
