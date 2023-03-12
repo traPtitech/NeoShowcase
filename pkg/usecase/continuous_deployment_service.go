@@ -78,8 +78,6 @@ func (cd *continuousDeploymentService) Stop(_ context.Context) error {
 func (cd *continuousDeploymentService) syncBuildLoop(closer <-chan struct{}) {
 	sub := cd.bus.Subscribe(event.FetcherFetchComplete)
 	defer sub.Unsubscribe()
-	ticker := time.NewTicker(3 * time.Minute)
-	defer ticker.Stop()
 
 	doSync := func() {
 		start := time.Now()
@@ -92,8 +90,6 @@ func (cd *continuousDeploymentService) syncBuildLoop(closer <-chan struct{}) {
 
 	for {
 		select {
-		case <-ticker.C:
-			doSync()
 		case <-sub.Chan():
 			doSync()
 		case <-closer:
@@ -116,6 +112,8 @@ func (cd *continuousDeploymentService) syncDeployLoop(closer <-chan struct{}) {
 		}
 		log.Infof("Synced deployments in %v", time.Since(start))
 	}
+
+	doSync()
 
 	for {
 		select {
