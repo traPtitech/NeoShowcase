@@ -35,8 +35,8 @@ func toDomainBuild(build *models.Build) *domain.Build {
 		StartedAt:     build.StartedAt,
 		FinishedAt:    optional.New(build.FinishedAt.Time, build.FinishedAt.Valid),
 	}
-	artifact := build.R.Artifact
-	if artifact != nil {
+	if build.R != nil && build.R.Artifact != nil {
+		artifact := build.R.Artifact
 		ret.Artifact = optional.From(domain.Artifact{
 			ID:        artifact.ID,
 			Size:      artifact.Size,
