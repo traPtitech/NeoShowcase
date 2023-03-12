@@ -174,7 +174,7 @@ func (cd *continuousDeploymentService) syncDeployments() error {
 
 	for _, app := range applications {
 		if build, ok := commitToBuild[app.WantCommit]; ok {
-			err := cd.deployer.QueueDeployment(ctx, build.ApplicationID, build.ID)
+			err := cd.deployer.StartDeployment(ctx, app, build)
 			if err != nil {
 				return fmt.Errorf("failed to queue deployment: %w", err)
 			}

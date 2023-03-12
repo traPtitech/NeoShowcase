@@ -10,6 +10,27 @@ import (
 	"github.com/traPtitech/neoshowcase/pkg/domain"
 )
 
+func (b *k8sBackend) GetContainer(ctx context.Context, appID string) (*domain.Container, error) {
+	list, err := b.clientset.CoreV1().Pods(appNamespace).List(ctx, metav1.ListOptions{
+		LabelSelector: metav1.FormatLabelSelector(&metav1.LabelSelector{MatchLabels: map[string]string{
+			appContainerLabel:              "true",
+			appContainerApplicationIDLabel: appID,
+		}}),
+	})
+	if err != nil {
+		return nil, fmt.Errorf("failed to fetch pods: %w", err)
+	}
+	if len(list.Items) == 0 {
+		return nil, domain.ErrContainerNotFound
+	}
+
+	item := list.Items[0]
+	return &domain.Container{
+		ApplicationID: appID,
+		State:         getContainerState(item.Status),
+	}, nil
+}
+
 func (b *k8sBackend) ListContainers(ctx context.Context) ([]domain.Container, error) {
 	list, err := b.clientset.CoreV1().Pods(appNamespace).List(ctx, metav1.ListOptions{
 		LabelSelector: metav1.FormatLabelSelector(&metav1.LabelSelector{MatchLabels: map[string]string{

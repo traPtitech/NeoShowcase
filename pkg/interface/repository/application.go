@@ -38,6 +38,7 @@ type ApplicationRepository interface {
 	UpdateApplication(ctx context.Context, id string, args UpdateApplicationArgs) error
 	RegisterApplicationOwner(ctx context.Context, applicationID string, userID string) error
 	GetApplicationByID(ctx context.Context, id string) (*domain.Application, error)
+	GetWebsite(ctx context.Context, applicationID string) (*domain.Website, error)
 	SetWebsite(ctx context.Context, applicationID string, fqdn string, httpPort int) error
 }
 
@@ -169,6 +170,19 @@ func (r *applicationRepository) GetApplicationByID(ctx context.Context, id strin
 		return nil, fmt.Errorf("failed to get application: %w", err)
 	}
 	return toDomainApplication(app, toDomainRepository(app.R.Repository)), nil
+}
+
+func (r *applicationRepository) GetWebsite(ctx context.Context, applicationID string) (*domain.Website, error) {
+	website, err := models.Websites(
+		models.WebsiteWhere.ApplicationID.EQ(applicationID),
+	).One(ctx, r.db)
+	if err != nil {
+		if isNoRowsErr(err) {
+			return nil, ErrNotFound
+		}
+		return nil, fmt.Errorf("failed to get website: %w", err)
+	}
+	return toDomainWebsite(website), nil
 }
 
 func (r *applicationRepository) SetWebsite(ctx context.Context, applicationID string, fqdn string, httpPort int) error {

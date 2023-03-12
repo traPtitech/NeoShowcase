@@ -9,6 +9,29 @@ import (
 	"github.com/traPtitech/neoshowcase/pkg/domain"
 )
 
+func (b *dockerBackend) GetContainer(ctx context.Context, appID string) (*domain.Container, error) {
+	containers, err := b.c.ListContainers(docker.ListContainersOptions{
+		All: true,
+		Filters: map[string][]string{"label": {
+			fmt.Sprintf("%s=true", appContainerLabel),
+			fmt.Sprintf("%s=%s", appContainerApplicationIDLabel, appID),
+		}},
+		Context: ctx,
+	})
+	if err != nil {
+		return nil, fmt.Errorf("failed to fetch containers: %w", err)
+	}
+	if len(containers) == 0 {
+		return nil, domain.ErrContainerNotFound
+	}
+
+	apiContainer := containers[0]
+	return &domain.Container{
+		ApplicationID: appID,
+		State:         getContainerState(apiContainer.State),
+	}, nil
+}
+
 func (b *dockerBackend) ListContainers(ctx context.Context) ([]domain.Container, error) {
 	containers, err := b.c.ListContainers(docker.ListContainersOptions{
 		All:     true,
