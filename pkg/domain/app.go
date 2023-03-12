@@ -14,7 +14,7 @@ type ApplicationState int
 
 const (
 	ApplicationStateIdle ApplicationState = iota
-	ApplicationStateStarting
+	ApplicationStateDeploying
 	ApplicationStateRunning
 	ApplicationStateErrored
 )
@@ -23,8 +23,8 @@ func (s ApplicationState) String() string {
 	switch s {
 	case ApplicationStateIdle:
 		return "IDLE"
-	case ApplicationStateStarting:
-		return "STARTING"
+	case ApplicationStateDeploying:
+		return "DEPLOYING"
 	case ApplicationStateRunning:
 		return "RUNNING"
 	case ApplicationStateErrored:
@@ -38,8 +38,8 @@ func ApplicationStateFromString(str string) ApplicationState {
 	switch str {
 	case "IDLE":
 		return ApplicationStateIdle
-	case "STARTING":
-		return ApplicationStateStarting
+	case "DEPLOYING":
+		return ApplicationStateDeploying
 	case "RUNNING":
 		return ApplicationStateRunning
 	case "ERRORED":

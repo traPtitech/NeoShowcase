@@ -31,7 +31,7 @@ CREATE TABLE `application_state`
 
 INSERT INTO `application_state` (`state`)
 VALUES ('IDLE'),
-       ('STARTING'),
+       ('DEPLOYING'),
        ('RUNNING'),
        ('ERRORED');
 

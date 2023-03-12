@@ -428,7 +428,7 @@ export enum BuildType {
 }
 export enum ApplicationState { 
   IDLE = 0,
-  STARTING = 1,
+  DEPLOYING = 1,
   RUNNING = 2,
   ERRORED = 3,
 }

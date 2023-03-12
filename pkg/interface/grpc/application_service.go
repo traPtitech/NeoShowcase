@@ -190,8 +190,8 @@ func convertToPBApplicationState(state domain.ApplicationState) pb.ApplicationSt
 	switch state {
 	case domain.ApplicationStateIdle:
 		return pb.ApplicationState_IDLE
-	case domain.ApplicationStateStarting:
-		return pb.ApplicationState_STARTING
+	case domain.ApplicationStateDeploying:
+		return pb.ApplicationState_DEPLOYING
 	case domain.ApplicationStateRunning:
 		return pb.ApplicationState_RUNNING
 	case domain.ApplicationStateErrored:

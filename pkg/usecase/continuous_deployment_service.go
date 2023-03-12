@@ -160,6 +160,7 @@ func (cd *continuousDeploymentService) syncDeployments() error {
 	if err != nil {
 		return err
 	}
+	applications = lo.Filter(applications, func(app *domain.Application, i int) bool { return app.State != domain.ApplicationStateDeploying })
 	commits := lo.Map(applications, func(app *domain.Application, i int) string { return app.WantCommit })
 	builds, err := cd.buildRepo.GetBuildsInCommit(ctx, commits)
 	if err != nil {
