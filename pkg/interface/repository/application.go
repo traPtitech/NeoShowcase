@@ -4,7 +4,6 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
-	"strings"
 
 	"github.com/samber/lo"
 	log "github.com/sirupsen/logrus"
@@ -106,8 +105,8 @@ func (r *applicationRepository) CreateApplication(ctx context.Context, args Crea
 		BranchName:    args.BranchName,
 		BuildType:     args.BuildType.String(),
 		State:         domain.ApplicationStateIdle.String(),
-		CurrentCommit: strings.Repeat("0", 40),
-		WantCommit:    strings.Repeat("0", 40),
+		CurrentCommit: domain.EmptyCommit,
+		WantCommit:    domain.EmptyCommit,
 	}
 	if err := app.Insert(ctx, r.db, boil.Infer()); err != nil {
 		return nil, fmt.Errorf("failed to create application: %w", err)

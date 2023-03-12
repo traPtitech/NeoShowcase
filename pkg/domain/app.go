@@ -49,6 +49,8 @@ func ApplicationStateFromString(str string) ApplicationState {
 	}
 }
 
+var EmptyCommit = strings.Repeat("0", 40)
+
 type Application struct {
 	ID            string
 	Repository    Repository

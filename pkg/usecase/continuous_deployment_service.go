@@ -145,6 +145,9 @@ func (cd *continuousDeploymentService) kickoffBuilds() error {
 		if buildExistsForCommit[app.WantCommit] {
 			continue
 		}
+		if app.WantCommit == domain.EmptyCommit {
+			continue
+		}
 		_, err := cd.builder.QueueBuild(ctx, app, app.WantCommit)
 		if err != nil {
 			return fmt.Errorf("failed to queue build: %w", err)
