@@ -148,7 +148,7 @@ func (r *repositoryFetcherService) fetchRepository(ctx context.Context, repo dom
 		err = gitRepo.FetchContext(ctx, &git.FetchOptions{
 			RemoteName: "origin",
 		})
-		if err != nil {
+		if err != nil && err != git.NoErrAlreadyUpToDate {
 			return nil, err
 		}
 		return gitRepo, nil

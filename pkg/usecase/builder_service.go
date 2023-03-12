@@ -183,13 +183,10 @@ func (s *builderService) initializeTask(ctx context.Context, task *builder.Task)
 		log.WithError(err).Errorf("failed to add remote: %s", task.BuildSource.RepositoryUrl)
 		return fmt.Errorf("failed to add remote: %w", err)
 	}
-	refName := plumbing.HEAD
-	if task.BuildSource.Commit != "" {
-		refName = plumbing.ReferenceName(task.BuildSource.Commit)
-	}
+	targetRef := plumbing.NewRemoteReferenceName("origin", "target")
 	err = remote.FetchContext(ctx, &git.FetchOptions{
 		RemoteName: "origin",
-		RefSpecs:   []config.RefSpec{config.RefSpec(refName)},
+		RefSpecs:   []config.RefSpec{config.RefSpec(fmt.Sprintf("+%s:%s", task.BuildSource.Commit, targetRef))},
 		Depth:      1,
 	})
 	if err != nil {
@@ -203,13 +200,7 @@ func (s *builderService) initializeTask(ctx context.Context, task *builder.Task)
 		log.WithError(err).Errorf("failed to get worktree: %s", intState.repositoryTempDir)
 		return fmt.Errorf("failed to get worktree: %w", err)
 	}
-	var checkoutOptions git.CheckoutOptions
-	if refName == plumbing.HEAD {
-		checkoutOptions = git.CheckoutOptions{Branch: "FETCH_HEAD"}
-	} else {
-		checkoutOptions = git.CheckoutOptions{Hash: plumbing.NewHash(task.BuildSource.Commit)}
-	}
-	err = wt.Checkout(&checkoutOptions)
+	err = wt.Checkout(&git.CheckoutOptions{Branch: targetRef})
 	if err != nil {
 		_ = os.RemoveAll(intState.repositoryTempDir)
 		log.WithError(err).Errorf("failed to checkout: %s", intState.repositoryTempDir)
