@@ -13,6 +13,7 @@ import (
 	"github.com/traPtitech/neoshowcase/pkg/domain/builder"
 	"github.com/traPtitech/neoshowcase/pkg/interface/grpc/pb"
 	"github.com/traPtitech/neoshowcase/pkg/interface/repository"
+	"github.com/traPtitech/neoshowcase/pkg/util/ds"
 )
 
 const (
@@ -31,7 +32,7 @@ type appBuildService struct {
 	buildRepo repository.BuildRepository
 	builder   pb.BuilderServiceClient
 
-	queue           queue
+	queue           *ds.Queue[*buildJob]
 	queueWait       sync.WaitGroup
 	cancel          context.CancelFunc
 	imageRegistry   string
@@ -51,7 +52,7 @@ func NewAppBuildService(appRepo repository.ApplicationRepository, buildRepo repo
 		appRepo:         appRepo,
 		buildRepo:       buildRepo,
 		builder:         builder,
-		queue:           newQueue(),
+		queue:           ds.NewQueue[*buildJob](),
 		cancel:          cancel,
 		imageRegistry:   string(registry),
 		imageNamePrefix: string(prefix),
@@ -89,7 +90,7 @@ func (s *appBuildService) Shutdown() {
 }
 
 func (s *appBuildService) CancelBuild(ctx context.Context, buildID string) error {
-	if ok := s.queue.DeleteById(buildID); !ok {
+	if ok := s.queue.DeleteIf(func(j *buildJob) bool { return j.buildID == buildID }); !ok {
 		return fmt.Errorf("job is already canceled")
 	}
 
@@ -175,46 +176,4 @@ func (s *appBuildService) requestBuild(ctx context.Context, app *domain.Applicat
 	log.WithField("applicationID", app.ID).
 		Info("build requested")
 	return nil
-}
-
-type queue struct {
-	data  []*buildJob
-	mutex *sync.RWMutex
-}
-
-func newQueue() queue {
-	return queue{
-		data:  []*buildJob{},
-		mutex: &sync.RWMutex{},
-	}
-}
-
-func (q *queue) Push(job *buildJob) {
-	q.mutex.Lock()
-	defer q.mutex.Unlock()
-	q.data = append(q.data, job)
-}
-
-func (q *queue) Pop() *buildJob {
-	q.mutex.Lock()
-	defer q.mutex.Unlock()
-	if len(q.data) == 0 {
-		return nil
-	}
-	res := q.data[0]
-	q.data = q.data[1:]
-
-	return res
-}
-
-func (q *queue) DeleteById(buildId string) bool {
-	q.mutex.Lock()
-	defer q.mutex.Unlock()
-	for i, v := range q.data {
-		if v.buildID == buildId {
-			q.data = append(q.data[:i], q.data[i+1:]...)
-			return true
-		}
-	}
-	return false
 }
