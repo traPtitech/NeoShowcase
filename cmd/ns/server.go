@@ -30,6 +30,7 @@ type Server struct {
 	bus                 domain.Bus
 	builderEventsBroker broker.BuilderEventsBroker
 	cdService           usecase.ContinuousDeploymentService
+	fetcherService      usecase.RepositoryFetcherService
 }
 
 func (s *Server) Start(ctx context.Context) error {
@@ -40,6 +41,10 @@ func (s *Server) Start(ctx context.Context) error {
 	})
 	eg.Go(func() error {
 		s.cdService.Run()
+		return nil
+	})
+	eg.Go(func() error {
+		s.fetcherService.Run()
 		return nil
 	})
 	eg.Go(func() error {
@@ -81,6 +86,9 @@ func (s *Server) Shutdown(ctx context.Context) error {
 	})
 	eg.Go(func() error {
 		return s.cdService.Stop(ctx)
+	})
+	eg.Go(func() error {
+		return s.fetcherService.Stop(ctx)
 	})
 
 	return eg.Wait()

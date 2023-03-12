@@ -18,6 +18,15 @@ export class Application extends jspb.Message {
   getBuildType(): BuildType;
   setBuildType(value: BuildType): Application;
 
+  getState(): ApplicationState;
+  setState(value: ApplicationState): Application;
+
+  getCurrentCommit(): string;
+  setCurrentCommit(value: string): Application;
+
+  getWantCommit(): string;
+  setWantCommit(value: string): Application;
+
   serializeBinary(): Uint8Array;
   toObject(includeInstance?: boolean): Application.AsObject;
   static toObject(includeInstance: boolean, msg: Application): Application.AsObject;
@@ -32,6 +41,9 @@ export namespace Application {
     repositoryUrl: string,
     branchName: string,
     buildType: BuildType,
+    state: ApplicationState,
+    currentCommit: string,
+    wantCommit: string,
   }
 }
 
@@ -203,6 +215,9 @@ export class Build extends jspb.Message {
   getId(): string;
   setId(value: string): Build;
 
+  getCommit(): string;
+  setCommit(value: string): Build;
+
   getStatus(): Build.BuildStatus;
   setStatus(value: Build.BuildStatus): Build;
 
@@ -227,6 +242,7 @@ export class Build extends jspb.Message {
 export namespace Build {
   export type AsObject = {
     id: string,
+    commit: string,
     status: Build.BuildStatus,
     startedAt?: google_protobuf_timestamp_pb.Timestamp.AsObject,
     finishedAt?: neoshowcase_protobuf_null_pb.NullTimestamp.AsObject,
@@ -409,4 +425,10 @@ export namespace SetApplicationEnvironmentVariableRequest {
 export enum BuildType { 
   IMAGE = 0,
   STATIC = 1,
+}
+export enum ApplicationState { 
+  IDLE = 0,
+  DEPLOYING = 1,
+  RUNNING = 2,
+  ERRORED = 3,
 }

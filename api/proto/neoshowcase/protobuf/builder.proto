@@ -18,7 +18,7 @@ message GetStatusResponse {
 
 message BuildSource {
   string repository_url = 1;
-  string ref = 2;
+  string commit = 2;
 }
 
 message BuildOptions {
@@ -30,10 +30,11 @@ message BuildOptions {
 
 message StartBuildImageRequest {
   string image_name = 1;
-  BuildSource source = 2;
-  BuildOptions options = 3;
-  string build_id = 4;
-  string application_id = 5;
+  string image_tag = 2;
+  BuildSource source = 3;
+  BuildOptions options = 4;
+  string build_id = 5;
+  string application_id = 6;
 }
 
 message StartBuildImageResponse {

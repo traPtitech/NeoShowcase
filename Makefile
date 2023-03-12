@@ -12,8 +12,14 @@ SPECTRAL_CMD := docker run --rm -it -v $$(pwd):/tmp stoplight/spectral:$(SPECTRA
 SQL_MIGRATE_CMD := sql-migrate
 EVANS_CMD := evans
 
+.DEFAULT_GOAL := help
+
+.PHONY: help
+help: ## Display this help screen
+	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-20s\033[0m %s\n", $$1, $$2}'
+
 .PHONY: init
-init:
+init: ## Install commands
 	go mod download
 	go install google.golang.org/protobuf/cmd/protoc-gen-go@latest
 	go install google.golang.org/grpc/cmd/protoc-gen-go-grpc@latest
@@ -23,101 +29,97 @@ init:
 	go install github.com/ktr0731/evans@latest
 
 .PHONY: gogen
-gogen:
+gogen: ## Generate go sources
 	go generate ./...
 
 .PHONY: protoc
-protoc:
+protoc: ## Generate proto sources
 	protoc $(PROTOC_OPTS) $(PROTOC_SOURCES)
 	protoc $(PROTOC_OPTS_CLIENT) $(PROTOC_SOURCES_CLIENT)
 
 .PHONY: db-gen-docs
-db-gen-docs:
+db-gen-docs: ## Generate db schema docs
 	@if [ -d "./docs/dbschema" ]; then \
 		rm -r ./docs/dbschema; \
 	fi
 	@$(TBLS_CMD) doc
 
 .PHONY: db-diff-docs
-db-diff-docs:
+db-diff-docs: ## Calculate diff with current db schema docs
 	@$(TBLS_CMD) diff
 
 .PHONY: db-lint
-db-lint:
+db-lint: ## Lint current db schema docs
 	@$(TBLS_CMD) lint
 
-.PHONY: swagger-lint
-swagger-lint:
-	@$(SPECTRAL_CMD) lint -r /tmp/.spectral.yml -q /tmp/api/http/swagger.yaml
-
 .PHONY: golangci-lint
-golangci-lint:
+golangci-lint: ## Lint go sources
 	@golangci-lint run
 
 .PHONY: up
-up:
+up: ## Setup development environment
 	@docker compose up -d --build
 
 .PHONY: up-ns
-up-ns:
+up-ns: ## Rebuild ns api server
 	@docker compose up -d --build ns
 
 .PHONY: up-ns-builder
-up-ns-builder:
+up-ns-builder: ## Rebuild ns builder
 	@docker compose up -d --build ns-builder
 
 .PHONY: up-ns-ssgem
-up-ns-ssgen:
+up-ns-ssgen: ## Rebuild ns static site gen
 	@docker compose up -d --build ns-ssgen
 
 .PHONY: down
-down:
+down: ## Tear down development environment
 	@docker compose down
 
 .PHONY: migrate-up
-migrate-up:
+migrate-up: ## Apply migration to development environment
 	@$(SQL_MIGRATE_CMD) up
 
 .PHONY: migrate-down
-migrate-down:
+migrate-down: ## Rollback migration of development environment
 	@$(SQL_MIGRATE_CMD) down
 
 .PHONY: ns-evans
-ns-evans:
+ns-evans: ## Connect to ns api server service
 	@$(EVANS_CMD) --host localhost -p 5009 -r repl
 
 .PHONY: ns-builder-evans
-ns-builder-evans:
+ns-builder-evans: ## Connect to ns builder service
 	@$(EVANS_CMD) --host localhost -p 5006 -r repl
 
 .PHONY: ns-ssgen-evans
-ns-ssgen-evans:
+ns-ssgen-evans: ## Connect to ns static site gen service
 	@$(EVANS_CMD) --host localhost -p 5007 -r repl
 
 .PHONY: db-update
-db-update: migrate-up gogen db-gen-docs
+db-update: migrate-up gogen db-gen-docs ## Apply migration, generate sqlboiler sources, and generate db schema docs
 
 .PHONY: dind-up
-dind-up:
+dind-up: ## Setup docker-in-docker container
 	docker run -it -d --privileged --name ns-test-dind -p 5555:2376 -e DOCKER_TLS_CERTDIR=/certs -v $$PWD/local-dev/dind:/certs docker:dind
 
 .PHONY: dind-down
-dind-down:
+dind-down: ## Tear down docker-in-docker container
 	docker rm -vf ns-test-dind
 
 .PHONY: docker-test
-docker-test:
+docker-test: ## Run docker tests
 	@docker container inspect ns-test-dind > /dev/null || make dind-up
 	ENABLE_DOCKER_TESTS=true DOCKER_HOST=tcp://localhost:5555 DOCKER_CERT_PATH=$$PWD/local-dev/dind/client DOCKER_TLS_VERIFY=true go test -v ./pkg/infrastructure/backend/dockerimpl
 
 .PHONY: k3d-up
-k3d-up:
-	k3d cluster create ns-test --kubeconfig-switch-context=false --no-lb --k3s-arg "--no-deploy=traefik,servicelb,metrics-server"
+k3d-up: ## Setup k3s environment
+	k3d cluster create ns-test --kubeconfig-switch-context=false --no-lb --k3s-arg "--disable=traefik,servicelb,metrics-server"
 
 .PHONY: k3d-down
-k3d-down:
+k3d-down: ## Tear down k3s environment
 	k3d cluster delete ns-test
 
 .PHONY: k8s-test
-k8s-test:
+k8s-test: ## Run k8s tests
 	ENABLE_K8S_TESTS=true K8S_TESTS_CLUSTER_CONTEXT=k3d-ns-test go test -v ./pkg/infrastructure/backend/k8simpl

@@ -7,7 +7,9 @@ import (
 
 	"github.com/traPtitech/neoshowcase/pkg/domain"
 	"github.com/traPtitech/neoshowcase/pkg/domain/builder"
+	"github.com/traPtitech/neoshowcase/pkg/domain/event"
 	"github.com/traPtitech/neoshowcase/pkg/interface/repository"
+	"github.com/traPtitech/neoshowcase/pkg/util/random"
 )
 
 var (
@@ -46,29 +48,38 @@ type APIServerService interface {
 }
 
 type apiServerService struct {
-	appRepo   repository.ApplicationRepository
-	buildRepo repository.BuildRepository
-	envRepo   repository.EnvironmentRepository
-	gitRepo   repository.GitRepositoryRepository
-	deploySvc AppDeployService
-	backend   domain.Backend
+	bus            domain.Bus
+	appRepo        repository.ApplicationRepository
+	buildRepo      repository.BuildRepository
+	envRepo        repository.EnvironmentRepository
+	gitRepo        repository.GitRepositoryRepository
+	deploySvc      AppDeployService
+	backend        domain.Backend
+	mariaDBManager domain.MariaDBManager
+	mongoDBManager domain.MongoDBManager
 }
 
 func NewAPIServerService(
+	bus domain.Bus,
 	appRepo repository.ApplicationRepository,
 	buildRepo repository.BuildRepository,
 	envRepo repository.EnvironmentRepository,
 	gitRepo repository.GitRepositoryRepository,
 	deploySvc AppDeployService,
 	backend domain.Backend,
+	mariaDBManager domain.MariaDBManager,
+	mongoDBManager domain.MongoDBManager,
 ) APIServerService {
 	return &apiServerService{
-		appRepo:   appRepo,
-		buildRepo: buildRepo,
-		envRepo:   envRepo,
-		gitRepo:   gitRepo,
-		deploySvc: deploySvc,
-		backend:   backend,
+		bus:            bus,
+		appRepo:        appRepo,
+		buildRepo:      buildRepo,
+		envRepo:        envRepo,
+		gitRepo:        gitRepo,
+		deploySvc:      deploySvc,
+		backend:        backend,
+		mariaDBManager: mariaDBManager,
+		mongoDBManager: mongoDBManager,
 	}
 }
 
@@ -113,7 +124,67 @@ func (s *apiServerService) CreateApplication(ctx context.Context, args CreateApp
 		return nil, err
 	}
 
+	err = s.createApplicationDatabase(ctx, application)
+	if err != nil {
+		return nil, err
+	}
+
+	s.bus.Publish(event.FetcherFetchRequest, nil)
+
 	return application, nil
+}
+
+func (s *apiServerService) createApplicationDatabase(ctx context.Context, app *domain.Application) error {
+	dbName := fmt.Sprintf("ns_app_%s", app.ID)
+
+	// TODO: アプリケーションの設定の取得
+	applicationNeedsMariaDB := true
+	if applicationNeedsMariaDB {
+		dbPassword := random.SecureGeneratePassword(32)
+		dbSetting := domain.CreateArgs{
+			Database: dbName,
+			Password: dbPassword,
+		}
+		if err := s.mariaDBManager.Create(ctx, dbSetting); err != nil {
+			return err
+		}
+
+		if err := s.envRepo.SetEnv(ctx, app.ID, domain.EnvMySQLUserKey, dbName); err != nil {
+			return err
+		}
+		if err := s.envRepo.SetEnv(ctx, app.ID, domain.EnvMySQLPasswordKey, dbPassword); err != nil {
+			return err
+		}
+		if err := s.envRepo.SetEnv(ctx, app.ID, domain.EnvMySQLDatabaseKey, dbName); err != nil {
+			return err
+		}
+	}
+
+	// TODO: アプリケーションの設定の取得
+	applicationNeedsMongoDB := true
+	if applicationNeedsMongoDB {
+		dbPassword := random.SecureGeneratePassword(32)
+		dbSetting := domain.CreateArgs{
+			Database: dbName,
+			Password: dbPassword,
+		}
+		err := s.mongoDBManager.Create(ctx, dbSetting)
+		if err != nil {
+			return err
+		}
+
+		if err := s.envRepo.SetEnv(ctx, app.ID, domain.EnvMongoDBUserKey, dbName); err != nil {
+			return err
+		}
+		if err := s.envRepo.SetEnv(ctx, app.ID, domain.EnvMongoDBPasswordKey, dbPassword); err != nil {
+			return err
+		}
+		if err := s.envRepo.SetEnv(ctx, app.ID, domain.EnvMongoDBDatabaseKey, dbName); err != nil {
+			return err
+		}
+	}
+
+	return nil
 }
 
 func (s *apiServerService) GetApplication(ctx context.Context, id string) (*domain.Application, error) {
@@ -122,6 +193,17 @@ func (s *apiServerService) GetApplication(ctx context.Context, id string) (*doma
 }
 
 func (s *apiServerService) DeleteApplication(ctx context.Context, id string) error {
+	// TODO implement me
+	panic("implement me")
+	// delete artifacts
+	// delete builds
+	// delete websites
+	// delete environments
+	// delete owners
+	// s.deleteApplicationDatabase()
+}
+
+func (s *apiServerService) deleteApplicationDatabase(ctx context.Context, app *domain.Application) error {
 	// TODO implement me
 	panic("implement me")
 }
@@ -151,13 +233,13 @@ func (s *apiServerService) StartApplication(ctx context.Context, id string) erro
 		}
 		return err
 	}
-	return s.deploySvc.QueueDeployment(ctx, id, build.ID)
+	return s.deploySvc.QueueDeployment(ctx, id, build.ID) // TODO: call cd service instead
 }
 
 func (s *apiServerService) RestartApplication(ctx context.Context, id string) error {
-	return s.backend.RestartContainer(ctx, id)
+	return s.backend.RestartContainer(ctx, id) // TODO: call cd service instead
 }
 
 func (s *apiServerService) StopApplication(ctx context.Context, id string) error {
-	return s.backend.DestroyContainer(ctx, id)
+	return s.backend.DestroyContainer(ctx, id) // TODO: call cd service instead
 }

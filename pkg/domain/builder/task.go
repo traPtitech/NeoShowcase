@@ -7,11 +7,12 @@ type Task struct {
 	BuildSource   *BuildSource
 	BuildOptions  *BuildOptions
 	ImageName     string
+	ImageTag      string
 }
 
 type BuildSource struct {
 	RepositoryUrl string
-	Ref           string
+	Commit        string
 }
 
 type BuildOptions struct {

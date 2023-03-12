@@ -13,6 +13,7 @@ import (
 	"github.com/traPtitech/neoshowcase/pkg/domain/builder"
 	"github.com/traPtitech/neoshowcase/pkg/interface/grpc/pb"
 	"github.com/traPtitech/neoshowcase/pkg/interface/repository"
+	"github.com/traPtitech/neoshowcase/pkg/util/ds"
 )
 
 const (
@@ -21,7 +22,7 @@ const (
 )
 
 type AppBuildService interface {
-	QueueBuild(ctx context.Context, application *domain.Application) (string, error)
+	QueueBuild(ctx context.Context, application *domain.Application, commit string) (string, error)
 	CancelBuild(ctx context.Context, buildID string) error
 	Shutdown()
 }
@@ -31,7 +32,7 @@ type appBuildService struct {
 	buildRepo repository.BuildRepository
 	builder   pb.BuilderServiceClient
 
-	queue           queue
+	queue           *ds.Queue[*buildJob]
 	queueWait       sync.WaitGroup
 	cancel          context.CancelFunc
 	imageRegistry   string
@@ -41,6 +42,7 @@ type appBuildService struct {
 type buildJob struct {
 	buildID string
 	app     *domain.Application
+	commit  string
 }
 
 func NewAppBuildService(appRepo repository.ApplicationRepository, buildRepo repository.BuildRepository, builder pb.BuilderServiceClient, registry builder.DockerImageRegistryString, prefix builder.DockerImageNamePrefixString) AppBuildService {
@@ -50,7 +52,7 @@ func NewAppBuildService(appRepo repository.ApplicationRepository, buildRepo repo
 		appRepo:         appRepo,
 		buildRepo:       buildRepo,
 		builder:         builder,
-		queue:           newQueue(),
+		queue:           ds.NewQueue[*buildJob](),
 		cancel:          cancel,
 		imageRegistry:   string(registry),
 		imageNamePrefix: string(prefix),
@@ -59,14 +61,14 @@ func NewAppBuildService(appRepo repository.ApplicationRepository, buildRepo repo
 	return s
 }
 
-func (s *appBuildService) QueueBuild(ctx context.Context, application *domain.Application) (string, error) {
+func (s *appBuildService) QueueBuild(ctx context.Context, application *domain.Application, commit string) (string, error) {
 	app, err := s.appRepo.GetApplicationByID(ctx, application.ID)
 	if err != nil {
 		return "", fmt.Errorf("failed to QueueBuild: %w", err)
 	}
 
 	// ビルドのエントリをDBに挿入
-	buildLog, err := s.buildRepo.CreateBuild(ctx, application.ID)
+	buildLog, err := s.buildRepo.CreateBuild(ctx, application.ID, commit)
 	if err != nil {
 		log.WithError(err).Errorf("failed to create build: %s", application.ID)
 		return "", fmt.Errorf("failed to create build: %w", err)
@@ -76,6 +78,7 @@ func (s *appBuildService) QueueBuild(ctx context.Context, application *domain.Ap
 	s.queue.Push(&buildJob{
 		buildID: buildLog.ID,
 		app:     app,
+		commit:  commit,
 	})
 
 	return buildLog.ID, nil
@@ -87,11 +90,12 @@ func (s *appBuildService) Shutdown() {
 }
 
 func (s *appBuildService) CancelBuild(ctx context.Context, buildID string) error {
-	if ok := s.queue.DeleteById(buildID); !ok {
+	deleted := s.queue.DeleteIf(func(j *buildJob) bool { return j.buildID == buildID })
+	if deleted == 0 {
 		return fmt.Errorf("job is already canceled")
 	}
 
-	s.queueWait.Done()
+	s.queueWait.Add(-deleted)
 	return nil
 }
 
@@ -119,7 +123,7 @@ func (s *appBuildService) startQueueManager(ctx context.Context) {
 						break requestLoop
 					}
 					if res.GetStatus() == pb.BuilderStatus_WAITING {
-						err := s.requestBuild(context.Background(), v.app, v.buildID)
+						err := s.requestBuild(context.Background(), v.app, v.buildID, v.commit)
 						if err != nil {
 							log.WithError(err).Error("failed to request build")
 						}
@@ -134,13 +138,15 @@ func (s *appBuildService) startQueueManager(ctx context.Context) {
 	}
 }
 
-func (s *appBuildService) requestBuild(ctx context.Context, app *domain.Application, buildID string) error {
+func (s *appBuildService) requestBuild(ctx context.Context, app *domain.Application, buildID string, commit string) error {
 	switch app.BuildType {
 	case builder.BuildTypeImage:
 		_, err := s.builder.StartBuildImage(ctx, &pb.StartBuildImageRequest{
 			ImageName: builder.GetImageName(s.imageRegistry, s.imageNamePrefix, app.ID),
+			ImageTag:  buildID,
 			Source: &pb.BuildSource{
-				RepositoryUrl: app.Repository.URL, // TODO ブランチ・タグ指定に対応
+				RepositoryUrl: app.Repository.URL,
+				Commit:        commit,
 			},
 			Options:       &pb.BuildOptions{}, // TODO 汎用ベースイメージビルドに対応させる
 			BuildId:       buildID,
@@ -153,7 +159,8 @@ func (s *appBuildService) requestBuild(ctx context.Context, app *domain.Applicat
 	case builder.BuildTypeStatic:
 		_, err := s.builder.StartBuildStatic(ctx, &pb.StartBuildStaticRequest{
 			Source: &pb.BuildSource{
-				RepositoryUrl: app.Repository.URL, // TODO ブランチ・タグ指定に対応
+				RepositoryUrl: app.Repository.URL,
+				Commit:        commit,
 			},
 			Options:       &pb.BuildOptions{}, // TODO 汎用ベースイメージビルドに対応させる
 			BuildId:       buildID,
@@ -170,46 +177,4 @@ func (s *appBuildService) requestBuild(ctx context.Context, app *domain.Applicat
 	log.WithField("applicationID", app.ID).
 		Info("build requested")
 	return nil
-}
-
-type queue struct {
-	data  []*buildJob
-	mutex *sync.RWMutex
-}
-
-func newQueue() queue {
-	return queue{
-		data:  []*buildJob{},
-		mutex: &sync.RWMutex{},
-	}
-}
-
-func (q *queue) Push(job *buildJob) {
-	q.mutex.Lock()
-	defer q.mutex.Unlock()
-	q.data = append(q.data, job)
-}
-
-func (q *queue) Pop() *buildJob {
-	q.mutex.Lock()
-	defer q.mutex.Unlock()
-	if len(q.data) == 0 {
-		return nil
-	}
-	res := q.data[0]
-	q.data = q.data[1:]
-
-	return res
-}
-
-func (q *queue) DeleteById(buildId string) bool {
-	q.mutex.Lock()
-	defer q.mutex.Unlock()
-	for i, v := range q.data {
-		if v.buildID == buildId {
-			q.data = append(q.data[:i], q.data[i+1:]...)
-			return true
-		}
-	}
-	return false
 }

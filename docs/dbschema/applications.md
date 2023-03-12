@@ -13,11 +13,16 @@ CREATE TABLE `applications` (
   `repository_id` varchar(22) NOT NULL COMMENT 'リポジトリID',
   `branch_name` varchar(100) NOT NULL COMMENT 'Gitブランチ・タグ名',
   `build_type` enum('image','static') NOT NULL COMMENT 'ビルドタイプ',
+  `state` varchar(10) NOT NULL COMMENT 'デプロイの状態',
+  `current_commit` char(40) NOT NULL COMMENT 'デプロイされたコミット',
+  `want_commit` char(40) NOT NULL COMMENT 'デプロイを待つコミット',
   `created_at` datetime(6) NOT NULL COMMENT '作成日時',
   `updated_at` datetime(6) NOT NULL COMMENT '更新日時',
   PRIMARY KEY (`id`),
   UNIQUE KEY `repository_id` (`repository_id`,`branch_name`),
-  CONSTRAINT `fk_applications_repository_id` FOREIGN KEY (`repository_id`) REFERENCES `repositories` (`id`)
+  KEY `fk_applications_state` (`state`),
+  CONSTRAINT `fk_applications_repository_id` FOREIGN KEY (`repository_id`) REFERENCES `repositories` (`id`),
+  CONSTRAINT `fk_applications_state` FOREIGN KEY (`state`) REFERENCES `application_state` (`state`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci COMMENT='アプリケーションテーブル'
 ```
 
@@ -31,6 +36,9 @@ CREATE TABLE `applications` (
 | repository_id | varchar(22) |  | false |  | [repositories](repositories.md) | リポジトリID |
 | branch_name | varchar(100) |  | false |  |  | Gitブランチ・タグ名 |
 | build_type | enum('image','static') |  | false |  |  | ビルドタイプ |
+| state | varchar(10) |  | false |  | [application_state](application_state.md) | デプロイの状態 |
+| current_commit | char(40) |  | false |  |  | デプロイされたコミット |
+| want_commit | char(40) |  | false |  |  | デプロイを待つコミット |
 | created_at | datetime(6) |  | false |  |  | 作成日時 |
 | updated_at | datetime(6) |  | false |  |  | 更新日時 |
 
@@ -39,6 +47,7 @@ CREATE TABLE `applications` (
 | Name | Type | Definition |
 | ---- | ---- | ---------- |
 | fk_applications_repository_id | FOREIGN KEY | FOREIGN KEY (repository_id) REFERENCES repositories (id) |
+| fk_applications_state | FOREIGN KEY | FOREIGN KEY (state) REFERENCES application_state (state) |
 | PRIMARY | PRIMARY KEY | PRIMARY KEY (id) |
 | repository_id | UNIQUE | UNIQUE KEY repository_id (repository_id, branch_name) |
 
@@ -46,6 +55,7 @@ CREATE TABLE `applications` (
 
 | Name | Definition |
 | ---- | ---------- |
+| fk_applications_state | KEY fk_applications_state (state) USING BTREE |
 | PRIMARY | PRIMARY KEY (id) USING BTREE |
 | repository_id | UNIQUE KEY repository_id (repository_id, branch_name) USING BTREE |
 

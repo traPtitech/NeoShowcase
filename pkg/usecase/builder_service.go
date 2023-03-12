@@ -10,6 +10,7 @@ import (
 	"sync"
 
 	"github.com/go-git/go-git/v5"
+	"github.com/go-git/go-git/v5/config"
 	"github.com/go-git/go-git/v5/plumbing"
 	buildkit "github.com/moby/buildkit/client"
 	"github.com/moby/buildkit/client/llb"
@@ -48,8 +49,6 @@ type builderService struct {
 	artifactRepo repository.ArtifactRepository
 	buildRepo    repository.BuildRepository
 
-	registry string
-
 	task              *builder.Task
 	internalTaskState *internalTaskState
 	taskLock          sync.Mutex
@@ -58,14 +57,13 @@ type builderService struct {
 	statusLock sync.RWMutex
 }
 
-func NewBuilderService(buildkit *buildkit.Client, storage domain.Storage, eventbus domain.Bus, artifactRepo repository.ArtifactRepository, buildRepo repository.BuildRepository, registry builder.DockerImageRegistryString) BuilderService {
+func NewBuilderService(buildkit *buildkit.Client, storage domain.Storage, eventbus domain.Bus, artifactRepo repository.ArtifactRepository, buildRepo repository.BuildRepository) BuilderService {
 	return &builderService{
 		buildkit:     buildkit,
 		storage:      storage,
 		eventbus:     eventbus,
 		artifactRepo: artifactRepo,
 		buildRepo:    buildRepo,
-		registry:     string(registry),
 
 		status: builder.StateWaiting,
 	}
@@ -167,15 +165,43 @@ func (s *builderService) initializeTask(ctx context.Context, task *builder.Task)
 	intState.repositoryTempDir = dir
 
 	// リポジトリをクローン
-	refName := plumbing.HEAD
-	if task.BuildSource.Ref != "" {
-		refName = plumbing.ReferenceName("refs/" + task.BuildSource.Ref)
+	repo, err := git.PlainInit(intState.repositoryTempDir, false)
+	if err != nil {
+		_ = os.RemoveAll(intState.repositoryTempDir)
+		log.WithError(err).Errorf("failed to init repository: %s", intState.repositoryTempDir)
+		return fmt.Errorf("failed to init repository: %w", err)
 	}
-	_, err = git.PlainCloneContext(ctx, intState.repositoryTempDir, false, &git.CloneOptions{URL: task.BuildSource.RepositoryUrl, Depth: 1, ReferenceName: refName})
+	remote, err := repo.CreateRemote(&config.RemoteConfig{
+		Name: "origin",
+		URLs: []string{task.BuildSource.RepositoryUrl},
+	})
+	if err != nil {
+		_ = os.RemoveAll(intState.repositoryTempDir)
+		log.WithError(err).Errorf("failed to add remote: %s", task.BuildSource.RepositoryUrl)
+		return fmt.Errorf("failed to add remote: %w", err)
+	}
+	targetRef := plumbing.NewRemoteReferenceName("origin", "target")
+	err = remote.FetchContext(ctx, &git.FetchOptions{
+		RemoteName: "origin",
+		RefSpecs:   []config.RefSpec{config.RefSpec(fmt.Sprintf("+%s:%s", task.BuildSource.Commit, targetRef))},
+		Depth:      1,
+	})
 	if err != nil {
 		_ = os.RemoveAll(intState.repositoryTempDir)
 		log.WithError(err).Errorf("failed to clone repository: %s", task.BuildSource.RepositoryUrl)
 		return fmt.Errorf("failed to clone repository: %w", err)
+	}
+	wt, err := repo.Worktree()
+	if err != nil {
+		_ = os.RemoveAll(intState.repositoryTempDir)
+		log.WithError(err).Errorf("failed to get worktree: %s", intState.repositoryTempDir)
+		return fmt.Errorf("failed to get worktree: %w", err)
+	}
+	err = wt.Checkout(&git.CheckoutOptions{Branch: targetRef})
+	if err != nil {
+		_ = os.RemoveAll(intState.repositoryTempDir)
+		log.WithError(err).Errorf("failed to checkout: %s", intState.repositoryTempDir)
+		return fmt.Errorf("failed to checkout: %w", err)
 	}
 
 	// Status を Building に変更
@@ -314,7 +340,7 @@ func (s *builderService) buildImage(t *builder.Task, intState *internalTaskState
 			// ImageNameの指定がない場合はビルドするだけで、イメージを保存しない
 			exportAttrs["name"] = "build-" + t.BuildID
 		} else {
-			exportAttrs["name"] = s.registry + "/" + t.ImageName + ":" + t.BuildID
+			exportAttrs["name"] = t.ImageName + ":" + t.ImageTag
 			exportAttrs["push"] = "true"
 		}
 

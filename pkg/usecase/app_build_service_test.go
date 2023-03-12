@@ -38,6 +38,7 @@ func TestAppBuildService_QueueBuild(t *testing.T) {
 		}
 		build := &domain.Build{
 			ID:            "f01691dd-985a-48c9-8b47-205af468431a",
+			Commit:        "e46b36b48c2cc692c558502e1f57466d93bc031d",
 			Status:        builder.BuildStatusQueued,
 			ApplicationID: app.ID,
 		}
@@ -46,7 +47,7 @@ func TestAppBuildService_QueueBuild(t *testing.T) {
 			GetApplicationByID(context.Background(), app.ID).Return(app, nil)
 
 		buildRepo.EXPECT().
-			CreateBuild(context.Background(), app.ID).Return(build, nil)
+			CreateBuild(context.Background(), app.ID, build.Commit).Return(build, nil)
 
 		c.EXPECT().
 			GetStatus(context.Background(), &emptypb.Empty{}).
@@ -59,8 +60,10 @@ func TestAppBuildService_QueueBuild(t *testing.T) {
 		c.EXPECT().
 			StartBuildImage(context.Background(), &pb.StartBuildImageRequest{
 				ImageName: "TestRegistry/TestPrefixbee2466e-9d46-45e5-a6c4-4d359504c10c",
+				ImageTag:  build.ID,
 				Source: &pb.BuildSource{
 					RepositoryUrl: app.Repository.URL,
+					Commit:        build.Commit,
 				},
 				Options:       &pb.BuildOptions{},
 				BuildId:       build.ID,
@@ -68,7 +71,7 @@ func TestAppBuildService_QueueBuild(t *testing.T) {
 			}).
 			Return(&pb.StartBuildImageResponse{}, nil)
 
-		_, err := s.QueueBuild(context.Background(), app)
+		_, err := s.QueueBuild(context.Background(), app, build.Commit)
 		s.Shutdown()
 		require.Nil(t, err)
 	})
@@ -92,6 +95,7 @@ func TestAppBuildService_QueueBuild(t *testing.T) {
 		}
 		build := &domain.Build{
 			ID:            "f01691dd-985a-48c9-8b47-205af468431a",
+			Commit:        "e46b36b48c2cc692c558502e1f57466d93bc031d",
 			Status:        builder.BuildStatusQueued,
 			ApplicationID: app.ID,
 		}
@@ -100,7 +104,7 @@ func TestAppBuildService_QueueBuild(t *testing.T) {
 			GetApplicationByID(context.Background(), app.ID).Return(app, nil)
 
 		buildRepo.EXPECT().
-			CreateBuild(context.Background(), app.ID).Return(build, nil)
+			CreateBuild(context.Background(), app.ID, build.Commit).Return(build, nil)
 
 		c.EXPECT().
 			GetStatus(context.Background(), &emptypb.Empty{}).
@@ -114,6 +118,7 @@ func TestAppBuildService_QueueBuild(t *testing.T) {
 			StartBuildStatic(context.Background(), &pb.StartBuildStaticRequest{
 				Source: &pb.BuildSource{
 					RepositoryUrl: app.Repository.URL,
+					Commit:        build.Commit,
 				},
 				Options:       &pb.BuildOptions{},
 				BuildId:       build.ID,
@@ -121,7 +126,7 @@ func TestAppBuildService_QueueBuild(t *testing.T) {
 			}).
 			Return(&pb.StartBuildStaticResponse{}, nil)
 
-		_, err := s.QueueBuild(context.Background(), app)
+		_, err := s.QueueBuild(context.Background(), app, build.Commit)
 		s.Shutdown()
 		require.Nil(t, err)
 	})
@@ -134,7 +139,7 @@ func TestAppBuildService_QueueBuild(t *testing.T) {
 		buildLog := mock_repository.NewMockBuildRepository(mockCtrl)
 		c := mock_pb.NewMockBuilderServiceClient(mockCtrl)
 		s := NewAppBuildService(appRepo, buildLog, c, "TestRegistry", "TestPrefix")
-		queue := &s.(*appBuildService).queue
+		queue := s.(*appBuildService).queue
 
 		app1 := &domain.Application{
 			ID: "d563e2de-7905-4267-8a9c-51520aac02b3",
@@ -154,11 +159,13 @@ func TestAppBuildService_QueueBuild(t *testing.T) {
 		}
 		build1 := &domain.Build{
 			ID:            "f01691dd-985a-48c9-8b47-205af468431a",
+			Commit:        "e46b36b48c2cc692c558502e1f57466d93bc031d",
 			Status:        builder.BuildStatusQueued,
 			ApplicationID: app1.ID,
 		}
 		build2 := &domain.Build{
 			ID:            "4bd30598-2962-416a-86b5-635899a96a65",
+			Commit:        "fc703e1553578709c3d98e8b6468e8abbde77b54",
 			Status:        builder.BuildStatusQueued,
 			ApplicationID: app2.ID,
 		}
@@ -168,8 +175,8 @@ func TestAppBuildService_QueueBuild(t *testing.T) {
 		appRepo.EXPECT().
 			GetApplicationByID(context.Background(), app2.ID).Return(app2, nil)
 
-		buildLog.EXPECT().CreateBuild(context.Background(), app1.ID).Return(build1, nil)
-		buildLog.EXPECT().CreateBuild(context.Background(), app2.ID).Return(build2, nil)
+		buildLog.EXPECT().CreateBuild(context.Background(), app1.ID, build1.Commit).Return(build1, nil)
+		buildLog.EXPECT().CreateBuild(context.Background(), app2.ID, build2.Commit).Return(build2, nil)
 
 		// stop processing queue
 		c.EXPECT().
@@ -180,11 +187,11 @@ func TestAppBuildService_QueueBuild(t *testing.T) {
 			}, nil).
 			AnyTimes()
 
-		id1, err := s.QueueBuild(context.Background(), app1)
+		id1, err := s.QueueBuild(context.Background(), app1, build1.Commit)
 		if err != nil {
 			t.Fatal(err)
 		}
-		id2, err := s.QueueBuild(context.Background(), app2)
+		id2, err := s.QueueBuild(context.Background(), app2, build2.Commit)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -192,22 +199,16 @@ func TestAppBuildService_QueueBuild(t *testing.T) {
 		// wait for the Pop() of first item
 		time.Sleep(queueCheckInterval * 2)
 
-		queue.mutex.RLock()
-		require.Equal(t, len(queue.data), 1)
-		queue.mutex.RUnlock()
+		require.Equal(t, queue.Len(), 1)
 
 		// could not cancel the latest one for now
 		err = s.CancelBuild(context.Background(), id1)
-		queue.mutex.RLock()
-		require.Equal(t, len(queue.data), 1)
-		queue.mutex.RUnlock()
+		require.Equal(t, queue.Len(), 1)
 		require.NotNil(t, err)
 
 		// cancel waiting job
 		err = s.CancelBuild(context.Background(), id2)
-		queue.mutex.RLock()
-		require.Equal(t, len(queue.data), 0)
-		queue.mutex.RUnlock()
+		require.Equal(t, queue.Len(), 0)
 		require.Nil(t, err)
 	})
 }

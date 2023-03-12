@@ -12,8 +12,8 @@ import (
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
+
 	"github.com/traPtitech/neoshowcase/pkg/domain"
-	"github.com/traPtitech/neoshowcase/pkg/domain/builder"
 	"github.com/traPtitech/neoshowcase/pkg/infrastructure/admindb"
 	"github.com/traPtitech/neoshowcase/pkg/infrastructure/storage"
 	"github.com/traPtitech/neoshowcase/pkg/interface/grpc"
@@ -78,7 +78,6 @@ func main() {
 	cli.SetupLogLevelFlag(flags)
 
 	viper.SetDefault("buildkit.address", appdefaults.Address)
-	viper.SetDefault("buildkit.registry", "localhost:5000")
 	viper.SetDefault("grpc.port", 10000)
 	viper.SetDefault("db.host", "127.0.0.1")
 	viper.SetDefault("db.port", 3306)
@@ -117,10 +116,6 @@ func provideStorageConfig(c Config) domain.StorageConfig {
 
 func provideGRPCPort(c Config) grpc.TCPListenPort {
 	return grpc.TCPListenPort(c.GRPC.Port)
-}
-
-func provideDockerImageRegistry(c Config) builder.DockerImageRegistryString {
-	return builder.DockerImageRegistryString(c.Buildkit.Registry)
 }
 
 func initStorage(c domain.StorageConfig) (domain.Storage, error) {

@@ -25,7 +25,6 @@ func New(c Config) (*Server, error) {
 		admindb.New,
 		hub.New,
 		provideGRPCPort,
-		provideDockerImageRegistry,
 		provideStorageConfig,
 		provideAdminDBConfig,
 		initStorage,

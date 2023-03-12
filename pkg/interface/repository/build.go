@@ -19,9 +19,10 @@ import (
 //go:generate go run github.com/golang/mock/mockgen@latest -source=$GOFILE -package=mock_$GOPACKAGE -destination=./mock/$GOFILE
 type BuildRepository interface {
 	GetBuilds(ctx context.Context, applicationID string) ([]*domain.Build, error)
+	GetBuildsInCommit(ctx context.Context, commits []string) ([]*domain.Build, error)
 	GetBuild(ctx context.Context, buildID string) (*domain.Build, error)
 	GetLastSuccessBuild(ctx context.Context, applicationID string) (*domain.Build, error)
-	CreateBuild(ctx context.Context, applicationID string) (*domain.Build, error)
+	CreateBuild(ctx context.Context, applicationID string, commit string) (*domain.Build, error)
 	UpdateBuild(ctx context.Context, args UpdateBuildArgs) error
 }
 
@@ -46,6 +47,18 @@ func (r *buildRepository) GetBuilds(ctx context.Context, applicationID string) (
 	builds, err := models.Builds(
 		models.BuildWhere.ApplicationID.EQ(applicationID),
 		qm.Load(models.BuildRels.Artifact),
+	).All(ctx, r.db)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get builds: %w", err)
+	}
+	return lo.Map(builds, func(b *models.Build, i int) *domain.Build {
+		return toDomainBuild(b)
+	}), nil
+}
+
+func (r *buildRepository) GetBuildsInCommit(ctx context.Context, commits []string) ([]*domain.Build, error) {
+	builds, err := models.Builds(
+		models.BuildWhere.Commit.IN(commits),
 	).All(ctx, r.db)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get builds: %w", err)
@@ -82,11 +95,12 @@ func (r *buildRepository) GetLastSuccessBuild(ctx context.Context, applicationID
 	return toDomainBuild(build), err
 }
 
-func (r *buildRepository) CreateBuild(ctx context.Context, applicationID string) (*domain.Build, error) {
+func (r *buildRepository) CreateBuild(ctx context.Context, applicationID string, commit string) (*domain.Build, error) {
 	const errMsg = "failed to CreateBuildLog: %w"
 
 	build := &models.Build{
 		ID:            domain.NewID(),
+		Commit:        commit,
 		Status:        builder.BuildStatusQueued.String(),
 		StartedAt:     time.Now(),
 		ApplicationID: applicationID,

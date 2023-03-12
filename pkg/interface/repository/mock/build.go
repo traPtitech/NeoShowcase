@@ -37,18 +37,18 @@ func (m *MockBuildRepository) EXPECT() *MockBuildRepositoryMockRecorder {
 }
 
 // CreateBuild mocks base method.
-func (m *MockBuildRepository) CreateBuild(ctx context.Context, applicationID string) (*domain.Build, error) {
+func (m *MockBuildRepository) CreateBuild(ctx context.Context, applicationID, commit string) (*domain.Build, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "CreateBuild", ctx, applicationID)
+	ret := m.ctrl.Call(m, "CreateBuild", ctx, applicationID, commit)
 	ret0, _ := ret[0].(*domain.Build)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // CreateBuild indicates an expected call of CreateBuild.
-func (mr *MockBuildRepositoryMockRecorder) CreateBuild(ctx, applicationID interface{}) *gomock.Call {
+func (mr *MockBuildRepositoryMockRecorder) CreateBuild(ctx, applicationID, commit interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateBuild", reflect.TypeOf((*MockBuildRepository)(nil).CreateBuild), ctx, applicationID)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateBuild", reflect.TypeOf((*MockBuildRepository)(nil).CreateBuild), ctx, applicationID, commit)
 }
 
 // GetBuild mocks base method.
@@ -79,6 +79,21 @@ func (m *MockBuildRepository) GetBuilds(ctx context.Context, applicationID strin
 func (mr *MockBuildRepositoryMockRecorder) GetBuilds(ctx, applicationID interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetBuilds", reflect.TypeOf((*MockBuildRepository)(nil).GetBuilds), ctx, applicationID)
+}
+
+// GetBuildsInCommit mocks base method.
+func (m *MockBuildRepository) GetBuildsInCommit(ctx context.Context, commits []string) ([]*domain.Build, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetBuildsInCommit", ctx, commits)
+	ret0, _ := ret[0].([]*domain.Build)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetBuildsInCommit indicates an expected call of GetBuildsInCommit.
+func (mr *MockBuildRepositoryMockRecorder) GetBuildsInCommit(ctx, commits interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetBuildsInCommit", reflect.TypeOf((*MockBuildRepository)(nil).GetBuildsInCommit), ctx, commits)
 }
 
 // GetLastSuccessBuild mocks base method.

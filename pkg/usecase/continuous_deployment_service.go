@@ -2,14 +2,16 @@ package usecase
 
 import (
 	"context"
-	"errors"
 	"fmt"
-	"math/rand"
-	"strings"
+	"sync"
+	"time"
 
+	"github.com/samber/lo"
 	log "github.com/sirupsen/logrus"
+	"golang.org/x/exp/slices"
 
 	"github.com/traPtitech/neoshowcase/pkg/domain"
+	"github.com/traPtitech/neoshowcase/pkg/domain/builder"
 	"github.com/traPtitech/neoshowcase/pkg/domain/event"
 	"github.com/traPtitech/neoshowcase/pkg/interface/repository"
 )
@@ -20,210 +22,163 @@ type ContinuousDeploymentService interface {
 }
 
 type continuousDeploymentService struct {
-	bus            domain.Bus
-	appRepo        repository.ApplicationRepository
-	envRepo        repository.EnvironmentRepository
-	deployer       AppDeployService
-	builder        AppBuildService
-	mariaDBManager domain.MariaDBManager
-	mongoDBManager domain.MongoDBManager
+	bus       domain.Bus
+	appRepo   repository.ApplicationRepository
+	buildRepo repository.BuildRepository
+	envRepo   repository.EnvironmentRepository
+	deployer  AppDeployService
+	builder   AppBuildService
+
+	run       func()
+	runOnce   sync.Once
+	close     func()
+	closeOnce sync.Once
 }
 
-func NewContinuousDeploymentService(bus domain.Bus, appRepo repository.ApplicationRepository, envRepo repository.EnvironmentRepository, deployer AppDeployService, builder AppBuildService, mariaDBManager domain.MariaDBManager, mongoDBManager domain.MongoDBManager) ContinuousDeploymentService {
-	return &continuousDeploymentService{
-		bus:            bus,
-		appRepo:        appRepo,
-		envRepo:        envRepo,
-		deployer:       deployer,
-		builder:        builder,
-		mariaDBManager: mariaDBManager,
-		mongoDBManager: mongoDBManager,
+func NewContinuousDeploymentService(
+	bus domain.Bus,
+	appRepo repository.ApplicationRepository,
+	buildRepo repository.BuildRepository,
+	envRepo repository.EnvironmentRepository,
+	deployer AppDeployService,
+	builder AppBuildService,
+) ContinuousDeploymentService {
+	cd := &continuousDeploymentService{
+		bus:       bus,
+		appRepo:   appRepo,
+		buildRepo: buildRepo,
+		envRepo:   envRepo,
+		deployer:  deployer,
+		builder:   builder,
 	}
+
+	syncBuildCloser := make(chan struct{})
+	syncDeployCloser := make(chan struct{})
+	cd.run = func() {
+		go cd.syncBuildLoop(syncBuildCloser)
+		go cd.syncDeployLoop(syncDeployCloser)
+	}
+	cd.close = func() {
+		close(syncBuildCloser)
+		close(syncDeployCloser)
+	}
+
+	return cd
 }
 
 func (cd *continuousDeploymentService) Run() {
-	cd.loop()
+	cd.runOnce.Do(cd.run)
 }
 
-func (cd *continuousDeploymentService) Stop(ctx context.Context) error {
+func (cd *continuousDeploymentService) Stop(_ context.Context) error {
+	cd.closeOnce.Do(cd.close)
 	return nil
 }
 
-func (cd *continuousDeploymentService) loop() {
-	sub := cd.bus.Subscribe(event.BuilderBuildSucceeded, event.WebhookRepositoryPush)
+func (cd *continuousDeploymentService) syncBuildLoop(closer <-chan struct{}) {
+	sub := cd.bus.Subscribe(event.FetcherFetchComplete)
 	defer sub.Unsubscribe()
-	for ev := range sub.Chan() {
-		switch ev.Type {
-		case event.FetcherRequestApplicationBuild:
-			applicationID := ev.Body["application_id"].(string)
-			cd.handleNewBuildRequest(applicationID)
-		case event.BuilderBuildSucceeded:
-			branchID := ev.Body["application_id"].(string)
-			buildID := ev.Body["build_id"].(string)
-			cd.handleBuilderBuildSucceeded(branchID, buildID)
+
+	doSync := func() {
+		start := time.Now()
+		if err := cd.kickoffBuilds(); err != nil {
+			log.WithError(err).Error("failed to kickoff builds")
+			return
+		}
+		log.Infof("Synced builds in %v", time.Since(start))
+	}
+
+	for {
+		select {
+		case <-sub.Chan():
+			doSync()
+		case <-closer:
+			return
 		}
 	}
 }
 
-const (
-	lowerCharSet  = "abcdefghijklmnopqrstuvwxyz"
-	upperCharSet  = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
-	symbolCharSet = "!@#$%&*"
-	numberSet     = "0123456789"
-	allCharSet    = lowerCharSet + upperCharSet + symbolCharSet + numberSet
-)
+func (cd *continuousDeploymentService) syncDeployLoop(closer <-chan struct{}) {
+	sub := cd.bus.Subscribe(event.BuilderBuildSucceeded)
+	defer sub.Unsubscribe()
+	ticker := time.NewTicker(3 * time.Minute)
+	defer ticker.Stop()
 
-func generateRandomString(length int) string {
-	var payload strings.Builder
-	for i := 0; i < length; i++ {
-		random := rand.Intn(len(allCharSet))
-		payload.WriteByte(allCharSet[random])
+	doSync := func() {
+		start := time.Now()
+		if err := cd.syncDeployments(); err != nil {
+			log.WithError(err).Error("failed to sync deployments")
+			return
+		}
+		log.Infof("Synced deployments in %v", time.Since(start))
 	}
-	return payload.String()
+
+	doSync()
+
+	for {
+		select {
+		case <-ticker.C:
+			doSync()
+		case <-sub.Chan():
+			doSync()
+		case <-closer:
+			return
+		}
+	}
 }
 
-func (cd *continuousDeploymentService) handleNewBuildRequest(applicationID string) {
-	log.WithField("applicationID", applicationID).
-		Info("application build request event received")
-
+func (cd *continuousDeploymentService) kickoffBuilds() error {
 	ctx := context.Background()
-
-	app, err := cd.appRepo.GetApplicationByID(ctx, applicationID)
+	applications, err := cd.appRepo.GetApplications(ctx)
 	if err != nil {
-		if errors.Is(err, repository.ErrNotFound) {
-			return
-		}
-		log.WithError(err).
-			WithField("applicationID", applicationID).
-			Error("failed to GetApplicationByID")
-		return
+		return err
 	}
-
-	// TODO dbSettingを設定から取得する
-	dbName := fmt.Sprintf("%s_%s", app.Repository, app.ID)
-	// TODO: アプリケーションの設定の取得
-	applicationNeedsMariaDB := true
-	if applicationNeedsMariaDB {
-		dbExists, err := cd.mariaDBManager.IsExist(ctx, dbName)
-		if err != nil {
-			log.WithError(err).
-				WithField("applicationID", applicationID).
-				Error("failed to check if database exists")
-			return
-		}
-
-		if !dbExists {
-			dbPassword := generateRandomString(32)
-			dbSetting := domain.CreateArgs{
-				Database: dbName,
-				Password: dbPassword,
-			}
-
-			if err := cd.mariaDBManager.Create(ctx, dbSetting); err != nil {
-				log.WithError(err).
-					WithField("Database", dbSetting.Database).
-					WithField("Password", dbSetting.Password)
-				return
-			}
-
-			if err := cd.envRepo.SetEnv(ctx, app.ID, domain.EnvMySQLUserKey, dbName); err != nil {
-				log.WithError(err).
-					WithField("applicationID", app.ID).
-					WithField("Key", domain.EnvMySQLUserKey).
-					WithField("Value", dbName)
-				return
-			}
-			if err := cd.envRepo.SetEnv(ctx, app.ID, domain.EnvMySQLPasswordKey, dbPassword); err != nil {
-				log.WithError(err).
-					WithField("applicationID", app.ID).
-					WithField("Key", domain.EnvMySQLPasswordKey)
-				return
-			}
-			if err := cd.envRepo.SetEnv(ctx, app.ID, domain.EnvMySQLDatabaseKey, dbName); err != nil {
-				log.WithError(err).
-					WithField("applicationID", app.ID).
-					WithField("Key", domain.EnvMySQLDatabaseKey).
-					WithField("Value", dbName)
-				return
-			}
-		}
-	}
-
-	// TODO: アプリケーションの設定の取得
-	applicationNeedsMongoDB := true
-	if applicationNeedsMongoDB {
-		dbExists, err := cd.mongoDBManager.IsExist(ctx, dbName)
-		if err != nil {
-			log.WithError(err).
-				WithField("applicationID", app.ID).
-				WithField("dbName", dbName).
-				Error("failed to check if database exists")
-			return
-		}
-
-		if !dbExists {
-			dbPassword := generateRandomString(32)
-			dbSetting := domain.CreateArgs{
-				Database: dbName,
-				Password: dbPassword,
-			}
-
-			err := cd.mongoDBManager.Create(ctx, dbSetting)
-			if err != nil {
-				log.WithError(err).
-					WithField("Database", dbSetting.Database).
-					WithField("Password", dbSetting.Password)
-			}
-
-			if err := cd.envRepo.SetEnv(ctx, app.ID, domain.EnvMongoDBUserKey, dbName); err != nil {
-				log.WithError(err).
-					WithField("applicationID", app.ID).
-					WithField("Key", domain.EnvMongoDBUserKey).
-					WithField("Value", dbName)
-				return
-			}
-			if err := cd.envRepo.SetEnv(ctx, app.ID, domain.EnvMongoDBPasswordKey, dbPassword); err != nil {
-				log.WithError(err).
-					WithField("applicationID", app.ID).
-					WithField("Key", domain.EnvMongoDBPasswordKey)
-				return
-			}
-			if err := cd.envRepo.SetEnv(ctx, app.ID, domain.EnvMongoDBDatabaseKey, dbName); err != nil {
-				log.WithError(err).
-					WithField("applicationID", app.ID).
-					WithField("Key", domain.EnvMongoDBDatabaseKey).
-					WithField("Value", dbName)
-				return
-			}
-		}
-	}
-
-	_, err = cd.builder.QueueBuild(ctx, app)
+	commits := lo.Map(applications, func(app *domain.Application, i int) string { return app.WantCommit })
+	builds, err := cd.buildRepo.GetBuildsInCommit(ctx, commits)
 	if err != nil {
-		log.WithError(err).
-			WithField("appID", app.ID).
-			Error("failed to RequestBuild")
-		return
+		return err
 	}
+	buildExistsForCommit := lo.SliceToMap(builds, func(b *domain.Build) (string, bool) { return b.Commit, true })
+	for _, app := range applications {
+		if buildExistsForCommit[app.WantCommit] {
+			continue
+		}
+		if app.WantCommit == domain.EmptyCommit {
+			continue
+		}
+		_, err := cd.builder.QueueBuild(ctx, app, app.WantCommit)
+		if err != nil {
+			return fmt.Errorf("failed to queue build: %w", err)
+		}
+	}
+	return nil
 }
 
-func (cd *continuousDeploymentService) handleBuilderBuildSucceeded(branchID string, buildID string) {
-	if branchID == "" {
-		// branchIDが無い場合はテストビルド
-		return
-	}
-
-	// 自動デプロイ
-	log.WithField("branchID", branchID).
-		WithField("buildID", buildID).
-		Error("starting application")
-
-	err := cd.deployer.QueueDeployment(context.Background(), branchID, buildID)
+func (cd *continuousDeploymentService) syncDeployments() error {
+	ctx := context.Background()
+	applications, err := cd.appRepo.GetApplicationsOutOfSync(ctx)
 	if err != nil {
-		// TODO エラー処理
-		log.WithError(err).
-			WithField("branchID", branchID).
-			WithField("buildID", buildID).
-			Error("failed to Start Application")
+		return err
 	}
+	applications = lo.Filter(applications, func(app *domain.Application, i int) bool { return app.State != domain.ApplicationStateDeploying })
+	commits := lo.Map(applications, func(app *domain.Application, i int) string { return app.WantCommit })
+	builds, err := cd.buildRepo.GetBuildsInCommit(ctx, commits)
+	if err != nil {
+		return err
+	}
+
+	// Last succeeded builds for each commit
+	builds = lo.Filter(builds, func(build *domain.Build, i int) bool { return build.Status == builder.BuildStatusSucceeded })
+	slices.SortFunc(builds, func(a, b *domain.Build) bool { return a.StartedAt.Before(b.StartedAt) })
+	commitToBuild := lo.SliceToMap(builds, func(b *domain.Build) (string, *domain.Build) { return b.Commit, b })
+
+	for _, app := range applications {
+		if build, ok := commitToBuild[app.WantCommit]; ok {
+			err := cd.deployer.QueueDeployment(ctx, build.ApplicationID, build.ID)
+			if err != nil {
+				return fmt.Errorf("failed to queue deployment: %w", err)
+			}
+		}
+	}
+	return nil
 }

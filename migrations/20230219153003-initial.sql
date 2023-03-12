@@ -21,18 +21,37 @@ CREATE TABLE `repositories`
   DEFAULT CHARACTER SET = `utf8mb4`
     COMMENT 'Gitリポジトリテーブル';
 
+CREATE TABLE `application_state`
+(
+    `state` VARCHAR(10) NOT NULL COMMENT 'デプロイの状態',
+    PRIMARY KEY (`state`)
+) ENGINE InnoDB
+  DEFAULT CHARACTER SET = `utf8mb4`
+    COMMENT 'デプロイの状態';
+
+INSERT INTO `application_state` (`state`)
+VALUES ('IDLE'),
+       ('DEPLOYING'),
+       ('RUNNING'),
+       ('ERRORED');
+
 CREATE TABLE `applications`
 (
-    `id`            VARCHAR(22)              NOT NULL COMMENT 'アプリケーションID',
-    `repository_id` VARCHAR(22)              NOT NULL COMMENT 'リポジトリID',
-    `branch_name`   VARCHAR(100)             NOT NULL COMMENT 'Gitブランチ・タグ名',
-    `build_type`    ENUM ('image', 'static') NOT NULL COMMENT 'ビルドタイプ',
-    `created_at`    DATETIME(6)              NOT NULL COMMENT '作成日時',
-    `updated_at`    DATETIME(6)              NOT NULL COMMENT '更新日時',
+    `id`             VARCHAR(22)              NOT NULL COMMENT 'アプリケーションID',
+    `repository_id`  VARCHAR(22)              NOT NULL COMMENT 'リポジトリID',
+    `branch_name`    VARCHAR(100)             NOT NULL COMMENT 'Gitブランチ・タグ名',
+    `build_type`     ENUM ('image', 'static') NOT NULL COMMENT 'ビルドタイプ',
+    `state`          VARCHAR(10)              NOT NULL COMMENT 'デプロイの状態',
+    `current_commit` CHAR(40)                 NOT NULL COMMENT 'デプロイされたコミット',
+    `want_commit`    CHAR(40)                 NOT NULL COMMENT 'デプロイを待つコミット',
+    `created_at`     DATETIME(6)              NOT NULL COMMENT '作成日時',
+    `updated_at`     DATETIME(6)              NOT NULL COMMENT '更新日時',
     PRIMARY KEY (`id`),
     UNIQUE KEY (`repository_id`, `branch_name`),
     CONSTRAINT `fk_applications_repository_id`
-        FOREIGN KEY (`repository_id`) REFERENCES `repositories` (`id`)
+        FOREIGN KEY (`repository_id`) REFERENCES `repositories` (`id`),
+    CONSTRAINT `fk_applications_state`
+        FOREIGN KEY (`state`) REFERENCES `application_state` (`state`)
 ) ENGINE InnoDB
   DEFAULT CHARACTER SET = `utf8mb4`
     COMMENT 'アプリケーションテーブル';
@@ -56,6 +75,7 @@ VALUES ('BUILDING'),
 CREATE TABLE `builds`
 (
     `id`             VARCHAR(22) NOT NULL COMMENT 'ビルドID',
+    `commit`         CHAR(40)    NOT NULL COMMENT 'コミットハッシュ',
     `status`         VARCHAR(10) NOT NULL COMMENT 'ビルドの状態',
     `started_at`     DATETIME(6) NOT NULL COMMENT 'ビルド開始日時',
     `finished_at`    DATETIME(6) NULL COMMENT 'ビルド終了日時',
@@ -124,6 +144,10 @@ CREATE TABLE `users`
   DEFAULT CHARACTER SET = `utf8mb4`
     COMMENT 'ユーザーテーブル';
 
+# TODO: delete once user setup / auth is implemented
+INSERT INTO `users`
+VALUES ('tmp-user', 'toki');
+
 CREATE TABLE `owners`
 (
     `user_id`        CHAR(36) NOT NULL COMMENT 'ユーザーID',
@@ -146,6 +170,6 @@ DROP TABLE `artifacts`;
 DROP TABLE `builds`;
 DROP TABLE `build_status`;
 DROP TABLE `applications`;
+DROP TABLE `application_state`;
 DROP TABLE `repositories`;
-DROP TABLE `providers`;
 DROP TABLE `available_domains`;

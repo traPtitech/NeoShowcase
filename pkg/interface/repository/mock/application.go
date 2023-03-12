@@ -66,6 +66,21 @@ func (mr *MockApplicationRepositoryMockRecorder) GetApplicationByID(ctx, id inte
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetApplicationByID", reflect.TypeOf((*MockApplicationRepository)(nil).GetApplicationByID), ctx, id)
 }
 
+// GetApplications mocks base method.
+func (m *MockApplicationRepository) GetApplications(ctx context.Context) ([]*domain.Application, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetApplications", ctx)
+	ret0, _ := ret[0].([]*domain.Application)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetApplications indicates an expected call of GetApplications.
+func (mr *MockApplicationRepositoryMockRecorder) GetApplications(ctx interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetApplications", reflect.TypeOf((*MockApplicationRepository)(nil).GetApplications), ctx)
+}
+
 // GetApplicationsByUserID mocks base method.
 func (m *MockApplicationRepository) GetApplicationsByUserID(ctx context.Context, userID string) ([]*domain.Application, error) {
 	m.ctrl.T.Helper()
@@ -79,6 +94,21 @@ func (m *MockApplicationRepository) GetApplicationsByUserID(ctx context.Context,
 func (mr *MockApplicationRepositoryMockRecorder) GetApplicationsByUserID(ctx, userID interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetApplicationsByUserID", reflect.TypeOf((*MockApplicationRepository)(nil).GetApplicationsByUserID), ctx, userID)
+}
+
+// GetApplicationsOutOfSync mocks base method.
+func (m *MockApplicationRepository) GetApplicationsOutOfSync(ctx context.Context) ([]*domain.Application, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetApplicationsOutOfSync", ctx)
+	ret0, _ := ret[0].([]*domain.Application)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetApplicationsOutOfSync indicates an expected call of GetApplicationsOutOfSync.
+func (mr *MockApplicationRepositoryMockRecorder) GetApplicationsOutOfSync(ctx interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetApplicationsOutOfSync", reflect.TypeOf((*MockApplicationRepository)(nil).GetApplicationsOutOfSync), ctx)
 }
 
 // RegisterApplicationOwner mocks base method.
@@ -107,4 +137,18 @@ func (m *MockApplicationRepository) SetWebsite(ctx context.Context, applicationI
 func (mr *MockApplicationRepositoryMockRecorder) SetWebsite(ctx, applicationID, fqdn, httpPort interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SetWebsite", reflect.TypeOf((*MockApplicationRepository)(nil).SetWebsite), ctx, applicationID, fqdn, httpPort)
+}
+
+// UpdateApplication mocks base method.
+func (m *MockApplicationRepository) UpdateApplication(ctx context.Context, id string, args repository.UpdateApplicationArgs) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "UpdateApplication", ctx, id, args)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// UpdateApplication indicates an expected call of UpdateApplication.
+func (mr *MockApplicationRepositoryMockRecorder) UpdateApplication(ctx, id, args interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateApplication", reflect.TypeOf((*MockApplicationRepository)(nil).UpdateApplication), ctx, id, args)
 }

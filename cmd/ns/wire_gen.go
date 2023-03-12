@@ -34,6 +34,8 @@ import (
 func NewWithDocker(c2 Config) (*Server, error) {
 	server := grpc.NewServer()
 	tcpListenPort := provideGRPCPort(c2)
+	hubHub := hub.New()
+	bus := eventbus.NewLocal(hubHub)
 	config := c2.DB
 	db, err := admindb.New(config)
 	if err != nil {
@@ -47,8 +49,6 @@ func NewWithDocker(c2 Config) (*Server, error) {
 	if err != nil {
 		return nil, err
 	}
-	hubHub := hub.New()
-	bus := eventbus.NewLocal(hubHub)
 	ingressConfDirPath := _wireIngressConfDirPathValue
 	backend, err := dockerimpl.NewDockerBackend(client, bus, ingressConfDirPath)
 	if err != nil {
@@ -63,7 +63,17 @@ func NewWithDocker(c2 Config) (*Server, error) {
 	dockerImageRegistryString := provideImageRegistry(c2)
 	dockerImageNamePrefixString := provideImagePrefix(c2)
 	appDeployService := usecase.NewAppDeployService(backend, staticSiteServiceClient, dockerImageRegistryString, dockerImageNamePrefixString, db)
-	apiServerService := usecase.NewAPIServerService(applicationRepository, buildRepository, environmentRepository, gitRepositoryRepository, appDeployService, backend)
+	mariaDBConfig := c2.MariaDB
+	mariaDBManager, err := dbmanager.NewMariaDBManager(mariaDBConfig)
+	if err != nil {
+		return nil, err
+	}
+	mongoDBConfig := c2.MongoDB
+	mongoDBManager, err := dbmanager.NewMongoDBManager(mongoDBConfig)
+	if err != nil {
+		return nil, err
+	}
+	apiServerService := usecase.NewAPIServerService(bus, applicationRepository, buildRepository, environmentRepository, gitRepositoryRepository, appDeployService, backend, mariaDBManager, mongoDBManager)
 	applicationService := grpc.NewApplicationServiceServer(apiServerService)
 	router := &Router{}
 	webConfig := provideWebServerConfig(router)
@@ -79,17 +89,12 @@ func NewWithDocker(c2 Config) (*Server, error) {
 		return nil, err
 	}
 	appBuildService := usecase.NewAppBuildService(applicationRepository, buildRepository, builderServiceClient, dockerImageRegistryString, dockerImageNamePrefixString)
-	mariaDBConfig := c2.MariaDB
-	mariaDBManager, err := dbmanager.NewMariaDBManager(mariaDBConfig)
+	continuousDeploymentService := usecase.NewContinuousDeploymentService(bus, applicationRepository, buildRepository, environmentRepository, appDeployService, appBuildService)
+	repositoryFetcherCacheDir := provideRepositoryFetcherCacheDir(c2)
+	repositoryFetcherService, err := usecase.NewRepositoryFetcherService(bus, applicationRepository, repositoryFetcherCacheDir)
 	if err != nil {
 		return nil, err
 	}
-	mongoDBConfig := c2.MongoDB
-	mongoDBManager, err := dbmanager.NewMongoDBManager(mongoDBConfig)
-	if err != nil {
-		return nil, err
-	}
-	continuousDeploymentService := usecase.NewContinuousDeploymentService(bus, applicationRepository, environmentRepository, appDeployService, appBuildService, mariaDBManager, mongoDBManager)
 	mainServer := &Server{
 		grpcServer:          server,
 		grpcPort:            tcpListenPort,
@@ -102,6 +107,7 @@ func NewWithDocker(c2 Config) (*Server, error) {
 		bus:                 bus,
 		builderEventsBroker: builderEventsBroker,
 		cdService:           continuousDeploymentService,
+		fetcherService:      repositoryFetcherService,
 	}
 	return mainServer, nil
 }
@@ -113,6 +119,8 @@ var (
 func NewWithK8S(c2 Config) (*Server, error) {
 	server := grpc.NewServer()
 	tcpListenPort := provideGRPCPort(c2)
+	hubHub := hub.New()
+	bus := eventbus.NewLocal(hubHub)
 	config := c2.DB
 	db, err := admindb.New(config)
 	if err != nil {
@@ -122,8 +130,6 @@ func NewWithK8S(c2 Config) (*Server, error) {
 	buildRepository := repository.NewBuildRepository(db)
 	environmentRepository := repository.NewEnvironmentRepository(db)
 	gitRepositoryRepository := repository.NewGitRepositoryRepository(db)
-	hubHub := hub.New()
-	bus := eventbus.NewLocal(hubHub)
 	restConfig, err := rest.InClusterConfig()
 	if err != nil {
 		return nil, err
@@ -145,7 +151,17 @@ func NewWithK8S(c2 Config) (*Server, error) {
 	dockerImageRegistryString := provideImageRegistry(c2)
 	dockerImageNamePrefixString := provideImagePrefix(c2)
 	appDeployService := usecase.NewAppDeployService(backend, staticSiteServiceClient, dockerImageRegistryString, dockerImageNamePrefixString, db)
-	apiServerService := usecase.NewAPIServerService(applicationRepository, buildRepository, environmentRepository, gitRepositoryRepository, appDeployService, backend)
+	mariaDBConfig := c2.MariaDB
+	mariaDBManager, err := dbmanager.NewMariaDBManager(mariaDBConfig)
+	if err != nil {
+		return nil, err
+	}
+	mongoDBConfig := c2.MongoDB
+	mongoDBManager, err := dbmanager.NewMongoDBManager(mongoDBConfig)
+	if err != nil {
+		return nil, err
+	}
+	apiServerService := usecase.NewAPIServerService(bus, applicationRepository, buildRepository, environmentRepository, gitRepositoryRepository, appDeployService, backend, mariaDBManager, mongoDBManager)
 	applicationService := grpc.NewApplicationServiceServer(apiServerService)
 	router := &Router{}
 	webConfig := provideWebServerConfig(router)
@@ -161,17 +177,12 @@ func NewWithK8S(c2 Config) (*Server, error) {
 		return nil, err
 	}
 	appBuildService := usecase.NewAppBuildService(applicationRepository, buildRepository, builderServiceClient, dockerImageRegistryString, dockerImageNamePrefixString)
-	mariaDBConfig := c2.MariaDB
-	mariaDBManager, err := dbmanager.NewMariaDBManager(mariaDBConfig)
+	continuousDeploymentService := usecase.NewContinuousDeploymentService(bus, applicationRepository, buildRepository, environmentRepository, appDeployService, appBuildService)
+	repositoryFetcherCacheDir := provideRepositoryFetcherCacheDir(c2)
+	repositoryFetcherService, err := usecase.NewRepositoryFetcherService(bus, applicationRepository, repositoryFetcherCacheDir)
 	if err != nil {
 		return nil, err
 	}
-	mongoDBConfig := c2.MongoDB
-	mongoDBManager, err := dbmanager.NewMongoDBManager(mongoDBConfig)
-	if err != nil {
-		return nil, err
-	}
-	continuousDeploymentService := usecase.NewContinuousDeploymentService(bus, applicationRepository, environmentRepository, appDeployService, appBuildService, mariaDBManager, mongoDBManager)
 	mainServer := &Server{
 		grpcServer:          server,
 		grpcPort:            tcpListenPort,
@@ -184,17 +195,19 @@ func NewWithK8S(c2 Config) (*Server, error) {
 		bus:                 bus,
 		builderEventsBroker: builderEventsBroker,
 		cdService:           continuousDeploymentService,
+		fetcherService:      repositoryFetcherService,
 	}
 	return mainServer, nil
 }
 
 // wire.go:
 
-var commonSet = wire.NewSet(web.NewServer, hub.New, eventbus.NewLocal, admindb.New, dbmanager.NewMariaDBManager, dbmanager.NewMongoDBManager, repository.NewApplicationRepository, repository.NewGitRepositoryRepository, repository.NewEnvironmentRepository, repository.NewBuildRepository, grpc.NewServer, grpc.NewApplicationServiceServer, grpc.NewBuilderServiceClientConn, grpc.NewStaticSiteServiceClientConn, grpc.NewBuilderServiceClient, grpc.NewStaticSiteServiceClient, broker.NewBuilderEventsBroker, usecase.NewAPIServerService, usecase.NewAppBuildService, usecase.NewAppDeployService, usecase.NewContinuousDeploymentService, handlerSet,
+var commonSet = wire.NewSet(web.NewServer, hub.New, eventbus.NewLocal, admindb.New, dbmanager.NewMariaDBManager, dbmanager.NewMongoDBManager, repository.NewApplicationRepository, repository.NewGitRepositoryRepository, repository.NewEnvironmentRepository, repository.NewBuildRepository, grpc.NewServer, grpc.NewApplicationServiceServer, grpc.NewBuilderServiceClientConn, grpc.NewStaticSiteServiceClientConn, grpc.NewBuilderServiceClient, grpc.NewStaticSiteServiceClient, broker.NewBuilderEventsBroker, usecase.NewAPIServerService, usecase.NewAppBuildService, usecase.NewAppDeployService, usecase.NewContinuousDeploymentService, usecase.NewRepositoryFetcherService, handlerSet,
 	provideGRPCPort,
 	provideWebServerConfig,
 	provideImagePrefix,
-	provideImageRegistry, wire.FieldsOf(new(Config), "Builder", "SSGen", "DB", "MariaDB", "MongoDB"), wire.Struct(new(Router), "*"), wire.Bind(new(web.Router), new(*Router)), wire.Struct(new(Server), "*"),
+	provideImageRegistry,
+	provideRepositoryFetcherCacheDir, wire.FieldsOf(new(Config), "Builder", "SSGen", "DB", "MariaDB", "MongoDB"), wire.Struct(new(Router), "*"), wire.Bind(new(web.Router), new(*Router)), wire.Struct(new(Server), "*"),
 )
 
 func New(c2 Config) (*Server, error) {

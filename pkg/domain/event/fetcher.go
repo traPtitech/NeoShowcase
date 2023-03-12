@@ -1,5 +1,6 @@
 package event
 
 const (
-	FetcherRequestApplicationBuild = "fetcher.request_application_build"
+	FetcherFetchRequest  = "fetcher.fetch_request"
+	FetcherFetchComplete = "fetcher.fetch_complete"
 )
