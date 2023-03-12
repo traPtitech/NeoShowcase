@@ -7,8 +7,7 @@ import (
 
 type Config struct {
 	Buildkit struct {
-		Address  string `mapstructure:"address" yaml:"address"`
-		Registry string `mapstructure:"registry" yaml:"registry"`
+		Address string `mapstructure:"address" yaml:"address"`
 	} `mapstructure:"buildkit" yaml:"buildkit"`
 	GRPC struct {
 		Port int `mapstructure:"port" yaml:"port"`

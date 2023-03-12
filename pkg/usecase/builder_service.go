@@ -49,8 +49,6 @@ type builderService struct {
 	artifactRepo repository.ArtifactRepository
 	buildRepo    repository.BuildRepository
 
-	registry string
-
 	task              *builder.Task
 	internalTaskState *internalTaskState
 	taskLock          sync.Mutex
@@ -59,14 +57,13 @@ type builderService struct {
 	statusLock sync.RWMutex
 }
 
-func NewBuilderService(buildkit *buildkit.Client, storage domain.Storage, eventbus domain.Bus, artifactRepo repository.ArtifactRepository, buildRepo repository.BuildRepository, registry builder.DockerImageRegistryString) BuilderService {
+func NewBuilderService(buildkit *buildkit.Client, storage domain.Storage, eventbus domain.Bus, artifactRepo repository.ArtifactRepository, buildRepo repository.BuildRepository) BuilderService {
 	return &builderService{
 		buildkit:     buildkit,
 		storage:      storage,
 		eventbus:     eventbus,
 		artifactRepo: artifactRepo,
 		buildRepo:    buildRepo,
-		registry:     string(registry),
 
 		status: builder.StateWaiting,
 	}
@@ -343,7 +340,7 @@ func (s *builderService) buildImage(t *builder.Task, intState *internalTaskState
 			// ImageNameの指定がない場合はビルドするだけで、イメージを保存しない
 			exportAttrs["name"] = "build-" + t.BuildID
 		} else {
-			exportAttrs["name"] = s.registry + "/" + t.ImageName + ":" + t.BuildID
+			exportAttrs["name"] = t.ImageName + ":" + t.ImageTag
 			exportAttrs["push"] = "true"
 		}
 

@@ -38,8 +38,7 @@ func New(c2 Config) (*Server, error) {
 	}
 	artifactRepository := repository.NewArtifactRepository(db)
 	buildRepository := repository.NewBuildRepository(db)
-	dockerImageRegistryString := provideDockerImageRegistry(c2)
-	builderService := usecase.NewBuilderService(client, storage, bus, artifactRepository, buildRepository, dockerImageRegistryString)
+	builderService := usecase.NewBuilderService(client, storage, bus, artifactRepository, buildRepository)
 	grpcBuilderService := grpc.NewBuilderServiceServer(builderService)
 	mainServer := &Server{
 		db:         db,

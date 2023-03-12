@@ -84,7 +84,7 @@ func main() {
 	viper.SetDefault("debug", false)
 	viper.SetDefault("mode", "docker")
 	viper.SetDefault("repository.cacheDir", "")
-	viper.SetDefault("image.registry", "")
+	viper.SetDefault("image.registry", "localhost")
 	viper.SetDefault("image.namePrefix", "ns-apps/")
 	viper.SetDefault("builder.addr", "")
 	viper.SetDefault("builder.insecure", false)

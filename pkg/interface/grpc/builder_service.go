@@ -99,6 +99,7 @@ func (s *BuilderService) StartBuildImage(ctx context.Context, request *pb.StartB
 		BuildSource:   convertBuildSourceFromPB(request.Source),
 		BuildOptions:  convertBuildOptionsFromPB(request.Options),
 		ImageName:     request.ImageName,
+		ImageTag:      request.ImageTag,
 		BuildID:       request.BuildId,
 		ApplicationID: request.ApplicationId,
 	}

@@ -7,6 +7,7 @@ type Task struct {
 	BuildSource   *BuildSource
 	BuildOptions  *BuildOptions
 	ImageName     string
+	ImageTag      string
 }
 
 type BuildSource struct {

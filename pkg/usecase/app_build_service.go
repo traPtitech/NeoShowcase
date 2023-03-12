@@ -141,6 +141,7 @@ func (s *appBuildService) requestBuild(ctx context.Context, app *domain.Applicat
 	case builder.BuildTypeImage:
 		_, err := s.builder.StartBuildImage(ctx, &pb.StartBuildImageRequest{
 			ImageName: builder.GetImageName(s.imageRegistry, s.imageNamePrefix, app.ID),
+			ImageTag:  buildID,
 			Source: &pb.BuildSource{
 				RepositoryUrl: app.Repository.URL,
 				Commit:        commit,
