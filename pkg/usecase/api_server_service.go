@@ -9,6 +9,7 @@ import (
 	"github.com/traPtitech/neoshowcase/pkg/domain/builder"
 	"github.com/traPtitech/neoshowcase/pkg/domain/event"
 	"github.com/traPtitech/neoshowcase/pkg/interface/repository"
+	"github.com/traPtitech/neoshowcase/pkg/util/optional"
 	"github.com/traPtitech/neoshowcase/pkg/util/random"
 )
 
@@ -226,6 +227,13 @@ func (s *apiServerService) SetApplicationEnvironmentVariable(ctx context.Context
 }
 
 func (s *apiServerService) StartApplication(ctx context.Context, id string) error {
+	app, err := s.appRepo.GetApplicationByID(ctx, id)
+	if err != nil {
+		return err
+	}
+	if app.State != domain.ApplicationStateIdle {
+		return errors.New("application is not idle")
+	}
 	build, err := s.buildRepo.GetLastSuccessBuild(ctx, id)
 	if err != nil {
 		if err == repository.ErrNotFound {
@@ -233,13 +241,31 @@ func (s *apiServerService) StartApplication(ctx context.Context, id string) erro
 		}
 		return err
 	}
-	return s.deploySvc.QueueDeployment(ctx, id, build.ID) // TODO: call cd service instead
+	return s.deploySvc.StartDeployment(ctx, app, build)
 }
 
 func (s *apiServerService) RestartApplication(ctx context.Context, id string) error {
-	return s.backend.RestartContainer(ctx, id) // TODO: call cd service instead
+	app, err := s.appRepo.GetApplicationByID(ctx, id)
+	if err != nil {
+		return err
+	}
+	if app.State != domain.ApplicationStateRunning {
+		return errors.New("application is not running")
+	}
+	return s.backend.RestartContainer(ctx, id)
 }
 
 func (s *apiServerService) StopApplication(ctx context.Context, id string) error {
-	return s.backend.DestroyContainer(ctx, id) // TODO: call cd service instead
+	app, err := s.appRepo.GetApplicationByID(ctx, id)
+	if err != nil {
+		return err
+	}
+	if app.State != domain.ApplicationStateRunning {
+		return errors.New("application is not running")
+	}
+	err = s.backend.DestroyContainer(ctx, id)
+	if err != nil {
+		return err
+	}
+	return s.appRepo.UpdateApplication(ctx, id, repository.UpdateApplicationArgs{State: optional.From(domain.ApplicationStateIdle)})
 }

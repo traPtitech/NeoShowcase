@@ -99,3 +99,9 @@ func ExtractNameFromRepositoryURL(repositoryURL string) (string, error) {
 	path = strings.TrimSuffix(path, ".git")
 	return path, nil
 }
+
+type Website struct {
+	ID   string
+	FQDN string
+	Port int
+}

@@ -2,8 +2,13 @@ package domain
 
 import (
 	"context"
+	"errors"
 
 	"github.com/volatiletech/null/v8"
+)
+
+var (
+	ErrContainerNotFound = errors.New("container not found")
 )
 
 type ContainerCreateArgs struct {
@@ -39,6 +44,7 @@ type Backend interface {
 	CreateContainer(ctx context.Context, args ContainerCreateArgs) error
 	RestartContainer(ctx context.Context, appID string) error
 	DestroyContainer(ctx context.Context, appID string) error
+	GetContainer(ctx context.Context, appID string) (*Container, error)
 	ListContainers(ctx context.Context) ([]Container, error)
 	RegisterIngress(ctx context.Context, appID string, host string, destination null.String, port null.Int) error
 	UnregisterIngress(ctx context.Context, appID string) error

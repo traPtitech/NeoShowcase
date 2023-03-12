@@ -111,6 +111,21 @@ func (mr *MockApplicationRepositoryMockRecorder) GetApplicationsOutOfSync(ctx in
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetApplicationsOutOfSync", reflect.TypeOf((*MockApplicationRepository)(nil).GetApplicationsOutOfSync), ctx)
 }
 
+// GetWebsite mocks base method.
+func (m *MockApplicationRepository) GetWebsite(ctx context.Context, applicationID string) (*domain.Website, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetWebsite", ctx, applicationID)
+	ret0, _ := ret[0].(*domain.Website)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetWebsite indicates an expected call of GetWebsite.
+func (mr *MockApplicationRepositoryMockRecorder) GetWebsite(ctx, applicationID interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetWebsite", reflect.TypeOf((*MockApplicationRepository)(nil).GetWebsite), ctx, applicationID)
+}
+
 // RegisterApplicationOwner mocks base method.
 func (m *MockApplicationRepository) RegisterApplicationOwner(ctx context.Context, applicationID, userID string) error {
 	m.ctrl.T.Helper()
