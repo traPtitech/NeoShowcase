@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/samber/lo"
 	log "github.com/sirupsen/logrus"
 	"google.golang.org/protobuf/types/known/emptypb"
 
@@ -22,6 +23,7 @@ type AppDeployService interface {
 type appDeployService struct {
 	backend domain.Backend
 	appRepo repository.ApplicationRepository
+	envRepo repository.EnvironmentRepository
 	ss      pb.StaticSiteServiceClient
 
 	imageRegistry   string
@@ -31,6 +33,7 @@ type appDeployService struct {
 func NewAppDeployService(
 	backend domain.Backend,
 	appRepo repository.ApplicationRepository,
+	envRepo repository.EnvironmentRepository,
 	ss pb.StaticSiteServiceClient,
 	registry builder.DockerImageRegistryString,
 	prefix builder.DockerImageNamePrefixString,
@@ -38,6 +41,7 @@ func NewAppDeployService(
 	return &appDeployService{
 		backend:         backend,
 		appRepo:         appRepo,
+		envRepo:         envRepo,
 		ss:              ss,
 		imageRegistry:   string(registry),
 		imageNamePrefix: string(prefix),
@@ -94,10 +98,15 @@ func (s *appDeployService) deploy(ctx context.Context, app *domain.Application, 
 }
 
 func (s *appDeployService) recreateContainer(ctx context.Context, app *domain.Application, build *domain.Build) error {
-	err := s.backend.CreateContainer(ctx, app, domain.ContainerCreateArgs{
+	envs, err := s.envRepo.GetEnv(ctx, app.ID)
+	if err != nil {
+		return err
+	}
+	err = s.backend.CreateContainer(ctx, app, domain.ContainerCreateArgs{
 		ImageName: builder.GetImageName(s.imageRegistry, s.imageNamePrefix, app.ID),
 		ImageTag:  build.ID,
 		Recreate:  true,
+		Envs:      lo.SliceToMap(envs, func(env *domain.Environment) (string, string) { return env.Key, env.Value }),
 	})
 	if err != nil {
 		return fmt.Errorf("failed to create container: %w", err)
