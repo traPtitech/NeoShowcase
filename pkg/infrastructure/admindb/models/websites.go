@@ -536,7 +536,7 @@ func (websiteL) LoadApplication(ctx context.Context, e boil.ContextExecutor, sin
 		if foreign.R == nil {
 			foreign.R = &applicationR{}
 		}
-		foreign.R.Website = object
+		foreign.R.Websites = append(foreign.R.Websites, object)
 		return nil
 	}
 
@@ -547,7 +547,7 @@ func (websiteL) LoadApplication(ctx context.Context, e boil.ContextExecutor, sin
 				if foreign.R == nil {
 					foreign.R = &applicationR{}
 				}
-				foreign.R.Website = local
+				foreign.R.Websites = append(foreign.R.Websites, local)
 				break
 			}
 		}
@@ -558,7 +558,7 @@ func (websiteL) LoadApplication(ctx context.Context, e boil.ContextExecutor, sin
 
 // SetApplication of the website to the related item.
 // Sets o.R.Application to related.
-// Adds o to related.R.Website.
+// Adds o to related.R.Websites.
 func (o *Website) SetApplication(ctx context.Context, exec boil.ContextExecutor, insert bool, related *Application) error {
 	var err error
 	if insert {
@@ -594,10 +594,10 @@ func (o *Website) SetApplication(ctx context.Context, exec boil.ContextExecutor,
 
 	if related.R == nil {
 		related.R = &applicationR{
-			Website: o,
+			Websites: WebsiteSlice{o},
 		}
 	} else {
-		related.R.Website = o
+		related.R.Websites = append(related.R.Websites, o)
 	}
 
 	return nil
@@ -886,7 +886,6 @@ func (o WebsiteSlice) UpdateAll(ctx context.Context, exec boil.ContextExecutor, 
 var mySQLWebsiteUniqueColumns = []string{
 	"id",
 	"fqdn",
-	"application_id",
 }
 
 // Upsert attempts an insert using an executor, and does an update or ignore on conflict.

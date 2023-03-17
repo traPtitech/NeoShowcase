@@ -43,8 +43,9 @@ type ApplicationRepository interface {
 	CreateApplication(ctx context.Context, args CreateApplicationArgs) (*domain.Application, error)
 	UpdateApplication(ctx context.Context, id string, args UpdateApplicationArgs) error
 	RegisterApplicationOwner(ctx context.Context, applicationID string, userID string) error
-	GetWebsite(ctx context.Context, applicationID string) (*domain.Website, error)
-	SetWebsite(ctx context.Context, applicationID string, fqdn string, httpPort int) error
+	GetWebsites(ctx context.Context, applicationIDs []string) ([]*domain.Website, error)
+	AddWebsite(ctx context.Context, applicationID string, fqdn string, httpPort int) error
+	DeleteWebsite(ctx context.Context, applicationID string, websiteID string) error
 }
 
 type applicationRepository struct {
@@ -60,7 +61,7 @@ func NewApplicationRepository(db *sql.DB) ApplicationRepository {
 func (r *applicationRepository) GetApplications(ctx context.Context, cond GetApplicationCondition) ([]*domain.Application, error) {
 	mods := []qm.QueryMod{
 		qm.Load(models.ApplicationRels.Repository),
-		qm.Load(models.ApplicationRels.Website),
+		qm.Load(models.ApplicationRels.Websites),
 	}
 
 	if cond.UserID.Valid {
@@ -96,17 +97,25 @@ func (r *applicationRepository) GetApplications(ctx context.Context, cond GetApp
 	}), nil
 }
 
-func (r *applicationRepository) GetApplication(ctx context.Context, id string) (*domain.Application, error) {
+func (r *applicationRepository) getApplication(ctx context.Context, id string) (*models.Application, error) {
 	app, err := models.Applications(
 		models.ApplicationWhere.ID.EQ(id),
 		qm.Load(models.ApplicationRels.Repository),
-		qm.Load(models.ApplicationRels.Website),
+		qm.Load(models.ApplicationRels.Websites),
 	).One(ctx, r.db)
 	if err != nil {
 		if isNoRowsErr(err) {
 			return nil, ErrNotFound
 		}
 		return nil, fmt.Errorf("failed to get application: %w", err)
+	}
+	return app, nil
+}
+
+func (r *applicationRepository) GetApplication(ctx context.Context, id string) (*domain.Application, error) {
+	app, err := r.getApplication(ctx, id)
+	if err != nil {
+		return nil, err
 	}
 	return toDomainApplication(app), nil
 }
@@ -131,7 +140,7 @@ func (r *applicationRepository) CreateApplication(ctx context.Context, args Crea
 	if err := app.L.LoadRepository(ctx, r.db, true, app, nil); err != nil {
 		return nil, fmt.Errorf("failed to load repository: %w", err)
 	}
-	if err := app.L.LoadWebsite(ctx, r.db, true, app, nil); err != nil {
+	if err := app.L.LoadWebsites(ctx, r.db, true, app, nil); err != nil {
 		return nil, fmt.Errorf("failed to load website: %w", err)
 	}
 
@@ -139,9 +148,9 @@ func (r *applicationRepository) CreateApplication(ctx context.Context, args Crea
 }
 
 func (r *applicationRepository) UpdateApplication(ctx context.Context, id string, args UpdateApplicationArgs) error {
-	app, err := models.Applications(models.ApplicationWhere.ID.EQ(id)).One(ctx, r.db)
+	app, err := r.getApplication(ctx, id)
 	if err != nil {
-		return fmt.Errorf("failed to find application: %w", err)
+		return err
 	}
 
 	if args.State.Valid {
@@ -159,9 +168,9 @@ func (r *applicationRepository) UpdateApplication(ctx context.Context, id string
 }
 
 func (r *applicationRepository) RegisterApplicationOwner(ctx context.Context, applicationID string, userID string) error {
-	app, err := models.Applications(models.ApplicationWhere.ID.EQ(applicationID)).One(ctx, r.db)
+	app, err := r.getApplication(ctx, applicationID)
 	if err != nil {
-		return fmt.Errorf("failed to find application: %w", err)
+		return err
 	}
 	user, err := models.Users(models.UserWhere.ID.EQ(userID)).One(ctx, r.db)
 	if err != nil {
@@ -174,9 +183,7 @@ func (r *applicationRepository) RegisterApplicationOwner(ctx context.Context, ap
 }
 
 func (r *applicationRepository) GetWebsites(ctx context.Context, applicationIDs []string) ([]*domain.Website, error) {
-	websites, err := models.Websites(
-		models.WebsiteWhere.ApplicationID.IN(applicationIDs),
-	).All(ctx, r.db)
+	websites, err := models.Websites(models.WebsiteWhere.ApplicationID.IN(applicationIDs)).All(ctx, r.db)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get websites: %w", err)
 	}
@@ -185,52 +192,38 @@ func (r *applicationRepository) GetWebsites(ctx context.Context, applicationIDs 
 	}), nil
 }
 
-func (r *applicationRepository) GetWebsite(ctx context.Context, applicationID string) (*domain.Website, error) {
-	website, err := models.Websites(
-		models.WebsiteWhere.ApplicationID.EQ(applicationID),
-	).One(ctx, r.db)
+func (r *applicationRepository) AddWebsite(ctx context.Context, applicationID string, fqdn string, httpPort int) error {
+	app, err := r.getApplication(ctx, applicationID)
 	if err != nil {
-		if isNoRowsErr(err) {
-			return nil, ErrNotFound
-		}
-		return nil, fmt.Errorf("failed to get website: %w", err)
+		return err
 	}
-	return toDomainWebsite(website), nil
-}
-
-func (r *applicationRepository) SetWebsite(ctx context.Context, applicationID string, fqdn string, httpPort int) error {
-	const errMsg = "failed to SetWebsite: %w"
-
-	branch, err := models.Applications(
-		qm.Load(models.ApplicationRels.Website),
-		models.ApplicationWhere.ID.EQ(applicationID),
-	).One(ctx, r.db)
-	if err != nil {
-		if isNoRowsErr(err) {
-			return ErrNotFound
-		}
-		return fmt.Errorf(errMsg, err)
-	}
-
-	ws := branch.R.Website
-	if ws != nil {
-		// テーブルの情報を更新
-		ws.FQDN = fqdn
-		ws.HTTPPort = httpPort
-		if _, err := ws.Update(ctx, r.db, boil.Infer()); err != nil {
-			return fmt.Errorf(errMsg, err)
-		}
-		return nil
-	}
-
-	// Websiteをテーブルに挿入
-	ws = &models.Website{
+	website := &models.Website{
 		ID:       domain.NewID(),
 		FQDN:     fqdn,
 		HTTPPort: httpPort,
 	}
-	if err := branch.SetWebsite(ctx, r.db, true, ws); err != nil {
-		return fmt.Errorf(errMsg, err)
+	err = app.AddWebsites(ctx, r.db, true, website)
+	if err != nil {
+		return fmt.Errorf("failed to add website: %w", err)
 	}
 	return nil
+}
+
+func (r *applicationRepository) DeleteWebsite(ctx context.Context, applicationID string, websiteID string) error {
+	app, err := r.getApplication(ctx, applicationID)
+	if err != nil {
+		return err
+	}
+
+	for _, website := range app.R.Websites {
+		if website.ID == websiteID {
+			_, err := website.Delete(ctx, r.db)
+			if err != nil {
+				return err
+			}
+			return nil
+		}
+	}
+
+	return ErrNotFound
 }

@@ -94,20 +94,10 @@ func (s *appDeployService) deploy(ctx context.Context, app *domain.Application, 
 }
 
 func (s *appDeployService) recreateContainer(ctx context.Context, app *domain.Application, build *domain.Build) error {
-	var httpProxy *domain.ContainerHTTPProxy
-	if app.Website.Valid {
-		httpProxy = &domain.ContainerHTTPProxy{
-			Domain: app.Website.V.FQDN,
-			Port:   app.Website.V.Port,
-		}
-	}
-
-	err := s.backend.CreateContainer(ctx, domain.ContainerCreateArgs{
-		ApplicationID: app.ID,
-		ImageName:     builder.GetImageName(s.imageRegistry, s.imageNamePrefix, app.ID),
-		ImageTag:      build.ID,
-		HTTPProxy:     httpProxy,
-		Recreate:      true,
+	err := s.backend.CreateContainer(ctx, app, domain.ContainerCreateArgs{
+		ImageName: builder.GetImageName(s.imageRegistry, s.imageNamePrefix, app.ID),
+		ImageTag:  build.ID,
+		Recreate:  true,
 	})
 	if err != nil {
 		return fmt.Errorf("failed to create container: %w", err)

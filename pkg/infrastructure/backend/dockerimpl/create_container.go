@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"strconv"
+	"strings"
 
 	docker "github.com/fsouza/go-dockerclient"
 
@@ -11,7 +12,7 @@ import (
 	"github.com/traPtitech/neoshowcase/pkg/util"
 )
 
-func (b *dockerBackend) CreateContainer(ctx context.Context, args domain.ContainerCreateArgs) error {
+func (b *dockerBackend) CreateContainer(ctx context.Context, app *domain.Application, args domain.ContainerCreateArgs) error {
 	if args.ImageTag == "" {
 		args.ImageTag = "latest"
 	}
@@ -34,7 +35,7 @@ func (b *dockerBackend) CreateContainer(ctx context.Context, args domain.Contain
 	if args.Recreate {
 		// 前のものが起動中の場合は削除する
 		err := b.c.RemoveContainer(docker.RemoveContainerOptions{
-			ID:            containerName(args.ApplicationID),
+			ID:            containerName(app.ID),
 			RemoveVolumes: true,
 			Force:         true,
 			Context:       ctx,
@@ -48,19 +49,19 @@ func (b *dockerBackend) CreateContainer(ctx context.Context, args domain.Contain
 
 	labels := util.MergeLabels(args.Labels, map[string]string{
 		appContainerLabel:              "true",
-		appContainerApplicationIDLabel: args.ApplicationID,
+		appContainerApplicationIDLabel: app.ID,
 	})
-	if args.HTTPProxy != nil {
-		traefikName := "ns_app_" + args.ApplicationID
-		labels["traefik.enabled"] = "true"
-		labels[fmt.Sprintf("traefik.http.routers.%s.rule", traefikName)] = fmt.Sprintf("Host(`%s`)", args.HTTPProxy.Domain)
+	labels["traefik.enabled"] = "true"
+	for _, website := range app.Websites {
+		traefikName := "nsapp_" + strings.ReplaceAll(website.FQDN, ".", "_")
+		labels[fmt.Sprintf("traefik.http.routers.%s.rule", traefikName)] = fmt.Sprintf("Host(`%s`)", website.FQDN)
 		labels[fmt.Sprintf("traefik.http.routers.%s.service", traefikName)] = traefikName
-		labels[fmt.Sprintf("traefik.http.services.%s.loadbalancer.server.port", traefikName)] = strconv.Itoa(args.HTTPProxy.Port)
+		labels[fmt.Sprintf("traefik.http.services.%s.loadbalancer.server.port", traefikName)] = strconv.Itoa(website.Port)
 	}
 
 	// ビルドしたイメージのコンテナを作成
 	cont, err := b.c.CreateContainer(docker.CreateContainerOptions{
-		Name: containerName(args.ApplicationID),
+		Name: containerName(app.ID),
 		Config: &docker.Config{
 			Image:  args.ImageName + ":" + args.ImageTag,
 			Labels: labels,

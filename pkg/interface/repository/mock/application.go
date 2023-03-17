@@ -36,6 +36,20 @@ func (m *MockApplicationRepository) EXPECT() *MockApplicationRepositoryMockRecor
 	return m.recorder
 }
 
+// AddWebsite mocks base method.
+func (m *MockApplicationRepository) AddWebsite(ctx context.Context, applicationID, fqdn string, httpPort int) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "AddWebsite", ctx, applicationID, fqdn, httpPort)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// AddWebsite indicates an expected call of AddWebsite.
+func (mr *MockApplicationRepositoryMockRecorder) AddWebsite(ctx, applicationID, fqdn, httpPort interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AddWebsite", reflect.TypeOf((*MockApplicationRepository)(nil).AddWebsite), ctx, applicationID, fqdn, httpPort)
+}
+
 // CreateApplication mocks base method.
 func (m *MockApplicationRepository) CreateApplication(ctx context.Context, args repository.CreateApplicationArgs) (*domain.Application, error) {
 	m.ctrl.T.Helper()
@@ -49,6 +63,20 @@ func (m *MockApplicationRepository) CreateApplication(ctx context.Context, args 
 func (mr *MockApplicationRepositoryMockRecorder) CreateApplication(ctx, args interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateApplication", reflect.TypeOf((*MockApplicationRepository)(nil).CreateApplication), ctx, args)
+}
+
+// DeleteWebsite mocks base method.
+func (m *MockApplicationRepository) DeleteWebsite(ctx context.Context, applicationID, websiteID string) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "DeleteWebsite", ctx, applicationID, websiteID)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// DeleteWebsite indicates an expected call of DeleteWebsite.
+func (mr *MockApplicationRepositoryMockRecorder) DeleteWebsite(ctx, applicationID, websiteID interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteWebsite", reflect.TypeOf((*MockApplicationRepository)(nil).DeleteWebsite), ctx, applicationID, websiteID)
 }
 
 // GetApplication mocks base method.
@@ -81,19 +109,19 @@ func (mr *MockApplicationRepositoryMockRecorder) GetApplications(ctx, cond inter
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetApplications", reflect.TypeOf((*MockApplicationRepository)(nil).GetApplications), ctx, cond)
 }
 
-// GetWebsite mocks base method.
-func (m *MockApplicationRepository) GetWebsite(ctx context.Context, applicationID string) (*domain.Website, error) {
+// GetWebsites mocks base method.
+func (m *MockApplicationRepository) GetWebsites(ctx context.Context, applicationIDs []string) ([]*domain.Website, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetWebsite", ctx, applicationID)
-	ret0, _ := ret[0].(*domain.Website)
+	ret := m.ctrl.Call(m, "GetWebsites", ctx, applicationIDs)
+	ret0, _ := ret[0].([]*domain.Website)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// GetWebsite indicates an expected call of GetWebsite.
-func (mr *MockApplicationRepositoryMockRecorder) GetWebsite(ctx, applicationID interface{}) *gomock.Call {
+// GetWebsites indicates an expected call of GetWebsites.
+func (mr *MockApplicationRepositoryMockRecorder) GetWebsites(ctx, applicationIDs interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetWebsite", reflect.TypeOf((*MockApplicationRepository)(nil).GetWebsite), ctx, applicationID)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetWebsites", reflect.TypeOf((*MockApplicationRepository)(nil).GetWebsites), ctx, applicationIDs)
 }
 
 // RegisterApplicationOwner mocks base method.
@@ -108,20 +136,6 @@ func (m *MockApplicationRepository) RegisterApplicationOwner(ctx context.Context
 func (mr *MockApplicationRepositoryMockRecorder) RegisterApplicationOwner(ctx, applicationID, userID interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RegisterApplicationOwner", reflect.TypeOf((*MockApplicationRepository)(nil).RegisterApplicationOwner), ctx, applicationID, userID)
-}
-
-// SetWebsite mocks base method.
-func (m *MockApplicationRepository) SetWebsite(ctx context.Context, applicationID, fqdn string, httpPort int) error {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "SetWebsite", ctx, applicationID, fqdn, httpPort)
-	ret0, _ := ret[0].(error)
-	return ret0
-}
-
-// SetWebsite indicates an expected call of SetWebsite.
-func (mr *MockApplicationRepositoryMockRecorder) SetWebsite(ctx, applicationID, fqdn, httpPort interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SetWebsite", reflect.TypeOf((*MockApplicationRepository)(nil).SetWebsite), ctx, applicationID, fqdn, httpPort)
 }
 
 // UpdateApplication mocks base method.

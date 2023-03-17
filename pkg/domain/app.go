@@ -59,7 +59,7 @@ type Application struct {
 	State         ApplicationState
 	CurrentCommit string
 	WantCommit    string
-	Website       optional.Of[Website]
+	Websites      []*Website
 }
 
 type Artifact struct {

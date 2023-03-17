@@ -5,11 +5,13 @@ import (
 	"fmt"
 
 	docker "github.com/fsouza/go-dockerclient"
+
+	"github.com/traPtitech/neoshowcase/pkg/domain"
 )
 
-func (b *dockerBackend) DestroyContainer(ctx context.Context, appID string) error {
+func (b *dockerBackend) DestroyContainer(ctx context.Context, app *domain.Application) error {
 	err := b.c.RemoveContainer(docker.RemoveContainerOptions{
-		ID:            containerName(appID),
+		ID:            containerName(app.ID),
 		RemoveVolumes: true,
 		Force:         true,
 		Context:       ctx,

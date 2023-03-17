@@ -58,11 +58,6 @@ func (s *staticSiteServerService) Reload(ctx context.Context) error {
 
 	var data []*domain.Site
 	for _, app := range applications {
-		if !app.Website.Valid {
-			continue
-		}
-		website := app.Website.V
-
 		build, ok := commitToBuild[app.CurrentCommit]
 		if !ok {
 			continue
@@ -70,12 +65,14 @@ func (s *staticSiteServerService) Reload(ctx context.Context) error {
 		if !build.Artifact.Valid {
 			continue
 		}
-		data = append(data, &domain.Site{
-			ID:            website.ID,
-			FQDN:          website.FQDN,
-			ArtifactID:    build.Artifact.V.ID,
-			ApplicationID: app.ID,
-		})
+		for _, website := range app.Websites {
+			data = append(data, &domain.Site{
+				ID:            website.ID,
+				FQDN:          website.FQDN,
+				ArtifactID:    build.Artifact.V.ID,
+				ApplicationID: app.ID,
+			})
+		}
 	}
 
 	return s.engine.Reconcile(data)

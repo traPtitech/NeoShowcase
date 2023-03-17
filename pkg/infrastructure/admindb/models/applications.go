@@ -138,27 +138,27 @@ var ApplicationWhere = struct {
 var ApplicationRels = struct {
 	Repository            string
 	StateApplicationState string
-	Website               string
 	Builds                string
 	Environments          string
 	Users                 string
+	Websites              string
 }{
 	Repository:            "Repository",
 	StateApplicationState: "StateApplicationState",
-	Website:               "Website",
 	Builds:                "Builds",
 	Environments:          "Environments",
 	Users:                 "Users",
+	Websites:              "Websites",
 }
 
 // applicationR is where relationships are stored.
 type applicationR struct {
 	Repository            *Repository       `boil:"Repository" json:"Repository" toml:"Repository" yaml:"Repository"`
 	StateApplicationState *ApplicationState `boil:"StateApplicationState" json:"StateApplicationState" toml:"StateApplicationState" yaml:"StateApplicationState"`
-	Website               *Website          `boil:"Website" json:"Website" toml:"Website" yaml:"Website"`
 	Builds                BuildSlice        `boil:"Builds" json:"Builds" toml:"Builds" yaml:"Builds"`
 	Environments          EnvironmentSlice  `boil:"Environments" json:"Environments" toml:"Environments" yaml:"Environments"`
 	Users                 UserSlice         `boil:"Users" json:"Users" toml:"Users" yaml:"Users"`
+	Websites              WebsiteSlice      `boil:"Websites" json:"Websites" toml:"Websites" yaml:"Websites"`
 }
 
 // NewStruct creates a new relationship struct
@@ -180,13 +180,6 @@ func (r *applicationR) GetStateApplicationState() *ApplicationState {
 	return r.StateApplicationState
 }
 
-func (r *applicationR) GetWebsite() *Website {
-	if r == nil {
-		return nil
-	}
-	return r.Website
-}
-
 func (r *applicationR) GetBuilds() BuildSlice {
 	if r == nil {
 		return nil
@@ -206,6 +199,13 @@ func (r *applicationR) GetUsers() UserSlice {
 		return nil
 	}
 	return r.Users
+}
+
+func (r *applicationR) GetWebsites() WebsiteSlice {
+	if r == nil {
+		return nil
+	}
+	return r.Websites
 }
 
 // applicationL is where Load methods for each relationship are stored.
@@ -519,17 +519,6 @@ func (o *Application) StateApplicationState(mods ...qm.QueryMod) applicationStat
 	return ApplicationStates(queryMods...)
 }
 
-// Website pointed to by the foreign key.
-func (o *Application) Website(mods ...qm.QueryMod) websiteQuery {
-	queryMods := []qm.QueryMod{
-		qm.Where("`application_id` = ?", o.ID),
-	}
-
-	queryMods = append(queryMods, mods...)
-
-	return Websites(queryMods...)
-}
-
 // Builds retrieves all the build's Builds with an executor.
 func (o *Application) Builds(mods ...qm.QueryMod) buildQuery {
 	var queryMods []qm.QueryMod
@@ -571,6 +560,20 @@ func (o *Application) Users(mods ...qm.QueryMod) userQuery {
 	)
 
 	return Users(queryMods...)
+}
+
+// Websites retrieves all the website's Websites with an executor.
+func (o *Application) Websites(mods ...qm.QueryMod) websiteQuery {
+	var queryMods []qm.QueryMod
+	if len(mods) != 0 {
+		queryMods = append(queryMods, mods...)
+	}
+
+	queryMods = append(queryMods,
+		qm.Where("`websites`.`application_id`=?", o.ID),
+	)
+
+	return Websites(queryMods...)
 }
 
 // LoadRepository allows an eager lookup of values, cached into the
@@ -805,123 +808,6 @@ func (applicationL) LoadStateApplicationState(ctx context.Context, e boil.Contex
 					foreign.R = &applicationStateR{}
 				}
 				foreign.R.StateApplications = append(foreign.R.StateApplications, local)
-				break
-			}
-		}
-	}
-
-	return nil
-}
-
-// LoadWebsite allows an eager lookup of values, cached into the
-// loaded structs of the objects. This is for a 1-1 relationship.
-func (applicationL) LoadWebsite(ctx context.Context, e boil.ContextExecutor, singular bool, maybeApplication interface{}, mods queries.Applicator) error {
-	var slice []*Application
-	var object *Application
-
-	if singular {
-		var ok bool
-		object, ok = maybeApplication.(*Application)
-		if !ok {
-			object = new(Application)
-			ok = queries.SetFromEmbeddedStruct(&object, &maybeApplication)
-			if !ok {
-				return errors.New(fmt.Sprintf("failed to set %T from embedded struct %T", object, maybeApplication))
-			}
-		}
-	} else {
-		s, ok := maybeApplication.(*[]*Application)
-		if ok {
-			slice = *s
-		} else {
-			ok = queries.SetFromEmbeddedStruct(&slice, maybeApplication)
-			if !ok {
-				return errors.New(fmt.Sprintf("failed to set %T from embedded struct %T", slice, maybeApplication))
-			}
-		}
-	}
-
-	args := make([]interface{}, 0, 1)
-	if singular {
-		if object.R == nil {
-			object.R = &applicationR{}
-		}
-		args = append(args, object.ID)
-	} else {
-	Outer:
-		for _, obj := range slice {
-			if obj.R == nil {
-				obj.R = &applicationR{}
-			}
-
-			for _, a := range args {
-				if a == obj.ID {
-					continue Outer
-				}
-			}
-
-			args = append(args, obj.ID)
-		}
-	}
-
-	if len(args) == 0 {
-		return nil
-	}
-
-	query := NewQuery(
-		qm.From(`websites`),
-		qm.WhereIn(`websites.application_id in ?`, args...),
-	)
-	if mods != nil {
-		mods.Apply(query)
-	}
-
-	results, err := query.QueryContext(ctx, e)
-	if err != nil {
-		return errors.Wrap(err, "failed to eager load Website")
-	}
-
-	var resultSlice []*Website
-	if err = queries.Bind(results, &resultSlice); err != nil {
-		return errors.Wrap(err, "failed to bind eager loaded slice Website")
-	}
-
-	if err = results.Close(); err != nil {
-		return errors.Wrap(err, "failed to close results of eager load for websites")
-	}
-	if err = results.Err(); err != nil {
-		return errors.Wrap(err, "error occurred during iteration of eager loaded relations for websites")
-	}
-
-	if len(websiteAfterSelectHooks) != 0 {
-		for _, obj := range resultSlice {
-			if err := obj.doAfterSelectHooks(ctx, e); err != nil {
-				return err
-			}
-		}
-	}
-
-	if len(resultSlice) == 0 {
-		return nil
-	}
-
-	if singular {
-		foreign := resultSlice[0]
-		object.R.Website = foreign
-		if foreign.R == nil {
-			foreign.R = &websiteR{}
-		}
-		foreign.R.Application = object
-	}
-
-	for _, local := range slice {
-		for _, foreign := range resultSlice {
-			if local.ID == foreign.ApplicationID {
-				local.R.Website = foreign
-				if foreign.R == nil {
-					foreign.R = &websiteR{}
-				}
-				foreign.R.Application = local
 				break
 			}
 		}
@@ -1289,6 +1175,120 @@ func (applicationL) LoadUsers(ctx context.Context, e boil.ContextExecutor, singu
 	return nil
 }
 
+// LoadWebsites allows an eager lookup of values, cached into the
+// loaded structs of the objects. This is for a 1-M or N-M relationship.
+func (applicationL) LoadWebsites(ctx context.Context, e boil.ContextExecutor, singular bool, maybeApplication interface{}, mods queries.Applicator) error {
+	var slice []*Application
+	var object *Application
+
+	if singular {
+		var ok bool
+		object, ok = maybeApplication.(*Application)
+		if !ok {
+			object = new(Application)
+			ok = queries.SetFromEmbeddedStruct(&object, &maybeApplication)
+			if !ok {
+				return errors.New(fmt.Sprintf("failed to set %T from embedded struct %T", object, maybeApplication))
+			}
+		}
+	} else {
+		s, ok := maybeApplication.(*[]*Application)
+		if ok {
+			slice = *s
+		} else {
+			ok = queries.SetFromEmbeddedStruct(&slice, maybeApplication)
+			if !ok {
+				return errors.New(fmt.Sprintf("failed to set %T from embedded struct %T", slice, maybeApplication))
+			}
+		}
+	}
+
+	args := make([]interface{}, 0, 1)
+	if singular {
+		if object.R == nil {
+			object.R = &applicationR{}
+		}
+		args = append(args, object.ID)
+	} else {
+	Outer:
+		for _, obj := range slice {
+			if obj.R == nil {
+				obj.R = &applicationR{}
+			}
+
+			for _, a := range args {
+				if a == obj.ID {
+					continue Outer
+				}
+			}
+
+			args = append(args, obj.ID)
+		}
+	}
+
+	if len(args) == 0 {
+		return nil
+	}
+
+	query := NewQuery(
+		qm.From(`websites`),
+		qm.WhereIn(`websites.application_id in ?`, args...),
+	)
+	if mods != nil {
+		mods.Apply(query)
+	}
+
+	results, err := query.QueryContext(ctx, e)
+	if err != nil {
+		return errors.Wrap(err, "failed to eager load websites")
+	}
+
+	var resultSlice []*Website
+	if err = queries.Bind(results, &resultSlice); err != nil {
+		return errors.Wrap(err, "failed to bind eager loaded slice websites")
+	}
+
+	if err = results.Close(); err != nil {
+		return errors.Wrap(err, "failed to close results in eager load on websites")
+	}
+	if err = results.Err(); err != nil {
+		return errors.Wrap(err, "error occurred during iteration of eager loaded relations for websites")
+	}
+
+	if len(websiteAfterSelectHooks) != 0 {
+		for _, obj := range resultSlice {
+			if err := obj.doAfterSelectHooks(ctx, e); err != nil {
+				return err
+			}
+		}
+	}
+	if singular {
+		object.R.Websites = resultSlice
+		for _, foreign := range resultSlice {
+			if foreign.R == nil {
+				foreign.R = &websiteR{}
+			}
+			foreign.R.Application = object
+		}
+		return nil
+	}
+
+	for _, foreign := range resultSlice {
+		for _, local := range slice {
+			if local.ID == foreign.ApplicationID {
+				local.R.Websites = append(local.R.Websites, foreign)
+				if foreign.R == nil {
+					foreign.R = &websiteR{}
+				}
+				foreign.R.Application = local
+				break
+			}
+		}
+	}
+
+	return nil
+}
+
 // SetRepository of the application to the related item.
 // Sets o.R.Repository to related.
 // Adds o to related.R.Applications.
@@ -1380,56 +1380,6 @@ func (o *Application) SetStateApplicationState(ctx context.Context, exec boil.Co
 		related.R.StateApplications = append(related.R.StateApplications, o)
 	}
 
-	return nil
-}
-
-// SetWebsite of the application to the related item.
-// Sets o.R.Website to related.
-// Adds o to related.R.Application.
-func (o *Application) SetWebsite(ctx context.Context, exec boil.ContextExecutor, insert bool, related *Website) error {
-	var err error
-
-	if insert {
-		related.ApplicationID = o.ID
-
-		if err = related.Insert(ctx, exec, boil.Infer()); err != nil {
-			return errors.Wrap(err, "failed to insert into foreign table")
-		}
-	} else {
-		updateQuery := fmt.Sprintf(
-			"UPDATE `websites` SET %s WHERE %s",
-			strmangle.SetParamNames("`", "`", 0, []string{"application_id"}),
-			strmangle.WhereClause("`", "`", 0, websitePrimaryKeyColumns),
-		)
-		values := []interface{}{o.ID, related.ID}
-
-		if boil.IsDebug(ctx) {
-			writer := boil.DebugWriterFrom(ctx)
-			fmt.Fprintln(writer, updateQuery)
-			fmt.Fprintln(writer, values)
-		}
-		if _, err = exec.ExecContext(ctx, updateQuery, values...); err != nil {
-			return errors.Wrap(err, "failed to update foreign table")
-		}
-
-		related.ApplicationID = o.ID
-	}
-
-	if o.R == nil {
-		o.R = &applicationR{
-			Website: related,
-		}
-	} else {
-		o.R.Website = related
-	}
-
-	if related.R == nil {
-		related.R = &websiteR{
-			Application: o,
-		}
-	} else {
-		related.R.Application = o
-	}
 	return nil
 }
 
@@ -1682,6 +1632,59 @@ func removeUsersFromApplicationsSlice(o *Application, related []*User) {
 			break
 		}
 	}
+}
+
+// AddWebsites adds the given related objects to the existing relationships
+// of the application, optionally inserting them as new records.
+// Appends related to o.R.Websites.
+// Sets related.R.Application appropriately.
+func (o *Application) AddWebsites(ctx context.Context, exec boil.ContextExecutor, insert bool, related ...*Website) error {
+	var err error
+	for _, rel := range related {
+		if insert {
+			rel.ApplicationID = o.ID
+			if err = rel.Insert(ctx, exec, boil.Infer()); err != nil {
+				return errors.Wrap(err, "failed to insert into foreign table")
+			}
+		} else {
+			updateQuery := fmt.Sprintf(
+				"UPDATE `websites` SET %s WHERE %s",
+				strmangle.SetParamNames("`", "`", 0, []string{"application_id"}),
+				strmangle.WhereClause("`", "`", 0, websitePrimaryKeyColumns),
+			)
+			values := []interface{}{o.ID, rel.ID}
+
+			if boil.IsDebug(ctx) {
+				writer := boil.DebugWriterFrom(ctx)
+				fmt.Fprintln(writer, updateQuery)
+				fmt.Fprintln(writer, values)
+			}
+			if _, err = exec.ExecContext(ctx, updateQuery, values...); err != nil {
+				return errors.Wrap(err, "failed to update foreign table")
+			}
+
+			rel.ApplicationID = o.ID
+		}
+	}
+
+	if o.R == nil {
+		o.R = &applicationR{
+			Websites: related,
+		}
+	} else {
+		o.R.Websites = append(o.R.Websites, related...)
+	}
+
+	for _, rel := range related {
+		if rel.R == nil {
+			rel.R = &websiteR{
+				Application: o,
+			}
+		} else {
+			rel.R.Application = o
+		}
+	}
+	return nil
 }
 
 // Applications retrieves all the records using an executor.

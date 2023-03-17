@@ -9,6 +9,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
+	"github.com/traPtitech/neoshowcase/pkg/domain"
 	"github.com/traPtitech/neoshowcase/pkg/infrastructure/eventbus"
 )
 
@@ -17,7 +18,10 @@ func TestDockerBackend_DestroyContainer(t *testing.T) {
 
 	t.Run("存在しないコンテナを指定", func(t *testing.T) {
 		t.Parallel()
-		err := m.DestroyContainer(context.Background(), "notfound")
+		app := domain.Application{
+			ID: "notfound",
+		}
+		err := m.DestroyContainer(context.Background(), &app)
 		assert.Error(t, err)
 	})
 
@@ -32,7 +36,10 @@ func TestDockerBackend_DestroyContainer(t *testing.T) {
 		})
 		require.NoError(t, err)
 
-		err = m.DestroyContainer(context.Background(), appID)
+		app := domain.Application{
+			ID: appID,
+		}
+		err = m.DestroyContainer(context.Background(), &app)
 		assert.NoError(t, err)
 	})
 
@@ -49,7 +56,10 @@ func TestDockerBackend_DestroyContainer(t *testing.T) {
 		require.NoError(t, err)
 		require.NoError(t, c.StartContainer(cont.ID, nil))
 
-		err = m.DestroyContainer(context.Background(), appID)
+		app := domain.Application{
+			ID: appID,
+		}
+		err = m.DestroyContainer(context.Background(), &app)
 		assert.NoError(t, err)
 	})
 }

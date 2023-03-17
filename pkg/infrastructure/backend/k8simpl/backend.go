@@ -3,6 +3,7 @@ package k8simpl
 import (
 	"context"
 	"fmt"
+	"strings"
 
 	log "github.com/sirupsen/logrus"
 	apiv1 "k8s.io/api/core/v1"
@@ -23,12 +24,16 @@ const (
 )
 
 type k8sBackend struct {
-	clientset  *kubernetes.Clientset
-	eventbus   domain.Bus
+	clientset *kubernetes.Clientset
+	eventbus  domain.Bus
+
 	podWatcher watch.Interface
 }
 
-func NewK8SBackend(eventbus domain.Bus, k8sCSet *kubernetes.Clientset) (domain.Backend, error) {
+func NewK8SBackend(
+	eventbus domain.Bus,
+	k8sCSet *kubernetes.Clientset,
+) (domain.Backend, error) {
 	b := &k8sBackend{
 		clientset: k8sCSet,
 		eventbus:  eventbus,
@@ -85,4 +90,8 @@ func pathTypePtr(pathType networkingv1.PathType) *networkingv1.PathType { return
 
 func deploymentName(appID string) string {
 	return fmt.Sprintf("nsapp-%s", appID)
+}
+
+func serviceName(fqdn string) string {
+	return fmt.Sprintf("nsapp-%s", strings.ReplaceAll(fqdn, ".", "-"))
 }

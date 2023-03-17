@@ -256,7 +256,7 @@ func (s *apiServerService) StopApplication(ctx context.Context, id string) error
 	if app.State != domain.ApplicationStateRunning {
 		return errors.New("application is not running")
 	}
-	err = s.backend.DestroyContainer(ctx, id)
+	err = s.backend.DestroyContainer(ctx, app)
 	if err != nil {
 		return err
 	}

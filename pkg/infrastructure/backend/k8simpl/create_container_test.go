@@ -21,9 +21,11 @@ func TestK8sBackend_CreateContainer(t *testing.T) {
 		image := "tianon/sleeping-beauty"
 		appID := "pjpjpjoijion"
 
-		err := m.CreateContainer(context.Background(), domain.ContainerCreateArgs{
-			ImageName:     image,
-			ApplicationID: appID,
+		app := domain.Application{
+			ID: appID,
+		}
+		err := m.CreateContainer(context.Background(), &app, domain.ContainerCreateArgs{
+			ImageName: image,
 		})
 		if assert.NoError(t, err) {
 			waitPodRunning(t, c, deploymentName(appID))
@@ -35,19 +37,22 @@ func TestK8sBackend_CreateContainer(t *testing.T) {
 		t.Parallel()
 		image := "chussenot/tiny-server"
 		appID := "pijojopjnnna"
+		site := "test.localhost"
 
-		err := m.CreateContainer(context.Background(), domain.ContainerCreateArgs{
-			ImageName:     image,
-			ApplicationID: appID,
-			HTTPProxy: &domain.ContainerHTTPProxy{
-				Domain: "test.localhost",
-				Port:   80,
-			},
+		app := domain.Application{
+			ID: appID,
+			Websites: []*domain.Website{{
+				FQDN: site,
+				Port: 80,
+			}},
+		}
+		err := m.CreateContainer(context.Background(), &app, domain.ContainerCreateArgs{
+			ImageName: image,
 		})
 		if assert.NoError(t, err) {
 			waitPodRunning(t, c, deploymentName(appID))
 			require.NoError(t, c.CoreV1().Pods(appNamespace).Delete(context.Background(), deploymentName(appID), metav1.DeleteOptions{}))
-			require.NoError(t, c.CoreV1().Services(appNamespace).Delete(context.Background(), deploymentName(appID), metav1.DeleteOptions{}))
+			require.NoError(t, c.CoreV1().Services(appNamespace).Delete(context.Background(), serviceName(site), metav1.DeleteOptions{}))
 		}
 	})
 
@@ -55,33 +60,31 @@ func TestK8sBackend_CreateContainer(t *testing.T) {
 		t.Parallel()
 		image := "chussenot/tiny-server"
 		appID := "98ygtfjfjhgj"
+		site := "ji9876fgoh.localhost"
 
-		err := m.CreateContainer(context.Background(), domain.ContainerCreateArgs{
-			ImageName:     image,
-			ApplicationID: appID,
-			HTTPProxy: &domain.ContainerHTTPProxy{
-				Domain: "ji9876fgoh.localhost",
-				Port:   80,
-			},
-			Recreate: true,
+		app := domain.Application{
+			ID: appID,
+			Websites: []*domain.Website{{
+				FQDN: site,
+				Port: 80,
+			}},
+		}
+		err := m.CreateContainer(context.Background(), &app, domain.ContainerCreateArgs{
+			ImageName: image,
+			Recreate:  true,
 		})
 		if assert.NoError(t, err) {
 			waitPodRunning(t, c, deploymentName(appID))
 		}
 
-		err = m.CreateContainer(context.Background(), domain.ContainerCreateArgs{
-			ImageName:     image,
-			ApplicationID: appID,
-			HTTPProxy: &domain.ContainerHTTPProxy{
-				Domain: "bbbbbb.localhost",
-				Port:   80,
-			},
-			Recreate: true,
+		err = m.CreateContainer(context.Background(), &app, domain.ContainerCreateArgs{
+			ImageName: image,
+			Recreate:  true,
 		})
 		if assert.NoError(t, err) {
 			waitPodRunning(t, c, deploymentName(appID))
 			require.NoError(t, c.CoreV1().Pods(appNamespace).Delete(context.Background(), deploymentName(appID), metav1.DeleteOptions{}))
-			require.NoError(t, c.CoreV1().Services(appNamespace).Delete(context.Background(), deploymentName(appID), metav1.DeleteOptions{}))
+			require.NoError(t, c.CoreV1().Services(appNamespace).Delete(context.Background(), serviceName(site), metav1.DeleteOptions{}))
 		}
 	})
 }
