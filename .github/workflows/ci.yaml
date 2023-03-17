@@ -12,20 +12,18 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
-      - uses: actions/setup-go@v3
+      - uses: actions/setup-go@v4
         with:
           go-version-file: ./go.mod
-          cache: true
       - run: go mod download
   protoc:
     name: Proto
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
-      - uses: actions/setup-go@v3
+      - uses: actions/setup-go@v4
         with:
           go-version-file: ./go.mod
-          cache: true
       - uses: arduino/setup-protoc@v1
         with:
           version: '3.9.1'
@@ -61,10 +59,9 @@ jobs:
           - ns-ssgen
     steps:
       - uses: actions/checkout@v3
-      - uses: actions/setup-go@v3
+      - uses: actions/setup-go@v4
         with:
           go-version-file: ./go.mod
-          cache: true
       - name: Use generated codes
         uses: actions/cache@v3
         with:
@@ -77,10 +74,9 @@ jobs:
     needs: [ mod, protoc ]
     steps:
       - uses: actions/checkout@v3
-      - uses: actions/setup-go@v3
+      - uses: actions/setup-go@v4
         with:
           go-version-file: ./go.mod
-          cache: true
       - name: Install reviewdog
         run: curl -sfL https://raw.githubusercontent.com/reviewdog/reviewdog/master/install.sh | sh -s -- -b $(go env GOPATH)/bin
       - name: Install golangci-lint
@@ -120,10 +116,9 @@ jobs:
           - 5010:27017
     steps:
       - uses: actions/checkout@v3
-      - uses: actions/setup-go@v3
+      - uses: actions/setup-go@v4
         with:
           go-version-file: ./go.mod
-          cache: true
       - name: Use generated codes
         uses: actions/cache@v3
         with:
@@ -143,10 +138,9 @@ jobs:
       ENABLE_K8S_TESTS: "true"
     steps:
       - uses: actions/checkout@v3
-      - uses: actions/setup-go@v3
+      - uses: actions/setup-go@v4
         with:
           go-version-file: ./go.mod
-          cache: true
       - name: Use generated codes
         uses: actions/cache@v3
         with:
@@ -182,7 +176,7 @@ jobs:
     name: TBLS
     runs-on: ubuntu-latest
     env:
-      TBLS_VERSION: v1.56.1
+      TBLS_VERSION: v1.62.1
     services:
       mysql:
         image: mariadb:10.8.3
@@ -194,7 +188,7 @@ jobs:
           - 5004:3306
     steps:
       - uses: actions/checkout@v3
-      - uses: actions/setup-go@v3
+      - uses: actions/setup-go@v4
         with:
           go-version-file: ./go.mod
       - name: Run ns-migrate up
@@ -211,7 +205,7 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       - name: Spectral checks
-        uses: stoplightio/spectral-action@v0.8.8
+        uses: stoplightio/spectral-action@v0.8.10
         with:
           file_glob: api/http/swagger.yaml
           repo_token: ${{ secrets.GITHUB_TOKEN }}
