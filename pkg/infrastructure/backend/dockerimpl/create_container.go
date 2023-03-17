@@ -3,6 +3,7 @@ package dockerimpl
 import (
 	"context"
 	"fmt"
+	"strconv"
 
 	docker "github.com/fsouza/go-dockerclient"
 
@@ -24,11 +25,6 @@ func (b *dockerBackend) CreateContainer(ctx context.Context, args domain.Contain
 		return fmt.Errorf("failed to pull image: %w", err)
 	}
 
-	labels := util.MergeLabels(args.Labels, map[string]string{
-		appContainerLabel:              "true",
-		appContainerApplicationIDLabel: args.ApplicationID,
-	})
-
 	var envs []string
 
 	for name, value := range args.Envs {
@@ -48,6 +44,18 @@ func (b *dockerBackend) CreateContainer(ctx context.Context, args domain.Contain
 				return fmt.Errorf("failed to remove old container: %w", err)
 			}
 		}
+	}
+
+	labels := util.MergeLabels(args.Labels, map[string]string{
+		appContainerLabel:              "true",
+		appContainerApplicationIDLabel: args.ApplicationID,
+	})
+	if args.HTTPProxy != nil {
+		traefikName := "ns_app_" + args.ApplicationID
+		labels["traefik.enabled"] = "true"
+		labels[fmt.Sprintf("traefik.http.routers.%s.rule", traefikName)] = fmt.Sprintf("Host(`%s`)", args.HTTPProxy.Domain)
+		labels[fmt.Sprintf("traefik.http.routers.%s.service", traefikName)] = traefikName
+		labels[fmt.Sprintf("traefik.http.services.%s.loadbalancer.server.port", traefikName)] = strconv.Itoa(args.HTTPProxy.Port)
 	}
 
 	// ビルドしたイメージのコンテナを作成

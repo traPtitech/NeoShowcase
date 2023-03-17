@@ -94,7 +94,6 @@ func (s *appDeployService) deploy(ctx context.Context, app *domain.Application, 
 }
 
 func (s *appDeployService) recreateContainer(ctx context.Context, app *domain.Application, build *domain.Build) error {
-	// TODO Ingressの設定がここでする必要があるかどうか確認する
 	var httpProxy *domain.ContainerHTTPProxy
 	if app.Website.Valid {
 		httpProxy = &domain.ContainerHTTPProxy{
