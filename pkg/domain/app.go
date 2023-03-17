@@ -59,6 +59,7 @@ type Application struct {
 	State         ApplicationState
 	CurrentCommit string
 	WantCommit    string
+	Websites      []*Website
 }
 
 type Artifact struct {

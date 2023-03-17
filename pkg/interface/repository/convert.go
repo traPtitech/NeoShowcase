@@ -1,6 +1,8 @@
 package repository
 
 import (
+	"github.com/samber/lo"
+
 	"github.com/traPtitech/neoshowcase/pkg/domain"
 	"github.com/traPtitech/neoshowcase/pkg/domain/builder"
 	"github.com/traPtitech/neoshowcase/pkg/infrastructure/admindb/models"
@@ -14,15 +16,18 @@ func toDomainRepository(repo *models.Repository) domain.Repository {
 	}
 }
 
-func toDomainApplication(app *models.Application, repo domain.Repository) *domain.Application {
+func toDomainApplication(app *models.Application) *domain.Application {
 	return &domain.Application{
 		ID:            app.ID,
-		Repository:    repo,
+		Repository:    toDomainRepository(app.R.Repository),
 		BranchName:    app.BranchName,
 		BuildType:     builder.BuildTypeFromString(app.BuildType),
 		State:         domain.ApplicationStateFromString(app.State),
 		CurrentCommit: app.CurrentCommit,
 		WantCommit:    app.WantCommit,
+		Websites: lo.Map(app.R.Websites, func(website *models.Website, i int) *domain.Website {
+			return toDomainWebsite(website)
+		}),
 	}
 }
 

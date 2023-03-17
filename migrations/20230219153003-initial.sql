@@ -128,7 +128,6 @@ CREATE TABLE `websites`
     `application_id` VARCHAR(22)    NOT NULL COMMENT 'アプリケーションID',
     PRIMARY KEY (`id`),
     UNIQUE KEY (`fqdn`),
-    UNIQUE KEY (`application_id`),
     CONSTRAINT `fk_websites_application_id`
         FOREIGN KEY (`application_id`) REFERENCES `applications` (`id`)
 ) ENGINE InnoDB

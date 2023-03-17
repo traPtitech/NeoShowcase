@@ -27,8 +27,10 @@ services:
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.ns_admin.rule=Host(`local.tokyotech.org`)"
+      - "traefik.http.routers.ns_admin.service=ns_admin"
       - "traefik.http.services.ns_admin.loadbalancer.server.port=8080"
       - "traefik.http.routers.ns_grpc.rule=Host(`grpc.local.tokyotech.org`)"
+      - "traefik.http.routers.ns_grpc.service=ns_grpc"
       - "traefik.http.services.ns_grpc.loadbalancer.server.port=5000"
     depends_on:
       - mysql
@@ -80,6 +82,12 @@ services:
     ports:
       - "5007:10000"
       - "5008:80"
+    labels:
+      - "traefik.enabled=true"
+      - "traefik.http.routers.ns_ssgen.rule=HostRegexp(`.*`)"
+      # lowest priority
+      - "traefik.http.routers.ns_ssgen.priority=1"
+      - "traefik.http.services.ns_ssgen.loadbalancer.server.port=80"
     depends_on:
       - mysql
     networks:

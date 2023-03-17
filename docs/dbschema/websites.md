@@ -17,7 +17,7 @@ CREATE TABLE `websites` (
   `application_id` varchar(22) NOT NULL COMMENT 'アプリケーションID',
   PRIMARY KEY (`id`),
   UNIQUE KEY `fqdn` (`fqdn`),
-  UNIQUE KEY `application_id` (`application_id`),
+  KEY `fk_websites_application_id` (`application_id`),
   CONSTRAINT `fk_websites_application_id` FOREIGN KEY (`application_id`) REFERENCES `applications` (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci COMMENT='Webサイトテーブル'
 ```
@@ -39,7 +39,6 @@ CREATE TABLE `websites` (
 
 | Name | Type | Definition |
 | ---- | ---- | ---------- |
-| application_id | UNIQUE | UNIQUE KEY application_id (application_id) |
 | fk_websites_application_id | FOREIGN KEY | FOREIGN KEY (application_id) REFERENCES applications (id) |
 | fqdn | UNIQUE | UNIQUE KEY fqdn (fqdn) |
 | PRIMARY | PRIMARY KEY | PRIMARY KEY (id) |
@@ -48,8 +47,8 @@ CREATE TABLE `websites` (
 
 | Name | Definition |
 | ---- | ---------- |
+| fk_websites_application_id | KEY fk_websites_application_id (application_id) USING BTREE |
 | PRIMARY | PRIMARY KEY (id) USING BTREE |
-| application_id | UNIQUE KEY application_id (application_id) USING BTREE |
 | fqdn | UNIQUE KEY fqdn (fqdn) USING BTREE |
 
 ## Relations

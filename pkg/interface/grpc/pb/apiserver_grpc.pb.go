@@ -36,7 +36,6 @@ type ApplicationServiceClient interface {
 	GetApplicationOutput(ctx context.Context, in *ApplicationIdRequest, opts ...grpc.CallOption) (*ApplicationOutput, error)
 	GetApplicationKeys(ctx context.Context, in *ApplicationIdRequest, opts ...grpc.CallOption) (*ApplicationKeys, error)
 	StartApplication(ctx context.Context, in *ApplicationIdRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
-	RestartApplication(ctx context.Context, in *ApplicationIdRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
 	StopApplication(ctx context.Context, in *ApplicationIdRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
 }
 
@@ -165,15 +164,6 @@ func (c *applicationServiceClient) StartApplication(ctx context.Context, in *App
 	return out, nil
 }
 
-func (c *applicationServiceClient) RestartApplication(ctx context.Context, in *ApplicationIdRequest, opts ...grpc.CallOption) (*emptypb.Empty, error) {
-	out := new(emptypb.Empty)
-	err := c.cc.Invoke(ctx, "/neoshowcase.protobuf.ApplicationService/RestartApplication", in, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
 func (c *applicationServiceClient) StopApplication(ctx context.Context, in *ApplicationIdRequest, opts ...grpc.CallOption) (*emptypb.Empty, error) {
 	out := new(emptypb.Empty)
 	err := c.cc.Invoke(ctx, "/neoshowcase.protobuf.ApplicationService/StopApplication", in, out, opts...)
@@ -200,7 +190,6 @@ type ApplicationServiceServer interface {
 	GetApplicationOutput(context.Context, *ApplicationIdRequest) (*ApplicationOutput, error)
 	GetApplicationKeys(context.Context, *ApplicationIdRequest) (*ApplicationKeys, error)
 	StartApplication(context.Context, *ApplicationIdRequest) (*emptypb.Empty, error)
-	RestartApplication(context.Context, *ApplicationIdRequest) (*emptypb.Empty, error)
 	StopApplication(context.Context, *ApplicationIdRequest) (*emptypb.Empty, error)
 	mustEmbedUnimplementedApplicationServiceServer()
 }
@@ -247,9 +236,6 @@ func (UnimplementedApplicationServiceServer) GetApplicationKeys(context.Context,
 }
 func (UnimplementedApplicationServiceServer) StartApplication(context.Context, *ApplicationIdRequest) (*emptypb.Empty, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method StartApplication not implemented")
-}
-func (UnimplementedApplicationServiceServer) RestartApplication(context.Context, *ApplicationIdRequest) (*emptypb.Empty, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method RestartApplication not implemented")
 }
 func (UnimplementedApplicationServiceServer) StopApplication(context.Context, *ApplicationIdRequest) (*emptypb.Empty, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method StopApplication not implemented")
@@ -501,24 +487,6 @@ func _ApplicationService_StartApplication_Handler(srv interface{}, ctx context.C
 	return interceptor(ctx, in, info, handler)
 }
 
-func _ApplicationService_RestartApplication_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(ApplicationIdRequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(ApplicationServiceServer).RestartApplication(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: "/neoshowcase.protobuf.ApplicationService/RestartApplication",
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(ApplicationServiceServer).RestartApplication(ctx, req.(*ApplicationIdRequest))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
 func _ApplicationService_StopApplication_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(ApplicationIdRequest)
 	if err := dec(in); err != nil {
@@ -595,10 +563,6 @@ var ApplicationService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "StartApplication",
 			Handler:    _ApplicationService_StartApplication_Handler,
-		},
-		{
-			MethodName: "RestartApplication",
-			Handler:    _ApplicationService_RestartApplication_Handler,
 		},
 		{
 			MethodName: "StopApplication",

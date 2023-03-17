@@ -14,15 +14,16 @@ import (
 	"github.com/traPtitech/neoshowcase/pkg/util"
 )
 
-func (b *k8sBackend) CreateContainer(ctx context.Context, args domain.ContainerCreateArgs) error {
+func (b *k8sBackend) CreateContainer(ctx context.Context, app *domain.Application, args domain.ContainerCreateArgs) error {
 	if args.ImageTag == "" {
 		args.ImageTag = "latest"
 	}
 
-	labels := util.MergeLabels(args.Labels, map[string]string{
+	selector := map[string]string{
 		appContainerLabel:              "true",
-		appContainerApplicationIDLabel: args.ApplicationID,
-	})
+		appContainerApplicationIDLabel: app.ID,
+	}
+	labels := util.MergeLabels(args.Labels, selector)
 
 	var envs []apiv1.EnvVar
 
@@ -35,31 +36,21 @@ func (b *k8sBackend) CreateContainer(ctx context.Context, args domain.ContainerC
 		Image: args.ImageName + ":" + args.ImageTag,
 		Env:   envs,
 	}
-	if args.HTTPProxy != nil {
-		cont.Ports = []apiv1.ContainerPort{
-			{
-				Name:          "http",
-				ContainerPort: int32(args.HTTPProxy.Port),
-				Protocol:      "TCP",
-			},
-		}
+	for _, website := range app.Websites {
 		svc := &apiv1.Service{
 			ObjectMeta: metav1.ObjectMeta{
-				Name:      deploymentName(args.ApplicationID),
+				Name:      serviceName(website.FQDN),
 				Namespace: appNamespace,
 				Labels:    labels,
 			},
 			Spec: apiv1.ServiceSpec{
 				ClusterIP: "None",
-				Selector: map[string]string{
-					appContainerLabel:              "true",
-					appContainerApplicationIDLabel: args.ApplicationID,
-				},
+				Selector:  selector,
 				Ports: []apiv1.ServicePort{
 					{
 						Protocol:   "TCP",
 						Port:       80,
-						TargetPort: intstr.FromString("http"),
+						TargetPort: intstr.FromInt(website.Port),
 					},
 				},
 			},
@@ -77,11 +68,16 @@ func (b *k8sBackend) CreateContainer(ctx context.Context, args domain.ContainerC
 				return fmt.Errorf("failed to create service: %w", err)
 			}
 		}
+
+		err := b.registerIngress(ctx, app, website)
+		if err != nil {
+			return err
+		}
 	}
 
 	pod := &apiv1.Pod{
 		ObjectMeta: metav1.ObjectMeta{
-			Name:      deploymentName(args.ApplicationID),
+			Name:      deploymentName(app.ID),
 			Namespace: appNamespace,
 			Labels:    labels,
 		},

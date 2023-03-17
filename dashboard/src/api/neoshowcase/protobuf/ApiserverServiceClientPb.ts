@@ -599,49 +599,6 @@ export class ApplicationServiceClient {
     this.methodDescriptorStartApplication);
   }
 
-  methodDescriptorRestartApplication = new grpcWeb.MethodDescriptor(
-    '/neoshowcase.protobuf.ApplicationService/RestartApplication',
-    grpcWeb.MethodType.UNARY,
-    neoshowcase_protobuf_apiserver_pb.ApplicationIdRequest,
-    google_protobuf_empty_pb.Empty,
-    (request: neoshowcase_protobuf_apiserver_pb.ApplicationIdRequest) => {
-      return request.serializeBinary();
-    },
-    google_protobuf_empty_pb.Empty.deserializeBinary
-  );
-
-  restartApplication(
-    request: neoshowcase_protobuf_apiserver_pb.ApplicationIdRequest,
-    metadata: grpcWeb.Metadata | null): Promise<google_protobuf_empty_pb.Empty>;
-
-  restartApplication(
-    request: neoshowcase_protobuf_apiserver_pb.ApplicationIdRequest,
-    metadata: grpcWeb.Metadata | null,
-    callback: (err: grpcWeb.RpcError,
-               response: google_protobuf_empty_pb.Empty) => void): grpcWeb.ClientReadableStream<google_protobuf_empty_pb.Empty>;
-
-  restartApplication(
-    request: neoshowcase_protobuf_apiserver_pb.ApplicationIdRequest,
-    metadata: grpcWeb.Metadata | null,
-    callback?: (err: grpcWeb.RpcError,
-               response: google_protobuf_empty_pb.Empty) => void) {
-    if (callback !== undefined) {
-      return this.client_.rpcCall(
-        this.hostname_ +
-          '/neoshowcase.protobuf.ApplicationService/RestartApplication',
-        request,
-        metadata || {},
-        this.methodDescriptorRestartApplication,
-        callback);
-    }
-    return this.client_.unaryCall(
-    this.hostname_ +
-      '/neoshowcase.protobuf.ApplicationService/RestartApplication',
-    request,
-    metadata || {},
-    this.methodDescriptorRestartApplication);
-  }
-
   methodDescriptorStopApplication = new grpcWeb.MethodDescriptor(
     '/neoshowcase.protobuf.ApplicationService/StopApplication',
     grpcWeb.MethodType.UNARY,

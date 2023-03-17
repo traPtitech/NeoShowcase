@@ -5,6 +5,9 @@ import (
 	"errors"
 	"fmt"
 
+	"github.com/samber/lo"
+	"golang.org/x/exp/slices"
+
 	"github.com/traPtitech/neoshowcase/pkg/domain"
 	"github.com/traPtitech/neoshowcase/pkg/domain/builder"
 	"github.com/traPtitech/neoshowcase/pkg/domain/event"
@@ -44,7 +47,6 @@ type APIServerService interface {
 	SetApplicationEnvironmentVariable(ctx context.Context, applicationID string, key string, value string) error
 	GetApplicationEnvironmentVariables(ctx context.Context, applicationID string) ([]*domain.Environment, error)
 	StartApplication(ctx context.Context, id string) error
-	RestartApplication(ctx context.Context, id string) error
 	StopApplication(ctx context.Context, id string) error
 }
 
@@ -85,7 +87,7 @@ func NewAPIServerService(
 }
 
 func (s *apiServerService) GetApplicationsByUserID(ctx context.Context, userID string) ([]*domain.Application, error) {
-	return s.appRepo.GetApplicationsByUserID(ctx, userID)
+	return s.appRepo.GetApplications(ctx, repository.GetApplicationCondition{UserID: optional.From(userID)})
 }
 
 func (s *apiServerService) CreateApplication(ctx context.Context, args CreateApplicationArgs) (*domain.Application, error) {
@@ -189,7 +191,7 @@ func (s *apiServerService) createApplicationDatabase(ctx context.Context, app *d
 }
 
 func (s *apiServerService) GetApplication(ctx context.Context, id string) (*domain.Application, error) {
-	application, err := s.appRepo.GetApplicationByID(ctx, id)
+	application, err := s.appRepo.GetApplication(ctx, id)
 	return handleRepoError(application, err)
 }
 
@@ -227,43 +229,34 @@ func (s *apiServerService) SetApplicationEnvironmentVariable(ctx context.Context
 }
 
 func (s *apiServerService) StartApplication(ctx context.Context, id string) error {
-	app, err := s.appRepo.GetApplicationByID(ctx, id)
+	app, err := s.appRepo.GetApplication(ctx, id)
 	if err != nil {
 		return err
 	}
-	if app.State != domain.ApplicationStateIdle {
-		return errors.New("application is not idle")
+	if app.State == domain.ApplicationStateDeploying {
+		return errors.New("application is currently deploying")
 	}
-	build, err := s.buildRepo.GetLastSuccessBuild(ctx, id)
-	if err != nil {
-		if err == repository.ErrNotFound {
-			return ErrNotFound
-		}
-		return err
-	}
-	return s.deploySvc.StartDeployment(ctx, app, build)
-}
-
-func (s *apiServerService) RestartApplication(ctx context.Context, id string) error {
-	app, err := s.appRepo.GetApplicationByID(ctx, id)
+	builds, err := s.buildRepo.GetBuildsInCommit(ctx, []string{app.CurrentCommit})
 	if err != nil {
 		return err
 	}
-	if app.State != domain.ApplicationStateRunning {
-		return errors.New("application is not running")
+	builds = lo.Filter(builds, func(build *domain.Build, i int) bool { return build.Status == builder.BuildStatusSucceeded })
+	slices.SortFunc(builds, func(a, b *domain.Build) bool { return a.StartedAt.After(b.StartedAt) })
+	if len(builds) == 0 {
+		return ErrNotFound
 	}
-	return s.backend.RestartContainer(ctx, id)
+	return s.deploySvc.StartDeployment(ctx, app, builds[0])
 }
 
 func (s *apiServerService) StopApplication(ctx context.Context, id string) error {
-	app, err := s.appRepo.GetApplicationByID(ctx, id)
+	app, err := s.appRepo.GetApplication(ctx, id)
 	if err != nil {
 		return err
 	}
 	if app.State != domain.ApplicationStateRunning {
 		return errors.New("application is not running")
 	}
-	err = s.backend.DestroyContainer(ctx, id)
+	err = s.backend.DestroyContainer(ctx, app)
 	if err != nil {
 		return err
 	}

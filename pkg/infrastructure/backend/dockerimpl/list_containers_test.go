@@ -26,18 +26,20 @@ func TestDockerBackend_ListContainers(t *testing.T) {
 
 	t.Run("正常", func(t *testing.T) {
 		image := "hello-world"
-		appID := "afiowjiodncx"
+		baseAppID := "afiowjiodncx"
 		n := 5
 		for i := 0; i < n; i++ {
 			i := i
-			err := m.CreateContainer(context.Background(), domain.ContainerCreateArgs{
-				ImageName:     image,
-				ApplicationID: appID + strconv.Itoa(i),
+			app := domain.Application{
+				ID: baseAppID + strconv.Itoa(i),
+			}
+			err := m.CreateContainer(context.Background(), &app, domain.ContainerCreateArgs{
+				ImageName: image,
 			})
 			require.NoError(t, err)
 			t.Cleanup(func() {
 				_ = c.RemoveContainer(docker.RemoveContainerOptions{
-					ID:            containerName(appID + strconv.Itoa(i)),
+					ID:            containerName(app.ID),
 					RemoveVolumes: true,
 					Force:         true,
 				})

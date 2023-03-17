@@ -104,7 +104,7 @@ func (r *repositoryFetcherService) fetchLoop(closer <-chan struct{}) {
 
 func (r *repositoryFetcherService) fetchAll() error {
 	ctx := context.Background()
-	applications, err := r.appRepo.GetApplications(ctx)
+	applications, err := r.appRepo.GetApplications(ctx, repository.GetApplicationCondition{})
 	if err != nil {
 		return err
 	}

@@ -18,8 +18,11 @@ func TestDockerBackend_CreateContainer(t *testing.T) {
 
 	t.Run("存在しないイメージを指定", func(t *testing.T) {
 		t.Parallel()
-		err := m.CreateContainer(context.Background(), domain.ContainerCreateArgs{
-			ImageName: "notfoundimage",
+		app := domain.Application{
+			ID: "test",
+		}
+		err := m.CreateContainer(context.Background(), &app, domain.ContainerCreateArgs{
+			ImageName: "notfound",
 		})
 		assert.Error(t, err)
 	})
@@ -29,9 +32,11 @@ func TestDockerBackend_CreateContainer(t *testing.T) {
 		image := "tianon/sleeping-beauty"
 		appID := "pjpjpjoijion"
 
-		err := m.CreateContainer(context.Background(), domain.ContainerCreateArgs{
-			ImageName:     image,
-			ApplicationID: appID,
+		app := domain.Application{
+			ID: appID,
+		}
+		err := m.CreateContainer(context.Background(), &app, domain.ContainerCreateArgs{
+			ImageName: image,
 		})
 		if assert.NoError(t, err) {
 			cont, err := c.InspectContainerWithOptions(docker.InspectContainerOptions{
@@ -56,17 +61,18 @@ func TestDockerBackend_CreateContainer(t *testing.T) {
 		image := "tianon/sleeping-beauty"
 		appID := "pij0bij90j20"
 
-		err := m.CreateContainer(context.Background(), domain.ContainerCreateArgs{
-			ImageName:     image,
-			ApplicationID: appID,
-			Recreate:      true,
+		app := domain.Application{
+			ID: appID,
+		}
+		err := m.CreateContainer(context.Background(), &app, domain.ContainerCreateArgs{
+			ImageName: image,
+			Recreate:  true,
 		})
 		require.NoError(t, err)
 
-		err = m.CreateContainer(context.Background(), domain.ContainerCreateArgs{
-			ImageName:     image,
-			ApplicationID: appID,
-			Recreate:      true,
+		err = m.CreateContainer(context.Background(), &app, domain.ContainerCreateArgs{
+			ImageName: image,
+			Recreate:  true,
 		})
 		if assert.NoError(t, err) {
 			cont, err := c.InspectContainerWithOptions(docker.InspectContainerOptions{

@@ -62,7 +62,7 @@ func NewAppBuildService(appRepo repository.ApplicationRepository, buildRepo repo
 }
 
 func (s *appBuildService) QueueBuild(ctx context.Context, application *domain.Application, commit string) (string, error) {
-	app, err := s.appRepo.GetApplicationByID(ctx, application.ID)
+	app, err := s.appRepo.GetApplication(ctx, application.ID)
 	if err != nil {
 		return "", fmt.Errorf("failed to QueueBuild: %w", err)
 	}

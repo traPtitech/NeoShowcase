@@ -148,14 +148,6 @@ func (s *ApplicationService) StartApplication(ctx context.Context, req *pb.Appli
 	return &emptypb.Empty{}, nil
 }
 
-func (s *ApplicationService) RestartApplication(ctx context.Context, req *pb.ApplicationIdRequest) (*emptypb.Empty, error) {
-	err := s.svc.RestartApplication(ctx, req.Id)
-	if err != nil {
-		return nil, status.Errorf(codes.Internal, "%v", err)
-	}
-	return &emptypb.Empty{}, nil
-}
-
 func (s *ApplicationService) StopApplication(ctx context.Context, req *pb.ApplicationIdRequest) (*emptypb.Empty, error) {
 	err := s.svc.StopApplication(ctx, req.Id)
 	if err != nil {

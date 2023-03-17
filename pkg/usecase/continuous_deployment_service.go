@@ -14,6 +14,7 @@ import (
 	"github.com/traPtitech/neoshowcase/pkg/domain/builder"
 	"github.com/traPtitech/neoshowcase/pkg/domain/event"
 	"github.com/traPtitech/neoshowcase/pkg/interface/repository"
+	"github.com/traPtitech/neoshowcase/pkg/util/optional"
 )
 
 type ContinuousDeploymentService interface {
@@ -129,7 +130,7 @@ func (cd *continuousDeploymentService) syncDeployLoop(closer <-chan struct{}) {
 
 func (cd *continuousDeploymentService) kickoffBuilds() error {
 	ctx := context.Background()
-	applications, err := cd.appRepo.GetApplications(ctx)
+	applications, err := cd.appRepo.GetApplications(ctx, repository.GetApplicationCondition{})
 	if err != nil {
 		return err
 	}
@@ -156,7 +157,7 @@ func (cd *continuousDeploymentService) kickoffBuilds() error {
 
 func (cd *continuousDeploymentService) syncDeployments() error {
 	ctx := context.Background()
-	applications, err := cd.appRepo.GetApplicationsOutOfSync(ctx)
+	applications, err := cd.appRepo.GetApplications(ctx, repository.GetApplicationCondition{InSync: optional.From(false)})
 	if err != nil {
 		return err
 	}

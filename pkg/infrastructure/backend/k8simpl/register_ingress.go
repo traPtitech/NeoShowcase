@@ -4,41 +4,29 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/volatiletech/null/v8"
 	networkingv1 "k8s.io/api/networking/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+
+	"github.com/traPtitech/neoshowcase/pkg/domain"
 )
 
-func (b *k8sBackend) RegisterIngress(ctx context.Context, appID string, host string, destination null.String, port null.Int) error {
+func (b *k8sBackend) registerIngress(ctx context.Context, app *domain.Application, website *domain.Website) error {
 	labels := map[string]string{
 		appContainerLabel:              "true",
-		appContainerApplicationIDLabel: appID,
-	}
-
-	svc := &networkingv1.IngressServiceBackend{
-		Name: deploymentName(appID),
-		Port: networkingv1.ServiceBackendPort{
-			Number: 80,
-		},
-	}
-	if destination.Valid {
-		svc.Name = destination.String
-	}
-	if port.Valid {
-		svc.Port.Number = int32(port.Int)
+		appContainerApplicationIDLabel: app.ID,
 	}
 
 	ingress := &networkingv1.Ingress{
 		ObjectMeta: metav1.ObjectMeta{
-			Name:      deploymentName(appID),
+			Name:      serviceName(website.FQDN),
 			Namespace: appNamespace,
 			Labels:    labels,
 		},
 		Spec: networkingv1.IngressSpec{
 			Rules: []networkingv1.IngressRule{
 				{
-					Host: host,
+					Host: website.FQDN,
 					IngressRuleValue: networkingv1.IngressRuleValue{
 						HTTP: &networkingv1.HTTPIngressRuleValue{
 							Paths: []networkingv1.HTTPIngressPath{
@@ -46,7 +34,12 @@ func (b *k8sBackend) RegisterIngress(ctx context.Context, appID string, host str
 									Path:     "/",
 									PathType: pathTypePtr(networkingv1.PathTypePrefix),
 									Backend: networkingv1.IngressBackend{
-										Service: svc,
+										Service: &networkingv1.IngressServiceBackend{
+											Name: serviceName(website.FQDN),
+											Port: networkingv1.ServiceBackendPort{
+												Number: 80,
+											},
+										},
 									},
 								},
 							},
