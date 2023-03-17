@@ -2,12 +2,8 @@ syntax = "proto3";
 package neoshowcase.protobuf;
 option go_package = "github.com/traPtitech/neoshowcase/pkg/interface/grpc/pb";
 
-message ReloadRequest {
-}
-
-message ReloadResponse {
-}
+import "google/protobuf/empty.proto";
 
 service StaticSiteService {
-  rpc Reload (ReloadRequest) returns (ReloadResponse);
+  rpc Reload (google.protobuf.Empty) returns (google.protobuf.Empty);
 }

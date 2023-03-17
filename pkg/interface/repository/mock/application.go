@@ -51,64 +51,34 @@ func (mr *MockApplicationRepositoryMockRecorder) CreateApplication(ctx, args int
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateApplication", reflect.TypeOf((*MockApplicationRepository)(nil).CreateApplication), ctx, args)
 }
 
-// GetApplicationByID mocks base method.
-func (m *MockApplicationRepository) GetApplicationByID(ctx context.Context, id string) (*domain.Application, error) {
+// GetApplication mocks base method.
+func (m *MockApplicationRepository) GetApplication(ctx context.Context, id string) (*domain.Application, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetApplicationByID", ctx, id)
+	ret := m.ctrl.Call(m, "GetApplication", ctx, id)
 	ret0, _ := ret[0].(*domain.Application)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// GetApplicationByID indicates an expected call of GetApplicationByID.
-func (mr *MockApplicationRepositoryMockRecorder) GetApplicationByID(ctx, id interface{}) *gomock.Call {
+// GetApplication indicates an expected call of GetApplication.
+func (mr *MockApplicationRepositoryMockRecorder) GetApplication(ctx, id interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetApplicationByID", reflect.TypeOf((*MockApplicationRepository)(nil).GetApplicationByID), ctx, id)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetApplication", reflect.TypeOf((*MockApplicationRepository)(nil).GetApplication), ctx, id)
 }
 
 // GetApplications mocks base method.
-func (m *MockApplicationRepository) GetApplications(ctx context.Context) ([]*domain.Application, error) {
+func (m *MockApplicationRepository) GetApplications(ctx context.Context, cond repository.GetApplicationCondition) ([]*domain.Application, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetApplications", ctx)
+	ret := m.ctrl.Call(m, "GetApplications", ctx, cond)
 	ret0, _ := ret[0].([]*domain.Application)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // GetApplications indicates an expected call of GetApplications.
-func (mr *MockApplicationRepositoryMockRecorder) GetApplications(ctx interface{}) *gomock.Call {
+func (mr *MockApplicationRepositoryMockRecorder) GetApplications(ctx, cond interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetApplications", reflect.TypeOf((*MockApplicationRepository)(nil).GetApplications), ctx)
-}
-
-// GetApplicationsByUserID mocks base method.
-func (m *MockApplicationRepository) GetApplicationsByUserID(ctx context.Context, userID string) ([]*domain.Application, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetApplicationsByUserID", ctx, userID)
-	ret0, _ := ret[0].([]*domain.Application)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// GetApplicationsByUserID indicates an expected call of GetApplicationsByUserID.
-func (mr *MockApplicationRepositoryMockRecorder) GetApplicationsByUserID(ctx, userID interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetApplicationsByUserID", reflect.TypeOf((*MockApplicationRepository)(nil).GetApplicationsByUserID), ctx, userID)
-}
-
-// GetApplicationsOutOfSync mocks base method.
-func (m *MockApplicationRepository) GetApplicationsOutOfSync(ctx context.Context) ([]*domain.Application, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetApplicationsOutOfSync", ctx)
-	ret0, _ := ret[0].([]*domain.Application)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// GetApplicationsOutOfSync indicates an expected call of GetApplicationsOutOfSync.
-func (mr *MockApplicationRepositoryMockRecorder) GetApplicationsOutOfSync(ctx interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetApplicationsOutOfSync", reflect.TypeOf((*MockApplicationRepository)(nil).GetApplicationsOutOfSync), ctx)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetApplications", reflect.TypeOf((*MockApplicationRepository)(nil).GetApplications), ctx, cond)
 }
 
 // GetWebsite mocks base method.

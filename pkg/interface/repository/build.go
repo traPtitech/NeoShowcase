@@ -21,7 +21,6 @@ type BuildRepository interface {
 	GetBuilds(ctx context.Context, applicationID string) ([]*domain.Build, error)
 	GetBuildsInCommit(ctx context.Context, commits []string) ([]*domain.Build, error)
 	GetBuild(ctx context.Context, buildID string) (*domain.Build, error)
-	GetLastSuccessBuild(ctx context.Context, applicationID string) (*domain.Build, error)
 	CreateBuild(ctx context.Context, applicationID string, commit string) (*domain.Build, error)
 	UpdateBuild(ctx context.Context, args UpdateBuildArgs) error
 }
@@ -77,22 +76,6 @@ func (r *buildRepository) GetBuild(ctx context.Context, buildID string) (*domain
 		return nil, fmt.Errorf("failed to find build: %w", err)
 	}
 	return toDomainBuild(build), nil
-}
-
-func (r *buildRepository) GetLastSuccessBuild(ctx context.Context, applicationID string) (*domain.Build, error) {
-	build, err := models.Builds(
-		models.BuildWhere.ApplicationID.EQ(applicationID),
-		models.BuildWhere.Status.EQ(builder.BuildStatusSucceeded.String()),
-		qm.OrderBy(models.BuildColumns.FinishedAt+" desc"),
-		qm.Load(models.BuildRels.Artifact),
-	).One(ctx, r.db)
-	if err != nil {
-		if isNoRowsErr(err) {
-			return nil, ErrNotFound
-		}
-		return nil, fmt.Errorf("failed to find build: %w", err)
-	}
-	return toDomainBuild(build), err
 }
 
 func (r *buildRepository) CreateBuild(ctx context.Context, applicationID string, commit string) (*domain.Build, error) {

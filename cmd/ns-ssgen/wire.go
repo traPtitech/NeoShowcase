@@ -19,6 +19,7 @@ func New(c Config) (*Server, error) {
 		grpc.NewStaticSiteServiceServer,
 		usecase.NewStaticSiteServerService,
 		admindb.New,
+		repository.NewApplicationRepository,
 		repository.NewBuildRepository,
 		staticserver.NewBuiltIn,
 		provideGRPCPort,

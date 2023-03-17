@@ -2,63 +2,71 @@ package usecase
 
 import (
 	"context"
-	"database/sql"
 
-	"github.com/volatiletech/sqlboiler/v4/queries/qm"
+	"github.com/samber/lo"
+	"golang.org/x/exp/slices"
 
 	"github.com/traPtitech/neoshowcase/pkg/domain"
-	"github.com/traPtitech/neoshowcase/pkg/infrastructure/admindb/models"
+	"github.com/traPtitech/neoshowcase/pkg/domain/builder"
 	"github.com/traPtitech/neoshowcase/pkg/interface/repository"
+	"github.com/traPtitech/neoshowcase/pkg/util/optional"
 )
+
+type SiteReloadTarget struct {
+	ApplicationID string
+	BuildID       string
+}
 
 type StaticSiteServerService interface {
 	Reload(ctx context.Context) error
 }
 
 type staticSiteServerService struct {
+	appRepo   repository.ApplicationRepository
 	buildRepo repository.BuildRepository
 	engine    domain.Engine
-
-	// TODO 後で消す
-	db *sql.DB
 }
 
 func NewStaticSiteServerService(
+	appRepo repository.ApplicationRepository,
 	buildRepo repository.BuildRepository,
 	engine domain.Engine,
-	db *sql.DB,
 ) StaticSiteServerService {
 	return &staticSiteServerService{
+		appRepo:   appRepo,
 		buildRepo: buildRepo,
 		engine:    engine,
-		db:        db,
 	}
 }
 
 func (s *staticSiteServerService) Reload(ctx context.Context) error {
-	applications, err := models.Applications(
-		models.ApplicationWhere.BuildType.EQ(models.ApplicationsBuildTypeStatic),
-		qm.Load(models.ApplicationRels.Website),
-	).All(ctx, s.db)
+	applications, err := s.appRepo.GetApplications(ctx, repository.GetApplicationCondition{BuildType: optional.From(builder.BuildTypeStatic)})
 	if err != nil {
 		return err
 	}
 
+	commits := lo.Map(applications, func(app *domain.Application, i int) string { return app.CurrentCommit })
+	builds, err := s.buildRepo.GetBuildsInCommit(ctx, commits)
+	if err != nil {
+		return err
+	}
+
+	// Last succeeded builds for each commit
+	builds = lo.Filter(builds, func(build *domain.Build, i int) bool { return build.Status == builder.BuildStatusSucceeded })
+	slices.SortFunc(builds, func(a, b *domain.Build) bool { return a.StartedAt.Before(b.StartedAt) })
+	commitToBuild := lo.SliceToMap(builds, func(b *domain.Build) (string, *domain.Build) { return b.Commit, b })
+
 	var data []*domain.Site
 	for _, app := range applications {
-		website := app.R.Website
-		if website == nil {
+		if !app.Website.Valid {
 			continue
 		}
+		website := app.Website.V
 
-		build, err := s.buildRepo.GetLastSuccessBuild(ctx, app.ID)
-		if err != nil && err != repository.ErrNotFound {
-			return err
-		}
-		if err == repository.ErrNotFound {
+		build, ok := commitToBuild[app.CurrentCommit]
+		if !ok {
 			continue
 		}
-
 		if !build.Artifact.Valid {
 			continue
 		}

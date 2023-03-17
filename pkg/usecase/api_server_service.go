@@ -5,6 +5,9 @@ import (
 	"errors"
 	"fmt"
 
+	"github.com/samber/lo"
+	"golang.org/x/exp/slices"
+
 	"github.com/traPtitech/neoshowcase/pkg/domain"
 	"github.com/traPtitech/neoshowcase/pkg/domain/builder"
 	"github.com/traPtitech/neoshowcase/pkg/domain/event"
@@ -85,7 +88,7 @@ func NewAPIServerService(
 }
 
 func (s *apiServerService) GetApplicationsByUserID(ctx context.Context, userID string) ([]*domain.Application, error) {
-	return s.appRepo.GetApplicationsByUserID(ctx, userID)
+	return s.appRepo.GetApplications(ctx, repository.GetApplicationCondition{UserID: optional.From(userID)})
 }
 
 func (s *apiServerService) CreateApplication(ctx context.Context, args CreateApplicationArgs) (*domain.Application, error) {
@@ -189,7 +192,7 @@ func (s *apiServerService) createApplicationDatabase(ctx context.Context, app *d
 }
 
 func (s *apiServerService) GetApplication(ctx context.Context, id string) (*domain.Application, error) {
-	application, err := s.appRepo.GetApplicationByID(ctx, id)
+	application, err := s.appRepo.GetApplication(ctx, id)
 	return handleRepoError(application, err)
 }
 
@@ -227,25 +230,27 @@ func (s *apiServerService) SetApplicationEnvironmentVariable(ctx context.Context
 }
 
 func (s *apiServerService) StartApplication(ctx context.Context, id string) error {
-	app, err := s.appRepo.GetApplicationByID(ctx, id)
+	app, err := s.appRepo.GetApplication(ctx, id)
 	if err != nil {
 		return err
 	}
 	if app.State != domain.ApplicationStateIdle {
 		return errors.New("application is not idle")
 	}
-	build, err := s.buildRepo.GetLastSuccessBuild(ctx, id)
+	builds, err := s.buildRepo.GetBuildsInCommit(ctx, []string{app.CurrentCommit})
 	if err != nil {
-		if err == repository.ErrNotFound {
-			return ErrNotFound
-		}
 		return err
 	}
-	return s.deploySvc.StartDeployment(ctx, app, build)
+	builds = lo.Filter(builds, func(build *domain.Build, i int) bool { return build.Status == builder.BuildStatusSucceeded })
+	slices.SortFunc(builds, func(a, b *domain.Build) bool { return a.StartedAt.After(b.StartedAt) })
+	if len(builds) == 0 {
+		return ErrNotFound
+	}
+	return s.deploySvc.StartDeployment(ctx, app, builds[0])
 }
 
 func (s *apiServerService) RestartApplication(ctx context.Context, id string) error {
-	app, err := s.appRepo.GetApplicationByID(ctx, id)
+	app, err := s.appRepo.GetApplication(ctx, id)
 	if err != nil {
 		return err
 	}
@@ -256,7 +261,7 @@ func (s *apiServerService) RestartApplication(ctx context.Context, id string) er
 }
 
 func (s *apiServerService) StopApplication(ctx context.Context, id string) error {
-	app, err := s.appRepo.GetApplicationByID(ctx, id)
+	app, err := s.appRepo.GetApplication(ctx, id)
 	if err != nil {
 		return err
 	}

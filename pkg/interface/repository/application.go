@@ -18,6 +18,13 @@ import (
 
 //go:generate go run github.com/golang/mock/mockgen -source=$GOFILE -package=mock_$GOPACKAGE -destination=./mock/$GOFILE
 
+type GetApplicationCondition struct {
+	UserID    optional.Of[string]
+	BuildType optional.Of[builder.BuildType]
+	// InSync WantCommit が CurrentCommit に一致する
+	InSync optional.Of[bool]
+}
+
 type CreateApplicationArgs struct {
 	RepositoryID string
 	BranchName   string
@@ -31,13 +38,11 @@ type UpdateApplicationArgs struct {
 }
 
 type ApplicationRepository interface {
-	GetApplications(ctx context.Context) ([]*domain.Application, error)
-	GetApplicationsOutOfSync(ctx context.Context) ([]*domain.Application, error)
-	GetApplicationsByUserID(ctx context.Context, userID string) ([]*domain.Application, error)
+	GetApplications(ctx context.Context, cond GetApplicationCondition) ([]*domain.Application, error)
+	GetApplication(ctx context.Context, id string) (*domain.Application, error)
 	CreateApplication(ctx context.Context, args CreateApplicationArgs) (*domain.Application, error)
 	UpdateApplication(ctx context.Context, id string, args UpdateApplicationArgs) error
 	RegisterApplicationOwner(ctx context.Context, applicationID string, userID string) error
-	GetApplicationByID(ctx context.Context, id string) (*domain.Application, error)
 	GetWebsite(ctx context.Context, applicationID string) (*domain.Website, error)
 	SetWebsite(ctx context.Context, applicationID string, fqdn string, httpPort int) error
 }
@@ -52,51 +57,58 @@ func NewApplicationRepository(db *sql.DB) ApplicationRepository {
 	}
 }
 
-func (r *applicationRepository) GetApplications(ctx context.Context) ([]*domain.Application, error) {
-	applications, err := models.Applications(
+func (r *applicationRepository) GetApplications(ctx context.Context, cond GetApplicationCondition) ([]*domain.Application, error) {
+	mods := []qm.QueryMod{
 		qm.Load(models.ApplicationRels.Repository),
-	).All(ctx, r.db)
+		qm.Load(models.ApplicationRels.Website),
+	}
+
+	if cond.UserID.Valid {
+		mods = append(mods,
+			qm.InnerJoin(fmt.Sprintf(
+				"%s ON %s.%s = %s.%s",
+				models.TableNames.Owners,
+				models.TableNames.Owners,
+				"application_id",
+				models.TableNames.Applications,
+				models.ApplicationColumns.ID,
+			)),
+			qm.Where(fmt.Sprintf("%s.%s = ?", models.TableNames.Owners, "user_id"), cond.UserID.V),
+		)
+	}
+	if cond.BuildType.Valid {
+		mods = append(mods, models.ApplicationWhere.BuildType.EQ(cond.BuildType.V.String()))
+	}
+	if cond.InSync.Valid {
+		if cond.InSync.V {
+			mods = append(mods, qm.Where(fmt.Sprintf("%s == %s", models.ApplicationColumns.WantCommit, models.ApplicationColumns.CurrentCommit)))
+		} else {
+			mods = append(mods, qm.Where(fmt.Sprintf("%s != %s", models.ApplicationColumns.WantCommit, models.ApplicationColumns.CurrentCommit)))
+		}
+	}
+
+	applications, err := models.Applications(mods...).All(ctx, r.db)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get applications: %w", err)
 	}
 	return lo.Map(applications, func(app *models.Application, i int) *domain.Application {
-		return toDomainApplication(app, toDomainRepository(app.R.Repository))
+		return toDomainApplication(app)
 	}), nil
 }
 
-func (r *applicationRepository) GetApplicationsOutOfSync(ctx context.Context) ([]*domain.Application, error) {
-	applications, err := models.Applications(
+func (r *applicationRepository) GetApplication(ctx context.Context, id string) (*domain.Application, error) {
+	app, err := models.Applications(
+		models.ApplicationWhere.ID.EQ(id),
 		qm.Load(models.ApplicationRels.Repository),
-		qm.Where(fmt.Sprintf("%s != %s", models.ApplicationColumns.WantCommit, models.ApplicationColumns.CurrentCommit)),
-	).All(ctx, r.db)
+		qm.Load(models.ApplicationRels.Website),
+	).One(ctx, r.db)
 	if err != nil {
-		return nil, fmt.Errorf("failed to get applications: %w", err)
+		if isNoRowsErr(err) {
+			return nil, ErrNotFound
+		}
+		return nil, fmt.Errorf("failed to get application: %w", err)
 	}
-	return lo.Map(applications, func(app *models.Application, i int) *domain.Application {
-		return toDomainApplication(app, toDomainRepository(app.R.Repository))
-	}), nil
-}
-
-func (r *applicationRepository) GetApplicationsByUserID(ctx context.Context, userID string) ([]*domain.Application, error) {
-	applications, err := models.Applications(
-		qm.Load(models.ApplicationRels.Repository),
-		qm.InnerJoin(fmt.Sprintf(
-			"%s ON %s.%s = %s.%s",
-			models.TableNames.Owners,
-			models.TableNames.Owners,
-			"application_id",
-			models.TableNames.Applications,
-			models.ApplicationColumns.ID,
-		)),
-		qm.Where(fmt.Sprintf("%s.%s = ?", models.TableNames.Owners, "user_id"), userID),
-	).All(ctx, r.db)
-	if err != nil {
-		return nil, fmt.Errorf("failed to get applications: %w", err)
-	}
-
-	return lo.Map(applications, func(app *models.Application, i int) *domain.Application {
-		return toDomainApplication(app, toDomainRepository(app.R.Repository))
-	}), nil
+	return toDomainApplication(app), nil
 }
 
 func (r *applicationRepository) CreateApplication(ctx context.Context, args CreateApplicationArgs) (*domain.Application, error) {
@@ -119,8 +131,11 @@ func (r *applicationRepository) CreateApplication(ctx context.Context, args Crea
 	if err := app.L.LoadRepository(ctx, r.db, true, app, nil); err != nil {
 		return nil, fmt.Errorf("failed to load repository: %w", err)
 	}
+	if err := app.L.LoadWebsite(ctx, r.db, true, app, nil); err != nil {
+		return nil, fmt.Errorf("failed to load website: %w", err)
+	}
 
-	return toDomainApplication(app, toDomainRepository(app.R.Repository)), nil
+	return toDomainApplication(app), nil
 }
 
 func (r *applicationRepository) UpdateApplication(ctx context.Context, id string, args UpdateApplicationArgs) error {
@@ -158,18 +173,16 @@ func (r *applicationRepository) RegisterApplicationOwner(ctx context.Context, ap
 	return nil
 }
 
-func (r *applicationRepository) GetApplicationByID(ctx context.Context, id string) (*domain.Application, error) {
-	app, err := models.Applications(
-		models.ApplicationWhere.ID.EQ(id),
-		qm.Load(models.ApplicationRels.Repository),
-	).One(ctx, r.db)
+func (r *applicationRepository) GetWebsites(ctx context.Context, applicationIDs []string) ([]*domain.Website, error) {
+	websites, err := models.Websites(
+		models.WebsiteWhere.ApplicationID.IN(applicationIDs),
+	).All(ctx, r.db)
 	if err != nil {
-		if isNoRowsErr(err) {
-			return nil, ErrNotFound
-		}
-		return nil, fmt.Errorf("failed to get application: %w", err)
+		return nil, fmt.Errorf("failed to get websites: %w", err)
 	}
-	return toDomainApplication(app, toDomainRepository(app.R.Repository)), nil
+	return lo.Map(websites, func(website *models.Website, i int) *domain.Website {
+		return toDomainWebsite(website)
+	}), nil
 }
 
 func (r *applicationRepository) GetWebsite(ctx context.Context, applicationID string) (*domain.Website, error) {

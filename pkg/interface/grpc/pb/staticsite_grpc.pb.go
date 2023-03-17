@@ -11,6 +11,7 @@ import (
 	grpc "google.golang.org/grpc"
 	codes "google.golang.org/grpc/codes"
 	status "google.golang.org/grpc/status"
+	emptypb "google.golang.org/protobuf/types/known/emptypb"
 )
 
 // This is a compile-time assertion to ensure that this generated file
@@ -22,7 +23,7 @@ const _ = grpc.SupportPackageIsVersion7
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type StaticSiteServiceClient interface {
-	Reload(ctx context.Context, in *ReloadRequest, opts ...grpc.CallOption) (*ReloadResponse, error)
+	Reload(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (*emptypb.Empty, error)
 }
 
 type staticSiteServiceClient struct {
@@ -33,8 +34,8 @@ func NewStaticSiteServiceClient(cc grpc.ClientConnInterface) StaticSiteServiceCl
 	return &staticSiteServiceClient{cc}
 }
 
-func (c *staticSiteServiceClient) Reload(ctx context.Context, in *ReloadRequest, opts ...grpc.CallOption) (*ReloadResponse, error) {
-	out := new(ReloadResponse)
+func (c *staticSiteServiceClient) Reload(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (*emptypb.Empty, error) {
+	out := new(emptypb.Empty)
 	err := c.cc.Invoke(ctx, "/neoshowcase.protobuf.StaticSiteService/Reload", in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -46,7 +47,7 @@ func (c *staticSiteServiceClient) Reload(ctx context.Context, in *ReloadRequest,
 // All implementations must embed UnimplementedStaticSiteServiceServer
 // for forward compatibility
 type StaticSiteServiceServer interface {
-	Reload(context.Context, *ReloadRequest) (*ReloadResponse, error)
+	Reload(context.Context, *emptypb.Empty) (*emptypb.Empty, error)
 	mustEmbedUnimplementedStaticSiteServiceServer()
 }
 
@@ -54,7 +55,7 @@ type StaticSiteServiceServer interface {
 type UnimplementedStaticSiteServiceServer struct {
 }
 
-func (UnimplementedStaticSiteServiceServer) Reload(context.Context, *ReloadRequest) (*ReloadResponse, error) {
+func (UnimplementedStaticSiteServiceServer) Reload(context.Context, *emptypb.Empty) (*emptypb.Empty, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Reload not implemented")
 }
 func (UnimplementedStaticSiteServiceServer) mustEmbedUnimplementedStaticSiteServiceServer() {}
@@ -71,7 +72,7 @@ func RegisterStaticSiteServiceServer(s grpc.ServiceRegistrar, srv StaticSiteServ
 }
 
 func _StaticSiteService_Reload_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(ReloadRequest)
+	in := new(emptypb.Empty)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -83,7 +84,7 @@ func _StaticSiteService_Reload_Handler(srv interface{}, ctx context.Context, dec
 		FullMethod: "/neoshowcase.protobuf.StaticSiteService/Reload",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(StaticSiteServiceServer).Reload(ctx, req.(*ReloadRequest))
+		return srv.(StaticSiteServiceServer).Reload(ctx, req.(*emptypb.Empty))
 	}
 	return interceptor(ctx, in, info, handler)
 }
