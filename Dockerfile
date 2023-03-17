@@ -1,5 +1,5 @@
 # build stage
-FROM golang:1.19-alpine AS builder
+FROM golang:1.20-alpine AS builder
 RUN apk add --update --no-cache git
 WORKDIR /go/src/github.com/traPtitech/NeoShowcase
 COPY ./go.* ./
