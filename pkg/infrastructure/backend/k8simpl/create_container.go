@@ -77,6 +77,9 @@ func (b *k8sBackend) CreateContainer(ctx context.Context, args domain.ContainerC
 				return fmt.Errorf("failed to create service: %w", err)
 			}
 		}
+
+		// TODO: use traefik to expose service?
+		// https://doc.traefik.io/traefik/reference/dynamic-configuration/kubernetes-crd/#resources
 	}
 
 	pod := &apiv1.Pod{
