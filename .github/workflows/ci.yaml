@@ -147,7 +147,7 @@ jobs:
           path: ./pkg/interface/grpc/pb
           key: ${{ runner.os }}-proto-${{ hashFiles('**/*.proto') }}
       - name: Create single cluster
-        uses: AbsaOSS/k3d-action@v2.3.0
+        uses: AbsaOSS/k3d-action@v2.4.0
         id: single-cluster
         with:
           cluster-name: "test-cluster"
