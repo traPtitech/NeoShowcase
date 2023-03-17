@@ -130,6 +130,5 @@ service ApplicationService {
   rpc GetApplicationOutput(ApplicationIdRequest) returns (ApplicationOutput);
   rpc GetApplicationKeys(ApplicationIdRequest) returns (ApplicationKeys);
   rpc StartApplication(ApplicationIdRequest) returns (google.protobuf.Empty);
-  rpc RestartApplication(ApplicationIdRequest) returns (google.protobuf.Empty);
   rpc StopApplication(ApplicationIdRequest) returns (google.protobuf.Empty);
 }

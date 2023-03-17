@@ -47,7 +47,6 @@ type APIServerService interface {
 	SetApplicationEnvironmentVariable(ctx context.Context, applicationID string, key string, value string) error
 	GetApplicationEnvironmentVariables(ctx context.Context, applicationID string) ([]*domain.Environment, error)
 	StartApplication(ctx context.Context, id string) error
-	RestartApplication(ctx context.Context, id string) error
 	StopApplication(ctx context.Context, id string) error
 }
 
@@ -234,8 +233,8 @@ func (s *apiServerService) StartApplication(ctx context.Context, id string) erro
 	if err != nil {
 		return err
 	}
-	if app.State != domain.ApplicationStateIdle {
-		return errors.New("application is not idle")
+	if app.State == domain.ApplicationStateDeploying {
+		return errors.New("application is currently deploying")
 	}
 	builds, err := s.buildRepo.GetBuildsInCommit(ctx, []string{app.CurrentCommit})
 	if err != nil {
@@ -247,17 +246,6 @@ func (s *apiServerService) StartApplication(ctx context.Context, id string) erro
 		return ErrNotFound
 	}
 	return s.deploySvc.StartDeployment(ctx, app, builds[0])
-}
-
-func (s *apiServerService) RestartApplication(ctx context.Context, id string) error {
-	app, err := s.appRepo.GetApplication(ctx, id)
-	if err != nil {
-		return err
-	}
-	if app.State != domain.ApplicationStateRunning {
-		return errors.New("application is not running")
-	}
-	return s.backend.RestartContainer(ctx, id)
 }
 
 func (s *apiServerService) StopApplication(ctx context.Context, id string) error {
