@@ -83,7 +83,7 @@ services:
       - "5007:10000"
       - "5008:80"
     labels:
-      - "traefik.enabled=true"
+      - "traefik.enable=true"
       - "traefik.http.routers.ns_ssgen.rule=HostRegexp(`.*`)"
       # lowest priority
       - "traefik.http.routers.ns_ssgen.priority=1"
