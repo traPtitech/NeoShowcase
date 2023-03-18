@@ -14,6 +14,7 @@ CREATE TABLE `builds` (
   `status` varchar(10) NOT NULL COMMENT 'ビルドの状態',
   `started_at` datetime(6) NOT NULL COMMENT 'ビルド開始日時',
   `finished_at` datetime(6) DEFAULT NULL COMMENT 'ビルド終了日時',
+  `retriable` tinyint(1) NOT NULL COMMENT '再ビルド可能フラグ',
   `application_id` varchar(22) NOT NULL COMMENT 'アプリケーションID',
   PRIMARY KEY (`id`),
   KEY `fk_builds_status` (`status`),
@@ -34,6 +35,7 @@ CREATE TABLE `builds` (
 | status | varchar(10) |  | false |  | [build_status](build_status.md) | ビルドの状態 |
 | started_at | datetime(6) |  | false |  |  | ビルド開始日時 |
 | finished_at | datetime(6) | NULL | true |  |  | ビルド終了日時 |
+| retriable | tinyint(1) |  | false |  |  | 再ビルド可能フラグ |
 | application_id | varchar(22) |  | false |  | [applications](applications.md) | アプリケーションID |
 
 ## Constraints

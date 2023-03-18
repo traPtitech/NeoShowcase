@@ -7,7 +7,7 @@ import "google/protobuf/empty.proto";
 import "neoshowcase/protobuf/null.proto";
 
 enum BuildType {
-  IMAGE = 0;
+  RUNTIME = 0;
   STATIC = 1;
 }
 
@@ -18,14 +18,45 @@ enum ApplicationState {
   ERRORED = 3;
 }
 
+enum AuthenticationType {
+  OFF = 0;
+  SOFT = 1;
+  HARD = 2;
+}
+
+message ApplicationConfig {
+  bool use_mariadb = 1;
+  bool use_mongodb = 2;
+  string base_image = 3;
+  string dockerfile_name = 4;
+  string artifact_path = 5;
+  string build_cmd = 6;
+  string entrypoint_cmd = 7;
+  AuthenticationType authentication = 8;
+}
+
+message Website {
+  string id = 1;
+  string fqdn = 2;
+  int32 port = 3;
+}
+
+message CreateWebsiteRequest {
+  string fqdn = 1;
+  int32 port = 2;
+}
+
 message Application {
   string id = 1;
-  string repository_url = 2;
-  string branch_name = 3;
-  BuildType build_type = 4;
-  ApplicationState state = 5;
-  string current_commit = 6;
-  string want_commit = 7;
+  string name = 2;
+  string repository_url = 3;
+  string branch_name = 4;
+  BuildType build_type = 5;
+  ApplicationState state = 6;
+  string current_commit = 7;
+  string want_commit = 8;
+  ApplicationConfig config = 9;
+  repeated Website websites = 10;
 }
 
 message ApplicationEnvironmentVariable {
@@ -78,6 +109,7 @@ message Build {
   BuildStatus status = 3;
   google.protobuf.Timestamp started_at = 4;
   neoshowcase.protobuf.NullTimestamp finished_at = 5;
+  bool retriable = 6;
 }
 
 message BuildLog {
@@ -89,9 +121,13 @@ message GetApplicationsResponse {
 }
 
 message CreateApplicationRequest {
-  string repository_url = 1;
-  string branch_name = 2;
-  BuildType build_type = 3;
+  string name = 1;
+  string repository_url = 2;
+  string branch_name = 3;
+  BuildType build_type = 4;
+  ApplicationConfig config = 5;
+  repeated CreateWebsiteRequest websites = 6;
+  bool start_on_create = 7;
 }
 
 message ApplicationIdRequest {
@@ -116,6 +152,11 @@ message SetApplicationEnvironmentVariableRequest {
   string value = 3;
 }
 
+message RetryCommitBuildRequest {
+  string application_id = 1;
+  string commit = 2;
+}
+
 service ApplicationService {
   rpc GetApplications(google.protobuf.Empty) returns (GetApplicationsResponse);
   rpc CreateApplication(CreateApplicationRequest) returns (Application);
@@ -129,6 +170,7 @@ service ApplicationService {
   rpc SetApplicationEnvironmentVariable(SetApplicationEnvironmentVariableRequest) returns (google.protobuf.Empty);
   rpc GetApplicationOutput(ApplicationIdRequest) returns (ApplicationOutput);
   rpc GetApplicationKeys(ApplicationIdRequest) returns (ApplicationKeys);
+  rpc RetryCommitBuild(RetryCommitBuildRequest) returns (google.protobuf.Empty);
   rpc StartApplication(ApplicationIdRequest) returns (google.protobuf.Empty);
   rpc StopApplication(ApplicationIdRequest) returns (google.protobuf.Empty);
 }

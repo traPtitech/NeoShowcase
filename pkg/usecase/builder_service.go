@@ -14,6 +14,7 @@ import (
 	"github.com/go-git/go-git/v5/plumbing"
 	buildkit "github.com/moby/buildkit/client"
 	"github.com/moby/buildkit/client/llb"
+	"github.com/moby/buildkit/frontend/dockerfile/dockerfile2llb"
 	"github.com/moby/buildkit/session"
 	"github.com/moby/buildkit/session/auth/authprovider"
 	"github.com/moby/buildkit/util/progress/progressui"
@@ -28,8 +29,8 @@ import (
 )
 
 const (
-	startupScriptName    = "shell.sh"
-	entryPointScriptName = "entrypoint.sh"
+	buildScriptName      = "neoshowcase_internal_build.sh"
+	entryPointScriptName = "neoshowcase_internal_entrypoint.sh"
 )
 
 type BuilderService interface {
@@ -95,7 +96,7 @@ func (s *builderService) StartBuild(ctx context.Context, task *builder.Task) err
 	return nil
 }
 
-func (s *builderService) CancelBuild(ctx context.Context) (string, error) {
+func (s *builderService) CancelBuild(_ context.Context) (string, error) {
 	s.statusLock.RLock()
 	state := s.status
 	s.statusLock.RUnlock()
@@ -111,7 +112,7 @@ func (s *builderService) CancelBuild(ctx context.Context) (string, error) {
 	return buildID, nil
 }
 
-func (s *builderService) Shutdown(ctx context.Context) error {
+func (s *builderService) Shutdown(_ context.Context) error {
 	s.statusLock.Lock()
 	prevStatus := s.status
 	s.status = builder.StateUnavailable
@@ -254,16 +255,19 @@ func (s *builderService) processTask(task *builder.Task, intState *internalTaskS
 			if status == builder.BuildStatusSucceeded {
 				sid := domain.NewID()
 				filename := intState.artifactTempFile.Name()
-				err := domain.SaveArtifact(s.storage, filename, filepath.Join("artifacts", fmt.Sprintf("%s.tar", sid)))
+				stat, err := os.Stat(filename)
 				if err != nil {
-					log.WithError(err).Errorf("failed to save directory to tar (BuildID: %s, ArtifactID: %s)", task.BuildID, sid)
+					log.WithError(err).Errorf("failed to open artifact (BuildID: %s, ArtifactID: %s)", task.BuildID, sid)
+				} else {
+					err = s.artifactRepo.CreateArtifact(context.Background(), stat.Size(), task.BuildID, sid)
+					if err != nil {
+						log.WithError(err).Errorf("failed to create artifact (BuildID: %s, ArtifactID: %s)", task.BuildID, sid)
+					}
 				}
 
-				// TODO: エラー処理
-				stat, _ := os.Stat(filename)
-				err = s.artifactRepo.CreateArtifact(context.Background(), stat.Size(), task.BuildID, sid)
+				err = domain.SaveArtifact(s.storage, filename, filepath.Join("artifacts", fmt.Sprintf("%s.tar", sid)))
 				if err != nil {
-					log.WithError(err).Errorf("failed to create artifact (BuildID: %s, ArtifactID: %s)", task.BuildID, sid)
+					log.WithError(err).Errorf("failed to save directory to tar (BuildID: %s, ArtifactID: %s)", task.BuildID, sid)
 				}
 			} else {
 				_ = os.Remove(intState.artifactTempFile.Name())
@@ -335,151 +339,216 @@ func (s *builderService) buildImage(t *builder.Task, intState *internalTaskState
 	eg, ctx := errgroup.WithContext(intState.ctx)
 	eg.Go(func() (err error) {
 		// イメージの出力先設定
-		exportAttrs := map[string]string{}
-		if len(t.ImageName) == 0 {
-			// ImageNameの指定がない場合はビルドするだけで、イメージを保存しない
-			exportAttrs["name"] = "build-" + t.BuildID
-		} else {
-			exportAttrs["name"] = t.ImageName + ":" + t.ImageTag
-			exportAttrs["push"] = "true"
+		exportAttrs := map[string]string{
+			"name": t.ImageName + ":" + t.ImageTag,
+			"push": "true",
 		}
-
-		if t.BuildOptions == nil || len(t.BuildOptions.BaseImageName) == 0 {
+		if len(t.BuildOptions.BaseImageName) == 0 {
 			// リポジトリルートのDockerfileを使用
 			// entrypoint, startupコマンドは無視
-			_, err = s.buildkit.Solve(ctx, nil, buildkit.SolveOpt{
-				Exports: []buildkit.ExportEntry{{
-					Type:  buildkit.ExporterImage,
-					Attrs: exportAttrs,
-				}},
-				LocalDirs: map[string]string{
-					"context":    intState.repositoryTempDir,
-					"dockerfile": intState.repositoryTempDir,
-				},
-				Frontend:      "dockerfile.v0",
-				FrontendAttrs: map[string]string{"filename": "Dockerfile"},
-				Session:       []session.Attachable{authprovider.NewDockerAuthProvider(io.Discard)},
-			}, ch)
+			err = s.buildImageWithDockerfile(ctx, t, intState, exportAttrs, ch)
 		} else {
 			// 指定したベースイメージを使用
-			var fs, fe *os.File
-			fs, err = os.OpenFile(filepath.Join(intState.repositoryTempDir, startupScriptName), os.O_RDWR|os.O_CREATE|os.O_TRUNC, os.ModePerm)
-			if err != nil {
-				return err
-			}
-			scmd := fmt.Sprintf(`#!/bin/sh
-%s
-`, t.BuildOptions.StartupCmd)
-			_, err = fs.WriteString(scmd)
-			if err != nil {
-				return err
-			}
-			defer fs.Close()
-			defer os.Remove(fs.Name())
-
-			fe, err = os.OpenFile(filepath.Join(intState.repositoryTempDir, entryPointScriptName), os.O_RDWR|os.O_CREATE|os.O_TRUNC, os.ModePerm)
-			if err != nil {
-				return err
-			}
-			ecmd := fmt.Sprintf(`#!/bin/sh
-%s
-`, t.BuildOptions.EntrypointCmd)
-			_, err = fe.WriteString(ecmd)
-			if err != nil {
-				return err
-			}
-			defer fe.Close()
-			defer os.Remove(fe.Name())
-
-			dockerfile := fmt.Sprintf(`
-FROM %s
-COPY . .
-RUN ./%s
-ENTRYPOINT ./%s
-`, t.BuildOptions.BaseImageName, startupScriptName, entryPointScriptName)
-			var tmp *os.File
-			tmp, err = os.CreateTemp("", "Dockerfile")
-			if err != nil {
-				return err
-			}
-			defer tmp.Close()
-			defer os.Remove(tmp.Name())
-			if _, err = tmp.WriteString(dockerfile); err != nil {
-				return err
-			}
-
-			_, err = s.buildkit.Solve(ctx, nil, buildkit.SolveOpt{
-				Exports: []buildkit.ExportEntry{{
-					Type:  buildkit.ExporterImage,
-					Attrs: exportAttrs,
-				}},
-				LocalDirs: map[string]string{
-					"context":    intState.repositoryTempDir,
-					"dockerfile": filepath.Dir(tmp.Name()),
-				},
-				Frontend:      "dockerfile.v0",
-				FrontendAttrs: map[string]string{"filename": filepath.Base(tmp.Name())},
-				Session:       []session.Attachable{authprovider.NewDockerAuthProvider(io.Discard)},
-			}, ch)
+			err = s.buildImageWithConfig(ctx, t, intState, exportAttrs, ch)
 		}
 		return err
 	})
 	eg.Go(func() error {
 		// ビルドログを収集
 		// TODO: VertexWarningを使う (LLBのどのvertexに問題があったか)
-		_, err := progressui.DisplaySolveStatus(context.TODO(), "", nil, intState.getLogWriter(), ch)
+		_, err := progressui.DisplaySolveStatus(ctx, "", nil, intState.getLogWriter(), ch)
 		return err
 	})
 	return eg.Wait()
+}
+
+func (s *builderService) buildImageWithDockerfile(
+	ctx context.Context,
+	t *builder.Task,
+	intState *internalTaskState,
+	exportAttrs map[string]string,
+	ch chan *buildkit.SolveStatus,
+) error {
+	_, err := s.buildkit.Solve(ctx, nil, buildkit.SolveOpt{
+		Exports: []buildkit.ExportEntry{{
+			Type:  buildkit.ExporterImage,
+			Attrs: exportAttrs,
+		}},
+		LocalDirs: map[string]string{
+			"context":    intState.repositoryTempDir,
+			"dockerfile": intState.repositoryTempDir,
+		},
+		Frontend:      "dockerfile.v0",
+		FrontendAttrs: map[string]string{"filename": t.BuildOptions.DockerfileName},
+		Session:       []session.Attachable{authprovider.NewDockerAuthProvider(io.Discard)},
+	}, ch)
+	return err
+}
+
+func (s *builderService) buildImageWithConfig(
+	ctx context.Context,
+	t *builder.Task,
+	intState *internalTaskState,
+	exportAttrs map[string]string,
+	ch chan *buildkit.SolveStatus,
+) error {
+	var fs, fe *os.File
+	fs, err := os.OpenFile(filepath.Join(intState.repositoryTempDir, buildScriptName), os.O_RDWR|os.O_CREATE|os.O_TRUNC, os.ModePerm)
+	if err != nil {
+		return err
+	}
+	_, err = fs.WriteString("#!/bin/sh\n" + t.BuildOptions.BuildCmd)
+	if err != nil {
+		return err
+	}
+	defer fs.Close()
+	defer os.Remove(fs.Name())
+
+	fe, err = os.OpenFile(filepath.Join(intState.repositoryTempDir, entryPointScriptName), os.O_RDWR|os.O_CREATE|os.O_TRUNC, os.ModePerm)
+	if err != nil {
+		return err
+	}
+	_, err = fe.WriteString("#!/bin/sh\n" + t.BuildOptions.EntrypointCmd)
+	if err != nil {
+		return err
+	}
+	defer fe.Close()
+	defer os.Remove(fe.Name())
+
+	var tmp *os.File
+	tmp, err = os.CreateTemp("", "Dockerfile")
+	if err != nil {
+		return err
+	}
+	defer tmp.Close()
+	defer os.Remove(tmp.Name())
+	dockerfile := fmt.Sprintf(
+		`FROM %s
+WORKDIR /srv
+COPY . .
+RUN ["/srv/%s"]
+ENTRYPOINT ["/srv/%s"]`,
+		t.BuildOptions.BaseImageName,
+		buildScriptName,
+		entryPointScriptName,
+	)
+	if _, err = tmp.WriteString(dockerfile); err != nil {
+		return err
+	}
+
+	_, err = s.buildkit.Solve(ctx, nil, buildkit.SolveOpt{
+		Exports: []buildkit.ExportEntry{{
+			Type:  buildkit.ExporterImage,
+			Attrs: exportAttrs,
+		}},
+		LocalDirs: map[string]string{
+			"context":    intState.repositoryTempDir,
+			"dockerfile": filepath.Dir(tmp.Name()),
+		},
+		Frontend:      "dockerfile.v0",
+		FrontendAttrs: map[string]string{"filename": filepath.Base(tmp.Name())},
+		Session:       []session.Attachable{authprovider.NewDockerAuthProvider(io.Discard)},
+	}, ch)
+	return err
 }
 
 func (s *builderService) buildStatic(t *builder.Task, intState *internalTaskState) error {
 	ch := make(chan *buildkit.SolveStatus)
 	eg, ctx := errgroup.WithContext(intState.ctx)
 	eg.Go(func() (err error) {
-		if t.BuildOptions == nil || len(t.BuildOptions.BaseImageName) == 0 {
+		if len(t.BuildOptions.BaseImageName) == 0 {
 			// リポジトリルートのDockerfileを使用
 			// entrypoint, startupコマンドは無視
-			// TODO
-			panic("not implemented")
+			err = s.buildStaticWithDockerfile(ctx, t, intState, ch)
 		} else {
 			// 指定したベースイメージを使用
-			b := llb.Image(t.BuildOptions.BaseImageName).
-				File(llb.Copy(llb.Local("local-src"), ".", ".", &llb.CopyInfo{
-					AllowWildcard:  true,
-					CreateDestPath: true,
-				})).
-				Run(llb.Shlex(t.BuildOptions.StartupCmd)).
-				Root()
-			// ビルドで生成された静的ファイルのみを含むScratchイメージを構成
-			def, _ := llb.
-				Scratch().
-				File(llb.Copy(b, t.BuildOptions.ArtifactPath, "/", &llb.CopyInfo{
-					CopyDirContentsOnly: true,
-					CreateDestPath:      true,
-					AllowWildcard:       true,
-				})).
-				Marshal(context.Background())
-
-			_, err = s.buildkit.Solve(ctx, def, buildkit.SolveOpt{
-				Exports: []buildkit.ExportEntry{{
-					Type:   buildkit.ExporterTar,
-					Output: func(_ map[string]string) (io.WriteCloser, error) { return intState.artifactTempFile, nil },
-				}},
-				LocalDirs: map[string]string{
-					"local-src": intState.repositoryTempDir,
-				},
-			}, ch)
+			err = s.buildStaticWithConfig(ctx, t, intState, ch)
 		}
 		return err
 	})
 	eg.Go(func() error {
 		// ビルドログを収集
 		// TODO: VertexWarningを使う (LLBのどのvertexに問題があったか)
-		_, err := progressui.DisplaySolveStatus(context.TODO(), "", nil, intState.getLogWriter(), ch)
+		_, err := progressui.DisplaySolveStatus(ctx, "", nil, intState.getLogWriter(), ch)
 		return err
 	})
 	return eg.Wait()
+}
+
+func (s *builderService) buildStaticWithDockerfile(
+	ctx context.Context,
+	t *builder.Task,
+	intState *internalTaskState,
+	ch chan *buildkit.SolveStatus,
+) error {
+	dockerfile, err := os.ReadFile(filepath.Join(intState.repositoryTempDir, t.BuildOptions.DockerfileName))
+	if err != nil {
+		return err
+	}
+	b, _, _, err := dockerfile2llb.Dockerfile2LLB(context.Background(), dockerfile, dockerfile2llb.ConvertOpt{})
+	if err != nil {
+		return err
+	}
+	def, err := llb.
+		Scratch().
+		File(llb.Copy(*b, t.BuildOptions.ArtifactPath, "/", &llb.CopyInfo{
+			CopyDirContentsOnly: true,
+			CreateDestPath:      true,
+			AllowWildcard:       true,
+		})).
+		Marshal(context.Background())
+	if err != nil {
+		return err
+	}
+	_, err = s.buildkit.Solve(ctx, def, buildkit.SolveOpt{
+		Exports: []buildkit.ExportEntry{{
+			Type:   buildkit.ExporterTar,
+			Output: func(_ map[string]string) (io.WriteCloser, error) { return intState.artifactTempFile, nil },
+		}},
+		LocalDirs: map[string]string{
+			"context": intState.repositoryTempDir,
+		},
+	}, ch)
+	return err
+}
+
+func (s *builderService) buildStaticWithConfig(
+	ctx context.Context,
+	t *builder.Task,
+	intState *internalTaskState,
+	ch chan *buildkit.SolveStatus,
+) error {
+	b := llb.Image(t.BuildOptions.BaseImageName).
+		Dir("/srv").
+		File(llb.Copy(llb.Local("local-src"), ".", ".", &llb.CopyInfo{
+			AllowWildcard:  true,
+			CreateDestPath: true,
+		})).
+		Run(llb.Shlex(t.BuildOptions.BuildCmd)).
+		Root()
+	// ビルドで生成された静的ファイルのみを含むScratchイメージを構成
+	def, err := llb.
+		Scratch().
+		File(llb.Copy(b, t.BuildOptions.ArtifactPath, "/", &llb.CopyInfo{
+			CopyDirContentsOnly: true,
+			CreateDestPath:      true,
+			AllowWildcard:       true,
+		})).
+		Marshal(context.Background())
+	if err != nil {
+		return err
+	}
+
+	_, err = s.buildkit.Solve(ctx, def, buildkit.SolveOpt{
+		Exports: []buildkit.ExportEntry{{
+			Type:   buildkit.ExporterTar,
+			Output: func(_ map[string]string) (io.WriteCloser, error) { return intState.artifactTempFile, nil },
+		}},
+		LocalDirs: map[string]string{
+			"local-src": intState.repositoryTempDir,
+		},
+	}, ch)
+	return err
 }
 
 type internalTaskState struct {

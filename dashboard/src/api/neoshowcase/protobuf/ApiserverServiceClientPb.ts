@@ -556,6 +556,49 @@ export class ApplicationServiceClient {
     this.methodDescriptorGetApplicationKeys);
   }
 
+  methodDescriptorRetryCommitBuild = new grpcWeb.MethodDescriptor(
+    '/neoshowcase.protobuf.ApplicationService/RetryCommitBuild',
+    grpcWeb.MethodType.UNARY,
+    neoshowcase_protobuf_apiserver_pb.RetryCommitBuildRequest,
+    google_protobuf_empty_pb.Empty,
+    (request: neoshowcase_protobuf_apiserver_pb.RetryCommitBuildRequest) => {
+      return request.serializeBinary();
+    },
+    google_protobuf_empty_pb.Empty.deserializeBinary
+  );
+
+  retryCommitBuild(
+    request: neoshowcase_protobuf_apiserver_pb.RetryCommitBuildRequest,
+    metadata: grpcWeb.Metadata | null): Promise<google_protobuf_empty_pb.Empty>;
+
+  retryCommitBuild(
+    request: neoshowcase_protobuf_apiserver_pb.RetryCommitBuildRequest,
+    metadata: grpcWeb.Metadata | null,
+    callback: (err: grpcWeb.RpcError,
+               response: google_protobuf_empty_pb.Empty) => void): grpcWeb.ClientReadableStream<google_protobuf_empty_pb.Empty>;
+
+  retryCommitBuild(
+    request: neoshowcase_protobuf_apiserver_pb.RetryCommitBuildRequest,
+    metadata: grpcWeb.Metadata | null,
+    callback?: (err: grpcWeb.RpcError,
+               response: google_protobuf_empty_pb.Empty) => void) {
+    if (callback !== undefined) {
+      return this.client_.rpcCall(
+        this.hostname_ +
+          '/neoshowcase.protobuf.ApplicationService/RetryCommitBuild',
+        request,
+        metadata || {},
+        this.methodDescriptorRetryCommitBuild,
+        callback);
+    }
+    return this.client_.unaryCall(
+    this.hostname_ +
+      '/neoshowcase.protobuf.ApplicationService/RetryCommitBuild',
+    request,
+    metadata || {},
+    this.methodDescriptorRetryCommitBuild);
+  }
+
   methodDescriptorStartApplication = new grpcWeb.MethodDescriptor(
     '/neoshowcase.protobuf.ApplicationService/StartApplication',
     grpcWeb.MethodType.UNARY,

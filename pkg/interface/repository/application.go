@@ -21,14 +21,24 @@ import (
 type GetApplicationCondition struct {
 	UserID    optional.Of[string]
 	BuildType optional.Of[builder.BuildType]
+	State     optional.Of[domain.ApplicationState]
 	// InSync WantCommit が CurrentCommit に一致する
 	InSync optional.Of[bool]
 }
 
+type CreateWebsiteArgs struct {
+	FQDN string
+	Port int
+}
+
 type CreateApplicationArgs struct {
+	Name         string
 	RepositoryID string
 	BranchName   string
 	BuildType    builder.BuildType
+	State        domain.ApplicationState
+	Config       domain.ApplicationConfig
+	Websites     []*CreateWebsiteArgs
 }
 
 type UpdateApplicationArgs struct {
@@ -60,6 +70,7 @@ func NewApplicationRepository(db *sql.DB) ApplicationRepository {
 
 func (r *applicationRepository) GetApplications(ctx context.Context, cond GetApplicationCondition) ([]*domain.Application, error) {
 	mods := []qm.QueryMod{
+		qm.Load(models.ApplicationRels.ApplicationConfig),
 		qm.Load(models.ApplicationRels.Repository),
 		qm.Load(models.ApplicationRels.Websites),
 	}
@@ -79,6 +90,9 @@ func (r *applicationRepository) GetApplications(ctx context.Context, cond GetApp
 	}
 	if cond.BuildType.Valid {
 		mods = append(mods, models.ApplicationWhere.BuildType.EQ(cond.BuildType.V.String()))
+	}
+	if cond.State.Valid {
+		mods = append(mods, models.ApplicationWhere.State.EQ(cond.State.V.String()))
 	}
 	if cond.InSync.Valid {
 		if cond.InSync.V {
@@ -100,6 +114,7 @@ func (r *applicationRepository) GetApplications(ctx context.Context, cond GetApp
 func (r *applicationRepository) getApplication(ctx context.Context, id string) (*models.Application, error) {
 	app, err := models.Applications(
 		models.ApplicationWhere.ID.EQ(id),
+		qm.Load(models.ApplicationRels.ApplicationConfig),
 		qm.Load(models.ApplicationRels.Repository),
 		qm.Load(models.ApplicationRels.Websites),
 	).One(ctx, r.db)
@@ -123,10 +138,11 @@ func (r *applicationRepository) GetApplication(ctx context.Context, id string) (
 func (r *applicationRepository) CreateApplication(ctx context.Context, args CreateApplicationArgs) (*domain.Application, error) {
 	app := &models.Application{
 		ID:            domain.NewID(),
+		Name:          args.Name,
 		RepositoryID:  args.RepositoryID,
 		BranchName:    args.BranchName,
 		BuildType:     args.BuildType.String(),
-		State:         domain.ApplicationStateIdle.String(),
+		State:         args.State.String(),
 		CurrentCommit: domain.EmptyCommit,
 		WantCommit:    domain.EmptyCommit,
 	}
@@ -134,17 +150,36 @@ func (r *applicationRepository) CreateApplication(ctx context.Context, args Crea
 		return nil, fmt.Errorf("failed to create application: %w", err)
 	}
 
+	config := &models.ApplicationConfig{
+		ApplicationID:  app.ID,
+		UseMariadb:     args.Config.UseMariaDB,
+		UseMongodb:     args.Config.UseMongoDB,
+		BaseImage:      args.Config.BaseImage,
+		DockerfileName: args.Config.DockerfileName,
+		ArtifactPath:   args.Config.ArtifactPath,
+		BuildCMD:       args.Config.BuildCmd,
+		EntrypointCMD:  args.Config.EntrypointCmd,
+		Authentication: args.Config.Authentication.String(),
+	}
+	if err := app.SetApplicationConfig(ctx, r.db, true, config); err != nil {
+		return nil, fmt.Errorf("failed to set application config")
+	}
+
+	websites := lo.Map(args.Websites, func(website *CreateWebsiteArgs, i int) *models.Website {
+		return &models.Website{
+			ID:       domain.NewID(),
+			FQDN:     website.FQDN,
+			HTTPPort: website.Port,
+		}
+	})
+	if err := app.AddWebsites(ctx, r.db, true, websites...); err != nil {
+		return nil, fmt.Errorf("failed to add websites")
+	}
+
 	log.WithField("appID", app.ID).
 		Info("app created")
 
-	if err := app.L.LoadRepository(ctx, r.db, true, app, nil); err != nil {
-		return nil, fmt.Errorf("failed to load repository: %w", err)
-	}
-	if err := app.L.LoadWebsites(ctx, r.db, true, app, nil); err != nil {
-		return nil, fmt.Errorf("failed to load website: %w", err)
-	}
-
-	return toDomainApplication(app), nil
+	return r.GetApplication(ctx, app.ID)
 }
 
 func (r *applicationRepository) UpdateApplication(ctx context.Context, id string, args UpdateApplicationArgs) error {

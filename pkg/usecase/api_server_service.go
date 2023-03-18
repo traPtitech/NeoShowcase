@@ -6,7 +6,6 @@ import (
 	"fmt"
 
 	"github.com/samber/lo"
-	"golang.org/x/exp/slices"
 
 	"github.com/traPtitech/neoshowcase/pkg/domain"
 	"github.com/traPtitech/neoshowcase/pkg/domain/builder"
@@ -30,11 +29,20 @@ func handleRepoError[T any](entity T, err error) (T, error) {
 	}
 }
 
+type CreateWebsiteArgs struct {
+	FQDN string
+	Port int
+}
+
 type CreateApplicationArgs struct {
 	UserID        string
+	Name          string
 	RepositoryURL string
 	BranchName    string
 	BuildType     builder.BuildType
+	Config        domain.ApplicationConfig
+	Websites      []*CreateWebsiteArgs
+	StartOnCreate bool
 }
 
 type APIServerService interface {
@@ -46,6 +54,7 @@ type APIServerService interface {
 	GetApplicationBuild(ctx context.Context, buildID string) (*domain.Build, error)
 	SetApplicationEnvironmentVariable(ctx context.Context, applicationID string, key string, value string) error
 	GetApplicationEnvironmentVariables(ctx context.Context, applicationID string) ([]*domain.Environment, error)
+	RetryCommitBuild(ctx context.Context, applicationID string, commit string) error
 	StartApplication(ctx context.Context, id string) error
 	StopApplication(ctx context.Context, id string) error
 }
@@ -110,10 +119,22 @@ func (s *apiServerService) CreateApplication(ctx context.Context, args CreateApp
 		}
 	}
 
+	var initialState domain.ApplicationState
+	if args.StartOnCreate {
+		initialState = domain.ApplicationStateDeploying
+	} else {
+		initialState = domain.ApplicationStateIdle
+	}
 	application, err := s.appRepo.CreateApplication(ctx, repository.CreateApplicationArgs{
+		Name:         args.Name,
 		RepositoryID: repo.ID,
 		BranchName:   args.BranchName,
 		BuildType:    args.BuildType,
+		State:        initialState,
+		Config:       args.Config,
+		Websites: lo.Map(args.Websites, func(website *CreateWebsiteArgs, i int) *repository.CreateWebsiteArgs {
+			return &repository.CreateWebsiteArgs{FQDN: website.FQDN, Port: website.Port}
+		}),
 	})
 	if err != nil {
 		if err == repository.ErrDuplicate {
@@ -138,11 +159,9 @@ func (s *apiServerService) CreateApplication(ctx context.Context, args CreateApp
 }
 
 func (s *apiServerService) createApplicationDatabase(ctx context.Context, app *domain.Application) error {
-	dbName := fmt.Sprintf("ns_app_%s", app.ID)
+	dbName := fmt.Sprintf("nsapp_%s", app.ID)
 
-	// TODO: アプリケーションの設定の取得
-	applicationNeedsMariaDB := true
-	if applicationNeedsMariaDB {
+	if app.Config.UseMariaDB {
 		dbPassword := random.SecureGeneratePassword(32)
 		dbSetting := domain.CreateArgs{
 			Database: dbName,
@@ -163,9 +182,7 @@ func (s *apiServerService) createApplicationDatabase(ctx context.Context, app *d
 		}
 	}
 
-	// TODO: アプリケーションの設定の取得
-	applicationNeedsMongoDB := true
-	if applicationNeedsMongoDB {
+	if app.Config.UseMongoDB {
 		dbPassword := random.SecureGeneratePassword(32)
 		dbSetting := domain.CreateArgs{
 			Database: dbName,
@@ -228,37 +245,27 @@ func (s *apiServerService) SetApplicationEnvironmentVariable(ctx context.Context
 	return s.envRepo.SetEnv(ctx, applicationID, key, value)
 }
 
-func (s *apiServerService) StartApplication(ctx context.Context, id string) error {
-	app, err := s.appRepo.GetApplication(ctx, id)
+func (s *apiServerService) RetryCommitBuild(ctx context.Context, applicationID string, commit string) error {
+	err := s.buildRepo.MarkCommitAsRetriable(ctx, applicationID, commit)
 	if err != nil {
 		return err
 	}
-	if app.State == domain.ApplicationStateDeploying {
-		return errors.New("application is currently deploying")
-	}
-	builds, err := s.buildRepo.GetBuildsInCommit(ctx, []string{app.CurrentCommit})
-	if err != nil {
-		return err
-	}
-	builds = lo.Filter(builds, func(build *domain.Build, i int) bool { return build.Status == builder.BuildStatusSucceeded })
-	slices.SortFunc(builds, func(a, b *domain.Build) bool { return a.StartedAt.After(b.StartedAt) })
-	if len(builds) == 0 {
-		return ErrNotFound
-	}
-	return s.deploySvc.StartDeployment(ctx, app, builds[0])
+	s.bus.Publish(event.CDServiceSyncBuildRequest, nil)
+	return nil
 }
 
-func (s *apiServerService) StopApplication(ctx context.Context, id string) error {
-	app, err := s.appRepo.GetApplication(ctx, id)
-	if err != nil {
-		return err
+func (s *apiServerService) StartApplication(_ context.Context, id string) error {
+	ok := s.deploySvc.Synchronize(id, true)
+	if !ok {
+		return errors.New("application is currently busy")
 	}
-	if app.State != domain.ApplicationStateRunning {
-		return errors.New("application is not running")
+	return nil
+}
+
+func (s *apiServerService) StopApplication(_ context.Context, id string) error {
+	ok := s.deploySvc.Stop(id)
+	if !ok {
+		return errors.New("application is currently busy")
 	}
-	err = s.backend.DestroyContainer(ctx, app)
-	if err != nil {
-		return err
-	}
-	return s.appRepo.UpdateApplication(ctx, id, repository.UpdateApplicationArgs{State: optional.From(domain.ApplicationStateIdle)})
+	return nil
 }

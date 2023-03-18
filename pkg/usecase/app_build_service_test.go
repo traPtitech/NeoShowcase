@@ -34,7 +34,7 @@ func TestAppBuildService_QueueBuild(t *testing.T) {
 				URL: "https://git.trap.jp/hijiki51/git-test",
 			},
 			BranchName: "main",
-			BuildType:  builder.BuildTypeImage,
+			BuildType:  builder.BuildTypeRuntime,
 		}
 		build := &domain.Build{
 			ID:            "f01691dd-985a-48c9-8b47-205af468431a",

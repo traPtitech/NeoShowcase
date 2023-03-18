@@ -16,8 +16,9 @@ type BuildSource struct {
 }
 
 type BuildOptions struct {
-	BaseImageName string
-	EntrypointCmd string
-	StartupCmd    string
-	ArtifactPath  string
+	BaseImageName  string
+	DockerfileName string
+	ArtifactPath   string
+	BuildCmd       string
+	EntrypointCmd  string
 }

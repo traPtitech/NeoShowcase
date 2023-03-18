@@ -9,6 +9,19 @@ import (
 	"github.com/traPtitech/neoshowcase/pkg/util/optional"
 )
 
+func toDomainApplicationConfig(c *models.ApplicationConfig) domain.ApplicationConfig {
+	return domain.ApplicationConfig{
+		UseMariaDB:     c.UseMariadb,
+		UseMongoDB:     c.UseMongodb,
+		BaseImage:      c.BaseImage,
+		DockerfileName: c.DockerfileName,
+		ArtifactPath:   c.ArtifactPath,
+		BuildCmd:       c.BuildCMD,
+		EntrypointCmd:  c.EntrypointCMD,
+		Authentication: domain.AuthenticationTypeFromString(c.Authentication),
+	}
+}
+
 func toDomainRepository(repo *models.Repository) domain.Repository {
 	return domain.Repository{
 		ID:  repo.ID,
@@ -19,15 +32,16 @@ func toDomainRepository(repo *models.Repository) domain.Repository {
 func toDomainApplication(app *models.Application) *domain.Application {
 	return &domain.Application{
 		ID:            app.ID,
-		Repository:    toDomainRepository(app.R.Repository),
+		Name:          app.Name,
 		BranchName:    app.BranchName,
 		BuildType:     builder.BuildTypeFromString(app.BuildType),
 		State:         domain.ApplicationStateFromString(app.State),
 		CurrentCommit: app.CurrentCommit,
 		WantCommit:    app.WantCommit,
-		Websites: lo.Map(app.R.Websites, func(website *models.Website, i int) *domain.Website {
-			return toDomainWebsite(website)
-		}),
+
+		Config:     toDomainApplicationConfig(app.R.ApplicationConfig),
+		Repository: toDomainRepository(app.R.Repository),
+		Websites:   lo.Map(app.R.Websites, func(website *models.Website, i int) *domain.Website { return toDomainWebsite(website) }),
 	}
 }
 
@@ -39,6 +53,7 @@ func toDomainBuild(build *models.Build) *domain.Build {
 		ApplicationID: build.ApplicationID,
 		StartedAt:     build.StartedAt,
 		FinishedAt:    optional.New(build.FinishedAt.Time, build.FinishedAt.Valid),
+		Retriable:     build.Retriable,
 	}
 	if build.R != nil && build.R.Artifact != nil {
 		artifact := build.R.Artifact

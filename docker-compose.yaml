@@ -83,8 +83,8 @@ services:
       - "5007:10000"
       - "5008:80"
     labels:
-      - "traefik.enabled=true"
-      - "traefik.http.routers.ns_ssgen.rule=HostRegexp(`.*`)"
+      - "traefik.enable=true"
+      - "traefik.http.routers.ns_ssgen.rule=HostRegexp(`{host:.*}`)"
       # lowest priority
       - "traefik.http.routers.ns_ssgen.priority=1"
       - "traefik.http.services.ns_ssgen.loadbalancer.server.port=80"

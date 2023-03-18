@@ -40,7 +40,10 @@ func NewStaticSiteServerService(
 }
 
 func (s *staticSiteServerService) Reload(ctx context.Context) error {
-	applications, err := s.appRepo.GetApplications(ctx, repository.GetApplicationCondition{BuildType: optional.From(builder.BuildTypeStatic)})
+	applications, err := s.appRepo.GetApplications(ctx, repository.GetApplicationCondition{
+		BuildType: optional.From(builder.BuildTypeStatic),
+		State:     optional.From(domain.ApplicationStateRunning),
+	})
 	if err != nil {
 		return err
 	}

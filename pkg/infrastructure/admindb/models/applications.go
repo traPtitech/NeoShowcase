@@ -24,6 +24,8 @@ import (
 // Application is an object representing the database table.
 type Application struct { // アプリケーションID
 	ID string `boil:"id" json:"id" toml:"id" yaml:"id"`
+	// アプリケーション名
+	Name string `boil:"name" json:"name" toml:"name" yaml:"name"`
 	// リポジトリID
 	RepositoryID string `boil:"repository_id" json:"repository_id" toml:"repository_id" yaml:"repository_id"`
 	// Gitブランチ・タグ名
@@ -47,6 +49,7 @@ type Application struct { // アプリケーションID
 
 var ApplicationColumns = struct {
 	ID            string
+	Name          string
 	RepositoryID  string
 	BranchName    string
 	BuildType     string
@@ -57,6 +60,7 @@ var ApplicationColumns = struct {
 	UpdatedAt     string
 }{
 	ID:            "id",
+	Name:          "name",
 	RepositoryID:  "repository_id",
 	BranchName:    "branch_name",
 	BuildType:     "build_type",
@@ -69,6 +73,7 @@ var ApplicationColumns = struct {
 
 var ApplicationTableColumns = struct {
 	ID            string
+	Name          string
 	RepositoryID  string
 	BranchName    string
 	BuildType     string
@@ -79,6 +84,7 @@ var ApplicationTableColumns = struct {
 	UpdatedAt     string
 }{
 	ID:            "applications.id",
+	Name:          "applications.name",
 	RepositoryID:  "applications.repository_id",
 	BranchName:    "applications.branch_name",
 	BuildType:     "applications.build_type",
@@ -114,6 +120,7 @@ func (w whereHelpertime_Time) GTE(x time.Time) qm.QueryMod {
 
 var ApplicationWhere = struct {
 	ID            whereHelperstring
+	Name          whereHelperstring
 	RepositoryID  whereHelperstring
 	BranchName    whereHelperstring
 	BuildType     whereHelperstring
@@ -124,6 +131,7 @@ var ApplicationWhere = struct {
 	UpdatedAt     whereHelpertime_Time
 }{
 	ID:            whereHelperstring{field: "`applications`.`id`"},
+	Name:          whereHelperstring{field: "`applications`.`name`"},
 	RepositoryID:  whereHelperstring{field: "`applications`.`repository_id`"},
 	BranchName:    whereHelperstring{field: "`applications`.`branch_name`"},
 	BuildType:     whereHelperstring{field: "`applications`.`build_type`"},
@@ -138,6 +146,7 @@ var ApplicationWhere = struct {
 var ApplicationRels = struct {
 	Repository            string
 	StateApplicationState string
+	ApplicationConfig     string
 	Builds                string
 	Environments          string
 	Users                 string
@@ -145,6 +154,7 @@ var ApplicationRels = struct {
 }{
 	Repository:            "Repository",
 	StateApplicationState: "StateApplicationState",
+	ApplicationConfig:     "ApplicationConfig",
 	Builds:                "Builds",
 	Environments:          "Environments",
 	Users:                 "Users",
@@ -153,12 +163,13 @@ var ApplicationRels = struct {
 
 // applicationR is where relationships are stored.
 type applicationR struct {
-	Repository            *Repository       `boil:"Repository" json:"Repository" toml:"Repository" yaml:"Repository"`
-	StateApplicationState *ApplicationState `boil:"StateApplicationState" json:"StateApplicationState" toml:"StateApplicationState" yaml:"StateApplicationState"`
-	Builds                BuildSlice        `boil:"Builds" json:"Builds" toml:"Builds" yaml:"Builds"`
-	Environments          EnvironmentSlice  `boil:"Environments" json:"Environments" toml:"Environments" yaml:"Environments"`
-	Users                 UserSlice         `boil:"Users" json:"Users" toml:"Users" yaml:"Users"`
-	Websites              WebsiteSlice      `boil:"Websites" json:"Websites" toml:"Websites" yaml:"Websites"`
+	Repository            *Repository        `boil:"Repository" json:"Repository" toml:"Repository" yaml:"Repository"`
+	StateApplicationState *ApplicationState  `boil:"StateApplicationState" json:"StateApplicationState" toml:"StateApplicationState" yaml:"StateApplicationState"`
+	ApplicationConfig     *ApplicationConfig `boil:"ApplicationConfig" json:"ApplicationConfig" toml:"ApplicationConfig" yaml:"ApplicationConfig"`
+	Builds                BuildSlice         `boil:"Builds" json:"Builds" toml:"Builds" yaml:"Builds"`
+	Environments          EnvironmentSlice   `boil:"Environments" json:"Environments" toml:"Environments" yaml:"Environments"`
+	Users                 UserSlice          `boil:"Users" json:"Users" toml:"Users" yaml:"Users"`
+	Websites              WebsiteSlice       `boil:"Websites" json:"Websites" toml:"Websites" yaml:"Websites"`
 }
 
 // NewStruct creates a new relationship struct
@@ -178,6 +189,13 @@ func (r *applicationR) GetStateApplicationState() *ApplicationState {
 		return nil
 	}
 	return r.StateApplicationState
+}
+
+func (r *applicationR) GetApplicationConfig() *ApplicationConfig {
+	if r == nil {
+		return nil
+	}
+	return r.ApplicationConfig
 }
 
 func (r *applicationR) GetBuilds() BuildSlice {
@@ -212,8 +230,8 @@ func (r *applicationR) GetWebsites() WebsiteSlice {
 type applicationL struct{}
 
 var (
-	applicationAllColumns            = []string{"id", "repository_id", "branch_name", "build_type", "state", "current_commit", "want_commit", "created_at", "updated_at"}
-	applicationColumnsWithoutDefault = []string{"id", "repository_id", "branch_name", "build_type", "state", "current_commit", "want_commit", "created_at", "updated_at"}
+	applicationAllColumns            = []string{"id", "name", "repository_id", "branch_name", "build_type", "state", "current_commit", "want_commit", "created_at", "updated_at"}
+	applicationColumnsWithoutDefault = []string{"id", "name", "repository_id", "branch_name", "build_type", "state", "current_commit", "want_commit", "created_at", "updated_at"}
 	applicationColumnsWithDefault    = []string{}
 	applicationPrimaryKeyColumns     = []string{"id"}
 	applicationGeneratedColumns      = []string{}
@@ -519,6 +537,17 @@ func (o *Application) StateApplicationState(mods ...qm.QueryMod) applicationStat
 	return ApplicationStates(queryMods...)
 }
 
+// ApplicationConfig pointed to by the foreign key.
+func (o *Application) ApplicationConfig(mods ...qm.QueryMod) applicationConfigQuery {
+	queryMods := []qm.QueryMod{
+		qm.Where("`application_id` = ?", o.ID),
+	}
+
+	queryMods = append(queryMods, mods...)
+
+	return ApplicationConfigs(queryMods...)
+}
+
 // Builds retrieves all the build's Builds with an executor.
 func (o *Application) Builds(mods ...qm.QueryMod) buildQuery {
 	var queryMods []qm.QueryMod
@@ -808,6 +837,123 @@ func (applicationL) LoadStateApplicationState(ctx context.Context, e boil.Contex
 					foreign.R = &applicationStateR{}
 				}
 				foreign.R.StateApplications = append(foreign.R.StateApplications, local)
+				break
+			}
+		}
+	}
+
+	return nil
+}
+
+// LoadApplicationConfig allows an eager lookup of values, cached into the
+// loaded structs of the objects. This is for a 1-1 relationship.
+func (applicationL) LoadApplicationConfig(ctx context.Context, e boil.ContextExecutor, singular bool, maybeApplication interface{}, mods queries.Applicator) error {
+	var slice []*Application
+	var object *Application
+
+	if singular {
+		var ok bool
+		object, ok = maybeApplication.(*Application)
+		if !ok {
+			object = new(Application)
+			ok = queries.SetFromEmbeddedStruct(&object, &maybeApplication)
+			if !ok {
+				return errors.New(fmt.Sprintf("failed to set %T from embedded struct %T", object, maybeApplication))
+			}
+		}
+	} else {
+		s, ok := maybeApplication.(*[]*Application)
+		if ok {
+			slice = *s
+		} else {
+			ok = queries.SetFromEmbeddedStruct(&slice, maybeApplication)
+			if !ok {
+				return errors.New(fmt.Sprintf("failed to set %T from embedded struct %T", slice, maybeApplication))
+			}
+		}
+	}
+
+	args := make([]interface{}, 0, 1)
+	if singular {
+		if object.R == nil {
+			object.R = &applicationR{}
+		}
+		args = append(args, object.ID)
+	} else {
+	Outer:
+		for _, obj := range slice {
+			if obj.R == nil {
+				obj.R = &applicationR{}
+			}
+
+			for _, a := range args {
+				if a == obj.ID {
+					continue Outer
+				}
+			}
+
+			args = append(args, obj.ID)
+		}
+	}
+
+	if len(args) == 0 {
+		return nil
+	}
+
+	query := NewQuery(
+		qm.From(`application_config`),
+		qm.WhereIn(`application_config.application_id in ?`, args...),
+	)
+	if mods != nil {
+		mods.Apply(query)
+	}
+
+	results, err := query.QueryContext(ctx, e)
+	if err != nil {
+		return errors.Wrap(err, "failed to eager load ApplicationConfig")
+	}
+
+	var resultSlice []*ApplicationConfig
+	if err = queries.Bind(results, &resultSlice); err != nil {
+		return errors.Wrap(err, "failed to bind eager loaded slice ApplicationConfig")
+	}
+
+	if err = results.Close(); err != nil {
+		return errors.Wrap(err, "failed to close results of eager load for application_config")
+	}
+	if err = results.Err(); err != nil {
+		return errors.Wrap(err, "error occurred during iteration of eager loaded relations for application_config")
+	}
+
+	if len(applicationConfigAfterSelectHooks) != 0 {
+		for _, obj := range resultSlice {
+			if err := obj.doAfterSelectHooks(ctx, e); err != nil {
+				return err
+			}
+		}
+	}
+
+	if len(resultSlice) == 0 {
+		return nil
+	}
+
+	if singular {
+		foreign := resultSlice[0]
+		object.R.ApplicationConfig = foreign
+		if foreign.R == nil {
+			foreign.R = &applicationConfigR{}
+		}
+		foreign.R.Application = object
+	}
+
+	for _, local := range slice {
+		for _, foreign := range resultSlice {
+			if local.ID == foreign.ApplicationID {
+				local.R.ApplicationConfig = foreign
+				if foreign.R == nil {
+					foreign.R = &applicationConfigR{}
+				}
+				foreign.R.Application = local
 				break
 			}
 		}
@@ -1380,6 +1526,56 @@ func (o *Application) SetStateApplicationState(ctx context.Context, exec boil.Co
 		related.R.StateApplications = append(related.R.StateApplications, o)
 	}
 
+	return nil
+}
+
+// SetApplicationConfig of the application to the related item.
+// Sets o.R.ApplicationConfig to related.
+// Adds o to related.R.Application.
+func (o *Application) SetApplicationConfig(ctx context.Context, exec boil.ContextExecutor, insert bool, related *ApplicationConfig) error {
+	var err error
+
+	if insert {
+		related.ApplicationID = o.ID
+
+		if err = related.Insert(ctx, exec, boil.Infer()); err != nil {
+			return errors.Wrap(err, "failed to insert into foreign table")
+		}
+	} else {
+		updateQuery := fmt.Sprintf(
+			"UPDATE `application_config` SET %s WHERE %s",
+			strmangle.SetParamNames("`", "`", 0, []string{"application_id"}),
+			strmangle.WhereClause("`", "`", 0, applicationConfigPrimaryKeyColumns),
+		)
+		values := []interface{}{o.ID, related.ApplicationID}
+
+		if boil.IsDebug(ctx) {
+			writer := boil.DebugWriterFrom(ctx)
+			fmt.Fprintln(writer, updateQuery)
+			fmt.Fprintln(writer, values)
+		}
+		if _, err = exec.ExecContext(ctx, updateQuery, values...); err != nil {
+			return errors.Wrap(err, "failed to update foreign table")
+		}
+
+		related.ApplicationID = o.ID
+	}
+
+	if o.R == nil {
+		o.R = &applicationR{
+			ApplicationConfig: related,
+		}
+	} else {
+		o.R.ApplicationConfig = related
+	}
+
+	if related.R == nil {
+		related.R = &applicationConfigR{
+			Application: o,
+		}
+	} else {
+		related.R.Application = o
+	}
 	return nil
 }
 

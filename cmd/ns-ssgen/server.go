@@ -5,18 +5,19 @@ import (
 	"database/sql"
 	"fmt"
 	"net"
-	"net/http"
 
-	log "github.com/sirupsen/logrus"
+	"golang.org/x/sync/errgroup"
+	"google.golang.org/grpc"
+
 	"github.com/traPtitech/neoshowcase/pkg/domain"
 	igrpc "github.com/traPtitech/neoshowcase/pkg/interface/grpc"
 	"github.com/traPtitech/neoshowcase/pkg/interface/grpc/pb"
-	"golang.org/x/sync/errgroup"
-	"google.golang.org/grpc"
+	"github.com/traPtitech/neoshowcase/pkg/usecase"
 )
 
 type Server struct {
 	db         *sql.DB
+	svc        usecase.StaticSiteServerService
 	grpcServer *grpc.Server
 	engine     domain.Engine
 	sss        *igrpc.StaticSiteService
@@ -31,13 +32,18 @@ func (s *Server) Start(ctx context.Context) error {
 		return fmt.Errorf("failed to start server: %w", err)
 	}
 
-	go func() {
-		err := s.engine.Start(ctx)
-		if err != nil && err != http.ErrServerClosed {
-			log.Error(err)
-		}
-	}()
-	return s.grpcServer.Serve(listener)
+	eg, ctx := errgroup.WithContext(ctx)
+	eg.Go(func() error {
+		return s.engine.Start(ctx)
+	})
+	eg.Go(func() error {
+		return s.svc.Reload(ctx)
+	})
+	eg.Go(func() error {
+		return s.grpcServer.Serve(listener)
+	})
+
+	return eg.Wait()
 }
 
 func (s *Server) Shutdown(ctx context.Context) error {

@@ -51,7 +51,7 @@ func (b *dockerBackend) CreateContainer(ctx context.Context, app *domain.Applica
 		appContainerLabel:              "true",
 		appContainerApplicationIDLabel: app.ID,
 	})
-	labels["traefik.enabled"] = "true"
+	labels["traefik.enable"] = "true"
 	for _, website := range app.Websites {
 		traefikName := "nsapp_" + strings.ReplaceAll(website.FQDN, ".", "_")
 		labels[fmt.Sprintf("traefik.http.routers.%s.rule", traefikName)] = fmt.Sprintf("Host(`%s`)", website.FQDN)

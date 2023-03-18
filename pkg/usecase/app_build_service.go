@@ -89,7 +89,7 @@ func (s *appBuildService) Shutdown() {
 	s.cancel()
 }
 
-func (s *appBuildService) CancelBuild(ctx context.Context, buildID string) error {
+func (s *appBuildService) CancelBuild(_ context.Context, buildID string) error {
 	deleted := s.queue.DeleteIf(func(j *buildJob) bool { return j.buildID == buildID })
 	if deleted == 0 {
 		return fmt.Errorf("job is already canceled")
@@ -140,7 +140,7 @@ func (s *appBuildService) startQueueManager(ctx context.Context) {
 
 func (s *appBuildService) requestBuild(ctx context.Context, app *domain.Application, buildID string, commit string) error {
 	switch app.BuildType {
-	case builder.BuildTypeImage:
+	case builder.BuildTypeRuntime:
 		_, err := s.builder.StartBuildImage(ctx, &pb.StartBuildImageRequest{
 			ImageName: builder.GetImageName(s.imageRegistry, s.imageNamePrefix, app.ID),
 			ImageTag:  buildID,
@@ -148,7 +148,13 @@ func (s *appBuildService) requestBuild(ctx context.Context, app *domain.Applicat
 				RepositoryUrl: app.Repository.URL,
 				Commit:        commit,
 			},
-			Options:       &pb.BuildOptions{}, // TODO 汎用ベースイメージビルドに対応させる
+			Options: &pb.BuildOptions{
+				BaseImageName:  app.Config.BaseImage,
+				DockerfileName: app.Config.DockerfileName,
+				ArtifactPath:   app.Config.ArtifactPath,
+				BuildCmd:       app.Config.BuildCmd,
+				EntrypointCmd:  app.Config.EntrypointCmd,
+			},
 			BuildId:       buildID,
 			ApplicationId: app.ID,
 		})
@@ -162,7 +168,13 @@ func (s *appBuildService) requestBuild(ctx context.Context, app *domain.Applicat
 				RepositoryUrl: app.Repository.URL,
 				Commit:        commit,
 			},
-			Options:       &pb.BuildOptions{}, // TODO 汎用ベースイメージビルドに対応させる
+			Options: &pb.BuildOptions{
+				BaseImageName:  app.Config.BaseImage,
+				DockerfileName: app.Config.DockerfileName,
+				ArtifactPath:   app.Config.ArtifactPath,
+				BuildCmd:       app.Config.BuildCmd,
+				EntrypointCmd:  app.Config.EntrypointCmd,
+			},
 			BuildId:       buildID,
 			ApplicationId: app.ID,
 		})

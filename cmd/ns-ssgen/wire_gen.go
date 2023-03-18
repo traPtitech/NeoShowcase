@@ -22,7 +22,8 @@ func New(c2 Config) (*Server, error) {
 	if err != nil {
 		return nil, err
 	}
-	server := grpc.NewServer()
+	applicationRepository := repository.NewApplicationRepository(db)
+	buildRepository := repository.NewBuildRepository(db)
 	storageConfig := provideStorageConfig(c2)
 	storage, err := initStorage(storageConfig)
 	if err != nil {
@@ -31,13 +32,13 @@ func New(c2 Config) (*Server, error) {
 	webServerDocumentRootPath := provideWebServerDocumentRootPath(c2)
 	webServerPort := provideWebServerPort(c2)
 	engine := staticserver.NewBuiltIn(storage, webServerDocumentRootPath, webServerPort)
-	applicationRepository := repository.NewApplicationRepository(db)
-	buildRepository := repository.NewBuildRepository(db)
 	staticSiteServerService := usecase.NewStaticSiteServerService(applicationRepository, buildRepository, engine)
+	server := grpc.NewServer()
 	staticSiteService := grpc.NewStaticSiteServiceServer(staticSiteServerService)
 	tcpListenPort := provideGRPCPort(c2)
 	mainServer := &Server{
 		db:         db,
+		svc:        staticSiteServerService,
 		grpcServer: server,
 		engine:     engine,
 		sss:        staticSiteService,

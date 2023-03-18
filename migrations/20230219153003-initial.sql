@@ -37,15 +37,16 @@ VALUES ('IDLE'),
 
 CREATE TABLE `applications`
 (
-    `id`             VARCHAR(22)              NOT NULL COMMENT 'アプリケーションID',
-    `repository_id`  VARCHAR(22)              NOT NULL COMMENT 'リポジトリID',
-    `branch_name`    VARCHAR(100)             NOT NULL COMMENT 'Gitブランチ・タグ名',
-    `build_type`     ENUM ('image', 'static') NOT NULL COMMENT 'ビルドタイプ',
-    `state`          VARCHAR(10)              NOT NULL COMMENT 'デプロイの状態',
-    `current_commit` CHAR(40)                 NOT NULL COMMENT 'デプロイされたコミット',
-    `want_commit`    CHAR(40)                 NOT NULL COMMENT 'デプロイを待つコミット',
-    `created_at`     DATETIME(6)              NOT NULL COMMENT '作成日時',
-    `updated_at`     DATETIME(6)              NOT NULL COMMENT '更新日時',
+    `id`             VARCHAR(22)                NOT NULL COMMENT 'アプリケーションID',
+    `name`           VARCHAR(100)               NOT NULL COMMENT 'アプリケーション名',
+    `repository_id`  VARCHAR(22)                NOT NULL COMMENT 'リポジトリID',
+    `branch_name`    VARCHAR(100)               NOT NULL COMMENT 'Gitブランチ・タグ名',
+    `build_type`     ENUM ('runtime', 'static') NOT NULL COMMENT 'ビルドタイプ',
+    `state`          VARCHAR(10)                NOT NULL COMMENT 'デプロイの状態',
+    `current_commit` CHAR(40)                   NOT NULL COMMENT 'デプロイされたコミット',
+    `want_commit`    CHAR(40)                   NOT NULL COMMENT 'デプロイを待つコミット',
+    `created_at`     DATETIME(6)                NOT NULL COMMENT '作成日時',
+    `updated_at`     DATETIME(6)                NOT NULL COMMENT '更新日時',
     PRIMARY KEY (`id`),
     UNIQUE KEY (`repository_id`, `branch_name`),
     CONSTRAINT `fk_applications_repository_id`
@@ -55,6 +56,24 @@ CREATE TABLE `applications`
 ) ENGINE InnoDB
   DEFAULT CHARACTER SET = `utf8mb4`
     COMMENT 'アプリケーションテーブル';
+
+CREATE TABLE `application_config`
+(
+    `application_id`  VARCHAR(22)                  NOT NULL COMMENT 'アプリケーションID',
+    `use_mariadb`     TINYINT(1)                   NOT NULL COMMENT 'MariaDBを使用するか',
+    `use_mongodb`     TINYINT(1)                   NOT NULL COMMENT 'MongoDBを使用するか',
+    `base_image`      VARCHAR(1000)                NOT NULL COMMENT 'ベースイメージの名前',
+    `dockerfile_name` VARCHAR(100)                 NOT NULL COMMENT 'Dockerfile名',
+    `artifact_path`   VARCHAR(100)                 NOT NULL COMMENT '静的成果物のパス',
+    `build_cmd`       TEXT                         NOT NULL COMMENT 'ビルドコマンド',
+    `entrypoint_cmd`  TEXT                         NOT NULL COMMENT 'コンテナのエントリポイント',
+    `authentication`  ENUM ('off', 'soft', 'hard') NOT NULL COMMENT 'traP部員認証タイプ',
+    PRIMARY KEY (`application_id`),
+    CONSTRAINT `fk_application_config_application_id`
+        FOREIGN KEY (`application_id`) REFERENCES `applications` (`id`)
+) ENGINE InnoDB
+  DEFAULT CHARACTER SET = `utf8mb4`
+    COMMENT '';
 
 CREATE TABLE `build_status`
 (
@@ -79,6 +98,7 @@ CREATE TABLE `builds`
     `status`         VARCHAR(10) NOT NULL COMMENT 'ビルドの状態',
     `started_at`     DATETIME(6) NOT NULL COMMENT 'ビルド開始日時',
     `finished_at`    DATETIME(6) NULL COMMENT 'ビルド終了日時',
+    `retriable`      TINYINT(1)  NOT NULL COMMENT '再ビルド可能フラグ',
     `application_id` VARCHAR(22) NOT NULL COMMENT 'アプリケーションID',
     PRIMARY KEY (`id`),
     CONSTRAINT `fk_builds_status`
@@ -168,6 +188,7 @@ DROP TABLE `environments`;
 DROP TABLE `artifacts`;
 DROP TABLE `builds`;
 DROP TABLE `build_status`;
+DROP TABLE `application_config`;
 DROP TABLE `applications`;
 DROP TABLE `application_state`;
 DROP TABLE `repositories`;

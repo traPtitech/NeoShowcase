@@ -39,7 +39,7 @@ func (s *ApplicationService) GetApplications(ctx context.Context, _ *emptypb.Emp
 	}
 	return &pb.GetApplicationsResponse{
 		Applications: lo.Map(applications, func(app *domain.Application, i int) *pb.Application {
-			return convertToPBApplication(app)
+			return toPBApplication(app)
 		}),
 	}, nil
 }
@@ -47,9 +47,15 @@ func (s *ApplicationService) GetApplications(ctx context.Context, _ *emptypb.Emp
 func (s *ApplicationService) CreateApplication(ctx context.Context, req *pb.CreateApplicationRequest) (*pb.Application, error) {
 	application, err := s.svc.CreateApplication(ctx, usecase.CreateApplicationArgs{
 		UserID:        getUserID(),
+		Name:          req.Name,
 		RepositoryURL: req.RepositoryUrl,
 		BranchName:    req.BranchName,
-		BuildType:     convertFromPBBuildType(req.BuildType),
+		BuildType:     fromPBBuildType(req.BuildType),
+		Config:        fromPBApplicationConfig(req.Config),
+		Websites: lo.Map(req.Websites, func(website *pb.CreateWebsiteRequest, i int) *usecase.CreateWebsiteArgs {
+			return &usecase.CreateWebsiteArgs{FQDN: website.Fqdn, Port: int(website.Port)}
+		}),
+		StartOnCreate: req.StartOnCreate,
 	})
 	if err != nil {
 		switch err {
@@ -59,7 +65,7 @@ func (s *ApplicationService) CreateApplication(ctx context.Context, req *pb.Crea
 			return nil, status.Errorf(codes.Internal, "%v", err)
 		}
 	}
-	return convertToPBApplication(application), nil
+	return toPBApplication(application), nil
 }
 
 func (s *ApplicationService) GetApplication(ctx context.Context, req *pb.ApplicationIdRequest) (*pb.Application, error) {
@@ -70,7 +76,7 @@ func (s *ApplicationService) GetApplication(ctx context.Context, req *pb.Applica
 		}
 		return nil, status.Errorf(codes.Internal, "%v", err)
 	}
-	return convertToPBApplication(application), nil
+	return toPBApplication(application), nil
 }
 
 func (s *ApplicationService) DeleteApplication(ctx context.Context, req *pb.ApplicationIdRequest) (*emptypb.Empty, error) {
@@ -88,7 +94,7 @@ func (s *ApplicationService) GetApplicationBuilds(ctx context.Context, req *pb.A
 	}
 	return &pb.GetApplicationBuildsResponse{
 		Builds: lo.Map(builds, func(build *domain.Build, i int) *pb.Build {
-			return convertToPBBuild(build)
+			return toPBBuild(build)
 		}),
 	}, nil
 }
@@ -101,7 +107,7 @@ func (s *ApplicationService) GetApplicationBuild(ctx context.Context, req *pb.Ge
 		}
 		return nil, status.Errorf(codes.Internal, "%v", err)
 	}
-	return convertToPBBuild(build), nil
+	return toPBBuild(build), nil
 }
 
 func (s *ApplicationService) GetApplicationBuildLog(context.Context, *pb.GetApplicationBuildLogRequest) (*pb.BuildLog, error) {
@@ -119,7 +125,7 @@ func (s *ApplicationService) GetApplicationEnvironmentVariables(ctx context.Cont
 	}
 	return &pb.ApplicationEnvironmentVariables{
 		Variables: lo.Map(environments, func(env *domain.Environment, i int) *pb.ApplicationEnvironmentVariable {
-			return convertToPBEnvironment(env)
+			return toPBEnvironment(env)
 		}),
 	}, nil
 }
@@ -140,6 +146,14 @@ func (s *ApplicationService) GetApplicationKeys(context.Context, *pb.Application
 	return nil, status.Errorf(codes.Unimplemented, "method GetApplicationKeys not implemented")
 }
 
+func (s *ApplicationService) RetryCommitBuild(ctx context.Context, req *pb.RetryCommitBuildRequest) (*emptypb.Empty, error) {
+	err := s.svc.RetryCommitBuild(ctx, req.ApplicationId, req.Commit)
+	if err != nil {
+		return nil, status.Errorf(codes.Internal, "%v", err)
+	}
+	return &emptypb.Empty{}, nil
+}
+
 func (s *ApplicationService) StartApplication(ctx context.Context, req *pb.ApplicationIdRequest) (*emptypb.Empty, error) {
 	err := s.svc.StartApplication(ctx, req.Id)
 	if err != nil {
@@ -156,10 +170,10 @@ func (s *ApplicationService) StopApplication(ctx context.Context, req *pb.Applic
 	return &emptypb.Empty{}, nil
 }
 
-func convertFromPBBuildType(buildType pb.BuildType) builder.BuildType {
+func fromPBBuildType(buildType pb.BuildType) builder.BuildType {
 	switch buildType {
-	case pb.BuildType_IMAGE:
-		return builder.BuildTypeImage
+	case pb.BuildType_RUNTIME:
+		return builder.BuildTypeRuntime
 	case pb.BuildType_STATIC:
 		return builder.BuildTypeStatic
 	default:
@@ -167,10 +181,10 @@ func convertFromPBBuildType(buildType pb.BuildType) builder.BuildType {
 	}
 }
 
-func convertToPBBuildType(buildType builder.BuildType) pb.BuildType {
+func toPBBuildType(buildType builder.BuildType) pb.BuildType {
 	switch buildType {
-	case builder.BuildTypeImage:
-		return pb.BuildType_IMAGE
+	case builder.BuildTypeRuntime:
+		return pb.BuildType_RUNTIME
 	case builder.BuildTypeStatic:
 		return pb.BuildType_STATIC
 	default:
@@ -178,7 +192,7 @@ func convertToPBBuildType(buildType builder.BuildType) pb.BuildType {
 	}
 }
 
-func convertToPBApplicationState(state domain.ApplicationState) pb.ApplicationState {
+func toPBApplicationState(state domain.ApplicationState) pb.ApplicationState {
 	switch state {
 	case domain.ApplicationStateIdle:
 		return pb.ApplicationState_IDLE
@@ -193,19 +207,82 @@ func convertToPBApplicationState(state domain.ApplicationState) pb.ApplicationSt
 	}
 }
 
-func convertToPBApplication(app *domain.Application) *pb.Application {
-	return &pb.Application{
-		Id:            app.ID,
-		RepositoryUrl: app.Repository.URL,
-		BranchName:    app.BranchName,
-		BuildType:     convertToPBBuildType(app.BuildType),
-		State:         convertToPBApplicationState(app.State),
-		CurrentCommit: app.CurrentCommit,
-		WantCommit:    app.WantCommit,
+func toPBAuthenticationType(t domain.AuthenticationType) pb.AuthenticationType {
+	switch t {
+	case domain.AuthenticationTypeOff:
+		return pb.AuthenticationType_OFF
+	case domain.AuthenticationTypeSoft:
+		return pb.AuthenticationType_SOFT
+	case domain.AuthenticationTypeHard:
+		return pb.AuthenticationType_HARD
+	default:
+		panic(fmt.Sprintf("unknown authentication type: %v", t))
 	}
 }
 
-func convertToPBBuildStatus(status builder.BuildStatus) pb.Build_BuildStatus {
+func fromPBAuthenticationType(t pb.AuthenticationType) domain.AuthenticationType {
+	switch t {
+	case pb.AuthenticationType_OFF:
+		return domain.AuthenticationTypeOff
+	case pb.AuthenticationType_SOFT:
+		return domain.AuthenticationTypeSoft
+	case pb.AuthenticationType_HARD:
+		return domain.AuthenticationTypeHard
+	default:
+		panic(fmt.Sprintf("unknown authentication type: %v", t))
+	}
+}
+
+func toPBApplicationConfig(c domain.ApplicationConfig) *pb.ApplicationConfig {
+	return &pb.ApplicationConfig{
+		UseMariadb:     c.UseMariaDB,
+		UseMongodb:     c.UseMongoDB,
+		BaseImage:      c.BaseImage,
+		DockerfileName: c.DockerfileName,
+		ArtifactPath:   c.ArtifactPath,
+		BuildCmd:       c.BuildCmd,
+		EntrypointCmd:  c.EntrypointCmd,
+		Authentication: toPBAuthenticationType(c.Authentication),
+	}
+}
+
+func fromPBApplicationConfig(c *pb.ApplicationConfig) domain.ApplicationConfig {
+	return domain.ApplicationConfig{
+		UseMariaDB:     c.UseMariadb,
+		UseMongoDB:     c.UseMongodb,
+		BaseImage:      c.BaseImage,
+		DockerfileName: c.DockerfileName,
+		ArtifactPath:   c.ArtifactPath,
+		BuildCmd:       c.BuildCmd,
+		EntrypointCmd:  c.EntrypointCmd,
+		Authentication: fromPBAuthenticationType(c.Authentication),
+	}
+}
+
+func toPBWebsite(website *domain.Website) *pb.Website {
+	return &pb.Website{
+		Id:   website.ID,
+		Fqdn: website.FQDN,
+		Port: int32(website.Port),
+	}
+}
+
+func toPBApplication(app *domain.Application) *pb.Application {
+	return &pb.Application{
+		Id:            app.ID,
+		Name:          app.Name,
+		RepositoryUrl: app.Repository.URL,
+		BranchName:    app.BranchName,
+		BuildType:     toPBBuildType(app.BuildType),
+		State:         toPBApplicationState(app.State),
+		CurrentCommit: app.CurrentCommit,
+		WantCommit:    app.WantCommit,
+		Config:        toPBApplicationConfig(app.Config),
+		Websites:      lo.Map(app.Websites, func(website *domain.Website, i int) *pb.Website { return toPBWebsite(website) }),
+	}
+}
+
+func toPBBuildStatus(status builder.BuildStatus) pb.Build_BuildStatus {
 	switch status {
 	case builder.BuildStatusBuilding:
 		return pb.Build_BUILDING
@@ -224,20 +301,21 @@ func convertToPBBuildStatus(status builder.BuildStatus) pb.Build_BuildStatus {
 	}
 }
 
-func convertToPBBuild(build *domain.Build) *pb.Build {
+func toPBBuild(build *domain.Build) *pb.Build {
 	return &pb.Build{
 		Id:        build.ID,
 		Commit:    build.Commit,
-		Status:    convertToPBBuildStatus(build.Status),
+		Status:    toPBBuildStatus(build.Status),
 		StartedAt: timestamppb.New(build.StartedAt),
 		FinishedAt: &pb.NullTimestamp{
 			Timestamp: timestamppb.New(build.FinishedAt.V),
 			Valid:     build.FinishedAt.Valid,
 		},
+		Retriable: build.Retriable,
 	}
 }
 
-func convertToPBEnvironment(env *domain.Environment) *pb.ApplicationEnvironmentVariable {
+func toPBEnvironment(env *domain.Environment) *pb.ApplicationEnvironmentVariable {
 	return &pb.ApplicationEnvironmentVariable{
 		Key:   env.Key,
 		Value: env.Value,
