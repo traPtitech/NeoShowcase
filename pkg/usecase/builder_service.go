@@ -255,16 +255,19 @@ func (s *builderService) processTask(task *builder.Task, intState *internalTaskS
 			if status == builder.BuildStatusSucceeded {
 				sid := domain.NewID()
 				filename := intState.artifactTempFile.Name()
-				err := domain.SaveArtifact(s.storage, filename, filepath.Join("artifacts", fmt.Sprintf("%s.tar", sid)))
+				stat, err := os.Stat(filename)
 				if err != nil {
-					log.WithError(err).Errorf("failed to save directory to tar (BuildID: %s, ArtifactID: %s)", task.BuildID, sid)
+					log.WithError(err).Errorf("failed to open artifact (BuildID: %s, ArtifactID: %s)", task.BuildID, sid)
+				} else {
+					err = s.artifactRepo.CreateArtifact(context.Background(), stat.Size(), task.BuildID, sid)
+					if err != nil {
+						log.WithError(err).Errorf("failed to create artifact (BuildID: %s, ArtifactID: %s)", task.BuildID, sid)
+					}
 				}
 
-				// TODO: エラー処理
-				stat, _ := os.Stat(filename)
-				err = s.artifactRepo.CreateArtifact(context.Background(), stat.Size(), task.BuildID, sid)
+				err = domain.SaveArtifact(s.storage, filename, filepath.Join("artifacts", fmt.Sprintf("%s.tar", sid)))
 				if err != nil {
-					log.WithError(err).Errorf("failed to create artifact (BuildID: %s, ArtifactID: %s)", task.BuildID, sid)
+					log.WithError(err).Errorf("failed to save directory to tar (BuildID: %s, ArtifactID: %s)", task.BuildID, sid)
 				}
 			} else {
 				_ = os.Remove(intState.artifactTempFile.Name())
