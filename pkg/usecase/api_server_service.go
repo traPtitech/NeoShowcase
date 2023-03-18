@@ -37,6 +37,7 @@ type CreateWebsiteArgs struct {
 
 type CreateApplicationArgs struct {
 	UserID        string
+	Name          string
 	RepositoryURL string
 	BranchName    string
 	BuildType     builder.BuildType
@@ -118,6 +119,7 @@ func (s *apiServerService) CreateApplication(ctx context.Context, args CreateApp
 	}
 
 	application, err := s.appRepo.CreateApplication(ctx, repository.CreateApplicationArgs{
+		Name:         args.Name,
 		RepositoryID: repo.ID,
 		BranchName:   args.BranchName,
 		BuildType:    args.BuildType,

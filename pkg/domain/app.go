@@ -96,6 +96,7 @@ var EmptyCommit = strings.Repeat("0", 40)
 
 type Application struct {
 	ID            string
+	Name          string
 	BranchName    string
 	BuildType     builder.BuildType
 	State         ApplicationState

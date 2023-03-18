@@ -31,6 +31,7 @@ type CreateWebsiteArgs struct {
 }
 
 type CreateApplicationArgs struct {
+	Name         string
 	RepositoryID string
 	BranchName   string
 	BuildType    builder.BuildType
@@ -132,6 +133,7 @@ func (r *applicationRepository) GetApplication(ctx context.Context, id string) (
 func (r *applicationRepository) CreateApplication(ctx context.Context, args CreateApplicationArgs) (*domain.Application, error) {
 	app := &models.Application{
 		ID:            domain.NewID(),
+		Name:          args.Name,
 		RepositoryID:  args.RepositoryID,
 		BranchName:    args.BranchName,
 		BuildType:     args.BuildType.String(),
@@ -158,6 +160,7 @@ func (r *applicationRepository) CreateApplication(ctx context.Context, args Crea
 
 	websites := lo.Map(args.Websites, func(website *CreateWebsiteArgs, i int) *models.Website {
 		return &models.Website{
+			ID:       domain.NewID(),
 			FQDN:     website.FQDN,
 			HTTPPort: website.Port,
 		}

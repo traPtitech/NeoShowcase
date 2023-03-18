@@ -38,6 +38,7 @@ VALUES ('IDLE'),
 CREATE TABLE `applications`
 (
     `id`             VARCHAR(22)                NOT NULL COMMENT 'アプリケーションID',
+    `name`           VARCHAR(100)               NOT NULL COMMENT 'アプリケーション名',
     `repository_id`  VARCHAR(22)                NOT NULL COMMENT 'リポジトリID',
     `branch_name`    VARCHAR(100)               NOT NULL COMMENT 'Gitブランチ・タグ名',
     `build_type`     ENUM ('runtime', 'static') NOT NULL COMMENT 'ビルドタイプ',

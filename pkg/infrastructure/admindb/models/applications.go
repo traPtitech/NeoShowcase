@@ -24,6 +24,8 @@ import (
 // Application is an object representing the database table.
 type Application struct { // アプリケーションID
 	ID string `boil:"id" json:"id" toml:"id" yaml:"id"`
+	// アプリケーション名
+	Name string `boil:"name" json:"name" toml:"name" yaml:"name"`
 	// リポジトリID
 	RepositoryID string `boil:"repository_id" json:"repository_id" toml:"repository_id" yaml:"repository_id"`
 	// Gitブランチ・タグ名
@@ -47,6 +49,7 @@ type Application struct { // アプリケーションID
 
 var ApplicationColumns = struct {
 	ID            string
+	Name          string
 	RepositoryID  string
 	BranchName    string
 	BuildType     string
@@ -57,6 +60,7 @@ var ApplicationColumns = struct {
 	UpdatedAt     string
 }{
 	ID:            "id",
+	Name:          "name",
 	RepositoryID:  "repository_id",
 	BranchName:    "branch_name",
 	BuildType:     "build_type",
@@ -69,6 +73,7 @@ var ApplicationColumns = struct {
 
 var ApplicationTableColumns = struct {
 	ID            string
+	Name          string
 	RepositoryID  string
 	BranchName    string
 	BuildType     string
@@ -79,6 +84,7 @@ var ApplicationTableColumns = struct {
 	UpdatedAt     string
 }{
 	ID:            "applications.id",
+	Name:          "applications.name",
 	RepositoryID:  "applications.repository_id",
 	BranchName:    "applications.branch_name",
 	BuildType:     "applications.build_type",
@@ -114,6 +120,7 @@ func (w whereHelpertime_Time) GTE(x time.Time) qm.QueryMod {
 
 var ApplicationWhere = struct {
 	ID            whereHelperstring
+	Name          whereHelperstring
 	RepositoryID  whereHelperstring
 	BranchName    whereHelperstring
 	BuildType     whereHelperstring
@@ -124,6 +131,7 @@ var ApplicationWhere = struct {
 	UpdatedAt     whereHelpertime_Time
 }{
 	ID:            whereHelperstring{field: "`applications`.`id`"},
+	Name:          whereHelperstring{field: "`applications`.`name`"},
 	RepositoryID:  whereHelperstring{field: "`applications`.`repository_id`"},
 	BranchName:    whereHelperstring{field: "`applications`.`branch_name`"},
 	BuildType:     whereHelperstring{field: "`applications`.`build_type`"},
@@ -222,8 +230,8 @@ func (r *applicationR) GetWebsites() WebsiteSlice {
 type applicationL struct{}
 
 var (
-	applicationAllColumns            = []string{"id", "repository_id", "branch_name", "build_type", "state", "current_commit", "want_commit", "created_at", "updated_at"}
-	applicationColumnsWithoutDefault = []string{"id", "repository_id", "branch_name", "build_type", "state", "current_commit", "want_commit", "created_at", "updated_at"}
+	applicationAllColumns            = []string{"id", "name", "repository_id", "branch_name", "build_type", "state", "current_commit", "want_commit", "created_at", "updated_at"}
+	applicationColumnsWithoutDefault = []string{"id", "name", "repository_id", "branch_name", "build_type", "state", "current_commit", "want_commit", "created_at", "updated_at"}
 	applicationColumnsWithDefault    = []string{}
 	applicationPrimaryKeyColumns     = []string{"id"}
 	applicationGeneratedColumns      = []string{}

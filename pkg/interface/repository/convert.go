@@ -30,6 +30,7 @@ func toDomainRepository(repo *models.Repository) domain.Repository {
 func toDomainApplication(app *models.Application) *domain.Application {
 	return &domain.Application{
 		ID:            app.ID,
+		Name:          app.Name,
 		BranchName:    app.BranchName,
 		BuildType:     builder.BuildTypeFromString(app.BuildType),
 		State:         domain.ApplicationStateFromString(app.State),

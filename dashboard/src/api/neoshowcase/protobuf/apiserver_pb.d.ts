@@ -95,6 +95,9 @@ export class Application extends jspb.Message {
   getId(): string;
   setId(value: string): Application;
 
+  getName(): string;
+  setName(value: string): Application;
+
   getRepositoryUrl(): string;
   setRepositoryUrl(value: string): Application;
 
@@ -134,6 +137,7 @@ export class Application extends jspb.Message {
 export namespace Application {
   export type AsObject = {
     id: string,
+    name: string,
     repositoryUrl: string,
     branchName: string,
     buildType: BuildType,
@@ -395,6 +399,9 @@ export namespace GetApplicationsResponse {
 }
 
 export class CreateApplicationRequest extends jspb.Message {
+  getName(): string;
+  setName(value: string): CreateApplicationRequest;
+
   getRepositoryUrl(): string;
   setRepositoryUrl(value: string): CreateApplicationRequest;
 
@@ -424,6 +431,7 @@ export class CreateApplicationRequest extends jspb.Message {
 
 export namespace CreateApplicationRequest {
   export type AsObject = {
+    name: string,
     repositoryUrl: string,
     branchName: string,
     buildType: BuildType,

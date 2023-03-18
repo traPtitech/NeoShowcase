@@ -47,6 +47,7 @@ func (s *ApplicationService) GetApplications(ctx context.Context, _ *emptypb.Emp
 func (s *ApplicationService) CreateApplication(ctx context.Context, req *pb.CreateApplicationRequest) (*pb.Application, error) {
 	application, err := s.svc.CreateApplication(ctx, usecase.CreateApplicationArgs{
 		UserID:        getUserID(),
+		Name:          req.Name,
 		RepositoryURL: req.RepositoryUrl,
 		BranchName:    req.BranchName,
 		BuildType:     fromPBBuildType(req.BuildType),
@@ -256,6 +257,7 @@ func toPBWebsite(website *domain.Website) *pb.Website {
 func toPBApplication(app *domain.Application) *pb.Application {
 	return &pb.Application{
 		Id:            app.ID,
+		Name:          app.Name,
 		RepositoryUrl: app.Repository.URL,
 		BranchName:    app.BranchName,
 		BuildType:     toPBBuildType(app.BuildType),
