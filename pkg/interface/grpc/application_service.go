@@ -147,7 +147,7 @@ func (s *ApplicationService) GetApplicationKeys(context.Context, *pb.Application
 }
 
 func (s *ApplicationService) RetryCommitBuild(ctx context.Context, req *pb.RetryCommitBuildRequest) (*emptypb.Empty, error) {
-	err := s.svc.RetryCommitBuild(ctx, req.Commit)
+	err := s.svc.RetryCommitBuild(ctx, req.ApplicationId, req.Commit)
 	if err != nil {
 		return nil, status.Errorf(codes.Internal, "%v", err)
 	}

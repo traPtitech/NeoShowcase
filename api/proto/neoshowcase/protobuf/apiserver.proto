@@ -153,7 +153,8 @@ message SetApplicationEnvironmentVariableRequest {
 }
 
 message RetryCommitBuildRequest {
-  string commit = 1;
+  string application_id = 1;
+  string commit = 2;
 }
 
 service ApplicationService {

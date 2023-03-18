@@ -54,7 +54,7 @@ type APIServerService interface {
 	GetApplicationBuild(ctx context.Context, buildID string) (*domain.Build, error)
 	SetApplicationEnvironmentVariable(ctx context.Context, applicationID string, key string, value string) error
 	GetApplicationEnvironmentVariables(ctx context.Context, applicationID string) ([]*domain.Environment, error)
-	RetryCommitBuild(ctx context.Context, commit string) error
+	RetryCommitBuild(ctx context.Context, applicationID string, commit string) error
 	StartApplication(ctx context.Context, id string) error
 	StopApplication(ctx context.Context, id string) error
 }
@@ -245,8 +245,8 @@ func (s *apiServerService) SetApplicationEnvironmentVariable(ctx context.Context
 	return s.envRepo.SetEnv(ctx, applicationID, key, value)
 }
 
-func (s *apiServerService) RetryCommitBuild(ctx context.Context, commit string) error {
-	err := s.buildRepo.MarkCommitAsRetriable(ctx, commit)
+func (s *apiServerService) RetryCommitBuild(ctx context.Context, applicationID string, commit string) error {
+	err := s.buildRepo.MarkCommitAsRetriable(ctx, applicationID, commit)
 	if err != nil {
 		return err
 	}

@@ -557,6 +557,9 @@ export namespace SetApplicationEnvironmentVariableRequest {
 }
 
 export class RetryCommitBuildRequest extends jspb.Message {
+  getApplicationId(): string;
+  setApplicationId(value: string): RetryCommitBuildRequest;
+
   getCommit(): string;
   setCommit(value: string): RetryCommitBuildRequest;
 
@@ -570,6 +573,7 @@ export class RetryCommitBuildRequest extends jspb.Message {
 
 export namespace RetryCommitBuildRequest {
   export type AsObject = {
+    applicationId: string,
     commit: string,
   }
 }
