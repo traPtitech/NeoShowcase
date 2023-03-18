@@ -5,7 +5,7 @@
 | Name | Columns | Comment | Type |
 | ---- | ------- | ------- | ---- |
 | [applications](applications.md) | 10 | アプリケーションテーブル | BASE TABLE |
-| [application_config](application_config.md) | 7 |  | BASE TABLE |
+| [application_config](application_config.md) | 9 |  | BASE TABLE |
 | [application_state](application_state.md) | 1 | デプロイの状態 | BASE TABLE |
 | [artifacts](artifacts.md) | 5 | 静的ファイル生成物テーブル | BASE TABLE |
 | [available_domains](available_domains.md) | 3 | 利用可能ドメインテーブル | BASE TABLE |

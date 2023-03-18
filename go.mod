@@ -45,9 +45,11 @@ require (
 	github.com/PuerkitoBio/purell v1.1.1 // indirect
 	github.com/PuerkitoBio/urlesc v0.0.0-20170810143723-de5bf2ad4578 // indirect
 	github.com/acomagu/bufpipe v1.0.3 // indirect
+	github.com/agext/levenshtein v1.2.3 // indirect
 	github.com/containerd/console v1.0.3 // indirect
 	github.com/containerd/containerd v1.6.6 // indirect
 	github.com/containerd/continuity v0.2.3-0.20220330195504-d132b287edc8 // indirect
+	github.com/containerd/ttrpc v1.1.0 // indirect
 	github.com/containerd/typeurl v1.0.2 // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/docker/cli v20.10.13+incompatible // indirect
@@ -97,6 +99,7 @@ require (
 	github.com/mattn/go-isatty v0.0.16 // indirect
 	github.com/mitchellh/go-homedir v1.1.0 // indirect
 	github.com/mitchellh/mapstructure v1.5.0 // indirect
+	github.com/moby/locker v1.0.1 // indirect
 	github.com/moby/sys/signal v0.6.0 // indirect
 	github.com/moby/term v0.0.0-20210619224110-3f7ff695adc6 // indirect
 	github.com/modern-go/concurrent v0.0.0-20180306012644-bacd9c7ef1dd // indirect

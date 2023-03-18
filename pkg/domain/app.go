@@ -87,6 +87,8 @@ type ApplicationConfig struct {
 	UseMariaDB     bool
 	UseMongoDB     bool
 	BaseImage      string
+	Workdir        string
+	ArtifactPath   string
 	BuildCmd       string
 	EntrypointCmd  string
 	Authentication AuthenticationType

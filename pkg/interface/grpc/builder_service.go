@@ -168,8 +168,9 @@ func convertBuildOptionsFromPB(options *pb.BuildOptions) *builder.BuildOptions {
 	}
 	return &builder.BuildOptions{
 		BaseImageName: options.BaseImageName,
-		EntrypointCmd: options.EntrypointCmd,
-		StartupCmd:    options.StartupCmd,
+		Workdir:       options.Workdir,
 		ArtifactPath:  options.ArtifactPath,
+		BuildCmd:      options.BuildCmd,
+		EntrypointCmd: options.EntrypointCmd,
 	}
 }

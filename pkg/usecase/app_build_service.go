@@ -148,7 +148,14 @@ func (s *appBuildService) requestBuild(ctx context.Context, app *domain.Applicat
 				RepositoryUrl: app.Repository.URL,
 				Commit:        commit,
 			},
-			Options:       &pb.BuildOptions{}, // TODO 汎用ベースイメージビルドに対応させる
+			Options: &pb.BuildOptions{
+				// TODO 汎用ベースイメージビルドに対応させる
+				BaseImageName: app.Config.BaseImage,
+				Workdir:       app.Config.Workdir,
+				ArtifactPath:  app.Config.ArtifactPath,
+				BuildCmd:      app.Config.BuildCmd,
+				EntrypointCmd: app.Config.EntrypointCmd,
+			},
 			BuildId:       buildID,
 			ApplicationId: app.ID,
 		})

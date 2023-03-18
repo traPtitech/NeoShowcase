@@ -17,7 +17,8 @@ type BuildSource struct {
 
 type BuildOptions struct {
 	BaseImageName string
-	EntrypointCmd string
-	StartupCmd    string
+	Workdir       string
 	ArtifactPath  string
+	BuildCmd      string
+	EntrypointCmd string
 }

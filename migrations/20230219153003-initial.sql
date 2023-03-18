@@ -63,6 +63,8 @@ CREATE TABLE `application_config`
     `use_mariadb`    TINYINT(1)                   NOT NULL COMMENT 'MariaDBを使用するか',
     `use_mongodb`    TINYINT(1)                   NOT NULL COMMENT 'MongoDBを使用するか',
     `base_image`     VARCHAR(1000)                NOT NULL COMMENT 'ベースイメージの名前',
+    `workdir`        VARCHAR(100)                 NOT NULL COMMENT 'ビルドと実行時のworkdir',
+    `artifact_path`  VARCHAR(100)                 NOT NULL COMMENT '静的成果物のパス',
     `build_cmd`      TEXT                         NOT NULL COMMENT 'ビルドコマンド',
     `entrypoint_cmd` TEXT                         NOT NULL COMMENT 'コンテナのエントリポイント',
     `authentication` ENUM ('off', 'soft', 'hard') NOT NULL COMMENT 'traP部員認証タイプ',

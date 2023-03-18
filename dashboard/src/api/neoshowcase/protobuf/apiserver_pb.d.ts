@@ -15,6 +15,12 @@ export class ApplicationConfig extends jspb.Message {
   getBaseImage(): string;
   setBaseImage(value: string): ApplicationConfig;
 
+  getWorkdir(): string;
+  setWorkdir(value: string): ApplicationConfig;
+
+  getArtifactPath(): string;
+  setArtifactPath(value: string): ApplicationConfig;
+
   getBuildCmd(): string;
   setBuildCmd(value: string): ApplicationConfig;
 
@@ -37,6 +43,8 @@ export namespace ApplicationConfig {
     useMariadb: boolean,
     useMongodb: boolean,
     baseImage: string,
+    workdir: string,
+    artifactPath: string,
     buildCmd: string,
     entrypointCmd: string,
     authentication: AuthenticationType,

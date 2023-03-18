@@ -11,6 +11,8 @@ CREATE TABLE `application_config` (
   `use_mariadb` tinyint(1) NOT NULL COMMENT 'MariaDBを使用するか',
   `use_mongodb` tinyint(1) NOT NULL COMMENT 'MongoDBを使用するか',
   `base_image` varchar(1000) NOT NULL COMMENT 'ベースイメージの名前',
+  `workdir` varchar(100) NOT NULL COMMENT 'ビルドと実行時のworkdir',
+  `artifact_path` varchar(100) NOT NULL COMMENT '静的成果物のパス',
   `build_cmd` text NOT NULL COMMENT 'ビルドコマンド',
   `entrypoint_cmd` text NOT NULL COMMENT 'コンテナのエントリポイント',
   `authentication` enum('off','soft','hard') NOT NULL COMMENT 'traP部員認証タイプ',
@@ -29,6 +31,8 @@ CREATE TABLE `application_config` (
 | use_mariadb | tinyint(1) |  | false |  |  | MariaDBを使用するか |
 | use_mongodb | tinyint(1) |  | false |  |  | MongoDBを使用するか |
 | base_image | varchar(1000) |  | false |  |  | ベースイメージの名前 |
+| workdir | varchar(100) |  | false |  |  | ビルドと実行時のworkdir |
+| artifact_path | varchar(100) |  | false |  |  | 静的成果物のパス |
 | build_cmd | text |  | false |  |  | ビルドコマンド |
 | entrypoint_cmd | text |  | false |  |  | コンテナのエントリポイント |
 | authentication | enum('off','soft','hard') |  | false |  |  | traP部員認証タイプ |

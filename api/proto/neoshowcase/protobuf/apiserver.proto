@@ -28,9 +28,11 @@ message ApplicationConfig {
   bool use_mariadb = 1;
   bool use_mongodb = 2;
   string base_image = 3;
-  string build_cmd = 4;
-  string entrypoint_cmd = 5;
-  AuthenticationType authentication = 6;
+  string workdir = 4;
+  string artifact_path = 5;
+  string build_cmd = 6;
+  string entrypoint_cmd = 7;
+  AuthenticationType authentication = 8;
 }
 
 message Website {

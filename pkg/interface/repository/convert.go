@@ -14,6 +14,8 @@ func toDomainApplicationConfig(c *models.ApplicationConfig) domain.ApplicationCo
 		UseMariaDB:     c.UseMariadb,
 		UseMongoDB:     c.UseMongodb,
 		BaseImage:      c.BaseImage,
+		Workdir:        c.Workdir,
+		ArtifactPath:   c.ArtifactPath,
 		BuildCmd:       c.BuildCMD,
 		EntrypointCmd:  c.EntrypointCMD,
 		Authentication: domain.AuthenticationTypeFromString(c.Authentication),

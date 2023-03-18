@@ -30,6 +30,10 @@ type ApplicationConfig struct { // アプリケーションID
 	UseMongodb bool `boil:"use_mongodb" json:"use_mongodb" toml:"use_mongodb" yaml:"use_mongodb"`
 	// ベースイメージの名前
 	BaseImage string `boil:"base_image" json:"base_image" toml:"base_image" yaml:"base_image"`
+	// ビルドと実行時のworkdir
+	Workdir string `boil:"workdir" json:"workdir" toml:"workdir" yaml:"workdir"`
+	// 静的成果物のパス
+	ArtifactPath string `boil:"artifact_path" json:"artifact_path" toml:"artifact_path" yaml:"artifact_path"`
 	// ビルドコマンド
 	BuildCMD string `boil:"build_cmd" json:"build_cmd" toml:"build_cmd" yaml:"build_cmd"`
 	// コンテナのエントリポイント
@@ -46,6 +50,8 @@ var ApplicationConfigColumns = struct {
 	UseMariadb     string
 	UseMongodb     string
 	BaseImage      string
+	Workdir        string
+	ArtifactPath   string
 	BuildCMD       string
 	EntrypointCMD  string
 	Authentication string
@@ -54,6 +60,8 @@ var ApplicationConfigColumns = struct {
 	UseMariadb:     "use_mariadb",
 	UseMongodb:     "use_mongodb",
 	BaseImage:      "base_image",
+	Workdir:        "workdir",
+	ArtifactPath:   "artifact_path",
 	BuildCMD:       "build_cmd",
 	EntrypointCMD:  "entrypoint_cmd",
 	Authentication: "authentication",
@@ -64,6 +72,8 @@ var ApplicationConfigTableColumns = struct {
 	UseMariadb     string
 	UseMongodb     string
 	BaseImage      string
+	Workdir        string
+	ArtifactPath   string
 	BuildCMD       string
 	EntrypointCMD  string
 	Authentication string
@@ -72,6 +82,8 @@ var ApplicationConfigTableColumns = struct {
 	UseMariadb:     "application_config.use_mariadb",
 	UseMongodb:     "application_config.use_mongodb",
 	BaseImage:      "application_config.base_image",
+	Workdir:        "application_config.workdir",
+	ArtifactPath:   "application_config.artifact_path",
 	BuildCMD:       "application_config.build_cmd",
 	EntrypointCMD:  "application_config.entrypoint_cmd",
 	Authentication: "application_config.authentication",
@@ -116,6 +128,8 @@ var ApplicationConfigWhere = struct {
 	UseMariadb     whereHelperbool
 	UseMongodb     whereHelperbool
 	BaseImage      whereHelperstring
+	Workdir        whereHelperstring
+	ArtifactPath   whereHelperstring
 	BuildCMD       whereHelperstring
 	EntrypointCMD  whereHelperstring
 	Authentication whereHelperstring
@@ -124,6 +138,8 @@ var ApplicationConfigWhere = struct {
 	UseMariadb:     whereHelperbool{field: "`application_config`.`use_mariadb`"},
 	UseMongodb:     whereHelperbool{field: "`application_config`.`use_mongodb`"},
 	BaseImage:      whereHelperstring{field: "`application_config`.`base_image`"},
+	Workdir:        whereHelperstring{field: "`application_config`.`workdir`"},
+	ArtifactPath:   whereHelperstring{field: "`application_config`.`artifact_path`"},
 	BuildCMD:       whereHelperstring{field: "`application_config`.`build_cmd`"},
 	EntrypointCMD:  whereHelperstring{field: "`application_config`.`entrypoint_cmd`"},
 	Authentication: whereHelperstring{field: "`application_config`.`authentication`"},
@@ -157,8 +173,8 @@ func (r *applicationConfigR) GetApplication() *Application {
 type applicationConfigL struct{}
 
 var (
-	applicationConfigAllColumns            = []string{"application_id", "use_mariadb", "use_mongodb", "base_image", "build_cmd", "entrypoint_cmd", "authentication"}
-	applicationConfigColumnsWithoutDefault = []string{"application_id", "use_mariadb", "use_mongodb", "base_image", "build_cmd", "entrypoint_cmd", "authentication"}
+	applicationConfigAllColumns            = []string{"application_id", "use_mariadb", "use_mongodb", "base_image", "workdir", "artifact_path", "build_cmd", "entrypoint_cmd", "authentication"}
+	applicationConfigColumnsWithoutDefault = []string{"application_id", "use_mariadb", "use_mongodb", "base_image", "workdir", "artifact_path", "build_cmd", "entrypoint_cmd", "authentication"}
 	applicationConfigColumnsWithDefault    = []string{}
 	applicationConfigPrimaryKeyColumns     = []string{"application_id"}
 	applicationConfigGeneratedColumns      = []string{}
