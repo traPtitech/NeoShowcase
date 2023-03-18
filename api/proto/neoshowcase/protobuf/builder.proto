@@ -23,7 +23,7 @@ message BuildSource {
 
 message BuildOptions {
   string base_image_name = 1;
-  string workdir = 2;
+  string dockerfile_name = 2;
   string artifact_path = 3;
   string build_cmd = 4;
   string entrypoint_cmd = 5;

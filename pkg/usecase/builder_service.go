@@ -340,10 +340,10 @@ func (s *builderService) buildImage(t *builder.Task, intState *internalTaskState
 			"name": t.ImageName + ":" + t.ImageTag,
 			"push": "true",
 		}
-		if t.BuildOptions == nil || len(t.BuildOptions.BaseImageName) == 0 {
+		if len(t.BuildOptions.BaseImageName) == 0 {
 			// リポジトリルートのDockerfileを使用
 			// entrypoint, startupコマンドは無視
-			err = s.buildImageWithDockerfile(ctx, intState, exportAttrs, ch)
+			err = s.buildImageWithDockerfile(ctx, t, intState, exportAttrs, ch)
 		} else {
 			// 指定したベースイメージを使用
 			err = s.buildImageWithConfig(ctx, t, intState, exportAttrs, ch)
@@ -361,6 +361,7 @@ func (s *builderService) buildImage(t *builder.Task, intState *internalTaskState
 
 func (s *builderService) buildImageWithDockerfile(
 	ctx context.Context,
+	t *builder.Task,
 	intState *internalTaskState,
 	exportAttrs map[string]string,
 	ch chan *buildkit.SolveStatus,
@@ -375,7 +376,7 @@ func (s *builderService) buildImageWithDockerfile(
 			"dockerfile": intState.repositoryTempDir,
 		},
 		Frontend:      "dockerfile.v0",
-		FrontendAttrs: map[string]string{"filename": "Dockerfile"},
+		FrontendAttrs: map[string]string{"filename": t.BuildOptions.DockerfileName},
 		Session:       []session.Attachable{authprovider.NewDockerAuthProvider(io.Discard)},
 	}, ch)
 	return err
@@ -422,11 +423,9 @@ func (s *builderService) buildImageWithConfig(
 		`FROM %s
 WORKDIR /srv
 COPY . .
-WORKDIR %s
 RUN ["/srv/%s"]
 ENTRYPOINT ["/srv/%s"]`,
 		t.BuildOptions.BaseImageName,
-		filepath.Join("/srv", t.BuildOptions.Workdir),
 		buildScriptName,
 		entryPointScriptName,
 	)
@@ -454,7 +453,7 @@ func (s *builderService) buildStatic(t *builder.Task, intState *internalTaskStat
 	ch := make(chan *buildkit.SolveStatus)
 	eg, ctx := errgroup.WithContext(intState.ctx)
 	eg.Go(func() (err error) {
-		if t.BuildOptions == nil || len(t.BuildOptions.BaseImageName) == 0 {
+		if len(t.BuildOptions.BaseImageName) == 0 {
 			// リポジトリルートのDockerfileを使用
 			// entrypoint, startupコマンドは無視
 			err = s.buildStaticWithDockerfile(ctx, t, intState, ch)
@@ -479,7 +478,7 @@ func (s *builderService) buildStaticWithDockerfile(
 	intState *internalTaskState,
 	ch chan *buildkit.SolveStatus,
 ) error {
-	dockerfile, err := os.ReadFile(filepath.Join(intState.repositoryTempDir, "Dockerfile"))
+	dockerfile, err := os.ReadFile(filepath.Join(intState.repositoryTempDir, t.BuildOptions.DockerfileName))
 	if err != nil {
 		return err
 	}
@@ -519,7 +518,6 @@ func (s *builderService) buildStaticWithConfig(
 			AllowWildcard:  true,
 			CreateDestPath: true,
 		})).
-		Dir(filepath.Join("/srv", t.BuildOptions.Workdir)).
 		Run(llb.Shlex(t.BuildOptions.BuildCmd)).
 		Root()
 	// ビルドで生成された静的ファイルのみを含むScratchイメージを構成

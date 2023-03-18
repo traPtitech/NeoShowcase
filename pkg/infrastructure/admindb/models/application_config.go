@@ -28,10 +28,10 @@ type ApplicationConfig struct { // アプリケーションID
 	UseMariadb bool `boil:"use_mariadb" json:"use_mariadb" toml:"use_mariadb" yaml:"use_mariadb"`
 	// MongoDBを使用するか
 	UseMongodb bool `boil:"use_mongodb" json:"use_mongodb" toml:"use_mongodb" yaml:"use_mongodb"`
+	// Dockerfile名
+	DockerfileName string `boil:"dockerfile_name" json:"dockerfile_name" toml:"dockerfile_name" yaml:"dockerfile_name"`
 	// ベースイメージの名前
 	BaseImage string `boil:"base_image" json:"base_image" toml:"base_image" yaml:"base_image"`
-	// ビルドと実行時のworkdir
-	Workdir string `boil:"workdir" json:"workdir" toml:"workdir" yaml:"workdir"`
 	// 静的成果物のパス
 	ArtifactPath string `boil:"artifact_path" json:"artifact_path" toml:"artifact_path" yaml:"artifact_path"`
 	// ビルドコマンド
@@ -49,8 +49,8 @@ var ApplicationConfigColumns = struct {
 	ApplicationID  string
 	UseMariadb     string
 	UseMongodb     string
+	DockerfileName string
 	BaseImage      string
-	Workdir        string
 	ArtifactPath   string
 	BuildCMD       string
 	EntrypointCMD  string
@@ -59,8 +59,8 @@ var ApplicationConfigColumns = struct {
 	ApplicationID:  "application_id",
 	UseMariadb:     "use_mariadb",
 	UseMongodb:     "use_mongodb",
+	DockerfileName: "dockerfile_name",
 	BaseImage:      "base_image",
-	Workdir:        "workdir",
 	ArtifactPath:   "artifact_path",
 	BuildCMD:       "build_cmd",
 	EntrypointCMD:  "entrypoint_cmd",
@@ -71,8 +71,8 @@ var ApplicationConfigTableColumns = struct {
 	ApplicationID  string
 	UseMariadb     string
 	UseMongodb     string
+	DockerfileName string
 	BaseImage      string
-	Workdir        string
 	ArtifactPath   string
 	BuildCMD       string
 	EntrypointCMD  string
@@ -81,8 +81,8 @@ var ApplicationConfigTableColumns = struct {
 	ApplicationID:  "application_config.application_id",
 	UseMariadb:     "application_config.use_mariadb",
 	UseMongodb:     "application_config.use_mongodb",
+	DockerfileName: "application_config.dockerfile_name",
 	BaseImage:      "application_config.base_image",
-	Workdir:        "application_config.workdir",
 	ArtifactPath:   "application_config.artifact_path",
 	BuildCMD:       "application_config.build_cmd",
 	EntrypointCMD:  "application_config.entrypoint_cmd",
@@ -127,8 +127,8 @@ var ApplicationConfigWhere = struct {
 	ApplicationID  whereHelperstring
 	UseMariadb     whereHelperbool
 	UseMongodb     whereHelperbool
+	DockerfileName whereHelperstring
 	BaseImage      whereHelperstring
-	Workdir        whereHelperstring
 	ArtifactPath   whereHelperstring
 	BuildCMD       whereHelperstring
 	EntrypointCMD  whereHelperstring
@@ -137,8 +137,8 @@ var ApplicationConfigWhere = struct {
 	ApplicationID:  whereHelperstring{field: "`application_config`.`application_id`"},
 	UseMariadb:     whereHelperbool{field: "`application_config`.`use_mariadb`"},
 	UseMongodb:     whereHelperbool{field: "`application_config`.`use_mongodb`"},
+	DockerfileName: whereHelperstring{field: "`application_config`.`dockerfile_name`"},
 	BaseImage:      whereHelperstring{field: "`application_config`.`base_image`"},
-	Workdir:        whereHelperstring{field: "`application_config`.`workdir`"},
 	ArtifactPath:   whereHelperstring{field: "`application_config`.`artifact_path`"},
 	BuildCMD:       whereHelperstring{field: "`application_config`.`build_cmd`"},
 	EntrypointCMD:  whereHelperstring{field: "`application_config`.`entrypoint_cmd`"},
@@ -173,8 +173,8 @@ func (r *applicationConfigR) GetApplication() *Application {
 type applicationConfigL struct{}
 
 var (
-	applicationConfigAllColumns            = []string{"application_id", "use_mariadb", "use_mongodb", "base_image", "workdir", "artifact_path", "build_cmd", "entrypoint_cmd", "authentication"}
-	applicationConfigColumnsWithoutDefault = []string{"application_id", "use_mariadb", "use_mongodb", "base_image", "workdir", "artifact_path", "build_cmd", "entrypoint_cmd", "authentication"}
+	applicationConfigAllColumns            = []string{"application_id", "use_mariadb", "use_mongodb", "dockerfile_name", "base_image", "artifact_path", "build_cmd", "entrypoint_cmd", "authentication"}
+	applicationConfigColumnsWithoutDefault = []string{"application_id", "use_mariadb", "use_mongodb", "dockerfile_name", "base_image", "artifact_path", "build_cmd", "entrypoint_cmd", "authentication"}
 	applicationConfigColumnsWithDefault    = []string{}
 	applicationConfigPrimaryKeyColumns     = []string{"application_id"}
 	applicationConfigGeneratedColumns      = []string{}

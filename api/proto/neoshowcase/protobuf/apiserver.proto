@@ -28,7 +28,7 @@ message ApplicationConfig {
   bool use_mariadb = 1;
   bool use_mongodb = 2;
   string base_image = 3;
-  string workdir = 4;
+  string dockerfile_name = 4;
   string artifact_path = 5;
   string build_cmd = 6;
   string entrypoint_cmd = 7;

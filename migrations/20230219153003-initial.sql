@@ -59,15 +59,15 @@ CREATE TABLE `applications`
 
 CREATE TABLE `application_config`
 (
-    `application_id` VARCHAR(22)                  NOT NULL COMMENT 'アプリケーションID',
-    `use_mariadb`    TINYINT(1)                   NOT NULL COMMENT 'MariaDBを使用するか',
-    `use_mongodb`    TINYINT(1)                   NOT NULL COMMENT 'MongoDBを使用するか',
-    `base_image`     VARCHAR(1000)                NOT NULL COMMENT 'ベースイメージの名前',
-    `workdir`        VARCHAR(100)                 NOT NULL COMMENT 'ビルドと実行時のworkdir',
-    `artifact_path`  VARCHAR(100)                 NOT NULL COMMENT '静的成果物のパス',
-    `build_cmd`      TEXT                         NOT NULL COMMENT 'ビルドコマンド',
-    `entrypoint_cmd` TEXT                         NOT NULL COMMENT 'コンテナのエントリポイント',
-    `authentication` ENUM ('off', 'soft', 'hard') NOT NULL COMMENT 'traP部員認証タイプ',
+    `application_id`  VARCHAR(22)                  NOT NULL COMMENT 'アプリケーションID',
+    `use_mariadb`     TINYINT(1)                   NOT NULL COMMENT 'MariaDBを使用するか',
+    `use_mongodb`     TINYINT(1)                   NOT NULL COMMENT 'MongoDBを使用するか',
+    `dockerfile_name` VARCHAR(100)                 NOT NULL COMMENT 'Dockerfile名',
+    `base_image`      VARCHAR(1000)                NOT NULL COMMENT 'ベースイメージの名前',
+    `artifact_path`   VARCHAR(100)                 NOT NULL COMMENT '静的成果物のパス',
+    `build_cmd`       TEXT                         NOT NULL COMMENT 'ビルドコマンド',
+    `entrypoint_cmd`  TEXT                         NOT NULL COMMENT 'コンテナのエントリポイント',
+    `authentication`  ENUM ('off', 'soft', 'hard') NOT NULL COMMENT 'traP部員認証タイプ',
     PRIMARY KEY (`application_id`),
     CONSTRAINT `fk_application_config_application_id`
         FOREIGN KEY (`application_id`) REFERENCES `applications` (`id`)

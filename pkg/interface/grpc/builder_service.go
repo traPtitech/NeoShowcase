@@ -24,11 +24,11 @@ func NewBuilderServiceServer(svc usecase.BuilderService) *BuilderService {
 	return &BuilderService{svc: svc}
 }
 
-func (s *BuilderService) GetStatus(ctx context.Context, empty *emptypb.Empty) (*pb.GetStatusResponse, error) {
+func (s *BuilderService) GetStatus(_ context.Context, _ *emptypb.Empty) (*pb.GetStatusResponse, error) {
 	return &pb.GetStatusResponse{Status: convertStateToPB(s.svc.GetStatus())}, nil
 }
 
-func (s *BuilderService) ConnectEventStream(empty *emptypb.Empty, stream pb.BuilderService_ConnectEventStreamServer) error {
+func (s *BuilderService) ConnectEventStream(_ *emptypb.Empty, stream pb.BuilderService_ConnectEventStreamServer) error {
 	if err := stream.Send(&pb.Event{Type: pb.Event_CONNECTED, Body: util.ToJSON(map[string]interface{}{})}); err != nil {
 		return err
 	}
@@ -153,9 +153,6 @@ func convertStateToPB(state builder.State) pb.BuilderStatus {
 }
 
 func convertBuildSourceFromPB(source *pb.BuildSource) *builder.BuildSource {
-	if source == nil {
-		return nil
-	}
 	return &builder.BuildSource{
 		RepositoryUrl: source.RepositoryUrl,
 		Commit:        source.Commit,
@@ -163,14 +160,11 @@ func convertBuildSourceFromPB(source *pb.BuildSource) *builder.BuildSource {
 }
 
 func convertBuildOptionsFromPB(options *pb.BuildOptions) *builder.BuildOptions {
-	if options == nil {
-		return nil
-	}
 	return &builder.BuildOptions{
-		BaseImageName: options.BaseImageName,
-		Workdir:       options.Workdir,
-		ArtifactPath:  options.ArtifactPath,
-		BuildCmd:      options.BuildCmd,
-		EntrypointCmd: options.EntrypointCmd,
+		BaseImageName:  options.BaseImageName,
+		DockerfileName: options.DockerfileName,
+		ArtifactPath:   options.ArtifactPath,
+		BuildCmd:       options.BuildCmd,
+		EntrypointCmd:  options.EntrypointCmd,
 	}
 }

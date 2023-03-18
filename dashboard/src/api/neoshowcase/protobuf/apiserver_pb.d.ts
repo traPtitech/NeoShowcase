@@ -15,8 +15,8 @@ export class ApplicationConfig extends jspb.Message {
   getBaseImage(): string;
   setBaseImage(value: string): ApplicationConfig;
 
-  getWorkdir(): string;
-  setWorkdir(value: string): ApplicationConfig;
+  getDockerfileName(): string;
+  setDockerfileName(value: string): ApplicationConfig;
 
   getArtifactPath(): string;
   setArtifactPath(value: string): ApplicationConfig;
@@ -43,7 +43,7 @@ export namespace ApplicationConfig {
     useMariadb: boolean,
     useMongodb: boolean,
     baseImage: string,
-    workdir: string,
+    dockerfileName: string,
     artifactPath: string,
     buildCmd: string,
     entrypointCmd: string,

@@ -87,7 +87,7 @@ type ApplicationConfig struct {
 	UseMariaDB     bool
 	UseMongoDB     bool
 	BaseImage      string
-	Workdir        string
+	DockerfileName string
 	ArtifactPath   string
 	BuildCmd       string
 	EntrypointCmd  string

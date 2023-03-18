@@ -10,8 +10,8 @@ CREATE TABLE `application_config` (
   `application_id` varchar(22) NOT NULL COMMENT 'アプリケーションID',
   `use_mariadb` tinyint(1) NOT NULL COMMENT 'MariaDBを使用するか',
   `use_mongodb` tinyint(1) NOT NULL COMMENT 'MongoDBを使用するか',
+  `dockerfile_name` varchar(100) NOT NULL COMMENT 'Dockerfile名',
   `base_image` varchar(1000) NOT NULL COMMENT 'ベースイメージの名前',
-  `workdir` varchar(100) NOT NULL COMMENT 'ビルドと実行時のworkdir',
   `artifact_path` varchar(100) NOT NULL COMMENT '静的成果物のパス',
   `build_cmd` text NOT NULL COMMENT 'ビルドコマンド',
   `entrypoint_cmd` text NOT NULL COMMENT 'コンテナのエントリポイント',
@@ -30,8 +30,8 @@ CREATE TABLE `application_config` (
 | application_id | varchar(22) |  | false |  | [applications](applications.md) | アプリケーションID |
 | use_mariadb | tinyint(1) |  | false |  |  | MariaDBを使用するか |
 | use_mongodb | tinyint(1) |  | false |  |  | MongoDBを使用するか |
+| dockerfile_name | varchar(100) |  | false |  |  | Dockerfile名 |
 | base_image | varchar(1000) |  | false |  |  | ベースイメージの名前 |
-| workdir | varchar(100) |  | false |  |  | ビルドと実行時のworkdir |
 | artifact_path | varchar(100) |  | false |  |  | 静的成果物のパス |
 | build_cmd | text |  | false |  |  | ビルドコマンド |
 | entrypoint_cmd | text |  | false |  |  | コンテナのエントリポイント |

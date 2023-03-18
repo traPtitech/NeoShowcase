@@ -14,7 +14,7 @@ func toDomainApplicationConfig(c *models.ApplicationConfig) domain.ApplicationCo
 		UseMariaDB:     c.UseMariadb,
 		UseMongoDB:     c.UseMongodb,
 		BaseImage:      c.BaseImage,
-		Workdir:        c.Workdir,
+		DockerfileName: c.DockerfileName,
 		ArtifactPath:   c.ArtifactPath,
 		BuildCmd:       c.BuildCMD,
 		EntrypointCmd:  c.EntrypointCMD,
