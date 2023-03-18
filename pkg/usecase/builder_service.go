@@ -353,7 +353,7 @@ func (s *builderService) buildImage(t *builder.Task, intState *internalTaskState
 	eg.Go(func() error {
 		// ビルドログを収集
 		// TODO: VertexWarningを使う (LLBのどのvertexに問題があったか)
-		_, err := progressui.DisplaySolveStatus(context.TODO(), "", nil, intState.getLogWriter(), ch)
+		_, err := progressui.DisplaySolveStatus(ctx, "", nil, intState.getLogWriter(), ch)
 		return err
 	})
 	return eg.Wait()
@@ -466,7 +466,7 @@ func (s *builderService) buildStatic(t *builder.Task, intState *internalTaskStat
 	eg.Go(func() error {
 		// ビルドログを収集
 		// TODO: VertexWarningを使う (LLBのどのvertexに問題があったか)
-		_, err := progressui.DisplaySolveStatus(context.TODO(), "", nil, intState.getLogWriter(), ch)
+		_, err := progressui.DisplaySolveStatus(ctx, "", nil, intState.getLogWriter(), ch)
 		return err
 	})
 	return eg.Wait()
