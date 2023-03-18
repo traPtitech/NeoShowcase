@@ -35,6 +35,7 @@ type CreateApplicationArgs struct {
 	RepositoryID string
 	BranchName   string
 	BuildType    builder.BuildType
+	State        domain.ApplicationState
 	Config       domain.ApplicationConfig
 	Websites     []*CreateWebsiteArgs
 }
@@ -137,7 +138,7 @@ func (r *applicationRepository) CreateApplication(ctx context.Context, args Crea
 		RepositoryID:  args.RepositoryID,
 		BranchName:    args.BranchName,
 		BuildType:     args.BuildType.String(),
-		State:         domain.ApplicationStateIdle.String(),
+		State:         args.State.String(),
 		CurrentCommit: domain.EmptyCommit,
 		WantCommit:    domain.EmptyCommit,
 	}

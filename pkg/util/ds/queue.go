@@ -6,6 +6,9 @@ import (
 	"github.com/samber/lo"
 )
 
+// Queue represents a simple queue.
+//
+// TODO: switch to github.com/emirpasic/gods once generics version is out?
 type Queue[T any] struct {
 	data  []T
 	mutex sync.RWMutex

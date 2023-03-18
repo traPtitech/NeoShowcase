@@ -6,7 +6,6 @@ import (
 	"fmt"
 
 	"github.com/samber/lo"
-	"golang.org/x/exp/slices"
 
 	"github.com/traPtitech/neoshowcase/pkg/domain"
 	"github.com/traPtitech/neoshowcase/pkg/domain/builder"
@@ -43,6 +42,7 @@ type CreateApplicationArgs struct {
 	BuildType     builder.BuildType
 	Config        domain.ApplicationConfig
 	Websites      []*CreateWebsiteArgs
+	StartOnCreate bool
 }
 
 type APIServerService interface {
@@ -118,11 +118,18 @@ func (s *apiServerService) CreateApplication(ctx context.Context, args CreateApp
 		}
 	}
 
+	var initialState domain.ApplicationState
+	if args.StartOnCreate {
+		initialState = domain.ApplicationStateDeploying
+	} else {
+		initialState = domain.ApplicationStateIdle
+	}
 	application, err := s.appRepo.CreateApplication(ctx, repository.CreateApplicationArgs{
 		Name:         args.Name,
 		RepositoryID: repo.ID,
 		BranchName:   args.BranchName,
 		BuildType:    args.BuildType,
+		State:        initialState,
 		Config:       args.Config,
 		Websites: lo.Map(args.Websites, func(website *CreateWebsiteArgs, i int) *repository.CreateWebsiteArgs {
 			return &repository.CreateWebsiteArgs{FQDN: website.FQDN, Port: website.Port}
@@ -237,37 +244,19 @@ func (s *apiServerService) SetApplicationEnvironmentVariable(ctx context.Context
 	return s.envRepo.SetEnv(ctx, applicationID, key, value)
 }
 
-func (s *apiServerService) StartApplication(ctx context.Context, id string) error {
-	app, err := s.appRepo.GetApplication(ctx, id)
-	if err != nil {
-		return err
+func (s *apiServerService) StartApplication(_ context.Context, id string) error {
+	ok := s.deploySvc.Synchronize(id, true)
+	if !ok {
+		return errors.New("application is currently busy")
 	}
-	if app.State == domain.ApplicationStateDeploying {
-		return errors.New("application is currently deploying")
-	}
-	builds, err := s.buildRepo.GetBuildsInCommit(ctx, []string{app.CurrentCommit})
-	if err != nil {
-		return err
-	}
-	builds = lo.Filter(builds, func(build *domain.Build, i int) bool { return build.Status == builder.BuildStatusSucceeded })
-	slices.SortFunc(builds, func(a, b *domain.Build) bool { return a.StartedAt.After(b.StartedAt) })
-	if len(builds) == 0 {
-		return ErrNotFound
-	}
-	return s.deploySvc.StartDeployment(ctx, app, builds[0])
+	s.bus.Publish(event.APIServerStartApplication, nil)
+	return nil
 }
 
-func (s *apiServerService) StopApplication(ctx context.Context, id string) error {
-	app, err := s.appRepo.GetApplication(ctx, id)
-	if err != nil {
-		return err
+func (s *apiServerService) StopApplication(_ context.Context, id string) error {
+	ok := s.deploySvc.Stop(id)
+	if !ok {
+		return errors.New("application is currently busy")
 	}
-	if app.State != domain.ApplicationStateRunning {
-		return errors.New("application is not running")
-	}
-	err = s.backend.DestroyContainer(ctx, app)
-	if err != nil {
-		return err
-	}
-	return s.appRepo.UpdateApplication(ctx, id, repository.UpdateApplicationArgs{State: optional.From(domain.ApplicationStateIdle)})
+	return nil
 }

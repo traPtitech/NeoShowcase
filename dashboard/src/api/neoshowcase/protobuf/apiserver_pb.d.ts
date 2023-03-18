@@ -421,6 +421,9 @@ export class CreateApplicationRequest extends jspb.Message {
   clearWebsitesList(): CreateApplicationRequest;
   addWebsites(value?: CreateWebsiteRequest, index?: number): CreateWebsiteRequest;
 
+  getStartOnCreate(): boolean;
+  setStartOnCreate(value: boolean): CreateApplicationRequest;
+
   serializeBinary(): Uint8Array;
   toObject(includeInstance?: boolean): CreateApplicationRequest.AsObject;
   static toObject(includeInstance: boolean, msg: CreateApplicationRequest): CreateApplicationRequest.AsObject;
@@ -437,6 +440,7 @@ export namespace CreateApplicationRequest {
     buildType: BuildType,
     config?: ApplicationConfig.AsObject,
     websitesList: Array<CreateWebsiteRequest.AsObject>,
+    startOnCreate: boolean,
   }
 }
 

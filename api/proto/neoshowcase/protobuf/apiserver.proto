@@ -124,6 +124,7 @@ message CreateApplicationRequest {
   BuildType build_type = 4;
   ApplicationConfig config = 5;
   repeated CreateWebsiteRequest websites = 6;
+  bool start_on_create = 7;
 }
 
 message ApplicationIdRequest {

@@ -2,16 +2,13 @@ package usecase
 
 import (
 	"context"
-	"fmt"
 	"sync"
 	"time"
 
 	"github.com/samber/lo"
 	log "github.com/sirupsen/logrus"
-	"golang.org/x/exp/slices"
 
 	"github.com/traPtitech/neoshowcase/pkg/domain"
-	"github.com/traPtitech/neoshowcase/pkg/domain/builder"
 	"github.com/traPtitech/neoshowcase/pkg/domain/event"
 	"github.com/traPtitech/neoshowcase/pkg/interface/repository"
 	"github.com/traPtitech/neoshowcase/pkg/util/optional"
@@ -77,7 +74,7 @@ func (cd *continuousDeploymentService) Stop(_ context.Context) error {
 }
 
 func (cd *continuousDeploymentService) syncBuildLoop(closer <-chan struct{}) {
-	sub := cd.bus.Subscribe(event.FetcherFetchComplete)
+	sub := cd.bus.Subscribe(event.FetcherFetchComplete, event.APIServerStartApplication)
 	defer sub.Unsubscribe()
 
 	doSync := func() {
@@ -147,9 +144,13 @@ func (cd *continuousDeploymentService) kickoffBuilds() error {
 		if app.WantCommit == domain.EmptyCommit {
 			continue
 		}
+		if app.State == domain.ApplicationStateIdle {
+			continue
+		}
 		_, err := cd.builder.QueueBuild(ctx, app, app.WantCommit)
 		if err != nil {
-			return fmt.Errorf("failed to queue build: %w", err)
+			log.WithError(err).WithField("application", app.ID).WithField("commit", app.WantCommit).Error("failed to queue build")
+			continue // Continue even if each app errors
 		}
 	}
 	return nil
@@ -157,29 +158,18 @@ func (cd *continuousDeploymentService) kickoffBuilds() error {
 
 func (cd *continuousDeploymentService) syncDeployments() error {
 	ctx := context.Background()
+
+	// Get out-of-sync and non-idle applications
 	applications, err := cd.appRepo.GetApplications(ctx, repository.GetApplicationCondition{InSync: optional.From(false)})
 	if err != nil {
 		return err
 	}
-	applications = lo.Filter(applications, func(app *domain.Application, i int) bool { return app.State != domain.ApplicationStateDeploying })
-	commits := lo.Map(applications, func(app *domain.Application, i int) string { return app.WantCommit })
-	builds, err := cd.buildRepo.GetBuildsInCommit(ctx, commits)
-	if err != nil {
-		return err
-	}
-
-	// Last succeeded builds for each commit
-	builds = lo.Filter(builds, func(build *domain.Build, i int) bool { return build.Status == builder.BuildStatusSucceeded })
-	slices.SortFunc(builds, func(a, b *domain.Build) bool { return a.StartedAt.Before(b.StartedAt) })
-	commitToBuild := lo.SliceToMap(builds, func(b *domain.Build) (string, *domain.Build) { return b.Commit, b })
+	applications = lo.Filter(applications, func(app *domain.Application, i int) bool {
+		return app.State != domain.ApplicationStateIdle && app.State != domain.ApplicationStateErrored
+	})
 
 	for _, app := range applications {
-		if build, ok := commitToBuild[app.WantCommit]; ok {
-			err := cd.deployer.StartDeployment(ctx, app, build)
-			if err != nil {
-				return fmt.Errorf("failed to queue deployment: %w", err)
-			}
-		}
+		_ = cd.deployer.Synchronize(app.ID, false)
 	}
 	return nil
 }
