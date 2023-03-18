@@ -55,6 +55,7 @@ func (s *ApplicationService) CreateApplication(ctx context.Context, req *pb.Crea
 		Websites: lo.Map(req.Websites, func(website *pb.CreateWebsiteRequest, i int) *usecase.CreateWebsiteArgs {
 			return &usecase.CreateWebsiteArgs{FQDN: website.Fqdn, Port: int(website.Port)}
 		}),
+		StartOnCreate: req.StartOnCreate,
 	})
 	if err != nil {
 		switch err {
