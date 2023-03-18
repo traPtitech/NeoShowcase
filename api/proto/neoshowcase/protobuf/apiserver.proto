@@ -7,7 +7,7 @@ import "google/protobuf/empty.proto";
 import "neoshowcase/protobuf/null.proto";
 
 enum BuildType {
-  IMAGE = 0;
+  RUNTIME = 0;
   STATIC = 1;
 }
 
@@ -18,6 +18,32 @@ enum ApplicationState {
   ERRORED = 3;
 }
 
+enum AuthenticationType {
+  OFF = 0;
+  SOFT = 1;
+  HARD = 2;
+}
+
+message ApplicationConfig {
+  bool use_mariadb = 1;
+  bool use_mongodb = 2;
+  string base_image = 3;
+  string build_cmd = 4;
+  string entrypoint_cmd = 5;
+  AuthenticationType authentication = 6;
+}
+
+message Website {
+  string id = 1;
+  string fqdn = 2;
+  int32 port = 3;
+}
+
+message CreateWebsiteRequest {
+  string fqdn = 1;
+  int32 port = 2;
+}
+
 message Application {
   string id = 1;
   string repository_url = 2;
@@ -26,6 +52,8 @@ message Application {
   ApplicationState state = 5;
   string current_commit = 6;
   string want_commit = 7;
+  ApplicationConfig config = 8;
+  repeated Website websites = 9;
 }
 
 message ApplicationEnvironmentVariable {
@@ -92,6 +120,8 @@ message CreateApplicationRequest {
   string repository_url = 1;
   string branch_name = 2;
   BuildType build_type = 3;
+  ApplicationConfig config = 4;
+  repeated CreateWebsiteRequest websites = 5;
 }
 
 message ApplicationIdRequest {

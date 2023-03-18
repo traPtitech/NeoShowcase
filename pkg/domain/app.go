@@ -49,17 +49,62 @@ func ApplicationStateFromString(str string) ApplicationState {
 	}
 }
 
+type AuthenticationType int
+
+const (
+	AuthenticationTypeOff AuthenticationType = iota
+	AuthenticationTypeSoft
+	AuthenticationTypeHard
+)
+
+func (a AuthenticationType) String() string {
+	switch a {
+	case AuthenticationTypeOff:
+		return "off"
+	case AuthenticationTypeSoft:
+		return "soft"
+	case AuthenticationTypeHard:
+		return "hard"
+	default:
+		return ""
+	}
+}
+
+func AuthenticationTypeFromString(s string) AuthenticationType {
+	switch s {
+	case "off":
+		return AuthenticationTypeOff
+	case "soft":
+		return AuthenticationTypeSoft
+	case "hard":
+		return AuthenticationTypeHard
+	default:
+		panic(fmt.Sprintf("unknown authentication type: %v", s))
+	}
+}
+
+type ApplicationConfig struct {
+	UseMariaDB     bool
+	UseMongoDB     bool
+	BaseImage      string
+	BuildCmd       string
+	EntrypointCmd  string
+	Authentication AuthenticationType
+}
+
 var EmptyCommit = strings.Repeat("0", 40)
 
 type Application struct {
 	ID            string
-	Repository    Repository
 	BranchName    string
 	BuildType     builder.BuildType
 	State         ApplicationState
 	CurrentCommit string
 	WantCommit    string
-	Websites      []*Website
+
+	Config     ApplicationConfig
+	Repository Repository
+	Websites   []*Website
 }
 
 type Artifact struct {

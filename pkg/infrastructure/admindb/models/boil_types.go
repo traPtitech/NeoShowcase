@@ -51,15 +51,30 @@ func makeCacheKey(cols boil.Columns, nzDefaults []string) string {
 	return str
 }
 
+// Enum values for ApplicationConfigAuthentication
+const (
+	ApplicationConfigAuthenticationOff  string = "off"
+	ApplicationConfigAuthenticationSoft string = "soft"
+	ApplicationConfigAuthenticationHard string = "hard"
+)
+
+func AllApplicationConfigAuthentication() []string {
+	return []string{
+		ApplicationConfigAuthenticationOff,
+		ApplicationConfigAuthenticationSoft,
+		ApplicationConfigAuthenticationHard,
+	}
+}
+
 // Enum values for ApplicationsBuildType
 const (
-	ApplicationsBuildTypeImage  string = "image"
-	ApplicationsBuildTypeStatic string = "static"
+	ApplicationsBuildTypeRuntime string = "runtime"
+	ApplicationsBuildTypeStatic  string = "static"
 )
 
 func AllApplicationsBuildType() []string {
 	return []string{
-		ApplicationsBuildTypeImage,
+		ApplicationsBuildTypeRuntime,
 		ApplicationsBuildTypeStatic,
 	}
 }

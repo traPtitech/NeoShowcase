@@ -9,14 +9,14 @@ import (
 type BuildType int
 
 const (
-	BuildTypeImage BuildType = iota
+	BuildTypeRuntime BuildType = iota
 	BuildTypeStatic
 )
 
 func (t BuildType) String() string {
 	switch t {
-	case BuildTypeImage:
-		return models.ApplicationsBuildTypeImage
+	case BuildTypeRuntime:
+		return models.ApplicationsBuildTypeRuntime
 	case BuildTypeStatic:
 		return models.ApplicationsBuildTypeStatic
 	}
@@ -25,8 +25,8 @@ func (t BuildType) String() string {
 
 func BuildTypeFromString(str string) BuildType {
 	switch str {
-	case models.ApplicationsBuildTypeImage:
-		return BuildTypeImage
+	case models.ApplicationsBuildTypeRuntime:
+		return BuildTypeRuntime
 	case models.ApplicationsBuildTypeStatic:
 		return BuildTypeStatic
 	default:

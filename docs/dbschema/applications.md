@@ -12,7 +12,7 @@ CREATE TABLE `applications` (
   `id` varchar(22) NOT NULL COMMENT 'アプリケーションID',
   `repository_id` varchar(22) NOT NULL COMMENT 'リポジトリID',
   `branch_name` varchar(100) NOT NULL COMMENT 'Gitブランチ・タグ名',
-  `build_type` enum('image','static') NOT NULL COMMENT 'ビルドタイプ',
+  `build_type` enum('runtime','static') NOT NULL COMMENT 'ビルドタイプ',
   `state` varchar(10) NOT NULL COMMENT 'デプロイの状態',
   `current_commit` char(40) NOT NULL COMMENT 'デプロイされたコミット',
   `want_commit` char(40) NOT NULL COMMENT 'デプロイを待つコミット',
@@ -32,10 +32,10 @@ CREATE TABLE `applications` (
 
 | Name | Type | Default | Nullable | Children | Parents | Comment |
 | ---- | ---- | ------- | -------- | -------- | ------- | ------- |
-| id | varchar(22) |  | false | [builds](builds.md) [environments](environments.md) [owners](owners.md) [websites](websites.md) |  | アプリケーションID |
+| id | varchar(22) |  | false | [application_config](application_config.md) [builds](builds.md) [environments](environments.md) [owners](owners.md) [websites](websites.md) |  | アプリケーションID |
 | repository_id | varchar(22) |  | false |  | [repositories](repositories.md) | リポジトリID |
 | branch_name | varchar(100) |  | false |  |  | Gitブランチ・タグ名 |
-| build_type | enum('image','static') |  | false |  |  | ビルドタイプ |
+| build_type | enum('runtime','static') |  | false |  |  | ビルドタイプ |
 | state | varchar(10) |  | false |  | [application_state](application_state.md) | デプロイの状態 |
 | current_commit | char(40) |  | false |  |  | デプロイされたコミット |
 | want_commit | char(40) |  | false |  |  | デプロイを待つコミット |

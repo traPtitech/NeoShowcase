@@ -5,6 +5,92 @@ import * as google_protobuf_empty_pb from 'google-protobuf/google/protobuf/empty
 import * as neoshowcase_protobuf_null_pb from '../../neoshowcase/protobuf/null_pb';
 
 
+export class ApplicationConfig extends jspb.Message {
+  getUseMariadb(): boolean;
+  setUseMariadb(value: boolean): ApplicationConfig;
+
+  getUseMongodb(): boolean;
+  setUseMongodb(value: boolean): ApplicationConfig;
+
+  getBaseImage(): string;
+  setBaseImage(value: string): ApplicationConfig;
+
+  getBuildCmd(): string;
+  setBuildCmd(value: string): ApplicationConfig;
+
+  getEntrypointCmd(): string;
+  setEntrypointCmd(value: string): ApplicationConfig;
+
+  getAuthentication(): AuthenticationType;
+  setAuthentication(value: AuthenticationType): ApplicationConfig;
+
+  serializeBinary(): Uint8Array;
+  toObject(includeInstance?: boolean): ApplicationConfig.AsObject;
+  static toObject(includeInstance: boolean, msg: ApplicationConfig): ApplicationConfig.AsObject;
+  static serializeBinaryToWriter(message: ApplicationConfig, writer: jspb.BinaryWriter): void;
+  static deserializeBinary(bytes: Uint8Array): ApplicationConfig;
+  static deserializeBinaryFromReader(message: ApplicationConfig, reader: jspb.BinaryReader): ApplicationConfig;
+}
+
+export namespace ApplicationConfig {
+  export type AsObject = {
+    useMariadb: boolean,
+    useMongodb: boolean,
+    baseImage: string,
+    buildCmd: string,
+    entrypointCmd: string,
+    authentication: AuthenticationType,
+  }
+}
+
+export class Website extends jspb.Message {
+  getId(): string;
+  setId(value: string): Website;
+
+  getFqdn(): string;
+  setFqdn(value: string): Website;
+
+  getPort(): number;
+  setPort(value: number): Website;
+
+  serializeBinary(): Uint8Array;
+  toObject(includeInstance?: boolean): Website.AsObject;
+  static toObject(includeInstance: boolean, msg: Website): Website.AsObject;
+  static serializeBinaryToWriter(message: Website, writer: jspb.BinaryWriter): void;
+  static deserializeBinary(bytes: Uint8Array): Website;
+  static deserializeBinaryFromReader(message: Website, reader: jspb.BinaryReader): Website;
+}
+
+export namespace Website {
+  export type AsObject = {
+    id: string,
+    fqdn: string,
+    port: number,
+  }
+}
+
+export class CreateWebsiteRequest extends jspb.Message {
+  getFqdn(): string;
+  setFqdn(value: string): CreateWebsiteRequest;
+
+  getPort(): number;
+  setPort(value: number): CreateWebsiteRequest;
+
+  serializeBinary(): Uint8Array;
+  toObject(includeInstance?: boolean): CreateWebsiteRequest.AsObject;
+  static toObject(includeInstance: boolean, msg: CreateWebsiteRequest): CreateWebsiteRequest.AsObject;
+  static serializeBinaryToWriter(message: CreateWebsiteRequest, writer: jspb.BinaryWriter): void;
+  static deserializeBinary(bytes: Uint8Array): CreateWebsiteRequest;
+  static deserializeBinaryFromReader(message: CreateWebsiteRequest, reader: jspb.BinaryReader): CreateWebsiteRequest;
+}
+
+export namespace CreateWebsiteRequest {
+  export type AsObject = {
+    fqdn: string,
+    port: number,
+  }
+}
+
 export class Application extends jspb.Message {
   getId(): string;
   setId(value: string): Application;
@@ -27,6 +113,16 @@ export class Application extends jspb.Message {
   getWantCommit(): string;
   setWantCommit(value: string): Application;
 
+  getConfig(): ApplicationConfig | undefined;
+  setConfig(value?: ApplicationConfig): Application;
+  hasConfig(): boolean;
+  clearConfig(): Application;
+
+  getWebsitesList(): Array<Website>;
+  setWebsitesList(value: Array<Website>): Application;
+  clearWebsitesList(): Application;
+  addWebsites(value?: Website, index?: number): Website;
+
   serializeBinary(): Uint8Array;
   toObject(includeInstance?: boolean): Application.AsObject;
   static toObject(includeInstance: boolean, msg: Application): Application.AsObject;
@@ -44,6 +140,8 @@ export namespace Application {
     state: ApplicationState,
     currentCommit: string,
     wantCommit: string,
+    config?: ApplicationConfig.AsObject,
+    websitesList: Array<Website.AsObject>,
   }
 }
 
@@ -306,6 +404,16 @@ export class CreateApplicationRequest extends jspb.Message {
   getBuildType(): BuildType;
   setBuildType(value: BuildType): CreateApplicationRequest;
 
+  getConfig(): ApplicationConfig | undefined;
+  setConfig(value?: ApplicationConfig): CreateApplicationRequest;
+  hasConfig(): boolean;
+  clearConfig(): CreateApplicationRequest;
+
+  getWebsitesList(): Array<CreateWebsiteRequest>;
+  setWebsitesList(value: Array<CreateWebsiteRequest>): CreateApplicationRequest;
+  clearWebsitesList(): CreateApplicationRequest;
+  addWebsites(value?: CreateWebsiteRequest, index?: number): CreateWebsiteRequest;
+
   serializeBinary(): Uint8Array;
   toObject(includeInstance?: boolean): CreateApplicationRequest.AsObject;
   static toObject(includeInstance: boolean, msg: CreateApplicationRequest): CreateApplicationRequest.AsObject;
@@ -319,6 +427,8 @@ export namespace CreateApplicationRequest {
     repositoryUrl: string,
     branchName: string,
     buildType: BuildType,
+    config?: ApplicationConfig.AsObject,
+    websitesList: Array<CreateWebsiteRequest.AsObject>,
   }
 }
 
@@ -423,7 +533,7 @@ export namespace SetApplicationEnvironmentVariableRequest {
 }
 
 export enum BuildType { 
-  IMAGE = 0,
+  RUNTIME = 0,
   STATIC = 1,
 }
 export enum ApplicationState { 
@@ -431,4 +541,9 @@ export enum ApplicationState {
   DEPLOYING = 1,
   RUNNING = 2,
   ERRORED = 3,
+}
+export enum AuthenticationType { 
+  OFF = 0,
+  SOFT = 1,
+  HARD = 2,
 }

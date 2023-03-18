@@ -140,7 +140,7 @@ func (s *appBuildService) startQueueManager(ctx context.Context) {
 
 func (s *appBuildService) requestBuild(ctx context.Context, app *domain.Application, buildID string, commit string) error {
 	switch app.BuildType {
-	case builder.BuildTypeImage:
+	case builder.BuildTypeRuntime:
 		_, err := s.builder.StartBuildImage(ctx, &pb.StartBuildImageRequest{
 			ImageName: builder.GetImageName(s.imageRegistry, s.imageNamePrefix, app.ID),
 			ImageTag:  buildID,

@@ -74,7 +74,7 @@ func (s *appDeployService) deployAndHandleError(app *domain.Application, build *
 }
 
 func (s *appDeployService) deploy(ctx context.Context, app *domain.Application, build *domain.Build) error {
-	if app.BuildType == builder.BuildTypeImage {
+	if app.BuildType == builder.BuildTypeRuntime {
 		err := s.recreateContainer(ctx, app, build)
 		if err != nil {
 			return err

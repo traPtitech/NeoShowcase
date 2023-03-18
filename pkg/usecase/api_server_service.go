@@ -30,11 +30,18 @@ func handleRepoError[T any](entity T, err error) (T, error) {
 	}
 }
 
+type CreateWebsiteArgs struct {
+	FQDN string
+	Port int
+}
+
 type CreateApplicationArgs struct {
 	UserID        string
 	RepositoryURL string
 	BranchName    string
 	BuildType     builder.BuildType
+	Config        domain.ApplicationConfig
+	Websites      []*CreateWebsiteArgs
 }
 
 type APIServerService interface {
@@ -114,6 +121,10 @@ func (s *apiServerService) CreateApplication(ctx context.Context, args CreateApp
 		RepositoryID: repo.ID,
 		BranchName:   args.BranchName,
 		BuildType:    args.BuildType,
+		Config:       args.Config,
+		Websites: lo.Map(args.Websites, func(website *CreateWebsiteArgs, i int) *repository.CreateWebsiteArgs {
+			return &repository.CreateWebsiteArgs{FQDN: website.FQDN, Port: website.Port}
+		}),
 	})
 	if err != nil {
 		if err == repository.ErrDuplicate {
@@ -138,11 +149,9 @@ func (s *apiServerService) CreateApplication(ctx context.Context, args CreateApp
 }
 
 func (s *apiServerService) createApplicationDatabase(ctx context.Context, app *domain.Application) error {
-	dbName := fmt.Sprintf("ns_app_%s", app.ID)
+	dbName := fmt.Sprintf("nsapp_%s", app.ID)
 
-	// TODO: アプリケーションの設定の取得
-	applicationNeedsMariaDB := true
-	if applicationNeedsMariaDB {
+	if app.Config.UseMariaDB {
 		dbPassword := random.SecureGeneratePassword(32)
 		dbSetting := domain.CreateArgs{
 			Database: dbName,
@@ -163,9 +172,7 @@ func (s *apiServerService) createApplicationDatabase(ctx context.Context, app *d
 		}
 	}
 
-	// TODO: アプリケーションの設定の取得
-	applicationNeedsMongoDB := true
-	if applicationNeedsMongoDB {
+	if app.Config.UseMongoDB {
 		dbPassword := random.SecureGeneratePassword(32)
 		dbSetting := domain.CreateArgs{
 			Database: dbName,

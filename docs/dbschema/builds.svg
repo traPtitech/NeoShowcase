@@ -40,63 +40,63 @@
 <!-- build_status -->
 <g id="node3" class="node">
 <title>build_status</title>
-<polygon fill="#efefef" stroke="transparent" points="110,-192.5 110,-227.5 317,-227.5 317,-192.5 110,-192.5"/>
-<polygon fill="none" stroke="#000000" points="110,-192.5 110,-227.5 317,-227.5 317,-192.5 110,-192.5"/>
-<text text-anchor="start" x="116.8581" y="-205.3" font-family="Arial Bold" font-size="18.00" fill="#000000">build_status</text>
-<text text-anchor="start" x="212.8881" y="-205.3" font-family="Arial" font-size="14.00" fill="#000000"> </text>
-<text text-anchor="start" x="216.7787" y="-205.3" font-family="Arial" font-size="14.00" fill="#666666">[BASE TABLE]</text>
-<polygon fill="none" stroke="#000000" points="110,-162.5 110,-192.5 317,-192.5 317,-162.5 110,-162.5"/>
-<text text-anchor="start" x="117" y="-173.9" font-family="Arial" font-size="14.00" fill="#000000">status </text>
-<text text-anchor="start" x="158.237" y="-173.9" font-family="Arial" font-size="14.00" fill="#666666">[varchar(10)]</text>
+<polygon fill="#efefef" stroke="transparent" points="107,-192.5 107,-227.5 314,-227.5 314,-192.5 107,-192.5"/>
+<polygon fill="none" stroke="#000000" points="107,-192.5 107,-227.5 314,-227.5 314,-192.5 107,-192.5"/>
+<text text-anchor="start" x="113.8581" y="-205.3" font-family="Arial Bold" font-size="18.00" fill="#000000">build_status</text>
+<text text-anchor="start" x="209.8881" y="-205.3" font-family="Arial" font-size="14.00" fill="#000000"> </text>
+<text text-anchor="start" x="213.7787" y="-205.3" font-family="Arial" font-size="14.00" fill="#666666">[BASE TABLE]</text>
+<polygon fill="none" stroke="#000000" points="107,-162.5 107,-192.5 314,-192.5 314,-162.5 107,-162.5"/>
+<text text-anchor="start" x="114" y="-173.9" font-family="Arial" font-size="14.00" fill="#000000">status </text>
+<text text-anchor="start" x="155.237" y="-173.9" font-family="Arial" font-size="14.00" fill="#666666">[varchar(10)]</text>
 </g>
 <!-- builds&#45;&gt;build_status -->
 <g id="edge2" class="edge">
 <title>builds:status&#45;&gt;build_status:status</title>
-<path fill="none" stroke="#000000" d="M270.7295,-577.0022C118.3822,-561.262 491.8358,-177.5 317,-177.5"/>
-<polygon fill="#000000" stroke="#000000" points="271.0117,-577.0158 280.7821,-581.9947 276.0059,-577.2579 281,-577.5 281,-577.5 281,-577.5 276.0059,-577.2579 281.2179,-573.0053 271.0117,-577.0158 271.0117,-577.0158"/>
+<path fill="none" stroke="#000000" d="M270.7324,-577.0022C118.3657,-561.262 488.7235,-177.5 314,-177.5"/>
+<polygon fill="#000000" stroke="#000000" points="271.0117,-577.0157 280.782,-581.9947 276.0059,-577.2578 281,-577.5 281,-577.5 281,-577.5 276.0059,-577.2578 281.218,-573.0053 271.0117,-577.0157 271.0117,-577.0157"/>
 <text text-anchor="start" x="7.0985" y="-587.5" font-family="Arial" font-size="10.00" fill="#000000">FOREIGN KEY (status) REFERENCES build_status (status)</text>
 </g>
 <!-- applications -->
 <g id="node4" class="node">
 <title>applications</title>
-<polygon fill="#efefef" stroke="transparent" points="421,-312.5 421,-347.5 641,-347.5 641,-312.5 421,-312.5"/>
-<polygon fill="none" stroke="#000000" points="421,-312.5 421,-347.5 641,-347.5 641,-312.5 421,-312.5"/>
-<text text-anchor="start" x="434.8621" y="-325.3" font-family="Arial Bold" font-size="18.00" fill="#000000">applications</text>
-<text text-anchor="start" x="529.8841" y="-325.3" font-family="Arial" font-size="14.00" fill="#000000"> </text>
-<text text-anchor="start" x="533.7747" y="-325.3" font-family="Arial" font-size="14.00" fill="#666666">[BASE TABLE]</text>
-<polygon fill="none" stroke="#000000" points="421,-282.5 421,-312.5 641,-312.5 641,-282.5 421,-282.5"/>
-<text text-anchor="start" x="428" y="-293.9" font-family="Arial" font-size="14.00" fill="#000000">id </text>
-<text text-anchor="start" x="442.7798" y="-293.9" font-family="Arial" font-size="14.00" fill="#666666">[varchar(22)]</text>
-<polygon fill="none" stroke="#000000" points="421,-252.5 421,-282.5 641,-282.5 641,-252.5 421,-252.5"/>
-<text text-anchor="start" x="428" y="-263.9" font-family="Arial" font-size="14.00" fill="#000000">repository_id </text>
-<text text-anchor="start" x="512.0112" y="-263.9" font-family="Arial" font-size="14.00" fill="#666666">[varchar(22)]</text>
-<polygon fill="none" stroke="#000000" points="421,-222.5 421,-252.5 641,-252.5 641,-222.5 421,-222.5"/>
-<text text-anchor="start" x="428" y="-233.9" font-family="Arial" font-size="14.00" fill="#000000">branch_name </text>
-<text text-anchor="start" x="517.4726" y="-233.9" font-family="Arial" font-size="14.00" fill="#666666">[varchar(100)]</text>
-<polygon fill="none" stroke="#000000" points="421,-192.5 421,-222.5 641,-222.5 641,-192.5 421,-192.5"/>
-<text text-anchor="start" x="427.5764" y="-203.9" font-family="Arial" font-size="14.00" fill="#000000">build_type </text>
-<text text-anchor="start" x="495.2664" y="-203.9" font-family="Arial" font-size="14.00" fill="#666666">[enum(&#39;image&#39;,&#39;static&#39;)]</text>
-<polygon fill="none" stroke="#000000" points="421,-162.5 421,-192.5 641,-192.5 641,-162.5 421,-162.5"/>
-<text text-anchor="start" x="428" y="-173.9" font-family="Arial" font-size="14.00" fill="#000000">state </text>
-<text text-anchor="start" x="462.237" y="-173.9" font-family="Arial" font-size="14.00" fill="#666666">[varchar(10)]</text>
-<polygon fill="none" stroke="#000000" points="421,-132.5 421,-162.5 641,-162.5 641,-132.5 421,-132.5"/>
-<text text-anchor="start" x="428" y="-143.9" font-family="Arial" font-size="14.00" fill="#000000">current_commit </text>
-<text text-anchor="start" x="528.3338" y="-143.9" font-family="Arial" font-size="14.00" fill="#666666">[char(40)]</text>
-<polygon fill="none" stroke="#000000" points="421,-102.5 421,-132.5 641,-132.5 641,-102.5 421,-102.5"/>
-<text text-anchor="start" x="428" y="-113.9" font-family="Arial" font-size="14.00" fill="#000000">want_commit </text>
-<text text-anchor="start" x="514.3366" y="-113.9" font-family="Arial" font-size="14.00" fill="#666666">[char(40)]</text>
-<polygon fill="none" stroke="#000000" points="421,-72.5 421,-102.5 641,-102.5 641,-72.5 421,-72.5"/>
-<text text-anchor="start" x="428" y="-83.9" font-family="Arial" font-size="14.00" fill="#000000">created_at </text>
-<text text-anchor="start" x="498.028" y="-83.9" font-family="Arial" font-size="14.00" fill="#666666">[datetime(6)]</text>
-<polygon fill="none" stroke="#000000" points="421,-42.5 421,-72.5 641,-72.5 641,-42.5 421,-42.5"/>
-<text text-anchor="start" x="428" y="-53.9" font-family="Arial" font-size="14.00" fill="#000000">updated_at </text>
-<text text-anchor="start" x="501.9326" y="-53.9" font-family="Arial" font-size="14.00" fill="#666666">[datetime(6)]</text>
+<polygon fill="#efefef" stroke="transparent" points="418,-312.5 418,-347.5 647,-347.5 647,-312.5 418,-312.5"/>
+<polygon fill="none" stroke="#000000" points="418,-312.5 418,-347.5 647,-347.5 647,-312.5 418,-312.5"/>
+<text text-anchor="start" x="436.3621" y="-325.3" font-family="Arial Bold" font-size="18.00" fill="#000000">applications</text>
+<text text-anchor="start" x="531.3841" y="-325.3" font-family="Arial" font-size="14.00" fill="#000000"> </text>
+<text text-anchor="start" x="535.2747" y="-325.3" font-family="Arial" font-size="14.00" fill="#666666">[BASE TABLE]</text>
+<polygon fill="none" stroke="#000000" points="418,-282.5 418,-312.5 647,-312.5 647,-282.5 418,-282.5"/>
+<text text-anchor="start" x="425" y="-293.9" font-family="Arial" font-size="14.00" fill="#000000">id </text>
+<text text-anchor="start" x="439.7798" y="-293.9" font-family="Arial" font-size="14.00" fill="#666666">[varchar(22)]</text>
+<polygon fill="none" stroke="#000000" points="418,-252.5 418,-282.5 647,-282.5 647,-252.5 418,-252.5"/>
+<text text-anchor="start" x="425" y="-263.9" font-family="Arial" font-size="14.00" fill="#000000">repository_id </text>
+<text text-anchor="start" x="509.0112" y="-263.9" font-family="Arial" font-size="14.00" fill="#666666">[varchar(22)]</text>
+<polygon fill="none" stroke="#000000" points="418,-222.5 418,-252.5 647,-252.5 647,-222.5 418,-222.5"/>
+<text text-anchor="start" x="425" y="-233.9" font-family="Arial" font-size="14.00" fill="#000000">branch_name </text>
+<text text-anchor="start" x="514.4726" y="-233.9" font-family="Arial" font-size="14.00" fill="#666666">[varchar(100)]</text>
+<polygon fill="none" stroke="#000000" points="418,-192.5 418,-222.5 647,-222.5 647,-192.5 418,-192.5"/>
+<text text-anchor="start" x="424.8008" y="-203.9" font-family="Arial" font-size="14.00" fill="#000000">build_type </text>
+<text text-anchor="start" x="492.4908" y="-203.9" font-family="Arial" font-size="14.00" fill="#666666">[enum(&#39;runtime&#39;,&#39;static&#39;)]</text>
+<polygon fill="none" stroke="#000000" points="418,-162.5 418,-192.5 647,-192.5 647,-162.5 418,-162.5"/>
+<text text-anchor="start" x="425" y="-173.9" font-family="Arial" font-size="14.00" fill="#000000">state </text>
+<text text-anchor="start" x="459.237" y="-173.9" font-family="Arial" font-size="14.00" fill="#666666">[varchar(10)]</text>
+<polygon fill="none" stroke="#000000" points="418,-132.5 418,-162.5 647,-162.5 647,-132.5 418,-132.5"/>
+<text text-anchor="start" x="425" y="-143.9" font-family="Arial" font-size="14.00" fill="#000000">current_commit </text>
+<text text-anchor="start" x="525.3338" y="-143.9" font-family="Arial" font-size="14.00" fill="#666666">[char(40)]</text>
+<polygon fill="none" stroke="#000000" points="418,-102.5 418,-132.5 647,-132.5 647,-102.5 418,-102.5"/>
+<text text-anchor="start" x="425" y="-113.9" font-family="Arial" font-size="14.00" fill="#000000">want_commit </text>
+<text text-anchor="start" x="511.3366" y="-113.9" font-family="Arial" font-size="14.00" fill="#666666">[char(40)]</text>
+<polygon fill="none" stroke="#000000" points="418,-72.5 418,-102.5 647,-102.5 647,-72.5 418,-72.5"/>
+<text text-anchor="start" x="425" y="-83.9" font-family="Arial" font-size="14.00" fill="#000000">created_at </text>
+<text text-anchor="start" x="495.028" y="-83.9" font-family="Arial" font-size="14.00" fill="#666666">[datetime(6)]</text>
+<polygon fill="none" stroke="#000000" points="418,-42.5 418,-72.5 647,-72.5 647,-42.5 418,-42.5"/>
+<text text-anchor="start" x="425" y="-53.9" font-family="Arial" font-size="14.00" fill="#000000">updated_at </text>
+<text text-anchor="start" x="498.9326" y="-53.9" font-family="Arial" font-size="14.00" fill="#666666">[datetime(6)]</text>
 </g>
 <!-- builds&#45;&gt;applications -->
 <g id="edge3" class="edge">
 <title>builds:application_id&#45;&gt;applications:id</title>
-<path fill="none" stroke="#000000" d="M473.0065,-484.798C484.8716,-475.9775 472.3923,-447.421 463,-427 452.7268,-404.6638 431.2732,-413.3362 421,-391 403.6357,-353.2462 379.4444,-297.5 421,-297.5"/>
-<polygon fill="#000000" stroke="#000000" points="472.6542,-484.893 461.8269,-483.1556 467.8271,-486.1965 463,-487.5 463,-487.5 463,-487.5 467.8271,-486.1965 464.1731,-491.8444 472.6542,-484.893 472.6542,-484.893"/>
+<path fill="none" stroke="#000000" d="M472.6929,-485.0281C485.2138,-476.4609 472.828,-447.4483 463,-427 451.905,-403.9154 429.095,-414.0846 418,-391 399.9986,-353.5458 376.4444,-297.5 418,-297.5"/>
+<polygon fill="#000000" stroke="#000000" points="472.6899,-485.0288 461.888,-483.1396 467.8449,-486.2644 463,-487.5 463,-487.5 463,-487.5 467.8449,-486.2644 464.112,-491.8604 472.6899,-485.0288 472.6899,-485.0288"/>
 <text text-anchor="start" x="469.602" y="-497.5" font-family="Arial" font-size="10.00" fill="#000000">FOREIGN KEY (application_id) REFERENCES applications (id)</text>
 </g>
 <!-- artifacts -->

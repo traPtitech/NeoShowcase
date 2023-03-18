@@ -25,10 +25,17 @@ type GetApplicationCondition struct {
 	InSync optional.Of[bool]
 }
 
+type CreateWebsiteArgs struct {
+	FQDN string
+	Port int
+}
+
 type CreateApplicationArgs struct {
 	RepositoryID string
 	BranchName   string
 	BuildType    builder.BuildType
+	Config       domain.ApplicationConfig
+	Websites     []*CreateWebsiteArgs
 }
 
 type UpdateApplicationArgs struct {
@@ -60,6 +67,7 @@ func NewApplicationRepository(db *sql.DB) ApplicationRepository {
 
 func (r *applicationRepository) GetApplications(ctx context.Context, cond GetApplicationCondition) ([]*domain.Application, error) {
 	mods := []qm.QueryMod{
+		qm.Load(models.ApplicationRels.ApplicationConfig),
 		qm.Load(models.ApplicationRels.Repository),
 		qm.Load(models.ApplicationRels.Websites),
 	}
@@ -100,6 +108,7 @@ func (r *applicationRepository) GetApplications(ctx context.Context, cond GetApp
 func (r *applicationRepository) getApplication(ctx context.Context, id string) (*models.Application, error) {
 	app, err := models.Applications(
 		models.ApplicationWhere.ID.EQ(id),
+		qm.Load(models.ApplicationRels.ApplicationConfig),
 		qm.Load(models.ApplicationRels.Repository),
 		qm.Load(models.ApplicationRels.Websites),
 	).One(ctx, r.db)
@@ -134,17 +143,33 @@ func (r *applicationRepository) CreateApplication(ctx context.Context, args Crea
 		return nil, fmt.Errorf("failed to create application: %w", err)
 	}
 
+	config := &models.ApplicationConfig{
+		ApplicationID:  app.ID,
+		UseMariadb:     args.Config.UseMariaDB,
+		UseMongodb:     args.Config.UseMongoDB,
+		BaseImage:      args.Config.BaseImage,
+		BuildCMD:       args.Config.BuildCmd,
+		EntrypointCMD:  args.Config.EntrypointCmd,
+		Authentication: args.Config.Authentication.String(),
+	}
+	if err := app.SetApplicationConfig(ctx, r.db, true, config); err != nil {
+		return nil, fmt.Errorf("failed to set application config")
+	}
+
+	websites := lo.Map(args.Websites, func(website *CreateWebsiteArgs, i int) *models.Website {
+		return &models.Website{
+			FQDN:     website.FQDN,
+			HTTPPort: website.Port,
+		}
+	})
+	if err := app.AddWebsites(ctx, r.db, true, websites...); err != nil {
+		return nil, fmt.Errorf("failed to add websites")
+	}
+
 	log.WithField("appID", app.ID).
 		Info("app created")
 
-	if err := app.L.LoadRepository(ctx, r.db, true, app, nil); err != nil {
-		return nil, fmt.Errorf("failed to load repository: %w", err)
-	}
-	if err := app.L.LoadWebsites(ctx, r.db, true, app, nil); err != nil {
-		return nil, fmt.Errorf("failed to load website: %w", err)
-	}
-
-	return toDomainApplication(app), nil
+	return r.GetApplication(ctx, app.ID)
 }
 
 func (r *applicationRepository) UpdateApplication(ctx context.Context, id string, args UpdateApplicationArgs) error {

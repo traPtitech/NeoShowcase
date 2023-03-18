@@ -4,27 +4,29 @@
 package models
 
 var TableNames = struct {
-	ApplicationState string
-	Applications     string
-	Artifacts        string
-	AvailableDomains string
-	BuildStatus      string
-	Builds           string
-	Environments     string
-	Owners           string
-	Repositories     string
-	Users            string
-	Websites         string
+	ApplicationConfig string
+	ApplicationState  string
+	Applications      string
+	Artifacts         string
+	AvailableDomains  string
+	BuildStatus       string
+	Builds            string
+	Environments      string
+	Owners            string
+	Repositories      string
+	Users             string
+	Websites          string
 }{
-	ApplicationState: "application_state",
-	Applications:     "applications",
-	Artifacts:        "artifacts",
-	AvailableDomains: "available_domains",
-	BuildStatus:      "build_status",
-	Builds:           "builds",
-	Environments:     "environments",
-	Owners:           "owners",
-	Repositories:     "repositories",
-	Users:            "users",
-	Websites:         "websites",
+	ApplicationConfig: "application_config",
+	ApplicationState:  "application_state",
+	Applications:      "applications",
+	Artifacts:         "artifacts",
+	AvailableDomains:  "available_domains",
+	BuildStatus:       "build_status",
+	Builds:            "builds",
+	Environments:      "environments",
+	Owners:            "owners",
+	Repositories:      "repositories",
+	Users:             "users",
+	Websites:          "websites",
 }
