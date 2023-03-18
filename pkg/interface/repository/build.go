@@ -23,6 +23,7 @@ type BuildRepository interface {
 	GetBuild(ctx context.Context, buildID string) (*domain.Build, error)
 	CreateBuild(ctx context.Context, applicationID string, commit string) (*domain.Build, error)
 	UpdateBuild(ctx context.Context, args UpdateBuildArgs) error
+	MarkCommitAsRetriable(ctx context.Context, commit string) error
 }
 
 type buildRepository struct {
@@ -58,6 +59,7 @@ func (r *buildRepository) GetBuilds(ctx context.Context, applicationID string) (
 func (r *buildRepository) GetBuildsInCommit(ctx context.Context, commits []string) ([]*domain.Build, error) {
 	builds, err := models.Builds(
 		models.BuildWhere.Commit.IN(commits),
+		qm.Load(models.BuildRels.Artifact),
 	).All(ctx, r.db)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get builds: %w", err)
@@ -121,5 +123,17 @@ func (r *buildRepository) UpdateBuild(ctx context.Context, args UpdateBuildArgs)
 		return fmt.Errorf(errMsg, err)
 	}
 
+	return nil
+}
+
+func (r *buildRepository) MarkCommitAsRetriable(ctx context.Context, commit string) error {
+	_, err := models.Builds(
+		models.BuildWhere.Commit.EQ(commit),
+	).UpdateAll(ctx, r.db, models.M{
+		models.BuildColumns.Retriable: true,
+	})
+	if err != nil {
+		return fmt.Errorf("failed to mark commit as retriable: %w", err)
+	}
 	return nil
 }

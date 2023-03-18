@@ -96,6 +96,20 @@ func (mr *MockBuildRepositoryMockRecorder) GetBuildsInCommit(ctx, commits interf
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetBuildsInCommit", reflect.TypeOf((*MockBuildRepository)(nil).GetBuildsInCommit), ctx, commits)
 }
 
+// MarkCommitAsRetriable mocks base method.
+func (m *MockBuildRepository) MarkCommitAsRetriable(ctx context.Context, commit string) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "MarkCommitAsRetriable", ctx, commit)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// MarkCommitAsRetriable indicates an expected call of MarkCommitAsRetriable.
+func (mr *MockBuildRepositoryMockRecorder) MarkCommitAsRetriable(ctx, commit interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "MarkCommitAsRetriable", reflect.TypeOf((*MockBuildRepository)(nil).MarkCommitAsRetriable), ctx, commit)
+}
+
 // UpdateBuild mocks base method.
 func (m *MockBuildRepository) UpdateBuild(ctx context.Context, args repository.UpdateBuildArgs) error {
 	m.ctrl.T.Helper()

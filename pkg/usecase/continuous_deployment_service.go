@@ -9,6 +9,7 @@ import (
 	log "github.com/sirupsen/logrus"
 
 	"github.com/traPtitech/neoshowcase/pkg/domain"
+	"github.com/traPtitech/neoshowcase/pkg/domain/builder"
 	"github.com/traPtitech/neoshowcase/pkg/domain/event"
 	"github.com/traPtitech/neoshowcase/pkg/interface/repository"
 	"github.com/traPtitech/neoshowcase/pkg/util/optional"
@@ -136,6 +137,7 @@ func (cd *continuousDeploymentService) kickoffBuilds() error {
 	if err != nil {
 		return err
 	}
+	builds = lo.Filter(builds, func(b *domain.Build, i int) bool { return !(b.Status == builder.BuildStatusFailed && b.Retriable) })
 	buildExistsForCommit := lo.SliceToMap(builds, func(b *domain.Build) (string, bool) { return b.Commit, true })
 	for _, app := range applications {
 		if buildExistsForCommit[app.WantCommit] {

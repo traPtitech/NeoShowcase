@@ -341,6 +341,9 @@ export class Build extends jspb.Message {
   hasFinishedAt(): boolean;
   clearFinishedAt(): Build;
 
+  getRetriable(): boolean;
+  setRetriable(value: boolean): Build;
+
   serializeBinary(): Uint8Array;
   toObject(includeInstance?: boolean): Build.AsObject;
   static toObject(includeInstance: boolean, msg: Build): Build.AsObject;
@@ -356,6 +359,7 @@ export namespace Build {
     status: Build.BuildStatus,
     startedAt?: google_protobuf_timestamp_pb.Timestamp.AsObject,
     finishedAt?: neoshowcase_protobuf_null_pb.NullTimestamp.AsObject,
+    retriable: boolean,
   }
 
   export enum BuildStatus { 
@@ -549,6 +553,24 @@ export namespace SetApplicationEnvironmentVariableRequest {
     applicationId: string,
     key: string,
     value: string,
+  }
+}
+
+export class RetryCommitBuildRequest extends jspb.Message {
+  getCommit(): string;
+  setCommit(value: string): RetryCommitBuildRequest;
+
+  serializeBinary(): Uint8Array;
+  toObject(includeInstance?: boolean): RetryCommitBuildRequest.AsObject;
+  static toObject(includeInstance: boolean, msg: RetryCommitBuildRequest): RetryCommitBuildRequest.AsObject;
+  static serializeBinaryToWriter(message: RetryCommitBuildRequest, writer: jspb.BinaryWriter): void;
+  static deserializeBinary(bytes: Uint8Array): RetryCommitBuildRequest;
+  static deserializeBinaryFromReader(message: RetryCommitBuildRequest, reader: jspb.BinaryReader): RetryCommitBuildRequest;
+}
+
+export namespace RetryCommitBuildRequest {
+  export type AsObject = {
+    commit: string,
   }
 }
 

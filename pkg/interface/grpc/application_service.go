@@ -146,6 +146,14 @@ func (s *ApplicationService) GetApplicationKeys(context.Context, *pb.Application
 	return nil, status.Errorf(codes.Unimplemented, "method GetApplicationKeys not implemented")
 }
 
+func (s *ApplicationService) RetryCommitBuild(ctx context.Context, req *pb.RetryCommitBuildRequest) (*emptypb.Empty, error) {
+	err := s.svc.RetryCommitBuild(ctx, req.Commit)
+	if err != nil {
+		return nil, status.Errorf(codes.Internal, "%v", err)
+	}
+	return &emptypb.Empty{}, nil
+}
+
 func (s *ApplicationService) StartApplication(ctx context.Context, req *pb.ApplicationIdRequest) (*emptypb.Empty, error) {
 	err := s.svc.StartApplication(ctx, req.Id)
 	if err != nil {
@@ -303,6 +311,7 @@ func toPBBuild(build *domain.Build) *pb.Build {
 			Timestamp: timestamppb.New(build.FinishedAt.V),
 			Valid:     build.FinishedAt.Valid,
 		},
+		Retriable: build.Retriable,
 	}
 }
 

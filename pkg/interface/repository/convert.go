@@ -53,6 +53,7 @@ func toDomainBuild(build *models.Build) *domain.Build {
 		ApplicationID: build.ApplicationID,
 		StartedAt:     build.StartedAt,
 		FinishedAt:    optional.New(build.FinishedAt.Time, build.FinishedAt.Valid),
+		Retriable:     build.Retriable,
 	}
 	if build.R != nil && build.R.Artifact != nil {
 		artifact := build.R.Artifact

@@ -35,6 +35,7 @@ type ApplicationServiceClient interface {
 	SetApplicationEnvironmentVariable(ctx context.Context, in *SetApplicationEnvironmentVariableRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
 	GetApplicationOutput(ctx context.Context, in *ApplicationIdRequest, opts ...grpc.CallOption) (*ApplicationOutput, error)
 	GetApplicationKeys(ctx context.Context, in *ApplicationIdRequest, opts ...grpc.CallOption) (*ApplicationKeys, error)
+	RetryCommitBuild(ctx context.Context, in *RetryCommitBuildRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
 	StartApplication(ctx context.Context, in *ApplicationIdRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
 	StopApplication(ctx context.Context, in *ApplicationIdRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
 }
@@ -155,6 +156,15 @@ func (c *applicationServiceClient) GetApplicationKeys(ctx context.Context, in *A
 	return out, nil
 }
 
+func (c *applicationServiceClient) RetryCommitBuild(ctx context.Context, in *RetryCommitBuildRequest, opts ...grpc.CallOption) (*emptypb.Empty, error) {
+	out := new(emptypb.Empty)
+	err := c.cc.Invoke(ctx, "/neoshowcase.protobuf.ApplicationService/RetryCommitBuild", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 func (c *applicationServiceClient) StartApplication(ctx context.Context, in *ApplicationIdRequest, opts ...grpc.CallOption) (*emptypb.Empty, error) {
 	out := new(emptypb.Empty)
 	err := c.cc.Invoke(ctx, "/neoshowcase.protobuf.ApplicationService/StartApplication", in, out, opts...)
@@ -189,6 +199,7 @@ type ApplicationServiceServer interface {
 	SetApplicationEnvironmentVariable(context.Context, *SetApplicationEnvironmentVariableRequest) (*emptypb.Empty, error)
 	GetApplicationOutput(context.Context, *ApplicationIdRequest) (*ApplicationOutput, error)
 	GetApplicationKeys(context.Context, *ApplicationIdRequest) (*ApplicationKeys, error)
+	RetryCommitBuild(context.Context, *RetryCommitBuildRequest) (*emptypb.Empty, error)
 	StartApplication(context.Context, *ApplicationIdRequest) (*emptypb.Empty, error)
 	StopApplication(context.Context, *ApplicationIdRequest) (*emptypb.Empty, error)
 	mustEmbedUnimplementedApplicationServiceServer()
@@ -233,6 +244,9 @@ func (UnimplementedApplicationServiceServer) GetApplicationOutput(context.Contex
 }
 func (UnimplementedApplicationServiceServer) GetApplicationKeys(context.Context, *ApplicationIdRequest) (*ApplicationKeys, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetApplicationKeys not implemented")
+}
+func (UnimplementedApplicationServiceServer) RetryCommitBuild(context.Context, *RetryCommitBuildRequest) (*emptypb.Empty, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method RetryCommitBuild not implemented")
 }
 func (UnimplementedApplicationServiceServer) StartApplication(context.Context, *ApplicationIdRequest) (*emptypb.Empty, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method StartApplication not implemented")
@@ -469,6 +483,24 @@ func _ApplicationService_GetApplicationKeys_Handler(srv interface{}, ctx context
 	return interceptor(ctx, in, info, handler)
 }
 
+func _ApplicationService_RetryCommitBuild_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(RetryCommitBuildRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ApplicationServiceServer).RetryCommitBuild(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/neoshowcase.protobuf.ApplicationService/RetryCommitBuild",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ApplicationServiceServer).RetryCommitBuild(ctx, req.(*RetryCommitBuildRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 func _ApplicationService_StartApplication_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(ApplicationIdRequest)
 	if err := dec(in); err != nil {
@@ -559,6 +591,10 @@ var ApplicationService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "GetApplicationKeys",
 			Handler:    _ApplicationService_GetApplicationKeys_Handler,
+		},
+		{
+			MethodName: "RetryCommitBuild",
+			Handler:    _ApplicationService_RetryCommitBuild_Handler,
 		},
 		{
 			MethodName: "StartApplication",

@@ -98,6 +98,7 @@ CREATE TABLE `builds`
     `status`         VARCHAR(10) NOT NULL COMMENT 'ビルドの状態',
     `started_at`     DATETIME(6) NOT NULL COMMENT 'ビルド開始日時',
     `finished_at`    DATETIME(6) NULL COMMENT 'ビルド終了日時',
+    `retriable`      TINYINT(1)  NOT NULL COMMENT '再ビルド可能フラグ',
     `application_id` VARCHAR(22) NOT NULL COMMENT 'アプリケーションID',
     PRIMARY KEY (`id`),
     CONSTRAINT `fk_builds_status`

@@ -33,6 +33,8 @@ type Build struct { // ビルドID
 	StartedAt time.Time `boil:"started_at" json:"started_at" toml:"started_at" yaml:"started_at"`
 	// ビルド終了日時
 	FinishedAt null.Time `boil:"finished_at" json:"finished_at,omitempty" toml:"finished_at" yaml:"finished_at,omitempty"`
+	// 再ビルド可能フラグ
+	Retriable bool `boil:"retriable" json:"retriable" toml:"retriable" yaml:"retriable"`
 	// アプリケーションID
 	ApplicationID string `boil:"application_id" json:"application_id" toml:"application_id" yaml:"application_id"`
 
@@ -46,6 +48,7 @@ var BuildColumns = struct {
 	Status        string
 	StartedAt     string
 	FinishedAt    string
+	Retriable     string
 	ApplicationID string
 }{
 	ID:            "id",
@@ -53,6 +56,7 @@ var BuildColumns = struct {
 	Status:        "status",
 	StartedAt:     "started_at",
 	FinishedAt:    "finished_at",
+	Retriable:     "retriable",
 	ApplicationID: "application_id",
 }
 
@@ -62,6 +66,7 @@ var BuildTableColumns = struct {
 	Status        string
 	StartedAt     string
 	FinishedAt    string
+	Retriable     string
 	ApplicationID string
 }{
 	ID:            "builds.id",
@@ -69,6 +74,7 @@ var BuildTableColumns = struct {
 	Status:        "builds.status",
 	StartedAt:     "builds.started_at",
 	FinishedAt:    "builds.finished_at",
+	Retriable:     "builds.retriable",
 	ApplicationID: "builds.application_id",
 }
 
@@ -80,6 +86,7 @@ var BuildWhere = struct {
 	Status        whereHelperstring
 	StartedAt     whereHelpertime_Time
 	FinishedAt    whereHelpernull_Time
+	Retriable     whereHelperbool
 	ApplicationID whereHelperstring
 }{
 	ID:            whereHelperstring{field: "`builds`.`id`"},
@@ -87,6 +94,7 @@ var BuildWhere = struct {
 	Status:        whereHelperstring{field: "`builds`.`status`"},
 	StartedAt:     whereHelpertime_Time{field: "`builds`.`started_at`"},
 	FinishedAt:    whereHelpernull_Time{field: "`builds`.`finished_at`"},
+	Retriable:     whereHelperbool{field: "`builds`.`retriable`"},
 	ApplicationID: whereHelperstring{field: "`builds`.`application_id`"},
 }
 
@@ -138,8 +146,8 @@ func (r *buildR) GetArtifact() *Artifact {
 type buildL struct{}
 
 var (
-	buildAllColumns            = []string{"id", "commit", "status", "started_at", "finished_at", "application_id"}
-	buildColumnsWithoutDefault = []string{"id", "commit", "status", "started_at", "finished_at", "application_id"}
+	buildAllColumns            = []string{"id", "commit", "status", "started_at", "finished_at", "retriable", "application_id"}
+	buildColumnsWithoutDefault = []string{"id", "commit", "status", "started_at", "finished_at", "retriable", "application_id"}
 	buildColumnsWithDefault    = []string{}
 	buildPrimaryKeyColumns     = []string{"id"}
 	buildGeneratedColumns      = []string{}

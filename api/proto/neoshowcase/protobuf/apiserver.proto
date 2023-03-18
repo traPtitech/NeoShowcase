@@ -109,6 +109,7 @@ message Build {
   BuildStatus status = 3;
   google.protobuf.Timestamp started_at = 4;
   neoshowcase.protobuf.NullTimestamp finished_at = 5;
+  bool retriable = 6;
 }
 
 message BuildLog {
@@ -151,6 +152,10 @@ message SetApplicationEnvironmentVariableRequest {
   string value = 3;
 }
 
+message RetryCommitBuildRequest {
+  string commit = 1;
+}
+
 service ApplicationService {
   rpc GetApplications(google.protobuf.Empty) returns (GetApplicationsResponse);
   rpc CreateApplication(CreateApplicationRequest) returns (Application);
@@ -164,6 +169,7 @@ service ApplicationService {
   rpc SetApplicationEnvironmentVariable(SetApplicationEnvironmentVariableRequest) returns (google.protobuf.Empty);
   rpc GetApplicationOutput(ApplicationIdRequest) returns (ApplicationOutput);
   rpc GetApplicationKeys(ApplicationIdRequest) returns (ApplicationKeys);
+  rpc RetryCommitBuild(RetryCommitBuildRequest) returns (google.protobuf.Empty);
   rpc StartApplication(ApplicationIdRequest) returns (google.protobuf.Empty);
   rpc StopApplication(ApplicationIdRequest) returns (google.protobuf.Empty);
 }

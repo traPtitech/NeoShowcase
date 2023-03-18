@@ -123,6 +123,7 @@ type Build struct {
 	ApplicationID string
 	StartedAt     time.Time
 	FinishedAt    optional.Of[time.Time]
+	Retriable     bool
 	Artifact      optional.Of[Artifact]
 }
 
