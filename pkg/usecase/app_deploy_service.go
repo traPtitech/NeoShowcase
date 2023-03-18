@@ -12,6 +12,7 @@ import (
 
 	"github.com/traPtitech/neoshowcase/pkg/domain"
 	"github.com/traPtitech/neoshowcase/pkg/domain/builder"
+	"github.com/traPtitech/neoshowcase/pkg/domain/event"
 	"github.com/traPtitech/neoshowcase/pkg/interface/grpc/pb"
 	"github.com/traPtitech/neoshowcase/pkg/interface/repository"
 	"github.com/traPtitech/neoshowcase/pkg/util/ds"
@@ -28,6 +29,7 @@ type AppDeployService interface {
 type appDeployService struct {
 	deployLock *ds.Mutex[string]
 
+	bus       domain.Bus
 	backend   domain.Backend
 	appRepo   repository.ApplicationRepository
 	buildRepo repository.BuildRepository
@@ -39,6 +41,7 @@ type appDeployService struct {
 }
 
 func NewAppDeployService(
+	bus domain.Bus,
 	backend domain.Backend,
 	appRepo repository.ApplicationRepository,
 	buildRepo repository.BuildRepository,
@@ -49,6 +52,7 @@ func NewAppDeployService(
 ) AppDeployService {
 	return &appDeployService{
 		deployLock:      ds.NewMutex[string](),
+		bus:             bus,
 		backend:         backend,
 		appRepo:         appRepo,
 		buildRepo:       buildRepo,
@@ -89,8 +93,17 @@ func (s *appDeployService) synchronize(ctx context.Context, appID string, restar
 		return err
 	}
 
+	// Mark application as started if idle
+	if app.State == domain.ApplicationStateIdle {
+		err = s.appRepo.UpdateApplication(ctx, app.ID, repository.UpdateApplicationArgs{State: optional.From(domain.ApplicationStateDeploying)})
+		if err != nil {
+			return err
+		}
+	}
+
 	build, err := s.getSuccessBuild(ctx, app)
 	if err == ErrNotFound {
+		s.bus.Publish(event.CDServiceSyncBuildRequest, nil)
 		return nil
 	}
 	if err != nil {

@@ -249,7 +249,6 @@ func (s *apiServerService) StartApplication(_ context.Context, id string) error 
 	if !ok {
 		return errors.New("application is currently busy")
 	}
-	s.bus.Publish(event.APIServerStartApplication, nil)
 	return nil
 }
 

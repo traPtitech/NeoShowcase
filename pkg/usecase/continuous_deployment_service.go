@@ -74,7 +74,7 @@ func (cd *continuousDeploymentService) Stop(_ context.Context) error {
 }
 
 func (cd *continuousDeploymentService) syncBuildLoop(closer <-chan struct{}) {
-	sub := cd.bus.Subscribe(event.FetcherFetchComplete, event.APIServerStartApplication)
+	sub := cd.bus.Subscribe(event.FetcherFetchComplete, event.CDServiceSyncBuildRequest)
 	defer sub.Unsubscribe()
 
 	doSync := func() {

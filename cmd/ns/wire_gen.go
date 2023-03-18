@@ -62,7 +62,7 @@ func NewWithDocker(c2 Config) (*Server, error) {
 	staticSiteServiceClient := grpc.NewStaticSiteServiceClient(staticSiteServiceClientConn)
 	dockerImageRegistryString := provideImageRegistry(c2)
 	dockerImageNamePrefixString := provideImagePrefix(c2)
-	appDeployService := usecase.NewAppDeployService(backend, applicationRepository, buildRepository, environmentRepository, staticSiteServiceClient, dockerImageRegistryString, dockerImageNamePrefixString)
+	appDeployService := usecase.NewAppDeployService(bus, backend, applicationRepository, buildRepository, environmentRepository, staticSiteServiceClient, dockerImageRegistryString, dockerImageNamePrefixString)
 	mariaDBConfig := c2.MariaDB
 	mariaDBManager, err := dbmanager.NewMariaDBManager(mariaDBConfig)
 	if err != nil {
@@ -150,7 +150,7 @@ func NewWithK8S(c2 Config) (*Server, error) {
 	staticSiteServiceClient := grpc.NewStaticSiteServiceClient(staticSiteServiceClientConn)
 	dockerImageRegistryString := provideImageRegistry(c2)
 	dockerImageNamePrefixString := provideImagePrefix(c2)
-	appDeployService := usecase.NewAppDeployService(backend, applicationRepository, buildRepository, environmentRepository, staticSiteServiceClient, dockerImageRegistryString, dockerImageNamePrefixString)
+	appDeployService := usecase.NewAppDeployService(bus, backend, applicationRepository, buildRepository, environmentRepository, staticSiteServiceClient, dockerImageRegistryString, dockerImageNamePrefixString)
 	mariaDBConfig := c2.MariaDB
 	mariaDBManager, err := dbmanager.NewMariaDBManager(mariaDBConfig)
 	if err != nil {
