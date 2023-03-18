@@ -21,6 +21,7 @@ import (
 type GetApplicationCondition struct {
 	UserID    optional.Of[string]
 	BuildType optional.Of[builder.BuildType]
+	State     optional.Of[domain.ApplicationState]
 	// InSync WantCommit が CurrentCommit に一致する
 	InSync optional.Of[bool]
 }
@@ -89,6 +90,9 @@ func (r *applicationRepository) GetApplications(ctx context.Context, cond GetApp
 	}
 	if cond.BuildType.Valid {
 		mods = append(mods, models.ApplicationWhere.BuildType.EQ(cond.BuildType.V.String()))
+	}
+	if cond.State.Valid {
+		mods = append(mods, models.ApplicationWhere.State.EQ(cond.State.V.String()))
 	}
 	if cond.InSync.Valid {
 		if cond.InSync.V {

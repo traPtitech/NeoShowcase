@@ -187,14 +187,22 @@ func (s *appDeployService) stop(ctx context.Context, appID string) error {
 		return err
 	}
 
-	err = s.backend.DestroyContainer(ctx, app)
-	if err != nil {
-		return err
+	if app.BuildType == builder.BuildTypeRuntime {
+		err = s.backend.DestroyContainer(ctx, app)
+		if err != nil {
+			return err
+		}
 	}
 
 	err = s.appRepo.UpdateApplication(ctx, app.ID, repository.UpdateApplicationArgs{State: optional.From(domain.ApplicationStateIdle)})
 	if err != nil {
 		return fmt.Errorf("failed to update application state: %w", err)
+	}
+
+	if app.BuildType == builder.BuildTypeStatic {
+		if _, err = s.ss.Reload(ctx, &emptypb.Empty{}); err != nil {
+			return fmt.Errorf("failed to reload static site server: %w", err)
+		}
 	}
 
 	return nil
