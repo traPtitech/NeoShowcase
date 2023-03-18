@@ -155,6 +155,8 @@ func (r *applicationRepository) CreateApplication(ctx context.Context, args Crea
 		UseMariadb:     args.Config.UseMariaDB,
 		UseMongodb:     args.Config.UseMongoDB,
 		BaseImage:      args.Config.BaseImage,
+		DockerfileName: args.Config.DockerfileName,
+		ArtifactPath:   args.Config.ArtifactPath,
 		BuildCMD:       args.Config.BuildCmd,
 		EntrypointCMD:  args.Config.EntrypointCmd,
 		Authentication: args.Config.Authentication.String(),

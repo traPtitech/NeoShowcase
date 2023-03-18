@@ -110,11 +110,11 @@
 <text text-anchor="start" x="50.5" y="-937.9" font-family="Arial" font-size="14.00" fill="#000000">use_mongodb </text>
 <text text-anchor="start" x="143.0946" y="-937.9" font-family="Arial" font-size="14.00" fill="#666666">[tinyint(1)]</text>
 <polygon fill="none" stroke="#000000" points="43.5,-896.5 43.5,-926.5 298.5,-926.5 298.5,-896.5 43.5,-896.5"/>
-<text text-anchor="start" x="50.5" y="-907.9" font-family="Arial" font-size="14.00" fill="#000000">dockerfile_name </text>
-<text text-anchor="start" x="157.0764" y="-907.9" font-family="Arial" font-size="14.00" fill="#666666">[varchar(100)]</text>
+<text text-anchor="start" x="50.5" y="-907.9" font-family="Arial" font-size="14.00" fill="#000000">base_image </text>
+<text text-anchor="start" x="130.636" y="-907.9" font-family="Arial" font-size="14.00" fill="#666666">[varchar(1000)]</text>
 <polygon fill="none" stroke="#000000" points="43.5,-866.5 43.5,-896.5 298.5,-896.5 298.5,-866.5 43.5,-866.5"/>
-<text text-anchor="start" x="50.5" y="-877.9" font-family="Arial" font-size="14.00" fill="#000000">base_image </text>
-<text text-anchor="start" x="130.636" y="-877.9" font-family="Arial" font-size="14.00" fill="#666666">[varchar(1000)]</text>
+<text text-anchor="start" x="50.5" y="-877.9" font-family="Arial" font-size="14.00" fill="#000000">dockerfile_name </text>
+<text text-anchor="start" x="157.0764" y="-877.9" font-family="Arial" font-size="14.00" fill="#666666">[varchar(100)]</text>
 <polygon fill="none" stroke="#000000" points="43.5,-836.5 43.5,-866.5 298.5,-866.5 298.5,-836.5 43.5,-836.5"/>
 <text text-anchor="start" x="50.5" y="-847.9" font-family="Arial" font-size="14.00" fill="#000000">artifact_path </text>
 <text text-anchor="start" x="131.4158" y="-847.9" font-family="Arial" font-size="14.00" fill="#666666">[varchar(100)]</text>
