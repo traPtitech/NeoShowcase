@@ -486,14 +486,17 @@ func (s *builderService) buildStaticWithDockerfile(
 	if err != nil {
 		return err
 	}
-	def, _ := llb.
+	def, err := llb.
 		Scratch().
-		File(llb.Copy(b, t.BuildOptions.ArtifactPath, "/", &llb.CopyInfo{
+		File(llb.Copy(*b, t.BuildOptions.ArtifactPath, "/", &llb.CopyInfo{
 			CopyDirContentsOnly: true,
 			CreateDestPath:      true,
 			AllowWildcard:       true,
 		})).
 		Marshal(context.Background())
+	if err != nil {
+		return err
+	}
 	_, err = s.buildkit.Solve(ctx, def, buildkit.SolveOpt{
 		Exports: []buildkit.ExportEntry{{
 			Type:   buildkit.ExporterTar,
@@ -521,7 +524,7 @@ func (s *builderService) buildStaticWithConfig(
 		Run(llb.Shlex(t.BuildOptions.BuildCmd)).
 		Root()
 	// ビルドで生成された静的ファイルのみを含むScratchイメージを構成
-	def, _ := llb.
+	def, err := llb.
 		Scratch().
 		File(llb.Copy(b, t.BuildOptions.ArtifactPath, "/", &llb.CopyInfo{
 			CopyDirContentsOnly: true,
@@ -529,8 +532,11 @@ func (s *builderService) buildStaticWithConfig(
 			AllowWildcard:       true,
 		})).
 		Marshal(context.Background())
+	if err != nil {
+		return err
+	}
 
-	_, err := s.buildkit.Solve(ctx, def, buildkit.SolveOpt{
+	_, err = s.buildkit.Solve(ctx, def, buildkit.SolveOpt{
 		Exports: []buildkit.ExportEntry{{
 			Type:   buildkit.ExporterTar,
 			Output: func(_ map[string]string) (io.WriteCloser, error) { return intState.artifactTempFile, nil },
