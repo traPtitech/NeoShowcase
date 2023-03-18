@@ -89,11 +89,6 @@ func (s *appDeployService) synchronize(ctx context.Context, appID string, restar
 		return err
 	}
 
-	err = s.appRepo.UpdateApplication(ctx, app.ID, repository.UpdateApplicationArgs{State: optional.From(domain.ApplicationStateDeploying)})
-	if err != nil {
-		return err
-	}
-
 	build, err := s.getSuccessBuild(ctx, app)
 	if err == ErrNotFound {
 		return nil
@@ -105,6 +100,11 @@ func (s *appDeployService) synchronize(ctx context.Context, appID string, restar
 	doDeploy := restart || (!restart && app.WantCommit != app.CurrentCommit)
 
 	if doDeploy && app.BuildType == builder.BuildTypeRuntime {
+		err = s.appRepo.UpdateApplication(ctx, app.ID, repository.UpdateApplicationArgs{State: optional.From(domain.ApplicationStateDeploying)})
+		if err != nil {
+			return err
+		}
+
 		err = s.recreateContainer(ctx, app, build)
 		if err != nil {
 			return err
