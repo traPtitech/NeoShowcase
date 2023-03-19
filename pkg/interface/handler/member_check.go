@@ -2,37 +2,44 @@ package handler
 
 import (
 	"net/http"
-	"strings"
 
 	"github.com/traPtitech/neoshowcase/pkg/domain/web"
 	"github.com/traPtitech/neoshowcase/pkg/usecase"
 )
 
+type TokenCookieName string
+
 type MemberCheckHandler web.Handler
 
 type memberCheckHandler struct {
-	s usecase.MemberCheckService
+	s          usecase.MemberCheckService
+	cookieName string
 }
 
-func NewMemberCheckHandler(s usecase.MemberCheckService) MemberCheckHandler {
-	return &memberCheckHandler{s: s}
+func NewMemberCheckHandler(s usecase.MemberCheckService, cookieName TokenCookieName) MemberCheckHandler {
+	return &memberCheckHandler{
+		s:          s,
+		cookieName: string(cookieName),
+	}
 }
 
 func (h *memberCheckHandler) HandleRequest(c web.Context) error {
 	unauthorized := func() error {
-		q := c.QueryParam("type")
-		switch strings.ToLower(q) {
+		authType := c.Request().Header.Get(web.HeaderNameAuthorizationType)
+		switch authType {
+		case "", "none":
+			return c.String(http.StatusOK, "")
 		case "soft":
-			c.Response().Header().Set("X-Showcase-User", "-")
+			c.Response().Header().Set(web.HeaderNameShowcaseUser, "-")
 			return c.String(http.StatusOK, "")
 		case "hard":
 			return c.NoContent(http.StatusForbidden)
 		default:
-			return c.NoContent(http.StatusForbidden)
+			return c.String(http.StatusBadRequest, "bad auth type")
 		}
 	}
 
-	tokenString, err := c.CookieValue("traP_ext_token")
+	tokenString, err := c.CookieValue(h.cookieName)
 	if len(tokenString) == 0 {
 		return unauthorized()
 	}
@@ -42,6 +49,6 @@ func (h *memberCheckHandler) HandleRequest(c web.Context) error {
 		return unauthorized()
 	}
 
-	c.Response().Header().Set("X-Showcase-User", id)
+	c.Response().Header().Set(web.HeaderNameShowcaseUser, id)
 	return c.String(http.StatusOK, "")
 }

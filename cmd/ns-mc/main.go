@@ -8,10 +8,10 @@ import (
 	"os"
 	"time"
 
-	"github.com/google/wire"
 	"github.com/labstack/echo/v4"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
+
 	"github.com/traPtitech/neoshowcase/pkg/domain/web"
 	"github.com/traPtitech/neoshowcase/pkg/interface/handler"
 	"github.com/traPtitech/neoshowcase/pkg/usecase"
@@ -26,6 +26,7 @@ var (
 var (
 	port           int
 	pubkeyFilePath string
+	cookieName     string
 )
 
 var rootCommand = &cobra.Command{
@@ -71,16 +72,12 @@ func main() {
 
 	flags.IntVarP(&port, "port", "p", cli.GetIntEnvOrDefault("NS_MC_PORT", 8081), "port num")
 	flags.StringVarP(&pubkeyFilePath, "pubkey-file", "k", cli.GetEnvOrDefault("NS_MC_PUBKEY_FILE", ""), "public key PEM file path")
+	flags.StringVarP(&cookieName, "cookie-name", "c", cli.GetEnvOrDefault("NS_MC_COOKIE_NAME", "traP_ext_token"), "token cookie name")
 
 	if err := rootCommand.Execute(); err != nil {
 		log.Fatal(err)
 	}
 }
-
-//nolint
-var handlerSet = wire.NewSet(
-	handler.NewMemberCheckHandler,
-)
 
 type Router struct {
 	h handler.MemberCheckHandler
@@ -118,4 +115,8 @@ func provideServerConfig(router web.Router) web.Config {
 		Port:   port,
 		Router: router,
 	}
+}
+
+func provideTokenCookieName() handler.TokenCookieName {
+	return handler.TokenCookieName(cookieName)
 }
