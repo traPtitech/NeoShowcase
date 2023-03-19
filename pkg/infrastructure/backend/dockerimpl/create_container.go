@@ -51,12 +51,19 @@ func (b *dockerBackend) CreateContainer(ctx context.Context, app *domain.Applica
 		appContainerLabel:              "true",
 		appContainerApplicationIDLabel: app.ID,
 	})
+
 	labels["traefik.enable"] = "true"
 	for _, website := range app.Websites {
 		traefikName := "nsapp_" + strings.ReplaceAll(website.FQDN, ".", "_")
 		labels[fmt.Sprintf("traefik.http.routers.%s.rule", traefikName)] = fmt.Sprintf("Host(`%s`)", website.FQDN)
 		labels[fmt.Sprintf("traefik.http.routers.%s.service", traefikName)] = traefikName
 		labels[fmt.Sprintf("traefik.http.services.%s.loadbalancer.server.port", traefikName)] = strconv.Itoa(website.Port)
+		switch app.Config.Authentication {
+		case domain.AuthenticationTypeSoft:
+			labels[fmt.Sprintf("traefik.http.routers.%s.middlewares", traefikName)] = "ns_auth_soft@file, ns_auth@file"
+		case domain.AuthenticationTypeHard:
+			labels[fmt.Sprintf("traefik.http.routers.%s.middlewares", traefikName)] = "ns_auth_hard@file, ns_auth@file"
+		}
 	}
 
 	// ビルドしたイメージのコンテナを作成

@@ -2,3 +2,4 @@ neoshowcase/**
 staticsite/**
 dind/**
 traefik/**
+!traefik/middlewares.yaml
