@@ -15,7 +15,13 @@ type DefaultContext struct {
 
 func (c *DefaultContext) CookieValue(name string) (string, error) {
 	token, err := c.Cookie(name)
-	return token.Value, err
+	if err != nil {
+		return "", err
+	}
+	if token == nil {
+		return "", nil
+	}
+	return token.Value, nil
 }
 
 func UnwrapHandler(h Handler) echo.HandlerFunc {
