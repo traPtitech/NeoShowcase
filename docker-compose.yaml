@@ -43,7 +43,11 @@ services:
       target: ns-mc
     restart: always
     ports:
-      - "5005:8081"
+      - "5005:80"
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.ns_mc.rule=Host(`mc.local.tokyotech.org`)"
+      - "traefik.http.services.ns_mc.loadbalancer.server.port=80"
     networks:
       - default
 

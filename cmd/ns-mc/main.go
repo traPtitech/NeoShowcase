@@ -70,7 +70,7 @@ func main() {
 	cli.SetupDebugFlag(flags)
 	cli.SetupLogLevelFlag(flags)
 
-	flags.IntVarP(&port, "port", "p", cli.GetIntEnvOrDefault("NS_MC_PORT", 8081), "port num")
+	flags.IntVarP(&port, "port", "p", cli.GetIntEnvOrDefault("NS_MC_PORT", 80), "port num")
 	flags.StringVarP(&pubkeyFilePath, "pubkey-file", "k", cli.GetEnvOrDefault("NS_MC_PUBKEY_FILE", ""), "public key PEM file path")
 	flags.StringVarP(&cookieName, "cookie-name", "c", cli.GetEnvOrDefault("NS_MC_COOKIE_NAME", "traP_ext_token"), "token cookie name")
 
