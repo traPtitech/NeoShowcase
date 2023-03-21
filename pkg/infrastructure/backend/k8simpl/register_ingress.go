@@ -109,8 +109,11 @@ func (b *k8sBackend) registerIngress(ctx context.Context, app *domain.Applicatio
 
 	if _, err := b.traefikClient.IngressRoutes(appNamespace).Create(ctx, ingressRoute, metav1.CreateOptions{}); err != nil {
 		if errors.IsAlreadyExists(err) {
-			if _, err = b.traefikClient.IngressRoutes(appNamespace).Update(ctx, ingressRoute, metav1.UpdateOptions{}); err != nil {
-				return fmt.Errorf("failed to update IngressRoute: %w", err)
+			if err = b.traefikClient.IngressRoutes(appNamespace).Delete(ctx, ingressRoute.Name, metav1.DeleteOptions{}); err != nil {
+				return fmt.Errorf("failed to delete IngressRoute: %w", err)
+			}
+			if _, err = b.traefikClient.IngressRoutes(appNamespace).Create(ctx, ingressRoute, metav1.CreateOptions{}); err != nil {
+				return fmt.Errorf("failed to create IngressRoute: %w", err)
 			}
 		} else {
 			return fmt.Errorf("failed to create IngressRoute: %w", err)
