@@ -188,12 +188,31 @@ services:
       - --providers.docker.exposedByDefault=false
       - --providers.file
       - --providers.file.directory=/opt/neoshowcase/conf
+      - --entrypoints.web.address=:80/tcp
+      - --entrypoints.websecure.address=:443/tcp
+      - --entrypoints.websecure.http.tls=true
+      - --entrypoints.traefik.address=:8080/tcp
+      - --entrypoints.metrics.address=:9100/tcp
+      - --api.dashboard=true
+      - --ping=true
+      - --metrics.prometheus=true
+      - --metrics.prometheus.entrypoint=metrics
     ports:
       - "80:80"
+      - "443:443"
       - "8080:8080"
+      - "9100:9100"
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
       - ./local-dev/traefik:/opt/neoshowcase/conf
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.traefik_dashboard.rule=Host(`traefik.local.tokyotech.org`)"
+      - "traefik.http.routers.traefik_dashboard.service=traefik_dashboard"
+      - "traefik.http.services.traefik_dashboard.loadbalancer.server.port=8080"
+      - "traefik.http.routers.traefik_metrics.rule=Host(`traefik.local.tokyotech.org`) && PathPrefix(`/metrics`)"
+      - "traefik.http.routers.traefik_metrics.service=traefik_metrics"
+      - "traefik.http.services.traefik_metrics.loadbalancer.server.port=9100"
     networks:
       - default
       - apps

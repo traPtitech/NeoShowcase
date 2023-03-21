@@ -21,6 +21,7 @@ import (
 	"github.com/traPtitech/neoshowcase/pkg/interface/grpc"
 	"github.com/traPtitech/neoshowcase/pkg/interface/repository"
 	"github.com/traPtitech/neoshowcase/pkg/usecase"
+	"github.com/traefik/traefik/v2/pkg/provider/kubernetes/crd/generated/clientset/versioned/typed/traefik/v1alpha1"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
 )
@@ -138,7 +139,11 @@ func NewWithK8S(c2 Config) (*Server, error) {
 	if err != nil {
 		return nil, err
 	}
-	backend, err := k8simpl.NewK8SBackend(bus, clientset)
+	traefikV1alpha1Client, err := v1alpha1.NewForConfig(restConfig)
+	if err != nil {
+		return nil, err
+	}
+	backend, err := k8simpl.NewK8SBackend(bus, clientset, traefikV1alpha1Client)
 	if err != nil {
 		return nil, err
 	}
