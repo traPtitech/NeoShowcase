@@ -77,8 +77,9 @@ func toDomainEnvironment(env *models.Environment) *domain.Environment {
 
 func toDomainWebsite(website *models.Website) *domain.Website {
 	return &domain.Website{
-		ID:   website.ID,
-		FQDN: website.FQDN,
-		Port: website.HTTPPort,
+		ID:       website.ID,
+		FQDN:     website.FQDN,
+		HTTPS:    website.HTTPS,
+		HTTPPort: website.HTTPPort,
 	}
 }

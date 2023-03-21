@@ -58,8 +58,11 @@ export class Website extends jspb.Message {
   getFqdn(): string;
   setFqdn(value: string): Website;
 
-  getPort(): number;
-  setPort(value: number): Website;
+  getHttps(): boolean;
+  setHttps(value: boolean): Website;
+
+  getHttpPort(): number;
+  setHttpPort(value: number): Website;
 
   serializeBinary(): Uint8Array;
   toObject(includeInstance?: boolean): Website.AsObject;
@@ -73,7 +76,8 @@ export namespace Website {
   export type AsObject = {
     id: string,
     fqdn: string,
-    port: number,
+    https: boolean,
+    httpPort: number,
   }
 }
 
@@ -81,8 +85,11 @@ export class CreateWebsiteRequest extends jspb.Message {
   getFqdn(): string;
   setFqdn(value: string): CreateWebsiteRequest;
 
-  getPort(): number;
-  setPort(value: number): CreateWebsiteRequest;
+  getHttps(): boolean;
+  setHttps(value: boolean): CreateWebsiteRequest;
+
+  getHttpPort(): number;
+  setHttpPort(value: number): CreateWebsiteRequest;
 
   serializeBinary(): Uint8Array;
   toObject(includeInstance?: boolean): CreateWebsiteRequest.AsObject;
@@ -95,7 +102,8 @@ export class CreateWebsiteRequest extends jspb.Message {
 export namespace CreateWebsiteRequest {
   export type AsObject = {
     fqdn: string,
-    port: number,
+    https: boolean,
+    httpPort: number,
   }
 }
 

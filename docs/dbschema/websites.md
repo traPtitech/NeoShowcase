@@ -11,7 +11,8 @@ Webサイトテーブル
 CREATE TABLE `websites` (
   `id` varchar(22) NOT NULL COMMENT 'サイトID',
   `fqdn` varchar(50) NOT NULL COMMENT 'サイトURLのFQDN',
-  `http_port` int(11) NOT NULL DEFAULT 80 COMMENT 'HTTPポート番号',
+  `https` tinyint(1) NOT NULL COMMENT 'httpsの接続かどうか',
+  `http_port` int(11) NOT NULL DEFAULT 80 COMMENT 'コンテナhttpポート番号',
   `created_at` datetime(6) NOT NULL COMMENT '作成日時',
   `updated_at` datetime(6) NOT NULL COMMENT '更新日時',
   `application_id` varchar(22) NOT NULL COMMENT 'アプリケーションID',
@@ -30,7 +31,8 @@ CREATE TABLE `websites` (
 | ---- | ---- | ------- | -------- | -------- | ------- | ------- |
 | id | varchar(22) |  | false |  |  | サイトID |
 | fqdn | varchar(50) |  | false |  |  | サイトURLのFQDN |
-| http_port | int(11) | 80 | false |  |  | HTTPポート番号 |
+| https | tinyint(1) |  | false |  |  | httpsの接続かどうか |
+| http_port | int(11) | 80 | false |  |  | コンテナhttpポート番号 |
 | created_at | datetime(6) |  | false |  |  | 作成日時 |
 | updated_at | datetime(6) |  | false |  |  | 更新日時 |
 | application_id | varchar(22) |  | false |  | [applications](applications.md) | アプリケーションID |

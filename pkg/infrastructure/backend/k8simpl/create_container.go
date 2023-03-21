@@ -50,7 +50,7 @@ func (b *k8sBackend) CreateContainer(ctx context.Context, app *domain.Applicatio
 					{
 						Protocol:   "TCP",
 						Port:       80,
-						TargetPort: intstr.FromInt(website.Port),
+						TargetPort: intstr.FromInt(website.HTTPPort),
 					},
 				},
 			},

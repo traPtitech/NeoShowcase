@@ -41,8 +41,8 @@ func TestK8sBackend_DestroyContainer(t *testing.T) {
 		app := domain.Application{
 			ID: appID,
 			Websites: []*domain.Website{{
-				FQDN: "test.localhost",
-				Port: 80,
+				FQDN:     "test.localhost",
+				HTTPPort: 80,
 			}},
 		}
 		err := m.CreateContainer(context.Background(), &app, domain.ContainerCreateArgs{

@@ -38,12 +38,14 @@ message ApplicationConfig {
 message Website {
   string id = 1;
   string fqdn = 2;
-  int32 port = 3;
+  bool https = 3;
+  int32 http_port = 4;
 }
 
 message CreateWebsiteRequest {
   string fqdn = 1;
-  int32 port = 2;
+  bool https = 2;
+  int32 http_port = 3;
 }
 
 message Application {

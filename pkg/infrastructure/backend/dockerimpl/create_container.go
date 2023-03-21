@@ -57,7 +57,7 @@ func (b *dockerBackend) CreateContainer(ctx context.Context, app *domain.Applica
 		traefikName := "nsapp_" + strings.ReplaceAll(website.FQDN, ".", "_")
 		labels[fmt.Sprintf("traefik.http.routers.%s.rule", traefikName)] = fmt.Sprintf("Host(`%s`)", website.FQDN)
 		labels[fmt.Sprintf("traefik.http.routers.%s.service", traefikName)] = traefikName
-		labels[fmt.Sprintf("traefik.http.services.%s.loadbalancer.server.port", traefikName)] = strconv.Itoa(website.Port)
+		labels[fmt.Sprintf("traefik.http.services.%s.loadbalancer.server.port", traefikName)] = strconv.Itoa(website.HTTPPort)
 		switch app.Config.Authentication {
 		case domain.AuthenticationTypeSoft:
 			labels[fmt.Sprintf("traefik.http.routers.%s.middlewares", traefikName)] = "ns_auth_soft@file, ns_auth@file"

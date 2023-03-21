@@ -26,7 +26,9 @@ type Website struct { // サイトID
 	ID string `boil:"id" json:"id" toml:"id" yaml:"id"`
 	// サイトURLのFQDN
 	FQDN string `boil:"fqdn" json:"fqdn" toml:"fqdn" yaml:"fqdn"`
-	// HTTPポート番号
+	// httpsの接続かどうか
+	HTTPS bool `boil:"https" json:"https" toml:"https" yaml:"https"`
+	// コンテナhttpポート番号
 	HTTPPort int `boil:"http_port" json:"http_port" toml:"http_port" yaml:"http_port"`
 	// 作成日時
 	CreatedAt time.Time `boil:"created_at" json:"created_at" toml:"created_at" yaml:"created_at"`
@@ -42,6 +44,7 @@ type Website struct { // サイトID
 var WebsiteColumns = struct {
 	ID            string
 	FQDN          string
+	HTTPS         string
 	HTTPPort      string
 	CreatedAt     string
 	UpdatedAt     string
@@ -49,6 +52,7 @@ var WebsiteColumns = struct {
 }{
 	ID:            "id",
 	FQDN:          "fqdn",
+	HTTPS:         "https",
 	HTTPPort:      "http_port",
 	CreatedAt:     "created_at",
 	UpdatedAt:     "updated_at",
@@ -58,6 +62,7 @@ var WebsiteColumns = struct {
 var WebsiteTableColumns = struct {
 	ID            string
 	FQDN          string
+	HTTPS         string
 	HTTPPort      string
 	CreatedAt     string
 	UpdatedAt     string
@@ -65,6 +70,7 @@ var WebsiteTableColumns = struct {
 }{
 	ID:            "websites.id",
 	FQDN:          "websites.fqdn",
+	HTTPS:         "websites.https",
 	HTTPPort:      "websites.http_port",
 	CreatedAt:     "websites.created_at",
 	UpdatedAt:     "websites.updated_at",
@@ -99,6 +105,7 @@ func (w whereHelperint) NIN(slice []int) qm.QueryMod {
 var WebsiteWhere = struct {
 	ID            whereHelperstring
 	FQDN          whereHelperstring
+	HTTPS         whereHelperbool
 	HTTPPort      whereHelperint
 	CreatedAt     whereHelpertime_Time
 	UpdatedAt     whereHelpertime_Time
@@ -106,6 +113,7 @@ var WebsiteWhere = struct {
 }{
 	ID:            whereHelperstring{field: "`websites`.`id`"},
 	FQDN:          whereHelperstring{field: "`websites`.`fqdn`"},
+	HTTPS:         whereHelperbool{field: "`websites`.`https`"},
 	HTTPPort:      whereHelperint{field: "`websites`.`http_port`"},
 	CreatedAt:     whereHelpertime_Time{field: "`websites`.`created_at`"},
 	UpdatedAt:     whereHelpertime_Time{field: "`websites`.`updated_at`"},
@@ -140,8 +148,8 @@ func (r *websiteR) GetApplication() *Application {
 type websiteL struct{}
 
 var (
-	websiteAllColumns            = []string{"id", "fqdn", "http_port", "created_at", "updated_at", "application_id"}
-	websiteColumnsWithoutDefault = []string{"id", "fqdn", "created_at", "updated_at", "application_id"}
+	websiteAllColumns            = []string{"id", "fqdn", "https", "http_port", "created_at", "updated_at", "application_id"}
+	websiteColumnsWithoutDefault = []string{"id", "fqdn", "https", "created_at", "updated_at", "application_id"}
 	websiteColumnsWithDefault    = []string{"http_port"}
 	websitePrimaryKeyColumns     = []string{"id"}
 	websiteGeneratedColumns      = []string{}

@@ -27,8 +27,9 @@ type GetApplicationCondition struct {
 }
 
 type CreateWebsiteArgs struct {
-	FQDN string
-	Port int
+	FQDN  string
+	HTTPS bool
+	Port  int
 }
 
 type CreateApplicationArgs struct {
@@ -54,7 +55,7 @@ type ApplicationRepository interface {
 	UpdateApplication(ctx context.Context, id string, args UpdateApplicationArgs) error
 	RegisterApplicationOwner(ctx context.Context, applicationID string, userID string) error
 	GetWebsites(ctx context.Context, applicationIDs []string) ([]*domain.Website, error)
-	AddWebsite(ctx context.Context, applicationID string, fqdn string, httpPort int) error
+	AddWebsite(ctx context.Context, applicationID string, fqdn string, https bool, httpPort int) error
 	DeleteWebsite(ctx context.Context, applicationID string, websiteID string) error
 }
 
@@ -169,6 +170,7 @@ func (r *applicationRepository) CreateApplication(ctx context.Context, args Crea
 		return &models.Website{
 			ID:       domain.NewID(),
 			FQDN:     website.FQDN,
+			HTTPS:    website.HTTPS,
 			HTTPPort: website.Port,
 		}
 	})
@@ -227,7 +229,7 @@ func (r *applicationRepository) GetWebsites(ctx context.Context, applicationIDs 
 	}), nil
 }
 
-func (r *applicationRepository) AddWebsite(ctx context.Context, applicationID string, fqdn string, httpPort int) error {
+func (r *applicationRepository) AddWebsite(ctx context.Context, applicationID string, fqdn string, https bool, httpPort int) error {
 	app, err := r.getApplication(ctx, applicationID)
 	if err != nil {
 		return err
@@ -235,6 +237,7 @@ func (r *applicationRepository) AddWebsite(ctx context.Context, applicationID st
 	website := &models.Website{
 		ID:       domain.NewID(),
 		FQDN:     fqdn,
+		HTTPS:    https,
 		HTTPPort: httpPort,
 	}
 	err = app.AddWebsites(ctx, r.db, true, website)

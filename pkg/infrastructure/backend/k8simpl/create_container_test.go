@@ -42,8 +42,8 @@ func TestK8sBackend_CreateContainer(t *testing.T) {
 		app := domain.Application{
 			ID: appID,
 			Websites: []*domain.Website{{
-				FQDN: site,
-				Port: 80,
+				FQDN:     site,
+				HTTPPort: 80,
 			}},
 		}
 		err := m.CreateContainer(context.Background(), &app, domain.ContainerCreateArgs{
@@ -65,8 +65,8 @@ func TestK8sBackend_CreateContainer(t *testing.T) {
 		app := domain.Application{
 			ID: appID,
 			Websites: []*domain.Website{{
-				FQDN: site,
-				Port: 80,
+				FQDN:     site,
+				HTTPPort: 80,
 			}},
 		}
 		err := m.CreateContainer(context.Background(), &app, domain.ContainerCreateArgs{
