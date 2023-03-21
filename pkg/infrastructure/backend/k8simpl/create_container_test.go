@@ -14,7 +14,7 @@ import (
 )
 
 func TestK8sBackend_CreateContainer(t *testing.T) {
-	m, c := prepareManager(t, eventbus.NewLocal(hub.New()))
+	m, c, tc := prepareManager(t, eventbus.NewLocal(hub.New()))
 
 	t.Run("Podを正常に起動", func(t *testing.T) {
 		t.Parallel()
@@ -53,6 +53,7 @@ func TestK8sBackend_CreateContainer(t *testing.T) {
 			waitPodRunning(t, c, deploymentName(appID))
 			require.NoError(t, c.CoreV1().Pods(appNamespace).Delete(context.Background(), deploymentName(appID), metav1.DeleteOptions{}))
 			require.NoError(t, c.CoreV1().Services(appNamespace).Delete(context.Background(), serviceName(site), metav1.DeleteOptions{}))
+			require.NoError(t, tc.IngressRoutes(appNamespace).Delete(context.Background(), serviceName(site), metav1.DeleteOptions{}))
 		}
 	})
 
@@ -85,6 +86,7 @@ func TestK8sBackend_CreateContainer(t *testing.T) {
 			waitPodRunning(t, c, deploymentName(appID))
 			require.NoError(t, c.CoreV1().Pods(appNamespace).Delete(context.Background(), deploymentName(appID), metav1.DeleteOptions{}))
 			require.NoError(t, c.CoreV1().Services(appNamespace).Delete(context.Background(), serviceName(site), metav1.DeleteOptions{}))
+			require.NoError(t, tc.IngressRoutes(appNamespace).Delete(context.Background(), serviceName(site), metav1.DeleteOptions{}))
 		}
 	})
 }

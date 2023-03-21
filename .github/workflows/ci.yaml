@@ -168,6 +168,9 @@ jobs:
           kubectl config use-context k3d-test-cluster
           kubectl get nodes -o wide
           kubectl create ns neoshowcase-apps
+      - name: Install CRDs
+        run: |
+          kubectl apply -f https://raw.githubusercontent.com/traefik/traefik/v2.9/docs/content/reference/dynamic-configuration/kubernetes-crd-definition-v1.yml
       - name: Run tests
         run: go test ./pkg/infrastructure/backend/k8simpl -v -coverprofile=coverage.out -covermode=atomic -vet=off
       - name: Upload coverage to Codecov

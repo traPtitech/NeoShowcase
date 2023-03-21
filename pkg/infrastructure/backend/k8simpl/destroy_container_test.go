@@ -13,7 +13,7 @@ import (
 )
 
 func TestK8sBackend_DestroyContainer(t *testing.T) {
-	m, c := prepareManager(t, eventbus.NewLocal(hub.New()))
+	m, c, _ := prepareManager(t, eventbus.NewLocal(hub.New()))
 
 	t.Run("Podを正常に削除", func(t *testing.T) {
 		t.Parallel()

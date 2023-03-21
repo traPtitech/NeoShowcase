@@ -8,7 +8,7 @@ import (
 	"time"
 
 	"github.com/stretchr/testify/require"
-	"github.com/traPtitech/neoshowcase/pkg/domain"
+	traefikv1alpha1 "github.com/traefik/traefik/v2/pkg/provider/kubernetes/crd/generated/clientset/versioned/typed/traefik/v1alpha1"
 	v1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -16,9 +16,11 @@ import (
 	"k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/clientcmd"
 	clientcmdapi "k8s.io/client-go/tools/clientcmd/api"
+
+	"github.com/traPtitech/neoshowcase/pkg/domain"
 )
 
-func prepareManager(t *testing.T, bus domain.Bus) (*k8sBackend, *kubernetes.Clientset) {
+func prepareManager(t *testing.T, bus domain.Bus) (*k8sBackend, *kubernetes.Clientset, *traefikv1alpha1.TraefikV1alpha1Client) {
 	t.Helper()
 	if ok, _ := strconv.ParseBool(os.Getenv("ENABLE_K8S_TESTS")); !ok {
 		t.SkipNow()
@@ -37,10 +39,12 @@ func prepareManager(t *testing.T, bus domain.Bus) (*k8sBackend, *kubernetes.Clie
 		kubeconf, err = clientcmd.BuildConfigFromFlags("", clientcmd.RecommendedHomeFile)
 	}
 	require.NoError(t, err)
-	clientset, err := kubernetes.NewForConfig(kubeconf)
+	client, err := kubernetes.NewForConfig(kubeconf)
+	require.NoError(t, err)
+	traefikClient, err := traefikv1alpha1.NewForConfig(kubeconf)
 	require.NoError(t, err)
 
-	if _, err := clientset.CoreV1().Namespaces().Create(context.Background(), &v1.Namespace{
+	if _, err := client.CoreV1().Namespaces().Create(context.Background(), &v1.Namespace{
 		ObjectMeta: metav1.ObjectMeta{
 			Name: appNamespace,
 		},
@@ -48,13 +52,13 @@ func prepareManager(t *testing.T, bus domain.Bus) (*k8sBackend, *kubernetes.Clie
 		t.Fatal(err)
 	}
 
-	b, err := NewK8SBackend(bus, clientset)
+	b, err := NewK8SBackend(bus, client, traefikClient)
 	require.NoError(t, err)
 	t.Cleanup(func() {
 		_ = b.Dispose(context.Background())
 	})
 
-	return b.(*k8sBackend), clientset
+	return b.(*k8sBackend), client, traefikClient
 }
 
 func waitPodRunning(t *testing.T, c *kubernetes.Clientset, podName string) {
