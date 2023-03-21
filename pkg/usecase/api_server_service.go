@@ -30,8 +30,9 @@ func handleRepoError[T any](entity T, err error) (T, error) {
 }
 
 type CreateWebsiteArgs struct {
-	FQDN string
-	Port int
+	FQDN  string
+	HTTPS bool
+	Port  int
 }
 
 type CreateApplicationArgs struct {
@@ -133,7 +134,11 @@ func (s *apiServerService) CreateApplication(ctx context.Context, args CreateApp
 		State:        initialState,
 		Config:       args.Config,
 		Websites: lo.Map(args.Websites, func(website *CreateWebsiteArgs, i int) *repository.CreateWebsiteArgs {
-			return &repository.CreateWebsiteArgs{FQDN: website.FQDN, Port: website.Port}
+			return &repository.CreateWebsiteArgs{
+				FQDN:  website.FQDN,
+				HTTPS: website.HTTPS,
+				Port:  website.Port,
+			}
 		}),
 	})
 	if err != nil {

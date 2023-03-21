@@ -1,0 +1,14 @@
+http:
+  middlewares:
+    ns_auth_soft:
+      headers:
+        customRequestHeaders:
+          X-NS-Auth-Type: soft
+    ns_auth_hard:
+      headers:
+        customRequestHeaders:
+          X-NS-Auth-Type: hard
+    ns_auth:
+      forwardAuth:
+        address: "http://ns-mc/"
+        authResponseHeaders: "X-Showcase-User"

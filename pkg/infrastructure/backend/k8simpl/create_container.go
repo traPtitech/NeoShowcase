@@ -8,7 +8,6 @@ import (
 	apiv1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/apimachinery/pkg/util/intstr"
 
 	"github.com/traPtitech/neoshowcase/pkg/domain"
 	"github.com/traPtitech/neoshowcase/pkg/util"
@@ -19,11 +18,11 @@ func (b *k8sBackend) CreateContainer(ctx context.Context, app *domain.Applicatio
 		args.ImageTag = "latest"
 	}
 
-	selector := map[string]string{
+	podSelector := map[string]string{
 		appContainerLabel:              "true",
 		appContainerApplicationIDLabel: app.ID,
 	}
-	labels := util.MergeLabels(args.Labels, selector)
+	labels := util.MergeLabels(args.Labels, podSelector)
 
 	var envs []apiv1.EnvVar
 
@@ -37,39 +36,11 @@ func (b *k8sBackend) CreateContainer(ctx context.Context, app *domain.Applicatio
 		Env:   envs,
 	}
 	for _, website := range app.Websites {
-		svc := &apiv1.Service{
-			ObjectMeta: metav1.ObjectMeta{
-				Name:      serviceName(website.FQDN),
-				Namespace: appNamespace,
-				Labels:    labels,
-			},
-			Spec: apiv1.ServiceSpec{
-				ClusterIP: "None",
-				Selector:  selector,
-				Ports: []apiv1.ServicePort{
-					{
-						Protocol:   "TCP",
-						Port:       80,
-						TargetPort: intstr.FromInt(website.Port),
-					},
-				},
-			},
+		err := b.registerService(ctx, app, website, podSelector)
+		if err != nil {
+			return err
 		}
-
-		if _, err := b.clientset.CoreV1().Services(appNamespace).Create(ctx, svc, metav1.CreateOptions{}); err != nil {
-			if args.Recreate && errors.IsAlreadyExists(err) {
-				if err = b.clientset.CoreV1().Services(appNamespace).Delete(ctx, svc.Name, metav1.DeleteOptions{}); err != nil {
-					return fmt.Errorf("failed to delete service: %w", err)
-				}
-				if _, err := b.clientset.CoreV1().Services(appNamespace).Create(ctx, svc, metav1.CreateOptions{}); err != nil {
-					return fmt.Errorf("failed to create service: %w", err)
-				}
-			} else {
-				return fmt.Errorf("failed to create service: %w", err)
-			}
-		}
-
-		err := b.registerIngress(ctx, app, website)
+		err = b.registerIngress(ctx, app, website)
 		if err != nil {
 			return err
 		}
@@ -86,15 +57,15 @@ func (b *k8sBackend) CreateContainer(ctx context.Context, app *domain.Applicatio
 		},
 	}
 
-	_, err := b.clientset.CoreV1().Pods(appNamespace).Create(ctx, pod, metav1.CreateOptions{})
+	_, err := b.client.CoreV1().Pods(appNamespace).Create(ctx, pod, metav1.CreateOptions{})
 	if err != nil {
 		if args.Recreate && errors.IsAlreadyExists(err) {
 			// TODO いい感じにしたい
-			if err = b.clientset.CoreV1().Pods(appNamespace).Delete(ctx, pod.Name, metav1.DeleteOptions{}); err != nil {
+			if err = b.client.CoreV1().Pods(appNamespace).Delete(ctx, pod.Name, metav1.DeleteOptions{}); err != nil {
 				return fmt.Errorf("failed to delete pod: %w", err)
 			}
 			for {
-				_, err := b.clientset.CoreV1().Pods(appNamespace).Get(ctx, pod.Name, metav1.GetOptions{})
+				_, err := b.client.CoreV1().Pods(appNamespace).Get(ctx, pod.Name, metav1.GetOptions{})
 				if err != nil {
 					if errors.IsNotFound(err) {
 						break
@@ -103,7 +74,7 @@ func (b *k8sBackend) CreateContainer(ctx context.Context, app *domain.Applicatio
 				}
 				time.Sleep(500 * time.Millisecond)
 			}
-			if _, err := b.clientset.CoreV1().Pods(appNamespace).Create(ctx, pod, metav1.CreateOptions{}); err != nil {
+			if _, err := b.client.CoreV1().Pods(appNamespace).Create(ctx, pod, metav1.CreateOptions{}); err != nil {
 				return fmt.Errorf("failed to create pod: %w", err)
 			}
 		} else {

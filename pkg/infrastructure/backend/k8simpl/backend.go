@@ -6,8 +6,8 @@ import (
 	"strings"
 
 	log "github.com/sirupsen/logrus"
+	traefikv1alpha1 "github.com/traefik/traefik/v2/pkg/provider/kubernetes/crd/generated/clientset/versioned/typed/traefik/v1alpha1"
 	apiv1 "k8s.io/api/core/v1"
-	networkingv1 "k8s.io/api/networking/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/watch"
 	"k8s.io/client-go/kubernetes"
@@ -23,9 +23,19 @@ const (
 	deploymentRestartAnnotation    = "neoshowcase.trap.jp/restartedAt"
 )
 
+const (
+	traefikHTTPEntrypoint     = "web"
+	traefikHTTPSEntrypoint    = "websecure"
+	traefikAuthSoftMiddleware = "ns_auth_soft@file"
+	traefikAuthHardMiddleware = "ns_auth_hard@file"
+	traefikAuthMiddleware     = "ns_auth@file"
+	traefikCertResolver       = "nsresolver@file"
+)
+
 type k8sBackend struct {
-	clientset *kubernetes.Clientset
-	eventbus  domain.Bus
+	client        *kubernetes.Clientset
+	traefikClient *traefikv1alpha1.TraefikV1alpha1Client
+	eventbus      domain.Bus
 
 	podWatcher watch.Interface
 }
@@ -33,10 +43,12 @@ type k8sBackend struct {
 func NewK8SBackend(
 	eventbus domain.Bus,
 	k8sCSet *kubernetes.Clientset,
+	traefikClient *traefikv1alpha1.TraefikV1alpha1Client,
 ) (domain.Backend, error) {
 	b := &k8sBackend{
-		clientset: k8sCSet,
-		eventbus:  eventbus,
+		client:        k8sCSet,
+		traefikClient: traefikClient,
+		eventbus:      eventbus,
 	}
 
 	var err error
@@ -80,13 +92,10 @@ func (b *k8sBackend) eventListener() {
 	}
 }
 
-func (b *k8sBackend) Dispose(ctx context.Context) error {
+func (b *k8sBackend) Dispose(_ context.Context) error {
 	b.podWatcher.Stop()
 	return nil
 }
-
-func int32Ptr(i int32) *int32                                           { return &i }
-func pathTypePtr(pathType networkingv1.PathType) *networkingv1.PathType { return &pathType }
 
 func deploymentName(appID string) string {
 	return fmt.Sprintf("nsapp-%s", appID)

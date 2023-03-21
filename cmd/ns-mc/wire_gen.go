@@ -23,7 +23,8 @@ func NewServer() (*web.Server, error) {
 	if err != nil {
 		return nil, err
 	}
-	memberCheckHandler := handler.NewMemberCheckHandler(memberCheckService)
+	tokenCookieName := provideTokenCookieName()
+	memberCheckHandler := handler.NewMemberCheckHandler(memberCheckService, tokenCookieName)
 	router := &Router{
 		h: memberCheckHandler,
 	}

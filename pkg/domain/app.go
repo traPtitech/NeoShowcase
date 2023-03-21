@@ -151,7 +151,8 @@ func ExtractNameFromRepositoryURL(repositoryURL string) (string, error) {
 }
 
 type Website struct {
-	ID   string
-	FQDN string
-	Port int
+	ID       string
+	FQDN     string
+	HTTPS    bool
+	HTTPPort int
 }

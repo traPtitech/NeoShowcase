@@ -11,7 +11,7 @@ import (
 )
 
 func (b *k8sBackend) GetContainer(ctx context.Context, appID string) (*domain.Container, error) {
-	list, err := b.clientset.CoreV1().Pods(appNamespace).List(ctx, metav1.ListOptions{
+	list, err := b.client.CoreV1().Pods(appNamespace).List(ctx, metav1.ListOptions{
 		LabelSelector: metav1.FormatLabelSelector(&metav1.LabelSelector{MatchLabels: map[string]string{
 			appContainerLabel:              "true",
 			appContainerApplicationIDLabel: appID,
@@ -32,7 +32,7 @@ func (b *k8sBackend) GetContainer(ctx context.Context, appID string) (*domain.Co
 }
 
 func (b *k8sBackend) ListContainers(ctx context.Context) ([]domain.Container, error) {
-	list, err := b.clientset.CoreV1().Pods(appNamespace).List(ctx, metav1.ListOptions{
+	list, err := b.client.CoreV1().Pods(appNamespace).List(ctx, metav1.ListOptions{
 		LabelSelector: metav1.FormatLabelSelector(&metav1.LabelSelector{MatchLabels: map[string]string{
 			appContainerLabel: "true",
 		}}),

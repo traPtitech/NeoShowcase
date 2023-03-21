@@ -19,6 +19,15 @@ const (
 	timeout                        = 5
 )
 
+const (
+	traefikHTTPEntrypoint     = "web"
+	traefikHTTPSEntrypoint    = "websecure"
+	traefikAuthSoftMiddleware = "ns_auth_soft@file"
+	traefikAuthHardMiddleware = "ns_auth_hard@file"
+	traefikAuthMiddleware     = "ns_auth@file"
+	traefikCertResolver       = "nsresolver@file"
+)
+
 type dockerBackend struct {
 	c              *docker.Client
 	bus            domain.Bus

@@ -18,7 +18,7 @@ func (b *k8sBackend) RestartContainer(ctx context.Context, appID string) error {
 			},
 		},
 	})
-	_, err := b.clientset.CoreV1().Pods(appNamespace).Patch(ctx, deploymentName(appID), types.MergePatchType, data, metav1.PatchOptions{})
+	_, err := b.client.CoreV1().Pods(appNamespace).Patch(ctx, deploymentName(appID), types.MergePatchType, data, metav1.PatchOptions{})
 	if err != nil {
 		return fmt.Errorf("failed to restart pod: %w", err)
 	}
