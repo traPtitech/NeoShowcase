@@ -127,6 +127,14 @@ func ssResourceLabels(appID string) map[string]string {
 	}
 }
 
+func allSelector() string {
+	return metav1.FormatLabelSelector(&metav1.LabelSelector{
+		MatchLabels: map[string]string{
+			appLabel: "true",
+		},
+	})
+}
+
 func labelSelector(appID string) string {
 	return metav1.FormatLabelSelector(&metav1.LabelSelector{
 		MatchLabels: map[string]string{

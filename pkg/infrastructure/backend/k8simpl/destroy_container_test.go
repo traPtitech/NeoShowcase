@@ -27,7 +27,7 @@ func TestK8sBackend_DestroyContainer(t *testing.T) {
 			ImageName: image,
 		})
 		require.NoError(t, err)
-		waitPodRunning(t, c, deploymentName(appID))
+		waitPodRunning(t, c, deploymentName(appID)+"-0")
 
 		err = m.DestroyContainer(context.Background(), &app)
 		assert.NoError(t, err)
@@ -50,7 +50,7 @@ func TestK8sBackend_DestroyContainer(t *testing.T) {
 			ImageName: image,
 		})
 		require.NoError(t, err)
-		waitPodRunning(t, c, deploymentName(appID))
+		waitPodRunning(t, c, deploymentName(appID)+"-0")
 
 		err = m.DestroyContainer(context.Background(), &app)
 		assert.NoError(t, err)
