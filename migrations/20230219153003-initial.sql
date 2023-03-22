@@ -1,7 +1,7 @@
 -- +migrate Up
 CREATE TABLE `available_domains`
 (
-    `domain` VARCHAR(256) NOT NULL COMMENT 'ドメイン',
+    `domain` VARCHAR(100) NOT NULL COMMENT 'ドメイン',
     PRIMARY KEY (`domain`)
 ) ENGINE = InnoDB
   DEFAULT CHARACTER SET = `utf8mb4`
@@ -138,8 +138,8 @@ CREATE TABLE `environments`
 CREATE TABLE `websites`
 (
     `id`             VARCHAR(22)    NOT NULL COMMENT 'サイトID',
-    `fqdn`           VARCHAR(50)    NOT NULL COMMENT 'サイトURLのFQDN',
-    `path_prefix`    VARCHAR(1000)  NOT NULL COMMENT 'サイトPathのPrefix',
+    `fqdn`           VARCHAR(100)   NOT NULL COMMENT 'サイトURLのFQDN',
+    `path_prefix`    VARCHAR(100)   NOT NULL COMMENT 'サイトPathのPrefix',
     `https`          TINYINT(1)     NOT NULL COMMENT 'httpsの接続かどうか',
     `http_port`      INT DEFAULT 80 NOT NULL COMMENT 'コンテナhttpポート番号',
     `created_at`     DATETIME(6)    NOT NULL COMMENT '作成日時',
