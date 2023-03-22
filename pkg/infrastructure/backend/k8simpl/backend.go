@@ -101,6 +101,18 @@ func deploymentName(appID string) string {
 	return fmt.Sprintf("nsapp-%s", appID)
 }
 
-func serviceName(fqdn string) string {
-	return fmt.Sprintf("nsapp-%s", strings.ReplaceAll(fqdn, ".", "-"))
+func serviceName(website *domain.Website) string {
+	s := fmt.Sprintf("nsapp-%s%s",
+		strings.ReplaceAll(website.FQDN, ".", "-"),
+		strings.ReplaceAll(website.PathPrefix, "/", "-"),
+	)
+	return strings.TrimSuffix(s, "-")
+}
+
+func stripMiddlewareName(website *domain.Website) string {
+	return serviceName(website) + "-strip"
+}
+
+func tlsSecretName(fqdn string) string {
+	return fmt.Sprintf("nsapp-secret-%s", strings.ReplaceAll(fqdn, ".", "-"))
 }

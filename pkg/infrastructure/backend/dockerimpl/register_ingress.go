@@ -16,7 +16,7 @@ type (
 )
 
 func (b *dockerBackend) registerIngress(_ context.Context, app *domain.Application, website *domain.Website) error {
-	svcName := serviceName(website.FQDN)
+	svcName := serviceName(website)
 	netName := networkName(app.ID)
 
 	var entrypoints []string
@@ -26,25 +26,41 @@ func (b *dockerBackend) registerIngress(_ context.Context, app *domain.Applicati
 		entrypoints = append(entrypoints, traefikHTTPEntrypoint)
 	}
 
-	var middlewares []string
+	var middlewareNames []string
 	switch app.Config.Authentication {
 	case domain.AuthenticationTypeSoft:
-		middlewares = append(middlewares,
+		middlewareNames = append(middlewareNames,
 			traefikAuthSoftMiddleware,
 			traefikAuthMiddleware,
 		)
 	case domain.AuthenticationTypeHard:
-		middlewares = append(middlewares,
+		middlewareNames = append(middlewareNames,
 			traefikAuthHardMiddleware,
 			traefikAuthMiddleware,
 		)
 	}
 
+	var middlewares m
+
+	var rule string
+	if website.PathPrefix == "/" {
+		rule = fmt.Sprintf("Host(`%s`)", website.FQDN)
+	} else {
+		rule = fmt.Sprintf("Host(`%s`) && PathPrefix(`%s`)", website.FQDN, website.PathPrefix)
+		middlewareName := stripMiddlewareName(website)
+		middlewareNames = append(middlewareNames, middlewareName)
+		middlewares[middlewareName] = m{
+			"stripPrefix": m{
+				"prefixes": []string{website.PathPrefix},
+			},
+		}
+	}
+
 	router := m{
 		"entrypoints": entrypoints,
-		"middlewares": middlewares,
+		"middlewares": middlewareNames,
 		"service":     svcName,
-		"rule":        fmt.Sprintf("Host(`%s`)", website.FQDN),
+		"rule":        rule,
 	}
 	svc := m{
 		"loadBalancer": m{
@@ -68,13 +84,14 @@ func (b *dockerBackend) registerIngress(_ context.Context, app *domain.Applicati
 			"routers": m{
 				svcName: router,
 			},
+			"middlewares": middlewares,
 			"services": m{
 				svcName: svc,
 			},
 		},
 	}
 
-	file, err := os.OpenFile(b.configFile(website.FQDN), os.O_CREATE|os.O_TRUNC|os.O_WRONLY, 0644)
+	file, err := os.OpenFile(b.configFile(website), os.O_CREATE|os.O_TRUNC|os.O_WRONLY, 0644)
 	if err != nil {
 		return fmt.Errorf("failed to open config file: %w", err)
 	}

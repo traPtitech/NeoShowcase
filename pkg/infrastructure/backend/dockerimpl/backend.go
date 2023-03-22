@@ -109,15 +109,23 @@ func containerName(appID string) string {
 	return fmt.Sprintf("nsapp-%s", appID)
 }
 
-func serviceName(fqdn string) string {
-	return fmt.Sprintf("nsapp-%s", strings.ReplaceAll(fqdn, ".", "-"))
-}
-
 func networkName(appID string) string {
 	return fmt.Sprintf("%s.nsapp.internal", appID)
 }
 
-func (b *dockerBackend) configFile(fqdn string) string {
-	filename := fmt.Sprintf("nsapp_%s.yaml", strings.ReplaceAll(fqdn, ".", "_"))
+func serviceName(website *domain.Website) string {
+	s := fmt.Sprintf("nsapp-%s%s",
+		strings.ReplaceAll(website.FQDN, ".", "-"),
+		strings.ReplaceAll(website.PathPrefix, "/", "-"),
+	)
+	return strings.TrimSuffix(s, "-")
+}
+
+func stripMiddlewareName(website *domain.Website) string {
+	return serviceName(website) + "-strip"
+}
+
+func (b *dockerBackend) configFile(website *domain.Website) string {
+	filename := serviceName(website) + ".yaml"
 	return filepath.Join(b.ingressConfDir, filename)
 }

@@ -93,6 +93,7 @@ func TestWebsite_ConflictsWith(t *testing.T) {
 		{"ng1", "/", []string{"/"}, true},
 		{"ng2", "/api", []string{"/"}, true},
 		{"ng3", "/api/v2", []string{"/api"}, true},
+		{"ng4", "/api", []string{"/api"}, true},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

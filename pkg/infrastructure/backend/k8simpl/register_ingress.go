@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/traefik/traefik/v2/pkg/config/dynamic"
 	"github.com/traefik/traefik/v2/pkg/provider/kubernetes/crd/traefik/v1alpha1"
 	"github.com/traefik/traefik/v2/pkg/types"
 	apiv1 "k8s.io/api/core/v1"
@@ -17,7 +18,7 @@ import (
 func (b *k8sBackend) registerService(ctx context.Context, _ *domain.Application, website *domain.Website, podSelector map[string]string) error {
 	svc := &apiv1.Service{
 		ObjectMeta: metav1.ObjectMeta{
-			Name:      serviceName(website.FQDN),
+			Name:      serviceName(website),
 			Namespace: appNamespace,
 			Labels:    map[string]string{},
 		},
@@ -50,6 +51,36 @@ func (b *k8sBackend) registerService(ctx context.Context, _ *domain.Application,
 	return nil
 }
 
+func (b *k8sBackend) registerMiddleware(ctx context.Context, _ *domain.Application, website *domain.Website) error {
+	name := stripMiddlewareName(website)
+	middleware := &v1alpha1.Middleware{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      name,
+			Namespace: appNamespace,
+			Labels:    map[string]string{},
+		},
+		Spec: v1alpha1.MiddlewareSpec{
+			StripPrefix: &dynamic.StripPrefix{
+				Prefixes: []string{website.PathPrefix},
+			},
+		},
+	}
+
+	if _, err := b.traefikClient.Middlewares(appNamespace).Create(ctx, middleware, metav1.CreateOptions{}); err != nil {
+		if errors.IsAlreadyExists(err) {
+			if err = b.traefikClient.Middlewares(appNamespace).Delete(ctx, middleware.Name, metav1.DeleteOptions{}); err != nil {
+				return fmt.Errorf("failed to delete middleware: %w", err)
+			}
+			if _, err = b.traefikClient.Middlewares(appNamespace).Create(ctx, middleware, metav1.CreateOptions{}); err != nil {
+				return fmt.Errorf("failed to create middleware: %w", err)
+			}
+		} else {
+			return fmt.Errorf("failed to create middleware: %w", err)
+		}
+	}
+	return nil
+}
+
 func (b *k8sBackend) registerIngress(ctx context.Context, app *domain.Application, website *domain.Website) error {
 	var entrypoints []string
 	if website.HTTPS {
@@ -75,27 +106,39 @@ func (b *k8sBackend) registerIngress(ctx context.Context, app *domain.Applicatio
 	var tls *v1alpha1.TLS
 	if website.HTTPS {
 		tls = &v1alpha1.TLS{
-			SecretName:   serviceName(website.FQDN),
+			SecretName:   tlsSecretName(website.FQDN),
 			CertResolver: traefikCertResolver,
 			Domains:      []types.Domain{{Main: website.FQDN}},
 		}
 	}
 
+	var rule string
+	if website.PathPrefix == "/" {
+		rule = fmt.Sprintf("Host(`%s`)", website.FQDN)
+	} else {
+		rule = fmt.Sprintf("Host(`%s`) && PathPrefix(`%s`)", website.FQDN, website.PathPrefix)
+		err := b.registerMiddleware(ctx, app, website)
+		if err != nil {
+			return err
+		}
+		middlewares = append(middlewares, v1alpha1.MiddlewareRef{Name: stripMiddlewareName(website)})
+	}
+
 	ingressRoute := &v1alpha1.IngressRoute{
 		ObjectMeta: metav1.ObjectMeta{
-			Name:      serviceName(website.FQDN),
+			Name:      serviceName(website),
 			Namespace: appNamespace,
 			Labels:    map[string]string{},
 		},
 		Spec: v1alpha1.IngressRouteSpec{
 			EntryPoints: entrypoints,
 			Routes: []v1alpha1.Route{{
-				Match:       fmt.Sprintf("Host(`%s`)", website.FQDN),
+				Match:       rule,
 				Kind:        "Rule",
 				Middlewares: middlewares,
 				Services: []v1alpha1.Service{{
 					LoadBalancerSpec: v1alpha1.LoadBalancerSpec{
-						Name:      serviceName(website.FQDN),
+						Name:      serviceName(website),
 						Kind:      "Service",
 						Namespace: appNamespace,
 						Port:      intstr.FromInt(website.HTTPPort),
