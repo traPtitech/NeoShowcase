@@ -23,7 +23,7 @@ func prepareManager(t *testing.T, bus domain.Bus) (*dockerBackend, *docker.Clien
 		t.Fatal(err)
 	}
 
-	m := NewDockerBackend(c, bus, "./local-dev/traefik", nil, nil, domain.StaticServerConnectivityConfig{})
+	m := NewDockerBackend(c, bus, "../../../../local-dev/traefik", nil, nil, domain.StaticServerConnectivityConfig{})
 
 	require.NoError(t, c.PullImage(docker.PullImageOptions{
 		Repository: "alpine",
