@@ -37,6 +37,9 @@ func (s *Server) Start(ctx context.Context) error {
 	eg, ctx := errgroup.WithContext(ctx)
 
 	eg.Go(func() error {
+		return s.backend.Start(ctx)
+	})
+	eg.Go(func() error {
 		return s.builderEventsBroker.Run()
 	})
 	eg.Go(func() error {

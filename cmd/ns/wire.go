@@ -55,7 +55,7 @@ var commonSet = wire.NewSet(
 	provideImagePrefix,
 	provideImageRegistry,
 	provideRepositoryFetcherCacheDir,
-	wire.FieldsOf(new(Config), "Builder", "SSGen", "DB", "MariaDB", "MongoDB"),
+	wire.FieldsOf(new(Config), "Builder", "SS", "SSGen", "DB", "MariaDB", "MongoDB"),
 	wire.Struct(new(Router), "*"),
 	wire.Bind(new(web.Router), new(*Router)),
 	wire.Struct(new(Server), "*"),

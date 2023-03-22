@@ -52,10 +52,8 @@ func NewWithDocker(c2 Config) (*Server, error) {
 		return nil, err
 	}
 	ingressConfDirPath := _wireIngressConfDirPathValue
-	backend, err := dockerimpl.NewDockerBackend(client, bus, ingressConfDirPath)
-	if err != nil {
-		return nil, err
-	}
+	staticServerConnectivityConfig := c2.SS
+	backend := dockerimpl.NewDockerBackend(client, bus, ingressConfDirPath, applicationRepository, buildRepository, staticServerConnectivityConfig)
 	staticSiteServiceClientConfig := c2.SSGen
 	staticSiteServiceClientConn, err := grpc.NewStaticSiteServiceClientConn(staticSiteServiceClientConfig)
 	if err != nil {
@@ -145,10 +143,8 @@ func NewWithK8S(c2 Config) (*Server, error) {
 	if err != nil {
 		return nil, err
 	}
-	backend, err := k8simpl.NewK8SBackend(bus, clientset, traefikV1alpha1Client)
-	if err != nil {
-		return nil, err
-	}
+	staticServerConnectivityConfig := c2.SS
+	backend := k8simpl.NewK8SBackend(bus, clientset, traefikV1alpha1Client, applicationRepository, buildRepository, staticServerConnectivityConfig)
 	staticSiteServiceClientConfig := c2.SSGen
 	staticSiteServiceClientConn, err := grpc.NewStaticSiteServiceClientConn(staticSiteServiceClientConfig)
 	if err != nil {
@@ -214,7 +210,7 @@ var commonSet = wire.NewSet(web.NewServer, hub.New, eventbus.NewLocal, admindb.N
 	provideWebServerConfig,
 	provideImagePrefix,
 	provideImageRegistry,
-	provideRepositoryFetcherCacheDir, wire.FieldsOf(new(Config), "Builder", "SSGen", "DB", "MariaDB", "MongoDB"), wire.Struct(new(Router), "*"), wire.Bind(new(web.Router), new(*Router)), wire.Struct(new(Server), "*"),
+	provideRepositoryFetcherCacheDir, wire.FieldsOf(new(Config), "Builder", "SS", "SSGen", "DB", "MariaDB", "MongoDB"), wire.Struct(new(Router), "*"), wire.Bind(new(web.Router), new(*Router)), wire.Struct(new(Server), "*"),
 )
 
 func New(c2 Config) (*Server, error) {

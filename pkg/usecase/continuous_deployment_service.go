@@ -172,5 +172,5 @@ func (cd *continuousDeploymentService) syncDeployments() error {
 	for _, app := range applications {
 		_ = cd.deployer.Synchronize(app.ID, false)
 	}
-	return nil
+	return cd.deployer.SynchronizeSS(ctx)
 }

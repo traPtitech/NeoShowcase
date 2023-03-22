@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"strings"
+	"sync"
 
 	log "github.com/sirupsen/logrus"
 	traefikv1alpha1 "github.com/traefik/traefik/v2/pkg/provider/kubernetes/crd/generated/clientset/versioned/typed/traefik/v1alpha1"
@@ -17,10 +18,12 @@ import (
 )
 
 const (
-	appNamespace                   = "neoshowcase-apps"
-	appContainerLabel              = "neoshowcase.trap.jp/app"
-	appContainerApplicationIDLabel = "neoshowcase.trap.jp/appId"
-	deploymentRestartAnnotation    = "neoshowcase.trap.jp/restartedAt"
+	appNamespace         = "neoshowcase-apps"
+	appLabel             = "neoshowcase.trap.jp/app"
+	appIDLabel           = "neoshowcase.trap.jp/appId"
+	appRestartAnnotation = "neoshowcase.trap.jp/startedAt"
+	ssLabel              = "neoshowcase.trap.jp/ss"
+	fieldManager         = "neoshowcase"
 )
 
 const (
@@ -37,33 +40,45 @@ type k8sBackend struct {
 	traefikClient *traefikv1alpha1.TraefikV1alpha1Client
 	eventbus      domain.Bus
 
+	appRepo   domain.ApplicationRepository
+	buildRepo domain.BuildRepository
+	ss        domain.StaticServerConnectivityConfig
+
 	podWatcher watch.Interface
+	reloadLock sync.Mutex
 }
 
 func NewK8SBackend(
 	eventbus domain.Bus,
 	k8sCSet *kubernetes.Clientset,
 	traefikClient *traefikv1alpha1.TraefikV1alpha1Client,
-) (domain.Backend, error) {
-	b := &k8sBackend{
+	appRepo domain.ApplicationRepository,
+	buildRepo domain.BuildRepository,
+	ss domain.StaticServerConnectivityConfig,
+) domain.Backend {
+	return &k8sBackend{
 		client:        k8sCSet,
 		traefikClient: traefikClient,
 		eventbus:      eventbus,
-	}
 
+		appRepo:   appRepo,
+		buildRepo: buildRepo,
+		ss:        ss,
+	}
+}
+
+func (b *k8sBackend) Start(_ context.Context) error {
 	var err error
-	b.podWatcher, err = k8sCSet.CoreV1().Pods(appNamespace).Watch(context.Background(), metav1.ListOptions{
+	b.podWatcher, err = b.client.CoreV1().Pods(appNamespace).Watch(context.Background(), metav1.ListOptions{
 		LabelSelector: metav1.FormatLabelSelector(&metav1.LabelSelector{MatchLabels: map[string]string{
-			appContainerLabel: "true",
+			appLabel: "true",
 		}}),
 	})
 	if err != nil {
-		return nil, fmt.Errorf("failed to watch pods: %w", err)
+		return fmt.Errorf("failed to watch pods: %w", err)
 	}
-
 	go b.eventListener()
-
-	return b, nil
+	return nil
 }
 
 func (b *k8sBackend) eventListener() {
@@ -73,7 +88,7 @@ func (b *k8sBackend) eventListener() {
 			log.Warnf("unexpected type: %v", ev)
 			continue
 		}
-		if p.Labels[appContainerLabel] != "true" {
+		if p.Labels[appLabel] != "true" {
 			continue
 		}
 
@@ -81,12 +96,12 @@ func (b *k8sBackend) eventListener() {
 		case watch.Modified:
 			if p.Status.Phase == apiv1.PodRunning {
 				b.eventbus.Publish(event.ContainerAppStarted, domain.Fields{
-					"application_id": p.Labels[appContainerApplicationIDLabel],
+					"application_id": p.Labels[appIDLabel],
 				})
 			}
 		case watch.Deleted:
 			b.eventbus.Publish(event.ContainerAppStopped, domain.Fields{
-				"application_id": p.Labels[appContainerApplicationIDLabel],
+				"application_id": p.Labels[appIDLabel],
 			})
 		}
 	}
@@ -95,6 +110,37 @@ func (b *k8sBackend) eventListener() {
 func (b *k8sBackend) Dispose(_ context.Context) error {
 	b.podWatcher.Stop()
 	return nil
+}
+
+func resourceLabels(appID string) map[string]string {
+	return map[string]string{
+		appLabel:   "true",
+		appIDLabel: appID,
+	}
+}
+
+func ssResourceLabels(appID string) map[string]string {
+	return map[string]string{
+		appLabel:   "true",
+		appIDLabel: appID,
+		ssLabel:    "true",
+	}
+}
+
+func labelSelector(appID string) string {
+	return metav1.FormatLabelSelector(&metav1.LabelSelector{
+		MatchLabels: map[string]string{
+			appIDLabel: appID,
+		},
+	})
+}
+
+func ssLabelSelector() string {
+	return metav1.FormatLabelSelector(&metav1.LabelSelector{
+		MatchLabels: map[string]string{
+			ssLabel: "true",
+		},
+	})
 }
 
 func deploymentName(appID string) string {

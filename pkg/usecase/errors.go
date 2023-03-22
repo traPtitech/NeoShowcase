@@ -13,14 +13,22 @@ const (
 	ErrorTypeAlreadyExists
 )
 
-type Error struct {
+type customError struct {
 	error
-	Type ErrorType
+	typ ErrorType
 }
 
 func newError(typ ErrorType, message string, err error) error {
 	if err == nil {
-		return &Error{error: errors.New(message), Type: typ}
+		return customError{error: errors.New(message), typ: typ}
 	}
-	return &Error{error: fmt.Errorf("%s: %w", message, err), Type: typ}
+	return customError{error: fmt.Errorf("%s: %w", message, err), typ: typ}
+}
+
+func GetErrorType(err error) (typ ErrorType, ok bool) {
+	var cErr customError
+	if errors.As(err, &cErr) {
+		return cErr.typ, true
+	}
+	return
 }

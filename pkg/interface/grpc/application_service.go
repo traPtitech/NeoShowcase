@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/friendsofgo/errors"
 	"github.com/samber/lo"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -18,9 +17,9 @@ import (
 )
 
 func handleUseCaseError(err error) error {
-	var uErr *usecase.Error
-	if errors.As(err, &uErr) {
-		switch uErr.Type {
+	typ, ok := usecase.GetErrorType(err)
+	if ok {
+		switch typ {
 		case usecase.ErrorTypeBadRequest:
 			return status.Errorf(codes.InvalidArgument, "%v", err)
 		case usecase.ErrorTypeNotFound:

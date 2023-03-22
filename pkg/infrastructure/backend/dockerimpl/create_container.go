@@ -5,9 +5,9 @@ import (
 	"fmt"
 
 	docker "github.com/fsouza/go-dockerclient"
+	"github.com/samber/lo"
 
 	"github.com/traPtitech/neoshowcase/pkg/domain"
-	"github.com/traPtitech/neoshowcase/pkg/util"
 )
 
 func (b *dockerBackend) CreateContainer(ctx context.Context, app *domain.Application, args domain.ContainerCreateArgs) error {
@@ -24,38 +24,26 @@ func (b *dockerBackend) CreateContainer(ctx context.Context, app *domain.Applica
 		return fmt.Errorf("failed to pull image: %w", err)
 	}
 
-	var envs []string
-
-	for name, value := range args.Envs {
-		envs = append(envs, name+"="+value)
-	}
-
-	if args.Recreate {
-		// 前のものが起動中の場合は削除する
-		err := b.c.RemoveContainer(docker.RemoveContainerOptions{
-			ID:            containerName(app.ID),
-			RemoveVolumes: true,
-			Force:         true,
-			Context:       ctx,
-		})
-		if err != nil {
-			if _, ok := err.(*docker.NoSuchContainer); !ok {
-				return fmt.Errorf("failed to remove old container: %w", err)
-			}
-		}
-	}
-
-	labels := util.MergeLabels(args.Labels, map[string]string{
-		appContainerLabel:              "true",
-		appContainerApplicationIDLabel: app.ID,
+	envs := lo.MapToSlice(args.Envs, func(key string, value string) string {
+		return key + "=" + value
 	})
 
-	labels["traefik.enable"] = "true"
-	for _, website := range app.Websites {
-		err := b.registerIngress(ctx, app, website)
-		if err != nil {
-			return fmt.Errorf("failed to register ingress: %w", err)
+	// 前のものが起動中の場合は削除する
+	err := b.c.RemoveContainer(docker.RemoveContainerOptions{
+		ID:            containerName(app.ID),
+		RemoveVolumes: true,
+		Force:         true,
+		Context:       ctx,
+	})
+	if err != nil {
+		if _, ok := err.(*docker.NoSuchContainer); !ok {
+			return fmt.Errorf("failed to remove old container: %w", err)
 		}
+	}
+
+	err = b.synchronizeRuntimeIngresses(ctx, app)
+	if err != nil {
+		return fmt.Errorf("failed to synchronize ingresses: %w", err)
 	}
 
 	// ビルドしたイメージのコンテナを作成
@@ -63,7 +51,7 @@ func (b *dockerBackend) CreateContainer(ctx context.Context, app *domain.Applica
 		Name: containerName(app.ID),
 		Config: &docker.Config{
 			Image:  args.ImageName + ":" + args.ImageTag,
-			Labels: labels,
+			Labels: containerLabels(app.ID),
 			Env:    envs,
 		},
 		HostConfig: &docker.HostConfig{

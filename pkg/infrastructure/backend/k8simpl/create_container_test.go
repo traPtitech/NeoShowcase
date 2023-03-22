@@ -74,7 +74,6 @@ func TestK8sBackend_CreateContainer(t *testing.T) {
 		}
 		err := m.CreateContainer(context.Background(), &app, domain.ContainerCreateArgs{
 			ImageName: image,
-			Recreate:  true,
 		})
 		if assert.NoError(t, err) {
 			waitPodRunning(t, c, deploymentName(appID))
@@ -82,7 +81,6 @@ func TestK8sBackend_CreateContainer(t *testing.T) {
 
 		err = m.CreateContainer(context.Background(), &app, domain.ContainerCreateArgs{
 			ImageName: image,
-			Recreate:  true,
 		})
 		if assert.NoError(t, err) {
 			waitPodRunning(t, c, deploymentName(appID))

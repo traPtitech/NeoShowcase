@@ -20,6 +20,7 @@ import (
 
 type AppDeployService interface {
 	Synchronize(appID string, restart bool) (started bool)
+	SynchronizeSS(ctx context.Context) error
 	Stop(appID string) (started bool)
 }
 
@@ -84,6 +85,16 @@ func (s *appDeployService) Synchronize(appID string, restart bool) (started bool
 	return true
 }
 
+func (s *appDeployService) SynchronizeSS(ctx context.Context) error {
+	if _, err := s.ss.Reload(ctx, &emptypb.Empty{}); err != nil {
+		return fmt.Errorf("failed to reload static site server: %w", err)
+	}
+	if err := s.backend.ReloadSSIngress(ctx); err != nil {
+		return fmt.Errorf("failed to relaod static site ingress: %w", err)
+	}
+	return nil
+}
+
 func (s *appDeployService) synchronize(ctx context.Context, appID string, restart bool) error {
 	start := time.Now()
 
@@ -101,12 +112,12 @@ func (s *appDeployService) synchronize(ctx context.Context, appID string, restar
 	}
 
 	build, err := s.getSuccessBuild(ctx, app)
-	if err == ErrNotFound {
-		s.bus.Publish(event.CDServiceSyncBuildRequest, nil)
-		return nil
-	}
 	if err != nil {
 		return err
+	}
+	if build == nil {
+		s.bus.Publish(event.CDServiceSyncBuildRequest, nil)
+		return nil
 	}
 
 	doDeploy := restart || (!restart && app.WantCommit != app.CurrentCommit)
@@ -132,8 +143,8 @@ func (s *appDeployService) synchronize(ctx context.Context, appID string, restar
 	}
 
 	if doDeploy && app.BuildType == builder.BuildTypeStatic {
-		if _, err = s.ss.Reload(ctx, &emptypb.Empty{}); err != nil {
-			return fmt.Errorf("failed to reload static site server: %w", err)
+		if err = s.SynchronizeSS(ctx); err != nil {
+			return err
 		}
 	}
 
@@ -149,7 +160,7 @@ func (s *appDeployService) getSuccessBuild(ctx context.Context, app *domain.Appl
 	builds = lo.Filter(builds, func(build *domain.Build, i int) bool { return build.Status == builder.BuildStatusSucceeded })
 	slices.SortFunc(builds, func(a, b *domain.Build) bool { return a.StartedAt.After(b.StartedAt) })
 	if len(builds) == 0 {
-		return nil, ErrNotFound
+		return nil, nil
 	}
 	return builds[0], nil
 }
@@ -162,7 +173,6 @@ func (s *appDeployService) recreateContainer(ctx context.Context, app *domain.Ap
 	err = s.backend.CreateContainer(ctx, app, domain.ContainerCreateArgs{
 		ImageName: builder.GetImageName(s.imageRegistry, s.imageNamePrefix, app.ID),
 		ImageTag:  build.ID,
-		Recreate:  true,
 		Envs:      lo.SliceToMap(envs, func(env *domain.Environment) (string, string) { return env.Key, env.Value }),
 	})
 	if err != nil {
@@ -212,8 +222,8 @@ func (s *appDeployService) stop(ctx context.Context, appID string) error {
 	}
 
 	if app.BuildType == builder.BuildTypeStatic {
-		if _, err = s.ss.Reload(ctx, &emptypb.Empty{}); err != nil {
-			return fmt.Errorf("failed to reload static site server: %w", err)
+		if err = s.SynchronizeSS(ctx); err != nil {
+			return err
 		}
 	}
 

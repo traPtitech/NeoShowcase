@@ -12,6 +12,7 @@ services:
       NS_APISERVER_MONGODB_HOST: "mongo"
       NS_APISERVER_BUILDER_ADDR: "ns-builder:10000"
       NS_APISERVER_BUILDER_INSECURE: "true"
+      NS_APISERVER_SS_URL: "http://ns-ssgen:80/"
       NS_APISERVER_SSGEN_ADDR: "ns-ssgen:10000"
       NS_APISERVER_SSGEN_INSECURE: "true"
       NS_APISERVER_GRPC_PORT: "5000"
@@ -220,4 +221,6 @@ services:
 
 networks:
   default: { }
-  apps: { }
+  apps:
+    name: neoshowcase_apps
+    external: true

@@ -19,7 +19,7 @@ type Server struct {
 	db         *sql.DB
 	svc        usecase.StaticSiteServerService
 	grpcServer *grpc.Server
-	engine     domain.Engine
+	engine     domain.SSEngine
 	sss        *igrpc.StaticSiteService
 	port       igrpc.TCPListenPort
 }
@@ -37,9 +37,6 @@ func (s *Server) Start(ctx context.Context) error {
 		return s.engine.Start(ctx)
 	})
 	eg.Go(func() error {
-		return s.svc.Reload(ctx)
-	})
-	eg.Go(func() error {
 		return s.grpcServer.Serve(listener)
 	})
 
@@ -50,14 +47,14 @@ func (s *Server) Shutdown(ctx context.Context) error {
 	eg, ctx := errgroup.WithContext(ctx)
 
 	eg.Go(func() error {
-		s.grpcServer.GracefulStop()
-		return nil
-	})
-	eg.Go(func() error {
 		return s.db.Close()
 	})
 	eg.Go(func() error {
 		return s.engine.Shutdown(ctx)
+	})
+	eg.Go(func() error {
+		s.grpcServer.GracefulStop()
+		return nil
 	})
 
 	return eg.Wait()

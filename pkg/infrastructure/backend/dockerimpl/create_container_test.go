@@ -45,8 +45,8 @@ func TestDockerBackend_CreateContainer(t *testing.T) {
 			require.NoError(t, err)
 
 			assert.Equal(t, cont.Config.Image, image+":latest")
-			assert.Equal(t, cont.Config.Labels[appContainerLabel], "true")
-			assert.Equal(t, cont.Config.Labels[appContainerApplicationIDLabel], appID)
+			assert.Equal(t, cont.Config.Labels[appLabel], "true")
+			assert.Equal(t, cont.Config.Labels[appIDLabel], appID)
 
 			require.NoError(t, c.RemoveContainer(docker.RemoveContainerOptions{
 				ID:            containerName(appID),
@@ -66,13 +66,11 @@ func TestDockerBackend_CreateContainer(t *testing.T) {
 		}
 		err := m.CreateContainer(context.Background(), &app, domain.ContainerCreateArgs{
 			ImageName: image,
-			Recreate:  true,
 		})
 		require.NoError(t, err)
 
 		err = m.CreateContainer(context.Background(), &app, domain.ContainerCreateArgs{
 			ImageName: image,
-			Recreate:  true,
 		})
 		if assert.NoError(t, err) {
 			cont, err := c.InspectContainerWithOptions(docker.InspectContainerOptions{
@@ -81,8 +79,8 @@ func TestDockerBackend_CreateContainer(t *testing.T) {
 			require.NoError(t, err)
 
 			assert.Equal(t, cont.Config.Image, image+":latest")
-			assert.Equal(t, cont.Config.Labels[appContainerLabel], "true")
-			assert.Equal(t, cont.Config.Labels[appContainerApplicationIDLabel], appID)
+			assert.Equal(t, cont.Config.Labels[appLabel], "true")
+			assert.Equal(t, cont.Config.Labels[appIDLabel], appID)
 
 			require.NoError(t, c.RemoveContainer(docker.RemoveContainerOptions{
 				ID:            containerName(appID),

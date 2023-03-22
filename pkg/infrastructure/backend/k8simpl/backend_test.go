@@ -52,7 +52,7 @@ func prepareManager(t *testing.T, bus domain.Bus) (*k8sBackend, *kubernetes.Clie
 		t.Fatal(err)
 	}
 
-	b, err := NewK8SBackend(bus, client, traefikClient)
+	b := NewK8SBackend(bus, client, traefikClient, nil, nil, domain.StaticServerConnectivityConfig{})
 	require.NoError(t, err)
 	t.Cleanup(func() {
 		_ = b.Dispose(context.Background())

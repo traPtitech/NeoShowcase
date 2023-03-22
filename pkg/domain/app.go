@@ -232,7 +232,7 @@ func (w *Website) ConflictsWith(existing []*Website) bool {
 	return false
 }
 
-func GetActiveWebsites(ctx context.Context, appRepo ApplicationRepository, buildRepo BuildRepository) ([]*Site, error) {
+func GetActiveStaticSites(ctx context.Context, appRepo ApplicationRepository, buildRepo BuildRepository) ([]*StaticSite, error) {
 	applications, err := appRepo.GetApplications(ctx, GetApplicationCondition{
 		BuildType: optional.From(builder.BuildTypeStatic),
 		State:     optional.From(ApplicationStateRunning),
@@ -252,7 +252,7 @@ func GetActiveWebsites(ctx context.Context, appRepo ApplicationRepository, build
 	slices.SortFunc(builds, func(a, b *Build) bool { return a.StartedAt.Before(b.StartedAt) })
 	commitToBuild := lo.SliceToMap(builds, func(b *Build) (string, *Build) { return b.Commit, b })
 
-	var sites []*Site
+	var sites []*StaticSite
 	for _, app := range applications {
 		build, ok := commitToBuild[app.CurrentCommit]
 		if !ok {
@@ -262,11 +262,10 @@ func GetActiveWebsites(ctx context.Context, appRepo ApplicationRepository, build
 			continue
 		}
 		for _, website := range app.Websites {
-			sites = append(sites, &Site{
-				ID:            website.ID,
-				FQDN:          website.FQDN,
-				ArtifactID:    build.Artifact.V.ID,
-				ApplicationID: app.ID,
+			sites = append(sites, &StaticSite{
+				Application: app,
+				Website:     website,
+				ArtifactID:  build.Artifact.V.ID,
 			})
 		}
 	}
