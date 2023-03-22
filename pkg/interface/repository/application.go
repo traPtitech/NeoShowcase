@@ -128,23 +128,11 @@ func (r *applicationRepository) CreateApplication(ctx context.Context, args doma
 	}
 
 	// Validate and insert from the most specific
-	slices.SortFunc(args.Websites, func(a, b *domain.CreateWebsiteArgs) bool { return len(b.PathPrefix) < len(a.PathPrefix) })
-	websites := lo.Map(args.Websites, func(website *domain.CreateWebsiteArgs, i int) *models.Website {
-		return &models.Website{
-			ID:         domain.NewID(),
-			FQDN:       website.FQDN,
-			PathPrefix: website.PathPrefix,
-			HTTPS:      website.HTTPS,
-			HTTPPort:   website.HTTPPort,
-		}
-	})
-	for _, website := range websites {
-		if err = r.validateWebsite(ctx, tx, website); err != nil {
+	slices.SortFunc(args.Websites, func(a, b *domain.Website) bool { return len(b.PathPrefix) < len(a.PathPrefix) })
+	for _, website := range args.Websites {
+		if err = r.validateAndInsertWebsite(ctx, tx, app, website); err != nil {
 			return nil, err
 		}
-	}
-	if err := app.AddWebsites(ctx, tx, true, websites...); err != nil {
-		return nil, fmt.Errorf("failed to add websites")
 	}
 
 	if err := tx.Commit(); err != nil {
@@ -199,19 +187,23 @@ func (r *applicationRepository) GetWebsites(ctx context.Context, applicationIDs 
 	}), nil
 }
 
-func (r *applicationRepository) validateWebsite(ctx context.Context, ex boil.ContextExecutor, website *models.Website) error {
+func (r *applicationRepository) validateAndInsertWebsite(ctx context.Context, ex boil.ContextExecutor, app *models.Application, website *domain.Website) error {
 	websites, err := models.Websites(models.WebsiteWhere.FQDN.EQ(website.FQDN), qm.For("UPDATE")).All(ctx, ex)
 	if err != nil {
 		return fmt.Errorf("failed to get existing websites: %w", err)
 	}
 	existing := lo.Map(websites, func(website *models.Website, i int) *domain.Website { return toDomainWebsite(website) })
-	if toDomainWebsite(website).ConflictsWith(existing) {
+	if website.ConflictsWith(existing) {
 		return ErrDuplicate
+	}
+	err = app.AddWebsites(ctx, ex, true, fromDomainWebsite(website))
+	if err != nil {
+		return fmt.Errorf("failed to add website: %w", err)
 	}
 	return nil
 }
 
-func (r *applicationRepository) AddWebsite(ctx context.Context, applicationID string, args domain.CreateWebsiteArgs) error {
+func (r *applicationRepository) AddWebsite(ctx context.Context, applicationID string, website *domain.Website) error {
 	app, err := r.getApplication(ctx, applicationID)
 	if err != nil {
 		return err
@@ -223,20 +215,9 @@ func (r *applicationRepository) AddWebsite(ctx context.Context, applicationID st
 	}
 	defer tx.Rollback()
 
-	website := &models.Website{
-		ID:         domain.NewID(),
-		FQDN:       args.FQDN,
-		PathPrefix: args.PathPrefix,
-		HTTPS:      args.HTTPS,
-		HTTPPort:   args.HTTPPort,
-	}
-	err = r.validateWebsite(ctx, tx, website)
+	err = r.validateAndInsertWebsite(ctx, tx, app, website)
 	if err != nil {
 		return err
-	}
-	err = app.AddWebsites(ctx, tx, true, website)
-	if err != nil {
-		return fmt.Errorf("failed to add website: %w", err)
 	}
 
 	err = tx.Commit()

@@ -68,8 +68,9 @@ func (s *ApplicationService) CreateApplication(ctx context.Context, req *pb.Crea
 		BranchName:    req.BranchName,
 		BuildType:     fromPBBuildType(req.BuildType),
 		Config:        fromPBApplicationConfig(req.Config),
-		Websites: lo.Map(req.Websites, func(website *pb.CreateWebsiteRequest, i int) *domain.CreateWebsiteArgs {
-			return &domain.CreateWebsiteArgs{
+		Websites: lo.Map(req.Websites, func(website *pb.CreateWebsiteRequest, i int) *domain.Website {
+			return &domain.Website{
+				ID:         domain.NewID(),
 				FQDN:       website.Fqdn,
 				PathPrefix: website.PathPrefix,
 				HTTPS:      website.Https,

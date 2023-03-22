@@ -17,13 +17,6 @@ type GetApplicationCondition struct {
 	InSync optional.Of[bool]
 }
 
-type CreateWebsiteArgs struct {
-	FQDN       string
-	PathPrefix string
-	HTTPS      bool
-	HTTPPort   int
-}
-
 type CreateApplicationArgs struct {
 	Name         string
 	RepositoryID string
@@ -31,7 +24,7 @@ type CreateApplicationArgs struct {
 	BuildType    builder.BuildType
 	State        ApplicationState
 	Config       ApplicationConfig
-	Websites     []*CreateWebsiteArgs
+	Websites     []*Website
 }
 
 type UpdateApplicationArgs struct {
@@ -47,7 +40,7 @@ type ApplicationRepository interface {
 	UpdateApplication(ctx context.Context, id string, args UpdateApplicationArgs) error
 	RegisterApplicationOwner(ctx context.Context, applicationID string, userID string) error
 	GetWebsites(ctx context.Context, applicationIDs []string) ([]*Website, error)
-	AddWebsite(ctx context.Context, applicationID string, args CreateWebsiteArgs) error
+	AddWebsite(ctx context.Context, applicationID string, website *Website) error
 	DeleteWebsite(ctx context.Context, applicationID string, websiteID string) error
 }
 

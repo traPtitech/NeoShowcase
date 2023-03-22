@@ -29,7 +29,7 @@ type CreateApplicationArgs struct {
 	BranchName    string
 	BuildType     builder.BuildType
 	Config        domain.ApplicationConfig
-	Websites      []*domain.CreateWebsiteArgs
+	Websites      []*domain.Website
 	StartOnCreate bool
 }
 
