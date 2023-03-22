@@ -115,6 +115,9 @@ func (s *apiServerService) CreateApplication(ctx context.Context, args CreateApp
 		return nil, err
 	}
 	for _, website := range args.Websites {
+		if !website.IsValid() {
+			return nil, newError(ErrorTypeBadRequest, "invalid website", nil)
+		}
 		if !domains.Match(website.FQDN) {
 			return nil, newError(ErrorTypeBadRequest, "domain not available", nil)
 		}
