@@ -45,9 +45,7 @@ func (b *k8sBackend) CreateContainer(ctx context.Context, app *domain.Applicatio
 			},
 			Template: apiv1.PodTemplateSpec{
 				ObjectMeta: metav1.ObjectMeta{
-					Name:      deploymentName(app.ID),
-					Namespace: appNamespace,
-					Labels:    resourceLabels(app.ID),
+					Labels: resourceLabels(app.ID),
 					Annotations: map[string]string{
 						appRestartAnnotation: time.Now().Format(time.RFC3339),
 					},
