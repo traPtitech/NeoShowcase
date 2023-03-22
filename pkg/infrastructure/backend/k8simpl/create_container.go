@@ -59,5 +59,5 @@ func (b *k8sBackend) CreateContainer(ctx context.Context, app *domain.Applicatio
 		},
 	}
 
-	return patch(ctx, statefulSet.Name, statefulSet, b.client.AppsV1().StatefulSets(appNamespace))
+	return patch[*v1.StatefulSet](ctx, statefulSet.Name, statefulSet, b.client.AppsV1().StatefulSets(appNamespace))
 }

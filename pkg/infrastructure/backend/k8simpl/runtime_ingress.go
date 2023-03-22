@@ -164,19 +164,19 @@ func (b *k8sBackend) synchronizeRuntimeIngresses(ctx context.Context, app *domai
 
 	// Apply resources
 	for _, svc := range services {
-		err = patch(ctx, svc.Name, svc, b.client.CoreV1().Services(appNamespace))
+		err = patch[*apiv1.Service](ctx, svc.Name, svc, b.client.CoreV1().Services(appNamespace))
 		if err != nil {
 			return fmt.Errorf("failed to patch service: %w", err)
 		}
 	}
 	for _, mw := range middlewares {
-		err = patch(ctx, mw.Name, mw, b.traefikClient.Middlewares(appNamespace))
+		err = patch[*v1alpha1.Middleware](ctx, mw.Name, mw, b.traefikClient.Middlewares(appNamespace))
 		if err != nil {
 			return fmt.Errorf("failed to patch middleware: %w", err)
 		}
 	}
 	for _, ir := range ingressRoutes {
-		err = patch(ctx, ir.Name, ir, b.traefikClient.IngressRoutes(appNamespace))
+		err = patch[*v1alpha1.IngressRoute](ctx, ir.Name, ir, b.traefikClient.IngressRoutes(appNamespace))
 		if err != nil {
 			return fmt.Errorf("failed to patch IngressRoute: %w", err)
 		}

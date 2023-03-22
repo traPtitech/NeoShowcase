@@ -80,13 +80,13 @@ func (b *k8sBackend) ReloadSSIngress(ctx context.Context) error {
 
 	// Apply resources
 	for _, mw := range middlewares {
-		err = patch(ctx, mw.Name, mw, b.traefikClient.Middlewares(appNamespace))
+		err = patch[*v1alpha1.Middleware](ctx, mw.Name, mw, b.traefikClient.Middlewares(appNamespace))
 		if err != nil {
 			return fmt.Errorf("failed to patch middleware: %w", err)
 		}
 	}
 	for _, ir := range ingressRoutes {
-		err = patch(ctx, ir.Name, ir, b.traefikClient.IngressRoutes(appNamespace))
+		err = patch[*v1alpha1.IngressRoute](ctx, ir.Name, ir, b.traefikClient.IngressRoutes(appNamespace))
 		if err != nil {
 			return fmt.Errorf("failed to patch IngressRoute: %w", err)
 		}
