@@ -95,6 +95,7 @@ func main() {
 	viper.SetDefault("ss.url", "")
 	viper.SetDefault("ssgen.addr", "")
 	viper.SetDefault("ssgen.insecure", false)
+	viper.SetDefault("docker.confdir", "/opt/traefik/conf")
 	viper.SetDefault("grpc.port", 5000)
 	viper.SetDefault("http.port", 10000)
 	viper.SetDefault("http.debug", false)

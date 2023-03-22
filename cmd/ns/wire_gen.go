@@ -51,7 +51,7 @@ func NewWithDocker(c2 Config) (*Server, error) {
 	if err != nil {
 		return nil, err
 	}
-	ingressConfDirPath := _wireIngressConfDirPathValue
+	ingressConfDirPath := provideIngressConfDirPath(c2)
 	staticServerConnectivityConfig := c2.SS
 	backend := dockerimpl.NewDockerBackend(client, bus, ingressConfDirPath, applicationRepository, buildRepository, staticServerConnectivityConfig)
 	staticSiteServiceClientConfig := c2.SSGen
@@ -111,10 +111,6 @@ func NewWithDocker(c2 Config) (*Server, error) {
 	}
 	return mainServer, nil
 }
-
-var (
-	_wireIngressConfDirPathValue = dockerimpl.IngressConfDirPath("/opt/traefik/conf")
-)
 
 func NewWithK8S(c2 Config) (*Server, error) {
 	server := grpc.NewServer()
@@ -208,6 +204,7 @@ func NewWithK8S(c2 Config) (*Server, error) {
 var commonSet = wire.NewSet(web.NewServer, hub.New, eventbus.NewLocal, admindb.New, dbmanager.NewMariaDBManager, dbmanager.NewMongoDBManager, repository.NewApplicationRepository, repository.NewAvailableDomainRepository, repository.NewGitRepositoryRepository, repository.NewEnvironmentRepository, repository.NewBuildRepository, grpc.NewServer, grpc.NewApplicationServiceServer, grpc.NewBuilderServiceClientConn, grpc.NewStaticSiteServiceClientConn, grpc.NewBuilderServiceClient, grpc.NewStaticSiteServiceClient, broker.NewBuilderEventsBroker, usecase.NewAPIServerService, usecase.NewAppBuildService, usecase.NewAppDeployService, usecase.NewContinuousDeploymentService, usecase.NewRepositoryFetcherService, handlerSet,
 	provideGRPCPort,
 	provideWebServerConfig,
+	provideIngressConfDirPath,
 	provideImagePrefix,
 	provideImageRegistry,
 	provideRepositoryFetcherCacheDir, wire.FieldsOf(new(Config), "Builder", "SS", "SSGen", "DB", "MariaDB", "MongoDB"), wire.Struct(new(Router), "*"), wire.Bind(new(web.Router), new(*Router)), wire.Struct(new(Server), "*"),

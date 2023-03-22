@@ -52,6 +52,7 @@ var commonSet = wire.NewSet(
 	handlerSet,
 	provideGRPCPort,
 	provideWebServerConfig,
+	provideIngressConfDirPath,
 	provideImagePrefix,
 	provideImageRegistry,
 	provideRepositoryFetcherCacheDir,
@@ -77,7 +78,6 @@ func NewWithDocker(c Config) (*Server, error) {
 		commonSet,
 		docker.NewClientFromEnv,
 		dockerimpl.NewDockerBackend,
-		wire.Value(dockerimpl.IngressConfDirPath("/opt/traefik/conf")),
 	)
 	return nil, nil
 }
