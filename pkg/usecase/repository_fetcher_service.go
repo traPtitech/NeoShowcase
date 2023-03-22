@@ -2,7 +2,9 @@ package usecase
 
 import (
 	"context"
+	"errors"
 	"fmt"
+	"io/fs"
 	"os"
 	"path/filepath"
 	"sync"
@@ -135,7 +137,7 @@ func (r *repositoryFetcherService) fetchAll() error {
 func (r *repositoryFetcherService) fetchRepository(ctx context.Context, repo domain.Repository) (*git.Repository, error) {
 	repoDir := filepath.Join(r.cacheDir, repo.ID)
 	_, err := os.Stat(repoDir)
-	if os.IsNotExist(err) {
+	if errors.Is(err, fs.ErrNotExist) {
 		gitRepo, err := git.PlainCloneContext(ctx, repoDir, true, &git.CloneOptions{
 			URL:        repo.URL,
 			RemoteName: "origin",

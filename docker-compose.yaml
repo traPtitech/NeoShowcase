@@ -188,6 +188,7 @@ services:
       - --providers.docker.exposedByDefault=false
       - --providers.file
       - --providers.file.directory=/opt/neoshowcase/conf
+      - --providers.file.watch=true
       - --entrypoints.web.address=:80/tcp
       - --entrypoints.websecure.address=:443/tcp
       - --entrypoints.websecure.http.tls=true

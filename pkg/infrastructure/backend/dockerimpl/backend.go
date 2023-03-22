@@ -3,6 +3,8 @@ package dockerimpl
 import (
 	"context"
 	"fmt"
+	"path/filepath"
+	"strings"
 
 	docker "github.com/fsouza/go-dockerclient"
 
@@ -80,7 +82,7 @@ func (b *dockerBackend) eventListener() {
 	}
 }
 
-func (b *dockerBackend) Dispose(ctx context.Context) error {
+func (b *dockerBackend) Dispose(_ context.Context) error {
 	_ = b.c.RemoveEventListener(b.dockerEvent)
 	close(b.dockerEvent)
 	return nil
@@ -105,4 +107,17 @@ func initNetworks(c *docker.Client) error {
 
 func containerName(appID string) string {
 	return fmt.Sprintf("nsapp-%s", appID)
+}
+
+func serviceName(fqdn string) string {
+	return fmt.Sprintf("nsapp-%s", strings.ReplaceAll(fqdn, ".", "-"))
+}
+
+func networkName(appID string) string {
+	return fmt.Sprintf("%s.nsapp.internal", appID)
+}
+
+func (b *dockerBackend) configFile(fqdn string) string {
+	filename := fmt.Sprintf("nsapp_%s.yaml", strings.ReplaceAll(fqdn, ".", "_"))
+	return filepath.Join(b.ingressConfDir, filename)
 }
