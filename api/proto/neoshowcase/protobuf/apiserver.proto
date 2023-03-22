@@ -63,6 +63,14 @@ message Application {
   repeated Website websites = 10;
 }
 
+message AvailableDomains {
+  repeated string domains = 1;
+}
+
+message AddAvailableDomainRequest {
+  string domain = 1;
+}
+
 message ApplicationEnvironmentVariable {
   string key = 1;
   string value = 2;
@@ -163,6 +171,8 @@ message RetryCommitBuildRequest {
 
 service ApplicationService {
   rpc GetApplications(google.protobuf.Empty) returns (GetApplicationsResponse);
+  rpc GetAvailableDomains(google.protobuf.Empty) returns (AvailableDomains);
+  rpc AddAvailableDomain(AddAvailableDomainRequest) returns (google.protobuf.Empty);
   rpc CreateApplication(CreateApplicationRequest) returns (Application);
   rpc GetApplication(ApplicationIdRequest) returns (Application);
   rpc DeleteApplication(ApplicationIdRequest) returns (google.protobuf.Empty);

@@ -36,17 +36,17 @@ func (m *MockApplicationRepository) EXPECT() *MockApplicationRepositoryMockRecor
 }
 
 // AddWebsite mocks base method.
-func (m *MockApplicationRepository) AddWebsite(ctx context.Context, applicationID string, args domain.CreateWebsiteArgs) error {
+func (m *MockApplicationRepository) AddWebsite(ctx context.Context, applicationID string, website *domain.Website) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "AddWebsite", ctx, applicationID, args)
+	ret := m.ctrl.Call(m, "AddWebsite", ctx, applicationID, website)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // AddWebsite indicates an expected call of AddWebsite.
-func (mr *MockApplicationRepositoryMockRecorder) AddWebsite(ctx, applicationID, args interface{}) *gomock.Call {
+func (mr *MockApplicationRepositoryMockRecorder) AddWebsite(ctx, applicationID, website interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AddWebsite", reflect.TypeOf((*MockApplicationRepository)(nil).AddWebsite), ctx, applicationID, args)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AddWebsite", reflect.TypeOf((*MockApplicationRepository)(nil).AddWebsite), ctx, applicationID, website)
 }
 
 // CreateApplication mocks base method.

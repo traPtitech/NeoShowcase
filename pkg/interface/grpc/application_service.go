@@ -33,14 +33,19 @@ func handleUseCaseError(err error) error {
 }
 
 type ApplicationService struct {
-	svc usecase.APIServerService
+	svc    usecase.APIServerService
+	adRepo domain.AvailableDomainRepository
 
 	pb.UnimplementedApplicationServiceServer
 }
 
-func NewApplicationServiceServer(svc usecase.APIServerService) *ApplicationService {
+func NewApplicationServiceServer(
+	svc usecase.APIServerService,
+	adRepo domain.AvailableDomainRepository,
+) *ApplicationService {
 	return &ApplicationService{
-		svc: svc,
+		svc:    svc,
+		adRepo: adRepo,
 	}
 }
 
@@ -58,6 +63,24 @@ func (s *ApplicationService) GetApplications(ctx context.Context, _ *emptypb.Emp
 			return toPBApplication(app)
 		}),
 	}, nil
+}
+
+func (s *ApplicationService) GetAvailableDomains(ctx context.Context, _ *emptypb.Empty) (*pb.AvailableDomains, error) {
+	domains, err := s.adRepo.GetAvailableDomains(ctx)
+	if err != nil {
+		return nil, status.Errorf(codes.Internal, "%v", err)
+	}
+	return &pb.AvailableDomains{
+		Domains: lo.Map(domains, func(d *domain.AvailableDomain, i int) string { return d.Domain }),
+	}, nil
+}
+
+func (s *ApplicationService) AddAvailableDomain(ctx context.Context, req *pb.AddAvailableDomainRequest) (*emptypb.Empty, error) {
+	err := s.adRepo.AddAvailableDomain(ctx, req.Domain)
+	if err != nil {
+		return nil, handleUseCaseError(err)
+	}
+	return &emptypb.Empty{}, nil
 }
 
 func (s *ApplicationService) CreateApplication(ctx context.Context, req *pb.CreateApplicationRequest) (*pb.Application, error) {

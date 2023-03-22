@@ -76,7 +76,7 @@ func NewWithDocker(c2 Config) (*Server, error) {
 		return nil, err
 	}
 	apiServerService := usecase.NewAPIServerService(bus, applicationRepository, availableDomainRepository, buildRepository, environmentRepository, gitRepositoryRepository, appDeployService, backend, mariaDBManager, mongoDBManager)
-	applicationService := grpc.NewApplicationServiceServer(apiServerService)
+	applicationService := grpc.NewApplicationServiceServer(apiServerService, availableDomainRepository)
 	router := &Router{}
 	webConfig := provideWebServerConfig(router)
 	webServer := web.NewServer(webConfig)
@@ -169,7 +169,7 @@ func NewWithK8S(c2 Config) (*Server, error) {
 		return nil, err
 	}
 	apiServerService := usecase.NewAPIServerService(bus, applicationRepository, availableDomainRepository, buildRepository, environmentRepository, gitRepositoryRepository, appDeployService, backend, mariaDBManager, mongoDBManager)
-	applicationService := grpc.NewApplicationServiceServer(apiServerService)
+	applicationService := grpc.NewApplicationServiceServer(apiServerService, availableDomainRepository)
 	router := &Router{}
 	webConfig := provideWebServerConfig(router)
 	webServer := web.NewServer(webConfig)
