@@ -35,6 +35,8 @@ type CreateApplicationArgs struct {
 
 type APIServerService interface {
 	GetApplicationsByUserID(ctx context.Context, userID string) ([]*domain.Application, error)
+	GetAvailableDomains(ctx context.Context) (domain.AvailableDomainSlice, error)
+	AddAvailableDomain(ctx context.Context, domain string) error
 	CreateApplication(ctx context.Context, args CreateApplicationArgs) (*domain.Application, error)
 	GetApplication(ctx context.Context, id string) (*domain.Application, error)
 	DeleteApplication(ctx context.Context, id string) error
@@ -88,6 +90,18 @@ func NewAPIServerService(
 
 func (s *apiServerService) GetApplicationsByUserID(ctx context.Context, userID string) ([]*domain.Application, error) {
 	return s.appRepo.GetApplications(ctx, domain.GetApplicationCondition{UserID: optional.From(userID)})
+}
+
+func (s *apiServerService) GetAvailableDomains(ctx context.Context) (domain.AvailableDomainSlice, error) {
+	return s.adRepo.GetAvailableDomains(ctx)
+}
+
+func (s *apiServerService) AddAvailableDomain(ctx context.Context, d string) error {
+	ad := domain.AvailableDomain{Domain: d}
+	if !ad.IsValid() {
+		return newError(ErrorTypeBadRequest, "invalid new domain", nil)
+	}
+	return s.adRepo.AddAvailableDomain(ctx, d)
 }
 
 func (s *apiServerService) CreateApplication(ctx context.Context, args CreateApplicationArgs) (*domain.Application, error) {
