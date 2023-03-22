@@ -12,7 +12,6 @@ import (
 	"k8s.io/utils/pointer"
 
 	"github.com/traPtitech/neoshowcase/pkg/domain"
-	"github.com/traPtitech/neoshowcase/pkg/util"
 )
 
 func (b *k8sBackend) CreateContainer(ctx context.Context, app *domain.Application, args domain.ContainerCreateArgs) error {
@@ -48,9 +47,10 @@ func (b *k8sBackend) CreateContainer(ctx context.Context, app *domain.Applicatio
 				ObjectMeta: metav1.ObjectMeta{
 					Name:      deploymentName(app.ID),
 					Namespace: appNamespace,
-					Labels: util.MergeMap(resourceLabels(app.ID), map[string]string{
+					Labels:    resourceLabels(app.ID),
+					Annotations: map[string]string{
 						appRestartAnnotation: time.Now().Format(time.RFC3339),
-					}),
+					},
 				},
 				Spec: apiv1.PodSpec{
 					Containers: []apiv1.Container{{
