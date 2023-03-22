@@ -9,6 +9,7 @@ import (
 
 	"github.com/samber/lo"
 	"golang.org/x/exp/slices"
+	"golang.org/x/net/idna"
 
 	"github.com/traPtitech/neoshowcase/pkg/domain/builder"
 	"github.com/traPtitech/neoshowcase/pkg/util/optional"
@@ -120,6 +121,49 @@ type Artifact struct {
 	CreatedAt time.Time
 }
 
+func IsValidDomain(domain string) bool {
+	// 面倒なのでtrailing dotは無しで統一
+	if strings.HasSuffix(domain, ".") {
+		return false
+	}
+	_, err := idna.Lookup.ToUnicode(domain)
+	return err == nil
+}
+
+type AvailableDomain struct {
+	Domain string
+}
+
+type AvailableDomainSlice []*AvailableDomain
+
+func (a *AvailableDomain) IsValid() bool {
+	domain := a.Domain
+	domain = strings.TrimPrefix(domain, "*.")
+	return IsValidDomain(domain)
+}
+
+func (a *AvailableDomain) Match(fqdn string) bool {
+	if fqdn == a.Domain {
+		return true
+	}
+	if strings.HasPrefix(a.Domain, "*.") {
+		baseDomain := strings.TrimPrefix(a.Domain, "*")
+		if strings.HasSuffix(fqdn, baseDomain) {
+			return true
+		}
+	}
+	return false
+}
+
+func (s AvailableDomainSlice) Match(fqdn string) bool {
+	for _, a := range s {
+		if a.Match(fqdn) {
+			return true
+		}
+	}
+	return false
+}
+
 type Build struct {
 	ID            string
 	Commit        string
@@ -160,6 +204,32 @@ type Website struct {
 	PathPrefix string
 	HTTPS      bool
 	HTTPPort   int
+}
+
+func (w *Website) IsValid() bool {
+	if !IsValidDomain(w.FQDN) {
+		return false
+	}
+	if !strings.HasPrefix(w.PathPrefix, "/") {
+		return false
+	}
+	if !(0 <= w.HTTPPort && w.HTTPPort < 65536) {
+		return false
+	}
+	return true
+}
+
+// ConflictsWith checks whether this website's path prefix is contained in the existing websites' path prefixes.
+func (w *Website) ConflictsWith(existing []*Website) bool {
+	for _, ex := range existing {
+		if w.FQDN != ex.FQDN {
+			continue
+		}
+		if strings.HasPrefix(w.PathPrefix, ex.PathPrefix) {
+			return true
+		}
+	}
+	return false
 }
 
 func GetActiveWebsites(ctx context.Context, appRepo ApplicationRepository, buildRepo BuildRepository) ([]*Site, error) {

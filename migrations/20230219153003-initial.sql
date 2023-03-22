@@ -1,11 +1,8 @@
 -- +migrate Up
 CREATE TABLE `available_domains`
 (
-    `id`        VARCHAR(22)          NOT NULL COMMENT 'ドメインID',
-    `domain`    VARCHAR(100)         NOT NULL COMMENT 'ドメイン',
-    `subdomain` TINYINT(1) DEFAULT 0 NOT NULL COMMENT 'サブドメインが利用可能か',
-    PRIMARY KEY (`id`),
-    UNIQUE KEY (`domain`)
+    `domain` VARCHAR(256) NOT NULL COMMENT 'ドメイン',
+    PRIMARY KEY (`domain`)
 ) ENGINE = InnoDB
   DEFAULT CHARACTER SET = `utf8mb4`
     COMMENT '利用可能ドメインテーブル';
@@ -149,7 +146,7 @@ CREATE TABLE `websites`
     `updated_at`     DATETIME(6)    NOT NULL COMMENT '更新日時',
     `application_id` VARCHAR(22)    NOT NULL COMMENT 'アプリケーションID',
     PRIMARY KEY (`id`),
-    UNIQUE KEY (`fqdn`),
+    UNIQUE KEY (`fqdn`, `path_prefix`),
     CONSTRAINT `fk_websites_application_id`
         FOREIGN KEY (`application_id`) REFERENCES `applications` (`id`)
 ) ENGINE InnoDB

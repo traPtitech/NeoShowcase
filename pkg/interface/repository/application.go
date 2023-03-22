@@ -6,9 +6,9 @@ import (
 	"fmt"
 
 	"github.com/samber/lo"
-	log "github.com/sirupsen/logrus"
 	"github.com/volatiletech/sqlboiler/v4/boil"
 	"github.com/volatiletech/sqlboiler/v4/queries/qm"
+	"golang.org/x/exp/slices"
 
 	"github.com/traPtitech/neoshowcase/pkg/domain"
 	"github.com/traPtitech/neoshowcase/pkg/infrastructure/admindb/models"
@@ -92,6 +92,12 @@ func (r *applicationRepository) GetApplication(ctx context.Context, id string) (
 }
 
 func (r *applicationRepository) CreateApplication(ctx context.Context, args domain.CreateApplicationArgs) (*domain.Application, error) {
+	tx, err := r.db.BeginTx(ctx, nil)
+	if err != nil {
+		return nil, fmt.Errorf("failed to start transaction: %w", err)
+	}
+	defer tx.Rollback()
+
 	app := &models.Application{
 		ID:            domain.NewID(),
 		Name:          args.Name,
@@ -102,7 +108,7 @@ func (r *applicationRepository) CreateApplication(ctx context.Context, args doma
 		CurrentCommit: domain.EmptyCommit,
 		WantCommit:    domain.EmptyCommit,
 	}
-	if err := app.Insert(ctx, r.db, boil.Infer()); err != nil {
+	if err := app.Insert(ctx, tx, boil.Infer()); err != nil {
 		return nil, fmt.Errorf("failed to create application: %w", err)
 	}
 
@@ -117,10 +123,12 @@ func (r *applicationRepository) CreateApplication(ctx context.Context, args doma
 		EntrypointCMD:  args.Config.EntrypointCmd,
 		Authentication: args.Config.Authentication.String(),
 	}
-	if err := app.SetApplicationConfig(ctx, r.db, true, config); err != nil {
+	if err := app.SetApplicationConfig(ctx, tx, true, config); err != nil {
 		return nil, fmt.Errorf("failed to set application config")
 	}
 
+	// Validate and insert from the most specific
+	slices.SortFunc(args.Websites, func(a, b *domain.CreateWebsiteArgs) bool { return len(b.PathPrefix) < len(a.PathPrefix) })
 	websites := lo.Map(args.Websites, func(website *domain.CreateWebsiteArgs, i int) *models.Website {
 		return &models.Website{
 			ID:         domain.NewID(),
@@ -130,12 +138,18 @@ func (r *applicationRepository) CreateApplication(ctx context.Context, args doma
 			HTTPPort:   website.HTTPPort,
 		}
 	})
-	if err := app.AddWebsites(ctx, r.db, true, websites...); err != nil {
+	for _, website := range websites {
+		if err = r.validateWebsite(ctx, tx, website); err != nil {
+			return nil, err
+		}
+	}
+	if err := app.AddWebsites(ctx, tx, true, websites...); err != nil {
 		return nil, fmt.Errorf("failed to add websites")
 	}
 
-	log.WithField("appID", app.ID).
-		Info("app created")
+	if err := tx.Commit(); err != nil {
+		return nil, fmt.Errorf("failed to commit transaction: %w", err)
+	}
 
 	return r.GetApplication(ctx, app.ID)
 }
@@ -185,11 +199,30 @@ func (r *applicationRepository) GetWebsites(ctx context.Context, applicationIDs 
 	}), nil
 }
 
+func (r *applicationRepository) validateWebsite(ctx context.Context, ex boil.ContextExecutor, website *models.Website) error {
+	websites, err := models.Websites(models.WebsiteWhere.FQDN.EQ(website.FQDN), qm.For("UPDATE")).All(ctx, ex)
+	if err != nil {
+		return fmt.Errorf("failed to get existing websites: %w", err)
+	}
+	existing := lo.Map(websites, func(website *models.Website, i int) *domain.Website { return toDomainWebsite(website) })
+	if toDomainWebsite(website).ConflictsWith(existing) {
+		return ErrDuplicate
+	}
+	return nil
+}
+
 func (r *applicationRepository) AddWebsite(ctx context.Context, applicationID string, args domain.CreateWebsiteArgs) error {
 	app, err := r.getApplication(ctx, applicationID)
 	if err != nil {
 		return err
 	}
+
+	tx, err := r.db.BeginTx(ctx, nil)
+	if err != nil {
+		return fmt.Errorf("failed to start transaction: %w", err)
+	}
+	defer tx.Rollback()
+
 	website := &models.Website{
 		ID:         domain.NewID(),
 		FQDN:       args.FQDN,
@@ -197,10 +230,20 @@ func (r *applicationRepository) AddWebsite(ctx context.Context, applicationID st
 		HTTPS:      args.HTTPS,
 		HTTPPort:   args.HTTPPort,
 	}
-	err = app.AddWebsites(ctx, r.db, true, website)
+	err = r.validateWebsite(ctx, tx, website)
+	if err != nil {
+		return err
+	}
+	err = app.AddWebsites(ctx, tx, true, website)
 	if err != nil {
 		return fmt.Errorf("failed to add website: %w", err)
 	}
+
+	err = tx.Commit()
+	if err != nil {
+		return fmt.Errorf("failed to commit transaction: %w", err)
+	}
+
 	return nil
 }
 

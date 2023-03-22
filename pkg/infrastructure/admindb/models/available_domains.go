@@ -22,47 +22,31 @@ import (
 )
 
 // AvailableDomain is an object representing the database table.
-type AvailableDomain struct { // ドメインID
-	ID string `boil:"id" json:"id" toml:"id" yaml:"id"`
-	// ドメイン
+type AvailableDomain struct { // ドメイン
 	Domain string `boil:"domain" json:"domain" toml:"domain" yaml:"domain"`
-	// サブドメインが利用可能か
-	Subdomain bool `boil:"subdomain" json:"subdomain" toml:"subdomain" yaml:"subdomain"`
 
 	R *availableDomainR `boil:"-" json:"-" toml:"-" yaml:"-"`
 	L availableDomainL  `boil:"-" json:"-" toml:"-" yaml:"-"`
 }
 
 var AvailableDomainColumns = struct {
-	ID        string
-	Domain    string
-	Subdomain string
+	Domain string
 }{
-	ID:        "id",
-	Domain:    "domain",
-	Subdomain: "subdomain",
+	Domain: "domain",
 }
 
 var AvailableDomainTableColumns = struct {
-	ID        string
-	Domain    string
-	Subdomain string
+	Domain string
 }{
-	ID:        "available_domains.id",
-	Domain:    "available_domains.domain",
-	Subdomain: "available_domains.subdomain",
+	Domain: "available_domains.domain",
 }
 
 // Generated where
 
 var AvailableDomainWhere = struct {
-	ID        whereHelperstring
-	Domain    whereHelperstring
-	Subdomain whereHelperbool
+	Domain whereHelperstring
 }{
-	ID:        whereHelperstring{field: "`available_domains`.`id`"},
-	Domain:    whereHelperstring{field: "`available_domains`.`domain`"},
-	Subdomain: whereHelperbool{field: "`available_domains`.`subdomain`"},
+	Domain: whereHelperstring{field: "`available_domains`.`domain`"},
 }
 
 // AvailableDomainRels is where relationship names are stored.
@@ -82,10 +66,10 @@ func (*availableDomainR) NewStruct() *availableDomainR {
 type availableDomainL struct{}
 
 var (
-	availableDomainAllColumns            = []string{"id", "domain", "subdomain"}
-	availableDomainColumnsWithoutDefault = []string{"id", "domain"}
-	availableDomainColumnsWithDefault    = []string{"subdomain"}
-	availableDomainPrimaryKeyColumns     = []string{"id"}
+	availableDomainAllColumns            = []string{"domain"}
+	availableDomainColumnsWithoutDefault = []string{"domain"}
+	availableDomainColumnsWithDefault    = []string{}
+	availableDomainPrimaryKeyColumns     = []string{"domain"}
 	availableDomainGeneratedColumns      = []string{}
 )
 
@@ -380,7 +364,7 @@ func AvailableDomains(mods ...qm.QueryMod) availableDomainQuery {
 
 // FindAvailableDomain retrieves a single record by ID with an executor.
 // If selectCols is empty Find will return all columns.
-func FindAvailableDomain(ctx context.Context, exec boil.ContextExecutor, iD string, selectCols ...string) (*AvailableDomain, error) {
+func FindAvailableDomain(ctx context.Context, exec boil.ContextExecutor, domain string, selectCols ...string) (*AvailableDomain, error) {
 	availableDomainObj := &AvailableDomain{}
 
 	sel := "*"
@@ -388,10 +372,10 @@ func FindAvailableDomain(ctx context.Context, exec boil.ContextExecutor, iD stri
 		sel = strings.Join(strmangle.IdentQuoteSlice(dialect.LQ, dialect.RQ, selectCols), ",")
 	}
 	query := fmt.Sprintf(
-		"select %s from `available_domains` where `id`=?", sel,
+		"select %s from `available_domains` where `domain`=?", sel,
 	)
 
-	q := queries.Raw(query, iD)
+	q := queries.Raw(query, domain)
 
 	err := q.Bind(ctx, exec, availableDomainObj)
 	if err != nil {
@@ -480,7 +464,7 @@ func (o *AvailableDomain) Insert(ctx context.Context, exec boil.ContextExecutor,
 	}
 
 	identifierCols = []interface{}{
-		o.ID,
+		o.Domain,
 	}
 
 	if boil.IsDebug(ctx) {
@@ -632,7 +616,6 @@ func (o AvailableDomainSlice) UpdateAll(ctx context.Context, exec boil.ContextEx
 }
 
 var mySQLAvailableDomainUniqueColumns = []string{
-	"id",
 	"domain",
 }
 
@@ -782,7 +765,7 @@ func (o *AvailableDomain) Delete(ctx context.Context, exec boil.ContextExecutor)
 	}
 
 	args := queries.ValuesFromMapping(reflect.Indirect(reflect.ValueOf(o)), availableDomainPrimaryKeyMapping)
-	sql := "DELETE FROM `available_domains` WHERE `id`=?"
+	sql := "DELETE FROM `available_domains` WHERE `domain`=?"
 
 	if boil.IsDebug(ctx) {
 		writer := boil.DebugWriterFrom(ctx)
@@ -879,7 +862,7 @@ func (o AvailableDomainSlice) DeleteAll(ctx context.Context, exec boil.ContextEx
 // Reload refetches the object from the database
 // using the primary keys with an executor.
 func (o *AvailableDomain) Reload(ctx context.Context, exec boil.ContextExecutor) error {
-	ret, err := FindAvailableDomain(ctx, exec, o.ID)
+	ret, err := FindAvailableDomain(ctx, exec, o.Domain)
 	if err != nil {
 		return err
 	}
@@ -918,16 +901,16 @@ func (o *AvailableDomainSlice) ReloadAll(ctx context.Context, exec boil.ContextE
 }
 
 // AvailableDomainExists checks if the AvailableDomain row exists.
-func AvailableDomainExists(ctx context.Context, exec boil.ContextExecutor, iD string) (bool, error) {
+func AvailableDomainExists(ctx context.Context, exec boil.ContextExecutor, domain string) (bool, error) {
 	var exists bool
-	sql := "select exists(select 1 from `available_domains` where `id`=? limit 1)"
+	sql := "select exists(select 1 from `available_domains` where `domain`=? limit 1)"
 
 	if boil.IsDebug(ctx) {
 		writer := boil.DebugWriterFrom(ctx)
 		fmt.Fprintln(writer, sql)
-		fmt.Fprintln(writer, iD)
+		fmt.Fprintln(writer, domain)
 	}
-	row := exec.QueryRowContext(ctx, sql, iD)
+	row := exec.QueryRowContext(ctx, sql, domain)
 
 	err := row.Scan(&exists)
 	if err != nil {
@@ -939,5 +922,5 @@ func AvailableDomainExists(ctx context.Context, exec boil.ContextExecutor, iD st
 
 // Exists checks if the AvailableDomain row exists.
 func (o *AvailableDomain) Exists(ctx context.Context, exec boil.ContextExecutor) (bool, error) {
-	return AvailableDomainExists(ctx, exec, o.ID)
+	return AvailableDomainExists(ctx, exec, o.Domain)
 }

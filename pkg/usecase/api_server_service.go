@@ -13,15 +13,10 @@ import (
 	"github.com/traPtitech/neoshowcase/pkg/util/random"
 )
 
-var (
-	ErrNotFound      = errors.New("not found")
-	ErrAlreadyExists = errors.New("already exists")
-)
-
 func handleRepoError[T any](entity T, err error) (T, error) {
 	switch err {
 	case repository.ErrNotFound:
-		return entity, ErrNotFound
+		return entity, newError(ErrorTypeNotFound, "not found", err)
 	default:
 		return entity, err
 	}
@@ -55,6 +50,7 @@ type APIServerService interface {
 type apiServerService struct {
 	bus            domain.Bus
 	appRepo        domain.ApplicationRepository
+	adRepo         domain.AvailableDomainRepository
 	buildRepo      domain.BuildRepository
 	envRepo        domain.EnvironmentRepository
 	gitRepo        domain.GitRepositoryRepository
@@ -67,6 +63,7 @@ type apiServerService struct {
 func NewAPIServerService(
 	bus domain.Bus,
 	appRepo domain.ApplicationRepository,
+	adRepo domain.AvailableDomainRepository,
 	buildRepo domain.BuildRepository,
 	envRepo domain.EnvironmentRepository,
 	gitRepo domain.GitRepositoryRepository,
@@ -78,6 +75,7 @@ func NewAPIServerService(
 	return &apiServerService{
 		bus:            bus,
 		appRepo:        appRepo,
+		adRepo:         adRepo,
 		buildRepo:      buildRepo,
 		envRepo:        envRepo,
 		gitRepo:        gitRepo,
@@ -101,7 +99,7 @@ func (s *apiServerService) CreateApplication(ctx context.Context, args CreateApp
 	if err == repository.ErrNotFound {
 		repoName, err := domain.ExtractNameFromRepositoryURL(args.RepositoryURL)
 		if err != nil {
-			return nil, fmt.Errorf("malformed repository url: %w", err)
+			return nil, newError(ErrorTypeBadRequest, "malformed repository url", err)
 		}
 		repo, err = s.gitRepo.RegisterRepository(ctx, domain.RegisterRepositoryArgs{
 			Name: repoName,
@@ -109,6 +107,16 @@ func (s *apiServerService) CreateApplication(ctx context.Context, args CreateApp
 		})
 		if err != nil {
 			return nil, err
+		}
+	}
+
+	domains, err := s.adRepo.GetAvailableDomains(ctx)
+	if err != nil {
+		return nil, err
+	}
+	for _, website := range args.Websites {
+		if !domains.Match(website.FQDN) {
+			return nil, newError(ErrorTypeBadRequest, "domain not available", nil)
 		}
 	}
 
@@ -128,9 +136,6 @@ func (s *apiServerService) CreateApplication(ctx context.Context, args CreateApp
 		Websites:     args.Websites,
 	})
 	if err != nil {
-		if err == repository.ErrDuplicate {
-			return nil, ErrAlreadyExists
-		}
 		return nil, err
 	}
 

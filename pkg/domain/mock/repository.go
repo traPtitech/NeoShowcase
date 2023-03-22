@@ -188,6 +188,72 @@ func (mr *MockArtifactRepositoryMockRecorder) CreateArtifact(ctx, size, buildID,
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateArtifact", reflect.TypeOf((*MockArtifactRepository)(nil).CreateArtifact), ctx, size, buildID, sid)
 }
 
+// MockAvailableDomainRepository is a mock of AvailableDomainRepository interface.
+type MockAvailableDomainRepository struct {
+	ctrl     *gomock.Controller
+	recorder *MockAvailableDomainRepositoryMockRecorder
+}
+
+// MockAvailableDomainRepositoryMockRecorder is the mock recorder for MockAvailableDomainRepository.
+type MockAvailableDomainRepositoryMockRecorder struct {
+	mock *MockAvailableDomainRepository
+}
+
+// NewMockAvailableDomainRepository creates a new mock instance.
+func NewMockAvailableDomainRepository(ctrl *gomock.Controller) *MockAvailableDomainRepository {
+	mock := &MockAvailableDomainRepository{ctrl: ctrl}
+	mock.recorder = &MockAvailableDomainRepositoryMockRecorder{mock}
+	return mock
+}
+
+// EXPECT returns an object that allows the caller to indicate expected use.
+func (m *MockAvailableDomainRepository) EXPECT() *MockAvailableDomainRepositoryMockRecorder {
+	return m.recorder
+}
+
+// AddAvailableDomain mocks base method.
+func (m *MockAvailableDomainRepository) AddAvailableDomain(ctx context.Context, domain string) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "AddAvailableDomain", ctx, domain)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// AddAvailableDomain indicates an expected call of AddAvailableDomain.
+func (mr *MockAvailableDomainRepositoryMockRecorder) AddAvailableDomain(ctx, domain interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AddAvailableDomain", reflect.TypeOf((*MockAvailableDomainRepository)(nil).AddAvailableDomain), ctx, domain)
+}
+
+// DeleteAvailableDomain mocks base method.
+func (m *MockAvailableDomainRepository) DeleteAvailableDomain(ctx context.Context, domain string) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "DeleteAvailableDomain", ctx, domain)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// DeleteAvailableDomain indicates an expected call of DeleteAvailableDomain.
+func (mr *MockAvailableDomainRepositoryMockRecorder) DeleteAvailableDomain(ctx, domain interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteAvailableDomain", reflect.TypeOf((*MockAvailableDomainRepository)(nil).DeleteAvailableDomain), ctx, domain)
+}
+
+// GetAvailableDomains mocks base method.
+func (m *MockAvailableDomainRepository) GetAvailableDomains(ctx context.Context) (domain.AvailableDomainSlice, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetAvailableDomains", ctx)
+	ret0, _ := ret[0].(domain.AvailableDomainSlice)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetAvailableDomains indicates an expected call of GetAvailableDomains.
+func (mr *MockAvailableDomainRepositoryMockRecorder) GetAvailableDomains(ctx interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetAvailableDomains", reflect.TypeOf((*MockAvailableDomainRepository)(nil).GetAvailableDomains), ctx)
+}
+
 // MockBuildRepository is a mock of BuildRepository interface.
 type MockBuildRepository struct {
 	ctrl     *gomock.Controller

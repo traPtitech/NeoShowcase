@@ -901,7 +901,6 @@ func (o WebsiteSlice) UpdateAll(ctx context.Context, exec boil.ContextExecutor, 
 
 var mySQLWebsiteUniqueColumns = []string{
 	"id",
-	"fqdn",
 }
 
 // Upsert attempts an insert using an executor, and does an update or ignore on conflict.

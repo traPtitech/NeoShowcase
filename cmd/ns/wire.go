@@ -33,6 +33,7 @@ var commonSet = wire.NewSet(
 	dbmanager.NewMariaDBManager,
 	dbmanager.NewMongoDBManager,
 	repository.NewApplicationRepository,
+	repository.NewAvailableDomainRepository,
 	repository.NewGitRepositoryRepository,
 	repository.NewEnvironmentRepository,
 	repository.NewBuildRepository,

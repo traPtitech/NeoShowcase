@@ -199,20 +199,14 @@
 <!-- available_domains -->
 <g id="node5" class="node">
 <title>available_domains</title>
-<polygon fill="#efefef" stroke="transparent" points="1293.5,-1293.5 1293.5,-1328.5 1553.5,-1328.5 1553.5,-1293.5 1293.5,-1293.5"/>
-<polygon fill="none" stroke="#000000" points="1293.5,-1293.5 1293.5,-1328.5 1553.5,-1328.5 1553.5,-1293.5 1293.5,-1293.5"/>
-<text text-anchor="start" x="1300.3576" y="-1306.3" font-family="Arial Bold" font-size="18.00" fill="#000000">available_domains</text>
-<text text-anchor="start" x="1449.3886" y="-1306.3" font-family="Arial" font-size="14.00" fill="#000000"> </text>
-<text text-anchor="start" x="1453.2792" y="-1306.3" font-family="Arial" font-size="14.00" fill="#666666">[BASE TABLE]</text>
-<polygon fill="none" stroke="#000000" points="1293.5,-1263.5 1293.5,-1293.5 1553.5,-1293.5 1553.5,-1263.5 1293.5,-1263.5"/>
-<text text-anchor="start" x="1300.5" y="-1274.9" font-family="Arial" font-size="14.00" fill="#000000">id </text>
-<text text-anchor="start" x="1315.2798" y="-1274.9" font-family="Arial" font-size="14.00" fill="#666666">[varchar(22)]</text>
+<polygon fill="#efefef" stroke="transparent" points="1293.5,-1263.5 1293.5,-1298.5 1553.5,-1298.5 1553.5,-1263.5 1293.5,-1263.5"/>
+<polygon fill="none" stroke="#000000" points="1293.5,-1263.5 1293.5,-1298.5 1553.5,-1298.5 1553.5,-1263.5 1293.5,-1263.5"/>
+<text text-anchor="start" x="1300.3576" y="-1276.3" font-family="Arial Bold" font-size="18.00" fill="#000000">available_domains</text>
+<text text-anchor="start" x="1449.3886" y="-1276.3" font-family="Arial" font-size="14.00" fill="#000000"> </text>
+<text text-anchor="start" x="1453.2792" y="-1276.3" font-family="Arial" font-size="14.00" fill="#666666">[BASE TABLE]</text>
 <polygon fill="none" stroke="#000000" points="1293.5,-1233.5 1293.5,-1263.5 1553.5,-1263.5 1553.5,-1233.5 1293.5,-1233.5"/>
 <text text-anchor="start" x="1300.5" y="-1244.9" font-family="Arial" font-size="14.00" fill="#000000">domain </text>
-<text text-anchor="start" x="1350.2882" y="-1244.9" font-family="Arial" font-size="14.00" fill="#666666">[varchar(100)]</text>
-<polygon fill="none" stroke="#000000" points="1293.5,-1203.5 1293.5,-1233.5 1553.5,-1233.5 1553.5,-1203.5 1293.5,-1203.5"/>
-<text text-anchor="start" x="1300.5" y="-1214.9" font-family="Arial" font-size="14.00" fill="#000000">subdomain </text>
-<text text-anchor="start" x="1372.8534" y="-1214.9" font-family="Arial" font-size="14.00" fill="#666666">[tinyint(1)]</text>
+<text text-anchor="start" x="1350.2882" y="-1244.9" font-family="Arial" font-size="14.00" fill="#666666">[varchar(256)]</text>
 </g>
 <!-- builds&#45;&gt;applications -->
 <g id="edge5" class="edge">

@@ -55,6 +55,12 @@ type ArtifactRepository interface {
 	CreateArtifact(ctx context.Context, size int64, buildID string, sid string) error
 }
 
+type AvailableDomainRepository interface {
+	GetAvailableDomains(ctx context.Context) (AvailableDomainSlice, error)
+	AddAvailableDomain(ctx context.Context, domain string) error
+	DeleteAvailableDomain(ctx context.Context, domain string) error
+}
+
 type UpdateBuildArgs struct {
 	ID     string
 	Status builder.BuildStatus
