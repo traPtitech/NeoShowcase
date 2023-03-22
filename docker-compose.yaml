@@ -17,7 +17,7 @@ services:
       NS_APISERVER_GRPC_PORT: "5000"
       NS_APISERVER_HTTP_PORT: "8080"
       NS_APISERVER_HTTP_DEBUG: "true"
-      NS_APISERVER_IMAGE_REGISTRY: "registry.local.tokyotech.org"
+      NS_APISERVER_IMAGE_REGISTRY: "registry.local.trapti.tech"
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
       - ./local-dev/neoshowcase:/data
@@ -26,10 +26,10 @@ services:
       - "5009:5000"
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.ns_admin.rule=Host(`local.tokyotech.org`)"
+      - "traefik.http.routers.ns_admin.rule=Host(`local.trapti.tech`)"
       - "traefik.http.routers.ns_admin.service=ns_admin"
       - "traefik.http.services.ns_admin.loadbalancer.server.port=8080"
-      - "traefik.http.routers.ns_grpc.rule=Host(`grpc.local.tokyotech.org`)"
+      - "traefik.http.routers.ns_grpc.rule=Host(`grpc.local.trapti.tech`)"
       - "traefik.http.routers.ns_grpc.service=ns_grpc"
       - "traefik.http.services.ns_grpc.loadbalancer.server.port=5000"
     depends_on:
@@ -46,7 +46,7 @@ services:
       - "5005:80"
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.ns_mc.rule=Host(`mc.local.tokyotech.org`)"
+      - "traefik.http.routers.ns_mc.rule=Host(`mc.local.trapti.tech`)"
       - "traefik.http.services.ns_mc.loadbalancer.server.port=80"
     networks:
       - default
@@ -105,12 +105,12 @@ services:
       REGISTRY_HTTP_ADDR: :80
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.registry.rule=Host(`registry.local.tokyotech.org`)"
+      - "traefik.http.routers.registry.rule=Host(`registry.local.trapti.tech`)"
       - "traefik.http.services.registry.loadbalancer.server.port=80"
     networks:
       default:
         aliases:
-          - "registry.local.tokyotech.org"
+          - "registry.local.trapti.tech"
 
   registry-frontend:
     image: konradkleine/docker-registry-frontend:v2
@@ -118,11 +118,11 @@ services:
     ports:
       - "5003:80"
     environment:
-      ENV_DOCKER_REGISTRY_HOST: registry.local.tokyotech.org
+      ENV_DOCKER_REGISTRY_HOST: registry.local.trapti.tech
       ENV_DOCKER_REGISTRY_PORT: 80
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.registry_frontend.rule=Host(`registry-frontend.local.tokyotech.org`)"
+      - "traefik.http.routers.registry_frontend.rule=Host(`registry-frontend.local.trapti.tech`)"
       - "traefik.http.services.registry_frontend.loadbalancer.server.port=80"
     networks:
       - default
@@ -174,7 +174,7 @@ services:
       - "5001:8080"
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.adminer.rule=Host(`adminer.local.tokyotech.org`)"
+      - "traefik.http.routers.adminer.rule=Host(`adminer.local.trapti.tech`)"
       - "traefik.http.services.adminer.loadbalancer.server.port=8080"
     networks:
       - default
@@ -208,10 +208,10 @@ services:
       - ./local-dev/traefik:/opt/neoshowcase/conf
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.traefik_dashboard.rule=Host(`traefik.local.tokyotech.org`)"
+      - "traefik.http.routers.traefik_dashboard.rule=Host(`traefik.local.trapti.tech`)"
       - "traefik.http.routers.traefik_dashboard.service=traefik_dashboard"
       - "traefik.http.services.traefik_dashboard.loadbalancer.server.port=8080"
-      - "traefik.http.routers.traefik_metrics.rule=Host(`traefik.local.tokyotech.org`) && PathPrefix(`/metrics`)"
+      - "traefik.http.routers.traefik_metrics.rule=Host(`traefik.local.trapti.tech`) && PathPrefix(`/metrics`)"
       - "traefik.http.routers.traefik_metrics.service=traefik_metrics"
       - "traefik.http.services.traefik_metrics.loadbalancer.server.port=9100"
     networks:
