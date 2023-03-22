@@ -11,65 +11,20 @@ import (
 	"github.com/volatiletech/sqlboiler/v4/queries/qm"
 
 	"github.com/traPtitech/neoshowcase/pkg/domain"
-	"github.com/traPtitech/neoshowcase/pkg/domain/builder"
 	"github.com/traPtitech/neoshowcase/pkg/infrastructure/admindb/models"
-	"github.com/traPtitech/neoshowcase/pkg/util/optional"
 )
-
-//go:generate go run github.com/golang/mock/mockgen -source=$GOFILE -package=mock_$GOPACKAGE -destination=./mock/$GOFILE
-
-type GetApplicationCondition struct {
-	UserID    optional.Of[string]
-	BuildType optional.Of[builder.BuildType]
-	State     optional.Of[domain.ApplicationState]
-	// InSync WantCommit が CurrentCommit に一致する
-	InSync optional.Of[bool]
-}
-
-type CreateWebsiteArgs struct {
-	FQDN  string
-	HTTPS bool
-	Port  int
-}
-
-type CreateApplicationArgs struct {
-	Name         string
-	RepositoryID string
-	BranchName   string
-	BuildType    builder.BuildType
-	State        domain.ApplicationState
-	Config       domain.ApplicationConfig
-	Websites     []*CreateWebsiteArgs
-}
-
-type UpdateApplicationArgs struct {
-	State         optional.Of[domain.ApplicationState]
-	CurrentCommit optional.Of[string]
-	WantCommit    optional.Of[string]
-}
-
-type ApplicationRepository interface {
-	GetApplications(ctx context.Context, cond GetApplicationCondition) ([]*domain.Application, error)
-	GetApplication(ctx context.Context, id string) (*domain.Application, error)
-	CreateApplication(ctx context.Context, args CreateApplicationArgs) (*domain.Application, error)
-	UpdateApplication(ctx context.Context, id string, args UpdateApplicationArgs) error
-	RegisterApplicationOwner(ctx context.Context, applicationID string, userID string) error
-	GetWebsites(ctx context.Context, applicationIDs []string) ([]*domain.Website, error)
-	AddWebsite(ctx context.Context, applicationID string, fqdn string, https bool, httpPort int) error
-	DeleteWebsite(ctx context.Context, applicationID string, websiteID string) error
-}
 
 type applicationRepository struct {
 	db *sql.DB
 }
 
-func NewApplicationRepository(db *sql.DB) ApplicationRepository {
+func NewApplicationRepository(db *sql.DB) domain.ApplicationRepository {
 	return &applicationRepository{
 		db: db,
 	}
 }
 
-func (r *applicationRepository) GetApplications(ctx context.Context, cond GetApplicationCondition) ([]*domain.Application, error) {
+func (r *applicationRepository) GetApplications(ctx context.Context, cond domain.GetApplicationCondition) ([]*domain.Application, error) {
 	mods := []qm.QueryMod{
 		qm.Load(models.ApplicationRels.ApplicationConfig),
 		qm.Load(models.ApplicationRels.Repository),
@@ -136,7 +91,7 @@ func (r *applicationRepository) GetApplication(ctx context.Context, id string) (
 	return toDomainApplication(app), nil
 }
 
-func (r *applicationRepository) CreateApplication(ctx context.Context, args CreateApplicationArgs) (*domain.Application, error) {
+func (r *applicationRepository) CreateApplication(ctx context.Context, args domain.CreateApplicationArgs) (*domain.Application, error) {
 	app := &models.Application{
 		ID:            domain.NewID(),
 		Name:          args.Name,
@@ -166,12 +121,13 @@ func (r *applicationRepository) CreateApplication(ctx context.Context, args Crea
 		return nil, fmt.Errorf("failed to set application config")
 	}
 
-	websites := lo.Map(args.Websites, func(website *CreateWebsiteArgs, i int) *models.Website {
+	websites := lo.Map(args.Websites, func(website *domain.CreateWebsiteArgs, i int) *models.Website {
 		return &models.Website{
-			ID:       domain.NewID(),
-			FQDN:     website.FQDN,
-			HTTPS:    website.HTTPS,
-			HTTPPort: website.Port,
+			ID:         domain.NewID(),
+			FQDN:       website.FQDN,
+			PathPrefix: website.PathPrefix,
+			HTTPS:      website.HTTPS,
+			HTTPPort:   website.HTTPPort,
 		}
 	})
 	if err := app.AddWebsites(ctx, r.db, true, websites...); err != nil {
@@ -184,7 +140,7 @@ func (r *applicationRepository) CreateApplication(ctx context.Context, args Crea
 	return r.GetApplication(ctx, app.ID)
 }
 
-func (r *applicationRepository) UpdateApplication(ctx context.Context, id string, args UpdateApplicationArgs) error {
+func (r *applicationRepository) UpdateApplication(ctx context.Context, id string, args domain.UpdateApplicationArgs) error {
 	app, err := r.getApplication(ctx, id)
 	if err != nil {
 		return err
@@ -229,16 +185,17 @@ func (r *applicationRepository) GetWebsites(ctx context.Context, applicationIDs 
 	}), nil
 }
 
-func (r *applicationRepository) AddWebsite(ctx context.Context, applicationID string, fqdn string, https bool, httpPort int) error {
+func (r *applicationRepository) AddWebsite(ctx context.Context, applicationID string, args domain.CreateWebsiteArgs) error {
 	app, err := r.getApplication(ctx, applicationID)
 	if err != nil {
 		return err
 	}
 	website := &models.Website{
-		ID:       domain.NewID(),
-		FQDN:     fqdn,
-		HTTPS:    https,
-		HTTPPort: httpPort,
+		ID:         domain.NewID(),
+		FQDN:       args.FQDN,
+		PathPrefix: args.PathPrefix,
+		HTTPS:      args.HTTPS,
+		HTTPPort:   args.HTTPPort,
 	}
 	err = app.AddWebsites(ctx, r.db, true, website)
 	if err != nil {

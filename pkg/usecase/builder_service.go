@@ -25,7 +25,6 @@ import (
 	"github.com/traPtitech/neoshowcase/pkg/domain"
 	"github.com/traPtitech/neoshowcase/pkg/domain/builder"
 	"github.com/traPtitech/neoshowcase/pkg/domain/event"
-	"github.com/traPtitech/neoshowcase/pkg/interface/repository"
 )
 
 const (
@@ -47,8 +46,8 @@ type builderService struct {
 	eventbus domain.Bus
 
 	// TODO: 後で消す
-	artifactRepo repository.ArtifactRepository
-	buildRepo    repository.BuildRepository
+	artifactRepo domain.ArtifactRepository
+	buildRepo    domain.BuildRepository
 
 	task              *builder.Task
 	internalTaskState *internalTaskState
@@ -58,7 +57,7 @@ type builderService struct {
 	statusLock sync.RWMutex
 }
 
-func NewBuilderService(buildkit *buildkit.Client, storage domain.Storage, eventbus domain.Bus, artifactRepo repository.ArtifactRepository, buildRepo repository.BuildRepository) BuilderService {
+func NewBuilderService(buildkit *buildkit.Client, storage domain.Storage, eventbus domain.Bus, artifactRepo domain.ArtifactRepository, buildRepo domain.BuildRepository) BuilderService {
 	return &builderService{
 		buildkit:     buildkit,
 		storage:      storage,
@@ -206,7 +205,7 @@ func (s *builderService) initializeTask(ctx context.Context, task *builder.Task)
 	}
 
 	// Status を Building に変更
-	args := repository.UpdateBuildArgs{
+	args := domain.UpdateBuildArgs{
 		ID:     intState.Build.ID,
 		Status: intState.Build.Status,
 	}
@@ -279,7 +278,7 @@ func (s *builderService) processTask(task *builder.Task, intState *internalTaskS
 
 		// BuildLog更新
 		intState.Build.Status = status
-		args := repository.UpdateBuildArgs{
+		args := domain.UpdateBuildArgs{
 			ID:     intState.Build.ID,
 			Status: intState.Build.Status,
 		}

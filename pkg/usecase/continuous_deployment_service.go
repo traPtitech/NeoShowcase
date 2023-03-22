@@ -11,7 +11,6 @@ import (
 	"github.com/traPtitech/neoshowcase/pkg/domain"
 	"github.com/traPtitech/neoshowcase/pkg/domain/builder"
 	"github.com/traPtitech/neoshowcase/pkg/domain/event"
-	"github.com/traPtitech/neoshowcase/pkg/interface/repository"
 	"github.com/traPtitech/neoshowcase/pkg/util/optional"
 )
 
@@ -22,9 +21,9 @@ type ContinuousDeploymentService interface {
 
 type continuousDeploymentService struct {
 	bus       domain.Bus
-	appRepo   repository.ApplicationRepository
-	buildRepo repository.BuildRepository
-	envRepo   repository.EnvironmentRepository
+	appRepo   domain.ApplicationRepository
+	buildRepo domain.BuildRepository
+	envRepo   domain.EnvironmentRepository
 	deployer  AppDeployService
 	builder   AppBuildService
 
@@ -36,9 +35,9 @@ type continuousDeploymentService struct {
 
 func NewContinuousDeploymentService(
 	bus domain.Bus,
-	appRepo repository.ApplicationRepository,
-	buildRepo repository.BuildRepository,
-	envRepo repository.EnvironmentRepository,
+	appRepo domain.ApplicationRepository,
+	buildRepo domain.BuildRepository,
+	envRepo domain.EnvironmentRepository,
 	deployer AppDeployService,
 	builder AppBuildService,
 ) ContinuousDeploymentService {
@@ -128,7 +127,7 @@ func (cd *continuousDeploymentService) syncDeployLoop(closer <-chan struct{}) {
 
 func (cd *continuousDeploymentService) kickoffBuilds() error {
 	ctx := context.Background()
-	applications, err := cd.appRepo.GetApplications(ctx, repository.GetApplicationCondition{})
+	applications, err := cd.appRepo.GetApplications(ctx, domain.GetApplicationCondition{})
 	if err != nil {
 		return err
 	}
@@ -162,7 +161,7 @@ func (cd *continuousDeploymentService) syncDeployments() error {
 	ctx := context.Background()
 
 	// Get out-of-sync and non-idle applications
-	applications, err := cd.appRepo.GetApplications(ctx, repository.GetApplicationCondition{InSync: optional.From(false)})
+	applications, err := cd.appRepo.GetApplications(ctx, domain.GetApplicationCondition{InSync: optional.From(false)})
 	if err != nil {
 		return err
 	}

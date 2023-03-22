@@ -1,10 +1,14 @@
 package domain
 
 import (
+	"context"
 	"fmt"
 	"net/url"
 	"strings"
 	"time"
+
+	"github.com/samber/lo"
+	"golang.org/x/exp/slices"
 
 	"github.com/traPtitech/neoshowcase/pkg/domain/builder"
 	"github.com/traPtitech/neoshowcase/pkg/util/optional"
@@ -151,8 +155,50 @@ func ExtractNameFromRepositoryURL(repositoryURL string) (string, error) {
 }
 
 type Website struct {
-	ID       string
-	FQDN     string
-	HTTPS    bool
-	HTTPPort int
+	ID         string
+	FQDN       string
+	PathPrefix string
+	HTTPS      bool
+	HTTPPort   int
+}
+
+func GetActiveWebsites(ctx context.Context, appRepo ApplicationRepository, buildRepo BuildRepository) ([]*Site, error) {
+	applications, err := appRepo.GetApplications(ctx, GetApplicationCondition{
+		BuildType: optional.From(builder.BuildTypeStatic),
+		State:     optional.From(ApplicationStateRunning),
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	commits := lo.Map(applications, func(app *Application, i int) string { return app.CurrentCommit })
+	builds, err := buildRepo.GetBuildsInCommit(ctx, commits)
+	if err != nil {
+		return nil, err
+	}
+
+	// Last succeeded builds for each commit
+	builds = lo.Filter(builds, func(build *Build, i int) bool { return build.Status == builder.BuildStatusSucceeded })
+	slices.SortFunc(builds, func(a, b *Build) bool { return a.StartedAt.Before(b.StartedAt) })
+	commitToBuild := lo.SliceToMap(builds, func(b *Build) (string, *Build) { return b.Commit, b })
+
+	var sites []*Site
+	for _, app := range applications {
+		build, ok := commitToBuild[app.CurrentCommit]
+		if !ok {
+			continue
+		}
+		if !build.Artifact.Valid {
+			continue
+		}
+		for _, website := range app.Websites {
+			sites = append(sites, &Site{
+				ID:            website.ID,
+				FQDN:          website.FQDN,
+				ArtifactID:    build.Artifact.V.ID,
+				ApplicationID: app.ID,
+			})
+		}
+	}
+	return sites, nil
 }

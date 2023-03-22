@@ -52,11 +52,12 @@ func (s *ApplicationService) CreateApplication(ctx context.Context, req *pb.Crea
 		BranchName:    req.BranchName,
 		BuildType:     fromPBBuildType(req.BuildType),
 		Config:        fromPBApplicationConfig(req.Config),
-		Websites: lo.Map(req.Websites, func(website *pb.CreateWebsiteRequest, i int) *usecase.CreateWebsiteArgs {
-			return &usecase.CreateWebsiteArgs{
-				FQDN:  website.Fqdn,
-				HTTPS: website.Https,
-				Port:  int(website.HttpPort),
+		Websites: lo.Map(req.Websites, func(website *pb.CreateWebsiteRequest, i int) *domain.CreateWebsiteArgs {
+			return &domain.CreateWebsiteArgs{
+				FQDN:       website.Fqdn,
+				PathPrefix: website.PathPrefix,
+				HTTPS:      website.Https,
+				HTTPPort:   int(website.HttpPort),
 			}
 		}),
 		StartOnCreate: req.StartOnCreate,
@@ -265,10 +266,11 @@ func fromPBApplicationConfig(c *pb.ApplicationConfig) domain.ApplicationConfig {
 
 func toPBWebsite(website *domain.Website) *pb.Website {
 	return &pb.Website{
-		Id:       website.ID,
-		Fqdn:     website.FQDN,
-		Https:    website.HTTPS,
-		HttpPort: int32(website.HTTPPort),
+		Id:         website.ID,
+		Fqdn:       website.FQDN,
+		PathPrefix: website.PathPrefix,
+		Https:      website.HTTPS,
+		HttpPort:   int32(website.HTTPPort),
 	}
 }
 

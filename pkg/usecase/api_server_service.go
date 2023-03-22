@@ -5,8 +5,6 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/samber/lo"
-
 	"github.com/traPtitech/neoshowcase/pkg/domain"
 	"github.com/traPtitech/neoshowcase/pkg/domain/builder"
 	"github.com/traPtitech/neoshowcase/pkg/domain/event"
@@ -29,12 +27,6 @@ func handleRepoError[T any](entity T, err error) (T, error) {
 	}
 }
 
-type CreateWebsiteArgs struct {
-	FQDN  string
-	HTTPS bool
-	Port  int
-}
-
 type CreateApplicationArgs struct {
 	UserID        string
 	Name          string
@@ -42,7 +34,7 @@ type CreateApplicationArgs struct {
 	BranchName    string
 	BuildType     builder.BuildType
 	Config        domain.ApplicationConfig
-	Websites      []*CreateWebsiteArgs
+	Websites      []*domain.CreateWebsiteArgs
 	StartOnCreate bool
 }
 
@@ -62,10 +54,10 @@ type APIServerService interface {
 
 type apiServerService struct {
 	bus            domain.Bus
-	appRepo        repository.ApplicationRepository
-	buildRepo      repository.BuildRepository
-	envRepo        repository.EnvironmentRepository
-	gitRepo        repository.GitRepositoryRepository
+	appRepo        domain.ApplicationRepository
+	buildRepo      domain.BuildRepository
+	envRepo        domain.EnvironmentRepository
+	gitRepo        domain.GitRepositoryRepository
 	deploySvc      AppDeployService
 	backend        domain.Backend
 	mariaDBManager domain.MariaDBManager
@@ -74,10 +66,10 @@ type apiServerService struct {
 
 func NewAPIServerService(
 	bus domain.Bus,
-	appRepo repository.ApplicationRepository,
-	buildRepo repository.BuildRepository,
-	envRepo repository.EnvironmentRepository,
-	gitRepo repository.GitRepositoryRepository,
+	appRepo domain.ApplicationRepository,
+	buildRepo domain.BuildRepository,
+	envRepo domain.EnvironmentRepository,
+	gitRepo domain.GitRepositoryRepository,
 	deploySvc AppDeployService,
 	backend domain.Backend,
 	mariaDBManager domain.MariaDBManager,
@@ -97,7 +89,7 @@ func NewAPIServerService(
 }
 
 func (s *apiServerService) GetApplicationsByUserID(ctx context.Context, userID string) ([]*domain.Application, error) {
-	return s.appRepo.GetApplications(ctx, repository.GetApplicationCondition{UserID: optional.From(userID)})
+	return s.appRepo.GetApplications(ctx, domain.GetApplicationCondition{UserID: optional.From(userID)})
 }
 
 func (s *apiServerService) CreateApplication(ctx context.Context, args CreateApplicationArgs) (*domain.Application, error) {
@@ -111,7 +103,7 @@ func (s *apiServerService) CreateApplication(ctx context.Context, args CreateApp
 		if err != nil {
 			return nil, fmt.Errorf("malformed repository url: %w", err)
 		}
-		repo, err = s.gitRepo.RegisterRepository(ctx, repository.RegisterRepositoryArgs{
+		repo, err = s.gitRepo.RegisterRepository(ctx, domain.RegisterRepositoryArgs{
 			Name: repoName,
 			URL:  args.RepositoryURL,
 		})
@@ -126,20 +118,14 @@ func (s *apiServerService) CreateApplication(ctx context.Context, args CreateApp
 	} else {
 		initialState = domain.ApplicationStateIdle
 	}
-	application, err := s.appRepo.CreateApplication(ctx, repository.CreateApplicationArgs{
+	application, err := s.appRepo.CreateApplication(ctx, domain.CreateApplicationArgs{
 		Name:         args.Name,
 		RepositoryID: repo.ID,
 		BranchName:   args.BranchName,
 		BuildType:    args.BuildType,
 		State:        initialState,
 		Config:       args.Config,
-		Websites: lo.Map(args.Websites, func(website *CreateWebsiteArgs, i int) *repository.CreateWebsiteArgs {
-			return &repository.CreateWebsiteArgs{
-				FQDN:  website.FQDN,
-				HTTPS: website.HTTPS,
-				Port:  website.Port,
-			}
-		}),
+		Websites:     args.Websites,
 	})
 	if err != nil {
 		if err == repository.ErrDuplicate {

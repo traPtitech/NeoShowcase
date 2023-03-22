@@ -12,7 +12,6 @@ import (
 	"github.com/traPtitech/neoshowcase/pkg/domain"
 	"github.com/traPtitech/neoshowcase/pkg/domain/builder"
 	"github.com/traPtitech/neoshowcase/pkg/interface/grpc/pb"
-	"github.com/traPtitech/neoshowcase/pkg/interface/repository"
 	"github.com/traPtitech/neoshowcase/pkg/util/ds"
 )
 
@@ -28,8 +27,8 @@ type AppBuildService interface {
 }
 
 type appBuildService struct {
-	appRepo   repository.ApplicationRepository
-	buildRepo repository.BuildRepository
+	appRepo   domain.ApplicationRepository
+	buildRepo domain.BuildRepository
 	builder   pb.BuilderServiceClient
 
 	queue           *ds.Queue[*buildJob]
@@ -45,7 +44,7 @@ type buildJob struct {
 	commit  string
 }
 
-func NewAppBuildService(appRepo repository.ApplicationRepository, buildRepo repository.BuildRepository, builder pb.BuilderServiceClient, registry builder.DockerImageRegistryString, prefix builder.DockerImageNamePrefixString) AppBuildService {
+func NewAppBuildService(appRepo domain.ApplicationRepository, buildRepo domain.BuildRepository, builder pb.BuilderServiceClient, registry builder.DockerImageRegistryString, prefix builder.DockerImageNamePrefixString) AppBuildService {
 	ctx, cancel := context.WithCancel(context.Background())
 
 	s := &appBuildService{

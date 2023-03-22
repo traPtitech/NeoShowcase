@@ -58,6 +58,9 @@ export class Website extends jspb.Message {
   getFqdn(): string;
   setFqdn(value: string): Website;
 
+  getPathPrefix(): string;
+  setPathPrefix(value: string): Website;
+
   getHttps(): boolean;
   setHttps(value: boolean): Website;
 
@@ -76,6 +79,7 @@ export namespace Website {
   export type AsObject = {
     id: string,
     fqdn: string,
+    pathPrefix: string,
     https: boolean,
     httpPort: number,
   }
@@ -84,6 +88,9 @@ export namespace Website {
 export class CreateWebsiteRequest extends jspb.Message {
   getFqdn(): string;
   setFqdn(value: string): CreateWebsiteRequest;
+
+  getPathPrefix(): string;
+  setPathPrefix(value: string): CreateWebsiteRequest;
 
   getHttps(): boolean;
   setHttps(value: boolean): CreateWebsiteRequest;
@@ -102,6 +109,7 @@ export class CreateWebsiteRequest extends jspb.Message {
 export namespace CreateWebsiteRequest {
   export type AsObject = {
     fqdn: string,
+    pathPrefix: string,
     https: boolean,
     httpPort: number,
   }

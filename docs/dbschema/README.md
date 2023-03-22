@@ -15,7 +15,7 @@
 | [owners](owners.md) | 2 | アプリケーション所有者テーブル | BASE TABLE |
 | [repositories](repositories.md) | 3 | Gitリポジトリテーブル | BASE TABLE |
 | [users](users.md) | 2 | ユーザーテーブル | BASE TABLE |
-| [websites](websites.md) | 7 | Webサイトテーブル | BASE TABLE |
+| [websites](websites.md) | 8 | Webサイトテーブル | BASE TABLE |
 
 ## Relations
 

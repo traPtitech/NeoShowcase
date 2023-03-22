@@ -14,7 +14,6 @@ import (
 	"github.com/traPtitech/neoshowcase/pkg/domain/builder"
 	"github.com/traPtitech/neoshowcase/pkg/domain/event"
 	"github.com/traPtitech/neoshowcase/pkg/interface/grpc/pb"
-	"github.com/traPtitech/neoshowcase/pkg/interface/repository"
 	"github.com/traPtitech/neoshowcase/pkg/util/ds"
 	"github.com/traPtitech/neoshowcase/pkg/util/optional"
 )
@@ -31,9 +30,9 @@ type appDeployService struct {
 
 	bus       domain.Bus
 	backend   domain.Backend
-	appRepo   repository.ApplicationRepository
-	buildRepo repository.BuildRepository
-	envRepo   repository.EnvironmentRepository
+	appRepo   domain.ApplicationRepository
+	buildRepo domain.BuildRepository
+	envRepo   domain.EnvironmentRepository
 	ss        pb.StaticSiteServiceClient
 
 	imageRegistry   string
@@ -43,9 +42,9 @@ type appDeployService struct {
 func NewAppDeployService(
 	bus domain.Bus,
 	backend domain.Backend,
-	appRepo repository.ApplicationRepository,
-	buildRepo repository.BuildRepository,
-	envRepo repository.EnvironmentRepository,
+	appRepo domain.ApplicationRepository,
+	buildRepo domain.BuildRepository,
+	envRepo domain.EnvironmentRepository,
 	ss pb.StaticSiteServiceClient,
 	registry builder.DockerImageRegistryString,
 	prefix builder.DockerImageNamePrefixString,
@@ -75,7 +74,7 @@ func (s *appDeployService) Synchronize(appID string, restart bool) (started bool
 		err := s.synchronize(ctx, appID, restart)
 		if err != nil {
 			log.WithError(err).WithField("application", appID).Error("failed to synchronize app")
-			err = s.appRepo.UpdateApplication(ctx, appID, repository.UpdateApplicationArgs{State: optional.From(domain.ApplicationStateErrored)})
+			err = s.appRepo.UpdateApplication(ctx, appID, domain.UpdateApplicationArgs{State: optional.From(domain.ApplicationStateErrored)})
 			if err != nil {
 				log.WithError(err).Error("failed to update application state")
 			}
@@ -95,7 +94,7 @@ func (s *appDeployService) synchronize(ctx context.Context, appID string, restar
 
 	// Mark application as started if idle
 	if app.State == domain.ApplicationStateIdle {
-		err = s.appRepo.UpdateApplication(ctx, app.ID, repository.UpdateApplicationArgs{State: optional.From(domain.ApplicationStateDeploying)})
+		err = s.appRepo.UpdateApplication(ctx, app.ID, domain.UpdateApplicationArgs{State: optional.From(domain.ApplicationStateDeploying)})
 		if err != nil {
 			return err
 		}
@@ -113,7 +112,7 @@ func (s *appDeployService) synchronize(ctx context.Context, appID string, restar
 	doDeploy := restart || (!restart && app.WantCommit != app.CurrentCommit)
 
 	if doDeploy && app.BuildType == builder.BuildTypeRuntime {
-		err = s.appRepo.UpdateApplication(ctx, app.ID, repository.UpdateApplicationArgs{State: optional.From(domain.ApplicationStateDeploying)})
+		err = s.appRepo.UpdateApplication(ctx, app.ID, domain.UpdateApplicationArgs{State: optional.From(domain.ApplicationStateDeploying)})
 		if err != nil {
 			return err
 		}
@@ -124,7 +123,7 @@ func (s *appDeployService) synchronize(ctx context.Context, appID string, restar
 		}
 	}
 
-	err = s.appRepo.UpdateApplication(ctx, app.ID, repository.UpdateApplicationArgs{
+	err = s.appRepo.UpdateApplication(ctx, app.ID, domain.UpdateApplicationArgs{
 		State:         optional.From(domain.ApplicationStateRunning),
 		CurrentCommit: optional.From(build.Commit),
 	})
@@ -184,7 +183,7 @@ func (s *appDeployService) Stop(appID string) (started bool) {
 		err := s.stop(ctx, appID)
 		if err != nil {
 			log.WithError(err).WithField("application", appID).Error("failed to stop app")
-			err = s.appRepo.UpdateApplication(ctx, appID, repository.UpdateApplicationArgs{State: optional.From(domain.ApplicationStateErrored)})
+			err = s.appRepo.UpdateApplication(ctx, appID, domain.UpdateApplicationArgs{State: optional.From(domain.ApplicationStateErrored)})
 			if err != nil {
 				log.WithError(err).Error("failed to update application state")
 			}
@@ -207,7 +206,7 @@ func (s *appDeployService) stop(ctx context.Context, appID string) error {
 		}
 	}
 
-	err = s.appRepo.UpdateApplication(ctx, app.ID, repository.UpdateApplicationArgs{State: optional.From(domain.ApplicationStateIdle)})
+	err = s.appRepo.UpdateApplication(ctx, app.ID, domain.UpdateApplicationArgs{State: optional.From(domain.ApplicationStateIdle)})
 	if err != nil {
 		return fmt.Errorf("failed to update application state: %w", err)
 	}

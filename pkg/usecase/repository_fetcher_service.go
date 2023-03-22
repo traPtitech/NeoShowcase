@@ -16,7 +16,6 @@ import (
 
 	"github.com/traPtitech/neoshowcase/pkg/domain"
 	"github.com/traPtitech/neoshowcase/pkg/domain/event"
-	"github.com/traPtitech/neoshowcase/pkg/interface/repository"
 	"github.com/traPtitech/neoshowcase/pkg/util/optional"
 )
 
@@ -29,7 +28,7 @@ type RepositoryFetcherCacheDir string
 
 type repositoryFetcherService struct {
 	bus     domain.Bus
-	appRepo repository.ApplicationRepository
+	appRepo domain.ApplicationRepository
 
 	cacheDir string
 
@@ -41,7 +40,7 @@ type repositoryFetcherService struct {
 
 func NewRepositoryFetcherService(
 	bus domain.Bus,
-	appRepo repository.ApplicationRepository,
+	appRepo domain.ApplicationRepository,
 	cacheDir RepositoryFetcherCacheDir,
 ) (RepositoryFetcherService, error) {
 	r := &repositoryFetcherService{
@@ -106,7 +105,7 @@ func (r *repositoryFetcherService) fetchLoop(closer <-chan struct{}) {
 
 func (r *repositoryFetcherService) fetchAll() error {
 	ctx := context.Background()
-	applications, err := r.appRepo.GetApplications(ctx, repository.GetApplicationCondition{})
+	applications, err := r.appRepo.GetApplications(ctx, domain.GetApplicationCondition{})
 	if err != nil {
 		return err
 	}
@@ -178,7 +177,7 @@ func (r *repositoryFetcherService) updateApplication(ctx context.Context, app *d
 	if app.WantCommit == hash {
 		return nil
 	}
-	return r.appRepo.UpdateApplication(ctx, app.ID, repository.UpdateApplicationArgs{WantCommit: optional.From(hash)})
+	return r.appRepo.UpdateApplication(ctx, app.ID, domain.UpdateApplicationArgs{WantCommit: optional.From(hash)})
 }
 
 func (r *repositoryFetcherService) Stop(_ context.Context) error {
