@@ -86,17 +86,22 @@ func (b *dockerBackend) runtimeIngressConfig(app *domain.Application, website *d
 		},
 	}
 
-	return m{
+	config := m{
 		"http": m{
 			"routers": m{
 				svcName: router,
 			},
-			"middlewares": middlewares,
 			"services": m{
 				svcName: svc,
 			},
 		},
 	}
+
+	if len(middlewares) > 0 {
+		config["http"].(m)["middlewares"] = middlewares
+	}
+
+	return config
 }
 
 func (b *dockerBackend) writeConfig(filename string, config any) error {
