@@ -17,6 +17,10 @@ import (
 
 func runtimeService(app *domain.Application, website *domain.Website) *apiv1.Service {
 	return &apiv1.Service{
+		TypeMeta: metav1.TypeMeta{
+			Kind:       "Service",
+			APIVersion: "v1",
+		},
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      serviceName(website),
 			Namespace: appNamespace,
@@ -48,6 +52,10 @@ func runtimeServiceRef(_ *domain.Application, website *domain.Website) []v1alpha
 
 func stripMiddleware(_ *domain.Application, website *domain.Website, labels map[string]string) *v1alpha1.Middleware {
 	return &v1alpha1.Middleware{
+		TypeMeta: metav1.TypeMeta{
+			Kind:       "Middleware",
+			APIVersion: "traefik.containo.us/v1alpha1",
+		},
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      stripMiddlewareName(website),
 			Namespace: appNamespace,
@@ -104,6 +112,10 @@ func ingressRouteBase(app *domain.Application, website *domain.Website, labels m
 	}
 
 	ingressRoute := &v1alpha1.IngressRoute{
+		TypeMeta: metav1.TypeMeta{
+			Kind:       "IngressRoute",
+			APIVersion: "traefik.containo.us/v1alpha1",
+		},
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      serviceName(website),
 			Namespace: appNamespace,

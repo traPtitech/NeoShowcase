@@ -30,6 +30,10 @@ func (b *k8sBackend) CreateContainer(ctx context.Context, app *domain.Applicatio
 	}
 
 	statefulSet := &v1.StatefulSet{
+		TypeMeta: metav1.TypeMeta{
+			Kind:       "StatefulSet",
+			APIVersion: "apps/v1",
+		},
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      deploymentName(app.ID),
 			Namespace: appNamespace,

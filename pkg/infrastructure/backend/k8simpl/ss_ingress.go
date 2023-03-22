@@ -28,6 +28,10 @@ func (b *k8sBackend) ssServiceRef() []v1alpha1.Service {
 
 func ssHeaderMiddleware(ss *domain.StaticSite) *v1alpha1.Middleware {
 	return &v1alpha1.Middleware{
+		TypeMeta: metav1.TypeMeta{
+			Kind:       "Middleware",
+			APIVersion: "traefik.containo.us/v1alpha1",
+		},
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      ssHeaderMiddlewareName(ss),
 			Namespace: appNamespace,
