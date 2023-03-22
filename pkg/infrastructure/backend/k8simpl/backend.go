@@ -159,6 +159,10 @@ func stripMiddlewareName(website *domain.Website) string {
 	return serviceName(website) + "-strip"
 }
 
+func ssHeaderMiddlewareName(ss *domain.StaticSite) string {
+	return fmt.Sprintf("nsapp-ss-header-%s", ss.Application.ID)
+}
+
 func tlsSecretName(fqdn string) string {
 	return fmt.Sprintf("nsapp-secret-%s", strings.ReplaceAll(fqdn, ".", "-"))
 }

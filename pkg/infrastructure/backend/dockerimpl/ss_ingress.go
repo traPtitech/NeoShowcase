@@ -32,7 +32,7 @@ func (b *dockerBackend) ReloadSSIngress(_ context.Context) error {
 		middlewares[middlewareName] = m{
 			"headers": m{
 				"customRequestHeaders": m{
-					web.HeaderNameSSGenAppName: ss.Application.ID,
+					web.HeaderNameSSGenAppID: ss.Application.ID,
 				},
 			},
 		}

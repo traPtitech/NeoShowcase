@@ -4,11 +4,13 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/traefik/traefik/v2/pkg/config/dynamic"
 	"github.com/traefik/traefik/v2/pkg/provider/kubernetes/crd/traefik/v1alpha1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/intstr"
 
 	"github.com/traPtitech/neoshowcase/pkg/domain"
+	"github.com/traPtitech/neoshowcase/pkg/domain/web"
 	"github.com/traPtitech/neoshowcase/pkg/util"
 )
 
@@ -22,6 +24,23 @@ func (b *k8sBackend) ssServiceRef() []v1alpha1.Service {
 			Scheme:    "http",
 		},
 	}}
+}
+
+func ssHeaderMiddleware(ss *domain.StaticSite) *v1alpha1.Middleware {
+	return &v1alpha1.Middleware{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      ssHeaderMiddlewareName(ss),
+			Namespace: appNamespace,
+			Labels:    ssResourceLabels(ss.Application.ID),
+		},
+		Spec: v1alpha1.MiddlewareSpec{
+			Headers: &dynamic.Headers{
+				CustomRequestHeaders: map[string]string{
+					web.HeaderNameSSGenAppID: ss.Application.ID,
+				},
+			},
+		},
+	}
 }
 
 func (b *k8sBackend) ReloadSSIngress(ctx context.Context) error {
@@ -50,6 +69,11 @@ func (b *k8sBackend) ReloadSSIngress(ctx context.Context) error {
 	for _, site := range sites {
 		ingressRoute, mw := ingressRouteBase(site.Application, site.Website, ssResourceLabels(site.Application.ID))
 		ingressRoute.Spec.Routes[0].Services = b.ssServiceRef()
+
+		ssHeaderMW := ssHeaderMiddleware(site)
+		ingressRoute.Spec.Routes[0].Middlewares = append(ingressRoute.Spec.Routes[0].Middlewares, v1alpha1.MiddlewareRef{Name: ssHeaderMW.Name})
+		mw = append(mw, ssHeaderMW)
+
 		middlewares = append(middlewares, mw...)
 		ingressRoutes = append(ingressRoutes, ingressRoute)
 	}
