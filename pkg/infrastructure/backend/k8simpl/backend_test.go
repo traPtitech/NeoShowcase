@@ -53,6 +53,7 @@ func prepareManager(t *testing.T, bus domain.Bus) (*k8sBackend, *kubernetes.Clie
 	}
 
 	b := NewK8SBackend(bus, client, traefikClient, nil, nil, domain.StaticServerConnectivityConfig{})
+	err = b.Start(context.Background())
 	require.NoError(t, err)
 	t.Cleanup(func() {
 		_ = b.Dispose(context.Background())

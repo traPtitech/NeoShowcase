@@ -1,6 +1,7 @@
 package dockerimpl
 
 import (
+	"context"
 	"os"
 	"strconv"
 	"testing"
@@ -24,6 +25,8 @@ func prepareManager(t *testing.T, bus domain.Bus) (*dockerBackend, *docker.Clien
 	}
 
 	m := NewDockerBackend(c, bus, "../../../../local-dev/traefik", nil, nil, domain.StaticServerConnectivityConfig{})
+	err = m.Start(context.Background())
+	require.NoError(t, err)
 
 	require.NoError(t, c.PullImage(docker.PullImageOptions{
 		Repository: "alpine",
