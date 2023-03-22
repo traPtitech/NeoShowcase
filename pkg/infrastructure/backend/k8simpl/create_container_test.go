@@ -37,14 +37,15 @@ func TestK8sBackend_CreateContainer(t *testing.T) {
 		t.Parallel()
 		image := "chussenot/tiny-server"
 		appID := "pijojopjnnna"
-		site := "test.localhost"
 
+		website := &domain.Website{
+			FQDN:       "test.localhost",
+			PathPrefix: "/",
+			HTTPPort:   80,
+		}
 		app := domain.Application{
-			ID: appID,
-			Websites: []*domain.Website{{
-				FQDN:     site,
-				HTTPPort: 80,
-			}},
+			ID:       appID,
+			Websites: []*domain.Website{website},
 		}
 		err := m.CreateContainer(context.Background(), &app, domain.ContainerCreateArgs{
 			ImageName: image,
@@ -52,8 +53,8 @@ func TestK8sBackend_CreateContainer(t *testing.T) {
 		if assert.NoError(t, err) {
 			waitPodRunning(t, c, deploymentName(appID))
 			require.NoError(t, c.CoreV1().Pods(appNamespace).Delete(context.Background(), deploymentName(appID), metav1.DeleteOptions{}))
-			require.NoError(t, c.CoreV1().Services(appNamespace).Delete(context.Background(), serviceName(site), metav1.DeleteOptions{}))
-			require.NoError(t, tc.IngressRoutes(appNamespace).Delete(context.Background(), serviceName(site), metav1.DeleteOptions{}))
+			require.NoError(t, c.CoreV1().Services(appNamespace).Delete(context.Background(), serviceName(website), metav1.DeleteOptions{}))
+			require.NoError(t, tc.IngressRoutes(appNamespace).Delete(context.Background(), serviceName(website), metav1.DeleteOptions{}))
 		}
 	})
 
@@ -61,14 +62,15 @@ func TestK8sBackend_CreateContainer(t *testing.T) {
 		t.Parallel()
 		image := "chussenot/tiny-server"
 		appID := "98ygtfjfjhgj"
-		site := "ji9876fgoh.localhost"
 
+		website := &domain.Website{
+			FQDN:       "ji9876fgoh.localhost",
+			PathPrefix: "/test",
+			HTTPPort:   80,
+		}
 		app := domain.Application{
-			ID: appID,
-			Websites: []*domain.Website{{
-				FQDN:     site,
-				HTTPPort: 80,
-			}},
+			ID:       appID,
+			Websites: []*domain.Website{website},
 		}
 		err := m.CreateContainer(context.Background(), &app, domain.ContainerCreateArgs{
 			ImageName: image,
@@ -85,8 +87,9 @@ func TestK8sBackend_CreateContainer(t *testing.T) {
 		if assert.NoError(t, err) {
 			waitPodRunning(t, c, deploymentName(appID))
 			require.NoError(t, c.CoreV1().Pods(appNamespace).Delete(context.Background(), deploymentName(appID), metav1.DeleteOptions{}))
-			require.NoError(t, c.CoreV1().Services(appNamespace).Delete(context.Background(), serviceName(site), metav1.DeleteOptions{}))
-			require.NoError(t, tc.IngressRoutes(appNamespace).Delete(context.Background(), serviceName(site), metav1.DeleteOptions{}))
+			require.NoError(t, c.CoreV1().Services(appNamespace).Delete(context.Background(), serviceName(website), metav1.DeleteOptions{}))
+			require.NoError(t, tc.IngressRoutes(appNamespace).Delete(context.Background(), serviceName(website), metav1.DeleteOptions{}))
+			require.NoError(t, tc.Middlewares(appNamespace).Delete(context.Background(), stripMiddlewareName(website), metav1.DeleteOptions{}))
 		}
 	})
 }
