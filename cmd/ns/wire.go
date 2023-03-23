@@ -33,6 +33,7 @@ var commonSet = wire.NewSet(
 	dbmanager.NewMariaDBManager,
 	dbmanager.NewMongoDBManager,
 	repository.NewApplicationRepository,
+	repository.NewAvailableDomainRepository,
 	repository.NewGitRepositoryRepository,
 	repository.NewEnvironmentRepository,
 	repository.NewBuildRepository,
@@ -51,10 +52,11 @@ var commonSet = wire.NewSet(
 	handlerSet,
 	provideGRPCPort,
 	provideWebServerConfig,
+	provideIngressConfDirPath,
 	provideImagePrefix,
 	provideImageRegistry,
 	provideRepositoryFetcherCacheDir,
-	wire.FieldsOf(new(Config), "Builder", "SSGen", "DB", "MariaDB", "MongoDB"),
+	wire.FieldsOf(new(Config), "Builder", "SS", "SSGen", "DB", "MariaDB", "MongoDB"),
 	wire.Struct(new(Router), "*"),
 	wire.Bind(new(web.Router), new(*Router)),
 	wire.Struct(new(Server), "*"),
@@ -76,7 +78,6 @@ func NewWithDocker(c Config) (*Server, error) {
 		commonSet,
 		docker.NewClientFromEnv,
 		dockerimpl.NewDockerBackend,
-		wire.Value(dockerimpl.IngressConfDirPath("/opt/traefik/conf")),
 	)
 	return nil, nil
 }

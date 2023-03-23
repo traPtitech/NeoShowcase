@@ -58,6 +58,9 @@ export class Website extends jspb.Message {
   getFqdn(): string;
   setFqdn(value: string): Website;
 
+  getPathPrefix(): string;
+  setPathPrefix(value: string): Website;
+
   getHttps(): boolean;
   setHttps(value: boolean): Website;
 
@@ -76,6 +79,7 @@ export namespace Website {
   export type AsObject = {
     id: string,
     fqdn: string,
+    pathPrefix: string,
     https: boolean,
     httpPort: number,
   }
@@ -84,6 +88,9 @@ export namespace Website {
 export class CreateWebsiteRequest extends jspb.Message {
   getFqdn(): string;
   setFqdn(value: string): CreateWebsiteRequest;
+
+  getPathPrefix(): string;
+  setPathPrefix(value: string): CreateWebsiteRequest;
 
   getHttps(): boolean;
   setHttps(value: boolean): CreateWebsiteRequest;
@@ -102,6 +109,7 @@ export class CreateWebsiteRequest extends jspb.Message {
 export namespace CreateWebsiteRequest {
   export type AsObject = {
     fqdn: string,
+    pathPrefix: string,
     https: boolean,
     httpPort: number,
   }
@@ -162,6 +170,44 @@ export namespace Application {
     wantCommit: string,
     config?: ApplicationConfig.AsObject,
     websitesList: Array<Website.AsObject>,
+  }
+}
+
+export class AvailableDomains extends jspb.Message {
+  getDomainsList(): Array<string>;
+  setDomainsList(value: Array<string>): AvailableDomains;
+  clearDomainsList(): AvailableDomains;
+  addDomains(value: string, index?: number): AvailableDomains;
+
+  serializeBinary(): Uint8Array;
+  toObject(includeInstance?: boolean): AvailableDomains.AsObject;
+  static toObject(includeInstance: boolean, msg: AvailableDomains): AvailableDomains.AsObject;
+  static serializeBinaryToWriter(message: AvailableDomains, writer: jspb.BinaryWriter): void;
+  static deserializeBinary(bytes: Uint8Array): AvailableDomains;
+  static deserializeBinaryFromReader(message: AvailableDomains, reader: jspb.BinaryReader): AvailableDomains;
+}
+
+export namespace AvailableDomains {
+  export type AsObject = {
+    domainsList: Array<string>,
+  }
+}
+
+export class AddAvailableDomainRequest extends jspb.Message {
+  getDomain(): string;
+  setDomain(value: string): AddAvailableDomainRequest;
+
+  serializeBinary(): Uint8Array;
+  toObject(includeInstance?: boolean): AddAvailableDomainRequest.AsObject;
+  static toObject(includeInstance: boolean, msg: AddAvailableDomainRequest): AddAvailableDomainRequest.AsObject;
+  static serializeBinaryToWriter(message: AddAvailableDomainRequest, writer: jspb.BinaryWriter): void;
+  static deserializeBinary(bytes: Uint8Array): AddAvailableDomainRequest;
+  static deserializeBinaryFromReader(message: AddAvailableDomainRequest, reader: jspb.BinaryReader): AddAvailableDomainRequest;
+}
+
+export namespace AddAvailableDomainRequest {
+  export type AsObject = {
+    domain: string,
   }
 }
 

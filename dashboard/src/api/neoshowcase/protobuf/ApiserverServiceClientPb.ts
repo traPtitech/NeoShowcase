@@ -83,6 +83,92 @@ export class ApplicationServiceClient {
     this.methodDescriptorGetApplications);
   }
 
+  methodDescriptorGetAvailableDomains = new grpcWeb.MethodDescriptor(
+    '/neoshowcase.protobuf.ApplicationService/GetAvailableDomains',
+    grpcWeb.MethodType.UNARY,
+    google_protobuf_empty_pb.Empty,
+    neoshowcase_protobuf_apiserver_pb.AvailableDomains,
+    (request: google_protobuf_empty_pb.Empty) => {
+      return request.serializeBinary();
+    },
+    neoshowcase_protobuf_apiserver_pb.AvailableDomains.deserializeBinary
+  );
+
+  getAvailableDomains(
+    request: google_protobuf_empty_pb.Empty,
+    metadata: grpcWeb.Metadata | null): Promise<neoshowcase_protobuf_apiserver_pb.AvailableDomains>;
+
+  getAvailableDomains(
+    request: google_protobuf_empty_pb.Empty,
+    metadata: grpcWeb.Metadata | null,
+    callback: (err: grpcWeb.RpcError,
+               response: neoshowcase_protobuf_apiserver_pb.AvailableDomains) => void): grpcWeb.ClientReadableStream<neoshowcase_protobuf_apiserver_pb.AvailableDomains>;
+
+  getAvailableDomains(
+    request: google_protobuf_empty_pb.Empty,
+    metadata: grpcWeb.Metadata | null,
+    callback?: (err: grpcWeb.RpcError,
+               response: neoshowcase_protobuf_apiserver_pb.AvailableDomains) => void) {
+    if (callback !== undefined) {
+      return this.client_.rpcCall(
+        this.hostname_ +
+          '/neoshowcase.protobuf.ApplicationService/GetAvailableDomains',
+        request,
+        metadata || {},
+        this.methodDescriptorGetAvailableDomains,
+        callback);
+    }
+    return this.client_.unaryCall(
+    this.hostname_ +
+      '/neoshowcase.protobuf.ApplicationService/GetAvailableDomains',
+    request,
+    metadata || {},
+    this.methodDescriptorGetAvailableDomains);
+  }
+
+  methodDescriptorAddAvailableDomain = new grpcWeb.MethodDescriptor(
+    '/neoshowcase.protobuf.ApplicationService/AddAvailableDomain',
+    grpcWeb.MethodType.UNARY,
+    neoshowcase_protobuf_apiserver_pb.AddAvailableDomainRequest,
+    google_protobuf_empty_pb.Empty,
+    (request: neoshowcase_protobuf_apiserver_pb.AddAvailableDomainRequest) => {
+      return request.serializeBinary();
+    },
+    google_protobuf_empty_pb.Empty.deserializeBinary
+  );
+
+  addAvailableDomain(
+    request: neoshowcase_protobuf_apiserver_pb.AddAvailableDomainRequest,
+    metadata: grpcWeb.Metadata | null): Promise<google_protobuf_empty_pb.Empty>;
+
+  addAvailableDomain(
+    request: neoshowcase_protobuf_apiserver_pb.AddAvailableDomainRequest,
+    metadata: grpcWeb.Metadata | null,
+    callback: (err: grpcWeb.RpcError,
+               response: google_protobuf_empty_pb.Empty) => void): grpcWeb.ClientReadableStream<google_protobuf_empty_pb.Empty>;
+
+  addAvailableDomain(
+    request: neoshowcase_protobuf_apiserver_pb.AddAvailableDomainRequest,
+    metadata: grpcWeb.Metadata | null,
+    callback?: (err: grpcWeb.RpcError,
+               response: google_protobuf_empty_pb.Empty) => void) {
+    if (callback !== undefined) {
+      return this.client_.rpcCall(
+        this.hostname_ +
+          '/neoshowcase.protobuf.ApplicationService/AddAvailableDomain',
+        request,
+        metadata || {},
+        this.methodDescriptorAddAvailableDomain,
+        callback);
+    }
+    return this.client_.unaryCall(
+    this.hostname_ +
+      '/neoshowcase.protobuf.ApplicationService/AddAvailableDomain',
+    request,
+    metadata || {},
+    this.methodDescriptorAddAvailableDomain);
+  }
+
   methodDescriptorCreateApplication = new grpcWeb.MethodDescriptor(
     '/neoshowcase.protobuf.ApplicationService/CreateApplication',
     grpcWeb.MethodType.UNARY,

@@ -8,18 +8,15 @@ import (
 
 	"github.com/volatiletech/sqlboiler/v4/boil"
 
+	"github.com/traPtitech/neoshowcase/pkg/domain"
 	"github.com/traPtitech/neoshowcase/pkg/infrastructure/admindb/models"
 )
-
-type ArtifactRepository interface {
-	CreateArtifact(ctx context.Context, size int64, buildID string, sid string) error
-}
 
 type artifactRepository struct {
 	db *sql.DB
 }
 
-func NewArtifactRepository(db *sql.DB) ArtifactRepository {
+func NewArtifactRepository(db *sql.DB) domain.ArtifactRepository {
 	return &artifactRepository{
 		db: db,
 	}

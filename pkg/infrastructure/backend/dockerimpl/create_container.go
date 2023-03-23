@@ -3,13 +3,11 @@ package dockerimpl
 import (
 	"context"
 	"fmt"
-	"strconv"
-	"strings"
 
 	docker "github.com/fsouza/go-dockerclient"
+	"github.com/samber/lo"
 
 	"github.com/traPtitech/neoshowcase/pkg/domain"
-	"github.com/traPtitech/neoshowcase/pkg/util"
 )
 
 func (b *dockerBackend) CreateContainer(ctx context.Context, app *domain.Application, args domain.ContainerCreateArgs) error {
@@ -26,53 +24,26 @@ func (b *dockerBackend) CreateContainer(ctx context.Context, app *domain.Applica
 		return fmt.Errorf("failed to pull image: %w", err)
 	}
 
-	var envs []string
-
-	for name, value := range args.Envs {
-		envs = append(envs, name+"="+value)
-	}
-
-	if args.Recreate {
-		// 前のものが起動中の場合は削除する
-		err := b.c.RemoveContainer(docker.RemoveContainerOptions{
-			ID:            containerName(app.ID),
-			RemoveVolumes: true,
-			Force:         true,
-			Context:       ctx,
-		})
-		if err != nil {
-			if _, ok := err.(*docker.NoSuchContainer); !ok {
-				return fmt.Errorf("failed to remove old container: %w", err)
-			}
-		}
-	}
-
-	labels := util.MergeLabels(args.Labels, map[string]string{
-		appContainerLabel:              "true",
-		appContainerApplicationIDLabel: app.ID,
+	envs := lo.MapToSlice(args.Envs, func(key string, value string) string {
+		return key + "=" + value
 	})
 
-	labels["traefik.enable"] = "true"
-	for _, website := range app.Websites {
-		traefikName := "nsapp_" + strings.ReplaceAll(website.FQDN, ".", "_")
-		labels[fmt.Sprintf("traefik.http.routers.%s.rule", traefikName)] = fmt.Sprintf("Host(`%s`)", website.FQDN)
-		labels[fmt.Sprintf("traefik.http.routers.%s.service", traefikName)] = traefikName
-		labels[fmt.Sprintf("traefik.http.services.%s.loadbalancer.server.port", traefikName)] = strconv.Itoa(website.HTTPPort)
-		if website.HTTPS {
-			labels[fmt.Sprintf("traefik.http.routers.%s.entrypoints", traefikName)] = traefikHTTPEntrypoint
-		} else {
-			labels[fmt.Sprintf("traefik.http.routers.%s.entrypoints", traefikName)] = traefikHTTPSEntrypoint
+	// 前のものが起動中の場合は削除する
+	err := b.c.RemoveContainer(docker.RemoveContainerOptions{
+		ID:            containerName(app.ID),
+		RemoveVolumes: true,
+		Force:         true,
+		Context:       ctx,
+	})
+	if err != nil {
+		if _, ok := err.(*docker.NoSuchContainer); !ok {
+			return fmt.Errorf("failed to remove old container: %w", err)
 		}
-		switch app.Config.Authentication {
-		case domain.AuthenticationTypeSoft:
-			labels[fmt.Sprintf("traefik.http.routers.%s.middlewares", traefikName)] = strings.Join([]string{traefikAuthSoftMiddleware, traefikAuthMiddleware}, ", ")
-		case domain.AuthenticationTypeHard:
-			labels[fmt.Sprintf("traefik.http.routers.%s.middlewares", traefikName)] = strings.Join([]string{traefikAuthHardMiddleware, traefikAuthMiddleware}, ", ")
-		}
-		if website.HTTPS {
-			labels[fmt.Sprintf("traefik.http.routers.%s.tls.certresolver", traefikName)] = traefikCertResolver
-			labels[fmt.Sprintf("traefik.http.routers.%s.tls.domains[0].main", traefikName)] = website.FQDN
-		}
+	}
+
+	err = b.synchronizeRuntimeIngresses(ctx, app)
+	if err != nil {
+		return fmt.Errorf("failed to synchronize ingresses: %w", err)
 	}
 
 	// ビルドしたイメージのコンテナを作成
@@ -80,14 +51,18 @@ func (b *dockerBackend) CreateContainer(ctx context.Context, app *domain.Applica
 		Name: containerName(app.ID),
 		Config: &docker.Config{
 			Image:  args.ImageName + ":" + args.ImageTag,
-			Labels: labels,
+			Labels: containerLabels(app.ID),
 			Env:    envs,
 		},
 		HostConfig: &docker.HostConfig{
 			RestartPolicy: docker.RestartOnFailure(5),
 		},
-		NetworkingConfig: &docker.NetworkingConfig{EndpointsConfig: map[string]*docker.EndpointConfig{appNetwork: {}}},
-		Context:          ctx,
+		NetworkingConfig: &docker.NetworkingConfig{EndpointsConfig: map[string]*docker.EndpointConfig{
+			appNetwork: {
+				Aliases: []string{networkName(app.ID)},
+			},
+		}},
+		Context: ctx,
 	})
 	if err != nil {
 		return fmt.Errorf("failed to create container: %w", err)

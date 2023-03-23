@@ -1,11 +1,8 @@
 -- +migrate Up
 CREATE TABLE `available_domains`
 (
-    `id`        VARCHAR(22)          NOT NULL COMMENT 'ドメインID',
-    `domain`    VARCHAR(100)         NOT NULL COMMENT 'ドメイン',
-    `subdomain` TINYINT(1) DEFAULT 0 NOT NULL COMMENT 'サブドメインが利用可能か',
-    PRIMARY KEY (`id`),
-    UNIQUE KEY (`domain`)
+    `domain` VARCHAR(100) NOT NULL COMMENT 'ドメイン',
+    PRIMARY KEY (`domain`)
 ) ENGINE = InnoDB
   DEFAULT CHARACTER SET = `utf8mb4`
     COMMENT '利用可能ドメインテーブル';
@@ -141,14 +138,15 @@ CREATE TABLE `environments`
 CREATE TABLE `websites`
 (
     `id`             VARCHAR(22)    NOT NULL COMMENT 'サイトID',
-    `fqdn`           VARCHAR(50)    NOT NULL COMMENT 'サイトURLのFQDN',
+    `fqdn`           VARCHAR(100)   NOT NULL COMMENT 'サイトURLのFQDN',
+    `path_prefix`    VARCHAR(100)   NOT NULL COMMENT 'サイトPathのPrefix',
     `https`          TINYINT(1)     NOT NULL COMMENT 'httpsの接続かどうか',
     `http_port`      INT DEFAULT 80 NOT NULL COMMENT 'コンテナhttpポート番号',
     `created_at`     DATETIME(6)    NOT NULL COMMENT '作成日時',
     `updated_at`     DATETIME(6)    NOT NULL COMMENT '更新日時',
     `application_id` VARCHAR(22)    NOT NULL COMMENT 'アプリケーションID',
     PRIMARY KEY (`id`),
-    UNIQUE KEY (`fqdn`),
+    UNIQUE KEY (`fqdn`, `path_prefix`),
     CONSTRAINT `fk_websites_application_id`
         FOREIGN KEY (`application_id`) REFERENCES `applications` (`id`)
 ) ENGINE InnoDB

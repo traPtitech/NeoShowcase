@@ -38,14 +38,16 @@ message ApplicationConfig {
 message Website {
   string id = 1;
   string fqdn = 2;
-  bool https = 3;
-  int32 http_port = 4;
+  string path_prefix = 3;
+  bool https = 4;
+  int32 http_port = 5;
 }
 
 message CreateWebsiteRequest {
   string fqdn = 1;
-  bool https = 2;
-  int32 http_port = 3;
+  string path_prefix = 2;
+  bool https = 3;
+  int32 http_port = 4;
 }
 
 message Application {
@@ -59,6 +61,14 @@ message Application {
   string want_commit = 8;
   ApplicationConfig config = 9;
   repeated Website websites = 10;
+}
+
+message AvailableDomains {
+  repeated string domains = 1;
+}
+
+message AddAvailableDomainRequest {
+  string domain = 1;
 }
 
 message ApplicationEnvironmentVariable {
@@ -161,6 +171,8 @@ message RetryCommitBuildRequest {
 
 service ApplicationService {
   rpc GetApplications(google.protobuf.Empty) returns (GetApplicationsResponse);
+  rpc GetAvailableDomains(google.protobuf.Empty) returns (AvailableDomains);
+  rpc AddAvailableDomain(AddAvailableDomainRequest) returns (google.protobuf.Empty);
   rpc CreateApplication(CreateApplicationRequest) returns (Application);
   rpc GetApplication(ApplicationIdRequest) returns (Application);
   rpc DeleteApplication(ApplicationIdRequest) returns (google.protobuf.Empty);

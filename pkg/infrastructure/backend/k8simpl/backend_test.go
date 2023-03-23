@@ -52,7 +52,8 @@ func prepareManager(t *testing.T, bus domain.Bus) (*k8sBackend, *kubernetes.Clie
 		t.Fatal(err)
 	}
 
-	b, err := NewK8SBackend(bus, client, traefikClient)
+	b := NewK8SBackend(bus, client, traefikClient, nil, nil, domain.StaticServerConnectivityConfig{})
+	err = b.Start(context.Background())
 	require.NoError(t, err)
 	t.Cleanup(func() {
 		_ = b.Dispose(context.Background())
@@ -61,17 +62,18 @@ func prepareManager(t *testing.T, bus domain.Bus) (*k8sBackend, *kubernetes.Clie
 	return b.(*k8sBackend), client, traefikClient
 }
 
-func waitPodRunning(t *testing.T, c *kubernetes.Clientset, podName string) {
+func waitPodRunning(t *testing.T, b *k8sBackend, appID string) {
 	t.Helper()
 
 	for i := 0; i < 120; i++ {
-		pod, err := c.CoreV1().Pods(appNamespace).Get(context.Background(), podName, metav1.GetOptions{})
-		require.NoError(t, err)
-
-		if getContainerState(pod.Status) == domain.ContainerStateRunning {
+		status, err := b.GetContainer(context.Background(), appID)
+		if err != nil && err != domain.ErrContainerNotFound {
+			t.Fatalf("error in get container: %v", err)
+		}
+		if err == nil && status.State == domain.ContainerStateRunning {
 			return
 		}
 		time.Sleep(500 * time.Millisecond)
 	}
-	t.Fatalf("wait pod running timeout: %s", podName)
+	t.Fatalf("wait pod running timeout: %s", appID)
 }

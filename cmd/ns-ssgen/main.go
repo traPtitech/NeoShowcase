@@ -10,6 +10,7 @@ import (
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
+
 	"github.com/traPtitech/neoshowcase/pkg/domain"
 	"github.com/traPtitech/neoshowcase/pkg/infrastructure/admindb"
 	"github.com/traPtitech/neoshowcase/pkg/infrastructure/storage"
@@ -116,12 +117,12 @@ func provideGRPCPort(c Config) grpc.TCPListenPort {
 	return grpc.TCPListenPort(c.GRPC.Port)
 }
 
-func provideWebServerPort(c Config) domain.WebServerPort {
-	return domain.WebServerPort(c.BuiltIn.Port)
+func provideWebServerPort(c Config) domain.StaticServerPort {
+	return domain.StaticServerPort(c.BuiltIn.Port)
 }
 
-func provideWebServerDocumentRootPath(c Config) domain.WebServerDocumentRootPath {
-	return domain.WebServerDocumentRootPath(c.ArtifactsRoot)
+func provideWebServerDocumentRootPath(c Config) domain.StaticServerDocumentRootPath {
+	return domain.StaticServerDocumentRootPath(c.ArtifactsRoot)
 }
 
 func initStorage(c domain.StorageConfig) (domain.Storage, error) {

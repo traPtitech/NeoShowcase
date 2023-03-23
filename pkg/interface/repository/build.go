@@ -16,21 +16,11 @@ import (
 	"github.com/traPtitech/neoshowcase/pkg/infrastructure/admindb/models"
 )
 
-//go:generate go run github.com/golang/mock/mockgen@latest -source=$GOFILE -package=mock_$GOPACKAGE -destination=./mock/$GOFILE
-type BuildRepository interface {
-	GetBuilds(ctx context.Context, applicationID string) ([]*domain.Build, error)
-	GetBuildsInCommit(ctx context.Context, commits []string) ([]*domain.Build, error)
-	GetBuild(ctx context.Context, buildID string) (*domain.Build, error)
-	CreateBuild(ctx context.Context, applicationID string, commit string) (*domain.Build, error)
-	UpdateBuild(ctx context.Context, args UpdateBuildArgs) error
-	MarkCommitAsRetriable(ctx context.Context, applicationID string, commit string) error
-}
-
 type buildRepository struct {
 	db *sql.DB
 }
 
-func NewBuildRepository(db *sql.DB) BuildRepository {
+func NewBuildRepository(db *sql.DB) domain.BuildRepository {
 	return &buildRepository{
 		db: db,
 	}
@@ -98,12 +88,7 @@ func (r *buildRepository) CreateBuild(ctx context.Context, applicationID string,
 	return toDomainBuild(build), nil
 }
 
-type UpdateBuildArgs struct {
-	ID     string
-	Status builder.BuildStatus
-}
-
-func (r *buildRepository) UpdateBuild(ctx context.Context, args UpdateBuildArgs) error {
+func (r *buildRepository) UpdateBuild(ctx context.Context, args domain.UpdateBuildArgs) error {
 	const errMsg = "failed to UpdateBuildStatus: %w"
 
 	build, err := r.getBuild(ctx, args.ID)

@@ -29,10 +29,10 @@ func New(c2 Config) (*Server, error) {
 	if err != nil {
 		return nil, err
 	}
-	webServerDocumentRootPath := provideWebServerDocumentRootPath(c2)
-	webServerPort := provideWebServerPort(c2)
-	engine := staticserver.NewBuiltIn(storage, webServerDocumentRootPath, webServerPort)
-	staticSiteServerService := usecase.NewStaticSiteServerService(applicationRepository, buildRepository, engine)
+	staticServerDocumentRootPath := provideWebServerDocumentRootPath(c2)
+	staticServerPort := provideWebServerPort(c2)
+	ssEngine := staticserver.NewBuiltIn(storage, staticServerDocumentRootPath, staticServerPort)
+	staticSiteServerService := usecase.NewStaticSiteServerService(applicationRepository, buildRepository, ssEngine)
 	server := grpc.NewServer()
 	staticSiteService := grpc.NewStaticSiteServiceServer(staticSiteServerService)
 	tcpListenPort := provideGRPCPort(c2)
@@ -40,7 +40,7 @@ func New(c2 Config) (*Server, error) {
 		db:         db,
 		svc:        staticSiteServerService,
 		grpcServer: server,
-		engine:     engine,
+		engine:     ssEngine,
 		sss:        staticSiteService,
 		port:       tcpListenPort,
 	}

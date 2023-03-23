@@ -16,13 +16,30 @@ import (
 	"github.com/traPtitech/neoshowcase/pkg/usecase"
 )
 
+func handleUseCaseError(err error) error {
+	typ, ok := usecase.GetErrorType(err)
+	if ok {
+		switch typ {
+		case usecase.ErrorTypeBadRequest:
+			return status.Errorf(codes.InvalidArgument, "%v", err)
+		case usecase.ErrorTypeNotFound:
+			return status.Errorf(codes.NotFound, "%v", err)
+		case usecase.ErrorTypeAlreadyExists:
+			return status.Errorf(codes.AlreadyExists, "%v", err)
+		}
+	}
+	return status.Errorf(codes.Internal, "%v", err)
+}
+
 type ApplicationService struct {
 	svc usecase.APIServerService
 
 	pb.UnimplementedApplicationServiceServer
 }
 
-func NewApplicationServiceServer(svc usecase.APIServerService) *ApplicationService {
+func NewApplicationServiceServer(
+	svc usecase.APIServerService,
+) *ApplicationService {
 	return &ApplicationService{
 		svc: svc,
 	}
@@ -35,13 +52,31 @@ func getUserID() string {
 func (s *ApplicationService) GetApplications(ctx context.Context, _ *emptypb.Empty) (*pb.GetApplicationsResponse, error) {
 	applications, err := s.svc.GetApplicationsByUserID(ctx, getUserID())
 	if err != nil {
-		return nil, status.Errorf(codes.Internal, "%v", err)
+		return nil, handleUseCaseError(err)
 	}
 	return &pb.GetApplicationsResponse{
 		Applications: lo.Map(applications, func(app *domain.Application, i int) *pb.Application {
 			return toPBApplication(app)
 		}),
 	}, nil
+}
+
+func (s *ApplicationService) GetAvailableDomains(ctx context.Context, _ *emptypb.Empty) (*pb.AvailableDomains, error) {
+	domains, err := s.svc.GetAvailableDomains(ctx)
+	if err != nil {
+		return nil, status.Errorf(codes.Internal, "%v", err)
+	}
+	return &pb.AvailableDomains{
+		Domains: lo.Map(domains, func(d *domain.AvailableDomain, i int) string { return d.Domain }),
+	}, nil
+}
+
+func (s *ApplicationService) AddAvailableDomain(ctx context.Context, req *pb.AddAvailableDomainRequest) (*emptypb.Empty, error) {
+	err := s.svc.AddAvailableDomain(ctx, req.Domain)
+	if err != nil {
+		return nil, handleUseCaseError(err)
+	}
+	return &emptypb.Empty{}, nil
 }
 
 func (s *ApplicationService) CreateApplication(ctx context.Context, req *pb.CreateApplicationRequest) (*pb.Application, error) {
@@ -52,22 +87,19 @@ func (s *ApplicationService) CreateApplication(ctx context.Context, req *pb.Crea
 		BranchName:    req.BranchName,
 		BuildType:     fromPBBuildType(req.BuildType),
 		Config:        fromPBApplicationConfig(req.Config),
-		Websites: lo.Map(req.Websites, func(website *pb.CreateWebsiteRequest, i int) *usecase.CreateWebsiteArgs {
-			return &usecase.CreateWebsiteArgs{
-				FQDN:  website.Fqdn,
-				HTTPS: website.Https,
-				Port:  int(website.HttpPort),
+		Websites: lo.Map(req.Websites, func(website *pb.CreateWebsiteRequest, i int) *domain.Website {
+			return &domain.Website{
+				ID:         domain.NewID(),
+				FQDN:       website.Fqdn,
+				PathPrefix: website.PathPrefix,
+				HTTPS:      website.Https,
+				HTTPPort:   int(website.HttpPort),
 			}
 		}),
 		StartOnCreate: req.StartOnCreate,
 	})
 	if err != nil {
-		switch err {
-		case usecase.ErrAlreadyExists:
-			return nil, status.Errorf(codes.AlreadyExists, "app already exists")
-		default:
-			return nil, status.Errorf(codes.Internal, "%v", err)
-		}
+		return nil, handleUseCaseError(err)
 	}
 	return toPBApplication(application), nil
 }
@@ -75,10 +107,7 @@ func (s *ApplicationService) CreateApplication(ctx context.Context, req *pb.Crea
 func (s *ApplicationService) GetApplication(ctx context.Context, req *pb.ApplicationIdRequest) (*pb.Application, error) {
 	application, err := s.svc.GetApplication(ctx, req.Id)
 	if err != nil {
-		if err == usecase.ErrNotFound {
-			return nil, status.Errorf(codes.NotFound, "not found")
-		}
-		return nil, status.Errorf(codes.Internal, "%v", err)
+		return nil, handleUseCaseError(err)
 	}
 	return toPBApplication(application), nil
 }
@@ -86,7 +115,7 @@ func (s *ApplicationService) GetApplication(ctx context.Context, req *pb.Applica
 func (s *ApplicationService) DeleteApplication(ctx context.Context, req *pb.ApplicationIdRequest) (*emptypb.Empty, error) {
 	err := s.svc.DeleteApplication(ctx, req.Id)
 	if err != nil {
-		return nil, status.Errorf(codes.Internal, "%v", err)
+		return nil, handleUseCaseError(err)
 	}
 	return &emptypb.Empty{}, nil
 }
@@ -94,7 +123,7 @@ func (s *ApplicationService) DeleteApplication(ctx context.Context, req *pb.Appl
 func (s *ApplicationService) GetApplicationBuilds(ctx context.Context, req *pb.ApplicationIdRequest) (*pb.GetApplicationBuildsResponse, error) {
 	builds, err := s.svc.GetApplicationBuilds(ctx, req.Id)
 	if err != nil {
-		return nil, status.Errorf(codes.Internal, "%v", err)
+		return nil, handleUseCaseError(err)
 	}
 	return &pb.GetApplicationBuildsResponse{
 		Builds: lo.Map(builds, func(build *domain.Build, i int) *pb.Build {
@@ -106,10 +135,7 @@ func (s *ApplicationService) GetApplicationBuilds(ctx context.Context, req *pb.A
 func (s *ApplicationService) GetApplicationBuild(ctx context.Context, req *pb.GetApplicationBuildRequest) (*pb.Build, error) {
 	build, err := s.svc.GetApplicationBuild(ctx, req.BuildId)
 	if err != nil {
-		if err == usecase.ErrNotFound {
-			return nil, status.Errorf(codes.NotFound, "not found")
-		}
-		return nil, status.Errorf(codes.Internal, "%v", err)
+		return nil, handleUseCaseError(err)
 	}
 	return toPBBuild(build), nil
 }
@@ -125,7 +151,7 @@ func (s *ApplicationService) GetApplicationBuildArtifact(context.Context, *pb.Ap
 func (s *ApplicationService) GetApplicationEnvironmentVariables(ctx context.Context, req *pb.ApplicationIdRequest) (*pb.ApplicationEnvironmentVariables, error) {
 	environments, err := s.svc.GetApplicationEnvironmentVariables(ctx, req.Id)
 	if err != nil {
-		return nil, status.Errorf(codes.Internal, "%v", err)
+		return nil, handleUseCaseError(err)
 	}
 	return &pb.ApplicationEnvironmentVariables{
 		Variables: lo.Map(environments, func(env *domain.Environment, i int) *pb.ApplicationEnvironmentVariable {
@@ -137,7 +163,7 @@ func (s *ApplicationService) GetApplicationEnvironmentVariables(ctx context.Cont
 func (s *ApplicationService) SetApplicationEnvironmentVariable(ctx context.Context, req *pb.SetApplicationEnvironmentVariableRequest) (*emptypb.Empty, error) {
 	err := s.svc.SetApplicationEnvironmentVariable(ctx, req.ApplicationId, req.Key, req.Value)
 	if err != nil {
-		return nil, status.Errorf(codes.Internal, "%v", err)
+		return nil, handleUseCaseError(err)
 	}
 	return &emptypb.Empty{}, nil
 }
@@ -153,7 +179,7 @@ func (s *ApplicationService) GetApplicationKeys(context.Context, *pb.Application
 func (s *ApplicationService) RetryCommitBuild(ctx context.Context, req *pb.RetryCommitBuildRequest) (*emptypb.Empty, error) {
 	err := s.svc.RetryCommitBuild(ctx, req.ApplicationId, req.Commit)
 	if err != nil {
-		return nil, status.Errorf(codes.Internal, "%v", err)
+		return nil, handleUseCaseError(err)
 	}
 	return &emptypb.Empty{}, nil
 }
@@ -161,7 +187,7 @@ func (s *ApplicationService) RetryCommitBuild(ctx context.Context, req *pb.Retry
 func (s *ApplicationService) StartApplication(ctx context.Context, req *pb.ApplicationIdRequest) (*emptypb.Empty, error) {
 	err := s.svc.StartApplication(ctx, req.Id)
 	if err != nil {
-		return nil, status.Errorf(codes.Internal, "%v", err)
+		return nil, handleUseCaseError(err)
 	}
 	return &emptypb.Empty{}, nil
 }
@@ -169,7 +195,7 @@ func (s *ApplicationService) StartApplication(ctx context.Context, req *pb.Appli
 func (s *ApplicationService) StopApplication(ctx context.Context, req *pb.ApplicationIdRequest) (*emptypb.Empty, error) {
 	err := s.svc.StopApplication(ctx, req.Id)
 	if err != nil {
-		return nil, status.Errorf(codes.Internal, "%v", err)
+		return nil, handleUseCaseError(err)
 	}
 	return &emptypb.Empty{}, nil
 }
@@ -265,10 +291,11 @@ func fromPBApplicationConfig(c *pb.ApplicationConfig) domain.ApplicationConfig {
 
 func toPBWebsite(website *domain.Website) *pb.Website {
 	return &pb.Website{
-		Id:       website.ID,
-		Fqdn:     website.FQDN,
-		Https:    website.HTTPS,
-		HttpPort: int32(website.HTTPPort),
+		Id:         website.ID,
+		Fqdn:       website.FQDN,
+		PathPrefix: website.PathPrefix,
+		Https:      website.HTTPS,
+		HttpPort:   int32(website.HTTPPort),
 	}
 }
 

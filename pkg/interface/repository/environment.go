@@ -12,17 +12,11 @@ import (
 	"github.com/traPtitech/neoshowcase/pkg/infrastructure/admindb/models"
 )
 
-//go:generate go run github.com/golang/mock/mockgen -source=$GOFILE -package=mock_$GOPACKAGE -destination=./mock/$GOFILE
-type EnvironmentRepository interface {
-	GetEnv(ctx context.Context, applicationID string) ([]*domain.Environment, error)
-	SetEnv(ctx context.Context, applicationID, key, value string) error
-}
-
 type environmentRepository struct {
 	db *sql.DB
 }
 
-func NewEnvironmentRepository(db *sql.DB) EnvironmentRepository {
+func NewEnvironmentRepository(db *sql.DB) domain.EnvironmentRepository {
 	return &environmentRepository{db: db}
 }
 

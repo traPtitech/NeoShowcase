@@ -1,10 +1,15 @@
 package domain
 
 import (
+	"context"
 	"fmt"
 	"net/url"
 	"strings"
 	"time"
+
+	"github.com/samber/lo"
+	"golang.org/x/exp/slices"
+	"golang.org/x/net/idna"
 
 	"github.com/traPtitech/neoshowcase/pkg/domain/builder"
 	"github.com/traPtitech/neoshowcase/pkg/util/optional"
@@ -116,6 +121,49 @@ type Artifact struct {
 	CreatedAt time.Time
 }
 
+func IsValidDomain(domain string) bool {
+	// 面倒なのでtrailing dotは無しで統一
+	if strings.HasSuffix(domain, ".") {
+		return false
+	}
+	_, err := idna.Lookup.ToUnicode(domain)
+	return err == nil
+}
+
+type AvailableDomain struct {
+	Domain string
+}
+
+type AvailableDomainSlice []*AvailableDomain
+
+func (a *AvailableDomain) IsValid() bool {
+	domain := a.Domain
+	domain = strings.TrimPrefix(domain, "*.")
+	return IsValidDomain(domain)
+}
+
+func (a *AvailableDomain) Match(fqdn string) bool {
+	if fqdn == a.Domain {
+		return true
+	}
+	if strings.HasPrefix(a.Domain, "*.") {
+		baseDomain := strings.TrimPrefix(a.Domain, "*")
+		if strings.HasSuffix(fqdn, baseDomain) {
+			return true
+		}
+	}
+	return false
+}
+
+func (s AvailableDomainSlice) Match(fqdn string) bool {
+	for _, a := range s {
+		if a.Match(fqdn) {
+			return true
+		}
+	}
+	return false
+}
+
 type Build struct {
 	ID            string
 	Commit        string
@@ -151,8 +199,75 @@ func ExtractNameFromRepositoryURL(repositoryURL string) (string, error) {
 }
 
 type Website struct {
-	ID       string
-	FQDN     string
-	HTTPS    bool
-	HTTPPort int
+	ID         string
+	FQDN       string
+	PathPrefix string
+	HTTPS      bool
+	HTTPPort   int
+}
+
+func (w *Website) IsValid() bool {
+	if !IsValidDomain(w.FQDN) {
+		return false
+	}
+	if !strings.HasPrefix(w.PathPrefix, "/") {
+		return false
+	}
+	if !(0 <= w.HTTPPort && w.HTTPPort < 65536) {
+		return false
+	}
+	return true
+}
+
+// ConflictsWith checks whether this website's path prefix is contained in the existing websites' path prefixes.
+func (w *Website) ConflictsWith(existing []*Website) bool {
+	for _, ex := range existing {
+		if w.FQDN != ex.FQDN {
+			continue
+		}
+		if strings.HasPrefix(w.PathPrefix, ex.PathPrefix) {
+			return true
+		}
+	}
+	return false
+}
+
+func GetActiveStaticSites(ctx context.Context, appRepo ApplicationRepository, buildRepo BuildRepository) ([]*StaticSite, error) {
+	applications, err := appRepo.GetApplications(ctx, GetApplicationCondition{
+		BuildType: optional.From(builder.BuildTypeStatic),
+		State:     optional.From(ApplicationStateRunning),
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	commits := lo.Map(applications, func(app *Application, i int) string { return app.CurrentCommit })
+	builds, err := buildRepo.GetBuildsInCommit(ctx, commits)
+	if err != nil {
+		return nil, err
+	}
+
+	// Last succeeded builds for each commit
+	builds = lo.Filter(builds, func(build *Build, i int) bool { return build.Status == builder.BuildStatusSucceeded })
+	slices.SortFunc(builds, func(a, b *Build) bool { return a.StartedAt.Before(b.StartedAt) })
+	commitToBuild := lo.SliceToMap(builds, func(b *Build) (string, *Build) { return b.Commit, b })
+
+	var sites []*StaticSite
+	for _, app := range applications {
+		build, ok := commitToBuild[app.CurrentCommit]
+		if !ok {
+			continue
+		}
+		if !build.Artifact.Valid {
+			continue
+		}
+		for _, website := range app.Websites {
+			sites = append(sites, &StaticSite{
+				Application: app,
+				Website:     website,
+				ArtifactID:  build.Artifact.V.ID,
+			})
+		}
+	}
+	return sites, nil
 }

@@ -3,8 +3,10 @@ package main
 import (
 	"strings"
 
+	"github.com/traPtitech/neoshowcase/pkg/domain"
 	"github.com/traPtitech/neoshowcase/pkg/domain/builder"
 	"github.com/traPtitech/neoshowcase/pkg/infrastructure/admindb"
+	"github.com/traPtitech/neoshowcase/pkg/infrastructure/backend/dockerimpl"
 	"github.com/traPtitech/neoshowcase/pkg/infrastructure/dbmanager"
 	"github.com/traPtitech/neoshowcase/pkg/interface/grpc"
 	"github.com/traPtitech/neoshowcase/pkg/usecase"
@@ -16,14 +18,18 @@ const (
 )
 
 type Config struct {
-	Debug   bool                               `mapstructure:"debug" yaml:"debug"`
-	Mode    string                             `mapstructure:"mode" yaml:"mode"`
-	Builder grpc.BuilderServiceClientConfig    `mapstructure:"builder" yaml:"builder"`
-	SSGen   grpc.StaticSiteServiceClientConfig `mapstructure:"ssgen" yaml:"ssgen"`
-	DB      admindb.Config                     `mapstructure:"db" yaml:"db"`
-	MariaDB dbmanager.MariaDBConfig            `mapstructure:"mariadb" yaml:"mariadb"`
-	MongoDB dbmanager.MongoDBConfig            `mapstructure:"mongodb" yaml:"mongodb"`
-	GRPC    struct {
+	Debug   bool                                  `mapstructure:"debug" yaml:"debug"`
+	Mode    string                                `mapstructure:"mode" yaml:"mode"`
+	Builder grpc.BuilderServiceClientConfig       `mapstructure:"builder" yaml:"builder"`
+	SS      domain.StaticServerConnectivityConfig `mapstructure:"ss" yaml:"ss"`
+	SSGen   grpc.StaticSiteServiceClientConfig    `mapstructure:"ssgen" yaml:"ssgen"`
+	DB      admindb.Config                        `mapstructure:"db" yaml:"db"`
+	MariaDB dbmanager.MariaDBConfig               `mapstructure:"mariadb" yaml:"mariadb"`
+	MongoDB dbmanager.MongoDBConfig               `mapstructure:"mongodb" yaml:"mongodb"`
+	Docker  struct {
+		ConfDir string `mapstructure:"confDir" yaml:"confDir"`
+	} `mapstructure:"docker" yaml:"docker"`
+	GRPC struct {
 		Port int `mapstructure:"port" yaml:"port"`
 	} `mapstructure:"grpc" yaml:"grpc"`
 	HTTP struct {
@@ -48,6 +54,10 @@ func (c *Config) GetMode() int {
 	default:
 		return ModeDocker
 	}
+}
+
+func provideIngressConfDirPath(c Config) dockerimpl.IngressConfDirPath {
+	return dockerimpl.IngressConfDirPath(c.Docker.ConfDir)
 }
 
 func provideImageRegistry(c Config) builder.DockerImageRegistryString {

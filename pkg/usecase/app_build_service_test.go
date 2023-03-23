@@ -11,9 +11,9 @@ import (
 
 	"github.com/traPtitech/neoshowcase/pkg/domain"
 	"github.com/traPtitech/neoshowcase/pkg/domain/builder"
+	"github.com/traPtitech/neoshowcase/pkg/domain/mock"
 	"github.com/traPtitech/neoshowcase/pkg/interface/grpc/pb"
-	mock_pb "github.com/traPtitech/neoshowcase/pkg/interface/grpc/pb/mock"
-	mock_repository "github.com/traPtitech/neoshowcase/pkg/interface/repository/mock"
+	"github.com/traPtitech/neoshowcase/pkg/interface/grpc/pb/mock"
 )
 
 func TestAppBuildService_QueueBuild(t *testing.T) {
@@ -24,8 +24,8 @@ func TestAppBuildService_QueueBuild(t *testing.T) {
 		mockCtrl := gomock.NewController(t)
 		defer mockCtrl.Finish()
 
-		appRepo := mock_repository.NewMockApplicationRepository(mockCtrl)
-		buildRepo := mock_repository.NewMockBuildRepository(mockCtrl)
+		appRepo := mock_domain.NewMockApplicationRepository(mockCtrl)
+		buildRepo := mock_domain.NewMockBuildRepository(mockCtrl)
 		c := mock_pb.NewMockBuilderServiceClient(mockCtrl)
 		s := NewAppBuildService(appRepo, buildRepo, c, "TestRegistry", "TestPrefix")
 		app := &domain.Application{
@@ -81,8 +81,8 @@ func TestAppBuildService_QueueBuild(t *testing.T) {
 		mockCtrl := gomock.NewController(t)
 		defer mockCtrl.Finish()
 
-		appRepo := mock_repository.NewMockApplicationRepository(mockCtrl)
-		buildRepo := mock_repository.NewMockBuildRepository(mockCtrl)
+		appRepo := mock_domain.NewMockApplicationRepository(mockCtrl)
+		buildRepo := mock_domain.NewMockBuildRepository(mockCtrl)
 		c := mock_pb.NewMockBuilderServiceClient(mockCtrl)
 		s := NewAppBuildService(appRepo, buildRepo, c, "TestRegistry", "TestPrefix")
 		app := &domain.Application{
@@ -135,8 +135,8 @@ func TestAppBuildService_QueueBuild(t *testing.T) {
 		mockCtrl := gomock.NewController(t)
 		defer mockCtrl.Finish()
 
-		appRepo := mock_repository.NewMockApplicationRepository(mockCtrl)
-		buildLog := mock_repository.NewMockBuildRepository(mockCtrl)
+		appRepo := mock_domain.NewMockApplicationRepository(mockCtrl)
+		buildLog := mock_domain.NewMockBuildRepository(mockCtrl)
 		c := mock_pb.NewMockBuilderServiceClient(mockCtrl)
 		s := NewAppBuildService(appRepo, buildLog, c, "TestRegistry", "TestPrefix")
 		queue := s.(*appBuildService).queue

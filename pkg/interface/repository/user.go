@@ -6,31 +6,23 @@ import (
 	"fmt"
 
 	"github.com/google/uuid"
+	"github.com/volatiletech/sqlboiler/v4/boil"
+
 	"github.com/traPtitech/neoshowcase/pkg/domain"
 	"github.com/traPtitech/neoshowcase/pkg/infrastructure/admindb/models"
-	"github.com/volatiletech/sqlboiler/v4/boil"
 )
-
-type UserRepository interface {
-	CreateUser(ctx context.Context, args CreateUserArgs) (*domain.User, error)
-	GetUserByID(ctx context.Context, id string) (*domain.User, error)
-}
 
 type userRepository struct {
 	db *sql.DB
 }
 
-type CreateUserArgs struct {
-	Name string
-}
-
-func NewUserRepository(db *sql.DB) UserRepository {
+func NewUserRepository(db *sql.DB) domain.UserRepository {
 	return &userRepository{
 		db: db,
 	}
 }
 
-func (u *userRepository) CreateUser(ctx context.Context, args CreateUserArgs) (*domain.User, error) {
+func (u *userRepository) CreateUser(ctx context.Context, args domain.CreateUserArgs) (*domain.User, error) {
 	const errMsg = "failed to create user: %w"
 
 	_, err := models.Users(models.UserWhere.Name.EQ(args.Name)).One(ctx, u.db)

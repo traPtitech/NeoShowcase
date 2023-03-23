@@ -1,12 +1,14 @@
 package dockerimpl
 
 import (
+	"context"
 	"os"
 	"strconv"
 	"testing"
 
 	docker "github.com/fsouza/go-dockerclient"
 	"github.com/stretchr/testify/require"
+
 	"github.com/traPtitech/neoshowcase/pkg/domain"
 )
 
@@ -22,10 +24,9 @@ func prepareManager(t *testing.T, bus domain.Bus) (*dockerBackend, *docker.Clien
 		t.Fatal(err)
 	}
 
-	m, err := NewDockerBackend(c, bus, "./local-dev/traefik")
-	if err != nil {
-		t.Fatal(err)
-	}
+	m := NewDockerBackend(c, bus, "../../../../local-dev/traefik", nil, nil, domain.StaticServerConnectivityConfig{})
+	err = m.Start(context.Background())
+	require.NoError(t, err)
 
 	require.NoError(t, c.PullImage(docker.PullImageOptions{
 		Repository: "alpine",

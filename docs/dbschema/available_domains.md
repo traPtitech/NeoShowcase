@@ -9,11 +9,8 @@
 
 ```sql
 CREATE TABLE `available_domains` (
-  `id` varchar(22) NOT NULL COMMENT 'ドメインID',
-  `domain` varchar(100) NOT NULL COMMENT 'ドメイン',
-  `subdomain` tinyint(1) NOT NULL DEFAULT 0 COMMENT 'サブドメインが利用可能か',
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `domain` (`domain`)
+  `domain` varchar(256) NOT NULL COMMENT 'ドメイン',
+  PRIMARY KEY (`domain`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci COMMENT='利用可能ドメインテーブル'
 ```
 
@@ -23,23 +20,19 @@ CREATE TABLE `available_domains` (
 
 | Name | Type | Default | Nullable | Children | Parents | Comment |
 | ---- | ---- | ------- | -------- | -------- | ------- | ------- |
-| id | varchar(22) |  | false |  |  | ドメインID |
-| domain | varchar(100) |  | false |  |  | ドメイン |
-| subdomain | tinyint(1) | 0 | false |  |  | サブドメインが利用可能か |
+| domain | varchar(256) |  | false |  |  | ドメイン |
 
 ## Constraints
 
 | Name | Type | Definition |
 | ---- | ---- | ---------- |
-| domain | UNIQUE | UNIQUE KEY domain (domain) |
-| PRIMARY | PRIMARY KEY | PRIMARY KEY (id) |
+| PRIMARY | PRIMARY KEY | PRIMARY KEY (domain) |
 
 ## Indexes
 
 | Name | Definition |
 | ---- | ---------- |
-| PRIMARY | PRIMARY KEY (id) USING BTREE |
-| domain | UNIQUE KEY domain (domain) USING BTREE |
+| PRIMARY | PRIMARY KEY (domain) USING BTREE |
 
 ## Relations
 

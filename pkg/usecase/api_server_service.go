@@ -5,8 +5,6 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/samber/lo"
-
 	"github.com/traPtitech/neoshowcase/pkg/domain"
 	"github.com/traPtitech/neoshowcase/pkg/domain/builder"
 	"github.com/traPtitech/neoshowcase/pkg/domain/event"
@@ -15,24 +13,13 @@ import (
 	"github.com/traPtitech/neoshowcase/pkg/util/random"
 )
 
-var (
-	ErrNotFound      = errors.New("not found")
-	ErrAlreadyExists = errors.New("already exists")
-)
-
 func handleRepoError[T any](entity T, err error) (T, error) {
 	switch err {
 	case repository.ErrNotFound:
-		return entity, ErrNotFound
+		return entity, newError(ErrorTypeNotFound, "not found", err)
 	default:
 		return entity, err
 	}
-}
-
-type CreateWebsiteArgs struct {
-	FQDN  string
-	HTTPS bool
-	Port  int
 }
 
 type CreateApplicationArgs struct {
@@ -42,12 +29,14 @@ type CreateApplicationArgs struct {
 	BranchName    string
 	BuildType     builder.BuildType
 	Config        domain.ApplicationConfig
-	Websites      []*CreateWebsiteArgs
+	Websites      []*domain.Website
 	StartOnCreate bool
 }
 
 type APIServerService interface {
 	GetApplicationsByUserID(ctx context.Context, userID string) ([]*domain.Application, error)
+	GetAvailableDomains(ctx context.Context) (domain.AvailableDomainSlice, error)
+	AddAvailableDomain(ctx context.Context, domain string) error
 	CreateApplication(ctx context.Context, args CreateApplicationArgs) (*domain.Application, error)
 	GetApplication(ctx context.Context, id string) (*domain.Application, error)
 	DeleteApplication(ctx context.Context, id string) error
@@ -62,10 +51,11 @@ type APIServerService interface {
 
 type apiServerService struct {
 	bus            domain.Bus
-	appRepo        repository.ApplicationRepository
-	buildRepo      repository.BuildRepository
-	envRepo        repository.EnvironmentRepository
-	gitRepo        repository.GitRepositoryRepository
+	appRepo        domain.ApplicationRepository
+	adRepo         domain.AvailableDomainRepository
+	buildRepo      domain.BuildRepository
+	envRepo        domain.EnvironmentRepository
+	gitRepo        domain.GitRepositoryRepository
 	deploySvc      AppDeployService
 	backend        domain.Backend
 	mariaDBManager domain.MariaDBManager
@@ -74,10 +64,11 @@ type apiServerService struct {
 
 func NewAPIServerService(
 	bus domain.Bus,
-	appRepo repository.ApplicationRepository,
-	buildRepo repository.BuildRepository,
-	envRepo repository.EnvironmentRepository,
-	gitRepo repository.GitRepositoryRepository,
+	appRepo domain.ApplicationRepository,
+	adRepo domain.AvailableDomainRepository,
+	buildRepo domain.BuildRepository,
+	envRepo domain.EnvironmentRepository,
+	gitRepo domain.GitRepositoryRepository,
 	deploySvc AppDeployService,
 	backend domain.Backend,
 	mariaDBManager domain.MariaDBManager,
@@ -86,6 +77,7 @@ func NewAPIServerService(
 	return &apiServerService{
 		bus:            bus,
 		appRepo:        appRepo,
+		adRepo:         adRepo,
 		buildRepo:      buildRepo,
 		envRepo:        envRepo,
 		gitRepo:        gitRepo,
@@ -97,7 +89,19 @@ func NewAPIServerService(
 }
 
 func (s *apiServerService) GetApplicationsByUserID(ctx context.Context, userID string) ([]*domain.Application, error) {
-	return s.appRepo.GetApplications(ctx, repository.GetApplicationCondition{UserID: optional.From(userID)})
+	return s.appRepo.GetApplications(ctx, domain.GetApplicationCondition{UserID: optional.From(userID)})
+}
+
+func (s *apiServerService) GetAvailableDomains(ctx context.Context) (domain.AvailableDomainSlice, error) {
+	return s.adRepo.GetAvailableDomains(ctx)
+}
+
+func (s *apiServerService) AddAvailableDomain(ctx context.Context, d string) error {
+	ad := domain.AvailableDomain{Domain: d}
+	if !ad.IsValid() {
+		return newError(ErrorTypeBadRequest, "invalid new domain", nil)
+	}
+	return s.adRepo.AddAvailableDomain(ctx, d)
 }
 
 func (s *apiServerService) CreateApplication(ctx context.Context, args CreateApplicationArgs) (*domain.Application, error) {
@@ -109,14 +113,27 @@ func (s *apiServerService) CreateApplication(ctx context.Context, args CreateApp
 	if err == repository.ErrNotFound {
 		repoName, err := domain.ExtractNameFromRepositoryURL(args.RepositoryURL)
 		if err != nil {
-			return nil, fmt.Errorf("malformed repository url: %w", err)
+			return nil, newError(ErrorTypeBadRequest, "malformed repository url", err)
 		}
-		repo, err = s.gitRepo.RegisterRepository(ctx, repository.RegisterRepositoryArgs{
+		repo, err = s.gitRepo.RegisterRepository(ctx, domain.RegisterRepositoryArgs{
 			Name: repoName,
 			URL:  args.RepositoryURL,
 		})
 		if err != nil {
 			return nil, err
+		}
+	}
+
+	domains, err := s.adRepo.GetAvailableDomains(ctx)
+	if err != nil {
+		return nil, err
+	}
+	for _, website := range args.Websites {
+		if !website.IsValid() {
+			return nil, newError(ErrorTypeBadRequest, "invalid website", nil)
+		}
+		if !domains.Match(website.FQDN) {
+			return nil, newError(ErrorTypeBadRequest, "domain not available", nil)
 		}
 	}
 
@@ -126,25 +143,16 @@ func (s *apiServerService) CreateApplication(ctx context.Context, args CreateApp
 	} else {
 		initialState = domain.ApplicationStateIdle
 	}
-	application, err := s.appRepo.CreateApplication(ctx, repository.CreateApplicationArgs{
+	application, err := s.appRepo.CreateApplication(ctx, domain.CreateApplicationArgs{
 		Name:         args.Name,
 		RepositoryID: repo.ID,
 		BranchName:   args.BranchName,
 		BuildType:    args.BuildType,
 		State:        initialState,
 		Config:       args.Config,
-		Websites: lo.Map(args.Websites, func(website *CreateWebsiteArgs, i int) *repository.CreateWebsiteArgs {
-			return &repository.CreateWebsiteArgs{
-				FQDN:  website.FQDN,
-				HTTPS: website.HTTPS,
-				Port:  website.Port,
-			}
-		}),
+		Websites:     args.Websites,
 	})
 	if err != nil {
-		if err == repository.ErrDuplicate {
-			return nil, ErrAlreadyExists
-		}
 		return nil, err
 	}
 

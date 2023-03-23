@@ -13,29 +13,17 @@ import (
 	"github.com/traPtitech/neoshowcase/pkg/infrastructure/admindb/models"
 )
 
-//go:generate go run github.com/golang/mock/mockgen -source=$GOFILE -package=mock_$GOPACKAGE -destination=./mock/$GOFILE
-type GitRepositoryRepository interface {
-	RegisterRepository(ctx context.Context, args RegisterRepositoryArgs) (domain.Repository, error)
-	GetRepositoryByID(ctx context.Context, id string) (domain.Repository, error)
-	GetRepository(ctx context.Context, rawURL string) (domain.Repository, error)
-}
-
 type gitRepositoryRepository struct {
 	db *sql.DB
 }
 
-type RegisterRepositoryArgs struct {
-	Name string
-	URL  string
-}
-
-func NewGitRepositoryRepository(db *sql.DB) GitRepositoryRepository {
+func NewGitRepositoryRepository(db *sql.DB) domain.GitRepositoryRepository {
 	return &gitRepositoryRepository{
 		db: db,
 	}
 }
 
-func (r *gitRepositoryRepository) RegisterRepository(ctx context.Context, args RegisterRepositoryArgs) (domain.Repository, error) {
+func (r *gitRepositoryRepository) RegisterRepository(ctx context.Context, args domain.RegisterRepositoryArgs) (domain.Repository, error) {
 	const errMsg = "failed to RegisterRepository: %w"
 
 	repo, err := models.Repositories(models.RepositoryWhere.URL.EQ(args.URL)).One(ctx, r.db)
