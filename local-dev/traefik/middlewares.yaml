@@ -11,4 +11,5 @@ http:
     ns_auth:
       forwardAuth:
         address: "http://ns-mc/"
-        authResponseHeaders: "X-Showcase-User"
+        authResponseHeaders:
+          - "X-Showcase-User"
