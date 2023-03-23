@@ -56,6 +56,10 @@ db-lint: ## Lint current db schema docs
 golangci-lint: ## Lint go sources
 	@golangci-lint run
 
+.PHONY: build
+build: ## Build containers
+	@docker compose build
+
 .PHONY: up
 up: ## Setup development environment
 	@docker compose up -d --build
@@ -111,6 +115,14 @@ dind-down: ## Tear down docker-in-docker container
 docker-test: ## Run docker tests
 	@docker container inspect ns-test-dind > /dev/null || make dind-up
 	ENABLE_DOCKER_TESTS=true DOCKER_HOST=tcp://localhost:5555 DOCKER_CERT_PATH=$$PWD/local-dev/dind/client DOCKER_TLS_VERIFY=true go test -v ./pkg/infrastructure/backend/dockerimpl
+
+.PHONY: k3s-import
+k3s-import: ## Import images to k3s environment
+	docker save ghcr.io/traptitech/ns:main | sudo k3s ctr images import -
+	docker save ghcr.io/traptitech/ns-builder:main | sudo k3s ctr images import -
+	docker save ghcr.io/traptitech/ns-mc:main | sudo k3s ctr images import -
+	docker save ghcr.io/traptitech/ns-migrate:main | sudo k3s ctr images import -
+	docker save ghcr.io/traptitech/ns-ssgen:main | sudo k3s ctr images import -
 
 .PHONY: k3d-up
 k3d-up: ## Setup k3s environment

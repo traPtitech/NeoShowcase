@@ -45,7 +45,6 @@ CREATE TABLE `applications`
     `created_at`     DATETIME(6)                NOT NULL COMMENT '作成日時',
     `updated_at`     DATETIME(6)                NOT NULL COMMENT '更新日時',
     PRIMARY KEY (`id`),
-    UNIQUE KEY (`repository_id`, `branch_name`),
     CONSTRAINT `fk_applications_repository_id`
         FOREIGN KEY (`repository_id`) REFERENCES `repositories` (`id`),
     CONSTRAINT `fk_applications_state`
