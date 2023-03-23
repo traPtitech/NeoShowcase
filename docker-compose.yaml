@@ -50,11 +50,11 @@ services:
     image: ghcr.io/traptitech/ns-mc:main
     restart: always
     ports:
-      - "5005:80"
+      - "5005:8080"
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.ns_mc.rule=Host(`mc.local.trapti.tech`)"
-      - "traefik.http.services.ns_mc.loadbalancer.server.port=80"
+      - "traefik.http.services.ns_mc.loadbalancer.server.port=8080"
     networks:
       - default
 
