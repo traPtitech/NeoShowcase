@@ -41,7 +41,7 @@ ENTRYPOINT ["/app/ns-builder"]
 CMD ["run"]
 
 FROM base as ns-mc
-EXPOSE 8081
+EXPOSE 80
 COPY --from=builder-ns-mc /app/ns-mc ./
 ENTRYPOINT ["/app/ns-mc"]
 CMD ["serve"]
@@ -56,7 +56,7 @@ COPY --from=builder-ns-migrate /app/ns-migrate ./
 ENTRYPOINT ["/app/ns-migrate"]
 
 FROM base as ns-all
-EXPOSE 8080 8081
+EXPOSE 80 8080
 COPY --from=builder-ns /app/ns ./
 COPY --from=builder-ns-builder /app/ns-builder ./
 COPY --from=builder-ns-mc /app/ns-mc ./
