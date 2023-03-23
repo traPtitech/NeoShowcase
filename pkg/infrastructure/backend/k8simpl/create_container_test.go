@@ -28,7 +28,7 @@ func TestK8sBackend_CreateContainer(t *testing.T) {
 			ImageName: image,
 		})
 		if assert.NoError(t, err) {
-			waitPodRunning(t, c, deploymentName(appID)+"-0")
+			waitPodRunning(t, m, appID)
 			require.NoError(t, c.AppsV1().StatefulSets(appNamespace).Delete(context.Background(), deploymentName(appID), metav1.DeleteOptions{}))
 		}
 	})
@@ -51,7 +51,7 @@ func TestK8sBackend_CreateContainer(t *testing.T) {
 			ImageName: image,
 		})
 		if assert.NoError(t, err) {
-			waitPodRunning(t, c, deploymentName(appID)+"-0")
+			waitPodRunning(t, m, appID)
 			require.NoError(t, c.AppsV1().StatefulSets(appNamespace).Delete(context.Background(), deploymentName(appID), metav1.DeleteOptions{}))
 			require.NoError(t, c.CoreV1().Services(appNamespace).Delete(context.Background(), serviceName(website), metav1.DeleteOptions{}))
 			require.NoError(t, tc.IngressRoutes(appNamespace).Delete(context.Background(), serviceName(website), metav1.DeleteOptions{}))
@@ -76,14 +76,14 @@ func TestK8sBackend_CreateContainer(t *testing.T) {
 			ImageName: image,
 		})
 		if assert.NoError(t, err) {
-			waitPodRunning(t, c, deploymentName(appID)+"-0")
+			waitPodRunning(t, m, appID)
 		}
 
 		err = m.CreateContainer(context.Background(), &app, domain.ContainerCreateArgs{
 			ImageName: image,
 		})
 		if assert.NoError(t, err) {
-			waitPodRunning(t, c, deploymentName(appID)+"-0")
+			waitPodRunning(t, m, appID)
 			require.NoError(t, c.AppsV1().StatefulSets(appNamespace).Delete(context.Background(), deploymentName(appID), metav1.DeleteOptions{}))
 			require.NoError(t, c.CoreV1().Services(appNamespace).Delete(context.Background(), serviceName(website), metav1.DeleteOptions{}))
 			require.NoError(t, tc.IngressRoutes(appNamespace).Delete(context.Background(), serviceName(website), metav1.DeleteOptions{}))

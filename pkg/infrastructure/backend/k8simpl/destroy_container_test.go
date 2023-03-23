@@ -13,7 +13,7 @@ import (
 )
 
 func TestK8sBackend_DestroyContainer(t *testing.T) {
-	m, c, _ := prepareManager(t, eventbus.NewLocal(hub.New()))
+	m, _, _ := prepareManager(t, eventbus.NewLocal(hub.New()))
 
 	t.Run("Podを正常に削除", func(t *testing.T) {
 		t.Parallel()
@@ -27,7 +27,7 @@ func TestK8sBackend_DestroyContainer(t *testing.T) {
 			ImageName: image,
 		})
 		require.NoError(t, err)
-		waitPodRunning(t, c, deploymentName(appID)+"-0")
+		waitPodRunning(t, m, appID)
 
 		err = m.DestroyContainer(context.Background(), &app)
 		assert.NoError(t, err)
@@ -50,7 +50,7 @@ func TestK8sBackend_DestroyContainer(t *testing.T) {
 			ImageName: image,
 		})
 		require.NoError(t, err)
-		waitPodRunning(t, c, deploymentName(appID)+"-0")
+		waitPodRunning(t, m, appID)
 
 		err = m.DestroyContainer(context.Background(), &app)
 		assert.NoError(t, err)
