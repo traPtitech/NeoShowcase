@@ -3,6 +3,7 @@ services:
     build:
       context: .
       target: ns
+    image: ghcr.io/traptitech/ns:main
     command: run --debug --loglevel=trace
     restart: always
     environment:
@@ -35,7 +36,10 @@ services:
       - "traefik.http.routers.ns_grpc.service=ns_grpc"
       - "traefik.http.services.ns_grpc.loadbalancer.server.port=5000"
     depends_on:
-      - mysql
+      mysql:
+        condition: service_healthy
+      ns-migrate:
+        condition: service_completed_successfully
     networks:
       - default
 
@@ -43,6 +47,7 @@ services:
     build:
       context: .
       target: ns-mc
+    image: ghcr.io/traptitech/ns-mc:main
     restart: always
     ports:
       - "5005:80"
@@ -57,6 +62,7 @@ services:
     build:
       context: .
       target: ns-builder
+    image: ghcr.io/traptitech/ns-builder:main
     command: run --debug --loglevel=trace
     restart: always
     environment:
@@ -68,8 +74,12 @@ services:
     ports:
       - "5006:10000"
     depends_on:
-      - mysql
-      - buildkitd
+      mysql:
+        condition: service_healthy
+      ns-migrate:
+        condition: service_completed_successfully
+      buildkitd:
+        condition: service_started
     networks:
       - default
 
@@ -77,6 +87,7 @@ services:
     build:
       context: .
       target: ns-ssgen
+    image: ghcr.io/traptitech/ns-ssgen:main
     command: run --debug --loglevel=trace
     restart: always
     environment:
@@ -89,7 +100,32 @@ services:
       - "5007:10000"
       - "5008:80"
     depends_on:
-      - mysql
+      mysql:
+        condition: service_healthy
+      ns-migrate:
+        condition: service_completed_successfully
+    networks:
+      - default
+
+  ns-migrate:
+    build:
+      context: .
+      target: ns-migrate
+    image: ghcr.io/traptitech/ns-migrate:main
+    command: up
+    restart: "no"
+    environment:
+      DB_HOST: "mysql"
+      DB_PORT: "3306"
+      DB_USER: "root"
+      DB_PASS: "password"
+      DB_NAME: "neoshowcase"
+    volumes:
+      - ./local-dev/staticsite/artifacts:/srv/artifacts
+      - ./local-dev/neoshowcase/artifacts:/neoshowcase/artifacts
+    depends_on:
+      mysql:
+        condition: service_healthy
     networks:
       - default
 
@@ -142,6 +178,11 @@ services:
       MYSQL_ROOT_PASSWORD: password
       MYSQL_DATABASE: neoshowcase
     command: mysqld --character-set-server=utf8 --collation-server=utf8_general_ci
+    healthcheck:
+      test: mysql --user=root --password=password --execute "SHOW DATABASES;"
+      interval: 1s
+      timeout: 10s
+      retries: 60
     ports:
       - "5004:3306"
     networks:
