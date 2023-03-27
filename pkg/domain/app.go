@@ -169,10 +169,20 @@ type Build struct {
 	Commit        string
 	Status        builder.BuildStatus
 	ApplicationID string
-	StartedAt     time.Time
+	StartedAt     optional.Of[time.Time]
+	UpdatedAt     optional.Of[time.Time]
 	FinishedAt    optional.Of[time.Time]
 	Retriable     bool
 	Artifact      optional.Of[Artifact]
+}
+
+func NewBuild(applicationID string, commit string) *Build {
+	return &Build{
+		ID:            NewID(),
+		Commit:        commit,
+		Status:        builder.BuildStatusQueued,
+		ApplicationID: applicationID,
+	}
 }
 
 type Environment struct {
@@ -242,14 +252,13 @@ func GetActiveStaticSites(ctx context.Context, appRepo ApplicationRepository, bu
 	}
 
 	commits := lo.Map(applications, func(app *Application, i int) string { return app.CurrentCommit })
-	builds, err := buildRepo.GetBuildsInCommit(ctx, commits)
+	builds, err := buildRepo.GetBuilds(ctx, GetBuildCondition{CommitIn: optional.From(commits), Status: optional.From(builder.BuildStatusSucceeded)})
 	if err != nil {
 		return nil, err
 	}
 
 	// Last succeeded builds for each commit
-	builds = lo.Filter(builds, func(build *Build, i int) bool { return build.Status == builder.BuildStatusSucceeded })
-	slices.SortFunc(builds, func(a, b *Build) bool { return a.StartedAt.Before(b.StartedAt) })
+	slices.SortFunc(builds, func(a, b *Build) bool { return a.StartedAt.ValueOrZero().Before(b.StartedAt.ValueOrZero()) })
 	commitToBuild := lo.SliceToMap(builds, func(b *Build) (string, *Build) { return b.Commit, b })
 
 	var sites []*StaticSite

@@ -4,12 +4,14 @@ package domain
 
 import (
 	"context"
+	"time"
 
 	"github.com/traPtitech/neoshowcase/pkg/domain/builder"
 	"github.com/traPtitech/neoshowcase/pkg/util/optional"
 )
 
 type GetApplicationCondition struct {
+	IDIn      optional.Of[[]string]
 	UserID    optional.Of[string]
 	BuildType optional.Of[builder.BuildType]
 	State     optional.Of[ApplicationState]
@@ -54,17 +56,27 @@ type AvailableDomainRepository interface {
 	DeleteAvailableDomain(ctx context.Context, domain string) error
 }
 
+type GetBuildCondition struct {
+	ApplicationID optional.Of[string]
+	Commit        optional.Of[string]
+	CommitIn      optional.Of[[]string]
+	Status        optional.Of[builder.BuildStatus]
+	Retriable     optional.Of[bool]
+}
+
 type UpdateBuildArgs struct {
-	ID     string
-	Status builder.BuildStatus
+	FromStatus optional.Of[builder.BuildStatus]
+	Status     optional.Of[builder.BuildStatus]
+	StartedAt  optional.Of[time.Time]
+	UpdatedAt  optional.Of[time.Time]
+	FinishedAt optional.Of[time.Time]
 }
 
 type BuildRepository interface {
-	GetBuilds(ctx context.Context, applicationID string) ([]*Build, error)
-	GetBuildsInCommit(ctx context.Context, commits []string) ([]*Build, error)
+	GetBuilds(ctx context.Context, condition GetBuildCondition) ([]*Build, error)
 	GetBuild(ctx context.Context, buildID string) (*Build, error)
-	CreateBuild(ctx context.Context, applicationID string, commit string) (*Build, error)
-	UpdateBuild(ctx context.Context, args UpdateBuildArgs) error
+	CreateBuild(ctx context.Context, build *Build) error
+	UpdateBuild(ctx context.Context, id string, args UpdateBuildArgs) error
 	MarkCommitAsRetriable(ctx context.Context, applicationID string, commit string) error
 }
 

@@ -17,14 +17,20 @@ import (
 // Injectors from wire.go:
 
 func New(c2 Config) (*Server, error) {
-	config := provideAdminDBConfig(c2)
+	config := c2.DB
 	db, err := admindb.New(config)
 	if err != nil {
 		return nil, err
 	}
+	componentServiceClientConfig := c2.NS
+	componentServiceClientConn, err := grpc.NewComponentServiceClientConn(componentServiceClientConfig)
+	if err != nil {
+		return nil, err
+	}
+	componentServiceClient := grpc.NewComponentServiceClient(componentServiceClientConn)
 	applicationRepository := repository.NewApplicationRepository(db)
 	buildRepository := repository.NewBuildRepository(db)
-	storageConfig := provideStorageConfig(c2)
+	storageConfig := c2.Storage
 	storage, err := initStorage(storageConfig)
 	if err != nil {
 		return nil, err
@@ -32,17 +38,11 @@ func New(c2 Config) (*Server, error) {
 	staticServerDocumentRootPath := provideWebServerDocumentRootPath(c2)
 	staticServerPort := provideWebServerPort(c2)
 	ssEngine := staticserver.NewBuiltIn(storage, staticServerDocumentRootPath, staticServerPort)
-	staticSiteServerService := usecase.NewStaticSiteServerService(applicationRepository, buildRepository, ssEngine)
-	server := grpc.NewServer()
-	staticSiteService := grpc.NewStaticSiteServiceServer(staticSiteServerService)
-	tcpListenPort := provideGRPCPort(c2)
-	mainServer := &Server{
-		db:         db,
-		svc:        staticSiteServerService,
-		grpcServer: server,
-		engine:     ssEngine,
-		sss:        staticSiteService,
-		port:       tcpListenPort,
+	staticSiteServerService := usecase.NewStaticSiteServerService(componentServiceClient, applicationRepository, buildRepository, ssEngine)
+	server := &Server{
+		db:     db,
+		svc:    staticSiteServerService,
+		engine: ssEngine,
 	}
-	return mainServer, nil
+	return server, nil
 }

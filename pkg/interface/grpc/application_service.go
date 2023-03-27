@@ -3,8 +3,10 @@ package grpc
 import (
 	"context"
 	"fmt"
+	"time"
 
 	"github.com/samber/lo"
+	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/types/known/emptypb"
@@ -14,6 +16,7 @@ import (
 	"github.com/traPtitech/neoshowcase/pkg/domain/builder"
 	"github.com/traPtitech/neoshowcase/pkg/interface/grpc/pb"
 	"github.com/traPtitech/neoshowcase/pkg/usecase"
+	"github.com/traPtitech/neoshowcase/pkg/util/optional"
 )
 
 func handleUseCaseError(err error) error {
@@ -31,6 +34,14 @@ func handleUseCaseError(err error) error {
 	return status.Errorf(codes.Internal, "%v", err)
 }
 
+type ApplicationServiceGRPCServer struct {
+	*grpc.Server
+}
+
+func NewApplicationServiceGRPCServer() ApplicationServiceGRPCServer {
+	return ApplicationServiceGRPCServer{NewServer()}
+}
+
 type ApplicationService struct {
 	svc usecase.APIServerService
 
@@ -39,7 +50,7 @@ type ApplicationService struct {
 
 func NewApplicationServiceServer(
 	svc usecase.APIServerService,
-) *ApplicationService {
+) pb.ApplicationServiceServer {
 	return &ApplicationService{
 		svc: svc,
 	}
@@ -333,17 +344,19 @@ func toPBBuildStatus(status builder.BuildStatus) pb.Build_BuildStatus {
 	}
 }
 
+func toPBNullTimestamp(t optional.Of[time.Time]) *pb.NullTimestamp {
+	return &pb.NullTimestamp{Timestamp: timestamppb.New(t.V), Valid: t.Valid}
+}
+
 func toPBBuild(build *domain.Build) *pb.Build {
 	return &pb.Build{
-		Id:        build.ID,
-		Commit:    build.Commit,
-		Status:    toPBBuildStatus(build.Status),
-		StartedAt: timestamppb.New(build.StartedAt),
-		FinishedAt: &pb.NullTimestamp{
-			Timestamp: timestamppb.New(build.FinishedAt.V),
-			Valid:     build.FinishedAt.Valid,
-		},
-		Retriable: build.Retriable,
+		Id:         build.ID,
+		Commit:     build.Commit,
+		Status:     toPBBuildStatus(build.Status),
+		StartedAt:  toPBNullTimestamp(build.StartedAt),
+		UpdatedAt:  toPBNullTimestamp(build.UpdatedAt),
+		FinishedAt: toPBNullTimestamp(build.FinishedAt),
+		Retriable:  build.Retriable,
 	}
 }
 

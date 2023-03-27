@@ -2,6 +2,7 @@ package usecase
 
 import (
 	"context"
+	"fmt"
 	"sync"
 	"time"
 
@@ -20,12 +21,14 @@ type ContinuousDeploymentService interface {
 }
 
 type continuousDeploymentService struct {
-	bus       domain.Bus
-	appRepo   domain.ApplicationRepository
-	buildRepo domain.BuildRepository
-	envRepo   domain.EnvironmentRepository
-	deployer  AppDeployService
-	builder   AppBuildService
+	bus             domain.Bus
+	appRepo         domain.ApplicationRepository
+	buildRepo       domain.BuildRepository
+	envRepo         domain.EnvironmentRepository
+	builder         AppBuildService
+	deployer        AppDeployService
+	imageRegistry   string
+	imageNamePrefix string
 
 	run       func()
 	runOnce   sync.Once
@@ -38,26 +41,33 @@ func NewContinuousDeploymentService(
 	appRepo domain.ApplicationRepository,
 	buildRepo domain.BuildRepository,
 	envRepo domain.EnvironmentRepository,
-	deployer AppDeployService,
 	builder AppBuildService,
+	deployer AppDeployService,
+	registry builder.DockerImageRegistryString,
+	prefix builder.DockerImageNamePrefixString,
 ) ContinuousDeploymentService {
 	cd := &continuousDeploymentService{
-		bus:       bus,
-		appRepo:   appRepo,
-		buildRepo: buildRepo,
-		envRepo:   envRepo,
-		deployer:  deployer,
-		builder:   builder,
+		bus:             bus,
+		appRepo:         appRepo,
+		buildRepo:       buildRepo,
+		envRepo:         envRepo,
+		builder:         builder,
+		deployer:        deployer,
+		imageRegistry:   string(registry),
+		imageNamePrefix: string(prefix),
 	}
 
-	syncBuildCloser := make(chan struct{})
+	registerBuildCloser := make(chan struct{})
+	startBuilds := make(chan struct{})
+	startBuildCloser := make(chan struct{})
 	syncDeployCloser := make(chan struct{})
 	cd.run = func() {
-		go cd.syncBuildLoop(syncBuildCloser)
+		go cd.registerBuildLoop(startBuilds, registerBuildCloser)
+		go cd.startBuildLoop(startBuilds, startBuildCloser)
 		go cd.syncDeployLoop(syncDeployCloser)
 	}
 	cd.close = func() {
-		close(syncBuildCloser)
+		close(registerBuildCloser)
 		close(syncDeployCloser)
 	}
 
@@ -73,15 +83,19 @@ func (cd *continuousDeploymentService) Stop(_ context.Context) error {
 	return nil
 }
 
-func (cd *continuousDeploymentService) syncBuildLoop(closer <-chan struct{}) {
-	sub := cd.bus.Subscribe(event.FetcherFetchComplete, event.CDServiceSyncBuildRequest)
+func (cd *continuousDeploymentService) registerBuildLoop(startBuilds chan<- struct{}, closer <-chan struct{}) {
+	sub := cd.bus.Subscribe(event.FetcherFetchComplete, event.CDServiceRegisterBuildRequest)
 	defer sub.Unsubscribe()
 
 	doSync := func() {
 		start := time.Now()
-		if err := cd.kickoffBuilds(); err != nil {
+		if err := cd.registerBuilds(); err != nil {
 			log.WithError(err).Error("failed to kickoff builds")
 			return
+		}
+		select {
+		case startBuilds <- struct{}{}:
+		default:
 		}
 		log.Infof("Synced builds in %v", time.Since(start))
 	}
@@ -96,8 +110,35 @@ func (cd *continuousDeploymentService) syncBuildLoop(closer <-chan struct{}) {
 	}
 }
 
+func (cd *continuousDeploymentService) startBuildLoop(syncer <-chan struct{}, closer <-chan struct{}) {
+	sub := cd.bus.Subscribe(event.BuilderBuildSettled)
+	defer sub.Unsubscribe()
+
+	doSync := func() {
+		start := time.Now()
+		if err := cd.startBuilds(); err != nil {
+			log.WithError(err).Error("failed to start builds")
+			return
+		}
+		log.Infof("Started builds in %v", time.Since(start))
+	}
+
+	doSync()
+
+	for {
+		select {
+		case <-syncer:
+			doSync()
+		case <-sub.Chan():
+			doSync()
+		case <-closer:
+			return
+		}
+	}
+}
+
 func (cd *continuousDeploymentService) syncDeployLoop(closer <-chan struct{}) {
-	sub := cd.bus.Subscribe(event.BuilderBuildSucceeded)
+	sub := cd.bus.Subscribe(event.BuilderBuildSettled)
 	defer sub.Unsubscribe()
 	ticker := time.NewTicker(3 * time.Minute)
 	defer ticker.Stop()
@@ -125,18 +166,17 @@ func (cd *continuousDeploymentService) syncDeployLoop(closer <-chan struct{}) {
 	}
 }
 
-func (cd *continuousDeploymentService) kickoffBuilds() error {
+func (cd *continuousDeploymentService) registerBuilds() error {
 	ctx := context.Background()
 	applications, err := cd.appRepo.GetApplications(ctx, domain.GetApplicationCondition{})
 	if err != nil {
 		return err
 	}
 	commits := lo.Map(applications, func(app *domain.Application, i int) string { return app.WantCommit })
-	builds, err := cd.buildRepo.GetBuildsInCommit(ctx, commits)
+	builds, err := cd.buildRepo.GetBuilds(ctx, domain.GetBuildCondition{CommitIn: optional.From(commits), Retriable: optional.From(false)})
 	if err != nil {
 		return err
 	}
-	builds = lo.Filter(builds, func(b *domain.Build, i int) bool { return !(b.Status == builder.BuildStatusFailed && b.Retriable) })
 	buildExistsForCommit := lo.SliceToMap(builds, func(b *domain.Build) (string, bool) { return b.Commit, true })
 	for _, app := range applications {
 		if buildExistsForCommit[app.WantCommit] {
@@ -148,11 +188,33 @@ func (cd *continuousDeploymentService) kickoffBuilds() error {
 		if app.State == domain.ApplicationStateIdle {
 			continue
 		}
-		_, err := cd.builder.QueueBuild(ctx, app, app.WantCommit)
+		build := domain.NewBuild(app.ID, app.WantCommit)
+		err = cd.buildRepo.CreateBuild(ctx, build)
 		if err != nil {
-			log.WithError(err).WithField("application", app.ID).WithField("commit", app.WantCommit).Error("failed to queue build")
-			continue // Continue even if each app errors
+			return fmt.Errorf("failed to create build: %w", err)
 		}
+	}
+	return nil
+}
+
+func (cd *continuousDeploymentService) startBuilds() error {
+	ctx := context.Background()
+	builds, err := cd.buildRepo.GetBuilds(ctx, domain.GetBuildCondition{Status: optional.From(builder.BuildStatusQueued)})
+	if err != nil {
+		return err
+	}
+	appIDs := lo.Map(builds, func(b *domain.Build, i int) string { return b.ApplicationID })
+	apps, err := cd.appRepo.GetApplications(ctx, domain.GetApplicationCondition{IDIn: optional.From(appIDs)})
+	if err != nil {
+		return err
+	}
+	appByID := lo.SliceToMap(apps, func(app *domain.Application) (string, *domain.Application) { return app.ID, app })
+	for _, build := range builds {
+		app, ok := appByID[build.ApplicationID]
+		if !ok {
+			return fmt.Errorf("app %v not found", build.ApplicationID)
+		}
+		cd.builder.TryStartBuild(app, build)
 	}
 	return nil
 }

@@ -278,18 +278,17 @@ func (m *MockBuildRepository) EXPECT() *MockBuildRepositoryMockRecorder {
 }
 
 // CreateBuild mocks base method.
-func (m *MockBuildRepository) CreateBuild(ctx context.Context, applicationID, commit string) (*domain.Build, error) {
+func (m *MockBuildRepository) CreateBuild(ctx context.Context, build *domain.Build) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "CreateBuild", ctx, applicationID, commit)
-	ret0, _ := ret[0].(*domain.Build)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
+	ret := m.ctrl.Call(m, "CreateBuild", ctx, build)
+	ret0, _ := ret[0].(error)
+	return ret0
 }
 
 // CreateBuild indicates an expected call of CreateBuild.
-func (mr *MockBuildRepositoryMockRecorder) CreateBuild(ctx, applicationID, commit interface{}) *gomock.Call {
+func (mr *MockBuildRepositoryMockRecorder) CreateBuild(ctx, build interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateBuild", reflect.TypeOf((*MockBuildRepository)(nil).CreateBuild), ctx, applicationID, commit)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateBuild", reflect.TypeOf((*MockBuildRepository)(nil).CreateBuild), ctx, build)
 }
 
 // GetBuild mocks base method.
@@ -308,33 +307,18 @@ func (mr *MockBuildRepositoryMockRecorder) GetBuild(ctx, buildID interface{}) *g
 }
 
 // GetBuilds mocks base method.
-func (m *MockBuildRepository) GetBuilds(ctx context.Context, applicationID string) ([]*domain.Build, error) {
+func (m *MockBuildRepository) GetBuilds(ctx context.Context, condition domain.GetBuildCondition) ([]*domain.Build, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetBuilds", ctx, applicationID)
+	ret := m.ctrl.Call(m, "GetBuilds", ctx, condition)
 	ret0, _ := ret[0].([]*domain.Build)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // GetBuilds indicates an expected call of GetBuilds.
-func (mr *MockBuildRepositoryMockRecorder) GetBuilds(ctx, applicationID interface{}) *gomock.Call {
+func (mr *MockBuildRepositoryMockRecorder) GetBuilds(ctx, condition interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetBuilds", reflect.TypeOf((*MockBuildRepository)(nil).GetBuilds), ctx, applicationID)
-}
-
-// GetBuildsInCommit mocks base method.
-func (m *MockBuildRepository) GetBuildsInCommit(ctx context.Context, commits []string) ([]*domain.Build, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetBuildsInCommit", ctx, commits)
-	ret0, _ := ret[0].([]*domain.Build)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// GetBuildsInCommit indicates an expected call of GetBuildsInCommit.
-func (mr *MockBuildRepositoryMockRecorder) GetBuildsInCommit(ctx, commits interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetBuildsInCommit", reflect.TypeOf((*MockBuildRepository)(nil).GetBuildsInCommit), ctx, commits)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetBuilds", reflect.TypeOf((*MockBuildRepository)(nil).GetBuilds), ctx, condition)
 }
 
 // MarkCommitAsRetriable mocks base method.
@@ -352,17 +336,17 @@ func (mr *MockBuildRepositoryMockRecorder) MarkCommitAsRetriable(ctx, applicatio
 }
 
 // UpdateBuild mocks base method.
-func (m *MockBuildRepository) UpdateBuild(ctx context.Context, args domain.UpdateBuildArgs) error {
+func (m *MockBuildRepository) UpdateBuild(ctx context.Context, id string, args domain.UpdateBuildArgs) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "UpdateBuild", ctx, args)
+	ret := m.ctrl.Call(m, "UpdateBuild", ctx, id, args)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // UpdateBuild indicates an expected call of UpdateBuild.
-func (mr *MockBuildRepositoryMockRecorder) UpdateBuild(ctx, args interface{}) *gomock.Call {
+func (mr *MockBuildRepositoryMockRecorder) UpdateBuild(ctx, id, args interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateBuild", reflect.TypeOf((*MockBuildRepository)(nil).UpdateBuild), ctx, args)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateBuild", reflect.TypeOf((*MockBuildRepository)(nil).UpdateBuild), ctx, id, args)
 }
 
 // MockEnvironmentRepository is a mock of EnvironmentRepository interface.

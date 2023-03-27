@@ -12,9 +12,7 @@ import (
 	"github.com/spf13/viper"
 
 	"github.com/traPtitech/neoshowcase/pkg/domain"
-	"github.com/traPtitech/neoshowcase/pkg/infrastructure/admindb"
 	"github.com/traPtitech/neoshowcase/pkg/infrastructure/storage"
-	"github.com/traPtitech/neoshowcase/pkg/interface/grpc"
 	"github.com/traPtitech/neoshowcase/pkg/util/cli"
 )
 
@@ -77,7 +75,8 @@ func main() {
 
 	viper.SetDefault("artifactsRoot", "/srv/artifacts")
 	viper.SetDefault("builtin.port", 80)
-	viper.SetDefault("grpc.port", 10000)
+	viper.SetDefault("ns.addr", "ns:10000")
+	viper.SetDefault("ns.insecure", false)
 	viper.SetDefault("db.host", "127.0.0.1")
 	viper.SetDefault("db.port", 3306)
 	viper.SetDefault("db.username", "root")
@@ -103,18 +102,6 @@ func main() {
 	if err := rootCommand.Execute(); err != nil {
 		log.Fatal(err)
 	}
-}
-
-func provideAdminDBConfig(c Config) admindb.Config {
-	return c.DB
-}
-
-func provideStorageConfig(c Config) domain.StorageConfig {
-	return c.Storage
-}
-
-func provideGRPCPort(c Config) grpc.TCPListenPort {
-	return grpc.TCPListenPort(c.GRPC.Port)
 }
 
 func provideWebServerPort(c Config) domain.StaticServerPort {

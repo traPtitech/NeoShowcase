@@ -19,7 +19,6 @@ import (
 	"github.com/traPtitech/neoshowcase/pkg/infrastructure/backend/k8simpl"
 	"github.com/traPtitech/neoshowcase/pkg/infrastructure/dbmanager"
 	"github.com/traPtitech/neoshowcase/pkg/infrastructure/eventbus"
-	"github.com/traPtitech/neoshowcase/pkg/interface/broker"
 	"github.com/traPtitech/neoshowcase/pkg/interface/grpc"
 	"github.com/traPtitech/neoshowcase/pkg/interface/repository"
 	"github.com/traPtitech/neoshowcase/pkg/usecase"
@@ -37,28 +36,20 @@ var commonSet = wire.NewSet(
 	repository.NewGitRepositoryRepository,
 	repository.NewEnvironmentRepository,
 	repository.NewBuildRepository,
-	grpc.NewServer,
+	grpc.NewApplicationServiceGRPCServer,
 	grpc.NewApplicationServiceServer,
-	grpc.NewBuilderServiceClientConn,
-	grpc.NewStaticSiteServiceClientConn,
-	grpc.NewBuilderServiceClient,
-	grpc.NewStaticSiteServiceClient,
-	broker.NewBuilderEventsBroker,
+	grpc.NewComponentServiceGRPCServer,
+	grpc.NewComponentServiceServer,
 	usecase.NewAPIServerService,
 	usecase.NewAppBuildService,
 	usecase.NewAppDeployService,
 	usecase.NewContinuousDeploymentService,
 	usecase.NewRepositoryFetcherService,
-	handlerSet,
-	provideGRPCPort,
-	provideWebServerConfig,
 	provideIngressConfDirPath,
 	provideImagePrefix,
 	provideImageRegistry,
 	provideRepositoryFetcherCacheDir,
-	wire.FieldsOf(new(Config), "Builder", "SS", "SSGen", "DB", "MariaDB", "MongoDB"),
-	wire.Struct(new(Router), "*"),
-	wire.Bind(new(web.Router), new(*Router)),
+	wire.FieldsOf(new(Config), "SS", "DB", "MariaDB", "MongoDB"),
 	wire.Struct(new(Server), "*"),
 )
 

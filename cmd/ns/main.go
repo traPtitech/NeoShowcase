@@ -7,15 +7,11 @@ import (
 	"time"
 
 	_ "github.com/go-sql-driver/mysql"
-	"github.com/google/wire"
-	"github.com/labstack/echo/v4"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 	"github.com/volatiletech/sqlboiler/v4/boil"
 
-	"github.com/traPtitech/neoshowcase/pkg/domain/web"
-	"github.com/traPtitech/neoshowcase/pkg/interface/grpc"
 	"github.com/traPtitech/neoshowcase/pkg/util/cli"
 )
 
@@ -86,19 +82,14 @@ func main() {
 	viper.SetDefault("repository.cacheDir", "")
 	viper.SetDefault("image.registry", "localhost")
 	viper.SetDefault("image.namePrefix", "ns-apps/")
-	viper.SetDefault("builder.addr", "")
-	viper.SetDefault("builder.insecure", false)
 	viper.SetDefault("ss.service.namespace", "default")
 	viper.SetDefault("ss.service.kind", "Service")
 	viper.SetDefault("ss.service.name", "")
 	viper.SetDefault("ss.service.port", 80)
 	viper.SetDefault("ss.url", "")
-	viper.SetDefault("ssgen.addr", "")
-	viper.SetDefault("ssgen.insecure", false)
 	viper.SetDefault("docker.confdir", "/opt/traefik/conf")
-	viper.SetDefault("grpc.port", 5000)
-	viper.SetDefault("http.port", 10000)
-	viper.SetDefault("http.debug", false)
+	viper.SetDefault("grpc.app.port", 5000)
+	viper.SetDefault("grpc.component.port", 10000)
 	viper.SetDefault("db.host", "127.0.0.1")
 	viper.SetDefault("db.port", 3306)
 	viper.SetDefault("db.username", "root")
@@ -118,25 +109,5 @@ func main() {
 
 	if err := rootCommand.Execute(); err != nil {
 		log.Fatal(err)
-	}
-}
-
-var handlerSet = wire.NewSet()
-
-type Router struct {
-}
-
-func (r *Router) SetupRoute(e *echo.Echo) {
-	_ = e.Group("")
-}
-
-func provideGRPCPort(c Config) grpc.TCPListenPort {
-	return grpc.TCPListenPort(c.GRPC.Port)
-}
-
-func provideWebServerConfig(router web.Router) web.Config {
-	return web.Config{
-		Port:   c.HTTP.Port,
-		Router: router,
 	}
 }

@@ -15,19 +15,17 @@ import (
 
 func New(c Config) (*Server, error) {
 	wire.Build(
-		grpc.NewServer,
-		grpc.NewStaticSiteServiceServer,
+		grpc.NewComponentServiceClientConn,
+		grpc.NewComponentServiceClient,
 		usecase.NewStaticSiteServerService,
 		admindb.New,
 		repository.NewApplicationRepository,
 		repository.NewBuildRepository,
 		staticserver.NewBuiltIn,
-		provideGRPCPort,
-		provideStorageConfig,
-		provideAdminDBConfig,
 		provideWebServerPort,
 		provideWebServerDocumentRootPath,
 		initStorage,
+		wire.FieldsOf(new(Config), "NS", "DB", "Storage"),
 		wire.Struct(new(Server), "*"),
 	)
 	return nil, nil
