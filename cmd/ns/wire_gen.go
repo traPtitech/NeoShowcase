@@ -66,7 +66,7 @@ func NewWithDocker(c2 Config) (*Server, error) {
 	if err != nil {
 		return nil, err
 	}
-	apiServerService := usecase.NewAPIServerService(bus, applicationRepository, availableDomainRepository, buildRepository, environmentRepository, gitRepositoryRepository, appDeployService, backend, mariaDBManager, mongoDBManager)
+	apiServerService := usecase.NewAPIServerService(bus, applicationRepository, availableDomainRepository, buildRepository, environmentRepository, gitRepositoryRepository, appDeployService, backend, componentService, mariaDBManager, mongoDBManager)
 	applicationServiceServer := grpc.NewApplicationServiceServer(apiServerService)
 	componentServiceGRPCServer := grpc.NewComponentServiceGRPCServer()
 	appBuildService := usecase.NewAppBuildService(buildRepository, componentService, dockerImageRegistryString, dockerImageNamePrefixString)
@@ -132,7 +132,7 @@ func NewWithK8S(c2 Config) (*Server, error) {
 	if err != nil {
 		return nil, err
 	}
-	apiServerService := usecase.NewAPIServerService(bus, applicationRepository, availableDomainRepository, buildRepository, environmentRepository, gitRepositoryRepository, appDeployService, backend, mariaDBManager, mongoDBManager)
+	apiServerService := usecase.NewAPIServerService(bus, applicationRepository, availableDomainRepository, buildRepository, environmentRepository, gitRepositoryRepository, appDeployService, backend, componentService, mariaDBManager, mongoDBManager)
 	applicationServiceServer := grpc.NewApplicationServiceServer(apiServerService)
 	componentServiceGRPCServer := grpc.NewComponentServiceGRPCServer()
 	appBuildService := usecase.NewAppBuildService(buildRepository, componentService, dockerImageRegistryString, dockerImageNamePrefixString)

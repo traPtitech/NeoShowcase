@@ -642,6 +642,49 @@ export class ApplicationServiceClient {
     this.methodDescriptorGetApplicationKeys);
   }
 
+  methodDescriptorCancelBuild = new grpcWeb.MethodDescriptor(
+    '/neoshowcase.protobuf.ApplicationService/CancelBuild',
+    grpcWeb.MethodType.UNARY,
+    neoshowcase_protobuf_apiserver_pb.CancelBuildRequest,
+    google_protobuf_empty_pb.Empty,
+    (request: neoshowcase_protobuf_apiserver_pb.CancelBuildRequest) => {
+      return request.serializeBinary();
+    },
+    google_protobuf_empty_pb.Empty.deserializeBinary
+  );
+
+  cancelBuild(
+    request: neoshowcase_protobuf_apiserver_pb.CancelBuildRequest,
+    metadata: grpcWeb.Metadata | null): Promise<google_protobuf_empty_pb.Empty>;
+
+  cancelBuild(
+    request: neoshowcase_protobuf_apiserver_pb.CancelBuildRequest,
+    metadata: grpcWeb.Metadata | null,
+    callback: (err: grpcWeb.RpcError,
+               response: google_protobuf_empty_pb.Empty) => void): grpcWeb.ClientReadableStream<google_protobuf_empty_pb.Empty>;
+
+  cancelBuild(
+    request: neoshowcase_protobuf_apiserver_pb.CancelBuildRequest,
+    metadata: grpcWeb.Metadata | null,
+    callback?: (err: grpcWeb.RpcError,
+               response: google_protobuf_empty_pb.Empty) => void) {
+    if (callback !== undefined) {
+      return this.client_.rpcCall(
+        this.hostname_ +
+          '/neoshowcase.protobuf.ApplicationService/CancelBuild',
+        request,
+        metadata || {},
+        this.methodDescriptorCancelBuild,
+        callback);
+    }
+    return this.client_.unaryCall(
+    this.hostname_ +
+      '/neoshowcase.protobuf.ApplicationService/CancelBuild',
+    request,
+    metadata || {},
+    this.methodDescriptorCancelBuild);
+  }
+
   methodDescriptorRetryCommitBuild = new grpcWeb.MethodDescriptor(
     '/neoshowcase.protobuf.ApplicationService/RetryCommitBuild',
     grpcWeb.MethodType.UNARY,

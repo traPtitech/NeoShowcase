@@ -1,6 +1,7 @@
 package grpc
 
 import (
+	"context"
 	"io"
 	"sync"
 
@@ -24,8 +25,7 @@ func NewComponentServiceGRPCServer() ComponentServiceGRPCServer {
 }
 
 type builderConnection struct {
-	busy bool
-	req  chan<- *pb.BuilderRequest
+	req chan<- *pb.BuilderRequest
 }
 
 type ssGenConnection struct {
@@ -53,9 +53,9 @@ func (s *ComponentService) ConnectBuilder(c pb.ComponentService_ConnectBuilderSe
 	log.WithField("id", id).Info("new builder connection")
 	defer log.WithField("id", id).Info("builder connection closed")
 
-	closer := make(chan struct{})
+	ctx, cancel := context.WithCancel(c.Context())
 	req := make(chan *pb.BuilderRequest)
-	conn := &builderConnection{busy: false, req: req}
+	conn := &builderConnection{req: req}
 	s.lock.Lock()
 	s.builderConnections = append(s.builderConnections, conn)
 	s.lock.Unlock()
@@ -67,7 +67,7 @@ func (s *ComponentService) ConnectBuilder(c pb.ComponentService_ConnectBuilderSe
 	}()
 
 	go func() {
-		defer close(closer)
+		defer cancel()
 
 		for {
 			res, err := c.Recv()
@@ -88,10 +88,8 @@ func (s *ComponentService) ConnectBuilder(c pb.ComponentService_ConnectBuilderSe
 			switch res.Type {
 			case pb.BuilderResponse_BUILD_STARTED:
 				s.bus.Publish(event.BuilderBuildStarted, payload)
-				conn.busy = true
 			case pb.BuilderResponse_BUILD_SETTLED:
 				s.bus.Publish(event.BuilderBuildSettled, payload)
-				conn.busy = false
 			}
 			s.lock.Unlock()
 		}
@@ -105,12 +103,7 @@ loop:
 			if err != nil {
 				return err
 			}
-			s.lock.Lock()
-			conn.busy = true
-			s.lock.Unlock()
-		case <-c.Context().Done():
-			break loop
-		case <-closer:
+		case <-ctx.Done():
 			break loop
 		}
 	}
@@ -154,29 +147,22 @@ loop:
 	return nil
 }
 
-func (s *ComponentService) TryStartBuild(req *pb.BuilderRequest) {
+func (s *ComponentService) BroadcastBuilder(req *pb.BuilderRequest) {
 	s.lock.Lock()
 	defer s.lock.Unlock()
 
 	for _, builder := range s.builderConnections {
-		if builder.busy {
-			continue
-		}
 		select {
 		case builder.req <- req:
-			return
 		default:
 		}
 	}
 }
 
-func (s *ComponentService) ReloadSSGen() {
+func (s *ComponentService) BroadcastSSGen(req *pb.SSGenRequest) {
 	s.lock.Lock()
 	defer s.lock.Unlock()
 
-	req := &pb.SSGenRequest{
-		Type: pb.SSGenRequest_RELOAD,
-	}
 	for _, ssgen := range s.ssGenConnections {
 		select {
 		case ssgen.req <- req:

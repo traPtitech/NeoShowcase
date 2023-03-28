@@ -89,17 +89,22 @@ func (s *builderService) Start(_ context.Context) error {
 
 func (s *builderService) Shutdown(_ context.Context) error {
 	s.cancel()
-	s.cancelBuild()
-	// TODO: wait until current state is complete
+	s.statusLock.Lock()
+	defer s.statusLock.Unlock()
+	if s.stateCancel != nil {
+		s.stateCancel()
+	}
 	return nil
 }
 
-func (s *builderService) cancelBuild() {
+func (s *builderService) cancelBuild(buildID string) {
 	s.statusLock.Lock()
 	defer s.statusLock.Unlock()
 
-	if s.stateCancel != nil {
-		s.stateCancel()
+	if s.state != nil && s.stateCancel != nil {
+		if s.state.build.ID == buildID {
+			s.stateCancel()
+		}
 	}
 }
 
@@ -149,6 +154,11 @@ func (s *builderService) onRequest(req *pb.BuilderRequest) {
 		if err != nil {
 			log.WithError(err).Errorf("failed to start build: %v", err)
 		}
+	case pb.BuilderRequest_CANCEL_BUILD:
+		b := req.Body.(*pb.BuilderRequest_CancelBuild).CancelBuild
+		s.cancelBuild(b.BuildId)
+	default:
+		log.Errorf("unknown builder request type: %v", req.Type)
 	}
 }
 
@@ -175,9 +185,13 @@ func (s *builderService) tryStartTask(task *builder.Task) error {
 	}
 
 	ctx, cancel := context.WithCancel(context.Background())
+	finish := make(chan struct{})
 	st := newState(task)
 	s.state = st
-	s.stateCancel = cancel
+	s.stateCancel = func() {
+		cancel()
+		<-finish
+	}
 
 	go func() {
 		s.response <- &pb.BuilderResponse{Type: pb.BuilderResponse_BUILD_STARTED, Body: &pb.BuilderResponse_Started{Started: &pb.BuildStarted{
@@ -193,6 +207,7 @@ func (s *builderService) tryStartTask(task *builder.Task) error {
 		}}}
 
 		cancel()
+		close(finish)
 		s.statusLock.Lock()
 		s.state = nil
 		s.stateCancel = nil
