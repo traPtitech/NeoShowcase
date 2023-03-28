@@ -93,3 +93,20 @@ func waitPodDeleted(t *testing.T, b *k8sBackend, appID string) {
 	}
 	t.Fatalf("wait pod running timeout: %s", appID)
 }
+
+type getter[T any] interface {
+	Get(ctx context.Context, name string, opts metav1.GetOptions) (T, error)
+}
+
+func exists[T any](t *testing.T, name string, getter getter[T]) {
+	t.Helper()
+	_, err := getter.Get(context.Background(), name, metav1.GetOptions{})
+	require.NoError(t, err)
+}
+
+func notExists[T any](t *testing.T, name string, getter getter[T]) {
+	t.Helper()
+	_, err := getter.Get(context.Background(), name, metav1.GetOptions{})
+	require.Error(t, err)
+	require.True(t, errors.IsNotFound(err))
+}
