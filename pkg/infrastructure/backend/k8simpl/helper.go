@@ -29,7 +29,7 @@ func strategicPatch[T any](ctx context.Context, name string, resource T, patcher
 	if err != nil {
 		return fmt.Errorf("failed to marshal resource: %w", err)
 	}
-	_, err = patcher.Patch(ctx, name, types.StrategicMergePatchType, b, metav1.PatchOptions{Force: pointer.Bool(true), FieldManager: fieldManager})
+	_, err = patcher.Patch(ctx, name, types.StrategicMergePatchType, b, metav1.PatchOptions{FieldManager: fieldManager})
 	return err
 }
 
