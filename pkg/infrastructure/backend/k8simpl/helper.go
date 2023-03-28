@@ -24,7 +24,7 @@ func patch[T any](ctx context.Context, name string, resource T, patcher patcher[
 	return err
 }
 
-func strategicPatch[T any](ctx context.Context, name string, resource T, patcher patcher[T]) error {
+func strategicPatch[T any](ctx context.Context, name string, resource any, patcher patcher[T]) error {
 	b, err := json.Marshal(resource)
 	if err != nil {
 		return fmt.Errorf("failed to marshal resource: %w", err)
