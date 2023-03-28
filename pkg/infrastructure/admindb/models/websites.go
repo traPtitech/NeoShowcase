@@ -28,6 +28,8 @@ type Website struct { // サイトID
 	FQDN string `boil:"fqdn" json:"fqdn" toml:"fqdn" yaml:"fqdn"`
 	// サイトPathのPrefix
 	PathPrefix string `boil:"path_prefix" json:"path_prefix" toml:"path_prefix" yaml:"path_prefix"`
+	// PathのPrefixを落とすかどうか
+	StripPrefix bool `boil:"strip_prefix" json:"strip_prefix" toml:"strip_prefix" yaml:"strip_prefix"`
 	// httpsの接続かどうか
 	HTTPS bool `boil:"https" json:"https" toml:"https" yaml:"https"`
 	// コンテナhttpポート番号
@@ -47,6 +49,7 @@ var WebsiteColumns = struct {
 	ID            string
 	FQDN          string
 	PathPrefix    string
+	StripPrefix   string
 	HTTPS         string
 	HTTPPort      string
 	CreatedAt     string
@@ -56,6 +59,7 @@ var WebsiteColumns = struct {
 	ID:            "id",
 	FQDN:          "fqdn",
 	PathPrefix:    "path_prefix",
+	StripPrefix:   "strip_prefix",
 	HTTPS:         "https",
 	HTTPPort:      "http_port",
 	CreatedAt:     "created_at",
@@ -67,6 +71,7 @@ var WebsiteTableColumns = struct {
 	ID            string
 	FQDN          string
 	PathPrefix    string
+	StripPrefix   string
 	HTTPS         string
 	HTTPPort      string
 	CreatedAt     string
@@ -76,6 +81,7 @@ var WebsiteTableColumns = struct {
 	ID:            "websites.id",
 	FQDN:          "websites.fqdn",
 	PathPrefix:    "websites.path_prefix",
+	StripPrefix:   "websites.strip_prefix",
 	HTTPS:         "websites.https",
 	HTTPPort:      "websites.http_port",
 	CreatedAt:     "websites.created_at",
@@ -112,6 +118,7 @@ var WebsiteWhere = struct {
 	ID            whereHelperstring
 	FQDN          whereHelperstring
 	PathPrefix    whereHelperstring
+	StripPrefix   whereHelperbool
 	HTTPS         whereHelperbool
 	HTTPPort      whereHelperint
 	CreatedAt     whereHelpertime_Time
@@ -121,6 +128,7 @@ var WebsiteWhere = struct {
 	ID:            whereHelperstring{field: "`websites`.`id`"},
 	FQDN:          whereHelperstring{field: "`websites`.`fqdn`"},
 	PathPrefix:    whereHelperstring{field: "`websites`.`path_prefix`"},
+	StripPrefix:   whereHelperbool{field: "`websites`.`strip_prefix`"},
 	HTTPS:         whereHelperbool{field: "`websites`.`https`"},
 	HTTPPort:      whereHelperint{field: "`websites`.`http_port`"},
 	CreatedAt:     whereHelpertime_Time{field: "`websites`.`created_at`"},
@@ -156,8 +164,8 @@ func (r *websiteR) GetApplication() *Application {
 type websiteL struct{}
 
 var (
-	websiteAllColumns            = []string{"id", "fqdn", "path_prefix", "https", "http_port", "created_at", "updated_at", "application_id"}
-	websiteColumnsWithoutDefault = []string{"id", "fqdn", "path_prefix", "https", "created_at", "updated_at", "application_id"}
+	websiteAllColumns            = []string{"id", "fqdn", "path_prefix", "strip_prefix", "https", "http_port", "created_at", "updated_at", "application_id"}
+	websiteColumnsWithoutDefault = []string{"id", "fqdn", "path_prefix", "strip_prefix", "https", "created_at", "updated_at", "application_id"}
 	websiteColumnsWithDefault    = []string{"http_port"}
 	websitePrimaryKeyColumns     = []string{"id"}
 	websiteGeneratedColumns      = []string{}

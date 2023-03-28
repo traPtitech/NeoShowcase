@@ -60,6 +60,9 @@ export class Website extends jspb.Message {
   getPathPrefix(): string;
   setPathPrefix(value: string): Website;
 
+  getStripPrefix(): boolean;
+  setStripPrefix(value: boolean): Website;
+
   getHttps(): boolean;
   setHttps(value: boolean): Website;
 
@@ -79,6 +82,7 @@ export namespace Website {
     id: string,
     fqdn: string,
     pathPrefix: string,
+    stripPrefix: boolean,
     https: boolean,
     httpPort: number,
   }
@@ -90,6 +94,9 @@ export class CreateWebsiteRequest extends jspb.Message {
 
   getPathPrefix(): string;
   setPathPrefix(value: string): CreateWebsiteRequest;
+
+  getStripPrefix(): boolean;
+  setStripPrefix(value: boolean): CreateWebsiteRequest;
 
   getHttps(): boolean;
   setHttps(value: boolean): CreateWebsiteRequest;
@@ -109,6 +116,7 @@ export namespace CreateWebsiteRequest {
   export type AsObject = {
     fqdn: string,
     pathPrefix: string,
+    stripPrefix: boolean,
     https: boolean,
     httpPort: number,
   }

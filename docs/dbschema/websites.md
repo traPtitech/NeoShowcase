@@ -10,15 +10,16 @@ Webサイトテーブル
 ```sql
 CREATE TABLE `websites` (
   `id` varchar(22) NOT NULL COMMENT 'サイトID',
-  `fqdn` varchar(50) NOT NULL COMMENT 'サイトURLのFQDN',
-  `path_prefix` varchar(1000) NOT NULL COMMENT 'サイトPathのPrefix',
+  `fqdn` varchar(100) NOT NULL COMMENT 'サイトURLのFQDN',
+  `path_prefix` varchar(100) NOT NULL COMMENT 'サイトPathのPrefix',
+  `strip_prefix` tinyint(1) NOT NULL COMMENT 'PathのPrefixを落とすかどうか',
   `https` tinyint(1) NOT NULL COMMENT 'httpsの接続かどうか',
   `http_port` int(11) NOT NULL DEFAULT 80 COMMENT 'コンテナhttpポート番号',
   `created_at` datetime(6) NOT NULL COMMENT '作成日時',
   `updated_at` datetime(6) NOT NULL COMMENT '更新日時',
   `application_id` varchar(22) NOT NULL COMMENT 'アプリケーションID',
   PRIMARY KEY (`id`),
-  UNIQUE KEY `fqdn` (`fqdn`,`path_prefix`) USING HASH,
+  UNIQUE KEY `fqdn` (`fqdn`,`path_prefix`),
   KEY `fk_websites_application_id` (`application_id`),
   CONSTRAINT `fk_websites_application_id` FOREIGN KEY (`application_id`) REFERENCES `applications` (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci COMMENT='Webサイトテーブル'
@@ -31,8 +32,9 @@ CREATE TABLE `websites` (
 | Name | Type | Default | Nullable | Children | Parents | Comment |
 | ---- | ---- | ------- | -------- | -------- | ------- | ------- |
 | id | varchar(22) |  | false |  |  | サイトID |
-| fqdn | varchar(50) |  | false |  |  | サイトURLのFQDN |
-| path_prefix | varchar(1000) |  | false |  |  | サイトPathのPrefix |
+| fqdn | varchar(100) |  | false |  |  | サイトURLのFQDN |
+| path_prefix | varchar(100) |  | false |  |  | サイトPathのPrefix |
+| strip_prefix | tinyint(1) |  | false |  |  | PathのPrefixを落とすかどうか |
 | https | tinyint(1) |  | false |  |  | httpsの接続かどうか |
 | http_port | int(11) | 80 | false |  |  | コンテナhttpポート番号 |
 | created_at | datetime(6) |  | false |  |  | 作成日時 |
@@ -53,7 +55,7 @@ CREATE TABLE `websites` (
 | ---- | ---------- |
 | fk_websites_application_id | KEY fk_websites_application_id (application_id) USING BTREE |
 | PRIMARY | PRIMARY KEY (id) USING BTREE |
-| fqdn | UNIQUE KEY fqdn (fqdn, path_prefix) USING HASH |
+| fqdn | UNIQUE KEY fqdn (fqdn, path_prefix) USING BTREE |
 
 ## Relations
 

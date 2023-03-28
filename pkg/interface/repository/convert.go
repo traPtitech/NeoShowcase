@@ -91,20 +91,22 @@ func toDomainEnvironment(env *models.Environment) *domain.Environment {
 
 func fromDomainWebsite(website *domain.Website) *models.Website {
 	return &models.Website{
-		ID:         website.ID,
-		FQDN:       website.FQDN,
-		PathPrefix: website.PathPrefix,
-		HTTPS:      website.HTTPS,
-		HTTPPort:   website.HTTPPort,
+		ID:          website.ID,
+		FQDN:        website.FQDN,
+		PathPrefix:  website.PathPrefix,
+		StripPrefix: website.StripPrefix,
+		HTTPS:       website.HTTPS,
+		HTTPPort:    website.HTTPPort,
 	}
 }
 
 func toDomainWebsite(website *models.Website) *domain.Website {
 	return &domain.Website{
-		ID:         website.ID,
-		FQDN:       website.FQDN,
-		PathPrefix: website.PathPrefix,
-		HTTPS:      website.HTTPS,
-		HTTPPort:   website.HTTPPort,
+		ID:          website.ID,
+		FQDN:        website.FQDN,
+		PathPrefix:  website.PathPrefix,
+		StripPrefix: website.StripPrefix,
+		HTTPS:       website.HTTPS,
+		HTTPPort:    website.HTTPPort,
 	}
 }
