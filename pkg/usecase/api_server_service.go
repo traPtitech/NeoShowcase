@@ -242,7 +242,7 @@ func (s *apiServerService) deleteApplicationDatabase(ctx context.Context, app *d
 }
 
 func (s *apiServerService) GetApplicationBuilds(ctx context.Context, applicationID string) ([]*domain.Build, error) {
-	return s.buildRepo.GetBuilds(ctx, applicationID)
+	return s.buildRepo.GetBuilds(ctx, domain.GetBuildCondition{ApplicationID: optional.From(applicationID)})
 }
 
 func (s *apiServerService) GetApplicationBuild(ctx context.Context, buildID string) (*domain.Build, error) {
@@ -263,7 +263,7 @@ func (s *apiServerService) RetryCommitBuild(ctx context.Context, applicationID s
 	if err != nil {
 		return err
 	}
-	s.bus.Publish(event.CDServiceSyncBuildRequest, nil)
+	s.bus.Publish(event.CDServiceRegisterBuildRequest, nil)
 	return nil
 }
 

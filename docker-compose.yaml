@@ -11,15 +11,10 @@ services:
       NS_APISERVER_DB_HOST: "mysql"
       NS_APISERVER_MARIADB_HOST: "mysql"
       NS_APISERVER_MONGODB_HOST: "mongo"
-      NS_APISERVER_BUILDER_ADDR: "ns-builder:10000"
-      NS_APISERVER_BUILDER_INSECURE: "true"
       NS_APISERVER_SS_URL: "http://ns-ssgen:80/"
-      NS_APISERVER_SSGEN_ADDR: "ns-ssgen:10000"
-      NS_APISERVER_SSGEN_INSECURE: "true"
       NS_APISERVER_DOCKER_CONFDIR: "/opt/traefik/conf"
-      NS_APISERVER_GRPC_PORT: "5000"
-      NS_APISERVER_HTTP_PORT: "8080"
-      NS_APISERVER_HTTP_DEBUG: "true"
+      NS_APISERVER_GRPC_APP_PORT: "5000"
+      NS_APISERVER_GRPC_COMPONENT_PORT: "10000"
       NS_APISERVER_IMAGE_REGISTRY: "registry.local.trapti.tech"
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
@@ -67,6 +62,8 @@ services:
     restart: always
     environment:
       NS_BUILDER_BUILDKIT_ADDRESS: "tcp://buildkitd:1234"
+      NS_BUILDER_NS_ADDR: "ns:10000"
+      NS_BUILDER_NS_INSECURE: "true"
       NS_BUILDER_DB_HOST: "mysql"
     volumes:
       - ./local-dev/neoshowcase/artifacts:/neoshowcase/artifacts
@@ -91,6 +88,8 @@ services:
     command: run --debug --loglevel=trace
     restart: always
     environment:
+      NS_SSGEN_NS_ADDR: "ns:10000"
+      NS_SSGEN_NS_INSECURE: "true"
       NS_SSGEN_DB_HOST: "mysql"
       NS_SSGEN_ARTIFACTSROOT: "/srv/artifacts"
     volumes:

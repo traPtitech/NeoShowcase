@@ -45,14 +45,28 @@ func toDomainApplication(app *models.Application) *domain.Application {
 	}
 }
 
+func fromDomainBuild(build *domain.Build) *models.Build {
+	return &models.Build{
+		ID:            build.ID,
+		Commit:        build.Commit,
+		Status:        build.Status.String(),
+		StartedAt:     optional.IntoTime(build.StartedAt),
+		UpdatedAt:     optional.IntoTime(build.UpdatedAt),
+		FinishedAt:    optional.IntoTime(build.FinishedAt),
+		Retriable:     build.Retriable,
+		ApplicationID: build.ApplicationID,
+	}
+}
+
 func toDomainBuild(build *models.Build) *domain.Build {
 	ret := &domain.Build{
 		ID:            build.ID,
 		Commit:        build.Commit,
 		Status:        builder.BuildStatusFromString(build.Status),
 		ApplicationID: build.ApplicationID,
-		StartedAt:     build.StartedAt,
-		FinishedAt:    optional.New(build.FinishedAt.Time, build.FinishedAt.Valid),
+		StartedAt:     optional.FromTime(build.StartedAt),
+		UpdatedAt:     optional.FromTime(build.UpdatedAt),
+		FinishedAt:    optional.FromTime(build.FinishedAt),
 		Retriable:     build.Retriable,
 	}
 	if build.R != nil && build.R.Artifact != nil {

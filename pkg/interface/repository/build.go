@@ -4,16 +4,14 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
-	"time"
 
 	"github.com/samber/lo"
-	"github.com/volatiletech/null/v8"
 	"github.com/volatiletech/sqlboiler/v4/boil"
 	"github.com/volatiletech/sqlboiler/v4/queries/qm"
 
 	"github.com/traPtitech/neoshowcase/pkg/domain"
-	"github.com/traPtitech/neoshowcase/pkg/domain/builder"
 	"github.com/traPtitech/neoshowcase/pkg/infrastructure/admindb/models"
+	"github.com/traPtitech/neoshowcase/pkg/util/optional"
 )
 
 type buildRepository struct {
@@ -33,24 +31,26 @@ func (r *buildRepository) getBuild(ctx context.Context, id string) (*models.Buil
 	).One(ctx, r.db)
 }
 
-func (r *buildRepository) GetBuilds(ctx context.Context, applicationID string) ([]*domain.Build, error) {
-	builds, err := models.Builds(
-		models.BuildWhere.ApplicationID.EQ(applicationID),
-		qm.Load(models.BuildRels.Artifact),
-	).All(ctx, r.db)
-	if err != nil {
-		return nil, fmt.Errorf("failed to get builds: %w", err)
-	}
-	return lo.Map(builds, func(b *models.Build, i int) *domain.Build {
-		return toDomainBuild(b)
-	}), nil
-}
+func (r *buildRepository) GetBuilds(ctx context.Context, cond domain.GetBuildCondition) ([]*domain.Build, error) {
+	mods := []qm.QueryMod{qm.Load(models.BuildRels.Artifact)}
 
-func (r *buildRepository) GetBuildsInCommit(ctx context.Context, commits []string) ([]*domain.Build, error) {
-	builds, err := models.Builds(
-		models.BuildWhere.Commit.IN(commits),
-		qm.Load(models.BuildRels.Artifact),
-	).All(ctx, r.db)
+	if cond.ApplicationID.Valid {
+		mods = append(mods, models.BuildWhere.ApplicationID.EQ(cond.ApplicationID.V))
+	}
+	if cond.Commit.Valid {
+		mods = append(mods, models.BuildWhere.Commit.EQ(cond.Commit.V))
+	}
+	if cond.CommitIn.Valid {
+		mods = append(mods, models.BuildWhere.Commit.IN(cond.CommitIn.V))
+	}
+	if cond.Status.Valid {
+		mods = append(mods, models.BuildWhere.Status.EQ(cond.Status.V.String()))
+	}
+	if cond.Retriable.Valid {
+		mods = append(mods, models.BuildWhere.Retriable.EQ(cond.Retriable.V))
+	}
+
+	builds, err := models.Builds(mods...).All(ctx, r.db)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get builds: %w", err)
 	}
@@ -70,42 +70,60 @@ func (r *buildRepository) GetBuild(ctx context.Context, buildID string) (*domain
 	return toDomainBuild(build), nil
 }
 
-func (r *buildRepository) CreateBuild(ctx context.Context, applicationID string, commit string) (*domain.Build, error) {
-	const errMsg = "failed to CreateBuildLog: %w"
-
-	build := &models.Build{
-		ID:            domain.NewID(),
-		Commit:        commit,
-		Status:        builder.BuildStatusQueued.String(),
-		StartedAt:     time.Now(),
-		ApplicationID: applicationID,
+func (r *buildRepository) CreateBuild(ctx context.Context, build *domain.Build) error {
+	mb := fromDomainBuild(build)
+	err := mb.Insert(ctx, r.db, boil.Infer())
+	if err != nil {
+		return fmt.Errorf("failed to insert build: %w", err)
 	}
-
-	if err := build.Insert(ctx, r.db, boil.Infer()); err != nil {
-		return nil, fmt.Errorf(errMsg, err)
-	}
-
-	return toDomainBuild(build), nil
+	return nil
 }
 
-func (r *buildRepository) UpdateBuild(ctx context.Context, args domain.UpdateBuildArgs) error {
-	const errMsg = "failed to UpdateBuildStatus: %w"
+func (r *buildRepository) UpdateBuild(ctx context.Context, id string, args domain.UpdateBuildArgs) error {
+	mods := []qm.QueryMod{
+		models.BuildWhere.ID.EQ(id),
+		qm.For("UPDATE"),
+	}
 
-	build, err := r.getBuild(ctx, args.ID)
+	if args.FromStatus.Valid {
+		mods = append(mods, models.BuildWhere.Status.EQ(args.FromStatus.V.String()))
+	}
+
+	tx, err := r.db.BeginTx(ctx, nil)
+	if err != nil {
+		return fmt.Errorf("failed to start transaction: %w", err)
+	}
+	defer tx.Rollback()
+
+	build, err := models.Builds(mods...).One(ctx, tx)
 	if err != nil {
 		if isNoRowsErr(err) {
 			return ErrNotFound
 		}
-		return fmt.Errorf(errMsg, err)
+		return fmt.Errorf("failed to get build: %w", err)
 	}
 
-	build.Status = args.Status.String()
-	if args.Status.IsFinished() {
-		build.FinishedAt = null.TimeFrom(time.Now())
+	if args.Status.Valid {
+		build.Status = args.Status.V.String()
+	}
+	if args.StartedAt.Valid {
+		build.StartedAt = optional.IntoTime(args.StartedAt)
+	}
+	if args.UpdatedAt.Valid {
+		build.UpdatedAt = optional.IntoTime(args.UpdatedAt)
+	}
+	if args.FinishedAt.Valid {
+		build.FinishedAt = optional.IntoTime(args.FinishedAt)
 	}
 
-	if _, err := build.Update(ctx, r.db, boil.Infer()); err != nil {
-		return fmt.Errorf(errMsg, err)
+	_, err = build.Update(ctx, tx, boil.Infer())
+	if err != nil {
+		return fmt.Errorf("failed to update build: %w", err)
+	}
+
+	err = tx.Commit()
+	if err != nil {
+		return fmt.Errorf("failed to commit: %w", err)
 	}
 
 	return nil

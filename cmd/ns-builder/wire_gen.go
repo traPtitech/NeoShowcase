@@ -7,9 +7,7 @@
 package main
 
 import (
-	"github.com/leandro-lugaresi/hub"
 	"github.com/traPtitech/neoshowcase/pkg/infrastructure/admindb"
-	"github.com/traPtitech/neoshowcase/pkg/infrastructure/eventbus"
 	"github.com/traPtitech/neoshowcase/pkg/interface/grpc"
 	"github.com/traPtitech/neoshowcase/pkg/interface/repository"
 	"github.com/traPtitech/neoshowcase/pkg/usecase"
@@ -18,35 +16,33 @@ import (
 // Injectors from wire.go:
 
 func New(c2 Config) (*Server, error) {
-	config := provideAdminDBConfig(c2)
+	config := c2.DB
 	db, err := admindb.New(config)
 	if err != nil {
 		return nil, err
 	}
-	hubHub := hub.New()
-	bus := eventbus.NewLocal(hubHub)
-	server := grpc.NewServer()
 	client, err := initBuildkitClient(c2)
 	if err != nil {
 		return nil, err
 	}
-	tcpListenPort := provideGRPCPort(c2)
-	storageConfig := provideStorageConfig(c2)
+	componentServiceClientConfig := c2.NS
+	componentServiceClientConn, err := grpc.NewComponentServiceClientConn(componentServiceClientConfig)
+	if err != nil {
+		return nil, err
+	}
+	componentServiceClient := grpc.NewComponentServiceClient(componentServiceClientConn)
+	storageConfig := c2.Storage
 	storage, err := initStorage(storageConfig)
 	if err != nil {
 		return nil, err
 	}
 	artifactRepository := repository.NewArtifactRepository(db)
 	buildRepository := repository.NewBuildRepository(db)
-	builderService := usecase.NewBuilderService(client, storage, bus, artifactRepository, buildRepository)
-	grpcBuilderService := grpc.NewBuilderServiceServer(builderService)
-	mainServer := &Server{
-		db:         db,
-		eventbus:   bus,
-		grpcServer: server,
-		buildkit:   client,
-		port:       tcpListenPort,
-		builder:    grpcBuilderService,
+	builderService := usecase.NewBuilderService(componentServiceClient, client, storage, artifactRepository, buildRepository)
+	server := &Server{
+		db:       db,
+		buildkit: client,
+		builder:  builderService,
 	}
-	return mainServer, nil
+	return server, nil
 }

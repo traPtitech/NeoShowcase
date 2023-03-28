@@ -1,6 +1,5 @@
 import * as jspb from 'google-protobuf'
 
-import * as google_protobuf_timestamp_pb from 'google-protobuf/google/protobuf/timestamp_pb';
 import * as google_protobuf_empty_pb from 'google-protobuf/google/protobuf/empty_pb';
 import * as neoshowcase_protobuf_null_pb from '../../neoshowcase/protobuf/null_pb';
 
@@ -385,10 +384,15 @@ export class Build extends jspb.Message {
   getStatus(): Build.BuildStatus;
   setStatus(value: Build.BuildStatus): Build;
 
-  getStartedAt(): google_protobuf_timestamp_pb.Timestamp | undefined;
-  setStartedAt(value?: google_protobuf_timestamp_pb.Timestamp): Build;
+  getStartedAt(): neoshowcase_protobuf_null_pb.NullTimestamp | undefined;
+  setStartedAt(value?: neoshowcase_protobuf_null_pb.NullTimestamp): Build;
   hasStartedAt(): boolean;
   clearStartedAt(): Build;
+
+  getUpdatedAt(): neoshowcase_protobuf_null_pb.NullTimestamp | undefined;
+  setUpdatedAt(value?: neoshowcase_protobuf_null_pb.NullTimestamp): Build;
+  hasUpdatedAt(): boolean;
+  clearUpdatedAt(): Build;
 
   getFinishedAt(): neoshowcase_protobuf_null_pb.NullTimestamp | undefined;
   setFinishedAt(value?: neoshowcase_protobuf_null_pb.NullTimestamp): Build;
@@ -411,7 +415,8 @@ export namespace Build {
     id: string,
     commit: string,
     status: Build.BuildStatus,
-    startedAt?: google_protobuf_timestamp_pb.Timestamp.AsObject,
+    startedAt?: neoshowcase_protobuf_null_pb.NullTimestamp.AsObject,
+    updatedAt?: neoshowcase_protobuf_null_pb.NullTimestamp.AsObject,
     finishedAt?: neoshowcase_protobuf_null_pb.NullTimestamp.AsObject,
     retriable: boolean,
   }

@@ -30,7 +30,9 @@ type Build struct { // ビルドID
 	// ビルドの状態
 	Status string `boil:"status" json:"status" toml:"status" yaml:"status"`
 	// ビルド開始日時
-	StartedAt time.Time `boil:"started_at" json:"started_at" toml:"started_at" yaml:"started_at"`
+	StartedAt null.Time `boil:"started_at" json:"started_at,omitempty" toml:"started_at" yaml:"started_at,omitempty"`
+	// ビルド更新日時
+	UpdatedAt null.Time `boil:"updated_at" json:"updated_at,omitempty" toml:"updated_at" yaml:"updated_at,omitempty"`
 	// ビルド終了日時
 	FinishedAt null.Time `boil:"finished_at" json:"finished_at,omitempty" toml:"finished_at" yaml:"finished_at,omitempty"`
 	// 再ビルド可能フラグ
@@ -47,6 +49,7 @@ var BuildColumns = struct {
 	Commit        string
 	Status        string
 	StartedAt     string
+	UpdatedAt     string
 	FinishedAt    string
 	Retriable     string
 	ApplicationID string
@@ -55,6 +58,7 @@ var BuildColumns = struct {
 	Commit:        "commit",
 	Status:        "status",
 	StartedAt:     "started_at",
+	UpdatedAt:     "updated_at",
 	FinishedAt:    "finished_at",
 	Retriable:     "retriable",
 	ApplicationID: "application_id",
@@ -65,6 +69,7 @@ var BuildTableColumns = struct {
 	Commit        string
 	Status        string
 	StartedAt     string
+	UpdatedAt     string
 	FinishedAt    string
 	Retriable     string
 	ApplicationID string
@@ -73,6 +78,7 @@ var BuildTableColumns = struct {
 	Commit:        "builds.commit",
 	Status:        "builds.status",
 	StartedAt:     "builds.started_at",
+	UpdatedAt:     "builds.updated_at",
 	FinishedAt:    "builds.finished_at",
 	Retriable:     "builds.retriable",
 	ApplicationID: "builds.application_id",
@@ -84,7 +90,8 @@ var BuildWhere = struct {
 	ID            whereHelperstring
 	Commit        whereHelperstring
 	Status        whereHelperstring
-	StartedAt     whereHelpertime_Time
+	StartedAt     whereHelpernull_Time
+	UpdatedAt     whereHelpernull_Time
 	FinishedAt    whereHelpernull_Time
 	Retriable     whereHelperbool
 	ApplicationID whereHelperstring
@@ -92,7 +99,8 @@ var BuildWhere = struct {
 	ID:            whereHelperstring{field: "`builds`.`id`"},
 	Commit:        whereHelperstring{field: "`builds`.`commit`"},
 	Status:        whereHelperstring{field: "`builds`.`status`"},
-	StartedAt:     whereHelpertime_Time{field: "`builds`.`started_at`"},
+	StartedAt:     whereHelpernull_Time{field: "`builds`.`started_at`"},
+	UpdatedAt:     whereHelpernull_Time{field: "`builds`.`updated_at`"},
 	FinishedAt:    whereHelpernull_Time{field: "`builds`.`finished_at`"},
 	Retriable:     whereHelperbool{field: "`builds`.`retriable`"},
 	ApplicationID: whereHelperstring{field: "`builds`.`application_id`"},
@@ -146,8 +154,8 @@ func (r *buildR) GetArtifact() *Artifact {
 type buildL struct{}
 
 var (
-	buildAllColumns            = []string{"id", "commit", "status", "started_at", "finished_at", "retriable", "application_id"}
-	buildColumnsWithoutDefault = []string{"id", "commit", "status", "started_at", "finished_at", "retriable", "application_id"}
+	buildAllColumns            = []string{"id", "commit", "status", "started_at", "updated_at", "finished_at", "retriable", "application_id"}
+	buildColumnsWithoutDefault = []string{"id", "commit", "status", "started_at", "updated_at", "finished_at", "retriable", "application_id"}
 	buildColumnsWithDefault    = []string{}
 	buildPrimaryKeyColumns     = []string{"id"}
 	buildGeneratedColumns      = []string{}
@@ -1014,6 +1022,13 @@ func (o *Build) Insert(ctx context.Context, exec boil.ContextExecutor, columns b
 	}
 
 	var err error
+	if !boil.TimestampsAreSkipped(ctx) {
+		currTime := time.Now().In(boil.GetLocation())
+
+		if queries.MustTime(o.UpdatedAt).IsZero() {
+			queries.SetScanner(&o.UpdatedAt, currTime)
+		}
+	}
 
 	if err := o.doBeforeInsertHooks(ctx, exec); err != nil {
 		return err
@@ -1105,6 +1120,12 @@ CacheNoHooks:
 // See boil.Columns.UpdateColumnSet documentation to understand column list inference for updates.
 // Update does not automatically update the record in case of default values. Use .Reload() to refresh the records.
 func (o *Build) Update(ctx context.Context, exec boil.ContextExecutor, columns boil.Columns) (int64, error) {
+	if !boil.TimestampsAreSkipped(ctx) {
+		currTime := time.Now().In(boil.GetLocation())
+
+		queries.SetScanner(&o.UpdatedAt, currTime)
+	}
+
 	var err error
 	if err = o.doBeforeUpdateHooks(ctx, exec); err != nil {
 		return 0, err
@@ -1238,6 +1259,11 @@ var mySQLBuildUniqueColumns = []string{
 func (o *Build) Upsert(ctx context.Context, exec boil.ContextExecutor, updateColumns, insertColumns boil.Columns) error {
 	if o == nil {
 		return errors.New("models: no builds provided for upsert")
+	}
+	if !boil.TimestampsAreSkipped(ctx) {
+		currTime := time.Now().In(boil.GetLocation())
+
+		queries.SetScanner(&o.UpdatedAt, currTime)
 	}
 
 	if err := o.doBeforeUpsertHooks(ctx, exec); err != nil {

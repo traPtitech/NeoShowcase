@@ -8,12 +8,10 @@ import (
 	"github.com/samber/lo"
 	log "github.com/sirupsen/logrus"
 	"golang.org/x/exp/slices"
-	"google.golang.org/protobuf/types/known/emptypb"
 
 	"github.com/traPtitech/neoshowcase/pkg/domain"
 	"github.com/traPtitech/neoshowcase/pkg/domain/builder"
 	"github.com/traPtitech/neoshowcase/pkg/domain/event"
-	"github.com/traPtitech/neoshowcase/pkg/interface/grpc/pb"
 	"github.com/traPtitech/neoshowcase/pkg/util/ds"
 	"github.com/traPtitech/neoshowcase/pkg/util/optional"
 )
@@ -34,7 +32,7 @@ type appDeployService struct {
 	appRepo   domain.ApplicationRepository
 	buildRepo domain.BuildRepository
 	envRepo   domain.EnvironmentRepository
-	ss        pb.StaticSiteServiceClient
+	component domain.ComponentService
 
 	imageRegistry   string
 	imageNamePrefix string
@@ -46,7 +44,7 @@ func NewAppDeployService(
 	appRepo domain.ApplicationRepository,
 	buildRepo domain.BuildRepository,
 	envRepo domain.EnvironmentRepository,
-	ss pb.StaticSiteServiceClient,
+	component domain.ComponentService,
 	registry builder.DockerImageRegistryString,
 	prefix builder.DockerImageNamePrefixString,
 ) AppDeployService {
@@ -57,7 +55,7 @@ func NewAppDeployService(
 		appRepo:         appRepo,
 		buildRepo:       buildRepo,
 		envRepo:         envRepo,
-		ss:              ss,
+		component:       component,
 		imageRegistry:   string(registry),
 		imageNamePrefix: string(prefix),
 	}
@@ -86,9 +84,7 @@ func (s *appDeployService) Synchronize(appID string, restart bool) (started bool
 }
 
 func (s *appDeployService) SynchronizeSS(ctx context.Context) error {
-	if _, err := s.ss.Reload(ctx, &emptypb.Empty{}); err != nil {
-		return fmt.Errorf("failed to reload static site server: %w", err)
-	}
+	s.component.ReloadSSGen()
 	if err := s.backend.ReloadSSIngress(ctx); err != nil {
 		return fmt.Errorf("failed to relaod static site ingress: %w", err)
 	}
@@ -116,7 +112,7 @@ func (s *appDeployService) synchronize(ctx context.Context, appID string, restar
 		return err
 	}
 	if build == nil {
-		s.bus.Publish(event.CDServiceSyncBuildRequest, nil)
+		s.bus.Publish(event.CDServiceRegisterBuildRequest, nil)
 		return nil
 	}
 
@@ -153,12 +149,11 @@ func (s *appDeployService) synchronize(ctx context.Context, appID string, restar
 }
 
 func (s *appDeployService) getSuccessBuild(ctx context.Context, app *domain.Application) (*domain.Build, error) {
-	builds, err := s.buildRepo.GetBuildsInCommit(ctx, []string{app.WantCommit})
+	builds, err := s.buildRepo.GetBuilds(ctx, domain.GetBuildCondition{Commit: optional.From(app.WantCommit), Status: optional.From(builder.BuildStatusSucceeded)})
 	if err != nil {
 		return nil, err
 	}
-	builds = lo.Filter(builds, func(build *domain.Build, i int) bool { return build.Status == builder.BuildStatusSucceeded })
-	slices.SortFunc(builds, func(a, b *domain.Build) bool { return a.StartedAt.After(b.StartedAt) })
+	slices.SortFunc(builds, func(a, b *domain.Build) bool { return a.StartedAt.ValueOrZero().After(b.StartedAt.ValueOrZero()) })
 	if len(builds) == 0 {
 		return nil, nil
 	}

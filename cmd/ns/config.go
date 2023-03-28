@@ -8,7 +8,6 @@ import (
 	"github.com/traPtitech/neoshowcase/pkg/infrastructure/admindb"
 	"github.com/traPtitech/neoshowcase/pkg/infrastructure/backend/dockerimpl"
 	"github.com/traPtitech/neoshowcase/pkg/infrastructure/dbmanager"
-	"github.com/traPtitech/neoshowcase/pkg/interface/grpc"
 	"github.com/traPtitech/neoshowcase/pkg/usecase"
 )
 
@@ -20,9 +19,7 @@ const (
 type Config struct {
 	Debug   bool                                  `mapstructure:"debug" yaml:"debug"`
 	Mode    string                                `mapstructure:"mode" yaml:"mode"`
-	Builder grpc.BuilderServiceClientConfig       `mapstructure:"builder" yaml:"builder"`
 	SS      domain.StaticServerConnectivityConfig `mapstructure:"ss" yaml:"ss"`
-	SSGen   grpc.StaticSiteServiceClientConfig    `mapstructure:"ssgen" yaml:"ssgen"`
 	DB      admindb.Config                        `mapstructure:"db" yaml:"db"`
 	MariaDB dbmanager.MariaDBConfig               `mapstructure:"mariadb" yaml:"mariadb"`
 	MongoDB dbmanager.MongoDBConfig               `mapstructure:"mongodb" yaml:"mongodb"`
@@ -30,12 +27,13 @@ type Config struct {
 		ConfDir string `mapstructure:"confDir" yaml:"confDir"`
 	} `mapstructure:"docker" yaml:"docker"`
 	GRPC struct {
-		Port int `mapstructure:"port" yaml:"port"`
+		App struct {
+			Port int `mapstructure:"port" yaml:"port"`
+		} `mapstructure:"app" yaml:"app"`
+		Component struct {
+			Port int `mapstructure:"port" yaml:"port"`
+		} `mapstructure:"component" yaml:"component"`
 	} `mapstructure:"grpc" yaml:"grpc"`
-	HTTP struct {
-		Debug bool `mapstructure:"debug" yaml:"debug"`
-		Port  int  `mapstructure:"port" yaml:"port"`
-	} `mapstructure:"http" yaml:"http"`
 	Repository struct {
 		CacheDir string `mapstructure:"cacheDir" yaml:"cacheDir"`
 	} `mapstructure:"repository" yaml:"repository"`

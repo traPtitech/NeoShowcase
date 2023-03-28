@@ -4,10 +4,13 @@ import (
 	"context"
 	"fmt"
 
-	"k8s.io/apimachinery/pkg/api/errors"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	v1 "k8s.io/api/apps/v1"
 
 	"github.com/traPtitech/neoshowcase/pkg/domain"
+)
+
+type (
+	m map[string]any
 )
 
 func (b *k8sBackend) DestroyContainer(ctx context.Context, app *domain.Application) error {
@@ -16,9 +19,19 @@ func (b *k8sBackend) DestroyContainer(ctx context.Context, app *domain.Applicati
 		return fmt.Errorf("failed to destroy runtime ingress resources: %w", err)
 	}
 
-	err = b.client.AppsV1().StatefulSets(appNamespace).Delete(ctx, deploymentName(app.ID), metav1.DeleteOptions{})
-	if err != nil && !errors.IsNotFound(err) {
-		return fmt.Errorf("failed to delete pod: %w", err)
+	// statefulset の spec.selector がなぜか omitempty ではないため
+	statefulSetName := deploymentName(app.ID)
+	statefulSet := m{
+		"kind":       "StatefulSet",
+		"apiVersion": "apps/v1",
+		"metadata": m{
+			"name":      statefulSetName,
+			"namespace": appNamespace,
+		},
+		"spec": m{
+			"replicas": 0,
+		},
 	}
-	return nil
+
+	return strategicPatch[*v1.StatefulSet](ctx, statefulSetName, statefulSet, b.client.AppsV1().StatefulSets(appNamespace))
 }

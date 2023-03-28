@@ -2,7 +2,6 @@ syntax = "proto3";
 package neoshowcase.protobuf;
 option go_package = "github.com/traPtitech/neoshowcase/pkg/interface/grpc/pb";
 
-import "google/protobuf/timestamp.proto";
 import "google/protobuf/empty.proto";
 import "neoshowcase/protobuf/null.proto";
 
@@ -119,9 +118,10 @@ message Build {
   string id = 1;
   string commit = 2;
   BuildStatus status = 3;
-  google.protobuf.Timestamp started_at = 4;
-  neoshowcase.protobuf.NullTimestamp finished_at = 5;
-  bool retriable = 6;
+  neoshowcase.protobuf.NullTimestamp started_at = 4;
+  neoshowcase.protobuf.NullTimestamp updated_at = 5;
+  neoshowcase.protobuf.NullTimestamp finished_at = 6;
+  bool retriable = 7;
 }
 
 message BuildLog {

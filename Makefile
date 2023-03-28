@@ -62,6 +62,7 @@ build: ## Build containers
 
 .PHONY: up
 up: ## Setup development environment
+	@docker network create neoshowcase_apps || return 0
 	@docker compose up -d --build
 
 .PHONY: up-ns

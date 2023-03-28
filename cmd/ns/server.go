@@ -7,30 +7,24 @@ import (
 	"net"
 
 	"golang.org/x/sync/errgroup"
-	"google.golang.org/grpc"
 
 	"github.com/traPtitech/neoshowcase/pkg/domain"
-	"github.com/traPtitech/neoshowcase/pkg/domain/web"
-	"github.com/traPtitech/neoshowcase/pkg/interface/broker"
-	igrpc "github.com/traPtitech/neoshowcase/pkg/interface/grpc"
+	grpc2 "github.com/traPtitech/neoshowcase/pkg/interface/grpc"
 	"github.com/traPtitech/neoshowcase/pkg/interface/grpc/pb"
 	"github.com/traPtitech/neoshowcase/pkg/usecase"
 )
 
 type Server struct {
-	grpcServer *grpc.Server
-	grpcPort   igrpc.TCPListenPort
-	appService *igrpc.ApplicationService
+	appServer        grpc2.ApplicationServiceGRPCServer
+	appService       pb.ApplicationServiceServer
+	componentServer  grpc2.ComponentServiceGRPCServer
+	componentService domain.ComponentService
 
-	webserver           *web.Server
-	db                  *sql.DB
-	builderConn         *igrpc.BuilderServiceClientConn
-	ssgenConn           *igrpc.StaticSiteServiceClientConn
-	backend             domain.Backend
-	bus                 domain.Bus
-	builderEventsBroker broker.BuilderEventsBroker
-	cdService           usecase.ContinuousDeploymentService
-	fetcherService      usecase.RepositoryFetcherService
+	db             *sql.DB
+	backend        domain.Backend
+	bus            domain.Bus
+	cdService      usecase.ContinuousDeploymentService
+	fetcherService usecase.RepositoryFetcherService
 }
 
 func (s *Server) Start(ctx context.Context) error {
@@ -38,9 +32,6 @@ func (s *Server) Start(ctx context.Context) error {
 
 	eg.Go(func() error {
 		return s.backend.Start(ctx)
-	})
-	eg.Go(func() error {
-		return s.builderEventsBroker.Run()
 	})
 	eg.Go(func() error {
 		s.cdService.Run()
@@ -51,16 +42,20 @@ func (s *Server) Start(ctx context.Context) error {
 		return nil
 	})
 	eg.Go(func() error {
-		return s.webserver.Start(ctx)
+		pb.RegisterApplicationServiceServer(s.appServer, s.appService)
+		listener, err := net.Listen("tcp", fmt.Sprintf(":%d", c.GRPC.App.Port))
+		if err != nil {
+			return fmt.Errorf("failed to start app server: %w", err)
+		}
+		return s.appServer.Serve(listener)
 	})
 	eg.Go(func() error {
-		pb.RegisterApplicationServiceServer(s.grpcServer, s.appService)
-
-		listener, err := net.Listen("tcp", fmt.Sprintf(":%d", s.grpcPort))
+		pb.RegisterComponentServiceServer(s.componentServer, s.componentService)
+		listener, err := net.Listen("tcp", fmt.Sprintf(":%d", c.GRPC.Component.Port))
 		if err != nil {
-			return fmt.Errorf("failed to start server: %w", err)
+			return fmt.Errorf("failed to start component server: %w", err)
 		}
-		return s.grpcServer.Serve(listener)
+		return s.componentServer.Serve(listener)
 	})
 
 	return eg.Wait()
@@ -70,16 +65,7 @@ func (s *Server) Shutdown(ctx context.Context) error {
 	eg, ctx := errgroup.WithContext(ctx)
 
 	eg.Go(func() error {
-		return s.webserver.Shutdown(ctx)
-	})
-	eg.Go(func() error {
 		return s.db.Close()
-	})
-	eg.Go(func() error {
-		return s.builderConn.Close()
-	})
-	eg.Go(func() error {
-		return s.ssgenConn.Close()
 	})
 	eg.Go(func() error {
 		return s.backend.Dispose(ctx)
@@ -92,6 +78,14 @@ func (s *Server) Shutdown(ctx context.Context) error {
 	})
 	eg.Go(func() error {
 		return s.fetcherService.Stop(ctx)
+	})
+	eg.Go(func() error {
+		s.appServer.Stop()
+		return nil
+	})
+	eg.Go(func() error {
+		s.componentServer.Stop()
+		return nil
 	})
 
 	return eg.Wait()
