@@ -45,9 +45,10 @@ func TestK8sBackend_CreateContainer(t *testing.T) {
 		appID := "pijojopjnnna"
 
 		website := &domain.Website{
-			FQDN:       "test.localhost",
-			PathPrefix: "/",
-			HTTPPort:   80,
+			FQDN:        "test.localhost",
+			PathPrefix:  "/test",
+			StripPrefix: false,
+			HTTPPort:    80,
 		}
 		app := domain.Application{
 			ID:       appID,
@@ -76,9 +77,10 @@ func TestK8sBackend_CreateContainer(t *testing.T) {
 		appID := "98ygtfjfjhgj"
 
 		website := &domain.Website{
-			FQDN:       "ji9876fgoh.localhost",
-			PathPrefix: "/test",
-			HTTPPort:   80,
+			FQDN:        "ji9876fgoh.localhost",
+			PathPrefix:  "/test",
+			StripPrefix: true,
+			HTTPPort:    80,
 		}
 		app := domain.Application{
 			ID:       appID,
