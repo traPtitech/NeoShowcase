@@ -35,7 +35,7 @@ func TestK8sBackend_CreateContainer(t *testing.T) {
 
 		err = m.DestroyContainer(context.Background(), &app)
 		require.NoError(t, err)
-		notExists[*appsv1.StatefulSet](t, deploymentName(appID), c.AppsV1().StatefulSets(appNamespace))
+		exists[*appsv1.StatefulSet](t, deploymentName(appID), c.AppsV1().StatefulSets(appNamespace))
 		waitPodDeleted(t, m, appID)
 	})
 
@@ -64,7 +64,7 @@ func TestK8sBackend_CreateContainer(t *testing.T) {
 
 		err = m.DestroyContainer(context.Background(), &app)
 		require.NoError(t, err)
-		notExists[*appsv1.StatefulSet](t, deploymentName(appID), c.AppsV1().StatefulSets(appNamespace))
+		exists[*appsv1.StatefulSet](t, deploymentName(appID), c.AppsV1().StatefulSets(appNamespace))
 		notExists[*corev1.Service](t, serviceName(website), c.CoreV1().Services(appNamespace))
 		notExists[*v1alpha1.IngressRoute](t, serviceName(website), tc.IngressRoutes(appNamespace))
 		waitPodDeleted(t, m, appID)
@@ -103,7 +103,7 @@ func TestK8sBackend_CreateContainer(t *testing.T) {
 
 		err = m.DestroyContainer(context.Background(), &app)
 		require.NoError(t, err)
-		notExists[*appsv1.StatefulSet](t, deploymentName(appID), c.AppsV1().StatefulSets(appNamespace))
+		exists[*appsv1.StatefulSet](t, deploymentName(appID), c.AppsV1().StatefulSets(appNamespace))
 		notExists[*corev1.Service](t, serviceName(website), c.CoreV1().Services(appNamespace))
 		notExists[*v1alpha1.IngressRoute](t, serviceName(website), tc.IngressRoutes(appNamespace))
 		notExists[*v1alpha1.Middleware](t, stripMiddlewareName(website), tc.Middlewares(appNamespace))
