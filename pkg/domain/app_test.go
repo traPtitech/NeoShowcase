@@ -1,15 +1,13 @@
 package domain
 
 import (
+	"reflect"
 	"testing"
 
 	"github.com/samber/lo"
 )
 
 func TestIsValidDomain(t *testing.T) {
-	type args struct {
-		domain string
-	}
 	tests := []struct {
 		name   string
 		domain string
@@ -80,6 +78,56 @@ func TestAvailableDomain_Match(t *testing.T) {
 	}
 }
 
+func TestWebsite_IsValid(t *testing.T) {
+	tests := []struct {
+		name    string
+		website Website
+		want    bool
+	}{
+		{"ok1", Website{FQDN: "google.com", PathPrefix: "/", HTTPPort: 80}, true},
+		{"ok2", Website{FQDN: "google.com", PathPrefix: "/path/to/prefix", HTTPPort: 8080}, true},
+		{"invalid fqdn1", Website{FQDN: "google.com.", PathPrefix: "/", HTTPPort: 80}, false},
+		{"invalid fqdn2", Website{FQDN: "*.google.com", PathPrefix: "/", HTTPPort: 80}, false},
+		{"invalid fqdn3", Website{FQDN: "google.*.com", PathPrefix: "/", HTTPPort: 80}, false},
+		{"invalid fqdn4", Website{FQDN: "goo gle.com", PathPrefix: "/", HTTPPort: 80}, false},
+		{"invalid fqdn5", Website{FQDN: "no space", PathPrefix: "/", HTTPPort: 80}, false},
+		{"invalid path1", Website{FQDN: "google.com", PathPrefix: "", HTTPPort: 80}, false},
+		{"invalid path2", Website{FQDN: "google.com", PathPrefix: "../test", HTTPPort: 80}, false},
+		{"invalid path3", Website{FQDN: "google.com", PathPrefix: "/test/", HTTPPort: 80}, false},
+		{"invalid port1", Website{FQDN: "google.com", PathPrefix: "/", HTTPPort: -1}, false},
+		{"invalid port2", Website{FQDN: "google.com", PathPrefix: "/", HTTPPort: 65536}, false},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := tt.website.IsValid(); got != tt.want {
+				t.Errorf("IsValid() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestWebsite_pathComponents(t *testing.T) {
+	tests := []struct {
+		name string
+		path string
+		want []string
+	}{
+		{"top", "/", []string{}},
+		{"first layer", "/test", []string{"test"}},
+		{"multiple layers", "/path/to/prefix", []string{"path", "to", "prefix"}},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			w := &Website{
+				PathPrefix: tt.path,
+			}
+			if got := w.pathComponents(); !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("pathComponents() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
 func TestWebsite_ConflictsWith(t *testing.T) {
 	tests := []struct {
 		name     string
@@ -90,6 +138,8 @@ func TestWebsite_ConflictsWith(t *testing.T) {
 		{"ok1", "/", []string{}, false},
 		{"ok2", "/foo", []string{"/api", "/spa"}, false},
 		{"ok3", "/api/v2", []string{"/api/v1", "/spa"}, false},
+		{"ok4", "/api2", []string{"/api"}, false},
+		{"ok5", "/api", []string{"/api2"}, false},
 		{"ng1", "/", []string{"/"}, true},
 		{"ng2", "/api", []string{"/"}, true},
 		{"ng3", "/api/v2", []string{"/api"}, true},
