@@ -3,6 +3,7 @@ package neoshowcase.protobuf;
 option go_package = "github.com/traPtitech/neoshowcase/pkg/interface/grpc/pb";
 
 import "google/protobuf/empty.proto";
+import "neoshowcase/protobuf/apiserver.proto";
 
 message BuildSource {
   string repository_url = 1;
@@ -37,11 +38,13 @@ message BuilderRequest {
   enum Type {
     START_BUILD_IMAGE = 0;
     START_BUILD_STATIC = 1;
+    CANCEL_BUILD = 2;
   }
   Type type = 1;
   oneof body {
     StartBuildImageRequest build_image = 2;
     StartBuildStaticRequest build_static = 3;
+    CancelBuildRequest cancel_build = 4;
   }
 }
 

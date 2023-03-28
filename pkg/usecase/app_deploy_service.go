@@ -12,6 +12,7 @@ import (
 	"github.com/traPtitech/neoshowcase/pkg/domain"
 	"github.com/traPtitech/neoshowcase/pkg/domain/builder"
 	"github.com/traPtitech/neoshowcase/pkg/domain/event"
+	"github.com/traPtitech/neoshowcase/pkg/interface/grpc/pb"
 	"github.com/traPtitech/neoshowcase/pkg/util/ds"
 	"github.com/traPtitech/neoshowcase/pkg/util/optional"
 )
@@ -84,7 +85,7 @@ func (s *appDeployService) Synchronize(appID string, restart bool) (started bool
 }
 
 func (s *appDeployService) SynchronizeSS(ctx context.Context) error {
-	s.component.ReloadSSGen()
+	s.component.BroadcastSSGen(&pb.SSGenRequest{Type: pb.SSGenRequest_RELOAD})
 	if err := s.backend.ReloadSSIngress(ctx); err != nil {
 		return fmt.Errorf("failed to relaod static site ingress: %w", err)
 	}

@@ -89,17 +89,22 @@ func (s *builderService) Start(_ context.Context) error {
 
 func (s *builderService) Shutdown(_ context.Context) error {
 	s.cancel()
-	s.cancelBuild()
-	// TODO: wait until current state is complete
+	s.statusLock.Lock()
+	defer s.statusLock.Unlock()
+	if s.stateCancel != nil {
+		s.stateCancel()
+	}
 	return nil
 }
 
-func (s *builderService) cancelBuild() {
+func (s *builderService) cancelBuild(buildID string) {
 	s.statusLock.Lock()
 	defer s.statusLock.Unlock()
 
-	if s.stateCancel != nil {
-		s.stateCancel()
+	if s.state != nil && s.stateCancel != nil {
+		if s.state.build.ID == buildID {
+			s.stateCancel()
+		}
 	}
 }
 
@@ -149,6 +154,11 @@ func (s *builderService) onRequest(req *pb.BuilderRequest) {
 		if err != nil {
 			log.WithError(err).Errorf("failed to start build: %v", err)
 		}
+	case pb.BuilderRequest_CANCEL_BUILD:
+		b := req.Body.(*pb.BuilderRequest_CancelBuild).CancelBuild
+		s.cancelBuild(b.BuildId)
+	default:
+		log.Errorf("unknown builder request type: %v", req.Type)
 	}
 }
 
@@ -175,9 +185,13 @@ func (s *builderService) tryStartTask(task *builder.Task) error {
 	}
 
 	ctx, cancel := context.WithCancel(context.Background())
+	finish := make(chan struct{})
 	st := newState(task)
 	s.state = st
-	s.stateCancel = cancel
+	s.stateCancel = func() {
+		cancel()
+		<-finish
+	}
 
 	go func() {
 		s.response <- &pb.BuilderResponse{Type: pb.BuilderResponse_BUILD_STARTED, Body: &pb.BuilderResponse_Started{Started: &pb.BuildStarted{
@@ -193,6 +207,7 @@ func (s *builderService) tryStartTask(task *builder.Task) error {
 		}}}
 
 		cancel()
+		close(finish)
 		s.statusLock.Lock()
 		s.state = nil
 		s.stateCancel = nil
@@ -203,6 +218,10 @@ func (s *builderService) tryStartTask(task *builder.Task) error {
 }
 
 func (s *builderService) process(ctx context.Context, st *state, task *builder.Task) builder.BuildStatus {
+	ctx, cancel := context.WithCancel(ctx)
+	defer cancel()
+	go s.updateStatusLoop(ctx, task.BuildID)
+
 	err := st.initTempFiles(task.Static)
 	if err != nil {
 		log.WithError(err).Error("failed to init temp files")
@@ -216,6 +235,22 @@ func (s *builderService) process(ctx context.Context, st *state, task *builder.T
 	}
 
 	return s.build(ctx, st, task)
+}
+
+func (s *builderService) updateStatusLoop(ctx context.Context, buildID string) {
+	ticker := time.NewTicker(3 * time.Second)
+	defer ticker.Stop()
+	for {
+		select {
+		case <-ticker.C:
+			err := s.buildRepo.UpdateBuild(ctx, buildID, domain.UpdateBuildArgs{UpdatedAt: optional.From(time.Now())})
+			if err != nil {
+				log.WithError(err).Error("failed to update build time")
+			}
+		case <-ctx.Done():
+			return
+		}
+	}
 }
 
 func (s *builderService) cloneRepository(ctx context.Context, st *state, task *builder.Task) error {
@@ -256,36 +291,14 @@ func (s *builderService) cloneRepository(ctx context.Context, st *state, task *b
 }
 
 func (s *builderService) build(ctx context.Context, st *state, task *builder.Task) builder.BuildStatus {
-	ctx, cancel := context.WithCancel(ctx)
-
 	st.writeLog("[ns-builder] Build started.")
 
-	var eg errgroup.Group
-	eg.Go(func() error {
-		defer cancel()
-		if task.Static {
-			return s.buildStatic(ctx, task, st)
-		} else {
-			return s.buildImage(ctx, task, st)
-		}
-	})
-	eg.Go(func() error {
-		ticker := time.NewTicker(3 * time.Second)
-		defer ticker.Stop()
-		for {
-			select {
-			case <-ticker.C:
-				err := s.buildRepo.UpdateBuild(ctx, task.BuildID, domain.UpdateBuildArgs{UpdatedAt: optional.From(time.Now())})
-				if err != nil {
-					log.WithError(err).Error("failed to update build time")
-				}
-			case <-ctx.Done():
-				return nil
-			}
-		}
-	})
-
-	err := eg.Wait()
+	var err error
+	if task.Static {
+		err = s.buildStatic(ctx, task, st)
+	} else {
+		err = s.buildImage(ctx, task, st)
+	}
 	if err != nil {
 		if err == context.Canceled || err == context.DeadlineExceeded || errors.Is(err, gstatus.FromContextError(context.Canceled).Err()) {
 			st.writeLog("[ns-builder] Build cancelled.")

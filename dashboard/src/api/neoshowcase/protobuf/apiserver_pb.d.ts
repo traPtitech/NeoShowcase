@@ -615,6 +615,24 @@ export namespace SetApplicationEnvironmentVariableRequest {
   }
 }
 
+export class CancelBuildRequest extends jspb.Message {
+  getBuildId(): string;
+  setBuildId(value: string): CancelBuildRequest;
+
+  serializeBinary(): Uint8Array;
+  toObject(includeInstance?: boolean): CancelBuildRequest.AsObject;
+  static toObject(includeInstance: boolean, msg: CancelBuildRequest): CancelBuildRequest.AsObject;
+  static serializeBinaryToWriter(message: CancelBuildRequest, writer: jspb.BinaryWriter): void;
+  static deserializeBinary(bytes: Uint8Array): CancelBuildRequest;
+  static deserializeBinaryFromReader(message: CancelBuildRequest, reader: jspb.BinaryReader): CancelBuildRequest;
+}
+
+export namespace CancelBuildRequest {
+  export type AsObject = {
+    buildId: string,
+  }
+}
+
 export class RetryCommitBuildRequest extends jspb.Message {
   getApplicationId(): string;
   setApplicationId(value: string): RetryCommitBuildRequest;

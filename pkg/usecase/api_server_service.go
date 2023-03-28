@@ -8,6 +8,7 @@ import (
 	"github.com/traPtitech/neoshowcase/pkg/domain"
 	"github.com/traPtitech/neoshowcase/pkg/domain/builder"
 	"github.com/traPtitech/neoshowcase/pkg/domain/event"
+	"github.com/traPtitech/neoshowcase/pkg/interface/grpc/pb"
 	"github.com/traPtitech/neoshowcase/pkg/interface/repository"
 	"github.com/traPtitech/neoshowcase/pkg/util/optional"
 	"github.com/traPtitech/neoshowcase/pkg/util/random"
@@ -44,6 +45,7 @@ type APIServerService interface {
 	GetApplicationBuild(ctx context.Context, buildID string) (*domain.Build, error)
 	SetApplicationEnvironmentVariable(ctx context.Context, applicationID string, key string, value string) error
 	GetApplicationEnvironmentVariables(ctx context.Context, applicationID string) ([]*domain.Environment, error)
+	CancelBuild(ctx context.Context, buildID string) error
 	RetryCommitBuild(ctx context.Context, applicationID string, commit string) error
 	StartApplication(ctx context.Context, id string) error
 	StopApplication(ctx context.Context, id string) error
@@ -58,6 +60,7 @@ type apiServerService struct {
 	gitRepo        domain.GitRepositoryRepository
 	deploySvc      AppDeployService
 	backend        domain.Backend
+	component      domain.ComponentService
 	mariaDBManager domain.MariaDBManager
 	mongoDBManager domain.MongoDBManager
 }
@@ -71,6 +74,7 @@ func NewAPIServerService(
 	gitRepo domain.GitRepositoryRepository,
 	deploySvc AppDeployService,
 	backend domain.Backend,
+	component domain.ComponentService,
 	mariaDBManager domain.MariaDBManager,
 	mongoDBManager domain.MongoDBManager,
 ) APIServerService {
@@ -83,6 +87,7 @@ func NewAPIServerService(
 		gitRepo:        gitRepo,
 		deploySvc:      deploySvc,
 		backend:        backend,
+		component:      component,
 		mariaDBManager: mariaDBManager,
 		mongoDBManager: mongoDBManager,
 	}
@@ -256,6 +261,14 @@ func (s *apiServerService) GetApplicationEnvironmentVariables(ctx context.Contex
 
 func (s *apiServerService) SetApplicationEnvironmentVariable(ctx context.Context, applicationID string, key string, value string) error {
 	return s.envRepo.SetEnv(ctx, applicationID, key, value)
+}
+
+func (s *apiServerService) CancelBuild(_ context.Context, buildID string) error {
+	s.component.BroadcastBuilder(&pb.BuilderRequest{
+		Type: pb.BuilderRequest_CANCEL_BUILD,
+		Body: &pb.BuilderRequest_CancelBuild{CancelBuild: &pb.CancelBuildRequest{BuildId: buildID}},
+	})
+	return nil
 }
 
 func (s *apiServerService) RetryCommitBuild(ctx context.Context, applicationID string, commit string) error {

@@ -187,6 +187,14 @@ func (s *ApplicationService) GetApplicationKeys(context.Context, *pb.Application
 	return nil, status.Errorf(codes.Unimplemented, "method GetApplicationKeys not implemented")
 }
 
+func (s *ApplicationService) CancelBuild(ctx context.Context, req *pb.CancelBuildRequest) (*emptypb.Empty, error) {
+	err := s.svc.CancelBuild(ctx, req.BuildId)
+	if err != nil {
+		return nil, handleUseCaseError(err)
+	}
+	return &emptypb.Empty{}, nil
+}
+
 func (s *ApplicationService) RetryCommitBuild(ctx context.Context, req *pb.RetryCommitBuildRequest) (*emptypb.Empty, error) {
 	err := s.svc.RetryCommitBuild(ctx, req.ApplicationId, req.Commit)
 	if err != nil {

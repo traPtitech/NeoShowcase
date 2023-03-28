@@ -8,8 +8,8 @@ import (
 
 type ComponentService interface {
 	pb.ComponentServiceServer
-	TryStartBuild(req *pb.BuilderRequest)
-	ReloadSSGen()
+	BroadcastBuilder(req *pb.BuilderRequest)
+	BroadcastSSGen(req *pb.SSGenRequest)
 }
 
 type ComponentServiceClient interface {

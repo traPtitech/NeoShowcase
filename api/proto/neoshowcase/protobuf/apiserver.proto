@@ -164,6 +164,10 @@ message SetApplicationEnvironmentVariableRequest {
   string value = 3;
 }
 
+message CancelBuildRequest {
+  string build_id = 1;
+}
+
 message RetryCommitBuildRequest {
   string application_id = 1;
   string commit = 2;
@@ -184,6 +188,7 @@ service ApplicationService {
   rpc SetApplicationEnvironmentVariable(SetApplicationEnvironmentVariableRequest) returns (google.protobuf.Empty);
   rpc GetApplicationOutput(ApplicationIdRequest) returns (ApplicationOutput);
   rpc GetApplicationKeys(ApplicationIdRequest) returns (ApplicationKeys);
+  rpc CancelBuild(CancelBuildRequest) returns (google.protobuf.Empty);
   rpc RetryCommitBuild(RetryCommitBuildRequest) returns (google.protobuf.Empty);
   rpc StartApplication(ApplicationIdRequest) returns (google.protobuf.Empty);
   rpc StopApplication(ApplicationIdRequest) returns (google.protobuf.Empty);
