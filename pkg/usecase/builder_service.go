@@ -256,13 +256,36 @@ func (s *builderService) cloneRepository(ctx context.Context, st *state, task *b
 }
 
 func (s *builderService) build(ctx context.Context, st *state, task *builder.Task) builder.BuildStatus {
+	ctx, cancel := context.WithCancel(ctx)
+
 	st.writeLog("[ns-builder] Build started.")
-	var err error
-	if task.Static {
-		err = s.buildStatic(ctx, task, st)
-	} else {
-		err = s.buildImage(ctx, task, st)
-	}
+
+	var eg errgroup.Group
+	eg.Go(func() error {
+		defer cancel()
+		if task.Static {
+			return s.buildStatic(ctx, task, st)
+		} else {
+			return s.buildImage(ctx, task, st)
+		}
+	})
+	eg.Go(func() error {
+		ticker := time.NewTicker(3 * time.Second)
+		defer ticker.Stop()
+		for {
+			select {
+			case <-ticker.C:
+				err := s.buildRepo.UpdateBuild(ctx, task.BuildID, domain.UpdateBuildArgs{UpdatedAt: optional.From(time.Now())})
+				if err != nil {
+					log.WithError(err).Error("failed to update build time")
+				}
+			case <-ctx.Done():
+				return nil
+			}
+		}
+	})
+
+	err := eg.Wait()
 	if err != nil {
 		if err == context.Canceled || err == context.DeadlineExceeded || errors.Is(err, gstatus.FromContextError(context.Canceled).Err()) {
 			st.writeLog("[ns-builder] Build cancelled.")
