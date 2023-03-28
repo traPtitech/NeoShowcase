@@ -223,8 +223,32 @@ func (w *Website) IsValid() bool {
 	if !strings.HasPrefix(w.PathPrefix, "/") {
 		return false
 	}
+	if w.PathPrefix != "/" && strings.HasSuffix(w.PathPrefix, "/") {
+		return false
+	}
 	if !(0 <= w.HTTPPort && w.HTTPPort < 65536) {
 		return false
+	}
+	return true
+}
+
+func (w *Website) pathComponents() []string {
+	if w.PathPrefix == "/" {
+		return []string{}
+	}
+	return strings.Split(w.PathPrefix, "/")[1:]
+}
+
+func (w *Website) pathContainedBy(target *Website) bool {
+	this := w.pathComponents()
+	other := target.pathComponents()
+	if len(this) < len(other) {
+		return false
+	}
+	for i := range other {
+		if this[i] != other[i] {
+			return false
+		}
 	}
 	return true
 }
@@ -235,7 +259,7 @@ func (w *Website) ConflictsWith(existing []*Website) bool {
 		if w.FQDN != ex.FQDN {
 			continue
 		}
-		if strings.HasPrefix(w.PathPrefix, ex.PathPrefix) {
+		if w.pathContainedBy(ex) {
 			return true
 		}
 	}
