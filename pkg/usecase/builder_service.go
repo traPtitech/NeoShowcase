@@ -203,6 +203,10 @@ func (s *builderService) tryStartTask(task *builder.Task) error {
 }
 
 func (s *builderService) process(ctx context.Context, st *state, task *builder.Task) builder.BuildStatus {
+	ctx, cancel := context.WithCancel(ctx)
+	defer cancel()
+	go s.updateStatusLoop(ctx, task.BuildID)
+
 	err := st.initTempFiles(task.Static)
 	if err != nil {
 		log.WithError(err).Error("failed to init temp files")
@@ -216,6 +220,22 @@ func (s *builderService) process(ctx context.Context, st *state, task *builder.T
 	}
 
 	return s.build(ctx, st, task)
+}
+
+func (s *builderService) updateStatusLoop(ctx context.Context, buildID string) {
+	ticker := time.NewTicker(3 * time.Second)
+	defer ticker.Stop()
+	for {
+		select {
+		case <-ticker.C:
+			err := s.buildRepo.UpdateBuild(ctx, buildID, domain.UpdateBuildArgs{UpdatedAt: optional.From(time.Now())})
+			if err != nil {
+				log.WithError(err).Error("failed to update build time")
+			}
+		case <-ctx.Done():
+			return
+		}
+	}
 }
 
 func (s *builderService) cloneRepository(ctx context.Context, st *state, task *builder.Task) error {
@@ -256,36 +276,14 @@ func (s *builderService) cloneRepository(ctx context.Context, st *state, task *b
 }
 
 func (s *builderService) build(ctx context.Context, st *state, task *builder.Task) builder.BuildStatus {
-	ctx, cancel := context.WithCancel(ctx)
-
 	st.writeLog("[ns-builder] Build started.")
 
-	var eg errgroup.Group
-	eg.Go(func() error {
-		defer cancel()
-		if task.Static {
-			return s.buildStatic(ctx, task, st)
-		} else {
-			return s.buildImage(ctx, task, st)
-		}
-	})
-	eg.Go(func() error {
-		ticker := time.NewTicker(3 * time.Second)
-		defer ticker.Stop()
-		for {
-			select {
-			case <-ticker.C:
-				err := s.buildRepo.UpdateBuild(ctx, task.BuildID, domain.UpdateBuildArgs{UpdatedAt: optional.From(time.Now())})
-				if err != nil {
-					log.WithError(err).Error("failed to update build time")
-				}
-			case <-ctx.Done():
-				return nil
-			}
-		}
-	})
-
-	err := eg.Wait()
+	var err error
+	if task.Static {
+		err = s.buildStatic(ctx, task, st)
+	} else {
+		err = s.buildImage(ctx, task, st)
+	}
 	if err != nil {
 		if err == context.Canceled || err == context.DeadlineExceeded || errors.Is(err, gstatus.FromContextError(context.Canceled).Err()) {
 			st.writeLog("[ns-builder] Build cancelled.")
