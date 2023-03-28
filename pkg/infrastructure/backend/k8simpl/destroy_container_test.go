@@ -31,6 +31,7 @@ func TestK8sBackend_DestroyContainer(t *testing.T) {
 
 		err = m.DestroyContainer(context.Background(), &app)
 		assert.NoError(t, err)
+		waitPodDeleted(t, m, appID)
 	})
 
 	t.Run("Podを正常に削除 (HTTP)", func(t *testing.T) {
@@ -54,5 +55,6 @@ func TestK8sBackend_DestroyContainer(t *testing.T) {
 
 		err = m.DestroyContainer(context.Background(), &app)
 		assert.NoError(t, err)
+		waitPodDeleted(t, m, appID)
 	})
 }

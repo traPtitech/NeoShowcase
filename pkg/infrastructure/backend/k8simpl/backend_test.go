@@ -77,3 +77,19 @@ func waitPodRunning(t *testing.T, b *k8sBackend, appID string) {
 	}
 	t.Fatalf("wait pod running timeout: %s", appID)
 }
+
+func waitPodDeleted(t *testing.T, b *k8sBackend, appID string) {
+	t.Helper()
+
+	for i := 0; i < 120; i++ {
+		_, err := b.GetContainer(context.Background(), appID)
+		if err == domain.ErrContainerNotFound {
+			return
+		}
+		if err != nil {
+			t.Fatalf("error in get container: %v", err)
+		}
+		time.Sleep(500 * time.Millisecond)
+	}
+	t.Fatalf("wait pod running timeout: %s", appID)
+}
