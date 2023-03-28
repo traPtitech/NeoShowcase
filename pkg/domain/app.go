@@ -209,11 +209,12 @@ func ExtractNameFromRepositoryURL(repositoryURL string) (string, error) {
 }
 
 type Website struct {
-	ID         string
-	FQDN       string
-	PathPrefix string
-	HTTPS      bool
-	HTTPPort   int
+	ID          string
+	FQDN        string
+	PathPrefix  string
+	StripPrefix bool
+	HTTPS       bool
+	HTTPPort    int
 }
 
 func (w *Website) IsValid() bool {
@@ -224,6 +225,9 @@ func (w *Website) IsValid() bool {
 		return false
 	}
 	if w.PathPrefix != "/" && strings.HasSuffix(w.PathPrefix, "/") {
+		return false
+	}
+	if w.StripPrefix && w.PathPrefix == "/" {
 		return false
 	}
 	if !(0 <= w.HTTPPort && w.HTTPPort < 65536) {

@@ -38,15 +38,17 @@ message Website {
   string id = 1;
   string fqdn = 2;
   string path_prefix = 3;
-  bool https = 4;
-  int32 http_port = 5;
+  bool strip_prefix = 4;
+  bool https = 5;
+  int32 http_port = 6;
 }
 
 message CreateWebsiteRequest {
   string fqdn = 1;
   string path_prefix = 2;
-  bool https = 3;
-  int32 http_port = 4;
+  bool strip_prefix = 3;
+  bool https = 4;
+  int32 http_port = 5;
 }
 
 message Application {

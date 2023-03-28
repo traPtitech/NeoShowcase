@@ -12,7 +12,8 @@ CREATE TABLE `builds` (
   `id` varchar(22) NOT NULL COMMENT 'ビルドID',
   `commit` char(40) NOT NULL COMMENT 'コミットハッシュ',
   `status` varchar(10) NOT NULL COMMENT 'ビルドの状態',
-  `started_at` datetime(6) NOT NULL COMMENT 'ビルド開始日時',
+  `started_at` datetime(6) DEFAULT NULL COMMENT 'ビルド開始日時',
+  `updated_at` datetime(6) DEFAULT NULL COMMENT 'ビルド更新日時',
   `finished_at` datetime(6) DEFAULT NULL COMMENT 'ビルド終了日時',
   `retriable` tinyint(1) NOT NULL COMMENT '再ビルド可能フラグ',
   `application_id` varchar(22) NOT NULL COMMENT 'アプリケーションID',
@@ -33,7 +34,8 @@ CREATE TABLE `builds` (
 | id | varchar(22) |  | false | [artifacts](artifacts.md) |  | ビルドID |
 | commit | char(40) |  | false |  |  | コミットハッシュ |
 | status | varchar(10) |  | false |  | [build_status](build_status.md) | ビルドの状態 |
-| started_at | datetime(6) |  | false |  |  | ビルド開始日時 |
+| started_at | datetime(6) | NULL | true |  |  | ビルド開始日時 |
+| updated_at | datetime(6) | NULL | true |  |  | ビルド更新日時 |
 | finished_at | datetime(6) | NULL | true |  |  | ビルド終了日時 |
 | retriable | tinyint(1) |  | false |  |  | 再ビルド可能フラグ |
 | application_id | varchar(22) |  | false |  | [applications](applications.md) | アプリケーションID |

@@ -97,9 +97,11 @@ func ingressRouteBase(app *domain.Application, website *domain.Website, labels m
 		rule = fmt.Sprintf("Host(`%s`)", website.FQDN)
 	} else {
 		rule = fmt.Sprintf("Host(`%s`) && PathPrefix(`%s`)", website.FQDN, website.PathPrefix)
-		middleware := stripMiddleware(app, website, labels)
-		middlewares = append(middlewares, middleware)
-		middlewareRefs = append(middlewareRefs, v1alpha1.MiddlewareRef{Name: middleware.Name})
+		if website.StripPrefix {
+			middleware := stripMiddleware(app, website, labels)
+			middlewares = append(middlewares, middleware)
+			middlewareRefs = append(middlewareRefs, v1alpha1.MiddlewareRef{Name: middleware.Name})
+		}
 	}
 
 	var tls *v1alpha1.TLS

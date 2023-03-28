@@ -20,7 +20,7 @@ CREATE TABLE `applications` (
   `created_at` datetime(6) NOT NULL COMMENT '作成日時',
   `updated_at` datetime(6) NOT NULL COMMENT '更新日時',
   PRIMARY KEY (`id`),
-  UNIQUE KEY `repository_id` (`repository_id`,`branch_name`),
+  KEY `fk_applications_repository_id` (`repository_id`),
   KEY `fk_applications_state` (`state`),
   CONSTRAINT `fk_applications_repository_id` FOREIGN KEY (`repository_id`) REFERENCES `repositories` (`id`),
   CONSTRAINT `fk_applications_state` FOREIGN KEY (`state`) REFERENCES `application_state` (`state`)
@@ -51,15 +51,14 @@ CREATE TABLE `applications` (
 | fk_applications_repository_id | FOREIGN KEY | FOREIGN KEY (repository_id) REFERENCES repositories (id) |
 | fk_applications_state | FOREIGN KEY | FOREIGN KEY (state) REFERENCES application_state (state) |
 | PRIMARY | PRIMARY KEY | PRIMARY KEY (id) |
-| repository_id | UNIQUE | UNIQUE KEY repository_id (repository_id, branch_name) |
 
 ## Indexes
 
 | Name | Definition |
 | ---- | ---------- |
+| fk_applications_repository_id | KEY fk_applications_repository_id (repository_id) USING BTREE |
 | fk_applications_state | KEY fk_applications_state (state) USING BTREE |
 | PRIMARY | PRIMARY KEY (id) USING BTREE |
-| repository_id | UNIQUE KEY repository_id (repository_id, branch_name) USING BTREE |
 
 ## Relations
 

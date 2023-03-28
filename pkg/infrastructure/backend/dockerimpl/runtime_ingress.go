@@ -45,12 +45,14 @@ func routerBase(app *domain.Application, website *domain.Website, middlewares m)
 		rule = fmt.Sprintf("Host(`%s`)", website.FQDN)
 	} else {
 		rule = fmt.Sprintf("Host(`%s`) && PathPrefix(`%s`)", website.FQDN, website.PathPrefix)
-		middlewareName := stripMiddlewareName(website)
-		middlewareNames = append(middlewareNames, middlewareName)
-		middlewares[middlewareName] = m{
-			"stripPrefix": m{
-				"prefixes": []string{website.PathPrefix},
-			},
+		if website.StripPrefix {
+			middlewareName := stripMiddlewareName(website)
+			middlewareNames = append(middlewareNames, middlewareName)
+			middlewares[middlewareName] = m{
+				"stripPrefix": m{
+					"prefixes": []string{website.PathPrefix},
+				},
+			}
 		}
 	}
 

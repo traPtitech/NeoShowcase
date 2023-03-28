@@ -140,6 +140,7 @@ CREATE TABLE `websites`
     `id`             VARCHAR(22)    NOT NULL COMMENT 'サイトID',
     `fqdn`           VARCHAR(100)   NOT NULL COMMENT 'サイトURLのFQDN',
     `path_prefix`    VARCHAR(100)   NOT NULL COMMENT 'サイトPathのPrefix',
+    `strip_prefix`   TINYINT(1)     NOT NULL COMMENT 'PathのPrefixを落とすかどうか',
     `https`          TINYINT(1)     NOT NULL COMMENT 'httpsの接続かどうか',
     `http_port`      INT DEFAULT 80 NOT NULL COMMENT 'コンテナhttpポート番号',
     `created_at`     DATETIME(6)    NOT NULL COMMENT '作成日時',

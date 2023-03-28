@@ -100,11 +100,12 @@ func (s *ApplicationService) CreateApplication(ctx context.Context, req *pb.Crea
 		Config:        fromPBApplicationConfig(req.Config),
 		Websites: lo.Map(req.Websites, func(website *pb.CreateWebsiteRequest, i int) *domain.Website {
 			return &domain.Website{
-				ID:         domain.NewID(),
-				FQDN:       website.Fqdn,
-				PathPrefix: website.PathPrefix,
-				HTTPS:      website.Https,
-				HTTPPort:   int(website.HttpPort),
+				ID:          domain.NewID(),
+				FQDN:        website.Fqdn,
+				PathPrefix:  website.PathPrefix,
+				StripPrefix: website.StripPrefix,
+				HTTPS:       website.Https,
+				HTTPPort:    int(website.HttpPort),
 			}
 		}),
 		StartOnCreate: req.StartOnCreate,

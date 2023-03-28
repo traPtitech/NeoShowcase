@@ -9,13 +9,13 @@
 | [application_state](application_state.md) | 1 | デプロイの状態 | BASE TABLE |
 | [artifacts](artifacts.md) | 5 | 静的ファイル生成物テーブル | BASE TABLE |
 | [available_domains](available_domains.md) | 1 | 利用可能ドメインテーブル | BASE TABLE |
-| [builds](builds.md) | 7 | ビルドテーブル | BASE TABLE |
+| [builds](builds.md) | 8 | ビルドテーブル | BASE TABLE |
 | [build_status](build_status.md) | 1 | ビルドの状態 | BASE TABLE |
 | [environments](environments.md) | 4 | 環境変数テーブル | BASE TABLE |
 | [owners](owners.md) | 2 | アプリケーション所有者テーブル | BASE TABLE |
 | [repositories](repositories.md) | 3 | Gitリポジトリテーブル | BASE TABLE |
 | [users](users.md) | 2 | ユーザーテーブル | BASE TABLE |
-| [websites](websites.md) | 8 | Webサイトテーブル | BASE TABLE |
+| [websites](websites.md) | 9 | Webサイトテーブル | BASE TABLE |
 
 ## Relations
 
