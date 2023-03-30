@@ -191,7 +191,9 @@ func (s *builderService) tryStartTask(task *builder.Task) error {
 		return err
 	}
 
-	repo, err := s.gitRepo.GetRepository(context.Background(), task.BuildID)
+	log.Infof("Starting build for %v", task.BuildID)
+
+	repo, err := s.gitRepo.GetRepository(context.Background(), task.BuildSource.RepositoryID)
 	if err != nil {
 		return err
 	}
@@ -224,6 +226,7 @@ func (s *builderService) tryStartTask(task *builder.Task) error {
 		s.state = nil
 		s.stateCancel = nil
 		s.statusLock.Unlock()
+		log.Infof("Build settled for %v", task.BuildID)
 	}()
 
 	return nil
