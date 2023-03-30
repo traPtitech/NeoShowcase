@@ -40,6 +40,92 @@ export class ApplicationServiceClient {
     this.options_ = options;
   }
 
+  methodDescriptorGetRepositories = new grpcWeb.MethodDescriptor(
+    '/neoshowcase.protobuf.ApplicationService/GetRepositories',
+    grpcWeb.MethodType.UNARY,
+    google_protobuf_empty_pb.Empty,
+    neoshowcase_protobuf_apiserver_pb.GetRepositoriesResponse,
+    (request: google_protobuf_empty_pb.Empty) => {
+      return request.serializeBinary();
+    },
+    neoshowcase_protobuf_apiserver_pb.GetRepositoriesResponse.deserializeBinary
+  );
+
+  getRepositories(
+    request: google_protobuf_empty_pb.Empty,
+    metadata: grpcWeb.Metadata | null): Promise<neoshowcase_protobuf_apiserver_pb.GetRepositoriesResponse>;
+
+  getRepositories(
+    request: google_protobuf_empty_pb.Empty,
+    metadata: grpcWeb.Metadata | null,
+    callback: (err: grpcWeb.RpcError,
+               response: neoshowcase_protobuf_apiserver_pb.GetRepositoriesResponse) => void): grpcWeb.ClientReadableStream<neoshowcase_protobuf_apiserver_pb.GetRepositoriesResponse>;
+
+  getRepositories(
+    request: google_protobuf_empty_pb.Empty,
+    metadata: grpcWeb.Metadata | null,
+    callback?: (err: grpcWeb.RpcError,
+               response: neoshowcase_protobuf_apiserver_pb.GetRepositoriesResponse) => void) {
+    if (callback !== undefined) {
+      return this.client_.rpcCall(
+        this.hostname_ +
+          '/neoshowcase.protobuf.ApplicationService/GetRepositories',
+        request,
+        metadata || {},
+        this.methodDescriptorGetRepositories,
+        callback);
+    }
+    return this.client_.unaryCall(
+    this.hostname_ +
+      '/neoshowcase.protobuf.ApplicationService/GetRepositories',
+    request,
+    metadata || {},
+    this.methodDescriptorGetRepositories);
+  }
+
+  methodDescriptorCreateRepository = new grpcWeb.MethodDescriptor(
+    '/neoshowcase.protobuf.ApplicationService/CreateRepository',
+    grpcWeb.MethodType.UNARY,
+    neoshowcase_protobuf_apiserver_pb.CreateRepositoryRequest,
+    neoshowcase_protobuf_apiserver_pb.Repository,
+    (request: neoshowcase_protobuf_apiserver_pb.CreateRepositoryRequest) => {
+      return request.serializeBinary();
+    },
+    neoshowcase_protobuf_apiserver_pb.Repository.deserializeBinary
+  );
+
+  createRepository(
+    request: neoshowcase_protobuf_apiserver_pb.CreateRepositoryRequest,
+    metadata: grpcWeb.Metadata | null): Promise<neoshowcase_protobuf_apiserver_pb.Repository>;
+
+  createRepository(
+    request: neoshowcase_protobuf_apiserver_pb.CreateRepositoryRequest,
+    metadata: grpcWeb.Metadata | null,
+    callback: (err: grpcWeb.RpcError,
+               response: neoshowcase_protobuf_apiserver_pb.Repository) => void): grpcWeb.ClientReadableStream<neoshowcase_protobuf_apiserver_pb.Repository>;
+
+  createRepository(
+    request: neoshowcase_protobuf_apiserver_pb.CreateRepositoryRequest,
+    metadata: grpcWeb.Metadata | null,
+    callback?: (err: grpcWeb.RpcError,
+               response: neoshowcase_protobuf_apiserver_pb.Repository) => void) {
+    if (callback !== undefined) {
+      return this.client_.rpcCall(
+        this.hostname_ +
+          '/neoshowcase.protobuf.ApplicationService/CreateRepository',
+        request,
+        metadata || {},
+        this.methodDescriptorCreateRepository,
+        callback);
+    }
+    return this.client_.unaryCall(
+    this.hostname_ +
+      '/neoshowcase.protobuf.ApplicationService/CreateRepository',
+    request,
+    metadata || {},
+    this.methodDescriptorCreateRepository);
+  }
+
   methodDescriptorGetApplications = new grpcWeb.MethodDescriptor(
     '/neoshowcase.protobuf.ApplicationService/GetApplications',
     grpcWeb.MethodType.UNARY,

@@ -19,16 +19,6 @@ type GetApplicationCondition struct {
 	InSync optional.Of[bool]
 }
 
-type CreateApplicationArgs struct {
-	Name         string
-	RepositoryID string
-	BranchName   string
-	BuildType    builder.BuildType
-	State        ApplicationState
-	Config       ApplicationConfig
-	Websites     []*Website
-}
-
 type UpdateApplicationArgs struct {
 	State         optional.Of[ApplicationState]
 	CurrentCommit optional.Of[string]
@@ -38,7 +28,7 @@ type UpdateApplicationArgs struct {
 type ApplicationRepository interface {
 	GetApplications(ctx context.Context, cond GetApplicationCondition) ([]*Application, error)
 	GetApplication(ctx context.Context, id string) (*Application, error)
-	CreateApplication(ctx context.Context, args CreateApplicationArgs) (*Application, error)
+	CreateApplication(ctx context.Context, app *Application) error
 	UpdateApplication(ctx context.Context, id string, args UpdateApplicationArgs) error
 	RegisterApplicationOwner(ctx context.Context, applicationID string, userID string) error
 	GetWebsites(ctx context.Context, applicationIDs []string) ([]*Website, error)
@@ -85,15 +75,15 @@ type EnvironmentRepository interface {
 	SetEnv(ctx context.Context, applicationID, key, value string) error
 }
 
-type RegisterRepositoryArgs struct {
-	Name string
-	URL  string
+type GetRepositoryCondition struct {
+	UserID optional.Of[string]
 }
 
 type GitRepositoryRepository interface {
-	RegisterRepository(ctx context.Context, args RegisterRepositoryArgs) (Repository, error)
-	GetRepositoryByID(ctx context.Context, id string) (Repository, error)
-	GetRepository(ctx context.Context, rawURL string) (Repository, error)
+	GetRepositories(ctx context.Context, condition GetRepositoryCondition) ([]*Repository, error)
+	GetRepository(ctx context.Context, id string) (*Repository, error)
+	CreateRepository(ctx context.Context, repo *Repository) error
+	RegisterRepositoryOwner(ctx context.Context, repositoryID string, userID string) error
 }
 
 type CreateUserArgs struct {

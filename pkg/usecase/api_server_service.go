@@ -6,7 +6,6 @@ import (
 	"fmt"
 
 	"github.com/traPtitech/neoshowcase/pkg/domain"
-	"github.com/traPtitech/neoshowcase/pkg/domain/builder"
 	"github.com/traPtitech/neoshowcase/pkg/domain/event"
 	"github.com/traPtitech/neoshowcase/pkg/interface/grpc/pb"
 	"github.com/traPtitech/neoshowcase/pkg/interface/repository"
@@ -23,22 +22,13 @@ func handleRepoError[T any](entity T, err error) (T, error) {
 	}
 }
 
-type CreateApplicationArgs struct {
-	UserID        string
-	Name          string
-	RepositoryURL string
-	BranchName    string
-	BuildType     builder.BuildType
-	Config        domain.ApplicationConfig
-	Websites      []*domain.Website
-	StartOnCreate bool
-}
-
 type APIServerService interface {
-	GetApplicationsByUserID(ctx context.Context, userID string) ([]*domain.Application, error)
+	GetRepositories(ctx context.Context) ([]*domain.Repository, error)
+	CreateRepository(ctx context.Context, repo *domain.Repository) error
+	GetApplications(ctx context.Context) ([]*domain.Application, error)
 	GetAvailableDomains(ctx context.Context) (domain.AvailableDomainSlice, error)
 	AddAvailableDomain(ctx context.Context, domain string) error
-	CreateApplication(ctx context.Context, args CreateApplicationArgs) (*domain.Application, error)
+	CreateApplication(ctx context.Context, app *domain.Application, startOnCreate bool) (*domain.Application, error)
 	GetApplication(ctx context.Context, id string) (*domain.Application, error)
 	DeleteApplication(ctx context.Context, id string) error
 	GetApplicationBuilds(ctx context.Context, applicationID string) ([]*domain.Build, error)
@@ -93,8 +83,16 @@ func NewAPIServerService(
 	}
 }
 
-func (s *apiServerService) GetApplicationsByUserID(ctx context.Context, userID string) ([]*domain.Application, error) {
-	return s.appRepo.GetApplications(ctx, domain.GetApplicationCondition{UserID: optional.From(userID)})
+func (s *apiServerService) GetRepositories(ctx context.Context) ([]*domain.Repository, error) {
+	return s.gitRepo.GetRepositories(ctx, domain.GetRepositoryCondition{})
+}
+
+func (s *apiServerService) CreateRepository(ctx context.Context, repo *domain.Repository) error {
+	return s.gitRepo.CreateRepository(ctx, repo)
+}
+
+func (s *apiServerService) GetApplications(ctx context.Context) ([]*domain.Application, error) {
+	return s.appRepo.GetApplications(ctx, domain.GetApplicationCondition{})
 }
 
 func (s *apiServerService) GetAvailableDomains(ctx context.Context) (domain.AvailableDomainSlice, error) {
@@ -109,31 +107,12 @@ func (s *apiServerService) AddAvailableDomain(ctx context.Context, d string) err
 	return s.adRepo.AddAvailableDomain(ctx, d)
 }
 
-func (s *apiServerService) CreateApplication(ctx context.Context, args CreateApplicationArgs) (*domain.Application, error) {
-	repo, err := s.gitRepo.GetRepository(ctx, args.RepositoryURL)
-	if err != nil && err != repository.ErrNotFound {
-		return nil, err
-	}
-
-	if err == repository.ErrNotFound {
-		repoName, err := domain.ExtractNameFromRepositoryURL(args.RepositoryURL)
-		if err != nil {
-			return nil, newError(ErrorTypeBadRequest, "malformed repository url", err)
-		}
-		repo, err = s.gitRepo.RegisterRepository(ctx, domain.RegisterRepositoryArgs{
-			Name: repoName,
-			URL:  args.RepositoryURL,
-		})
-		if err != nil {
-			return nil, err
-		}
-	}
-
+func (s *apiServerService) CreateApplication(ctx context.Context, app *domain.Application, startOnCreate bool) (*domain.Application, error) {
 	domains, err := s.adRepo.GetAvailableDomains(ctx)
 	if err != nil {
 		return nil, err
 	}
-	for _, website := range args.Websites {
+	for _, website := range app.Websites {
 		if !website.IsValid() {
 			return nil, newError(ErrorTypeBadRequest, "invalid website", nil)
 		}
@@ -142,38 +121,24 @@ func (s *apiServerService) CreateApplication(ctx context.Context, args CreateApp
 		}
 	}
 
-	var initialState domain.ApplicationState
-	if args.StartOnCreate {
-		initialState = domain.ApplicationStateDeploying
+	if startOnCreate {
+		app.State = domain.ApplicationStateDeploying
 	} else {
-		initialState = domain.ApplicationStateIdle
+		app.State = domain.ApplicationStateIdle
 	}
-	application, err := s.appRepo.CreateApplication(ctx, domain.CreateApplicationArgs{
-		Name:         args.Name,
-		RepositoryID: repo.ID,
-		BranchName:   args.BranchName,
-		BuildType:    args.BuildType,
-		State:        initialState,
-		Config:       args.Config,
-		Websites:     args.Websites,
-	})
+	err = s.appRepo.CreateApplication(ctx, app)
 	if err != nil {
 		return nil, err
 	}
 
-	err = s.appRepo.RegisterApplicationOwner(ctx, application.ID, args.UserID)
-	if err != nil {
-		return nil, err
-	}
-
-	err = s.createApplicationDatabase(ctx, application)
+	err = s.createApplicationDatabase(ctx, app)
 	if err != nil {
 		return nil, err
 	}
 
 	s.bus.Publish(event.FetcherFetchRequest, nil)
 
-	return application, nil
+	return s.GetApplication(ctx, app.ID)
 }
 
 func (s *apiServerService) createApplicationDatabase(ctx context.Context, app *domain.Application) error {

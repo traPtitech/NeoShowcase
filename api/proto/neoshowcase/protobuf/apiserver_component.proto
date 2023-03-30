@@ -6,7 +6,7 @@ import "google/protobuf/empty.proto";
 import "neoshowcase/protobuf/apiserver.proto";
 
 message BuildSource {
-  string repository_url = 1;
+  string repository_id = 1;
   string commit = 2;
 }
 

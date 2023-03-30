@@ -3,7 +3,6 @@ package domain
 import (
 	"context"
 	"fmt"
-	"net/url"
 	"strings"
 	"time"
 
@@ -104,15 +103,18 @@ var EmptyCommit = strings.Repeat("0", 40)
 type Application struct {
 	ID            string
 	Name          string
+	RepositoryID  string
 	BranchName    string
 	BuildType     builder.BuildType
 	State         ApplicationState
 	CurrentCommit string
 	WantCommit    string
+	CreatedAt     time.Time
+	UpdatedAt     time.Time
 
-	Config     ApplicationConfig
-	Repository Repository
-	Websites   []*Website
+	Config   ApplicationConfig
+	Websites []*Website
+	OwnerIDs []string
 }
 
 type Artifact struct {
@@ -193,19 +195,47 @@ type Environment struct {
 }
 
 type Repository struct {
-	ID  string
-	URL string
+	ID       string
+	Name     string
+	URL      string
+	Auth     optional.Of[RepositoryAuth]
+	OwnerIDs []string
 }
 
-func ExtractNameFromRepositoryURL(repositoryURL string) (string, error) {
-	u, err := url.Parse(repositoryURL)
-	if err != nil {
-		return "", err
+type RepositoryAuthMethod int
+
+const (
+	RepositoryAuthMethodBasic RepositoryAuthMethod = iota
+	RepositoryAuthMethodSSH
+)
+
+func (t RepositoryAuthMethod) String() string {
+	switch t {
+	case RepositoryAuthMethodBasic:
+		return "basic"
+	case RepositoryAuthMethodSSH:
+		return "ssh"
+	default:
+		return ""
 	}
-	path := u.Path
-	path = strings.TrimPrefix(path, "/")
-	path = strings.TrimSuffix(path, ".git")
-	return path, nil
+}
+
+func RepositoryAuthMethodFromString(s string) RepositoryAuthMethod {
+	switch s {
+	case "basic":
+		return RepositoryAuthMethodBasic
+	case "ssh":
+		return RepositoryAuthMethodSSH
+	default:
+		panic(fmt.Sprintf("unknown auth type: %v", s))
+	}
+}
+
+type RepositoryAuth struct {
+	Method   RepositoryAuthMethod
+	Username string
+	Password string
+	SSHKey   string
 }
 
 type Website struct {

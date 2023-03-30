@@ -50,18 +50,17 @@ func (mr *MockApplicationRepositoryMockRecorder) AddWebsite(ctx, applicationID, 
 }
 
 // CreateApplication mocks base method.
-func (m *MockApplicationRepository) CreateApplication(ctx context.Context, args domain.CreateApplicationArgs) (*domain.Application, error) {
+func (m *MockApplicationRepository) CreateApplication(ctx context.Context, app *domain.Application) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "CreateApplication", ctx, args)
-	ret0, _ := ret[0].(*domain.Application)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
+	ret := m.ctrl.Call(m, "CreateApplication", ctx, app)
+	ret0, _ := ret[0].(error)
+	return ret0
 }
 
 // CreateApplication indicates an expected call of CreateApplication.
-func (mr *MockApplicationRepositoryMockRecorder) CreateApplication(ctx, args interface{}) *gomock.Call {
+func (mr *MockApplicationRepositoryMockRecorder) CreateApplication(ctx, app interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateApplication", reflect.TypeOf((*MockApplicationRepository)(nil).CreateApplication), ctx, args)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateApplication", reflect.TypeOf((*MockApplicationRepository)(nil).CreateApplication), ctx, app)
 }
 
 // DeleteWebsite mocks base method.
@@ -424,49 +423,62 @@ func (m *MockGitRepositoryRepository) EXPECT() *MockGitRepositoryRepositoryMockR
 	return m.recorder
 }
 
-// GetRepository mocks base method.
-func (m *MockGitRepositoryRepository) GetRepository(ctx context.Context, rawURL string) (domain.Repository, error) {
+// CreateRepository mocks base method.
+func (m *MockGitRepositoryRepository) CreateRepository(ctx context.Context, repo *domain.Repository) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetRepository", ctx, rawURL)
-	ret0, _ := ret[0].(domain.Repository)
+	ret := m.ctrl.Call(m, "CreateRepository", ctx, repo)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// CreateRepository indicates an expected call of CreateRepository.
+func (mr *MockGitRepositoryRepositoryMockRecorder) CreateRepository(ctx, repo interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateRepository", reflect.TypeOf((*MockGitRepositoryRepository)(nil).CreateRepository), ctx, repo)
+}
+
+// GetRepositories mocks base method.
+func (m *MockGitRepositoryRepository) GetRepositories(ctx context.Context, condition domain.GetRepositoryCondition) ([]*domain.Repository, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetRepositories", ctx, condition)
+	ret0, _ := ret[0].([]*domain.Repository)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetRepositories indicates an expected call of GetRepositories.
+func (mr *MockGitRepositoryRepositoryMockRecorder) GetRepositories(ctx, condition interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetRepositories", reflect.TypeOf((*MockGitRepositoryRepository)(nil).GetRepositories), ctx, condition)
+}
+
+// GetRepository mocks base method.
+func (m *MockGitRepositoryRepository) GetRepository(ctx context.Context, id string) (*domain.Repository, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetRepository", ctx, id)
+	ret0, _ := ret[0].(*domain.Repository)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // GetRepository indicates an expected call of GetRepository.
-func (mr *MockGitRepositoryRepositoryMockRecorder) GetRepository(ctx, rawURL interface{}) *gomock.Call {
+func (mr *MockGitRepositoryRepositoryMockRecorder) GetRepository(ctx, id interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetRepository", reflect.TypeOf((*MockGitRepositoryRepository)(nil).GetRepository), ctx, rawURL)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetRepository", reflect.TypeOf((*MockGitRepositoryRepository)(nil).GetRepository), ctx, id)
 }
 
-// GetRepositoryByID mocks base method.
-func (m *MockGitRepositoryRepository) GetRepositoryByID(ctx context.Context, id string) (domain.Repository, error) {
+// RegisterRepositoryOwner mocks base method.
+func (m *MockGitRepositoryRepository) RegisterRepositoryOwner(ctx context.Context, repositoryID, userID string) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetRepositoryByID", ctx, id)
-	ret0, _ := ret[0].(domain.Repository)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
+	ret := m.ctrl.Call(m, "RegisterRepositoryOwner", ctx, repositoryID, userID)
+	ret0, _ := ret[0].(error)
+	return ret0
 }
 
-// GetRepositoryByID indicates an expected call of GetRepositoryByID.
-func (mr *MockGitRepositoryRepositoryMockRecorder) GetRepositoryByID(ctx, id interface{}) *gomock.Call {
+// RegisterRepositoryOwner indicates an expected call of RegisterRepositoryOwner.
+func (mr *MockGitRepositoryRepositoryMockRecorder) RegisterRepositoryOwner(ctx, repositoryID, userID interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetRepositoryByID", reflect.TypeOf((*MockGitRepositoryRepository)(nil).GetRepositoryByID), ctx, id)
-}
-
-// RegisterRepository mocks base method.
-func (m *MockGitRepositoryRepository) RegisterRepository(ctx context.Context, args domain.RegisterRepositoryArgs) (domain.Repository, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "RegisterRepository", ctx, args)
-	ret0, _ := ret[0].(domain.Repository)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// RegisterRepository indicates an expected call of RegisterRepository.
-func (mr *MockGitRepositoryRepositoryMockRecorder) RegisterRepository(ctx, args interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RegisterRepository", reflect.TypeOf((*MockGitRepositoryRepository)(nil).RegisterRepository), ctx, args)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RegisterRepositoryOwner", reflect.TypeOf((*MockGitRepositoryRepository)(nil).RegisterRepositoryOwner), ctx, repositoryID, userID)
 }
 
 // MockUserRepository is a mock of UserRepository interface.

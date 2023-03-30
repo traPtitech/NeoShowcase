@@ -19,7 +19,7 @@
 <text text-anchor="start" x="450.7853" y="-785.3" font-family="Arial" font-size="14.00" fill="#666666">[BASE TABLE]</text>
 <polygon fill="none" stroke="#000000" points="296,-742.5 296,-772.5 551,-772.5 551,-742.5 296,-742.5"/>
 <text text-anchor="start" x="303" y="-753.9" font-family="Arial" font-size="14.00" fill="#000000">application_id </text>
-<text text-anchor="start" x="392.4684" y="-753.9" font-family="Arial" font-size="14.00" fill="#666666">[varchar(22)]</text>
+<text text-anchor="start" x="392.4684" y="-753.9" font-family="Arial" font-size="14.00" fill="#666666">[char(22)]</text>
 <polygon fill="none" stroke="#000000" points="296,-712.5 296,-742.5 551,-742.5 551,-712.5 296,-712.5"/>
 <text text-anchor="start" x="303" y="-723.9" font-family="Arial" font-size="14.00" fill="#000000">use_mariadb </text>
 <text text-anchor="start" x="387.7966" y="-723.9" font-family="Arial" font-size="14.00" fill="#666666">[tinyint(1)]</text>
@@ -56,7 +56,7 @@
 <text text-anchor="start" x="426.2747" y="-355.3" font-family="Arial" font-size="14.00" fill="#666666">[BASE TABLE]</text>
 <polygon fill="none" stroke="#000000" points="309,-312.5 309,-342.5 538,-342.5 538,-312.5 309,-312.5"/>
 <text text-anchor="start" x="316" y="-323.9" font-family="Arial" font-size="14.00" fill="#000000">id </text>
-<text text-anchor="start" x="330.7798" y="-323.9" font-family="Arial" font-size="14.00" fill="#666666">[varchar(22)]</text>
+<text text-anchor="start" x="330.7798" y="-323.9" font-family="Arial" font-size="14.00" fill="#666666">[char(22)]</text>
 <polygon fill="none" stroke="#000000" points="309,-282.5 309,-312.5 538,-312.5 538,-282.5 309,-282.5"/>
 <text text-anchor="start" x="316" y="-293.9" font-family="Arial" font-size="14.00" fill="#000000">name </text>
 <text text-anchor="start" x="354.899" y="-293.9" font-family="Arial" font-size="14.00" fill="#666666">[varchar(100)]</text>

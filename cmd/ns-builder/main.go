@@ -4,17 +4,13 @@ import (
 	"context"
 	"fmt"
 	"math/rand"
-	"strings"
 	"time"
 
-	buildkit "github.com/moby/buildkit/client"
 	"github.com/moby/buildkit/util/appdefaults"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 
-	"github.com/traPtitech/neoshowcase/pkg/domain"
-	"github.com/traPtitech/neoshowcase/pkg/infrastructure/storage"
 	"github.com/traPtitech/neoshowcase/pkg/util/cli"
 )
 
@@ -76,6 +72,7 @@ func main() {
 	cli.SetupLogLevelFlag(flags)
 
 	viper.SetDefault("buildkit.address", appdefaults.Address)
+	viper.SetDefault("repository.privateKeyFile", "")
 	viper.SetDefault("ns.addr", "ns:10000")
 	viper.SetDefault("ns.insecure", false)
 	viper.SetDefault("db.host", "127.0.0.1")
@@ -103,27 +100,4 @@ func main() {
 	if err := rootCommand.Execute(); err != nil {
 		log.Fatal(err)
 	}
-}
-
-func initStorage(c domain.StorageConfig) (domain.Storage, error) {
-	switch strings.ToLower(c.Type) {
-	case "local":
-		return storage.NewLocalStorage(c.Local.Dir)
-	case "s3":
-		return storage.NewS3Storage(c.S3.Bucket, c.S3.AccessKey, c.S3.AccessSecret, c.S3.Region, c.S3.Endpoint)
-	case "swift":
-		return storage.NewSwiftStorage(c.Swift.Container, c.Swift.UserName, c.Swift.APIKey, c.Swift.TenantName, c.Swift.TenantID, c.Swift.AuthURL)
-	default:
-		return nil, fmt.Errorf("unknown storage: %s", c.Type)
-	}
-}
-
-func initBuildkitClient(c Config) (*buildkit.Client, error) {
-	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
-	defer cancel()
-	client, err := buildkit.New(ctx, c.Buildkit.Address)
-	if err != nil {
-		return nil, fmt.Errorf("failed to initialize Buildkit Client: %w", err)
-	}
-	return client, nil
 }

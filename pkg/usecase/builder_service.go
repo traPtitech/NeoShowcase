@@ -13,6 +13,7 @@ import (
 	"github.com/go-git/go-git/v5"
 	"github.com/go-git/go-git/v5/config"
 	"github.com/go-git/go-git/v5/plumbing"
+	"github.com/go-git/go-git/v5/plumbing/transport/ssh"
 	buildkit "github.com/moby/buildkit/client"
 	"github.com/moby/buildkit/client/llb"
 	"github.com/moby/buildkit/frontend/dockerfile/dockerfile2llb"
@@ -45,10 +46,12 @@ type builderService struct {
 	client   domain.ComponentServiceClient
 	buildkit *buildkit.Client
 	storage  domain.Storage
+	pubKey   *ssh.PublicKeys
 
 	// TODO: 後で消す
 	artifactRepo domain.ArtifactRepository
 	buildRepo    domain.BuildRepository
+	gitRepo      domain.GitRepositoryRepository
 
 	state       *state
 	stateCancel func()
@@ -61,15 +64,19 @@ func NewBuilderService(
 	client domain.ComponentServiceClient,
 	buildkit *buildkit.Client,
 	storage domain.Storage,
+	pubKey *ssh.PublicKeys,
 	artifactRepo domain.ArtifactRepository,
 	buildRepo domain.BuildRepository,
+	gitRepo domain.GitRepositoryRepository,
 ) BuilderService {
 	return &builderService{
 		client:       client,
 		buildkit:     buildkit,
 		storage:      storage,
+		pubKey:       pubKey,
 		artifactRepo: artifactRepo,
 		buildRepo:    buildRepo,
+		gitRepo:      gitRepo,
 	}
 }
 
@@ -102,7 +109,7 @@ func (s *builderService) cancelBuild(buildID string) {
 	defer s.statusLock.Unlock()
 
 	if s.state != nil && s.stateCancel != nil {
-		if s.state.build.ID == buildID {
+		if s.state.task.BuildID == buildID {
 			s.stateCancel()
 		}
 	}
@@ -117,8 +124,8 @@ func (s *builderService) onRequest(req *pb.BuilderRequest) {
 			ApplicationID: b.ApplicationId,
 			Static:        false,
 			BuildSource: &builder.BuildSource{
-				RepositoryUrl: b.Source.RepositoryUrl,
-				Commit:        b.Source.Commit,
+				RepositoryID: b.Source.RepositoryId,
+				Commit:       b.Source.Commit,
 			},
 			BuildOptions: &builder.BuildOptions{
 				BaseImageName:  b.Options.BaseImageName,
@@ -140,8 +147,8 @@ func (s *builderService) onRequest(req *pb.BuilderRequest) {
 			ApplicationID: b.ApplicationId,
 			Static:        true,
 			BuildSource: &builder.BuildSource{
-				RepositoryUrl: b.Source.RepositoryUrl,
-				Commit:        b.Source.Commit,
+				RepositoryID: b.Source.RepositoryId,
+				Commit:       b.Source.Commit,
 			},
 			BuildOptions: &builder.BuildOptions{
 				BaseImageName:  b.Options.BaseImageName,
@@ -184,9 +191,14 @@ func (s *builderService) tryStartTask(task *builder.Task) error {
 		return err
 	}
 
+	repo, err := s.gitRepo.GetRepository(context.Background(), task.BuildID)
+	if err != nil {
+		return err
+	}
+
 	ctx, cancel := context.WithCancel(context.Background())
 	finish := make(chan struct{})
-	st := newState(task)
+	st := newState(task, repo)
 	s.state = st
 	s.stateCancel = func() {
 		cancel()
@@ -198,8 +210,8 @@ func (s *builderService) tryStartTask(task *builder.Task) error {
 			ApplicationId: task.ApplicationID,
 			BuildId:       task.BuildID,
 		}}}
-		status := s.process(ctx, st, task)
-		s.finalize(context.Background(), st, task, status) // don't want finalization tasks to be cancelled
+		status := s.process(ctx, st)
+		s.finalize(context.Background(), st, status) // don't want finalization tasks to be cancelled
 		s.response <- &pb.BuilderResponse{Type: pb.BuilderResponse_BUILD_SETTLED, Body: &pb.BuilderResponse_Settled{Settled: &pb.BuildSettled{
 			ApplicationId: task.ApplicationID,
 			BuildId:       task.BuildID,
@@ -217,24 +229,24 @@ func (s *builderService) tryStartTask(task *builder.Task) error {
 	return nil
 }
 
-func (s *builderService) process(ctx context.Context, st *state, task *builder.Task) builder.BuildStatus {
+func (s *builderService) process(ctx context.Context, st *state) builder.BuildStatus {
 	ctx, cancel := context.WithCancel(ctx)
 	defer cancel()
-	go s.updateStatusLoop(ctx, task.BuildID)
+	go s.updateStatusLoop(ctx, st.task.BuildID)
 
-	err := st.initTempFiles(task.Static)
+	err := st.initTempFiles(st.task.Static)
 	if err != nil {
 		log.WithError(err).Error("failed to init temp files")
 		return builder.BuildStatusFailed
 	}
 
-	err = s.cloneRepository(ctx, st, task)
+	err = s.cloneRepository(ctx, st)
 	if err != nil {
 		log.WithError(err).Error("failed to clone repository")
 		return builder.BuildStatusFailed
 	}
 
-	return s.build(ctx, st, task)
+	return s.build(ctx, st)
 }
 
 func (s *builderService) updateStatusLoop(ctx context.Context, buildID string) {
@@ -253,51 +265,51 @@ func (s *builderService) updateStatusLoop(ctx context.Context, buildID string) {
 	}
 }
 
-func (s *builderService) cloneRepository(ctx context.Context, st *state, task *builder.Task) error {
+func (s *builderService) cloneRepository(ctx context.Context, st *state) error {
 	repo, err := git.PlainInit(st.repositoryTempDir, false)
 	if err != nil {
-		_ = os.RemoveAll(st.repositoryTempDir)
 		return fmt.Errorf("failed to init repository: %w", err)
+	}
+	auth, err := domain.GitAuthMethod(st.repository, s.pubKey)
+	if err != nil {
+		return err
 	}
 	remote, err := repo.CreateRemote(&config.RemoteConfig{
 		Name: "origin",
-		URLs: []string{task.BuildSource.RepositoryUrl},
+		URLs: []string{st.repository.URL},
 	})
 	if err != nil {
-		_ = os.RemoveAll(st.repositoryTempDir)
 		return fmt.Errorf("failed to add remote: %w", err)
 	}
 	targetRef := plumbing.NewRemoteReferenceName("origin", "target")
 	err = remote.FetchContext(ctx, &git.FetchOptions{
 		RemoteName: "origin",
-		RefSpecs:   []config.RefSpec{config.RefSpec(fmt.Sprintf("+%s:%s", task.BuildSource.Commit, targetRef))},
+		RefSpecs:   []config.RefSpec{config.RefSpec(fmt.Sprintf("+%s:%s", st.task.BuildSource.Commit, targetRef))},
 		Depth:      1,
+		Auth:       auth,
 	})
 	if err != nil {
-		_ = os.RemoveAll(st.repositoryTempDir)
 		return fmt.Errorf("failed to clone repository: %w", err)
 	}
 	wt, err := repo.Worktree()
 	if err != nil {
-		_ = os.RemoveAll(st.repositoryTempDir)
 		return fmt.Errorf("failed to get worktree: %w", err)
 	}
 	err = wt.Checkout(&git.CheckoutOptions{Branch: targetRef})
 	if err != nil {
-		_ = os.RemoveAll(st.repositoryTempDir)
 		return fmt.Errorf("failed to checkout: %w", err)
 	}
 	return nil
 }
 
-func (s *builderService) build(ctx context.Context, st *state, task *builder.Task) builder.BuildStatus {
+func (s *builderService) build(ctx context.Context, st *state) builder.BuildStatus {
 	st.writeLog("[ns-builder] Build started.")
 
 	var err error
-	if task.Static {
-		err = s.buildStatic(ctx, task, st)
+	if st.task.Static {
+		err = s.buildStatic(ctx, st)
 	} else {
-		err = s.buildImage(ctx, task, st)
+		err = s.buildImage(ctx, st)
 	}
 	if err != nil {
 		if err == context.Canceled || err == context.DeadlineExceeded || errors.Is(err, gstatus.FromContextError(context.Canceled).Err()) {
@@ -312,12 +324,12 @@ func (s *builderService) build(ctx context.Context, st *state, task *builder.Tas
 	return builder.BuildStatusSucceeded
 }
 
-func (s *builderService) finalize(ctx context.Context, st *state, task *builder.Task, status builder.BuildStatus) {
+func (s *builderService) finalize(ctx context.Context, st *state, status builder.BuildStatus) {
 	// ログファイルの保存
 	if st.logTempFile != nil {
 		_ = st.logTempFile.Close()
-		if err := domain.SaveLogFile(s.storage, st.logTempFile.Name(), filepath.Join("buildlogs", task.BuildID), task.BuildID); err != nil {
-			log.WithError(err).Errorf("failed to save build log (%s)", task.BuildID)
+		if err := domain.SaveLogFile(s.storage, st.logTempFile.Name(), filepath.Join("buildlogs", st.task.BuildID), st.task.BuildID); err != nil {
+			log.WithError(err).Error("failed to save build log")
 		}
 	}
 
@@ -329,17 +341,17 @@ func (s *builderService) finalize(ctx context.Context, st *state, task *builder.
 			filename := st.artifactTempFile.Name()
 			stat, err := os.Stat(filename)
 			if err != nil {
-				log.WithError(err).Errorf("failed to open artifact (BuildID: %s, ArtifactID: %s)", task.BuildID, sid)
+				log.WithError(err).Error("failed to open artifact")
 			} else {
-				err = s.artifactRepo.CreateArtifact(ctx, stat.Size(), task.BuildID, sid)
+				err = s.artifactRepo.CreateArtifact(ctx, stat.Size(), st.task.BuildID, sid)
 				if err != nil {
-					log.WithError(err).Errorf("failed to create artifact (BuildID: %s, ArtifactID: %s)", task.BuildID, sid)
+					log.WithError(err).Error("failed to create artifact")
 				}
 			}
 
 			err = domain.SaveArtifact(s.storage, filename, filepath.Join("artifacts", fmt.Sprintf("%s.tar", sid)))
 			if err != nil {
-				log.WithError(err).Errorf("failed to save directory to tar (BuildID: %s, ArtifactID: %s)", task.BuildID, sid)
+				log.WithError(err).Error("failed to save directory to tar")
 			}
 		} else {
 			_ = os.Remove(st.artifactTempFile.Name())
@@ -358,34 +370,34 @@ func (s *builderService) finalize(ctx context.Context, st *state, task *builder.
 		UpdatedAt:  optional.From(now),
 		FinishedAt: optional.From(now),
 	}
-	if err := s.buildRepo.UpdateBuild(ctx, st.build.ID, updateArgs); err != nil {
-		log.WithError(err).Errorf("failed to update build_log entry (%s)", task.BuildID)
+	if err := s.buildRepo.UpdateBuild(ctx, st.task.BuildID, updateArgs); err != nil {
+		log.WithError(err).Error("failed to update build_log entry")
 	}
 }
 
-func (s *builderService) buildImage(ctx context.Context, t *builder.Task, intState *state) error {
+func (s *builderService) buildImage(ctx context.Context, st *state) error {
 	ch := make(chan *buildkit.SolveStatus)
 	eg, ctx := errgroup.WithContext(ctx)
 	eg.Go(func() (err error) {
 		// イメージの出力先設定
 		exportAttrs := map[string]string{
-			"name": t.ImageName + ":" + t.ImageTag,
+			"name": st.task.ImageName + ":" + st.task.ImageTag,
 			"push": "true",
 		}
-		if len(t.BuildOptions.BaseImageName) == 0 {
+		if len(st.task.BuildOptions.BaseImageName) == 0 {
 			// リポジトリルートのDockerfileを使用
 			// entrypoint, startupコマンドは無視
-			err = s.buildImageWithDockerfile(ctx, t, intState, exportAttrs, ch)
+			err = s.buildImageWithDockerfile(ctx, st, exportAttrs, ch)
 		} else {
 			// 指定したベースイメージを使用
-			err = s.buildImageWithConfig(ctx, t, intState, exportAttrs, ch)
+			err = s.buildImageWithConfig(ctx, st, exportAttrs, ch)
 		}
 		return err
 	})
 	eg.Go(func() error {
 		// ビルドログを収集
 		// TODO: VertexWarningを使う (LLBのどのvertexに問題があったか)
-		_, err := progressui.DisplaySolveStatus(ctx, "", nil, intState.getLogWriter(), ch)
+		_, err := progressui.DisplaySolveStatus(ctx, "", nil, st.getLogWriter(), ch)
 		return err
 	})
 	return eg.Wait()
@@ -393,7 +405,6 @@ func (s *builderService) buildImage(ctx context.Context, t *builder.Task, intSta
 
 func (s *builderService) buildImageWithDockerfile(
 	ctx context.Context,
-	task *builder.Task,
 	st *state,
 	exportAttrs map[string]string,
 	ch chan *buildkit.SolveStatus,
@@ -408,7 +419,7 @@ func (s *builderService) buildImageWithDockerfile(
 			"dockerfile": st.repositoryTempDir,
 		},
 		Frontend:      "dockerfile.v0",
-		FrontendAttrs: map[string]string{"filename": task.BuildOptions.DockerfileName},
+		FrontendAttrs: map[string]string{"filename": st.task.BuildOptions.DockerfileName},
 		Session:       []session.Attachable{authprovider.NewDockerAuthProvider(io.Discard)},
 	}, ch)
 	return err
@@ -416,7 +427,6 @@ func (s *builderService) buildImageWithDockerfile(
 
 func (s *builderService) buildImageWithConfig(
 	ctx context.Context,
-	task *builder.Task,
 	st *state,
 	exportAttrs map[string]string,
 	ch chan *buildkit.SolveStatus,
@@ -426,7 +436,7 @@ func (s *builderService) buildImageWithConfig(
 	if err != nil {
 		return err
 	}
-	_, err = fs.WriteString("#!/bin/sh\n" + task.BuildOptions.BuildCmd)
+	_, err = fs.WriteString("#!/bin/sh\n" + st.task.BuildOptions.BuildCmd)
 	if err != nil {
 		return err
 	}
@@ -437,7 +447,7 @@ func (s *builderService) buildImageWithConfig(
 	if err != nil {
 		return err
 	}
-	_, err = fe.WriteString("#!/bin/sh\n" + task.BuildOptions.EntrypointCmd)
+	_, err = fe.WriteString("#!/bin/sh\n" + st.task.BuildOptions.EntrypointCmd)
 	if err != nil {
 		return err
 	}
@@ -457,7 +467,7 @@ WORKDIR /srv
 COPY . .
 RUN ["/srv/%s"]
 ENTRYPOINT ["/srv/%s"]`,
-		task.BuildOptions.BaseImageName,
+		st.task.BuildOptions.BaseImageName,
 		buildScriptName,
 		entryPointScriptName,
 	)
@@ -481,17 +491,17 @@ ENTRYPOINT ["/srv/%s"]`,
 	return err
 }
 
-func (s *builderService) buildStatic(ctx context.Context, task *builder.Task, st *state) error {
+func (s *builderService) buildStatic(ctx context.Context, st *state) error {
 	ch := make(chan *buildkit.SolveStatus)
 	eg, ctx := errgroup.WithContext(ctx)
 	eg.Go(func() (err error) {
-		if len(task.BuildOptions.BaseImageName) == 0 {
+		if len(st.task.BuildOptions.BaseImageName) == 0 {
 			// リポジトリルートのDockerfileを使用
 			// entrypoint, startupコマンドは無視
-			err = s.buildStaticWithDockerfile(ctx, task, st, ch)
+			err = s.buildStaticWithDockerfile(ctx, st, ch)
 		} else {
 			// 指定したベースイメージを使用
-			err = s.buildStaticWithConfig(ctx, task, st, ch)
+			err = s.buildStaticWithConfig(ctx, st, ch)
 		}
 		return err
 	})
@@ -506,11 +516,10 @@ func (s *builderService) buildStatic(ctx context.Context, task *builder.Task, st
 
 func (s *builderService) buildStaticWithDockerfile(
 	ctx context.Context,
-	task *builder.Task,
 	st *state,
 	ch chan *buildkit.SolveStatus,
 ) error {
-	dockerfile, err := os.ReadFile(filepath.Join(st.repositoryTempDir, task.BuildOptions.DockerfileName))
+	dockerfile, err := os.ReadFile(filepath.Join(st.repositoryTempDir, st.task.BuildOptions.DockerfileName))
 	if err != nil {
 		return err
 	}
@@ -520,7 +529,7 @@ func (s *builderService) buildStaticWithDockerfile(
 	}
 	def, err := llb.
 		Scratch().
-		File(llb.Copy(*b, task.BuildOptions.ArtifactPath, "/", &llb.CopyInfo{
+		File(llb.Copy(*b, st.task.BuildOptions.ArtifactPath, "/", &llb.CopyInfo{
 			CopyDirContentsOnly: true,
 			CreateDestPath:      true,
 			AllowWildcard:       true,
@@ -543,22 +552,21 @@ func (s *builderService) buildStaticWithDockerfile(
 
 func (s *builderService) buildStaticWithConfig(
 	ctx context.Context,
-	task *builder.Task,
 	st *state,
 	ch chan *buildkit.SolveStatus,
 ) error {
-	b := llb.Image(task.BuildOptions.BaseImageName).
+	b := llb.Image(st.task.BuildOptions.BaseImageName).
 		Dir("/srv").
 		File(llb.Copy(llb.Local("local-src"), ".", ".", &llb.CopyInfo{
 			AllowWildcard:  true,
 			CreateDestPath: true,
 		})).
-		Run(llb.Shlex(task.BuildOptions.BuildCmd)).
+		Run(llb.Shlex(st.task.BuildOptions.BuildCmd)).
 		Root()
 	// ビルドで生成された静的ファイルのみを含むScratchイメージを構成
 	def, err := llb.
 		Scratch().
-		File(llb.Copy(b, task.BuildOptions.ArtifactPath, "/", &llb.CopyInfo{
+		File(llb.Copy(b, st.task.BuildOptions.ArtifactPath, "/", &llb.CopyInfo{
 			CopyDirContentsOnly: true,
 			CreateDestPath:      true,
 			AllowWildcard:       true,
@@ -581,19 +589,18 @@ func (s *builderService) buildStaticWithConfig(
 }
 
 type state struct {
-	build             domain.Build
+	task       *builder.Task
+	repository *domain.Repository
+
 	repositoryTempDir string
 	logTempFile       *os.File
 	artifactTempFile  *os.File
 }
 
-func newState(task *builder.Task) *state {
+func newState(task *builder.Task, repo *domain.Repository) *state {
 	return &state{
-		build: domain.Build{
-			ID:            task.BuildID,
-			Status:        builder.BuildStatusBuilding,
-			ApplicationID: task.ApplicationID,
-		},
+		task:       task,
+		repository: repo,
 	}
 }
 

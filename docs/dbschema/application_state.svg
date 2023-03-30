@@ -32,7 +32,7 @@
 <text text-anchor="start" x="171.2747" y="-551.571" font-family="Arial" font-size="14.00" fill="#666666">[BASE TABLE]</text>
 <polygon fill="none" stroke="#000000" points="54,-508.771 54,-538.771 283,-538.771 283,-508.771 54,-508.771"/>
 <text text-anchor="start" x="61" y="-520.171" font-family="Arial" font-size="14.00" fill="#000000">id </text>
-<text text-anchor="start" x="75.7798" y="-520.171" font-family="Arial" font-size="14.00" fill="#666666">[varchar(22)]</text>
+<text text-anchor="start" x="75.7798" y="-520.171" font-family="Arial" font-size="14.00" fill="#666666">[char(22)]</text>
 <polygon fill="none" stroke="#000000" points="54,-478.771 54,-508.771 283,-508.771 283,-478.771 54,-478.771"/>
 <text text-anchor="start" x="61" y="-490.171" font-family="Arial" font-size="14.00" fill="#000000">name </text>
 <text text-anchor="start" x="99.899" y="-490.171" font-family="Arial" font-size="14.00" fill="#666666">[varchar(100)]</text>

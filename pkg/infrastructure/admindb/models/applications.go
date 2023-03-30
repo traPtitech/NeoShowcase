@@ -147,17 +147,17 @@ var ApplicationRels = struct {
 	Repository            string
 	StateApplicationState string
 	ApplicationConfig     string
+	Users                 string
 	Builds                string
 	Environments          string
-	Users                 string
 	Websites              string
 }{
 	Repository:            "Repository",
 	StateApplicationState: "StateApplicationState",
 	ApplicationConfig:     "ApplicationConfig",
+	Users:                 "Users",
 	Builds:                "Builds",
 	Environments:          "Environments",
-	Users:                 "Users",
 	Websites:              "Websites",
 }
 
@@ -166,9 +166,9 @@ type applicationR struct {
 	Repository            *Repository        `boil:"Repository" json:"Repository" toml:"Repository" yaml:"Repository"`
 	StateApplicationState *ApplicationState  `boil:"StateApplicationState" json:"StateApplicationState" toml:"StateApplicationState" yaml:"StateApplicationState"`
 	ApplicationConfig     *ApplicationConfig `boil:"ApplicationConfig" json:"ApplicationConfig" toml:"ApplicationConfig" yaml:"ApplicationConfig"`
+	Users                 UserSlice          `boil:"Users" json:"Users" toml:"Users" yaml:"Users"`
 	Builds                BuildSlice         `boil:"Builds" json:"Builds" toml:"Builds" yaml:"Builds"`
 	Environments          EnvironmentSlice   `boil:"Environments" json:"Environments" toml:"Environments" yaml:"Environments"`
-	Users                 UserSlice          `boil:"Users" json:"Users" toml:"Users" yaml:"Users"`
 	Websites              WebsiteSlice       `boil:"Websites" json:"Websites" toml:"Websites" yaml:"Websites"`
 }
 
@@ -198,6 +198,13 @@ func (r *applicationR) GetApplicationConfig() *ApplicationConfig {
 	return r.ApplicationConfig
 }
 
+func (r *applicationR) GetUsers() UserSlice {
+	if r == nil {
+		return nil
+	}
+	return r.Users
+}
+
 func (r *applicationR) GetBuilds() BuildSlice {
 	if r == nil {
 		return nil
@@ -210,13 +217,6 @@ func (r *applicationR) GetEnvironments() EnvironmentSlice {
 		return nil
 	}
 	return r.Environments
-}
-
-func (r *applicationR) GetUsers() UserSlice {
-	if r == nil {
-		return nil
-	}
-	return r.Users
 }
 
 func (r *applicationR) GetWebsites() WebsiteSlice {
@@ -548,6 +548,21 @@ func (o *Application) ApplicationConfig(mods ...qm.QueryMod) applicationConfigQu
 	return ApplicationConfigs(queryMods...)
 }
 
+// Users retrieves all the user's Users with an executor.
+func (o *Application) Users(mods ...qm.QueryMod) userQuery {
+	var queryMods []qm.QueryMod
+	if len(mods) != 0 {
+		queryMods = append(queryMods, mods...)
+	}
+
+	queryMods = append(queryMods,
+		qm.InnerJoin("`application_owners` on `users`.`id` = `application_owners`.`user_id`"),
+		qm.Where("`application_owners`.`application_id`=?", o.ID),
+	)
+
+	return Users(queryMods...)
+}
+
 // Builds retrieves all the build's Builds with an executor.
 func (o *Application) Builds(mods ...qm.QueryMod) buildQuery {
 	var queryMods []qm.QueryMod
@@ -574,21 +589,6 @@ func (o *Application) Environments(mods ...qm.QueryMod) environmentQuery {
 	)
 
 	return Environments(queryMods...)
-}
-
-// Users retrieves all the user's Users with an executor.
-func (o *Application) Users(mods ...qm.QueryMod) userQuery {
-	var queryMods []qm.QueryMod
-	if len(mods) != 0 {
-		queryMods = append(queryMods, mods...)
-	}
-
-	queryMods = append(queryMods,
-		qm.InnerJoin("`owners` on `users`.`id` = `owners`.`user_id`"),
-		qm.Where("`owners`.`application_id`=?", o.ID),
-	)
-
-	return Users(queryMods...)
 }
 
 // Websites retrieves all the website's Websites with an executor.
@@ -962,6 +962,137 @@ func (applicationL) LoadApplicationConfig(ctx context.Context, e boil.ContextExe
 	return nil
 }
 
+// LoadUsers allows an eager lookup of values, cached into the
+// loaded structs of the objects. This is for a 1-M or N-M relationship.
+func (applicationL) LoadUsers(ctx context.Context, e boil.ContextExecutor, singular bool, maybeApplication interface{}, mods queries.Applicator) error {
+	var slice []*Application
+	var object *Application
+
+	if singular {
+		var ok bool
+		object, ok = maybeApplication.(*Application)
+		if !ok {
+			object = new(Application)
+			ok = queries.SetFromEmbeddedStruct(&object, &maybeApplication)
+			if !ok {
+				return errors.New(fmt.Sprintf("failed to set %T from embedded struct %T", object, maybeApplication))
+			}
+		}
+	} else {
+		s, ok := maybeApplication.(*[]*Application)
+		if ok {
+			slice = *s
+		} else {
+			ok = queries.SetFromEmbeddedStruct(&slice, maybeApplication)
+			if !ok {
+				return errors.New(fmt.Sprintf("failed to set %T from embedded struct %T", slice, maybeApplication))
+			}
+		}
+	}
+
+	args := make([]interface{}, 0, 1)
+	if singular {
+		if object.R == nil {
+			object.R = &applicationR{}
+		}
+		args = append(args, object.ID)
+	} else {
+	Outer:
+		for _, obj := range slice {
+			if obj.R == nil {
+				obj.R = &applicationR{}
+			}
+
+			for _, a := range args {
+				if a == obj.ID {
+					continue Outer
+				}
+			}
+
+			args = append(args, obj.ID)
+		}
+	}
+
+	if len(args) == 0 {
+		return nil
+	}
+
+	query := NewQuery(
+		qm.Select("`users`.`id`, `users`.`name`, `a`.`application_id`"),
+		qm.From("`users`"),
+		qm.InnerJoin("`application_owners` as `a` on `users`.`id` = `a`.`user_id`"),
+		qm.WhereIn("`a`.`application_id` in ?", args...),
+	)
+	if mods != nil {
+		mods.Apply(query)
+	}
+
+	results, err := query.QueryContext(ctx, e)
+	if err != nil {
+		return errors.Wrap(err, "failed to eager load users")
+	}
+
+	var resultSlice []*User
+
+	var localJoinCols []string
+	for results.Next() {
+		one := new(User)
+		var localJoinCol string
+
+		err = results.Scan(&one.ID, &one.Name, &localJoinCol)
+		if err != nil {
+			return errors.Wrap(err, "failed to scan eager loaded results for users")
+		}
+		if err = results.Err(); err != nil {
+			return errors.Wrap(err, "failed to plebian-bind eager loaded slice users")
+		}
+
+		resultSlice = append(resultSlice, one)
+		localJoinCols = append(localJoinCols, localJoinCol)
+	}
+
+	if err = results.Close(); err != nil {
+		return errors.Wrap(err, "failed to close results in eager load on users")
+	}
+	if err = results.Err(); err != nil {
+		return errors.Wrap(err, "error occurred during iteration of eager loaded relations for users")
+	}
+
+	if len(userAfterSelectHooks) != 0 {
+		for _, obj := range resultSlice {
+			if err := obj.doAfterSelectHooks(ctx, e); err != nil {
+				return err
+			}
+		}
+	}
+	if singular {
+		object.R.Users = resultSlice
+		for _, foreign := range resultSlice {
+			if foreign.R == nil {
+				foreign.R = &userR{}
+			}
+			foreign.R.Applications = append(foreign.R.Applications, object)
+		}
+		return nil
+	}
+
+	for i, foreign := range resultSlice {
+		localJoinCol := localJoinCols[i]
+		for _, local := range slice {
+			if local.ID == localJoinCol {
+				local.R.Users = append(local.R.Users, foreign)
+				if foreign.R == nil {
+					foreign.R = &userR{}
+				}
+				foreign.R.Applications = append(foreign.R.Applications, local)
+				break
+			}
+		}
+	}
+
+	return nil
+}
+
 // LoadBuilds allows an eager lookup of values, cached into the
 // loaded structs of the objects. This is for a 1-M or N-M relationship.
 func (applicationL) LoadBuilds(ctx context.Context, e boil.ContextExecutor, singular bool, maybeApplication interface{}, mods queries.Applicator) error {
@@ -1182,137 +1313,6 @@ func (applicationL) LoadEnvironments(ctx context.Context, e boil.ContextExecutor
 					foreign.R = &environmentR{}
 				}
 				foreign.R.Application = local
-				break
-			}
-		}
-	}
-
-	return nil
-}
-
-// LoadUsers allows an eager lookup of values, cached into the
-// loaded structs of the objects. This is for a 1-M or N-M relationship.
-func (applicationL) LoadUsers(ctx context.Context, e boil.ContextExecutor, singular bool, maybeApplication interface{}, mods queries.Applicator) error {
-	var slice []*Application
-	var object *Application
-
-	if singular {
-		var ok bool
-		object, ok = maybeApplication.(*Application)
-		if !ok {
-			object = new(Application)
-			ok = queries.SetFromEmbeddedStruct(&object, &maybeApplication)
-			if !ok {
-				return errors.New(fmt.Sprintf("failed to set %T from embedded struct %T", object, maybeApplication))
-			}
-		}
-	} else {
-		s, ok := maybeApplication.(*[]*Application)
-		if ok {
-			slice = *s
-		} else {
-			ok = queries.SetFromEmbeddedStruct(&slice, maybeApplication)
-			if !ok {
-				return errors.New(fmt.Sprintf("failed to set %T from embedded struct %T", slice, maybeApplication))
-			}
-		}
-	}
-
-	args := make([]interface{}, 0, 1)
-	if singular {
-		if object.R == nil {
-			object.R = &applicationR{}
-		}
-		args = append(args, object.ID)
-	} else {
-	Outer:
-		for _, obj := range slice {
-			if obj.R == nil {
-				obj.R = &applicationR{}
-			}
-
-			for _, a := range args {
-				if a == obj.ID {
-					continue Outer
-				}
-			}
-
-			args = append(args, obj.ID)
-		}
-	}
-
-	if len(args) == 0 {
-		return nil
-	}
-
-	query := NewQuery(
-		qm.Select("`users`.`id`, `users`.`name`, `a`.`application_id`"),
-		qm.From("`users`"),
-		qm.InnerJoin("`owners` as `a` on `users`.`id` = `a`.`user_id`"),
-		qm.WhereIn("`a`.`application_id` in ?", args...),
-	)
-	if mods != nil {
-		mods.Apply(query)
-	}
-
-	results, err := query.QueryContext(ctx, e)
-	if err != nil {
-		return errors.Wrap(err, "failed to eager load users")
-	}
-
-	var resultSlice []*User
-
-	var localJoinCols []string
-	for results.Next() {
-		one := new(User)
-		var localJoinCol string
-
-		err = results.Scan(&one.ID, &one.Name, &localJoinCol)
-		if err != nil {
-			return errors.Wrap(err, "failed to scan eager loaded results for users")
-		}
-		if err = results.Err(); err != nil {
-			return errors.Wrap(err, "failed to plebian-bind eager loaded slice users")
-		}
-
-		resultSlice = append(resultSlice, one)
-		localJoinCols = append(localJoinCols, localJoinCol)
-	}
-
-	if err = results.Close(); err != nil {
-		return errors.Wrap(err, "failed to close results in eager load on users")
-	}
-	if err = results.Err(); err != nil {
-		return errors.Wrap(err, "error occurred during iteration of eager loaded relations for users")
-	}
-
-	if len(userAfterSelectHooks) != 0 {
-		for _, obj := range resultSlice {
-			if err := obj.doAfterSelectHooks(ctx, e); err != nil {
-				return err
-			}
-		}
-	}
-	if singular {
-		object.R.Users = resultSlice
-		for _, foreign := range resultSlice {
-			if foreign.R == nil {
-				foreign.R = &userR{}
-			}
-			foreign.R.Applications = append(foreign.R.Applications, object)
-		}
-		return nil
-	}
-
-	for i, foreign := range resultSlice {
-		localJoinCol := localJoinCols[i]
-		for _, local := range slice {
-			if local.ID == localJoinCol {
-				local.R.Users = append(local.R.Users, foreign)
-				if foreign.R == nil {
-					foreign.R = &userR{}
-				}
-				foreign.R.Applications = append(foreign.R.Applications, local)
 				break
 			}
 		}
@@ -1579,6 +1579,151 @@ func (o *Application) SetApplicationConfig(ctx context.Context, exec boil.Contex
 	return nil
 }
 
+// AddUsers adds the given related objects to the existing relationships
+// of the application, optionally inserting them as new records.
+// Appends related to o.R.Users.
+// Sets related.R.Applications appropriately.
+func (o *Application) AddUsers(ctx context.Context, exec boil.ContextExecutor, insert bool, related ...*User) error {
+	var err error
+	for _, rel := range related {
+		if insert {
+			if err = rel.Insert(ctx, exec, boil.Infer()); err != nil {
+				return errors.Wrap(err, "failed to insert into foreign table")
+			}
+		}
+	}
+
+	for _, rel := range related {
+		query := "insert into `application_owners` (`application_id`, `user_id`) values (?, ?)"
+		values := []interface{}{o.ID, rel.ID}
+
+		if boil.IsDebug(ctx) {
+			writer := boil.DebugWriterFrom(ctx)
+			fmt.Fprintln(writer, query)
+			fmt.Fprintln(writer, values)
+		}
+		_, err = exec.ExecContext(ctx, query, values...)
+		if err != nil {
+			return errors.Wrap(err, "failed to insert into join table")
+		}
+	}
+	if o.R == nil {
+		o.R = &applicationR{
+			Users: related,
+		}
+	} else {
+		o.R.Users = append(o.R.Users, related...)
+	}
+
+	for _, rel := range related {
+		if rel.R == nil {
+			rel.R = &userR{
+				Applications: ApplicationSlice{o},
+			}
+		} else {
+			rel.R.Applications = append(rel.R.Applications, o)
+		}
+	}
+	return nil
+}
+
+// SetUsers removes all previously related items of the
+// application replacing them completely with the passed
+// in related items, optionally inserting them as new records.
+// Sets o.R.Applications's Users accordingly.
+// Replaces o.R.Users with related.
+// Sets related.R.Applications's Users accordingly.
+func (o *Application) SetUsers(ctx context.Context, exec boil.ContextExecutor, insert bool, related ...*User) error {
+	query := "delete from `application_owners` where `application_id` = ?"
+	values := []interface{}{o.ID}
+	if boil.IsDebug(ctx) {
+		writer := boil.DebugWriterFrom(ctx)
+		fmt.Fprintln(writer, query)
+		fmt.Fprintln(writer, values)
+	}
+	_, err := exec.ExecContext(ctx, query, values...)
+	if err != nil {
+		return errors.Wrap(err, "failed to remove relationships before set")
+	}
+
+	removeUsersFromApplicationsSlice(o, related)
+	if o.R != nil {
+		o.R.Users = nil
+	}
+
+	return o.AddUsers(ctx, exec, insert, related...)
+}
+
+// RemoveUsers relationships from objects passed in.
+// Removes related items from R.Users (uses pointer comparison, removal does not keep order)
+// Sets related.R.Applications.
+func (o *Application) RemoveUsers(ctx context.Context, exec boil.ContextExecutor, related ...*User) error {
+	if len(related) == 0 {
+		return nil
+	}
+
+	var err error
+	query := fmt.Sprintf(
+		"delete from `application_owners` where `application_id` = ? and `user_id` in (%s)",
+		strmangle.Placeholders(dialect.UseIndexPlaceholders, len(related), 2, 1),
+	)
+	values := []interface{}{o.ID}
+	for _, rel := range related {
+		values = append(values, rel.ID)
+	}
+
+	if boil.IsDebug(ctx) {
+		writer := boil.DebugWriterFrom(ctx)
+		fmt.Fprintln(writer, query)
+		fmt.Fprintln(writer, values)
+	}
+	_, err = exec.ExecContext(ctx, query, values...)
+	if err != nil {
+		return errors.Wrap(err, "failed to remove relationships before set")
+	}
+	removeUsersFromApplicationsSlice(o, related)
+	if o.R == nil {
+		return nil
+	}
+
+	for _, rel := range related {
+		for i, ri := range o.R.Users {
+			if rel != ri {
+				continue
+			}
+
+			ln := len(o.R.Users)
+			if ln > 1 && i < ln-1 {
+				o.R.Users[i] = o.R.Users[ln-1]
+			}
+			o.R.Users = o.R.Users[:ln-1]
+			break
+		}
+	}
+
+	return nil
+}
+
+func removeUsersFromApplicationsSlice(o *Application, related []*User) {
+	for _, rel := range related {
+		if rel.R == nil {
+			continue
+		}
+		for i, ri := range rel.R.Applications {
+			if o.ID != ri.ID {
+				continue
+			}
+
+			ln := len(rel.R.Applications)
+			if ln > 1 && i < ln-1 {
+				rel.R.Applications[i] = rel.R.Applications[ln-1]
+			}
+			rel.R.Applications = rel.R.Applications[:ln-1]
+			break
+		}
+	}
+}
+
 // AddBuilds adds the given related objects to the existing relationships
 // of the application, optionally inserting them as new records.
 // Appends related to o.R.Builds.
@@ -1683,151 +1828,6 @@ func (o *Application) AddEnvironments(ctx context.Context, exec boil.ContextExec
 		}
 	}
 	return nil
-}
-
-// AddUsers adds the given related objects to the existing relationships
-// of the application, optionally inserting them as new records.
-// Appends related to o.R.Users.
-// Sets related.R.Applications appropriately.
-func (o *Application) AddUsers(ctx context.Context, exec boil.ContextExecutor, insert bool, related ...*User) error {
-	var err error
-	for _, rel := range related {
-		if insert {
-			if err = rel.Insert(ctx, exec, boil.Infer()); err != nil {
-				return errors.Wrap(err, "failed to insert into foreign table")
-			}
-		}
-	}
-
-	for _, rel := range related {
-		query := "insert into `owners` (`application_id`, `user_id`) values (?, ?)"
-		values := []interface{}{o.ID, rel.ID}
-
-		if boil.IsDebug(ctx) {
-			writer := boil.DebugWriterFrom(ctx)
-			fmt.Fprintln(writer, query)
-			fmt.Fprintln(writer, values)
-		}
-		_, err = exec.ExecContext(ctx, query, values...)
-		if err != nil {
-			return errors.Wrap(err, "failed to insert into join table")
-		}
-	}
-	if o.R == nil {
-		o.R = &applicationR{
-			Users: related,
-		}
-	} else {
-		o.R.Users = append(o.R.Users, related...)
-	}
-
-	for _, rel := range related {
-		if rel.R == nil {
-			rel.R = &userR{
-				Applications: ApplicationSlice{o},
-			}
-		} else {
-			rel.R.Applications = append(rel.R.Applications, o)
-		}
-	}
-	return nil
-}
-
-// SetUsers removes all previously related items of the
-// application replacing them completely with the passed
-// in related items, optionally inserting them as new records.
-// Sets o.R.Applications's Users accordingly.
-// Replaces o.R.Users with related.
-// Sets related.R.Applications's Users accordingly.
-func (o *Application) SetUsers(ctx context.Context, exec boil.ContextExecutor, insert bool, related ...*User) error {
-	query := "delete from `owners` where `application_id` = ?"
-	values := []interface{}{o.ID}
-	if boil.IsDebug(ctx) {
-		writer := boil.DebugWriterFrom(ctx)
-		fmt.Fprintln(writer, query)
-		fmt.Fprintln(writer, values)
-	}
-	_, err := exec.ExecContext(ctx, query, values...)
-	if err != nil {
-		return errors.Wrap(err, "failed to remove relationships before set")
-	}
-
-	removeUsersFromApplicationsSlice(o, related)
-	if o.R != nil {
-		o.R.Users = nil
-	}
-
-	return o.AddUsers(ctx, exec, insert, related...)
-}
-
-// RemoveUsers relationships from objects passed in.
-// Removes related items from R.Users (uses pointer comparison, removal does not keep order)
-// Sets related.R.Applications.
-func (o *Application) RemoveUsers(ctx context.Context, exec boil.ContextExecutor, related ...*User) error {
-	if len(related) == 0 {
-		return nil
-	}
-
-	var err error
-	query := fmt.Sprintf(
-		"delete from `owners` where `application_id` = ? and `user_id` in (%s)",
-		strmangle.Placeholders(dialect.UseIndexPlaceholders, len(related), 2, 1),
-	)
-	values := []interface{}{o.ID}
-	for _, rel := range related {
-		values = append(values, rel.ID)
-	}
-
-	if boil.IsDebug(ctx) {
-		writer := boil.DebugWriterFrom(ctx)
-		fmt.Fprintln(writer, query)
-		fmt.Fprintln(writer, values)
-	}
-	_, err = exec.ExecContext(ctx, query, values...)
-	if err != nil {
-		return errors.Wrap(err, "failed to remove relationships before set")
-	}
-	removeUsersFromApplicationsSlice(o, related)
-	if o.R == nil {
-		return nil
-	}
-
-	for _, rel := range related {
-		for i, ri := range o.R.Users {
-			if rel != ri {
-				continue
-			}
-
-			ln := len(o.R.Users)
-			if ln > 1 && i < ln-1 {
-				o.R.Users[i] = o.R.Users[ln-1]
-			}
-			o.R.Users = o.R.Users[:ln-1]
-			break
-		}
-	}
-
-	return nil
-}
-
-func removeUsersFromApplicationsSlice(o *Application, related []*User) {
-	for _, rel := range related {
-		if rel.R == nil {
-			continue
-		}
-		for i, ri := range rel.R.Applications {
-			if o.ID != ri.ID {
-				continue
-			}
-
-			ln := len(rel.R.Applications)
-			if ln > 1 && i < ln-1 {
-				rel.R.Applications[i] = rel.R.Applications[ln-1]
-			}
-			rel.R.Applications = rel.R.Applications[:ln-1]
-			break
-		}
-	}
 }
 
 // AddWebsites adds the given related objects to the existing relationships

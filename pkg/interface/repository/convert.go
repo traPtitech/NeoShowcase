@@ -9,6 +9,20 @@ import (
 	"github.com/traPtitech/neoshowcase/pkg/util/optional"
 )
 
+func fromDomainApplicationConfig(appID string, c *domain.ApplicationConfig) *models.ApplicationConfig {
+	return &models.ApplicationConfig{
+		ApplicationID:  appID,
+		UseMariadb:     c.UseMariaDB,
+		UseMongodb:     c.UseMongoDB,
+		BaseImage:      c.BaseImage,
+		DockerfileName: c.DockerfileName,
+		ArtifactPath:   c.ArtifactPath,
+		BuildCMD:       c.BuildCmd,
+		EntrypointCMD:  c.EntrypointCmd,
+		Authentication: c.Authentication.String(),
+	}
+}
+
 func toDomainApplicationConfig(c *models.ApplicationConfig) domain.ApplicationConfig {
 	return domain.ApplicationConfig{
 		UseMariaDB:     c.UseMariadb,
@@ -22,10 +36,55 @@ func toDomainApplicationConfig(c *models.ApplicationConfig) domain.ApplicationCo
 	}
 }
 
-func toDomainRepository(repo *models.Repository) domain.Repository {
-	return domain.Repository{
-		ID:  repo.ID,
-		URL: repo.URL,
+func fromDomainRepository(repo *domain.Repository) *models.Repository {
+	return &models.Repository{
+		ID:   repo.ID,
+		Name: repo.Name,
+		URL:  repo.URL,
+	}
+}
+
+func fromDomainRepositoryAuth(repositoryID string, auth *domain.RepositoryAuth) *models.RepositoryAuth {
+	return &models.RepositoryAuth{
+		RepositoryID: repositoryID,
+		Method:       auth.Method.String(),
+		Username:     auth.Username,
+		Password:     auth.Password,
+		SSHKey:       auth.SSHKey,
+	}
+}
+
+func toDomainRepository(repo *models.Repository) *domain.Repository {
+	ret := &domain.Repository{
+		ID:       repo.ID,
+		Name:     repo.Name,
+		URL:      repo.URL,
+		OwnerIDs: lo.Map(repo.R.Users, func(user *models.User, i int) string { return user.ID }),
+	}
+	if repo.R.RepositoryAuth != nil {
+		auth := repo.R.RepositoryAuth
+		ret.Auth = optional.From(domain.RepositoryAuth{
+			Method:   domain.RepositoryAuthMethodFromString(auth.Method),
+			Username: auth.Username,
+			Password: auth.Password,
+			SSHKey:   auth.SSHKey,
+		})
+	}
+	return ret
+}
+
+func fromDomainApplication(app *domain.Application) *models.Application {
+	return &models.Application{
+		ID:            app.ID,
+		Name:          app.Name,
+		RepositoryID:  app.RepositoryID,
+		BranchName:    app.BranchName,
+		BuildType:     app.BuildType.String(),
+		State:         app.State.String(),
+		CurrentCommit: app.CurrentCommit,
+		WantCommit:    app.WantCommit,
+		CreatedAt:     app.CreatedAt,
+		UpdatedAt:     app.UpdatedAt,
 	}
 }
 
@@ -33,15 +92,16 @@ func toDomainApplication(app *models.Application) *domain.Application {
 	return &domain.Application{
 		ID:            app.ID,
 		Name:          app.Name,
+		RepositoryID:  app.RepositoryID,
 		BranchName:    app.BranchName,
 		BuildType:     builder.BuildTypeFromString(app.BuildType),
 		State:         domain.ApplicationStateFromString(app.State),
 		CurrentCommit: app.CurrentCommit,
 		WantCommit:    app.WantCommit,
 
-		Config:     toDomainApplicationConfig(app.R.ApplicationConfig),
-		Repository: toDomainRepository(app.R.Repository),
-		Websites:   lo.Map(app.R.Websites, func(website *models.Website, i int) *domain.Website { return toDomainWebsite(website) }),
+		Config:   toDomainApplicationConfig(app.R.ApplicationConfig),
+		Websites: lo.Map(app.R.Websites, func(website *models.Website, i int) *domain.Website { return toDomainWebsite(website) }),
+		OwnerIDs: lo.Map(app.R.Users, func(user *models.User, i int) string { return user.ID }),
 	}
 }
 

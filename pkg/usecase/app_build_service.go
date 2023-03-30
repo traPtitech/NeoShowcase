@@ -41,8 +41,8 @@ func (s *appBuildService) TryStartBuild(app *domain.Application, build *domain.B
 					ImageName: builder.GetImageName(s.imageRegistry, s.imageNamePrefix, app.ID),
 					ImageTag:  build.ID,
 					Source: &pb.BuildSource{
-						RepositoryUrl: app.Repository.URL,
-						Commit:        build.Commit,
+						RepositoryId: app.RepositoryID,
+						Commit:       build.Commit,
 					},
 					Options: &pb.BuildOptions{
 						BaseImageName:  app.Config.BaseImage,
@@ -63,8 +63,8 @@ func (s *appBuildService) TryStartBuild(app *domain.Application, build *domain.B
 			Body: &pb.BuilderRequest_BuildStatic{
 				BuildStatic: &pb.StartBuildStaticRequest{
 					Source: &pb.BuildSource{
-						RepositoryUrl: app.Repository.URL,
-						Commit:        build.Commit,
+						RepositoryId: app.RepositoryID,
+						Commit:       build.Commit,
 					},
 					Options: &pb.BuildOptions{
 						BaseImageName:  app.Config.BaseImage,

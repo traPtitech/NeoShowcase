@@ -7,7 +7,7 @@
 
 ```sql
 CREATE TABLE `application_config` (
-  `application_id` varchar(22) NOT NULL COMMENT 'アプリケーションID',
+  `application_id` char(22) NOT NULL COMMENT 'アプリケーションID',
   `use_mariadb` tinyint(1) NOT NULL COMMENT 'MariaDBを使用するか',
   `use_mongodb` tinyint(1) NOT NULL COMMENT 'MongoDBを使用するか',
   `base_image` varchar(1000) NOT NULL COMMENT 'ベースイメージの名前',
@@ -27,7 +27,7 @@ CREATE TABLE `application_config` (
 
 | Name | Type | Default | Nullable | Children | Parents | Comment |
 | ---- | ---- | ------- | -------- | -------- | ------- | ------- |
-| application_id | varchar(22) |  | false |  | [applications](applications.md) | アプリケーションID |
+| application_id | char(22) |  | false |  | [applications](applications.md) | アプリケーションID |
 | use_mariadb | tinyint(1) |  | false |  |  | MariaDBを使用するか |
 | use_mongodb | tinyint(1) |  | false |  |  | MongoDBを使用するか |
 | base_image | varchar(1000) |  | false |  |  | ベースイメージの名前 |

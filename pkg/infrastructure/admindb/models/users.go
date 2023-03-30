@@ -60,13 +60,16 @@ var UserWhere = struct {
 // UserRels is where relationship names are stored.
 var UserRels = struct {
 	Applications string
+	Repositories string
 }{
 	Applications: "Applications",
+	Repositories: "Repositories",
 }
 
 // userR is where relationships are stored.
 type userR struct {
 	Applications ApplicationSlice `boil:"Applications" json:"Applications" toml:"Applications" yaml:"Applications"`
+	Repositories RepositorySlice  `boil:"Repositories" json:"Repositories" toml:"Repositories" yaml:"Repositories"`
 }
 
 // NewStruct creates a new relationship struct
@@ -79,6 +82,13 @@ func (r *userR) GetApplications() ApplicationSlice {
 		return nil
 	}
 	return r.Applications
+}
+
+func (r *userR) GetRepositories() RepositorySlice {
+	if r == nil {
+		return nil
+	}
+	return r.Repositories
 }
 
 // userL is where Load methods for each relationship are stored.
@@ -378,11 +388,26 @@ func (o *User) Applications(mods ...qm.QueryMod) applicationQuery {
 	}
 
 	queryMods = append(queryMods,
-		qm.InnerJoin("`owners` on `applications`.`id` = `owners`.`application_id`"),
-		qm.Where("`owners`.`user_id`=?", o.ID),
+		qm.InnerJoin("`application_owners` on `applications`.`id` = `application_owners`.`application_id`"),
+		qm.Where("`application_owners`.`user_id`=?", o.ID),
 	)
 
 	return Applications(queryMods...)
+}
+
+// Repositories retrieves all the repository's Repositories with an executor.
+func (o *User) Repositories(mods ...qm.QueryMod) repositoryQuery {
+	var queryMods []qm.QueryMod
+	if len(mods) != 0 {
+		queryMods = append(queryMods, mods...)
+	}
+
+	queryMods = append(queryMods,
+		qm.InnerJoin("`repository_owners` on `repositories`.`id` = `repository_owners`.`repository_id`"),
+		qm.Where("`repository_owners`.`user_id`=?", o.ID),
+	)
+
+	return Repositories(queryMods...)
 }
 
 // LoadApplications allows an eager lookup of values, cached into the
@@ -443,7 +468,7 @@ func (userL) LoadApplications(ctx context.Context, e boil.ContextExecutor, singu
 	query := NewQuery(
 		qm.Select("`applications`.`id`, `applications`.`name`, `applications`.`repository_id`, `applications`.`branch_name`, `applications`.`build_type`, `applications`.`state`, `applications`.`current_commit`, `applications`.`want_commit`, `applications`.`created_at`, `applications`.`updated_at`, `a`.`user_id`"),
 		qm.From("`applications`"),
-		qm.InnerJoin("`owners` as `a` on `applications`.`id` = `a`.`application_id`"),
+		qm.InnerJoin("`application_owners` as `a` on `applications`.`id` = `a`.`application_id`"),
 		qm.WhereIn("`a`.`user_id` in ?", args...),
 	)
 	if mods != nil {
@@ -516,6 +541,137 @@ func (userL) LoadApplications(ctx context.Context, e boil.ContextExecutor, singu
 	return nil
 }
 
+// LoadRepositories allows an eager lookup of values, cached into the
+// loaded structs of the objects. This is for a 1-M or N-M relationship.
+func (userL) LoadRepositories(ctx context.Context, e boil.ContextExecutor, singular bool, maybeUser interface{}, mods queries.Applicator) error {
+	var slice []*User
+	var object *User
+
+	if singular {
+		var ok bool
+		object, ok = maybeUser.(*User)
+		if !ok {
+			object = new(User)
+			ok = queries.SetFromEmbeddedStruct(&object, &maybeUser)
+			if !ok {
+				return errors.New(fmt.Sprintf("failed to set %T from embedded struct %T", object, maybeUser))
+			}
+		}
+	} else {
+		s, ok := maybeUser.(*[]*User)
+		if ok {
+			slice = *s
+		} else {
+			ok = queries.SetFromEmbeddedStruct(&slice, maybeUser)
+			if !ok {
+				return errors.New(fmt.Sprintf("failed to set %T from embedded struct %T", slice, maybeUser))
+			}
+		}
+	}
+
+	args := make([]interface{}, 0, 1)
+	if singular {
+		if object.R == nil {
+			object.R = &userR{}
+		}
+		args = append(args, object.ID)
+	} else {
+	Outer:
+		for _, obj := range slice {
+			if obj.R == nil {
+				obj.R = &userR{}
+			}
+
+			for _, a := range args {
+				if a == obj.ID {
+					continue Outer
+				}
+			}
+
+			args = append(args, obj.ID)
+		}
+	}
+
+	if len(args) == 0 {
+		return nil
+	}
+
+	query := NewQuery(
+		qm.Select("`repositories`.`id`, `repositories`.`name`, `repositories`.`url`, `a`.`user_id`"),
+		qm.From("`repositories`"),
+		qm.InnerJoin("`repository_owners` as `a` on `repositories`.`id` = `a`.`repository_id`"),
+		qm.WhereIn("`a`.`user_id` in ?", args...),
+	)
+	if mods != nil {
+		mods.Apply(query)
+	}
+
+	results, err := query.QueryContext(ctx, e)
+	if err != nil {
+		return errors.Wrap(err, "failed to eager load repositories")
+	}
+
+	var resultSlice []*Repository
+
+	var localJoinCols []string
+	for results.Next() {
+		one := new(Repository)
+		var localJoinCol string
+
+		err = results.Scan(&one.ID, &one.Name, &one.URL, &localJoinCol)
+		if err != nil {
+			return errors.Wrap(err, "failed to scan eager loaded results for repositories")
+		}
+		if err = results.Err(); err != nil {
+			return errors.Wrap(err, "failed to plebian-bind eager loaded slice repositories")
+		}
+
+		resultSlice = append(resultSlice, one)
+		localJoinCols = append(localJoinCols, localJoinCol)
+	}
+
+	if err = results.Close(); err != nil {
+		return errors.Wrap(err, "failed to close results in eager load on repositories")
+	}
+	if err = results.Err(); err != nil {
+		return errors.Wrap(err, "error occurred during iteration of eager loaded relations for repositories")
+	}
+
+	if len(repositoryAfterSelectHooks) != 0 {
+		for _, obj := range resultSlice {
+			if err := obj.doAfterSelectHooks(ctx, e); err != nil {
+				return err
+			}
+		}
+	}
+	if singular {
+		object.R.Repositories = resultSlice
+		for _, foreign := range resultSlice {
+			if foreign.R == nil {
+				foreign.R = &repositoryR{}
+			}
+			foreign.R.Users = append(foreign.R.Users, object)
+		}
+		return nil
+	}
+
+	for i, foreign := range resultSlice {
+		localJoinCol := localJoinCols[i]
+		for _, local := range slice {
+			if local.ID == localJoinCol {
+				local.R.Repositories = append(local.R.Repositories, foreign)
+				if foreign.R == nil {
+					foreign.R = &repositoryR{}
+				}
+				foreign.R.Users = append(foreign.R.Users, local)
+				break
+			}
+		}
+	}
+
+	return nil
+}
+
 // AddApplications adds the given related objects to the existing relationships
 // of the user, optionally inserting them as new records.
 // Appends related to o.R.Applications.
@@ -531,7 +687,7 @@ func (o *User) AddApplications(ctx context.Context, exec boil.ContextExecutor, i
 	}
 
 	for _, rel := range related {
-		query := "insert into `owners` (`user_id`, `application_id`) values (?, ?)"
+		query := "insert into `application_owners` (`user_id`, `application_id`) values (?, ?)"
 		values := []interface{}{o.ID, rel.ID}
 
 		if boil.IsDebug(ctx) {
@@ -571,7 +727,7 @@ func (o *User) AddApplications(ctx context.Context, exec boil.ContextExecutor, i
 // Replaces o.R.Applications with related.
 // Sets related.R.Users's Applications accordingly.
 func (o *User) SetApplications(ctx context.Context, exec boil.ContextExecutor, insert bool, related ...*Application) error {
-	query := "delete from `owners` where `user_id` = ?"
+	query := "delete from `application_owners` where `user_id` = ?"
 	values := []interface{}{o.ID}
 	if boil.IsDebug(ctx) {
 		writer := boil.DebugWriterFrom(ctx)
@@ -601,7 +757,7 @@ func (o *User) RemoveApplications(ctx context.Context, exec boil.ContextExecutor
 
 	var err error
 	query := fmt.Sprintf(
-		"delete from `owners` where `user_id` = ? and `application_id` in (%s)",
+		"delete from `application_owners` where `user_id` = ? and `application_id` in (%s)",
 		strmangle.Placeholders(dialect.UseIndexPlaceholders, len(related), 2, 1),
 	)
 	values := []interface{}{o.ID}
@@ -642,6 +798,151 @@ func (o *User) RemoveApplications(ctx context.Context, exec boil.ContextExecutor
 }
 
 func removeApplicationsFromUsersSlice(o *User, related []*Application) {
+	for _, rel := range related {
+		if rel.R == nil {
+			continue
+		}
+		for i, ri := range rel.R.Users {
+			if o.ID != ri.ID {
+				continue
+			}
+
+			ln := len(rel.R.Users)
+			if ln > 1 && i < ln-1 {
+				rel.R.Users[i] = rel.R.Users[ln-1]
+			}
+			rel.R.Users = rel.R.Users[:ln-1]
+			break
+		}
+	}
+}
+
+// AddRepositories adds the given related objects to the existing relationships
+// of the user, optionally inserting them as new records.
+// Appends related to o.R.Repositories.
+// Sets related.R.Users appropriately.
+func (o *User) AddRepositories(ctx context.Context, exec boil.ContextExecutor, insert bool, related ...*Repository) error {
+	var err error
+	for _, rel := range related {
+		if insert {
+			if err = rel.Insert(ctx, exec, boil.Infer()); err != nil {
+				return errors.Wrap(err, "failed to insert into foreign table")
+			}
+		}
+	}
+
+	for _, rel := range related {
+		query := "insert into `repository_owners` (`user_id`, `repository_id`) values (?, ?)"
+		values := []interface{}{o.ID, rel.ID}
+
+		if boil.IsDebug(ctx) {
+			writer := boil.DebugWriterFrom(ctx)
+			fmt.Fprintln(writer, query)
+			fmt.Fprintln(writer, values)
+		}
+		_, err = exec.ExecContext(ctx, query, values...)
+		if err != nil {
+			return errors.Wrap(err, "failed to insert into join table")
+		}
+	}
+	if o.R == nil {
+		o.R = &userR{
+			Repositories: related,
+		}
+	} else {
+		o.R.Repositories = append(o.R.Repositories, related...)
+	}
+
+	for _, rel := range related {
+		if rel.R == nil {
+			rel.R = &repositoryR{
+				Users: UserSlice{o},
+			}
+		} else {
+			rel.R.Users = append(rel.R.Users, o)
+		}
+	}
+	return nil
+}
+
+// SetRepositories removes all previously related items of the
+// user replacing them completely with the passed
+// in related items, optionally inserting them as new records.
+// Sets o.R.Users's Repositories accordingly.
+// Replaces o.R.Repositories with related.
+// Sets related.R.Users's Repositories accordingly.
+func (o *User) SetRepositories(ctx context.Context, exec boil.ContextExecutor, insert bool, related ...*Repository) error {
+	query := "delete from `repository_owners` where `user_id` = ?"
+	values := []interface{}{o.ID}
+	if boil.IsDebug(ctx) {
+		writer := boil.DebugWriterFrom(ctx)
+		fmt.Fprintln(writer, query)
+		fmt.Fprintln(writer, values)
+	}
+	_, err := exec.ExecContext(ctx, query, values...)
+	if err != nil {
+		return errors.Wrap(err, "failed to remove relationships before set")
+	}
+
+	removeRepositoriesFromUsersSlice(o, related)
+	if o.R != nil {
+		o.R.Repositories = nil
+	}
+
+	return o.AddRepositories(ctx, exec, insert, related...)
+}
+
+// RemoveRepositories relationships from objects passed in.
+// Removes related items from R.Repositories (uses pointer comparison, removal does not keep order)
+// Sets related.R.Users.
+func (o *User) RemoveRepositories(ctx context.Context, exec boil.ContextExecutor, related ...*Repository) error {
+	if len(related) == 0 {
+		return nil
+	}
+
+	var err error
+	query := fmt.Sprintf(
+		"delete from `repository_owners` where `user_id` = ? and `repository_id` in (%s)",
+		strmangle.Placeholders(dialect.UseIndexPlaceholders, len(related), 2, 1),
+	)
+	values := []interface{}{o.ID}
+	for _, rel := range related {
+		values = append(values, rel.ID)
+	}
+
+	if boil.IsDebug(ctx) {
+		writer := boil.DebugWriterFrom(ctx)
+		fmt.Fprintln(writer, query)
+		fmt.Fprintln(writer, values)
+	}
+	_, err = exec.ExecContext(ctx, query, values...)
+	if err != nil {
+		return errors.Wrap(err, "failed to remove relationships before set")
+	}
+	removeRepositoriesFromUsersSlice(o, related)
+	if o.R == nil {
+		return nil
+	}
+
+	for _, rel := range related {
+		for i, ri := range o.R.Repositories {
+			if rel != ri {
+				continue
+			}
+
+			ln := len(o.R.Repositories)
+			if ln > 1 && i < ln-1 {
+				o.R.Repositories[i] = o.R.Repositories[ln-1]
+			}
+			o.R.Repositories = o.R.Repositories[:ln-1]
+			break
+		}
+	}
+
+	return nil
+}
+
+func removeRepositoriesFromUsersSlice(o *User, related []*Repository) {
 	for _, rel := range related {
 		if rel.R == nil {
 			continue

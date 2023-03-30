@@ -9,7 +9,7 @@ CREATE TABLE `available_domains`
 
 CREATE TABLE `repositories`
 (
-    `id`   VARCHAR(22)  NOT NULL COMMENT 'リポジトリID',
+    `id`   CHAR(22)  NOT NULL COMMENT 'リポジトリID',
     `name` VARCHAR(256) NOT NULL COMMENT 'リポジトリ名',
     `url`  VARCHAR(256) NOT NULL COMMENT 'Git Remote URL',
     PRIMARY KEY (`id`),
@@ -17,6 +17,20 @@ CREATE TABLE `repositories`
 ) ENGINE InnoDB
   DEFAULT CHARACTER SET = `utf8mb4`
     COMMENT 'Gitリポジトリテーブル';
+
+CREATE TABLE `repository_auth`
+(
+    `repository_id` CHAR(22)           NOT NULL COMMENT 'リポジトリID',
+    `method`        ENUM ('basic', 'ssh') NOT NULL COMMENT '認証方法',
+    `username`      VARCHAR(256)          NOT NULL COMMENT '(basic)ユーザー名',
+    `password`      VARCHAR(256)          NOT NULL COMMENT '(basic)パスワード',
+    `ssh_key`       TEXT                  NOT NULL COMMENT '(ssh)PEM encoded private key',
+    PRIMARY KEY (`repository_id`),
+    CONSTRAINT `fk_repository_auth_repository_id`
+        FOREIGN KEY (`repository_id`) REFERENCES `repositories` (`id`)
+) ENGINE InnoDB
+  DEFAULT CHARACTER SET = `utf8mb4`
+    COMMENT 'Gitリポジトリ認証情報テーブル';
 
 CREATE TABLE `application_state`
 (
@@ -34,7 +48,7 @@ VALUES ('IDLE'),
 
 CREATE TABLE `applications`
 (
-    `id`             VARCHAR(22)                NOT NULL COMMENT 'アプリケーションID',
+    `id`             CHAR(22)                NOT NULL COMMENT 'アプリケーションID',
     `name`           VARCHAR(100)               NOT NULL COMMENT 'アプリケーション名',
     `repository_id`  VARCHAR(22)                NOT NULL COMMENT 'リポジトリID',
     `branch_name`    VARCHAR(100)               NOT NULL COMMENT 'Gitブランチ・タグ名',
@@ -55,7 +69,7 @@ CREATE TABLE `applications`
 
 CREATE TABLE `application_config`
 (
-    `application_id`  VARCHAR(22)                  NOT NULL COMMENT 'アプリケーションID',
+    `application_id`  CHAR(22)                  NOT NULL COMMENT 'アプリケーションID',
     `use_mariadb`     TINYINT(1)                   NOT NULL COMMENT 'MariaDBを使用するか',
     `use_mongodb`     TINYINT(1)                   NOT NULL COMMENT 'MongoDBを使用するか',
     `base_image`      VARCHAR(1000)                NOT NULL COMMENT 'ベースイメージの名前',
@@ -89,14 +103,14 @@ VALUES ('BUILDING'),
 
 CREATE TABLE `builds`
 (
-    `id`             VARCHAR(22) NOT NULL COMMENT 'ビルドID',
+    `id`             CHAR(22) NOT NULL COMMENT 'ビルドID',
     `commit`         CHAR(40)    NOT NULL COMMENT 'コミットハッシュ',
     `status`         VARCHAR(10) NOT NULL COMMENT 'ビルドの状態',
     `started_at`     DATETIME(6) NULL COMMENT 'ビルド開始日時',
     `updated_at`     DATETIME(6) NULL COMMENT 'ビルド更新日時',
     `finished_at`    DATETIME(6) NULL COMMENT 'ビルド終了日時',
     `retriable`      TINYINT(1)  NOT NULL COMMENT '再ビルド可能フラグ',
-    `application_id` VARCHAR(22) NOT NULL COMMENT 'アプリケーションID',
+    `application_id` CHAR(22) NOT NULL COMMENT 'アプリケーションID',
     PRIMARY KEY (`id`),
     CONSTRAINT `fk_builds_status`
         FOREIGN KEY (`status`) REFERENCES `build_status` (`status`),
@@ -108,7 +122,7 @@ CREATE TABLE `builds`
 
 CREATE TABLE `artifacts`
 (
-    `id`         VARCHAR(22) NOT NULL COMMENT '生成物ID',
+    `id`         CHAR(22) NOT NULL COMMENT '生成物ID',
     `size`       BIGINT      NOT NULL COMMENT '生成物ファイルサイズ(tar)',
     `created_at` DATETIME(6) NOT NULL COMMENT '作成日時',
     `deleted_at` DATETIME(6) NULL COMMENT '削除日時',
@@ -123,8 +137,8 @@ CREATE TABLE `artifacts`
 
 CREATE TABLE `environments`
 (
-    `id`             VARCHAR(22)  NOT NULL COMMENT '環境変数ID',
-    `application_id` VARCHAR(22)  NOT NULL COMMENT 'アプリケーションID',
+    `id`             CHAR(22)  NOT NULL COMMENT '環境変数ID',
+    `application_id` CHAR(22)  NOT NULL COMMENT 'アプリケーションID',
     `key`            VARCHAR(100) NOT NULL COMMENT '環境変数のキー',
     `value`          TEXT         NOT NULL COMMENT '環境変数の値',
     PRIMARY KEY (`id`),
@@ -137,7 +151,7 @@ CREATE TABLE `environments`
 
 CREATE TABLE `websites`
 (
-    `id`             VARCHAR(22)    NOT NULL COMMENT 'サイトID',
+    `id`             CHAR(22)    NOT NULL COMMENT 'サイトID',
     `fqdn`           VARCHAR(100)   NOT NULL COMMENT 'サイトURLのFQDN',
     `path_prefix`    VARCHAR(100)   NOT NULL COMMENT 'サイトPathのPrefix',
     `strip_prefix`   TINYINT(1)     NOT NULL COMMENT 'PathのPrefixを落とすかどうか',
@@ -145,7 +159,7 @@ CREATE TABLE `websites`
     `http_port`      INT DEFAULT 80 NOT NULL COMMENT 'コンテナhttpポート番号',
     `created_at`     DATETIME(6)    NOT NULL COMMENT '作成日時',
     `updated_at`     DATETIME(6)    NOT NULL COMMENT '更新日時',
-    `application_id` VARCHAR(22)    NOT NULL COMMENT 'アプリケーションID',
+    `application_id` CHAR(22)    NOT NULL COMMENT 'アプリケーションID',
     PRIMARY KEY (`id`),
     UNIQUE KEY (`fqdn`, `path_prefix`),
     CONSTRAINT `fk_websites_application_id`
@@ -156,7 +170,7 @@ CREATE TABLE `websites`
 
 CREATE TABLE `users`
 (
-    `id`   CHAR(36)     NOT NULL COMMENT 'ユーザーID',
+    `id`   CHAR(22)  NOT NULL COMMENT 'ユーザーID',
     `name` VARCHAR(255) NOT NULL COMMENT 'ユーザー名',
     PRIMARY KEY (`id`)
 ) ENGINE InnoDB
@@ -167,21 +181,35 @@ CREATE TABLE `users`
 INSERT INTO `users`
 VALUES ('tmp-user', 'toki');
 
-CREATE TABLE `owners`
+CREATE TABLE `repository_owners`
 (
-    `user_id`        CHAR(36) NOT NULL COMMENT 'ユーザーID',
-    `application_id` CHAR(36) NOT NULL COMMENT 'アプリケーションID',
-    PRIMARY KEY (`user_id`, `application_id`),
-    CONSTRAINT `fk_owners_user_id`
+    `user_id`       CHAR(22) NOT NULL COMMENT 'ユーザーID',
+    `repository_id` CHAR(22) NOT NULL COMMENT 'リポジトリID',
+    PRIMARY KEY (`user_id`, `repository_id`),
+    CONSTRAINT `fk_repository_owners_user_id`
         FOREIGN KEY (`user_id`) REFERENCES `users` (`id`),
-    CONSTRAINT `fk_owners_application_id`
+    CONSTRAINT `fk_repository_owners_repository_id`
+        FOREIGN KEY (`repository_id`) REFERENCES `repositories` (`id`)
+) ENGINE InnoDB
+  DEFAULT CHARACTER SET = `utf8mb4`
+    COMMENT 'リポジトリ所有者テーブル';
+
+CREATE TABLE `application_owners`
+(
+    `user_id`        CHAR(22) NOT NULL COMMENT 'ユーザーID',
+    `application_id` CHAR(22) NOT NULL COMMENT 'アプリケーションID',
+    PRIMARY KEY (`user_id`, `application_id`),
+    CONSTRAINT `fk_application_owners_user_id`
+        FOREIGN KEY (`user_id`) REFERENCES `users` (`id`),
+    CONSTRAINT `fk_application_owners_application_id`
         FOREIGN KEY (`application_id`) REFERENCES `applications` (`id`)
 ) ENGINE InnoDB
   DEFAULT CHARACTER SET = `utf8mb4`
     COMMENT 'アプリケーション所有者テーブル';
 
 -- +migrate Down
-DROP TABLE `owners`;
+DROP TABLE `application_owners`;
+DROP TABLE `repository_owners`;
 DROP TABLE `users`;
 DROP TABLE `websites`;
 DROP TABLE `environments`;
@@ -191,5 +219,6 @@ DROP TABLE `build_status`;
 DROP TABLE `application_config`;
 DROP TABLE `applications`;
 DROP TABLE `application_state`;
+DROP TABLE `repository_auth`;
 DROP TABLE `repositories`;
 DROP TABLE `available_domains`;

@@ -3,11 +3,11 @@ package repository
 import (
 	"context"
 	"database/sql"
-	"errors"
 	"fmt"
 
-	log "github.com/sirupsen/logrus"
+	"github.com/samber/lo"
 	"github.com/volatiletech/sqlboiler/v4/boil"
+	"github.com/volatiletech/sqlboiler/v4/queries/qm"
 
 	"github.com/traPtitech/neoshowcase/pkg/domain"
 	"github.com/traPtitech/neoshowcase/pkg/infrastructure/admindb/models"
@@ -23,57 +23,106 @@ func NewGitRepositoryRepository(db *sql.DB) domain.GitRepositoryRepository {
 	}
 }
 
-func (r *gitRepositoryRepository) RegisterRepository(ctx context.Context, args domain.RegisterRepositoryArgs) (domain.Repository, error) {
-	const errMsg = "failed to RegisterRepository: %w"
-
-	repo, err := models.Repositories(models.RepositoryWhere.URL.EQ(args.URL)).One(ctx, r.db)
-	if err != nil && err != sql.ErrNoRows {
-		return domain.Repository{}, fmt.Errorf(errMsg, err)
-	}
-	if repo != nil {
-		return domain.Repository{}, fmt.Errorf(errMsg, errors.New("repository already exists"))
+func (r *gitRepositoryRepository) GetRepositories(ctx context.Context, cond domain.GetRepositoryCondition) ([]*domain.Repository, error) {
+	mods := []qm.QueryMod{
+		qm.Load(models.RepositoryRels.RepositoryAuth),
+		qm.Load(models.RepositoryRels.Users),
 	}
 
-	repo = &models.Repository{
-		ID:   domain.NewID(),
-		Name: args.Name,
-		URL:  args.URL,
+	if cond.UserID.Valid {
+		mods = append(mods,
+			qm.InnerJoin(fmt.Sprintf(
+				"%s ON %s.%s = %s.%s",
+				models.TableNames.RepositoryOwners,
+				models.TableNames.RepositoryOwners,
+				"repository_id",
+				models.TableNames.Repositories,
+				models.RepositoryColumns.ID,
+			)),
+			qm.Where(fmt.Sprintf("%s.%s = ?", models.TableNames.RepositoryOwners, "user_id"), cond.UserID.V),
+		)
 	}
-	if err := repo.Insert(ctx, r.db, boil.Infer()); err != nil {
-		return domain.Repository{}, fmt.Errorf(errMsg, err)
+
+	repos, err := models.Repositories(mods...).All(ctx, r.db)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get repositories: %w", err)
 	}
-
-	log.WithField("repositoryID", repo.ID).
-		Info("registered repository")
-
-	return toDomainRepository(repo), nil
-
+	return lo.Map(repos, func(repo *models.Repository, i int) *domain.Repository {
+		return toDomainRepository(repo)
+	}), nil
 }
 
-func (r *gitRepositoryRepository) GetRepositoryByID(ctx context.Context, id string) (domain.Repository, error) {
-	const errMsg = "failed to GetRepositoryByID: %w"
-
-	repo, err := models.Repositories(models.RepositoryWhere.ID.EQ(id)).One(ctx, r.db)
+func (r *gitRepositoryRepository) GetRepository(ctx context.Context, id string) (*domain.Repository, error) {
+	repo, err := models.Repositories(
+		models.RepositoryWhere.ID.EQ(id),
+		qm.Load(models.RepositoryRels.RepositoryAuth),
+		qm.Load(models.RepositoryRels.Users),
+	).One(ctx, r.db)
 	if err != nil {
 		if isNoRowsErr(err) {
-			return domain.Repository{}, ErrNotFound
+			return nil, ErrNotFound
 		}
-		return domain.Repository{}, fmt.Errorf(errMsg, err)
+		return nil, fmt.Errorf("failed to get repository: %w", err)
 	}
-
 	return toDomainRepository(repo), nil
 }
 
-func (r *gitRepositoryRepository) GetRepository(ctx context.Context, rawURL string) (domain.Repository, error) {
-	const errMsg = "failed to GetRepository: %w"
-
-	repo, err := models.Repositories(models.RepositoryWhere.URL.EQ(rawURL)).One(ctx, r.db)
+func (r *gitRepositoryRepository) CreateRepository(ctx context.Context, repo *domain.Repository) error {
+	tx, err := r.db.BeginTx(ctx, nil)
 	if err != nil {
-		if isNoRowsErr(err) {
-			return domain.Repository{}, ErrNotFound
-		}
-		return domain.Repository{}, fmt.Errorf(errMsg, err)
+		return fmt.Errorf("failed to start transaction: %w", err)
+	}
+	defer tx.Rollback()
+
+	mr := fromDomainRepository(repo)
+	err = mr.Insert(ctx, tx, boil.Infer())
+	if err != nil {
+		return fmt.Errorf("faield to insert repository: %w", err)
 	}
 
-	return toDomainRepository(repo), nil
+	if repo.Auth.Valid {
+		mra := fromDomainRepositoryAuth(repo.ID, &repo.Auth.V)
+		err = mr.SetRepositoryAuth(ctx, tx, true, mra)
+		if err != nil {
+			return fmt.Errorf("failed to insert repository auth: %w", err)
+		}
+	}
+
+	repo.OwnerIDs = lo.Uniq(repo.OwnerIDs)
+	users, err := models.Users(models.UserWhere.ID.IN(repo.OwnerIDs)).All(ctx, tx)
+	if err != nil {
+		return fmt.Errorf("failed to get users: %w", err)
+	}
+	if len(users) < len(repo.OwnerIDs) {
+		return ErrNotFound
+	}
+
+	err = tx.Commit()
+	if err != nil {
+		return fmt.Errorf("failed to commit transaction: %w", err)
+	}
+
+	return nil
+}
+
+func (r *gitRepositoryRepository) RegisterRepositoryOwner(ctx context.Context, repositoryID string, userID string) error {
+	repo, err := models.Repositories(models.RepositoryWhere.ID.EQ(repositoryID)).One(ctx, r.db)
+	if err != nil {
+		if isNoRowsErr(err) {
+			return ErrNotFound
+		}
+		return fmt.Errorf("failed to get repository: %w", err)
+	}
+	user, err := models.Users(models.UserWhere.ID.EQ(userID)).One(ctx, r.db)
+	if err != nil {
+		if isNoRowsErr(err) {
+			return ErrNotFound
+		}
+		return fmt.Errorf("failed to get user: %w", err)
+	}
+	err = repo.AddUsers(ctx, r.db, false, user)
+	if err != nil {
+		return fmt.Errorf("failed to add owner: %w", err)
+	}
+	return nil
 }

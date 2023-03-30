@@ -9,7 +9,7 @@
 
 ```sql
 CREATE TABLE `users` (
-  `id` char(36) NOT NULL COMMENT 'ユーザーID',
+  `id` char(22) NOT NULL COMMENT 'ユーザーID',
   `name` varchar(255) NOT NULL COMMENT 'ユーザー名',
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci COMMENT='ユーザーテーブル'
@@ -21,7 +21,7 @@ CREATE TABLE `users` (
 
 | Name | Type | Default | Nullable | Children | Parents | Comment |
 | ---- | ---- | ------- | -------- | -------- | ------- | ------- |
-| id | char(36) |  | false | [owners](owners.md) |  | ユーザーID |
+| id | char(22) |  | false | [application_owners](application_owners.md) [repository_owners](repository_owners.md) |  | ユーザーID |
 | name | varchar(255) |  | false |  |  | ユーザー名 |
 
 ## Constraints

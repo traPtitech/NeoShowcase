@@ -184,7 +184,6 @@ func (cd *continuousDeploymentService) registerBuilds() error {
 	crashed := lo.Filter(builds, func(build *domain.Build, i int) bool {
 		return build.Status == builder.BuildStatusBuilding && build.UpdatedAt.ValueOrZero().Before(crashThreshold)
 	})
-	crashedIDs := lo.SliceToMap(crashed, func(build *domain.Build) (string, bool) { return build.ID, true })
 	for _, build := range crashed {
 		err = cd.buildRepo.UpdateBuild(ctx, build.ID, domain.UpdateBuildArgs{
 			FromStatus: optional.From(builder.BuildStatusBuilding),
@@ -194,7 +193,6 @@ func (cd *continuousDeploymentService) registerBuilds() error {
 			log.WithError(err).Error("failed to mark crashed build as errored")
 		}
 	}
-	builds = lo.Reject(builds, func(build *domain.Build, i int) bool { return crashedIDs[build.ID] })
 
 	buildExistsForCommit := lo.SliceToMap(builds, func(b *domain.Build) (string, bool) { return b.Commit, true })
 	for _, app := range applications {

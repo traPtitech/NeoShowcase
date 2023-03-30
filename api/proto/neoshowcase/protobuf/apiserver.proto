@@ -5,6 +5,32 @@ option go_package = "github.com/traPtitech/neoshowcase/pkg/interface/grpc/pb";
 import "google/protobuf/empty.proto";
 import "neoshowcase/protobuf/null.proto";
 
+message Repository {
+  string id = 1;
+  string name = 2;
+  string url = 3;
+  optional string auth_method = 4;
+}
+
+message CreateRepositoryAuthBasic {
+  string username = 1;
+  string password = 2;
+}
+
+message CreateRepositoryAuthSSH {
+  string ssh_key = 1;
+}
+
+message CreateRepositoryRequest {
+  string name = 1;
+  string url = 2;
+  oneof auth {
+    google.protobuf.Empty none = 3;
+    CreateRepositoryAuthBasic basic = 4;
+    CreateRepositoryAuthSSH ssh = 5;
+  }
+}
+
 enum BuildType {
   RUNTIME = 0;
   STATIC = 1;
@@ -54,7 +80,7 @@ message CreateWebsiteRequest {
 message Application {
   string id = 1;
   string name = 2;
-  string repository_url = 3;
+  string repository_id = 3;
   string branch_name = 4;
   BuildType build_type = 5;
   ApplicationState state = 6;
@@ -62,6 +88,7 @@ message Application {
   string want_commit = 8;
   ApplicationConfig config = 9;
   repeated Website websites = 10;
+  repeated string owner_ids = 11;
 }
 
 message AvailableDomains {
@@ -130,13 +157,17 @@ message BuildLog {
   string output = 1;
 }
 
+message GetRepositoriesResponse {
+  repeated Repository repositories = 1;
+}
+
 message GetApplicationsResponse {
   repeated Application applications = 1;
 }
 
 message CreateApplicationRequest {
   string name = 1;
-  string repository_url = 2;
+  string repository_id = 2;
   string branch_name = 3;
   BuildType build_type = 4;
   ApplicationConfig config = 5;
@@ -176,6 +207,8 @@ message RetryCommitBuildRequest {
 }
 
 service ApplicationService {
+  rpc GetRepositories(google.protobuf.Empty) returns (GetRepositoriesResponse);
+  rpc CreateRepository(CreateRepositoryRequest) returns (Repository);
   rpc GetApplications(google.protobuf.Empty) returns (GetApplicationsResponse);
   rpc GetAvailableDomains(google.protobuf.Empty) returns (AvailableDomains);
   rpc AddAvailableDomain(AddAvailableDomainRequest) returns (google.protobuf.Empty);
