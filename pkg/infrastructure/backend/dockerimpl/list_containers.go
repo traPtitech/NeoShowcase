@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/friendsofgo/errors"
 	docker "github.com/fsouza/go-dockerclient"
 
 	"github.com/traPtitech/neoshowcase/pkg/domain"
@@ -19,7 +20,7 @@ func (b *dockerBackend) GetContainer(ctx context.Context, appID string) (*domain
 		Context: ctx,
 	})
 	if err != nil {
-		return nil, fmt.Errorf("failed to fetch containers: %w", err)
+		return nil, errors.Wrap(err, "failed to fetch containers")
 	}
 	if len(containers) == 0 {
 		return nil, domain.ErrContainerNotFound
@@ -39,7 +40,7 @@ func (b *dockerBackend) ListContainers(ctx context.Context) ([]domain.Container,
 		Context: ctx,
 	})
 	if err != nil {
-		return nil, fmt.Errorf("failed to fetch containers: %w", err)
+		return nil, errors.Wrap(err, "failed to fetch containers")
 	}
 
 	var result []domain.Container

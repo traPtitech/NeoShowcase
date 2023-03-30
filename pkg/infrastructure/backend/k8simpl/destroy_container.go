@@ -2,8 +2,8 @@ package k8simpl
 
 import (
 	"context"
-	"fmt"
 
+	"github.com/friendsofgo/errors"
 	v1 "k8s.io/api/apps/v1"
 
 	"github.com/traPtitech/neoshowcase/pkg/domain"
@@ -16,7 +16,7 @@ type (
 func (b *k8sBackend) DestroyContainer(ctx context.Context, app *domain.Application) error {
 	err := b.destroyRuntimeIngresses(ctx, app)
 	if err != nil {
-		return fmt.Errorf("failed to destroy runtime ingress resources: %w", err)
+		return errors.Wrap(err, "failed to destroy runtime ingress resources")
 	}
 
 	// statefulset の spec.selector がなぜか omitempty ではないため

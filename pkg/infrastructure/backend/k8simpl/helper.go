@@ -3,8 +3,8 @@ package k8simpl
 import (
 	"context"
 	"encoding/json"
-	"fmt"
 
+	"github.com/friendsofgo/errors"
 	"github.com/samber/lo"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
@@ -18,7 +18,7 @@ type patcher[T any] interface {
 func patch[T any](ctx context.Context, name string, resource T, patcher patcher[T]) error {
 	b, err := json.Marshal(resource)
 	if err != nil {
-		return fmt.Errorf("failed to marshal resource: %w", err)
+		return errors.Wrap(err, "failed to marshal resource")
 	}
 	_, err = patcher.Patch(ctx, name, types.ApplyPatchType, b, metav1.PatchOptions{Force: pointer.Bool(true), FieldManager: fieldManager})
 	return err
@@ -27,7 +27,7 @@ func patch[T any](ctx context.Context, name string, resource T, patcher patcher[
 func strategicPatch[T any](ctx context.Context, name string, resource any, patcher patcher[T]) error {
 	b, err := json.Marshal(resource)
 	if err != nil {
-		return fmt.Errorf("failed to marshal resource: %w", err)
+		return errors.Wrap(err, "failed to marshal resource")
 	}
 	_, err = patcher.Patch(ctx, name, types.StrategicMergePatchType, b, metav1.PatchOptions{FieldManager: fieldManager})
 	return err

@@ -1,11 +1,12 @@
 package storage
 
 import (
-	"fmt"
 	"io"
 	"os"
 
+	"github.com/friendsofgo/errors"
 	"github.com/ncw/swift"
+
 	"github.com/traPtitech/neoshowcase/pkg/domain"
 )
 
@@ -74,17 +75,17 @@ func (ss *SwiftStorage) Delete(filename string) error {
 func (ss *SwiftStorage) Move(filename, destPath string) error {
 	inputFile, err := os.Open(filename)
 	if err != nil {
-		return fmt.Errorf("couldn't open source file: %w", err)
+		return errors.Wrap(err, "couldn't open source file")
 	}
 	_, err = ss.conn.ObjectPut(ss.container, destPath, inputFile, true, "", "", swift.Headers{})
 	inputFile.Close()
 	if err != nil {
-		return fmt.Errorf("writing to output file failed: %w", err)
+		return errors.Wrap(err, "writing to output file failed")
 	}
 	// The copy was successful, so now delete the original file
 	err = os.Remove(filename)
 	if err != nil {
-		return fmt.Errorf("failed removing original file: %w", err)
+		return errors.Wrap(err, "failed removing original file")
 	}
 	return nil
 }

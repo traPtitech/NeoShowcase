@@ -2,7 +2,8 @@ package repository
 
 import (
 	"database/sql"
-	"errors"
+
+	"github.com/friendsofgo/errors"
 
 	"github.com/go-sql-driver/mysql"
 )

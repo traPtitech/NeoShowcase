@@ -6,6 +6,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/friendsofgo/errors"
 	"github.com/samber/lo"
 	log "github.com/sirupsen/logrus"
 
@@ -208,7 +209,7 @@ func (cd *continuousDeploymentService) registerBuilds() error {
 		build := domain.NewBuild(app.ID, app.WantCommit)
 		err = cd.buildRepo.CreateBuild(ctx, build)
 		if err != nil {
-			return fmt.Errorf("failed to create build: %w", err)
+			return errors.Wrap(err, "failed to create build")
 		}
 	}
 	return nil

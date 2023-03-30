@@ -3,8 +3,8 @@ package repository
 import (
 	"context"
 	"database/sql"
-	"fmt"
 
+	"github.com/friendsofgo/errors"
 	"github.com/samber/lo"
 	"github.com/volatiletech/sqlboiler/v4/boil"
 
@@ -33,18 +33,14 @@ func (r *environmentRepository) GetEnv(ctx context.Context, applicationID string
 }
 
 func (r *environmentRepository) SetEnv(ctx context.Context, applicationID, key, value string) error {
-	const errMsg = "failed to SetEnv: %w"
-
 	env := models.Environment{
 		ID:            domain.NewID(),
 		ApplicationID: applicationID,
 		Key:           key,
 		Value:         value,
 	}
-
 	if err := env.Upsert(ctx, r.db, boil.Infer(), boil.Infer()); err != nil {
-		return fmt.Errorf(errMsg, err)
+		return errors.Wrap(err, "failed to upsert env")
 	}
-
 	return nil
 }

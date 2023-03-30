@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"fmt"
 
+	"github.com/friendsofgo/errors"
 	"github.com/samber/lo"
 	"github.com/volatiletech/sqlboiler/v4/boil"
 	"github.com/volatiletech/sqlboiler/v4/queries/qm"
@@ -64,7 +65,7 @@ func (r *applicationRepository) GetApplications(ctx context.Context, cond domain
 
 	applications, err := models.Applications(mods...).All(ctx, r.db)
 	if err != nil {
-		return nil, fmt.Errorf("failed to get applications: %w", err)
+		return nil, errors.Wrap(err, "failed to get applications")
 	}
 	return lo.Map(applications, func(app *models.Application, i int) *domain.Application {
 		return toDomainApplication(app)
@@ -83,7 +84,7 @@ func (r *applicationRepository) getApplication(ctx context.Context, id string) (
 		if isNoRowsErr(err) {
 			return nil, ErrNotFound
 		}
-		return nil, fmt.Errorf("failed to get application: %w", err)
+		return nil, errors.Wrap(err, "failed to get application")
 	}
 	return app, nil
 }
@@ -99,13 +100,13 @@ func (r *applicationRepository) GetApplication(ctx context.Context, id string) (
 func (r *applicationRepository) CreateApplication(ctx context.Context, app *domain.Application) error {
 	tx, err := r.db.BeginTx(ctx, nil)
 	if err != nil {
-		return fmt.Errorf("failed to start transaction: %w", err)
+		return errors.Wrap(err, "failed to start transaction")
 	}
 	defer tx.Rollback()
 
 	ma := fromDomainApplication(app)
 	if err = ma.Insert(ctx, tx, boil.Infer()); err != nil {
-		return fmt.Errorf("failed to create application: %w", err)
+		return errors.Wrap(err, "failed to create application")
 	}
 
 	mc := fromDomainApplicationConfig(app.ID, &app.Config)
@@ -128,11 +129,11 @@ func (r *applicationRepository) CreateApplication(ctx context.Context, app *doma
 	}
 	err = ma.AddUsers(ctx, tx, false, users...)
 	if err != nil {
-		return fmt.Errorf("failed to add owners: %w", err)
+		return errors.Wrap(err, "failed to add owners")
 	}
 
 	if err := tx.Commit(); err != nil {
-		return fmt.Errorf("failed to commit transaction: %w", err)
+		return errors.Wrap(err, "failed to commit transaction")
 	}
 
 	return nil
@@ -165,10 +166,10 @@ func (r *applicationRepository) RegisterApplicationOwner(ctx context.Context, ap
 	}
 	user, err := models.Users(models.UserWhere.ID.EQ(userID)).One(ctx, r.db)
 	if err != nil {
-		return fmt.Errorf("failed to find user: %w", err)
+		return errors.Wrap(err, "failed to find user")
 	}
 	if err := app.AddUsers(ctx, r.db, false, user); err != nil {
-		return fmt.Errorf("failed to register owner: %w", err)
+		return errors.Wrap(err, "failed to register owner")
 	}
 	return nil
 }
@@ -176,7 +177,7 @@ func (r *applicationRepository) RegisterApplicationOwner(ctx context.Context, ap
 func (r *applicationRepository) GetWebsites(ctx context.Context, applicationIDs []string) ([]*domain.Website, error) {
 	websites, err := models.Websites(models.WebsiteWhere.ApplicationID.IN(applicationIDs)).All(ctx, r.db)
 	if err != nil {
-		return nil, fmt.Errorf("failed to get websites: %w", err)
+		return nil, errors.Wrap(err, "failed to get websites")
 	}
 	return lo.Map(websites, func(website *models.Website, i int) *domain.Website {
 		return toDomainWebsite(website)
@@ -186,7 +187,7 @@ func (r *applicationRepository) GetWebsites(ctx context.Context, applicationIDs 
 func (r *applicationRepository) validateAndInsertWebsite(ctx context.Context, ex boil.ContextExecutor, app *models.Application, website *domain.Website) error {
 	websites, err := models.Websites(models.WebsiteWhere.FQDN.EQ(website.FQDN), qm.For("UPDATE")).All(ctx, ex)
 	if err != nil {
-		return fmt.Errorf("failed to get existing websites: %w", err)
+		return errors.Wrap(err, "failed to get existing websites")
 	}
 	existing := lo.Map(websites, func(website *models.Website, i int) *domain.Website { return toDomainWebsite(website) })
 	if website.ConflictsWith(existing) {
@@ -194,7 +195,7 @@ func (r *applicationRepository) validateAndInsertWebsite(ctx context.Context, ex
 	}
 	err = app.AddWebsites(ctx, ex, true, fromDomainWebsite(website))
 	if err != nil {
-		return fmt.Errorf("failed to add website: %w", err)
+		return errors.Wrap(err, "failed to add website")
 	}
 	return nil
 }
@@ -207,7 +208,7 @@ func (r *applicationRepository) AddWebsite(ctx context.Context, applicationID st
 
 	tx, err := r.db.BeginTx(ctx, nil)
 	if err != nil {
-		return fmt.Errorf("failed to start transaction: %w", err)
+		return errors.Wrap(err, "failed to start transaction")
 	}
 	defer tx.Rollback()
 
@@ -218,7 +219,7 @@ func (r *applicationRepository) AddWebsite(ctx context.Context, applicationID st
 
 	err = tx.Commit()
 	if err != nil {
-		return fmt.Errorf("failed to commit transaction: %w", err)
+		return errors.Wrap(err, "failed to commit transaction")
 	}
 
 	return nil

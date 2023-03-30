@@ -3,8 +3,8 @@ package repository
 import (
 	"context"
 	"database/sql"
-	"fmt"
 
+	"github.com/friendsofgo/errors"
 	"github.com/samber/lo"
 	"github.com/volatiletech/sqlboiler/v4/boil"
 	"github.com/volatiletech/sqlboiler/v4/queries/qm"
@@ -52,7 +52,7 @@ func (r *buildRepository) GetBuilds(ctx context.Context, cond domain.GetBuildCon
 
 	builds, err := models.Builds(mods...).All(ctx, r.db)
 	if err != nil {
-		return nil, fmt.Errorf("failed to get builds: %w", err)
+		return nil, errors.Wrap(err, "failed to get builds")
 	}
 	return lo.Map(builds, func(b *models.Build, i int) *domain.Build {
 		return toDomainBuild(b)
@@ -65,7 +65,7 @@ func (r *buildRepository) GetBuild(ctx context.Context, buildID string) (*domain
 		if isNoRowsErr(err) {
 			return nil, ErrNotFound
 		}
-		return nil, fmt.Errorf("failed to find build: %w", err)
+		return nil, errors.Wrap(err, "failed to find build")
 	}
 	return toDomainBuild(build), nil
 }
@@ -74,7 +74,7 @@ func (r *buildRepository) CreateBuild(ctx context.Context, build *domain.Build) 
 	mb := fromDomainBuild(build)
 	err := mb.Insert(ctx, r.db, boil.Infer())
 	if err != nil {
-		return fmt.Errorf("failed to insert build: %w", err)
+		return errors.Wrap(err, "failed to insert build")
 	}
 	return nil
 }
@@ -91,7 +91,7 @@ func (r *buildRepository) UpdateBuild(ctx context.Context, id string, args domai
 
 	tx, err := r.db.BeginTx(ctx, nil)
 	if err != nil {
-		return fmt.Errorf("failed to start transaction: %w", err)
+		return errors.Wrap(err, "failed to start transaction")
 	}
 	defer tx.Rollback()
 
@@ -100,7 +100,7 @@ func (r *buildRepository) UpdateBuild(ctx context.Context, id string, args domai
 		if isNoRowsErr(err) {
 			return ErrNotFound
 		}
-		return fmt.Errorf("failed to get build: %w", err)
+		return errors.Wrap(err, "failed to get build")
 	}
 
 	if args.Status.Valid {
@@ -118,12 +118,12 @@ func (r *buildRepository) UpdateBuild(ctx context.Context, id string, args domai
 
 	_, err = build.Update(ctx, tx, boil.Infer())
 	if err != nil {
-		return fmt.Errorf("failed to update build: %w", err)
+		return errors.Wrap(err, "failed to update build")
 	}
 
 	err = tx.Commit()
 	if err != nil {
-		return fmt.Errorf("failed to commit: %w", err)
+		return errors.Wrap(err, "failed to commit")
 	}
 
 	return nil
@@ -137,7 +137,7 @@ func (r *buildRepository) MarkCommitAsRetriable(ctx context.Context, application
 		models.BuildColumns.Retriable: true,
 	})
 	if err != nil {
-		return fmt.Errorf("failed to mark commit as retriable: %w", err)
+		return errors.Wrap(err, "failed to mark commit as retriable")
 	}
 	return nil
 }

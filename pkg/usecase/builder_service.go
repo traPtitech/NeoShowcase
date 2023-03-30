@@ -2,7 +2,6 @@ package usecase
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"io"
 	"os"
@@ -10,6 +9,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/friendsofgo/errors"
 	"github.com/go-git/go-git/v5"
 	"github.com/go-git/go-git/v5/config"
 	"github.com/go-git/go-git/v5/plumbing"
@@ -174,7 +174,7 @@ func (s *builderService) tryStartTask(task *builder.Task) error {
 	defer s.statusLock.Unlock()
 
 	if s.state != nil {
-		return fmt.Errorf("builder unavailable")
+		return errors.New("builder unavailable")
 	}
 
 	now := time.Now()
@@ -268,7 +268,7 @@ func (s *builderService) updateStatusLoop(ctx context.Context, buildID string) {
 func (s *builderService) cloneRepository(ctx context.Context, st *state) error {
 	repo, err := git.PlainInit(st.repositoryTempDir, false)
 	if err != nil {
-		return fmt.Errorf("failed to init repository: %w", err)
+		return errors.Wrap(err, "failed to init repository")
 	}
 	auth, err := domain.GitAuthMethod(st.repository, s.pubKey)
 	if err != nil {
@@ -279,7 +279,7 @@ func (s *builderService) cloneRepository(ctx context.Context, st *state) error {
 		URLs: []string{st.repository.URL},
 	})
 	if err != nil {
-		return fmt.Errorf("failed to add remote: %w", err)
+		return errors.Wrap(err, "failed to add remote")
 	}
 	targetRef := plumbing.NewRemoteReferenceName("origin", "target")
 	err = remote.FetchContext(ctx, &git.FetchOptions{
@@ -289,15 +289,15 @@ func (s *builderService) cloneRepository(ctx context.Context, st *state) error {
 		Auth:       auth,
 	})
 	if err != nil {
-		return fmt.Errorf("failed to clone repository: %w", err)
+		return errors.Wrap(err, "failed to clone repository")
 	}
 	wt, err := repo.Worktree()
 	if err != nil {
-		return fmt.Errorf("failed to get worktree: %w", err)
+		return errors.Wrap(err, "failed to get worktree")
 	}
 	err = wt.Checkout(&git.CheckoutOptions{Branch: targetRef})
 	if err != nil {
-		return fmt.Errorf("failed to checkout: %w", err)
+		return errors.Wrap(err, "failed to checkout")
 	}
 	return nil
 }
@@ -610,21 +610,21 @@ func (s *state) initTempFiles(useArtifactTempFile bool) error {
 	// ログ用一時ファイル作成
 	s.logTempFile, err = os.CreateTemp("", "buildlog-")
 	if err != nil {
-		return fmt.Errorf("failed to create tmp log file: %w", err)
+		return errors.Wrap(err, "failed to create tmp log file")
 	}
 
 	// 成果物tarの一時保存先作成
 	if useArtifactTempFile {
 		s.artifactTempFile, err = os.CreateTemp("", "artifacts-")
 		if err != nil {
-			return fmt.Errorf("failed to create tmp artifact file: %w", err)
+			return errors.Wrap(err, "failed to create tmp artifact file")
 		}
 	}
 
 	// リポジトリクローン用の一時ディレクトリ作成
 	s.repositoryTempDir, err = os.MkdirTemp("", "repository-")
 	if err != nil {
-		return fmt.Errorf("failed to create tmp repository dir: %w", err)
+		return errors.Wrap(err, "failed to create tmp repository dir")
 	}
 
 	return nil

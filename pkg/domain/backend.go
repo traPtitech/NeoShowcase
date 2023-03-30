@@ -2,7 +2,8 @@ package domain
 
 import (
 	"context"
-	"errors"
+
+	"github.com/friendsofgo/errors"
 )
 
 var (

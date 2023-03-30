@@ -2,8 +2,9 @@ package usecase
 
 import (
 	"context"
-	"errors"
 	"fmt"
+
+	"github.com/friendsofgo/errors"
 
 	"github.com/traPtitech/neoshowcase/pkg/domain"
 	"github.com/traPtitech/neoshowcase/pkg/domain/event"

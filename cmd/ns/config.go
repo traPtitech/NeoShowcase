@@ -1,10 +1,10 @@
 package main
 
 import (
-	"fmt"
 	"os"
 	"strings"
 
+	"github.com/friendsofgo/errors"
 	"github.com/go-git/go-git/v5/plumbing/transport/ssh"
 
 	"github.com/traPtitech/neoshowcase/pkg/domain"
@@ -78,7 +78,7 @@ func provideRepositoryFetcherCacheDir(c Config) usecase.RepositoryFetcherCacheDi
 func provideRepositoryPublicKey(c Config) (*ssh.PublicKeys, error) {
 	bytes, err := os.ReadFile(c.Repository.PrivateKeyFile)
 	if err != nil {
-		return nil, fmt.Errorf("failed to open private key file: %w", err)
+		return nil, errors.Wrap(err, "failed to open private key file")
 	}
 	return ssh.NewPublicKeys("", bytes, "")
 }

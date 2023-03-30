@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/friendsofgo/errors"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
@@ -29,12 +30,12 @@ func NewMongoDBManager(config MongoDBConfig) (domain.MongoDBManager, error) {
 		options.Client().ApplyURI(fmt.Sprintf("mongodb://%s:%s@%s:%d", config.AdminUser, config.AdminPassword, config.Host, config.Port)),
 	)
 	if err != nil {
-		return nil, fmt.Errorf("failed to create new client: %w", err)
+		return nil, errors.Wrap(err, "failed to create new client")
 	}
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 	if err := client.Connect(ctx); err != nil {
-		return nil, fmt.Errorf("failed to connect: %w", err)
+		return nil, errors.Wrap(err, "failed to connect")
 	}
 
 	return &mongoDBManagerImpl{client: client}, nil

@@ -1,8 +1,9 @@
 package usecase
 
 import (
-	"errors"
 	"fmt"
+
+	"github.com/friendsofgo/errors"
 )
 
 type ErrorType int

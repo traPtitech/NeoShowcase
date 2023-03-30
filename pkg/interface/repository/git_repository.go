@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"fmt"
 
+	"github.com/friendsofgo/errors"
 	"github.com/samber/lo"
 	"github.com/volatiletech/sqlboiler/v4/boil"
 	"github.com/volatiletech/sqlboiler/v4/queries/qm"
@@ -45,7 +46,7 @@ func (r *gitRepositoryRepository) GetRepositories(ctx context.Context, cond doma
 
 	repos, err := models.Repositories(mods...).All(ctx, r.db)
 	if err != nil {
-		return nil, fmt.Errorf("failed to get repositories: %w", err)
+		return nil, errors.Wrap(err, "failed to get repositories")
 	}
 	return lo.Map(repos, func(repo *models.Repository, i int) *domain.Repository {
 		return toDomainRepository(repo)
@@ -62,7 +63,7 @@ func (r *gitRepositoryRepository) GetRepository(ctx context.Context, id string) 
 		if isNoRowsErr(err) {
 			return nil, ErrNotFound
 		}
-		return nil, fmt.Errorf("failed to get repository: %w", err)
+		return nil, errors.Wrap(err, "failed to get repository")
 	}
 	return toDomainRepository(repo), nil
 }
@@ -70,28 +71,28 @@ func (r *gitRepositoryRepository) GetRepository(ctx context.Context, id string) 
 func (r *gitRepositoryRepository) CreateRepository(ctx context.Context, repo *domain.Repository) error {
 	tx, err := r.db.BeginTx(ctx, nil)
 	if err != nil {
-		return fmt.Errorf("failed to start transaction: %w", err)
+		return errors.Wrap(err, "failed to start transaction")
 	}
 	defer tx.Rollback()
 
 	mr := fromDomainRepository(repo)
 	err = mr.Insert(ctx, tx, boil.Infer())
 	if err != nil {
-		return fmt.Errorf("faield to insert repository: %w", err)
+		return errors.Wrap(err, "faield to insert repository")
 	}
 
 	if repo.Auth.Valid {
 		mra := fromDomainRepositoryAuth(repo.ID, &repo.Auth.V)
 		err = mr.SetRepositoryAuth(ctx, tx, true, mra)
 		if err != nil {
-			return fmt.Errorf("failed to insert repository auth: %w", err)
+			return errors.Wrap(err, "failed to insert repository auth")
 		}
 	}
 
 	repo.OwnerIDs = lo.Uniq(repo.OwnerIDs)
 	users, err := models.Users(models.UserWhere.ID.IN(repo.OwnerIDs)).All(ctx, tx)
 	if err != nil {
-		return fmt.Errorf("failed to get users: %w", err)
+		return errors.Wrap(err, "failed to get users")
 	}
 	if len(users) < len(repo.OwnerIDs) {
 		return ErrNotFound
@@ -99,7 +100,7 @@ func (r *gitRepositoryRepository) CreateRepository(ctx context.Context, repo *do
 
 	err = tx.Commit()
 	if err != nil {
-		return fmt.Errorf("failed to commit transaction: %w", err)
+		return errors.Wrap(err, "failed to commit transaction")
 	}
 
 	return nil
@@ -111,18 +112,18 @@ func (r *gitRepositoryRepository) RegisterRepositoryOwner(ctx context.Context, r
 		if isNoRowsErr(err) {
 			return ErrNotFound
 		}
-		return fmt.Errorf("failed to get repository: %w", err)
+		return errors.Wrap(err, "failed to get repository")
 	}
 	user, err := models.Users(models.UserWhere.ID.EQ(userID)).One(ctx, r.db)
 	if err != nil {
 		if isNoRowsErr(err) {
 			return ErrNotFound
 		}
-		return fmt.Errorf("failed to get user: %w", err)
+		return errors.Wrap(err, "failed to get user")
 	}
 	err = repo.AddUsers(ctx, r.db, false, user)
 	if err != nil {
-		return fmt.Errorf("failed to add owner: %w", err)
+		return errors.Wrap(err, "failed to add owner")
 	}
 	return nil
 }

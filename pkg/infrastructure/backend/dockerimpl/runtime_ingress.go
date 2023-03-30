@@ -7,6 +7,7 @@ import (
 	"path/filepath"
 	"strings"
 
+	"github.com/friendsofgo/errors"
 	"gopkg.in/yaml.v2"
 
 	"github.com/traPtitech/neoshowcase/pkg/domain"
@@ -162,7 +163,7 @@ func (b *dockerBackend) synchronizeRuntimeIngresses(_ context.Context, app *doma
 func (b *dockerBackend) destroyRuntimeIngresses(_ context.Context, app *domain.Application) error {
 	entries, err := os.ReadDir(b.ingressConfDir)
 	if err != nil {
-		return fmt.Errorf("failed to read conf dir: %w", err)
+		return errors.Wrap(err, "failed to read conf dir")
 	}
 
 	confFilePrefix := configFilePrefix(app)
@@ -173,7 +174,7 @@ func (b *dockerBackend) destroyRuntimeIngresses(_ context.Context, app *domain.A
 		if strings.HasPrefix(entry.Name(), confFilePrefix) {
 			err = os.Remove(filepath.Join(b.ingressConfDir, entry.Name()))
 			if err != nil {
-				return fmt.Errorf("failed to remove config: %w", err)
+				return errors.Wrap(err, "failed to remove config")
 			}
 		}
 	}

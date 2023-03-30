@@ -2,8 +2,8 @@ package dockerimpl
 
 import (
 	"context"
-	"fmt"
 
+	"github.com/friendsofgo/errors"
 	docker "github.com/fsouza/go-dockerclient"
 
 	"github.com/traPtitech/neoshowcase/pkg/domain"
@@ -22,7 +22,7 @@ func (b *dockerBackend) DestroyContainer(ctx context.Context, app *domain.Applic
 		Context:       ctx,
 	})
 	if err != nil {
-		return fmt.Errorf("failed to destroy container: %w", err)
+		return errors.Wrap(err, "failed to destroy container")
 	}
 	return nil
 }

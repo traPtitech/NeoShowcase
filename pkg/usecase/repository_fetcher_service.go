@@ -2,13 +2,13 @@ package usecase
 
 import (
 	"context"
-	"errors"
-	"fmt"
 	"io/fs"
 	"os"
 	"path/filepath"
 	"sync"
 	"time"
+
+	"github.com/friendsofgo/errors"
 
 	"github.com/go-git/go-git/v5"
 	"github.com/go-git/go-git/v5/plumbing/transport/ssh"
@@ -137,7 +137,7 @@ func (r *repositoryFetcherService) fetchAll() error {
 		for _, app := range reposToApps[repo.ID] {
 			err := r.updateApplication(ctx, app, gitRepo)
 			if err != nil {
-				return fmt.Errorf("failed to update app: %w", err)
+				return errors.Wrap(err, "failed to update app")
 			}
 		}
 	}

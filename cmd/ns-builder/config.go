@@ -7,6 +7,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/friendsofgo/errors"
 	"github.com/go-git/go-git/v5/plumbing/transport/ssh"
 	buildkit "github.com/moby/buildkit/client"
 
@@ -31,7 +32,7 @@ type Config struct {
 func provideRepositoryPublicKey(c Config) (*ssh.PublicKeys, error) {
 	bytes, err := os.ReadFile(c.Repository.PrivateKeyFile)
 	if err != nil {
-		return nil, fmt.Errorf("failed to open private key file: %w", err)
+		return nil, errors.Wrap(err, "failed to open private key file")
 	}
 	return ssh.NewPublicKeys("", bytes, "")
 }
@@ -54,7 +55,7 @@ func initBuildkitClient(c Config) (*buildkit.Client, error) {
 	defer cancel()
 	client, err := buildkit.New(ctx, c.Buildkit.Address)
 	if err != nil {
-		return nil, fmt.Errorf("failed to initialize Buildkit Client: %w", err)
+		return nil, errors.Wrap(err, "failed to initialize Buildkit Client")
 	}
 	return client, nil
 }

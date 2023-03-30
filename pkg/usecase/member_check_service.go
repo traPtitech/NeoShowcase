@@ -2,8 +2,8 @@ package usecase
 
 import (
 	"crypto/rsa"
-	"errors"
-	"fmt"
+
+	"github.com/friendsofgo/errors"
 
 	"github.com/dgrijalva/jwt-go"
 )
@@ -22,7 +22,7 @@ func NewMemberCheckService(pem TrapShowcaseJWTPublicKeyPEM) (MemberCheckService,
 	// JWT公開鍵をパース
 	pubkey, err := jwt.ParseRSAPublicKeyFromPEM([]byte(pem))
 	if err != nil {
-		return nil, fmt.Errorf("failed to parse JWT RSA public key from pem: %w", err)
+		return nil, errors.Wrap(err, "failed to parse JWT RSA public key from pem")
 	}
 	return &memberCheckService{pubkey: pubkey}, nil
 }

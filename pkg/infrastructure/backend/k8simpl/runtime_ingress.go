@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/friendsofgo/errors"
 	"github.com/traefik/traefik/v2/pkg/config/dynamic"
 	"github.com/traefik/traefik/v2/pkg/provider/kubernetes/crd/traefik/v1alpha1"
 	"github.com/traefik/traefik/v2/pkg/types"
@@ -141,17 +142,17 @@ func (b *k8sBackend) listRuntimeIngressResources(ctx context.Context, appID stri
 	listOpt := metav1.ListOptions{LabelSelector: labelSelector(appID)}
 	services, err = b.client.CoreV1().Services(appNamespace).List(ctx, listOpt)
 	if err != nil {
-		err = fmt.Errorf("failed to get services: %w", err)
+		err = errors.Wrap(err, "failed to get services")
 		return
 	}
 	middlewares, err = b.traefikClient.Middlewares(appNamespace).List(ctx, listOpt)
 	if err != nil {
-		err = fmt.Errorf("failed to get middlewares: %w", err)
+		err = errors.Wrap(err, "failed to get middlewares")
 		return
 	}
 	ingressRoutes, err = b.traefikClient.IngressRoutes(appNamespace).List(ctx, listOpt)
 	if err != nil {
-		err = fmt.Errorf("failed to get IngressRotues: %w", err)
+		err = errors.Wrap(err, "failed to get IngressRotues")
 		return
 	}
 	return
@@ -180,34 +181,34 @@ func (b *k8sBackend) synchronizeRuntimeIngresses(ctx context.Context, app *domai
 	for _, svc := range services {
 		err = patch[*apiv1.Service](ctx, svc.Name, svc, b.client.CoreV1().Services(appNamespace))
 		if err != nil {
-			return fmt.Errorf("failed to patch service: %w", err)
+			return errors.Wrap(err, "failed to patch service")
 		}
 	}
 	for _, mw := range middlewares {
 		err = patch[*v1alpha1.Middleware](ctx, mw.Name, mw, b.traefikClient.Middlewares(appNamespace))
 		if err != nil {
-			return fmt.Errorf("failed to patch middleware: %w", err)
+			return errors.Wrap(err, "failed to patch middleware")
 		}
 	}
 	for _, ir := range ingressRoutes {
 		err = patch[*v1alpha1.IngressRoute](ctx, ir.Name, ir, b.traefikClient.IngressRoutes(appNamespace))
 		if err != nil {
-			return fmt.Errorf("failed to patch IngressRoute: %w", err)
+			return errors.Wrap(err, "failed to patch IngressRoute")
 		}
 	}
 
 	// Prune old resources
 	err = prune(ctx, diff(util.SliceOfPtr(existingServices.Items), services), b.client.CoreV1().Services(appNamespace))
 	if err != nil {
-		return fmt.Errorf("failed to prune services: %w", err)
+		return errors.Wrap(err, "failed to prune services")
 	}
 	err = prune(ctx, diff(util.SliceOfPtr(existingMiddlewares.Items), middlewares), b.traefikClient.Middlewares(appNamespace))
 	if err != nil {
-		return fmt.Errorf("failed to prune middlewares: %w", err)
+		return errors.Wrap(err, "failed to prune middlewares")
 	}
 	err = prune(ctx, diff(util.SliceOfPtr(existingIngressRoutes.Items), ingressRoutes), b.traefikClient.IngressRoutes(appNamespace))
 	if err != nil {
-		return fmt.Errorf("failed to prune IngressRoutes: %w", err)
+		return errors.Wrap(err, "failed to prune IngressRoutes")
 	}
 
 	return nil
