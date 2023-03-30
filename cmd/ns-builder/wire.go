@@ -19,9 +19,11 @@ func New(c Config) (*Server, error) {
 		usecase.NewBuilderService,
 		repository.NewArtifactRepository,
 		repository.NewBuildRepository,
+		repository.NewGitRepositoryRepository,
 		admindb.New,
 		initStorage,
 		initBuildkitClient,
+		provideRepositoryPublicKey,
 		wire.FieldsOf(new(Config), "NS", "DB", "Storage"),
 		wire.Struct(new(Server), "*"),
 	)

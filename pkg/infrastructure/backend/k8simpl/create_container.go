@@ -2,9 +2,9 @@ package k8simpl
 
 import (
 	"context"
-	"fmt"
 	"time"
 
+	"github.com/friendsofgo/errors"
 	"github.com/samber/lo"
 	v1 "k8s.io/api/apps/v1"
 	apiv1 "k8s.io/api/core/v1"
@@ -25,7 +25,7 @@ func (b *k8sBackend) CreateContainer(ctx context.Context, app *domain.Applicatio
 
 	err := b.synchronizeRuntimeIngresses(ctx, app)
 	if err != nil {
-		return fmt.Errorf("failed to synchronize ingresses: %w", err)
+		return errors.Wrap(err, "failed to synchronize ingresses")
 	}
 
 	statefulSet := &v1.StatefulSet{

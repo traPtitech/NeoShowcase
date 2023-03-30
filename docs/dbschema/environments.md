@@ -9,8 +9,8 @@
 
 ```sql
 CREATE TABLE `environments` (
-  `id` varchar(22) NOT NULL COMMENT '環境変数ID',
-  `application_id` varchar(22) NOT NULL COMMENT 'アプリケーションID',
+  `id` char(22) NOT NULL COMMENT '環境変数ID',
+  `application_id` char(22) NOT NULL COMMENT 'アプリケーションID',
   `key` varchar(100) NOT NULL COMMENT '環境変数のキー',
   `value` text NOT NULL COMMENT '環境変数の値',
   PRIMARY KEY (`id`),
@@ -25,8 +25,8 @@ CREATE TABLE `environments` (
 
 | Name | Type | Default | Nullable | Children | Parents | Comment |
 | ---- | ---- | ------- | -------- | -------- | ------- | ------- |
-| id | varchar(22) |  | false |  |  | 環境変数ID |
-| application_id | varchar(22) |  | false |  | [applications](applications.md) | アプリケーションID |
+| id | char(22) |  | false |  |  | 環境変数ID |
+| application_id | char(22) |  | false |  | [applications](applications.md) | アプリケーションID |
 | key | varchar(100) |  | false |  |  | 環境変数のキー |
 | value | text |  | false |  |  | 環境変数の値 |
 

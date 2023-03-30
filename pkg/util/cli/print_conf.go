@@ -1,10 +1,11 @@
 package cli
 
 import (
+	"os"
+
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 	"gopkg.in/yaml.v2"
-	"os"
 )
 
 // PrintConfCommand 設定確認・ベース設定プリントコマンド

@@ -6,6 +6,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/friendsofgo/errors"
 	"github.com/samber/lo"
 	log "github.com/sirupsen/logrus"
 
@@ -90,7 +91,7 @@ func (cd *continuousDeploymentService) registerBuildLoop(startBuilds chan<- stru
 	doSync := func() {
 		start := time.Now()
 		if err := cd.registerBuilds(); err != nil {
-			log.WithError(err).Error("failed to kickoff builds")
+			log.Errorf("failed to kickoff builds: %+v", err)
 			return
 		}
 		select {
@@ -117,7 +118,7 @@ func (cd *continuousDeploymentService) startBuildLoop(syncer <-chan struct{}, cl
 	doSync := func() {
 		start := time.Now()
 		if err := cd.startBuilds(); err != nil {
-			log.WithError(err).Error("failed to start builds")
+			log.Errorf("failed to start builds: %+v", err)
 			return
 		}
 		log.Infof("Started builds in %v", time.Since(start))
@@ -146,7 +147,7 @@ func (cd *continuousDeploymentService) syncDeployLoop(closer <-chan struct{}) {
 	doSync := func() {
 		start := time.Now()
 		if err := cd.syncDeployments(); err != nil {
-			log.WithError(err).Error("failed to sync deployments")
+			log.Errorf("failed to sync deployments: %+v", err)
 			return
 		}
 		log.Infof("Synced deployments in %v", time.Since(start))
@@ -184,17 +185,15 @@ func (cd *continuousDeploymentService) registerBuilds() error {
 	crashed := lo.Filter(builds, func(build *domain.Build, i int) bool {
 		return build.Status == builder.BuildStatusBuilding && build.UpdatedAt.ValueOrZero().Before(crashThreshold)
 	})
-	crashedIDs := lo.SliceToMap(crashed, func(build *domain.Build) (string, bool) { return build.ID, true })
 	for _, build := range crashed {
 		err = cd.buildRepo.UpdateBuild(ctx, build.ID, domain.UpdateBuildArgs{
 			FromStatus: optional.From(builder.BuildStatusBuilding),
 			Status:     optional.From(builder.BuildStatusFailed),
 		})
 		if err != nil {
-			log.WithError(err).Error("failed to mark crashed build as errored")
+			log.Errorf("failed to mark crashed build as errored: %+v", err)
 		}
 	}
-	builds = lo.Reject(builds, func(build *domain.Build, i int) bool { return crashedIDs[build.ID] })
 
 	buildExistsForCommit := lo.SliceToMap(builds, func(b *domain.Build) (string, bool) { return b.Commit, true })
 	for _, app := range applications {
@@ -210,7 +209,7 @@ func (cd *continuousDeploymentService) registerBuilds() error {
 		build := domain.NewBuild(app.ID, app.WantCommit)
 		err = cd.buildRepo.CreateBuild(ctx, build)
 		if err != nil {
-			return fmt.Errorf("failed to create build: %w", err)
+			return errors.Wrap(err, "failed to create build")
 		}
 	}
 	return nil

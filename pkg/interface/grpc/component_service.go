@@ -75,13 +75,13 @@ func (s *ComponentService) ConnectBuilder(c pb.ComponentService_ConnectBuilderSe
 				return
 			}
 			if err != nil {
-				log.WithError(err).Errorf("error receiving builder event: %v", err)
+				log.Errorf("error receiving builder event: %+v", err)
 				return
 			}
 
 			payload, err := util.IntoField(res.Body)
 			if err != nil {
-				log.WithError(err).Errorf("failed to decode builder event body: %v", err)
+				log.Errorf("failed to decode builder event body: %+v", err)
 			}
 
 			s.lock.Lock()

@@ -1,11 +1,11 @@
 package storage
 
 import (
-	"errors"
-	"fmt"
 	"io"
 	"os"
 	"path/filepath"
+
+	"github.com/friendsofgo/errors"
 
 	"github.com/traPtitech/neoshowcase/pkg/domain"
 )
@@ -62,23 +62,23 @@ func (ls *LocalStorage) Delete(filename string) error {
 func (ls *LocalStorage) Move(filename, destPath string) error {
 	inputFile, err := os.Open(filename)
 	if err != nil {
-		return fmt.Errorf("couldn't open source file: %w", err)
+		return errors.Wrap(err, "couldn't open source file")
 	}
 	outputFile, err := os.Create(ls.getFilePath(destPath))
 	if err != nil {
 		inputFile.Close()
-		return fmt.Errorf("couldn't open dest file: %w", err)
+		return errors.Wrap(err, "couldn't open dest file")
 	}
 	defer outputFile.Close()
 	_, err = io.Copy(outputFile, inputFile)
 	inputFile.Close()
 	if err != nil {
-		return fmt.Errorf("writing to output file failed: %w", err)
+		return errors.Wrap(err, "writing to output file failed")
 	}
 	// The copy was successful, so now delete the original file
 	err = os.Remove(filename)
 	if err != nil {
-		return fmt.Errorf("failed removing original file: %w", err)
+		return errors.Wrap(err, "failed removing original file")
 	}
 	return nil
 }

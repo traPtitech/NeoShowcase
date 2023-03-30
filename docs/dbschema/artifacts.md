@@ -9,7 +9,7 @@
 
 ```sql
 CREATE TABLE `artifacts` (
-  `id` varchar(22) NOT NULL COMMENT '生成物ID',
+  `id` char(22) NOT NULL COMMENT '生成物ID',
   `size` bigint(20) NOT NULL COMMENT '生成物ファイルサイズ(tar)',
   `created_at` datetime(6) NOT NULL COMMENT '作成日時',
   `deleted_at` datetime(6) DEFAULT NULL COMMENT '削除日時',
@@ -26,7 +26,7 @@ CREATE TABLE `artifacts` (
 
 | Name | Type | Default | Nullable | Children | Parents | Comment |
 | ---- | ---- | ------- | -------- | -------- | ------- | ------- |
-| id | varchar(22) |  | false |  |  | 生成物ID |
+| id | char(22) |  | false |  |  | 生成物ID |
 | size | bigint(20) |  | false |  |  | 生成物ファイルサイズ(tar) |
 | created_at | datetime(6) |  | false |  |  | 作成日時 |
 | deleted_at | datetime(6) | NULL | true |  |  | 削除日時 |

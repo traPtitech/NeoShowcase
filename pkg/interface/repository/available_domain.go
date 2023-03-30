@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"fmt"
 
+	"github.com/friendsofgo/errors"
 	"github.com/samber/lo"
 	"github.com/volatiletech/sqlboiler/v4/boil"
 
@@ -25,7 +26,7 @@ func NewAvailableDomainRepository(db *sql.DB) domain.AvailableDomainRepository {
 func (r *availableDomainRepository) GetAvailableDomains(ctx context.Context) (domain.AvailableDomainSlice, error) {
 	domains, err := models.AvailableDomains().All(ctx, r.db)
 	if err != nil {
-		return nil, fmt.Errorf("failed to get available domains: %w", err)
+		return nil, errors.Wrap(err, "failed to get available domains")
 	}
 	dDomains := lo.Map(domains, func(d *models.AvailableDomain, i int) *domain.AvailableDomain {
 		return &domain.AvailableDomain{Domain: d.Domain}

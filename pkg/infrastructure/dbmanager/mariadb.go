@@ -7,6 +7,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/friendsofgo/errors"
 	"github.com/go-sql-driver/mysql"
 
 	"github.com/traPtitech/neoshowcase/pkg/domain"
@@ -39,11 +40,11 @@ func NewMariaDBManager(c MariaDBConfig) (domain.MariaDBManager, error) {
 	// DB接続
 	connector, err := mysql.NewConnector(conf)
 	if err != nil {
-		return nil, fmt.Errorf("failed to create new connector: %w", err)
+		return nil, errors.Wrap(err, "failed to create new connector")
 	}
 	db := sql.OpenDB(connector)
 	if err := db.Ping(); err != nil {
-		return nil, fmt.Errorf("failed to ping db: %w", err)
+		return nil, errors.Wrap(err, "failed to ping db")
 	}
 	db.SetMaxOpenConns(1024)
 	db.SetMaxIdleConns(1024)

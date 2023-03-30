@@ -1,7 +1,6 @@
 package storage
 
 import (
-	"fmt"
 	"io"
 	"os"
 
@@ -10,6 +9,8 @@ import (
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/s3"
 	"github.com/aws/aws-sdk-go/service/s3/s3manager"
+	"github.com/friendsofgo/errors"
+
 	"github.com/traPtitech/neoshowcase/pkg/domain"
 )
 
@@ -29,7 +30,7 @@ func NewS3Storage(bucket, accessKey, accessSecret, region, endpoint string) (*S3
 	}
 	sess, err := session.NewSession(s3Config)
 	if err != nil {
-		return nil, fmt.Errorf("failed to new session: %w", err)
+		return nil, errors.Wrap(err, "failed to new session")
 	}
 	s := S3Storage{
 		sess:   sess,
@@ -93,7 +94,7 @@ func (s3s *S3Storage) Move(filename, destPath string) error {
 	// Move LocalDir to Swift Storage
 	inputFile, err := os.Open(filename)
 	if err != nil {
-		return fmt.Errorf("couldn't open source file: %w", err)
+		return errors.Wrap(err, "couldn't open source file")
 	}
 	uploader := s3manager.NewUploader(s3s.sess)
 	_, err = uploader.Upload(&s3manager.UploadInput{
@@ -103,12 +104,12 @@ func (s3s *S3Storage) Move(filename, destPath string) error {
 	})
 	inputFile.Close()
 	if err != nil {
-		return fmt.Errorf("writing to output file failed: %w", err)
+		return errors.Wrap(err, "writing to output file failed")
 	}
 	// The copy was successful, so now delete the original file
 	err = os.Remove(filename)
 	if err != nil {
-		return fmt.Errorf("failed removing original file: %w", err)
+		return errors.Wrap(err, "failed removing original file")
 	}
 	return nil
 }

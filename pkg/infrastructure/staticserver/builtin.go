@@ -6,6 +6,7 @@ import (
 	"path/filepath"
 	"sync"
 
+	"github.com/friendsofgo/errors"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
 
@@ -90,7 +91,7 @@ func (b *BuiltIn) Reconcile(sites []*domain.StaticSite) error {
 		// 静的ファイルの配置
 		if !util.FileExists(artifactDir) {
 			if err := domain.ExtractTarToDir(b.storage, filepath.Join("artifacts", site.ArtifactID+".tar"), artifactDir); err != nil {
-				return fmt.Errorf("failed to extract artifact tar: %w", err)
+				return errors.Wrap(err, "failed to extract artifact tar")
 			}
 		}
 	}

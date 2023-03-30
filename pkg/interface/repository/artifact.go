@@ -3,9 +3,9 @@ package repository
 import (
 	"context"
 	"database/sql"
-	"fmt"
 	"time"
 
+	"github.com/friendsofgo/errors"
 	"github.com/volatiletech/sqlboiler/v4/boil"
 
 	"github.com/traPtitech/neoshowcase/pkg/domain"
@@ -31,7 +31,7 @@ func (r *artifactRepository) CreateArtifact(ctx context.Context, size int64, bui
 	}
 
 	if err := artifact.Insert(context.Background(), r.db, boil.Infer()); err != nil {
-		return fmt.Errorf("failed to insert artifact entry: %w", err)
+		return errors.Wrap(err, "failed to insert artifact entry")
 	}
 
 	return nil

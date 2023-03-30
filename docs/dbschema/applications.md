@@ -9,7 +9,7 @@
 
 ```sql
 CREATE TABLE `applications` (
-  `id` varchar(22) NOT NULL COMMENT 'アプリケーションID',
+  `id` char(22) NOT NULL COMMENT 'アプリケーションID',
   `name` varchar(100) NOT NULL COMMENT 'アプリケーション名',
   `repository_id` varchar(22) NOT NULL COMMENT 'リポジトリID',
   `branch_name` varchar(100) NOT NULL COMMENT 'Gitブランチ・タグ名',
@@ -33,7 +33,7 @@ CREATE TABLE `applications` (
 
 | Name | Type | Default | Nullable | Children | Parents | Comment |
 | ---- | ---- | ------- | -------- | -------- | ------- | ------- |
-| id | varchar(22) |  | false | [application_config](application_config.md) [builds](builds.md) [environments](environments.md) [owners](owners.md) [websites](websites.md) |  | アプリケーションID |
+| id | char(22) |  | false | [application_config](application_config.md) [application_owners](application_owners.md) [builds](builds.md) [environments](environments.md) [websites](websites.md) |  | アプリケーションID |
 | name | varchar(100) |  | false |  |  | アプリケーション名 |
 | repository_id | varchar(22) |  | false |  | [repositories](repositories.md) | リポジトリID |
 | branch_name | varchar(100) |  | false |  |  | Gitブランチ・タグ名 |

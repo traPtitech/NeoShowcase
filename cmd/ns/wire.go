@@ -49,6 +49,7 @@ var commonSet = wire.NewSet(
 	provideImagePrefix,
 	provideImageRegistry,
 	provideRepositoryFetcherCacheDir,
+	provideRepositoryPublicKey,
 	wire.FieldsOf(new(Config), "SS", "DB", "MariaDB", "MongoDB"),
 	wire.Struct(new(Server), "*"),
 )

@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"net"
 
+	"github.com/friendsofgo/errors"
 	"golang.org/x/sync/errgroup"
 
 	"github.com/traPtitech/neoshowcase/pkg/domain"
@@ -45,7 +46,7 @@ func (s *Server) Start(ctx context.Context) error {
 		pb.RegisterApplicationServiceServer(s.appServer, s.appService)
 		listener, err := net.Listen("tcp", fmt.Sprintf(":%d", c.GRPC.App.Port))
 		if err != nil {
-			return fmt.Errorf("failed to start app server: %w", err)
+			return errors.Wrap(err, "failed to start app server")
 		}
 		return s.appServer.Serve(listener)
 	})
@@ -53,7 +54,7 @@ func (s *Server) Start(ctx context.Context) error {
 		pb.RegisterComponentServiceServer(s.componentServer, s.componentService)
 		listener, err := net.Listen("tcp", fmt.Sprintf(":%d", c.GRPC.Component.Port))
 		if err != nil {
-			return fmt.Errorf("failed to start component server: %w", err)
+			return errors.Wrap(err, "failed to start component server")
 		}
 		return s.componentServer.Serve(listener)
 	})

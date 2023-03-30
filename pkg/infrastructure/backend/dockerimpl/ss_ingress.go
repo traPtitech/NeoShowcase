@@ -2,9 +2,9 @@ package dockerimpl
 
 import (
 	"context"
-	"fmt"
 	"os"
 
+	"github.com/friendsofgo/errors"
 	"gopkg.in/yaml.v2"
 
 	"github.com/traPtitech/neoshowcase/pkg/domain"
@@ -58,7 +58,7 @@ func (b *dockerBackend) ReloadSSIngress(_ context.Context) error {
 
 	file, err := os.OpenFile(traefikSSFilename, os.O_CREATE|os.O_TRUNC|os.O_WRONLY, 0644)
 	if err != nil {
-		return fmt.Errorf("failed to open config file: %w", err)
+		return errors.Wrap(err, "failed to open config file")
 	}
 	defer file.Close()
 

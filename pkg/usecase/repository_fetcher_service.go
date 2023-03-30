@@ -2,15 +2,16 @@ package usecase
 
 import (
 	"context"
-	"errors"
-	"fmt"
 	"io/fs"
 	"os"
 	"path/filepath"
 	"sync"
 	"time"
 
+	"github.com/friendsofgo/errors"
+
 	"github.com/go-git/go-git/v5"
+	"github.com/go-git/go-git/v5/plumbing/transport/ssh"
 	"github.com/samber/lo"
 	log "github.com/sirupsen/logrus"
 
@@ -27,10 +28,11 @@ type RepositoryFetcherService interface {
 type RepositoryFetcherCacheDir string
 
 type repositoryFetcherService struct {
-	bus     domain.Bus
-	appRepo domain.ApplicationRepository
-
+	bus      domain.Bus
+	appRepo  domain.ApplicationRepository
+	gitRepo  domain.GitRepositoryRepository
 	cacheDir string
+	pubKey   *ssh.PublicKeys
 
 	run       func()
 	runOnce   sync.Once
@@ -41,15 +43,19 @@ type repositoryFetcherService struct {
 func NewRepositoryFetcherService(
 	bus domain.Bus,
 	appRepo domain.ApplicationRepository,
+	gitRepo domain.GitRepositoryRepository,
 	cacheDir RepositoryFetcherCacheDir,
+	pubKey *ssh.PublicKeys,
 ) (RepositoryFetcherService, error) {
 	r := &repositoryFetcherService{
 		bus:     bus,
 		appRepo: appRepo,
+		gitRepo: gitRepo,
+		pubKey:  pubKey,
 	}
 
 	if cacheDir == "" {
-		tmp, err := os.MkdirTemp("", "repo-fetcher")
+		tmp, err := os.MkdirTemp("", "repo-fetcher-cache-")
 		if err != nil {
 			return nil, err
 		}
@@ -82,7 +88,7 @@ func (r *repositoryFetcherService) fetchLoop(closer <-chan struct{}) {
 	doSync := func() {
 		start := time.Now()
 		if err := r.fetchAll(); err != nil {
-			log.WithError(err).Error("failed to fetch repositories")
+			log.Errorf("failed to fetch repositories: %+v", err)
 			return
 		}
 		log.Infof("Fetched repositories in %v", time.Since(start))
@@ -105,40 +111,49 @@ func (r *repositoryFetcherService) fetchLoop(closer <-chan struct{}) {
 
 func (r *repositoryFetcherService) fetchAll() error {
 	ctx := context.Background()
+	repositories, err := r.gitRepo.GetRepositories(ctx, domain.GetRepositoryCondition{})
+	if err != nil {
+		return err
+	}
 	applications, err := r.appRepo.GetApplications(ctx, domain.GetApplicationCondition{})
 	if err != nil {
 		return err
 	}
-	repos := lo.SliceToMap(applications, func(app *domain.Application) (string, domain.Repository) { return app.Repository.ID, app.Repository })
+
+	repos := lo.SliceToMap(repositories, func(repo *domain.Repository) (string, *domain.Repository) { return repo.ID, repo })
 	reposToApps := make(map[string][]*domain.Application)
 	for _, app := range applications {
-		reposToApps[app.Repository.ID] = append(reposToApps[app.Repository.ID], app)
+		reposToApps[app.RepositoryID] = append(reposToApps[app.RepositoryID], app)
 	}
 
 	for _, repo := range repos {
 		gitRepo, err := r.fetchRepository(ctx, repo)
 		if err != nil {
-			log.WithError(err).
-				WithField("repository", repo.URL).
-				Error("failed to fetch repository")
+			log.Errorf("failed to fetch repository: %+v", err)
 			continue // fail-safe
 		}
 		for _, app := range reposToApps[repo.ID] {
 			err := r.updateApplication(ctx, app, gitRepo)
 			if err != nil {
-				return fmt.Errorf("failed to update app: %w", err)
+				return errors.Wrap(err, "failed to update app")
 			}
 		}
 	}
 	return nil
 }
 
-func (r *repositoryFetcherService) fetchRepository(ctx context.Context, repo domain.Repository) (*git.Repository, error) {
+func (r *repositoryFetcherService) fetchRepository(ctx context.Context, repo *domain.Repository) (*git.Repository, error) {
+	auth, err := domain.GitAuthMethod(repo, r.pubKey)
+	if err != nil {
+		return nil, err
+	}
+
 	repoDir := filepath.Join(r.cacheDir, repo.ID)
-	_, err := os.Stat(repoDir)
+	_, err = os.Stat(repoDir)
 	if errors.Is(err, fs.ErrNotExist) {
 		gitRepo, err := git.PlainCloneContext(ctx, repoDir, true, &git.CloneOptions{
 			URL:        repo.URL,
+			Auth:       auth,
 			RemoteName: "origin",
 		})
 		if err != nil {
@@ -151,6 +166,7 @@ func (r *repositoryFetcherService) fetchRepository(ctx context.Context, repo dom
 			return nil, err
 		}
 		err = gitRepo.FetchContext(ctx, &git.FetchOptions{
+			Auth:       auth,
 			RemoteName: "origin",
 		})
 		if err != nil && err != git.NoErrAlreadyUpToDate {

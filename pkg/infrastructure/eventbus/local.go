@@ -4,6 +4,7 @@ import (
 	"context"
 
 	"github.com/leandro-lugaresi/hub"
+
 	"github.com/traPtitech/neoshowcase/pkg/domain"
 )
 

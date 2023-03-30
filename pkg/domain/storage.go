@@ -2,11 +2,11 @@ package domain
 
 import (
 	"archive/tar"
-	"errors"
-	"fmt"
 	"io"
 	"os"
 	"path/filepath"
+
+	"github.com/friendsofgo/errors"
 
 	log "github.com/sirupsen/logrus"
 )
@@ -27,7 +27,7 @@ type Storage interface {
 // SaveArtifact Artifactをtar形式で保存する
 func SaveArtifact(s Storage, filename string, dstpath string) error {
 	if err := s.Move(filename, dstpath); err != nil {
-		return fmt.Errorf("failed to save artifact tar file: %w", err)
+		return errors.Wrap(err, "failed to save artifact tar file")
 	}
 
 	return nil
@@ -36,7 +36,7 @@ func SaveArtifact(s Storage, filename string, dstpath string) error {
 // SaveLogFile ログファイルを保存する
 func SaveLogFile(s Storage, filename string, dstpath string, buildid string) error {
 	if err := s.Move(filename, dstpath); err != nil {
-		return fmt.Errorf("failed to move build log: %w", err)
+		return errors.Wrap(err, "failed to move build log")
 	}
 	return nil
 }
@@ -45,7 +45,7 @@ func SaveLogFile(s Storage, filename string, dstpath string, buildid string) err
 func ExtractTarToDir(s Storage, sourcePath, destPath string) error {
 	inputFile, err := s.Open(sourcePath)
 	if err != nil {
-		return fmt.Errorf("couldn't open source file: %w", err)
+		return errors.Wrap(err, "couldn't open source file")
 	}
 	defer inputFile.Close()
 
@@ -56,28 +56,28 @@ func ExtractTarToDir(s Storage, sourcePath, destPath string) error {
 			break
 		}
 		if err != nil {
-			return fmt.Errorf("bad tar file: %w", err)
+			return errors.Wrap(err, "bad tar file")
 		}
 
 		path := filepath.Join(destPath, header.Name)
 		switch header.Typeflag {
 		case tar.TypeDir:
 			if err := os.MkdirAll(path, header.FileInfo().Mode()); err != nil {
-				return fmt.Errorf("failed to create directory: %w", err)
+				return errors.Wrap(err, "failed to create directory")
 			}
 		case tar.TypeReg:
 			if err := os.MkdirAll(filepath.Dir(path), header.FileInfo().Mode()|os.ModeDir|100); err != nil {
-				return fmt.Errorf("failed to create directory: %w", err)
+				return errors.Wrap(err, "failed to create directory")
 			}
 
 			file, err := os.OpenFile(path, os.O_CREATE|os.O_TRUNC|os.O_WRONLY, header.FileInfo().Mode())
 			if err != nil {
-				return fmt.Errorf("failed to create file: %w", err)
+				return errors.Wrap(err, "failed to create file")
 			}
 			_, err = io.Copy(file, tr)
 			_ = file.Close()
 			if err != nil {
-				return fmt.Errorf("failed to write file: %w", err)
+				return errors.Wrap(err, "failed to write file")
 			}
 
 		default:

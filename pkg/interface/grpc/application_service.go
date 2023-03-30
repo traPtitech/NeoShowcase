@@ -60,8 +60,35 @@ func getUserID() string {
 	return "tmp-user" // TODO: implement auth
 }
 
+func (s *ApplicationService) GetRepositories(ctx context.Context, _ *emptypb.Empty) (*pb.GetRepositoriesResponse, error) {
+	repositories, err := s.svc.GetRepositories(ctx)
+	if err != nil {
+		return nil, handleUseCaseError(err)
+	}
+	return &pb.GetRepositoriesResponse{
+		Repositories: lo.Map(repositories, func(repo *domain.Repository, i int) *pb.Repository {
+			return toPBRepository(repo)
+		}),
+	}, nil
+}
+
+func (s *ApplicationService) CreateRepository(ctx context.Context, req *pb.CreateRepositoryRequest) (*pb.Repository, error) {
+	repo := &domain.Repository{
+		ID:       domain.NewID(),
+		Name:     req.Name,
+		URL:      req.Url,
+		Auth:     fromPBRepositoryAuth(req),
+		OwnerIDs: []string{getUserID()},
+	}
+	err := s.svc.CreateRepository(ctx, repo)
+	if err != nil {
+		return nil, handleUseCaseError(err)
+	}
+	return toPBRepository(repo), nil
+}
+
 func (s *ApplicationService) GetApplications(ctx context.Context, _ *emptypb.Empty) (*pb.GetApplicationsResponse, error) {
-	applications, err := s.svc.GetApplicationsByUserID(ctx, getUserID())
+	applications, err := s.svc.GetApplications(ctx)
 	if err != nil {
 		return nil, handleUseCaseError(err)
 	}
@@ -91,12 +118,18 @@ func (s *ApplicationService) AddAvailableDomain(ctx context.Context, req *pb.Add
 }
 
 func (s *ApplicationService) CreateApplication(ctx context.Context, req *pb.CreateApplicationRequest) (*pb.Application, error) {
-	application, err := s.svc.CreateApplication(ctx, usecase.CreateApplicationArgs{
-		UserID:        getUserID(),
+	now := time.Now()
+	app := &domain.Application{
+		ID:            domain.NewID(),
 		Name:          req.Name,
-		RepositoryURL: req.RepositoryUrl,
+		RepositoryID:  req.RepositoryId,
 		BranchName:    req.BranchName,
 		BuildType:     fromPBBuildType(req.BuildType),
+		State:         domain.ApplicationStateIdle,
+		CurrentCommit: domain.EmptyCommit,
+		WantCommit:    domain.EmptyCommit,
+		CreatedAt:     now,
+		UpdatedAt:     now,
 		Config:        fromPBApplicationConfig(req.Config),
 		Websites: lo.Map(req.Websites, func(website *pb.CreateWebsiteRequest, i int) *domain.Website {
 			return &domain.Website{
@@ -108,12 +141,13 @@ func (s *ApplicationService) CreateApplication(ctx context.Context, req *pb.Crea
 				HTTPPort:    int(website.HttpPort),
 			}
 		}),
-		StartOnCreate: req.StartOnCreate,
-	})
+		OwnerIDs: []string{getUserID()},
+	}
+	app, err := s.svc.CreateApplication(ctx, app, req.StartOnCreate)
 	if err != nil {
 		return nil, handleUseCaseError(err)
 	}
-	return toPBApplication(application), nil
+	return toPBApplication(app), nil
 }
 
 func (s *ApplicationService) GetApplication(ctx context.Context, req *pb.ApplicationIdRequest) (*pb.Application, error) {
@@ -220,6 +254,38 @@ func (s *ApplicationService) StopApplication(ctx context.Context, req *pb.Applic
 	return &emptypb.Empty{}, nil
 }
 
+func fromPBRepositoryAuth(req *pb.CreateRepositoryRequest) optional.Of[domain.RepositoryAuth] {
+	switch v := req.Auth.(type) {
+	case *pb.CreateRepositoryRequest_None:
+		return optional.Of[domain.RepositoryAuth]{}
+	case *pb.CreateRepositoryRequest_Basic:
+		return optional.From(domain.RepositoryAuth{
+			Method:   domain.RepositoryAuthMethodBasic,
+			Username: v.Basic.Username,
+			Password: v.Basic.Password,
+		})
+	case *pb.CreateRepositoryRequest_Ssh:
+		return optional.From(domain.RepositoryAuth{
+			Method: domain.RepositoryAuthMethodSSH,
+			SSHKey: v.Ssh.SshKey,
+		})
+	default:
+		panic("unknown auth type")
+	}
+}
+
+func toPBRepository(repo *domain.Repository) *pb.Repository {
+	ret := &pb.Repository{
+		Id:   repo.ID,
+		Name: repo.Name,
+		Url:  repo.URL,
+	}
+	if repo.Auth.Valid {
+		ret.AuthMethod = repo.Auth.V.Method.String()
+	}
+	return ret
+}
+
 func fromPBBuildType(buildType pb.BuildType) builder.BuildType {
 	switch buildType {
 	case pb.BuildType_RUNTIME:
@@ -323,7 +389,7 @@ func toPBApplication(app *domain.Application) *pb.Application {
 	return &pb.Application{
 		Id:            app.ID,
 		Name:          app.Name,
-		RepositoryUrl: app.Repository.URL,
+		RepositoryId:  app.RepositoryID,
 		BranchName:    app.BranchName,
 		BuildType:     toPBBuildType(app.BuildType),
 		State:         toPBApplicationState(app.State),
@@ -331,6 +397,7 @@ func toPBApplication(app *domain.Application) *pb.Application {
 		WantCommit:    app.WantCommit,
 		Config:        toPBApplicationConfig(app.Config),
 		Websites:      lo.Map(app.Websites, func(website *domain.Website, i int) *pb.Website { return toPBWebsite(website) }),
+		OwnerIds:      app.OwnerIDs,
 	}
 }
 

@@ -1,5 +1,6 @@
-neoshowcase/**
-staticsite/**
-dind/**
-traefik/**
-!traefik/middlewares.yaml
+/dind
+/local-storage
+/repositories
+/staticsite
+/traefik
+!/traefik/middlewares.yaml

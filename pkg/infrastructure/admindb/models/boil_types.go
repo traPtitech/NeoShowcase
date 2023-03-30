@@ -78,3 +78,16 @@ func AllApplicationsBuildType() []string {
 		ApplicationsBuildTypeStatic,
 	}
 }
+
+// Enum values for RepositoryAuthMethod
+const (
+	RepositoryAuthMethodBasic string = "basic"
+	RepositoryAuthMethodSSH   string = "ssh"
+)
+
+func AllRepositoryAuthMethod() []string {
+	return []string{
+		RepositoryAuthMethodBasic,
+		RepositoryAuthMethodSSH,
+	}
+}

@@ -6,6 +6,7 @@ import (
 	"strings"
 	"sync"
 
+	"github.com/friendsofgo/errors"
 	docker "github.com/fsouza/go-dockerclient"
 
 	"github.com/traPtitech/neoshowcase/pkg/domain"
@@ -66,13 +67,13 @@ func NewDockerBackend(
 func (b *dockerBackend) Start(_ context.Context) error {
 	// showcase用のネットワークを用意
 	if err := initNetworks(b.c); err != nil {
-		return fmt.Errorf("failed to init networks: %w", err)
+		return errors.Wrap(err, "failed to init networks")
 	}
 
 	b.dockerEvent = make(chan *docker.APIEvents, 10)
 	if err := b.c.AddEventListener(b.dockerEvent); err != nil {
 		close(b.dockerEvent)
-		return fmt.Errorf("failed to add event listener: %w", err)
+		return errors.Wrap(err, "failed to add event listener")
 	}
 	go b.eventListener()
 
@@ -111,7 +112,7 @@ func (b *dockerBackend) Dispose(_ context.Context) error {
 func initNetworks(c *docker.Client) error {
 	networks, err := c.ListNetworks()
 	if err != nil {
-		return fmt.Errorf("failed to list networks: %w", err)
+		return errors.Wrap(err, "failed to list networks")
 	}
 	for _, network := range networks {
 		if network.Name == appNetwork {

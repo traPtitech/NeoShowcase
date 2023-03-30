@@ -3,9 +3,8 @@ package repository
 import (
 	"context"
 	"database/sql"
-	"fmt"
 
-	"github.com/google/uuid"
+	"github.com/friendsofgo/errors"
 	"github.com/volatiletech/sqlboiler/v4/boil"
 
 	"github.com/traPtitech/neoshowcase/pkg/domain"
@@ -23,24 +22,13 @@ func NewUserRepository(db *sql.DB) domain.UserRepository {
 }
 
 func (u *userRepository) CreateUser(ctx context.Context, args domain.CreateUserArgs) (*domain.User, error) {
-	const errMsg = "failed to create user: %w"
-
-	_, err := models.Users(models.UserWhere.Name.EQ(args.Name)).One(ctx, u.db)
-	if err != nil && err != sql.ErrNoRows {
-		return nil, fmt.Errorf(errMsg, err)
-	}
-	id, err := uuid.NewRandom()
-	if err != nil {
-		return nil, fmt.Errorf(errMsg, err)
-	}
 	user := &models.User{
-		ID:   id.String(),
+		ID:   domain.NewID(),
 		Name: args.Name,
 	}
 	if err := user.Insert(ctx, u.db, boil.Infer()); err != nil {
-		return nil, fmt.Errorf(errMsg, err)
+		return nil, errors.Wrap(err, "failed to insert user")
 	}
-
 	return &domain.User{
 		ID:   user.ID,
 		Name: user.Name,
@@ -48,11 +36,9 @@ func (u *userRepository) CreateUser(ctx context.Context, args domain.CreateUserA
 }
 
 func (u *userRepository) GetUserByID(ctx context.Context, id string) (*domain.User, error) {
-	const errMsg = "failed to get user: %w"
-
 	user, err := models.Users(models.UserWhere.ID.EQ(id)).One(ctx, u.db)
 	if err != nil {
-		return nil, fmt.Errorf(errMsg, err)
+		return nil, errors.Wrap(err, "failed to get user")
 	}
 	return &domain.User{
 		ID:   user.ID,

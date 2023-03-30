@@ -11,8 +11,8 @@ type Task struct {
 }
 
 type BuildSource struct {
-	RepositoryUrl string
-	Commit        string
+	RepositoryID string
+	Commit       string
 }
 
 type BuildOptions struct {

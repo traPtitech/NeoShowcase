@@ -57,7 +57,7 @@ func (s *staticSiteServerService) Start(_ context.Context) error {
 	go func() {
 		err := s.reload(context.Background())
 		if err != nil {
-			log.WithError(err).Error("failed to perform initial reload")
+			log.Errorf("failed to perform initial reload: %+v", err)
 		}
 	}()
 
@@ -74,7 +74,7 @@ func (s *staticSiteServerService) onRequest(req *pb.SSGenRequest) {
 	case pb.SSGenRequest_RELOAD:
 		err := s.reload(context.Background())
 		if err != nil {
-			log.WithError(err).Error("failed to reload static server")
+			log.Errorf("failed to reload static server: %+v", err)
 		}
 	}
 }

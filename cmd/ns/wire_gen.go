@@ -72,7 +72,11 @@ func NewWithDocker(c2 Config) (*Server, error) {
 	appBuildService := usecase.NewAppBuildService(buildRepository, componentService, dockerImageRegistryString, dockerImageNamePrefixString)
 	continuousDeploymentService := usecase.NewContinuousDeploymentService(bus, applicationRepository, buildRepository, environmentRepository, appBuildService, appDeployService, dockerImageRegistryString, dockerImageNamePrefixString)
 	repositoryFetcherCacheDir := provideRepositoryFetcherCacheDir(c2)
-	repositoryFetcherService, err := usecase.NewRepositoryFetcherService(bus, applicationRepository, repositoryFetcherCacheDir)
+	publicKeys, err := provideRepositoryPublicKey(c2)
+	if err != nil {
+		return nil, err
+	}
+	repositoryFetcherService, err := usecase.NewRepositoryFetcherService(bus, applicationRepository, gitRepositoryRepository, repositoryFetcherCacheDir, publicKeys)
 	if err != nil {
 		return nil, err
 	}
@@ -138,7 +142,11 @@ func NewWithK8S(c2 Config) (*Server, error) {
 	appBuildService := usecase.NewAppBuildService(buildRepository, componentService, dockerImageRegistryString, dockerImageNamePrefixString)
 	continuousDeploymentService := usecase.NewContinuousDeploymentService(bus, applicationRepository, buildRepository, environmentRepository, appBuildService, appDeployService, dockerImageRegistryString, dockerImageNamePrefixString)
 	repositoryFetcherCacheDir := provideRepositoryFetcherCacheDir(c2)
-	repositoryFetcherService, err := usecase.NewRepositoryFetcherService(bus, applicationRepository, repositoryFetcherCacheDir)
+	publicKeys, err := provideRepositoryPublicKey(c2)
+	if err != nil {
+		return nil, err
+	}
+	repositoryFetcherService, err := usecase.NewRepositoryFetcherService(bus, applicationRepository, gitRepositoryRepository, repositoryFetcherCacheDir, publicKeys)
 	if err != nil {
 		return nil, err
 	}
@@ -161,7 +169,8 @@ func NewWithK8S(c2 Config) (*Server, error) {
 var commonSet = wire.NewSet(web.NewServer, hub.New, eventbus.NewLocal, admindb.New, dbmanager.NewMariaDBManager, dbmanager.NewMongoDBManager, repository.NewApplicationRepository, repository.NewAvailableDomainRepository, repository.NewGitRepositoryRepository, repository.NewEnvironmentRepository, repository.NewBuildRepository, grpc.NewApplicationServiceGRPCServer, grpc.NewApplicationServiceServer, grpc.NewComponentServiceGRPCServer, grpc.NewComponentServiceServer, usecase.NewAPIServerService, usecase.NewAppBuildService, usecase.NewAppDeployService, usecase.NewContinuousDeploymentService, usecase.NewRepositoryFetcherService, provideIngressConfDirPath,
 	provideImagePrefix,
 	provideImageRegistry,
-	provideRepositoryFetcherCacheDir, wire.FieldsOf(new(Config), "SS", "DB", "MariaDB", "MongoDB"), wire.Struct(new(Server), "*"),
+	provideRepositoryFetcherCacheDir,
+	provideRepositoryPublicKey, wire.FieldsOf(new(Config), "SS", "DB", "MariaDB", "MongoDB"), wire.Struct(new(Server), "*"),
 )
 
 func New(c2 Config) (*Server, error) {

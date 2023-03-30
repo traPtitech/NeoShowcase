@@ -2,8 +2,8 @@ package dockerimpl
 
 import (
 	"context"
-	"fmt"
 
+	"github.com/friendsofgo/errors"
 	docker "github.com/fsouza/go-dockerclient"
 	"github.com/samber/lo"
 
@@ -21,7 +21,7 @@ func (b *dockerBackend) CreateContainer(ctx context.Context, app *domain.Applica
 		Tag:        args.ImageTag,
 		Context:    ctx,
 	}, docker.AuthConfiguration{}); err != nil {
-		return fmt.Errorf("failed to pull image: %w", err)
+		return errors.Wrap(err, "failed to pull image")
 	}
 
 	envs := lo.MapToSlice(args.Envs, func(key string, value string) string {
@@ -37,13 +37,13 @@ func (b *dockerBackend) CreateContainer(ctx context.Context, app *domain.Applica
 	})
 	if err != nil {
 		if _, ok := err.(*docker.NoSuchContainer); !ok {
-			return fmt.Errorf("failed to remove old container: %w", err)
+			return errors.Wrap(err, "failed to remove old container")
 		}
 	}
 
 	err = b.synchronizeRuntimeIngresses(ctx, app)
 	if err != nil {
-		return fmt.Errorf("failed to synchronize ingresses: %w", err)
+		return errors.Wrap(err, "failed to synchronize ingresses")
 	}
 
 	// ビルドしたイメージのコンテナを作成
@@ -65,12 +65,12 @@ func (b *dockerBackend) CreateContainer(ctx context.Context, app *domain.Applica
 		Context: ctx,
 	})
 	if err != nil {
-		return fmt.Errorf("failed to create container: %w", err)
+		return errors.Wrap(err, "failed to create container")
 	}
 
 	// コンテナを起動
 	if err := b.c.StartContainer(cont.ID, nil); err != nil {
-		return fmt.Errorf("failed to start container: %w", err)
+		return errors.Wrap(err, "failed to start container")
 	}
 
 	return nil

@@ -2,8 +2,8 @@ package k8simpl
 
 import (
 	"context"
-	"fmt"
 
+	"github.com/friendsofgo/errors"
 	"github.com/traefik/traefik/v2/pkg/config/dynamic"
 	"github.com/traefik/traefik/v2/pkg/provider/kubernetes/crd/traefik/v1alpha1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -60,11 +60,11 @@ func (b *k8sBackend) ReloadSSIngress(ctx context.Context) error {
 	listOpt := metav1.ListOptions{LabelSelector: ssLabelSelector()}
 	existingMiddlewares, err := b.traefikClient.Middlewares(appNamespace).List(ctx, listOpt)
 	if err != nil {
-		return fmt.Errorf("failed to get middlewares: %w", err)
+		return errors.Wrap(err, "failed to get middlewares")
 	}
 	existingIngressRoutes, err := b.traefikClient.IngressRoutes(appNamespace).List(ctx, listOpt)
 	if err != nil {
-		return fmt.Errorf("failed to get IngressRotues: %w", err)
+		return errors.Wrap(err, "failed to get IngressRotues")
 	}
 
 	// Calculate next resources to apply
@@ -86,24 +86,24 @@ func (b *k8sBackend) ReloadSSIngress(ctx context.Context) error {
 	for _, mw := range middlewares {
 		err = patch[*v1alpha1.Middleware](ctx, mw.Name, mw, b.traefikClient.Middlewares(appNamespace))
 		if err != nil {
-			return fmt.Errorf("failed to patch middleware: %w", err)
+			return errors.Wrap(err, "failed to patch middleware")
 		}
 	}
 	for _, ir := range ingressRoutes {
 		err = patch[*v1alpha1.IngressRoute](ctx, ir.Name, ir, b.traefikClient.IngressRoutes(appNamespace))
 		if err != nil {
-			return fmt.Errorf("failed to patch IngressRoute: %w", err)
+			return errors.Wrap(err, "failed to patch IngressRoute")
 		}
 	}
 
 	// Prune old resources
 	err = prune(ctx, diff(util.SliceOfPtr(existingMiddlewares.Items), middlewares), b.traefikClient.Middlewares(appNamespace))
 	if err != nil {
-		return fmt.Errorf("failed to prune middlewares: %w", err)
+		return errors.Wrap(err, "failed to prune middlewares")
 	}
 	err = prune(ctx, diff(util.SliceOfPtr(existingIngressRoutes.Items), ingressRoutes), b.traefikClient.IngressRoutes(appNamespace))
 	if err != nil {
-		return fmt.Errorf("failed to prune IngressRoutes: %w", err)
+		return errors.Wrap(err, "failed to prune IngressRoutes")
 	}
 
 	return nil

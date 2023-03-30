@@ -9,7 +9,7 @@ Gitリポジトリテーブル
 
 ```sql
 CREATE TABLE `repositories` (
-  `id` varchar(22) NOT NULL COMMENT 'リポジトリID',
+  `id` char(22) NOT NULL COMMENT 'リポジトリID',
   `name` varchar(256) NOT NULL COMMENT 'リポジトリ名',
   `url` varchar(256) NOT NULL COMMENT 'Git Remote URL',
   PRIMARY KEY (`id`),
@@ -23,7 +23,7 @@ CREATE TABLE `repositories` (
 
 | Name | Type | Default | Nullable | Children | Parents | Comment |
 | ---- | ---- | ------- | -------- | -------- | ------- | ------- |
-| id | varchar(22) |  | false | [applications](applications.md) |  | リポジトリID |
+| id | char(22) |  | false | [applications](applications.md) [repository_auth](repository_auth.md) [repository_owners](repository_owners.md) |  | リポジトリID |
 | name | varchar(256) |  | false |  |  | リポジトリ名 |
 | url | varchar(256) |  | false |  |  | Git Remote URL |
 

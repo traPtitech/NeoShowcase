@@ -2,9 +2,9 @@ package usecase
 
 import (
 	"context"
-	"fmt"
 	"time"
 
+	"github.com/friendsofgo/errors"
 	"github.com/samber/lo"
 	log "github.com/sirupsen/logrus"
 	"golang.org/x/exp/slices"
@@ -73,10 +73,10 @@ func (s *appDeployService) Synchronize(appID string, restart bool) (started bool
 		ctx := context.Background()
 		err := s.synchronize(ctx, appID, restart)
 		if err != nil {
-			log.WithError(err).WithField("application", appID).Error("failed to synchronize app")
+			log.Errorf("failed to synchronize app: %+v", err)
 			err = s.appRepo.UpdateApplication(ctx, appID, domain.UpdateApplicationArgs{State: optional.From(domain.ApplicationStateErrored)})
 			if err != nil {
-				log.WithError(err).Error("failed to update application state")
+				log.Errorf("failed to update application state: %+v", err)
 			}
 		}
 	}()
@@ -87,7 +87,7 @@ func (s *appDeployService) Synchronize(appID string, restart bool) (started bool
 func (s *appDeployService) SynchronizeSS(ctx context.Context) error {
 	s.component.BroadcastSSGen(&pb.SSGenRequest{Type: pb.SSGenRequest_RELOAD})
 	if err := s.backend.ReloadSSIngress(ctx); err != nil {
-		return fmt.Errorf("failed to relaod static site ingress: %w", err)
+		return errors.Wrap(err, "failed to reload static site ingress")
 	}
 	return nil
 }
@@ -136,7 +136,7 @@ func (s *appDeployService) synchronize(ctx context.Context, appID string, restar
 		CurrentCommit: optional.From(build.Commit),
 	})
 	if err != nil {
-		return fmt.Errorf("failed to update application: %w", err)
+		return errors.Wrap(err, "failed to update application")
 	}
 
 	if doDeploy && app.BuildType == builder.BuildTypeStatic {
@@ -172,7 +172,7 @@ func (s *appDeployService) recreateContainer(ctx context.Context, app *domain.Ap
 		Envs:      lo.SliceToMap(envs, func(env *domain.Environment) (string, string) { return env.Key, env.Value }),
 	})
 	if err != nil {
-		return fmt.Errorf("failed to create container: %w", err)
+		return errors.Wrap(err, "failed to create container")
 	}
 	return nil
 }
@@ -188,10 +188,10 @@ func (s *appDeployService) Stop(appID string) (started bool) {
 		ctx := context.Background()
 		err := s.stop(ctx, appID)
 		if err != nil {
-			log.WithError(err).WithField("application", appID).Error("failed to stop app")
+			log.Errorf("failed to stop app: %+v", err)
 			err = s.appRepo.UpdateApplication(ctx, appID, domain.UpdateApplicationArgs{State: optional.From(domain.ApplicationStateErrored)})
 			if err != nil {
-				log.WithError(err).Error("failed to update application state")
+				log.Errorf("failed to update application state: %+v", err)
 			}
 		}
 	}()
@@ -214,7 +214,7 @@ func (s *appDeployService) stop(ctx context.Context, appID string) error {
 
 	err = s.appRepo.UpdateApplication(ctx, app.ID, domain.UpdateApplicationArgs{State: optional.From(domain.ApplicationStateIdle)})
 	if err != nil {
-		return fmt.Errorf("failed to update application state: %w", err)
+		return errors.Wrap(err, "failed to update application state")
 	}
 
 	if app.BuildType == builder.BuildTypeStatic {

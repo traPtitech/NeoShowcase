@@ -4,6 +4,125 @@ import * as google_protobuf_empty_pb from 'google-protobuf/google/protobuf/empty
 import * as neoshowcase_protobuf_null_pb from '../../neoshowcase/protobuf/null_pb';
 
 
+export class Repository extends jspb.Message {
+  getId(): string;
+  setId(value: string): Repository;
+
+  getName(): string;
+  setName(value: string): Repository;
+
+  getUrl(): string;
+  setUrl(value: string): Repository;
+
+  getAuthMethod(): string;
+  setAuthMethod(value: string): Repository;
+
+  serializeBinary(): Uint8Array;
+  toObject(includeInstance?: boolean): Repository.AsObject;
+  static toObject(includeInstance: boolean, msg: Repository): Repository.AsObject;
+  static serializeBinaryToWriter(message: Repository, writer: jspb.BinaryWriter): void;
+  static deserializeBinary(bytes: Uint8Array): Repository;
+  static deserializeBinaryFromReader(message: Repository, reader: jspb.BinaryReader): Repository;
+}
+
+export namespace Repository {
+  export type AsObject = {
+    id: string,
+    name: string,
+    url: string,
+    authMethod: string,
+  }
+}
+
+export class CreateRepositoryAuthBasic extends jspb.Message {
+  getUsername(): string;
+  setUsername(value: string): CreateRepositoryAuthBasic;
+
+  getPassword(): string;
+  setPassword(value: string): CreateRepositoryAuthBasic;
+
+  serializeBinary(): Uint8Array;
+  toObject(includeInstance?: boolean): CreateRepositoryAuthBasic.AsObject;
+  static toObject(includeInstance: boolean, msg: CreateRepositoryAuthBasic): CreateRepositoryAuthBasic.AsObject;
+  static serializeBinaryToWriter(message: CreateRepositoryAuthBasic, writer: jspb.BinaryWriter): void;
+  static deserializeBinary(bytes: Uint8Array): CreateRepositoryAuthBasic;
+  static deserializeBinaryFromReader(message: CreateRepositoryAuthBasic, reader: jspb.BinaryReader): CreateRepositoryAuthBasic;
+}
+
+export namespace CreateRepositoryAuthBasic {
+  export type AsObject = {
+    username: string,
+    password: string,
+  }
+}
+
+export class CreateRepositoryAuthSSH extends jspb.Message {
+  getSshKey(): string;
+  setSshKey(value: string): CreateRepositoryAuthSSH;
+
+  serializeBinary(): Uint8Array;
+  toObject(includeInstance?: boolean): CreateRepositoryAuthSSH.AsObject;
+  static toObject(includeInstance: boolean, msg: CreateRepositoryAuthSSH): CreateRepositoryAuthSSH.AsObject;
+  static serializeBinaryToWriter(message: CreateRepositoryAuthSSH, writer: jspb.BinaryWriter): void;
+  static deserializeBinary(bytes: Uint8Array): CreateRepositoryAuthSSH;
+  static deserializeBinaryFromReader(message: CreateRepositoryAuthSSH, reader: jspb.BinaryReader): CreateRepositoryAuthSSH;
+}
+
+export namespace CreateRepositoryAuthSSH {
+  export type AsObject = {
+    sshKey: string,
+  }
+}
+
+export class CreateRepositoryRequest extends jspb.Message {
+  getName(): string;
+  setName(value: string): CreateRepositoryRequest;
+
+  getUrl(): string;
+  setUrl(value: string): CreateRepositoryRequest;
+
+  getNone(): google_protobuf_empty_pb.Empty | undefined;
+  setNone(value?: google_protobuf_empty_pb.Empty): CreateRepositoryRequest;
+  hasNone(): boolean;
+  clearNone(): CreateRepositoryRequest;
+
+  getBasic(): CreateRepositoryAuthBasic | undefined;
+  setBasic(value?: CreateRepositoryAuthBasic): CreateRepositoryRequest;
+  hasBasic(): boolean;
+  clearBasic(): CreateRepositoryRequest;
+
+  getSsh(): CreateRepositoryAuthSSH | undefined;
+  setSsh(value?: CreateRepositoryAuthSSH): CreateRepositoryRequest;
+  hasSsh(): boolean;
+  clearSsh(): CreateRepositoryRequest;
+
+  getAuthCase(): CreateRepositoryRequest.AuthCase;
+
+  serializeBinary(): Uint8Array;
+  toObject(includeInstance?: boolean): CreateRepositoryRequest.AsObject;
+  static toObject(includeInstance: boolean, msg: CreateRepositoryRequest): CreateRepositoryRequest.AsObject;
+  static serializeBinaryToWriter(message: CreateRepositoryRequest, writer: jspb.BinaryWriter): void;
+  static deserializeBinary(bytes: Uint8Array): CreateRepositoryRequest;
+  static deserializeBinaryFromReader(message: CreateRepositoryRequest, reader: jspb.BinaryReader): CreateRepositoryRequest;
+}
+
+export namespace CreateRepositoryRequest {
+  export type AsObject = {
+    name: string,
+    url: string,
+    none?: google_protobuf_empty_pb.Empty.AsObject,
+    basic?: CreateRepositoryAuthBasic.AsObject,
+    ssh?: CreateRepositoryAuthSSH.AsObject,
+  }
+
+  export enum AuthCase { 
+    AUTH_NOT_SET = 0,
+    NONE = 3,
+    BASIC = 4,
+    SSH = 5,
+  }
+}
+
 export class ApplicationConfig extends jspb.Message {
   getUseMariadb(): boolean;
   setUseMariadb(value: boolean): ApplicationConfig;
@@ -129,8 +248,8 @@ export class Application extends jspb.Message {
   getName(): string;
   setName(value: string): Application;
 
-  getRepositoryUrl(): string;
-  setRepositoryUrl(value: string): Application;
+  getRepositoryId(): string;
+  setRepositoryId(value: string): Application;
 
   getBranchName(): string;
   setBranchName(value: string): Application;
@@ -157,6 +276,11 @@ export class Application extends jspb.Message {
   clearWebsitesList(): Application;
   addWebsites(value?: Website, index?: number): Website;
 
+  getOwnerIdsList(): Array<string>;
+  setOwnerIdsList(value: Array<string>): Application;
+  clearOwnerIdsList(): Application;
+  addOwnerIds(value: string, index?: number): Application;
+
   serializeBinary(): Uint8Array;
   toObject(includeInstance?: boolean): Application.AsObject;
   static toObject(includeInstance: boolean, msg: Application): Application.AsObject;
@@ -169,7 +293,7 @@ export namespace Application {
   export type AsObject = {
     id: string,
     name: string,
-    repositoryUrl: string,
+    repositoryId: string,
     branchName: string,
     buildType: BuildType,
     state: ApplicationState,
@@ -177,6 +301,7 @@ export namespace Application {
     wantCommit: string,
     config?: ApplicationConfig.AsObject,
     websitesList: Array<Website.AsObject>,
+    ownerIdsList: Array<string>,
   }
 }
 
@@ -457,6 +582,26 @@ export namespace BuildLog {
   }
 }
 
+export class GetRepositoriesResponse extends jspb.Message {
+  getRepositoriesList(): Array<Repository>;
+  setRepositoriesList(value: Array<Repository>): GetRepositoriesResponse;
+  clearRepositoriesList(): GetRepositoriesResponse;
+  addRepositories(value?: Repository, index?: number): Repository;
+
+  serializeBinary(): Uint8Array;
+  toObject(includeInstance?: boolean): GetRepositoriesResponse.AsObject;
+  static toObject(includeInstance: boolean, msg: GetRepositoriesResponse): GetRepositoriesResponse.AsObject;
+  static serializeBinaryToWriter(message: GetRepositoriesResponse, writer: jspb.BinaryWriter): void;
+  static deserializeBinary(bytes: Uint8Array): GetRepositoriesResponse;
+  static deserializeBinaryFromReader(message: GetRepositoriesResponse, reader: jspb.BinaryReader): GetRepositoriesResponse;
+}
+
+export namespace GetRepositoriesResponse {
+  export type AsObject = {
+    repositoriesList: Array<Repository.AsObject>,
+  }
+}
+
 export class GetApplicationsResponse extends jspb.Message {
   getApplicationsList(): Array<Application>;
   setApplicationsList(value: Array<Application>): GetApplicationsResponse;
@@ -481,8 +626,8 @@ export class CreateApplicationRequest extends jspb.Message {
   getName(): string;
   setName(value: string): CreateApplicationRequest;
 
-  getRepositoryUrl(): string;
-  setRepositoryUrl(value: string): CreateApplicationRequest;
+  getRepositoryId(): string;
+  setRepositoryId(value: string): CreateApplicationRequest;
 
   getBranchName(): string;
   setBranchName(value: string): CreateApplicationRequest;
@@ -514,7 +659,7 @@ export class CreateApplicationRequest extends jspb.Message {
 export namespace CreateApplicationRequest {
   export type AsObject = {
     name: string,
-    repositoryUrl: string,
+    repositoryId: string,
     branchName: string,
     buildType: BuildType,
     config?: ApplicationConfig.AsObject,

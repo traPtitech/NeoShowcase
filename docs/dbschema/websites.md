@@ -9,7 +9,7 @@ Webサイトテーブル
 
 ```sql
 CREATE TABLE `websites` (
-  `id` varchar(22) NOT NULL COMMENT 'サイトID',
+  `id` char(22) NOT NULL COMMENT 'サイトID',
   `fqdn` varchar(100) NOT NULL COMMENT 'サイトURLのFQDN',
   `path_prefix` varchar(100) NOT NULL COMMENT 'サイトPathのPrefix',
   `strip_prefix` tinyint(1) NOT NULL COMMENT 'PathのPrefixを落とすかどうか',
@@ -17,7 +17,7 @@ CREATE TABLE `websites` (
   `http_port` int(11) NOT NULL DEFAULT 80 COMMENT 'コンテナhttpポート番号',
   `created_at` datetime(6) NOT NULL COMMENT '作成日時',
   `updated_at` datetime(6) NOT NULL COMMENT '更新日時',
-  `application_id` varchar(22) NOT NULL COMMENT 'アプリケーションID',
+  `application_id` char(22) NOT NULL COMMENT 'アプリケーションID',
   PRIMARY KEY (`id`),
   UNIQUE KEY `fqdn` (`fqdn`,`path_prefix`),
   KEY `fk_websites_application_id` (`application_id`),
@@ -31,7 +31,7 @@ CREATE TABLE `websites` (
 
 | Name | Type | Default | Nullable | Children | Parents | Comment |
 | ---- | ---- | ------- | -------- | -------- | ------- | ------- |
-| id | varchar(22) |  | false |  |  | サイトID |
+| id | char(22) |  | false |  |  | サイトID |
 | fqdn | varchar(100) |  | false |  |  | サイトURLのFQDN |
 | path_prefix | varchar(100) |  | false |  |  | サイトPathのPrefix |
 | strip_prefix | tinyint(1) |  | false |  |  | PathのPrefixを落とすかどうか |
@@ -39,7 +39,7 @@ CREATE TABLE `websites` (
 | http_port | int(11) | 80 | false |  |  | コンテナhttpポート番号 |
 | created_at | datetime(6) |  | false |  |  | 作成日時 |
 | updated_at | datetime(6) |  | false |  |  | 更新日時 |
-| application_id | varchar(22) |  | false |  | [applications](applications.md) | アプリケーションID |
+| application_id | char(22) |  | false |  | [applications](applications.md) | アプリケーションID |
 
 ## Constraints
 

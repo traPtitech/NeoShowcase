@@ -6,6 +6,7 @@ import (
 	"strings"
 	"sync"
 
+	"github.com/friendsofgo/errors"
 	log "github.com/sirupsen/logrus"
 	traefikv1alpha1 "github.com/traefik/traefik/v2/pkg/provider/kubernetes/crd/generated/clientset/versioned/typed/traefik/v1alpha1"
 	apiv1 "k8s.io/api/core/v1"
@@ -75,7 +76,7 @@ func (b *k8sBackend) Start(_ context.Context) error {
 		}}),
 	})
 	if err != nil {
-		return fmt.Errorf("failed to watch pods: %w", err)
+		return errors.Wrap(err, "failed to watch pods")
 	}
 	go b.eventListener()
 	return nil

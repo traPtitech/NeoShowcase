@@ -1,7 +1,11 @@
 package main
 
 import (
+	"os"
 	"strings"
+
+	"github.com/friendsofgo/errors"
+	"github.com/go-git/go-git/v5/plumbing/transport/ssh"
 
 	"github.com/traPtitech/neoshowcase/pkg/domain"
 	"github.com/traPtitech/neoshowcase/pkg/domain/builder"
@@ -35,7 +39,8 @@ type Config struct {
 		} `mapstructure:"component" yaml:"component"`
 	} `mapstructure:"grpc" yaml:"grpc"`
 	Repository struct {
-		CacheDir string `mapstructure:"cacheDir" yaml:"cacheDir"`
+		CacheDir       string `mapstructure:"cacheDir" yaml:"cacheDir"`
+		PrivateKeyFile string `mapstructure:"privateKeyFile" yaml:"privateKeyFile"`
 	} `mapstructure:"repository" yaml:"repository"`
 	Image struct {
 		Registry   builder.DockerImageRegistryString   `mapstructure:"registry" yaml:"registry"`
@@ -68,4 +73,12 @@ func provideImagePrefix(c Config) builder.DockerImageNamePrefixString {
 
 func provideRepositoryFetcherCacheDir(c Config) usecase.RepositoryFetcherCacheDir {
 	return usecase.RepositoryFetcherCacheDir(c.Repository.CacheDir)
+}
+
+func provideRepositoryPublicKey(c Config) (*ssh.PublicKeys, error) {
+	bytes, err := os.ReadFile(c.Repository.PrivateKeyFile)
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to open private key file")
+	}
+	return ssh.NewPublicKeys("", bytes, "")
 }

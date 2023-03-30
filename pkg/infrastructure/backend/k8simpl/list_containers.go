@@ -2,8 +2,8 @@ package k8simpl
 
 import (
 	"context"
-	"fmt"
 
+	"github.com/friendsofgo/errors"
 	apiv1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
@@ -15,7 +15,7 @@ func (b *k8sBackend) GetContainer(ctx context.Context, appID string) (*domain.Co
 		LabelSelector: labelSelector(appID),
 	})
 	if err != nil {
-		return nil, fmt.Errorf("failed to fetch pods: %w", err)
+		return nil, errors.Wrap(err, "failed to fetch pods")
 	}
 	if len(list.Items) == 0 {
 		return nil, domain.ErrContainerNotFound
@@ -33,7 +33,7 @@ func (b *k8sBackend) ListContainers(ctx context.Context) ([]domain.Container, er
 		LabelSelector: allSelector(),
 	})
 	if err != nil {
-		return nil, fmt.Errorf("failed to fetch pods: %w", err)
+		return nil, errors.Wrap(err, "failed to fetch pods")
 	}
 
 	var result []domain.Container

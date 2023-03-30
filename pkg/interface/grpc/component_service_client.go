@@ -60,7 +60,7 @@ func (c *ComponentServiceClient) ConnectBuilder(ctx context.Context, onRequest f
 		defer func() {
 			err := conn.CloseSend()
 			if err != nil {
-				log.WithError(err).Error("failed to close send stream")
+				log.Errorf("failed to close send stream: %+v", err)
 			}
 		}()
 
@@ -72,7 +72,7 @@ func (c *ComponentServiceClient) ConnectBuilder(ctx context.Context, onRequest f
 				}
 				err := conn.Send(res)
 				if err != nil {
-					log.WithError(err).Error("failed to send builder response")
+					log.Errorf("failed to send builder response: %+v", err)
 					return
 				}
 			case <-ctx.Done():
@@ -107,7 +107,7 @@ func (c *ComponentServiceClient) ConnectSSGen(ctx context.Context, onRequest fun
 		cancel()
 		err := conn.CloseSend()
 		if err != nil {
-			log.WithError(err).Error("failed to close send stream")
+			log.Errorf("failed to close send stream: %+v", err)
 		}
 	}()
 
