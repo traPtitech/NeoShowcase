@@ -88,7 +88,7 @@ func (r *repositoryFetcherService) fetchLoop(closer <-chan struct{}) {
 	doSync := func() {
 		start := time.Now()
 		if err := r.fetchAll(); err != nil {
-			log.WithError(err).Error("failed to fetch repositories")
+			log.Errorf("failed to fetch repositories: %+v", err)
 			return
 		}
 		log.Infof("Fetched repositories in %v", time.Since(start))
@@ -129,9 +129,7 @@ func (r *repositoryFetcherService) fetchAll() error {
 	for _, repo := range repos {
 		gitRepo, err := r.fetchRepository(ctx, repo)
 		if err != nil {
-			log.WithError(err).
-				WithField("repository", repo.URL).
-				Error("failed to fetch repository")
+			log.Errorf("failed to fetch repository: %+v", err)
 			continue // fail-safe
 		}
 		for _, app := range reposToApps[repo.ID] {

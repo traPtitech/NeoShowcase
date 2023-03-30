@@ -73,10 +73,10 @@ func (s *appDeployService) Synchronize(appID string, restart bool) (started bool
 		ctx := context.Background()
 		err := s.synchronize(ctx, appID, restart)
 		if err != nil {
-			log.WithError(err).WithField("application", appID).Error("failed to synchronize app")
+			log.Errorf("failed to synchronize app: %+v", err)
 			err = s.appRepo.UpdateApplication(ctx, appID, domain.UpdateApplicationArgs{State: optional.From(domain.ApplicationStateErrored)})
 			if err != nil {
-				log.WithError(err).Error("failed to update application state")
+				log.Errorf("failed to update application state: %+v", err)
 			}
 		}
 	}()
@@ -87,7 +87,7 @@ func (s *appDeployService) Synchronize(appID string, restart bool) (started bool
 func (s *appDeployService) SynchronizeSS(ctx context.Context) error {
 	s.component.BroadcastSSGen(&pb.SSGenRequest{Type: pb.SSGenRequest_RELOAD})
 	if err := s.backend.ReloadSSIngress(ctx); err != nil {
-		return errors.Wrap(err, "failed to relaod static site ingress")
+		return errors.Wrap(err, "failed to reload static site ingress")
 	}
 	return nil
 }
@@ -188,10 +188,10 @@ func (s *appDeployService) Stop(appID string) (started bool) {
 		ctx := context.Background()
 		err := s.stop(ctx, appID)
 		if err != nil {
-			log.WithError(err).WithField("application", appID).Error("failed to stop app")
+			log.Errorf("failed to stop app: %+v", err)
 			err = s.appRepo.UpdateApplication(ctx, appID, domain.UpdateApplicationArgs{State: optional.From(domain.ApplicationStateErrored)})
 			if err != nil {
-				log.WithError(err).Error("failed to update application state")
+				log.Errorf("failed to update application state: %+v", err)
 			}
 		}
 	}()

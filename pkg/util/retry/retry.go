@@ -20,7 +20,7 @@ func Do(ctx context.Context, fn func(ctx context.Context) error, initialBackoff,
 			backoff = initialBackoff
 			log.Infof("Lost connection, retrying in %v", backoff)
 		} else {
-			log.WithError(err).Errorf("Lost connection, retrying in %v", backoff)
+			log.Errorf("Lost connection, retrying in %v: %+v", backoff, err)
 		}
 		select {
 		case <-time.After(backoff):

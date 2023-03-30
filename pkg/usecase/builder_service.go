@@ -138,7 +138,7 @@ func (s *builderService) onRequest(req *pb.BuilderRequest) {
 			ImageTag:  b.ImageTag,
 		})
 		if err != nil {
-			log.WithError(err).Errorf("failed to start build: %v", err)
+			log.Errorf("failed to start build: %+v", err)
 		}
 	case pb.BuilderRequest_START_BUILD_STATIC:
 		b := req.Body.(*pb.BuilderRequest_BuildStatic).BuildStatic
@@ -159,7 +159,7 @@ func (s *builderService) onRequest(req *pb.BuilderRequest) {
 			},
 		})
 		if err != nil {
-			log.WithError(err).Errorf("failed to start build: %v", err)
+			log.Errorf("failed to start build: %+v", err)
 		}
 	case pb.BuilderRequest_CANCEL_BUILD:
 		b := req.Body.(*pb.BuilderRequest_CancelBuild).CancelBuild
@@ -239,13 +239,13 @@ func (s *builderService) process(ctx context.Context, st *state) builder.BuildSt
 
 	err := st.initTempFiles(st.task.Static)
 	if err != nil {
-		log.WithError(err).Error("failed to init temp files")
+		log.Errorf("failed to init temp files: %+v", err)
 		return builder.BuildStatusFailed
 	}
 
 	err = s.cloneRepository(ctx, st)
 	if err != nil {
-		log.WithError(err).Error("failed to clone repository")
+		log.Errorf("failed to clone repository: %+v", err)
 		return builder.BuildStatusFailed
 	}
 
@@ -260,7 +260,7 @@ func (s *builderService) updateStatusLoop(ctx context.Context, buildID string) {
 		case <-ticker.C:
 			err := s.buildRepo.UpdateBuild(ctx, buildID, domain.UpdateBuildArgs{UpdatedAt: optional.From(time.Now())})
 			if err != nil {
-				log.WithError(err).Error("failed to update build time")
+				log.Errorf("failed to update build time: %+v", err)
 			}
 		case <-ctx.Done():
 			return
@@ -319,7 +319,7 @@ func (s *builderService) build(ctx context.Context, st *state) builder.BuildStat
 			st.writeLog("[ns-builder] Build cancelled.")
 			return builder.BuildStatusCanceled
 		}
-		log.WithError(err).Error("failed to build")
+		log.Errorf("failed to build: %+v", err)
 		return builder.BuildStatusFailed
 	}
 
@@ -332,7 +332,7 @@ func (s *builderService) finalize(ctx context.Context, st *state, status builder
 	if st.logTempFile != nil {
 		_ = st.logTempFile.Close()
 		if err := domain.SaveLogFile(s.storage, st.logTempFile.Name(), filepath.Join("buildlogs", st.task.BuildID), st.task.BuildID); err != nil {
-			log.WithError(err).Error("failed to save build log")
+			log.Errorf("failed to save build log: %+v", err)
 		}
 	}
 
@@ -344,17 +344,17 @@ func (s *builderService) finalize(ctx context.Context, st *state, status builder
 			filename := st.artifactTempFile.Name()
 			stat, err := os.Stat(filename)
 			if err != nil {
-				log.WithError(err).Error("failed to open artifact")
+				log.Errorf("failed to open artifact: %+v", err)
 			} else {
 				err = s.artifactRepo.CreateArtifact(ctx, stat.Size(), st.task.BuildID, sid)
 				if err != nil {
-					log.WithError(err).Error("failed to create artifact")
+					log.Errorf("failed to create artifact: %+v", err)
 				}
 			}
 
 			err = domain.SaveArtifact(s.storage, filename, filepath.Join("artifacts", fmt.Sprintf("%s.tar", sid)))
 			if err != nil {
-				log.WithError(err).Error("failed to save directory to tar")
+				log.Errorf("failed to save directory to tar: %+v", err)
 			}
 		} else {
 			_ = os.Remove(st.artifactTempFile.Name())
@@ -374,7 +374,7 @@ func (s *builderService) finalize(ctx context.Context, st *state, status builder
 		FinishedAt: optional.From(now),
 	}
 	if err := s.buildRepo.UpdateBuild(ctx, st.task.BuildID, updateArgs); err != nil {
-		log.WithError(err).Error("failed to update build_log entry")
+		log.Errorf("failed to update build_log entry: %+v", err)
 	}
 }
 

@@ -28,7 +28,7 @@ func SetupLogLevelFlag(flags *pflag.FlagSet) {
 	cobra.OnInitialize(func() {
 		level, err := log.ParseLevel(viper.GetString("loglevel"))
 		if err != nil {
-			log.Error(err.Error())
+			log.Errorf("failed to set log level: %+v", err)
 		} else {
 			log.SetLevel(level)
 		}

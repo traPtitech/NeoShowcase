@@ -91,7 +91,7 @@ func (cd *continuousDeploymentService) registerBuildLoop(startBuilds chan<- stru
 	doSync := func() {
 		start := time.Now()
 		if err := cd.registerBuilds(); err != nil {
-			log.WithError(err).Error("failed to kickoff builds")
+			log.Errorf("failed to kickoff builds: %+v", err)
 			return
 		}
 		select {
@@ -118,7 +118,7 @@ func (cd *continuousDeploymentService) startBuildLoop(syncer <-chan struct{}, cl
 	doSync := func() {
 		start := time.Now()
 		if err := cd.startBuilds(); err != nil {
-			log.WithError(err).Error("failed to start builds")
+			log.Errorf("failed to start builds: %+v", err)
 			return
 		}
 		log.Infof("Started builds in %v", time.Since(start))
@@ -147,7 +147,7 @@ func (cd *continuousDeploymentService) syncDeployLoop(closer <-chan struct{}) {
 	doSync := func() {
 		start := time.Now()
 		if err := cd.syncDeployments(); err != nil {
-			log.WithError(err).Error("failed to sync deployments")
+			log.Errorf("failed to sync deployments: %+v", err)
 			return
 		}
 		log.Infof("Synced deployments in %v", time.Since(start))
@@ -191,7 +191,7 @@ func (cd *continuousDeploymentService) registerBuilds() error {
 			Status:     optional.From(builder.BuildStatusFailed),
 		})
 		if err != nil {
-			log.WithError(err).Error("failed to mark crashed build as errored")
+			log.Errorf("failed to mark crashed build as errored: %+v", err)
 		}
 	}
 
