@@ -9,7 +9,7 @@ message Repository {
   string id = 1;
   string name = 2;
   string url = 3;
-  optional string auth_method = 4;
+  string auth_method = 4;
 }
 
 message CreateRepositoryAuthBasic {

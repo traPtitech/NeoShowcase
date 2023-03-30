@@ -281,7 +281,7 @@ func toPBRepository(repo *domain.Repository) *pb.Repository {
 		Url:  repo.URL,
 	}
 	if repo.Auth.Valid {
-		ret.AuthMethod = lo.ToPtr(repo.Auth.V.Method.String())
+		ret.AuthMethod = repo.Auth.V.Method.String()
 	}
 	return ret
 }

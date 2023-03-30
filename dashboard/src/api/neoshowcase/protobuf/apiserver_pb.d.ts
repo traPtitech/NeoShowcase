@@ -16,8 +16,6 @@ export class Repository extends jspb.Message {
 
   getAuthMethod(): string;
   setAuthMethod(value: string): Repository;
-  hasAuthMethod(): boolean;
-  clearAuthMethod(): Repository;
 
   serializeBinary(): Uint8Array;
   toObject(includeInstance?: boolean): Repository.AsObject;
@@ -32,12 +30,7 @@ export namespace Repository {
     id: string,
     name: string,
     url: string,
-    authMethod?: string,
-  }
-
-  export enum AuthMethodCase { 
-    _AUTH_METHOD_NOT_SET = 0,
-    AUTH_METHOD = 4,
+    authMethod: string,
   }
 }
 
