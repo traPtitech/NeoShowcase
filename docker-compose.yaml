@@ -131,9 +131,6 @@ services:
       DB_USER: "root"
       DB_PASS: "password"
       DB_NAME: "neoshowcase"
-    volumes:
-      - ./local-dev/staticsite/artifacts:/srv/artifacts
-      - ./local-dev/neoshowcase/artifacts:/neoshowcase/artifacts
     depends_on:
       mysql:
         condition: service_healthy
