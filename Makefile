@@ -60,22 +60,29 @@ golangci-lint: ## Lint go sources
 build: ## Build containers
 	@docker compose build
 
-.PHONY: up
-up: ## Setup development environment
+.PHONY: up-network
+up-network: ## Ensure apps network
 	@docker network create neoshowcase_apps || return 0
+
+.PHONY: up
+up: up-network ## Setup development environment
 	@docker compose up -d --build
 
 .PHONY: up-ns
-up-ns: ## Rebuild ns api server
+up-ns: up-network ## Rebuild ns api server
 	@docker compose up -d --build ns
 
 .PHONY: up-ns-builder
-up-ns-builder: ## Rebuild ns builder
+up-ns-builder: up-network ## Rebuild ns builder
 	@docker compose up -d --build ns-builder
 
 .PHONY: up-ns-ssgem
-up-ns-ssgen: ## Rebuild ns static site gen
+up-ns-ssgen: up-network ## Rebuild ns static site gen
 	@docker compose up -d --build ns-ssgen
+
+.PHONY: up-db
+up-db: up-network ## Start development db
+	@docker compose up -d --build mysql
 
 .PHONY: down
 down: ## Tear down development environment
