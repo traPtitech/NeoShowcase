@@ -24,29 +24,37 @@ import (
 // AvailableDomain is an object representing the database table.
 type AvailableDomain struct { // ドメイン
 	Domain string `boil:"domain" json:"domain" toml:"domain" yaml:"domain"`
+	// 利用可能かどうか
+	Available bool `boil:"available" json:"available" toml:"available" yaml:"available"`
 
 	R *availableDomainR `boil:"-" json:"-" toml:"-" yaml:"-"`
 	L availableDomainL  `boil:"-" json:"-" toml:"-" yaml:"-"`
 }
 
 var AvailableDomainColumns = struct {
-	Domain string
+	Domain    string
+	Available string
 }{
-	Domain: "domain",
+	Domain:    "domain",
+	Available: "available",
 }
 
 var AvailableDomainTableColumns = struct {
-	Domain string
+	Domain    string
+	Available string
 }{
-	Domain: "available_domains.domain",
+	Domain:    "available_domains.domain",
+	Available: "available_domains.available",
 }
 
 // Generated where
 
 var AvailableDomainWhere = struct {
-	Domain whereHelperstring
+	Domain    whereHelperstring
+	Available whereHelperbool
 }{
-	Domain: whereHelperstring{field: "`available_domains`.`domain`"},
+	Domain:    whereHelperstring{field: "`available_domains`.`domain`"},
+	Available: whereHelperbool{field: "`available_domains`.`available`"},
 }
 
 // AvailableDomainRels is where relationship names are stored.
@@ -66,8 +74,8 @@ func (*availableDomainR) NewStruct() *availableDomainR {
 type availableDomainL struct{}
 
 var (
-	availableDomainAllColumns            = []string{"domain"}
-	availableDomainColumnsWithoutDefault = []string{"domain"}
+	availableDomainAllColumns            = []string{"domain", "available"}
+	availableDomainColumnsWithoutDefault = []string{"domain", "available"}
 	availableDomainColumnsWithDefault    = []string{}
 	availableDomainPrimaryKeyColumns     = []string{"domain"}
 	availableDomainGeneratedColumns      = []string{}

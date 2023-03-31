@@ -305,11 +305,33 @@ export namespace Application {
   }
 }
 
+export class AvailableDomain extends jspb.Message {
+  getDomain(): string;
+  setDomain(value: string): AvailableDomain;
+
+  getAvailable(): boolean;
+  setAvailable(value: boolean): AvailableDomain;
+
+  serializeBinary(): Uint8Array;
+  toObject(includeInstance?: boolean): AvailableDomain.AsObject;
+  static toObject(includeInstance: boolean, msg: AvailableDomain): AvailableDomain.AsObject;
+  static serializeBinaryToWriter(message: AvailableDomain, writer: jspb.BinaryWriter): void;
+  static deserializeBinary(bytes: Uint8Array): AvailableDomain;
+  static deserializeBinaryFromReader(message: AvailableDomain, reader: jspb.BinaryReader): AvailableDomain;
+}
+
+export namespace AvailableDomain {
+  export type AsObject = {
+    domain: string,
+    available: boolean,
+  }
+}
+
 export class AvailableDomains extends jspb.Message {
-  getDomainsList(): Array<string>;
-  setDomainsList(value: Array<string>): AvailableDomains;
+  getDomainsList(): Array<AvailableDomain>;
+  setDomainsList(value: Array<AvailableDomain>): AvailableDomains;
   clearDomainsList(): AvailableDomains;
-  addDomains(value: string, index?: number): AvailableDomains;
+  addDomains(value?: AvailableDomain, index?: number): AvailableDomain;
 
   serializeBinary(): Uint8Array;
   toObject(includeInstance?: boolean): AvailableDomains.AsObject;
@@ -321,25 +343,7 @@ export class AvailableDomains extends jspb.Message {
 
 export namespace AvailableDomains {
   export type AsObject = {
-    domainsList: Array<string>,
-  }
-}
-
-export class AddAvailableDomainRequest extends jspb.Message {
-  getDomain(): string;
-  setDomain(value: string): AddAvailableDomainRequest;
-
-  serializeBinary(): Uint8Array;
-  toObject(includeInstance?: boolean): AddAvailableDomainRequest.AsObject;
-  static toObject(includeInstance: boolean, msg: AddAvailableDomainRequest): AddAvailableDomainRequest.AsObject;
-  static serializeBinaryToWriter(message: AddAvailableDomainRequest, writer: jspb.BinaryWriter): void;
-  static deserializeBinary(bytes: Uint8Array): AddAvailableDomainRequest;
-  static deserializeBinaryFromReader(message: AddAvailableDomainRequest, reader: jspb.BinaryReader): AddAvailableDomainRequest;
-}
-
-export namespace AddAvailableDomainRequest {
-  export type AsObject = {
-    domain: string,
+    domainsList: Array<AvailableDomain.AsObject>,
   }
 }
 

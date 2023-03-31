@@ -27,7 +27,7 @@ type ApplicationServiceClient interface {
 	CreateRepository(ctx context.Context, in *CreateRepositoryRequest, opts ...grpc.CallOption) (*Repository, error)
 	GetApplications(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (*GetApplicationsResponse, error)
 	GetAvailableDomains(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (*AvailableDomains, error)
-	AddAvailableDomain(ctx context.Context, in *AddAvailableDomainRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
+	AddAvailableDomain(ctx context.Context, in *AvailableDomain, opts ...grpc.CallOption) (*emptypb.Empty, error)
 	CreateApplication(ctx context.Context, in *CreateApplicationRequest, opts ...grpc.CallOption) (*Application, error)
 	GetApplication(ctx context.Context, in *ApplicationIdRequest, opts ...grpc.CallOption) (*Application, error)
 	DeleteApplication(ctx context.Context, in *ApplicationIdRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
@@ -89,7 +89,7 @@ func (c *applicationServiceClient) GetAvailableDomains(ctx context.Context, in *
 	return out, nil
 }
 
-func (c *applicationServiceClient) AddAvailableDomain(ctx context.Context, in *AddAvailableDomainRequest, opts ...grpc.CallOption) (*emptypb.Empty, error) {
+func (c *applicationServiceClient) AddAvailableDomain(ctx context.Context, in *AvailableDomain, opts ...grpc.CallOption) (*emptypb.Empty, error) {
 	out := new(emptypb.Empty)
 	err := c.cc.Invoke(ctx, "/neoshowcase.protobuf.ApplicationService/AddAvailableDomain", in, out, opts...)
 	if err != nil {
@@ -241,7 +241,7 @@ type ApplicationServiceServer interface {
 	CreateRepository(context.Context, *CreateRepositoryRequest) (*Repository, error)
 	GetApplications(context.Context, *emptypb.Empty) (*GetApplicationsResponse, error)
 	GetAvailableDomains(context.Context, *emptypb.Empty) (*AvailableDomains, error)
-	AddAvailableDomain(context.Context, *AddAvailableDomainRequest) (*emptypb.Empty, error)
+	AddAvailableDomain(context.Context, *AvailableDomain) (*emptypb.Empty, error)
 	CreateApplication(context.Context, *CreateApplicationRequest) (*Application, error)
 	GetApplication(context.Context, *ApplicationIdRequest) (*Application, error)
 	DeleteApplication(context.Context, *ApplicationIdRequest) (*emptypb.Empty, error)
@@ -276,7 +276,7 @@ func (UnimplementedApplicationServiceServer) GetApplications(context.Context, *e
 func (UnimplementedApplicationServiceServer) GetAvailableDomains(context.Context, *emptypb.Empty) (*AvailableDomains, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetAvailableDomains not implemented")
 }
-func (UnimplementedApplicationServiceServer) AddAvailableDomain(context.Context, *AddAvailableDomainRequest) (*emptypb.Empty, error) {
+func (UnimplementedApplicationServiceServer) AddAvailableDomain(context.Context, *AvailableDomain) (*emptypb.Empty, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method AddAvailableDomain not implemented")
 }
 func (UnimplementedApplicationServiceServer) CreateApplication(context.Context, *CreateApplicationRequest) (*Application, error) {
@@ -410,7 +410,7 @@ func _ApplicationService_GetAvailableDomains_Handler(srv interface{}, ctx contex
 }
 
 func _ApplicationService_AddAvailableDomain_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(AddAvailableDomainRequest)
+	in := new(AvailableDomain)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -422,7 +422,7 @@ func _ApplicationService_AddAvailableDomain_Handler(srv interface{}, ctx context
 		FullMethod: "/neoshowcase.protobuf.ApplicationService/AddAvailableDomain",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(ApplicationServiceServer).AddAvailableDomain(ctx, req.(*AddAvailableDomainRequest))
+		return srv.(ApplicationServiceServer).AddAvailableDomain(ctx, req.(*AvailableDomain))
 	}
 	return interceptor(ctx, in, info, handler)
 }

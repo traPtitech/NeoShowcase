@@ -133,7 +133,8 @@ func IsValidDomain(domain string) bool {
 }
 
 type AvailableDomain struct {
-	Domain string
+	Domain    string
+	Available bool
 }
 
 type AvailableDomainSlice []*AvailableDomain
@@ -144,7 +145,7 @@ func (a *AvailableDomain) IsValid() bool {
 	return IsValidDomain(domain)
 }
 
-func (a *AvailableDomain) Match(fqdn string) bool {
+func (a *AvailableDomain) match(fqdn string) bool {
 	if fqdn == a.Domain {
 		return true
 	}
@@ -157,9 +158,14 @@ func (a *AvailableDomain) Match(fqdn string) bool {
 	return false
 }
 
-func (s AvailableDomainSlice) Match(fqdn string) bool {
+func (s AvailableDomainSlice) IsAvailable(fqdn string) bool {
 	for _, a := range s {
-		if a.Match(fqdn) {
+		if !a.Available && a.match(fqdn) {
+			return false
+		}
+	}
+	for _, a := range s {
+		if a.Available && a.match(fqdn) {
 			return true
 		}
 	}

@@ -9,6 +9,20 @@ import (
 	"github.com/traPtitech/neoshowcase/pkg/util/optional"
 )
 
+func fromDomainAvailableDomain(ad *domain.AvailableDomain) *models.AvailableDomain {
+	return &models.AvailableDomain{
+		Domain:    ad.Domain,
+		Available: ad.Available,
+	}
+}
+
+func toDomainAvailableDomain(ad *models.AvailableDomain) *domain.AvailableDomain {
+	return &domain.AvailableDomain{
+		Domain:    ad.Domain,
+		Available: ad.Available,
+	}
+}
+
 func fromDomainApplicationConfig(appID string, c *domain.ApplicationConfig) *models.ApplicationConfig {
 	return &models.ApplicationConfig{
 		ApplicationID:  appID,

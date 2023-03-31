@@ -34,9 +34,9 @@ func (r *availableDomainRepository) GetAvailableDomains(ctx context.Context) (do
 	return dDomains, nil
 }
 
-func (r *availableDomainRepository) AddAvailableDomain(ctx context.Context, domain string) error {
-	d := models.AvailableDomain{Domain: domain}
-	err := d.Insert(ctx, r.db, boil.Infer())
+func (r *availableDomainRepository) AddAvailableDomain(ctx context.Context, ad *domain.AvailableDomain) error {
+	mad := fromDomainAvailableDomain(ad)
+	err := mad.Insert(ctx, r.db, boil.Infer())
 	if err != nil {
 		return fmt.Errorf("failed to insert available domain")
 	}

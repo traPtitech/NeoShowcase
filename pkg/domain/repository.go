@@ -42,7 +42,7 @@ type ArtifactRepository interface {
 
 type AvailableDomainRepository interface {
 	GetAvailableDomains(ctx context.Context) (AvailableDomainSlice, error)
-	AddAvailableDomain(ctx context.Context, domain string) error
+	AddAvailableDomain(ctx context.Context, ad *AvailableDomain) error
 	DeleteAvailableDomain(ctx context.Context, domain string) error
 }
 

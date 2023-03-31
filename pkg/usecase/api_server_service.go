@@ -28,7 +28,7 @@ type APIServerService interface {
 	CreateRepository(ctx context.Context, repo *domain.Repository) error
 	GetApplications(ctx context.Context) ([]*domain.Application, error)
 	GetAvailableDomains(ctx context.Context) (domain.AvailableDomainSlice, error)
-	AddAvailableDomain(ctx context.Context, domain string) error
+	AddAvailableDomain(ctx context.Context, ad *domain.AvailableDomain) error
 	CreateApplication(ctx context.Context, app *domain.Application, startOnCreate bool) (*domain.Application, error)
 	GetApplication(ctx context.Context, id string) (*domain.Application, error)
 	DeleteApplication(ctx context.Context, id string) error
@@ -100,12 +100,11 @@ func (s *apiServerService) GetAvailableDomains(ctx context.Context) (domain.Avai
 	return s.adRepo.GetAvailableDomains(ctx)
 }
 
-func (s *apiServerService) AddAvailableDomain(ctx context.Context, d string) error {
-	ad := domain.AvailableDomain{Domain: d}
+func (s *apiServerService) AddAvailableDomain(ctx context.Context, ad *domain.AvailableDomain) error {
 	if !ad.IsValid() {
 		return newError(ErrorTypeBadRequest, "invalid new domain", nil)
 	}
-	return s.adRepo.AddAvailableDomain(ctx, d)
+	return s.adRepo.AddAvailableDomain(ctx, ad)
 }
 
 func (s *apiServerService) CreateApplication(ctx context.Context, app *domain.Application, startOnCreate bool) (*domain.Application, error) {
@@ -117,7 +116,7 @@ func (s *apiServerService) CreateApplication(ctx context.Context, app *domain.Ap
 		if !website.IsValid() {
 			return nil, newError(ErrorTypeBadRequest, "invalid website", nil)
 		}
-		if !domains.Match(website.FQDN) {
+		if !domains.IsAvailable(website.FQDN) {
 			return nil, newError(ErrorTypeBadRequest, "domain not available", nil)
 		}
 	}

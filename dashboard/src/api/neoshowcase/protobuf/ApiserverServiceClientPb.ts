@@ -215,26 +215,26 @@ export class ApplicationServiceClient {
   methodDescriptorAddAvailableDomain = new grpcWeb.MethodDescriptor(
     '/neoshowcase.protobuf.ApplicationService/AddAvailableDomain',
     grpcWeb.MethodType.UNARY,
-    neoshowcase_protobuf_apiserver_pb.AddAvailableDomainRequest,
+    neoshowcase_protobuf_apiserver_pb.AvailableDomain,
     google_protobuf_empty_pb.Empty,
-    (request: neoshowcase_protobuf_apiserver_pb.AddAvailableDomainRequest) => {
+    (request: neoshowcase_protobuf_apiserver_pb.AvailableDomain) => {
       return request.serializeBinary();
     },
     google_protobuf_empty_pb.Empty.deserializeBinary
   );
 
   addAvailableDomain(
-    request: neoshowcase_protobuf_apiserver_pb.AddAvailableDomainRequest,
+    request: neoshowcase_protobuf_apiserver_pb.AvailableDomain,
     metadata: grpcWeb.Metadata | null): Promise<google_protobuf_empty_pb.Empty>;
 
   addAvailableDomain(
-    request: neoshowcase_protobuf_apiserver_pb.AddAvailableDomainRequest,
+    request: neoshowcase_protobuf_apiserver_pb.AvailableDomain,
     metadata: grpcWeb.Metadata | null,
     callback: (err: grpcWeb.RpcError,
                response: google_protobuf_empty_pb.Empty) => void): grpcWeb.ClientReadableStream<google_protobuf_empty_pb.Empty>;
 
   addAvailableDomain(
-    request: neoshowcase_protobuf_apiserver_pb.AddAvailableDomainRequest,
+    request: neoshowcase_protobuf_apiserver_pb.AvailableDomain,
     metadata: grpcWeb.Metadata | null,
     callback?: (err: grpcWeb.RpcError,
                response: google_protobuf_empty_pb.Empty) => void) {

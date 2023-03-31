@@ -10,6 +10,7 @@
 ```sql
 CREATE TABLE `available_domains` (
   `domain` varchar(100) NOT NULL COMMENT 'ドメイン',
+  `available` tinyint(1) NOT NULL COMMENT '利用可能かどうか',
   PRIMARY KEY (`domain`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci COMMENT='利用可能ドメインテーブル'
 ```
@@ -21,6 +22,7 @@ CREATE TABLE `available_domains` (
 | Name | Type | Default | Nullable | Children | Parents | Comment |
 | ---- | ---- | ------- | -------- | -------- | ------- | ------- |
 | domain | varchar(100) |  | false |  |  | ドメイン |
+| available | tinyint(1) |  | false |  |  | 利用可能かどうか |
 
 ## Constraints
 

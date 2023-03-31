@@ -105,12 +105,12 @@ func (s *ApplicationService) GetAvailableDomains(ctx context.Context, _ *emptypb
 		return nil, status.Errorf(codes.Internal, "%v", err)
 	}
 	return &pb.AvailableDomains{
-		Domains: lo.Map(domains, func(d *domain.AvailableDomain, i int) string { return d.Domain }),
+		Domains: lo.Map(domains, func(ad *domain.AvailableDomain, i int) *pb.AvailableDomain { return toPBAvailableDomain(ad) }),
 	}, nil
 }
 
-func (s *ApplicationService) AddAvailableDomain(ctx context.Context, req *pb.AddAvailableDomainRequest) (*emptypb.Empty, error) {
-	err := s.svc.AddAvailableDomain(ctx, req.Domain)
+func (s *ApplicationService) AddAvailableDomain(ctx context.Context, req *pb.AvailableDomain) (*emptypb.Empty, error) {
+	err := s.svc.AddAvailableDomain(ctx, fromPBAvailableDomain(req))
 	if err != nil {
 		return nil, handleUseCaseError(err)
 	}
@@ -252,6 +252,20 @@ func (s *ApplicationService) StopApplication(ctx context.Context, req *pb.Applic
 		return nil, handleUseCaseError(err)
 	}
 	return &emptypb.Empty{}, nil
+}
+
+func fromPBAvailableDomain(ad *pb.AvailableDomain) *domain.AvailableDomain {
+	return &domain.AvailableDomain{
+		Domain:    ad.Domain,
+		Available: ad.Available,
+	}
+}
+
+func toPBAvailableDomain(ad *domain.AvailableDomain) *pb.AvailableDomain {
+	return &pb.AvailableDomain{
+		Domain:    ad.Domain,
+		Available: ad.Available,
+	}
 }
 
 func fromPBRepositoryAuth(req *pb.CreateRepositoryRequest) optional.Of[domain.RepositoryAuth] {

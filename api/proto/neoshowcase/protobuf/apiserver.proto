@@ -91,12 +91,13 @@ message Application {
   repeated string owner_ids = 11;
 }
 
-message AvailableDomains {
-  repeated string domains = 1;
+message AvailableDomain {
+  string domain = 1;
+  bool available = 2;
 }
 
-message AddAvailableDomainRequest {
-  string domain = 1;
+message AvailableDomains {
+  repeated AvailableDomain domains = 1;
 }
 
 message ApplicationEnvironmentVariable {
@@ -211,7 +212,7 @@ service ApplicationService {
   rpc CreateRepository(CreateRepositoryRequest) returns (Repository);
   rpc GetApplications(google.protobuf.Empty) returns (GetApplicationsResponse);
   rpc GetAvailableDomains(google.protobuf.Empty) returns (AvailableDomains);
-  rpc AddAvailableDomain(AddAvailableDomainRequest) returns (google.protobuf.Empty);
+  rpc AddAvailableDomain(AvailableDomain) returns (google.protobuf.Empty);
   rpc CreateApplication(CreateApplicationRequest) returns (Application);
   rpc GetApplication(ApplicationIdRequest) returns (Application);
   rpc DeleteApplication(ApplicationIdRequest) returns (google.protobuf.Empty);
