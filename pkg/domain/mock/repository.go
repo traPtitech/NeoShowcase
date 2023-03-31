@@ -35,20 +35,6 @@ func (m *MockApplicationRepository) EXPECT() *MockApplicationRepositoryMockRecor
 	return m.recorder
 }
 
-// AddWebsite mocks base method.
-func (m *MockApplicationRepository) AddWebsite(ctx context.Context, applicationID string, website *domain.Website) error {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "AddWebsite", ctx, applicationID, website)
-	ret0, _ := ret[0].(error)
-	return ret0
-}
-
-// AddWebsite indicates an expected call of AddWebsite.
-func (mr *MockApplicationRepositoryMockRecorder) AddWebsite(ctx, applicationID, website interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AddWebsite", reflect.TypeOf((*MockApplicationRepository)(nil).AddWebsite), ctx, applicationID, website)
-}
-
 // CreateApplication mocks base method.
 func (m *MockApplicationRepository) CreateApplication(ctx context.Context, app *domain.Application) error {
 	m.ctrl.T.Helper()
@@ -63,18 +49,18 @@ func (mr *MockApplicationRepositoryMockRecorder) CreateApplication(ctx, app inte
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateApplication", reflect.TypeOf((*MockApplicationRepository)(nil).CreateApplication), ctx, app)
 }
 
-// DeleteWebsite mocks base method.
-func (m *MockApplicationRepository) DeleteWebsite(ctx context.Context, applicationID, websiteID string) error {
+// DeleteApplication mocks base method.
+func (m *MockApplicationRepository) DeleteApplication(ctx context.Context, id string) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "DeleteWebsite", ctx, applicationID, websiteID)
+	ret := m.ctrl.Call(m, "DeleteApplication", ctx, id)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
-// DeleteWebsite indicates an expected call of DeleteWebsite.
-func (mr *MockApplicationRepositoryMockRecorder) DeleteWebsite(ctx, applicationID, websiteID interface{}) *gomock.Call {
+// DeleteApplication indicates an expected call of DeleteApplication.
+func (mr *MockApplicationRepositoryMockRecorder) DeleteApplication(ctx, id interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteWebsite", reflect.TypeOf((*MockApplicationRepository)(nil).DeleteWebsite), ctx, applicationID, websiteID)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteApplication", reflect.TypeOf((*MockApplicationRepository)(nil).DeleteApplication), ctx, id)
 }
 
 // GetApplication mocks base method.
@@ -107,37 +93,8 @@ func (mr *MockApplicationRepositoryMockRecorder) GetApplications(ctx, cond inter
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetApplications", reflect.TypeOf((*MockApplicationRepository)(nil).GetApplications), ctx, cond)
 }
 
-// GetWebsites mocks base method.
-func (m *MockApplicationRepository) GetWebsites(ctx context.Context, applicationIDs []string) ([]*domain.Website, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetWebsites", ctx, applicationIDs)
-	ret0, _ := ret[0].([]*domain.Website)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// GetWebsites indicates an expected call of GetWebsites.
-func (mr *MockApplicationRepositoryMockRecorder) GetWebsites(ctx, applicationIDs interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetWebsites", reflect.TypeOf((*MockApplicationRepository)(nil).GetWebsites), ctx, applicationIDs)
-}
-
-// RegisterApplicationOwner mocks base method.
-func (m *MockApplicationRepository) RegisterApplicationOwner(ctx context.Context, applicationID, userID string) error {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "RegisterApplicationOwner", ctx, applicationID, userID)
-	ret0, _ := ret[0].(error)
-	return ret0
-}
-
-// RegisterApplicationOwner indicates an expected call of RegisterApplicationOwner.
-func (mr *MockApplicationRepositoryMockRecorder) RegisterApplicationOwner(ctx, applicationID, userID interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RegisterApplicationOwner", reflect.TypeOf((*MockApplicationRepository)(nil).RegisterApplicationOwner), ctx, applicationID, userID)
-}
-
 // UpdateApplication mocks base method.
-func (m *MockApplicationRepository) UpdateApplication(ctx context.Context, id string, args domain.UpdateApplicationArgs) error {
+func (m *MockApplicationRepository) UpdateApplication(ctx context.Context, id string, args *domain.UpdateApplicationArgs) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "UpdateApplication", ctx, id, args)
 	ret0, _ := ret[0].(error)
@@ -174,17 +131,46 @@ func (m *MockArtifactRepository) EXPECT() *MockArtifactRepositoryMockRecorder {
 }
 
 // CreateArtifact mocks base method.
-func (m *MockArtifactRepository) CreateArtifact(ctx context.Context, size int64, buildID, sid string) error {
+func (m *MockArtifactRepository) CreateArtifact(ctx context.Context, artifact *domain.Artifact) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "CreateArtifact", ctx, size, buildID, sid)
+	ret := m.ctrl.Call(m, "CreateArtifact", ctx, artifact)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // CreateArtifact indicates an expected call of CreateArtifact.
-func (mr *MockArtifactRepositoryMockRecorder) CreateArtifact(ctx, size, buildID, sid interface{}) *gomock.Call {
+func (mr *MockArtifactRepositoryMockRecorder) CreateArtifact(ctx, artifact interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateArtifact", reflect.TypeOf((*MockArtifactRepository)(nil).CreateArtifact), ctx, size, buildID, sid)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateArtifact", reflect.TypeOf((*MockArtifactRepository)(nil).CreateArtifact), ctx, artifact)
+}
+
+// GetArtifacts mocks base method.
+func (m *MockArtifactRepository) GetArtifacts(ctx context.Context, cond domain.GetArtifactCondition) ([]*domain.Artifact, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetArtifacts", ctx, cond)
+	ret0, _ := ret[0].([]*domain.Artifact)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetArtifacts indicates an expected call of GetArtifacts.
+func (mr *MockArtifactRepositoryMockRecorder) GetArtifacts(ctx, cond interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetArtifacts", reflect.TypeOf((*MockArtifactRepository)(nil).GetArtifacts), ctx, cond)
+}
+
+// HardDeleteArtifacts mocks base method.
+func (m *MockArtifactRepository) HardDeleteArtifacts(ctx context.Context, cond domain.GetArtifactCondition) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "HardDeleteArtifacts", ctx, cond)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// HardDeleteArtifacts indicates an expected call of HardDeleteArtifacts.
+func (mr *MockArtifactRepositoryMockRecorder) HardDeleteArtifacts(ctx, cond interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "HardDeleteArtifacts", reflect.TypeOf((*MockArtifactRepository)(nil).HardDeleteArtifacts), ctx, cond)
 }
 
 // MockAvailableDomainRepository is a mock of AvailableDomainRepository interface.
@@ -211,17 +197,17 @@ func (m *MockAvailableDomainRepository) EXPECT() *MockAvailableDomainRepositoryM
 }
 
 // AddAvailableDomain mocks base method.
-func (m *MockAvailableDomainRepository) AddAvailableDomain(ctx context.Context, domain string) error {
+func (m *MockAvailableDomainRepository) AddAvailableDomain(ctx context.Context, ad *domain.AvailableDomain) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "AddAvailableDomain", ctx, domain)
+	ret := m.ctrl.Call(m, "AddAvailableDomain", ctx, ad)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // AddAvailableDomain indicates an expected call of AddAvailableDomain.
-func (mr *MockAvailableDomainRepositoryMockRecorder) AddAvailableDomain(ctx, domain interface{}) *gomock.Call {
+func (mr *MockAvailableDomainRepositoryMockRecorder) AddAvailableDomain(ctx, ad interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AddAvailableDomain", reflect.TypeOf((*MockAvailableDomainRepository)(nil).AddAvailableDomain), ctx, domain)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AddAvailableDomain", reflect.TypeOf((*MockAvailableDomainRepository)(nil).AddAvailableDomain), ctx, ad)
 }
 
 // DeleteAvailableDomain mocks base method.
@@ -290,6 +276,20 @@ func (mr *MockBuildRepositoryMockRecorder) CreateBuild(ctx, build interface{}) *
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateBuild", reflect.TypeOf((*MockBuildRepository)(nil).CreateBuild), ctx, build)
 }
 
+// DeleteBuilds mocks base method.
+func (m *MockBuildRepository) DeleteBuilds(ctx context.Context, cond domain.GetBuildCondition) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "DeleteBuilds", ctx, cond)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// DeleteBuilds indicates an expected call of DeleteBuilds.
+func (mr *MockBuildRepositoryMockRecorder) DeleteBuilds(ctx, cond interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteBuilds", reflect.TypeOf((*MockBuildRepository)(nil).DeleteBuilds), ctx, cond)
+}
+
 // GetBuild mocks base method.
 func (m *MockBuildRepository) GetBuild(ctx context.Context, buildID string) (*domain.Build, error) {
 	m.ctrl.T.Helper()
@@ -306,18 +306,18 @@ func (mr *MockBuildRepositoryMockRecorder) GetBuild(ctx, buildID interface{}) *g
 }
 
 // GetBuilds mocks base method.
-func (m *MockBuildRepository) GetBuilds(ctx context.Context, condition domain.GetBuildCondition) ([]*domain.Build, error) {
+func (m *MockBuildRepository) GetBuilds(ctx context.Context, cond domain.GetBuildCondition) ([]*domain.Build, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetBuilds", ctx, condition)
+	ret := m.ctrl.Call(m, "GetBuilds", ctx, cond)
 	ret0, _ := ret[0].([]*domain.Build)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // GetBuilds indicates an expected call of GetBuilds.
-func (mr *MockBuildRepositoryMockRecorder) GetBuilds(ctx, condition interface{}) *gomock.Call {
+func (mr *MockBuildRepositoryMockRecorder) GetBuilds(ctx, cond interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetBuilds", reflect.TypeOf((*MockBuildRepository)(nil).GetBuilds), ctx, condition)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetBuilds", reflect.TypeOf((*MockBuildRepository)(nil).GetBuilds), ctx, cond)
 }
 
 // MarkCommitAsRetriable mocks base method.
@@ -371,33 +371,47 @@ func (m *MockEnvironmentRepository) EXPECT() *MockEnvironmentRepositoryMockRecor
 	return m.recorder
 }
 
-// GetEnv mocks base method.
-func (m *MockEnvironmentRepository) GetEnv(ctx context.Context, applicationID string) ([]*domain.Environment, error) {
+// DeleteEnv mocks base method.
+func (m *MockEnvironmentRepository) DeleteEnv(ctx context.Context, cond domain.GetEnvCondition) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetEnv", ctx, applicationID)
+	ret := m.ctrl.Call(m, "DeleteEnv", ctx, cond)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// DeleteEnv indicates an expected call of DeleteEnv.
+func (mr *MockEnvironmentRepositoryMockRecorder) DeleteEnv(ctx, cond interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteEnv", reflect.TypeOf((*MockEnvironmentRepository)(nil).DeleteEnv), ctx, cond)
+}
+
+// GetEnv mocks base method.
+func (m *MockEnvironmentRepository) GetEnv(ctx context.Context, cond domain.GetEnvCondition) ([]*domain.Environment, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetEnv", ctx, cond)
 	ret0, _ := ret[0].([]*domain.Environment)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // GetEnv indicates an expected call of GetEnv.
-func (mr *MockEnvironmentRepositoryMockRecorder) GetEnv(ctx, applicationID interface{}) *gomock.Call {
+func (mr *MockEnvironmentRepositoryMockRecorder) GetEnv(ctx, cond interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetEnv", reflect.TypeOf((*MockEnvironmentRepository)(nil).GetEnv), ctx, applicationID)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetEnv", reflect.TypeOf((*MockEnvironmentRepository)(nil).GetEnv), ctx, cond)
 }
 
 // SetEnv mocks base method.
-func (m *MockEnvironmentRepository) SetEnv(ctx context.Context, applicationID, key, value string) error {
+func (m *MockEnvironmentRepository) SetEnv(ctx context.Context, applicationID string, env *domain.Environment) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "SetEnv", ctx, applicationID, key, value)
+	ret := m.ctrl.Call(m, "SetEnv", ctx, applicationID, env)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // SetEnv indicates an expected call of SetEnv.
-func (mr *MockEnvironmentRepositoryMockRecorder) SetEnv(ctx, applicationID, key, value interface{}) *gomock.Call {
+func (mr *MockEnvironmentRepositoryMockRecorder) SetEnv(ctx, applicationID, env interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SetEnv", reflect.TypeOf((*MockEnvironmentRepository)(nil).SetEnv), ctx, applicationID, key, value)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SetEnv", reflect.TypeOf((*MockEnvironmentRepository)(nil).SetEnv), ctx, applicationID, env)
 }
 
 // MockGitRepositoryRepository is a mock of GitRepositoryRepository interface.

@@ -1,8 +1,6 @@
 package usecase
 
 import (
-	"fmt"
-
 	"github.com/friendsofgo/errors"
 )
 
@@ -23,7 +21,7 @@ func newError(typ ErrorType, message string, err error) error {
 	if err == nil {
 		return customError{error: errors.New(message), typ: typ}
 	}
-	return customError{error: fmt.Errorf("%s: %w", message, err), typ: typ}
+	return customError{error: errors.Wrap(err, message), typ: typ}
 }
 
 func GetErrorType(err error) (typ ErrorType, ok bool) {

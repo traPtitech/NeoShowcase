@@ -11,6 +11,8 @@ services:
       NS_APISERVER_DB_HOST: "mysql"
       NS_APISERVER_MARIADB_HOST: "mysql"
       NS_APISERVER_MONGODB_HOST: "mongo"
+      NS_APISERVER_STORAGE_TYPE: "local"
+      NS_APISERVER_STORAGE_LOCAL_DIR: "/data"
       NS_APISERVER_SS_URL: "http://ns-ssgen:80/"
       NS_APISERVER_DOCKER_CONFDIR: "/opt/traefik/conf"
       NS_APISERVER_GRPC_APP_PORT: "5000"
@@ -20,6 +22,7 @@ services:
       NS_APISERVER_IMAGE_REGISTRY: "registry.local.trapti.tech"
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
+      - ./local-dev/data:/data
       - ./local-dev/keys:/keys
       - ./local-dev/repositories:/repositories
       - ./local-dev/traefik:/opt/traefik/conf

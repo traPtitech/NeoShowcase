@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"os"
 	"strings"
 
@@ -12,6 +13,7 @@ import (
 	"github.com/traPtitech/neoshowcase/pkg/infrastructure/admindb"
 	"github.com/traPtitech/neoshowcase/pkg/infrastructure/backend/dockerimpl"
 	"github.com/traPtitech/neoshowcase/pkg/infrastructure/dbmanager"
+	"github.com/traPtitech/neoshowcase/pkg/infrastructure/storage"
 	"github.com/traPtitech/neoshowcase/pkg/usecase"
 )
 
@@ -27,6 +29,7 @@ type Config struct {
 	DB      admindb.Config                        `mapstructure:"db" yaml:"db"`
 	MariaDB dbmanager.MariaDBConfig               `mapstructure:"mariadb" yaml:"mariadb"`
 	MongoDB dbmanager.MongoDBConfig               `mapstructure:"mongodb" yaml:"mongodb"`
+	Storage domain.StorageConfig                  `mapstructure:"storage" yaml:"storage"`
 	Docker  struct {
 		ConfDir string `mapstructure:"confDir" yaml:"confDir"`
 	} `mapstructure:"docker" yaml:"docker"`
@@ -81,4 +84,17 @@ func provideRepositoryPublicKey(c Config) (*ssh.PublicKeys, error) {
 		return nil, errors.Wrap(err, "failed to open private key file")
 	}
 	return ssh.NewPublicKeys("", bytes, "")
+}
+
+func initStorage(c domain.StorageConfig) (domain.Storage, error) {
+	switch strings.ToLower(c.Type) {
+	case "local":
+		return storage.NewLocalStorage(c.Local.Dir)
+	case "s3":
+		return storage.NewS3Storage(c.S3.Bucket, c.S3.AccessKey, c.S3.AccessSecret, c.S3.Region, c.S3.Endpoint)
+	case "swift":
+		return storage.NewSwiftStorage(c.Swift.Container, c.Swift.UserName, c.Swift.APIKey, c.Swift.TenantName, c.Swift.TenantID, c.Swift.AuthURL)
+	default:
+		return nil, fmt.Errorf("unknown storage: %s", c.Type)
+	}
 }

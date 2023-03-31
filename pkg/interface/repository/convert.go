@@ -9,6 +9,26 @@ import (
 	"github.com/traPtitech/neoshowcase/pkg/util/optional"
 )
 
+func fromDomainArtifact(a *domain.Artifact) *models.Artifact {
+	return &models.Artifact{
+		ID:        a.ID,
+		Size:      a.Size,
+		CreatedAt: a.CreatedAt,
+		DeletedAt: optional.IntoTime(a.DeletedAt),
+		BuildID:   a.BuildID,
+	}
+}
+
+func toDomainArtifact(a *models.Artifact) *domain.Artifact {
+	return &domain.Artifact{
+		ID:        a.ID,
+		BuildID:   a.BuildID,
+		Size:      a.Size,
+		CreatedAt: a.CreatedAt,
+		DeletedAt: optional.FromTime(a.DeletedAt),
+	}
+}
+
 func fromDomainAvailableDomain(ad *domain.AvailableDomain) *models.AvailableDomain {
 	return &models.AvailableDomain{
 		Domain:    ad.Domain,
@@ -144,22 +164,25 @@ func toDomainBuild(build *models.Build) *domain.Build {
 		Retriable:     build.Retriable,
 	}
 	if build.R != nil && build.R.Artifact != nil {
-		artifact := build.R.Artifact
-		ret.Artifact = optional.From(domain.Artifact{
-			ID:        artifact.ID,
-			Size:      artifact.Size,
-			CreatedAt: artifact.CreatedAt,
-		})
+		ret.Artifact = optional.From(*toDomainArtifact(build.R.Artifact))
 	}
 	return ret
 }
 
-func toDomainEnvironment(env *models.Environment) *domain.Environment {
-	return &domain.Environment{
-		ID:            env.ID,
-		ApplicationID: env.ApplicationID,
+func fromDomainEnvironment(applicationID string, env *domain.Environment) *models.Environment {
+	return &models.Environment{
+		ApplicationID: applicationID,
 		Key:           env.Key,
 		Value:         env.Value,
+		System:        env.System,
+	}
+}
+
+func toDomainEnvironment(env *models.Environment) *domain.Environment {
+	return &domain.Environment{
+		Key:    env.Key,
+		Value:  env.Value,
+		System: env.System,
 	}
 }
 

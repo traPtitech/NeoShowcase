@@ -9,12 +9,11 @@
 
 ```sql
 CREATE TABLE `environments` (
-  `id` char(22) NOT NULL COMMENT '環境変数ID',
   `application_id` char(22) NOT NULL COMMENT 'アプリケーションID',
   `key` varchar(100) NOT NULL COMMENT '環境変数のキー',
   `value` text NOT NULL COMMENT '環境変数の値',
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `application_id` (`application_id`,`key`),
+  `system` tinyint(1) NOT NULL COMMENT 'システムによって設定された環境変数かどうか',
+  PRIMARY KEY (`application_id`,`key`),
   CONSTRAINT `fk_environments_application_id` FOREIGN KEY (`application_id`) REFERENCES `applications` (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci COMMENT='環境変数テーブル'
 ```
@@ -25,25 +24,23 @@ CREATE TABLE `environments` (
 
 | Name | Type | Default | Nullable | Children | Parents | Comment |
 | ---- | ---- | ------- | -------- | -------- | ------- | ------- |
-| id | char(22) |  | false |  |  | 環境変数ID |
 | application_id | char(22) |  | false |  | [applications](applications.md) | アプリケーションID |
 | key | varchar(100) |  | false |  |  | 環境変数のキー |
 | value | text |  | false |  |  | 環境変数の値 |
+| system | tinyint(1) |  | false |  |  | システムによって設定された環境変数かどうか |
 
 ## Constraints
 
 | Name | Type | Definition |
 | ---- | ---- | ---------- |
-| application_id | UNIQUE | UNIQUE KEY application_id (application_id, key) |
 | fk_environments_application_id | FOREIGN KEY | FOREIGN KEY (application_id) REFERENCES applications (id) |
-| PRIMARY | PRIMARY KEY | PRIMARY KEY (id) |
+| PRIMARY | PRIMARY KEY | PRIMARY KEY (application_id, key) |
 
 ## Indexes
 
 | Name | Definition |
 | ---- | ---------- |
-| PRIMARY | PRIMARY KEY (id) USING BTREE |
-| application_id | UNIQUE KEY application_id (application_id, key) USING BTREE |
+| PRIMARY | PRIMARY KEY (application_id, key) USING BTREE |
 
 ## Relations
 

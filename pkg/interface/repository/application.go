@@ -40,14 +40,12 @@ func (r *applicationRepository) GetApplications(ctx context.Context, cond domain
 	if cond.UserID.Valid {
 		mods = append(mods,
 			qm.InnerJoin(fmt.Sprintf(
-				"%s ON %s.%s = %s.%s",
+				"%s ON %s.application_id = %s",
 				models.TableNames.ApplicationOwners,
 				models.TableNames.ApplicationOwners,
-				"application_id",
-				models.TableNames.Applications,
-				models.ApplicationColumns.ID,
+				models.ApplicationTableColumns.ID,
 			)),
-			qm.Where(fmt.Sprintf("%s.%s = ?", models.TableNames.ApplicationOwners, "user_id"), cond.UserID.V),
+			qm.Where(fmt.Sprintf("%s.user_id = ?", models.TableNames.ApplicationOwners), cond.UserID.V),
 		)
 	}
 	if cond.BuildType.Valid {
@@ -195,6 +193,30 @@ func (r *applicationRepository) UpdateApplication(ctx context.Context, id string
 	}
 
 	return err
+}
+
+func (r *applicationRepository) DeleteApplication(ctx context.Context, id string) error {
+	app, err := r.getApplication(ctx, id, false, r.db)
+	if err != nil {
+		return err
+	}
+	_, err = app.R.Users.DeleteAll(ctx, r.db)
+	if err != nil {
+		return errors.Wrap(err, "failed to delete application owners")
+	}
+	_, err = app.R.Websites.DeleteAll(ctx, r.db)
+	if err != nil {
+		return errors.Wrap(err, "failed to delete websites")
+	}
+	_, err = app.R.ApplicationConfig.Delete(ctx, r.db)
+	if err != nil {
+		return errors.Wrap(err, "failed to delete application config")
+	}
+	_, err = app.Delete(ctx, r.db)
+	if err != nil {
+		return errors.Wrap(err, "failed to delete application")
+	}
+	return nil
 }
 
 func (r *applicationRepository) validateAndInsertWebsites(ctx context.Context, ex boil.ContextExecutor, app *models.Application, websites []*domain.Website) error {

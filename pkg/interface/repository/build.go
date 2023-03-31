@@ -31,9 +31,8 @@ func (r *buildRepository) getBuild(ctx context.Context, id string) (*models.Buil
 	).One(ctx, r.db)
 }
 
-func (r *buildRepository) GetBuilds(ctx context.Context, cond domain.GetBuildCondition) ([]*domain.Build, error) {
-	mods := []qm.QueryMod{qm.Load(models.BuildRels.Artifact)}
-
+func (r *buildRepository) buildMods(cond domain.GetBuildCondition) []qm.QueryMod {
+	var mods []qm.QueryMod
 	if cond.ApplicationID.Valid {
 		mods = append(mods, models.BuildWhere.ApplicationID.EQ(cond.ApplicationID.V))
 	}
@@ -49,7 +48,12 @@ func (r *buildRepository) GetBuilds(ctx context.Context, cond domain.GetBuildCon
 	if cond.Retriable.Valid {
 		mods = append(mods, models.BuildWhere.Retriable.EQ(cond.Retriable.V))
 	}
+	return mods
+}
 
+func (r *buildRepository) GetBuilds(ctx context.Context, cond domain.GetBuildCondition) ([]*domain.Build, error) {
+	mods := []qm.QueryMod{qm.Load(models.BuildRels.Artifact)}
+	mods = append(mods, r.buildMods(cond)...)
 	builds, err := models.Builds(mods...).All(ctx, r.db)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to get builds")
@@ -138,6 +142,14 @@ func (r *buildRepository) MarkCommitAsRetriable(ctx context.Context, application
 	})
 	if err != nil {
 		return errors.Wrap(err, "failed to mark commit as retriable")
+	}
+	return nil
+}
+
+func (r *buildRepository) DeleteBuilds(ctx context.Context, cond domain.GetBuildCondition) error {
+	_, err := models.Builds(r.buildMods(cond)...).DeleteAll(ctx, r.db)
+	if err != nil {
+		return errors.Wrap(err, "failed to delete builds")
 	}
 	return nil
 }

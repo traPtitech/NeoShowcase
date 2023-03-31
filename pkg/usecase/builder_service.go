@@ -331,7 +331,7 @@ func (s *builderService) finalize(ctx context.Context, st *state, status builder
 	// ログファイルの保存
 	if st.logTempFile != nil {
 		_ = st.logTempFile.Close()
-		if err := domain.SaveLogFile(s.storage, st.logTempFile.Name(), filepath.Join("buildlogs", st.task.BuildID), st.task.BuildID); err != nil {
+		if err := domain.SaveBuildLog(s.storage, st.logTempFile.Name(), st.task.BuildID); err != nil {
 			log.Errorf("failed to save build log: %+v", err)
 		}
 	}
@@ -340,22 +340,24 @@ func (s *builderService) finalize(ctx context.Context, st *state, status builder
 	if st.artifactTempFile != nil {
 		_ = st.artifactTempFile.Close()
 		if status == builder.BuildStatusSucceeded {
-			sid := domain.NewID()
-			filename := st.artifactTempFile.Name()
-			stat, err := os.Stat(filename)
-			if err != nil {
-				log.Errorf("failed to open artifact: %+v", err)
-			} else {
-				err = s.artifactRepo.CreateArtifact(ctx, stat.Size(), st.task.BuildID, sid)
+			err := func() error {
+				filename := st.artifactTempFile.Name()
+				stat, err := os.Stat(filename)
 				if err != nil {
-					log.Errorf("failed to create artifact: %+v", err)
+					return errors.Wrap(err, "failed to open artifact")
 				}
-			}
-
-			err = domain.SaveArtifact(s.storage, filename, filepath.Join("artifacts", fmt.Sprintf("%s.tar", sid)))
-			if err != nil {
-				log.Errorf("failed to save directory to tar: %+v", err)
-			}
+				artifact := domain.NewArtifact(st.task.BuildID, stat.Size())
+				err = s.artifactRepo.CreateArtifact(ctx, artifact)
+				if err != nil {
+					return errors.Wrap(err, "failed to create artifact")
+				}
+				err = domain.SaveArtifact(s.storage, filename, artifact.ID)
+				if err != nil {
+					return errors.Wrap(err, "failed to save artifact")
+				}
+				return nil
+			}()
+			log.Errorf("failed to process artifact: %+v", err)
 		} else {
 			_ = os.Remove(st.artifactTempFile.Name())
 		}
@@ -374,7 +376,7 @@ func (s *builderService) finalize(ctx context.Context, st *state, status builder
 		FinishedAt: optional.From(now),
 	}
 	if err := s.buildRepo.UpdateBuild(ctx, st.task.BuildID, updateArgs); err != nil {
-		log.Errorf("failed to update build_log entry: %+v", err)
+		log.Errorf("failed to update build: %+v", err)
 	}
 }
 

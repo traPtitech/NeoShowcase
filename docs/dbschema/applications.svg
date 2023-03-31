@@ -207,24 +207,24 @@
 <text text-anchor="start" x="1157.3821" y="-960.3" font-family="Arial" font-size="14.00" fill="#000000"> </text>
 <text text-anchor="start" x="1161.2727" y="-960.3" font-family="Arial" font-size="14.00" fill="#666666">[BASE TABLE]</text>
 <polygon fill="none" stroke="#000000" points="1042.5,-917.5 1042.5,-947.5 1261.5,-947.5 1261.5,-917.5 1042.5,-917.5"/>
-<text text-anchor="start" x="1049.5" y="-928.9" font-family="Arial" font-size="14.00" fill="#000000">id </text>
-<text text-anchor="start" x="1064.2798" y="-928.9" font-family="Arial" font-size="14.00" fill="#666666">[char(22)]</text>
+<text text-anchor="start" x="1049.5" y="-928.9" font-family="Arial" font-size="14.00" fill="#000000">application_id </text>
+<text text-anchor="start" x="1138.9684" y="-928.9" font-family="Arial" font-size="14.00" fill="#666666">[char(22)]</text>
 <polygon fill="none" stroke="#000000" points="1042.5,-887.5 1042.5,-917.5 1261.5,-917.5 1261.5,-887.5 1042.5,-887.5"/>
-<text text-anchor="start" x="1049.5" y="-898.9" font-family="Arial" font-size="14.00" fill="#000000">application_id </text>
-<text text-anchor="start" x="1138.9684" y="-898.9" font-family="Arial" font-size="14.00" fill="#666666">[char(22)]</text>
+<text text-anchor="start" x="1049.5" y="-898.9" font-family="Arial" font-size="14.00" fill="#000000">key </text>
+<text text-anchor="start" x="1075.1732" y="-898.9" font-family="Arial" font-size="14.00" fill="#666666">[varchar(100)]</text>
 <polygon fill="none" stroke="#000000" points="1042.5,-857.5 1042.5,-887.5 1261.5,-887.5 1261.5,-857.5 1042.5,-857.5"/>
-<text text-anchor="start" x="1049.5" y="-868.9" font-family="Arial" font-size="14.00" fill="#000000">key </text>
-<text text-anchor="start" x="1075.1732" y="-868.9" font-family="Arial" font-size="14.00" fill="#666666">[varchar(100)]</text>
+<text text-anchor="start" x="1049.5" y="-868.9" font-family="Arial" font-size="14.00" fill="#000000">value </text>
+<text text-anchor="start" x="1086.845" y="-868.9" font-family="Arial" font-size="14.00" fill="#666666">[text]</text>
 <polygon fill="none" stroke="#000000" points="1042.5,-827.5 1042.5,-857.5 1261.5,-857.5 1261.5,-827.5 1042.5,-827.5"/>
-<text text-anchor="start" x="1049.5" y="-838.9" font-family="Arial" font-size="14.00" fill="#000000">value </text>
-<text text-anchor="start" x="1086.845" y="-838.9" font-family="Arial" font-size="14.00" fill="#666666">[text]</text>
+<text text-anchor="start" x="1049.5" y="-838.9" font-family="Arial" font-size="14.00" fill="#000000">system </text>
+<text text-anchor="start" x="1097.7244" y="-838.9" font-family="Arial" font-size="14.00" fill="#666666">[tinyint(1)]</text>
 </g>
 <!-- environments&#45;&gt;applications -->
 <g id="edge4" class="edge">
 <title>environments:application_id&#45;&gt;applications:id</title>
-<path fill="none" stroke="#000000" d="M1032.6754,-900.2511C975.3163,-871.5366 1038.954,-577.5 968.5,-577.5"/>
-<polygon fill="#000000" stroke="#000000" points="1032.7521,-900.2686 1041.4959,-906.8865 1037.6261,-901.3843 1042.5,-902.5 1042.5,-902.5 1042.5,-902.5 1037.6261,-901.3843 1043.5041,-898.1135 1032.7521,-900.2686 1032.7521,-900.2686"/>
-<text text-anchor="start" x="827.102" y="-886.5" font-family="Arial" font-size="10.00" fill="#000000">FOREIGN KEY (application_id) REFERENCES applications (id)</text>
+<path fill="none" stroke="#000000" d="M1032.6251,-930.4152C969.4085,-901.3218 1045.4646,-577.5 968.5,-577.5"/>
+<polygon fill="#000000" stroke="#000000" points="1032.7157,-930.4343 1041.5704,-936.9029 1037.6078,-931.4671 1042.5,-932.5 1042.5,-932.5 1042.5,-932.5 1037.6078,-931.4671 1043.4296,-928.0971 1032.7157,-930.4343 1032.7157,-930.4343"/>
+<text text-anchor="start" x="827.102" y="-916.5" font-family="Arial" font-size="10.00" fill="#000000">FOREIGN KEY (application_id) REFERENCES applications (id)</text>
 </g>
 <!-- websites -->
 <g id="node6" class="node">

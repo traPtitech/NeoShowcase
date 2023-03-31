@@ -159,6 +159,6 @@ func init() {
 
 func main() {
 	if err := rootCommand.Execute(); err != nil {
-		log.Fatal(err)
+		log.Fatalf("failed to exec: %+v", err)
 	}
 }

@@ -113,32 +113,14 @@ message AvailableDomains {
   repeated AvailableDomain domains = 1;
 }
 
-message ApplicationEnvironmentVariable {
+message ApplicationEnvVar {
   string key = 1;
   string value = 2;
+  bool system = 3;
 }
 
-message ApplicationEnvironmentVariables {
-  repeated ApplicationEnvironmentVariable variables = 1;
-}
-
-message MariaDbKey {
-  string host = 1;
-  string database = 2;
-  string user = 3;
-  string password = 4;
-}
-
-message MongoKey {
-  string host = 1;
-  string database = 2;
-  string user = 3;
-  string password = 4;
-}
-
-message ApplicationKeys {
-  MariaDbKey mariaDbKey = 1;
-  MongoKey mongoKey = 2;
+message ApplicationEnvVars {
+  repeated ApplicationEnvVar variables = 1;
 }
 
 message ApplicationBuildArtifact {
@@ -215,7 +197,7 @@ message GetApplicationBuildLogRequest {
   string build_id = 1;
 }
 
-message SetApplicationEnvironmentVariableRequest {
+message SetApplicationEnvVarRequest {
   string application_id = 1;
   string key = 2;
   string value = 3;
@@ -244,10 +226,9 @@ service ApplicationService {
   rpc GetApplicationBuild(GetApplicationBuildRequest) returns (Build);
   rpc GetApplicationBuildLog(GetApplicationBuildLogRequest) returns (BuildLog);
   rpc GetApplicationBuildArtifact(ApplicationIdRequest) returns (ApplicationBuildArtifact);
-  rpc GetApplicationEnvironmentVariables(ApplicationIdRequest) returns (ApplicationEnvironmentVariables);
-  rpc SetApplicationEnvironmentVariable(SetApplicationEnvironmentVariableRequest) returns (google.protobuf.Empty);
+  rpc GetApplicationEnvVars(ApplicationIdRequest) returns (ApplicationEnvVars);
+  rpc SetApplicationEnvVar(SetApplicationEnvVarRequest) returns (google.protobuf.Empty);
   rpc GetApplicationOutput(ApplicationIdRequest) returns (ApplicationOutput);
-  rpc GetApplicationKeys(ApplicationIdRequest) returns (ApplicationKeys);
   rpc CancelBuild(CancelBuildRequest) returns (google.protobuf.Empty);
   rpc RetryCommitBuild(RetryCommitBuildRequest) returns (google.protobuf.Empty);
   rpc StartApplication(ApplicationIdRequest) returns (google.protobuf.Empty);

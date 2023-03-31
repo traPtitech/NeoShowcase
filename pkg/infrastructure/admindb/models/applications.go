@@ -1795,7 +1795,7 @@ func (o *Application) AddEnvironments(ctx context.Context, exec boil.ContextExec
 				strmangle.SetParamNames("`", "`", 0, []string{"application_id"}),
 				strmangle.WhereClause("`", "`", 0, environmentPrimaryKeyColumns),
 			)
-			values := []interface{}{o.ID, rel.ID}
+			values := []interface{}{o.ID, rel.ApplicationID, rel.Key}
 
 			if boil.IsDebug(ctx) {
 				writer := boil.DebugWriterFrom(ctx)
