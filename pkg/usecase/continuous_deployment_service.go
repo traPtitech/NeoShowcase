@@ -7,7 +7,6 @@ import (
 	"time"
 
 	"github.com/friendsofgo/errors"
-	"github.com/heroku/docker-registry-client/registry"
 	"github.com/samber/lo"
 	log "github.com/sirupsen/logrus"
 
@@ -29,7 +28,6 @@ type continuousDeploymentService struct {
 	envRepo   domain.EnvironmentRepository
 	builder   AppBuildService
 	deployer  AppDeployService
-	image     builder.ImageConfig
 
 	run       func()
 	runOnce   sync.Once
@@ -44,7 +42,6 @@ func NewContinuousDeploymentService(
 	envRepo domain.EnvironmentRepository,
 	builder AppBuildService,
 	deployer AppDeployService,
-	image builder.ImageConfig,
 ) (ContinuousDeploymentService, error) {
 	cd := &continuousDeploymentService{
 		bus:       bus,
@@ -53,12 +50,6 @@ func NewContinuousDeploymentService(
 		envRepo:   envRepo,
 		builder:   builder,
 		deployer:  deployer,
-		image:     image,
-	}
-
-	r, err := registry.New(image.Registry.Scheme+"://"+image.Registry.Addr, image.Registry.Username, image.Registry.Password)
-	if err != nil {
-		return nil, err
 	}
 
 	ctx, cancel := context.WithCancel(context.Background())
@@ -67,7 +58,6 @@ func NewContinuousDeploymentService(
 		go cd.registerBuildLoop(ctx, startBuilds)
 		go cd.startBuildLoop(ctx, startBuilds)
 		go cd.syncDeployLoop(ctx)
-		go cd.pruneImagesLoop(ctx, r)
 	}
 	cd.close = func() {
 		cancel()
@@ -168,30 +158,6 @@ func (cd *continuousDeploymentService) syncDeployLoop(ctx context.Context) {
 	}
 }
 
-func (cd *continuousDeploymentService) pruneImagesLoop(ctx context.Context, r *registry.Registry) {
-	ticker := time.NewTicker(1 * time.Hour)
-	defer ticker.Stop()
-
-	doPrune := func() {
-		start := time.Now()
-		err := cd.pruneImages(ctx, r)
-		if err != nil {
-			log.Errorf("failed to prune images: %+v", err)
-			return
-		}
-		log.Infof("Pruned images in %v", time.Since(start))
-	}
-
-	for {
-		select {
-		case <-ticker.C:
-			doPrune()
-		case <-ctx.Done():
-			return
-		}
-	}
-}
-
 func (cd *continuousDeploymentService) registerBuilds(ctx context.Context) error {
 	applications, err := cd.appRepo.GetApplications(ctx, domain.GetApplicationCondition{})
 	if err != nil {
@@ -274,40 +240,4 @@ func (cd *continuousDeploymentService) syncDeployments(ctx context.Context) erro
 		_ = cd.deployer.Synchronize(app.ID, false)
 	}
 	return cd.deployer.SynchronizeSS(ctx)
-}
-
-func (cd *continuousDeploymentService) pruneImages(ctx context.Context, r *registry.Registry) error {
-	applications, err := cd.appRepo.GetApplications(ctx, domain.GetApplicationCondition{BuildType: optional.From(builder.BuildTypeRuntime)})
-	if err != nil {
-		return err
-	}
-	commits := make(map[string]struct{}, 2*len(applications))
-	for _, app := range applications {
-		commits[app.WantCommit] = struct{}{}
-		commits[app.CurrentCommit] = struct{}{}
-	}
-
-	for _, app := range applications {
-		imageName := cd.image.ImageName(app.ID)
-		tags, err := r.Tags(imageName)
-		if err != nil {
-			return errors.Wrap(err, "failed to get tags for image")
-		}
-		danglingTags := lo.Reject(tags, func(tag string, i int) bool { _, ok := commits[tag]; return ok })
-		for _, tag := range danglingTags {
-			digest, err := r.ManifestDigest(imageName, tag)
-			if err != nil {
-				return errors.Wrap(err, "failed to get manifest digest")
-			}
-			// NOTE: needs manual execution of "registry garbage-collect <config> --delete-untagged" in docker registry side
-			// to actually delete the layers
-			// https://docs.docker.com/registry/garbage-collection/
-			err = r.DeleteManifest(imageName, digest)
-			if err != nil {
-				return errors.Wrap(err, "failed to delete manifest")
-			}
-		}
-	}
-
-	return nil
 }

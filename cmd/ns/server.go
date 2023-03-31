@@ -26,6 +26,7 @@ type Server struct {
 	bus            domain.Bus
 	cdService      usecase.ContinuousDeploymentService
 	fetcherService usecase.RepositoryFetcherService
+	cleanerService usecase.CleanerService
 }
 
 func (s *Server) Start(ctx context.Context) error {
@@ -41,6 +42,9 @@ func (s *Server) Start(ctx context.Context) error {
 	eg.Go(func() error {
 		s.fetcherService.Run()
 		return nil
+	})
+	eg.Go(func() error {
+		return s.cleanerService.Start(ctx)
 	})
 	eg.Go(func() error {
 		pb.RegisterApplicationServiceServer(s.appServer, s.appService)
@@ -79,6 +83,9 @@ func (s *Server) Shutdown(ctx context.Context) error {
 	})
 	eg.Go(func() error {
 		return s.fetcherService.Stop(ctx)
+	})
+	eg.Go(func() error {
+		return s.cleanerService.Shutdown(ctx)
 	})
 	eg.Go(func() error {
 		s.appServer.Stop()

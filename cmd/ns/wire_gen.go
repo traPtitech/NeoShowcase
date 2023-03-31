@@ -75,7 +75,7 @@ func NewWithDocker(c2 Config) (*Server, error) {
 	applicationServiceServer := grpc.NewApplicationServiceServer(apiServerService)
 	componentServiceGRPCServer := grpc.NewComponentServiceGRPCServer()
 	appBuildService := usecase.NewAppBuildService(buildRepository, componentService, imageConfig)
-	continuousDeploymentService, err := usecase.NewContinuousDeploymentService(bus, applicationRepository, buildRepository, environmentRepository, appBuildService, appDeployService, imageConfig)
+	continuousDeploymentService, err := usecase.NewContinuousDeploymentService(bus, applicationRepository, buildRepository, environmentRepository, appBuildService, appDeployService)
 	if err != nil {
 		return nil, err
 	}
@@ -85,6 +85,10 @@ func NewWithDocker(c2 Config) (*Server, error) {
 		return nil, err
 	}
 	repositoryFetcherService, err := usecase.NewRepositoryFetcherService(bus, applicationRepository, gitRepositoryRepository, repositoryFetcherCacheDir, publicKeys)
+	if err != nil {
+		return nil, err
+	}
+	cleanerService, err := usecase.NewCleanerService(applicationRepository, imageConfig)
 	if err != nil {
 		return nil, err
 	}
@@ -98,6 +102,7 @@ func NewWithDocker(c2 Config) (*Server, error) {
 		bus:              bus,
 		cdService:        continuousDeploymentService,
 		fetcherService:   repositoryFetcherService,
+		cleanerService:   cleanerService,
 	}
 	return server, nil
 }
@@ -153,7 +158,7 @@ func NewWithK8S(c2 Config) (*Server, error) {
 	applicationServiceServer := grpc.NewApplicationServiceServer(apiServerService)
 	componentServiceGRPCServer := grpc.NewComponentServiceGRPCServer()
 	appBuildService := usecase.NewAppBuildService(buildRepository, componentService, imageConfig)
-	continuousDeploymentService, err := usecase.NewContinuousDeploymentService(bus, applicationRepository, buildRepository, environmentRepository, appBuildService, appDeployService, imageConfig)
+	continuousDeploymentService, err := usecase.NewContinuousDeploymentService(bus, applicationRepository, buildRepository, environmentRepository, appBuildService, appDeployService)
 	if err != nil {
 		return nil, err
 	}
@@ -163,6 +168,10 @@ func NewWithK8S(c2 Config) (*Server, error) {
 		return nil, err
 	}
 	repositoryFetcherService, err := usecase.NewRepositoryFetcherService(bus, applicationRepository, gitRepositoryRepository, repositoryFetcherCacheDir, publicKeys)
+	if err != nil {
+		return nil, err
+	}
+	cleanerService, err := usecase.NewCleanerService(applicationRepository, imageConfig)
 	if err != nil {
 		return nil, err
 	}
@@ -176,13 +185,14 @@ func NewWithK8S(c2 Config) (*Server, error) {
 		bus:              bus,
 		cdService:        continuousDeploymentService,
 		fetcherService:   repositoryFetcherService,
+		cleanerService:   cleanerService,
 	}
 	return server, nil
 }
 
 // wire.go:
 
-var commonSet = wire.NewSet(web.NewServer, hub.New, eventbus.NewLocal, admindb.New, dbmanager.NewMariaDBManager, dbmanager.NewMongoDBManager, repository.NewApplicationRepository, repository.NewAvailableDomainRepository, repository.NewGitRepositoryRepository, repository.NewEnvironmentRepository, repository.NewBuildRepository, repository.NewArtifactRepository, grpc.NewApplicationServiceGRPCServer, grpc.NewApplicationServiceServer, grpc.NewComponentServiceGRPCServer, grpc.NewComponentServiceServer, usecase.NewAPIServerService, usecase.NewAppBuildService, usecase.NewAppDeployService, usecase.NewContinuousDeploymentService, usecase.NewRepositoryFetcherService, provideIngressConfDirPath,
+var commonSet = wire.NewSet(web.NewServer, hub.New, eventbus.NewLocal, admindb.New, dbmanager.NewMariaDBManager, dbmanager.NewMongoDBManager, repository.NewApplicationRepository, repository.NewAvailableDomainRepository, repository.NewGitRepositoryRepository, repository.NewEnvironmentRepository, repository.NewBuildRepository, repository.NewArtifactRepository, grpc.NewApplicationServiceGRPCServer, grpc.NewApplicationServiceServer, grpc.NewComponentServiceGRPCServer, grpc.NewComponentServiceServer, usecase.NewAPIServerService, usecase.NewAppBuildService, usecase.NewAppDeployService, usecase.NewContinuousDeploymentService, usecase.NewRepositoryFetcherService, usecase.NewCleanerService, provideIngressConfDirPath,
 	provideRepositoryFetcherCacheDir,
 	provideRepositoryPublicKey,
 	initStorage, wire.FieldsOf(new(Config), "SS", "DB", "MariaDB", "MongoDB", "Storage", "Image"), wire.Struct(new(Server), "*"),

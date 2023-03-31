@@ -46,6 +46,7 @@ var commonSet = wire.NewSet(
 	usecase.NewAppDeployService,
 	usecase.NewContinuousDeploymentService,
 	usecase.NewRepositoryFetcherService,
+	usecase.NewCleanerService,
 	provideIngressConfDirPath,
 	provideRepositoryFetcherCacheDir,
 	provideRepositoryPublicKey,
