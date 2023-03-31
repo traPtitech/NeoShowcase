@@ -22,14 +22,12 @@ type ContinuousDeploymentService interface {
 }
 
 type continuousDeploymentService struct {
-	bus             domain.Bus
-	appRepo         domain.ApplicationRepository
-	buildRepo       domain.BuildRepository
-	envRepo         domain.EnvironmentRepository
-	builder         AppBuildService
-	deployer        AppDeployService
-	imageRegistry   string
-	imageNamePrefix string
+	bus       domain.Bus
+	appRepo   domain.ApplicationRepository
+	buildRepo domain.BuildRepository
+	envRepo   domain.EnvironmentRepository
+	builder   AppBuildService
+	deployer  AppDeployService
 
 	run       func()
 	runOnce   sync.Once
@@ -44,35 +42,28 @@ func NewContinuousDeploymentService(
 	envRepo domain.EnvironmentRepository,
 	builder AppBuildService,
 	deployer AppDeployService,
-	registry builder.DockerImageRegistryString,
-	prefix builder.DockerImageNamePrefixString,
-) ContinuousDeploymentService {
+) (ContinuousDeploymentService, error) {
 	cd := &continuousDeploymentService{
-		bus:             bus,
-		appRepo:         appRepo,
-		buildRepo:       buildRepo,
-		envRepo:         envRepo,
-		builder:         builder,
-		deployer:        deployer,
-		imageRegistry:   string(registry),
-		imageNamePrefix: string(prefix),
+		bus:       bus,
+		appRepo:   appRepo,
+		buildRepo: buildRepo,
+		envRepo:   envRepo,
+		builder:   builder,
+		deployer:  deployer,
 	}
 
-	registerBuildCloser := make(chan struct{})
+	ctx, cancel := context.WithCancel(context.Background())
 	startBuilds := make(chan struct{})
-	startBuildCloser := make(chan struct{})
-	syncDeployCloser := make(chan struct{})
 	cd.run = func() {
-		go cd.registerBuildLoop(startBuilds, registerBuildCloser)
-		go cd.startBuildLoop(startBuilds, startBuildCloser)
-		go cd.syncDeployLoop(syncDeployCloser)
+		go cd.registerBuildLoop(ctx, startBuilds)
+		go cd.startBuildLoop(ctx, startBuilds)
+		go cd.syncDeployLoop(ctx)
 	}
 	cd.close = func() {
-		close(registerBuildCloser)
-		close(syncDeployCloser)
+		cancel()
 	}
 
-	return cd
+	return cd, nil
 }
 
 func (cd *continuousDeploymentService) Run() {
@@ -84,13 +75,13 @@ func (cd *continuousDeploymentService) Stop(_ context.Context) error {
 	return nil
 }
 
-func (cd *continuousDeploymentService) registerBuildLoop(startBuilds chan<- struct{}, closer <-chan struct{}) {
+func (cd *continuousDeploymentService) registerBuildLoop(ctx context.Context, startBuilds chan<- struct{}) {
 	sub := cd.bus.Subscribe(event.FetcherFetchComplete, event.CDServiceRegisterBuildRequest)
 	defer sub.Unsubscribe()
 
 	doSync := func() {
 		start := time.Now()
-		if err := cd.registerBuilds(); err != nil {
+		if err := cd.registerBuilds(ctx); err != nil {
 			log.Errorf("failed to kickoff builds: %+v", err)
 			return
 		}
@@ -105,19 +96,19 @@ func (cd *continuousDeploymentService) registerBuildLoop(startBuilds chan<- stru
 		select {
 		case <-sub.Chan():
 			doSync()
-		case <-closer:
+		case <-ctx.Done():
 			return
 		}
 	}
 }
 
-func (cd *continuousDeploymentService) startBuildLoop(syncer <-chan struct{}, closer <-chan struct{}) {
+func (cd *continuousDeploymentService) startBuildLoop(ctx context.Context, syncer <-chan struct{}) {
 	sub := cd.bus.Subscribe(event.BuilderBuildSettled)
 	defer sub.Unsubscribe()
 
 	doSync := func() {
 		start := time.Now()
-		if err := cd.startBuilds(); err != nil {
+		if err := cd.startBuilds(ctx); err != nil {
 			log.Errorf("failed to start builds: %+v", err)
 			return
 		}
@@ -132,13 +123,13 @@ func (cd *continuousDeploymentService) startBuildLoop(syncer <-chan struct{}, cl
 			doSync()
 		case <-sub.Chan():
 			doSync()
-		case <-closer:
+		case <-ctx.Done():
 			return
 		}
 	}
 }
 
-func (cd *continuousDeploymentService) syncDeployLoop(closer <-chan struct{}) {
+func (cd *continuousDeploymentService) syncDeployLoop(ctx context.Context) {
 	sub := cd.bus.Subscribe(event.BuilderBuildSettled)
 	defer sub.Unsubscribe()
 	ticker := time.NewTicker(3 * time.Minute)
@@ -146,7 +137,7 @@ func (cd *continuousDeploymentService) syncDeployLoop(closer <-chan struct{}) {
 
 	doSync := func() {
 		start := time.Now()
-		if err := cd.syncDeployments(); err != nil {
+		if err := cd.syncDeployments(ctx); err != nil {
 			log.Errorf("failed to sync deployments: %+v", err)
 			return
 		}
@@ -161,14 +152,13 @@ func (cd *continuousDeploymentService) syncDeployLoop(closer <-chan struct{}) {
 			doSync()
 		case <-sub.Chan():
 			doSync()
-		case <-closer:
+		case <-ctx.Done():
 			return
 		}
 	}
 }
 
-func (cd *continuousDeploymentService) registerBuilds() error {
-	ctx := context.Background()
+func (cd *continuousDeploymentService) registerBuilds(ctx context.Context) error {
 	applications, err := cd.appRepo.GetApplications(ctx, domain.GetApplicationCondition{})
 	if err != nil {
 		return err
@@ -215,8 +205,7 @@ func (cd *continuousDeploymentService) registerBuilds() error {
 	return nil
 }
 
-func (cd *continuousDeploymentService) startBuilds() error {
-	ctx := context.Background()
+func (cd *continuousDeploymentService) startBuilds(ctx context.Context) error {
 	builds, err := cd.buildRepo.GetBuilds(ctx, domain.GetBuildCondition{Status: optional.From(builder.BuildStatusQueued)})
 	if err != nil {
 		return err
@@ -237,9 +226,7 @@ func (cd *continuousDeploymentService) startBuilds() error {
 	return nil
 }
 
-func (cd *continuousDeploymentService) syncDeployments() error {
-	ctx := context.Background()
-
+func (cd *continuousDeploymentService) syncDeployments(ctx context.Context) error {
 	// Get out-of-sync and non-idle applications
 	applications, err := cd.appRepo.GetApplications(ctx, domain.GetApplicationCondition{InSync: optional.From(false)})
 	if err != nil {

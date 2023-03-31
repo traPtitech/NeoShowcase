@@ -316,6 +316,38 @@ func (w *Website) ConflictsWith(existing []*Website) bool {
 	return false
 }
 
+func GetArtifactsInUse(ctx context.Context, appRepo ApplicationRepository, buildRepo BuildRepository) ([]*Artifact, error) {
+	applications, err := appRepo.GetApplications(ctx, GetApplicationCondition{
+		BuildType: optional.From(builder.BuildTypeStatic),
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	commits := make(map[string]struct{}, 2*len(applications))
+	for _, app := range applications {
+		commits[app.WantCommit] = struct{}{}
+		commits[app.CurrentCommit] = struct{}{}
+	}
+	builds, err := buildRepo.GetBuilds(ctx, GetBuildCondition{CommitIn: optional.From(lo.Keys(commits)), Status: optional.From(builder.BuildStatusSucceeded)})
+	if err != nil {
+		return nil, err
+	}
+
+	// Last succeeded builds for each commit
+	slices.SortFunc(builds, func(a, b *Build) bool { return a.StartedAt.ValueOrZero().Before(b.StartedAt.ValueOrZero()) })
+	commitToBuild := lo.SliceToMap(builds, func(b *Build) (string, *Build) { return b.Commit, b })
+
+	artifacts := make([]*Artifact, len(commitToBuild))
+	for _, build := range commitToBuild {
+		if !build.Artifact.Valid {
+			continue
+		}
+		artifacts = append(artifacts, &build.Artifact.V)
+	}
+	return artifacts, nil
+}
+
 func GetActiveStaticSites(ctx context.Context, appRepo ApplicationRepository, buildRepo BuildRepository) ([]*StaticSite, error) {
 	applications, err := appRepo.GetApplications(ctx, GetApplicationCondition{
 		BuildType: optional.From(builder.BuildTypeStatic),

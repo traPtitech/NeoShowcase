@@ -1,2 +1,11 @@
 [registry."registry.local.trapti.tech"]
 http = true
+
+[worker.oci]
+enabled = true
+gc = true
+gckeepstorage = 9000
+
+[[worker.oci.gcpolicy]]
+all = true
+keepBytes = 1024000000

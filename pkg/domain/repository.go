@@ -40,11 +40,17 @@ type ApplicationRepository interface {
 
 type GetArtifactCondition struct {
 	ApplicationID optional.Of[string]
+	IsDeleted     optional.Of[bool]
+}
+
+type UpdateArtifactArgs struct {
+	DeletedAt optional.Of[time.Time]
 }
 
 type ArtifactRepository interface {
 	GetArtifacts(ctx context.Context, cond GetArtifactCondition) ([]*Artifact, error)
 	CreateArtifact(ctx context.Context, artifact *Artifact) error
+	UpdateArtifact(ctx context.Context, id string, args UpdateArtifactArgs) error
 	HardDeleteArtifacts(ctx context.Context, cond GetArtifactCondition) error
 }
 

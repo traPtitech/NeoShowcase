@@ -45,10 +45,7 @@ type Config struct {
 		CacheDir       string `mapstructure:"cacheDir" yaml:"cacheDir"`
 		PrivateKeyFile string `mapstructure:"privateKeyFile" yaml:"privateKeyFile"`
 	} `mapstructure:"repository" yaml:"repository"`
-	Image struct {
-		Registry   builder.DockerImageRegistryString   `mapstructure:"registry" yaml:"registry"`
-		NamePrefix builder.DockerImageNamePrefixString `mapstructure:"namePrefix" yaml:"namePrefix"`
-	} `mapstructure:"image" yaml:"image"`
+	Image builder.ImageConfig `mapstructure:"image" yaml:"image"`
 }
 
 func (c *Config) GetMode() int {
@@ -64,14 +61,6 @@ func (c *Config) GetMode() int {
 
 func provideIngressConfDirPath(c Config) dockerimpl.IngressConfDirPath {
 	return dockerimpl.IngressConfDirPath(c.Docker.ConfDir)
-}
-
-func provideImageRegistry(c Config) builder.DockerImageRegistryString {
-	return c.Image.Registry
-}
-
-func provideImagePrefix(c Config) builder.DockerImageNamePrefixString {
-	return c.Image.NamePrefix
 }
 
 func provideRepositoryFetcherCacheDir(c Config) usecase.RepositoryFetcherCacheDir {

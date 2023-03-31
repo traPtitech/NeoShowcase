@@ -35,8 +35,7 @@ type appDeployService struct {
 	envRepo   domain.EnvironmentRepository
 	component domain.ComponentService
 
-	imageRegistry   string
-	imageNamePrefix string
+	image builder.ImageConfig
 }
 
 func NewAppDeployService(
@@ -46,19 +45,17 @@ func NewAppDeployService(
 	buildRepo domain.BuildRepository,
 	envRepo domain.EnvironmentRepository,
 	component domain.ComponentService,
-	registry builder.DockerImageRegistryString,
-	prefix builder.DockerImageNamePrefixString,
+	imageConfig builder.ImageConfig,
 ) AppDeployService {
 	return &appDeployService{
-		deployLock:      ds.NewMutex[string](),
-		bus:             bus,
-		backend:         backend,
-		appRepo:         appRepo,
-		buildRepo:       buildRepo,
-		envRepo:         envRepo,
-		component:       component,
-		imageRegistry:   string(registry),
-		imageNamePrefix: string(prefix),
+		deployLock: ds.NewMutex[string](),
+		bus:        bus,
+		backend:    backend,
+		appRepo:    appRepo,
+		buildRepo:  buildRepo,
+		envRepo:    envRepo,
+		component:  component,
+		image:      imageConfig,
 	}
 }
 
@@ -167,8 +164,8 @@ func (s *appDeployService) recreateContainer(ctx context.Context, app *domain.Ap
 		return err
 	}
 	err = s.backend.CreateContainer(ctx, app, domain.ContainerCreateArgs{
-		ImageName: builder.GetImageName(s.imageRegistry, s.imageNamePrefix, app.ID),
-		ImageTag:  build.ID,
+		ImageName: s.image.FullImageName(app.ID),
+		ImageTag:  build.Commit,
 		Envs:      lo.SliceToMap(envs, func(env *domain.Environment) (string, string) { return env.Key, env.Value }),
 	})
 	if err != nil {

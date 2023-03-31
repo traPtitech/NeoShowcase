@@ -173,6 +173,20 @@ func (mr *MockArtifactRepositoryMockRecorder) HardDeleteArtifacts(ctx, cond inte
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "HardDeleteArtifacts", reflect.TypeOf((*MockArtifactRepository)(nil).HardDeleteArtifacts), ctx, cond)
 }
 
+// UpdateArtifact mocks base method.
+func (m *MockArtifactRepository) UpdateArtifact(ctx context.Context, id string, args domain.UpdateArtifactArgs) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "UpdateArtifact", ctx, id, args)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// UpdateArtifact indicates an expected call of UpdateArtifact.
+func (mr *MockArtifactRepositoryMockRecorder) UpdateArtifact(ctx, id, args interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateArtifact", reflect.TypeOf((*MockArtifactRepository)(nil).UpdateArtifact), ctx, id, args)
+}
+
 // MockAvailableDomainRepository is a mock of AvailableDomainRepository interface.
 type MockAvailableDomainRepository struct {
 	ctrl     *gomock.Controller

@@ -3,15 +3,16 @@ package staticserver
 import (
 	"context"
 	"fmt"
+	"os"
 	"path/filepath"
 	"sync"
 
 	"github.com/friendsofgo/errors"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
+	"github.com/samber/lo"
 
 	"github.com/traPtitech/neoshowcase/pkg/domain"
-	"github.com/traPtitech/neoshowcase/pkg/util"
 )
 
 type BuiltIn struct {
@@ -74,10 +75,14 @@ func (b *BuiltIn) Reconcile(sites []*domain.StaticSite) error {
 	b.reconcileLock.Lock()
 	defer b.reconcileLock.Unlock()
 
+	err := b.syncArtifacts(sites)
+	if err != nil {
+		return err
+	}
+
 	siteMap := map[string]*builtInHost{}
 	for _, site := range sites {
 		artifactDir := filepath.Join(b.docsRoot, site.ArtifactID)
-
 		e := echo.New()
 		e.Use(middleware.StaticWithConfig(middleware.StaticConfig{
 			Root:  artifactDir,
@@ -87,17 +92,49 @@ func (b *BuiltIn) Reconcile(sites []*domain.StaticSite) error {
 			Echo: e,
 			Site: site,
 		}
-
-		// 静的ファイルの配置
-		if !util.FileExists(artifactDir) {
-			if err := domain.ExtractTarToDir(b.storage, site.ArtifactID, artifactDir); err != nil {
-				return errors.Wrap(err, "failed to extract artifact tar")
-			}
-		}
 	}
 
 	b.sitesLock.Lock()
 	b.sites = siteMap
 	b.sitesLock.Unlock()
+	return nil
+}
+
+func (b *BuiltIn) syncArtifacts(sites []*domain.StaticSite) error {
+	entries, err := os.ReadDir(b.docsRoot)
+	if err != nil {
+		return errors.Wrap(err, "failed to read docs root")
+	}
+	currentArtifacts := make(map[string]struct{}, len(entries))
+	for _, e := range entries {
+		if e.IsDir() {
+			currentArtifacts[e.Name()] = struct{}{}
+		}
+	}
+
+	wantArtifacts := lo.SliceToMap(sites, func(site *domain.StaticSite) (string, struct{}) { return site.ArtifactID, struct{}{} })
+
+	for artifactID := range wantArtifacts {
+		if _, ok := currentArtifacts[artifactID]; ok {
+			continue
+		}
+		artifactDir := filepath.Join(b.docsRoot, artifactID)
+		err = domain.ExtractTarToDir(b.storage, artifactID, artifactDir)
+		if err != nil {
+			return errors.Wrap(err, "failed to extract artifact tar")
+		}
+	}
+
+	for artifactID := range currentArtifacts {
+		if _, ok := wantArtifacts[artifactID]; ok {
+			continue
+		}
+		artifactDir := filepath.Join(b.docsRoot, artifactID)
+		err = os.RemoveAll(artifactDir)
+		if err != nil {
+			return errors.Wrap(err, "failed to delete unused artifact directory")
+		}
+	}
+
 	return nil
 }

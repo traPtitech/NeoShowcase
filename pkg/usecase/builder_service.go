@@ -48,7 +48,6 @@ type builderService struct {
 	storage  domain.Storage
 	pubKey   *ssh.PublicKeys
 
-	// TODO: 後で消す
 	artifactRepo domain.ArtifactRepository
 	buildRepo    domain.BuildRepository
 	gitRepo      domain.GitRepositoryRepository
@@ -90,6 +89,7 @@ func (s *builderService) Start(_ context.Context) error {
 	go retry.Do(ctx, func(ctx context.Context) error {
 		return s.client.ConnectBuilder(ctx, s.onRequest, response)
 	}, 1*time.Second, 60*time.Second)
+	go s.pruneLoop(ctx)
 
 	return nil
 }
@@ -102,6 +102,27 @@ func (s *builderService) Shutdown(_ context.Context) error {
 		s.stateCancel()
 	}
 	return nil
+}
+
+func (s *builderService) pruneLoop(ctx context.Context) {
+	ticker := time.NewTicker(1 * time.Hour)
+	defer ticker.Stop()
+
+	for {
+		select {
+		case <-ticker.C:
+			err := s.prune(ctx)
+			if err != nil {
+				log.Errorf("failed to prune buildkit: %+v", err)
+			}
+		case <-ctx.Done():
+			return
+		}
+	}
+}
+
+func (s *builderService) prune(ctx context.Context) error {
+	return s.buildkit.Prune(ctx, nil, buildkit.PruneAll)
 }
 
 func (s *builderService) cancelBuild(buildID string) {

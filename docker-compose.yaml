@@ -19,7 +19,8 @@ services:
       NS_APISERVER_GRPC_COMPONENT_PORT: "10000"
       NS_APISERVER_REPOSITORY_CACHEDIR: "/repositories"
       NS_APISERVER_REPOSITORY_PRIVATEKEYFILE: "/keys/id_ed25519"
-      NS_APISERVER_IMAGE_REGISTRY: "registry.local.trapti.tech"
+      NS_APISERVER_IMAGE_REGISTRY_SCHEME: "http"
+      NS_APISERVER_IMAGE_REGISTRY_ADDR: "registry.local.trapti.tech"
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
       - ./local-dev/data:/data
@@ -130,9 +131,6 @@ services:
       DB_USER: "root"
       DB_PASS: "password"
       DB_NAME: "neoshowcase"
-    volumes:
-      - ./local-dev/staticsite/artifacts:/srv/artifacts
-      - ./local-dev/neoshowcase/artifacts:/neoshowcase/artifacts
     depends_on:
       mysql:
         condition: service_healthy
@@ -145,10 +143,14 @@ services:
     environment:
       REGISTRY_STORAGE_DELETE_ENABLED: "true"
       REGISTRY_HTTP_ADDR: :80
+      GC_SCRIPT: /gc.sh
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.registry.rule=Host(`registry.local.trapti.tech`)"
       - "traefik.http.services.registry.loadbalancer.server.port=80"
+    volumes:
+      - ./local-dev/registry/entrypoint.sh:/entrypoint.sh
+      - ./local-dev/registry/gc.sh:/gc.sh
     networks:
       default:
         aliases:

@@ -192,6 +192,11 @@ func (r *applicationRepository) UpdateApplication(ctx context.Context, id string
 		}
 	}
 
+	err = tx.Commit()
+	if err != nil {
+		return errors.Wrap(err, "failed to commit transaction")
+	}
+
 	return err
 }
 
