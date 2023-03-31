@@ -21,8 +21,11 @@ type CleanerService interface {
 }
 
 type cleanerService struct {
-	appRepo domain.ApplicationRepository
-	image   builder.ImageConfig
+	artifactRepo domain.ArtifactRepository
+	appRepo      domain.ApplicationRepository
+	buildRepo    domain.BuildRepository
+	image        builder.ImageConfig
+	storage      domain.Storage
 
 	start        func()
 	startOnce    sync.Once
@@ -31,12 +34,18 @@ type cleanerService struct {
 }
 
 func NewCleanerService(
+	artifactRepo domain.ArtifactRepository,
 	appRepo domain.ApplicationRepository,
+	buildRepo domain.BuildRepository,
 	image builder.ImageConfig,
+	storage domain.Storage,
 ) (CleanerService, error) {
 	c := &cleanerService{
-		appRepo: appRepo,
-		image:   image,
+		artifactRepo: artifactRepo,
+		appRepo:      appRepo,
+		buildRepo:    buildRepo,
+		image:        image,
+		storage:      storage,
 	}
 
 	r, err := registry.New(image.Registry.Scheme+"://"+image.Registry.Addr, image.Registry.Username, image.Registry.Password)
@@ -87,6 +96,30 @@ func (c *cleanerService) pruneImagesLoop(ctx context.Context, r *registry.Regist
 	}
 }
 
+func (c *cleanerService) pruneArtifactsLoop(ctx context.Context) {
+	ticker := time.NewTicker(1 * time.Hour)
+	defer ticker.Stop()
+
+	doPrune := func() {
+		start := time.Now()
+		err := c.pruneArtifacts(ctx)
+		if err != nil {
+			log.Errorf("failed to prune artifacts: %+v", err)
+			return
+		}
+		log.Infof("Pruned artifacts in %v", time.Since(start))
+	}
+
+	for {
+		select {
+		case <-ticker.C:
+			doPrune()
+		case <-ctx.Done():
+			return
+		}
+	}
+}
+
 func (c *cleanerService) pruneImages(ctx context.Context, r *registry.Registry) error {
 	applications, err := c.appRepo.GetApplications(ctx, domain.GetApplicationCondition{BuildType: optional.From(builder.BuildTypeRuntime)})
 	if err != nil {
@@ -117,6 +150,41 @@ func (c *cleanerService) pruneImages(ctx context.Context, r *registry.Registry) 
 			if err != nil {
 				return errors.Wrap(err, "failed to delete manifest")
 			}
+		}
+	}
+
+	return nil
+}
+
+func (c *cleanerService) pruneArtifacts(ctx context.Context) error {
+	const artifactDeletionThreshold = 7 * 24 * time.Hour
+
+	inUse, err := domain.GetArtifactsInUse(ctx, c.appRepo, c.buildRepo)
+	if err != nil {
+		return errors.Wrap(err, "failed to get artifacts in use")
+	}
+	inUseIDs := lo.SliceToMap(inUse, func(a *domain.Artifact) (string, bool) { return a.ID, true })
+
+	artifacts, err := c.artifactRepo.GetArtifacts(ctx, domain.GetArtifactCondition{IsDeleted: optional.From(false)})
+	if err != nil {
+		return errors.Wrap(err, "failed to get existing artifacts")
+	}
+
+	deletionThreshold := time.Now().Add(-artifactDeletionThreshold)
+	for _, artifact := range artifacts {
+		if inUseIDs[artifact.ID] {
+			continue
+		}
+		if artifact.CreatedAt.After(deletionThreshold) {
+			continue
+		}
+		err = domain.DeleteArtifact(c.storage, artifact.ID)
+		if err != nil {
+			return err
+		}
+		err = c.artifactRepo.UpdateArtifact(ctx, artifact.ID, domain.UpdateArtifactArgs{DeletedAt: optional.From(time.Now())})
+		if err != nil {
+			return errors.Wrap(err, "failed to mark artifact as deleted")
 		}
 	}
 

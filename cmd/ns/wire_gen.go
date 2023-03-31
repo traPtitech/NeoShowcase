@@ -88,7 +88,7 @@ func NewWithDocker(c2 Config) (*Server, error) {
 	if err != nil {
 		return nil, err
 	}
-	cleanerService, err := usecase.NewCleanerService(applicationRepository, imageConfig)
+	cleanerService, err := usecase.NewCleanerService(artifactRepository, applicationRepository, buildRepository, imageConfig, storage)
 	if err != nil {
 		return nil, err
 	}
@@ -171,7 +171,7 @@ func NewWithK8S(c2 Config) (*Server, error) {
 	if err != nil {
 		return nil, err
 	}
-	cleanerService, err := usecase.NewCleanerService(applicationRepository, imageConfig)
+	cleanerService, err := usecase.NewCleanerService(artifactRepository, applicationRepository, buildRepository, imageConfig, storage)
 	if err != nil {
 		return nil, err
 	}

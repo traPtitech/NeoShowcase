@@ -12,6 +12,7 @@ import (
 
 	"github.com/traPtitech/neoshowcase/pkg/domain"
 	"github.com/traPtitech/neoshowcase/pkg/infrastructure/admindb/models"
+	"github.com/traPtitech/neoshowcase/pkg/util/optional"
 )
 
 type artifactRepository struct {
@@ -37,6 +38,13 @@ func (r *artifactRepository) buildMods(cond domain.GetArtifactCondition) []qm.Qu
 			models.BuildWhere.ApplicationID.EQ(cond.ApplicationID.V),
 		)
 	}
+	if cond.IsDeleted.Valid {
+		if cond.IsDeleted.V {
+			mods = append(mods, models.ArtifactWhere.DeletedAt.IsNotNull())
+		} else {
+			mods = append(mods, models.ArtifactWhere.DeletedAt.IsNull())
+		}
+	}
 	return mods
 }
 
@@ -54,6 +62,23 @@ func (r *artifactRepository) CreateArtifact(ctx context.Context, artifact *domai
 	ma := fromDomainArtifact(artifact)
 	if err := ma.Insert(ctx, r.db, boil.Infer()); err != nil {
 		return errors.Wrap(err, "failed to insert artifact")
+	}
+	return nil
+}
+
+func (r *artifactRepository) UpdateArtifact(ctx context.Context, id string, args domain.UpdateArtifactArgs) error {
+	artifact, err := models.Artifacts(models.ArtifactWhere.ID.EQ(id)).One(ctx, r.db)
+	if err != nil {
+		return errors.Wrap(err, "failed to get artifact")
+	}
+
+	if args.DeletedAt.Valid {
+		artifact.DeletedAt = optional.IntoTime(args.DeletedAt)
+	}
+
+	_, err = artifact.Update(ctx, r.db, boil.Infer())
+	if err != nil {
+		return errors.Wrap(err, "failed to update artifact")
 	}
 	return nil
 }
