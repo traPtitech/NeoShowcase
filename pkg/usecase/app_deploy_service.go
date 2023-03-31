@@ -164,8 +164,8 @@ func (s *appDeployService) recreateContainer(ctx context.Context, app *domain.Ap
 		return err
 	}
 	err = s.backend.CreateContainer(ctx, app, domain.ContainerCreateArgs{
-		ImageName: s.image.ImageName(app.ID),
-		ImageTag:  build.ID,
+		ImageName: s.image.FullImageName(app.ID),
+		ImageTag:  build.Commit,
 		Envs:      lo.SliceToMap(envs, func(env *domain.Environment) (string, string) { return env.Key, env.Value }),
 	})
 	if err != nil {

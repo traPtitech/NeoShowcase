@@ -35,8 +35,8 @@ func (s *appBuildService) TryStartBuild(app *domain.Application, build *domain.B
 			Type: pb.BuilderRequest_START_BUILD_IMAGE,
 			Body: &pb.BuilderRequest_BuildImage{
 				BuildImage: &pb.StartBuildImageRequest{
-					ImageName: s.image.ImageName(app.ID),
-					ImageTag:  build.ID,
+					ImageName: s.image.FullImageName(app.ID),
+					ImageTag:  build.Commit,
 					Source: &pb.BuildSource{
 						RepositoryId: app.RepositoryID,
 						Commit:       build.Commit,

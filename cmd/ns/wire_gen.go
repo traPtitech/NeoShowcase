@@ -75,7 +75,10 @@ func NewWithDocker(c2 Config) (*Server, error) {
 	applicationServiceServer := grpc.NewApplicationServiceServer(apiServerService)
 	componentServiceGRPCServer := grpc.NewComponentServiceGRPCServer()
 	appBuildService := usecase.NewAppBuildService(buildRepository, componentService, imageConfig)
-	continuousDeploymentService := usecase.NewContinuousDeploymentService(bus, applicationRepository, buildRepository, environmentRepository, appBuildService, appDeployService)
+	continuousDeploymentService, err := usecase.NewContinuousDeploymentService(bus, applicationRepository, buildRepository, environmentRepository, appBuildService, appDeployService, imageConfig)
+	if err != nil {
+		return nil, err
+	}
 	repositoryFetcherCacheDir := provideRepositoryFetcherCacheDir(c2)
 	publicKeys, err := provideRepositoryPublicKey(c2)
 	if err != nil {
@@ -150,7 +153,10 @@ func NewWithK8S(c2 Config) (*Server, error) {
 	applicationServiceServer := grpc.NewApplicationServiceServer(apiServerService)
 	componentServiceGRPCServer := grpc.NewComponentServiceGRPCServer()
 	appBuildService := usecase.NewAppBuildService(buildRepository, componentService, imageConfig)
-	continuousDeploymentService := usecase.NewContinuousDeploymentService(bus, applicationRepository, buildRepository, environmentRepository, appBuildService, appDeployService)
+	continuousDeploymentService, err := usecase.NewContinuousDeploymentService(bus, applicationRepository, buildRepository, environmentRepository, appBuildService, appDeployService, imageConfig)
+	if err != nil {
+		return nil, err
+	}
 	repositoryFetcherCacheDir := provideRepositoryFetcherCacheDir(c2)
 	publicKeys, err := provideRepositoryPublicKey(c2)
 	if err != nil {

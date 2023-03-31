@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/friendsofgo/errors"
+	"github.com/heroku/docker-registry-client/registry"
 	"github.com/samber/lo"
 	log "github.com/sirupsen/logrus"
 
@@ -28,6 +29,7 @@ type continuousDeploymentService struct {
 	envRepo   domain.EnvironmentRepository
 	builder   AppBuildService
 	deployer  AppDeployService
+	image     builder.ImageConfig
 
 	run       func()
 	runOnce   sync.Once
@@ -42,7 +44,8 @@ func NewContinuousDeploymentService(
 	envRepo domain.EnvironmentRepository,
 	builder AppBuildService,
 	deployer AppDeployService,
-) ContinuousDeploymentService {
+	image builder.ImageConfig,
+) (ContinuousDeploymentService, error) {
 	cd := &continuousDeploymentService{
 		bus:       bus,
 		appRepo:   appRepo,
@@ -50,23 +53,27 @@ func NewContinuousDeploymentService(
 		envRepo:   envRepo,
 		builder:   builder,
 		deployer:  deployer,
+		image:     image,
 	}
 
-	registerBuildCloser := make(chan struct{})
+	r, err := registry.New(image.Registry.Scheme+"://"+image.Registry.Addr, image.Registry.Username, image.Registry.Password)
+	if err != nil {
+		return nil, err
+	}
+
+	ctx, cancel := context.WithCancel(context.Background())
 	startBuilds := make(chan struct{})
-	startBuildCloser := make(chan struct{})
-	syncDeployCloser := make(chan struct{})
 	cd.run = func() {
-		go cd.registerBuildLoop(startBuilds, registerBuildCloser)
-		go cd.startBuildLoop(startBuilds, startBuildCloser)
-		go cd.syncDeployLoop(syncDeployCloser)
+		go cd.registerBuildLoop(ctx, startBuilds)
+		go cd.startBuildLoop(ctx, startBuilds)
+		go cd.syncDeployLoop(ctx)
+		go cd.pruneImagesLoop(ctx, r)
 	}
 	cd.close = func() {
-		close(registerBuildCloser)
-		close(syncDeployCloser)
+		cancel()
 	}
 
-	return cd
+	return cd, nil
 }
 
 func (cd *continuousDeploymentService) Run() {
@@ -78,13 +85,13 @@ func (cd *continuousDeploymentService) Stop(_ context.Context) error {
 	return nil
 }
 
-func (cd *continuousDeploymentService) registerBuildLoop(startBuilds chan<- struct{}, closer <-chan struct{}) {
+func (cd *continuousDeploymentService) registerBuildLoop(ctx context.Context, startBuilds chan<- struct{}) {
 	sub := cd.bus.Subscribe(event.FetcherFetchComplete, event.CDServiceRegisterBuildRequest)
 	defer sub.Unsubscribe()
 
 	doSync := func() {
 		start := time.Now()
-		if err := cd.registerBuilds(); err != nil {
+		if err := cd.registerBuilds(ctx); err != nil {
 			log.Errorf("failed to kickoff builds: %+v", err)
 			return
 		}
@@ -99,19 +106,19 @@ func (cd *continuousDeploymentService) registerBuildLoop(startBuilds chan<- stru
 		select {
 		case <-sub.Chan():
 			doSync()
-		case <-closer:
+		case <-ctx.Done():
 			return
 		}
 	}
 }
 
-func (cd *continuousDeploymentService) startBuildLoop(syncer <-chan struct{}, closer <-chan struct{}) {
+func (cd *continuousDeploymentService) startBuildLoop(ctx context.Context, syncer <-chan struct{}) {
 	sub := cd.bus.Subscribe(event.BuilderBuildSettled)
 	defer sub.Unsubscribe()
 
 	doSync := func() {
 		start := time.Now()
-		if err := cd.startBuilds(); err != nil {
+		if err := cd.startBuilds(ctx); err != nil {
 			log.Errorf("failed to start builds: %+v", err)
 			return
 		}
@@ -126,13 +133,13 @@ func (cd *continuousDeploymentService) startBuildLoop(syncer <-chan struct{}, cl
 			doSync()
 		case <-sub.Chan():
 			doSync()
-		case <-closer:
+		case <-ctx.Done():
 			return
 		}
 	}
 }
 
-func (cd *continuousDeploymentService) syncDeployLoop(closer <-chan struct{}) {
+func (cd *continuousDeploymentService) syncDeployLoop(ctx context.Context) {
 	sub := cd.bus.Subscribe(event.BuilderBuildSettled)
 	defer sub.Unsubscribe()
 	ticker := time.NewTicker(3 * time.Minute)
@@ -140,7 +147,7 @@ func (cd *continuousDeploymentService) syncDeployLoop(closer <-chan struct{}) {
 
 	doSync := func() {
 		start := time.Now()
-		if err := cd.syncDeployments(); err != nil {
+		if err := cd.syncDeployments(ctx); err != nil {
 			log.Errorf("failed to sync deployments: %+v", err)
 			return
 		}
@@ -155,14 +162,37 @@ func (cd *continuousDeploymentService) syncDeployLoop(closer <-chan struct{}) {
 			doSync()
 		case <-sub.Chan():
 			doSync()
-		case <-closer:
+		case <-ctx.Done():
 			return
 		}
 	}
 }
 
-func (cd *continuousDeploymentService) registerBuilds() error {
-	ctx := context.Background()
+func (cd *continuousDeploymentService) pruneImagesLoop(ctx context.Context, r *registry.Registry) {
+	ticker := time.NewTicker(1 * time.Hour)
+	defer ticker.Stop()
+
+	doPrune := func() {
+		start := time.Now()
+		err := cd.pruneImages(ctx, r)
+		if err != nil {
+			log.Errorf("failed to prune images: %+v", err)
+			return
+		}
+		log.Infof("Pruned images in %v", time.Since(start))
+	}
+
+	for {
+		select {
+		case <-ticker.C:
+			doPrune()
+		case <-ctx.Done():
+			return
+		}
+	}
+}
+
+func (cd *continuousDeploymentService) registerBuilds(ctx context.Context) error {
 	applications, err := cd.appRepo.GetApplications(ctx, domain.GetApplicationCondition{})
 	if err != nil {
 		return err
@@ -209,8 +239,7 @@ func (cd *continuousDeploymentService) registerBuilds() error {
 	return nil
 }
 
-func (cd *continuousDeploymentService) startBuilds() error {
-	ctx := context.Background()
+func (cd *continuousDeploymentService) startBuilds(ctx context.Context) error {
 	builds, err := cd.buildRepo.GetBuilds(ctx, domain.GetBuildCondition{Status: optional.From(builder.BuildStatusQueued)})
 	if err != nil {
 		return err
@@ -231,9 +260,7 @@ func (cd *continuousDeploymentService) startBuilds() error {
 	return nil
 }
 
-func (cd *continuousDeploymentService) syncDeployments() error {
-	ctx := context.Background()
-
+func (cd *continuousDeploymentService) syncDeployments(ctx context.Context) error {
 	// Get out-of-sync and non-idle applications
 	applications, err := cd.appRepo.GetApplications(ctx, domain.GetApplicationCondition{InSync: optional.From(false)})
 	if err != nil {
@@ -247,4 +274,40 @@ func (cd *continuousDeploymentService) syncDeployments() error {
 		_ = cd.deployer.Synchronize(app.ID, false)
 	}
 	return cd.deployer.SynchronizeSS(ctx)
+}
+
+func (cd *continuousDeploymentService) pruneImages(ctx context.Context, r *registry.Registry) error {
+	applications, err := cd.appRepo.GetApplications(ctx, domain.GetApplicationCondition{BuildType: optional.From(builder.BuildTypeRuntime)})
+	if err != nil {
+		return err
+	}
+	commits := make(map[string]struct{}, 2*len(applications))
+	for _, app := range applications {
+		commits[app.WantCommit] = struct{}{}
+		commits[app.CurrentCommit] = struct{}{}
+	}
+
+	for _, app := range applications {
+		imageName := cd.image.ImageName(app.ID)
+		tags, err := r.Tags(imageName)
+		if err != nil {
+			return errors.Wrap(err, "failed to get tags for image")
+		}
+		danglingTags := lo.Reject(tags, func(tag string, i int) bool { _, ok := commits[tag]; return ok })
+		for _, tag := range danglingTags {
+			digest, err := r.ManifestDigest(imageName, tag)
+			if err != nil {
+				return errors.Wrap(err, "failed to get manifest digest")
+			}
+			// NOTE: needs manual execution of "registry garbage-collect <config> --delete-untagged" in docker registry side
+			// to actually delete the layers
+			// https://docs.docker.com/registry/garbage-collection/
+			err = r.DeleteManifest(imageName, digest)
+			if err != nil {
+				return errors.Wrap(err, "failed to delete manifest")
+			}
+		}
+	}
+
+	return nil
 }

@@ -1,0 +1,9 @@
+{
+  "//": "sample",
+  "auths": {
+    "http://registry.local.trapti.tech/v1/": {
+      "username": "ns",
+      "password": "password"
+    }
+  }
+}
