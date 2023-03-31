@@ -19,7 +19,7 @@ services:
       NS_APISERVER_GRPC_COMPONENT_PORT: "10000"
       NS_APISERVER_REPOSITORY_CACHEDIR: "/repositories"
       NS_APISERVER_REPOSITORY_PRIVATEKEYFILE: "/keys/id_ed25519"
-      NS_APISERVER_IMAGE_REGISTRY: "registry.local.trapti.tech"
+      NS_APISERVER_IMAGE_REGISTRY_ADDR: "registry.local.trapti.tech"
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
       - ./local-dev/data:/data

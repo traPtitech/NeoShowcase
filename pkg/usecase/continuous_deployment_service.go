@@ -22,14 +22,12 @@ type ContinuousDeploymentService interface {
 }
 
 type continuousDeploymentService struct {
-	bus             domain.Bus
-	appRepo         domain.ApplicationRepository
-	buildRepo       domain.BuildRepository
-	envRepo         domain.EnvironmentRepository
-	builder         AppBuildService
-	deployer        AppDeployService
-	imageRegistry   string
-	imageNamePrefix string
+	bus       domain.Bus
+	appRepo   domain.ApplicationRepository
+	buildRepo domain.BuildRepository
+	envRepo   domain.EnvironmentRepository
+	builder   AppBuildService
+	deployer  AppDeployService
 
 	run       func()
 	runOnce   sync.Once
@@ -44,18 +42,14 @@ func NewContinuousDeploymentService(
 	envRepo domain.EnvironmentRepository,
 	builder AppBuildService,
 	deployer AppDeployService,
-	registry builder.DockerImageRegistryString,
-	prefix builder.DockerImageNamePrefixString,
 ) ContinuousDeploymentService {
 	cd := &continuousDeploymentService{
-		bus:             bus,
-		appRepo:         appRepo,
-		buildRepo:       buildRepo,
-		envRepo:         envRepo,
-		builder:         builder,
-		deployer:        deployer,
-		imageRegistry:   string(registry),
-		imageNamePrefix: string(prefix),
+		bus:       bus,
+		appRepo:   appRepo,
+		buildRepo: buildRepo,
+		envRepo:   envRepo,
+		builder:   builder,
+		deployer:  deployer,
 	}
 
 	registerBuildCloser := make(chan struct{})

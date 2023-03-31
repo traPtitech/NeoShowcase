@@ -11,23 +11,20 @@ type AppBuildService interface {
 }
 
 type appBuildService struct {
-	buildRepo       domain.BuildRepository
-	component       domain.ComponentService
-	imageRegistry   string
-	imageNamePrefix string
+	buildRepo domain.BuildRepository
+	component domain.ComponentService
+	image     builder.ImageConfig
 }
 
 func NewAppBuildService(
 	buildRepo domain.BuildRepository,
 	component domain.ComponentService,
-	registry builder.DockerImageRegistryString,
-	prefix builder.DockerImageNamePrefixString,
+	imageConfig builder.ImageConfig,
 ) AppBuildService {
 	return &appBuildService{
-		buildRepo:       buildRepo,
-		component:       component,
-		imageRegistry:   string(registry),
-		imageNamePrefix: string(prefix),
+		buildRepo: buildRepo,
+		component: component,
+		image:     imageConfig,
 	}
 }
 
@@ -38,7 +35,7 @@ func (s *appBuildService) TryStartBuild(app *domain.Application, build *domain.B
 			Type: pb.BuilderRequest_START_BUILD_IMAGE,
 			Body: &pb.BuilderRequest_BuildImage{
 				BuildImage: &pb.StartBuildImageRequest{
-					ImageName: builder.GetImageName(s.imageRegistry, s.imageNamePrefix, app.ID),
+					ImageName: s.image.ImageName(app.ID),
 					ImageTag:  build.ID,
 					Source: &pb.BuildSource{
 						RepositoryId: app.RepositoryID,

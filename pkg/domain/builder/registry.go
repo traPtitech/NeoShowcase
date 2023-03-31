@@ -1,8 +1,14 @@
 package builder
 
-type DockerImageRegistryString string
-type DockerImageNamePrefixString string
+type ImageConfig struct {
+	Registry struct {
+		Addr     string `mapstructure:"addr" yaml:"addr"`
+		Username string `mapstructure:"username" yaml:"username"`
+		Password string `mapstructure:"password" yaml:"password"`
+	} `mapstructure:"registry" yaml:"registry"`
+	NamePrefix string `mapstructure:"namePrefix" yaml:"namePrefix"`
+}
 
-func GetImageName(registry string, prefix string, appID string) string {
-	return registry + "/" + prefix + appID
+func (c *ImageConfig) ImageName(appID string) string {
+	return c.Registry.Addr + "/" + c.NamePrefix + appID
 }

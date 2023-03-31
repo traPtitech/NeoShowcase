@@ -47,12 +47,10 @@ var commonSet = wire.NewSet(
 	usecase.NewContinuousDeploymentService,
 	usecase.NewRepositoryFetcherService,
 	provideIngressConfDirPath,
-	provideImagePrefix,
-	provideImageRegistry,
 	provideRepositoryFetcherCacheDir,
 	provideRepositoryPublicKey,
 	initStorage,
-	wire.FieldsOf(new(Config), "SS", "DB", "MariaDB", "MongoDB", "Storage"),
+	wire.FieldsOf(new(Config), "SS", "DB", "MariaDB", "MongoDB", "Storage", "Image"),
 	wire.Struct(new(Server), "*"),
 )
 
