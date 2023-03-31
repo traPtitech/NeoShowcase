@@ -193,7 +193,7 @@ func (r *repositoryFetcherService) updateApplication(ctx context.Context, app *d
 	if app.WantCommit == hash {
 		return nil
 	}
-	return r.appRepo.UpdateApplication(ctx, app.ID, domain.UpdateApplicationArgs{WantCommit: optional.From(hash)})
+	return r.appRepo.UpdateApplication(ctx, app.ID, &domain.UpdateApplicationArgs{WantCommit: optional.From(hash)})
 }
 
 func (r *repositoryFetcherService) Stop(_ context.Context) error {
