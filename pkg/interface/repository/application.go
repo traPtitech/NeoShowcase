@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
+	"time"
 
 	"github.com/friendsofgo/errors"
 	"github.com/samber/lo"
@@ -72,14 +73,18 @@ func (r *applicationRepository) GetApplications(ctx context.Context, cond domain
 	}), nil
 }
 
-func (r *applicationRepository) getApplication(ctx context.Context, id string) (*models.Application, error) {
-	app, err := models.Applications(
+func (r *applicationRepository) getApplication(ctx context.Context, id string, forUpdate bool, ex boil.ContextExecutor) (*models.Application, error) {
+	mods := []qm.QueryMod{
 		models.ApplicationWhere.ID.EQ(id),
 		qm.Load(models.ApplicationRels.ApplicationConfig),
 		qm.Load(models.ApplicationRels.Repository),
 		qm.Load(models.ApplicationRels.Websites),
 		qm.Load(models.ApplicationRels.Users),
-	).One(ctx, r.db)
+	}
+	if forUpdate {
+		mods = append(mods, qm.For("UPDATE"))
+	}
+	app, err := models.Applications(mods...).One(ctx, ex)
 	if err != nil {
 		if isNoRowsErr(err) {
 			return nil, ErrNotFound
@@ -90,7 +95,7 @@ func (r *applicationRepository) getApplication(ctx context.Context, id string) (
 }
 
 func (r *applicationRepository) GetApplication(ctx context.Context, id string) (*domain.Application, error) {
-	app, err := r.getApplication(ctx, id)
+	app, err := r.getApplication(ctx, id, false, r.db)
 	if err != nil {
 		return nil, err
 	}
@@ -114,37 +119,41 @@ func (r *applicationRepository) CreateApplication(ctx context.Context, app *doma
 		return fmt.Errorf("failed to set application config")
 	}
 
-	// Validate and insert from the most specific
-	slices.SortFunc(app.Websites, func(a, b *domain.Website) bool { return len(b.PathPrefix) < len(a.PathPrefix) })
-	for _, website := range app.Websites {
-		if err = r.validateAndInsertWebsite(ctx, tx, ma, website); err != nil {
-			return err
-		}
-	}
-
-	app.OwnerIDs = lo.Uniq(app.OwnerIDs)
-	users, err := models.Users(models.UserWhere.ID.IN(app.OwnerIDs)).All(ctx, tx)
-	if len(users) < len(app.OwnerIDs) {
-		return ErrNotFound
-	}
-	err = ma.AddUsers(ctx, tx, false, users...)
+	err = r.validateAndInsertWebsites(ctx, tx, ma, app.Websites)
 	if err != nil {
-		return errors.Wrap(err, "failed to add owners")
+		return err
 	}
 
-	if err := tx.Commit(); err != nil {
+	err = r.insertOwners(ctx, tx, ma, app.OwnerIDs)
+	if err != nil {
+		return err
+	}
+
+	if err = tx.Commit(); err != nil {
 		return errors.Wrap(err, "failed to commit transaction")
 	}
 
 	return nil
 }
 
-func (r *applicationRepository) UpdateApplication(ctx context.Context, id string, args domain.UpdateApplicationArgs) error {
-	app, err := r.getApplication(ctx, id)
+func (r *applicationRepository) UpdateApplication(ctx context.Context, id string, args *domain.UpdateApplicationArgs) error {
+	tx, err := r.db.BeginTx(ctx, nil)
+	if err != nil {
+		return errors.Wrap(err, "failed to start transaction")
+	}
+	defer tx.Rollback()
+
+	app, err := r.getApplication(ctx, id, true, tx)
 	if err != nil {
 		return err
 	}
 
+	if args.Name.Valid {
+		app.Name = args.Name.V
+	}
+	if args.BranchName.Valid {
+		app.BranchName = args.BranchName.V
+	}
 	if args.State.Valid {
 		app.State = args.State.V.String()
 	}
@@ -155,33 +164,48 @@ func (r *applicationRepository) UpdateApplication(ctx context.Context, id string
 		app.WantCommit = args.WantCommit.V
 	}
 
-	_, err = app.Update(ctx, r.db, boil.Infer())
+	app.UpdatedAt = time.Now()
+	_, err = app.Update(ctx, tx, boil.Infer())
+
+	if args.Config.Valid {
+		err = app.SetApplicationConfig(ctx, tx, false, fromDomainApplicationConfig(app.ID, &args.Config.V))
+		if err != nil {
+			return errors.Wrap(err, "failed to update config")
+		}
+	}
+	if args.Websites.Valid {
+		_, err = app.R.Websites.DeleteAll(ctx, tx)
+		if err != nil {
+			return errors.Wrap(err, "failed to delete all websites")
+		}
+		err = r.validateAndInsertWebsites(ctx, tx, app, args.Websites.V)
+		if err != nil {
+			return err
+		}
+	}
+	if args.OwnerIDs.Valid {
+		_, err = app.R.Users.DeleteAll(ctx, tx)
+		if err != nil {
+			return errors.Wrap(err, "failed to delete all owners")
+		}
+		err = r.insertOwners(ctx, tx, app, args.OwnerIDs.V)
+		if err != nil {
+			return err
+		}
+	}
+
 	return err
 }
 
-func (r *applicationRepository) RegisterApplicationOwner(ctx context.Context, applicationID string, userID string) error {
-	app, err := r.getApplication(ctx, applicationID)
-	if err != nil {
-		return err
-	}
-	user, err := models.Users(models.UserWhere.ID.EQ(userID)).One(ctx, r.db)
-	if err != nil {
-		return errors.Wrap(err, "failed to find user")
-	}
-	if err := app.AddUsers(ctx, r.db, false, user); err != nil {
-		return errors.Wrap(err, "failed to register owner")
+func (r *applicationRepository) validateAndInsertWebsites(ctx context.Context, ex boil.ContextExecutor, app *models.Application, websites []*domain.Website) error {
+	// Validate and insert from the most specific
+	slices.SortFunc(websites, func(a, b *domain.Website) bool { return len(b.PathPrefix) < len(a.PathPrefix) })
+	for _, website := range websites {
+		if err := r.validateAndInsertWebsite(ctx, ex, app, website); err != nil {
+			return err
+		}
 	}
 	return nil
-}
-
-func (r *applicationRepository) GetWebsites(ctx context.Context, applicationIDs []string) ([]*domain.Website, error) {
-	websites, err := models.Websites(models.WebsiteWhere.ApplicationID.IN(applicationIDs)).All(ctx, r.db)
-	if err != nil {
-		return nil, errors.Wrap(err, "failed to get websites")
-	}
-	return lo.Map(websites, func(website *models.Website, i int) *domain.Website {
-		return toDomainWebsite(website)
-	}), nil
 }
 
 func (r *applicationRepository) validateAndInsertWebsite(ctx context.Context, ex boil.ContextExecutor, app *models.Application, website *domain.Website) error {
@@ -200,46 +224,15 @@ func (r *applicationRepository) validateAndInsertWebsite(ctx context.Context, ex
 	return nil
 }
 
-func (r *applicationRepository) AddWebsite(ctx context.Context, applicationID string, website *domain.Website) error {
-	app, err := r.getApplication(ctx, applicationID)
-	if err != nil {
-		return err
+func (r *applicationRepository) insertOwners(ctx context.Context, ex boil.ContextExecutor, app *models.Application, ownerIDs []string) error {
+	ownerIDs = lo.Uniq(ownerIDs)
+	users, err := models.Users(models.UserWhere.ID.IN(ownerIDs)).All(ctx, ex)
+	if len(users) < len(ownerIDs) {
+		return ErrNotFound
 	}
-
-	tx, err := r.db.BeginTx(ctx, nil)
+	err = app.AddUsers(ctx, ex, false, users...)
 	if err != nil {
-		return errors.Wrap(err, "failed to start transaction")
+		return errors.Wrap(err, "failed to add owners")
 	}
-	defer tx.Rollback()
-
-	err = r.validateAndInsertWebsite(ctx, tx, app, website)
-	if err != nil {
-		return err
-	}
-
-	err = tx.Commit()
-	if err != nil {
-		return errors.Wrap(err, "failed to commit transaction")
-	}
-
 	return nil
-}
-
-func (r *applicationRepository) DeleteWebsite(ctx context.Context, applicationID string, websiteID string) error {
-	app, err := r.getApplication(ctx, applicationID)
-	if err != nil {
-		return err
-	}
-
-	for _, website := range app.R.Websites {
-		if website.ID == websiteID {
-			_, err := website.Delete(ctx, r.db)
-			if err != nil {
-				return err
-			}
-			return nil
-		}
-	}
-
-	return ErrNotFound
 }

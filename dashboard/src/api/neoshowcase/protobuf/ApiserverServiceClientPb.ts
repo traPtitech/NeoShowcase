@@ -341,6 +341,49 @@ export class ApplicationServiceClient {
     this.methodDescriptorGetApplication);
   }
 
+  methodDescriptorUpdateApplication = new grpcWeb.MethodDescriptor(
+    '/neoshowcase.protobuf.ApplicationService/UpdateApplication',
+    grpcWeb.MethodType.UNARY,
+    neoshowcase_protobuf_apiserver_pb.UpdateApplicationRequest,
+    google_protobuf_empty_pb.Empty,
+    (request: neoshowcase_protobuf_apiserver_pb.UpdateApplicationRequest) => {
+      return request.serializeBinary();
+    },
+    google_protobuf_empty_pb.Empty.deserializeBinary
+  );
+
+  updateApplication(
+    request: neoshowcase_protobuf_apiserver_pb.UpdateApplicationRequest,
+    metadata: grpcWeb.Metadata | null): Promise<google_protobuf_empty_pb.Empty>;
+
+  updateApplication(
+    request: neoshowcase_protobuf_apiserver_pb.UpdateApplicationRequest,
+    metadata: grpcWeb.Metadata | null,
+    callback: (err: grpcWeb.RpcError,
+               response: google_protobuf_empty_pb.Empty) => void): grpcWeb.ClientReadableStream<google_protobuf_empty_pb.Empty>;
+
+  updateApplication(
+    request: neoshowcase_protobuf_apiserver_pb.UpdateApplicationRequest,
+    metadata: grpcWeb.Metadata | null,
+    callback?: (err: grpcWeb.RpcError,
+               response: google_protobuf_empty_pb.Empty) => void) {
+    if (callback !== undefined) {
+      return this.client_.rpcCall(
+        this.hostname_ +
+          '/neoshowcase.protobuf.ApplicationService/UpdateApplication',
+        request,
+        metadata || {},
+        this.methodDescriptorUpdateApplication,
+        callback);
+    }
+    return this.client_.unaryCall(
+    this.hostname_ +
+      '/neoshowcase.protobuf.ApplicationService/UpdateApplication',
+    request,
+    metadata || {},
+    this.methodDescriptorUpdateApplication);
+  }
+
   methodDescriptorDeleteApplication = new grpcWeb.MethodDescriptor(
     '/neoshowcase.protobuf.ApplicationService/DeleteApplication',
     grpcWeb.MethodType.UNARY,

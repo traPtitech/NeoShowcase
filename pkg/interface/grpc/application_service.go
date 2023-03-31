@@ -158,6 +158,41 @@ func (s *ApplicationService) GetApplication(ctx context.Context, req *pb.Applica
 	return toPBApplication(application), nil
 }
 
+func (s *ApplicationService) UpdateApplication(ctx context.Context, req *pb.UpdateApplicationRequest) (*emptypb.Empty, error) {
+	app, err := s.svc.GetApplication(ctx, req.Id)
+	if err != nil {
+		return nil, handleUseCaseError(err)
+	}
+
+	for _, createReq := range req.NewWebsites {
+		app.Websites = append(app.Websites, fromPBCreateWebsiteRequest(createReq))
+	}
+	for _, deleteReq := range req.DeleteWebsites {
+		app.Websites = lo.Reject(app.Websites, func(w *domain.Website, i int) bool { return w.ID == deleteReq.Id })
+	}
+
+	err = s.svc.UpdateApplication(ctx, app, &domain.UpdateApplicationArgs{
+		Name:       optional.From(req.Name),
+		BranchName: optional.From(req.BranchName),
+		Config: optional.From(domain.ApplicationConfig{
+			UseMariaDB:     app.Config.UseMariaDB,
+			UseMongoDB:     app.Config.UseMongoDB,
+			BaseImage:      req.Config.BaseImage,
+			DockerfileName: req.Config.DockerfileName,
+			ArtifactPath:   req.Config.ArtifactPath,
+			BuildCmd:       req.Config.BuildCmd,
+			EntrypointCmd:  req.Config.EntrypointCmd,
+			Authentication: fromPBAuthenticationType(req.Config.Authentication),
+		}),
+		Websites: optional.From(app.Websites),
+		OwnerIDs: optional.From(req.OwnerIds),
+	})
+	if err != nil {
+		return nil, handleUseCaseError(err)
+	}
+	return &emptypb.Empty{}, nil
+}
+
 func (s *ApplicationService) DeleteApplication(ctx context.Context, req *pb.ApplicationIdRequest) (*emptypb.Empty, error) {
 	err := s.svc.DeleteApplication(ctx, req.Id)
 	if err != nil {
@@ -386,6 +421,17 @@ func fromPBApplicationConfig(c *pb.ApplicationConfig) domain.ApplicationConfig {
 		BuildCmd:       c.BuildCmd,
 		EntrypointCmd:  c.EntrypointCmd,
 		Authentication: fromPBAuthenticationType(c.Authentication),
+	}
+}
+
+func fromPBCreateWebsiteRequest(req *pb.CreateWebsiteRequest) *domain.Website {
+	return &domain.Website{
+		ID:          domain.NewID(),
+		FQDN:        req.Fqdn,
+		PathPrefix:  req.PathPrefix,
+		StripPrefix: req.StripPrefix,
+		HTTPS:       req.Https,
+		HTTPPort:    int(req.HttpPort),
 	}
 }
 

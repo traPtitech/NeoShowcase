@@ -60,6 +60,15 @@ message ApplicationConfig {
   AuthenticationType authentication = 8;
 }
 
+message UpdateApplicationConfigRequest {
+  string base_image = 1;
+  string dockerfile_name = 2;
+  string artifact_path = 3;
+  string build_cmd = 4;
+  string entrypoint_cmd = 5;
+  AuthenticationType authentication = 6;
+}
+
 message Website {
   string id = 1;
   string fqdn = 2;
@@ -75,6 +84,10 @@ message CreateWebsiteRequest {
   bool strip_prefix = 3;
   bool https = 4;
   int32 http_port = 5;
+}
+
+message DeleteWebsiteRequest {
+  string id = 1;
 }
 
 message Application {
@@ -176,6 +189,16 @@ message CreateApplicationRequest {
   bool start_on_create = 7;
 }
 
+message UpdateApplicationRequest {
+  string id = 1;
+  string name = 2;
+  string branch_name = 3;
+  UpdateApplicationConfigRequest config = 4;
+  repeated CreateWebsiteRequest new_websites = 5;
+  repeated DeleteWebsiteRequest delete_websites = 6;
+  repeated string owner_ids = 7;
+}
+
 message ApplicationIdRequest {
   string id = 1;
 }
@@ -215,6 +238,7 @@ service ApplicationService {
   rpc AddAvailableDomain(AvailableDomain) returns (google.protobuf.Empty);
   rpc CreateApplication(CreateApplicationRequest) returns (Application);
   rpc GetApplication(ApplicationIdRequest) returns (Application);
+  rpc UpdateApplication(UpdateApplicationRequest) returns (google.protobuf.Empty);
   rpc DeleteApplication(ApplicationIdRequest) returns (google.protobuf.Empty);
   rpc GetApplicationBuilds(ApplicationIdRequest) returns (GetApplicationBuildsResponse);
   rpc GetApplicationBuild(GetApplicationBuildRequest) returns (Build);

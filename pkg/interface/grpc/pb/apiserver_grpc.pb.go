@@ -30,6 +30,7 @@ type ApplicationServiceClient interface {
 	AddAvailableDomain(ctx context.Context, in *AvailableDomain, opts ...grpc.CallOption) (*emptypb.Empty, error)
 	CreateApplication(ctx context.Context, in *CreateApplicationRequest, opts ...grpc.CallOption) (*Application, error)
 	GetApplication(ctx context.Context, in *ApplicationIdRequest, opts ...grpc.CallOption) (*Application, error)
+	UpdateApplication(ctx context.Context, in *UpdateApplicationRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
 	DeleteApplication(ctx context.Context, in *ApplicationIdRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
 	GetApplicationBuilds(ctx context.Context, in *ApplicationIdRequest, opts ...grpc.CallOption) (*GetApplicationBuildsResponse, error)
 	GetApplicationBuild(ctx context.Context, in *GetApplicationBuildRequest, opts ...grpc.CallOption) (*Build, error)
@@ -110,6 +111,15 @@ func (c *applicationServiceClient) CreateApplication(ctx context.Context, in *Cr
 func (c *applicationServiceClient) GetApplication(ctx context.Context, in *ApplicationIdRequest, opts ...grpc.CallOption) (*Application, error) {
 	out := new(Application)
 	err := c.cc.Invoke(ctx, "/neoshowcase.protobuf.ApplicationService/GetApplication", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *applicationServiceClient) UpdateApplication(ctx context.Context, in *UpdateApplicationRequest, opts ...grpc.CallOption) (*emptypb.Empty, error) {
+	out := new(emptypb.Empty)
+	err := c.cc.Invoke(ctx, "/neoshowcase.protobuf.ApplicationService/UpdateApplication", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -244,6 +254,7 @@ type ApplicationServiceServer interface {
 	AddAvailableDomain(context.Context, *AvailableDomain) (*emptypb.Empty, error)
 	CreateApplication(context.Context, *CreateApplicationRequest) (*Application, error)
 	GetApplication(context.Context, *ApplicationIdRequest) (*Application, error)
+	UpdateApplication(context.Context, *UpdateApplicationRequest) (*emptypb.Empty, error)
 	DeleteApplication(context.Context, *ApplicationIdRequest) (*emptypb.Empty, error)
 	GetApplicationBuilds(context.Context, *ApplicationIdRequest) (*GetApplicationBuildsResponse, error)
 	GetApplicationBuild(context.Context, *GetApplicationBuildRequest) (*Build, error)
@@ -284,6 +295,9 @@ func (UnimplementedApplicationServiceServer) CreateApplication(context.Context, 
 }
 func (UnimplementedApplicationServiceServer) GetApplication(context.Context, *ApplicationIdRequest) (*Application, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetApplication not implemented")
+}
+func (UnimplementedApplicationServiceServer) UpdateApplication(context.Context, *UpdateApplicationRequest) (*emptypb.Empty, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method UpdateApplication not implemented")
 }
 func (UnimplementedApplicationServiceServer) DeleteApplication(context.Context, *ApplicationIdRequest) (*emptypb.Empty, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method DeleteApplication not implemented")
@@ -459,6 +473,24 @@ func _ApplicationService_GetApplication_Handler(srv interface{}, ctx context.Con
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(ApplicationServiceServer).GetApplication(ctx, req.(*ApplicationIdRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _ApplicationService_UpdateApplication_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(UpdateApplicationRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ApplicationServiceServer).UpdateApplication(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/neoshowcase.protobuf.ApplicationService/UpdateApplication",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ApplicationServiceServer).UpdateApplication(ctx, req.(*UpdateApplicationRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -731,6 +763,10 @@ var ApplicationService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "GetApplication",
 			Handler:    _ApplicationService_GetApplication_Handler,
+		},
+		{
+			MethodName: "UpdateApplication",
+			Handler:    _ApplicationService_UpdateApplication_Handler,
 		},
 		{
 			MethodName: "DeleteApplication",

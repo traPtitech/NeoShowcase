@@ -31,6 +31,7 @@ type APIServerService interface {
 	AddAvailableDomain(ctx context.Context, ad *domain.AvailableDomain) error
 	CreateApplication(ctx context.Context, app *domain.Application, startOnCreate bool) (*domain.Application, error)
 	GetApplication(ctx context.Context, id string) (*domain.Application, error)
+	UpdateApplication(ctx context.Context, app *domain.Application, args *domain.UpdateApplicationArgs) error
 	DeleteApplication(ctx context.Context, id string) error
 	GetApplicationBuilds(ctx context.Context, applicationID string) ([]*domain.Build, error)
 	GetApplicationBuild(ctx context.Context, buildID string) (*domain.Build, error)
@@ -193,6 +194,14 @@ func (s *apiServerService) createApplicationDatabase(ctx context.Context, app *d
 func (s *apiServerService) GetApplication(ctx context.Context, id string) (*domain.Application, error) {
 	application, err := s.appRepo.GetApplication(ctx, id)
 	return handleRepoError(application, err)
+}
+
+func (s *apiServerService) UpdateApplication(ctx context.Context, app *domain.Application, args *domain.UpdateApplicationArgs) error {
+	err := s.appRepo.UpdateApplication(ctx, app.ID, args)
+	if err != nil {
+		return err
+	}
+	return s.RetryCommitBuild(ctx, app.ID, app.CurrentCommit)
 }
 
 func (s *apiServerService) DeleteApplication(ctx context.Context, id string) error {

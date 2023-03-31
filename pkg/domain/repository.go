@@ -20,20 +20,21 @@ type GetApplicationCondition struct {
 }
 
 type UpdateApplicationArgs struct {
+	Name          optional.Of[string]
+	BranchName    optional.Of[string]
 	State         optional.Of[ApplicationState]
 	CurrentCommit optional.Of[string]
 	WantCommit    optional.Of[string]
+	Config        optional.Of[ApplicationConfig]
+	Websites      optional.Of[[]*Website]
+	OwnerIDs      optional.Of[[]string]
 }
 
 type ApplicationRepository interface {
 	GetApplications(ctx context.Context, cond GetApplicationCondition) ([]*Application, error)
 	GetApplication(ctx context.Context, id string) (*Application, error)
 	CreateApplication(ctx context.Context, app *Application) error
-	UpdateApplication(ctx context.Context, id string, args UpdateApplicationArgs) error
-	RegisterApplicationOwner(ctx context.Context, applicationID string, userID string) error
-	GetWebsites(ctx context.Context, applicationIDs []string) ([]*Website, error)
-	AddWebsite(ctx context.Context, applicationID string, website *Website) error
-	DeleteWebsite(ctx context.Context, applicationID string, websiteID string) error
+	UpdateApplication(ctx context.Context, id string, args *UpdateApplicationArgs) error
 }
 
 type ArtifactRepository interface {
