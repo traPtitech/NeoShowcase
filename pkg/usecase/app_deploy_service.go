@@ -162,7 +162,7 @@ func (s *appDeployService) getSuccessBuild(ctx context.Context, app *domain.Appl
 }
 
 func (s *appDeployService) recreateContainer(ctx context.Context, app *domain.Application, build *domain.Build) error {
-	envs, err := s.envRepo.GetEnv(ctx, app.ID)
+	envs, err := s.envRepo.GetEnv(ctx, domain.GetEnvCondition{ApplicationID: optional.From(app.ID)})
 	if err != nil {
 		return err
 	}

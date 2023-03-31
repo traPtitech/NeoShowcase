@@ -49,7 +49,7 @@ func runCommand() *cobra.Command {
 			go func() {
 				err := service.Start(context.Background())
 				if err != nil {
-					log.Fatal(err)
+					log.Fatalf("failed to start service: %+v", err)
 				}
 			}()
 
@@ -107,8 +107,21 @@ func main() {
 	viper.SetDefault("mongodb.port", 27017)
 	viper.SetDefault("mongodb.adminUser", "root")
 	viper.SetDefault("mongodb.adminPassword", "password")
+	viper.SetDefault("storage.type", "local")
+	viper.SetDefault("storage.local.dir", "/neoshowcase")
+	viper.SetDefault("storage.s3.bucket", "neoshowcase")
+	viper.SetDefault("storage.s3.endpoint", "")
+	viper.SetDefault("storage.s3.region", "")
+	viper.SetDefault("storage.s3.accessKey", "")
+	viper.SetDefault("storage.s3.accessSecret", "")
+	viper.SetDefault("storage.swift.username", "")
+	viper.SetDefault("storage.swift.apiKey", "")
+	viper.SetDefault("storage.swift.tenantName", "")
+	viper.SetDefault("storage.swift.tenantId", "")
+	viper.SetDefault("storage.swift.container", "neoshowcase")
+	viper.SetDefault("storage.swift.authUrl", "")
 
 	if err := rootCommand.Execute(); err != nil {
-		log.Fatal(err)
+		log.Fatalf("failed to exec: %+v", err)
 	}
 }

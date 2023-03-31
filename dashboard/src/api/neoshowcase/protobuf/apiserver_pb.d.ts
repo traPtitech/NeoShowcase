@@ -403,131 +403,49 @@ export namespace AvailableDomains {
   }
 }
 
-export class ApplicationEnvironmentVariable extends jspb.Message {
+export class ApplicationEnvVar extends jspb.Message {
   getKey(): string;
-  setKey(value: string): ApplicationEnvironmentVariable;
+  setKey(value: string): ApplicationEnvVar;
 
   getValue(): string;
-  setValue(value: string): ApplicationEnvironmentVariable;
+  setValue(value: string): ApplicationEnvVar;
+
+  getSystem(): boolean;
+  setSystem(value: boolean): ApplicationEnvVar;
 
   serializeBinary(): Uint8Array;
-  toObject(includeInstance?: boolean): ApplicationEnvironmentVariable.AsObject;
-  static toObject(includeInstance: boolean, msg: ApplicationEnvironmentVariable): ApplicationEnvironmentVariable.AsObject;
-  static serializeBinaryToWriter(message: ApplicationEnvironmentVariable, writer: jspb.BinaryWriter): void;
-  static deserializeBinary(bytes: Uint8Array): ApplicationEnvironmentVariable;
-  static deserializeBinaryFromReader(message: ApplicationEnvironmentVariable, reader: jspb.BinaryReader): ApplicationEnvironmentVariable;
+  toObject(includeInstance?: boolean): ApplicationEnvVar.AsObject;
+  static toObject(includeInstance: boolean, msg: ApplicationEnvVar): ApplicationEnvVar.AsObject;
+  static serializeBinaryToWriter(message: ApplicationEnvVar, writer: jspb.BinaryWriter): void;
+  static deserializeBinary(bytes: Uint8Array): ApplicationEnvVar;
+  static deserializeBinaryFromReader(message: ApplicationEnvVar, reader: jspb.BinaryReader): ApplicationEnvVar;
 }
 
-export namespace ApplicationEnvironmentVariable {
+export namespace ApplicationEnvVar {
   export type AsObject = {
     key: string,
     value: string,
+    system: boolean,
   }
 }
 
-export class ApplicationEnvironmentVariables extends jspb.Message {
-  getVariablesList(): Array<ApplicationEnvironmentVariable>;
-  setVariablesList(value: Array<ApplicationEnvironmentVariable>): ApplicationEnvironmentVariables;
-  clearVariablesList(): ApplicationEnvironmentVariables;
-  addVariables(value?: ApplicationEnvironmentVariable, index?: number): ApplicationEnvironmentVariable;
+export class ApplicationEnvVars extends jspb.Message {
+  getVariablesList(): Array<ApplicationEnvVar>;
+  setVariablesList(value: Array<ApplicationEnvVar>): ApplicationEnvVars;
+  clearVariablesList(): ApplicationEnvVars;
+  addVariables(value?: ApplicationEnvVar, index?: number): ApplicationEnvVar;
 
   serializeBinary(): Uint8Array;
-  toObject(includeInstance?: boolean): ApplicationEnvironmentVariables.AsObject;
-  static toObject(includeInstance: boolean, msg: ApplicationEnvironmentVariables): ApplicationEnvironmentVariables.AsObject;
-  static serializeBinaryToWriter(message: ApplicationEnvironmentVariables, writer: jspb.BinaryWriter): void;
-  static deserializeBinary(bytes: Uint8Array): ApplicationEnvironmentVariables;
-  static deserializeBinaryFromReader(message: ApplicationEnvironmentVariables, reader: jspb.BinaryReader): ApplicationEnvironmentVariables;
+  toObject(includeInstance?: boolean): ApplicationEnvVars.AsObject;
+  static toObject(includeInstance: boolean, msg: ApplicationEnvVars): ApplicationEnvVars.AsObject;
+  static serializeBinaryToWriter(message: ApplicationEnvVars, writer: jspb.BinaryWriter): void;
+  static deserializeBinary(bytes: Uint8Array): ApplicationEnvVars;
+  static deserializeBinaryFromReader(message: ApplicationEnvVars, reader: jspb.BinaryReader): ApplicationEnvVars;
 }
 
-export namespace ApplicationEnvironmentVariables {
+export namespace ApplicationEnvVars {
   export type AsObject = {
-    variablesList: Array<ApplicationEnvironmentVariable.AsObject>,
-  }
-}
-
-export class MariaDbKey extends jspb.Message {
-  getHost(): string;
-  setHost(value: string): MariaDbKey;
-
-  getDatabase(): string;
-  setDatabase(value: string): MariaDbKey;
-
-  getUser(): string;
-  setUser(value: string): MariaDbKey;
-
-  getPassword(): string;
-  setPassword(value: string): MariaDbKey;
-
-  serializeBinary(): Uint8Array;
-  toObject(includeInstance?: boolean): MariaDbKey.AsObject;
-  static toObject(includeInstance: boolean, msg: MariaDbKey): MariaDbKey.AsObject;
-  static serializeBinaryToWriter(message: MariaDbKey, writer: jspb.BinaryWriter): void;
-  static deserializeBinary(bytes: Uint8Array): MariaDbKey;
-  static deserializeBinaryFromReader(message: MariaDbKey, reader: jspb.BinaryReader): MariaDbKey;
-}
-
-export namespace MariaDbKey {
-  export type AsObject = {
-    host: string,
-    database: string,
-    user: string,
-    password: string,
-  }
-}
-
-export class MongoKey extends jspb.Message {
-  getHost(): string;
-  setHost(value: string): MongoKey;
-
-  getDatabase(): string;
-  setDatabase(value: string): MongoKey;
-
-  getUser(): string;
-  setUser(value: string): MongoKey;
-
-  getPassword(): string;
-  setPassword(value: string): MongoKey;
-
-  serializeBinary(): Uint8Array;
-  toObject(includeInstance?: boolean): MongoKey.AsObject;
-  static toObject(includeInstance: boolean, msg: MongoKey): MongoKey.AsObject;
-  static serializeBinaryToWriter(message: MongoKey, writer: jspb.BinaryWriter): void;
-  static deserializeBinary(bytes: Uint8Array): MongoKey;
-  static deserializeBinaryFromReader(message: MongoKey, reader: jspb.BinaryReader): MongoKey;
-}
-
-export namespace MongoKey {
-  export type AsObject = {
-    host: string,
-    database: string,
-    user: string,
-    password: string,
-  }
-}
-
-export class ApplicationKeys extends jspb.Message {
-  getMariadbkey(): MariaDbKey | undefined;
-  setMariadbkey(value?: MariaDbKey): ApplicationKeys;
-  hasMariadbkey(): boolean;
-  clearMariadbkey(): ApplicationKeys;
-
-  getMongokey(): MongoKey | undefined;
-  setMongokey(value?: MongoKey): ApplicationKeys;
-  hasMongokey(): boolean;
-  clearMongokey(): ApplicationKeys;
-
-  serializeBinary(): Uint8Array;
-  toObject(includeInstance?: boolean): ApplicationKeys.AsObject;
-  static toObject(includeInstance: boolean, msg: ApplicationKeys): ApplicationKeys.AsObject;
-  static serializeBinaryToWriter(message: ApplicationKeys, writer: jspb.BinaryWriter): void;
-  static deserializeBinary(bytes: Uint8Array): ApplicationKeys;
-  static deserializeBinaryFromReader(message: ApplicationKeys, reader: jspb.BinaryReader): ApplicationKeys;
-}
-
-export namespace ApplicationKeys {
-  export type AsObject = {
-    mariadbkey?: MariaDbKey.AsObject,
-    mongokey?: MongoKey.AsObject,
+    variablesList: Array<ApplicationEnvVar.AsObject>,
   }
 }
 
@@ -852,25 +770,25 @@ export namespace GetApplicationBuildLogRequest {
   }
 }
 
-export class SetApplicationEnvironmentVariableRequest extends jspb.Message {
+export class SetApplicationEnvVarRequest extends jspb.Message {
   getApplicationId(): string;
-  setApplicationId(value: string): SetApplicationEnvironmentVariableRequest;
+  setApplicationId(value: string): SetApplicationEnvVarRequest;
 
   getKey(): string;
-  setKey(value: string): SetApplicationEnvironmentVariableRequest;
+  setKey(value: string): SetApplicationEnvVarRequest;
 
   getValue(): string;
-  setValue(value: string): SetApplicationEnvironmentVariableRequest;
+  setValue(value: string): SetApplicationEnvVarRequest;
 
   serializeBinary(): Uint8Array;
-  toObject(includeInstance?: boolean): SetApplicationEnvironmentVariableRequest.AsObject;
-  static toObject(includeInstance: boolean, msg: SetApplicationEnvironmentVariableRequest): SetApplicationEnvironmentVariableRequest.AsObject;
-  static serializeBinaryToWriter(message: SetApplicationEnvironmentVariableRequest, writer: jspb.BinaryWriter): void;
-  static deserializeBinary(bytes: Uint8Array): SetApplicationEnvironmentVariableRequest;
-  static deserializeBinaryFromReader(message: SetApplicationEnvironmentVariableRequest, reader: jspb.BinaryReader): SetApplicationEnvironmentVariableRequest;
+  toObject(includeInstance?: boolean): SetApplicationEnvVarRequest.AsObject;
+  static toObject(includeInstance: boolean, msg: SetApplicationEnvVarRequest): SetApplicationEnvVarRequest.AsObject;
+  static serializeBinaryToWriter(message: SetApplicationEnvVarRequest, writer: jspb.BinaryWriter): void;
+  static deserializeBinary(bytes: Uint8Array): SetApplicationEnvVarRequest;
+  static deserializeBinaryFromReader(message: SetApplicationEnvVarRequest, reader: jspb.BinaryReader): SetApplicationEnvVarRequest;
 }
 
-export namespace SetApplicationEnvironmentVariableRequest {
+export namespace SetApplicationEnvVarRequest {
   export type AsObject = {
     applicationId: string,
     key: string,

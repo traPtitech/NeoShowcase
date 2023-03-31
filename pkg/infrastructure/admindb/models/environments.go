@@ -22,55 +22,55 @@ import (
 )
 
 // Environment is an object representing the database table.
-type Environment struct { // 環境変数ID
-	ID string `boil:"id" json:"id" toml:"id" yaml:"id"`
-	// アプリケーションID
+type Environment struct { // アプリケーションID
 	ApplicationID string `boil:"application_id" json:"application_id" toml:"application_id" yaml:"application_id"`
 	// 環境変数のキー
 	Key string `boil:"key" json:"key" toml:"key" yaml:"key"`
 	// 環境変数の値
 	Value string `boil:"value" json:"value" toml:"value" yaml:"value"`
+	// システムによって設定された環境変数かどうか
+	System bool `boil:"system" json:"system" toml:"system" yaml:"system"`
 
 	R *environmentR `boil:"-" json:"-" toml:"-" yaml:"-"`
 	L environmentL  `boil:"-" json:"-" toml:"-" yaml:"-"`
 }
 
 var EnvironmentColumns = struct {
-	ID            string
 	ApplicationID string
 	Key           string
 	Value         string
+	System        string
 }{
-	ID:            "id",
 	ApplicationID: "application_id",
 	Key:           "key",
 	Value:         "value",
+	System:        "system",
 }
 
 var EnvironmentTableColumns = struct {
-	ID            string
 	ApplicationID string
 	Key           string
 	Value         string
+	System        string
 }{
-	ID:            "environments.id",
 	ApplicationID: "environments.application_id",
 	Key:           "environments.key",
 	Value:         "environments.value",
+	System:        "environments.system",
 }
 
 // Generated where
 
 var EnvironmentWhere = struct {
-	ID            whereHelperstring
 	ApplicationID whereHelperstring
 	Key           whereHelperstring
 	Value         whereHelperstring
+	System        whereHelperbool
 }{
-	ID:            whereHelperstring{field: "`environments`.`id`"},
 	ApplicationID: whereHelperstring{field: "`environments`.`application_id`"},
 	Key:           whereHelperstring{field: "`environments`.`key`"},
 	Value:         whereHelperstring{field: "`environments`.`value`"},
+	System:        whereHelperbool{field: "`environments`.`system`"},
 }
 
 // EnvironmentRels is where relationship names are stored.
@@ -101,10 +101,10 @@ func (r *environmentR) GetApplication() *Application {
 type environmentL struct{}
 
 var (
-	environmentAllColumns            = []string{"id", "application_id", "key", "value"}
-	environmentColumnsWithoutDefault = []string{"id", "application_id", "key", "value"}
+	environmentAllColumns            = []string{"application_id", "key", "value", "system"}
+	environmentColumnsWithoutDefault = []string{"application_id", "key", "value", "system"}
 	environmentColumnsWithDefault    = []string{}
-	environmentPrimaryKeyColumns     = []string{"id"}
+	environmentPrimaryKeyColumns     = []string{"application_id", "key"}
 	environmentGeneratedColumns      = []string{}
 )
 
@@ -533,7 +533,7 @@ func (o *Environment) SetApplication(ctx context.Context, exec boil.ContextExecu
 		strmangle.SetParamNames("`", "`", 0, []string{"application_id"}),
 		strmangle.WhereClause("`", "`", 0, environmentPrimaryKeyColumns),
 	)
-	values := []interface{}{related.ID, o.ID}
+	values := []interface{}{related.ID, o.ApplicationID, o.Key}
 
 	if boil.IsDebug(ctx) {
 		writer := boil.DebugWriterFrom(ctx)
@@ -577,7 +577,7 @@ func Environments(mods ...qm.QueryMod) environmentQuery {
 
 // FindEnvironment retrieves a single record by ID with an executor.
 // If selectCols is empty Find will return all columns.
-func FindEnvironment(ctx context.Context, exec boil.ContextExecutor, iD string, selectCols ...string) (*Environment, error) {
+func FindEnvironment(ctx context.Context, exec boil.ContextExecutor, applicationID string, key string, selectCols ...string) (*Environment, error) {
 	environmentObj := &Environment{}
 
 	sel := "*"
@@ -585,10 +585,10 @@ func FindEnvironment(ctx context.Context, exec boil.ContextExecutor, iD string, 
 		sel = strings.Join(strmangle.IdentQuoteSlice(dialect.LQ, dialect.RQ, selectCols), ",")
 	}
 	query := fmt.Sprintf(
-		"select %s from `environments` where `id`=?", sel,
+		"select %s from `environments` where `application_id`=? AND `key`=?", sel,
 	)
 
-	q := queries.Raw(query, iD)
+	q := queries.Raw(query, applicationID, key)
 
 	err := q.Bind(ctx, exec, environmentObj)
 	if err != nil {
@@ -677,7 +677,8 @@ func (o *Environment) Insert(ctx context.Context, exec boil.ContextExecutor, col
 	}
 
 	identifierCols = []interface{}{
-		o.ID,
+		o.ApplicationID,
+		o.Key,
 	}
 
 	if boil.IsDebug(ctx) {
@@ -828,9 +829,7 @@ func (o EnvironmentSlice) UpdateAll(ctx context.Context, exec boil.ContextExecut
 	return rowsAff, nil
 }
 
-var mySQLEnvironmentUniqueColumns = []string{
-	"id",
-}
+var mySQLEnvironmentUniqueColumns = []string{}
 
 // Upsert attempts an insert using an executor, and does an update or ignore on conflict.
 // See boil.Columns documentation for how to properly use updateColumns and insertColumns.
@@ -978,7 +977,7 @@ func (o *Environment) Delete(ctx context.Context, exec boil.ContextExecutor) (in
 	}
 
 	args := queries.ValuesFromMapping(reflect.Indirect(reflect.ValueOf(o)), environmentPrimaryKeyMapping)
-	sql := "DELETE FROM `environments` WHERE `id`=?"
+	sql := "DELETE FROM `environments` WHERE `application_id`=? AND `key`=?"
 
 	if boil.IsDebug(ctx) {
 		writer := boil.DebugWriterFrom(ctx)
@@ -1075,7 +1074,7 @@ func (o EnvironmentSlice) DeleteAll(ctx context.Context, exec boil.ContextExecut
 // Reload refetches the object from the database
 // using the primary keys with an executor.
 func (o *Environment) Reload(ctx context.Context, exec boil.ContextExecutor) error {
-	ret, err := FindEnvironment(ctx, exec, o.ID)
+	ret, err := FindEnvironment(ctx, exec, o.ApplicationID, o.Key)
 	if err != nil {
 		return err
 	}
@@ -1114,16 +1113,16 @@ func (o *EnvironmentSlice) ReloadAll(ctx context.Context, exec boil.ContextExecu
 }
 
 // EnvironmentExists checks if the Environment row exists.
-func EnvironmentExists(ctx context.Context, exec boil.ContextExecutor, iD string) (bool, error) {
+func EnvironmentExists(ctx context.Context, exec boil.ContextExecutor, applicationID string, key string) (bool, error) {
 	var exists bool
-	sql := "select exists(select 1 from `environments` where `id`=? limit 1)"
+	sql := "select exists(select 1 from `environments` where `application_id`=? AND `key`=? limit 1)"
 
 	if boil.IsDebug(ctx) {
 		writer := boil.DebugWriterFrom(ctx)
 		fmt.Fprintln(writer, sql)
-		fmt.Fprintln(writer, iD)
+		fmt.Fprintln(writer, applicationID, key)
 	}
-	row := exec.QueryRowContext(ctx, sql, iD)
+	row := exec.QueryRowContext(ctx, sql, applicationID, key)
 
 	err := row.Scan(&exists)
 	if err != nil {
@@ -1135,5 +1134,5 @@ func EnvironmentExists(ctx context.Context, exec boil.ContextExecutor, iD string
 
 // Exists checks if the Environment row exists.
 func (o *Environment) Exists(ctx context.Context, exec boil.ContextExecutor) (bool, error) {
-	return EnvironmentExists(ctx, exec, o.ID)
+	return EnvironmentExists(ctx, exec, o.ApplicationID, o.Key)
 }

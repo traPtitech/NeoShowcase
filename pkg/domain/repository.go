@@ -35,10 +35,17 @@ type ApplicationRepository interface {
 	GetApplication(ctx context.Context, id string) (*Application, error)
 	CreateApplication(ctx context.Context, app *Application) error
 	UpdateApplication(ctx context.Context, id string, args *UpdateApplicationArgs) error
+	DeleteApplication(ctx context.Context, id string) error
+}
+
+type GetArtifactCondition struct {
+	ApplicationID optional.Of[string]
 }
 
 type ArtifactRepository interface {
-	CreateArtifact(ctx context.Context, size int64, buildID string, sid string) error
+	GetArtifacts(ctx context.Context, cond GetArtifactCondition) ([]*Artifact, error)
+	CreateArtifact(ctx context.Context, artifact *Artifact) error
+	HardDeleteArtifacts(ctx context.Context, cond GetArtifactCondition) error
 }
 
 type AvailableDomainRepository interface {
@@ -64,16 +71,23 @@ type UpdateBuildArgs struct {
 }
 
 type BuildRepository interface {
-	GetBuilds(ctx context.Context, condition GetBuildCondition) ([]*Build, error)
+	GetBuilds(ctx context.Context, cond GetBuildCondition) ([]*Build, error)
 	GetBuild(ctx context.Context, buildID string) (*Build, error)
 	CreateBuild(ctx context.Context, build *Build) error
 	UpdateBuild(ctx context.Context, id string, args UpdateBuildArgs) error
 	MarkCommitAsRetriable(ctx context.Context, applicationID string, commit string) error
+	DeleteBuilds(ctx context.Context, cond GetBuildCondition) error
+}
+
+type GetEnvCondition struct {
+	ApplicationID optional.Of[string]
+	Key           optional.Of[string]
 }
 
 type EnvironmentRepository interface {
-	GetEnv(ctx context.Context, applicationID string) ([]*Environment, error)
-	SetEnv(ctx context.Context, applicationID, key, value string) error
+	GetEnv(ctx context.Context, cond GetEnvCondition) ([]*Environment, error)
+	SetEnv(ctx context.Context, applicationID string, env *Environment) error
+	DeleteEnv(ctx context.Context, cond GetEnvCondition) error
 }
 
 type GetRepositoryCondition struct {

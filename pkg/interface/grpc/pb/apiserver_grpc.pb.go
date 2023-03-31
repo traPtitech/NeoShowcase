@@ -36,10 +36,9 @@ type ApplicationServiceClient interface {
 	GetApplicationBuild(ctx context.Context, in *GetApplicationBuildRequest, opts ...grpc.CallOption) (*Build, error)
 	GetApplicationBuildLog(ctx context.Context, in *GetApplicationBuildLogRequest, opts ...grpc.CallOption) (*BuildLog, error)
 	GetApplicationBuildArtifact(ctx context.Context, in *ApplicationIdRequest, opts ...grpc.CallOption) (*ApplicationBuildArtifact, error)
-	GetApplicationEnvironmentVariables(ctx context.Context, in *ApplicationIdRequest, opts ...grpc.CallOption) (*ApplicationEnvironmentVariables, error)
-	SetApplicationEnvironmentVariable(ctx context.Context, in *SetApplicationEnvironmentVariableRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
+	GetApplicationEnvVars(ctx context.Context, in *ApplicationIdRequest, opts ...grpc.CallOption) (*ApplicationEnvVars, error)
+	SetApplicationEnvVar(ctx context.Context, in *SetApplicationEnvVarRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
 	GetApplicationOutput(ctx context.Context, in *ApplicationIdRequest, opts ...grpc.CallOption) (*ApplicationOutput, error)
-	GetApplicationKeys(ctx context.Context, in *ApplicationIdRequest, opts ...grpc.CallOption) (*ApplicationKeys, error)
 	CancelBuild(ctx context.Context, in *CancelBuildRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
 	RetryCommitBuild(ctx context.Context, in *RetryCommitBuildRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
 	StartApplication(ctx context.Context, in *ApplicationIdRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
@@ -171,18 +170,18 @@ func (c *applicationServiceClient) GetApplicationBuildArtifact(ctx context.Conte
 	return out, nil
 }
 
-func (c *applicationServiceClient) GetApplicationEnvironmentVariables(ctx context.Context, in *ApplicationIdRequest, opts ...grpc.CallOption) (*ApplicationEnvironmentVariables, error) {
-	out := new(ApplicationEnvironmentVariables)
-	err := c.cc.Invoke(ctx, "/neoshowcase.protobuf.ApplicationService/GetApplicationEnvironmentVariables", in, out, opts...)
+func (c *applicationServiceClient) GetApplicationEnvVars(ctx context.Context, in *ApplicationIdRequest, opts ...grpc.CallOption) (*ApplicationEnvVars, error) {
+	out := new(ApplicationEnvVars)
+	err := c.cc.Invoke(ctx, "/neoshowcase.protobuf.ApplicationService/GetApplicationEnvVars", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
 	return out, nil
 }
 
-func (c *applicationServiceClient) SetApplicationEnvironmentVariable(ctx context.Context, in *SetApplicationEnvironmentVariableRequest, opts ...grpc.CallOption) (*emptypb.Empty, error) {
+func (c *applicationServiceClient) SetApplicationEnvVar(ctx context.Context, in *SetApplicationEnvVarRequest, opts ...grpc.CallOption) (*emptypb.Empty, error) {
 	out := new(emptypb.Empty)
-	err := c.cc.Invoke(ctx, "/neoshowcase.protobuf.ApplicationService/SetApplicationEnvironmentVariable", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/neoshowcase.protobuf.ApplicationService/SetApplicationEnvVar", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -192,15 +191,6 @@ func (c *applicationServiceClient) SetApplicationEnvironmentVariable(ctx context
 func (c *applicationServiceClient) GetApplicationOutput(ctx context.Context, in *ApplicationIdRequest, opts ...grpc.CallOption) (*ApplicationOutput, error) {
 	out := new(ApplicationOutput)
 	err := c.cc.Invoke(ctx, "/neoshowcase.protobuf.ApplicationService/GetApplicationOutput", in, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
-func (c *applicationServiceClient) GetApplicationKeys(ctx context.Context, in *ApplicationIdRequest, opts ...grpc.CallOption) (*ApplicationKeys, error) {
-	out := new(ApplicationKeys)
-	err := c.cc.Invoke(ctx, "/neoshowcase.protobuf.ApplicationService/GetApplicationKeys", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -260,10 +250,9 @@ type ApplicationServiceServer interface {
 	GetApplicationBuild(context.Context, *GetApplicationBuildRequest) (*Build, error)
 	GetApplicationBuildLog(context.Context, *GetApplicationBuildLogRequest) (*BuildLog, error)
 	GetApplicationBuildArtifact(context.Context, *ApplicationIdRequest) (*ApplicationBuildArtifact, error)
-	GetApplicationEnvironmentVariables(context.Context, *ApplicationIdRequest) (*ApplicationEnvironmentVariables, error)
-	SetApplicationEnvironmentVariable(context.Context, *SetApplicationEnvironmentVariableRequest) (*emptypb.Empty, error)
+	GetApplicationEnvVars(context.Context, *ApplicationIdRequest) (*ApplicationEnvVars, error)
+	SetApplicationEnvVar(context.Context, *SetApplicationEnvVarRequest) (*emptypb.Empty, error)
 	GetApplicationOutput(context.Context, *ApplicationIdRequest) (*ApplicationOutput, error)
-	GetApplicationKeys(context.Context, *ApplicationIdRequest) (*ApplicationKeys, error)
 	CancelBuild(context.Context, *CancelBuildRequest) (*emptypb.Empty, error)
 	RetryCommitBuild(context.Context, *RetryCommitBuildRequest) (*emptypb.Empty, error)
 	StartApplication(context.Context, *ApplicationIdRequest) (*emptypb.Empty, error)
@@ -314,17 +303,14 @@ func (UnimplementedApplicationServiceServer) GetApplicationBuildLog(context.Cont
 func (UnimplementedApplicationServiceServer) GetApplicationBuildArtifact(context.Context, *ApplicationIdRequest) (*ApplicationBuildArtifact, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetApplicationBuildArtifact not implemented")
 }
-func (UnimplementedApplicationServiceServer) GetApplicationEnvironmentVariables(context.Context, *ApplicationIdRequest) (*ApplicationEnvironmentVariables, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method GetApplicationEnvironmentVariables not implemented")
+func (UnimplementedApplicationServiceServer) GetApplicationEnvVars(context.Context, *ApplicationIdRequest) (*ApplicationEnvVars, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetApplicationEnvVars not implemented")
 }
-func (UnimplementedApplicationServiceServer) SetApplicationEnvironmentVariable(context.Context, *SetApplicationEnvironmentVariableRequest) (*emptypb.Empty, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method SetApplicationEnvironmentVariable not implemented")
+func (UnimplementedApplicationServiceServer) SetApplicationEnvVar(context.Context, *SetApplicationEnvVarRequest) (*emptypb.Empty, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method SetApplicationEnvVar not implemented")
 }
 func (UnimplementedApplicationServiceServer) GetApplicationOutput(context.Context, *ApplicationIdRequest) (*ApplicationOutput, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetApplicationOutput not implemented")
-}
-func (UnimplementedApplicationServiceServer) GetApplicationKeys(context.Context, *ApplicationIdRequest) (*ApplicationKeys, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method GetApplicationKeys not implemented")
 }
 func (UnimplementedApplicationServiceServer) CancelBuild(context.Context, *CancelBuildRequest) (*emptypb.Empty, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method CancelBuild not implemented")
@@ -585,38 +571,38 @@ func _ApplicationService_GetApplicationBuildArtifact_Handler(srv interface{}, ct
 	return interceptor(ctx, in, info, handler)
 }
 
-func _ApplicationService_GetApplicationEnvironmentVariables_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+func _ApplicationService_GetApplicationEnvVars_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(ApplicationIdRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(ApplicationServiceServer).GetApplicationEnvironmentVariables(ctx, in)
+		return srv.(ApplicationServiceServer).GetApplicationEnvVars(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/neoshowcase.protobuf.ApplicationService/GetApplicationEnvironmentVariables",
+		FullMethod: "/neoshowcase.protobuf.ApplicationService/GetApplicationEnvVars",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(ApplicationServiceServer).GetApplicationEnvironmentVariables(ctx, req.(*ApplicationIdRequest))
+		return srv.(ApplicationServiceServer).GetApplicationEnvVars(ctx, req.(*ApplicationIdRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
-func _ApplicationService_SetApplicationEnvironmentVariable_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(SetApplicationEnvironmentVariableRequest)
+func _ApplicationService_SetApplicationEnvVar_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(SetApplicationEnvVarRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(ApplicationServiceServer).SetApplicationEnvironmentVariable(ctx, in)
+		return srv.(ApplicationServiceServer).SetApplicationEnvVar(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/neoshowcase.protobuf.ApplicationService/SetApplicationEnvironmentVariable",
+		FullMethod: "/neoshowcase.protobuf.ApplicationService/SetApplicationEnvVar",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(ApplicationServiceServer).SetApplicationEnvironmentVariable(ctx, req.(*SetApplicationEnvironmentVariableRequest))
+		return srv.(ApplicationServiceServer).SetApplicationEnvVar(ctx, req.(*SetApplicationEnvVarRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -635,24 +621,6 @@ func _ApplicationService_GetApplicationOutput_Handler(srv interface{}, ctx conte
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(ApplicationServiceServer).GetApplicationOutput(ctx, req.(*ApplicationIdRequest))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
-func _ApplicationService_GetApplicationKeys_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(ApplicationIdRequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(ApplicationServiceServer).GetApplicationKeys(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: "/neoshowcase.protobuf.ApplicationService/GetApplicationKeys",
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(ApplicationServiceServer).GetApplicationKeys(ctx, req.(*ApplicationIdRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -789,20 +757,16 @@ var ApplicationService_ServiceDesc = grpc.ServiceDesc{
 			Handler:    _ApplicationService_GetApplicationBuildArtifact_Handler,
 		},
 		{
-			MethodName: "GetApplicationEnvironmentVariables",
-			Handler:    _ApplicationService_GetApplicationEnvironmentVariables_Handler,
+			MethodName: "GetApplicationEnvVars",
+			Handler:    _ApplicationService_GetApplicationEnvVars_Handler,
 		},
 		{
-			MethodName: "SetApplicationEnvironmentVariable",
-			Handler:    _ApplicationService_SetApplicationEnvironmentVariable_Handler,
+			MethodName: "SetApplicationEnvVar",
+			Handler:    _ApplicationService_SetApplicationEnvVar_Handler,
 		},
 		{
 			MethodName: "GetApplicationOutput",
 			Handler:    _ApplicationService_GetApplicationOutput_Handler,
-		},
-		{
-			MethodName: "GetApplicationKeys",
-			Handler:    _ApplicationService_GetApplicationKeys_Handler,
 		},
 		{
 			MethodName: "CancelBuild",

@@ -24,26 +24,50 @@ type Storage interface {
 	Move(filename, destPath string) error // LocalFile to Storage
 }
 
-// SaveArtifact Artifactをtar形式で保存する
-func SaveArtifact(s Storage, filename string, dstpath string) error {
-	if err := s.Move(filename, dstpath); err != nil {
-		return errors.Wrap(err, "failed to save artifact tar file")
-	}
-
-	return nil
+func buildLogPath(buildID string) string {
+	const buildLogDirectory = "buildlogs"
+	return filepath.Join(buildLogDirectory, buildID)
 }
 
-// SaveLogFile ログファイルを保存する
-func SaveLogFile(s Storage, filename string, dstpath string, buildid string) error {
-	if err := s.Move(filename, dstpath); err != nil {
+func SaveBuildLog(s Storage, filename string, buildID string) error {
+	if err := s.Move(filename, buildLogPath(buildID)); err != nil {
 		return errors.Wrap(err, "failed to move build log")
 	}
 	return nil
 }
 
+func DeleteBuildLog(s Storage, buildID string) error {
+	err := s.Delete(buildLogPath(buildID))
+	if err != nil {
+		return errors.Wrap(err, "failed to delete build log")
+	}
+	return nil
+}
+
+func artifactPath(id string) string {
+	const artifactDirectory = "artifacts"
+	return filepath.Join(artifactDirectory, id+".tar")
+}
+
+// SaveArtifact Artifactをtar形式で保存する
+func SaveArtifact(s Storage, filename string, artifactID string) error {
+	if err := s.Move(filename, artifactPath(artifactID)); err != nil {
+		return errors.Wrap(err, "failed to save artifact")
+	}
+	return nil
+}
+
+func DeleteArtifact(s Storage, artifactID string) error {
+	err := s.Delete(artifactPath(artifactID))
+	if err != nil {
+		return errors.Wrap(err, "failed to delete artifact")
+	}
+	return nil
+}
+
 // ExtractTarToDir tarファイルをディレクトリに展開する
-func ExtractTarToDir(s Storage, sourcePath, destPath string) error {
-	inputFile, err := s.Open(sourcePath)
+func ExtractTarToDir(s Storage, artifactID string, destPath string) error {
+	inputFile, err := s.Open(artifactPath(artifactID))
 	if err != nil {
 		return errors.Wrap(err, "couldn't open source file")
 	}

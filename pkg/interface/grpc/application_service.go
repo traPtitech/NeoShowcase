@@ -229,19 +229,19 @@ func (s *ApplicationService) GetApplicationBuildArtifact(context.Context, *pb.Ap
 	return nil, status.Errorf(codes.Unimplemented, "method GetApplicationBuildArtifact not implemented")
 }
 
-func (s *ApplicationService) GetApplicationEnvironmentVariables(ctx context.Context, req *pb.ApplicationIdRequest) (*pb.ApplicationEnvironmentVariables, error) {
+func (s *ApplicationService) GetApplicationEnvVars(ctx context.Context, req *pb.ApplicationIdRequest) (*pb.ApplicationEnvVars, error) {
 	environments, err := s.svc.GetApplicationEnvironmentVariables(ctx, req.Id)
 	if err != nil {
 		return nil, handleUseCaseError(err)
 	}
-	return &pb.ApplicationEnvironmentVariables{
-		Variables: lo.Map(environments, func(env *domain.Environment, i int) *pb.ApplicationEnvironmentVariable {
+	return &pb.ApplicationEnvVars{
+		Variables: lo.Map(environments, func(env *domain.Environment, i int) *pb.ApplicationEnvVar {
 			return toPBEnvironment(env)
 		}),
 	}, nil
 }
 
-func (s *ApplicationService) SetApplicationEnvironmentVariable(ctx context.Context, req *pb.SetApplicationEnvironmentVariableRequest) (*emptypb.Empty, error) {
+func (s *ApplicationService) SetApplicationEnvVar(ctx context.Context, req *pb.SetApplicationEnvVarRequest) (*emptypb.Empty, error) {
 	err := s.svc.SetApplicationEnvironmentVariable(ctx, req.ApplicationId, req.Key, req.Value)
 	if err != nil {
 		return nil, handleUseCaseError(err)
@@ -251,10 +251,6 @@ func (s *ApplicationService) SetApplicationEnvironmentVariable(ctx context.Conte
 
 func (s *ApplicationService) GetApplicationOutput(context.Context, *pb.ApplicationIdRequest) (*pb.ApplicationOutput, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetApplicationOutput not implemented")
-}
-
-func (s *ApplicationService) GetApplicationKeys(context.Context, *pb.ApplicationIdRequest) (*pb.ApplicationKeys, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method GetApplicationKeys not implemented")
 }
 
 func (s *ApplicationService) CancelBuild(ctx context.Context, req *pb.CancelBuildRequest) (*emptypb.Empty, error) {
@@ -496,9 +492,10 @@ func toPBBuild(build *domain.Build) *pb.Build {
 	}
 }
 
-func toPBEnvironment(env *domain.Environment) *pb.ApplicationEnvironmentVariable {
-	return &pb.ApplicationEnvironmentVariable{
-		Key:   env.Key,
-		Value: env.Value,
+func toPBEnvironment(env *domain.Environment) *pb.ApplicationEnvVar {
+	return &pb.ApplicationEnvVar{
+		Key:    env.Key,
+		Value:  env.Value,
+		System: env.System,
 	}
 }

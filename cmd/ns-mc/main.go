@@ -48,7 +48,7 @@ func serveCommand() *cobra.Command {
 			go func() {
 				err := server.Start(context.Background())
 				if err != nil && err != http.ErrServerClosed {
-					log.Fatal(err)
+					log.Fatalf("failed to start server: %+v", err)
 				}
 			}()
 
@@ -75,7 +75,7 @@ func main() {
 	flags.StringVarP(&cookieName, "cookie-name", "c", cli.GetEnvOrDefault("NS_MC_COOKIE_NAME", "traP_ext_token"), "token cookie name")
 
 	if err := rootCommand.Execute(); err != nil {
-		log.Fatal(err)
+		log.Fatalf("failed to exec: %+v", err)
 	}
 }
 

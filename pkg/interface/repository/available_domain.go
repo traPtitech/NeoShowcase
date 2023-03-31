@@ -28,8 +28,8 @@ func (r *availableDomainRepository) GetAvailableDomains(ctx context.Context) (do
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to get available domains")
 	}
-	dDomains := lo.Map(domains, func(d *models.AvailableDomain, i int) *domain.AvailableDomain {
-		return &domain.AvailableDomain{Domain: d.Domain}
+	dDomains := lo.Map(domains, func(ad *models.AvailableDomain, i int) *domain.AvailableDomain {
+		return toDomainAvailableDomain(ad)
 	})
 	return dDomains, nil
 }

@@ -138,12 +138,11 @@ CREATE TABLE `artifacts`
 
 CREATE TABLE `environments`
 (
-    `id`             CHAR(22)     NOT NULL COMMENT '環境変数ID',
     `application_id` CHAR(22)     NOT NULL COMMENT 'アプリケーションID',
     `key`            VARCHAR(100) NOT NULL COMMENT '環境変数のキー',
     `value`          TEXT         NOT NULL COMMENT '環境変数の値',
-    PRIMARY KEY (`id`),
-    UNIQUE KEY (`application_id`, `key`),
+    `system`         TINYINT(1)   NOT NULL COMMENT 'システムによって設定された環境変数かどうか',
+    PRIMARY KEY (`application_id`, `key`),
     CONSTRAINT `fk_environments_application_id`
         FOREIGN KEY (`application_id`) REFERENCES `applications` (`id`)
 ) ENGINE InnoDB

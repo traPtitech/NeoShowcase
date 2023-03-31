@@ -90,7 +90,7 @@ func (b *BuiltIn) Reconcile(sites []*domain.StaticSite) error {
 
 		// 静的ファイルの配置
 		if !util.FileExists(artifactDir) {
-			if err := domain.ExtractTarToDir(b.storage, filepath.Join("artifacts", site.ArtifactID+".tar"), artifactDir); err != nil {
+			if err := domain.ExtractTarToDir(b.storage, site.ArtifactID, artifactDir); err != nil {
 				return errors.Wrap(err, "failed to extract artifact tar")
 			}
 		}

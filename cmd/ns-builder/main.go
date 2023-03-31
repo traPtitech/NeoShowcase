@@ -43,7 +43,7 @@ func runCommand() *cobra.Command {
 			go func() {
 				err := service.Start(context.Background())
 				if err != nil {
-					log.Fatal(err)
+					log.Fatalf("failed to start service: %+v", err)
 				}
 			}()
 
@@ -98,6 +98,6 @@ func main() {
 	viper.SetDefault("storage.swift.authUrl", "")
 
 	if err := rootCommand.Execute(); err != nil {
-		log.Fatal(err)
+		log.Fatalf("failed to exec: %+v", err)
 	}
 }

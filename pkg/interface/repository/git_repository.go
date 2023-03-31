@@ -33,14 +33,12 @@ func (r *gitRepositoryRepository) GetRepositories(ctx context.Context, cond doma
 	if cond.UserID.Valid {
 		mods = append(mods,
 			qm.InnerJoin(fmt.Sprintf(
-				"%s ON %s.%s = %s.%s",
+				"%s ON %s.repository_id = %s",
 				models.TableNames.RepositoryOwners,
 				models.TableNames.RepositoryOwners,
-				"repository_id",
-				models.TableNames.Repositories,
-				models.RepositoryColumns.ID,
+				models.RepositoryTableColumns.ID,
 			)),
-			qm.Where(fmt.Sprintf("%s.%s = ?", models.TableNames.RepositoryOwners, "user_id"), cond.UserID.V),
+			qm.Where(fmt.Sprintf("%s.user_id = ?", models.TableNames.RepositoryOwners), cond.UserID.V),
 		)
 	}
 

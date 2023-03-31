@@ -2,9 +2,9 @@ package usecase
 
 import (
 	"context"
-	"fmt"
 
 	"github.com/friendsofgo/errors"
+	log "github.com/sirupsen/logrus"
 
 	"github.com/traPtitech/neoshowcase/pkg/domain"
 	"github.com/traPtitech/neoshowcase/pkg/domain/event"
@@ -45,6 +45,7 @@ type APIServerService interface {
 
 type apiServerService struct {
 	bus            domain.Bus
+	artifactRepo   domain.ArtifactRepository
 	appRepo        domain.ApplicationRepository
 	adRepo         domain.AvailableDomainRepository
 	buildRepo      domain.BuildRepository
@@ -52,6 +53,7 @@ type apiServerService struct {
 	gitRepo        domain.GitRepositoryRepository
 	deploySvc      AppDeployService
 	backend        domain.Backend
+	storage        domain.Storage
 	component      domain.ComponentService
 	mariaDBManager domain.MariaDBManager
 	mongoDBManager domain.MongoDBManager
@@ -59,6 +61,7 @@ type apiServerService struct {
 
 func NewAPIServerService(
 	bus domain.Bus,
+	artifactRepo domain.ArtifactRepository,
 	appRepo domain.ApplicationRepository,
 	adRepo domain.AvailableDomainRepository,
 	buildRepo domain.BuildRepository,
@@ -66,12 +69,14 @@ func NewAPIServerService(
 	gitRepo domain.GitRepositoryRepository,
 	deploySvc AppDeployService,
 	backend domain.Backend,
+	storage domain.Storage,
 	component domain.ComponentService,
 	mariaDBManager domain.MariaDBManager,
 	mongoDBManager domain.MongoDBManager,
 ) APIServerService {
 	return &apiServerService{
 		bus:            bus,
+		artifactRepo:   artifactRepo,
 		appRepo:        appRepo,
 		adRepo:         adRepo,
 		buildRepo:      buildRepo,
@@ -79,6 +84,7 @@ func NewAPIServerService(
 		gitRepo:        gitRepo,
 		deploySvc:      deploySvc,
 		backend:        backend,
+		storage:        storage,
 		component:      component,
 		mariaDBManager: mariaDBManager,
 		mongoDBManager: mongoDBManager,
@@ -143,7 +149,7 @@ func (s *apiServerService) CreateApplication(ctx context.Context, app *domain.Ap
 }
 
 func (s *apiServerService) createApplicationDatabase(ctx context.Context, app *domain.Application) error {
-	dbName := fmt.Sprintf("nsapp_%s", app.ID)
+	dbName := domain.DBName(app.ID)
 
 	if app.Config.UseMariaDB {
 		dbPassword := random.SecureGeneratePassword(32)
@@ -151,18 +157,21 @@ func (s *apiServerService) createApplicationDatabase(ctx context.Context, app *d
 			Database: dbName,
 			Password: dbPassword,
 		}
-		if err := s.mariaDBManager.Create(ctx, dbSetting); err != nil {
+		err := s.mariaDBManager.Create(ctx, dbSetting)
+		if err != nil {
 			return err
 		}
 
-		if err := s.envRepo.SetEnv(ctx, app.ID, domain.EnvMySQLUserKey, dbName); err != nil {
-			return err
+		envs := []*domain.Environment{
+			{Key: domain.EnvMySQLUserKey, Value: dbName, System: true},
+			{Key: domain.EnvMySQLPasswordKey, Value: dbPassword, System: true},
+			{Key: domain.EnvMySQLDatabaseKey, Value: dbName, System: true},
 		}
-		if err := s.envRepo.SetEnv(ctx, app.ID, domain.EnvMySQLPasswordKey, dbPassword); err != nil {
-			return err
-		}
-		if err := s.envRepo.SetEnv(ctx, app.ID, domain.EnvMySQLDatabaseKey, dbName); err != nil {
-			return err
+		for _, env := range envs {
+			err = s.envRepo.SetEnv(ctx, app.ID, env)
+			if err != nil {
+				return err
+			}
 		}
 	}
 
@@ -177,13 +186,35 @@ func (s *apiServerService) createApplicationDatabase(ctx context.Context, app *d
 			return err
 		}
 
-		if err := s.envRepo.SetEnv(ctx, app.ID, domain.EnvMongoDBUserKey, dbName); err != nil {
+		envs := []*domain.Environment{
+			{Key: domain.EnvMongoDBUserKey, Value: dbName, System: true},
+			{Key: domain.EnvMongoDBPasswordKey, Value: dbPassword, System: true},
+			{Key: domain.EnvMongoDBDatabaseKey, Value: dbName, System: true},
+		}
+		for _, env := range envs {
+			err = s.envRepo.SetEnv(ctx, app.ID, env)
+			if err != nil {
+				return err
+			}
+		}
+	}
+
+	return nil
+}
+
+func (s *apiServerService) deleteApplicationDatabase(ctx context.Context, app *domain.Application) error {
+	dbName := domain.DBName(app.ID)
+
+	if app.Config.UseMariaDB {
+		err := s.mariaDBManager.Delete(ctx, domain.DeleteArgs{Database: dbName})
+		if err != nil {
 			return err
 		}
-		if err := s.envRepo.SetEnv(ctx, app.ID, domain.EnvMongoDBPasswordKey, dbPassword); err != nil {
-			return err
-		}
-		if err := s.envRepo.SetEnv(ctx, app.ID, domain.EnvMongoDBDatabaseKey, dbName); err != nil {
+	}
+
+	if app.Config.UseMongoDB {
+		err := s.mongoDBManager.Delete(ctx, domain.DeleteArgs{Database: dbName})
+		if err != nil {
 			return err
 		}
 	}
@@ -205,19 +236,64 @@ func (s *apiServerService) UpdateApplication(ctx context.Context, app *domain.Ap
 }
 
 func (s *apiServerService) DeleteApplication(ctx context.Context, id string) error {
-	// TODO implement me
-	panic("implement me")
-	// delete artifacts
-	// delete builds
-	// delete websites
-	// delete environments
-	// delete owners
-	// s.deleteApplicationDatabase()
-}
+	app, err := s.appRepo.GetApplication(ctx, id)
+	if err != nil {
+		return err
+	}
+	if app.State != domain.ApplicationStateIdle {
+		return newError(ErrorTypeBadRequest, "stop the application first before deleting", nil)
+	}
 
-func (s *apiServerService) deleteApplicationDatabase(ctx context.Context, app *domain.Application) error {
-	// TODO implement me
-	panic("implement me")
+	err = s.deleteApplicationDatabase(ctx, app)
+	if err != nil {
+		return err
+	}
+
+	// delete artifacts
+	artifacts, err := s.artifactRepo.GetArtifacts(ctx, domain.GetArtifactCondition{ApplicationID: optional.From(app.ID)})
+	if err != nil {
+		return err
+	}
+	for _, artifact := range artifacts {
+		if artifact.DeletedAt.Valid {
+			continue
+		}
+		err = domain.DeleteArtifact(s.storage, artifact.ID)
+		if err != nil {
+			log.Errorf("failed to delete artifact: %+v", err) // fail-safe
+		}
+	}
+	err = s.artifactRepo.HardDeleteArtifacts(ctx, domain.GetArtifactCondition{ApplicationID: optional.From(app.ID)})
+	if err != nil {
+		return err
+	}
+	// delete builds
+	builds, err := s.buildRepo.GetBuilds(ctx, domain.GetBuildCondition{ApplicationID: optional.From(app.ID)})
+	if err != nil {
+		return err
+	}
+	for _, build := range builds {
+		err = domain.DeleteBuildLog(s.storage, build.ID)
+		if err != nil {
+			log.Errorf("failed to delete build log: %+v", err) // fail-safe
+		}
+	}
+	err = s.buildRepo.DeleteBuilds(ctx, domain.GetBuildCondition{ApplicationID: optional.From(app.ID)})
+	if err != nil {
+		return err
+	}
+	// delete environments
+	err = s.envRepo.DeleteEnv(ctx, domain.GetEnvCondition{ApplicationID: optional.From(app.ID)})
+	if err != nil {
+		return err
+	}
+	// delete websites, owners, application
+	err = s.appRepo.DeleteApplication(ctx, app.ID)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
 
 func (s *apiServerService) GetApplicationBuilds(ctx context.Context, applicationID string) ([]*domain.Build, error) {
@@ -230,11 +306,12 @@ func (s *apiServerService) GetApplicationBuild(ctx context.Context, buildID stri
 }
 
 func (s *apiServerService) GetApplicationEnvironmentVariables(ctx context.Context, applicationID string) ([]*domain.Environment, error) {
-	return s.envRepo.GetEnv(ctx, applicationID)
+	return s.envRepo.GetEnv(ctx, domain.GetEnvCondition{ApplicationID: optional.From(applicationID)})
 }
 
 func (s *apiServerService) SetApplicationEnvironmentVariable(ctx context.Context, applicationID string, key string, value string) error {
-	return s.envRepo.SetEnv(ctx, applicationID, key, value)
+	env := &domain.Environment{Key: key, Value: value, System: false}
+	return s.envRepo.SetEnv(ctx, applicationID, env)
 }
 
 func (s *apiServerService) CancelBuild(_ context.Context, buildID string) error {

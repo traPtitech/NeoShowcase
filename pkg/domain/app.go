@@ -119,8 +119,19 @@ type Application struct {
 
 type Artifact struct {
 	ID        string
+	BuildID   string
 	Size      int64
 	CreatedAt time.Time
+	DeletedAt optional.Of[time.Time]
+}
+
+func NewArtifact(buildID string, size int64) *Artifact {
+	return &Artifact{
+		ID:        NewID(),
+		BuildID:   buildID,
+		Size:      size,
+		CreatedAt: time.Now(),
+	}
 }
 
 func IsValidDomain(domain string) bool {
@@ -194,10 +205,9 @@ func NewBuild(applicationID string, commit string) *Build {
 }
 
 type Environment struct {
-	ID            string
-	ApplicationID string
-	Key           string
-	Value         string
+	Key    string
+	Value  string
+	System bool
 }
 
 type Repository struct {

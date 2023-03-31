@@ -599,90 +599,90 @@ export class ApplicationServiceClient {
     this.methodDescriptorGetApplicationBuildArtifact);
   }
 
-  methodDescriptorGetApplicationEnvironmentVariables = new grpcWeb.MethodDescriptor(
-    '/neoshowcase.protobuf.ApplicationService/GetApplicationEnvironmentVariables',
+  methodDescriptorGetApplicationEnvVars = new grpcWeb.MethodDescriptor(
+    '/neoshowcase.protobuf.ApplicationService/GetApplicationEnvVars',
     grpcWeb.MethodType.UNARY,
     neoshowcase_protobuf_apiserver_pb.ApplicationIdRequest,
-    neoshowcase_protobuf_apiserver_pb.ApplicationEnvironmentVariables,
+    neoshowcase_protobuf_apiserver_pb.ApplicationEnvVars,
     (request: neoshowcase_protobuf_apiserver_pb.ApplicationIdRequest) => {
       return request.serializeBinary();
     },
-    neoshowcase_protobuf_apiserver_pb.ApplicationEnvironmentVariables.deserializeBinary
+    neoshowcase_protobuf_apiserver_pb.ApplicationEnvVars.deserializeBinary
   );
 
-  getApplicationEnvironmentVariables(
+  getApplicationEnvVars(
     request: neoshowcase_protobuf_apiserver_pb.ApplicationIdRequest,
-    metadata: grpcWeb.Metadata | null): Promise<neoshowcase_protobuf_apiserver_pb.ApplicationEnvironmentVariables>;
+    metadata: grpcWeb.Metadata | null): Promise<neoshowcase_protobuf_apiserver_pb.ApplicationEnvVars>;
 
-  getApplicationEnvironmentVariables(
+  getApplicationEnvVars(
     request: neoshowcase_protobuf_apiserver_pb.ApplicationIdRequest,
     metadata: grpcWeb.Metadata | null,
     callback: (err: grpcWeb.RpcError,
-               response: neoshowcase_protobuf_apiserver_pb.ApplicationEnvironmentVariables) => void): grpcWeb.ClientReadableStream<neoshowcase_protobuf_apiserver_pb.ApplicationEnvironmentVariables>;
+               response: neoshowcase_protobuf_apiserver_pb.ApplicationEnvVars) => void): grpcWeb.ClientReadableStream<neoshowcase_protobuf_apiserver_pb.ApplicationEnvVars>;
 
-  getApplicationEnvironmentVariables(
+  getApplicationEnvVars(
     request: neoshowcase_protobuf_apiserver_pb.ApplicationIdRequest,
     metadata: grpcWeb.Metadata | null,
     callback?: (err: grpcWeb.RpcError,
-               response: neoshowcase_protobuf_apiserver_pb.ApplicationEnvironmentVariables) => void) {
+               response: neoshowcase_protobuf_apiserver_pb.ApplicationEnvVars) => void) {
     if (callback !== undefined) {
       return this.client_.rpcCall(
         this.hostname_ +
-          '/neoshowcase.protobuf.ApplicationService/GetApplicationEnvironmentVariables',
+          '/neoshowcase.protobuf.ApplicationService/GetApplicationEnvVars',
         request,
         metadata || {},
-        this.methodDescriptorGetApplicationEnvironmentVariables,
+        this.methodDescriptorGetApplicationEnvVars,
         callback);
     }
     return this.client_.unaryCall(
     this.hostname_ +
-      '/neoshowcase.protobuf.ApplicationService/GetApplicationEnvironmentVariables',
+      '/neoshowcase.protobuf.ApplicationService/GetApplicationEnvVars',
     request,
     metadata || {},
-    this.methodDescriptorGetApplicationEnvironmentVariables);
+    this.methodDescriptorGetApplicationEnvVars);
   }
 
-  methodDescriptorSetApplicationEnvironmentVariable = new grpcWeb.MethodDescriptor(
-    '/neoshowcase.protobuf.ApplicationService/SetApplicationEnvironmentVariable',
+  methodDescriptorSetApplicationEnvVar = new grpcWeb.MethodDescriptor(
+    '/neoshowcase.protobuf.ApplicationService/SetApplicationEnvVar',
     grpcWeb.MethodType.UNARY,
-    neoshowcase_protobuf_apiserver_pb.SetApplicationEnvironmentVariableRequest,
+    neoshowcase_protobuf_apiserver_pb.SetApplicationEnvVarRequest,
     google_protobuf_empty_pb.Empty,
-    (request: neoshowcase_protobuf_apiserver_pb.SetApplicationEnvironmentVariableRequest) => {
+    (request: neoshowcase_protobuf_apiserver_pb.SetApplicationEnvVarRequest) => {
       return request.serializeBinary();
     },
     google_protobuf_empty_pb.Empty.deserializeBinary
   );
 
-  setApplicationEnvironmentVariable(
-    request: neoshowcase_protobuf_apiserver_pb.SetApplicationEnvironmentVariableRequest,
+  setApplicationEnvVar(
+    request: neoshowcase_protobuf_apiserver_pb.SetApplicationEnvVarRequest,
     metadata: grpcWeb.Metadata | null): Promise<google_protobuf_empty_pb.Empty>;
 
-  setApplicationEnvironmentVariable(
-    request: neoshowcase_protobuf_apiserver_pb.SetApplicationEnvironmentVariableRequest,
+  setApplicationEnvVar(
+    request: neoshowcase_protobuf_apiserver_pb.SetApplicationEnvVarRequest,
     metadata: grpcWeb.Metadata | null,
     callback: (err: grpcWeb.RpcError,
                response: google_protobuf_empty_pb.Empty) => void): grpcWeb.ClientReadableStream<google_protobuf_empty_pb.Empty>;
 
-  setApplicationEnvironmentVariable(
-    request: neoshowcase_protobuf_apiserver_pb.SetApplicationEnvironmentVariableRequest,
+  setApplicationEnvVar(
+    request: neoshowcase_protobuf_apiserver_pb.SetApplicationEnvVarRequest,
     metadata: grpcWeb.Metadata | null,
     callback?: (err: grpcWeb.RpcError,
                response: google_protobuf_empty_pb.Empty) => void) {
     if (callback !== undefined) {
       return this.client_.rpcCall(
         this.hostname_ +
-          '/neoshowcase.protobuf.ApplicationService/SetApplicationEnvironmentVariable',
+          '/neoshowcase.protobuf.ApplicationService/SetApplicationEnvVar',
         request,
         metadata || {},
-        this.methodDescriptorSetApplicationEnvironmentVariable,
+        this.methodDescriptorSetApplicationEnvVar,
         callback);
     }
     return this.client_.unaryCall(
     this.hostname_ +
-      '/neoshowcase.protobuf.ApplicationService/SetApplicationEnvironmentVariable',
+      '/neoshowcase.protobuf.ApplicationService/SetApplicationEnvVar',
     request,
     metadata || {},
-    this.methodDescriptorSetApplicationEnvironmentVariable);
+    this.methodDescriptorSetApplicationEnvVar);
   }
 
   methodDescriptorGetApplicationOutput = new grpcWeb.MethodDescriptor(
@@ -726,49 +726,6 @@ export class ApplicationServiceClient {
     request,
     metadata || {},
     this.methodDescriptorGetApplicationOutput);
-  }
-
-  methodDescriptorGetApplicationKeys = new grpcWeb.MethodDescriptor(
-    '/neoshowcase.protobuf.ApplicationService/GetApplicationKeys',
-    grpcWeb.MethodType.UNARY,
-    neoshowcase_protobuf_apiserver_pb.ApplicationIdRequest,
-    neoshowcase_protobuf_apiserver_pb.ApplicationKeys,
-    (request: neoshowcase_protobuf_apiserver_pb.ApplicationIdRequest) => {
-      return request.serializeBinary();
-    },
-    neoshowcase_protobuf_apiserver_pb.ApplicationKeys.deserializeBinary
-  );
-
-  getApplicationKeys(
-    request: neoshowcase_protobuf_apiserver_pb.ApplicationIdRequest,
-    metadata: grpcWeb.Metadata | null): Promise<neoshowcase_protobuf_apiserver_pb.ApplicationKeys>;
-
-  getApplicationKeys(
-    request: neoshowcase_protobuf_apiserver_pb.ApplicationIdRequest,
-    metadata: grpcWeb.Metadata | null,
-    callback: (err: grpcWeb.RpcError,
-               response: neoshowcase_protobuf_apiserver_pb.ApplicationKeys) => void): grpcWeb.ClientReadableStream<neoshowcase_protobuf_apiserver_pb.ApplicationKeys>;
-
-  getApplicationKeys(
-    request: neoshowcase_protobuf_apiserver_pb.ApplicationIdRequest,
-    metadata: grpcWeb.Metadata | null,
-    callback?: (err: grpcWeb.RpcError,
-               response: neoshowcase_protobuf_apiserver_pb.ApplicationKeys) => void) {
-    if (callback !== undefined) {
-      return this.client_.rpcCall(
-        this.hostname_ +
-          '/neoshowcase.protobuf.ApplicationService/GetApplicationKeys',
-        request,
-        metadata || {},
-        this.methodDescriptorGetApplicationKeys,
-        callback);
-    }
-    return this.client_.unaryCall(
-    this.hostname_ +
-      '/neoshowcase.protobuf.ApplicationService/GetApplicationKeys',
-    request,
-    metadata || {},
-    this.methodDescriptorGetApplicationKeys);
   }
 
   methodDescriptorCancelBuild = new grpcWeb.MethodDescriptor(

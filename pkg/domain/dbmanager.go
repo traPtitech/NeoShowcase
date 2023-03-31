@@ -2,6 +2,10 @@ package domain
 
 import "context"
 
+func DBName(applicationID string) string {
+	return "nsapp_" + applicationID
+}
+
 // CreateArgs データベース作成引数
 type CreateArgs struct {
 	// Database データベース/ユーザー名
