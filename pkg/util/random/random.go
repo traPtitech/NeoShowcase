@@ -2,6 +2,7 @@ package random
 
 import (
 	"crypto/rand"
+	"encoding/hex"
 	"math/big"
 	"strings"
 )
@@ -21,7 +22,6 @@ func SecureGenerate(charset []rune, length int) string {
 }
 
 const (
-	hex             = "0123456789abcdef"
 	lowerCharSet    = "abcdefghijklmnopqrstuvwxyz"
 	upperCharSet    = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
 	symbolCharSet   = "!@#$%&*"
@@ -30,12 +30,17 @@ const (
 )
 
 var (
-	hexRunes      = []rune(hex)
 	passwordRunes = []rune(passwordCharSet)
 )
 
 func SecureGenerateHex(length int) string {
-	return SecureGenerate(hexRunes, length)
+	byteLength := (length + 1) / 2
+	b := make([]byte, byteLength)
+	_, err := rand.Read(b[:])
+	if err != nil {
+		panic(err)
+	}
+	return hex.EncodeToString(b[:])
 }
 
 func SecureGeneratePassword(length int) string {

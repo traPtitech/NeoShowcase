@@ -74,7 +74,7 @@ func (s *appDeployService) Synchronize(appID string, restart bool) (started bool
 		err := s.synchronize(ctx, appID, restart)
 		if err != nil {
 			log.Errorf("failed to synchronize app: %+v", err)
-			err = s.appRepo.UpdateApplication(ctx, appID, domain.UpdateApplicationArgs{State: optional.From(domain.ApplicationStateErrored)})
+			err = s.appRepo.UpdateApplication(ctx, appID, &domain.UpdateApplicationArgs{State: optional.From(domain.ApplicationStateErrored)})
 			if err != nil {
 				log.Errorf("failed to update application state: %+v", err)
 			}
@@ -102,7 +102,7 @@ func (s *appDeployService) synchronize(ctx context.Context, appID string, restar
 
 	// Mark application as started if idle
 	if app.State == domain.ApplicationStateIdle {
-		err = s.appRepo.UpdateApplication(ctx, app.ID, domain.UpdateApplicationArgs{State: optional.From(domain.ApplicationStateDeploying)})
+		err = s.appRepo.UpdateApplication(ctx, app.ID, &domain.UpdateApplicationArgs{State: optional.From(domain.ApplicationStateDeploying)})
 		if err != nil {
 			return err
 		}
@@ -120,7 +120,7 @@ func (s *appDeployService) synchronize(ctx context.Context, appID string, restar
 	doDeploy := restart || (!restart && app.WantCommit != app.CurrentCommit)
 
 	if doDeploy && app.BuildType == builder.BuildTypeRuntime {
-		err = s.appRepo.UpdateApplication(ctx, app.ID, domain.UpdateApplicationArgs{State: optional.From(domain.ApplicationStateDeploying)})
+		err = s.appRepo.UpdateApplication(ctx, app.ID, &domain.UpdateApplicationArgs{State: optional.From(domain.ApplicationStateDeploying)})
 		if err != nil {
 			return err
 		}
@@ -131,7 +131,7 @@ func (s *appDeployService) synchronize(ctx context.Context, appID string, restar
 		}
 	}
 
-	err = s.appRepo.UpdateApplication(ctx, app.ID, domain.UpdateApplicationArgs{
+	err = s.appRepo.UpdateApplication(ctx, app.ID, &domain.UpdateApplicationArgs{
 		State:         optional.From(domain.ApplicationStateRunning),
 		CurrentCommit: optional.From(build.Commit),
 	})
@@ -189,7 +189,7 @@ func (s *appDeployService) Stop(appID string) (started bool) {
 		err := s.stop(ctx, appID)
 		if err != nil {
 			log.Errorf("failed to stop app: %+v", err)
-			err = s.appRepo.UpdateApplication(ctx, appID, domain.UpdateApplicationArgs{State: optional.From(domain.ApplicationStateErrored)})
+			err = s.appRepo.UpdateApplication(ctx, appID, &domain.UpdateApplicationArgs{State: optional.From(domain.ApplicationStateErrored)})
 			if err != nil {
 				log.Errorf("failed to update application state: %+v", err)
 			}
@@ -212,7 +212,7 @@ func (s *appDeployService) stop(ctx context.Context, appID string) error {
 		}
 	}
 
-	err = s.appRepo.UpdateApplication(ctx, app.ID, domain.UpdateApplicationArgs{State: optional.From(domain.ApplicationStateIdle)})
+	err = s.appRepo.UpdateApplication(ctx, app.ID, &domain.UpdateApplicationArgs{State: optional.From(domain.ApplicationStateIdle)})
 	if err != nil {
 		return errors.Wrap(err, "failed to update application state")
 	}

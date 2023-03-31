@@ -246,14 +246,17 @@
 <!-- available_domains -->
 <g id="node6" class="node">
 <title>available_domains</title>
-<polygon fill="#efefef" stroke="transparent" points="2138.5,-1263.5 2138.5,-1298.5 2398.5,-1298.5 2398.5,-1263.5 2138.5,-1263.5"/>
-<polygon fill="none" stroke="#000000" points="2138.5,-1263.5 2138.5,-1298.5 2398.5,-1298.5 2398.5,-1263.5 2138.5,-1263.5"/>
-<text text-anchor="start" x="2145.3576" y="-1276.3" font-family="Arial Bold" font-size="18.00" fill="#000000">available_domains</text>
-<text text-anchor="start" x="2294.3886" y="-1276.3" font-family="Arial" font-size="14.00" fill="#000000"> </text>
-<text text-anchor="start" x="2298.2792" y="-1276.3" font-family="Arial" font-size="14.00" fill="#666666">[BASE TABLE]</text>
-<polygon fill="none" stroke="#000000" points="2138.5,-1233.5 2138.5,-1263.5 2398.5,-1263.5 2398.5,-1233.5 2138.5,-1233.5"/>
-<text text-anchor="start" x="2145.5" y="-1244.9" font-family="Arial" font-size="14.00" fill="#000000">domain </text>
-<text text-anchor="start" x="2195.2882" y="-1244.9" font-family="Arial" font-size="14.00" fill="#666666">[varchar(100)]</text>
+<polygon fill="#efefef" stroke="transparent" points="2138.5,-1278.5 2138.5,-1313.5 2398.5,-1313.5 2398.5,-1278.5 2138.5,-1278.5"/>
+<polygon fill="none" stroke="#000000" points="2138.5,-1278.5 2138.5,-1313.5 2398.5,-1313.5 2398.5,-1278.5 2138.5,-1278.5"/>
+<text text-anchor="start" x="2145.3576" y="-1291.3" font-family="Arial Bold" font-size="18.00" fill="#000000">available_domains</text>
+<text text-anchor="start" x="2294.3886" y="-1291.3" font-family="Arial" font-size="14.00" fill="#000000"> </text>
+<text text-anchor="start" x="2298.2792" y="-1291.3" font-family="Arial" font-size="14.00" fill="#666666">[BASE TABLE]</text>
+<polygon fill="none" stroke="#000000" points="2138.5,-1248.5 2138.5,-1278.5 2398.5,-1278.5 2398.5,-1248.5 2138.5,-1248.5"/>
+<text text-anchor="start" x="2145.5" y="-1259.9" font-family="Arial" font-size="14.00" fill="#000000">domain </text>
+<text text-anchor="start" x="2195.2882" y="-1259.9" font-family="Arial" font-size="14.00" fill="#666666">[varchar(100)]</text>
+<polygon fill="none" stroke="#000000" points="2138.5,-1218.5 2138.5,-1248.5 2398.5,-1248.5 2398.5,-1218.5 2138.5,-1218.5"/>
+<text text-anchor="start" x="2145.5" y="-1229.9" font-family="Arial" font-size="14.00" fill="#000000">available </text>
+<text text-anchor="start" x="2204.6234" y="-1229.9" font-family="Arial" font-size="14.00" fill="#666666">[tinyint(1)]</text>
 </g>
 <!-- builds&#45;&gt;applications -->
 <g id="edge7" class="edge">

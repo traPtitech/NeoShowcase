@@ -1,7 +1,8 @@
 -- +migrate Up
 CREATE TABLE `available_domains`
 (
-    `domain` VARCHAR(100) NOT NULL COMMENT 'ドメイン',
+    `domain`    VARCHAR(100) NOT NULL COMMENT 'ドメイン',
+    `available` TINYINT(1)   NOT NULL COMMENT '利用可能かどうか',
     PRIMARY KEY (`domain`)
 ) ENGINE = InnoDB
   DEFAULT CHARACTER SET = `utf8mb4`
@@ -9,7 +10,7 @@ CREATE TABLE `available_domains`
 
 CREATE TABLE `repositories`
 (
-    `id`   CHAR(22)  NOT NULL COMMENT 'リポジトリID',
+    `id`   CHAR(22)     NOT NULL COMMENT 'リポジトリID',
     `name` VARCHAR(256) NOT NULL COMMENT 'リポジトリ名',
     `url`  VARCHAR(256) NOT NULL COMMENT 'Git Remote URL',
     PRIMARY KEY (`id`),
@@ -20,7 +21,7 @@ CREATE TABLE `repositories`
 
 CREATE TABLE `repository_auth`
 (
-    `repository_id` CHAR(22)           NOT NULL COMMENT 'リポジトリID',
+    `repository_id` CHAR(22)              NOT NULL COMMENT 'リポジトリID',
     `method`        ENUM ('basic', 'ssh') NOT NULL COMMENT '認証方法',
     `username`      VARCHAR(256)          NOT NULL COMMENT '(basic)ユーザー名',
     `password`      VARCHAR(256)          NOT NULL COMMENT '(basic)パスワード',
@@ -48,7 +49,7 @@ VALUES ('IDLE'),
 
 CREATE TABLE `applications`
 (
-    `id`             CHAR(22)                NOT NULL COMMENT 'アプリケーションID',
+    `id`             CHAR(22)                   NOT NULL COMMENT 'アプリケーションID',
     `name`           VARCHAR(100)               NOT NULL COMMENT 'アプリケーション名',
     `repository_id`  VARCHAR(22)                NOT NULL COMMENT 'リポジトリID',
     `branch_name`    VARCHAR(100)               NOT NULL COMMENT 'Gitブランチ・タグ名',
@@ -69,7 +70,7 @@ CREATE TABLE `applications`
 
 CREATE TABLE `application_config`
 (
-    `application_id`  CHAR(22)                  NOT NULL COMMENT 'アプリケーションID',
+    `application_id`  CHAR(22)                     NOT NULL COMMENT 'アプリケーションID',
     `use_mariadb`     TINYINT(1)                   NOT NULL COMMENT 'MariaDBを使用するか',
     `use_mongodb`     TINYINT(1)                   NOT NULL COMMENT 'MongoDBを使用するか',
     `base_image`      VARCHAR(1000)                NOT NULL COMMENT 'ベースイメージの名前',
@@ -103,14 +104,14 @@ VALUES ('BUILDING'),
 
 CREATE TABLE `builds`
 (
-    `id`             CHAR(22) NOT NULL COMMENT 'ビルドID',
+    `id`             CHAR(22)    NOT NULL COMMENT 'ビルドID',
     `commit`         CHAR(40)    NOT NULL COMMENT 'コミットハッシュ',
     `status`         VARCHAR(10) NOT NULL COMMENT 'ビルドの状態',
     `started_at`     DATETIME(6) NULL COMMENT 'ビルド開始日時',
     `updated_at`     DATETIME(6) NULL COMMENT 'ビルド更新日時',
     `finished_at`    DATETIME(6) NULL COMMENT 'ビルド終了日時',
     `retriable`      TINYINT(1)  NOT NULL COMMENT '再ビルド可能フラグ',
-    `application_id` CHAR(22) NOT NULL COMMENT 'アプリケーションID',
+    `application_id` CHAR(22)    NOT NULL COMMENT 'アプリケーションID',
     PRIMARY KEY (`id`),
     CONSTRAINT `fk_builds_status`
         FOREIGN KEY (`status`) REFERENCES `build_status` (`status`),
@@ -122,7 +123,7 @@ CREATE TABLE `builds`
 
 CREATE TABLE `artifacts`
 (
-    `id`         CHAR(22) NOT NULL COMMENT '生成物ID',
+    `id`         CHAR(22)    NOT NULL COMMENT '生成物ID',
     `size`       BIGINT      NOT NULL COMMENT '生成物ファイルサイズ(tar)',
     `created_at` DATETIME(6) NOT NULL COMMENT '作成日時',
     `deleted_at` DATETIME(6) NULL COMMENT '削除日時',
@@ -137,8 +138,8 @@ CREATE TABLE `artifacts`
 
 CREATE TABLE `environments`
 (
-    `id`             CHAR(22)  NOT NULL COMMENT '環境変数ID',
-    `application_id` CHAR(22)  NOT NULL COMMENT 'アプリケーションID',
+    `id`             CHAR(22)     NOT NULL COMMENT '環境変数ID',
+    `application_id` CHAR(22)     NOT NULL COMMENT 'アプリケーションID',
     `key`            VARCHAR(100) NOT NULL COMMENT '環境変数のキー',
     `value`          TEXT         NOT NULL COMMENT '環境変数の値',
     PRIMARY KEY (`id`),
@@ -151,7 +152,7 @@ CREATE TABLE `environments`
 
 CREATE TABLE `websites`
 (
-    `id`             CHAR(22)    NOT NULL COMMENT 'サイトID',
+    `id`             CHAR(22)       NOT NULL COMMENT 'サイトID',
     `fqdn`           VARCHAR(100)   NOT NULL COMMENT 'サイトURLのFQDN',
     `path_prefix`    VARCHAR(100)   NOT NULL COMMENT 'サイトPathのPrefix',
     `strip_prefix`   TINYINT(1)     NOT NULL COMMENT 'PathのPrefixを落とすかどうか',
@@ -159,7 +160,7 @@ CREATE TABLE `websites`
     `http_port`      INT DEFAULT 80 NOT NULL COMMENT 'コンテナhttpポート番号',
     `created_at`     DATETIME(6)    NOT NULL COMMENT '作成日時',
     `updated_at`     DATETIME(6)    NOT NULL COMMENT '更新日時',
-    `application_id` CHAR(22)    NOT NULL COMMENT 'アプリケーションID',
+    `application_id` CHAR(22)       NOT NULL COMMENT 'アプリケーションID',
     PRIMARY KEY (`id`),
     UNIQUE KEY (`fqdn`, `path_prefix`),
     CONSTRAINT `fk_websites_application_id`
@@ -170,7 +171,7 @@ CREATE TABLE `websites`
 
 CREATE TABLE `users`
 (
-    `id`   CHAR(22)  NOT NULL COMMENT 'ユーザーID',
+    `id`   CHAR(22)     NOT NULL COMMENT 'ユーザーID',
     `name` VARCHAR(255) NOT NULL COMMENT 'ユーザー名',
     PRIMARY KEY (`id`)
 ) ENGINE InnoDB

@@ -169,6 +169,44 @@ export namespace ApplicationConfig {
   }
 }
 
+export class UpdateApplicationConfigRequest extends jspb.Message {
+  getBaseImage(): string;
+  setBaseImage(value: string): UpdateApplicationConfigRequest;
+
+  getDockerfileName(): string;
+  setDockerfileName(value: string): UpdateApplicationConfigRequest;
+
+  getArtifactPath(): string;
+  setArtifactPath(value: string): UpdateApplicationConfigRequest;
+
+  getBuildCmd(): string;
+  setBuildCmd(value: string): UpdateApplicationConfigRequest;
+
+  getEntrypointCmd(): string;
+  setEntrypointCmd(value: string): UpdateApplicationConfigRequest;
+
+  getAuthentication(): AuthenticationType;
+  setAuthentication(value: AuthenticationType): UpdateApplicationConfigRequest;
+
+  serializeBinary(): Uint8Array;
+  toObject(includeInstance?: boolean): UpdateApplicationConfigRequest.AsObject;
+  static toObject(includeInstance: boolean, msg: UpdateApplicationConfigRequest): UpdateApplicationConfigRequest.AsObject;
+  static serializeBinaryToWriter(message: UpdateApplicationConfigRequest, writer: jspb.BinaryWriter): void;
+  static deserializeBinary(bytes: Uint8Array): UpdateApplicationConfigRequest;
+  static deserializeBinaryFromReader(message: UpdateApplicationConfigRequest, reader: jspb.BinaryReader): UpdateApplicationConfigRequest;
+}
+
+export namespace UpdateApplicationConfigRequest {
+  export type AsObject = {
+    baseImage: string,
+    dockerfileName: string,
+    artifactPath: string,
+    buildCmd: string,
+    entrypointCmd: string,
+    authentication: AuthenticationType,
+  }
+}
+
 export class Website extends jspb.Message {
   getId(): string;
   setId(value: string): Website;
@@ -241,6 +279,24 @@ export namespace CreateWebsiteRequest {
   }
 }
 
+export class DeleteWebsiteRequest extends jspb.Message {
+  getId(): string;
+  setId(value: string): DeleteWebsiteRequest;
+
+  serializeBinary(): Uint8Array;
+  toObject(includeInstance?: boolean): DeleteWebsiteRequest.AsObject;
+  static toObject(includeInstance: boolean, msg: DeleteWebsiteRequest): DeleteWebsiteRequest.AsObject;
+  static serializeBinaryToWriter(message: DeleteWebsiteRequest, writer: jspb.BinaryWriter): void;
+  static deserializeBinary(bytes: Uint8Array): DeleteWebsiteRequest;
+  static deserializeBinaryFromReader(message: DeleteWebsiteRequest, reader: jspb.BinaryReader): DeleteWebsiteRequest;
+}
+
+export namespace DeleteWebsiteRequest {
+  export type AsObject = {
+    id: string,
+  }
+}
+
 export class Application extends jspb.Message {
   getId(): string;
   setId(value: string): Application;
@@ -305,11 +361,33 @@ export namespace Application {
   }
 }
 
+export class AvailableDomain extends jspb.Message {
+  getDomain(): string;
+  setDomain(value: string): AvailableDomain;
+
+  getAvailable(): boolean;
+  setAvailable(value: boolean): AvailableDomain;
+
+  serializeBinary(): Uint8Array;
+  toObject(includeInstance?: boolean): AvailableDomain.AsObject;
+  static toObject(includeInstance: boolean, msg: AvailableDomain): AvailableDomain.AsObject;
+  static serializeBinaryToWriter(message: AvailableDomain, writer: jspb.BinaryWriter): void;
+  static deserializeBinary(bytes: Uint8Array): AvailableDomain;
+  static deserializeBinaryFromReader(message: AvailableDomain, reader: jspb.BinaryReader): AvailableDomain;
+}
+
+export namespace AvailableDomain {
+  export type AsObject = {
+    domain: string,
+    available: boolean,
+  }
+}
+
 export class AvailableDomains extends jspb.Message {
-  getDomainsList(): Array<string>;
-  setDomainsList(value: Array<string>): AvailableDomains;
+  getDomainsList(): Array<AvailableDomain>;
+  setDomainsList(value: Array<AvailableDomain>): AvailableDomains;
   clearDomainsList(): AvailableDomains;
-  addDomains(value: string, index?: number): AvailableDomains;
+  addDomains(value?: AvailableDomain, index?: number): AvailableDomain;
 
   serializeBinary(): Uint8Array;
   toObject(includeInstance?: boolean): AvailableDomains.AsObject;
@@ -321,25 +399,7 @@ export class AvailableDomains extends jspb.Message {
 
 export namespace AvailableDomains {
   export type AsObject = {
-    domainsList: Array<string>,
-  }
-}
-
-export class AddAvailableDomainRequest extends jspb.Message {
-  getDomain(): string;
-  setDomain(value: string): AddAvailableDomainRequest;
-
-  serializeBinary(): Uint8Array;
-  toObject(includeInstance?: boolean): AddAvailableDomainRequest.AsObject;
-  static toObject(includeInstance: boolean, msg: AddAvailableDomainRequest): AddAvailableDomainRequest.AsObject;
-  static serializeBinaryToWriter(message: AddAvailableDomainRequest, writer: jspb.BinaryWriter): void;
-  static deserializeBinary(bytes: Uint8Array): AddAvailableDomainRequest;
-  static deserializeBinaryFromReader(message: AddAvailableDomainRequest, reader: jspb.BinaryReader): AddAvailableDomainRequest;
-}
-
-export namespace AddAvailableDomainRequest {
-  export type AsObject = {
-    domain: string,
+    domainsList: Array<AvailableDomain.AsObject>,
   }
 }
 
@@ -665,6 +725,56 @@ export namespace CreateApplicationRequest {
     config?: ApplicationConfig.AsObject,
     websitesList: Array<CreateWebsiteRequest.AsObject>,
     startOnCreate: boolean,
+  }
+}
+
+export class UpdateApplicationRequest extends jspb.Message {
+  getId(): string;
+  setId(value: string): UpdateApplicationRequest;
+
+  getName(): string;
+  setName(value: string): UpdateApplicationRequest;
+
+  getBranchName(): string;
+  setBranchName(value: string): UpdateApplicationRequest;
+
+  getConfig(): UpdateApplicationConfigRequest | undefined;
+  setConfig(value?: UpdateApplicationConfigRequest): UpdateApplicationRequest;
+  hasConfig(): boolean;
+  clearConfig(): UpdateApplicationRequest;
+
+  getNewWebsitesList(): Array<CreateWebsiteRequest>;
+  setNewWebsitesList(value: Array<CreateWebsiteRequest>): UpdateApplicationRequest;
+  clearNewWebsitesList(): UpdateApplicationRequest;
+  addNewWebsites(value?: CreateWebsiteRequest, index?: number): CreateWebsiteRequest;
+
+  getDeleteWebsitesList(): Array<DeleteWebsiteRequest>;
+  setDeleteWebsitesList(value: Array<DeleteWebsiteRequest>): UpdateApplicationRequest;
+  clearDeleteWebsitesList(): UpdateApplicationRequest;
+  addDeleteWebsites(value?: DeleteWebsiteRequest, index?: number): DeleteWebsiteRequest;
+
+  getOwnerIdsList(): Array<string>;
+  setOwnerIdsList(value: Array<string>): UpdateApplicationRequest;
+  clearOwnerIdsList(): UpdateApplicationRequest;
+  addOwnerIds(value: string, index?: number): UpdateApplicationRequest;
+
+  serializeBinary(): Uint8Array;
+  toObject(includeInstance?: boolean): UpdateApplicationRequest.AsObject;
+  static toObject(includeInstance: boolean, msg: UpdateApplicationRequest): UpdateApplicationRequest.AsObject;
+  static serializeBinaryToWriter(message: UpdateApplicationRequest, writer: jspb.BinaryWriter): void;
+  static deserializeBinary(bytes: Uint8Array): UpdateApplicationRequest;
+  static deserializeBinaryFromReader(message: UpdateApplicationRequest, reader: jspb.BinaryReader): UpdateApplicationRequest;
+}
+
+export namespace UpdateApplicationRequest {
+  export type AsObject = {
+    id: string,
+    name: string,
+    branchName: string,
+    config?: UpdateApplicationConfigRequest.AsObject,
+    newWebsitesList: Array<CreateWebsiteRequest.AsObject>,
+    deleteWebsitesList: Array<DeleteWebsiteRequest.AsObject>,
+    ownerIdsList: Array<string>,
   }
 }
 

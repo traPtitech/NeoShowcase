@@ -52,7 +52,7 @@ func TestAvailableDomain_IsValid(t *testing.T) {
 	}
 }
 
-func TestAvailableDomain_Match(t *testing.T) {
+func TestAvailableDomain_match(t *testing.T) {
 	tests := []struct {
 		name   string
 		domain string
@@ -71,8 +71,67 @@ func TestAvailableDomain_Match(t *testing.T) {
 			a := &AvailableDomain{
 				Domain: tt.domain,
 			}
-			if got := a.Match(tt.target); got != tt.want {
+			if got := a.match(tt.target); got != tt.want {
 				t.Errorf("Match() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestAvailableDomainSlice_IsAvailable(t *testing.T) {
+	tests := []struct {
+		name string
+		s    AvailableDomainSlice
+		fqdn string
+		want bool
+	}{
+		{
+			name: "empty",
+			s:    AvailableDomainSlice{},
+			fqdn: "google.com",
+			want: false,
+		},
+		{
+			name: "empty (nil)",
+			s:    nil,
+			fqdn: "google.com",
+			want: false,
+		},
+		{
+			name: "ok",
+			s:    AvailableDomainSlice{{Domain: "google.com", Available: true}},
+			fqdn: "google.com",
+			want: true,
+		},
+		{
+			name: "subdomain ok",
+			s:    AvailableDomainSlice{{Domain: "*.google.com", Available: true}},
+			fqdn: "sub.google.com",
+			want: true,
+		},
+		{
+			name: "ng",
+			s:    AvailableDomainSlice{{Domain: "google.com", Available: true}},
+			fqdn: "yahoo.com",
+			want: false,
+		},
+		{
+			name: "specific subdomain ng 1",
+			s:    AvailableDomainSlice{{Domain: "*.google.com", Available: true}, {Domain: "sub.google.com", Available: false}},
+			fqdn: "sub.google.com",
+			want: false,
+		},
+		{
+			name: "specific subdomain ng 2",
+			s:    AvailableDomainSlice{{Domain: "sub.google.com", Available: false}, {Domain: "*.google.com", Available: true}},
+			fqdn: "sub.google.com",
+			want: false,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := tt.s.IsAvailable(tt.fqdn); got != tt.want {
+				t.Errorf("IsAvailable() = %v, want %v", got, tt.want)
 			}
 		})
 	}
