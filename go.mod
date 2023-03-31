@@ -27,7 +27,7 @@ require (
 	github.com/volatiletech/null/v8 v8.1.2
 	github.com/volatiletech/sqlboiler/v4 v4.14.1
 	github.com/volatiletech/strmangle v0.0.4
-	go.mongodb.org/mongo-driver v1.10.1
+	go.mongodb.org/mongo-driver v1.11.3
 	golang.org/x/exp v0.0.0-20221205204356-47842c84f3db
 	golang.org/x/net v0.8.0
 	golang.org/x/sync v0.1.0
