@@ -3,7 +3,6 @@ package grpc
 import (
 	"context"
 	"io"
-	"net/http"
 
 	"github.com/bufbuild/connect-go"
 	"github.com/friendsofgo/errors"
@@ -25,7 +24,7 @@ type ComponentServiceClient struct {
 
 func NewComponentServiceClient(c ComponentServiceClientConfig) domain.ComponentServiceClient {
 	return &ComponentServiceClient{
-		client: pbconnect.NewComponentServiceClient(http.DefaultClient, c.URL),
+		client: pbconnect.NewComponentServiceClient(newInsecureClient(), c.URL),
 	}
 }
 
