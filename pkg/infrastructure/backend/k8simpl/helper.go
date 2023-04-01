@@ -8,7 +8,6 @@ import (
 	"github.com/samber/lo"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
-	"k8s.io/utils/pointer"
 )
 
 type patcher[T any] interface {
@@ -20,7 +19,7 @@ func patch[T any](ctx context.Context, name string, resource T, patcher patcher[
 	if err != nil {
 		return errors.Wrap(err, "failed to marshal resource")
 	}
-	_, err = patcher.Patch(ctx, name, types.ApplyPatchType, b, metav1.PatchOptions{Force: pointer.Bool(true), FieldManager: fieldManager})
+	_, err = patcher.Patch(ctx, name, types.ApplyPatchType, b, metav1.PatchOptions{Force: lo.ToPtr(true), FieldManager: fieldManager})
 	return err
 }
 

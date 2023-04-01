@@ -205,7 +205,7 @@ func (r *applicationRepository) DeleteApplication(ctx context.Context, id string
 	if err != nil {
 		return err
 	}
-	_, err = app.R.Users.DeleteAll(ctx, r.db)
+	err = app.SetUsers(ctx, r.db, false)
 	if err != nil {
 		return errors.Wrap(err, "failed to delete application owners")
 	}

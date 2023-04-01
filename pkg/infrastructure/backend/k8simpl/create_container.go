@@ -9,7 +9,6 @@ import (
 	v1 "k8s.io/api/apps/v1"
 	apiv1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/utils/pointer"
 
 	"github.com/traPtitech/neoshowcase/pkg/domain"
 )
@@ -39,7 +38,7 @@ func (b *k8sBackend) CreateContainer(ctx context.Context, app *domain.Applicatio
 			Labels:    resourceLabels(app.ID),
 		},
 		Spec: v1.StatefulSetSpec{
-			Replicas: pointer.Int32(1),
+			Replicas: lo.ToPtr(int32(1)),
 			Selector: &metav1.LabelSelector{
 				MatchLabels: resourceLabels(app.ID),
 			},

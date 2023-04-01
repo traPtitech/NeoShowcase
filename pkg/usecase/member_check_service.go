@@ -4,8 +4,7 @@ import (
 	"crypto/rsa"
 
 	"github.com/friendsofgo/errors"
-
-	"github.com/dgrijalva/jwt-go"
+	"github.com/golang-jwt/jwt/v4"
 )
 
 type TrapShowcaseJWTPublicKeyPEM string

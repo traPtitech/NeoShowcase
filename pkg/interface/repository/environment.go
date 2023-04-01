@@ -51,7 +51,11 @@ func (r *environmentRepository) SetEnv(ctx context.Context, applicationID string
 }
 
 func (r *environmentRepository) DeleteEnv(ctx context.Context, cond domain.GetEnvCondition) error {
-	_, err := models.Environments(r.buildMods(cond)...).DeleteAll(ctx, r.db)
+	envs, err := models.Environments(r.buildMods(cond)...).All(ctx, r.db)
+	if err != nil {
+		return errors.Wrap(err, "failed to get env")
+	}
+	_, err = envs.DeleteAll(ctx, r.db)
 	if err != nil {
 		return errors.Wrap(err, "failed to delete env")
 	}
