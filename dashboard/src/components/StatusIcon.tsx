@@ -1,10 +1,9 @@
 import { JSXElement } from 'solid-js'
-import { AiFillCheckCircle } from 'solid-icons/ai'
+import { AiFillCheckCircle, AiFillMinusCircle } from 'solid-icons/ai'
 import { vars } from '/@/theme.css'
 import { IoReloadCircle } from 'solid-icons/io'
 import { BiSolidErrorCircle } from 'solid-icons/bi'
 import { ApplicationState, BuildType } from '/@/api/neoshowcase/protobuf/apiserver_pb'
-import { FaSolidCircleMinus } from 'solid-icons/fa'
 
 interface Props {
   buildType: BuildType
@@ -14,7 +13,7 @@ interface Props {
 export const StatusIcon = ({ buildType, state }: Props): JSXElement => {
   switch (state) {
     case ApplicationState.IDLE:
-      return <FaSolidCircleMinus size={20} color={vars.text.black4} />
+      return <AiFillMinusCircle size={20} color={vars.text.black4} />
     case ApplicationState.RUNNING:
       if (buildType === BuildType.RUNTIME) {
         return <AiFillCheckCircle size={20} color={vars.icon.success1} />

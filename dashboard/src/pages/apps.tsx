@@ -51,7 +51,7 @@ export default () => {
   const [repos] = createResource(() => client.getRepositories({}))
   const [apps] = createResource(() => client.getApplications({}))
   const loaded = () => !!(repos() && apps())
-  const appsByRepo = loaded() && apps().applications.reduce((acc, app) => {
+  const appsByRepo = () => loaded() && apps().applications.reduce((acc, app) => {
     if (!acc[app.repositoryId]) acc[app.repositoryId] = []
     acc[app.repositoryId].push(app)
     return acc
@@ -105,7 +105,7 @@ export default () => {
           </div>
           <div class={repositoriesContainer}>
             {loaded() && repos().repositories.map((r) => (
-              <RepositoryRow repo={r} apps={appsByRepo[r.id] || []} />
+              <RepositoryRow repo={r} apps={appsByRepo()[r.id] || []} />
             ))}
           </div>
         </div>
