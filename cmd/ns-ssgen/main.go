@@ -73,8 +73,7 @@ func main() {
 
 	viper.SetDefault("artifactsRoot", "/srv/artifacts")
 	viper.SetDefault("builtin.port", 80)
-	viper.SetDefault("ns.addr", "ns:10000")
-	viper.SetDefault("ns.insecure", false)
+	viper.SetDefault("ns.url", "http://ns:10000")
 	viper.SetDefault("db.host", "127.0.0.1")
 	viper.SetDefault("db.port", 3306)
 	viper.SetDefault("db.username", "root")

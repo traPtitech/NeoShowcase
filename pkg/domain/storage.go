@@ -76,7 +76,7 @@ func ExtractTarToDir(s Storage, artifactID string, destPath string) error {
 	tr := tar.NewReader(inputFile)
 	for {
 		header, err := tr.Next()
-		if err == io.EOF {
+		if errors.Is(err, io.EOF) {
 			break
 		}
 		if err != nil {

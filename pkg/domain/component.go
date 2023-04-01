@@ -4,10 +4,11 @@ import (
 	"context"
 
 	"github.com/traPtitech/neoshowcase/pkg/interface/grpc/pb"
+	"github.com/traPtitech/neoshowcase/pkg/interface/grpc/pb/pbconnect"
 )
 
 type ComponentService interface {
-	pb.ComponentServiceServer
+	pbconnect.ComponentServiceHandler
 	BroadcastBuilder(req *pb.BuilderRequest)
 	BroadcastSSGen(req *pb.SSGenRequest)
 }

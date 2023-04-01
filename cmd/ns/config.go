@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"net/http"
 	"os"
 	"strings"
 
@@ -10,10 +11,12 @@ import (
 
 	"github.com/traPtitech/neoshowcase/pkg/domain"
 	"github.com/traPtitech/neoshowcase/pkg/domain/builder"
+	"github.com/traPtitech/neoshowcase/pkg/domain/web"
 	"github.com/traPtitech/neoshowcase/pkg/infrastructure/admindb"
 	"github.com/traPtitech/neoshowcase/pkg/infrastructure/backend/dockerimpl"
 	"github.com/traPtitech/neoshowcase/pkg/infrastructure/dbmanager"
 	"github.com/traPtitech/neoshowcase/pkg/infrastructure/storage"
+	"github.com/traPtitech/neoshowcase/pkg/interface/grpc/pb/pbconnect"
 	"github.com/traPtitech/neoshowcase/pkg/usecase"
 )
 
@@ -33,14 +36,14 @@ type Config struct {
 	Docker  struct {
 		ConfDir string `mapstructure:"confDir" yaml:"confDir"`
 	} `mapstructure:"docker" yaml:"docker"`
-	GRPC struct {
+	Web struct {
 		App struct {
 			Port int `mapstructure:"port" yaml:"port"`
 		} `mapstructure:"app" yaml:"app"`
 		Component struct {
 			Port int `mapstructure:"port" yaml:"port"`
 		} `mapstructure:"component" yaml:"component"`
-	} `mapstructure:"grpc" yaml:"grpc"`
+	} `mapstructure:"web" yaml:"web"`
 	Repository struct {
 		CacheDir       string `mapstructure:"cacheDir" yaml:"cacheDir"`
 		PrivateKeyFile string `mapstructure:"privateKeyFile" yaml:"privateKeyFile"`
@@ -86,4 +89,31 @@ func initStorage(c domain.StorageConfig) (domain.Storage, error) {
 	default:
 		return nil, fmt.Errorf("unknown storage: %s", c.Type)
 	}
+}
+
+type webAppServer struct {
+	*web.H2CServer
+}
+type webComponentServer struct {
+	*web.H2CServer
+}
+
+func provideWebAppServer(c Config, appService pbconnect.ApplicationServiceHandler) *webAppServer {
+	wc := web.H2CConfig{
+		Port: c.Web.App.Port,
+		SetupRoute: func(mux *http.ServeMux) {
+			mux.Handle(pbconnect.NewApplicationServiceHandler(appService))
+		},
+	}
+	return &webAppServer{web.NewH2CServer(wc)}
+}
+
+func provideWebComponentServer(c Config, componentService domain.ComponentService) *webComponentServer {
+	wc := web.H2CConfig{
+		Port: c.Web.Component.Port,
+		SetupRoute: func(mux *http.ServeMux) {
+			mux.Handle(pbconnect.NewComponentServiceHandler(componentService))
+		},
+	}
+	return &webComponentServer{web.NewH2CServer(wc)}
 }

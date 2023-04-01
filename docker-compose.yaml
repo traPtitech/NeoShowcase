@@ -15,8 +15,8 @@ services:
       NS_APISERVER_STORAGE_LOCAL_DIR: "/data"
       NS_APISERVER_SS_URL: "http://ns-ssgen:80/"
       NS_APISERVER_DOCKER_CONFDIR: "/opt/traefik/conf"
-      NS_APISERVER_GRPC_APP_PORT: "5000"
-      NS_APISERVER_GRPC_COMPONENT_PORT: "10000"
+      NS_APISERVER_WEB_APP_PORT: "5000"
+      NS_APISERVER_WEB_COMPONENT_PORT: "10000"
       NS_APISERVER_REPOSITORY_CACHEDIR: "/repositories"
       NS_APISERVER_REPOSITORY_PRIVATEKEYFILE: "/keys/id_ed25519"
       NS_APISERVER_IMAGE_REGISTRY_SCHEME: "http"
@@ -27,16 +27,11 @@ services:
       - ./local-dev/keys:/keys
       - ./local-dev/repositories:/repositories
       - ./local-dev/traefik:/opt/traefik/conf
-    ports:
-      - "5009:5000"
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.ns_admin.rule=Host(`local.trapti.tech`)"
-      - "traefik.http.routers.ns_admin.service=ns_admin"
-      - "traefik.http.services.ns_admin.loadbalancer.server.port=8080"
-      - "traefik.http.routers.ns_grpc.rule=Host(`grpc.local.trapti.tech`)"
-      - "traefik.http.routers.ns_grpc.service=ns_grpc"
-      - "traefik.http.services.ns_grpc.loadbalancer.server.port=5000"
+      - "traefik.http.routers.ns.rule=Host(`ns.local.trapti.tech`)"
+      - "traefik.http.routers.ns.service=ns"
+      - "traefik.http.services.ns.loadbalancer.server.port=5000"
     depends_on:
       mysql:
         condition: service_healthy
@@ -51,8 +46,6 @@ services:
       target: ns-mc
     image: ghcr.io/traptitech/ns-mc:main
     restart: always
-    ports:
-      - "5005:8080"
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.ns_mc.rule=Host(`mc.local.trapti.tech`)"
@@ -70,8 +63,7 @@ services:
     environment:
       NS_BUILDER_BUILDKIT_ADDRESS: "tcp://buildkitd:1234"
       NS_BUILDER_REPOSITORY_PRIVATEKEYFILE: "/keys/id_ed25519"
-      NS_BUILDER_NS_ADDR: "ns:10000"
-      NS_BUILDER_NS_INSECURE: "true"
+      NS_BUILDER_NS_URL: "http://ns:10000"
       NS_BUILDER_DB_HOST: "mysql"
       NS_BUILDER_STORAGE_TYPE: "local"
       NS_BUILDER_STORAGE_LOCAL_DIR: "/data"
@@ -96,8 +88,7 @@ services:
     command: run --debug --loglevel=trace
     restart: always
     environment:
-      NS_SSGEN_NS_ADDR: "ns:10000"
-      NS_SSGEN_NS_INSECURE: "true"
+      NS_SSGEN_NS_URL: "http://ns:10000"
       NS_SSGEN_DB_HOST: "mysql"
       NS_SSGEN_ARTIFACTSROOT: "/artifacts"
       NS_SSGEN_STORAGE_TYPE: "local"
@@ -156,8 +147,6 @@ services:
   registry-frontend:
     image: konradkleine/docker-registry-frontend:v2
     restart: always
-    ports:
-      - "5003:80"
     environment:
       ENV_DOCKER_REGISTRY_HOST: registry.local.trapti.tech
       ENV_DOCKER_REGISTRY_PORT: 80
@@ -172,8 +161,6 @@ services:
     image: moby/buildkit:latest
     restart: always
     privileged: true
-    ports:
-      - "5002:1234"
     command: --addr tcp://0.0.0.0:1234
     volumes:
       - ./local-dev/buildkitd/buildkitd.toml:/etc/buildkit/buildkitd.toml
@@ -216,8 +203,6 @@ services:
     environment:
       ADMINER_DEFAULT_SERVER: mysql
       ADMINER_DESIGN: nette
-    ports:
-      - "5001:8080"
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.adminer.rule=Host(`adminer.local.trapti.tech`)"

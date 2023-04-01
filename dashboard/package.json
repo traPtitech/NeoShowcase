@@ -11,21 +11,22 @@
   },
   "license": "MIT",
   "devDependencies": {
-    "@types/node": "18.14.0",
+    "@types/node": "18.15.11",
     "@vanilla-extract/vite-plugin": "3.8.0",
-    "rome": "11.0.0",
-    "typescript": "4.9.5",
-    "vite": "4.1.2",
+    "rome": "12.0.0",
+    "typescript": "5.0.3",
+    "vite": "4.2.1",
     "vite-plugin-fonts": "0.7.0",
-    "vite-plugin-solid": "2.5.0",
-    "vite-plugin-solid-svg": "0.6.0"
+    "vite-plugin-solid": "2.6.1",
+    "vite-plugin-solid-svg": "0.6.1"
   },
   "dependencies": {
-    "@solidjs/router": "0.7.0",
-    "@vanilla-extract/css": "1.9.5",
-    "google-protobuf": "3.21.2",
-    "grpc-web": "1.4.2",
+    "@bufbuild/connect": "0.8.4",
+    "@bufbuild/connect-web": "0.8.4",
+    "@bufbuild/protobuf": "1.2.0",
+    "@solidjs/router": "0.8.2",
+    "@vanilla-extract/css": "1.11.0",
     "solid-icons": "1.0.4",
-    "solid-js": "1.6.11"
+    "solid-js": "1.7.0"
   }
 }

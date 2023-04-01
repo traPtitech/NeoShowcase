@@ -8,9 +8,14 @@ import (
 	"github.com/labstack/echo/v4/middleware"
 )
 
+type Config struct {
+	Port       int
+	SetupRoute func(e *echo.Echo)
+}
+
 type Server struct {
 	echo *echo.Echo
-	conf Config
+	port int
 }
 
 func NewServer(conf Config) *Server {
@@ -25,13 +30,13 @@ func NewServer(conf Config) *Server {
 	e.Use(middleware.RequestID())
 
 	e.Use(WrapContextMiddleware())
-	conf.Router.SetupRoute(e)
+	conf.SetupRoute(e)
 
-	return &Server{echo: e, conf: conf}
+	return &Server{echo: e, port: conf.Port}
 }
 
 func (s *Server) Start(_ context.Context) error {
-	return s.echo.Start(fmt.Sprintf(":%d", s.conf.Port))
+	return s.echo.Start(fmt.Sprintf(":%d", s.port))
 }
 
 func (s *Server) Shutdown(ctx context.Context) error {

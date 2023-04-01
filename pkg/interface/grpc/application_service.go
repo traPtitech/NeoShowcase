@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/bufbuild/connect-go"
 	"github.com/samber/lo"
-	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/types/known/emptypb"
@@ -15,6 +15,7 @@ import (
 	"github.com/traPtitech/neoshowcase/pkg/domain"
 	"github.com/traPtitech/neoshowcase/pkg/domain/builder"
 	"github.com/traPtitech/neoshowcase/pkg/interface/grpc/pb"
+	"github.com/traPtitech/neoshowcase/pkg/interface/grpc/pb/pbconnect"
 	"github.com/traPtitech/neoshowcase/pkg/usecase"
 	"github.com/traPtitech/neoshowcase/pkg/util/optional"
 )
@@ -34,23 +35,13 @@ func handleUseCaseError(err error) error {
 	return status.Errorf(codes.Internal, "%v", err)
 }
 
-type ApplicationServiceGRPCServer struct {
-	*grpc.Server
-}
-
-func NewApplicationServiceGRPCServer() ApplicationServiceGRPCServer {
-	return ApplicationServiceGRPCServer{NewServer()}
-}
-
 type ApplicationService struct {
 	svc usecase.APIServerService
-
-	pb.UnimplementedApplicationServiceServer
 }
 
 func NewApplicationServiceServer(
 	svc usecase.APIServerService,
-) pb.ApplicationServiceServer {
+) pbconnect.ApplicationServiceHandler {
 	return &ApplicationService{
 		svc: svc,
 	}
@@ -60,78 +51,85 @@ func getUserID() string {
 	return "tmp-user" // TODO: implement auth
 }
 
-func (s *ApplicationService) GetRepositories(ctx context.Context, _ *emptypb.Empty) (*pb.GetRepositoriesResponse, error) {
+func (s *ApplicationService) GetRepositories(ctx context.Context, _ *connect.Request[emptypb.Empty]) (*connect.Response[pb.GetRepositoriesResponse], error) {
 	repositories, err := s.svc.GetRepositories(ctx)
 	if err != nil {
 		return nil, handleUseCaseError(err)
 	}
-	return &pb.GetRepositoriesResponse{
+	res := connect.NewResponse(&pb.GetRepositoriesResponse{
 		Repositories: lo.Map(repositories, func(repo *domain.Repository, i int) *pb.Repository {
 			return toPBRepository(repo)
 		}),
-	}, nil
+	})
+	return res, nil
 }
 
-func (s *ApplicationService) CreateRepository(ctx context.Context, req *pb.CreateRepositoryRequest) (*pb.Repository, error) {
+func (s *ApplicationService) CreateRepository(ctx context.Context, req *connect.Request[pb.CreateRepositoryRequest]) (*connect.Response[pb.Repository], error) {
+	msg := req.Msg
 	repo := &domain.Repository{
 		ID:       domain.NewID(),
-		Name:     req.Name,
-		URL:      req.Url,
-		Auth:     fromPBRepositoryAuth(req),
+		Name:     msg.Name,
+		URL:      msg.Url,
+		Auth:     fromPBRepositoryAuth(msg),
 		OwnerIDs: []string{getUserID()},
 	}
 	err := s.svc.CreateRepository(ctx, repo)
 	if err != nil {
 		return nil, handleUseCaseError(err)
 	}
-	return toPBRepository(repo), nil
+	res := connect.NewResponse(toPBRepository(repo))
+	return res, nil
 }
 
-func (s *ApplicationService) GetApplications(ctx context.Context, _ *emptypb.Empty) (*pb.GetApplicationsResponse, error) {
+func (s *ApplicationService) GetApplications(ctx context.Context, _ *connect.Request[emptypb.Empty]) (*connect.Response[pb.GetApplicationsResponse], error) {
 	applications, err := s.svc.GetApplications(ctx)
 	if err != nil {
 		return nil, handleUseCaseError(err)
 	}
-	return &pb.GetApplicationsResponse{
+	res := connect.NewResponse(&pb.GetApplicationsResponse{
 		Applications: lo.Map(applications, func(app *domain.Application, i int) *pb.Application {
 			return toPBApplication(app)
 		}),
-	}, nil
+	})
+	return res, nil
 }
 
-func (s *ApplicationService) GetAvailableDomains(ctx context.Context, _ *emptypb.Empty) (*pb.AvailableDomains, error) {
+func (s *ApplicationService) GetAvailableDomains(ctx context.Context, _ *connect.Request[emptypb.Empty]) (*connect.Response[pb.AvailableDomains], error) {
 	domains, err := s.svc.GetAvailableDomains(ctx)
 	if err != nil {
 		return nil, status.Errorf(codes.Internal, "%v", err)
 	}
-	return &pb.AvailableDomains{
+	res := connect.NewResponse(&pb.AvailableDomains{
 		Domains: lo.Map(domains, func(ad *domain.AvailableDomain, i int) *pb.AvailableDomain { return toPBAvailableDomain(ad) }),
-	}, nil
+	})
+	return res, nil
 }
 
-func (s *ApplicationService) AddAvailableDomain(ctx context.Context, req *pb.AvailableDomain) (*emptypb.Empty, error) {
-	err := s.svc.AddAvailableDomain(ctx, fromPBAvailableDomain(req))
+func (s *ApplicationService) AddAvailableDomain(ctx context.Context, req *connect.Request[pb.AvailableDomain]) (*connect.Response[emptypb.Empty], error) {
+	err := s.svc.AddAvailableDomain(ctx, fromPBAvailableDomain(req.Msg))
 	if err != nil {
 		return nil, handleUseCaseError(err)
 	}
-	return &emptypb.Empty{}, nil
+	res := connect.NewResponse(&emptypb.Empty{})
+	return res, nil
 }
 
-func (s *ApplicationService) CreateApplication(ctx context.Context, req *pb.CreateApplicationRequest) (*pb.Application, error) {
+func (s *ApplicationService) CreateApplication(ctx context.Context, req *connect.Request[pb.CreateApplicationRequest]) (*connect.Response[pb.Application], error) {
+	msg := req.Msg
 	now := time.Now()
 	app := &domain.Application{
 		ID:            domain.NewID(),
-		Name:          req.Name,
-		RepositoryID:  req.RepositoryId,
-		BranchName:    req.BranchName,
-		BuildType:     fromPBBuildType(req.BuildType),
+		Name:          msg.Name,
+		RepositoryID:  msg.RepositoryId,
+		BranchName:    msg.BranchName,
+		BuildType:     fromPBBuildType(msg.BuildType),
 		State:         domain.ApplicationStateIdle,
 		CurrentCommit: domain.EmptyCommit,
 		WantCommit:    domain.EmptyCommit,
 		CreatedAt:     now,
 		UpdatedAt:     now,
-		Config:        fromPBApplicationConfig(req.Config),
-		Websites: lo.Map(req.Websites, func(website *pb.CreateWebsiteRequest, i int) *domain.Website {
+		Config:        fromPBApplicationConfig(msg.Config),
+		Websites: lo.Map(msg.Websites, func(website *pb.CreateWebsiteRequest, i int) *domain.Website {
 			return &domain.Website{
 				ID:          domain.NewID(),
 				FQDN:        website.Fqdn,
@@ -143,146 +141,161 @@ func (s *ApplicationService) CreateApplication(ctx context.Context, req *pb.Crea
 		}),
 		OwnerIDs: []string{getUserID()},
 	}
-	app, err := s.svc.CreateApplication(ctx, app, req.StartOnCreate)
+	app, err := s.svc.CreateApplication(ctx, app, msg.StartOnCreate)
 	if err != nil {
 		return nil, handleUseCaseError(err)
 	}
-	return toPBApplication(app), nil
+	res := connect.NewResponse(toPBApplication(app))
+	return res, nil
 }
 
-func (s *ApplicationService) GetApplication(ctx context.Context, req *pb.ApplicationIdRequest) (*pb.Application, error) {
-	application, err := s.svc.GetApplication(ctx, req.Id)
+func (s *ApplicationService) GetApplication(ctx context.Context, req *connect.Request[pb.ApplicationIdRequest]) (*connect.Response[pb.Application], error) {
+	application, err := s.svc.GetApplication(ctx, req.Msg.Id)
 	if err != nil {
 		return nil, handleUseCaseError(err)
 	}
-	return toPBApplication(application), nil
+	res := connect.NewResponse(toPBApplication(application))
+	return res, nil
 }
 
-func (s *ApplicationService) UpdateApplication(ctx context.Context, req *pb.UpdateApplicationRequest) (*emptypb.Empty, error) {
-	app, err := s.svc.GetApplication(ctx, req.Id)
+func (s *ApplicationService) UpdateApplication(ctx context.Context, req *connect.Request[pb.UpdateApplicationRequest]) (*connect.Response[emptypb.Empty], error) {
+	msg := req.Msg
+	app, err := s.svc.GetApplication(ctx, msg.Id)
 	if err != nil {
 		return nil, handleUseCaseError(err)
 	}
 
-	for _, createReq := range req.NewWebsites {
+	for _, createReq := range msg.NewWebsites {
 		app.Websites = append(app.Websites, fromPBCreateWebsiteRequest(createReq))
 	}
-	for _, deleteReq := range req.DeleteWebsites {
+	for _, deleteReq := range msg.DeleteWebsites {
 		app.Websites = lo.Reject(app.Websites, func(w *domain.Website, i int) bool { return w.ID == deleteReq.Id })
 	}
 
 	err = s.svc.UpdateApplication(ctx, app, &domain.UpdateApplicationArgs{
-		Name:       optional.From(req.Name),
-		BranchName: optional.From(req.BranchName),
+		Name:       optional.From(msg.Name),
+		BranchName: optional.From(msg.BranchName),
 		Config: optional.From(domain.ApplicationConfig{
 			UseMariaDB:     app.Config.UseMariaDB,
 			UseMongoDB:     app.Config.UseMongoDB,
-			BaseImage:      req.Config.BaseImage,
-			DockerfileName: req.Config.DockerfileName,
-			ArtifactPath:   req.Config.ArtifactPath,
-			BuildCmd:       req.Config.BuildCmd,
-			EntrypointCmd:  req.Config.EntrypointCmd,
-			Authentication: fromPBAuthenticationType(req.Config.Authentication),
+			BaseImage:      msg.Config.BaseImage,
+			DockerfileName: msg.Config.DockerfileName,
+			ArtifactPath:   msg.Config.ArtifactPath,
+			BuildCmd:       msg.Config.BuildCmd,
+			EntrypointCmd:  msg.Config.EntrypointCmd,
+			Authentication: fromPBAuthenticationType(msg.Config.Authentication),
 		}),
 		Websites: optional.From(app.Websites),
-		OwnerIDs: optional.From(req.OwnerIds),
+		OwnerIDs: optional.From(msg.OwnerIds),
 	})
 	if err != nil {
 		return nil, handleUseCaseError(err)
 	}
-	return &emptypb.Empty{}, nil
+	res := connect.NewResponse(&emptypb.Empty{})
+	return res, nil
 }
 
-func (s *ApplicationService) DeleteApplication(ctx context.Context, req *pb.ApplicationIdRequest) (*emptypb.Empty, error) {
-	err := s.svc.DeleteApplication(ctx, req.Id)
+func (s *ApplicationService) DeleteApplication(ctx context.Context, req *connect.Request[pb.ApplicationIdRequest]) (*connect.Response[emptypb.Empty], error) {
+	err := s.svc.DeleteApplication(ctx, req.Msg.Id)
 	if err != nil {
 		return nil, handleUseCaseError(err)
 	}
-	return &emptypb.Empty{}, nil
+	res := connect.NewResponse(&emptypb.Empty{})
+	return res, nil
 }
 
-func (s *ApplicationService) GetApplicationBuilds(ctx context.Context, req *pb.ApplicationIdRequest) (*pb.GetApplicationBuildsResponse, error) {
-	builds, err := s.svc.GetApplicationBuilds(ctx, req.Id)
+func (s *ApplicationService) GetApplicationBuilds(ctx context.Context, req *connect.Request[pb.ApplicationIdRequest]) (*connect.Response[pb.GetApplicationBuildsResponse], error) {
+	builds, err := s.svc.GetApplicationBuilds(ctx, req.Msg.Id)
 	if err != nil {
 		return nil, handleUseCaseError(err)
 	}
-	return &pb.GetApplicationBuildsResponse{
+	res := connect.NewResponse(&pb.GetApplicationBuildsResponse{
 		Builds: lo.Map(builds, func(build *domain.Build, i int) *pb.Build {
 			return toPBBuild(build)
 		}),
-	}, nil
+	})
+	return res, nil
 }
 
-func (s *ApplicationService) GetApplicationBuild(ctx context.Context, req *pb.GetApplicationBuildRequest) (*pb.Build, error) {
-	build, err := s.svc.GetApplicationBuild(ctx, req.BuildId)
+func (s *ApplicationService) GetApplicationBuild(ctx context.Context, req *connect.Request[pb.GetApplicationBuildRequest]) (*connect.Response[pb.Build], error) {
+	build, err := s.svc.GetApplicationBuild(ctx, req.Msg.BuildId)
 	if err != nil {
 		return nil, handleUseCaseError(err)
 	}
-	return toPBBuild(build), nil
+	res := connect.NewResponse(toPBBuild(build))
+	return res, nil
 }
 
-func (s *ApplicationService) GetApplicationBuildLog(context.Context, *pb.GetApplicationBuildLogRequest) (*pb.BuildLog, error) {
+func (s *ApplicationService) GetApplicationBuildLog(ctx context.Context, req *connect.Request[pb.GetApplicationBuildLogRequest]) (*connect.Response[pb.BuildLog], error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetApplicationBuildLog not implemented")
 }
 
-func (s *ApplicationService) GetApplicationBuildArtifact(context.Context, *pb.ApplicationIdRequest) (*pb.ApplicationBuildArtifact, error) {
+func (s *ApplicationService) GetApplicationBuildArtifact(ctx context.Context, req *connect.Request[pb.ApplicationIdRequest]) (*connect.Response[pb.ApplicationBuildArtifact], error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetApplicationBuildArtifact not implemented")
 }
 
-func (s *ApplicationService) GetApplicationEnvVars(ctx context.Context, req *pb.ApplicationIdRequest) (*pb.ApplicationEnvVars, error) {
-	environments, err := s.svc.GetApplicationEnvironmentVariables(ctx, req.Id)
+func (s *ApplicationService) GetApplicationEnvVars(ctx context.Context, req *connect.Request[pb.ApplicationIdRequest]) (*connect.Response[pb.ApplicationEnvVars], error) {
+	environments, err := s.svc.GetApplicationEnvironmentVariables(ctx, req.Msg.Id)
 	if err != nil {
 		return nil, handleUseCaseError(err)
 	}
-	return &pb.ApplicationEnvVars{
+	res := connect.NewResponse(&pb.ApplicationEnvVars{
 		Variables: lo.Map(environments, func(env *domain.Environment, i int) *pb.ApplicationEnvVar {
 			return toPBEnvironment(env)
 		}),
-	}, nil
+	})
+	return res, nil
 }
 
-func (s *ApplicationService) SetApplicationEnvVar(ctx context.Context, req *pb.SetApplicationEnvVarRequest) (*emptypb.Empty, error) {
-	err := s.svc.SetApplicationEnvironmentVariable(ctx, req.ApplicationId, req.Key, req.Value)
+func (s *ApplicationService) SetApplicationEnvVar(ctx context.Context, req *connect.Request[pb.SetApplicationEnvVarRequest]) (*connect.Response[emptypb.Empty], error) {
+	msg := req.Msg
+	err := s.svc.SetApplicationEnvironmentVariable(ctx, msg.ApplicationId, msg.Key, msg.Value)
 	if err != nil {
 		return nil, handleUseCaseError(err)
 	}
-	return &emptypb.Empty{}, nil
+	res := connect.NewResponse(&emptypb.Empty{})
+	return res, nil
 }
 
-func (s *ApplicationService) GetApplicationOutput(context.Context, *pb.ApplicationIdRequest) (*pb.ApplicationOutput, error) {
+func (s *ApplicationService) GetApplicationOutput(ctx context.Context, req *connect.Request[pb.ApplicationIdRequest]) (*connect.Response[pb.ApplicationOutput], error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetApplicationOutput not implemented")
 }
 
-func (s *ApplicationService) CancelBuild(ctx context.Context, req *pb.CancelBuildRequest) (*emptypb.Empty, error) {
-	err := s.svc.CancelBuild(ctx, req.BuildId)
+func (s *ApplicationService) CancelBuild(ctx context.Context, req *connect.Request[pb.CancelBuildRequest]) (*connect.Response[emptypb.Empty], error) {
+	err := s.svc.CancelBuild(ctx, req.Msg.BuildId)
 	if err != nil {
 		return nil, handleUseCaseError(err)
 	}
-	return &emptypb.Empty{}, nil
+	res := connect.NewResponse(&emptypb.Empty{})
+	return res, nil
 }
 
-func (s *ApplicationService) RetryCommitBuild(ctx context.Context, req *pb.RetryCommitBuildRequest) (*emptypb.Empty, error) {
-	err := s.svc.RetryCommitBuild(ctx, req.ApplicationId, req.Commit)
+func (s *ApplicationService) RetryCommitBuild(ctx context.Context, req *connect.Request[pb.RetryCommitBuildRequest]) (*connect.Response[emptypb.Empty], error) {
+	msg := req.Msg
+	err := s.svc.RetryCommitBuild(ctx, msg.ApplicationId, msg.Commit)
 	if err != nil {
 		return nil, handleUseCaseError(err)
 	}
-	return &emptypb.Empty{}, nil
+	res := connect.NewResponse(&emptypb.Empty{})
+	return res, nil
 }
 
-func (s *ApplicationService) StartApplication(ctx context.Context, req *pb.ApplicationIdRequest) (*emptypb.Empty, error) {
-	err := s.svc.StartApplication(ctx, req.Id)
+func (s *ApplicationService) StartApplication(ctx context.Context, req *connect.Request[pb.ApplicationIdRequest]) (*connect.Response[emptypb.Empty], error) {
+	err := s.svc.StartApplication(ctx, req.Msg.Id)
 	if err != nil {
 		return nil, handleUseCaseError(err)
 	}
-	return &emptypb.Empty{}, nil
+	res := connect.NewResponse(&emptypb.Empty{})
+	return res, nil
 }
 
-func (s *ApplicationService) StopApplication(ctx context.Context, req *pb.ApplicationIdRequest) (*emptypb.Empty, error) {
-	err := s.svc.StopApplication(ctx, req.Id)
+func (s *ApplicationService) StopApplication(ctx context.Context, req *connect.Request[pb.ApplicationIdRequest]) (*connect.Response[emptypb.Empty], error) {
+	err := s.svc.StopApplication(ctx, req.Msg.Id)
 	if err != nil {
 		return nil, handleUseCaseError(err)
 	}
-	return &emptypb.Empty{}, nil
+	res := connect.NewResponse(&emptypb.Empty{})
+	return res, nil
 }
 
 func fromPBAvailableDomain(ad *pb.AvailableDomain) *domain.AvailableDomain {

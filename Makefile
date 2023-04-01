@@ -2,8 +2,8 @@ TBLS_VERSION := 1.62.1
 SPECTRAL_VERSION := 6.4.0
 
 GO_REPO_ROOT_PACKAGE := "github.com/traPtitech/neoshowcase"
-PROTOC_OPTS := -I ./api/proto --go_out=. --go_opt=module=$(GO_REPO_ROOT_PACKAGE) --go-grpc_out=. --go-grpc_opt=module=$(GO_REPO_ROOT_PACKAGE)
-PROTOC_OPTS_CLIENT := -I ./api/proto --grpc-web_out=import_style=typescript,mode=grpcwebtext:./dashboard/src/api
+PROTOC_OPTS := -I ./api/proto --go_out=. --go_opt=module=$(GO_REPO_ROOT_PACKAGE) --connect-go_out=. --connect-go_opt=module=$(GO_REPO_ROOT_PACKAGE)
+PROTOC_OPTS_CLIENT := -I ./api/proto --es_out=./dashboard/src/api --es_opt=target=ts --connect-es_out=./dashboard/src/api --connect-es_opt=target=ts
 PROTOC_SOURCES ?= $(shell find ./api/proto/neoshowcase -type f -name "*.proto" -print)
 PROTOC_SOURCES_CLIENT := ./api/proto/neoshowcase/protobuf/apiserver.proto
 
@@ -22,10 +22,8 @@ help: ## Display this help screen
 init: ## Install commands
 	go mod download
 	go install google.golang.org/protobuf/cmd/protoc-gen-go@latest
-	go install google.golang.org/grpc/cmd/protoc-gen-go-grpc@latest
-	go install github.com/volatiletech/sqlboiler/v4@latest
-	go install github.com/volatiletech/sqlboiler/v4/drivers/sqlboiler-mysql@latest
-	go install github.com/rubenv/sql-migrate/sql-migrate@latest
+	go install github.com/bufbuild/connect-go/cmd/protoc-gen-connect-go@latest
+	yarn global add @bufbuild/protoc-gen-connect-es @bufbuild/protoc-gen-es
 	go install github.com/ktr0731/evans@latest
 
 .PHONY: gogen
@@ -98,7 +96,7 @@ migrate-down: ## Rollback migration of development environment
 
 .PHONY: ns-evans
 ns-evans: ## Connect to ns api server service
-	@$(EVANS_CMD) --host localhost -p 5009 -r repl
+	@$(EVANS_CMD) --path ./api/proto --proto neoshowcase/protobuf/apiserver.proto --host ns.local.trapti.tech -p 80 repl
 
 .PHONY: db-update
 db-update: migrate-up gogen db-gen-docs ## Apply migration, generate sqlboiler sources, and generate db schema docs
