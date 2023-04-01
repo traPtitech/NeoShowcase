@@ -3,8 +3,10 @@ package web
 import (
 	"context"
 	"fmt"
-	"net"
 	"net/http"
+
+	"golang.org/x/net/http2"
+	"golang.org/x/net/http2/h2c"
 )
 
 type H2CConfig struct {
@@ -13,26 +15,23 @@ type H2CConfig struct {
 }
 
 type H2CServer struct {
-	port     int
-	mux      *http.ServeMux
-	listener net.Listener
+	server *http.Server
 }
 
 func NewH2CServer(c H2CConfig) *H2CServer {
 	mux := http.NewServeMux()
 	c.SetupRoute(mux)
-	return &H2CServer{port: c.Port, mux: mux}
+	server := &http.Server{
+		Addr:    fmt.Sprintf(":%d", c.Port),
+		Handler: h2c.NewHandler(mux, &http2.Server{}),
+	}
+	return &H2CServer{server: server}
 }
 
 func (s *H2CServer) Start(_ context.Context) error {
-	listener, err := net.Listen("tcp", fmt.Sprintf(":%d", s.port))
-	if err != nil {
-		return err
-	}
-	s.listener = listener
-	return http.Serve(listener, s.mux)
+	return s.server.ListenAndServe()
 }
 
-func (s *H2CServer) Shutdown(_ context.Context) error {
-	return s.listener.Close()
+func (s *H2CServer) Shutdown(ctx context.Context) error {
+	return s.server.Shutdown(ctx)
 }
