@@ -29,7 +29,7 @@ services:
       - ./local-dev/traefik:/opt/traefik/conf
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.ns.rule=Host(`ns.local.trapti.tech`)"
+      - "traefik.http.routers.ns.rule=Host(`ns.local.trapti.tech`) && PathPrefix(`/neoshowcase.protobuf.ApplicationService`)"
       - "traefik.http.routers.ns.service=ns"
       - "traefik.http.services.ns.loadbalancer.server.port=5000"
     depends_on:
@@ -37,6 +37,22 @@ services:
         condition: service_healthy
       ns-migrate:
         condition: service_completed_successfully
+    networks:
+      - default
+
+  dashboard:
+    build:
+      context: ./dashboard
+      target: dev
+    image: ghcr.io/traptitech/ns-dashboard:main
+    restart: always
+    volumes:
+      - ./dashboard:/work
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.ns_dashboard.rule=Host(`ns.local.trapti.tech`)"
+      - "traefik.http.routers.ns_dashboard.service=ns_dashboard"
+      - "traefik.http.services.ns_dashboard.loadbalancer.server.port=80"
     networks:
       - default
 
