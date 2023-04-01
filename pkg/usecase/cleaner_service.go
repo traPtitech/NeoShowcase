@@ -74,7 +74,7 @@ func (c *cleanerService) Shutdown(_ context.Context) error {
 }
 
 func (c *cleanerService) pruneImagesLoop(ctx context.Context, r *registry.Registry) {
-	ticker := time.NewTicker(10 * time.Second)
+	ticker := time.NewTicker(1 * time.Hour)
 	defer ticker.Stop()
 
 	doPrune := func() {
