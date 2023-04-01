@@ -3,7 +3,6 @@ package main
 import (
 	"context"
 	"fmt"
-	"math/rand"
 	"strings"
 	"time"
 
@@ -60,7 +59,6 @@ func runCommand() *cobra.Command {
 }
 
 func main() {
-	rand.Seed(time.Now().UnixNano())
 	cobra.OnInitialize(cli.CobraOnInitializeFunc(&configFilePath, "NS_SSGEN", &c))
 
 	rootCommand.AddCommand(

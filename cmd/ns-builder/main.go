@@ -3,7 +3,6 @@ package main
 import (
 	"context"
 	"fmt"
-	"math/rand"
 	"time"
 
 	"github.com/moby/buildkit/util/appdefaults"
@@ -58,7 +57,6 @@ func runCommand() *cobra.Command {
 }
 
 func main() {
-	rand.Seed(time.Now().UnixNano())
 	cobra.OnInitialize(cli.CobraOnInitializeFunc(&configFilePath, "NS_BUILDER", &c))
 
 	rootCommand.AddCommand(

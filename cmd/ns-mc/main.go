@@ -3,7 +3,6 @@ package main
 import (
 	"context"
 	"fmt"
-	"math/rand"
 	"net/http"
 	"os"
 	"time"
@@ -62,7 +61,6 @@ func serveCommand() *cobra.Command {
 }
 
 func main() {
-	rand.Seed(time.Now().UnixNano())
 	rootCommand.AddCommand(
 		serveCommand(),
 	)
