@@ -147,7 +147,11 @@ func (r *buildRepository) MarkCommitAsRetriable(ctx context.Context, application
 }
 
 func (r *buildRepository) DeleteBuilds(ctx context.Context, cond domain.GetBuildCondition) error {
-	_, err := models.Builds(r.buildMods(cond)...).DeleteAll(ctx, r.db)
+	builds, err := models.Builds(r.buildMods(cond)...).All(ctx, r.db)
+	if err != nil {
+		return errors.Wrap(err, "failed to get builds")
+	}
+	_, err = builds.DeleteAll(ctx, r.db)
 	if err != nil {
 		return errors.Wrap(err, "failed to delete builds")
 	}

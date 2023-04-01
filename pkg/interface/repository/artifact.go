@@ -84,7 +84,11 @@ func (r *artifactRepository) UpdateArtifact(ctx context.Context, id string, args
 }
 
 func (r *artifactRepository) HardDeleteArtifacts(ctx context.Context, cond domain.GetArtifactCondition) error {
-	_, err := models.Artifacts(r.buildMods(cond)...).DeleteAll(ctx, r.db)
+	artifacts, err := models.Artifacts(r.buildMods(cond)...).All(ctx, r.db)
+	if err != nil {
+		return errors.Wrap(err, "failed to get artifacts")
+	}
+	_, err = artifacts.DeleteAll(ctx, r.db)
 	if err != nil {
 		return errors.Wrap(err, "failed to delete artifacts")
 	}
