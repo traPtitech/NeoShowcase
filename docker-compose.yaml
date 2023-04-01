@@ -229,7 +229,7 @@ services:
       - default
 
   traefik:
-    image: traefik:v2.3
+    image: traefik:3.0
     restart: always
     command:
       - --api.insecure=true

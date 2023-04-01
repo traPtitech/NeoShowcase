@@ -9,7 +9,7 @@ import (
 	docker "github.com/fsouza/go-dockerclient"
 	"github.com/google/wire"
 	"github.com/leandro-lugaresi/hub"
-	traefikv1alpha1 "github.com/traefik/traefik/v2/pkg/provider/kubernetes/crd/generated/clientset/versioned/typed/traefik/v1alpha1"
+	traefikv1alpha1 "github.com/traefik/traefik/v3/pkg/provider/kubernetes/crd/generated/clientset/versioned/typed/traefikio/v1alpha1"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
 
