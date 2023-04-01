@@ -17,8 +17,6 @@ import (
 	buildkit "github.com/moby/buildkit/client"
 	"github.com/moby/buildkit/client/llb"
 	"github.com/moby/buildkit/frontend/dockerfile/dockerfile2llb"
-	"github.com/moby/buildkit/session"
-	"github.com/moby/buildkit/session/auth/authprovider"
 	"github.com/moby/buildkit/util/progress/progressui"
 	log "github.com/sirupsen/logrus"
 	"golang.org/x/sync/errgroup"
@@ -446,7 +444,6 @@ func (s *builderService) buildImageWithDockerfile(
 		},
 		Frontend:      "dockerfile.v0",
 		FrontendAttrs: map[string]string{"filename": st.task.BuildOptions.DockerfileName},
-		Session:       []session.Attachable{authprovider.NewDockerAuthProvider(io.Discard)},
 	}, ch)
 	return err
 }
@@ -512,7 +509,6 @@ ENTRYPOINT ["/srv/%s"]`,
 		},
 		Frontend:      "dockerfile.v0",
 		FrontendAttrs: map[string]string{"filename": filepath.Base(tmp.Name())},
-		Session:       []session.Attachable{authprovider.NewDockerAuthProvider(io.Discard)},
 	}, ch)
 	return err
 }
