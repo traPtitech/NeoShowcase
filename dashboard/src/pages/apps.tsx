@@ -51,11 +51,13 @@ export default () => {
   const [repos] = createResource(() => client.getRepositories({}))
   const [apps] = createResource(() => client.getApplications({}))
   const loaded = () => !!(repos() && apps())
-  const appsByRepo = () => loaded() && apps().applications.reduce((acc, app) => {
-    if (!acc[app.repositoryId]) acc[app.repositoryId] = []
-    acc[app.repositoryId].push(app)
-    return acc
-  }, {} as Record<string, Application[]>)
+  const appsByRepo = () =>
+    loaded() &&
+    apps().applications.reduce((acc, app) => {
+      if (!acc[app.repositoryId]) acc[app.repositoryId] = []
+      acc[app.repositoryId].push(app)
+      return acc
+    }, {} as Record<string, Application[]>)
 
   return (
     <div class={container}>
@@ -70,13 +72,23 @@ export default () => {
                 <StatusCheckbox buildType={BuildType.RUNTIME} state={ApplicationState.IDLE} title='Idle' num={7} />
               </Checkbox>
               <Checkbox>
-                <StatusCheckbox buildType={BuildType.RUNTIME} state={ApplicationState.RUNNING} title='Running' num={24} />
+                <StatusCheckbox
+                  buildType={BuildType.RUNTIME}
+                  state={ApplicationState.RUNNING}
+                  title='Running'
+                  num={24}
+                />
               </Checkbox>
               <Checkbox>
                 <StatusCheckbox buildType={BuildType.STATIC} state={ApplicationState.RUNNING} title='Static' num={6} />
               </Checkbox>
               <Checkbox>
-                <StatusCheckbox buildType={BuildType.RUNTIME} state={ApplicationState.DEPLOYING} title='Deploying' num={1} />
+                <StatusCheckbox
+                  buildType={BuildType.RUNTIME}
+                  state={ApplicationState.DEPLOYING}
+                  title='Deploying'
+                  num={1}
+                />
               </Checkbox>
               <Checkbox>
                 <StatusCheckbox buildType={BuildType.RUNTIME} state={ApplicationState.ERRORED} title='Error' num={3} />
@@ -104,9 +116,7 @@ export default () => {
             </div>
           </div>
           <div class={repositoriesContainer}>
-            {loaded() && repos().repositories.map((r) => (
-              <RepositoryRow repo={r} apps={appsByRepo()[r.id] || []} />
-            ))}
+            {loaded() && repos().repositories.map((r) => <RepositoryRow repo={r} apps={appsByRepo()[r.id] || []} />)}
           </div>
         </div>
       </div>

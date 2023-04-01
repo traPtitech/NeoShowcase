@@ -61,9 +61,7 @@ export const RepositoryRow = ({ repo, apps }: Props): JSXElement => {
           <div class={appDetail}>
             <div class={appName}>{app.name}</div>
             <div class={appFooter}>
-              <div>
-                {shortSha(app.currentCommit)}
-              </div>
+              <div>{shortSha(app.currentCommit)}</div>
               <div class={appFooterRight}>
                 <div>{app.websites[0]?.fqdn || ''}</div>
                 <div>{durationHuman(3 * 60 * 1000) /* TODO: use updatedAt */}</div>

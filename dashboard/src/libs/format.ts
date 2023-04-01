@@ -7,7 +7,7 @@ export const durationHuman = (millis: number): string => {
   seconds -= minutes * 60
   let hours = Math.floor(minutes / 60)
   minutes -= hours * 60
-  let days = Math.floor(hours / 24)
+  const days = Math.floor(hours / 24)
   hours -= days * 24
   if (days > 0) return `${days} day${days > 1 ? 's' : ''}`
   if (hours > 0) return `${hours} hour${hours > 1 ? 's' : ''}`
