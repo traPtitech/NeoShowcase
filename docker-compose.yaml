@@ -32,6 +32,9 @@ services:
       - "traefik.http.routers.ns.rule=Host(`ns.local.trapti.tech`) && PathPrefix(`/neoshowcase.protobuf.ApplicationService`)"
       - "traefik.http.routers.ns.service=ns"
       - "traefik.http.services.ns.loadbalancer.server.port=5000"
+    ports:
+      # for debug
+      - 10000:10000
     depends_on:
       mysql:
         condition: service_healthy

@@ -66,8 +66,9 @@ message BuildSettled {
 
 message BuilderResponse {
   enum Type {
-    BUILD_STARTED = 0;
-    BUILD_SETTLED = 1;
+    CONNECTED = 0;
+    BUILD_STARTED = 1;
+    BUILD_SETTLED = 2;
   }
   Type type = 1;
   oneof body {

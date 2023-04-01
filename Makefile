@@ -98,6 +98,10 @@ migrate-down: ## Rollback migration of development environment
 ns-evans: ## Connect to ns api server service
 	@$(EVANS_CMD) --path ./api/proto --proto neoshowcase/protobuf/apiserver.proto --host ns.local.trapti.tech -p 80 repl
 
+.PHONY: ns-component-evans
+ns-component-evans: ## Connect to ns component service
+	@$(EVANS_CMD) --path ./api/proto --proto neoshowcase/protobuf/apiserver_component.proto --host localhost -p 10000 repl
+
 .PHONY: db-update
 db-update: migrate-up gogen db-gen-docs ## Apply migration, generate sqlboiler sources, and generate db schema docs
 

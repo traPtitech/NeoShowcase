@@ -39,6 +39,14 @@ func (c *ComponentServiceClient) ConnectBuilder(ctx context.Context, onRequest f
 		defer cancel()
 		defer st.CloseRequest()
 
+		// Need to send one arbitrary event to actually start the connection
+		// not sure if this is a bug with connect protocol or something
+		err := st.Send(&pb.BuilderResponse{Type: pb.BuilderResponse_CONNECTED})
+		if err != nil {
+			log.Errorf("failed to send connected event: %+v", err)
+			return
+		}
+
 		for {
 			select {
 			case res, ok := <-response:
