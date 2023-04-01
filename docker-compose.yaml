@@ -78,8 +78,6 @@ services:
     volumes:
       - ./local-dev/keys:/keys
       - ./local-dev/local-storage:/data
-    ports:
-      - "5006:10000"
     depends_on:
       mysql:
         condition: service_healthy
@@ -108,7 +106,6 @@ services:
       - ./local-dev/staticsite/artifacts:/artifacts
       - ./local-dev/local-storage:/data
     ports:
-      - "5007:10000"
       - "5008:80"
     depends_on:
       mysql:

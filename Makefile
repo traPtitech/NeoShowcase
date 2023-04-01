@@ -100,14 +100,6 @@ migrate-down: ## Rollback migration of development environment
 ns-evans: ## Connect to ns api server service
 	@$(EVANS_CMD) --host localhost -p 5009 -r repl
 
-.PHONY: ns-builder-evans
-ns-builder-evans: ## Connect to ns builder service
-	@$(EVANS_CMD) --host localhost -p 5006 -r repl
-
-.PHONY: ns-ssgen-evans
-ns-ssgen-evans: ## Connect to ns static site gen service
-	@$(EVANS_CMD) --host localhost -p 5007 -r repl
-
 .PHONY: db-update
 db-update: migrate-up gogen db-gen-docs ## Apply migration, generate sqlboiler sources, and generate db schema docs
 
