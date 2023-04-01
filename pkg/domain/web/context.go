@@ -45,3 +45,7 @@ func WrapContextMiddleware() echo.MiddlewareFunc {
 		}
 	}
 }
+
+type Handler interface {
+	HandleRequest(c Context) error
+}

@@ -16,65 +16,13 @@ import {
   statusCheckboxContainer,
   statusCheckboxContainerLeft,
 } from '/@/pages/apps.css'
-import { Props as RepositoryProps, Repository } from '/@/components/Repository'
 import { Checkbox } from '/@/components/Checkbox'
-import { Status, StatusIcon } from '/@/components/StatusIcon'
-import { JSXElement } from 'solid-js'
-import { titleCase } from '/@/libs/casing'
+import { StatusIcon } from '/@/components/StatusIcon'
+import { createResource, JSXElement } from 'solid-js'
 import { Radio, RadioItem } from '/@/components/Radio'
-
-const testReposData: RepositoryProps[] = [
-  {
-    name: 'traPtitech/traQ',
-    provider: 'GitHub',
-    apps: [
-      {
-        name: 'master',
-        status: 'running',
-        lastCommit: '1234567',
-        lastCommitDate: '1 day ago',
-        url: 'https://q.trap.jp/',
-        updateDate: '15 days ago',
-      },
-      {
-        name: 'dev',
-        status: 'deploying',
-        lastCommit: '1234567',
-        lastCommitDate: '1 day ago',
-        url: 'https://q-dev.tokyotech.org/',
-        updateDate: '15 days ago',
-      },
-    ],
-  },
-  {
-    name: 'traPtitech/NeoShowcase',
-    provider: 'GitLab',
-    apps: [
-      {
-        name: 'master',
-        status: 'static',
-        lastCommit: '1234567',
-        lastCommitDate: '1 day ago',
-        url: 'https://showcase.trap.show/',
-        updateDate: '15 days ago',
-      },
-    ],
-  },
-  {
-    name: 'traPtitech/booQ',
-    provider: 'Gitea',
-    apps: [
-      {
-        name: 'master',
-        status: 'error',
-        lastCommit: '1234567',
-        lastCommitDate: '1 day ago',
-        url: 'https://booq.trap.jp/',
-        updateDate: '15 days ago',
-      },
-    ],
-  },
-]
+import { client } from '/@/libs/api'
+import { Application, ApplicationState, BuildType } from '/@/api/neoshowcase/protobuf/apiserver_pb'
+import { RepositoryRow } from '/@/components/RepositoryRow'
 
 const sortItems: RadioItem[] = [
   { value: 'desc', title: '最新順' },
@@ -82,15 +30,16 @@ const sortItems: RadioItem[] = [
 ]
 
 interface StatusCheckboxProps {
-  status: Status
+  buildType: BuildType
+  state: ApplicationState
+  title: string
   num: number
 }
-const StatusCheckbox = ({ status, num }: StatusCheckboxProps): JSXElement => {
-  const title = titleCase(status)
+const StatusCheckbox = ({ buildType, state, title, num }: StatusCheckboxProps): JSXElement => {
   return (
     <div class={statusCheckboxContainer}>
       <div class={statusCheckboxContainerLeft}>
-        <StatusIcon status={status} />
+        <StatusIcon buildType={buildType} state={state} />
         <div>{title}</div>
       </div>
       <div>{num}</div>
@@ -99,6 +48,17 @@ const StatusCheckbox = ({ status, num }: StatusCheckboxProps): JSXElement => {
 }
 
 export default () => {
+  const [repos] = createResource(() => client.getRepositories({}))
+  const [apps] = createResource(() => client.getApplications({}))
+  const loaded = () => !!(repos() && apps())
+  const appsByRepo = () =>
+    loaded() &&
+    apps().applications.reduce((acc, app) => {
+      if (!acc[app.repositoryId]) acc[app.repositoryId] = []
+      acc[app.repositoryId].push(app)
+      return acc
+    }, {} as Record<string, Application[]>)
+
   return (
     <div class={container}>
       <Header />
@@ -109,16 +69,29 @@ export default () => {
             <div class={sidebarTitle}>Status</div>
             <div class={sidebarOptions}>
               <Checkbox>
-                <StatusCheckbox status='running' num={24} />
+                <StatusCheckbox buildType={BuildType.RUNTIME} state={ApplicationState.IDLE} title='Idle' num={7} />
               </Checkbox>
               <Checkbox>
-                <StatusCheckbox status='static' num={6} />
+                <StatusCheckbox
+                  buildType={BuildType.RUNTIME}
+                  state={ApplicationState.RUNNING}
+                  title='Running'
+                  num={24}
+                />
               </Checkbox>
               <Checkbox>
-                <StatusCheckbox status='deploying' num={1} />
+                <StatusCheckbox buildType={BuildType.STATIC} state={ApplicationState.RUNNING} title='Static' num={6} />
               </Checkbox>
               <Checkbox>
-                <StatusCheckbox status='error' num={3} />
+                <StatusCheckbox
+                  buildType={BuildType.RUNTIME}
+                  state={ApplicationState.DEPLOYING}
+                  title='Deploying'
+                  num={1}
+                />
+              </Checkbox>
+              <Checkbox>
+                <StatusCheckbox buildType={BuildType.RUNTIME} state={ApplicationState.ERRORED} title='Error' num={3} />
               </Checkbox>
             </div>
           </div>
@@ -143,9 +116,7 @@ export default () => {
             </div>
           </div>
           <div class={repositoriesContainer}>
-            {testReposData.map((r) => (
-              <Repository name={r.name} provider={r.provider} apps={r.apps} />
-            ))}
+            {loaded() && repos().repositories.map((r) => <RepositoryRow repo={r} apps={appsByRepo()[r.id] || []} />)}
           </div>
         </div>
       </div>

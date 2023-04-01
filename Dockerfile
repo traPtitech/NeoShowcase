@@ -30,7 +30,7 @@ WORKDIR /app
 
 # artifact images
 FROM base as ns
-EXPOSE 8080
+EXPOSE 5000 10000
 COPY --from=builder-ns /app/ns ./
 ENTRYPOINT ["/app/ns"]
 CMD ["run"]
@@ -56,7 +56,7 @@ COPY --from=builder-ns-migrate /app/ns-migrate ./
 ENTRYPOINT ["/app/ns-migrate"]
 
 FROM base as ns-all
-EXPOSE 8080
+EXPOSE 5000 10000 8080
 COPY --from=builder-ns /app/ns ./
 COPY --from=builder-ns-builder /app/ns-builder ./
 COPY --from=builder-ns-mc /app/ns-mc ./

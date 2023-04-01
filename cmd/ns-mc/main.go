@@ -3,7 +3,6 @@ package main
 import (
 	"context"
 	"fmt"
-	"math/rand"
 	"net/http"
 	"os"
 	"time"
@@ -62,7 +61,6 @@ func serveCommand() *cobra.Command {
 }
 
 func main() {
-	rand.Seed(time.Now().UnixNano())
 	rootCommand.AddCommand(
 		serveCommand(),
 	)
@@ -77,14 +75,6 @@ func main() {
 	if err := rootCommand.Execute(); err != nil {
 		log.Fatalf("failed to exec: %+v", err)
 	}
-}
-
-type Router struct {
-	h handler.MemberCheckHandler
-}
-
-func (r *Router) SetupRoute(e *echo.Echo) {
-	e.GET("/", web.UnwrapHandler(r.h))
 }
 
 func providePubKeyPEM() (usecase.TrapShowcaseJWTPublicKeyPEM, error) {
@@ -110,10 +100,12 @@ OQIDAQAB
 	return defaultPublicKeyPEM, nil
 }
 
-func provideServerConfig(router web.Router) web.Config {
+func provideServerConfig(h handler.MemberCheckHandler) web.Config {
 	return web.Config{
-		Port:   port,
-		Router: router,
+		Port: port,
+		SetupRoute: func(e *echo.Echo) {
+			e.GET("/", web.UnwrapHandler(h))
+		},
 	}
 }
 

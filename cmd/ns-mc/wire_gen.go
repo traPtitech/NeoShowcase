@@ -25,10 +25,7 @@ func NewServer() (*web.Server, error) {
 	}
 	tokenCookieName := provideTokenCookieName()
 	memberCheckHandler := handler.NewMemberCheckHandler(memberCheckService, tokenCookieName)
-	router := &Router{
-		h: memberCheckHandler,
-	}
-	config := provideServerConfig(router)
+	config := provideServerConfig(memberCheckHandler)
 	server := web.NewServer(config)
 	return server, nil
 }

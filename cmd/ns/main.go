@@ -3,7 +3,6 @@ package main
 import (
 	"context"
 	"fmt"
-	"math/rand"
 	"time"
 
 	_ "github.com/go-sql-driver/mysql"
@@ -45,7 +44,6 @@ func runCommand() *cobra.Command {
 				boil.DebugMode = true
 			}
 
-			// TODO: context
 			go func() {
 				err := service.Start(context.Background())
 				if err != nil {
@@ -64,7 +62,6 @@ func runCommand() *cobra.Command {
 }
 
 func main() {
-	rand.Seed(time.Now().UnixNano())
 	cobra.OnInitialize(cli.CobraOnInitializeFunc(&configFilePath, "NS_APISERVER", &c))
 
 	rootCommand.AddCommand(
@@ -92,8 +89,8 @@ func main() {
 	viper.SetDefault("ss.service.port", 80)
 	viper.SetDefault("ss.url", "")
 	viper.SetDefault("docker.confdir", "/opt/traefik/conf")
-	viper.SetDefault("grpc.app.port", 5000)
-	viper.SetDefault("grpc.component.port", 10000)
+	viper.SetDefault("web.app.port", 5000)
+	viper.SetDefault("web.component.port", 10000)
 	viper.SetDefault("db.host", "127.0.0.1")
 	viper.SetDefault("db.port", 3306)
 	viper.SetDefault("db.username", "root")

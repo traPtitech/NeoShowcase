@@ -19,8 +19,6 @@ func NewServer() (*web.Server, error) {
 		providePubKeyPEM,
 		provideServerConfig,
 		provideTokenCookieName,
-		wire.Struct(new(Router), "*"),
-		wire.Bind(new(web.Router), new(*Router)),
 	)
 	return nil, nil
 }

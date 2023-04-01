@@ -1,5 +1,7 @@
 /dind
 /local-storage
+/mongo
+/mysql
 /repositories
 /staticsite
 /traefik

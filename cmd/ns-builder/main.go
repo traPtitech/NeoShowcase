@@ -3,7 +3,6 @@ package main
 import (
 	"context"
 	"fmt"
-	"math/rand"
 	"time"
 
 	"github.com/moby/buildkit/util/appdefaults"
@@ -58,7 +57,6 @@ func runCommand() *cobra.Command {
 }
 
 func main() {
-	rand.Seed(time.Now().UnixNano())
 	cobra.OnInitialize(cli.CobraOnInitializeFunc(&configFilePath, "NS_BUILDER", &c))
 
 	rootCommand.AddCommand(
@@ -73,8 +71,7 @@ func main() {
 
 	viper.SetDefault("buildkit.address", appdefaults.Address)
 	viper.SetDefault("repository.privateKeyFile", "")
-	viper.SetDefault("ns.addr", "ns:10000")
-	viper.SetDefault("ns.insecure", false)
+	viper.SetDefault("ns.url", "http://ns:10000")
 	viper.SetDefault("db.host", "127.0.0.1")
 	viper.SetDefault("db.port", 3306)
 	viper.SetDefault("db.username", "root")

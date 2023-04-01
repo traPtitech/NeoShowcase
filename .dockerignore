@@ -3,6 +3,7 @@
 /.git/
 /.vscode/
 /api/
+/dashboard/
 /docs/
 /img/
 /local-dev/

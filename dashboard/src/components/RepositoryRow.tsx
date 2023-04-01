@@ -16,22 +16,15 @@ import {
 import { AiFillGithub, AiFillGitlab } from 'solid-icons/ai'
 import { vars } from '/@/theme.css'
 import { SiGitea } from 'solid-icons/si'
-import { Status, StatusIcon } from '/@/components/StatusIcon'
+import { StatusIcon } from '/@/components/StatusIcon'
+import { Application, Repository } from '/@/api/neoshowcase/protobuf/apiserver_pb'
+import { repositoryURLToProvider } from '/@/libs/application'
+import { durationHuman, shortSha } from '/@/libs/format'
 
 export type Provider = 'GitHub' | 'GitLab' | 'Gitea'
 
-export interface Application {
-  name: string
-  status: Status
-  lastCommit: string
-  lastCommitDate: string
-  url: string
-  updateDate: string
-}
-
 export interface Props {
-  name: string
-  provider: Provider
+  repo: Repository
   apps: Application[]
 }
 
@@ -46,13 +39,14 @@ const providerToIcon = (provider: Provider): JSXElement => {
   }
 }
 
-export const Repository = ({ name, provider, apps }: Props): JSXElement => {
+export const RepositoryRow = ({ repo, apps }: Props): JSXElement => {
+  const provider = repositoryURLToProvider(repo.url)
   return (
     <div class={container}>
       <div class={header}>
         <div class={headerLeft}>
           {providerToIcon(provider)}
-          <div class={repoName}>{name}</div>
+          <div class={repoName}>{repo.name}</div>
           <div class={appsCount}>
             {apps.length} {apps.length === 1 ? 'app' : 'apps'}
           </div>
@@ -63,16 +57,14 @@ export const Repository = ({ name, provider, apps }: Props): JSXElement => {
       </div>
       {apps.map((app, i) => (
         <div class={i === apps.length - 1 ? application : applicationNotLast}>
-          <StatusIcon status={app.status} />
+          <StatusIcon buildType={app.buildType} state={app.state} />
           <div class={appDetail}>
             <div class={appName}>{app.name}</div>
             <div class={appFooter}>
-              <div>
-                {app.lastCommit}・{app.lastCommitDate}
-              </div>
+              <div>{shortSha(app.currentCommit)}</div>
               <div class={appFooterRight}>
-                <div>{app.url}</div>
-                <div>{app.updateDate}</div>
+                <div>{app.websites[0]?.fqdn || ''}</div>
+                <div>{durationHuman(3 * 60 * 1000) /* TODO: use updatedAt */}</div>
               </div>
             </div>
           </div>

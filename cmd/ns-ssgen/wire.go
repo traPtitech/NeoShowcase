@@ -15,7 +15,6 @@ import (
 
 func New(c Config) (*Server, error) {
 	wire.Build(
-		grpc.NewComponentServiceClientConn,
 		grpc.NewComponentServiceClient,
 		usecase.NewStaticSiteServerService,
 		admindb.New,

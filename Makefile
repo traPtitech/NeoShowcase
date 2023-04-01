@@ -2,10 +2,10 @@ TBLS_VERSION := 1.62.1
 SPECTRAL_VERSION := 6.4.0
 
 GO_REPO_ROOT_PACKAGE := "github.com/traPtitech/neoshowcase"
-PROTOC_OPTS := -I ./api/proto --go_out=. --go_opt=module=$(GO_REPO_ROOT_PACKAGE) --go-grpc_out=. --go-grpc_opt=module=$(GO_REPO_ROOT_PACKAGE)
-PROTOC_OPTS_CLIENT := -I ./api/proto --grpc-web_out=import_style=typescript,mode=grpcwebtext:./dashboard/src/api
+PROTOC_OPTS := -I ./api/proto --go_out=. --go_opt=module=$(GO_REPO_ROOT_PACKAGE) --connect-go_out=. --connect-go_opt=module=$(GO_REPO_ROOT_PACKAGE)
+PROTOC_OPTS_CLIENT := -I ./api/proto --es_out=./dashboard/src/api --es_opt=target=ts --connect-es_out=./dashboard/src/api --connect-es_opt=target=ts
 PROTOC_SOURCES ?= $(shell find ./api/proto/neoshowcase -type f -name "*.proto" -print)
-PROTOC_SOURCES_CLIENT := ./api/proto/neoshowcase/protobuf/apiserver.proto
+PROTOC_SOURCES_CLIENT := ./api/proto/neoshowcase/protobuf/apiserver.proto ./api/proto/neoshowcase/protobuf/null.proto
 
 TBLS_CMD := docker run --rm --net=host -v $$(pwd):/work --workdir /work -u $$(id -u):$$(id -g) ghcr.io/k1low/tbls:v$(TBLS_VERSION)
 SPECTRAL_CMD := docker run --rm -it -v $$(pwd):/tmp stoplight/spectral:$(SPECTRAL_VERSION)
@@ -22,10 +22,8 @@ help: ## Display this help screen
 init: ## Install commands
 	go mod download
 	go install google.golang.org/protobuf/cmd/protoc-gen-go@latest
-	go install google.golang.org/grpc/cmd/protoc-gen-go-grpc@latest
-	go install github.com/volatiletech/sqlboiler/v4@latest
-	go install github.com/volatiletech/sqlboiler/v4/drivers/sqlboiler-mysql@latest
-	go install github.com/rubenv/sql-migrate/sql-migrate@latest
+	go install github.com/bufbuild/connect-go/cmd/protoc-gen-connect-go@latest
+	yarn global add @bufbuild/protoc-gen-connect-es @bufbuild/protoc-gen-es
 	go install github.com/ktr0731/evans@latest
 
 .PHONY: gogen
@@ -98,15 +96,11 @@ migrate-down: ## Rollback migration of development environment
 
 .PHONY: ns-evans
 ns-evans: ## Connect to ns api server service
-	@$(EVANS_CMD) --host localhost -p 5009 -r repl
+	@$(EVANS_CMD) --path ./api/proto --proto neoshowcase/protobuf/apiserver.proto --host ns.local.trapti.tech -p 80 repl
 
-.PHONY: ns-builder-evans
-ns-builder-evans: ## Connect to ns builder service
-	@$(EVANS_CMD) --host localhost -p 5006 -r repl
-
-.PHONY: ns-ssgen-evans
-ns-ssgen-evans: ## Connect to ns static site gen service
-	@$(EVANS_CMD) --host localhost -p 5007 -r repl
+.PHONY: ns-component-evans
+ns-component-evans: ## Connect to ns component service
+	@$(EVANS_CMD) --path ./api/proto --proto neoshowcase/protobuf/apiserver_component.proto --host localhost -p 10000 repl
 
 .PHONY: db-update
 db-update: migrate-up gogen db-gen-docs ## Apply migration, generate sqlboiler sources, and generate db schema docs

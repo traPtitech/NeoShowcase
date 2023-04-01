@@ -5,9 +5,10 @@ import (
 	"io"
 	"sync"
 
+	"github.com/bufbuild/connect-go"
+	"github.com/friendsofgo/errors"
 	"github.com/samber/lo"
 	log "github.com/sirupsen/logrus"
-	"google.golang.org/grpc"
 	"google.golang.org/protobuf/types/known/emptypb"
 
 	"github.com/traPtitech/neoshowcase/pkg/domain"
@@ -16,20 +17,12 @@ import (
 	"github.com/traPtitech/neoshowcase/pkg/util"
 )
 
-type ComponentServiceGRPCServer struct {
-	*grpc.Server
-}
-
-func NewComponentServiceGRPCServer() ComponentServiceGRPCServer {
-	return ComponentServiceGRPCServer{NewServer()}
-}
-
 type builderConnection struct {
-	req chan<- *pb.BuilderRequest
+	reqSender chan<- *pb.BuilderRequest
 }
 
 type ssGenConnection struct {
-	req chan<- *pb.SSGenRequest
+	reqSender chan<- *pb.SSGenRequest
 }
 
 type ComponentService struct {
@@ -38,8 +31,6 @@ type ComponentService struct {
 	builderConnections []*builderConnection
 	ssGenConnections   []*ssGenConnection
 	lock               sync.Mutex
-
-	pb.UnimplementedComponentServiceServer
 }
 
 func NewComponentServiceServer(bus domain.Bus) domain.ComponentService {
@@ -48,14 +39,14 @@ func NewComponentServiceServer(bus domain.Bus) domain.ComponentService {
 	}
 }
 
-func (s *ComponentService) ConnectBuilder(c pb.ComponentService_ConnectBuilderServer) error {
+func (s *ComponentService) ConnectBuilder(ctx context.Context, st *connect.BidiStream[pb.BuilderResponse, pb.BuilderRequest]) error {
 	id := domain.NewID()
 	log.WithField("id", id).Info("new builder connection")
 	defer log.WithField("id", id).Info("builder connection closed")
 
-	ctx, cancel := context.WithCancel(c.Context())
-	req := make(chan *pb.BuilderRequest)
-	conn := &builderConnection{req: req}
+	ctx, cancel := context.WithCancel(ctx)
+	reqSender := make(chan *pb.BuilderRequest)
+	conn := &builderConnection{reqSender: reqSender}
 	s.lock.Lock()
 	s.builderConnections = append(s.builderConnections, conn)
 	s.lock.Unlock()
@@ -70,8 +61,8 @@ func (s *ComponentService) ConnectBuilder(c pb.ComponentService_ConnectBuilderSe
 		defer cancel()
 
 		for {
-			res, err := c.Recv()
-			if err == io.EOF {
+			res, err := st.Receive()
+			if errors.Is(err, io.EOF) {
 				return
 			}
 			if err != nil {
@@ -98,8 +89,8 @@ func (s *ComponentService) ConnectBuilder(c pb.ComponentService_ConnectBuilderSe
 loop:
 	for {
 		select {
-		case req := <-req:
-			err := c.Send(req)
+		case req := <-reqSender:
+			err := st.Send(req)
 			if err != nil {
 				return err
 			}
@@ -111,13 +102,13 @@ loop:
 	return nil
 }
 
-func (s *ComponentService) ConnectSSGen(_ *emptypb.Empty, c pb.ComponentService_ConnectSSGenServer) error {
+func (s *ComponentService) ConnectSSGen(ctx context.Context, _ *connect.Request[emptypb.Empty], st *connect.ServerStream[pb.SSGenRequest]) error {
 	id := domain.NewID()
 	log.WithField("id", id).Info("new ssgen connection")
 	defer log.WithField("id", id).Info("ssgen connection closed")
 
-	req := make(chan *pb.SSGenRequest)
-	conn := &ssGenConnection{req: req}
+	reqSender := make(chan *pb.SSGenRequest)
+	conn := &ssGenConnection{reqSender: reqSender}
 	s.lock.Lock()
 	s.ssGenConnections = append(s.ssGenConnections, conn)
 	s.lock.Unlock()
@@ -131,15 +122,15 @@ func (s *ComponentService) ConnectSSGen(_ *emptypb.Empty, c pb.ComponentService_
 loop:
 	for {
 		select {
-		case req, ok := <-req:
+		case req, ok := <-reqSender:
 			if !ok {
 				break loop
 			}
-			err := c.Send(req)
+			err := st.Send(req)
 			if err != nil {
 				return err
 			}
-		case <-c.Context().Done():
+		case <-ctx.Done():
 			break loop
 		}
 	}
@@ -153,7 +144,7 @@ func (s *ComponentService) BroadcastBuilder(req *pb.BuilderRequest) {
 
 	for _, builder := range s.builderConnections {
 		select {
-		case builder.req <- req:
+		case builder.reqSender <- req:
 		default:
 		}
 	}
@@ -165,7 +156,7 @@ func (s *ComponentService) BroadcastSSGen(req *pb.SSGenRequest) {
 
 	for _, ssgen := range s.ssGenConnections {
 		select {
-		case ssgen.req <- req:
+		case ssgen.reqSender <- req:
 		default:
 		}
 	}

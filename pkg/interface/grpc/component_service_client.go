@@ -4,45 +4,28 @@ import (
 	"context"
 	"io"
 
+	"github.com/bufbuild/connect-go"
+	"github.com/friendsofgo/errors"
 	log "github.com/sirupsen/logrus"
-	"google.golang.org/grpc"
 	"google.golang.org/protobuf/types/known/emptypb"
 
 	"github.com/traPtitech/neoshowcase/pkg/domain"
+	"github.com/traPtitech/neoshowcase/pkg/domain/web"
 	"github.com/traPtitech/neoshowcase/pkg/interface/grpc/pb"
+	"github.com/traPtitech/neoshowcase/pkg/interface/grpc/pb/pbconnect"
 )
 
-type ComponentServiceClientConn struct {
-	*grpc.ClientConn
-}
-
 type ComponentServiceClientConfig struct {
-	Insecure bool   `mapstructure:"insecure" yaml:"insecure"`
-	Addr     string `mapstructure:"addr" yaml:"addr"`
-}
-
-func (c *ComponentServiceClientConfig) provideClientConfig() ClientConfig {
-	return ClientConfig{
-		Insecure: c.Insecure,
-		Addr:     c.Addr,
-	}
-}
-
-func NewComponentServiceClientConn(c ComponentServiceClientConfig) (*ComponentServiceClientConn, error) {
-	conn, err := NewClient(c.provideClientConfig())
-	if err != nil {
-		return nil, err
-	}
-	return &ComponentServiceClientConn{ClientConn: conn}, nil
+	URL string `mapstructure:"url" yaml:"url"`
 }
 
 type ComponentServiceClient struct {
-	client pb.ComponentServiceClient
+	client pbconnect.ComponentServiceClient
 }
 
-func NewComponentServiceClient(cc *ComponentServiceClientConn) domain.ComponentServiceClient {
+func NewComponentServiceClient(c ComponentServiceClientConfig) domain.ComponentServiceClient {
 	return &ComponentServiceClient{
-		client: pb.NewComponentServiceClient(cc.ClientConn),
+		client: pbconnect.NewComponentServiceClient(web.NewH2CClient(), c.URL),
 	}
 }
 
@@ -50,19 +33,20 @@ func (c *ComponentServiceClient) ConnectBuilder(ctx context.Context, onRequest f
 	ctx, cancel := context.WithCancel(ctx)
 	defer cancel()
 
-	conn, err := c.client.ConnectBuilder(ctx)
-	if err != nil {
-		return err
-	}
+	st := c.client.ConnectBuilder(ctx)
+	defer st.CloseResponse()
 
 	go func() {
 		defer cancel()
-		defer func() {
-			err := conn.CloseSend()
-			if err != nil {
-				log.Errorf("failed to close send stream: %+v", err)
-			}
-		}()
+		defer st.CloseRequest()
+
+		// Need to send one arbitrary event to actually start the connection
+		// not sure if this is a bug with connect protocol or something
+		err := st.Send(&pb.BuilderResponse{Type: pb.BuilderResponse_CONNECTED})
+		if err != nil {
+			log.Errorf("failed to send connected event: %+v", err)
+			return
+		}
 
 		for {
 			select {
@@ -70,7 +54,7 @@ func (c *ComponentServiceClient) ConnectBuilder(ctx context.Context, onRequest f
 				if !ok {
 					return
 				}
-				err := conn.Send(res)
+				err := st.Send(res)
 				if err != nil {
 					log.Errorf("failed to send builder response: %+v", err)
 					return
@@ -82,8 +66,8 @@ func (c *ComponentServiceClient) ConnectBuilder(ctx context.Context, onRequest f
 	}()
 
 	for {
-		req, err := conn.Recv()
-		if err == io.EOF {
+		req, err := st.Receive()
+		if errors.Is(err, io.EOF) {
 			return nil
 		}
 		if err != nil {
@@ -97,28 +81,15 @@ func (c *ComponentServiceClient) ConnectSSGen(ctx context.Context, onRequest fun
 	ctx, cancel := context.WithCancel(ctx)
 	defer cancel()
 
-	conn, err := c.client.ConnectSSGen(ctx, &emptypb.Empty{})
+	st, err := c.client.ConnectSSGen(ctx, connect.NewRequest(&emptypb.Empty{}))
 	if err != nil {
 		return err
 	}
+	defer st.Close()
 
-	go func() {
-		<-ctx.Done()
-		cancel()
-		err := conn.CloseSend()
-		if err != nil {
-			log.Errorf("failed to close send stream: %+v", err)
-		}
-	}()
-
-	for {
-		req, err := conn.Recv()
-		if err == io.EOF {
-			return nil
-		}
-		if err != nil {
-			return err
-		}
-		onRequest(req)
+	for st.Receive() {
+		msg := st.Msg()
+		onRequest(msg)
 	}
+	return st.Err()
 }

@@ -26,11 +26,7 @@ func New(c2 Config) (*Server, error) {
 		return nil, err
 	}
 	componentServiceClientConfig := c2.NS
-	componentServiceClientConn, err := grpc.NewComponentServiceClientConn(componentServiceClientConfig)
-	if err != nil {
-		return nil, err
-	}
-	componentServiceClient := grpc.NewComponentServiceClient(componentServiceClientConn)
+	componentServiceClient := grpc.NewComponentServiceClient(componentServiceClientConfig)
 	storageConfig := c2.Storage
 	storage, err := initStorage(storageConfig)
 	if err != nil {
