@@ -2,6 +2,7 @@ package usecase
 
 import (
 	"context"
+	"strings"
 	"sync"
 	"time"
 
@@ -73,7 +74,7 @@ func (c *cleanerService) Shutdown(_ context.Context) error {
 }
 
 func (c *cleanerService) pruneImagesLoop(ctx context.Context, r *registry.Registry) {
-	ticker := time.NewTicker(1 * time.Hour)
+	ticker := time.NewTicker(10 * time.Second)
 	defer ticker.Stop()
 
 	doPrune := func() {
@@ -125,19 +126,30 @@ func (c *cleanerService) pruneImages(ctx context.Context, r *registry.Registry) 
 	if err != nil {
 		return err
 	}
-	commits := make(map[string]struct{}, 2*len(applications))
-	for _, app := range applications {
-		commits[app.WantCommit] = struct{}{}
-		commits[app.CurrentCommit] = struct{}{}
+	appsMap := lo.SliceToMap(applications, func(app *domain.Application) (string, *domain.Application) { return app.ID, app })
+
+	imageNames, err := r.Repositories()
+	if err != nil {
+		return errors.Wrap(err, "failed to get image repositories")
 	}
 
-	for _, app := range applications {
-		imageName := c.image.ImageName(app.ID)
+	for _, imageName := range imageNames {
+		if !strings.HasPrefix(imageName, c.image.NamePrefix) {
+			continue
+		}
+		appID := strings.TrimPrefix(imageName, c.image.NamePrefix)
+
 		tags, err := r.Tags(imageName)
 		if err != nil {
 			return errors.Wrap(err, "failed to get tags for image")
 		}
-		danglingTags := lo.Reject(tags, func(tag string, i int) bool { _, ok := commits[tag]; return ok })
+		app, ok := appsMap[appID]
+		var danglingTags []string
+		if ok {
+			danglingTags = lo.Reject(tags, func(tag string, i int) bool { return app.WantCommit == tag || app.CurrentCommit == tag })
+		} else {
+			danglingTags = tags
+		}
 		for _, tag := range danglingTags {
 			digest, err := r.ManifestDigest(imageName, tag)
 			if err != nil {
