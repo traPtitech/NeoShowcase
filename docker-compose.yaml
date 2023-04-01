@@ -184,7 +184,7 @@ services:
       - default
 
   mysql:
-    image: mariadb
+    image: mariadb:10
     restart: always
     environment:
       MYSQL_ROOT_PASSWORD: password
@@ -195,6 +195,8 @@ services:
       interval: 1s
       timeout: 10s
       retries: 60
+    volumes:
+      - ./local-dev/mysql:/var/lib/mysql
     ports:
       - "5004:3306"
     networks:
@@ -202,11 +204,13 @@ services:
       - apps
 
   mongo:
-    image: mongo
+    image: mongo:6
     restart: always
     environment:
       MONGO_INITDB_ROOT_USERNAME: root
       MONGO_INITDB_ROOT_PASSWORD: password
+    volumes:
+      - ./local-dev/mongo:/data/db
     ports:
       - "5010:27017"
     networks:
