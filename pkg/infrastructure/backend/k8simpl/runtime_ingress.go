@@ -5,9 +5,9 @@ import (
 	"fmt"
 
 	"github.com/friendsofgo/errors"
-	"github.com/traefik/traefik/v3/pkg/config/dynamic"
-	traefikv1alpha1 "github.com/traefik/traefik/v3/pkg/provider/kubernetes/crd/traefikio/v1alpha1"
-	"github.com/traefik/traefik/v3/pkg/types"
+	"github.com/traefik/traefik/v2/pkg/config/dynamic"
+	traefikv1alpha1 "github.com/traefik/traefik/v2/pkg/provider/kubernetes/crd/traefikio/v1alpha1"
+	"github.com/traefik/traefik/v2/pkg/types"
 	apiv1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/intstr"
@@ -55,7 +55,7 @@ func stripMiddleware(_ *domain.Application, website *domain.Website, labels map[
 	return &traefikv1alpha1.Middleware{
 		TypeMeta: metav1.TypeMeta{
 			Kind:       "Middleware",
-			APIVersion: "traefik.io/v1",
+			APIVersion: "traefik.io/v1alpha1",
 		},
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      stripMiddlewareName(website),
@@ -117,7 +117,7 @@ func ingressRouteBase(app *domain.Application, website *domain.Website, labels m
 	ingressRoute := &traefikv1alpha1.IngressRoute{
 		TypeMeta: metav1.TypeMeta{
 			Kind:       "IngressRoute",
-			APIVersion: "traefik.io/v1",
+			APIVersion: "traefik.io/v1alpha1",
 		},
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      serviceName(website),
