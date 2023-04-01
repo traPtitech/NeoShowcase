@@ -45,7 +45,6 @@ func runCommand() *cobra.Command {
 				boil.DebugMode = true
 			}
 
-			// TODO: context
 			go func() {
 				err := service.Start(context.Background())
 				if err != nil {
