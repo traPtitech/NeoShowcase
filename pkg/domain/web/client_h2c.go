@@ -1,4 +1,4 @@
-package grpc
+package web
 
 import (
 	"context"
@@ -9,7 +9,7 @@ import (
 	"golang.org/x/net/http2"
 )
 
-func newInsecureClient() *http.Client {
+func NewH2CClient() *http.Client {
 	// https://connect.build/docs/go/deployment
 	return &http.Client{
 		Transport: &http2.Transport{

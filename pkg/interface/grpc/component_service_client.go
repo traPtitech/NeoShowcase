@@ -10,6 +10,7 @@ import (
 	"google.golang.org/protobuf/types/known/emptypb"
 
 	"github.com/traPtitech/neoshowcase/pkg/domain"
+	"github.com/traPtitech/neoshowcase/pkg/domain/web"
 	"github.com/traPtitech/neoshowcase/pkg/interface/grpc/pb"
 	"github.com/traPtitech/neoshowcase/pkg/interface/grpc/pb/pbconnect"
 )
@@ -24,7 +25,7 @@ type ComponentServiceClient struct {
 
 func NewComponentServiceClient(c ComponentServiceClientConfig) domain.ComponentServiceClient {
 	return &ComponentServiceClient{
-		client: pbconnect.NewComponentServiceClient(newInsecureClient(), c.URL),
+		client: pbconnect.NewComponentServiceClient(web.NewH2CClient(), c.URL),
 	}
 }
 
