@@ -4,7 +4,7 @@
 // @ts-nocheck
 
 import { Empty, MethodKind } from "@bufbuild/protobuf";
-import { Application, ApplicationBuildArtifact, ApplicationEnvVars, ApplicationIdRequest, ApplicationOutput, AvailableDomain, AvailableDomains, Build, BuildLog, CancelBuildRequest, CreateApplicationRequest, CreateRepositoryRequest, GetApplicationBuildLogRequest, GetApplicationBuildRequest, GetApplicationBuildsResponse, GetApplicationsResponse, GetRepositoriesResponse, GetSystemPublicKeyResponse, Repository, RetryCommitBuildRequest, SetApplicationEnvVarRequest, UpdateApplicationRequest, User } from "./apiserver_pb.js";
+import { Application, ApplicationEnvVars, ApplicationIdRequest, ApplicationOutput, ArtifactContent, ArtifactIdRequest, AvailableDomain, AvailableDomains, Build, BuildIdRequest, BuildLog, CreateApplicationRequest, CreateRepositoryRequest, GetApplicationsResponse, GetBuildsResponse, GetRepositoriesResponse, GetSystemPublicKeyResponse, Repository, RetryCommitBuildRequest, SetApplicationEnvVarRequest, UpdateApplicationRequest, User } from "./apiserver_pb.js";
 
 /**
  * @generated from service neoshowcase.protobuf.ApplicationService
@@ -117,7 +117,7 @@ export const ApplicationService = {
     getBuilds: {
       name: "GetBuilds",
       I: ApplicationIdRequest,
-      O: GetApplicationBuildsResponse,
+      O: GetBuildsResponse,
       kind: MethodKind.Unary,
     },
     /**
@@ -125,7 +125,7 @@ export const ApplicationService = {
      */
     getBuild: {
       name: "GetBuild",
-      I: GetApplicationBuildRequest,
+      I: BuildIdRequest,
       O: Build,
       kind: MethodKind.Unary,
     },
@@ -134,7 +134,7 @@ export const ApplicationService = {
      */
     getBuildLogStream: {
       name: "GetBuildLogStream",
-      I: GetApplicationBuildLogRequest,
+      I: BuildIdRequest,
       O: BuildLog,
       kind: MethodKind.ServerStreaming,
     },
@@ -143,7 +143,7 @@ export const ApplicationService = {
      */
     getBuildLog: {
       name: "GetBuildLog",
-      I: GetApplicationBuildLogRequest,
+      I: BuildIdRequest,
       O: BuildLog,
       kind: MethodKind.Unary,
     },
@@ -152,8 +152,8 @@ export const ApplicationService = {
      */
     getBuildArtifact: {
       name: "GetBuildArtifact",
-      I: ApplicationIdRequest,
-      O: ApplicationBuildArtifact,
+      I: ArtifactIdRequest,
+      O: ArtifactContent,
       kind: MethodKind.Unary,
     },
     /**
@@ -188,7 +188,7 @@ export const ApplicationService = {
      */
     cancelBuild: {
       name: "CancelBuild",
-      I: CancelBuildRequest,
+      I: BuildIdRequest,
       O: Empty,
       kind: MethodKind.Unary,
     },

@@ -66,6 +66,15 @@ func SaveArtifact(s Storage, filename string, artifactID string) error {
 	return nil
 }
 
+func GetArtifact(s Storage, artifactID string) ([]byte, error) {
+	r, err := s.Open(artifactPath(artifactID))
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to open artifact")
+	}
+	defer r.Close()
+	return io.ReadAll(r)
+}
+
 func DeleteArtifact(s Storage, artifactID string) error {
 	err := s.Delete(artifactPath(artifactID))
 	if err != nil {

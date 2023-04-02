@@ -44,7 +44,7 @@ message BuilderRequest {
   oneof body {
     StartBuildImageRequest build_image = 2;
     StartBuildStaticRequest build_static = 3;
-    CancelBuildRequest cancel_build = 4;
+    BuildIdRequest cancel_build = 4;
   }
 }
 

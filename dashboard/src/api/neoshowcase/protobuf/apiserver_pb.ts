@@ -4,7 +4,7 @@
 // @ts-nocheck
 
 import type { BinaryReadOptions, FieldList, JsonReadOptions, JsonValue, PartialMessage, PlainMessage } from "@bufbuild/protobuf";
-import { Empty, Message, proto3 } from "@bufbuild/protobuf";
+import { Empty, Message, proto3, protoInt64, Timestamp } from "@bufbuild/protobuf";
 import { NullTimestamp } from "./null_pb.js";
 
 /**
@@ -913,39 +913,100 @@ export class ApplicationEnvVars extends Message<ApplicationEnvVars> {
 }
 
 /**
- * @generated from message neoshowcase.protobuf.ApplicationBuildArtifact
+ * @generated from message neoshowcase.protobuf.Artifact
  */
-export class ApplicationBuildArtifact extends Message<ApplicationBuildArtifact> {
+export class Artifact extends Message<Artifact> {
   /**
-   * @generated from field: string url = 1;
+   * @generated from field: string id = 1;
    */
-  url = "";
+  id = "";
 
-  constructor(data?: PartialMessage<ApplicationBuildArtifact>) {
+  /**
+   * @generated from field: int64 size = 2;
+   */
+  size = protoInt64.zero;
+
+  /**
+   * @generated from field: google.protobuf.Timestamp created_at = 3;
+   */
+  createdAt?: Timestamp;
+
+  /**
+   * @generated from field: neoshowcase.protobuf.NullTimestamp deleted_at = 4;
+   */
+  deletedAt?: NullTimestamp;
+
+  constructor(data?: PartialMessage<Artifact>) {
     super();
     proto3.util.initPartial(data, this);
   }
 
   static readonly runtime: typeof proto3 = proto3;
-  static readonly typeName = "neoshowcase.protobuf.ApplicationBuildArtifact";
+  static readonly typeName = "neoshowcase.protobuf.Artifact";
   static readonly fields: FieldList = proto3.util.newFieldList(() => [
-    { no: 1, name: "url", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+    { no: 1, name: "id", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+    { no: 2, name: "size", kind: "scalar", T: 3 /* ScalarType.INT64 */ },
+    { no: 3, name: "created_at", kind: "message", T: Timestamp },
+    { no: 4, name: "deleted_at", kind: "message", T: NullTimestamp },
   ]);
 
-  static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): ApplicationBuildArtifact {
-    return new ApplicationBuildArtifact().fromBinary(bytes, options);
+  static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): Artifact {
+    return new Artifact().fromBinary(bytes, options);
   }
 
-  static fromJson(jsonValue: JsonValue, options?: Partial<JsonReadOptions>): ApplicationBuildArtifact {
-    return new ApplicationBuildArtifact().fromJson(jsonValue, options);
+  static fromJson(jsonValue: JsonValue, options?: Partial<JsonReadOptions>): Artifact {
+    return new Artifact().fromJson(jsonValue, options);
   }
 
-  static fromJsonString(jsonString: string, options?: Partial<JsonReadOptions>): ApplicationBuildArtifact {
-    return new ApplicationBuildArtifact().fromJsonString(jsonString, options);
+  static fromJsonString(jsonString: string, options?: Partial<JsonReadOptions>): Artifact {
+    return new Artifact().fromJsonString(jsonString, options);
   }
 
-  static equals(a: ApplicationBuildArtifact | PlainMessage<ApplicationBuildArtifact> | undefined, b: ApplicationBuildArtifact | PlainMessage<ApplicationBuildArtifact> | undefined): boolean {
-    return proto3.util.equals(ApplicationBuildArtifact, a, b);
+  static equals(a: Artifact | PlainMessage<Artifact> | undefined, b: Artifact | PlainMessage<Artifact> | undefined): boolean {
+    return proto3.util.equals(Artifact, a, b);
+  }
+}
+
+/**
+ * @generated from message neoshowcase.protobuf.ArtifactContent
+ */
+export class ArtifactContent extends Message<ArtifactContent> {
+  /**
+   * @generated from field: string filename = 1;
+   */
+  filename = "";
+
+  /**
+   * @generated from field: bytes content = 2;
+   */
+  content = new Uint8Array(0);
+
+  constructor(data?: PartialMessage<ArtifactContent>) {
+    super();
+    proto3.util.initPartial(data, this);
+  }
+
+  static readonly runtime: typeof proto3 = proto3;
+  static readonly typeName = "neoshowcase.protobuf.ArtifactContent";
+  static readonly fields: FieldList = proto3.util.newFieldList(() => [
+    { no: 1, name: "filename", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+    { no: 2, name: "content", kind: "scalar", T: 12 /* ScalarType.BYTES */ },
+  ]);
+
+  static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): ArtifactContent {
+    return new ArtifactContent().fromBinary(bytes, options);
+  }
+
+  static fromJson(jsonValue: JsonValue, options?: Partial<JsonReadOptions>): ArtifactContent {
+    return new ArtifactContent().fromJson(jsonValue, options);
+  }
+
+  static fromJsonString(jsonString: string, options?: Partial<JsonReadOptions>): ArtifactContent {
+    return new ArtifactContent().fromJsonString(jsonString, options);
+  }
+
+  static equals(a: ArtifactContent | PlainMessage<ArtifactContent> | undefined, b: ArtifactContent | PlainMessage<ArtifactContent> | undefined): boolean {
+    return proto3.util.equals(ArtifactContent, a, b);
   }
 }
 
@@ -1025,6 +1086,11 @@ export class Build extends Message<Build> {
    */
   retriable = false;
 
+  /**
+   * @generated from field: neoshowcase.protobuf.Artifact artifact = 8;
+   */
+  artifact?: Artifact;
+
   constructor(data?: PartialMessage<Build>) {
     super();
     proto3.util.initPartial(data, this);
@@ -1040,6 +1106,7 @@ export class Build extends Message<Build> {
     { no: 5, name: "updated_at", kind: "message", T: NullTimestamp },
     { no: 6, name: "finished_at", kind: "message", T: NullTimestamp },
     { no: 7, name: "retriable", kind: "scalar", T: 8 /* ScalarType.BOOL */ },
+    { no: 8, name: "artifact", kind: "message", T: Artifact },
   ]);
 
   static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): Build {
@@ -1435,113 +1502,113 @@ export class ApplicationIdRequest extends Message<ApplicationIdRequest> {
 }
 
 /**
- * @generated from message neoshowcase.protobuf.GetApplicationBuildsResponse
+ * @generated from message neoshowcase.protobuf.BuildIdRequest
  */
-export class GetApplicationBuildsResponse extends Message<GetApplicationBuildsResponse> {
+export class BuildIdRequest extends Message<BuildIdRequest> {
+  /**
+   * @generated from field: string build_id = 1;
+   */
+  buildId = "";
+
+  constructor(data?: PartialMessage<BuildIdRequest>) {
+    super();
+    proto3.util.initPartial(data, this);
+  }
+
+  static readonly runtime: typeof proto3 = proto3;
+  static readonly typeName = "neoshowcase.protobuf.BuildIdRequest";
+  static readonly fields: FieldList = proto3.util.newFieldList(() => [
+    { no: 1, name: "build_id", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+  ]);
+
+  static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): BuildIdRequest {
+    return new BuildIdRequest().fromBinary(bytes, options);
+  }
+
+  static fromJson(jsonValue: JsonValue, options?: Partial<JsonReadOptions>): BuildIdRequest {
+    return new BuildIdRequest().fromJson(jsonValue, options);
+  }
+
+  static fromJsonString(jsonString: string, options?: Partial<JsonReadOptions>): BuildIdRequest {
+    return new BuildIdRequest().fromJsonString(jsonString, options);
+  }
+
+  static equals(a: BuildIdRequest | PlainMessage<BuildIdRequest> | undefined, b: BuildIdRequest | PlainMessage<BuildIdRequest> | undefined): boolean {
+    return proto3.util.equals(BuildIdRequest, a, b);
+  }
+}
+
+/**
+ * @generated from message neoshowcase.protobuf.ArtifactIdRequest
+ */
+export class ArtifactIdRequest extends Message<ArtifactIdRequest> {
+  /**
+   * @generated from field: string artifact_id = 1;
+   */
+  artifactId = "";
+
+  constructor(data?: PartialMessage<ArtifactIdRequest>) {
+    super();
+    proto3.util.initPartial(data, this);
+  }
+
+  static readonly runtime: typeof proto3 = proto3;
+  static readonly typeName = "neoshowcase.protobuf.ArtifactIdRequest";
+  static readonly fields: FieldList = proto3.util.newFieldList(() => [
+    { no: 1, name: "artifact_id", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+  ]);
+
+  static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): ArtifactIdRequest {
+    return new ArtifactIdRequest().fromBinary(bytes, options);
+  }
+
+  static fromJson(jsonValue: JsonValue, options?: Partial<JsonReadOptions>): ArtifactIdRequest {
+    return new ArtifactIdRequest().fromJson(jsonValue, options);
+  }
+
+  static fromJsonString(jsonString: string, options?: Partial<JsonReadOptions>): ArtifactIdRequest {
+    return new ArtifactIdRequest().fromJsonString(jsonString, options);
+  }
+
+  static equals(a: ArtifactIdRequest | PlainMessage<ArtifactIdRequest> | undefined, b: ArtifactIdRequest | PlainMessage<ArtifactIdRequest> | undefined): boolean {
+    return proto3.util.equals(ArtifactIdRequest, a, b);
+  }
+}
+
+/**
+ * @generated from message neoshowcase.protobuf.GetBuildsResponse
+ */
+export class GetBuildsResponse extends Message<GetBuildsResponse> {
   /**
    * @generated from field: repeated neoshowcase.protobuf.Build builds = 1;
    */
   builds: Build[] = [];
 
-  constructor(data?: PartialMessage<GetApplicationBuildsResponse>) {
+  constructor(data?: PartialMessage<GetBuildsResponse>) {
     super();
     proto3.util.initPartial(data, this);
   }
 
   static readonly runtime: typeof proto3 = proto3;
-  static readonly typeName = "neoshowcase.protobuf.GetApplicationBuildsResponse";
+  static readonly typeName = "neoshowcase.protobuf.GetBuildsResponse";
   static readonly fields: FieldList = proto3.util.newFieldList(() => [
     { no: 1, name: "builds", kind: "message", T: Build, repeated: true },
   ]);
 
-  static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): GetApplicationBuildsResponse {
-    return new GetApplicationBuildsResponse().fromBinary(bytes, options);
+  static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): GetBuildsResponse {
+    return new GetBuildsResponse().fromBinary(bytes, options);
   }
 
-  static fromJson(jsonValue: JsonValue, options?: Partial<JsonReadOptions>): GetApplicationBuildsResponse {
-    return new GetApplicationBuildsResponse().fromJson(jsonValue, options);
+  static fromJson(jsonValue: JsonValue, options?: Partial<JsonReadOptions>): GetBuildsResponse {
+    return new GetBuildsResponse().fromJson(jsonValue, options);
   }
 
-  static fromJsonString(jsonString: string, options?: Partial<JsonReadOptions>): GetApplicationBuildsResponse {
-    return new GetApplicationBuildsResponse().fromJsonString(jsonString, options);
+  static fromJsonString(jsonString: string, options?: Partial<JsonReadOptions>): GetBuildsResponse {
+    return new GetBuildsResponse().fromJsonString(jsonString, options);
   }
 
-  static equals(a: GetApplicationBuildsResponse | PlainMessage<GetApplicationBuildsResponse> | undefined, b: GetApplicationBuildsResponse | PlainMessage<GetApplicationBuildsResponse> | undefined): boolean {
-    return proto3.util.equals(GetApplicationBuildsResponse, a, b);
-  }
-}
-
-/**
- * @generated from message neoshowcase.protobuf.GetApplicationBuildRequest
- */
-export class GetApplicationBuildRequest extends Message<GetApplicationBuildRequest> {
-  /**
-   * @generated from field: string build_id = 1;
-   */
-  buildId = "";
-
-  constructor(data?: PartialMessage<GetApplicationBuildRequest>) {
-    super();
-    proto3.util.initPartial(data, this);
-  }
-
-  static readonly runtime: typeof proto3 = proto3;
-  static readonly typeName = "neoshowcase.protobuf.GetApplicationBuildRequest";
-  static readonly fields: FieldList = proto3.util.newFieldList(() => [
-    { no: 1, name: "build_id", kind: "scalar", T: 9 /* ScalarType.STRING */ },
-  ]);
-
-  static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): GetApplicationBuildRequest {
-    return new GetApplicationBuildRequest().fromBinary(bytes, options);
-  }
-
-  static fromJson(jsonValue: JsonValue, options?: Partial<JsonReadOptions>): GetApplicationBuildRequest {
-    return new GetApplicationBuildRequest().fromJson(jsonValue, options);
-  }
-
-  static fromJsonString(jsonString: string, options?: Partial<JsonReadOptions>): GetApplicationBuildRequest {
-    return new GetApplicationBuildRequest().fromJsonString(jsonString, options);
-  }
-
-  static equals(a: GetApplicationBuildRequest | PlainMessage<GetApplicationBuildRequest> | undefined, b: GetApplicationBuildRequest | PlainMessage<GetApplicationBuildRequest> | undefined): boolean {
-    return proto3.util.equals(GetApplicationBuildRequest, a, b);
-  }
-}
-
-/**
- * @generated from message neoshowcase.protobuf.GetApplicationBuildLogRequest
- */
-export class GetApplicationBuildLogRequest extends Message<GetApplicationBuildLogRequest> {
-  /**
-   * @generated from field: string build_id = 1;
-   */
-  buildId = "";
-
-  constructor(data?: PartialMessage<GetApplicationBuildLogRequest>) {
-    super();
-    proto3.util.initPartial(data, this);
-  }
-
-  static readonly runtime: typeof proto3 = proto3;
-  static readonly typeName = "neoshowcase.protobuf.GetApplicationBuildLogRequest";
-  static readonly fields: FieldList = proto3.util.newFieldList(() => [
-    { no: 1, name: "build_id", kind: "scalar", T: 9 /* ScalarType.STRING */ },
-  ]);
-
-  static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): GetApplicationBuildLogRequest {
-    return new GetApplicationBuildLogRequest().fromBinary(bytes, options);
-  }
-
-  static fromJson(jsonValue: JsonValue, options?: Partial<JsonReadOptions>): GetApplicationBuildLogRequest {
-    return new GetApplicationBuildLogRequest().fromJson(jsonValue, options);
-  }
-
-  static fromJsonString(jsonString: string, options?: Partial<JsonReadOptions>): GetApplicationBuildLogRequest {
-    return new GetApplicationBuildLogRequest().fromJsonString(jsonString, options);
-  }
-
-  static equals(a: GetApplicationBuildLogRequest | PlainMessage<GetApplicationBuildLogRequest> | undefined, b: GetApplicationBuildLogRequest | PlainMessage<GetApplicationBuildLogRequest> | undefined): boolean {
-    return proto3.util.equals(GetApplicationBuildLogRequest, a, b);
+  static equals(a: GetBuildsResponse | PlainMessage<GetBuildsResponse> | undefined, b: GetBuildsResponse | PlainMessage<GetBuildsResponse> | undefined): boolean {
+    return proto3.util.equals(GetBuildsResponse, a, b);
   }
 }
 
@@ -1591,43 +1658,6 @@ export class SetApplicationEnvVarRequest extends Message<SetApplicationEnvVarReq
 
   static equals(a: SetApplicationEnvVarRequest | PlainMessage<SetApplicationEnvVarRequest> | undefined, b: SetApplicationEnvVarRequest | PlainMessage<SetApplicationEnvVarRequest> | undefined): boolean {
     return proto3.util.equals(SetApplicationEnvVarRequest, a, b);
-  }
-}
-
-/**
- * @generated from message neoshowcase.protobuf.CancelBuildRequest
- */
-export class CancelBuildRequest extends Message<CancelBuildRequest> {
-  /**
-   * @generated from field: string build_id = 1;
-   */
-  buildId = "";
-
-  constructor(data?: PartialMessage<CancelBuildRequest>) {
-    super();
-    proto3.util.initPartial(data, this);
-  }
-
-  static readonly runtime: typeof proto3 = proto3;
-  static readonly typeName = "neoshowcase.protobuf.CancelBuildRequest";
-  static readonly fields: FieldList = proto3.util.newFieldList(() => [
-    { no: 1, name: "build_id", kind: "scalar", T: 9 /* ScalarType.STRING */ },
-  ]);
-
-  static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): CancelBuildRequest {
-    return new CancelBuildRequest().fromBinary(bytes, options);
-  }
-
-  static fromJson(jsonValue: JsonValue, options?: Partial<JsonReadOptions>): CancelBuildRequest {
-    return new CancelBuildRequest().fromJson(jsonValue, options);
-  }
-
-  static fromJsonString(jsonString: string, options?: Partial<JsonReadOptions>): CancelBuildRequest {
-    return new CancelBuildRequest().fromJsonString(jsonString, options);
-  }
-
-  static equals(a: CancelBuildRequest | PlainMessage<CancelBuildRequest> | undefined, b: CancelBuildRequest | PlainMessage<CancelBuildRequest> | undefined): boolean {
-    return proto3.util.equals(CancelBuildRequest, a, b);
   }
 }
 
