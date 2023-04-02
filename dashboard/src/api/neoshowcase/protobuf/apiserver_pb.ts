@@ -669,9 +669,9 @@ export class Application extends Message<Application> {
   repositoryId = "";
 
   /**
-   * @generated from field: string branch_name = 4;
+   * @generated from field: string ref_name = 4;
    */
-  branchName = "";
+  refName = "";
 
   /**
    * @generated from field: neoshowcase.protobuf.BuildType build_type = 5;
@@ -719,7 +719,7 @@ export class Application extends Message<Application> {
     { no: 1, name: "id", kind: "scalar", T: 9 /* ScalarType.STRING */ },
     { no: 2, name: "name", kind: "scalar", T: 9 /* ScalarType.STRING */ },
     { no: 3, name: "repository_id", kind: "scalar", T: 9 /* ScalarType.STRING */ },
-    { no: 4, name: "branch_name", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+    { no: 4, name: "ref_name", kind: "scalar", T: 9 /* ScalarType.STRING */ },
     { no: 5, name: "build_type", kind: "enum", T: proto3.getEnumType(BuildType) },
     { no: 6, name: "state", kind: "enum", T: proto3.getEnumType(ApplicationState) },
     { no: 7, name: "current_commit", kind: "scalar", T: 9 /* ScalarType.STRING */ },
@@ -1266,9 +1266,9 @@ export class CreateApplicationRequest extends Message<CreateApplicationRequest> 
   repositoryId = "";
 
   /**
-   * @generated from field: string branch_name = 3;
+   * @generated from field: string ref_name = 3;
    */
-  branchName = "";
+  refName = "";
 
   /**
    * @generated from field: neoshowcase.protobuf.BuildType build_type = 4;
@@ -1300,7 +1300,7 @@ export class CreateApplicationRequest extends Message<CreateApplicationRequest> 
   static readonly fields: FieldList = proto3.util.newFieldList(() => [
     { no: 1, name: "name", kind: "scalar", T: 9 /* ScalarType.STRING */ },
     { no: 2, name: "repository_id", kind: "scalar", T: 9 /* ScalarType.STRING */ },
-    { no: 3, name: "branch_name", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+    { no: 3, name: "ref_name", kind: "scalar", T: 9 /* ScalarType.STRING */ },
     { no: 4, name: "build_type", kind: "enum", T: proto3.getEnumType(BuildType) },
     { no: 5, name: "config", kind: "message", T: ApplicationConfig },
     { no: 6, name: "websites", kind: "message", T: CreateWebsiteRequest, repeated: true },
@@ -1339,9 +1339,9 @@ export class UpdateApplicationRequest extends Message<UpdateApplicationRequest> 
   name = "";
 
   /**
-   * @generated from field: string branch_name = 3;
+   * @generated from field: string ref_name = 3;
    */
-  branchName = "";
+  refName = "";
 
   /**
    * @generated from field: neoshowcase.protobuf.UpdateApplicationConfigRequest config = 4;
@@ -1373,7 +1373,7 @@ export class UpdateApplicationRequest extends Message<UpdateApplicationRequest> 
   static readonly fields: FieldList = proto3.util.newFieldList(() => [
     { no: 1, name: "id", kind: "scalar", T: 9 /* ScalarType.STRING */ },
     { no: 2, name: "name", kind: "scalar", T: 9 /* ScalarType.STRING */ },
-    { no: 3, name: "branch_name", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+    { no: 3, name: "ref_name", kind: "scalar", T: 9 /* ScalarType.STRING */ },
     { no: 4, name: "config", kind: "message", T: UpdateApplicationConfigRequest },
     { no: 5, name: "new_websites", kind: "message", T: CreateWebsiteRequest, repeated: true },
     { no: 6, name: "delete_websites", kind: "message", T: DeleteWebsiteRequest, repeated: true },

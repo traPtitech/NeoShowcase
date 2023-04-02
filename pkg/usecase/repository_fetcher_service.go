@@ -164,10 +164,10 @@ func (r *repositoryFetcherService) updateApps(ctx context.Context, repo *domain.
 	}
 
 	for _, app := range apps {
-		commit, ok := refToCommit[app.BranchName]
+		commit, ok := refToCommit[app.RefName]
 		if !ok {
 			// TODO: log error and present to user?
-			log.Errorf("failed to get resolve ref %v for app %v", app.BranchName, app.ID)
+			log.Errorf("failed to get resolve ref %v for app %v", app.RefName, app.ID)
 			continue // fail-safe
 		}
 		err = r.appRepo.UpdateApplication(ctx, app.ID, &domain.UpdateApplicationArgs{WantCommit: optional.From(commit)})

@@ -140,7 +140,7 @@ func (s *ApplicationService) CreateApplication(ctx context.Context, req *connect
 		ID:            domain.NewID(),
 		Name:          msg.Name,
 		RepositoryID:  msg.RepositoryId,
-		BranchName:    msg.BranchName,
+		RefName:       msg.RefName,
 		BuildType:     fromPBBuildType(msg.BuildType),
 		State:         domain.ApplicationStateIdle,
 		CurrentCommit: domain.EmptyCommit,
@@ -192,8 +192,8 @@ func (s *ApplicationService) UpdateApplication(ctx context.Context, req *connect
 	}
 
 	err = s.svc.UpdateApplication(ctx, app, &domain.UpdateApplicationArgs{
-		Name:       optional.From(msg.Name),
-		BranchName: optional.From(msg.BranchName),
+		Name:    optional.From(msg.Name),
+		RefName: optional.From(msg.RefName),
 		Config: optional.From(domain.ApplicationConfig{
 			UseMariaDB:     app.Config.UseMariaDB,
 			UseMongoDB:     app.Config.UseMongoDB,
@@ -478,7 +478,7 @@ func toPBApplication(app *domain.Application) *pb.Application {
 		Id:            app.ID,
 		Name:          app.Name,
 		RepositoryId:  app.RepositoryID,
-		BranchName:    app.BranchName,
+		RefName:       app.RefName,
 		BuildType:     toPBBuildType(app.BuildType),
 		State:         toPBApplicationState(app.State),
 		CurrentCommit: app.CurrentCommit,
