@@ -16,6 +16,7 @@ require (
 	github.com/labstack/echo/v4 v4.10.2
 	github.com/leandro-lugaresi/hub v1.1.1
 	github.com/moby/buildkit v0.11.5
+	github.com/motoki317/sc v1.5.0
 	github.com/ncw/swift v1.0.53
 	github.com/rubenv/sql-migrate v1.4.0
 	github.com/samber/lo v1.38.1

@@ -25,30 +25,29 @@ func handleUseCaseError(err error) error {
 	if ok {
 		switch typ {
 		case usecase.ErrorTypeBadRequest:
-			return status.Errorf(codes.InvalidArgument, "%v", err)
+			return connect.NewError(connect.CodeInvalidArgument, err)
 		case usecase.ErrorTypeNotFound:
-			return status.Errorf(codes.NotFound, "%v", err)
+			return connect.NewError(connect.CodeNotFound, err)
 		case usecase.ErrorTypeAlreadyExists:
-			return status.Errorf(codes.AlreadyExists, "%v", err)
+			return connect.NewError(connect.CodeAlreadyExists, err)
 		}
 	}
-	return status.Errorf(codes.Internal, "%v", err)
+	return connect.NewError(connect.CodeInternal, err)
 }
 
 type ApplicationService struct {
-	svc usecase.APIServerService
+	svc      usecase.APIServerService
+	userRepo domain.UserRepository
 }
 
 func NewApplicationServiceServer(
 	svc usecase.APIServerService,
+	userRepo domain.UserRepository,
 ) pbconnect.ApplicationServiceHandler {
 	return &ApplicationService{
-		svc: svc,
+		svc:      svc,
+		userRepo: userRepo,
 	}
-}
-
-func getUserID() string {
-	return "tmp-user" // TODO: implement auth
 }
 
 func (s *ApplicationService) GetRepositories(ctx context.Context, _ *connect.Request[emptypb.Empty]) (*connect.Response[pb.GetRepositoriesResponse], error) {
@@ -66,12 +65,13 @@ func (s *ApplicationService) GetRepositories(ctx context.Context, _ *connect.Req
 
 func (s *ApplicationService) CreateRepository(ctx context.Context, req *connect.Request[pb.CreateRepositoryRequest]) (*connect.Response[pb.Repository], error) {
 	msg := req.Msg
+	user := getUser(ctx)
 	repo := &domain.Repository{
 		ID:       domain.NewID(),
 		Name:     msg.Name,
 		URL:      msg.Url,
 		Auth:     fromPBRepositoryAuth(msg),
-		OwnerIDs: []string{getUserID()},
+		OwnerIDs: []string{user.ID},
 	}
 	err := s.svc.CreateRepository(ctx, repo)
 	if err != nil {
@@ -116,6 +116,7 @@ func (s *ApplicationService) AddAvailableDomain(ctx context.Context, req *connec
 
 func (s *ApplicationService) CreateApplication(ctx context.Context, req *connect.Request[pb.CreateApplicationRequest]) (*connect.Response[pb.Application], error) {
 	msg := req.Msg
+	user := getUser(ctx)
 	now := time.Now()
 	app := &domain.Application{
 		ID:            domain.NewID(),
@@ -139,7 +140,7 @@ func (s *ApplicationService) CreateApplication(ctx context.Context, req *connect
 				HTTPPort:    int(website.HttpPort),
 			}
 		}),
-		OwnerIDs: []string{getUserID()},
+		OwnerIDs: []string{user.ID},
 	}
 	app, err := s.svc.CreateApplication(ctx, app, msg.StartOnCreate)
 	if err != nil {

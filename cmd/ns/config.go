@@ -6,6 +6,7 @@ import (
 	"os"
 	"strings"
 
+	"github.com/bufbuild/connect-go"
 	"github.com/friendsofgo/errors"
 	"github.com/go-git/go-git/v5/plumbing/transport/ssh"
 
@@ -16,6 +17,7 @@ import (
 	"github.com/traPtitech/neoshowcase/pkg/infrastructure/backend/dockerimpl"
 	"github.com/traPtitech/neoshowcase/pkg/infrastructure/dbmanager"
 	"github.com/traPtitech/neoshowcase/pkg/infrastructure/storage"
+	"github.com/traPtitech/neoshowcase/pkg/interface/grpc"
 	"github.com/traPtitech/neoshowcase/pkg/interface/grpc/pb/pbconnect"
 	"github.com/traPtitech/neoshowcase/pkg/usecase"
 )
@@ -98,11 +100,18 @@ type webComponentServer struct {
 	*web.H2CServer
 }
 
-func provideWebAppServer(c Config, appService pbconnect.ApplicationServiceHandler) *webAppServer {
+func provideWebAppServer(
+	c Config,
+	appService pbconnect.ApplicationServiceHandler,
+	authInterceptor *grpc.AuthInterceptor,
+) *webAppServer {
 	wc := web.H2CConfig{
 		Port: c.Web.App.Port,
 		SetupRoute: func(mux *http.ServeMux) {
-			mux.Handle(pbconnect.NewApplicationServiceHandler(appService))
+			mux.Handle(pbconnect.NewApplicationServiceHandler(
+				appService,
+				connect.WithInterceptors(authInterceptor),
+			))
 		},
 	}
 	return &webAppServer{web.NewH2CServer(wc)}

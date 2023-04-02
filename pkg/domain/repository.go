@@ -112,6 +112,5 @@ type CreateUserArgs struct {
 }
 
 type UserRepository interface {
-	CreateUser(ctx context.Context, args CreateUserArgs) (*User, error)
-	GetUserByID(ctx context.Context, id string) (*User, error)
+	GetOrCreateUser(ctx context.Context, name string) (*User, error)
 }

@@ -71,8 +71,10 @@ func NewWithDocker(c2 Config) (*Server, error) {
 		return nil, err
 	}
 	apiServerService := usecase.NewAPIServerService(bus, artifactRepository, applicationRepository, availableDomainRepository, buildRepository, environmentRepository, gitRepositoryRepository, appDeployService, backend, storage, componentService, mariaDBManager, mongoDBManager)
-	applicationServiceHandler := grpc.NewApplicationServiceServer(apiServerService)
-	mainWebAppServer := provideWebAppServer(c2, applicationServiceHandler)
+	userRepository := repository.NewUserRepository(db)
+	applicationServiceHandler := grpc.NewApplicationServiceServer(apiServerService, userRepository)
+	authInterceptor := grpc.NewAuthInterceptor(userRepository)
+	mainWebAppServer := provideWebAppServer(c2, applicationServiceHandler, authInterceptor)
 	mainWebComponentServer := provideWebComponentServer(c2, componentService)
 	appBuildService := usecase.NewAppBuildService(buildRepository, componentService, imageConfig)
 	continuousDeploymentService, err := usecase.NewContinuousDeploymentService(bus, applicationRepository, buildRepository, environmentRepository, appBuildService, appDeployService)
@@ -152,8 +154,10 @@ func NewWithK8S(c2 Config) (*Server, error) {
 		return nil, err
 	}
 	apiServerService := usecase.NewAPIServerService(bus, artifactRepository, applicationRepository, availableDomainRepository, buildRepository, environmentRepository, gitRepositoryRepository, appDeployService, backend, storage, componentService, mariaDBManager, mongoDBManager)
-	applicationServiceHandler := grpc.NewApplicationServiceServer(apiServerService)
-	mainWebAppServer := provideWebAppServer(c2, applicationServiceHandler)
+	userRepository := repository.NewUserRepository(db)
+	applicationServiceHandler := grpc.NewApplicationServiceServer(apiServerService, userRepository)
+	authInterceptor := grpc.NewAuthInterceptor(userRepository)
+	mainWebAppServer := provideWebAppServer(c2, applicationServiceHandler, authInterceptor)
 	mainWebComponentServer := provideWebComponentServer(c2, componentService)
 	appBuildService := usecase.NewAppBuildService(buildRepository, componentService, imageConfig)
 	continuousDeploymentService, err := usecase.NewContinuousDeploymentService(bus, applicationRepository, buildRepository, environmentRepository, appBuildService, appDeployService)
@@ -188,7 +192,7 @@ func NewWithK8S(c2 Config) (*Server, error) {
 
 // wire.go:
 
-var commonSet = wire.NewSet(web.NewServer, hub.New, eventbus.NewLocal, admindb.New, dbmanager.NewMariaDBManager, dbmanager.NewMongoDBManager, repository.NewApplicationRepository, repository.NewAvailableDomainRepository, repository.NewGitRepositoryRepository, repository.NewEnvironmentRepository, repository.NewBuildRepository, repository.NewArtifactRepository, grpc.NewApplicationServiceServer, grpc.NewComponentServiceServer, usecase.NewAPIServerService, usecase.NewAppBuildService, usecase.NewAppDeployService, usecase.NewContinuousDeploymentService, usecase.NewRepositoryFetcherService, usecase.NewCleanerService, provideIngressConfDirPath,
+var commonSet = wire.NewSet(web.NewServer, hub.New, eventbus.NewLocal, admindb.New, dbmanager.NewMariaDBManager, dbmanager.NewMongoDBManager, repository.NewApplicationRepository, repository.NewAvailableDomainRepository, repository.NewGitRepositoryRepository, repository.NewEnvironmentRepository, repository.NewBuildRepository, repository.NewArtifactRepository, repository.NewUserRepository, grpc.NewApplicationServiceServer, grpc.NewAuthInterceptor, grpc.NewComponentServiceServer, usecase.NewAPIServerService, usecase.NewAppBuildService, usecase.NewAppDeployService, usecase.NewContinuousDeploymentService, usecase.NewRepositoryFetcherService, usecase.NewCleanerService, provideIngressConfDirPath,
 	provideRepositoryFetcherCacheDir,
 	provideRepositoryPublicKey,
 	initStorage,
