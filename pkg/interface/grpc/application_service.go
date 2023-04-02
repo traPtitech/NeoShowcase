@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/bufbuild/connect-go"
+	"github.com/go-git/go-git/v5/plumbing/transport/ssh"
 	"github.com/samber/lo"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -38,15 +39,18 @@ func handleUseCaseError(err error) error {
 type ApplicationService struct {
 	svc      usecase.APIServerService
 	userRepo domain.UserRepository
+	pubKey   *ssh.PublicKeys
 }
 
 func NewApplicationServiceServer(
 	svc usecase.APIServerService,
 	userRepo domain.UserRepository,
+	pubKey *ssh.PublicKeys,
 ) pbconnect.ApplicationServiceHandler {
 	return &ApplicationService{
 		svc:      svc,
 		userRepo: userRepo,
+		pubKey:   pubKey,
 	}
 }
 
@@ -96,6 +100,14 @@ func (s *ApplicationService) GetApplications(ctx context.Context, _ *connect.Req
 		Applications: lo.Map(applications, func(app *domain.Application, i int) *pb.Application {
 			return toPBApplication(app)
 		}),
+	})
+	return res, nil
+}
+
+func (s *ApplicationService) GetSystemPublicKey(_ context.Context, _ *connect.Request[emptypb.Empty]) (*connect.Response[pb.GetSystemPublicKeyResponse], error) {
+	encoded := domain.Base64EncodedPublicKey(s.pubKey)
+	res := connect.NewResponse(&pb.GetSystemPublicKeyResponse{
+		PublicKey: encoded,
 	})
 	return res, nil
 }

@@ -2,15 +2,13 @@ package usecase
 
 import (
 	"context"
-	"io/fs"
-	"os"
-	"path/filepath"
 	"sync"
 	"time"
 
 	"github.com/friendsofgo/errors"
-
 	"github.com/go-git/go-git/v5"
+	"github.com/go-git/go-git/v5/config"
+	"github.com/go-git/go-git/v5/plumbing"
 	"github.com/go-git/go-git/v5/plumbing/transport/ssh"
 	"github.com/samber/lo"
 	log "github.com/sirupsen/logrus"
@@ -25,14 +23,11 @@ type RepositoryFetcherService interface {
 	Stop(ctx context.Context) error
 }
 
-type RepositoryFetcherCacheDir string
-
 type repositoryFetcherService struct {
-	bus      domain.Bus
-	appRepo  domain.ApplicationRepository
-	gitRepo  domain.GitRepositoryRepository
-	cacheDir string
-	pubKey   *ssh.PublicKeys
+	bus     domain.Bus
+	appRepo domain.ApplicationRepository
+	gitRepo domain.GitRepositoryRepository
+	pubKey  *ssh.PublicKeys
 
 	run       func()
 	runOnce   sync.Once
@@ -44,7 +39,6 @@ func NewRepositoryFetcherService(
 	bus domain.Bus,
 	appRepo domain.ApplicationRepository,
 	gitRepo domain.GitRepositoryRepository,
-	cacheDir RepositoryFetcherCacheDir,
 	pubKey *ssh.PublicKeys,
 ) (RepositoryFetcherService, error) {
 	r := &repositoryFetcherService{
@@ -52,16 +46,6 @@ func NewRepositoryFetcherService(
 		appRepo: appRepo,
 		gitRepo: gitRepo,
 		pubKey:  pubKey,
-	}
-
-	if cacheDir == "" {
-		tmp, err := os.MkdirTemp("", "repo-fetcher-cache-")
-		if err != nil {
-			return nil, err
-		}
-		r.cacheDir = tmp
-	} else {
-		r.cacheDir = string(cacheDir)
 	}
 
 	closer := make(chan struct{})
@@ -127,73 +111,71 @@ func (r *repositoryFetcherService) fetchAll() error {
 	}
 
 	for _, repo := range repos {
-		gitRepo, err := r.fetchRepository(ctx, repo)
+		err = r.updateApps(ctx, repo, reposToApps[repo.ID])
 		if err != nil {
-			log.Errorf("failed to fetch repository: %+v", err)
-			continue // fail-safe
-		}
-		for _, app := range reposToApps[repo.ID] {
-			err := r.updateApplication(ctx, app, gitRepo)
-			if err != nil {
-				return errors.Wrap(err, "failed to update app")
-			}
+			return errors.Wrap(err, "failed to update repo")
 		}
 	}
 	return nil
 }
 
-func (r *repositoryFetcherService) fetchRepository(ctx context.Context, repo *domain.Repository) (*git.Repository, error) {
+func (r *repositoryFetcherService) resolveRefs(ctx context.Context, repo *domain.Repository) (refToCommit map[string]string, err error) {
 	auth, err := domain.GitAuthMethod(repo, r.pubKey)
 	if err != nil {
 		return nil, err
 	}
-
-	repoDir := filepath.Join(r.cacheDir, repo.ID)
-	_, err = os.Stat(repoDir)
-	if errors.Is(err, fs.ErrNotExist) {
-		gitRepo, err := git.PlainCloneContext(ctx, repoDir, true, &git.CloneOptions{
-			URL:        repo.URL,
-			Auth:       auth,
-			RemoteName: "origin",
-		})
-		if err != nil {
-			return nil, err
-		}
-		return gitRepo, nil
-	} else {
-		gitRepo, err := git.PlainOpen(repoDir)
-		if err != nil {
-			return nil, err
-		}
-		err = gitRepo.FetchContext(ctx, &git.FetchOptions{
-			Auth:       auth,
-			RemoteName: "origin",
-		})
-		if err != nil && err != git.NoErrAlreadyUpToDate {
-			return nil, err
-		}
-		return gitRepo, nil
+	remote := git.NewRemote(nil, &config.RemoteConfig{
+		Name: "origin",
+		URLs: []string{repo.URL},
+	})
+	refs, err := remote.ListContext(ctx, &git.ListOptions{
+		Auth: auth,
+	})
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to list remote refs")
 	}
+
+	refToCommit = make(map[string]string, 2*len(refs))
+	for _, ref := range refs {
+		if ref.Type() == plumbing.HashReference {
+			refToCommit[ref.Name().String()] = ref.Hash().String()
+			refToCommit[ref.Name().Short()] = ref.Hash().String()
+		}
+	}
+	for _, ref := range refs {
+		if ref.Type() == plumbing.SymbolicReference {
+			commit, ok := refToCommit[ref.Target().String()]
+			if ok {
+				refToCommit[ref.Name().String()] = commit
+			}
+		}
+	}
+	return refToCommit, nil
 }
 
-func (r *repositoryFetcherService) updateApplication(ctx context.Context, app *domain.Application, repo *git.Repository) error {
-	branch, err := repo.Branch(app.BranchName)
-	if err == git.ErrBranchNotFound {
-		log.WithField("app", app.ID).Errorf("branch %s not found", app.BranchName)
-		return nil // skip app update
-	}
-	if err != nil {
-		return err
-	}
-	ref, err := repo.Reference(branch.Merge, true)
-	if err != nil {
-		return err
-	}
-	hash := ref.Hash().String()
-	if app.WantCommit == hash {
+func (r *repositoryFetcherService) updateApps(ctx context.Context, repo *domain.Repository, apps []*domain.Application) error {
+	if len(apps) == 0 {
 		return nil
 	}
-	return r.appRepo.UpdateApplication(ctx, app.ID, &domain.UpdateApplicationArgs{WantCommit: optional.From(hash)})
+
+	refToCommit, err := r.resolveRefs(ctx, repo)
+	if err != nil {
+		return err
+	}
+
+	for _, app := range apps {
+		commit, ok := refToCommit[app.BranchName]
+		if !ok {
+			// TODO: log error and present to user?
+			log.Errorf("failed to get resolve ref %v for app %v", app.BranchName, app.ID)
+			continue // fail-safe
+		}
+		err = r.appRepo.UpdateApplication(ctx, app.ID, &domain.UpdateApplicationArgs{WantCommit: optional.From(commit)})
+		if err != nil {
+			return errors.Wrap(err, "failed to update application")
+		}
+	}
+	return nil
 }
 
 func (r *repositoryFetcherService) Stop(_ context.Context) error {
