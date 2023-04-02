@@ -532,32 +532,17 @@ func (m *MockUserRepository) EXPECT() *MockUserRepositoryMockRecorder {
 	return m.recorder
 }
 
-// CreateUser mocks base method.
-func (m *MockUserRepository) CreateUser(ctx context.Context, args domain.CreateUserArgs) (*domain.User, error) {
+// GetOrCreateUser mocks base method.
+func (m *MockUserRepository) GetOrCreateUser(ctx context.Context, name string) (*domain.User, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "CreateUser", ctx, args)
+	ret := m.ctrl.Call(m, "GetOrCreateUser", ctx, name)
 	ret0, _ := ret[0].(*domain.User)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// CreateUser indicates an expected call of CreateUser.
-func (mr *MockUserRepositoryMockRecorder) CreateUser(ctx, args interface{}) *gomock.Call {
+// GetOrCreateUser indicates an expected call of GetOrCreateUser.
+func (mr *MockUserRepositoryMockRecorder) GetOrCreateUser(ctx, name interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateUser", reflect.TypeOf((*MockUserRepository)(nil).CreateUser), ctx, args)
-}
-
-// GetUserByID mocks base method.
-func (m *MockUserRepository) GetUserByID(ctx context.Context, id string) (*domain.User, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetUserByID", ctx, id)
-	ret0, _ := ret[0].(*domain.User)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// GetUserByID indicates an expected call of GetUserByID.
-func (mr *MockUserRepositoryMockRecorder) GetUserByID(ctx, id interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetUserByID", reflect.TypeOf((*MockUserRepository)(nil).GetUserByID), ctx, id)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetOrCreateUser", reflect.TypeOf((*MockUserRepository)(nil).GetOrCreateUser), ctx, name)
 }

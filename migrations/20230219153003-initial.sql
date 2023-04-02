@@ -170,8 +170,9 @@ CREATE TABLE `websites`
 
 CREATE TABLE `users`
 (
-    `id`   CHAR(22)     NOT NULL COMMENT 'ユーザーID',
-    `name` VARCHAR(255) NOT NULL COMMENT 'ユーザー名',
+    `id`    CHAR(22)     NOT NULL COMMENT 'ユーザーID',
+    `name`  VARCHAR(255) NOT NULL COMMENT 'ユーザー名',
+    `admin` TINYINT(1)   NOT NULL COMMENT 'Admin Flag',
     PRIMARY KEY (`id`)
 ) ENGINE InnoDB
   DEFAULT CHARACTER SET = `utf8mb4`

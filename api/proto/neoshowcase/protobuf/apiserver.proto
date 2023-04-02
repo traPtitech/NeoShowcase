@@ -5,6 +5,12 @@ option go_package = "github.com/traPtitech/neoshowcase/pkg/interface/grpc/pb";
 import "google/protobuf/empty.proto";
 import "neoshowcase/protobuf/null.proto";
 
+message User {
+  string id = 1;
+  string name = 2;
+  bool admin = 3;
+}
+
 message Repository {
   string id = 1;
   string name = 2;
@@ -213,6 +219,7 @@ message RetryCommitBuildRequest {
 }
 
 service ApplicationService {
+  rpc GetMe(google.protobuf.Empty) returns (User);
   rpc GetRepositories(google.protobuf.Empty) returns (GetRepositoriesResponse);
   rpc CreateRepository(CreateRepositoryRequest) returns (Repository);
   rpc GetApplications(google.protobuf.Empty) returns (GetApplicationsResponse);

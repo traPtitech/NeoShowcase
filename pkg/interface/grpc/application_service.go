@@ -50,6 +50,12 @@ func NewApplicationServiceServer(
 	}
 }
 
+func (s *ApplicationService) GetMe(ctx context.Context, _ *connect.Request[emptypb.Empty]) (*connect.Response[pb.User], error) {
+	user := getUser(ctx)
+	res := connect.NewResponse(toPBUser(user))
+	return res, nil
+}
+
 func (s *ApplicationService) GetRepositories(ctx context.Context, _ *connect.Request[emptypb.Empty]) (*connect.Response[pb.GetRepositoriesResponse], error) {
 	repositories, err := s.svc.GetRepositories(ctx)
 	if err != nil {
@@ -511,5 +517,13 @@ func toPBEnvironment(env *domain.Environment) *pb.ApplicationEnvVar {
 		Key:    env.Key,
 		Value:  env.Value,
 		System: env.System,
+	}
+}
+
+func toPBUser(user *domain.User) *pb.User {
+	return &pb.User{
+		Id:    user.ID,
+		Name:  user.Name,
+		Admin: user.Admin,
 	}
 }
