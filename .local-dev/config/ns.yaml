@@ -1,0 +1,50 @@
+debug: true
+
+mode: docker
+
+ss:
+  url: http://ns-ssgen:80/
+
+db:
+  host: mysql
+  port: 3306
+  username: root
+  password: password
+  database: neoshowcase
+
+mariadb:
+  host: mysql
+  port: 3306
+  adminUser: root
+  adminPassword: password
+
+mongodb:
+  host: mongo
+  port: 27017
+  adminUser: root
+  adminPassword: password
+
+storage:
+  type: local
+  local:
+    dir: /data
+
+docker:
+  confDir: /opt/traefik/conf
+
+web:
+  app:
+    port: 5000
+  component:
+    port: 10000
+
+repository:
+  privateKeyFile: /keys/id_ed25519
+
+image:
+  registry:
+    scheme: http
+    addr: registry.local.trapti.tech
+    username: ""
+    password: ""
+    namePrefix: ns-apps/

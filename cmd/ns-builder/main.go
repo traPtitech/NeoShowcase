@@ -70,8 +70,11 @@ func main() {
 	cli.SetupLogLevelFlag(flags)
 
 	viper.SetDefault("buildkit.address", appdefaults.Address)
+
 	viper.SetDefault("repository.privateKeyFile", "")
+
 	viper.SetDefault("ns.url", "http://ns:10000")
+
 	viper.SetDefault("db.host", "127.0.0.1")
 	viper.SetDefault("db.port", 3306)
 	viper.SetDefault("db.username", "root")
@@ -80,6 +83,7 @@ func main() {
 	viper.SetDefault("db.connection.maxOpen", 0)
 	viper.SetDefault("db.connection.maxIdle", 2)
 	viper.SetDefault("db.connection.lifetime", 0)
+
 	viper.SetDefault("storage.type", "local")
 	viper.SetDefault("storage.local.dir", "/neoshowcase")
 	viper.SetDefault("storage.s3.bucket", "neoshowcase")

@@ -4,24 +4,11 @@ services:
       context: .
       target: ns
     image: ghcr.io/traptitech/ns:main
-    command: run --debug --loglevel=trace
+    command: run --debug --loglevel=trace --config=/config.yaml
     restart: always
-    environment:
-      NS_APISERVER_DEBUG: "true"
-      NS_APISERVER_DB_HOST: "mysql"
-      NS_APISERVER_MARIADB_HOST: "mysql"
-      NS_APISERVER_MONGODB_HOST: "mongo"
-      NS_APISERVER_STORAGE_TYPE: "local"
-      NS_APISERVER_STORAGE_LOCAL_DIR: "/data"
-      NS_APISERVER_SS_URL: "http://ns-ssgen:80/"
-      NS_APISERVER_DOCKER_CONFDIR: "/opt/traefik/conf"
-      NS_APISERVER_WEB_APP_PORT: "5000"
-      NS_APISERVER_WEB_COMPONENT_PORT: "10000"
-      NS_APISERVER_REPOSITORY_PRIVATEKEYFILE: "/keys/id_ed25519"
-      NS_APISERVER_IMAGE_REGISTRY_SCHEME: "http"
-      NS_APISERVER_IMAGE_REGISTRY_ADDR: "registry.local.trapti.tech"
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
+      - ./.local-dev/config/ns.yaml:/config.yaml
       - ./.local-dev/local-storage:/data
       - ./.local-dev/keys:/keys
       - ./.local-dev/traefik:/opt/traefik/conf
@@ -67,7 +54,7 @@ services:
     command:
       - --config=/config.ini
     volumes:
-      - ./.local-dev/traefik-forward-auth/config.ini:/config.ini
+      - ./.local-dev/config/ns-auth.ini:/config.ini
     networks:
       - default
 
@@ -100,16 +87,10 @@ services:
       context: .
       target: ns-builder
     image: ghcr.io/traptitech/ns-builder:main
-    command: run --debug --loglevel=trace
+    command: run --debug --loglevel=trace --config=/config.yaml
     restart: always
-    environment:
-      NS_BUILDER_BUILDKIT_ADDRESS: "tcp://buildkitd:1234"
-      NS_BUILDER_REPOSITORY_PRIVATEKEYFILE: "/keys/id_ed25519"
-      NS_BUILDER_NS_URL: "http://ns:10000"
-      NS_BUILDER_DB_HOST: "mysql"
-      NS_BUILDER_STORAGE_TYPE: "local"
-      NS_BUILDER_STORAGE_LOCAL_DIR: "/data"
     volumes:
+      - ./.local-dev/config/ns-builder.yaml:/config.yaml
       - ./.local-dev/keys:/keys
       - ./.local-dev/local-storage:/data
     depends_on:
@@ -127,19 +108,12 @@ services:
       context: .
       target: ns-ssgen
     image: ghcr.io/traptitech/ns-ssgen:main
-    command: run --debug --loglevel=trace
+    command: run --debug --loglevel=trace --config=/config.yaml
     restart: always
-    environment:
-      NS_SSGEN_NS_URL: "http://ns:10000"
-      NS_SSGEN_DB_HOST: "mysql"
-      NS_SSGEN_ARTIFACTSROOT: "/artifacts"
-      NS_SSGEN_STORAGE_TYPE: "local"
-      NS_SSGEN_STORAGE_LOCAL_DIR: "/data"
     volumes:
+      - ./.local-dev/config/ns-ssgen.yaml:/config.yaml
       - ./.local-dev/staticsite/artifacts:/artifacts
       - ./.local-dev/local-storage:/data
-    ports:
-      - "5008:80"
     depends_on:
       mysql:
         condition: service_healthy

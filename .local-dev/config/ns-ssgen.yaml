@@ -1,0 +1,19 @@
+artifactsRoot: /artifacts
+
+builtIn:
+  port: 8080
+
+ns:
+  url: http://ns:10000
+
+db:
+  host: mysql
+  port: 3306
+  username: root
+  password: password
+  database: neoshowcase
+
+storage:
+  type: local
+  local:
+    dir: /data
