@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/bufbuild/connect-go"
+	"github.com/friendsofgo/errors"
 	"github.com/go-git/go-git/v5/plumbing/transport/ssh"
 	"github.com/samber/lo"
 	"google.golang.org/grpc/codes"
@@ -38,15 +39,18 @@ func handleUseCaseError(err error) error {
 
 type ApplicationService struct {
 	svc    usecase.APIServerService
+	logSvc *usecase.LogStreamService
 	pubKey *ssh.PublicKeys
 }
 
 func NewApplicationServiceServer(
 	svc usecase.APIServerService,
+	logSvc *usecase.LogStreamService,
 	pubKey *ssh.PublicKeys,
 ) pbconnect.ApplicationServiceHandler {
 	return &ApplicationService{
 		svc:    svc,
+		logSvc: logSvc,
 		pubKey: pubKey,
 	}
 }
@@ -240,6 +244,23 @@ func (s *ApplicationService) GetBuild(ctx context.Context, req *connect.Request[
 	}
 	res := connect.NewResponse(toPBBuild(build))
 	return res, nil
+}
+
+func (s *ApplicationService) GetBuildLogStream(_ context.Context, req *connect.Request[pb.GetApplicationBuildLogRequest], st *connect.ServerStream[pb.BuildLog]) error {
+	sub := make(chan []byte, 100)
+	ok, unsubscribe := s.logSvc.SubscribeBuildLog(req.Msg.BuildId, sub)
+	if !ok {
+		return connect.NewError(connect.CodeInvalidArgument, errors.New("build log stream not available"))
+	}
+	defer unsubscribe()
+
+	for log := range sub {
+		err := st.Send(&pb.BuildLog{Log: log})
+		if err != nil {
+			return connect.NewError(connect.CodeInternal, errors.New("failed to send log"))
+		}
+	}
+	return nil
 }
 
 func (s *ApplicationService) GetBuildLog(ctx context.Context, req *connect.Request[pb.GetApplicationBuildLogRequest]) (*connect.Response[pb.BuildLog], error) {

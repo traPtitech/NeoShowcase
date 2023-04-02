@@ -41,6 +41,7 @@ type ApplicationServiceClient interface {
 	DeleteApplication(context.Context, *connect_go.Request[pb.ApplicationIdRequest]) (*connect_go.Response[emptypb.Empty], error)
 	GetBuilds(context.Context, *connect_go.Request[pb.ApplicationIdRequest]) (*connect_go.Response[pb.GetApplicationBuildsResponse], error)
 	GetBuild(context.Context, *connect_go.Request[pb.GetApplicationBuildRequest]) (*connect_go.Response[pb.Build], error)
+	GetBuildLogStream(context.Context, *connect_go.Request[pb.GetApplicationBuildLogRequest]) (*connect_go.ServerStreamForClient[pb.BuildLog], error)
 	GetBuildLog(context.Context, *connect_go.Request[pb.GetApplicationBuildLogRequest]) (*connect_go.Response[pb.BuildLog], error)
 	GetBuildArtifact(context.Context, *connect_go.Request[pb.ApplicationIdRequest]) (*connect_go.Response[pb.ApplicationBuildArtifact], error)
 	GetEnvVars(context.Context, *connect_go.Request[pb.ApplicationIdRequest]) (*connect_go.Response[pb.ApplicationEnvVars], error)
@@ -127,6 +128,11 @@ func NewApplicationServiceClient(httpClient connect_go.HTTPClient, baseURL strin
 			baseURL+"/neoshowcase.protobuf.ApplicationService/GetBuild",
 			opts...,
 		),
+		getBuildLogStream: connect_go.NewClient[pb.GetApplicationBuildLogRequest, pb.BuildLog](
+			httpClient,
+			baseURL+"/neoshowcase.protobuf.ApplicationService/GetBuildLogStream",
+			opts...,
+		),
 		getBuildLog: connect_go.NewClient[pb.GetApplicationBuildLogRequest, pb.BuildLog](
 			httpClient,
 			baseURL+"/neoshowcase.protobuf.ApplicationService/GetBuildLog",
@@ -190,6 +196,7 @@ type applicationServiceClient struct {
 	deleteApplication    *connect_go.Client[pb.ApplicationIdRequest, emptypb.Empty]
 	getBuilds            *connect_go.Client[pb.ApplicationIdRequest, pb.GetApplicationBuildsResponse]
 	getBuild             *connect_go.Client[pb.GetApplicationBuildRequest, pb.Build]
+	getBuildLogStream    *connect_go.Client[pb.GetApplicationBuildLogRequest, pb.BuildLog]
 	getBuildLog          *connect_go.Client[pb.GetApplicationBuildLogRequest, pb.BuildLog]
 	getBuildArtifact     *connect_go.Client[pb.ApplicationIdRequest, pb.ApplicationBuildArtifact]
 	getEnvVars           *connect_go.Client[pb.ApplicationIdRequest, pb.ApplicationEnvVars]
@@ -266,6 +273,11 @@ func (c *applicationServiceClient) GetBuild(ctx context.Context, req *connect_go
 	return c.getBuild.CallUnary(ctx, req)
 }
 
+// GetBuildLogStream calls neoshowcase.protobuf.ApplicationService.GetBuildLogStream.
+func (c *applicationServiceClient) GetBuildLogStream(ctx context.Context, req *connect_go.Request[pb.GetApplicationBuildLogRequest]) (*connect_go.ServerStreamForClient[pb.BuildLog], error) {
+	return c.getBuildLogStream.CallServerStream(ctx, req)
+}
+
 // GetBuildLog calls neoshowcase.protobuf.ApplicationService.GetBuildLog.
 func (c *applicationServiceClient) GetBuildLog(ctx context.Context, req *connect_go.Request[pb.GetApplicationBuildLogRequest]) (*connect_go.Response[pb.BuildLog], error) {
 	return c.getBuildLog.CallUnary(ctx, req)
@@ -327,6 +339,7 @@ type ApplicationServiceHandler interface {
 	DeleteApplication(context.Context, *connect_go.Request[pb.ApplicationIdRequest]) (*connect_go.Response[emptypb.Empty], error)
 	GetBuilds(context.Context, *connect_go.Request[pb.ApplicationIdRequest]) (*connect_go.Response[pb.GetApplicationBuildsResponse], error)
 	GetBuild(context.Context, *connect_go.Request[pb.GetApplicationBuildRequest]) (*connect_go.Response[pb.Build], error)
+	GetBuildLogStream(context.Context, *connect_go.Request[pb.GetApplicationBuildLogRequest], *connect_go.ServerStream[pb.BuildLog]) error
 	GetBuildLog(context.Context, *connect_go.Request[pb.GetApplicationBuildLogRequest]) (*connect_go.Response[pb.BuildLog], error)
 	GetBuildArtifact(context.Context, *connect_go.Request[pb.ApplicationIdRequest]) (*connect_go.Response[pb.ApplicationBuildArtifact], error)
 	GetEnvVars(context.Context, *connect_go.Request[pb.ApplicationIdRequest]) (*connect_go.Response[pb.ApplicationEnvVars], error)
@@ -408,6 +421,11 @@ func NewApplicationServiceHandler(svc ApplicationServiceHandler, opts ...connect
 	mux.Handle("/neoshowcase.protobuf.ApplicationService/GetBuild", connect_go.NewUnaryHandler(
 		"/neoshowcase.protobuf.ApplicationService/GetBuild",
 		svc.GetBuild,
+		opts...,
+	))
+	mux.Handle("/neoshowcase.protobuf.ApplicationService/GetBuildLogStream", connect_go.NewServerStreamHandler(
+		"/neoshowcase.protobuf.ApplicationService/GetBuildLogStream",
+		svc.GetBuildLogStream,
 		opts...,
 	))
 	mux.Handle("/neoshowcase.protobuf.ApplicationService/GetBuildLog", connect_go.NewUnaryHandler(
@@ -511,6 +529,10 @@ func (UnimplementedApplicationServiceHandler) GetBuilds(context.Context, *connec
 
 func (UnimplementedApplicationServiceHandler) GetBuild(context.Context, *connect_go.Request[pb.GetApplicationBuildRequest]) (*connect_go.Response[pb.Build], error) {
 	return nil, connect_go.NewError(connect_go.CodeUnimplemented, errors.New("neoshowcase.protobuf.ApplicationService.GetBuild is not implemented"))
+}
+
+func (UnimplementedApplicationServiceHandler) GetBuildLogStream(context.Context, *connect_go.Request[pb.GetApplicationBuildLogRequest], *connect_go.ServerStream[pb.BuildLog]) error {
+	return connect_go.NewError(connect_go.CodeUnimplemented, errors.New("neoshowcase.protobuf.ApplicationService.GetBuildLogStream is not implemented"))
 }
 
 func (UnimplementedApplicationServiceHandler) GetBuildLog(context.Context, *connect_go.Request[pb.GetApplicationBuildLogRequest]) (*connect_go.Response[pb.BuildLog], error) {

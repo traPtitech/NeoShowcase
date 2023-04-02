@@ -236,6 +236,7 @@ service ApplicationService {
   rpc DeleteApplication(ApplicationIdRequest) returns (google.protobuf.Empty);
   rpc GetBuilds(ApplicationIdRequest) returns (GetApplicationBuildsResponse);
   rpc GetBuild(GetApplicationBuildRequest) returns (Build);
+  rpc GetBuildLogStream(GetApplicationBuildLogRequest) returns (stream BuildLog);
   rpc GetBuildLog(GetApplicationBuildLogRequest) returns (BuildLog);
   rpc GetBuildArtifact(ApplicationIdRequest) returns (ApplicationBuildArtifact);
   rpc GetEnvVars(ApplicationIdRequest) returns (ApplicationEnvVars);

@@ -130,6 +130,15 @@ export const ApplicationService = {
       kind: MethodKind.Unary,
     },
     /**
+     * @generated from rpc neoshowcase.protobuf.ApplicationService.GetBuildLogStream
+     */
+    getBuildLogStream: {
+      name: "GetBuildLogStream",
+      I: GetApplicationBuildLogRequest,
+      O: BuildLog,
+      kind: MethodKind.ServerStreaming,
+    },
+    /**
      * @generated from rpc neoshowcase.protobuf.ApplicationService.GetBuildLog
      */
     getBuildLog: {

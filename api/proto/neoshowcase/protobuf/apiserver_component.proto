@@ -66,7 +66,7 @@ message BuildSettled {
 
 message BuildLogPortion {
   string build_id = 1;
-  string log = 2;
+  bytes log = 2;
 }
 
 message BuilderResponse {
