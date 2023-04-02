@@ -433,13 +433,14 @@ func (s *builderService) buildImageWithDockerfile(
 	exportAttrs map[string]string,
 	ch chan *buildkit.SolveStatus,
 ) error {
+	contextDir := filepath.Dir(st.task.BuildOptions.DockerfileName)
 	_, err := s.buildkit.Solve(ctx, nil, buildkit.SolveOpt{
 		Exports: []buildkit.ExportEntry{{
 			Type:  buildkit.ExporterImage,
 			Attrs: exportAttrs,
 		}},
 		LocalDirs: map[string]string{
-			"context":    st.repositoryTempDir,
+			"context":    filepath.Join(st.repositoryTempDir, contextDir),
 			"dockerfile": st.repositoryTempDir,
 		},
 		Frontend:      "dockerfile.v0",
@@ -560,13 +561,14 @@ func (s *builderService) buildStaticWithDockerfile(
 	if err != nil {
 		return err
 	}
+	contextDir := filepath.Dir(st.task.BuildOptions.DockerfileName)
 	_, err = s.buildkit.Solve(ctx, def, buildkit.SolveOpt{
 		Exports: []buildkit.ExportEntry{{
 			Type:   buildkit.ExporterTar,
 			Output: func(_ map[string]string) (io.WriteCloser, error) { return st.artifactTempFile, nil },
 		}},
 		LocalDirs: map[string]string{
-			"context": st.repositoryTempDir,
+			"context": filepath.Join(st.repositoryTempDir, contextDir),
 		},
 	}, ch)
 	return err
