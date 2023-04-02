@@ -79,6 +79,7 @@ func (l *LogStreamService) CloseBuildLog(id string) {
 	if ok {
 		st.close()
 	}
+	delete(l.buildLogs, id)
 }
 
 func (l *LogStreamService) SubscribeBuildLog(id string, sub chan<- []byte) (ok bool, unsubscribe func()) {
