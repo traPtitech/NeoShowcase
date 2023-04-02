@@ -23,10 +23,10 @@ services:
       NS_APISERVER_IMAGE_REGISTRY_ADDR: "registry.local.trapti.tech"
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
-      - ./local-dev/data:/data
-      - ./local-dev/keys:/keys
-      - ./local-dev/repositories:/repositories
-      - ./local-dev/traefik:/opt/traefik/conf
+      - ./.local-dev/local-storage:/data
+      - ./.local-dev/keys:/keys
+      - ./.local-dev/repositories:/repositories
+      - ./.local-dev/traefik:/opt/traefik/conf
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.ns.rule=Host(`ns.local.trapti.tech`) && PathPrefix(`/neoshowcase.protobuf.ApplicationService`)"
@@ -69,7 +69,7 @@ services:
     command:
       - --config=/config.ini
     volumes:
-      - ./local-dev/traefik-forward-auth/config.ini:/config.ini
+      - ./.local-dev/traefik-forward-auth/config.ini:/config.ini
     networks:
       - default
 
@@ -112,8 +112,8 @@ services:
       NS_BUILDER_STORAGE_TYPE: "local"
       NS_BUILDER_STORAGE_LOCAL_DIR: "/data"
     volumes:
-      - ./local-dev/keys:/keys
-      - ./local-dev/local-storage:/data
+      - ./.local-dev/keys:/keys
+      - ./.local-dev/local-storage:/data
     depends_on:
       mysql:
         condition: service_healthy
@@ -138,8 +138,8 @@ services:
       NS_SSGEN_STORAGE_TYPE: "local"
       NS_SSGEN_STORAGE_LOCAL_DIR: "/data"
     volumes:
-      - ./local-dev/staticsite/artifacts:/artifacts
-      - ./local-dev/local-storage:/data
+      - ./.local-dev/staticsite/artifacts:/artifacts
+      - ./.local-dev/local-storage:/data
     ports:
       - "5008:80"
     depends_on:
@@ -181,8 +181,8 @@ services:
       - "traefik.http.routers.registry.rule=Host(`registry.local.trapti.tech`)"
       - "traefik.http.services.registry.loadbalancer.server.port=80"
     volumes:
-      - ./local-dev/registry/entrypoint.sh:/entrypoint.sh
-      - ./local-dev/registry/gc.sh:/gc.sh
+      - ./.local-dev/registry/entrypoint.sh:/entrypoint.sh
+      - ./.local-dev/registry/gc.sh:/gc.sh
     networks:
       default:
         aliases:
@@ -207,7 +207,7 @@ services:
     privileged: true
     command: --addr tcp://0.0.0.0:1234
     volumes:
-      - ./local-dev/buildkitd/buildkitd.toml:/etc/buildkit/buildkitd.toml
+      - ./.local-dev/buildkitd/buildkitd.toml:/etc/buildkit/buildkitd.toml
     networks:
       - default
 
@@ -224,7 +224,7 @@ services:
       timeout: 10s
       retries: 60
     volumes:
-      - ./local-dev/mysql:/var/lib/mysql
+      - ./.local-dev/mysql:/var/lib/mysql
     ports:
       - "5004:3306"
     networks:
@@ -238,7 +238,7 @@ services:
       MONGO_INITDB_ROOT_USERNAME: root
       MONGO_INITDB_ROOT_PASSWORD: password
     volumes:
-      - ./local-dev/mongo:/data/db
+      - ./.local-dev/mongo:/data/db
     ports:
       - "5010:27017"
     networks:
@@ -284,7 +284,7 @@ services:
       - "9100:9100"
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
-      - ./local-dev/traefik:/opt/neoshowcase/conf
+      - ./.local-dev/traefik:/opt/neoshowcase/conf
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.traefik_dashboard.rule=Host(`traefik.local.trapti.tech`)"
