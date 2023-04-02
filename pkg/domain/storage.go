@@ -36,6 +36,15 @@ func SaveBuildLog(s Storage, filename string, buildID string) error {
 	return nil
 }
 
+func GetBuildLog(s Storage, buildID string) ([]byte, error) {
+	r, err := s.Open(buildLogPath(buildID))
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to open build log")
+	}
+	defer r.Close()
+	return io.ReadAll(r)
+}
+
 func DeleteBuildLog(s Storage, buildID string) error {
 	err := s.Delete(buildLogPath(buildID))
 	if err != nil {

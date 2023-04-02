@@ -100,7 +100,7 @@ message Application {
   string id = 1;
   string name = 2;
   string repository_id = 3;
-  string branch_name = 4;
+  string ref_name = 4;
   BuildType build_type = 5;
   ApplicationState state = 6;
   string current_commit = 7;
@@ -156,7 +156,7 @@ message Build {
 }
 
 message BuildLog {
-  string output = 1;
+  bytes log = 1;
 }
 
 message GetRepositoriesResponse {
@@ -174,7 +174,7 @@ message GetSystemPublicKeyResponse {
 message CreateApplicationRequest {
   string name = 1;
   string repository_id = 2;
-  string branch_name = 3;
+  string ref_name = 3;
   BuildType build_type = 4;
   ApplicationConfig config = 5;
   repeated CreateWebsiteRequest websites = 6;
@@ -184,7 +184,7 @@ message CreateApplicationRequest {
 message UpdateApplicationRequest {
   string id = 1;
   string name = 2;
-  string branch_name = 3;
+  string ref_name = 3;
   UpdateApplicationConfigRequest config = 4;
   repeated CreateWebsiteRequest new_websites = 5;
   repeated DeleteWebsiteRequest delete_websites = 6;
@@ -234,12 +234,13 @@ service ApplicationService {
   rpc GetApplication(ApplicationIdRequest) returns (Application);
   rpc UpdateApplication(UpdateApplicationRequest) returns (google.protobuf.Empty);
   rpc DeleteApplication(ApplicationIdRequest) returns (google.protobuf.Empty);
-  rpc GetApplicationBuilds(ApplicationIdRequest) returns (GetApplicationBuildsResponse);
-  rpc GetApplicationBuild(GetApplicationBuildRequest) returns (Build);
-  rpc GetApplicationBuildLog(GetApplicationBuildLogRequest) returns (BuildLog);
-  rpc GetApplicationBuildArtifact(ApplicationIdRequest) returns (ApplicationBuildArtifact);
-  rpc GetApplicationEnvVars(ApplicationIdRequest) returns (ApplicationEnvVars);
-  rpc SetApplicationEnvVar(SetApplicationEnvVarRequest) returns (google.protobuf.Empty);
+  rpc GetBuilds(ApplicationIdRequest) returns (GetApplicationBuildsResponse);
+  rpc GetBuild(GetApplicationBuildRequest) returns (Build);
+  rpc GetBuildLogStream(GetApplicationBuildLogRequest) returns (stream BuildLog);
+  rpc GetBuildLog(GetApplicationBuildLogRequest) returns (BuildLog);
+  rpc GetBuildArtifact(ApplicationIdRequest) returns (ApplicationBuildArtifact);
+  rpc GetEnvVars(ApplicationIdRequest) returns (ApplicationEnvVars);
+  rpc SetEnvVar(SetApplicationEnvVarRequest) returns (google.protobuf.Empty);
   rpc GetApplicationOutput(ApplicationIdRequest) returns (ApplicationOutput);
   rpc CancelBuild(CancelBuildRequest) returns (google.protobuf.Empty);
   rpc RetryCommitBuild(RetryCommitBuildRequest) returns (google.protobuf.Empty);

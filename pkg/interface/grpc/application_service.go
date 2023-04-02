@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/bufbuild/connect-go"
+	"github.com/friendsofgo/errors"
 	"github.com/go-git/go-git/v5/plumbing/transport/ssh"
 	"github.com/samber/lo"
 	"google.golang.org/grpc/codes"
@@ -37,20 +38,20 @@ func handleUseCaseError(err error) error {
 }
 
 type ApplicationService struct {
-	svc      usecase.APIServerService
-	userRepo domain.UserRepository
-	pubKey   *ssh.PublicKeys
+	svc    usecase.APIServerService
+	logSvc *usecase.LogStreamService
+	pubKey *ssh.PublicKeys
 }
 
 func NewApplicationServiceServer(
 	svc usecase.APIServerService,
-	userRepo domain.UserRepository,
+	logSvc *usecase.LogStreamService,
 	pubKey *ssh.PublicKeys,
 ) pbconnect.ApplicationServiceHandler {
 	return &ApplicationService{
-		svc:      svc,
-		userRepo: userRepo,
-		pubKey:   pubKey,
+		svc:    svc,
+		logSvc: logSvc,
+		pubKey: pubKey,
 	}
 }
 
@@ -140,7 +141,7 @@ func (s *ApplicationService) CreateApplication(ctx context.Context, req *connect
 		ID:            domain.NewID(),
 		Name:          msg.Name,
 		RepositoryID:  msg.RepositoryId,
-		BranchName:    msg.BranchName,
+		RefName:       msg.RefName,
 		BuildType:     fromPBBuildType(msg.BuildType),
 		State:         domain.ApplicationStateIdle,
 		CurrentCommit: domain.EmptyCommit,
@@ -192,8 +193,8 @@ func (s *ApplicationService) UpdateApplication(ctx context.Context, req *connect
 	}
 
 	err = s.svc.UpdateApplication(ctx, app, &domain.UpdateApplicationArgs{
-		Name:       optional.From(msg.Name),
-		BranchName: optional.From(msg.BranchName),
+		Name:    optional.From(msg.Name),
+		RefName: optional.From(msg.RefName),
 		Config: optional.From(domain.ApplicationConfig{
 			UseMariaDB:     app.Config.UseMariaDB,
 			UseMongoDB:     app.Config.UseMongoDB,
@@ -223,8 +224,8 @@ func (s *ApplicationService) DeleteApplication(ctx context.Context, req *connect
 	return res, nil
 }
 
-func (s *ApplicationService) GetApplicationBuilds(ctx context.Context, req *connect.Request[pb.ApplicationIdRequest]) (*connect.Response[pb.GetApplicationBuildsResponse], error) {
-	builds, err := s.svc.GetApplicationBuilds(ctx, req.Msg.Id)
+func (s *ApplicationService) GetBuilds(ctx context.Context, req *connect.Request[pb.ApplicationIdRequest]) (*connect.Response[pb.GetApplicationBuildsResponse], error) {
+	builds, err := s.svc.GetBuilds(ctx, req.Msg.Id)
 	if err != nil {
 		return nil, handleUseCaseError(err)
 	}
@@ -236,8 +237,8 @@ func (s *ApplicationService) GetApplicationBuilds(ctx context.Context, req *conn
 	return res, nil
 }
 
-func (s *ApplicationService) GetApplicationBuild(ctx context.Context, req *connect.Request[pb.GetApplicationBuildRequest]) (*connect.Response[pb.Build], error) {
-	build, err := s.svc.GetApplicationBuild(ctx, req.Msg.BuildId)
+func (s *ApplicationService) GetBuild(ctx context.Context, req *connect.Request[pb.GetApplicationBuildRequest]) (*connect.Response[pb.Build], error) {
+	build, err := s.svc.GetBuild(ctx, req.Msg.BuildId)
 	if err != nil {
 		return nil, handleUseCaseError(err)
 	}
@@ -245,16 +246,38 @@ func (s *ApplicationService) GetApplicationBuild(ctx context.Context, req *conne
 	return res, nil
 }
 
-func (s *ApplicationService) GetApplicationBuildLog(ctx context.Context, req *connect.Request[pb.GetApplicationBuildLogRequest]) (*connect.Response[pb.BuildLog], error) {
-	return nil, status.Errorf(codes.Unimplemented, "method GetApplicationBuildLog not implemented")
+func (s *ApplicationService) GetBuildLogStream(_ context.Context, req *connect.Request[pb.GetApplicationBuildLogRequest], st *connect.ServerStream[pb.BuildLog]) error {
+	sub := make(chan []byte, 100)
+	ok, unsubscribe := s.logSvc.SubscribeBuildLog(req.Msg.BuildId, sub)
+	if !ok {
+		return connect.NewError(connect.CodeInvalidArgument, errors.New("build log stream not available"))
+	}
+	defer unsubscribe()
+
+	for log := range sub {
+		err := st.Send(&pb.BuildLog{Log: log})
+		if err != nil {
+			return connect.NewError(connect.CodeInternal, errors.New("failed to send log"))
+		}
+	}
+	return nil
 }
 
-func (s *ApplicationService) GetApplicationBuildArtifact(ctx context.Context, req *connect.Request[pb.ApplicationIdRequest]) (*connect.Response[pb.ApplicationBuildArtifact], error) {
+func (s *ApplicationService) GetBuildLog(ctx context.Context, req *connect.Request[pb.GetApplicationBuildLogRequest]) (*connect.Response[pb.BuildLog], error) {
+	log, err := s.svc.GetBuildLog(ctx, req.Msg.BuildId)
+	if err != nil {
+		return nil, handleUseCaseError(err)
+	}
+	res := connect.NewResponse(&pb.BuildLog{Log: log})
+	return res, nil
+}
+
+func (s *ApplicationService) GetBuildArtifact(ctx context.Context, req *connect.Request[pb.ApplicationIdRequest]) (*connect.Response[pb.ApplicationBuildArtifact], error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetApplicationBuildArtifact not implemented")
 }
 
-func (s *ApplicationService) GetApplicationEnvVars(ctx context.Context, req *connect.Request[pb.ApplicationIdRequest]) (*connect.Response[pb.ApplicationEnvVars], error) {
-	environments, err := s.svc.GetApplicationEnvironmentVariables(ctx, req.Msg.Id)
+func (s *ApplicationService) GetEnvVars(ctx context.Context, req *connect.Request[pb.ApplicationIdRequest]) (*connect.Response[pb.ApplicationEnvVars], error) {
+	environments, err := s.svc.GetEnvironmentVariables(ctx, req.Msg.Id)
 	if err != nil {
 		return nil, handleUseCaseError(err)
 	}
@@ -266,9 +289,9 @@ func (s *ApplicationService) GetApplicationEnvVars(ctx context.Context, req *con
 	return res, nil
 }
 
-func (s *ApplicationService) SetApplicationEnvVar(ctx context.Context, req *connect.Request[pb.SetApplicationEnvVarRequest]) (*connect.Response[emptypb.Empty], error) {
+func (s *ApplicationService) SetEnvVar(ctx context.Context, req *connect.Request[pb.SetApplicationEnvVarRequest]) (*connect.Response[emptypb.Empty], error) {
 	msg := req.Msg
-	err := s.svc.SetApplicationEnvironmentVariable(ctx, msg.ApplicationId, msg.Key, msg.Value)
+	err := s.svc.SetEnvironmentVariable(ctx, msg.ApplicationId, msg.Key, msg.Value)
 	if err != nil {
 		return nil, handleUseCaseError(err)
 	}
@@ -478,7 +501,7 @@ func toPBApplication(app *domain.Application) *pb.Application {
 		Id:            app.ID,
 		Name:          app.Name,
 		RepositoryId:  app.RepositoryID,
-		BranchName:    app.BranchName,
+		RefName:       app.RefName,
 		BuildType:     toPBBuildType(app.BuildType),
 		State:         toPBApplicationState(app.State),
 		CurrentCommit: app.CurrentCommit,

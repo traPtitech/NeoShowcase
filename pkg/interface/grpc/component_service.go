@@ -14,7 +14,7 @@ import (
 	"github.com/traPtitech/neoshowcase/pkg/domain"
 	"github.com/traPtitech/neoshowcase/pkg/domain/event"
 	"github.com/traPtitech/neoshowcase/pkg/interface/grpc/pb"
-	"github.com/traPtitech/neoshowcase/pkg/util"
+	"github.com/traPtitech/neoshowcase/pkg/usecase"
 )
 
 type builderConnection struct {
@@ -26,16 +26,21 @@ type ssGenConnection struct {
 }
 
 type ComponentService struct {
-	bus domain.Bus
+	bus       domain.Bus
+	logStream *usecase.LogStreamService
 
 	builderConnections []*builderConnection
 	ssGenConnections   []*ssGenConnection
 	lock               sync.Mutex
 }
 
-func NewComponentServiceServer(bus domain.Bus) domain.ComponentService {
+func NewComponentServiceServer(
+	bus domain.Bus,
+	logStream *usecase.LogStreamService,
+) domain.ComponentService {
 	return &ComponentService{
-		bus: bus,
+		bus:       bus,
+		logStream: logStream,
 	}
 }
 
@@ -43,6 +48,7 @@ func (s *ComponentService) ConnectBuilder(ctx context.Context, st *connect.BidiS
 	id := domain.NewID()
 	log.WithField("id", id).Info("new builder connection")
 	defer log.WithField("id", id).Info("builder connection closed")
+	s.bus.Publish(event.BuilderConnected, nil)
 
 	ctx, cancel := context.WithCancel(ctx)
 	reqSender := make(chan *pb.BuilderRequest)
@@ -70,17 +76,19 @@ func (s *ComponentService) ConnectBuilder(ctx context.Context, st *connect.BidiS
 				return
 			}
 
-			payload, err := util.IntoField(res.Body)
-			if err != nil {
-				log.Errorf("failed to decode builder event body: %+v", err)
-			}
-
 			s.lock.Lock()
 			switch res.Type {
 			case pb.BuilderResponse_BUILD_STARTED:
-				s.bus.Publish(event.BuilderBuildStarted, payload)
+				payload := res.Body.(*pb.BuilderResponse_Started).Started
+				s.bus.Publish(event.BuilderBuildStarted, nil)
+				s.logStream.AppendBuildLog(payload.BuildId, nil)
 			case pb.BuilderResponse_BUILD_SETTLED:
-				s.bus.Publish(event.BuilderBuildSettled, payload)
+				payload := res.Body.(*pb.BuilderResponse_Settled).Settled
+				s.bus.Publish(event.BuilderBuildSettled, nil)
+				s.logStream.CloseBuildLog(payload.BuildId)
+			case pb.BuilderResponse_BUILD_LOG:
+				payload := res.Body.(*pb.BuilderResponse_Log).Log
+				s.logStream.AppendBuildLog(payload.BuildId, payload.Log)
 			}
 			s.lock.Unlock()
 		}

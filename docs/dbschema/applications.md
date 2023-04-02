@@ -12,7 +12,7 @@ CREATE TABLE `applications` (
   `id` char(22) NOT NULL COMMENT 'アプリケーションID',
   `name` varchar(100) NOT NULL COMMENT 'アプリケーション名',
   `repository_id` varchar(22) NOT NULL COMMENT 'リポジトリID',
-  `branch_name` varchar(100) NOT NULL COMMENT 'Gitブランチ・タグ名',
+  `ref_name` varchar(100) NOT NULL COMMENT 'Gitブランチ・タグ名',
   `build_type` enum('runtime','static') NOT NULL COMMENT 'ビルドタイプ',
   `state` varchar(10) NOT NULL COMMENT 'デプロイの状態',
   `current_commit` char(40) NOT NULL COMMENT 'デプロイされたコミット',
@@ -36,7 +36,7 @@ CREATE TABLE `applications` (
 | id | char(22) |  | false | [application_config](application_config.md) [application_owners](application_owners.md) [builds](builds.md) [environments](environments.md) [websites](websites.md) |  | アプリケーションID |
 | name | varchar(100) |  | false |  |  | アプリケーション名 |
 | repository_id | varchar(22) |  | false |  | [repositories](repositories.md) | リポジトリID |
-| branch_name | varchar(100) |  | false |  |  | Gitブランチ・タグ名 |
+| ref_name | varchar(100) |  | false |  |  | Gitブランチ・タグ名 |
 | build_type | enum('runtime','static') |  | false |  |  | ビルドタイプ |
 | state | varchar(10) |  | false |  | [application_state](application_state.md) | デプロイの状態 |
 | current_commit | char(40) |  | false |  |  | デプロイされたコミット |

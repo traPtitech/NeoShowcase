@@ -64,16 +64,23 @@ message BuildSettled {
   Reason reason = 3;
 }
 
+message BuildLogPortion {
+  string build_id = 1;
+  bytes log = 2;
+}
+
 message BuilderResponse {
   enum Type {
     CONNECTED = 0;
     BUILD_STARTED = 1;
     BUILD_SETTLED = 2;
+    BUILD_LOG = 3;
   }
   Type type = 1;
   oneof body {
     BuildStarted started = 2;
     BuildSettled settled = 3;
+    BuildLogPortion log = 4;
   }
 }
 

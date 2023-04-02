@@ -112,55 +112,64 @@ export const ApplicationService = {
       kind: MethodKind.Unary,
     },
     /**
-     * @generated from rpc neoshowcase.protobuf.ApplicationService.GetApplicationBuilds
+     * @generated from rpc neoshowcase.protobuf.ApplicationService.GetBuilds
      */
-    getApplicationBuilds: {
-      name: "GetApplicationBuilds",
+    getBuilds: {
+      name: "GetBuilds",
       I: ApplicationIdRequest,
       O: GetApplicationBuildsResponse,
       kind: MethodKind.Unary,
     },
     /**
-     * @generated from rpc neoshowcase.protobuf.ApplicationService.GetApplicationBuild
+     * @generated from rpc neoshowcase.protobuf.ApplicationService.GetBuild
      */
-    getApplicationBuild: {
-      name: "GetApplicationBuild",
+    getBuild: {
+      name: "GetBuild",
       I: GetApplicationBuildRequest,
       O: Build,
       kind: MethodKind.Unary,
     },
     /**
-     * @generated from rpc neoshowcase.protobuf.ApplicationService.GetApplicationBuildLog
+     * @generated from rpc neoshowcase.protobuf.ApplicationService.GetBuildLogStream
      */
-    getApplicationBuildLog: {
-      name: "GetApplicationBuildLog",
+    getBuildLogStream: {
+      name: "GetBuildLogStream",
+      I: GetApplicationBuildLogRequest,
+      O: BuildLog,
+      kind: MethodKind.ServerStreaming,
+    },
+    /**
+     * @generated from rpc neoshowcase.protobuf.ApplicationService.GetBuildLog
+     */
+    getBuildLog: {
+      name: "GetBuildLog",
       I: GetApplicationBuildLogRequest,
       O: BuildLog,
       kind: MethodKind.Unary,
     },
     /**
-     * @generated from rpc neoshowcase.protobuf.ApplicationService.GetApplicationBuildArtifact
+     * @generated from rpc neoshowcase.protobuf.ApplicationService.GetBuildArtifact
      */
-    getApplicationBuildArtifact: {
-      name: "GetApplicationBuildArtifact",
+    getBuildArtifact: {
+      name: "GetBuildArtifact",
       I: ApplicationIdRequest,
       O: ApplicationBuildArtifact,
       kind: MethodKind.Unary,
     },
     /**
-     * @generated from rpc neoshowcase.protobuf.ApplicationService.GetApplicationEnvVars
+     * @generated from rpc neoshowcase.protobuf.ApplicationService.GetEnvVars
      */
-    getApplicationEnvVars: {
-      name: "GetApplicationEnvVars",
+    getEnvVars: {
+      name: "GetEnvVars",
       I: ApplicationIdRequest,
       O: ApplicationEnvVars,
       kind: MethodKind.Unary,
     },
     /**
-     * @generated from rpc neoshowcase.protobuf.ApplicationService.SetApplicationEnvVar
+     * @generated from rpc neoshowcase.protobuf.ApplicationService.SetEnvVar
      */
-    setApplicationEnvVar: {
-      name: "SetApplicationEnvVar",
+    setEnvVar: {
+      name: "SetEnvVar",
       I: SetApplicationEnvVarRequest,
       O: Empty,
       kind: MethodKind.Unary,

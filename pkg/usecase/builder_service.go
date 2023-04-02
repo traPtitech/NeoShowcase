@@ -81,7 +81,7 @@ func (s *builderService) Start(_ context.Context) error {
 	ctx, cancel := context.WithCancel(context.Background())
 	s.cancel = cancel
 
-	response := make(chan *pb.BuilderResponse)
+	response := make(chan *pb.BuilderResponse, 100)
 	s.response = response
 
 	go retry.Do(ctx, func(ctx context.Context) error {
@@ -219,7 +219,7 @@ func (s *builderService) tryStartTask(task *builder.Task) error {
 
 	ctx, cancel := context.WithCancel(context.Background())
 	finish := make(chan struct{})
-	st := newState(task, repo)
+	st := newState(task, repo, s.response)
 	s.state = st
 	s.stateCancel = func() {
 		cancel()
@@ -613,16 +613,43 @@ func (s *builderService) buildStaticWithConfig(
 type state struct {
 	task       *builder.Task
 	repository *domain.Repository
+	response   chan<- *pb.BuilderResponse
 
 	repositoryTempDir string
 	logTempFile       *os.File
+	logWriter         *logWriter
 	artifactTempFile  *os.File
 }
 
-func newState(task *builder.Task, repo *domain.Repository) *state {
+type logWriter struct {
+	buildID  string
+	response chan<- *pb.BuilderResponse
+	logFile  *os.File
+}
+
+func (l *logWriter) toBuilderResponse(p []byte) *pb.BuilderResponse {
+	return &pb.BuilderResponse{Type: pb.BuilderResponse_BUILD_LOG, Body: &pb.BuilderResponse_Log{
+		Log: &pb.BuildLogPortion{BuildId: l.buildID, Log: p},
+	}}
+}
+
+func (l *logWriter) Write(p []byte) (n int, err error) {
+	n, err = l.logFile.Write(p)
+	if err != nil {
+		return
+	}
+	select {
+	case l.response <- l.toBuilderResponse(p):
+	default:
+	}
+	return
+}
+
+func newState(task *builder.Task, repo *domain.Repository, response chan<- *pb.BuilderResponse) *state {
 	return &state{
 		task:       task,
 		repository: repo,
+		response:   response,
 	}
 }
 
@@ -633,6 +660,11 @@ func (s *state) initTempFiles(useArtifactTempFile bool) error {
 	s.logTempFile, err = os.CreateTemp("", "buildlog-")
 	if err != nil {
 		return errors.Wrap(err, "failed to create tmp log file")
+	}
+	s.logWriter = &logWriter{
+		buildID:  s.task.BuildID,
+		response: s.response,
+		logFile:  s.logTempFile,
 	}
 
 	// 成果物tarの一時保存先作成
@@ -653,14 +685,11 @@ func (s *state) initTempFiles(useArtifactTempFile bool) error {
 }
 
 func (s *state) getLogWriter() io.Writer {
-	if s.logTempFile == nil {
-		return io.Discard
-	}
-	return s.logTempFile
+	return s.logWriter
 }
 
 func (s *state) writeLog(a ...interface{}) {
-	_, _ = fmt.Fprintln(s.getLogWriter(), a...)
+	_, _ = fmt.Fprintln(s.logWriter, a...)
 }
 
 func toPBSettleReason(status builder.BuildStatus) pb.BuildSettled_Reason {

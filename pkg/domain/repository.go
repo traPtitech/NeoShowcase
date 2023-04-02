@@ -21,7 +21,7 @@ type GetApplicationCondition struct {
 
 type UpdateApplicationArgs struct {
 	Name          optional.Of[string]
-	BranchName    optional.Of[string]
+	RefName       optional.Of[string]
 	State         optional.Of[ApplicationState]
 	CurrentCommit optional.Of[string]
 	WantCommit    optional.Of[string]

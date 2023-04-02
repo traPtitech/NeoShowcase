@@ -149,8 +149,8 @@ func (r *applicationRepository) UpdateApplication(ctx context.Context, id string
 	if args.Name.Valid {
 		app.Name = args.Name.V
 	}
-	if args.BranchName.Valid {
-		app.BranchName = args.BranchName.V
+	if args.RefName.Valid {
+		app.RefName = args.RefName.V
 	}
 	if args.State.Valid {
 		app.State = args.State.V.String()

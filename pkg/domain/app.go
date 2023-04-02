@@ -104,7 +104,7 @@ type Application struct {
 	ID            string
 	Name          string
 	RepositoryID  string
-	BranchName    string
+	RefName       string
 	BuildType     builder.BuildType
 	State         ApplicationState
 	CurrentCommit string

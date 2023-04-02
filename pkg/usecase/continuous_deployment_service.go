@@ -103,7 +103,7 @@ func (cd *continuousDeploymentService) registerBuildLoop(ctx context.Context, st
 }
 
 func (cd *continuousDeploymentService) startBuildLoop(ctx context.Context, syncer <-chan struct{}) {
-	sub := cd.bus.Subscribe(event.BuilderBuildSettled)
+	sub := cd.bus.Subscribe(event.BuilderConnected, event.BuilderBuildSettled)
 	defer sub.Unsubscribe()
 
 	doSync := func() {

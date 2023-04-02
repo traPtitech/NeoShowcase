@@ -40,8 +40,8 @@
 <text text-anchor="start" x="61" y="-460.171" font-family="Arial" font-size="14.00" fill="#000000">repository_id </text>
 <text text-anchor="start" x="145.0112" y="-460.171" font-family="Arial" font-size="14.00" fill="#666666">[varchar(22)]</text>
 <polygon fill="none" stroke="#000000" points="54,-418.771 54,-448.771 283,-448.771 283,-418.771 54,-418.771"/>
-<text text-anchor="start" x="61" y="-430.171" font-family="Arial" font-size="14.00" fill="#000000">branch_name </text>
-<text text-anchor="start" x="150.4726" y="-430.171" font-family="Arial" font-size="14.00" fill="#666666">[varchar(100)]</text>
+<text text-anchor="start" x="61" y="-430.171" font-family="Arial" font-size="14.00" fill="#000000">ref_name </text>
+<text text-anchor="start" x="124.0154" y="-430.171" font-family="Arial" font-size="14.00" fill="#666666">[varchar(100)]</text>
 <polygon fill="none" stroke="#000000" points="54,-388.771 54,-418.771 283,-418.771 283,-388.771 54,-388.771"/>
 <text text-anchor="start" x="60.8008" y="-400.171" font-family="Arial" font-size="14.00" fill="#000000">build_type </text>
 <text text-anchor="start" x="128.4908" y="-400.171" font-family="Arial" font-size="14.00" fill="#666666">[enum(&#39;runtime&#39;,&#39;static&#39;)]</text>

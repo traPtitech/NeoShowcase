@@ -39,12 +39,13 @@ type ApplicationServiceClient interface {
 	GetApplication(context.Context, *connect_go.Request[pb.ApplicationIdRequest]) (*connect_go.Response[pb.Application], error)
 	UpdateApplication(context.Context, *connect_go.Request[pb.UpdateApplicationRequest]) (*connect_go.Response[emptypb.Empty], error)
 	DeleteApplication(context.Context, *connect_go.Request[pb.ApplicationIdRequest]) (*connect_go.Response[emptypb.Empty], error)
-	GetApplicationBuilds(context.Context, *connect_go.Request[pb.ApplicationIdRequest]) (*connect_go.Response[pb.GetApplicationBuildsResponse], error)
-	GetApplicationBuild(context.Context, *connect_go.Request[pb.GetApplicationBuildRequest]) (*connect_go.Response[pb.Build], error)
-	GetApplicationBuildLog(context.Context, *connect_go.Request[pb.GetApplicationBuildLogRequest]) (*connect_go.Response[pb.BuildLog], error)
-	GetApplicationBuildArtifact(context.Context, *connect_go.Request[pb.ApplicationIdRequest]) (*connect_go.Response[pb.ApplicationBuildArtifact], error)
-	GetApplicationEnvVars(context.Context, *connect_go.Request[pb.ApplicationIdRequest]) (*connect_go.Response[pb.ApplicationEnvVars], error)
-	SetApplicationEnvVar(context.Context, *connect_go.Request[pb.SetApplicationEnvVarRequest]) (*connect_go.Response[emptypb.Empty], error)
+	GetBuilds(context.Context, *connect_go.Request[pb.ApplicationIdRequest]) (*connect_go.Response[pb.GetApplicationBuildsResponse], error)
+	GetBuild(context.Context, *connect_go.Request[pb.GetApplicationBuildRequest]) (*connect_go.Response[pb.Build], error)
+	GetBuildLogStream(context.Context, *connect_go.Request[pb.GetApplicationBuildLogRequest]) (*connect_go.ServerStreamForClient[pb.BuildLog], error)
+	GetBuildLog(context.Context, *connect_go.Request[pb.GetApplicationBuildLogRequest]) (*connect_go.Response[pb.BuildLog], error)
+	GetBuildArtifact(context.Context, *connect_go.Request[pb.ApplicationIdRequest]) (*connect_go.Response[pb.ApplicationBuildArtifact], error)
+	GetEnvVars(context.Context, *connect_go.Request[pb.ApplicationIdRequest]) (*connect_go.Response[pb.ApplicationEnvVars], error)
+	SetEnvVar(context.Context, *connect_go.Request[pb.SetApplicationEnvVarRequest]) (*connect_go.Response[emptypb.Empty], error)
 	GetApplicationOutput(context.Context, *connect_go.Request[pb.ApplicationIdRequest]) (*connect_go.Response[pb.ApplicationOutput], error)
 	CancelBuild(context.Context, *connect_go.Request[pb.CancelBuildRequest]) (*connect_go.Response[emptypb.Empty], error)
 	RetryCommitBuild(context.Context, *connect_go.Request[pb.RetryCommitBuildRequest]) (*connect_go.Response[emptypb.Empty], error)
@@ -117,34 +118,39 @@ func NewApplicationServiceClient(httpClient connect_go.HTTPClient, baseURL strin
 			baseURL+"/neoshowcase.protobuf.ApplicationService/DeleteApplication",
 			opts...,
 		),
-		getApplicationBuilds: connect_go.NewClient[pb.ApplicationIdRequest, pb.GetApplicationBuildsResponse](
+		getBuilds: connect_go.NewClient[pb.ApplicationIdRequest, pb.GetApplicationBuildsResponse](
 			httpClient,
-			baseURL+"/neoshowcase.protobuf.ApplicationService/GetApplicationBuilds",
+			baseURL+"/neoshowcase.protobuf.ApplicationService/GetBuilds",
 			opts...,
 		),
-		getApplicationBuild: connect_go.NewClient[pb.GetApplicationBuildRequest, pb.Build](
+		getBuild: connect_go.NewClient[pb.GetApplicationBuildRequest, pb.Build](
 			httpClient,
-			baseURL+"/neoshowcase.protobuf.ApplicationService/GetApplicationBuild",
+			baseURL+"/neoshowcase.protobuf.ApplicationService/GetBuild",
 			opts...,
 		),
-		getApplicationBuildLog: connect_go.NewClient[pb.GetApplicationBuildLogRequest, pb.BuildLog](
+		getBuildLogStream: connect_go.NewClient[pb.GetApplicationBuildLogRequest, pb.BuildLog](
 			httpClient,
-			baseURL+"/neoshowcase.protobuf.ApplicationService/GetApplicationBuildLog",
+			baseURL+"/neoshowcase.protobuf.ApplicationService/GetBuildLogStream",
 			opts...,
 		),
-		getApplicationBuildArtifact: connect_go.NewClient[pb.ApplicationIdRequest, pb.ApplicationBuildArtifact](
+		getBuildLog: connect_go.NewClient[pb.GetApplicationBuildLogRequest, pb.BuildLog](
 			httpClient,
-			baseURL+"/neoshowcase.protobuf.ApplicationService/GetApplicationBuildArtifact",
+			baseURL+"/neoshowcase.protobuf.ApplicationService/GetBuildLog",
 			opts...,
 		),
-		getApplicationEnvVars: connect_go.NewClient[pb.ApplicationIdRequest, pb.ApplicationEnvVars](
+		getBuildArtifact: connect_go.NewClient[pb.ApplicationIdRequest, pb.ApplicationBuildArtifact](
 			httpClient,
-			baseURL+"/neoshowcase.protobuf.ApplicationService/GetApplicationEnvVars",
+			baseURL+"/neoshowcase.protobuf.ApplicationService/GetBuildArtifact",
 			opts...,
 		),
-		setApplicationEnvVar: connect_go.NewClient[pb.SetApplicationEnvVarRequest, emptypb.Empty](
+		getEnvVars: connect_go.NewClient[pb.ApplicationIdRequest, pb.ApplicationEnvVars](
 			httpClient,
-			baseURL+"/neoshowcase.protobuf.ApplicationService/SetApplicationEnvVar",
+			baseURL+"/neoshowcase.protobuf.ApplicationService/GetEnvVars",
+			opts...,
+		),
+		setEnvVar: connect_go.NewClient[pb.SetApplicationEnvVarRequest, emptypb.Empty](
+			httpClient,
+			baseURL+"/neoshowcase.protobuf.ApplicationService/SetEnvVar",
 			opts...,
 		),
 		getApplicationOutput: connect_go.NewClient[pb.ApplicationIdRequest, pb.ApplicationOutput](
@@ -177,28 +183,29 @@ func NewApplicationServiceClient(httpClient connect_go.HTTPClient, baseURL strin
 
 // applicationServiceClient implements ApplicationServiceClient.
 type applicationServiceClient struct {
-	getMe                       *connect_go.Client[emptypb.Empty, pb.User]
-	getRepositories             *connect_go.Client[emptypb.Empty, pb.GetRepositoriesResponse]
-	createRepository            *connect_go.Client[pb.CreateRepositoryRequest, pb.Repository]
-	getApplications             *connect_go.Client[emptypb.Empty, pb.GetApplicationsResponse]
-	getSystemPublicKey          *connect_go.Client[emptypb.Empty, pb.GetSystemPublicKeyResponse]
-	getAvailableDomains         *connect_go.Client[emptypb.Empty, pb.AvailableDomains]
-	addAvailableDomain          *connect_go.Client[pb.AvailableDomain, emptypb.Empty]
-	createApplication           *connect_go.Client[pb.CreateApplicationRequest, pb.Application]
-	getApplication              *connect_go.Client[pb.ApplicationIdRequest, pb.Application]
-	updateApplication           *connect_go.Client[pb.UpdateApplicationRequest, emptypb.Empty]
-	deleteApplication           *connect_go.Client[pb.ApplicationIdRequest, emptypb.Empty]
-	getApplicationBuilds        *connect_go.Client[pb.ApplicationIdRequest, pb.GetApplicationBuildsResponse]
-	getApplicationBuild         *connect_go.Client[pb.GetApplicationBuildRequest, pb.Build]
-	getApplicationBuildLog      *connect_go.Client[pb.GetApplicationBuildLogRequest, pb.BuildLog]
-	getApplicationBuildArtifact *connect_go.Client[pb.ApplicationIdRequest, pb.ApplicationBuildArtifact]
-	getApplicationEnvVars       *connect_go.Client[pb.ApplicationIdRequest, pb.ApplicationEnvVars]
-	setApplicationEnvVar        *connect_go.Client[pb.SetApplicationEnvVarRequest, emptypb.Empty]
-	getApplicationOutput        *connect_go.Client[pb.ApplicationIdRequest, pb.ApplicationOutput]
-	cancelBuild                 *connect_go.Client[pb.CancelBuildRequest, emptypb.Empty]
-	retryCommitBuild            *connect_go.Client[pb.RetryCommitBuildRequest, emptypb.Empty]
-	startApplication            *connect_go.Client[pb.ApplicationIdRequest, emptypb.Empty]
-	stopApplication             *connect_go.Client[pb.ApplicationIdRequest, emptypb.Empty]
+	getMe                *connect_go.Client[emptypb.Empty, pb.User]
+	getRepositories      *connect_go.Client[emptypb.Empty, pb.GetRepositoriesResponse]
+	createRepository     *connect_go.Client[pb.CreateRepositoryRequest, pb.Repository]
+	getApplications      *connect_go.Client[emptypb.Empty, pb.GetApplicationsResponse]
+	getSystemPublicKey   *connect_go.Client[emptypb.Empty, pb.GetSystemPublicKeyResponse]
+	getAvailableDomains  *connect_go.Client[emptypb.Empty, pb.AvailableDomains]
+	addAvailableDomain   *connect_go.Client[pb.AvailableDomain, emptypb.Empty]
+	createApplication    *connect_go.Client[pb.CreateApplicationRequest, pb.Application]
+	getApplication       *connect_go.Client[pb.ApplicationIdRequest, pb.Application]
+	updateApplication    *connect_go.Client[pb.UpdateApplicationRequest, emptypb.Empty]
+	deleteApplication    *connect_go.Client[pb.ApplicationIdRequest, emptypb.Empty]
+	getBuilds            *connect_go.Client[pb.ApplicationIdRequest, pb.GetApplicationBuildsResponse]
+	getBuild             *connect_go.Client[pb.GetApplicationBuildRequest, pb.Build]
+	getBuildLogStream    *connect_go.Client[pb.GetApplicationBuildLogRequest, pb.BuildLog]
+	getBuildLog          *connect_go.Client[pb.GetApplicationBuildLogRequest, pb.BuildLog]
+	getBuildArtifact     *connect_go.Client[pb.ApplicationIdRequest, pb.ApplicationBuildArtifact]
+	getEnvVars           *connect_go.Client[pb.ApplicationIdRequest, pb.ApplicationEnvVars]
+	setEnvVar            *connect_go.Client[pb.SetApplicationEnvVarRequest, emptypb.Empty]
+	getApplicationOutput *connect_go.Client[pb.ApplicationIdRequest, pb.ApplicationOutput]
+	cancelBuild          *connect_go.Client[pb.CancelBuildRequest, emptypb.Empty]
+	retryCommitBuild     *connect_go.Client[pb.RetryCommitBuildRequest, emptypb.Empty]
+	startApplication     *connect_go.Client[pb.ApplicationIdRequest, emptypb.Empty]
+	stopApplication      *connect_go.Client[pb.ApplicationIdRequest, emptypb.Empty]
 }
 
 // GetMe calls neoshowcase.protobuf.ApplicationService.GetMe.
@@ -256,35 +263,39 @@ func (c *applicationServiceClient) DeleteApplication(ctx context.Context, req *c
 	return c.deleteApplication.CallUnary(ctx, req)
 }
 
-// GetApplicationBuilds calls neoshowcase.protobuf.ApplicationService.GetApplicationBuilds.
-func (c *applicationServiceClient) GetApplicationBuilds(ctx context.Context, req *connect_go.Request[pb.ApplicationIdRequest]) (*connect_go.Response[pb.GetApplicationBuildsResponse], error) {
-	return c.getApplicationBuilds.CallUnary(ctx, req)
+// GetBuilds calls neoshowcase.protobuf.ApplicationService.GetBuilds.
+func (c *applicationServiceClient) GetBuilds(ctx context.Context, req *connect_go.Request[pb.ApplicationIdRequest]) (*connect_go.Response[pb.GetApplicationBuildsResponse], error) {
+	return c.getBuilds.CallUnary(ctx, req)
 }
 
-// GetApplicationBuild calls neoshowcase.protobuf.ApplicationService.GetApplicationBuild.
-func (c *applicationServiceClient) GetApplicationBuild(ctx context.Context, req *connect_go.Request[pb.GetApplicationBuildRequest]) (*connect_go.Response[pb.Build], error) {
-	return c.getApplicationBuild.CallUnary(ctx, req)
+// GetBuild calls neoshowcase.protobuf.ApplicationService.GetBuild.
+func (c *applicationServiceClient) GetBuild(ctx context.Context, req *connect_go.Request[pb.GetApplicationBuildRequest]) (*connect_go.Response[pb.Build], error) {
+	return c.getBuild.CallUnary(ctx, req)
 }
 
-// GetApplicationBuildLog calls neoshowcase.protobuf.ApplicationService.GetApplicationBuildLog.
-func (c *applicationServiceClient) GetApplicationBuildLog(ctx context.Context, req *connect_go.Request[pb.GetApplicationBuildLogRequest]) (*connect_go.Response[pb.BuildLog], error) {
-	return c.getApplicationBuildLog.CallUnary(ctx, req)
+// GetBuildLogStream calls neoshowcase.protobuf.ApplicationService.GetBuildLogStream.
+func (c *applicationServiceClient) GetBuildLogStream(ctx context.Context, req *connect_go.Request[pb.GetApplicationBuildLogRequest]) (*connect_go.ServerStreamForClient[pb.BuildLog], error) {
+	return c.getBuildLogStream.CallServerStream(ctx, req)
 }
 
-// GetApplicationBuildArtifact calls
-// neoshowcase.protobuf.ApplicationService.GetApplicationBuildArtifact.
-func (c *applicationServiceClient) GetApplicationBuildArtifact(ctx context.Context, req *connect_go.Request[pb.ApplicationIdRequest]) (*connect_go.Response[pb.ApplicationBuildArtifact], error) {
-	return c.getApplicationBuildArtifact.CallUnary(ctx, req)
+// GetBuildLog calls neoshowcase.protobuf.ApplicationService.GetBuildLog.
+func (c *applicationServiceClient) GetBuildLog(ctx context.Context, req *connect_go.Request[pb.GetApplicationBuildLogRequest]) (*connect_go.Response[pb.BuildLog], error) {
+	return c.getBuildLog.CallUnary(ctx, req)
 }
 
-// GetApplicationEnvVars calls neoshowcase.protobuf.ApplicationService.GetApplicationEnvVars.
-func (c *applicationServiceClient) GetApplicationEnvVars(ctx context.Context, req *connect_go.Request[pb.ApplicationIdRequest]) (*connect_go.Response[pb.ApplicationEnvVars], error) {
-	return c.getApplicationEnvVars.CallUnary(ctx, req)
+// GetBuildArtifact calls neoshowcase.protobuf.ApplicationService.GetBuildArtifact.
+func (c *applicationServiceClient) GetBuildArtifact(ctx context.Context, req *connect_go.Request[pb.ApplicationIdRequest]) (*connect_go.Response[pb.ApplicationBuildArtifact], error) {
+	return c.getBuildArtifact.CallUnary(ctx, req)
 }
 
-// SetApplicationEnvVar calls neoshowcase.protobuf.ApplicationService.SetApplicationEnvVar.
-func (c *applicationServiceClient) SetApplicationEnvVar(ctx context.Context, req *connect_go.Request[pb.SetApplicationEnvVarRequest]) (*connect_go.Response[emptypb.Empty], error) {
-	return c.setApplicationEnvVar.CallUnary(ctx, req)
+// GetEnvVars calls neoshowcase.protobuf.ApplicationService.GetEnvVars.
+func (c *applicationServiceClient) GetEnvVars(ctx context.Context, req *connect_go.Request[pb.ApplicationIdRequest]) (*connect_go.Response[pb.ApplicationEnvVars], error) {
+	return c.getEnvVars.CallUnary(ctx, req)
+}
+
+// SetEnvVar calls neoshowcase.protobuf.ApplicationService.SetEnvVar.
+func (c *applicationServiceClient) SetEnvVar(ctx context.Context, req *connect_go.Request[pb.SetApplicationEnvVarRequest]) (*connect_go.Response[emptypb.Empty], error) {
+	return c.setEnvVar.CallUnary(ctx, req)
 }
 
 // GetApplicationOutput calls neoshowcase.protobuf.ApplicationService.GetApplicationOutput.
@@ -326,12 +337,13 @@ type ApplicationServiceHandler interface {
 	GetApplication(context.Context, *connect_go.Request[pb.ApplicationIdRequest]) (*connect_go.Response[pb.Application], error)
 	UpdateApplication(context.Context, *connect_go.Request[pb.UpdateApplicationRequest]) (*connect_go.Response[emptypb.Empty], error)
 	DeleteApplication(context.Context, *connect_go.Request[pb.ApplicationIdRequest]) (*connect_go.Response[emptypb.Empty], error)
-	GetApplicationBuilds(context.Context, *connect_go.Request[pb.ApplicationIdRequest]) (*connect_go.Response[pb.GetApplicationBuildsResponse], error)
-	GetApplicationBuild(context.Context, *connect_go.Request[pb.GetApplicationBuildRequest]) (*connect_go.Response[pb.Build], error)
-	GetApplicationBuildLog(context.Context, *connect_go.Request[pb.GetApplicationBuildLogRequest]) (*connect_go.Response[pb.BuildLog], error)
-	GetApplicationBuildArtifact(context.Context, *connect_go.Request[pb.ApplicationIdRequest]) (*connect_go.Response[pb.ApplicationBuildArtifact], error)
-	GetApplicationEnvVars(context.Context, *connect_go.Request[pb.ApplicationIdRequest]) (*connect_go.Response[pb.ApplicationEnvVars], error)
-	SetApplicationEnvVar(context.Context, *connect_go.Request[pb.SetApplicationEnvVarRequest]) (*connect_go.Response[emptypb.Empty], error)
+	GetBuilds(context.Context, *connect_go.Request[pb.ApplicationIdRequest]) (*connect_go.Response[pb.GetApplicationBuildsResponse], error)
+	GetBuild(context.Context, *connect_go.Request[pb.GetApplicationBuildRequest]) (*connect_go.Response[pb.Build], error)
+	GetBuildLogStream(context.Context, *connect_go.Request[pb.GetApplicationBuildLogRequest], *connect_go.ServerStream[pb.BuildLog]) error
+	GetBuildLog(context.Context, *connect_go.Request[pb.GetApplicationBuildLogRequest]) (*connect_go.Response[pb.BuildLog], error)
+	GetBuildArtifact(context.Context, *connect_go.Request[pb.ApplicationIdRequest]) (*connect_go.Response[pb.ApplicationBuildArtifact], error)
+	GetEnvVars(context.Context, *connect_go.Request[pb.ApplicationIdRequest]) (*connect_go.Response[pb.ApplicationEnvVars], error)
+	SetEnvVar(context.Context, *connect_go.Request[pb.SetApplicationEnvVarRequest]) (*connect_go.Response[emptypb.Empty], error)
 	GetApplicationOutput(context.Context, *connect_go.Request[pb.ApplicationIdRequest]) (*connect_go.Response[pb.ApplicationOutput], error)
 	CancelBuild(context.Context, *connect_go.Request[pb.CancelBuildRequest]) (*connect_go.Response[emptypb.Empty], error)
 	RetryCommitBuild(context.Context, *connect_go.Request[pb.RetryCommitBuildRequest]) (*connect_go.Response[emptypb.Empty], error)
@@ -401,34 +413,39 @@ func NewApplicationServiceHandler(svc ApplicationServiceHandler, opts ...connect
 		svc.DeleteApplication,
 		opts...,
 	))
-	mux.Handle("/neoshowcase.protobuf.ApplicationService/GetApplicationBuilds", connect_go.NewUnaryHandler(
-		"/neoshowcase.protobuf.ApplicationService/GetApplicationBuilds",
-		svc.GetApplicationBuilds,
+	mux.Handle("/neoshowcase.protobuf.ApplicationService/GetBuilds", connect_go.NewUnaryHandler(
+		"/neoshowcase.protobuf.ApplicationService/GetBuilds",
+		svc.GetBuilds,
 		opts...,
 	))
-	mux.Handle("/neoshowcase.protobuf.ApplicationService/GetApplicationBuild", connect_go.NewUnaryHandler(
-		"/neoshowcase.protobuf.ApplicationService/GetApplicationBuild",
-		svc.GetApplicationBuild,
+	mux.Handle("/neoshowcase.protobuf.ApplicationService/GetBuild", connect_go.NewUnaryHandler(
+		"/neoshowcase.protobuf.ApplicationService/GetBuild",
+		svc.GetBuild,
 		opts...,
 	))
-	mux.Handle("/neoshowcase.protobuf.ApplicationService/GetApplicationBuildLog", connect_go.NewUnaryHandler(
-		"/neoshowcase.protobuf.ApplicationService/GetApplicationBuildLog",
-		svc.GetApplicationBuildLog,
+	mux.Handle("/neoshowcase.protobuf.ApplicationService/GetBuildLogStream", connect_go.NewServerStreamHandler(
+		"/neoshowcase.protobuf.ApplicationService/GetBuildLogStream",
+		svc.GetBuildLogStream,
 		opts...,
 	))
-	mux.Handle("/neoshowcase.protobuf.ApplicationService/GetApplicationBuildArtifact", connect_go.NewUnaryHandler(
-		"/neoshowcase.protobuf.ApplicationService/GetApplicationBuildArtifact",
-		svc.GetApplicationBuildArtifact,
+	mux.Handle("/neoshowcase.protobuf.ApplicationService/GetBuildLog", connect_go.NewUnaryHandler(
+		"/neoshowcase.protobuf.ApplicationService/GetBuildLog",
+		svc.GetBuildLog,
 		opts...,
 	))
-	mux.Handle("/neoshowcase.protobuf.ApplicationService/GetApplicationEnvVars", connect_go.NewUnaryHandler(
-		"/neoshowcase.protobuf.ApplicationService/GetApplicationEnvVars",
-		svc.GetApplicationEnvVars,
+	mux.Handle("/neoshowcase.protobuf.ApplicationService/GetBuildArtifact", connect_go.NewUnaryHandler(
+		"/neoshowcase.protobuf.ApplicationService/GetBuildArtifact",
+		svc.GetBuildArtifact,
 		opts...,
 	))
-	mux.Handle("/neoshowcase.protobuf.ApplicationService/SetApplicationEnvVar", connect_go.NewUnaryHandler(
-		"/neoshowcase.protobuf.ApplicationService/SetApplicationEnvVar",
-		svc.SetApplicationEnvVar,
+	mux.Handle("/neoshowcase.protobuf.ApplicationService/GetEnvVars", connect_go.NewUnaryHandler(
+		"/neoshowcase.protobuf.ApplicationService/GetEnvVars",
+		svc.GetEnvVars,
+		opts...,
+	))
+	mux.Handle("/neoshowcase.protobuf.ApplicationService/SetEnvVar", connect_go.NewUnaryHandler(
+		"/neoshowcase.protobuf.ApplicationService/SetEnvVar",
+		svc.SetEnvVar,
 		opts...,
 	))
 	mux.Handle("/neoshowcase.protobuf.ApplicationService/GetApplicationOutput", connect_go.NewUnaryHandler(
@@ -506,28 +523,32 @@ func (UnimplementedApplicationServiceHandler) DeleteApplication(context.Context,
 	return nil, connect_go.NewError(connect_go.CodeUnimplemented, errors.New("neoshowcase.protobuf.ApplicationService.DeleteApplication is not implemented"))
 }
 
-func (UnimplementedApplicationServiceHandler) GetApplicationBuilds(context.Context, *connect_go.Request[pb.ApplicationIdRequest]) (*connect_go.Response[pb.GetApplicationBuildsResponse], error) {
-	return nil, connect_go.NewError(connect_go.CodeUnimplemented, errors.New("neoshowcase.protobuf.ApplicationService.GetApplicationBuilds is not implemented"))
+func (UnimplementedApplicationServiceHandler) GetBuilds(context.Context, *connect_go.Request[pb.ApplicationIdRequest]) (*connect_go.Response[pb.GetApplicationBuildsResponse], error) {
+	return nil, connect_go.NewError(connect_go.CodeUnimplemented, errors.New("neoshowcase.protobuf.ApplicationService.GetBuilds is not implemented"))
 }
 
-func (UnimplementedApplicationServiceHandler) GetApplicationBuild(context.Context, *connect_go.Request[pb.GetApplicationBuildRequest]) (*connect_go.Response[pb.Build], error) {
-	return nil, connect_go.NewError(connect_go.CodeUnimplemented, errors.New("neoshowcase.protobuf.ApplicationService.GetApplicationBuild is not implemented"))
+func (UnimplementedApplicationServiceHandler) GetBuild(context.Context, *connect_go.Request[pb.GetApplicationBuildRequest]) (*connect_go.Response[pb.Build], error) {
+	return nil, connect_go.NewError(connect_go.CodeUnimplemented, errors.New("neoshowcase.protobuf.ApplicationService.GetBuild is not implemented"))
 }
 
-func (UnimplementedApplicationServiceHandler) GetApplicationBuildLog(context.Context, *connect_go.Request[pb.GetApplicationBuildLogRequest]) (*connect_go.Response[pb.BuildLog], error) {
-	return nil, connect_go.NewError(connect_go.CodeUnimplemented, errors.New("neoshowcase.protobuf.ApplicationService.GetApplicationBuildLog is not implemented"))
+func (UnimplementedApplicationServiceHandler) GetBuildLogStream(context.Context, *connect_go.Request[pb.GetApplicationBuildLogRequest], *connect_go.ServerStream[pb.BuildLog]) error {
+	return connect_go.NewError(connect_go.CodeUnimplemented, errors.New("neoshowcase.protobuf.ApplicationService.GetBuildLogStream is not implemented"))
 }
 
-func (UnimplementedApplicationServiceHandler) GetApplicationBuildArtifact(context.Context, *connect_go.Request[pb.ApplicationIdRequest]) (*connect_go.Response[pb.ApplicationBuildArtifact], error) {
-	return nil, connect_go.NewError(connect_go.CodeUnimplemented, errors.New("neoshowcase.protobuf.ApplicationService.GetApplicationBuildArtifact is not implemented"))
+func (UnimplementedApplicationServiceHandler) GetBuildLog(context.Context, *connect_go.Request[pb.GetApplicationBuildLogRequest]) (*connect_go.Response[pb.BuildLog], error) {
+	return nil, connect_go.NewError(connect_go.CodeUnimplemented, errors.New("neoshowcase.protobuf.ApplicationService.GetBuildLog is not implemented"))
 }
 
-func (UnimplementedApplicationServiceHandler) GetApplicationEnvVars(context.Context, *connect_go.Request[pb.ApplicationIdRequest]) (*connect_go.Response[pb.ApplicationEnvVars], error) {
-	return nil, connect_go.NewError(connect_go.CodeUnimplemented, errors.New("neoshowcase.protobuf.ApplicationService.GetApplicationEnvVars is not implemented"))
+func (UnimplementedApplicationServiceHandler) GetBuildArtifact(context.Context, *connect_go.Request[pb.ApplicationIdRequest]) (*connect_go.Response[pb.ApplicationBuildArtifact], error) {
+	return nil, connect_go.NewError(connect_go.CodeUnimplemented, errors.New("neoshowcase.protobuf.ApplicationService.GetBuildArtifact is not implemented"))
 }
 
-func (UnimplementedApplicationServiceHandler) SetApplicationEnvVar(context.Context, *connect_go.Request[pb.SetApplicationEnvVarRequest]) (*connect_go.Response[emptypb.Empty], error) {
-	return nil, connect_go.NewError(connect_go.CodeUnimplemented, errors.New("neoshowcase.protobuf.ApplicationService.SetApplicationEnvVar is not implemented"))
+func (UnimplementedApplicationServiceHandler) GetEnvVars(context.Context, *connect_go.Request[pb.ApplicationIdRequest]) (*connect_go.Response[pb.ApplicationEnvVars], error) {
+	return nil, connect_go.NewError(connect_go.CodeUnimplemented, errors.New("neoshowcase.protobuf.ApplicationService.GetEnvVars is not implemented"))
+}
+
+func (UnimplementedApplicationServiceHandler) SetEnvVar(context.Context, *connect_go.Request[pb.SetApplicationEnvVarRequest]) (*connect_go.Response[emptypb.Empty], error) {
+	return nil, connect_go.NewError(connect_go.CodeUnimplemented, errors.New("neoshowcase.protobuf.ApplicationService.SetEnvVar is not implemented"))
 }
 
 func (UnimplementedApplicationServiceHandler) GetApplicationOutput(context.Context, *connect_go.Request[pb.ApplicationIdRequest]) (*connect_go.Response[pb.ApplicationOutput], error) {
