@@ -71,12 +71,12 @@ func NewWithDocker(c2 Config) (*Server, error) {
 		return nil, err
 	}
 	apiServerService := usecase.NewAPIServerService(bus, artifactRepository, applicationRepository, availableDomainRepository, buildRepository, environmentRepository, gitRepositoryRepository, appDeployService, backend, storage, componentService, mariaDBManager, mongoDBManager)
-	userRepository := repository.NewUserRepository(db)
 	publicKeys, err := provideRepositoryPublicKey(c2)
 	if err != nil {
 		return nil, err
 	}
-	applicationServiceHandler := grpc.NewApplicationServiceServer(apiServerService, userRepository, publicKeys)
+	applicationServiceHandler := grpc.NewApplicationServiceServer(apiServerService, publicKeys)
+	userRepository := repository.NewUserRepository(db)
 	authInterceptor := grpc.NewAuthInterceptor(userRepository)
 	mainWebAppServer := provideWebAppServer(c2, applicationServiceHandler, authInterceptor)
 	mainWebComponentServer := provideWebComponentServer(c2, componentService)
@@ -153,12 +153,12 @@ func NewWithK8S(c2 Config) (*Server, error) {
 		return nil, err
 	}
 	apiServerService := usecase.NewAPIServerService(bus, artifactRepository, applicationRepository, availableDomainRepository, buildRepository, environmentRepository, gitRepositoryRepository, appDeployService, backend, storage, componentService, mariaDBManager, mongoDBManager)
-	userRepository := repository.NewUserRepository(db)
 	publicKeys, err := provideRepositoryPublicKey(c2)
 	if err != nil {
 		return nil, err
 	}
-	applicationServiceHandler := grpc.NewApplicationServiceServer(apiServerService, userRepository, publicKeys)
+	applicationServiceHandler := grpc.NewApplicationServiceServer(apiServerService, publicKeys)
+	userRepository := repository.NewUserRepository(db)
 	authInterceptor := grpc.NewAuthInterceptor(userRepository)
 	mainWebAppServer := provideWebAppServer(c2, applicationServiceHandler, authInterceptor)
 	mainWebComponentServer := provideWebComponentServer(c2, componentService)

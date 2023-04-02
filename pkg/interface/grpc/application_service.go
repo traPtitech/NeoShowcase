@@ -37,20 +37,17 @@ func handleUseCaseError(err error) error {
 }
 
 type ApplicationService struct {
-	svc      usecase.APIServerService
-	userRepo domain.UserRepository
-	pubKey   *ssh.PublicKeys
+	svc    usecase.APIServerService
+	pubKey *ssh.PublicKeys
 }
 
 func NewApplicationServiceServer(
 	svc usecase.APIServerService,
-	userRepo domain.UserRepository,
 	pubKey *ssh.PublicKeys,
 ) pbconnect.ApplicationServiceHandler {
 	return &ApplicationService{
-		svc:      svc,
-		userRepo: userRepo,
-		pubKey:   pubKey,
+		svc:    svc,
+		pubKey: pubKey,
 	}
 }
 
@@ -223,8 +220,8 @@ func (s *ApplicationService) DeleteApplication(ctx context.Context, req *connect
 	return res, nil
 }
 
-func (s *ApplicationService) GetApplicationBuilds(ctx context.Context, req *connect.Request[pb.ApplicationIdRequest]) (*connect.Response[pb.GetApplicationBuildsResponse], error) {
-	builds, err := s.svc.GetApplicationBuilds(ctx, req.Msg.Id)
+func (s *ApplicationService) GetBuilds(ctx context.Context, req *connect.Request[pb.ApplicationIdRequest]) (*connect.Response[pb.GetApplicationBuildsResponse], error) {
+	builds, err := s.svc.GetBuilds(ctx, req.Msg.Id)
 	if err != nil {
 		return nil, handleUseCaseError(err)
 	}
@@ -236,8 +233,8 @@ func (s *ApplicationService) GetApplicationBuilds(ctx context.Context, req *conn
 	return res, nil
 }
 
-func (s *ApplicationService) GetApplicationBuild(ctx context.Context, req *connect.Request[pb.GetApplicationBuildRequest]) (*connect.Response[pb.Build], error) {
-	build, err := s.svc.GetApplicationBuild(ctx, req.Msg.BuildId)
+func (s *ApplicationService) GetBuild(ctx context.Context, req *connect.Request[pb.GetApplicationBuildRequest]) (*connect.Response[pb.Build], error) {
+	build, err := s.svc.GetBuild(ctx, req.Msg.BuildId)
 	if err != nil {
 		return nil, handleUseCaseError(err)
 	}
@@ -245,16 +242,21 @@ func (s *ApplicationService) GetApplicationBuild(ctx context.Context, req *conne
 	return res, nil
 }
 
-func (s *ApplicationService) GetApplicationBuildLog(ctx context.Context, req *connect.Request[pb.GetApplicationBuildLogRequest]) (*connect.Response[pb.BuildLog], error) {
-	return nil, status.Errorf(codes.Unimplemented, "method GetApplicationBuildLog not implemented")
+func (s *ApplicationService) GetBuildLog(ctx context.Context, req *connect.Request[pb.GetApplicationBuildLogRequest]) (*connect.Response[pb.BuildLog], error) {
+	log, err := s.svc.GetBuildLog(ctx, req.Msg.BuildId)
+	if err != nil {
+		return nil, handleUseCaseError(err)
+	}
+	res := connect.NewResponse(&pb.BuildLog{Log: log})
+	return res, nil
 }
 
-func (s *ApplicationService) GetApplicationBuildArtifact(ctx context.Context, req *connect.Request[pb.ApplicationIdRequest]) (*connect.Response[pb.ApplicationBuildArtifact], error) {
+func (s *ApplicationService) GetBuildArtifact(ctx context.Context, req *connect.Request[pb.ApplicationIdRequest]) (*connect.Response[pb.ApplicationBuildArtifact], error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetApplicationBuildArtifact not implemented")
 }
 
-func (s *ApplicationService) GetApplicationEnvVars(ctx context.Context, req *connect.Request[pb.ApplicationIdRequest]) (*connect.Response[pb.ApplicationEnvVars], error) {
-	environments, err := s.svc.GetApplicationEnvironmentVariables(ctx, req.Msg.Id)
+func (s *ApplicationService) GetEnvVars(ctx context.Context, req *connect.Request[pb.ApplicationIdRequest]) (*connect.Response[pb.ApplicationEnvVars], error) {
+	environments, err := s.svc.GetEnvironmentVariables(ctx, req.Msg.Id)
 	if err != nil {
 		return nil, handleUseCaseError(err)
 	}
@@ -266,9 +268,9 @@ func (s *ApplicationService) GetApplicationEnvVars(ctx context.Context, req *con
 	return res, nil
 }
 
-func (s *ApplicationService) SetApplicationEnvVar(ctx context.Context, req *connect.Request[pb.SetApplicationEnvVarRequest]) (*connect.Response[emptypb.Empty], error) {
+func (s *ApplicationService) SetEnvVar(ctx context.Context, req *connect.Request[pb.SetApplicationEnvVarRequest]) (*connect.Response[emptypb.Empty], error) {
 	msg := req.Msg
-	err := s.svc.SetApplicationEnvironmentVariable(ctx, msg.ApplicationId, msg.Key, msg.Value)
+	err := s.svc.SetEnvironmentVariable(ctx, msg.ApplicationId, msg.Key, msg.Value)
 	if err != nil {
 		return nil, handleUseCaseError(err)
 	}

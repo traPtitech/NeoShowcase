@@ -33,10 +33,11 @@ type APIServerService interface {
 	GetApplication(ctx context.Context, id string) (*domain.Application, error)
 	UpdateApplication(ctx context.Context, app *domain.Application, args *domain.UpdateApplicationArgs) error
 	DeleteApplication(ctx context.Context, id string) error
-	GetApplicationBuilds(ctx context.Context, applicationID string) ([]*domain.Build, error)
-	GetApplicationBuild(ctx context.Context, buildID string) (*domain.Build, error)
-	SetApplicationEnvironmentVariable(ctx context.Context, applicationID string, key string, value string) error
-	GetApplicationEnvironmentVariables(ctx context.Context, applicationID string) ([]*domain.Environment, error)
+	GetBuilds(ctx context.Context, applicationID string) ([]*domain.Build, error)
+	GetBuild(ctx context.Context, buildID string) (*domain.Build, error)
+	GetBuildLog(ctx context.Context, buildID string) ([]byte, error)
+	SetEnvironmentVariable(ctx context.Context, applicationID string, key string, value string) error
+	GetEnvironmentVariables(ctx context.Context, applicationID string) ([]*domain.Environment, error)
 	CancelBuild(ctx context.Context, buildID string) error
 	RetryCommitBuild(ctx context.Context, applicationID string, commit string) error
 	StartApplication(ctx context.Context, id string) error
@@ -296,20 +297,31 @@ func (s *apiServerService) DeleteApplication(ctx context.Context, id string) err
 	return nil
 }
 
-func (s *apiServerService) GetApplicationBuilds(ctx context.Context, applicationID string) ([]*domain.Build, error) {
+func (s *apiServerService) GetBuilds(ctx context.Context, applicationID string) ([]*domain.Build, error) {
 	return s.buildRepo.GetBuilds(ctx, domain.GetBuildCondition{ApplicationID: optional.From(applicationID)})
 }
 
-func (s *apiServerService) GetApplicationBuild(ctx context.Context, buildID string) (*domain.Build, error) {
+func (s *apiServerService) GetBuild(ctx context.Context, buildID string) (*domain.Build, error) {
 	build, err := s.buildRepo.GetBuild(ctx, buildID)
 	return handleRepoError(build, err)
 }
 
-func (s *apiServerService) GetApplicationEnvironmentVariables(ctx context.Context, applicationID string) ([]*domain.Environment, error) {
+func (s *apiServerService) GetBuildLog(ctx context.Context, buildID string) ([]byte, error) {
+	build, err := s.buildRepo.GetBuild(ctx, buildID)
+	if err != nil {
+		return nil, err
+	}
+	if !build.Status.IsFinished() {
+		return nil, newError(ErrorTypeBadRequest, "build not finished", nil)
+	}
+	return domain.GetBuildLog(s.storage, buildID)
+}
+
+func (s *apiServerService) GetEnvironmentVariables(ctx context.Context, applicationID string) ([]*domain.Environment, error) {
 	return s.envRepo.GetEnv(ctx, domain.GetEnvCondition{ApplicationID: optional.From(applicationID)})
 }
 
-func (s *apiServerService) SetApplicationEnvironmentVariable(ctx context.Context, applicationID string, key string, value string) error {
+func (s *apiServerService) SetEnvironmentVariable(ctx context.Context, applicationID string, key string, value string) error {
 	env := &domain.Environment{Key: key, Value: value, System: false}
 	return s.envRepo.SetEnv(ctx, applicationID, env)
 }

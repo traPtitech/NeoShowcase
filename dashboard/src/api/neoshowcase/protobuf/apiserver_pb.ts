@@ -1108,9 +1108,9 @@ proto3.util.setEnumType(Build_BuildStatus, "neoshowcase.protobuf.Build.BuildStat
  */
 export class BuildLog extends Message<BuildLog> {
   /**
-   * @generated from field: string output = 1;
+   * @generated from field: bytes log = 1;
    */
-  output = "";
+  log = new Uint8Array(0);
 
   constructor(data?: PartialMessage<BuildLog>) {
     super();
@@ -1120,7 +1120,7 @@ export class BuildLog extends Message<BuildLog> {
   static readonly runtime: typeof proto3 = proto3;
   static readonly typeName = "neoshowcase.protobuf.BuildLog";
   static readonly fields: FieldList = proto3.util.newFieldList(() => [
-    { no: 1, name: "output", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+    { no: 1, name: "log", kind: "scalar", T: 12 /* ScalarType.BYTES */ },
   ]);
 
   static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): BuildLog {

@@ -156,7 +156,7 @@ message Build {
 }
 
 message BuildLog {
-  string output = 1;
+  bytes log = 1;
 }
 
 message GetRepositoriesResponse {
@@ -234,12 +234,12 @@ service ApplicationService {
   rpc GetApplication(ApplicationIdRequest) returns (Application);
   rpc UpdateApplication(UpdateApplicationRequest) returns (google.protobuf.Empty);
   rpc DeleteApplication(ApplicationIdRequest) returns (google.protobuf.Empty);
-  rpc GetApplicationBuilds(ApplicationIdRequest) returns (GetApplicationBuildsResponse);
-  rpc GetApplicationBuild(GetApplicationBuildRequest) returns (Build);
-  rpc GetApplicationBuildLog(GetApplicationBuildLogRequest) returns (BuildLog);
-  rpc GetApplicationBuildArtifact(ApplicationIdRequest) returns (ApplicationBuildArtifact);
-  rpc GetApplicationEnvVars(ApplicationIdRequest) returns (ApplicationEnvVars);
-  rpc SetApplicationEnvVar(SetApplicationEnvVarRequest) returns (google.protobuf.Empty);
+  rpc GetBuilds(ApplicationIdRequest) returns (GetApplicationBuildsResponse);
+  rpc GetBuild(GetApplicationBuildRequest) returns (Build);
+  rpc GetBuildLog(GetApplicationBuildLogRequest) returns (BuildLog);
+  rpc GetBuildArtifact(ApplicationIdRequest) returns (ApplicationBuildArtifact);
+  rpc GetEnvVars(ApplicationIdRequest) returns (ApplicationEnvVars);
+  rpc SetEnvVar(SetApplicationEnvVarRequest) returns (google.protobuf.Empty);
   rpc GetApplicationOutput(ApplicationIdRequest) returns (ApplicationOutput);
   rpc CancelBuild(CancelBuildRequest) returns (google.protobuf.Empty);
   rpc RetryCommitBuild(RetryCommitBuildRequest) returns (google.protobuf.Empty);
