@@ -1,16 +1,9 @@
-<div align="center">
-  <h1>NeoShowcase</h1>
-  <p>
-    <strong>traP Internal PaaS</strong>
-  </p>
-  <p>
-    <a href="https://apis.trap.jp/?urls.primaryName=NeoShowcase">API</a>
-    /
-    <a href="https://github.com/traPtitech/NeoShowcase-Dashboard">Dashboard</a>
-  </p>
-  <p>
-    <a href="https://github.com/traPtitech/NeoShowcase/actions/workflows/ci.yaml"><img src="https://github.com/traPtitech/NeoShowcase/actions/workflows/ci.yaml/badge.svg"></a>
-    <a href="https://github.com/traPtitech/NeoShowcase/actions/workflows/main.yaml"><img src="https://github.com/traPtitech/NeoShowcase/actions/workflows/main.yaml/badge.svg"></a>
-    <a href="https://codecov.io/gh/traPtitech/NeoShowcase"><img src="https://codecov.io/gh/traPtitech/NeoShowcase/branch/master/graph/badge.svg"></a>
-  </p>
-</div>
+# NeoShowcase
+
+[![](https://github.com/traPtitech/NeoShowcase/actions/workflows/ci.yaml/badge.svg)](https://github.com/traPtitech/NeoShowcase/actions/workflows/ci.yaml)
+[![](https://github.com/traPtitech/NeoShowcase/actions/workflows/main.yaml/badge.svg)](https://github.com/traPtitech/NeoShowcase/actions/workflows/main.yaml)
+[![](https://codecov.io/gh/traPtitech/NeoShowcase/branch/master/graph/badge.svg)](https://codecov.io/gh/traPtitech/NeoShowcase)
+[![](https://img.shields.io/badge/license-MIT-blue.svg)](https://github.com/traPtitech/NeoShowcase/blob/main/LICENSE)
+
+NeoShowcase is a PaaS (Platform as a Service) application for [Digital Creators Club traP](https://github.com/traPtitech).
+This application is a successor to [kaz/showcase](https://github.com/kaz/showcase).
