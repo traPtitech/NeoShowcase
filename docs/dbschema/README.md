@@ -16,7 +16,7 @@
 | [repositories](repositories.md) | 3 | Gitリポジトリテーブル | BASE TABLE |
 | [repository_auth](repository_auth.md) | 5 | Gitリポジトリ認証情報テーブル | BASE TABLE |
 | [repository_owners](repository_owners.md) | 2 | リポジトリ所有者テーブル | BASE TABLE |
-| [users](users.md) | 2 | ユーザーテーブル | BASE TABLE |
+| [users](users.md) | 3 | ユーザーテーブル | BASE TABLE |
 | [websites](websites.md) | 9 | Webサイトテーブル | BASE TABLE |
 
 ## Relations

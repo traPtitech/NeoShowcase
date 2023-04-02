@@ -28,6 +28,7 @@ const (
 
 // ApplicationServiceClient is a client for the neoshowcase.protobuf.ApplicationService service.
 type ApplicationServiceClient interface {
+	GetMe(context.Context, *connect_go.Request[emptypb.Empty]) (*connect_go.Response[pb.User], error)
 	GetRepositories(context.Context, *connect_go.Request[emptypb.Empty]) (*connect_go.Response[pb.GetRepositoriesResponse], error)
 	CreateRepository(context.Context, *connect_go.Request[pb.CreateRepositoryRequest]) (*connect_go.Response[pb.Repository], error)
 	GetApplications(context.Context, *connect_go.Request[emptypb.Empty]) (*connect_go.Response[pb.GetApplicationsResponse], error)
@@ -60,6 +61,11 @@ type ApplicationServiceClient interface {
 func NewApplicationServiceClient(httpClient connect_go.HTTPClient, baseURL string, opts ...connect_go.ClientOption) ApplicationServiceClient {
 	baseURL = strings.TrimRight(baseURL, "/")
 	return &applicationServiceClient{
+		getMe: connect_go.NewClient[emptypb.Empty, pb.User](
+			httpClient,
+			baseURL+"/neoshowcase.protobuf.ApplicationService/GetMe",
+			opts...,
+		),
 		getRepositories: connect_go.NewClient[emptypb.Empty, pb.GetRepositoriesResponse](
 			httpClient,
 			baseURL+"/neoshowcase.protobuf.ApplicationService/GetRepositories",
@@ -165,6 +171,7 @@ func NewApplicationServiceClient(httpClient connect_go.HTTPClient, baseURL strin
 
 // applicationServiceClient implements ApplicationServiceClient.
 type applicationServiceClient struct {
+	getMe                       *connect_go.Client[emptypb.Empty, pb.User]
 	getRepositories             *connect_go.Client[emptypb.Empty, pb.GetRepositoriesResponse]
 	createRepository            *connect_go.Client[pb.CreateRepositoryRequest, pb.Repository]
 	getApplications             *connect_go.Client[emptypb.Empty, pb.GetApplicationsResponse]
@@ -185,6 +192,11 @@ type applicationServiceClient struct {
 	retryCommitBuild            *connect_go.Client[pb.RetryCommitBuildRequest, emptypb.Empty]
 	startApplication            *connect_go.Client[pb.ApplicationIdRequest, emptypb.Empty]
 	stopApplication             *connect_go.Client[pb.ApplicationIdRequest, emptypb.Empty]
+}
+
+// GetMe calls neoshowcase.protobuf.ApplicationService.GetMe.
+func (c *applicationServiceClient) GetMe(ctx context.Context, req *connect_go.Request[emptypb.Empty]) (*connect_go.Response[pb.User], error) {
+	return c.getMe.CallUnary(ctx, req)
 }
 
 // GetRepositories calls neoshowcase.protobuf.ApplicationService.GetRepositories.
@@ -291,6 +303,7 @@ func (c *applicationServiceClient) StopApplication(ctx context.Context, req *con
 // ApplicationServiceHandler is an implementation of the neoshowcase.protobuf.ApplicationService
 // service.
 type ApplicationServiceHandler interface {
+	GetMe(context.Context, *connect_go.Request[emptypb.Empty]) (*connect_go.Response[pb.User], error)
 	GetRepositories(context.Context, *connect_go.Request[emptypb.Empty]) (*connect_go.Response[pb.GetRepositoriesResponse], error)
 	CreateRepository(context.Context, *connect_go.Request[pb.CreateRepositoryRequest]) (*connect_go.Response[pb.Repository], error)
 	GetApplications(context.Context, *connect_go.Request[emptypb.Empty]) (*connect_go.Response[pb.GetApplicationsResponse], error)
@@ -320,6 +333,11 @@ type ApplicationServiceHandler interface {
 // and JSON codecs. They also support gzip compression.
 func NewApplicationServiceHandler(svc ApplicationServiceHandler, opts ...connect_go.HandlerOption) (string, http.Handler) {
 	mux := http.NewServeMux()
+	mux.Handle("/neoshowcase.protobuf.ApplicationService/GetMe", connect_go.NewUnaryHandler(
+		"/neoshowcase.protobuf.ApplicationService/GetMe",
+		svc.GetMe,
+		opts...,
+	))
 	mux.Handle("/neoshowcase.protobuf.ApplicationService/GetRepositories", connect_go.NewUnaryHandler(
 		"/neoshowcase.protobuf.ApplicationService/GetRepositories",
 		svc.GetRepositories,
@@ -425,6 +443,10 @@ func NewApplicationServiceHandler(svc ApplicationServiceHandler, opts ...connect
 
 // UnimplementedApplicationServiceHandler returns CodeUnimplemented from all methods.
 type UnimplementedApplicationServiceHandler struct{}
+
+func (UnimplementedApplicationServiceHandler) GetMe(context.Context, *connect_go.Request[emptypb.Empty]) (*connect_go.Response[pb.User], error) {
+	return nil, connect_go.NewError(connect_go.CodeUnimplemented, errors.New("neoshowcase.protobuf.ApplicationService.GetMe is not implemented"))
+}
 
 func (UnimplementedApplicationServiceHandler) GetRepositories(context.Context, *connect_go.Request[emptypb.Empty]) (*connect_go.Response[pb.GetRepositoriesResponse], error) {
 	return nil, connect_go.NewError(connect_go.CodeUnimplemented, errors.New("neoshowcase.protobuf.ApplicationService.GetRepositories is not implemented"))

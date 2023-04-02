@@ -16,6 +16,7 @@ require (
 	github.com/labstack/echo/v4 v4.10.2
 	github.com/leandro-lugaresi/hub v1.1.1
 	github.com/moby/buildkit v0.11.5
+	github.com/motoki317/sc v1.5.0
 	github.com/ncw/swift v1.0.53
 	github.com/rubenv/sql-migrate v1.4.0
 	github.com/samber/lo v1.38.1
@@ -206,4 +207,5 @@ replace (
 
 replace github.com/docker/docker => github.com/docker/docker v20.10.3-0.20220414164044-61404de7df1a+incompatible
 
+// https://github.com/heroku/docker-registry-client/pull/79
 replace github.com/heroku/docker-registry-client => github.com/motoki317/docker-registry-client v0.0.2

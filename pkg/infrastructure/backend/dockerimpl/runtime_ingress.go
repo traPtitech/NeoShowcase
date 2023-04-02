@@ -11,6 +11,7 @@ import (
 	"gopkg.in/yaml.v2"
 
 	"github.com/traPtitech/neoshowcase/pkg/domain"
+	"github.com/traPtitech/neoshowcase/pkg/domain/web"
 	"github.com/traPtitech/neoshowcase/pkg/util"
 )
 
@@ -22,22 +23,22 @@ type (
 func routerBase(app *domain.Application, website *domain.Website, middlewares m) m {
 	var entrypoints []string
 	if website.HTTPS {
-		entrypoints = append(entrypoints, traefikHTTPSEntrypoint)
+		entrypoints = append(entrypoints, web.TraefikHTTPSEntrypoint)
 	} else {
-		entrypoints = append(entrypoints, traefikHTTPEntrypoint)
+		entrypoints = append(entrypoints, web.TraefikHTTPEntrypoint)
 	}
 
 	var middlewareNames []string
 	switch app.Config.Authentication {
 	case domain.AuthenticationTypeSoft:
 		middlewareNames = append(middlewareNames,
-			traefikAuthSoftMiddleware,
-			traefikAuthMiddleware,
+			web.TraefikAuthSoftMiddleware,
+			web.TraefikAuthMiddleware,
 		)
 	case domain.AuthenticationTypeHard:
 		middlewareNames = append(middlewareNames,
-			traefikAuthHardMiddleware,
-			traefikAuthMiddleware,
+			web.TraefikAuthHardMiddleware,
+			web.TraefikAuthMiddleware,
 		)
 	}
 
@@ -65,7 +66,7 @@ func routerBase(app *domain.Application, website *domain.Website, middlewares m)
 
 	if website.HTTPS {
 		router["tls"] = m{
-			"certResolver": traefikCertResolver,
+			"certResolver": web.TraefikCertResolver,
 			"domains": a{
 				m{"main": website.FQDN},
 			},

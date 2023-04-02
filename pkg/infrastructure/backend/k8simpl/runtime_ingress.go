@@ -13,6 +13,7 @@ import (
 	"k8s.io/apimachinery/pkg/util/intstr"
 
 	"github.com/traPtitech/neoshowcase/pkg/domain"
+	"github.com/traPtitech/neoshowcase/pkg/domain/web"
 	"github.com/traPtitech/neoshowcase/pkg/util"
 )
 
@@ -73,22 +74,22 @@ func stripMiddleware(_ *domain.Application, website *domain.Website, labels map[
 func ingressRouteBase(app *domain.Application, website *domain.Website, labels map[string]string) (*traefikv1alpha1.IngressRoute, []*traefikv1alpha1.Middleware) {
 	var entrypoints []string
 	if website.HTTPS {
-		entrypoints = append(entrypoints, traefikHTTPSEntrypoint)
+		entrypoints = append(entrypoints, web.TraefikHTTPSEntrypoint)
 	} else {
-		entrypoints = append(entrypoints, traefikHTTPEntrypoint)
+		entrypoints = append(entrypoints, web.TraefikHTTPEntrypoint)
 	}
 
 	var middlewareRefs []traefikv1alpha1.MiddlewareRef
 	switch app.Config.Authentication {
 	case domain.AuthenticationTypeSoft:
 		middlewareRefs = append(middlewareRefs,
-			traefikv1alpha1.MiddlewareRef{Name: traefikAuthSoftMiddleware},
-			traefikv1alpha1.MiddlewareRef{Name: traefikAuthMiddleware},
+			traefikv1alpha1.MiddlewareRef{Name: web.TraefikAuthSoftMiddleware},
+			traefikv1alpha1.MiddlewareRef{Name: web.TraefikAuthMiddleware},
 		)
 	case domain.AuthenticationTypeHard:
 		middlewareRefs = append(middlewareRefs,
-			traefikv1alpha1.MiddlewareRef{Name: traefikAuthHardMiddleware},
-			traefikv1alpha1.MiddlewareRef{Name: traefikAuthMiddleware},
+			traefikv1alpha1.MiddlewareRef{Name: web.TraefikAuthHardMiddleware},
+			traefikv1alpha1.MiddlewareRef{Name: web.TraefikAuthMiddleware},
 		)
 	}
 
@@ -109,7 +110,7 @@ func ingressRouteBase(app *domain.Application, website *domain.Website, labels m
 	if website.HTTPS {
 		tls = &traefikv1alpha1.TLS{
 			SecretName:   tlsSecretName(website.FQDN),
-			CertResolver: traefikCertResolver,
+			CertResolver: web.TraefikCertResolver,
 			Domains:      []types.Domain{{Main: website.FQDN}},
 		}
 	}

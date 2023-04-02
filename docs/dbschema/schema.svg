@@ -160,23 +160,26 @@
 <!-- users -->
 <g id="node13" class="node">
 <title>users</title>
-<polygon fill="#efefef" stroke="transparent" points="529.5,-469.5 529.5,-504.5 684.5,-504.5 684.5,-469.5 529.5,-469.5"/>
-<polygon fill="none" stroke="#000000" points="529.5,-469.5 529.5,-504.5 684.5,-504.5 684.5,-469.5 529.5,-469.5"/>
-<text text-anchor="start" x="536.3708" y="-482.3" font-family="Arial Bold" font-size="18.00" fill="#000000">users</text>
-<text text-anchor="start" x="580.3754" y="-482.3" font-family="Arial" font-size="14.00" fill="#000000"> </text>
-<text text-anchor="start" x="584.266" y="-482.3" font-family="Arial" font-size="14.00" fill="#666666">[BASE TABLE]</text>
-<polygon fill="none" stroke="#000000" points="529.5,-439.5 529.5,-469.5 684.5,-469.5 684.5,-439.5 529.5,-439.5"/>
-<text text-anchor="start" x="536.5" y="-450.9" font-family="Arial" font-size="14.00" fill="#000000">id </text>
-<text text-anchor="start" x="551.2798" y="-450.9" font-family="Arial" font-size="14.00" fill="#666666">[char(22)]</text>
-<polygon fill="none" stroke="#000000" points="529.5,-409.5 529.5,-439.5 684.5,-439.5 684.5,-409.5 529.5,-409.5"/>
-<text text-anchor="start" x="536.5" y="-420.9" font-family="Arial" font-size="14.00" fill="#000000">name </text>
-<text text-anchor="start" x="575.399" y="-420.9" font-family="Arial" font-size="14.00" fill="#666666">[varchar(255)]</text>
+<polygon fill="#efefef" stroke="transparent" points="529.5,-484.5 529.5,-519.5 684.5,-519.5 684.5,-484.5 529.5,-484.5"/>
+<polygon fill="none" stroke="#000000" points="529.5,-484.5 529.5,-519.5 684.5,-519.5 684.5,-484.5 529.5,-484.5"/>
+<text text-anchor="start" x="536.3708" y="-497.3" font-family="Arial Bold" font-size="18.00" fill="#000000">users</text>
+<text text-anchor="start" x="580.3754" y="-497.3" font-family="Arial" font-size="14.00" fill="#000000"> </text>
+<text text-anchor="start" x="584.266" y="-497.3" font-family="Arial" font-size="14.00" fill="#666666">[BASE TABLE]</text>
+<polygon fill="none" stroke="#000000" points="529.5,-454.5 529.5,-484.5 684.5,-484.5 684.5,-454.5 529.5,-454.5"/>
+<text text-anchor="start" x="536.5" y="-465.9" font-family="Arial" font-size="14.00" fill="#000000">id </text>
+<text text-anchor="start" x="551.2798" y="-465.9" font-family="Arial" font-size="14.00" fill="#666666">[char(22)]</text>
+<polygon fill="none" stroke="#000000" points="529.5,-424.5 529.5,-454.5 684.5,-454.5 684.5,-424.5 529.5,-424.5"/>
+<text text-anchor="start" x="536.5" y="-435.9" font-family="Arial" font-size="14.00" fill="#000000">name </text>
+<text text-anchor="start" x="575.399" y="-435.9" font-family="Arial" font-size="14.00" fill="#666666">[varchar(255)]</text>
+<polygon fill="none" stroke="#000000" points="529.5,-394.5 529.5,-424.5 684.5,-424.5 684.5,-394.5 529.5,-394.5"/>
+<text text-anchor="start" x="536.5" y="-405.9" font-family="Arial" font-size="14.00" fill="#000000">admin </text>
+<text text-anchor="start" x="578.5056" y="-405.9" font-family="Arial" font-size="14.00" fill="#666666">[tinyint(1)]</text>
 </g>
 <!-- application_owners&#45;&gt;users -->
 <g id="edge5" class="edge">
 <title>application_owners:user_id&#45;&gt;users:id</title>
-<path fill="none" stroke="#000000" d="M518.496,-896.1171C339.5239,-881.5217 889.2606,-454.5 684.5,-454.5"/>
-<polygon fill="#000000" stroke="#000000" points="518.5073,-896.1175 528.3279,-900.9967 523.5037,-896.3087 528.5,-896.5 528.5,-896.5 528.5,-896.5 523.5037,-896.3087 528.6721,-892.0033 518.5073,-896.1175 518.5073,-896.1175"/>
+<path fill="none" stroke="#000000" d="M518.2865,-896.0869C346.4426,-881.2107 882.8961,-469.5 684.5,-469.5"/>
+<polygon fill="#000000" stroke="#000000" points="518.5082,-896.0958 528.3181,-900.9963 523.5041,-896.2979 528.5,-896.5 528.5,-896.5 528.5,-896.5 523.5041,-896.2979 528.6819,-892.0037 518.5082,-896.0958 518.5082,-896.0958"/>
 <text text-anchor="start" x="475.445" y="-880.5" font-family="Arial" font-size="10.00" fill="#000000">FOREIGN KEY (user_id) REFERENCES users (id)</text>
 </g>
 <!-- artifacts -->
@@ -368,8 +371,8 @@
 <!-- repository_owners&#45;&gt;users -->
 <g id="edge12" class="edge">
 <title>repository_owners:user_id&#45;&gt;users:id</title>
-<path fill="none" stroke="#000000" d="M432.4583,-891.5361C474.8055,-842.9766 482.1528,-454.5 529.5,-454.5"/>
-<polygon fill="#000000" stroke="#000000" points="432.247,-891.6532 421.3189,-892.5639 427.8735,-894.0766 423.5,-896.5 423.5,-896.5 423.5,-896.5 427.8735,-894.0766 425.6811,-900.4361 432.247,-891.6532 432.247,-891.6532"/>
+<path fill="none" stroke="#000000" d="M432.4674,-891.4071C473.6144,-843.2309 483.7663,-469.5 529.5,-469.5"/>
+<polygon fill="#000000" stroke="#000000" points="432.1955,-891.5615 421.2777,-892.587 427.8478,-894.0307 423.5,-896.5 423.5,-896.5 423.5,-896.5 427.8478,-894.0307 425.7223,-900.413 432.1955,-891.5615 432.1955,-891.5615"/>
 <text text-anchor="start" x="430.445" y="-906.5" font-family="Arial" font-size="10.00" fill="#000000">FOREIGN KEY (user_id) REFERENCES users (id)</text>
 </g>
 <!-- websites -->

@@ -107,7 +107,7 @@ db-update: migrate-up gogen db-gen-docs ## Apply migration, generate sqlboiler s
 
 .PHONY: dind-up
 dind-up: ## Setup docker-in-docker container
-	docker run -it -d --privileged --name ns-test-dind -p 5555:2376 -e DOCKER_TLS_CERTDIR=/certs -v $$PWD/local-dev/dind:/certs docker:dind
+	docker run -it -d --privileged --name ns-test-dind -p 5555:2376 -e DOCKER_TLS_CERTDIR=/certs -v $$PWD/.local-dev/dind:/certs docker:dind
 
 .PHONY: dind-down
 dind-down: ## Tear down docker-in-docker container
@@ -116,7 +116,7 @@ dind-down: ## Tear down docker-in-docker container
 .PHONY: docker-test
 docker-test: ## Run docker tests
 	@docker container inspect ns-test-dind > /dev/null || make dind-up
-	ENABLE_DOCKER_TESTS=true DOCKER_HOST=tcp://localhost:5555 DOCKER_CERT_PATH=$$PWD/local-dev/dind/client DOCKER_TLS_VERIFY=true go test -v ./pkg/infrastructure/backend/dockerimpl
+	ENABLE_DOCKER_TESTS=true DOCKER_HOST=tcp://localhost:5555 DOCKER_CERT_PATH=$$PWD/.local-dev/dind/client DOCKER_TLS_VERIFY=true go test -v ./pkg/infrastructure/backend/dockerimpl
 
 .PHONY: k3s-import
 k3s-import: ## Import images to k3s environment

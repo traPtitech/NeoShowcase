@@ -13,6 +13,9 @@ ENV CGO_ENABLED 0
 FROM builder as builder-ns
 RUN go build -o /app/ns -ldflags "-s -w -X main.version=$APP_VERSION -X main.revision=$APP_REVISION" ./cmd/ns
 
+FROM builder as builder-ns-auth-dev
+RUN go build -o /app/ns-auth-dev -ldflags "-s -w -X main.version=$APP_VERSION -X main.revision=$APP_REVISION" ./cmd/ns-auth-dev
+
 FROM builder as builder-ns-builder
 RUN go build -o /app/ns-builder -ldflags "-s -w -X main.version=$APP_VERSION -X main.revision=$APP_REVISION" ./cmd/ns-builder
 
@@ -34,6 +37,11 @@ EXPOSE 5000 10000
 COPY --from=builder-ns /app/ns ./
 ENTRYPOINT ["/app/ns"]
 CMD ["run"]
+
+FROM base AS ns-auth-dev
+EXPOSE 4181
+COPY --from=builder-ns-auth-dev /app/ns-auth-dev ./
+ENTRYPOINT ["/app/ns-auth-dev"]
 
 FROM base as ns-builder
 COPY --from=builder-ns-builder /app/ns-builder ./

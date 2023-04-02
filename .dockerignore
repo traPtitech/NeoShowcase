@@ -6,7 +6,7 @@
 /dashboard/
 /docs/
 /img/
-/local-dev/
+/.local-dev/
 
 .dockerignore
 .gitignore

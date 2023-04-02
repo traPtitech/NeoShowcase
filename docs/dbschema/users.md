@@ -11,6 +11,7 @@
 CREATE TABLE `users` (
   `id` char(22) NOT NULL COMMENT 'ユーザーID',
   `name` varchar(255) NOT NULL COMMENT 'ユーザー名',
+  `admin` tinyint(1) NOT NULL COMMENT 'Admin Flag',
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci COMMENT='ユーザーテーブル'
 ```
@@ -23,6 +24,7 @@ CREATE TABLE `users` (
 | ---- | ---- | ------- | -------- | -------- | ------- | ------- |
 | id | char(22) |  | false | [application_owners](application_owners.md) [repository_owners](repository_owners.md) |  | ユーザーID |
 | name | varchar(255) |  | false |  |  | ユーザー名 |
+| admin | tinyint(1) |  | false |  |  | Admin Flag |
 
 ## Constraints
 

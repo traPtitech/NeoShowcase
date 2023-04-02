@@ -104,7 +104,7 @@ func provideServerConfig(h handler.MemberCheckHandler) web.Config {
 	return web.Config{
 		Port: port,
 		SetupRoute: func(e *echo.Echo) {
-			e.GET("/", web.UnwrapHandler(h))
+			e.Any("/*", web.UnwrapHandler(h))
 		},
 	}
 }

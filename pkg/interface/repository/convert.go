@@ -207,3 +207,19 @@ func toDomainWebsite(website *models.Website) *domain.Website {
 		HTTPPort:    website.HTTPPort,
 	}
 }
+
+func fromDomainUser(user *domain.User) *models.User {
+	return &models.User{
+		ID:    user.ID,
+		Name:  user.Name,
+		Admin: user.Admin,
+	}
+}
+
+func toDomainUser(user *models.User) *domain.User {
+	return &domain.User{
+		ID:    user.ID,
+		Name:  user.Name,
+		Admin: user.Admin,
+	}
+}

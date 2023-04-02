@@ -11,6 +11,7 @@ import {
   rightContainer,
 } from '/@/components/Header.css'
 import { A } from '@solidjs/router'
+import { user } from '/@/libs/api'
 
 interface NavProps {
   href: string
@@ -34,8 +35,8 @@ export const Header = (): JSXElement => {
         </div>
       </div>
       <div class={rightContainer}>
-        <img src="https://q.trap.jp/api/1.0/public/icon/toki" alt="icon" class={icon} />
-        <div class={accountName}>toki</div>
+        {user() && <img src={`https://q.trap.jp/api/1.0/public/icon/${user().name}`} alt="icon" class={icon} />}
+        {user() && <div class={accountName}>{user().name}</div>}
       </div>
     </div>
   )
