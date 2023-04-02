@@ -18,7 +18,7 @@ import {
 } from '/@/pages/apps.css'
 import { Checkbox } from '/@/components/Checkbox'
 import { StatusIcon } from '/@/components/StatusIcon'
-import { createResource, JSXElement } from 'solid-js'
+import {createResource, JSX, JSXElement} from 'solid-js'
 import { Radio, RadioItem } from '/@/components/Radio'
 import { client } from '/@/libs/api'
 import { Application, ApplicationState, BuildType } from '/@/api/neoshowcase/protobuf/apiserver_pb'
@@ -35,7 +35,7 @@ interface StatusCheckboxProps {
   title: string
   num: number
 }
-const StatusCheckbox = ({ buildType, state, title, num }: StatusCheckboxProps): JSXElement => {
+const StatusCheckbox = ({ buildType, state, title, num }: StatusCheckboxProps): JSX.Element => {
   return (
     <div class={statusCheckboxContainer}>
       <div class={statusCheckboxContainerLeft}>
