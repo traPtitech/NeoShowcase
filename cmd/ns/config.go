@@ -19,7 +19,6 @@ import (
 	"github.com/traPtitech/neoshowcase/pkg/infrastructure/storage"
 	"github.com/traPtitech/neoshowcase/pkg/interface/grpc"
 	"github.com/traPtitech/neoshowcase/pkg/interface/grpc/pb/pbconnect"
-	"github.com/traPtitech/neoshowcase/pkg/usecase"
 )
 
 const (
@@ -47,7 +46,6 @@ type Config struct {
 		} `mapstructure:"component" yaml:"component"`
 	} `mapstructure:"web" yaml:"web"`
 	Repository struct {
-		CacheDir       string `mapstructure:"cacheDir" yaml:"cacheDir"`
 		PrivateKeyFile string `mapstructure:"privateKeyFile" yaml:"privateKeyFile"`
 	} `mapstructure:"repository" yaml:"repository"`
 	Image builder.ImageConfig `mapstructure:"image" yaml:"image"`
@@ -66,10 +64,6 @@ func (c *Config) GetMode() int {
 
 func provideIngressConfDirPath(c Config) dockerimpl.IngressConfDirPath {
 	return dockerimpl.IngressConfDirPath(c.Docker.ConfDir)
-}
-
-func provideRepositoryFetcherCacheDir(c Config) usecase.RepositoryFetcherCacheDir {
-	return usecase.RepositoryFetcherCacheDir(c.Repository.CacheDir)
 }
 
 func provideRepositoryPublicKey(c Config) (*ssh.PublicKeys, error) {

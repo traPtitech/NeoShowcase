@@ -81,12 +81,11 @@ func NewWithDocker(c2 Config) (*Server, error) {
 	if err != nil {
 		return nil, err
 	}
-	repositoryFetcherCacheDir := provideRepositoryFetcherCacheDir(c2)
 	publicKeys, err := provideRepositoryPublicKey(c2)
 	if err != nil {
 		return nil, err
 	}
-	repositoryFetcherService, err := usecase.NewRepositoryFetcherService(bus, applicationRepository, gitRepositoryRepository, repositoryFetcherCacheDir, publicKeys)
+	repositoryFetcherService, err := usecase.NewRepositoryFetcherService(bus, applicationRepository, gitRepositoryRepository, publicKeys)
 	if err != nil {
 		return nil, err
 	}
@@ -164,12 +163,11 @@ func NewWithK8S(c2 Config) (*Server, error) {
 	if err != nil {
 		return nil, err
 	}
-	repositoryFetcherCacheDir := provideRepositoryFetcherCacheDir(c2)
 	publicKeys, err := provideRepositoryPublicKey(c2)
 	if err != nil {
 		return nil, err
 	}
-	repositoryFetcherService, err := usecase.NewRepositoryFetcherService(bus, applicationRepository, gitRepositoryRepository, repositoryFetcherCacheDir, publicKeys)
+	repositoryFetcherService, err := usecase.NewRepositoryFetcherService(bus, applicationRepository, gitRepositoryRepository, publicKeys)
 	if err != nil {
 		return nil, err
 	}
@@ -193,7 +191,6 @@ func NewWithK8S(c2 Config) (*Server, error) {
 // wire.go:
 
 var commonSet = wire.NewSet(web.NewServer, hub.New, eventbus.NewLocal, admindb.New, dbmanager.NewMariaDBManager, dbmanager.NewMongoDBManager, repository.NewApplicationRepository, repository.NewAvailableDomainRepository, repository.NewGitRepositoryRepository, repository.NewEnvironmentRepository, repository.NewBuildRepository, repository.NewArtifactRepository, repository.NewUserRepository, grpc.NewApplicationServiceServer, grpc.NewAuthInterceptor, grpc.NewComponentServiceServer, usecase.NewAPIServerService, usecase.NewAppBuildService, usecase.NewAppDeployService, usecase.NewContinuousDeploymentService, usecase.NewRepositoryFetcherService, usecase.NewCleanerService, provideIngressConfDirPath,
-	provideRepositoryFetcherCacheDir,
 	provideRepositoryPublicKey,
 	initStorage,
 	provideWebAppServer,

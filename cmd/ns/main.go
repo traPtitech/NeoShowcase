@@ -76,7 +76,6 @@ func main() {
 
 	viper.SetDefault("debug", false)
 	viper.SetDefault("mode", "docker")
-	viper.SetDefault("repository.cacheDir", "")
 	viper.SetDefault("repository.privateKeyFile", "")
 	viper.SetDefault("image.registry.scheme", "https")
 	viper.SetDefault("image.registry.addr", "localhost")
