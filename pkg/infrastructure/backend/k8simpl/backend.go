@@ -27,15 +27,6 @@ const (
 	fieldManager         = "neoshowcase"
 )
 
-const (
-	traefikHTTPEntrypoint     = "web"
-	traefikHTTPSEntrypoint    = "websecure"
-	traefikAuthSoftMiddleware = "ns_auth_soft@file"
-	traefikAuthHardMiddleware = "ns_auth_hard@file"
-	traefikAuthMiddleware     = "ns_auth@file"
-	traefikCertResolver       = "nsresolver@file"
-)
-
 type k8sBackend struct {
 	client        *kubernetes.Clientset
 	traefikClient *traefikv1alpha1.TraefikV1alpha1Client

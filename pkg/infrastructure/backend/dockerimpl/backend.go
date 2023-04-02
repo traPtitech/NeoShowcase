@@ -22,14 +22,8 @@ const (
 )
 
 const (
-	traefikHTTPEntrypoint     = "web"
-	traefikHTTPSEntrypoint    = "websecure"
-	traefikAuthSoftMiddleware = "ns_auth_soft@file"
-	traefikAuthHardMiddleware = "ns_auth_hard@file"
-	traefikAuthMiddleware     = "ns_auth@file"
-	traefikCertResolver       = "nsresolver@file"
-	traefikSSFilename         = "ss.yaml"
-	traefikSSServiceName      = "ss"
+	traefikSSFilename    = "ss.yaml"
+	traefikSSServiceName = "ss"
 )
 
 type dockerBackend struct {

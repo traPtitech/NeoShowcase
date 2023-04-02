@@ -30,6 +30,8 @@ services:
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.ns.rule=Host(`ns.local.trapti.tech`) && PathPrefix(`/neoshowcase.protobuf.ApplicationService`)"
+      # - "traefik.http.routers.ns.middlewares=ns_auth@file"
+      - "traefik.http.routers.ns.middlewares=ns_auth_dev@file"
       - "traefik.http.routers.ns.service=ns"
       - "traefik.http.services.ns.loadbalancer.server.port=5000"
     ports:
@@ -54,8 +56,31 @@ services:
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.ns_dashboard.rule=Host(`ns.local.trapti.tech`)"
+      # - "traefik.http.routers.ns_dashboard.middlewares=ns_auth@file"
+      - "traefik.http.routers.ns_dashboard.middlewares=ns_auth_dev@file"
       - "traefik.http.routers.ns_dashboard.service=ns_dashboard"
       - "traefik.http.services.ns_dashboard.loadbalancer.server.port=80"
+    networks:
+      - default
+
+  ns-auth:
+    image: ghcr.io/jordemort/traefik-forward-auth:latest
+    restart: always
+    command:
+      - --config=/config.ini
+    volumes:
+      - ./local-dev/traefik-forward-auth/config.ini:/config.ini
+    networks:
+      - default
+
+  ns-auth-dev:
+    build:
+      context: .
+      target: ns-auth-dev
+    image: ghcr.io/traptitech/ns-auth-dev:main
+    restart: always
+    environment:
+      USER: "toki"
     networks:
       - default
 
