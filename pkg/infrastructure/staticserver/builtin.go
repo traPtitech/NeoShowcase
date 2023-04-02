@@ -13,6 +13,7 @@ import (
 	"github.com/samber/lo"
 
 	"github.com/traPtitech/neoshowcase/pkg/domain"
+	"github.com/traPtitech/neoshowcase/pkg/domain/web"
 )
 
 type BuiltIn struct {
@@ -47,8 +48,10 @@ func NewBuiltIn(storage domain.Storage, path domain.StaticServerDocumentRootPath
 		req := c.Request()
 		res := c.Response()
 
+		appID := req.Header.Get(web.HeaderNameSSGenAppID)
+
 		b.sitesLock.RLock()
-		host := b.sites[req.Host]
+		host := b.sites[appID]
 		b.sitesLock.RUnlock()
 
 		if host == nil {
@@ -88,7 +91,7 @@ func (b *BuiltIn) Reconcile(sites []*domain.StaticSite) error {
 			Root:  artifactDir,
 			Index: "index.html",
 		}))
-		siteMap[site.Website.FQDN] = &builtInHost{
+		siteMap[site.Application.ID] = &builtInHost{
 			Echo: e,
 			Site: site,
 		}
