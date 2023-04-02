@@ -36,6 +36,7 @@ type APIServerService interface {
 	GetBuilds(ctx context.Context, applicationID string) ([]*domain.Build, error)
 	GetBuild(ctx context.Context, buildID string) (*domain.Build, error)
 	GetBuildLog(ctx context.Context, buildID string) ([]byte, error)
+	GetArtifact(ctx context.Context, artifactID string) ([]byte, error)
 	SetEnvironmentVariable(ctx context.Context, applicationID string, key string, value string) error
 	GetEnvironmentVariables(ctx context.Context, applicationID string) ([]*domain.Environment, error)
 	CancelBuild(ctx context.Context, buildID string) error
@@ -317,6 +318,10 @@ func (s *apiServerService) GetBuildLog(ctx context.Context, buildID string) ([]b
 	return domain.GetBuildLog(s.storage, buildID)
 }
 
+func (s *apiServerService) GetArtifact(_ context.Context, artifactID string) ([]byte, error) {
+	return domain.GetArtifact(s.storage, artifactID)
+}
+
 func (s *apiServerService) GetEnvironmentVariables(ctx context.Context, applicationID string) ([]*domain.Environment, error) {
 	return s.envRepo.GetEnv(ctx, domain.GetEnvCondition{ApplicationID: optional.From(applicationID)})
 }
@@ -329,7 +334,7 @@ func (s *apiServerService) SetEnvironmentVariable(ctx context.Context, applicati
 func (s *apiServerService) CancelBuild(_ context.Context, buildID string) error {
 	s.component.BroadcastBuilder(&pb.BuilderRequest{
 		Type: pb.BuilderRequest_CANCEL_BUILD,
-		Body: &pb.BuilderRequest_CancelBuild{CancelBuild: &pb.CancelBuildRequest{BuildId: buildID}},
+		Body: &pb.BuilderRequest_CancelBuild{CancelBuild: &pb.BuildIdRequest{BuildId: buildID}},
 	})
 	return nil
 }

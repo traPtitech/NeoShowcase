@@ -3,6 +3,7 @@ package neoshowcase.protobuf;
 option go_package = "github.com/traPtitech/neoshowcase/pkg/interface/grpc/pb";
 
 import "google/protobuf/empty.proto";
+import "google/protobuf/timestamp.proto";
 import "neoshowcase/protobuf/null.proto";
 
 message User {
@@ -129,8 +130,16 @@ message ApplicationEnvVars {
   repeated ApplicationEnvVar variables = 1;
 }
 
-message ApplicationBuildArtifact {
-  string url = 1;
+message Artifact {
+  string id = 1;
+  int64 size = 2;
+  google.protobuf.Timestamp created_at = 3;
+  neoshowcase.protobuf.NullTimestamp deleted_at = 4;
+}
+
+message ArtifactContent {
+  string filename = 1;
+  bytes content = 2;
 }
 
 message ApplicationOutput {
@@ -153,6 +162,7 @@ message Build {
   neoshowcase.protobuf.NullTimestamp updated_at = 5;
   neoshowcase.protobuf.NullTimestamp finished_at = 6;
   bool retriable = 7;
+  Artifact artifact = 8;
 }
 
 message BuildLog {
@@ -195,26 +205,22 @@ message ApplicationIdRequest {
   string id = 1;
 }
 
-message GetApplicationBuildsResponse {
+message BuildIdRequest {
+  string build_id = 1;
+}
+
+message ArtifactIdRequest {
+  string artifact_id = 1;
+}
+
+message GetBuildsResponse {
   repeated Build builds = 1;
-}
-
-message GetApplicationBuildRequest {
-  string build_id = 1;
-}
-
-message GetApplicationBuildLogRequest {
-  string build_id = 1;
 }
 
 message SetApplicationEnvVarRequest {
   string application_id = 1;
   string key = 2;
   string value = 3;
-}
-
-message CancelBuildRequest {
-  string build_id = 1;
 }
 
 message RetryCommitBuildRequest {
@@ -234,15 +240,15 @@ service ApplicationService {
   rpc GetApplication(ApplicationIdRequest) returns (Application);
   rpc UpdateApplication(UpdateApplicationRequest) returns (google.protobuf.Empty);
   rpc DeleteApplication(ApplicationIdRequest) returns (google.protobuf.Empty);
-  rpc GetBuilds(ApplicationIdRequest) returns (GetApplicationBuildsResponse);
-  rpc GetBuild(GetApplicationBuildRequest) returns (Build);
-  rpc GetBuildLogStream(GetApplicationBuildLogRequest) returns (stream BuildLog);
-  rpc GetBuildLog(GetApplicationBuildLogRequest) returns (BuildLog);
-  rpc GetBuildArtifact(ApplicationIdRequest) returns (ApplicationBuildArtifact);
+  rpc GetBuilds(ApplicationIdRequest) returns (GetBuildsResponse);
+  rpc GetBuild(BuildIdRequest) returns (Build);
+  rpc GetBuildLogStream(BuildIdRequest) returns (stream BuildLog);
+  rpc GetBuildLog(BuildIdRequest) returns (BuildLog);
+  rpc GetBuildArtifact(ArtifactIdRequest) returns (ArtifactContent);
   rpc GetEnvVars(ApplicationIdRequest) returns (ApplicationEnvVars);
   rpc SetEnvVar(SetApplicationEnvVarRequest) returns (google.protobuf.Empty);
   rpc GetApplicationOutput(ApplicationIdRequest) returns (ApplicationOutput);
-  rpc CancelBuild(CancelBuildRequest) returns (google.protobuf.Empty);
+  rpc CancelBuild(BuildIdRequest) returns (google.protobuf.Empty);
   rpc RetryCommitBuild(RetryCommitBuildRequest) returns (google.protobuf.Empty);
   rpc StartApplication(ApplicationIdRequest) returns (google.protobuf.Empty);
   rpc StopApplication(ApplicationIdRequest) returns (google.protobuf.Empty);

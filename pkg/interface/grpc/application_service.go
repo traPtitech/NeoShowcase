@@ -224,12 +224,12 @@ func (s *ApplicationService) DeleteApplication(ctx context.Context, req *connect
 	return res, nil
 }
 
-func (s *ApplicationService) GetBuilds(ctx context.Context, req *connect.Request[pb.ApplicationIdRequest]) (*connect.Response[pb.GetApplicationBuildsResponse], error) {
+func (s *ApplicationService) GetBuilds(ctx context.Context, req *connect.Request[pb.ApplicationIdRequest]) (*connect.Response[pb.GetBuildsResponse], error) {
 	builds, err := s.svc.GetBuilds(ctx, req.Msg.Id)
 	if err != nil {
 		return nil, handleUseCaseError(err)
 	}
-	res := connect.NewResponse(&pb.GetApplicationBuildsResponse{
+	res := connect.NewResponse(&pb.GetBuildsResponse{
 		Builds: lo.Map(builds, func(build *domain.Build, i int) *pb.Build {
 			return toPBBuild(build)
 		}),
@@ -237,7 +237,7 @@ func (s *ApplicationService) GetBuilds(ctx context.Context, req *connect.Request
 	return res, nil
 }
 
-func (s *ApplicationService) GetBuild(ctx context.Context, req *connect.Request[pb.GetApplicationBuildRequest]) (*connect.Response[pb.Build], error) {
+func (s *ApplicationService) GetBuild(ctx context.Context, req *connect.Request[pb.BuildIdRequest]) (*connect.Response[pb.Build], error) {
 	build, err := s.svc.GetBuild(ctx, req.Msg.BuildId)
 	if err != nil {
 		return nil, handleUseCaseError(err)
@@ -246,7 +246,7 @@ func (s *ApplicationService) GetBuild(ctx context.Context, req *connect.Request[
 	return res, nil
 }
 
-func (s *ApplicationService) GetBuildLogStream(_ context.Context, req *connect.Request[pb.GetApplicationBuildLogRequest], st *connect.ServerStream[pb.BuildLog]) error {
+func (s *ApplicationService) GetBuildLogStream(_ context.Context, req *connect.Request[pb.BuildIdRequest], st *connect.ServerStream[pb.BuildLog]) error {
 	sub := make(chan []byte, 100)
 	ok, unsubscribe := s.logSvc.SubscribeBuildLog(req.Msg.BuildId, sub)
 	if !ok {
@@ -263,7 +263,7 @@ func (s *ApplicationService) GetBuildLogStream(_ context.Context, req *connect.R
 	return nil
 }
 
-func (s *ApplicationService) GetBuildLog(ctx context.Context, req *connect.Request[pb.GetApplicationBuildLogRequest]) (*connect.Response[pb.BuildLog], error) {
+func (s *ApplicationService) GetBuildLog(ctx context.Context, req *connect.Request[pb.BuildIdRequest]) (*connect.Response[pb.BuildLog], error) {
 	log, err := s.svc.GetBuildLog(ctx, req.Msg.BuildId)
 	if err != nil {
 		return nil, handleUseCaseError(err)
@@ -272,8 +272,16 @@ func (s *ApplicationService) GetBuildLog(ctx context.Context, req *connect.Reque
 	return res, nil
 }
 
-func (s *ApplicationService) GetBuildArtifact(ctx context.Context, req *connect.Request[pb.ApplicationIdRequest]) (*connect.Response[pb.ApplicationBuildArtifact], error) {
-	return nil, status.Errorf(codes.Unimplemented, "method GetApplicationBuildArtifact not implemented")
+func (s *ApplicationService) GetBuildArtifact(ctx context.Context, req *connect.Request[pb.ArtifactIdRequest]) (*connect.Response[pb.ArtifactContent], error) {
+	content, err := s.svc.GetArtifact(ctx, req.Msg.ArtifactId)
+	if err != nil {
+		return nil, handleUseCaseError(err)
+	}
+	res := connect.NewResponse(&pb.ArtifactContent{
+		Filename: req.Msg.ArtifactId + ".tar",
+		Content:  content,
+	})
+	return res, nil
 }
 
 func (s *ApplicationService) GetEnvVars(ctx context.Context, req *connect.Request[pb.ApplicationIdRequest]) (*connect.Response[pb.ApplicationEnvVars], error) {
@@ -303,7 +311,7 @@ func (s *ApplicationService) GetApplicationOutput(ctx context.Context, req *conn
 	return nil, status.Errorf(codes.Unimplemented, "method GetApplicationOutput not implemented")
 }
 
-func (s *ApplicationService) CancelBuild(ctx context.Context, req *connect.Request[pb.CancelBuildRequest]) (*connect.Response[emptypb.Empty], error) {
+func (s *ApplicationService) CancelBuild(ctx context.Context, req *connect.Request[pb.BuildIdRequest]) (*connect.Response[emptypb.Empty], error) {
 	err := s.svc.CancelBuild(ctx, req.Msg.BuildId)
 	if err != nil {
 		return nil, handleUseCaseError(err)
@@ -535,8 +543,17 @@ func toPBNullTimestamp(t optional.Of[time.Time]) *pb.NullTimestamp {
 	return &pb.NullTimestamp{Timestamp: timestamppb.New(t.V), Valid: t.Valid}
 }
 
+func toPBArtifact(artifact *domain.Artifact) *pb.Artifact {
+	return &pb.Artifact{
+		Id:        artifact.ID,
+		Size:      artifact.Size,
+		CreatedAt: timestamppb.New(artifact.CreatedAt),
+		DeletedAt: toPBNullTimestamp(artifact.DeletedAt),
+	}
+}
+
 func toPBBuild(build *domain.Build) *pb.Build {
-	return &pb.Build{
+	b := &pb.Build{
 		Id:         build.ID,
 		Commit:     build.Commit,
 		Status:     toPBBuildStatus(build.Status),
@@ -545,6 +562,10 @@ func toPBBuild(build *domain.Build) *pb.Build {
 		FinishedAt: toPBNullTimestamp(build.FinishedAt),
 		Retriable:  build.Retriable,
 	}
+	if build.Artifact.Valid {
+		b.Artifact = toPBArtifact(&build.Artifact.V)
+	}
+	return b
 }
 
 func toPBEnvironment(env *domain.Environment) *pb.ApplicationEnvVar {
