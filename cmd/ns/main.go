@@ -75,21 +75,15 @@ func main() {
 	cli.SetupLogLevelFlag(flags)
 
 	viper.SetDefault("debug", false)
+
 	viper.SetDefault("mode", "docker")
-	viper.SetDefault("repository.privateKeyFile", "")
-	viper.SetDefault("image.registry.scheme", "https")
-	viper.SetDefault("image.registry.addr", "localhost")
-	viper.SetDefault("image.registry.username", "")
-	viper.SetDefault("image.registry.password", "")
-	viper.SetDefault("image.namePrefix", "ns-apps/")
+
 	viper.SetDefault("ss.service.namespace", "default")
 	viper.SetDefault("ss.service.kind", "Service")
 	viper.SetDefault("ss.service.name", "")
 	viper.SetDefault("ss.service.port", 80)
 	viper.SetDefault("ss.url", "")
-	viper.SetDefault("docker.confdir", "/opt/traefik/conf")
-	viper.SetDefault("web.app.port", 5000)
-	viper.SetDefault("web.component.port", 10000)
+
 	viper.SetDefault("db.host", "127.0.0.1")
 	viper.SetDefault("db.port", 3306)
 	viper.SetDefault("db.username", "root")
@@ -98,14 +92,17 @@ func main() {
 	viper.SetDefault("db.connection.maxOpen", 0)
 	viper.SetDefault("db.connection.maxIdle", 2)
 	viper.SetDefault("db.connection.lifetime", 0)
+
 	viper.SetDefault("mariadb.host", "127.0.0.1")
 	viper.SetDefault("mariadb.port", 3306)
 	viper.SetDefault("mariadb.adminUser", "root")
 	viper.SetDefault("mariadb.adminPassword", "password")
+
 	viper.SetDefault("mongodb.host", "127.0.0.1")
 	viper.SetDefault("mongodb.port", 27017)
 	viper.SetDefault("mongodb.adminUser", "root")
 	viper.SetDefault("mongodb.adminPassword", "password")
+
 	viper.SetDefault("storage.type", "local")
 	viper.SetDefault("storage.local.dir", "/neoshowcase")
 	viper.SetDefault("storage.s3.bucket", "neoshowcase")
@@ -119,6 +116,19 @@ func main() {
 	viper.SetDefault("storage.swift.tenantId", "")
 	viper.SetDefault("storage.swift.container", "neoshowcase")
 	viper.SetDefault("storage.swift.authUrl", "")
+
+	viper.SetDefault("docker.confdir", "/opt/traefik/conf")
+
+	viper.SetDefault("web.app.port", 5000)
+	viper.SetDefault("web.component.port", 10000)
+
+	viper.SetDefault("repository.privateKeyFile", "")
+
+	viper.SetDefault("image.registry.scheme", "https")
+	viper.SetDefault("image.registry.addr", "localhost")
+	viper.SetDefault("image.registry.username", "")
+	viper.SetDefault("image.registry.password", "")
+	viper.SetDefault("image.namePrefix", "ns-apps/")
 
 	if err := rootCommand.Execute(); err != nil {
 		log.Fatalf("failed to exec: %+v", err)

@@ -1,0 +1,20 @@
+buildkit:
+  address: tcp://buildkitd:1234
+
+repository:
+  privateKeyFile: /keys/id_ed25519
+
+ns:
+  url: http://ns:10000
+
+db:
+  host: mysql
+  port: 3306
+  username: root
+  password: password
+  database: neoshowcase
+
+storage:
+  type: local
+  local:
+    dir: /data
