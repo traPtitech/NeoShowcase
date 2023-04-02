@@ -206,4 +206,5 @@ replace (
 
 replace github.com/docker/docker => github.com/docker/docker v20.10.3-0.20220414164044-61404de7df1a+incompatible
 
+// https://github.com/heroku/docker-registry-client/pull/79
 replace github.com/heroku/docker-registry-client => github.com/motoki317/docker-registry-client v0.0.2
