@@ -41,20 +41,25 @@ func (b *dockerBackend) ReloadSSIngress(_ context.Context) error {
 		routers[traefikName(ss.Website)] = router
 	}
 
-	config := m{
-		"http": m{
-			"routers":     routers,
-			"middlewares": middlewares,
-			"services": m{
-				traefikSSServiceName: m{
-					"loadBalancer": m{
-						"servers": a{
-							m{"url": b.ssURL},
-						},
+	http := m{
+		"services": m{
+			traefikSSServiceName: m{
+				"loadBalancer": m{
+					"servers": a{
+						m{"url": b.ssURL},
 					},
 				},
 			},
 		},
+	}
+	if len(routers) > 0 {
+		http["routers"] = routers
+	}
+	if len(middlewares) > 0 {
+		http["middlewares"] = middlewares
+	}
+	config := m{
+		"http": http,
 	}
 
 	file, err := os.OpenFile(filepath.Join(b.ingressConfDir, traefikSSFilename), os.O_CREATE|os.O_TRUNC|os.O_WRONLY, 0644)
