@@ -72,16 +72,16 @@ func NewWithDocker(c2 Config) (*Server, error) {
 	}
 	apiServerService := usecase.NewAPIServerService(bus, artifactRepository, applicationRepository, availableDomainRepository, buildRepository, environmentRepository, gitRepositoryRepository, appDeployService, backend, storage, componentService, mariaDBManager, mongoDBManager)
 	userRepository := repository.NewUserRepository(db)
-	applicationServiceHandler := grpc.NewApplicationServiceServer(apiServerService, userRepository)
+	publicKeys, err := provideRepositoryPublicKey(c2)
+	if err != nil {
+		return nil, err
+	}
+	applicationServiceHandler := grpc.NewApplicationServiceServer(apiServerService, userRepository, publicKeys)
 	authInterceptor := grpc.NewAuthInterceptor(userRepository)
 	mainWebAppServer := provideWebAppServer(c2, applicationServiceHandler, authInterceptor)
 	mainWebComponentServer := provideWebComponentServer(c2, componentService)
 	appBuildService := usecase.NewAppBuildService(buildRepository, componentService, imageConfig)
 	continuousDeploymentService, err := usecase.NewContinuousDeploymentService(bus, applicationRepository, buildRepository, environmentRepository, appBuildService, appDeployService)
-	if err != nil {
-		return nil, err
-	}
-	publicKeys, err := provideRepositoryPublicKey(c2)
 	if err != nil {
 		return nil, err
 	}
@@ -154,16 +154,16 @@ func NewWithK8S(c2 Config) (*Server, error) {
 	}
 	apiServerService := usecase.NewAPIServerService(bus, artifactRepository, applicationRepository, availableDomainRepository, buildRepository, environmentRepository, gitRepositoryRepository, appDeployService, backend, storage, componentService, mariaDBManager, mongoDBManager)
 	userRepository := repository.NewUserRepository(db)
-	applicationServiceHandler := grpc.NewApplicationServiceServer(apiServerService, userRepository)
+	publicKeys, err := provideRepositoryPublicKey(c2)
+	if err != nil {
+		return nil, err
+	}
+	applicationServiceHandler := grpc.NewApplicationServiceServer(apiServerService, userRepository, publicKeys)
 	authInterceptor := grpc.NewAuthInterceptor(userRepository)
 	mainWebAppServer := provideWebAppServer(c2, applicationServiceHandler, authInterceptor)
 	mainWebComponentServer := provideWebComponentServer(c2, componentService)
 	appBuildService := usecase.NewAppBuildService(buildRepository, componentService, imageConfig)
 	continuousDeploymentService, err := usecase.NewContinuousDeploymentService(bus, applicationRepository, buildRepository, environmentRepository, appBuildService, appDeployService)
-	if err != nil {
-		return nil, err
-	}
-	publicKeys, err := provideRepositoryPublicKey(c2)
 	if err != nil {
 		return nil, err
 	}

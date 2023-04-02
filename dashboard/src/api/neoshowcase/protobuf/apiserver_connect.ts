@@ -4,7 +4,7 @@
 // @ts-nocheck
 
 import { Empty, MethodKind } from "@bufbuild/protobuf";
-import { Application, ApplicationBuildArtifact, ApplicationEnvVars, ApplicationIdRequest, ApplicationOutput, AvailableDomain, AvailableDomains, Build, BuildLog, CancelBuildRequest, CreateApplicationRequest, CreateRepositoryRequest, GetApplicationBuildLogRequest, GetApplicationBuildRequest, GetApplicationBuildsResponse, GetApplicationsResponse, GetRepositoriesResponse, Repository, RetryCommitBuildRequest, SetApplicationEnvVarRequest, UpdateApplicationRequest, User } from "./apiserver_pb.js";
+import { Application, ApplicationBuildArtifact, ApplicationEnvVars, ApplicationIdRequest, ApplicationOutput, AvailableDomain, AvailableDomains, Build, BuildLog, CancelBuildRequest, CreateApplicationRequest, CreateRepositoryRequest, GetApplicationBuildLogRequest, GetApplicationBuildRequest, GetApplicationBuildsResponse, GetApplicationsResponse, GetRepositoriesResponse, GetSystemPublicKeyResponse, Repository, RetryCommitBuildRequest, SetApplicationEnvVarRequest, UpdateApplicationRequest, User } from "./apiserver_pb.js";
 
 /**
  * @generated from service neoshowcase.protobuf.ApplicationService
@@ -46,6 +46,15 @@ export const ApplicationService = {
       name: "GetApplications",
       I: Empty,
       O: GetApplicationsResponse,
+      kind: MethodKind.Unary,
+    },
+    /**
+     * @generated from rpc neoshowcase.protobuf.ApplicationService.GetSystemPublicKey
+     */
+    getSystemPublicKey: {
+      name: "GetSystemPublicKey",
+      I: Empty,
+      O: GetSystemPublicKeyResponse,
       kind: MethodKind.Unary,
     },
     /**

@@ -167,6 +167,10 @@ message GetApplicationsResponse {
   repeated Application applications = 1;
 }
 
+message GetSystemPublicKeyResponse {
+  string public_key = 1;
+}
+
 message CreateApplicationRequest {
   string name = 1;
   string repository_id = 2;
@@ -223,6 +227,7 @@ service ApplicationService {
   rpc GetRepositories(google.protobuf.Empty) returns (GetRepositoriesResponse);
   rpc CreateRepository(CreateRepositoryRequest) returns (Repository);
   rpc GetApplications(google.protobuf.Empty) returns (GetApplicationsResponse);
+  rpc GetSystemPublicKey(google.protobuf.Empty) returns (GetSystemPublicKeyResponse);
   rpc GetAvailableDomains(google.protobuf.Empty) returns (AvailableDomains);
   rpc AddAvailableDomain(AvailableDomain) returns (google.protobuf.Empty);
   rpc CreateApplication(CreateApplicationRequest) returns (Application);

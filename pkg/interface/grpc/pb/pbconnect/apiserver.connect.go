@@ -32,6 +32,7 @@ type ApplicationServiceClient interface {
 	GetRepositories(context.Context, *connect_go.Request[emptypb.Empty]) (*connect_go.Response[pb.GetRepositoriesResponse], error)
 	CreateRepository(context.Context, *connect_go.Request[pb.CreateRepositoryRequest]) (*connect_go.Response[pb.Repository], error)
 	GetApplications(context.Context, *connect_go.Request[emptypb.Empty]) (*connect_go.Response[pb.GetApplicationsResponse], error)
+	GetSystemPublicKey(context.Context, *connect_go.Request[emptypb.Empty]) (*connect_go.Response[pb.GetSystemPublicKeyResponse], error)
 	GetAvailableDomains(context.Context, *connect_go.Request[emptypb.Empty]) (*connect_go.Response[pb.AvailableDomains], error)
 	AddAvailableDomain(context.Context, *connect_go.Request[pb.AvailableDomain]) (*connect_go.Response[emptypb.Empty], error)
 	CreateApplication(context.Context, *connect_go.Request[pb.CreateApplicationRequest]) (*connect_go.Response[pb.Application], error)
@@ -79,6 +80,11 @@ func NewApplicationServiceClient(httpClient connect_go.HTTPClient, baseURL strin
 		getApplications: connect_go.NewClient[emptypb.Empty, pb.GetApplicationsResponse](
 			httpClient,
 			baseURL+"/neoshowcase.protobuf.ApplicationService/GetApplications",
+			opts...,
+		),
+		getSystemPublicKey: connect_go.NewClient[emptypb.Empty, pb.GetSystemPublicKeyResponse](
+			httpClient,
+			baseURL+"/neoshowcase.protobuf.ApplicationService/GetSystemPublicKey",
 			opts...,
 		),
 		getAvailableDomains: connect_go.NewClient[emptypb.Empty, pb.AvailableDomains](
@@ -175,6 +181,7 @@ type applicationServiceClient struct {
 	getRepositories             *connect_go.Client[emptypb.Empty, pb.GetRepositoriesResponse]
 	createRepository            *connect_go.Client[pb.CreateRepositoryRequest, pb.Repository]
 	getApplications             *connect_go.Client[emptypb.Empty, pb.GetApplicationsResponse]
+	getSystemPublicKey          *connect_go.Client[emptypb.Empty, pb.GetSystemPublicKeyResponse]
 	getAvailableDomains         *connect_go.Client[emptypb.Empty, pb.AvailableDomains]
 	addAvailableDomain          *connect_go.Client[pb.AvailableDomain, emptypb.Empty]
 	createApplication           *connect_go.Client[pb.CreateApplicationRequest, pb.Application]
@@ -212,6 +219,11 @@ func (c *applicationServiceClient) CreateRepository(ctx context.Context, req *co
 // GetApplications calls neoshowcase.protobuf.ApplicationService.GetApplications.
 func (c *applicationServiceClient) GetApplications(ctx context.Context, req *connect_go.Request[emptypb.Empty]) (*connect_go.Response[pb.GetApplicationsResponse], error) {
 	return c.getApplications.CallUnary(ctx, req)
+}
+
+// GetSystemPublicKey calls neoshowcase.protobuf.ApplicationService.GetSystemPublicKey.
+func (c *applicationServiceClient) GetSystemPublicKey(ctx context.Context, req *connect_go.Request[emptypb.Empty]) (*connect_go.Response[pb.GetSystemPublicKeyResponse], error) {
+	return c.getSystemPublicKey.CallUnary(ctx, req)
 }
 
 // GetAvailableDomains calls neoshowcase.protobuf.ApplicationService.GetAvailableDomains.
@@ -307,6 +319,7 @@ type ApplicationServiceHandler interface {
 	GetRepositories(context.Context, *connect_go.Request[emptypb.Empty]) (*connect_go.Response[pb.GetRepositoriesResponse], error)
 	CreateRepository(context.Context, *connect_go.Request[pb.CreateRepositoryRequest]) (*connect_go.Response[pb.Repository], error)
 	GetApplications(context.Context, *connect_go.Request[emptypb.Empty]) (*connect_go.Response[pb.GetApplicationsResponse], error)
+	GetSystemPublicKey(context.Context, *connect_go.Request[emptypb.Empty]) (*connect_go.Response[pb.GetSystemPublicKeyResponse], error)
 	GetAvailableDomains(context.Context, *connect_go.Request[emptypb.Empty]) (*connect_go.Response[pb.AvailableDomains], error)
 	AddAvailableDomain(context.Context, *connect_go.Request[pb.AvailableDomain]) (*connect_go.Response[emptypb.Empty], error)
 	CreateApplication(context.Context, *connect_go.Request[pb.CreateApplicationRequest]) (*connect_go.Response[pb.Application], error)
@@ -351,6 +364,11 @@ func NewApplicationServiceHandler(svc ApplicationServiceHandler, opts ...connect
 	mux.Handle("/neoshowcase.protobuf.ApplicationService/GetApplications", connect_go.NewUnaryHandler(
 		"/neoshowcase.protobuf.ApplicationService/GetApplications",
 		svc.GetApplications,
+		opts...,
+	))
+	mux.Handle("/neoshowcase.protobuf.ApplicationService/GetSystemPublicKey", connect_go.NewUnaryHandler(
+		"/neoshowcase.protobuf.ApplicationService/GetSystemPublicKey",
+		svc.GetSystemPublicKey,
 		opts...,
 	))
 	mux.Handle("/neoshowcase.protobuf.ApplicationService/GetAvailableDomains", connect_go.NewUnaryHandler(
@@ -458,6 +476,10 @@ func (UnimplementedApplicationServiceHandler) CreateRepository(context.Context, 
 
 func (UnimplementedApplicationServiceHandler) GetApplications(context.Context, *connect_go.Request[emptypb.Empty]) (*connect_go.Response[pb.GetApplicationsResponse], error) {
 	return nil, connect_go.NewError(connect_go.CodeUnimplemented, errors.New("neoshowcase.protobuf.ApplicationService.GetApplications is not implemented"))
+}
+
+func (UnimplementedApplicationServiceHandler) GetSystemPublicKey(context.Context, *connect_go.Request[emptypb.Empty]) (*connect_go.Response[pb.GetSystemPublicKeyResponse], error) {
+	return nil, connect_go.NewError(connect_go.CodeUnimplemented, errors.New("neoshowcase.protobuf.ApplicationService.GetSystemPublicKey is not implemented"))
 }
 
 func (UnimplementedApplicationServiceHandler) GetAvailableDomains(context.Context, *connect_go.Request[emptypb.Empty]) (*connect_go.Response[pb.AvailableDomains], error) {
