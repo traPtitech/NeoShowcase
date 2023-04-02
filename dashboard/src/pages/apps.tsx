@@ -18,7 +18,7 @@ import {
 } from '/@/pages/apps.css'
 import { Checkbox } from '/@/components/Checkbox'
 import { StatusIcon } from '/@/components/StatusIcon'
-import {createResource, JSX, JSXElement} from 'solid-js'
+import { createResource, JSX } from 'solid-js'
 import { Radio, RadioItem } from '/@/components/Radio'
 import { client } from '/@/libs/api'
 import { Application, ApplicationState, BuildType } from '/@/api/neoshowcase/protobuf/apiserver_pb'
