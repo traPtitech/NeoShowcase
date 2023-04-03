@@ -20,7 +20,7 @@ import (
 	"github.com/traPtitech/neoshowcase/pkg/interface/grpc"
 	"github.com/traPtitech/neoshowcase/pkg/interface/repository"
 	"github.com/traPtitech/neoshowcase/pkg/usecase"
-	"github.com/traefik/traefik/v2/pkg/provider/kubernetes/crd/generated/clientset/versioned/typed/traefikio/v1alpha1"
+	"github.com/traefik/traefik/v2/pkg/provider/kubernetes/crd/generated/clientset/versioned/typed/traefikcontainous/v1alpha1"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
 )
@@ -129,12 +129,12 @@ func NewWithK8S(c2 Config) (*Server, error) {
 	if err != nil {
 		return nil, err
 	}
-	traefikV1alpha1Client, err := v1alpha1.NewForConfig(restConfig)
+	traefikContainousV1alpha1Client, err := v1alpha1.NewForConfig(restConfig)
 	if err != nil {
 		return nil, err
 	}
 	staticServerConnectivityConfig := c2.SS
-	backend := k8simpl.NewK8SBackend(bus, clientset, traefikV1alpha1Client, applicationRepository, buildRepository, staticServerConnectivityConfig)
+	backend := k8simpl.NewK8SBackend(bus, clientset, traefikContainousV1alpha1Client, applicationRepository, buildRepository, staticServerConnectivityConfig)
 	logStreamService := usecase.NewLogStreamService()
 	componentService := grpc.NewComponentServiceServer(bus, logStreamService)
 	imageConfig := c2.Image

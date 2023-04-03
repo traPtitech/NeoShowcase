@@ -5,7 +5,7 @@ import (
 
 	"github.com/friendsofgo/errors"
 	"github.com/traefik/traefik/v2/pkg/config/dynamic"
-	traefikv1alpha1 "github.com/traefik/traefik/v2/pkg/provider/kubernetes/crd/traefikio/v1alpha1"
+	traefikv1alpha1 "github.com/traefik/traefik/v2/pkg/provider/kubernetes/crd/traefikcontainous/v1alpha1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/intstr"
 
@@ -30,7 +30,7 @@ func ssHeaderMiddleware(ss *domain.StaticSite) *traefikv1alpha1.Middleware {
 	return &traefikv1alpha1.Middleware{
 		TypeMeta: metav1.TypeMeta{
 			Kind:       "Middleware",
-			APIVersion: "traefik.io/v1alpha1",
+			APIVersion: "traefik.containo.us/v1alpha1",
 		},
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      ssHeaderMiddlewareName(ss),
