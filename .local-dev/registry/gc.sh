@@ -1,7 +1,5 @@
 #!/bin/sh
 
-set -e
-
 while true; do
   sleep 3600
   echo "[gc.sh] Running garbage collection..."
