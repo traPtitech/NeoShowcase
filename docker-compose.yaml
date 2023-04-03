@@ -34,7 +34,7 @@ services:
     build:
       context: ./dashboard
       target: dev
-    image: ghcr.io/traptitech/ns-dashboard:main
+    image: ghcr.io/traptitech/ns-dashboard:main-dev
     restart: always
     volumes:
       - ./dashboard:/work
