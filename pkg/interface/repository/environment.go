@@ -43,10 +43,38 @@ func (r *environmentRepository) GetEnv(ctx context.Context, cond domain.GetEnvCo
 }
 
 func (r *environmentRepository) SetEnv(ctx context.Context, applicationID string, env *domain.Environment) error {
-	me := fromDomainEnvironment(applicationID, env)
-	if err := me.Upsert(ctx, r.db, boil.Infer(), boil.Infer()); err != nil {
-		return errors.Wrap(err, "failed to upsert env")
+	// NOTE: sqlboiler does not recognize multiple column unique keys: https://github.com/volatiletech/sqlboiler/issues/328
+	tx, err := r.db.BeginTx(ctx, nil)
+	if err != nil {
+		return errors.Wrap(err, "failed to start transaction")
 	}
+
+	me, err := models.Environments(
+		models.EnvironmentWhere.ApplicationID.EQ(applicationID),
+		models.EnvironmentWhere.Key.EQ(env.Key),
+		qm.For("UPDATE"),
+	).One(ctx, tx)
+	if err != nil && !isNoRowsErr(err) {
+		return errors.Wrap(err, "failed to get environment")
+	}
+	exists := !isNoRowsErr(err)
+
+	me = fromDomainEnvironment(applicationID, env)
+
+	if exists {
+		_, err = me.Update(ctx, tx, boil.Infer())
+	} else {
+		err = me.Insert(ctx, tx, boil.Infer())
+	}
+	if err != nil {
+		return errors.Wrap(err, "failed to upsert environment")
+	}
+
+	err = tx.Commit()
+	if err != nil {
+		return errors.Wrap(err, "failed to commit")
+	}
+
 	return nil
 }
 
