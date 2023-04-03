@@ -121,6 +121,7 @@ docker-test: ## Run docker tests
 .PHONY: k3s-import
 k3s-import: ## Import images to k3s environment
 	docker save ghcr.io/traptitech/ns:main | sudo k3s ctr images import -
+	docker save ghcr.io/traptitech/ns-dashboard:main | sudo k3s ctr images import -
 	docker save ghcr.io/traptitech/ns-builder:main | sudo k3s ctr images import -
 	docker save ghcr.io/traptitech/ns-mc:main | sudo k3s ctr images import -
 	docker save ghcr.io/traptitech/ns-migrate:main | sudo k3s ctr images import -
