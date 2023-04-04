@@ -84,10 +84,15 @@ func fromDomainRepository(repo *domain.Repository) *models.Repository {
 	}
 }
 
+var repoAuthMethodMapper = mapper.NewValueMapper(map[string]domain.RepositoryAuthMethod{
+	models.RepositoryAuthMethodBasic: domain.RepositoryAuthMethodBasic,
+	models.RepositoryAuthMethodSSH:   domain.RepositoryAuthMethodSSH,
+})
+
 func fromDomainRepositoryAuth(repositoryID string, auth *domain.RepositoryAuth) *models.RepositoryAuth {
 	return &models.RepositoryAuth{
 		RepositoryID: repositoryID,
-		Method:       auth.Method.String(),
+		Method:       repoAuthMethodMapper.FromMust(auth.Method),
 		Username:     auth.Username,
 		Password:     auth.Password,
 		SSHKey:       auth.SSHKey,
@@ -104,7 +109,7 @@ func toDomainRepository(repo *models.Repository) *domain.Repository {
 	if repo.R.RepositoryAuth != nil {
 		auth := repo.R.RepositoryAuth
 		ret.Auth = optional.From(domain.RepositoryAuth{
-			Method:   domain.RepositoryAuthMethodFromString(auth.Method),
+			Method:   repoAuthMethodMapper.IntoMust(auth.Method),
 			Username: auth.Username,
 			Password: auth.Password,
 			SSHKey:   auth.SSHKey,

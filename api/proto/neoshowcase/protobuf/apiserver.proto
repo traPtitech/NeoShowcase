@@ -13,10 +13,14 @@ message User {
 }
 
 message Repository {
+  enum AuthMethod {
+    BASIC = 0;
+    SSH = 1;
+  }
   string id = 1;
   string name = 2;
   string url = 3;
-  string auth_method = 4;
+  AuthMethod auth_method = 4;
 }
 
 message CreateRepositoryAuthBasic {
@@ -148,11 +152,11 @@ message ApplicationOutput {
 
 message Build {
   enum BuildStatus {
-    BUILDING = 0;
-    SUCCEEDED = 1;
-    FAILED = 2;
-    CANCELLED = 3;
-    QUEUED = 4;
+    QUEUED = 0;
+    BUILDING = 1;
+    SUCCEEDED = 2;
+    FAILED = 3;
+    CANCELLED = 4;
     SKIPPED = 5;
   }
   string id = 1;
