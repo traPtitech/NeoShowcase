@@ -192,8 +192,10 @@ jobs:
       - uses: actions/setup-go@v4
         with:
           go-version-file: ./go.mod
-      - name: Run ns-migrate up
-        run: go run ./cmd/ns-migrate up -P 5004
+      - name: Run migration
+        run: |
+          go install github.com/k0kubun/sqldef/cmd/mysqldef@latest
+          DB_PORT=5004 ./migrations/entrypoint.sh ./migrations/schema.sql
       - name: Lint
         run: |
           source <(curl https://raw.githubusercontent.com/k1LoW/tbls/main/use)
