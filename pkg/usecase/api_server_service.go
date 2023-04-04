@@ -164,6 +164,7 @@ func (s *apiServerService) createApplicationDatabase(ctx context.Context, app *d
 			{ApplicationID: app.ID, Key: domain.EnvMySQLUserKey, Value: dbName, System: true},
 			{ApplicationID: app.ID, Key: domain.EnvMySQLPasswordKey, Value: dbPassword, System: true},
 			{ApplicationID: app.ID, Key: domain.EnvMySQLDatabaseKey, Value: dbName, System: true},
+			// {Key: domain.EnvMySQLHostnameKey, Value: dbHost, System: true},
 		}
 		for _, env := range envs {
 			err = s.envRepo.SetEnv(ctx, env)
