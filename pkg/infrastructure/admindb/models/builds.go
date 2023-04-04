@@ -108,20 +108,17 @@ var BuildWhere = struct {
 
 // BuildRels is where relationship names are stored.
 var BuildRels = struct {
-	Application       string
-	StatusBuildStatus string
-	Artifact          string
+	Application string
+	Artifact    string
 }{
-	Application:       "Application",
-	StatusBuildStatus: "StatusBuildStatus",
-	Artifact:          "Artifact",
+	Application: "Application",
+	Artifact:    "Artifact",
 }
 
 // buildR is where relationships are stored.
 type buildR struct {
-	Application       *Application `boil:"Application" json:"Application" toml:"Application" yaml:"Application"`
-	StatusBuildStatus *BuildStatus `boil:"StatusBuildStatus" json:"StatusBuildStatus" toml:"StatusBuildStatus" yaml:"StatusBuildStatus"`
-	Artifact          *Artifact    `boil:"Artifact" json:"Artifact" toml:"Artifact" yaml:"Artifact"`
+	Application *Application `boil:"Application" json:"Application" toml:"Application" yaml:"Application"`
+	Artifact    *Artifact    `boil:"Artifact" json:"Artifact" toml:"Artifact" yaml:"Artifact"`
 }
 
 // NewStruct creates a new relationship struct
@@ -134,13 +131,6 @@ func (r *buildR) GetApplication() *Application {
 		return nil
 	}
 	return r.Application
-}
-
-func (r *buildR) GetStatusBuildStatus() *BuildStatus {
-	if r == nil {
-		return nil
-	}
-	return r.StatusBuildStatus
 }
 
 func (r *buildR) GetArtifact() *Artifact {
@@ -450,17 +440,6 @@ func (o *Build) Application(mods ...qm.QueryMod) applicationQuery {
 	return Applications(queryMods...)
 }
 
-// StatusBuildStatus pointed to by the foreign key.
-func (o *Build) StatusBuildStatus(mods ...qm.QueryMod) buildStatusQuery {
-	queryMods := []qm.QueryMod{
-		qm.Where("`status` = ?", o.Status),
-	}
-
-	queryMods = append(queryMods, mods...)
-
-	return BuildStatuses(queryMods...)
-}
-
 // Artifact pointed to by the foreign key.
 func (o *Build) Artifact(mods ...qm.QueryMod) artifactQuery {
 	queryMods := []qm.QueryMod{
@@ -584,126 +563,6 @@ func (buildL) LoadApplication(ctx context.Context, e boil.ContextExecutor, singu
 					foreign.R = &applicationR{}
 				}
 				foreign.R.Builds = append(foreign.R.Builds, local)
-				break
-			}
-		}
-	}
-
-	return nil
-}
-
-// LoadStatusBuildStatus allows an eager lookup of values, cached into the
-// loaded structs of the objects. This is for an N-1 relationship.
-func (buildL) LoadStatusBuildStatus(ctx context.Context, e boil.ContextExecutor, singular bool, maybeBuild interface{}, mods queries.Applicator) error {
-	var slice []*Build
-	var object *Build
-
-	if singular {
-		var ok bool
-		object, ok = maybeBuild.(*Build)
-		if !ok {
-			object = new(Build)
-			ok = queries.SetFromEmbeddedStruct(&object, &maybeBuild)
-			if !ok {
-				return errors.New(fmt.Sprintf("failed to set %T from embedded struct %T", object, maybeBuild))
-			}
-		}
-	} else {
-		s, ok := maybeBuild.(*[]*Build)
-		if ok {
-			slice = *s
-		} else {
-			ok = queries.SetFromEmbeddedStruct(&slice, maybeBuild)
-			if !ok {
-				return errors.New(fmt.Sprintf("failed to set %T from embedded struct %T", slice, maybeBuild))
-			}
-		}
-	}
-
-	args := make([]interface{}, 0, 1)
-	if singular {
-		if object.R == nil {
-			object.R = &buildR{}
-		}
-		args = append(args, object.Status)
-
-	} else {
-	Outer:
-		for _, obj := range slice {
-			if obj.R == nil {
-				obj.R = &buildR{}
-			}
-
-			for _, a := range args {
-				if a == obj.Status {
-					continue Outer
-				}
-			}
-
-			args = append(args, obj.Status)
-
-		}
-	}
-
-	if len(args) == 0 {
-		return nil
-	}
-
-	query := NewQuery(
-		qm.From(`build_status`),
-		qm.WhereIn(`build_status.status in ?`, args...),
-	)
-	if mods != nil {
-		mods.Apply(query)
-	}
-
-	results, err := query.QueryContext(ctx, e)
-	if err != nil {
-		return errors.Wrap(err, "failed to eager load BuildStatus")
-	}
-
-	var resultSlice []*BuildStatus
-	if err = queries.Bind(results, &resultSlice); err != nil {
-		return errors.Wrap(err, "failed to bind eager loaded slice BuildStatus")
-	}
-
-	if err = results.Close(); err != nil {
-		return errors.Wrap(err, "failed to close results of eager load for build_status")
-	}
-	if err = results.Err(); err != nil {
-		return errors.Wrap(err, "error occurred during iteration of eager loaded relations for build_status")
-	}
-
-	if len(buildStatusAfterSelectHooks) != 0 {
-		for _, obj := range resultSlice {
-			if err := obj.doAfterSelectHooks(ctx, e); err != nil {
-				return err
-			}
-		}
-	}
-
-	if len(resultSlice) == 0 {
-		return nil
-	}
-
-	if singular {
-		foreign := resultSlice[0]
-		object.R.StatusBuildStatus = foreign
-		if foreign.R == nil {
-			foreign.R = &buildStatusR{}
-		}
-		foreign.R.StatusBuilds = append(foreign.R.StatusBuilds, object)
-		return nil
-	}
-
-	for _, local := range slice {
-		for _, foreign := range resultSlice {
-			if local.Status == foreign.Status {
-				local.R.StatusBuildStatus = foreign
-				if foreign.R == nil {
-					foreign.R = &buildStatusR{}
-				}
-				foreign.R.StatusBuilds = append(foreign.R.StatusBuilds, local)
 				break
 			}
 		}
@@ -871,53 +730,6 @@ func (o *Build) SetApplication(ctx context.Context, exec boil.ContextExecutor, i
 		}
 	} else {
 		related.R.Builds = append(related.R.Builds, o)
-	}
-
-	return nil
-}
-
-// SetStatusBuildStatus of the build to the related item.
-// Sets o.R.StatusBuildStatus to related.
-// Adds o to related.R.StatusBuilds.
-func (o *Build) SetStatusBuildStatus(ctx context.Context, exec boil.ContextExecutor, insert bool, related *BuildStatus) error {
-	var err error
-	if insert {
-		if err = related.Insert(ctx, exec, boil.Infer()); err != nil {
-			return errors.Wrap(err, "failed to insert into foreign table")
-		}
-	}
-
-	updateQuery := fmt.Sprintf(
-		"UPDATE `builds` SET %s WHERE %s",
-		strmangle.SetParamNames("`", "`", 0, []string{"status"}),
-		strmangle.WhereClause("`", "`", 0, buildPrimaryKeyColumns),
-	)
-	values := []interface{}{related.Status, o.ID}
-
-	if boil.IsDebug(ctx) {
-		writer := boil.DebugWriterFrom(ctx)
-		fmt.Fprintln(writer, updateQuery)
-		fmt.Fprintln(writer, values)
-	}
-	if _, err = exec.ExecContext(ctx, updateQuery, values...); err != nil {
-		return errors.Wrap(err, "failed to update local table")
-	}
-
-	o.Status = related.Status
-	if o.R == nil {
-		o.R = &buildR{
-			StatusBuildStatus: related,
-		}
-	} else {
-		o.R.StatusBuildStatus = related
-	}
-
-	if related.R == nil {
-		related.R = &buildStatusR{
-			StatusBuilds: BuildSlice{o},
-		}
-	} else {
-		related.R.StatusBuilds = append(related.R.StatusBuilds, o)
 	}
 
 	return nil

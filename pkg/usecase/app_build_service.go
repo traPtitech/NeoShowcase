@@ -30,7 +30,7 @@ func NewAppBuildService(
 
 func (s *appBuildService) TryStartBuild(app *domain.Application, build *domain.Build) {
 	switch app.BuildType {
-	case builder.BuildTypeRuntime:
+	case domain.BuildTypeRuntime:
 		s.component.BroadcastBuilder(&pb.BuilderRequest{
 			Type: pb.BuilderRequest_START_BUILD_IMAGE,
 			Body: &pb.BuilderRequest_BuildImage{
@@ -54,7 +54,7 @@ func (s *appBuildService) TryStartBuild(app *domain.Application, build *domain.B
 			},
 		})
 
-	case builder.BuildTypeStatic:
+	case domain.BuildTypeStatic:
 		s.component.BroadcastBuilder(&pb.BuilderRequest{
 			Type: pb.BuilderRequest_START_BUILD_STATIC,
 			Body: &pb.BuilderRequest_BuildStatic{

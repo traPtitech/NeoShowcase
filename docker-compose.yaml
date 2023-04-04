@@ -127,7 +127,6 @@ services:
       context: .
       target: ns-migrate
     image: ghcr.io/traptitech/ns-migrate:main
-    command: up
     restart: "no"
     environment:
       DB_HOST: "mysql"

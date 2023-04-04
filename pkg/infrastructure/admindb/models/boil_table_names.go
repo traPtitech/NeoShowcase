@@ -6,11 +6,9 @@ package models
 var TableNames = struct {
 	ApplicationConfig string
 	ApplicationOwners string
-	ApplicationState  string
 	Applications      string
 	Artifacts         string
 	AvailableDomains  string
-	BuildStatus       string
 	Builds            string
 	Environments      string
 	Repositories      string
@@ -21,11 +19,9 @@ var TableNames = struct {
 }{
 	ApplicationConfig: "application_config",
 	ApplicationOwners: "application_owners",
-	ApplicationState:  "application_state",
 	Applications:      "applications",
 	Artifacts:         "artifacts",
 	AvailableDomains:  "available_domains",
-	BuildStatus:       "build_status",
 	Builds:            "builds",
 	Environments:      "environments",
 	Repositories:      "repositories",

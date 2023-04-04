@@ -14,7 +14,7 @@ CREATE TABLE `applications` (
   `repository_id` varchar(22) NOT NULL COMMENT 'リポジトリID',
   `ref_name` varchar(100) NOT NULL COMMENT 'Gitブランチ・タグ名',
   `build_type` enum('runtime','static') NOT NULL COMMENT 'ビルドタイプ',
-  `state` varchar(10) NOT NULL COMMENT 'デプロイの状態',
+  `state` enum('idle','deploying','running','errored') NOT NULL COMMENT 'デプロイの状態',
   `current_commit` char(40) NOT NULL COMMENT 'デプロイされたコミット',
   `want_commit` char(40) NOT NULL COMMENT 'デプロイを待つコミット',
   `created_at` datetime(6) NOT NULL COMMENT '作成日時',
@@ -22,8 +22,7 @@ CREATE TABLE `applications` (
   PRIMARY KEY (`id`),
   KEY `fk_applications_repository_id` (`repository_id`),
   KEY `fk_applications_state` (`state`),
-  CONSTRAINT `fk_applications_repository_id` FOREIGN KEY (`repository_id`) REFERENCES `repositories` (`id`),
-  CONSTRAINT `fk_applications_state` FOREIGN KEY (`state`) REFERENCES `application_state` (`state`)
+  CONSTRAINT `fk_applications_repository_id` FOREIGN KEY (`repository_id`) REFERENCES `repositories` (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci COMMENT='アプリケーションテーブル'
 ```
 
@@ -38,7 +37,7 @@ CREATE TABLE `applications` (
 | repository_id | varchar(22) |  | false |  | [repositories](repositories.md) | リポジトリID |
 | ref_name | varchar(100) |  | false |  |  | Gitブランチ・タグ名 |
 | build_type | enum('runtime','static') |  | false |  |  | ビルドタイプ |
-| state | varchar(10) |  | false |  | [application_state](application_state.md) | デプロイの状態 |
+| state | enum('idle','deploying','running','errored') |  | false |  |  | デプロイの状態 |
 | current_commit | char(40) |  | false |  |  | デプロイされたコミット |
 | want_commit | char(40) |  | false |  |  | デプロイを待つコミット |
 | created_at | datetime(6) |  | false |  |  | 作成日時 |
@@ -49,7 +48,6 @@ CREATE TABLE `applications` (
 | Name | Type | Definition |
 | ---- | ---- | ---------- |
 | fk_applications_repository_id | FOREIGN KEY | FOREIGN KEY (repository_id) REFERENCES repositories (id) |
-| fk_applications_state | FOREIGN KEY | FOREIGN KEY (state) REFERENCES application_state (state) |
 | PRIMARY | PRIMARY KEY | PRIMARY KEY (id) |
 
 ## Indexes

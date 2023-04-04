@@ -9,7 +9,7 @@ PROTOC_SOURCES_CLIENT := ./api/proto/neoshowcase/protobuf/apiserver.proto ./api/
 
 TBLS_CMD := docker run --rm --net=host -v $$(pwd):/work --workdir /work -u $$(id -u):$$(id -g) ghcr.io/k1low/tbls:v$(TBLS_VERSION)
 SPECTRAL_CMD := docker run --rm -it -v $$(pwd):/tmp stoplight/spectral:$(SPECTRAL_VERSION)
-SQL_MIGRATE_CMD := sql-migrate
+SQLDEF_CMD := APP_VERSION=local APP_REVISION=makefile mysqldef --port=5004 --user=root --password=password neoshowcase
 EVANS_CMD := evans
 
 .DEFAULT_GOAL := help
@@ -24,6 +24,7 @@ init: ## Install commands
 	go install google.golang.org/protobuf/cmd/protoc-gen-go@latest
 	go install github.com/bufbuild/connect-go/cmd/protoc-gen-connect-go@latest
 	yarn global add @bufbuild/protoc-gen-connect-es @bufbuild/protoc-gen-es
+	go install github.com/k0kubun/sqldef/cmd/mysqldef@latest
 	go install github.com/ktr0731/evans@latest
 
 .PHONY: gogen
@@ -86,13 +87,9 @@ up-db: up-network ## Start development db
 down: ## Tear down development environment
 	@docker compose down
 
-.PHONY: migrate-up
-migrate-up: ## Apply migration to development environment
-	@$(SQL_MIGRATE_CMD) up
-
-.PHONY: migrate-down
-migrate-down: ## Rollback migration of development environment
-	@$(SQL_MIGRATE_CMD) down
+.PHONY: migrate
+migrate: ## Apply migration to development environment
+	@$(SQLDEF_CMD) < ./migrations/schema.sql
 
 .PHONY: ns-evans
 ns-evans: ## Connect to ns api server service
@@ -103,7 +100,7 @@ ns-component-evans: ## Connect to ns component service
 	@$(EVANS_CMD) --path ./api/proto --proto neoshowcase/protobuf/apiserver_component.proto --host localhost -p 10000 repl
 
 .PHONY: db-update
-db-update: migrate-up gogen db-gen-docs ## Apply migration, generate sqlboiler sources, and generate db schema docs
+db-update: migrate gogen db-gen-docs ## Apply migration, generate sqlboiler sources, and generate db schema docs
 
 .PHONY: dind-up
 dind-up: ## Setup docker-in-docker container
