@@ -192,7 +192,7 @@ func TestWebsite_pathComponents(t *testing.T) {
 }
 
 func TestWebsite_ConflictsWith(t *testing.T) {
-	tests := []struct {
+	pathTests := []struct {
 		name     string
 		target   string
 		existing []string
@@ -208,8 +208,8 @@ func TestWebsite_ConflictsWith(t *testing.T) {
 		{"ng3", "/api/v2", []string{"/api"}, true},
 		{"ng4", "/api", []string{"/api"}, true},
 	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
+	for _, tt := range pathTests {
+		t.Run("path "+tt.name, func(t *testing.T) {
 			w := &Website{
 				PathPrefix: tt.target,
 			}
@@ -217,6 +217,39 @@ func TestWebsite_ConflictsWith(t *testing.T) {
 				return &Website{PathPrefix: ex}
 			})
 			if got := w.ConflictsWith(existingWebsites); got != tt.want {
+				t.Errorf("ConflictsWith() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+
+	fullTests := []struct {
+		name     string
+		target   *Website
+		existing []*Website
+		want     bool
+	}{
+		{
+			name:     "ng if same scheme",
+			target:   &Website{PathPrefix: "/", HTTPS: false},
+			existing: []*Website{{PathPrefix: "/", HTTPS: false}},
+			want:     true,
+		},
+		{
+			name:     "ok if different scheme",
+			target:   &Website{PathPrefix: "/", HTTPS: true},
+			existing: []*Website{{PathPrefix: "/", HTTPS: false}},
+			want:     false,
+		},
+		{
+			name:     "ok if different fqdn",
+			target:   &Website{FQDN: "google.com", PathPrefix: "/", HTTPS: false},
+			existing: []*Website{{FQDN: "yahoo.com", PathPrefix: "/", HTTPS: false}},
+			want:     false,
+		},
+	}
+	for _, tt := range fullTests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := tt.target.ConflictsWith(tt.existing); got != tt.want {
 				t.Errorf("ConflictsWith() = %v, want %v", got, tt.want)
 			}
 		})

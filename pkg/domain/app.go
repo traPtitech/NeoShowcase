@@ -256,6 +256,9 @@ func (w *Website) ConflictsWith(existing []*Website) bool {
 		if w.FQDN != ex.FQDN {
 			continue
 		}
+		if w.HTTPS != ex.HTTPS {
+			continue
+		}
 		if w.pathContainedBy(ex) {
 			return true
 		}
