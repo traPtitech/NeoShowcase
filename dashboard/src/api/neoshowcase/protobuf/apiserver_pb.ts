@@ -154,9 +154,9 @@ export class Repository extends Message<Repository> {
   url = "";
 
   /**
-   * @generated from field: string auth_method = 4;
+   * @generated from field: neoshowcase.protobuf.Repository.AuthMethod auth_method = 4;
    */
-  authMethod = "";
+  authMethod = Repository_AuthMethod.BASIC;
 
   constructor(data?: PartialMessage<Repository>) {
     super();
@@ -169,7 +169,7 @@ export class Repository extends Message<Repository> {
     { no: 1, name: "id", kind: "scalar", T: 9 /* ScalarType.STRING */ },
     { no: 2, name: "name", kind: "scalar", T: 9 /* ScalarType.STRING */ },
     { no: 3, name: "url", kind: "scalar", T: 9 /* ScalarType.STRING */ },
-    { no: 4, name: "auth_method", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+    { no: 4, name: "auth_method", kind: "enum", T: proto3.getEnumType(Repository_AuthMethod) },
   ]);
 
   static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): Repository {
@@ -188,6 +188,26 @@ export class Repository extends Message<Repository> {
     return proto3.util.equals(Repository, a, b);
   }
 }
+
+/**
+ * @generated from enum neoshowcase.protobuf.Repository.AuthMethod
+ */
+export enum Repository_AuthMethod {
+  /**
+   * @generated from enum value: BASIC = 0;
+   */
+  BASIC = 0,
+
+  /**
+   * @generated from enum value: SSH = 1;
+   */
+  SSH = 1,
+}
+// Retrieve enum metadata with: proto3.getEnumType(Repository_AuthMethod)
+proto3.util.setEnumType(Repository_AuthMethod, "neoshowcase.protobuf.Repository.AuthMethod", [
+  { no: 0, name: "BASIC" },
+  { no: 1, name: "SSH" },
+]);
 
 /**
  * @generated from message neoshowcase.protobuf.CreateRepositoryAuthBasic
@@ -1064,7 +1084,7 @@ export class Build extends Message<Build> {
   /**
    * @generated from field: neoshowcase.protobuf.Build.BuildStatus status = 3;
    */
-  status = Build_BuildStatus.BUILDING;
+  status = Build_BuildStatus.QUEUED;
 
   /**
    * @generated from field: neoshowcase.protobuf.NullTimestamp started_at = 4;
@@ -1131,29 +1151,29 @@ export class Build extends Message<Build> {
  */
 export enum Build_BuildStatus {
   /**
-   * @generated from enum value: BUILDING = 0;
+   * @generated from enum value: QUEUED = 0;
    */
-  BUILDING = 0,
+  QUEUED = 0,
 
   /**
-   * @generated from enum value: SUCCEEDED = 1;
+   * @generated from enum value: BUILDING = 1;
    */
-  SUCCEEDED = 1,
+  BUILDING = 1,
 
   /**
-   * @generated from enum value: FAILED = 2;
+   * @generated from enum value: SUCCEEDED = 2;
    */
-  FAILED = 2,
+  SUCCEEDED = 2,
 
   /**
-   * @generated from enum value: CANCELLED = 3;
+   * @generated from enum value: FAILED = 3;
    */
-  CANCELLED = 3,
+  FAILED = 3,
 
   /**
-   * @generated from enum value: QUEUED = 4;
+   * @generated from enum value: CANCELLED = 4;
    */
-  QUEUED = 4,
+  CANCELLED = 4,
 
   /**
    * @generated from enum value: SKIPPED = 5;
@@ -1162,11 +1182,11 @@ export enum Build_BuildStatus {
 }
 // Retrieve enum metadata with: proto3.getEnumType(Build_BuildStatus)
 proto3.util.setEnumType(Build_BuildStatus, "neoshowcase.protobuf.Build.BuildStatus", [
-  { no: 0, name: "BUILDING" },
-  { no: 1, name: "SUCCEEDED" },
-  { no: 2, name: "FAILED" },
-  { no: 3, name: "CANCELLED" },
-  { no: 4, name: "QUEUED" },
+  { no: 0, name: "QUEUED" },
+  { no: 1, name: "BUILDING" },
+  { no: 2, name: "SUCCEEDED" },
+  { no: 3, name: "FAILED" },
+  { no: 4, name: "CANCELLED" },
   { no: 5, name: "SKIPPED" },
 ]);
 

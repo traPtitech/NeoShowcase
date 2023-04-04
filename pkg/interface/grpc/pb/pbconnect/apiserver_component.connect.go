@@ -26,6 +26,22 @@ const (
 	ComponentServiceName = "neoshowcase.protobuf.ComponentService"
 )
 
+// These constants are the fully-qualified names of the RPCs defined in this package. They're
+// exposed at runtime as Spec.Procedure and as the final two segments of the HTTP route.
+//
+// Note that these are different from the fully-qualified method names used by
+// google.golang.org/protobuf/reflect/protoreflect. To convert from these constants to
+// reflection-formatted method names, remove the leading slash and convert the remaining slash to a
+// period.
+const (
+	// ComponentServiceConnectBuilderProcedure is the fully-qualified name of the ComponentService's
+	// ConnectBuilder RPC.
+	ComponentServiceConnectBuilderProcedure = "/neoshowcase.protobuf.ComponentService/ConnectBuilder"
+	// ComponentServiceConnectSSGenProcedure is the fully-qualified name of the ComponentService's
+	// ConnectSSGen RPC.
+	ComponentServiceConnectSSGenProcedure = "/neoshowcase.protobuf.ComponentService/ConnectSSGen"
+)
+
 // ComponentServiceClient is a client for the neoshowcase.protobuf.ComponentService service.
 type ComponentServiceClient interface {
 	ConnectBuilder(context.Context) *connect_go.BidiStreamForClient[pb.BuilderResponse, pb.BuilderRequest]
@@ -44,12 +60,12 @@ func NewComponentServiceClient(httpClient connect_go.HTTPClient, baseURL string,
 	return &componentServiceClient{
 		connectBuilder: connect_go.NewClient[pb.BuilderResponse, pb.BuilderRequest](
 			httpClient,
-			baseURL+"/neoshowcase.protobuf.ComponentService/ConnectBuilder",
+			baseURL+ComponentServiceConnectBuilderProcedure,
 			opts...,
 		),
 		connectSSGen: connect_go.NewClient[emptypb.Empty, pb.SSGenRequest](
 			httpClient,
-			baseURL+"/neoshowcase.protobuf.ComponentService/ConnectSSGen",
+			baseURL+ComponentServiceConnectSSGenProcedure,
 			opts...,
 		),
 	}
@@ -85,13 +101,13 @@ type ComponentServiceHandler interface {
 // and JSON codecs. They also support gzip compression.
 func NewComponentServiceHandler(svc ComponentServiceHandler, opts ...connect_go.HandlerOption) (string, http.Handler) {
 	mux := http.NewServeMux()
-	mux.Handle("/neoshowcase.protobuf.ComponentService/ConnectBuilder", connect_go.NewBidiStreamHandler(
-		"/neoshowcase.protobuf.ComponentService/ConnectBuilder",
+	mux.Handle(ComponentServiceConnectBuilderProcedure, connect_go.NewBidiStreamHandler(
+		ComponentServiceConnectBuilderProcedure,
 		svc.ConnectBuilder,
 		opts...,
 	))
-	mux.Handle("/neoshowcase.protobuf.ComponentService/ConnectSSGen", connect_go.NewServerStreamHandler(
-		"/neoshowcase.protobuf.ComponentService/ConnectSSGen",
+	mux.Handle(ComponentServiceConnectSSGenProcedure, connect_go.NewServerStreamHandler(
+		ComponentServiceConnectSSGenProcedure,
 		svc.ConnectSSGen,
 		opts...,
 	))

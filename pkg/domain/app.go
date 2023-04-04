@@ -2,7 +2,6 @@ package domain
 
 import (
 	"context"
-	"fmt"
 	"strings"
 	"time"
 
@@ -194,28 +193,6 @@ const (
 	RepositoryAuthMethodBasic RepositoryAuthMethod = iota
 	RepositoryAuthMethodSSH
 )
-
-func (t RepositoryAuthMethod) String() string {
-	switch t {
-	case RepositoryAuthMethodBasic:
-		return "basic"
-	case RepositoryAuthMethodSSH:
-		return "ssh"
-	default:
-		return ""
-	}
-}
-
-func RepositoryAuthMethodFromString(s string) RepositoryAuthMethod {
-	switch s {
-	case "basic":
-		return RepositoryAuthMethodBasic
-	case "ssh":
-		return RepositoryAuthMethodSSH
-	default:
-		panic(fmt.Sprintf("unknown auth type: %v", s))
-	}
-}
 
 type RepositoryAuth struct {
 	Method   RepositoryAuthMethod

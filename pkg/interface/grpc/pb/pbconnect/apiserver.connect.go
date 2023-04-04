@@ -26,6 +26,85 @@ const (
 	ApplicationServiceName = "neoshowcase.protobuf.ApplicationService"
 )
 
+// These constants are the fully-qualified names of the RPCs defined in this package. They're
+// exposed at runtime as Spec.Procedure and as the final two segments of the HTTP route.
+//
+// Note that these are different from the fully-qualified method names used by
+// google.golang.org/protobuf/reflect/protoreflect. To convert from these constants to
+// reflection-formatted method names, remove the leading slash and convert the remaining slash to a
+// period.
+const (
+	// ApplicationServiceGetMeProcedure is the fully-qualified name of the ApplicationService's GetMe
+	// RPC.
+	ApplicationServiceGetMeProcedure = "/neoshowcase.protobuf.ApplicationService/GetMe"
+	// ApplicationServiceGetRepositoriesProcedure is the fully-qualified name of the
+	// ApplicationService's GetRepositories RPC.
+	ApplicationServiceGetRepositoriesProcedure = "/neoshowcase.protobuf.ApplicationService/GetRepositories"
+	// ApplicationServiceCreateRepositoryProcedure is the fully-qualified name of the
+	// ApplicationService's CreateRepository RPC.
+	ApplicationServiceCreateRepositoryProcedure = "/neoshowcase.protobuf.ApplicationService/CreateRepository"
+	// ApplicationServiceGetApplicationsProcedure is the fully-qualified name of the
+	// ApplicationService's GetApplications RPC.
+	ApplicationServiceGetApplicationsProcedure = "/neoshowcase.protobuf.ApplicationService/GetApplications"
+	// ApplicationServiceGetSystemPublicKeyProcedure is the fully-qualified name of the
+	// ApplicationService's GetSystemPublicKey RPC.
+	ApplicationServiceGetSystemPublicKeyProcedure = "/neoshowcase.protobuf.ApplicationService/GetSystemPublicKey"
+	// ApplicationServiceGetAvailableDomainsProcedure is the fully-qualified name of the
+	// ApplicationService's GetAvailableDomains RPC.
+	ApplicationServiceGetAvailableDomainsProcedure = "/neoshowcase.protobuf.ApplicationService/GetAvailableDomains"
+	// ApplicationServiceAddAvailableDomainProcedure is the fully-qualified name of the
+	// ApplicationService's AddAvailableDomain RPC.
+	ApplicationServiceAddAvailableDomainProcedure = "/neoshowcase.protobuf.ApplicationService/AddAvailableDomain"
+	// ApplicationServiceCreateApplicationProcedure is the fully-qualified name of the
+	// ApplicationService's CreateApplication RPC.
+	ApplicationServiceCreateApplicationProcedure = "/neoshowcase.protobuf.ApplicationService/CreateApplication"
+	// ApplicationServiceGetApplicationProcedure is the fully-qualified name of the ApplicationService's
+	// GetApplication RPC.
+	ApplicationServiceGetApplicationProcedure = "/neoshowcase.protobuf.ApplicationService/GetApplication"
+	// ApplicationServiceUpdateApplicationProcedure is the fully-qualified name of the
+	// ApplicationService's UpdateApplication RPC.
+	ApplicationServiceUpdateApplicationProcedure = "/neoshowcase.protobuf.ApplicationService/UpdateApplication"
+	// ApplicationServiceDeleteApplicationProcedure is the fully-qualified name of the
+	// ApplicationService's DeleteApplication RPC.
+	ApplicationServiceDeleteApplicationProcedure = "/neoshowcase.protobuf.ApplicationService/DeleteApplication"
+	// ApplicationServiceGetBuildsProcedure is the fully-qualified name of the ApplicationService's
+	// GetBuilds RPC.
+	ApplicationServiceGetBuildsProcedure = "/neoshowcase.protobuf.ApplicationService/GetBuilds"
+	// ApplicationServiceGetBuildProcedure is the fully-qualified name of the ApplicationService's
+	// GetBuild RPC.
+	ApplicationServiceGetBuildProcedure = "/neoshowcase.protobuf.ApplicationService/GetBuild"
+	// ApplicationServiceGetBuildLogStreamProcedure is the fully-qualified name of the
+	// ApplicationService's GetBuildLogStream RPC.
+	ApplicationServiceGetBuildLogStreamProcedure = "/neoshowcase.protobuf.ApplicationService/GetBuildLogStream"
+	// ApplicationServiceGetBuildLogProcedure is the fully-qualified name of the ApplicationService's
+	// GetBuildLog RPC.
+	ApplicationServiceGetBuildLogProcedure = "/neoshowcase.protobuf.ApplicationService/GetBuildLog"
+	// ApplicationServiceGetBuildArtifactProcedure is the fully-qualified name of the
+	// ApplicationService's GetBuildArtifact RPC.
+	ApplicationServiceGetBuildArtifactProcedure = "/neoshowcase.protobuf.ApplicationService/GetBuildArtifact"
+	// ApplicationServiceGetEnvVarsProcedure is the fully-qualified name of the ApplicationService's
+	// GetEnvVars RPC.
+	ApplicationServiceGetEnvVarsProcedure = "/neoshowcase.protobuf.ApplicationService/GetEnvVars"
+	// ApplicationServiceSetEnvVarProcedure is the fully-qualified name of the ApplicationService's
+	// SetEnvVar RPC.
+	ApplicationServiceSetEnvVarProcedure = "/neoshowcase.protobuf.ApplicationService/SetEnvVar"
+	// ApplicationServiceGetApplicationOutputProcedure is the fully-qualified name of the
+	// ApplicationService's GetApplicationOutput RPC.
+	ApplicationServiceGetApplicationOutputProcedure = "/neoshowcase.protobuf.ApplicationService/GetApplicationOutput"
+	// ApplicationServiceCancelBuildProcedure is the fully-qualified name of the ApplicationService's
+	// CancelBuild RPC.
+	ApplicationServiceCancelBuildProcedure = "/neoshowcase.protobuf.ApplicationService/CancelBuild"
+	// ApplicationServiceRetryCommitBuildProcedure is the fully-qualified name of the
+	// ApplicationService's RetryCommitBuild RPC.
+	ApplicationServiceRetryCommitBuildProcedure = "/neoshowcase.protobuf.ApplicationService/RetryCommitBuild"
+	// ApplicationServiceStartApplicationProcedure is the fully-qualified name of the
+	// ApplicationService's StartApplication RPC.
+	ApplicationServiceStartApplicationProcedure = "/neoshowcase.protobuf.ApplicationService/StartApplication"
+	// ApplicationServiceStopApplicationProcedure is the fully-qualified name of the
+	// ApplicationService's StopApplication RPC.
+	ApplicationServiceStopApplicationProcedure = "/neoshowcase.protobuf.ApplicationService/StopApplication"
+)
+
 // ApplicationServiceClient is a client for the neoshowcase.protobuf.ApplicationService service.
 type ApplicationServiceClient interface {
 	GetMe(context.Context, *connect_go.Request[emptypb.Empty]) (*connect_go.Response[pb.User], error)
@@ -65,117 +144,117 @@ func NewApplicationServiceClient(httpClient connect_go.HTTPClient, baseURL strin
 	return &applicationServiceClient{
 		getMe: connect_go.NewClient[emptypb.Empty, pb.User](
 			httpClient,
-			baseURL+"/neoshowcase.protobuf.ApplicationService/GetMe",
+			baseURL+ApplicationServiceGetMeProcedure,
 			opts...,
 		),
 		getRepositories: connect_go.NewClient[emptypb.Empty, pb.GetRepositoriesResponse](
 			httpClient,
-			baseURL+"/neoshowcase.protobuf.ApplicationService/GetRepositories",
+			baseURL+ApplicationServiceGetRepositoriesProcedure,
 			opts...,
 		),
 		createRepository: connect_go.NewClient[pb.CreateRepositoryRequest, pb.Repository](
 			httpClient,
-			baseURL+"/neoshowcase.protobuf.ApplicationService/CreateRepository",
+			baseURL+ApplicationServiceCreateRepositoryProcedure,
 			opts...,
 		),
 		getApplications: connect_go.NewClient[emptypb.Empty, pb.GetApplicationsResponse](
 			httpClient,
-			baseURL+"/neoshowcase.protobuf.ApplicationService/GetApplications",
+			baseURL+ApplicationServiceGetApplicationsProcedure,
 			opts...,
 		),
 		getSystemPublicKey: connect_go.NewClient[emptypb.Empty, pb.GetSystemPublicKeyResponse](
 			httpClient,
-			baseURL+"/neoshowcase.protobuf.ApplicationService/GetSystemPublicKey",
+			baseURL+ApplicationServiceGetSystemPublicKeyProcedure,
 			opts...,
 		),
 		getAvailableDomains: connect_go.NewClient[emptypb.Empty, pb.AvailableDomains](
 			httpClient,
-			baseURL+"/neoshowcase.protobuf.ApplicationService/GetAvailableDomains",
+			baseURL+ApplicationServiceGetAvailableDomainsProcedure,
 			opts...,
 		),
 		addAvailableDomain: connect_go.NewClient[pb.AvailableDomain, emptypb.Empty](
 			httpClient,
-			baseURL+"/neoshowcase.protobuf.ApplicationService/AddAvailableDomain",
+			baseURL+ApplicationServiceAddAvailableDomainProcedure,
 			opts...,
 		),
 		createApplication: connect_go.NewClient[pb.CreateApplicationRequest, pb.Application](
 			httpClient,
-			baseURL+"/neoshowcase.protobuf.ApplicationService/CreateApplication",
+			baseURL+ApplicationServiceCreateApplicationProcedure,
 			opts...,
 		),
 		getApplication: connect_go.NewClient[pb.ApplicationIdRequest, pb.Application](
 			httpClient,
-			baseURL+"/neoshowcase.protobuf.ApplicationService/GetApplication",
+			baseURL+ApplicationServiceGetApplicationProcedure,
 			opts...,
 		),
 		updateApplication: connect_go.NewClient[pb.UpdateApplicationRequest, emptypb.Empty](
 			httpClient,
-			baseURL+"/neoshowcase.protobuf.ApplicationService/UpdateApplication",
+			baseURL+ApplicationServiceUpdateApplicationProcedure,
 			opts...,
 		),
 		deleteApplication: connect_go.NewClient[pb.ApplicationIdRequest, emptypb.Empty](
 			httpClient,
-			baseURL+"/neoshowcase.protobuf.ApplicationService/DeleteApplication",
+			baseURL+ApplicationServiceDeleteApplicationProcedure,
 			opts...,
 		),
 		getBuilds: connect_go.NewClient[pb.ApplicationIdRequest, pb.GetBuildsResponse](
 			httpClient,
-			baseURL+"/neoshowcase.protobuf.ApplicationService/GetBuilds",
+			baseURL+ApplicationServiceGetBuildsProcedure,
 			opts...,
 		),
 		getBuild: connect_go.NewClient[pb.BuildIdRequest, pb.Build](
 			httpClient,
-			baseURL+"/neoshowcase.protobuf.ApplicationService/GetBuild",
+			baseURL+ApplicationServiceGetBuildProcedure,
 			opts...,
 		),
 		getBuildLogStream: connect_go.NewClient[pb.BuildIdRequest, pb.BuildLog](
 			httpClient,
-			baseURL+"/neoshowcase.protobuf.ApplicationService/GetBuildLogStream",
+			baseURL+ApplicationServiceGetBuildLogStreamProcedure,
 			opts...,
 		),
 		getBuildLog: connect_go.NewClient[pb.BuildIdRequest, pb.BuildLog](
 			httpClient,
-			baseURL+"/neoshowcase.protobuf.ApplicationService/GetBuildLog",
+			baseURL+ApplicationServiceGetBuildLogProcedure,
 			opts...,
 		),
 		getBuildArtifact: connect_go.NewClient[pb.ArtifactIdRequest, pb.ArtifactContent](
 			httpClient,
-			baseURL+"/neoshowcase.protobuf.ApplicationService/GetBuildArtifact",
+			baseURL+ApplicationServiceGetBuildArtifactProcedure,
 			opts...,
 		),
 		getEnvVars: connect_go.NewClient[pb.ApplicationIdRequest, pb.ApplicationEnvVars](
 			httpClient,
-			baseURL+"/neoshowcase.protobuf.ApplicationService/GetEnvVars",
+			baseURL+ApplicationServiceGetEnvVarsProcedure,
 			opts...,
 		),
 		setEnvVar: connect_go.NewClient[pb.SetApplicationEnvVarRequest, emptypb.Empty](
 			httpClient,
-			baseURL+"/neoshowcase.protobuf.ApplicationService/SetEnvVar",
+			baseURL+ApplicationServiceSetEnvVarProcedure,
 			opts...,
 		),
 		getApplicationOutput: connect_go.NewClient[pb.ApplicationIdRequest, pb.ApplicationOutput](
 			httpClient,
-			baseURL+"/neoshowcase.protobuf.ApplicationService/GetApplicationOutput",
+			baseURL+ApplicationServiceGetApplicationOutputProcedure,
 			opts...,
 		),
 		cancelBuild: connect_go.NewClient[pb.BuildIdRequest, emptypb.Empty](
 			httpClient,
-			baseURL+"/neoshowcase.protobuf.ApplicationService/CancelBuild",
+			baseURL+ApplicationServiceCancelBuildProcedure,
 			opts...,
 		),
 		retryCommitBuild: connect_go.NewClient[pb.RetryCommitBuildRequest, emptypb.Empty](
 			httpClient,
-			baseURL+"/neoshowcase.protobuf.ApplicationService/RetryCommitBuild",
+			baseURL+ApplicationServiceRetryCommitBuildProcedure,
 			opts...,
 		),
 		startApplication: connect_go.NewClient[pb.ApplicationIdRequest, emptypb.Empty](
 			httpClient,
-			baseURL+"/neoshowcase.protobuf.ApplicationService/StartApplication",
+			baseURL+ApplicationServiceStartApplicationProcedure,
 			opts...,
 		),
 		stopApplication: connect_go.NewClient[pb.ApplicationIdRequest, emptypb.Empty](
 			httpClient,
-			baseURL+"/neoshowcase.protobuf.ApplicationService/StopApplication",
+			baseURL+ApplicationServiceStopApplicationProcedure,
 			opts...,
 		),
 	}
@@ -358,118 +437,118 @@ type ApplicationServiceHandler interface {
 // and JSON codecs. They also support gzip compression.
 func NewApplicationServiceHandler(svc ApplicationServiceHandler, opts ...connect_go.HandlerOption) (string, http.Handler) {
 	mux := http.NewServeMux()
-	mux.Handle("/neoshowcase.protobuf.ApplicationService/GetMe", connect_go.NewUnaryHandler(
-		"/neoshowcase.protobuf.ApplicationService/GetMe",
+	mux.Handle(ApplicationServiceGetMeProcedure, connect_go.NewUnaryHandler(
+		ApplicationServiceGetMeProcedure,
 		svc.GetMe,
 		opts...,
 	))
-	mux.Handle("/neoshowcase.protobuf.ApplicationService/GetRepositories", connect_go.NewUnaryHandler(
-		"/neoshowcase.protobuf.ApplicationService/GetRepositories",
+	mux.Handle(ApplicationServiceGetRepositoriesProcedure, connect_go.NewUnaryHandler(
+		ApplicationServiceGetRepositoriesProcedure,
 		svc.GetRepositories,
 		opts...,
 	))
-	mux.Handle("/neoshowcase.protobuf.ApplicationService/CreateRepository", connect_go.NewUnaryHandler(
-		"/neoshowcase.protobuf.ApplicationService/CreateRepository",
+	mux.Handle(ApplicationServiceCreateRepositoryProcedure, connect_go.NewUnaryHandler(
+		ApplicationServiceCreateRepositoryProcedure,
 		svc.CreateRepository,
 		opts...,
 	))
-	mux.Handle("/neoshowcase.protobuf.ApplicationService/GetApplications", connect_go.NewUnaryHandler(
-		"/neoshowcase.protobuf.ApplicationService/GetApplications",
+	mux.Handle(ApplicationServiceGetApplicationsProcedure, connect_go.NewUnaryHandler(
+		ApplicationServiceGetApplicationsProcedure,
 		svc.GetApplications,
 		opts...,
 	))
-	mux.Handle("/neoshowcase.protobuf.ApplicationService/GetSystemPublicKey", connect_go.NewUnaryHandler(
-		"/neoshowcase.protobuf.ApplicationService/GetSystemPublicKey",
+	mux.Handle(ApplicationServiceGetSystemPublicKeyProcedure, connect_go.NewUnaryHandler(
+		ApplicationServiceGetSystemPublicKeyProcedure,
 		svc.GetSystemPublicKey,
 		opts...,
 	))
-	mux.Handle("/neoshowcase.protobuf.ApplicationService/GetAvailableDomains", connect_go.NewUnaryHandler(
-		"/neoshowcase.protobuf.ApplicationService/GetAvailableDomains",
+	mux.Handle(ApplicationServiceGetAvailableDomainsProcedure, connect_go.NewUnaryHandler(
+		ApplicationServiceGetAvailableDomainsProcedure,
 		svc.GetAvailableDomains,
 		opts...,
 	))
-	mux.Handle("/neoshowcase.protobuf.ApplicationService/AddAvailableDomain", connect_go.NewUnaryHandler(
-		"/neoshowcase.protobuf.ApplicationService/AddAvailableDomain",
+	mux.Handle(ApplicationServiceAddAvailableDomainProcedure, connect_go.NewUnaryHandler(
+		ApplicationServiceAddAvailableDomainProcedure,
 		svc.AddAvailableDomain,
 		opts...,
 	))
-	mux.Handle("/neoshowcase.protobuf.ApplicationService/CreateApplication", connect_go.NewUnaryHandler(
-		"/neoshowcase.protobuf.ApplicationService/CreateApplication",
+	mux.Handle(ApplicationServiceCreateApplicationProcedure, connect_go.NewUnaryHandler(
+		ApplicationServiceCreateApplicationProcedure,
 		svc.CreateApplication,
 		opts...,
 	))
-	mux.Handle("/neoshowcase.protobuf.ApplicationService/GetApplication", connect_go.NewUnaryHandler(
-		"/neoshowcase.protobuf.ApplicationService/GetApplication",
+	mux.Handle(ApplicationServiceGetApplicationProcedure, connect_go.NewUnaryHandler(
+		ApplicationServiceGetApplicationProcedure,
 		svc.GetApplication,
 		opts...,
 	))
-	mux.Handle("/neoshowcase.protobuf.ApplicationService/UpdateApplication", connect_go.NewUnaryHandler(
-		"/neoshowcase.protobuf.ApplicationService/UpdateApplication",
+	mux.Handle(ApplicationServiceUpdateApplicationProcedure, connect_go.NewUnaryHandler(
+		ApplicationServiceUpdateApplicationProcedure,
 		svc.UpdateApplication,
 		opts...,
 	))
-	mux.Handle("/neoshowcase.protobuf.ApplicationService/DeleteApplication", connect_go.NewUnaryHandler(
-		"/neoshowcase.protobuf.ApplicationService/DeleteApplication",
+	mux.Handle(ApplicationServiceDeleteApplicationProcedure, connect_go.NewUnaryHandler(
+		ApplicationServiceDeleteApplicationProcedure,
 		svc.DeleteApplication,
 		opts...,
 	))
-	mux.Handle("/neoshowcase.protobuf.ApplicationService/GetBuilds", connect_go.NewUnaryHandler(
-		"/neoshowcase.protobuf.ApplicationService/GetBuilds",
+	mux.Handle(ApplicationServiceGetBuildsProcedure, connect_go.NewUnaryHandler(
+		ApplicationServiceGetBuildsProcedure,
 		svc.GetBuilds,
 		opts...,
 	))
-	mux.Handle("/neoshowcase.protobuf.ApplicationService/GetBuild", connect_go.NewUnaryHandler(
-		"/neoshowcase.protobuf.ApplicationService/GetBuild",
+	mux.Handle(ApplicationServiceGetBuildProcedure, connect_go.NewUnaryHandler(
+		ApplicationServiceGetBuildProcedure,
 		svc.GetBuild,
 		opts...,
 	))
-	mux.Handle("/neoshowcase.protobuf.ApplicationService/GetBuildLogStream", connect_go.NewServerStreamHandler(
-		"/neoshowcase.protobuf.ApplicationService/GetBuildLogStream",
+	mux.Handle(ApplicationServiceGetBuildLogStreamProcedure, connect_go.NewServerStreamHandler(
+		ApplicationServiceGetBuildLogStreamProcedure,
 		svc.GetBuildLogStream,
 		opts...,
 	))
-	mux.Handle("/neoshowcase.protobuf.ApplicationService/GetBuildLog", connect_go.NewUnaryHandler(
-		"/neoshowcase.protobuf.ApplicationService/GetBuildLog",
+	mux.Handle(ApplicationServiceGetBuildLogProcedure, connect_go.NewUnaryHandler(
+		ApplicationServiceGetBuildLogProcedure,
 		svc.GetBuildLog,
 		opts...,
 	))
-	mux.Handle("/neoshowcase.protobuf.ApplicationService/GetBuildArtifact", connect_go.NewUnaryHandler(
-		"/neoshowcase.protobuf.ApplicationService/GetBuildArtifact",
+	mux.Handle(ApplicationServiceGetBuildArtifactProcedure, connect_go.NewUnaryHandler(
+		ApplicationServiceGetBuildArtifactProcedure,
 		svc.GetBuildArtifact,
 		opts...,
 	))
-	mux.Handle("/neoshowcase.protobuf.ApplicationService/GetEnvVars", connect_go.NewUnaryHandler(
-		"/neoshowcase.protobuf.ApplicationService/GetEnvVars",
+	mux.Handle(ApplicationServiceGetEnvVarsProcedure, connect_go.NewUnaryHandler(
+		ApplicationServiceGetEnvVarsProcedure,
 		svc.GetEnvVars,
 		opts...,
 	))
-	mux.Handle("/neoshowcase.protobuf.ApplicationService/SetEnvVar", connect_go.NewUnaryHandler(
-		"/neoshowcase.protobuf.ApplicationService/SetEnvVar",
+	mux.Handle(ApplicationServiceSetEnvVarProcedure, connect_go.NewUnaryHandler(
+		ApplicationServiceSetEnvVarProcedure,
 		svc.SetEnvVar,
 		opts...,
 	))
-	mux.Handle("/neoshowcase.protobuf.ApplicationService/GetApplicationOutput", connect_go.NewUnaryHandler(
-		"/neoshowcase.protobuf.ApplicationService/GetApplicationOutput",
+	mux.Handle(ApplicationServiceGetApplicationOutputProcedure, connect_go.NewUnaryHandler(
+		ApplicationServiceGetApplicationOutputProcedure,
 		svc.GetApplicationOutput,
 		opts...,
 	))
-	mux.Handle("/neoshowcase.protobuf.ApplicationService/CancelBuild", connect_go.NewUnaryHandler(
-		"/neoshowcase.protobuf.ApplicationService/CancelBuild",
+	mux.Handle(ApplicationServiceCancelBuildProcedure, connect_go.NewUnaryHandler(
+		ApplicationServiceCancelBuildProcedure,
 		svc.CancelBuild,
 		opts...,
 	))
-	mux.Handle("/neoshowcase.protobuf.ApplicationService/RetryCommitBuild", connect_go.NewUnaryHandler(
-		"/neoshowcase.protobuf.ApplicationService/RetryCommitBuild",
+	mux.Handle(ApplicationServiceRetryCommitBuildProcedure, connect_go.NewUnaryHandler(
+		ApplicationServiceRetryCommitBuildProcedure,
 		svc.RetryCommitBuild,
 		opts...,
 	))
-	mux.Handle("/neoshowcase.protobuf.ApplicationService/StartApplication", connect_go.NewUnaryHandler(
-		"/neoshowcase.protobuf.ApplicationService/StartApplication",
+	mux.Handle(ApplicationServiceStartApplicationProcedure, connect_go.NewUnaryHandler(
+		ApplicationServiceStartApplicationProcedure,
 		svc.StartApplication,
 		opts...,
 	))
-	mux.Handle("/neoshowcase.protobuf.ApplicationService/StopApplication", connect_go.NewUnaryHandler(
-		"/neoshowcase.protobuf.ApplicationService/StopApplication",
+	mux.Handle(ApplicationServiceStopApplicationProcedure, connect_go.NewUnaryHandler(
+		ApplicationServiceStopApplicationProcedure,
 		svc.StopApplication,
 		opts...,
 	))

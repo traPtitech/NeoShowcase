@@ -2,7 +2,6 @@ package grpc
 
 import (
 	"context"
-	"fmt"
 	"time"
 
 	"github.com/bufbuild/connect-go"
@@ -382,6 +381,11 @@ func fromPBRepositoryAuth(req *pb.CreateRepositoryRequest) optional.Of[domain.Re
 	}
 }
 
+var repoAuthMethodMapper = mapper.NewValueMapper(map[domain.RepositoryAuthMethod]pb.Repository_AuthMethod{
+	domain.RepositoryAuthMethodBasic: pb.Repository_BASIC,
+	domain.RepositoryAuthMethodSSH:   pb.Repository_SSH,
+})
+
 func toPBRepository(repo *domain.Repository) *pb.Repository {
 	ret := &pb.Repository{
 		Id:   repo.ID,
@@ -389,7 +393,7 @@ func toPBRepository(repo *domain.Repository) *pb.Repository {
 		Url:  repo.URL,
 	}
 	if repo.Auth.Valid {
-		ret.AuthMethod = repo.Auth.V.Method.String()
+		ret.AuthMethod = repoAuthMethodMapper.IntoMust(repo.Auth.V.Method)
 	}
 	return ret
 }
@@ -475,24 +479,14 @@ func toPBApplication(app *domain.Application) *pb.Application {
 	}
 }
 
-func toPBBuildStatus(status domain.BuildStatus) pb.Build_BuildStatus {
-	switch status {
-	case domain.BuildStatusBuilding:
-		return pb.Build_BUILDING
-	case domain.BuildStatusSucceeded:
-		return pb.Build_SUCCEEDED
-	case domain.BuildStatusFailed:
-		return pb.Build_FAILED
-	case domain.BuildStatusCanceled:
-		return pb.Build_CANCELLED
-	case domain.BuildStatusQueued:
-		return pb.Build_QUEUED
-	case domain.BuildStatusSkipped:
-		return pb.Build_SKIPPED
-	default:
-		panic(fmt.Sprintf("unknown build status: %v", status))
-	}
-}
+var buildStatusMapper = mapper.NewValueMapper(map[domain.BuildStatus]pb.Build_BuildStatus{
+	domain.BuildStatusQueued:    pb.Build_QUEUED,
+	domain.BuildStatusBuilding:  pb.Build_BUILDING,
+	domain.BuildStatusSucceeded: pb.Build_SUCCEEDED,
+	domain.BuildStatusFailed:    pb.Build_FAILED,
+	domain.BuildStatusCanceled:  pb.Build_CANCELLED,
+	domain.BuildStatusSkipped:   pb.Build_SKIPPED,
+})
 
 func toPBNullTimestamp(t optional.Of[time.Time]) *pb.NullTimestamp {
 	return &pb.NullTimestamp{Timestamp: timestamppb.New(t.V), Valid: t.Valid}
@@ -511,7 +505,7 @@ func toPBBuild(build *domain.Build) *pb.Build {
 	b := &pb.Build{
 		Id:         build.ID,
 		Commit:     build.Commit,
-		Status:     toPBBuildStatus(build.Status),
+		Status:     buildStatusMapper.IntoMust(build.Status),
 		StartedAt:  toPBNullTimestamp(build.StartedAt),
 		UpdatedAt:  toPBNullTimestamp(build.UpdatedAt),
 		FinishedAt: toPBNullTimestamp(build.FinishedAt),
