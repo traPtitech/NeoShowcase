@@ -122,8 +122,10 @@ jobs:
         with:
           path: ./pkg/interface/grpc/pb
           key: ${{ runner.os }}-proto-${{ hashFiles('**/*.proto') }}
-      - name: Run ns-migrate up
-        run: go run ./cmd/ns-migrate up -P 5004
+      - name: Run migration
+        run: |
+          go install github.com/k0kubun/sqldef/cmd/mysqldef@latest
+          DB_PORT=5004 ./migrations/entrypoint.sh ./migrations/schema.sql
       - name: Run tests
         run: go test ./... -v -race -coverprofile=coverage.out -covermode=atomic -vet=off
       - name: Upload coverage to Codecov
