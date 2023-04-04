@@ -53,7 +53,6 @@ jobs:
           - ns
           - ns-builder
           - ns-mc
-          - ns-migrate
           - ns-ssgen
     steps:
       - uses: actions/checkout@v3
