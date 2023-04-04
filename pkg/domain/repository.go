@@ -6,14 +6,13 @@ import (
 	"context"
 	"time"
 
-	"github.com/traPtitech/neoshowcase/pkg/domain/builder"
 	"github.com/traPtitech/neoshowcase/pkg/util/optional"
 )
 
 type GetApplicationCondition struct {
 	IDIn      optional.Of[[]string]
 	UserID    optional.Of[string]
-	BuildType optional.Of[builder.BuildType]
+	BuildType optional.Of[BuildType]
 	State     optional.Of[ApplicationState]
 	// InSync WantCommit が CurrentCommit に一致する
 	InSync optional.Of[bool]
@@ -64,13 +63,13 @@ type GetBuildCondition struct {
 	ApplicationID optional.Of[string]
 	Commit        optional.Of[string]
 	CommitIn      optional.Of[[]string]
-	Status        optional.Of[builder.BuildStatus]
+	Status        optional.Of[BuildStatus]
 	Retriable     optional.Of[bool]
 }
 
 type UpdateBuildArgs struct {
-	FromStatus optional.Of[builder.BuildStatus]
-	Status     optional.Of[builder.BuildStatus]
+	FromStatus optional.Of[BuildStatus]
+	Status     optional.Of[BuildStatus]
 	StartedAt  optional.Of[time.Time]
 	UpdatedAt  optional.Of[time.Time]
 	FinishedAt optional.Of[time.Time]

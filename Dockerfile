@@ -23,7 +23,8 @@ FROM builder as builder-ns-mc
 RUN go build -o /app/ns-mc -ldflags "-s -w -X main.version=$APP_VERSION -X main.revision=$APP_REVISION" ./cmd/ns-mc
 
 FROM builder as builder-ns-migrate
-RUN go build -o /app/ns-migrate -ldflags "-s -w -X main.version=$APP_VERSION -X main.revision=$APP_REVISION" ./cmd/ns-migrate
+ARG SQLDEF_VERSION=v0.15.22
+RUN go install -ldflags "-s -w -X main.version=$SQLDEF_VERSION" github.com/k0kubun/sqldef/cmd/mysqldef@$SQLDEF_VERSION
 
 FROM builder as builder-ns-ssgen
 RUN go build -o /app/ns-ssgen -ldflags "-s -w -X main.version=$APP_VERSION -X main.revision=$APP_REVISION" ./cmd/ns-ssgen
@@ -60,8 +61,15 @@ ENTRYPOINT ["/app/ns-ssgen"]
 CMD ["run"]
 
 FROM base as ns-migrate
-COPY --from=builder-ns-migrate /app/ns-migrate ./
-ENTRYPOINT ["/app/ns-migrate"]
+ENV APP_VERSION=$APP_VERSION
+ENV APP_REVISION=$APP_REVISION
+
+COPY ./migrations/entrypoint.sh ./
+COPY ./migrations/schema.sql ./
+COPY --from=builder-ns-migrate /go/bin/mysqldef /usr/local/bin/
+
+ENTRYPOINT ["/app/entrypoint.sh"]
+CMD ["/app/schema.sql"]
 
 FROM base as ns-all
 EXPOSE 5000 10000 8080
@@ -69,4 +77,3 @@ COPY --from=builder-ns /app/ns ./
 COPY --from=builder-ns-builder /app/ns-builder ./
 COPY --from=builder-ns-mc /app/ns-mc ./
 COPY --from=builder-ns-ssgen /app/ns-ssgen ./
-COPY --from=builder-ns-migrate /app/ns-migrate ./

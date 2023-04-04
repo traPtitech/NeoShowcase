@@ -49,10 +49,10 @@ func (r *applicationRepository) GetApplications(ctx context.Context, cond domain
 		)
 	}
 	if cond.BuildType.Valid {
-		mods = append(mods, models.ApplicationWhere.BuildType.EQ(cond.BuildType.V.String()))
+		mods = append(mods, models.ApplicationWhere.BuildType.EQ(buildTypeMapper.FromMust(cond.BuildType.V)))
 	}
 	if cond.State.Valid {
-		mods = append(mods, models.ApplicationWhere.State.EQ(cond.State.V.String()))
+		mods = append(mods, models.ApplicationWhere.State.EQ(appStateMapper.FromMust(cond.State.V)))
 	}
 	if cond.InSync.Valid {
 		if cond.InSync.V {
@@ -153,7 +153,7 @@ func (r *applicationRepository) UpdateApplication(ctx context.Context, id string
 		app.RefName = args.RefName.V
 	}
 	if args.State.Valid {
-		app.State = args.State.V.String()
+		app.State = appStateMapper.FromMust(args.State.V)
 	}
 	if args.CurrentCommit.Valid {
 		app.CurrentCommit = args.CurrentCommit.V

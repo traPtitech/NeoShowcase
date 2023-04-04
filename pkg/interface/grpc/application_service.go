@@ -15,10 +15,10 @@ import (
 	"google.golang.org/protobuf/types/known/timestamppb"
 
 	"github.com/traPtitech/neoshowcase/pkg/domain"
-	"github.com/traPtitech/neoshowcase/pkg/domain/builder"
 	"github.com/traPtitech/neoshowcase/pkg/interface/grpc/pb"
 	"github.com/traPtitech/neoshowcase/pkg/interface/grpc/pb/pbconnect"
 	"github.com/traPtitech/neoshowcase/pkg/usecase"
+	"github.com/traPtitech/neoshowcase/pkg/util/mapper"
 	"github.com/traPtitech/neoshowcase/pkg/util/optional"
 )
 
@@ -142,7 +142,7 @@ func (s *ApplicationService) CreateApplication(ctx context.Context, req *connect
 		Name:          msg.Name,
 		RepositoryID:  msg.RepositoryId,
 		RefName:       msg.RefName,
-		BuildType:     fromPBBuildType(msg.BuildType),
+		BuildType:     buildTypeMapper.FromMust(msg.BuildType),
 		State:         domain.ApplicationStateIdle,
 		CurrentCommit: domain.EmptyCommit,
 		WantCommit:    domain.EmptyCommit,
@@ -203,7 +203,7 @@ func (s *ApplicationService) UpdateApplication(ctx context.Context, req *connect
 			ArtifactPath:   msg.Config.ArtifactPath,
 			BuildCmd:       msg.Config.BuildCmd,
 			EntrypointCmd:  msg.Config.EntrypointCmd,
-			Authentication: fromPBAuthenticationType(msg.Config.Authentication),
+			Authentication: authTypeMapper.FromMust(msg.Config.Authentication),
 		}),
 		Websites: optional.From(app.Websites),
 		OwnerIDs: optional.From(msg.OwnerIds),
@@ -394,68 +394,23 @@ func toPBRepository(repo *domain.Repository) *pb.Repository {
 	return ret
 }
 
-func fromPBBuildType(buildType pb.BuildType) builder.BuildType {
-	switch buildType {
-	case pb.BuildType_RUNTIME:
-		return builder.BuildTypeRuntime
-	case pb.BuildType_STATIC:
-		return builder.BuildTypeStatic
-	default:
-		panic(fmt.Sprintf("unknown build type: %v", buildType))
-	}
-}
+var buildTypeMapper = mapper.NewValueMapper(map[domain.BuildType]pb.BuildType{
+	domain.BuildTypeRuntime: pb.BuildType_RUNTIME,
+	domain.BuildTypeStatic:  pb.BuildType_STATIC,
+})
 
-func toPBBuildType(buildType builder.BuildType) pb.BuildType {
-	switch buildType {
-	case builder.BuildTypeRuntime:
-		return pb.BuildType_RUNTIME
-	case builder.BuildTypeStatic:
-		return pb.BuildType_STATIC
-	default:
-		panic(fmt.Sprintf("unknown build type: %v", buildType))
-	}
-}
+var appStateMapper = mapper.NewValueMapper(map[domain.ApplicationState]pb.ApplicationState{
+	domain.ApplicationStateIdle:      pb.ApplicationState_IDLE,
+	domain.ApplicationStateDeploying: pb.ApplicationState_DEPLOYING,
+	domain.ApplicationStateRunning:   pb.ApplicationState_RUNNING,
+	domain.ApplicationStateErrored:   pb.ApplicationState_ERRORED,
+})
 
-func toPBApplicationState(state domain.ApplicationState) pb.ApplicationState {
-	switch state {
-	case domain.ApplicationStateIdle:
-		return pb.ApplicationState_IDLE
-	case domain.ApplicationStateDeploying:
-		return pb.ApplicationState_DEPLOYING
-	case domain.ApplicationStateRunning:
-		return pb.ApplicationState_RUNNING
-	case domain.ApplicationStateErrored:
-		return pb.ApplicationState_ERRORED
-	default:
-		panic(fmt.Sprintf("unknown application state: %v", state))
-	}
-}
-
-func toPBAuthenticationType(t domain.AuthenticationType) pb.AuthenticationType {
-	switch t {
-	case domain.AuthenticationTypeOff:
-		return pb.AuthenticationType_OFF
-	case domain.AuthenticationTypeSoft:
-		return pb.AuthenticationType_SOFT
-	case domain.AuthenticationTypeHard:
-		return pb.AuthenticationType_HARD
-	default:
-		panic(fmt.Sprintf("unknown authentication type: %v", t))
-	}
-}
-
-func fromPBAuthenticationType(t pb.AuthenticationType) domain.AuthenticationType {
-	switch t {
-	case pb.AuthenticationType_OFF:
-		return domain.AuthenticationTypeOff
-	case pb.AuthenticationType_SOFT:
-		return domain.AuthenticationTypeSoft
-	case pb.AuthenticationType_HARD:
-		return domain.AuthenticationTypeHard
-	default:
-		panic(fmt.Sprintf("unknown authentication type: %v", t))
-	}
-}
+var authTypeMapper = mapper.NewValueMapper(map[domain.AuthenticationType]pb.AuthenticationType{
+	domain.AuthenticationTypeOff:  pb.AuthenticationType_OFF,
+	domain.AuthenticationTypeSoft: pb.AuthenticationType_SOFT,
+	domain.AuthenticationTypeHard: pb.AuthenticationType_HARD,
+})
 
 func toPBApplicationConfig(c domain.ApplicationConfig) *pb.ApplicationConfig {
 	return &pb.ApplicationConfig{
@@ -466,7 +421,7 @@ func toPBApplicationConfig(c domain.ApplicationConfig) *pb.ApplicationConfig {
 		ArtifactPath:   c.ArtifactPath,
 		BuildCmd:       c.BuildCmd,
 		EntrypointCmd:  c.EntrypointCmd,
-		Authentication: toPBAuthenticationType(c.Authentication),
+		Authentication: authTypeMapper.IntoMust(c.Authentication),
 	}
 }
 
@@ -479,7 +434,7 @@ func fromPBApplicationConfig(c *pb.ApplicationConfig) domain.ApplicationConfig {
 		ArtifactPath:   c.ArtifactPath,
 		BuildCmd:       c.BuildCmd,
 		EntrypointCmd:  c.EntrypointCmd,
-		Authentication: fromPBAuthenticationType(c.Authentication),
+		Authentication: authTypeMapper.FromMust(c.Authentication),
 	}
 }
 
@@ -510,8 +465,8 @@ func toPBApplication(app *domain.Application) *pb.Application {
 		Name:          app.Name,
 		RepositoryId:  app.RepositoryID,
 		RefName:       app.RefName,
-		BuildType:     toPBBuildType(app.BuildType),
-		State:         toPBApplicationState(app.State),
+		BuildType:     buildTypeMapper.IntoMust(app.BuildType),
+		State:         appStateMapper.IntoMust(app.State),
 		CurrentCommit: app.CurrentCommit,
 		WantCommit:    app.WantCommit,
 		Config:        toPBApplicationConfig(app.Config),
@@ -520,19 +475,19 @@ func toPBApplication(app *domain.Application) *pb.Application {
 	}
 }
 
-func toPBBuildStatus(status builder.BuildStatus) pb.Build_BuildStatus {
+func toPBBuildStatus(status domain.BuildStatus) pb.Build_BuildStatus {
 	switch status {
-	case builder.BuildStatusBuilding:
+	case domain.BuildStatusBuilding:
 		return pb.Build_BUILDING
-	case builder.BuildStatusSucceeded:
+	case domain.BuildStatusSucceeded:
 		return pb.Build_SUCCEEDED
-	case builder.BuildStatusFailed:
+	case domain.BuildStatusFailed:
 		return pb.Build_FAILED
-	case builder.BuildStatusCanceled:
+	case domain.BuildStatusCanceled:
 		return pb.Build_CANCELLED
-	case builder.BuildStatusQueued:
+	case domain.BuildStatusQueued:
 		return pb.Build_QUEUED
-	case builder.BuildStatusSkipped:
+	case domain.BuildStatusSkipped:
 		return pb.Build_SKIPPED
 	default:
 		panic(fmt.Sprintf("unknown build status: %v", status))

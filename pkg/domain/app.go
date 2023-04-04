@@ -10,7 +10,6 @@ import (
 	"golang.org/x/exp/slices"
 	"golang.org/x/net/idna"
 
-	"github.com/traPtitech/neoshowcase/pkg/domain/builder"
 	"github.com/traPtitech/neoshowcase/pkg/util/optional"
 )
 
@@ -23,36 +22,6 @@ const (
 	ApplicationStateErrored
 )
 
-func (s ApplicationState) String() string {
-	switch s {
-	case ApplicationStateIdle:
-		return "IDLE"
-	case ApplicationStateDeploying:
-		return "DEPLOYING"
-	case ApplicationStateRunning:
-		return "RUNNING"
-	case ApplicationStateErrored:
-		return "ERRORED"
-	default:
-		return ""
-	}
-}
-
-func ApplicationStateFromString(str string) ApplicationState {
-	switch str {
-	case "IDLE":
-		return ApplicationStateIdle
-	case "DEPLOYING":
-		return ApplicationStateDeploying
-	case "RUNNING":
-		return ApplicationStateRunning
-	case "ERRORED":
-		return ApplicationStateErrored
-	default:
-		panic(fmt.Sprintf("unknown application state: %v", str))
-	}
-}
-
 type AuthenticationType int
 
 const (
@@ -60,32 +29,6 @@ const (
 	AuthenticationTypeSoft
 	AuthenticationTypeHard
 )
-
-func (a AuthenticationType) String() string {
-	switch a {
-	case AuthenticationTypeOff:
-		return "off"
-	case AuthenticationTypeSoft:
-		return "soft"
-	case AuthenticationTypeHard:
-		return "hard"
-	default:
-		return ""
-	}
-}
-
-func AuthenticationTypeFromString(s string) AuthenticationType {
-	switch s {
-	case "off":
-		return AuthenticationTypeOff
-	case "soft":
-		return AuthenticationTypeSoft
-	case "hard":
-		return AuthenticationTypeHard
-	default:
-		panic(fmt.Sprintf("unknown authentication type: %v", s))
-	}
-}
 
 type ApplicationConfig struct {
 	UseMariaDB     bool
@@ -98,6 +41,13 @@ type ApplicationConfig struct {
 	Authentication AuthenticationType
 }
 
+type BuildType int
+
+const (
+	BuildTypeRuntime BuildType = iota
+	BuildTypeStatic
+)
+
 var EmptyCommit = strings.Repeat("0", 40)
 
 type Application struct {
@@ -105,7 +55,7 @@ type Application struct {
 	Name          string
 	RepositoryID  string
 	RefName       string
-	BuildType     builder.BuildType
+	BuildType     BuildType
 	State         ApplicationState
 	CurrentCommit string
 	WantCommit    string
@@ -183,10 +133,30 @@ func (s AvailableDomainSlice) IsAvailable(fqdn string) bool {
 	return false
 }
 
+type BuildStatus int
+
+const (
+	BuildStatusQueued BuildStatus = iota
+	BuildStatusBuilding
+	BuildStatusSucceeded
+	BuildStatusFailed
+	BuildStatusCanceled
+	BuildStatusSkipped
+)
+
+func (t BuildStatus) IsFinished() bool {
+	switch t {
+	case BuildStatusSucceeded, BuildStatusFailed, BuildStatusCanceled, BuildStatusSkipped:
+		return true
+	default:
+		return false
+	}
+}
+
 type Build struct {
 	ID            string
 	Commit        string
-	Status        builder.BuildStatus
+	Status        BuildStatus
 	ApplicationID string
 	StartedAt     optional.Of[time.Time]
 	UpdatedAt     optional.Of[time.Time]
@@ -199,7 +169,7 @@ func NewBuild(applicationID string, commit string) *Build {
 	return &Build{
 		ID:            NewID(),
 		Commit:        commit,
-		Status:        builder.BuildStatusQueued,
+		Status:        BuildStatusQueued,
 		ApplicationID: applicationID,
 	}
 }
@@ -318,7 +288,7 @@ func (w *Website) ConflictsWith(existing []*Website) bool {
 
 func GetArtifactsInUse(ctx context.Context, appRepo ApplicationRepository, buildRepo BuildRepository) ([]*Artifact, error) {
 	applications, err := appRepo.GetApplications(ctx, GetApplicationCondition{
-		BuildType: optional.From(builder.BuildTypeStatic),
+		BuildType: optional.From(BuildTypeStatic),
 	})
 	if err != nil {
 		return nil, err
@@ -329,7 +299,7 @@ func GetArtifactsInUse(ctx context.Context, appRepo ApplicationRepository, build
 		commits[app.WantCommit] = struct{}{}
 		commits[app.CurrentCommit] = struct{}{}
 	}
-	builds, err := buildRepo.GetBuilds(ctx, GetBuildCondition{CommitIn: optional.From(lo.Keys(commits)), Status: optional.From(builder.BuildStatusSucceeded)})
+	builds, err := buildRepo.GetBuilds(ctx, GetBuildCondition{CommitIn: optional.From(lo.Keys(commits)), Status: optional.From(BuildStatusSucceeded)})
 	if err != nil {
 		return nil, err
 	}
@@ -350,7 +320,7 @@ func GetArtifactsInUse(ctx context.Context, appRepo ApplicationRepository, build
 
 func GetActiveStaticSites(ctx context.Context, appRepo ApplicationRepository, buildRepo BuildRepository) ([]*StaticSite, error) {
 	applications, err := appRepo.GetApplications(ctx, GetApplicationCondition{
-		BuildType: optional.From(builder.BuildTypeStatic),
+		BuildType: optional.From(BuildTypeStatic),
 		State:     optional.From(ApplicationStateRunning),
 	})
 	if err != nil {
@@ -358,7 +328,7 @@ func GetActiveStaticSites(ctx context.Context, appRepo ApplicationRepository, bu
 	}
 
 	commits := lo.Map(applications, func(app *Application, i int) string { return app.CurrentCommit })
-	builds, err := buildRepo.GetBuilds(ctx, GetBuildCondition{CommitIn: optional.From(commits), Status: optional.From(builder.BuildStatusSucceeded)})
+	builds, err := buildRepo.GetBuilds(ctx, GetBuildCondition{CommitIn: optional.From(commits), Status: optional.From(BuildStatusSucceeded)})
 	if err != nil {
 		return nil, err
 	}

@@ -11,7 +11,6 @@ import (
 	log "github.com/sirupsen/logrus"
 
 	"github.com/traPtitech/neoshowcase/pkg/domain"
-	"github.com/traPtitech/neoshowcase/pkg/domain/builder"
 	"github.com/traPtitech/neoshowcase/pkg/domain/event"
 	"github.com/traPtitech/neoshowcase/pkg/util/optional"
 )
@@ -173,12 +172,12 @@ func (cd *continuousDeploymentService) registerBuilds(ctx context.Context) error
 	const crashDetectThreshold = 60 * time.Second
 	crashThreshold := time.Now().Add(-crashDetectThreshold)
 	crashed := lo.Filter(builds, func(build *domain.Build, i int) bool {
-		return build.Status == builder.BuildStatusBuilding && build.UpdatedAt.ValueOrZero().Before(crashThreshold)
+		return build.Status == domain.BuildStatusBuilding && build.UpdatedAt.ValueOrZero().Before(crashThreshold)
 	})
 	for _, build := range crashed {
 		err = cd.buildRepo.UpdateBuild(ctx, build.ID, domain.UpdateBuildArgs{
-			FromStatus: optional.From(builder.BuildStatusBuilding),
-			Status:     optional.From(builder.BuildStatusFailed),
+			FromStatus: optional.From(domain.BuildStatusBuilding),
+			Status:     optional.From(domain.BuildStatusFailed),
 		})
 		if err != nil {
 			log.Errorf("failed to mark crashed build as errored: %+v", err)
@@ -206,7 +205,7 @@ func (cd *continuousDeploymentService) registerBuilds(ctx context.Context) error
 }
 
 func (cd *continuousDeploymentService) startBuilds(ctx context.Context) error {
-	builds, err := cd.buildRepo.GetBuilds(ctx, domain.GetBuildCondition{Status: optional.From(builder.BuildStatusQueued)})
+	builds, err := cd.buildRepo.GetBuilds(ctx, domain.GetBuildCondition{Status: optional.From(domain.BuildStatusQueued)})
 	if err != nil {
 		return err
 	}

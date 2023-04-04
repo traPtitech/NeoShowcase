@@ -79,6 +79,44 @@ func AllApplicationsBuildType() []string {
 	}
 }
 
+// Enum values for ApplicationsState
+const (
+	ApplicationsStateIdle      string = "idle"
+	ApplicationsStateDeploying string = "deploying"
+	ApplicationsStateRunning   string = "running"
+	ApplicationsStateErrored   string = "errored"
+)
+
+func AllApplicationsState() []string {
+	return []string{
+		ApplicationsStateIdle,
+		ApplicationsStateDeploying,
+		ApplicationsStateRunning,
+		ApplicationsStateErrored,
+	}
+}
+
+// Enum values for BuildsStatus
+const (
+	BuildsStatusBuilding  string = "building"
+	BuildsStatusSucceeded string = "succeeded"
+	BuildsStatusFailed    string = "failed"
+	BuildsStatusCanceled  string = "canceled"
+	BuildsStatusQueued    string = "queued"
+	BuildsStatusSkipped   string = "skipped"
+)
+
+func AllBuildsStatus() []string {
+	return []string{
+		BuildsStatusBuilding,
+		BuildsStatusSucceeded,
+		BuildsStatusFailed,
+		BuildsStatusCanceled,
+		BuildsStatusQueued,
+		BuildsStatusSkipped,
+	}
+}
+
 // Enum values for RepositoryAuthMethod
 const (
 	RepositoryAuthMethodBasic string = "basic"

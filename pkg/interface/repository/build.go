@@ -43,7 +43,7 @@ func (r *buildRepository) buildMods(cond domain.GetBuildCondition) []qm.QueryMod
 		mods = append(mods, models.BuildWhere.Commit.IN(cond.CommitIn.V))
 	}
 	if cond.Status.Valid {
-		mods = append(mods, models.BuildWhere.Status.EQ(cond.Status.V.String()))
+		mods = append(mods, models.BuildWhere.Status.EQ(buildStatusMapper.FromMust(cond.Status.V)))
 	}
 	if cond.Retriable.Valid {
 		mods = append(mods, models.BuildWhere.Retriable.EQ(cond.Retriable.V))
@@ -90,7 +90,7 @@ func (r *buildRepository) UpdateBuild(ctx context.Context, id string, args domai
 	}
 
 	if args.FromStatus.Valid {
-		mods = append(mods, models.BuildWhere.Status.EQ(args.FromStatus.V.String()))
+		mods = append(mods, models.BuildWhere.Status.EQ(buildStatusMapper.FromMust(args.FromStatus.V)))
 	}
 
 	tx, err := r.db.BeginTx(ctx, nil)
@@ -108,7 +108,7 @@ func (r *buildRepository) UpdateBuild(ctx context.Context, id string, args domai
 	}
 
 	if args.Status.Valid {
-		build.Status = args.Status.V.String()
+		build.Status = buildStatusMapper.FromMust(args.Status.V)
 	}
 	if args.StartedAt.Valid {
 		build.StartedAt = optional.IntoTime(args.StartedAt)

@@ -11,7 +11,7 @@
 CREATE TABLE `builds` (
   `id` char(22) NOT NULL COMMENT 'ビルドID',
   `commit` char(40) NOT NULL COMMENT 'コミットハッシュ',
-  `status` varchar(10) NOT NULL COMMENT 'ビルドの状態',
+  `status` enum('building','succeeded','failed','canceled','queued','skipped') NOT NULL COMMENT 'ビルドの状態',
   `started_at` datetime(6) DEFAULT NULL COMMENT 'ビルド開始日時',
   `updated_at` datetime(6) DEFAULT NULL COMMENT 'ビルド更新日時',
   `finished_at` datetime(6) DEFAULT NULL COMMENT 'ビルド終了日時',
@@ -20,8 +20,7 @@ CREATE TABLE `builds` (
   PRIMARY KEY (`id`),
   KEY `fk_builds_status` (`status`),
   KEY `fk_builds_application_id` (`application_id`),
-  CONSTRAINT `fk_builds_application_id` FOREIGN KEY (`application_id`) REFERENCES `applications` (`id`),
-  CONSTRAINT `fk_builds_status` FOREIGN KEY (`status`) REFERENCES `build_status` (`status`)
+  CONSTRAINT `fk_builds_application_id` FOREIGN KEY (`application_id`) REFERENCES `applications` (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci COMMENT='ビルドテーブル'
 ```
 
@@ -33,7 +32,7 @@ CREATE TABLE `builds` (
 | ---- | ---- | ------- | -------- | -------- | ------- | ------- |
 | id | char(22) |  | false | [artifacts](artifacts.md) |  | ビルドID |
 | commit | char(40) |  | false |  |  | コミットハッシュ |
-| status | varchar(10) |  | false |  | [build_status](build_status.md) | ビルドの状態 |
+| status | enum('building','succeeded','failed','canceled','queued','skipped') |  | false |  |  | ビルドの状態 |
 | started_at | datetime(6) | NULL | true |  |  | ビルド開始日時 |
 | updated_at | datetime(6) | NULL | true |  |  | ビルド更新日時 |
 | finished_at | datetime(6) | NULL | true |  |  | ビルド終了日時 |
@@ -45,7 +44,6 @@ CREATE TABLE `builds` (
 | Name | Type | Definition |
 | ---- | ---- | ---------- |
 | fk_builds_application_id | FOREIGN KEY | FOREIGN KEY (application_id) REFERENCES applications (id) |
-| fk_builds_status | FOREIGN KEY | FOREIGN KEY (status) REFERENCES build_status (status) |
 | PRIMARY | PRIMARY KEY | PRIMARY KEY (id) |
 
 ## Indexes

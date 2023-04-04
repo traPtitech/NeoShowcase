@@ -198,8 +198,8 @@ func (s *builderService) tryStartTask(task *builder.Task) error {
 
 	now := time.Now()
 	err := s.buildRepo.UpdateBuild(context.Background(), task.BuildID, domain.UpdateBuildArgs{
-		FromStatus: optional.From(builder.BuildStatusQueued),
-		Status:     optional.From(builder.BuildStatusBuilding),
+		FromStatus: optional.From(domain.BuildStatusQueued),
+		Status:     optional.From(domain.BuildStatusBuilding),
 		StartedAt:  optional.From(now),
 		UpdatedAt:  optional.From(now),
 	})
@@ -251,7 +251,7 @@ func (s *builderService) tryStartTask(task *builder.Task) error {
 	return nil
 }
 
-func (s *builderService) process(ctx context.Context, st *state) builder.BuildStatus {
+func (s *builderService) process(ctx context.Context, st *state) domain.BuildStatus {
 	ctx, cancel := context.WithCancel(ctx)
 	defer cancel()
 	go s.updateStatusLoop(ctx, st.task.BuildID)
@@ -259,13 +259,13 @@ func (s *builderService) process(ctx context.Context, st *state) builder.BuildSt
 	err := st.initTempFiles(st.task.Static)
 	if err != nil {
 		log.Errorf("failed to init temp files: %+v", err)
-		return builder.BuildStatusFailed
+		return domain.BuildStatusFailed
 	}
 
 	err = s.cloneRepository(ctx, st)
 	if err != nil {
 		log.Errorf("failed to clone repository: %+v", err)
-		return builder.BuildStatusFailed
+		return domain.BuildStatusFailed
 	}
 
 	return s.build(ctx, st)
@@ -324,7 +324,7 @@ func (s *builderService) cloneRepository(ctx context.Context, st *state) error {
 	return nil
 }
 
-func (s *builderService) build(ctx context.Context, st *state) builder.BuildStatus {
+func (s *builderService) build(ctx context.Context, st *state) domain.BuildStatus {
 	st.writeLog("[ns-builder] Build started.")
 
 	var err error
@@ -336,17 +336,17 @@ func (s *builderService) build(ctx context.Context, st *state) builder.BuildStat
 	if err != nil {
 		if err == context.Canceled || err == context.DeadlineExceeded || errors.Is(err, gstatus.FromContextError(context.Canceled).Err()) {
 			st.writeLog("[ns-builder] Build cancelled.")
-			return builder.BuildStatusCanceled
+			return domain.BuildStatusCanceled
 		}
 		log.Errorf("failed to build: %+v", err)
-		return builder.BuildStatusFailed
+		return domain.BuildStatusFailed
 	}
 
 	st.writeLog("[ns-builder] Build succeeded!")
-	return builder.BuildStatusSucceeded
+	return domain.BuildStatusSucceeded
 }
 
-func (s *builderService) finalize(ctx context.Context, st *state, status builder.BuildStatus) {
+func (s *builderService) finalize(ctx context.Context, st *state, status domain.BuildStatus) {
 	// ログファイルの保存
 	if st.logTempFile != nil {
 		_ = st.logTempFile.Close()
@@ -358,7 +358,7 @@ func (s *builderService) finalize(ctx context.Context, st *state, status builder
 	// 生成物tarの保存
 	if st.artifactTempFile != nil {
 		_ = st.artifactTempFile.Close()
-		if status == builder.BuildStatusSucceeded {
+		if status == domain.BuildStatusSucceeded {
 			err := func() error {
 				filename := st.artifactTempFile.Name()
 				stat, err := os.Stat(filename)
@@ -694,13 +694,13 @@ func (s *state) writeLog(a ...interface{}) {
 	_, _ = fmt.Fprintln(s.logWriter, a...)
 }
 
-func toPBSettleReason(status builder.BuildStatus) pb.BuildSettled_Reason {
+func toPBSettleReason(status domain.BuildStatus) pb.BuildSettled_Reason {
 	switch status {
-	case builder.BuildStatusSucceeded:
+	case domain.BuildStatusSucceeded:
 		return pb.BuildSettled_SUCCESS
-	case builder.BuildStatusFailed:
+	case domain.BuildStatusFailed:
 		return pb.BuildSettled_FAILED
-	case builder.BuildStatusCanceled:
+	case domain.BuildStatusCanceled:
 		return pb.BuildSettled_CANCELLED
 	default:
 		panic(fmt.Sprintf("unexpected settled status: %v", status))

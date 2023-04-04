@@ -116,7 +116,7 @@ func (s *appDeployService) synchronize(ctx context.Context, appID string, restar
 
 	doDeploy := restart || (!restart && app.WantCommit != app.CurrentCommit)
 
-	if doDeploy && app.BuildType == builder.BuildTypeRuntime {
+	if doDeploy && app.BuildType == domain.BuildTypeRuntime {
 		err = s.appRepo.UpdateApplication(ctx, app.ID, &domain.UpdateApplicationArgs{State: optional.From(domain.ApplicationStateDeploying)})
 		if err != nil {
 			return err
@@ -136,7 +136,7 @@ func (s *appDeployService) synchronize(ctx context.Context, appID string, restar
 		return errors.Wrap(err, "failed to update application")
 	}
 
-	if doDeploy && app.BuildType == builder.BuildTypeStatic {
+	if doDeploy && app.BuildType == domain.BuildTypeStatic {
 		if err = s.SynchronizeSS(ctx); err != nil {
 			return err
 		}
@@ -147,7 +147,7 @@ func (s *appDeployService) synchronize(ctx context.Context, appID string, restar
 }
 
 func (s *appDeployService) getSuccessBuild(ctx context.Context, app *domain.Application) (*domain.Build, error) {
-	builds, err := s.buildRepo.GetBuilds(ctx, domain.GetBuildCondition{Commit: optional.From(app.WantCommit), Status: optional.From(builder.BuildStatusSucceeded)})
+	builds, err := s.buildRepo.GetBuilds(ctx, domain.GetBuildCondition{Commit: optional.From(app.WantCommit), Status: optional.From(domain.BuildStatusSucceeded)})
 	if err != nil {
 		return nil, err
 	}
@@ -202,7 +202,7 @@ func (s *appDeployService) stop(ctx context.Context, appID string) error {
 		return err
 	}
 
-	if app.BuildType == builder.BuildTypeRuntime {
+	if app.BuildType == domain.BuildTypeRuntime {
 		err = s.backend.DestroyContainer(ctx, app)
 		if err != nil {
 			return err
@@ -214,7 +214,7 @@ func (s *appDeployService) stop(ctx context.Context, appID string) error {
 		return errors.Wrap(err, "failed to update application state")
 	}
 
-	if app.BuildType == builder.BuildTypeStatic {
+	if app.BuildType == domain.BuildTypeStatic {
 		if err = s.SynchronizeSS(ctx); err != nil {
 			return err
 		}

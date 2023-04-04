@@ -4,8 +4,8 @@ import (
 	"github.com/samber/lo"
 
 	"github.com/traPtitech/neoshowcase/pkg/domain"
-	"github.com/traPtitech/neoshowcase/pkg/domain/builder"
 	"github.com/traPtitech/neoshowcase/pkg/infrastructure/admindb/models"
+	"github.com/traPtitech/neoshowcase/pkg/util/mapper"
 	"github.com/traPtitech/neoshowcase/pkg/util/optional"
 )
 
@@ -43,6 +43,12 @@ func toDomainAvailableDomain(ad *models.AvailableDomain) *domain.AvailableDomain
 	}
 }
 
+var authTypeMapper = mapper.NewValueMapper(map[string]domain.AuthenticationType{
+	models.ApplicationConfigAuthenticationOff:  domain.AuthenticationTypeOff,
+	models.ApplicationConfigAuthenticationSoft: domain.AuthenticationTypeSoft,
+	models.ApplicationConfigAuthenticationHard: domain.AuthenticationTypeHard,
+})
+
 func fromDomainApplicationConfig(appID string, c *domain.ApplicationConfig) *models.ApplicationConfig {
 	return &models.ApplicationConfig{
 		ApplicationID:  appID,
@@ -53,7 +59,7 @@ func fromDomainApplicationConfig(appID string, c *domain.ApplicationConfig) *mod
 		ArtifactPath:   c.ArtifactPath,
 		BuildCMD:       c.BuildCmd,
 		EntrypointCMD:  c.EntrypointCmd,
-		Authentication: c.Authentication.String(),
+		Authentication: authTypeMapper.FromMust(c.Authentication),
 	}
 }
 
@@ -66,7 +72,7 @@ func toDomainApplicationConfig(c *models.ApplicationConfig) domain.ApplicationCo
 		ArtifactPath:   c.ArtifactPath,
 		BuildCmd:       c.BuildCMD,
 		EntrypointCmd:  c.EntrypointCMD,
-		Authentication: domain.AuthenticationTypeFromString(c.Authentication),
+		Authentication: authTypeMapper.IntoMust(c.Authentication),
 	}
 }
 
@@ -107,14 +113,26 @@ func toDomainRepository(repo *models.Repository) *domain.Repository {
 	return ret
 }
 
+var appStateMapper = mapper.NewValueMapper(map[string]domain.ApplicationState{
+	models.ApplicationsStateIdle:      domain.ApplicationStateIdle,
+	models.ApplicationsStateDeploying: domain.ApplicationStateDeploying,
+	models.ApplicationsStateRunning:   domain.ApplicationStateRunning,
+	models.ApplicationsStateErrored:   domain.ApplicationStateErrored,
+})
+
+var buildTypeMapper = mapper.NewValueMapper(map[string]domain.BuildType{
+	models.ApplicationsBuildTypeRuntime: domain.BuildTypeRuntime,
+	models.ApplicationsBuildTypeStatic:  domain.BuildTypeStatic,
+})
+
 func fromDomainApplication(app *domain.Application) *models.Application {
 	return &models.Application{
 		ID:            app.ID,
 		Name:          app.Name,
 		RepositoryID:  app.RepositoryID,
 		RefName:       app.RefName,
-		BuildType:     app.BuildType.String(),
-		State:         app.State.String(),
+		BuildType:     buildTypeMapper.FromMust(app.BuildType),
+		State:         appStateMapper.FromMust(app.State),
 		CurrentCommit: app.CurrentCommit,
 		WantCommit:    app.WantCommit,
 		CreatedAt:     app.CreatedAt,
@@ -128,8 +146,8 @@ func toDomainApplication(app *models.Application) *domain.Application {
 		Name:          app.Name,
 		RepositoryID:  app.RepositoryID,
 		RefName:       app.RefName,
-		BuildType:     builder.BuildTypeFromString(app.BuildType),
-		State:         domain.ApplicationStateFromString(app.State),
+		BuildType:     buildTypeMapper.IntoMust(app.BuildType),
+		State:         appStateMapper.IntoMust(app.State),
 		CurrentCommit: app.CurrentCommit,
 		WantCommit:    app.WantCommit,
 
@@ -139,11 +157,20 @@ func toDomainApplication(app *models.Application) *domain.Application {
 	}
 }
 
+var buildStatusMapper = mapper.NewValueMapper(map[string]domain.BuildStatus{
+	models.BuildsStatusQueued:    domain.BuildStatusQueued,
+	models.BuildsStatusBuilding:  domain.BuildStatusBuilding,
+	models.BuildsStatusSucceeded: domain.BuildStatusSucceeded,
+	models.BuildsStatusFailed:    domain.BuildStatusFailed,
+	models.BuildsStatusCanceled:  domain.BuildStatusCanceled,
+	models.BuildsStatusSkipped:   domain.BuildStatusSkipped,
+})
+
 func fromDomainBuild(build *domain.Build) *models.Build {
 	return &models.Build{
 		ID:            build.ID,
 		Commit:        build.Commit,
-		Status:        build.Status.String(),
+		Status:        buildStatusMapper.FromMust(build.Status),
 		StartedAt:     optional.IntoTime(build.StartedAt),
 		UpdatedAt:     optional.IntoTime(build.UpdatedAt),
 		FinishedAt:    optional.IntoTime(build.FinishedAt),
@@ -156,7 +183,7 @@ func toDomainBuild(build *models.Build) *domain.Build {
 	ret := &domain.Build{
 		ID:            build.ID,
 		Commit:        build.Commit,
-		Status:        builder.BuildStatusFromString(build.Status),
+		Status:        buildStatusMapper.IntoMust(build.Status),
 		ApplicationID: build.ApplicationID,
 		StartedAt:     optional.FromTime(build.StartedAt),
 		UpdatedAt:     optional.FromTime(build.UpdatedAt),
