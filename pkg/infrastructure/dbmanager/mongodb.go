@@ -15,6 +15,7 @@ import (
 
 type mongoDBManagerImpl struct {
 	client *mongo.Client
+	c      MongoDBConfig
 }
 
 type MongoDBConfig struct {
@@ -38,7 +39,11 @@ func NewMongoDBManager(config MongoDBConfig) (domain.MongoDBManager, error) {
 		return nil, errors.Wrap(err, "failed to connect")
 	}
 
-	return &mongoDBManagerImpl{client: client}, nil
+	return &mongoDBManagerImpl{client: client, c: config}, nil
+}
+
+func (m *mongoDBManagerImpl) GetHost() (host string, port int) {
+	return m.c.Host, m.c.Port
 }
 
 func (m *mongoDBManagerImpl) Create(ctx context.Context, args domain.CreateArgs) error {

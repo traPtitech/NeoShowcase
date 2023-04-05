@@ -22,6 +22,7 @@ type DeleteArgs struct {
 
 // MariaDBManager MariaDBマネージャー
 type MariaDBManager interface {
+	GetHost() (host string, port int)
 	// Create データベースが存在しない場合、作成します
 	Create(ctx context.Context, args CreateArgs) error
 	// Delete データベースが存在する場合、削除します
@@ -33,6 +34,7 @@ type MariaDBManager interface {
 
 // MongoDBManager Mongoマネージャー
 type MongoDBManager interface {
+	GetHost() (host string, port int)
 	// Create データベースが存在しない場合、作成します
 	Create(ctx context.Context, args CreateArgs) error
 	// Delete データベースが存在する場合、削除します

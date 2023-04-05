@@ -15,6 +15,7 @@ import (
 
 type mariaDBManagerImpl struct {
 	db *sql.DB
+	c  MariaDBConfig
 }
 
 type MariaDBConfig struct {
@@ -51,7 +52,11 @@ func NewMariaDBManager(c MariaDBConfig) (domain.MariaDBManager, error) {
 	db.SetConnMaxLifetime(0)
 	db.SetConnMaxIdleTime(time.Minute)
 
-	return &mariaDBManagerImpl{db: db}, nil
+	return &mariaDBManagerImpl{db: db, c: c}, nil
+}
+
+func (m *mariaDBManagerImpl) GetHost() (host string, port int) {
+	return m.c.Host, m.c.Port
 }
 
 func (m *mariaDBManagerImpl) Create(ctx context.Context, args domain.CreateArgs) error {
