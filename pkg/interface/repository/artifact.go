@@ -60,7 +60,7 @@ func (r *artifactRepository) GetArtifacts(ctx context.Context, cond domain.GetAr
 
 func (r *artifactRepository) CreateArtifact(ctx context.Context, artifact *domain.Artifact) error {
 	ma := fromDomainArtifact(artifact)
-	if err := ma.Insert(ctx, r.db, boil.Infer()); err != nil {
+	if err := ma.Insert(ctx, r.db, boil.Blacklist()); err != nil {
 		return errors.Wrap(err, "failed to insert artifact")
 	}
 	return nil
@@ -76,7 +76,7 @@ func (r *artifactRepository) UpdateArtifact(ctx context.Context, id string, args
 		artifact.DeletedAt = optional.IntoTime(args.DeletedAt)
 	}
 
-	_, err = artifact.Update(ctx, r.db, boil.Infer())
+	_, err = artifact.Update(ctx, r.db, boil.Blacklist())
 	if err != nil {
 		return errors.Wrap(err, "failed to update artifact")
 	}

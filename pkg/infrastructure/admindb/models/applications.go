@@ -32,8 +32,8 @@ type Application struct { // アプリケーションID
 	RefName string `boil:"ref_name" json:"ref_name" toml:"ref_name" yaml:"ref_name"`
 	// ビルドタイプ
 	BuildType string `boil:"build_type" json:"build_type" toml:"build_type" yaml:"build_type"`
-	// デプロイの状態
-	State string `boil:"state" json:"state" toml:"state" yaml:"state"`
+	// アプリが起動しているか
+	Running bool `boil:"running" json:"running" toml:"running" yaml:"running"`
 	// デプロイされたコミット
 	CurrentCommit string `boil:"current_commit" json:"current_commit" toml:"current_commit" yaml:"current_commit"`
 	// デプロイを待つコミット
@@ -53,7 +53,7 @@ var ApplicationColumns = struct {
 	RepositoryID  string
 	RefName       string
 	BuildType     string
-	State         string
+	Running       string
 	CurrentCommit string
 	WantCommit    string
 	CreatedAt     string
@@ -64,7 +64,7 @@ var ApplicationColumns = struct {
 	RepositoryID:  "repository_id",
 	RefName:       "ref_name",
 	BuildType:     "build_type",
-	State:         "state",
+	Running:       "running",
 	CurrentCommit: "current_commit",
 	WantCommit:    "want_commit",
 	CreatedAt:     "created_at",
@@ -77,7 +77,7 @@ var ApplicationTableColumns = struct {
 	RepositoryID  string
 	RefName       string
 	BuildType     string
-	State         string
+	Running       string
 	CurrentCommit string
 	WantCommit    string
 	CreatedAt     string
@@ -88,7 +88,7 @@ var ApplicationTableColumns = struct {
 	RepositoryID:  "applications.repository_id",
 	RefName:       "applications.ref_name",
 	BuildType:     "applications.build_type",
-	State:         "applications.state",
+	Running:       "applications.running",
 	CurrentCommit: "applications.current_commit",
 	WantCommit:    "applications.want_commit",
 	CreatedAt:     "applications.created_at",
@@ -124,7 +124,7 @@ var ApplicationWhere = struct {
 	RepositoryID  whereHelperstring
 	RefName       whereHelperstring
 	BuildType     whereHelperstring
-	State         whereHelperstring
+	Running       whereHelperbool
 	CurrentCommit whereHelperstring
 	WantCommit    whereHelperstring
 	CreatedAt     whereHelpertime_Time
@@ -135,7 +135,7 @@ var ApplicationWhere = struct {
 	RepositoryID:  whereHelperstring{field: "`applications`.`repository_id`"},
 	RefName:       whereHelperstring{field: "`applications`.`ref_name`"},
 	BuildType:     whereHelperstring{field: "`applications`.`build_type`"},
-	State:         whereHelperstring{field: "`applications`.`state`"},
+	Running:       whereHelperbool{field: "`applications`.`running`"},
 	CurrentCommit: whereHelperstring{field: "`applications`.`current_commit`"},
 	WantCommit:    whereHelperstring{field: "`applications`.`want_commit`"},
 	CreatedAt:     whereHelpertime_Time{field: "`applications`.`created_at`"},
@@ -220,8 +220,8 @@ func (r *applicationR) GetWebsites() WebsiteSlice {
 type applicationL struct{}
 
 var (
-	applicationAllColumns            = []string{"id", "name", "repository_id", "ref_name", "build_type", "state", "current_commit", "want_commit", "created_at", "updated_at"}
-	applicationColumnsWithoutDefault = []string{"id", "name", "repository_id", "ref_name", "build_type", "state", "current_commit", "want_commit", "created_at", "updated_at"}
+	applicationAllColumns            = []string{"id", "name", "repository_id", "ref_name", "build_type", "running", "current_commit", "want_commit", "created_at", "updated_at"}
+	applicationColumnsWithoutDefault = []string{"id", "name", "repository_id", "ref_name", "build_type", "running", "current_commit", "want_commit", "created_at", "updated_at"}
 	applicationColumnsWithDefault    = []string{}
 	applicationPrimaryKeyColumns     = []string{"id"}
 	applicationGeneratedColumns      = []string{}

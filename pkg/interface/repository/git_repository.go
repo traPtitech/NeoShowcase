@@ -74,14 +74,14 @@ func (r *gitRepositoryRepository) CreateRepository(ctx context.Context, repo *do
 	defer tx.Rollback()
 
 	mr := fromDomainRepository(repo)
-	err = mr.Insert(ctx, tx, boil.Infer())
+	err = mr.Insert(ctx, tx, boil.Blacklist())
 	if err != nil {
-		return errors.Wrap(err, "faield to insert repository")
+		return errors.Wrap(err, "failed to insert repository")
 	}
 
 	if repo.Auth.Valid {
 		mra := fromDomainRepositoryAuth(repo.ID, &repo.Auth.V)
-		err = mr.SetRepositoryAuth(ctx, tx, true, mra)
+		err = mra.Insert(ctx, tx, boil.Blacklist())
 		if err != nil {
 			return errors.Wrap(err, "failed to insert repository auth")
 		}

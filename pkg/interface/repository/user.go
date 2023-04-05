@@ -40,7 +40,7 @@ func (r *userRepository) GetOrCreateUser(ctx context.Context, name string) (*dom
 	if isNoRowsErr(err) {
 		user := domain.NewUser(name)
 		mu = fromDomainUser(user)
-		err = mu.Insert(ctx, tx, boil.Infer())
+		err = mu.Insert(ctx, tx, boil.Blacklist())
 		if err != nil {
 			return nil, errors.Wrap(err, "failed to insert user")
 		}

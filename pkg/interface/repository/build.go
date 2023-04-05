@@ -76,7 +76,7 @@ func (r *buildRepository) GetBuild(ctx context.Context, buildID string) (*domain
 
 func (r *buildRepository) CreateBuild(ctx context.Context, build *domain.Build) error {
 	mb := fromDomainBuild(build)
-	err := mb.Insert(ctx, r.db, boil.Infer())
+	err := mb.Insert(ctx, r.db, boil.Blacklist())
 	if err != nil {
 		return errors.Wrap(err, "failed to insert build")
 	}
@@ -120,7 +120,7 @@ func (r *buildRepository) UpdateBuild(ctx context.Context, id string, args domai
 		build.FinishedAt = optional.IntoTime(args.FinishedAt)
 	}
 
-	_, err = build.Update(ctx, tx, boil.Infer())
+	_, err = build.Update(ctx, tx, boil.Blacklist())
 	if err != nil {
 		return errors.Wrap(err, "failed to update build")
 	}

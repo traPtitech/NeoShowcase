@@ -12,15 +12,6 @@ import (
 	"github.com/traPtitech/neoshowcase/pkg/util/optional"
 )
 
-type ApplicationState int
-
-const (
-	ApplicationStateIdle ApplicationState = iota
-	ApplicationStateDeploying
-	ApplicationStateRunning
-	ApplicationStateErrored
-)
-
 type AuthenticationType int
 
 const (
@@ -55,7 +46,7 @@ type Application struct {
 	RepositoryID  string
 	RefName       string
 	BuildType     BuildType
-	State         ApplicationState
+	Running       bool
 	CurrentCommit string
 	WantCommit    string
 	CreatedAt     time.Time
@@ -64,6 +55,10 @@ type Application struct {
 	Config   ApplicationConfig
 	Websites []*Website
 	OwnerIDs []string
+}
+
+func (a *Application) IsDeploying() bool {
+	return a.Running && a.CurrentCommit != a.WantCommit
 }
 
 type Artifact struct {
@@ -174,9 +169,10 @@ func NewBuild(applicationID string, commit string) *Build {
 }
 
 type Environment struct {
-	Key    string
-	Value  string
-	System bool
+	ApplicationID string
+	Key           string
+	Value         string
+	System        bool
 }
 
 type Repository struct {
@@ -301,7 +297,7 @@ func GetArtifactsInUse(ctx context.Context, appRepo ApplicationRepository, build
 func GetActiveStaticSites(ctx context.Context, appRepo ApplicationRepository, buildRepo BuildRepository) ([]*StaticSite, error) {
 	applications, err := appRepo.GetApplications(ctx, GetApplicationCondition{
 		BuildType: optional.From(BuildTypeStatic),
-		State:     optional.From(ApplicationStateRunning),
+		Running:   optional.From(true),
 	})
 	if err != nil {
 		return nil, err

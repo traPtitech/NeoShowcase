@@ -142,7 +142,7 @@ func (s *ApplicationService) CreateApplication(ctx context.Context, req *connect
 		RepositoryID:  msg.RepositoryId,
 		RefName:       msg.RefName,
 		BuildType:     buildTypeMapper.FromMust(msg.BuildType),
-		State:         domain.ApplicationStateIdle,
+		Running:       msg.StartOnCreate,
 		CurrentCommit: domain.EmptyCommit,
 		WantCommit:    domain.EmptyCommit,
 		CreatedAt:     now,
@@ -403,13 +403,6 @@ var buildTypeMapper = mapper.NewValueMapper(map[domain.BuildType]pb.BuildType{
 	domain.BuildTypeStatic:  pb.BuildType_STATIC,
 })
 
-var appStateMapper = mapper.NewValueMapper(map[domain.ApplicationState]pb.ApplicationState{
-	domain.ApplicationStateIdle:      pb.ApplicationState_IDLE,
-	domain.ApplicationStateDeploying: pb.ApplicationState_DEPLOYING,
-	domain.ApplicationStateRunning:   pb.ApplicationState_RUNNING,
-	domain.ApplicationStateErrored:   pb.ApplicationState_ERRORED,
-})
-
 var authTypeMapper = mapper.NewValueMapper(map[domain.AuthenticationType]pb.AuthenticationType{
 	domain.AuthenticationTypeOff:  pb.AuthenticationType_OFF,
 	domain.AuthenticationTypeSoft: pb.AuthenticationType_SOFT,
@@ -470,7 +463,7 @@ func toPBApplication(app *domain.Application) *pb.Application {
 		RepositoryId:  app.RepositoryID,
 		RefName:       app.RefName,
 		BuildType:     buildTypeMapper.IntoMust(app.BuildType),
-		State:         appStateMapper.IntoMust(app.State),
+		Running:       app.Running,
 		CurrentCommit: app.CurrentCommit,
 		WantCommit:    app.WantCommit,
 		Config:        toPBApplicationConfig(app.Config),

@@ -51,14 +51,14 @@ func (r *applicationRepository) GetApplications(ctx context.Context, cond domain
 	if cond.BuildType.Valid {
 		mods = append(mods, models.ApplicationWhere.BuildType.EQ(buildTypeMapper.FromMust(cond.BuildType.V)))
 	}
-	if cond.State.Valid {
-		mods = append(mods, models.ApplicationWhere.State.EQ(appStateMapper.FromMust(cond.State.V)))
+	if cond.Running.Valid {
+		mods = append(mods, models.ApplicationWhere.Running.EQ(cond.Running.V))
 	}
 	if cond.InSync.Valid {
 		if cond.InSync.V {
-			mods = append(mods, qm.Where(fmt.Sprintf("%s == %s", models.ApplicationColumns.WantCommit, models.ApplicationColumns.CurrentCommit)))
+			mods = append(mods, qm.Where(fmt.Sprintf("%s == %s", models.ApplicationTableColumns.WantCommit, models.ApplicationTableColumns.CurrentCommit)))
 		} else {
-			mods = append(mods, qm.Where(fmt.Sprintf("%s != %s", models.ApplicationColumns.WantCommit, models.ApplicationColumns.CurrentCommit)))
+			mods = append(mods, qm.Where(fmt.Sprintf("%s != %s", models.ApplicationTableColumns.WantCommit, models.ApplicationTableColumns.CurrentCommit)))
 		}
 	}
 
@@ -108,13 +108,14 @@ func (r *applicationRepository) CreateApplication(ctx context.Context, app *doma
 	defer tx.Rollback()
 
 	ma := fromDomainApplication(app)
-	if err = ma.Insert(ctx, tx, boil.Infer()); err != nil {
+	if err = ma.Insert(ctx, tx, boil.Blacklist()); err != nil {
 		return errors.Wrap(err, "failed to create application")
 	}
 
 	mc := fromDomainApplicationConfig(app.ID, &app.Config)
-	if err = ma.SetApplicationConfig(ctx, tx, true, mc); err != nil {
-		return fmt.Errorf("failed to set application config")
+	err = mc.Insert(ctx, tx, boil.Blacklist())
+	if err != nil {
+		return fmt.Errorf("failed to create application config")
 	}
 
 	err = r.validateAndInsertWebsites(ctx, tx, ma, app.Websites)
@@ -152,8 +153,8 @@ func (r *applicationRepository) UpdateApplication(ctx context.Context, id string
 	if args.RefName.Valid {
 		app.RefName = args.RefName.V
 	}
-	if args.State.Valid {
-		app.State = appStateMapper.FromMust(args.State.V)
+	if args.Running.Valid {
+		app.Running = args.Running.V
 	}
 	if args.CurrentCommit.Valid {
 		app.CurrentCommit = args.CurrentCommit.V
@@ -163,10 +164,11 @@ func (r *applicationRepository) UpdateApplication(ctx context.Context, id string
 	}
 
 	app.UpdatedAt = time.Now()
-	_, err = app.Update(ctx, tx, boil.Infer())
+	_, err = app.Update(ctx, tx, boil.Blacklist())
 
 	if args.Config.Valid {
-		err = app.SetApplicationConfig(ctx, tx, false, fromDomainApplicationConfig(app.ID, &args.Config.V))
+		mac := fromDomainApplicationConfig(app.ID, &args.Config.V)
+		err = mac.Upsert(ctx, tx, boil.Blacklist(), boil.Blacklist())
 		if err != nil {
 			return errors.Wrap(err, "failed to update config")
 		}
@@ -244,7 +246,8 @@ func (r *applicationRepository) validateAndInsertWebsite(ctx context.Context, ex
 	if website.ConflictsWith(existing) {
 		return ErrDuplicate
 	}
-	err = app.AddWebsites(ctx, ex, true, fromDomainWebsite(website))
+	mw := fromDomainWebsite(app.ID, website)
+	err = mw.Insert(ctx, ex, boil.Blacklist())
 	if err != nil {
 		return errors.Wrap(err, "failed to add website")
 	}

@@ -23,6 +23,9 @@ func NewEnvironmentRepository(db *sql.DB) domain.EnvironmentRepository {
 
 func (r *environmentRepository) buildMods(cond domain.GetEnvCondition) []qm.QueryMod {
 	var mods []qm.QueryMod
+	if cond.ApplicationIDIn.Valid {
+		mods = append(mods, models.EnvironmentWhere.ApplicationID.IN(cond.ApplicationIDIn.V))
+	}
 	if cond.ApplicationID.Valid {
 		mods = append(mods, models.EnvironmentWhere.ApplicationID.EQ(cond.ApplicationID.V))
 	}
@@ -42,7 +45,7 @@ func (r *environmentRepository) GetEnv(ctx context.Context, cond domain.GetEnvCo
 	}), nil
 }
 
-func (r *environmentRepository) SetEnv(ctx context.Context, applicationID string, env *domain.Environment) error {
+func (r *environmentRepository) SetEnv(ctx context.Context, env *domain.Environment) error {
 	// NOTE: sqlboiler does not recognize multiple column unique keys: https://github.com/volatiletech/sqlboiler/issues/328
 	tx, err := r.db.BeginTx(ctx, nil)
 	if err != nil {
@@ -50,7 +53,7 @@ func (r *environmentRepository) SetEnv(ctx context.Context, applicationID string
 	}
 
 	me, err := models.Environments(
-		models.EnvironmentWhere.ApplicationID.EQ(applicationID),
+		models.EnvironmentWhere.ApplicationID.EQ(env.ApplicationID),
 		models.EnvironmentWhere.Key.EQ(env.Key),
 		qm.For("UPDATE"),
 	).One(ctx, tx)
@@ -59,12 +62,12 @@ func (r *environmentRepository) SetEnv(ctx context.Context, applicationID string
 	}
 	exists := !isNoRowsErr(err)
 
-	me = fromDomainEnvironment(applicationID, env)
+	me = fromDomainEnvironment(env)
 
 	if exists {
-		_, err = me.Update(ctx, tx, boil.Infer())
+		_, err = me.Update(ctx, tx, boil.Blacklist())
 	} else {
-		err = me.Insert(ctx, tx, boil.Infer())
+		err = me.Insert(ctx, tx, boil.Blacklist())
 	}
 	if err != nil {
 		return errors.Wrap(err, "failed to upsert environment")
