@@ -415,17 +415,17 @@ func (mr *MockEnvironmentRepositoryMockRecorder) GetEnv(ctx, cond interface{}) *
 }
 
 // SetEnv mocks base method.
-func (m *MockEnvironmentRepository) SetEnv(ctx context.Context, applicationID string, env *domain.Environment) error {
+func (m *MockEnvironmentRepository) SetEnv(ctx context.Context, env *domain.Environment) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "SetEnv", ctx, applicationID, env)
+	ret := m.ctrl.Call(m, "SetEnv", ctx, env)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // SetEnv indicates an expected call of SetEnv.
-func (mr *MockEnvironmentRepositoryMockRecorder) SetEnv(ctx, applicationID, env interface{}) *gomock.Call {
+func (mr *MockEnvironmentRepositoryMockRecorder) SetEnv(ctx, env interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SetEnv", reflect.TypeOf((*MockEnvironmentRepository)(nil).SetEnv), ctx, applicationID, env)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SetEnv", reflect.TypeOf((*MockEnvironmentRepository)(nil).SetEnv), ctx, env)
 }
 
 // MockGitRepositoryRepository is a mock of GitRepositoryRepository interface.

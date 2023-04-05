@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"strings"
 	"sync"
+	"time"
 
 	"github.com/friendsofgo/errors"
 	docker "github.com/fsouza/go-dockerclient"
@@ -16,24 +17,23 @@ import (
 type IngressConfDirPath string
 
 const (
-	appNetwork = "neoshowcase_apps"
-	appLabel   = "neoshowcase.trap.jp/app"
-	appIDLabel = "neoshowcase.trap.jp/appId"
+	appNetwork          = "neoshowcase_apps"
+	appLabel            = "neoshowcase.trap.jp/app"
+	appIDLabel          = "neoshowcase.trap.jp/appId"
+	appRestartedAtLabel = "neoshowcase.trap.jp/restartedAt"
 )
 
 const (
-	traefikSSFilename    = "ss.yaml"
-	traefikSSServiceName = "ss"
+	traefikRuntimeFilename = "apps.yaml"
+	traefikSSFilename      = "ss.yaml"
+	traefikSSServiceName   = "ss"
 )
 
 type dockerBackend struct {
 	c              *docker.Client
 	bus            domain.Bus
 	ingressConfDir string
-
-	appRepo   domain.ApplicationRepository
-	buildRepo domain.BuildRepository
-	ssURL     string
+	ssURL          string
 
 	dockerEvent chan *docker.APIEvents
 	reloadLock  sync.Mutex
@@ -43,18 +43,13 @@ func NewDockerBackend(
 	c *docker.Client,
 	bus domain.Bus,
 	path IngressConfDirPath,
-	appRepo domain.ApplicationRepository,
-	buildRepo domain.BuildRepository,
 	ss domain.StaticServerConnectivityConfig,
 ) domain.Backend {
 	return &dockerBackend{
 		c:              c,
 		bus:            bus,
 		ingressConfDir: string(path),
-
-		appRepo:   appRepo,
-		buildRepo: buildRepo,
-		ssURL:     ss.URL,
+		ssURL:          ss.URL,
 	}
 }
 
@@ -120,10 +115,11 @@ func initNetworks(c *docker.Client) error {
 	return err
 }
 
-func containerLabels(appID string) map[string]string {
+func containerLabels(app *domain.Application) map[string]string {
 	return map[string]string{
-		appLabel:   "true",
-		appIDLabel: appID,
+		appLabel:            "true",
+		appIDLabel:          app.ID,
+		appRestartedAtLabel: app.UpdatedAt.Format(time.RFC3339),
 	}
 }
 
@@ -149,17 +145,4 @@ func stripMiddlewareName(website *domain.Website) string {
 
 func ssHeaderMiddlewareName(ss *domain.StaticSite) string {
 	return fmt.Sprintf("nsapp-ss-header-%s", ss.Application.ID)
-}
-
-func configFilePrefix(app *domain.Application) string {
-	return fmt.Sprintf("nsapp-%s-", app.ID)
-}
-
-func configFile(app *domain.Application, website *domain.Website) string {
-	filename := configFilePrefix(app) +
-		strings.ReplaceAll(website.FQDN, ".", "-") +
-		strings.ReplaceAll(website.PathPrefix, "/", "-")
-	filename = strings.TrimSuffix(filename, "-")
-	filename += ".yaml"
-	return filename
 }

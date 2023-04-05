@@ -142,7 +142,7 @@ func (s *ApplicationService) CreateApplication(ctx context.Context, req *connect
 		RepositoryID:  msg.RepositoryId,
 		RefName:       msg.RefName,
 		BuildType:     buildTypeMapper.FromMust(msg.BuildType),
-		State:         domain.ApplicationStateIdle,
+		Running:       msg.StartOnCreate,
 		CurrentCommit: domain.EmptyCommit,
 		WantCommit:    domain.EmptyCommit,
 		CreatedAt:     now,
@@ -160,7 +160,7 @@ func (s *ApplicationService) CreateApplication(ctx context.Context, req *connect
 		}),
 		OwnerIDs: []string{user.ID},
 	}
-	app, err := s.svc.CreateApplication(ctx, app, msg.StartOnCreate)
+	app, err := s.svc.CreateApplication(ctx, app)
 	if err != nil {
 		return nil, handleUseCaseError(err)
 	}
@@ -192,8 +192,9 @@ func (s *ApplicationService) UpdateApplication(ctx context.Context, req *connect
 	}
 
 	err = s.svc.UpdateApplication(ctx, app, &domain.UpdateApplicationArgs{
-		Name:    optional.From(msg.Name),
-		RefName: optional.From(msg.RefName),
+		Name:      optional.From(msg.Name),
+		RefName:   optional.From(msg.RefName),
+		UpdatedAt: optional.From(time.Now()),
 		Config: optional.From(domain.ApplicationConfig{
 			UseMariaDB:     app.Config.UseMariaDB,
 			UseMongoDB:     app.Config.UseMongoDB,
@@ -403,13 +404,6 @@ var buildTypeMapper = mapper.NewValueMapper(map[domain.BuildType]pb.BuildType{
 	domain.BuildTypeStatic:  pb.BuildType_STATIC,
 })
 
-var appStateMapper = mapper.NewValueMapper(map[domain.ApplicationState]pb.ApplicationState{
-	domain.ApplicationStateIdle:      pb.ApplicationState_IDLE,
-	domain.ApplicationStateDeploying: pb.ApplicationState_DEPLOYING,
-	domain.ApplicationStateRunning:   pb.ApplicationState_RUNNING,
-	domain.ApplicationStateErrored:   pb.ApplicationState_ERRORED,
-})
-
 var authTypeMapper = mapper.NewValueMapper(map[domain.AuthenticationType]pb.AuthenticationType{
 	domain.AuthenticationTypeOff:  pb.AuthenticationType_OFF,
 	domain.AuthenticationTypeSoft: pb.AuthenticationType_SOFT,
@@ -470,7 +464,7 @@ func toPBApplication(app *domain.Application) *pb.Application {
 		RepositoryId:  app.RepositoryID,
 		RefName:       app.RefName,
 		BuildType:     buildTypeMapper.IntoMust(app.BuildType),
-		State:         appStateMapper.IntoMust(app.State),
+		Running:       app.Running,
 		CurrentCommit: app.CurrentCommit,
 		WantCommit:    app.WantCommit,
 		Config:        toPBApplicationConfig(app.Config),

@@ -27,16 +27,18 @@ func TestDockerBackend_ListContainers(t *testing.T) {
 	t.Run("正常", func(t *testing.T) {
 		image := "hello-world"
 		baseAppID := "afiowjiodncx"
+
 		n := 5
+		var apps []*domain.AppDesiredState
 		for i := 0; i < n; i++ {
-			i := i
 			app := domain.Application{
 				ID: baseAppID + strconv.Itoa(i),
 			}
-			err := m.CreateContainer(context.Background(), &app, domain.ContainerCreateArgs{
+			apps = append(apps, &domain.AppDesiredState{
+				App:       &app,
 				ImageName: image,
+				ImageTag:  "latest",
 			})
-			require.NoError(t, err)
 			t.Cleanup(func() {
 				_ = c.RemoveContainer(docker.RemoveContainerOptions{
 					ID:            containerName(app.ID),
@@ -45,6 +47,9 @@ func TestDockerBackend_ListContainers(t *testing.T) {
 				})
 			})
 		}
+
+		err := m.Synchronize(context.Background(), apps)
+		require.NoError(t, err)
 
 		result, err := m.ListContainers(context.Background())
 		if assert.NoError(t, err) {

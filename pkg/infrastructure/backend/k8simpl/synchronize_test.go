@@ -3,9 +3,9 @@ package k8simpl
 import (
 	"context"
 	"testing"
+	"time"
 
 	"github.com/leandro-lugaresi/hub"
-	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	traefikv1alpha1 "github.com/traefik/traefik/v2/pkg/provider/kubernetes/crd/traefikcontainous/v1alpha1"
 	appsv1 "k8s.io/api/apps/v1"
@@ -15,32 +15,33 @@ import (
 	"github.com/traPtitech/neoshowcase/pkg/infrastructure/eventbus"
 )
 
-func TestK8sBackend_CreateContainer(t *testing.T) {
+func TestK8sBackend_Synchronize(t *testing.T) {
 	m, c, tc := prepareManager(t, eventbus.NewLocal(hub.New()))
 
 	t.Run("Podを正常に起動", func(t *testing.T) {
-		t.Parallel()
 		image := "tianon/sleeping-beauty"
 		appID := "pjpjpjoijion"
 
 		app := domain.Application{
-			ID: appID,
+			ID:        appID,
+			UpdatedAt: time.Now(),
 		}
-		err := m.CreateContainer(context.Background(), &app, domain.ContainerCreateArgs{
+		err := m.Synchronize(context.Background(), []*domain.AppDesiredState{{
+			App:       &app,
 			ImageName: image,
-		})
+			ImageTag:  "latest",
+		}})
 		require.NoError(t, err)
 		exists[*appsv1.StatefulSet](t, deploymentName(appID), c.AppsV1().StatefulSets(appNamespace))
 		waitPodRunning(t, m, appID)
 
-		err = m.DestroyContainer(context.Background(), &app)
+		err = m.Synchronize(context.Background(), nil)
 		require.NoError(t, err)
 		exists[*appsv1.StatefulSet](t, deploymentName(appID), c.AppsV1().StatefulSets(appNamespace))
 		waitPodDeleted(t, m, appID)
 	})
 
 	t.Run("Podを正常に起動 (HTTP)", func(t *testing.T) {
-		t.Parallel()
 		image := "chussenot/tiny-server"
 		appID := "pijojopjnnna"
 
@@ -51,19 +52,22 @@ func TestK8sBackend_CreateContainer(t *testing.T) {
 			HTTPPort:    80,
 		}
 		app := domain.Application{
-			ID:       appID,
-			Websites: []*domain.Website{website},
+			ID:        appID,
+			Websites:  []*domain.Website{website},
+			UpdatedAt: time.Now(),
 		}
-		err := m.CreateContainer(context.Background(), &app, domain.ContainerCreateArgs{
+		err := m.Synchronize(context.Background(), []*domain.AppDesiredState{{
+			App:       &app,
 			ImageName: image,
-		})
+			ImageTag:  "latest",
+		}})
 		require.NoError(t, err)
 		exists[*appsv1.StatefulSet](t, deploymentName(appID), c.AppsV1().StatefulSets(appNamespace))
 		exists[*corev1.Service](t, serviceName(website), c.CoreV1().Services(appNamespace))
 		exists[*traefikv1alpha1.IngressRoute](t, serviceName(website), tc.IngressRoutes(appNamespace))
 		waitPodRunning(t, m, appID)
 
-		err = m.DestroyContainer(context.Background(), &app)
+		err = m.Synchronize(context.Background(), nil)
 		require.NoError(t, err)
 		exists[*appsv1.StatefulSet](t, deploymentName(appID), c.AppsV1().StatefulSets(appNamespace))
 		notExists[*corev1.Service](t, serviceName(website), c.CoreV1().Services(appNamespace))
@@ -72,7 +76,6 @@ func TestK8sBackend_CreateContainer(t *testing.T) {
 	})
 
 	t.Run("Podを正常に起動 (HTTP, Recreate)", func(t *testing.T) {
-		t.Parallel()
 		image := "chussenot/tiny-server"
 		appID := "98ygtfjfjhgj"
 
@@ -83,19 +86,24 @@ func TestK8sBackend_CreateContainer(t *testing.T) {
 			HTTPPort:    80,
 		}
 		app := domain.Application{
-			ID:       appID,
-			Websites: []*domain.Website{website},
+			ID:        appID,
+			Websites:  []*domain.Website{website},
+			UpdatedAt: time.Now(),
 		}
-		err := m.CreateContainer(context.Background(), &app, domain.ContainerCreateArgs{
+		err := m.Synchronize(context.Background(), []*domain.AppDesiredState{{
+			App:       &app,
 			ImageName: image,
-		})
-		if assert.NoError(t, err) {
-			waitPodRunning(t, m, appID)
-		}
+			ImageTag:  "latest",
+		}})
+		require.NoError(t, err)
+		waitPodRunning(t, m, appID)
 
-		err = m.CreateContainer(context.Background(), &app, domain.ContainerCreateArgs{
+		app.UpdatedAt = time.Now() // Restart
+		err = m.Synchronize(context.Background(), []*domain.AppDesiredState{{
+			App:       &app,
 			ImageName: image,
-		})
+			ImageTag:  "latest",
+		}})
 		require.NoError(t, err)
 		exists[*appsv1.StatefulSet](t, deploymentName(appID), c.AppsV1().StatefulSets(appNamespace))
 		exists[*corev1.Service](t, serviceName(website), c.CoreV1().Services(appNamespace))
@@ -103,7 +111,7 @@ func TestK8sBackend_CreateContainer(t *testing.T) {
 		exists[*traefikv1alpha1.Middleware](t, stripMiddlewareName(website), tc.Middlewares(appNamespace))
 		waitPodRunning(t, m, appID)
 
-		err = m.DestroyContainer(context.Background(), &app)
+		err = m.Synchronize(context.Background(), nil)
 		require.NoError(t, err)
 		exists[*appsv1.StatefulSet](t, deploymentName(appID), c.AppsV1().StatefulSets(appNamespace))
 		notExists[*corev1.Service](t, serviceName(website), c.CoreV1().Services(appNamespace))

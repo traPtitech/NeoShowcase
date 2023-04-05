@@ -2,6 +2,7 @@ package usecase
 
 import (
 	"context"
+	"time"
 
 	"github.com/friendsofgo/errors"
 	log "github.com/sirupsen/logrus"
@@ -29,7 +30,7 @@ type APIServerService interface {
 	GetApplications(ctx context.Context) ([]*domain.Application, error)
 	GetAvailableDomains(ctx context.Context) (domain.AvailableDomainSlice, error)
 	AddAvailableDomain(ctx context.Context, ad *domain.AvailableDomain) error
-	CreateApplication(ctx context.Context, app *domain.Application, startOnCreate bool) (*domain.Application, error)
+	CreateApplication(ctx context.Context, app *domain.Application) (*domain.Application, error)
 	GetApplication(ctx context.Context, id string) (*domain.Application, error)
 	UpdateApplication(ctx context.Context, app *domain.Application, args *domain.UpdateApplicationArgs) error
 	DeleteApplication(ctx context.Context, id string) error
@@ -116,7 +117,7 @@ func (s *apiServerService) AddAvailableDomain(ctx context.Context, ad *domain.Av
 	return s.adRepo.AddAvailableDomain(ctx, ad)
 }
 
-func (s *apiServerService) CreateApplication(ctx context.Context, app *domain.Application, startOnCreate bool) (*domain.Application, error) {
+func (s *apiServerService) CreateApplication(ctx context.Context, app *domain.Application) (*domain.Application, error) {
 	domains, err := s.adRepo.GetAvailableDomains(ctx)
 	if err != nil {
 		return nil, err
@@ -130,11 +131,6 @@ func (s *apiServerService) CreateApplication(ctx context.Context, app *domain.Ap
 		}
 	}
 
-	if startOnCreate {
-		app.State = domain.ApplicationStateDeploying
-	} else {
-		app.State = domain.ApplicationStateIdle
-	}
 	err = s.appRepo.CreateApplication(ctx, app)
 	if err != nil {
 		return nil, err
@@ -165,12 +161,12 @@ func (s *apiServerService) createApplicationDatabase(ctx context.Context, app *d
 		}
 
 		envs := []*domain.Environment{
-			{Key: domain.EnvMySQLUserKey, Value: dbName, System: true},
-			{Key: domain.EnvMySQLPasswordKey, Value: dbPassword, System: true},
-			{Key: domain.EnvMySQLDatabaseKey, Value: dbName, System: true},
+			{ApplicationID: app.ID, Key: domain.EnvMySQLUserKey, Value: dbName, System: true},
+			{ApplicationID: app.ID, Key: domain.EnvMySQLPasswordKey, Value: dbPassword, System: true},
+			{ApplicationID: app.ID, Key: domain.EnvMySQLDatabaseKey, Value: dbName, System: true},
 		}
 		for _, env := range envs {
-			err = s.envRepo.SetEnv(ctx, app.ID, env)
+			err = s.envRepo.SetEnv(ctx, env)
 			if err != nil {
 				return err
 			}
@@ -189,12 +185,12 @@ func (s *apiServerService) createApplicationDatabase(ctx context.Context, app *d
 		}
 
 		envs := []*domain.Environment{
-			{Key: domain.EnvMongoDBUserKey, Value: dbName, System: true},
-			{Key: domain.EnvMongoDBPasswordKey, Value: dbPassword, System: true},
-			{Key: domain.EnvMongoDBDatabaseKey, Value: dbName, System: true},
+			{ApplicationID: app.ID, Key: domain.EnvMongoDBUserKey, Value: dbName, System: true},
+			{ApplicationID: app.ID, Key: domain.EnvMongoDBPasswordKey, Value: dbPassword, System: true},
+			{ApplicationID: app.ID, Key: domain.EnvMongoDBDatabaseKey, Value: dbName, System: true},
 		}
 		for _, env := range envs {
-			err = s.envRepo.SetEnv(ctx, app.ID, env)
+			err = s.envRepo.SetEnv(ctx, env)
 			if err != nil {
 				return err
 			}
@@ -242,7 +238,7 @@ func (s *apiServerService) DeleteApplication(ctx context.Context, id string) err
 	if err != nil {
 		return err
 	}
-	if app.State != domain.ApplicationStateIdle {
+	if app.Running {
 		return newError(ErrorTypeBadRequest, "stop the application first before deleting", nil)
 	}
 
@@ -327,8 +323,8 @@ func (s *apiServerService) GetEnvironmentVariables(ctx context.Context, applicat
 }
 
 func (s *apiServerService) SetEnvironmentVariable(ctx context.Context, applicationID string, key string, value string) error {
-	env := &domain.Environment{Key: key, Value: value, System: false}
-	return s.envRepo.SetEnv(ctx, applicationID, env)
+	env := &domain.Environment{ApplicationID: applicationID, Key: key, Value: value, System: false}
+	return s.envRepo.SetEnv(ctx, env)
 }
 
 func (s *apiServerService) CancelBuild(_ context.Context, buildID string) error {
@@ -348,18 +344,32 @@ func (s *apiServerService) RetryCommitBuild(ctx context.Context, applicationID s
 	return nil
 }
 
-func (s *apiServerService) StartApplication(_ context.Context, id string) error {
-	ok := s.deploySvc.Synchronize(id, true)
-	if !ok {
-		return errors.New("application is currently busy")
+func (s *apiServerService) StartApplication(ctx context.Context, id string) error {
+	err := s.appRepo.UpdateApplication(ctx, id, &domain.UpdateApplicationArgs{
+		Running:   optional.From(true),
+		UpdatedAt: optional.From(time.Now()),
+	})
+	if err != nil {
+		return errors.Wrap(err, "failed to mark application as running")
+	}
+	err = s.deploySvc.Synchronize(ctx)
+	if err != nil {
+		return errors.Wrap(err, "failed to synchronize application")
 	}
 	return nil
 }
 
-func (s *apiServerService) StopApplication(_ context.Context, id string) error {
-	ok := s.deploySvc.Stop(id)
-	if !ok {
-		return errors.New("application is currently busy")
+func (s *apiServerService) StopApplication(ctx context.Context, id string) error {
+	err := s.appRepo.UpdateApplication(ctx, id, &domain.UpdateApplicationArgs{
+		Running:   optional.From(false),
+		UpdatedAt: optional.From(time.Now()),
+	})
+	if err != nil {
+		return errors.Wrap(err, "failed to mark application as not running")
+	}
+	err = s.deploySvc.Synchronize(ctx)
+	if err != nil {
+		return errors.Wrap(err, "failed to synchronize application")
 	}
 	return nil
 }

@@ -47,63 +47,75 @@ func ssHeaderMiddleware(ss *domain.StaticSite) *traefikv1alpha1.Middleware {
 	}
 }
 
-func (b *k8sBackend) ReloadSSIngress(ctx context.Context) error {
+type ssResources struct {
+	middlewares   []*traefikv1alpha1.Middleware
+	ingressRoutes []*traefikv1alpha1.IngressRoute
+}
+
+func (b *k8sBackend) listCurrentSSResources(ctx context.Context) (*ssResources, error) {
+	var resources ssResources
+	listOpt := metav1.ListOptions{LabelSelector: ssLabelSelector()}
+
+	mw, err := b.traefikClient.Middlewares(appNamespace).List(ctx, listOpt)
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to get middlewares")
+	}
+	resources.middlewares = util.SliceOfPtr(mw.Items)
+
+	ir, err := b.traefikClient.IngressRoutes(appNamespace).List(ctx, listOpt)
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to get ingress routes")
+	}
+	resources.ingressRoutes = util.SliceOfPtr(ir.Items)
+
+	return &resources, nil
+}
+
+func (b *k8sBackend) SynchronizeSSIngress(ctx context.Context, sites []*domain.StaticSite) error {
 	b.reloadLock.Lock()
 	defer b.reloadLock.Unlock()
 
-	sites, err := domain.GetActiveStaticSites(context.Background(), b.appRepo, b.buildRepo)
+	// List old resources
+	old, err := b.listCurrentSSResources(ctx)
 	if err != nil {
 		return err
 	}
 
-	// Collect current resources
-	listOpt := metav1.ListOptions{LabelSelector: ssLabelSelector()}
-	existingMiddlewares, err := b.traefikClient.Middlewares(appNamespace).List(ctx, listOpt)
-	if err != nil {
-		return errors.Wrap(err, "failed to get middlewares")
-	}
-	existingIngressRoutes, err := b.traefikClient.IngressRoutes(appNamespace).List(ctx, listOpt)
-	if err != nil {
-		return errors.Wrap(err, "failed to get IngressRotues")
-	}
-
 	// Calculate next resources to apply
-	var middlewares []*traefikv1alpha1.Middleware
-	var ingressRoutes []*traefikv1alpha1.IngressRoute
+	var next ssResources
 	for _, site := range sites {
-		ingressRoute, mw := ingressRouteBase(site.Application, site.Website, ssResourceLabels(site.Application.ID))
-		ingressRoute.Spec.Routes[0].Services = b.ssServiceRef()
+		ingressRoute, mw := ingressRoute(site.Application, site.Website, ssResourceLabels(site.Application.ID), b.ssServiceRef())
 
 		ssHeaderMW := ssHeaderMiddleware(site)
 		ingressRoute.Spec.Routes[0].Middlewares = append(ingressRoute.Spec.Routes[0].Middlewares, traefikv1alpha1.MiddlewareRef{Name: ssHeaderMW.Name})
 		mw = append(mw, ssHeaderMW)
 
-		middlewares = append(middlewares, mw...)
-		ingressRoutes = append(ingressRoutes, ingressRoute)
+		next.middlewares = append(next.middlewares, mw...)
+		next.ingressRoutes = append(next.ingressRoutes, ingressRoute)
 	}
 
 	// Apply resources
-	for _, mw := range middlewares {
+	for _, mw := range next.middlewares {
 		err = patch[*traefikv1alpha1.Middleware](ctx, mw.Name, mw, b.traefikClient.Middlewares(appNamespace))
 		if err != nil {
 			return errors.Wrap(err, "failed to patch middleware")
 		}
 	}
-	for _, ir := range ingressRoutes {
+	for _, ir := range next.ingressRoutes {
 		err = patch[*traefikv1alpha1.IngressRoute](ctx, ir.Name, ir, b.traefikClient.IngressRoutes(appNamespace))
 		if err != nil {
-			return errors.Wrap(err, "failed to patch IngressRoute")
+			return errors.Wrap(err, "failed to patch ingress route")
 		}
 	}
 
 	// Prune old resources
-	err = prune(ctx, diff(util.SliceOfPtr(existingMiddlewares.Items), middlewares), b.traefikClient.Middlewares(appNamespace))
+	err = prune[*traefikv1alpha1.Middleware](ctx, diff(old.middlewares, next.middlewares), b.traefikClient.Middlewares(appNamespace))
 	if err != nil {
 		return errors.Wrap(err, "failed to prune middlewares")
 	}
-	err = prune(ctx, diff(util.SliceOfPtr(existingIngressRoutes.Items), ingressRoutes), b.traefikClient.IngressRoutes(appNamespace))
+	err = prune[*traefikv1alpha1.IngressRoute](ctx, diff(old.ingressRoutes, next.ingressRoutes), b.traefikClient.IngressRoutes(appNamespace))
 	if err != nil {
-		return errors.Wrap(err, "failed to prune IngressRoutes")
+		return errors.Wrap(err, "failed to prune ingress route")
 	}
 
 	return nil

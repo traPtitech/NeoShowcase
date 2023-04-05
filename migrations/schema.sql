@@ -55,19 +55,18 @@ CREATE TABLE `repository_owners`
 
 CREATE TABLE `applications`
 (
-    `id`             CHAR(22)                                         NOT NULL COMMENT 'アプリケーションID',
-    `name`           VARCHAR(100)                                     NOT NULL COMMENT 'アプリケーション名',
-    `repository_id`  VARCHAR(22)                                      NOT NULL COMMENT 'リポジトリID',
-    `ref_name`       VARCHAR(100)                                     NOT NULL COMMENT 'Gitブランチ・タグ名',
-    `build_type`     ENUM ('runtime','static')                        NOT NULL COMMENT 'ビルドタイプ',
-    `state`          ENUM ('idle', 'deploying', 'running', 'errored') NOT NULL COMMENT 'デプロイの状態',
-    `current_commit` CHAR(40)                                         NOT NULL COMMENT 'デプロイされたコミット',
-    `want_commit`    CHAR(40)                                         NOT NULL COMMENT 'デプロイを待つコミット',
-    `created_at`     DATETIME(6)                                      NOT NULL COMMENT '作成日時',
-    `updated_at`     DATETIME(6)                                      NOT NULL COMMENT '更新日時',
+    `id`             CHAR(22)                  NOT NULL COMMENT 'アプリケーションID',
+    `name`           VARCHAR(100)              NOT NULL COMMENT 'アプリケーション名',
+    `repository_id`  VARCHAR(22)               NOT NULL COMMENT 'リポジトリID',
+    `ref_name`       VARCHAR(100)              NOT NULL COMMENT 'Gitブランチ・タグ名',
+    `build_type`     ENUM ('runtime','static') NOT NULL COMMENT 'ビルドタイプ',
+    `running`        TINYINT(1)                NOT NULL COMMENT 'アプリが起動しているか',
+    `current_commit` CHAR(40)                  NOT NULL COMMENT 'デプロイされたコミット',
+    `want_commit`    CHAR(40)                  NOT NULL COMMENT 'デプロイを待つコミット',
+    `created_at`     DATETIME(6)               NOT NULL COMMENT '作成日時',
+    `updated_at`     DATETIME(6)               NOT NULL COMMENT '更新日時',
     PRIMARY KEY (`id`),
     KEY `fk_applications_repository_id` (`repository_id`),
-    KEY `fk_applications_state` (`state`),
     CONSTRAINT `fk_applications_repository_id` FOREIGN KEY (`repository_id`) REFERENCES `repositories` (`id`)
 ) ENGINE = InnoDB
   DEFAULT CHARSET = utf8mb4
@@ -98,8 +97,6 @@ CREATE TABLE `websites`
     `strip_prefix`   TINYINT(1)   NOT NULL COMMENT 'PathのPrefixを落とすかどうか',
     `https`          TINYINT(1)   NOT NULL COMMENT 'httpsの接続かどうか',
     `http_port`      INT(11)      NOT NULL DEFAULT 80 COMMENT 'コンテナhttpポート番号',
-    `created_at`     DATETIME(6)  NOT NULL COMMENT '作成日時',
-    `updated_at`     DATETIME(6)  NOT NULL COMMENT '更新日時',
     `application_id` CHAR(22)     NOT NULL COMMENT 'アプリケーションID',
     PRIMARY KEY (`id`),
     UNIQUE KEY `fqdn` (`fqdn`, `path_prefix`),

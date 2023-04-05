@@ -28,7 +28,7 @@ func (b *k8sBackend) GetContainer(ctx context.Context, appID string) (*domain.Co
 	}, nil
 }
 
-func (b *k8sBackend) ListContainers(ctx context.Context) ([]domain.Container, error) {
+func (b *k8sBackend) ListContainers(ctx context.Context) ([]*domain.Container, error) {
 	list, err := b.client.CoreV1().Pods(appNamespace).List(ctx, metav1.ListOptions{
 		LabelSelector: allSelector(),
 	})
@@ -36,9 +36,9 @@ func (b *k8sBackend) ListContainers(ctx context.Context) ([]domain.Container, er
 		return nil, errors.Wrap(err, "failed to fetch pods")
 	}
 
-	var result []domain.Container
+	var result []*domain.Container
 	for _, item := range list.Items {
-		result = append(result, domain.Container{
+		result = append(result, &domain.Container{
 			ApplicationID: item.Labels[appIDLabel],
 			State:         getContainerState(item.Status),
 		})

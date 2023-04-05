@@ -51,7 +51,7 @@ func NewWithDocker(c2 Config) (*Server, error) {
 	}
 	ingressConfDirPath := provideIngressConfDirPath(c2)
 	staticServerConnectivityConfig := c2.SS
-	backend := dockerimpl.NewDockerBackend(client, bus, ingressConfDirPath, applicationRepository, buildRepository, staticServerConnectivityConfig)
+	backend := dockerimpl.NewDockerBackend(client, bus, ingressConfDirPath, staticServerConnectivityConfig)
 	logStreamService := usecase.NewLogStreamService()
 	componentService := grpc.NewComponentServiceServer(bus, logStreamService)
 	imageConfig := c2.Image
@@ -82,7 +82,7 @@ func NewWithDocker(c2 Config) (*Server, error) {
 	mainWebAppServer := provideWebAppServer(c2, applicationServiceHandler, authInterceptor)
 	mainWebComponentServer := provideWebComponentServer(c2, componentService)
 	appBuildService := usecase.NewAppBuildService(buildRepository, componentService, imageConfig)
-	continuousDeploymentService, err := usecase.NewContinuousDeploymentService(bus, applicationRepository, buildRepository, environmentRepository, appBuildService, appDeployService)
+	continuousDeploymentService, err := usecase.NewContinuousDeploymentService(bus, applicationRepository, buildRepository, appBuildService, appDeployService)
 	if err != nil {
 		return nil, err
 	}
@@ -134,7 +134,7 @@ func NewWithK8S(c2 Config) (*Server, error) {
 		return nil, err
 	}
 	staticServerConnectivityConfig := c2.SS
-	backend := k8simpl.NewK8SBackend(bus, clientset, traefikContainousV1alpha1Client, applicationRepository, buildRepository, staticServerConnectivityConfig)
+	backend := k8simpl.NewK8SBackend(bus, clientset, traefikContainousV1alpha1Client, staticServerConnectivityConfig)
 	logStreamService := usecase.NewLogStreamService()
 	componentService := grpc.NewComponentServiceServer(bus, logStreamService)
 	imageConfig := c2.Image
@@ -165,7 +165,7 @@ func NewWithK8S(c2 Config) (*Server, error) {
 	mainWebAppServer := provideWebAppServer(c2, applicationServiceHandler, authInterceptor)
 	mainWebComponentServer := provideWebComponentServer(c2, componentService)
 	appBuildService := usecase.NewAppBuildService(buildRepository, componentService, imageConfig)
-	continuousDeploymentService, err := usecase.NewContinuousDeploymentService(bus, applicationRepository, buildRepository, environmentRepository, appBuildService, appDeployService)
+	continuousDeploymentService, err := usecase.NewContinuousDeploymentService(bus, applicationRepository, buildRepository, appBuildService, appDeployService)
 	if err != nil {
 		return nil, err
 	}

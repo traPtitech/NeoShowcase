@@ -13,7 +13,7 @@ type GetApplicationCondition struct {
 	IDIn      optional.Of[[]string]
 	UserID    optional.Of[string]
 	BuildType optional.Of[BuildType]
-	State     optional.Of[ApplicationState]
+	Running   optional.Of[bool]
 	// InSync WantCommit が CurrentCommit に一致する
 	InSync optional.Of[bool]
 }
@@ -21,9 +21,10 @@ type GetApplicationCondition struct {
 type UpdateApplicationArgs struct {
 	Name          optional.Of[string]
 	RefName       optional.Of[string]
-	State         optional.Of[ApplicationState]
+	Running       optional.Of[bool]
 	CurrentCommit optional.Of[string]
 	WantCommit    optional.Of[string]
+	UpdatedAt     optional.Of[time.Time]
 	Config        optional.Of[ApplicationConfig]
 	Websites      optional.Of[[]*Website]
 	OwnerIDs      optional.Of[[]string]
@@ -85,13 +86,14 @@ type BuildRepository interface {
 }
 
 type GetEnvCondition struct {
-	ApplicationID optional.Of[string]
-	Key           optional.Of[string]
+	ApplicationIDIn optional.Of[[]string]
+	ApplicationID   optional.Of[string]
+	Key             optional.Of[string]
 }
 
 type EnvironmentRepository interface {
 	GetEnv(ctx context.Context, cond GetEnvCondition) ([]*Environment, error)
-	SetEnv(ctx context.Context, applicationID string, env *Environment) error
+	SetEnv(ctx context.Context, env *Environment) error
 	DeleteEnv(ctx context.Context, cond GetEnvCondition) error
 }
 

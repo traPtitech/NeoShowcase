@@ -118,13 +118,6 @@ func toDomainRepository(repo *models.Repository) *domain.Repository {
 	return ret
 }
 
-var appStateMapper = mapper.NewValueMapper(map[string]domain.ApplicationState{
-	models.ApplicationsStateIdle:      domain.ApplicationStateIdle,
-	models.ApplicationsStateDeploying: domain.ApplicationStateDeploying,
-	models.ApplicationsStateRunning:   domain.ApplicationStateRunning,
-	models.ApplicationsStateErrored:   domain.ApplicationStateErrored,
-})
-
 var buildTypeMapper = mapper.NewValueMapper(map[string]domain.BuildType{
 	models.ApplicationsBuildTypeRuntime: domain.BuildTypeRuntime,
 	models.ApplicationsBuildTypeStatic:  domain.BuildTypeStatic,
@@ -137,7 +130,7 @@ func fromDomainApplication(app *domain.Application) *models.Application {
 		RepositoryID:  app.RepositoryID,
 		RefName:       app.RefName,
 		BuildType:     buildTypeMapper.FromMust(app.BuildType),
-		State:         appStateMapper.FromMust(app.State),
+		Running:       app.Running,
 		CurrentCommit: app.CurrentCommit,
 		WantCommit:    app.WantCommit,
 		CreatedAt:     app.CreatedAt,
@@ -152,7 +145,7 @@ func toDomainApplication(app *models.Application) *domain.Application {
 		RepositoryID:  app.RepositoryID,
 		RefName:       app.RefName,
 		BuildType:     buildTypeMapper.IntoMust(app.BuildType),
-		State:         appStateMapper.IntoMust(app.State),
+		Running:       app.Running,
 		CurrentCommit: app.CurrentCommit,
 		WantCommit:    app.WantCommit,
 
@@ -201,9 +194,9 @@ func toDomainBuild(build *models.Build) *domain.Build {
 	return ret
 }
 
-func fromDomainEnvironment(applicationID string, env *domain.Environment) *models.Environment {
+func fromDomainEnvironment(env *domain.Environment) *models.Environment {
 	return &models.Environment{
-		ApplicationID: applicationID,
+		ApplicationID: env.ApplicationID,
 		Key:           env.Key,
 		Value:         env.Value,
 		System:        env.System,
@@ -212,20 +205,22 @@ func fromDomainEnvironment(applicationID string, env *domain.Environment) *model
 
 func toDomainEnvironment(env *models.Environment) *domain.Environment {
 	return &domain.Environment{
-		Key:    env.Key,
-		Value:  env.Value,
-		System: env.System,
+		ApplicationID: env.ApplicationID,
+		Key:           env.Key,
+		Value:         env.Value,
+		System:        env.System,
 	}
 }
 
-func fromDomainWebsite(website *domain.Website) *models.Website {
+func fromDomainWebsite(appID string, website *domain.Website) *models.Website {
 	return &models.Website{
-		ID:          website.ID,
-		FQDN:        website.FQDN,
-		PathPrefix:  website.PathPrefix,
-		StripPrefix: website.StripPrefix,
-		HTTPS:       website.HTTPS,
-		HTTPPort:    website.HTTPPort,
+		ID:            website.ID,
+		FQDN:          website.FQDN,
+		PathPrefix:    website.PathPrefix,
+		StripPrefix:   website.StripPrefix,
+		HTTPS:         website.HTTPS,
+		HTTPPort:      website.HTTPPort,
+		ApplicationID: appID,
 	}
 }
 

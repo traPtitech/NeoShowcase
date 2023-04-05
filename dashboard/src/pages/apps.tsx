@@ -21,8 +21,9 @@ import { StatusIcon } from '/@/components/StatusIcon'
 import { createResource, JSX } from 'solid-js'
 import { Radio, RadioItem } from '/@/components/Radio'
 import { client } from '/@/libs/api'
-import { Application, ApplicationState, BuildType } from '/@/api/neoshowcase/protobuf/apiserver_pb'
+import { Application } from '/@/api/neoshowcase/protobuf/apiserver_pb'
 import { RepositoryRow } from '/@/components/RepositoryRow'
+import { ApplicationState } from '/@/libs/application'
 
 const sortItems: RadioItem[] = [
   { value: 'desc', title: '最新順' },
@@ -30,16 +31,16 @@ const sortItems: RadioItem[] = [
 ]
 
 interface StatusCheckboxProps {
-  buildType: BuildType
   state: ApplicationState
   title: string
   num: number
 }
-const StatusCheckbox = ({ buildType, state, title, num }: StatusCheckboxProps): JSX.Element => {
+
+const StatusCheckbox = ({ state, title, num }: StatusCheckboxProps): JSX.Element => {
   return (
     <div class={statusCheckboxContainer}>
       <div class={statusCheckboxContainerLeft}>
-        <StatusIcon buildType={buildType} state={state} />
+        <StatusIcon state={state} />
         <div>{title}</div>
       </div>
       <div>{num}</div>
@@ -69,29 +70,16 @@ export default () => {
             <div class={sidebarTitle}>Status</div>
             <div class={sidebarOptions}>
               <Checkbox>
-                <StatusCheckbox buildType={BuildType.RUNTIME} state={ApplicationState.IDLE} title='Idle' num={7} />
+                <StatusCheckbox state={ApplicationState.Idle} title='Idle' num={7} />
               </Checkbox>
               <Checkbox>
-                <StatusCheckbox
-                  buildType={BuildType.RUNTIME}
-                  state={ApplicationState.RUNNING}
-                  title='Running'
-                  num={24}
-                />
+                <StatusCheckbox state={ApplicationState.Deploying} title='Deploying' num={1} />
               </Checkbox>
               <Checkbox>
-                <StatusCheckbox buildType={BuildType.STATIC} state={ApplicationState.RUNNING} title='Static' num={6} />
+                <StatusCheckbox state={ApplicationState.Running} title='Running' num={24} />
               </Checkbox>
               <Checkbox>
-                <StatusCheckbox
-                  buildType={BuildType.RUNTIME}
-                  state={ApplicationState.DEPLOYING}
-                  title='Deploying'
-                  num={1}
-                />
-              </Checkbox>
-              <Checkbox>
-                <StatusCheckbox buildType={BuildType.RUNTIME} state={ApplicationState.ERRORED} title='Error' num={3} />
+                <StatusCheckbox state={ApplicationState.Static} title='Static' num={6} />
               </Checkbox>
             </div>
           </div>

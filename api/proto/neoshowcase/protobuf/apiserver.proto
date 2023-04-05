@@ -47,13 +47,6 @@ enum BuildType {
   STATIC = 1;
 }
 
-enum ApplicationState {
-  IDLE = 0;
-  DEPLOYING = 1;
-  RUNNING = 2;
-  ERRORED = 3;
-}
-
 enum AuthenticationType {
   OFF = 0;
   SOFT = 1;
@@ -107,7 +100,7 @@ message Application {
   string repository_id = 3;
   string ref_name = 4;
   BuildType build_type = 5;
-  ApplicationState state = 6;
+  bool running = 6;
   string current_commit = 7;
   string want_commit = 8;
   ApplicationConfig config = 9;

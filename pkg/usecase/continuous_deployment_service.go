@@ -24,7 +24,6 @@ type continuousDeploymentService struct {
 	bus       domain.Bus
 	appRepo   domain.ApplicationRepository
 	buildRepo domain.BuildRepository
-	envRepo   domain.EnvironmentRepository
 	builder   AppBuildService
 	deployer  AppDeployService
 
@@ -38,7 +37,6 @@ func NewContinuousDeploymentService(
 	bus domain.Bus,
 	appRepo domain.ApplicationRepository,
 	buildRepo domain.BuildRepository,
-	envRepo domain.EnvironmentRepository,
 	builder AppBuildService,
 	deployer AppDeployService,
 ) (ContinuousDeploymentService, error) {
@@ -46,7 +44,6 @@ func NewContinuousDeploymentService(
 		bus:       bus,
 		appRepo:   appRepo,
 		buildRepo: buildRepo,
-		envRepo:   envRepo,
 		builder:   builder,
 		deployer:  deployer,
 	}
@@ -192,7 +189,7 @@ func (cd *continuousDeploymentService) registerBuilds(ctx context.Context) error
 		if app.WantCommit == domain.EmptyCommit {
 			continue
 		}
-		if app.State == domain.ApplicationStateIdle {
+		if !app.Running {
 			continue
 		}
 		build := domain.NewBuild(app.ID, app.WantCommit)
@@ -226,17 +223,38 @@ func (cd *continuousDeploymentService) startBuilds(ctx context.Context) error {
 }
 
 func (cd *continuousDeploymentService) syncDeployments(ctx context.Context) error {
-	// Get out-of-sync and non-idle applications
-	applications, err := cd.appRepo.GetApplications(ctx, domain.GetApplicationCondition{InSync: optional.From(false)})
+	// Get out-of-sync applications
+	apps, err := cd.appRepo.GetApplications(ctx, domain.GetApplicationCondition{
+		Running: optional.From(true),
+		InSync:  optional.From(false),
+	})
 	if err != nil {
 		return err
 	}
-	applications = lo.Filter(applications, func(app *domain.Application, i int) bool {
-		return app.State != domain.ApplicationStateIdle && app.State != domain.ApplicationStateErrored
+	commits := lo.SliceToMap(apps, func(app *domain.Application) (string, struct{}) { return app.WantCommit, struct{}{} })
+	builds, err := cd.buildRepo.GetBuilds(ctx, domain.GetBuildCondition{
+		CommitIn: optional.From(lo.Keys(commits)),
+		Status:   optional.From(domain.BuildStatusSucceeded),
 	})
+	if err != nil {
+		return err
+	}
+	buildExists := lo.SliceToMap(builds, func(b *domain.Build) (string, bool) { return b.Commit, true })
 
-	for _, app := range applications {
-		_ = cd.deployer.Synchronize(app.ID, false)
+	// Check if build has succeeded, and if so save as synced
+	for _, app := range apps {
+		if buildExists[app.WantCommit] {
+			err = cd.appRepo.UpdateApplication(ctx, app.ID, &domain.UpdateApplicationArgs{CurrentCommit: optional.From(app.WantCommit)})
+			if err != nil {
+				return errors.Wrap(err, "failed to sync application commit")
+			}
+		}
+	}
+
+	// Synchronize
+	err = cd.deployer.Synchronize(ctx)
+	if err != nil {
+		return errors.Wrap(err, "failed to synchronize app deployments")
 	}
 	return cd.deployer.SynchronizeSS(ctx)
 }

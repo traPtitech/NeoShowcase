@@ -3,9 +3,11 @@ package main
 import (
 	"context"
 	"fmt"
+	"net/http"
 	"strings"
 	"time"
 
+	"github.com/friendsofgo/errors"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
@@ -43,7 +45,7 @@ func runCommand() *cobra.Command {
 
 			go func() {
 				err := server.Start(context.Background())
-				if err != nil {
+				if err != nil && !errors.Is(err, http.ErrServerClosed) {
 					log.Fatalf("failed to start server: %+v", err)
 				}
 			}()

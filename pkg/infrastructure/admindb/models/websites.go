@@ -34,10 +34,6 @@ type Website struct { // サイトID
 	HTTPS bool `boil:"https" json:"https" toml:"https" yaml:"https"`
 	// コンテナhttpポート番号
 	HTTPPort int `boil:"http_port" json:"http_port" toml:"http_port" yaml:"http_port"`
-	// 作成日時
-	CreatedAt time.Time `boil:"created_at" json:"created_at" toml:"created_at" yaml:"created_at"`
-	// 更新日時
-	UpdatedAt time.Time `boil:"updated_at" json:"updated_at" toml:"updated_at" yaml:"updated_at"`
 	// アプリケーションID
 	ApplicationID string `boil:"application_id" json:"application_id" toml:"application_id" yaml:"application_id"`
 
@@ -52,8 +48,6 @@ var WebsiteColumns = struct {
 	StripPrefix   string
 	HTTPS         string
 	HTTPPort      string
-	CreatedAt     string
-	UpdatedAt     string
 	ApplicationID string
 }{
 	ID:            "id",
@@ -62,8 +56,6 @@ var WebsiteColumns = struct {
 	StripPrefix:   "strip_prefix",
 	HTTPS:         "https",
 	HTTPPort:      "http_port",
-	CreatedAt:     "created_at",
-	UpdatedAt:     "updated_at",
 	ApplicationID: "application_id",
 }
 
@@ -74,8 +66,6 @@ var WebsiteTableColumns = struct {
 	StripPrefix   string
 	HTTPS         string
 	HTTPPort      string
-	CreatedAt     string
-	UpdatedAt     string
 	ApplicationID string
 }{
 	ID:            "websites.id",
@@ -84,8 +74,6 @@ var WebsiteTableColumns = struct {
 	StripPrefix:   "websites.strip_prefix",
 	HTTPS:         "websites.https",
 	HTTPPort:      "websites.http_port",
-	CreatedAt:     "websites.created_at",
-	UpdatedAt:     "websites.updated_at",
 	ApplicationID: "websites.application_id",
 }
 
@@ -121,8 +109,6 @@ var WebsiteWhere = struct {
 	StripPrefix   whereHelperbool
 	HTTPS         whereHelperbool
 	HTTPPort      whereHelperint
-	CreatedAt     whereHelpertime_Time
-	UpdatedAt     whereHelpertime_Time
 	ApplicationID whereHelperstring
 }{
 	ID:            whereHelperstring{field: "`websites`.`id`"},
@@ -131,8 +117,6 @@ var WebsiteWhere = struct {
 	StripPrefix:   whereHelperbool{field: "`websites`.`strip_prefix`"},
 	HTTPS:         whereHelperbool{field: "`websites`.`https`"},
 	HTTPPort:      whereHelperint{field: "`websites`.`http_port`"},
-	CreatedAt:     whereHelpertime_Time{field: "`websites`.`created_at`"},
-	UpdatedAt:     whereHelpertime_Time{field: "`websites`.`updated_at`"},
 	ApplicationID: whereHelperstring{field: "`websites`.`application_id`"},
 }
 
@@ -164,8 +148,8 @@ func (r *websiteR) GetApplication() *Application {
 type websiteL struct{}
 
 var (
-	websiteAllColumns            = []string{"id", "fqdn", "path_prefix", "strip_prefix", "https", "http_port", "created_at", "updated_at", "application_id"}
-	websiteColumnsWithoutDefault = []string{"id", "fqdn", "path_prefix", "strip_prefix", "https", "created_at", "updated_at", "application_id"}
+	websiteAllColumns            = []string{"id", "fqdn", "path_prefix", "strip_prefix", "https", "http_port", "application_id"}
+	websiteColumnsWithoutDefault = []string{"id", "fqdn", "path_prefix", "strip_prefix", "https", "application_id"}
 	websiteColumnsWithDefault    = []string{"http_port"}
 	websitePrimaryKeyColumns     = []string{"id"}
 	websiteGeneratedColumns      = []string{}
@@ -676,16 +660,6 @@ func (o *Website) Insert(ctx context.Context, exec boil.ContextExecutor, columns
 	}
 
 	var err error
-	if !boil.TimestampsAreSkipped(ctx) {
-		currTime := time.Now().In(boil.GetLocation())
-
-		if o.CreatedAt.IsZero() {
-			o.CreatedAt = currTime
-		}
-		if o.UpdatedAt.IsZero() {
-			o.UpdatedAt = currTime
-		}
-	}
 
 	if err := o.doBeforeInsertHooks(ctx, exec); err != nil {
 		return err
@@ -777,12 +751,6 @@ CacheNoHooks:
 // See boil.Columns.UpdateColumnSet documentation to understand column list inference for updates.
 // Update does not automatically update the record in case of default values. Use .Reload() to refresh the records.
 func (o *Website) Update(ctx context.Context, exec boil.ContextExecutor, columns boil.Columns) (int64, error) {
-	if !boil.TimestampsAreSkipped(ctx) {
-		currTime := time.Now().In(boil.GetLocation())
-
-		o.UpdatedAt = currTime
-	}
-
 	var err error
 	if err = o.doBeforeUpdateHooks(ctx, exec); err != nil {
 		return 0, err
@@ -916,14 +884,6 @@ var mySQLWebsiteUniqueColumns = []string{
 func (o *Website) Upsert(ctx context.Context, exec boil.ContextExecutor, updateColumns, insertColumns boil.Columns) error {
 	if o == nil {
 		return errors.New("models: no websites provided for upsert")
-	}
-	if !boil.TimestampsAreSkipped(ctx) {
-		currTime := time.Now().In(boil.GetLocation())
-
-		if o.CreatedAt.IsZero() {
-			o.CreatedAt = currTime
-		}
-		o.UpdatedAt = currTime
 	}
 
 	if err := o.doBeforeUpsertHooks(ctx, exec); err != nil {

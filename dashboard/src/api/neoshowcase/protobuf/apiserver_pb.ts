@@ -28,38 +28,6 @@ proto3.util.setEnumType(BuildType, "neoshowcase.protobuf.BuildType", [
 ]);
 
 /**
- * @generated from enum neoshowcase.protobuf.ApplicationState
- */
-export enum ApplicationState {
-  /**
-   * @generated from enum value: IDLE = 0;
-   */
-  IDLE = 0,
-
-  /**
-   * @generated from enum value: DEPLOYING = 1;
-   */
-  DEPLOYING = 1,
-
-  /**
-   * @generated from enum value: RUNNING = 2;
-   */
-  RUNNING = 2,
-
-  /**
-   * @generated from enum value: ERRORED = 3;
-   */
-  ERRORED = 3,
-}
-// Retrieve enum metadata with: proto3.getEnumType(ApplicationState)
-proto3.util.setEnumType(ApplicationState, "neoshowcase.protobuf.ApplicationState", [
-  { no: 0, name: "IDLE" },
-  { no: 1, name: "DEPLOYING" },
-  { no: 2, name: "RUNNING" },
-  { no: 3, name: "ERRORED" },
-]);
-
-/**
  * @generated from enum neoshowcase.protobuf.AuthenticationType
  */
 export enum AuthenticationType {
@@ -699,9 +667,9 @@ export class Application extends Message<Application> {
   buildType = BuildType.RUNTIME;
 
   /**
-   * @generated from field: neoshowcase.protobuf.ApplicationState state = 6;
+   * @generated from field: bool running = 6;
    */
-  state = ApplicationState.IDLE;
+  running = false;
 
   /**
    * @generated from field: string current_commit = 7;
@@ -741,7 +709,7 @@ export class Application extends Message<Application> {
     { no: 3, name: "repository_id", kind: "scalar", T: 9 /* ScalarType.STRING */ },
     { no: 4, name: "ref_name", kind: "scalar", T: 9 /* ScalarType.STRING */ },
     { no: 5, name: "build_type", kind: "enum", T: proto3.getEnumType(BuildType) },
-    { no: 6, name: "state", kind: "enum", T: proto3.getEnumType(ApplicationState) },
+    { no: 6, name: "running", kind: "scalar", T: 8 /* ScalarType.BOOL */ },
     { no: 7, name: "current_commit", kind: "scalar", T: 9 /* ScalarType.STRING */ },
     { no: 8, name: "want_commit", kind: "scalar", T: 9 /* ScalarType.STRING */ },
     { no: 9, name: "config", kind: "message", T: ApplicationConfig },
