@@ -3,8 +3,10 @@ package main
 import (
 	"context"
 	"fmt"
+	"net/http"
 	"time"
 
+	"github.com/friendsofgo/errors"
 	_ "github.com/go-sql-driver/mysql"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
@@ -46,7 +48,7 @@ func runCommand() *cobra.Command {
 
 			go func() {
 				err := service.Start(context.Background())
-				if err != nil {
+				if err != nil && !errors.Is(err, http.ErrServerClosed) {
 					log.Fatalf("failed to start service: %+v", err)
 				}
 			}()
