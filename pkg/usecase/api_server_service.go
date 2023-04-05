@@ -2,6 +2,7 @@ package usecase
 
 import (
 	"context"
+	"strconv"
 	"time"
 
 	"github.com/friendsofgo/errors"
@@ -150,6 +151,7 @@ func (s *apiServerService) createApplicationDatabase(ctx context.Context, app *d
 	dbName := domain.DBName(app.ID)
 
 	if app.Config.UseMariaDB {
+		host, port := s.mariaDBManager.GetHost()
 		dbPassword := random.SecureGeneratePassword(32)
 		dbSetting := domain.CreateArgs{
 			Database: dbName,
@@ -161,6 +163,8 @@ func (s *apiServerService) createApplicationDatabase(ctx context.Context, app *d
 		}
 
 		envs := []*domain.Environment{
+			{ApplicationID: app.ID, Key: domain.EnvMySQLHostnameKey, Value: host, System: true},
+			{ApplicationID: app.ID, Key: domain.EnvMySQLPortKey, Value: strconv.Itoa(port), System: true},
 			{ApplicationID: app.ID, Key: domain.EnvMySQLUserKey, Value: dbName, System: true},
 			{ApplicationID: app.ID, Key: domain.EnvMySQLPasswordKey, Value: dbPassword, System: true},
 			{ApplicationID: app.ID, Key: domain.EnvMySQLDatabaseKey, Value: dbName, System: true},
@@ -174,6 +178,7 @@ func (s *apiServerService) createApplicationDatabase(ctx context.Context, app *d
 	}
 
 	if app.Config.UseMongoDB {
+		host, port := s.mongoDBManager.GetHost()
 		dbPassword := random.SecureGeneratePassword(32)
 		dbSetting := domain.CreateArgs{
 			Database: dbName,
@@ -185,6 +190,8 @@ func (s *apiServerService) createApplicationDatabase(ctx context.Context, app *d
 		}
 
 		envs := []*domain.Environment{
+			{ApplicationID: app.ID, Key: domain.EnvMongoDBHostnameKey, Value: host, System: true},
+			{ApplicationID: app.ID, Key: domain.EnvMongoDBPortKey, Value: strconv.Itoa(port), System: true},
 			{ApplicationID: app.ID, Key: domain.EnvMongoDBUserKey, Value: dbName, System: true},
 			{ApplicationID: app.ID, Key: domain.EnvMongoDBPasswordKey, Value: dbPassword, System: true},
 			{ApplicationID: app.ID, Key: domain.EnvMongoDBDatabaseKey, Value: dbName, System: true},
