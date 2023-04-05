@@ -11,7 +11,7 @@ import (
 )
 
 type patcher[T any] interface {
-	Patch(ctx context.Context, name string, pt types.PatchType, data []byte, opts metav1.PatchOptions, subresources ...string) (result T, err error)
+	Patch(ctx context.Context, name string, pt types.PatchType, data []byte, opts metav1.PatchOptions, subResources ...string) (result T, err error)
 }
 
 func patch[T any](ctx context.Context, name string, resource T, patcher patcher[T]) error {
@@ -36,32 +36,25 @@ type namedResource interface {
 	GetName() string
 }
 
-func diff[T namedResource](existing []T, current []T) []string {
-	var ret []string
+func diff[T namedResource](existing []T, current []T) []T {
+	var ret []T
 	currentMap := lo.SliceToMap(current, func(r T) (string, struct{}) { return r.GetName(), struct{}{} })
 	for _, ex := range existing {
 		if _, ok := currentMap[ex.GetName()]; !ok {
-			ret = append(ret, ex.GetName())
+			ret = append(ret, ex)
 		}
 	}
 	return ret
 }
 
-func names[T namedResource](resources []T) []string {
-	ret := make([]string, len(resources))
-	for i := range resources {
-		ret[i] = resources[i].GetName()
-	}
-	return ret
-}
-
-type deleter interface {
+type deleter[T namedResource] interface {
+	patcher[T] // embedded just to actually catch type errors
 	Delete(ctx context.Context, name string, opts metav1.DeleteOptions) error
 }
 
-func prune(ctx context.Context, names []string, deleter deleter) error {
-	for _, name := range names {
-		if err := deleter.Delete(ctx, name, metav1.DeleteOptions{}); err != nil {
+func prune[T namedResource](ctx context.Context, resources []T, deleter deleter[T]) error {
+	for _, resource := range resources {
+		if err := deleter.Delete(ctx, resource.GetName(), metav1.DeleteOptions{}); err != nil {
 			return err
 		}
 	}

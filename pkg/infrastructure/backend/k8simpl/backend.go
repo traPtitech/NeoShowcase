@@ -18,6 +18,10 @@ import (
 	"github.com/traPtitech/neoshowcase/pkg/domain/event"
 )
 
+type (
+	m map[string]any
+)
+
 const (
 	appNamespace         = "neoshowcase-apps"
 	appLabel             = "neoshowcase.trap.jp/app"

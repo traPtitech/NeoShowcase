@@ -10,10 +10,12 @@ var (
 	ErrContainerNotFound = errors.New("container not found")
 )
 
-type ContainerCreateArgs struct {
+type AppDesiredState struct {
+	App       *Application
 	ImageName string
 	ImageTag  string
 	Envs      map[string]string
+	Restart   bool
 }
 
 type Container struct {
@@ -34,9 +36,8 @@ type Backend interface {
 	Start(ctx context.Context) error
 	Dispose(ctx context.Context) error
 
-	CreateContainer(ctx context.Context, app *Application, args ContainerCreateArgs) error
-	DestroyContainer(ctx context.Context, app *Application) error
+	Synchronize(ctx context.Context, apps []*AppDesiredState) error
+	SynchronizeSSIngress(ctx context.Context) error
 	GetContainer(ctx context.Context, appID string) (*Container, error)
-	ListContainers(ctx context.Context) ([]Container, error)
-	ReloadSSIngress(ctx context.Context) error
+	ListContainers(ctx context.Context) ([]*Container, error)
 }

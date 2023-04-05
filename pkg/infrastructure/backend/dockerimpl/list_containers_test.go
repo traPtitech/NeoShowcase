@@ -33,9 +33,11 @@ func TestDockerBackend_ListContainers(t *testing.T) {
 			app := domain.Application{
 				ID: baseAppID + strconv.Itoa(i),
 			}
-			err := m.CreateContainer(context.Background(), &app, domain.ContainerCreateArgs{
+			err := m.Synchronize(context.Background(), []*domain.AppDesiredState{{
+				App:       &app,
 				ImageName: image,
-			})
+				ImageTag:  "latest",
+			}})
 			require.NoError(t, err)
 			t.Cleanup(func() {
 				_ = c.RemoveContainer(docker.RemoveContainerOptions{

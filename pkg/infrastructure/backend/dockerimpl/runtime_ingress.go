@@ -1,18 +1,15 @@
 package dockerimpl
 
 import (
-	"context"
 	"fmt"
 	"os"
 	"path/filepath"
-	"strings"
 
 	"github.com/friendsofgo/errors"
 	"gopkg.in/yaml.v2"
 
 	"github.com/traPtitech/neoshowcase/pkg/domain"
 	"github.com/traPtitech/neoshowcase/pkg/domain/web"
-	"github.com/traPtitech/neoshowcase/pkg/util"
 )
 
 type (
@@ -20,7 +17,9 @@ type (
 	a []any
 )
 
-func routerBase(app *domain.Application, website *domain.Website, middlewares m) m {
+func routerBase(app *domain.Application, website *domain.Website, svcName string) (router m, middlewares m) {
+	middlewares = make(m)
+
 	var entrypoints []string
 	if website.HTTPS {
 		entrypoints = append(entrypoints, web.TraefikHTTPSEntrypoint)
@@ -58,10 +57,11 @@ func routerBase(app *domain.Application, website *domain.Website, middlewares m)
 		}
 	}
 
-	router := m{
+	router = m{
 		"entrypoints": entrypoints,
 		"middlewares": middlewareNames,
 		"rule":        rule,
+		"service":     svcName,
 	}
 
 	if website.HTTPS {
@@ -72,14 +72,28 @@ func routerBase(app *domain.Application, website *domain.Website, middlewares m)
 			},
 		}
 	}
-	return router
+
+	return router, middlewares
 }
 
-func (b *dockerBackend) runtimeIngressConfig(app *domain.Application, website *domain.Website) m {
-	middlewares := m{}
-	router := routerBase(app, website, middlewares)
+type runtimeConfigBuilder struct {
+	routers     m
+	middlewares m
+	services    m
+}
+
+func newRuntimeConfigBuilder() *runtimeConfigBuilder {
+	return &runtimeConfigBuilder{
+		routers:     make(m),
+		middlewares: make(m),
+		services:    make(m),
+	}
+}
+
+func (b *runtimeConfigBuilder) addWebsite(app *domain.Application, website *domain.Website) {
 	svcName := traefikName(website)
-	router["service"] = svcName
+
+	router, middlewares := routerBase(app, website, svcName)
 
 	netName := networkName(app.ID)
 	svc := m{
@@ -90,95 +104,41 @@ func (b *dockerBackend) runtimeIngressConfig(app *domain.Application, website *d
 		},
 	}
 
-	config := m{
-		"http": m{
-			"routers": m{
-				svcName: router,
-			},
-			"services": m{
-				svcName: svc,
-			},
-		},
+	b.routers[svcName] = router
+	for name, mw := range middlewares {
+		b.middlewares[name] = mw
+	}
+	b.services[svcName] = svc
+}
+
+func (b *runtimeConfigBuilder) build() m {
+	http := make(m)
+
+	if len(b.routers) > 0 {
+		http["routers"] = b.routers
+	}
+	if len(b.middlewares) > 0 {
+		http["middlewares"] = b.middlewares
+	}
+	if len(b.services) > 0 {
+		http["services"] = b.services
 	}
 
-	if len(middlewares) > 0 {
-		config["http"].(m)["middlewares"] = middlewares
+	if len(http) == 0 {
+		return nil
 	}
-
-	return config
+	return m{
+		"http": http,
+	}
 }
 
 func (b *dockerBackend) writeConfig(filename string, config any) error {
 	file, err := os.OpenFile(filepath.Join(b.ingressConfDir, filename), os.O_CREATE|os.O_TRUNC|os.O_WRONLY, 0644)
 	if err != nil {
-		return err
+		return errors.Wrap(err, "failed to open config file")
 	}
 	defer file.Close()
 	enc := yaml.NewEncoder(file)
 	defer enc.Close()
 	return enc.Encode(config)
-}
-
-func (b *dockerBackend) synchronizeRuntimeIngresses(_ context.Context, app *domain.Application) error {
-	entries, err := os.ReadDir(b.ingressConfDir)
-	if err != nil {
-		return err
-	}
-
-	confFilePrefix := configFilePrefix(app)
-	existingFiles := m{}
-	for _, entry := range entries {
-		if entry.IsDir() {
-			continue
-		}
-		if strings.HasPrefix(entry.Name(), confFilePrefix) {
-			existingFiles[entry.Name()] = true
-		}
-	}
-
-	newConfigs := m{}
-	for _, website := range app.Websites {
-		newConfigs[configFile(app, website)] = b.runtimeIngressConfig(app, website)
-	}
-
-	// Create / update configuration files
-	for filename, config := range newConfigs {
-		err = b.writeConfig(filename, config)
-		if err != nil {
-			return err
-		}
-	}
-
-	// Prune old configuration files
-	danglingFiles := util.MapDiff(existingFiles, newConfigs)
-	for filename := range danglingFiles {
-		err = os.Remove(filepath.Join(b.ingressConfDir, filename))
-		if err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-func (b *dockerBackend) destroyRuntimeIngresses(_ context.Context, app *domain.Application) error {
-	entries, err := os.ReadDir(b.ingressConfDir)
-	if err != nil {
-		return errors.Wrap(err, "failed to read conf dir")
-	}
-
-	confFilePrefix := configFilePrefix(app)
-	for _, entry := range entries {
-		if entry.IsDir() {
-			continue
-		}
-		if strings.HasPrefix(entry.Name(), confFilePrefix) {
-			err = os.Remove(filepath.Join(b.ingressConfDir, entry.Name()))
-			if err != nil {
-				return errors.Wrap(err, "failed to remove config")
-			}
-		}
-	}
-
-	return nil
 }

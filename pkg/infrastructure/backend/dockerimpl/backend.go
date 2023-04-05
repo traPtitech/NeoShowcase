@@ -22,8 +22,9 @@ const (
 )
 
 const (
-	traefikSSFilename    = "ss.yaml"
-	traefikSSServiceName = "ss"
+	traefikRuntimeFilename = "apps.yaml"
+	traefikSSFilename      = "ss.yaml"
+	traefikSSServiceName   = "ss"
 )
 
 type dockerBackend struct {

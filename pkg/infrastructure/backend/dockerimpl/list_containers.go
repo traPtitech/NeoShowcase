@@ -33,7 +33,7 @@ func (b *dockerBackend) GetContainer(ctx context.Context, appID string) (*domain
 	}, nil
 }
 
-func (b *dockerBackend) ListContainers(ctx context.Context) ([]domain.Container, error) {
+func (b *dockerBackend) ListContainers(ctx context.Context) ([]*domain.Container, error) {
 	containers, err := b.c.ListContainers(docker.ListContainersOptions{
 		All:     true,
 		Filters: map[string][]string{"label": {fmt.Sprintf("%s=true", appLabel)}},
@@ -43,9 +43,9 @@ func (b *dockerBackend) ListContainers(ctx context.Context) ([]domain.Container,
 		return nil, errors.Wrap(err, "failed to fetch containers")
 	}
 
-	var result []domain.Container
+	var result []*domain.Container
 	for _, apiContainers := range containers {
-		result = append(result, domain.Container{
+		result = append(result, &domain.Container{
 			ApplicationID: apiContainers.Labels[appIDLabel],
 			State:         getContainerState(apiContainers.State),
 		})
