@@ -82,7 +82,7 @@ func NewWithDocker(c2 Config) (*Server, error) {
 	mainWebAppServer := provideWebAppServer(c2, applicationServiceHandler, authInterceptor)
 	mainWebComponentServer := provideWebComponentServer(c2, componentService)
 	appBuildService := usecase.NewAppBuildService(buildRepository, componentService, imageConfig)
-	continuousDeploymentService, err := usecase.NewContinuousDeploymentService(bus, applicationRepository, buildRepository, environmentRepository, appBuildService, appDeployService)
+	continuousDeploymentService, err := usecase.NewContinuousDeploymentService(bus, applicationRepository, buildRepository, appBuildService, appDeployService)
 	if err != nil {
 		return nil, err
 	}
@@ -165,7 +165,7 @@ func NewWithK8S(c2 Config) (*Server, error) {
 	mainWebAppServer := provideWebAppServer(c2, applicationServiceHandler, authInterceptor)
 	mainWebComponentServer := provideWebComponentServer(c2, componentService)
 	appBuildService := usecase.NewAppBuildService(buildRepository, componentService, imageConfig)
-	continuousDeploymentService, err := usecase.NewContinuousDeploymentService(bus, applicationRepository, buildRepository, environmentRepository, appBuildService, appDeployService)
+	continuousDeploymentService, err := usecase.NewContinuousDeploymentService(bus, applicationRepository, buildRepository, appBuildService, appDeployService)
 	if err != nil {
 		return nil, err
 	}

@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"strings"
 	"sync"
+	"time"
 
 	"github.com/friendsofgo/errors"
 	docker "github.com/fsouza/go-dockerclient"
@@ -16,9 +17,10 @@ import (
 type IngressConfDirPath string
 
 const (
-	appNetwork = "neoshowcase_apps"
-	appLabel   = "neoshowcase.trap.jp/app"
-	appIDLabel = "neoshowcase.trap.jp/appId"
+	appNetwork          = "neoshowcase_apps"
+	appLabel            = "neoshowcase.trap.jp/app"
+	appIDLabel          = "neoshowcase.trap.jp/appId"
+	appRestartedAtLabel = "neoshowcase.trap.jp/restartedAt"
 )
 
 const (
@@ -121,10 +123,11 @@ func initNetworks(c *docker.Client) error {
 	return err
 }
 
-func containerLabels(appID string) map[string]string {
+func containerLabels(app *domain.Application) map[string]string {
 	return map[string]string{
-		appLabel:   "true",
-		appIDLabel: appID,
+		appLabel:            "true",
+		appIDLabel:          app.ID,
+		appRestartedAtLabel: app.UpdatedAt.Format(time.RFC3339),
 	}
 }
 

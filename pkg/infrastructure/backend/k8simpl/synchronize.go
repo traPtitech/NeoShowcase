@@ -53,22 +53,10 @@ func (b *k8sBackend) listCurrentResources(ctx context.Context) (*runtimeResource
 	return &resources, nil
 }
 
-func statefulSet(app *domain.AppDesiredState, old *v1.StatefulSet) *v1.StatefulSet {
+func statefulSet(app *domain.AppDesiredState) *v1.StatefulSet {
 	envs := lo.MapToSlice(app.Envs, func(key string, value string) apiv1.EnvVar {
 		return apiv1.EnvVar{Name: key, Value: value}
 	})
-
-	var restartedAt time.Time
-	if old == nil || app.Restart {
-		restartedAt = time.Now()
-	} else {
-		var err error
-		oldAnnotation := old.Spec.Template.ObjectMeta.Annotations[appRestartAnnotation]
-		restartedAt, err = time.Parse(time.RFC3339, oldAnnotation)
-		if err != nil {
-			restartedAt = time.Now()
-		}
-	}
 
 	return &v1.StatefulSet{
 		TypeMeta: metav1.TypeMeta{
@@ -89,7 +77,7 @@ func statefulSet(app *domain.AppDesiredState, old *v1.StatefulSet) *v1.StatefulS
 				ObjectMeta: metav1.ObjectMeta{
 					Labels: resourceLabels(app.App.ID),
 					Annotations: map[string]string{
-						appRestartAnnotation: restartedAt.Format(time.RFC3339),
+						appRestartAnnotation: app.App.UpdatedAt.Format(time.RFC3339),
 					},
 				},
 				Spec: apiv1.PodSpec{
@@ -121,19 +109,19 @@ func (b *k8sBackend) deleteStatefulSet(ctx context.Context, ss *v1.StatefulSet) 
 }
 
 func (b *k8sBackend) Synchronize(ctx context.Context, apps []*domain.AppDesiredState) error {
+	b.reloadLock.Lock()
+	defer b.reloadLock.Unlock()
+
 	// List old resources
 	old, err := b.listCurrentResources(ctx)
 	if err != nil {
 		return err
 	}
-	oldStatefulSets := lo.SliceToMap(old.statefulSets, func(sf *v1.StatefulSet) (string, *v1.StatefulSet) {
-		return sf.ObjectMeta.Labels[appIDLabel], sf
-	})
 
 	// Calculate next resources to apply
 	var next runtimeResources
 	for _, app := range apps {
-		next.statefulSets = append(next.statefulSets, statefulSet(app, oldStatefulSets[app.App.ID]))
+		next.statefulSets = append(next.statefulSets, statefulSet(app))
 		for _, website := range app.App.Websites {
 			next.services = append(next.services, runtimeService(app.App, website))
 			ingressRoute, mw := ingressRoute(app.App, website, resourceLabels(app.App.ID), runtimeServiceRef(app.App, website))

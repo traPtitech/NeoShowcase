@@ -160,7 +160,7 @@ func (s *ApplicationService) CreateApplication(ctx context.Context, req *connect
 		}),
 		OwnerIDs: []string{user.ID},
 	}
-	app, err := s.svc.CreateApplication(ctx, app, msg.StartOnCreate)
+	app, err := s.svc.CreateApplication(ctx, app)
 	if err != nil {
 		return nil, handleUseCaseError(err)
 	}
@@ -192,8 +192,9 @@ func (s *ApplicationService) UpdateApplication(ctx context.Context, req *connect
 	}
 
 	err = s.svc.UpdateApplication(ctx, app, &domain.UpdateApplicationArgs{
-		Name:    optional.From(msg.Name),
-		RefName: optional.From(msg.RefName),
+		Name:      optional.From(msg.Name),
+		RefName:   optional.From(msg.RefName),
+		UpdatedAt: optional.From(time.Now()),
 		Config: optional.From(domain.ApplicationConfig{
 			UseMariaDB:     app.Config.UseMariaDB,
 			UseMongoDB:     app.Config.UseMongoDB,

@@ -24,7 +24,6 @@ type continuousDeploymentService struct {
 	bus       domain.Bus
 	appRepo   domain.ApplicationRepository
 	buildRepo domain.BuildRepository
-	envRepo   domain.EnvironmentRepository
 	builder   AppBuildService
 	deployer  AppDeployService
 
@@ -38,7 +37,6 @@ func NewContinuousDeploymentService(
 	bus domain.Bus,
 	appRepo domain.ApplicationRepository,
 	buildRepo domain.BuildRepository,
-	envRepo domain.EnvironmentRepository,
 	builder AppBuildService,
 	deployer AppDeployService,
 ) (ContinuousDeploymentService, error) {
@@ -46,7 +44,6 @@ func NewContinuousDeploymentService(
 		bus:       bus,
 		appRepo:   appRepo,
 		buildRepo: buildRepo,
-		envRepo:   envRepo,
 		builder:   builder,
 		deployer:  deployer,
 	}
@@ -255,7 +252,7 @@ func (cd *continuousDeploymentService) syncDeployments(ctx context.Context) erro
 	}
 
 	// Synchronize
-	err = cd.deployer.Synchronize(ctx, nil)
+	err = cd.deployer.Synchronize(ctx)
 	if err != nil {
 		return errors.Wrap(err, "failed to synchronize app deployments")
 	}

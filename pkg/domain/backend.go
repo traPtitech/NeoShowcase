@@ -15,7 +15,6 @@ type AppDesiredState struct {
 	ImageName string
 	ImageTag  string
 	Envs      map[string]string
-	Restart   bool
 }
 
 type Container struct {
@@ -37,7 +36,7 @@ type Backend interface {
 	Dispose(ctx context.Context) error
 
 	Synchronize(ctx context.Context, apps []*AppDesiredState) error
-	SynchronizeSSIngress(ctx context.Context) error
+	SynchronizeSSIngress(ctx context.Context, sites []*StaticSite) error
 	GetContainer(ctx context.Context, appID string) (*Container, error)
 	ListContainers(ctx context.Context) ([]*Container, error)
 }

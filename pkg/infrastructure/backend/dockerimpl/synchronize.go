@@ -3,15 +3,89 @@ package dockerimpl
 import (
 	"context"
 	"fmt"
+	"time"
 
 	"github.com/friendsofgo/errors"
 	docker "github.com/fsouza/go-dockerclient"
 	"github.com/samber/lo"
+	log "github.com/sirupsen/logrus"
 
 	"github.com/traPtitech/neoshowcase/pkg/domain"
 )
 
+func (b *dockerBackend) syncAppContainer(ctx context.Context, app *domain.AppDesiredState, oldContainer *docker.APIContainers) error {
+	newImageName := app.ImageName + ":" + app.ImageTag
+	var oldRestartedAt time.Time
+	var err error
+	if oldContainer != nil {
+		oldRestartedAt, err = time.Parse(time.RFC3339, oldContainer.Labels[appRestartedAtLabel])
+		if err != nil {
+			oldRestartedAt = time.Time{}
+		}
+	} else {
+		oldRestartedAt = time.Time{}
+	}
+	doDeploy := oldContainer == nil || oldContainer.Image != newImageName || !oldRestartedAt.Equal(app.App.UpdatedAt)
+	if !doDeploy {
+		return nil
+	}
+
+	if oldContainer != nil {
+		err = b.c.RemoveContainer(docker.RemoveContainerOptions{
+			ID:            oldContainer.ID,
+			RemoveVolumes: true,
+			Force:         true,
+			Context:       ctx,
+		})
+		if err != nil {
+			return errors.Wrap(err, "failed to remove old container")
+		}
+	}
+
+	err = b.c.PullImage(docker.PullImageOptions{
+		Repository: app.ImageName,
+		Tag:        app.ImageTag,
+		Context:    ctx,
+	}, docker.AuthConfiguration{})
+	if err != nil {
+		return errors.Wrap(err, "failed to pull image")
+	}
+
+	envs := lo.MapToSlice(app.Envs, func(key string, value string) string {
+		return key + "=" + value
+	})
+	cont, err := b.c.CreateContainer(docker.CreateContainerOptions{
+		Name: containerName(app.App.ID),
+		Config: &docker.Config{
+			Image:  newImageName,
+			Labels: containerLabels(app.App),
+			Env:    envs,
+		},
+		HostConfig: &docker.HostConfig{
+			RestartPolicy: docker.RestartOnFailure(5),
+		},
+		NetworkingConfig: &docker.NetworkingConfig{EndpointsConfig: map[string]*docker.EndpointConfig{
+			appNetwork: {
+				Aliases: []string{networkName(app.App.ID)},
+			},
+		}},
+		Context: ctx,
+	})
+	if err != nil {
+		return errors.Wrap(err, "failed to create container")
+	}
+
+	err = b.c.StartContainer(cont.ID, nil)
+	if err != nil {
+		return errors.Wrap(err, "failed to start container")
+	}
+	return nil
+}
+
 func (b *dockerBackend) Synchronize(ctx context.Context, apps []*domain.AppDesiredState) error {
+	b.reloadLock.Lock()
+	defer b.reloadLock.Unlock()
+
 	// List old resources
 	oldContainers, err := b.c.ListContainers(docker.ListContainersOptions{
 		All:     true,
@@ -25,62 +99,12 @@ func (b *dockerBackend) Synchronize(ctx context.Context, apps []*domain.AppDesir
 		return c.Labels[appIDLabel], &c
 	})
 
-	// Calculate next resources to apply
+	// Calculate next resources and apply
 	for _, app := range apps {
-		oldContainer, oldExist := oldContainersMap[app.App.ID]
-		newImageName := app.ImageName + ":" + app.ImageTag
-		doDeploy := !oldExist || app.Restart || oldContainer.Image != newImageName
-		if !doDeploy {
-			continue
-		}
-
-		if oldExist {
-			err = b.c.RemoveContainer(docker.RemoveContainerOptions{
-				ID:            oldContainer.ID,
-				RemoveVolumes: true,
-				Force:         true,
-				Context:       ctx,
-			})
-			if err != nil {
-				return errors.Wrap(err, "failed to remove old container")
-			}
-		}
-
-		err = b.c.PullImage(docker.PullImageOptions{
-			Repository: app.ImageName,
-			Tag:        app.ImageTag,
-			Context:    ctx,
-		}, docker.AuthConfiguration{})
+		err = b.syncAppContainer(ctx, app, oldContainersMap[app.App.ID])
 		if err != nil {
-			return errors.Wrap(err, "failed to pull image")
-		}
-
-		envs := lo.MapToSlice(app.Envs, func(key string, value string) string {
-			return key + "=" + value
-		})
-		cont, err := b.c.CreateContainer(docker.CreateContainerOptions{
-			Name: containerName(app.App.ID),
-			Config: &docker.Config{
-				Image:  newImageName,
-				Labels: containerLabels(app.App.ID),
-				Env:    envs,
-			},
-			HostConfig: &docker.HostConfig{
-				RestartPolicy: docker.RestartOnFailure(5),
-			},
-			NetworkingConfig: &docker.NetworkingConfig{EndpointsConfig: map[string]*docker.EndpointConfig{
-				appNetwork: {
-					Aliases: []string{networkName(app.App.ID)},
-				},
-			}},
-			Context: ctx,
-		})
-		if err != nil {
-			return errors.Wrap(err, "failed to create container")
-		}
-
-		if err := b.c.StartContainer(cont.ID, nil); err != nil {
-			return errors.Wrap(err, "failed to start container")
+			log.Errorf("failed to sync app: %+v", err)
+			continue // fail-safe
 		}
 	}
 
@@ -111,7 +135,8 @@ func (b *dockerBackend) Synchronize(ctx context.Context, apps []*domain.AppDesir
 			Context:       ctx,
 		})
 		if err != nil {
-			return errors.Wrap(err, "failed to remove old container")
+			log.Errorf("failed to remove old container: %+v", err)
+			continue // fail-safe
 		}
 	}
 

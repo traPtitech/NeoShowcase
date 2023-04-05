@@ -61,14 +61,9 @@ func (b *ssConfigBuilder) build(ssURL string) m {
 	}
 }
 
-func (b *dockerBackend) SynchronizeSSIngress(ctx context.Context) error {
+func (b *dockerBackend) SynchronizeSSIngress(_ context.Context, sites []*domain.StaticSite) error {
 	b.reloadLock.Lock()
 	defer b.reloadLock.Unlock()
-
-	sites, err := domain.GetActiveStaticSites(ctx, b.appRepo, b.buildRepo)
-	if err != nil {
-		return err
-	}
 
 	cb := newSSConfigBuilder()
 	for _, site := range sites {

@@ -24,6 +24,7 @@ type UpdateApplicationArgs struct {
 	Running       optional.Of[bool]
 	CurrentCommit optional.Of[string]
 	WantCommit    optional.Of[string]
+	UpdatedAt     optional.Of[time.Time]
 	Config        optional.Of[ApplicationConfig]
 	Websites      optional.Of[[]*Website]
 	OwnerIDs      optional.Of[[]string]

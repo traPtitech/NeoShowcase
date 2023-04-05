@@ -71,14 +71,9 @@ func (b *k8sBackend) listCurrentSSResources(ctx context.Context) (*ssResources, 
 	return &resources, nil
 }
 
-func (b *k8sBackend) SynchronizeSSIngress(ctx context.Context) error {
+func (b *k8sBackend) SynchronizeSSIngress(ctx context.Context, sites []*domain.StaticSite) error {
 	b.reloadLock.Lock()
 	defer b.reloadLock.Unlock()
-
-	sites, err := domain.GetActiveStaticSites(context.Background(), b.appRepo, b.buildRepo)
-	if err != nil {
-		return err
-	}
 
 	// List old resources
 	old, err := b.listCurrentSSResources(ctx)

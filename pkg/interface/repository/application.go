@@ -4,7 +4,6 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
-	"time"
 
 	"github.com/friendsofgo/errors"
 	"github.com/samber/lo"
@@ -162,8 +161,10 @@ func (r *applicationRepository) UpdateApplication(ctx context.Context, id string
 	if args.WantCommit.Valid {
 		app.WantCommit = args.WantCommit.V
 	}
+	if args.UpdatedAt.Valid {
+		app.UpdatedAt = args.UpdatedAt.V
+	}
 
-	app.UpdatedAt = time.Now()
 	_, err = app.Update(ctx, tx, boil.Blacklist())
 
 	if args.Config.Valid {
