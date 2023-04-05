@@ -146,16 +146,3 @@ func stripMiddlewareName(website *domain.Website) string {
 func ssHeaderMiddlewareName(ss *domain.StaticSite) string {
 	return fmt.Sprintf("nsapp-ss-header-%s", ss.Application.ID)
 }
-
-func configFilePrefix(app *domain.Application) string {
-	return fmt.Sprintf("nsapp-%s-", app.ID)
-}
-
-func configFile(app *domain.Application, website *domain.Website) string {
-	filename := configFilePrefix(app) +
-		strings.ReplaceAll(website.FQDN, ".", "-") +
-		strings.ReplaceAll(website.PathPrefix, "/", "-")
-	filename = strings.TrimSuffix(filename, "-")
-	filename += ".yaml"
-	return filename
-}
