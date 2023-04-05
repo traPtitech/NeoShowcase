@@ -32,13 +32,10 @@ const (
 )
 
 type k8sBackend struct {
+	eventbus      domain.Bus
 	client        *kubernetes.Clientset
 	traefikClient *traefikv1alpha1.TraefikContainousV1alpha1Client
-	eventbus      domain.Bus
-
-	appRepo   domain.ApplicationRepository
-	buildRepo domain.BuildRepository
-	ss        domain.StaticServerConnectivityConfig
+	ss            domain.StaticServerConnectivityConfig
 
 	podWatcher watch.Interface
 	reloadLock sync.Mutex
@@ -48,18 +45,13 @@ func NewK8SBackend(
 	eventbus domain.Bus,
 	k8sCSet *kubernetes.Clientset,
 	traefikClient *traefikv1alpha1.TraefikContainousV1alpha1Client,
-	appRepo domain.ApplicationRepository,
-	buildRepo domain.BuildRepository,
 	ss domain.StaticServerConnectivityConfig,
 ) domain.Backend {
 	return &k8sBackend{
 		client:        k8sCSet,
 		traefikClient: traefikClient,
 		eventbus:      eventbus,
-
-		appRepo:   appRepo,
-		buildRepo: buildRepo,
-		ss:        ss,
+		ss:            ss,
 	}
 }
 

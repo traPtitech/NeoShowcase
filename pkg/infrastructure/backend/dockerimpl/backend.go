@@ -33,10 +33,7 @@ type dockerBackend struct {
 	c              *docker.Client
 	bus            domain.Bus
 	ingressConfDir string
-
-	appRepo   domain.ApplicationRepository
-	buildRepo domain.BuildRepository
-	ssURL     string
+	ssURL          string
 
 	dockerEvent chan *docker.APIEvents
 	reloadLock  sync.Mutex
@@ -46,18 +43,13 @@ func NewDockerBackend(
 	c *docker.Client,
 	bus domain.Bus,
 	path IngressConfDirPath,
-	appRepo domain.ApplicationRepository,
-	buildRepo domain.BuildRepository,
 	ss domain.StaticServerConnectivityConfig,
 ) domain.Backend {
 	return &dockerBackend{
 		c:              c,
 		bus:            bus,
 		ingressConfDir: string(path),
-
-		appRepo:   appRepo,
-		buildRepo: buildRepo,
-		ssURL:     ss.URL,
+		ssURL:          ss.URL,
 	}
 }
 
