@@ -11,6 +11,7 @@ import { styled } from '@macaron-css/solid'
 import { vars } from '/@/theme'
 import { Container } from '/@/libs/layout'
 import { Button } from '/@/components/Button'
+import {A} from "@solidjs/router";
 
 const sortItems: RadioItem[] = [
   { value: 'desc', title: '最新順' },
@@ -166,9 +167,11 @@ export default () => {
           <MainContainer>
             <SearchBarContainer>
               <SearchBar placeholder='Search...' />
-              <Button color='black1' size='large'>
-                + Create new app
-              </Button>
+              <A href="/newapp_select_repo">
+                <Button color='black1' size='large'>
+                  + Create new app
+                </Button>
+              </A>
             </SearchBarContainer>
             <RepositoriesContainer>
               <For
