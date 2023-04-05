@@ -3,6 +3,7 @@ package k8simpl
 import (
 	"context"
 	"testing"
+	"time"
 
 	"github.com/leandro-lugaresi/hub"
 	"github.com/stretchr/testify/require"
@@ -22,7 +23,8 @@ func TestK8sBackend_Synchronize(t *testing.T) {
 		appID := "pjpjpjoijion"
 
 		app := domain.Application{
-			ID: appID,
+			ID:        appID,
+			UpdatedAt: time.Now(),
 		}
 		err := m.Synchronize(context.Background(), []*domain.AppDesiredState{{
 			App:       &app,
@@ -50,8 +52,9 @@ func TestK8sBackend_Synchronize(t *testing.T) {
 			HTTPPort:    80,
 		}
 		app := domain.Application{
-			ID:       appID,
-			Websites: []*domain.Website{website},
+			ID:        appID,
+			Websites:  []*domain.Website{website},
+			UpdatedAt: time.Now(),
 		}
 		err := m.Synchronize(context.Background(), []*domain.AppDesiredState{{
 			App:       &app,
@@ -83,8 +86,9 @@ func TestK8sBackend_Synchronize(t *testing.T) {
 			HTTPPort:    80,
 		}
 		app := domain.Application{
-			ID:       appID,
-			Websites: []*domain.Website{website},
+			ID:        appID,
+			Websites:  []*domain.Website{website},
+			UpdatedAt: time.Now(),
 		}
 		err := m.Synchronize(context.Background(), []*domain.AppDesiredState{{
 			App:       &app,
@@ -94,11 +98,11 @@ func TestK8sBackend_Synchronize(t *testing.T) {
 		require.NoError(t, err)
 		waitPodRunning(t, m, appID)
 
+		app.UpdatedAt = time.Now() // Restart
 		err = m.Synchronize(context.Background(), []*domain.AppDesiredState{{
 			App:       &app,
 			ImageName: image,
 			ImageTag:  "latest",
-			Restart:   true,
 		}})
 		require.NoError(t, err)
 		exists[*appsv1.StatefulSet](t, deploymentName(appID), c.AppsV1().StatefulSets(appNamespace))

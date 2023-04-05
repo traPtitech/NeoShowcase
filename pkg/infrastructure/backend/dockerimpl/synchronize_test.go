@@ -3,6 +3,7 @@ package dockerimpl
 import (
 	"context"
 	"testing"
+	"time"
 
 	docker "github.com/fsouza/go-dockerclient"
 	"github.com/leandro-lugaresi/hub"
@@ -19,7 +20,8 @@ func TestDockerBackend_CreateContainer(t *testing.T) {
 	t.Run("存在しないイメージを指定", func(t *testing.T) {
 		t.Parallel()
 		app := domain.Application{
-			ID: "test",
+			ID:        "test",
+			UpdatedAt: time.Now(),
 		}
 		err := m.Synchronize(context.Background(), []*domain.AppDesiredState{{
 			App:       &app,
@@ -35,7 +37,8 @@ func TestDockerBackend_CreateContainer(t *testing.T) {
 		appID := "pjpjpjoijion"
 
 		app := domain.Application{
-			ID: appID,
+			ID:        appID,
+			UpdatedAt: time.Now(),
 		}
 		err := m.Synchronize(context.Background(), []*domain.AppDesiredState{{
 			App:       &app,
@@ -66,7 +69,8 @@ func TestDockerBackend_CreateContainer(t *testing.T) {
 		appID := "pij0bij90j20"
 
 		app := domain.Application{
-			ID: appID,
+			ID:        appID,
+			UpdatedAt: time.Now(),
 		}
 		err := m.Synchronize(context.Background(), []*domain.AppDesiredState{{
 			App:       &app,
@@ -75,11 +79,11 @@ func TestDockerBackend_CreateContainer(t *testing.T) {
 		}})
 		require.NoError(t, err)
 
+		app.UpdatedAt = time.Now() // Restart
 		err = m.Synchronize(context.Background(), []*domain.AppDesiredState{{
 			App:       &app,
 			ImageName: image,
 			ImageTag:  "latest",
-			Restart:   true,
 		}})
 		require.NoError(t, err)
 
