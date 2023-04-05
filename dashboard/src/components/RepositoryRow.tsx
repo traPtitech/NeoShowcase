@@ -18,7 +18,7 @@ import { vars } from '/@/theme.css'
 import { SiGitea } from 'solid-icons/si'
 import { StatusIcon } from '/@/components/StatusIcon'
 import { Application, Repository } from '/@/api/neoshowcase/protobuf/apiserver_pb'
-import { repositoryURLToProvider } from '/@/libs/application'
+import { applicationState, repositoryURLToProvider } from '/@/libs/application'
 import { durationHuman, shortSha } from '/@/libs/format'
 
 export type Provider = 'GitHub' | 'GitLab' | 'Gitea'
@@ -57,7 +57,7 @@ export const RepositoryRow = ({ repo, apps }: Props): JSXElement => {
       </div>
       {apps.map((app, i) => (
         <div class={i === apps.length - 1 ? application : applicationNotLast}>
-          <StatusIcon buildType={app.buildType} state={app.state} />
+          <StatusIcon state={applicationState(app)} />
           <div class={appDetail}>
             <div class={appName}>{app.name}</div>
             <div class={appFooter}>
