@@ -47,7 +47,6 @@ const StatusCheckbox = (props: StatusCheckboxProps): JSX.Element => {
         <StatusIcon state={props.state} />
         <div>{props.title}</div>
       </div>
-
       <div>{num()}</div>
     </div>
   )
