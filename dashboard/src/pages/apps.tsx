@@ -25,6 +25,10 @@ import { Application } from '/@/api/neoshowcase/protobuf/apiserver_pb'
 import { RepositoryRow } from '/@/components/RepositoryRow'
 import { applicationState, ApplicationState } from '/@/libs/application'
 
+const [repos] = createResource(() => client.getRepositories({}))
+const [apps] = createResource(() => client.getApplications({}))
+const loaded = () => !!(repos() && apps())
+
 const sortItems: RadioItem[] = [
   { value: 'desc', title: '最新順' },
   { value: 'asc', title: '古い順' },
@@ -33,25 +37,23 @@ const sortItems: RadioItem[] = [
 interface StatusCheckboxProps {
   state: ApplicationState
   title: string
-  num: number
 }
 
 const StatusCheckbox = (props: StatusCheckboxProps): JSX.Element => {
+  const num = () => loaded() && apps().applications.filter((app) => applicationState(app) === props.state).length
   return (
     <div class={statusCheckboxContainer}>
       <div class={statusCheckboxContainerLeft}>
         <StatusIcon state={props.state} />
         <div>{props.title}</div>
       </div>
-      <div>{props.num}</div>
+
+      <div>{num()}</div>
     </div>
   )
 }
 
 export default () => {
-  const [repos] = createResource(() => client.getRepositories({}))
-  const [apps] = createResource(() => client.getApplications({}))
-  const loaded = () => !!(repos() && apps())
   const appsByRepo = () =>
     loaded() &&
     apps().applications.reduce((acc, app) => {
@@ -59,10 +61,6 @@ export default () => {
       acc[app.repositoryId].push(app)
       return acc
     }, {} as Record<string, Application[]>)
-
-  const countAppsStatus = (state: ApplicationState): number => {
-    return apps().applications.filter((app) => applicationState(app) === state).length
-  }
 
   return (
     <div class={container}>
@@ -74,16 +72,16 @@ export default () => {
             <div class={sidebarTitle}>Status</div>
             <div class={sidebarOptions}>
               <Checkbox>
-                <StatusCheckbox state={ApplicationState.Idle} title='Idle' num={loaded() && countAppsStatus(ApplicationState.Idle)} />
+                <StatusCheckbox state={ApplicationState.Idle} title='Idle' />
               </Checkbox>
               <Checkbox>
-                <StatusCheckbox state={ApplicationState.Deploying} title='Deploying' num={loaded() && countAppsStatus(ApplicationState.Deploying)} />
+                <StatusCheckbox state={ApplicationState.Deploying} title='Deploying' />
               </Checkbox>
               <Checkbox>
-                <StatusCheckbox state={ApplicationState.Running} title='Running' num={loaded() && countAppsStatus(ApplicationState.Running)} />
+                <StatusCheckbox state={ApplicationState.Running} title='Running' />
               </Checkbox>
               <Checkbox>
-                <StatusCheckbox state={ApplicationState.Static} title='Static' num={loaded() && countAppsStatus(ApplicationState.Static)} />
+                <StatusCheckbox state={ApplicationState.Static} title='Static' />
               </Checkbox>
             </div>
           </div>
