@@ -5,9 +5,20 @@ export const container = style({
   padding: '40px 72px',
 })
 
-export const appsTitle = style({
+export const  appTitle = style({
   marginTop: '48px',
+  display: 'flex',
+})
+
+export const appsTitle = style({
+  marginLeft: '50px',
   fontSize: '32px',
+  fontWeight: 'bold',
+  color: vars.text.black1,
+})
+
+export const arrow = style({
+  fontSize: '40px',
   fontWeight: 'bold',
   color: vars.text.black1,
 })

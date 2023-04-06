@@ -1,5 +1,7 @@
 import { Header } from '/@/components/Header'
 import {
+  appTitle,
+  arrow,
   appsTitle,
   container,
   contentContainer,
@@ -15,7 +17,7 @@ import {
   sidebarTitle,
   statusCheckboxContainer,
   statusCheckboxContainerLeft,
-} from '/@/pages/apps.css'
+} from '/@/pages/newapp_select_repo.css'
 import { Checkbox } from '/@/components/Checkbox'
 import { StatusIcon } from '/@/components/StatusIcon'
 import { createResource, JSX } from 'solid-js'
@@ -23,6 +25,8 @@ import { Radio, RadioItem } from '/@/components/Radio'
 import { client } from '/@/libs/api'
 import { Application, ApplicationState, BuildType } from '/@/api/neoshowcase/protobuf/apiserver_pb'
 import { RepositoryRow } from '/@/components/RepositoryRow'
+import { Routes, Route, A } from "@solidjs/router";
+import { ImArrowLeft2 } from 'solid-icons/im'
 
 const sortItems: RadioItem[] = [
   { value: 'desc', title: '最新順' },
@@ -62,7 +66,10 @@ export default () => {
   return (
     <div class={container}>
       <Header />
-      <div class={appsTitle}>Apps</div>
+      <div class={appTitle}>
+        <div class={arrow}><A href={"/apps"}><ImArrowLeft2 /></A>New app</div>
+        <div class={appsTitle}></div>
+      </div>
       <div class={contentContainer}>
         <div class={sidebarContainer}>
           <div class={sidebarSection}>
