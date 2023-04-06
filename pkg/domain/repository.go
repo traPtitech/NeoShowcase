@@ -10,10 +10,11 @@ import (
 )
 
 type GetApplicationCondition struct {
-	IDIn      optional.Of[[]string]
-	UserID    optional.Of[string]
-	BuildType optional.Of[BuildType]
-	Running   optional.Of[bool]
+	IDIn         optional.Of[[]string]
+	RepositoryID optional.Of[string]
+	UserID       optional.Of[string]
+	BuildType    optional.Of[BuildType]
+	Running      optional.Of[bool]
 	// InSync WantCommit が CurrentCommit に一致する
 	InSync optional.Of[bool]
 }
@@ -29,6 +30,39 @@ type UpdateApplicationArgs struct {
 	Config        optional.Of[ApplicationConfig]
 	Websites      optional.Of[[]*Website]
 	OwnerIDs      optional.Of[[]string]
+}
+
+func (a *Application) Apply(args *UpdateApplicationArgs) {
+	if args.Name.Valid {
+		a.Name = args.Name.V
+	}
+	if args.RefName.Valid {
+		a.RefName = args.RefName.V
+	}
+	if args.Running.Valid {
+		a.Running = args.Running.V
+	}
+	if args.Container.Valid {
+		a.Container = args.Container.V
+	}
+	if args.CurrentCommit.Valid {
+		a.CurrentCommit = args.CurrentCommit.V
+	}
+	if args.WantCommit.Valid {
+		a.WantCommit = args.WantCommit.V
+	}
+	if args.UpdatedAt.Valid {
+		a.UpdatedAt = args.UpdatedAt.V
+	}
+	if args.Config.Valid {
+		a.Config = args.Config.V
+	}
+	if args.Websites.Valid {
+		a.Websites = args.Websites.V
+	}
+	if args.OwnerIDs.Valid {
+		a.OwnerIDs = args.OwnerIDs.V
+	}
 }
 
 type ApplicationRepository interface {
@@ -103,10 +137,34 @@ type GetRepositoryCondition struct {
 	UserID optional.Of[string]
 }
 
+type UpdateRepositoryArgs struct {
+	Name     optional.Of[string]
+	URL      optional.Of[string]
+	Auth     optional.Of[optional.Of[RepositoryAuth]]
+	OwnerIDs optional.Of[[]string]
+}
+
+func (r *Repository) Apply(args *UpdateRepositoryArgs) {
+	if args.Name.Valid {
+		r.Name = args.Name.V
+	}
+	if args.URL.Valid {
+		r.URL = args.URL.V
+	}
+	if args.Auth.Valid {
+		r.Auth = args.Auth.V
+	}
+	if args.OwnerIDs.Valid {
+		r.OwnerIDs = args.OwnerIDs.V
+	}
+}
+
 type GitRepositoryRepository interface {
 	GetRepositories(ctx context.Context, condition GetRepositoryCondition) ([]*Repository, error)
 	GetRepository(ctx context.Context, id string) (*Repository, error)
 	CreateRepository(ctx context.Context, repo *Repository) error
+	UpdateRepository(ctx context.Context, id string, args *UpdateRepositoryArgs) error
+	DeleteRepository(ctx context.Context, id string) error
 }
 
 type CreateUserArgs struct {

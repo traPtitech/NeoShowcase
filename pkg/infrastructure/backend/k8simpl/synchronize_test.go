@@ -26,7 +26,7 @@ func TestK8sBackend_Synchronize(t *testing.T) {
 			ID:        appID,
 			UpdatedAt: time.Now(),
 		}
-		err := m.Synchronize(context.Background(), []*domain.AppDesiredState{{
+		err := m.SynchronizeRuntime(context.Background(), []*domain.AppDesiredState{{
 			App:       &app,
 			ImageName: image,
 			ImageTag:  "latest",
@@ -35,7 +35,7 @@ func TestK8sBackend_Synchronize(t *testing.T) {
 		exists[*appsv1.StatefulSet](t, deploymentName(appID), c.AppsV1().StatefulSets(appNamespace))
 		waitPodRunning(t, m, appID)
 
-		err = m.Synchronize(context.Background(), nil)
+		err = m.SynchronizeRuntime(context.Background(), nil)
 		require.NoError(t, err)
 		exists[*appsv1.StatefulSet](t, deploymentName(appID), c.AppsV1().StatefulSets(appNamespace))
 		waitPodDeleted(t, m, appID)
@@ -56,7 +56,7 @@ func TestK8sBackend_Synchronize(t *testing.T) {
 			Websites:  []*domain.Website{website},
 			UpdatedAt: time.Now(),
 		}
-		err := m.Synchronize(context.Background(), []*domain.AppDesiredState{{
+		err := m.SynchronizeRuntime(context.Background(), []*domain.AppDesiredState{{
 			App:       &app,
 			ImageName: image,
 			ImageTag:  "latest",
@@ -67,7 +67,7 @@ func TestK8sBackend_Synchronize(t *testing.T) {
 		exists[*traefikv1alpha1.IngressRoute](t, serviceName(website), tc.IngressRoutes(appNamespace))
 		waitPodRunning(t, m, appID)
 
-		err = m.Synchronize(context.Background(), nil)
+		err = m.SynchronizeRuntime(context.Background(), nil)
 		require.NoError(t, err)
 		exists[*appsv1.StatefulSet](t, deploymentName(appID), c.AppsV1().StatefulSets(appNamespace))
 		notExists[*corev1.Service](t, serviceName(website), c.CoreV1().Services(appNamespace))
@@ -90,7 +90,7 @@ func TestK8sBackend_Synchronize(t *testing.T) {
 			Websites:  []*domain.Website{website},
 			UpdatedAt: time.Now(),
 		}
-		err := m.Synchronize(context.Background(), []*domain.AppDesiredState{{
+		err := m.SynchronizeRuntime(context.Background(), []*domain.AppDesiredState{{
 			App:       &app,
 			ImageName: image,
 			ImageTag:  "latest",
@@ -99,7 +99,7 @@ func TestK8sBackend_Synchronize(t *testing.T) {
 		waitPodRunning(t, m, appID)
 
 		app.UpdatedAt = time.Now() // Restart
-		err = m.Synchronize(context.Background(), []*domain.AppDesiredState{{
+		err = m.SynchronizeRuntime(context.Background(), []*domain.AppDesiredState{{
 			App:       &app,
 			ImageName: image,
 			ImageTag:  "latest",
@@ -111,7 +111,7 @@ func TestK8sBackend_Synchronize(t *testing.T) {
 		exists[*traefikv1alpha1.Middleware](t, stripMiddlewareName(website), tc.Middlewares(appNamespace))
 		waitPodRunning(t, m, appID)
 
-		err = m.Synchronize(context.Background(), nil)
+		err = m.SynchronizeRuntime(context.Background(), nil)
 		require.NoError(t, err)
 		exists[*appsv1.StatefulSet](t, deploymentName(appID), c.AppsV1().StatefulSets(appNamespace))
 		notExists[*corev1.Service](t, serviceName(website), c.CoreV1().Services(appNamespace))

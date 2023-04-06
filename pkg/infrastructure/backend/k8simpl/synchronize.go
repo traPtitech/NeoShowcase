@@ -108,7 +108,7 @@ func (b *k8sBackend) deleteStatefulSet(ctx context.Context, ss *v1.StatefulSet) 
 	return strategicPatch[*v1.StatefulSet](ctx, ss.Name, patch, b.client.AppsV1().StatefulSets(appNamespace))
 }
 
-func (b *k8sBackend) Synchronize(ctx context.Context, apps []*domain.AppDesiredState) error {
+func (b *k8sBackend) SynchronizeRuntime(ctx context.Context, apps []*domain.AppDesiredState) error {
 	b.reloadLock.Lock()
 	defer b.reloadLock.Unlock()
 

@@ -10,6 +10,7 @@ const (
 	ErrorTypeBadRequest ErrorType = iota
 	ErrorTypeNotFound
 	ErrorTypeAlreadyExists
+	ErrorTypeForbidden
 )
 
 type customError struct {
@@ -24,10 +25,10 @@ func newError(typ ErrorType, message string, err error) error {
 	return customError{error: errors.Wrap(err, message), typ: typ}
 }
 
-func GetErrorType(err error) (typ ErrorType, ok bool) {
+func DecomposeError(err error) (underlying error, typ ErrorType, ok bool) {
 	var cErr customError
 	if errors.As(err, &cErr) {
-		return cErr.typ, true
+		return cErr.error, cErr.typ, true
 	}
 	return
 }

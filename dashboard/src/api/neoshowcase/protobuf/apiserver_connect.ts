@@ -4,7 +4,7 @@
 // @ts-nocheck
 
 import { Empty, MethodKind } from "@bufbuild/protobuf";
-import { Application, ApplicationEnvVars, ApplicationIdRequest, ApplicationOutput, ArtifactContent, ArtifactIdRequest, AvailableDomain, AvailableDomains, Build, BuildIdRequest, BuildLog, CreateApplicationRequest, CreateRepositoryRequest, GetApplicationsResponse, GetBuildsResponse, GetRepositoriesResponse, GetSystemPublicKeyResponse, Repository, RetryCommitBuildRequest, SetApplicationEnvVarRequest, UpdateApplicationRequest, User } from "./apiserver_pb.js";
+import { Application, ApplicationEnvVars, ApplicationIdRequest, ApplicationOutput, ArtifactContent, ArtifactIdRequest, AvailableDomain, AvailableDomains, Build, BuildIdRequest, BuildLog, CreateApplicationRequest, CreateRepositoryRequest, GetApplicationsResponse, GetBuildsResponse, GetRepositoriesResponse, GetSystemPublicKeyResponse, Repository, RepositoryIdRequest, RetryCommitBuildRequest, SetApplicationEnvVarRequest, UpdateApplicationRequest, UpdateRepositoryRequest, User } from "./apiserver_pb.js";
 
 /**
  * @generated from service neoshowcase.protobuf.ApplicationService
@@ -37,6 +37,24 @@ export const ApplicationService = {
       name: "CreateRepository",
       I: CreateRepositoryRequest,
       O: Repository,
+      kind: MethodKind.Unary,
+    },
+    /**
+     * @generated from rpc neoshowcase.protobuf.ApplicationService.UpdateRepository
+     */
+    updateRepository: {
+      name: "UpdateRepository",
+      I: UpdateRepositoryRequest,
+      O: Empty,
+      kind: MethodKind.Unary,
+    },
+    /**
+     * @generated from rpc neoshowcase.protobuf.ApplicationService.DeleteRepository
+     */
+    deleteRepository: {
+      name: "DeleteRepository",
+      I: RepositoryIdRequest,
+      O: Empty,
       kind: MethodKind.Unary,
     },
     /**

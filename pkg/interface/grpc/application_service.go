@@ -14,6 +14,7 @@ import (
 	"google.golang.org/protobuf/types/known/timestamppb"
 
 	"github.com/traPtitech/neoshowcase/pkg/domain"
+	"github.com/traPtitech/neoshowcase/pkg/domain/web"
 	"github.com/traPtitech/neoshowcase/pkg/interface/grpc/pb"
 	"github.com/traPtitech/neoshowcase/pkg/interface/grpc/pb/pbconnect"
 	"github.com/traPtitech/neoshowcase/pkg/usecase"
@@ -22,28 +23,30 @@ import (
 )
 
 func handleUseCaseError(err error) error {
-	typ, ok := usecase.GetErrorType(err)
+	underlying, typ, ok := usecase.DecomposeError(err)
 	if ok {
 		switch typ {
 		case usecase.ErrorTypeBadRequest:
-			return connect.NewError(connect.CodeInvalidArgument, err)
+			return connect.NewError(connect.CodeInvalidArgument, underlying)
 		case usecase.ErrorTypeNotFound:
-			return connect.NewError(connect.CodeNotFound, err)
+			return connect.NewError(connect.CodeNotFound, underlying)
 		case usecase.ErrorTypeAlreadyExists:
-			return connect.NewError(connect.CodeAlreadyExists, err)
+			return connect.NewError(connect.CodeAlreadyExists, underlying)
+		case usecase.ErrorTypeForbidden:
+			return connect.NewError(connect.CodePermissionDenied, underlying)
 		}
 	}
 	return connect.NewError(connect.CodeInternal, err)
 }
 
 type ApplicationService struct {
-	svc    usecase.APIServerService
+	svc    *usecase.APIServerService
 	logSvc *usecase.LogStreamService
 	pubKey *ssh.PublicKeys
 }
 
 func NewApplicationServiceServer(
-	svc usecase.APIServerService,
+	svc *usecase.APIServerService,
 	logSvc *usecase.LogStreamService,
 	pubKey *ssh.PublicKeys,
 ) pbconnect.ApplicationServiceHandler {
@@ -55,7 +58,7 @@ func NewApplicationServiceServer(
 }
 
 func (s *ApplicationService) GetMe(ctx context.Context, _ *connect.Request[emptypb.Empty]) (*connect.Response[pb.User], error) {
-	user := getUser(ctx)
+	user := web.GetUser(ctx)
 	res := connect.NewResponse(toPBUser(user))
 	return res, nil
 }
@@ -75,12 +78,12 @@ func (s *ApplicationService) GetRepositories(ctx context.Context, _ *connect.Req
 
 func (s *ApplicationService) CreateRepository(ctx context.Context, req *connect.Request[pb.CreateRepositoryRequest]) (*connect.Response[pb.Repository], error) {
 	msg := req.Msg
-	user := getUser(ctx)
+	user := web.GetUser(ctx)
 	repo := &domain.Repository{
 		ID:       domain.NewID(),
 		Name:     msg.Name,
 		URL:      msg.Url,
-		Auth:     fromPBRepositoryAuth(msg),
+		Auth:     fromPBRepositoryAuth(msg.Auth),
 		OwnerIDs: []string{user.ID},
 	}
 	err := s.svc.CreateRepository(ctx, repo)
@@ -88,6 +91,31 @@ func (s *ApplicationService) CreateRepository(ctx context.Context, req *connect.
 		return nil, handleUseCaseError(err)
 	}
 	res := connect.NewResponse(toPBRepository(repo))
+	return res, nil
+}
+
+func (s *ApplicationService) UpdateRepository(ctx context.Context, req *connect.Request[pb.UpdateRepositoryRequest]) (*connect.Response[emptypb.Empty], error) {
+	msg := req.Msg
+	args := &domain.UpdateRepositoryArgs{
+		Name:     optional.From(msg.Name),
+		URL:      optional.From(msg.Url),
+		Auth:     optional.From(fromPBRepositoryAuth(msg.Auth)),
+		OwnerIDs: optional.From(msg.OwnerIds),
+	}
+	err := s.svc.UpdateRepository(ctx, msg.Id, args)
+	if err != nil {
+		return nil, handleUseCaseError(err)
+	}
+	res := connect.NewResponse(&emptypb.Empty{})
+	return res, nil
+}
+
+func (s *ApplicationService) DeleteRepository(ctx context.Context, req *connect.Request[pb.RepositoryIdRequest]) (*connect.Response[emptypb.Empty], error) {
+	err := s.svc.DeleteRepository(ctx, req.Msg.RepositoryId)
+	if err != nil {
+		return nil, handleUseCaseError(err)
+	}
+	res := connect.NewResponse(&emptypb.Empty{})
 	return res, nil
 }
 
@@ -134,7 +162,7 @@ func (s *ApplicationService) AddAvailableDomain(ctx context.Context, req *connec
 
 func (s *ApplicationService) CreateApplication(ctx context.Context, req *connect.Request[pb.CreateApplicationRequest]) (*connect.Response[pb.Application], error) {
 	msg := req.Msg
-	user := getUser(ctx)
+	user := web.GetUser(ctx)
 	now := time.Now()
 	app := &domain.Application{
 		ID:            domain.NewID(),
@@ -185,14 +213,15 @@ func (s *ApplicationService) UpdateApplication(ctx context.Context, req *connect
 		return nil, handleUseCaseError(err)
 	}
 
+	websites := app.Websites
 	for _, createReq := range msg.NewWebsites {
-		app.Websites = append(app.Websites, fromPBCreateWebsiteRequest(createReq))
+		websites = append(websites, fromPBCreateWebsiteRequest(createReq))
 	}
 	for _, deleteReq := range msg.DeleteWebsites {
-		app.Websites = lo.Reject(app.Websites, func(w *domain.Website, i int) bool { return w.ID == deleteReq.Id })
+		websites = lo.Reject(websites, func(w *domain.Website, i int) bool { return w.ID == deleteReq.Id })
 	}
 
-	err = s.svc.UpdateApplication(ctx, app, &domain.UpdateApplicationArgs{
+	err = s.svc.UpdateApplication(ctx, msg.Id, &domain.UpdateApplicationArgs{
 		Name:      optional.From(msg.Name),
 		RefName:   optional.From(msg.RefName),
 		UpdatedAt: optional.From(time.Now()),
@@ -206,7 +235,7 @@ func (s *ApplicationService) UpdateApplication(ctx context.Context, req *connect
 			EntrypointCmd:  msg.Config.EntrypointCmd,
 			Authentication: authTypeMapper.FromMust(msg.Config.Authentication),
 		}),
-		Websites: optional.From(app.Websites),
+		Websites: optional.From(websites),
 		OwnerIDs: optional.From(msg.OwnerIds),
 	})
 	if err != nil {
@@ -363,17 +392,17 @@ func toPBAvailableDomain(ad *domain.AvailableDomain) *pb.AvailableDomain {
 	}
 }
 
-func fromPBRepositoryAuth(req *pb.CreateRepositoryRequest) optional.Of[domain.RepositoryAuth] {
+func fromPBRepositoryAuth(req *pb.CreateRepositoryAuth) optional.Of[domain.RepositoryAuth] {
 	switch v := req.Auth.(type) {
-	case *pb.CreateRepositoryRequest_None:
+	case *pb.CreateRepositoryAuth_None:
 		return optional.Of[domain.RepositoryAuth]{}
-	case *pb.CreateRepositoryRequest_Basic:
+	case *pb.CreateRepositoryAuth_Basic:
 		return optional.From(domain.RepositoryAuth{
 			Method:   domain.RepositoryAuthMethodBasic,
 			Username: v.Basic.Username,
 			Password: v.Basic.Password,
 		})
-	case *pb.CreateRepositoryRequest_Ssh:
+	case *pb.CreateRepositoryAuth_Ssh:
 		return optional.From(domain.RepositoryAuth{
 			Method: domain.RepositoryAuthMethodSSH,
 			SSHKey: v.Ssh.SshKey,

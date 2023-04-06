@@ -43,6 +43,12 @@ const (
 	// ApplicationServiceCreateRepositoryProcedure is the fully-qualified name of the
 	// ApplicationService's CreateRepository RPC.
 	ApplicationServiceCreateRepositoryProcedure = "/neoshowcase.protobuf.ApplicationService/CreateRepository"
+	// ApplicationServiceUpdateRepositoryProcedure is the fully-qualified name of the
+	// ApplicationService's UpdateRepository RPC.
+	ApplicationServiceUpdateRepositoryProcedure = "/neoshowcase.protobuf.ApplicationService/UpdateRepository"
+	// ApplicationServiceDeleteRepositoryProcedure is the fully-qualified name of the
+	// ApplicationService's DeleteRepository RPC.
+	ApplicationServiceDeleteRepositoryProcedure = "/neoshowcase.protobuf.ApplicationService/DeleteRepository"
 	// ApplicationServiceGetApplicationsProcedure is the fully-qualified name of the
 	// ApplicationService's GetApplications RPC.
 	ApplicationServiceGetApplicationsProcedure = "/neoshowcase.protobuf.ApplicationService/GetApplications"
@@ -110,6 +116,8 @@ type ApplicationServiceClient interface {
 	GetMe(context.Context, *connect_go.Request[emptypb.Empty]) (*connect_go.Response[pb.User], error)
 	GetRepositories(context.Context, *connect_go.Request[emptypb.Empty]) (*connect_go.Response[pb.GetRepositoriesResponse], error)
 	CreateRepository(context.Context, *connect_go.Request[pb.CreateRepositoryRequest]) (*connect_go.Response[pb.Repository], error)
+	UpdateRepository(context.Context, *connect_go.Request[pb.UpdateRepositoryRequest]) (*connect_go.Response[emptypb.Empty], error)
+	DeleteRepository(context.Context, *connect_go.Request[pb.RepositoryIdRequest]) (*connect_go.Response[emptypb.Empty], error)
 	GetApplications(context.Context, *connect_go.Request[emptypb.Empty]) (*connect_go.Response[pb.GetApplicationsResponse], error)
 	GetSystemPublicKey(context.Context, *connect_go.Request[emptypb.Empty]) (*connect_go.Response[pb.GetSystemPublicKeyResponse], error)
 	GetAvailableDomains(context.Context, *connect_go.Request[emptypb.Empty]) (*connect_go.Response[pb.AvailableDomains], error)
@@ -155,6 +163,16 @@ func NewApplicationServiceClient(httpClient connect_go.HTTPClient, baseURL strin
 		createRepository: connect_go.NewClient[pb.CreateRepositoryRequest, pb.Repository](
 			httpClient,
 			baseURL+ApplicationServiceCreateRepositoryProcedure,
+			opts...,
+		),
+		updateRepository: connect_go.NewClient[pb.UpdateRepositoryRequest, emptypb.Empty](
+			httpClient,
+			baseURL+ApplicationServiceUpdateRepositoryProcedure,
+			opts...,
+		),
+		deleteRepository: connect_go.NewClient[pb.RepositoryIdRequest, emptypb.Empty](
+			httpClient,
+			baseURL+ApplicationServiceDeleteRepositoryProcedure,
 			opts...,
 		),
 		getApplications: connect_go.NewClient[emptypb.Empty, pb.GetApplicationsResponse](
@@ -265,6 +283,8 @@ type applicationServiceClient struct {
 	getMe                *connect_go.Client[emptypb.Empty, pb.User]
 	getRepositories      *connect_go.Client[emptypb.Empty, pb.GetRepositoriesResponse]
 	createRepository     *connect_go.Client[pb.CreateRepositoryRequest, pb.Repository]
+	updateRepository     *connect_go.Client[pb.UpdateRepositoryRequest, emptypb.Empty]
+	deleteRepository     *connect_go.Client[pb.RepositoryIdRequest, emptypb.Empty]
 	getApplications      *connect_go.Client[emptypb.Empty, pb.GetApplicationsResponse]
 	getSystemPublicKey   *connect_go.Client[emptypb.Empty, pb.GetSystemPublicKeyResponse]
 	getAvailableDomains  *connect_go.Client[emptypb.Empty, pb.AvailableDomains]
@@ -300,6 +320,16 @@ func (c *applicationServiceClient) GetRepositories(ctx context.Context, req *con
 // CreateRepository calls neoshowcase.protobuf.ApplicationService.CreateRepository.
 func (c *applicationServiceClient) CreateRepository(ctx context.Context, req *connect_go.Request[pb.CreateRepositoryRequest]) (*connect_go.Response[pb.Repository], error) {
 	return c.createRepository.CallUnary(ctx, req)
+}
+
+// UpdateRepository calls neoshowcase.protobuf.ApplicationService.UpdateRepository.
+func (c *applicationServiceClient) UpdateRepository(ctx context.Context, req *connect_go.Request[pb.UpdateRepositoryRequest]) (*connect_go.Response[emptypb.Empty], error) {
+	return c.updateRepository.CallUnary(ctx, req)
+}
+
+// DeleteRepository calls neoshowcase.protobuf.ApplicationService.DeleteRepository.
+func (c *applicationServiceClient) DeleteRepository(ctx context.Context, req *connect_go.Request[pb.RepositoryIdRequest]) (*connect_go.Response[emptypb.Empty], error) {
+	return c.deleteRepository.CallUnary(ctx, req)
 }
 
 // GetApplications calls neoshowcase.protobuf.ApplicationService.GetApplications.
@@ -408,6 +438,8 @@ type ApplicationServiceHandler interface {
 	GetMe(context.Context, *connect_go.Request[emptypb.Empty]) (*connect_go.Response[pb.User], error)
 	GetRepositories(context.Context, *connect_go.Request[emptypb.Empty]) (*connect_go.Response[pb.GetRepositoriesResponse], error)
 	CreateRepository(context.Context, *connect_go.Request[pb.CreateRepositoryRequest]) (*connect_go.Response[pb.Repository], error)
+	UpdateRepository(context.Context, *connect_go.Request[pb.UpdateRepositoryRequest]) (*connect_go.Response[emptypb.Empty], error)
+	DeleteRepository(context.Context, *connect_go.Request[pb.RepositoryIdRequest]) (*connect_go.Response[emptypb.Empty], error)
 	GetApplications(context.Context, *connect_go.Request[emptypb.Empty]) (*connect_go.Response[pb.GetApplicationsResponse], error)
 	GetSystemPublicKey(context.Context, *connect_go.Request[emptypb.Empty]) (*connect_go.Response[pb.GetSystemPublicKeyResponse], error)
 	GetAvailableDomains(context.Context, *connect_go.Request[emptypb.Empty]) (*connect_go.Response[pb.AvailableDomains], error)
@@ -450,6 +482,16 @@ func NewApplicationServiceHandler(svc ApplicationServiceHandler, opts ...connect
 	mux.Handle(ApplicationServiceCreateRepositoryProcedure, connect_go.NewUnaryHandler(
 		ApplicationServiceCreateRepositoryProcedure,
 		svc.CreateRepository,
+		opts...,
+	))
+	mux.Handle(ApplicationServiceUpdateRepositoryProcedure, connect_go.NewUnaryHandler(
+		ApplicationServiceUpdateRepositoryProcedure,
+		svc.UpdateRepository,
+		opts...,
+	))
+	mux.Handle(ApplicationServiceDeleteRepositoryProcedure, connect_go.NewUnaryHandler(
+		ApplicationServiceDeleteRepositoryProcedure,
+		svc.DeleteRepository,
 		opts...,
 	))
 	mux.Handle(ApplicationServiceGetApplicationsProcedure, connect_go.NewUnaryHandler(
@@ -568,6 +610,14 @@ func (UnimplementedApplicationServiceHandler) GetRepositories(context.Context, *
 
 func (UnimplementedApplicationServiceHandler) CreateRepository(context.Context, *connect_go.Request[pb.CreateRepositoryRequest]) (*connect_go.Response[pb.Repository], error) {
 	return nil, connect_go.NewError(connect_go.CodeUnimplemented, errors.New("neoshowcase.protobuf.ApplicationService.CreateRepository is not implemented"))
+}
+
+func (UnimplementedApplicationServiceHandler) UpdateRepository(context.Context, *connect_go.Request[pb.UpdateRepositoryRequest]) (*connect_go.Response[emptypb.Empty], error) {
+	return nil, connect_go.NewError(connect_go.CodeUnimplemented, errors.New("neoshowcase.protobuf.ApplicationService.UpdateRepository is not implemented"))
+}
+
+func (UnimplementedApplicationServiceHandler) DeleteRepository(context.Context, *connect_go.Request[pb.RepositoryIdRequest]) (*connect_go.Response[emptypb.Empty], error) {
+	return nil, connect_go.NewError(connect_go.CodeUnimplemented, errors.New("neoshowcase.protobuf.ApplicationService.DeleteRepository is not implemented"))
 }
 
 func (UnimplementedApplicationServiceHandler) GetApplications(context.Context, *connect_go.Request[emptypb.Empty]) (*connect_go.Response[pb.GetApplicationsResponse], error) {

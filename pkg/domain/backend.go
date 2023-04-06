@@ -31,7 +31,7 @@ type Backend interface {
 	Start(ctx context.Context) error
 	Dispose(ctx context.Context) error
 
-	Synchronize(ctx context.Context, apps []*AppDesiredState) error
+	SynchronizeRuntime(ctx context.Context, apps []*AppDesiredState) error
 	SynchronizeSSIngress(ctx context.Context, sites []*StaticSite) error
 	GetContainer(ctx context.Context, appID string) (*Container, error)
 	ListContainers(ctx context.Context) ([]*Container, error)

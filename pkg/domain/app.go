@@ -5,6 +5,8 @@ import (
 	"strings"
 	"time"
 
+	"github.com/go-git/go-git/v5/plumbing/transport"
+	"github.com/go-git/go-git/v5/plumbing/transport/ssh"
 	"github.com/samber/lo"
 	"golang.org/x/exp/slices"
 	"golang.org/x/net/idna"
@@ -29,6 +31,34 @@ type ApplicationConfig struct {
 	BuildCmd       string
 	EntrypointCmd  string
 	Authentication AuthenticationType
+}
+
+func (c *ApplicationConfig) IsValid(buildType BuildType) bool {
+	switch buildType {
+	case BuildTypeRuntime:
+		if c.DockerfileName != "" {
+			// pass
+		} else {
+			// NOTE: base image is not necessary (default: scratch)
+			// NOTE: build cmd is not necessary
+			if c.EntrypointCmd == "" {
+				return false
+			}
+		}
+	case BuildTypeStatic:
+		if c.DockerfileName != "" {
+			if c.ArtifactPath == "" {
+				return false
+			}
+		} else {
+			// NOTE: base image is not necessary (default: scratch)
+			// NOTE: build cmd is not necessary
+			if c.ArtifactPath == "" {
+				return false
+			}
+		}
+	}
+	return true
 }
 
 type BuildType int
@@ -56,6 +86,30 @@ type Application struct {
 	Config   ApplicationConfig
 	Websites []*Website
 	OwnerIDs []string
+}
+
+func (a *Application) IsValid() bool {
+	if a.Name == "" {
+		return false
+	}
+	if a.RepositoryID == "" {
+		return false
+	}
+	if a.RefName == "" {
+		return false
+	}
+	if !a.Config.IsValid(a.BuildType) {
+		return false
+	}
+	for _, website := range a.Websites {
+		if !website.IsValid() {
+			return false
+		}
+	}
+	if len(a.OwnerIDs) == 0 {
+		return false
+	}
+	return true
 }
 
 type Artifact struct {
@@ -180,6 +234,36 @@ type Repository struct {
 	OwnerIDs []string
 }
 
+func (r *Repository) IsValid() bool {
+	if r.Name == "" {
+		return false
+	}
+	ep, err := transport.NewEndpoint(r.URL)
+	if err != nil {
+		return false
+	}
+	if !r.Auth.Valid {
+		// URL is in http(s) format
+		if ep.Protocol != "http" && ep.Protocol != "https" {
+			return false
+		}
+	} else if r.Auth.V.Method == RepositoryAuthMethodBasic {
+		// URL is in https format
+		if ep.Protocol != "https" {
+			return false
+		}
+	} else if r.Auth.V.Method == RepositoryAuthMethodSSH {
+		// URL is in ssh format
+		if ep.Protocol != "ssh" {
+			return false
+		}
+	}
+	if len(r.OwnerIDs) == 0 {
+		return false
+	}
+	return true
+}
+
 type RepositoryAuthMethod int
 
 const (
@@ -192,6 +276,26 @@ type RepositoryAuth struct {
 	Username string
 	Password string
 	SSHKey   string
+}
+
+func (r *RepositoryAuth) IsValid() bool {
+	switch r.Method {
+	case RepositoryAuthMethodBasic:
+		if r.Username == "" {
+			return false
+		}
+		if r.Password == "" {
+			return false
+		}
+	case RepositoryAuthMethodSSH:
+		if r.SSHKey != "" {
+			_, err := ssh.NewPublicKeys("", []byte(r.SSHKey), "")
+			if err != nil {
+				return false
+			}
+		}
+	}
+	return true
 }
 
 type Website struct {

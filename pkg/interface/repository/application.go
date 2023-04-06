@@ -36,6 +36,9 @@ func (r *applicationRepository) GetApplications(ctx context.Context, cond domain
 	if cond.IDIn.Valid {
 		mods = append(mods, models.ApplicationWhere.ID.IN(cond.IDIn.V))
 	}
+	if cond.RepositoryID.Valid {
+		mods = append(mods, models.ApplicationWhere.RepositoryID.EQ(cond.RepositoryID.V))
+	}
 	if cond.UserID.Valid {
 		mods = append(mods,
 			qm.InnerJoin(fmt.Sprintf(
