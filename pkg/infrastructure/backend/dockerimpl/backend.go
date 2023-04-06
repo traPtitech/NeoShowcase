@@ -74,20 +74,13 @@ func (b *dockerBackend) eventListener() {
 		// https://docs.docker.com/engine/reference/commandline/events/
 		switch ev.Type {
 		case "container":
-			switch ev.Action {
-			case "start":
-				if ev.Actor.Attributes[appLabel] == "true" {
-					b.bus.Publish(event.ContainerAppStarted, domain.Fields{
-						"application_id": ev.Actor.Attributes[appIDLabel],
-					})
-				}
-			case "stop":
-				if ev.Actor.Attributes[appLabel] == "true" {
-					b.bus.Publish(event.ContainerAppStopped, domain.Fields{
-						"application_id": ev.Actor.Attributes[appIDLabel],
-					})
-				}
+			appID, ok := ev.Actor.Attributes[appIDLabel]
+			if !ok {
+				continue
 			}
+			b.bus.Publish(event.AppContainerUpdated, domain.Fields{
+				"application_id": appID,
+			})
 		}
 	}
 }

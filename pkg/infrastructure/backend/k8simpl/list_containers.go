@@ -4,7 +4,8 @@ import (
 	"context"
 
 	"github.com/friendsofgo/errors"
-	apiv1 "k8s.io/api/core/v1"
+	"github.com/samber/lo"
+	"k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
 	"github.com/traPtitech/neoshowcase/pkg/domain"
@@ -17,14 +18,16 @@ func (b *k8sBackend) GetContainer(ctx context.Context, appID string) (*domain.Co
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to fetch pods")
 	}
-	if len(list.Items) == 0 {
-		return nil, domain.ErrContainerNotFound
-	}
 
-	item := list.Items[0]
+	if len(list.Items) == 0 {
+		return &domain.Container{
+			ApplicationID: appID,
+			State:         domain.ContainerStateMissing,
+		}, nil
+	}
 	return &domain.Container{
 		ApplicationID: appID,
-		State:         getContainerState(item.Status),
+		State:         getContainerState(list.Items[0].Status),
 	}, nil
 }
 
@@ -36,29 +39,26 @@ func (b *k8sBackend) ListContainers(ctx context.Context) ([]*domain.Container, e
 		return nil, errors.Wrap(err, "failed to fetch pods")
 	}
 
-	var result []*domain.Container
-	for _, item := range list.Items {
-		result = append(result, &domain.Container{
-			ApplicationID: item.Labels[appIDLabel],
-			State:         getContainerState(item.Status),
-		})
-	}
+	result := lo.Map(list.Items, func(pod v1.Pod, i int) *domain.Container {
+		return &domain.Container{
+			ApplicationID: pod.Labels[appIDLabel],
+			State:         getContainerState(pod.Status),
+		}
+	})
 	return result, nil
 }
 
-func getContainerState(status apiv1.PodStatus) domain.ContainerState {
+func getContainerState(status v1.PodStatus) domain.ContainerState {
 	switch status.Phase {
-	case apiv1.PodPending:
-		return domain.ContainerStateRestarting
-	case apiv1.PodRunning:
+	case v1.PodPending:
+		return domain.ContainerStateStarting
+	case v1.PodRunning:
 		return domain.ContainerStateRunning
-	case apiv1.PodFailed:
-		return domain.ContainerStateStopped
-	case apiv1.PodSucceeded:
-		return domain.ContainerStateStopped
-	case apiv1.PodUnknown:
-		return domain.ContainerStateOther
+	case v1.PodFailed:
+		return domain.ContainerStateErrored
+	case v1.PodSucceeded:
+		return domain.ContainerStateExited
 	default:
-		return domain.ContainerStateOther
+		return domain.ContainerStateUnknown
 	}
 }

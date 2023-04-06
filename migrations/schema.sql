@@ -30,11 +30,11 @@ CREATE TABLE `repositories`
 
 CREATE TABLE `repository_auth`
 (
-    `repository_id` CHAR(22)             NOT NULL COMMENT 'リポジトリID',
-    `method`        ENUM ('basic','ssh') NOT NULL COMMENT '認証方法',
-    `username`      VARCHAR(256)         NOT NULL COMMENT '(basic)ユーザー名',
-    `password`      VARCHAR(256)         NOT NULL COMMENT '(basic)パスワード',
-    `ssh_key`       TEXT                 NOT NULL COMMENT '(ssh)PEM encoded private key',
+    `repository_id` CHAR(22)              NOT NULL COMMENT 'リポジトリID',
+    `method`        ENUM ('basic', 'ssh') NOT NULL COMMENT '認証方法',
+    `username`      VARCHAR(256)          NOT NULL COMMENT '(basic)ユーザー名',
+    `password`      VARCHAR(256)          NOT NULL COMMENT '(basic)パスワード',
+    `ssh_key`       TEXT                  NOT NULL COMMENT '(ssh)PEM encoded private key',
     PRIMARY KEY (`repository_id`),
     CONSTRAINT `fk_repository_auth_repository_id` FOREIGN KEY (`repository_id`) REFERENCES `repositories` (`id`)
 ) ENGINE = InnoDB
@@ -55,16 +55,17 @@ CREATE TABLE `repository_owners`
 
 CREATE TABLE `applications`
 (
-    `id`             CHAR(22)                  NOT NULL COMMENT 'アプリケーションID',
-    `name`           VARCHAR(100)              NOT NULL COMMENT 'アプリケーション名',
-    `repository_id`  VARCHAR(22)               NOT NULL COMMENT 'リポジトリID',
-    `ref_name`       VARCHAR(100)              NOT NULL COMMENT 'Gitブランチ・タグ名',
-    `build_type`     ENUM ('runtime','static') NOT NULL COMMENT 'ビルドタイプ',
-    `running`        TINYINT(1)                NOT NULL COMMENT 'アプリが起動しているか',
-    `current_commit` CHAR(40)                  NOT NULL COMMENT 'デプロイされたコミット',
-    `want_commit`    CHAR(40)                  NOT NULL COMMENT 'デプロイを待つコミット',
-    `created_at`     DATETIME(6)               NOT NULL COMMENT '作成日時',
-    `updated_at`     DATETIME(6)               NOT NULL COMMENT '更新日時',
+    `id`             CHAR(22)                                                                NOT NULL COMMENT 'アプリケーションID',
+    `name`           VARCHAR(100)                                                            NOT NULL COMMENT 'アプリケーション名',
+    `repository_id`  VARCHAR(22)                                                             NOT NULL COMMENT 'リポジトリID',
+    `ref_name`       VARCHAR(100)                                                            NOT NULL COMMENT 'Gitブランチ・タグ名',
+    `build_type`     ENUM ('runtime', 'static')                                              NOT NULL COMMENT 'ビルドタイプ',
+    `running`        TINYINT(1)                                                              NOT NULL COMMENT 'アプリを起動させるか(desired state)',
+    `container`      ENUM ('missing', 'starting', 'running', 'exited', 'errored', 'unknown') NOT NULL COMMENT 'コンテナの状態(runtime only)',
+    `current_commit` CHAR(40)                                                                NOT NULL COMMENT 'デプロイされたコミット',
+    `want_commit`    CHAR(40)                                                                NOT NULL COMMENT 'デプロイを待つコミット',
+    `created_at`     DATETIME(6)                                                             NOT NULL COMMENT '作成日時',
+    `updated_at`     DATETIME(6)                                                             NOT NULL COMMENT '更新日時',
     PRIMARY KEY (`id`),
     KEY `fk_applications_repository_id` (`repository_id`),
     CONSTRAINT `fk_applications_repository_id` FOREIGN KEY (`repository_id`) REFERENCES `repositories` (`id`)

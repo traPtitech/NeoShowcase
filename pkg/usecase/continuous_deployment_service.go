@@ -25,8 +25,10 @@ type continuousDeploymentService struct {
 	bus       domain.Bus
 	appRepo   domain.ApplicationRepository
 	buildRepo domain.BuildRepository
+	backend   domain.Backend
 	builder   *AppBuildHelper
 	deployer  *AppDeployHelper
+	mutator   *ContainerStateMutator
 
 	run       func()
 	runOnce   sync.Once
@@ -38,15 +40,19 @@ func NewContinuousDeploymentService(
 	bus domain.Bus,
 	appRepo domain.ApplicationRepository,
 	buildRepo domain.BuildRepository,
+	backend domain.Backend,
 	builder *AppBuildHelper,
 	deployer *AppDeployHelper,
+	mutator *ContainerStateMutator,
 ) (ContinuousDeploymentService, error) {
 	cd := &continuousDeploymentService{
 		bus:       bus,
 		appRepo:   appRepo,
 		buildRepo: buildRepo,
+		backend:   backend,
 		builder:   builder,
 		deployer:  deployer,
+		mutator:   mutator,
 	}
 
 	ctx, cancel := context.WithCancel(context.Background())
@@ -257,7 +263,7 @@ func (cd *continuousDeploymentService) detectBuildCrash(ctx context.Context) err
 	return nil
 }
 
-func (cd *continuousDeploymentService) syncDeployments(ctx context.Context) error {
+func (cd *continuousDeploymentService) _syncAppCommits(ctx context.Context) error {
 	// Get out-of-sync applications
 	apps, err := cd.appRepo.GetApplications(ctx, domain.GetApplicationCondition{
 		Running: optional.From(true),
@@ -285,11 +291,28 @@ func (cd *continuousDeploymentService) syncDeployments(ctx context.Context) erro
 			}
 		}
 	}
+	return nil
+}
+
+func (cd *continuousDeploymentService) syncDeployments(ctx context.Context) error {
+	err := cd._syncAppCommits(ctx)
+	if err != nil {
+		return err
+	}
 
 	// Synchronize
 	err = cd.deployer.synchronize(ctx)
 	if err != nil {
 		return errors.Wrap(err, "failed to synchronize app deployments")
 	}
-	return cd.deployer.synchronizeSS(ctx)
+	err = cd.deployer.synchronizeSS(ctx)
+	if err != nil {
+		return errors.Wrap(err, "failed to synchronize static server")
+	}
+
+	err = cd.mutator.updateAll(ctx)
+	if err != nil {
+		return err
+	}
+	return nil
 }

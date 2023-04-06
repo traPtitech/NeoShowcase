@@ -95,17 +95,26 @@ message DeleteWebsiteRequest {
 }
 
 message Application {
+  enum ContainerState {
+    MISSING = 0;
+    STARTING = 1;
+    RUNNING = 2;
+    EXITED = 3;
+    ERRORED = 4;
+    UNKNOWN = 5;
+  }
   string id = 1;
   string name = 2;
   string repository_id = 3;
   string ref_name = 4;
   BuildType build_type = 5;
   bool running = 6;
-  string current_commit = 7;
-  string want_commit = 8;
-  ApplicationConfig config = 9;
-  repeated Website websites = 10;
-  repeated string owner_ids = 11;
+  ContainerState container = 7;
+  string current_commit = 8;
+  string want_commit = 9;
+  ApplicationConfig config = 10;
+  repeated Website websites = 11;
+  repeated string owner_ids = 12;
 }
 
 message AvailableDomain {

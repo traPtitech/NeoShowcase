@@ -82,7 +82,8 @@ func NewWithDocker(c2 Config) (*Server, error) {
 	imageConfig := c2.Image
 	appBuildHelper := usecase.NewAppBuildHelper(componentService, imageConfig)
 	appDeployHelper := usecase.NewAppDeployHelper(backend, applicationRepository, buildRepository, environmentRepository, componentService, imageConfig)
-	continuousDeploymentService, err := usecase.NewContinuousDeploymentService(bus, applicationRepository, buildRepository, appBuildHelper, appDeployHelper)
+	containerStateMutator := usecase.NewContainerStateMutator(bus, applicationRepository, backend)
+	continuousDeploymentService, err := usecase.NewContinuousDeploymentService(bus, applicationRepository, buildRepository, backend, appBuildHelper, appDeployHelper, containerStateMutator)
 	if err != nil {
 		return nil, err
 	}
@@ -165,7 +166,8 @@ func NewWithK8S(c2 Config) (*Server, error) {
 	imageConfig := c2.Image
 	appBuildHelper := usecase.NewAppBuildHelper(componentService, imageConfig)
 	appDeployHelper := usecase.NewAppDeployHelper(backend, applicationRepository, buildRepository, environmentRepository, componentService, imageConfig)
-	continuousDeploymentService, err := usecase.NewContinuousDeploymentService(bus, applicationRepository, buildRepository, appBuildHelper, appDeployHelper)
+	containerStateMutator := usecase.NewContainerStateMutator(bus, applicationRepository, backend)
+	continuousDeploymentService, err := usecase.NewContinuousDeploymentService(bus, applicationRepository, buildRepository, backend, appBuildHelper, appDeployHelper, containerStateMutator)
 	if err != nil {
 		return nil, err
 	}
@@ -192,7 +194,7 @@ func NewWithK8S(c2 Config) (*Server, error) {
 
 // wire.go:
 
-var commonSet = wire.NewSet(web.NewServer, hub.New, eventbus.NewLocal, admindb.New, dbmanager.NewMariaDBManager, dbmanager.NewMongoDBManager, repository.NewApplicationRepository, repository.NewAvailableDomainRepository, repository.NewGitRepositoryRepository, repository.NewEnvironmentRepository, repository.NewBuildRepository, repository.NewArtifactRepository, repository.NewUserRepository, grpc.NewApplicationServiceServer, grpc.NewAuthInterceptor, grpc.NewComponentServiceServer, usecase.NewAPIServerService, usecase.NewAppBuildHelper, usecase.NewAppDeployHelper, usecase.NewContinuousDeploymentService, usecase.NewRepositoryFetcherService, usecase.NewCleanerService, usecase.NewLogStreamService, provideIngressConfDirPath,
+var commonSet = wire.NewSet(web.NewServer, hub.New, eventbus.NewLocal, admindb.New, dbmanager.NewMariaDBManager, dbmanager.NewMongoDBManager, repository.NewApplicationRepository, repository.NewAvailableDomainRepository, repository.NewGitRepositoryRepository, repository.NewEnvironmentRepository, repository.NewBuildRepository, repository.NewArtifactRepository, repository.NewUserRepository, grpc.NewApplicationServiceServer, grpc.NewAuthInterceptor, grpc.NewComponentServiceServer, usecase.NewAPIServerService, usecase.NewAppBuildHelper, usecase.NewAppDeployHelper, usecase.NewContinuousDeploymentService, usecase.NewRepositoryFetcherService, usecase.NewCleanerService, usecase.NewLogStreamService, usecase.NewContainerStateMutator, provideIngressConfDirPath,
 	provideRepositoryPublicKey,
 	initStorage,
 	provideWebAppServer,

@@ -14,7 +14,8 @@ CREATE TABLE `applications` (
   `repository_id` varchar(22) NOT NULL COMMENT 'リポジトリID',
   `ref_name` varchar(100) NOT NULL COMMENT 'Gitブランチ・タグ名',
   `build_type` enum('runtime','static') NOT NULL COMMENT 'ビルドタイプ',
-  `running` tinyint(1) NOT NULL COMMENT 'アプリが起動しているか',
+  `running` tinyint(1) NOT NULL COMMENT 'アプリを起動させるか(desired state)',
+  `container` enum('missing','starting','running','exited','errored','unknown') NOT NULL COMMENT 'コンテナの状態',
   `current_commit` char(40) NOT NULL COMMENT 'デプロイされたコミット',
   `want_commit` char(40) NOT NULL COMMENT 'デプロイを待つコミット',
   `created_at` datetime(6) NOT NULL COMMENT '作成日時',
@@ -36,7 +37,8 @@ CREATE TABLE `applications` (
 | repository_id | varchar(22) |  | false |  | [repositories](repositories.md) | リポジトリID |
 | ref_name | varchar(100) |  | false |  |  | Gitブランチ・タグ名 |
 | build_type | enum('runtime','static') |  | false |  |  | ビルドタイプ |
-| running | tinyint(1) |  | false |  |  | アプリが起動しているか |
+| running | tinyint(1) |  | false |  |  | アプリを起動させるか(desired state) |
+| container | enum('missing','starting','running','exited','errored','unknown') |  | false |  |  | コンテナの状態 |
 | current_commit | char(40) |  | false |  |  | デプロイされたコミット |
 | want_commit | char(40) |  | false |  |  | デプロイを待つコミット |
 | created_at | datetime(6) |  | false |  |  | 作成日時 |

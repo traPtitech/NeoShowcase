@@ -123,6 +123,15 @@ var buildTypeMapper = mapper.NewValueMapper(map[string]domain.BuildType{
 	models.ApplicationsBuildTypeStatic:  domain.BuildTypeStatic,
 })
 
+var containerStateMapper = mapper.NewValueMapper(map[string]domain.ContainerState{
+	models.ApplicationsContainerMissing:  domain.ContainerStateMissing,
+	models.ApplicationsContainerStarting: domain.ContainerStateStarting,
+	models.ApplicationsContainerRunning:  domain.ContainerStateRunning,
+	models.ApplicationsContainerExited:   domain.ContainerStateExited,
+	models.ApplicationsContainerErrored:  domain.ContainerStateErrored,
+	models.ApplicationsContainerUnknown:  domain.ContainerStateUnknown,
+})
+
 func fromDomainApplication(app *domain.Application) *models.Application {
 	return &models.Application{
 		ID:            app.ID,
@@ -131,6 +140,7 @@ func fromDomainApplication(app *domain.Application) *models.Application {
 		RefName:       app.RefName,
 		BuildType:     buildTypeMapper.FromMust(app.BuildType),
 		Running:       app.Running,
+		Container:     containerStateMapper.FromMust(app.Container),
 		CurrentCommit: app.CurrentCommit,
 		WantCommit:    app.WantCommit,
 		CreatedAt:     app.CreatedAt,
@@ -146,6 +156,7 @@ func toDomainApplication(app *models.Application) *domain.Application {
 		RefName:       app.RefName,
 		BuildType:     buildTypeMapper.IntoMust(app.BuildType),
 		Running:       app.Running,
+		Container:     containerStateMapper.IntoMust(app.Container),
 		CurrentCommit: app.CurrentCommit,
 		WantCommit:    app.WantCommit,
 

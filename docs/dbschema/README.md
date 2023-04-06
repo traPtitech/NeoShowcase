@@ -4,7 +4,7 @@
 
 | Name | Columns | Comment | Type |
 | ---- | ------- | ------- | ---- |
-| [applications](applications.md) | 10 | アプリケーションテーブル | BASE TABLE |
+| [applications](applications.md) | 11 | アプリケーションテーブル | BASE TABLE |
 | [application_config](application_config.md) | 9 |  | BASE TABLE |
 | [application_owners](application_owners.md) | 2 | アプリケーション所有者テーブル | BASE TABLE |
 | [artifacts](artifacts.md) | 5 | 静的ファイル生成物テーブル | BASE TABLE |
