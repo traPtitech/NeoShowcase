@@ -39,6 +39,7 @@ func (c *ApplicationConfig) IsValid(buildType BuildType) bool {
 		if c.DockerfileName != "" {
 			// pass
 		} else {
+			// NOTE: base image is not necessary (default: scratch)
 			// NOTE: build cmd is not necessary
 			if c.EntrypointCmd == "" {
 				return false
@@ -50,6 +51,7 @@ func (c *ApplicationConfig) IsValid(buildType BuildType) bool {
 				return false
 			}
 		} else {
+			// NOTE: base image is not necessary (default: scratch)
 			// NOTE: build cmd is not necessary
 			if c.ArtifactPath == "" {
 				return false

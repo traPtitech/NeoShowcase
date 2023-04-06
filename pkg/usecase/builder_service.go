@@ -26,6 +26,7 @@ import (
 	"github.com/traPtitech/neoshowcase/pkg/domain/builder"
 	"github.com/traPtitech/neoshowcase/pkg/interface/grpc/pb"
 	"github.com/traPtitech/neoshowcase/pkg/interface/repository"
+	"github.com/traPtitech/neoshowcase/pkg/util"
 	"github.com/traPtitech/neoshowcase/pkg/util/optional"
 	"github.com/traPtitech/neoshowcase/pkg/util/retry"
 )
@@ -455,61 +456,45 @@ func (s *builderService) buildImageWithConfig(
 	exportAttrs map[string]string,
 	ch chan *buildkit.SolveStatus,
 ) error {
-	var fs, fe *os.File
-	fs, err := os.OpenFile(filepath.Join(st.repositoryTempDir, buildScriptName), os.O_RDWR|os.O_CREATE|os.O_TRUNC, os.ModePerm)
+	err := createScriptFile(filepath.Join(st.repositoryTempDir, buildScriptName), st.task.BuildOptions.BuildCmd)
 	if err != nil {
 		return err
 	}
-	_, err = fs.WriteString("#!/bin/sh\n" + st.task.BuildOptions.BuildCmd)
-	if err != nil {
-		return err
-	}
-	defer fs.Close()
-	defer os.Remove(fs.Name())
 
-	fe, err = os.OpenFile(filepath.Join(st.repositoryTempDir, entryPointScriptName), os.O_RDWR|os.O_CREATE|os.O_TRUNC, os.ModePerm)
+	err = createScriptFile(filepath.Join(st.repositoryTempDir, entryPointScriptName), st.task.BuildOptions.EntrypointCmd)
 	if err != nil {
 		return err
 	}
-	_, err = fe.WriteString("#!/bin/sh\n" + st.task.BuildOptions.EntrypointCmd)
-	if err != nil {
-		return err
-	}
-	defer fe.Close()
-	defer os.Remove(fe.Name())
 
-	var tmp *os.File
-	tmp, err = os.CreateTemp("", "Dockerfile-")
-	if err != nil {
-		return err
-	}
-	defer tmp.Close()
-	defer os.Remove(tmp.Name())
 	dockerfile := fmt.Sprintf(
 		`FROM %s
 WORKDIR /srv
 COPY . .
 RUN ["/srv/%s"]
 ENTRYPOINT ["/srv/%s"]`,
-		st.task.BuildOptions.BaseImageName,
+		util.ValueOr(st.task.BuildOptions.BaseImageName, "scratch"),
 		buildScriptName,
 		entryPointScriptName,
 	)
-	if _, err = tmp.WriteString(dockerfile); err != nil {
+	b, _, _, err := dockerfile2llb.Dockerfile2LLB(ctx, []byte(dockerfile), dockerfile2llb.ConvertOpt{})
+	if err != nil {
 		return err
 	}
 
-	_, err = s.buildkit.Solve(ctx, nil, buildkit.SolveOpt{
+	def, err := b.Marshal(ctx)
+	if err != nil {
+		return err
+	}
+
+	_, err = s.buildkit.Solve(ctx, def, buildkit.SolveOpt{
 		Exports: []buildkit.ExportEntry{{
 			Type:  buildkit.ExporterImage,
 			Attrs: exportAttrs,
 		}},
 		LocalDirs: map[string]string{
-			"context":    st.repositoryTempDir,
-			"dockerfile": filepath.Dir(tmp.Name()),
+			"context": st.repositoryTempDir,
 		},
-		Frontend:      "dockerfile.v0",
-		FrontendAttrs: map[string]string{"filename": filepath.Base(tmp.Name())},
+		Frontend: "dockerfile.v0",
 	}, ch)
 	return err
 }
@@ -546,10 +531,12 @@ func (s *builderService) buildStaticWithDockerfile(
 	if err != nil {
 		return err
 	}
+
 	b, _, _, err := dockerfile2llb.Dockerfile2LLB(ctx, dockerfile, dockerfile2llb.ConvertOpt{})
 	if err != nil {
 		return err
 	}
+
 	def, err := llb.
 		Scratch().
 		File(llb.Copy(*b, st.task.BuildOptions.ArtifactPath, "/", &llb.CopyInfo{
@@ -561,6 +548,7 @@ func (s *builderService) buildStaticWithDockerfile(
 	if err != nil {
 		return err
 	}
+
 	contextDir := filepath.Dir(st.task.BuildOptions.DockerfileName)
 	_, err = s.buildkit.Solve(ctx, def, buildkit.SolveOpt{
 		Exports: []buildkit.ExportEntry{{
@@ -579,14 +567,27 @@ func (s *builderService) buildStaticWithConfig(
 	st *state,
 	ch chan *buildkit.SolveStatus,
 ) error {
-	b := llb.Image(st.task.BuildOptions.BaseImageName).
+	err := createScriptFile(filepath.Join(st.repositoryTempDir, buildScriptName), st.task.BuildOptions.BuildCmd)
+	if err != nil {
+		return err
+	}
+
+	var ls llb.State
+	if st.task.BuildOptions.BaseImageName == "" {
+		ls = llb.Scratch()
+	} else {
+		ls = llb.Image(st.task.BuildOptions.BaseImageName)
+	}
+	b := ls.
 		Dir("/srv").
 		File(llb.Copy(llb.Local("local-src"), ".", ".", &llb.CopyInfo{
-			AllowWildcard:  true,
-			CreateDestPath: true,
+			CopyDirContentsOnly: true,
+			AllowWildcard:       true,
+			CreateDestPath:      true,
 		})).
-		Run(llb.Shlex(st.task.BuildOptions.BuildCmd)).
+		Run(llb.Args([]string{"./" + buildScriptName})).
 		Root()
+
 	// ビルドで生成された静的ファイルのみを含むScratchイメージを構成
 	def, err := llb.
 		Scratch().
@@ -610,6 +611,19 @@ func (s *builderService) buildStaticWithConfig(
 		},
 	}, ch)
 	return err
+}
+
+func createScriptFile(filename string, script string) error {
+	f, err := os.OpenFile(filename, os.O_RDWR|os.O_CREATE|os.O_TRUNC, os.ModePerm)
+	if err != nil {
+		return err
+	}
+	defer f.Close()
+	_, err = f.WriteString("#!/bin/sh\nset -eux\n" + script)
+	if err != nil {
+		return err
+	}
+	return nil
 }
 
 type state struct {
