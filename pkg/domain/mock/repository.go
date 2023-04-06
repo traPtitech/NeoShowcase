@@ -35,6 +35,20 @@ func (m *MockApplicationRepository) EXPECT() *MockApplicationRepositoryMockRecor
 	return m.recorder
 }
 
+// BulkUpdateState mocks base method.
+func (m_2 *MockApplicationRepository) BulkUpdateState(ctx context.Context, m map[string]domain.ContainerState) error {
+	m_2.ctrl.T.Helper()
+	ret := m_2.ctrl.Call(m_2, "BulkUpdateState", ctx, m)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// BulkUpdateState indicates an expected call of BulkUpdateState.
+func (mr *MockApplicationRepositoryMockRecorder) BulkUpdateState(ctx, m interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "BulkUpdateState", reflect.TypeOf((*MockApplicationRepository)(nil).BulkUpdateState), ctx, m)
+}
+
 // CreateApplication mocks base method.
 func (m *MockApplicationRepository) CreateApplication(ctx context.Context, app *domain.Application) error {
 	m.ctrl.T.Helper()
@@ -493,20 +507,6 @@ func (m *MockGitRepositoryRepository) GetRepository(ctx context.Context, id stri
 func (mr *MockGitRepositoryRepositoryMockRecorder) GetRepository(ctx, id interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetRepository", reflect.TypeOf((*MockGitRepositoryRepository)(nil).GetRepository), ctx, id)
-}
-
-// RegisterRepositoryOwner mocks base method.
-func (m *MockGitRepositoryRepository) RegisterRepositoryOwner(ctx context.Context, repositoryID, userID string) error {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "RegisterRepositoryOwner", ctx, repositoryID, userID)
-	ret0, _ := ret[0].(error)
-	return ret0
-}
-
-// RegisterRepositoryOwner indicates an expected call of RegisterRepositoryOwner.
-func (mr *MockGitRepositoryRepositoryMockRecorder) RegisterRepositoryOwner(ctx, repositoryID, userID interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RegisterRepositoryOwner", reflect.TypeOf((*MockGitRepositoryRepository)(nil).RegisterRepositoryOwner), ctx, repositoryID, userID)
 }
 
 // MockUserRepository is a mock of UserRepository interface.

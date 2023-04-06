@@ -87,13 +87,9 @@ func (r *gitRepositoryRepository) CreateRepository(ctx context.Context, repo *do
 		}
 	}
 
-	repo.OwnerIDs = lo.Uniq(repo.OwnerIDs)
-	users, err := models.Users(models.UserWhere.ID.IN(repo.OwnerIDs)).All(ctx, tx)
+	err = r.setOwners(ctx, tx, mr, repo.OwnerIDs)
 	if err != nil {
-		return errors.Wrap(err, "failed to get users")
-	}
-	if len(users) < len(repo.OwnerIDs) {
-		return ErrNotFound
+		return err
 	}
 
 	err = tx.Commit()
@@ -104,24 +100,18 @@ func (r *gitRepositoryRepository) CreateRepository(ctx context.Context, repo *do
 	return nil
 }
 
-func (r *gitRepositoryRepository) RegisterRepositoryOwner(ctx context.Context, repositoryID string, userID string) error {
-	repo, err := models.Repositories(models.RepositoryWhere.ID.EQ(repositoryID)).One(ctx, r.db)
+func (r *gitRepositoryRepository) setOwners(ctx context.Context, ex boil.ContextExecutor, repo *models.Repository, ownerIDs []string) error {
+	ownerIDs = lo.Uniq(ownerIDs)
+	users, err := models.Users(models.UserWhere.ID.IN(ownerIDs)).All(ctx, ex)
 	if err != nil {
-		if isNoRowsErr(err) {
-			return ErrNotFound
-		}
-		return errors.Wrap(err, "failed to get repository")
+		return errors.Wrap(err, "failed to get users")
 	}
-	user, err := models.Users(models.UserWhere.ID.EQ(userID)).One(ctx, r.db)
-	if err != nil {
-		if isNoRowsErr(err) {
-			return ErrNotFound
-		}
-		return errors.Wrap(err, "failed to get user")
+	if len(users) < len(ownerIDs) {
+		return ErrNotFound
 	}
-	err = repo.AddUsers(ctx, r.db, false, user)
+	err = repo.SetUsers(ctx, ex, false, users...)
 	if err != nil {
-		return errors.Wrap(err, "failed to add owner")
+		return errors.Wrap(err, "failed to")
 	}
 	return nil
 }

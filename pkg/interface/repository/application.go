@@ -122,7 +122,7 @@ func (r *applicationRepository) CreateApplication(ctx context.Context, app *doma
 		return err
 	}
 
-	err = r.insertOwners(ctx, tx, ma, app.OwnerIDs)
+	err = r.setOwners(ctx, tx, ma, app.OwnerIDs)
 	if err != nil {
 		return err
 	}
@@ -146,29 +146,37 @@ func (r *applicationRepository) UpdateApplication(ctx context.Context, id string
 		return err
 	}
 
+	var cols []string
 	if args.Name.Valid {
 		app.Name = args.Name.V
+		cols = append(cols, models.ApplicationColumns.Name)
 	}
 	if args.RefName.Valid {
 		app.RefName = args.RefName.V
+		cols = append(cols, models.ApplicationColumns.RefName)
 	}
 	if args.Running.Valid {
 		app.Running = args.Running.V
+		cols = append(cols, models.ApplicationColumns.Running)
 	}
 	if args.Container.Valid {
 		app.Container = containerStateMapper.FromMust(args.Container.V)
+		cols = append(cols, models.ApplicationColumns.Container)
 	}
 	if args.CurrentCommit.Valid {
 		app.CurrentCommit = args.CurrentCommit.V
+		cols = append(cols, models.ApplicationColumns.CurrentCommit)
 	}
 	if args.WantCommit.Valid {
 		app.WantCommit = args.WantCommit.V
+		cols = append(cols, models.ApplicationColumns.WantCommit)
 	}
 	if args.UpdatedAt.Valid {
 		app.UpdatedAt = args.UpdatedAt.V
+		cols = append(cols, models.ApplicationColumns.UpdatedAt)
 	}
 
-	_, err = app.Update(ctx, tx, boil.Blacklist())
+	_, err = app.Update(ctx, tx, boil.Whitelist(cols...))
 
 	if args.Config.Valid {
 		mac := fromDomainApplicationConfig(app.ID, &args.Config.V)
@@ -188,11 +196,7 @@ func (r *applicationRepository) UpdateApplication(ctx context.Context, id string
 		}
 	}
 	if args.OwnerIDs.Valid {
-		_, err = app.R.Users.DeleteAll(ctx, tx)
-		if err != nil {
-			return errors.Wrap(err, "failed to delete all owners")
-		}
-		err = r.insertOwners(ctx, tx, app, args.OwnerIDs.V)
+		err = r.setOwners(ctx, tx, app, args.OwnerIDs.V)
 		if err != nil {
 			return err
 		}
@@ -260,7 +264,7 @@ func (r *applicationRepository) validateAndInsertWebsite(ctx context.Context, ex
 	}
 	existing := lo.Map(websites, func(website *models.Website, i int) *domain.Website { return toDomainWebsite(website) })
 	if website.ConflictsWith(existing) {
-		return ErrDuplicate
+		return errors.New("conflicts with existing websites")
 	}
 	mw := fromDomainWebsite(app.ID, website)
 	err = mw.Insert(ctx, ex, boil.Blacklist())
@@ -270,13 +274,13 @@ func (r *applicationRepository) validateAndInsertWebsite(ctx context.Context, ex
 	return nil
 }
 
-func (r *applicationRepository) insertOwners(ctx context.Context, ex boil.ContextExecutor, app *models.Application, ownerIDs []string) error {
+func (r *applicationRepository) setOwners(ctx context.Context, ex boil.ContextExecutor, app *models.Application, ownerIDs []string) error {
 	ownerIDs = lo.Uniq(ownerIDs)
 	users, err := models.Users(models.UserWhere.ID.IN(ownerIDs)).All(ctx, ex)
 	if len(users) < len(ownerIDs) {
 		return ErrNotFound
 	}
-	err = app.AddUsers(ctx, ex, false, users...)
+	err = app.SetUsers(ctx, ex, false, users...)
 	if err != nil {
 		return errors.Wrap(err, "failed to add owners")
 	}

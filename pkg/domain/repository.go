@@ -107,7 +107,6 @@ type GitRepositoryRepository interface {
 	GetRepositories(ctx context.Context, condition GetRepositoryCondition) ([]*Repository, error)
 	GetRepository(ctx context.Context, id string) (*Repository, error)
 	CreateRepository(ctx context.Context, repo *Repository) error
-	RegisterRepositoryOwner(ctx context.Context, repositoryID string, userID string) error
 }
 
 type CreateUserArgs struct {

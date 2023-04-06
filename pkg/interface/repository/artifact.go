@@ -72,11 +72,13 @@ func (r *artifactRepository) UpdateArtifact(ctx context.Context, id string, args
 		return errors.Wrap(err, "failed to get artifact")
 	}
 
+	var cols []string
 	if args.DeletedAt.Valid {
 		artifact.DeletedAt = optional.IntoTime(args.DeletedAt)
+		cols = append(cols, models.ArtifactColumns.DeletedAt)
 	}
 
-	_, err = artifact.Update(ctx, r.db, boil.Blacklist())
+	_, err = artifact.Update(ctx, r.db, boil.Whitelist(cols...))
 	if err != nil {
 		return errors.Wrap(err, "failed to update artifact")
 	}
