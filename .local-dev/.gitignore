@@ -3,6 +3,7 @@
 /mongo
 /mysql
 /repositories
+/registry-data
 /staticsite
 /traefik
 !/traefik/middlewares.yaml

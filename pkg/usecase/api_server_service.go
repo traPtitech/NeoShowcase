@@ -55,8 +55,6 @@ type apiServerService struct {
 	buildRepo      domain.BuildRepository
 	envRepo        domain.EnvironmentRepository
 	gitRepo        domain.GitRepositoryRepository
-	deploySvc      AppDeployService
-	backend        domain.Backend
 	storage        domain.Storage
 	component      domain.ComponentService
 	mariaDBManager domain.MariaDBManager
@@ -71,8 +69,6 @@ func NewAPIServerService(
 	buildRepo domain.BuildRepository,
 	envRepo domain.EnvironmentRepository,
 	gitRepo domain.GitRepositoryRepository,
-	deploySvc AppDeployService,
-	backend domain.Backend,
 	storage domain.Storage,
 	component domain.ComponentService,
 	mariaDBManager domain.MariaDBManager,
@@ -86,8 +82,6 @@ func NewAPIServerService(
 		buildRepo:      buildRepo,
 		envRepo:        envRepo,
 		gitRepo:        gitRepo,
-		deploySvc:      deploySvc,
-		backend:        backend,
 		storage:        storage,
 		component:      component,
 		mariaDBManager: mariaDBManager,
@@ -347,6 +341,7 @@ func (s *apiServerService) RetryCommitBuild(ctx context.Context, applicationID s
 	if err != nil {
 		return err
 	}
+	// NOTE: requires the app to be running for builds to register
 	s.bus.Publish(event.CDServiceRegisterBuildRequest, nil)
 	return nil
 }
@@ -359,10 +354,8 @@ func (s *apiServerService) StartApplication(ctx context.Context, id string) erro
 	if err != nil {
 		return errors.Wrap(err, "failed to mark application as running")
 	}
-	err = s.deploySvc.Synchronize(ctx)
-	if err != nil {
-		return errors.Wrap(err, "failed to synchronize application")
-	}
+	s.bus.Publish(event.CDServiceRegisterBuildRequest, nil)
+	s.bus.Publish(event.CDServiceSyncDeployRequest, nil)
 	return nil
 }
 
@@ -374,9 +367,6 @@ func (s *apiServerService) StopApplication(ctx context.Context, id string) error
 	if err != nil {
 		return errors.Wrap(err, "failed to mark application as not running")
 	}
-	err = s.deploySvc.Synchronize(ctx)
-	if err != nil {
-		return errors.Wrap(err, "failed to synchronize application")
-	}
+	s.bus.Publish(event.CDServiceSyncDeployRequest, nil)
 	return nil
 }

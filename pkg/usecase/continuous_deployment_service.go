@@ -12,6 +12,7 @@ import (
 
 	"github.com/traPtitech/neoshowcase/pkg/domain"
 	"github.com/traPtitech/neoshowcase/pkg/domain/event"
+	"github.com/traPtitech/neoshowcase/pkg/util/coalesce"
 	"github.com/traPtitech/neoshowcase/pkg/util/optional"
 )
 
@@ -24,8 +25,8 @@ type continuousDeploymentService struct {
 	bus       domain.Bus
 	appRepo   domain.ApplicationRepository
 	buildRepo domain.BuildRepository
-	builder   AppBuildService
-	deployer  AppDeployService
+	builder   *AppBuildHelper
+	deployer  *AppDeployHelper
 
 	run       func()
 	runOnce   sync.Once
@@ -37,8 +38,8 @@ func NewContinuousDeploymentService(
 	bus domain.Bus,
 	appRepo domain.ApplicationRepository,
 	buildRepo domain.BuildRepository,
-	builder AppBuildService,
-	deployer AppDeployService,
+	builder *AppBuildHelper,
+	deployer *AppDeployHelper,
 ) (ContinuousDeploymentService, error) {
 	cd := &continuousDeploymentService{
 		bus:       bus,
@@ -53,6 +54,7 @@ func NewContinuousDeploymentService(
 	cd.run = func() {
 		go cd.registerBuildLoop(ctx, startBuilds)
 		go cd.startBuildLoop(ctx, startBuilds)
+		go cd.detectBuildCrashLoop(ctx)
 		go cd.syncDeployLoop(ctx)
 	}
 	cd.close = func() {
@@ -125,19 +127,16 @@ func (cd *continuousDeploymentService) startBuildLoop(ctx context.Context, synce
 	}
 }
 
-func (cd *continuousDeploymentService) syncDeployLoop(ctx context.Context) {
-	sub := cd.bus.Subscribe(event.BuilderBuildSettled)
-	defer sub.Unsubscribe()
-	ticker := time.NewTicker(3 * time.Minute)
+func (cd *continuousDeploymentService) detectBuildCrashLoop(ctx context.Context) {
+	ticker := time.NewTicker(1 * time.Minute)
 	defer ticker.Stop()
 
 	doSync := func() {
 		start := time.Now()
-		if err := cd.syncDeployments(ctx); err != nil {
-			log.Errorf("failed to sync deployments: %+v", err)
-			return
+		if err := cd.detectBuildCrash(ctx); err != nil {
+			log.Errorf("failed to detect build crash: %+v", err)
 		}
-		log.Infof("Synced deployments in %v", time.Since(start))
+		log.Debugf("Build crash detection complete in %v", time.Since(start))
 	}
 
 	doSync()
@@ -146,8 +145,36 @@ func (cd *continuousDeploymentService) syncDeployLoop(ctx context.Context) {
 		select {
 		case <-ticker.C:
 			doSync()
+		case <-ctx.Done():
+			return
+		}
+	}
+}
+
+func (cd *continuousDeploymentService) syncDeployLoop(ctx context.Context) {
+	sub := cd.bus.Subscribe(event.BuilderBuildSettled, event.CDServiceSyncDeployRequest)
+	defer sub.Unsubscribe()
+	ticker := time.NewTicker(3 * time.Minute)
+	defer ticker.Stop()
+
+	coalescer := coalesce.NewCoalescer(func(ctx context.Context) error {
+		start := time.Now()
+		if err := cd.syncDeployments(ctx); err != nil {
+			log.Errorf("failed to sync deployments: %+v", err)
+			return nil
+		}
+		log.Infof("Synced deployments in %v", time.Since(start))
+		return nil
+	})
+
+	_ = coalescer.Do(ctx)
+
+	for {
+		select {
+		case <-ticker.C:
+			_ = coalescer.Do(ctx)
 		case <-sub.Chan():
-			doSync()
+			_ = coalescer.Do(ctx)
 		case <-ctx.Done():
 			return
 		}
@@ -163,22 +190,6 @@ func (cd *continuousDeploymentService) registerBuilds(ctx context.Context) error
 	builds, err := cd.buildRepo.GetBuilds(ctx, domain.GetBuildCondition{CommitIn: optional.From(commits), Retriable: optional.From(false)})
 	if err != nil {
 		return err
-	}
-
-	// Detect builder crash and mark builds as errored
-	const crashDetectThreshold = 60 * time.Second
-	crashThreshold := time.Now().Add(-crashDetectThreshold)
-	crashed := lo.Filter(builds, func(build *domain.Build, i int) bool {
-		return build.Status == domain.BuildStatusBuilding && build.UpdatedAt.ValueOrZero().Before(crashThreshold)
-	})
-	for _, build := range crashed {
-		err = cd.buildRepo.UpdateBuild(ctx, build.ID, domain.UpdateBuildArgs{
-			FromStatus: optional.From(domain.BuildStatusBuilding),
-			Status:     optional.From(domain.BuildStatusFailed),
-		})
-		if err != nil {
-			log.Errorf("failed to mark crashed build as errored: %+v", err)
-		}
 	}
 
 	buildExistsForCommit := lo.SliceToMap(builds, func(b *domain.Build) (string, bool) { return b.Commit, true })
@@ -217,8 +228,32 @@ func (cd *continuousDeploymentService) startBuilds(ctx context.Context) error {
 		if !ok {
 			return fmt.Errorf("app %v not found", build.ApplicationID)
 		}
-		cd.builder.TryStartBuild(app, build)
+		cd.builder.tryStartBuild(app, build)
 	}
+	return nil
+}
+
+func (cd *continuousDeploymentService) detectBuildCrash(ctx context.Context) error {
+	const crashDetectThreshold = 60 * time.Second
+	now := time.Now()
+
+	builds, err := cd.buildRepo.GetBuilds(ctx, domain.GetBuildCondition{Status: optional.From(domain.BuildStatusBuilding)})
+	if err != nil {
+		return errors.Wrap(err, "failed to get running builds")
+	}
+	crashed := lo.Filter(builds, func(build *domain.Build, i int) bool {
+		return now.Sub(build.UpdatedAt.ValueOrZero()) > crashDetectThreshold
+	})
+	for _, build := range crashed {
+		err = cd.buildRepo.UpdateBuild(ctx, build.ID, domain.UpdateBuildArgs{
+			FromStatus: optional.From(domain.BuildStatusBuilding),
+			Status:     optional.From(domain.BuildStatusFailed),
+		})
+		if err != nil {
+			log.Errorf("failed to mark crashed build as errored: %+v", err)
+		}
+	}
+
 	return nil
 }
 
@@ -252,9 +287,9 @@ func (cd *continuousDeploymentService) syncDeployments(ctx context.Context) erro
 	}
 
 	// Synchronize
-	err = cd.deployer.Synchronize(ctx)
+	err = cd.deployer.synchronize(ctx)
 	if err != nil {
 		return errors.Wrap(err, "failed to synchronize app deployments")
 	}
-	return cd.deployer.SynchronizeSS(ctx)
+	return cd.deployer.synchronizeSS(ctx)
 }
