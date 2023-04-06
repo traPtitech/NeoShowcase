@@ -3,7 +3,7 @@ debug: true
 mode: docker
 
 ss:
-  url: http://ns-ssgen:80/
+  url: http://ns-ssgen:8080/
 
 db:
   host: mysql
