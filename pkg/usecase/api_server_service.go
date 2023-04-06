@@ -122,6 +122,10 @@ func (s *APIServerService) GetRepositories(ctx context.Context) ([]*domain.Repos
 }
 
 func (s *APIServerService) CreateRepository(ctx context.Context, repo *domain.Repository) error {
+	if !repo.IsValid() {
+		return newError(ErrorTypeBadRequest, "invalid repository", nil)
+	}
+
 	return s.gitRepo.CreateRepository(ctx, repo)
 }
 
@@ -129,6 +133,15 @@ func (s *APIServerService) UpdateRepository(ctx context.Context, id string, args
 	err := s.isRepositoryOwner(ctx, id)
 	if err != nil {
 		return err
+	}
+
+	repo, err := s.gitRepo.GetRepository(ctx, id)
+	if err != nil {
+		return err
+	}
+	repo.Apply(args)
+	if !repo.IsValid() {
+		return newError(ErrorTypeBadRequest, "invalid repository", nil)
 	}
 
 	return s.gitRepo.UpdateRepository(ctx, id, args)

@@ -5,6 +5,8 @@ import (
 	"testing"
 
 	"github.com/samber/lo"
+
+	"github.com/traPtitech/neoshowcase/pkg/util/optional"
 )
 
 func TestIsValidDomain(t *testing.T) {
@@ -132,6 +134,231 @@ func TestAvailableDomainSlice_IsAvailable(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			if got := tt.s.IsAvailable(tt.fqdn); got != tt.want {
 				t.Errorf("IsAvailable() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+const validSSHKey = `-----BEGIN OPENSSH PRIVATE KEY-----
+b3BlbnNzaC1rZXktdjEAAAAABG5vbmUAAAAEbm9uZQAAAAAAAAABAAAAMwAAAAtzc2gtZW
+QyNTUxOQAAACAC1iAC54T1ooCQN545XcXDPdTxJEEDdt9TsO3MwoPMwwAAAJCX+efxl/nn
+8QAAAAtzc2gtZWQyNTUxOQAAACAC1iAC54T1ooCQN545XcXDPdTxJEEDdt9TsO3MwoPMww
+AAAEA+FzwWKIYduEDOqkEOZ2wmxZWPc2wpZeWj+J8e3Q6x0QLWIALnhPWigJA3njldxcM9
+1PEkQQN231Ow7czCg8zDAAAADG1vdG9AbW90by13cwE=
+-----END OPENSSH PRIVATE KEY-----`
+
+func TestRepository_IsValid(t *testing.T) {
+	tests := []struct {
+		name string
+		repo Repository
+		want bool
+	}{
+		{
+			name: "valid auth none (http)",
+			repo: Repository{
+				Name:     "test",
+				URL:      "http://github.com/traPtitech/NeoShowcase",
+				Auth:     optional.Of[RepositoryAuth]{},
+				OwnerIDs: []string{"abc"},
+			},
+			want: true,
+		},
+		{
+			name: "valid auth none (https)",
+			repo: Repository{
+				Name:     "test",
+				URL:      "https://github.com/traPtitech/NeoShowcase",
+				Auth:     optional.Of[RepositoryAuth]{},
+				OwnerIDs: []string{"abc"},
+			},
+			want: true,
+		},
+		{
+			name: "valid auth basic",
+			repo: Repository{
+				Name: "test",
+				URL:  "https://github.com/traPtitech/NeoShowcase",
+				Auth: optional.From(RepositoryAuth{
+					Method:   RepositoryAuthMethodBasic,
+					Username: "username",
+					Password: "password",
+				}),
+				OwnerIDs: []string{"abc"},
+			},
+			want: true,
+		},
+		{
+			name: "valid auth ssh",
+			repo: Repository{
+				Name: "test",
+				URL:  "git@github.com:traPtitech/NeoShowcase.git",
+				Auth: optional.From(RepositoryAuth{
+					Method: RepositoryAuthMethodSSH,
+					SSHKey: validSSHKey,
+				}),
+				OwnerIDs: []string{"abc"},
+			},
+			want: true,
+		},
+		{
+			name: "invalid name",
+			repo: Repository{
+				Name:     "",
+				URL:      "http://github.com/traPtitech/NeoShowcase",
+				Auth:     optional.Of[RepositoryAuth]{},
+				OwnerIDs: []string{"abc"},
+			},
+			want: false,
+		},
+		{
+			name: "invalid url",
+			repo: Repository{
+				Name:     "test",
+				URL:      "ttp://github.com/traPtitech/NeoShowcase",
+				Auth:     optional.Of[RepositoryAuth]{},
+				OwnerIDs: []string{"abc"},
+			},
+			want: false,
+		},
+		{
+			name: "invalid scheme (auth none)",
+			repo: Repository{
+				Name:     "test",
+				URL:      "git@github.com:traPtitech/NeoShowcase.git",
+				Auth:     optional.Of[RepositoryAuth]{},
+				OwnerIDs: []string{"abc"},
+			},
+			want: false,
+		},
+		{
+			name: "invalid scheme (auth basic)",
+			repo: Repository{
+				Name: "test",
+				URL:  "http://github.com/traPtitech/NeoShowcase",
+				Auth: optional.From(RepositoryAuth{
+					Method:   RepositoryAuthMethodBasic,
+					Username: "username",
+					Password: "password",
+				}),
+				OwnerIDs: []string{"abc"},
+			},
+			want: false,
+		},
+		{
+			name: "invalid scheme (auth ssh)",
+			repo: Repository{
+				Name: "test",
+				URL:  "https://github.com/traPtitech/NeoShowcase",
+				Auth: optional.From(RepositoryAuth{
+					Method: RepositoryAuthMethodSSH,
+					SSHKey: validSSHKey,
+				}),
+				OwnerIDs: []string{"abc"},
+			},
+			want: false,
+		},
+		{
+			name: "invalid owners",
+			repo: Repository{
+				Name:     "test",
+				URL:      "http://github.com/traPtitech/NeoShowcase",
+				Auth:     optional.Of[RepositoryAuth]{},
+				OwnerIDs: []string{},
+			},
+			want: false,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := tt.repo.IsValid(); got != tt.want {
+				t.Errorf("IsValid() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestRepositoryAuth_IsValid(t *testing.T) {
+	tests := []struct {
+		name string
+		auth RepositoryAuth
+		want bool
+	}{
+		{
+			name: "valid basic auth",
+			auth: RepositoryAuth{
+				Method:   RepositoryAuthMethodBasic,
+				Username: "root",
+				Password: "password",
+				SSHKey:   "",
+			},
+			want: true,
+		},
+		{
+			name: "invalid username",
+			auth: RepositoryAuth{
+				Method:   RepositoryAuthMethodBasic,
+				Username: "",
+				Password: "password",
+				SSHKey:   "",
+			},
+			want: false,
+		},
+		{
+			name: "invalid password",
+			auth: RepositoryAuth{
+				Method:   RepositoryAuthMethodBasic,
+				Username: "root",
+				Password: "",
+				SSHKey:   "",
+			},
+			want: false,
+		},
+		{
+			name: "valid ssh auth",
+			auth: RepositoryAuth{
+				Method:   RepositoryAuthMethodSSH,
+				Username: "",
+				Password: "",
+				SSHKey:   validSSHKey,
+			},
+			want: true,
+		},
+		{
+			name: "invalid ssh private key",
+			auth: RepositoryAuth{
+				Method:   RepositoryAuthMethodSSH,
+				Username: "",
+				Password: "",
+				SSHKey: `-----BEGIN OPENSSH PRIVATE KEY------
+-----END OPENSSH PRIVATE KEY-----`,
+			},
+			want: false,
+		},
+		{
+			name: "invalid ssh auth (public key)",
+			auth: RepositoryAuth{
+				Method:   RepositoryAuthMethodSSH,
+				Username: "",
+				Password: "",
+				SSHKey:   `ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIALWIALnhPWigJA3njldxcM91PEkQQN231Ow7czCg8zD`,
+			},
+			want: false,
+		},
+		{
+			name: "invalid ssh auth (empty)",
+			auth: RepositoryAuth{
+				Method:   RepositoryAuthMethodSSH,
+				Username: "",
+				Password: "",
+				SSHKey:   "",
+			},
+			want: false,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := tt.auth.IsValid(); got != tt.want {
+				t.Errorf("IsValid() = %v, want %v", got, tt.want)
 			}
 		})
 	}

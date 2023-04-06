@@ -111,6 +111,22 @@ type UpdateRepositoryArgs struct {
 	OwnerIDs optional.Of[[]string]
 }
 
+func (r *Repository) Apply(args *UpdateRepositoryArgs) *Repository {
+	if args.Name.Valid {
+		r.Name = args.Name.V
+	}
+	if args.URL.Valid {
+		r.URL = args.URL.V
+	}
+	if args.Auth.Valid {
+		r.Auth = args.Auth.V
+	}
+	if args.OwnerIDs.Valid {
+		r.OwnerIDs = args.OwnerIDs.V
+	}
+	return r
+}
+
 type GitRepositoryRepository interface {
 	GetRepositories(ctx context.Context, condition GetRepositoryCondition) ([]*Repository, error)
 	GetRepository(ctx context.Context, id string) (*Repository, error)
