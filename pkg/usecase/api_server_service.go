@@ -347,6 +347,7 @@ func (s *apiServerService) RetryCommitBuild(ctx context.Context, applicationID s
 	if err != nil {
 		return err
 	}
+	// NOTE: requires the app to be running for builds to register
 	s.bus.Publish(event.CDServiceRegisterBuildRequest, nil)
 	return nil
 }
