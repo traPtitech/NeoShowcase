@@ -3,9 +3,11 @@ package dockerimpl
 import (
 	"context"
 	"fmt"
+	"strings"
 
 	"github.com/friendsofgo/errors"
 	docker "github.com/fsouza/go-dockerclient"
+	"github.com/samber/lo"
 
 	"github.com/traPtitech/neoshowcase/pkg/domain"
 )
@@ -22,14 +24,16 @@ func (b *dockerBackend) GetContainer(ctx context.Context, appID string) (*domain
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to fetch containers")
 	}
-	if len(containers) == 0 {
-		return nil, domain.ErrContainerNotFound
-	}
 
-	apiContainer := containers[0]
+	if len(containers) == 0 {
+		return &domain.Container{
+			ApplicationID: appID,
+			State:         domain.ContainerStateMissing,
+		}, nil
+	}
 	return &domain.Container{
 		ApplicationID: appID,
-		State:         getContainerState(apiContainer.State),
+		State:         getContainerState(&containers[0]),
 	}, nil
 }
 
@@ -43,31 +47,34 @@ func (b *dockerBackend) ListContainers(ctx context.Context) ([]*domain.Container
 		return nil, errors.Wrap(err, "failed to fetch containers")
 	}
 
-	var result []*domain.Container
-	for _, apiContainers := range containers {
-		result = append(result, &domain.Container{
-			ApplicationID: apiContainers.Labels[appIDLabel],
-			State:         getContainerState(apiContainers.State),
-		})
-	}
+	result := lo.Map(containers, func(c docker.APIContainers, i int) *domain.Container {
+		return &domain.Container{
+			ApplicationID: c.Labels[appIDLabel],
+			State:         getContainerState(&c),
+		}
+	})
 	return result, nil
 }
 
-func getContainerState(state string) domain.ContainerState {
-	switch state {
-	case "Created":
-		return domain.ContainerStateStopped
-	case "Restarting":
-		return domain.ContainerStateRestarting
-	case "Running":
+func getContainerState(c *docker.APIContainers) domain.ContainerState {
+	// https://docs.docker.com/engine/api/v1.42/#tag/Container/operation/ContainerList
+	switch strings.ToLower(c.State) {
+	case "created":
+		return domain.ContainerStateStarting
+	case "restarting":
+		return domain.ContainerStateRunning // to match with k8s pod phase
+	case "running":
 		return domain.ContainerStateRunning
-	case "Paused":
-		return domain.ContainerStateOther
-	case "Exited":
-		return domain.ContainerStateStopped
-	case "Dead":
-		return domain.ContainerStateOther
+	case "exited":
+		status := strings.ToLower(c.Status)
+		if strings.HasPrefix(status, "exited (0)") || strings.HasPrefix(status, "exit 0") {
+			return domain.ContainerStateExited
+		} else {
+			return domain.ContainerStateErrored
+		}
+	case "dead":
+		return domain.ContainerStateErrored
 	default:
-		return domain.ContainerStateOther
+		return domain.ContainerStateUnknown
 	}
 }

@@ -163,6 +163,64 @@ func (Repository_AuthMethod) EnumDescriptor() ([]byte, []int) {
 	return file_neoshowcase_protobuf_apiserver_proto_rawDescGZIP(), []int{1, 0}
 }
 
+type Application_ContainerState int32
+
+const (
+	Application_MISSING  Application_ContainerState = 0
+	Application_STARTING Application_ContainerState = 1
+	Application_RUNNING  Application_ContainerState = 2
+	Application_EXITED   Application_ContainerState = 3
+	Application_ERRORED  Application_ContainerState = 4
+	Application_UNKNOWN  Application_ContainerState = 5
+)
+
+// Enum value maps for Application_ContainerState.
+var (
+	Application_ContainerState_name = map[int32]string{
+		0: "MISSING",
+		1: "STARTING",
+		2: "RUNNING",
+		3: "EXITED",
+		4: "ERRORED",
+		5: "UNKNOWN",
+	}
+	Application_ContainerState_value = map[string]int32{
+		"MISSING":  0,
+		"STARTING": 1,
+		"RUNNING":  2,
+		"EXITED":   3,
+		"ERRORED":  4,
+		"UNKNOWN":  5,
+	}
+)
+
+func (x Application_ContainerState) Enum() *Application_ContainerState {
+	p := new(Application_ContainerState)
+	*p = x
+	return p
+}
+
+func (x Application_ContainerState) String() string {
+	return protoimpl.X.EnumStringOf(x.Descriptor(), protoreflect.EnumNumber(x))
+}
+
+func (Application_ContainerState) Descriptor() protoreflect.EnumDescriptor {
+	return file_neoshowcase_protobuf_apiserver_proto_enumTypes[3].Descriptor()
+}
+
+func (Application_ContainerState) Type() protoreflect.EnumType {
+	return &file_neoshowcase_protobuf_apiserver_proto_enumTypes[3]
+}
+
+func (x Application_ContainerState) Number() protoreflect.EnumNumber {
+	return protoreflect.EnumNumber(x)
+}
+
+// Deprecated: Use Application_ContainerState.Descriptor instead.
+func (Application_ContainerState) EnumDescriptor() ([]byte, []int) {
+	return file_neoshowcase_protobuf_apiserver_proto_rawDescGZIP(), []int{10, 0}
+}
+
 type Build_BuildStatus int32
 
 const (
@@ -205,11 +263,11 @@ func (x Build_BuildStatus) String() string {
 }
 
 func (Build_BuildStatus) Descriptor() protoreflect.EnumDescriptor {
-	return file_neoshowcase_protobuf_apiserver_proto_enumTypes[3].Descriptor()
+	return file_neoshowcase_protobuf_apiserver_proto_enumTypes[4].Descriptor()
 }
 
 func (Build_BuildStatus) Type() protoreflect.EnumType {
-	return &file_neoshowcase_protobuf_apiserver_proto_enumTypes[3]
+	return &file_neoshowcase_protobuf_apiserver_proto_enumTypes[4]
 }
 
 func (x Build_BuildStatus) Number() protoreflect.EnumNumber {
@@ -976,17 +1034,18 @@ type Application struct {
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	Id            string             `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
-	Name          string             `protobuf:"bytes,2,opt,name=name,proto3" json:"name,omitempty"`
-	RepositoryId  string             `protobuf:"bytes,3,opt,name=repository_id,json=repositoryId,proto3" json:"repository_id,omitempty"`
-	RefName       string             `protobuf:"bytes,4,opt,name=ref_name,json=refName,proto3" json:"ref_name,omitempty"`
-	BuildType     BuildType          `protobuf:"varint,5,opt,name=build_type,json=buildType,proto3,enum=neoshowcase.protobuf.BuildType" json:"build_type,omitempty"`
-	Running       bool               `protobuf:"varint,6,opt,name=running,proto3" json:"running,omitempty"`
-	CurrentCommit string             `protobuf:"bytes,7,opt,name=current_commit,json=currentCommit,proto3" json:"current_commit,omitempty"`
-	WantCommit    string             `protobuf:"bytes,8,opt,name=want_commit,json=wantCommit,proto3" json:"want_commit,omitempty"`
-	Config        *ApplicationConfig `protobuf:"bytes,9,opt,name=config,proto3" json:"config,omitempty"`
-	Websites      []*Website         `protobuf:"bytes,10,rep,name=websites,proto3" json:"websites,omitempty"`
-	OwnerIds      []string           `protobuf:"bytes,11,rep,name=owner_ids,json=ownerIds,proto3" json:"owner_ids,omitempty"`
+	Id            string                     `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
+	Name          string                     `protobuf:"bytes,2,opt,name=name,proto3" json:"name,omitempty"`
+	RepositoryId  string                     `protobuf:"bytes,3,opt,name=repository_id,json=repositoryId,proto3" json:"repository_id,omitempty"`
+	RefName       string                     `protobuf:"bytes,4,opt,name=ref_name,json=refName,proto3" json:"ref_name,omitempty"`
+	BuildType     BuildType                  `protobuf:"varint,5,opt,name=build_type,json=buildType,proto3,enum=neoshowcase.protobuf.BuildType" json:"build_type,omitempty"`
+	Running       bool                       `protobuf:"varint,6,opt,name=running,proto3" json:"running,omitempty"`
+	Container     Application_ContainerState `protobuf:"varint,7,opt,name=container,proto3,enum=neoshowcase.protobuf.Application_ContainerState" json:"container,omitempty"`
+	CurrentCommit string                     `protobuf:"bytes,8,opt,name=current_commit,json=currentCommit,proto3" json:"current_commit,omitempty"`
+	WantCommit    string                     `protobuf:"bytes,9,opt,name=want_commit,json=wantCommit,proto3" json:"want_commit,omitempty"`
+	Config        *ApplicationConfig         `protobuf:"bytes,10,opt,name=config,proto3" json:"config,omitempty"`
+	Websites      []*Website                 `protobuf:"bytes,11,rep,name=websites,proto3" json:"websites,omitempty"`
+	OwnerIds      []string                   `protobuf:"bytes,12,rep,name=owner_ids,json=ownerIds,proto3" json:"owner_ids,omitempty"`
 }
 
 func (x *Application) Reset() {
@@ -1061,6 +1120,13 @@ func (x *Application) GetRunning() bool {
 		return x.Running
 	}
 	return false
+}
+
+func (x *Application) GetContainer() Application_ContainerState {
+	if x != nil {
+		return x.Container
+	}
+	return Application_MISSING
 }
 
 func (x *Application) GetCurrentCommit() string {
@@ -2386,7 +2452,7 @@ var file_neoshowcase_protobuf_apiserver_proto_rawDesc = []byte{
 	0x05, 0x52, 0x08, 0x68, 0x74, 0x74, 0x70, 0x50, 0x6f, 0x72, 0x74, 0x22, 0x26, 0x0a, 0x14, 0x44,
 	0x65, 0x6c, 0x65, 0x74, 0x65, 0x57, 0x65, 0x62, 0x73, 0x69, 0x74, 0x65, 0x52, 0x65, 0x71, 0x75,
 	0x65, 0x73, 0x74, 0x12, 0x0e, 0x0a, 0x02, 0x69, 0x64, 0x18, 0x01, 0x20, 0x01, 0x28, 0x09, 0x52,
-	0x02, 0x69, 0x64, 0x22, 0xac, 0x03, 0x0a, 0x0b, 0x41, 0x70, 0x70, 0x6c, 0x69, 0x63, 0x61, 0x74,
+	0x02, 0x69, 0x64, 0x22, 0xdc, 0x04, 0x0a, 0x0b, 0x41, 0x70, 0x70, 0x6c, 0x69, 0x63, 0x61, 0x74,
 	0x69, 0x6f, 0x6e, 0x12, 0x0e, 0x0a, 0x02, 0x69, 0x64, 0x18, 0x01, 0x20, 0x01, 0x28, 0x09, 0x52,
 	0x02, 0x69, 0x64, 0x12, 0x12, 0x0a, 0x04, 0x6e, 0x61, 0x6d, 0x65, 0x18, 0x02, 0x20, 0x01, 0x28,
 	0x09, 0x52, 0x04, 0x6e, 0x61, 0x6d, 0x65, 0x12, 0x23, 0x0a, 0x0d, 0x72, 0x65, 0x70, 0x6f, 0x73,
@@ -2399,21 +2465,32 @@ var file_neoshowcase_protobuf_apiserver_proto_rawDesc = []byte{
 	0x75, 0x66, 0x2e, 0x42, 0x75, 0x69, 0x6c, 0x64, 0x54, 0x79, 0x70, 0x65, 0x52, 0x09, 0x62, 0x75,
 	0x69, 0x6c, 0x64, 0x54, 0x79, 0x70, 0x65, 0x12, 0x18, 0x0a, 0x07, 0x72, 0x75, 0x6e, 0x6e, 0x69,
 	0x6e, 0x67, 0x18, 0x06, 0x20, 0x01, 0x28, 0x08, 0x52, 0x07, 0x72, 0x75, 0x6e, 0x6e, 0x69, 0x6e,
-	0x67, 0x12, 0x25, 0x0a, 0x0e, 0x63, 0x75, 0x72, 0x72, 0x65, 0x6e, 0x74, 0x5f, 0x63, 0x6f, 0x6d,
-	0x6d, 0x69, 0x74, 0x18, 0x07, 0x20, 0x01, 0x28, 0x09, 0x52, 0x0d, 0x63, 0x75, 0x72, 0x72, 0x65,
+	0x67, 0x12, 0x4e, 0x0a, 0x09, 0x63, 0x6f, 0x6e, 0x74, 0x61, 0x69, 0x6e, 0x65, 0x72, 0x18, 0x07,
+	0x20, 0x01, 0x28, 0x0e, 0x32, 0x30, 0x2e, 0x6e, 0x65, 0x6f, 0x73, 0x68, 0x6f, 0x77, 0x63, 0x61,
+	0x73, 0x65, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x62, 0x75, 0x66, 0x2e, 0x41, 0x70, 0x70, 0x6c,
+	0x69, 0x63, 0x61, 0x74, 0x69, 0x6f, 0x6e, 0x2e, 0x43, 0x6f, 0x6e, 0x74, 0x61, 0x69, 0x6e, 0x65,
+	0x72, 0x53, 0x74, 0x61, 0x74, 0x65, 0x52, 0x09, 0x63, 0x6f, 0x6e, 0x74, 0x61, 0x69, 0x6e, 0x65,
+	0x72, 0x12, 0x25, 0x0a, 0x0e, 0x63, 0x75, 0x72, 0x72, 0x65, 0x6e, 0x74, 0x5f, 0x63, 0x6f, 0x6d,
+	0x6d, 0x69, 0x74, 0x18, 0x08, 0x20, 0x01, 0x28, 0x09, 0x52, 0x0d, 0x63, 0x75, 0x72, 0x72, 0x65,
 	0x6e, 0x74, 0x43, 0x6f, 0x6d, 0x6d, 0x69, 0x74, 0x12, 0x1f, 0x0a, 0x0b, 0x77, 0x61, 0x6e, 0x74,
-	0x5f, 0x63, 0x6f, 0x6d, 0x6d, 0x69, 0x74, 0x18, 0x08, 0x20, 0x01, 0x28, 0x09, 0x52, 0x0a, 0x77,
+	0x5f, 0x63, 0x6f, 0x6d, 0x6d, 0x69, 0x74, 0x18, 0x09, 0x20, 0x01, 0x28, 0x09, 0x52, 0x0a, 0x77,
 	0x61, 0x6e, 0x74, 0x43, 0x6f, 0x6d, 0x6d, 0x69, 0x74, 0x12, 0x3f, 0x0a, 0x06, 0x63, 0x6f, 0x6e,
-	0x66, 0x69, 0x67, 0x18, 0x09, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x27, 0x2e, 0x6e, 0x65, 0x6f, 0x73,
+	0x66, 0x69, 0x67, 0x18, 0x0a, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x27, 0x2e, 0x6e, 0x65, 0x6f, 0x73,
 	0x68, 0x6f, 0x77, 0x63, 0x61, 0x73, 0x65, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x62, 0x75, 0x66,
 	0x2e, 0x41, 0x70, 0x70, 0x6c, 0x69, 0x63, 0x61, 0x74, 0x69, 0x6f, 0x6e, 0x43, 0x6f, 0x6e, 0x66,
 	0x69, 0x67, 0x52, 0x06, 0x63, 0x6f, 0x6e, 0x66, 0x69, 0x67, 0x12, 0x39, 0x0a, 0x08, 0x77, 0x65,
-	0x62, 0x73, 0x69, 0x74, 0x65, 0x73, 0x18, 0x0a, 0x20, 0x03, 0x28, 0x0b, 0x32, 0x1d, 0x2e, 0x6e,
+	0x62, 0x73, 0x69, 0x74, 0x65, 0x73, 0x18, 0x0b, 0x20, 0x03, 0x28, 0x0b, 0x32, 0x1d, 0x2e, 0x6e,
 	0x65, 0x6f, 0x73, 0x68, 0x6f, 0x77, 0x63, 0x61, 0x73, 0x65, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f,
 	0x62, 0x75, 0x66, 0x2e, 0x57, 0x65, 0x62, 0x73, 0x69, 0x74, 0x65, 0x52, 0x08, 0x77, 0x65, 0x62,
 	0x73, 0x69, 0x74, 0x65, 0x73, 0x12, 0x1b, 0x0a, 0x09, 0x6f, 0x77, 0x6e, 0x65, 0x72, 0x5f, 0x69,
-	0x64, 0x73, 0x18, 0x0b, 0x20, 0x03, 0x28, 0x09, 0x52, 0x08, 0x6f, 0x77, 0x6e, 0x65, 0x72, 0x49,
-	0x64, 0x73, 0x22, 0x47, 0x0a, 0x0f, 0x41, 0x76, 0x61, 0x69, 0x6c, 0x61, 0x62, 0x6c, 0x65, 0x44,
+	0x64, 0x73, 0x18, 0x0c, 0x20, 0x03, 0x28, 0x09, 0x52, 0x08, 0x6f, 0x77, 0x6e, 0x65, 0x72, 0x49,
+	0x64, 0x73, 0x22, 0x5e, 0x0a, 0x0e, 0x43, 0x6f, 0x6e, 0x74, 0x61, 0x69, 0x6e, 0x65, 0x72, 0x53,
+	0x74, 0x61, 0x74, 0x65, 0x12, 0x0b, 0x0a, 0x07, 0x4d, 0x49, 0x53, 0x53, 0x49, 0x4e, 0x47, 0x10,
+	0x00, 0x12, 0x0c, 0x0a, 0x08, 0x53, 0x54, 0x41, 0x52, 0x54, 0x49, 0x4e, 0x47, 0x10, 0x01, 0x12,
+	0x0b, 0x0a, 0x07, 0x52, 0x55, 0x4e, 0x4e, 0x49, 0x4e, 0x47, 0x10, 0x02, 0x12, 0x0a, 0x0a, 0x06,
+	0x45, 0x58, 0x49, 0x54, 0x45, 0x44, 0x10, 0x03, 0x12, 0x0b, 0x0a, 0x07, 0x45, 0x52, 0x52, 0x4f,
+	0x52, 0x45, 0x44, 0x10, 0x04, 0x12, 0x0b, 0x0a, 0x07, 0x55, 0x4e, 0x4b, 0x4e, 0x4f, 0x57, 0x4e,
+	0x10, 0x05, 0x22, 0x47, 0x0a, 0x0f, 0x41, 0x76, 0x61, 0x69, 0x6c, 0x61, 0x62, 0x6c, 0x65, 0x44,
 	0x6f, 0x6d, 0x61, 0x69, 0x6e, 0x12, 0x16, 0x0a, 0x06, 0x64, 0x6f, 0x6d, 0x61, 0x69, 0x6e, 0x18,
 	0x01, 0x20, 0x01, 0x28, 0x09, 0x52, 0x06, 0x64, 0x6f, 0x6d, 0x61, 0x69, 0x6e, 0x12, 0x1c, 0x0a,
 	0x09, 0x61, 0x76, 0x61, 0x69, 0x6c, 0x61, 0x62, 0x6c, 0x65, 0x18, 0x02, 0x20, 0x01, 0x28, 0x08,
@@ -2729,127 +2806,129 @@ func file_neoshowcase_protobuf_apiserver_proto_rawDescGZIP() []byte {
 	return file_neoshowcase_protobuf_apiserver_proto_rawDescData
 }
 
-var file_neoshowcase_protobuf_apiserver_proto_enumTypes = make([]protoimpl.EnumInfo, 4)
+var file_neoshowcase_protobuf_apiserver_proto_enumTypes = make([]protoimpl.EnumInfo, 5)
 var file_neoshowcase_protobuf_apiserver_proto_msgTypes = make([]protoimpl.MessageInfo, 31)
 var file_neoshowcase_protobuf_apiserver_proto_goTypes = []interface{}{
 	(BuildType)(0),                         // 0: neoshowcase.protobuf.BuildType
 	(AuthenticationType)(0),                // 1: neoshowcase.protobuf.AuthenticationType
 	(Repository_AuthMethod)(0),             // 2: neoshowcase.protobuf.Repository.AuthMethod
-	(Build_BuildStatus)(0),                 // 3: neoshowcase.protobuf.Build.BuildStatus
-	(*User)(nil),                           // 4: neoshowcase.protobuf.User
-	(*Repository)(nil),                     // 5: neoshowcase.protobuf.Repository
-	(*CreateRepositoryAuthBasic)(nil),      // 6: neoshowcase.protobuf.CreateRepositoryAuthBasic
-	(*CreateRepositoryAuthSSH)(nil),        // 7: neoshowcase.protobuf.CreateRepositoryAuthSSH
-	(*CreateRepositoryRequest)(nil),        // 8: neoshowcase.protobuf.CreateRepositoryRequest
-	(*ApplicationConfig)(nil),              // 9: neoshowcase.protobuf.ApplicationConfig
-	(*UpdateApplicationConfigRequest)(nil), // 10: neoshowcase.protobuf.UpdateApplicationConfigRequest
-	(*Website)(nil),                        // 11: neoshowcase.protobuf.Website
-	(*CreateWebsiteRequest)(nil),           // 12: neoshowcase.protobuf.CreateWebsiteRequest
-	(*DeleteWebsiteRequest)(nil),           // 13: neoshowcase.protobuf.DeleteWebsiteRequest
-	(*Application)(nil),                    // 14: neoshowcase.protobuf.Application
-	(*AvailableDomain)(nil),                // 15: neoshowcase.protobuf.AvailableDomain
-	(*AvailableDomains)(nil),               // 16: neoshowcase.protobuf.AvailableDomains
-	(*ApplicationEnvVar)(nil),              // 17: neoshowcase.protobuf.ApplicationEnvVar
-	(*ApplicationEnvVars)(nil),             // 18: neoshowcase.protobuf.ApplicationEnvVars
-	(*Artifact)(nil),                       // 19: neoshowcase.protobuf.Artifact
-	(*ArtifactContent)(nil),                // 20: neoshowcase.protobuf.ArtifactContent
-	(*ApplicationOutput)(nil),              // 21: neoshowcase.protobuf.ApplicationOutput
-	(*Build)(nil),                          // 22: neoshowcase.protobuf.Build
-	(*BuildLog)(nil),                       // 23: neoshowcase.protobuf.BuildLog
-	(*GetRepositoriesResponse)(nil),        // 24: neoshowcase.protobuf.GetRepositoriesResponse
-	(*GetApplicationsResponse)(nil),        // 25: neoshowcase.protobuf.GetApplicationsResponse
-	(*GetSystemPublicKeyResponse)(nil),     // 26: neoshowcase.protobuf.GetSystemPublicKeyResponse
-	(*CreateApplicationRequest)(nil),       // 27: neoshowcase.protobuf.CreateApplicationRequest
-	(*UpdateApplicationRequest)(nil),       // 28: neoshowcase.protobuf.UpdateApplicationRequest
-	(*ApplicationIdRequest)(nil),           // 29: neoshowcase.protobuf.ApplicationIdRequest
-	(*BuildIdRequest)(nil),                 // 30: neoshowcase.protobuf.BuildIdRequest
-	(*ArtifactIdRequest)(nil),              // 31: neoshowcase.protobuf.ArtifactIdRequest
-	(*GetBuildsResponse)(nil),              // 32: neoshowcase.protobuf.GetBuildsResponse
-	(*SetApplicationEnvVarRequest)(nil),    // 33: neoshowcase.protobuf.SetApplicationEnvVarRequest
-	(*RetryCommitBuildRequest)(nil),        // 34: neoshowcase.protobuf.RetryCommitBuildRequest
-	(*emptypb.Empty)(nil),                  // 35: google.protobuf.Empty
-	(*timestamppb.Timestamp)(nil),          // 36: google.protobuf.Timestamp
-	(*NullTimestamp)(nil),                  // 37: neoshowcase.protobuf.NullTimestamp
+	(Application_ContainerState)(0),        // 3: neoshowcase.protobuf.Application.ContainerState
+	(Build_BuildStatus)(0),                 // 4: neoshowcase.protobuf.Build.BuildStatus
+	(*User)(nil),                           // 5: neoshowcase.protobuf.User
+	(*Repository)(nil),                     // 6: neoshowcase.protobuf.Repository
+	(*CreateRepositoryAuthBasic)(nil),      // 7: neoshowcase.protobuf.CreateRepositoryAuthBasic
+	(*CreateRepositoryAuthSSH)(nil),        // 8: neoshowcase.protobuf.CreateRepositoryAuthSSH
+	(*CreateRepositoryRequest)(nil),        // 9: neoshowcase.protobuf.CreateRepositoryRequest
+	(*ApplicationConfig)(nil),              // 10: neoshowcase.protobuf.ApplicationConfig
+	(*UpdateApplicationConfigRequest)(nil), // 11: neoshowcase.protobuf.UpdateApplicationConfigRequest
+	(*Website)(nil),                        // 12: neoshowcase.protobuf.Website
+	(*CreateWebsiteRequest)(nil),           // 13: neoshowcase.protobuf.CreateWebsiteRequest
+	(*DeleteWebsiteRequest)(nil),           // 14: neoshowcase.protobuf.DeleteWebsiteRequest
+	(*Application)(nil),                    // 15: neoshowcase.protobuf.Application
+	(*AvailableDomain)(nil),                // 16: neoshowcase.protobuf.AvailableDomain
+	(*AvailableDomains)(nil),               // 17: neoshowcase.protobuf.AvailableDomains
+	(*ApplicationEnvVar)(nil),              // 18: neoshowcase.protobuf.ApplicationEnvVar
+	(*ApplicationEnvVars)(nil),             // 19: neoshowcase.protobuf.ApplicationEnvVars
+	(*Artifact)(nil),                       // 20: neoshowcase.protobuf.Artifact
+	(*ArtifactContent)(nil),                // 21: neoshowcase.protobuf.ArtifactContent
+	(*ApplicationOutput)(nil),              // 22: neoshowcase.protobuf.ApplicationOutput
+	(*Build)(nil),                          // 23: neoshowcase.protobuf.Build
+	(*BuildLog)(nil),                       // 24: neoshowcase.protobuf.BuildLog
+	(*GetRepositoriesResponse)(nil),        // 25: neoshowcase.protobuf.GetRepositoriesResponse
+	(*GetApplicationsResponse)(nil),        // 26: neoshowcase.protobuf.GetApplicationsResponse
+	(*GetSystemPublicKeyResponse)(nil),     // 27: neoshowcase.protobuf.GetSystemPublicKeyResponse
+	(*CreateApplicationRequest)(nil),       // 28: neoshowcase.protobuf.CreateApplicationRequest
+	(*UpdateApplicationRequest)(nil),       // 29: neoshowcase.protobuf.UpdateApplicationRequest
+	(*ApplicationIdRequest)(nil),           // 30: neoshowcase.protobuf.ApplicationIdRequest
+	(*BuildIdRequest)(nil),                 // 31: neoshowcase.protobuf.BuildIdRequest
+	(*ArtifactIdRequest)(nil),              // 32: neoshowcase.protobuf.ArtifactIdRequest
+	(*GetBuildsResponse)(nil),              // 33: neoshowcase.protobuf.GetBuildsResponse
+	(*SetApplicationEnvVarRequest)(nil),    // 34: neoshowcase.protobuf.SetApplicationEnvVarRequest
+	(*RetryCommitBuildRequest)(nil),        // 35: neoshowcase.protobuf.RetryCommitBuildRequest
+	(*emptypb.Empty)(nil),                  // 36: google.protobuf.Empty
+	(*timestamppb.Timestamp)(nil),          // 37: google.protobuf.Timestamp
+	(*NullTimestamp)(nil),                  // 38: neoshowcase.protobuf.NullTimestamp
 }
 var file_neoshowcase_protobuf_apiserver_proto_depIdxs = []int32{
 	2,  // 0: neoshowcase.protobuf.Repository.auth_method:type_name -> neoshowcase.protobuf.Repository.AuthMethod
-	35, // 1: neoshowcase.protobuf.CreateRepositoryRequest.none:type_name -> google.protobuf.Empty
-	6,  // 2: neoshowcase.protobuf.CreateRepositoryRequest.basic:type_name -> neoshowcase.protobuf.CreateRepositoryAuthBasic
-	7,  // 3: neoshowcase.protobuf.CreateRepositoryRequest.ssh:type_name -> neoshowcase.protobuf.CreateRepositoryAuthSSH
+	36, // 1: neoshowcase.protobuf.CreateRepositoryRequest.none:type_name -> google.protobuf.Empty
+	7,  // 2: neoshowcase.protobuf.CreateRepositoryRequest.basic:type_name -> neoshowcase.protobuf.CreateRepositoryAuthBasic
+	8,  // 3: neoshowcase.protobuf.CreateRepositoryRequest.ssh:type_name -> neoshowcase.protobuf.CreateRepositoryAuthSSH
 	1,  // 4: neoshowcase.protobuf.ApplicationConfig.authentication:type_name -> neoshowcase.protobuf.AuthenticationType
 	1,  // 5: neoshowcase.protobuf.UpdateApplicationConfigRequest.authentication:type_name -> neoshowcase.protobuf.AuthenticationType
 	0,  // 6: neoshowcase.protobuf.Application.build_type:type_name -> neoshowcase.protobuf.BuildType
-	9,  // 7: neoshowcase.protobuf.Application.config:type_name -> neoshowcase.protobuf.ApplicationConfig
-	11, // 8: neoshowcase.protobuf.Application.websites:type_name -> neoshowcase.protobuf.Website
-	15, // 9: neoshowcase.protobuf.AvailableDomains.domains:type_name -> neoshowcase.protobuf.AvailableDomain
-	17, // 10: neoshowcase.protobuf.ApplicationEnvVars.variables:type_name -> neoshowcase.protobuf.ApplicationEnvVar
-	36, // 11: neoshowcase.protobuf.Artifact.created_at:type_name -> google.protobuf.Timestamp
-	37, // 12: neoshowcase.protobuf.Artifact.deleted_at:type_name -> neoshowcase.protobuf.NullTimestamp
-	3,  // 13: neoshowcase.protobuf.Build.status:type_name -> neoshowcase.protobuf.Build.BuildStatus
-	37, // 14: neoshowcase.protobuf.Build.started_at:type_name -> neoshowcase.protobuf.NullTimestamp
-	37, // 15: neoshowcase.protobuf.Build.updated_at:type_name -> neoshowcase.protobuf.NullTimestamp
-	37, // 16: neoshowcase.protobuf.Build.finished_at:type_name -> neoshowcase.protobuf.NullTimestamp
-	19, // 17: neoshowcase.protobuf.Build.artifact:type_name -> neoshowcase.protobuf.Artifact
-	5,  // 18: neoshowcase.protobuf.GetRepositoriesResponse.repositories:type_name -> neoshowcase.protobuf.Repository
-	14, // 19: neoshowcase.protobuf.GetApplicationsResponse.applications:type_name -> neoshowcase.protobuf.Application
-	0,  // 20: neoshowcase.protobuf.CreateApplicationRequest.build_type:type_name -> neoshowcase.protobuf.BuildType
-	9,  // 21: neoshowcase.protobuf.CreateApplicationRequest.config:type_name -> neoshowcase.protobuf.ApplicationConfig
-	12, // 22: neoshowcase.protobuf.CreateApplicationRequest.websites:type_name -> neoshowcase.protobuf.CreateWebsiteRequest
-	10, // 23: neoshowcase.protobuf.UpdateApplicationRequest.config:type_name -> neoshowcase.protobuf.UpdateApplicationConfigRequest
-	12, // 24: neoshowcase.protobuf.UpdateApplicationRequest.new_websites:type_name -> neoshowcase.protobuf.CreateWebsiteRequest
-	13, // 25: neoshowcase.protobuf.UpdateApplicationRequest.delete_websites:type_name -> neoshowcase.protobuf.DeleteWebsiteRequest
-	22, // 26: neoshowcase.protobuf.GetBuildsResponse.builds:type_name -> neoshowcase.protobuf.Build
-	35, // 27: neoshowcase.protobuf.ApplicationService.GetMe:input_type -> google.protobuf.Empty
-	35, // 28: neoshowcase.protobuf.ApplicationService.GetRepositories:input_type -> google.protobuf.Empty
-	8,  // 29: neoshowcase.protobuf.ApplicationService.CreateRepository:input_type -> neoshowcase.protobuf.CreateRepositoryRequest
-	35, // 30: neoshowcase.protobuf.ApplicationService.GetApplications:input_type -> google.protobuf.Empty
-	35, // 31: neoshowcase.protobuf.ApplicationService.GetSystemPublicKey:input_type -> google.protobuf.Empty
-	35, // 32: neoshowcase.protobuf.ApplicationService.GetAvailableDomains:input_type -> google.protobuf.Empty
-	15, // 33: neoshowcase.protobuf.ApplicationService.AddAvailableDomain:input_type -> neoshowcase.protobuf.AvailableDomain
-	27, // 34: neoshowcase.protobuf.ApplicationService.CreateApplication:input_type -> neoshowcase.protobuf.CreateApplicationRequest
-	29, // 35: neoshowcase.protobuf.ApplicationService.GetApplication:input_type -> neoshowcase.protobuf.ApplicationIdRequest
-	28, // 36: neoshowcase.protobuf.ApplicationService.UpdateApplication:input_type -> neoshowcase.protobuf.UpdateApplicationRequest
-	29, // 37: neoshowcase.protobuf.ApplicationService.DeleteApplication:input_type -> neoshowcase.protobuf.ApplicationIdRequest
-	29, // 38: neoshowcase.protobuf.ApplicationService.GetBuilds:input_type -> neoshowcase.protobuf.ApplicationIdRequest
-	30, // 39: neoshowcase.protobuf.ApplicationService.GetBuild:input_type -> neoshowcase.protobuf.BuildIdRequest
-	30, // 40: neoshowcase.protobuf.ApplicationService.GetBuildLogStream:input_type -> neoshowcase.protobuf.BuildIdRequest
-	30, // 41: neoshowcase.protobuf.ApplicationService.GetBuildLog:input_type -> neoshowcase.protobuf.BuildIdRequest
-	31, // 42: neoshowcase.protobuf.ApplicationService.GetBuildArtifact:input_type -> neoshowcase.protobuf.ArtifactIdRequest
-	29, // 43: neoshowcase.protobuf.ApplicationService.GetEnvVars:input_type -> neoshowcase.protobuf.ApplicationIdRequest
-	33, // 44: neoshowcase.protobuf.ApplicationService.SetEnvVar:input_type -> neoshowcase.protobuf.SetApplicationEnvVarRequest
-	29, // 45: neoshowcase.protobuf.ApplicationService.GetApplicationOutput:input_type -> neoshowcase.protobuf.ApplicationIdRequest
-	30, // 46: neoshowcase.protobuf.ApplicationService.CancelBuild:input_type -> neoshowcase.protobuf.BuildIdRequest
-	34, // 47: neoshowcase.protobuf.ApplicationService.RetryCommitBuild:input_type -> neoshowcase.protobuf.RetryCommitBuildRequest
-	29, // 48: neoshowcase.protobuf.ApplicationService.StartApplication:input_type -> neoshowcase.protobuf.ApplicationIdRequest
-	29, // 49: neoshowcase.protobuf.ApplicationService.StopApplication:input_type -> neoshowcase.protobuf.ApplicationIdRequest
-	4,  // 50: neoshowcase.protobuf.ApplicationService.GetMe:output_type -> neoshowcase.protobuf.User
-	24, // 51: neoshowcase.protobuf.ApplicationService.GetRepositories:output_type -> neoshowcase.protobuf.GetRepositoriesResponse
-	5,  // 52: neoshowcase.protobuf.ApplicationService.CreateRepository:output_type -> neoshowcase.protobuf.Repository
-	25, // 53: neoshowcase.protobuf.ApplicationService.GetApplications:output_type -> neoshowcase.protobuf.GetApplicationsResponse
-	26, // 54: neoshowcase.protobuf.ApplicationService.GetSystemPublicKey:output_type -> neoshowcase.protobuf.GetSystemPublicKeyResponse
-	16, // 55: neoshowcase.protobuf.ApplicationService.GetAvailableDomains:output_type -> neoshowcase.protobuf.AvailableDomains
-	35, // 56: neoshowcase.protobuf.ApplicationService.AddAvailableDomain:output_type -> google.protobuf.Empty
-	14, // 57: neoshowcase.protobuf.ApplicationService.CreateApplication:output_type -> neoshowcase.protobuf.Application
-	14, // 58: neoshowcase.protobuf.ApplicationService.GetApplication:output_type -> neoshowcase.protobuf.Application
-	35, // 59: neoshowcase.protobuf.ApplicationService.UpdateApplication:output_type -> google.protobuf.Empty
-	35, // 60: neoshowcase.protobuf.ApplicationService.DeleteApplication:output_type -> google.protobuf.Empty
-	32, // 61: neoshowcase.protobuf.ApplicationService.GetBuilds:output_type -> neoshowcase.protobuf.GetBuildsResponse
-	22, // 62: neoshowcase.protobuf.ApplicationService.GetBuild:output_type -> neoshowcase.protobuf.Build
-	23, // 63: neoshowcase.protobuf.ApplicationService.GetBuildLogStream:output_type -> neoshowcase.protobuf.BuildLog
-	23, // 64: neoshowcase.protobuf.ApplicationService.GetBuildLog:output_type -> neoshowcase.protobuf.BuildLog
-	20, // 65: neoshowcase.protobuf.ApplicationService.GetBuildArtifact:output_type -> neoshowcase.protobuf.ArtifactContent
-	18, // 66: neoshowcase.protobuf.ApplicationService.GetEnvVars:output_type -> neoshowcase.protobuf.ApplicationEnvVars
-	35, // 67: neoshowcase.protobuf.ApplicationService.SetEnvVar:output_type -> google.protobuf.Empty
-	21, // 68: neoshowcase.protobuf.ApplicationService.GetApplicationOutput:output_type -> neoshowcase.protobuf.ApplicationOutput
-	35, // 69: neoshowcase.protobuf.ApplicationService.CancelBuild:output_type -> google.protobuf.Empty
-	35, // 70: neoshowcase.protobuf.ApplicationService.RetryCommitBuild:output_type -> google.protobuf.Empty
-	35, // 71: neoshowcase.protobuf.ApplicationService.StartApplication:output_type -> google.protobuf.Empty
-	35, // 72: neoshowcase.protobuf.ApplicationService.StopApplication:output_type -> google.protobuf.Empty
-	50, // [50:73] is the sub-list for method output_type
-	27, // [27:50] is the sub-list for method input_type
-	27, // [27:27] is the sub-list for extension type_name
-	27, // [27:27] is the sub-list for extension extendee
-	0,  // [0:27] is the sub-list for field type_name
+	3,  // 7: neoshowcase.protobuf.Application.container:type_name -> neoshowcase.protobuf.Application.ContainerState
+	10, // 8: neoshowcase.protobuf.Application.config:type_name -> neoshowcase.protobuf.ApplicationConfig
+	12, // 9: neoshowcase.protobuf.Application.websites:type_name -> neoshowcase.protobuf.Website
+	16, // 10: neoshowcase.protobuf.AvailableDomains.domains:type_name -> neoshowcase.protobuf.AvailableDomain
+	18, // 11: neoshowcase.protobuf.ApplicationEnvVars.variables:type_name -> neoshowcase.protobuf.ApplicationEnvVar
+	37, // 12: neoshowcase.protobuf.Artifact.created_at:type_name -> google.protobuf.Timestamp
+	38, // 13: neoshowcase.protobuf.Artifact.deleted_at:type_name -> neoshowcase.protobuf.NullTimestamp
+	4,  // 14: neoshowcase.protobuf.Build.status:type_name -> neoshowcase.protobuf.Build.BuildStatus
+	38, // 15: neoshowcase.protobuf.Build.started_at:type_name -> neoshowcase.protobuf.NullTimestamp
+	38, // 16: neoshowcase.protobuf.Build.updated_at:type_name -> neoshowcase.protobuf.NullTimestamp
+	38, // 17: neoshowcase.protobuf.Build.finished_at:type_name -> neoshowcase.protobuf.NullTimestamp
+	20, // 18: neoshowcase.protobuf.Build.artifact:type_name -> neoshowcase.protobuf.Artifact
+	6,  // 19: neoshowcase.protobuf.GetRepositoriesResponse.repositories:type_name -> neoshowcase.protobuf.Repository
+	15, // 20: neoshowcase.protobuf.GetApplicationsResponse.applications:type_name -> neoshowcase.protobuf.Application
+	0,  // 21: neoshowcase.protobuf.CreateApplicationRequest.build_type:type_name -> neoshowcase.protobuf.BuildType
+	10, // 22: neoshowcase.protobuf.CreateApplicationRequest.config:type_name -> neoshowcase.protobuf.ApplicationConfig
+	13, // 23: neoshowcase.protobuf.CreateApplicationRequest.websites:type_name -> neoshowcase.protobuf.CreateWebsiteRequest
+	11, // 24: neoshowcase.protobuf.UpdateApplicationRequest.config:type_name -> neoshowcase.protobuf.UpdateApplicationConfigRequest
+	13, // 25: neoshowcase.protobuf.UpdateApplicationRequest.new_websites:type_name -> neoshowcase.protobuf.CreateWebsiteRequest
+	14, // 26: neoshowcase.protobuf.UpdateApplicationRequest.delete_websites:type_name -> neoshowcase.protobuf.DeleteWebsiteRequest
+	23, // 27: neoshowcase.protobuf.GetBuildsResponse.builds:type_name -> neoshowcase.protobuf.Build
+	36, // 28: neoshowcase.protobuf.ApplicationService.GetMe:input_type -> google.protobuf.Empty
+	36, // 29: neoshowcase.protobuf.ApplicationService.GetRepositories:input_type -> google.protobuf.Empty
+	9,  // 30: neoshowcase.protobuf.ApplicationService.CreateRepository:input_type -> neoshowcase.protobuf.CreateRepositoryRequest
+	36, // 31: neoshowcase.protobuf.ApplicationService.GetApplications:input_type -> google.protobuf.Empty
+	36, // 32: neoshowcase.protobuf.ApplicationService.GetSystemPublicKey:input_type -> google.protobuf.Empty
+	36, // 33: neoshowcase.protobuf.ApplicationService.GetAvailableDomains:input_type -> google.protobuf.Empty
+	16, // 34: neoshowcase.protobuf.ApplicationService.AddAvailableDomain:input_type -> neoshowcase.protobuf.AvailableDomain
+	28, // 35: neoshowcase.protobuf.ApplicationService.CreateApplication:input_type -> neoshowcase.protobuf.CreateApplicationRequest
+	30, // 36: neoshowcase.protobuf.ApplicationService.GetApplication:input_type -> neoshowcase.protobuf.ApplicationIdRequest
+	29, // 37: neoshowcase.protobuf.ApplicationService.UpdateApplication:input_type -> neoshowcase.protobuf.UpdateApplicationRequest
+	30, // 38: neoshowcase.protobuf.ApplicationService.DeleteApplication:input_type -> neoshowcase.protobuf.ApplicationIdRequest
+	30, // 39: neoshowcase.protobuf.ApplicationService.GetBuilds:input_type -> neoshowcase.protobuf.ApplicationIdRequest
+	31, // 40: neoshowcase.protobuf.ApplicationService.GetBuild:input_type -> neoshowcase.protobuf.BuildIdRequest
+	31, // 41: neoshowcase.protobuf.ApplicationService.GetBuildLogStream:input_type -> neoshowcase.protobuf.BuildIdRequest
+	31, // 42: neoshowcase.protobuf.ApplicationService.GetBuildLog:input_type -> neoshowcase.protobuf.BuildIdRequest
+	32, // 43: neoshowcase.protobuf.ApplicationService.GetBuildArtifact:input_type -> neoshowcase.protobuf.ArtifactIdRequest
+	30, // 44: neoshowcase.protobuf.ApplicationService.GetEnvVars:input_type -> neoshowcase.protobuf.ApplicationIdRequest
+	34, // 45: neoshowcase.protobuf.ApplicationService.SetEnvVar:input_type -> neoshowcase.protobuf.SetApplicationEnvVarRequest
+	30, // 46: neoshowcase.protobuf.ApplicationService.GetApplicationOutput:input_type -> neoshowcase.protobuf.ApplicationIdRequest
+	31, // 47: neoshowcase.protobuf.ApplicationService.CancelBuild:input_type -> neoshowcase.protobuf.BuildIdRequest
+	35, // 48: neoshowcase.protobuf.ApplicationService.RetryCommitBuild:input_type -> neoshowcase.protobuf.RetryCommitBuildRequest
+	30, // 49: neoshowcase.protobuf.ApplicationService.StartApplication:input_type -> neoshowcase.protobuf.ApplicationIdRequest
+	30, // 50: neoshowcase.protobuf.ApplicationService.StopApplication:input_type -> neoshowcase.protobuf.ApplicationIdRequest
+	5,  // 51: neoshowcase.protobuf.ApplicationService.GetMe:output_type -> neoshowcase.protobuf.User
+	25, // 52: neoshowcase.protobuf.ApplicationService.GetRepositories:output_type -> neoshowcase.protobuf.GetRepositoriesResponse
+	6,  // 53: neoshowcase.protobuf.ApplicationService.CreateRepository:output_type -> neoshowcase.protobuf.Repository
+	26, // 54: neoshowcase.protobuf.ApplicationService.GetApplications:output_type -> neoshowcase.protobuf.GetApplicationsResponse
+	27, // 55: neoshowcase.protobuf.ApplicationService.GetSystemPublicKey:output_type -> neoshowcase.protobuf.GetSystemPublicKeyResponse
+	17, // 56: neoshowcase.protobuf.ApplicationService.GetAvailableDomains:output_type -> neoshowcase.protobuf.AvailableDomains
+	36, // 57: neoshowcase.protobuf.ApplicationService.AddAvailableDomain:output_type -> google.protobuf.Empty
+	15, // 58: neoshowcase.protobuf.ApplicationService.CreateApplication:output_type -> neoshowcase.protobuf.Application
+	15, // 59: neoshowcase.protobuf.ApplicationService.GetApplication:output_type -> neoshowcase.protobuf.Application
+	36, // 60: neoshowcase.protobuf.ApplicationService.UpdateApplication:output_type -> google.protobuf.Empty
+	36, // 61: neoshowcase.protobuf.ApplicationService.DeleteApplication:output_type -> google.protobuf.Empty
+	33, // 62: neoshowcase.protobuf.ApplicationService.GetBuilds:output_type -> neoshowcase.protobuf.GetBuildsResponse
+	23, // 63: neoshowcase.protobuf.ApplicationService.GetBuild:output_type -> neoshowcase.protobuf.Build
+	24, // 64: neoshowcase.protobuf.ApplicationService.GetBuildLogStream:output_type -> neoshowcase.protobuf.BuildLog
+	24, // 65: neoshowcase.protobuf.ApplicationService.GetBuildLog:output_type -> neoshowcase.protobuf.BuildLog
+	21, // 66: neoshowcase.protobuf.ApplicationService.GetBuildArtifact:output_type -> neoshowcase.protobuf.ArtifactContent
+	19, // 67: neoshowcase.protobuf.ApplicationService.GetEnvVars:output_type -> neoshowcase.protobuf.ApplicationEnvVars
+	36, // 68: neoshowcase.protobuf.ApplicationService.SetEnvVar:output_type -> google.protobuf.Empty
+	22, // 69: neoshowcase.protobuf.ApplicationService.GetApplicationOutput:output_type -> neoshowcase.protobuf.ApplicationOutput
+	36, // 70: neoshowcase.protobuf.ApplicationService.CancelBuild:output_type -> google.protobuf.Empty
+	36, // 71: neoshowcase.protobuf.ApplicationService.RetryCommitBuild:output_type -> google.protobuf.Empty
+	36, // 72: neoshowcase.protobuf.ApplicationService.StartApplication:output_type -> google.protobuf.Empty
+	36, // 73: neoshowcase.protobuf.ApplicationService.StopApplication:output_type -> google.protobuf.Empty
+	51, // [51:74] is the sub-list for method output_type
+	28, // [28:51] is the sub-list for method input_type
+	28, // [28:28] is the sub-list for extension type_name
+	28, // [28:28] is the sub-list for extension extendee
+	0,  // [0:28] is the sub-list for field type_name
 }
 
 func init() { file_neoshowcase_protobuf_apiserver_proto_init() }
@@ -3242,7 +3321,7 @@ func file_neoshowcase_protobuf_apiserver_proto_init() {
 		File: protoimpl.DescBuilder{
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: file_neoshowcase_protobuf_apiserver_proto_rawDesc,
-			NumEnums:      4,
+			NumEnums:      5,
 			NumMessages:   31,
 			NumExtensions: 0,
 			NumServices:   1,

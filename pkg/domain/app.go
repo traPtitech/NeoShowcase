@@ -47,6 +47,7 @@ type Application struct {
 	RefName       string
 	BuildType     BuildType
 	Running       bool
+	Container     ContainerState
 	CurrentCommit string
 	WantCommit    string
 	CreatedAt     time.Time
@@ -55,10 +56,6 @@ type Application struct {
 	Config   ApplicationConfig
 	Websites []*Website
 	OwnerIDs []string
-}
-
-func (a *Application) IsDeploying() bool {
-	return a.Running && a.CurrentCommit != a.WantCommit
 }
 
 type Artifact struct {

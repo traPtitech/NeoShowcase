@@ -76,22 +76,14 @@ func (b *k8sBackend) eventListener() {
 			log.Warnf("unexpected type: %v", ev)
 			continue
 		}
-		if p.Labels[appLabel] != "true" {
+
+		appID, ok := p.Labels[appIDLabel]
+		if !ok {
 			continue
 		}
-
-		switch ev.Type {
-		case watch.Modified:
-			if p.Status.Phase == apiv1.PodRunning {
-				b.eventbus.Publish(event.ContainerAppStarted, domain.Fields{
-					"application_id": p.Labels[appIDLabel],
-				})
-			}
-		case watch.Deleted:
-			b.eventbus.Publish(event.ContainerAppStopped, domain.Fields{
-				"application_id": p.Labels[appIDLabel],
-			})
-		}
+		b.eventbus.Publish(event.AppContainerUpdated, domain.Fields{
+			"application_id": appID,
+		})
 	}
 }
 

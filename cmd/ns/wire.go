@@ -48,6 +48,7 @@ var commonSet = wire.NewSet(
 	usecase.NewRepositoryFetcherService,
 	usecase.NewCleanerService,
 	usecase.NewLogStreamService,
+	usecase.NewContainerStateMutator,
 	provideIngressConfDirPath,
 	provideRepositoryPublicKey,
 	initStorage,

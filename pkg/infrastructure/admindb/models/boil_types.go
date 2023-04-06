@@ -79,6 +79,27 @@ func AllApplicationsBuildType() []string {
 	}
 }
 
+// Enum values for ApplicationsContainer
+const (
+	ApplicationsContainerMissing  string = "missing"
+	ApplicationsContainerStarting string = "starting"
+	ApplicationsContainerRunning  string = "running"
+	ApplicationsContainerExited   string = "exited"
+	ApplicationsContainerErrored  string = "errored"
+	ApplicationsContainerUnknown  string = "unknown"
+)
+
+func AllApplicationsContainer() []string {
+	return []string{
+		ApplicationsContainerMissing,
+		ApplicationsContainerStarting,
+		ApplicationsContainerRunning,
+		ApplicationsContainerExited,
+		ApplicationsContainerErrored,
+		ApplicationsContainerUnknown,
+	}
+}
+
 // Enum values for BuildsStatus
 const (
 	BuildsStatusBuilding  string = "building"

@@ -672,27 +672,32 @@ export class Application extends Message<Application> {
   running = false;
 
   /**
-   * @generated from field: string current_commit = 7;
+   * @generated from field: neoshowcase.protobuf.Application.ContainerState container = 7;
+   */
+  container = Application_ContainerState.MISSING;
+
+  /**
+   * @generated from field: string current_commit = 8;
    */
   currentCommit = "";
 
   /**
-   * @generated from field: string want_commit = 8;
+   * @generated from field: string want_commit = 9;
    */
   wantCommit = "";
 
   /**
-   * @generated from field: neoshowcase.protobuf.ApplicationConfig config = 9;
+   * @generated from field: neoshowcase.protobuf.ApplicationConfig config = 10;
    */
   config?: ApplicationConfig;
 
   /**
-   * @generated from field: repeated neoshowcase.protobuf.Website websites = 10;
+   * @generated from field: repeated neoshowcase.protobuf.Website websites = 11;
    */
   websites: Website[] = [];
 
   /**
-   * @generated from field: repeated string owner_ids = 11;
+   * @generated from field: repeated string owner_ids = 12;
    */
   ownerIds: string[] = [];
 
@@ -710,11 +715,12 @@ export class Application extends Message<Application> {
     { no: 4, name: "ref_name", kind: "scalar", T: 9 /* ScalarType.STRING */ },
     { no: 5, name: "build_type", kind: "enum", T: proto3.getEnumType(BuildType) },
     { no: 6, name: "running", kind: "scalar", T: 8 /* ScalarType.BOOL */ },
-    { no: 7, name: "current_commit", kind: "scalar", T: 9 /* ScalarType.STRING */ },
-    { no: 8, name: "want_commit", kind: "scalar", T: 9 /* ScalarType.STRING */ },
-    { no: 9, name: "config", kind: "message", T: ApplicationConfig },
-    { no: 10, name: "websites", kind: "message", T: Website, repeated: true },
-    { no: 11, name: "owner_ids", kind: "scalar", T: 9 /* ScalarType.STRING */, repeated: true },
+    { no: 7, name: "container", kind: "enum", T: proto3.getEnumType(Application_ContainerState) },
+    { no: 8, name: "current_commit", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+    { no: 9, name: "want_commit", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+    { no: 10, name: "config", kind: "message", T: ApplicationConfig },
+    { no: 11, name: "websites", kind: "message", T: Website, repeated: true },
+    { no: 12, name: "owner_ids", kind: "scalar", T: 9 /* ScalarType.STRING */, repeated: true },
   ]);
 
   static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): Application {
@@ -733,6 +739,50 @@ export class Application extends Message<Application> {
     return proto3.util.equals(Application, a, b);
   }
 }
+
+/**
+ * @generated from enum neoshowcase.protobuf.Application.ContainerState
+ */
+export enum Application_ContainerState {
+  /**
+   * @generated from enum value: MISSING = 0;
+   */
+  MISSING = 0,
+
+  /**
+   * @generated from enum value: STARTING = 1;
+   */
+  STARTING = 1,
+
+  /**
+   * @generated from enum value: RUNNING = 2;
+   */
+  RUNNING = 2,
+
+  /**
+   * @generated from enum value: EXITED = 3;
+   */
+  EXITED = 3,
+
+  /**
+   * @generated from enum value: ERRORED = 4;
+   */
+  ERRORED = 4,
+
+  /**
+   * @generated from enum value: UNKNOWN = 5;
+   */
+  UNKNOWN = 5,
+}
+// Retrieve enum metadata with: proto3.getEnumType(Application_ContainerState)
+proto3.util.setEnumType(Application_ContainerState, "neoshowcase.protobuf.Application.ContainerState", [
+  { no: 0, name: "MISSING" },
+  { no: 1, name: "STARTING" },
+  { no: 2, name: "RUNNING" },
+  { no: 3, name: "EXITED" },
+  { no: 4, name: "ERRORED" },
+  { no: 5, name: "UNKNOWN" },
+]);
 
 /**
  * @generated from message neoshowcase.protobuf.AvailableDomain

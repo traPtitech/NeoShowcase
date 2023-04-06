@@ -143,6 +143,7 @@ func (s *ApplicationService) CreateApplication(ctx context.Context, req *connect
 		RefName:       msg.RefName,
 		BuildType:     buildTypeMapper.FromMust(msg.BuildType),
 		Running:       msg.StartOnCreate,
+		Container:     domain.ContainerStateMissing,
 		CurrentCommit: domain.EmptyCommit,
 		WantCommit:    domain.EmptyCommit,
 		CreatedAt:     now,
@@ -457,6 +458,15 @@ func toPBWebsite(website *domain.Website) *pb.Website {
 	}
 }
 
+var containerStateMapper = mapper.NewValueMapper(map[domain.ContainerState]pb.Application_ContainerState{
+	domain.ContainerStateMissing:  pb.Application_MISSING,
+	domain.ContainerStateStarting: pb.Application_STARTING,
+	domain.ContainerStateRunning:  pb.Application_RUNNING,
+	domain.ContainerStateExited:   pb.Application_EXITED,
+	domain.ContainerStateErrored:  pb.Application_ERRORED,
+	domain.ContainerStateUnknown:  pb.Application_UNKNOWN,
+})
+
 func toPBApplication(app *domain.Application) *pb.Application {
 	return &pb.Application{
 		Id:            app.ID,
@@ -465,6 +475,7 @@ func toPBApplication(app *domain.Application) *pb.Application {
 		RefName:       app.RefName,
 		BuildType:     buildTypeMapper.IntoMust(app.BuildType),
 		Running:       app.Running,
+		Container:     containerStateMapper.IntoMust(app.Container),
 		CurrentCommit: app.CurrentCommit,
 		WantCommit:    app.WantCommit,
 		Config:        toPBApplicationConfig(app.Config),

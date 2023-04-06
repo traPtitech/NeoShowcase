@@ -22,6 +22,7 @@ type UpdateApplicationArgs struct {
 	Name          optional.Of[string]
 	RefName       optional.Of[string]
 	Running       optional.Of[bool]
+	Container     optional.Of[ContainerState]
 	CurrentCommit optional.Of[string]
 	WantCommit    optional.Of[string]
 	UpdatedAt     optional.Of[time.Time]
@@ -35,6 +36,7 @@ type ApplicationRepository interface {
 	GetApplication(ctx context.Context, id string) (*Application, error)
 	CreateApplication(ctx context.Context, app *Application) error
 	UpdateApplication(ctx context.Context, id string, args *UpdateApplicationArgs) error
+	BulkUpdateState(ctx context.Context, m map[string]ContainerState) error
 	DeleteApplication(ctx context.Context, id string) error
 }
 

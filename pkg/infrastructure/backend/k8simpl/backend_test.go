@@ -67,10 +67,10 @@ func waitPodRunning(t *testing.T, b *k8sBackend, appID string) {
 
 	for i := 0; i < 120; i++ {
 		status, err := b.GetContainer(context.Background(), appID)
-		if err != nil && err != domain.ErrContainerNotFound {
+		if err != nil {
 			t.Fatalf("error in get container: %v", err)
 		}
-		if err == nil && status.State == domain.ContainerStateRunning {
+		if status.State == domain.ContainerStateRunning {
 			return
 		}
 		time.Sleep(500 * time.Millisecond)
@@ -82,12 +82,12 @@ func waitPodDeleted(t *testing.T, b *k8sBackend, appID string) {
 	t.Helper()
 
 	for i := 0; i < 120; i++ {
-		_, err := b.GetContainer(context.Background(), appID)
-		if err == domain.ErrContainerNotFound {
-			return
-		}
+		status, err := b.GetContainer(context.Background(), appID)
 		if err != nil {
 			t.Fatalf("error in get container: %v", err)
+		}
+		if status.State == domain.ContainerStateMissing {
+			return
 		}
 		time.Sleep(500 * time.Millisecond)
 	}

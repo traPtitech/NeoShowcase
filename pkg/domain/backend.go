@@ -2,12 +2,6 @@ package domain
 
 import (
 	"context"
-
-	"github.com/friendsofgo/errors"
-)
-
-var (
-	ErrContainerNotFound = errors.New("container not found")
 )
 
 type AppDesiredState struct {
@@ -25,10 +19,12 @@ type Container struct {
 type ContainerState int
 
 const (
-	ContainerStateRunning ContainerState = iota
-	ContainerStateRestarting
-	ContainerStateStopped
-	ContainerStateOther
+	ContainerStateMissing ContainerState = iota
+	ContainerStateStarting
+	ContainerStateRunning
+	ContainerStateExited
+	ContainerStateErrored
+	ContainerStateUnknown
 )
 
 type Backend interface {
