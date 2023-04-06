@@ -23,7 +23,11 @@ import { Radio, RadioItem } from '/@/components/Radio'
 import { client } from '/@/libs/api'
 import { Application } from '/@/api/neoshowcase/protobuf/apiserver_pb'
 import { RepositoryRow } from '/@/components/RepositoryRow'
-import { ApplicationState } from '/@/libs/application'
+import { applicationState, ApplicationState } from '/@/libs/application'
+
+const [repos] = createResource(() => client.getRepositories({}))
+const [apps] = createResource(() => client.getApplications({}))
+const loaded = () => !!(repos() && apps())
 
 const sortItems: RadioItem[] = [
   { value: 'desc', title: '最新順' },
@@ -33,25 +37,22 @@ const sortItems: RadioItem[] = [
 interface StatusCheckboxProps {
   state: ApplicationState
   title: string
-  num: number
 }
 
-const StatusCheckbox = ({ state, title, num }: StatusCheckboxProps): JSX.Element => {
+const StatusCheckbox = (props: StatusCheckboxProps): JSX.Element => {
+  const num = () => loaded() && apps().applications.filter((app) => applicationState(app) === props.state).length
   return (
     <div class={statusCheckboxContainer}>
       <div class={statusCheckboxContainerLeft}>
-        <StatusIcon state={state} />
-        <div>{title}</div>
+        <StatusIcon state={props.state} />
+        <div>{props.title}</div>
       </div>
-      <div>{num}</div>
+      <div>{num()}</div>
     </div>
   )
 }
 
 export default () => {
-  const [repos] = createResource(() => client.getRepositories({}))
-  const [apps] = createResource(() => client.getApplications({}))
-  const loaded = () => !!(repos() && apps())
   const appsByRepo = () =>
     loaded() &&
     apps().applications.reduce((acc, app) => {
@@ -70,16 +71,16 @@ export default () => {
             <div class={sidebarTitle}>Status</div>
             <div class={sidebarOptions}>
               <Checkbox>
-                <StatusCheckbox state={ApplicationState.Idle} title='Idle' num={7} />
+                <StatusCheckbox state={ApplicationState.Idle} title='Idle' />
               </Checkbox>
               <Checkbox>
-                <StatusCheckbox state={ApplicationState.Deploying} title='Deploying' num={1} />
+                <StatusCheckbox state={ApplicationState.Deploying} title='Deploying' />
               </Checkbox>
               <Checkbox>
-                <StatusCheckbox state={ApplicationState.Running} title='Running' num={24} />
+                <StatusCheckbox state={ApplicationState.Running} title='Running' />
               </Checkbox>
               <Checkbox>
-                <StatusCheckbox state={ApplicationState.Static} title='Static' num={6} />
+                <StatusCheckbox state={ApplicationState.Static} title='Static' />
               </Checkbox>
             </div>
           </div>
