@@ -360,10 +360,8 @@ func (s *apiServerService) StartApplication(ctx context.Context, id string) erro
 	if err != nil {
 		return errors.Wrap(err, "failed to mark application as running")
 	}
-	err = s.deploySvc.Synchronize(ctx)
-	if err != nil {
-		return errors.Wrap(err, "failed to synchronize application")
-	}
+	s.bus.Publish(event.CDServiceRegisterBuildRequest, nil)
+	s.bus.Publish(event.CDServiceSyncDeployRequest, nil)
 	return nil
 }
 
@@ -375,9 +373,6 @@ func (s *apiServerService) StopApplication(ctx context.Context, id string) error
 	if err != nil {
 		return errors.Wrap(err, "failed to mark application as not running")
 	}
-	err = s.deploySvc.Synchronize(ctx)
-	if err != nil {
-		return errors.Wrap(err, "failed to synchronize application")
-	}
+	s.bus.Publish(event.CDServiceSyncDeployRequest, nil)
 	return nil
 }

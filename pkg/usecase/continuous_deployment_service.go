@@ -12,6 +12,7 @@ import (
 
 	"github.com/traPtitech/neoshowcase/pkg/domain"
 	"github.com/traPtitech/neoshowcase/pkg/domain/event"
+	"github.com/traPtitech/neoshowcase/pkg/util/coalesce"
 	"github.com/traPtitech/neoshowcase/pkg/util/optional"
 )
 
@@ -151,28 +152,29 @@ func (cd *continuousDeploymentService) detectBuildCrashLoop(ctx context.Context)
 }
 
 func (cd *continuousDeploymentService) syncDeployLoop(ctx context.Context) {
-	sub := cd.bus.Subscribe(event.BuilderBuildSettled)
+	sub := cd.bus.Subscribe(event.BuilderBuildSettled, event.CDServiceSyncDeployRequest)
 	defer sub.Unsubscribe()
 	ticker := time.NewTicker(3 * time.Minute)
 	defer ticker.Stop()
 
-	doSync := func() {
+	coalescer := coalesce.NewCoalescer(func(ctx context.Context) error {
 		start := time.Now()
 		if err := cd.syncDeployments(ctx); err != nil {
 			log.Errorf("failed to sync deployments: %+v", err)
-			return
+			return nil
 		}
 		log.Infof("Synced deployments in %v", time.Since(start))
-	}
+		return nil
+	})
 
-	doSync()
+	_ = coalescer.Do(ctx)
 
 	for {
 		select {
 		case <-ticker.C:
-			doSync()
+			_ = coalescer.Do(ctx)
 		case <-sub.Chan():
-			doSync()
+			_ = coalescer.Do(ctx)
 		case <-ctx.Done():
 			return
 		}
