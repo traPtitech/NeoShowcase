@@ -260,7 +260,7 @@ func (r *applicationRepository) validateAndInsertWebsite(ctx context.Context, ex
 	}
 	existing := lo.Map(websites, func(website *models.Website, i int) *domain.Website { return toDomainWebsite(website) })
 	if website.ConflictsWith(existing) {
-		return ErrDuplicate
+		return errors.New("conflicts with existing websites")
 	}
 	mw := fromDomainWebsite(app.ID, website)
 	err = mw.Insert(ctx, ex, boil.Blacklist())
