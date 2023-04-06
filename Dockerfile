@@ -56,6 +56,7 @@ ENTRYPOINT ["/app/ns-mc"]
 CMD ["serve"]
 
 FROM base as ns-ssgen
+EXPOSE 8080
 COPY --from=builder-ns-ssgen /app/ns-ssgen ./
 ENTRYPOINT ["/app/ns-ssgen"]
 CMD ["run"]
