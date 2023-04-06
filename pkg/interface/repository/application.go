@@ -122,7 +122,7 @@ func (r *applicationRepository) CreateApplication(ctx context.Context, app *doma
 		return err
 	}
 
-	err = r.insertOwners(ctx, tx, ma, app.OwnerIDs)
+	err = r.setOwners(ctx, tx, ma, app.OwnerIDs)
 	if err != nil {
 		return err
 	}
@@ -196,11 +196,7 @@ func (r *applicationRepository) UpdateApplication(ctx context.Context, id string
 		}
 	}
 	if args.OwnerIDs.Valid {
-		_, err = app.R.Users.DeleteAll(ctx, tx)
-		if err != nil {
-			return errors.Wrap(err, "failed to delete all owners")
-		}
-		err = r.insertOwners(ctx, tx, app, args.OwnerIDs.V)
+		err = r.setOwners(ctx, tx, app, args.OwnerIDs.V)
 		if err != nil {
 			return err
 		}
@@ -278,13 +274,13 @@ func (r *applicationRepository) validateAndInsertWebsite(ctx context.Context, ex
 	return nil
 }
 
-func (r *applicationRepository) insertOwners(ctx context.Context, ex boil.ContextExecutor, app *models.Application, ownerIDs []string) error {
+func (r *applicationRepository) setOwners(ctx context.Context, ex boil.ContextExecutor, app *models.Application, ownerIDs []string) error {
 	ownerIDs = lo.Uniq(ownerIDs)
 	users, err := models.Users(models.UserWhere.ID.IN(ownerIDs)).All(ctx, ex)
 	if len(users) < len(ownerIDs) {
 		return ErrNotFound
 	}
-	err = app.AddUsers(ctx, ex, false, users...)
+	err = app.SetUsers(ctx, ex, false, users...)
 	if err != nil {
 		return errors.Wrap(err, "failed to add owners")
 	}
