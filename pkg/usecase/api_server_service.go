@@ -6,10 +6,12 @@ import (
 	"time"
 
 	"github.com/friendsofgo/errors"
+	"github.com/samber/lo"
 	log "github.com/sirupsen/logrus"
 
 	"github.com/traPtitech/neoshowcase/pkg/domain"
 	"github.com/traPtitech/neoshowcase/pkg/domain/event"
+	"github.com/traPtitech/neoshowcase/pkg/domain/web"
 	"github.com/traPtitech/neoshowcase/pkg/interface/grpc/pb"
 	"github.com/traPtitech/neoshowcase/pkg/interface/repository"
 	"github.com/traPtitech/neoshowcase/pkg/util/optional"
@@ -67,6 +69,54 @@ func NewAPIServerService(
 	}
 }
 
+func (s *APIServerService) isRepositoryOwner(ctx context.Context, id string) error {
+	user := web.GetUser(ctx)
+	repo, err := s.gitRepo.GetRepository(ctx, id)
+	if err != nil {
+		return errors.Wrap(err, "failed to get repository")
+	}
+	if !lo.Contains(repo.OwnerIDs, user.ID) {
+		return newError(ErrorTypeForbidden, "you do not have permission for this repository", nil)
+	}
+	return nil
+}
+
+func (s *APIServerService) isApplicationOwner(ctx context.Context, id string) error {
+	user := web.GetUser(ctx)
+	app, err := s.appRepo.GetApplication(ctx, id)
+	if err != nil {
+		return errors.Wrap(err, "failed to get application")
+	}
+	if !lo.Contains(app.OwnerIDs, user.ID) {
+		return newError(ErrorTypeForbidden, "you do not have permission for this application", nil)
+	}
+	return nil
+}
+
+func (s *APIServerService) isBuildOwner(ctx context.Context, id string) error {
+	user := web.GetUser(ctx)
+	build, err := s.buildRepo.GetBuild(ctx, id)
+	if err != nil {
+		return errors.Wrap(err, "failed to get build")
+	}
+	app, err := s.appRepo.GetApplication(ctx, build.ApplicationID)
+	if err != nil {
+		return errors.Wrap(err, "failed to get application")
+	}
+	if !lo.Contains(app.OwnerIDs, user.ID) {
+		return newError(ErrorTypeForbidden, "you do not have permission for this application", nil)
+	}
+	return nil
+}
+
+func (s *APIServerService) isAdmin(ctx context.Context) error {
+	user := web.GetUser(ctx)
+	if !user.Admin {
+		return newError(ErrorTypeForbidden, "you do not have permission for this action", nil)
+	}
+	return nil
+}
+
 func (s *APIServerService) GetRepositories(ctx context.Context) ([]*domain.Repository, error) {
 	return s.gitRepo.GetRepositories(ctx, domain.GetRepositoryCondition{})
 }
@@ -76,10 +126,20 @@ func (s *APIServerService) CreateRepository(ctx context.Context, repo *domain.Re
 }
 
 func (s *APIServerService) UpdateRepository(ctx context.Context, id string, args *domain.UpdateRepositoryArgs) error {
+	err := s.isRepositoryOwner(ctx, id)
+	if err != nil {
+		return err
+	}
+
 	return s.gitRepo.UpdateRepository(ctx, id, args)
 }
 
 func (s *APIServerService) DeleteRepository(ctx context.Context, id string) error {
+	err := s.isRepositoryOwner(ctx, id)
+	if err != nil {
+		return err
+	}
+
 	apps, err := s.appRepo.GetApplications(ctx, domain.GetApplicationCondition{RepositoryID: optional.From(id)})
 	if err != nil {
 		return errors.Wrap(err, "failed to get related applications")
@@ -100,6 +160,11 @@ func (s *APIServerService) GetAvailableDomains(ctx context.Context) (domain.Avai
 }
 
 func (s *APIServerService) AddAvailableDomain(ctx context.Context, ad *domain.AvailableDomain) error {
+	err := s.isAdmin(ctx)
+	if err != nil {
+		return err
+	}
+
 	if !ad.IsValid() {
 		return newError(ErrorTypeBadRequest, "invalid new domain", nil)
 	}
@@ -107,6 +172,11 @@ func (s *APIServerService) AddAvailableDomain(ctx context.Context, ad *domain.Av
 }
 
 func (s *APIServerService) CreateApplication(ctx context.Context, app *domain.Application) (*domain.Application, error) {
+	err := s.isRepositoryOwner(ctx, app.RepositoryID)
+	if err != nil {
+		return nil, err
+	}
+
 	domains, err := s.adRepo.GetAvailableDomains(ctx)
 	if err != nil {
 		return nil, err
@@ -221,7 +291,12 @@ func (s *APIServerService) GetApplication(ctx context.Context, id string) (*doma
 }
 
 func (s *APIServerService) UpdateApplication(ctx context.Context, app *domain.Application, args *domain.UpdateApplicationArgs) error {
-	err := s.appRepo.UpdateApplication(ctx, app.ID, args)
+	err := s.isApplicationOwner(ctx, app.ID)
+	if err != nil {
+		return err
+	}
+
+	err = s.appRepo.UpdateApplication(ctx, app.ID, args)
 	if err != nil {
 		return err
 	}
@@ -229,6 +304,11 @@ func (s *APIServerService) UpdateApplication(ctx context.Context, app *domain.Ap
 }
 
 func (s *APIServerService) DeleteApplication(ctx context.Context, id string) error {
+	err := s.isApplicationOwner(ctx, id)
+	if err != nil {
+		return err
+	}
+
 	app, err := s.appRepo.GetApplication(ctx, id)
 	if err != nil {
 		return err
@@ -314,15 +394,30 @@ func (s *APIServerService) GetArtifact(_ context.Context, artifactID string) ([]
 }
 
 func (s *APIServerService) GetEnvironmentVariables(ctx context.Context, applicationID string) ([]*domain.Environment, error) {
+	err := s.isApplicationOwner(ctx, applicationID)
+	if err != nil {
+		return nil, err
+	}
+
 	return s.envRepo.GetEnv(ctx, domain.GetEnvCondition{ApplicationID: optional.From(applicationID)})
 }
 
 func (s *APIServerService) SetEnvironmentVariable(ctx context.Context, applicationID string, key string, value string) error {
+	err := s.isApplicationOwner(ctx, applicationID)
+	if err != nil {
+		return err
+	}
+
 	env := &domain.Environment{ApplicationID: applicationID, Key: key, Value: value, System: false}
 	return s.envRepo.SetEnv(ctx, env)
 }
 
-func (s *APIServerService) CancelBuild(_ context.Context, buildID string) error {
+func (s *APIServerService) CancelBuild(ctx context.Context, buildID string) error {
+	err := s.isBuildOwner(ctx, buildID)
+	if err != nil {
+		return err
+	}
+
 	s.component.BroadcastBuilder(&pb.BuilderRequest{
 		Type: pb.BuilderRequest_CANCEL_BUILD,
 		Body: &pb.BuilderRequest_CancelBuild{CancelBuild: &pb.BuildIdRequest{BuildId: buildID}},
@@ -331,7 +426,12 @@ func (s *APIServerService) CancelBuild(_ context.Context, buildID string) error 
 }
 
 func (s *APIServerService) RetryCommitBuild(ctx context.Context, applicationID string, commit string) error {
-	err := s.buildRepo.MarkCommitAsRetriable(ctx, applicationID, commit)
+	err := s.isApplicationOwner(ctx, applicationID)
+	if err != nil {
+		return err
+	}
+
+	err = s.buildRepo.MarkCommitAsRetriable(ctx, applicationID, commit)
 	if err != nil {
 		return err
 	}
@@ -341,7 +441,12 @@ func (s *APIServerService) RetryCommitBuild(ctx context.Context, applicationID s
 }
 
 func (s *APIServerService) StartApplication(ctx context.Context, id string) error {
-	err := s.appRepo.UpdateApplication(ctx, id, &domain.UpdateApplicationArgs{
+	err := s.isApplicationOwner(ctx, id)
+	if err != nil {
+		return err
+	}
+
+	err = s.appRepo.UpdateApplication(ctx, id, &domain.UpdateApplicationArgs{
 		Running:   optional.From(true),
 		UpdatedAt: optional.From(time.Now()),
 	})
@@ -354,7 +459,12 @@ func (s *APIServerService) StartApplication(ctx context.Context, id string) erro
 }
 
 func (s *APIServerService) StopApplication(ctx context.Context, id string) error {
-	err := s.appRepo.UpdateApplication(ctx, id, &domain.UpdateApplicationArgs{
+	err := s.isApplicationOwner(ctx, id)
+	if err != nil {
+		return err
+	}
+
+	err = s.appRepo.UpdateApplication(ctx, id, &domain.UpdateApplicationArgs{
 		Running:   optional.From(false),
 		UpdatedAt: optional.From(time.Now()),
 	})

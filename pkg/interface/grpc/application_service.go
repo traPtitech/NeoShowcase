@@ -14,6 +14,7 @@ import (
 	"google.golang.org/protobuf/types/known/timestamppb"
 
 	"github.com/traPtitech/neoshowcase/pkg/domain"
+	"github.com/traPtitech/neoshowcase/pkg/domain/web"
 	"github.com/traPtitech/neoshowcase/pkg/interface/grpc/pb"
 	"github.com/traPtitech/neoshowcase/pkg/interface/grpc/pb/pbconnect"
 	"github.com/traPtitech/neoshowcase/pkg/usecase"
@@ -22,15 +23,17 @@ import (
 )
 
 func handleUseCaseError(err error) error {
-	typ, ok := usecase.GetErrorType(err)
+	underlying, typ, ok := usecase.DecomposeError(err)
 	if ok {
 		switch typ {
 		case usecase.ErrorTypeBadRequest:
-			return connect.NewError(connect.CodeInvalidArgument, err)
+			return connect.NewError(connect.CodeInvalidArgument, underlying)
 		case usecase.ErrorTypeNotFound:
-			return connect.NewError(connect.CodeNotFound, err)
+			return connect.NewError(connect.CodeNotFound, underlying)
 		case usecase.ErrorTypeAlreadyExists:
-			return connect.NewError(connect.CodeAlreadyExists, err)
+			return connect.NewError(connect.CodeAlreadyExists, underlying)
+		case usecase.ErrorTypeForbidden:
+			return connect.NewError(connect.CodePermissionDenied, underlying)
 		}
 	}
 	return connect.NewError(connect.CodeInternal, err)
@@ -55,7 +58,7 @@ func NewApplicationServiceServer(
 }
 
 func (s *ApplicationService) GetMe(ctx context.Context, _ *connect.Request[emptypb.Empty]) (*connect.Response[pb.User], error) {
-	user := getUser(ctx)
+	user := web.GetUser(ctx)
 	res := connect.NewResponse(toPBUser(user))
 	return res, nil
 }
@@ -75,7 +78,7 @@ func (s *ApplicationService) GetRepositories(ctx context.Context, _ *connect.Req
 
 func (s *ApplicationService) CreateRepository(ctx context.Context, req *connect.Request[pb.CreateRepositoryRequest]) (*connect.Response[pb.Repository], error) {
 	msg := req.Msg
-	user := getUser(ctx)
+	user := web.GetUser(ctx)
 	repo := &domain.Repository{
 		ID:       domain.NewID(),
 		Name:     msg.Name,
@@ -159,7 +162,7 @@ func (s *ApplicationService) AddAvailableDomain(ctx context.Context, req *connec
 
 func (s *ApplicationService) CreateApplication(ctx context.Context, req *connect.Request[pb.CreateApplicationRequest]) (*connect.Response[pb.Application], error) {
 	msg := req.Msg
-	user := getUser(ctx)
+	user := web.GetUser(ctx)
 	now := time.Now()
 	app := &domain.Application{
 		ID:            domain.NewID(),

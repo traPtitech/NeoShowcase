@@ -12,18 +12,6 @@ import (
 	"github.com/traPtitech/neoshowcase/pkg/domain/web"
 )
 
-type userKeyType struct{}
-
-var userKey = userKeyType{}
-
-func getUser(ctx context.Context) *domain.User {
-	return ctx.Value(userKey).(*domain.User)
-}
-
-func setUser(ctx *context.Context, user *domain.User) {
-	*ctx = context.WithValue(*ctx, userKey, user)
-}
-
 type AuthInterceptor struct {
 	userCache *sc.Cache[string, *domain.User]
 }
@@ -49,7 +37,7 @@ func (a *AuthInterceptor) authenticate(ctx *context.Context, headers http.Header
 	if err != nil {
 		return connect.NewError(connect.CodeInternal, err)
 	}
-	setUser(ctx, user)
+	web.SetUser(ctx, user)
 	return nil
 }
 
