@@ -301,9 +301,9 @@ func (cd *continuousDeploymentService) syncDeployments(ctx context.Context) erro
 	}
 
 	// Synchronize
-	err = cd.deployer.synchronize(ctx)
+	err = cd.deployer.synchronizeRuntime(ctx)
 	if err != nil {
-		return errors.Wrap(err, "failed to synchronize app deployments")
+		return errors.Wrap(err, "failed to synchronize runtime deployments")
 	}
 	err = cd.deployer.synchronizeSS(ctx)
 	if err != nil {

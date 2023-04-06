@@ -55,10 +55,11 @@ func (s *AppDeployHelper) _getEnv(ctx context.Context, apps []*domain.Applicatio
 	return ret, nil
 }
 
-func (s *AppDeployHelper) synchronize(ctx context.Context) error {
+func (s *AppDeployHelper) synchronizeRuntime(ctx context.Context) error {
 	// Get all 'running' state applications
 	apps, err := s.appRepo.GetApplications(ctx, domain.GetApplicationCondition{
-		Running: optional.From(true),
+		BuildType: optional.From(domain.BuildTypeRuntime),
+		Running:   optional.From(true),
 	})
 	if err != nil {
 		return err
@@ -89,7 +90,7 @@ func (s *AppDeployHelper) synchronize(ctx context.Context) error {
 			Envs:      envs[app.ID],
 		}
 	})
-	return s.backend.Synchronize(ctx, desiredStates)
+	return s.backend.SynchronizeRuntime(ctx, desiredStates)
 }
 
 func (s *AppDeployHelper) synchronizeSS(ctx context.Context) error {

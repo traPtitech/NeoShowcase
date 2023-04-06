@@ -82,7 +82,7 @@ func (b *dockerBackend) syncAppContainer(ctx context.Context, app *domain.AppDes
 	return nil
 }
 
-func (b *dockerBackend) Synchronize(ctx context.Context, apps []*domain.AppDesiredState) error {
+func (b *dockerBackend) SynchronizeRuntime(ctx context.Context, apps []*domain.AppDesiredState) error {
 	b.reloadLock.Lock()
 	defer b.reloadLock.Unlock()
 

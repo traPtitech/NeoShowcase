@@ -23,7 +23,7 @@ func TestDockerBackend_CreateContainer(t *testing.T) {
 			ID:        "test",
 			UpdatedAt: time.Now(),
 		}
-		err := m.Synchronize(context.Background(), []*domain.AppDesiredState{{
+		err := m.SynchronizeRuntime(context.Background(), []*domain.AppDesiredState{{
 			App:       &app,
 			ImageName: "not-found",
 			ImageTag:  "latest",
@@ -40,7 +40,7 @@ func TestDockerBackend_CreateContainer(t *testing.T) {
 			ID:        appID,
 			UpdatedAt: time.Now(),
 		}
-		err := m.Synchronize(context.Background(), []*domain.AppDesiredState{{
+		err := m.SynchronizeRuntime(context.Background(), []*domain.AppDesiredState{{
 			App:       &app,
 			ImageName: image,
 			ImageTag:  "latest",
@@ -72,7 +72,7 @@ func TestDockerBackend_CreateContainer(t *testing.T) {
 			ID:        appID,
 			UpdatedAt: time.Now(),
 		}
-		err := m.Synchronize(context.Background(), []*domain.AppDesiredState{{
+		err := m.SynchronizeRuntime(context.Background(), []*domain.AppDesiredState{{
 			App:       &app,
 			ImageName: image,
 			ImageTag:  "latest",
@@ -80,7 +80,7 @@ func TestDockerBackend_CreateContainer(t *testing.T) {
 		require.NoError(t, err)
 
 		app.UpdatedAt = time.Now() // Restart
-		err = m.Synchronize(context.Background(), []*domain.AppDesiredState{{
+		err = m.SynchronizeRuntime(context.Background(), []*domain.AppDesiredState{{
 			App:       &app,
 			ImageName: image,
 			ImageTag:  "latest",
