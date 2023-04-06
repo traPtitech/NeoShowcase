@@ -146,29 +146,37 @@ func (r *applicationRepository) UpdateApplication(ctx context.Context, id string
 		return err
 	}
 
+	var cols []string
 	if args.Name.Valid {
 		app.Name = args.Name.V
+		cols = append(cols, models.ApplicationColumns.Name)
 	}
 	if args.RefName.Valid {
 		app.RefName = args.RefName.V
+		cols = append(cols, models.ApplicationColumns.RefName)
 	}
 	if args.Running.Valid {
 		app.Running = args.Running.V
+		cols = append(cols, models.ApplicationColumns.Running)
 	}
 	if args.Container.Valid {
 		app.Container = containerStateMapper.FromMust(args.Container.V)
+		cols = append(cols, models.ApplicationColumns.Container)
 	}
 	if args.CurrentCommit.Valid {
 		app.CurrentCommit = args.CurrentCommit.V
+		cols = append(cols, models.ApplicationColumns.CurrentCommit)
 	}
 	if args.WantCommit.Valid {
 		app.WantCommit = args.WantCommit.V
+		cols = append(cols, models.ApplicationColumns.WantCommit)
 	}
 	if args.UpdatedAt.Valid {
 		app.UpdatedAt = args.UpdatedAt.V
+		cols = append(cols, models.ApplicationColumns.UpdatedAt)
 	}
 
-	_, err = app.Update(ctx, tx, boil.Blacklist())
+	_, err = app.Update(ctx, tx, boil.Whitelist(cols...))
 
 	if args.Config.Valid {
 		mac := fromDomainApplicationConfig(app.ID, &args.Config.V)

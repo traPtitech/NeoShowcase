@@ -107,20 +107,25 @@ func (r *buildRepository) UpdateBuild(ctx context.Context, id string, args domai
 		return errors.Wrap(err, "failed to get build")
 	}
 
+	var cols []string
 	if args.Status.Valid {
 		build.Status = buildStatusMapper.FromMust(args.Status.V)
+		cols = append(cols, models.BuildColumns.Status)
 	}
 	if args.StartedAt.Valid {
 		build.StartedAt = optional.IntoTime(args.StartedAt)
+		cols = append(cols, models.BuildColumns.StartedAt)
 	}
 	if args.UpdatedAt.Valid {
 		build.UpdatedAt = optional.IntoTime(args.UpdatedAt)
+		cols = append(cols, models.BuildColumns.UpdatedAt)
 	}
 	if args.FinishedAt.Valid {
 		build.FinishedAt = optional.IntoTime(args.FinishedAt)
+		cols = append(cols, models.BuildColumns.FinishedAt)
 	}
 
-	_, err = build.Update(ctx, tx, boil.Blacklist())
+	_, err = build.Update(ctx, tx, boil.Whitelist(cols...))
 	if err != nil {
 		return errors.Wrap(err, "failed to update build")
 	}
