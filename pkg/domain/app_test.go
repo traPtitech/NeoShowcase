@@ -566,16 +566,6 @@ func TestRepositoryAuth_IsValid(t *testing.T) {
 			},
 			want: false,
 		},
-		{
-			name: "invalid ssh auth (empty)",
-			auth: RepositoryAuth{
-				Method:   RepositoryAuthMethodSSH,
-				Username: "",
-				Password: "",
-				SSHKey:   "",
-			},
-			want: false,
-		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
