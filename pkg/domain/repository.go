@@ -32,6 +32,39 @@ type UpdateApplicationArgs struct {
 	OwnerIDs      optional.Of[[]string]
 }
 
+func (a *Application) Apply(args *UpdateApplicationArgs) {
+	if args.Name.Valid {
+		a.Name = args.Name.V
+	}
+	if args.RefName.Valid {
+		a.RefName = args.RefName.V
+	}
+	if args.Running.Valid {
+		a.Running = args.Running.V
+	}
+	if args.Container.Valid {
+		a.Container = args.Container.V
+	}
+	if args.CurrentCommit.Valid {
+		a.CurrentCommit = args.CurrentCommit.V
+	}
+	if args.WantCommit.Valid {
+		a.WantCommit = args.WantCommit.V
+	}
+	if args.UpdatedAt.Valid {
+		a.UpdatedAt = args.UpdatedAt.V
+	}
+	if args.Config.Valid {
+		a.Config = args.Config.V
+	}
+	if args.Websites.Valid {
+		a.Websites = args.Websites.V
+	}
+	if args.OwnerIDs.Valid {
+		a.OwnerIDs = args.OwnerIDs.V
+	}
+}
+
 type ApplicationRepository interface {
 	GetApplications(ctx context.Context, cond GetApplicationCondition) ([]*Application, error)
 	GetApplication(ctx context.Context, id string) (*Application, error)
@@ -111,7 +144,7 @@ type UpdateRepositoryArgs struct {
 	OwnerIDs optional.Of[[]string]
 }
 
-func (r *Repository) Apply(args *UpdateRepositoryArgs) *Repository {
+func (r *Repository) Apply(args *UpdateRepositoryArgs) {
 	if args.Name.Valid {
 		r.Name = args.Name.V
 	}
@@ -124,7 +157,6 @@ func (r *Repository) Apply(args *UpdateRepositoryArgs) *Repository {
 	if args.OwnerIDs.Valid {
 		r.OwnerIDs = args.OwnerIDs.V
 	}
-	return r
 }
 
 type GitRepositoryRepository interface {

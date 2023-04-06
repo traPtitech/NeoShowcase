@@ -33,6 +33,32 @@ type ApplicationConfig struct {
 	Authentication AuthenticationType
 }
 
+func (c *ApplicationConfig) IsValid(buildType BuildType) bool {
+	switch buildType {
+	case BuildTypeRuntime:
+		if c.DockerfileName != "" {
+			// pass
+		} else {
+			// NOTE: build cmd is not necessary
+			if c.EntrypointCmd == "" {
+				return false
+			}
+		}
+	case BuildTypeStatic:
+		if c.DockerfileName != "" {
+			if c.ArtifactPath == "" {
+				return false
+			}
+		} else {
+			// NOTE: build cmd is not necessary
+			if c.ArtifactPath == "" {
+				return false
+			}
+		}
+	}
+	return true
+}
+
 type BuildType int
 
 const (
@@ -58,6 +84,30 @@ type Application struct {
 	Config   ApplicationConfig
 	Websites []*Website
 	OwnerIDs []string
+}
+
+func (a *Application) IsValid() bool {
+	if a.Name == "" {
+		return false
+	}
+	if a.RepositoryID == "" {
+		return false
+	}
+	if a.RefName == "" {
+		return false
+	}
+	if !a.Config.IsValid(a.BuildType) {
+		return false
+	}
+	for _, website := range a.Websites {
+		if !website.IsValid() {
+			return false
+		}
+	}
+	if len(a.OwnerIDs) == 0 {
+		return false
+	}
+	return true
 }
 
 type Artifact struct {
@@ -236,9 +286,11 @@ func (r *RepositoryAuth) IsValid() bool {
 			return false
 		}
 	case RepositoryAuthMethodSSH:
-		_, err := ssh.NewPublicKeys("", []byte(r.SSHKey), "")
-		if err != nil {
-			return false
+		if r.SSHKey != "" {
+			_, err := ssh.NewPublicKeys("", []byte(r.SSHKey), "")
+			if err != nil {
+				return false
+			}
 		}
 	}
 	return true

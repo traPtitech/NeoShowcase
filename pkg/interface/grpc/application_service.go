@@ -213,14 +213,15 @@ func (s *ApplicationService) UpdateApplication(ctx context.Context, req *connect
 		return nil, handleUseCaseError(err)
 	}
 
+	websites := app.Websites
 	for _, createReq := range msg.NewWebsites {
-		app.Websites = append(app.Websites, fromPBCreateWebsiteRequest(createReq))
+		websites = append(websites, fromPBCreateWebsiteRequest(createReq))
 	}
 	for _, deleteReq := range msg.DeleteWebsites {
-		app.Websites = lo.Reject(app.Websites, func(w *domain.Website, i int) bool { return w.ID == deleteReq.Id })
+		websites = lo.Reject(websites, func(w *domain.Website, i int) bool { return w.ID == deleteReq.Id })
 	}
 
-	err = s.svc.UpdateApplication(ctx, app, &domain.UpdateApplicationArgs{
+	err = s.svc.UpdateApplication(ctx, msg.Id, &domain.UpdateApplicationArgs{
 		Name:      optional.From(msg.Name),
 		RefName:   optional.From(msg.RefName),
 		UpdatedAt: optional.From(time.Now()),
@@ -234,7 +235,7 @@ func (s *ApplicationService) UpdateApplication(ctx context.Context, req *connect
 			EntrypointCmd:  msg.Config.EntrypointCmd,
 			Authentication: authTypeMapper.FromMust(msg.Config.Authentication),
 		}),
-		Websites: optional.From(app.Websites),
+		Websites: optional.From(websites),
 		OwnerIDs: optional.From(msg.OwnerIds),
 	})
 	if err != nil {

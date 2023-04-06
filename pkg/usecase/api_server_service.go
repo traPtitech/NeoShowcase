@@ -190,6 +190,10 @@ func (s *APIServerService) CreateApplication(ctx context.Context, app *domain.Ap
 		return nil, err
 	}
 
+	if !app.IsValid() {
+		return nil, newError(ErrorTypeBadRequest, "invalid application", nil)
+	}
+
 	domains, err := s.adRepo.GetAvailableDomains(ctx)
 	if err != nil {
 		return nil, err
@@ -303,17 +307,22 @@ func (s *APIServerService) GetApplication(ctx context.Context, id string) (*doma
 	return handleRepoError(application, err)
 }
 
-func (s *APIServerService) UpdateApplication(ctx context.Context, app *domain.Application, args *domain.UpdateApplicationArgs) error {
-	err := s.isApplicationOwner(ctx, app.ID)
+func (s *APIServerService) UpdateApplication(ctx context.Context, id string, args *domain.UpdateApplicationArgs) error {
+	err := s.isApplicationOwner(ctx, id)
 	if err != nil {
 		return err
 	}
 
-	err = s.appRepo.UpdateApplication(ctx, app.ID, args)
+	app, err := s.appRepo.GetApplication(ctx, id)
 	if err != nil {
 		return err
 	}
-	return s.RetryCommitBuild(ctx, app.ID, app.CurrentCommit)
+	app.Apply(args)
+	if !app.IsValid() {
+		return newError(ErrorTypeBadRequest, "invalid application", nil)
+	}
+
+	return s.appRepo.UpdateApplication(ctx, id, args)
 }
 
 func (s *APIServerService) DeleteApplication(ctx context.Context, id string) error {

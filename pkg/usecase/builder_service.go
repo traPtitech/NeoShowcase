@@ -408,8 +408,8 @@ func (s *builderService) buildImage(ctx context.Context, st *state) error {
 			"name": st.task.ImageName + ":" + st.task.ImageTag,
 			"push": "true",
 		}
-		if len(st.task.BuildOptions.BaseImageName) == 0 {
-			// リポジトリルートのDockerfileを使用
+		if st.task.BuildOptions.DockerfileName != "" {
+			// Dockerfileを使用
 			// entrypoint, startupコマンドは無視
 			err = s.buildImageWithDockerfile(ctx, st, exportAttrs, ch)
 		} else {
@@ -479,7 +479,7 @@ func (s *builderService) buildImageWithConfig(
 	defer os.Remove(fe.Name())
 
 	var tmp *os.File
-	tmp, err = os.CreateTemp("", "Dockerfile")
+	tmp, err = os.CreateTemp("", "Dockerfile-")
 	if err != nil {
 		return err
 	}
@@ -518,8 +518,8 @@ func (s *builderService) buildStatic(ctx context.Context, st *state) error {
 	ch := make(chan *buildkit.SolveStatus)
 	eg, ctx := errgroup.WithContext(ctx)
 	eg.Go(func() (err error) {
-		if len(st.task.BuildOptions.BaseImageName) == 0 {
-			// リポジトリルートのDockerfileを使用
+		if st.task.BuildOptions.DockerfileName != "" {
+			// Dockerfileを使用
 			// entrypoint, startupコマンドは無視
 			err = s.buildStaticWithDockerfile(ctx, st, ch)
 		} else {
@@ -590,7 +590,7 @@ func (s *builderService) buildStaticWithConfig(
 	// ビルドで生成された静的ファイルのみを含むScratchイメージを構成
 	def, err := llb.
 		Scratch().
-		File(llb.Copy(b, st.task.BuildOptions.ArtifactPath, "/", &llb.CopyInfo{
+		File(llb.Copy(b, filepath.Join("/srv", st.task.BuildOptions.ArtifactPath), "/", &llb.CopyInfo{
 			CopyDirContentsOnly: true,
 			CreateDestPath:      true,
 			AllowWildcard:       true,

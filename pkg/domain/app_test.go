@@ -3,11 +3,223 @@ package domain
 import (
 	"reflect"
 	"testing"
+	"time"
 
 	"github.com/samber/lo"
 
 	"github.com/traPtitech/neoshowcase/pkg/util/optional"
 )
+
+func TestApplicationConfig_IsValid(t *testing.T) {
+	tests := []struct {
+		name      string
+		buildType BuildType
+		config    ApplicationConfig
+		want      bool
+	}{
+		{
+			name:      "valid (runtime dockerfile)",
+			buildType: BuildTypeRuntime,
+			config: ApplicationConfig{
+				DockerfileName: "Dockerfile",
+			},
+			want: true,
+		},
+		{
+			name:      "valid (runtime config)",
+			buildType: BuildTypeRuntime,
+			config: ApplicationConfig{
+				BaseImage:     "golang:1.20",
+				BuildCmd:      "go build -o main",
+				EntrypointCmd: "./main",
+			},
+			want: true,
+		},
+		{
+			name:      "valid with no build cmd (runtime config)",
+			buildType: BuildTypeRuntime,
+			config: ApplicationConfig{
+				BaseImage:     "python:3",
+				BuildCmd:      "",
+				EntrypointCmd: "python3 main.py",
+			},
+			want: true,
+		},
+		{
+			name:      "valid with scratch (runtime config)",
+			buildType: BuildTypeRuntime,
+			config: ApplicationConfig{
+				BaseImage:     "",
+				BuildCmd:      "",
+				EntrypointCmd: "./my-binary",
+			},
+			want: true,
+		},
+		{
+			name:      "empty entrypoint cmd (runtime config)",
+			buildType: BuildTypeRuntime,
+			config: ApplicationConfig{
+				BaseImage:     "golang:1.20",
+				BuildCmd:      "go build -o main",
+				EntrypointCmd: "",
+			},
+			want: false,
+		},
+		{
+			name:      "valid (static dockerfile)",
+			buildType: BuildTypeStatic,
+			config: ApplicationConfig{
+				DockerfileName: "Dockerfile",
+				ArtifactPath:   "./dist",
+			},
+			want: true,
+		},
+		{
+			name:      "empty artifact path (static dockerfile)",
+			buildType: BuildTypeStatic,
+			config: ApplicationConfig{
+				DockerfileName: "Dockerfile",
+				ArtifactPath:   "",
+			},
+			want: false,
+		},
+		{
+			name:      "valid (static config)",
+			buildType: BuildTypeStatic,
+			config: ApplicationConfig{
+				BaseImage:    "node:18",
+				ArtifactPath: "./dist",
+				BuildCmd:     "yarn build",
+			},
+			want: true,
+		},
+		{
+			name:      "valid with no build cmd (static config)",
+			buildType: BuildTypeStatic,
+			config: ApplicationConfig{
+				BaseImage:    "alpine:latest",
+				ArtifactPath: "./dist",
+				BuildCmd:     "",
+			},
+			want: true,
+		},
+		{
+			name:      "valid with scratch (static config)",
+			buildType: BuildTypeStatic,
+			config: ApplicationConfig{
+				BaseImage:    "",
+				ArtifactPath: "./dist",
+				BuildCmd:     "",
+			},
+			want: true,
+		},
+		{
+			name:      "empty artifact path (static config)",
+			buildType: BuildTypeStatic,
+			config: ApplicationConfig{
+				BaseImage:    "",
+				ArtifactPath: "",
+				BuildCmd:     "",
+			},
+			want: false,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := tt.config.IsValid(tt.buildType); got != tt.want {
+				t.Errorf("IsValid() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestApplication_IsValid(t *testing.T) {
+	tests := []struct {
+		name string
+		app  Application
+		want bool
+	}{
+		{
+			name: "valid",
+			app: Application{
+				Name:          "test",
+				RepositoryID:  "abc",
+				RefName:       "master",
+				BuildType:     BuildTypeRuntime,
+				Running:       false,
+				CurrentCommit: EmptyCommit,
+				WantCommit:    EmptyCommit,
+				CreatedAt:     time.Now(),
+				UpdatedAt:     time.Now(),
+				Config:        ApplicationConfig{DockerfileName: "Dockerfile"},
+				Websites:      nil,
+				OwnerIDs:      []string{"abc"},
+			},
+			want: true,
+		},
+		{
+			name: "empty name",
+			app: Application{
+				Name:          "",
+				RepositoryID:  "abc",
+				RefName:       "master",
+				BuildType:     BuildTypeRuntime,
+				Running:       false,
+				CurrentCommit: EmptyCommit,
+				WantCommit:    EmptyCommit,
+				CreatedAt:     time.Now(),
+				UpdatedAt:     time.Now(),
+				Config:        ApplicationConfig{DockerfileName: "Dockerfile"},
+				Websites:      nil,
+				OwnerIDs:      []string{"abc"},
+			},
+			want: false,
+		},
+		{
+			name: "empty repository id",
+			app: Application{
+				Name:          "test",
+				RepositoryID:  "",
+				RefName:       "master",
+				BuildType:     BuildTypeRuntime,
+				Running:       false,
+				CurrentCommit: EmptyCommit,
+				WantCommit:    EmptyCommit,
+				CreatedAt:     time.Now(),
+				UpdatedAt:     time.Now(),
+				Config:        ApplicationConfig{DockerfileName: "Dockerfile"},
+				Websites:      nil,
+				OwnerIDs:      []string{"abc"},
+			},
+			want: false,
+		},
+		{
+			name: "empty owners",
+			app: Application{
+				Name:          "test",
+				RepositoryID:  "abc",
+				RefName:       "master",
+				BuildType:     BuildTypeRuntime,
+				Running:       false,
+				CurrentCommit: EmptyCommit,
+				WantCommit:    EmptyCommit,
+				CreatedAt:     time.Now(),
+				UpdatedAt:     time.Now(),
+				Config:        ApplicationConfig{DockerfileName: "Dockerfile"},
+				Websites:      nil,
+				OwnerIDs:      []string{},
+			},
+			want: false,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := tt.app.IsValid(); got != tt.want {
+				t.Errorf("IsValid() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
 
 func TestIsValidDomain(t *testing.T) {
 	tests := []struct {
@@ -320,6 +532,16 @@ func TestRepositoryAuth_IsValid(t *testing.T) {
 				Username: "",
 				Password: "",
 				SSHKey:   validSSHKey,
+			},
+			want: true,
+		},
+		{
+			name: "valid ssh auth (uses default system key)",
+			auth: RepositoryAuth{
+				Method:   RepositoryAuthMethodSSH,
+				Username: "",
+				Password: "",
+				SSHKey:   "",
 			},
 			want: true,
 		},
