@@ -55,8 +55,6 @@ type apiServerService struct {
 	buildRepo      domain.BuildRepository
 	envRepo        domain.EnvironmentRepository
 	gitRepo        domain.GitRepositoryRepository
-	deploySvc      AppDeployService
-	backend        domain.Backend
 	storage        domain.Storage
 	component      domain.ComponentService
 	mariaDBManager domain.MariaDBManager
@@ -71,8 +69,6 @@ func NewAPIServerService(
 	buildRepo domain.BuildRepository,
 	envRepo domain.EnvironmentRepository,
 	gitRepo domain.GitRepositoryRepository,
-	deploySvc AppDeployService,
-	backend domain.Backend,
 	storage domain.Storage,
 	component domain.ComponentService,
 	mariaDBManager domain.MariaDBManager,
@@ -86,8 +82,6 @@ func NewAPIServerService(
 		buildRepo:      buildRepo,
 		envRepo:        envRepo,
 		gitRepo:        gitRepo,
-		deploySvc:      deploySvc,
-		backend:        backend,
 		storage:        storage,
 		component:      component,
 		mariaDBManager: mariaDBManager,

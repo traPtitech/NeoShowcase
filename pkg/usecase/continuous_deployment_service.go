@@ -25,8 +25,8 @@ type continuousDeploymentService struct {
 	bus       domain.Bus
 	appRepo   domain.ApplicationRepository
 	buildRepo domain.BuildRepository
-	builder   AppBuildService
-	deployer  AppDeployService
+	builder   *AppBuildHelper
+	deployer  *AppDeployHelper
 
 	run       func()
 	runOnce   sync.Once
@@ -38,8 +38,8 @@ func NewContinuousDeploymentService(
 	bus domain.Bus,
 	appRepo domain.ApplicationRepository,
 	buildRepo domain.BuildRepository,
-	builder AppBuildService,
-	deployer AppDeployService,
+	builder *AppBuildHelper,
+	deployer *AppDeployHelper,
 ) (ContinuousDeploymentService, error) {
 	cd := &continuousDeploymentService{
 		bus:       bus,
@@ -228,7 +228,7 @@ func (cd *continuousDeploymentService) startBuilds(ctx context.Context) error {
 		if !ok {
 			return fmt.Errorf("app %v not found", build.ApplicationID)
 		}
-		cd.builder.TryStartBuild(app, build)
+		cd.builder.tryStartBuild(app, build)
 	}
 	return nil
 }
@@ -287,9 +287,9 @@ func (cd *continuousDeploymentService) syncDeployments(ctx context.Context) erro
 	}
 
 	// Synchronize
-	err = cd.deployer.Synchronize(ctx)
+	err = cd.deployer.synchronize(ctx)
 	if err != nil {
 		return errors.Wrap(err, "failed to synchronize app deployments")
 	}
-	return cd.deployer.SynchronizeSS(ctx)
+	return cd.deployer.synchronizeSS(ctx)
 }

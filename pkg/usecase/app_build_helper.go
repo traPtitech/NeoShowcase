@@ -6,29 +6,22 @@ import (
 	"github.com/traPtitech/neoshowcase/pkg/interface/grpc/pb"
 )
 
-type AppBuildService interface {
-	TryStartBuild(app *domain.Application, build *domain.Build)
-}
-
-type appBuildService struct {
-	buildRepo domain.BuildRepository
+type AppBuildHelper struct {
 	component domain.ComponentService
 	image     builder.ImageConfig
 }
 
-func NewAppBuildService(
-	buildRepo domain.BuildRepository,
+func NewAppBuildHelper(
 	component domain.ComponentService,
 	imageConfig builder.ImageConfig,
-) AppBuildService {
-	return &appBuildService{
-		buildRepo: buildRepo,
+) *AppBuildHelper {
+	return &AppBuildHelper{
 		component: component,
 		image:     imageConfig,
 	}
 }
 
-func (s *appBuildService) TryStartBuild(app *domain.Application, build *domain.Build) {
+func (s *AppBuildHelper) tryStartBuild(app *domain.Application, build *domain.Build) {
 	switch app.BuildType {
 	case domain.BuildTypeRuntime:
 		s.component.BroadcastBuilder(&pb.BuilderRequest{
