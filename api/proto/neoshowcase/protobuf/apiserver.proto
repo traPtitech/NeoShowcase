@@ -32,14 +32,30 @@ message CreateRepositoryAuthSSH {
   string ssh_key = 1;
 }
 
+message CreateRepositoryAuth {
+  oneof auth {
+    google.protobuf.Empty none = 1;
+    CreateRepositoryAuthBasic basic = 2;
+    CreateRepositoryAuthSSH ssh = 3;
+  }
+}
+
 message CreateRepositoryRequest {
   string name = 1;
   string url = 2;
-  oneof auth {
-    google.protobuf.Empty none = 3;
-    CreateRepositoryAuthBasic basic = 4;
-    CreateRepositoryAuthSSH ssh = 5;
-  }
+  CreateRepositoryAuth auth = 3;
+}
+
+message UpdateRepositoryRequest {
+  string id = 1;
+  string name = 2;
+  string url = 3;
+  CreateRepositoryAuth auth = 4;
+  repeated string owner_ids = 5;
+}
+
+message RepositoryIdRequest {
+  string repository_id = 1;
 }
 
 enum BuildType {
@@ -238,6 +254,8 @@ service ApplicationService {
   rpc GetMe(google.protobuf.Empty) returns (User);
   rpc GetRepositories(google.protobuf.Empty) returns (GetRepositoriesResponse);
   rpc CreateRepository(CreateRepositoryRequest) returns (Repository);
+  rpc UpdateRepository(UpdateRepositoryRequest) returns (google.protobuf.Empty);
+  rpc DeleteRepository(RepositoryIdRequest) returns (google.protobuf.Empty);
   rpc GetApplications(google.protobuf.Empty) returns (GetApplicationsResponse);
   rpc GetSystemPublicKey(google.protobuf.Empty) returns (GetSystemPublicKeyResponse);
   rpc GetAvailableDomains(google.protobuf.Empty) returns (AvailableDomains);

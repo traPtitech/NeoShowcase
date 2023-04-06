@@ -37,13 +37,13 @@ func handleUseCaseError(err error) error {
 }
 
 type ApplicationService struct {
-	svc    usecase.APIServerService
+	svc    *usecase.APIServerService
 	logSvc *usecase.LogStreamService
 	pubKey *ssh.PublicKeys
 }
 
 func NewApplicationServiceServer(
-	svc usecase.APIServerService,
+	svc *usecase.APIServerService,
 	logSvc *usecase.LogStreamService,
 	pubKey *ssh.PublicKeys,
 ) pbconnect.ApplicationServiceHandler {
@@ -80,7 +80,7 @@ func (s *ApplicationService) CreateRepository(ctx context.Context, req *connect.
 		ID:       domain.NewID(),
 		Name:     msg.Name,
 		URL:      msg.Url,
-		Auth:     fromPBRepositoryAuth(msg),
+		Auth:     fromPBRepositoryAuth(msg.Auth),
 		OwnerIDs: []string{user.ID},
 	}
 	err := s.svc.CreateRepository(ctx, repo)
@@ -88,6 +88,31 @@ func (s *ApplicationService) CreateRepository(ctx context.Context, req *connect.
 		return nil, handleUseCaseError(err)
 	}
 	res := connect.NewResponse(toPBRepository(repo))
+	return res, nil
+}
+
+func (s *ApplicationService) UpdateRepository(ctx context.Context, req *connect.Request[pb.UpdateRepositoryRequest]) (*connect.Response[emptypb.Empty], error) {
+	msg := req.Msg
+	args := &domain.UpdateRepositoryArgs{
+		Name:     optional.From(msg.Name),
+		URL:      optional.From(msg.Url),
+		Auth:     optional.From(fromPBRepositoryAuth(msg.Auth)),
+		OwnerIDs: optional.From(msg.OwnerIds),
+	}
+	err := s.svc.UpdateRepository(ctx, msg.Id, args)
+	if err != nil {
+		return nil, handleUseCaseError(err)
+	}
+	res := connect.NewResponse(&emptypb.Empty{})
+	return res, nil
+}
+
+func (s *ApplicationService) DeleteRepository(ctx context.Context, req *connect.Request[pb.RepositoryIdRequest]) (*connect.Response[emptypb.Empty], error) {
+	err := s.svc.DeleteRepository(ctx, req.Msg.RepositoryId)
+	if err != nil {
+		return nil, handleUseCaseError(err)
+	}
+	res := connect.NewResponse(&emptypb.Empty{})
 	return res, nil
 }
 
@@ -363,17 +388,17 @@ func toPBAvailableDomain(ad *domain.AvailableDomain) *pb.AvailableDomain {
 	}
 }
 
-func fromPBRepositoryAuth(req *pb.CreateRepositoryRequest) optional.Of[domain.RepositoryAuth] {
+func fromPBRepositoryAuth(req *pb.CreateRepositoryAuth) optional.Of[domain.RepositoryAuth] {
 	switch v := req.Auth.(type) {
-	case *pb.CreateRepositoryRequest_None:
+	case *pb.CreateRepositoryAuth_None:
 		return optional.Of[domain.RepositoryAuth]{}
-	case *pb.CreateRepositoryRequest_Basic:
+	case *pb.CreateRepositoryAuth_Basic:
 		return optional.From(domain.RepositoryAuth{
 			Method:   domain.RepositoryAuthMethodBasic,
 			Username: v.Basic.Username,
 			Password: v.Basic.Password,
 		})
-	case *pb.CreateRepositoryRequest_Ssh:
+	case *pb.CreateRepositoryAuth_Ssh:
 		return optional.From(domain.RepositoryAuth{
 			Method: domain.RepositoryAuthMethodSSH,
 			SSHKey: v.Ssh.SshKey,

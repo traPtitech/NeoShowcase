@@ -10,10 +10,11 @@ import (
 )
 
 type GetApplicationCondition struct {
-	IDIn      optional.Of[[]string]
-	UserID    optional.Of[string]
-	BuildType optional.Of[BuildType]
-	Running   optional.Of[bool]
+	IDIn         optional.Of[[]string]
+	RepositoryID optional.Of[string]
+	UserID       optional.Of[string]
+	BuildType    optional.Of[BuildType]
+	Running      optional.Of[bool]
 	// InSync WantCommit が CurrentCommit に一致する
 	InSync optional.Of[bool]
 }
@@ -103,10 +104,19 @@ type GetRepositoryCondition struct {
 	UserID optional.Of[string]
 }
 
+type UpdateRepositoryArgs struct {
+	Name     optional.Of[string]
+	URL      optional.Of[string]
+	Auth     optional.Of[optional.Of[RepositoryAuth]]
+	OwnerIDs optional.Of[[]string]
+}
+
 type GitRepositoryRepository interface {
 	GetRepositories(ctx context.Context, condition GetRepositoryCondition) ([]*Repository, error)
 	GetRepository(ctx context.Context, id string) (*Repository, error)
 	CreateRepository(ctx context.Context, repo *Repository) error
+	UpdateRepository(ctx context.Context, id string, args *UpdateRepositoryArgs) error
+	DeleteRepository(ctx context.Context, id string) error
 }
 
 type CreateUserArgs struct {
