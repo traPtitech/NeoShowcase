@@ -57,6 +57,7 @@ golangci-lint: ## Lint go sources
 
 .PHONY: build
 build: ## Build containers
+	@docker build -t ghcr.io/traptitech/ns-dashboard:main dashboard
 	@docker compose build
 
 .PHONY: up-network

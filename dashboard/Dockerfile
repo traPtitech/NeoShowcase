@@ -17,4 +17,5 @@ RUN yarn build
 
 FROM caddy:2 AS prod
 
+COPY Caddyfile /etc/caddy/Caddyfile
 COPY --from=builder /work/dist/ /usr/share/caddy/

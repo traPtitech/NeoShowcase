@@ -1,0 +1,12 @@
+{
+    admin off
+}
+
+:80
+
+root * /usr/share/caddy
+
+handle {
+    file_server
+    try_files {path} /index.html
+}
