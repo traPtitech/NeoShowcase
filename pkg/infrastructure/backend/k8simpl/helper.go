@@ -54,7 +54,7 @@ type deleter[T namedResource] interface {
 
 func prune[T namedResource](ctx context.Context, resources []T, deleter deleter[T]) error {
 	for _, resource := range resources {
-		if err := deleter.Delete(ctx, resource.GetName(), metav1.DeleteOptions{}); err != nil {
+		if err := deleter.Delete(ctx, resource.GetName(), metav1.DeleteOptions{PropagationPolicy: lo.ToPtr(metav1.DeletePropagationForeground)}); err != nil {
 			return err
 		}
 	}

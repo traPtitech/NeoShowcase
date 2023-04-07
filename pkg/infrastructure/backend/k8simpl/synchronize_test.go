@@ -37,7 +37,7 @@ func TestK8sBackend_Synchronize(t *testing.T) {
 
 		err = m.SynchronizeRuntime(context.Background(), nil)
 		require.NoError(t, err)
-		exists[*appsv1.StatefulSet](t, deploymentName(appID), c.AppsV1().StatefulSets(appNamespace))
+		notExists[*appsv1.StatefulSet](t, deploymentName(appID), c.AppsV1().StatefulSets(appNamespace))
 		waitPodDeleted(t, m, appID)
 	})
 
@@ -69,7 +69,7 @@ func TestK8sBackend_Synchronize(t *testing.T) {
 
 		err = m.SynchronizeRuntime(context.Background(), nil)
 		require.NoError(t, err)
-		exists[*appsv1.StatefulSet](t, deploymentName(appID), c.AppsV1().StatefulSets(appNamespace))
+		notExists[*appsv1.StatefulSet](t, deploymentName(appID), c.AppsV1().StatefulSets(appNamespace))
 		notExists[*corev1.Service](t, serviceName(website), c.CoreV1().Services(appNamespace))
 		notExists[*traefikv1alpha1.IngressRoute](t, serviceName(website), tc.IngressRoutes(appNamespace))
 		waitPodDeleted(t, m, appID)
@@ -113,7 +113,7 @@ func TestK8sBackend_Synchronize(t *testing.T) {
 
 		err = m.SynchronizeRuntime(context.Background(), nil)
 		require.NoError(t, err)
-		exists[*appsv1.StatefulSet](t, deploymentName(appID), c.AppsV1().StatefulSets(appNamespace))
+		notExists[*appsv1.StatefulSet](t, deploymentName(appID), c.AppsV1().StatefulSets(appNamespace))
 		notExists[*corev1.Service](t, serviceName(website), c.CoreV1().Services(appNamespace))
 		notExists[*traefikv1alpha1.IngressRoute](t, serviceName(website), tc.IngressRoutes(appNamespace))
 		notExists[*traefikv1alpha1.Middleware](t, stripMiddlewareName(website), tc.Middlewares(appNamespace))

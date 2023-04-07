@@ -157,12 +157,12 @@ func (b *k8sBackend) SynchronizeRuntime(ctx context.Context, apps []*domain.AppD
 	}
 
 	// Prune old resources
-	// NOTE: StatefulSet は直接削除ではなく replicas: 0 に scale down しないと Pod が削除されない
-	for _, ss := range diff(old.statefulSets, next.statefulSets) {
-		err = b.deleteStatefulSet(ctx, ss)
-		if err != nil {
-			return errors.Wrap(err, "failed to prune stateful sets")
-		}
+	// NOTE: stateful set does not provide any guarantees to (order of) termination of pods when deleted
+	// NOTE: stateful set does not delete volumes
+	// https://kubernetes.io/docs/concepts/workloads/controllers/statefulset/#limitations
+	err = prune[*v1.StatefulSet](ctx, diff(old.statefulSets, next.statefulSets), b.client.AppsV1().StatefulSets(appNamespace))
+	if err != nil {
+		return errors.Wrap(err, "failed to prune stateful sets")
 	}
 	err = prune[*apiv1.Service](ctx, diff(old.services, next.services), b.client.CoreV1().Services(appNamespace))
 	if err != nil {
