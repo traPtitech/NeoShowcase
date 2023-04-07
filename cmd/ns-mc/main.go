@@ -68,9 +68,9 @@ func main() {
 	cli.SetupDebugFlag(flags)
 	cli.SetupLogLevelFlag(flags)
 
-	flags.IntVarP(&port, "port", "p", cli.GetIntEnvOrDefault("NS_MC_PORT", 8080), "port num")
-	flags.StringVarP(&pubkeyFilePath, "pubkey-file", "k", cli.GetEnvOrDefault("NS_MC_PUBKEY_FILE", ""), "public key PEM file path")
-	flags.StringVarP(&cookieName, "cookie-name", "c", cli.GetEnvOrDefault("NS_MC_COOKIE_NAME", "traP_ext_token"), "token cookie name")
+	flags.IntVarP(&port, "port", "p", cli.GetIntEnvOrDefault("NS_PORT", 8080), "port num")
+	flags.StringVarP(&pubkeyFilePath, "pubkey-file", "k", cli.GetEnvOrDefault("NS_PUBKEY_FILE", ""), "public key PEM file path")
+	flags.StringVarP(&cookieName, "cookie-name", "c", cli.GetEnvOrDefault("NS_COOKIE_NAME", "traP_ext_token"), "token cookie name")
 
 	if err := rootCommand.Execute(); err != nil {
 		log.Fatalf("failed to exec: %+v", err)

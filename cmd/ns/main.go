@@ -64,7 +64,7 @@ func runCommand() *cobra.Command {
 }
 
 func main() {
-	cobra.OnInitialize(cli.CobraOnInitializeFunc(&configFilePath, "NS_APISERVER", &c))
+	cobra.OnInitialize(cli.CobraOnInitializeFunc(&configFilePath, "NS", &c))
 
 	rootCommand.AddCommand(
 		runCommand(),
