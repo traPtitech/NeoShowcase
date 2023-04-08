@@ -48,6 +48,7 @@ func TestK8sBackend_Synchronize(t *testing.T) {
 		appID := "pijojopjnnna"
 
 		website := &domain.Website{
+			ID:          "282d4394a71686dcc4a3e2",
 			FQDN:        "test.localhost",
 			PathPrefix:  "/test",
 			StripPrefix: false,
@@ -82,6 +83,7 @@ func TestK8sBackend_Synchronize(t *testing.T) {
 		appID := "98ygtfjfjhgj"
 
 		website := &domain.Website{
+			ID:          "a3fd3e4df5d66bfcb8f11c",
 			FQDN:        "ji9876fgoh.localhost",
 			PathPrefix:  "/test",
 			StripPrefix: true,
