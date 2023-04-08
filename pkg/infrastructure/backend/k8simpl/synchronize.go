@@ -108,22 +108,6 @@ func (b *k8sBackend) statefulSet(app *domain.AppDesiredState) *appsv1.StatefulSe
 	return ss
 }
 
-func (b *k8sBackend) deleteStatefulSet(ctx context.Context, ss *appsv1.StatefulSet) error {
-	// HACK?: statefulset の spec.selector がなぜか omitempty ではないため、生 json を指定する
-	patch := m{
-		"kind":       "StatefulSet",
-		"apiVersion": "apps/v1",
-		"metadata": m{
-			"name":      ss.Name,
-			"namespace": b.config.Namespace,
-		},
-		"spec": m{
-			"replicas": 0,
-		},
-	}
-	return strategicPatch[*appsv1.StatefulSet](ctx, ss.Name, patch, b.client.AppsV1().StatefulSets(b.config.Namespace))
-}
-
 func (b *k8sBackend) SynchronizeRuntime(ctx context.Context, apps []*domain.AppDesiredState) error {
 	b.reloadLock.Lock()
 	defer b.reloadLock.Unlock()

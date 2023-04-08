@@ -23,15 +23,6 @@ func patch[T any](ctx context.Context, name string, resource T, patcher patcher[
 	return err
 }
 
-func strategicPatch[T any](ctx context.Context, name string, resource any, patcher patcher[T]) error {
-	b, err := json.Marshal(resource)
-	if err != nil {
-		return errors.Wrap(err, "failed to marshal resource")
-	}
-	_, err = patcher.Patch(ctx, name, types.StrategicMergePatchType, b, metav1.PatchOptions{FieldManager: fieldManager})
-	return err
-}
-
 type namedResource interface {
 	GetName() string
 }
