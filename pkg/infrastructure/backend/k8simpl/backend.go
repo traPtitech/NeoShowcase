@@ -18,6 +18,15 @@ import (
 	"github.com/traPtitech/neoshowcase/pkg/domain/event"
 )
 
+type Config struct {
+	SS struct {
+		Namespace string `mapstructure:"namespace" yaml:"namespace"`
+		Kind      string `mapstructure:"kind" yaml:"kind"`
+		Name      string `mapstructure:"name" yaml:"name"`
+		Port      int    `mapstructure:"port" yaml:"port"`
+	} `mapstructure:"ss" yaml:"ss"`
+}
+
 type (
 	m map[string]any
 )
@@ -35,7 +44,7 @@ type k8sBackend struct {
 	eventbus      domain.Bus
 	client        *kubernetes.Clientset
 	traefikClient *traefikv1alpha1.TraefikContainousV1alpha1Client
-	ss            domain.StaticServerConnectivityConfig
+	config        Config
 
 	podWatcher watch.Interface
 	reloadLock sync.Mutex
@@ -45,13 +54,13 @@ func NewK8SBackend(
 	eventbus domain.Bus,
 	k8sCSet *kubernetes.Clientset,
 	traefikClient *traefikv1alpha1.TraefikContainousV1alpha1Client,
-	ss domain.StaticServerConnectivityConfig,
+	config Config,
 ) domain.Backend {
 	return &k8sBackend{
 		client:        k8sCSet,
 		traefikClient: traefikClient,
 		eventbus:      eventbus,
-		ss:            ss,
+		config:        config,
 	}
 }
 

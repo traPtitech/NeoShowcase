@@ -70,5 +70,5 @@ func (b *dockerBackend) SynchronizeSSIngress(_ context.Context, sites []*domain.
 		cb.addStaticSite(site)
 	}
 
-	return b.writeConfig(traefikSSFilename, cb.build(b.ssURL))
+	return b.writeConfig(traefikSSFilename, cb.build(b.conf.SS.URL))
 }

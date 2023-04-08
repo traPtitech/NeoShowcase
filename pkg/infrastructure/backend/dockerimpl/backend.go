@@ -14,7 +14,12 @@ import (
 	"github.com/traPtitech/neoshowcase/pkg/domain/event"
 )
 
-type IngressConfDirPath string
+type Config struct {
+	ConfDir string `mapstructure:"confDir" yaml:"confDir"`
+	SS      struct {
+		URL string `mapstructure:"url" yaml:"url"`
+	} `mapstructure:"ss" yaml:"ss"`
+}
 
 const (
 	appNetwork          = "neoshowcase_apps"
@@ -30,10 +35,9 @@ const (
 )
 
 type dockerBackend struct {
-	c              *docker.Client
-	bus            domain.Bus
-	ingressConfDir string
-	ssURL          string
+	c    *docker.Client
+	bus  domain.Bus
+	conf Config
 
 	dockerEvent chan *docker.APIEvents
 	reloadLock  sync.Mutex
@@ -42,14 +46,12 @@ type dockerBackend struct {
 func NewDockerBackend(
 	c *docker.Client,
 	bus domain.Bus,
-	path IngressConfDirPath,
-	ss domain.StaticServerConnectivityConfig,
+	conf Config,
 ) domain.Backend {
 	return &dockerBackend{
-		c:              c,
-		bus:            bus,
-		ingressConfDir: string(path),
-		ssURL:          ss.URL,
+		c:    c,
+		bus:  bus,
+		conf: conf,
 	}
 }
 

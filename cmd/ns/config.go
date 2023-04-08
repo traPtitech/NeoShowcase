@@ -15,6 +15,7 @@ import (
 	"github.com/traPtitech/neoshowcase/pkg/domain/web"
 	"github.com/traPtitech/neoshowcase/pkg/infrastructure/admindb"
 	"github.com/traPtitech/neoshowcase/pkg/infrastructure/backend/dockerimpl"
+	"github.com/traPtitech/neoshowcase/pkg/infrastructure/backend/k8simpl"
 	"github.com/traPtitech/neoshowcase/pkg/infrastructure/dbmanager"
 	"github.com/traPtitech/neoshowcase/pkg/infrastructure/storage"
 	"github.com/traPtitech/neoshowcase/pkg/interface/grpc"
@@ -27,17 +28,15 @@ const (
 )
 
 type Config struct {
-	Debug   bool                                  `mapstructure:"debug" yaml:"debug"`
-	Mode    string                                `mapstructure:"mode" yaml:"mode"`
-	SS      domain.StaticServerConnectivityConfig `mapstructure:"ss" yaml:"ss"`
-	DB      admindb.Config                        `mapstructure:"db" yaml:"db"`
-	MariaDB dbmanager.MariaDBConfig               `mapstructure:"mariadb" yaml:"mariadb"`
-	MongoDB dbmanager.MongoDBConfig               `mapstructure:"mongodb" yaml:"mongodb"`
-	Storage domain.StorageConfig                  `mapstructure:"storage" yaml:"storage"`
-	Docker  struct {
-		ConfDir string `mapstructure:"confDir" yaml:"confDir"`
-	} `mapstructure:"docker" yaml:"docker"`
-	Web struct {
+	Debug   bool                    `mapstructure:"debug" yaml:"debug"`
+	Mode    string                  `mapstructure:"mode" yaml:"mode"`
+	DB      admindb.Config          `mapstructure:"db" yaml:"db"`
+	MariaDB dbmanager.MariaDBConfig `mapstructure:"mariadb" yaml:"mariadb"`
+	MongoDB dbmanager.MongoDBConfig `mapstructure:"mongodb" yaml:"mongodb"`
+	Storage domain.StorageConfig    `mapstructure:"storage" yaml:"storage"`
+	Docker  dockerimpl.Config       `mapstructure:"docker" yaml:"docker"`
+	K8s     k8simpl.Config          `mapstructure:"k8s" yaml:"k8s"`
+	Web     struct {
 		App struct {
 			Port int `mapstructure:"port" yaml:"port"`
 		} `mapstructure:"app" yaml:"app"`
@@ -60,10 +59,6 @@ func (c *Config) GetMode() int {
 	default:
 		return ModeDocker
 	}
-}
-
-func provideIngressConfDirPath(c Config) dockerimpl.IngressConfDirPath {
-	return dockerimpl.IngressConfDirPath(c.Docker.ConfDir)
 }
 
 func provideRepositoryPublicKey(c Config) (*ssh.PublicKeys, error) {

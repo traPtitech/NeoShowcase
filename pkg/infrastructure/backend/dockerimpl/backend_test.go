@@ -24,7 +24,9 @@ func prepareManager(t *testing.T, bus domain.Bus) (*dockerBackend, *docker.Clien
 		t.Fatal(err)
 	}
 
-	m := NewDockerBackend(c, bus, "../../../../.local-dev/traefik", domain.StaticServerConnectivityConfig{})
+	m := NewDockerBackend(c, bus, Config{
+		ConfDir: "../../../../.local-dev/traefik",
+	})
 	err = m.Start(context.Background())
 	require.NoError(t, err)
 

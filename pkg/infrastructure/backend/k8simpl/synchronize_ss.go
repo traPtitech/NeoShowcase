@@ -17,10 +17,10 @@ import (
 func (b *k8sBackend) ssServiceRef() []traefikv1alpha1.Service {
 	return []traefikv1alpha1.Service{{
 		LoadBalancerSpec: traefikv1alpha1.LoadBalancerSpec{
-			Name:      b.ss.Service.Name,
-			Kind:      b.ss.Service.Kind,
-			Namespace: b.ss.Service.Namespace,
-			Port:      intstr.FromInt(b.ss.Service.Port),
+			Name:      b.config.SS.Name,
+			Kind:      b.config.SS.Kind,
+			Namespace: b.config.SS.Namespace,
+			Port:      intstr.FromInt(b.config.SS.Port),
 			Scheme:    "http",
 		},
 	}}

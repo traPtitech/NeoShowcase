@@ -133,7 +133,7 @@ func (b *runtimeConfigBuilder) build() m {
 }
 
 func (b *dockerBackend) writeConfig(filename string, config any) error {
-	file, err := os.OpenFile(filepath.Join(b.ingressConfDir, filename), os.O_CREATE|os.O_TRUNC|os.O_WRONLY, 0644)
+	file, err := os.OpenFile(filepath.Join(b.conf.ConfDir, filename), os.O_CREATE|os.O_TRUNC|os.O_WRONLY, 0644)
 	if err != nil {
 		return errors.Wrap(err, "failed to open config file")
 	}

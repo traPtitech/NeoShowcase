@@ -49,12 +49,11 @@ var commonSet = wire.NewSet(
 	usecase.NewCleanerService,
 	usecase.NewLogStreamService,
 	usecase.NewContainerStateMutator,
-	provideIngressConfDirPath,
 	provideRepositoryPublicKey,
 	initStorage,
 	provideWebAppServer,
 	provideWebComponentServer,
-	wire.FieldsOf(new(Config), "SS", "DB", "MariaDB", "MongoDB", "Storage", "Image"),
+	wire.FieldsOf(new(Config), "DB", "MariaDB", "MongoDB", "Storage", "Docker", "K8s", "Image"),
 	wire.Struct(new(Server), "*"),
 )
 
