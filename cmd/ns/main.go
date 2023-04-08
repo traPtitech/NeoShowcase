@@ -127,6 +127,7 @@ func main() {
 	viper.SetDefault("k8s.tls.traefik.certResolver", "nsresolver")
 	viper.SetDefault("k8s.tls.certManager.issuer.name", "cert-issuer")
 	viper.SetDefault("k8s.tls.certManager.issuer.kind", "ClusterIssuer")
+	viper.SetDefault("k8s.imagePullSecret", "")
 
 	viper.SetDefault("web.app.port", 5000)
 	viper.SetDefault("web.component.port", 10000)

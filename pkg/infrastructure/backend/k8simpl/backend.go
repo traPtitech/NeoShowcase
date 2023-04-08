@@ -46,6 +46,8 @@ type Config struct {
 			} `mapstructure:"issuer" yaml:"issuer"`
 		} `mapstructure:"certManager" yaml:"certManager"`
 	} `mapstructure:"tls" yaml:"tls"`
+	// ImagePullSecret required if registry is private
+	ImagePullSecret string `mapstructure:"imagePullSecret" yaml:"imagePullSecret"`
 }
 
 type (

@@ -8,8 +8,8 @@ import (
 	"github.com/friendsofgo/errors"
 	"github.com/samber/lo"
 	traefikv1alpha1 "github.com/traefik/traefik/v2/pkg/provider/kubernetes/crd/traefikcontainous/v1alpha1"
-	v1 "k8s.io/api/apps/v1"
-	apiv1 "k8s.io/api/core/v1"
+	appsv1 "k8s.io/api/apps/v1"
+	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
 	"github.com/traPtitech/neoshowcase/pkg/domain"
@@ -17,8 +17,8 @@ import (
 )
 
 type runtimeResources struct {
-	statefulSets  []*v1.StatefulSet
-	services      []*apiv1.Service
+	statefulSets  []*appsv1.StatefulSet
+	services      []*v1.Service
 	middlewares   []*traefikv1alpha1.Middleware
 	ingressRoutes []*traefikv1alpha1.IngressRoute
 	certificates  []*certmanagerv1.Certificate
@@ -63,12 +63,12 @@ func (b *k8sBackend) listCurrentResources(ctx context.Context) (*runtimeResource
 	return &resources, nil
 }
 
-func (b *k8sBackend) statefulSet(app *domain.AppDesiredState) *v1.StatefulSet {
-	envs := lo.MapToSlice(app.Envs, func(key string, value string) apiv1.EnvVar {
-		return apiv1.EnvVar{Name: key, Value: value}
+func (b *k8sBackend) statefulSet(app *domain.AppDesiredState) *appsv1.StatefulSet {
+	envs := lo.MapToSlice(app.Envs, func(key string, value string) v1.EnvVar {
+		return v1.EnvVar{Name: key, Value: value}
 	})
 
-	return &v1.StatefulSet{
+	ss := &appsv1.StatefulSet{
 		TypeMeta: metav1.TypeMeta{
 			Kind:       "StatefulSet",
 			APIVersion: "apps/v1",
@@ -78,20 +78,20 @@ func (b *k8sBackend) statefulSet(app *domain.AppDesiredState) *v1.StatefulSet {
 			Namespace: b.config.Namespace,
 			Labels:    resourceLabels(app.App.ID),
 		},
-		Spec: v1.StatefulSetSpec{
+		Spec: appsv1.StatefulSetSpec{
 			Replicas: lo.ToPtr(int32(1)),
 			Selector: &metav1.LabelSelector{
 				MatchLabels: resourceLabels(app.App.ID),
 			},
-			Template: apiv1.PodTemplateSpec{
+			Template: v1.PodTemplateSpec{
 				ObjectMeta: metav1.ObjectMeta{
 					Labels: resourceLabels(app.App.ID),
 					Annotations: map[string]string{
 						appRestartAnnotation: app.App.UpdatedAt.Format(time.RFC3339),
 					},
 				},
-				Spec: apiv1.PodSpec{
-					Containers: []apiv1.Container{{
+				Spec: v1.PodSpec{
+					Containers: []v1.Container{{
 						Name:  "app",
 						Image: app.ImageName + ":" + app.ImageTag,
 						Env:   envs,
@@ -100,9 +100,15 @@ func (b *k8sBackend) statefulSet(app *domain.AppDesiredState) *v1.StatefulSet {
 			},
 		},
 	}
+
+	if b.config.ImagePullSecret != "" {
+		ss.Spec.Template.Spec.ImagePullSecrets = []v1.LocalObjectReference{{Name: b.config.ImagePullSecret}}
+	}
+
+	return ss
 }
 
-func (b *k8sBackend) deleteStatefulSet(ctx context.Context, ss *v1.StatefulSet) error {
+func (b *k8sBackend) deleteStatefulSet(ctx context.Context, ss *appsv1.StatefulSet) error {
 	// HACK?: statefulset の spec.selector がなぜか omitempty ではないため、生 json を指定する
 	patch := m{
 		"kind":       "StatefulSet",
@@ -115,7 +121,7 @@ func (b *k8sBackend) deleteStatefulSet(ctx context.Context, ss *v1.StatefulSet) 
 			"replicas": 0,
 		},
 	}
-	return strategicPatch[*v1.StatefulSet](ctx, ss.Name, patch, b.client.AppsV1().StatefulSets(b.config.Namespace))
+	return strategicPatch[*appsv1.StatefulSet](ctx, ss.Name, patch, b.client.AppsV1().StatefulSets(b.config.Namespace))
 }
 
 func (b *k8sBackend) SynchronizeRuntime(ctx context.Context, apps []*domain.AppDesiredState) error {
@@ -144,13 +150,13 @@ func (b *k8sBackend) SynchronizeRuntime(ctx context.Context, apps []*domain.AppD
 
 	// Apply resources
 	for _, ss := range next.statefulSets {
-		err = patch[*v1.StatefulSet](ctx, ss.Name, ss, b.client.AppsV1().StatefulSets(b.config.Namespace))
+		err = patch[*appsv1.StatefulSet](ctx, ss.Name, ss, b.client.AppsV1().StatefulSets(b.config.Namespace))
 		if err != nil {
 			return errors.Wrap(err, "failed to patch stateful set")
 		}
 	}
 	for _, svc := range next.services {
-		err = patch[*apiv1.Service](ctx, svc.Name, svc, b.client.CoreV1().Services(b.config.Namespace))
+		err = patch[*v1.Service](ctx, svc.Name, svc, b.client.CoreV1().Services(b.config.Namespace))
 		if err != nil {
 			return errors.Wrap(err, "failed to patch service")
 		}
@@ -178,11 +184,11 @@ func (b *k8sBackend) SynchronizeRuntime(ctx context.Context, apps []*domain.AppD
 	// NOTE: stateful set does not provide any guarantees to (order of) termination of pods when deleted
 	// NOTE: stateful set does not delete volumes
 	// https://kubernetes.io/docs/concepts/workloads/controllers/statefulset/#limitations
-	err = prune[*v1.StatefulSet](ctx, diff(old.statefulSets, next.statefulSets), b.client.AppsV1().StatefulSets(b.config.Namespace))
+	err = prune[*appsv1.StatefulSet](ctx, diff(old.statefulSets, next.statefulSets), b.client.AppsV1().StatefulSets(b.config.Namespace))
 	if err != nil {
 		return errors.Wrap(err, "failed to prune stateful sets")
 	}
-	err = prune[*apiv1.Service](ctx, diff(old.services, next.services), b.client.CoreV1().Services(b.config.Namespace))
+	err = prune[*v1.Service](ctx, diff(old.services, next.services), b.client.CoreV1().Services(b.config.Namespace))
 	if err != nil {
 		return errors.Wrap(err, "failed to prune services")
 	}

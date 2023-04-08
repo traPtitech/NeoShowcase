@@ -9,7 +9,7 @@ import (
 	"github.com/traefik/traefik/v2/pkg/config/dynamic"
 	traefikv1alpha1 "github.com/traefik/traefik/v2/pkg/provider/kubernetes/crd/traefikcontainous/v1alpha1"
 	"github.com/traefik/traefik/v2/pkg/types"
-	apiv1 "k8s.io/api/core/v1"
+	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/intstr"
 
@@ -17,8 +17,8 @@ import (
 	"github.com/traPtitech/neoshowcase/pkg/domain/web"
 )
 
-func (b *k8sBackend) runtimeService(app *domain.Application, website *domain.Website) *apiv1.Service {
-	return &apiv1.Service{
+func (b *k8sBackend) runtimeService(app *domain.Application, website *domain.Website) *v1.Service {
+	return &v1.Service{
 		TypeMeta: metav1.TypeMeta{
 			Kind:       "Service",
 			APIVersion: "v1",
@@ -28,10 +28,10 @@ func (b *k8sBackend) runtimeService(app *domain.Application, website *domain.Web
 			Namespace: b.config.Namespace,
 			Labels:    resourceLabels(app.ID),
 		},
-		Spec: apiv1.ServiceSpec{
+		Spec: v1.ServiceSpec{
 			Type:     "ClusterIP",
 			Selector: resourceLabels(app.ID),
-			Ports: []apiv1.ServicePort{{
+			Ports: []v1.ServicePort{{
 				Protocol:   "TCP",
 				Port:       80,
 				TargetPort: intstr.FromInt(website.HTTPPort),
