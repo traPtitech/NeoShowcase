@@ -65,7 +65,7 @@ func (b *dockerBackend) syncAppContainer(ctx context.Context, app *domain.AppDes
 			RestartPolicy: docker.RestartOnFailure(5),
 		},
 		NetworkingConfig: &docker.NetworkingConfig{EndpointsConfig: map[string]*docker.EndpointConfig{
-			appNetwork: {
+			b.conf.Network: {
 				Aliases: []string{networkName(app.App.ID)},
 			},
 		}},
@@ -112,7 +112,7 @@ func (b *dockerBackend) SynchronizeRuntime(ctx context.Context, apps []*domain.A
 	cb := newRuntimeConfigBuilder()
 	for _, app := range apps {
 		for _, website := range app.App.Websites {
-			cb.addWebsite(app.App, website)
+			cb.addWebsite(b, app.App, website)
 		}
 	}
 	err = b.writeConfig(traefikRuntimeFilename, cb.build())

@@ -3,7 +3,6 @@ package dockerimpl
 import (
 	"context"
 	"fmt"
-	"strings"
 	"sync"
 	"time"
 
@@ -14,10 +13,16 @@ import (
 	"github.com/traPtitech/neoshowcase/pkg/domain/event"
 )
 
-type IngressConfDirPath string
+type Config struct {
+	ConfDir string `mapstructure:"confDir" yaml:"confDir"`
+	SS      struct {
+		URL string `mapstructure:"url" yaml:"url"`
+	} `mapstructure:"ss" yaml:"ss"`
+	Network      string `mapstructure:"network" yaml:"network"`
+	CertResolver string `mapstructure:"certResolver" yaml:"certResolver"`
+}
 
 const (
-	appNetwork          = "neoshowcase_apps"
 	appLabel            = "neoshowcase.trap.jp/app"
 	appIDLabel          = "neoshowcase.trap.jp/appId"
 	appRestartedAtLabel = "neoshowcase.trap.jp/restartedAt"
@@ -30,10 +35,9 @@ const (
 )
 
 type dockerBackend struct {
-	c              *docker.Client
-	bus            domain.Bus
-	ingressConfDir string
-	ssURL          string
+	c    *docker.Client
+	bus  domain.Bus
+	conf Config
 
 	dockerEvent chan *docker.APIEvents
 	reloadLock  sync.Mutex
@@ -42,20 +46,18 @@ type dockerBackend struct {
 func NewDockerBackend(
 	c *docker.Client,
 	bus domain.Bus,
-	path IngressConfDirPath,
-	ss domain.StaticServerConnectivityConfig,
+	conf Config,
 ) domain.Backend {
 	return &dockerBackend{
-		c:              c,
-		bus:            bus,
-		ingressConfDir: string(path),
-		ssURL:          ss.URL,
+		c:    c,
+		bus:  bus,
+		conf: conf,
 	}
 }
 
 func (b *dockerBackend) Start(_ context.Context) error {
 	// showcase用のネットワークを用意
-	if err := initNetworks(b.c); err != nil {
+	if err := b.initNetworks(); err != nil {
 		return errors.Wrap(err, "failed to init networks")
 	}
 
@@ -91,19 +93,19 @@ func (b *dockerBackend) Dispose(_ context.Context) error {
 	return nil
 }
 
-func initNetworks(c *docker.Client) error {
-	networks, err := c.ListNetworks()
+func (b *dockerBackend) initNetworks() error {
+	networks, err := b.c.ListNetworks()
 	if err != nil {
 		return errors.Wrap(err, "failed to list networks")
 	}
 	for _, network := range networks {
-		if network.Name == appNetwork {
+		if network.Name == b.conf.Network {
 			return nil
 		}
 	}
 
-	_, err = c.CreateNetwork(docker.CreateNetworkOptions{
-		Name: appNetwork,
+	_, err = b.c.CreateNetwork(docker.CreateNetworkOptions{
+		Name: b.conf.Network,
 	})
 	return err
 }
@@ -125,11 +127,7 @@ func networkName(appID string) string {
 }
 
 func traefikName(website *domain.Website) string {
-	s := fmt.Sprintf("nsapp-%s%s",
-		strings.ReplaceAll(website.FQDN, ".", "-"),
-		strings.ReplaceAll(website.PathPrefix, "/", "-"),
-	)
-	return strings.TrimSuffix(s, "-")
+	return fmt.Sprintf("nsapp-%s", website.ID)
 }
 
 func stripMiddlewareName(website *domain.Website) string {

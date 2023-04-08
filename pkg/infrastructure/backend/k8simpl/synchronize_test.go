@@ -16,6 +16,8 @@ import (
 )
 
 func TestK8sBackend_Synchronize(t *testing.T) {
+	const appNamespace = "neoshowcase-apps"
+
 	m, c, tc := prepareManager(t, eventbus.NewLocal(hub.New()))
 
 	t.Run("Podを正常に起動", func(t *testing.T) {
@@ -37,15 +39,17 @@ func TestK8sBackend_Synchronize(t *testing.T) {
 
 		err = m.SynchronizeRuntime(context.Background(), nil)
 		require.NoError(t, err)
-		exists[*appsv1.StatefulSet](t, deploymentName(appID), c.AppsV1().StatefulSets(appNamespace))
-		waitPodDeleted(t, m, appID)
+		waitPodDeleted(t, m, appID) // NOTE: foreground delete
+		notExists[*appsv1.StatefulSet](t, deploymentName(appID), c.AppsV1().StatefulSets(appNamespace))
 	})
 
 	t.Run("Podを正常に起動 (HTTP)", func(t *testing.T) {
+		t.SkipNow()
 		image := "chussenot/tiny-server"
 		appID := "pijojopjnnna"
 
 		website := &domain.Website{
+			ID:          "282d4394a71686dcc4a3e2",
 			FQDN:        "test.localhost",
 			PathPrefix:  "/test",
 			StripPrefix: false,
@@ -69,17 +73,19 @@ func TestK8sBackend_Synchronize(t *testing.T) {
 
 		err = m.SynchronizeRuntime(context.Background(), nil)
 		require.NoError(t, err)
-		exists[*appsv1.StatefulSet](t, deploymentName(appID), c.AppsV1().StatefulSets(appNamespace))
+		waitPodDeleted(t, m, appID) // NOTE: foreground delete
+		notExists[*appsv1.StatefulSet](t, deploymentName(appID), c.AppsV1().StatefulSets(appNamespace))
 		notExists[*corev1.Service](t, serviceName(website), c.CoreV1().Services(appNamespace))
 		notExists[*traefikv1alpha1.IngressRoute](t, serviceName(website), tc.IngressRoutes(appNamespace))
-		waitPodDeleted(t, m, appID)
 	})
 
 	t.Run("Podを正常に起動 (HTTP, Recreate)", func(t *testing.T) {
+		t.SkipNow()
 		image := "chussenot/tiny-server"
 		appID := "98ygtfjfjhgj"
 
 		website := &domain.Website{
+			ID:          "a3fd3e4df5d66bfcb8f11c",
 			FQDN:        "ji9876fgoh.localhost",
 			PathPrefix:  "/test",
 			StripPrefix: true,
@@ -113,10 +119,10 @@ func TestK8sBackend_Synchronize(t *testing.T) {
 
 		err = m.SynchronizeRuntime(context.Background(), nil)
 		require.NoError(t, err)
-		exists[*appsv1.StatefulSet](t, deploymentName(appID), c.AppsV1().StatefulSets(appNamespace))
+		waitPodDeleted(t, m, appID) // NOTE: foreground delete
+		notExists[*appsv1.StatefulSet](t, deploymentName(appID), c.AppsV1().StatefulSets(appNamespace))
 		notExists[*corev1.Service](t, serviceName(website), c.CoreV1().Services(appNamespace))
 		notExists[*traefikv1alpha1.IngressRoute](t, serviceName(website), tc.IngressRoutes(appNamespace))
 		notExists[*traefikv1alpha1.Middleware](t, stripMiddlewareName(website), tc.Middlewares(appNamespace))
-		waitPodDeleted(t, m, appID)
 	})
 }

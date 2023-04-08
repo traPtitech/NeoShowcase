@@ -8,6 +8,7 @@ package main
 
 import (
 	"fmt"
+	"github.com/cert-manager/cert-manager/pkg/client/clientset/versioned"
 	"github.com/fsouza/go-dockerclient"
 	"github.com/google/wire"
 	"github.com/leandro-lugaresi/hub"
@@ -76,9 +77,8 @@ func NewWithDocker(c2 Config) (*Server, error) {
 	if err != nil {
 		return nil, err
 	}
-	ingressConfDirPath := provideIngressConfDirPath(c2)
-	staticServerConnectivityConfig := c2.SS
-	backend := dockerimpl.NewDockerBackend(client, bus, ingressConfDirPath, staticServerConnectivityConfig)
+	dockerimplConfig := c2.Docker
+	backend := dockerimpl.NewDockerBackend(client, bus, dockerimplConfig)
 	imageConfig := c2.Image
 	appBuildHelper := usecase.NewAppBuildHelper(componentService, imageConfig)
 	appDeployHelper := usecase.NewAppDeployHelper(backend, applicationRepository, buildRepository, environmentRepository, componentService, imageConfig)
@@ -161,8 +161,15 @@ func NewWithK8S(c2 Config) (*Server, error) {
 	if err != nil {
 		return nil, err
 	}
-	staticServerConnectivityConfig := c2.SS
-	backend := k8simpl.NewK8SBackend(bus, clientset, traefikContainousV1alpha1Client, staticServerConnectivityConfig)
+	versionedClientset, err := versioned.NewForConfig(restConfig)
+	if err != nil {
+		return nil, err
+	}
+	k8simplConfig := c2.K8s
+	backend, err := k8simpl.NewK8SBackend(bus, clientset, traefikContainousV1alpha1Client, versionedClientset, k8simplConfig)
+	if err != nil {
+		return nil, err
+	}
 	imageConfig := c2.Image
 	appBuildHelper := usecase.NewAppBuildHelper(componentService, imageConfig)
 	appDeployHelper := usecase.NewAppDeployHelper(backend, applicationRepository, buildRepository, environmentRepository, componentService, imageConfig)
@@ -194,11 +201,10 @@ func NewWithK8S(c2 Config) (*Server, error) {
 
 // wire.go:
 
-var commonSet = wire.NewSet(web.NewServer, hub.New, eventbus.NewLocal, admindb.New, dbmanager.NewMariaDBManager, dbmanager.NewMongoDBManager, repository.NewApplicationRepository, repository.NewAvailableDomainRepository, repository.NewGitRepositoryRepository, repository.NewEnvironmentRepository, repository.NewBuildRepository, repository.NewArtifactRepository, repository.NewUserRepository, grpc.NewApplicationServiceServer, grpc.NewAuthInterceptor, grpc.NewComponentServiceServer, usecase.NewAPIServerService, usecase.NewAppBuildHelper, usecase.NewAppDeployHelper, usecase.NewContinuousDeploymentService, usecase.NewRepositoryFetcherService, usecase.NewCleanerService, usecase.NewLogStreamService, usecase.NewContainerStateMutator, provideIngressConfDirPath,
-	provideRepositoryPublicKey,
+var commonSet = wire.NewSet(web.NewServer, hub.New, eventbus.NewLocal, admindb.New, dbmanager.NewMariaDBManager, dbmanager.NewMongoDBManager, repository.NewApplicationRepository, repository.NewAvailableDomainRepository, repository.NewGitRepositoryRepository, repository.NewEnvironmentRepository, repository.NewBuildRepository, repository.NewArtifactRepository, repository.NewUserRepository, grpc.NewApplicationServiceServer, grpc.NewAuthInterceptor, grpc.NewComponentServiceServer, usecase.NewAPIServerService, usecase.NewAppBuildHelper, usecase.NewAppDeployHelper, usecase.NewContinuousDeploymentService, usecase.NewRepositoryFetcherService, usecase.NewCleanerService, usecase.NewLogStreamService, usecase.NewContainerStateMutator, provideRepositoryPublicKey,
 	initStorage,
 	provideWebAppServer,
-	provideWebComponentServer, wire.FieldsOf(new(Config), "SS", "DB", "MariaDB", "MongoDB", "Storage", "Image"), wire.Struct(new(Server), "*"),
+	provideWebComponentServer, wire.FieldsOf(new(Config), "DB", "MariaDB", "MongoDB", "Storage", "Docker", "K8s", "Image"), wire.Struct(new(Server), "*"),
 )
 
 func New(c2 Config) (*Server, error) {

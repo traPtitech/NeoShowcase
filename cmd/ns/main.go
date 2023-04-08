@@ -80,12 +80,6 @@ func main() {
 
 	viper.SetDefault("mode", "docker")
 
-	viper.SetDefault("ss.service.namespace", "default")
-	viper.SetDefault("ss.service.kind", "Service")
-	viper.SetDefault("ss.service.name", "")
-	viper.SetDefault("ss.service.port", 80)
-	viper.SetDefault("ss.url", "")
-
 	viper.SetDefault("db.host", "127.0.0.1")
 	viper.SetDefault("db.port", 3306)
 	viper.SetDefault("db.username", "root")
@@ -119,7 +113,21 @@ func main() {
 	viper.SetDefault("storage.swift.container", "neoshowcase")
 	viper.SetDefault("storage.swift.authUrl", "")
 
-	viper.SetDefault("docker.confdir", "/opt/traefik/conf")
+	viper.SetDefault("docker.confDir", "/opt/traefik/conf")
+	viper.SetDefault("docker.ss.url", "")
+	viper.SetDefault("docker.network", "neoshowcase_apps")
+	viper.SetDefault("docker.certResolver", "nsresolver")
+
+	viper.SetDefault("k8s.ss.namespace", "default")
+	viper.SetDefault("k8s.ss.kind", "Service")
+	viper.SetDefault("k8s.ss.name", "")
+	viper.SetDefault("k8s.ss.port", 80)
+	viper.SetDefault("k8s.namespace", "neoshowcase-apps")
+	viper.SetDefault("k8s.tls.type", "traefik")
+	viper.SetDefault("k8s.tls.traefik.certResolver", "nsresolver")
+	viper.SetDefault("k8s.tls.certManager.issuer.name", "cert-issuer")
+	viper.SetDefault("k8s.tls.certManager.issuer.kind", "ClusterIssuer")
+	viper.SetDefault("k8s.imagePullSecret", "")
 
 	viper.SetDefault("web.app.port", 5000)
 	viper.SetDefault("web.component.port", 10000)

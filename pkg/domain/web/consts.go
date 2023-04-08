@@ -13,5 +13,4 @@ const (
 	TraefikAuthSoftMiddleware = "nsapp_auth_soft@file"
 	TraefikAuthHardMiddleware = "nsapp_auth_hard@file"
 	TraefikAuthMiddleware     = "nsapp_auth@file"
-	TraefikCertResolver       = "nsresolver@file"
 )
