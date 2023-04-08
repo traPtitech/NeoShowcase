@@ -22,6 +22,8 @@ import (
 )
 
 func prepareManager(t *testing.T, bus domain.Bus) (*k8sBackend, *kubernetes.Clientset, *traefikv1alpha1.TraefikContainousV1alpha1Client) {
+	const appsNamespace = "neoshowcase-apps"
+
 	t.Helper()
 	if ok, _ := strconv.ParseBool(os.Getenv("ENABLE_K8S_TESTS")); !ok {
 		t.SkipNow()
@@ -49,13 +51,14 @@ func prepareManager(t *testing.T, bus domain.Bus) (*k8sBackend, *kubernetes.Clie
 
 	if _, err := client.CoreV1().Namespaces().Create(context.Background(), &v1.Namespace{
 		ObjectMeta: metav1.ObjectMeta{
-			Name: "neoshowcase-apps",
+			Name: appsNamespace,
 		},
 	}, metav1.CreateOptions{}); err != nil && !errors.IsAlreadyExists(err) {
 		t.Fatal(err)
 	}
 
 	var config Config
+	config.Namespace = appsNamespace
 	config.TLS.Type = tlsTypeTraefik
 	b, err := NewK8SBackend(bus, client, traefikClient, certManagerClient, config)
 	require.NoError(t, err)
