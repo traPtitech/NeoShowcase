@@ -26,25 +26,25 @@ func (b *k8sBackend) listCurrentResources(ctx context.Context) (*runtimeResource
 	var resources runtimeResources
 	listOpt := metav1.ListOptions{LabelSelector: allSelector()}
 
-	ss, err := b.client.AppsV1().StatefulSets(appNamespace).List(ctx, listOpt)
+	ss, err := b.client.AppsV1().StatefulSets(b.config.Namespace).List(ctx, listOpt)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to get stateful sets")
 	}
 	resources.statefulSets = util.SliceOfPtr(ss.Items)
 
-	svc, err := b.client.CoreV1().Services(appNamespace).List(ctx, listOpt)
+	svc, err := b.client.CoreV1().Services(b.config.Namespace).List(ctx, listOpt)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to get services")
 	}
 	resources.services = util.SliceOfPtr(svc.Items)
 
-	mw, err := b.traefikClient.Middlewares(appNamespace).List(ctx, listOpt)
+	mw, err := b.traefikClient.Middlewares(b.config.Namespace).List(ctx, listOpt)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to get middlewares")
 	}
 	resources.middlewares = util.SliceOfPtr(mw.Items)
 
-	ir, err := b.traefikClient.IngressRoutes(appNamespace).List(ctx, listOpt)
+	ir, err := b.traefikClient.IngressRoutes(b.config.Namespace).List(ctx, listOpt)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to get ingress routes")
 	}
@@ -53,7 +53,7 @@ func (b *k8sBackend) listCurrentResources(ctx context.Context) (*runtimeResource
 	return &resources, nil
 }
 
-func statefulSet(app *domain.AppDesiredState) *v1.StatefulSet {
+func (b *k8sBackend) statefulSet(app *domain.AppDesiredState) *v1.StatefulSet {
 	envs := lo.MapToSlice(app.Envs, func(key string, value string) apiv1.EnvVar {
 		return apiv1.EnvVar{Name: key, Value: value}
 	})
@@ -65,7 +65,7 @@ func statefulSet(app *domain.AppDesiredState) *v1.StatefulSet {
 		},
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      deploymentName(app.App.ID),
-			Namespace: appNamespace,
+			Namespace: b.config.Namespace,
 			Labels:    resourceLabels(app.App.ID),
 		},
 		Spec: v1.StatefulSetSpec{
@@ -99,13 +99,13 @@ func (b *k8sBackend) deleteStatefulSet(ctx context.Context, ss *v1.StatefulSet) 
 		"apiVersion": "apps/v1",
 		"metadata": m{
 			"name":      ss.Name,
-			"namespace": appNamespace,
+			"namespace": b.config.Namespace,
 		},
 		"spec": m{
 			"replicas": 0,
 		},
 	}
-	return strategicPatch[*v1.StatefulSet](ctx, ss.Name, patch, b.client.AppsV1().StatefulSets(appNamespace))
+	return strategicPatch[*v1.StatefulSet](ctx, ss.Name, patch, b.client.AppsV1().StatefulSets(b.config.Namespace))
 }
 
 func (b *k8sBackend) SynchronizeRuntime(ctx context.Context, apps []*domain.AppDesiredState) error {
@@ -121,10 +121,10 @@ func (b *k8sBackend) SynchronizeRuntime(ctx context.Context, apps []*domain.AppD
 	// Calculate next resources to apply
 	var next runtimeResources
 	for _, app := range apps {
-		next.statefulSets = append(next.statefulSets, statefulSet(app))
+		next.statefulSets = append(next.statefulSets, b.statefulSet(app))
 		for _, website := range app.App.Websites {
-			next.services = append(next.services, runtimeService(app.App, website))
-			ingressRoute, mw := ingressRoute(app.App, website, resourceLabels(app.App.ID), runtimeServiceRef(app.App, website))
+			next.services = append(next.services, b.runtimeService(app.App, website))
+			ingressRoute, mw := b.ingressRoute(app.App, website, resourceLabels(app.App.ID), b.runtimeServiceRef(app.App, website))
 			next.middlewares = append(next.middlewares, mw...)
 			next.ingressRoutes = append(next.ingressRoutes, ingressRoute)
 		}
@@ -132,25 +132,25 @@ func (b *k8sBackend) SynchronizeRuntime(ctx context.Context, apps []*domain.AppD
 
 	// Apply resources
 	for _, ss := range next.statefulSets {
-		err = patch[*v1.StatefulSet](ctx, ss.Name, ss, b.client.AppsV1().StatefulSets(appNamespace))
+		err = patch[*v1.StatefulSet](ctx, ss.Name, ss, b.client.AppsV1().StatefulSets(b.config.Namespace))
 		if err != nil {
 			return errors.Wrap(err, "failed to patch stateful set")
 		}
 	}
 	for _, svc := range next.services {
-		err = patch[*apiv1.Service](ctx, svc.Name, svc, b.client.CoreV1().Services(appNamespace))
+		err = patch[*apiv1.Service](ctx, svc.Name, svc, b.client.CoreV1().Services(b.config.Namespace))
 		if err != nil {
 			return errors.Wrap(err, "failed to patch service")
 		}
 	}
 	for _, mw := range next.middlewares {
-		err = patch[*traefikv1alpha1.Middleware](ctx, mw.Name, mw, b.traefikClient.Middlewares(appNamespace))
+		err = patch[*traefikv1alpha1.Middleware](ctx, mw.Name, mw, b.traefikClient.Middlewares(b.config.Namespace))
 		if err != nil {
 			return errors.Wrap(err, "failed to patch middleware")
 		}
 	}
 	for _, ir := range next.ingressRoutes {
-		err = patch[*traefikv1alpha1.IngressRoute](ctx, ir.Name, ir, b.traefikClient.IngressRoutes(appNamespace))
+		err = patch[*traefikv1alpha1.IngressRoute](ctx, ir.Name, ir, b.traefikClient.IngressRoutes(b.config.Namespace))
 		if err != nil {
 			return errors.Wrap(err, "failed to patch ingress route")
 		}
@@ -160,19 +160,19 @@ func (b *k8sBackend) SynchronizeRuntime(ctx context.Context, apps []*domain.AppD
 	// NOTE: stateful set does not provide any guarantees to (order of) termination of pods when deleted
 	// NOTE: stateful set does not delete volumes
 	// https://kubernetes.io/docs/concepts/workloads/controllers/statefulset/#limitations
-	err = prune[*v1.StatefulSet](ctx, diff(old.statefulSets, next.statefulSets), b.client.AppsV1().StatefulSets(appNamespace))
+	err = prune[*v1.StatefulSet](ctx, diff(old.statefulSets, next.statefulSets), b.client.AppsV1().StatefulSets(b.config.Namespace))
 	if err != nil {
 		return errors.Wrap(err, "failed to prune stateful sets")
 	}
-	err = prune[*apiv1.Service](ctx, diff(old.services, next.services), b.client.CoreV1().Services(appNamespace))
+	err = prune[*apiv1.Service](ctx, diff(old.services, next.services), b.client.CoreV1().Services(b.config.Namespace))
 	if err != nil {
 		return errors.Wrap(err, "failed to prune services")
 	}
-	err = prune[*traefikv1alpha1.Middleware](ctx, diff(old.middlewares, next.middlewares), b.traefikClient.Middlewares(appNamespace))
+	err = prune[*traefikv1alpha1.Middleware](ctx, diff(old.middlewares, next.middlewares), b.traefikClient.Middlewares(b.config.Namespace))
 	if err != nil {
 		return errors.Wrap(err, "failed to prune middlewares")
 	}
-	err = prune[*traefikv1alpha1.IngressRoute](ctx, diff(old.ingressRoutes, next.ingressRoutes), b.traefikClient.IngressRoutes(appNamespace))
+	err = prune[*traefikv1alpha1.IngressRoute](ctx, diff(old.ingressRoutes, next.ingressRoutes), b.traefikClient.IngressRoutes(b.config.Namespace))
 	if err != nil {
 		return errors.Wrap(err, "failed to prune ingress routes")
 	}

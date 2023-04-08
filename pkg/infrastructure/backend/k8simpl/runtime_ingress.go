@@ -14,7 +14,7 @@ import (
 	"github.com/traPtitech/neoshowcase/pkg/domain/web"
 )
 
-func runtimeService(app *domain.Application, website *domain.Website) *apiv1.Service {
+func (b *k8sBackend) runtimeService(app *domain.Application, website *domain.Website) *apiv1.Service {
 	return &apiv1.Service{
 		TypeMeta: metav1.TypeMeta{
 			Kind:       "Service",
@@ -22,7 +22,7 @@ func runtimeService(app *domain.Application, website *domain.Website) *apiv1.Ser
 		},
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      serviceName(website),
-			Namespace: appNamespace,
+			Namespace: b.config.Namespace,
 			Labels:    resourceLabels(app.ID),
 		},
 		Spec: apiv1.ServiceSpec{
@@ -37,19 +37,19 @@ func runtimeService(app *domain.Application, website *domain.Website) *apiv1.Ser
 	}
 }
 
-func runtimeServiceRef(_ *domain.Application, website *domain.Website) []traefikv1alpha1.Service {
+func (b *k8sBackend) runtimeServiceRef(_ *domain.Application, website *domain.Website) []traefikv1alpha1.Service {
 	return []traefikv1alpha1.Service{{
 		LoadBalancerSpec: traefikv1alpha1.LoadBalancerSpec{
 			Name:      serviceName(website),
 			Kind:      "Service",
-			Namespace: appNamespace,
+			Namespace: b.config.Namespace,
 			Port:      intstr.FromInt(80),
 			Scheme:    "http",
 		},
 	}}
 }
 
-func stripMiddleware(_ *domain.Application, website *domain.Website, labels map[string]string) *traefikv1alpha1.Middleware {
+func (b *k8sBackend) stripMiddleware(_ *domain.Application, website *domain.Website, labels map[string]string) *traefikv1alpha1.Middleware {
 	return &traefikv1alpha1.Middleware{
 		TypeMeta: metav1.TypeMeta{
 			Kind:       "Middleware",
@@ -57,7 +57,7 @@ func stripMiddleware(_ *domain.Application, website *domain.Website, labels map[
 		},
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      stripMiddlewareName(website),
-			Namespace: appNamespace,
+			Namespace: b.config.Namespace,
 			Labels:    labels,
 		},
 		Spec: traefikv1alpha1.MiddlewareSpec{
@@ -68,7 +68,7 @@ func stripMiddleware(_ *domain.Application, website *domain.Website, labels map[
 	}
 }
 
-func ingressRoute(app *domain.Application, website *domain.Website, labels map[string]string, serviceRefs []traefikv1alpha1.Service) (*traefikv1alpha1.IngressRoute, []*traefikv1alpha1.Middleware) {
+func (b *k8sBackend) ingressRoute(app *domain.Application, website *domain.Website, labels map[string]string, serviceRefs []traefikv1alpha1.Service) (*traefikv1alpha1.IngressRoute, []*traefikv1alpha1.Middleware) {
 	var entrypoints []string
 	if website.HTTPS {
 		entrypoints = append(entrypoints, web.TraefikHTTPSEntrypoint)
@@ -97,7 +97,7 @@ func ingressRoute(app *domain.Application, website *domain.Website, labels map[s
 	} else {
 		rule = fmt.Sprintf("Host(`%s`) && PathPrefix(`%s`)", website.FQDN, website.PathPrefix)
 		if website.StripPrefix {
-			middleware := stripMiddleware(app, website, labels)
+			middleware := b.stripMiddleware(app, website, labels)
 			middlewares = append(middlewares, middleware)
 			middlewareRefs = append(middlewareRefs, traefikv1alpha1.MiddlewareRef{Name: middleware.Name})
 		}
@@ -119,7 +119,7 @@ func ingressRoute(app *domain.Application, website *domain.Website, labels map[s
 		},
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      serviceName(website),
-			Namespace: appNamespace,
+			Namespace: b.config.Namespace,
 			Labels:    labels,
 		},
 		Spec: traefikv1alpha1.IngressRouteSpec{

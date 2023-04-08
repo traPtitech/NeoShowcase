@@ -65,7 +65,7 @@ func (b *dockerBackend) syncAppContainer(ctx context.Context, app *domain.AppDes
 			RestartPolicy: docker.RestartOnFailure(5),
 		},
 		NetworkingConfig: &docker.NetworkingConfig{EndpointsConfig: map[string]*docker.EndpointConfig{
-			appNetwork: {
+			b.conf.Network: {
 				Aliases: []string{networkName(app.App.ID)},
 			},
 		}},

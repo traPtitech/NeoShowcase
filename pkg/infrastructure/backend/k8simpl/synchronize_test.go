@@ -16,6 +16,8 @@ import (
 )
 
 func TestK8sBackend_Synchronize(t *testing.T) {
+	const appNamespace = "neoshowcase-apps"
+
 	m, c, tc := prepareManager(t, eventbus.NewLocal(hub.New()))
 
 	t.Run("Podを正常に起動", func(t *testing.T) {

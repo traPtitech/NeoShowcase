@@ -12,7 +12,7 @@ import (
 )
 
 func (b *k8sBackend) GetContainer(ctx context.Context, appID string) (*domain.Container, error) {
-	list, err := b.client.CoreV1().Pods(appNamespace).List(ctx, metav1.ListOptions{
+	list, err := b.client.CoreV1().Pods(b.config.Namespace).List(ctx, metav1.ListOptions{
 		LabelSelector: labelSelector(appID),
 	})
 	if err != nil {
@@ -32,7 +32,7 @@ func (b *k8sBackend) GetContainer(ctx context.Context, appID string) (*domain.Co
 }
 
 func (b *k8sBackend) ListContainers(ctx context.Context) ([]*domain.Container, error) {
-	list, err := b.client.CoreV1().Pods(appNamespace).List(ctx, metav1.ListOptions{
+	list, err := b.client.CoreV1().Pods(b.config.Namespace).List(ctx, metav1.ListOptions{
 		LabelSelector: allSelector(),
 	})
 	if err != nil {

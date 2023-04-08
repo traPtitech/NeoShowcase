@@ -25,6 +25,7 @@ type Config struct {
 		Name      string `mapstructure:"name" yaml:"name"`
 		Port      int    `mapstructure:"port" yaml:"port"`
 	} `mapstructure:"ss" yaml:"ss"`
+	Namespace string `mapstructure:"namespace" yaml:"namespace"`
 }
 
 type (
@@ -32,7 +33,6 @@ type (
 )
 
 const (
-	appNamespace         = "neoshowcase-apps"
 	appLabel             = "neoshowcase.trap.jp/app"
 	appIDLabel           = "neoshowcase.trap.jp/appId"
 	appRestartAnnotation = "neoshowcase.trap.jp/startedAt"
@@ -66,7 +66,7 @@ func NewK8SBackend(
 
 func (b *k8sBackend) Start(_ context.Context) error {
 	var err error
-	b.podWatcher, err = b.client.CoreV1().Pods(appNamespace).Watch(context.Background(), metav1.ListOptions{
+	b.podWatcher, err = b.client.CoreV1().Pods(b.config.Namespace).Watch(context.Background(), metav1.ListOptions{
 		LabelSelector: metav1.FormatLabelSelector(&metav1.LabelSelector{MatchLabels: map[string]string{
 			appLabel: "true",
 		}}),

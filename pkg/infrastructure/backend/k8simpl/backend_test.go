@@ -46,7 +46,7 @@ func prepareManager(t *testing.T, bus domain.Bus) (*k8sBackend, *kubernetes.Clie
 
 	if _, err := client.CoreV1().Namespaces().Create(context.Background(), &v1.Namespace{
 		ObjectMeta: metav1.ObjectMeta{
-			Name: appNamespace,
+			Name: "neoshowcase-apps",
 		},
 	}, metav1.CreateOptions{}); err != nil && !errors.IsAlreadyExists(err) {
 		t.Fatal(err)
