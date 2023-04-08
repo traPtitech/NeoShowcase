@@ -6,6 +6,7 @@ import (
 	"strings"
 	"sync"
 
+	certmanagerv1 "github.com/cert-manager/cert-manager/pkg/client/clientset/versioned"
 	"github.com/friendsofgo/errors"
 	log "github.com/sirupsen/logrus"
 	traefikv1alpha1 "github.com/traefik/traefik/v2/pkg/provider/kubernetes/crd/generated/clientset/versioned/typed/traefikcontainous/v1alpha1"
@@ -18,6 +19,11 @@ import (
 	"github.com/traPtitech/neoshowcase/pkg/domain/event"
 )
 
+const (
+	tlsTypeTraefik     = "traefik"
+	tlsTypeCertManager = "cert-manager"
+)
+
 type Config struct {
 	SS struct {
 		Namespace string `mapstructure:"namespace" yaml:"namespace"`
@@ -26,6 +32,20 @@ type Config struct {
 		Port      int    `mapstructure:"port" yaml:"port"`
 	} `mapstructure:"ss" yaml:"ss"`
 	Namespace string `mapstructure:"namespace" yaml:"namespace"`
+	TLS       struct {
+		// cert-manager note: https://doc.traefik.io/traefik/providers/kubernetes-crd/#letsencrypt-support-with-the-custom-resource-definition-provider
+		// needs to enable ingress provider in traefik
+		Type    string `mapstructure:"type" yaml:"type"`
+		Traefik struct {
+			CertResolver string `mapstructure:"certResolver" yaml:"certResolver"`
+		} `mapstructure:"traefik" yaml:"traefik"`
+		CertManager struct {
+			Issuer struct {
+				Name string `mapstructure:"name" yaml:"name"`
+				Kind string `mapstructure:"kind" yaml:"kind"`
+			} `mapstructure:"issuer" yaml:"issuer"`
+		} `mapstructure:"certManager" yaml:"certManager"`
+	} `mapstructure:"tls" yaml:"tls"`
 }
 
 type (
@@ -41,10 +61,11 @@ const (
 )
 
 type k8sBackend struct {
-	eventbus      domain.Bus
-	client        *kubernetes.Clientset
-	traefikClient *traefikv1alpha1.TraefikContainousV1alpha1Client
-	config        Config
+	eventbus          domain.Bus
+	client            *kubernetes.Clientset
+	traefikClient     *traefikv1alpha1.TraefikContainousV1alpha1Client
+	certManagerClient *certmanagerv1.Clientset
+	config            Config
 
 	podWatcher watch.Interface
 	reloadLock sync.Mutex
@@ -54,14 +75,20 @@ func NewK8SBackend(
 	eventbus domain.Bus,
 	k8sCSet *kubernetes.Clientset,
 	traefikClient *traefikv1alpha1.TraefikContainousV1alpha1Client,
+	certManagerClient *certmanagerv1.Clientset,
 	config Config,
-) domain.Backend {
-	return &k8sBackend{
-		client:        k8sCSet,
-		traefikClient: traefikClient,
-		eventbus:      eventbus,
-		config:        config,
+) (domain.Backend, error) {
+	if config.TLS.Type != tlsTypeTraefik && config.TLS.Type != tlsTypeCertManager {
+		return nil, errors.New("k8s.tls.type needs to be one of 'traefik' or 'cert-manager'")
 	}
+
+	return &k8sBackend{
+		eventbus:          eventbus,
+		client:            k8sCSet,
+		traefikClient:     traefikClient,
+		certManagerClient: certManagerClient,
+		config:            config,
+	}, nil
 }
 
 func (b *k8sBackend) Start(_ context.Context) error {
@@ -145,11 +172,7 @@ func deploymentName(appID string) string {
 }
 
 func serviceName(website *domain.Website) string {
-	s := fmt.Sprintf("nsapp-%s%s",
-		strings.ReplaceAll(website.FQDN, ".", "-"),
-		strings.ReplaceAll(website.PathPrefix, "/", "-"),
-	)
-	return strings.TrimSuffix(s, "-")
+	return fmt.Sprintf("nsapp-%s", website.ID)
 }
 
 func stripMiddlewareName(website *domain.Website) string {
@@ -158,6 +181,10 @@ func stripMiddlewareName(website *domain.Website) string {
 
 func ssHeaderMiddlewareName(ss *domain.StaticSite) string {
 	return fmt.Sprintf("nsapp-ss-header-%s", ss.Application.ID)
+}
+
+func certificateName(fqdn string) string {
+	return tlsSecretName(fqdn)
 }
 
 func tlsSecretName(fqdn string) string {

@@ -112,7 +112,7 @@ func (b *dockerBackend) SynchronizeRuntime(ctx context.Context, apps []*domain.A
 	cb := newRuntimeConfigBuilder()
 	for _, app := range apps {
 		for _, website := range app.App.Websites {
-			cb.addWebsite(app.App, website)
+			cb.addWebsite(b, app.App, website)
 		}
 	}
 	err = b.writeConfig(traefikRuntimeFilename, cb.build())

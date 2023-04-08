@@ -4,6 +4,7 @@ import (
 	"context"
 	"time"
 
+	certmanagerv1 "github.com/cert-manager/cert-manager/pkg/apis/certmanager/v1"
 	"github.com/friendsofgo/errors"
 	"github.com/samber/lo"
 	traefikv1alpha1 "github.com/traefik/traefik/v2/pkg/provider/kubernetes/crd/traefikcontainous/v1alpha1"
@@ -20,6 +21,7 @@ type runtimeResources struct {
 	services      []*apiv1.Service
 	middlewares   []*traefikv1alpha1.Middleware
 	ingressRoutes []*traefikv1alpha1.IngressRoute
+	certificates  []*certmanagerv1.Certificate
 }
 
 func (b *k8sBackend) listCurrentResources(ctx context.Context) (*runtimeResources, error) {
@@ -49,6 +51,14 @@ func (b *k8sBackend) listCurrentResources(ctx context.Context) (*runtimeResource
 		return nil, errors.Wrap(err, "failed to get ingress routes")
 	}
 	resources.ingressRoutes = util.SliceOfPtr(ir.Items)
+
+	if b.config.TLS.Type == tlsTypeCertManager {
+		certs, err := b.certManagerClient.CertmanagerV1().Certificates(b.config.Namespace).List(ctx, listOpt)
+		if err != nil {
+			return nil, errors.Wrap(err, "failed to get certificates")
+		}
+		resources.certificates = util.SliceOfPtr(certs.Items)
+	}
 
 	return &resources, nil
 }
@@ -124,11 +134,13 @@ func (b *k8sBackend) SynchronizeRuntime(ctx context.Context, apps []*domain.AppD
 		next.statefulSets = append(next.statefulSets, b.statefulSet(app))
 		for _, website := range app.App.Websites {
 			next.services = append(next.services, b.runtimeService(app.App, website))
-			ingressRoute, mw := b.ingressRoute(app.App, website, resourceLabels(app.App.ID), b.runtimeServiceRef(app.App, website))
+			ingressRoute, mw, certs := b.ingressRoute(app.App, website, resourceLabels(app.App.ID), b.runtimeServiceRef(app.App, website))
 			next.middlewares = append(next.middlewares, mw...)
 			next.ingressRoutes = append(next.ingressRoutes, ingressRoute)
+			next.certificates = append(next.certificates, certs...)
 		}
 	}
+	next.certificates = lo.FindDuplicatesBy(next.certificates, func(cert *certmanagerv1.Certificate) string { return cert.Name })
 
 	// Apply resources
 	for _, ss := range next.statefulSets {
@@ -155,6 +167,12 @@ func (b *k8sBackend) SynchronizeRuntime(ctx context.Context, apps []*domain.AppD
 			return errors.Wrap(err, "failed to patch ingress route")
 		}
 	}
+	for _, cert := range next.certificates {
+		err = patch[*certmanagerv1.Certificate](ctx, cert.Name, cert, b.certManagerClient.CertmanagerV1().Certificates(b.config.Namespace))
+		if err != nil {
+			return errors.Wrap(err, "failed to patch certificate")
+		}
+	}
 
 	// Prune old resources
 	// NOTE: stateful set does not provide any guarantees to (order of) termination of pods when deleted
@@ -175,6 +193,10 @@ func (b *k8sBackend) SynchronizeRuntime(ctx context.Context, apps []*domain.AppD
 	err = prune[*traefikv1alpha1.IngressRoute](ctx, diff(old.ingressRoutes, next.ingressRoutes), b.traefikClient.IngressRoutes(b.config.Namespace))
 	if err != nil {
 		return errors.Wrap(err, "failed to prune ingress routes")
+	}
+	err = prune[*certmanagerv1.Certificate](ctx, diff(old.certificates, next.certificates), b.certManagerClient.CertmanagerV1().Certificates(b.config.Namespace))
+	if err != nil {
+		return errors.Wrap(err, "failed to prune certificates")
 	}
 
 	return nil

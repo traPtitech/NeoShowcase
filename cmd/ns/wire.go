@@ -6,6 +6,7 @@ package main
 import (
 	"fmt"
 
+	certmanagerv1 "github.com/cert-manager/cert-manager/pkg/client/clientset/versioned"
 	docker "github.com/fsouza/go-dockerclient"
 	"github.com/google/wire"
 	"github.com/leandro-lugaresi/hub"
@@ -83,6 +84,7 @@ func NewWithK8S(c Config) (*Server, error) {
 		rest.InClusterConfig,
 		kubernetes.NewForConfig,
 		traefikv1alpha1.NewForConfig,
+		certmanagerv1.NewForConfig,
 		k8simpl.NewK8SBackend,
 	)
 	return nil, nil

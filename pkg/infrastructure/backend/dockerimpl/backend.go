@@ -18,7 +18,8 @@ type Config struct {
 	SS      struct {
 		URL string `mapstructure:"url" yaml:"url"`
 	} `mapstructure:"ss" yaml:"ss"`
-	Network string `mapstructure:"network" yaml:"network"`
+	Network      string `mapstructure:"network" yaml:"network"`
+	CertResolver string `mapstructure:"certResolver" yaml:"certResolver"`
 }
 
 const (

@@ -2,9 +2,6 @@ debug: true
 
 mode: docker
 
-ss:
-  url: http://ns-ssgen:8080/
-
 db:
   host: mysql
   port: 3306
@@ -31,6 +28,10 @@ storage:
 
 docker:
   confDir: /opt/traefik/conf
+  ss:
+    url: http://ns-ssgen:8080/
+  network: neoshowcase_apps
+  certResolver: nsresolver
 
 web:
   app:

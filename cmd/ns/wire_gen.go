@@ -8,6 +8,7 @@ package main
 
 import (
 	"fmt"
+	"github.com/cert-manager/cert-manager/pkg/client/clientset/versioned"
 	"github.com/fsouza/go-dockerclient"
 	"github.com/google/wire"
 	"github.com/leandro-lugaresi/hub"
@@ -160,8 +161,15 @@ func NewWithK8S(c2 Config) (*Server, error) {
 	if err != nil {
 		return nil, err
 	}
+	versionedClientset, err := versioned.NewForConfig(restConfig)
+	if err != nil {
+		return nil, err
+	}
 	k8simplConfig := c2.K8s
-	backend := k8simpl.NewK8SBackend(bus, clientset, traefikContainousV1alpha1Client, k8simplConfig)
+	backend, err := k8simpl.NewK8SBackend(bus, clientset, traefikContainousV1alpha1Client, versionedClientset, k8simplConfig)
+	if err != nil {
+		return nil, err
+	}
 	imageConfig := c2.Image
 	appBuildHelper := usecase.NewAppBuildHelper(componentService, imageConfig)
 	appDeployHelper := usecase.NewAppDeployHelper(backend, applicationRepository, buildRepository, environmentRepository, componentService, imageConfig)
