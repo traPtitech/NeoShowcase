@@ -26,6 +26,7 @@ func prepareManager(t *testing.T, bus domain.Bus) (*dockerBackend, *docker.Clien
 
 	m := NewDockerBackend(c, bus, Config{
 		ConfDir: "../../../../.local-dev/traefik",
+		Network: "neoshowcase_apps",
 	})
 	err = m.Start(context.Background())
 	require.NoError(t, err)
