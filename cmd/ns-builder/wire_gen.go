@@ -28,7 +28,7 @@ func New(c2 Config) (*Server, error) {
 	componentServiceClientConfig := c2.NS
 	componentServiceClient := grpc.NewComponentServiceClient(componentServiceClientConfig)
 	storageConfig := c2.Storage
-	storage, err := initStorage(storageConfig)
+	storage, err := provideStorage(storageConfig)
 	if err != nil {
 		return nil, err
 	}

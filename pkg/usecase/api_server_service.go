@@ -28,17 +28,19 @@ func handleRepoError[T any](entity T, err error) (T, error) {
 }
 
 type APIServerService struct {
-	bus            domain.Bus
-	artifactRepo   domain.ArtifactRepository
-	appRepo        domain.ApplicationRepository
-	adRepo         domain.AvailableDomainRepository
-	buildRepo      domain.BuildRepository
-	envRepo        domain.EnvironmentRepository
-	gitRepo        domain.GitRepositoryRepository
-	storage        domain.Storage
-	component      domain.ComponentService
-	mariaDBManager domain.MariaDBManager
-	mongoDBManager domain.MongoDBManager
+	bus             domain.Bus
+	artifactRepo    domain.ArtifactRepository
+	appRepo         domain.ApplicationRepository
+	adRepo          domain.AvailableDomainRepository
+	buildRepo       domain.BuildRepository
+	envRepo         domain.EnvironmentRepository
+	gitRepo         domain.GitRepositoryRepository
+	storage         domain.Storage
+	component       domain.ComponentService
+	mariaDBManager  domain.MariaDBManager
+	mongoDBManager  domain.MongoDBManager
+	containerLogger domain.ContainerLogger
+	logSvc          *LogStreamService
 }
 
 func NewAPIServerService(
@@ -53,24 +55,31 @@ func NewAPIServerService(
 	component domain.ComponentService,
 	mariaDBManager domain.MariaDBManager,
 	mongoDBManager domain.MongoDBManager,
+	containerLogger domain.ContainerLogger,
+	logSvc *LogStreamService,
 ) *APIServerService {
 	return &APIServerService{
-		bus:            bus,
-		artifactRepo:   artifactRepo,
-		appRepo:        appRepo,
-		adRepo:         adRepo,
-		buildRepo:      buildRepo,
-		envRepo:        envRepo,
-		gitRepo:        gitRepo,
-		storage:        storage,
-		component:      component,
-		mariaDBManager: mariaDBManager,
-		mongoDBManager: mongoDBManager,
+		bus:             bus,
+		artifactRepo:    artifactRepo,
+		appRepo:         appRepo,
+		adRepo:          adRepo,
+		buildRepo:       buildRepo,
+		envRepo:         envRepo,
+		gitRepo:         gitRepo,
+		storage:         storage,
+		component:       component,
+		mariaDBManager:  mariaDBManager,
+		mongoDBManager:  mongoDBManager,
+		containerLogger: containerLogger,
+		logSvc:          logSvc,
 	}
 }
 
 func (s *APIServerService) isRepositoryOwner(ctx context.Context, id string) error {
 	user := web.GetUser(ctx)
+	if user.Admin {
+		return nil
+	}
 	repo, err := s.gitRepo.GetRepository(ctx, id)
 	if err != nil {
 		return errors.Wrap(err, "failed to get repository")
@@ -83,6 +92,9 @@ func (s *APIServerService) isRepositoryOwner(ctx context.Context, id string) err
 
 func (s *APIServerService) isApplicationOwner(ctx context.Context, id string) error {
 	user := web.GetUser(ctx)
+	if user.Admin {
+		return nil
+	}
 	app, err := s.appRepo.GetApplication(ctx, id)
 	if err != nil {
 		return errors.Wrap(err, "failed to get application")
@@ -95,6 +107,9 @@ func (s *APIServerService) isApplicationOwner(ctx context.Context, id string) er
 
 func (s *APIServerService) isBuildOwner(ctx context.Context, id string) error {
 	user := web.GetUser(ctx)
+	if user.Admin {
+		return nil
+	}
 	build, err := s.buildRepo.GetBuild(ctx, id)
 	if err != nil {
 		return errors.Wrap(err, "failed to get build")
@@ -401,6 +416,11 @@ func (s *APIServerService) GetBuild(ctx context.Context, buildID string) (*domai
 }
 
 func (s *APIServerService) GetBuildLog(ctx context.Context, buildID string) ([]byte, error) {
+	err := s.isBuildOwner(ctx, buildID)
+	if err != nil {
+		return nil, err
+	}
+
 	build, err := s.buildRepo.GetBuild(ctx, buildID)
 	if err != nil {
 		return nil, err
@@ -409,6 +429,28 @@ func (s *APIServerService) GetBuildLog(ctx context.Context, buildID string) ([]b
 		return nil, newError(ErrorTypeBadRequest, "build not finished", nil)
 	}
 	return domain.GetBuildLog(s.storage, buildID)
+}
+
+func (s *APIServerService) GetBuildLogStream(ctx context.Context, buildID string, send func(b []byte) error) error {
+	err := s.isBuildOwner(ctx, buildID)
+	if err != nil {
+		return err
+	}
+
+	sub := make(chan []byte, 100)
+	ok, unsubscribe := s.logSvc.SubscribeBuildLog(buildID, sub)
+	if !ok {
+		return newError(ErrorTypeBadRequest, "build log stream not available", nil)
+	}
+	defer unsubscribe()
+
+	for b := range sub {
+		err = send(b)
+		if err != nil {
+			return errors.Wrap(err, "failed to send log")
+		}
+	}
+	return nil
 }
 
 func (s *APIServerService) GetArtifact(_ context.Context, artifactID string) ([]byte, error) {
@@ -432,6 +474,45 @@ func (s *APIServerService) SetEnvironmentVariable(ctx context.Context, applicati
 
 	env := &domain.Environment{ApplicationID: applicationID, Key: key, Value: value, System: false}
 	return s.envRepo.SetEnv(ctx, env)
+}
+
+func (s *APIServerService) GetOutput(ctx context.Context, id string, before time.Time) ([]*domain.ContainerLog, error) {
+	err := s.isApplicationOwner(ctx, id)
+	if err != nil {
+		return nil, err
+	}
+
+	return s.containerLogger.Get(ctx, id, before)
+}
+
+func (s *APIServerService) GetOutputStream(ctx context.Context, id string, after time.Time, send func(l *domain.ContainerLog) error) error {
+	err := s.isApplicationOwner(ctx, id)
+	if err != nil {
+		return err
+	}
+
+	ctx, cancel := context.WithCancel(ctx)
+	defer cancel()
+
+	ch, err := s.containerLogger.Stream(ctx, id, after)
+	if err != nil {
+		return errors.Wrap(err, "failed to connect to stream")
+	}
+
+	for {
+		select {
+		case d, ok := <-ch:
+			if !ok {
+				return errors.Wrap(err, "log stream closed")
+			}
+			err = send(d)
+			if err != nil {
+				return errors.Wrap(err, "failed to send log")
+			}
+		case <-ctx.Done():
+			return nil
+		}
+	}
 }
 
 func (s *APIServerService) CancelBuild(ctx context.Context, buildID string) error {

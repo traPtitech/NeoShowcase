@@ -17,6 +17,7 @@ import (
 	"github.com/traPtitech/neoshowcase/pkg/infrastructure/backend/dockerimpl"
 	"github.com/traPtitech/neoshowcase/pkg/infrastructure/backend/k8simpl"
 	"github.com/traPtitech/neoshowcase/pkg/infrastructure/dbmanager"
+	"github.com/traPtitech/neoshowcase/pkg/infrastructure/log/loki"
 	"github.com/traPtitech/neoshowcase/pkg/infrastructure/storage"
 	"github.com/traPtitech/neoshowcase/pkg/interface/grpc"
 	"github.com/traPtitech/neoshowcase/pkg/interface/grpc/pb/pbconnect"
@@ -36,7 +37,11 @@ type Config struct {
 	Storage domain.StorageConfig    `mapstructure:"storage" yaml:"storage"`
 	Docker  dockerimpl.Config       `mapstructure:"docker" yaml:"docker"`
 	K8s     k8simpl.Config          `mapstructure:"k8s" yaml:"k8s"`
-	Web     struct {
+	Log     struct {
+		Type string      `mapstructure:"type" yaml:"type"`
+		Loki loki.Config `mapstructure:"loki" yaml:"loki"`
+	} `mapstructure:"log" yaml:"log"`
+	Web struct {
 		App struct {
 			Port int `mapstructure:"port" yaml:"port"`
 		} `mapstructure:"app" yaml:"app"`
@@ -69,7 +74,7 @@ func provideRepositoryPublicKey(c Config) (*ssh.PublicKeys, error) {
 	return ssh.NewPublicKeys("", bytes, "")
 }
 
-func initStorage(c domain.StorageConfig) (domain.Storage, error) {
+func provideStorage(c domain.StorageConfig) (domain.Storage, error) {
 	switch strings.ToLower(c.Type) {
 	case "local":
 		return storage.NewLocalStorage(c.Local.Dir)
@@ -79,6 +84,15 @@ func initStorage(c domain.StorageConfig) (domain.Storage, error) {
 		return storage.NewSwiftStorage(c.Swift.Container, c.Swift.UserName, c.Swift.APIKey, c.Swift.TenantName, c.Swift.TenantID, c.Swift.AuthURL)
 	default:
 		return nil, fmt.Errorf("unknown storage: %s", c.Type)
+	}
+}
+
+func provideContainerLogger(c Config) (domain.ContainerLogger, error) {
+	switch c.Log.Type {
+	case "loki":
+		return loki.NewLokiStreamer(c.Log.Loki), nil
+	default:
+		return nil, errors.Errorf("invalid log type: %v (supported values: loki)", c.Log.Type)
 	}
 }
 

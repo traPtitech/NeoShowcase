@@ -115,7 +115,7 @@ func provideWebServerDocumentRootPath(c Config) domain.StaticServerDocumentRootP
 	return domain.StaticServerDocumentRootPath(c.ArtifactsRoot)
 }
 
-func initStorage(c domain.StorageConfig) (domain.Storage, error) {
+func provideStorage(c domain.StorageConfig) (domain.Storage, error) {
 	switch strings.ToLower(c.Type) {
 	case "local":
 		return storage.NewLocalStorage(c.Local.Dir)

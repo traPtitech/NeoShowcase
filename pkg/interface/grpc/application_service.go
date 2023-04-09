@@ -5,7 +5,6 @@ import (
 	"time"
 
 	"github.com/bufbuild/connect-go"
-	"github.com/friendsofgo/errors"
 	"github.com/go-git/go-git/v5/plumbing/transport/ssh"
 	"github.com/samber/lo"
 	"google.golang.org/grpc/codes"
@@ -41,18 +40,15 @@ func handleUseCaseError(err error) error {
 
 type ApplicationService struct {
 	svc    *usecase.APIServerService
-	logSvc *usecase.LogStreamService
 	pubKey *ssh.PublicKeys
 }
 
 func NewApplicationServiceServer(
 	svc *usecase.APIServerService,
-	logSvc *usecase.LogStreamService,
 	pubKey *ssh.PublicKeys,
 ) pbconnect.ApplicationServiceHandler {
 	return &ApplicationService{
 		svc:    svc,
-		logSvc: logSvc,
 		pubKey: pubKey,
 	}
 }
@@ -276,23 +272,6 @@ func (s *ApplicationService) GetBuild(ctx context.Context, req *connect.Request[
 	return res, nil
 }
 
-func (s *ApplicationService) GetBuildLogStream(_ context.Context, req *connect.Request[pb.BuildIdRequest], st *connect.ServerStream[pb.BuildLog]) error {
-	sub := make(chan []byte, 100)
-	ok, unsubscribe := s.logSvc.SubscribeBuildLog(req.Msg.BuildId, sub)
-	if !ok {
-		return connect.NewError(connect.CodeInvalidArgument, errors.New("build log stream not available"))
-	}
-	defer unsubscribe()
-
-	for log := range sub {
-		err := st.Send(&pb.BuildLog{Log: log})
-		if err != nil {
-			return connect.NewError(connect.CodeInternal, errors.New("failed to send log"))
-		}
-	}
-	return nil
-}
-
 func (s *ApplicationService) GetBuildLog(ctx context.Context, req *connect.Request[pb.BuildIdRequest]) (*connect.Response[pb.BuildLog], error) {
 	log, err := s.svc.GetBuildLog(ctx, req.Msg.BuildId)
 	if err != nil {
@@ -300,6 +279,16 @@ func (s *ApplicationService) GetBuildLog(ctx context.Context, req *connect.Reque
 	}
 	res := connect.NewResponse(&pb.BuildLog{Log: log})
 	return res, nil
+}
+
+func (s *ApplicationService) GetBuildLogStream(ctx context.Context, req *connect.Request[pb.BuildIdRequest], st *connect.ServerStream[pb.BuildLog]) error {
+	err := s.svc.GetBuildLogStream(ctx, req.Msg.BuildId, func(b []byte) error {
+		return st.Send(&pb.BuildLog{Log: b})
+	})
+	if err != nil {
+		return handleUseCaseError(err)
+	}
+	return nil
 }
 
 func (s *ApplicationService) GetBuildArtifact(ctx context.Context, req *connect.Request[pb.ArtifactIdRequest]) (*connect.Response[pb.ArtifactContent], error) {
@@ -337,8 +326,37 @@ func (s *ApplicationService) SetEnvVar(ctx context.Context, req *connect.Request
 	return res, nil
 }
 
-func (s *ApplicationService) GetApplicationOutput(ctx context.Context, req *connect.Request[pb.ApplicationIdRequest]) (*connect.Response[pb.ApplicationOutput], error) {
-	return nil, status.Errorf(codes.Unimplemented, "method GetApplicationOutput not implemented")
+func (s *ApplicationService) GetOutput(ctx context.Context, req *connect.Request[pb.GetOutputRequest]) (*connect.Response[pb.GetOutputResponse], error) {
+	msg := req.Msg
+	before := time.Now()
+	if req.Msg.Before != nil {
+		before = msg.Before.AsTime()
+	}
+	logs, err := s.svc.GetOutput(ctx, msg.ApplicationId, before)
+	if err != nil {
+		return nil, handleUseCaseError(err)
+	}
+	res := connect.NewResponse(&pb.GetOutputResponse{
+		Outputs: lo.Map(logs, func(l *domain.ContainerLog, i int) *pb.ApplicationOutput {
+			return toPBApplicationOutput(l)
+		}),
+	})
+	return res, nil
+}
+
+func (s *ApplicationService) GetOutputStream(ctx context.Context, req *connect.Request[pb.GetOutputStreamRequest], st *connect.ServerStream[pb.ApplicationOutput]) error {
+	msg := req.Msg
+	after := time.Now()
+	if req.Msg.After != nil {
+		after = msg.After.AsTime()
+	}
+	err := s.svc.GetOutputStream(ctx, msg.ApplicationId, after, func(l *domain.ContainerLog) error {
+		return st.Send(toPBApplicationOutput(l))
+	})
+	if err != nil {
+		return handleUseCaseError(err)
+	}
+	return nil
 }
 
 func (s *ApplicationService) CancelBuild(ctx context.Context, req *connect.Request[pb.BuildIdRequest]) (*connect.Response[emptypb.Empty], error) {
@@ -556,6 +574,13 @@ func toPBEnvironment(env *domain.Environment) *pb.ApplicationEnvVar {
 		Key:    env.Key,
 		Value:  env.Value,
 		System: env.System,
+	}
+}
+
+func toPBApplicationOutput(l *domain.ContainerLog) *pb.ApplicationOutput {
+	return &pb.ApplicationOutput{
+		Time: timestamppb.New(l.Time),
+		Log:  l.Log,
 	}
 }
 

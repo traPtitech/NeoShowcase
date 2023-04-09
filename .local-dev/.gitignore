@@ -1,9 +1,14 @@
 /dind
+# needs uid 472 gid 472
+/grafana
 /local-storage
+# needs uid 10001 gid 10001
+/loki
 /mongo
 /mysql
+/promtail
 /repositories
 /registry-data
 /staticsite
-/traefik
+/traefik/*
 !/traefik/middlewares.yaml

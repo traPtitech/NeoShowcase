@@ -33,6 +33,12 @@ docker:
   network: neoshowcase_apps
   certResolver: nsresolver
 
+log:
+  type: loki
+  loki:
+    endpoint: http://loki:3100
+    appIDLabel: neoshowcase_trap_jp_appId
+
 web:
   app:
     port: 5000

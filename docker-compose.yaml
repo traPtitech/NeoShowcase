@@ -231,6 +231,45 @@ services:
     networks:
       - default
 
+  grafana:
+    image: grafana/grafana:9.4.7
+    restart: always
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.grafana.rule=Host(`grafana.local.trapti.tech`)"
+      - "traefik.http.services.grafana.loadbalancer.server.port=3000"
+    volumes:
+      - ./.local-dev/grafana:/var/lib/grafana
+      - ./.local-dev/config/grafana.ini:/etc/grafana/grafana.ini:ro
+    networks:
+      - default
+
+  loki:
+    image: grafana/loki:2.8.0
+    command: "-config.file /etc/loki/loki.yaml"
+    restart: always
+    labels:
+      # for debug
+      - "traefik.enable=true"
+      - "traefik.http.routers.loki.rule=Host(`loki.local.trapti.tech`)"
+      - "traefik.http.services.loki.loadbalancer.server.port=3100"
+    volumes:
+      - ./.local-dev/loki:/var/lib/loki
+      - ./.local-dev/config/loki.yaml:/etc/loki/loki.yaml:ro
+    networks:
+      - default
+
+  promtail:
+    image: grafana/promtail:2.8.0
+    command: "-config.file /etc/promtail/promtail.yaml"
+    restart: always
+    volumes:
+      - ./.local-dev/config/promtail.yaml:/etc/promtail/promtail.yaml
+      - ./.local-dev/promtail:/var/run/promtail
+      - /var/run/docker.sock:/var/run/docker.sock
+    networks:
+      - default
+
   traefik:
     image: traefik:2.9
     restart: always

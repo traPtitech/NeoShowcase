@@ -129,6 +129,10 @@ func main() {
 	viper.SetDefault("k8s.tls.certManager.issuer.kind", "ClusterIssuer")
 	viper.SetDefault("k8s.imagePullSecret", "")
 
+	viper.SetDefault("log.type", "loki")
+	viper.SetDefault("log.loki.endpoint", "http://loki:3100")
+	viper.SetDefault("log.loki.appIDLabel", "neoshowcase_trap_jp_appId")
+
 	viper.SetDefault("web.app.port", 5000)
 	viper.SetDefault("web.component.port", 10000)
 

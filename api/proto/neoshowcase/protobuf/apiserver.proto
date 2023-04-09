@@ -164,8 +164,24 @@ message ArtifactContent {
   bytes content = 2;
 }
 
+message GetOutputRequest {
+  string application_id = 1;
+  // Leave empty to default to now
+  google.protobuf.Timestamp before = 2;
+}
+
 message ApplicationOutput {
-  string output = 1;
+  google.protobuf.Timestamp time = 1;
+  string log = 2;
+}
+
+message GetOutputResponse {
+  repeated ApplicationOutput outputs = 1;
+}
+
+message GetOutputStreamRequest {
+  string application_id = 1;
+  google.protobuf.Timestamp after = 2;
 }
 
 message Build {
@@ -266,12 +282,13 @@ service ApplicationService {
   rpc DeleteApplication(ApplicationIdRequest) returns (google.protobuf.Empty);
   rpc GetBuilds(ApplicationIdRequest) returns (GetBuildsResponse);
   rpc GetBuild(BuildIdRequest) returns (Build);
-  rpc GetBuildLogStream(BuildIdRequest) returns (stream BuildLog);
   rpc GetBuildLog(BuildIdRequest) returns (BuildLog);
+  rpc GetBuildLogStream(BuildIdRequest) returns (stream BuildLog);
   rpc GetBuildArtifact(ArtifactIdRequest) returns (ArtifactContent);
   rpc GetEnvVars(ApplicationIdRequest) returns (ApplicationEnvVars);
   rpc SetEnvVar(SetApplicationEnvVarRequest) returns (google.protobuf.Empty);
-  rpc GetApplicationOutput(ApplicationIdRequest) returns (ApplicationOutput);
+  rpc GetOutput(GetOutputRequest) returns (GetOutputResponse);
+  rpc GetOutputStream(GetOutputStreamRequest) returns (stream ApplicationOutput);
   rpc CancelBuild(BuildIdRequest) returns (google.protobuf.Empty);
   rpc RetryCommitBuild(RetryCommitBuildRequest) returns (google.protobuf.Empty);
   rpc StartApplication(ApplicationIdRequest) returns (google.protobuf.Empty);
