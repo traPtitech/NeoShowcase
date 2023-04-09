@@ -12,22 +12,22 @@ import (
 
 func TestApplicationConfig_IsValid(t *testing.T) {
 	tests := []struct {
-		name      string
-		buildType BuildType
-		config    ApplicationConfig
-		want      bool
+		name       string
+		deployType DeployType
+		config     ApplicationConfig
+		want       bool
 	}{
 		{
-			name:      "valid (runtime dockerfile)",
-			buildType: BuildTypeRuntime,
+			name:       "valid (runtime dockerfile)",
+			deployType: DeployTypeRuntime,
 			config: ApplicationConfig{
 				DockerfileName: "Dockerfile",
 			},
 			want: true,
 		},
 		{
-			name:      "valid (runtime config)",
-			buildType: BuildTypeRuntime,
+			name:       "valid (runtime config)",
+			deployType: DeployTypeRuntime,
 			config: ApplicationConfig{
 				BaseImage:     "golang:1.20",
 				BuildCmd:      "go build -o main",
@@ -36,8 +36,8 @@ func TestApplicationConfig_IsValid(t *testing.T) {
 			want: true,
 		},
 		{
-			name:      "valid with no build cmd (runtime config)",
-			buildType: BuildTypeRuntime,
+			name:       "valid with no build cmd (runtime config)",
+			deployType: DeployTypeRuntime,
 			config: ApplicationConfig{
 				BaseImage:     "python:3",
 				BuildCmd:      "",
@@ -46,8 +46,8 @@ func TestApplicationConfig_IsValid(t *testing.T) {
 			want: true,
 		},
 		{
-			name:      "valid with scratch (runtime config)",
-			buildType: BuildTypeRuntime,
+			name:       "valid with scratch (runtime config)",
+			deployType: DeployTypeRuntime,
 			config: ApplicationConfig{
 				BaseImage:     "",
 				BuildCmd:      "",
@@ -56,8 +56,8 @@ func TestApplicationConfig_IsValid(t *testing.T) {
 			want: true,
 		},
 		{
-			name:      "empty entrypoint cmd (runtime config)",
-			buildType: BuildTypeRuntime,
+			name:       "empty entrypoint cmd (runtime config)",
+			deployType: DeployTypeRuntime,
 			config: ApplicationConfig{
 				BaseImage:     "golang:1.20",
 				BuildCmd:      "go build -o main",
@@ -66,8 +66,8 @@ func TestApplicationConfig_IsValid(t *testing.T) {
 			want: false,
 		},
 		{
-			name:      "valid (static dockerfile)",
-			buildType: BuildTypeStatic,
+			name:       "valid (static dockerfile)",
+			deployType: DeployTypeStatic,
 			config: ApplicationConfig{
 				DockerfileName: "Dockerfile",
 				ArtifactPath:   "./dist",
@@ -75,8 +75,8 @@ func TestApplicationConfig_IsValid(t *testing.T) {
 			want: true,
 		},
 		{
-			name:      "empty artifact path (static dockerfile)",
-			buildType: BuildTypeStatic,
+			name:       "empty artifact path (static dockerfile)",
+			deployType: DeployTypeStatic,
 			config: ApplicationConfig{
 				DockerfileName: "Dockerfile",
 				ArtifactPath:   "",
@@ -84,8 +84,8 @@ func TestApplicationConfig_IsValid(t *testing.T) {
 			want: false,
 		},
 		{
-			name:      "valid (static config)",
-			buildType: BuildTypeStatic,
+			name:       "valid (static config)",
+			deployType: DeployTypeStatic,
 			config: ApplicationConfig{
 				BaseImage:    "node:18",
 				ArtifactPath: "./dist",
@@ -94,8 +94,8 @@ func TestApplicationConfig_IsValid(t *testing.T) {
 			want: true,
 		},
 		{
-			name:      "valid with no build cmd (static config)",
-			buildType: BuildTypeStatic,
+			name:       "valid with no build cmd (static config)",
+			deployType: DeployTypeStatic,
 			config: ApplicationConfig{
 				BaseImage:    "alpine:latest",
 				ArtifactPath: "./dist",
@@ -104,8 +104,8 @@ func TestApplicationConfig_IsValid(t *testing.T) {
 			want: true,
 		},
 		{
-			name:      "valid with scratch (static config)",
-			buildType: BuildTypeStatic,
+			name:       "valid with scratch (static config)",
+			deployType: DeployTypeStatic,
 			config: ApplicationConfig{
 				BaseImage:    "",
 				ArtifactPath: "./dist",
@@ -114,8 +114,8 @@ func TestApplicationConfig_IsValid(t *testing.T) {
 			want: true,
 		},
 		{
-			name:      "empty artifact path (static config)",
-			buildType: BuildTypeStatic,
+			name:       "empty artifact path (static config)",
+			deployType: DeployTypeStatic,
 			config: ApplicationConfig{
 				BaseImage:    "",
 				ArtifactPath: "",
@@ -126,7 +126,7 @@ func TestApplicationConfig_IsValid(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := tt.config.IsValid(tt.buildType); got != tt.want {
+			if got := tt.config.IsValid(tt.deployType); got != tt.want {
 				t.Errorf("IsValid() = %v, want %v", got, tt.want)
 			}
 		})
@@ -145,7 +145,7 @@ func TestApplication_IsValid(t *testing.T) {
 				Name:          "test",
 				RepositoryID:  "abc",
 				RefName:       "master",
-				BuildType:     BuildTypeRuntime,
+				DeployType:    DeployTypeRuntime,
 				Running:       false,
 				CurrentCommit: EmptyCommit,
 				WantCommit:    EmptyCommit,
@@ -163,7 +163,7 @@ func TestApplication_IsValid(t *testing.T) {
 				Name:          "",
 				RepositoryID:  "abc",
 				RefName:       "master",
-				BuildType:     BuildTypeRuntime,
+				DeployType:    DeployTypeRuntime,
 				Running:       false,
 				CurrentCommit: EmptyCommit,
 				WantCommit:    EmptyCommit,
@@ -181,7 +181,7 @@ func TestApplication_IsValid(t *testing.T) {
 				Name:          "test",
 				RepositoryID:  "",
 				RefName:       "master",
-				BuildType:     BuildTypeRuntime,
+				DeployType:    DeployTypeRuntime,
 				Running:       false,
 				CurrentCommit: EmptyCommit,
 				WantCommit:    EmptyCommit,
@@ -199,7 +199,7 @@ func TestApplication_IsValid(t *testing.T) {
 				Name:          "test",
 				RepositoryID:  "abc",
 				RefName:       "master",
-				BuildType:     BuildTypeRuntime,
+				DeployType:    DeployTypeRuntime,
 				Running:       false,
 				CurrentCommit: EmptyCommit,
 				WantCommit:    EmptyCommit,

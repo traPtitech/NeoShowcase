@@ -165,7 +165,7 @@ func (s *ApplicationService) CreateApplication(ctx context.Context, req *connect
 		Name:          msg.Name,
 		RepositoryID:  msg.RepositoryId,
 		RefName:       msg.RefName,
-		BuildType:     buildTypeMapper.FromMust(msg.BuildType),
+		DeployType:    deployTypeMapper.FromMust(msg.DeployType),
 		Running:       msg.StartOnCreate,
 		Container:     domain.ContainerStateMissing,
 		CurrentCommit: domain.EmptyCommit,
@@ -447,9 +447,9 @@ func toPBRepository(repo *domain.Repository) *pb.Repository {
 	return ret
 }
 
-var buildTypeMapper = mapper.NewValueMapper(map[domain.BuildType]pb.BuildType{
-	domain.BuildTypeRuntime: pb.BuildType_RUNTIME,
-	domain.BuildTypeStatic:  pb.BuildType_STATIC,
+var deployTypeMapper = mapper.NewValueMapper(map[domain.DeployType]pb.DeployType{
+	domain.DeployTypeRuntime: pb.DeployType_RUNTIME,
+	domain.DeployTypeStatic:  pb.DeployType_STATIC,
 })
 
 var authTypeMapper = mapper.NewValueMapper(map[domain.AuthenticationType]pb.AuthenticationType{
@@ -520,7 +520,7 @@ func toPBApplication(app *domain.Application) *pb.Application {
 		Name:          app.Name,
 		RepositoryId:  app.RepositoryID,
 		RefName:       app.RefName,
-		BuildType:     buildTypeMapper.IntoMust(app.BuildType),
+		DeployType:    deployTypeMapper.IntoMust(app.DeployType),
 		Running:       app.Running,
 		Container:     containerStateMapper.IntoMust(app.Container),
 		CurrentCommit: app.CurrentCommit,

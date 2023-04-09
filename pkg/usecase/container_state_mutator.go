@@ -69,7 +69,7 @@ func (m *ContainerStateMutator) updateAll(ctx context.Context) error {
 	m.lock.Lock()
 	defer m.lock.Unlock()
 
-	apps, err := m.appRepo.GetApplications(ctx, domain.GetApplicationCondition{BuildType: optional.From(domain.BuildTypeRuntime)})
+	apps, err := m.appRepo.GetApplications(ctx, domain.GetApplicationCondition{DeployType: optional.From(domain.DeployTypeRuntime)})
 	if err != nil {
 		return errors.Wrap(err, "failed to get all runtime applications")
 	}

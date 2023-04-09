@@ -33,9 +33,9 @@ type ApplicationConfig struct {
 	Authentication AuthenticationType
 }
 
-func (c *ApplicationConfig) IsValid(buildType BuildType) bool {
-	switch buildType {
-	case BuildTypeRuntime:
+func (c *ApplicationConfig) IsValid(deployType DeployType) bool {
+	switch deployType {
+	case DeployTypeRuntime:
 		if c.DockerfileName != "" {
 			// pass
 		} else {
@@ -45,7 +45,7 @@ func (c *ApplicationConfig) IsValid(buildType BuildType) bool {
 				return false
 			}
 		}
-	case BuildTypeStatic:
+	case DeployTypeStatic:
 		if c.DockerfileName != "" {
 			if c.ArtifactPath == "" {
 				return false
@@ -61,11 +61,11 @@ func (c *ApplicationConfig) IsValid(buildType BuildType) bool {
 	return true
 }
 
-type BuildType int
+type DeployType int
 
 const (
-	BuildTypeRuntime BuildType = iota
-	BuildTypeStatic
+	DeployTypeRuntime DeployType = iota
+	DeployTypeStatic
 )
 
 var EmptyCommit = strings.Repeat("0", 40)
@@ -75,7 +75,7 @@ type Application struct {
 	Name          string
 	RepositoryID  string
 	RefName       string
-	BuildType     BuildType
+	DeployType    DeployType
 	Running       bool
 	Container     ContainerState
 	CurrentCommit string
@@ -98,7 +98,7 @@ func (a *Application) IsValid() bool {
 	if a.RefName == "" {
 		return false
 	}
-	if !a.Config.IsValid(a.BuildType) {
+	if !a.Config.IsValid(a.DeployType) {
 		return false
 	}
 	for _, website := range a.Websites {
@@ -365,7 +365,7 @@ func (w *Website) ConflictsWith(existing []*Website) bool {
 
 func GetArtifactsInUse(ctx context.Context, appRepo ApplicationRepository, buildRepo BuildRepository) ([]*Artifact, error) {
 	applications, err := appRepo.GetApplications(ctx, GetApplicationCondition{
-		BuildType: optional.From(BuildTypeStatic),
+		DeployType: optional.From(DeployTypeStatic),
 	})
 	if err != nil {
 		return nil, err
@@ -397,8 +397,8 @@ func GetArtifactsInUse(ctx context.Context, appRepo ApplicationRepository, build
 
 func GetActiveStaticSites(ctx context.Context, appRepo ApplicationRepository, buildRepo BuildRepository) ([]*StaticSite, error) {
 	applications, err := appRepo.GetApplications(ctx, GetApplicationCondition{
-		BuildType: optional.From(BuildTypeStatic),
-		Running:   optional.From(true),
+		DeployType: optional.From(DeployTypeStatic),
+		Running:    optional.From(true),
 	})
 	if err != nil {
 		return nil, err

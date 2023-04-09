@@ -66,16 +66,16 @@ func AllApplicationConfigAuthentication() []string {
 	}
 }
 
-// Enum values for ApplicationsBuildType
+// Enum values for ApplicationsDeployType
 const (
-	ApplicationsBuildTypeRuntime string = "runtime"
-	ApplicationsBuildTypeStatic  string = "static"
+	ApplicationsDeployTypeRuntime string = "runtime"
+	ApplicationsDeployTypeStatic  string = "static"
 )
 
-func AllApplicationsBuildType() []string {
+func AllApplicationsDeployType() []string {
 	return []string{
-		ApplicationsBuildTypeRuntime,
-		ApplicationsBuildTypeStatic,
+		ApplicationsDeployTypeRuntime,
+		ApplicationsDeployTypeStatic,
 	}
 }
 

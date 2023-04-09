@@ -118,9 +118,9 @@ func toDomainRepository(repo *models.Repository) *domain.Repository {
 	return ret
 }
 
-var buildTypeMapper = mapper.NewValueMapper(map[string]domain.BuildType{
-	models.ApplicationsBuildTypeRuntime: domain.BuildTypeRuntime,
-	models.ApplicationsBuildTypeStatic:  domain.BuildTypeStatic,
+var deployTypeMapper = mapper.NewValueMapper(map[string]domain.DeployType{
+	models.ApplicationsDeployTypeRuntime: domain.DeployTypeRuntime,
+	models.ApplicationsDeployTypeStatic:  domain.DeployTypeStatic,
 })
 
 var containerStateMapper = mapper.NewValueMapper(map[string]domain.ContainerState{
@@ -138,7 +138,7 @@ func fromDomainApplication(app *domain.Application) *models.Application {
 		Name:          app.Name,
 		RepositoryID:  app.RepositoryID,
 		RefName:       app.RefName,
-		BuildType:     buildTypeMapper.FromMust(app.BuildType),
+		DeployType:    deployTypeMapper.FromMust(app.DeployType),
 		Running:       app.Running,
 		Container:     containerStateMapper.FromMust(app.Container),
 		CurrentCommit: app.CurrentCommit,
@@ -154,7 +154,7 @@ func toDomainApplication(app *models.Application) *domain.Application {
 		Name:          app.Name,
 		RepositoryID:  app.RepositoryID,
 		RefName:       app.RefName,
-		BuildType:     buildTypeMapper.IntoMust(app.BuildType),
+		DeployType:    deployTypeMapper.IntoMust(app.DeployType),
 		Running:       app.Running,
 		Container:     containerStateMapper.IntoMust(app.Container),
 		CurrentCommit: app.CurrentCommit,

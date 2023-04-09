@@ -22,8 +22,8 @@ func NewAppBuildHelper(
 }
 
 func (s *AppBuildHelper) tryStartBuild(app *domain.Application, build *domain.Build) {
-	switch app.BuildType {
-	case domain.BuildTypeRuntime:
+	switch app.DeployType {
+	case domain.DeployTypeRuntime:
 		s.component.BroadcastBuilder(&pb.BuilderRequest{
 			Type: pb.BuilderRequest_START_BUILD_IMAGE,
 			Body: &pb.BuilderRequest_BuildImage{
@@ -47,7 +47,7 @@ func (s *AppBuildHelper) tryStartBuild(app *domain.Application, build *domain.Bu
 			},
 		})
 
-	case domain.BuildTypeStatic:
+	case domain.DeployTypeStatic:
 		s.component.BroadcastBuilder(&pb.BuilderRequest{
 			Type: pb.BuilderRequest_START_BUILD_STATIC,
 			Body: &pb.BuilderRequest_BuildStatic{

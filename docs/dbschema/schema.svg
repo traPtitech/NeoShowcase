@@ -30,8 +30,8 @@
 <text text-anchor="start" x="880.5" y="-510.9" font-family="Arial" font-size="14.00" fill="#000000">ref_name </text>
 <text text-anchor="start" x="943.5154" y="-510.9" font-family="Arial" font-size="14.00" fill="#666666">[varchar(100)]</text>
 <polygon fill="none" stroke="#000000" points="873.5,-469.5 873.5,-499.5 1335.5,-499.5 1335.5,-469.5 873.5,-469.5"/>
-<text text-anchor="start" x="880.5" y="-480.9" font-family="Arial" font-size="14.00" fill="#000000">build_type </text>
-<text text-anchor="start" x="948.19" y="-480.9" font-family="Arial" font-size="14.00" fill="#666666">[enum(&#39;runtime&#39;,&#39;static&#39;)]</text>
+<text text-anchor="start" x="880.5" y="-480.9" font-family="Arial" font-size="14.00" fill="#000000">deploy_type </text>
+<text text-anchor="start" x="959.866" y="-480.9" font-family="Arial" font-size="14.00" fill="#666666">[enum(&#39;runtime&#39;,&#39;static&#39;)]</text>
 <polygon fill="none" stroke="#000000" points="873.5,-439.5 873.5,-469.5 1335.5,-469.5 1335.5,-439.5 873.5,-439.5"/>
 <text text-anchor="start" x="880.5" y="-450.9" font-family="Arial" font-size="14.00" fill="#000000">running </text>
 <text text-anchor="start" x="931.0708" y="-450.9" font-family="Arial" font-size="14.00" fill="#666666">[tinyint(1)]</text>

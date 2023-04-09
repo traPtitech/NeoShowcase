@@ -58,7 +58,7 @@ message RepositoryIdRequest {
   string repository_id = 1;
 }
 
-enum BuildType {
+enum DeployType {
   RUNTIME = 0;
   STATIC = 1;
 }
@@ -123,7 +123,7 @@ message Application {
   string name = 2;
   string repository_id = 3;
   string ref_name = 4;
-  BuildType build_type = 5;
+  DeployType deploy_type = 5;
   bool running = 6;
   ContainerState container = 7;
   string current_commit = 8;
@@ -223,7 +223,7 @@ message CreateApplicationRequest {
   string name = 1;
   string repository_id = 2;
   string ref_name = 3;
-  BuildType build_type = 4;
+  DeployType deploy_type = 4;
   ApplicationConfig config = 5;
   repeated CreateWebsiteRequest websites = 6;
   bool start_on_create = 7;

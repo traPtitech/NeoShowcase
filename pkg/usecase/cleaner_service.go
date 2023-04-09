@@ -122,7 +122,7 @@ func (c *cleanerService) pruneArtifactsLoop(ctx context.Context) {
 }
 
 func (c *cleanerService) pruneImages(ctx context.Context, r *registry.Registry) error {
-	applications, err := c.appRepo.GetApplications(ctx, domain.GetApplicationCondition{BuildType: optional.From(domain.BuildTypeRuntime)})
+	applications, err := c.appRepo.GetApplications(ctx, domain.GetApplicationCondition{DeployType: optional.From(domain.DeployTypeRuntime)})
 	if err != nil {
 		return err
 	}

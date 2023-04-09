@@ -8,9 +8,9 @@ import { Empty, Message, proto3, protoInt64, Timestamp } from "@bufbuild/protobu
 import { NullTimestamp } from "./null_pb.js";
 
 /**
- * @generated from enum neoshowcase.protobuf.BuildType
+ * @generated from enum neoshowcase.protobuf.DeployType
  */
-export enum BuildType {
+export enum DeployType {
   /**
    * @generated from enum value: RUNTIME = 0;
    */
@@ -21,8 +21,8 @@ export enum BuildType {
    */
   STATIC = 1,
 }
-// Retrieve enum metadata with: proto3.getEnumType(BuildType)
-proto3.util.setEnumType(BuildType, "neoshowcase.protobuf.BuildType", [
+// Retrieve enum metadata with: proto3.getEnumType(DeployType)
+proto3.util.setEnumType(DeployType, "neoshowcase.protobuf.DeployType", [
   { no: 0, name: "RUNTIME" },
   { no: 1, name: "STATIC" },
 ]);
@@ -797,9 +797,9 @@ export class Application extends Message<Application> {
   refName = "";
 
   /**
-   * @generated from field: neoshowcase.protobuf.BuildType build_type = 5;
+   * @generated from field: neoshowcase.protobuf.DeployType deploy_type = 5;
    */
-  buildType = BuildType.RUNTIME;
+  deployType = DeployType.RUNTIME;
 
   /**
    * @generated from field: bool running = 6;
@@ -848,7 +848,7 @@ export class Application extends Message<Application> {
     { no: 2, name: "name", kind: "scalar", T: 9 /* ScalarType.STRING */ },
     { no: 3, name: "repository_id", kind: "scalar", T: 9 /* ScalarType.STRING */ },
     { no: 4, name: "ref_name", kind: "scalar", T: 9 /* ScalarType.STRING */ },
-    { no: 5, name: "build_type", kind: "enum", T: proto3.getEnumType(BuildType) },
+    { no: 5, name: "deploy_type", kind: "enum", T: proto3.getEnumType(DeployType) },
     { no: 6, name: "running", kind: "scalar", T: 8 /* ScalarType.BOOL */ },
     { no: 7, name: "container", kind: "enum", T: proto3.getEnumType(Application_ContainerState) },
     { no: 8, name: "current_commit", kind: "scalar", T: 9 /* ScalarType.STRING */ },
@@ -1642,9 +1642,9 @@ export class CreateApplicationRequest extends Message<CreateApplicationRequest> 
   refName = "";
 
   /**
-   * @generated from field: neoshowcase.protobuf.BuildType build_type = 4;
+   * @generated from field: neoshowcase.protobuf.DeployType deploy_type = 4;
    */
-  buildType = BuildType.RUNTIME;
+  deployType = DeployType.RUNTIME;
 
   /**
    * @generated from field: neoshowcase.protobuf.ApplicationConfig config = 5;
@@ -1672,7 +1672,7 @@ export class CreateApplicationRequest extends Message<CreateApplicationRequest> 
     { no: 1, name: "name", kind: "scalar", T: 9 /* ScalarType.STRING */ },
     { no: 2, name: "repository_id", kind: "scalar", T: 9 /* ScalarType.STRING */ },
     { no: 3, name: "ref_name", kind: "scalar", T: 9 /* ScalarType.STRING */ },
-    { no: 4, name: "build_type", kind: "enum", T: proto3.getEnumType(BuildType) },
+    { no: 4, name: "deploy_type", kind: "enum", T: proto3.getEnumType(DeployType) },
     { no: 5, name: "config", kind: "message", T: ApplicationConfig },
     { no: 6, name: "websites", kind: "message", T: CreateWebsiteRequest, repeated: true },
     { no: 7, name: "start_on_create", kind: "scalar", T: 8 /* ScalarType.BOOL */ },

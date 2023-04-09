@@ -1,5 +1,5 @@
 import { Provider } from '/@/components/RepositoryRow'
-import { Application, BuildType } from '/@/api/neoshowcase/protobuf/apiserver_pb'
+import { Application, DeployType } from '/@/api/neoshowcase/protobuf/apiserver_pb'
 
 export enum ApplicationState {
   Idle = 0,
@@ -15,7 +15,7 @@ export const applicationState = (app: Application): ApplicationState => {
   if (app.wantCommit !== app.currentCommit) {
     return ApplicationState.Deploying
   }
-  if (app.buildType === BuildType.RUNTIME) {
+  if (app.deployType === DeployType.RUNTIME) {
     return ApplicationState.Running
   } else {
     return ApplicationState.Static
