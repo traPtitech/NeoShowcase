@@ -20,7 +20,7 @@ func New(c Config) (*Server, error) {
 		repository.NewBuildRepository,
 		repository.NewGitRepositoryRepository,
 		admindb.New,
-		initStorage,
+		provideStorage,
 		initBuildkitClient,
 		provideRepositoryPublicKey,
 		wire.FieldsOf(new(Config), "NS", "DB", "Storage"),

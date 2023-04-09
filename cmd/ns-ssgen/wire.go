@@ -23,7 +23,7 @@ func New(c Config) (*Server, error) {
 		staticserver.NewBuiltIn,
 		provideWebServerPort,
 		provideWebServerDocumentRootPath,
-		initStorage,
+		provideStorage,
 		wire.FieldsOf(new(Config), "NS", "DB", "Storage"),
 		wire.Struct(new(Server), "*"),
 	)

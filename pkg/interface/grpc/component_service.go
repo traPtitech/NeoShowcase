@@ -81,7 +81,7 @@ func (s *ComponentService) ConnectBuilder(ctx context.Context, st *connect.BidiS
 			case pb.BuilderResponse_BUILD_STARTED:
 				payload := res.Body.(*pb.BuilderResponse_Started).Started
 				s.bus.Publish(event.BuilderBuildStarted, nil)
-				s.logStream.AppendBuildLog(payload.BuildId, nil)
+				s.logStream.StartBuildLog(payload.BuildId)
 			case pb.BuilderResponse_BUILD_SETTLED:
 				payload := res.Body.(*pb.BuilderResponse_Settled).Settled
 				s.bus.Publish(event.BuilderBuildSettled, nil)

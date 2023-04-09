@@ -27,7 +27,7 @@ func New(c2 Config) (*Server, error) {
 	applicationRepository := repository.NewApplicationRepository(db)
 	buildRepository := repository.NewBuildRepository(db)
 	storageConfig := c2.Storage
-	storage, err := initStorage(storageConfig)
+	storage, err := provideStorage(storageConfig)
 	if err != nil {
 		return nil, err
 	}

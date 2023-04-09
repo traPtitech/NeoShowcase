@@ -7,6 +7,14 @@ import (
 	"github.com/samber/lo"
 )
 
+type buildLogStream struct {
+	id   string
+	b    bytes.Buffer
+	subs []chan<- []byte
+
+	lock sync.Mutex
+}
+
 type LogStreamService struct {
 	buildLogs map[string]*buildLogStream
 
@@ -19,13 +27,10 @@ func NewLogStreamService() *LogStreamService {
 	}
 }
 
-type buildLogStream struct {
-	id   string
-	b    bytes.Buffer
-	subs []chan<- []byte
-}
-
 func (st *buildLogStream) append(b []byte) {
+	st.lock.Lock()
+	defer st.lock.Unlock()
+
 	st.b.Write(b)
 	for _, sub := range st.subs {
 		select {
@@ -36,6 +41,9 @@ func (st *buildLogStream) append(b []byte) {
 }
 
 func (st *buildLogStream) subscribe(sub chan<- []byte) {
+	st.lock.Lock()
+	defer st.lock.Unlock()
+
 	st.subs = append(st.subs, sub)
 	select {
 	case sub <- st.b.Bytes():
@@ -44,31 +52,41 @@ func (st *buildLogStream) subscribe(sub chan<- []byte) {
 }
 
 func (st *buildLogStream) unsubscribe(sub chan<- []byte) {
+	st.lock.Lock()
+	defer st.lock.Unlock()
+
 	st.subs = lo.Without(st.subs, sub)
 	close(sub)
 }
 
 func (st *buildLogStream) close() {
+	st.lock.Lock()
+	defer st.lock.Unlock()
+
 	for _, sub := range st.subs {
 		close(sub)
 	}
 }
 
-func (l *LogStreamService) getOrInitBuildLogStream(id string) *buildLogStream {
+func (l *LogStreamService) StartBuildLog(id string) {
+	l.lock.Lock()
+	defer l.lock.Unlock()
+
 	st, ok := l.buildLogs[id]
-	if !ok {
-		st = &buildLogStream{id: id}
-		l.buildLogs[id] = st
+	if ok {
+		st.close()
 	}
-	return st
+	l.buildLogs[id] = &buildLogStream{id: id}
 }
 
 func (l *LogStreamService) AppendBuildLog(id string, logPortion []byte) {
 	l.lock.Lock()
-	defer l.lock.Unlock()
+	st, ok := l.buildLogs[id]
+	l.lock.Unlock()
 
-	st := l.getOrInitBuildLogStream(id)
-	st.append(logPortion)
+	if ok {
+		st.append(logPortion)
+	}
 }
 
 func (l *LogStreamService) CloseBuildLog(id string) {
@@ -84,9 +102,9 @@ func (l *LogStreamService) CloseBuildLog(id string) {
 
 func (l *LogStreamService) SubscribeBuildLog(id string, sub chan<- []byte) (ok bool, unsubscribe func()) {
 	l.lock.Lock()
-	defer l.lock.Unlock()
-
 	st, ok := l.buildLogs[id]
+	l.lock.Unlock()
+
 	if !ok {
 		return false, nil
 	}

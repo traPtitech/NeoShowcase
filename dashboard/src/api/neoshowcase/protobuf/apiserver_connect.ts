@@ -4,7 +4,7 @@
 // @ts-nocheck
 
 import { Empty, MethodKind } from "@bufbuild/protobuf";
-import { Application, ApplicationEnvVars, ApplicationIdRequest, ApplicationOutput, ArtifactContent, ArtifactIdRequest, AvailableDomain, AvailableDomains, Build, BuildIdRequest, BuildLog, CreateApplicationRequest, CreateRepositoryRequest, GetApplicationsResponse, GetBuildsResponse, GetRepositoriesResponse, GetSystemPublicKeyResponse, Repository, RepositoryIdRequest, RetryCommitBuildRequest, SetApplicationEnvVarRequest, UpdateApplicationRequest, UpdateRepositoryRequest, User } from "./apiserver_pb.js";
+import { Application, ApplicationEnvVars, ApplicationIdRequest, ApplicationOutput, ArtifactContent, ArtifactIdRequest, AvailableDomain, AvailableDomains, Build, BuildIdRequest, BuildLog, CreateApplicationRequest, CreateRepositoryRequest, GetApplicationsResponse, GetBuildsResponse, GetOutputRequest, GetOutputResponse, GetOutputStreamRequest, GetRepositoriesResponse, GetSystemPublicKeyResponse, Repository, RepositoryIdRequest, RetryCommitBuildRequest, SetApplicationEnvVarRequest, UpdateApplicationRequest, UpdateRepositoryRequest, User } from "./apiserver_pb.js";
 
 /**
  * @generated from service neoshowcase.protobuf.ApplicationService
@@ -148,15 +148,6 @@ export const ApplicationService = {
       kind: MethodKind.Unary,
     },
     /**
-     * @generated from rpc neoshowcase.protobuf.ApplicationService.GetBuildLogStream
-     */
-    getBuildLogStream: {
-      name: "GetBuildLogStream",
-      I: BuildIdRequest,
-      O: BuildLog,
-      kind: MethodKind.ServerStreaming,
-    },
-    /**
      * @generated from rpc neoshowcase.protobuf.ApplicationService.GetBuildLog
      */
     getBuildLog: {
@@ -164,6 +155,15 @@ export const ApplicationService = {
       I: BuildIdRequest,
       O: BuildLog,
       kind: MethodKind.Unary,
+    },
+    /**
+     * @generated from rpc neoshowcase.protobuf.ApplicationService.GetBuildLogStream
+     */
+    getBuildLogStream: {
+      name: "GetBuildLogStream",
+      I: BuildIdRequest,
+      O: BuildLog,
+      kind: MethodKind.ServerStreaming,
     },
     /**
      * @generated from rpc neoshowcase.protobuf.ApplicationService.GetBuildArtifact
@@ -193,13 +193,22 @@ export const ApplicationService = {
       kind: MethodKind.Unary,
     },
     /**
-     * @generated from rpc neoshowcase.protobuf.ApplicationService.GetApplicationOutput
+     * @generated from rpc neoshowcase.protobuf.ApplicationService.GetOutput
      */
-    getApplicationOutput: {
-      name: "GetApplicationOutput",
-      I: ApplicationIdRequest,
-      O: ApplicationOutput,
+    getOutput: {
+      name: "GetOutput",
+      I: GetOutputRequest,
+      O: GetOutputResponse,
       kind: MethodKind.Unary,
+    },
+    /**
+     * @generated from rpc neoshowcase.protobuf.ApplicationService.GetOutputStream
+     */
+    getOutputStream: {
+      name: "GetOutputStream",
+      I: GetOutputStreamRequest,
+      O: ApplicationOutput,
+      kind: MethodKind.ServerStreaming,
     },
     /**
      * @generated from rpc neoshowcase.protobuf.ApplicationService.CancelBuild
