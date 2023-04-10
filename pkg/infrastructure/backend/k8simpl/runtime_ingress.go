@@ -71,22 +71,22 @@ func (b *k8sBackend) stripMiddleware(_ *domain.Application, website *domain.Webs
 	}
 }
 
-func (b *k8sBackend) certificate(_ *domain.Application, website *domain.Website, labels map[string]string) *certmanagerv1.Certificate {
+func (b *k8sBackend) certificate(targetDomain string, labels map[string]string) *certmanagerv1.Certificate {
 	return &certmanagerv1.Certificate{
 		TypeMeta: metav1.TypeMeta{
 			APIVersion: "cert-manager.io/v1",
 			Kind:       "Certificate",
 		},
 		ObjectMeta: metav1.ObjectMeta{
-			Name:      certificateName(website.FQDN),
+			Name:      certificateName(targetDomain),
 			Namespace: b.config.Namespace,
 			Labels:    labels,
 		},
 		Spec: certmanagerv1.CertificateSpec{
-			SecretName:  tlsSecretName(website.FQDN),
+			SecretName:  tlsSecretName(targetDomain),
 			Duration:    &metav1.Duration{Duration: 90 * 24 * time.Hour},
 			RenewBefore: &metav1.Duration{Duration: 15 * 24 * time.Hour},
-			DNSNames:    []string{website.FQDN},
+			DNSNames:    []string{targetDomain},
 			IssuerRef: certmetav1.ObjectReference{
 				Name: b.config.TLS.CertManager.Issuer.Name,
 				Kind: b.config.TLS.CertManager.Issuer.Kind,
@@ -95,7 +95,13 @@ func (b *k8sBackend) certificate(_ *domain.Application, website *domain.Website,
 	}
 }
 
-func (b *k8sBackend) ingressRoute(app *domain.Application, website *domain.Website, labels map[string]string, serviceRefs []traefikv1alpha1.Service) (
+func (b *k8sBackend) ingressRoute(
+	app *domain.Application,
+	website *domain.Website,
+	labels map[string]string,
+	serviceRefs []traefikv1alpha1.Service,
+	ads domain.AvailableDomainSlice,
+) (
 	*traefikv1alpha1.IngressRoute,
 	[]*traefikv1alpha1.Middleware,
 	[]*certmanagerv1.Certificate,
@@ -138,17 +144,19 @@ func (b *k8sBackend) ingressRoute(app *domain.Application, website *domain.Websi
 	var certs []*certmanagerv1.Certificate
 	if website.HTTPS {
 		if b.config.TLS.Type == tlsTypeTraefik {
+			targetDomain := domain.TLSTargetDomain(b.config.TLS.Traefik.Wildcard, website, ads)
 			tls = &traefikv1alpha1.TLS{
-				SecretName:   tlsSecretName(website.FQDN),
+				SecretName:   tlsSecretName(targetDomain),
 				CertResolver: b.config.TLS.Traefik.CertResolver,
-				Domains:      []types.Domain{{Main: website.FQDN}},
+				Domains:      []types.Domain{{Main: targetDomain}},
 			}
 		} else if b.config.TLS.Type == tlsTypeCertManager {
+			targetDomain := domain.TLSTargetDomain(b.config.TLS.CertManager.Wildcard, website, ads)
 			tls = &traefikv1alpha1.TLS{
-				SecretName: tlsSecretName(website.FQDN),
-				Domains:    []types.Domain{{Main: website.FQDN}},
+				SecretName: tlsSecretName(targetDomain),
+				Domains:    []types.Domain{{Main: targetDomain}},
 			}
-			certs = append(certs, b.certificate(app, website, labels))
+			certs = append(certs, b.certificate(targetDomain, labels))
 		}
 	}
 

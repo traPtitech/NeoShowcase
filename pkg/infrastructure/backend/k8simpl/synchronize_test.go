@@ -32,12 +32,12 @@ func TestK8sBackend_Synchronize(t *testing.T) {
 			App:       &app,
 			ImageName: image,
 			ImageTag:  "latest",
-		}})
+		}}, nil)
 		require.NoError(t, err)
 		exists[*appsv1.StatefulSet](t, deploymentName(appID), c.AppsV1().StatefulSets(appNamespace))
 		waitPodRunning(t, m, appID)
 
-		err = m.SynchronizeRuntime(context.Background(), nil)
+		err = m.SynchronizeRuntime(context.Background(), nil, nil)
 		require.NoError(t, err)
 		waitPodDeleted(t, m, appID) // NOTE: foreground delete
 		notExists[*appsv1.StatefulSet](t, deploymentName(appID), c.AppsV1().StatefulSets(appNamespace))
@@ -64,14 +64,14 @@ func TestK8sBackend_Synchronize(t *testing.T) {
 			App:       &app,
 			ImageName: image,
 			ImageTag:  "latest",
-		}})
+		}}, nil)
 		require.NoError(t, err)
 		exists[*appsv1.StatefulSet](t, deploymentName(appID), c.AppsV1().StatefulSets(appNamespace))
 		exists[*corev1.Service](t, serviceName(website), c.CoreV1().Services(appNamespace))
 		exists[*traefikv1alpha1.IngressRoute](t, serviceName(website), tc.IngressRoutes(appNamespace))
 		waitPodRunning(t, m, appID)
 
-		err = m.SynchronizeRuntime(context.Background(), nil)
+		err = m.SynchronizeRuntime(context.Background(), nil, nil)
 		require.NoError(t, err)
 		waitPodDeleted(t, m, appID) // NOTE: foreground delete
 		notExists[*appsv1.StatefulSet](t, deploymentName(appID), c.AppsV1().StatefulSets(appNamespace))
@@ -100,7 +100,7 @@ func TestK8sBackend_Synchronize(t *testing.T) {
 			App:       &app,
 			ImageName: image,
 			ImageTag:  "latest",
-		}})
+		}}, nil)
 		require.NoError(t, err)
 		waitPodRunning(t, m, appID)
 
@@ -109,7 +109,7 @@ func TestK8sBackend_Synchronize(t *testing.T) {
 			App:       &app,
 			ImageName: image,
 			ImageTag:  "latest",
-		}})
+		}}, nil)
 		require.NoError(t, err)
 		exists[*appsv1.StatefulSet](t, deploymentName(appID), c.AppsV1().StatefulSets(appNamespace))
 		exists[*corev1.Service](t, serviceName(website), c.CoreV1().Services(appNamespace))
@@ -117,7 +117,7 @@ func TestK8sBackend_Synchronize(t *testing.T) {
 		exists[*traefikv1alpha1.Middleware](t, stripMiddlewareName(website), tc.Middlewares(appNamespace))
 		waitPodRunning(t, m, appID)
 
-		err = m.SynchronizeRuntime(context.Background(), nil)
+		err = m.SynchronizeRuntime(context.Background(), nil, nil)
 		require.NoError(t, err)
 		waitPodDeleted(t, m, appID) // NOTE: foreground delete
 		notExists[*appsv1.StatefulSet](t, deploymentName(appID), c.AppsV1().StatefulSets(appNamespace))

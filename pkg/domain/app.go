@@ -3,9 +3,10 @@ package domain
 import (
 	"context"
 	"fmt"
-	"github.com/mattn/go-shellwords"
 	"strings"
 	"time"
+
+	"github.com/mattn/go-shellwords"
 
 	"github.com/go-git/go-git/v5/plumbing/transport"
 	"github.com/go-git/go-git/v5/plumbing/transport/ssh"
@@ -275,6 +276,15 @@ func (s AvailableDomainSlice) IsAvailable(fqdn string) bool {
 		}
 	}
 	return false
+}
+
+func (s AvailableDomainSlice) GetAvailableMatch(fqdn string) *AvailableDomain {
+	for _, a := range s {
+		if a.Available && a.match(fqdn) {
+			return a
+		}
+	}
+	return nil
 }
 
 type BuildStatus int
