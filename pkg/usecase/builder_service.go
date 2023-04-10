@@ -3,6 +3,7 @@ package usecase
 import (
 	"context"
 	"fmt"
+	"github.com/mattn/go-shellwords"
 	"github.com/traPtitech/neoshowcase/pkg/interface/grpc/pbconvert"
 	"io"
 	"os"
@@ -27,14 +28,12 @@ import (
 	"github.com/traPtitech/neoshowcase/pkg/domain/builder"
 	"github.com/traPtitech/neoshowcase/pkg/interface/grpc/pb"
 	"github.com/traPtitech/neoshowcase/pkg/interface/repository"
-	"github.com/traPtitech/neoshowcase/pkg/util"
 	"github.com/traPtitech/neoshowcase/pkg/util/optional"
 	"github.com/traPtitech/neoshowcase/pkg/util/retry"
 )
 
 const (
-	buildScriptName      = "neoshowcase_internal_build.sh"
-	entryPointScriptName = "neoshowcase_internal_entrypoint.sh"
+	buildScriptName = "neoshowcase_internal_build.sh"
 )
 
 type BuilderService interface {
@@ -362,11 +361,11 @@ func (s *builderService) build(ctx context.Context, st *state) domain.BuildStatu
 		}
 		switch bc := st.task.BuildConfig.(type) {
 		case *domain.BuildConfigRuntimeCmd:
-			return s.buildImageWithConfig(ctx, st, exportAttrs, ch, bc)
+			return s.buildImageWithCmd(ctx, st, exportAttrs, ch, bc)
 		case *domain.BuildConfigRuntimeDockerfile:
 			return s.buildImageWithDockerfile(ctx, st, exportAttrs, ch, bc)
 		case *domain.BuildConfigStaticCmd:
-			return s.buildStaticWithConfig(ctx, st, ch, bc)
+			return s.buildStaticWithCmd(ctx, st, ch, bc)
 		case *domain.BuildConfigStaticDockerfile:
 			return s.buildStaticWithDockerfile(ctx, st, ch, bc)
 		default:
@@ -394,41 +393,46 @@ func (s *builderService) build(ctx context.Context, st *state) domain.BuildStatu
 	return domain.BuildStatusSucceeded
 }
 
-func (s *builderService) buildImageWithConfig(
+func (s *builderService) buildImageWithCmd(
 	ctx context.Context,
 	st *state,
 	exportAttrs map[string]string,
 	ch chan *buildkit.SolveStatus,
 	bc *domain.BuildConfigRuntimeCmd,
 ) error {
-	err := createScriptFile(filepath.Join(st.repositoryTempDir, buildScriptName), bc.BuildCmd)
-	if err != nil {
-		return err
+	var ls llb.State
+	if bc.BaseImage == "" {
+		ls = llb.Scratch()
+	} else {
+		ls = llb.Image(bc.BaseImage)
+	}
+	ls = ls.
+		Dir("/srv").
+		File(llb.Copy(llb.Local("local-src"), ".", ".", &llb.CopyInfo{
+			CopyDirContentsOnly: true,
+			AllowWildcard:       true,
+			CreateDestPath:      true,
+		}))
+
+	if bc.BuildCmd != "" {
+		if bc.BuildCmdShell {
+			err := createScriptFile(filepath.Join(st.repositoryTempDir, buildScriptName), bc.BuildCmd)
+			if err != nil {
+				return err
+			}
+			ls = ls.Run(llb.Args([]string{"./" + buildScriptName})).Root()
+		} else {
+			args, err := shellwords.Parse(bc.BuildCmd)
+			if err != nil {
+				return err
+			}
+			ls = ls.Run(llb.Args(args)).Root()
+		}
 	}
 
-	err = createScriptFile(filepath.Join(st.repositoryTempDir, entryPointScriptName), bc.EntrypointCmd)
+	def, err := ls.Marshal(ctx)
 	if err != nil {
-		return err
-	}
-
-	dockerfile := fmt.Sprintf(
-		`FROM %s
-WORKDIR /srv
-COPY . .
-RUN ["/srv/%s"]
-ENTRYPOINT ["/srv/%s"]`,
-		util.ValueOr(bc.BaseImage, "scratch"),
-		buildScriptName,
-		entryPointScriptName,
-	)
-	b, _, _, err := dockerfile2llb.Dockerfile2LLB(ctx, []byte(dockerfile), dockerfile2llb.ConvertOpt{})
-	if err != nil {
-		return err
-	}
-
-	def, err := b.Marshal(ctx)
-	if err != nil {
-		return err
+		return errors.Wrap(err, "failed to marshal llb")
 	}
 
 	_, err = s.buildkit.Solve(ctx, def, buildkit.SolveOpt{
@@ -437,9 +441,8 @@ ENTRYPOINT ["/srv/%s"]`,
 			Attrs: exportAttrs,
 		}},
 		LocalDirs: map[string]string{
-			"context": st.repositoryTempDir,
+			"local-src": st.repositoryTempDir,
 		},
-		Frontend: "dockerfile.v0",
 	}, ch)
 	return err
 }
@@ -467,44 +470,53 @@ func (s *builderService) buildImageWithDockerfile(
 	return err
 }
 
-func (s *builderService) buildStaticWithConfig(
+func (s *builderService) buildStaticWithCmd(
 	ctx context.Context,
 	st *state,
 	ch chan *buildkit.SolveStatus,
 	bc *domain.BuildConfigStaticCmd,
 ) error {
-	err := createScriptFile(filepath.Join(st.repositoryTempDir, buildScriptName), bc.BuildCmd)
-	if err != nil {
-		return err
-	}
-
 	var ls llb.State
 	if bc.BaseImage == "" {
 		ls = llb.Scratch()
 	} else {
 		ls = llb.Image(bc.BaseImage)
 	}
-	b := ls.
+	ls = ls.
 		Dir("/srv").
 		File(llb.Copy(llb.Local("local-src"), ".", ".", &llb.CopyInfo{
 			CopyDirContentsOnly: true,
 			AllowWildcard:       true,
 			CreateDestPath:      true,
-		})).
-		Run(llb.Args([]string{"./" + buildScriptName})).
-		Root()
+		}))
+
+	if bc.BuildCmd != "" {
+		if bc.BuildCmdShell {
+			err := createScriptFile(filepath.Join(st.repositoryTempDir, buildScriptName), bc.BuildCmd)
+			if err != nil {
+				return err
+			}
+			ls = ls.Run(llb.Args([]string{"./" + buildScriptName})).Root()
+		} else {
+			args, err := shellwords.Parse(bc.BuildCmd)
+			if err != nil {
+				return err
+			}
+			ls = ls.Run(llb.Args(args)).Root()
+		}
+	}
 
 	// ビルドで生成された静的ファイルのみを含むScratchイメージを構成
 	def, err := llb.
 		Scratch().
-		File(llb.Copy(b, filepath.Join("/srv", bc.ArtifactPath), "/", &llb.CopyInfo{
+		File(llb.Copy(ls, filepath.Join("/srv", bc.ArtifactPath), "/", &llb.CopyInfo{
 			CopyDirContentsOnly: true,
 			CreateDestPath:      true,
 			AllowWildcard:       true,
 		})).
 		Marshal(ctx)
 	if err != nil {
-		return err
+		return errors.Wrap(err, "failed to marshal llb")
 	}
 
 	_, err = s.buildkit.Solve(ctx, def, buildkit.SolveOpt{

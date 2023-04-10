@@ -75,17 +75,17 @@ CREATE TABLE `applications`
 
 CREATE TABLE `application_config`
 (
-    `application_id`      CHAR(22)                                                                      NOT NULL COMMENT 'アプリケーションID',
-    `use_mariadb`         TINYINT(1)                                                                    NOT NULL COMMENT 'MariaDBを使用するか',
-    `use_mongodb`         TINYINT(1)                                                                    NOT NULL COMMENT 'MongoDBを使用するか',
-    `build_type`          ENUM ('runtime-cmd', 'runtime-dockerfile', 'static-cmd', 'static-dockerfile') NOT NULL COMMENT 'ビルドタイプ',
-    `base_image`          VARCHAR(1000)                                                                 NOT NULL COMMENT 'ベースイメージの名前',
-    `build_cmd`           TEXT                                                                          NOT NULL COMMENT 'ビルドコマンド(shell)',
-    `entrypoint_cmd`      TEXT                                                                          NOT NULL COMMENT 'コンテナのエントリポイント(shell)',
-    `artifact_path`       VARCHAR(100)                                                                  NOT NULL COMMENT '静的成果物のパス',
-    `dockerfile_name`     VARCHAR(100)                                                                  NOT NULL COMMENT 'Dockerfile名',
-    `entrypoint_override` TEXT                                                                          NOT NULL COMMENT 'Entrypointの上書き(args)',
-    `command_override`    TEXT                                                                          NOT NULL COMMENT 'Commandの上書き(args)',
+    `application_id`  CHAR(22)                                                                      NOT NULL COMMENT 'アプリケーションID',
+    `use_mariadb`     TINYINT(1)                                                                    NOT NULL COMMENT 'MariaDBを使用するか',
+    `use_mongodb`     TINYINT(1)                                                                    NOT NULL COMMENT 'MongoDBを使用するか',
+    `build_type`      ENUM ('runtime-cmd', 'runtime-dockerfile', 'static-cmd', 'static-dockerfile') NOT NULL COMMENT 'ビルドタイプ',
+    `base_image`      VARCHAR(1000)                                                                 NOT NULL COMMENT 'ベースイメージの名前',
+    `build_cmd`       TEXT                                                                          NOT NULL COMMENT 'ビルドコマンド',
+    `build_cmd_shell` TINYINT(1)                                                                    NOT NULL COMMENT 'ビルドコマンドをshellで実行するか',
+    `artifact_path`   VARCHAR(100)                                                                  NOT NULL COMMENT '静的成果物のパス',
+    `dockerfile_name` VARCHAR(100)                                                                  NOT NULL COMMENT 'Dockerfile名',
+    `entrypoint`      TEXT                                                                          NOT NULL COMMENT 'Entrypoint(args)',
+    `command`         TEXT                                                                          NOT NULL COMMENT 'Command(args)',
     PRIMARY KEY (`application_id`),
     CONSTRAINT `fk_application_config_application_id` FOREIGN KEY (`application_id`) REFERENCES `applications` (`id`)
 ) ENGINE = InnoDB

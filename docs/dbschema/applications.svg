@@ -104,8 +104,8 @@
 <text text-anchor="start" x="50" y="-943.9" font-family="Arial" font-size="14.00" fill="#000000">build_cmd </text>
 <text text-anchor="start" x="117.6774" y="-943.9" font-family="Arial" font-size="14.00" fill="#666666">[text]</text>
 <polygon fill="none" stroke="#000000" points="43,-902.5 43,-932.5 563,-932.5 563,-902.5 43,-902.5"/>
-<text text-anchor="start" x="50" y="-913.9" font-family="Arial" font-size="14.00" fill="#000000">entrypoint_cmd </text>
-<text text-anchor="start" x="149.5778" y="-913.9" font-family="Arial" font-size="14.00" fill="#666666">[text]</text>
+<text text-anchor="start" x="50" y="-913.9" font-family="Arial" font-size="14.00" fill="#000000">build_cmd_shell </text>
+<text text-anchor="start" x="154.2384" y="-913.9" font-family="Arial" font-size="14.00" fill="#666666">[tinyint(1)]</text>
 <polygon fill="none" stroke="#000000" points="43,-872.5 43,-902.5 563,-902.5 563,-872.5 43,-872.5"/>
 <text text-anchor="start" x="50" y="-883.9" font-family="Arial" font-size="14.00" fill="#000000">artifact_path </text>
 <text text-anchor="start" x="130.9158" y="-883.9" font-family="Arial" font-size="14.00" fill="#666666">[varchar(100)]</text>
@@ -113,11 +113,11 @@
 <text text-anchor="start" x="50" y="-853.9" font-family="Arial" font-size="14.00" fill="#000000">dockerfile_name </text>
 <text text-anchor="start" x="156.5764" y="-853.9" font-family="Arial" font-size="14.00" fill="#666666">[varchar(100)]</text>
 <polygon fill="none" stroke="#000000" points="43,-812.5 43,-842.5 563,-842.5 563,-812.5 43,-812.5"/>
-<text text-anchor="start" x="50" y="-823.9" font-family="Arial" font-size="14.00" fill="#000000">entrypoint_override </text>
-<text text-anchor="start" x="173.6928" y="-823.9" font-family="Arial" font-size="14.00" fill="#666666">[text]</text>
+<text text-anchor="start" x="50" y="-823.9" font-family="Arial" font-size="14.00" fill="#000000">entrypoint </text>
+<text text-anchor="start" x="115.352" y="-823.9" font-family="Arial" font-size="14.00" fill="#666666">[text]</text>
 <polygon fill="none" stroke="#000000" points="43,-782.5 43,-812.5 563,-812.5 563,-782.5 43,-782.5"/>
-<text text-anchor="start" x="50" y="-793.9" font-family="Arial" font-size="14.00" fill="#000000">command_override </text>
-<text text-anchor="start" x="173.683" y="-793.9" font-family="Arial" font-size="14.00" fill="#666666">[text]</text>
+<text text-anchor="start" x="50" y="-793.9" font-family="Arial" font-size="14.00" fill="#000000">command </text>
+<text text-anchor="start" x="115.3422" y="-793.9" font-family="Arial" font-size="14.00" fill="#666666">[text]</text>
 </g>
 <!-- application_config&#45;&gt;applications -->
 <g id="edge1" class="edge">

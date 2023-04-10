@@ -12,12 +12,12 @@ CREATE TABLE `application_config` (
   `use_mongodb` tinyint(1) NOT NULL COMMENT 'MongoDBを使用するか',
   `build_type` enum('runtime-cmd','runtime-dockerfile','static-cmd','static-dockerfile') NOT NULL COMMENT 'ビルドタイプ',
   `base_image` varchar(1000) NOT NULL COMMENT 'ベースイメージの名前',
-  `build_cmd` text NOT NULL COMMENT 'ビルドコマンド(shell)',
-  `entrypoint_cmd` text NOT NULL COMMENT 'コンテナのエントリポイント(shell)',
+  `build_cmd` text NOT NULL COMMENT 'ビルドコマンド',
+  `build_cmd_shell` tinyint(1) NOT NULL COMMENT 'ビルドコマンドをshellで実行するか',
   `artifact_path` varchar(100) NOT NULL COMMENT '静的成果物のパス',
   `dockerfile_name` varchar(100) NOT NULL COMMENT 'Dockerfile名',
-  `entrypoint_override` text NOT NULL COMMENT 'Entrypointの上書き(args)',
-  `command_override` text NOT NULL COMMENT 'Commandの上書き(args)',
+  `entrypoint` text NOT NULL COMMENT 'Entrypoint(args)',
+  `command` text NOT NULL COMMENT 'Command(args)',
   PRIMARY KEY (`application_id`),
   CONSTRAINT `fk_application_config_application_id` FOREIGN KEY (`application_id`) REFERENCES `applications` (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci
@@ -34,12 +34,12 @@ CREATE TABLE `application_config` (
 | use_mongodb | tinyint(1) |  | false |  |  | MongoDBを使用するか |
 | build_type | enum('runtime-cmd','runtime-dockerfile','static-cmd','static-dockerfile') |  | false |  |  | ビルドタイプ |
 | base_image | varchar(1000) |  | false |  |  | ベースイメージの名前 |
-| build_cmd | text |  | false |  |  | ビルドコマンド(shell) |
-| entrypoint_cmd | text |  | false |  |  | コンテナのエントリポイント(shell) |
+| build_cmd | text |  | false |  |  | ビルドコマンド |
+| build_cmd_shell | tinyint(1) |  | false |  |  | ビルドコマンドをshellで実行するか |
 | artifact_path | varchar(100) |  | false |  |  | 静的成果物のパス |
 | dockerfile_name | varchar(100) |  | false |  |  | Dockerfile名 |
-| entrypoint_override | text |  | false |  |  | Entrypointの上書き(args) |
-| command_override | text |  | false |  |  | Commandの上書き(args) |
+| entrypoint | text |  | false |  |  | Entrypoint(args) |
+| command | text |  | false |  |  | Command(args) |
 
 ## Constraints
 

@@ -19,6 +19,8 @@ func FromPBApplicationConfig(c *pb.ApplicationConfig) domain.ApplicationConfig {
 		UseMongoDB:  c.UseMongodb,
 		BuildType:   BuildTypeMapper.FromMust(c.BuildType),
 		BuildConfig: FromPBBuildConfig(c.BuildConfig),
+		Entrypoint:  c.Entrypoint,
+		Command:     c.Command,
 	}
 }
 
@@ -28,5 +30,7 @@ func ToPBApplicationConfig(c domain.ApplicationConfig) *pb.ApplicationConfig {
 		UseMongodb:  c.UseMongoDB,
 		BuildType:   BuildTypeMapper.IntoMust(c.BuildType),
 		BuildConfig: ToPBBuildConfig(c.BuildConfig),
+		Entrypoint:  c.Entrypoint,
+		Command:     c.Command,
 	}
 }

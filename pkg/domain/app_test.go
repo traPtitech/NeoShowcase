@@ -1,6 +1,7 @@
 package domain
 
 import (
+	"github.com/stretchr/testify/require"
 	"reflect"
 	"testing"
 	"time"
@@ -21,47 +22,62 @@ func TestApplicationConfig_IsValid(t *testing.T) {
 			name:       "valid (runtime dockerfile)",
 			deployType: DeployTypeRuntime,
 			config: ApplicationConfig{
-				DockerfileName: "Dockerfile",
+				BuildType: BuildTypeRuntimeDockerfile,
+				BuildConfig: &BuildConfigRuntimeDockerfile{
+					DockerfileName: "Dockerfile",
+				},
 			},
 			want: true,
 		},
 		{
-			name:       "valid (runtime config)",
+			name:       "valid (runtime cmd)",
 			deployType: DeployTypeRuntime,
 			config: ApplicationConfig{
-				BaseImage:     "golang:1.20",
-				BuildCmd:      "go build -o main",
-				EntrypointCmd: "./main",
+				BuildType: BuildTypeRuntimeCmd,
+				BuildConfig: &BuildConfigRuntimeCmd{
+					BaseImage: "golang:1.20",
+					BuildCmd:  "go build -o main",
+				},
+				Entrypoint: "./main",
 			},
 			want: true,
 		},
 		{
-			name:       "valid with no build cmd (runtime config)",
+			name:       "valid with no build cmd (runtime cmd)",
 			deployType: DeployTypeRuntime,
 			config: ApplicationConfig{
-				BaseImage:     "python:3",
-				BuildCmd:      "",
-				EntrypointCmd: "python3 main.py",
+				BuildType: BuildTypeRuntimeCmd,
+				BuildConfig: &BuildConfigRuntimeCmd{
+					BaseImage: "python:3",
+					BuildCmd:  "",
+				},
+				Entrypoint: "python3 main.py",
 			},
 			want: true,
 		},
 		{
-			name:       "valid with scratch (runtime config)",
+			name:       "valid with scratch (runtime cmd)",
 			deployType: DeployTypeRuntime,
 			config: ApplicationConfig{
-				BaseImage:     "",
-				BuildCmd:      "",
-				EntrypointCmd: "./my-binary",
+				BuildType: BuildTypeRuntimeCmd,
+				BuildConfig: &BuildConfigRuntimeCmd{
+					BaseImage: "",
+					BuildCmd:  "",
+				},
+				Entrypoint: "./my-binary",
 			},
 			want: true,
 		},
 		{
-			name:       "empty entrypoint cmd (runtime config)",
+			name:       "empty entrypoint cmd (runtime cmd)",
 			deployType: DeployTypeRuntime,
 			config: ApplicationConfig{
-				BaseImage:     "golang:1.20",
-				BuildCmd:      "go build -o main",
-				EntrypointCmd: "",
+				BuildType: BuildTypeRuntimeCmd,
+				BuildConfig: &BuildConfigRuntimeCmd{
+					BaseImage: "golang:1.20",
+					BuildCmd:  "go build -o main",
+				},
+				Entrypoint: "",
 			},
 			want: false,
 		},
@@ -69,8 +85,11 @@ func TestApplicationConfig_IsValid(t *testing.T) {
 			name:       "valid (static dockerfile)",
 			deployType: DeployTypeStatic,
 			config: ApplicationConfig{
-				DockerfileName: "Dockerfile",
-				ArtifactPath:   "./dist",
+				BuildType: BuildTypeStaticDockerfile,
+				BuildConfig: &BuildConfigStaticDockerfile{
+					DockerfileName: "Dockerfile",
+					ArtifactPath:   "./dist",
+				},
 			},
 			want: true,
 		},
@@ -78,48 +97,63 @@ func TestApplicationConfig_IsValid(t *testing.T) {
 			name:       "empty artifact path (static dockerfile)",
 			deployType: DeployTypeStatic,
 			config: ApplicationConfig{
-				DockerfileName: "Dockerfile",
-				ArtifactPath:   "",
+				BuildType: BuildTypeStaticDockerfile,
+				BuildConfig: &BuildConfigStaticDockerfile{
+					DockerfileName: "Dockerfile",
+					ArtifactPath:   "",
+				},
 			},
 			want: false,
 		},
 		{
-			name:       "valid (static config)",
+			name:       "valid (static cmd)",
 			deployType: DeployTypeStatic,
 			config: ApplicationConfig{
-				BaseImage:    "node:18",
-				ArtifactPath: "./dist",
-				BuildCmd:     "yarn build",
+				BuildType: BuildTypeStaticCmd,
+				BuildConfig: &BuildConfigStaticCmd{
+					BaseImage:    "node:18",
+					BuildCmd:     "yarn build",
+					ArtifactPath: "./dist",
+				},
 			},
 			want: true,
 		},
 		{
-			name:       "valid with no build cmd (static config)",
+			name:       "valid with no build cmd (static cmd)",
 			deployType: DeployTypeStatic,
 			config: ApplicationConfig{
-				BaseImage:    "alpine:latest",
-				ArtifactPath: "./dist",
-				BuildCmd:     "",
+				BuildType: BuildTypeStaticCmd,
+				BuildConfig: &BuildConfigStaticCmd{
+					BaseImage:    "alpine:latest",
+					BuildCmd:     "",
+					ArtifactPath: "./dist",
+				},
 			},
 			want: true,
 		},
 		{
-			name:       "valid with scratch (static config)",
+			name:       "valid with scratch (static cmd)",
 			deployType: DeployTypeStatic,
 			config: ApplicationConfig{
-				BaseImage:    "",
-				ArtifactPath: "./dist",
-				BuildCmd:     "",
+				BuildType: BuildTypeStaticCmd,
+				BuildConfig: &BuildConfigStaticCmd{
+					BaseImage:    "",
+					BuildCmd:     "",
+					ArtifactPath: "./dist",
+				},
 			},
 			want: true,
 		},
 		{
-			name:       "empty artifact path (static config)",
+			name:       "empty artifact path (static cmd)",
 			deployType: DeployTypeStatic,
 			config: ApplicationConfig{
-				BaseImage:    "",
-				ArtifactPath: "",
-				BuildCmd:     "",
+				BuildType: BuildTypeStaticCmd,
+				BuildConfig: &BuildConfigStaticCmd{
+					BaseImage:    "",
+					BuildCmd:     "",
+					ArtifactPath: "",
+				},
 			},
 			want: false,
 		},
@@ -134,6 +168,12 @@ func TestApplicationConfig_IsValid(t *testing.T) {
 }
 
 func TestApplication_IsValid(t *testing.T) {
+	runtimeValidConfig := ApplicationConfig{
+		BuildType:   BuildTypeRuntimeDockerfile,
+		BuildConfig: &BuildConfigRuntimeDockerfile{DockerfileName: "Dockerfile"},
+	}
+	require.True(t, runtimeValidConfig.IsValid(DeployTypeRuntime))
+
 	tests := []struct {
 		name string
 		app  Application
@@ -151,7 +191,7 @@ func TestApplication_IsValid(t *testing.T) {
 				WantCommit:    EmptyCommit,
 				CreatedAt:     time.Now(),
 				UpdatedAt:     time.Now(),
-				Config:        ApplicationConfig{DockerfileName: "Dockerfile"},
+				Config:        runtimeValidConfig,
 				Websites:      nil,
 				OwnerIDs:      []string{"abc"},
 			},
@@ -169,7 +209,7 @@ func TestApplication_IsValid(t *testing.T) {
 				WantCommit:    EmptyCommit,
 				CreatedAt:     time.Now(),
 				UpdatedAt:     time.Now(),
-				Config:        ApplicationConfig{DockerfileName: "Dockerfile"},
+				Config:        runtimeValidConfig,
 				Websites:      nil,
 				OwnerIDs:      []string{"abc"},
 			},
@@ -187,7 +227,7 @@ func TestApplication_IsValid(t *testing.T) {
 				WantCommit:    EmptyCommit,
 				CreatedAt:     time.Now(),
 				UpdatedAt:     time.Now(),
-				Config:        ApplicationConfig{DockerfileName: "Dockerfile"},
+				Config:        runtimeValidConfig,
 				Websites:      nil,
 				OwnerIDs:      []string{"abc"},
 			},
@@ -205,7 +245,7 @@ func TestApplication_IsValid(t *testing.T) {
 				WantCommit:    EmptyCommit,
 				CreatedAt:     time.Now(),
 				UpdatedAt:     time.Now(),
-				Config:        ApplicationConfig{DockerfileName: "Dockerfile"},
+				Config:        runtimeValidConfig,
 				Websites:      nil,
 				OwnerIDs:      []string{},
 			},

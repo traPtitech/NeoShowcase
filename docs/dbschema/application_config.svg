@@ -36,8 +36,8 @@
 <text text-anchor="start" x="53" y="-693.9" font-family="Arial" font-size="14.00" fill="#000000">build_cmd </text>
 <text text-anchor="start" x="120.6774" y="-693.9" font-family="Arial" font-size="14.00" fill="#666666">[text]</text>
 <polygon fill="none" stroke="#000000" points="46,-652.5 46,-682.5 566,-682.5 566,-652.5 46,-652.5"/>
-<text text-anchor="start" x="53" y="-663.9" font-family="Arial" font-size="14.00" fill="#000000">entrypoint_cmd </text>
-<text text-anchor="start" x="152.5778" y="-663.9" font-family="Arial" font-size="14.00" fill="#666666">[text]</text>
+<text text-anchor="start" x="53" y="-663.9" font-family="Arial" font-size="14.00" fill="#000000">build_cmd_shell </text>
+<text text-anchor="start" x="157.2384" y="-663.9" font-family="Arial" font-size="14.00" fill="#666666">[tinyint(1)]</text>
 <polygon fill="none" stroke="#000000" points="46,-622.5 46,-652.5 566,-652.5 566,-622.5 46,-622.5"/>
 <text text-anchor="start" x="53" y="-633.9" font-family="Arial" font-size="14.00" fill="#000000">artifact_path </text>
 <text text-anchor="start" x="133.9158" y="-633.9" font-family="Arial" font-size="14.00" fill="#666666">[varchar(100)]</text>
@@ -45,11 +45,11 @@
 <text text-anchor="start" x="53" y="-603.9" font-family="Arial" font-size="14.00" fill="#000000">dockerfile_name </text>
 <text text-anchor="start" x="159.5764" y="-603.9" font-family="Arial" font-size="14.00" fill="#666666">[varchar(100)]</text>
 <polygon fill="none" stroke="#000000" points="46,-562.5 46,-592.5 566,-592.5 566,-562.5 46,-562.5"/>
-<text text-anchor="start" x="53" y="-573.9" font-family="Arial" font-size="14.00" fill="#000000">entrypoint_override </text>
-<text text-anchor="start" x="176.6928" y="-573.9" font-family="Arial" font-size="14.00" fill="#666666">[text]</text>
+<text text-anchor="start" x="53" y="-573.9" font-family="Arial" font-size="14.00" fill="#000000">entrypoint </text>
+<text text-anchor="start" x="118.352" y="-573.9" font-family="Arial" font-size="14.00" fill="#666666">[text]</text>
 <polygon fill="none" stroke="#000000" points="46,-532.5 46,-562.5 566,-562.5 566,-532.5 46,-532.5"/>
-<text text-anchor="start" x="53" y="-543.9" font-family="Arial" font-size="14.00" fill="#000000">command_override </text>
-<text text-anchor="start" x="176.683" y="-543.9" font-family="Arial" font-size="14.00" fill="#666666">[text]</text>
+<text text-anchor="start" x="53" y="-543.9" font-family="Arial" font-size="14.00" fill="#000000">command </text>
+<text text-anchor="start" x="118.3422" y="-543.9" font-family="Arial" font-size="14.00" fill="#666666">[text]</text>
 <polygon fill="none" stroke="#000000" stroke-width="3" points="44.5,-531.5 44.5,-899.5 567.5,-899.5 567.5,-531.5 44.5,-531.5"/>
 </g>
 <!-- applications -->

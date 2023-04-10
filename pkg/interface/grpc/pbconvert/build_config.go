@@ -11,19 +11,18 @@ func FromPBBuildConfig(c *pb.BuildConfig) domain.BuildConfig {
 		return &domain.BuildConfigRuntimeCmd{
 			BaseImage:     bc.RuntimeCmd.BaseImage,
 			BuildCmd:      bc.RuntimeCmd.BuildCmd,
-			EntrypointCmd: bc.RuntimeCmd.EntrypointCmd,
+			BuildCmdShell: bc.RuntimeCmd.BuildCmdShell,
 		}
 	case *pb.BuildConfig_RuntimeDockerfile:
 		return &domain.BuildConfigRuntimeDockerfile{
-			DockerfileName:     bc.RuntimeDockerfile.DockerfileName,
-			EntrypointOverride: bc.RuntimeDockerfile.EntrypointOverride,
-			CommandOverride:    bc.RuntimeDockerfile.CommandOverride,
+			DockerfileName: bc.RuntimeDockerfile.DockerfileName,
 		}
 	case *pb.BuildConfig_StaticCmd:
 		return &domain.BuildConfigStaticCmd{
-			BaseImage:    bc.StaticCmd.BaseImage,
-			BuildCmd:     bc.StaticCmd.BuildCmd,
-			ArtifactPath: bc.StaticCmd.ArtifactPath,
+			BaseImage:     bc.StaticCmd.BaseImage,
+			BuildCmd:      bc.StaticCmd.BuildCmd,
+			BuildCmdShell: bc.StaticCmd.BuildCmdShell,
+			ArtifactPath:  bc.StaticCmd.ArtifactPath,
 		}
 	case *pb.BuildConfig_StaticDockerfile:
 		return &domain.BuildConfigStaticDockerfile{
@@ -41,19 +40,18 @@ func ToPBBuildConfig(c domain.BuildConfig) *pb.BuildConfig {
 		return &pb.BuildConfig{BuildConfig: &pb.BuildConfig_RuntimeCmd{RuntimeCmd: &pb.BuildConfigRuntimeCmd{
 			BaseImage:     bc.BaseImage,
 			BuildCmd:      bc.BuildCmd,
-			EntrypointCmd: bc.EntrypointCmd,
+			BuildCmdShell: bc.BuildCmdShell,
 		}}}
 	case *domain.BuildConfigRuntimeDockerfile:
 		return &pb.BuildConfig{BuildConfig: &pb.BuildConfig_RuntimeDockerfile{RuntimeDockerfile: &pb.BuildConfigRuntimeDockerfile{
-			DockerfileName:     bc.DockerfileName,
-			EntrypointOverride: bc.EntrypointOverride,
-			CommandOverride:    bc.CommandOverride,
+			DockerfileName: bc.DockerfileName,
 		}}}
 	case *domain.BuildConfigStaticCmd:
 		return &pb.BuildConfig{BuildConfig: &pb.BuildConfig_StaticCmd{StaticCmd: &pb.BuildConfigStaticCmd{
-			BaseImage:    bc.BaseImage,
-			BuildCmd:     bc.BuildCmd,
-			ArtifactPath: bc.ArtifactPath,
+			BaseImage:     bc.BaseImage,
+			BuildCmd:      bc.BuildCmd,
+			BuildCmdShell: bc.BuildCmdShell,
+			ArtifactPath:  bc.ArtifactPath,
 		}}}
 	case *domain.BuildConfigStaticDockerfile:
 		return &pb.BuildConfig{BuildConfig: &pb.BuildConfig_StaticDockerfile{StaticDockerfile: &pb.BuildConfigStaticDockerfile{

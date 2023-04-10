@@ -56,19 +56,20 @@ func fromDomainApplicationConfig(appID string, c *domain.ApplicationConfig) *mod
 		UseMariadb:    c.UseMariaDB,
 		UseMongodb:    c.UseMongoDB,
 		BuildType:     buildTypeMapper.FromMust(c.BuildType),
+		Entrypoint:    c.Entrypoint,
+		Command:       c.Command,
 	}
 	switch bc := c.BuildConfig.(type) {
 	case *domain.BuildConfigRuntimeCmd:
 		mc.BaseImage = bc.BaseImage
 		mc.BuildCMD = bc.BuildCmd
-		mc.EntrypointCMD = bc.EntrypointCmd
+		mc.BuildCMDShell = bc.BuildCmdShell
 	case *domain.BuildConfigRuntimeDockerfile:
 		mc.DockerfileName = bc.DockerfileName
-		mc.EntrypointOverride = bc.EntrypointOverride
-		mc.CommandOverride = bc.CommandOverride
 	case *domain.BuildConfigStaticCmd:
 		mc.BaseImage = bc.BaseImage
 		mc.BuildCMD = bc.BuildCmd
+		mc.BuildCMDShell = bc.BuildCmdShell
 		mc.ArtifactPath = bc.ArtifactPath
 	case *domain.BuildConfigStaticDockerfile:
 		mc.DockerfileName = bc.DockerfileName
@@ -84,25 +85,26 @@ func toDomainApplicationConfig(c *models.ApplicationConfig) domain.ApplicationCo
 		UseMariaDB: c.UseMariadb,
 		UseMongoDB: c.UseMongodb,
 		BuildType:  buildTypeMapper.IntoMust(c.BuildType),
+		Entrypoint: c.Entrypoint,
+		Command:    c.Command,
 	}
 	switch ac.BuildType {
 	case domain.BuildTypeRuntimeCmd:
 		ac.BuildConfig = &domain.BuildConfigRuntimeCmd{
 			BaseImage:     c.BaseImage,
 			BuildCmd:      c.BuildCMD,
-			EntrypointCmd: c.EntrypointCMD,
+			BuildCmdShell: c.BuildCMDShell,
 		}
 	case domain.BuildTypeRuntimeDockerfile:
 		ac.BuildConfig = &domain.BuildConfigRuntimeDockerfile{
-			DockerfileName:     c.DockerfileName,
-			EntrypointOverride: c.EntrypointOverride,
-			CommandOverride:    c.CommandOverride,
+			DockerfileName: c.DockerfileName,
 		}
 	case domain.BuildTypeStaticCmd:
 		ac.BuildConfig = &domain.BuildConfigStaticCmd{
-			BaseImage:    c.BaseImage,
-			BuildCmd:     c.BuildCMD,
-			ArtifactPath: c.ArtifactPath,
+			BaseImage:     c.BaseImage,
+			BuildCmd:      c.BuildCMD,
+			BuildCmdShell: c.BuildCMDShell,
+			ArtifactPath:  c.ArtifactPath,
 		}
 	case domain.BuildTypeStaticDockerfile:
 		ac.BuildConfig = &domain.BuildConfigStaticDockerfile{

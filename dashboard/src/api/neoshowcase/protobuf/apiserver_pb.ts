@@ -508,9 +508,9 @@ export class BuildConfigRuntimeCmd extends Message<BuildConfigRuntimeCmd> {
   buildCmd = "";
 
   /**
-   * @generated from field: string entrypoint_cmd = 3;
+   * @generated from field: bool build_cmd_shell = 3;
    */
-  entrypointCmd = "";
+  buildCmdShell = false;
 
   constructor(data?: PartialMessage<BuildConfigRuntimeCmd>) {
     super();
@@ -522,7 +522,7 @@ export class BuildConfigRuntimeCmd extends Message<BuildConfigRuntimeCmd> {
   static readonly fields: FieldList = proto3.util.newFieldList(() => [
     { no: 1, name: "base_image", kind: "scalar", T: 9 /* ScalarType.STRING */ },
     { no: 2, name: "build_cmd", kind: "scalar", T: 9 /* ScalarType.STRING */ },
-    { no: 3, name: "entrypoint_cmd", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+    { no: 3, name: "build_cmd_shell", kind: "scalar", T: 8 /* ScalarType.BOOL */ },
   ]);
 
   static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): BuildConfigRuntimeCmd {
@@ -551,16 +551,6 @@ export class BuildConfigRuntimeDockerfile extends Message<BuildConfigRuntimeDock
    */
   dockerfileName = "";
 
-  /**
-   * @generated from field: string entrypoint_override = 2;
-   */
-  entrypointOverride = "";
-
-  /**
-   * @generated from field: string command_override = 3;
-   */
-  commandOverride = "";
-
   constructor(data?: PartialMessage<BuildConfigRuntimeDockerfile>) {
     super();
     proto3.util.initPartial(data, this);
@@ -570,8 +560,6 @@ export class BuildConfigRuntimeDockerfile extends Message<BuildConfigRuntimeDock
   static readonly typeName = "neoshowcase.protobuf.BuildConfigRuntimeDockerfile";
   static readonly fields: FieldList = proto3.util.newFieldList(() => [
     { no: 1, name: "dockerfile_name", kind: "scalar", T: 9 /* ScalarType.STRING */ },
-    { no: 2, name: "entrypoint_override", kind: "scalar", T: 9 /* ScalarType.STRING */ },
-    { no: 3, name: "command_override", kind: "scalar", T: 9 /* ScalarType.STRING */ },
   ]);
 
   static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): BuildConfigRuntimeDockerfile {
@@ -606,7 +594,12 @@ export class BuildConfigStaticCmd extends Message<BuildConfigStaticCmd> {
   buildCmd = "";
 
   /**
-   * @generated from field: string artifact_path = 3;
+   * @generated from field: bool build_cmd_shell = 3;
+   */
+  buildCmdShell = false;
+
+  /**
+   * @generated from field: string artifact_path = 4;
    */
   artifactPath = "";
 
@@ -620,7 +613,8 @@ export class BuildConfigStaticCmd extends Message<BuildConfigStaticCmd> {
   static readonly fields: FieldList = proto3.util.newFieldList(() => [
     { no: 1, name: "base_image", kind: "scalar", T: 9 /* ScalarType.STRING */ },
     { no: 2, name: "build_cmd", kind: "scalar", T: 9 /* ScalarType.STRING */ },
-    { no: 3, name: "artifact_path", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+    { no: 3, name: "build_cmd_shell", kind: "scalar", T: 8 /* ScalarType.BOOL */ },
+    { no: 4, name: "artifact_path", kind: "scalar", T: 9 /* ScalarType.STRING */ },
   ]);
 
   static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): BuildConfigStaticCmd {
@@ -771,6 +765,16 @@ export class ApplicationConfig extends Message<ApplicationConfig> {
    */
   buildConfig?: BuildConfig;
 
+  /**
+   * @generated from field: string entrypoint = 5;
+   */
+  entrypoint = "";
+
+  /**
+   * @generated from field: string command = 6;
+   */
+  command = "";
+
   constructor(data?: PartialMessage<ApplicationConfig>) {
     super();
     proto3.util.initPartial(data, this);
@@ -783,6 +787,8 @@ export class ApplicationConfig extends Message<ApplicationConfig> {
     { no: 2, name: "use_mongodb", kind: "scalar", T: 8 /* ScalarType.BOOL */ },
     { no: 3, name: "build_type", kind: "enum", T: proto3.getEnumType(BuildType) },
     { no: 4, name: "build_config", kind: "message", T: BuildConfig },
+    { no: 5, name: "entrypoint", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+    { no: 6, name: "command", kind: "scalar", T: 9 /* ScalarType.STRING */ },
   ]);
 
   static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): ApplicationConfig {

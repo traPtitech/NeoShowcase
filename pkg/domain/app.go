@@ -3,6 +3,7 @@ package domain
 import (
 	"context"
 	"fmt"
+	"github.com/mattn/go-shellwords"
 	"strings"
 	"time"
 
@@ -48,7 +49,7 @@ func (buildConfigEmbed) isBuildConfig() {}
 type BuildConfigRuntimeCmd struct {
 	BaseImage     string
 	BuildCmd      string
-	EntrypointCmd string
+	BuildCmdShell bool
 	buildConfigEmbed
 }
 
@@ -59,13 +60,11 @@ func (bc *BuildConfigRuntimeCmd) BuildType() BuildType {
 func (bc *BuildConfigRuntimeCmd) IsValid() bool {
 	// NOTE: base image is not necessary (default: scratch)
 	// NOTE: build cmd is not necessary
-	return bc.EntrypointCmd != ""
+	return true
 }
 
 type BuildConfigRuntimeDockerfile struct {
-	DockerfileName     string
-	EntrypointOverride string
-	CommandOverride    string
+	DockerfileName string
 	buildConfigEmbed
 }
 
@@ -78,9 +77,10 @@ func (bc *BuildConfigRuntimeDockerfile) IsValid() bool {
 }
 
 type BuildConfigStaticCmd struct {
-	BaseImage    string
-	BuildCmd     string
-	ArtifactPath string
+	BaseImage     string
+	BuildCmd      string
+	BuildCmdShell bool
+	ArtifactPath  string
 	buildConfigEmbed
 }
 
@@ -113,6 +113,13 @@ type ApplicationConfig struct {
 	UseMongoDB  bool
 	BuildType   BuildType
 	BuildConfig BuildConfig
+	Entrypoint  string
+	Command     string
+}
+
+func isValidCommand(s string) bool {
+	_, err := shellwords.Parse(s)
+	return err == nil
 }
 
 func (c *ApplicationConfig) IsValid(deployType DeployType) bool {
@@ -122,7 +129,35 @@ func (c *ApplicationConfig) IsValid(deployType DeployType) bool {
 	if c.BuildConfig.BuildType() != c.BuildType {
 		return false
 	}
-	return c.BuildConfig.IsValid()
+	if !c.BuildConfig.IsValid() {
+		return false
+	}
+	if c.BuildType == BuildTypeRuntimeCmd && c.Entrypoint == "" && c.Command == "" {
+		return false
+	}
+	// NOTE: Runtime Dockerfile build could have no entrypoint/command but is impossible to catch only from config
+	// (can only catch at runtime)
+	if c.Entrypoint != "" {
+		if !isValidCommand(c.Entrypoint) {
+			return false
+		}
+	}
+	if c.Command != "" {
+		if !isValidCommand(c.Command) {
+			return false
+		}
+	}
+	return true
+}
+
+func (c *ApplicationConfig) EntrypointArgs() []string {
+	args, _ := shellwords.Parse(c.Entrypoint)
+	return args
+}
+
+func (c *ApplicationConfig) CommandArgs() []string {
+	args, _ := shellwords.Parse(c.Command)
+	return args
 }
 
 type DeployType int
