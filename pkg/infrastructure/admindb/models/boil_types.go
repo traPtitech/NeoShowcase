@@ -51,18 +51,20 @@ func makeCacheKey(cols boil.Columns, nzDefaults []string) string {
 	return str
 }
 
-// Enum values for ApplicationConfigAuthentication
+// Enum values for ApplicationConfigBuildType
 const (
-	ApplicationConfigAuthenticationOff  string = "off"
-	ApplicationConfigAuthenticationSoft string = "soft"
-	ApplicationConfigAuthenticationHard string = "hard"
+	ApplicationConfigBuildTypeRuntimeCMD        string = "runtime-cmd"
+	ApplicationConfigBuildTypeRuntimeDockerfile string = "runtime-dockerfile"
+	ApplicationConfigBuildTypeStaticCMD         string = "static-cmd"
+	ApplicationConfigBuildTypeStaticDockerfile  string = "static-dockerfile"
 )
 
-func AllApplicationConfigAuthentication() []string {
+func AllApplicationConfigBuildType() []string {
 	return []string{
-		ApplicationConfigAuthenticationOff,
-		ApplicationConfigAuthenticationSoft,
-		ApplicationConfigAuthenticationHard,
+		ApplicationConfigBuildTypeRuntimeCMD,
+		ApplicationConfigBuildTypeRuntimeDockerfile,
+		ApplicationConfigBuildTypeStaticCMD,
+		ApplicationConfigBuildTypeStaticDockerfile,
 	}
 }
 
@@ -131,5 +133,20 @@ func AllRepositoryAuthMethod() []string {
 	return []string{
 		RepositoryAuthMethodBasic,
 		RepositoryAuthMethodSSH,
+	}
+}
+
+// Enum values for WebsitesAuthentication
+const (
+	WebsitesAuthenticationOff  string = "off"
+	WebsitesAuthenticationSoft string = "soft"
+	WebsitesAuthenticationHard string = "hard"
+)
+
+func AllWebsitesAuthentication() []string {
+	return []string{
+		WebsitesAuthenticationOff,
+		WebsitesAuthenticationSoft,
+		WebsitesAuthenticationHard,
 	}
 }

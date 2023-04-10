@@ -2,23 +2,21 @@ package grpc
 
 import (
 	"context"
+	"github.com/traPtitech/neoshowcase/pkg/interface/grpc/pbconvert"
 	"time"
 
 	"github.com/bufbuild/connect-go"
 	"github.com/go-git/go-git/v5/plumbing/transport/ssh"
 	"github.com/samber/lo"
-	"google.golang.org/grpc/codes"
-	"google.golang.org/grpc/status"
-	"google.golang.org/protobuf/types/known/emptypb"
-	"google.golang.org/protobuf/types/known/timestamppb"
-
 	"github.com/traPtitech/neoshowcase/pkg/domain"
 	"github.com/traPtitech/neoshowcase/pkg/domain/web"
 	"github.com/traPtitech/neoshowcase/pkg/interface/grpc/pb"
 	"github.com/traPtitech/neoshowcase/pkg/interface/grpc/pb/pbconnect"
 	"github.com/traPtitech/neoshowcase/pkg/usecase"
-	"github.com/traPtitech/neoshowcase/pkg/util/mapper"
 	"github.com/traPtitech/neoshowcase/pkg/util/optional"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
+	"google.golang.org/protobuf/types/known/emptypb"
 )
 
 func handleUseCaseError(err error) error {
@@ -55,7 +53,7 @@ func NewApplicationServiceServer(
 
 func (s *ApplicationService) GetMe(ctx context.Context, _ *connect.Request[emptypb.Empty]) (*connect.Response[pb.User], error) {
 	user := web.GetUser(ctx)
-	res := connect.NewResponse(toPBUser(user))
+	res := connect.NewResponse(pbconvert.ToPBUser(user))
 	return res, nil
 }
 
@@ -66,7 +64,7 @@ func (s *ApplicationService) GetRepositories(ctx context.Context, _ *connect.Req
 	}
 	res := connect.NewResponse(&pb.GetRepositoriesResponse{
 		Repositories: lo.Map(repositories, func(repo *domain.Repository, i int) *pb.Repository {
-			return toPBRepository(repo)
+			return pbconvert.ToPBRepository(repo)
 		}),
 	})
 	return res, nil
@@ -79,14 +77,14 @@ func (s *ApplicationService) CreateRepository(ctx context.Context, req *connect.
 		ID:       domain.NewID(),
 		Name:     msg.Name,
 		URL:      msg.Url,
-		Auth:     fromPBRepositoryAuth(msg.Auth),
+		Auth:     pbconvert.FromPBRepositoryAuth(msg.Auth),
 		OwnerIDs: []string{user.ID},
 	}
 	err := s.svc.CreateRepository(ctx, repo)
 	if err != nil {
 		return nil, handleUseCaseError(err)
 	}
-	res := connect.NewResponse(toPBRepository(repo))
+	res := connect.NewResponse(pbconvert.ToPBRepository(repo))
 	return res, nil
 }
 
@@ -95,7 +93,7 @@ func (s *ApplicationService) UpdateRepository(ctx context.Context, req *connect.
 	args := &domain.UpdateRepositoryArgs{
 		Name:     optional.From(msg.Name),
 		URL:      optional.From(msg.Url),
-		Auth:     optional.From(fromPBRepositoryAuth(msg.Auth)),
+		Auth:     optional.From(pbconvert.FromPBRepositoryAuth(msg.Auth)),
 		OwnerIDs: optional.From(msg.OwnerIds),
 	}
 	err := s.svc.UpdateRepository(ctx, msg.Id, args)
@@ -122,7 +120,7 @@ func (s *ApplicationService) GetApplications(ctx context.Context, _ *connect.Req
 	}
 	res := connect.NewResponse(&pb.GetApplicationsResponse{
 		Applications: lo.Map(applications, func(app *domain.Application, i int) *pb.Application {
-			return toPBApplication(app)
+			return pbconvert.ToPBApplication(app)
 		}),
 	})
 	return res, nil
@@ -142,13 +140,15 @@ func (s *ApplicationService) GetAvailableDomains(ctx context.Context, _ *connect
 		return nil, status.Errorf(codes.Internal, "%v", err)
 	}
 	res := connect.NewResponse(&pb.AvailableDomains{
-		Domains: lo.Map(domains, func(ad *domain.AvailableDomain, i int) *pb.AvailableDomain { return toPBAvailableDomain(ad) }),
+		Domains: lo.Map(domains, func(ad *domain.AvailableDomain, i int) *pb.AvailableDomain {
+			return pbconvert.ToPBAvailableDomain(ad)
+		}),
 	})
 	return res, nil
 }
 
 func (s *ApplicationService) AddAvailableDomain(ctx context.Context, req *connect.Request[pb.AvailableDomain]) (*connect.Response[emptypb.Empty], error) {
-	err := s.svc.AddAvailableDomain(ctx, fromPBAvailableDomain(req.Msg))
+	err := s.svc.AddAvailableDomain(ctx, pbconvert.FromPBAvailableDomain(req.Msg))
 	if err != nil {
 		return nil, handleUseCaseError(err)
 	}
@@ -160,28 +160,22 @@ func (s *ApplicationService) CreateApplication(ctx context.Context, req *connect
 	msg := req.Msg
 	user := web.GetUser(ctx)
 	now := time.Now()
+	config := pbconvert.FromPBApplicationConfig(msg.Config)
 	app := &domain.Application{
 		ID:            domain.NewID(),
 		Name:          msg.Name,
 		RepositoryID:  msg.RepositoryId,
 		RefName:       msg.RefName,
-		DeployType:    deployTypeMapper.FromMust(msg.DeployType),
+		DeployType:    config.BuildConfig.BuildType().DeployType(),
 		Running:       msg.StartOnCreate,
 		Container:     domain.ContainerStateMissing,
 		CurrentCommit: domain.EmptyCommit,
 		WantCommit:    domain.EmptyCommit,
 		CreatedAt:     now,
 		UpdatedAt:     now,
-		Config:        fromPBApplicationConfig(msg.Config),
+		Config:        config,
 		Websites: lo.Map(msg.Websites, func(website *pb.CreateWebsiteRequest, i int) *domain.Website {
-			return &domain.Website{
-				ID:          domain.NewID(),
-				FQDN:        website.Fqdn,
-				PathPrefix:  website.PathPrefix,
-				StripPrefix: website.StripPrefix,
-				HTTPS:       website.Https,
-				HTTPPort:    int(website.HttpPort),
-			}
+			return pbconvert.FromPBCreateWebsiteRequest(website)
 		}),
 		OwnerIDs: []string{user.ID},
 	}
@@ -189,7 +183,7 @@ func (s *ApplicationService) CreateApplication(ctx context.Context, req *connect
 	if err != nil {
 		return nil, handleUseCaseError(err)
 	}
-	res := connect.NewResponse(toPBApplication(app))
+	res := connect.NewResponse(pbconvert.ToPBApplication(app))
 	return res, nil
 }
 
@@ -198,7 +192,7 @@ func (s *ApplicationService) GetApplication(ctx context.Context, req *connect.Re
 	if err != nil {
 		return nil, handleUseCaseError(err)
 	}
-	res := connect.NewResponse(toPBApplication(application))
+	res := connect.NewResponse(pbconvert.ToPBApplication(application))
 	return res, nil
 }
 
@@ -211,7 +205,7 @@ func (s *ApplicationService) UpdateApplication(ctx context.Context, req *connect
 
 	websites := app.Websites
 	for _, createReq := range msg.NewWebsites {
-		websites = append(websites, fromPBCreateWebsiteRequest(createReq))
+		websites = append(websites, pbconvert.FromPBCreateWebsiteRequest(createReq))
 	}
 	for _, deleteReq := range msg.DeleteWebsites {
 		websites = lo.Reject(websites, func(w *domain.Website, i int) bool { return w.ID == deleteReq.Id })
@@ -222,14 +216,10 @@ func (s *ApplicationService) UpdateApplication(ctx context.Context, req *connect
 		RefName:   optional.From(msg.RefName),
 		UpdatedAt: optional.From(time.Now()),
 		Config: optional.From(domain.ApplicationConfig{
-			UseMariaDB:     app.Config.UseMariaDB,
-			UseMongoDB:     app.Config.UseMongoDB,
-			BaseImage:      msg.Config.BaseImage,
-			DockerfileName: msg.Config.DockerfileName,
-			ArtifactPath:   msg.Config.ArtifactPath,
-			BuildCmd:       msg.Config.BuildCmd,
-			EntrypointCmd:  msg.Config.EntrypointCmd,
-			Authentication: authTypeMapper.FromMust(msg.Config.Authentication),
+			UseMariaDB:  app.Config.UseMariaDB,
+			UseMongoDB:  app.Config.UseMongoDB,
+			BuildType:   pbconvert.BuildTypeMapper.FromMust(msg.Config.BuildType),
+			BuildConfig: pbconvert.FromPBBuildConfig(msg.Config.BuildConfig),
 		}),
 		Websites: optional.From(websites),
 		OwnerIDs: optional.From(msg.OwnerIds),
@@ -257,7 +247,7 @@ func (s *ApplicationService) GetBuilds(ctx context.Context, req *connect.Request
 	}
 	res := connect.NewResponse(&pb.GetBuildsResponse{
 		Builds: lo.Map(builds, func(build *domain.Build, i int) *pb.Build {
-			return toPBBuild(build)
+			return pbconvert.ToPBBuild(build)
 		}),
 	})
 	return res, nil
@@ -268,7 +258,7 @@ func (s *ApplicationService) GetBuild(ctx context.Context, req *connect.Request[
 	if err != nil {
 		return nil, handleUseCaseError(err)
 	}
-	res := connect.NewResponse(toPBBuild(build))
+	res := connect.NewResponse(pbconvert.ToPBBuild(build))
 	return res, nil
 }
 
@@ -310,7 +300,7 @@ func (s *ApplicationService) GetEnvVars(ctx context.Context, req *connect.Reques
 	}
 	res := connect.NewResponse(&pb.ApplicationEnvVars{
 		Variables: lo.Map(environments, func(env *domain.Environment, i int) *pb.ApplicationEnvVar {
-			return toPBEnvironment(env)
+			return pbconvert.ToPBEnvironment(env)
 		}),
 	})
 	return res, nil
@@ -338,7 +328,7 @@ func (s *ApplicationService) GetOutput(ctx context.Context, req *connect.Request
 	}
 	res := connect.NewResponse(&pb.GetOutputResponse{
 		Outputs: lo.Map(logs, func(l *domain.ContainerLog, i int) *pb.ApplicationOutput {
-			return toPBApplicationOutput(l)
+			return pbconvert.ToPBApplicationOutput(l)
 		}),
 	})
 	return res, nil
@@ -351,7 +341,7 @@ func (s *ApplicationService) GetOutputStream(ctx context.Context, req *connect.R
 		after = msg.After.AsTime()
 	}
 	err := s.svc.GetOutputStream(ctx, msg.ApplicationId, after, func(l *domain.ContainerLog) error {
-		return st.Send(toPBApplicationOutput(l))
+		return st.Send(pbconvert.ToPBApplicationOutput(l))
 	})
 	if err != nil {
 		return handleUseCaseError(err)
@@ -394,200 +384,4 @@ func (s *ApplicationService) StopApplication(ctx context.Context, req *connect.R
 	}
 	res := connect.NewResponse(&emptypb.Empty{})
 	return res, nil
-}
-
-func fromPBAvailableDomain(ad *pb.AvailableDomain) *domain.AvailableDomain {
-	return &domain.AvailableDomain{
-		Domain:    ad.Domain,
-		Available: ad.Available,
-	}
-}
-
-func toPBAvailableDomain(ad *domain.AvailableDomain) *pb.AvailableDomain {
-	return &pb.AvailableDomain{
-		Domain:    ad.Domain,
-		Available: ad.Available,
-	}
-}
-
-func fromPBRepositoryAuth(req *pb.CreateRepositoryAuth) optional.Of[domain.RepositoryAuth] {
-	switch v := req.Auth.(type) {
-	case *pb.CreateRepositoryAuth_None:
-		return optional.Of[domain.RepositoryAuth]{}
-	case *pb.CreateRepositoryAuth_Basic:
-		return optional.From(domain.RepositoryAuth{
-			Method:   domain.RepositoryAuthMethodBasic,
-			Username: v.Basic.Username,
-			Password: v.Basic.Password,
-		})
-	case *pb.CreateRepositoryAuth_Ssh:
-		return optional.From(domain.RepositoryAuth{
-			Method: domain.RepositoryAuthMethodSSH,
-			SSHKey: v.Ssh.SshKey,
-		})
-	default:
-		panic("unknown auth type")
-	}
-}
-
-var repoAuthMethodMapper = mapper.NewValueMapper(map[domain.RepositoryAuthMethod]pb.Repository_AuthMethod{
-	domain.RepositoryAuthMethodBasic: pb.Repository_BASIC,
-	domain.RepositoryAuthMethodSSH:   pb.Repository_SSH,
-})
-
-func toPBRepository(repo *domain.Repository) *pb.Repository {
-	ret := &pb.Repository{
-		Id:   repo.ID,
-		Name: repo.Name,
-		Url:  repo.URL,
-	}
-	if repo.Auth.Valid {
-		ret.AuthMethod = repoAuthMethodMapper.IntoMust(repo.Auth.V.Method)
-	}
-	return ret
-}
-
-var deployTypeMapper = mapper.NewValueMapper(map[domain.DeployType]pb.DeployType{
-	domain.DeployTypeRuntime: pb.DeployType_RUNTIME,
-	domain.DeployTypeStatic:  pb.DeployType_STATIC,
-})
-
-var authTypeMapper = mapper.NewValueMapper(map[domain.AuthenticationType]pb.AuthenticationType{
-	domain.AuthenticationTypeOff:  pb.AuthenticationType_OFF,
-	domain.AuthenticationTypeSoft: pb.AuthenticationType_SOFT,
-	domain.AuthenticationTypeHard: pb.AuthenticationType_HARD,
-})
-
-func toPBApplicationConfig(c domain.ApplicationConfig) *pb.ApplicationConfig {
-	return &pb.ApplicationConfig{
-		UseMariadb:     c.UseMariaDB,
-		UseMongodb:     c.UseMongoDB,
-		BaseImage:      c.BaseImage,
-		DockerfileName: c.DockerfileName,
-		ArtifactPath:   c.ArtifactPath,
-		BuildCmd:       c.BuildCmd,
-		EntrypointCmd:  c.EntrypointCmd,
-		Authentication: authTypeMapper.IntoMust(c.Authentication),
-	}
-}
-
-func fromPBApplicationConfig(c *pb.ApplicationConfig) domain.ApplicationConfig {
-	return domain.ApplicationConfig{
-		UseMariaDB:     c.UseMariadb,
-		UseMongoDB:     c.UseMongodb,
-		BaseImage:      c.BaseImage,
-		DockerfileName: c.DockerfileName,
-		ArtifactPath:   c.ArtifactPath,
-		BuildCmd:       c.BuildCmd,
-		EntrypointCmd:  c.EntrypointCmd,
-		Authentication: authTypeMapper.FromMust(c.Authentication),
-	}
-}
-
-func fromPBCreateWebsiteRequest(req *pb.CreateWebsiteRequest) *domain.Website {
-	return &domain.Website{
-		ID:          domain.NewID(),
-		FQDN:        req.Fqdn,
-		PathPrefix:  req.PathPrefix,
-		StripPrefix: req.StripPrefix,
-		HTTPS:       req.Https,
-		HTTPPort:    int(req.HttpPort),
-	}
-}
-
-func toPBWebsite(website *domain.Website) *pb.Website {
-	return &pb.Website{
-		Id:         website.ID,
-		Fqdn:       website.FQDN,
-		PathPrefix: website.PathPrefix,
-		Https:      website.HTTPS,
-		HttpPort:   int32(website.HTTPPort),
-	}
-}
-
-var containerStateMapper = mapper.NewValueMapper(map[domain.ContainerState]pb.Application_ContainerState{
-	domain.ContainerStateMissing:  pb.Application_MISSING,
-	domain.ContainerStateStarting: pb.Application_STARTING,
-	domain.ContainerStateRunning:  pb.Application_RUNNING,
-	domain.ContainerStateExited:   pb.Application_EXITED,
-	domain.ContainerStateErrored:  pb.Application_ERRORED,
-	domain.ContainerStateUnknown:  pb.Application_UNKNOWN,
-})
-
-func toPBApplication(app *domain.Application) *pb.Application {
-	return &pb.Application{
-		Id:            app.ID,
-		Name:          app.Name,
-		RepositoryId:  app.RepositoryID,
-		RefName:       app.RefName,
-		DeployType:    deployTypeMapper.IntoMust(app.DeployType),
-		Running:       app.Running,
-		Container:     containerStateMapper.IntoMust(app.Container),
-		CurrentCommit: app.CurrentCommit,
-		WantCommit:    app.WantCommit,
-		Config:        toPBApplicationConfig(app.Config),
-		Websites:      lo.Map(app.Websites, func(website *domain.Website, i int) *pb.Website { return toPBWebsite(website) }),
-		OwnerIds:      app.OwnerIDs,
-	}
-}
-
-var buildStatusMapper = mapper.NewValueMapper(map[domain.BuildStatus]pb.Build_BuildStatus{
-	domain.BuildStatusQueued:    pb.Build_QUEUED,
-	domain.BuildStatusBuilding:  pb.Build_BUILDING,
-	domain.BuildStatusSucceeded: pb.Build_SUCCEEDED,
-	domain.BuildStatusFailed:    pb.Build_FAILED,
-	domain.BuildStatusCanceled:  pb.Build_CANCELLED,
-	domain.BuildStatusSkipped:   pb.Build_SKIPPED,
-})
-
-func toPBNullTimestamp(t optional.Of[time.Time]) *pb.NullTimestamp {
-	return &pb.NullTimestamp{Timestamp: timestamppb.New(t.V), Valid: t.Valid}
-}
-
-func toPBArtifact(artifact *domain.Artifact) *pb.Artifact {
-	return &pb.Artifact{
-		Id:        artifact.ID,
-		Size:      artifact.Size,
-		CreatedAt: timestamppb.New(artifact.CreatedAt),
-		DeletedAt: toPBNullTimestamp(artifact.DeletedAt),
-	}
-}
-
-func toPBBuild(build *domain.Build) *pb.Build {
-	b := &pb.Build{
-		Id:         build.ID,
-		Commit:     build.Commit,
-		Status:     buildStatusMapper.IntoMust(build.Status),
-		StartedAt:  toPBNullTimestamp(build.StartedAt),
-		UpdatedAt:  toPBNullTimestamp(build.UpdatedAt),
-		FinishedAt: toPBNullTimestamp(build.FinishedAt),
-		Retriable:  build.Retriable,
-	}
-	if build.Artifact.Valid {
-		b.Artifact = toPBArtifact(&build.Artifact.V)
-	}
-	return b
-}
-
-func toPBEnvironment(env *domain.Environment) *pb.ApplicationEnvVar {
-	return &pb.ApplicationEnvVar{
-		Key:    env.Key,
-		Value:  env.Value,
-		System: env.System,
-	}
-}
-
-func toPBApplicationOutput(l *domain.ContainerLog) *pb.ApplicationOutput {
-	return &pb.ApplicationOutput{
-		Time: timestamppb.New(l.Time),
-		Log:  l.Log,
-	}
-}
-
-func toPBUser(user *domain.User) *pb.User {
-	return &pb.User{
-		Id:    user.ID,
-		Name:  user.Name,
-		Admin: user.Admin,
-	}
 }

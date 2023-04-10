@@ -2,6 +2,7 @@ package domain
 
 import (
 	"context"
+	"fmt"
 	"strings"
 	"time"
 
@@ -14,51 +15,114 @@ import (
 	"github.com/traPtitech/neoshowcase/pkg/util/optional"
 )
 
-type AuthenticationType int
+type BuildType int
 
 const (
-	AuthenticationTypeOff AuthenticationType = iota
-	AuthenticationTypeSoft
-	AuthenticationTypeHard
+	BuildTypeRuntimeCmd BuildType = iota
+	BuildTypeRuntimeDockerfile
+	BuildTypeStaticCmd
+	BuildTypeStaticDockerfile
 )
 
-type ApplicationConfig struct {
-	UseMariaDB     bool
-	UseMongoDB     bool
-	BaseImage      string
+func (b BuildType) DeployType() DeployType {
+	switch b {
+	case BuildTypeRuntimeCmd, BuildTypeRuntimeDockerfile:
+		return DeployTypeRuntime
+	case BuildTypeStaticCmd, BuildTypeStaticDockerfile:
+		return DeployTypeStatic
+	default:
+		panic(fmt.Sprintf("unknown build type: %v", b))
+	}
+}
+
+type BuildConfig interface {
+	isBuildConfig()
+	BuildType() BuildType
+	IsValid() bool
+}
+
+type buildConfigEmbed struct{}
+
+func (buildConfigEmbed) isBuildConfig() {}
+
+type BuildConfigRuntimeCmd struct {
+	BaseImage     string
+	BuildCmd      string
+	EntrypointCmd string
+	buildConfigEmbed
+}
+
+func (bc *BuildConfigRuntimeCmd) BuildType() BuildType {
+	return BuildTypeRuntimeCmd
+}
+
+func (bc *BuildConfigRuntimeCmd) IsValid() bool {
+	// NOTE: base image is not necessary (default: scratch)
+	// NOTE: build cmd is not necessary
+	return bc.EntrypointCmd != ""
+}
+
+type BuildConfigRuntimeDockerfile struct {
+	DockerfileName     string
+	EntrypointOverride string
+	CommandOverride    string
+	buildConfigEmbed
+}
+
+func (bc *BuildConfigRuntimeDockerfile) BuildType() BuildType {
+	return BuildTypeRuntimeDockerfile
+}
+
+func (bc *BuildConfigRuntimeDockerfile) IsValid() bool {
+	return bc.DockerfileName != ""
+}
+
+type BuildConfigStaticCmd struct {
+	BaseImage    string
+	BuildCmd     string
+	ArtifactPath string
+	buildConfigEmbed
+}
+
+func (bc *BuildConfigStaticCmd) BuildType() BuildType {
+	return BuildTypeStaticCmd
+}
+
+func (bc *BuildConfigStaticCmd) IsValid() bool {
+	// NOTE: base image is not necessary (default: scratch)
+	// NOTE: build cmd is not necessary
+	return bc.ArtifactPath != ""
+}
+
+type BuildConfigStaticDockerfile struct {
 	DockerfileName string
 	ArtifactPath   string
-	BuildCmd       string
-	EntrypointCmd  string
-	Authentication AuthenticationType
+	buildConfigEmbed
+}
+
+func (bc *BuildConfigStaticDockerfile) BuildType() BuildType {
+	return BuildTypeStaticDockerfile
+}
+
+func (bc *BuildConfigStaticDockerfile) IsValid() bool {
+	return bc.DockerfileName != "" && bc.ArtifactPath != ""
+}
+
+type ApplicationConfig struct {
+	UseMariaDB  bool
+	UseMongoDB  bool
+	BuildType   BuildType
+	BuildConfig BuildConfig
 }
 
 func (c *ApplicationConfig) IsValid(deployType DeployType) bool {
-	switch deployType {
-	case DeployTypeRuntime:
-		if c.DockerfileName != "" {
-			// pass
-		} else {
-			// NOTE: base image is not necessary (default: scratch)
-			// NOTE: build cmd is not necessary
-			if c.EntrypointCmd == "" {
-				return false
-			}
-		}
-	case DeployTypeStatic:
-		if c.DockerfileName != "" {
-			if c.ArtifactPath == "" {
-				return false
-			}
-		} else {
-			// NOTE: base image is not necessary (default: scratch)
-			// NOTE: build cmd is not necessary
-			if c.ArtifactPath == "" {
-				return false
-			}
-		}
+	if c.BuildType.DeployType() != deployType {
+		return false
 	}
-	return true
+	if c.BuildConfig.BuildType() != c.BuildType {
+		return false
+	}
+	return c.BuildConfig.IsValid()
 }
 
 type DeployType int
@@ -298,13 +362,22 @@ func (r *RepositoryAuth) IsValid() bool {
 	return true
 }
 
+type AuthenticationType int
+
+const (
+	AuthenticationTypeOff AuthenticationType = iota
+	AuthenticationTypeSoft
+	AuthenticationTypeHard
+)
+
 type Website struct {
-	ID          string
-	FQDN        string
-	PathPrefix  string
-	StripPrefix bool
-	HTTPS       bool
-	HTTPPort    int
+	ID             string
+	FQDN           string
+	PathPrefix     string
+	StripPrefix    bool
+	HTTPS          bool
+	HTTPPort       int
+	Authentication AuthenticationType
 }
 
 func (w *Website) IsValid() bool {

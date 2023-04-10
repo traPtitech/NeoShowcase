@@ -4,6 +4,7 @@ import (
 	"github.com/traPtitech/neoshowcase/pkg/domain"
 	"github.com/traPtitech/neoshowcase/pkg/domain/builder"
 	"github.com/traPtitech/neoshowcase/pkg/interface/grpc/pb"
+	"github.com/traPtitech/neoshowcase/pkg/interface/grpc/pbconvert"
 )
 
 type AppBuildHelper struct {
@@ -22,51 +23,16 @@ func NewAppBuildHelper(
 }
 
 func (s *AppBuildHelper) tryStartBuild(app *domain.Application, build *domain.Build) {
-	switch app.DeployType {
-	case domain.DeployTypeRuntime:
-		s.component.BroadcastBuilder(&pb.BuilderRequest{
-			Type: pb.BuilderRequest_START_BUILD_IMAGE,
-			Body: &pb.BuilderRequest_BuildImage{
-				BuildImage: &pb.StartBuildImageRequest{
-					ImageName: s.image.FullImageName(app.ID),
-					ImageTag:  build.Commit,
-					Source: &pb.BuildSource{
-						RepositoryId: app.RepositoryID,
-						Commit:       build.Commit,
-					},
-					Options: &pb.BuildOptions{
-						BaseImageName:  app.Config.BaseImage,
-						DockerfileName: app.Config.DockerfileName,
-						ArtifactPath:   app.Config.ArtifactPath,
-						BuildCmd:       app.Config.BuildCmd,
-						EntrypointCmd:  app.Config.EntrypointCmd,
-					},
-					BuildId:       build.ID,
-					ApplicationId: app.ID,
-				},
-			},
-		})
-
-	case domain.DeployTypeStatic:
-		s.component.BroadcastBuilder(&pb.BuilderRequest{
-			Type: pb.BuilderRequest_START_BUILD_STATIC,
-			Body: &pb.BuilderRequest_BuildStatic{
-				BuildStatic: &pb.StartBuildStaticRequest{
-					Source: &pb.BuildSource{
-						RepositoryId: app.RepositoryID,
-						Commit:       build.Commit,
-					},
-					Options: &pb.BuildOptions{
-						BaseImageName:  app.Config.BaseImage,
-						DockerfileName: app.Config.DockerfileName,
-						ArtifactPath:   app.Config.ArtifactPath,
-						BuildCmd:       app.Config.BuildCmd,
-						EntrypointCmd:  app.Config.EntrypointCmd,
-					},
-					BuildId:       build.ID,
-					ApplicationId: app.ID,
-				},
-			},
-		})
-	}
+	s.component.BroadcastBuilder(&pb.BuilderRequest{
+		Type: pb.BuilderRequest_START_BUILD,
+		Body: &pb.BuilderRequest_StartBuild{StartBuild: &pb.StartBuildRequest{
+			ApplicationId: app.ID,
+			BuildId:       build.ID,
+			RepositoryId:  app.RepositoryID,
+			Commit:        build.Commit,
+			ImageName:     s.image.FullImageName(app.ID),
+			ImageTag:      build.Commit,
+			BuildConfig:   pbconvert.ToPBBuildConfig(app.Config.BuildConfig),
+		}},
+	})
 }

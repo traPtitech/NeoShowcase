@@ -15,6 +15,7 @@ CREATE TABLE `websites` (
   `strip_prefix` tinyint(1) NOT NULL COMMENT 'PathのPrefixを落とすかどうか',
   `https` tinyint(1) NOT NULL COMMENT 'httpsの接続かどうか',
   `http_port` int(11) NOT NULL DEFAULT 80 COMMENT 'コンテナhttpポート番号',
+  `authentication` enum('off','soft','hard') NOT NULL COMMENT 'traP部員認証タイプ',
   `application_id` char(22) NOT NULL COMMENT 'アプリケーションID',
   PRIMARY KEY (`id`),
   UNIQUE KEY `fqdn` (`fqdn`,`path_prefix`),
@@ -35,6 +36,7 @@ CREATE TABLE `websites` (
 | strip_prefix | tinyint(1) |  | false |  |  | PathのPrefixを落とすかどうか |
 | https | tinyint(1) |  | false |  |  | httpsの接続かどうか |
 | http_port | int(11) | 80 | false |  |  | コンテナhttpポート番号 |
+| authentication | enum('off','soft','hard') |  | false |  |  | traP部員認証タイプ |
 | application_id | char(22) |  | false |  | [applications](applications.md) | アプリケーションID |
 
 ## Constraints

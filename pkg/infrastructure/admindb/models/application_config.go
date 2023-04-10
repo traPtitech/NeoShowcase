@@ -28,65 +28,77 @@ type ApplicationConfig struct { // アプリケーションID
 	UseMariadb bool `boil:"use_mariadb" json:"use_mariadb" toml:"use_mariadb" yaml:"use_mariadb"`
 	// MongoDBを使用するか
 	UseMongodb bool `boil:"use_mongodb" json:"use_mongodb" toml:"use_mongodb" yaml:"use_mongodb"`
+	// ビルドタイプ
+	BuildType string `boil:"build_type" json:"build_type" toml:"build_type" yaml:"build_type"`
 	// ベースイメージの名前
 	BaseImage string `boil:"base_image" json:"base_image" toml:"base_image" yaml:"base_image"`
-	// Dockerfile名
-	DockerfileName string `boil:"dockerfile_name" json:"dockerfile_name" toml:"dockerfile_name" yaml:"dockerfile_name"`
+	// ビルドコマンド(shell)
+	BuildCMD string `boil:"build_cmd" json:"build_cmd" toml:"build_cmd" yaml:"build_cmd"`
+	// コンテナのエントリポイント(shell)
+	EntrypointCMD string `boil:"entrypoint_cmd" json:"entrypoint_cmd" toml:"entrypoint_cmd" yaml:"entrypoint_cmd"`
 	// 静的成果物のパス
 	ArtifactPath string `boil:"artifact_path" json:"artifact_path" toml:"artifact_path" yaml:"artifact_path"`
-	// ビルドコマンド
-	BuildCMD string `boil:"build_cmd" json:"build_cmd" toml:"build_cmd" yaml:"build_cmd"`
-	// コンテナのエントリポイント
-	EntrypointCMD string `boil:"entrypoint_cmd" json:"entrypoint_cmd" toml:"entrypoint_cmd" yaml:"entrypoint_cmd"`
-	// traP部員認証タイプ
-	Authentication string `boil:"authentication" json:"authentication" toml:"authentication" yaml:"authentication"`
+	// Dockerfile名
+	DockerfileName string `boil:"dockerfile_name" json:"dockerfile_name" toml:"dockerfile_name" yaml:"dockerfile_name"`
+	// Entrypointの上書き(args)
+	EntrypointOverride string `boil:"entrypoint_override" json:"entrypoint_override" toml:"entrypoint_override" yaml:"entrypoint_override"`
+	// Commandの上書き(args)
+	CommandOverride string `boil:"command_override" json:"command_override" toml:"command_override" yaml:"command_override"`
 
 	R *applicationConfigR `boil:"-" json:"-" toml:"-" yaml:"-"`
 	L applicationConfigL  `boil:"-" json:"-" toml:"-" yaml:"-"`
 }
 
 var ApplicationConfigColumns = struct {
-	ApplicationID  string
-	UseMariadb     string
-	UseMongodb     string
-	BaseImage      string
-	DockerfileName string
-	ArtifactPath   string
-	BuildCMD       string
-	EntrypointCMD  string
-	Authentication string
+	ApplicationID      string
+	UseMariadb         string
+	UseMongodb         string
+	BuildType          string
+	BaseImage          string
+	BuildCMD           string
+	EntrypointCMD      string
+	ArtifactPath       string
+	DockerfileName     string
+	EntrypointOverride string
+	CommandOverride    string
 }{
-	ApplicationID:  "application_id",
-	UseMariadb:     "use_mariadb",
-	UseMongodb:     "use_mongodb",
-	BaseImage:      "base_image",
-	DockerfileName: "dockerfile_name",
-	ArtifactPath:   "artifact_path",
-	BuildCMD:       "build_cmd",
-	EntrypointCMD:  "entrypoint_cmd",
-	Authentication: "authentication",
+	ApplicationID:      "application_id",
+	UseMariadb:         "use_mariadb",
+	UseMongodb:         "use_mongodb",
+	BuildType:          "build_type",
+	BaseImage:          "base_image",
+	BuildCMD:           "build_cmd",
+	EntrypointCMD:      "entrypoint_cmd",
+	ArtifactPath:       "artifact_path",
+	DockerfileName:     "dockerfile_name",
+	EntrypointOverride: "entrypoint_override",
+	CommandOverride:    "command_override",
 }
 
 var ApplicationConfigTableColumns = struct {
-	ApplicationID  string
-	UseMariadb     string
-	UseMongodb     string
-	BaseImage      string
-	DockerfileName string
-	ArtifactPath   string
-	BuildCMD       string
-	EntrypointCMD  string
-	Authentication string
+	ApplicationID      string
+	UseMariadb         string
+	UseMongodb         string
+	BuildType          string
+	BaseImage          string
+	BuildCMD           string
+	EntrypointCMD      string
+	ArtifactPath       string
+	DockerfileName     string
+	EntrypointOverride string
+	CommandOverride    string
 }{
-	ApplicationID:  "application_config.application_id",
-	UseMariadb:     "application_config.use_mariadb",
-	UseMongodb:     "application_config.use_mongodb",
-	BaseImage:      "application_config.base_image",
-	DockerfileName: "application_config.dockerfile_name",
-	ArtifactPath:   "application_config.artifact_path",
-	BuildCMD:       "application_config.build_cmd",
-	EntrypointCMD:  "application_config.entrypoint_cmd",
-	Authentication: "application_config.authentication",
+	ApplicationID:      "application_config.application_id",
+	UseMariadb:         "application_config.use_mariadb",
+	UseMongodb:         "application_config.use_mongodb",
+	BuildType:          "application_config.build_type",
+	BaseImage:          "application_config.base_image",
+	BuildCMD:           "application_config.build_cmd",
+	EntrypointCMD:      "application_config.entrypoint_cmd",
+	ArtifactPath:       "application_config.artifact_path",
+	DockerfileName:     "application_config.dockerfile_name",
+	EntrypointOverride: "application_config.entrypoint_override",
+	CommandOverride:    "application_config.command_override",
 }
 
 // Generated where
@@ -124,25 +136,29 @@ func (w whereHelperbool) GT(x bool) qm.QueryMod  { return qmhelper.Where(w.field
 func (w whereHelperbool) GTE(x bool) qm.QueryMod { return qmhelper.Where(w.field, qmhelper.GTE, x) }
 
 var ApplicationConfigWhere = struct {
-	ApplicationID  whereHelperstring
-	UseMariadb     whereHelperbool
-	UseMongodb     whereHelperbool
-	BaseImage      whereHelperstring
-	DockerfileName whereHelperstring
-	ArtifactPath   whereHelperstring
-	BuildCMD       whereHelperstring
-	EntrypointCMD  whereHelperstring
-	Authentication whereHelperstring
+	ApplicationID      whereHelperstring
+	UseMariadb         whereHelperbool
+	UseMongodb         whereHelperbool
+	BuildType          whereHelperstring
+	BaseImage          whereHelperstring
+	BuildCMD           whereHelperstring
+	EntrypointCMD      whereHelperstring
+	ArtifactPath       whereHelperstring
+	DockerfileName     whereHelperstring
+	EntrypointOverride whereHelperstring
+	CommandOverride    whereHelperstring
 }{
-	ApplicationID:  whereHelperstring{field: "`application_config`.`application_id`"},
-	UseMariadb:     whereHelperbool{field: "`application_config`.`use_mariadb`"},
-	UseMongodb:     whereHelperbool{field: "`application_config`.`use_mongodb`"},
-	BaseImage:      whereHelperstring{field: "`application_config`.`base_image`"},
-	DockerfileName: whereHelperstring{field: "`application_config`.`dockerfile_name`"},
-	ArtifactPath:   whereHelperstring{field: "`application_config`.`artifact_path`"},
-	BuildCMD:       whereHelperstring{field: "`application_config`.`build_cmd`"},
-	EntrypointCMD:  whereHelperstring{field: "`application_config`.`entrypoint_cmd`"},
-	Authentication: whereHelperstring{field: "`application_config`.`authentication`"},
+	ApplicationID:      whereHelperstring{field: "`application_config`.`application_id`"},
+	UseMariadb:         whereHelperbool{field: "`application_config`.`use_mariadb`"},
+	UseMongodb:         whereHelperbool{field: "`application_config`.`use_mongodb`"},
+	BuildType:          whereHelperstring{field: "`application_config`.`build_type`"},
+	BaseImage:          whereHelperstring{field: "`application_config`.`base_image`"},
+	BuildCMD:           whereHelperstring{field: "`application_config`.`build_cmd`"},
+	EntrypointCMD:      whereHelperstring{field: "`application_config`.`entrypoint_cmd`"},
+	ArtifactPath:       whereHelperstring{field: "`application_config`.`artifact_path`"},
+	DockerfileName:     whereHelperstring{field: "`application_config`.`dockerfile_name`"},
+	EntrypointOverride: whereHelperstring{field: "`application_config`.`entrypoint_override`"},
+	CommandOverride:    whereHelperstring{field: "`application_config`.`command_override`"},
 }
 
 // ApplicationConfigRels is where relationship names are stored.
@@ -173,8 +189,8 @@ func (r *applicationConfigR) GetApplication() *Application {
 type applicationConfigL struct{}
 
 var (
-	applicationConfigAllColumns            = []string{"application_id", "use_mariadb", "use_mongodb", "base_image", "dockerfile_name", "artifact_path", "build_cmd", "entrypoint_cmd", "authentication"}
-	applicationConfigColumnsWithoutDefault = []string{"application_id", "use_mariadb", "use_mongodb", "base_image", "dockerfile_name", "artifact_path", "build_cmd", "entrypoint_cmd", "authentication"}
+	applicationConfigAllColumns            = []string{"application_id", "use_mariadb", "use_mongodb", "build_type", "base_image", "build_cmd", "entrypoint_cmd", "artifact_path", "dockerfile_name", "entrypoint_override", "command_override"}
+	applicationConfigColumnsWithoutDefault = []string{"application_id", "use_mariadb", "use_mongodb", "build_type", "base_image", "build_cmd", "entrypoint_cmd", "artifact_path", "dockerfile_name", "entrypoint_override", "command_override"}
 	applicationConfigColumnsWithDefault    = []string{}
 	applicationConfigPrimaryKeyColumns     = []string{"application_id"}
 	applicationConfigGeneratedColumns      = []string{}

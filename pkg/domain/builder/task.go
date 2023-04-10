@@ -1,24 +1,13 @@
 package builder
 
+import "github.com/traPtitech/neoshowcase/pkg/domain"
+
 type Task struct {
-	BuildID       string
 	ApplicationID string
-	Static        bool
-	BuildSource   *BuildSource
-	BuildOptions  *BuildOptions
+	BuildID       string
+	RepositoryID  string
+	Commit        string
 	ImageName     string
 	ImageTag      string
-}
-
-type BuildSource struct {
-	RepositoryID string
-	Commit       string
-}
-
-type BuildOptions struct {
-	BaseImageName  string
-	DockerfileName string
-	ArtifactPath   string
-	BuildCmd       string
-	EntrypointCmd  string
+	BuildConfig   domain.BuildConfig
 }

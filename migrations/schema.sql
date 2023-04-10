@@ -75,15 +75,17 @@ CREATE TABLE `applications`
 
 CREATE TABLE `application_config`
 (
-    `application_id`  CHAR(22)                   NOT NULL COMMENT 'アプリケーションID',
-    `use_mariadb`     TINYINT(1)                 NOT NULL COMMENT 'MariaDBを使用するか',
-    `use_mongodb`     TINYINT(1)                 NOT NULL COMMENT 'MongoDBを使用するか',
-    `base_image`      VARCHAR(1000)              NOT NULL COMMENT 'ベースイメージの名前',
-    `dockerfile_name` VARCHAR(100)               NOT NULL COMMENT 'Dockerfile名',
-    `artifact_path`   VARCHAR(100)               NOT NULL COMMENT '静的成果物のパス',
-    `build_cmd`       TEXT                       NOT NULL COMMENT 'ビルドコマンド',
-    `entrypoint_cmd`  TEXT                       NOT NULL COMMENT 'コンテナのエントリポイント',
-    `authentication`  ENUM ('off','soft','hard') NOT NULL COMMENT 'traP部員認証タイプ',
+    `application_id`      CHAR(22)                                                                      NOT NULL COMMENT 'アプリケーションID',
+    `use_mariadb`         TINYINT(1)                                                                    NOT NULL COMMENT 'MariaDBを使用するか',
+    `use_mongodb`         TINYINT(1)                                                                    NOT NULL COMMENT 'MongoDBを使用するか',
+    `build_type`          ENUM ('runtime-cmd', 'runtime-dockerfile', 'static-cmd', 'static-dockerfile') NOT NULL COMMENT 'ビルドタイプ',
+    `base_image`          VARCHAR(1000)                                                                 NOT NULL COMMENT 'ベースイメージの名前',
+    `build_cmd`           TEXT                                                                          NOT NULL COMMENT 'ビルドコマンド(shell)',
+    `entrypoint_cmd`      TEXT                                                                          NOT NULL COMMENT 'コンテナのエントリポイント(shell)',
+    `artifact_path`       VARCHAR(100)                                                                  NOT NULL COMMENT '静的成果物のパス',
+    `dockerfile_name`     VARCHAR(100)                                                                  NOT NULL COMMENT 'Dockerfile名',
+    `entrypoint_override` TEXT                                                                          NOT NULL COMMENT 'Entrypointの上書き(args)',
+    `command_override`    TEXT                                                                          NOT NULL COMMENT 'Commandの上書き(args)',
     PRIMARY KEY (`application_id`),
     CONSTRAINT `fk_application_config_application_id` FOREIGN KEY (`application_id`) REFERENCES `applications` (`id`)
 ) ENGINE = InnoDB
@@ -92,13 +94,14 @@ CREATE TABLE `application_config`
 
 CREATE TABLE `websites`
 (
-    `id`             CHAR(22)     NOT NULL COMMENT 'サイトID',
-    `fqdn`           VARCHAR(100) NOT NULL COMMENT 'サイトURLのFQDN',
-    `path_prefix`    VARCHAR(100) NOT NULL COMMENT 'サイトPathのPrefix',
-    `strip_prefix`   TINYINT(1)   NOT NULL COMMENT 'PathのPrefixを落とすかどうか',
-    `https`          TINYINT(1)   NOT NULL COMMENT 'httpsの接続かどうか',
-    `http_port`      INT(11)      NOT NULL DEFAULT 80 COMMENT 'コンテナhttpポート番号',
-    `application_id` CHAR(22)     NOT NULL COMMENT 'アプリケーションID',
+    `id`             CHAR(22)                   NOT NULL COMMENT 'サイトID',
+    `fqdn`           VARCHAR(100)               NOT NULL COMMENT 'サイトURLのFQDN',
+    `path_prefix`    VARCHAR(100)               NOT NULL COMMENT 'サイトPathのPrefix',
+    `strip_prefix`   TINYINT(1)                 NOT NULL COMMENT 'PathのPrefixを落とすかどうか',
+    `https`          TINYINT(1)                 NOT NULL COMMENT 'httpsの接続かどうか',
+    `http_port`      INT(11)                    NOT NULL DEFAULT 80 COMMENT 'コンテナhttpポート番号',
+    `authentication` ENUM ('off','soft','hard') NOT NULL COMMENT 'traP部員認証タイプ',
+    `application_id` CHAR(22)                   NOT NULL COMMENT 'アプリケーションID',
     PRIMARY KEY (`id`),
     UNIQUE KEY `fqdn` (`fqdn`, `path_prefix`),
     KEY `fk_websites_application_id` (`application_id`),
