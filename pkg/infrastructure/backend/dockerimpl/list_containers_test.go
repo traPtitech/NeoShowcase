@@ -48,7 +48,7 @@ func TestDockerBackend_ListContainers(t *testing.T) {
 			})
 		}
 
-		err := m.SynchronizeRuntime(context.Background(), apps)
+		err := m.SynchronizeRuntime(context.Background(), apps, nil)
 		require.NoError(t, err)
 
 		result, err := m.ListContainers(context.Background())
