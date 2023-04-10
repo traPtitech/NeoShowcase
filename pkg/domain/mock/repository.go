@@ -479,6 +479,20 @@ func (mr *MockGitRepositoryRepositoryMockRecorder) CreateRepository(ctx, repo in
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateRepository", reflect.TypeOf((*MockGitRepositoryRepository)(nil).CreateRepository), ctx, repo)
 }
 
+// DeleteRepository mocks base method.
+func (m *MockGitRepositoryRepository) DeleteRepository(ctx context.Context, id string) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "DeleteRepository", ctx, id)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// DeleteRepository indicates an expected call of DeleteRepository.
+func (mr *MockGitRepositoryRepositoryMockRecorder) DeleteRepository(ctx, id interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteRepository", reflect.TypeOf((*MockGitRepositoryRepository)(nil).DeleteRepository), ctx, id)
+}
+
 // GetRepositories mocks base method.
 func (m *MockGitRepositoryRepository) GetRepositories(ctx context.Context, condition domain.GetRepositoryCondition) ([]*domain.Repository, error) {
 	m.ctrl.T.Helper()
@@ -507,6 +521,20 @@ func (m *MockGitRepositoryRepository) GetRepository(ctx context.Context, id stri
 func (mr *MockGitRepositoryRepositoryMockRecorder) GetRepository(ctx, id interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetRepository", reflect.TypeOf((*MockGitRepositoryRepository)(nil).GetRepository), ctx, id)
+}
+
+// UpdateRepository mocks base method.
+func (m *MockGitRepositoryRepository) UpdateRepository(ctx context.Context, id string, args *domain.UpdateRepositoryArgs) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "UpdateRepository", ctx, id, args)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// UpdateRepository indicates an expected call of UpdateRepository.
+func (mr *MockGitRepositoryRepositoryMockRecorder) UpdateRepository(ctx, id, args interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateRepository", reflect.TypeOf((*MockGitRepositoryRepository)(nil).UpdateRepository), ctx, id, args)
 }
 
 // MockUserRepository is a mock of UserRepository interface.

@@ -13,7 +13,7 @@ type GetApplicationCondition struct {
 	IDIn         optional.Of[[]string]
 	RepositoryID optional.Of[string]
 	UserID       optional.Of[string]
-	BuildType    optional.Of[BuildType]
+	DeployType   optional.Of[DeployType]
 	Running      optional.Of[bool]
 	// InSync WantCommit が CurrentCommit に一致する
 	InSync optional.Of[bool]

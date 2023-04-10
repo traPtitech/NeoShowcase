@@ -28,7 +28,7 @@ func (b *dockerBackend) routerBase(app *domain.Application, website *domain.Webs
 	}
 
 	var middlewareNames []string
-	switch app.Config.Authentication {
+	switch website.Authentication {
 	case domain.AuthenticationTypeSoft:
 		middlewareNames = append(middlewareNames,
 			web.TraefikAuthSoftMiddleware,

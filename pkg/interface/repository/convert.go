@@ -43,37 +43,78 @@ func toDomainAvailableDomain(ad *models.AvailableDomain) *domain.AvailableDomain
 	}
 }
 
-var authTypeMapper = mapper.NewValueMapper(map[string]domain.AuthenticationType{
-	models.ApplicationConfigAuthenticationOff:  domain.AuthenticationTypeOff,
-	models.ApplicationConfigAuthenticationSoft: domain.AuthenticationTypeSoft,
-	models.ApplicationConfigAuthenticationHard: domain.AuthenticationTypeHard,
+var buildTypeMapper = mapper.NewValueMapper(map[string]domain.BuildType{
+	models.ApplicationConfigBuildTypeRuntimeCMD:        domain.BuildTypeRuntimeCmd,
+	models.ApplicationConfigBuildTypeRuntimeDockerfile: domain.BuildTypeRuntimeDockerfile,
+	models.ApplicationConfigBuildTypeStaticCMD:         domain.BuildTypeStaticCmd,
+	models.ApplicationConfigBuildTypeStaticDockerfile:  domain.BuildTypeStaticDockerfile,
 })
 
 func fromDomainApplicationConfig(appID string, c *domain.ApplicationConfig) *models.ApplicationConfig {
-	return &models.ApplicationConfig{
-		ApplicationID:  appID,
-		UseMariadb:     c.UseMariaDB,
-		UseMongodb:     c.UseMongoDB,
-		BaseImage:      c.BaseImage,
-		DockerfileName: c.DockerfileName,
-		ArtifactPath:   c.ArtifactPath,
-		BuildCMD:       c.BuildCmd,
-		EntrypointCMD:  c.EntrypointCmd,
-		Authentication: authTypeMapper.FromMust(c.Authentication),
+	mc := &models.ApplicationConfig{
+		ApplicationID: appID,
+		UseMariadb:    c.UseMariaDB,
+		UseMongodb:    c.UseMongoDB,
+		BuildType:     buildTypeMapper.FromMust(c.BuildType),
+		Entrypoint:    c.Entrypoint,
+		Command:       c.Command,
 	}
+	switch bc := c.BuildConfig.(type) {
+	case *domain.BuildConfigRuntimeCmd:
+		mc.BaseImage = bc.BaseImage
+		mc.BuildCMD = bc.BuildCmd
+		mc.BuildCMDShell = bc.BuildCmdShell
+	case *domain.BuildConfigRuntimeDockerfile:
+		mc.DockerfileName = bc.DockerfileName
+	case *domain.BuildConfigStaticCmd:
+		mc.BaseImage = bc.BaseImage
+		mc.BuildCMD = bc.BuildCmd
+		mc.BuildCMDShell = bc.BuildCmdShell
+		mc.ArtifactPath = bc.ArtifactPath
+	case *domain.BuildConfigStaticDockerfile:
+		mc.DockerfileName = bc.DockerfileName
+		mc.ArtifactPath = bc.ArtifactPath
+	default:
+		panic("unknown domain build config type")
+	}
+	return mc
 }
 
 func toDomainApplicationConfig(c *models.ApplicationConfig) domain.ApplicationConfig {
-	return domain.ApplicationConfig{
-		UseMariaDB:     c.UseMariadb,
-		UseMongoDB:     c.UseMongodb,
-		BaseImage:      c.BaseImage,
-		DockerfileName: c.DockerfileName,
-		ArtifactPath:   c.ArtifactPath,
-		BuildCmd:       c.BuildCMD,
-		EntrypointCmd:  c.EntrypointCMD,
-		Authentication: authTypeMapper.IntoMust(c.Authentication),
+	ac := domain.ApplicationConfig{
+		UseMariaDB: c.UseMariadb,
+		UseMongoDB: c.UseMongodb,
+		BuildType:  buildTypeMapper.IntoMust(c.BuildType),
+		Entrypoint: c.Entrypoint,
+		Command:    c.Command,
 	}
+	switch ac.BuildType {
+	case domain.BuildTypeRuntimeCmd:
+		ac.BuildConfig = &domain.BuildConfigRuntimeCmd{
+			BaseImage:     c.BaseImage,
+			BuildCmd:      c.BuildCMD,
+			BuildCmdShell: c.BuildCMDShell,
+		}
+	case domain.BuildTypeRuntimeDockerfile:
+		ac.BuildConfig = &domain.BuildConfigRuntimeDockerfile{
+			DockerfileName: c.DockerfileName,
+		}
+	case domain.BuildTypeStaticCmd:
+		ac.BuildConfig = &domain.BuildConfigStaticCmd{
+			BaseImage:     c.BaseImage,
+			BuildCmd:      c.BuildCMD,
+			BuildCmdShell: c.BuildCMDShell,
+			ArtifactPath:  c.ArtifactPath,
+		}
+	case domain.BuildTypeStaticDockerfile:
+		ac.BuildConfig = &domain.BuildConfigStaticDockerfile{
+			DockerfileName: c.DockerfileName,
+			ArtifactPath:   c.ArtifactPath,
+		}
+	default:
+		panic("unknown build type")
+	}
+	return ac
 }
 
 func fromDomainRepository(repo *domain.Repository) *models.Repository {
@@ -118,9 +159,9 @@ func toDomainRepository(repo *models.Repository) *domain.Repository {
 	return ret
 }
 
-var buildTypeMapper = mapper.NewValueMapper(map[string]domain.BuildType{
-	models.ApplicationsBuildTypeRuntime: domain.BuildTypeRuntime,
-	models.ApplicationsBuildTypeStatic:  domain.BuildTypeStatic,
+var deployTypeMapper = mapper.NewValueMapper(map[string]domain.DeployType{
+	models.ApplicationsDeployTypeRuntime: domain.DeployTypeRuntime,
+	models.ApplicationsDeployTypeStatic:  domain.DeployTypeStatic,
 })
 
 var containerStateMapper = mapper.NewValueMapper(map[string]domain.ContainerState{
@@ -138,7 +179,7 @@ func fromDomainApplication(app *domain.Application) *models.Application {
 		Name:          app.Name,
 		RepositoryID:  app.RepositoryID,
 		RefName:       app.RefName,
-		BuildType:     buildTypeMapper.FromMust(app.BuildType),
+		DeployType:    deployTypeMapper.FromMust(app.DeployType),
 		Running:       app.Running,
 		Container:     containerStateMapper.FromMust(app.Container),
 		CurrentCommit: app.CurrentCommit,
@@ -154,7 +195,7 @@ func toDomainApplication(app *models.Application) *domain.Application {
 		Name:          app.Name,
 		RepositoryID:  app.RepositoryID,
 		RefName:       app.RefName,
-		BuildType:     buildTypeMapper.IntoMust(app.BuildType),
+		DeployType:    deployTypeMapper.IntoMust(app.DeployType),
 		Running:       app.Running,
 		Container:     containerStateMapper.IntoMust(app.Container),
 		CurrentCommit: app.CurrentCommit,
@@ -223,26 +264,34 @@ func toDomainEnvironment(env *models.Environment) *domain.Environment {
 	}
 }
 
+var authTypeMapper = mapper.NewValueMapper(map[string]domain.AuthenticationType{
+	models.WebsitesAuthenticationOff:  domain.AuthenticationTypeOff,
+	models.WebsitesAuthenticationSoft: domain.AuthenticationTypeSoft,
+	models.WebsitesAuthenticationHard: domain.AuthenticationTypeHard,
+})
+
 func fromDomainWebsite(appID string, website *domain.Website) *models.Website {
 	return &models.Website{
-		ID:            website.ID,
-		FQDN:          website.FQDN,
-		PathPrefix:    website.PathPrefix,
-		StripPrefix:   website.StripPrefix,
-		HTTPS:         website.HTTPS,
-		HTTPPort:      website.HTTPPort,
-		ApplicationID: appID,
+		ID:             website.ID,
+		FQDN:           website.FQDN,
+		PathPrefix:     website.PathPrefix,
+		StripPrefix:    website.StripPrefix,
+		HTTPS:          website.HTTPS,
+		HTTPPort:       website.HTTPPort,
+		Authentication: authTypeMapper.FromMust(website.Authentication),
+		ApplicationID:  appID,
 	}
 }
 
 func toDomainWebsite(website *models.Website) *domain.Website {
 	return &domain.Website{
-		ID:          website.ID,
-		FQDN:        website.FQDN,
-		PathPrefix:  website.PathPrefix,
-		StripPrefix: website.StripPrefix,
-		HTTPS:       website.HTTPS,
-		HTTPPort:    website.HTTPPort,
+		ID:             website.ID,
+		FQDN:           website.FQDN,
+		PathPrefix:     website.PathPrefix,
+		StripPrefix:    website.StripPrefix,
+		HTTPS:          website.HTTPS,
+		HTTPPort:       website.HTTPPort,
+		Authentication: authTypeMapper.IntoMust(website.Authentication),
 	}
 }
 

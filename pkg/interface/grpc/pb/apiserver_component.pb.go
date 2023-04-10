@@ -24,22 +24,19 @@ const (
 type BuilderRequest_Type int32
 
 const (
-	BuilderRequest_START_BUILD_IMAGE  BuilderRequest_Type = 0
-	BuilderRequest_START_BUILD_STATIC BuilderRequest_Type = 1
-	BuilderRequest_CANCEL_BUILD       BuilderRequest_Type = 2
+	BuilderRequest_START_BUILD  BuilderRequest_Type = 0
+	BuilderRequest_CANCEL_BUILD BuilderRequest_Type = 1
 )
 
 // Enum value maps for BuilderRequest_Type.
 var (
 	BuilderRequest_Type_name = map[int32]string{
-		0: "START_BUILD_IMAGE",
-		1: "START_BUILD_STATIC",
-		2: "CANCEL_BUILD",
+		0: "START_BUILD",
+		1: "CANCEL_BUILD",
 	}
 	BuilderRequest_Type_value = map[string]int32{
-		"START_BUILD_IMAGE":  0,
-		"START_BUILD_STATIC": 1,
-		"CANCEL_BUILD":       2,
+		"START_BUILD":  0,
+		"CANCEL_BUILD": 1,
 	}
 )
 
@@ -67,7 +64,7 @@ func (x BuilderRequest_Type) Number() protoreflect.EnumNumber {
 
 // Deprecated: Use BuilderRequest_Type.Descriptor instead.
 func (BuilderRequest_Type) EnumDescriptor() ([]byte, []int) {
-	return file_neoshowcase_protobuf_apiserver_component_proto_rawDescGZIP(), []int{4, 0}
+	return file_neoshowcase_protobuf_apiserver_component_proto_rawDescGZIP(), []int{1, 0}
 }
 
 type BuildSettled_Reason int32
@@ -116,7 +113,7 @@ func (x BuildSettled_Reason) Number() protoreflect.EnumNumber {
 
 // Deprecated: Use BuildSettled_Reason.Descriptor instead.
 func (BuildSettled_Reason) EnumDescriptor() ([]byte, []int) {
-	return file_neoshowcase_protobuf_apiserver_component_proto_rawDescGZIP(), []int{6, 0}
+	return file_neoshowcase_protobuf_apiserver_component_proto_rawDescGZIP(), []int{3, 0}
 }
 
 type BuilderResponse_Type int32
@@ -168,7 +165,7 @@ func (x BuilderResponse_Type) Number() protoreflect.EnumNumber {
 
 // Deprecated: Use BuilderResponse_Type.Descriptor instead.
 func (BuilderResponse_Type) EnumDescriptor() ([]byte, []int) {
-	return file_neoshowcase_protobuf_apiserver_component_proto_rawDescGZIP(), []int{8, 0}
+	return file_neoshowcase_protobuf_apiserver_component_proto_rawDescGZIP(), []int{5, 0}
 }
 
 type SSGenRequest_Type int32
@@ -211,20 +208,25 @@ func (x SSGenRequest_Type) Number() protoreflect.EnumNumber {
 
 // Deprecated: Use SSGenRequest_Type.Descriptor instead.
 func (SSGenRequest_Type) EnumDescriptor() ([]byte, []int) {
-	return file_neoshowcase_protobuf_apiserver_component_proto_rawDescGZIP(), []int{9, 0}
+	return file_neoshowcase_protobuf_apiserver_component_proto_rawDescGZIP(), []int{6, 0}
 }
 
-type BuildSource struct {
+type StartBuildRequest struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	RepositoryId string `protobuf:"bytes,1,opt,name=repository_id,json=repositoryId,proto3" json:"repository_id,omitempty"`
-	Commit       string `protobuf:"bytes,2,opt,name=commit,proto3" json:"commit,omitempty"`
+	ApplicationId string       `protobuf:"bytes,1,opt,name=application_id,json=applicationId,proto3" json:"application_id,omitempty"`
+	BuildId       string       `protobuf:"bytes,2,opt,name=build_id,json=buildId,proto3" json:"build_id,omitempty"`
+	RepositoryId  string       `protobuf:"bytes,3,opt,name=repository_id,json=repositoryId,proto3" json:"repository_id,omitempty"`
+	Commit        string       `protobuf:"bytes,4,opt,name=commit,proto3" json:"commit,omitempty"`
+	ImageName     string       `protobuf:"bytes,5,opt,name=image_name,json=imageName,proto3" json:"image_name,omitempty"` // empty on static site build
+	ImageTag      string       `protobuf:"bytes,6,opt,name=image_tag,json=imageTag,proto3" json:"image_tag,omitempty"`    // empty on static site build
+	BuildConfig   *BuildConfig `protobuf:"bytes,7,opt,name=build_config,json=buildConfig,proto3" json:"build_config,omitempty"`
 }
 
-func (x *BuildSource) Reset() {
-	*x = BuildSource{}
+func (x *StartBuildRequest) Reset() {
+	*x = StartBuildRequest{}
 	if protoimpl.UnsafeEnabled {
 		mi := &file_neoshowcase_protobuf_apiserver_component_proto_msgTypes[0]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
@@ -232,13 +234,13 @@ func (x *BuildSource) Reset() {
 	}
 }
 
-func (x *BuildSource) String() string {
+func (x *StartBuildRequest) String() string {
 	return protoimpl.X.MessageStringOf(x)
 }
 
-func (*BuildSource) ProtoMessage() {}
+func (*StartBuildRequest) ProtoMessage() {}
 
-func (x *BuildSource) ProtoReflect() protoreflect.Message {
+func (x *StartBuildRequest) ProtoReflect() protoreflect.Message {
 	mi := &file_neoshowcase_protobuf_apiserver_component_proto_msgTypes[0]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
@@ -250,260 +252,58 @@ func (x *BuildSource) ProtoReflect() protoreflect.Message {
 	return mi.MessageOf(x)
 }
 
-// Deprecated: Use BuildSource.ProtoReflect.Descriptor instead.
-func (*BuildSource) Descriptor() ([]byte, []int) {
+// Deprecated: Use StartBuildRequest.ProtoReflect.Descriptor instead.
+func (*StartBuildRequest) Descriptor() ([]byte, []int) {
 	return file_neoshowcase_protobuf_apiserver_component_proto_rawDescGZIP(), []int{0}
 }
 
-func (x *BuildSource) GetRepositoryId() string {
+func (x *StartBuildRequest) GetApplicationId() string {
+	if x != nil {
+		return x.ApplicationId
+	}
+	return ""
+}
+
+func (x *StartBuildRequest) GetBuildId() string {
+	if x != nil {
+		return x.BuildId
+	}
+	return ""
+}
+
+func (x *StartBuildRequest) GetRepositoryId() string {
 	if x != nil {
 		return x.RepositoryId
 	}
 	return ""
 }
 
-func (x *BuildSource) GetCommit() string {
+func (x *StartBuildRequest) GetCommit() string {
 	if x != nil {
 		return x.Commit
 	}
 	return ""
 }
 
-type BuildOptions struct {
-	state         protoimpl.MessageState
-	sizeCache     protoimpl.SizeCache
-	unknownFields protoimpl.UnknownFields
-
-	BaseImageName  string `protobuf:"bytes,1,opt,name=base_image_name,json=baseImageName,proto3" json:"base_image_name,omitempty"`
-	DockerfileName string `protobuf:"bytes,2,opt,name=dockerfile_name,json=dockerfileName,proto3" json:"dockerfile_name,omitempty"`
-	ArtifactPath   string `protobuf:"bytes,3,opt,name=artifact_path,json=artifactPath,proto3" json:"artifact_path,omitempty"`
-	BuildCmd       string `protobuf:"bytes,4,opt,name=build_cmd,json=buildCmd,proto3" json:"build_cmd,omitempty"`
-	EntrypointCmd  string `protobuf:"bytes,5,opt,name=entrypoint_cmd,json=entrypointCmd,proto3" json:"entrypoint_cmd,omitempty"`
-}
-
-func (x *BuildOptions) Reset() {
-	*x = BuildOptions{}
-	if protoimpl.UnsafeEnabled {
-		mi := &file_neoshowcase_protobuf_apiserver_component_proto_msgTypes[1]
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		ms.StoreMessageInfo(mi)
-	}
-}
-
-func (x *BuildOptions) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*BuildOptions) ProtoMessage() {}
-
-func (x *BuildOptions) ProtoReflect() protoreflect.Message {
-	mi := &file_neoshowcase_protobuf_apiserver_component_proto_msgTypes[1]
-	if protoimpl.UnsafeEnabled && x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use BuildOptions.ProtoReflect.Descriptor instead.
-func (*BuildOptions) Descriptor() ([]byte, []int) {
-	return file_neoshowcase_protobuf_apiserver_component_proto_rawDescGZIP(), []int{1}
-}
-
-func (x *BuildOptions) GetBaseImageName() string {
-	if x != nil {
-		return x.BaseImageName
-	}
-	return ""
-}
-
-func (x *BuildOptions) GetDockerfileName() string {
-	if x != nil {
-		return x.DockerfileName
-	}
-	return ""
-}
-
-func (x *BuildOptions) GetArtifactPath() string {
-	if x != nil {
-		return x.ArtifactPath
-	}
-	return ""
-}
-
-func (x *BuildOptions) GetBuildCmd() string {
-	if x != nil {
-		return x.BuildCmd
-	}
-	return ""
-}
-
-func (x *BuildOptions) GetEntrypointCmd() string {
-	if x != nil {
-		return x.EntrypointCmd
-	}
-	return ""
-}
-
-type StartBuildImageRequest struct {
-	state         protoimpl.MessageState
-	sizeCache     protoimpl.SizeCache
-	unknownFields protoimpl.UnknownFields
-
-	ImageName     string        `protobuf:"bytes,1,opt,name=image_name,json=imageName,proto3" json:"image_name,omitempty"`
-	ImageTag      string        `protobuf:"bytes,2,opt,name=image_tag,json=imageTag,proto3" json:"image_tag,omitempty"`
-	Source        *BuildSource  `protobuf:"bytes,3,opt,name=source,proto3" json:"source,omitempty"`
-	Options       *BuildOptions `protobuf:"bytes,4,opt,name=options,proto3" json:"options,omitempty"`
-	BuildId       string        `protobuf:"bytes,5,opt,name=build_id,json=buildId,proto3" json:"build_id,omitempty"`
-	ApplicationId string        `protobuf:"bytes,6,opt,name=application_id,json=applicationId,proto3" json:"application_id,omitempty"`
-}
-
-func (x *StartBuildImageRequest) Reset() {
-	*x = StartBuildImageRequest{}
-	if protoimpl.UnsafeEnabled {
-		mi := &file_neoshowcase_protobuf_apiserver_component_proto_msgTypes[2]
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		ms.StoreMessageInfo(mi)
-	}
-}
-
-func (x *StartBuildImageRequest) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*StartBuildImageRequest) ProtoMessage() {}
-
-func (x *StartBuildImageRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_neoshowcase_protobuf_apiserver_component_proto_msgTypes[2]
-	if protoimpl.UnsafeEnabled && x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use StartBuildImageRequest.ProtoReflect.Descriptor instead.
-func (*StartBuildImageRequest) Descriptor() ([]byte, []int) {
-	return file_neoshowcase_protobuf_apiserver_component_proto_rawDescGZIP(), []int{2}
-}
-
-func (x *StartBuildImageRequest) GetImageName() string {
+func (x *StartBuildRequest) GetImageName() string {
 	if x != nil {
 		return x.ImageName
 	}
 	return ""
 }
 
-func (x *StartBuildImageRequest) GetImageTag() string {
+func (x *StartBuildRequest) GetImageTag() string {
 	if x != nil {
 		return x.ImageTag
 	}
 	return ""
 }
 
-func (x *StartBuildImageRequest) GetSource() *BuildSource {
+func (x *StartBuildRequest) GetBuildConfig() *BuildConfig {
 	if x != nil {
-		return x.Source
+		return x.BuildConfig
 	}
 	return nil
-}
-
-func (x *StartBuildImageRequest) GetOptions() *BuildOptions {
-	if x != nil {
-		return x.Options
-	}
-	return nil
-}
-
-func (x *StartBuildImageRequest) GetBuildId() string {
-	if x != nil {
-		return x.BuildId
-	}
-	return ""
-}
-
-func (x *StartBuildImageRequest) GetApplicationId() string {
-	if x != nil {
-		return x.ApplicationId
-	}
-	return ""
-}
-
-type StartBuildStaticRequest struct {
-	state         protoimpl.MessageState
-	sizeCache     protoimpl.SizeCache
-	unknownFields protoimpl.UnknownFields
-
-	Source        *BuildSource  `protobuf:"bytes,1,opt,name=source,proto3" json:"source,omitempty"`
-	Options       *BuildOptions `protobuf:"bytes,2,opt,name=options,proto3" json:"options,omitempty"`
-	BuildId       string        `protobuf:"bytes,3,opt,name=build_id,json=buildId,proto3" json:"build_id,omitempty"`
-	ApplicationId string        `protobuf:"bytes,4,opt,name=application_id,json=applicationId,proto3" json:"application_id,omitempty"`
-}
-
-func (x *StartBuildStaticRequest) Reset() {
-	*x = StartBuildStaticRequest{}
-	if protoimpl.UnsafeEnabled {
-		mi := &file_neoshowcase_protobuf_apiserver_component_proto_msgTypes[3]
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		ms.StoreMessageInfo(mi)
-	}
-}
-
-func (x *StartBuildStaticRequest) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*StartBuildStaticRequest) ProtoMessage() {}
-
-func (x *StartBuildStaticRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_neoshowcase_protobuf_apiserver_component_proto_msgTypes[3]
-	if protoimpl.UnsafeEnabled && x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use StartBuildStaticRequest.ProtoReflect.Descriptor instead.
-func (*StartBuildStaticRequest) Descriptor() ([]byte, []int) {
-	return file_neoshowcase_protobuf_apiserver_component_proto_rawDescGZIP(), []int{3}
-}
-
-func (x *StartBuildStaticRequest) GetSource() *BuildSource {
-	if x != nil {
-		return x.Source
-	}
-	return nil
-}
-
-func (x *StartBuildStaticRequest) GetOptions() *BuildOptions {
-	if x != nil {
-		return x.Options
-	}
-	return nil
-}
-
-func (x *StartBuildStaticRequest) GetBuildId() string {
-	if x != nil {
-		return x.BuildId
-	}
-	return ""
-}
-
-func (x *StartBuildStaticRequest) GetApplicationId() string {
-	if x != nil {
-		return x.ApplicationId
-	}
-	return ""
 }
 
 type BuilderRequest struct {
@@ -514,8 +314,7 @@ type BuilderRequest struct {
 	Type BuilderRequest_Type `protobuf:"varint,1,opt,name=type,proto3,enum=neoshowcase.protobuf.BuilderRequest_Type" json:"type,omitempty"`
 	// Types that are assignable to Body:
 	//
-	//	*BuilderRequest_BuildImage
-	//	*BuilderRequest_BuildStatic
+	//	*BuilderRequest_StartBuild
 	//	*BuilderRequest_CancelBuild
 	Body isBuilderRequest_Body `protobuf_oneof:"body"`
 }
@@ -523,7 +322,7 @@ type BuilderRequest struct {
 func (x *BuilderRequest) Reset() {
 	*x = BuilderRequest{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_neoshowcase_protobuf_apiserver_component_proto_msgTypes[4]
+		mi := &file_neoshowcase_protobuf_apiserver_component_proto_msgTypes[1]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -536,7 +335,7 @@ func (x *BuilderRequest) String() string {
 func (*BuilderRequest) ProtoMessage() {}
 
 func (x *BuilderRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_neoshowcase_protobuf_apiserver_component_proto_msgTypes[4]
+	mi := &file_neoshowcase_protobuf_apiserver_component_proto_msgTypes[1]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -549,14 +348,14 @@ func (x *BuilderRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use BuilderRequest.ProtoReflect.Descriptor instead.
 func (*BuilderRequest) Descriptor() ([]byte, []int) {
-	return file_neoshowcase_protobuf_apiserver_component_proto_rawDescGZIP(), []int{4}
+	return file_neoshowcase_protobuf_apiserver_component_proto_rawDescGZIP(), []int{1}
 }
 
 func (x *BuilderRequest) GetType() BuilderRequest_Type {
 	if x != nil {
 		return x.Type
 	}
-	return BuilderRequest_START_BUILD_IMAGE
+	return BuilderRequest_START_BUILD
 }
 
 func (m *BuilderRequest) GetBody() isBuilderRequest_Body {
@@ -566,16 +365,9 @@ func (m *BuilderRequest) GetBody() isBuilderRequest_Body {
 	return nil
 }
 
-func (x *BuilderRequest) GetBuildImage() *StartBuildImageRequest {
-	if x, ok := x.GetBody().(*BuilderRequest_BuildImage); ok {
-		return x.BuildImage
-	}
-	return nil
-}
-
-func (x *BuilderRequest) GetBuildStatic() *StartBuildStaticRequest {
-	if x, ok := x.GetBody().(*BuilderRequest_BuildStatic); ok {
-		return x.BuildStatic
+func (x *BuilderRequest) GetStartBuild() *StartBuildRequest {
+	if x, ok := x.GetBody().(*BuilderRequest_StartBuild); ok {
+		return x.StartBuild
 	}
 	return nil
 }
@@ -591,21 +383,15 @@ type isBuilderRequest_Body interface {
 	isBuilderRequest_Body()
 }
 
-type BuilderRequest_BuildImage struct {
-	BuildImage *StartBuildImageRequest `protobuf:"bytes,2,opt,name=build_image,json=buildImage,proto3,oneof"`
-}
-
-type BuilderRequest_BuildStatic struct {
-	BuildStatic *StartBuildStaticRequest `protobuf:"bytes,3,opt,name=build_static,json=buildStatic,proto3,oneof"`
+type BuilderRequest_StartBuild struct {
+	StartBuild *StartBuildRequest `protobuf:"bytes,2,opt,name=start_build,json=startBuild,proto3,oneof"`
 }
 
 type BuilderRequest_CancelBuild struct {
-	CancelBuild *BuildIdRequest `protobuf:"bytes,4,opt,name=cancel_build,json=cancelBuild,proto3,oneof"`
+	CancelBuild *BuildIdRequest `protobuf:"bytes,3,opt,name=cancel_build,json=cancelBuild,proto3,oneof"`
 }
 
-func (*BuilderRequest_BuildImage) isBuilderRequest_Body() {}
-
-func (*BuilderRequest_BuildStatic) isBuilderRequest_Body() {}
+func (*BuilderRequest_StartBuild) isBuilderRequest_Body() {}
 
 func (*BuilderRequest_CancelBuild) isBuilderRequest_Body() {}
 
@@ -621,7 +407,7 @@ type BuildStarted struct {
 func (x *BuildStarted) Reset() {
 	*x = BuildStarted{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_neoshowcase_protobuf_apiserver_component_proto_msgTypes[5]
+		mi := &file_neoshowcase_protobuf_apiserver_component_proto_msgTypes[2]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -634,7 +420,7 @@ func (x *BuildStarted) String() string {
 func (*BuildStarted) ProtoMessage() {}
 
 func (x *BuildStarted) ProtoReflect() protoreflect.Message {
-	mi := &file_neoshowcase_protobuf_apiserver_component_proto_msgTypes[5]
+	mi := &file_neoshowcase_protobuf_apiserver_component_proto_msgTypes[2]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -647,7 +433,7 @@ func (x *BuildStarted) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use BuildStarted.ProtoReflect.Descriptor instead.
 func (*BuildStarted) Descriptor() ([]byte, []int) {
-	return file_neoshowcase_protobuf_apiserver_component_proto_rawDescGZIP(), []int{5}
+	return file_neoshowcase_protobuf_apiserver_component_proto_rawDescGZIP(), []int{2}
 }
 
 func (x *BuildStarted) GetApplicationId() string {
@@ -677,7 +463,7 @@ type BuildSettled struct {
 func (x *BuildSettled) Reset() {
 	*x = BuildSettled{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_neoshowcase_protobuf_apiserver_component_proto_msgTypes[6]
+		mi := &file_neoshowcase_protobuf_apiserver_component_proto_msgTypes[3]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -690,7 +476,7 @@ func (x *BuildSettled) String() string {
 func (*BuildSettled) ProtoMessage() {}
 
 func (x *BuildSettled) ProtoReflect() protoreflect.Message {
-	mi := &file_neoshowcase_protobuf_apiserver_component_proto_msgTypes[6]
+	mi := &file_neoshowcase_protobuf_apiserver_component_proto_msgTypes[3]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -703,7 +489,7 @@ func (x *BuildSettled) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use BuildSettled.ProtoReflect.Descriptor instead.
 func (*BuildSettled) Descriptor() ([]byte, []int) {
-	return file_neoshowcase_protobuf_apiserver_component_proto_rawDescGZIP(), []int{6}
+	return file_neoshowcase_protobuf_apiserver_component_proto_rawDescGZIP(), []int{3}
 }
 
 func (x *BuildSettled) GetApplicationId() string {
@@ -739,7 +525,7 @@ type BuildLogPortion struct {
 func (x *BuildLogPortion) Reset() {
 	*x = BuildLogPortion{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_neoshowcase_protobuf_apiserver_component_proto_msgTypes[7]
+		mi := &file_neoshowcase_protobuf_apiserver_component_proto_msgTypes[4]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -752,7 +538,7 @@ func (x *BuildLogPortion) String() string {
 func (*BuildLogPortion) ProtoMessage() {}
 
 func (x *BuildLogPortion) ProtoReflect() protoreflect.Message {
-	mi := &file_neoshowcase_protobuf_apiserver_component_proto_msgTypes[7]
+	mi := &file_neoshowcase_protobuf_apiserver_component_proto_msgTypes[4]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -765,7 +551,7 @@ func (x *BuildLogPortion) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use BuildLogPortion.ProtoReflect.Descriptor instead.
 func (*BuildLogPortion) Descriptor() ([]byte, []int) {
-	return file_neoshowcase_protobuf_apiserver_component_proto_rawDescGZIP(), []int{7}
+	return file_neoshowcase_protobuf_apiserver_component_proto_rawDescGZIP(), []int{4}
 }
 
 func (x *BuildLogPortion) GetBuildId() string {
@@ -799,7 +585,7 @@ type BuilderResponse struct {
 func (x *BuilderResponse) Reset() {
 	*x = BuilderResponse{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_neoshowcase_protobuf_apiserver_component_proto_msgTypes[8]
+		mi := &file_neoshowcase_protobuf_apiserver_component_proto_msgTypes[5]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -812,7 +598,7 @@ func (x *BuilderResponse) String() string {
 func (*BuilderResponse) ProtoMessage() {}
 
 func (x *BuilderResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_neoshowcase_protobuf_apiserver_component_proto_msgTypes[8]
+	mi := &file_neoshowcase_protobuf_apiserver_component_proto_msgTypes[5]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -825,7 +611,7 @@ func (x *BuilderResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use BuilderResponse.ProtoReflect.Descriptor instead.
 func (*BuilderResponse) Descriptor() ([]byte, []int) {
-	return file_neoshowcase_protobuf_apiserver_component_proto_rawDescGZIP(), []int{8}
+	return file_neoshowcase_protobuf_apiserver_component_proto_rawDescGZIP(), []int{5}
 }
 
 func (x *BuilderResponse) GetType() BuilderResponse_Type {
@@ -896,7 +682,7 @@ type SSGenRequest struct {
 func (x *SSGenRequest) Reset() {
 	*x = SSGenRequest{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_neoshowcase_protobuf_apiserver_component_proto_msgTypes[9]
+		mi := &file_neoshowcase_protobuf_apiserver_component_proto_msgTypes[6]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -909,7 +695,7 @@ func (x *SSGenRequest) String() string {
 func (*SSGenRequest) ProtoMessage() {}
 
 func (x *SSGenRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_neoshowcase_protobuf_apiserver_component_proto_msgTypes[9]
+	mi := &file_neoshowcase_protobuf_apiserver_component_proto_msgTypes[6]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -922,7 +708,7 @@ func (x *SSGenRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use SSGenRequest.ProtoReflect.Descriptor instead.
 func (*SSGenRequest) Descriptor() ([]byte, []int) {
-	return file_neoshowcase_protobuf_apiserver_component_proto_rawDescGZIP(), []int{9}
+	return file_neoshowcase_protobuf_apiserver_component_proto_rawDescGZIP(), []int{6}
 }
 
 func (x *SSGenRequest) GetType() SSGenRequest_Type {
@@ -943,80 +729,42 @@ var file_neoshowcase_protobuf_apiserver_component_proto_rawDesc = []byte{
 	0x72, 0x6f, 0x74, 0x6f, 0x62, 0x75, 0x66, 0x2f, 0x65, 0x6d, 0x70, 0x74, 0x79, 0x2e, 0x70, 0x72,
 	0x6f, 0x74, 0x6f, 0x1a, 0x24, 0x6e, 0x65, 0x6f, 0x73, 0x68, 0x6f, 0x77, 0x63, 0x61, 0x73, 0x65,
 	0x2f, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x62, 0x75, 0x66, 0x2f, 0x61, 0x70, 0x69, 0x73, 0x65, 0x72,
-	0x76, 0x65, 0x72, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x22, 0x4a, 0x0a, 0x0b, 0x42, 0x75, 0x69,
-	0x6c, 0x64, 0x53, 0x6f, 0x75, 0x72, 0x63, 0x65, 0x12, 0x23, 0x0a, 0x0d, 0x72, 0x65, 0x70, 0x6f,
-	0x73, 0x69, 0x74, 0x6f, 0x72, 0x79, 0x5f, 0x69, 0x64, 0x18, 0x01, 0x20, 0x01, 0x28, 0x09, 0x52,
-	0x0c, 0x72, 0x65, 0x70, 0x6f, 0x73, 0x69, 0x74, 0x6f, 0x72, 0x79, 0x49, 0x64, 0x12, 0x16, 0x0a,
-	0x06, 0x63, 0x6f, 0x6d, 0x6d, 0x69, 0x74, 0x18, 0x02, 0x20, 0x01, 0x28, 0x09, 0x52, 0x06, 0x63,
-	0x6f, 0x6d, 0x6d, 0x69, 0x74, 0x22, 0xc8, 0x01, 0x0a, 0x0c, 0x42, 0x75, 0x69, 0x6c, 0x64, 0x4f,
-	0x70, 0x74, 0x69, 0x6f, 0x6e, 0x73, 0x12, 0x26, 0x0a, 0x0f, 0x62, 0x61, 0x73, 0x65, 0x5f, 0x69,
-	0x6d, 0x61, 0x67, 0x65, 0x5f, 0x6e, 0x61, 0x6d, 0x65, 0x18, 0x01, 0x20, 0x01, 0x28, 0x09, 0x52,
-	0x0d, 0x62, 0x61, 0x73, 0x65, 0x49, 0x6d, 0x61, 0x67, 0x65, 0x4e, 0x61, 0x6d, 0x65, 0x12, 0x27,
-	0x0a, 0x0f, 0x64, 0x6f, 0x63, 0x6b, 0x65, 0x72, 0x66, 0x69, 0x6c, 0x65, 0x5f, 0x6e, 0x61, 0x6d,
-	0x65, 0x18, 0x02, 0x20, 0x01, 0x28, 0x09, 0x52, 0x0e, 0x64, 0x6f, 0x63, 0x6b, 0x65, 0x72, 0x66,
-	0x69, 0x6c, 0x65, 0x4e, 0x61, 0x6d, 0x65, 0x12, 0x23, 0x0a, 0x0d, 0x61, 0x72, 0x74, 0x69, 0x66,
-	0x61, 0x63, 0x74, 0x5f, 0x70, 0x61, 0x74, 0x68, 0x18, 0x03, 0x20, 0x01, 0x28, 0x09, 0x52, 0x0c,
-	0x61, 0x72, 0x74, 0x69, 0x66, 0x61, 0x63, 0x74, 0x50, 0x61, 0x74, 0x68, 0x12, 0x1b, 0x0a, 0x09,
-	0x62, 0x75, 0x69, 0x6c, 0x64, 0x5f, 0x63, 0x6d, 0x64, 0x18, 0x04, 0x20, 0x01, 0x28, 0x09, 0x52,
-	0x08, 0x62, 0x75, 0x69, 0x6c, 0x64, 0x43, 0x6d, 0x64, 0x12, 0x25, 0x0a, 0x0e, 0x65, 0x6e, 0x74,
-	0x72, 0x79, 0x70, 0x6f, 0x69, 0x6e, 0x74, 0x5f, 0x63, 0x6d, 0x64, 0x18, 0x05, 0x20, 0x01, 0x28,
-	0x09, 0x52, 0x0d, 0x65, 0x6e, 0x74, 0x72, 0x79, 0x70, 0x6f, 0x69, 0x6e, 0x74, 0x43, 0x6d, 0x64,
-	0x22, 0x8f, 0x02, 0x0a, 0x16, 0x53, 0x74, 0x61, 0x72, 0x74, 0x42, 0x75, 0x69, 0x6c, 0x64, 0x49,
-	0x6d, 0x61, 0x67, 0x65, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x12, 0x1d, 0x0a, 0x0a, 0x69,
-	0x6d, 0x61, 0x67, 0x65, 0x5f, 0x6e, 0x61, 0x6d, 0x65, 0x18, 0x01, 0x20, 0x01, 0x28, 0x09, 0x52,
-	0x09, 0x69, 0x6d, 0x61, 0x67, 0x65, 0x4e, 0x61, 0x6d, 0x65, 0x12, 0x1b, 0x0a, 0x09, 0x69, 0x6d,
-	0x61, 0x67, 0x65, 0x5f, 0x74, 0x61, 0x67, 0x18, 0x02, 0x20, 0x01, 0x28, 0x09, 0x52, 0x08, 0x69,
-	0x6d, 0x61, 0x67, 0x65, 0x54, 0x61, 0x67, 0x12, 0x39, 0x0a, 0x06, 0x73, 0x6f, 0x75, 0x72, 0x63,
-	0x65, 0x18, 0x03, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x21, 0x2e, 0x6e, 0x65, 0x6f, 0x73, 0x68, 0x6f,
-	0x77, 0x63, 0x61, 0x73, 0x65, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x62, 0x75, 0x66, 0x2e, 0x42,
-	0x75, 0x69, 0x6c, 0x64, 0x53, 0x6f, 0x75, 0x72, 0x63, 0x65, 0x52, 0x06, 0x73, 0x6f, 0x75, 0x72,
-	0x63, 0x65, 0x12, 0x3c, 0x0a, 0x07, 0x6f, 0x70, 0x74, 0x69, 0x6f, 0x6e, 0x73, 0x18, 0x04, 0x20,
-	0x01, 0x28, 0x0b, 0x32, 0x22, 0x2e, 0x6e, 0x65, 0x6f, 0x73, 0x68, 0x6f, 0x77, 0x63, 0x61, 0x73,
-	0x65, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x62, 0x75, 0x66, 0x2e, 0x42, 0x75, 0x69, 0x6c, 0x64,
-	0x4f, 0x70, 0x74, 0x69, 0x6f, 0x6e, 0x73, 0x52, 0x07, 0x6f, 0x70, 0x74, 0x69, 0x6f, 0x6e, 0x73,
-	0x12, 0x19, 0x0a, 0x08, 0x62, 0x75, 0x69, 0x6c, 0x64, 0x5f, 0x69, 0x64, 0x18, 0x05, 0x20, 0x01,
-	0x28, 0x09, 0x52, 0x07, 0x62, 0x75, 0x69, 0x6c, 0x64, 0x49, 0x64, 0x12, 0x25, 0x0a, 0x0e, 0x61,
-	0x70, 0x70, 0x6c, 0x69, 0x63, 0x61, 0x74, 0x69, 0x6f, 0x6e, 0x5f, 0x69, 0x64, 0x18, 0x06, 0x20,
-	0x01, 0x28, 0x09, 0x52, 0x0d, 0x61, 0x70, 0x70, 0x6c, 0x69, 0x63, 0x61, 0x74, 0x69, 0x6f, 0x6e,
-	0x49, 0x64, 0x22, 0xd4, 0x01, 0x0a, 0x17, 0x53, 0x74, 0x61, 0x72, 0x74, 0x42, 0x75, 0x69, 0x6c,
-	0x64, 0x53, 0x74, 0x61, 0x74, 0x69, 0x63, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x12, 0x39,
-	0x0a, 0x06, 0x73, 0x6f, 0x75, 0x72, 0x63, 0x65, 0x18, 0x01, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x21,
-	0x2e, 0x6e, 0x65, 0x6f, 0x73, 0x68, 0x6f, 0x77, 0x63, 0x61, 0x73, 0x65, 0x2e, 0x70, 0x72, 0x6f,
-	0x74, 0x6f, 0x62, 0x75, 0x66, 0x2e, 0x42, 0x75, 0x69, 0x6c, 0x64, 0x53, 0x6f, 0x75, 0x72, 0x63,
-	0x65, 0x52, 0x06, 0x73, 0x6f, 0x75, 0x72, 0x63, 0x65, 0x12, 0x3c, 0x0a, 0x07, 0x6f, 0x70, 0x74,
-	0x69, 0x6f, 0x6e, 0x73, 0x18, 0x02, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x22, 0x2e, 0x6e, 0x65, 0x6f,
-	0x73, 0x68, 0x6f, 0x77, 0x63, 0x61, 0x73, 0x65, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x62, 0x75,
-	0x66, 0x2e, 0x42, 0x75, 0x69, 0x6c, 0x64, 0x4f, 0x70, 0x74, 0x69, 0x6f, 0x6e, 0x73, 0x52, 0x07,
-	0x6f, 0x70, 0x74, 0x69, 0x6f, 0x6e, 0x73, 0x12, 0x19, 0x0a, 0x08, 0x62, 0x75, 0x69, 0x6c, 0x64,
-	0x5f, 0x69, 0x64, 0x18, 0x03, 0x20, 0x01, 0x28, 0x09, 0x52, 0x07, 0x62, 0x75, 0x69, 0x6c, 0x64,
-	0x49, 0x64, 0x12, 0x25, 0x0a, 0x0e, 0x61, 0x70, 0x70, 0x6c, 0x69, 0x63, 0x61, 0x74, 0x69, 0x6f,
-	0x6e, 0x5f, 0x69, 0x64, 0x18, 0x04, 0x20, 0x01, 0x28, 0x09, 0x52, 0x0d, 0x61, 0x70, 0x70, 0x6c,
-	0x69, 0x63, 0x61, 0x74, 0x69, 0x6f, 0x6e, 0x49, 0x64, 0x22, 0x90, 0x03, 0x0a, 0x0e, 0x42, 0x75,
-	0x69, 0x6c, 0x64, 0x65, 0x72, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x12, 0x3d, 0x0a, 0x04,
-	0x74, 0x79, 0x70, 0x65, 0x18, 0x01, 0x20, 0x01, 0x28, 0x0e, 0x32, 0x29, 0x2e, 0x6e, 0x65, 0x6f,
-	0x73, 0x68, 0x6f, 0x77, 0x63, 0x61, 0x73, 0x65, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x62, 0x75,
-	0x66, 0x2e, 0x42, 0x75, 0x69, 0x6c, 0x64, 0x65, 0x72, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74,
-	0x2e, 0x54, 0x79, 0x70, 0x65, 0x52, 0x04, 0x74, 0x79, 0x70, 0x65, 0x12, 0x4f, 0x0a, 0x0b, 0x62,
-	0x75, 0x69, 0x6c, 0x64, 0x5f, 0x69, 0x6d, 0x61, 0x67, 0x65, 0x18, 0x02, 0x20, 0x01, 0x28, 0x0b,
-	0x32, 0x2c, 0x2e, 0x6e, 0x65, 0x6f, 0x73, 0x68, 0x6f, 0x77, 0x63, 0x61, 0x73, 0x65, 0x2e, 0x70,
-	0x72, 0x6f, 0x74, 0x6f, 0x62, 0x75, 0x66, 0x2e, 0x53, 0x74, 0x61, 0x72, 0x74, 0x42, 0x75, 0x69,
-	0x6c, 0x64, 0x49, 0x6d, 0x61, 0x67, 0x65, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x48, 0x00,
-	0x52, 0x0a, 0x62, 0x75, 0x69, 0x6c, 0x64, 0x49, 0x6d, 0x61, 0x67, 0x65, 0x12, 0x52, 0x0a, 0x0c,
-	0x62, 0x75, 0x69, 0x6c, 0x64, 0x5f, 0x73, 0x74, 0x61, 0x74, 0x69, 0x63, 0x18, 0x03, 0x20, 0x01,
-	0x28, 0x0b, 0x32, 0x2d, 0x2e, 0x6e, 0x65, 0x6f, 0x73, 0x68, 0x6f, 0x77, 0x63, 0x61, 0x73, 0x65,
-	0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x62, 0x75, 0x66, 0x2e, 0x53, 0x74, 0x61, 0x72, 0x74, 0x42,
-	0x75, 0x69, 0x6c, 0x64, 0x53, 0x74, 0x61, 0x74, 0x69, 0x63, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73,
-	0x74, 0x48, 0x00, 0x52, 0x0b, 0x62, 0x75, 0x69, 0x6c, 0x64, 0x53, 0x74, 0x61, 0x74, 0x69, 0x63,
-	0x12, 0x49, 0x0a, 0x0c, 0x63, 0x61, 0x6e, 0x63, 0x65, 0x6c, 0x5f, 0x62, 0x75, 0x69, 0x6c, 0x64,
-	0x18, 0x04, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x24, 0x2e, 0x6e, 0x65, 0x6f, 0x73, 0x68, 0x6f, 0x77,
-	0x63, 0x61, 0x73, 0x65, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x62, 0x75, 0x66, 0x2e, 0x42, 0x75,
-	0x69, 0x6c, 0x64, 0x49, 0x64, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x48, 0x00, 0x52, 0x0b,
-	0x63, 0x61, 0x6e, 0x63, 0x65, 0x6c, 0x42, 0x75, 0x69, 0x6c, 0x64, 0x22, 0x47, 0x0a, 0x04, 0x54,
-	0x79, 0x70, 0x65, 0x12, 0x15, 0x0a, 0x11, 0x53, 0x54, 0x41, 0x52, 0x54, 0x5f, 0x42, 0x55, 0x49,
-	0x4c, 0x44, 0x5f, 0x49, 0x4d, 0x41, 0x47, 0x45, 0x10, 0x00, 0x12, 0x16, 0x0a, 0x12, 0x53, 0x54,
-	0x41, 0x52, 0x54, 0x5f, 0x42, 0x55, 0x49, 0x4c, 0x44, 0x5f, 0x53, 0x54, 0x41, 0x54, 0x49, 0x43,
-	0x10, 0x01, 0x12, 0x10, 0x0a, 0x0c, 0x43, 0x41, 0x4e, 0x43, 0x45, 0x4c, 0x5f, 0x42, 0x55, 0x49,
-	0x4c, 0x44, 0x10, 0x02, 0x42, 0x06, 0x0a, 0x04, 0x62, 0x6f, 0x64, 0x79, 0x22, 0x50, 0x0a, 0x0c,
+	0x76, 0x65, 0x72, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x22, 0x94, 0x02, 0x0a, 0x11, 0x53, 0x74,
+	0x61, 0x72, 0x74, 0x42, 0x75, 0x69, 0x6c, 0x64, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x12,
+	0x25, 0x0a, 0x0e, 0x61, 0x70, 0x70, 0x6c, 0x69, 0x63, 0x61, 0x74, 0x69, 0x6f, 0x6e, 0x5f, 0x69,
+	0x64, 0x18, 0x01, 0x20, 0x01, 0x28, 0x09, 0x52, 0x0d, 0x61, 0x70, 0x70, 0x6c, 0x69, 0x63, 0x61,
+	0x74, 0x69, 0x6f, 0x6e, 0x49, 0x64, 0x12, 0x19, 0x0a, 0x08, 0x62, 0x75, 0x69, 0x6c, 0x64, 0x5f,
+	0x69, 0x64, 0x18, 0x02, 0x20, 0x01, 0x28, 0x09, 0x52, 0x07, 0x62, 0x75, 0x69, 0x6c, 0x64, 0x49,
+	0x64, 0x12, 0x23, 0x0a, 0x0d, 0x72, 0x65, 0x70, 0x6f, 0x73, 0x69, 0x74, 0x6f, 0x72, 0x79, 0x5f,
+	0x69, 0x64, 0x18, 0x03, 0x20, 0x01, 0x28, 0x09, 0x52, 0x0c, 0x72, 0x65, 0x70, 0x6f, 0x73, 0x69,
+	0x74, 0x6f, 0x72, 0x79, 0x49, 0x64, 0x12, 0x16, 0x0a, 0x06, 0x63, 0x6f, 0x6d, 0x6d, 0x69, 0x74,
+	0x18, 0x04, 0x20, 0x01, 0x28, 0x09, 0x52, 0x06, 0x63, 0x6f, 0x6d, 0x6d, 0x69, 0x74, 0x12, 0x1d,
+	0x0a, 0x0a, 0x69, 0x6d, 0x61, 0x67, 0x65, 0x5f, 0x6e, 0x61, 0x6d, 0x65, 0x18, 0x05, 0x20, 0x01,
+	0x28, 0x09, 0x52, 0x09, 0x69, 0x6d, 0x61, 0x67, 0x65, 0x4e, 0x61, 0x6d, 0x65, 0x12, 0x1b, 0x0a,
+	0x09, 0x69, 0x6d, 0x61, 0x67, 0x65, 0x5f, 0x74, 0x61, 0x67, 0x18, 0x06, 0x20, 0x01, 0x28, 0x09,
+	0x52, 0x08, 0x69, 0x6d, 0x61, 0x67, 0x65, 0x54, 0x61, 0x67, 0x12, 0x44, 0x0a, 0x0c, 0x62, 0x75,
+	0x69, 0x6c, 0x64, 0x5f, 0x63, 0x6f, 0x6e, 0x66, 0x69, 0x67, 0x18, 0x07, 0x20, 0x01, 0x28, 0x0b,
+	0x32, 0x21, 0x2e, 0x6e, 0x65, 0x6f, 0x73, 0x68, 0x6f, 0x77, 0x63, 0x61, 0x73, 0x65, 0x2e, 0x70,
+	0x72, 0x6f, 0x74, 0x6f, 0x62, 0x75, 0x66, 0x2e, 0x42, 0x75, 0x69, 0x6c, 0x64, 0x43, 0x6f, 0x6e,
+	0x66, 0x69, 0x67, 0x52, 0x0b, 0x62, 0x75, 0x69, 0x6c, 0x64, 0x43, 0x6f, 0x6e, 0x66, 0x69, 0x67,
+	0x22, 0x99, 0x02, 0x0a, 0x0e, 0x42, 0x75, 0x69, 0x6c, 0x64, 0x65, 0x72, 0x52, 0x65, 0x71, 0x75,
+	0x65, 0x73, 0x74, 0x12, 0x3d, 0x0a, 0x04, 0x74, 0x79, 0x70, 0x65, 0x18, 0x01, 0x20, 0x01, 0x28,
+	0x0e, 0x32, 0x29, 0x2e, 0x6e, 0x65, 0x6f, 0x73, 0x68, 0x6f, 0x77, 0x63, 0x61, 0x73, 0x65, 0x2e,
+	0x70, 0x72, 0x6f, 0x74, 0x6f, 0x62, 0x75, 0x66, 0x2e, 0x42, 0x75, 0x69, 0x6c, 0x64, 0x65, 0x72,
+	0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x2e, 0x54, 0x79, 0x70, 0x65, 0x52, 0x04, 0x74, 0x79,
+	0x70, 0x65, 0x12, 0x4a, 0x0a, 0x0b, 0x73, 0x74, 0x61, 0x72, 0x74, 0x5f, 0x62, 0x75, 0x69, 0x6c,
+	0x64, 0x18, 0x02, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x27, 0x2e, 0x6e, 0x65, 0x6f, 0x73, 0x68, 0x6f,
+	0x77, 0x63, 0x61, 0x73, 0x65, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x62, 0x75, 0x66, 0x2e, 0x53,
+	0x74, 0x61, 0x72, 0x74, 0x42, 0x75, 0x69, 0x6c, 0x64, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74,
+	0x48, 0x00, 0x52, 0x0a, 0x73, 0x74, 0x61, 0x72, 0x74, 0x42, 0x75, 0x69, 0x6c, 0x64, 0x12, 0x49,
+	0x0a, 0x0c, 0x63, 0x61, 0x6e, 0x63, 0x65, 0x6c, 0x5f, 0x62, 0x75, 0x69, 0x6c, 0x64, 0x18, 0x03,
+	0x20, 0x01, 0x28, 0x0b, 0x32, 0x24, 0x2e, 0x6e, 0x65, 0x6f, 0x73, 0x68, 0x6f, 0x77, 0x63, 0x61,
+	0x73, 0x65, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x62, 0x75, 0x66, 0x2e, 0x42, 0x75, 0x69, 0x6c,
+	0x64, 0x49, 0x64, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x48, 0x00, 0x52, 0x0b, 0x63, 0x61,
+	0x6e, 0x63, 0x65, 0x6c, 0x42, 0x75, 0x69, 0x6c, 0x64, 0x22, 0x29, 0x0a, 0x04, 0x54, 0x79, 0x70,
+	0x65, 0x12, 0x0f, 0x0a, 0x0b, 0x53, 0x54, 0x41, 0x52, 0x54, 0x5f, 0x42, 0x55, 0x49, 0x4c, 0x44,
+	0x10, 0x00, 0x12, 0x10, 0x0a, 0x0c, 0x43, 0x41, 0x4e, 0x43, 0x45, 0x4c, 0x5f, 0x42, 0x55, 0x49,
+	0x4c, 0x44, 0x10, 0x01, 0x42, 0x06, 0x0a, 0x04, 0x62, 0x6f, 0x64, 0x79, 0x22, 0x50, 0x0a, 0x0c,
 	0x42, 0x75, 0x69, 0x6c, 0x64, 0x53, 0x74, 0x61, 0x72, 0x74, 0x65, 0x64, 0x12, 0x25, 0x0a, 0x0e,
 	0x61, 0x70, 0x70, 0x6c, 0x69, 0x63, 0x61, 0x74, 0x69, 0x6f, 0x6e, 0x5f, 0x69, 0x64, 0x18, 0x01,
 	0x20, 0x01, 0x28, 0x09, 0x52, 0x0d, 0x61, 0x70, 0x70, 0x6c, 0x69, 0x63, 0x61, 0x74, 0x69, 0x6f,
@@ -1099,49 +847,43 @@ func file_neoshowcase_protobuf_apiserver_component_proto_rawDescGZIP() []byte {
 }
 
 var file_neoshowcase_protobuf_apiserver_component_proto_enumTypes = make([]protoimpl.EnumInfo, 4)
-var file_neoshowcase_protobuf_apiserver_component_proto_msgTypes = make([]protoimpl.MessageInfo, 10)
+var file_neoshowcase_protobuf_apiserver_component_proto_msgTypes = make([]protoimpl.MessageInfo, 7)
 var file_neoshowcase_protobuf_apiserver_component_proto_goTypes = []interface{}{
-	(BuilderRequest_Type)(0),        // 0: neoshowcase.protobuf.BuilderRequest.Type
-	(BuildSettled_Reason)(0),        // 1: neoshowcase.protobuf.BuildSettled.Reason
-	(BuilderResponse_Type)(0),       // 2: neoshowcase.protobuf.BuilderResponse.Type
-	(SSGenRequest_Type)(0),          // 3: neoshowcase.protobuf.SSGenRequest.Type
-	(*BuildSource)(nil),             // 4: neoshowcase.protobuf.BuildSource
-	(*BuildOptions)(nil),            // 5: neoshowcase.protobuf.BuildOptions
-	(*StartBuildImageRequest)(nil),  // 6: neoshowcase.protobuf.StartBuildImageRequest
-	(*StartBuildStaticRequest)(nil), // 7: neoshowcase.protobuf.StartBuildStaticRequest
-	(*BuilderRequest)(nil),          // 8: neoshowcase.protobuf.BuilderRequest
-	(*BuildStarted)(nil),            // 9: neoshowcase.protobuf.BuildStarted
-	(*BuildSettled)(nil),            // 10: neoshowcase.protobuf.BuildSettled
-	(*BuildLogPortion)(nil),         // 11: neoshowcase.protobuf.BuildLogPortion
-	(*BuilderResponse)(nil),         // 12: neoshowcase.protobuf.BuilderResponse
-	(*SSGenRequest)(nil),            // 13: neoshowcase.protobuf.SSGenRequest
-	(*BuildIdRequest)(nil),          // 14: neoshowcase.protobuf.BuildIdRequest
-	(*emptypb.Empty)(nil),           // 15: google.protobuf.Empty
+	(BuilderRequest_Type)(0),  // 0: neoshowcase.protobuf.BuilderRequest.Type
+	(BuildSettled_Reason)(0),  // 1: neoshowcase.protobuf.BuildSettled.Reason
+	(BuilderResponse_Type)(0), // 2: neoshowcase.protobuf.BuilderResponse.Type
+	(SSGenRequest_Type)(0),    // 3: neoshowcase.protobuf.SSGenRequest.Type
+	(*StartBuildRequest)(nil), // 4: neoshowcase.protobuf.StartBuildRequest
+	(*BuilderRequest)(nil),    // 5: neoshowcase.protobuf.BuilderRequest
+	(*BuildStarted)(nil),      // 6: neoshowcase.protobuf.BuildStarted
+	(*BuildSettled)(nil),      // 7: neoshowcase.protobuf.BuildSettled
+	(*BuildLogPortion)(nil),   // 8: neoshowcase.protobuf.BuildLogPortion
+	(*BuilderResponse)(nil),   // 9: neoshowcase.protobuf.BuilderResponse
+	(*SSGenRequest)(nil),      // 10: neoshowcase.protobuf.SSGenRequest
+	(*BuildConfig)(nil),       // 11: neoshowcase.protobuf.BuildConfig
+	(*BuildIdRequest)(nil),    // 12: neoshowcase.protobuf.BuildIdRequest
+	(*emptypb.Empty)(nil),     // 13: google.protobuf.Empty
 }
 var file_neoshowcase_protobuf_apiserver_component_proto_depIdxs = []int32{
-	4,  // 0: neoshowcase.protobuf.StartBuildImageRequest.source:type_name -> neoshowcase.protobuf.BuildSource
-	5,  // 1: neoshowcase.protobuf.StartBuildImageRequest.options:type_name -> neoshowcase.protobuf.BuildOptions
-	4,  // 2: neoshowcase.protobuf.StartBuildStaticRequest.source:type_name -> neoshowcase.protobuf.BuildSource
-	5,  // 3: neoshowcase.protobuf.StartBuildStaticRequest.options:type_name -> neoshowcase.protobuf.BuildOptions
-	0,  // 4: neoshowcase.protobuf.BuilderRequest.type:type_name -> neoshowcase.protobuf.BuilderRequest.Type
-	6,  // 5: neoshowcase.protobuf.BuilderRequest.build_image:type_name -> neoshowcase.protobuf.StartBuildImageRequest
-	7,  // 6: neoshowcase.protobuf.BuilderRequest.build_static:type_name -> neoshowcase.protobuf.StartBuildStaticRequest
-	14, // 7: neoshowcase.protobuf.BuilderRequest.cancel_build:type_name -> neoshowcase.protobuf.BuildIdRequest
-	1,  // 8: neoshowcase.protobuf.BuildSettled.reason:type_name -> neoshowcase.protobuf.BuildSettled.Reason
-	2,  // 9: neoshowcase.protobuf.BuilderResponse.type:type_name -> neoshowcase.protobuf.BuilderResponse.Type
-	9,  // 10: neoshowcase.protobuf.BuilderResponse.started:type_name -> neoshowcase.protobuf.BuildStarted
-	10, // 11: neoshowcase.protobuf.BuilderResponse.settled:type_name -> neoshowcase.protobuf.BuildSettled
-	11, // 12: neoshowcase.protobuf.BuilderResponse.log:type_name -> neoshowcase.protobuf.BuildLogPortion
-	3,  // 13: neoshowcase.protobuf.SSGenRequest.type:type_name -> neoshowcase.protobuf.SSGenRequest.Type
-	12, // 14: neoshowcase.protobuf.ComponentService.ConnectBuilder:input_type -> neoshowcase.protobuf.BuilderResponse
-	15, // 15: neoshowcase.protobuf.ComponentService.ConnectSSGen:input_type -> google.protobuf.Empty
-	8,  // 16: neoshowcase.protobuf.ComponentService.ConnectBuilder:output_type -> neoshowcase.protobuf.BuilderRequest
-	13, // 17: neoshowcase.protobuf.ComponentService.ConnectSSGen:output_type -> neoshowcase.protobuf.SSGenRequest
-	16, // [16:18] is the sub-list for method output_type
-	14, // [14:16] is the sub-list for method input_type
-	14, // [14:14] is the sub-list for extension type_name
-	14, // [14:14] is the sub-list for extension extendee
-	0,  // [0:14] is the sub-list for field type_name
+	11, // 0: neoshowcase.protobuf.StartBuildRequest.build_config:type_name -> neoshowcase.protobuf.BuildConfig
+	0,  // 1: neoshowcase.protobuf.BuilderRequest.type:type_name -> neoshowcase.protobuf.BuilderRequest.Type
+	4,  // 2: neoshowcase.protobuf.BuilderRequest.start_build:type_name -> neoshowcase.protobuf.StartBuildRequest
+	12, // 3: neoshowcase.protobuf.BuilderRequest.cancel_build:type_name -> neoshowcase.protobuf.BuildIdRequest
+	1,  // 4: neoshowcase.protobuf.BuildSettled.reason:type_name -> neoshowcase.protobuf.BuildSettled.Reason
+	2,  // 5: neoshowcase.protobuf.BuilderResponse.type:type_name -> neoshowcase.protobuf.BuilderResponse.Type
+	6,  // 6: neoshowcase.protobuf.BuilderResponse.started:type_name -> neoshowcase.protobuf.BuildStarted
+	7,  // 7: neoshowcase.protobuf.BuilderResponse.settled:type_name -> neoshowcase.protobuf.BuildSettled
+	8,  // 8: neoshowcase.protobuf.BuilderResponse.log:type_name -> neoshowcase.protobuf.BuildLogPortion
+	3,  // 9: neoshowcase.protobuf.SSGenRequest.type:type_name -> neoshowcase.protobuf.SSGenRequest.Type
+	9,  // 10: neoshowcase.protobuf.ComponentService.ConnectBuilder:input_type -> neoshowcase.protobuf.BuilderResponse
+	13, // 11: neoshowcase.protobuf.ComponentService.ConnectSSGen:input_type -> google.protobuf.Empty
+	5,  // 12: neoshowcase.protobuf.ComponentService.ConnectBuilder:output_type -> neoshowcase.protobuf.BuilderRequest
+	10, // 13: neoshowcase.protobuf.ComponentService.ConnectSSGen:output_type -> neoshowcase.protobuf.SSGenRequest
+	12, // [12:14] is the sub-list for method output_type
+	10, // [10:12] is the sub-list for method input_type
+	10, // [10:10] is the sub-list for extension type_name
+	10, // [10:10] is the sub-list for extension extendee
+	0,  // [0:10] is the sub-list for field type_name
 }
 
 func init() { file_neoshowcase_protobuf_apiserver_component_proto_init() }
@@ -1152,7 +894,7 @@ func file_neoshowcase_protobuf_apiserver_component_proto_init() {
 	file_neoshowcase_protobuf_apiserver_proto_init()
 	if !protoimpl.UnsafeEnabled {
 		file_neoshowcase_protobuf_apiserver_component_proto_msgTypes[0].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*BuildSource); i {
+			switch v := v.(*StartBuildRequest); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -1164,42 +906,6 @@ func file_neoshowcase_protobuf_apiserver_component_proto_init() {
 			}
 		}
 		file_neoshowcase_protobuf_apiserver_component_proto_msgTypes[1].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*BuildOptions); i {
-			case 0:
-				return &v.state
-			case 1:
-				return &v.sizeCache
-			case 2:
-				return &v.unknownFields
-			default:
-				return nil
-			}
-		}
-		file_neoshowcase_protobuf_apiserver_component_proto_msgTypes[2].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*StartBuildImageRequest); i {
-			case 0:
-				return &v.state
-			case 1:
-				return &v.sizeCache
-			case 2:
-				return &v.unknownFields
-			default:
-				return nil
-			}
-		}
-		file_neoshowcase_protobuf_apiserver_component_proto_msgTypes[3].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*StartBuildStaticRequest); i {
-			case 0:
-				return &v.state
-			case 1:
-				return &v.sizeCache
-			case 2:
-				return &v.unknownFields
-			default:
-				return nil
-			}
-		}
-		file_neoshowcase_protobuf_apiserver_component_proto_msgTypes[4].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*BuilderRequest); i {
 			case 0:
 				return &v.state
@@ -1211,7 +917,7 @@ func file_neoshowcase_protobuf_apiserver_component_proto_init() {
 				return nil
 			}
 		}
-		file_neoshowcase_protobuf_apiserver_component_proto_msgTypes[5].Exporter = func(v interface{}, i int) interface{} {
+		file_neoshowcase_protobuf_apiserver_component_proto_msgTypes[2].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*BuildStarted); i {
 			case 0:
 				return &v.state
@@ -1223,7 +929,7 @@ func file_neoshowcase_protobuf_apiserver_component_proto_init() {
 				return nil
 			}
 		}
-		file_neoshowcase_protobuf_apiserver_component_proto_msgTypes[6].Exporter = func(v interface{}, i int) interface{} {
+		file_neoshowcase_protobuf_apiserver_component_proto_msgTypes[3].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*BuildSettled); i {
 			case 0:
 				return &v.state
@@ -1235,7 +941,7 @@ func file_neoshowcase_protobuf_apiserver_component_proto_init() {
 				return nil
 			}
 		}
-		file_neoshowcase_protobuf_apiserver_component_proto_msgTypes[7].Exporter = func(v interface{}, i int) interface{} {
+		file_neoshowcase_protobuf_apiserver_component_proto_msgTypes[4].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*BuildLogPortion); i {
 			case 0:
 				return &v.state
@@ -1247,7 +953,7 @@ func file_neoshowcase_protobuf_apiserver_component_proto_init() {
 				return nil
 			}
 		}
-		file_neoshowcase_protobuf_apiserver_component_proto_msgTypes[8].Exporter = func(v interface{}, i int) interface{} {
+		file_neoshowcase_protobuf_apiserver_component_proto_msgTypes[5].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*BuilderResponse); i {
 			case 0:
 				return &v.state
@@ -1259,7 +965,7 @@ func file_neoshowcase_protobuf_apiserver_component_proto_init() {
 				return nil
 			}
 		}
-		file_neoshowcase_protobuf_apiserver_component_proto_msgTypes[9].Exporter = func(v interface{}, i int) interface{} {
+		file_neoshowcase_protobuf_apiserver_component_proto_msgTypes[6].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*SSGenRequest); i {
 			case 0:
 				return &v.state
@@ -1272,12 +978,11 @@ func file_neoshowcase_protobuf_apiserver_component_proto_init() {
 			}
 		}
 	}
-	file_neoshowcase_protobuf_apiserver_component_proto_msgTypes[4].OneofWrappers = []interface{}{
-		(*BuilderRequest_BuildImage)(nil),
-		(*BuilderRequest_BuildStatic)(nil),
+	file_neoshowcase_protobuf_apiserver_component_proto_msgTypes[1].OneofWrappers = []interface{}{
+		(*BuilderRequest_StartBuild)(nil),
 		(*BuilderRequest_CancelBuild)(nil),
 	}
-	file_neoshowcase_protobuf_apiserver_component_proto_msgTypes[8].OneofWrappers = []interface{}{
+	file_neoshowcase_protobuf_apiserver_component_proto_msgTypes[5].OneofWrappers = []interface{}{
 		(*BuilderResponse_Started)(nil),
 		(*BuilderResponse_Settled)(nil),
 		(*BuilderResponse_Log)(nil),
@@ -1288,7 +993,7 @@ func file_neoshowcase_protobuf_apiserver_component_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: file_neoshowcase_protobuf_apiserver_component_proto_rawDesc,
 			NumEnums:      4,
-			NumMessages:   10,
+			NumMessages:   7,
 			NumExtensions: 0,
 			NumServices:   1,
 		},

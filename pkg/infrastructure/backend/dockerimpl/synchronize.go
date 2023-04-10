@@ -54,13 +54,20 @@ func (b *dockerBackend) syncAppContainer(ctx context.Context, app *domain.AppDes
 	envs := lo.MapToSlice(app.Envs, func(key string, value string) string {
 		return key + "=" + value
 	})
+	config := &docker.Config{
+		Image:  newImageName,
+		Labels: containerLabels(app.App),
+		Env:    envs,
+	}
+	if app.App.Config.Entrypoint != "" {
+		config.Entrypoint = app.App.Config.EntrypointArgs()
+	}
+	if app.App.Config.Command != "" {
+		config.Cmd = app.App.Config.CommandArgs()
+	}
 	cont, err := b.c.CreateContainer(docker.CreateContainerOptions{
-		Name: containerName(app.App.ID),
-		Config: &docker.Config{
-			Image:  newImageName,
-			Labels: containerLabels(app.App),
-			Env:    envs,
-		},
+		Name:   containerName(app.App.ID),
+		Config: config,
 		HostConfig: &docker.HostConfig{
 			RestartPolicy: docker.RestartOnFailure(5),
 		},

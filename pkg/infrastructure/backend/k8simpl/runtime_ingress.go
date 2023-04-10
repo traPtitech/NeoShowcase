@@ -108,7 +108,7 @@ func (b *k8sBackend) ingressRoute(app *domain.Application, website *domain.Websi
 	}
 
 	var middlewareRefs []traefikv1alpha1.MiddlewareRef
-	switch app.Config.Authentication {
+	switch website.Authentication {
 	case domain.AuthenticationTypeSoft:
 		middlewareRefs = append(middlewareRefs,
 			traefikv1alpha1.MiddlewareRef{Name: web.TraefikAuthSoftMiddleware},

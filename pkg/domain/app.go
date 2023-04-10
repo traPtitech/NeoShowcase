@@ -2,6 +2,8 @@ package domain
 
 import (
 	"context"
+	"fmt"
+	"github.com/mattn/go-shellwords"
 	"strings"
 	"time"
 
@@ -14,58 +16,155 @@ import (
 	"github.com/traPtitech/neoshowcase/pkg/util/optional"
 )
 
-type AuthenticationType int
+type BuildType int
 
 const (
-	AuthenticationTypeOff AuthenticationType = iota
-	AuthenticationTypeSoft
-	AuthenticationTypeHard
+	BuildTypeRuntimeCmd BuildType = iota
+	BuildTypeRuntimeDockerfile
+	BuildTypeStaticCmd
+	BuildTypeStaticDockerfile
 )
 
-type ApplicationConfig struct {
-	UseMariaDB     bool
-	UseMongoDB     bool
-	BaseImage      string
-	DockerfileName string
-	ArtifactPath   string
-	BuildCmd       string
-	EntrypointCmd  string
-	Authentication AuthenticationType
+func (b BuildType) DeployType() DeployType {
+	switch b {
+	case BuildTypeRuntimeCmd, BuildTypeRuntimeDockerfile:
+		return DeployTypeRuntime
+	case BuildTypeStaticCmd, BuildTypeStaticDockerfile:
+		return DeployTypeStatic
+	default:
+		panic(fmt.Sprintf("unknown build type: %v", b))
+	}
 }
 
-func (c *ApplicationConfig) IsValid(buildType BuildType) bool {
-	switch buildType {
-	case BuildTypeRuntime:
-		if c.DockerfileName != "" {
-			// pass
-		} else {
-			// NOTE: base image is not necessary (default: scratch)
-			// NOTE: build cmd is not necessary
-			if c.EntrypointCmd == "" {
-				return false
-			}
+type BuildConfig interface {
+	isBuildConfig()
+	BuildType() BuildType
+	IsValid() bool
+}
+
+type buildConfigEmbed struct{}
+
+func (buildConfigEmbed) isBuildConfig() {}
+
+type BuildConfigRuntimeCmd struct {
+	BaseImage     string
+	BuildCmd      string
+	BuildCmdShell bool
+	buildConfigEmbed
+}
+
+func (bc *BuildConfigRuntimeCmd) BuildType() BuildType {
+	return BuildTypeRuntimeCmd
+}
+
+func (bc *BuildConfigRuntimeCmd) IsValid() bool {
+	// NOTE: base image is not necessary (default: scratch)
+	// NOTE: build cmd is not necessary
+	return true
+}
+
+type BuildConfigRuntimeDockerfile struct {
+	DockerfileName string
+	buildConfigEmbed
+}
+
+func (bc *BuildConfigRuntimeDockerfile) BuildType() BuildType {
+	return BuildTypeRuntimeDockerfile
+}
+
+func (bc *BuildConfigRuntimeDockerfile) IsValid() bool {
+	return bc.DockerfileName != ""
+}
+
+type BuildConfigStaticCmd struct {
+	BaseImage     string
+	BuildCmd      string
+	BuildCmdShell bool
+	ArtifactPath  string
+	buildConfigEmbed
+}
+
+func (bc *BuildConfigStaticCmd) BuildType() BuildType {
+	return BuildTypeStaticCmd
+}
+
+func (bc *BuildConfigStaticCmd) IsValid() bool {
+	// NOTE: base image is not necessary (default: scratch)
+	// NOTE: build cmd is not necessary
+	return bc.ArtifactPath != ""
+}
+
+type BuildConfigStaticDockerfile struct {
+	DockerfileName string
+	ArtifactPath   string
+	buildConfigEmbed
+}
+
+func (bc *BuildConfigStaticDockerfile) BuildType() BuildType {
+	return BuildTypeStaticDockerfile
+}
+
+func (bc *BuildConfigStaticDockerfile) IsValid() bool {
+	return bc.DockerfileName != "" && bc.ArtifactPath != ""
+}
+
+type ApplicationConfig struct {
+	UseMariaDB  bool
+	UseMongoDB  bool
+	BuildType   BuildType
+	BuildConfig BuildConfig
+	Entrypoint  string
+	Command     string
+}
+
+func isValidCommand(s string) bool {
+	_, err := shellwords.Parse(s)
+	return err == nil
+}
+
+func (c *ApplicationConfig) IsValid(deployType DeployType) bool {
+	if c.BuildType.DeployType() != deployType {
+		return false
+	}
+	if c.BuildConfig.BuildType() != c.BuildType {
+		return false
+	}
+	if !c.BuildConfig.IsValid() {
+		return false
+	}
+	if c.BuildType == BuildTypeRuntimeCmd && c.Entrypoint == "" && c.Command == "" {
+		return false
+	}
+	// NOTE: Runtime Dockerfile build could have no entrypoint/command but is impossible to catch only from config
+	// (can only catch at runtime)
+	if c.Entrypoint != "" {
+		if !isValidCommand(c.Entrypoint) {
+			return false
 		}
-	case BuildTypeStatic:
-		if c.DockerfileName != "" {
-			if c.ArtifactPath == "" {
-				return false
-			}
-		} else {
-			// NOTE: base image is not necessary (default: scratch)
-			// NOTE: build cmd is not necessary
-			if c.ArtifactPath == "" {
-				return false
-			}
+	}
+	if c.Command != "" {
+		if !isValidCommand(c.Command) {
+			return false
 		}
 	}
 	return true
 }
 
-type BuildType int
+func (c *ApplicationConfig) EntrypointArgs() []string {
+	args, _ := shellwords.Parse(c.Entrypoint)
+	return args
+}
+
+func (c *ApplicationConfig) CommandArgs() []string {
+	args, _ := shellwords.Parse(c.Command)
+	return args
+}
+
+type DeployType int
 
 const (
-	BuildTypeRuntime BuildType = iota
-	BuildTypeStatic
+	DeployTypeRuntime DeployType = iota
+	DeployTypeStatic
 )
 
 var EmptyCommit = strings.Repeat("0", 40)
@@ -75,7 +174,7 @@ type Application struct {
 	Name          string
 	RepositoryID  string
 	RefName       string
-	BuildType     BuildType
+	DeployType    DeployType
 	Running       bool
 	Container     ContainerState
 	CurrentCommit string
@@ -98,7 +197,7 @@ func (a *Application) IsValid() bool {
 	if a.RefName == "" {
 		return false
 	}
-	if !a.Config.IsValid(a.BuildType) {
+	if !a.Config.IsValid(a.DeployType) {
 		return false
 	}
 	for _, website := range a.Websites {
@@ -298,13 +397,22 @@ func (r *RepositoryAuth) IsValid() bool {
 	return true
 }
 
+type AuthenticationType int
+
+const (
+	AuthenticationTypeOff AuthenticationType = iota
+	AuthenticationTypeSoft
+	AuthenticationTypeHard
+)
+
 type Website struct {
-	ID          string
-	FQDN        string
-	PathPrefix  string
-	StripPrefix bool
-	HTTPS       bool
-	HTTPPort    int
+	ID             string
+	FQDN           string
+	PathPrefix     string
+	StripPrefix    bool
+	HTTPS          bool
+	HTTPPort       int
+	Authentication AuthenticationType
 }
 
 func (w *Website) IsValid() bool {
@@ -365,7 +473,7 @@ func (w *Website) ConflictsWith(existing []*Website) bool {
 
 func GetArtifactsInUse(ctx context.Context, appRepo ApplicationRepository, buildRepo BuildRepository) ([]*Artifact, error) {
 	applications, err := appRepo.GetApplications(ctx, GetApplicationCondition{
-		BuildType: optional.From(BuildTypeStatic),
+		DeployType: optional.From(DeployTypeStatic),
 	})
 	if err != nil {
 		return nil, err
@@ -397,8 +505,8 @@ func GetArtifactsInUse(ctx context.Context, appRepo ApplicationRepository, build
 
 func GetActiveStaticSites(ctx context.Context, appRepo ApplicationRepository, buildRepo BuildRepository) ([]*StaticSite, error) {
 	applications, err := appRepo.GetApplications(ctx, GetApplicationCondition{
-		BuildType: optional.From(BuildTypeStatic),
-		Running:   optional.From(true),
+		DeployType: optional.From(DeployTypeStatic),
+		Running:    optional.From(true),
 	})
 	if err != nil {
 		return nil, err

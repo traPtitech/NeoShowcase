@@ -52,8 +52,8 @@
 <text text-anchor="start" x="50" y="-263.9" font-family="Arial" font-size="14.00" fill="#000000">ref_name </text>
 <text text-anchor="start" x="113.0154" y="-263.9" font-family="Arial" font-size="14.00" fill="#666666">[varchar(100)]</text>
 <polygon fill="none" stroke="#000000" points="43,-222.5 43,-252.5 505,-252.5 505,-222.5 43,-222.5"/>
-<text text-anchor="start" x="50" y="-233.9" font-family="Arial" font-size="14.00" fill="#000000">build_type </text>
-<text text-anchor="start" x="117.69" y="-233.9" font-family="Arial" font-size="14.00" fill="#666666">[enum(&#39;runtime&#39;,&#39;static&#39;)]</text>
+<text text-anchor="start" x="50" y="-233.9" font-family="Arial" font-size="14.00" fill="#000000">deploy_type </text>
+<text text-anchor="start" x="129.366" y="-233.9" font-family="Arial" font-size="14.00" fill="#666666">[enum(&#39;runtime&#39;,&#39;static&#39;)]</text>
 <polygon fill="none" stroke="#000000" points="43,-192.5 43,-222.5 505,-222.5 505,-192.5 43,-192.5"/>
 <text text-anchor="start" x="50" y="-203.9" font-family="Arial" font-size="14.00" fill="#000000">running </text>
 <text text-anchor="start" x="100.5708" y="-203.9" font-family="Arial" font-size="14.00" fill="#666666">[tinyint(1)]</text>

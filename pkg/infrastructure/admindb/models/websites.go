@@ -34,6 +34,8 @@ type Website struct { // サイトID
 	HTTPS bool `boil:"https" json:"https" toml:"https" yaml:"https"`
 	// コンテナhttpポート番号
 	HTTPPort int `boil:"http_port" json:"http_port" toml:"http_port" yaml:"http_port"`
+	// traP部員認証タイプ
+	Authentication string `boil:"authentication" json:"authentication" toml:"authentication" yaml:"authentication"`
 	// アプリケーションID
 	ApplicationID string `boil:"application_id" json:"application_id" toml:"application_id" yaml:"application_id"`
 
@@ -42,39 +44,43 @@ type Website struct { // サイトID
 }
 
 var WebsiteColumns = struct {
-	ID            string
-	FQDN          string
-	PathPrefix    string
-	StripPrefix   string
-	HTTPS         string
-	HTTPPort      string
-	ApplicationID string
+	ID             string
+	FQDN           string
+	PathPrefix     string
+	StripPrefix    string
+	HTTPS          string
+	HTTPPort       string
+	Authentication string
+	ApplicationID  string
 }{
-	ID:            "id",
-	FQDN:          "fqdn",
-	PathPrefix:    "path_prefix",
-	StripPrefix:   "strip_prefix",
-	HTTPS:         "https",
-	HTTPPort:      "http_port",
-	ApplicationID: "application_id",
+	ID:             "id",
+	FQDN:           "fqdn",
+	PathPrefix:     "path_prefix",
+	StripPrefix:    "strip_prefix",
+	HTTPS:          "https",
+	HTTPPort:       "http_port",
+	Authentication: "authentication",
+	ApplicationID:  "application_id",
 }
 
 var WebsiteTableColumns = struct {
-	ID            string
-	FQDN          string
-	PathPrefix    string
-	StripPrefix   string
-	HTTPS         string
-	HTTPPort      string
-	ApplicationID string
+	ID             string
+	FQDN           string
+	PathPrefix     string
+	StripPrefix    string
+	HTTPS          string
+	HTTPPort       string
+	Authentication string
+	ApplicationID  string
 }{
-	ID:            "websites.id",
-	FQDN:          "websites.fqdn",
-	PathPrefix:    "websites.path_prefix",
-	StripPrefix:   "websites.strip_prefix",
-	HTTPS:         "websites.https",
-	HTTPPort:      "websites.http_port",
-	ApplicationID: "websites.application_id",
+	ID:             "websites.id",
+	FQDN:           "websites.fqdn",
+	PathPrefix:     "websites.path_prefix",
+	StripPrefix:    "websites.strip_prefix",
+	HTTPS:          "websites.https",
+	HTTPPort:       "websites.http_port",
+	Authentication: "websites.authentication",
+	ApplicationID:  "websites.application_id",
 }
 
 // Generated where
@@ -103,21 +109,23 @@ func (w whereHelperint) NIN(slice []int) qm.QueryMod {
 }
 
 var WebsiteWhere = struct {
-	ID            whereHelperstring
-	FQDN          whereHelperstring
-	PathPrefix    whereHelperstring
-	StripPrefix   whereHelperbool
-	HTTPS         whereHelperbool
-	HTTPPort      whereHelperint
-	ApplicationID whereHelperstring
+	ID             whereHelperstring
+	FQDN           whereHelperstring
+	PathPrefix     whereHelperstring
+	StripPrefix    whereHelperbool
+	HTTPS          whereHelperbool
+	HTTPPort       whereHelperint
+	Authentication whereHelperstring
+	ApplicationID  whereHelperstring
 }{
-	ID:            whereHelperstring{field: "`websites`.`id`"},
-	FQDN:          whereHelperstring{field: "`websites`.`fqdn`"},
-	PathPrefix:    whereHelperstring{field: "`websites`.`path_prefix`"},
-	StripPrefix:   whereHelperbool{field: "`websites`.`strip_prefix`"},
-	HTTPS:         whereHelperbool{field: "`websites`.`https`"},
-	HTTPPort:      whereHelperint{field: "`websites`.`http_port`"},
-	ApplicationID: whereHelperstring{field: "`websites`.`application_id`"},
+	ID:             whereHelperstring{field: "`websites`.`id`"},
+	FQDN:           whereHelperstring{field: "`websites`.`fqdn`"},
+	PathPrefix:     whereHelperstring{field: "`websites`.`path_prefix`"},
+	StripPrefix:    whereHelperbool{field: "`websites`.`strip_prefix`"},
+	HTTPS:          whereHelperbool{field: "`websites`.`https`"},
+	HTTPPort:       whereHelperint{field: "`websites`.`http_port`"},
+	Authentication: whereHelperstring{field: "`websites`.`authentication`"},
+	ApplicationID:  whereHelperstring{field: "`websites`.`application_id`"},
 }
 
 // WebsiteRels is where relationship names are stored.
@@ -148,8 +156,8 @@ func (r *websiteR) GetApplication() *Application {
 type websiteL struct{}
 
 var (
-	websiteAllColumns            = []string{"id", "fqdn", "path_prefix", "strip_prefix", "https", "http_port", "application_id"}
-	websiteColumnsWithoutDefault = []string{"id", "fqdn", "path_prefix", "strip_prefix", "https", "application_id"}
+	websiteAllColumns            = []string{"id", "fqdn", "path_prefix", "strip_prefix", "https", "http_port", "authentication", "application_id"}
+	websiteColumnsWithoutDefault = []string{"id", "fqdn", "path_prefix", "strip_prefix", "https", "authentication", "application_id"}
 	websiteColumnsWithDefault    = []string{"http_port"}
 	websitePrimaryKeyColumns     = []string{"id"}
 	websiteGeneratedColumns      = []string{}

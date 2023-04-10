@@ -58,35 +58,67 @@ message RepositoryIdRequest {
   string repository_id = 1;
 }
 
-enum BuildType {
+enum DeployType {
   RUNTIME = 0;
   STATIC = 1;
+}
+
+enum BuildType {
+  RUNTIME_CMD = 0;
+  RUNTIME_DOCKERFILE = 1;
+  STATIC_CMD = 2;
+  STATIC_DOCKERFILE = 3;
+}
+
+message BuildConfigRuntimeCmd {
+  string base_image = 1;
+  string build_cmd = 2;
+  bool build_cmd_shell = 3;
+}
+
+message BuildConfigRuntimeDockerfile {
+  string dockerfile_name = 1;
+}
+
+message BuildConfigStaticCmd {
+  string base_image = 1;
+  string build_cmd = 2;
+  bool build_cmd_shell = 3;
+  string artifact_path = 4;
+}
+
+message BuildConfigStaticDockerfile {
+  string dockerfile_name = 1;
+  string artifact_path = 2;
+}
+
+message BuildConfig {
+  oneof build_config {
+    BuildConfigRuntimeCmd runtime_cmd = 1;
+    BuildConfigRuntimeDockerfile runtime_dockerfile = 2;
+    BuildConfigStaticCmd static_cmd = 3;
+    BuildConfigStaticDockerfile static_dockerfile = 4;
+  }
+}
+
+message ApplicationConfig {
+  bool use_mariadb = 1;
+  bool use_mongodb = 2;
+  BuildType build_type = 3;
+  BuildConfig build_config = 4;
+  string entrypoint = 5;
+  string command = 6;
+}
+
+message UpdateApplicationConfigRequest {
+  BuildType build_type = 1;
+  BuildConfig build_config = 2;
 }
 
 enum AuthenticationType {
   OFF = 0;
   SOFT = 1;
   HARD = 2;
-}
-
-message ApplicationConfig {
-  bool use_mariadb = 1;
-  bool use_mongodb = 2;
-  string base_image = 3;
-  string dockerfile_name = 4;
-  string artifact_path = 5;
-  string build_cmd = 6;
-  string entrypoint_cmd = 7;
-  AuthenticationType authentication = 8;
-}
-
-message UpdateApplicationConfigRequest {
-  string base_image = 1;
-  string dockerfile_name = 2;
-  string artifact_path = 3;
-  string build_cmd = 4;
-  string entrypoint_cmd = 5;
-  AuthenticationType authentication = 6;
 }
 
 message Website {
@@ -96,6 +128,7 @@ message Website {
   bool strip_prefix = 4;
   bool https = 5;
   int32 http_port = 6;
+  AuthenticationType authentication = 7;
 }
 
 message CreateWebsiteRequest {
@@ -104,6 +137,7 @@ message CreateWebsiteRequest {
   bool strip_prefix = 3;
   bool https = 4;
   int32 http_port = 5;
+  AuthenticationType authentication = 6;
 }
 
 message DeleteWebsiteRequest {
@@ -123,7 +157,7 @@ message Application {
   string name = 2;
   string repository_id = 3;
   string ref_name = 4;
-  BuildType build_type = 5;
+  DeployType deploy_type = 5;
   bool running = 6;
   ContainerState container = 7;
   string current_commit = 8;
@@ -131,6 +165,25 @@ message Application {
   ApplicationConfig config = 10;
   repeated Website websites = 11;
   repeated string owner_ids = 12;
+}
+
+message CreateApplicationRequest {
+  string name = 1;
+  string repository_id = 2;
+  string ref_name = 3;
+  ApplicationConfig config = 4;
+  repeated CreateWebsiteRequest websites = 5;
+  bool start_on_create = 6;
+}
+
+message UpdateApplicationRequest {
+  string id = 1;
+  string name = 2;
+  string ref_name = 3;
+  UpdateApplicationConfigRequest config = 4;
+  repeated CreateWebsiteRequest new_websites = 5;
+  repeated DeleteWebsiteRequest delete_websites = 6;
+  repeated string owner_ids = 7;
 }
 
 message AvailableDomain {
@@ -217,26 +270,6 @@ message GetApplicationsResponse {
 
 message GetSystemPublicKeyResponse {
   string public_key = 1;
-}
-
-message CreateApplicationRequest {
-  string name = 1;
-  string repository_id = 2;
-  string ref_name = 3;
-  BuildType build_type = 4;
-  ApplicationConfig config = 5;
-  repeated CreateWebsiteRequest websites = 6;
-  bool start_on_create = 7;
-}
-
-message UpdateApplicationRequest {
-  string id = 1;
-  string name = 2;
-  string ref_name = 3;
-  UpdateApplicationConfigRequest config = 4;
-  repeated CreateWebsiteRequest new_websites = 5;
-  repeated DeleteWebsiteRequest delete_websites = 6;
-  repeated string owner_ids = 7;
 }
 
 message ApplicationIdRequest {

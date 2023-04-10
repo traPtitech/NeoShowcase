@@ -16,10 +16,12 @@ require (
 	github.com/heroku/docker-registry-client v0.0.0-20211012143308-9463674c8930
 	github.com/labstack/echo/v4 v4.10.2
 	github.com/leandro-lugaresi/hub v1.1.1
+	github.com/mattn/go-shellwords v1.0.12
 	github.com/moby/buildkit v0.11.5
 	github.com/motoki317/sc v1.5.0
 	github.com/ncw/swift v1.0.53
 	github.com/samber/lo v1.38.1
+	github.com/shiguredo/websocket v1.6.0
 	github.com/sirupsen/logrus v1.9.0
 	github.com/spf13/cobra v1.6.1
 	github.com/spf13/pflag v1.0.5
@@ -131,7 +133,6 @@ require (
 	github.com/pkg/errors v0.9.1 // indirect
 	github.com/pmezard/go-difflib v1.0.0 // indirect
 	github.com/sergi/go-diff v1.3.1 // indirect
-	github.com/shiguredo/websocket v1.6.0 // indirect
 	github.com/shopspring/decimal v1.3.1 // indirect
 	github.com/skeema/knownhosts v1.1.0 // indirect
 	github.com/spf13/afero v1.9.5 // indirect

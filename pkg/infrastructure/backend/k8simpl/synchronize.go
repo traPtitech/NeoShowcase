@@ -68,6 +68,17 @@ func (b *k8sBackend) statefulSet(app *domain.AppDesiredState) *appsv1.StatefulSe
 		return v1.EnvVar{Name: key, Value: value}
 	})
 
+	cont := v1.Container{
+		Name:  "app",
+		Image: app.ImageName + ":" + app.ImageTag,
+		Env:   envs,
+	}
+	if app.App.Config.Entrypoint != "" {
+		cont.Command = app.App.Config.EntrypointArgs()
+	}
+	if app.App.Config.Command != "" {
+		cont.Args = app.App.Config.CommandArgs()
+	}
 	ss := &appsv1.StatefulSet{
 		TypeMeta: metav1.TypeMeta{
 			Kind:       "StatefulSet",
@@ -91,11 +102,7 @@ func (b *k8sBackend) statefulSet(app *domain.AppDesiredState) *appsv1.StatefulSe
 					},
 				},
 				Spec: v1.PodSpec{
-					Containers: []v1.Container{{
-						Name:  "app",
-						Image: app.ImageName + ":" + app.ImageTag,
-						Env:   envs,
-					}},
+					Containers: []v1.Container{cont},
 				},
 			},
 		},

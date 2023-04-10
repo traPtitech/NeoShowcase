@@ -50,8 +50,8 @@ func (r *applicationRepository) GetApplications(ctx context.Context, cond domain
 			qm.Where(fmt.Sprintf("%s.user_id = ?", models.TableNames.ApplicationOwners), cond.UserID.V),
 		)
 	}
-	if cond.BuildType.Valid {
-		mods = append(mods, models.ApplicationWhere.BuildType.EQ(buildTypeMapper.FromMust(cond.BuildType.V)))
+	if cond.DeployType.Valid {
+		mods = append(mods, models.ApplicationWhere.DeployType.EQ(deployTypeMapper.FromMust(cond.DeployType.V)))
 	}
 	if cond.Running.Valid {
 		mods = append(mods, models.ApplicationWhere.Running.EQ(cond.Running.V))

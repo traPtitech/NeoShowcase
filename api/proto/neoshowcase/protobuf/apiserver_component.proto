@@ -5,46 +5,25 @@ option go_package = "github.com/traPtitech/neoshowcase/pkg/interface/grpc/pb";
 import "google/protobuf/empty.proto";
 import "neoshowcase/protobuf/apiserver.proto";
 
-message BuildSource {
-  string repository_id = 1;
-  string commit = 2;
-}
-
-message BuildOptions {
-  string base_image_name = 1;
-  string dockerfile_name = 2;
-  string artifact_path = 3;
-  string build_cmd = 4;
-  string entrypoint_cmd = 5;
-}
-
-message StartBuildImageRequest {
-  string image_name = 1;
-  string image_tag = 2;
-  BuildSource source = 3;
-  BuildOptions options = 4;
-  string build_id = 5;
-  string application_id = 6;
-}
-
-message StartBuildStaticRequest {
-  BuildSource source = 1;
-  BuildOptions options = 2;
-  string build_id = 3;
-  string application_id = 4;
+message StartBuildRequest {
+  string application_id = 1;
+  string build_id = 2;
+  string repository_id = 3;
+  string commit = 4;
+  string image_name = 5; // empty on static site build
+  string image_tag = 6; // empty on static site build
+  BuildConfig build_config = 7;
 }
 
 message BuilderRequest {
   enum Type {
-    START_BUILD_IMAGE = 0;
-    START_BUILD_STATIC = 1;
-    CANCEL_BUILD = 2;
+    START_BUILD = 0;
+    CANCEL_BUILD = 1;
   }
   Type type = 1;
   oneof body {
-    StartBuildImageRequest build_image = 2;
-    StartBuildStaticRequest build_static = 3;
-    BuildIdRequest cancel_build = 4;
+    StartBuildRequest start_build = 2;
+    BuildIdRequest cancel_build = 3;
   }
 }
 
