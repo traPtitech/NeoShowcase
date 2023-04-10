@@ -14,6 +14,7 @@ import (
 
 type AppDeployHelper struct {
 	backend   domain.Backend
+	adRepo    domain.AvailableDomainRepository
 	appRepo   domain.ApplicationRepository
 	buildRepo domain.BuildRepository
 	envRepo   domain.EnvironmentRepository
@@ -23,6 +24,7 @@ type AppDeployHelper struct {
 
 func NewAppDeployHelper(
 	backend domain.Backend,
+	adRepo domain.AvailableDomainRepository,
 	appRepo domain.ApplicationRepository,
 	buildRepo domain.BuildRepository,
 	envRepo domain.EnvironmentRepository,
@@ -31,6 +33,7 @@ func NewAppDeployHelper(
 ) *AppDeployHelper {
 	return &AppDeployHelper{
 		backend:   backend,
+		adRepo:    adRepo,
 		appRepo:   appRepo,
 		buildRepo: buildRepo,
 		envRepo:   envRepo,
@@ -78,6 +81,10 @@ func (s *AppDeployHelper) synchronizeRuntime(ctx context.Context) error {
 	syncableApps := lo.Filter(apps, func(app *domain.Application, i int) bool { return buildExists[app.WantCommit] })
 
 	// Deploy
+	ads, err := s.adRepo.GetAvailableDomains(ctx)
+	if err != nil {
+		return err
+	}
 	envs, err := s._getEnv(ctx, syncableApps)
 	if err != nil {
 		return err
@@ -90,17 +97,21 @@ func (s *AppDeployHelper) synchronizeRuntime(ctx context.Context) error {
 			Envs:      envs[app.ID],
 		}
 	})
-	return s.backend.SynchronizeRuntime(ctx, desiredStates)
+	return s.backend.SynchronizeRuntime(ctx, desiredStates, ads)
 }
 
 func (s *AppDeployHelper) synchronizeSS(ctx context.Context) error {
 	s.component.BroadcastSSGen(&pb.SSGenRequest{Type: pb.SSGenRequest_RELOAD})
 
+	ads, err := s.adRepo.GetAvailableDomains(ctx)
+	if err != nil {
+		return err
+	}
 	sites, err := domain.GetActiveStaticSites(ctx, s.appRepo, s.buildRepo)
 	if err != nil {
 		return err
 	}
-	err = s.backend.SynchronizeSSIngress(ctx, sites)
+	err = s.backend.SynchronizeSSIngress(ctx, sites, ads)
 	if err != nil {
 		return errors.Wrap(err, "failed to reload static site ingress")
 	}

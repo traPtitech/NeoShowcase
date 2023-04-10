@@ -27,7 +27,7 @@ func TestDockerBackend_CreateContainer(t *testing.T) {
 			App:       &app,
 			ImageName: "not-found",
 			ImageTag:  "latest",
-		}})
+		}}, nil)
 		assert.NoError(t, err) // fail-safe
 	})
 
@@ -44,7 +44,7 @@ func TestDockerBackend_CreateContainer(t *testing.T) {
 			App:       &app,
 			ImageName: image,
 			ImageTag:  "latest",
-		}})
+		}}, nil)
 		require.NoError(t, err)
 
 		cont, err := c.InspectContainerWithOptions(docker.InspectContainerOptions{
@@ -76,7 +76,7 @@ func TestDockerBackend_CreateContainer(t *testing.T) {
 			App:       &app,
 			ImageName: image,
 			ImageTag:  "latest",
-		}})
+		}}, nil)
 		require.NoError(t, err)
 
 		app.UpdatedAt = time.Now() // Restart
@@ -84,7 +84,7 @@ func TestDockerBackend_CreateContainer(t *testing.T) {
 			App:       &app,
 			ImageName: image,
 			ImageTag:  "latest",
-		}})
+		}}, nil)
 		require.NoError(t, err)
 
 		cont, err := c.InspectContainerWithOptions(docker.InspectContainerOptions{

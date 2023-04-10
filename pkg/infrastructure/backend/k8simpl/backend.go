@@ -38,21 +38,19 @@ type Config struct {
 		Type    string `mapstructure:"type" yaml:"type"`
 		Traefik struct {
 			CertResolver string `mapstructure:"certResolver" yaml:"certResolver"`
+			Wildcard     bool   `mapstructure:"wildcard" yaml:"wildcard"`
 		} `mapstructure:"traefik" yaml:"traefik"`
 		CertManager struct {
 			Issuer struct {
 				Name string `mapstructure:"name" yaml:"name"`
 				Kind string `mapstructure:"kind" yaml:"kind"`
 			} `mapstructure:"issuer" yaml:"issuer"`
+			Wildcard bool `mapstructure:"wildcard" yaml:"wildcard"`
 		} `mapstructure:"certManager" yaml:"certManager"`
 	} `mapstructure:"tls" yaml:"tls"`
 	// ImagePullSecret required if registry is private
 	ImagePullSecret string `mapstructure:"imagePullSecret" yaml:"imagePullSecret"`
 }
-
-type (
-	m map[string]any
-)
 
 const (
 	appLabel             = "neoshowcase.trap.jp/app"
@@ -190,5 +188,11 @@ func certificateName(fqdn string) string {
 }
 
 func tlsSecretName(fqdn string) string {
-	return fmt.Sprintf("nsapp-secret-%s", strings.ReplaceAll(fqdn, ".", "-"))
+	if strings.HasPrefix(fqdn, "*.") {
+		fqdn = strings.TrimPrefix(fqdn, "*.")
+		fqdn = strings.ReplaceAll(fqdn, ".", "-")
+		return fmt.Sprintf("nsapp-wildcard-tls-%s", fqdn)
+	}
+	fqdn = strings.ReplaceAll(fqdn, ".", "-")
+	return fmt.Sprintf("nsapp-tls-%s", fqdn)
 }

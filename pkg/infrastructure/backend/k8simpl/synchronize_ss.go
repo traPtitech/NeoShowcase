@@ -82,7 +82,7 @@ func (b *k8sBackend) listCurrentSSResources(ctx context.Context) (*ssResources, 
 	return &resources, nil
 }
 
-func (b *k8sBackend) SynchronizeSSIngress(ctx context.Context, sites []*domain.StaticSite) error {
+func (b *k8sBackend) SynchronizeSSIngress(ctx context.Context, sites []*domain.StaticSite, ads domain.AvailableDomainSlice) error {
 	b.reloadLock.Lock()
 	defer b.reloadLock.Unlock()
 
@@ -95,7 +95,7 @@ func (b *k8sBackend) SynchronizeSSIngress(ctx context.Context, sites []*domain.S
 	// Calculate next resources to apply
 	var next ssResources
 	for _, site := range sites {
-		ingressRoute, mw, certs := b.ingressRoute(site.Application, site.Website, ssResourceLabels(site.Application.ID), b.ssServiceRef())
+		ingressRoute, mw, certs := b.ingressRoute(site.Application, site.Website, ssResourceLabels(site.Application.ID), b.ssServiceRef(), ads)
 
 		ssHeaderMW := b.ssHeaderMiddleware(site)
 		ingressRoute.Spec.Routes[0].Middlewares = append(ingressRoute.Spec.Routes[0].Middlewares, traefikv1alpha1.MiddlewareRef{Name: ssHeaderMW.Name})

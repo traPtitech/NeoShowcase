@@ -89,7 +89,7 @@ func (b *dockerBackend) syncAppContainer(ctx context.Context, app *domain.AppDes
 	return nil
 }
 
-func (b *dockerBackend) SynchronizeRuntime(ctx context.Context, apps []*domain.AppDesiredState) error {
+func (b *dockerBackend) SynchronizeRuntime(ctx context.Context, apps []*domain.AppDesiredState, ads domain.AvailableDomainSlice) error {
 	b.reloadLock.Lock()
 	defer b.reloadLock.Unlock()
 
@@ -119,7 +119,7 @@ func (b *dockerBackend) SynchronizeRuntime(ctx context.Context, apps []*domain.A
 	cb := newRuntimeConfigBuilder()
 	for _, app := range apps {
 		for _, website := range app.App.Websites {
-			cb.addWebsite(b, app.App, website)
+			cb.addWebsite(b, app.App, website, ads)
 		}
 	}
 	err = b.writeConfig(traefikRuntimeFilename, cb.build())

@@ -31,7 +31,9 @@ docker:
   ss:
     url: http://ns-ssgen:8080/
   network: neoshowcase_apps
-  certResolver: nsresolver
+  tls:
+    certResolver: nsresolver
+    wildcard: false
 
 log:
   type: loki

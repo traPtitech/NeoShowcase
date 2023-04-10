@@ -27,12 +27,22 @@ const (
 	ContainerStateUnknown
 )
 
+func TLSTargetDomain(allowWildcard bool, website *Website, ads AvailableDomainSlice) string {
+	if allowWildcard {
+		ad := ads.GetAvailableMatch(website.FQDN)
+		if ad != nil {
+			return ad.Domain
+		}
+	}
+	return website.FQDN
+}
+
 type Backend interface {
 	Start(ctx context.Context) error
 	Dispose(ctx context.Context) error
 
-	SynchronizeRuntime(ctx context.Context, apps []*AppDesiredState) error
-	SynchronizeSSIngress(ctx context.Context, sites []*StaticSite) error
+	SynchronizeRuntime(ctx context.Context, apps []*AppDesiredState, ads AvailableDomainSlice) error
+	SynchronizeSSIngress(ctx context.Context, sites []*StaticSite, ads AvailableDomainSlice) error
 	GetContainer(ctx context.Context, appID string) (*Container, error)
 	ListContainers(ctx context.Context) ([]*Container, error)
 }

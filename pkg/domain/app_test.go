@@ -1,10 +1,12 @@
 package domain
 
 import (
-	"github.com/stretchr/testify/require"
 	"reflect"
 	"testing"
 	"time"
+
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 
 	"github.com/samber/lo"
 
@@ -325,9 +327,8 @@ func TestAvailableDomain_match(t *testing.T) {
 			a := &AvailableDomain{
 				Domain: tt.domain,
 			}
-			if got := a.match(tt.target); got != tt.want {
-				t.Errorf("Match() = %v, want %v", got, tt.want)
-			}
+			got := a.match(tt.target)
+			assert.Equal(t, tt.want, got)
 		})
 	}
 }
@@ -381,12 +382,35 @@ func TestAvailableDomainSlice_IsAvailable(t *testing.T) {
 			fqdn: "sub.google.com",
 			want: false,
 		},
+		{
+			name: "specific wildcard subdomain ng 1",
+			s:    AvailableDomainSlice{{Domain: "*.sub.google.com", Available: false}, {Domain: "*.google.com", Available: true}},
+			fqdn: "test.sub.google.com",
+			want: false,
+		},
+		{
+			name: "specific wildcard subdomain ng 2",
+			s:    AvailableDomainSlice{{Domain: "*.google.com", Available: true}, {Domain: "*.sub.google.com", Available: false}},
+			fqdn: "test.sub.google.com",
+			want: false,
+		},
+		{
+			name: "specific wildcard subdomain ok 1",
+			s:    AvailableDomainSlice{{Domain: "*.sub.google.com", Available: false}, {Domain: "*.google.com", Available: true}},
+			fqdn: "sub.google.com",
+			want: true,
+		},
+		{
+			name: "specific wildcard subdomain ok 2",
+			s:    AvailableDomainSlice{{Domain: "*.google.com", Available: true}, {Domain: "*.sub.google.com", Available: false}},
+			fqdn: "sub.google.com",
+			want: true,
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := tt.s.IsAvailable(tt.fqdn); got != tt.want {
-				t.Errorf("IsAvailable() = %v, want %v", got, tt.want)
-			}
+			got := tt.s.IsAvailable(tt.fqdn)
+			assert.Equal(t, tt.want, got)
 		})
 	}
 }

@@ -18,8 +18,11 @@ type Config struct {
 	SS      struct {
 		URL string `mapstructure:"url" yaml:"url"`
 	} `mapstructure:"ss" yaml:"ss"`
-	Network      string `mapstructure:"network" yaml:"network"`
-	CertResolver string `mapstructure:"certResolver" yaml:"certResolver"`
+	Network string `mapstructure:"network" yaml:"network"`
+	TLS     struct {
+		CertResolver string `mapstructure:"certResolver" yaml:"certResolver"`
+		Wildcard     bool   `mapstructure:"wildcard" yaml:"wildcard"`
+	} `mapstructure:"tls" yaml:"tls"`
 }
 
 const (
