@@ -60,29 +60,20 @@ build: ## Build containers
 	@docker build -t ghcr.io/traptitech/ns-dashboard:main dashboard
 	@docker compose build
 
-.PHONY: up-network
-up-network: ## Ensure apps network
+.PHONY: ensure-network
+ensure-network: ## Ensure apps network
 	@docker network create neoshowcase_apps || return 0
 
+.PHONY: ensure-mounts
+ensure-mounts: ## Ensure local dev mounts
+	@mkdir -p .local-dev/grafana
+	@sudo chown -R 472:472 .local-dev/grafana
+	@mkdir -p .local-dev/loki
+	@sudo chown -R 10001:10001 .local-dev/loki
+
 .PHONY: up
-up: up-network ## Setup development environment
+up: ensure-network ensure-mounts ## Setup development environment
 	@docker compose up -d --build
-
-.PHONY: up-ns
-up-ns: up-network ## Rebuild ns api server
-	@docker compose up -d --build ns
-
-.PHONY: up-ns-builder
-up-ns-builder: up-network ## Rebuild ns builder
-	@docker compose up -d --build ns-builder
-
-.PHONY: up-ns-ssgem
-up-ns-ssgen: up-network ## Rebuild ns static site gen
-	@docker compose up -d --build ns-ssgen
-
-.PHONY: up-db
-up-db: up-network ## Start development db
-	@docker compose up -d --build mysql
 
 .PHONY: down
 down: ## Tear down development environment
