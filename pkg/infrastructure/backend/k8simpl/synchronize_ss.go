@@ -13,7 +13,7 @@ import (
 
 	"github.com/traPtitech/neoshowcase/pkg/domain"
 	"github.com/traPtitech/neoshowcase/pkg/domain/web"
-	"github.com/traPtitech/neoshowcase/pkg/util"
+	"github.com/traPtitech/neoshowcase/pkg/util/ds"
 )
 
 func (b *k8sBackend) ssServiceRef() []traefikv1alpha1.Service {
@@ -37,7 +37,7 @@ func (b *k8sBackend) ssHeaderMiddleware(ss *domain.StaticSite) *traefikv1alpha1.
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      ssHeaderMiddlewareName(ss),
 			Namespace: b.config.Namespace,
-			Labels:    ssResourceLabels(ss.Application.ID),
+			Labels:    b.ssLabel(ss.Application.ID),
 		},
 		Spec: traefikv1alpha1.MiddlewareSpec{
 			Headers: &dynamic.Headers{
@@ -57,26 +57,26 @@ type ssResources struct {
 
 func (b *k8sBackend) listCurrentSSResources(ctx context.Context) (*ssResources, error) {
 	var resources ssResources
-	listOpt := metav1.ListOptions{LabelSelector: ssLabelSelector()}
+	listOpt := metav1.ListOptions{LabelSelector: toSelectorString(ssSelector())}
 
 	mw, err := b.traefikClient.Middlewares(b.config.Namespace).List(ctx, listOpt)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to get middlewares")
 	}
-	resources.middlewares = util.SliceOfPtr(mw.Items)
+	resources.middlewares = ds.SliceOfPtr(mw.Items)
 
 	ir, err := b.traefikClient.IngressRoutes(b.config.Namespace).List(ctx, listOpt)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to get ingress routes")
 	}
-	resources.ingressRoutes = util.SliceOfPtr(ir.Items)
+	resources.ingressRoutes = ds.SliceOfPtr(ir.Items)
 
 	if b.config.TLS.Type == tlsTypeCertManager {
 		certs, err := b.certManagerClient.CertmanagerV1().Certificates(b.config.Namespace).List(ctx, listOpt)
 		if err != nil {
 			return nil, errors.Wrap(err, "failed to get certificates")
 		}
-		resources.certificates = util.SliceOfPtr(certs.Items)
+		resources.certificates = ds.SliceOfPtr(certs.Items)
 	}
 
 	return &resources, nil
@@ -95,7 +95,7 @@ func (b *k8sBackend) SynchronizeSSIngress(ctx context.Context, sites []*domain.S
 	// Calculate next resources to apply
 	var next ssResources
 	for _, site := range sites {
-		ingressRoute, mw, certs := b.ingressRoute(site.Application, site.Website, ssResourceLabels(site.Application.ID), b.ssServiceRef(), ads)
+		ingressRoute, mw, certs := b.ingressRoute(site.Application, site.Website, b.ssLabel(site.Application.ID), b.ssServiceRef(), ads)
 
 		ssHeaderMW := b.ssHeaderMiddleware(site)
 		ingressRoute.Spec.Routes[0].Middlewares = append(ingressRoute.Spec.Routes[0].Middlewares, traefikv1alpha1.MiddlewareRef{Name: ssHeaderMW.Name})

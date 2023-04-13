@@ -56,7 +56,7 @@ func (b *dockerBackend) syncAppContainer(ctx context.Context, app *domain.AppDes
 	})
 	config := &docker.Config{
 		Image:  newImageName,
-		Labels: containerLabels(app.App),
+		Labels: b.containerLabels(app.App),
 		Env:    envs,
 	}
 	if app.App.Config.Entrypoint != "" {

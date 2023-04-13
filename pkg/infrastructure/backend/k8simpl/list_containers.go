@@ -13,7 +13,7 @@ import (
 
 func (b *k8sBackend) GetContainer(ctx context.Context, appID string) (*domain.Container, error) {
 	list, err := b.client.CoreV1().Pods(b.config.Namespace).List(ctx, metav1.ListOptions{
-		LabelSelector: labelSelector(appID),
+		LabelSelector: toSelectorString(appSelector(appID)),
 	})
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to fetch pods")
@@ -33,7 +33,7 @@ func (b *k8sBackend) GetContainer(ctx context.Context, appID string) (*domain.Co
 
 func (b *k8sBackend) ListContainers(ctx context.Context) ([]*domain.Container, error) {
 	list, err := b.client.CoreV1().Pods(b.config.Namespace).List(ctx, metav1.ListOptions{
-		LabelSelector: allSelector(),
+		LabelSelector: toSelectorString(allSelector()),
 	})
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to fetch pods")

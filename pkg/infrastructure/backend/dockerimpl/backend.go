@@ -11,6 +11,7 @@ import (
 
 	"github.com/traPtitech/neoshowcase/pkg/domain"
 	"github.com/traPtitech/neoshowcase/pkg/domain/event"
+	"github.com/traPtitech/neoshowcase/pkg/util/ds"
 )
 
 type Config struct {
@@ -18,7 +19,8 @@ type Config struct {
 	SS      struct {
 		URL string `mapstructure:"url" yaml:"url"`
 	} `mapstructure:"ss" yaml:"ss"`
-	Network string `mapstructure:"network" yaml:"network"`
+	Network string            `mapstructure:"network" yaml:"network"`
+	Labels  map[string]string `mapstructure:"labels" yaml:"labels"`
 	TLS     struct {
 		CertResolver string `mapstructure:"certResolver" yaml:"certResolver"`
 		Wildcard     bool   `mapstructure:"wildcard" yaml:"wildcard"`
@@ -113,12 +115,12 @@ func (b *dockerBackend) initNetworks() error {
 	return err
 }
 
-func containerLabels(app *domain.Application) map[string]string {
-	return map[string]string{
+func (b *dockerBackend) containerLabels(app *domain.Application) map[string]string {
+	return ds.MergeMap(b.conf.Labels, map[string]string{
 		appLabel:            "true",
 		appIDLabel:          app.ID,
 		appRestartedAtLabel: app.UpdatedAt.Format(time.RFC3339),
-	}
+	})
 }
 
 func containerName(appID string) string {

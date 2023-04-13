@@ -1,4 +1,4 @@
-package util
+package ds
 
 func SliceOfPtr[T any](s []T) []*T {
 	ret := make([]*T, len(s))

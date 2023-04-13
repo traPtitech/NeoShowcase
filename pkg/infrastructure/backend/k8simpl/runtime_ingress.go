@@ -26,11 +26,11 @@ func (b *k8sBackend) runtimeService(app *domain.Application, website *domain.Web
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      serviceName(website),
 			Namespace: b.config.Namespace,
-			Labels:    resourceLabels(app.ID),
+			Labels:    b.appLabel(app.ID),
 		},
 		Spec: v1.ServiceSpec{
 			Type:     "ClusterIP",
-			Selector: resourceLabels(app.ID),
+			Selector: appSelector(app.ID),
 			Ports: []v1.ServicePort{{
 				Protocol:   "TCP",
 				Port:       80,

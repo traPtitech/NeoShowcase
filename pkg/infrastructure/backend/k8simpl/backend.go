@@ -17,6 +17,7 @@ import (
 
 	"github.com/traPtitech/neoshowcase/pkg/domain"
 	"github.com/traPtitech/neoshowcase/pkg/domain/event"
+	"github.com/traPtitech/neoshowcase/pkg/util/ds"
 )
 
 const (
@@ -31,7 +32,8 @@ type Config struct {
 		Name      string `mapstructure:"name" yaml:"name"`
 		Port      int    `mapstructure:"port" yaml:"port"`
 	} `mapstructure:"ss" yaml:"ss"`
-	Namespace string `mapstructure:"namespace" yaml:"namespace"`
+	Namespace string            `mapstructure:"namespace" yaml:"namespace"`
+	Labels    map[string]string `mapstructure:"labels" yaml:"labels"`
 	TLS       struct {
 		// cert-manager note: https://doc.traefik.io/traefik/providers/kubernetes-crd/#letsencrypt-support-with-the-custom-resource-definition-provider
 		// needs to enable ingress provider in traefik
@@ -128,43 +130,43 @@ func (b *k8sBackend) Dispose(_ context.Context) error {
 	return nil
 }
 
-func resourceLabels(appID string) map[string]string {
-	return map[string]string{
+func (b *k8sBackend) appLabel(appID string) map[string]string {
+	return ds.MergeMap(b.config.Labels, map[string]string{
 		appLabel:   "true",
 		appIDLabel: appID,
-	}
+	})
 }
 
-func ssResourceLabels(appID string) map[string]string {
-	return map[string]string{
+func (b *k8sBackend) ssLabel(appID string) map[string]string {
+	return ds.MergeMap(b.config.Labels, map[string]string{
 		appLabel:   "true",
 		appIDLabel: appID,
 		ssLabel:    "true",
+	})
+}
+
+func toSelectorString(matchLabels map[string]string) string {
+	return metav1.FormatLabelSelector(&metav1.LabelSelector{
+		MatchLabels: matchLabels,
+	})
+}
+
+func allSelector() map[string]string {
+	return map[string]string{
+		appLabel: "true",
 	}
 }
 
-func allSelector() string {
-	return metav1.FormatLabelSelector(&metav1.LabelSelector{
-		MatchLabels: map[string]string{
-			appLabel: "true",
-		},
-	})
+func appSelector(appID string) map[string]string {
+	return map[string]string{
+		appIDLabel: appID,
+	}
 }
 
-func labelSelector(appID string) string {
-	return metav1.FormatLabelSelector(&metav1.LabelSelector{
-		MatchLabels: map[string]string{
-			appIDLabel: appID,
-		},
-	})
-}
-
-func ssLabelSelector() string {
-	return metav1.FormatLabelSelector(&metav1.LabelSelector{
-		MatchLabels: map[string]string{
-			ssLabel: "true",
-		},
-	})
+func ssSelector() map[string]string {
+	return map[string]string{
+		ssLabel: "true",
+	}
 }
 
 func deploymentName(appID string) string {

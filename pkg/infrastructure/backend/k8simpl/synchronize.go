@@ -13,7 +13,7 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
 	"github.com/traPtitech/neoshowcase/pkg/domain"
-	"github.com/traPtitech/neoshowcase/pkg/util"
+	"github.com/traPtitech/neoshowcase/pkg/util/ds"
 )
 
 type runtimeResources struct {
@@ -26,38 +26,38 @@ type runtimeResources struct {
 
 func (b *k8sBackend) listCurrentResources(ctx context.Context) (*runtimeResources, error) {
 	var resources runtimeResources
-	listOpt := metav1.ListOptions{LabelSelector: allSelector()}
+	listOpt := metav1.ListOptions{LabelSelector: toSelectorString(allSelector())}
 
 	ss, err := b.client.AppsV1().StatefulSets(b.config.Namespace).List(ctx, listOpt)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to get stateful sets")
 	}
-	resources.statefulSets = util.SliceOfPtr(ss.Items)
+	resources.statefulSets = ds.SliceOfPtr(ss.Items)
 
 	svc, err := b.client.CoreV1().Services(b.config.Namespace).List(ctx, listOpt)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to get services")
 	}
-	resources.services = util.SliceOfPtr(svc.Items)
+	resources.services = ds.SliceOfPtr(svc.Items)
 
 	mw, err := b.traefikClient.Middlewares(b.config.Namespace).List(ctx, listOpt)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to get middlewares")
 	}
-	resources.middlewares = util.SliceOfPtr(mw.Items)
+	resources.middlewares = ds.SliceOfPtr(mw.Items)
 
 	ir, err := b.traefikClient.IngressRoutes(b.config.Namespace).List(ctx, listOpt)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to get ingress routes")
 	}
-	resources.ingressRoutes = util.SliceOfPtr(ir.Items)
+	resources.ingressRoutes = ds.SliceOfPtr(ir.Items)
 
 	if b.config.TLS.Type == tlsTypeCertManager {
 		certs, err := b.certManagerClient.CertmanagerV1().Certificates(b.config.Namespace).List(ctx, listOpt)
 		if err != nil {
 			return nil, errors.Wrap(err, "failed to get certificates")
 		}
-		resources.certificates = util.SliceOfPtr(certs.Items)
+		resources.certificates = ds.SliceOfPtr(certs.Items)
 	}
 
 	return &resources, nil
@@ -87,16 +87,16 @@ func (b *k8sBackend) statefulSet(app *domain.AppDesiredState) *appsv1.StatefulSe
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      deploymentName(app.App.ID),
 			Namespace: b.config.Namespace,
-			Labels:    resourceLabels(app.App.ID),
+			Labels:    b.appLabel(app.App.ID),
 		},
 		Spec: appsv1.StatefulSetSpec{
 			Replicas: lo.ToPtr(int32(1)),
 			Selector: &metav1.LabelSelector{
-				MatchLabels: resourceLabels(app.App.ID),
+				MatchLabels: appSelector(app.App.ID),
 			},
 			Template: v1.PodTemplateSpec{
 				ObjectMeta: metav1.ObjectMeta{
-					Labels: resourceLabels(app.App.ID),
+					Labels: b.appLabel(app.App.ID),
 					Annotations: map[string]string{
 						appRestartAnnotation: app.App.UpdatedAt.Format(time.RFC3339),
 					},
@@ -131,7 +131,7 @@ func (b *k8sBackend) SynchronizeRuntime(ctx context.Context, apps []*domain.AppD
 		next.statefulSets = append(next.statefulSets, b.statefulSet(app))
 		for _, website := range app.App.Websites {
 			next.services = append(next.services, b.runtimeService(app.App, website))
-			ingressRoute, mw, certs := b.ingressRoute(app.App, website, resourceLabels(app.App.ID), b.runtimeServiceRef(app.App, website), ads)
+			ingressRoute, mw, certs := b.ingressRoute(app.App, website, b.appLabel(app.App.ID), b.runtimeServiceRef(app.App, website), ads)
 			next.middlewares = append(next.middlewares, mw...)
 			next.ingressRoutes = append(next.ingressRoutes, ingressRoute)
 			next.certificates = append(next.certificates, certs...)
