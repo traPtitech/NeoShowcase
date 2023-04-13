@@ -295,21 +295,19 @@ func (cd *continuousDeploymentService) _syncAppCommits(ctx context.Context) erro
 }
 
 func (cd *continuousDeploymentService) syncDeployments(ctx context.Context) error {
+	// Sync current commit fields
 	err := cd._syncAppCommits(ctx)
 	if err != nil {
 		return err
 	}
 
 	// Synchronize
-	err = cd.deployer.synchronizeRuntime(ctx)
+	err = cd.deployer.synchronize(ctx)
 	if err != nil {
-		return errors.Wrap(err, "failed to synchronize runtime deployments")
-	}
-	err = cd.deployer.synchronizeSS(ctx)
-	if err != nil {
-		return errors.Wrap(err, "failed to synchronize static server")
+		return errors.Wrap(err, "failed to synchronize deployments")
 	}
 
+	// Update container states
 	err = cd.mutator.updateAll(ctx)
 	if err != nil {
 		return err

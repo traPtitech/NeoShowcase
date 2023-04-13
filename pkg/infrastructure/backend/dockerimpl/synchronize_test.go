@@ -23,11 +23,14 @@ func TestDockerBackend_CreateContainer(t *testing.T) {
 			ID:        "test",
 			UpdatedAt: time.Now(),
 		}
-		err := m.SynchronizeRuntime(context.Background(), []*domain.AppDesiredState{{
-			App:       &app,
-			ImageName: "not-found",
-			ImageTag:  "latest",
-		}}, nil)
+		st := domain.DesiredState{
+			Runtime: []*domain.RuntimeDesiredState{{
+				App:       &app,
+				ImageName: "not-found",
+				ImageTag:  "latest",
+			}},
+		}
+		err := m.Synchronize(context.Background(), &st)
 		assert.NoError(t, err) // fail-safe
 	})
 
@@ -40,11 +43,14 @@ func TestDockerBackend_CreateContainer(t *testing.T) {
 			ID:        appID,
 			UpdatedAt: time.Now(),
 		}
-		err := m.SynchronizeRuntime(context.Background(), []*domain.AppDesiredState{{
-			App:       &app,
-			ImageName: image,
-			ImageTag:  "latest",
-		}}, nil)
+		st := domain.DesiredState{
+			Runtime: []*domain.RuntimeDesiredState{{
+				App:       &app,
+				ImageName: image,
+				ImageTag:  "latest",
+			}},
+		}
+		err := m.Synchronize(context.Background(), &st)
 		require.NoError(t, err)
 
 		cont, err := c.InspectContainerWithOptions(docker.InspectContainerOptions{
@@ -72,19 +78,18 @@ func TestDockerBackend_CreateContainer(t *testing.T) {
 			ID:        appID,
 			UpdatedAt: time.Now(),
 		}
-		err := m.SynchronizeRuntime(context.Background(), []*domain.AppDesiredState{{
-			App:       &app,
-			ImageName: image,
-			ImageTag:  "latest",
-		}}, nil)
+		st := domain.DesiredState{
+			Runtime: []*domain.RuntimeDesiredState{{
+				App:       &app,
+				ImageName: image,
+				ImageTag:  "latest",
+			}},
+		}
+		err := m.Synchronize(context.Background(), &st)
 		require.NoError(t, err)
 
 		app.UpdatedAt = time.Now() // Restart
-		err = m.SynchronizeRuntime(context.Background(), []*domain.AppDesiredState{{
-			App:       &app,
-			ImageName: image,
-			ImageTag:  "latest",
-		}}, nil)
+		err = m.Synchronize(context.Background(), &st)
 		require.NoError(t, err)
 
 		cont, err := c.InspectContainerWithOptions(docker.InspectContainerOptions{

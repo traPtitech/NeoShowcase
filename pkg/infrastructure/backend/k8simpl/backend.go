@@ -58,7 +58,6 @@ const (
 	appLabel             = "neoshowcase.trap.jp/app"
 	appIDLabel           = "neoshowcase.trap.jp/appId"
 	appRestartAnnotation = "neoshowcase.trap.jp/startedAt"
-	ssLabel              = "neoshowcase.trap.jp/ss"
 	fieldManager         = "neoshowcase"
 )
 
@@ -130,18 +129,16 @@ func (b *k8sBackend) Dispose(_ context.Context) error {
 	return nil
 }
 
+func (b *k8sBackend) generalLabel() map[string]string {
+	return ds.MergeMap(b.config.Labels, map[string]string{
+		appLabel: "true",
+	})
+}
+
 func (b *k8sBackend) appLabel(appID string) map[string]string {
 	return ds.MergeMap(b.config.Labels, map[string]string{
 		appLabel:   "true",
 		appIDLabel: appID,
-	})
-}
-
-func (b *k8sBackend) ssLabel(appID string) map[string]string {
-	return ds.MergeMap(b.config.Labels, map[string]string{
-		appLabel:   "true",
-		appIDLabel: appID,
-		ssLabel:    "true",
 	})
 }
 
@@ -160,12 +157,6 @@ func allSelector() map[string]string {
 func appSelector(appID string) map[string]string {
 	return map[string]string{
 		appIDLabel: appID,
-	}
-}
-
-func ssSelector() map[string]string {
-	return map[string]string{
-		ssLabel: "true",
 	}
 }
 

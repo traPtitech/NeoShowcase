@@ -61,14 +61,10 @@ func (b *ssConfigBuilder) build(ssURL string) m {
 	}
 }
 
-func (b *dockerBackend) SynchronizeSSIngress(_ context.Context, sites []*domain.StaticSite, ads domain.AvailableDomainSlice) error {
-	b.reloadLock.Lock()
-	defer b.reloadLock.Unlock()
-
+func (b *dockerBackend) synchronizeSSIngress(_ context.Context, sites []*domain.StaticSite, ads domain.AvailableDomainSlice) error {
 	cb := newSSConfigBuilder()
 	for _, site := range sites {
 		cb.addStaticSite(b, site, ads)
 	}
-
 	return b.writeConfig(traefikSSFilename, cb.build(b.conf.SS.URL))
 }
