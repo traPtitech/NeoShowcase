@@ -3,7 +3,6 @@ package usecase
 import (
 	"context"
 
-	"github.com/friendsofgo/errors"
 	"github.com/samber/lo"
 
 	"github.com/traPtitech/neoshowcase/pkg/domain"
@@ -58,14 +57,14 @@ func (s *AppDeployHelper) _getEnv(ctx context.Context, apps []*domain.Applicatio
 	return ret, nil
 }
 
-func (s *AppDeployHelper) synchronizeRuntime(ctx context.Context) error {
+func (s *AppDeployHelper) _runtimeDesiredStates(ctx context.Context) ([]*domain.RuntimeDesiredState, error) {
 	// Get all 'running' state applications
 	apps, err := s.appRepo.GetApplications(ctx, domain.GetApplicationCondition{
 		DeployType: optional.From(domain.DeployTypeRuntime),
 		Running:    optional.From(true),
 	})
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	// Calculate deploy-able applications
@@ -75,45 +74,43 @@ func (s *AppDeployHelper) synchronizeRuntime(ctx context.Context) error {
 		Status:   optional.From(domain.BuildStatusSucceeded),
 	})
 	if err != nil {
-		return err
+		return nil, err
 	}
 	buildExists := lo.SliceToMap(builds, func(b *domain.Build) (string, bool) { return b.Commit, true })
 	syncableApps := lo.Filter(apps, func(app *domain.Application, i int) bool { return buildExists[app.WantCommit] })
 
-	// Deploy
-	ads, err := s.adRepo.GetAvailableDomains(ctx)
-	if err != nil {
-		return err
-	}
 	envs, err := s._getEnv(ctx, syncableApps)
 	if err != nil {
-		return err
+		return nil, err
 	}
-	desiredStates := lo.Map(syncableApps, func(app *domain.Application, i int) *domain.AppDesiredState {
-		return &domain.AppDesiredState{
+	desiredStates := lo.Map(syncableApps, func(app *domain.Application, i int) *domain.RuntimeDesiredState {
+		return &domain.RuntimeDesiredState{
 			App:       app,
 			ImageName: s.image.FullImageName(app.ID),
 			ImageTag:  app.CurrentCommit,
 			Envs:      envs[app.ID],
 		}
 	})
-	return s.backend.SynchronizeRuntime(ctx, desiredStates, ads)
+	return desiredStates, nil
 }
 
-func (s *AppDeployHelper) synchronizeSS(ctx context.Context) error {
-	s.component.BroadcastSSGen(&pb.SSGenRequest{Type: pb.SSGenRequest_RELOAD})
+func (s *AppDeployHelper) synchronize(ctx context.Context) error {
+	var st domain.DesiredState
+	var err error
+	st.Runtime, err = s._runtimeDesiredStates(ctx)
+	if err != nil {
+		return err
+	}
+	st.StaticSites, err = domain.GetActiveStaticSites(ctx, s.appRepo, s.buildRepo)
+	if err != nil {
+		return err
+	}
+	st.Domains, err = s.adRepo.GetAvailableDomains(ctx)
+	if err != nil {
+		return err
+	}
 
-	ads, err := s.adRepo.GetAvailableDomains(ctx)
-	if err != nil {
-		return err
-	}
-	sites, err := domain.GetActiveStaticSites(ctx, s.appRepo, s.buildRepo)
-	if err != nil {
-		return err
-	}
-	err = s.backend.SynchronizeSSIngress(ctx, sites, ads)
-	if err != nil {
-		return errors.Wrap(err, "failed to reload static site ingress")
-	}
-	return nil
+	// Synchronize
+	s.component.BroadcastSSGen(&pb.SSGenRequest{Type: pb.SSGenRequest_RELOAD})
+	return s.backend.Synchronize(ctx, &st)
 }

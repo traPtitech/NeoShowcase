@@ -28,16 +28,19 @@ func TestK8sBackend_Synchronize(t *testing.T) {
 			ID:        appID,
 			UpdatedAt: time.Now(),
 		}
-		err := m.SynchronizeRuntime(context.Background(), []*domain.AppDesiredState{{
-			App:       &app,
-			ImageName: image,
-			ImageTag:  "latest",
-		}}, nil)
+		st := domain.DesiredState{
+			Runtime: []*domain.RuntimeDesiredState{{
+				App:       &app,
+				ImageName: image,
+				ImageTag:  "latest",
+			}},
+		}
+		err := m.Synchronize(context.Background(), &st)
 		require.NoError(t, err)
 		exists[*appsv1.StatefulSet](t, deploymentName(appID), c.AppsV1().StatefulSets(appNamespace))
 		waitPodRunning(t, m, appID)
 
-		err = m.SynchronizeRuntime(context.Background(), nil, nil)
+		err = m.Synchronize(context.Background(), &domain.DesiredState{})
 		require.NoError(t, err)
 		waitPodDeleted(t, m, appID) // NOTE: foreground delete
 		notExists[*appsv1.StatefulSet](t, deploymentName(appID), c.AppsV1().StatefulSets(appNamespace))
@@ -60,18 +63,21 @@ func TestK8sBackend_Synchronize(t *testing.T) {
 			Websites:  []*domain.Website{website},
 			UpdatedAt: time.Now(),
 		}
-		err := m.SynchronizeRuntime(context.Background(), []*domain.AppDesiredState{{
-			App:       &app,
-			ImageName: image,
-			ImageTag:  "latest",
-		}}, nil)
+		st := domain.DesiredState{
+			Runtime: []*domain.RuntimeDesiredState{{
+				App:       &app,
+				ImageName: image,
+				ImageTag:  "latest",
+			}},
+		}
+		err := m.Synchronize(context.Background(), &st)
 		require.NoError(t, err)
 		exists[*appsv1.StatefulSet](t, deploymentName(appID), c.AppsV1().StatefulSets(appNamespace))
 		exists[*corev1.Service](t, serviceName(website), c.CoreV1().Services(appNamespace))
 		exists[*traefikv1alpha1.IngressRoute](t, serviceName(website), tc.IngressRoutes(appNamespace))
 		waitPodRunning(t, m, appID)
 
-		err = m.SynchronizeRuntime(context.Background(), nil, nil)
+		err = m.Synchronize(context.Background(), &domain.DesiredState{})
 		require.NoError(t, err)
 		waitPodDeleted(t, m, appID) // NOTE: foreground delete
 		notExists[*appsv1.StatefulSet](t, deploymentName(appID), c.AppsV1().StatefulSets(appNamespace))
@@ -96,20 +102,19 @@ func TestK8sBackend_Synchronize(t *testing.T) {
 			Websites:  []*domain.Website{website},
 			UpdatedAt: time.Now(),
 		}
-		err := m.SynchronizeRuntime(context.Background(), []*domain.AppDesiredState{{
-			App:       &app,
-			ImageName: image,
-			ImageTag:  "latest",
-		}}, nil)
+		st := domain.DesiredState{
+			Runtime: []*domain.RuntimeDesiredState{{
+				App:       &app,
+				ImageName: image,
+				ImageTag:  "latest",
+			}},
+		}
+		err := m.Synchronize(context.Background(), &st)
 		require.NoError(t, err)
 		waitPodRunning(t, m, appID)
 
 		app.UpdatedAt = time.Now() // Restart
-		err = m.SynchronizeRuntime(context.Background(), []*domain.AppDesiredState{{
-			App:       &app,
-			ImageName: image,
-			ImageTag:  "latest",
-		}}, nil)
+		err = m.Synchronize(context.Background(), &st)
 		require.NoError(t, err)
 		exists[*appsv1.StatefulSet](t, deploymentName(appID), c.AppsV1().StatefulSets(appNamespace))
 		exists[*corev1.Service](t, serviceName(website), c.CoreV1().Services(appNamespace))
@@ -117,7 +122,7 @@ func TestK8sBackend_Synchronize(t *testing.T) {
 		exists[*traefikv1alpha1.Middleware](t, stripMiddlewareName(website), tc.Middlewares(appNamespace))
 		waitPodRunning(t, m, appID)
 
-		err = m.SynchronizeRuntime(context.Background(), nil, nil)
+		err = m.Synchronize(context.Background(), &domain.DesiredState{})
 		require.NoError(t, err)
 		waitPodDeleted(t, m, appID) // NOTE: foreground delete
 		notExists[*appsv1.StatefulSet](t, deploymentName(appID), c.AppsV1().StatefulSets(appNamespace))

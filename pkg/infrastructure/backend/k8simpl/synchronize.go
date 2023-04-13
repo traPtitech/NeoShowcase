@@ -2,7 +2,6 @@ package k8simpl
 
 import (
 	"context"
-	"time"
 
 	certmanagerv1 "github.com/cert-manager/cert-manager/pkg/apis/certmanager/v1"
 	"github.com/friendsofgo/errors"
@@ -13,10 +12,10 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
 	"github.com/traPtitech/neoshowcase/pkg/domain"
-	"github.com/traPtitech/neoshowcase/pkg/util"
+	"github.com/traPtitech/neoshowcase/pkg/util/ds"
 )
 
-type runtimeResources struct {
+type resources struct {
 	statefulSets  []*appsv1.StatefulSet
 	services      []*v1.Service
 	middlewares   []*traefikv1alpha1.Middleware
@@ -24,98 +23,46 @@ type runtimeResources struct {
 	certificates  []*certmanagerv1.Certificate
 }
 
-func (b *k8sBackend) listCurrentResources(ctx context.Context) (*runtimeResources, error) {
-	var resources runtimeResources
-	listOpt := metav1.ListOptions{LabelSelector: allSelector()}
+func (b *k8sBackend) listCurrentResources(ctx context.Context) (*resources, error) {
+	var rsc resources
+	listOpt := metav1.ListOptions{LabelSelector: toSelectorString(allSelector())}
 
 	ss, err := b.client.AppsV1().StatefulSets(b.config.Namespace).List(ctx, listOpt)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to get stateful sets")
 	}
-	resources.statefulSets = util.SliceOfPtr(ss.Items)
+	rsc.statefulSets = ds.SliceOfPtr(ss.Items)
 
 	svc, err := b.client.CoreV1().Services(b.config.Namespace).List(ctx, listOpt)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to get services")
 	}
-	resources.services = util.SliceOfPtr(svc.Items)
+	rsc.services = ds.SliceOfPtr(svc.Items)
 
 	mw, err := b.traefikClient.Middlewares(b.config.Namespace).List(ctx, listOpt)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to get middlewares")
 	}
-	resources.middlewares = util.SliceOfPtr(mw.Items)
+	rsc.middlewares = ds.SliceOfPtr(mw.Items)
 
 	ir, err := b.traefikClient.IngressRoutes(b.config.Namespace).List(ctx, listOpt)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to get ingress routes")
 	}
-	resources.ingressRoutes = util.SliceOfPtr(ir.Items)
+	rsc.ingressRoutes = ds.SliceOfPtr(ir.Items)
 
 	if b.config.TLS.Type == tlsTypeCertManager {
 		certs, err := b.certManagerClient.CertmanagerV1().Certificates(b.config.Namespace).List(ctx, listOpt)
 		if err != nil {
 			return nil, errors.Wrap(err, "failed to get certificates")
 		}
-		resources.certificates = util.SliceOfPtr(certs.Items)
+		rsc.certificates = ds.SliceOfPtr(certs.Items)
 	}
 
-	return &resources, nil
+	return &rsc, nil
 }
 
-func (b *k8sBackend) statefulSet(app *domain.AppDesiredState) *appsv1.StatefulSet {
-	envs := lo.MapToSlice(app.Envs, func(key string, value string) v1.EnvVar {
-		return v1.EnvVar{Name: key, Value: value}
-	})
-
-	cont := v1.Container{
-		Name:  "app",
-		Image: app.ImageName + ":" + app.ImageTag,
-		Env:   envs,
-	}
-	if app.App.Config.Entrypoint != "" {
-		cont.Command = app.App.Config.EntrypointArgs()
-	}
-	if app.App.Config.Command != "" {
-		cont.Args = app.App.Config.CommandArgs()
-	}
-	ss := &appsv1.StatefulSet{
-		TypeMeta: metav1.TypeMeta{
-			Kind:       "StatefulSet",
-			APIVersion: "apps/v1",
-		},
-		ObjectMeta: metav1.ObjectMeta{
-			Name:      deploymentName(app.App.ID),
-			Namespace: b.config.Namespace,
-			Labels:    resourceLabels(app.App.ID),
-		},
-		Spec: appsv1.StatefulSetSpec{
-			Replicas: lo.ToPtr(int32(1)),
-			Selector: &metav1.LabelSelector{
-				MatchLabels: resourceLabels(app.App.ID),
-			},
-			Template: v1.PodTemplateSpec{
-				ObjectMeta: metav1.ObjectMeta{
-					Labels: resourceLabels(app.App.ID),
-					Annotations: map[string]string{
-						appRestartAnnotation: app.App.UpdatedAt.Format(time.RFC3339),
-					},
-				},
-				Spec: v1.PodSpec{
-					Containers: []v1.Container{cont},
-				},
-			},
-		},
-	}
-
-	if b.config.ImagePullSecret != "" {
-		ss.Spec.Template.Spec.ImagePullSecrets = []v1.LocalObjectReference{{Name: b.config.ImagePullSecret}}
-	}
-
-	return ss
-}
-
-func (b *k8sBackend) SynchronizeRuntime(ctx context.Context, apps []*domain.AppDesiredState, ads domain.AvailableDomainSlice) error {
+func (b *k8sBackend) Synchronize(ctx context.Context, s *domain.DesiredState) error {
 	b.reloadLock.Lock()
 	defer b.reloadLock.Unlock()
 
@@ -126,17 +73,9 @@ func (b *k8sBackend) SynchronizeRuntime(ctx context.Context, apps []*domain.AppD
 	}
 
 	// Calculate next resources to apply
-	var next runtimeResources
-	for _, app := range apps {
-		next.statefulSets = append(next.statefulSets, b.statefulSet(app))
-		for _, website := range app.App.Websites {
-			next.services = append(next.services, b.runtimeService(app.App, website))
-			ingressRoute, mw, certs := b.ingressRoute(app.App, website, resourceLabels(app.App.ID), b.runtimeServiceRef(app.App, website), ads)
-			next.middlewares = append(next.middlewares, mw...)
-			next.ingressRoutes = append(next.ingressRoutes, ingressRoute)
-			next.certificates = append(next.certificates, certs...)
-		}
-	}
+	var next resources
+	b.runtimeResources(&next, s.Runtime, s.Domains)
+	b.ssResources(&next, s.StaticSites, s.Domains)
 	next.certificates = lo.FindDuplicatesBy(next.certificates, func(cert *certmanagerv1.Certificate) string { return cert.Name })
 
 	// Apply resources

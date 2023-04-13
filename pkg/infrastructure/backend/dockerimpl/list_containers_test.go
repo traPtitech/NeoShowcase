@@ -29,12 +29,12 @@ func TestDockerBackend_ListContainers(t *testing.T) {
 		baseAppID := "afiowjiodncx"
 
 		n := 5
-		var apps []*domain.AppDesiredState
+		var apps []*domain.RuntimeDesiredState
 		for i := 0; i < n; i++ {
 			app := domain.Application{
 				ID: baseAppID + strconv.Itoa(i),
 			}
-			apps = append(apps, &domain.AppDesiredState{
+			apps = append(apps, &domain.RuntimeDesiredState{
 				App:       &app,
 				ImageName: image,
 				ImageTag:  "latest",
@@ -48,7 +48,8 @@ func TestDockerBackend_ListContainers(t *testing.T) {
 			})
 		}
 
-		err := m.SynchronizeRuntime(context.Background(), apps, nil)
+		st := domain.DesiredState{Runtime: apps}
+		err := m.Synchronize(context.Background(), &st)
 		require.NoError(t, err)
 
 		result, err := m.ListContainers(context.Background())

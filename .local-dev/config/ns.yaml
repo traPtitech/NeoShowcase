@@ -31,6 +31,9 @@ docker:
   ss:
     url: http://ns-ssgen:8080/
   network: neoshowcase_apps
+  labels:
+    # test additional labels
+    neoshowcase.trap.jp/test: ns-apps
   tls:
     certResolver: nsresolver
     wildcard: false

@@ -26,11 +26,11 @@ func (b *k8sBackend) runtimeService(app *domain.Application, website *domain.Web
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      serviceName(website),
 			Namespace: b.config.Namespace,
-			Labels:    resourceLabels(app.ID),
+			Labels:    b.appLabel(app.ID),
 		},
 		Spec: v1.ServiceSpec{
 			Type:     "ClusterIP",
-			Selector: resourceLabels(app.ID),
+			Selector: appSelector(app.ID),
 			Ports: []v1.ServicePort{{
 				Protocol:   "TCP",
 				Port:       80,
@@ -52,7 +52,7 @@ func (b *k8sBackend) runtimeServiceRef(_ *domain.Application, website *domain.We
 	}}
 }
 
-func (b *k8sBackend) stripMiddleware(_ *domain.Application, website *domain.Website, labels map[string]string) *traefikv1alpha1.Middleware {
+func (b *k8sBackend) stripMiddleware(app *domain.Application, website *domain.Website) *traefikv1alpha1.Middleware {
 	return &traefikv1alpha1.Middleware{
 		TypeMeta: metav1.TypeMeta{
 			Kind:       "Middleware",
@@ -61,7 +61,7 @@ func (b *k8sBackend) stripMiddleware(_ *domain.Application, website *domain.Webs
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      stripMiddlewareName(website),
 			Namespace: b.config.Namespace,
-			Labels:    labels,
+			Labels:    b.appLabel(app.ID),
 		},
 		Spec: traefikv1alpha1.MiddlewareSpec{
 			StripPrefix: &dynamic.StripPrefix{
@@ -71,7 +71,7 @@ func (b *k8sBackend) stripMiddleware(_ *domain.Application, website *domain.Webs
 	}
 }
 
-func (b *k8sBackend) certificate(targetDomain string, labels map[string]string) *certmanagerv1.Certificate {
+func (b *k8sBackend) certificate(targetDomain string) *certmanagerv1.Certificate {
 	return &certmanagerv1.Certificate{
 		TypeMeta: metav1.TypeMeta{
 			APIVersion: "cert-manager.io/v1",
@@ -80,7 +80,7 @@ func (b *k8sBackend) certificate(targetDomain string, labels map[string]string) 
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      certificateName(targetDomain),
 			Namespace: b.config.Namespace,
-			Labels:    labels,
+			Labels:    b.generalLabel(), // certificate may be shared by one or more apps
 		},
 		Spec: certmanagerv1.CertificateSpec{
 			SecretName:  tlsSecretName(targetDomain),
@@ -98,7 +98,6 @@ func (b *k8sBackend) certificate(targetDomain string, labels map[string]string) 
 func (b *k8sBackend) ingressRoute(
 	app *domain.Application,
 	website *domain.Website,
-	labels map[string]string,
 	serviceRefs []traefikv1alpha1.Service,
 	ads domain.AvailableDomainSlice,
 ) (
@@ -134,7 +133,7 @@ func (b *k8sBackend) ingressRoute(
 	} else {
 		rule = fmt.Sprintf("Host(`%s`) && PathPrefix(`%s`)", website.FQDN, website.PathPrefix)
 		if website.StripPrefix {
-			middleware := b.stripMiddleware(app, website, labels)
+			middleware := b.stripMiddleware(app, website)
 			middlewares = append(middlewares, middleware)
 			middlewareRefs = append(middlewareRefs, traefikv1alpha1.MiddlewareRef{Name: middleware.Name})
 		}
@@ -156,7 +155,7 @@ func (b *k8sBackend) ingressRoute(
 				SecretName: tlsSecretName(targetDomain),
 				Domains:    []types.Domain{{Main: targetDomain}},
 			}
-			certs = append(certs, b.certificate(targetDomain, labels))
+			certs = append(certs, b.certificate(targetDomain))
 		}
 	}
 
@@ -168,7 +167,7 @@ func (b *k8sBackend) ingressRoute(
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      serviceName(website),
 			Namespace: b.config.Namespace,
-			Labels:    labels,
+			Labels:    b.appLabel(app.ID),
 		},
 		Spec: traefikv1alpha1.IngressRouteSpec{
 			EntryPoints: entrypoints,

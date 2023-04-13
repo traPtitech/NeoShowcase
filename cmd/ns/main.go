@@ -116,6 +116,7 @@ func main() {
 	viper.SetDefault("docker.confDir", "/opt/traefik/conf")
 	viper.SetDefault("docker.ss.url", "")
 	viper.SetDefault("docker.network", "neoshowcase_apps")
+	viper.SetDefault("docker.labels", nil)
 	viper.SetDefault("docker.tls.certResolver", "nsresolver")
 	viper.SetDefault("docker.tls.wildcard", "false")
 
@@ -124,6 +125,7 @@ func main() {
 	viper.SetDefault("k8s.ss.name", "")
 	viper.SetDefault("k8s.ss.port", 80)
 	viper.SetDefault("k8s.namespace", "neoshowcase-apps")
+	viper.SetDefault("k8s.labels", nil)
 	viper.SetDefault("k8s.tls.type", "traefik")
 	viper.SetDefault("k8s.tls.traefik.certResolver", "nsresolver")
 	viper.SetDefault("k8s.tls.traefik.wildcard", false)
