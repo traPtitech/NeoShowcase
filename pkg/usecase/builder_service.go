@@ -3,13 +3,19 @@ package usecase
 import (
 	"context"
 	"fmt"
-	"github.com/mattn/go-shellwords"
-	"github.com/traPtitech/neoshowcase/pkg/interface/grpc/pbconvert"
 	"io"
 	"os"
 	"path/filepath"
 	"sync"
 	"time"
+
+	"github.com/docker/cli/cli/config/configfile"
+	"github.com/docker/cli/cli/config/types"
+	"github.com/mattn/go-shellwords"
+	"github.com/moby/buildkit/session"
+	"github.com/moby/buildkit/session/auth/authprovider"
+
+	"github.com/traPtitech/neoshowcase/pkg/interface/grpc/pbconvert"
 
 	"github.com/friendsofgo/errors"
 	"github.com/go-git/go-git/v5"
@@ -46,6 +52,7 @@ type builderService struct {
 	buildkit *buildkit.Client
 	storage  domain.Storage
 	pubKey   *ssh.PublicKeys
+	config   builder.ImageConfig
 
 	artifactRepo domain.ArtifactRepository
 	buildRepo    domain.BuildRepository
@@ -63,6 +70,7 @@ func NewBuilderService(
 	buildkit *buildkit.Client,
 	storage domain.Storage,
 	pubKey *ssh.PublicKeys,
+	config builder.ImageConfig,
 	artifactRepo domain.ArtifactRepository,
 	buildRepo domain.BuildRepository,
 	gitRepo domain.GitRepositoryRepository,
@@ -72,6 +80,7 @@ func NewBuilderService(
 		buildkit:     buildkit,
 		storage:      storage,
 		pubKey:       pubKey,
+		config:       config,
 		artifactRepo: artifactRepo,
 		buildRepo:    buildRepo,
 		gitRepo:      gitRepo,
@@ -133,6 +142,20 @@ func (s *builderService) cancelBuild(buildID string) {
 			s.stateCancel()
 		}
 	}
+}
+
+func (s *builderService) authSessions() []session.Attachable {
+	if s.config.Registry.Username == "" && s.config.Registry.Password == "" {
+		return nil
+	}
+	return []session.Attachable{authprovider.NewDockerAuthProvider(&configfile.ConfigFile{
+		AuthConfigs: map[string]types.AuthConfig{
+			s.config.Registry.Addr: {
+				Username: s.config.Registry.Username,
+				Password: s.config.Registry.Password,
+			},
+		},
+	})}
 }
 
 func (s *builderService) onRequest(req *pb.BuilderRequest) {
@@ -443,6 +466,7 @@ func (s *builderService) buildImageWithCmd(
 		LocalDirs: map[string]string{
 			"local-src": st.repositoryTempDir,
 		},
+		Session: s.authSessions(),
 	}, ch)
 	return err
 }
@@ -466,6 +490,7 @@ func (s *builderService) buildImageWithDockerfile(
 		},
 		Frontend:      "dockerfile.v0",
 		FrontendAttrs: map[string]string{"filename": bc.DockerfileName},
+		Session:       s.authSessions(),
 	}, ch)
 	return err
 }
@@ -527,6 +552,7 @@ func (s *builderService) buildStaticWithCmd(
 		LocalDirs: map[string]string{
 			"local-src": st.repositoryTempDir,
 		},
+		Session: s.authSessions(),
 	}, ch)
 	return err
 }
@@ -568,6 +594,7 @@ func (s *builderService) buildStaticWithDockerfile(
 		LocalDirs: map[string]string{
 			"context": filepath.Join(st.repositoryTempDir, contextDir),
 		},
+		Session: s.authSessions(),
 	}, ch)
 	return err
 }

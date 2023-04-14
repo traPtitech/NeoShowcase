@@ -6,6 +6,7 @@ require (
 	github.com/aws/aws-sdk-go v1.44.234
 	github.com/bufbuild/connect-go v1.5.2
 	github.com/cert-manager/cert-manager v1.11.1
+	github.com/docker/cli v23.0.0-rc.1+incompatible
 	github.com/friendsofgo/errors v0.9.2
 	github.com/fsouza/go-dockerclient v1.9.7
 	github.com/go-git/go-git/v5 v5.6.1
@@ -65,6 +66,7 @@ require (
 	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/docker/distribution v2.8.1+incompatible // indirect
 	github.com/docker/docker v23.0.2+incompatible // indirect
+	github.com/docker/docker-credential-helpers v0.7.0 // indirect
 	github.com/docker/go-connections v0.4.0 // indirect
 	github.com/docker/go-units v0.5.0 // indirect
 	github.com/docker/libtrust v0.0.0-20160708172513-aabc10ec26b7 // indirect
