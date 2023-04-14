@@ -12,6 +12,7 @@ import (
 	buildkit "github.com/moby/buildkit/client"
 
 	"github.com/traPtitech/neoshowcase/pkg/domain"
+	"github.com/traPtitech/neoshowcase/pkg/domain/builder"
 	"github.com/traPtitech/neoshowcase/pkg/infrastructure/admindb"
 	"github.com/traPtitech/neoshowcase/pkg/infrastructure/storage"
 	"github.com/traPtitech/neoshowcase/pkg/interface/grpc"
@@ -27,6 +28,7 @@ type Config struct {
 	NS      grpc.ComponentServiceClientConfig `mapstructure:"ns" yaml:"ns"`
 	DB      admindb.Config                    `mapstructure:"db" yaml:"db"`
 	Storage domain.StorageConfig              `mapstructure:"storage" yaml:"storage"`
+	Image   builder.ImageConfig               `mapstructure:"image" yaml:"image"`
 }
 
 func provideRepositoryPublicKey(c Config) (*ssh.PublicKeys, error) {
