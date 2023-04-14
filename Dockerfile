@@ -4,8 +4,6 @@ FROM golang:1.20-alpine AS builder
 WORKDIR /go/src/github.com/traPtitech/NeoShowcase
 ENV GOCACHE=/tmp/go/cache
 ENV CGO_ENABLED 0
-ARG APP_VERSION=dev
-ARG APP_REVISION=local
 
 RUN apk add --update --no-cache git
 
@@ -14,6 +12,9 @@ RUN --mount=type=cache,target=/go/pkg/mod \
     go mod download
 
 COPY . .
+
+ARG APP_VERSION=dev
+ARG APP_REVISION=local
 
 FROM builder as builder-ns
 RUN --mount=type=cache,target=/go/pkg/mod --mount=type=cache,target=/tmp/go/cache \
