@@ -76,7 +76,7 @@ func (b *k8sBackend) Synchronize(ctx context.Context, s *domain.DesiredState) er
 	var next resources
 	b.runtimeResources(&next, s.Runtime, s.Domains)
 	b.ssResources(&next, s.StaticSites, s.Domains)
-	next.certificates = lo.FindDuplicatesBy(next.certificates, func(cert *certmanagerv1.Certificate) string { return cert.Name })
+	next.certificates = lo.UniqBy(next.certificates, func(cert *certmanagerv1.Certificate) string { return cert.Name })
 
 	// Apply resources
 	for _, ss := range next.statefulSets {
