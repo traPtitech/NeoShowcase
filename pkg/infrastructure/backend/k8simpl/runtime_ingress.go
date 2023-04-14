@@ -83,7 +83,10 @@ func (b *k8sBackend) certificate(targetDomain string) *certmanagerv1.Certificate
 			Labels:    b.generalLabel(), // certificate may be shared by one or more apps
 		},
 		Spec: certmanagerv1.CertificateSpec{
-			SecretName:  tlsSecretName(targetDomain),
+			SecretName: tlsSecretName(targetDomain),
+			SecretTemplate: &certmanagerv1.CertificateSecretTemplate{
+				Labels: b.generalLabel(),
+			},
 			Duration:    &metav1.Duration{Duration: 90 * 24 * time.Hour},
 			RenewBefore: &metav1.Duration{Duration: 15 * 24 * time.Hour},
 			DNSNames:    []string{targetDomain},
