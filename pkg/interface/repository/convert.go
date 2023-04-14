@@ -200,6 +200,8 @@ func toDomainApplication(app *models.Application) *domain.Application {
 		Container:     containerStateMapper.IntoMust(app.Container),
 		CurrentCommit: app.CurrentCommit,
 		WantCommit:    app.WantCommit,
+		CreatedAt:     app.CreatedAt,
+		UpdatedAt:     app.UpdatedAt,
 
 		Config:   toDomainApplicationConfig(app.R.ApplicationConfig),
 		Websites: lo.Map(app.R.Websites, func(website *models.Website, i int) *domain.Website { return toDomainWebsite(website) }),
