@@ -18,3 +18,11 @@ storage:
   type: local
   local:
     dir: /data
+
+image:
+  registry:
+    scheme: http
+    addr: registry.local.trapti.tech
+    username: ""
+    password: ""
+    namePrefix: ns-apps/
