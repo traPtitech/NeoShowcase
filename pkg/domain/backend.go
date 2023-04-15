@@ -3,8 +3,6 @@ package domain
 import (
 	"context"
 	"strings"
-
-	"github.com/samber/lo"
 )
 
 type DesiredState struct {
@@ -37,8 +35,13 @@ const (
 
 type WildcardDomains []string
 
-func (wd WildcardDomains) IsValid() bool {
-	return lo.EveryBy(wd, IsValidWildcardDomain)
+func (wd WildcardDomains) Validate() error {
+	for _, d := range wd {
+		if err := ValidateWildcardDomain(d); err != nil {
+			return err
+		}
+	}
+	return nil
 }
 
 func (wd WildcardDomains) TLSTargetDomain(website *Website) string {

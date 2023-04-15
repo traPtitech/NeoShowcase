@@ -30,8 +30,8 @@ type Config struct {
 }
 
 func (c *Config) Validate() error {
-	if !c.TLS.Wildcard.Domains.IsValid() {
-		return errors.New("docker.tls.wildcard.domains is invalid")
+	if err := c.TLS.Wildcard.Domains.Validate(); err != nil {
+		return errors.Wrap(err, "docker.tls.wildcard.domains is invalid")
 	}
 	return nil
 }

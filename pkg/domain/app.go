@@ -6,6 +6,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/friendsofgo/errors"
 	"github.com/mattn/go-shellwords"
 
 	"github.com/go-git/go-git/v5/plumbing/transport"
@@ -40,7 +41,7 @@ func (b BuildType) DeployType() DeployType {
 type BuildConfig interface {
 	isBuildConfig()
 	BuildType() BuildType
-	IsValid() bool
+	Validate() error
 }
 
 type buildConfigEmbed struct{}
@@ -58,10 +59,10 @@ func (bc *BuildConfigRuntimeCmd) BuildType() BuildType {
 	return BuildTypeRuntimeCmd
 }
 
-func (bc *BuildConfigRuntimeCmd) IsValid() bool {
+func (bc *BuildConfigRuntimeCmd) Validate() error {
 	// NOTE: base image is not necessary (default: scratch)
 	// NOTE: build cmd is not necessary
-	return true
+	return nil
 }
 
 type BuildConfigRuntimeDockerfile struct {
@@ -73,8 +74,11 @@ func (bc *BuildConfigRuntimeDockerfile) BuildType() BuildType {
 	return BuildTypeRuntimeDockerfile
 }
 
-func (bc *BuildConfigRuntimeDockerfile) IsValid() bool {
-	return bc.DockerfileName != ""
+func (bc *BuildConfigRuntimeDockerfile) Validate() error {
+	if bc.DockerfileName == "" {
+		return errors.New("dockerfile_name is required")
+	}
+	return nil
 }
 
 type BuildConfigStaticCmd struct {
@@ -89,10 +93,13 @@ func (bc *BuildConfigStaticCmd) BuildType() BuildType {
 	return BuildTypeStaticCmd
 }
 
-func (bc *BuildConfigStaticCmd) IsValid() bool {
+func (bc *BuildConfigStaticCmd) Validate() error {
 	// NOTE: base image is not necessary (default: scratch)
 	// NOTE: build cmd is not necessary
-	return bc.ArtifactPath != ""
+	if bc.ArtifactPath == "" {
+		return errors.New("artifact_path is required")
+	}
+	return nil
 }
 
 type BuildConfigStaticDockerfile struct {
@@ -105,8 +112,14 @@ func (bc *BuildConfigStaticDockerfile) BuildType() BuildType {
 	return BuildTypeStaticDockerfile
 }
 
-func (bc *BuildConfigStaticDockerfile) IsValid() bool {
-	return bc.DockerfileName != "" && bc.ArtifactPath != ""
+func (bc *BuildConfigStaticDockerfile) Validate() error {
+	if bc.DockerfileName == "" {
+		return errors.New("dockerfile_name is required")
+	}
+	if bc.ArtifactPath == "" {
+		return errors.New("artifact_path is required")
+	}
+	return nil
 }
 
 type ApplicationConfig struct {
@@ -118,37 +131,37 @@ type ApplicationConfig struct {
 	Command     string
 }
 
-func isValidCommand(s string) bool {
+func validateCommand(s string) error {
 	_, err := shellwords.Parse(s)
-	return err == nil
+	return err
 }
 
-func (c *ApplicationConfig) IsValid(deployType DeployType) bool {
+func (c *ApplicationConfig) Validate(deployType DeployType) error {
 	if c.BuildType.DeployType() != deployType {
-		return false
+		return errors.New("build type doesn't match deploy type")
 	}
 	if c.BuildConfig.BuildType() != c.BuildType {
-		return false
+		return errors.New("build config doesn't match build type")
 	}
-	if !c.BuildConfig.IsValid() {
-		return false
+	if err := c.BuildConfig.Validate(); err != nil {
+		return errors.Wrap(err, "invalid build_config")
 	}
 	if c.BuildType == BuildTypeRuntimeCmd && c.Entrypoint == "" && c.Command == "" {
-		return false
+		return errors.New("entrypoint or command is required for runtime_cmd build type")
 	}
 	// NOTE: Runtime Dockerfile build could have no entrypoint/command but is impossible to catch only from config
 	// (can only catch at runtime)
 	if c.Entrypoint != "" {
-		if !isValidCommand(c.Entrypoint) {
-			return false
+		if err := validateCommand(c.Entrypoint); err != nil {
+			return errors.Wrap(err, "invalid entrypoint")
 		}
 	}
 	if c.Command != "" {
-		if !isValidCommand(c.Command) {
-			return false
+		if err := validateCommand(c.Command); err != nil {
+			return errors.Wrap(err, "invalid command")
 		}
 	}
-	return true
+	return nil
 }
 
 func (c *ApplicationConfig) EntrypointArgs() []string {
@@ -188,28 +201,28 @@ type Application struct {
 	OwnerIDs []string
 }
 
-func (a *Application) IsValid() bool {
+func (a *Application) Validate() error {
 	if a.Name == "" {
-		return false
+		return errors.New("name is required")
 	}
 	if a.RepositoryID == "" {
-		return false
+		return errors.New("repository_id is required")
 	}
 	if a.RefName == "" {
-		return false
+		return errors.New("ref_name is required")
 	}
-	if !a.Config.IsValid(a.DeployType) {
-		return false
+	if err := a.Config.Validate(a.DeployType); err != nil {
+		return errors.Wrap(err, "invalid config")
 	}
 	for _, website := range a.Websites {
-		if !website.IsValid() {
-			return false
+		if err := website.Validate(); err != nil {
+			return errors.Wrap(err, "invalid website")
 		}
 	}
 	if len(a.OwnerIDs) == 0 {
-		return false
+		return errors.New("owner_ids cannot be empty")
 	}
-	return true
+	return nil
 }
 
 type Artifact struct {
@@ -229,21 +242,24 @@ func NewArtifact(buildID string, size int64) *Artifact {
 	}
 }
 
-func IsValidDomain(domain string) bool {
+func ValidateDomain(domain string) error {
 	// 面倒なのでtrailing dotは無しで統一
 	if strings.HasSuffix(domain, ".") {
-		return false
+		return errors.New("trailing dot not allowed in domain")
 	}
 	_, err := idna.Lookup.ToUnicode(domain)
-	return err == nil
+	if err != nil {
+		return errors.Wrap(err, "invalid domain")
+	}
+	return nil
 }
 
-func IsValidWildcardDomain(domain string) bool {
+func ValidateWildcardDomain(domain string) error {
 	if !strings.HasPrefix(domain, "*.") {
-		return false
+		return errors.New("wildcard domain needs to begin with *.")
 	}
 	baseDomain := strings.TrimPrefix(domain, "*.")
-	return IsValidDomain(baseDomain)
+	return ValidateDomain(baseDomain)
 }
 
 func MatchDomain(source, target string) bool {
@@ -266,8 +282,12 @@ type AvailableDomain struct {
 
 type AvailableDomainSlice []*AvailableDomain
 
-func (a *AvailableDomain) IsValid() bool {
-	return IsValidWildcardDomain(a.Domain) || IsValidDomain(a.Domain)
+func (a *AvailableDomain) Validate() error {
+	err := ValidateWildcardDomain(a.Domain)
+	if err == nil {
+		return nil
+	}
+	return ValidateDomain(a.Domain)
 }
 
 func (a *AvailableDomain) match(fqdn string) bool {
@@ -344,34 +364,34 @@ type Repository struct {
 	OwnerIDs []string
 }
 
-func (r *Repository) IsValid() bool {
+func (r *Repository) Validate() error {
 	if r.Name == "" {
-		return false
+		return errors.New("name is required")
 	}
 	ep, err := transport.NewEndpoint(r.URL)
 	if err != nil {
-		return false
+		return errors.Wrap(err, "invalid url")
 	}
 	if !r.Auth.Valid {
 		// URL is in http(s) format
 		if ep.Protocol != "http" && ep.Protocol != "https" {
-			return false
+			return errors.New("url has to be http(s) protocol when auth is none")
 		}
 	} else if r.Auth.V.Method == RepositoryAuthMethodBasic {
 		// URL is in https format
 		if ep.Protocol != "https" {
-			return false
+			return errors.New("url has to be https protocol when auth is basic")
 		}
 	} else if r.Auth.V.Method == RepositoryAuthMethodSSH {
 		// URL is in ssh format
 		if ep.Protocol != "ssh" {
-			return false
+			return errors.New("url has to be ssh protocol when auth is ssh")
 		}
 	}
 	if len(r.OwnerIDs) == 0 {
-		return false
+		return errors.New("owner_ids cannot be empty")
 	}
-	return true
+	return nil
 }
 
 type RepositoryAuthMethod int
@@ -388,24 +408,24 @@ type RepositoryAuth struct {
 	SSHKey   string
 }
 
-func (r *RepositoryAuth) IsValid() bool {
+func (r *RepositoryAuth) Validate() error {
 	switch r.Method {
 	case RepositoryAuthMethodBasic:
 		if r.Username == "" {
-			return false
+			return errors.New("username cannot be empty")
 		}
 		if r.Password == "" {
-			return false
+			return errors.New("password cannot be empty")
 		}
 	case RepositoryAuthMethodSSH:
 		if r.SSHKey != "" {
 			_, err := ssh.NewPublicKeys("", []byte(r.SSHKey), "")
 			if err != nil {
-				return false
+				return errors.Wrap(err, "invalid ssh private key")
 			}
 		}
 	}
-	return true
+	return nil
 }
 
 type AuthenticationType int
@@ -426,23 +446,23 @@ type Website struct {
 	Authentication AuthenticationType
 }
 
-func (w *Website) IsValid() bool {
-	if !IsValidDomain(w.FQDN) {
-		return false
+func (w *Website) Validate() error {
+	if err := ValidateDomain(w.FQDN); err != nil {
+		return errors.Wrap(err, "invalid domain")
 	}
 	if !strings.HasPrefix(w.PathPrefix, "/") {
-		return false
+		return errors.New("path_prefix has to start with /")
 	}
 	if w.PathPrefix != "/" && strings.HasSuffix(w.PathPrefix, "/") {
-		return false
+		return errors.New("path_prefix requires no trailing slash")
 	}
 	if w.StripPrefix && w.PathPrefix == "/" {
-		return false
+		return errors.New("strip_prefix has to be false when path_prefix is /")
 	}
 	if !(0 <= w.HTTPPort && w.HTTPPort < 65536) {
-		return false
+		return errors.New("invalid port number (requires 0 ~ 65535)")
 	}
-	return true
+	return nil
 }
 
 func (w *Website) pathComponents() []string {
