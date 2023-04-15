@@ -13,12 +13,12 @@ import (
 	"github.com/traPtitech/neoshowcase/pkg/util/optional"
 )
 
-func TestApplicationConfig_IsValid(t *testing.T) {
+func TestApplicationConfig_Validate(t *testing.T) {
 	tests := []struct {
 		name       string
 		deployType DeployType
 		config     ApplicationConfig
-		want       bool
+		wantErr    bool
 	}{
 		{
 			name:       "valid (runtime dockerfile)",
@@ -29,7 +29,7 @@ func TestApplicationConfig_IsValid(t *testing.T) {
 					DockerfileName: "Dockerfile",
 				},
 			},
-			want: true,
+			wantErr: false,
 		},
 		{
 			name:       "valid (runtime cmd)",
@@ -42,7 +42,7 @@ func TestApplicationConfig_IsValid(t *testing.T) {
 				},
 				Entrypoint: "./main",
 			},
-			want: true,
+			wantErr: false,
 		},
 		{
 			name:       "valid with no build cmd (runtime cmd)",
@@ -55,7 +55,7 @@ func TestApplicationConfig_IsValid(t *testing.T) {
 				},
 				Entrypoint: "python3 main.py",
 			},
-			want: true,
+			wantErr: false,
 		},
 		{
 			name:       "valid with scratch (runtime cmd)",
@@ -68,7 +68,7 @@ func TestApplicationConfig_IsValid(t *testing.T) {
 				},
 				Entrypoint: "./my-binary",
 			},
-			want: true,
+			wantErr: false,
 		},
 		{
 			name:       "empty entrypoint cmd (runtime cmd)",
@@ -81,7 +81,7 @@ func TestApplicationConfig_IsValid(t *testing.T) {
 				},
 				Entrypoint: "",
 			},
-			want: false,
+			wantErr: true,
 		},
 		{
 			name:       "valid (static dockerfile)",
@@ -93,7 +93,7 @@ func TestApplicationConfig_IsValid(t *testing.T) {
 					ArtifactPath:   "./dist",
 				},
 			},
-			want: true,
+			wantErr: false,
 		},
 		{
 			name:       "empty artifact path (static dockerfile)",
@@ -105,7 +105,7 @@ func TestApplicationConfig_IsValid(t *testing.T) {
 					ArtifactPath:   "",
 				},
 			},
-			want: false,
+			wantErr: true,
 		},
 		{
 			name:       "valid (static cmd)",
@@ -118,7 +118,7 @@ func TestApplicationConfig_IsValid(t *testing.T) {
 					ArtifactPath: "./dist",
 				},
 			},
-			want: true,
+			wantErr: false,
 		},
 		{
 			name:       "valid with no build cmd (static cmd)",
@@ -131,7 +131,7 @@ func TestApplicationConfig_IsValid(t *testing.T) {
 					ArtifactPath: "./dist",
 				},
 			},
-			want: true,
+			wantErr: false,
 		},
 		{
 			name:       "valid with scratch (static cmd)",
@@ -144,7 +144,7 @@ func TestApplicationConfig_IsValid(t *testing.T) {
 					ArtifactPath: "./dist",
 				},
 			},
-			want: true,
+			wantErr: false,
 		},
 		{
 			name:       "empty artifact path (static cmd)",
@@ -157,29 +157,32 @@ func TestApplicationConfig_IsValid(t *testing.T) {
 					ArtifactPath: "",
 				},
 			},
-			want: false,
+			wantErr: true,
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := tt.config.IsValid(tt.deployType); got != tt.want {
-				t.Errorf("IsValid() = %v, want %v", got, tt.want)
+			err := tt.config.Validate(tt.deployType)
+			if tt.wantErr {
+				assert.Error(t, err)
+			} else {
+				assert.NoError(t, err)
 			}
 		})
 	}
 }
 
-func TestApplication_IsValid(t *testing.T) {
+func TestApplication_Validate(t *testing.T) {
 	runtimeValidConfig := ApplicationConfig{
 		BuildType:   BuildTypeRuntimeDockerfile,
 		BuildConfig: &BuildConfigRuntimeDockerfile{DockerfileName: "Dockerfile"},
 	}
-	require.True(t, runtimeValidConfig.IsValid(DeployTypeRuntime))
+	require.NoError(t, runtimeValidConfig.Validate(DeployTypeRuntime))
 
 	tests := []struct {
-		name string
-		app  Application
-		want bool
+		name    string
+		app     Application
+		wantErr bool
 	}{
 		{
 			name: "valid",
@@ -197,7 +200,7 @@ func TestApplication_IsValid(t *testing.T) {
 				Websites:      nil,
 				OwnerIDs:      []string{"abc"},
 			},
-			want: true,
+			wantErr: false,
 		},
 		{
 			name: "empty name",
@@ -215,7 +218,7 @@ func TestApplication_IsValid(t *testing.T) {
 				Websites:      nil,
 				OwnerIDs:      []string{"abc"},
 			},
-			want: false,
+			wantErr: true,
 		},
 		{
 			name: "empty repository id",
@@ -233,7 +236,7 @@ func TestApplication_IsValid(t *testing.T) {
 				Websites:      nil,
 				OwnerIDs:      []string{"abc"},
 			},
-			want: false,
+			wantErr: true,
 		},
 		{
 			name: "empty owners",
@@ -251,58 +254,67 @@ func TestApplication_IsValid(t *testing.T) {
 				Websites:      nil,
 				OwnerIDs:      []string{},
 			},
-			want: false,
+			wantErr: true,
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := tt.app.IsValid(); got != tt.want {
-				t.Errorf("IsValid() = %v, want %v", got, tt.want)
+			err := tt.app.Validate()
+			if tt.wantErr {
+				assert.Error(t, err)
+			} else {
+				assert.NoError(t, err)
 			}
 		})
 	}
 }
 
-func TestIsValidDomain(t *testing.T) {
+func TestValidateDomain(t *testing.T) {
 	tests := []struct {
-		name   string
-		domain string
-		want   bool
+		name    string
+		domain  string
+		wantErr bool
 	}{
-		{"ok", "google.com", true},
-		{"wildcard ng", "*.trap.show", false},
-		{"multi wildcard ng", "*.*.trap.show", false},
-		{"wildcard in middle", "trap.*.show", false},
-		{"trailing dot ng", "google.com.", false},
+		{"ok", "google.com", false},
+		{"wildcard ng", "*.trap.show", true},
+		{"multi wildcard ng", "*.*.trap.show", true},
+		{"wildcard in middle", "trap.*.show", true},
+		{"trailing dot ng", "google.com.", true},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := IsValidDomain(tt.domain); got != tt.want {
-				t.Errorf("IsValidDomain() = %v, want %v", got, tt.want)
+			err := ValidateDomain(tt.domain)
+			if tt.wantErr {
+				assert.Error(t, err)
+			} else {
+				assert.NoError(t, err)
 			}
 		})
 	}
 }
 
-func TestAvailableDomain_IsValid(t *testing.T) {
+func TestAvailableDomain_Validate(t *testing.T) {
 	tests := []struct {
-		name   string
-		domain string
-		want   bool
+		name    string
+		domain  string
+		wantErr bool
 	}{
-		{"ok", "google.com", true},
-		{"wildcard ok", "*.trap.show", true},
-		{"multi wildcard ng", "*.*.trap.show", false},
-		{"wildcard in middle", "trap.*.show", false},
-		{"trailing dot ng", "google.com.", false},
+		{"ok", "google.com", false},
+		{"wildcard ok", "*.trap.show", false},
+		{"multi wildcard ng", "*.*.trap.show", true},
+		{"wildcard in middle", "trap.*.show", true},
+		{"trailing dot ng", "google.com.", true},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			a := &AvailableDomain{
 				Domain: tt.domain,
 			}
-			if got := a.IsValid(); got != tt.want {
-				t.Errorf("IsValid() = %v, want %v", got, tt.want)
+			err := a.Validate()
+			if tt.wantErr {
+				assert.Error(t, err)
+			} else {
+				assert.NoError(t, err)
 			}
 		})
 	}
@@ -423,11 +435,11 @@ AAAEA+FzwWKIYduEDOqkEOZ2wmxZWPc2wpZeWj+J8e3Q6x0QLWIALnhPWigJA3njldxcM9
 1PEkQQN231Ow7czCg8zDAAAADG1vdG9AbW90by13cwE=
 -----END OPENSSH PRIVATE KEY-----`
 
-func TestRepository_IsValid(t *testing.T) {
+func TestRepository_Validate(t *testing.T) {
 	tests := []struct {
-		name string
-		repo Repository
-		want bool
+		name    string
+		repo    Repository
+		wantErr bool
 	}{
 		{
 			name: "valid auth none (http)",
@@ -437,7 +449,7 @@ func TestRepository_IsValid(t *testing.T) {
 				Auth:     optional.Of[RepositoryAuth]{},
 				OwnerIDs: []string{"abc"},
 			},
-			want: true,
+			wantErr: false,
 		},
 		{
 			name: "valid auth none (https)",
@@ -447,7 +459,7 @@ func TestRepository_IsValid(t *testing.T) {
 				Auth:     optional.Of[RepositoryAuth]{},
 				OwnerIDs: []string{"abc"},
 			},
-			want: true,
+			wantErr: false,
 		},
 		{
 			name: "valid auth basic",
@@ -461,7 +473,7 @@ func TestRepository_IsValid(t *testing.T) {
 				}),
 				OwnerIDs: []string{"abc"},
 			},
-			want: true,
+			wantErr: false,
 		},
 		{
 			name: "valid auth ssh",
@@ -474,7 +486,7 @@ func TestRepository_IsValid(t *testing.T) {
 				}),
 				OwnerIDs: []string{"abc"},
 			},
-			want: true,
+			wantErr: false,
 		},
 		{
 			name: "invalid name",
@@ -484,7 +496,7 @@ func TestRepository_IsValid(t *testing.T) {
 				Auth:     optional.Of[RepositoryAuth]{},
 				OwnerIDs: []string{"abc"},
 			},
-			want: false,
+			wantErr: true,
 		},
 		{
 			name: "invalid url",
@@ -494,7 +506,7 @@ func TestRepository_IsValid(t *testing.T) {
 				Auth:     optional.Of[RepositoryAuth]{},
 				OwnerIDs: []string{"abc"},
 			},
-			want: false,
+			wantErr: true,
 		},
 		{
 			name: "invalid scheme (auth none)",
@@ -504,7 +516,7 @@ func TestRepository_IsValid(t *testing.T) {
 				Auth:     optional.Of[RepositoryAuth]{},
 				OwnerIDs: []string{"abc"},
 			},
-			want: false,
+			wantErr: true,
 		},
 		{
 			name: "invalid scheme (auth basic)",
@@ -518,7 +530,7 @@ func TestRepository_IsValid(t *testing.T) {
 				}),
 				OwnerIDs: []string{"abc"},
 			},
-			want: false,
+			wantErr: true,
 		},
 		{
 			name: "invalid scheme (auth ssh)",
@@ -531,7 +543,7 @@ func TestRepository_IsValid(t *testing.T) {
 				}),
 				OwnerIDs: []string{"abc"},
 			},
-			want: false,
+			wantErr: true,
 		},
 		{
 			name: "invalid owners",
@@ -541,23 +553,26 @@ func TestRepository_IsValid(t *testing.T) {
 				Auth:     optional.Of[RepositoryAuth]{},
 				OwnerIDs: []string{},
 			},
-			want: false,
+			wantErr: true,
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := tt.repo.IsValid(); got != tt.want {
-				t.Errorf("IsValid() = %v, want %v", got, tt.want)
+			err := tt.repo.Validate()
+			if tt.wantErr {
+				assert.Error(t, err)
+			} else {
+				assert.NoError(t, err)
 			}
 		})
 	}
 }
 
-func TestRepositoryAuth_IsValid(t *testing.T) {
+func TestRepositoryAuth_Validate(t *testing.T) {
 	tests := []struct {
-		name string
-		auth RepositoryAuth
-		want bool
+		name    string
+		auth    RepositoryAuth
+		wantErr bool
 	}{
 		{
 			name: "valid basic auth",
@@ -567,7 +582,7 @@ func TestRepositoryAuth_IsValid(t *testing.T) {
 				Password: "password",
 				SSHKey:   "",
 			},
-			want: true,
+			wantErr: false,
 		},
 		{
 			name: "invalid username",
@@ -577,7 +592,7 @@ func TestRepositoryAuth_IsValid(t *testing.T) {
 				Password: "password",
 				SSHKey:   "",
 			},
-			want: false,
+			wantErr: true,
 		},
 		{
 			name: "invalid password",
@@ -587,7 +602,7 @@ func TestRepositoryAuth_IsValid(t *testing.T) {
 				Password: "",
 				SSHKey:   "",
 			},
-			want: false,
+			wantErr: true,
 		},
 		{
 			name: "valid ssh auth",
@@ -597,7 +612,7 @@ func TestRepositoryAuth_IsValid(t *testing.T) {
 				Password: "",
 				SSHKey:   validSSHKey,
 			},
-			want: true,
+			wantErr: false,
 		},
 		{
 			name: "valid ssh auth (uses default system key)",
@@ -607,7 +622,7 @@ func TestRepositoryAuth_IsValid(t *testing.T) {
 				Password: "",
 				SSHKey:   "",
 			},
-			want: true,
+			wantErr: false,
 		},
 		{
 			name: "invalid ssh private key",
@@ -618,7 +633,7 @@ func TestRepositoryAuth_IsValid(t *testing.T) {
 				SSHKey: `-----BEGIN OPENSSH PRIVATE KEY------
 -----END OPENSSH PRIVATE KEY-----`,
 			},
-			want: false,
+			wantErr: true,
 		},
 		{
 			name: "invalid ssh auth (public key)",
@@ -628,45 +643,51 @@ func TestRepositoryAuth_IsValid(t *testing.T) {
 				Password: "",
 				SSHKey:   `ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIALWIALnhPWigJA3njldxcM91PEkQQN231Ow7czCg8zD`,
 			},
-			want: false,
+			wantErr: true,
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := tt.auth.IsValid(); got != tt.want {
-				t.Errorf("IsValid() = %v, want %v", got, tt.want)
+			err := tt.auth.Validate()
+			if tt.wantErr {
+				assert.Error(t, err)
+			} else {
+				assert.NoError(t, err)
 			}
 		})
 	}
 }
 
-func TestWebsite_IsValid(t *testing.T) {
+func TestWebsite_Validate(t *testing.T) {
 	tests := []struct {
 		name    string
 		website Website
-		want    bool
+		wantErr bool
 	}{
-		{"ok1", Website{FQDN: "google.com", PathPrefix: "/", HTTPPort: 80}, true},
-		{"ok2", Website{FQDN: "google.com", PathPrefix: "/path/to/prefix", HTTPPort: 8080}, true},
-		{"invalid fqdn1", Website{FQDN: "google.com.", PathPrefix: "/", HTTPPort: 80}, false},
-		{"invalid fqdn2", Website{FQDN: "*.google.com", PathPrefix: "/", HTTPPort: 80}, false},
-		{"invalid fqdn3", Website{FQDN: "google.*.com", PathPrefix: "/", HTTPPort: 80}, false},
-		{"invalid fqdn4", Website{FQDN: "goo gle.com", PathPrefix: "/", HTTPPort: 80}, false},
-		{"invalid fqdn5", Website{FQDN: "no space", PathPrefix: "/", HTTPPort: 80}, false},
-		{"invalid path1", Website{FQDN: "google.com", PathPrefix: "", HTTPPort: 80}, false},
-		{"invalid path2", Website{FQDN: "google.com", PathPrefix: "../test", HTTPPort: 80}, false},
-		{"invalid path3", Website{FQDN: "google.com", PathPrefix: "/test/", HTTPPort: 80}, false},
-		{"strip prefix ok1", Website{FQDN: "google.com", PathPrefix: "/", StripPrefix: false, HTTPPort: 80}, true},
-		{"strip prefix ok2", Website{FQDN: "google.com", PathPrefix: "/test", StripPrefix: false, HTTPPort: 80}, true},
-		{"strip prefix ng", Website{FQDN: "google.com", PathPrefix: "/", StripPrefix: true, HTTPPort: 80}, false},
-		{"strip prefix ok3", Website{FQDN: "google.com", PathPrefix: "/test", StripPrefix: true, HTTPPort: 80}, true},
-		{"invalid port1", Website{FQDN: "google.com", PathPrefix: "/", HTTPPort: -1}, false},
-		{"invalid port2", Website{FQDN: "google.com", PathPrefix: "/", HTTPPort: 65536}, false},
+		{"ok1", Website{FQDN: "google.com", PathPrefix: "/", HTTPPort: 80}, false},
+		{"ok2", Website{FQDN: "google.com", PathPrefix: "/path/to/prefix", HTTPPort: 8080}, false},
+		{"invalid fqdn1", Website{FQDN: "google.com.", PathPrefix: "/", HTTPPort: 80}, true},
+		{"invalid fqdn2", Website{FQDN: "*.google.com", PathPrefix: "/", HTTPPort: 80}, true},
+		{"invalid fqdn3", Website{FQDN: "google.*.com", PathPrefix: "/", HTTPPort: 80}, true},
+		{"invalid fqdn4", Website{FQDN: "goo gle.com", PathPrefix: "/", HTTPPort: 80}, true},
+		{"invalid fqdn5", Website{FQDN: "no space", PathPrefix: "/", HTTPPort: 80}, true},
+		{"invalid path1", Website{FQDN: "google.com", PathPrefix: "", HTTPPort: 80}, true},
+		{"invalid path2", Website{FQDN: "google.com", PathPrefix: "../test", HTTPPort: 80}, true},
+		{"invalid path3", Website{FQDN: "google.com", PathPrefix: "/test/", HTTPPort: 80}, true},
+		{"strip prefix ok1", Website{FQDN: "google.com", PathPrefix: "/", StripPrefix: false, HTTPPort: 80}, false},
+		{"strip prefix ok2", Website{FQDN: "google.com", PathPrefix: "/test", StripPrefix: false, HTTPPort: 80}, false},
+		{"strip prefix ng", Website{FQDN: "google.com", PathPrefix: "/", StripPrefix: true, HTTPPort: 80}, true},
+		{"strip prefix ok3", Website{FQDN: "google.com", PathPrefix: "/test", StripPrefix: true, HTTPPort: 80}, false},
+		{"invalid port1", Website{FQDN: "google.com", PathPrefix: "/", HTTPPort: -1}, true},
+		{"invalid port2", Website{FQDN: "google.com", PathPrefix: "/", HTTPPort: 65536}, true},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := tt.website.IsValid(); got != tt.want {
-				t.Errorf("IsValid() = %v, want %v", got, tt.want)
+			err := tt.website.Validate()
+			if tt.wantErr {
+				assert.Error(t, err)
+			} else {
+				assert.NoError(t, err)
 			}
 		})
 	}

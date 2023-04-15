@@ -137,8 +137,8 @@ func (s *APIServerService) GetRepositories(ctx context.Context) ([]*domain.Repos
 }
 
 func (s *APIServerService) CreateRepository(ctx context.Context, repo *domain.Repository) error {
-	if !repo.IsValid() {
-		return newError(ErrorTypeBadRequest, "invalid repository", nil)
+	if err := repo.Validate(); err != nil {
+		return newError(ErrorTypeBadRequest, "invalid repository", err)
 	}
 
 	return s.gitRepo.CreateRepository(ctx, repo)
@@ -155,8 +155,8 @@ func (s *APIServerService) UpdateRepository(ctx context.Context, id string, args
 		return err
 	}
 	repo.Apply(args)
-	if !repo.IsValid() {
-		return newError(ErrorTypeBadRequest, "invalid repository", nil)
+	if err = repo.Validate(); err != nil {
+		return newError(ErrorTypeBadRequest, "invalid repository", err)
 	}
 
 	return s.gitRepo.UpdateRepository(ctx, id, args)
@@ -193,8 +193,8 @@ func (s *APIServerService) AddAvailableDomain(ctx context.Context, ad *domain.Av
 		return err
 	}
 
-	if !ad.IsValid() {
-		return newError(ErrorTypeBadRequest, "invalid new domain", nil)
+	if err = ad.Validate(); err != nil {
+		return newError(ErrorTypeBadRequest, "invalid new domain", err)
 	}
 	return s.adRepo.AddAvailableDomain(ctx, ad)
 }
@@ -211,8 +211,8 @@ func (s *APIServerService) CreateApplication(ctx context.Context, app *domain.Ap
 		}
 	}
 
-	if !app.IsValid() {
-		return nil, newError(ErrorTypeBadRequest, "invalid application", nil)
+	if err = app.Validate(); err != nil {
+		return nil, newError(ErrorTypeBadRequest, "invalid application", err)
 	}
 
 	domains, err := s.adRepo.GetAvailableDomains(ctx)
@@ -220,9 +220,6 @@ func (s *APIServerService) CreateApplication(ctx context.Context, app *domain.Ap
 		return nil, err
 	}
 	for _, website := range app.Websites {
-		if !website.IsValid() {
-			return nil, newError(ErrorTypeBadRequest, "invalid website", nil)
-		}
 		if !domains.IsAvailable(website.FQDN) {
 			return nil, newError(ErrorTypeBadRequest, "domain not available", nil)
 		}
@@ -339,8 +336,8 @@ func (s *APIServerService) UpdateApplication(ctx context.Context, id string, arg
 		return err
 	}
 	app.Apply(args)
-	if !app.IsValid() {
-		return newError(ErrorTypeBadRequest, "invalid application", nil)
+	if err = app.Validate(); err != nil {
+		return newError(ErrorTypeBadRequest, "invalid application", err)
 	}
 
 	return s.appRepo.UpdateApplication(ctx, id, args)

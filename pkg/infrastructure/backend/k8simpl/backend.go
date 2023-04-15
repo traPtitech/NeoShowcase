@@ -61,12 +61,12 @@ type Config struct {
 func (c *Config) Validate() error {
 	switch c.TLS.Type {
 	case tlsTypeTraefik:
-		if !c.TLS.Traefik.Wildcard.Domains.IsValid() {
-			return errors.New("k8s.tls.traefik.wildcard.domains is invalid")
+		if err := c.TLS.Traefik.Wildcard.Domains.Validate(); err != nil {
+			return errors.Wrap(err, "k8s.tls.traefik.wildcard.domains is invalid")
 		}
 	case tlsTypeCertManager:
-		if !c.TLS.CertManager.Wildcard.Domains.IsValid() {
-			return errors.New("k8s.tls.certManager.wildcard.domains is invalid")
+		if err := c.TLS.CertManager.Wildcard.Domains.Validate(); err != nil {
+			return errors.Wrap(err, "k8s.tls.certManager.wildcard.domains is invalid")
 		}
 	default:
 		return errors.New("k8s.tls.type needs to be one of 'traefik' or 'cert-manager'")
