@@ -113,6 +113,8 @@ message ApplicationConfig {
 message UpdateApplicationConfigRequest {
   BuildType build_type = 1;
   BuildConfig build_config = 2;
+  string entrypoint = 3;
+  string command = 4;
 }
 
 enum AuthenticationType {
