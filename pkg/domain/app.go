@@ -246,6 +246,19 @@ func IsValidWildcardDomain(domain string) bool {
 	return IsValidDomain(baseDomain)
 }
 
+func MatchDomain(source, target string) bool {
+	if source == target {
+		return true
+	}
+	if strings.HasPrefix(source, "*.") {
+		baseDomain := strings.TrimPrefix(source, "*")
+		if strings.HasSuffix(target, baseDomain) {
+			return true
+		}
+	}
+	return false
+}
+
 type AvailableDomain struct {
 	Domain    string
 	Available bool
@@ -258,16 +271,7 @@ func (a *AvailableDomain) IsValid() bool {
 }
 
 func (a *AvailableDomain) match(fqdn string) bool {
-	if fqdn == a.Domain {
-		return true
-	}
-	if strings.HasPrefix(a.Domain, "*.") {
-		baseDomain := strings.TrimPrefix(a.Domain, "*")
-		if strings.HasSuffix(fqdn, baseDomain) {
-			return true
-		}
-	}
-	return false
+	return MatchDomain(a.Domain, fqdn)
 }
 
 func (s AvailableDomainSlice) IsAvailable(fqdn string) bool {

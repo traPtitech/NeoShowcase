@@ -5,8 +5,6 @@ import (
 	"strings"
 
 	"github.com/samber/lo"
-
-	"github.com/traPtitech/neoshowcase/pkg/util/ds"
 )
 
 type DesiredState struct {
@@ -44,17 +42,11 @@ func (wd WildcardDomains) IsValid() bool {
 }
 
 func (wd WildcardDomains) TLSTargetDomain(website *Website) string {
-	websiteParts := strings.Split(website.FQDN, ".")
 	for _, d := range wd {
-		baseParts := strings.Split(strings.TrimPrefix(d, "*."), ".")
-		if ds.HasSuffix(websiteParts, baseParts) {
-			switch {
-			case len(websiteParts) == len(baseParts)+1:
-				return d
-			case len(websiteParts) > len(baseParts)+1:
-				websiteParts[0] = "*"
-				return strings.Join(websiteParts, ".")
-			}
+		if MatchDomain(d, website.FQDN) {
+			websiteParts := strings.Split(website.FQDN, ".")
+			websiteParts[0] = "*"
+			return strings.Join(websiteParts, ".")
 		}
 	}
 	return website.FQDN
