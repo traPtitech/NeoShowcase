@@ -13,13 +13,20 @@ export const  appTitle = style({
 export const appsTitle = style({
   marginLeft: '50px',
   fontSize: '32px',
-  fontWeight: 'bold',
+  fontWeight: 700,
   color: vars.text.black1,
 })
 
 export const arrow = style({
-  fontSize: '40px',
+  fontSize: '32px',
   fontWeight: 'bold',
+  color: vars.text.black1,
+})
+
+export const subTitle = style({
+  marginTop: '30px',
+  fontSize: '32px',
+  fontWeight: 500,
   color: vars.text.black1,
 })
 
