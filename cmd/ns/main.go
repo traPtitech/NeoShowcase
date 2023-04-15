@@ -118,7 +118,7 @@ func main() {
 	viper.SetDefault("docker.network", "neoshowcase_apps")
 	viper.SetDefault("docker.labels", nil)
 	viper.SetDefault("docker.tls.certResolver", "nsresolver")
-	viper.SetDefault("docker.tls.wildcard", "false")
+	viper.SetDefault("docker.tls.wildcard.domains", nil)
 
 	viper.SetDefault("k8s.ss.namespace", "default")
 	viper.SetDefault("k8s.ss.kind", "Service")
@@ -128,10 +128,10 @@ func main() {
 	viper.SetDefault("k8s.labels", nil)
 	viper.SetDefault("k8s.tls.type", "traefik")
 	viper.SetDefault("k8s.tls.traefik.certResolver", "nsresolver")
-	viper.SetDefault("k8s.tls.traefik.wildcard", false)
+	viper.SetDefault("k8s.tls.traefik.wildcard.domains", nil)
 	viper.SetDefault("k8s.tls.certManager.issuer.name", "cert-issuer")
 	viper.SetDefault("k8s.tls.certManager.issuer.kind", "ClusterIssuer")
-	viper.SetDefault("k8s.tls.certManager.wildcard", false)
+	viper.SetDefault("k8s.tls.certManager.wildcard.domains", nil)
 	viper.SetDefault("k8s.imagePullSecret", "")
 
 	viper.SetDefault("log.type", "loki")

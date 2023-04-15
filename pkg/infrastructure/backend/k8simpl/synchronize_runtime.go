@@ -63,12 +63,12 @@ func (b *k8sBackend) statefulSet(app *domain.RuntimeDesiredState) *appsv1.Statef
 	return ss
 }
 
-func (b *k8sBackend) runtimeResources(next *resources, apps []*domain.RuntimeDesiredState, ads domain.AvailableDomainSlice) {
+func (b *k8sBackend) runtimeResources(next *resources, apps []*domain.RuntimeDesiredState) {
 	for _, app := range apps {
 		next.statefulSets = append(next.statefulSets, b.statefulSet(app))
 		for _, website := range app.App.Websites {
 			next.services = append(next.services, b.runtimeService(app.App, website))
-			ingressRoute, mw, certs := b.ingressRoute(app.App, website, b.runtimeServiceRef(app.App, website), ads)
+			ingressRoute, mw, certs := b.ingressRoute(app.App, website, b.runtimeServiceRef(app.App, website))
 			next.middlewares = append(next.middlewares, mw...)
 			next.ingressRoutes = append(next.ingressRoutes, ingressRoute)
 			next.certificates = append(next.certificates, certs...)

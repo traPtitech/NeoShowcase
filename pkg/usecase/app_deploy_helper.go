@@ -13,7 +13,6 @@ import (
 
 type AppDeployHelper struct {
 	backend   domain.Backend
-	adRepo    domain.AvailableDomainRepository
 	appRepo   domain.ApplicationRepository
 	buildRepo domain.BuildRepository
 	envRepo   domain.EnvironmentRepository
@@ -23,7 +22,6 @@ type AppDeployHelper struct {
 
 func NewAppDeployHelper(
 	backend domain.Backend,
-	adRepo domain.AvailableDomainRepository,
 	appRepo domain.ApplicationRepository,
 	buildRepo domain.BuildRepository,
 	envRepo domain.EnvironmentRepository,
@@ -32,7 +30,6 @@ func NewAppDeployHelper(
 ) *AppDeployHelper {
 	return &AppDeployHelper{
 		backend:   backend,
-		adRepo:    adRepo,
 		appRepo:   appRepo,
 		buildRepo: buildRepo,
 		envRepo:   envRepo,
@@ -102,10 +99,6 @@ func (s *AppDeployHelper) synchronize(ctx context.Context) error {
 		return err
 	}
 	st.StaticSites, err = domain.GetActiveStaticSites(ctx, s.appRepo, s.buildRepo)
-	if err != nil {
-		return err
-	}
-	st.Domains, err = s.adRepo.GetAvailableDomains(ctx)
 	if err != nil {
 		return err
 	}

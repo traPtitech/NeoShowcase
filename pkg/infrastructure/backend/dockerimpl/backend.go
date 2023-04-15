@@ -23,8 +23,17 @@ type Config struct {
 	Labels  map[string]string `mapstructure:"labels" yaml:"labels"`
 	TLS     struct {
 		CertResolver string `mapstructure:"certResolver" yaml:"certResolver"`
-		Wildcard     bool   `mapstructure:"wildcard" yaml:"wildcard"`
+		Wildcard     struct {
+			Domains domain.WildcardDomains `mapstructure:"domains" yaml:"domains"`
+		} `mapstructure:"wildcard" yaml:"wildcard"`
 	} `mapstructure:"tls" yaml:"tls"`
+}
+
+func (c *Config) Validate() error {
+	if !c.TLS.Wildcard.Domains.IsValid() {
+		return errors.New("docker.tls.wildcard.domains is invalid")
+	}
+	return nil
 }
 
 const (
@@ -52,12 +61,16 @@ func NewDockerBackend(
 	c *docker.Client,
 	bus domain.Bus,
 	conf Config,
-) domain.Backend {
+) (domain.Backend, error) {
+	err := conf.Validate()
+	if err != nil {
+		return nil, err
+	}
 	return &dockerBackend{
 		c:    c,
 		bus:  bus,
 		conf: conf,
-	}
+	}, nil
 }
 
 func (b *dockerBackend) Start(_ context.Context) error {

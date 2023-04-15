@@ -74,8 +74,8 @@ func (b *k8sBackend) Synchronize(ctx context.Context, s *domain.DesiredState) er
 
 	// Calculate next resources to apply
 	var next resources
-	b.runtimeResources(&next, s.Runtime, s.Domains)
-	b.ssResources(&next, s.StaticSites, s.Domains)
+	b.runtimeResources(&next, s.Runtime)
+	b.ssResources(&next, s.StaticSites)
 	next.certificates = lo.UniqBy(next.certificates, func(cert *certmanagerv1.Certificate) string { return cert.Name })
 
 	// Apply resources

@@ -102,7 +102,6 @@ func (b *k8sBackend) ingressRoute(
 	app *domain.Application,
 	website *domain.Website,
 	serviceRefs []traefikv1alpha1.Service,
-	ads domain.AvailableDomainSlice,
 ) (
 	*traefikv1alpha1.IngressRoute,
 	[]*traefikv1alpha1.Middleware,
@@ -146,14 +145,14 @@ func (b *k8sBackend) ingressRoute(
 	var certs []*certmanagerv1.Certificate
 	if website.HTTPS {
 		if b.config.TLS.Type == tlsTypeTraefik {
-			targetDomain := domain.TLSTargetDomain(b.config.TLS.Traefik.Wildcard, website, ads)
+			targetDomain := b.config.TLS.Traefik.Wildcard.Domains.TLSTargetDomain(website)
 			tls = &traefikv1alpha1.TLS{
 				SecretName:   tlsSecretName(targetDomain),
 				CertResolver: b.config.TLS.Traefik.CertResolver,
 				Domains:      []types.Domain{{Main: targetDomain}},
 			}
 		} else if b.config.TLS.Type == tlsTypeCertManager {
-			targetDomain := domain.TLSTargetDomain(b.config.TLS.CertManager.Wildcard, website, ads)
+			targetDomain := b.config.TLS.CertManager.Wildcard.Domains.TLSTargetDomain(website)
 			tls = &traefikv1alpha1.TLS{
 				SecretName: tlsSecretName(targetDomain),
 				Domains:    []types.Domain{{Main: targetDomain}},

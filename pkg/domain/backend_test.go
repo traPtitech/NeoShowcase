@@ -8,20 +8,21 @@ import (
 
 func TestTLSTargetDomain(t *testing.T) {
 	tests := []struct {
-		name     string
-		wildcard bool
-		fqdn     string
-		ads      AvailableDomainSlice
-		want     string
+		name    string
+		fqdn    string
+		domains WildcardDomains
+		want    string
 	}{
-		{"wildcard match", true, "sub.google.com", AvailableDomainSlice{{Domain: "*.google.com", Available: true}}, "*.google.com"},
-		{"not wildcard match", true, "sub.google.com", AvailableDomainSlice{{Domain: "sub.google.com", Available: true}}, "sub.google.com"},
-		{"wildcard match (no wildcard)", false, "sub.google.com", AvailableDomainSlice{{Domain: "*.google.com", Available: true}}, "sub.google.com"},
-		{"not wildcard match (no wildcard)", false, "sub.google.com", AvailableDomainSlice{{Domain: "sub.google.com", Available: true}}, "sub.google.com"},
+		{"wildcard match", "sub.google.com", WildcardDomains{"*.google.com"}, "*.google.com"},
+		{"not wildcard match", "google.com", WildcardDomains{"*.google.com"}, "google.com"},
+		{"recursive wildcard match", "grand.children.google.com", WildcardDomains{"*.google.com"}, "*.children.google.com"},
+		{"domain txt record not in control", "test.yahoo.com", WildcardDomains{"*.google.com"}, "test.yahoo.com"},
+		{"wildcard match (no wildcard)", "sub.google.com", WildcardDomains{}, "sub.google.com"},
+		{"not wildcard match (no wildcard)", "google.com", WildcardDomains{}, "google.com"},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			assert.Equalf(t, tt.want, TLSTargetDomain(tt.wildcard, &Website{FQDN: tt.fqdn}, tt.ads), "TLSTargetDomain(%v, %v, %v)", tt.wildcard, tt.fqdn, tt.ads)
+			assert.Equalf(t, tt.want, tt.domains.TLSTargetDomain(&Website{FQDN: tt.fqdn}), "(%v).TLSTargetDomain(%v)", tt.domains, tt.fqdn)
 		})
 	}
 }

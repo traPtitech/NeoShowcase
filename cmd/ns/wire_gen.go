@@ -82,10 +82,13 @@ func NewWithDocker(c2 Config) (*Server, error) {
 		return nil, err
 	}
 	dockerimplConfig := c2.Docker
-	backend := dockerimpl.NewDockerBackend(client, bus, dockerimplConfig)
+	backend, err := dockerimpl.NewDockerBackend(client, bus, dockerimplConfig)
+	if err != nil {
+		return nil, err
+	}
 	imageConfig := c2.Image
 	appBuildHelper := usecase.NewAppBuildHelper(componentService, imageConfig)
-	appDeployHelper := usecase.NewAppDeployHelper(backend, availableDomainRepository, applicationRepository, buildRepository, environmentRepository, componentService, imageConfig)
+	appDeployHelper := usecase.NewAppDeployHelper(backend, applicationRepository, buildRepository, environmentRepository, componentService, imageConfig)
 	containerStateMutator := usecase.NewContainerStateMutator(bus, applicationRepository, backend)
 	continuousDeploymentService, err := usecase.NewContinuousDeploymentService(bus, applicationRepository, buildRepository, backend, appBuildHelper, appDeployHelper, containerStateMutator)
 	if err != nil {
@@ -180,7 +183,7 @@ func NewWithK8S(c2 Config) (*Server, error) {
 	}
 	imageConfig := c2.Image
 	appBuildHelper := usecase.NewAppBuildHelper(componentService, imageConfig)
-	appDeployHelper := usecase.NewAppDeployHelper(backend, availableDomainRepository, applicationRepository, buildRepository, environmentRepository, componentService, imageConfig)
+	appDeployHelper := usecase.NewAppDeployHelper(backend, applicationRepository, buildRepository, environmentRepository, componentService, imageConfig)
 	containerStateMutator := usecase.NewContainerStateMutator(bus, applicationRepository, backend)
 	continuousDeploymentService, err := usecase.NewContinuousDeploymentService(bus, applicationRepository, buildRepository, backend, appBuildHelper, appDeployHelper, containerStateMutator)
 	if err != nil {

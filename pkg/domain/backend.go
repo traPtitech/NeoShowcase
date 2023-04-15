@@ -2,12 +2,14 @@ package domain
 
 import (
 	"context"
+	"strings"
+
+	"github.com/samber/lo"
 )
 
 type DesiredState struct {
 	Runtime     []*RuntimeDesiredState
 	StaticSites []*StaticSite
-	Domains     AvailableDomainSlice
 }
 
 type RuntimeDesiredState struct {
@@ -33,11 +35,18 @@ const (
 	ContainerStateUnknown
 )
 
-func TLSTargetDomain(allowWildcard bool, website *Website, ads AvailableDomainSlice) string {
-	if allowWildcard {
-		ad := ads.GetAvailableMatch(website.FQDN)
-		if ad != nil {
-			return ad.Domain
+type WildcardDomains []string
+
+func (wd WildcardDomains) IsValid() bool {
+	return lo.EveryBy(wd, IsValidWildcardDomain)
+}
+
+func (wd WildcardDomains) TLSTargetDomain(website *Website) string {
+	for _, d := range wd {
+		if MatchDomain(d, website.FQDN) {
+			websiteParts := strings.Split(website.FQDN, ".")
+			websiteParts[0] = "*"
+			return strings.Join(websiteParts, ".")
 		}
 	}
 	return website.FQDN
