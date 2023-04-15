@@ -50,8 +50,7 @@ func (b *k8sBackend) statefulSet(app *domain.RuntimeDesiredState) *appsv1.Statef
 					},
 				},
 				Spec: v1.PodSpec{
-					Containers:    []v1.Container{cont},
-					RestartPolicy: v1.RestartPolicyOnFailure,
+					Containers: []v1.Container{cont},
 				},
 			},
 		},
