@@ -155,7 +155,6 @@ func (b *k8sBackend) ingressRoute(
 			targetDomain := b.config.TLS.CertManager.Wildcard.Domains.TLSTargetDomain(website)
 			tls = &traefikv1alpha1.TLS{
 				SecretName: tlsSecretName(targetDomain),
-				Domains:    []types.Domain{{Main: targetDomain}},
 			}
 			certs = append(certs, b.certificate(targetDomain))
 		}
