@@ -2,12 +2,16 @@ package domain
 
 import (
 	"context"
+	"strings"
+
+	"github.com/samber/lo"
+
+	"github.com/traPtitech/neoshowcase/pkg/util/ds"
 )
 
 type DesiredState struct {
 	Runtime     []*RuntimeDesiredState
 	StaticSites []*StaticSite
-	Domains     AvailableDomainSlice
 }
 
 type RuntimeDesiredState struct {
@@ -33,11 +37,24 @@ const (
 	ContainerStateUnknown
 )
 
-func TLSTargetDomain(allowWildcard bool, website *Website, ads AvailableDomainSlice) string {
-	if allowWildcard {
-		ad := ads.GetAvailableMatch(website.FQDN)
-		if ad != nil {
-			return ad.Domain
+type WildcardDomains []string
+
+func (wd WildcardDomains) IsValid() bool {
+	return lo.EveryBy(wd, IsValidWildcardDomain)
+}
+
+func (wd WildcardDomains) TLSTargetDomain(website *Website) string {
+	websiteParts := strings.Split(website.FQDN, ".")
+	for _, d := range wd {
+		baseParts := strings.Split(strings.TrimPrefix(d, "*."), ".")
+		if ds.HasSuffix(websiteParts, baseParts) {
+			switch {
+			case len(websiteParts) == len(baseParts)+1:
+				return d
+			case len(websiteParts) > len(baseParts)+1:
+				websiteParts[0] = "*"
+				return strings.Join(websiteParts, ".")
+			}
 		}
 	}
 	return website.FQDN

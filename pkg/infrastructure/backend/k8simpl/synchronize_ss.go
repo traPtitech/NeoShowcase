@@ -43,9 +43,9 @@ func (b *k8sBackend) ssHeaderMiddleware(ss *domain.StaticSite) *traefikv1alpha1.
 	}
 }
 
-func (b *k8sBackend) ssResources(next *resources, sites []*domain.StaticSite, ads domain.AvailableDomainSlice) {
+func (b *k8sBackend) ssResources(next *resources, sites []*domain.StaticSite) {
 	for _, site := range sites {
-		ingressRoute, mw, certs := b.ingressRoute(site.Application, site.Website, b.ssServiceRef(), ads)
+		ingressRoute, mw, certs := b.ingressRoute(site.Application, site.Website, b.ssServiceRef())
 
 		ssHeaderMW := b.ssHeaderMiddleware(site)
 		ingressRoute.Spec.Routes[0].Middlewares = append(ingressRoute.Spec.Routes[0].Middlewares, traefikv1alpha1.MiddlewareRef{Name: ssHeaderMW.Name})

@@ -17,7 +17,7 @@ type (
 	a []any
 )
 
-func (b *dockerBackend) routerBase(website *domain.Website, svcName string, ads domain.AvailableDomainSlice) (router m, middlewares m) {
+func (b *dockerBackend) routerBase(website *domain.Website, svcName string) (router m, middlewares m) {
 	middlewares = make(m)
 
 	var entrypoints []string
@@ -65,7 +65,7 @@ func (b *dockerBackend) routerBase(website *domain.Website, svcName string, ads 
 	}
 
 	if website.HTTPS {
-		targetDomain := domain.TLSTargetDomain(b.conf.TLS.Wildcard, website, ads)
+		targetDomain := b.conf.TLS.Wildcard.Domains.TLSTargetDomain(website)
 		router["tls"] = m{
 			"certResolver": b.conf.TLS.CertResolver,
 			"domains": a{
@@ -91,10 +91,10 @@ func newRuntimeConfigBuilder() *runtimeConfigBuilder {
 	}
 }
 
-func (b *runtimeConfigBuilder) addWebsite(backend *dockerBackend, app *domain.Application, website *domain.Website, ads domain.AvailableDomainSlice) {
+func (b *runtimeConfigBuilder) addWebsite(backend *dockerBackend, app *domain.Application, website *domain.Website) {
 	svcName := traefikName(website)
 
-	router, middlewares := backend.routerBase(website, svcName, ads)
+	router, middlewares := backend.routerBase(website, svcName)
 
 	netName := networkName(app.ID)
 	svc := m{

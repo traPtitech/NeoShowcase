@@ -89,7 +89,7 @@ func (b *dockerBackend) syncAppContainer(ctx context.Context, app *domain.Runtim
 	return nil
 }
 
-func (b *dockerBackend) synchronizeRuntime(ctx context.Context, apps []*domain.RuntimeDesiredState, ads domain.AvailableDomainSlice) error {
+func (b *dockerBackend) synchronizeRuntime(ctx context.Context, apps []*domain.RuntimeDesiredState) error {
 	// List old resources
 	oldContainers, err := b.c.ListContainers(docker.ListContainersOptions{
 		All:     true,
@@ -116,7 +116,7 @@ func (b *dockerBackend) synchronizeRuntime(ctx context.Context, apps []*domain.R
 	cb := newRuntimeConfigBuilder()
 	for _, app := range apps {
 		for _, website := range app.App.Websites {
-			cb.addWebsite(b, app.App, website, ads)
+			cb.addWebsite(b, app.App, website)
 		}
 	}
 	err = b.writeConfig(traefikRuntimeFilename, cb.build())

@@ -238,6 +238,14 @@ func IsValidDomain(domain string) bool {
 	return err == nil
 }
 
+func IsValidWildcardDomain(domain string) bool {
+	if !strings.HasPrefix(domain, "*.") {
+		return false
+	}
+	baseDomain := strings.TrimPrefix(domain, "*.")
+	return IsValidDomain(baseDomain)
+}
+
 type AvailableDomain struct {
 	Domain    string
 	Available bool
@@ -246,9 +254,7 @@ type AvailableDomain struct {
 type AvailableDomainSlice []*AvailableDomain
 
 func (a *AvailableDomain) IsValid() bool {
-	domain := a.Domain
-	domain = strings.TrimPrefix(domain, "*.")
-	return IsValidDomain(domain)
+	return IsValidWildcardDomain(a.Domain) || IsValidDomain(a.Domain)
 }
 
 func (a *AvailableDomain) match(fqdn string) bool {
@@ -276,15 +282,6 @@ func (s AvailableDomainSlice) IsAvailable(fqdn string) bool {
 		}
 	}
 	return false
-}
-
-func (s AvailableDomainSlice) GetAvailableMatch(fqdn string) *AvailableDomain {
-	for _, a := range s {
-		if a.Available && a.match(fqdn) {
-			return a
-		}
-	}
-	return nil
 }
 
 type BuildStatus int

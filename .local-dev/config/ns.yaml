@@ -36,7 +36,8 @@ docker:
     neoshowcase.trap.jp/test: ns-apps
   tls:
     certResolver: nsresolver
-    wildcard: false
+    wildcard:
+      domains: []
 
 log:
   type: loki

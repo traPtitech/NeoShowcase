@@ -19,8 +19,8 @@ func newSSConfigBuilder() *ssConfigBuilder {
 	}
 }
 
-func (b *ssConfigBuilder) addStaticSite(backend *dockerBackend, site *domain.StaticSite, ads domain.AvailableDomainSlice) {
-	router, newMiddlewares := backend.routerBase(site.Website, traefikSSServiceName, ads)
+func (b *ssConfigBuilder) addStaticSite(backend *dockerBackend, site *domain.StaticSite) {
+	router, newMiddlewares := backend.routerBase(site.Website, traefikSSServiceName)
 	for name, mw := range newMiddlewares {
 		b.middlewares[name] = mw
 	}
@@ -61,10 +61,10 @@ func (b *ssConfigBuilder) build(ssURL string) m {
 	}
 }
 
-func (b *dockerBackend) synchronizeSSIngress(_ context.Context, sites []*domain.StaticSite, ads domain.AvailableDomainSlice) error {
+func (b *dockerBackend) synchronizeSSIngress(_ context.Context, sites []*domain.StaticSite) error {
 	cb := newSSConfigBuilder()
 	for _, site := range sites {
-		cb.addStaticSite(b, site, ads)
+		cb.addStaticSite(b, site)
 	}
 	return b.writeConfig(traefikSSFilename, cb.build(b.conf.SS.URL))
 }

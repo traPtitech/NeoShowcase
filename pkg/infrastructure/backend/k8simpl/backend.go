@@ -40,18 +40,38 @@ type Config struct {
 		Type    string `mapstructure:"type" yaml:"type"`
 		Traefik struct {
 			CertResolver string `mapstructure:"certResolver" yaml:"certResolver"`
-			Wildcard     bool   `mapstructure:"wildcard" yaml:"wildcard"`
+			Wildcard     struct {
+				Domains domain.WildcardDomains `mapstructure:"domains" yaml:"domains"`
+			} `mapstructure:"wildcard" yaml:"wildcard"`
 		} `mapstructure:"traefik" yaml:"traefik"`
 		CertManager struct {
 			Issuer struct {
 				Name string `mapstructure:"name" yaml:"name"`
 				Kind string `mapstructure:"kind" yaml:"kind"`
 			} `mapstructure:"issuer" yaml:"issuer"`
-			Wildcard bool `mapstructure:"wildcard" yaml:"wildcard"`
+			Wildcard struct {
+				Domains domain.WildcardDomains `mapstructure:"domains" yaml:"domains"`
+			} `mapstructure:"wildcard" yaml:"wildcard"`
 		} `mapstructure:"certManager" yaml:"certManager"`
 	} `mapstructure:"tls" yaml:"tls"`
 	// ImagePullSecret required if registry is private
 	ImagePullSecret string `mapstructure:"imagePullSecret" yaml:"imagePullSecret"`
+}
+
+func (c *Config) Validate() error {
+	switch c.TLS.Type {
+	case tlsTypeTraefik:
+		if !c.TLS.Traefik.Wildcard.Domains.IsValid() {
+			return errors.New("k8s.tls.traefik.wildcard.domains is invalid")
+		}
+	case tlsTypeCertManager:
+		if !c.TLS.CertManager.Wildcard.Domains.IsValid() {
+			return errors.New("k8s.tls.certManager.wildcard.domains is invalid")
+		}
+	default:
+		return errors.New("k8s.tls.type needs to be one of 'traefik' or 'cert-manager'")
+	}
+	return nil
 }
 
 const (
@@ -79,10 +99,10 @@ func NewK8SBackend(
 	certManagerClient *certmanagerv1.Clientset,
 	config Config,
 ) (domain.Backend, error) {
-	if config.TLS.Type != tlsTypeTraefik && config.TLS.Type != tlsTypeCertManager {
-		return nil, errors.New("k8s.tls.type needs to be one of 'traefik' or 'cert-manager'")
+	err := config.Validate()
+	if err != nil {
+		return nil, err
 	}
-
 	return &k8sBackend{
 		eventbus:          eventbus,
 		client:            k8sCSet,
@@ -177,15 +197,15 @@ func ssHeaderMiddlewareName(ss *domain.StaticSite) string {
 }
 
 func certificateName(fqdn string) string {
-	return tlsSecretName(fqdn)
-}
-
-func tlsSecretName(fqdn string) string {
 	if strings.HasPrefix(fqdn, "*.") {
 		fqdn = strings.TrimPrefix(fqdn, "*.")
 		fqdn = strings.ReplaceAll(fqdn, ".", "-")
-		return fmt.Sprintf("nsapp-wildcard-tls-%s", fqdn)
+		return fmt.Sprintf("nsapp-%s-wildcard", fqdn)
 	}
 	fqdn = strings.ReplaceAll(fqdn, ".", "-")
-	return fmt.Sprintf("nsapp-tls-%s", fqdn)
+	return fmt.Sprintf("nsapp-%s", fqdn)
+}
+
+func tlsSecretName(fqdn string) string {
+	return certificateName(fqdn) + "-tls"
 }
