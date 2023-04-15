@@ -2,21 +2,23 @@ package grpc
 
 import (
 	"context"
-	"github.com/traPtitech/neoshowcase/pkg/interface/grpc/pbconvert"
 	"time"
+
+	"github.com/traPtitech/neoshowcase/pkg/interface/grpc/pbconvert"
 
 	"github.com/bufbuild/connect-go"
 	"github.com/go-git/go-git/v5/plumbing/transport/ssh"
 	"github.com/samber/lo"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
+	"google.golang.org/protobuf/types/known/emptypb"
+
 	"github.com/traPtitech/neoshowcase/pkg/domain"
 	"github.com/traPtitech/neoshowcase/pkg/domain/web"
 	"github.com/traPtitech/neoshowcase/pkg/interface/grpc/pb"
 	"github.com/traPtitech/neoshowcase/pkg/interface/grpc/pb/pbconnect"
 	"github.com/traPtitech/neoshowcase/pkg/usecase"
 	"github.com/traPtitech/neoshowcase/pkg/util/optional"
-	"google.golang.org/grpc/codes"
-	"google.golang.org/grpc/status"
-	"google.golang.org/protobuf/types/known/emptypb"
 )
 
 func handleUseCaseError(err error) error {
@@ -220,6 +222,8 @@ func (s *ApplicationService) UpdateApplication(ctx context.Context, req *connect
 			UseMongoDB:  app.Config.UseMongoDB,
 			BuildType:   pbconvert.BuildTypeMapper.FromMust(msg.Config.BuildType),
 			BuildConfig: pbconvert.FromPBBuildConfig(msg.Config.BuildConfig),
+			Entrypoint:  msg.Config.Entrypoint,
+			Command:     msg.Config.Command,
 		}),
 		Websites: optional.From(websites),
 		OwnerIDs: optional.From(msg.OwnerIds),

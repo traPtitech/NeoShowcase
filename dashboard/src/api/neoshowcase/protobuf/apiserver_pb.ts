@@ -822,6 +822,16 @@ export class UpdateApplicationConfigRequest extends Message<UpdateApplicationCon
    */
   buildConfig?: BuildConfig;
 
+  /**
+   * @generated from field: string entrypoint = 3;
+   */
+  entrypoint = "";
+
+  /**
+   * @generated from field: string command = 4;
+   */
+  command = "";
+
   constructor(data?: PartialMessage<UpdateApplicationConfigRequest>) {
     super();
     proto3.util.initPartial(data, this);
@@ -832,6 +842,8 @@ export class UpdateApplicationConfigRequest extends Message<UpdateApplicationCon
   static readonly fields: FieldList = proto3.util.newFieldList(() => [
     { no: 1, name: "build_type", kind: "enum", T: proto3.getEnumType(BuildType) },
     { no: 2, name: "build_config", kind: "message", T: BuildConfig },
+    { no: 3, name: "entrypoint", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+    { no: 4, name: "command", kind: "scalar", T: 9 /* ScalarType.STRING */ },
   ]);
 
   static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): UpdateApplicationConfigRequest {
