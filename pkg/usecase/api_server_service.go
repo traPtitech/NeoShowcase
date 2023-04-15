@@ -200,9 +200,15 @@ func (s *APIServerService) AddAvailableDomain(ctx context.Context, ad *domain.Av
 }
 
 func (s *APIServerService) CreateApplication(ctx context.Context, app *domain.Application) (*domain.Application, error) {
-	err := s.isRepositoryOwner(ctx, app.RepositoryID)
+	repo, err := s.gitRepo.GetRepository(ctx, app.RepositoryID)
 	if err != nil {
 		return nil, err
+	}
+	if repo.Auth.Valid {
+		err = s.isRepositoryOwner(ctx, app.RepositoryID)
+		if err != nil {
+			return nil, err
+		}
 	}
 
 	if !app.IsValid() {
