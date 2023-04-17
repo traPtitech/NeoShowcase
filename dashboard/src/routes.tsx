@@ -10,4 +10,8 @@ export default useRoutes([
     path: '/apps',
     component: lazy(() => import('/@/pages/apps')),
   },
+  {
+    path: '/apps/:id',
+    component: lazy(() => import('/@/pages/apps/[id]')),
+  },
 ])
