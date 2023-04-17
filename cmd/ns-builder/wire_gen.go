@@ -25,8 +25,8 @@ func New(c2 Config) (*Server, error) {
 	if err != nil {
 		return nil, err
 	}
-	componentServiceClientConfig := c2.NS
-	componentServiceClient := grpc.NewComponentServiceClient(componentServiceClientConfig)
+	controllerServiceClientConfig := c2.Controller
+	controllerBuilderServiceClient := grpc.NewControllerBuilderServiceClient(controllerServiceClientConfig)
 	storageConfig := c2.Storage
 	storage, err := provideStorage(storageConfig)
 	if err != nil {
@@ -40,7 +40,7 @@ func New(c2 Config) (*Server, error) {
 	artifactRepository := repository.NewArtifactRepository(db)
 	buildRepository := repository.NewBuildRepository(db)
 	gitRepositoryRepository := repository.NewGitRepositoryRepository(db)
-	builderService := usecase.NewBuilderService(componentServiceClient, client, storage, publicKeys, imageConfig, artifactRepository, buildRepository, gitRepositoryRepository)
+	builderService := usecase.NewBuilderService(controllerBuilderServiceClient, client, storage, publicKeys, imageConfig, artifactRepository, buildRepository, gitRepositoryRepository)
 	server := &Server{
 		db:       db,
 		buildkit: client,

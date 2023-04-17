@@ -11,8 +11,7 @@ import (
 )
 
 type Server struct {
-	appServer       *webAppServer
-	componentServer *webComponentServer
+	controllerServer *controllerServer
 
 	db             *sql.DB
 	backend        domain.Backend
@@ -40,10 +39,7 @@ func (s *Server) Start(ctx context.Context) error {
 		return s.cleanerService.Start(ctx)
 	})
 	eg.Go(func() error {
-		return s.appServer.Start(ctx)
-	})
-	eg.Go(func() error {
-		return s.componentServer.Start(ctx)
+		return s.controllerServer.Start(ctx)
 	})
 
 	return eg.Wait()
@@ -71,10 +67,7 @@ func (s *Server) Shutdown(ctx context.Context) error {
 		return s.cleanerService.Shutdown(ctx)
 	})
 	eg.Go(func() error {
-		return s.appServer.Shutdown(ctx)
-	})
-	eg.Go(func() error {
-		return s.componentServer.Shutdown(ctx)
+		return s.controllerServer.Shutdown(ctx)
 	})
 
 	return eg.Wait()

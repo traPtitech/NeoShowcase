@@ -3,7 +3,7 @@ package neoshowcase.protobuf;
 option go_package = "github.com/traPtitech/neoshowcase/pkg/interface/grpc/pb";
 
 import "google/protobuf/empty.proto";
-import "neoshowcase/protobuf/apiserver.proto";
+import "neoshowcase/protobuf/gateway.proto";
 
 message StartBuildRequest {
   string application_id = 1;
@@ -70,7 +70,18 @@ message SSGenRequest {
   Type type = 1;
 }
 
-service ComponentService {
+service ControllerService {
+  rpc FetchRepository(RepositoryIdRequest) returns (google.protobuf.Empty);
+  rpc RegisterBuilds(google.protobuf.Empty) returns (google.protobuf.Empty);
+  rpc SyncDeployments(google.protobuf.Empty) returns (google.protobuf.Empty);
+  rpc StreamBuildLog(BuildIdRequest) returns (stream BuildLog);
+  rpc CancelBuild(BuildIdRequest) returns (google.protobuf.Empty);
+}
+
+service ControllerBuilderService {
   rpc ConnectBuilder(stream BuilderResponse) returns (stream BuilderRequest);
+}
+
+service ControllerSSGenService {
   rpc ConnectSSGen(google.protobuf.Empty) returns (stream SSGenRequest);
 }

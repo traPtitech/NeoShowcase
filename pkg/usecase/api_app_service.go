@@ -4,10 +4,10 @@ import (
 	"context"
 	"strconv"
 
+	"github.com/friendsofgo/errors"
 	log "github.com/sirupsen/logrus"
 
 	"github.com/traPtitech/neoshowcase/pkg/domain"
-	"github.com/traPtitech/neoshowcase/pkg/domain/event"
 	"github.com/traPtitech/neoshowcase/pkg/util/optional"
 	"github.com/traPtitech/neoshowcase/pkg/util/random"
 )
@@ -50,7 +50,10 @@ func (s *APIServerService) CreateApplication(ctx context.Context, app *domain.Ap
 		return nil, err
 	}
 
-	s.bus.Publish(event.FetcherFetchRequest, nil)
+	err = s.controller.FetchRepository(ctx, app.RepositoryID)
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to request to fetch repository")
+	}
 
 	return s.GetApplication(ctx, app.ID)
 }

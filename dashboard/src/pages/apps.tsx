@@ -21,7 +21,7 @@ import { StatusIcon } from '/@/components/StatusIcon'
 import { createResource, JSX } from 'solid-js'
 import { Radio, RadioItem } from '/@/components/Radio'
 import { client } from '/@/libs/api'
-import { Application } from '/@/api/neoshowcase/protobuf/apiserver_pb'
+import { Application } from '/@/api/neoshowcase/protobuf/gateway_pb'
 import { RepositoryRow } from '/@/components/RepositoryRow'
 import { applicationState, ApplicationState } from '/@/libs/application'
 

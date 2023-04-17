@@ -14,21 +14,22 @@ import (
 	log "github.com/sirupsen/logrus"
 
 	"github.com/traPtitech/neoshowcase/pkg/domain"
-	"github.com/traPtitech/neoshowcase/pkg/domain/event"
 	"github.com/traPtitech/neoshowcase/pkg/util/optional"
 )
 
 type RepositoryFetcherService interface {
 	Run()
+	Fetch(repositoryID string)
 	Stop(ctx context.Context) error
 }
 
 type repositoryFetcherService struct {
-	bus     domain.Bus
 	appRepo domain.ApplicationRepository
 	gitRepo domain.GitRepositoryRepository
 	pubKey  *ssh.PublicKeys
+	cd      ContinuousDeploymentService
 
+	fetcher   chan<- string
 	run       func()
 	runOnce   sync.Once
 	close     func()
@@ -36,25 +37,25 @@ type repositoryFetcherService struct {
 }
 
 func NewRepositoryFetcherService(
-	bus domain.Bus,
 	appRepo domain.ApplicationRepository,
 	gitRepo domain.GitRepositoryRepository,
 	pubKey *ssh.PublicKeys,
+	cd ContinuousDeploymentService,
 ) (RepositoryFetcherService, error) {
 	r := &repositoryFetcherService{
-		bus:     bus,
 		appRepo: appRepo,
 		gitRepo: gitRepo,
 		pubKey:  pubKey,
+		cd:      cd,
 	}
 
-	closer := make(chan struct{})
+	fetcher := make(chan string, 10)
+	r.fetcher = fetcher
+	ctx, cancel := context.WithCancel(context.Background())
 	r.run = func() {
-		go r.fetchLoop(closer)
+		go r.fetchLoop(ctx, fetcher)
 	}
-	r.close = func() {
-		close(closer)
-	}
+	r.close = cancel
 
 	return r, nil
 }
@@ -63,48 +64,65 @@ func (r *repositoryFetcherService) Run() {
 	r.runOnce.Do(r.run)
 }
 
-func (r *repositoryFetcherService) fetchLoop(closer <-chan struct{}) {
-	sub := r.bus.Subscribe(event.FetcherFetchRequest)
-	defer sub.Unsubscribe()
+func (r *repositoryFetcherService) Fetch(repositoryID string) {
+	// non-blocking; fetch operation is eventually consistent
+	select {
+	case r.fetcher <- repositoryID:
+	default:
+	}
+}
+
+func (r *repositoryFetcherService) fetchLoop(ctx context.Context, fetcher <-chan string) {
 	ticker := time.NewTicker(3 * time.Minute)
 	defer ticker.Stop()
 
-	doSync := func() {
+	doSync := func(repositoryID optional.Of[string]) {
 		start := time.Now()
-		if err := r.fetchAll(); err != nil {
+		if err := r.fetch(repositoryID); err != nil {
 			log.Errorf("failed to fetch repositories: %+v", err)
 			return
 		}
 		log.Infof("Fetched repositories in %v", time.Since(start))
-		r.bus.Publish(event.FetcherFetchComplete, nil)
+
+		r.cd.RegisterBuilds()
 	}
 
-	doSync()
+	doSync(optional.None[string]())
 
 	for {
 		select {
-		case <-sub.Chan():
-			doSync()
+		case id := <-fetcher:
+			doSync(optional.From(id))
 		case <-ticker.C:
-			doSync()
-		case <-closer:
+			doSync(optional.None[string]())
+		case <-ctx.Done():
 			return
 		}
 	}
 }
 
-func (r *repositoryFetcherService) fetchAll() error {
+func (r *repositoryFetcherService) fetch(repositoryID optional.Of[string]) error {
 	ctx := context.Background()
-	repositories, err := r.gitRepo.GetRepositories(ctx, domain.GetRepositoryCondition{})
-	if err != nil {
-		return err
+	var repositories []*domain.Repository
+	var err error
+	if repositoryID.Valid {
+		repository, err := r.gitRepo.GetRepository(ctx, repositoryID.V)
+		if err != nil {
+			return err
+		}
+		repositories = append(repositories, repository)
+	} else {
+		repositories, err = r.gitRepo.GetRepositories(ctx, domain.GetRepositoryCondition{})
+		if err != nil {
+			return err
+		}
 	}
+	repos := lo.SliceToMap(repositories, func(repo *domain.Repository) (string, *domain.Repository) { return repo.ID, repo })
+
 	applications, err := r.appRepo.GetApplications(ctx, domain.GetApplicationCondition{})
 	if err != nil {
 		return err
 	}
-
-	repos := lo.SliceToMap(repositories, func(repo *domain.Repository) (string, *domain.Repository) { return repo.ID, repo })
 	reposToApps := make(map[string][]*domain.Application)
 	for _, app := range applications {
 		reposToApps[app.RepositoryID] = append(reposToApps[app.RepositoryID], app)
@@ -166,9 +184,8 @@ func (r *repositoryFetcherService) updateApps(ctx context.Context, repo *domain.
 	for _, app := range apps {
 		commit, ok := refToCommit[app.RefName]
 		if !ok {
-			// TODO: log error and present to user?
 			log.Errorf("failed to get resolve ref %v for app %v", app.RefName, app.ID)
-			continue // fail-safe
+			commit = domain.EmptyCommit // Mark as empty commit to signal error
 		}
 		err = r.appRepo.UpdateApplication(ctx, app.ID, &domain.UpdateApplicationArgs{WantCommit: optional.From(commit)})
 		if err != nil {

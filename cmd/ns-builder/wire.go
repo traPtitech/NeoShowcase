@@ -14,7 +14,7 @@ import (
 
 func New(c Config) (*Server, error) {
 	wire.Build(
-		grpc.NewComponentServiceClient,
+		grpc.NewControllerBuilderServiceClient,
 		usecase.NewBuilderService,
 		repository.NewArtifactRepository,
 		repository.NewBuildRepository,
@@ -23,7 +23,7 @@ func New(c Config) (*Server, error) {
 		provideStorage,
 		initBuildkitClient,
 		provideRepositoryPublicKey,
-		wire.FieldsOf(new(Config), "NS", "DB", "Storage", "Image"),
+		wire.FieldsOf(new(Config), "Controller", "DB", "Storage", "Image"),
 		wire.Struct(new(Server), "*"),
 	)
 	return nil, nil

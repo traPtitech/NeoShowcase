@@ -14,7 +14,7 @@ import {
   applicationNotLast,
 } from '/@/components/Repository.css'
 import { StatusIcon } from '/@/components/StatusIcon'
-import { Application, Repository } from '/@/api/neoshowcase/protobuf/apiserver_pb'
+import { Application, Repository } from '/@/api/neoshowcase/protobuf/gateway_pb'
 import { applicationState, providerToIcon, repositoryURLToProvider } from '/@/libs/application'
 import { durationHuman, shortSha } from '/@/libs/format'
 import { A } from '@solidjs/router'

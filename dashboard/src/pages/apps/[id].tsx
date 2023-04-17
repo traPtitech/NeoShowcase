@@ -16,7 +16,7 @@ import {
 } from '/@/pages/apps/[id].css'
 import { StatusIcon } from '/@/components/StatusIcon'
 import { titleCase } from '/@/libs/casing'
-import { Application_ContainerState, DeployType } from '/@/api/neoshowcase/protobuf/apiserver_pb'
+import { Application_ContainerState, DeployType } from '/@/api/neoshowcase/protobuf/gateway_pb'
 import { durationHuman } from '/@/libs/format'
 
 export default () => {

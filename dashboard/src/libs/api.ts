@@ -1,5 +1,5 @@
 import { createConnectTransport, createPromiseClient } from '@bufbuild/connect-web'
-import { APIService } from '/@/api/neoshowcase/protobuf/apiserver_connect'
+import { APIService } from '/@/api/neoshowcase/protobuf/gateway_connect'
 import { createResource } from 'solid-js'
 
 const transport = createConnectTransport({

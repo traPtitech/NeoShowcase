@@ -5,10 +5,9 @@ type Of[T any] struct {
 	Valid bool
 }
 
-func New[T any](v T, valid bool) Of[T] {
+func None[T any]() Of[T] {
 	return Of[T]{
-		V:     v,
-		Valid: valid,
+		Valid: false,
 	}
 }
 

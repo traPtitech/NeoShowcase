@@ -1,0 +1,38 @@
+port: 8080
+debug: true
+
+db:
+  host: mysql
+  port: 3306
+  username: root
+  password: password
+  database: neoshowcase
+
+controller:
+  url: http://ns-controller:10000
+
+mariadb:
+  host: mysql
+  port: 3306
+  adminUser: root
+  adminPassword: password
+
+mongodb:
+  host: mongo
+  port: 27017
+  adminUser: root
+  adminPassword: password
+
+storage:
+  type: local
+  local:
+    dir: /data
+
+log:
+  type: loki
+  loki:
+    endpoint: http://loki:3100
+    appIDLabel: neoshowcase_trap_jp_appId
+
+repository:
+  privateKeyFile: /keys/id_ed25519

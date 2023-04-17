@@ -8,22 +8,22 @@ import (
 )
 
 type AppBuildHelper struct {
-	component domain.ComponentService
-	image     builder.ImageConfig
+	builder domain.ControllerBuilderService
+	image   builder.ImageConfig
 }
 
 func NewAppBuildHelper(
-	component domain.ComponentService,
+	builder domain.ControllerBuilderService,
 	imageConfig builder.ImageConfig,
 ) *AppBuildHelper {
 	return &AppBuildHelper{
-		component: component,
-		image:     imageConfig,
+		builder: builder,
+		image:   imageConfig,
 	}
 }
 
 func (s *AppBuildHelper) tryStartBuild(app *domain.Application, build *domain.Build) {
-	s.component.BroadcastBuilder(&pb.BuilderRequest{
+	s.builder.BroadcastBuilder(&pb.BuilderRequest{
 		Type: pb.BuilderRequest_START_BUILD,
 		Body: &pb.BuilderRequest_StartBuild{StartBuild: &pb.StartBuildRequest{
 			ApplicationId: app.ID,
