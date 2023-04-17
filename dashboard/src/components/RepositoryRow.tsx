@@ -44,13 +44,13 @@ export const RepositoryRow = ({ repo, apps }: Props): JSXElement => {
       </div>
       {apps.map((app, i) => (
         <A href={`/apps/${app.id}`}>
-          <div className={i === apps.length - 1 ? application : applicationNotLast}>
+          <div class={i === apps.length - 1 ? application : applicationNotLast}>
             <StatusIcon state={applicationState(app)} />
-            <div className={appDetail}>
-              <div className={appName}>{app.name}</div>
-              <div className={appFooter}>
+            <div class={appDetail}>
+              <div class={appName}>{app.name}</div>
+              <div class={appFooter}>
                 <div>{shortSha(app.currentCommit)}</div>
-                <div className={appFooterRight}>
+                <div class={appFooterRight}>
                   <div>{app.websites[0]?.fqdn || ''}</div>
                   <div>{durationHuman(3 * 60 * 1000) /* TODO: use updatedAt */}</div>
                 </div>

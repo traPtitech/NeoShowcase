@@ -27,44 +27,44 @@ export default () => {
   )
 
   return (
-    <div className={container}>
+    <div class={container}>
       <Header />
-      <div className={appTitle}>
-        <div className={centerInline}>{providerToIcon('GitHub', 36)}</div>
+      <div class={appTitle}>
+        <div class={centerInline}>{providerToIcon('GitHub', 36)}</div>
         <div>{app()?.name}</div>
       </div>
-      <div className={contentContainer}>
-        <div className={card}>
-          <div className={cardTitle}>Overall</div>
-          <div className={cardItems}>
-            <div className={cardItem}>
-              <div className={cardItemTitle}>状態</div>
-              <div className={cardItemContent}>
+      <div class={contentContainer}>
+        <div class={card}>
+          <div class={cardTitle}>Overall</div>
+          <div class={cardItems}>
+            <div class={cardItem}>
+              <div class={cardItemTitle}>状態</div>
+              <div class={cardItemContent}>
                 {app() && <StatusIcon state={applicationState(app())} />}
                 {app() && applicationState(app())}
               </div>
             </div>
             {app() && app().deployType === DeployType.RUNTIME && (
-              <div className={cardItem}>
-                <div className={cardItemTitle}>コンテナの状態</div>
-                <div className={cardItemContent}>{app() && titleCase(Application_ContainerState[app().container])}</div>
+              <div class={cardItem}>
+                <div class={cardItemTitle}>コンテナの状態</div>
+                <div class={cardItemContent}>{app() && titleCase(Application_ContainerState[app().container])}</div>
               </div>
             )}
-            <div className={cardItem}>
-              <div className={cardItemTitle}>起動時間</div>
-              <div className={cardItemContent}>
+            <div class={cardItem}>
+              <div class={cardItemTitle}>起動時間</div>
+              <div class={cardItemContent}>
                 {app()?.running && durationHuman(3 * 60 * 1000 /* TODO: use updated_at */)}
                 {app() && !app().running && '-'}
               </div>
             </div>
-            <div className={cardItem}>
-              <div className={cardItemTitle}>作成日</div>
-              <div className={cardItemContent}>{app() && new Date().toLocaleString() /* TODO: use created_at */}</div>
+            <div class={cardItem}>
+              <div class={cardItemTitle}>作成日</div>
+              <div class={cardItemContent}>{app() && new Date().toLocaleString() /* TODO: use created_at */}</div>
             </div>
             {app() && app().websites.length > 0 && (
-              <div className={cardItem}>
-                <div className={cardItemTitle}>URLs</div>
-                <div className={cardItemContent}>
+              <div class={cardItem}>
+                <div class={cardItemTitle}>URLs</div>
+                <div class={cardItemContent}>
                   {app()?.websites.map((website) => (
                     <a href={getWebsiteURL(website)} target='_blank' rel="noreferrer">
                       {getWebsiteURL(website)}
