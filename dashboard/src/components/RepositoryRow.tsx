@@ -13,30 +13,17 @@ import {
   appFooterRight,
   applicationNotLast,
 } from '/@/components/Repository.css'
-import { AiFillGithub, AiFillGitlab } from 'solid-icons/ai'
-import { vars } from '/@/theme.css'
-import { SiGitea } from 'solid-icons/si'
 import { StatusIcon } from '/@/components/StatusIcon'
 import { Application, Repository } from '/@/api/neoshowcase/protobuf/apiserver_pb'
-import { applicationState, repositoryURLToProvider } from '/@/libs/application'
+import { applicationState, providerToIcon, repositoryURLToProvider } from '/@/libs/application'
 import { durationHuman, shortSha } from '/@/libs/format'
+import { A } from '@solidjs/router'
 
 export type Provider = 'GitHub' | 'GitLab' | 'Gitea'
 
 export interface Props {
   repo: Repository
   apps: Application[]
-}
-
-const providerToIcon = (provider: Provider): JSXElement => {
-  switch (provider) {
-    case 'GitHub':
-      return <AiFillGithub size={20} color={vars.text.black1} />
-    case 'GitLab':
-      return <AiFillGitlab size={20} color='#FC6D26' />
-    case 'Gitea':
-      return <SiGitea size={20} color={vars.text.black1} />
-  }
 }
 
 export const RepositoryRow = ({ repo, apps }: Props): JSXElement => {
@@ -56,19 +43,21 @@ export const RepositoryRow = ({ repo, apps }: Props): JSXElement => {
         </div>
       </div>
       {apps.map((app, i) => (
-        <div class={i === apps.length - 1 ? application : applicationNotLast}>
-          <StatusIcon state={applicationState(app)} />
-          <div class={appDetail}>
-            <div class={appName}>{app.name}</div>
-            <div class={appFooter}>
-              <div>{shortSha(app.currentCommit)}</div>
-              <div class={appFooterRight}>
-                <div>{app.websites[0]?.fqdn || ''}</div>
-                <div>{durationHuman(3 * 60 * 1000) /* TODO: use updatedAt */}</div>
+        <A href={`/apps/${app.id}`}>
+          <div class={i === apps.length - 1 ? application : applicationNotLast}>
+            <StatusIcon state={applicationState(app)} />
+            <div class={appDetail}>
+              <div class={appName}>{app.name}</div>
+              <div class={appFooter}>
+                <div>{shortSha(app.currentCommit)}</div>
+                <div class={appFooterRight}>
+                  <div>{app.websites[0]?.fqdn || ''}</div>
+                  <div>{durationHuman(3 * 60 * 1000) /* TODO: use updatedAt */}</div>
+                </div>
               </div>
             </div>
           </div>
-        </div>
+        </A>
       ))}
     </div>
   )
