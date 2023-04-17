@@ -105,13 +105,13 @@ type webComponentServer struct {
 
 func provideWebAppServer(
 	c Config,
-	appService pbconnect.ApplicationServiceHandler,
+	appService pbconnect.APIServiceHandler,
 	authInterceptor *grpc.AuthInterceptor,
 ) *webAppServer {
 	wc := web.H2CConfig{
 		Port: c.Web.App.Port,
 		SetupRoute: func(mux *http.ServeMux) {
-			mux.Handle(pbconnect.NewApplicationServiceHandler(
+			mux.Handle(pbconnect.NewAPIServiceHandler(
 				appService,
 				connect.WithInterceptors(authInterceptor),
 			))

@@ -22,7 +22,7 @@ export default defineConfig({
   server: {
     port: 5173,
     proxy: {
-      '/neoshowcase.protobuf.ApplicationService': {
+      '/neoshowcase.protobuf.APIService': {
         target: 'http://ns.local.trapti.tech'
       }
     }

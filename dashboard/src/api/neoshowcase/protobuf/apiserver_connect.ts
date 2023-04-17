@@ -7,13 +7,15 @@ import { Empty, MethodKind } from "@bufbuild/protobuf";
 import { Application, ApplicationEnvVars, ApplicationIdRequest, ApplicationOutput, ArtifactContent, ArtifactIdRequest, AvailableDomain, AvailableDomains, Build, BuildIdRequest, BuildLog, CreateApplicationRequest, CreateRepositoryRequest, GetApplicationsResponse, GetBuildsResponse, GetOutputRequest, GetOutputResponse, GetOutputStreamRequest, GetRepositoriesResponse, GetSystemPublicKeyResponse, Repository, RepositoryIdRequest, RetryCommitBuildRequest, SetApplicationEnvVarRequest, UpdateApplicationRequest, UpdateRepositoryRequest, User } from "./apiserver_pb.js";
 
 /**
- * @generated from service neoshowcase.protobuf.ApplicationService
+ * @generated from service neoshowcase.protobuf.APIService
  */
-export const ApplicationService = {
-  typeName: "neoshowcase.protobuf.ApplicationService",
+export const APIService = {
+  typeName: "neoshowcase.protobuf.APIService",
   methods: {
     /**
-     * @generated from rpc neoshowcase.protobuf.ApplicationService.GetMe
+     * System
+     *
+     * @generated from rpc neoshowcase.protobuf.APIService.GetMe
      */
     getMe: {
       name: "GetMe",
@@ -22,52 +24,7 @@ export const ApplicationService = {
       kind: MethodKind.Unary,
     },
     /**
-     * @generated from rpc neoshowcase.protobuf.ApplicationService.GetRepositories
-     */
-    getRepositories: {
-      name: "GetRepositories",
-      I: Empty,
-      O: GetRepositoriesResponse,
-      kind: MethodKind.Unary,
-    },
-    /**
-     * @generated from rpc neoshowcase.protobuf.ApplicationService.CreateRepository
-     */
-    createRepository: {
-      name: "CreateRepository",
-      I: CreateRepositoryRequest,
-      O: Repository,
-      kind: MethodKind.Unary,
-    },
-    /**
-     * @generated from rpc neoshowcase.protobuf.ApplicationService.UpdateRepository
-     */
-    updateRepository: {
-      name: "UpdateRepository",
-      I: UpdateRepositoryRequest,
-      O: Empty,
-      kind: MethodKind.Unary,
-    },
-    /**
-     * @generated from rpc neoshowcase.protobuf.ApplicationService.DeleteRepository
-     */
-    deleteRepository: {
-      name: "DeleteRepository",
-      I: RepositoryIdRequest,
-      O: Empty,
-      kind: MethodKind.Unary,
-    },
-    /**
-     * @generated from rpc neoshowcase.protobuf.ApplicationService.GetApplications
-     */
-    getApplications: {
-      name: "GetApplications",
-      I: Empty,
-      O: GetApplicationsResponse,
-      kind: MethodKind.Unary,
-    },
-    /**
-     * @generated from rpc neoshowcase.protobuf.ApplicationService.GetSystemPublicKey
+     * @generated from rpc neoshowcase.protobuf.APIService.GetSystemPublicKey
      */
     getSystemPublicKey: {
       name: "GetSystemPublicKey",
@@ -76,7 +33,7 @@ export const ApplicationService = {
       kind: MethodKind.Unary,
     },
     /**
-     * @generated from rpc neoshowcase.protobuf.ApplicationService.GetAvailableDomains
+     * @generated from rpc neoshowcase.protobuf.APIService.GetAvailableDomains
      */
     getAvailableDomains: {
       name: "GetAvailableDomains",
@@ -85,7 +42,7 @@ export const ApplicationService = {
       kind: MethodKind.Unary,
     },
     /**
-     * @generated from rpc neoshowcase.protobuf.ApplicationService.AddAvailableDomain
+     * @generated from rpc neoshowcase.protobuf.APIService.AddAvailableDomain
      */
     addAvailableDomain: {
       name: "AddAvailableDomain",
@@ -94,7 +51,47 @@ export const ApplicationService = {
       kind: MethodKind.Unary,
     },
     /**
-     * @generated from rpc neoshowcase.protobuf.ApplicationService.CreateApplication
+     * Repository CRUD
+     *
+     * @generated from rpc neoshowcase.protobuf.APIService.CreateRepository
+     */
+    createRepository: {
+      name: "CreateRepository",
+      I: CreateRepositoryRequest,
+      O: Repository,
+      kind: MethodKind.Unary,
+    },
+    /**
+     * @generated from rpc neoshowcase.protobuf.APIService.GetRepositories
+     */
+    getRepositories: {
+      name: "GetRepositories",
+      I: Empty,
+      O: GetRepositoriesResponse,
+      kind: MethodKind.Unary,
+    },
+    /**
+     * @generated from rpc neoshowcase.protobuf.APIService.UpdateRepository
+     */
+    updateRepository: {
+      name: "UpdateRepository",
+      I: UpdateRepositoryRequest,
+      O: Empty,
+      kind: MethodKind.Unary,
+    },
+    /**
+     * @generated from rpc neoshowcase.protobuf.APIService.DeleteRepository
+     */
+    deleteRepository: {
+      name: "DeleteRepository",
+      I: RepositoryIdRequest,
+      O: Empty,
+      kind: MethodKind.Unary,
+    },
+    /**
+     * Application CRUD
+     *
+     * @generated from rpc neoshowcase.protobuf.APIService.CreateApplication
      */
     createApplication: {
       name: "CreateApplication",
@@ -103,7 +100,16 @@ export const ApplicationService = {
       kind: MethodKind.Unary,
     },
     /**
-     * @generated from rpc neoshowcase.protobuf.ApplicationService.GetApplication
+     * @generated from rpc neoshowcase.protobuf.APIService.GetApplications
+     */
+    getApplications: {
+      name: "GetApplications",
+      I: Empty,
+      O: GetApplicationsResponse,
+      kind: MethodKind.Unary,
+    },
+    /**
+     * @generated from rpc neoshowcase.protobuf.APIService.GetApplication
      */
     getApplication: {
       name: "GetApplication",
@@ -112,7 +118,7 @@ export const ApplicationService = {
       kind: MethodKind.Unary,
     },
     /**
-     * @generated from rpc neoshowcase.protobuf.ApplicationService.UpdateApplication
+     * @generated from rpc neoshowcase.protobuf.APIService.UpdateApplication
      */
     updateApplication: {
       name: "UpdateApplication",
@@ -121,7 +127,7 @@ export const ApplicationService = {
       kind: MethodKind.Unary,
     },
     /**
-     * @generated from rpc neoshowcase.protobuf.ApplicationService.DeleteApplication
+     * @generated from rpc neoshowcase.protobuf.APIService.DeleteApplication
      */
     deleteApplication: {
       name: "DeleteApplication",
@@ -130,52 +136,9 @@ export const ApplicationService = {
       kind: MethodKind.Unary,
     },
     /**
-     * @generated from rpc neoshowcase.protobuf.ApplicationService.GetBuilds
-     */
-    getBuilds: {
-      name: "GetBuilds",
-      I: ApplicationIdRequest,
-      O: GetBuildsResponse,
-      kind: MethodKind.Unary,
-    },
-    /**
-     * @generated from rpc neoshowcase.protobuf.ApplicationService.GetBuild
-     */
-    getBuild: {
-      name: "GetBuild",
-      I: BuildIdRequest,
-      O: Build,
-      kind: MethodKind.Unary,
-    },
-    /**
-     * @generated from rpc neoshowcase.protobuf.ApplicationService.GetBuildLog
-     */
-    getBuildLog: {
-      name: "GetBuildLog",
-      I: BuildIdRequest,
-      O: BuildLog,
-      kind: MethodKind.Unary,
-    },
-    /**
-     * @generated from rpc neoshowcase.protobuf.ApplicationService.GetBuildLogStream
-     */
-    getBuildLogStream: {
-      name: "GetBuildLogStream",
-      I: BuildIdRequest,
-      O: BuildLog,
-      kind: MethodKind.ServerStreaming,
-    },
-    /**
-     * @generated from rpc neoshowcase.protobuf.ApplicationService.GetBuildArtifact
-     */
-    getBuildArtifact: {
-      name: "GetBuildArtifact",
-      I: ArtifactIdRequest,
-      O: ArtifactContent,
-      kind: MethodKind.Unary,
-    },
-    /**
-     * @generated from rpc neoshowcase.protobuf.ApplicationService.GetEnvVars
+     * Application info / config
+     *
+     * @generated from rpc neoshowcase.protobuf.APIService.GetEnvVars
      */
     getEnvVars: {
       name: "GetEnvVars",
@@ -184,7 +147,7 @@ export const ApplicationService = {
       kind: MethodKind.Unary,
     },
     /**
-     * @generated from rpc neoshowcase.protobuf.ApplicationService.SetEnvVar
+     * @generated from rpc neoshowcase.protobuf.APIService.SetEnvVar
      */
     setEnvVar: {
       name: "SetEnvVar",
@@ -193,7 +156,7 @@ export const ApplicationService = {
       kind: MethodKind.Unary,
     },
     /**
-     * @generated from rpc neoshowcase.protobuf.ApplicationService.GetOutput
+     * @generated from rpc neoshowcase.protobuf.APIService.GetOutput
      */
     getOutput: {
       name: "GetOutput",
@@ -202,7 +165,7 @@ export const ApplicationService = {
       kind: MethodKind.Unary,
     },
     /**
-     * @generated from rpc neoshowcase.protobuf.ApplicationService.GetOutputStream
+     * @generated from rpc neoshowcase.protobuf.APIService.GetOutputStream
      */
     getOutputStream: {
       name: "GetOutputStream",
@@ -211,25 +174,7 @@ export const ApplicationService = {
       kind: MethodKind.ServerStreaming,
     },
     /**
-     * @generated from rpc neoshowcase.protobuf.ApplicationService.CancelBuild
-     */
-    cancelBuild: {
-      name: "CancelBuild",
-      I: BuildIdRequest,
-      O: Empty,
-      kind: MethodKind.Unary,
-    },
-    /**
-     * @generated from rpc neoshowcase.protobuf.ApplicationService.RetryCommitBuild
-     */
-    retryCommitBuild: {
-      name: "RetryCommitBuild",
-      I: RetryCommitBuildRequest,
-      O: Empty,
-      kind: MethodKind.Unary,
-    },
-    /**
-     * @generated from rpc neoshowcase.protobuf.ApplicationService.StartApplication
+     * @generated from rpc neoshowcase.protobuf.APIService.StartApplication
      */
     startApplication: {
       name: "StartApplication",
@@ -238,12 +183,77 @@ export const ApplicationService = {
       kind: MethodKind.Unary,
     },
     /**
-     * @generated from rpc neoshowcase.protobuf.ApplicationService.StopApplication
+     * @generated from rpc neoshowcase.protobuf.APIService.StopApplication
      */
     stopApplication: {
       name: "StopApplication",
       I: ApplicationIdRequest,
       O: Empty,
+      kind: MethodKind.Unary,
+    },
+    /**
+     * Application builds
+     *
+     * @generated from rpc neoshowcase.protobuf.APIService.GetBuilds
+     */
+    getBuilds: {
+      name: "GetBuilds",
+      I: ApplicationIdRequest,
+      O: GetBuildsResponse,
+      kind: MethodKind.Unary,
+    },
+    /**
+     * @generated from rpc neoshowcase.protobuf.APIService.GetBuild
+     */
+    getBuild: {
+      name: "GetBuild",
+      I: BuildIdRequest,
+      O: Build,
+      kind: MethodKind.Unary,
+    },
+    /**
+     * @generated from rpc neoshowcase.protobuf.APIService.RetryCommitBuild
+     */
+    retryCommitBuild: {
+      name: "RetryCommitBuild",
+      I: RetryCommitBuildRequest,
+      O: Empty,
+      kind: MethodKind.Unary,
+    },
+    /**
+     * @generated from rpc neoshowcase.protobuf.APIService.CancelBuild
+     */
+    cancelBuild: {
+      name: "CancelBuild",
+      I: BuildIdRequest,
+      O: Empty,
+      kind: MethodKind.Unary,
+    },
+    /**
+     * @generated from rpc neoshowcase.protobuf.APIService.GetBuildLog
+     */
+    getBuildLog: {
+      name: "GetBuildLog",
+      I: BuildIdRequest,
+      O: BuildLog,
+      kind: MethodKind.Unary,
+    },
+    /**
+     * @generated from rpc neoshowcase.protobuf.APIService.GetBuildLogStream
+     */
+    getBuildLogStream: {
+      name: "GetBuildLogStream",
+      I: BuildIdRequest,
+      O: BuildLog,
+      kind: MethodKind.ServerStreaming,
+    },
+    /**
+     * @generated from rpc neoshowcase.protobuf.APIService.GetBuildArtifact
+     */
+    getBuildArtifact: {
+      name: "GetBuildArtifact",
+      I: ArtifactIdRequest,
+      O: ArtifactContent,
       kind: MethodKind.Unary,
     },
   }
