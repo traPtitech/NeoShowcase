@@ -50,8 +50,9 @@ jobs:
     strategy:
       matrix:
         component:
-          - ns
           - ns-builder
+          - ns-controller
+          - ns-gateway
           - ns-mc
           - ns-ssgen
     steps:

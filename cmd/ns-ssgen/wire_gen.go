@@ -22,8 +22,8 @@ func New(c2 Config) (*Server, error) {
 	if err != nil {
 		return nil, err
 	}
-	componentServiceClientConfig := c2.NS
-	componentServiceClient := grpc.NewComponentServiceClient(componentServiceClientConfig)
+	controllerServiceClientConfig := c2.Controller
+	controllerSSGenServiceClient := grpc.NewControllerSSGenServiceClient(controllerServiceClientConfig)
 	applicationRepository := repository.NewApplicationRepository(db)
 	buildRepository := repository.NewBuildRepository(db)
 	storageConfig := c2.Storage
@@ -34,7 +34,7 @@ func New(c2 Config) (*Server, error) {
 	staticServerDocumentRootPath := provideWebServerDocumentRootPath(c2)
 	staticServerPort := provideWebServerPort(c2)
 	ssEngine := staticserver.NewBuiltIn(storage, staticServerDocumentRootPath, staticServerPort)
-	staticSiteServerService := usecase.NewStaticSiteServerService(componentServiceClient, applicationRepository, buildRepository, ssEngine)
+	staticSiteServerService := usecase.NewStaticSiteServerService(controllerSSGenServiceClient, applicationRepository, buildRepository, ssEngine)
 	server := &Server{
 		db:     db,
 		svc:    staticSiteServerService,

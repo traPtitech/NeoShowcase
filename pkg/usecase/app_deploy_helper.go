@@ -16,7 +16,7 @@ type AppDeployHelper struct {
 	appRepo   domain.ApplicationRepository
 	buildRepo domain.BuildRepository
 	envRepo   domain.EnvironmentRepository
-	component domain.ComponentService
+	ssgen     domain.ControllerSSGenService
 	image     builder.ImageConfig
 }
 
@@ -25,7 +25,7 @@ func NewAppDeployHelper(
 	appRepo domain.ApplicationRepository,
 	buildRepo domain.BuildRepository,
 	envRepo domain.EnvironmentRepository,
-	component domain.ComponentService,
+	ssgen domain.ControllerSSGenService,
 	imageConfig builder.ImageConfig,
 ) *AppDeployHelper {
 	return &AppDeployHelper{
@@ -33,7 +33,7 @@ func NewAppDeployHelper(
 		appRepo:   appRepo,
 		buildRepo: buildRepo,
 		envRepo:   envRepo,
-		component: component,
+		ssgen:     ssgen,
 		image:     imageConfig,
 	}
 }
@@ -104,6 +104,6 @@ func (s *AppDeployHelper) synchronize(ctx context.Context) error {
 	}
 
 	// Synchronize
-	s.component.BroadcastSSGen(&pb.SSGenRequest{Type: pb.SSGenRequest_RELOAD})
+	s.ssgen.BroadcastSSGen(&pb.SSGenRequest{Type: pb.SSGenRequest_RELOAD})
 	return s.backend.Synchronize(ctx, &st)
 }

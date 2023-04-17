@@ -1,5 +1,5 @@
+port: 10000
 debug: true
-
 mode: docker
 
 db:
@@ -8,18 +8,6 @@ db:
   username: root
   password: password
   database: neoshowcase
-
-mariadb:
-  host: mysql
-  port: 3306
-  adminUser: root
-  adminPassword: password
-
-mongodb:
-  host: mongo
-  port: 27017
-  adminUser: root
-  adminPassword: password
 
 storage:
   type: local
@@ -38,18 +26,6 @@ docker:
     certResolver: nsresolver
     wildcard:
       domains: []
-
-log:
-  type: loki
-  loki:
-    endpoint: http://loki:3100
-    appIDLabel: neoshowcase_trap_jp_appId
-
-web:
-  app:
-    port: 5000
-  component:
-    port: 10000
 
 repository:
   privateKeyFile: /keys/id_ed25519

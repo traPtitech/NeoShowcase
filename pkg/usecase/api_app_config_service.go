@@ -7,7 +7,6 @@ import (
 	"github.com/friendsofgo/errors"
 
 	"github.com/traPtitech/neoshowcase/pkg/domain"
-	"github.com/traPtitech/neoshowcase/pkg/domain/event"
 	"github.com/traPtitech/neoshowcase/pkg/util/optional"
 )
 
@@ -82,8 +81,15 @@ func (s *APIServerService) StartApplication(ctx context.Context, id string) erro
 	if err != nil {
 		return errors.Wrap(err, "failed to mark application as running")
 	}
-	s.bus.Publish(event.CDServiceRegisterBuildRequest, nil)
-	s.bus.Publish(event.CDServiceSyncDeployRequest, nil)
+
+	err = s.controller.RegisterBuilds(ctx)
+	if err != nil {
+		return errors.Wrap(err, "failed to request new builds")
+	}
+	err = s.controller.SyncDeployments(ctx)
+	if err != nil {
+		return errors.Wrap(err, "failed to request sync deployment")
+	}
 	return nil
 }
 
@@ -100,6 +106,10 @@ func (s *APIServerService) StopApplication(ctx context.Context, id string) error
 	if err != nil {
 		return errors.Wrap(err, "failed to mark application as not running")
 	}
-	s.bus.Publish(event.CDServiceSyncDeployRequest, nil)
+
+	err = s.controller.SyncDeployments(ctx)
+	if err != nil {
+		return errors.Wrap(err, "failed to request sync deployment")
+	}
 	return nil
 }

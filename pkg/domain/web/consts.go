@@ -2,9 +2,9 @@ package web
 
 const (
 	HeaderNameAPIAuthorization  = "X-Forwarded-User"
-	HeaderNameAuthorizationType = "X-NS-Auth-Type"
+	HeaderNameAuthorizationType = "X-Controller-Auth-Type"
 	HeaderNameShowcaseUser      = "X-Showcase-User"
-	HeaderNameSSGenAppID        = "X-NS-App-Id"
+	HeaderNameSSGenAppID        = "X-Controller-App-Id"
 )
 
 const (

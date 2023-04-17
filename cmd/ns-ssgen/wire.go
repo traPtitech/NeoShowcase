@@ -15,7 +15,7 @@ import (
 
 func New(c Config) (*Server, error) {
 	wire.Build(
-		grpc.NewComponentServiceClient,
+		grpc.NewControllerSSGenServiceClient,
 		usecase.NewStaticSiteServerService,
 		admindb.New,
 		repository.NewApplicationRepository,
@@ -24,7 +24,7 @@ func New(c Config) (*Server, error) {
 		provideWebServerPort,
 		provideWebServerDocumentRootPath,
 		provideStorage,
-		wire.FieldsOf(new(Config), "NS", "DB", "Storage"),
+		wire.FieldsOf(new(Config), "Controller", "DB", "Storage"),
 		wire.Struct(new(Server), "*"),
 	)
 	return nil, nil

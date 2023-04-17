@@ -10,7 +10,6 @@ import (
 	"github.com/friendsofgo/errors"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
-	"github.com/spf13/viper"
 
 	"github.com/traPtitech/neoshowcase/pkg/domain"
 	"github.com/traPtitech/neoshowcase/pkg/infrastructure/storage"
@@ -61,7 +60,7 @@ func runCommand() *cobra.Command {
 }
 
 func main() {
-	cobra.OnInitialize(cli.CobraOnInitializeFunc(&configFilePath, "NS", &c))
+	cobra.OnInitialize(cli.CobraOnInitializeFunc(&configFilePath, "Controller", &c))
 
 	rootCommand.AddCommand(
 		runCommand(),
@@ -72,35 +71,6 @@ func main() {
 	flags.StringVarP(&configFilePath, "config", "c", "", "config file path")
 	cli.SetupDebugFlag(flags)
 	cli.SetupLogLevelFlag(flags)
-
-	viper.SetDefault("artifactsRoot", "/srv/artifacts")
-
-	viper.SetDefault("builtin.port", 8080)
-
-	viper.SetDefault("ns.url", "http://ns:10000")
-
-	viper.SetDefault("db.host", "127.0.0.1")
-	viper.SetDefault("db.port", 3306)
-	viper.SetDefault("db.username", "root")
-	viper.SetDefault("db.password", "password")
-	viper.SetDefault("db.database", "neoshowcase")
-	viper.SetDefault("db.connection.maxOpen", 0)
-	viper.SetDefault("db.connection.maxIdle", 2)
-	viper.SetDefault("db.connection.lifetime", 0)
-
-	viper.SetDefault("storage.type", "local")
-	viper.SetDefault("storage.local.dir", "/neoshowcase")
-	viper.SetDefault("storage.s3.bucket", "neoshowcase")
-	viper.SetDefault("storage.s3.endpoint", "")
-	viper.SetDefault("storage.s3.region", "")
-	viper.SetDefault("storage.s3.accessKey", "")
-	viper.SetDefault("storage.s3.accessSecret", "")
-	viper.SetDefault("storage.swift.username", "")
-	viper.SetDefault("storage.swift.apiKey", "")
-	viper.SetDefault("storage.swift.tenantName", "")
-	viper.SetDefault("storage.swift.tenantId", "")
-	viper.SetDefault("storage.swift.container", "neoshowcase")
-	viper.SetDefault("storage.swift.authUrl", "")
 
 	if err := rootCommand.Execute(); err != nil {
 		log.Fatalf("failed to exec: %+v", err)

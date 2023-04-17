@@ -11,13 +11,16 @@ import (
 	log "github.com/sirupsen/logrus"
 
 	"github.com/traPtitech/neoshowcase/pkg/domain"
-	"github.com/traPtitech/neoshowcase/pkg/domain/event"
 	"github.com/traPtitech/neoshowcase/pkg/util/coalesce"
+	"github.com/traPtitech/neoshowcase/pkg/util/loop"
 	"github.com/traPtitech/neoshowcase/pkg/util/optional"
 )
 
 type ContinuousDeploymentService interface {
 	Run()
+	RegisterBuilds()
+	StartBuilds()
+	SyncDeployments()
 	Stop(ctx context.Context) error
 }
 
@@ -30,10 +33,13 @@ type continuousDeploymentService struct {
 	deployer  *AppDeployHelper
 	mutator   *ContainerStateMutator
 
-	run       func()
-	runOnce   sync.Once
-	close     func()
-	closeOnce sync.Once
+	doRegisterBuild func()
+	doStartBuild    func()
+	doSyncDeploy    func()
+	run             func()
+	runOnce         sync.Once
+	close           func()
+	closeOnce       sync.Once
 }
 
 func NewContinuousDeploymentService(
@@ -42,6 +48,7 @@ func NewContinuousDeploymentService(
 	buildRepo domain.BuildRepository,
 	backend domain.Backend,
 	builder *AppBuildHelper,
+	builderSvc domain.ControllerBuilderService,
 	deployer *AppDeployHelper,
 	mutator *ContainerStateMutator,
 ) (ContinuousDeploymentService, error) {
@@ -56,114 +63,36 @@ func NewContinuousDeploymentService(
 	}
 
 	ctx, cancel := context.WithCancel(context.Background())
-	startBuilds := make(chan struct{})
-	cd.run = func() {
-		go cd.registerBuildLoop(ctx, startBuilds)
-		go cd.startBuildLoop(ctx, startBuilds)
-		go cd.detectBuildCrashLoop(ctx)
-		go cd.syncDeployLoop(ctx)
-	}
-	cd.close = func() {
-		cancel()
-	}
 
-	return cd, nil
-}
-
-func (cd *continuousDeploymentService) Run() {
-	cd.runOnce.Do(cd.run)
-}
-
-func (cd *continuousDeploymentService) Stop(_ context.Context) error {
-	cd.closeOnce.Do(cd.close)
-	return nil
-}
-
-func (cd *continuousDeploymentService) registerBuildLoop(ctx context.Context, startBuilds chan<- struct{}) {
-	sub := cd.bus.Subscribe(event.FetcherFetchComplete, event.CDServiceRegisterBuildRequest)
-	defer sub.Unsubscribe()
-
-	doSync := func() {
+	doRegisterBuild := coalesce.NewCoalescer(func(ctx context.Context) error {
 		start := time.Now()
 		if err := cd.registerBuilds(ctx); err != nil {
 			log.Errorf("failed to kickoff builds: %+v", err)
-			return
-		}
-		select {
-		case startBuilds <- struct{}{}:
-		default:
+			return nil
 		}
 		log.Infof("Synced builds in %v", time.Since(start))
+
+		go cd.doStartBuild()
+		return nil
+	})
+	cd.doRegisterBuild = func() {
+		_ = doRegisterBuild.Do(context.Background())
 	}
 
-	for {
-		select {
-		case <-sub.Chan():
-			doSync()
-		case <-ctx.Done():
-			return
-		}
-	}
-}
-
-func (cd *continuousDeploymentService) startBuildLoop(ctx context.Context, syncer <-chan struct{}) {
-	sub := cd.bus.Subscribe(event.BuilderConnected, event.BuilderBuildSettled)
-	defer sub.Unsubscribe()
-
-	doSync := func() {
+	doStartBuild := coalesce.NewCoalescer(func(ctx context.Context) error {
 		start := time.Now()
 		if err := cd.startBuilds(ctx); err != nil {
 			log.Errorf("failed to start builds: %+v", err)
-			return
+			return nil
 		}
 		log.Infof("Started builds in %v", time.Since(start))
+		return nil
+	})
+	cd.doStartBuild = func() {
+		_ = doStartBuild.Do(context.Background())
 	}
 
-	doSync()
-
-	for {
-		select {
-		case <-syncer:
-			doSync()
-		case <-sub.Chan():
-			doSync()
-		case <-ctx.Done():
-			return
-		}
-	}
-}
-
-func (cd *continuousDeploymentService) detectBuildCrashLoop(ctx context.Context) {
-	ticker := time.NewTicker(1 * time.Minute)
-	defer ticker.Stop()
-
-	doSync := func() {
-		start := time.Now()
-		if err := cd.detectBuildCrash(ctx); err != nil {
-			log.Errorf("failed to detect build crash: %+v", err)
-		}
-		log.Debugf("Build crash detection complete in %v", time.Since(start))
-	}
-
-	doSync()
-
-	for {
-		select {
-		case <-ticker.C:
-			doSync()
-		case <-ctx.Done():
-			return
-		}
-	}
-}
-
-func (cd *continuousDeploymentService) syncDeployLoop(ctx context.Context) {
-	sub := cd.bus.Subscribe(event.BuilderBuildSettled, event.CDServiceSyncDeployRequest)
-	defer sub.Unsubscribe()
-	ticker := time.NewTicker(3 * time.Minute)
-	defer ticker.Stop()
-
-	coalescer := coalesce.NewCoalescer(func(ctx context.Context) error {
+	doSyncDeploy := coalesce.NewCoalescer(func(ctx context.Context) error {
 		start := time.Now()
 		if err := cd.syncDeployments(ctx); err != nil {
 			log.Errorf("failed to sync deployments: %+v", err)
@@ -172,19 +101,58 @@ func (cd *continuousDeploymentService) syncDeployLoop(ctx context.Context) {
 		log.Infof("Synced deployments in %v", time.Since(start))
 		return nil
 	})
-
-	_ = coalescer.Do(ctx)
-
-	for {
-		select {
-		case <-ticker.C:
-			_ = coalescer.Do(ctx)
-		case <-sub.Chan():
-			_ = coalescer.Do(ctx)
-		case <-ctx.Done():
-			return
-		}
+	cd.doSyncDeploy = func() {
+		_ = doSyncDeploy.Do(context.Background())
 	}
+
+	doDetectBuildCrash := func(ctx context.Context) {
+		start := time.Now()
+		if err := cd.detectBuildCrash(ctx); err != nil {
+			log.Errorf("failed to detect build crash: %+v", err)
+		}
+		log.Debugf("Build crash detection complete in %v", time.Since(start))
+	}
+
+	cd.run = func() {
+		go func() {
+			for range builderSvc.ListenBuilderIdle() {
+				go cd.doStartBuild()
+			}
+		}()
+		go func() {
+			for range builderSvc.ListenBuildSettled() {
+				go cd.doSyncDeploy()
+			}
+		}()
+		go loop.Loop(ctx, func(ctx context.Context) {
+			_ = doSyncDeploy.Do(ctx)
+		}, 3*time.Minute, true)
+		go loop.Loop(ctx, doDetectBuildCrash, 1*time.Minute, true)
+	}
+	cd.close = cancel
+
+	return cd, nil
+}
+
+func (cd *continuousDeploymentService) Run() {
+	cd.runOnce.Do(cd.run)
+}
+
+func (cd *continuousDeploymentService) RegisterBuilds() {
+	go cd.doRegisterBuild()
+}
+
+func (cd *continuousDeploymentService) StartBuilds() {
+	go cd.doStartBuild()
+}
+
+func (cd *continuousDeploymentService) SyncDeployments() {
+	go cd.doSyncDeploy()
+}
+
+func (cd *continuousDeploymentService) Stop(_ context.Context) error {
+	cd.closeOnce.Do(cd.close)
+	return nil
 }
 
 func (cd *continuousDeploymentService) registerBuilds(ctx context.Context) error {

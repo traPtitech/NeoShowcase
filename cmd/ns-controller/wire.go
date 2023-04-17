@@ -41,7 +41,9 @@ var commonSet = wire.NewSet(
 	repository.NewUserRepository,
 	grpc.NewAPIServiceServer,
 	grpc.NewAuthInterceptor,
-	grpc.NewComponentServiceServer,
+	grpc.NewControllerService,
+	grpc.NewControllerBuilderService,
+	grpc.NewControllerSSGenService,
 	usecase.NewAPIServerService,
 	usecase.NewAppBuildHelper,
 	usecase.NewAppDeployHelper,
@@ -52,10 +54,8 @@ var commonSet = wire.NewSet(
 	usecase.NewContainerStateMutator,
 	provideRepositoryPublicKey,
 	provideStorage,
-	provideContainerLogger,
-	provideWebAppServer,
-	provideWebComponentServer,
-	wire.FieldsOf(new(Config), "DB", "MariaDB", "MongoDB", "Storage", "Docker", "K8s", "Image"),
+	provideControllerServer,
+	wire.FieldsOf(new(Config), "DB", "Storage", "Docker", "K8s", "Image"),
 	wire.Struct(new(Server), "*"),
 )
 

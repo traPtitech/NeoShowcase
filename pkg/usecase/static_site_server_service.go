@@ -23,7 +23,7 @@ type StaticSiteServerService interface {
 }
 
 type staticSiteServerService struct {
-	client    domain.ComponentServiceClient
+	client    domain.ControllerSSGenServiceClient
 	appRepo   domain.ApplicationRepository
 	buildRepo domain.BuildRepository
 	engine    domain.SSEngine
@@ -33,7 +33,7 @@ type staticSiteServerService struct {
 }
 
 func NewStaticSiteServerService(
-	client domain.ComponentServiceClient,
+	client domain.ControllerSSGenServiceClient,
 	appRepo domain.ApplicationRepository,
 	buildRepo domain.BuildRepository,
 	engine domain.SSEngine,

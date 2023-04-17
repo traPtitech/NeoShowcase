@@ -29,11 +29,10 @@ type APIServerService struct {
 	envRepo         domain.EnvironmentRepository
 	gitRepo         domain.GitRepositoryRepository
 	storage         domain.Storage
-	component       domain.ComponentService
 	mariaDBManager  domain.MariaDBManager
 	mongoDBManager  domain.MongoDBManager
 	containerLogger domain.ContainerLogger
-	logSvc          *LogStreamService
+	controller      domain.ControllerServiceClient
 }
 
 func NewAPIServerService(
@@ -45,11 +44,10 @@ func NewAPIServerService(
 	envRepo domain.EnvironmentRepository,
 	gitRepo domain.GitRepositoryRepository,
 	storage domain.Storage,
-	component domain.ComponentService,
 	mariaDBManager domain.MariaDBManager,
 	mongoDBManager domain.MongoDBManager,
 	containerLogger domain.ContainerLogger,
-	logSvc *LogStreamService,
+	controller domain.ControllerServiceClient,
 ) *APIServerService {
 	return &APIServerService{
 		bus:             bus,
@@ -60,11 +58,10 @@ func NewAPIServerService(
 		envRepo:         envRepo,
 		gitRepo:         gitRepo,
 		storage:         storage,
-		component:       component,
 		mariaDBManager:  mariaDBManager,
 		mongoDBManager:  mongoDBManager,
 		containerLogger: containerLogger,
-		logSvc:          logSvc,
+		controller:      controller,
 	}
 }
 

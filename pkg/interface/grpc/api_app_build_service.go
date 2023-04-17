@@ -4,6 +4,7 @@ import (
 	"context"
 
 	"github.com/bufbuild/connect-go"
+	"github.com/friendsofgo/errors"
 	"github.com/samber/lo"
 	"google.golang.org/protobuf/types/known/emptypb"
 
@@ -63,11 +64,18 @@ func (s *APIService) GetBuildLog(ctx context.Context, req *connect.Request[pb.Bu
 }
 
 func (s *APIService) GetBuildLogStream(ctx context.Context, req *connect.Request[pb.BuildIdRequest], st *connect.ServerStream[pb.BuildLog]) error {
-	err := s.svc.GetBuildLogStream(ctx, req.Msg.BuildId, func(b []byte) error {
-		return st.Send(&pb.BuildLog{Log: b})
-	})
+	ctx, cancel := context.WithCancel(ctx)
+	defer cancel()
+
+	ch, err := s.svc.GetBuildLogStream(ctx, req.Msg.BuildId)
 	if err != nil {
 		return handleUseCaseError(err)
+	}
+	for l := range ch {
+		err = st.Send(l)
+		if err != nil {
+			return errors.New("failed to send event")
+		}
 	}
 	return nil
 }

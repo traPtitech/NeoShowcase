@@ -1,5 +1,5 @@
 import { Provider } from '/@/components/RepositoryRow'
-import { Application, DeployType, Website } from '/@/api/neoshowcase/protobuf/apiserver_pb'
+import { Application, DeployType, Website } from '/@/api/neoshowcase/protobuf/gateway_pb'
 import { JSXElement } from 'solid-js'
 import { AiFillGithub, AiFillGitlab } from 'solid-icons/ai'
 import { SiGitea } from 'solid-icons/si'

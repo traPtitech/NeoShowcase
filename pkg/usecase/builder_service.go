@@ -48,7 +48,7 @@ type BuilderService interface {
 }
 
 type builderService struct {
-	client   domain.ComponentServiceClient
+	client   domain.ControllerBuilderServiceClient
 	buildkit *buildkit.Client
 	storage  domain.Storage
 	pubKey   *ssh.PublicKeys
@@ -66,7 +66,7 @@ type builderService struct {
 }
 
 func NewBuilderService(
-	client domain.ComponentServiceClient,
+	client domain.ControllerBuilderServiceClient,
 	buildkit *buildkit.Client,
 	storage domain.Storage,
 	pubKey *ssh.PublicKeys,
@@ -348,7 +348,9 @@ func (s *builderService) finalize(ctx context.Context, st *state, status domain.
 				}
 				return nil
 			}()
-			log.Errorf("failed to process artifact: %+v", err)
+			if err != nil {
+				log.Errorf("failed to process artifact: %+v", err)
+			}
 		} else {
 			_ = os.Remove(st.artifactTempFile.Name())
 		}
