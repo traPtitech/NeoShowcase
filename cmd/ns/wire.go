@@ -39,7 +39,7 @@ var commonSet = wire.NewSet(
 	repository.NewBuildRepository,
 	repository.NewArtifactRepository,
 	repository.NewUserRepository,
-	grpc.NewApplicationServiceServer,
+	grpc.NewAPIServiceServer,
 	grpc.NewAuthInterceptor,
 	grpc.NewComponentServiceServer,
 	usecase.NewAPIServerService,

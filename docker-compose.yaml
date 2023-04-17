@@ -14,7 +14,7 @@ services:
       - ./.local-dev/traefik:/opt/traefik/conf
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.ns.rule=Host(`ns.local.trapti.tech`) && PathPrefix(`/neoshowcase.protobuf.ApplicationService`)"
+      - "traefik.http.routers.ns.rule=Host(`ns.local.trapti.tech`) && PathPrefix(`/neoshowcase.protobuf.APIService`)"
       # - "traefik.http.routers.ns.middlewares=ns_auth@file"
       - "traefik.http.routers.ns.middlewares=ns_auth_dev@file"
       - "traefik.http.routers.ns.service=ns"

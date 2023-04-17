@@ -2,6 +2,8 @@ package pbconvert
 
 import (
 	"github.com/samber/lo"
+	"google.golang.org/protobuf/types/known/timestamppb"
+
 	"github.com/traPtitech/neoshowcase/pkg/domain"
 	"github.com/traPtitech/neoshowcase/pkg/interface/grpc/pb"
 	"github.com/traPtitech/neoshowcase/pkg/util/mapper"
@@ -32,6 +34,8 @@ func ToPBApplication(app *domain.Application) *pb.Application {
 		Container:     ContainerStateMapper.IntoMust(app.Container),
 		CurrentCommit: app.CurrentCommit,
 		WantCommit:    app.WantCommit,
+		CreatedAt:     timestamppb.New(app.CreatedAt),
+		UpdatedAt:     timestamppb.New(app.UpdatedAt),
 		Config:        ToPBApplicationConfig(app.Config),
 		Websites: lo.Map(app.Websites, func(website *domain.Website, i int) *pb.Website {
 			return ToPBWebsite(website)

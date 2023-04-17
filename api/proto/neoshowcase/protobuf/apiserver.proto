@@ -164,9 +164,11 @@ message Application {
   ContainerState container = 7;
   string current_commit = 8;
   string want_commit = 9;
-  ApplicationConfig config = 10;
-  repeated Website websites = 11;
-  repeated string owner_ids = 12;
+  google.protobuf.Timestamp created_at = 10;
+  google.protobuf.Timestamp updated_at = 11;
+  ApplicationConfig config = 12;
+  repeated Website websites = 13;
+  repeated string owner_ids = 14;
 }
 
 message CreateApplicationRequest {
@@ -301,31 +303,41 @@ message RetryCommitBuildRequest {
   string commit = 2;
 }
 
-service ApplicationService {
+service APIService {
+  // System
   rpc GetMe(google.protobuf.Empty) returns (User);
-  rpc GetRepositories(google.protobuf.Empty) returns (GetRepositoriesResponse);
-  rpc CreateRepository(CreateRepositoryRequest) returns (Repository);
-  rpc UpdateRepository(UpdateRepositoryRequest) returns (google.protobuf.Empty);
-  rpc DeleteRepository(RepositoryIdRequest) returns (google.protobuf.Empty);
-  rpc GetApplications(google.protobuf.Empty) returns (GetApplicationsResponse);
   rpc GetSystemPublicKey(google.protobuf.Empty) returns (GetSystemPublicKeyResponse);
   rpc GetAvailableDomains(google.protobuf.Empty) returns (AvailableDomains);
   rpc AddAvailableDomain(AvailableDomain) returns (google.protobuf.Empty);
+
+  // Repository CRUD
+  rpc CreateRepository(CreateRepositoryRequest) returns (Repository);
+  rpc GetRepositories(google.protobuf.Empty) returns (GetRepositoriesResponse);
+  rpc GetRepository(RepositoryIdRequest) returns (Repository);
+  rpc UpdateRepository(UpdateRepositoryRequest) returns (google.protobuf.Empty);
+  rpc DeleteRepository(RepositoryIdRequest) returns (google.protobuf.Empty);
+
+  // Application CRUD
   rpc CreateApplication(CreateApplicationRequest) returns (Application);
+  rpc GetApplications(google.protobuf.Empty) returns (GetApplicationsResponse);
   rpc GetApplication(ApplicationIdRequest) returns (Application);
   rpc UpdateApplication(UpdateApplicationRequest) returns (google.protobuf.Empty);
   rpc DeleteApplication(ApplicationIdRequest) returns (google.protobuf.Empty);
-  rpc GetBuilds(ApplicationIdRequest) returns (GetBuildsResponse);
-  rpc GetBuild(BuildIdRequest) returns (Build);
-  rpc GetBuildLog(BuildIdRequest) returns (BuildLog);
-  rpc GetBuildLogStream(BuildIdRequest) returns (stream BuildLog);
-  rpc GetBuildArtifact(ArtifactIdRequest) returns (ArtifactContent);
+
+  // Application info / config
   rpc GetEnvVars(ApplicationIdRequest) returns (ApplicationEnvVars);
   rpc SetEnvVar(SetApplicationEnvVarRequest) returns (google.protobuf.Empty);
   rpc GetOutput(GetOutputRequest) returns (GetOutputResponse);
   rpc GetOutputStream(GetOutputStreamRequest) returns (stream ApplicationOutput);
-  rpc CancelBuild(BuildIdRequest) returns (google.protobuf.Empty);
-  rpc RetryCommitBuild(RetryCommitBuildRequest) returns (google.protobuf.Empty);
   rpc StartApplication(ApplicationIdRequest) returns (google.protobuf.Empty);
   rpc StopApplication(ApplicationIdRequest) returns (google.protobuf.Empty);
+
+  // Application builds
+  rpc GetBuilds(ApplicationIdRequest) returns (GetBuildsResponse);
+  rpc GetBuild(BuildIdRequest) returns (Build);
+  rpc RetryCommitBuild(RetryCommitBuildRequest) returns (google.protobuf.Empty);
+  rpc CancelBuild(BuildIdRequest) returns (google.protobuf.Empty);
+  rpc GetBuildLog(BuildIdRequest) returns (BuildLog);
+  rpc GetBuildLogStream(BuildIdRequest) returns (stream BuildLog);
+  rpc GetBuildArtifact(ArtifactIdRequest) returns (ArtifactContent);
 }
