@@ -164,9 +164,11 @@ message Application {
   ContainerState container = 7;
   string current_commit = 8;
   string want_commit = 9;
-  ApplicationConfig config = 10;
-  repeated Website websites = 11;
-  repeated string owner_ids = 12;
+  google.protobuf.Timestamp created_at = 10;
+  google.protobuf.Timestamp updated_at = 11;
+  ApplicationConfig config = 12;
+  repeated Website websites = 13;
+  repeated string owner_ids = 14;
 }
 
 message CreateApplicationRequest {
