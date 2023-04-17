@@ -313,6 +313,7 @@ service APIService {
   // Repository CRUD
   rpc CreateRepository(CreateRepositoryRequest) returns (Repository);
   rpc GetRepositories(google.protobuf.Empty) returns (GetRepositoriesResponse);
+  rpc GetRepository(RepositoryIdRequest) returns (Repository);
   rpc UpdateRepository(UpdateRepositoryRequest) returns (google.protobuf.Empty);
   rpc DeleteRepository(RepositoryIdRequest) returns (google.protobuf.Empty);
 

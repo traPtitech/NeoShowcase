@@ -45,6 +45,15 @@ func (s *APIService) GetRepositories(ctx context.Context, _ *connect.Request[emp
 	return res, nil
 }
 
+func (s *APIService) GetRepository(ctx context.Context, req *connect.Request[pb.RepositoryIdRequest]) (*connect.Response[pb.Repository], error) {
+	repository, err := s.svc.GetRepository(ctx, req.Msg.RepositoryId)
+	if err != nil {
+		return nil, handleUseCaseError(err)
+	}
+	res := connect.NewResponse(pbconvert.ToPBRepository(repository))
+	return res, nil
+}
+
 func (s *APIService) UpdateRepository(ctx context.Context, req *connect.Request[pb.UpdateRepositoryRequest]) (*connect.Response[emptypb.Empty], error) {
 	msg := req.Msg
 	args := &domain.UpdateRepositoryArgs{

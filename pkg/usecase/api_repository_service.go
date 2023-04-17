@@ -21,6 +21,10 @@ func (s *APIServerService) GetRepositories(ctx context.Context) ([]*domain.Repos
 	return s.gitRepo.GetRepositories(ctx, domain.GetRepositoryCondition{})
 }
 
+func (s *APIServerService) GetRepository(ctx context.Context, id string) (*domain.Repository, error) {
+	return handleRepoError(s.gitRepo.GetRepository(ctx, id))
+}
+
 func (s *APIServerService) UpdateRepository(ctx context.Context, id string, args *domain.UpdateRepositoryArgs) error {
 	err := s.isRepositoryOwner(ctx, id)
 	if err != nil {

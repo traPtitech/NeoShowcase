@@ -140,8 +140,7 @@ func (s *APIServerService) GetApplications(ctx context.Context) ([]*domain.Appli
 }
 
 func (s *APIServerService) GetApplication(ctx context.Context, id string) (*domain.Application, error) {
-	application, err := s.appRepo.GetApplication(ctx, id)
-	return handleRepoError(application, err)
+	return handleRepoError(s.appRepo.GetApplication(ctx, id))
 }
 
 func (s *APIServerService) UpdateApplication(ctx context.Context, id string, args *domain.UpdateApplicationArgs) error {

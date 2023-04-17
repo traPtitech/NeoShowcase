@@ -51,6 +51,9 @@ const (
 	// APIServiceGetRepositoriesProcedure is the fully-qualified name of the APIService's
 	// GetRepositories RPC.
 	APIServiceGetRepositoriesProcedure = "/neoshowcase.protobuf.APIService/GetRepositories"
+	// APIServiceGetRepositoryProcedure is the fully-qualified name of the APIService's GetRepository
+	// RPC.
+	APIServiceGetRepositoryProcedure = "/neoshowcase.protobuf.APIService/GetRepository"
 	// APIServiceUpdateRepositoryProcedure is the fully-qualified name of the APIService's
 	// UpdateRepository RPC.
 	APIServiceUpdateRepositoryProcedure = "/neoshowcase.protobuf.APIService/UpdateRepository"
@@ -116,6 +119,7 @@ type APIServiceClient interface {
 	// Repository CRUD
 	CreateRepository(context.Context, *connect_go.Request[pb.CreateRepositoryRequest]) (*connect_go.Response[pb.Repository], error)
 	GetRepositories(context.Context, *connect_go.Request[emptypb.Empty]) (*connect_go.Response[pb.GetRepositoriesResponse], error)
+	GetRepository(context.Context, *connect_go.Request[pb.RepositoryIdRequest]) (*connect_go.Response[pb.Repository], error)
 	UpdateRepository(context.Context, *connect_go.Request[pb.UpdateRepositoryRequest]) (*connect_go.Response[emptypb.Empty], error)
 	DeleteRepository(context.Context, *connect_go.Request[pb.RepositoryIdRequest]) (*connect_go.Response[emptypb.Empty], error)
 	// Application CRUD
@@ -179,6 +183,11 @@ func NewAPIServiceClient(httpClient connect_go.HTTPClient, baseURL string, opts 
 		getRepositories: connect_go.NewClient[emptypb.Empty, pb.GetRepositoriesResponse](
 			httpClient,
 			baseURL+APIServiceGetRepositoriesProcedure,
+			opts...,
+		),
+		getRepository: connect_go.NewClient[pb.RepositoryIdRequest, pb.Repository](
+			httpClient,
+			baseURL+APIServiceGetRepositoryProcedure,
 			opts...,
 		),
 		updateRepository: connect_go.NewClient[pb.UpdateRepositoryRequest, emptypb.Empty](
@@ -292,6 +301,7 @@ type aPIServiceClient struct {
 	addAvailableDomain  *connect_go.Client[pb.AvailableDomain, emptypb.Empty]
 	createRepository    *connect_go.Client[pb.CreateRepositoryRequest, pb.Repository]
 	getRepositories     *connect_go.Client[emptypb.Empty, pb.GetRepositoriesResponse]
+	getRepository       *connect_go.Client[pb.RepositoryIdRequest, pb.Repository]
 	updateRepository    *connect_go.Client[pb.UpdateRepositoryRequest, emptypb.Empty]
 	deleteRepository    *connect_go.Client[pb.RepositoryIdRequest, emptypb.Empty]
 	createApplication   *connect_go.Client[pb.CreateApplicationRequest, pb.Application]
@@ -342,6 +352,11 @@ func (c *aPIServiceClient) CreateRepository(ctx context.Context, req *connect_go
 // GetRepositories calls neoshowcase.protobuf.APIService.GetRepositories.
 func (c *aPIServiceClient) GetRepositories(ctx context.Context, req *connect_go.Request[emptypb.Empty]) (*connect_go.Response[pb.GetRepositoriesResponse], error) {
 	return c.getRepositories.CallUnary(ctx, req)
+}
+
+// GetRepository calls neoshowcase.protobuf.APIService.GetRepository.
+func (c *aPIServiceClient) GetRepository(ctx context.Context, req *connect_go.Request[pb.RepositoryIdRequest]) (*connect_go.Response[pb.Repository], error) {
+	return c.getRepository.CallUnary(ctx, req)
 }
 
 // UpdateRepository calls neoshowcase.protobuf.APIService.UpdateRepository.
@@ -454,6 +469,7 @@ type APIServiceHandler interface {
 	// Repository CRUD
 	CreateRepository(context.Context, *connect_go.Request[pb.CreateRepositoryRequest]) (*connect_go.Response[pb.Repository], error)
 	GetRepositories(context.Context, *connect_go.Request[emptypb.Empty]) (*connect_go.Response[pb.GetRepositoriesResponse], error)
+	GetRepository(context.Context, *connect_go.Request[pb.RepositoryIdRequest]) (*connect_go.Response[pb.Repository], error)
 	UpdateRepository(context.Context, *connect_go.Request[pb.UpdateRepositoryRequest]) (*connect_go.Response[emptypb.Empty], error)
 	DeleteRepository(context.Context, *connect_go.Request[pb.RepositoryIdRequest]) (*connect_go.Response[emptypb.Empty], error)
 	// Application CRUD
@@ -514,6 +530,11 @@ func NewAPIServiceHandler(svc APIServiceHandler, opts ...connect_go.HandlerOptio
 	mux.Handle(APIServiceGetRepositoriesProcedure, connect_go.NewUnaryHandler(
 		APIServiceGetRepositoriesProcedure,
 		svc.GetRepositories,
+		opts...,
+	))
+	mux.Handle(APIServiceGetRepositoryProcedure, connect_go.NewUnaryHandler(
+		APIServiceGetRepositoryProcedure,
+		svc.GetRepository,
 		opts...,
 	))
 	mux.Handle(APIServiceUpdateRepositoryProcedure, connect_go.NewUnaryHandler(
@@ -644,6 +665,10 @@ func (UnimplementedAPIServiceHandler) CreateRepository(context.Context, *connect
 
 func (UnimplementedAPIServiceHandler) GetRepositories(context.Context, *connect_go.Request[emptypb.Empty]) (*connect_go.Response[pb.GetRepositoriesResponse], error) {
 	return nil, connect_go.NewError(connect_go.CodeUnimplemented, errors.New("neoshowcase.protobuf.APIService.GetRepositories is not implemented"))
+}
+
+func (UnimplementedAPIServiceHandler) GetRepository(context.Context, *connect_go.Request[pb.RepositoryIdRequest]) (*connect_go.Response[pb.Repository], error) {
+	return nil, connect_go.NewError(connect_go.CodeUnimplemented, errors.New("neoshowcase.protobuf.APIService.GetRepository is not implemented"))
 }
 
 func (UnimplementedAPIServiceHandler) UpdateRepository(context.Context, *connect_go.Request[pb.UpdateRepositoryRequest]) (*connect_go.Response[emptypb.Empty], error) {

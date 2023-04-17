@@ -71,6 +71,15 @@ export const APIService = {
       kind: MethodKind.Unary,
     },
     /**
+     * @generated from rpc neoshowcase.protobuf.APIService.GetRepository
+     */
+    getRepository: {
+      name: "GetRepository",
+      I: RepositoryIdRequest,
+      O: Repository,
+      kind: MethodKind.Unary,
+    },
+    /**
      * @generated from rpc neoshowcase.protobuf.APIService.UpdateRepository
      */
     updateRepository: {
