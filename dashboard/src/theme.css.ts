@@ -1,4 +1,4 @@
-import { createGlobalTheme } from '@vanilla-extract/css'
+import { createGlobalTheme, style } from '@vanilla-extract/css'
 
 export const vars = createGlobalTheme(':root', {
   bg: {
@@ -15,6 +15,7 @@ export const vars = createGlobalTheme(':root', {
     black3: '#9CA3AF',
     black4: '#ADB5BC',
     white1: '#FAFAFA',
+    url: '#3B82F6',
   },
   icon: {
     error: '#EB5E28',
@@ -22,4 +23,8 @@ export const vars = createGlobalTheme(':root', {
     success1: '#41B883',
     success2: '#68B3C8',
   },
+})
+
+export const url = style({
+  color: vars.text.url,
 })

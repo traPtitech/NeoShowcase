@@ -1,7 +1,7 @@
 import { style } from '@vanilla-extract/css'
 import { vars } from '/@/theme.css'
 
-export const appTitle = style({
+export const appTitleContainer = style({
   display: 'flex',
   flexDirection: 'row',
   gap: '14px',
@@ -11,6 +11,12 @@ export const appTitle = style({
   fontSize: '32px',
   fontWeight: 'bold',
   color: vars.text.black1,
+})
+
+export const appTitle = style({
+  display: 'flex',
+  flexDirection: 'row',
+  gap: '8px',
 })
 
 export const centerInline = style({
@@ -31,7 +37,8 @@ export const card = style({
 })
 
 export const cardTitle = style({
-  fontSize: '20px',
+  fontSize: '24px',
+  fontWeight: 600,
 })
 
 export const cardItems = style({
@@ -42,20 +49,22 @@ export const cardItems = style({
 
 export const cardItem = style({
   display: 'flex',
-  flexDirection: 'column',
-  gap: '12px',
+  flexDirection: 'row',
+  gap: '8px',
 })
 
 export const cardItemTitle = style({
-  fontSize: '14px',
+  fontSize: '16px',
   color: vars.text.black3,
 })
 
 export const cardItemContent = style({
-  fontSize: '12px',
+  marginLeft: 'auto',
+  fontSize: '16px',
   color: vars.text.black1,
 
   display: 'flex',
   flexDirection: 'row',
-  gap: '8px',
+  alignItems: 'center',
+  gap: '4px',
 })

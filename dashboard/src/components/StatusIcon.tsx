@@ -6,17 +6,19 @@ import { ApplicationState } from '/@/libs/application'
 
 interface Props {
   state: ApplicationState
+  size?: number
 }
 
 export const StatusIcon = (props: Props): JSXElement => {
+  const size = () => props.size ?? 20
   switch (props.state) {
     case ApplicationState.Idle:
-      return <AiFillMinusCircle size={20} color={vars.text.black4} />
+      return <AiFillMinusCircle size={size()} color={vars.text.black4} />
     case ApplicationState.Deploying:
-      return <IoReloadCircle size={20} color={vars.icon.pending} />
+      return <IoReloadCircle size={size()} color={vars.icon.pending} />
     case ApplicationState.Running:
-      return <AiFillCheckCircle size={20} color={vars.icon.success1} />
+      return <AiFillCheckCircle size={size()} color={vars.icon.success1} />
     case ApplicationState.Static:
-      return <AiFillCheckCircle size={20} color={vars.icon.success2} />
+      return <AiFillCheckCircle size={size()} color={vars.icon.success2} />
   }
 }

@@ -6,6 +6,7 @@ import { container, contentContainer } from '/@/pages/apps.css'
 import { applicationState, getWebsiteURL, providerToIcon } from '/@/libs/application'
 import {
   appTitle,
+  appTitleContainer,
   card,
   cardItem,
   cardItemContent,
@@ -17,7 +18,8 @@ import {
 import { StatusIcon } from '/@/components/StatusIcon'
 import { titleCase } from '/@/libs/casing'
 import { Application_ContainerState, DeployType } from '/@/api/neoshowcase/protobuf/gateway_pb'
-import { durationHuman } from '/@/libs/format'
+import { DiffHuman } from '/@/libs/format'
+import { url } from '/@/theme.css'
 
 export default () => {
   const params = useParams()
@@ -25,13 +27,21 @@ export default () => {
     () => params.id,
     (id) => client.getApplication({ id }),
   )
+  const [repo] = createResource(
+    () => app()?.repositoryId,
+    (id) => client.getRepository({ repositoryId: id }),
+  )
 
   return (
     <div class={container}>
       <Header />
-      <div class={appTitle}>
+      <div class={appTitleContainer}>
         <div class={centerInline}>{providerToIcon('GitHub', 36)}</div>
-        <div>{app()?.name}</div>
+        <div class={appTitle}>
+          <div>{repo()?.name}</div>
+          <div>/</div>
+          <div>{app()?.name}</div>
+        </div>
       </div>
       <div class={contentContainer}>
         <div class={card}>
@@ -40,7 +50,7 @@ export default () => {
             <div class={cardItem}>
               <div class={cardItemTitle}>状態</div>
               <div class={cardItemContent}>
-                {app() && <StatusIcon state={applicationState(app())} />}
+                {app() && <StatusIcon state={applicationState(app())} size={24} />}
                 {app() && applicationState(app())}
               </div>
             </div>
@@ -51,22 +61,26 @@ export default () => {
               </div>
             )}
             <div class={cardItem}>
-              <div class={cardItemTitle}>起動時間</div>
+              <div class={cardItemTitle}>起動時刻</div>
               <div class={cardItemContent}>
-                {app()?.running && durationHuman(3 * 60 * 1000 /* TODO: use updated_at */)}
+                {app()?.running && <DiffHuman target={app().updatedAt.toDate()} />}
                 {app() && !app().running && '-'}
               </div>
             </div>
             <div class={cardItem}>
               <div class={cardItemTitle}>作成日</div>
-              <div class={cardItemContent}>{app() && new Date().toLocaleString() /* TODO: use created_at */}</div>
+              <div class={cardItemContent}>{app() && <DiffHuman target={app().createdAt.toDate()} />}</div>
             </div>
             {app() && app().websites.length > 0 && (
               <div class={cardItem}>
                 <div class={cardItemTitle}>URLs</div>
+              </div>
+            )}
+            {app() && app().websites.length > 0 && (
+              <div class={cardItem}>
                 <div class={cardItemContent}>
                   {app()?.websites.map((website) => (
-                    <a href={getWebsiteURL(website)} target='_blank' rel="noreferrer">
+                    <a class={url} href={getWebsiteURL(website)} target='_blank' rel="noreferrer">
                       {getWebsiteURL(website)}
                     </a>
                   ))}
