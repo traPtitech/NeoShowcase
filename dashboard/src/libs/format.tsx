@@ -15,3 +15,20 @@ export const durationHuman = (millis: number): string => {
   if (seconds > 0) return `${seconds} sec${seconds > 1 ? 's' : ''}`
   return `${millis} ms`
 }
+
+export interface DiffHumanProps {
+  target: Date
+}
+
+export const DiffHuman = (props: DiffHumanProps) => {
+  const now = new Date()
+  const diff = () => now.getTime() - props.target.getTime()
+  const suffix = () => (diff() > 0 ? 'ago' : 'from now')
+  const human = () => durationHuman(Math.abs(diff()))
+  const tooltip = () => props.target.toLocaleString()
+  return (
+    <div title={tooltip()}>
+      {human()} {suffix()}
+    </div>
+  )
+}
