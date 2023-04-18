@@ -25,6 +25,11 @@ export const centerInline = style({
   justifyContent: 'center',
 })
 
+export const cardsContainer = style({
+  display: 'grid',
+  gap: '40px',
+})
+
 export const card = style({
   borderRadius: '4px',
   border: `1px solid ${vars.bg.white4}`,
