@@ -14,8 +14,12 @@ import (
 )
 
 type Config struct {
-	ConfDir string `mapstructure:"confDir" yaml:"confDir"`
-	SS      struct {
+	ConfDir     string `mapstructure:"confDir" yaml:"confDir"`
+	Middlewares struct {
+		AuthSoft []string `mapstructure:"authSoft" yaml:"authSoft"`
+		AuthHard []string `mapstructure:"authHard" yaml:"authHard"`
+	} `mapstructure:"middlewares" yaml:"middlewares"`
+	SS struct {
 		URL string `mapstructure:"url" yaml:"url"`
 	} `mapstructure:"ss" yaml:"ss"`
 	Network string            `mapstructure:"network" yaml:"network"`
