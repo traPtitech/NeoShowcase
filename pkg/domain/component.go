@@ -17,8 +17,8 @@ type ControllerServiceClient interface {
 
 type ControllerBuilderService interface {
 	pbconnect.ControllerBuilderServiceHandler
-	ListenBuilderIdle() <-chan struct{}
-	ListenBuildSettled() <-chan struct{}
+	ListenBuilderIdle() (sub <-chan struct{}, unsub func())
+	ListenBuildSettled() (sub <-chan struct{}, unsub func())
 	BroadcastBuilder(req *pb.BuilderRequest)
 }
 

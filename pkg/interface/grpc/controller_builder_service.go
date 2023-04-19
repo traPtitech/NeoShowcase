@@ -22,8 +22,8 @@ type builderConnection struct {
 type ControllerBuilderService struct {
 	logStream *usecase.LogStreamService
 
-	idle    chan struct{}
-	settled chan struct{}
+	idle    domain.PubSub[struct{}]
+	settled domain.PubSub[struct{}]
 
 	builderConnections []*builderConnection
 	lock               sync.Mutex
@@ -34,8 +34,6 @@ func NewControllerBuilderService(
 ) domain.ControllerBuilderService {
 	return &ControllerBuilderService{
 		logStream: logStream,
-		idle:      make(chan struct{}),
-		settled:   make(chan struct{}),
 	}
 }
 
@@ -44,7 +42,7 @@ func (s *ControllerBuilderService) ConnectBuilder(ctx context.Context, st *conne
 	log.WithField("id", id).Info("new builder connection")
 	defer log.WithField("id", id).Info("builder connection closed")
 
-	s.sendIdle()
+	s.idle.Publish(struct{}{})
 
 	ctx, cancel := context.WithCancel(ctx)
 	reqSender := make(chan *pb.BuilderRequest)
@@ -79,8 +77,8 @@ func (s *ControllerBuilderService) ConnectBuilder(ctx context.Context, st *conne
 				s.logStream.StartBuildLog(payload.BuildId)
 			case pb.BuilderResponse_BUILD_SETTLED:
 				payload := res.Body.(*pb.BuilderResponse_Settled).Settled
-				s.sendIdle()
-				s.sendSettled()
+				s.idle.Publish(struct{}{})
+				s.settled.Publish(struct{}{})
 				s.logStream.CloseBuildLog(payload.BuildId)
 			case pb.BuilderResponse_BUILD_LOG:
 				payload := res.Body.(*pb.BuilderResponse_Log).Log
@@ -106,26 +104,12 @@ loop:
 	return nil
 }
 
-func (s *ControllerBuilderService) sendIdle() {
-	select {
-	case s.idle <- struct{}{}:
-	default:
-	}
+func (s *ControllerBuilderService) ListenBuilderIdle() (sub <-chan struct{}, unsub func()) {
+	return s.idle.Subscribe()
 }
 
-func (s *ControllerBuilderService) sendSettled() {
-	select {
-	case s.settled <- struct{}{}:
-	default:
-	}
-}
-
-func (s *ControllerBuilderService) ListenBuilderIdle() <-chan struct{} {
-	return s.idle
-}
-
-func (s *ControllerBuilderService) ListenBuildSettled() <-chan struct{} {
-	return s.settled
+func (s *ControllerBuilderService) ListenBuildSettled() (sub <-chan struct{}, unsub func()) {
+	return s.settled.Subscribe()
 }
 
 func (s *ControllerBuilderService) BroadcastBuilder(req *pb.BuilderRequest) {

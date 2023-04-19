@@ -112,12 +112,14 @@ func NewContinuousDeploymentService(
 
 	cd.run = func() {
 		go func() {
-			for range builderSvc.ListenBuilderIdle() {
+			sub, _ := builderSvc.ListenBuilderIdle()
+			for range sub {
 				go cd.doStartBuild()
 			}
 		}()
 		go func() {
-			for range builderSvc.ListenBuildSettled() {
+			sub, _ := builderSvc.ListenBuildSettled()
+			for range sub {
 				go cd.doSyncDeploy()
 			}
 		}()
