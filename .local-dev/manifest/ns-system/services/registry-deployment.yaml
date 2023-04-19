@@ -1,0 +1,41 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: registry
+
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: registry
+  template:
+    metadata:
+      labels:
+        app: registry
+    spec:
+      containers:
+        - name: registry
+          image: registry:2
+          env:
+            - name: REGISTRY_HTTP_ADDR
+              value: ":80"
+          ports:
+            - containerPort: 80
+              name: http
+          volumeMounts:
+            - name: registry
+              mountPath: /var/lib/registry
+            - name: registry-config
+              mountPath: /entrypoint.sh
+              subPath: entrypoint.sh
+            - name: registry-config
+              mountPath: /gc.sh
+              subPath: gc.sh
+      volumes:
+        - name: registry
+          hostPath:
+            path: /opt/registry
+        - name: registry-config
+          configMap:
+            name: registry-config
+            defaultMode: 0755

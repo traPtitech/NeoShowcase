@@ -1,0 +1,20 @@
+apiVersion: traefik.containo.us/v1alpha1
+kind: IngressRoute
+metadata:
+  name: argocd-server
+
+spec:
+  entryPoints:
+    - web
+    - websecure
+  routes:
+    - kind: Rule
+      match: Host(`cd.local.trapti.tech`)
+      services:
+        - kind: Service
+          namespace: argocd
+          name: argocd-server
+          port: 80
+          scheme: http
+          strategy: RoundRobin
+          weight: 1

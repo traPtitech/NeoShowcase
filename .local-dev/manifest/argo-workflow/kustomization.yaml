@@ -1,0 +1,6 @@
+resources:
+  - https://github.com/argoproj/argo-workflows/releases/download/v3.4.5/install.yaml
+  - ingress-route.yaml
+
+patchesStrategicMerge:
+  - argo-server.yaml

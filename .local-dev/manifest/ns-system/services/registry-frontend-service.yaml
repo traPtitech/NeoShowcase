@@ -1,0 +1,13 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: registry-frontend
+
+spec:
+  type: ClusterIP
+  selector:
+    app: registry-frontend
+  ports:
+    - name: http
+      port: 80
+      targetPort: http

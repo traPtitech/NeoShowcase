@@ -1,0 +1,87 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ns-builder
+
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: ns-builder
+  template:
+    metadata:
+      labels:
+        app: ns-builder
+    spec:
+      containers:
+        - name: buildkitd
+          image: moby/buildkit:latest
+          imagePullPolicy: Always
+          args:
+            - --addr
+            - unix:///run/buildkit/buildkitd.sock
+          readinessProbe:
+            exec:
+              command:
+                - buildctl
+                - debug
+                - workers
+            initialDelaySeconds: 5
+            periodSeconds: 30
+          livenessProbe:
+            exec:
+              command:
+                - buildctl
+                - debug
+                - workers
+            initialDelaySeconds: 5
+            periodSeconds: 30
+          securityContext:
+            privileged: true
+          volumeMounts:
+            - mountPath: /run/buildkit
+              name: socket
+            - mountPath: /etc/buildkit/buildkitd.toml
+              name: buildkit-config
+              subPath: buildkitd.toml
+
+        - name: builder
+          image: ghcr.io/traptitech/ns-builder:main
+          imagePullPolicy: Never
+          args:
+            - run
+            - --loglevel=debug
+            - --config=/opt/config/config.yaml
+          volumeMounts:
+            - mountPath: /run/buildkit
+              name: socket
+            - mountPath: /opt/config/config.yaml
+              name: config
+              subPath: config.yaml
+            - mountPath: /keys
+              name: keys
+            # - mountPath: /.docker
+            #   name: secret
+      volumes:
+        - name: socket
+          emptyDir: {}
+        - name: config
+          configMap:
+            name: ns-config
+            items:
+              - key: ns-builder.yaml
+                path: config.yaml
+        - name: buildkit-config
+          configMap:
+            name: ns-config
+            items:
+              - key: buildkitd.toml
+                path: buildkitd.toml
+        - name: keys
+          secret:
+            secretName: ns-keys
+        # - name: secret
+        #   secret:
+        #     secretName: registry-secret
+      # nodeSelector:
+      #   neoshowcase.trap.jp/builder-node: "true"

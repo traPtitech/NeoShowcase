@@ -1,0 +1,8 @@
+resources:
+  - https://raw.githubusercontent.com/argoproj/argo-cd/v2.6.7/manifests/install.yaml
+  - ingress-route.yaml
+  - app-project.yaml
+
+patchesStrategicMerge:
+  - argocd-server.yaml
+  - argocd-ssh-known-hosts-cm.yaml

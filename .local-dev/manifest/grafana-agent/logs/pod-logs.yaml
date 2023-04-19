@@ -1,0 +1,36 @@
+apiVersion: monitoring.grafana.com/v1alpha1
+kind: PodLogs
+metadata:
+  name: kubernetes-pods
+  labels:
+    instance: primary
+
+spec:
+  relabelings:
+    - action: labelmap
+      regex: __meta_kubernetes_pod_label_(.+)
+      replacement: $1
+    - action: replace
+      sourceLabels:
+        - __meta_kubernetes_pod_node_name
+      targetLabel: host
+    - action: replace
+      sourceLabels:
+        - __meta_kubernetes_pod_container_name
+      targetLabel: container
+
+  namespaceSelector:
+    matchNames:
+      - default
+      - argocd
+      - kubernetes-dashboard
+      - traefik
+      - argo
+      - ns-system
+      - neoshowcase-apps
+      - loki
+      - grafana-agent-operator
+      - grafana
+      - grafana-agent
+  selector:
+    matchLabels: {}

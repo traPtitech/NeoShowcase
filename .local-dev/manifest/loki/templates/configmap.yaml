@@ -1,0 +1,72 @@
+---
+# Source: loki/templates/configmap.yaml
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: loki
+  labels:
+    helm.sh/chart: loki-5.0.0
+    app.kubernetes.io/name: loki
+    app.kubernetes.io/instance: loki
+    app.kubernetes.io/version: "2.8.0"
+    app.kubernetes.io/managed-by: Helm
+data:
+  config.yaml: |
+    auth_enabled: false
+    common:
+      compactor_address: 'loki'
+      path_prefix: /var/loki
+      replication_factor: 1
+      storage:
+        s3:
+          access_key_id: NEOSHOWCASEMINIOROOTUSER
+          bucketnames: loki-chunks
+          endpoint: minio.ns-system.svc.cluster.local
+          insecure: true
+          region: us-east-1
+          s3forcepathstyle: true
+          secret_access_key: 593fbde300c5718e416886e7e4be339d903541b3900f211ceb89f5b4052a98b3
+    limits_config:
+      enforce_metric_name: false
+      max_cache_freshness_per_query: 10m
+      reject_old_samples: true
+      reject_old_samples_max_age: 168h
+      split_queries_by_interval: 15m
+    memberlist:
+      join_members:
+      - loki-memberlist
+    query_range:
+      align_queries_with_step: true
+    ruler:
+      storage:
+        s3:
+          access_key_id: NEOSHOWCASEMINIOROOTUSER
+          bucketnames: loki-ruler
+          endpoint: minio.ns-system.svc.cluster.local
+          insecure: true
+          region: us-east-1
+          s3forcepathstyle: true
+          secret_access_key: 593fbde300c5718e416886e7e4be339d903541b3900f211ceb89f5b4052a98b3
+        type: s3
+    runtime_config:
+      file: /etc/loki/runtime-config/runtime-config.yaml
+    schema_config:
+      configs:
+      - from: "2022-01-11"
+        index:
+          period: 24h
+          prefix: loki_index_
+        object_store: s3
+        schema: v12
+        store: boltdb-shipper
+    server:
+      grpc_listen_port: 9095
+      http_listen_port: 3100
+    storage_config:
+      hedging:
+        at: 250ms
+        max_per_second: 20
+        up_to: 3
+    table_manager:
+      retention_deletes_enabled: true
+      retention_period: 672h

@@ -1,0 +1,10 @@
+resources:
+  - charts/grafana.yaml
+  - charts/grafana-agent-operator.yaml
+  - argo-workflow.yaml
+  - argocd.yaml
+  - grafana.yaml
+  - grafana-agent.yaml
+  - loki.yaml
+  - neoshowcase.yaml
+  - traefik.yaml

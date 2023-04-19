@@ -1,0 +1,31 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ns-auth
+
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: ns-auth
+  template:
+    metadata:
+      labels:
+        app: ns-auth
+    spec:
+      containers:
+        - name: ns-auth
+          image: ghcr.io/jordemort/traefik-forward-auth:latest
+          args:
+            - --config=/config.ini
+          ports:
+            - containerPort: 4181
+              name: http
+          volumeMounts:
+            - name: ns-config
+              mountPath: /config.ini
+              subPath: ns-auth.ini
+      volumes:
+        - name: ns-config
+          configMap:
+            name: ns-config

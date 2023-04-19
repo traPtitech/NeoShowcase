@@ -1,0 +1,10 @@
+apiVersion: traefik.containo.us/v1alpha1
+kind: Middleware
+metadata:
+  name: nsapp-auth
+
+spec:
+  forwardAuth:
+    address: http://ns-mc.ns-system.svc.cluster.local/
+    authResponseHeaders:
+      - X-Showcase-User

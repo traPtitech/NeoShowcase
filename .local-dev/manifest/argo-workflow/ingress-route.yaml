@@ -1,0 +1,20 @@
+apiVersion: traefik.containo.us/v1alpha1
+kind: IngressRoute
+metadata:
+  name: argo-server
+
+spec:
+  entryPoints:
+    - web
+    - websecure
+  routes:
+    - kind: Rule
+      match: Host(`workflow.local.trapti.tech`)
+      services:
+        - kind: Service
+          namespace: argo
+          name: argo-server
+          port: 2746
+          scheme: http
+          strategy: RoundRobin
+          weight: 1

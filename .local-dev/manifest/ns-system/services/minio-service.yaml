@@ -1,0 +1,16 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: minio
+
+spec:
+  type: ClusterIP
+  selector:
+    app: minio
+  ports:
+    - name: backend
+      port: 80
+      targetPort: backend
+    - name: console
+      port: 9001
+      targetPort: console

@@ -1,0 +1,23 @@
+apiVersion: traefik.containo.us/v1alpha1
+kind: IngressRoute
+metadata:
+  name: ns-gateway
+
+spec:
+  entryPoints:
+    - web
+    - websecure
+  routes:
+    - kind: Rule
+      match: Host(`ns.local.trapti.tech`) && PathPrefix(`/neoshowcase.protobuf.APIService`)
+      middlewares:
+        - name: ns-auth-dev
+          namespace: ns-system
+      services:
+        - namespace: ns-system
+          kind: Service
+          name: ns-gateway
+          port: http
+          scheme: h2c
+          strategy: RoundRobin
+          weight: 1

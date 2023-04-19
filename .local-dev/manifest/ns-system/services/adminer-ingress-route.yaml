@@ -1,0 +1,20 @@
+apiVersion: traefik.containo.us/v1alpha1
+kind: IngressRoute
+metadata:
+  name: adminer
+
+spec:
+  entryPoints:
+    - web
+    - websecure
+  routes:
+    - kind: Rule
+      match: Host(`adminer.local.trapti.tech`)
+      services:
+        - namespace: ns-system
+          kind: Service
+          name: adminer
+          port: 80
+          scheme: http
+          strategy: RoundRobin
+          weight: 1
