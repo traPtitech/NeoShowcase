@@ -1,0 +1,22 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ns-dashboard
+
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: ns-dashboard
+  template:
+    metadata:
+      labels:
+        app: ns-dashboard
+    spec:
+      containers:
+        - name: ns-dashboard
+          image: ghcr.io/traptitech/ns-dashboard:main
+          imagePullPolicy: Never
+          ports:
+            - containerPort: 80
+              name: http

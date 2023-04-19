@@ -1,0 +1,45 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: ns-controller
+
+spec:
+  replicas: 1
+  serviceName: ns-controller
+  selector:
+    matchLabels:
+      app: ns-controller
+  template:
+    metadata:
+      labels:
+        app: ns-controller
+    spec:
+      serviceAccountName: ns-controller
+      containers:
+        - name: ns-controller
+          image: ghcr.io/traptitech/ns-controller:main
+          imagePullPolicy: Never
+          args:
+            - run
+            - --loglevel=debug
+            - --config=/opt/config/ns-controller.yaml
+          ports:
+            - containerPort: 10000
+              name: grpc
+          volumeMounts:
+            - mountPath: /opt/repo-cache
+              name: repository-cache
+            - mountPath: /opt/config/ns-controller.yaml
+              name: config
+              subPath: ns-controller.yaml
+            - mountPath: /keys
+              name: keys
+      volumes:
+        - name: repository-cache
+          emptyDir: {}
+        - name: config
+          configMap:
+            name: ns-config
+        - name: keys
+          secret:
+            secretName: ns-keys

@@ -1,0 +1,7 @@
+certificatesResolvers:
+  resolver:
+    acme:
+      email: "motoki317@gmail.com"
+      storage: "/certs/acme.json"
+      certificatesDuration: 2160
+      tlsChallenge: {}

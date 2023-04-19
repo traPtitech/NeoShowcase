@@ -1,0 +1,20 @@
+apiVersion: traefik.containo.us/v1alpha1
+kind: IngressRoute
+metadata:
+  name: minio
+
+spec:
+  entryPoints:
+    - web
+    - websecure
+  routes:
+    - kind: Rule
+      match: Host(`minio.local.trapti.tech`)
+      services:
+        - namespace: ns-system
+          kind: Service
+          name: minio
+          port: 9001
+          scheme: http
+          strategy: RoundRobin
+          weight: 1

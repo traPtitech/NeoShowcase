@@ -1,0 +1,26 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: grafana-chart
+  namespace: argocd
+spec:
+  destination:
+    namespace: grafana
+    server: https://kubernetes.default.svc
+  project: default
+  sources:
+    - repoURL: https://grafana.github.io/helm-charts
+      chart: grafana
+      targetRevision: "6.52.9"
+      helm:
+        valueFiles:
+          - $values/.local-dev/manifest/grafana/values.yaml
+    - repoURL: https://github.com/traPtitech/NeoShowcase
+      targetRevision: master
+      ref: values
+  syncPolicy:
+    syncOptions:
+      - CreateNamespace=true
+    automated:
+      prune: true
+      selfHeal: true

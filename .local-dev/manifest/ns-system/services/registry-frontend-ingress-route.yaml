@@ -1,0 +1,20 @@
+apiVersion: traefik.containo.us/v1alpha1
+kind: IngressRoute
+metadata:
+  name: registry-frontend
+
+spec:
+  entryPoints:
+    - web
+    - websecure
+  routes:
+    - kind: Rule
+      match: Host(`registry-frontend.local.trapti.tech`)
+      services:
+        - namespace: ns-system
+          kind: Service
+          name: registry-frontend
+          port: http
+          scheme: http
+          strategy: RoundRobin
+          weight: 1

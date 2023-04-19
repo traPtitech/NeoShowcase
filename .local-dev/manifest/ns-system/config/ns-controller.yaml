@@ -1,0 +1,56 @@
+port: 10000
+debug: false
+mode: k8s
+
+db:
+  host: mariadb.ns-system.svc.cluster.local
+  port: 3306
+  username: root
+  password: password
+  database: neoshowcase
+
+storage:
+  type: s3
+  s3:
+    bucket: neoshowcase
+    accessKey: NEOSHOWCASEMINIOROOTUSER
+    accessSecret: 593fbde300c5718e416886e7e4be339d903541b3900f211ceb89f5b4052a98b3
+    region: us-east-1
+    endpoint: http://minio.ns-system.svc.cluster.local
+
+k8s:
+  middlewares:
+    authSoft:
+      - nsapp-auth-soft
+      - nsapp-auth
+    authHard:
+      - nsapp-auth-hard
+      - nsapp-auth
+  ss:
+    namespace: ns-system
+    kind: Service
+    name: ns-ssgen
+    port: 80
+  namespace: ns-apps
+  # extra labels
+  labels:
+    app.kubernetes.io/instance: ns-apps
+  tls:
+    type: traefik
+    traefik:
+      certResolver: resolver
+      wildcard:
+        domains: []
+  # required if registry is private
+  imagePullSecret: ""
+
+repository:
+  privateKeyFile: /keys/id_ed25519
+
+image:
+  registry:
+    scheme: http
+    addr: registry.ns-system.svc.cluster.local
+    username: ""
+    password: ""
+    namePrefix: ns-apps/

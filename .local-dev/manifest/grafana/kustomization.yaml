@@ -1,0 +1,2 @@
+resources:
+  - grafana-ingress-route.yaml

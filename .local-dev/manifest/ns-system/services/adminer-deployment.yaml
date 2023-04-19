@@ -1,0 +1,36 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: adminer
+
+spec:
+  selector:
+    matchLabels:
+      app: adminer
+  template:
+    metadata:
+      labels:
+        app: adminer
+    spec:
+      containers:
+        - name: adminer
+          image: adminer:4.7.7
+          env:
+            - name: ADMINER_DEFAULT_SERVER
+              value: mariadb
+            - name: ADMINER_DESIGN
+              value: nette
+          ports:
+            - name: http
+              containerPort: 8080
+#      affinity:
+#        nodeAffinity:
+#          requiredDuringSchedulingIgnoredDuringExecution:
+#            nodeSelectorTerms:
+#              - matchExpressions:
+#                  - key: node-role.kubernetes.io/master
+#                    operator: Exists
+#      tolerations:
+#        - key: node-role.kubernetes.io/master
+#          operator: Exists
+#          effect: NoSchedule

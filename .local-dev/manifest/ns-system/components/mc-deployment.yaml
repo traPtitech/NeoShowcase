@@ -1,0 +1,25 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ns-mc
+
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: ns-mc
+  template:
+    metadata:
+      labels:
+        app: ns-mc
+    spec:
+      containers:
+        - name: ns-mc
+          image: ghcr.io/traptitech/ns-mc:main
+          imagePullPolicy: Never
+          args:
+            - serve
+            - --port=8080
+          ports:
+            - containerPort: 8080
+              name: http

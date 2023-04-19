@@ -1,0 +1,5 @@
+nameReference:
+  - kind: ConfigMap
+    fieldSpecs:
+      - kind: WorkflowTemplate
+        path: spec/templates/container/env/valueFrom/configMapKeyRef/name

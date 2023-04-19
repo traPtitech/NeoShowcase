@@ -1,0 +1,26 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: registry-frontend
+
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: registry-frontend
+  template:
+    metadata:
+      labels:
+        app: registry-frontend
+    spec:
+      containers:
+        - name: registry-frontend
+          image: konradkleine/docker-registry-frontend:v2
+          env:
+            - name: ENV_DOCKER_REGISTRY_HOST
+              value: registry.ns-system.svc.cluster.local
+            - name: ENV_DOCKER_REGISTRY_PORT
+              value: "80"
+          ports:
+            - containerPort: 80
+              name: http
