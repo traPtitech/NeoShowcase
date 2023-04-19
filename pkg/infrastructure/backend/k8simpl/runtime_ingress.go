@@ -117,15 +117,13 @@ func (b *k8sBackend) ingressRoute(
 	var middlewareRefs []traefikv1alpha1.MiddlewareRef
 	switch website.Authentication {
 	case domain.AuthenticationTypeSoft:
-		middlewareRefs = append(middlewareRefs,
-			traefikv1alpha1.MiddlewareRef{Name: web.TraefikAuthSoftMiddleware},
-			traefikv1alpha1.MiddlewareRef{Name: web.TraefikAuthMiddleware},
-		)
+		for _, middlewareName := range b.config.Middlewares.AuthSoft {
+			middlewareRefs = append(middlewareRefs, traefikv1alpha1.MiddlewareRef{Name: middlewareName})
+		}
 	case domain.AuthenticationTypeHard:
-		middlewareRefs = append(middlewareRefs,
-			traefikv1alpha1.MiddlewareRef{Name: web.TraefikAuthHardMiddleware},
-			traefikv1alpha1.MiddlewareRef{Name: web.TraefikAuthMiddleware},
-		)
+		for _, middlewareName := range b.config.Middlewares.AuthHard {
+			middlewareRefs = append(middlewareRefs, traefikv1alpha1.MiddlewareRef{Name: middlewareName})
+		}
 	}
 
 	var rule string

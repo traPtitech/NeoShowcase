@@ -25,6 +25,10 @@ const (
 )
 
 type Config struct {
+	Middlewares struct {
+		AuthSoft []string `mapstructure:"authSoft" yaml:"authSoft"`
+		AuthHard []string `mapstructure:"authHard" yaml:"authHard"`
+	} `mapstructure:"middlewares" yaml:"middlewares"`
 	SS struct {
 		Namespace string `mapstructure:"namespace" yaml:"namespace"`
 		Kind      string `mapstructure:"kind" yaml:"kind"`

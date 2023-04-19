@@ -30,15 +30,9 @@ func (b *dockerBackend) routerBase(website *domain.Website, svcName string) (rou
 	var middlewareNames []string
 	switch website.Authentication {
 	case domain.AuthenticationTypeSoft:
-		middlewareNames = append(middlewareNames,
-			web.TraefikAuthSoftMiddleware,
-			web.TraefikAuthMiddleware,
-		)
+		middlewareNames = append(middlewareNames, b.conf.Middlewares.AuthSoft...)
 	case domain.AuthenticationTypeHard:
-		middlewareNames = append(middlewareNames,
-			web.TraefikAuthHardMiddleware,
-			web.TraefikAuthMiddleware,
-		)
+		middlewareNames = append(middlewareNames, b.conf.Middlewares.AuthHard...)
 	}
 
 	var rule string
