@@ -16,7 +16,6 @@ import (
 	"k8s.io/client-go/kubernetes"
 
 	"github.com/traPtitech/neoshowcase/pkg/domain"
-	"github.com/traPtitech/neoshowcase/pkg/domain/event"
 	"github.com/traPtitech/neoshowcase/pkg/util/ds"
 )
 
@@ -82,18 +81,17 @@ const (
 )
 
 type k8sBackend struct {
-	eventbus          domain.Bus
 	client            *kubernetes.Clientset
 	traefikClient     *traefikv1alpha1.TraefikContainousV1alpha1Client
 	certManagerClient *certmanagerv1.Clientset
 	config            Config
+	eventSubs         domain.PubSub[*domain.ContainerEvent]
 
 	podWatcher watch.Interface
 	reloadLock sync.Mutex
 }
 
 func NewK8SBackend(
-	eventbus domain.Bus,
 	k8sCSet *kubernetes.Clientset,
 	traefikClient *traefikv1alpha1.TraefikContainousV1alpha1Client,
 	certManagerClient *certmanagerv1.Clientset,
@@ -104,7 +102,6 @@ func NewK8SBackend(
 		return nil, err
 	}
 	return &k8sBackend{
-		eventbus:          eventbus,
 		client:            k8sCSet,
 		traefikClient:     traefikClient,
 		certManagerClient: certManagerClient,
@@ -138,15 +135,17 @@ func (b *k8sBackend) eventListener() {
 		if !ok {
 			continue
 		}
-		b.eventbus.Publish(event.AppContainerUpdated, domain.Fields{
-			"application_id": appID,
-		})
+		b.eventSubs.Publish(&domain.ContainerEvent{ApplicationID: appID})
 	}
 }
 
 func (b *k8sBackend) Dispose(_ context.Context) error {
 	b.podWatcher.Stop()
 	return nil
+}
+
+func (b *k8sBackend) ListenContainerEvents() (sub <-chan *domain.ContainerEvent, unsub func()) {
+	return b.eventSubs.Subscribe()
 }
 
 func (b *k8sBackend) generalLabel() map[string]string {

@@ -25,7 +25,6 @@ type ContinuousDeploymentService interface {
 }
 
 type continuousDeploymentService struct {
-	bus       domain.Bus
 	appRepo   domain.ApplicationRepository
 	buildRepo domain.BuildRepository
 	backend   domain.Backend
@@ -43,7 +42,6 @@ type continuousDeploymentService struct {
 }
 
 func NewContinuousDeploymentService(
-	bus domain.Bus,
 	appRepo domain.ApplicationRepository,
 	buildRepo domain.BuildRepository,
 	backend domain.Backend,
@@ -53,7 +51,6 @@ func NewContinuousDeploymentService(
 	mutator *ContainerStateMutator,
 ) (ContinuousDeploymentService, error) {
 	cd := &continuousDeploymentService{
-		bus:       bus,
 		appRepo:   appRepo,
 		buildRepo: buildRepo,
 		backend:   backend,
@@ -115,12 +112,14 @@ func NewContinuousDeploymentService(
 
 	cd.run = func() {
 		go func() {
-			for range builderSvc.ListenBuilderIdle() {
+			sub, _ := builderSvc.ListenBuilderIdle()
+			for range sub {
 				go cd.doStartBuild()
 			}
 		}()
 		go func() {
-			for range builderSvc.ListenBuildSettled() {
+			sub, _ := builderSvc.ListenBuildSettled()
+			for range sub {
 				go cd.doSyncDeploy()
 			}
 		}()

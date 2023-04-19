@@ -7,10 +7,8 @@
 package main
 
 import (
-	"github.com/leandro-lugaresi/hub"
 	"github.com/traPtitech/neoshowcase/pkg/infrastructure/admindb"
 	"github.com/traPtitech/neoshowcase/pkg/infrastructure/dbmanager"
-	"github.com/traPtitech/neoshowcase/pkg/infrastructure/eventbus"
 	"github.com/traPtitech/neoshowcase/pkg/interface/grpc"
 	"github.com/traPtitech/neoshowcase/pkg/interface/repository"
 	"github.com/traPtitech/neoshowcase/pkg/usecase"
@@ -23,8 +21,6 @@ import (
 // Injectors from wire.go:
 
 func NewServer(c2 Config) (*Server, error) {
-	hubHub := hub.New()
-	bus := eventbus.NewLocal(hubHub)
 	config := c2.DB
 	db, err := admindb.New(config)
 	if err != nil {
@@ -57,7 +53,7 @@ func NewServer(c2 Config) (*Server, error) {
 	}
 	controllerServiceClientConfig := c2.Controller
 	controllerServiceClient := grpc.NewControllerServiceClient(controllerServiceClientConfig)
-	apiServerService := usecase.NewAPIServerService(bus, artifactRepository, applicationRepository, availableDomainRepository, buildRepository, environmentRepository, gitRepositoryRepository, storage, mariaDBManager, mongoDBManager, containerLogger, controllerServiceClient)
+	apiServerService := usecase.NewAPIServerService(artifactRepository, applicationRepository, availableDomainRepository, buildRepository, environmentRepository, gitRepositoryRepository, storage, mariaDBManager, mongoDBManager, containerLogger, controllerServiceClient)
 	publicKeys, err := provideRepositoryPublicKey(c2)
 	if err != nil {
 		return nil, err
@@ -69,7 +65,6 @@ func NewServer(c2 Config) (*Server, error) {
 	server := &Server{
 		appServer: mainGatewayServer,
 		db:        db,
-		bus:       bus,
 	}
 	return server, nil
 }

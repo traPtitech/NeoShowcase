@@ -21,7 +21,6 @@ func handleRepoError[T any](entity T, err error) (T, error) {
 }
 
 type APIServerService struct {
-	bus             domain.Bus
 	artifactRepo    domain.ArtifactRepository
 	appRepo         domain.ApplicationRepository
 	adRepo          domain.AvailableDomainRepository
@@ -36,7 +35,6 @@ type APIServerService struct {
 }
 
 func NewAPIServerService(
-	bus domain.Bus,
 	artifactRepo domain.ArtifactRepository,
 	appRepo domain.ApplicationRepository,
 	adRepo domain.AvailableDomainRepository,
@@ -50,7 +48,6 @@ func NewAPIServerService(
 	controller domain.ControllerServiceClient,
 ) *APIServerService {
 	return &APIServerService{
-		bus:             bus,
 		artifactRepo:    artifactRepo,
 		appRepo:         appRepo,
 		adRepo:          adRepo,

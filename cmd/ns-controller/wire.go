@@ -9,7 +9,6 @@ import (
 	certmanagerv1 "github.com/cert-manager/cert-manager/pkg/client/clientset/versioned"
 	docker "github.com/fsouza/go-dockerclient"
 	"github.com/google/wire"
-	"github.com/leandro-lugaresi/hub"
 	traefikv1alpha1 "github.com/traefik/traefik/v2/pkg/provider/kubernetes/crd/generated/clientset/versioned/typed/traefikcontainous/v1alpha1"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
@@ -19,7 +18,6 @@ import (
 	"github.com/traPtitech/neoshowcase/pkg/infrastructure/backend/dockerimpl"
 	"github.com/traPtitech/neoshowcase/pkg/infrastructure/backend/k8simpl"
 	"github.com/traPtitech/neoshowcase/pkg/infrastructure/dbmanager"
-	"github.com/traPtitech/neoshowcase/pkg/infrastructure/eventbus"
 	"github.com/traPtitech/neoshowcase/pkg/interface/grpc"
 	"github.com/traPtitech/neoshowcase/pkg/interface/repository"
 	"github.com/traPtitech/neoshowcase/pkg/usecase"
@@ -27,8 +25,6 @@ import (
 
 var commonSet = wire.NewSet(
 	web.NewServer,
-	hub.New,
-	eventbus.NewLocal,
 	admindb.New,
 	dbmanager.NewMariaDBManager,
 	dbmanager.NewMongoDBManager,

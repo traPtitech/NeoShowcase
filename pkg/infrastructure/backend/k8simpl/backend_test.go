@@ -21,7 +21,7 @@ import (
 	"github.com/traPtitech/neoshowcase/pkg/domain"
 )
 
-func prepareManager(t *testing.T, bus domain.Bus) (*k8sBackend, *kubernetes.Clientset, *traefikv1alpha1.TraefikContainousV1alpha1Client) {
+func prepareManager(t *testing.T) (*k8sBackend, *kubernetes.Clientset, *traefikv1alpha1.TraefikContainousV1alpha1Client) {
 	const appsNamespace = "neoshowcase-apps"
 
 	t.Helper()
@@ -60,7 +60,7 @@ func prepareManager(t *testing.T, bus domain.Bus) (*k8sBackend, *kubernetes.Clie
 	var config Config
 	config.Namespace = appsNamespace
 	config.TLS.Type = tlsTypeTraefik
-	b, err := NewK8SBackend(bus, client, traefikClient, certManagerClient, config)
+	b, err := NewK8SBackend(client, traefikClient, certManagerClient, config)
 	require.NoError(t, err)
 
 	err = b.Start(context.Background())

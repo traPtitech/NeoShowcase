@@ -6,16 +6,14 @@ import (
 	"time"
 
 	docker "github.com/fsouza/go-dockerclient"
-	"github.com/leandro-lugaresi/hub"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
 	"github.com/traPtitech/neoshowcase/pkg/domain"
-	"github.com/traPtitech/neoshowcase/pkg/infrastructure/eventbus"
 )
 
 func TestDockerBackend_CreateContainer(t *testing.T) {
-	m, c := prepareManager(t, eventbus.NewLocal(hub.New()))
+	m, c := prepareManager(t)
 
 	t.Run("存在しないイメージを指定", func(t *testing.T) {
 		t.Parallel()

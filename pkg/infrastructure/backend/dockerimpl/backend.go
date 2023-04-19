@@ -10,7 +10,6 @@ import (
 	docker "github.com/fsouza/go-dockerclient"
 
 	"github.com/traPtitech/neoshowcase/pkg/domain"
-	"github.com/traPtitech/neoshowcase/pkg/domain/event"
 	"github.com/traPtitech/neoshowcase/pkg/util/ds"
 )
 
@@ -49,17 +48,18 @@ const (
 )
 
 type dockerBackend struct {
-	c    *docker.Client
-	bus  domain.Bus
-	conf Config
+	c         *docker.Client
+	conf      Config
+	eventSubs domain.PubSub[*domain.ContainerEvent]
 
 	dockerEvent chan *docker.APIEvents
-	reloadLock  sync.Mutex
+	subsLock    sync.Mutex
+
+	reloadLock sync.Mutex
 }
 
 func NewDockerBackend(
 	c *docker.Client,
-	bus domain.Bus,
 	conf Config,
 ) (domain.Backend, error) {
 	err := conf.Validate()
@@ -68,7 +68,6 @@ func NewDockerBackend(
 	}
 	return &dockerBackend{
 		c:    c,
-		bus:  bus,
 		conf: conf,
 	}, nil
 }
@@ -98,9 +97,7 @@ func (b *dockerBackend) eventListener() {
 			if !ok {
 				continue
 			}
-			b.bus.Publish(event.AppContainerUpdated, domain.Fields{
-				"application_id": appID,
-			})
+			b.eventSubs.Publish(&domain.ContainerEvent{ApplicationID: appID})
 		}
 	}
 }
@@ -109,6 +106,10 @@ func (b *dockerBackend) Dispose(_ context.Context) error {
 	_ = b.c.RemoveEventListener(b.dockerEvent)
 	close(b.dockerEvent)
 	return nil
+}
+
+func (b *dockerBackend) ListenContainerEvents() (sub <-chan *domain.ContainerEvent, unsub func()) {
+	return b.eventSubs.Subscribe()
 }
 
 func (b *dockerBackend) initNetworks() error {
