@@ -11,7 +11,7 @@ spec:
   source:
     repoURL: https://github.com/traPtitech/NeoShowcase
     path: .local-dev/manifest/ns-system
-    targetRevision: master
+    targetRevision: main
   syncPolicy:
     syncOptions:
       - CreateNamespace=true
