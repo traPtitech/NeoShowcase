@@ -63,7 +63,7 @@ func runCommand() *cobra.Command {
 }
 
 func main() {
-	cobra.OnInitialize(cli.CobraOnInitializeFunc(&configFilePath, "Controller", &c))
+	cobra.OnInitialize(cli.CobraOnInitializeFunc(&configFilePath, &c))
 
 	rootCommand.AddCommand(
 		runCommand(),

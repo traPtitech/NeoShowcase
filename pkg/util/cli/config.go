@@ -17,7 +17,7 @@ func BindPFlag(flags *pflag.FlagSet, key string, flag ...string) {
 	}
 }
 
-func CobraOnInitializeFunc(configFilePath *string, envPrefix string, config interface{}) func() {
+func CobraOnInitializeFunc(configFilePath *string, config interface{}) func() {
 	return func() {
 		if len(*configFilePath) > 0 {
 			viper.SetConfigFile(*configFilePath)
@@ -26,7 +26,7 @@ func CobraOnInitializeFunc(configFilePath *string, envPrefix string, config inte
 			viper.SetConfigName("config")
 		}
 		viper.SetEnvKeyReplacer(strings.NewReplacer(".", "_"))
-		viper.SetEnvPrefix(envPrefix)
+		viper.SetEnvPrefix("NS")
 		viper.AutomaticEnv()
 		if err := viper.ReadInConfig(); err != nil {
 			if _, ok := err.(viper.ConfigFileNotFoundError); !ok {
