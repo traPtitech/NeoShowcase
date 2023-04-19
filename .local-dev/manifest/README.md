@@ -16,8 +16,9 @@ Manifest files required to deploy NeoShowcase locally
 4. Add initial `applications` application
    - Add known hosts and connect repository
    - Add application (path: `applications`)
-   - Sync applications
-5. Access `cd.local.trapti.tech` and more
+5. Build and import images with `make build && make k3s-import` at root of the repository
+6. Sync other applications (and optionally, change their target revision)
+7. Access `cd.local.trapti.tech` and more
 
 ## local registry setup
 
