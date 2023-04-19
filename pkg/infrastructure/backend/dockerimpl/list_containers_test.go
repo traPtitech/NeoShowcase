@@ -6,16 +6,14 @@ import (
 	"testing"
 
 	docker "github.com/fsouza/go-dockerclient"
-	"github.com/leandro-lugaresi/hub"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
 	"github.com/traPtitech/neoshowcase/pkg/domain"
-	"github.com/traPtitech/neoshowcase/pkg/infrastructure/eventbus"
 )
 
 func TestDockerBackend_ListContainers(t *testing.T) {
-	m, c := prepareManager(t, eventbus.NewLocal(hub.New()))
+	m, c := prepareManager(t)
 
 	t.Run("空リスト", func(t *testing.T) {
 		result, err := m.ListContainers(context.Background())

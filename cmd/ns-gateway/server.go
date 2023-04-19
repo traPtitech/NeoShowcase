@@ -5,14 +5,11 @@ import (
 	"database/sql"
 
 	"golang.org/x/sync/errgroup"
-
-	"github.com/traPtitech/neoshowcase/pkg/domain"
 )
 
 type Server struct {
 	appServer *gatewayServer
 	db        *sql.DB
-	bus       domain.Bus
 }
 
 func (s *Server) Start(ctx context.Context) error {
@@ -27,9 +24,6 @@ func (s *Server) Shutdown(ctx context.Context) error {
 	})
 	eg.Go(func() error {
 		return s.db.Close()
-	})
-	eg.Go(func() error {
-		return s.bus.Close(ctx)
 	})
 
 	return eg.Wait()

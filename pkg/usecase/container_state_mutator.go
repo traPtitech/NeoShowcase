@@ -10,7 +10,6 @@ import (
 	log "github.com/sirupsen/logrus"
 
 	"github.com/traPtitech/neoshowcase/pkg/domain"
-	"github.com/traPtitech/neoshowcase/pkg/domain/event"
 	"github.com/traPtitech/neoshowcase/pkg/util/optional"
 )
 
@@ -22,7 +21,6 @@ type ContainerStateMutator struct {
 }
 
 func NewContainerStateMutator(
-	bus domain.Bus,
 	appRepo domain.ApplicationRepository,
 	backend domain.Backend,
 ) *ContainerStateMutator {
@@ -30,15 +28,15 @@ func NewContainerStateMutator(
 		appRepo: appRepo,
 		backend: backend,
 	}
-	go m._subscribe(bus)
+	go m._subscribe(backend)
 	return m
 }
 
-func (m *ContainerStateMutator) _subscribe(bus domain.Bus) {
+func (m *ContainerStateMutator) _subscribe(backend domain.Backend) {
+	sub, _ := backend.ListenContainerEvents()
 	updateOne := sc.NewMust[string, struct{}](m._updateOne, 0, 0, sc.EnableStrictCoalescing())
-	sub := bus.Subscribe(event.AppContainerUpdated)
-	for e := range sub.Chan() {
-		appID := e.Body["application_id"].(string)
+	for e := range sub {
+		appID := e.ApplicationID
 		// coalesce events
 		go func() {
 			_, err := updateOne.Get(context.Background(), appID)

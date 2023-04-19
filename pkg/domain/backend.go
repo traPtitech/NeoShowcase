@@ -17,6 +17,10 @@ type RuntimeDesiredState struct {
 	Envs      map[string]string
 }
 
+type ContainerEvent struct {
+	ApplicationID string
+}
+
 type Container struct {
 	ApplicationID string
 	State         ContainerState
@@ -59,6 +63,7 @@ type Backend interface {
 	Start(ctx context.Context) error
 	Dispose(ctx context.Context) error
 
+	ListenContainerEvents() (sub <-chan *ContainerEvent, unsub func())
 	Synchronize(ctx context.Context, s *DesiredState) error
 	GetContainer(ctx context.Context, appID string) (*Container, error)
 	ListContainers(ctx context.Context) ([]*Container, error)

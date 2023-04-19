@@ -5,11 +5,9 @@ package main
 
 import (
 	"github.com/google/wire"
-	"github.com/leandro-lugaresi/hub"
 
 	"github.com/traPtitech/neoshowcase/pkg/infrastructure/admindb"
 	"github.com/traPtitech/neoshowcase/pkg/infrastructure/dbmanager"
-	"github.com/traPtitech/neoshowcase/pkg/infrastructure/eventbus"
 	"github.com/traPtitech/neoshowcase/pkg/interface/grpc"
 	"github.com/traPtitech/neoshowcase/pkg/interface/repository"
 	"github.com/traPtitech/neoshowcase/pkg/usecase"
@@ -17,8 +15,6 @@ import (
 
 func NewServer(c Config) (*Server, error) {
 	wire.Build(
-		hub.New,
-		eventbus.NewLocal,
 		admindb.New,
 		dbmanager.NewMariaDBManager,
 		dbmanager.NewMongoDBManager,

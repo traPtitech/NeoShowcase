@@ -5,20 +5,18 @@ import (
 	"testing"
 	"time"
 
-	"github.com/leandro-lugaresi/hub"
 	"github.com/stretchr/testify/require"
 	traefikv1alpha1 "github.com/traefik/traefik/v2/pkg/provider/kubernetes/crd/traefikcontainous/v1alpha1"
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
 
 	"github.com/traPtitech/neoshowcase/pkg/domain"
-	"github.com/traPtitech/neoshowcase/pkg/infrastructure/eventbus"
 )
 
 func TestK8sBackend_Synchronize(t *testing.T) {
 	const appNamespace = "neoshowcase-apps"
 
-	m, c, tc := prepareManager(t, eventbus.NewLocal(hub.New()))
+	m, c, tc := prepareManager(t)
 
 	t.Run("Podを正常に起動", func(t *testing.T) {
 		image := "tianon/sleeping-beauty"

@@ -15,7 +15,6 @@ type Server struct {
 
 	db             *sql.DB
 	backend        domain.Backend
-	bus            domain.Bus
 	cdService      usecase.ContinuousDeploymentService
 	fetcherService usecase.RepositoryFetcherService
 	cleanerService usecase.CleanerService
@@ -53,9 +52,6 @@ func (s *Server) Shutdown(ctx context.Context) error {
 	})
 	eg.Go(func() error {
 		return s.backend.Dispose(ctx)
-	})
-	eg.Go(func() error {
-		return s.bus.Close(ctx)
 	})
 	eg.Go(func() error {
 		return s.cdService.Stop(ctx)
