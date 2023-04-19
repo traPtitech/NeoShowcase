@@ -14,8 +14,8 @@ spec:
       targetRevision: "6.52.9"
       helm:
         valueFiles:
-          - $values/grafana/values.yaml
-    - repoURL: https://git.toki317.dev/toki/ns-manifest.git
+          - $values/.local-dev/manifest/grafana/values.yaml
+    - repoURL: https://github.com/traPtitech/NeoShowcase
       targetRevision: master
       ref: values
   syncPolicy:

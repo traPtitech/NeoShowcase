@@ -9,8 +9,8 @@ spec:
     server: https://kubernetes.default.svc
   project: default
   source:
-    repoURL: https://git.toki317.dev/toki/ns-manifest.git
-    path: argo-workflow
+    repoURL: https://github.com/traPtitech/NeoShowcase
+    path: .local-dev/manifest/argo-workflow
     targetRevision: master
   syncPolicy:
     syncOptions:

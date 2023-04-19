@@ -9,8 +9,8 @@ spec:
     server: https://kubernetes.default.svc
   project: default
   source:
-    repoURL: https://git.toki317.dev/toki/ns-manifest.git
-    path: ns-system
+    repoURL: https://github.com/traPtitech/NeoShowcase
+    path: .local-dev/manifest/ns-system
     targetRevision: master
   syncPolicy:
     syncOptions:

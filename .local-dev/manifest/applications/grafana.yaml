@@ -9,8 +9,8 @@ spec:
     server: https://kubernetes.default.svc
   project: default
   source:
-    repoURL: https://git.toki317.dev/toki/ns-manifest.git
-    path: grafana
+    repoURL: https://github.com/traPtitech/NeoShowcase
+    path: .local-dev/manifest/grafana
     targetRevision: master
   syncPolicy:
     syncOptions:
