@@ -20,13 +20,14 @@ storage:
 
 k8s:
   middlewares:
-    - domain: "*.local.trapti.tech"
-      authSoft:
-        - nsapp_auth_soft@file
-        - nsapp_auth@file
-      authHard:
-        - nsapp_auth_hard@file
-        - nsapp_auth@file
+    auth:
+      - domain: "*.local.trapti.tech"
+        authSoft:
+          - nsapp_auth_soft@file
+          - nsapp_auth@file
+        authHard:
+          - nsapp_auth_hard@file
+          - nsapp_auth@file
   ss:
     namespace: ns-system
     kind: Service
