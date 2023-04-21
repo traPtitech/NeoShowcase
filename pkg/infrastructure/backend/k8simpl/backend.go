@@ -8,6 +8,7 @@ import (
 
 	certmanagerv1 "github.com/cert-manager/cert-manager/pkg/client/clientset/versioned"
 	"github.com/friendsofgo/errors"
+	"github.com/samber/lo"
 	log "github.com/sirupsen/logrus"
 	traefikv1alpha1 "github.com/traefik/traefik/v2/pkg/provider/kubernetes/crd/generated/clientset/versioned/typed/traefikcontainous/v1alpha1"
 	apiv1 "k8s.io/api/core/v1"
@@ -24,10 +25,20 @@ const (
 	tlsTypeCertManager = "cert-manager"
 )
 
+type authConf = struct {
+	Domain string   `mapstructure:"domain" yaml:"domain"`
+	Soft   []string `mapstructure:"soft" yaml:"soft"`
+	Hard   []string `mapstructure:"hard" yaml:"hard"`
+}
+
+type labelConf = struct {
+	Key   string `mapstructure:"key" yaml:"key"`
+	Value string `mapstructure:"value" yaml:"value"`
+}
+
 type Config struct {
 	Middlewares struct {
-		AuthSoft []string `mapstructure:"authSoft" yaml:"authSoft"`
-		AuthHard []string `mapstructure:"authHard" yaml:"authHard"`
+		Auth []*authConf `mapstructure:"auth" yaml:"auth"`
 	} `mapstructure:"middlewares" yaml:"middlewares"`
 	SS struct {
 		Namespace string `mapstructure:"namespace" yaml:"namespace"`
@@ -35,8 +46,8 @@ type Config struct {
 		Name      string `mapstructure:"name" yaml:"name"`
 		Port      int    `mapstructure:"port" yaml:"port"`
 	} `mapstructure:"ss" yaml:"ss"`
-	Namespace string            `mapstructure:"namespace" yaml:"namespace"`
-	Labels    map[string]string `mapstructure:"labels" yaml:"labels"`
+	Namespace string       `mapstructure:"namespace" yaml:"namespace"`
+	Labels    []*labelConf `mapstructure:"labels" yaml:"labels"`
 	TLS       struct {
 		// cert-manager note: https://doc.traefik.io/traefik/providers/kubernetes-crd/#letsencrypt-support-with-the-custom-resource-definition-provider
 		// needs to enable ingress provider in traefik
@@ -61,7 +72,19 @@ type Config struct {
 	ImagePullSecret string `mapstructure:"imagePullSecret" yaml:"imagePullSecret"`
 }
 
+func (c *Config) labels() map[string]string {
+	return lo.SliceToMap(c.Labels, func(l *labelConf) (string, string) {
+		return l.Key, l.Value
+	})
+}
+
 func (c *Config) Validate() error {
+	for _, ac := range c.Middlewares.Auth {
+		ad := domain.AvailableDomain{Domain: ac.Domain}
+		if err := ad.Validate(); err != nil {
+			return errors.Wrapf(err, "invalid domain %s for middleware config", ac.Domain)
+		}
+	}
 	switch c.TLS.Type {
 	case tlsTypeTraefik:
 		if err := c.TLS.Traefik.Wildcard.Domains.Validate(); err != nil {
@@ -148,18 +171,36 @@ func (b *k8sBackend) Dispose(_ context.Context) error {
 	return nil
 }
 
+func (b *k8sBackend) AuthAllowed(fqdn string) bool {
+	for _, ac := range b.config.Middlewares.Auth {
+		if domain.MatchDomain(ac.Domain, fqdn) {
+			return true
+		}
+	}
+	return false
+}
+
+func (b *k8sBackend) targetAuth(fqdn string) *authConf {
+	for _, ac := range b.config.Middlewares.Auth {
+		if domain.MatchDomain(ac.Domain, fqdn) {
+			return ac
+		}
+	}
+	return nil
+}
+
 func (b *k8sBackend) ListenContainerEvents() (sub <-chan *domain.ContainerEvent, unsub func()) {
 	return b.eventSubs.Subscribe()
 }
 
 func (b *k8sBackend) generalLabel() map[string]string {
-	return ds.MergeMap(b.config.Labels, map[string]string{
+	return ds.MergeMap(b.config.labels(), map[string]string{
 		appLabel: "true",
 	})
 }
 
 func (b *k8sBackend) appLabel(appID string) map[string]string {
-	return ds.MergeMap(b.config.Labels, map[string]string{
+	return ds.MergeMap(b.config.labels(), map[string]string{
 		appLabel:   "true",
 		appIDLabel: appID,
 	})

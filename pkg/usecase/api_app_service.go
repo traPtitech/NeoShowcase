@@ -2,6 +2,7 @@ package usecase
 
 import (
 	"context"
+	"fmt"
 	"strconv"
 
 	"github.com/friendsofgo/errors"
@@ -28,6 +29,18 @@ func (s *APIServerService) CreateApplication(ctx context.Context, app *domain.Ap
 
 	if err = app.Validate(); err != nil {
 		return nil, newError(ErrorTypeBadRequest, "invalid application", err)
+	}
+	for _, website := range app.Websites {
+		if website.Authentication == domain.AuthenticationTypeOff {
+			continue
+		}
+		available, err := s.controller.AuthAvailable(ctx, website.FQDN)
+		if err != nil {
+			return nil, errors.Wrap(err, "checking auth availability")
+		}
+		if !available {
+			return nil, newError(ErrorTypeBadRequest, fmt.Sprintf("auth not available for domain %s", website.FQDN), err)
+		}
 	}
 
 	domains, err := s.adRepo.GetAvailableDomains(ctx)
@@ -159,6 +172,18 @@ func (s *APIServerService) UpdateApplication(ctx context.Context, id string, arg
 	app.Apply(args)
 	if err = app.Validate(); err != nil {
 		return newError(ErrorTypeBadRequest, "invalid application", err)
+	}
+	for _, website := range app.Websites {
+		if website.Authentication == domain.AuthenticationTypeOff {
+			continue
+		}
+		available, err := s.controller.AuthAvailable(ctx, website.FQDN)
+		if err != nil {
+			return errors.Wrap(err, "checking auth availability")
+		}
+		if !available {
+			return newError(ErrorTypeBadRequest, fmt.Sprintf("auth not available for domain %s", website.FQDN), err)
+		}
 	}
 
 	return s.appRepo.UpdateApplication(ctx, id, args)

@@ -29,6 +29,15 @@ func NewControllerServiceClient(
 	}
 }
 
+func (c *ControllerServiceClient) AuthAvailable(ctx context.Context, fqdn string) (bool, error) {
+	req := connect.NewRequest(&pb.AuthAvailableRequest{Fqdn: fqdn})
+	res, err := c.client.AuthAvailable(ctx, req)
+	if err != nil {
+		return false, err
+	}
+	return res.Msg.Available, nil
+}
+
 func (c *ControllerServiceClient) FetchRepository(ctx context.Context, repositoryID string) error {
 	req := connect.NewRequest(&pb.RepositoryIdRequest{RepositoryId: repositoryID})
 	_, err := c.client.FetchRepository(ctx, req)

@@ -20,12 +20,14 @@ storage:
 
 k8s:
   middlewares:
-    authSoft:
-      - nsapp-auth-soft
-      - nsapp-auth
-    authHard:
-      - nsapp-auth-hard
-      - nsapp-auth
+    auth:
+      - domain: "*.local.trapti.tech"
+        soft:
+          - nsapp_auth_soft@file
+          - nsapp_auth@file
+        hard:
+          - nsapp_auth_hard@file
+          - nsapp_auth@file
   ss:
     namespace: ns-system
     kind: Service
@@ -34,7 +36,8 @@ k8s:
   namespace: ns-apps
   # extra labels
   labels:
-    app.kubernetes.io/instance: ns-apps
+    - key: app.kubernetes.io/instance
+      value: ns-apps
   tls:
     type: traefik
     traefik:

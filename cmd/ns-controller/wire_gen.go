@@ -31,8 +31,17 @@ import (
 // Injectors from wire.go:
 
 func NewWithDocker(c2 Config) (*Server, error) {
-	config := c2.DB
-	db, err := admindb.New(config)
+	client, err := docker.NewClientFromEnv()
+	if err != nil {
+		return nil, err
+	}
+	config := c2.Docker
+	backend, err := dockerimpl.NewDockerBackend(client, config)
+	if err != nil {
+		return nil, err
+	}
+	admindbConfig := c2.DB
+	db, err := admindb.New(admindbConfig)
 	if err != nil {
 		return nil, err
 	}
@@ -43,15 +52,6 @@ func NewWithDocker(c2 Config) (*Server, error) {
 		return nil, err
 	}
 	buildRepository := repository.NewBuildRepository(db)
-	client, err := docker.NewClientFromEnv()
-	if err != nil {
-		return nil, err
-	}
-	dockerimplConfig := c2.Docker
-	backend, err := dockerimpl.NewDockerBackend(client, dockerimplConfig)
-	if err != nil {
-		return nil, err
-	}
 	logStreamService := usecase.NewLogStreamService()
 	controllerBuilderService := grpc.NewControllerBuilderService(logStreamService)
 	imageConfig := c2.Image
@@ -68,7 +68,7 @@ func NewWithDocker(c2 Config) (*Server, error) {
 	if err != nil {
 		return nil, err
 	}
-	controllerServiceHandler := grpc.NewControllerService(repositoryFetcherService, continuousDeploymentService, controllerBuilderService, logStreamService)
+	controllerServiceHandler := grpc.NewControllerService(backend, repositoryFetcherService, continuousDeploymentService, controllerBuilderService, logStreamService)
 	mainControllerServer := provideControllerServer(c2, controllerServiceHandler, controllerBuilderService, controllerSSGenService)
 	artifactRepository := repository.NewArtifactRepository(db)
 	storageConfig := c2.Storage
@@ -92,8 +92,29 @@ func NewWithDocker(c2 Config) (*Server, error) {
 }
 
 func NewWithK8S(c2 Config) (*Server, error) {
-	config := c2.DB
-	db, err := admindb.New(config)
+	config, err := rest.InClusterConfig()
+	if err != nil {
+		return nil, err
+	}
+	clientset, err := kubernetes.NewForConfig(config)
+	if err != nil {
+		return nil, err
+	}
+	traefikContainousV1alpha1Client, err := v1alpha1.NewForConfig(config)
+	if err != nil {
+		return nil, err
+	}
+	versionedClientset, err := versioned.NewForConfig(config)
+	if err != nil {
+		return nil, err
+	}
+	k8simplConfig := c2.K8s
+	backend, err := k8simpl.NewK8SBackend(clientset, traefikContainousV1alpha1Client, versionedClientset, k8simplConfig)
+	if err != nil {
+		return nil, err
+	}
+	admindbConfig := c2.DB
+	db, err := admindb.New(admindbConfig)
 	if err != nil {
 		return nil, err
 	}
@@ -104,27 +125,6 @@ func NewWithK8S(c2 Config) (*Server, error) {
 		return nil, err
 	}
 	buildRepository := repository.NewBuildRepository(db)
-	restConfig, err := rest.InClusterConfig()
-	if err != nil {
-		return nil, err
-	}
-	clientset, err := kubernetes.NewForConfig(restConfig)
-	if err != nil {
-		return nil, err
-	}
-	traefikContainousV1alpha1Client, err := v1alpha1.NewForConfig(restConfig)
-	if err != nil {
-		return nil, err
-	}
-	versionedClientset, err := versioned.NewForConfig(restConfig)
-	if err != nil {
-		return nil, err
-	}
-	k8simplConfig := c2.K8s
-	backend, err := k8simpl.NewK8SBackend(clientset, traefikContainousV1alpha1Client, versionedClientset, k8simplConfig)
-	if err != nil {
-		return nil, err
-	}
 	logStreamService := usecase.NewLogStreamService()
 	controllerBuilderService := grpc.NewControllerBuilderService(logStreamService)
 	imageConfig := c2.Image
@@ -141,7 +141,7 @@ func NewWithK8S(c2 Config) (*Server, error) {
 	if err != nil {
 		return nil, err
 	}
-	controllerServiceHandler := grpc.NewControllerService(repositoryFetcherService, continuousDeploymentService, controllerBuilderService, logStreamService)
+	controllerServiceHandler := grpc.NewControllerService(backend, repositoryFetcherService, continuousDeploymentService, controllerBuilderService, logStreamService)
 	mainControllerServer := provideControllerServer(c2, controllerServiceHandler, controllerBuilderService, controllerSSGenService)
 	artifactRepository := repository.NewArtifactRepository(db)
 	storageConfig := c2.Storage

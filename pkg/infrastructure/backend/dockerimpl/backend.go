@@ -8,22 +8,33 @@ import (
 
 	"github.com/friendsofgo/errors"
 	docker "github.com/fsouza/go-dockerclient"
+	"github.com/samber/lo"
 
 	"github.com/traPtitech/neoshowcase/pkg/domain"
 	"github.com/traPtitech/neoshowcase/pkg/util/ds"
 )
 
+type authConf = struct {
+	Domain string   `mapstructure:"domain" yaml:"domain"`
+	Soft   []string `mapstructure:"soft" yaml:"soft"`
+	Hard   []string `mapstructure:"hard" yaml:"hard"`
+}
+
+type labelConf = struct {
+	Key   string `mapstructure:"key" yaml:"key"`
+	Value string `mapstructure:"value" yaml:"value"`
+}
+
 type Config struct {
 	ConfDir     string `mapstructure:"confDir" yaml:"confDir"`
 	Middlewares struct {
-		AuthSoft []string `mapstructure:"authSoft" yaml:"authSoft"`
-		AuthHard []string `mapstructure:"authHard" yaml:"authHard"`
+		Auth []*authConf `mapstructure:"auth" yaml:"auth"`
 	} `mapstructure:"middlewares" yaml:"middlewares"`
 	SS struct {
 		URL string `mapstructure:"url" yaml:"url"`
 	} `mapstructure:"ss" yaml:"ss"`
-	Network string            `mapstructure:"network" yaml:"network"`
-	Labels  map[string]string `mapstructure:"labels" yaml:"labels"`
+	Network string       `mapstructure:"network" yaml:"network"`
+	Labels  []*labelConf `mapstructure:"labels" yaml:"labels"`
 	TLS     struct {
 		CertResolver string `mapstructure:"certResolver" yaml:"certResolver"`
 		Wildcard     struct {
@@ -32,7 +43,19 @@ type Config struct {
 	} `mapstructure:"tls" yaml:"tls"`
 }
 
+func (c *Config) labels() map[string]string {
+	return lo.SliceToMap(c.Labels, func(l *labelConf) (string, string) {
+		return l.Key, l.Value
+	})
+}
+
 func (c *Config) Validate() error {
+	for _, ac := range c.Middlewares.Auth {
+		ad := domain.AvailableDomain{Domain: ac.Domain}
+		if err := ad.Validate(); err != nil {
+			return errors.Wrapf(err, "invalid domain %s for middleware config", ac.Domain)
+		}
+	}
 	if err := c.TLS.Wildcard.Domains.Validate(); err != nil {
 		return errors.Wrap(err, "docker.tls.wildcard.domains is invalid")
 	}
@@ -112,6 +135,24 @@ func (b *dockerBackend) Dispose(_ context.Context) error {
 	return nil
 }
 
+func (b *dockerBackend) AuthAllowed(fqdn string) bool {
+	for _, ac := range b.conf.Middlewares.Auth {
+		if domain.MatchDomain(ac.Domain, fqdn) {
+			return true
+		}
+	}
+	return false
+}
+
+func (b *dockerBackend) targetAuth(fqdn string) *authConf {
+	for _, ac := range b.conf.Middlewares.Auth {
+		if domain.MatchDomain(ac.Domain, fqdn) {
+			return ac
+		}
+	}
+	return nil
+}
+
 func (b *dockerBackend) ListenContainerEvents() (sub <-chan *domain.ContainerEvent, unsub func()) {
 	return b.eventSubs.Subscribe()
 }
@@ -134,7 +175,7 @@ func (b *dockerBackend) initNetworks() error {
 }
 
 func (b *dockerBackend) containerLabels(app *domain.Application) map[string]string {
-	return ds.MergeMap(b.conf.Labels, map[string]string{
+	return ds.MergeMap(b.conf.labels(), map[string]string{
 		appLabel:            "true",
 		appIDLabel:          app.ID,
 		appRestartedAtLabel: app.UpdatedAt.Format(time.RFC3339),
