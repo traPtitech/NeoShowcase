@@ -13,11 +13,16 @@ import (
 	"github.com/traPtitech/neoshowcase/pkg/util/ds"
 )
 
+type authConf = struct {
+	Domain   string   `mapstructure:"domain" yaml:"domain"`
+	AuthSoft []string `mapstructure:"authSoft" yaml:"authSoft"`
+	AuthHard []string `mapstructure:"authHard" yaml:"authHard"`
+}
+
 type Config struct {
 	ConfDir     string `mapstructure:"confDir" yaml:"confDir"`
 	Middlewares struct {
-		AuthSoft []string `mapstructure:"authSoft" yaml:"authSoft"`
-		AuthHard []string `mapstructure:"authHard" yaml:"authHard"`
+		Auth []*authConf `mapstructure:"auth" yaml:"auth"`
 	} `mapstructure:"middlewares" yaml:"middlewares"`
 	SS struct {
 		URL string `mapstructure:"url" yaml:"url"`
@@ -33,6 +38,12 @@ type Config struct {
 }
 
 func (c *Config) Validate() error {
+	for _, ac := range c.Middlewares.Auth {
+		ad := domain.AvailableDomain{Domain: ac.Domain}
+		if err := ad.Validate(); err != nil {
+			return errors.Wrapf(err, "invalid domain %s for middleware config", ac.Domain)
+		}
+	}
 	if err := c.TLS.Wildcard.Domains.Validate(); err != nil {
 		return errors.Wrap(err, "docker.tls.wildcard.domains is invalid")
 	}
@@ -109,6 +120,24 @@ func (b *dockerBackend) eventListener() {
 func (b *dockerBackend) Dispose(_ context.Context) error {
 	_ = b.c.RemoveEventListener(b.dockerEvent)
 	close(b.dockerEvent)
+	return nil
+}
+
+func (b *dockerBackend) AuthAllowed(fqdn string) bool {
+	for _, ac := range b.conf.Middlewares.Auth {
+		if domain.MatchDomain(ac.Domain, fqdn) {
+			return true
+		}
+	}
+	return false
+}
+
+func (b *dockerBackend) targetAuth(fqdn string) *authConf {
+	for _, ac := range b.conf.Middlewares.Auth {
+		if domain.MatchDomain(ac.Domain, fqdn) {
+			return ac
+		}
+	}
 	return nil
 }
 

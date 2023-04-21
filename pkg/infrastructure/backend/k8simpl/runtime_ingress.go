@@ -6,6 +6,7 @@ import (
 
 	certmanagerv1 "github.com/cert-manager/cert-manager/pkg/apis/certmanager/v1"
 	certmetav1 "github.com/cert-manager/cert-manager/pkg/apis/meta/v1"
+	log "github.com/sirupsen/logrus"
 	"github.com/traefik/traefik/v2/pkg/config/dynamic"
 	traefikv1alpha1 "github.com/traefik/traefik/v2/pkg/provider/kubernetes/crd/traefikcontainous/v1alpha1"
 	"github.com/traefik/traefik/v2/pkg/types"
@@ -115,15 +116,20 @@ func (b *k8sBackend) ingressRoute(
 	}
 
 	var middlewareRefs []traefikv1alpha1.MiddlewareRef
-	switch website.Authentication {
-	case domain.AuthenticationTypeSoft:
-		for _, middlewareName := range b.config.Middlewares.AuthSoft {
-			middlewareRefs = append(middlewareRefs, traefikv1alpha1.MiddlewareRef{Name: middlewareName})
+	authConfig := b.targetAuth(website.FQDN)
+	if authConfig != nil {
+		switch website.Authentication {
+		case domain.AuthenticationTypeSoft:
+			for _, middlewareName := range authConfig.AuthSoft {
+				middlewareRefs = append(middlewareRefs, traefikv1alpha1.MiddlewareRef{Name: middlewareName})
+			}
+		case domain.AuthenticationTypeHard:
+			for _, middlewareName := range authConfig.AuthHard {
+				middlewareRefs = append(middlewareRefs, traefikv1alpha1.MiddlewareRef{Name: middlewareName})
+			}
 		}
-	case domain.AuthenticationTypeHard:
-		for _, middlewareName := range b.config.Middlewares.AuthHard {
-			middlewareRefs = append(middlewareRefs, traefikv1alpha1.MiddlewareRef{Name: middlewareName})
-		}
+	} else if website.Authentication != domain.AuthenticationTypeOff {
+		log.Warnf("auth config not available for %s", website.FQDN)
 	}
 
 	var rule string

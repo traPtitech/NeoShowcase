@@ -17,12 +17,13 @@ storage:
 docker:
   confDir: /opt/traefik/conf
   middlewares:
-    authSoft:
-      - nsapp_auth_soft@file
-      - nsapp_auth@file
-    authHard:
-      - nsapp_auth_hard@file
-      - nsapp_auth@file
+    - domain: "*.local.trapti.tech"
+      authSoft:
+        - nsapp_auth_soft@file
+        - nsapp_auth@file
+      authHard:
+        - nsapp_auth_hard@file
+        - nsapp_auth@file
   ss:
     url: http://ns-ssgen:8080/
   network: neoshowcase_apps

@@ -6,6 +6,7 @@ import (
 	"path/filepath"
 
 	"github.com/friendsofgo/errors"
+	log "github.com/sirupsen/logrus"
 	"gopkg.in/yaml.v2"
 
 	"github.com/traPtitech/neoshowcase/pkg/domain"
@@ -28,11 +29,16 @@ func (b *dockerBackend) routerBase(website *domain.Website, svcName string) (rou
 	}
 
 	var middlewareNames []string
-	switch website.Authentication {
-	case domain.AuthenticationTypeSoft:
-		middlewareNames = append(middlewareNames, b.conf.Middlewares.AuthSoft...)
-	case domain.AuthenticationTypeHard:
-		middlewareNames = append(middlewareNames, b.conf.Middlewares.AuthHard...)
+	authConfig := b.targetAuth(website.FQDN)
+	if authConfig != nil {
+		switch website.Authentication {
+		case domain.AuthenticationTypeSoft:
+			middlewareNames = append(middlewareNames, authConfig.AuthSoft...)
+		case domain.AuthenticationTypeHard:
+			middlewareNames = append(middlewareNames, authConfig.AuthHard...)
+		}
+	} else if website.Authentication != domain.AuthenticationTypeOff {
+		log.Warnf("auth config not available for %s", website.FQDN)
 	}
 
 	var rule string

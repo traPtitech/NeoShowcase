@@ -63,6 +63,7 @@ type Backend interface {
 	Start(ctx context.Context) error
 	Dispose(ctx context.Context) error
 
+	AuthAllowed(targetDomain string) bool
 	ListenContainerEvents() (sub <-chan *ContainerEvent, unsub func())
 	Synchronize(ctx context.Context, s *DesiredState) error
 	GetContainer(ctx context.Context, appID string) (*Container, error)

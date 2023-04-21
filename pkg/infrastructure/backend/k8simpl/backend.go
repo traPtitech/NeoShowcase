@@ -24,10 +24,15 @@ const (
 	tlsTypeCertManager = "cert-manager"
 )
 
+type authConf = struct {
+	Domain   string   `mapstructure:"domain" yaml:"domain"`
+	AuthSoft []string `mapstructure:"authSoft" yaml:"authSoft"`
+	AuthHard []string `mapstructure:"authHard" yaml:"authHard"`
+}
+
 type Config struct {
 	Middlewares struct {
-		AuthSoft []string `mapstructure:"authSoft" yaml:"authSoft"`
-		AuthHard []string `mapstructure:"authHard" yaml:"authHard"`
+		Auth []*authConf `mapstructure:"auth" yaml:"auth"`
 	} `mapstructure:"middlewares" yaml:"middlewares"`
 	SS struct {
 		Namespace string `mapstructure:"namespace" yaml:"namespace"`
@@ -62,6 +67,12 @@ type Config struct {
 }
 
 func (c *Config) Validate() error {
+	for _, ac := range c.Middlewares.Auth {
+		ad := domain.AvailableDomain{Domain: ac.Domain}
+		if err := ad.Validate(); err != nil {
+			return errors.Wrapf(err, "invalid domain %s for middleware config", ac.Domain)
+		}
+	}
 	switch c.TLS.Type {
 	case tlsTypeTraefik:
 		if err := c.TLS.Traefik.Wildcard.Domains.Validate(); err != nil {
@@ -145,6 +156,24 @@ func (b *k8sBackend) eventListener() {
 
 func (b *k8sBackend) Dispose(_ context.Context) error {
 	b.podWatcher.Stop()
+	return nil
+}
+
+func (b *k8sBackend) AuthAllowed(fqdn string) bool {
+	for _, ac := range b.config.Middlewares.Auth {
+		if domain.MatchDomain(ac.Domain, fqdn) {
+			return true
+		}
+	}
+	return false
+}
+
+func (b *k8sBackend) targetAuth(fqdn string) *authConf {
+	for _, ac := range b.config.Middlewares.Auth {
+		if domain.MatchDomain(ac.Domain, fqdn) {
+			return ac
+		}
+	}
 	return nil
 }
 
