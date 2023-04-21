@@ -30,7 +30,8 @@ docker:
   network: neoshowcase_apps
   labels:
     # test additional labels
-    neoshowcase.trap.jp/test: ns-apps
+    - key: neoshowcase.trap.jp/test
+      value: ns-apps
   tls:
     certResolver: nsresolver
     wildcard:

@@ -36,7 +36,8 @@ k8s:
   namespace: ns-apps
   # extra labels
   labels:
-    app.kubernetes.io/instance: ns-apps
+    - key: app.kubernetes.io/instance
+      value: ns-apps
   tls:
     type: traefik
     traefik:

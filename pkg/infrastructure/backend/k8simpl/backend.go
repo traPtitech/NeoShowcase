@@ -8,6 +8,7 @@ import (
 
 	certmanagerv1 "github.com/cert-manager/cert-manager/pkg/client/clientset/versioned"
 	"github.com/friendsofgo/errors"
+	"github.com/samber/lo"
 	log "github.com/sirupsen/logrus"
 	traefikv1alpha1 "github.com/traefik/traefik/v2/pkg/provider/kubernetes/crd/generated/clientset/versioned/typed/traefikcontainous/v1alpha1"
 	apiv1 "k8s.io/api/core/v1"
@@ -30,6 +31,11 @@ type authConf = struct {
 	AuthHard []string `mapstructure:"authHard" yaml:"authHard"`
 }
 
+type labelConf = struct {
+	Key   string `mapstructure:"key" yaml:"key"`
+	Value string `mapstructure:"value" yaml:"value"`
+}
+
 type Config struct {
 	Middlewares struct {
 		Auth []*authConf `mapstructure:"auth" yaml:"auth"`
@@ -40,8 +46,8 @@ type Config struct {
 		Name      string `mapstructure:"name" yaml:"name"`
 		Port      int    `mapstructure:"port" yaml:"port"`
 	} `mapstructure:"ss" yaml:"ss"`
-	Namespace string            `mapstructure:"namespace" yaml:"namespace"`
-	Labels    map[string]string `mapstructure:"labels" yaml:"labels"`
+	Namespace string       `mapstructure:"namespace" yaml:"namespace"`
+	Labels    []*labelConf `mapstructure:"labels" yaml:"labels"`
 	TLS       struct {
 		// cert-manager note: https://doc.traefik.io/traefik/providers/kubernetes-crd/#letsencrypt-support-with-the-custom-resource-definition-provider
 		// needs to enable ingress provider in traefik
@@ -64,6 +70,12 @@ type Config struct {
 	} `mapstructure:"tls" yaml:"tls"`
 	// ImagePullSecret required if registry is private
 	ImagePullSecret string `mapstructure:"imagePullSecret" yaml:"imagePullSecret"`
+}
+
+func (c *Config) labels() map[string]string {
+	return lo.SliceToMap(c.Labels, func(l *labelConf) (string, string) {
+		return l.Key, l.Value
+	})
 }
 
 func (c *Config) Validate() error {
@@ -182,13 +194,13 @@ func (b *k8sBackend) ListenContainerEvents() (sub <-chan *domain.ContainerEvent,
 }
 
 func (b *k8sBackend) generalLabel() map[string]string {
-	return ds.MergeMap(b.config.Labels, map[string]string{
+	return ds.MergeMap(b.config.labels(), map[string]string{
 		appLabel: "true",
 	})
 }
 
 func (b *k8sBackend) appLabel(appID string) map[string]string {
-	return ds.MergeMap(b.config.Labels, map[string]string{
+	return ds.MergeMap(b.config.labels(), map[string]string{
 		appLabel:   "true",
 		appIDLabel: appID,
 	})

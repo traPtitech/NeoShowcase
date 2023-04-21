@@ -8,6 +8,7 @@ import (
 
 	"github.com/friendsofgo/errors"
 	docker "github.com/fsouza/go-dockerclient"
+	"github.com/samber/lo"
 
 	"github.com/traPtitech/neoshowcase/pkg/domain"
 	"github.com/traPtitech/neoshowcase/pkg/util/ds"
@@ -19,6 +20,11 @@ type authConf = struct {
 	AuthHard []string `mapstructure:"authHard" yaml:"authHard"`
 }
 
+type labelConf = struct {
+	Key   string `mapstructure:"key" yaml:"key"`
+	Value string `mapstructure:"value" yaml:"value"`
+}
+
 type Config struct {
 	ConfDir     string `mapstructure:"confDir" yaml:"confDir"`
 	Middlewares struct {
@@ -27,14 +33,20 @@ type Config struct {
 	SS struct {
 		URL string `mapstructure:"url" yaml:"url"`
 	} `mapstructure:"ss" yaml:"ss"`
-	Network string            `mapstructure:"network" yaml:"network"`
-	Labels  map[string]string `mapstructure:"labels" yaml:"labels"`
+	Network string       `mapstructure:"network" yaml:"network"`
+	Labels  []*labelConf `mapstructure:"labels" yaml:"labels"`
 	TLS     struct {
 		CertResolver string `mapstructure:"certResolver" yaml:"certResolver"`
 		Wildcard     struct {
 			Domains domain.WildcardDomains `mapstructure:"domains" yaml:"domains"`
 		} `mapstructure:"wildcard" yaml:"wildcard"`
 	} `mapstructure:"tls" yaml:"tls"`
+}
+
+func (c *Config) labels() map[string]string {
+	return lo.SliceToMap(c.Labels, func(l *labelConf) (string, string) {
+		return l.Key, l.Value
+	})
 }
 
 func (c *Config) Validate() error {
@@ -163,7 +175,7 @@ func (b *dockerBackend) initNetworks() error {
 }
 
 func (b *dockerBackend) containerLabels(app *domain.Application) map[string]string {
-	return ds.MergeMap(b.conf.Labels, map[string]string{
+	return ds.MergeMap(b.conf.labels(), map[string]string{
 		appLabel:            "true",
 		appIDLabel:          app.ID,
 		appRestartedAtLabel: app.UpdatedAt.Format(time.RFC3339),
