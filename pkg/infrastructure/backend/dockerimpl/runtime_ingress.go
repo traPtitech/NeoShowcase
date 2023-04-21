@@ -33,9 +33,9 @@ func (b *dockerBackend) routerBase(website *domain.Website, svcName string) (rou
 	if authConfig != nil {
 		switch website.Authentication {
 		case domain.AuthenticationTypeSoft:
-			middlewareNames = append(middlewareNames, authConfig.AuthSoft...)
+			middlewareNames = append(middlewareNames, authConfig.Soft...)
 		case domain.AuthenticationTypeHard:
-			middlewareNames = append(middlewareNames, authConfig.AuthHard...)
+			middlewareNames = append(middlewareNames, authConfig.Hard...)
 		}
 	} else if website.Authentication != domain.AuthenticationTypeOff {
 		log.Warnf("auth config not available for %s", website.FQDN)

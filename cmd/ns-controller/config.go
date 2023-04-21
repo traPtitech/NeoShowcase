@@ -68,16 +68,14 @@ func init() {
 	viper.SetDefault("storage.swift.authUrl", "")
 
 	viper.SetDefault("docker.confDir", "/opt/traefik/conf")
-	viper.SetDefault("docker.middlewares.authSoft", []string{"nsapp_auth_soft@file", "nsapp_auth@file"})
-	viper.SetDefault("docker.middlewares.authHard", []string{"nsapp_auth_hard@file", "nsapp_auth@file"})
+	viper.SetDefault("docker.middlewares.auth", nil)
 	viper.SetDefault("docker.ss.url", "")
 	viper.SetDefault("docker.network", "neoshowcase_apps")
 	viper.SetDefault("docker.labels", nil)
 	viper.SetDefault("docker.tls.certResolver", "nsresolver")
 	viper.SetDefault("docker.tls.wildcard.domains", nil)
 
-	viper.SetDefault("k8s.middlewares.authSoft", []string{"nsapp_auth_soft@file", "nsapp_auth@file"})
-	viper.SetDefault("k8s.middlewares.authHard", []string{"nsapp_auth_hard@file", "nsapp_auth@file"})
+	viper.SetDefault("k8s.middlewares.auth", nil)
 	viper.SetDefault("k8s.ss.namespace", "default")
 	viper.SetDefault("k8s.ss.kind", "Service")
 	viper.SetDefault("k8s.ss.name", "")

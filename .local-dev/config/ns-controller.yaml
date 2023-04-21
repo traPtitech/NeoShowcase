@@ -19,10 +19,10 @@ docker:
   middlewares:
     auth:
       - domain: "*.local.trapti.tech"
-        authSoft:
+        soft:
           - nsapp_auth_soft@file
           - nsapp_auth@file
-        authHard:
+        hard:
           - nsapp_auth_hard@file
           - nsapp_auth@file
   ss:

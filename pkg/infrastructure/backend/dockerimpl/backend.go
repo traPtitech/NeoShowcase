@@ -15,9 +15,9 @@ import (
 )
 
 type authConf = struct {
-	Domain   string   `mapstructure:"domain" yaml:"domain"`
-	AuthSoft []string `mapstructure:"authSoft" yaml:"authSoft"`
-	AuthHard []string `mapstructure:"authHard" yaml:"authHard"`
+	Domain string   `mapstructure:"domain" yaml:"domain"`
+	Soft   []string `mapstructure:"soft" yaml:"soft"`
+	Hard   []string `mapstructure:"hard" yaml:"hard"`
 }
 
 type labelConf = struct {
