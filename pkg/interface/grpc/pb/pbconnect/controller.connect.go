@@ -38,6 +38,9 @@ const (
 // reflection-formatted method names, remove the leading slash and convert the remaining slash to a
 // period.
 const (
+	// ControllerServiceAuthAvailableProcedure is the fully-qualified name of the ControllerService's
+	// AuthAvailable RPC.
+	ControllerServiceAuthAvailableProcedure = "/neoshowcase.protobuf.ControllerService/AuthAvailable"
 	// ControllerServiceFetchRepositoryProcedure is the fully-qualified name of the ControllerService's
 	// FetchRepository RPC.
 	ControllerServiceFetchRepositoryProcedure = "/neoshowcase.protobuf.ControllerService/FetchRepository"
@@ -63,6 +66,7 @@ const (
 
 // ControllerServiceClient is a client for the neoshowcase.protobuf.ControllerService service.
 type ControllerServiceClient interface {
+	AuthAvailable(context.Context, *connect_go.Request[pb.AuthAvailableRequest]) (*connect_go.Response[pb.AuthAvailableResponse], error)
 	FetchRepository(context.Context, *connect_go.Request[pb.RepositoryIdRequest]) (*connect_go.Response[emptypb.Empty], error)
 	RegisterBuilds(context.Context, *connect_go.Request[emptypb.Empty]) (*connect_go.Response[emptypb.Empty], error)
 	SyncDeployments(context.Context, *connect_go.Request[emptypb.Empty]) (*connect_go.Response[emptypb.Empty], error)
@@ -80,6 +84,11 @@ type ControllerServiceClient interface {
 func NewControllerServiceClient(httpClient connect_go.HTTPClient, baseURL string, opts ...connect_go.ClientOption) ControllerServiceClient {
 	baseURL = strings.TrimRight(baseURL, "/")
 	return &controllerServiceClient{
+		authAvailable: connect_go.NewClient[pb.AuthAvailableRequest, pb.AuthAvailableResponse](
+			httpClient,
+			baseURL+ControllerServiceAuthAvailableProcedure,
+			opts...,
+		),
 		fetchRepository: connect_go.NewClient[pb.RepositoryIdRequest, emptypb.Empty](
 			httpClient,
 			baseURL+ControllerServiceFetchRepositoryProcedure,
@@ -110,11 +119,17 @@ func NewControllerServiceClient(httpClient connect_go.HTTPClient, baseURL string
 
 // controllerServiceClient implements ControllerServiceClient.
 type controllerServiceClient struct {
+	authAvailable   *connect_go.Client[pb.AuthAvailableRequest, pb.AuthAvailableResponse]
 	fetchRepository *connect_go.Client[pb.RepositoryIdRequest, emptypb.Empty]
 	registerBuilds  *connect_go.Client[emptypb.Empty, emptypb.Empty]
 	syncDeployments *connect_go.Client[emptypb.Empty, emptypb.Empty]
 	streamBuildLog  *connect_go.Client[pb.BuildIdRequest, pb.BuildLog]
 	cancelBuild     *connect_go.Client[pb.BuildIdRequest, emptypb.Empty]
+}
+
+// AuthAvailable calls neoshowcase.protobuf.ControllerService.AuthAvailable.
+func (c *controllerServiceClient) AuthAvailable(ctx context.Context, req *connect_go.Request[pb.AuthAvailableRequest]) (*connect_go.Response[pb.AuthAvailableResponse], error) {
+	return c.authAvailable.CallUnary(ctx, req)
 }
 
 // FetchRepository calls neoshowcase.protobuf.ControllerService.FetchRepository.
@@ -145,6 +160,7 @@ func (c *controllerServiceClient) CancelBuild(ctx context.Context, req *connect_
 // ControllerServiceHandler is an implementation of the neoshowcase.protobuf.ControllerService
 // service.
 type ControllerServiceHandler interface {
+	AuthAvailable(context.Context, *connect_go.Request[pb.AuthAvailableRequest]) (*connect_go.Response[pb.AuthAvailableResponse], error)
 	FetchRepository(context.Context, *connect_go.Request[pb.RepositoryIdRequest]) (*connect_go.Response[emptypb.Empty], error)
 	RegisterBuilds(context.Context, *connect_go.Request[emptypb.Empty]) (*connect_go.Response[emptypb.Empty], error)
 	SyncDeployments(context.Context, *connect_go.Request[emptypb.Empty]) (*connect_go.Response[emptypb.Empty], error)
@@ -159,6 +175,11 @@ type ControllerServiceHandler interface {
 // and JSON codecs. They also support gzip compression.
 func NewControllerServiceHandler(svc ControllerServiceHandler, opts ...connect_go.HandlerOption) (string, http.Handler) {
 	mux := http.NewServeMux()
+	mux.Handle(ControllerServiceAuthAvailableProcedure, connect_go.NewUnaryHandler(
+		ControllerServiceAuthAvailableProcedure,
+		svc.AuthAvailable,
+		opts...,
+	))
 	mux.Handle(ControllerServiceFetchRepositoryProcedure, connect_go.NewUnaryHandler(
 		ControllerServiceFetchRepositoryProcedure,
 		svc.FetchRepository,
@@ -189,6 +210,10 @@ func NewControllerServiceHandler(svc ControllerServiceHandler, opts ...connect_g
 
 // UnimplementedControllerServiceHandler returns CodeUnimplemented from all methods.
 type UnimplementedControllerServiceHandler struct{}
+
+func (UnimplementedControllerServiceHandler) AuthAvailable(context.Context, *connect_go.Request[pb.AuthAvailableRequest]) (*connect_go.Response[pb.AuthAvailableResponse], error) {
+	return nil, connect_go.NewError(connect_go.CodeUnimplemented, errors.New("neoshowcase.protobuf.ControllerService.AuthAvailable is not implemented"))
+}
 
 func (UnimplementedControllerServiceHandler) FetchRepository(context.Context, *connect_go.Request[pb.RepositoryIdRequest]) (*connect_go.Response[emptypb.Empty], error) {
 	return nil, connect_go.NewError(connect_go.CodeUnimplemented, errors.New("neoshowcase.protobuf.ControllerService.FetchRepository is not implemented"))

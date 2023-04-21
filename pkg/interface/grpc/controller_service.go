@@ -14,6 +14,7 @@ import (
 )
 
 type ControllerService struct {
+	backend   domain.Backend
 	fetcher   usecase.RepositoryFetcherService
 	cd        usecase.ContinuousDeploymentService
 	builder   domain.ControllerBuilderService
@@ -21,17 +22,25 @@ type ControllerService struct {
 }
 
 func NewControllerService(
+	backend domain.Backend,
 	fetcher usecase.RepositoryFetcherService,
 	cd usecase.ContinuousDeploymentService,
 	builder domain.ControllerBuilderService,
 	logStream *usecase.LogStreamService,
 ) pbconnect.ControllerServiceHandler {
 	return &ControllerService{
+		backend:   backend,
 		fetcher:   fetcher,
 		cd:        cd,
 		builder:   builder,
 		logStream: logStream,
 	}
+}
+
+func (s *ControllerService) AuthAvailable(_ context.Context, c *connect.Request[pb.AuthAvailableRequest]) (*connect.Response[pb.AuthAvailableResponse], error) {
+	available := s.backend.AuthAllowed(c.Msg.Fqdn)
+	res := connect.NewResponse(&pb.AuthAvailableResponse{Available: available})
+	return res, nil
 }
 
 func (s *ControllerService) FetchRepository(_ context.Context, c *connect.Request[pb.RepositoryIdRequest]) (*connect.Response[emptypb.Empty], error) {
