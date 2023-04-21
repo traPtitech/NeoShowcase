@@ -275,7 +275,10 @@ func TestValidateDomain(t *testing.T) {
 		domain  string
 		wantErr bool
 	}{
-		{"ok", "google.com", false},
+		{"ok 1", "google.com", false},
+		{"invalid characters 1", "admin@example.com", true},
+		{"ok 2", "hyphens-are-allowed.example.com", false},
+		{"invalid characters 2", "underscore_not_allowed.example.com", true},
 		{"wildcard ng", "*.trap.show", true},
 		{"multi wildcard ng", "*.*.trap.show", true},
 		{"wildcard in middle", "trap.*.show", true},
