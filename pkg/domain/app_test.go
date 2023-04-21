@@ -1,6 +1,7 @@
 package domain
 
 import (
+	"fmt"
 	"reflect"
 	"testing"
 	"time"
@@ -276,9 +277,11 @@ func TestValidateDomain(t *testing.T) {
 		wantErr bool
 	}{
 		{"ok 1", "google.com", false},
-		{"invalid characters 1", "admin@example.com", true},
 		{"ok 2", "hyphens-are-allowed.example.com", false},
+		{"ok 3", "日本語.jp", false},
+		{"invalid characters 1", "admin@example.com", true},
 		{"invalid characters 2", "underscore_not_allowed.example.com", true},
+		{"invalid characters 3", "space not allowed.example.com", true},
 		{"wildcard ng", "*.trap.show", true},
 		{"multi wildcard ng", "*.*.trap.show", true},
 		{"wildcard in middle", "trap.*.show", true},
@@ -288,6 +291,7 @@ func TestValidateDomain(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			err := ValidateDomain(tt.domain)
 			if tt.wantErr {
+				fmt.Println(err.Error())
 				assert.Error(t, err)
 			} else {
 				assert.NoError(t, err)
