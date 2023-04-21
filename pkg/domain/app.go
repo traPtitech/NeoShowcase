@@ -3,6 +3,7 @@ package domain
 import (
 	"context"
 	"fmt"
+	"net/url"
 	"strings"
 	"time"
 
@@ -247,6 +248,9 @@ func ValidateDomain(domain string) error {
 	if strings.HasSuffix(domain, ".") {
 		return errors.New("trailing dot not allowed in domain")
 	}
+	if strings.HasPrefix(domain, ".") {
+		return errors.New("leading dot not allowed in domain")
+	}
 	_, err := idna.Lookup.ToUnicode(domain)
 	if err != nil {
 		return errors.Wrap(err, "invalid domain")
@@ -458,6 +462,13 @@ func (w *Website) Validate() error {
 	}
 	if w.StripPrefix && w.PathPrefix == "/" {
 		return errors.New("strip_prefix has to be false when path_prefix is /")
+	}
+	u, err := url.ParseRequestURI(w.PathPrefix)
+	if err != nil {
+		return errors.Wrap(err, "invalid path")
+	}
+	if u.EscapedPath() != w.PathPrefix {
+		return errors.New("invalid path: either not escaped or contains non-path elements")
 	}
 	if !(0 <= w.HTTPPort && w.HTTPPort < 65536) {
 		return errors.New("invalid port number (requires 0 ~ 65535)")

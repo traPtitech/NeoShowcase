@@ -275,10 +275,16 @@ func TestValidateDomain(t *testing.T) {
 		domain  string
 		wantErr bool
 	}{
-		{"ok", "google.com", false},
+		{"ok 1", "google.com", false},
+		{"ok 2", "hyphens-are-allowed.example.com", false},
+		{"ok 3", "日本語.jp", false},
+		{"invalid characters 1", "admin@example.com", true},
+		{"invalid characters 2", "underscore_not_allowed.example.com", true},
+		{"invalid characters 3", "space not allowed.example.com", true},
 		{"wildcard ng", "*.trap.show", true},
 		{"multi wildcard ng", "*.*.trap.show", true},
 		{"wildcard in middle", "trap.*.show", true},
+		{"leading dot ng", ".example.com", true},
 		{"trailing dot ng", "google.com.", true},
 	}
 	for _, tt := range tests {
@@ -666,6 +672,9 @@ func TestWebsite_Validate(t *testing.T) {
 	}{
 		{"ok1", Website{FQDN: "google.com", PathPrefix: "/", HTTPPort: 80}, false},
 		{"ok2", Website{FQDN: "google.com", PathPrefix: "/path/to/prefix", HTTPPort: 8080}, false},
+		{"ok3", Website{FQDN: "google.com", PathPrefix: "/space%20is%20encoded", HTTPPort: 8080}, false},
+		{"ok4", Website{FQDN: "trap.show", PathPrefix: "/~toki", HTTPPort: 8080}, false},
+		{"ok5", Website{FQDN: "trap.show", PathPrefix: "/~toki/bot_converter", HTTPPort: 8080}, false},
 		{"invalid fqdn1", Website{FQDN: "google.com.", PathPrefix: "/", HTTPPort: 80}, true},
 		{"invalid fqdn2", Website{FQDN: "*.google.com", PathPrefix: "/", HTTPPort: 80}, true},
 		{"invalid fqdn3", Website{FQDN: "google.*.com", PathPrefix: "/", HTTPPort: 80}, true},
@@ -674,6 +683,11 @@ func TestWebsite_Validate(t *testing.T) {
 		{"invalid path1", Website{FQDN: "google.com", PathPrefix: "", HTTPPort: 80}, true},
 		{"invalid path2", Website{FQDN: "google.com", PathPrefix: "../test", HTTPPort: 80}, true},
 		{"invalid path3", Website{FQDN: "google.com", PathPrefix: "/test/", HTTPPort: 80}, true},
+		{"invalid path4", Website{FQDN: "google.com", PathPrefix: "/space not encoded", HTTPPort: 80}, true},
+		{"invalid path5", Website{FQDN: "google.com", PathPrefix: "/query?", HTTPPort: 80}, true},
+		{"invalid path6", Website{FQDN: "google.com", PathPrefix: "/query?foo", HTTPPort: 80}, true},
+		{"invalid path7", Website{FQDN: "google.com", PathPrefix: "/query?foo=bar", HTTPPort: 80}, true},
+		{"invalid path8", Website{FQDN: "google.com", PathPrefix: "https://google.com/test", HTTPPort: 80}, true},
 		{"strip prefix ok1", Website{FQDN: "google.com", PathPrefix: "/", StripPrefix: false, HTTPPort: 80}, false},
 		{"strip prefix ok2", Website{FQDN: "google.com", PathPrefix: "/test", StripPrefix: false, HTTPPort: 80}, false},
 		{"strip prefix ng", Website{FQDN: "google.com", PathPrefix: "/", StripPrefix: true, HTTPPort: 80}, true},
