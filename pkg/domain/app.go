@@ -248,6 +248,9 @@ func ValidateDomain(domain string) error {
 	if strings.HasSuffix(domain, ".") {
 		return errors.New("trailing dot not allowed in domain")
 	}
+	if strings.HasPrefix(domain, ".") {
+		return errors.New("leading dot not allowed in domain")
+	}
 	_, err := idna.Lookup.ToUnicode(domain)
 	if err != nil {
 		return errors.Wrap(err, "invalid domain")

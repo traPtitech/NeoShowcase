@@ -1,7 +1,6 @@
 package domain
 
 import (
-	"fmt"
 	"reflect"
 	"testing"
 	"time"
@@ -285,13 +284,13 @@ func TestValidateDomain(t *testing.T) {
 		{"wildcard ng", "*.trap.show", true},
 		{"multi wildcard ng", "*.*.trap.show", true},
 		{"wildcard in middle", "trap.*.show", true},
+		{"leading dot ng", ".example.com", true},
 		{"trailing dot ng", "google.com.", true},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			err := ValidateDomain(tt.domain)
 			if tt.wantErr {
-				fmt.Println(err.Error())
 				assert.Error(t, err)
 			} else {
 				assert.NoError(t, err)
