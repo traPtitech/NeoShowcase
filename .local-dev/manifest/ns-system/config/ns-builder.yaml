@@ -29,4 +29,4 @@ image:
     addr: registry.ns-system.svc.cluster.local
     username: ""
     password: ""
-    namePrefix: ns-apps/
+  namePrefix: ns-apps/
