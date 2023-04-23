@@ -36,7 +36,8 @@ func NewWithDocker(c2 Config) (*Server, error) {
 		return nil, err
 	}
 	config := c2.Docker
-	backend, err := dockerimpl.NewDockerBackend(client, config)
+	imageConfig := c2.Image
+	backend, err := dockerimpl.NewDockerBackend(client, config, imageConfig)
 	if err != nil {
 		return nil, err
 	}
@@ -54,7 +55,6 @@ func NewWithDocker(c2 Config) (*Server, error) {
 	buildRepository := repository.NewBuildRepository(db)
 	logStreamService := usecase.NewLogStreamService()
 	controllerBuilderService := grpc.NewControllerBuilderService(logStreamService)
-	imageConfig := c2.Image
 	appBuildHelper := usecase.NewAppBuildHelper(controllerBuilderService, imageConfig)
 	environmentRepository := repository.NewEnvironmentRepository(db)
 	controllerSSGenService := grpc.NewControllerSSGenService()

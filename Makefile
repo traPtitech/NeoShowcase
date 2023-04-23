@@ -85,11 +85,11 @@ migrate: ## Apply migration to development environment
 
 .PHONY: ns-evans
 ns-evans: ## Connect to ns api server service
-	@$(EVANS_CMD) --path ./api/proto --proto neoshowcase/protobuf/apiserver.proto --host ns.local.trapti.tech -p 80 repl
+	@$(EVANS_CMD) --path ./api/proto --proto neoshowcase/protobuf/gateway.proto --host ns.local.trapti.tech -p 80 repl
 
 .PHONY: ns-controller-evans
 ns-controller-evans: ## Connect to ns controller service
-	@$(EVANS_CMD) --path ./api/proto --proto neoshowcase/protobuf/apiserver_component.proto --host localhost -p 10000 repl
+	@$(EVANS_CMD) --path ./api/proto --proto neoshowcase/protobuf/controller.proto --host localhost -p 10000 repl
 
 .PHONY: db-update
 db-update: migrate gogen db-gen-docs ## Apply migration, generate sqlboiler sources, and generate db schema docs

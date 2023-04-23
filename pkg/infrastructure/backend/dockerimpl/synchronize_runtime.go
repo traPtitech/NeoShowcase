@@ -46,7 +46,7 @@ func (b *dockerBackend) syncAppContainer(ctx context.Context, app *domain.Runtim
 		Repository: app.ImageName,
 		Tag:        app.ImageTag,
 		Context:    ctx,
-	}, docker.AuthConfiguration{})
+	}, b.authConfig())
 	if err != nil {
 		return errors.Wrap(err, "failed to pull image")
 	}
