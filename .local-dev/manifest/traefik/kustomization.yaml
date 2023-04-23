@@ -12,4 +12,3 @@ configMapGenerator:
   - name: traefik-config
     files:
       - config/cert-resolver.yaml
-      - config/middlewares.yaml
