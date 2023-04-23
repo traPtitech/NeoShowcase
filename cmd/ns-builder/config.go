@@ -62,6 +62,12 @@ func init() {
 	viper.SetDefault("storage.swift.tenantId", "")
 	viper.SetDefault("storage.swift.container", "neoshowcase")
 	viper.SetDefault("storage.swift.authUrl", "")
+
+	viper.SetDefault("image.registry.scheme", "https")
+	viper.SetDefault("image.registry.addr", "localhost")
+	viper.SetDefault("image.registry.username", "")
+	viper.SetDefault("image.registry.password", "")
+	viper.SetDefault("image.namePrefix", "ns-apps/")
 }
 
 func provideRepositoryPublicKey(c Config) (*ssh.PublicKeys, error) {

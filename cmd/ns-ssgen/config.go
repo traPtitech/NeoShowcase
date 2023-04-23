@@ -21,7 +21,7 @@ type Config struct {
 func init() {
 	viper.SetDefault("artifactsRoot", "/srv/artifacts")
 
-	viper.SetDefault("builtin.port", 8080)
+	viper.SetDefault("builtIn.port", 8080)
 
 	viper.SetDefault("controller.url", "http://ns-controller:10000")
 
