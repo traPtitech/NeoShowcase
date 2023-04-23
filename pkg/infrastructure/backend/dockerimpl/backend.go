@@ -11,6 +11,7 @@ import (
 	"github.com/samber/lo"
 
 	"github.com/traPtitech/neoshowcase/pkg/domain"
+	"github.com/traPtitech/neoshowcase/pkg/domain/builder"
 	"github.com/traPtitech/neoshowcase/pkg/util/ds"
 )
 
@@ -77,6 +78,7 @@ const (
 type dockerBackend struct {
 	c         *docker.Client
 	conf      Config
+	image     builder.ImageConfig
 	eventSubs domain.PubSub[*domain.ContainerEvent]
 
 	dockerEvent chan *docker.APIEvents
@@ -88,14 +90,16 @@ type dockerBackend struct {
 func NewDockerBackend(
 	c *docker.Client,
 	conf Config,
+	image builder.ImageConfig,
 ) (domain.Backend, error) {
 	err := conf.Validate()
 	if err != nil {
 		return nil, err
 	}
 	return &dockerBackend{
-		c:    c,
-		conf: conf,
+		c:     c,
+		conf:  conf,
+		image: image,
 	}, nil
 }
 
@@ -172,6 +176,16 @@ func (b *dockerBackend) initNetworks() error {
 		Name: b.conf.Network,
 	})
 	return err
+}
+
+func (b *dockerBackend) authConfig() docker.AuthConfiguration {
+	if b.image.Registry.Username == "" && b.image.Registry.Password == "" {
+		return docker.AuthConfiguration{}
+	}
+	return docker.AuthConfiguration{
+		Username: b.image.Registry.Username,
+		Password: b.image.Registry.Password,
+	}
 }
 
 func (b *dockerBackend) containerLabels(app *domain.Application) map[string]string {
