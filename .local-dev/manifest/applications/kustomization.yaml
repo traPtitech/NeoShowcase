@@ -6,5 +6,6 @@ resources:
   - grafana.yaml
   - grafana-agent.yaml
   - loki.yaml
-  - neoshowcase.yaml
+  - ns-apps.yaml
+  - ns-system.yaml
   - traefik.yaml
