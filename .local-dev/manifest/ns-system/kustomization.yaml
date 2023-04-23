@@ -40,7 +40,6 @@ resources:
   - services/registry-ingress-route.yaml
   - services/registry-service.yaml
   - mariadb-migration-workflow-template.yaml
-  - app-namespace.yaml
 
 configMapGenerator:
   - name: ns-config

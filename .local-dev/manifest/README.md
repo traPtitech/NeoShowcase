@@ -20,8 +20,8 @@ kubelet-arg:
    - `kubectl create ns argocd`
    - `kubectl apply -n argocd -f {{ version described in ./argocd/kustomization.yaml }}`
      - refer to `./argocd/kustomization.yaml` for the current version
-   - `kubectl port-forward svc/argocd-server -n argocd 8080:443`
-3. Access localhost:8080
+   - `kubectl port-forward svc/argocd-server -n argocd 8124:443`
+3. Access https://localhost:8124
    - Get admin password from ` kubectl get secret -n argocd argocd-initial-admin-secret -o jsonpath="{.data.password}" | base64 --decode && echo`
 4. Add initial `applications` application
    - Add known hosts and connect repository
@@ -29,7 +29,8 @@ kubelet-arg:
 5. Build and import images with `make build && make k3s-import` at root of the repository
 6. Sync other applications (and optionally, change their target revision)
    - `traefik`, `argocd`, then other applications
-7. Access `cd.local.trapti.tech` and more
+   - If argocd sync fails, do `kubectl port-forward svc/argocd-server -n argocd 8124:80` and access http://localhost:8124 (Note it is NOT http*s*)
+   - Access `cd.local.trapti.tech` and keep syncing
 
 ## local registry setup
 
