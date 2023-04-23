@@ -8,6 +8,8 @@ import (
 
 	docker "github.com/fsouza/go-dockerclient"
 	"github.com/stretchr/testify/require"
+
+	"github.com/traPtitech/neoshowcase/pkg/domain/builder"
 )
 
 func prepareManager(t *testing.T) (*dockerBackend, *docker.Client) {
@@ -25,7 +27,7 @@ func prepareManager(t *testing.T) (*dockerBackend, *docker.Client) {
 	m, err := NewDockerBackend(c, Config{
 		ConfDir: "../../../../.local-dev/traefik",
 		Network: "neoshowcase_apps",
-	})
+	}, builder.ImageConfig{})
 	require.NoError(t, err)
 	err = m.Start(context.Background())
 	require.NoError(t, err)
