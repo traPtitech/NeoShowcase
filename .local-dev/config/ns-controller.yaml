@@ -44,6 +44,6 @@ image:
   registry:
     scheme: http
     addr: registry.local.trapti.tech
-    username: ""
-    password: ""
+    username: registry
+    password: super-secret
     namePrefix: ns-apps/
