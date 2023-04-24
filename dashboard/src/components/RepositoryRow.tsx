@@ -16,7 +16,7 @@ import {
 import { StatusIcon } from '/@/components/StatusIcon'
 import { Application, Repository } from '/@/api/neoshowcase/protobuf/gateway_pb'
 import { applicationState, providerToIcon, repositoryURLToProvider } from '/@/libs/application'
-import { durationHuman, shortSha } from '/@/libs/format'
+import { DiffHuman, shortSha } from '/@/libs/format'
 import { A } from '@solidjs/router'
 
 export type Provider = 'GitHub' | 'GitLab' | 'Gitea'
@@ -52,7 +52,7 @@ export const RepositoryRow = ({ repo, apps }: Props): JSXElement => {
                 <div>{shortSha(app.currentCommit)}</div>
                 <div class={appFooterRight}>
                   <div>{app.websites[0]?.fqdn || ''}</div>
-                  <div>{durationHuman(3 * 60 * 1000) /* TODO: use updatedAt */}</div>
+                  <DiffHuman target={app.updatedAt.toDate()} />
                 </div>
               </div>
             </div>
