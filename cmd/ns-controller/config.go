@@ -74,6 +74,10 @@ func init() {
 	viper.SetDefault("docker.labels", nil)
 	viper.SetDefault("docker.tls.certResolver", "nsresolver")
 	viper.SetDefault("docker.tls.wildcard.domains", nil)
+	viper.SetDefault("docker.resources.cpus", 1.6)
+	viper.SetDefault("docker.resources.memory", 1e9 /* 1GB */)
+	viper.SetDefault("docker.resources.memorySwap", -1 /* unlimited swap */)
+	viper.SetDefault("docker.resources.memoryReservation", 256*1e6 /* 256MB */)
 
 	viper.SetDefault("k8s.middlewares.auth", nil)
 	viper.SetDefault("k8s.ss.namespace", "default")

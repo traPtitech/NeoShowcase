@@ -1,6 +1,8 @@
 package dockerimpl
 
 import (
+	"math"
+
 	"github.com/friendsofgo/errors"
 	"github.com/samber/lo"
 
@@ -34,6 +36,12 @@ type Config struct {
 			Domains domain.WildcardDomains `mapstructure:"domains" yaml:"domains"`
 		} `mapstructure:"wildcard" yaml:"wildcard"`
 	} `mapstructure:"tls" yaml:"tls"`
+	Resources struct {
+		CPUs              float64 `mapstructure:"cpus" yaml:"cpus"`
+		Memory            int64   `mapstructure:"memory" yaml:"memory"`
+		MemorySwap        int64   `mapstructure:"memorySwap" yaml:"memorySwap"`
+		MemoryReservation int64   `mapstructure:"memoryReservation" yaml:"memoryReservation"`
+	} `mapstructure:"resources" yaml:"resources"`
 }
 
 func (c *Config) labels() map[string]string {
@@ -49,8 +57,23 @@ func (c *Config) Validate() error {
 			return errors.Wrapf(err, "invalid domain %s for middleware config", ac.Domain)
 		}
 	}
+
 	if err := c.TLS.Wildcard.Domains.Validate(); err != nil {
 		return errors.Wrap(err, "docker.tls.wildcard.domains is invalid")
 	}
+
+	if c.Resources.CPUs < 0 || math.IsNaN(c.Resources.CPUs) || math.IsInf(c.Resources.CPUs, 0) {
+		return errors.New("docker.resources.cpus needs to be a positive number")
+	}
+	if c.Resources.Memory < 0 {
+		return errors.New("docker.resources.memory needs to be a positive number")
+	}
+	if c.Resources.MemorySwap < -1 {
+		return errors.New("docker.resources.memorySwap needs to be a positive number, or -1 for unlimited swap")
+	}
+	if c.Resources.MemoryReservation < 0 {
+		return errors.New("docker.resources.memoryReservation needs to be a positive number")
+	}
+
 	return nil
 }
