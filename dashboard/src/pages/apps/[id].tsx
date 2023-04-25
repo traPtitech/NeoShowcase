@@ -207,7 +207,7 @@ export default () => {
           <div class={cardItems}>
             <div class={cardItem}>
               <div class={cardItemTitle}>Build Type</div>
-              <div class={cardItemContent}>{app() && buildTypeStr[app().config.buildType]}</div>
+              <div class={cardItemContent}>{app() && buildTypeStr[app().config.buildConfig.buildConfig.case]}</div>
             </div>
             {app()?.config.buildConfig && <BuildConfigInfo config={app().config.buildConfig} />}
             {app()?.config.entrypoint && (

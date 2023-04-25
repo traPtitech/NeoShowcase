@@ -1,15 +1,15 @@
 import { Provider } from '/@/components/RepositoryRow'
-import { Application, BuildType, DeployType, Website } from '/@/api/neoshowcase/protobuf/gateway_pb'
+import { Application, BuildConfig, DeployType, Website } from '/@/api/neoshowcase/protobuf/gateway_pb'
 import { JSXElement } from 'solid-js'
 import { AiFillGithub, AiFillGitlab } from 'solid-icons/ai'
 import { SiGitea } from 'solid-icons/si'
 import { vars } from '/@/theme.css'
 
-export const buildTypeStr: Record<BuildType, string> = {
-  [BuildType.RUNTIME_CMD]: 'Runtime (command)',
-  [BuildType.RUNTIME_DOCKERFILE]: 'Runtime (Dockerfile)',
-  [BuildType.STATIC_CMD]: 'Static (command)',
-  [BuildType.STATIC_DOCKERFILE]: 'Static (Dockerfile)',
+export const buildTypeStr: Record<BuildConfig['buildConfig']['case'], string> = {
+  runtimeCmd: 'Runtime (command)',
+  runtimeDockerfile: 'Runtime (Dockerfile)',
+  staticCmd: 'Static (command)',
+  staticDockerfile: 'Static (Dockerfile)',
 }
 
 export enum ApplicationState {

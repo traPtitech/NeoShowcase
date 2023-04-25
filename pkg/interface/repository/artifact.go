@@ -12,6 +12,7 @@ import (
 
 	"github.com/traPtitech/neoshowcase/pkg/domain"
 	"github.com/traPtitech/neoshowcase/pkg/infrastructure/admindb/models"
+	"github.com/traPtitech/neoshowcase/pkg/interface/repository/repoconvert"
 	"github.com/traPtitech/neoshowcase/pkg/util/optional"
 )
 
@@ -54,12 +55,12 @@ func (r *artifactRepository) GetArtifacts(ctx context.Context, cond domain.GetAr
 		return nil, errors.Wrap(err, "failed to get artifacts")
 	}
 	return lo.Map(artifacts, func(a *models.Artifact, i int) *domain.Artifact {
-		return toDomainArtifact(a)
+		return repoconvert.ToDomainArtifact(a)
 	}), nil
 }
 
 func (r *artifactRepository) CreateArtifact(ctx context.Context, artifact *domain.Artifact) error {
-	ma := fromDomainArtifact(artifact)
+	ma := repoconvert.FromDomainArtifact(artifact)
 	if err := ma.Insert(ctx, r.db, boil.Blacklist()); err != nil {
 		return errors.Wrap(err, "failed to insert artifact")
 	}

@@ -63,13 +63,6 @@ enum DeployType {
   STATIC = 1;
 }
 
-enum BuildType {
-  RUNTIME_CMD = 0;
-  RUNTIME_DOCKERFILE = 1;
-  STATIC_CMD = 2;
-  STATIC_DOCKERFILE = 3;
-}
-
 message BuildConfigRuntimeCmd {
   string base_image = 1;
   string build_cmd = 2;
@@ -106,17 +99,15 @@ message BuildConfig {
 message ApplicationConfig {
   bool use_mariadb = 1;
   bool use_mongodb = 2;
-  BuildType build_type = 3;
-  BuildConfig build_config = 4;
-  string entrypoint = 5;
-  string command = 6;
+  BuildConfig build_config = 3;
+  string entrypoint = 4;
+  string command = 5;
 }
 
 message UpdateApplicationConfigRequest {
-  BuildType build_type = 1;
-  BuildConfig build_config = 2;
-  string entrypoint = 3;
-  string command = 4;
+  BuildConfig build_config = 1;
+  string entrypoint = 2;
+  string command = 3;
 }
 
 enum AuthenticationType {

@@ -12,6 +12,7 @@ import (
 
 	"github.com/traPtitech/neoshowcase/pkg/domain"
 	"github.com/traPtitech/neoshowcase/pkg/infrastructure/admindb/models"
+	"github.com/traPtitech/neoshowcase/pkg/interface/repository/repoconvert"
 )
 
 type gitRepositoryRepository struct {
@@ -47,7 +48,7 @@ func (r *gitRepositoryRepository) GetRepositories(ctx context.Context, cond doma
 		return nil, errors.Wrap(err, "failed to get repositories")
 	}
 	return lo.Map(repos, func(repo *models.Repository, i int) *domain.Repository {
-		return toDomainRepository(repo)
+		return repoconvert.ToDomainRepository(repo)
 	}), nil
 }
 
@@ -67,7 +68,7 @@ func (r *gitRepositoryRepository) GetRepository(ctx context.Context, id string) 
 		}
 		return nil, errors.Wrap(err, "failed to get repository")
 	}
-	return toDomainRepository(repo), nil
+	return repoconvert.ToDomainRepository(repo), nil
 }
 
 func (r *gitRepositoryRepository) CreateRepository(ctx context.Context, repo *domain.Repository) error {
@@ -77,14 +78,14 @@ func (r *gitRepositoryRepository) CreateRepository(ctx context.Context, repo *do
 	}
 	defer tx.Rollback()
 
-	mr := fromDomainRepository(repo)
+	mr := repoconvert.FromDomainRepository(repo)
 	err = mr.Insert(ctx, tx, boil.Blacklist())
 	if err != nil {
 		return errors.Wrap(err, "failed to insert repository")
 	}
 
 	if repo.Auth.Valid {
-		mra := fromDomainRepositoryAuth(repo.ID, &repo.Auth.V)
+		mra := repoconvert.FromDomainRepositoryAuth(repo.ID, &repo.Auth.V)
 		err = mra.Insert(ctx, tx, boil.Blacklist())
 		if err != nil {
 			return errors.Wrap(err, "failed to insert repository auth")
@@ -136,7 +137,7 @@ func (r *gitRepositoryRepository) UpdateRepository(ctx context.Context, id strin
 			}
 		}
 		if args.Auth.V.Valid {
-			mra := fromDomainRepositoryAuth(repo.ID, &args.Auth.V.V)
+			mra := repoconvert.FromDomainRepositoryAuth(repo.ID, &args.Auth.V.V)
 			err = repo.SetRepositoryAuth(ctx, tx, true, mra)
 			if err != nil {
 				return errors.Wrap(err, "failed to set repository auth")

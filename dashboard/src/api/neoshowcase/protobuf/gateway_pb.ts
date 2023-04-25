@@ -28,38 +28,6 @@ proto3.util.setEnumType(DeployType, "neoshowcase.protobuf.DeployType", [
 ]);
 
 /**
- * @generated from enum neoshowcase.protobuf.BuildType
- */
-export enum BuildType {
-  /**
-   * @generated from enum value: RUNTIME_CMD = 0;
-   */
-  RUNTIME_CMD = 0,
-
-  /**
-   * @generated from enum value: RUNTIME_DOCKERFILE = 1;
-   */
-  RUNTIME_DOCKERFILE = 1,
-
-  /**
-   * @generated from enum value: STATIC_CMD = 2;
-   */
-  STATIC_CMD = 2,
-
-  /**
-   * @generated from enum value: STATIC_DOCKERFILE = 3;
-   */
-  STATIC_DOCKERFILE = 3,
-}
-// Retrieve enum metadata with: proto3.getEnumType(BuildType)
-proto3.util.setEnumType(BuildType, "neoshowcase.protobuf.BuildType", [
-  { no: 0, name: "RUNTIME_CMD" },
-  { no: 1, name: "RUNTIME_DOCKERFILE" },
-  { no: 2, name: "STATIC_CMD" },
-  { no: 3, name: "STATIC_DOCKERFILE" },
-]);
-
-/**
  * @generated from enum neoshowcase.protobuf.AuthenticationType
  */
 export enum AuthenticationType {
@@ -768,22 +736,17 @@ export class ApplicationConfig extends Message<ApplicationConfig> {
   useMongodb = false;
 
   /**
-   * @generated from field: neoshowcase.protobuf.BuildType build_type = 3;
-   */
-  buildType = BuildType.RUNTIME_CMD;
-
-  /**
-   * @generated from field: neoshowcase.protobuf.BuildConfig build_config = 4;
+   * @generated from field: neoshowcase.protobuf.BuildConfig build_config = 3;
    */
   buildConfig?: BuildConfig;
 
   /**
-   * @generated from field: string entrypoint = 5;
+   * @generated from field: string entrypoint = 4;
    */
   entrypoint = "";
 
   /**
-   * @generated from field: string command = 6;
+   * @generated from field: string command = 5;
    */
   command = "";
 
@@ -797,10 +760,9 @@ export class ApplicationConfig extends Message<ApplicationConfig> {
   static readonly fields: FieldList = proto3.util.newFieldList(() => [
     { no: 1, name: "use_mariadb", kind: "scalar", T: 8 /* ScalarType.BOOL */ },
     { no: 2, name: "use_mongodb", kind: "scalar", T: 8 /* ScalarType.BOOL */ },
-    { no: 3, name: "build_type", kind: "enum", T: proto3.getEnumType(BuildType) },
-    { no: 4, name: "build_config", kind: "message", T: BuildConfig },
-    { no: 5, name: "entrypoint", kind: "scalar", T: 9 /* ScalarType.STRING */ },
-    { no: 6, name: "command", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+    { no: 3, name: "build_config", kind: "message", T: BuildConfig },
+    { no: 4, name: "entrypoint", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+    { no: 5, name: "command", kind: "scalar", T: 9 /* ScalarType.STRING */ },
   ]);
 
   static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): ApplicationConfig {
@@ -825,22 +787,17 @@ export class ApplicationConfig extends Message<ApplicationConfig> {
  */
 export class UpdateApplicationConfigRequest extends Message<UpdateApplicationConfigRequest> {
   /**
-   * @generated from field: neoshowcase.protobuf.BuildType build_type = 1;
-   */
-  buildType = BuildType.RUNTIME_CMD;
-
-  /**
-   * @generated from field: neoshowcase.protobuf.BuildConfig build_config = 2;
+   * @generated from field: neoshowcase.protobuf.BuildConfig build_config = 1;
    */
   buildConfig?: BuildConfig;
 
   /**
-   * @generated from field: string entrypoint = 3;
+   * @generated from field: string entrypoint = 2;
    */
   entrypoint = "";
 
   /**
-   * @generated from field: string command = 4;
+   * @generated from field: string command = 3;
    */
   command = "";
 
@@ -852,10 +809,9 @@ export class UpdateApplicationConfigRequest extends Message<UpdateApplicationCon
   static readonly runtime: typeof proto3 = proto3;
   static readonly typeName = "neoshowcase.protobuf.UpdateApplicationConfigRequest";
   static readonly fields: FieldList = proto3.util.newFieldList(() => [
-    { no: 1, name: "build_type", kind: "enum", T: proto3.getEnumType(BuildType) },
-    { no: 2, name: "build_config", kind: "message", T: BuildConfig },
-    { no: 3, name: "entrypoint", kind: "scalar", T: 9 /* ScalarType.STRING */ },
-    { no: 4, name: "command", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+    { no: 1, name: "build_config", kind: "message", T: BuildConfig },
+    { no: 2, name: "entrypoint", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+    { no: 3, name: "command", kind: "scalar", T: 9 /* ScalarType.STRING */ },
   ]);
 
   static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): UpdateApplicationConfigRequest {

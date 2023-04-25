@@ -11,6 +11,7 @@ import (
 
 	"github.com/traPtitech/neoshowcase/pkg/domain"
 	"github.com/traPtitech/neoshowcase/pkg/infrastructure/admindb/models"
+	"github.com/traPtitech/neoshowcase/pkg/interface/repository/repoconvert"
 	"github.com/traPtitech/neoshowcase/pkg/util/optional"
 )
 
@@ -43,7 +44,7 @@ func (r *buildRepository) buildMods(cond domain.GetBuildCondition) []qm.QueryMod
 		mods = append(mods, models.BuildWhere.Commit.IN(cond.CommitIn.V))
 	}
 	if cond.Status.Valid {
-		mods = append(mods, models.BuildWhere.Status.EQ(buildStatusMapper.FromMust(cond.Status.V)))
+		mods = append(mods, models.BuildWhere.Status.EQ(repoconvert.BuildStatusMapper.FromMust(cond.Status.V)))
 	}
 	if cond.Retriable.Valid {
 		mods = append(mods, models.BuildWhere.Retriable.EQ(cond.Retriable.V))
@@ -59,7 +60,7 @@ func (r *buildRepository) GetBuilds(ctx context.Context, cond domain.GetBuildCon
 		return nil, errors.Wrap(err, "failed to get builds")
 	}
 	return lo.Map(builds, func(b *models.Build, i int) *domain.Build {
-		return toDomainBuild(b)
+		return repoconvert.ToDomainBuild(b)
 	}), nil
 }
 
@@ -71,11 +72,11 @@ func (r *buildRepository) GetBuild(ctx context.Context, buildID string) (*domain
 		}
 		return nil, errors.Wrap(err, "failed to find build")
 	}
-	return toDomainBuild(build), nil
+	return repoconvert.ToDomainBuild(build), nil
 }
 
 func (r *buildRepository) CreateBuild(ctx context.Context, build *domain.Build) error {
-	mb := fromDomainBuild(build)
+	mb := repoconvert.FromDomainBuild(build)
 	err := mb.Insert(ctx, r.db, boil.Blacklist())
 	if err != nil {
 		return errors.Wrap(err, "failed to insert build")
@@ -90,7 +91,7 @@ func (r *buildRepository) UpdateBuild(ctx context.Context, id string, args domai
 	}
 
 	if args.FromStatus.Valid {
-		mods = append(mods, models.BuildWhere.Status.EQ(buildStatusMapper.FromMust(args.FromStatus.V)))
+		mods = append(mods, models.BuildWhere.Status.EQ(repoconvert.BuildStatusMapper.FromMust(args.FromStatus.V)))
 	}
 
 	tx, err := r.db.BeginTx(ctx, nil)
@@ -109,7 +110,7 @@ func (r *buildRepository) UpdateBuild(ctx context.Context, id string, args domai
 
 	var cols []string
 	if args.Status.Valid {
-		build.Status = buildStatusMapper.FromMust(args.Status.V)
+		build.Status = repoconvert.BuildStatusMapper.FromMust(args.Status.V)
 		cols = append(cols, models.BuildColumns.Status)
 	}
 	if args.StartedAt.Valid {
