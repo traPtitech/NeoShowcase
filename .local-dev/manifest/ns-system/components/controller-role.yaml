@@ -18,6 +18,7 @@ rules:
     verbs:
       - "*"
   - apiGroups:
+      - traefik.io
       - traefik.containo.us
     resources:
       - ingressroutes
