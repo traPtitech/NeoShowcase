@@ -3,7 +3,7 @@ module github.com/traPtitech/neoshowcase
 go 1.20
 
 require (
-	github.com/aws/aws-sdk-go v1.44.234
+	github.com/aws/aws-sdk-go v1.44.249
 	github.com/bufbuild/connect-go v1.5.2
 	github.com/cert-manager/cert-manager v1.11.1
 	github.com/docker/cli v23.0.0-rc.1+incompatible
