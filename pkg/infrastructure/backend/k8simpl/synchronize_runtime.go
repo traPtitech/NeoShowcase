@@ -50,7 +50,9 @@ func (b *k8sBackend) statefulSet(app *domain.RuntimeDesiredState) *appsv1.Statef
 					},
 				},
 				Spec: v1.PodSpec{
-					Containers: []v1.Container{cont},
+					Containers:   []v1.Container{cont},
+					NodeSelector: b.config.podSchedulingNodeSelector(),
+					Tolerations:  b.config.podSchedulingTolerations(),
 				},
 			},
 		},

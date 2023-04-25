@@ -6,7 +6,7 @@ import (
 	"github.com/traPtitech/neoshowcase/pkg/util/mapper"
 )
 
-var BuildStatusMapper = mapper.NewValueMapper(map[domain.BuildStatus]pb.Build_BuildStatus{
+var BuildStatusMapper = mapper.MustNewValueMapper(map[domain.BuildStatus]pb.Build_BuildStatus{
 	domain.BuildStatusQueued:    pb.Build_QUEUED,
 	domain.BuildStatusBuilding:  pb.Build_BUILDING,
 	domain.BuildStatusSucceeded: pb.Build_SUCCEEDED,

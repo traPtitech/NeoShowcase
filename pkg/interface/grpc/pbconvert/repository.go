@@ -27,7 +27,7 @@ func FromPBRepositoryAuth(req *pb.CreateRepositoryAuth) optional.Of[domain.Repos
 	}
 }
 
-var RepoAuthMethodMapper = mapper.NewValueMapper(map[domain.RepositoryAuthMethod]pb.Repository_AuthMethod{
+var RepoAuthMethodMapper = mapper.MustNewValueMapper(map[domain.RepositoryAuthMethod]pb.Repository_AuthMethod{
 	domain.RepositoryAuthMethodBasic: pb.Repository_BASIC,
 	domain.RepositoryAuthMethodSSH:   pb.Repository_SSH,
 })

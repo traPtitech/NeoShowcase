@@ -43,7 +43,7 @@ func toDomainAvailableDomain(ad *models.AvailableDomain) *domain.AvailableDomain
 	}
 }
 
-var buildTypeMapper = mapper.NewValueMapper(map[string]domain.BuildType{
+var buildTypeMapper = mapper.MustNewValueMapper(map[string]domain.BuildType{
 	models.ApplicationConfigBuildTypeRuntimeCMD:        domain.BuildTypeRuntimeCmd,
 	models.ApplicationConfigBuildTypeRuntimeDockerfile: domain.BuildTypeRuntimeDockerfile,
 	models.ApplicationConfigBuildTypeStaticCMD:         domain.BuildTypeStaticCmd,
@@ -129,7 +129,7 @@ func fromDomainRepository(repo *domain.Repository) *models.Repository {
 	}
 }
 
-var repoAuthMethodMapper = mapper.NewValueMapper(map[string]domain.RepositoryAuthMethod{
+var repoAuthMethodMapper = mapper.MustNewValueMapper(map[string]domain.RepositoryAuthMethod{
 	models.RepositoryAuthMethodBasic: domain.RepositoryAuthMethodBasic,
 	models.RepositoryAuthMethodSSH:   domain.RepositoryAuthMethodSSH,
 })
@@ -163,12 +163,12 @@ func toDomainRepository(repo *models.Repository) *domain.Repository {
 	return ret
 }
 
-var deployTypeMapper = mapper.NewValueMapper(map[string]domain.DeployType{
+var deployTypeMapper = mapper.MustNewValueMapper(map[string]domain.DeployType{
 	models.ApplicationsDeployTypeRuntime: domain.DeployTypeRuntime,
 	models.ApplicationsDeployTypeStatic:  domain.DeployTypeStatic,
 })
 
-var containerStateMapper = mapper.NewValueMapper(map[string]domain.ContainerState{
+var containerStateMapper = mapper.MustNewValueMapper(map[string]domain.ContainerState{
 	models.ApplicationsContainerMissing:  domain.ContainerStateMissing,
 	models.ApplicationsContainerStarting: domain.ContainerStateStarting,
 	models.ApplicationsContainerRunning:  domain.ContainerStateRunning,
@@ -213,7 +213,7 @@ func toDomainApplication(app *models.Application) *domain.Application {
 	}
 }
 
-var buildStatusMapper = mapper.NewValueMapper(map[string]domain.BuildStatus{
+var buildStatusMapper = mapper.MustNewValueMapper(map[string]domain.BuildStatus{
 	models.BuildsStatusQueued:    domain.BuildStatusQueued,
 	models.BuildsStatusBuilding:  domain.BuildStatusBuilding,
 	models.BuildsStatusSucceeded: domain.BuildStatusSucceeded,
@@ -270,7 +270,7 @@ func toDomainEnvironment(env *models.Environment) *domain.Environment {
 	}
 }
 
-var authTypeMapper = mapper.NewValueMapper(map[string]domain.AuthenticationType{
+var authTypeMapper = mapper.MustNewValueMapper(map[string]domain.AuthenticationType{
 	models.WebsitesAuthenticationOff:  domain.AuthenticationTypeOff,
 	models.WebsitesAuthenticationSoft: domain.AuthenticationTypeSoft,
 	models.WebsitesAuthenticationHard: domain.AuthenticationTypeHard,

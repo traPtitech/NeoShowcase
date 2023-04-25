@@ -3,8 +3,10 @@ package k8simpl
 import (
 	"github.com/friendsofgo/errors"
 	"github.com/samber/lo"
+	v1 "k8s.io/api/core/v1"
 
 	"github.com/traPtitech/neoshowcase/pkg/domain"
+	"github.com/traPtitech/neoshowcase/pkg/util/mapper"
 )
 
 const (
@@ -82,6 +84,41 @@ func (c *Config) labels() map[string]string {
 	})
 }
 
+func (c *Config) podSchedulingNodeSelector() map[string]string {
+	if len(c.Scheduling.NodeSelector) == 0 {
+		return nil
+	}
+	return lo.SliceToMap(c.Scheduling.NodeSelector, func(ns *nodeSelector) (string, string) {
+		return ns.Key, ns.Value
+	})
+}
+
+var tolerationOperatorMapper = mapper.MustNewValueMapper(map[string]v1.TolerationOperator{
+	string(v1.TolerationOpEqual):  v1.TolerationOpEqual,
+	string(v1.TolerationOpExists): v1.TolerationOpExists,
+})
+
+var taintEffectMapper = mapper.MustNewValueMapper(map[string]v1.TaintEffect{
+	string(v1.TaintEffectNoSchedule):       v1.TaintEffectNoSchedule,
+	string(v1.TaintEffectNoExecute):        v1.TaintEffectNoExecute,
+	string(v1.TaintEffectPreferNoSchedule): v1.TaintEffectPreferNoSchedule,
+})
+
+func (c *Config) podSchedulingTolerations() []v1.Toleration {
+	if len(c.Scheduling.Tolerations) == 0 {
+		return nil
+	}
+	return lo.Map(c.Scheduling.Tolerations, func(t *toleration, _ int) v1.Toleration {
+		return v1.Toleration{
+			Key:               t.Key,
+			Operator:          tolerationOperatorMapper.IntoMust(t.Operator),
+			Value:             t.Value,
+			Effect:            taintEffectMapper.IntoMust(t.Effect),
+			TolerationSeconds: lo.ToPtr(int64(t.TolerationSeconds)),
+		}
+	})
+}
+
 func (c *Config) Validate() error {
 	for _, ac := range c.Middlewares.Auth {
 		ad := domain.AvailableDomain{Domain: ac.Domain}
@@ -100,6 +137,14 @@ func (c *Config) Validate() error {
 		}
 	default:
 		return errors.New("k8s.tls.type needs to be one of 'traefik' or 'cert-manager'")
+	}
+	for _, t := range c.Scheduling.Tolerations {
+		if _, ok := tolerationOperatorMapper.Into(t.Operator); !ok {
+			return errors.Errorf("k8s.scheduling.tolerations: unknown toleration operator: %v", t.Operator)
+		}
+		if _, ok := taintEffectMapper.Into(t.Effect); !ok {
+			return errors.Errorf("k8s.scheduling.tolerations: unknown taint effect: %v", t.Effect)
+		}
 	}
 	return nil
 }
