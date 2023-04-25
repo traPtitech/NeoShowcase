@@ -16,6 +16,7 @@ func FromPBBuildConfig(c *pb.BuildConfig) domain.BuildConfig {
 	case *pb.BuildConfig_RuntimeDockerfile:
 		return &domain.BuildConfigRuntimeDockerfile{
 			DockerfileName: bc.RuntimeDockerfile.DockerfileName,
+			Context:        bc.RuntimeDockerfile.Context,
 		}
 	case *pb.BuildConfig_StaticCmd:
 		return &domain.BuildConfigStaticCmd{
@@ -27,6 +28,7 @@ func FromPBBuildConfig(c *pb.BuildConfig) domain.BuildConfig {
 	case *pb.BuildConfig_StaticDockerfile:
 		return &domain.BuildConfigStaticDockerfile{
 			DockerfileName: bc.StaticDockerfile.DockerfileName,
+			Context:        bc.StaticDockerfile.Context,
 			ArtifactPath:   bc.StaticDockerfile.ArtifactPath,
 		}
 	default:
@@ -45,6 +47,7 @@ func ToPBBuildConfig(c domain.BuildConfig) *pb.BuildConfig {
 	case *domain.BuildConfigRuntimeDockerfile:
 		return &pb.BuildConfig{BuildConfig: &pb.BuildConfig_RuntimeDockerfile{RuntimeDockerfile: &pb.BuildConfigRuntimeDockerfile{
 			DockerfileName: bc.DockerfileName,
+			Context:        bc.Context,
 		}}}
 	case *domain.BuildConfigStaticCmd:
 		return &pb.BuildConfig{BuildConfig: &pb.BuildConfig_StaticCmd{StaticCmd: &pb.BuildConfigStaticCmd{
@@ -56,6 +59,7 @@ func ToPBBuildConfig(c domain.BuildConfig) *pb.BuildConfig {
 	case *domain.BuildConfigStaticDockerfile:
 		return &pb.BuildConfig{BuildConfig: &pb.BuildConfig_StaticDockerfile{StaticDockerfile: &pb.BuildConfigStaticDockerfile{
 			DockerfileName: bc.DockerfileName,
+			Context:        bc.Context,
 			ArtifactPath:   bc.ArtifactPath,
 		}}}
 	default:
