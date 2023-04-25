@@ -23,6 +23,19 @@ type labelConf = struct {
 	Value string `mapstructure:"value" yaml:"value"`
 }
 
+type nodeSelector = struct {
+	Key   string `mapstructure:"key" yaml:"key"`
+	Value string `mapstructure:"value" yaml:"value"`
+}
+
+type toleration = struct {
+	Key               string `mapstructure:"key" yaml:"key"`
+	Operator          string `mapstructure:"operator" yaml:"operator"`
+	Value             string `mapstructure:"value" yaml:"value"`
+	Effect            string `mapstructure:"effect" yaml:"effect"`
+	TolerationSeconds int    `mapstructure:"tolerationSeconds" yaml:"tolerationSeconds"`
+}
+
 type Config struct {
 	Middlewares struct {
 		Auth []*authConf `mapstructure:"auth" yaml:"auth"`
@@ -57,6 +70,10 @@ type Config struct {
 	} `mapstructure:"tls" yaml:"tls"`
 	// ImagePullSecret required if registry is private
 	ImagePullSecret string `mapstructure:"imagePullSecret" yaml:"imagePullSecret"`
+	Scheduling      struct {
+		NodeSelector []*nodeSelector `mapstructure:"nodeSelector" yaml:"nodeSelector"`
+		Tolerations  []*toleration   `mapstructure:"tolerations" yaml:"tolerations"`
+	} `mapstructure:"scheduling" yaml:"scheduling"`
 }
 
 func (c *Config) labels() map[string]string {

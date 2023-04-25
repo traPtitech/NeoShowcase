@@ -89,6 +89,8 @@ func init() {
 	viper.SetDefault("k8s.tls.certManager.issuer.kind", "ClusterIssuer")
 	viper.SetDefault("k8s.tls.certManager.wildcard.domains", nil)
 	viper.SetDefault("k8s.imagePullSecret", "")
+	viper.SetDefault("k8s.scheduling.nodeSelector", nil)
+	viper.SetDefault("k8s.scheduling.tolerations", nil)
 
 	viper.SetDefault("repository.privateKeyFile", "")
 
