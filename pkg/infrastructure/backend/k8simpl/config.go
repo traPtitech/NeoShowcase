@@ -4,8 +4,10 @@ import (
 	"github.com/friendsofgo/errors"
 	"github.com/samber/lo"
 	v1 "k8s.io/api/core/v1"
+	"k8s.io/apimachinery/pkg/api/resource"
 
 	"github.com/traPtitech/neoshowcase/pkg/domain"
+	"github.com/traPtitech/neoshowcase/pkg/util/ds"
 	"github.com/traPtitech/neoshowcase/pkg/util/mapper"
 )
 
@@ -76,6 +78,16 @@ type Config struct {
 		NodeSelector []*nodeSelector `mapstructure:"nodeSelector" yaml:"nodeSelector"`
 		Tolerations  []*toleration   `mapstructure:"tolerations" yaml:"tolerations"`
 	} `mapstructure:"scheduling" yaml:"scheduling"`
+	Resources struct {
+		Requests struct {
+			CPU    string `mapstructure:"cpu" yaml:"cpu"`
+			Memory string `mapstructure:"memory" yaml:"memory"`
+		} `mapstructure:"requests" yaml:"requests"`
+		Limits struct {
+			CPU    string `mapstructure:"cpu" yaml:"cpu"`
+			Memory string `mapstructure:"memory" yaml:"memory"`
+		} `mapstructure:"limits" yaml:"limits"`
+	} `mapstructure:"resources" yaml:"resources"`
 }
 
 func (c *Config) labels() map[string]string {
@@ -119,6 +131,28 @@ func (c *Config) podSchedulingTolerations() []v1.Toleration {
 	})
 }
 
+func (c *Config) resourceRequirements() v1.ResourceRequirements {
+	var r v1.ResourceRequirements
+	if c.Resources.Requests.CPU != "" {
+		ds.AppendMap(&r.Requests, v1.ResourceCPU, resource.MustParse(c.Resources.Requests.CPU))
+	}
+	if c.Resources.Requests.Memory != "" {
+		ds.AppendMap(&r.Requests, v1.ResourceMemory, resource.MustParse(c.Resources.Requests.Memory))
+	}
+	if c.Resources.Limits.CPU != "" {
+		ds.AppendMap(&r.Limits, v1.ResourceCPU, resource.MustParse(c.Resources.Limits.CPU))
+	}
+	if c.Resources.Limits.Memory != "" {
+		ds.AppendMap(&r.Limits, v1.ResourceMemory, resource.MustParse(c.Resources.Limits.Memory))
+	}
+	return r
+}
+
+func validateResourceQuantity(s string) error {
+	_, err := resource.ParseQuantity(s)
+	return err
+}
+
 func (c *Config) Validate() error {
 	for _, ac := range c.Middlewares.Auth {
 		ad := domain.AvailableDomain{Domain: ac.Domain}
@@ -126,6 +160,7 @@ func (c *Config) Validate() error {
 			return errors.Wrapf(err, "invalid domain %s for middleware config", ac.Domain)
 		}
 	}
+
 	switch c.TLS.Type {
 	case tlsTypeTraefik:
 		if err := c.TLS.Traefik.Wildcard.Domains.Validate(); err != nil {
@@ -138,6 +173,7 @@ func (c *Config) Validate() error {
 	default:
 		return errors.New("k8s.tls.type needs to be one of 'traefik' or 'cert-manager'")
 	}
+
 	for _, t := range c.Scheduling.Tolerations {
 		if _, ok := tolerationOperatorMapper.Into(t.Operator); !ok {
 			return errors.Errorf("k8s.scheduling.tolerations: unknown toleration operator: %v", t.Operator)
@@ -146,5 +182,27 @@ func (c *Config) Validate() error {
 			return errors.Errorf("k8s.scheduling.tolerations: unknown taint effect: %v", t.Effect)
 		}
 	}
+
+	if c.Resources.Requests.CPU != "" {
+		if err := validateResourceQuantity(c.Resources.Requests.CPU); err != nil {
+			return errors.Wrap(err, "k8s.resources.requests.cpu: invalid quantity")
+		}
+	}
+	if c.Resources.Requests.Memory != "" {
+		if err := validateResourceQuantity(c.Resources.Requests.Memory); err != nil {
+			return errors.Wrap(err, "k8s.resources.requests.memory: invalid quantity")
+		}
+	}
+	if c.Resources.Limits.CPU != "" {
+		if err := validateResourceQuantity(c.Resources.Limits.CPU); err != nil {
+			return errors.Wrap(err, "k8s.resources.limits.cpu: invalid quantity")
+		}
+	}
+	if c.Resources.Limits.Memory != "" {
+		if err := validateResourceQuantity(c.Resources.Limits.Memory); err != nil {
+			return errors.Wrap(err, "k8s.resources.limits.memory: invalid quantity")
+		}
+	}
+
 	return nil
 }

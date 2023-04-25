@@ -36,6 +36,11 @@ docker:
     certResolver: nsresolver
     wildcard:
       domains: []
+  resources:
+    cpus: 1.6
+    memory: 1000000000 # 1GB
+    memorySwap: -1
+    memoryReservation: 256000000 # 256MB
 
 repository:
   privateKeyFile: /keys/id_ed25519

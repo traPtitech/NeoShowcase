@@ -5,7 +5,7 @@ import (
 	"testing"
 	"time"
 
-	docker "github.com/fsouza/go-dockerclient"
+	"github.com/docker/docker/api/types"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
@@ -51,17 +51,14 @@ func TestDockerBackend_CreateContainer(t *testing.T) {
 		err := m.Synchronize(context.Background(), &st)
 		require.NoError(t, err)
 
-		cont, err := c.InspectContainerWithOptions(docker.InspectContainerOptions{
-			ID: containerName(appID),
-		})
+		cont, err := c.ContainerInspect(context.Background(), containerName(appID))
 		require.NoError(t, err)
 
 		assert.Equal(t, cont.Config.Image, image+":latest")
 		assert.Equal(t, cont.Config.Labels[appLabel], "true")
 		assert.Equal(t, cont.Config.Labels[appIDLabel], appID)
 
-		require.NoError(t, c.RemoveContainer(docker.RemoveContainerOptions{
-			ID:            cont.ID,
+		require.NoError(t, c.ContainerRemove(context.Background(), cont.ID, types.ContainerRemoveOptions{
 			RemoveVolumes: true,
 			Force:         true,
 		}))
@@ -90,17 +87,14 @@ func TestDockerBackend_CreateContainer(t *testing.T) {
 		err = m.Synchronize(context.Background(), &st)
 		require.NoError(t, err)
 
-		cont, err := c.InspectContainerWithOptions(docker.InspectContainerOptions{
-			ID: containerName(appID),
-		})
+		cont, err := c.ContainerInspect(context.Background(), containerName(appID))
 		require.NoError(t, err)
 
 		assert.Equal(t, cont.Config.Image, image+":latest")
 		assert.Equal(t, cont.Config.Labels[appLabel], "true")
 		assert.Equal(t, cont.Config.Labels[appIDLabel], appID)
 
-		require.NoError(t, c.RemoveContainer(docker.RemoveContainerOptions{
-			ID:            cont.ID,
+		require.NoError(t, c.ContainerRemove(context.Background(), cont.ID, types.ContainerRemoveOptions{
 			RemoveVolumes: true,
 			Force:         true,
 		}))

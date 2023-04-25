@@ -7,7 +7,6 @@ import (
 	"fmt"
 
 	certmanagerv1 "github.com/cert-manager/cert-manager/pkg/client/clientset/versioned"
-	docker "github.com/fsouza/go-dockerclient"
 	"github.com/google/wire"
 	traefikv1alpha1 "github.com/traefik/traefik/v2/pkg/provider/kubernetes/crd/generated/clientset/versioned/typed/traefikio/v1alpha1"
 	"k8s.io/client-go/kubernetes"
@@ -69,7 +68,7 @@ func New(c Config) (*Server, error) {
 func NewWithDocker(c Config) (*Server, error) {
 	wire.Build(
 		commonSet,
-		docker.NewClientFromEnv,
+		dockerimpl.NewClientFromEnv,
 		dockerimpl.NewDockerBackend,
 	)
 	return nil, nil
