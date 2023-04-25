@@ -1,5 +1,5 @@
 resources:
-  - https://raw.githubusercontent.com/traefik/traefik/v2.9/docs/content/reference/dynamic-configuration/kubernetes-crd-definition-v1.yml
+  - https://raw.githubusercontent.com/traefik/traefik/v2.10/docs/content/reference/dynamic-configuration/kubernetes-crd-definition-v1.yml
   - traefik-service-account.yaml
   - traefik-cluster-role.yaml
   - traefik-role-binding.yaml
