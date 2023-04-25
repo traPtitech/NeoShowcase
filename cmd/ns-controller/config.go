@@ -91,6 +91,10 @@ func init() {
 	viper.SetDefault("k8s.imagePullSecret", "")
 	viper.SetDefault("k8s.scheduling.nodeSelector", nil)
 	viper.SetDefault("k8s.scheduling.tolerations", nil)
+	viper.SetDefault("k8s.resources.requests.cpu", "")
+	viper.SetDefault("k8s.resources.requests.memory", "")
+	viper.SetDefault("k8s.resources.limits.cpu", "1.6")
+	viper.SetDefault("k8s.resources.limits.memory", "1G")
 
 	viper.SetDefault("repository.privateKeyFile", "")
 
