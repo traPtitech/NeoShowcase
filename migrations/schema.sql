@@ -84,6 +84,7 @@ CREATE TABLE `application_config`
     `build_cmd_shell` TINYINT(1)                                                                    NOT NULL COMMENT 'ビルドコマンドをshellで実行するか',
     `artifact_path`   VARCHAR(100)                                                                  NOT NULL COMMENT '静的成果物のパス',
     `dockerfile_name` VARCHAR(100)                                                                  NOT NULL COMMENT 'Dockerfile名',
+    `context`         VARCHAR(100)                                                                  NOT NULL COMMENT 'ビルド時のcontext',
     `entrypoint`      TEXT                                                                          NOT NULL COMMENT 'Entrypoint(args)',
     `command`         TEXT                                                                          NOT NULL COMMENT 'Command(args)',
     PRIMARY KEY (`application_id`),

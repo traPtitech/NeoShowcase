@@ -78,6 +78,7 @@ message BuildConfigRuntimeCmd {
 
 message BuildConfigRuntimeDockerfile {
   string dockerfile_name = 1;
+  string context = 2;
 }
 
 message BuildConfigStaticCmd {
@@ -89,7 +90,8 @@ message BuildConfigStaticCmd {
 
 message BuildConfigStaticDockerfile {
   string dockerfile_name = 1;
-  string artifact_path = 2;
+  string context = 2;
+  string artifact_path = 3;
 }
 
 message BuildConfig {

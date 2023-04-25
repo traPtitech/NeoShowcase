@@ -68,6 +68,7 @@ func (bc *BuildConfigRuntimeCmd) Validate() error {
 
 type BuildConfigRuntimeDockerfile struct {
 	DockerfileName string
+	Context        string
 	buildConfigEmbed
 }
 
@@ -105,6 +106,7 @@ func (bc *BuildConfigStaticCmd) Validate() error {
 
 type BuildConfigStaticDockerfile struct {
 	DockerfileName string
+	Context        string
 	ArtifactPath   string
 	buildConfigEmbed
 }

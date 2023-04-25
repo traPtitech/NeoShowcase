@@ -14,6 +14,7 @@ import (
 	"github.com/mattn/go-shellwords"
 	"github.com/moby/buildkit/session"
 	"github.com/moby/buildkit/session/auth/authprovider"
+	"github.com/samber/lo"
 
 	"github.com/traPtitech/neoshowcase/pkg/interface/grpc/pbconvert"
 
@@ -480,7 +481,8 @@ func (s *builderService) buildImageWithDockerfile(
 	ch chan *buildkit.SolveStatus,
 	bc *domain.BuildConfigRuntimeDockerfile,
 ) error {
-	contextDir := filepath.Dir(bc.DockerfileName)
+	contextDir := lo.Ternary(bc.Context != "", bc.Context, ".")
+	dockerfileDir := filepath.Join(contextDir, filepath.Dir(bc.DockerfileName))
 	_, err := s.buildkit.Solve(ctx, nil, buildkit.SolveOpt{
 		Exports: []buildkit.ExportEntry{{
 			Type:  buildkit.ExporterImage,
@@ -488,7 +490,7 @@ func (s *builderService) buildImageWithDockerfile(
 		}},
 		LocalDirs: map[string]string{
 			"context":    filepath.Join(st.repositoryTempDir, contextDir),
-			"dockerfile": st.repositoryTempDir,
+			"dockerfile": filepath.Join(st.repositoryTempDir, dockerfileDir),
 		},
 		Frontend:      "dockerfile.v0",
 		FrontendAttrs: map[string]string{"filename": bc.DockerfileName},
@@ -565,7 +567,8 @@ func (s *builderService) buildStaticWithDockerfile(
 	ch chan *buildkit.SolveStatus,
 	bc *domain.BuildConfigStaticDockerfile,
 ) error {
-	dockerfile, err := os.ReadFile(filepath.Join(st.repositoryTempDir, bc.DockerfileName))
+	contextDir := lo.Ternary(bc.Context != "", bc.Context, filepath.Dir(bc.DockerfileName))
+	dockerfile, err := os.ReadFile(filepath.Join(st.repositoryTempDir, contextDir, bc.DockerfileName))
 	if err != nil {
 		return err
 	}
@@ -587,7 +590,6 @@ func (s *builderService) buildStaticWithDockerfile(
 		return err
 	}
 
-	contextDir := filepath.Dir(bc.DockerfileName)
 	_, err = s.buildkit.Solve(ctx, def, buildkit.SolveOpt{
 		Exports: []buildkit.ExportEntry{{
 			Type:   buildkit.ExporterTar,

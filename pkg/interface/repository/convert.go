@@ -66,6 +66,7 @@ func fromDomainApplicationConfig(appID string, c *domain.ApplicationConfig) *mod
 		mc.BuildCMDShell = bc.BuildCmdShell
 	case *domain.BuildConfigRuntimeDockerfile:
 		mc.DockerfileName = bc.DockerfileName
+		mc.Context = bc.Context
 	case *domain.BuildConfigStaticCmd:
 		mc.BaseImage = bc.BaseImage
 		mc.BuildCMD = bc.BuildCmd
@@ -73,6 +74,7 @@ func fromDomainApplicationConfig(appID string, c *domain.ApplicationConfig) *mod
 		mc.ArtifactPath = bc.ArtifactPath
 	case *domain.BuildConfigStaticDockerfile:
 		mc.DockerfileName = bc.DockerfileName
+		mc.Context = bc.Context
 		mc.ArtifactPath = bc.ArtifactPath
 	default:
 		panic("unknown domain build config type")
@@ -98,6 +100,7 @@ func toDomainApplicationConfig(c *models.ApplicationConfig) domain.ApplicationCo
 	case domain.BuildTypeRuntimeDockerfile:
 		ac.BuildConfig = &domain.BuildConfigRuntimeDockerfile{
 			DockerfileName: c.DockerfileName,
+			Context:        c.Context,
 		}
 	case domain.BuildTypeStaticCmd:
 		ac.BuildConfig = &domain.BuildConfigStaticCmd{
@@ -109,6 +112,7 @@ func toDomainApplicationConfig(c *models.ApplicationConfig) domain.ApplicationCo
 	case domain.BuildTypeStaticDockerfile:
 		ac.BuildConfig = &domain.BuildConfigStaticDockerfile{
 			DockerfileName: c.DockerfileName,
+			Context:        c.Context,
 			ArtifactPath:   c.ArtifactPath,
 		}
 	default:
