@@ -73,8 +73,8 @@ func (s *AppDeployHelper) _runtimeDesiredStates(ctx context.Context) ([]*domain.
 	if err != nil {
 		return nil, err
 	}
-	buildExists := lo.SliceToMap(builds, func(b *domain.Build) (string, bool) { return b.Commit, true })
-	syncableApps := lo.Filter(apps, func(app *domain.Application, i int) bool { return buildExists[app.WantCommit] })
+	buildExists := lo.SliceToMap(builds, func(b *domain.Build) (string, bool) { return b.ApplicationID + b.Commit, true })
+	syncableApps := lo.Filter(apps, func(app *domain.Application, i int) bool { return buildExists[app.ID+app.WantCommit] })
 
 	envs, err := s._getEnv(ctx, syncableApps)
 	if err != nil {

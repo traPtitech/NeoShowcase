@@ -160,14 +160,20 @@ func (cd *continuousDeploymentService) registerBuilds(ctx context.Context) error
 		return err
 	}
 	commits := lo.Map(applications, func(app *domain.Application, i int) string { return app.WantCommit })
-	builds, err := cd.buildRepo.GetBuilds(ctx, domain.GetBuildCondition{CommitIn: optional.From(commits), Retriable: optional.From(false)})
+	builds, err := cd.buildRepo.GetBuilds(ctx, domain.GetBuildCondition{CommitIn: optional.From(commits)})
 	if err != nil {
 		return err
 	}
 
-	buildExistsForCommit := lo.SliceToMap(builds, func(b *domain.Build) (string, bool) { return b.Commit, true })
+	buildExists := make(map[string]bool, len(applications)) // app id + commit -> bool
+	for _, build := range builds {
+		if build.Retriable {
+			continue // Do not count retriable build as 'exists'
+		}
+		buildExists[build.ApplicationID+build.Commit] = true
+	}
 	for _, app := range applications {
-		if buildExistsForCommit[app.WantCommit] {
+		if buildExists[app.ID+app.WantCommit] {
 			continue
 		}
 		if app.WantCommit == domain.EmptyCommit {
@@ -247,11 +253,11 @@ func (cd *continuousDeploymentService) _syncAppCommits(ctx context.Context) erro
 	if err != nil {
 		return err
 	}
-	buildExists := lo.SliceToMap(builds, func(b *domain.Build) (string, bool) { return b.Commit, true })
+	buildExists := lo.SliceToMap(builds, func(b *domain.Build) (string, bool) { return b.ApplicationID + b.Commit, true })
 
 	// Check if build has succeeded, and if so save as synced
 	for _, app := range apps {
-		if buildExists[app.WantCommit] {
+		if buildExists[app.ID+app.WantCommit] {
 			err = cd.appRepo.UpdateApplication(ctx, app.ID, &domain.UpdateApplicationArgs{CurrentCommit: optional.From(app.WantCommit)})
 			if err != nil {
 				return errors.Wrap(err, "failed to sync application commit")
