@@ -11,6 +11,7 @@ import (
 
 	"github.com/traPtitech/neoshowcase/pkg/domain"
 	"github.com/traPtitech/neoshowcase/pkg/infrastructure/admindb/models"
+	"github.com/traPtitech/neoshowcase/pkg/interface/repository/repoconvert"
 )
 
 type availableDomainRepository struct {
@@ -29,13 +30,13 @@ func (r *availableDomainRepository) GetAvailableDomains(ctx context.Context) (do
 		return nil, errors.Wrap(err, "failed to get available domains")
 	}
 	dDomains := lo.Map(domains, func(ad *models.AvailableDomain, i int) *domain.AvailableDomain {
-		return toDomainAvailableDomain(ad)
+		return repoconvert.ToDomainAvailableDomain(ad)
 	})
 	return dDomains, nil
 }
 
 func (r *availableDomainRepository) AddAvailableDomain(ctx context.Context, ad *domain.AvailableDomain) error {
-	mad := fromDomainAvailableDomain(ad)
+	mad := repoconvert.FromDomainAvailableDomain(ad)
 	err := mad.Insert(ctx, r.db, boil.Blacklist())
 	if err != nil {
 		return fmt.Errorf("failed to insert available domain")

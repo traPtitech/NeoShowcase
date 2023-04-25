@@ -10,6 +10,7 @@ import (
 
 	"github.com/traPtitech/neoshowcase/pkg/domain"
 	"github.com/traPtitech/neoshowcase/pkg/infrastructure/admindb/models"
+	"github.com/traPtitech/neoshowcase/pkg/interface/repository/repoconvert"
 )
 
 type userRepository struct {
@@ -39,7 +40,7 @@ func (r *userRepository) GetOrCreateUser(ctx context.Context, name string) (*dom
 
 	if isNoRowsErr(err) {
 		user := domain.NewUser(name)
-		mu = fromDomainUser(user)
+		mu = repoconvert.FromDomainUser(user)
 		err = mu.Insert(ctx, tx, boil.Blacklist())
 		if err != nil {
 			return nil, errors.Wrap(err, "failed to insert user")
@@ -51,5 +52,5 @@ func (r *userRepository) GetOrCreateUser(ctx context.Context, name string) (*dom
 		return nil, errors.Wrap(err, "failed to commit")
 	}
 
-	return toDomainUser(mu), nil
+	return repoconvert.ToDomainUser(mu), nil
 }

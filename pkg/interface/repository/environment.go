@@ -11,6 +11,7 @@ import (
 
 	"github.com/traPtitech/neoshowcase/pkg/domain"
 	"github.com/traPtitech/neoshowcase/pkg/infrastructure/admindb/models"
+	"github.com/traPtitech/neoshowcase/pkg/interface/repository/repoconvert"
 )
 
 type environmentRepository struct {
@@ -41,7 +42,7 @@ func (r *environmentRepository) GetEnv(ctx context.Context, cond domain.GetEnvCo
 		return nil, err
 	}
 	return lo.Map(environments, func(env *models.Environment, i int) *domain.Environment {
-		return toDomainEnvironment(env)
+		return repoconvert.ToDomainEnvironment(env)
 	}), nil
 }
 
@@ -62,7 +63,7 @@ func (r *environmentRepository) SetEnv(ctx context.Context, env *domain.Environm
 	}
 	exists := !isNoRowsErr(err)
 
-	me = fromDomainEnvironment(env)
+	me = repoconvert.FromDomainEnvironment(env)
 
 	if exists {
 		_, err = me.Update(ctx, tx, boil.Blacklist())

@@ -13,6 +13,7 @@ import (
 
 	"github.com/traPtitech/neoshowcase/pkg/domain"
 	"github.com/traPtitech/neoshowcase/pkg/infrastructure/admindb/models"
+	"github.com/traPtitech/neoshowcase/pkg/interface/repository/repoconvert"
 )
 
 type applicationRepository struct {
@@ -51,7 +52,7 @@ func (r *applicationRepository) GetApplications(ctx context.Context, cond domain
 		)
 	}
 	if cond.DeployType.Valid {
-		mods = append(mods, models.ApplicationWhere.DeployType.EQ(deployTypeMapper.FromMust(cond.DeployType.V)))
+		mods = append(mods, models.ApplicationWhere.DeployType.EQ(repoconvert.DeployTypeMapper.FromMust(cond.DeployType.V)))
 	}
 	if cond.Running.Valid {
 		mods = append(mods, models.ApplicationWhere.Running.EQ(cond.Running.V))
@@ -69,7 +70,7 @@ func (r *applicationRepository) GetApplications(ctx context.Context, cond domain
 		return nil, errors.Wrap(err, "failed to get applications")
 	}
 	return lo.Map(applications, func(app *models.Application, i int) *domain.Application {
-		return toDomainApplication(app)
+		return repoconvert.ToDomainApplication(app)
 	}), nil
 }
 
@@ -99,7 +100,7 @@ func (r *applicationRepository) GetApplication(ctx context.Context, id string) (
 	if err != nil {
 		return nil, err
 	}
-	return toDomainApplication(app), nil
+	return repoconvert.ToDomainApplication(app), nil
 }
 
 func (r *applicationRepository) CreateApplication(ctx context.Context, app *domain.Application) error {
@@ -109,12 +110,12 @@ func (r *applicationRepository) CreateApplication(ctx context.Context, app *doma
 	}
 	defer tx.Rollback()
 
-	ma := fromDomainApplication(app)
+	ma := repoconvert.FromDomainApplication(app)
 	if err = ma.Insert(ctx, tx, boil.Blacklist()); err != nil {
 		return errors.Wrap(err, "failed to create application")
 	}
 
-	mc := fromDomainApplicationConfig(app.ID, &app.Config)
+	mc := repoconvert.FromDomainApplicationConfig(app.ID, &app.Config)
 	err = mc.Insert(ctx, tx, boil.Blacklist())
 	if err != nil {
 		return fmt.Errorf("failed to create application config")
@@ -163,7 +164,7 @@ func (r *applicationRepository) UpdateApplication(ctx context.Context, id string
 		cols = append(cols, models.ApplicationColumns.Running)
 	}
 	if args.Container.Valid {
-		app.Container = containerStateMapper.FromMust(args.Container.V)
+		app.Container = repoconvert.ContainerStateMapper.FromMust(args.Container.V)
 		cols = append(cols, models.ApplicationColumns.Container)
 	}
 	if args.CurrentCommit.Valid {
@@ -182,7 +183,7 @@ func (r *applicationRepository) UpdateApplication(ctx context.Context, id string
 	_, err = app.Update(ctx, tx, boil.Whitelist(cols...))
 
 	if args.Config.Valid {
-		mac := fromDomainApplicationConfig(app.ID, &args.Config.V)
+		mac := repoconvert.FromDomainApplicationConfig(app.ID, &args.Config.V)
 		err = mac.Upsert(ctx, tx, boil.Blacklist(), boil.Blacklist())
 		if err != nil {
 			return errors.Wrap(err, "failed to update config")
@@ -216,7 +217,7 @@ func (r *applicationRepository) UpdateApplication(ctx context.Context, id string
 func (r *applicationRepository) BulkUpdateState(ctx context.Context, m map[string]domain.ContainerState) error {
 	// NOTE: sqlboiler does not support bulk insert/update by default, could use custom templating
 	for appID, state := range m {
-		ma := models.Application{ID: appID, Container: containerStateMapper.FromMust(state)}
+		ma := models.Application{ID: appID, Container: repoconvert.ContainerStateMapper.FromMust(state)}
 		_, err := ma.Update(ctx, r.db, boil.Whitelist(models.ApplicationColumns.Container))
 		if err != nil {
 			return errors.Wrap(err, "failed to update container state")
@@ -265,11 +266,11 @@ func (r *applicationRepository) validateAndInsertWebsite(ctx context.Context, ex
 	if err != nil {
 		return errors.Wrap(err, "failed to get existing websites")
 	}
-	existing := lo.Map(websites, func(website *models.Website, i int) *domain.Website { return toDomainWebsite(website) })
+	existing := lo.Map(websites, func(website *models.Website, i int) *domain.Website { return repoconvert.ToDomainWebsite(website) })
 	if website.ConflictsWith(existing) {
 		return errors.New("conflicts with existing websites")
 	}
-	mw := fromDomainWebsite(app.ID, website)
+	mw := repoconvert.FromDomainWebsite(app.ID, website)
 	err = mw.Insert(ctx, ex, boil.Blacklist())
 	if err != nil {
 		return errors.Wrap(err, "failed to add website")
