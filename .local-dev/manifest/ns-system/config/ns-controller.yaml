@@ -46,6 +46,13 @@ k8s:
         domains: []
   # required if registry is private
   imagePullSecret: ""
+  resources:
+    requests:
+      cpu: 50m
+      memory: 50M
+    limits:
+      cpu: 1600m
+      memory: 1G
 
 repository:
   privateKeyFile: /keys/id_ed25519
