@@ -8,7 +8,6 @@ import (
 
 	certmanagerv1 "github.com/cert-manager/cert-manager/pkg/client/clientset/versioned"
 	"github.com/friendsofgo/errors"
-	"github.com/samber/lo"
 	log "github.com/sirupsen/logrus"
 	traefikv1alpha1 "github.com/traefik/traefik/v2/pkg/provider/kubernetes/crd/generated/clientset/versioned/typed/traefikio/v1alpha1"
 	apiv1 "k8s.io/api/core/v1"
@@ -19,86 +18,6 @@ import (
 	"github.com/traPtitech/neoshowcase/pkg/domain"
 	"github.com/traPtitech/neoshowcase/pkg/util/ds"
 )
-
-const (
-	tlsTypeTraefik     = "traefik"
-	tlsTypeCertManager = "cert-manager"
-)
-
-type authConf = struct {
-	Domain string   `mapstructure:"domain" yaml:"domain"`
-	Soft   []string `mapstructure:"soft" yaml:"soft"`
-	Hard   []string `mapstructure:"hard" yaml:"hard"`
-}
-
-type labelConf = struct {
-	Key   string `mapstructure:"key" yaml:"key"`
-	Value string `mapstructure:"value" yaml:"value"`
-}
-
-type Config struct {
-	Middlewares struct {
-		Auth []*authConf `mapstructure:"auth" yaml:"auth"`
-	} `mapstructure:"middlewares" yaml:"middlewares"`
-	SS struct {
-		Namespace string `mapstructure:"namespace" yaml:"namespace"`
-		Kind      string `mapstructure:"kind" yaml:"kind"`
-		Name      string `mapstructure:"name" yaml:"name"`
-		Port      int    `mapstructure:"port" yaml:"port"`
-	} `mapstructure:"ss" yaml:"ss"`
-	Namespace string       `mapstructure:"namespace" yaml:"namespace"`
-	Labels    []*labelConf `mapstructure:"labels" yaml:"labels"`
-	TLS       struct {
-		// cert-manager note: https://doc.traefik.io/traefik/providers/kubernetes-crd/#letsencrypt-support-with-the-custom-resource-definition-provider
-		// needs to enable ingress provider in traefik
-		Type    string `mapstructure:"type" yaml:"type"`
-		Traefik struct {
-			CertResolver string `mapstructure:"certResolver" yaml:"certResolver"`
-			Wildcard     struct {
-				Domains domain.WildcardDomains `mapstructure:"domains" yaml:"domains"`
-			} `mapstructure:"wildcard" yaml:"wildcard"`
-		} `mapstructure:"traefik" yaml:"traefik"`
-		CertManager struct {
-			Issuer struct {
-				Name string `mapstructure:"name" yaml:"name"`
-				Kind string `mapstructure:"kind" yaml:"kind"`
-			} `mapstructure:"issuer" yaml:"issuer"`
-			Wildcard struct {
-				Domains domain.WildcardDomains `mapstructure:"domains" yaml:"domains"`
-			} `mapstructure:"wildcard" yaml:"wildcard"`
-		} `mapstructure:"certManager" yaml:"certManager"`
-	} `mapstructure:"tls" yaml:"tls"`
-	// ImagePullSecret required if registry is private
-	ImagePullSecret string `mapstructure:"imagePullSecret" yaml:"imagePullSecret"`
-}
-
-func (c *Config) labels() map[string]string {
-	return lo.SliceToMap(c.Labels, func(l *labelConf) (string, string) {
-		return l.Key, l.Value
-	})
-}
-
-func (c *Config) Validate() error {
-	for _, ac := range c.Middlewares.Auth {
-		ad := domain.AvailableDomain{Domain: ac.Domain}
-		if err := ad.Validate(); err != nil {
-			return errors.Wrapf(err, "invalid domain %s for middleware config", ac.Domain)
-		}
-	}
-	switch c.TLS.Type {
-	case tlsTypeTraefik:
-		if err := c.TLS.Traefik.Wildcard.Domains.Validate(); err != nil {
-			return errors.Wrap(err, "k8s.tls.traefik.wildcard.domains is invalid")
-		}
-	case tlsTypeCertManager:
-		if err := c.TLS.CertManager.Wildcard.Domains.Validate(); err != nil {
-			return errors.Wrap(err, "k8s.tls.certManager.wildcard.domains is invalid")
-		}
-	default:
-		return errors.New("k8s.tls.type needs to be one of 'traefik' or 'cert-manager'")
-	}
-	return nil
-}
 
 const (
 	appLabel             = "neoshowcase.trap.jp/app"

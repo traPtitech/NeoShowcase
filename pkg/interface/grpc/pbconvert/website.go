@@ -6,7 +6,7 @@ import (
 	"github.com/traPtitech/neoshowcase/pkg/util/mapper"
 )
 
-var AuthTypeMapper = mapper.NewValueMapper(map[domain.AuthenticationType]pb.AuthenticationType{
+var AuthTypeMapper = mapper.MustNewValueMapper(map[domain.AuthenticationType]pb.AuthenticationType{
 	domain.AuthenticationTypeOff:  pb.AuthenticationType_OFF,
 	domain.AuthenticationTypeSoft: pb.AuthenticationType_SOFT,
 	domain.AuthenticationTypeHard: pb.AuthenticationType_HARD,

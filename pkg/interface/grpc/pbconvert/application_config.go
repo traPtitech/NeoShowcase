@@ -6,7 +6,7 @@ import (
 	"github.com/traPtitech/neoshowcase/pkg/util/mapper"
 )
 
-var BuildTypeMapper = mapper.NewValueMapper(map[domain.BuildType]pb.BuildType{
+var BuildTypeMapper = mapper.MustNewValueMapper(map[domain.BuildType]pb.BuildType{
 	domain.BuildTypeRuntimeCmd:        pb.BuildType_RUNTIME_CMD,
 	domain.BuildTypeRuntimeDockerfile: pb.BuildType_RUNTIME_DOCKERFILE,
 	domain.BuildTypeStaticCmd:         pb.BuildType_STATIC_CMD,

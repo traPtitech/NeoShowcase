@@ -9,12 +9,12 @@ import (
 	"github.com/traPtitech/neoshowcase/pkg/util/mapper"
 )
 
-var DeployTypeMapper = mapper.NewValueMapper(map[domain.DeployType]pb.DeployType{
+var DeployTypeMapper = mapper.MustNewValueMapper(map[domain.DeployType]pb.DeployType{
 	domain.DeployTypeRuntime: pb.DeployType_RUNTIME,
 	domain.DeployTypeStatic:  pb.DeployType_STATIC,
 })
 
-var ContainerStateMapper = mapper.NewValueMapper(map[domain.ContainerState]pb.Application_ContainerState{
+var ContainerStateMapper = mapper.MustNewValueMapper(map[domain.ContainerState]pb.Application_ContainerState{
 	domain.ContainerStateMissing:  pb.Application_MISSING,
 	domain.ContainerStateStarting: pb.Application_STARTING,
 	domain.ContainerStateRunning:  pb.Application_RUNNING,
