@@ -29,6 +29,6 @@
     "@solidjs/router": "0.8.2",
     "@vanilla-extract/css": "1.11.0",
     "solid-icons": "1.0.4",
-    "solid-js": "1.7.0"
+    "solid-js": "1.7.3"
   }
 }
