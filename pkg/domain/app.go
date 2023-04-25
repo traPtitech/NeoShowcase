@@ -128,7 +128,6 @@ func (bc *BuildConfigStaticDockerfile) Validate() error {
 type ApplicationConfig struct {
 	UseMariaDB  bool
 	UseMongoDB  bool
-	BuildType   BuildType
 	BuildConfig BuildConfig
 	Entrypoint  string
 	Command     string
@@ -140,16 +139,13 @@ func validateCommand(s string) error {
 }
 
 func (c *ApplicationConfig) Validate(deployType DeployType) error {
-	if c.BuildType.DeployType() != deployType {
+	if c.BuildConfig.BuildType().DeployType() != deployType {
 		return errors.New("build type doesn't match deploy type")
-	}
-	if c.BuildConfig.BuildType() != c.BuildType {
-		return errors.New("build config doesn't match build type")
 	}
 	if err := c.BuildConfig.Validate(); err != nil {
 		return errors.Wrap(err, "invalid build_config")
 	}
-	if c.BuildType == BuildTypeRuntimeCmd && c.Entrypoint == "" && c.Command == "" {
+	if c.BuildConfig.BuildType() == BuildTypeRuntimeCmd && c.Entrypoint == "" && c.Command == "" {
 		return errors.New("entrypoint or command is required for runtime_cmd build type")
 	}
 	// NOTE: Runtime Dockerfile build could have no entrypoint/command but is impossible to catch only from config

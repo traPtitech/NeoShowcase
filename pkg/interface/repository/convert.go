@@ -55,7 +55,7 @@ func fromDomainApplicationConfig(appID string, c *domain.ApplicationConfig) *mod
 		ApplicationID: appID,
 		UseMariadb:    c.UseMariaDB,
 		UseMongodb:    c.UseMongoDB,
-		BuildType:     buildTypeMapper.FromMust(c.BuildType),
+		BuildType:     buildTypeMapper.FromMust(c.BuildConfig.BuildType()),
 		Entrypoint:    c.Entrypoint,
 		Command:       c.Command,
 	}
@@ -86,11 +86,10 @@ func toDomainApplicationConfig(c *models.ApplicationConfig) domain.ApplicationCo
 	ac := domain.ApplicationConfig{
 		UseMariaDB: c.UseMariadb,
 		UseMongoDB: c.UseMongodb,
-		BuildType:  buildTypeMapper.IntoMust(c.BuildType),
 		Entrypoint: c.Entrypoint,
 		Command:    c.Command,
 	}
-	switch ac.BuildType {
+	switch buildTypeMapper.IntoMust(c.BuildType) {
 	case domain.BuildTypeRuntimeCmd:
 		ac.BuildConfig = &domain.BuildConfigRuntimeCmd{
 			BaseImage:     c.BaseImage,

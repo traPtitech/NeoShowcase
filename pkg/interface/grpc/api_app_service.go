@@ -90,7 +90,6 @@ func (s *APIService) UpdateApplication(ctx context.Context, req *connect.Request
 		Config: optional.From(domain.ApplicationConfig{
 			UseMariaDB:  app.Config.UseMariaDB,
 			UseMongoDB:  app.Config.UseMongoDB,
-			BuildType:   pbconvert.BuildTypeMapper.FromMust(msg.Config.BuildType),
 			BuildConfig: pbconvert.FromPBBuildConfig(msg.Config.BuildConfig),
 			Entrypoint:  msg.Config.Entrypoint,
 			Command:     msg.Config.Command,

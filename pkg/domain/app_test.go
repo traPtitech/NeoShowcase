@@ -24,7 +24,6 @@ func TestApplicationConfig_Validate(t *testing.T) {
 			name:       "valid (runtime dockerfile)",
 			deployType: DeployTypeRuntime,
 			config: ApplicationConfig{
-				BuildType: BuildTypeRuntimeDockerfile,
 				BuildConfig: &BuildConfigRuntimeDockerfile{
 					DockerfileName: "Dockerfile",
 				},
@@ -35,7 +34,6 @@ func TestApplicationConfig_Validate(t *testing.T) {
 			name:       "valid (runtime cmd)",
 			deployType: DeployTypeRuntime,
 			config: ApplicationConfig{
-				BuildType: BuildTypeRuntimeCmd,
 				BuildConfig: &BuildConfigRuntimeCmd{
 					BaseImage: "golang:1.20",
 					BuildCmd:  "go build -o main",
@@ -48,7 +46,6 @@ func TestApplicationConfig_Validate(t *testing.T) {
 			name:       "valid with no build cmd (runtime cmd)",
 			deployType: DeployTypeRuntime,
 			config: ApplicationConfig{
-				BuildType: BuildTypeRuntimeCmd,
 				BuildConfig: &BuildConfigRuntimeCmd{
 					BaseImage: "python:3",
 					BuildCmd:  "",
@@ -61,7 +58,6 @@ func TestApplicationConfig_Validate(t *testing.T) {
 			name:       "valid with scratch (runtime cmd)",
 			deployType: DeployTypeRuntime,
 			config: ApplicationConfig{
-				BuildType: BuildTypeRuntimeCmd,
 				BuildConfig: &BuildConfigRuntimeCmd{
 					BaseImage: "",
 					BuildCmd:  "",
@@ -74,7 +70,6 @@ func TestApplicationConfig_Validate(t *testing.T) {
 			name:       "empty entrypoint cmd (runtime cmd)",
 			deployType: DeployTypeRuntime,
 			config: ApplicationConfig{
-				BuildType: BuildTypeRuntimeCmd,
 				BuildConfig: &BuildConfigRuntimeCmd{
 					BaseImage: "golang:1.20",
 					BuildCmd:  "go build -o main",
@@ -87,7 +82,6 @@ func TestApplicationConfig_Validate(t *testing.T) {
 			name:       "valid (static dockerfile)",
 			deployType: DeployTypeStatic,
 			config: ApplicationConfig{
-				BuildType: BuildTypeStaticDockerfile,
 				BuildConfig: &BuildConfigStaticDockerfile{
 					DockerfileName: "Dockerfile",
 					ArtifactPath:   "./dist",
@@ -99,7 +93,6 @@ func TestApplicationConfig_Validate(t *testing.T) {
 			name:       "empty artifact path (static dockerfile)",
 			deployType: DeployTypeStatic,
 			config: ApplicationConfig{
-				BuildType: BuildTypeStaticDockerfile,
 				BuildConfig: &BuildConfigStaticDockerfile{
 					DockerfileName: "Dockerfile",
 					ArtifactPath:   "",
@@ -111,7 +104,6 @@ func TestApplicationConfig_Validate(t *testing.T) {
 			name:       "valid (static cmd)",
 			deployType: DeployTypeStatic,
 			config: ApplicationConfig{
-				BuildType: BuildTypeStaticCmd,
 				BuildConfig: &BuildConfigStaticCmd{
 					BaseImage:    "node:18",
 					BuildCmd:     "yarn build",
@@ -124,7 +116,6 @@ func TestApplicationConfig_Validate(t *testing.T) {
 			name:       "valid with no build cmd (static cmd)",
 			deployType: DeployTypeStatic,
 			config: ApplicationConfig{
-				BuildType: BuildTypeStaticCmd,
 				BuildConfig: &BuildConfigStaticCmd{
 					BaseImage:    "alpine:latest",
 					BuildCmd:     "",
@@ -137,7 +128,6 @@ func TestApplicationConfig_Validate(t *testing.T) {
 			name:       "valid with scratch (static cmd)",
 			deployType: DeployTypeStatic,
 			config: ApplicationConfig{
-				BuildType: BuildTypeStaticCmd,
 				BuildConfig: &BuildConfigStaticCmd{
 					BaseImage:    "",
 					BuildCmd:     "",
@@ -150,7 +140,6 @@ func TestApplicationConfig_Validate(t *testing.T) {
 			name:       "empty artifact path (static cmd)",
 			deployType: DeployTypeStatic,
 			config: ApplicationConfig{
-				BuildType: BuildTypeStaticCmd,
 				BuildConfig: &BuildConfigStaticCmd{
 					BaseImage:    "",
 					BuildCmd:     "",
@@ -174,7 +163,6 @@ func TestApplicationConfig_Validate(t *testing.T) {
 
 func TestApplication_Validate(t *testing.T) {
 	runtimeValidConfig := ApplicationConfig{
-		BuildType:   BuildTypeRuntimeDockerfile,
 		BuildConfig: &BuildConfigRuntimeDockerfile{DockerfileName: "Dockerfile"},
 	}
 	require.NoError(t, runtimeValidConfig.Validate(DeployTypeRuntime))
