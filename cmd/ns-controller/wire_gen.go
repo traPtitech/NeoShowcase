@@ -9,7 +9,6 @@ package main
 import (
 	"fmt"
 	"github.com/cert-manager/cert-manager/pkg/client/clientset/versioned"
-	"github.com/fsouza/go-dockerclient"
 	"github.com/google/wire"
 	"github.com/traPtitech/neoshowcase/pkg/domain/web"
 	"github.com/traPtitech/neoshowcase/pkg/infrastructure/admindb"
@@ -31,7 +30,7 @@ import (
 // Injectors from wire.go:
 
 func NewWithDocker(c2 Config) (*Server, error) {
-	client, err := docker.NewClientFromEnv()
+	client, err := dockerimpl.NewClientFromEnv()
 	if err != nil {
 		return nil, err
 	}

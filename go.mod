@@ -7,8 +7,8 @@ require (
 	github.com/bufbuild/connect-go v1.5.2
 	github.com/cert-manager/cert-manager v1.11.1
 	github.com/docker/cli v23.0.0-rc.1+incompatible
+	github.com/docker/docker v23.0.4+incompatible
 	github.com/friendsofgo/errors v0.9.2
-	github.com/fsouza/go-dockerclient v1.9.7
 	github.com/go-git/go-git/v5 v5.6.1
 	github.com/go-sql-driver/mysql v1.7.0
 	github.com/golang-jwt/jwt/v4 v4.5.0
@@ -64,7 +64,6 @@ require (
 	github.com/cyphar/filepath-securejoin v0.2.3 // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/docker/distribution v2.8.1+incompatible // indirect
-	github.com/docker/docker v23.0.2+incompatible // indirect
 	github.com/docker/docker-credential-helpers v0.7.0 // indirect
 	github.com/docker/go-connections v0.4.0 // indirect
 	github.com/docker/go-units v0.5.0 // indirect
@@ -119,7 +118,6 @@ require (
 	github.com/moby/locker v1.0.1 // indirect
 	github.com/moby/patternmatcher v0.5.0 // indirect
 	github.com/moby/sys/signal v0.7.0 // indirect
-	github.com/moby/term v0.0.0-20221205130635-1aeaba878587 // indirect
 	github.com/modern-go/concurrent v0.0.0-20180306012644-bacd9c7ef1dd // indirect
 	github.com/modern-go/reflect2 v1.0.2 // indirect
 	github.com/montanaflynn/stats v0.7.0 // indirect

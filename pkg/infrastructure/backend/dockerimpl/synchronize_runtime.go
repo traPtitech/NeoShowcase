@@ -3,17 +3,21 @@ package dockerimpl
 import (
 	"context"
 	"fmt"
+	"io"
 	"time"
 
+	"github.com/docker/docker/api/types"
+	"github.com/docker/docker/api/types/container"
+	"github.com/docker/docker/api/types/filters"
+	"github.com/docker/docker/api/types/network"
 	"github.com/friendsofgo/errors"
-	docker "github.com/fsouza/go-dockerclient"
 	"github.com/samber/lo"
 	log "github.com/sirupsen/logrus"
 
 	"github.com/traPtitech/neoshowcase/pkg/domain"
 )
 
-func (b *dockerBackend) syncAppContainer(ctx context.Context, app *domain.RuntimeDesiredState, oldContainer *docker.APIContainers) error {
+func (b *dockerBackend) syncAppContainer(ctx context.Context, app *domain.RuntimeDesiredState, oldContainer *types.Container) error {
 	newImageName := app.ImageName + ":" + app.ImageTag
 	var oldRestartedAt time.Time
 	var err error
@@ -31,30 +35,38 @@ func (b *dockerBackend) syncAppContainer(ctx context.Context, app *domain.Runtim
 	}
 
 	if oldContainer != nil {
-		err = b.c.RemoveContainer(docker.RemoveContainerOptions{
-			ID:            oldContainer.ID,
+		err = b.c.ContainerRemove(ctx, oldContainer.ID, types.ContainerRemoveOptions{
 			RemoveVolumes: true,
 			Force:         true,
-			Context:       ctx,
 		})
 		if err != nil {
 			return errors.Wrap(err, "failed to remove old container")
 		}
 	}
 
-	err = b.c.PullImage(docker.PullImageOptions{
-		Repository: app.ImageName,
-		Tag:        app.ImageTag,
-		Context:    ctx,
-	}, b.authConfig())
+	registryAuth, err := b.authConfig()
 	if err != nil {
-		return errors.Wrap(err, "failed to pull image")
+		return errors.Wrap(err, "getting auth config")
+	}
+	res, err := b.c.ImagePull(ctx, app.ImageName+":"+app.ImageTag, types.ImagePullOptions{
+		RegistryAuth: registryAuth,
+	})
+	if err != nil {
+		return errors.Wrap(err, "pulling image")
+	}
+	_, err = io.ReadAll(res)
+	if err != nil {
+		return errors.Wrap(err, "pulling image")
+	}
+	err = res.Close()
+	if err != nil {
+		return errors.Wrap(err, "pulling image")
 	}
 
 	envs := lo.MapToSlice(app.Envs, func(key string, value string) string {
 		return key + "=" + value
 	})
-	config := &docker.Config{
+	config := &container.Config{
 		Image:  newImageName,
 		Labels: b.containerLabels(app.App),
 		Env:    envs,
@@ -65,24 +77,23 @@ func (b *dockerBackend) syncAppContainer(ctx context.Context, app *domain.Runtim
 	if app.App.Config.Command != "" {
 		config.Cmd = app.App.Config.CommandArgs()
 	}
-	cont, err := b.c.CreateContainer(docker.CreateContainerOptions{
-		Name:   containerName(app.App.ID),
-		Config: config,
-		HostConfig: &docker.HostConfig{
-			RestartPolicy: docker.RestartOnFailure(5),
+	hostConfig := &container.HostConfig{
+		RestartPolicy: container.RestartPolicy{
+			Name:              "on-failure",
+			MaximumRetryCount: 5,
 		},
-		NetworkingConfig: &docker.NetworkingConfig{EndpointsConfig: map[string]*docker.EndpointConfig{
-			b.conf.Network: {
-				Aliases: []string{networkName(app.App.ID)},
-			},
-		}},
-		Context: ctx,
-	})
+	}
+	networkingConfig := &network.NetworkingConfig{EndpointsConfig: map[string]*network.EndpointSettings{
+		b.conf.Network: {
+			Aliases: []string{networkName(app.App.ID)},
+		},
+	}}
+	cont, err := b.c.ContainerCreate(ctx, config, hostConfig, networkingConfig, nil, containerName(app.App.ID))
 	if err != nil {
 		return errors.Wrap(err, "failed to create container")
 	}
 
-	err = b.c.StartContainer(cont.ID, nil)
+	err = b.c.ContainerStart(ctx, cont.ID, types.ContainerStartOptions{})
 	if err != nil {
 		return errors.Wrap(err, "failed to start container")
 	}
@@ -91,15 +102,16 @@ func (b *dockerBackend) syncAppContainer(ctx context.Context, app *domain.Runtim
 
 func (b *dockerBackend) synchronizeRuntime(ctx context.Context, apps []*domain.RuntimeDesiredState) error {
 	// List old resources
-	oldContainers, err := b.c.ListContainers(docker.ListContainersOptions{
-		All:     true,
-		Filters: map[string][]string{"label": {fmt.Sprintf("%s=true", appLabel)}},
-		Context: ctx,
+	oldContainers, err := b.c.ContainerList(ctx, types.ContainerListOptions{
+		All: true,
+		Filters: filters.NewArgs(
+			filters.Arg("label", fmt.Sprintf("%s=true", appLabel)),
+		),
 	})
 	if err != nil {
 		return errors.Wrap(err, "failed to list containers")
 	}
-	oldContainersMap := lo.SliceToMap(oldContainers, func(c docker.APIContainers) (string, *docker.APIContainers) {
+	oldContainersMap := lo.SliceToMap(oldContainers, func(c types.Container) (string, *types.Container) {
 		return c.Labels[appIDLabel], &c
 	})
 
@@ -132,11 +144,9 @@ func (b *dockerBackend) synchronizeRuntime(ctx context.Context, apps []*domain.R
 			continue
 		}
 
-		err = b.c.RemoveContainer(docker.RemoveContainerOptions{
-			ID:            oldContainer.ID,
+		err = b.c.ContainerRemove(ctx, oldContainer.ID, types.ContainerRemoveOptions{
 			RemoveVolumes: true,
 			Force:         true,
-			Context:       ctx,
 		})
 		if err != nil {
 			log.Errorf("failed to remove old container: %+v", err)

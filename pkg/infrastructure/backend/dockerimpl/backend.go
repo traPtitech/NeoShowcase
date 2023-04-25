@@ -2,12 +2,18 @@ package dockerimpl
 
 import (
 	"context"
+	"encoding/base64"
+	"encoding/json"
 	"fmt"
 	"sync"
 	"time"
 
+	"github.com/docker/docker/api/types"
+	"github.com/docker/docker/api/types/events"
+	"github.com/docker/docker/api/types/filters"
+	"github.com/docker/docker/client"
 	"github.com/friendsofgo/errors"
-	docker "github.com/fsouza/go-dockerclient"
+	log "github.com/sirupsen/logrus"
 
 	"github.com/traPtitech/neoshowcase/pkg/domain"
 	"github.com/traPtitech/neoshowcase/pkg/domain/builder"
@@ -27,19 +33,24 @@ const (
 )
 
 type dockerBackend struct {
-	c         *docker.Client
+	c         *client.Client
 	conf      Config
 	image     builder.ImageConfig
 	eventSubs domain.PubSub[*domain.ContainerEvent]
 
-	dockerEvent chan *docker.APIEvents
-	subsLock    sync.Mutex
+	eventCh     <-chan events.Message
+	eventErr    <-chan error
+	eventCancel func()
 
 	reloadLock sync.Mutex
 }
 
+func NewClientFromEnv() (*client.Client, error) {
+	return client.NewClientWithOpts(client.FromEnv)
+}
+
 func NewDockerBackend(
-	c *docker.Client,
+	c *client.Client,
 	conf Config,
 	image builder.ImageConfig,
 ) (domain.Backend, error) {
@@ -54,39 +65,62 @@ func NewDockerBackend(
 	}, nil
 }
 
-func (b *dockerBackend) Start(_ context.Context) error {
+func (b *dockerBackend) Start(ctx context.Context) error {
 	// showcase用のネットワークを用意
-	if err := b.initNetworks(); err != nil {
+	if err := b.initNetworks(ctx); err != nil {
 		return errors.Wrap(err, "failed to init networks")
 	}
 
-	b.dockerEvent = make(chan *docker.APIEvents, 10)
-	if err := b.c.AddEventListener(b.dockerEvent); err != nil {
-		close(b.dockerEvent)
-		return errors.Wrap(err, "failed to add event listener")
-	}
-	go b.eventListener()
+	eventCtx, eventCancel := context.WithCancel(context.Background())
+	b.eventCancel = eventCancel
+	go b.eventListenerLoop(eventCtx)
 
 	return nil
 }
 
-func (b *dockerBackend) eventListener() {
-	for ev := range b.dockerEvent {
-		// https://docs.docker.com/engine/reference/commandline/events/
-		switch ev.Type {
-		case "container":
-			appID, ok := ev.Actor.Attributes[appIDLabel]
+func (b *dockerBackend) eventListenerLoop(ctx context.Context) {
+	for {
+		err := b.eventListener(ctx)
+		if err == nil {
+			return
+		}
+		log.Errorf("docker event listner errored, retrying in 1s: %+v", err)
+		select {
+		case <-time.After(time.Second):
+		case <-ctx.Done():
+			return
+		}
+	}
+}
+
+func (b *dockerBackend) eventListener(ctx context.Context) error {
+	// https://docs.docker.com/engine/reference/commandline/events/
+	ch, errCh := b.c.Events(ctx, types.EventsOptions{Filters: filters.NewArgs(filters.Arg("type", "container"))})
+	for {
+		select {
+		case ev, ok := <-ch:
 			if !ok {
-				continue
+				return nil
 			}
-			b.eventSubs.Publish(&domain.ContainerEvent{ApplicationID: appID})
+			switch ev.Type {
+			case "container":
+				appID, ok := ev.Actor.Attributes[appIDLabel]
+				if !ok {
+					continue
+				}
+				b.eventSubs.Publish(&domain.ContainerEvent{ApplicationID: appID})
+			}
+		case err, ok := <-errCh:
+			if !ok {
+				return nil
+			}
+			return err
 		}
 	}
 }
 
 func (b *dockerBackend) Dispose(_ context.Context) error {
-	_ = b.c.RemoveEventListener(b.dockerEvent)
-	close(b.dockerEvent)
+	b.eventCancel()
 	return nil
 }
 
@@ -112,8 +146,8 @@ func (b *dockerBackend) ListenContainerEvents() (sub <-chan *domain.ContainerEve
 	return b.eventSubs.Subscribe()
 }
 
-func (b *dockerBackend) initNetworks() error {
-	networks, err := b.c.ListNetworks()
+func (b *dockerBackend) initNetworks(ctx context.Context) error {
+	networks, err := b.c.NetworkList(ctx, types.NetworkListOptions{})
 	if err != nil {
 		return errors.Wrap(err, "failed to list networks")
 	}
@@ -123,20 +157,23 @@ func (b *dockerBackend) initNetworks() error {
 		}
 	}
 
-	_, err = b.c.CreateNetwork(docker.CreateNetworkOptions{
-		Name: b.conf.Network,
-	})
+	_, err = b.c.NetworkCreate(ctx, b.conf.Network, types.NetworkCreate{})
 	return err
 }
 
-func (b *dockerBackend) authConfig() docker.AuthConfiguration {
+func (b *dockerBackend) authConfig() (string, error) {
 	if b.image.Registry.Username == "" && b.image.Registry.Password == "" {
-		return docker.AuthConfiguration{}
+		return "", nil
 	}
-	return docker.AuthConfiguration{
+	c := types.AuthConfig{
 		Username: b.image.Registry.Username,
 		Password: b.image.Registry.Password,
 	}
+	bytes, err := json.Marshal(c)
+	if err != nil {
+		return "", err
+	}
+	return base64.URLEncoding.EncodeToString(bytes), nil
 }
 
 func (b *dockerBackend) containerLabels(app *domain.Application) map[string]string {

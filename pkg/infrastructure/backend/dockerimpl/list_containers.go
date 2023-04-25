@@ -5,21 +5,21 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/docker/docker/api/types"
+	"github.com/docker/docker/api/types/filters"
 	"github.com/friendsofgo/errors"
-	docker "github.com/fsouza/go-dockerclient"
 	"github.com/samber/lo"
 
 	"github.com/traPtitech/neoshowcase/pkg/domain"
 )
 
 func (b *dockerBackend) GetContainer(ctx context.Context, appID string) (*domain.Container, error) {
-	containers, err := b.c.ListContainers(docker.ListContainersOptions{
+	containers, err := b.c.ContainerList(ctx, types.ContainerListOptions{
 		All: true,
-		Filters: map[string][]string{"label": {
-			fmt.Sprintf("%s=true", appLabel),
-			fmt.Sprintf("%s=%s", appIDLabel, appID),
-		}},
-		Context: ctx,
+		Filters: filters.NewArgs(
+			filters.Arg("label", fmt.Sprintf("%s=true", appLabel)),
+			filters.Arg("label", fmt.Sprintf("%s=%s", appIDLabel, appID)),
+		),
 	})
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to fetch containers")
@@ -38,16 +38,17 @@ func (b *dockerBackend) GetContainer(ctx context.Context, appID string) (*domain
 }
 
 func (b *dockerBackend) ListContainers(ctx context.Context) ([]*domain.Container, error) {
-	containers, err := b.c.ListContainers(docker.ListContainersOptions{
-		All:     true,
-		Filters: map[string][]string{"label": {fmt.Sprintf("%s=true", appLabel)}},
-		Context: ctx,
+	containers, err := b.c.ContainerList(ctx, types.ContainerListOptions{
+		All: true,
+		Filters: filters.NewArgs(
+			filters.Arg("label", fmt.Sprintf("%s=true", appLabel)),
+		),
 	})
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to fetch containers")
 	}
 
-	result := lo.Map(containers, func(c docker.APIContainers, i int) *domain.Container {
+	result := lo.Map(containers, func(c types.Container, i int) *domain.Container {
 		return &domain.Container{
 			ApplicationID: c.Labels[appIDLabel],
 			State:         getContainerState(&c),
@@ -56,7 +57,7 @@ func (b *dockerBackend) ListContainers(ctx context.Context) ([]*domain.Container
 	return result, nil
 }
 
-func getContainerState(c *docker.APIContainers) domain.ContainerState {
+func getContainerState(c *types.Container) domain.ContainerState {
 	// https://docs.docker.com/engine/api/v1.42/#tag/Container/operation/ContainerList
 	switch strings.ToLower(c.State) {
 	case "created":
