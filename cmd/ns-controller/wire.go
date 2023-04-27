@@ -12,7 +12,6 @@ import (
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
 
-	"github.com/traPtitech/neoshowcase/pkg/domain/web"
 	"github.com/traPtitech/neoshowcase/pkg/infrastructure/admindb"
 	"github.com/traPtitech/neoshowcase/pkg/infrastructure/backend/dockerimpl"
 	"github.com/traPtitech/neoshowcase/pkg/infrastructure/backend/k8simpl"
@@ -23,7 +22,6 @@ import (
 )
 
 var commonSet = wire.NewSet(
-	web.NewServer,
 	admindb.New,
 	dbmanager.NewMariaDBManager,
 	dbmanager.NewMongoDBManager,

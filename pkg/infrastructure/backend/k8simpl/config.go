@@ -49,6 +49,7 @@ type Config struct {
 		Kind      string `mapstructure:"kind" yaml:"kind"`
 		Name      string `mapstructure:"name" yaml:"name"`
 		Port      int    `mapstructure:"port" yaml:"port"`
+		Scheme    string `mapstructure:"scheme" yaml:"scheme"`
 	} `mapstructure:"ss" yaml:"ss"`
 	Namespace string       `mapstructure:"namespace" yaml:"namespace"`
 	Labels    []*labelConf `mapstructure:"labels" yaml:"labels"`

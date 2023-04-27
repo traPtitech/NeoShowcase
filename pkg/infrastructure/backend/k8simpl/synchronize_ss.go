@@ -17,7 +17,7 @@ func (b *k8sBackend) ssServiceRef() []traefikv1alpha1.Service {
 			Kind:      b.config.SS.Kind,
 			Namespace: b.config.SS.Namespace,
 			Port:      intstr.FromInt(b.config.SS.Port),
-			Scheme:    "http",
+			Scheme:    b.config.SS.Scheme,
 		},
 	}}
 }
