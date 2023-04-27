@@ -6,6 +6,7 @@ import (
 
 	certmanagerv1 "github.com/cert-manager/cert-manager/pkg/apis/certmanager/v1"
 	certmetav1 "github.com/cert-manager/cert-manager/pkg/apis/meta/v1"
+	"github.com/samber/lo"
 	log "github.com/sirupsen/logrus"
 	"github.com/traefik/traefik/v2/pkg/config/dynamic"
 	traefikv1alpha1 "github.com/traefik/traefik/v2/pkg/provider/kubernetes/crd/traefikio/v1alpha1"
@@ -48,7 +49,7 @@ func (b *k8sBackend) runtimeServiceRef(_ *domain.Application, website *domain.We
 			Kind:      "Service",
 			Namespace: b.config.Namespace,
 			Port:      intstr.FromInt(80),
-			Scheme:    "http",
+			Scheme:    lo.Ternary(website.H2C, "h2c", "http"),
 		},
 	}}
 }

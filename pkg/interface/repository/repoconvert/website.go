@@ -19,6 +19,7 @@ func FromDomainWebsite(appID string, website *domain.Website) *models.Website {
 		PathPrefix:     website.PathPrefix,
 		StripPrefix:    website.StripPrefix,
 		HTTPS:          website.HTTPS,
+		H2C:            website.H2C,
 		HTTPPort:       website.HTTPPort,
 		Authentication: AuthTypeMapper.FromMust(website.Authentication),
 		ApplicationID:  appID,
@@ -32,6 +33,7 @@ func ToDomainWebsite(website *models.Website) *domain.Website {
 		PathPrefix:     website.PathPrefix,
 		StripPrefix:    website.StripPrefix,
 		HTTPS:          website.HTTPS,
+		H2C:            website.H2C,
 		HTTPPort:       website.HTTPPort,
 		Authentication: AuthTypeMapper.IntoMust(website.Authentication),
 	}

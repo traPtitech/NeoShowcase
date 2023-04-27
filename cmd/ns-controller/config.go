@@ -84,6 +84,7 @@ func init() {
 	viper.SetDefault("k8s.ss.kind", "Service")
 	viper.SetDefault("k8s.ss.name", "")
 	viper.SetDefault("k8s.ss.port", 80)
+	viper.SetDefault("k8s.ss.scheme", "http")
 	viper.SetDefault("k8s.namespace", "neoshowcase-apps")
 	viper.SetDefault("k8s.labels", nil)
 	viper.SetDefault("k8s.tls.type", "traefik")

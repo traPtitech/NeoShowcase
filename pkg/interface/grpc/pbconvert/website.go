@@ -19,6 +19,7 @@ func FromPBCreateWebsiteRequest(req *pb.CreateWebsiteRequest) *domain.Website {
 		PathPrefix:     req.PathPrefix,
 		StripPrefix:    req.StripPrefix,
 		HTTPS:          req.Https,
+		H2C:            req.H2C,
 		HTTPPort:       int(req.HttpPort),
 		Authentication: AuthTypeMapper.FromMust(req.Authentication),
 	}
@@ -30,6 +31,7 @@ func ToPBWebsite(website *domain.Website) *pb.Website {
 		Fqdn:           website.FQDN,
 		PathPrefix:     website.PathPrefix,
 		Https:          website.HTTPS,
+		H2C:            website.H2C,
 		HttpPort:       int32(website.HTTPPort),
 		Authentication: AuthTypeMapper.IntoMust(website.Authentication),
 	}

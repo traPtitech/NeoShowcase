@@ -33,6 +33,7 @@ k8s:
     kind: Service
     name: ns-ssgen
     port: 80
+    scheme: http
   namespace: ns-apps
   # extra labels
   labels:
