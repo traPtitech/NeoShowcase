@@ -8,8 +8,6 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	"github.com/samber/lo"
-
 	"github.com/traPtitech/neoshowcase/pkg/util/optional"
 )
 
@@ -161,7 +159,7 @@ func TestApplicationConfig_Validate(t *testing.T) {
 	}
 }
 
-func TestApplication_Validate(t *testing.T) {
+func TestApplication_SelfValidate(t *testing.T) {
 	runtimeValidConfig := ApplicationConfig{
 		BuildConfig: &BuildConfigRuntimeDockerfile{DockerfileName: "Dockerfile"},
 	}
@@ -247,7 +245,7 @@ func TestApplication_Validate(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			err := tt.app.Validate()
+			err := tt.app.SelfValidate()
 			if tt.wantErr {
 				assert.Error(t, err)
 			} else {
@@ -717,33 +715,31 @@ func TestWebsite_pathComponents(t *testing.T) {
 	}
 }
 
-func TestWebsite_ConflictsWith(t *testing.T) {
+func TestWebsite_conflictsWith(t *testing.T) {
 	pathTests := []struct {
 		name     string
 		target   string
-		existing []string
+		existing string
 		want     bool
 	}{
-		{"ok1", "/", []string{}, false},
-		{"ok2", "/foo", []string{"/api", "/spa"}, false},
-		{"ok3", "/api/v2", []string{"/api/v1", "/spa"}, false},
-		{"ok4", "/api2", []string{"/api"}, false},
-		{"ok5", "/api", []string{"/api2"}, false},
-		{"ng1", "/", []string{"/"}, true},
-		{"ng2", "/api", []string{"/"}, true},
-		{"ng3", "/api/v2", []string{"/api"}, true},
-		{"ng4", "/api", []string{"/api"}, true},
+		{"ok1", "/foo", "/api", false},
+		{"ok2", "/foo", "/spa", false},
+		{"ok3", "/api/v2", "/api/v1", false},
+		{"ok4", "/api2", "/api", false},
+		{"ok5", "/api", "/api2", false},
+		{"ng1", "/", "/", true},
+		{"ng2", "/api", "/", true},
+		{"ng3", "/", "/api", true},
+		{"ng4", "/api/v2", "/api", true},
+		{"ng5", "/api", "/api/v2", true},
+		{"ng6", "/api", "/api", true},
 	}
 	for _, tt := range pathTests {
 		t.Run("path "+tt.name, func(t *testing.T) {
-			w := &Website{
-				PathPrefix: tt.target,
-			}
-			existingWebsites := lo.Map(tt.existing, func(ex string, i int) *Website {
-				return &Website{PathPrefix: ex}
-			})
-			if got := w.ConflictsWith(existingWebsites); got != tt.want {
-				t.Errorf("ConflictsWith() = %v, want %v", got, tt.want)
+			w := &Website{PathPrefix: tt.target}
+			target := &Website{PathPrefix: tt.existing}
+			if got := w.conflictsWith(target); got != tt.want {
+				t.Errorf("conflictsWith() = %v, want %v", got, tt.want)
 			}
 		})
 	}
@@ -751,33 +747,139 @@ func TestWebsite_ConflictsWith(t *testing.T) {
 	fullTests := []struct {
 		name     string
 		target   *Website
-		existing []*Website
+		existing *Website
 		want     bool
 	}{
 		{
 			name:     "ng if same scheme",
 			target:   &Website{PathPrefix: "/", HTTPS: false},
-			existing: []*Website{{PathPrefix: "/", HTTPS: false}},
+			existing: &Website{PathPrefix: "/", HTTPS: false},
 			want:     true,
 		},
 		{
 			name:     "ok if different scheme",
 			target:   &Website{PathPrefix: "/", HTTPS: true},
-			existing: []*Website{{PathPrefix: "/", HTTPS: false}},
+			existing: &Website{PathPrefix: "/", HTTPS: false},
 			want:     false,
 		},
 		{
 			name:     "ok if different fqdn",
 			target:   &Website{FQDN: "google.com", PathPrefix: "/", HTTPS: false},
-			existing: []*Website{{FQDN: "yahoo.com", PathPrefix: "/", HTTPS: false}},
+			existing: &Website{FQDN: "yahoo.com", PathPrefix: "/", HTTPS: false},
 			want:     false,
 		},
 	}
 	for _, tt := range fullTests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := tt.target.ConflictsWith(tt.existing); got != tt.want {
-				t.Errorf("ConflictsWith() = %v, want %v", got, tt.want)
+			if got := tt.target.conflictsWith(tt.existing); got != tt.want {
+				t.Errorf("conflictsWith() = %v, want %v", got, tt.want)
 			}
+		})
+	}
+}
+
+func TestApplication_WebsiteConflicts(t *testing.T) {
+	u1 := &User{ID: "user1"}
+	u2 := &User{ID: "user2"}
+	u3 := &User{ID: "user3"}
+	admin := &User{ID: "user4", Admin: true}
+	existing := &Application{
+		Websites: []*Website{{
+			FQDN:       "bar.trap.games",
+			PathPrefix: "/",
+		}},
+		OwnerIDs: []string{u2.ID, u3.ID},
+	}
+	tests := []struct {
+		name     string
+		target   *Application
+		existing *Application
+		actor    *User
+		want     bool
+	}{
+		{
+			name: "ok (different fqdn, no conflict)",
+			target: &Application{
+				Websites: []*Website{{
+					FQDN:       "foo.trap.games",
+					PathPrefix: "/api",
+				}},
+				OwnerIDs: []string{u1.ID, u3.ID},
+			},
+			existing: existing,
+			actor:    u1,
+			want:     false,
+		},
+		{
+			name: "ng (conflict, no ownership of the other)",
+			target: &Application{
+				Websites: []*Website{{
+					FQDN:       "bar.trap.games",
+					PathPrefix: "/api",
+				}},
+				OwnerIDs: []string{u1.ID, u3.ID},
+			},
+			existing: existing,
+			actor:    u1,
+			want:     true,
+		},
+		{
+			name: "ng (conflict, owner of the other, but same website)",
+			target: &Application{
+				Websites: []*Website{{
+					FQDN:       "bar.trap.games",
+					PathPrefix: "/",
+				}},
+				OwnerIDs: []string{u1.ID, u3.ID},
+			},
+			existing: existing,
+			actor:    u3,
+			want:     true,
+		},
+		{
+			name: "ng (conflict, actor is admin, but same website)",
+			target: &Application{
+				Websites: []*Website{{
+					FQDN:       "bar.trap.games",
+					PathPrefix: "/",
+				}},
+				OwnerIDs: []string{u1.ID, u3.ID},
+			},
+			existing: existing,
+			actor:    admin,
+			want:     true,
+		},
+		{
+			name: "ok (conflict, but owner of the other)",
+			target: &Application{
+				Websites: []*Website{{
+					FQDN:       "bar.trap.games",
+					PathPrefix: "/api",
+				}},
+				OwnerIDs: []string{u1.ID, u3.ID},
+			},
+			existing: existing,
+			actor:    u3,
+			want:     false,
+		},
+		{
+			name: "ok (conflict, but actor is admin)",
+			target: &Application{
+				Websites: []*Website{{
+					FQDN:       "bar.trap.games",
+					PathPrefix: "/api",
+				}},
+				OwnerIDs: []string{u1.ID, u3.ID},
+			},
+			existing: existing,
+			actor:    admin,
+			want:     false,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got := tt.target.WebsiteConflicts([]*Application{tt.existing}, tt.actor)
+			assert.Equal(t, tt.want, got)
 		})
 	}
 }

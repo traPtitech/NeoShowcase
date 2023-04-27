@@ -4,7 +4,6 @@ import (
 	"context"
 
 	"github.com/friendsofgo/errors"
-	"github.com/samber/lo"
 
 	"github.com/traPtitech/neoshowcase/pkg/domain"
 	"github.com/traPtitech/neoshowcase/pkg/domain/web"
@@ -62,42 +61,33 @@ func NewAPIServerService(
 	}
 }
 
-func (s *APIServerService) isRepositoryOwner(ctx context.Context, id string) error {
+func (s *APIServerService) isRepositoryOwner(ctx context.Context, repoID string) error {
 	user := web.GetUser(ctx)
-	if user.Admin {
-		return nil
-	}
-	repo, err := s.gitRepo.GetRepository(ctx, id)
+	repo, err := s.gitRepo.GetRepository(ctx, repoID)
 	if err != nil {
 		return errors.Wrap(err, "failed to get repository")
 	}
-	if !lo.Contains(repo.OwnerIDs, user.ID) {
+	if !repo.IsOwner(user) {
 		return newError(ErrorTypeForbidden, "you do not have permission for this repository", nil)
 	}
 	return nil
 }
 
-func (s *APIServerService) isApplicationOwner(ctx context.Context, id string) error {
+func (s *APIServerService) isApplicationOwner(ctx context.Context, appID string) error {
 	user := web.GetUser(ctx)
-	if user.Admin {
-		return nil
-	}
-	app, err := s.appRepo.GetApplication(ctx, id)
+	app, err := s.appRepo.GetApplication(ctx, appID)
 	if err != nil {
 		return errors.Wrap(err, "failed to get application")
 	}
-	if !lo.Contains(app.OwnerIDs, user.ID) {
+	if !app.IsOwner(user) {
 		return newError(ErrorTypeForbidden, "you do not have permission for this application", nil)
 	}
 	return nil
 }
 
-func (s *APIServerService) isBuildOwner(ctx context.Context, id string) error {
+func (s *APIServerService) isBuildOwner(ctx context.Context, buildID string) error {
 	user := web.GetUser(ctx)
-	if user.Admin {
-		return nil
-	}
-	build, err := s.buildRepo.GetBuild(ctx, id)
+	build, err := s.buildRepo.GetBuild(ctx, buildID)
 	if err != nil {
 		return errors.Wrap(err, "failed to get build")
 	}
@@ -105,7 +95,7 @@ func (s *APIServerService) isBuildOwner(ctx context.Context, id string) error {
 	if err != nil {
 		return errors.Wrap(err, "failed to get application")
 	}
-	if !lo.Contains(app.OwnerIDs, user.ID) {
+	if !app.IsOwner(user) {
 		return newError(ErrorTypeForbidden, "you do not have permission for this application", nil)
 	}
 	return nil
