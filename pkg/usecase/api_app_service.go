@@ -2,13 +2,13 @@ package usecase
 
 import (
 	"context"
-	"fmt"
 	"strconv"
 
 	"github.com/friendsofgo/errors"
 	log "github.com/sirupsen/logrus"
 
 	"github.com/traPtitech/neoshowcase/pkg/domain"
+	"github.com/traPtitech/neoshowcase/pkg/domain/web"
 	"github.com/traPtitech/neoshowcase/pkg/util/optional"
 	"github.com/traPtitech/neoshowcase/pkg/util/random"
 )
@@ -18,6 +18,7 @@ func (s *APIServerService) CreateApplication(ctx context.Context, app *domain.Ap
 	if err != nil {
 		return nil, err
 	}
+
 	// Only check for repository owner if repository is private;
 	// allow everyone to create application if repository is public
 	if repo.Auth.Valid {
@@ -27,32 +28,21 @@ func (s *APIServerService) CreateApplication(ctx context.Context, app *domain.Ap
 		}
 	}
 
-	if err = app.Validate(); err != nil {
-		return nil, newError(ErrorTypeBadRequest, "invalid application", err)
+	// Validate
+	existing, err := s.appRepo.GetApplications(ctx, domain.GetApplicationCondition{})
+	if err != nil {
+		return nil, errors.Wrap(err, "getting existing applications")
 	}
-	for _, website := range app.Websites {
-		if website.Authentication == domain.AuthenticationTypeOff {
-			continue
-		}
-		available, err := s.controller.AuthAvailable(ctx, website.FQDN)
-		if err != nil {
-			return nil, errors.Wrap(err, "checking auth availability")
-		}
-		if !available {
-			return nil, newError(ErrorTypeBadRequest, fmt.Sprintf("auth not available for domain %s", website.FQDN), err)
-		}
-	}
-
 	domains, err := s.adRepo.GetAvailableDomains(ctx)
 	if err != nil {
-		return nil, err
+		return nil, errors.Wrap(err, "getting available domains")
 	}
-	for _, website := range app.Websites {
-		if !domains.IsAvailable(website.FQDN) {
-			return nil, newError(ErrorTypeBadRequest, "domain not available", nil)
-		}
+	valErr, err := app.Validate(ctx, web.GetUser(ctx), existing, s.controller, domains)
+	if valErr != nil {
+		return nil, newError(ErrorTypeBadRequest, "invalid application", err)
 	}
 
+	// Create
 	err = s.appRepo.CreateApplication(ctx, app)
 	if err != nil {
 		return nil, err
@@ -170,20 +160,19 @@ func (s *APIServerService) UpdateApplication(ctx context.Context, id string, arg
 		return err
 	}
 	app.Apply(args)
-	if err = app.Validate(); err != nil {
-		return newError(ErrorTypeBadRequest, "invalid application", err)
+
+	// Validate
+	existing, err := s.appRepo.GetApplications(ctx, domain.GetApplicationCondition{})
+	if err != nil {
+		return errors.Wrap(err, "getting existing applications")
 	}
-	for _, website := range app.Websites {
-		if website.Authentication == domain.AuthenticationTypeOff {
-			continue
-		}
-		available, err := s.controller.AuthAvailable(ctx, website.FQDN)
-		if err != nil {
-			return errors.Wrap(err, "checking auth availability")
-		}
-		if !available {
-			return newError(ErrorTypeBadRequest, fmt.Sprintf("auth not available for domain %s", website.FQDN), err)
-		}
+	domains, err := s.adRepo.GetAvailableDomains(ctx)
+	if err != nil {
+		return errors.Wrap(err, "getting available domains")
+	}
+	valErr, err := app.Validate(ctx, web.GetUser(ctx), existing, s.controller, domains)
+	if valErr != nil {
+		return newError(ErrorTypeBadRequest, "invalid application", err)
 	}
 
 	return s.appRepo.UpdateApplication(ctx, id, args)

@@ -9,7 +9,6 @@ import (
 	"github.com/samber/lo"
 	"github.com/volatiletech/sqlboiler/v4/boil"
 	"github.com/volatiletech/sqlboiler/v4/queries/qm"
-	"golang.org/x/exp/slices"
 
 	"github.com/traPtitech/neoshowcase/pkg/domain"
 	"github.com/traPtitech/neoshowcase/pkg/infrastructure/admindb/models"
@@ -121,7 +120,7 @@ func (r *applicationRepository) CreateApplication(ctx context.Context, app *doma
 		return fmt.Errorf("failed to create application config")
 	}
 
-	err = r.validateAndInsertWebsites(ctx, tx, ma, app.Websites)
+	err = r.setWebsites(ctx, tx, ma, app.Websites)
 	if err != nil {
 		return err
 	}
@@ -190,11 +189,7 @@ func (r *applicationRepository) UpdateApplication(ctx context.Context, id string
 		}
 	}
 	if args.Websites.Valid {
-		_, err = app.R.Websites.DeleteAll(ctx, tx)
-		if err != nil {
-			return errors.Wrap(err, "failed to delete all websites")
-		}
-		err = r.validateAndInsertWebsites(ctx, tx, app, args.Websites.V)
+		err = r.setWebsites(ctx, tx, app, args.Websites.V)
 		if err != nil {
 			return err
 		}
@@ -250,30 +245,17 @@ func (r *applicationRepository) DeleteApplication(ctx context.Context, id string
 	return nil
 }
 
-func (r *applicationRepository) validateAndInsertWebsites(ctx context.Context, ex boil.ContextExecutor, app *models.Application, websites []*domain.Website) error {
-	// Validate and insert from the most specific
-	slices.SortFunc(websites, func(a, b *domain.Website) bool { return len(b.PathPrefix) < len(a.PathPrefix) })
-	for _, website := range websites {
-		if err := r.validateAndInsertWebsite(ctx, ex, app, website); err != nil {
-			return err
+func (r *applicationRepository) setWebsites(ctx context.Context, ex boil.ContextExecutor, app *models.Application, websites []*domain.Website) error {
+	_, err := app.R.Websites.DeleteAll(ctx, ex)
+	if err != nil {
+		return errors.Wrap(err, "failed to delete all websites")
+	}
+	for _, w := range websites {
+		mw := repoconvert.FromDomainWebsite(app.ID, w)
+		err = mw.Insert(ctx, ex, boil.Blacklist())
+		if err != nil {
+			return errors.Wrap(err, "failed to insert website")
 		}
-	}
-	return nil
-}
-
-func (r *applicationRepository) validateAndInsertWebsite(ctx context.Context, ex boil.ContextExecutor, app *models.Application, website *domain.Website) error {
-	websites, err := models.Websites(models.WebsiteWhere.FQDN.EQ(website.FQDN), qm.For("UPDATE")).All(ctx, ex)
-	if err != nil {
-		return errors.Wrap(err, "failed to get existing websites")
-	}
-	existing := lo.Map(websites, func(website *models.Website, i int) *domain.Website { return repoconvert.ToDomainWebsite(website) })
-	if website.ConflictsWith(existing) {
-		return errors.New("conflicts with existing websites")
-	}
-	mw := repoconvert.FromDomainWebsite(app.ID, website)
-	err = mw.Insert(ctx, ex, boil.Blacklist())
-	if err != nil {
-		return errors.Wrap(err, "failed to add website")
 	}
 	return nil
 }

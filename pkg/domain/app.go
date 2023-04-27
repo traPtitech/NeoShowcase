@@ -16,6 +16,7 @@ import (
 	"golang.org/x/exp/slices"
 	"golang.org/x/net/idna"
 
+	"github.com/traPtitech/neoshowcase/pkg/util/ds"
 	"github.com/traPtitech/neoshowcase/pkg/util/optional"
 )
 
@@ -200,7 +201,7 @@ type Application struct {
 	OwnerIDs []string
 }
 
-func (a *Application) Validate() error {
+func (a *Application) SelfValidate() error {
 	if a.Name == "" {
 		return errors.New("name is required")
 	}
@@ -222,6 +223,47 @@ func (a *Application) Validate() error {
 		return errors.New("owner_ids cannot be empty")
 	}
 	return nil
+}
+
+func (a *Application) Validate(
+	ctx context.Context,
+	actor *User,
+	existing []*Application,
+	controller ControllerServiceClient,
+	domains AvailableDomainSlice,
+) (validateErr error, err error) {
+	if err = a.SelfValidate(); err != nil {
+		return err, nil
+	}
+
+	for _, website := range a.Websites {
+		if website.Authentication == AuthenticationTypeOff {
+			continue
+		}
+		available, err := controller.AuthAvailable(ctx, website.FQDN)
+		if err != nil {
+			return nil, errors.Wrap(err, "checking auth availability")
+		}
+		if !available {
+			return errors.Errorf("auth not available for domain %s", website.FQDN), nil
+		}
+	}
+
+	for _, website := range a.Websites {
+		if !domains.IsAvailable(website.FQDN) {
+			return errors.Errorf("domain %s not available", website.FQDN), nil
+		}
+	}
+
+	if a.WebsiteConflicts(existing, actor) {
+		return errors.New("website conflict"), nil
+	}
+
+	return nil, nil
+}
+
+func (a *Application) IsOwner(user *User) bool {
+	return user.Admin || lo.Contains(a.OwnerIDs, user.ID)
 }
 
 type Artifact struct {
@@ -396,6 +438,10 @@ func (r *Repository) Validate() error {
 	return nil
 }
 
+func (r *Repository) IsOwner(user *User) bool {
+	return user.Admin || lo.Contains(r.OwnerIDs, user.ID)
+}
+
 type RepositoryAuthMethod int
 
 const (
@@ -475,10 +521,11 @@ func (w *Website) Validate() error {
 }
 
 func (w *Website) pathComponents() []string {
+	// NOTE: empty PathPrefix must not exist
 	if w.PathPrefix == "/" {
 		return []string{}
 	}
-	return strings.Split(w.PathPrefix, "/")[1:]
+	return strings.Split(w.PathPrefix[1:], "/")
 }
 
 func (w *Website) pathContainedBy(target *Website) bool {
@@ -487,25 +534,40 @@ func (w *Website) pathContainedBy(target *Website) bool {
 	if len(this) < len(other) {
 		return false
 	}
-	for i := range other {
-		if this[i] != other[i] {
-			return false
-		}
-	}
-	return true
+	return ds.Equals(this[:len(other)], other)
 }
 
-// ConflictsWith checks whether this website's path prefix is contained in the existing websites' path prefixes.
-func (w *Website) ConflictsWith(existing []*Website) bool {
-	for _, ex := range existing {
-		if w.FQDN != ex.FQDN {
-			continue
-		}
-		if w.HTTPS != ex.HTTPS {
-			continue
-		}
-		if w.pathContainedBy(ex) {
-			return true
+func (w *Website) Equals(target *Website) bool {
+	if w.FQDN != target.FQDN {
+		return false
+	}
+	if w.HTTPS != target.HTTPS {
+		return false
+	}
+	return w.PathPrefix == target.PathPrefix
+}
+
+func (w *Website) conflictsWith(target *Website) bool {
+	if w.FQDN != target.FQDN {
+		return false
+	}
+	if w.HTTPS != target.HTTPS {
+		return false
+	}
+	return w.pathContainedBy(target) || target.pathContainedBy(w)
+}
+
+func (a *Application) WebsiteConflicts(existing []*Application, actor *User) bool {
+	for _, w := range a.Websites {
+		for _, ex := range existing {
+			for _, w2 := range ex.Websites {
+				if w.Equals(w2) {
+					return true
+				}
+				if w.conflictsWith(w2) && !ex.IsOwner(actor) {
+					return true
+				}
+			}
 		}
 	}
 	return false
