@@ -6,6 +6,7 @@ import (
 	"path/filepath"
 
 	"github.com/friendsofgo/errors"
+	"github.com/samber/lo"
 	log "github.com/sirupsen/logrus"
 	"gopkg.in/yaml.v2"
 
@@ -100,7 +101,12 @@ func (b *runtimeConfigBuilder) addWebsite(backend *dockerBackend, app *domain.Ap
 	svc := m{
 		"loadBalancer": m{
 			"servers": a{
-				m{"url": fmt.Sprintf("http://%s:%d/", netName, website.HTTPPort)},
+				m{"url": fmt.Sprintf(
+					"%s://%s:%d/",
+					lo.Ternary(website.H2C, "h2c", "http"),
+					netName,
+					website.HTTPPort,
+				)},
 			},
 		},
 	}

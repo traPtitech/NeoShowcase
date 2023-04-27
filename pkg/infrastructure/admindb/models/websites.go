@@ -32,7 +32,9 @@ type Website struct { // サイトID
 	StripPrefix bool `boil:"strip_prefix" json:"strip_prefix" toml:"strip_prefix" yaml:"strip_prefix"`
 	// httpsの接続かどうか
 	HTTPS bool `boil:"https" json:"https" toml:"https" yaml:"https"`
-	// コンテナhttpポート番号
+	// (advanced)プロキシとアプリとの通信にh2c protocolを使うかどうか
+	H2C bool `boil:"h2c" json:"h2c" toml:"h2c" yaml:"h2c"`
+	// (runtime only)コンテナhttpポート番号
 	HTTPPort int `boil:"http_port" json:"http_port" toml:"http_port" yaml:"http_port"`
 	// traP部員認証タイプ
 	Authentication string `boil:"authentication" json:"authentication" toml:"authentication" yaml:"authentication"`
@@ -49,6 +51,7 @@ var WebsiteColumns = struct {
 	PathPrefix     string
 	StripPrefix    string
 	HTTPS          string
+	H2C            string
 	HTTPPort       string
 	Authentication string
 	ApplicationID  string
@@ -58,6 +61,7 @@ var WebsiteColumns = struct {
 	PathPrefix:     "path_prefix",
 	StripPrefix:    "strip_prefix",
 	HTTPS:          "https",
+	H2C:            "h2c",
 	HTTPPort:       "http_port",
 	Authentication: "authentication",
 	ApplicationID:  "application_id",
@@ -69,6 +73,7 @@ var WebsiteTableColumns = struct {
 	PathPrefix     string
 	StripPrefix    string
 	HTTPS          string
+	H2C            string
 	HTTPPort       string
 	Authentication string
 	ApplicationID  string
@@ -78,6 +83,7 @@ var WebsiteTableColumns = struct {
 	PathPrefix:     "websites.path_prefix",
 	StripPrefix:    "websites.strip_prefix",
 	HTTPS:          "websites.https",
+	H2C:            "websites.h2c",
 	HTTPPort:       "websites.http_port",
 	Authentication: "websites.authentication",
 	ApplicationID:  "websites.application_id",
@@ -114,6 +120,7 @@ var WebsiteWhere = struct {
 	PathPrefix     whereHelperstring
 	StripPrefix    whereHelperbool
 	HTTPS          whereHelperbool
+	H2C            whereHelperbool
 	HTTPPort       whereHelperint
 	Authentication whereHelperstring
 	ApplicationID  whereHelperstring
@@ -123,6 +130,7 @@ var WebsiteWhere = struct {
 	PathPrefix:     whereHelperstring{field: "`websites`.`path_prefix`"},
 	StripPrefix:    whereHelperbool{field: "`websites`.`strip_prefix`"},
 	HTTPS:          whereHelperbool{field: "`websites`.`https`"},
+	H2C:            whereHelperbool{field: "`websites`.`h2c`"},
 	HTTPPort:       whereHelperint{field: "`websites`.`http_port`"},
 	Authentication: whereHelperstring{field: "`websites`.`authentication`"},
 	ApplicationID:  whereHelperstring{field: "`websites`.`application_id`"},
@@ -156,8 +164,8 @@ func (r *websiteR) GetApplication() *Application {
 type websiteL struct{}
 
 var (
-	websiteAllColumns            = []string{"id", "fqdn", "path_prefix", "strip_prefix", "https", "http_port", "authentication", "application_id"}
-	websiteColumnsWithoutDefault = []string{"id", "fqdn", "path_prefix", "strip_prefix", "https", "authentication", "application_id"}
+	websiteAllColumns            = []string{"id", "fqdn", "path_prefix", "strip_prefix", "https", "h2c", "http_port", "authentication", "application_id"}
+	websiteColumnsWithoutDefault = []string{"id", "fqdn", "path_prefix", "strip_prefix", "https", "h2c", "authentication", "application_id"}
 	websiteColumnsWithDefault    = []string{"http_port"}
 	websitePrimaryKeyColumns     = []string{"id"}
 	websiteGeneratedColumns      = []string{}

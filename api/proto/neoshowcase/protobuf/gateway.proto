@@ -122,8 +122,9 @@ message Website {
   string path_prefix = 3;
   bool strip_prefix = 4;
   bool https = 5;
-  int32 http_port = 6;
-  AuthenticationType authentication = 7;
+  bool h2c = 6;
+  int32 http_port = 7;
+  AuthenticationType authentication = 8;
 }
 
 message CreateWebsiteRequest {
@@ -131,8 +132,9 @@ message CreateWebsiteRequest {
   string path_prefix = 2;
   bool strip_prefix = 3;
   bool https = 4;
-  int32 http_port = 5;
-  AuthenticationType authentication = 6;
+  bool h2c = 5;
+  int32 http_port = 6;
+  AuthenticationType authentication = 7;
 }
 
 message DeleteWebsiteRequest {

@@ -861,12 +861,17 @@ export class Website extends Message<Website> {
   https = false;
 
   /**
-   * @generated from field: int32 http_port = 6;
+   * @generated from field: bool h2c = 6;
+   */
+  h2c = false;
+
+  /**
+   * @generated from field: int32 http_port = 7;
    */
   httpPort = 0;
 
   /**
-   * @generated from field: neoshowcase.protobuf.AuthenticationType authentication = 7;
+   * @generated from field: neoshowcase.protobuf.AuthenticationType authentication = 8;
    */
   authentication = AuthenticationType.OFF;
 
@@ -883,8 +888,9 @@ export class Website extends Message<Website> {
     { no: 3, name: "path_prefix", kind: "scalar", T: 9 /* ScalarType.STRING */ },
     { no: 4, name: "strip_prefix", kind: "scalar", T: 8 /* ScalarType.BOOL */ },
     { no: 5, name: "https", kind: "scalar", T: 8 /* ScalarType.BOOL */ },
-    { no: 6, name: "http_port", kind: "scalar", T: 5 /* ScalarType.INT32 */ },
-    { no: 7, name: "authentication", kind: "enum", T: proto3.getEnumType(AuthenticationType) },
+    { no: 6, name: "h2c", kind: "scalar", T: 8 /* ScalarType.BOOL */ },
+    { no: 7, name: "http_port", kind: "scalar", T: 5 /* ScalarType.INT32 */ },
+    { no: 8, name: "authentication", kind: "enum", T: proto3.getEnumType(AuthenticationType) },
   ]);
 
   static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): Website {
@@ -929,12 +935,17 @@ export class CreateWebsiteRequest extends Message<CreateWebsiteRequest> {
   https = false;
 
   /**
-   * @generated from field: int32 http_port = 5;
+   * @generated from field: bool h2c = 5;
+   */
+  h2c = false;
+
+  /**
+   * @generated from field: int32 http_port = 6;
    */
   httpPort = 0;
 
   /**
-   * @generated from field: neoshowcase.protobuf.AuthenticationType authentication = 6;
+   * @generated from field: neoshowcase.protobuf.AuthenticationType authentication = 7;
    */
   authentication = AuthenticationType.OFF;
 
@@ -950,8 +961,9 @@ export class CreateWebsiteRequest extends Message<CreateWebsiteRequest> {
     { no: 2, name: "path_prefix", kind: "scalar", T: 9 /* ScalarType.STRING */ },
     { no: 3, name: "strip_prefix", kind: "scalar", T: 8 /* ScalarType.BOOL */ },
     { no: 4, name: "https", kind: "scalar", T: 8 /* ScalarType.BOOL */ },
-    { no: 5, name: "http_port", kind: "scalar", T: 5 /* ScalarType.INT32 */ },
-    { no: 6, name: "authentication", kind: "enum", T: proto3.getEnumType(AuthenticationType) },
+    { no: 5, name: "h2c", kind: "scalar", T: 8 /* ScalarType.BOOL */ },
+    { no: 6, name: "http_port", kind: "scalar", T: 5 /* ScalarType.INT32 */ },
+    { no: 7, name: "authentication", kind: "enum", T: proto3.getEnumType(AuthenticationType) },
   ]);
 
   static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): CreateWebsiteRequest {

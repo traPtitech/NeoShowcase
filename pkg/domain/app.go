@@ -490,6 +490,7 @@ type Website struct {
 	PathPrefix     string
 	StripPrefix    bool
 	HTTPS          bool
+	H2C            bool
 	HTTPPort       int
 	Authentication AuthenticationType
 }
