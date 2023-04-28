@@ -9,8 +9,8 @@ buildpack:
     containerName: buildpack
     localDir: /neoshowcase/buildpack
     remoteDir: /workspace
-    user: cnb
-    group: cnb
+    user: 1000
+    group: 1000
 
 repository:
   privateKeyFile: /keys/id_ed25519

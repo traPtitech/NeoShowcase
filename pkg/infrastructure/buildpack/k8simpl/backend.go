@@ -126,7 +126,7 @@ func (k *k8sBackend) Pack(ctx context.Context, repoDir string, logWriter io.Writ
 			log.Errorf("failed to rm repo dir: %+v", err)
 		}
 	}()
-	err = exec.CommandContext(ctx, "chown", "-R", k.config.User+":"+k.config.Group, localDstPath).Run()
+	err = exec.CommandContext(ctx, "chown", "-R", fmt.Sprintf("%d:%d", k.config.User, k.config.Group), localDstPath).Run()
 	if err != nil {
 		return errors.Wrap(err, "setting repo owner")
 	}
