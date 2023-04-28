@@ -1,6 +1,17 @@
 buildkit:
   address: unix:///run/buildkit/buildkitd.sock
 
+buildpack:
+  backend: k8s
+  k8s:
+    namespace: ns-system
+    podName: ns-builder
+    containerName: buildpack
+    localDir: /neoshowcase/buildpack
+    remoteDir: /workspace
+    user: cnb
+    group: cnb
+
 repository:
   privateKeyFile: /keys/id_ed25519
 

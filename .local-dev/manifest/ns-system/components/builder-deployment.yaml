@@ -14,6 +14,16 @@ spec:
         app: ns-builder
     spec:
       containers:
+        - name: buildpack
+          image: paketobuildpacks/builder:base
+          imagePullPolicy: Always
+          command:
+            - sleep
+            - infinity
+          volumeMounts:
+            - mountPath: /workspace
+              name: buildpack
+
         - name: buildkitd
           image: moby/buildkit:latest
           imagePullPolicy: Always
@@ -53,6 +63,8 @@ spec:
             - --loglevel=debug
             - --config=/opt/config/config.yaml
           volumeMounts:
+            - mountPath: /neoshowcase/buildpack
+              name: buildpack
             - mountPath: /run/buildkit
               name: socket
             - mountPath: /opt/config/config.yaml
@@ -63,6 +75,8 @@ spec:
             # - mountPath: /.docker
             #   name: secret
       volumes:
+        - name: buildpack
+          emptyDir: {}
         - name: socket
           emptyDir: {}
         - name: config

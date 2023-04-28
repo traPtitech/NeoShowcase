@@ -73,7 +73,11 @@ func (k *k8sBackend) dockerAuth() (s string, ok bool) {
 func (k *k8sBackend) prepareAuth() error {
 	auth, ok := k.dockerAuth()
 	if ok {
-		err := k.exec(context.Background(), "/", fmt.Sprintf(`echo '%s' > ~/.docker/config.json`, auth), io.Discard, io.Discard)
+		err := k.exec(context.Background(), "/", "mkdir -p ~/.docker", io.Discard, io.Discard)
+		if err != nil {
+			return errors.Wrap(err, "making ~/.docker directory")
+		}
+		err = k.exec(context.Background(), "/", fmt.Sprintf(`echo '%s' > ~/.docker/config.json`, auth), io.Discard, io.Discard)
 		if err != nil {
 			return errors.Wrap(err, "writing ~/.docker/config.json to builder")
 		}
@@ -122,6 +126,10 @@ func (k *k8sBackend) Pack(ctx context.Context, repoDir string, logWriter io.Writ
 			log.Errorf("failed to rm repo dir: %+v", err)
 		}
 	}()
+	err = exec.CommandContext(ctx, "chown", "-R", k.config.User+":"+k.config.Group, localDstPath).Run()
+	if err != nil {
+		return errors.Wrap(err, "setting repo owner")
+	}
 
 	// TODO: support pushing to insecure registry for local development
 	// https://github.com/buildpacks/lifecycle/issues/524

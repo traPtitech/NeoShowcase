@@ -74,8 +74,6 @@ func (d *dockerBackend) prepareAuth() error {
 		if err != nil {
 			return errors.Wrap(err, "writing ~/.docker/config.json to builder")
 		}
-		if d.image.Registry.Scheme == "http" {
-		}
 	}
 	return nil
 }
