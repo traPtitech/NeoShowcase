@@ -63,6 +63,11 @@ spec:
             - run
             - --loglevel=debug
             - --config=/opt/config/config.yaml
+          env:
+            - name: NS_BUILDPACK_K8S_PODNAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
           volumeMounts:
             - mountPath: /neoshowcase/buildpack
               name: buildpack

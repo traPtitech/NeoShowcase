@@ -5,7 +5,7 @@ buildpack:
   backend: k8s
   k8s:
     namespace: ns-system
-    podName: ns-builder
+    # podName: ns-builder # specified from env
     containerName: buildpack
     localDir: /neoshowcase/buildpack
     remoteDir: /workspace
