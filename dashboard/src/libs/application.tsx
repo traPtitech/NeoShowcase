@@ -6,6 +6,7 @@ import { SiGitea } from 'solid-icons/si'
 import { vars } from '/@/theme.css'
 
 export const buildTypeStr: Record<BuildConfig['buildConfig']['case'], string> = {
+  runtimeBuildpack: 'Runtime (Buildpack)',
   runtimeCmd: 'Runtime (command)',
   runtimeDockerfile: 'Runtime (Dockerfile)',
   staticCmd: 'Static (command)',
