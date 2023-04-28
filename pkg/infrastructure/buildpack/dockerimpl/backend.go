@@ -63,6 +63,10 @@ func (d *dockerBackend) dockerAuth() (s string, ok bool) {
 	return string(b), true
 }
 
+func escapeSingleQuote(s string) string {
+	return strings.ReplaceAll(s, "'", "\\'")
+}
+
 func (d *dockerBackend) prepareAuth() error {
 	auth, ok := d.dockerAuth()
 	if ok {
@@ -70,7 +74,7 @@ func (d *dockerBackend) prepareAuth() error {
 		if err != nil {
 			return errors.Wrap(err, "making ~/.docker directory")
 		}
-		err = d.exec(context.Background(), "/", []string{"sh", "-c", fmt.Sprintf(`echo '%s' > ~/.docker/config.json`, auth)}, io.Discard, io.Discard)
+		err = d.exec(context.Background(), "/", []string{"sh", "-c", fmt.Sprintf(`echo '%s' > ~/.docker/config.json`, escapeSingleQuote(auth))}, io.Discard, io.Discard)
 		if err != nil {
 			return errors.Wrap(err, "writing ~/.docker/config.json to builder")
 		}

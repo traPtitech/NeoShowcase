@@ -7,6 +7,7 @@ import (
 	"io"
 	"os/exec"
 	"path/filepath"
+	"strings"
 
 	"github.com/docker/cli/cli/config/configfile"
 	types2 "github.com/docker/cli/cli/config/types"
@@ -70,6 +71,10 @@ func (k *k8sBackend) dockerAuth() (s string, ok bool) {
 	return string(b), true
 }
 
+func escapeSingleQuote(s string) string {
+	return strings.ReplaceAll(s, "'", "\\'")
+}
+
 func (k *k8sBackend) prepareAuth() error {
 	auth, ok := k.dockerAuth()
 	if ok {
@@ -77,7 +82,7 @@ func (k *k8sBackend) prepareAuth() error {
 		if err != nil {
 			return errors.Wrap(err, "making ~/.docker directory")
 		}
-		err = k.exec(context.Background(), "/", fmt.Sprintf(`echo '%s' > ~/.docker/config.json`, auth), io.Discard, io.Discard)
+		err = k.exec(context.Background(), "/", fmt.Sprintf(`echo '%s' > ~/.docker/config.json`, escapeSingleQuote(auth)), io.Discard, io.Discard)
 		if err != nil {
 			return errors.Wrap(err, "writing ~/.docker/config.json to builder")
 		}
