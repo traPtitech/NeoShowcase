@@ -5,10 +5,18 @@ import (
 	"io"
 	"os"
 	"path/filepath"
+	"strings"
 
 	"github.com/friendsofgo/errors"
 	log "github.com/sirupsen/logrus"
 )
+
+func validRelPath(p string) bool {
+	if p == "" || strings.Contains(p, `\`) || strings.HasPrefix(p, "/") || strings.Contains(p, "..") {
+		return false
+	}
+	return true
+}
 
 func Extract(tarStream io.Reader, destPath string) error {
 	tr := tar.NewReader(tarStream)
@@ -19,6 +27,10 @@ func Extract(tarStream io.Reader, destPath string) error {
 		}
 		if err != nil {
 			return errors.Wrap(err, "bad tar file")
+		}
+
+		if !validRelPath(header.Name) {
+			return errors.Errorf("invalid path %v", header.Name)
 		}
 
 		path := filepath.Join(destPath, header.Name)
