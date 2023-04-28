@@ -16,6 +16,8 @@ import (
 	"github.com/traPtitech/neoshowcase/pkg/domain"
 	"github.com/traPtitech/neoshowcase/pkg/domain/builder"
 	"github.com/traPtitech/neoshowcase/pkg/infrastructure/admindb"
+	"github.com/traPtitech/neoshowcase/pkg/infrastructure/buildpack/dockerimpl"
+	"github.com/traPtitech/neoshowcase/pkg/infrastructure/buildpack/k8simpl"
 	"github.com/traPtitech/neoshowcase/pkg/infrastructure/storage"
 	"github.com/traPtitech/neoshowcase/pkg/interface/grpc"
 )
@@ -24,6 +26,11 @@ type Config struct {
 	Buildkit struct {
 		Address string `mapstructure:"address" yaml:"address"`
 	} `mapstructure:"buildkit" yaml:"buildkit"`
+	Buildpack struct {
+		Backend string            `mapstructure:"backend" yaml:"backend"`
+		Docker  dockerimpl.Config `mapstructure:"docker" yaml:"docker"`
+		K8s     k8simpl.Config    `mapstructure:"k8s" yaml:"k8s"`
+	}
 	Repository struct {
 		PrivateKeyFile string `mapstructure:"privateKeyFile" yaml:"privateKeyFile"`
 	} `mapstructure:"repository" yaml:"repository"`
@@ -35,6 +42,14 @@ type Config struct {
 
 func init() {
 	viper.SetDefault("buildkit.address", appdefaults.Address)
+
+	viper.SetDefault("buildpack.backend", "docker")
+	viper.SetDefault("buildpack.docker.containerName", "buildpack")
+	viper.SetDefault("buildpack.k8s.namespace", "ns-system")
+	viper.SetDefault("buildpack.k8s.podName", "ns-builder")
+	viper.SetDefault("buildpack.k8s.containerName", "buildpack")
+	viper.SetDefault("buildpack.k8s.localDir", "/neoshowcase/buildpack")
+	viper.SetDefault("buildpack.k8s.remoteDir", "/neoshowcase/buildpack")
 
 	viper.SetDefault("repository.privateKeyFile", "")
 
@@ -68,6 +83,17 @@ func init() {
 	viper.SetDefault("image.registry.username", "")
 	viper.SetDefault("image.registry.password", "")
 	viper.SetDefault("image.namePrefix", "ns-apps/")
+}
+
+func provideBuildpackBackend(c Config) (builder.BuildpackBackend, error) {
+	switch c.Buildpack.Backend {
+	case "docker":
+		return dockerimpl.NewBuildpackBackend(c.Buildpack.Docker, c.Image)
+	case "k8s":
+		return k8simpl.NewBuildpackBackend(c.Buildpack.K8s, c.Image)
+	default:
+		return nil, errors.Errorf("invalid buildpack backend: %v", c.Buildpack.Backend)
+	}
 }
 
 func provideRepositoryPublicKey(c Config) (*ssh.PublicKeys, error) {

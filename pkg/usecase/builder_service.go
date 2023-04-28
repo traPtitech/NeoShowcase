@@ -49,11 +49,12 @@ type BuilderService interface {
 }
 
 type builderService struct {
-	client   domain.ControllerBuilderServiceClient
-	buildkit *buildkit.Client
-	storage  domain.Storage
-	pubKey   *ssh.PublicKeys
-	config   builder.ImageConfig
+	client    domain.ControllerBuilderServiceClient
+	buildkit  *buildkit.Client
+	buildpack builder.BuildpackBackend
+	storage   domain.Storage
+	pubKey    *ssh.PublicKeys
+	config    builder.ImageConfig
 
 	artifactRepo domain.ArtifactRepository
 	buildRepo    domain.BuildRepository
@@ -69,6 +70,7 @@ type builderService struct {
 func NewBuilderService(
 	client domain.ControllerBuilderServiceClient,
 	buildkit *buildkit.Client,
+	buildpack builder.BuildpackBackend,
 	storage domain.Storage,
 	pubKey *ssh.PublicKeys,
 	config builder.ImageConfig,
@@ -79,6 +81,7 @@ func NewBuilderService(
 	return &builderService{
 		client:       client,
 		buildkit:     buildkit,
+		buildpack:    buildpack,
 		storage:      storage,
 		pubKey:       pubKey,
 		config:       config,
