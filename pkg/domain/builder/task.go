@@ -11,3 +11,7 @@ type Task struct {
 	ImageTag      string
 	BuildConfig   domain.BuildConfig
 }
+
+func (t *Task) DestImage() string {
+	return t.ImageName + ":" + t.ImageTag
+}

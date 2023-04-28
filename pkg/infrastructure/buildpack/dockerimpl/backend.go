@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io"
 	"path/filepath"
+	"strings"
 
 	"github.com/docker/cli/cli/config/configfile"
 	types2 "github.com/docker/cli/cli/config/types"
@@ -65,56 +66,95 @@ func (d *dockerBackend) dockerAuth() (s string, ok bool) {
 func (d *dockerBackend) prepareAuth() error {
 	auth, ok := d.dockerAuth()
 	if ok {
-		err := d.exec(context.Background(), "/", []string{"sh", "-c", fmt.Sprintf(`echo '%s' > ~/.docker/config.json`, auth)}, io.Discard, io.Discard)
+		err := d.exec(context.Background(), "/", []string{"sh", "-c", "mkdir -p ~/.docker"}, io.Discard, io.Discard)
+		if err != nil {
+			return errors.Wrap(err, "making ~/.docker directory")
+		}
+		err = d.exec(context.Background(), "/", []string{"sh", "-c", fmt.Sprintf(`echo '%s' > ~/.docker/config.json`, auth)}, io.Discard, io.Discard)
 		if err != nil {
 			return errors.Wrap(err, "writing ~/.docker/config.json to builder")
+		}
+		if d.image.Registry.Scheme == "http" {
 		}
 	}
 	return nil
 }
 
+func (d *dockerBackend) execRoot(ctx context.Context, workDir string, cmd []string, outWriter, errWriter io.Writer) error {
+	return d._exec(ctx, true, workDir, cmd, outWriter, errWriter)
+}
+
 func (d *dockerBackend) exec(ctx context.Context, workDir string, cmd []string, outWriter, errWriter io.Writer) error {
-	execID, err := d.c.ContainerExecCreate(ctx, d.config.ContainerName, types.ExecConfig{
+	return d._exec(ctx, false, workDir, cmd, outWriter, errWriter)
+}
+
+func (d *dockerBackend) _exec(ctx context.Context, root bool, workDir string, cmd []string, outWriter, errWriter io.Writer) error {
+	execConf := types.ExecConfig{
 		AttachStderr: true,
 		AttachStdout: true,
 		Tty:          true,
 		WorkingDir:   workDir,
 		Cmd:          cmd,
-	})
+	}
+	if root {
+		execConf.User = "root"
+	} else {
+		execConf.User = d.config.User
+	}
+	execID, err := d.c.ContainerExecCreate(ctx, d.config.ContainerName, execConf)
 	if err != nil {
 		return errors.Wrap(err, "creating exec")
 	}
-	res, err := d.c.ContainerExecAttach(ctx, execID.ID, types.ExecStartCheck{})
+
+	ex, err := d.c.ContainerExecAttach(ctx, execID.ID, types.ExecStartCheck{})
 	if err != nil {
 		return errors.Wrap(err, "attaching exec process")
 	}
-	defer res.Close()
+	defer ex.Close()
 
-	_, err = stdcopy.StdCopy(outWriter, errWriter, res.Reader)
+	_, err = stdcopy.StdCopy(outWriter, errWriter, ex.Reader)
 	if err != nil {
 		return errors.Wrap(err, "reading exec response")
 	}
+
+	res, err := d.c.ContainerExecInspect(ctx, execID.ID)
+	if err != nil {
+		return errors.Wrap(err, "inspecting exec result")
+	}
+	if res.ExitCode != 0 {
+		return errors.Errorf("exec %s failed with exit code %d", strings.Join(cmd, " "), res.ExitCode)
+	}
+
 	return nil
 }
 
-func (d *dockerBackend) Pack(ctx context.Context, repoDir string, imageDest string, logWriter io.Writer) error {
-	tmpID := domain.NewID()
-	baseDir := "/work"
-	dstRepoPath := fmt.Sprintf("repo-%s", tmpID)
-	dstPath := filepath.Join(baseDir, dstRepoPath)
+func (d *dockerBackend) Pack(ctx context.Context, repoDir string, logWriter io.Writer, imageDest string) error {
+	dstRepoPath := fmt.Sprintf("repo-%s", domain.NewID())
+	remoteDstPath := filepath.Join(d.config.RemoteDir, dstRepoPath)
 
-	err := d.c.CopyToContainer(ctx, d.config.ContainerName, dstPath, tarfs.Compress(repoDir), types.CopyToContainerOptions{})
+	err := d.exec(ctx, d.config.RemoteDir, []string{"mkdir", dstRepoPath}, io.Discard, io.Discard)
+	if err != nil {
+		return errors.Wrap(err, "making remote repo tmp dir")
+	}
+	err = d.c.CopyToContainer(ctx, d.config.ContainerName, remoteDstPath, tarfs.Compress(repoDir), types.CopyToContainerOptions{})
 	if err != nil {
 		return errors.Wrap(err, "copying file to container")
 	}
+	err = d.execRoot(ctx, d.config.RemoteDir, []string{"chown", "-R", d.config.User + ":" + d.config.Group, dstRepoPath}, io.Discard, io.Discard)
+	if err != nil {
+		return errors.Wrap(err, "setting remote repo owner")
+	}
 	defer func() {
-		err := d.exec(ctx, baseDir, []string{"rm", "-r", dstRepoPath}, io.Discard, io.Discard)
+		err := d.exec(ctx, d.config.RemoteDir, []string{"rm", "-r", dstRepoPath}, io.Discard, io.Discard)
 		if err != nil {
 			log.Errorf("failed to remove remote repo dir: %+v", err)
 		}
 	}()
 
-	err = d.exec(ctx, dstPath, []string{"/cnb/lifecycle/creator", "-app=.", imageDest}, logWriter, logWriter)
+	// TODO: support pushing to insecure registry for local development
+	// https://github.com/buildpacks/lifecycle/issues/524
+	// https://github.com/buildpacks/rfcs/blob/main/text/0111-support-insecure-registries.md
+	err = d.exec(ctx, remoteDstPath, []string{"/cnb/lifecycle/creator", "-skip-restore", "-app=.", imageDest}, logWriter, logWriter)
 	if err != nil {
 		return err
 	}

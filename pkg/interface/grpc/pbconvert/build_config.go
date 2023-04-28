@@ -7,6 +7,10 @@ import (
 
 func FromPBBuildConfig(c *pb.BuildConfig) domain.BuildConfig {
 	switch bc := c.BuildConfig.(type) {
+	case *pb.BuildConfig_RuntimeBuildpack:
+		return &domain.BuildConfigRuntimeBuildpack{
+			Context: bc.RuntimeBuildpack.Context,
+		}
 	case *pb.BuildConfig_RuntimeCmd:
 		return &domain.BuildConfigRuntimeCmd{
 			BaseImage:     bc.RuntimeCmd.BaseImage,
@@ -38,6 +42,10 @@ func FromPBBuildConfig(c *pb.BuildConfig) domain.BuildConfig {
 
 func ToPBBuildConfig(c domain.BuildConfig) *pb.BuildConfig {
 	switch bc := c.(type) {
+	case *domain.BuildConfigRuntimeBuildpack:
+		return &pb.BuildConfig{BuildConfig: &pb.BuildConfig_RuntimeBuildpack{RuntimeBuildpack: &pb.BuildConfigRuntimeBuildpack{
+			Context: bc.Context,
+		}}}
 	case *domain.BuildConfigRuntimeCmd:
 		return &pb.BuildConfig{BuildConfig: &pb.BuildConfig_RuntimeCmd{RuntimeCmd: &pb.BuildConfigRuntimeCmd{
 			BaseImage:     bc.BaseImage,

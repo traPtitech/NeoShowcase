@@ -106,7 +106,7 @@ func (k *k8sBackend) exec(ctx context.Context, workDir string, cmd string, stdou
 	return nil
 }
 
-func (k *k8sBackend) Pack(ctx context.Context, repoDir string, imageDest string, logWriter io.Writer) error {
+func (k *k8sBackend) Pack(ctx context.Context, repoDir string, logWriter io.Writer, imageDest string) error {
 	tmpID := domain.NewID()
 	dstRepoPath := fmt.Sprintf("repo-%s", tmpID)
 	localDstPath := filepath.Join(k.config.LocalDir, dstRepoPath)
@@ -123,7 +123,10 @@ func (k *k8sBackend) Pack(ctx context.Context, repoDir string, imageDest string,
 		}
 	}()
 
-	err = k.exec(ctx, remoteDstPath, fmt.Sprintf("/cnb/lifecycle/creator -app=. %s", imageDest), logWriter, logWriter)
+	// TODO: support pushing to insecure registry for local development
+	// https://github.com/buildpacks/lifecycle/issues/524
+	// https://github.com/buildpacks/rfcs/blob/main/text/0111-support-insecure-registries.md
+	err = k.exec(ctx, remoteDstPath, fmt.Sprintf("/cnb/lifecycle/creator -skip-restore -app=. %s", imageDest), logWriter, logWriter)
 	if err != nil {
 		return err
 	}

@@ -23,7 +23,8 @@ import (
 type BuildType int
 
 const (
-	BuildTypeRuntimeCmd BuildType = iota
+	BuildTypeRuntimeBuildpack BuildType = iota
+	BuildTypeRuntimeCmd
 	BuildTypeRuntimeDockerfile
 	BuildTypeStaticCmd
 	BuildTypeStaticDockerfile
@@ -31,7 +32,7 @@ const (
 
 func (b BuildType) DeployType() DeployType {
 	switch b {
-	case BuildTypeRuntimeCmd, BuildTypeRuntimeDockerfile:
+	case BuildTypeRuntimeBuildpack, BuildTypeRuntimeCmd, BuildTypeRuntimeDockerfile:
 		return DeployTypeRuntime
 	case BuildTypeStaticCmd, BuildTypeStaticDockerfile:
 		return DeployTypeStatic
@@ -49,6 +50,20 @@ type BuildConfig interface {
 type buildConfigEmbed struct{}
 
 func (buildConfigEmbed) isBuildConfig() {}
+
+type BuildConfigRuntimeBuildpack struct {
+	Context string
+	buildConfigEmbed
+}
+
+func (bc *BuildConfigRuntimeBuildpack) BuildType() BuildType {
+	return BuildTypeRuntimeBuildpack
+}
+
+func (bc *BuildConfigRuntimeBuildpack) Validate() error {
+	// NOTE: context is not necessary
+	return nil
+}
 
 type BuildConfigRuntimeCmd struct {
 	BaseImage     string

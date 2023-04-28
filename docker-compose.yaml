@@ -109,6 +109,7 @@ services:
     command: run --debug --loglevel=trace --config=/config.yaml
     restart: always
     volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
       - ./.local-dev/config/ns-builder.yaml:/config.yaml
       - ./.local-dev/keys:/keys
       - ./.local-dev/local-storage:/data
@@ -196,6 +197,15 @@ services:
       - "traefik.enable=true"
       - "traefik.http.routers.registry_frontend.rule=Host(`registry-frontend.local.trapti.tech`)"
       - "traefik.http.services.registry_frontend.loadbalancer.server.port=80"
+    networks:
+      - default
+
+  buildpack:
+    image: paketobuildpacks/builder:base
+    restart: always
+    entrypoint:
+      - sleep
+      - infinity
     networks:
       - default
 

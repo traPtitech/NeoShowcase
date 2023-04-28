@@ -45,11 +45,14 @@ func init() {
 
 	viper.SetDefault("buildpack.backend", "docker")
 	viper.SetDefault("buildpack.docker.containerName", "buildpack")
+	viper.SetDefault("buildpack.docker.remoteDir", "/workspace")
+	viper.SetDefault("buildpack.docker.user", "cnb")
+	viper.SetDefault("buildpack.docker.group", "cnb")
 	viper.SetDefault("buildpack.k8s.namespace", "ns-system")
 	viper.SetDefault("buildpack.k8s.podName", "ns-builder")
 	viper.SetDefault("buildpack.k8s.containerName", "buildpack")
 	viper.SetDefault("buildpack.k8s.localDir", "/neoshowcase/buildpack")
-	viper.SetDefault("buildpack.k8s.remoteDir", "/neoshowcase/buildpack")
+	viper.SetDefault("buildpack.k8s.remoteDir", "/workspace")
 
 	viper.SetDefault("repository.privateKeyFile", "")
 

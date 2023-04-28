@@ -63,6 +63,10 @@ enum DeployType {
   STATIC = 1;
 }
 
+message BuildConfigRuntimeBuildpack {
+  string context = 1;
+}
+
 message BuildConfigRuntimeCmd {
   string base_image = 1;
   string build_cmd = 2;
@@ -89,10 +93,11 @@ message BuildConfigStaticDockerfile {
 
 message BuildConfig {
   oneof build_config {
-    BuildConfigRuntimeCmd runtime_cmd = 1;
-    BuildConfigRuntimeDockerfile runtime_dockerfile = 2;
-    BuildConfigStaticCmd static_cmd = 3;
-    BuildConfigStaticDockerfile static_dockerfile = 4;
+    BuildConfigRuntimeBuildpack runtime_buildpack = 1;
+    BuildConfigRuntimeCmd runtime_cmd = 2;
+    BuildConfigRuntimeDockerfile runtime_dockerfile = 3;
+    BuildConfigStaticCmd static_cmd = 4;
+    BuildConfigStaticDockerfile static_dockerfile = 5;
   }
 }
 
