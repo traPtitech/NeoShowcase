@@ -7,6 +7,7 @@ import (
 )
 
 var BuildTypeMapper = mapper.MustNewValueMapper(map[string]domain.BuildType{
+	models.ApplicationConfigBuildTypeRuntimeBuildpack:  domain.BuildTypeRuntimeBuildpack,
 	models.ApplicationConfigBuildTypeRuntimeCMD:        domain.BuildTypeRuntimeCmd,
 	models.ApplicationConfigBuildTypeRuntimeDockerfile: domain.BuildTypeRuntimeDockerfile,
 	models.ApplicationConfigBuildTypeStaticCMD:         domain.BuildTypeStaticCmd,
@@ -15,6 +16,8 @@ var BuildTypeMapper = mapper.MustNewValueMapper(map[string]domain.BuildType{
 
 func FromDomainBuildConfig(c domain.BuildConfig, mc *models.ApplicationConfig) {
 	switch bc := c.(type) {
+	case *domain.BuildConfigRuntimeBuildpack:
+		mc.Context = bc.Context
 	case *domain.BuildConfigRuntimeCmd:
 		mc.BaseImage = bc.BaseImage
 		mc.BuildCMD = bc.BuildCmd
@@ -38,6 +41,10 @@ func FromDomainBuildConfig(c domain.BuildConfig, mc *models.ApplicationConfig) {
 
 func ToDomainBuildConfig(c *models.ApplicationConfig) domain.BuildConfig {
 	switch BuildTypeMapper.IntoMust(c.BuildType) {
+	case domain.BuildTypeRuntimeBuildpack:
+		return &domain.BuildConfigRuntimeBuildpack{
+			Context: c.Context,
+		}
 	case domain.BuildTypeRuntimeCmd:
 		return &domain.BuildConfigRuntimeCmd{
 			BaseImage:     c.BaseImage,

@@ -32,7 +32,7 @@ type Website struct { // サイトID
 	StripPrefix bool `boil:"strip_prefix" json:"strip_prefix" toml:"strip_prefix" yaml:"strip_prefix"`
 	// httpsの接続かどうか
 	HTTPS bool `boil:"https" json:"https" toml:"https" yaml:"https"`
-	// (advanced)プロキシとアプリとの通信にh2c protocolを使うかどうか
+	// (advanced)プロキシとアプリの通信にh2c protocolを使うかどうか
 	H2C bool `boil:"h2c" json:"h2c" toml:"h2c" yaml:"h2c"`
 	// (runtime only)コンテナhttpポート番号
 	HTTPPort int `boil:"http_port" json:"http_port" toml:"http_port" yaml:"http_port"`

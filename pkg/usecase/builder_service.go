@@ -49,11 +49,12 @@ type BuilderService interface {
 }
 
 type builderService struct {
-	client   domain.ControllerBuilderServiceClient
-	buildkit *buildkit.Client
-	storage  domain.Storage
-	pubKey   *ssh.PublicKeys
-	config   builder.ImageConfig
+	client    domain.ControllerBuilderServiceClient
+	buildkit  *buildkit.Client
+	buildpack builder.BuildpackBackend
+	storage   domain.Storage
+	pubKey    *ssh.PublicKeys
+	config    builder.ImageConfig
 
 	artifactRepo domain.ArtifactRepository
 	buildRepo    domain.BuildRepository
@@ -69,6 +70,7 @@ type builderService struct {
 func NewBuilderService(
 	client domain.ControllerBuilderServiceClient,
 	buildkit *buildkit.Client,
+	buildpack builder.BuildpackBackend,
 	storage domain.Storage,
 	pubKey *ssh.PublicKeys,
 	config builder.ImageConfig,
@@ -79,6 +81,7 @@ func NewBuilderService(
 	return &builderService{
 		client:       client,
 		buildkit:     buildkit,
+		buildpack:    buildpack,
 		storage:      storage,
 		pubKey:       pubKey,
 		config:       config,
@@ -380,16 +383,13 @@ func (s *builderService) build(ctx context.Context, st *state) domain.BuildStatu
 	ch := make(chan *buildkit.SolveStatus)
 	eg, ctx := errgroup.WithContext(ctx)
 	eg.Go(func() (err error) {
-		// イメージの出力先設定
-		exportAttrs := map[string]string{
-			"name": st.task.ImageName + ":" + st.task.ImageTag,
-			"push": "true",
-		}
 		switch bc := st.task.BuildConfig.(type) {
+		case *domain.BuildConfigRuntimeBuildpack:
+			return s.buildImageBuildpack(ctx, st, bc)
 		case *domain.BuildConfigRuntimeCmd:
-			return s.buildImageWithCmd(ctx, st, exportAttrs, ch, bc)
+			return s.buildImageWithCmd(ctx, st, ch, bc)
 		case *domain.BuildConfigRuntimeDockerfile:
-			return s.buildImageWithDockerfile(ctx, st, exportAttrs, ch, bc)
+			return s.buildImageWithDockerfile(ctx, st, ch, bc)
 		case *domain.BuildConfigStaticCmd:
 			return s.buildStaticWithCmd(ctx, st, ch, bc)
 		case *domain.BuildConfigStaticDockerfile:
@@ -419,10 +419,19 @@ func (s *builderService) build(ctx context.Context, st *state) domain.BuildStatu
 	return domain.BuildStatusSucceeded
 }
 
+func (s *builderService) buildImageBuildpack(
+	ctx context.Context,
+	st *state,
+	bc *domain.BuildConfigRuntimeBuildpack,
+) error {
+	contextDir := lo.Ternary(bc.Context != "", bc.Context, ".")
+	buildDir := filepath.Join(st.repositoryTempDir, contextDir)
+	return s.buildpack.Pack(ctx, buildDir, st.getLogWriter(), st.task.DestImage())
+}
+
 func (s *builderService) buildImageWithCmd(
 	ctx context.Context,
 	st *state,
-	exportAttrs map[string]string,
 	ch chan *buildkit.SolveStatus,
 	bc *domain.BuildConfigRuntimeCmd,
 ) error {
@@ -463,8 +472,11 @@ func (s *builderService) buildImageWithCmd(
 
 	_, err = s.buildkit.Solve(ctx, def, buildkit.SolveOpt{
 		Exports: []buildkit.ExportEntry{{
-			Type:  buildkit.ExporterImage,
-			Attrs: exportAttrs,
+			Type: buildkit.ExporterImage,
+			Attrs: map[string]string{
+				"name": st.task.DestImage(),
+				"push": "true",
+			},
 		}},
 		LocalDirs: map[string]string{
 			"local-src": st.repositoryTempDir,
@@ -477,7 +489,6 @@ func (s *builderService) buildImageWithCmd(
 func (s *builderService) buildImageWithDockerfile(
 	ctx context.Context,
 	st *state,
-	exportAttrs map[string]string,
 	ch chan *buildkit.SolveStatus,
 	bc *domain.BuildConfigRuntimeDockerfile,
 ) error {
@@ -485,8 +496,11 @@ func (s *builderService) buildImageWithDockerfile(
 	dockerfileDir := filepath.Join(contextDir, filepath.Dir(bc.DockerfileName))
 	_, err := s.buildkit.Solve(ctx, nil, buildkit.SolveOpt{
 		Exports: []buildkit.ExportEntry{{
-			Type:  buildkit.ExporterImage,
-			Attrs: exportAttrs,
+			Type: buildkit.ExporterImage,
+			Attrs: map[string]string{
+				"name": st.task.DestImage(),
+				"push": "true",
+			},
 		}},
 		LocalDirs: map[string]string{
 			"context":    filepath.Join(st.repositoryTempDir, contextDir),

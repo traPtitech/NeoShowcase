@@ -1,6 +1,12 @@
 buildkit:
   address: tcp://buildkitd:1234
 
+buildpack:
+  backend: docker
+  docker:
+    containerName: neoshowcase-buildpack-1
+    remoteDir: /workspace
+
 repository:
   privateKeyFile: /keys/id_ed25519
 

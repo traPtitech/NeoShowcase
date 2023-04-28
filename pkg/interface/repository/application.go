@@ -246,13 +246,15 @@ func (r *applicationRepository) DeleteApplication(ctx context.Context, id string
 }
 
 func (r *applicationRepository) setWebsites(ctx context.Context, ex boil.ContextExecutor, app *models.Application, websites []*domain.Website) error {
-	_, err := app.R.Websites.DeleteAll(ctx, ex)
-	if err != nil {
-		return errors.Wrap(err, "failed to delete all websites")
+	if app.R != nil && app.R.Websites != nil {
+		_, err := app.R.Websites.DeleteAll(ctx, ex)
+		if err != nil {
+			return errors.Wrap(err, "failed to delete existing app websites")
+		}
 	}
 	for _, w := range websites {
 		mw := repoconvert.FromDomainWebsite(app.ID, w)
-		err = mw.Insert(ctx, ex, boil.Blacklist())
+		err := mw.Insert(ctx, ex, boil.Blacklist())
 		if err != nil {
 			return errors.Wrap(err, "failed to insert website")
 		}

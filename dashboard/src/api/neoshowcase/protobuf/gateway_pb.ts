@@ -462,6 +462,43 @@ export class RepositoryIdRequest extends Message<RepositoryIdRequest> {
 }
 
 /**
+ * @generated from message neoshowcase.protobuf.BuildConfigRuntimeBuildpack
+ */
+export class BuildConfigRuntimeBuildpack extends Message<BuildConfigRuntimeBuildpack> {
+  /**
+   * @generated from field: string context = 1;
+   */
+  context = "";
+
+  constructor(data?: PartialMessage<BuildConfigRuntimeBuildpack>) {
+    super();
+    proto3.util.initPartial(data, this);
+  }
+
+  static readonly runtime: typeof proto3 = proto3;
+  static readonly typeName = "neoshowcase.protobuf.BuildConfigRuntimeBuildpack";
+  static readonly fields: FieldList = proto3.util.newFieldList(() => [
+    { no: 1, name: "context", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+  ]);
+
+  static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): BuildConfigRuntimeBuildpack {
+    return new BuildConfigRuntimeBuildpack().fromBinary(bytes, options);
+  }
+
+  static fromJson(jsonValue: JsonValue, options?: Partial<JsonReadOptions>): BuildConfigRuntimeBuildpack {
+    return new BuildConfigRuntimeBuildpack().fromJson(jsonValue, options);
+  }
+
+  static fromJsonString(jsonString: string, options?: Partial<JsonReadOptions>): BuildConfigRuntimeBuildpack {
+    return new BuildConfigRuntimeBuildpack().fromJsonString(jsonString, options);
+  }
+
+  static equals(a: BuildConfigRuntimeBuildpack | PlainMessage<BuildConfigRuntimeBuildpack> | undefined, b: BuildConfigRuntimeBuildpack | PlainMessage<BuildConfigRuntimeBuildpack> | undefined): boolean {
+    return proto3.util.equals(BuildConfigRuntimeBuildpack, a, b);
+  }
+}
+
+/**
  * @generated from message neoshowcase.protobuf.BuildConfigRuntimeCmd
  */
 export class BuildConfigRuntimeCmd extends Message<BuildConfigRuntimeCmd> {
@@ -666,25 +703,31 @@ export class BuildConfig extends Message<BuildConfig> {
    */
   buildConfig: {
     /**
-     * @generated from field: neoshowcase.protobuf.BuildConfigRuntimeCmd runtime_cmd = 1;
+     * @generated from field: neoshowcase.protobuf.BuildConfigRuntimeBuildpack runtime_buildpack = 1;
+     */
+    value: BuildConfigRuntimeBuildpack;
+    case: "runtimeBuildpack";
+  } | {
+    /**
+     * @generated from field: neoshowcase.protobuf.BuildConfigRuntimeCmd runtime_cmd = 2;
      */
     value: BuildConfigRuntimeCmd;
     case: "runtimeCmd";
   } | {
     /**
-     * @generated from field: neoshowcase.protobuf.BuildConfigRuntimeDockerfile runtime_dockerfile = 2;
+     * @generated from field: neoshowcase.protobuf.BuildConfigRuntimeDockerfile runtime_dockerfile = 3;
      */
     value: BuildConfigRuntimeDockerfile;
     case: "runtimeDockerfile";
   } | {
     /**
-     * @generated from field: neoshowcase.protobuf.BuildConfigStaticCmd static_cmd = 3;
+     * @generated from field: neoshowcase.protobuf.BuildConfigStaticCmd static_cmd = 4;
      */
     value: BuildConfigStaticCmd;
     case: "staticCmd";
   } | {
     /**
-     * @generated from field: neoshowcase.protobuf.BuildConfigStaticDockerfile static_dockerfile = 4;
+     * @generated from field: neoshowcase.protobuf.BuildConfigStaticDockerfile static_dockerfile = 5;
      */
     value: BuildConfigStaticDockerfile;
     case: "staticDockerfile";
@@ -698,10 +741,11 @@ export class BuildConfig extends Message<BuildConfig> {
   static readonly runtime: typeof proto3 = proto3;
   static readonly typeName = "neoshowcase.protobuf.BuildConfig";
   static readonly fields: FieldList = proto3.util.newFieldList(() => [
-    { no: 1, name: "runtime_cmd", kind: "message", T: BuildConfigRuntimeCmd, oneof: "build_config" },
-    { no: 2, name: "runtime_dockerfile", kind: "message", T: BuildConfigRuntimeDockerfile, oneof: "build_config" },
-    { no: 3, name: "static_cmd", kind: "message", T: BuildConfigStaticCmd, oneof: "build_config" },
-    { no: 4, name: "static_dockerfile", kind: "message", T: BuildConfigStaticDockerfile, oneof: "build_config" },
+    { no: 1, name: "runtime_buildpack", kind: "message", T: BuildConfigRuntimeBuildpack, oneof: "build_config" },
+    { no: 2, name: "runtime_cmd", kind: "message", T: BuildConfigRuntimeCmd, oneof: "build_config" },
+    { no: 3, name: "runtime_dockerfile", kind: "message", T: BuildConfigRuntimeDockerfile, oneof: "build_config" },
+    { no: 4, name: "static_cmd", kind: "message", T: BuildConfigStaticCmd, oneof: "build_config" },
+    { no: 5, name: "static_dockerfile", kind: "message", T: BuildConfigStaticDockerfile, oneof: "build_config" },
   ]);
 
   static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): BuildConfig {

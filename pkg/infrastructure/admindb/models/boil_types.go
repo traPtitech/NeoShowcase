@@ -53,6 +53,7 @@ func makeCacheKey(cols boil.Columns, nzDefaults []string) string {
 
 // Enum values for ApplicationConfigBuildType
 const (
+	ApplicationConfigBuildTypeRuntimeBuildpack  string = "runtime-buildpack"
 	ApplicationConfigBuildTypeRuntimeCMD        string = "runtime-cmd"
 	ApplicationConfigBuildTypeRuntimeDockerfile string = "runtime-dockerfile"
 	ApplicationConfigBuildTypeStaticCMD         string = "static-cmd"
@@ -61,6 +62,7 @@ const (
 
 func AllApplicationConfigBuildType() []string {
 	return []string{
+		ApplicationConfigBuildTypeRuntimeBuildpack,
 		ApplicationConfigBuildTypeRuntimeCMD,
 		ApplicationConfigBuildTypeRuntimeDockerfile,
 		ApplicationConfigBuildTypeStaticCMD,
