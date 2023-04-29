@@ -77,7 +77,7 @@ up: ensure-network ensure-mounts ## Setup development environment
 
 .PHONY: down
 down: ## Tear down development environment
-	@docker compose down
+	@docker compose down -v
 
 .PHONY: migrate
 migrate: ## Apply migration to development environment

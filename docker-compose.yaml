@@ -33,6 +33,7 @@ services:
     restart: always
     volumes:
       - ./dashboard:/work
+      - /work/node_modules
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.ns_dashboard.rule=Host(`ns.local.trapti.tech`)"
