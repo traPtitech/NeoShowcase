@@ -121,7 +121,7 @@ k3s-import: ## Import images to k3s environment
 .PHONY: k3d-up
 k3d-up: ## Setup k3s environment
 	k3d cluster create ns-test --no-lb --k3s-arg "--disable=traefik,servicelb,metrics-server"
-	kubectl apply -f https://raw.githubusercontent.com/traefik/traefik/v2.9/docs/content/reference/dynamic-configuration/kubernetes-crd-definition-v1.yml
+	kubectl apply -f https://raw.githubusercontent.com/traefik/traefik/v2.10/docs/content/reference/dynamic-configuration/kubernetes-crd-definition-v1.yml
 
 .PHONY: k3d-down
 k3d-down: ## Tear down k3s environment
