@@ -72,36 +72,41 @@ func prepareManager(t *testing.T) (*k8sBackend, *kubernetes.Clientset, *traefikv
 	return b.(*k8sBackend), client, traefikClient
 }
 
-func waitPodRunning(t *testing.T, b *k8sBackend, appID string) {
+func waitCondition(t *testing.T, cond func() (ok bool, err error)) {
 	t.Helper()
 
 	for i := 0; i < 120; i++ {
-		status, err := b.GetContainer(context.Background(), appID)
+		ok, err := cond()
 		if err != nil {
-			t.Fatalf("error in get container: %v", err)
+			t.Fatalf(err.Error())
 		}
-		if status.State == domain.ContainerStateRunning {
+		if ok {
 			return
 		}
 		time.Sleep(500 * time.Millisecond)
 	}
-	t.Fatalf("wait pod running timeout: %s", appID)
+}
+
+func waitPodRunning(t *testing.T, b *k8sBackend, appID string) {
+	t.Helper()
+	waitCondition(t, func() (ok bool, err error) {
+		status, err := b.GetContainer(context.Background(), appID)
+		if err != nil {
+			return false, err
+		}
+		return status.State == domain.ContainerStateRunning, nil
+	})
 }
 
 func waitPodDeleted(t *testing.T, b *k8sBackend, appID string) {
 	t.Helper()
-
-	for i := 0; i < 120; i++ {
+	waitCondition(t, func() (ok bool, err error) {
 		status, err := b.GetContainer(context.Background(), appID)
 		if err != nil {
-			t.Fatalf("error in get container: %v", err)
+			return false, err
 		}
-		if status.State == domain.ContainerStateMissing {
-			return
-		}
-		time.Sleep(500 * time.Millisecond)
-	}
-	t.Fatalf("wait pod running timeout: %s", appID)
+		return status.State == domain.ContainerStateMissing, nil
+	})
 }
 
 type getter[T any] interface {
@@ -119,4 +124,15 @@ func notExists[T any](t *testing.T, name string, getter getter[T]) {
 	_, err := getter.Get(context.Background(), name, metav1.GetOptions{})
 	require.Error(t, err)
 	require.True(t, errors.IsNotFound(err))
+}
+
+func waitNotExists[T any](t *testing.T, name string, getter getter[T]) {
+	t.Helper()
+	waitCondition(t, func() (ok bool, err error) {
+		_, err = getter.Get(context.Background(), name, metav1.GetOptions{})
+		if errors.IsNotFound(err) {
+			return true, nil
+		}
+		return false, err
+	})
 }
