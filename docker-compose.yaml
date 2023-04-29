@@ -170,7 +170,7 @@ services:
       GC_SCRIPT: /gc.sh
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.registry.rule=Host(`registry.local.trapti.tech`)"
+      - "traefik.http.routers.registry.rule=Host(`registry.local`)"
       - "traefik.http.services.registry.loadbalancer.server.port=80"
     volumes:
       - ./.local-dev/registry/entrypoint.sh:/entrypoint.sh
@@ -179,15 +179,15 @@ services:
     networks:
       default:
         aliases:
-          - "registry.local.trapti.tech"
+          - "registry.local"
 
   registry-frontend:
     image: joxit/docker-registry-ui:2
     restart: always
     environment:
       SINGLE_REGISTRY: "true"
-      REGISTRY_TITLE: registry.local.trapti.tech
-      NGINX_PROXY_PASS_URL: http://registry.local.trapti.tech
+      REGISTRY_TITLE: registry.local
+      NGINX_PROXY_PASS_URL: http://registry.local
       SHOW_CONTENT_DIGEST: "true"
       DELETE_IMAGES: "true"
     labels:

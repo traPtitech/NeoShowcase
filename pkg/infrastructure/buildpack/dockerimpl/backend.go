@@ -157,6 +157,8 @@ func (d *dockerBackend) Pack(ctx context.Context, repoDir string, logWriter io.W
 	// TODO: support pushing to insecure registry for local development
 	// https://github.com/buildpacks/lifecycle/issues/524
 	// https://github.com/buildpacks/rfcs/blob/main/text/0111-support-insecure-registries.md
+	// Workaround: use registry host "*.local" to allow google/go-containerregistry to detect as http protocol
+	// see: https://github.com/traPtitech/NeoShowcase/issues/493
 	err = d.exec(ctx,
 		remoteDstPath,
 		[]string{"/cnb/lifecycle/creator", "-skip-restore", "-app=.", imageDest},

@@ -9,7 +9,7 @@ spec:
     - websecure
   routes:
     - kind: Rule
-      match: Host(`registry.local.trapti.tech`)
+      match: Host(`registry.local`)
       services:
         - namespace: ns-system
           kind: Service

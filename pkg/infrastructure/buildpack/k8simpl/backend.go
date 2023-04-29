@@ -145,6 +145,8 @@ func (k *k8sBackend) Pack(ctx context.Context, repoDir string, logWriter io.Writ
 	// TODO: support pushing to insecure registry for local development
 	// https://github.com/buildpacks/lifecycle/issues/524
 	// https://github.com/buildpacks/rfcs/blob/main/text/0111-support-insecure-registries.md
+	// Workaround: use registry host "*.local" to allow google/go-containerregistry to detect as http protocol
+	// see: https://github.com/traPtitech/NeoShowcase/issues/493
 	err = k.exec(ctx,
 		remoteDstPath,
 		fmt.Sprintf("/cnb/lifecycle/creator -skip-restore -app=. %s", imageDest),

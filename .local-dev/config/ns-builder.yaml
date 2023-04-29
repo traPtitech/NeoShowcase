@@ -31,7 +31,7 @@ storage:
 image:
   registry:
     scheme: http
-    addr: registry.local.trapti.tech
+    addr: registry.local
     username: ""
     password: ""
   namePrefix: ns-apps/
