@@ -97,7 +97,6 @@ func (k *k8sBackend) exec(ctx context.Context, workDir string, cmd string, stdou
 		Command:   []string{"sh", "-c", fmt.Sprintf(`cd %s && %s`, workDir, cmd)},
 		Stdout:    true,
 		Stderr:    true,
-		TTY:       true,
 		Container: k.config.ContainerName,
 	}
 	req.VersionedParams(option, scheme.ParameterCodec)

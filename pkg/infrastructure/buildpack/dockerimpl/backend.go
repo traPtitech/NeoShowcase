@@ -94,7 +94,6 @@ func (d *dockerBackend) _exec(ctx context.Context, root bool, workDir string, cm
 	execConf := types.ExecConfig{
 		AttachStderr: true,
 		AttachStdout: true,
-		Tty:          true,
 		WorkingDir:   workDir,
 		Cmd:          cmd,
 	}
