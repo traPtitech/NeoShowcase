@@ -8,4 +8,5 @@ type Config struct {
 	RemoteDir     string `mapstructure:"remoteDir" yaml:"remoteDir"`
 	User          int    `mapstructure:"user" yaml:"user"`
 	Group         int    `mapstructure:"group" yaml:"group"`
+	PlatformAPI   string `mapstructure:"platformAPI" yaml:"platformAPI"`
 }

@@ -11,6 +11,7 @@ buildpack:
     remoteDir: /workspace
     user: 1000
     group: 1000
+    platformAPI: "0.11"
 
 repository:
   privateKeyFile: /keys/id_ed25519

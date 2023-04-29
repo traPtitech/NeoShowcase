@@ -6,6 +6,9 @@ buildpack:
   docker:
     containerName: neoshowcase-buildpack-1
     remoteDir: /workspace
+    user: cnb
+    group: cnb
+    platformAPI: "0.11"
 
 repository:
   privateKeyFile: /keys/id_ed25519

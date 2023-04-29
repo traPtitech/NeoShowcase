@@ -78,11 +78,11 @@ func escapeSingleQuote(s string) string {
 func (k *k8sBackend) prepareAuth() error {
 	auth, ok := k.dockerAuth()
 	if ok {
-		err := k.exec(context.Background(), "/", "mkdir -p ~/.docker", io.Discard, io.Discard)
+		err := k.exec(context.Background(), "/", "mkdir -p ~/.docker", nil, io.Discard, io.Discard)
 		if err != nil {
 			return errors.Wrap(err, "making ~/.docker directory")
 		}
-		err = k.exec(context.Background(), "/", fmt.Sprintf(`echo '%s' > ~/.docker/config.json`, escapeSingleQuote(auth)), io.Discard, io.Discard)
+		err = k.exec(context.Background(), "/", fmt.Sprintf(`echo '%s' > ~/.docker/config.json`, escapeSingleQuote(auth)), nil, io.Discard, io.Discard)
 		if err != nil {
 			return errors.Wrap(err, "writing ~/.docker/config.json to builder")
 		}
@@ -90,11 +90,18 @@ func (k *k8sBackend) prepareAuth() error {
 	return nil
 }
 
-func (k *k8sBackend) exec(ctx context.Context, workDir string, cmd string, stdout io.Writer, stderr io.Writer) error {
+func (k *k8sBackend) exec(ctx context.Context, workDir string, cmd string, env map[string]string, stdout io.Writer, stderr io.Writer) error {
 	req := k.c.CoreV1().RESTClient().Post().Resource("pods").Name(k.config.PodName).
 		Namespace(k.config.Namespace).SubResource("exec")
+	var shCmds []string
+	for k, v := range env {
+		shCmds = append(shCmds, fmt.Sprintf("export %v=%v", k, v))
+	}
+	shCmds = append(shCmds,
+		"cd "+workDir,
+		cmd)
 	option := &v1.PodExecOptions{
-		Command:   []string{"sh", "-c", fmt.Sprintf(`cd %s && %s`, workDir, cmd)},
+		Command:   []string{"sh", "-c", strings.Join(shCmds, " && ")},
 		Stdout:    true,
 		Stderr:    true,
 		Container: k.config.ContainerName,
@@ -138,7 +145,11 @@ func (k *k8sBackend) Pack(ctx context.Context, repoDir string, logWriter io.Writ
 	// TODO: support pushing to insecure registry for local development
 	// https://github.com/buildpacks/lifecycle/issues/524
 	// https://github.com/buildpacks/rfcs/blob/main/text/0111-support-insecure-registries.md
-	err = k.exec(ctx, remoteDstPath, fmt.Sprintf("/cnb/lifecycle/creator -skip-restore -app=. %s", imageDest), logWriter, logWriter)
+	err = k.exec(ctx,
+		remoteDstPath,
+		fmt.Sprintf("/cnb/lifecycle/creator -skip-restore -app=. %s", imageDest),
+		map[string]string{"CNB_PLATFORM_API": k.config.PlatformAPI},
+		logWriter, logWriter)
 	if err != nil {
 		return err
 	}
