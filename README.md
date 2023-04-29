@@ -7,3 +7,18 @@
 
 NeoShowcase is a PaaS (Platform as a Service) application for [Digital Creators Club traP](https://github.com/traPtitech).
 This application is a successor to [kaz/showcase](https://github.com/kaz/showcase).
+
+## Development
+
+- `make`: Display Makefile help
+- `make up`: Spin up development environment
+- `make down`: Tear down development environment
+
+### Workaround
+
+Add following to your `/etc/hosts` before executing `make up`
+(workaround to issue #493)
+
+```
+127.0.0.1 registry.local
+```
