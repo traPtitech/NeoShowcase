@@ -14,6 +14,7 @@ import (
 	"github.com/docker/docker/client"
 	"github.com/docker/docker/pkg/stdcopy"
 	"github.com/friendsofgo/errors"
+	"github.com/samber/lo"
 	log "github.com/sirupsen/logrus"
 
 	"github.com/traPtitech/neoshowcase/pkg/domain"
@@ -70,11 +71,11 @@ func escapeSingleQuote(s string) string {
 func (d *dockerBackend) prepareAuth() error {
 	auth, ok := d.dockerAuth()
 	if ok {
-		err := d.exec(context.Background(), "/", []string{"sh", "-c", "mkdir -p ~/.docker"}, io.Discard, io.Discard)
+		err := d.exec(context.Background(), "/", []string{"sh", "-c", "mkdir -p ~/.docker"}, nil, io.Discard, io.Discard)
 		if err != nil {
 			return errors.Wrap(err, "making ~/.docker directory")
 		}
-		err = d.exec(context.Background(), "/", []string{"sh", "-c", fmt.Sprintf(`echo '%s' > ~/.docker/config.json`, escapeSingleQuote(auth))}, io.Discard, io.Discard)
+		err = d.exec(context.Background(), "/", []string{"sh", "-c", fmt.Sprintf(`echo '%s' > ~/.docker/config.json`, escapeSingleQuote(auth))}, nil, io.Discard, io.Discard)
 		if err != nil {
 			return errors.Wrap(err, "writing ~/.docker/config.json to builder")
 		}
@@ -82,20 +83,21 @@ func (d *dockerBackend) prepareAuth() error {
 	return nil
 }
 
-func (d *dockerBackend) execRoot(ctx context.Context, workDir string, cmd []string, outWriter, errWriter io.Writer) error {
-	return d._exec(ctx, true, workDir, cmd, outWriter, errWriter)
+func (d *dockerBackend) execRoot(ctx context.Context, workDir string, cmd []string, env map[string]string, outWriter, errWriter io.Writer) error {
+	return d._exec(ctx, true, workDir, cmd, env, outWriter, errWriter)
 }
 
-func (d *dockerBackend) exec(ctx context.Context, workDir string, cmd []string, outWriter, errWriter io.Writer) error {
-	return d._exec(ctx, false, workDir, cmd, outWriter, errWriter)
+func (d *dockerBackend) exec(ctx context.Context, workDir string, cmd []string, env map[string]string, outWriter, errWriter io.Writer) error {
+	return d._exec(ctx, false, workDir, cmd, env, outWriter, errWriter)
 }
 
-func (d *dockerBackend) _exec(ctx context.Context, root bool, workDir string, cmd []string, outWriter, errWriter io.Writer) error {
+func (d *dockerBackend) _exec(ctx context.Context, root bool, workDir string, cmd []string, env map[string]string, outWriter, errWriter io.Writer) error {
 	execConf := types.ExecConfig{
 		AttachStderr: true,
 		AttachStdout: true,
 		WorkingDir:   workDir,
 		Cmd:          cmd,
+		Env:          lo.MapToSlice(env, func(k, v string) string { return k + "=" + v }),
 	}
 	if root {
 		execConf.User = "root"
@@ -133,7 +135,7 @@ func (d *dockerBackend) Pack(ctx context.Context, repoDir string, logWriter io.W
 	dstRepoPath := fmt.Sprintf("repo-%s", domain.NewID())
 	remoteDstPath := filepath.Join(d.config.RemoteDir, dstRepoPath)
 
-	err := d.exec(ctx, d.config.RemoteDir, []string{"mkdir", dstRepoPath}, io.Discard, io.Discard)
+	err := d.exec(ctx, d.config.RemoteDir, []string{"mkdir", dstRepoPath}, nil, io.Discard, io.Discard)
 	if err != nil {
 		return errors.Wrap(err, "making remote repo tmp dir")
 	}
@@ -141,12 +143,12 @@ func (d *dockerBackend) Pack(ctx context.Context, repoDir string, logWriter io.W
 	if err != nil {
 		return errors.Wrap(err, "copying file to container")
 	}
-	err = d.execRoot(ctx, d.config.RemoteDir, []string{"chown", "-R", d.config.User + ":" + d.config.Group, dstRepoPath}, io.Discard, io.Discard)
+	err = d.execRoot(ctx, d.config.RemoteDir, []string{"chown", "-R", d.config.User + ":" + d.config.Group, dstRepoPath}, nil, io.Discard, io.Discard)
 	if err != nil {
 		return errors.Wrap(err, "setting remote repo owner")
 	}
 	defer func() {
-		err := d.exec(ctx, d.config.RemoteDir, []string{"rm", "-r", dstRepoPath}, io.Discard, io.Discard)
+		err := d.exec(ctx, d.config.RemoteDir, []string{"rm", "-r", dstRepoPath}, nil, io.Discard, io.Discard)
 		if err != nil {
 			log.Errorf("failed to remove remote repo dir: %+v", err)
 		}
@@ -155,7 +157,13 @@ func (d *dockerBackend) Pack(ctx context.Context, repoDir string, logWriter io.W
 	// TODO: support pushing to insecure registry for local development
 	// https://github.com/buildpacks/lifecycle/issues/524
 	// https://github.com/buildpacks/rfcs/blob/main/text/0111-support-insecure-registries.md
-	err = d.exec(ctx, remoteDstPath, []string{"/cnb/lifecycle/creator", "-skip-restore", "-app=.", imageDest}, logWriter, logWriter)
+	// Workaround: use registry host "*.local" to allow google/go-containerregistry to detect as http protocol
+	// see: https://github.com/traPtitech/NeoShowcase/issues/493
+	err = d.exec(ctx,
+		remoteDstPath,
+		[]string{"/cnb/lifecycle/creator", "-skip-restore", "-app=.", imageDest},
+		map[string]string{"CNB_PLATFORM_API": d.config.PlatformAPI},
+		logWriter, logWriter)
 	if err != nil {
 		return err
 	}

@@ -1,4 +1,4 @@
-[registry."registry.local.trapti.tech"]
+[registry."registry.local"]
 http = true
 
 [worker.oci]

@@ -385,6 +385,7 @@ func (s *builderService) build(ctx context.Context, st *state) domain.BuildStatu
 	eg.Go(func() (err error) {
 		switch bc := st.task.BuildConfig.(type) {
 		case *domain.BuildConfigRuntimeBuildpack:
+			defer close(ch)
 			return s.buildImageBuildpack(ctx, st, bc)
 		case *domain.BuildConfigRuntimeCmd:
 			return s.buildImageWithCmd(ctx, st, ch, bc)

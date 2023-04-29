@@ -33,6 +33,7 @@ services:
     restart: always
     volumes:
       - ./dashboard:/work
+      - /work/node_modules
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.ns_dashboard.rule=Host(`ns.local.trapti.tech`)"
@@ -167,30 +168,27 @@ services:
       REGISTRY_STORAGE_DELETE_ENABLED: "true"
       REGISTRY_HTTP_ADDR: :80
       REGISTRY_STORAGE_FILESYSTEM_ROOTDIRECTORY: /var/lib/registry
-      REGISTRY_AUTH_HTPASSWD_REALM: registry
-      REGISTRY_AUTH_HTPASSWD_PATH: /htpasswd
       GC_SCRIPT: /gc.sh
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.registry.rule=Host(`registry.local.trapti.tech`)"
+      - "traefik.http.routers.registry.rule=Host(`registry.local`)"
       - "traefik.http.services.registry.loadbalancer.server.port=80"
     volumes:
       - ./.local-dev/registry/entrypoint.sh:/entrypoint.sh
       - ./.local-dev/registry/gc.sh:/gc.sh
-      - ./.local-dev/registry/htpasswd:/htpasswd
       - ./.local-dev/registry-data:/var/lib/registry
     networks:
       default:
         aliases:
-          - "registry.local.trapti.tech"
+          - "registry.local"
 
   registry-frontend:
     image: joxit/docker-registry-ui:2
     restart: always
     environment:
       SINGLE_REGISTRY: "true"
-      REGISTRY_TITLE: registry.local.trapti.tech
-      NGINX_PROXY_PASS_URL: http://registry.local.trapti.tech
+      REGISTRY_TITLE: registry.local
+      NGINX_PROXY_PASS_URL: http://registry.local
       SHOW_CONTENT_DIGEST: "true"
       DELETE_IMAGES: "true"
     labels:
