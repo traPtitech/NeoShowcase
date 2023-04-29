@@ -167,8 +167,6 @@ services:
       REGISTRY_STORAGE_DELETE_ENABLED: "true"
       REGISTRY_HTTP_ADDR: :80
       REGISTRY_STORAGE_FILESYSTEM_ROOTDIRECTORY: /var/lib/registry
-      REGISTRY_AUTH_HTPASSWD_REALM: registry
-      REGISTRY_AUTH_HTPASSWD_PATH: /htpasswd
       GC_SCRIPT: /gc.sh
     labels:
       - "traefik.enable=true"
@@ -177,7 +175,6 @@ services:
     volumes:
       - ./.local-dev/registry/entrypoint.sh:/entrypoint.sh
       - ./.local-dev/registry/gc.sh:/gc.sh
-      - ./.local-dev/registry/htpasswd:/htpasswd
       - ./.local-dev/registry-data:/var/lib/registry
     networks:
       default:
