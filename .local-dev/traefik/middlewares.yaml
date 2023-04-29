@@ -17,9 +17,9 @@ http:
       forwardAuth:
         address: "http://ns-auth:4181/"
         authResponseHeaders:
-          - "X-Forwarded-User"
+          - "X-Showcase-User"
     ns_auth_dev:
       forwardAuth:
         address: "http://ns-auth-dev:4181/"
         authResponseHeaders:
-          - "X-Forwarded-User"
+          - "X-Showcase-User"

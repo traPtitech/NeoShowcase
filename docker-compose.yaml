@@ -69,7 +69,7 @@ services:
       - default
 
   ns-auth:
-    image: ghcr.io/jordemort/traefik-forward-auth:latest
+    image: ghcr.io/traptitech/traefik-forward-auth:2.4.0
     restart: always
     command:
       - --config=/config.ini
@@ -85,6 +85,7 @@ services:
     image: ghcr.io/traptitech/ns-auth-dev:main
     restart: always
     environment:
+      HEADER: X-Showcase-User
       USER: "toki"
     networks:
       - default

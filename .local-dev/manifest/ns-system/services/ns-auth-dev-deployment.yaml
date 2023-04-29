@@ -21,5 +21,7 @@ spec:
             - containerPort: 4181
               name: http
           env:
+            - name: HEADER
+              value: X-Showcase-User
             - name: USER
               value: toki

@@ -60,7 +60,8 @@ func NewServer(c2 Config) (*Server, error) {
 	}
 	apiServiceHandler := grpc.NewAPIServiceServer(apiServerService, publicKeys)
 	userRepository := repository.NewUserRepository(db)
-	authInterceptor := grpc.NewAuthInterceptor(userRepository)
+	authHeader := c2.AuthHeader
+	authInterceptor := grpc.NewAuthInterceptor(userRepository, authHeader)
 	mainGatewayServer := provideGatewayServer(c2, apiServiceHandler, authInterceptor)
 	server := &Server{
 		appServer: mainGatewayServer,
