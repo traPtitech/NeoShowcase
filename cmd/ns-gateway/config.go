@@ -24,6 +24,7 @@ import (
 type Config struct {
 	Port       int                                `mapstructure:"port" yaml:"port"`
 	Debug      bool                               `mapstructure:"debug" yaml:"debug"`
+	AuthHeader grpc.AuthHeader                    `mapstructure:"authHeader" yaml:"authHeader"`
 	Controller grpc.ControllerServiceClientConfig `mapstructure:"controller" yaml:"controller"`
 	DB         admindb.Config                     `mapstructure:"db" yaml:"db"`
 	MariaDB    dbmanager.MariaDBConfig            `mapstructure:"mariadb" yaml:"mariadb"`
@@ -41,6 +42,7 @@ type Config struct {
 func init() {
 	viper.SetDefault("port", 8080)
 	viper.SetDefault("debug", false)
+	viper.SetDefault("authHeader", "X-Showcase-User")
 
 	viper.SetDefault("controller.url", "http://ns-controller:10000")
 

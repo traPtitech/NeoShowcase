@@ -28,9 +28,9 @@ const (
 type Config struct {
 	Port       int                  `mapstructure:"port" yaml:"port"`
 	Debug      bool                 `mapstructure:"debug" yaml:"debug"`
-	Mode       string               `mapstructure:"mode" yaml:"mode"`
 	DB         admindb.Config       `mapstructure:"db" yaml:"db"`
 	Storage    domain.StorageConfig `mapstructure:"storage" yaml:"storage"`
+	Mode       string               `mapstructure:"mode" yaml:"mode"`
 	Docker     dockerimpl.Config    `mapstructure:"docker" yaml:"docker"`
 	K8s        k8simpl.Config       `mapstructure:"k8s" yaml:"k8s"`
 	Repository struct {
@@ -42,7 +42,6 @@ type Config struct {
 func init() {
 	viper.SetDefault("port", 10000)
 	viper.SetDefault("debug", false)
-	viper.SetDefault("mode", "docker")
 
 	viper.SetDefault("db.host", "127.0.0.1")
 	viper.SetDefault("db.port", 3306)
@@ -66,6 +65,8 @@ func init() {
 	viper.SetDefault("storage.swift.tenantId", "")
 	viper.SetDefault("storage.swift.container", "neoshowcase")
 	viper.SetDefault("storage.swift.authUrl", "")
+
+	viper.SetDefault("mode", "docker")
 
 	viper.SetDefault("docker.confDir", "/opt/traefik/conf")
 	viper.SetDefault("docker.middlewares.auth", nil)

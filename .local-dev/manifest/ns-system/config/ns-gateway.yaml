@@ -1,5 +1,6 @@
 port: 8080
 debug: false
+headerName: X-Showcase-User
 
 controller:
   url: http://ns-controller.ns-system.svc.cluster.local:10000

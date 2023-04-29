@@ -22,12 +22,13 @@ func getEnvOrDefault(key string, fallback string) string {
 }
 
 func main() {
+	header := getEnvOrDefault("HEADER", "X-Showcase-User")
 	port := getEnvOrDefault("PORT", "4181")
 	user := getEnvOrDefault("USER", "toki")
 
 	e := echo.New()
 	e.Any("/*", func(c echo.Context) error {
-		c.Response().Header().Set("X-Forwarded-User", user)
+		c.Response().Header().Set(header, user)
 		return c.NoContent(http.StatusOK)
 	})
 

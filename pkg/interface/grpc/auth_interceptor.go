@@ -14,22 +14,27 @@ import (
 
 type AuthInterceptor struct {
 	userCache *sc.Cache[string, *domain.User]
+	header    string
 }
+
+type AuthHeader string
 
 var _ connect.Interceptor = &AuthInterceptor{}
 
 func NewAuthInterceptor(
 	userRepo domain.UserRepository,
+	header AuthHeader,
 ) *AuthInterceptor {
 	return &AuthInterceptor{
 		userCache: sc.NewMust(func(ctx context.Context, name string) (*domain.User, error) {
 			return userRepo.GetOrCreateUser(ctx, name)
 		}, 1*time.Minute, 2*time.Minute),
+		header: string(header),
 	}
 }
 
 func (a *AuthInterceptor) authenticate(ctx *context.Context, headers http.Header) error {
-	name := headers.Get(web.HeaderNameAPIAuthorization)
+	name := headers.Get(a.header)
 	if name == "" {
 		return connect.NewError(connect.CodeUnauthenticated, nil)
 	}
