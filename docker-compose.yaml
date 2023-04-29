@@ -69,7 +69,7 @@ services:
       - default
 
   ns-auth:
-    image: ghcr.io/traptitech/traefik-forward-auth:2.4.0
+    image: ghcr.io/traptitech/traefik-forward-auth:2.5.0
     restart: always
     command:
       - --config=/config.ini
