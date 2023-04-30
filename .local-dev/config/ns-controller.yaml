@@ -22,9 +22,11 @@ docker:
         soft:
           - nsapp_auth_soft@file
           - nsapp_auth@file
+          # - ns_auth_dev@file
         hard:
           - nsapp_auth_hard@file
           - nsapp_auth@file
+          # - ns_auth_dev@file
   ss:
     url: http://ns-ssgen:8080/
   network: neoshowcase_apps

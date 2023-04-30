@@ -15,8 +15,6 @@ resources:
   - components/gateway-deployment.yaml
   - components/gateway-ingress-route.yaml
   - components/gateway-service.yaml
-  - components/mc-deployment.yaml
-  - components/mc-service.yaml
   - components/ssgen-deployment.yaml
   - components/ssgen-service.yaml
   # ls services/*.yaml | sed -e 's/^/ - /g'

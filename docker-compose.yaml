@@ -75,6 +75,11 @@ services:
       - --config=/config.ini
     volumes:
       - ./.local-dev/config/ns-auth.ini:/config.ini
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.ns_auth.rule=Host(`auth.local.trapti.tech`)"
+      - "traefik.http.routers.ns_auth.service=ns_auth"
+      - "traefik.http.services.ns_auth.loadbalancer.server.port=4181"
     networks:
       - default
 
@@ -87,19 +92,6 @@ services:
     environment:
       HEADER: X-Showcase-User
       USER: "toki"
-    networks:
-      - default
-
-  ns-mc:
-    build:
-      context: .
-      target: ns-mc
-    image: ghcr.io/traptitech/ns-mc:main
-    restart: always
-    labels:
-      - "traefik.enable=true"
-      - "traefik.http.routers.ns_mc.rule=Host(`mc.local.trapti.tech`)"
-      - "traefik.http.services.ns_mc.loadbalancer.server.port=8080"
     networks:
       - default
 

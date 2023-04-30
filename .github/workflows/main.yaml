@@ -15,7 +15,6 @@ jobs:
           - ns-builder
           - ns-controller
           - ns-gateway
-          - ns-mc
           - ns-migrate
           - ns-ssgen
     steps:

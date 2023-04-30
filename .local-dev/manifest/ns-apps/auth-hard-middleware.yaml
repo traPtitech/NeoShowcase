@@ -6,4 +6,4 @@ metadata:
 spec:
   headers:
     customRequestHeaders:
-      X-NS-Auth-Type: hard
+      X-Forward-Auth-Type: hard
