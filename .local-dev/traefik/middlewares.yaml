@@ -3,14 +3,14 @@ http:
     nsapp_auth_soft:
       headers:
         customRequestHeaders:
-          X-NS-Auth-Type: soft
+          X-Forward-Auth-Type: soft
     nsapp_auth_hard:
       headers:
         customRequestHeaders:
-          X-NS-Auth-Type: hard
+          X-Forward-Auth-Type: hard
     nsapp_auth:
       forwardAuth:
-        address: "http://ns-mc:8080/"
+        address: "http://ns-auth:4181/"
         authResponseHeaders:
           - "X-Showcase-User"
     ns_auth:

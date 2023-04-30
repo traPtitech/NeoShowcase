@@ -1,9 +1,7 @@
 package web
 
 const (
-	HeaderNameAuthorizationType = "X-Ns-Auth-Type"
-	HeaderNameShowcaseUser      = "X-Showcase-User"
-	HeaderNameSSGenAppID        = "X-Controller-App-Id"
+	HeaderNameSSGenAppID = "X-Controller-App-Id"
 )
 
 const (

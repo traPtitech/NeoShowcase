@@ -23,11 +23,11 @@ k8s:
     auth:
       - domain: "*.local.trapti.tech"
         soft:
-          - nsapp_auth_soft@file
-          - nsapp_auth@file
+          - nsapp-auth-soft
+          - nsapp-auth
         hard:
-          - nsapp_auth_hard@file
-          - nsapp_auth@file
+          - nsapp-auth-hard
+          - nsapp-auth
   ss:
     namespace: ns-system
     kind: Service
