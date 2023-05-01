@@ -304,40 +304,72 @@ message RetryCommitBuildRequest {
 }
 
 service APIService {
-  // System
+  // General / System
+
+  // GetMe 自身の情報を取得します プロキシ認証のため常に成功します
   rpc GetMe(google.protobuf.Empty) returns (User);
+  // GetSystemPublicKey システムのSSH公開鍵を取得します リポジトリごとにSSH秘密鍵を設定しないデフォルトSSH認証で使用します
   rpc GetSystemPublicKey(google.protobuf.Empty) returns (GetSystemPublicKeyResponse);
+  // GetAvailableDomains 使用可能なドメイン一覧を取得します
   rpc GetAvailableDomains(google.protobuf.Empty) returns (AvailableDomains);
+  // AddAvailableDomain 使用可能なドメインを登録します（admin only）
   rpc AddAvailableDomain(AvailableDomain) returns (google.protobuf.Empty);
 
   // Repository CRUD
+
+  // CreateRepository リポジトリを登録します
   rpc CreateRepository(CreateRepositoryRequest) returns (Repository);
+  // GetRepositories リポジトリ一覧を取得します
   rpc GetRepositories(google.protobuf.Empty) returns (GetRepositoriesResponse);
+  // GetRepository リポジトリを取得します
   rpc GetRepository(RepositoryIdRequest) returns (Repository);
+  // UpdateRepository リポジトリ情報を更新します
   rpc UpdateRepository(UpdateRepositoryRequest) returns (google.protobuf.Empty);
+  // DeleteRepository リポジトリを削除します 関連する全てのアプリケーションの削除が必要です
   rpc DeleteRepository(RepositoryIdRequest) returns (google.protobuf.Empty);
 
   // Application CRUD
+
+  // CreateApplication アプリを作成します
   rpc CreateApplication(CreateApplicationRequest) returns (Application);
+  // GetApplications アプリ一覧を取得します
   rpc GetApplications(google.protobuf.Empty) returns (GetApplicationsResponse);
+  // GetApplication アプリを取得します
   rpc GetApplication(ApplicationIdRequest) returns (Application);
+  // UpdateApplication アプリ情報を更新します
   rpc UpdateApplication(UpdateApplicationRequest) returns (google.protobuf.Empty);
+  // DeleteApplication アプリを削除します 先にアプリのシャットダウンが必要です
   rpc DeleteApplication(ApplicationIdRequest) returns (google.protobuf.Empty);
 
   // Application info / config
+
+  // GetEnvVars アプリの環境変数を取得します
   rpc GetEnvVars(ApplicationIdRequest) returns (ApplicationEnvVars);
+  // SetEnvVar アプリの環境変数をセットします システムによって設定された環境変数は上書きできません
   rpc SetEnvVar(SetApplicationEnvVarRequest) returns (google.protobuf.Empty);
+  // GetOutput アプリの出力を取得します
   rpc GetOutput(GetOutputRequest) returns (GetOutputResponse);
+  // GetOutputStream アプリの出力をストリーム形式で取得します
   rpc GetOutputStream(GetOutputStreamRequest) returns (stream ApplicationOutput);
+  // StartApplication アプリを起動します 起動中の場合は再起動します
   rpc StartApplication(ApplicationIdRequest) returns (google.protobuf.Empty);
+  // StopApplication アプリをシャットダウンします
   rpc StopApplication(ApplicationIdRequest) returns (google.protobuf.Empty);
 
   // Application builds
+
+  // GetBuilds アプリのビルド一覧を取得します
   rpc GetBuilds(ApplicationIdRequest) returns (GetBuildsResponse);
+  // GetBuild アプリのビルド情報を取得します
   rpc GetBuild(BuildIdRequest) returns (Build);
+  // RetryCommitBuild アプリの該当コミットのビルドをやり直します
   rpc RetryCommitBuild(RetryCommitBuildRequest) returns (google.protobuf.Empty);
+  // CancelBuild 該当ビルドが進行中の場合キャンセルします
   rpc CancelBuild(BuildIdRequest) returns (google.protobuf.Empty);
+  // GetBuildLog 終了したビルドのログを取得します
   rpc GetBuildLog(BuildIdRequest) returns (BuildLog);
+  // GetBuildLogStream ビルド中のログをストリーム形式で取得します
   rpc GetBuildLogStream(BuildIdRequest) returns (stream BuildLog);
+  // GetBuildArtifact 静的サイトアプリの場合ビルド成果物（静的ファイルのtar）を取得します
   rpc GetBuildArtifact(ArtifactIdRequest) returns (ArtifactContent);
 }
