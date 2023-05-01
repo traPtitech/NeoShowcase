@@ -7,18 +7,28 @@ export const container = style({
 
 export const  appTitle = style({
   marginTop: '48px',
+
   display: 'flex',
+  flexDirection: 'row',
+  alignItems: 'center',
 })
 
 export const appsTitle = style({
-  marginLeft: '50px',
+  display: 'flex',
+  flexDirection: 'row',
+  alignItems: 'center',
   fontSize: '32px',
   fontWeight: 700,
   color: vars.text.black1,
 })
 
 export const arrow = style({
-  fontSize: '32px',
+  display: 'flex',
+  flexDirection: 'row',
+  alignItems: 'center',
+
+  width: '320x',
+  height: '32',
   fontWeight: 'bold',
   color: vars.text.black1,
 })

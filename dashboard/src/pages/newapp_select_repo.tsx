@@ -24,11 +24,12 @@ import { StatusIcon } from '/@/components/StatusIcon'
 import { createResource, JSX } from 'solid-js'
 import { Radio, RadioItem } from '/@/components/Radio'
 import { client } from '/@/libs/api'
-import { Application } from '/@/api/neoshowcase/protobuf/apiserver_pb'
+import { Application } from '/@/api/neoshowcase/protobuf/gateway_pb'
 import { RepositoryRow } from '/@/components/RepositoryRow'
 import { applicationState, ApplicationState } from '/@/libs/application'
 import { Routes, Route, A } from '@solidjs/router'
 import { ImArrowLeft2 } from 'solid-icons/im'
+import { BsArrowLeftShort } from 'solid-icons/bs'
 
 const [repos] = createResource(() => client.getRepositories({}))
 const [apps] = createResource(() => client.getApplications({}))
@@ -86,8 +87,8 @@ export default () => {
     <div class={container}>
       <Header />
       <div class={appTitle}>
-        <div class={arrow}><A href={'/apps'}><ImArrowLeft2 /></A>New app</div>
-        <div class={appsTitle}></div>
+        <div class={arrow}><A href={'/apps'}><BsArrowLeftShort /></A></div>
+        <div class={appsTitle}>New app</div>
       </div>
       <div class={subTitle}>Select repository </div>
       <div class={contentContainer}>
