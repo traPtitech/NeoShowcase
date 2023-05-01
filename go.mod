@@ -6,12 +6,11 @@ require (
 	github.com/aws/aws-sdk-go v1.44.249
 	github.com/bufbuild/connect-go v1.5.2
 	github.com/cert-manager/cert-manager v1.11.1
-	github.com/docker/cli v23.0.0-rc.1+incompatible
+	github.com/docker/cli v24.0.0-rc.1+incompatible
 	github.com/docker/docker v23.0.4+incompatible
 	github.com/friendsofgo/errors v0.9.2
 	github.com/go-git/go-git/v5 v5.6.1
 	github.com/go-sql-driver/mysql v1.7.0
-	github.com/golang-jwt/jwt/v4 v4.5.0
 	github.com/golang/mock v1.6.0
 	github.com/google/wire v0.5.0
 	github.com/heroku/docker-registry-client v0.0.0-20211012143308-9463674c8930
