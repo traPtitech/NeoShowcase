@@ -800,8 +800,8 @@ github.com/tonistiigi/vt100 v0.0.0-20210615222946-8066bb97264f h1:DLpt6B5oaaS8jy
 github.com/tonistiigi/vt100 v0.0.0-20210615222946-8066bb97264f/go.mod h1:ulncasL3N9uLrVann0m+CDlJKWsIAP34MPcOJF6VRvc=
 github.com/traefik/paerser v0.2.0 h1:zqCLGSXoNlcBd+mzqSCLjon/I6phqIjeJL2xFB2ysgQ=
 github.com/traefik/paerser v0.2.0/go.mod h1:afzaVcgF8A+MpTnPG4wBr4whjanCSYA6vK5RwaYVtRc=
-github.com/traefik/traefik/v2 v2.10.0 h1:uX5LxoTxCFm/YHy+VoM0JQ0kkLucsdiBOxdlzZrSBtM=
-github.com/traefik/traefik/v2 v2.10.0/go.mod h1:h1eEYDOOpu9X1tbwfYxta9+7PIfrZovpaYFGcIKvm9Q=
+github.com/traefik/traefik/v2 v2.10.1 h1:YP034U+yUkHZizCkokUMdV0wecuROJntxwqH5P70Krs=
+github.com/traefik/traefik/v2 v2.10.1/go.mod h1:prn4IYzwqrxXeZUfpdl9eICqpcKV9teQD//LFOD/srk=
 github.com/tv42/httpunix v0.0.0-20150427012821-b75d8614f926/go.mod h1:9ESjWnEqriFuLhtthL60Sar/7RFoluCcXsuvEwTV5KM=
 github.com/ultraware/funlen v0.0.1/go.mod h1:Dp4UiAus7Wdb9KUZsYWZEWiRzGuM2kXM1lPbfaF6xhA=
 github.com/urfave/cli v1.22.1/go.mod h1:Gos4lmkARVdJ6EkW0WaNv/tZAAMe9V7XWyB60NtXRu0=
