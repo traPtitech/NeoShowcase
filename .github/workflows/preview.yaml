@@ -3,6 +3,9 @@ name: preview
 on:
   pull_request:
 
+permissions:
+  packages: write
+
 jobs:
   build-dashboard-image:
     name: Build Dashboard Image
