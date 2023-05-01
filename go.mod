@@ -11,7 +11,6 @@ require (
 	github.com/friendsofgo/errors v0.9.2
 	github.com/go-git/go-git/v5 v5.6.1
 	github.com/go-sql-driver/mysql v1.7.0
-	github.com/golang-jwt/jwt/v4 v4.5.0
 	github.com/golang/mock v1.6.0
 	github.com/google/wire v0.5.0
 	github.com/heroku/docker-registry-client v0.0.0-20211012143308-9463674c8930
@@ -27,7 +26,7 @@ require (
 	github.com/spf13/pflag v1.0.5
 	github.com/spf13/viper v1.15.0
 	github.com/stretchr/testify v1.8.2
-	github.com/traefik/traefik/v2 v2.10.0
+	github.com/traefik/traefik/v2 v2.10.1
 	github.com/volatiletech/null/v8 v8.1.2
 	github.com/volatiletech/sqlboiler/v4 v4.14.2
 	github.com/volatiletech/strmangle v0.0.4
