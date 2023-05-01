@@ -560,6 +560,34 @@ func (m *MockUserRepository) EXPECT() *MockUserRepositoryMockRecorder {
 	return m.recorder
 }
 
+// CreateUserKey mocks base method.
+func (m *MockUserRepository) CreateUserKey(ctx context.Context, key *domain.UserKey) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CreateUserKey", ctx, key)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// CreateUserKey indicates an expected call of CreateUserKey.
+func (mr *MockUserRepositoryMockRecorder) CreateUserKey(ctx, key interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateUserKey", reflect.TypeOf((*MockUserRepository)(nil).CreateUserKey), ctx, key)
+}
+
+// DeleteUserKey mocks base method.
+func (m *MockUserRepository) DeleteUserKey(ctx context.Context, keyID, userID string) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "DeleteUserKey", ctx, keyID, userID)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// DeleteUserKey indicates an expected call of DeleteUserKey.
+func (mr *MockUserRepositoryMockRecorder) DeleteUserKey(ctx, keyID, userID interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteUserKey", reflect.TypeOf((*MockUserRepository)(nil).DeleteUserKey), ctx, keyID, userID)
+}
+
 // GetOrCreateUser mocks base method.
 func (m *MockUserRepository) GetOrCreateUser(ctx context.Context, name string) (*domain.User, error) {
 	m.ctrl.T.Helper()
@@ -573,4 +601,34 @@ func (m *MockUserRepository) GetOrCreateUser(ctx context.Context, name string) (
 func (mr *MockUserRepositoryMockRecorder) GetOrCreateUser(ctx, name interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetOrCreateUser", reflect.TypeOf((*MockUserRepository)(nil).GetOrCreateUser), ctx, name)
+}
+
+// GetUserKeys mocks base method.
+func (m *MockUserRepository) GetUserKeys(ctx context.Context, cond domain.GetUserKeyCondition) ([]*domain.UserKey, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetUserKeys", ctx, cond)
+	ret0, _ := ret[0].([]*domain.UserKey)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetUserKeys indicates an expected call of GetUserKeys.
+func (mr *MockUserRepositoryMockRecorder) GetUserKeys(ctx, cond interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetUserKeys", reflect.TypeOf((*MockUserRepository)(nil).GetUserKeys), ctx, cond)
+}
+
+// GetUsers mocks base method.
+func (m *MockUserRepository) GetUsers(ctx context.Context, cond domain.GetUserCondition) ([]*domain.User, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetUsers", ctx, cond)
+	ret0, _ := ret[0].([]*domain.User)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetUsers indicates an expected call of GetUsers.
+func (mr *MockUserRepositoryMockRecorder) GetUsers(ctx, cond interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetUsers", reflect.TypeOf((*MockUserRepository)(nil).GetUsers), ctx, cond)
 }

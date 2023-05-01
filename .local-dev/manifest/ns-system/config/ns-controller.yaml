@@ -19,6 +19,8 @@ storage:
     endpoint: http://minio.ns-system.svc.cluster.local
 
 k8s:
+  ssh:
+    port: 2201
   middlewares:
     auth:
       - domain: "*.local.trapti.tech"

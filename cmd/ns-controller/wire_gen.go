@@ -34,22 +34,23 @@ func NewWithDocker(c2 Config) (*Server, error) {
 		return nil, err
 	}
 	config := c2.Docker
-	imageConfig := c2.Image
-	backend, err := dockerimpl.NewDockerBackend(client, config, imageConfig)
+	publicKeys, err := provideRepositoryPublicKey(c2)
 	if err != nil {
 		return nil, err
 	}
+	imageConfig := c2.Image
 	admindbConfig := c2.DB
 	db, err := admindb.New(admindbConfig)
 	if err != nil {
 		return nil, err
 	}
 	applicationRepository := repository.NewApplicationRepository(db)
-	gitRepositoryRepository := repository.NewGitRepositoryRepository(db)
-	publicKeys, err := provideRepositoryPublicKey(c2)
+	userRepository := repository.NewUserRepository(db)
+	backend, err := dockerimpl.NewDockerBackend(client, config, publicKeys, imageConfig, applicationRepository, userRepository)
 	if err != nil {
 		return nil, err
 	}
+	gitRepositoryRepository := repository.NewGitRepositoryRepository(db)
 	buildRepository := repository.NewBuildRepository(db)
 	logStreamService := usecase.NewLogStreamService()
 	controllerBuilderService := grpc.NewControllerBuilderService(logStreamService)

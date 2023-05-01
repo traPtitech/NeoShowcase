@@ -1,0 +1,19 @@
+apiVersion: traefik.io/v1alpha1
+kind: IngressRoute
+metadata:
+  name: ns-ssh
+
+spec:
+  entryPoints:
+    - ns-ssh
+  routes:
+    - kind: Rule
+      match: HostSNI(`.*`)
+      services:
+        - namespace: ns-system
+          kind: Service
+          name: ns-controller
+          port: 2201
+          scheme: tcp
+          strategy: RoundRobin
+          weight: 1

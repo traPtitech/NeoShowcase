@@ -1,8 +1,8 @@
 resources:
   # ls components/*.yaml | sed -e 's/^/ - /g'
   - components/builder-deployment.yaml
-  - components/builder-role.yaml
   - components/builder-role-binding.yaml
+  - components/builder-role.yaml
   - components/builder-service-account.yaml
   - components/controller-role-binding.yaml
   - components/controller-role.yaml
@@ -10,13 +10,13 @@ resources:
   - components/controller-service.yaml
   - components/controller-stateful-set.yaml
   - components/dashboard-deployment.yaml
-  - components/dashboard-ingress-route.yaml
   - components/dashboard-service.yaml
   - components/gateway-deployment.yaml
-  - components/gateway-ingress-route.yaml
   - components/gateway-service.yaml
+  - components/ingress-route.yaml
   - components/ssgen-deployment.yaml
   - components/ssgen-service.yaml
+  - components/ssh-ingress-route.yaml
   # ls services/*.yaml | sed -e 's/^/ - /g'
   - services/adminer-deployment.yaml
   - services/adminer-ingress-route.yaml

@@ -24,6 +24,8 @@ spec:
             - --loglevel=debug
             - --config=/opt/config/ns-controller.yaml
           ports:
+            - containerPort: 2201
+              name: ssh
             - containerPort: 10000
               name: grpc
           volumeMounts:

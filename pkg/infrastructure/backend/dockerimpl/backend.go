@@ -13,6 +13,7 @@ import (
 	"github.com/docker/docker/api/types/filters"
 	"github.com/docker/docker/client"
 	"github.com/friendsofgo/errors"
+	"github.com/go-git/go-git/v5/plumbing/transport/ssh"
 	log "github.com/sirupsen/logrus"
 
 	"github.com/traPtitech/neoshowcase/pkg/domain"
@@ -33,10 +34,14 @@ const (
 )
 
 type dockerBackend struct {
-	c         *client.Client
-	conf      Config
-	image     builder.ImageConfig
+	c        *client.Client
+	config   Config
+	image    builder.ImageConfig
+	appRepo  domain.ApplicationRepository
+	userRepo domain.UserRepository
+
 	eventSubs domain.PubSub[*domain.ContainerEvent]
+	sshServer *sshServer
 
 	eventCh     <-chan events.Message
 	eventErr    <-chan error
@@ -51,18 +56,25 @@ func NewClientFromEnv() (*client.Client, error) {
 
 func NewDockerBackend(
 	c *client.Client,
-	conf Config,
+	config Config,
+	sshKey *ssh.PublicKeys,
 	image builder.ImageConfig,
+	appRepo domain.ApplicationRepository,
+	userRepo domain.UserRepository,
 ) (domain.Backend, error) {
-	err := conf.Validate()
+	err := config.Validate()
 	if err != nil {
 		return nil, err
 	}
-	return &dockerBackend{
-		c:     c,
-		conf:  conf,
-		image: image,
-	}, nil
+	b := &dockerBackend{
+		c:        c,
+		config:   config,
+		image:    image,
+		appRepo:  appRepo,
+		userRepo: userRepo,
+	}
+	b.sshServer = newSSHServer(b, config.SSH, sshKey)
+	return b, nil
 }
 
 func (b *dockerBackend) Start(ctx context.Context) error {
@@ -74,6 +86,8 @@ func (b *dockerBackend) Start(ctx context.Context) error {
 	eventCtx, eventCancel := context.WithCancel(context.Background())
 	b.eventCancel = eventCancel
 	go b.eventListenerLoop(eventCtx)
+
+	b.sshServer.Start()
 
 	return nil
 }
@@ -121,11 +135,11 @@ func (b *dockerBackend) eventListener(ctx context.Context) error {
 
 func (b *dockerBackend) Dispose(_ context.Context) error {
 	b.eventCancel()
-	return nil
+	return b.sshServer.Close()
 }
 
 func (b *dockerBackend) AuthAllowed(fqdn string) bool {
-	for _, ac := range b.conf.Middlewares.Auth {
+	for _, ac := range b.config.Middlewares.Auth {
 		if domain.MatchDomain(ac.Domain, fqdn) {
 			return true
 		}
@@ -134,7 +148,7 @@ func (b *dockerBackend) AuthAllowed(fqdn string) bool {
 }
 
 func (b *dockerBackend) targetAuth(fqdn string) *authConf {
-	for _, ac := range b.conf.Middlewares.Auth {
+	for _, ac := range b.config.Middlewares.Auth {
 		if domain.MatchDomain(ac.Domain, fqdn) {
 			return ac
 		}
@@ -152,12 +166,12 @@ func (b *dockerBackend) initNetworks(ctx context.Context) error {
 		return errors.Wrap(err, "failed to list networks")
 	}
 	for _, network := range networks {
-		if network.Name == b.conf.Network {
+		if network.Name == b.config.Network {
 			return nil
 		}
 	}
 
-	_, err = b.c.NetworkCreate(ctx, b.conf.Network, types.NetworkCreate{})
+	_, err = b.c.NetworkCreate(ctx, b.config.Network, types.NetworkCreate{})
 	return err
 }
 
@@ -177,7 +191,7 @@ func (b *dockerBackend) authConfig() (string, error) {
 }
 
 func (b *dockerBackend) containerLabels(app *domain.Application) map[string]string {
-	return ds.MergeMap(b.conf.labels(), map[string]string{
+	return ds.MergeMap(b.config.labels(), map[string]string{
 		appLabel:            "true",
 		appIDLabel:          app.ID,
 		appRestartedAtLabel: app.UpdatedAt.Format(time.RFC3339),

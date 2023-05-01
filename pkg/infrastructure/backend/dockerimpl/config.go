@@ -21,7 +21,8 @@ type labelConf = struct {
 }
 
 type Config struct {
-	ConfDir     string `mapstructure:"confDir" yaml:"confDir"`
+	SSH         sshConfig `mapstructure:"ssh" yaml:"ssh"`
+	ConfDir     string    `mapstructure:"confDir" yaml:"confDir"`
 	Middlewares struct {
 		Auth []*authConf `mapstructure:"auth" yaml:"auth"`
 	} `mapstructure:"middlewares" yaml:"middlewares"`

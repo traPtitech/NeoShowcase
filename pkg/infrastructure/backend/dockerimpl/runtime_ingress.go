@@ -66,9 +66,9 @@ func (b *dockerBackend) routerBase(website *domain.Website, svcName string) (rou
 	}
 
 	if website.HTTPS {
-		targetDomain := b.conf.TLS.Wildcard.Domains.TLSTargetDomain(website)
+		targetDomain := b.config.TLS.Wildcard.Domains.TLSTargetDomain(website)
 		router["tls"] = m{
-			"certResolver": b.conf.TLS.CertResolver,
+			"certResolver": b.config.TLS.CertResolver,
 			"domains": a{
 				m{"main": targetDomain},
 			},
@@ -140,7 +140,7 @@ func (b *runtimeConfigBuilder) build() m {
 }
 
 func (b *dockerBackend) writeConfig(filename string, config any) error {
-	file, err := os.OpenFile(filepath.Join(b.conf.ConfDir, filename), os.O_CREATE|os.O_TRUNC|os.O_WRONLY, 0644)
+	file, err := os.OpenFile(filepath.Join(b.config.ConfDir, filename), os.O_CREATE|os.O_TRUNC|os.O_WRONLY, 0644)
 	if err != nil {
 		return errors.Wrap(err, "failed to open config file")
 	}

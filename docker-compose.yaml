@@ -65,6 +65,12 @@ services:
         condition: service_healthy
       ns-migrate:
         condition: service_completed_successfully
+    labels:
+      - "traefik.enable=true"
+      - "traefik.tcp.routers.ns_controller.entrypoints=ns-ssh"
+      - "traefik.tcp.routers.ns_controller.rule=HostSNI(`*`)"
+      - "traefik.tcp.routers.ns_controller.service=ns_controller"
+      - "traefik.tcp.services.ns_controller.loadbalancer.server.port=2201"
     networks:
       - default
 
@@ -309,6 +315,7 @@ services:
       - --entrypoints.web.address=:80/tcp
       - --entrypoints.websecure.address=:443/tcp
       - --entrypoints.websecure.http.tls=true
+      - --entrypoints.ns-ssh.address=:2201/tcp
       - --entrypoints.traefik.address=:8080/tcp
       - --entrypoints.metrics.address=:9100/tcp
       - --api.dashboard=true
@@ -318,6 +325,7 @@ services:
     ports:
       - "80:80"
       - "443:443"
+      - "2201:2201"
       - "8080:8080"
       - "9100:9100"
     volumes:
