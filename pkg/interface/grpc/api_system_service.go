@@ -10,16 +10,9 @@ import (
 	"google.golang.org/protobuf/types/known/emptypb"
 
 	"github.com/traPtitech/neoshowcase/pkg/domain"
-	"github.com/traPtitech/neoshowcase/pkg/domain/web"
 	"github.com/traPtitech/neoshowcase/pkg/interface/grpc/pb"
 	"github.com/traPtitech/neoshowcase/pkg/interface/grpc/pbconvert"
 )
-
-func (s *APIService) GetMe(ctx context.Context, _ *connect.Request[emptypb.Empty]) (*connect.Response[pb.User], error) {
-	user := web.GetUser(ctx)
-	res := connect.NewResponse(pbconvert.ToPBUser(user))
-	return res, nil
-}
 
 func (s *APIService) GetSystemPublicKey(_ context.Context, _ *connect.Request[emptypb.Empty]) (*connect.Response[pb.GetSystemPublicKeyResponse], error) {
 	encoded := domain.Base64EncodedPublicKey(s.pubKey)

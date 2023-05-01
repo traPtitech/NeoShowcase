@@ -25,6 +25,18 @@ type UserKey struct {
 	PublicKey string
 }
 
+func NewUserKey(userID string, publicKey string) (*UserKey, error) {
+	key := &UserKey{
+		ID:        NewID(),
+		UserID:    userID,
+		PublicKey: publicKey,
+	}
+	if err := key.Validate(); err != nil {
+		return nil, err
+	}
+	return key, nil
+}
+
 func (u *UserKey) MarshalKey() []byte {
 	out, _, _, _, _ := ssh.ParseAuthorizedKey([]byte(u.PublicKey))
 	return out.Marshal()

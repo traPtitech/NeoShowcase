@@ -103,6 +103,166 @@ export class User extends Message<User> {
 }
 
 /**
+ * @generated from message neoshowcase.protobuf.UserKey
+ */
+export class UserKey extends Message<UserKey> {
+  /**
+   * @generated from field: string id = 1;
+   */
+  id = "";
+
+  /**
+   * @generated from field: string user_id = 2;
+   */
+  userId = "";
+
+  /**
+   * @generated from field: string public_key = 3;
+   */
+  publicKey = "";
+
+  constructor(data?: PartialMessage<UserKey>) {
+    super();
+    proto3.util.initPartial(data, this);
+  }
+
+  static readonly runtime: typeof proto3 = proto3;
+  static readonly typeName = "neoshowcase.protobuf.UserKey";
+  static readonly fields: FieldList = proto3.util.newFieldList(() => [
+    { no: 1, name: "id", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+    { no: 2, name: "user_id", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+    { no: 3, name: "public_key", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+  ]);
+
+  static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): UserKey {
+    return new UserKey().fromBinary(bytes, options);
+  }
+
+  static fromJson(jsonValue: JsonValue, options?: Partial<JsonReadOptions>): UserKey {
+    return new UserKey().fromJson(jsonValue, options);
+  }
+
+  static fromJsonString(jsonString: string, options?: Partial<JsonReadOptions>): UserKey {
+    return new UserKey().fromJsonString(jsonString, options);
+  }
+
+  static equals(a: UserKey | PlainMessage<UserKey> | undefined, b: UserKey | PlainMessage<UserKey> | undefined): boolean {
+    return proto3.util.equals(UserKey, a, b);
+  }
+}
+
+/**
+ * @generated from message neoshowcase.protobuf.GetUserKeysResponse
+ */
+export class GetUserKeysResponse extends Message<GetUserKeysResponse> {
+  /**
+   * @generated from field: repeated neoshowcase.protobuf.UserKey keys = 1;
+   */
+  keys: UserKey[] = [];
+
+  constructor(data?: PartialMessage<GetUserKeysResponse>) {
+    super();
+    proto3.util.initPartial(data, this);
+  }
+
+  static readonly runtime: typeof proto3 = proto3;
+  static readonly typeName = "neoshowcase.protobuf.GetUserKeysResponse";
+  static readonly fields: FieldList = proto3.util.newFieldList(() => [
+    { no: 1, name: "keys", kind: "message", T: UserKey, repeated: true },
+  ]);
+
+  static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): GetUserKeysResponse {
+    return new GetUserKeysResponse().fromBinary(bytes, options);
+  }
+
+  static fromJson(jsonValue: JsonValue, options?: Partial<JsonReadOptions>): GetUserKeysResponse {
+    return new GetUserKeysResponse().fromJson(jsonValue, options);
+  }
+
+  static fromJsonString(jsonString: string, options?: Partial<JsonReadOptions>): GetUserKeysResponse {
+    return new GetUserKeysResponse().fromJsonString(jsonString, options);
+  }
+
+  static equals(a: GetUserKeysResponse | PlainMessage<GetUserKeysResponse> | undefined, b: GetUserKeysResponse | PlainMessage<GetUserKeysResponse> | undefined): boolean {
+    return proto3.util.equals(GetUserKeysResponse, a, b);
+  }
+}
+
+/**
+ * @generated from message neoshowcase.protobuf.CreateUserKeyRequest
+ */
+export class CreateUserKeyRequest extends Message<CreateUserKeyRequest> {
+  /**
+   * @generated from field: string public_key = 1;
+   */
+  publicKey = "";
+
+  constructor(data?: PartialMessage<CreateUserKeyRequest>) {
+    super();
+    proto3.util.initPartial(data, this);
+  }
+
+  static readonly runtime: typeof proto3 = proto3;
+  static readonly typeName = "neoshowcase.protobuf.CreateUserKeyRequest";
+  static readonly fields: FieldList = proto3.util.newFieldList(() => [
+    { no: 1, name: "public_key", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+  ]);
+
+  static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): CreateUserKeyRequest {
+    return new CreateUserKeyRequest().fromBinary(bytes, options);
+  }
+
+  static fromJson(jsonValue: JsonValue, options?: Partial<JsonReadOptions>): CreateUserKeyRequest {
+    return new CreateUserKeyRequest().fromJson(jsonValue, options);
+  }
+
+  static fromJsonString(jsonString: string, options?: Partial<JsonReadOptions>): CreateUserKeyRequest {
+    return new CreateUserKeyRequest().fromJsonString(jsonString, options);
+  }
+
+  static equals(a: CreateUserKeyRequest | PlainMessage<CreateUserKeyRequest> | undefined, b: CreateUserKeyRequest | PlainMessage<CreateUserKeyRequest> | undefined): boolean {
+    return proto3.util.equals(CreateUserKeyRequest, a, b);
+  }
+}
+
+/**
+ * @generated from message neoshowcase.protobuf.DeleteUserKeyRequest
+ */
+export class DeleteUserKeyRequest extends Message<DeleteUserKeyRequest> {
+  /**
+   * @generated from field: string key_id = 1;
+   */
+  keyId = "";
+
+  constructor(data?: PartialMessage<DeleteUserKeyRequest>) {
+    super();
+    proto3.util.initPartial(data, this);
+  }
+
+  static readonly runtime: typeof proto3 = proto3;
+  static readonly typeName = "neoshowcase.protobuf.DeleteUserKeyRequest";
+  static readonly fields: FieldList = proto3.util.newFieldList(() => [
+    { no: 1, name: "key_id", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+  ]);
+
+  static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): DeleteUserKeyRequest {
+    return new DeleteUserKeyRequest().fromBinary(bytes, options);
+  }
+
+  static fromJson(jsonValue: JsonValue, options?: Partial<JsonReadOptions>): DeleteUserKeyRequest {
+    return new DeleteUserKeyRequest().fromJson(jsonValue, options);
+  }
+
+  static fromJsonString(jsonString: string, options?: Partial<JsonReadOptions>): DeleteUserKeyRequest {
+    return new DeleteUserKeyRequest().fromJsonString(jsonString, options);
+  }
+
+  static equals(a: DeleteUserKeyRequest | PlainMessage<DeleteUserKeyRequest> | undefined, b: DeleteUserKeyRequest | PlainMessage<DeleteUserKeyRequest> | undefined): boolean {
+    return proto3.util.equals(DeleteUserKeyRequest, a, b);
+  }
+}
+
+/**
  * @generated from message neoshowcase.protobuf.Repository
  */
 export class Repository extends Message<Repository> {

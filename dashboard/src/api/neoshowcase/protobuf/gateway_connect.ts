@@ -4,16 +4,51 @@
 // @ts-nocheck
 
 import { Empty, MethodKind } from "@bufbuild/protobuf";
-import { Application, ApplicationEnvVars, ApplicationIdRequest, ApplicationOutput, ArtifactContent, ArtifactIdRequest, AvailableDomain, AvailableDomains, Build, BuildIdRequest, BuildLog, CreateApplicationRequest, CreateRepositoryRequest, GetApplicationsResponse, GetBuildsResponse, GetOutputRequest, GetOutputResponse, GetOutputStreamRequest, GetRepositoriesResponse, GetSystemPublicKeyResponse, Repository, RepositoryIdRequest, RetryCommitBuildRequest, SetApplicationEnvVarRequest, UpdateApplicationRequest, UpdateRepositoryRequest, User } from "./gateway_pb.js";
+import { Application, ApplicationEnvVars, ApplicationIdRequest, ApplicationOutput, ArtifactContent, ArtifactIdRequest, AvailableDomain, AvailableDomains, Build, BuildIdRequest, BuildLog, CreateApplicationRequest, CreateRepositoryRequest, CreateUserKeyRequest, DeleteUserKeyRequest, GetApplicationsResponse, GetBuildsResponse, GetOutputRequest, GetOutputResponse, GetOutputStreamRequest, GetRepositoriesResponse, GetSystemPublicKeyResponse, GetUserKeysResponse, Repository, RepositoryIdRequest, RetryCommitBuildRequest, SetApplicationEnvVarRequest, UpdateApplicationRequest, UpdateRepositoryRequest, User, UserKey } from "./gateway_pb.js";
 
 /**
+ * General / System
+ *
  * @generated from service neoshowcase.protobuf.APIService
  */
 export const APIService = {
   typeName: "neoshowcase.protobuf.APIService",
   methods: {
     /**
-     * System
+     * GetSystemPublicKey システムのSSH公開鍵を取得します リポジトリごとにSSH秘密鍵を設定しないデフォルトSSH認証で使用します
+     *
+     * @generated from rpc neoshowcase.protobuf.APIService.GetSystemPublicKey
+     */
+    getSystemPublicKey: {
+      name: "GetSystemPublicKey",
+      I: Empty,
+      O: GetSystemPublicKeyResponse,
+      kind: MethodKind.Unary,
+    },
+    /**
+     * GetAvailableDomains 使用可能なドメイン一覧を取得します
+     *
+     * @generated from rpc neoshowcase.protobuf.APIService.GetAvailableDomains
+     */
+    getAvailableDomains: {
+      name: "GetAvailableDomains",
+      I: Empty,
+      O: AvailableDomains,
+      kind: MethodKind.Unary,
+    },
+    /**
+     * AddAvailableDomain 使用可能なドメインを登録します（admin only）
+     *
+     * @generated from rpc neoshowcase.protobuf.APIService.AddAvailableDomain
+     */
+    addAvailableDomain: {
+      name: "AddAvailableDomain",
+      I: AvailableDomain,
+      O: Empty,
+      kind: MethodKind.Unary,
+    },
+    /**
+     * GetMe 自身の情報を取得します プロキシ認証のため常に成功します
      *
      * @generated from rpc neoshowcase.protobuf.APIService.GetMe
      */
@@ -24,34 +59,40 @@ export const APIService = {
       kind: MethodKind.Unary,
     },
     /**
-     * @generated from rpc neoshowcase.protobuf.APIService.GetSystemPublicKey
+     * CreateUserKey アプリコンテナSSH用の公開鍵を登録します
+     *
+     * @generated from rpc neoshowcase.protobuf.APIService.CreateUserKey
      */
-    getSystemPublicKey: {
-      name: "GetSystemPublicKey",
-      I: Empty,
-      O: GetSystemPublicKeyResponse,
+    createUserKey: {
+      name: "CreateUserKey",
+      I: CreateUserKeyRequest,
+      O: UserKey,
       kind: MethodKind.Unary,
     },
     /**
-     * @generated from rpc neoshowcase.protobuf.APIService.GetAvailableDomains
+     * GetUserKeys 登録した公開鍵一覧を取得します
+     *
+     * @generated from rpc neoshowcase.protobuf.APIService.GetUserKeys
      */
-    getAvailableDomains: {
-      name: "GetAvailableDomains",
+    getUserKeys: {
+      name: "GetUserKeys",
       I: Empty,
-      O: AvailableDomains,
+      O: GetUserKeysResponse,
       kind: MethodKind.Unary,
     },
     /**
-     * @generated from rpc neoshowcase.protobuf.APIService.AddAvailableDomain
+     * DeleteUserKey 登録した公開鍵を削除します
+     *
+     * @generated from rpc neoshowcase.protobuf.APIService.DeleteUserKey
      */
-    addAvailableDomain: {
-      name: "AddAvailableDomain",
-      I: AvailableDomain,
+    deleteUserKey: {
+      name: "DeleteUserKey",
+      I: DeleteUserKeyRequest,
       O: Empty,
       kind: MethodKind.Unary,
     },
     /**
-     * Repository CRUD
+     * CreateRepository リポジトリを登録します
      *
      * @generated from rpc neoshowcase.protobuf.APIService.CreateRepository
      */
@@ -62,6 +103,8 @@ export const APIService = {
       kind: MethodKind.Unary,
     },
     /**
+     * GetRepositories リポジトリ一覧を取得します
+     *
      * @generated from rpc neoshowcase.protobuf.APIService.GetRepositories
      */
     getRepositories: {
@@ -71,6 +114,8 @@ export const APIService = {
       kind: MethodKind.Unary,
     },
     /**
+     * GetRepository リポジトリを取得します
+     *
      * @generated from rpc neoshowcase.protobuf.APIService.GetRepository
      */
     getRepository: {
@@ -80,6 +125,8 @@ export const APIService = {
       kind: MethodKind.Unary,
     },
     /**
+     * UpdateRepository リポジトリ情報を更新します
+     *
      * @generated from rpc neoshowcase.protobuf.APIService.UpdateRepository
      */
     updateRepository: {
@@ -89,6 +136,8 @@ export const APIService = {
       kind: MethodKind.Unary,
     },
     /**
+     * DeleteRepository リポジトリを削除します 関連する全てのアプリケーションの削除が必要です
+     *
      * @generated from rpc neoshowcase.protobuf.APIService.DeleteRepository
      */
     deleteRepository: {
@@ -98,7 +147,7 @@ export const APIService = {
       kind: MethodKind.Unary,
     },
     /**
-     * Application CRUD
+     * CreateApplication アプリを作成します
      *
      * @generated from rpc neoshowcase.protobuf.APIService.CreateApplication
      */
@@ -109,6 +158,8 @@ export const APIService = {
       kind: MethodKind.Unary,
     },
     /**
+     * GetApplications アプリ一覧を取得します
+     *
      * @generated from rpc neoshowcase.protobuf.APIService.GetApplications
      */
     getApplications: {
@@ -118,6 +169,8 @@ export const APIService = {
       kind: MethodKind.Unary,
     },
     /**
+     * GetApplication アプリを取得します
+     *
      * @generated from rpc neoshowcase.protobuf.APIService.GetApplication
      */
     getApplication: {
@@ -127,6 +180,8 @@ export const APIService = {
       kind: MethodKind.Unary,
     },
     /**
+     * UpdateApplication アプリ情報を更新します
+     *
      * @generated from rpc neoshowcase.protobuf.APIService.UpdateApplication
      */
     updateApplication: {
@@ -136,6 +191,8 @@ export const APIService = {
       kind: MethodKind.Unary,
     },
     /**
+     * DeleteApplication アプリを削除します 先にアプリのシャットダウンが必要です
+     *
      * @generated from rpc neoshowcase.protobuf.APIService.DeleteApplication
      */
     deleteApplication: {
@@ -145,7 +202,7 @@ export const APIService = {
       kind: MethodKind.Unary,
     },
     /**
-     * Application info / config
+     * GetEnvVars アプリの環境変数を取得します
      *
      * @generated from rpc neoshowcase.protobuf.APIService.GetEnvVars
      */
@@ -156,6 +213,8 @@ export const APIService = {
       kind: MethodKind.Unary,
     },
     /**
+     * SetEnvVar アプリの環境変数をセットします システムによって設定された環境変数は上書きできません
+     *
      * @generated from rpc neoshowcase.protobuf.APIService.SetEnvVar
      */
     setEnvVar: {
@@ -165,6 +224,8 @@ export const APIService = {
       kind: MethodKind.Unary,
     },
     /**
+     * GetOutput アプリの出力を取得します
+     *
      * @generated from rpc neoshowcase.protobuf.APIService.GetOutput
      */
     getOutput: {
@@ -174,6 +235,8 @@ export const APIService = {
       kind: MethodKind.Unary,
     },
     /**
+     * GetOutputStream アプリの出力をストリーム形式で取得します
+     *
      * @generated from rpc neoshowcase.protobuf.APIService.GetOutputStream
      */
     getOutputStream: {
@@ -183,6 +246,8 @@ export const APIService = {
       kind: MethodKind.ServerStreaming,
     },
     /**
+     * StartApplication アプリを起動します 起動中の場合は再起動します
+     *
      * @generated from rpc neoshowcase.protobuf.APIService.StartApplication
      */
     startApplication: {
@@ -192,6 +257,8 @@ export const APIService = {
       kind: MethodKind.Unary,
     },
     /**
+     * StopApplication アプリをシャットダウンします
+     *
      * @generated from rpc neoshowcase.protobuf.APIService.StopApplication
      */
     stopApplication: {
@@ -201,7 +268,7 @@ export const APIService = {
       kind: MethodKind.Unary,
     },
     /**
-     * Application builds
+     * GetBuilds アプリのビルド一覧を取得します
      *
      * @generated from rpc neoshowcase.protobuf.APIService.GetBuilds
      */
@@ -212,6 +279,8 @@ export const APIService = {
       kind: MethodKind.Unary,
     },
     /**
+     * GetBuild アプリのビルド情報を取得します
+     *
      * @generated from rpc neoshowcase.protobuf.APIService.GetBuild
      */
     getBuild: {
@@ -221,6 +290,8 @@ export const APIService = {
       kind: MethodKind.Unary,
     },
     /**
+     * RetryCommitBuild アプリの該当コミットのビルドをやり直します
+     *
      * @generated from rpc neoshowcase.protobuf.APIService.RetryCommitBuild
      */
     retryCommitBuild: {
@@ -230,6 +301,8 @@ export const APIService = {
       kind: MethodKind.Unary,
     },
     /**
+     * CancelBuild 該当ビルドが進行中の場合キャンセルします
+     *
      * @generated from rpc neoshowcase.protobuf.APIService.CancelBuild
      */
     cancelBuild: {
@@ -239,6 +312,8 @@ export const APIService = {
       kind: MethodKind.Unary,
     },
     /**
+     * GetBuildLog 終了したビルドのログを取得します
+     *
      * @generated from rpc neoshowcase.protobuf.APIService.GetBuildLog
      */
     getBuildLog: {
@@ -248,6 +323,8 @@ export const APIService = {
       kind: MethodKind.Unary,
     },
     /**
+     * GetBuildLogStream ビルド中のログをストリーム形式で取得します
+     *
      * @generated from rpc neoshowcase.protobuf.APIService.GetBuildLogStream
      */
     getBuildLogStream: {
@@ -257,6 +334,8 @@ export const APIService = {
       kind: MethodKind.ServerStreaming,
     },
     /**
+     * GetBuildArtifact 静的サイトアプリの場合ビルド成果物（静的ファイルのtar）を取得します
+     *
      * @generated from rpc neoshowcase.protobuf.APIService.GetBuildArtifact
      */
     getBuildArtifact: {
