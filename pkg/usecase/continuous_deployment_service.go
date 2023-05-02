@@ -9,6 +9,7 @@ import (
 	"github.com/friendsofgo/errors"
 	"github.com/samber/lo"
 	log "github.com/sirupsen/logrus"
+	"golang.org/x/exp/slices"
 
 	"github.com/traPtitech/neoshowcase/pkg/domain"
 	"github.com/traPtitech/neoshowcase/pkg/util/coalesce"
@@ -236,11 +237,10 @@ func (cd *continuousDeploymentService) detectBuildCrash(ctx context.Context) err
 	return nil
 }
 
-func (cd *continuousDeploymentService) _syncAppCommits(ctx context.Context) error {
-	// Get out-of-sync applications
+func (cd *continuousDeploymentService) _syncAppFields(ctx context.Context) error {
+	// Get all running applications
 	apps, err := cd.appRepo.GetApplications(ctx, domain.GetApplicationCondition{
 		Running: optional.From(true),
-		InSync:  optional.From(false),
 	})
 	if err != nil {
 		return err
@@ -253,12 +253,21 @@ func (cd *continuousDeploymentService) _syncAppCommits(ctx context.Context) erro
 	if err != nil {
 		return err
 	}
-	buildExists := lo.SliceToMap(builds, func(b *domain.Build) (string, bool) { return b.ApplicationID + b.Commit, true })
 
-	// Check if build has succeeded, and if so save as synced
+	slices.SortFunc(builds, func(b1, b2 *domain.Build) bool { return b1.FinishedAt.V.Before(b2.FinishedAt.V) })
+	latestBuild := lo.SliceToMap(builds, func(b *domain.Build) (string, *domain.Build) { return b.ApplicationID + b.Commit, b })
+
 	for _, app := range apps {
-		if buildExists[app.ID+app.WantCommit] {
-			err = cd.appRepo.UpdateApplication(ctx, app.ID, &domain.UpdateApplicationArgs{CurrentCommit: optional.From(app.WantCommit)})
+		// Check if build has succeeded, if so sync 'current_commit' and 'updated_at' fields for restarting app
+		if b, ok := latestBuild[app.ID+app.WantCommit]; ok {
+			isSynced := app.CurrentCommit == app.WantCommit && !app.UpdatedAt.Before(b.FinishedAt.V)
+			if isSynced {
+				continue
+			}
+			err = cd.appRepo.UpdateApplication(ctx, app.ID, &domain.UpdateApplicationArgs{
+				CurrentCommit: optional.From(app.WantCommit),
+				UpdatedAt:     optional.From(b.FinishedAt.V),
+			})
 			if err != nil {
 				return errors.Wrap(err, "failed to sync application commit")
 			}
@@ -268,8 +277,8 @@ func (cd *continuousDeploymentService) _syncAppCommits(ctx context.Context) erro
 }
 
 func (cd *continuousDeploymentService) syncDeployments(ctx context.Context) error {
-	// Sync current commit fields
-	err := cd._syncAppCommits(ctx)
+	// Sync app fields from build result
+	err := cd._syncAppFields(ctx)
 	if err != nil {
 		return err
 	}
