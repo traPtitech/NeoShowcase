@@ -83,20 +83,20 @@ func (b *dockerBackend) syncAppContainer(ctx context.Context, app *domain.Runtim
 			MaximumRetryCount: 5,
 		},
 	}
-	if b.conf.Resources.CPUs != 0 {
-		hostConfig.NanoCPUs = int64(b.conf.Resources.CPUs * 1e9)
+	if b.config.Resources.CPUs != 0 {
+		hostConfig.NanoCPUs = int64(b.config.Resources.CPUs * 1e9)
 	}
-	if b.conf.Resources.Memory != 0 {
-		hostConfig.Memory = b.conf.Resources.Memory
+	if b.config.Resources.Memory != 0 {
+		hostConfig.Memory = b.config.Resources.Memory
 	}
-	if b.conf.Resources.MemorySwap != 0 {
-		hostConfig.MemorySwap = b.conf.Resources.MemorySwap
+	if b.config.Resources.MemorySwap != 0 {
+		hostConfig.MemorySwap = b.config.Resources.MemorySwap
 	}
-	if b.conf.Resources.MemoryReservation != 0 {
-		hostConfig.MemoryReservation = b.conf.Resources.MemoryReservation
+	if b.config.Resources.MemoryReservation != 0 {
+		hostConfig.MemoryReservation = b.config.Resources.MemoryReservation
 	}
 	networkingConfig := &network.NetworkingConfig{EndpointsConfig: map[string]*network.EndpointSettings{
-		b.conf.Network: {
+		b.config.Network: {
 			Aliases: []string{networkName(app.App.ID)},
 		},
 	}}

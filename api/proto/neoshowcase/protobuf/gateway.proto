@@ -12,6 +12,24 @@ message User {
   bool admin = 3;
 }
 
+message UserKey {
+  string id = 1;
+  string user_id = 2;
+  string public_key = 3;
+}
+
+message GetUserKeysResponse {
+  repeated UserKey keys = 1;
+}
+
+message CreateUserKeyRequest {
+  string public_key = 1;
+}
+
+message DeleteUserKeyRequest {
+  string key_id = 1;
+}
+
 message Repository {
   enum AuthMethod {
     BASIC = 0;
@@ -306,14 +324,23 @@ message RetryCommitBuildRequest {
 service APIService {
   // General / System
 
-  // GetMe 自身の情報を取得します プロキシ認証のため常に成功します
-  rpc GetMe(google.protobuf.Empty) returns (User);
   // GetSystemPublicKey システムのSSH公開鍵を取得します リポジトリごとにSSH秘密鍵を設定しないデフォルトSSH認証で使用します
   rpc GetSystemPublicKey(google.protobuf.Empty) returns (GetSystemPublicKeyResponse);
   // GetAvailableDomains 使用可能なドメイン一覧を取得します
   rpc GetAvailableDomains(google.protobuf.Empty) returns (AvailableDomains);
   // AddAvailableDomain 使用可能なドメインを登録します（admin only）
   rpc AddAvailableDomain(AvailableDomain) returns (google.protobuf.Empty);
+
+  // User
+
+  // GetMe 自身の情報を取得します プロキシ認証のため常に成功します
+  rpc GetMe(google.protobuf.Empty) returns (User);
+  // CreateUserKey アプリコンテナSSH用の公開鍵を登録します
+  rpc CreateUserKey(CreateUserKeyRequest) returns (UserKey);
+  // GetUserKeys 登録した公開鍵一覧を取得します
+  rpc GetUserKeys(google.protobuf.Empty) returns (GetUserKeysResponse);
+  // DeleteUserKey 登録した公開鍵を削除します
+  rpc DeleteUserKey(DeleteUserKeyRequest) returns (google.protobuf.Empty);
 
   // Repository CRUD
 

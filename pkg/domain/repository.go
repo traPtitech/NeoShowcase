@@ -171,6 +171,18 @@ type CreateUserArgs struct {
 	Name string
 }
 
+type GetUserCondition struct {
+	Admin optional.Of[bool]
+}
+
+type GetUserKeyCondition struct {
+	UserIDs optional.Of[[]string]
+}
+
 type UserRepository interface {
 	GetOrCreateUser(ctx context.Context, name string) (*User, error)
+	GetUsers(ctx context.Context, cond GetUserCondition) ([]*User, error)
+	GetUserKeys(ctx context.Context, cond GetUserKeyCondition) ([]*UserKey, error)
+	CreateUserKey(ctx context.Context, key *UserKey) error
+	DeleteUserKey(ctx context.Context, keyID string, userID string) error
 }

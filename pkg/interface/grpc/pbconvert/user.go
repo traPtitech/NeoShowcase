@@ -12,3 +12,11 @@ func ToPBUser(user *domain.User) *pb.User {
 		Admin: user.Admin,
 	}
 }
+
+func ToPBUserKey(key *domain.UserKey) *pb.UserKey {
+	return &pb.UserKey{
+		Id:        key.ID,
+		UserId:    key.UserID,
+		PublicKey: key.PublicKey,
+	}
+}

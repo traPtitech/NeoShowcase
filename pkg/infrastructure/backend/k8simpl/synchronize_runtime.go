@@ -17,10 +17,11 @@ func (b *k8sBackend) statefulSet(app *domain.RuntimeDesiredState) *appsv1.Statef
 	})
 
 	cont := v1.Container{
-		Name:      "app",
-		Image:     app.ImageName + ":" + app.ImageTag,
-		Env:       envs,
-		Resources: b.config.resourceRequirements(),
+		Name:            podContainerName,
+		Image:           app.ImageName + ":" + app.ImageTag,
+		Env:             envs,
+		Resources:       b.config.resourceRequirements(),
+		ImagePullPolicy: v1.PullAlways,
 	}
 	if app.App.Config.Entrypoint != "" {
 		cont.Command = app.App.Config.EntrypointArgs()

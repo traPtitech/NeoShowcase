@@ -2,6 +2,7 @@ package domain
 
 import (
 	"context"
+	"io"
 	"strings"
 )
 
@@ -68,4 +69,5 @@ type Backend interface {
 	Synchronize(ctx context.Context, s *DesiredState) error
 	GetContainer(ctx context.Context, appID string) (*Container, error)
 	ListContainers(ctx context.Context) ([]*Container, error)
+	ExecContainer(ctx context.Context, appID string, cmd []string, stdin io.Reader, stdout, stderr io.Writer) error
 }

@@ -46,7 +46,7 @@ func NewWithDocker(c2 Config) (*Server, error) {
 	}
 	applicationRepository := repository.NewApplicationRepository(db)
 	gitRepositoryRepository := repository.NewGitRepositoryRepository(db)
-	publicKeys, err := provideRepositoryPublicKey(c2)
+	publicKeys, err := providePublicKey(c2)
 	if err != nil {
 		return nil, err
 	}
@@ -68,6 +68,9 @@ func NewWithDocker(c2 Config) (*Server, error) {
 	}
 	controllerServiceHandler := grpc.NewControllerService(backend, repositoryFetcherService, continuousDeploymentService, controllerBuilderService, logStreamService)
 	mainControllerServer := provideControllerServer(c2, controllerServiceHandler, controllerBuilderService, controllerSSGenService)
+	sshConfig := c2.SSH
+	userRepository := repository.NewUserRepository(db)
+	sshServer := usecase.NewSSHServer(sshConfig, publicKeys, backend, applicationRepository, userRepository)
 	artifactRepository := repository.NewArtifactRepository(db)
 	storageConfig := c2.Storage
 	storage, err := provideStorage(storageConfig)
@@ -82,6 +85,7 @@ func NewWithDocker(c2 Config) (*Server, error) {
 		controllerServer: mainControllerServer,
 		db:               db,
 		backend:          backend,
+		sshServer:        sshServer,
 		cdService:        continuousDeploymentService,
 		fetcherService:   repositoryFetcherService,
 		cleanerService:   cleanerService,
@@ -107,7 +111,7 @@ func NewWithK8S(c2 Config) (*Server, error) {
 		return nil, err
 	}
 	k8simplConfig := c2.K8s
-	backend, err := k8simpl.NewK8SBackend(clientset, traefikV1alpha1Client, versionedClientset, k8simplConfig)
+	backend, err := k8simpl.NewK8SBackend(config, clientset, traefikV1alpha1Client, versionedClientset, k8simplConfig)
 	if err != nil {
 		return nil, err
 	}
@@ -118,7 +122,7 @@ func NewWithK8S(c2 Config) (*Server, error) {
 	}
 	applicationRepository := repository.NewApplicationRepository(db)
 	gitRepositoryRepository := repository.NewGitRepositoryRepository(db)
-	publicKeys, err := provideRepositoryPublicKey(c2)
+	publicKeys, err := providePublicKey(c2)
 	if err != nil {
 		return nil, err
 	}
@@ -141,6 +145,9 @@ func NewWithK8S(c2 Config) (*Server, error) {
 	}
 	controllerServiceHandler := grpc.NewControllerService(backend, repositoryFetcherService, continuousDeploymentService, controllerBuilderService, logStreamService)
 	mainControllerServer := provideControllerServer(c2, controllerServiceHandler, controllerBuilderService, controllerSSGenService)
+	sshConfig := c2.SSH
+	userRepository := repository.NewUserRepository(db)
+	sshServer := usecase.NewSSHServer(sshConfig, publicKeys, backend, applicationRepository, userRepository)
 	artifactRepository := repository.NewArtifactRepository(db)
 	storageConfig := c2.Storage
 	storage, err := provideStorage(storageConfig)
@@ -155,6 +162,7 @@ func NewWithK8S(c2 Config) (*Server, error) {
 		controllerServer: mainControllerServer,
 		db:               db,
 		backend:          backend,
+		sshServer:        sshServer,
 		cdService:        continuousDeploymentService,
 		fetcherService:   repositoryFetcherService,
 		cleanerService:   cleanerService,
@@ -164,9 +172,9 @@ func NewWithK8S(c2 Config) (*Server, error) {
 
 // wire.go:
 
-var commonSet = wire.NewSet(admindb.New, dbmanager.NewMariaDBManager, dbmanager.NewMongoDBManager, repository.NewApplicationRepository, repository.NewAvailableDomainRepository, repository.NewGitRepositoryRepository, repository.NewEnvironmentRepository, repository.NewBuildRepository, repository.NewArtifactRepository, repository.NewUserRepository, grpc.NewAPIServiceServer, grpc.NewAuthInterceptor, grpc.NewControllerService, grpc.NewControllerBuilderService, grpc.NewControllerSSGenService, usecase.NewAPIServerService, usecase.NewAppBuildHelper, usecase.NewAppDeployHelper, usecase.NewContinuousDeploymentService, usecase.NewRepositoryFetcherService, usecase.NewCleanerService, usecase.NewLogStreamService, usecase.NewContainerStateMutator, provideRepositoryPublicKey,
+var commonSet = wire.NewSet(admindb.New, dbmanager.NewMariaDBManager, dbmanager.NewMongoDBManager, repository.NewApplicationRepository, repository.NewAvailableDomainRepository, repository.NewGitRepositoryRepository, repository.NewEnvironmentRepository, repository.NewBuildRepository, repository.NewArtifactRepository, repository.NewUserRepository, grpc.NewAPIServiceServer, grpc.NewAuthInterceptor, grpc.NewControllerService, grpc.NewControllerBuilderService, grpc.NewControllerSSGenService, usecase.NewAPIServerService, usecase.NewAppBuildHelper, usecase.NewAppDeployHelper, usecase.NewContinuousDeploymentService, usecase.NewRepositoryFetcherService, usecase.NewCleanerService, usecase.NewLogStreamService, usecase.NewContainerStateMutator, usecase.NewSSHServer, providePublicKey,
 	provideStorage,
-	provideControllerServer, wire.FieldsOf(new(Config), "DB", "Storage", "Docker", "K8s", "Image"), wire.Struct(new(Server), "*"),
+	provideControllerServer, wire.FieldsOf(new(Config), "Docker", "K8s", "SSH", "DB", "Storage", "Image"), wire.Struct(new(Server), "*"),
 )
 
 func New(c2 Config) (*Server, error) {

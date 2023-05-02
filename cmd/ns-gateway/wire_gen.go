@@ -32,6 +32,7 @@ func NewServer(c2 Config) (*Server, error) {
 	buildRepository := repository.NewBuildRepository(db)
 	environmentRepository := repository.NewEnvironmentRepository(db)
 	gitRepositoryRepository := repository.NewGitRepositoryRepository(db)
+	userRepository := repository.NewUserRepository(db)
 	storageConfig := c2.Storage
 	storage, err := provideStorage(storageConfig)
 	if err != nil {
@@ -53,13 +54,12 @@ func NewServer(c2 Config) (*Server, error) {
 	}
 	controllerServiceClientConfig := c2.Controller
 	controllerServiceClient := grpc.NewControllerServiceClient(controllerServiceClientConfig)
-	apiServerService := usecase.NewAPIServerService(artifactRepository, applicationRepository, availableDomainRepository, buildRepository, environmentRepository, gitRepositoryRepository, storage, mariaDBManager, mongoDBManager, containerLogger, controllerServiceClient)
+	apiServerService := usecase.NewAPIServerService(artifactRepository, applicationRepository, availableDomainRepository, buildRepository, environmentRepository, gitRepositoryRepository, userRepository, storage, mariaDBManager, mongoDBManager, containerLogger, controllerServiceClient)
 	publicKeys, err := provideRepositoryPublicKey(c2)
 	if err != nil {
 		return nil, err
 	}
 	apiServiceHandler := grpc.NewAPIServiceServer(apiServerService, publicKeys)
-	userRepository := repository.NewUserRepository(db)
 	authHeader := c2.AuthHeader
 	authInterceptor := grpc.NewAuthInterceptor(userRepository, authHeader)
 	mainGatewayServer := provideGatewayServer(c2, apiServiceHandler, authInterceptor)

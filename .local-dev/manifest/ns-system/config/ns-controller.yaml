@@ -1,22 +1,7 @@
 port: 10000
 debug: false
+privateKeyFile: /keys/id_ed25519
 mode: k8s
-
-db:
-  host: mariadb.ns-system.svc.cluster.local
-  port: 3306
-  username: root
-  password: password
-  database: neoshowcase
-
-storage:
-  type: s3
-  s3:
-    bucket: neoshowcase
-    accessKey: NEOSHOWCASEMINIOROOTUSER
-    accessSecret: 593fbde300c5718e416886e7e4be339d903541b3900f211ceb89f5b4052a98b3
-    region: us-east-1
-    endpoint: http://minio.ns-system.svc.cluster.local
 
 k8s:
   middlewares:
@@ -55,8 +40,24 @@ k8s:
       cpu: 1600m
       memory: 1G
 
-repository:
-  privateKeyFile: /keys/id_ed25519
+ssh:
+  port: 2201
+
+db:
+  host: mariadb.ns-system.svc.cluster.local
+  port: 3306
+  username: root
+  password: password
+  database: neoshowcase
+
+storage:
+  type: s3
+  s3:
+    bucket: neoshowcase
+    accessKey: NEOSHOWCASEMINIOROOTUSER
+    accessSecret: 593fbde300c5718e416886e7e4be339d903541b3900f211ceb89f5b4052a98b3
+    region: us-east-1
+    endpoint: http://minio.ns-system.svc.cluster.local
 
 image:
   registry:

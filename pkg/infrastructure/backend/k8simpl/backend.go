@@ -14,6 +14,7 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/watch"
 	"k8s.io/client-go/kubernetes"
+	"k8s.io/client-go/rest"
 
 	"github.com/traPtitech/neoshowcase/pkg/domain"
 	"github.com/traPtitech/neoshowcase/pkg/util/ds"
@@ -27,17 +28,20 @@ const (
 )
 
 type k8sBackend struct {
+	restConfig        *rest.Config
 	client            *kubernetes.Clientset
 	traefikClient     *traefikv1alpha1.TraefikV1alpha1Client
 	certManagerClient *certmanagerv1.Clientset
 	config            Config
-	eventSubs         domain.PubSub[*domain.ContainerEvent]
+
+	eventSubs domain.PubSub[*domain.ContainerEvent]
 
 	podWatcher watch.Interface
 	reloadLock sync.Mutex
 }
 
 func NewK8SBackend(
+	restConfig *rest.Config,
 	k8sCSet *kubernetes.Clientset,
 	traefikClient *traefikv1alpha1.TraefikV1alpha1Client,
 	certManagerClient *certmanagerv1.Clientset,
@@ -47,12 +51,14 @@ func NewK8SBackend(
 	if err != nil {
 		return nil, err
 	}
-	return &k8sBackend{
+	b := &k8sBackend{
+		restConfig:        restConfig,
 		client:            k8sCSet,
 		traefikClient:     traefikClient,
 		certManagerClient: certManagerClient,
 		config:            config,
-	}, nil
+	}
+	return b, nil
 }
 
 func (b *k8sBackend) Start(_ context.Context) error {
@@ -66,6 +72,7 @@ func (b *k8sBackend) Start(_ context.Context) error {
 		return errors.Wrap(err, "failed to watch pods")
 	}
 	go b.eventListener()
+
 	return nil
 }
 
@@ -146,6 +153,12 @@ func appSelector(appID string) map[string]string {
 func deploymentName(appID string) string {
 	return fmt.Sprintf("nsapp-%s", appID)
 }
+
+func generatedPodName(appID string) string {
+	return deploymentName(appID) + "-0"
+}
+
+const podContainerName = "app"
 
 func serviceName(website *domain.Website) string {
 	return fmt.Sprintf("nsapp-%s", website.ID)

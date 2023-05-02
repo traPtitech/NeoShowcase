@@ -16,7 +16,7 @@ spec:
         valueFiles:
           - $values/.local-dev/manifest/grafana/values.yaml
     - repoURL: https://github.com/traPtitech/NeoShowcase
-      targetRevision: master
+      targetRevision: main
       ref: values
   syncPolicy:
     syncOptions:

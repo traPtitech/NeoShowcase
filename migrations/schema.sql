@@ -17,6 +17,17 @@ CREATE TABLE `users`
   DEFAULT CHARSET = utf8mb4
   COLLATE = utf8mb4_general_ci COMMENT ='ユーザーテーブル';
 
+CREATE TABLE `user_keys`
+(
+    `id`         CHAR(22) NOT NULL COMMENT 'ID',
+    `user_id`    CHAR(22) NOT NULL COMMENT 'ユーザーID',
+    `public_key` TEXT     NOT NULL COMMENT 'SSH Public Key',
+    PRIMARY KEY (`id`),
+    CONSTRAINT `fk_user_keys_user_id` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`)
+) ENGINE = InnoDB
+  DEFAULT CHARSET = utf8mb4
+  COLLATE = utf8mb4_general_ci COMMENT = 'ユーザーSSHキーテーブル';
+
 CREATE TABLE `repositories`
 (
     `id`   CHAR(22)     NOT NULL COMMENT 'リポジトリID',

@@ -34,8 +34,6 @@ const (
 // reflection-formatted method names, remove the leading slash and convert the remaining slash to a
 // period.
 const (
-	// APIServiceGetMeProcedure is the fully-qualified name of the APIService's GetMe RPC.
-	APIServiceGetMeProcedure = "/neoshowcase.protobuf.APIService/GetMe"
 	// APIServiceGetSystemPublicKeyProcedure is the fully-qualified name of the APIService's
 	// GetSystemPublicKey RPC.
 	APIServiceGetSystemPublicKeyProcedure = "/neoshowcase.protobuf.APIService/GetSystemPublicKey"
@@ -45,6 +43,16 @@ const (
 	// APIServiceAddAvailableDomainProcedure is the fully-qualified name of the APIService's
 	// AddAvailableDomain RPC.
 	APIServiceAddAvailableDomainProcedure = "/neoshowcase.protobuf.APIService/AddAvailableDomain"
+	// APIServiceGetMeProcedure is the fully-qualified name of the APIService's GetMe RPC.
+	APIServiceGetMeProcedure = "/neoshowcase.protobuf.APIService/GetMe"
+	// APIServiceCreateUserKeyProcedure is the fully-qualified name of the APIService's CreateUserKey
+	// RPC.
+	APIServiceCreateUserKeyProcedure = "/neoshowcase.protobuf.APIService/CreateUserKey"
+	// APIServiceGetUserKeysProcedure is the fully-qualified name of the APIService's GetUserKeys RPC.
+	APIServiceGetUserKeysProcedure = "/neoshowcase.protobuf.APIService/GetUserKeys"
+	// APIServiceDeleteUserKeyProcedure is the fully-qualified name of the APIService's DeleteUserKey
+	// RPC.
+	APIServiceDeleteUserKeyProcedure = "/neoshowcase.protobuf.APIService/DeleteUserKey"
 	// APIServiceCreateRepositoryProcedure is the fully-qualified name of the APIService's
 	// CreateRepository RPC.
 	APIServiceCreateRepositoryProcedure = "/neoshowcase.protobuf.APIService/CreateRepository"
@@ -111,37 +119,65 @@ const (
 
 // APIServiceClient is a client for the neoshowcase.protobuf.APIService service.
 type APIServiceClient interface {
-	// System
-	GetMe(context.Context, *connect_go.Request[emptypb.Empty]) (*connect_go.Response[pb.User], error)
+	// GetSystemPublicKey システムのSSH公開鍵を取得します リポジトリごとにSSH秘密鍵を設定しないデフォルトSSH認証で使用します
 	GetSystemPublicKey(context.Context, *connect_go.Request[emptypb.Empty]) (*connect_go.Response[pb.GetSystemPublicKeyResponse], error)
+	// GetAvailableDomains 使用可能なドメイン一覧を取得します
 	GetAvailableDomains(context.Context, *connect_go.Request[emptypb.Empty]) (*connect_go.Response[pb.AvailableDomains], error)
+	// AddAvailableDomain 使用可能なドメインを登録します（admin only）
 	AddAvailableDomain(context.Context, *connect_go.Request[pb.AvailableDomain]) (*connect_go.Response[emptypb.Empty], error)
-	// Repository CRUD
+	// GetMe 自身の情報を取得します プロキシ認証のため常に成功します
+	GetMe(context.Context, *connect_go.Request[emptypb.Empty]) (*connect_go.Response[pb.User], error)
+	// CreateUserKey アプリコンテナSSH用の公開鍵を登録します
+	CreateUserKey(context.Context, *connect_go.Request[pb.CreateUserKeyRequest]) (*connect_go.Response[pb.UserKey], error)
+	// GetUserKeys 登録した公開鍵一覧を取得します
+	GetUserKeys(context.Context, *connect_go.Request[emptypb.Empty]) (*connect_go.Response[pb.GetUserKeysResponse], error)
+	// DeleteUserKey 登録した公開鍵を削除します
+	DeleteUserKey(context.Context, *connect_go.Request[pb.DeleteUserKeyRequest]) (*connect_go.Response[emptypb.Empty], error)
+	// CreateRepository リポジトリを登録します
 	CreateRepository(context.Context, *connect_go.Request[pb.CreateRepositoryRequest]) (*connect_go.Response[pb.Repository], error)
+	// GetRepositories リポジトリ一覧を取得します
 	GetRepositories(context.Context, *connect_go.Request[emptypb.Empty]) (*connect_go.Response[pb.GetRepositoriesResponse], error)
+	// GetRepository リポジトリを取得します
 	GetRepository(context.Context, *connect_go.Request[pb.RepositoryIdRequest]) (*connect_go.Response[pb.Repository], error)
+	// UpdateRepository リポジトリ情報を更新します
 	UpdateRepository(context.Context, *connect_go.Request[pb.UpdateRepositoryRequest]) (*connect_go.Response[emptypb.Empty], error)
+	// DeleteRepository リポジトリを削除します 関連する全てのアプリケーションの削除が必要です
 	DeleteRepository(context.Context, *connect_go.Request[pb.RepositoryIdRequest]) (*connect_go.Response[emptypb.Empty], error)
-	// Application CRUD
+	// CreateApplication アプリを作成します
 	CreateApplication(context.Context, *connect_go.Request[pb.CreateApplicationRequest]) (*connect_go.Response[pb.Application], error)
+	// GetApplications アプリ一覧を取得します
 	GetApplications(context.Context, *connect_go.Request[emptypb.Empty]) (*connect_go.Response[pb.GetApplicationsResponse], error)
+	// GetApplication アプリを取得します
 	GetApplication(context.Context, *connect_go.Request[pb.ApplicationIdRequest]) (*connect_go.Response[pb.Application], error)
+	// UpdateApplication アプリ情報を更新します
 	UpdateApplication(context.Context, *connect_go.Request[pb.UpdateApplicationRequest]) (*connect_go.Response[emptypb.Empty], error)
+	// DeleteApplication アプリを削除します 先にアプリのシャットダウンが必要です
 	DeleteApplication(context.Context, *connect_go.Request[pb.ApplicationIdRequest]) (*connect_go.Response[emptypb.Empty], error)
-	// Application info / config
+	// GetEnvVars アプリの環境変数を取得します
 	GetEnvVars(context.Context, *connect_go.Request[pb.ApplicationIdRequest]) (*connect_go.Response[pb.ApplicationEnvVars], error)
+	// SetEnvVar アプリの環境変数をセットします システムによって設定された環境変数は上書きできません
 	SetEnvVar(context.Context, *connect_go.Request[pb.SetApplicationEnvVarRequest]) (*connect_go.Response[emptypb.Empty], error)
+	// GetOutput アプリの出力を取得します
 	GetOutput(context.Context, *connect_go.Request[pb.GetOutputRequest]) (*connect_go.Response[pb.GetOutputResponse], error)
+	// GetOutputStream アプリの出力をストリーム形式で取得します
 	GetOutputStream(context.Context, *connect_go.Request[pb.GetOutputStreamRequest]) (*connect_go.ServerStreamForClient[pb.ApplicationOutput], error)
+	// StartApplication アプリを起動します 起動中の場合は再起動します
 	StartApplication(context.Context, *connect_go.Request[pb.ApplicationIdRequest]) (*connect_go.Response[emptypb.Empty], error)
+	// StopApplication アプリをシャットダウンします
 	StopApplication(context.Context, *connect_go.Request[pb.ApplicationIdRequest]) (*connect_go.Response[emptypb.Empty], error)
-	// Application builds
+	// GetBuilds アプリのビルド一覧を取得します
 	GetBuilds(context.Context, *connect_go.Request[pb.ApplicationIdRequest]) (*connect_go.Response[pb.GetBuildsResponse], error)
+	// GetBuild アプリのビルド情報を取得します
 	GetBuild(context.Context, *connect_go.Request[pb.BuildIdRequest]) (*connect_go.Response[pb.Build], error)
+	// RetryCommitBuild アプリの該当コミットのビルドをやり直します
 	RetryCommitBuild(context.Context, *connect_go.Request[pb.RetryCommitBuildRequest]) (*connect_go.Response[emptypb.Empty], error)
+	// CancelBuild 該当ビルドが進行中の場合キャンセルします
 	CancelBuild(context.Context, *connect_go.Request[pb.BuildIdRequest]) (*connect_go.Response[emptypb.Empty], error)
+	// GetBuildLog 終了したビルドのログを取得します
 	GetBuildLog(context.Context, *connect_go.Request[pb.BuildIdRequest]) (*connect_go.Response[pb.BuildLog], error)
+	// GetBuildLogStream ビルド中のログをストリーム形式で取得します
 	GetBuildLogStream(context.Context, *connect_go.Request[pb.BuildIdRequest]) (*connect_go.ServerStreamForClient[pb.BuildLog], error)
+	// GetBuildArtifact 静的サイトアプリの場合ビルド成果物（静的ファイルのtar）を取得します
 	GetBuildArtifact(context.Context, *connect_go.Request[pb.ArtifactIdRequest]) (*connect_go.Response[pb.ArtifactContent], error)
 }
 
@@ -155,11 +191,6 @@ type APIServiceClient interface {
 func NewAPIServiceClient(httpClient connect_go.HTTPClient, baseURL string, opts ...connect_go.ClientOption) APIServiceClient {
 	baseURL = strings.TrimRight(baseURL, "/")
 	return &aPIServiceClient{
-		getMe: connect_go.NewClient[emptypb.Empty, pb.User](
-			httpClient,
-			baseURL+APIServiceGetMeProcedure,
-			opts...,
-		),
 		getSystemPublicKey: connect_go.NewClient[emptypb.Empty, pb.GetSystemPublicKeyResponse](
 			httpClient,
 			baseURL+APIServiceGetSystemPublicKeyProcedure,
@@ -173,6 +204,26 @@ func NewAPIServiceClient(httpClient connect_go.HTTPClient, baseURL string, opts 
 		addAvailableDomain: connect_go.NewClient[pb.AvailableDomain, emptypb.Empty](
 			httpClient,
 			baseURL+APIServiceAddAvailableDomainProcedure,
+			opts...,
+		),
+		getMe: connect_go.NewClient[emptypb.Empty, pb.User](
+			httpClient,
+			baseURL+APIServiceGetMeProcedure,
+			opts...,
+		),
+		createUserKey: connect_go.NewClient[pb.CreateUserKeyRequest, pb.UserKey](
+			httpClient,
+			baseURL+APIServiceCreateUserKeyProcedure,
+			opts...,
+		),
+		getUserKeys: connect_go.NewClient[emptypb.Empty, pb.GetUserKeysResponse](
+			httpClient,
+			baseURL+APIServiceGetUserKeysProcedure,
+			opts...,
+		),
+		deleteUserKey: connect_go.NewClient[pb.DeleteUserKeyRequest, emptypb.Empty](
+			httpClient,
+			baseURL+APIServiceDeleteUserKeyProcedure,
 			opts...,
 		),
 		createRepository: connect_go.NewClient[pb.CreateRepositoryRequest, pb.Repository](
@@ -295,10 +346,13 @@ func NewAPIServiceClient(httpClient connect_go.HTTPClient, baseURL string, opts 
 
 // aPIServiceClient implements APIServiceClient.
 type aPIServiceClient struct {
-	getMe               *connect_go.Client[emptypb.Empty, pb.User]
 	getSystemPublicKey  *connect_go.Client[emptypb.Empty, pb.GetSystemPublicKeyResponse]
 	getAvailableDomains *connect_go.Client[emptypb.Empty, pb.AvailableDomains]
 	addAvailableDomain  *connect_go.Client[pb.AvailableDomain, emptypb.Empty]
+	getMe               *connect_go.Client[emptypb.Empty, pb.User]
+	createUserKey       *connect_go.Client[pb.CreateUserKeyRequest, pb.UserKey]
+	getUserKeys         *connect_go.Client[emptypb.Empty, pb.GetUserKeysResponse]
+	deleteUserKey       *connect_go.Client[pb.DeleteUserKeyRequest, emptypb.Empty]
 	createRepository    *connect_go.Client[pb.CreateRepositoryRequest, pb.Repository]
 	getRepositories     *connect_go.Client[emptypb.Empty, pb.GetRepositoriesResponse]
 	getRepository       *connect_go.Client[pb.RepositoryIdRequest, pb.Repository]
@@ -324,11 +378,6 @@ type aPIServiceClient struct {
 	getBuildArtifact    *connect_go.Client[pb.ArtifactIdRequest, pb.ArtifactContent]
 }
 
-// GetMe calls neoshowcase.protobuf.APIService.GetMe.
-func (c *aPIServiceClient) GetMe(ctx context.Context, req *connect_go.Request[emptypb.Empty]) (*connect_go.Response[pb.User], error) {
-	return c.getMe.CallUnary(ctx, req)
-}
-
 // GetSystemPublicKey calls neoshowcase.protobuf.APIService.GetSystemPublicKey.
 func (c *aPIServiceClient) GetSystemPublicKey(ctx context.Context, req *connect_go.Request[emptypb.Empty]) (*connect_go.Response[pb.GetSystemPublicKeyResponse], error) {
 	return c.getSystemPublicKey.CallUnary(ctx, req)
@@ -342,6 +391,26 @@ func (c *aPIServiceClient) GetAvailableDomains(ctx context.Context, req *connect
 // AddAvailableDomain calls neoshowcase.protobuf.APIService.AddAvailableDomain.
 func (c *aPIServiceClient) AddAvailableDomain(ctx context.Context, req *connect_go.Request[pb.AvailableDomain]) (*connect_go.Response[emptypb.Empty], error) {
 	return c.addAvailableDomain.CallUnary(ctx, req)
+}
+
+// GetMe calls neoshowcase.protobuf.APIService.GetMe.
+func (c *aPIServiceClient) GetMe(ctx context.Context, req *connect_go.Request[emptypb.Empty]) (*connect_go.Response[pb.User], error) {
+	return c.getMe.CallUnary(ctx, req)
+}
+
+// CreateUserKey calls neoshowcase.protobuf.APIService.CreateUserKey.
+func (c *aPIServiceClient) CreateUserKey(ctx context.Context, req *connect_go.Request[pb.CreateUserKeyRequest]) (*connect_go.Response[pb.UserKey], error) {
+	return c.createUserKey.CallUnary(ctx, req)
+}
+
+// GetUserKeys calls neoshowcase.protobuf.APIService.GetUserKeys.
+func (c *aPIServiceClient) GetUserKeys(ctx context.Context, req *connect_go.Request[emptypb.Empty]) (*connect_go.Response[pb.GetUserKeysResponse], error) {
+	return c.getUserKeys.CallUnary(ctx, req)
+}
+
+// DeleteUserKey calls neoshowcase.protobuf.APIService.DeleteUserKey.
+func (c *aPIServiceClient) DeleteUserKey(ctx context.Context, req *connect_go.Request[pb.DeleteUserKeyRequest]) (*connect_go.Response[emptypb.Empty], error) {
+	return c.deleteUserKey.CallUnary(ctx, req)
 }
 
 // CreateRepository calls neoshowcase.protobuf.APIService.CreateRepository.
@@ -461,37 +530,65 @@ func (c *aPIServiceClient) GetBuildArtifact(ctx context.Context, req *connect_go
 
 // APIServiceHandler is an implementation of the neoshowcase.protobuf.APIService service.
 type APIServiceHandler interface {
-	// System
-	GetMe(context.Context, *connect_go.Request[emptypb.Empty]) (*connect_go.Response[pb.User], error)
+	// GetSystemPublicKey システムのSSH公開鍵を取得します リポジトリごとにSSH秘密鍵を設定しないデフォルトSSH認証で使用します
 	GetSystemPublicKey(context.Context, *connect_go.Request[emptypb.Empty]) (*connect_go.Response[pb.GetSystemPublicKeyResponse], error)
+	// GetAvailableDomains 使用可能なドメイン一覧を取得します
 	GetAvailableDomains(context.Context, *connect_go.Request[emptypb.Empty]) (*connect_go.Response[pb.AvailableDomains], error)
+	// AddAvailableDomain 使用可能なドメインを登録します（admin only）
 	AddAvailableDomain(context.Context, *connect_go.Request[pb.AvailableDomain]) (*connect_go.Response[emptypb.Empty], error)
-	// Repository CRUD
+	// GetMe 自身の情報を取得します プロキシ認証のため常に成功します
+	GetMe(context.Context, *connect_go.Request[emptypb.Empty]) (*connect_go.Response[pb.User], error)
+	// CreateUserKey アプリコンテナSSH用の公開鍵を登録します
+	CreateUserKey(context.Context, *connect_go.Request[pb.CreateUserKeyRequest]) (*connect_go.Response[pb.UserKey], error)
+	// GetUserKeys 登録した公開鍵一覧を取得します
+	GetUserKeys(context.Context, *connect_go.Request[emptypb.Empty]) (*connect_go.Response[pb.GetUserKeysResponse], error)
+	// DeleteUserKey 登録した公開鍵を削除します
+	DeleteUserKey(context.Context, *connect_go.Request[pb.DeleteUserKeyRequest]) (*connect_go.Response[emptypb.Empty], error)
+	// CreateRepository リポジトリを登録します
 	CreateRepository(context.Context, *connect_go.Request[pb.CreateRepositoryRequest]) (*connect_go.Response[pb.Repository], error)
+	// GetRepositories リポジトリ一覧を取得します
 	GetRepositories(context.Context, *connect_go.Request[emptypb.Empty]) (*connect_go.Response[pb.GetRepositoriesResponse], error)
+	// GetRepository リポジトリを取得します
 	GetRepository(context.Context, *connect_go.Request[pb.RepositoryIdRequest]) (*connect_go.Response[pb.Repository], error)
+	// UpdateRepository リポジトリ情報を更新します
 	UpdateRepository(context.Context, *connect_go.Request[pb.UpdateRepositoryRequest]) (*connect_go.Response[emptypb.Empty], error)
+	// DeleteRepository リポジトリを削除します 関連する全てのアプリケーションの削除が必要です
 	DeleteRepository(context.Context, *connect_go.Request[pb.RepositoryIdRequest]) (*connect_go.Response[emptypb.Empty], error)
-	// Application CRUD
+	// CreateApplication アプリを作成します
 	CreateApplication(context.Context, *connect_go.Request[pb.CreateApplicationRequest]) (*connect_go.Response[pb.Application], error)
+	// GetApplications アプリ一覧を取得します
 	GetApplications(context.Context, *connect_go.Request[emptypb.Empty]) (*connect_go.Response[pb.GetApplicationsResponse], error)
+	// GetApplication アプリを取得します
 	GetApplication(context.Context, *connect_go.Request[pb.ApplicationIdRequest]) (*connect_go.Response[pb.Application], error)
+	// UpdateApplication アプリ情報を更新します
 	UpdateApplication(context.Context, *connect_go.Request[pb.UpdateApplicationRequest]) (*connect_go.Response[emptypb.Empty], error)
+	// DeleteApplication アプリを削除します 先にアプリのシャットダウンが必要です
 	DeleteApplication(context.Context, *connect_go.Request[pb.ApplicationIdRequest]) (*connect_go.Response[emptypb.Empty], error)
-	// Application info / config
+	// GetEnvVars アプリの環境変数を取得します
 	GetEnvVars(context.Context, *connect_go.Request[pb.ApplicationIdRequest]) (*connect_go.Response[pb.ApplicationEnvVars], error)
+	// SetEnvVar アプリの環境変数をセットします システムによって設定された環境変数は上書きできません
 	SetEnvVar(context.Context, *connect_go.Request[pb.SetApplicationEnvVarRequest]) (*connect_go.Response[emptypb.Empty], error)
+	// GetOutput アプリの出力を取得します
 	GetOutput(context.Context, *connect_go.Request[pb.GetOutputRequest]) (*connect_go.Response[pb.GetOutputResponse], error)
+	// GetOutputStream アプリの出力をストリーム形式で取得します
 	GetOutputStream(context.Context, *connect_go.Request[pb.GetOutputStreamRequest], *connect_go.ServerStream[pb.ApplicationOutput]) error
+	// StartApplication アプリを起動します 起動中の場合は再起動します
 	StartApplication(context.Context, *connect_go.Request[pb.ApplicationIdRequest]) (*connect_go.Response[emptypb.Empty], error)
+	// StopApplication アプリをシャットダウンします
 	StopApplication(context.Context, *connect_go.Request[pb.ApplicationIdRequest]) (*connect_go.Response[emptypb.Empty], error)
-	// Application builds
+	// GetBuilds アプリのビルド一覧を取得します
 	GetBuilds(context.Context, *connect_go.Request[pb.ApplicationIdRequest]) (*connect_go.Response[pb.GetBuildsResponse], error)
+	// GetBuild アプリのビルド情報を取得します
 	GetBuild(context.Context, *connect_go.Request[pb.BuildIdRequest]) (*connect_go.Response[pb.Build], error)
+	// RetryCommitBuild アプリの該当コミットのビルドをやり直します
 	RetryCommitBuild(context.Context, *connect_go.Request[pb.RetryCommitBuildRequest]) (*connect_go.Response[emptypb.Empty], error)
+	// CancelBuild 該当ビルドが進行中の場合キャンセルします
 	CancelBuild(context.Context, *connect_go.Request[pb.BuildIdRequest]) (*connect_go.Response[emptypb.Empty], error)
+	// GetBuildLog 終了したビルドのログを取得します
 	GetBuildLog(context.Context, *connect_go.Request[pb.BuildIdRequest]) (*connect_go.Response[pb.BuildLog], error)
+	// GetBuildLogStream ビルド中のログをストリーム形式で取得します
 	GetBuildLogStream(context.Context, *connect_go.Request[pb.BuildIdRequest], *connect_go.ServerStream[pb.BuildLog]) error
+	// GetBuildArtifact 静的サイトアプリの場合ビルド成果物（静的ファイルのtar）を取得します
 	GetBuildArtifact(context.Context, *connect_go.Request[pb.ArtifactIdRequest]) (*connect_go.Response[pb.ArtifactContent], error)
 }
 
@@ -502,11 +599,6 @@ type APIServiceHandler interface {
 // and JSON codecs. They also support gzip compression.
 func NewAPIServiceHandler(svc APIServiceHandler, opts ...connect_go.HandlerOption) (string, http.Handler) {
 	mux := http.NewServeMux()
-	mux.Handle(APIServiceGetMeProcedure, connect_go.NewUnaryHandler(
-		APIServiceGetMeProcedure,
-		svc.GetMe,
-		opts...,
-	))
 	mux.Handle(APIServiceGetSystemPublicKeyProcedure, connect_go.NewUnaryHandler(
 		APIServiceGetSystemPublicKeyProcedure,
 		svc.GetSystemPublicKey,
@@ -520,6 +612,26 @@ func NewAPIServiceHandler(svc APIServiceHandler, opts ...connect_go.HandlerOptio
 	mux.Handle(APIServiceAddAvailableDomainProcedure, connect_go.NewUnaryHandler(
 		APIServiceAddAvailableDomainProcedure,
 		svc.AddAvailableDomain,
+		opts...,
+	))
+	mux.Handle(APIServiceGetMeProcedure, connect_go.NewUnaryHandler(
+		APIServiceGetMeProcedure,
+		svc.GetMe,
+		opts...,
+	))
+	mux.Handle(APIServiceCreateUserKeyProcedure, connect_go.NewUnaryHandler(
+		APIServiceCreateUserKeyProcedure,
+		svc.CreateUserKey,
+		opts...,
+	))
+	mux.Handle(APIServiceGetUserKeysProcedure, connect_go.NewUnaryHandler(
+		APIServiceGetUserKeysProcedure,
+		svc.GetUserKeys,
+		opts...,
+	))
+	mux.Handle(APIServiceDeleteUserKeyProcedure, connect_go.NewUnaryHandler(
+		APIServiceDeleteUserKeyProcedure,
+		svc.DeleteUserKey,
 		opts...,
 	))
 	mux.Handle(APIServiceCreateRepositoryProcedure, connect_go.NewUnaryHandler(
@@ -643,10 +755,6 @@ func NewAPIServiceHandler(svc APIServiceHandler, opts ...connect_go.HandlerOptio
 // UnimplementedAPIServiceHandler returns CodeUnimplemented from all methods.
 type UnimplementedAPIServiceHandler struct{}
 
-func (UnimplementedAPIServiceHandler) GetMe(context.Context, *connect_go.Request[emptypb.Empty]) (*connect_go.Response[pb.User], error) {
-	return nil, connect_go.NewError(connect_go.CodeUnimplemented, errors.New("neoshowcase.protobuf.APIService.GetMe is not implemented"))
-}
-
 func (UnimplementedAPIServiceHandler) GetSystemPublicKey(context.Context, *connect_go.Request[emptypb.Empty]) (*connect_go.Response[pb.GetSystemPublicKeyResponse], error) {
 	return nil, connect_go.NewError(connect_go.CodeUnimplemented, errors.New("neoshowcase.protobuf.APIService.GetSystemPublicKey is not implemented"))
 }
@@ -657,6 +765,22 @@ func (UnimplementedAPIServiceHandler) GetAvailableDomains(context.Context, *conn
 
 func (UnimplementedAPIServiceHandler) AddAvailableDomain(context.Context, *connect_go.Request[pb.AvailableDomain]) (*connect_go.Response[emptypb.Empty], error) {
 	return nil, connect_go.NewError(connect_go.CodeUnimplemented, errors.New("neoshowcase.protobuf.APIService.AddAvailableDomain is not implemented"))
+}
+
+func (UnimplementedAPIServiceHandler) GetMe(context.Context, *connect_go.Request[emptypb.Empty]) (*connect_go.Response[pb.User], error) {
+	return nil, connect_go.NewError(connect_go.CodeUnimplemented, errors.New("neoshowcase.protobuf.APIService.GetMe is not implemented"))
+}
+
+func (UnimplementedAPIServiceHandler) CreateUserKey(context.Context, *connect_go.Request[pb.CreateUserKeyRequest]) (*connect_go.Response[pb.UserKey], error) {
+	return nil, connect_go.NewError(connect_go.CodeUnimplemented, errors.New("neoshowcase.protobuf.APIService.CreateUserKey is not implemented"))
+}
+
+func (UnimplementedAPIServiceHandler) GetUserKeys(context.Context, *connect_go.Request[emptypb.Empty]) (*connect_go.Response[pb.GetUserKeysResponse], error) {
+	return nil, connect_go.NewError(connect_go.CodeUnimplemented, errors.New("neoshowcase.protobuf.APIService.GetUserKeys is not implemented"))
+}
+
+func (UnimplementedAPIServiceHandler) DeleteUserKey(context.Context, *connect_go.Request[pb.DeleteUserKeyRequest]) (*connect_go.Response[emptypb.Empty], error) {
+	return nil, connect_go.NewError(connect_go.CodeUnimplemented, errors.New("neoshowcase.protobuf.APIService.DeleteUserKey is not implemented"))
 }
 
 func (UnimplementedAPIServiceHandler) CreateRepository(context.Context, *connect_go.Request[pb.CreateRepositoryRequest]) (*connect_go.Response[pb.Repository], error) {

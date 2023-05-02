@@ -20,3 +20,19 @@ func ToDomainUser(user *models.User) *domain.User {
 		Admin: user.Admin,
 	}
 }
+
+func FromDomainUserKey(key *domain.UserKey) *models.UserKey {
+	return &models.UserKey{
+		ID:        key.ID,
+		UserID:    key.UserID,
+		PublicKey: key.PublicKey,
+	}
+}
+
+func ToDomainUserKey(key *models.UserKey) *domain.UserKey {
+	return &domain.UserKey{
+		ID:        key.ID,
+		UserID:    key.UserID,
+		PublicKey: key.PublicKey,
+	}
+}

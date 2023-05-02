@@ -1,18 +1,7 @@
 port: 10000
 debug: true
+privateKeyFile: /keys/id_ed25519
 mode: docker
-
-db:
-  host: mysql
-  port: 3306
-  username: root
-  password: password
-  database: neoshowcase
-
-storage:
-  type: local
-  local:
-    dir: /data
 
 docker:
   confDir: /opt/traefik/conf
@@ -44,8 +33,20 @@ docker:
     memorySwap: -1
     memoryReservation: 256000000 # 256MB
 
-repository:
-  privateKeyFile: /keys/id_ed25519
+ssh:
+  port: 2201
+
+db:
+  host: mysql
+  port: 3306
+  username: root
+  password: password
+  database: neoshowcase
+
+storage:
+  type: local
+  local:
+    dir: /data
 
 image:
   registry:

@@ -14,6 +14,7 @@ var TableNames = struct {
 	Repositories      string
 	RepositoryAuth    string
 	RepositoryOwners  string
+	UserKeys          string
 	Users             string
 	Websites          string
 }{
@@ -27,6 +28,7 @@ var TableNames = struct {
 	Repositories:      "repositories",
 	RepositoryAuth:    "repository_auth",
 	RepositoryOwners:  "repository_owners",
+	UserKeys:          "user_keys",
 	Users:             "users",
 	Websites:          "websites",
 }

@@ -26,46 +26,22 @@ const (
 )
 
 type Config struct {
-	Port       int                  `mapstructure:"port" yaml:"port"`
-	Debug      bool                 `mapstructure:"debug" yaml:"debug"`
-	DB         admindb.Config       `mapstructure:"db" yaml:"db"`
-	Storage    domain.StorageConfig `mapstructure:"storage" yaml:"storage"`
-	Mode       string               `mapstructure:"mode" yaml:"mode"`
-	Docker     dockerimpl.Config    `mapstructure:"docker" yaml:"docker"`
-	K8s        k8simpl.Config       `mapstructure:"k8s" yaml:"k8s"`
-	Repository struct {
-		PrivateKeyFile string `mapstructure:"privateKeyFile" yaml:"privateKeyFile"`
-	} `mapstructure:"repository" yaml:"repository"`
-	Image builder.ImageConfig `mapstructure:"image" yaml:"image"`
+	Port           int                  `mapstructure:"port" yaml:"port"`
+	Debug          bool                 `mapstructure:"debug" yaml:"debug"`
+	PrivateKeyFile string               `mapstructure:"privateKeyFile" yaml:"privateKeyFile"`
+	Mode           string               `mapstructure:"mode" yaml:"mode"`
+	Docker         dockerimpl.Config    `mapstructure:"docker" yaml:"docker"`
+	K8s            k8simpl.Config       `mapstructure:"k8s" yaml:"k8s"`
+	SSH            domain.SSHConfig     `mapstructure:"ssh" yaml:"ssh"`
+	DB             admindb.Config       `mapstructure:"db" yaml:"db"`
+	Storage        domain.StorageConfig `mapstructure:"storage" yaml:"storage"`
+	Image          builder.ImageConfig  `mapstructure:"image" yaml:"image"`
 }
 
 func init() {
 	viper.SetDefault("port", 10000)
 	viper.SetDefault("debug", false)
-
-	viper.SetDefault("db.host", "127.0.0.1")
-	viper.SetDefault("db.port", 3306)
-	viper.SetDefault("db.username", "root")
-	viper.SetDefault("db.password", "password")
-	viper.SetDefault("db.database", "neoshowcase")
-	viper.SetDefault("db.connection.maxOpen", 0)
-	viper.SetDefault("db.connection.maxIdle", 2)
-	viper.SetDefault("db.connection.lifetime", 0)
-
-	viper.SetDefault("storage.type", "local")
-	viper.SetDefault("storage.local.dir", "/neoshowcase")
-	viper.SetDefault("storage.s3.bucket", "neoshowcase")
-	viper.SetDefault("storage.s3.endpoint", "")
-	viper.SetDefault("storage.s3.region", "")
-	viper.SetDefault("storage.s3.accessKey", "")
-	viper.SetDefault("storage.s3.accessSecret", "")
-	viper.SetDefault("storage.swift.username", "")
-	viper.SetDefault("storage.swift.apiKey", "")
-	viper.SetDefault("storage.swift.tenantName", "")
-	viper.SetDefault("storage.swift.tenantId", "")
-	viper.SetDefault("storage.swift.container", "neoshowcase")
-	viper.SetDefault("storage.swift.authUrl", "")
-
+	viper.SetDefault("privateKeyFile", "")
 	viper.SetDefault("mode", "docker")
 
 	viper.SetDefault("docker.confDir", "/opt/traefik/conf")
@@ -102,7 +78,30 @@ func init() {
 	viper.SetDefault("k8s.resources.limits.cpu", "1.6")
 	viper.SetDefault("k8s.resources.limits.memory", "1G")
 
-	viper.SetDefault("repository.privateKeyFile", "")
+	viper.SetDefault("ssh.port", 2201)
+
+	viper.SetDefault("db.host", "127.0.0.1")
+	viper.SetDefault("db.port", 3306)
+	viper.SetDefault("db.username", "root")
+	viper.SetDefault("db.password", "password")
+	viper.SetDefault("db.database", "neoshowcase")
+	viper.SetDefault("db.connection.maxOpen", 0)
+	viper.SetDefault("db.connection.maxIdle", 2)
+	viper.SetDefault("db.connection.lifetime", 0)
+
+	viper.SetDefault("storage.type", "local")
+	viper.SetDefault("storage.local.dir", "/neoshowcase")
+	viper.SetDefault("storage.s3.bucket", "neoshowcase")
+	viper.SetDefault("storage.s3.endpoint", "")
+	viper.SetDefault("storage.s3.region", "")
+	viper.SetDefault("storage.s3.accessKey", "")
+	viper.SetDefault("storage.s3.accessSecret", "")
+	viper.SetDefault("storage.swift.username", "")
+	viper.SetDefault("storage.swift.apiKey", "")
+	viper.SetDefault("storage.swift.tenantName", "")
+	viper.SetDefault("storage.swift.tenantId", "")
+	viper.SetDefault("storage.swift.container", "neoshowcase")
+	viper.SetDefault("storage.swift.authUrl", "")
 
 	viper.SetDefault("image.registry.scheme", "https")
 	viper.SetDefault("image.registry.addr", "localhost")
@@ -122,8 +121,8 @@ func (c *Config) GetMode() int {
 	}
 }
 
-func provideRepositoryPublicKey(c Config) (*ssh.PublicKeys, error) {
-	bytes, err := os.ReadFile(c.Repository.PrivateKeyFile)
+func providePublicKey(c Config) (*ssh.PublicKeys, error) {
+	bytes, err := os.ReadFile(c.PrivateKeyFile)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to open private key file")
 	}
