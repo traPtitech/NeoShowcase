@@ -8,12 +8,14 @@ import (
 
 	certmanagerv1 "github.com/cert-manager/cert-manager/pkg/client/clientset/versioned"
 	"github.com/friendsofgo/errors"
+	"github.com/go-git/go-git/v5/plumbing/transport/ssh"
 	log "github.com/sirupsen/logrus"
 	traefikv1alpha1 "github.com/traefik/traefik/v2/pkg/provider/kubernetes/crd/generated/clientset/versioned/typed/traefikio/v1alpha1"
 	apiv1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/watch"
 	"k8s.io/client-go/kubernetes"
+	"k8s.io/client-go/rest"
 
 	"github.com/traPtitech/neoshowcase/pkg/domain"
 	"github.com/traPtitech/neoshowcase/pkg/util/ds"
@@ -27,32 +29,46 @@ const (
 )
 
 type k8sBackend struct {
+	restConfig        *rest.Config
 	client            *kubernetes.Clientset
 	traefikClient     *traefikv1alpha1.TraefikV1alpha1Client
 	certManagerClient *certmanagerv1.Clientset
 	config            Config
-	eventSubs         domain.PubSub[*domain.ContainerEvent]
+	appRepo           domain.ApplicationRepository
+	userRepo          domain.UserRepository
+
+	eventSubs domain.PubSub[*domain.ContainerEvent]
+	sshServer *sshServer
 
 	podWatcher watch.Interface
 	reloadLock sync.Mutex
 }
 
 func NewK8SBackend(
+	restConfig *rest.Config,
 	k8sCSet *kubernetes.Clientset,
 	traefikClient *traefikv1alpha1.TraefikV1alpha1Client,
 	certManagerClient *certmanagerv1.Clientset,
 	config Config,
+	key *ssh.PublicKeys,
+	appRepo domain.ApplicationRepository,
+	userRepo domain.UserRepository,
 ) (domain.Backend, error) {
 	err := config.Validate()
 	if err != nil {
 		return nil, err
 	}
-	return &k8sBackend{
+	b := &k8sBackend{
+		restConfig:        restConfig,
 		client:            k8sCSet,
 		traefikClient:     traefikClient,
 		certManagerClient: certManagerClient,
 		config:            config,
-	}, nil
+		appRepo:           appRepo,
+		userRepo:          userRepo,
+	}
+	b.sshServer = newSSHServer(b, config.SSH, key)
+	return b, nil
 }
 
 func (b *k8sBackend) Start(_ context.Context) error {
@@ -66,6 +82,9 @@ func (b *k8sBackend) Start(_ context.Context) error {
 		return errors.Wrap(err, "failed to watch pods")
 	}
 	go b.eventListener()
+
+	b.sshServer.Start()
+
 	return nil
 }
 
@@ -87,7 +106,7 @@ func (b *k8sBackend) eventListener() {
 
 func (b *k8sBackend) Dispose(_ context.Context) error {
 	b.podWatcher.Stop()
-	return nil
+	return b.sshServer.Close()
 }
 
 func (b *k8sBackend) AuthAllowed(fqdn string) bool {
@@ -146,6 +165,12 @@ func appSelector(appID string) map[string]string {
 func deploymentName(appID string) string {
 	return fmt.Sprintf("nsapp-%s", appID)
 }
+
+func generatedPodName(appID string) string {
+	return deploymentName(appID) + "-0"
+}
+
+const podContainerName = "app"
 
 func serviceName(website *domain.Website) string {
 	return fmt.Sprintf("nsapp-%s", website.ID)

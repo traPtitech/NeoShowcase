@@ -108,7 +108,7 @@ func NewWithK8S(c2 Config) (*Server, error) {
 		return nil, err
 	}
 	k8simplConfig := c2.K8s
-	backend, err := k8simpl.NewK8SBackend(clientset, traefikV1alpha1Client, versionedClientset, k8simplConfig)
+	publicKeys, err := provideRepositoryPublicKey(c2)
 	if err != nil {
 		return nil, err
 	}
@@ -118,11 +118,12 @@ func NewWithK8S(c2 Config) (*Server, error) {
 		return nil, err
 	}
 	applicationRepository := repository.NewApplicationRepository(db)
-	gitRepositoryRepository := repository.NewGitRepositoryRepository(db)
-	publicKeys, err := provideRepositoryPublicKey(c2)
+	userRepository := repository.NewUserRepository(db)
+	backend, err := k8simpl.NewK8SBackend(config, clientset, traefikV1alpha1Client, versionedClientset, k8simplConfig, publicKeys, applicationRepository, userRepository)
 	if err != nil {
 		return nil, err
 	}
+	gitRepositoryRepository := repository.NewGitRepositoryRepository(db)
 	buildRepository := repository.NewBuildRepository(db)
 	logStreamService := usecase.NewLogStreamService()
 	controllerBuilderService := grpc.NewControllerBuilderService(logStreamService)
