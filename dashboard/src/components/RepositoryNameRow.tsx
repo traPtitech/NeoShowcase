@@ -11,7 +11,7 @@ import {
   appDetail,
   appFooter,
   appFooterRight,
-  applicationNotLast,
+  applicationNotLast, appDescription,
 } from '/@/components/Repository.css'
 import { StatusIcon } from '/@/components/StatusIcon'
 import { Application, Repository } from '/@/api/neoshowcase/protobuf/gateway_pb'
@@ -28,14 +28,25 @@ export interface Props {
 
 export const RepositoryRow = ({ repo, apps }: Props): JSXElement => {
   const provider = repositoryURLToProvider(repo.url)
+  const sortedApps = apps.sort((a, b) => {
+    if (a.updatedAt.toDate() < b.updatedAt.toDate()) {
+        return 1
+    }
+    if (a.updatedAt.toDate() > b.updatedAt.toDate()) {
+        return -1
+    }
+    return 0
+  })
   return (
     <div class={container}>
       <div class={header}>
         <div class={headerLeft}>
           {providerToIcon(provider)}
           <div class={repoName}>{repo.name}</div>
-          <div class={appsCount}>
-            {apps.length} {apps.length === 1 ? 'app' : 'apps'}
+          <div class={appDescription}>
+            {/*{apps.length} {apps.length === 1 ? 'app' : 'apps'}*/}
+            {apps.length && ` ${sortedApps[0].refName}/${sortedApps[0].currentCommit.slice(0, 7)}・`}
+            {apps.length && <DiffHuman target={sortedApps[0].updatedAt.toDate()} />}
           </div>
         </div>
         <div class={addSelectButton}>
