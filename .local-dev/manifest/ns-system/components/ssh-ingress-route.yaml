@@ -8,7 +8,7 @@ spec:
     - ns-ssh
   routes:
     - kind: Rule
-      match: HostSNI(`.*`)
+      match: HostSNI(`*`)
       services:
         - namespace: ns-system
           kind: Service
