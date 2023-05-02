@@ -134,11 +134,11 @@ export default () => {
         <div class={mainContentContainer}>
           <div class={searchBarContainer}>
             <input placeholder='Search...' class={searchBar} />
-            <A href='/newapp_select_repo'>
-              <div class={createAppButton}>
-                <div class={createAppText}>+ Create new app</div>
-              </div>
-            </A>
+            {/*<A href='/newapp_select_repo'>*/}
+            {/*  <div class={createAppButton}>*/}
+            {/*    <div class={createAppText}>+ Create new app</div>*/}
+            {/*  </div>*/}
+            {/*</A>*/}
           </div>
           <div class={repositoriesContainer}>
             {loaded() && repos().repositories.map((r) => <RepositoryRow repo={r} apps={appsByRepo()[r.id] || []} />)}

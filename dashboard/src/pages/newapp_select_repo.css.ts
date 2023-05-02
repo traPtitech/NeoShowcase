@@ -102,8 +102,6 @@ export const mainContentContainer = style({
 
 export const searchBarContainer = style({
   display: 'grid',
-  gridTemplateColumns: '1fr 180px',
-  gap: '20px',
   height: '44px',
 })
 
