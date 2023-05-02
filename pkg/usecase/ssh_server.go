@@ -104,7 +104,9 @@ func (s *sshServer) handler(sess ssh.Session) {
 	}
 
 	appID := sess.User()
-	log.Infof("new ssh connection into app %s", appID)
+	sessID := domain.NewID()
+	log.Infof("new ssh connection into app %s (session id: %v)", appID, sessID)
+	defer log.Infof("closing ssh connecttion into app %s (session id: %v)", appID, sessID)
 
 	app, err := s.appRepo.GetApplication(sess.Context(), appID)
 	if err != nil {
