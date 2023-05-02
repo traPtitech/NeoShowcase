@@ -45,10 +45,11 @@ var commonSet = wire.NewSet(
 	usecase.NewCleanerService,
 	usecase.NewLogStreamService,
 	usecase.NewContainerStateMutator,
-	provideRepositoryPublicKey,
+	usecase.NewSSHServer,
+	providePublicKey,
 	provideStorage,
 	provideControllerServer,
-	wire.FieldsOf(new(Config), "DB", "Storage", "Docker", "K8s", "Image"),
+	wire.FieldsOf(new(Config), "Docker", "K8s", "SSH", "DB", "Storage", "Image"),
 	wire.Struct(new(Server), "*"),
 )
 

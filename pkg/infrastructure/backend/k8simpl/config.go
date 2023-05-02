@@ -41,9 +41,6 @@ type toleration = struct {
 }
 
 type Config struct {
-	SSH struct {
-		Port int `mapstructure:"port" yaml:"port"`
-	} `mapstructure:"ssh" yaml:"ssh"`
 	Middlewares struct {
 		Auth []*authConf `mapstructure:"auth" yaml:"auth"`
 	} `mapstructure:"middlewares" yaml:"middlewares"`

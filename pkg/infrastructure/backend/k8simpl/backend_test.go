@@ -8,7 +8,6 @@ import (
 	"time"
 
 	certmanagerv1 "github.com/cert-manager/cert-manager/pkg/client/clientset/versioned"
-	ssh2 "github.com/go-git/go-git/v5/plumbing/transport/ssh"
 	"github.com/stretchr/testify/require"
 	traefikv1alpha1 "github.com/traefik/traefik/v2/pkg/provider/kubernetes/crd/generated/clientset/versioned/typed/traefikio/v1alpha1"
 	v1 "k8s.io/api/core/v1"
@@ -21,14 +20,6 @@ import (
 
 	"github.com/traPtitech/neoshowcase/pkg/domain"
 )
-
-const key = `-----BEGIN OPENSSH PRIVATE KEY-----
-b3BlbnNzaC1rZXktdjEAAAAABG5vbmUAAAAEbm9uZQAAAAAAAAABAAAAMwAAAAtzc2gtZW
-QyNTUxOQAAACAC1iAC54T1ooCQN545XcXDPdTxJEEDdt9TsO3MwoPMwwAAAJCX+efxl/nn
-8QAAAAtzc2gtZWQyNTUxOQAAACAC1iAC54T1ooCQN545XcXDPdTxJEEDdt9TsO3MwoPMww
-AAAEA+FzwWKIYduEDOqkEOZ2wmxZWPc2wpZeWj+J8e3Q6x0QLWIALnhPWigJA3njldxcM9
-1PEkQQN231Ow7czCg8zDAAAADG1vdG9AbW90by13cwE=
------END OPENSSH PRIVATE KEY-----`
 
 func prepareManager(t *testing.T) (*k8sBackend, *kubernetes.Clientset, *traefikv1alpha1.TraefikV1alpha1Client) {
 	const appsNamespace = "neoshowcase-apps"
@@ -66,12 +57,10 @@ func prepareManager(t *testing.T) (*k8sBackend, *kubernetes.Clientset, *traefikv
 		t.Fatal(err)
 	}
 
-	sshKey, err := ssh2.NewPublicKeys("", []byte(key), "")
-	require.NoError(t, err)
 	var config Config
 	config.Namespace = appsNamespace
 	config.TLS.Type = tlsTypeTraefik
-	b, err := NewK8SBackend(kubeconf, client, traefikClient, certManagerClient, config, sshKey, nil, nil)
+	b, err := NewK8SBackend(kubeconf, client, traefikClient, certManagerClient, config)
 	require.NoError(t, err)
 
 	err = b.Start(context.Background())

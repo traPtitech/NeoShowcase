@@ -15,6 +15,7 @@ type Server struct {
 
 	db             *sql.DB
 	backend        domain.Backend
+	sshServer      usecase.SSHServer
 	cdService      usecase.ContinuousDeploymentService
 	fetcherService usecase.RepositoryFetcherService
 	cleanerService usecase.CleanerService
@@ -25,6 +26,9 @@ func (s *Server) Start(ctx context.Context) error {
 
 	eg.Go(func() error {
 		return s.backend.Start(ctx)
+	})
+	eg.Go(func() error {
+		return s.sshServer.Start()
 	})
 	eg.Go(func() error {
 		s.cdService.Run()
@@ -52,6 +56,9 @@ func (s *Server) Shutdown(ctx context.Context) error {
 	})
 	eg.Go(func() error {
 		return s.backend.Dispose(ctx)
+	})
+	eg.Go(func() error {
+		return s.sshServer.Close()
 	})
 	eg.Go(func() error {
 		return s.cdService.Stop(ctx)

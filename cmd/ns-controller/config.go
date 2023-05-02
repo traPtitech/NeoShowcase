@@ -26,22 +26,59 @@ const (
 )
 
 type Config struct {
-	Port       int                  `mapstructure:"port" yaml:"port"`
-	Debug      bool                 `mapstructure:"debug" yaml:"debug"`
-	DB         admindb.Config       `mapstructure:"db" yaml:"db"`
-	Storage    domain.StorageConfig `mapstructure:"storage" yaml:"storage"`
-	Mode       string               `mapstructure:"mode" yaml:"mode"`
-	Docker     dockerimpl.Config    `mapstructure:"docker" yaml:"docker"`
-	K8s        k8simpl.Config       `mapstructure:"k8s" yaml:"k8s"`
-	Repository struct {
-		PrivateKeyFile string `mapstructure:"privateKeyFile" yaml:"privateKeyFile"`
-	} `mapstructure:"repository" yaml:"repository"`
-	Image builder.ImageConfig `mapstructure:"image" yaml:"image"`
+	Port           int                  `mapstructure:"port" yaml:"port"`
+	Debug          bool                 `mapstructure:"debug" yaml:"debug"`
+	PrivateKeyFile string               `mapstructure:"privateKeyFile" yaml:"privateKeyFile"`
+	Mode           string               `mapstructure:"mode" yaml:"mode"`
+	Docker         dockerimpl.Config    `mapstructure:"docker" yaml:"docker"`
+	K8s            k8simpl.Config       `mapstructure:"k8s" yaml:"k8s"`
+	SSH            domain.SSHConfig     `mapstructure:"ssh" yaml:"ssh"`
+	DB             admindb.Config       `mapstructure:"db" yaml:"db"`
+	Storage        domain.StorageConfig `mapstructure:"storage" yaml:"storage"`
+	Image          builder.ImageConfig  `mapstructure:"image" yaml:"image"`
 }
 
 func init() {
 	viper.SetDefault("port", 10000)
 	viper.SetDefault("debug", false)
+	viper.SetDefault("privateKeyFile", "")
+	viper.SetDefault("mode", "docker")
+
+	viper.SetDefault("docker.confDir", "/opt/traefik/conf")
+	viper.SetDefault("docker.middlewares.auth", nil)
+	viper.SetDefault("docker.ss.url", "")
+	viper.SetDefault("docker.network", "neoshowcase_apps")
+	viper.SetDefault("docker.labels", nil)
+	viper.SetDefault("docker.tls.certResolver", "nsresolver")
+	viper.SetDefault("docker.tls.wildcard.domains", nil)
+	viper.SetDefault("docker.resources.cpus", 1.6)
+	viper.SetDefault("docker.resources.memory", 1e9 /* 1GB */)
+	viper.SetDefault("docker.resources.memorySwap", -1 /* unlimited swap */)
+	viper.SetDefault("docker.resources.memoryReservation", 256*1e6 /* 256MB */)
+
+	viper.SetDefault("k8s.middlewares.auth", nil)
+	viper.SetDefault("k8s.ss.namespace", "default")
+	viper.SetDefault("k8s.ss.kind", "Service")
+	viper.SetDefault("k8s.ss.name", "")
+	viper.SetDefault("k8s.ss.port", 80)
+	viper.SetDefault("k8s.ss.scheme", "http")
+	viper.SetDefault("k8s.namespace", "neoshowcase-apps")
+	viper.SetDefault("k8s.labels", nil)
+	viper.SetDefault("k8s.tls.type", "traefik")
+	viper.SetDefault("k8s.tls.traefik.certResolver", "nsresolver")
+	viper.SetDefault("k8s.tls.traefik.wildcard.domains", nil)
+	viper.SetDefault("k8s.tls.certManager.issuer.name", "cert-issuer")
+	viper.SetDefault("k8s.tls.certManager.issuer.kind", "ClusterIssuer")
+	viper.SetDefault("k8s.tls.certManager.wildcard.domains", nil)
+	viper.SetDefault("k8s.imagePullSecret", "")
+	viper.SetDefault("k8s.scheduling.nodeSelector", nil)
+	viper.SetDefault("k8s.scheduling.tolerations", nil)
+	viper.SetDefault("k8s.resources.requests.cpu", "")
+	viper.SetDefault("k8s.resources.requests.memory", "")
+	viper.SetDefault("k8s.resources.limits.cpu", "1.6")
+	viper.SetDefault("k8s.resources.limits.memory", "1G")
+
+	viper.SetDefault("ssh.port", 2201)
 
 	viper.SetDefault("db.host", "127.0.0.1")
 	viper.SetDefault("db.port", 3306)
@@ -66,46 +103,6 @@ func init() {
 	viper.SetDefault("storage.swift.container", "neoshowcase")
 	viper.SetDefault("storage.swift.authUrl", "")
 
-	viper.SetDefault("mode", "docker")
-
-	viper.SetDefault("docker.ssh.port", 2201)
-	viper.SetDefault("docker.confDir", "/opt/traefik/conf")
-	viper.SetDefault("docker.middlewares.auth", nil)
-	viper.SetDefault("docker.ss.url", "")
-	viper.SetDefault("docker.network", "neoshowcase_apps")
-	viper.SetDefault("docker.labels", nil)
-	viper.SetDefault("docker.tls.certResolver", "nsresolver")
-	viper.SetDefault("docker.tls.wildcard.domains", nil)
-	viper.SetDefault("docker.resources.cpus", 1.6)
-	viper.SetDefault("docker.resources.memory", 1e9 /* 1GB */)
-	viper.SetDefault("docker.resources.memorySwap", -1 /* unlimited swap */)
-	viper.SetDefault("docker.resources.memoryReservation", 256*1e6 /* 256MB */)
-
-	viper.SetDefault("k8s.ssh.port", 2201)
-	viper.SetDefault("k8s.middlewares.auth", nil)
-	viper.SetDefault("k8s.ss.namespace", "default")
-	viper.SetDefault("k8s.ss.kind", "Service")
-	viper.SetDefault("k8s.ss.name", "")
-	viper.SetDefault("k8s.ss.port", 80)
-	viper.SetDefault("k8s.ss.scheme", "http")
-	viper.SetDefault("k8s.namespace", "neoshowcase-apps")
-	viper.SetDefault("k8s.labels", nil)
-	viper.SetDefault("k8s.tls.type", "traefik")
-	viper.SetDefault("k8s.tls.traefik.certResolver", "nsresolver")
-	viper.SetDefault("k8s.tls.traefik.wildcard.domains", nil)
-	viper.SetDefault("k8s.tls.certManager.issuer.name", "cert-issuer")
-	viper.SetDefault("k8s.tls.certManager.issuer.kind", "ClusterIssuer")
-	viper.SetDefault("k8s.tls.certManager.wildcard.domains", nil)
-	viper.SetDefault("k8s.imagePullSecret", "")
-	viper.SetDefault("k8s.scheduling.nodeSelector", nil)
-	viper.SetDefault("k8s.scheduling.tolerations", nil)
-	viper.SetDefault("k8s.resources.requests.cpu", "")
-	viper.SetDefault("k8s.resources.requests.memory", "")
-	viper.SetDefault("k8s.resources.limits.cpu", "1.6")
-	viper.SetDefault("k8s.resources.limits.memory", "1G")
-
-	viper.SetDefault("repository.privateKeyFile", "")
-
 	viper.SetDefault("image.registry.scheme", "https")
 	viper.SetDefault("image.registry.addr", "localhost")
 	viper.SetDefault("image.registry.username", "")
@@ -124,8 +121,8 @@ func (c *Config) GetMode() int {
 	}
 }
 
-func provideRepositoryPublicKey(c Config) (*ssh.PublicKeys, error) {
-	bytes, err := os.ReadFile(c.Repository.PrivateKeyFile)
+func providePublicKey(c Config) (*ssh.PublicKeys, error) {
+	bytes, err := os.ReadFile(c.PrivateKeyFile)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to open private key file")
 	}

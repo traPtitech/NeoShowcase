@@ -8,7 +8,6 @@ import (
 
 	certmanagerv1 "github.com/cert-manager/cert-manager/pkg/client/clientset/versioned"
 	"github.com/friendsofgo/errors"
-	"github.com/go-git/go-git/v5/plumbing/transport/ssh"
 	log "github.com/sirupsen/logrus"
 	traefikv1alpha1 "github.com/traefik/traefik/v2/pkg/provider/kubernetes/crd/generated/clientset/versioned/typed/traefikio/v1alpha1"
 	apiv1 "k8s.io/api/core/v1"
@@ -34,11 +33,8 @@ type k8sBackend struct {
 	traefikClient     *traefikv1alpha1.TraefikV1alpha1Client
 	certManagerClient *certmanagerv1.Clientset
 	config            Config
-	appRepo           domain.ApplicationRepository
-	userRepo          domain.UserRepository
 
 	eventSubs domain.PubSub[*domain.ContainerEvent]
-	sshServer *sshServer
 
 	podWatcher watch.Interface
 	reloadLock sync.Mutex
@@ -50,9 +46,6 @@ func NewK8SBackend(
 	traefikClient *traefikv1alpha1.TraefikV1alpha1Client,
 	certManagerClient *certmanagerv1.Clientset,
 	config Config,
-	key *ssh.PublicKeys,
-	appRepo domain.ApplicationRepository,
-	userRepo domain.UserRepository,
 ) (domain.Backend, error) {
 	err := config.Validate()
 	if err != nil {
@@ -64,10 +57,7 @@ func NewK8SBackend(
 		traefikClient:     traefikClient,
 		certManagerClient: certManagerClient,
 		config:            config,
-		appRepo:           appRepo,
-		userRepo:          userRepo,
 	}
-	b.sshServer = newSSHServer(b, config.SSH, key)
 	return b, nil
 }
 
@@ -82,8 +72,6 @@ func (b *k8sBackend) Start(_ context.Context) error {
 		return errors.Wrap(err, "failed to watch pods")
 	}
 	go b.eventListener()
-
-	b.sshServer.Start()
 
 	return nil
 }
@@ -106,7 +94,7 @@ func (b *k8sBackend) eventListener() {
 
 func (b *k8sBackend) Dispose(_ context.Context) error {
 	b.podWatcher.Stop()
-	return b.sshServer.Close()
+	return nil
 }
 
 func (b *k8sBackend) AuthAllowed(fqdn string) bool {

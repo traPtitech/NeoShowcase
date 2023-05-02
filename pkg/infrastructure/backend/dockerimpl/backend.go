@@ -9,11 +9,9 @@ import (
 	"time"
 
 	"github.com/docker/docker/api/types"
-	"github.com/docker/docker/api/types/events"
 	"github.com/docker/docker/api/types/filters"
 	"github.com/docker/docker/client"
 	"github.com/friendsofgo/errors"
-	"github.com/go-git/go-git/v5/plumbing/transport/ssh"
 	log "github.com/sirupsen/logrus"
 
 	"github.com/traPtitech/neoshowcase/pkg/domain"
@@ -34,17 +32,11 @@ const (
 )
 
 type dockerBackend struct {
-	c        *client.Client
-	config   Config
-	image    builder.ImageConfig
-	appRepo  domain.ApplicationRepository
-	userRepo domain.UserRepository
+	c      *client.Client
+	config Config
+	image  builder.ImageConfig
 
-	eventSubs domain.PubSub[*domain.ContainerEvent]
-	sshServer *sshServer
-
-	eventCh     <-chan events.Message
-	eventErr    <-chan error
+	eventSubs   domain.PubSub[*domain.ContainerEvent]
 	eventCancel func()
 
 	reloadLock sync.Mutex
@@ -57,23 +49,17 @@ func NewClientFromEnv() (*client.Client, error) {
 func NewDockerBackend(
 	c *client.Client,
 	config Config,
-	sshKey *ssh.PublicKeys,
 	image builder.ImageConfig,
-	appRepo domain.ApplicationRepository,
-	userRepo domain.UserRepository,
 ) (domain.Backend, error) {
 	err := config.Validate()
 	if err != nil {
 		return nil, err
 	}
 	b := &dockerBackend{
-		c:        c,
-		config:   config,
-		image:    image,
-		appRepo:  appRepo,
-		userRepo: userRepo,
+		c:      c,
+		config: config,
+		image:  image,
 	}
-	b.sshServer = newSSHServer(b, config.SSH, sshKey)
 	return b, nil
 }
 
@@ -86,8 +72,6 @@ func (b *dockerBackend) Start(ctx context.Context) error {
 	eventCtx, eventCancel := context.WithCancel(context.Background())
 	b.eventCancel = eventCancel
 	go b.eventListenerLoop(eventCtx)
-
-	b.sshServer.Start()
 
 	return nil
 }
@@ -135,7 +119,7 @@ func (b *dockerBackend) eventListener(ctx context.Context) error {
 
 func (b *dockerBackend) Dispose(_ context.Context) error {
 	b.eventCancel()
-	return b.sshServer.Close()
+	return nil
 }
 
 func (b *dockerBackend) AuthAllowed(fqdn string) bool {
