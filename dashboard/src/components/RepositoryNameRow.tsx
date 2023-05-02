@@ -5,7 +5,7 @@ import {
   container,
   header,
   headerLeft,
-  addBranchButton,
+  addSelectButton,
   repoName,
   appName,
   appDetail,
@@ -38,25 +38,25 @@ export const RepositoryRow = ({ repo, apps }: Props): JSXElement => {
             {apps.length} {apps.length === 1 ? 'app' : 'apps'}
           </div>
         </div>
-        <div class={addBranchButton}>
+        <div class={addSelectButton}>
           <div>Select</div>
         </div>
       </div>
-      {apps.map((app, i) => (
-        <div class={i === apps.length - 1 ? application : applicationNotLast}>
-          <StatusIcon state={applicationState(app)} />
-          <div class={appDetail}>
-            <div class={appName}>{app.name}</div>
-            <div class={appFooter}>
-              <div>{shortSha(app.currentCommit)}</div>
-              <div class={appFooterRight}>
-                <div>{app.websites[0]?.fqdn || ''}</div>
-                <DiffHuman target={app.updatedAt.toDate()} />
-              </div>
-            </div>
-          </div>
-        </div>
-      ))}
+      {/*{apps.map((app, i) => (*/}
+      {/*  <div class={i === apps.length - 1 ? application : applicationNotLast}>*/}
+      {/*    <StatusIcon state={applicationState(app)} />*/}
+      {/*    <div class={appDetail}>*/}
+      {/*      <div class={appName}>{app.name}</div>*/}
+      {/*      <div class={appFooter}>*/}
+      {/*        <div>{shortSha(app.currentCommit)}</div>*/}
+      {/*        <div class={appFooterRight}>*/}
+      {/*          <div>{app.websites[0]?.fqdn || ''}</div>*/}
+      {/*          <DiffHuman target={app.updatedAt.toDate()} />*/}
+      {/*        </div>*/}
+      {/*      </div>*/}
+      {/*    </div>*/}
+      {/*  </div>*/}
+      {/*))}*/}
     </div>
   )
 }
