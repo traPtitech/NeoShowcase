@@ -16,8 +16,8 @@ require (
 	github.com/google/wire v0.5.0
 	github.com/heroku/docker-registry-client v0.0.0-20211012143308-9463674c8930
 	github.com/labstack/echo/v4 v4.10.2
+	github.com/lukesampson/figlet v0.0.0-20190211215653-8a3ef4a6ac42
 	github.com/mattn/go-shellwords v1.0.12
-	github.com/mbndr/figlet4go v0.0.0-20190224160619-d6cef5b186ea
 	github.com/moby/buildkit v0.11.5
 	github.com/motoki317/sc v1.5.0
 	github.com/ncw/swift v1.0.53

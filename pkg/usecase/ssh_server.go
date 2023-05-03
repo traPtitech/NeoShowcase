@@ -7,11 +7,11 @@ import (
 	"github.com/friendsofgo/errors"
 	"github.com/gliderlabs/ssh"
 	ssh2 "github.com/go-git/go-git/v5/plumbing/transport/ssh"
-	"github.com/mbndr/figlet4go"
 	"github.com/samber/lo"
 	log "github.com/sirupsen/logrus"
 
 	"github.com/traPtitech/neoshowcase/pkg/domain"
+	"github.com/traPtitech/neoshowcase/pkg/util/fig"
 	"github.com/traPtitech/neoshowcase/pkg/util/optional"
 )
 
@@ -20,31 +20,20 @@ var (
 )
 
 func init() {
-	fig := figlet4go.NewAsciiRender()
-	figOpt := figlet4go.NewRenderOptions()
-	figOpt.FontName = "larry3d"
-	orange, err := figlet4go.NewTrueColorFromHexString("FF9900")
+	orange, err := fig.NewTrueColorFromHexString("FF9900")
 	if err != nil {
 		panic(err)
 	}
-	figOpt.FontColor = []figlet4go.Color{
-		orange,               // N
-		orange,               // e
-		orange,               // o
-		figlet4go.ColorWhite, // S
-		figlet4go.ColorWhite, // h
-		figlet4go.ColorWhite, // o
-		figlet4go.ColorWhite, // w
-		figlet4go.ColorWhite, // c
-		figlet4go.ColorWhite, // a
-		figlet4go.ColorWhite, // s
-		figlet4go.ColorWhite, // e
-	}
-	msg, err := fig.RenderOpts("NeoShowcase", figOpt)
+	var b fig.Builder
+	err = b.Append("Neo", "larry3d", orange)
 	if err != nil {
 		panic(err)
 	}
-	figWelcome = msg
+	err = b.Append("Showcase", "larry3d", fig.ColorWhite)
+	if err != nil {
+		panic(err)
+	}
+	figWelcome = b.String()
 }
 
 type SSHServer interface {
@@ -148,6 +137,7 @@ func (s *sshServer) handler(sess ssh.Session) {
 	}
 
 	_, _ = sess.Write([]byte(figWelcome))
+	_, _ = sess.Write([]byte{'\n'})
 	_, _ = sess.Write([]byte(fmt.Sprintf("Welcome to NeoShowcase! Connecting to application %s (id: %s) ...\n", app.Name, appID)))
 
 	cmd := sess.Command()
