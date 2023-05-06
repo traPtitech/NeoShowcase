@@ -2,24 +2,112 @@ import { A, useParams } from '@solidjs/router'
 import { createResource } from 'solid-js'
 import { client } from '/@/libs/api'
 import { Header } from '/@/components/Header'
-import { container, contentContainer } from '/@/pages/apps.css'
 import { applicationState, buildTypeStr, getWebsiteURL, providerToIcon } from '/@/libs/application'
-import {
-  appTitle,
-  appTitleContainer,
-  card,
-  cardItem,
-  cardItemContent,
-  cardItems,
-  cardItemTitle,
-  cardTitle,
-  centerInline,
-} from '/@/pages/apps/[id].css'
 import { StatusIcon } from '/@/components/StatusIcon'
 import { titleCase } from '/@/libs/casing'
 import { Application_ContainerState, BuildConfig, DeployType } from '/@/api/neoshowcase/protobuf/gateway_pb'
 import { DiffHuman, shortSha } from '/@/libs/format'
-import { url } from '/@/theme.css'
+import { vars } from '/@/theme'
+import { styled } from '@macaron-css/solid'
+import { Container } from '/@/libs/layout'
+import { URLText } from '/@/components/URLText'
+
+const AppTitleContainer = styled('div', {
+  base: {
+    display: 'flex',
+    flexDirection: 'row',
+    gap: '14px',
+    alignContent: 'center',
+
+    marginTop: '48px',
+    fontSize: '32px',
+    fontWeight: 'bold',
+    color: vars.text.black1,
+  },
+})
+
+const AppTitle = styled('div', {
+  base: {
+    display: 'flex',
+    flexDirection: 'row',
+    gap: '8px',
+  },
+})
+
+const CenterInline = styled('div', {
+  base: {
+    display: 'flex',
+    flexDirection: 'column',
+    justifyContent: 'center',
+  },
+})
+
+const CardsContainer = styled('div', {
+  base: {
+    marginTop: '24px',
+    display: 'flex',
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: '40px',
+  },
+})
+
+const Card = styled('div', {
+  base: {
+    minWidth: '320px',
+    borderRadius: '4px',
+    border: `1px solid ${vars.bg.white4}`,
+    background: vars.bg.white1,
+    padding: '24px 36px',
+
+    display: 'flex',
+    flexDirection: 'column',
+    gap: '24px',
+  },
+})
+
+const CardTitle = styled('div', {
+  base: {
+    fontSize: '24px',
+    fontWeight: 600,
+  },
+})
+
+const CardItems = styled('div', {
+  base: {
+    display: 'flex',
+    flexDirection: 'column',
+    gap: '20px',
+  },
+})
+
+const CardItem = styled('div', {
+  base: {
+    display: 'flex',
+    flexDirection: 'row',
+    gap: '8px',
+  },
+})
+
+const CardItemTitle = styled('div', {
+  base: {
+    fontSize: '16px',
+    color: vars.text.black3,
+  },
+})
+
+const CardItemContent = styled('div', {
+  base: {
+    marginLeft: 'auto',
+    fontSize: '16px',
+    color: vars.text.black1,
+
+    display: 'flex',
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: '4px',
+  },
+})
 
 interface BuildConfigInfoProps {
   config: BuildConfig
@@ -31,57 +119,57 @@ const BuildConfigInfo = (props: BuildConfigInfoProps) => {
     case 'runtimeCmd':
       return (
         <>
-          <div class={cardItem}>
-            <div class={cardItemTitle}>Base Image</div>
-            <div class={cardItemContent}>{c.value.baseImage || 'Scratch'}</div>
-          </div>
+          <CardItem>
+            <CardItemTitle>Base Image</CardItemTitle>
+            <CardItemContent>{c.value.baseImage || 'Scratch'}</CardItemContent>
+          </CardItem>
           {c.value.buildCmd && (
-            <div class={cardItem}>
-              <div class={cardItemTitle}>Build Command{c.value.buildCmdShell && ' (Shell)'}</div>
-              <div class={cardItemContent}>{c.value.buildCmd}</div>
-            </div>
+            <CardItem>
+              <CardItemTitle>Build Command{c.value.buildCmdShell && ' (Shell)'}</CardItemTitle>
+              <CardItemContent>{c.value.buildCmd}</CardItemContent>
+            </CardItem>
           )}
         </>
       )
     case 'runtimeDockerfile':
       return (
         <>
-          <div class={cardItem}>
-            <div class={cardItemTitle}>Dockerfile</div>
-            <div class={cardItemContent}>{c.value.dockerfileName}</div>
-          </div>
+          <CardItem>
+            <CardItemTitle>Dockerfile</CardItemTitle>
+            <CardItemContent>{c.value.dockerfileName}</CardItemContent>
+          </CardItem>
         </>
       )
     case 'staticCmd':
       return (
         <>
-          <div class={cardItem}>
-            <div class={cardItemTitle}>Base Image</div>
-            <div class={cardItemContent}>{c.value.baseImage || 'Scratch'}</div>
-          </div>
+          <CardItem>
+            <CardItemTitle>Base Image</CardItemTitle>
+            <CardItemContent>{c.value.baseImage || 'Scratch'}</CardItemContent>
+          </CardItem>
           {c.value.buildCmd && (
-            <div class={cardItem}>
-              <div class={cardItemTitle}>Build Command{c.value.buildCmdShell && ' (Shell)'}</div>
-              <div class={cardItemContent}>{c.value.buildCmd}</div>
-            </div>
+            <CardItem>
+              <CardItemTitle>Build Command{c.value.buildCmdShell && ' (Shell)'}</CardItemTitle>
+              <CardItemContent>{c.value.buildCmd}</CardItemContent>
+            </CardItem>
           )}
-          <div class={cardItem}>
-            <div class={cardItemTitle}>Artifact Path</div>
-            <div class={cardItemContent}>{c.value.artifactPath}</div>
-          </div>
+          <CardItem>
+            <CardItemTitle>Artifact Path</CardItemTitle>
+            <CardItemContent>{c.value.artifactPath}</CardItemContent>
+          </CardItem>
         </>
       )
     case 'staticDockerfile':
       return (
         <>
-          <div class={cardItem}>
-            <div class={cardItemTitle}>Dockerfile</div>
-            <div class={cardItemContent}>{c.value.dockerfileName}</div>
-          </div>
-          <div class={cardItem}>
-            <div class={cardItemTitle}>Artifact Path</div>
-            <div class={cardItemContent}>{c.value.artifactPath}</div>
-          </div>
+          <CardItem>
+            <CardItemTitle>Dockerfile</CardItemTitle>
+            <div>{c.value.dockerfileName}</div>
+          </CardItem>
+          <CardItem>
+            <CardItemTitle>Artifact Path</CardItemTitle>
+            <div>{c.value.artifactPath}</div>
+          </CardItem>
         </>
       )
   }
@@ -99,132 +187,134 @@ export default () => {
   )
 
   return (
-    <div class={container}>
+    <Container>
       <Header />
-      <div class={appTitleContainer}>
-        <div class={centerInline}>{providerToIcon('GitHub', 36)}</div>
-        <div class={appTitle}>
+      <AppTitleContainer>
+        <CenterInline>{providerToIcon('GitHub', 36)}</CenterInline>
+        <AppTitle>
           <div>{repo()?.name}</div>
           <div>/</div>
           <div>{app()?.name}</div>
-        </div>
-      </div>
-      <div class={contentContainer}>
-        <div class={card}>
-          <div class={cardTitle}>Overall</div>
-          <div class={cardItems}>
-            <div class={cardItem}>
-              <div class={cardItemTitle}>状態</div>
-              <div class={cardItemContent}>
+        </AppTitle>
+      </AppTitleContainer>
+      <CardsContainer>
+        <Card>
+          <CardTitle>Overall</CardTitle>
+          <CardItems>
+            <CardItem>
+              <CardItemTitle>状態</CardItemTitle>
+              <CardItemContent>
                 {app() && <StatusIcon state={applicationState(app())} size={24} />}
                 {app() && applicationState(app())}
-              </div>
-            </div>
+              </CardItemContent>
+            </CardItem>
             {app() && app().deployType === DeployType.RUNTIME && (
-              <div class={cardItem}>
-                <div class={cardItemTitle}>コンテナの状態</div>
-                <div class={cardItemContent}>{app() && titleCase(Application_ContainerState[app().container])}</div>
-              </div>
+              <CardItem>
+                <CardItemTitle>コンテナの状態</CardItemTitle>
+                <CardItemContent>{app() && titleCase(Application_ContainerState[app().container])}</CardItemContent>
+              </CardItem>
             )}
-            <div class={cardItem}>
-              <div class={cardItemTitle}>起動時刻</div>
-              <div class={cardItemContent}>
+            <CardItem>
+              <CardItemTitle>起動時刻</CardItemTitle>
+              <CardItemContent>
                 {app()?.running && <DiffHuman target={app().updatedAt.toDate()} />}
                 {app() && !app().running && '-'}
-              </div>
-            </div>
-            <div class={cardItem}>
-              <div class={cardItemTitle}>作成日</div>
-              <div class={cardItemContent}>{app() && <DiffHuman target={app().createdAt.toDate()} />}</div>
-            </div>
+              </CardItemContent>
+            </CardItem>
+            <CardItem>
+              <CardItemTitle>作成日</CardItemTitle>
+              <CardItemContent>{app() && <DiffHuman target={app().createdAt.toDate()} />}</CardItemContent>
+            </CardItem>
             {app() && app().websites.length > 0 && (
-              <div class={cardItem}>
-                <div class={cardItemTitle}>URLs</div>
-              </div>
+              <CardItem>
+                <CardItemTitle>URLs</CardItemTitle>
+              </CardItem>
             )}
             {app() && app().websites.length > 0 && (
-              <div class={cardItem}>
-                <div class={cardItemContent}>
+              <CardItem>
+                <CardItemTitle>
                   {app()?.websites.map((website) => (
-                    <a class={url} href={getWebsiteURL(website)} target='_blank' rel="noreferrer">
+                    <URLText href={getWebsiteURL(website)} target='_blank' rel="noreferrer">
                       {getWebsiteURL(website)}
-                    </a>
+                    </URLText>
                   ))}
-                </div>
-              </div>
+                </CardItemTitle>
+              </CardItem>
             )}
-          </div>
-        </div>
-        <div class={card}>
-          <div class={cardTitle}>Info</div>
-          <div class={cardItems}>
-            <div class={cardItem}>
-              <div class={cardItemTitle}>ID</div>
-              <div class={cardItemContent}>{app()?.id}</div>
-            </div>
-            <div class={cardItem}>
-              <div class={cardItemTitle}>Name</div>
-              <div class={cardItemContent}>{app()?.name}</div>
-            </div>
-            <A class={cardItem} href={`/repos/${repo()?.id}`}>
-              <div class={cardItemTitle}>Repository</div>
-              <div class={cardItemContent}>
-                <div class={centerInline}>{providerToIcon('GitHub', 20)}</div>
-                {repo()?.name}
-              </div>
+          </CardItems>
+        </Card>
+        <Card>
+          <CardTitle>Info</CardTitle>
+          <CardItems>
+            <CardItem>
+              <CardItemTitle>ID</CardItemTitle>
+              <CardItemContent>{app()?.id}</CardItemContent>
+            </CardItem>
+            <CardItem>
+              <CardItemTitle>Name</CardItemTitle>
+              <CardItemContent>{app()?.name}</CardItemContent>
+            </CardItem>
+            <A href={`/repos/${repo()?.id}`}>
+              <CardItem>
+                <CardItemTitle>Repository</CardItemTitle>
+                <CardItemContent>
+                  <CenterInline>{providerToIcon('GitHub', 20)}</CenterInline>
+                  {repo()?.name}
+                </CardItemContent>
+              </CardItem>
             </A>
-            <div class={cardItem}>
-              <div class={cardItemTitle}>Git ref (short)</div>
-              <div class={cardItemContent}>{app()?.refName}</div>
-            </div>
-            <div class={cardItem}>
-              <div class={cardItemTitle}>Deploy type</div>
-              <div class={cardItemContent}>{app() && titleCase(DeployType[app().deployType])}</div>
-            </div>
-            <div class={cardItem}>
-              <div class={cardItemTitle}>Commit</div>
-              <div class={cardItemContent}>
+            <CardItem>
+              <CardItemTitle>Git ref (short)</CardItemTitle>
+              <CardItemContent>{app()?.refName}</CardItemContent>
+            </CardItem>
+            <CardItem>
+              <CardItemTitle>Deploy type</CardItemTitle>
+              <CardItemContent>{app() && titleCase(DeployType[app().deployType])}</CardItemContent>
+            </CardItem>
+            <CardItem>
+              <CardItemTitle>Commit</CardItemTitle>
+              <CardItemContent>
                 {app() && app().currentCommit !== app().wantCommit && (
                   <div>
                     {shortSha(app().currentCommit)} → {shortSha(app().wantCommit)} (Deploying)
                   </div>
                 )}
                 {app() && app().currentCommit === app().wantCommit && <div>{shortSha(app().currentCommit)}</div>}
-              </div>
-            </div>
-            <div class={cardItem}>
-              <div class={cardItemTitle}>Use MariaDB</div>
-              <div class={cardItemContent}>{app() && `${app().config.useMariadb}`}</div>
-            </div>
-            <div class={cardItem}>
-              <div class={cardItemTitle}>Use MongoDB</div>
-              <div class={cardItemContent}>{app() && `${app().config.useMongodb}`}</div>
-            </div>
-          </div>
-        </div>
-        <div class={card}>
-          <div class={cardTitle}>Build Config</div>
-          <div class={cardItems}>
-            <div class={cardItem}>
-              <div class={cardItemTitle}>Build Type</div>
-              <div class={cardItemContent}>{app() && buildTypeStr[app().config.buildConfig.buildConfig.case]}</div>
-            </div>
+              </CardItemContent>
+            </CardItem>
+            <CardItem>
+              <CardItemTitle>Use MariaDB</CardItemTitle>
+              <CardItemContent>{app() && `${app().config.useMariadb}`}</CardItemContent>
+            </CardItem>
+            <CardItem>
+              <CardItemTitle>Use MongoDB</CardItemTitle>
+              <CardItemContent>{app() && `${app().config.useMongodb}`}</CardItemContent>
+            </CardItem>
+          </CardItems>
+        </Card>
+        <Card>
+          <CardTitle>Build Config</CardTitle>
+          <CardItems>
+            <CardItem>
+              <CardItemTitle>Build Type</CardItemTitle>
+              <CardItemContent>{app() && buildTypeStr[app().config.buildConfig.buildConfig.case]}</CardItemContent>
+            </CardItem>
             {app()?.config.buildConfig && <BuildConfigInfo config={app().config.buildConfig} />}
             {app()?.config.entrypoint && (
-              <div class={cardItem}>
-                <div class={cardItemTitle}>Entrypoint</div>
-                <div class={cardItemContent}>{app()?.config.entrypoint}</div>
-              </div>
+              <CardItem>
+                <CardItemTitle>Entrypoint</CardItemTitle>
+                <CardItemContent>{app()?.config.entrypoint}</CardItemContent>
+              </CardItem>
             )}
             {app()?.config.command && (
-              <div class={cardItem}>
-                <div class={cardItemTitle}>Command</div>
-                <div class={cardItemContent}>{app()?.config.command}</div>
-              </div>
+              <CardItem>
+                <CardItemTitle>Command</CardItemTitle>
+                <CardItemContent>{app()?.config.command}</CardItemContent>
+              </CardItem>
             )}
-          </div>
-        </div>
-      </div>
-    </div>
+          </CardItems>
+        </Card>
+      </CardsContainer>
+    </Container>
   )
 }

@@ -1,4 +1,4 @@
-import { createGlobalTheme, style } from '@vanilla-extract/css'
+import { createGlobalTheme } from '@macaron-css/core'
 
 export const vars = createGlobalTheme(':root', {
   bg: {
@@ -23,8 +23,4 @@ export const vars = createGlobalTheme(':root', {
     success1: '#41B883',
     success2: '#68B3C8',
   },
-})
-
-export const url = style({
-  color: vars.text.url,
 })

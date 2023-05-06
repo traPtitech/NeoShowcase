@@ -1,14 +1,14 @@
-import { vanillaExtractPlugin } from '@vanilla-extract/vite-plugin'
 import path from 'path'
 import { defineConfig } from 'vite'
 import solidPlugin from 'vite-plugin-solid'
 import solidSvg from 'vite-plugin-solid-svg'
 import VitePluginFonts from 'vite-plugin-fonts'
+import { macaronVitePlugin } from '@macaron-css/vite'
 
 export default defineConfig({
   plugins: [
+    macaronVitePlugin(), // comes first
     solidPlugin(),
-    vanillaExtractPlugin(),
     solidSvg({ defaultAsComponent: true }),
     VitePluginFonts({
       google: {
