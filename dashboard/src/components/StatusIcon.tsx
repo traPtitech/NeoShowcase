@@ -3,8 +3,17 @@ import { AiFillCheckCircle, AiFillMinusCircle } from 'solid-icons/ai'
 import { vars } from '/@/theme'
 import { IoReloadCircle } from 'solid-icons/io'
 import { ApplicationState } from '/@/libs/application'
+import { Dynamic } from 'solid-js/web'
 
-
+interface IconProps {
+  size: number
+}
+const components: Record<ApplicationState, (props: IconProps) => JSXElement> = {
+  Idle: (props) => <AiFillMinusCircle size={props.size} color={vars.text.black4} />,
+  Deploying: (props) => <IoReloadCircle size={props.size} color={vars.icon.pending} />,
+  Running: (props) => <AiFillCheckCircle size={props.size} color={vars.icon.success1} />,
+  Static: (props) => <AiFillCheckCircle size={props.size} color={vars.icon.success2} />,
+}
 
 interface Props {
   state: ApplicationState
@@ -12,21 +21,7 @@ interface Props {
 }
 
 export const StatusIcon = (props: Props): JSXElement => {
-  const size = props.size ?? 20
   return (
-    <Switch>
-      <Match when={props.state === ApplicationState.Idle}>
-        <AiFillMinusCircle size={size} color={vars.text.black4} />
-      </Match>
-      <Match when={props.state === ApplicationState.Deploying}>
-        <IoReloadCircle size={size} color={vars.icon.pending} />
-      </Match>
-      <Match when={props.state === ApplicationState.Running}>
-        <AiFillCheckCircle size={size} color={vars.icon.success1} />
-      </Match>
-      <Match when={props.state === ApplicationState.Static}>
-        <AiFillCheckCircle size={size} color={vars.icon.success2} />
-      </Match>
-    </Switch>
+    <Dynamic component={components[props.state]} size={props.size ?? 20} />
   )
 }

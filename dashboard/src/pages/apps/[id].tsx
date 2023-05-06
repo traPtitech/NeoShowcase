@@ -9,39 +9,10 @@ import { Application_ContainerState, BuildConfig, DeployType } from '/@/api/neos
 import { DiffHuman, shortSha } from '/@/libs/format'
 import { vars } from '/@/theme'
 import { styled } from '@macaron-css/solid'
-import { Container } from '/@/libs/layout'
+import { CenterInline, Container } from '/@/libs/layout'
 import { URLText } from '/@/components/URLText'
 import { Button } from '/@/components/Button'
-
-const AppTitleContainer = styled('div', {
-  base: {
-    display: 'flex',
-    flexDirection: 'row',
-    gap: '14px',
-    alignContent: 'center',
-
-    marginTop: '48px',
-    fontSize: '32px',
-    fontWeight: 'bold',
-    color: vars.text.black1,
-  },
-})
-
-const AppTitle = styled('div', {
-  base: {
-    display: 'flex',
-    flexDirection: 'row',
-    gap: '8px',
-  },
-})
-
-const CenterInline = styled('div', {
-  base: {
-    display: 'flex',
-    flexDirection: 'column',
-    justifyContent: 'center',
-  },
-})
+import { AppNav } from '/@/components/AppNav'
 
 const CardsContainer = styled('div', {
   base: {
@@ -204,14 +175,7 @@ export default () => {
     <Container>
       <Header />
       <Show when={loaded()}>
-        <AppTitleContainer>
-          <CenterInline>{providerToIcon('GitHub', 36)}</CenterInline>
-          <AppTitle>
-            <div>{repo().name}</div>
-            <div>/</div>
-            <div>{app().name}</div>
-          </AppTitle>
-        </AppTitleContainer>
+        <AppNav appID={app().id} appName={app().name} repoName={repo().name} />
         <CardsContainer>
           <Card>
             <Show when={!app().running}>
