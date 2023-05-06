@@ -124,7 +124,7 @@ export default () => {
     () => app()?.deployType === DeployType.RUNTIME && app()?.id,
     (id) => client.getOutput({ applicationId: id, before: Timestamp.fromDate(now) }),
   )
-  const reversedLog = createMemo(() => log() && [...log().outputs].reverse() as ApplicationOutput[])
+  const reversedLog = createMemo(() => log() && ([...log().outputs].reverse() as ApplicationOutput[]))
   const [logStream] = createResource(
     () => app()?.container === Application_ContainerState.RUNNING && app()?.id,
     (id) => client.getOutputStream({ applicationId: id, after: Timestamp.fromDate(now) }),
@@ -139,7 +139,7 @@ export default () => {
 
     const iterate = async () => {
       for await (const log of stream) {
-        setStreamedLog(prev => prev.concat(log.log))
+        setStreamedLog((prev) => prev.concat(log.log))
       }
       await sleep(1000)
       await refetchApp()
@@ -217,11 +217,14 @@ export default () => {
                 </CardItem>
                 <CardItem>
                   <CardItemTitle>
-                    <For each={app().websites} children={(website) => (
-                      <URLText href={getWebsiteURL(website)} target='_blank' rel="noreferrer">
-                        {getWebsiteURL(website)}
-                      </URLText>
-                    )} />
+                    <For
+                      each={app().websites}
+                      children={(website) => (
+                        <URLText href={getWebsiteURL(website)} target='_blank' rel="noreferrer">
+                          {getWebsiteURL(website)}
+                        </URLText>
+                      )}
+                    />
                   </CardItemTitle>
                 </CardItem>
               </Show>
@@ -284,7 +287,8 @@ export default () => {
               <CardItem>
                 <CardItemTitle>Build Type</CardItemTitle>
                 <CardItemContent>{buildTypeStr[app().config.buildConfig.buildConfig.case]}</CardItemContent>
-              </CardItem>A
+              </CardItem>
+              A
               <BuildConfigInfo config={app().config.buildConfig} />
               <Show when={app().config.entrypoint}>
                 <CardItem>
@@ -304,12 +308,10 @@ export default () => {
             <Card>
               <CardTitle>Container Log</CardTitle>
               <LogContainer ref={logRef} overflowX='scroll'>
-                <For each={reversedLog()} children={(l) => (
-                  <span>{l.log}</span>
-                )} />
-                <For each={streamedLog()} children={(line) => (
-                  <span>{line}</span>
-                )} />
+                {/* rome-ignore lint: Avoid passing children using a prop */}
+                <For each={reversedLog()} children={(l) => <span>{l.log}</span>} />
+                {/* rome-ignore lint: Avoid passing children using a prop */}
+                <For each={streamedLog()} children={(line) => <span>{line}</span>} />
               </LogContainer>
             </Card>
           </Show>

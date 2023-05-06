@@ -171,9 +171,10 @@ export default () => {
               </Button>
             </SearchBarContainer>
             <RepositoriesContainer>
-              <For each={repos().repositories} children={(r) => (
-                <RepositoryRow repo={r} apps={appsByRepo()[r.id] || []} />
-              )} />
+              <For
+                each={repos().repositories}
+                children={(r) => <RepositoryRow repo={r} apps={appsByRepo()[r.id] || []} />}
+              />
             </RepositoriesContainer>
           </MainContainer>
         </ContentContainer>

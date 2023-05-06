@@ -15,7 +15,7 @@ const BuildsContainer = styled('div', {
     marginTop: '24px',
     borderRadius: '4px',
     border: `1px solid ${vars.bg.white4}`,
-  }
+  },
 })
 
 const BuildContainer = styled('div', {
@@ -92,11 +92,15 @@ export default () => {
   )
   const loaded = () => !!(app() && repo() && builds())
 
-  const sortedBuilds = createMemo(() => builds() && [...builds().builds].sort((b1, b2) => {
-    if (!b1.startedAt.valid) return -1
-    if (!b2.startedAt.valid) return 1
-    return b2.startedAt.timestamp.toDate().getTime() - b1.startedAt.timestamp.toDate().getTime()
-  }))
+  const sortedBuilds = createMemo(
+    () =>
+      builds() &&
+      [...builds().builds].sort((b1, b2) => {
+        if (!b1.startedAt.valid) return -1
+        if (!b2.startedAt.valid) return 1
+        return b2.startedAt.timestamp.toDate().getTime() - b1.startedAt.timestamp.toDate().getTime()
+      }),
+  )
 
   return (
     <Container>
@@ -104,25 +108,28 @@ export default () => {
       <Show when={loaded()}>
         <AppNav repoName={repo().name} appName={app().name} appID={app().id} />
         <BuildsContainer>
-          <For each={sortedBuilds()} children={(b, i) => (
-            <A href={`/apps/${app().id}/builds/${b.id}`}>
-              <BuildContainer upperBorder={i() > 0 && i() < sortedBuilds().length-1 ? 'line' : 'none'}>
-                <BuildStatusIcon state={b.status} />
-                <BuildDetail>
-                  <BuildName>Build {b.id}</BuildName>
-                  <BuildFooter>
-                    <div>{shortSha(b.commit)}</div>
-                    <BuildFooterRight>
-                      {/* TODO: use queued_at */}
-                      <Show when={b.startedAt.valid}>
-                        <DiffHuman target={b.startedAt.timestamp.toDate()} />
-                      </Show>
-                    </BuildFooterRight>
-                  </BuildFooter>
-                </BuildDetail>
-              </BuildContainer>
-            </A>
-          )} />
+          <For
+            each={sortedBuilds()}
+            children={(b, i) => (
+              <A href={`/apps/${app().id}/builds/${b.id}`}>
+                <BuildContainer upperBorder={i() > 0 && i() < sortedBuilds().length - 1 ? 'line' : 'none'}>
+                  <BuildStatusIcon state={b.status} />
+                  <BuildDetail>
+                    <BuildName>Build {b.id}</BuildName>
+                    <BuildFooter>
+                      <div>{shortSha(b.commit)}</div>
+                      <BuildFooterRight>
+                        {/* TODO: use queued_at */}
+                        <Show when={b.startedAt.valid}>
+                          <DiffHuman target={b.startedAt.timestamp.toDate()} />
+                        </Show>
+                      </BuildFooterRight>
+                    </BuildFooter>
+                  </BuildDetail>
+                </BuildContainer>
+              </A>
+            )}
+          />
         </BuildsContainer>
       </Show>
     </Container>

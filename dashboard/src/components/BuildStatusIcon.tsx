@@ -23,7 +23,5 @@ interface Props {
 }
 
 export const BuildStatusIcon = (props: Props): JSXElement => {
-  return (
-    <Dynamic component={components[props.state]} size={props.size ?? 20} />
-  )
+  return <Dynamic component={components[props.state]} size={props.size ?? 20} />
 }

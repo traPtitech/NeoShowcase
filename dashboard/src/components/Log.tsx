@@ -23,10 +23,10 @@ export const LogContainer = styled('div', {
       scroll: {
         whiteSpace: 'nowrap',
         overflowX: 'scroll',
-      }
-    }
+      },
+    },
   },
   defaultVariants: {
     overflowX: 'wrap',
-  }
+  },
 })

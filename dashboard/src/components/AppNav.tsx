@@ -34,7 +34,7 @@ const AppNavContainer = styled('div', {
     display: 'flex',
     flexDirection: 'row',
     gap: '20px',
-  }
+  },
 })
 
 export interface AppNavProps {
@@ -56,10 +56,14 @@ export const AppNav = (props: AppNavProps): JSXElement => {
       </AppTitleContainer>
       <AppNavContainer>
         <A href={`/apps/${props.appID}`}>
-          <Button color='black1' size='large'>General</Button>
+          <Button color='black1' size='large'>
+            General
+          </Button>
         </A>
         <A href={`/apps/${props.appID}/builds`}>
-          <Button color='black1' size='large'>Builds</Button>
+          <Button color='black1' size='large'>
+            Builds
+          </Button>
         </A>
       </AppNavContainer>
     </>

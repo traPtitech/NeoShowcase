@@ -54,7 +54,7 @@ export default () => {
 
     const iterate = async () => {
       for await (const log of stream) {
-        setStreamedLog(prev => concatBuffers(prev, log.log))
+        setStreamedLog((prev) => concatBuffers(prev, log.log))
       }
       await sleep(1000)
       await refetchBuild() // refetch build on stream end
@@ -122,7 +122,7 @@ export default () => {
                 <CardItemTitle>Started at</CardItemTitle>
                 <CardItemContent>
                   <Show when={build().startedAt.valid} fallback={'-'}>
-                    <DiffHuman target={build().startedAt.timestamp.toDate()}></DiffHuman>
+                    <DiffHuman target={build().startedAt.timestamp.toDate()} />
                   </Show>
                 </CardItemContent>
               </CardItem>
@@ -130,7 +130,7 @@ export default () => {
                 <CardItemTitle>Finished at</CardItemTitle>
                 <CardItemContent>
                   <Show when={build().finishedAt.valid} fallback={'-'}>
-                    <DiffHuman target={build().finishedAt.timestamp.toDate()}></DiffHuman>
+                    <DiffHuman target={build().finishedAt.timestamp.toDate()} />
                   </Show>
                 </CardItemContent>
               </CardItem>
@@ -138,15 +138,15 @@ export default () => {
                 <CardItemTitle>Duration</CardItemTitle>
                 <CardItemContent>
                   <Show when={build().startedAt.valid && build().finishedAt.valid} fallback={'-'}>
-                    {durationHuman(build().finishedAt.timestamp.toDate().getTime() - build().startedAt.timestamp.toDate().getTime())}
+                    {durationHuman(
+                      build().finishedAt.timestamp.toDate().getTime() - build().startedAt.timestamp.toDate().getTime(),
+                    )}
                   </Show>
                 </CardItemContent>
               </CardItem>
               <CardItem>
                 <CardItemTitle>Retried</CardItemTitle>
-                <CardItemContent>
-                  {build().retriable ? 'Yes' : 'No'}
-                </CardItemContent>
+                <CardItemContent>{build().retriable ? 'Yes' : 'No'}</CardItemContent>
               </CardItem>
             </CardItems>
           </Card>

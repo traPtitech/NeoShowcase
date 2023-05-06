@@ -147,23 +147,26 @@ export const RepositoryRow = ({ repo, apps }: Props): JSXElement => {
           <div>Add&nbsp;branch</div>
         </AddBranchButton>
       </Header>
-      <For each={apps} children={(app, i) => (
-        <A href={`/apps/${app.id}`}>
-          <ApplicationContainer upperBorder={i() === apps.length - 1 ? 'none' : 'line'}>
-            <StatusIcon state={applicationState(app)} />
-            <AppDetail>
-              <AppName>{app.name}</AppName>
-              <AppFooter>
-                <div>{shortSha(app.currentCommit)}</div>
-                <AppFooterRight>
-                  <div>{app.websites[0]?.fqdn || ''}</div>
-                  <DiffHuman target={app.updatedAt.toDate()} />
-                </AppFooterRight>
-              </AppFooter>
-            </AppDetail>
-          </ApplicationContainer>
-        </A>
-      )} />
+      <For
+        each={apps}
+        children={(app, i) => (
+          <A href={`/apps/${app.id}`}>
+            <ApplicationContainer upperBorder={i() === apps.length - 1 ? 'none' : 'line'}>
+              <StatusIcon state={applicationState(app)} />
+              <AppDetail>
+                <AppName>{app.name}</AppName>
+                <AppFooter>
+                  <div>{shortSha(app.currentCommit)}</div>
+                  <AppFooterRight>
+                    <div>{app.websites[0]?.fqdn || ''}</div>
+                    <DiffHuman target={app.updatedAt.toDate()} />
+                  </AppFooterRight>
+                </AppFooter>
+              </AppDetail>
+            </ApplicationContainer>
+          </A>
+        )}
+      />
     </Container>
   )
 }
