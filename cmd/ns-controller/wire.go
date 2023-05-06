@@ -12,19 +12,18 @@ import (
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
 
-	"github.com/traPtitech/neoshowcase/pkg/infrastructure/admindb"
 	"github.com/traPtitech/neoshowcase/pkg/infrastructure/backend/dockerimpl"
 	"github.com/traPtitech/neoshowcase/pkg/infrastructure/backend/k8simpl"
 	"github.com/traPtitech/neoshowcase/pkg/infrastructure/dbmanager"
-	"github.com/traPtitech/neoshowcase/pkg/interface/grpc"
-	"github.com/traPtitech/neoshowcase/pkg/interface/repository"
+	"github.com/traPtitech/neoshowcase/pkg/infrastructure/grpc"
+	"github.com/traPtitech/neoshowcase/pkg/infrastructure/repository"
 	"github.com/traPtitech/neoshowcase/pkg/usecase"
 )
 
 var commonSet = wire.NewSet(
-	admindb.New,
 	dbmanager.NewMariaDBManager,
 	dbmanager.NewMongoDBManager,
+	repository.New,
 	repository.NewApplicationRepository,
 	repository.NewAvailableDomainRepository,
 	repository.NewGitRepositoryRepository,

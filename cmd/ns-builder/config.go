@@ -15,11 +15,11 @@ import (
 
 	"github.com/traPtitech/neoshowcase/pkg/domain"
 	"github.com/traPtitech/neoshowcase/pkg/domain/builder"
-	"github.com/traPtitech/neoshowcase/pkg/infrastructure/admindb"
 	"github.com/traPtitech/neoshowcase/pkg/infrastructure/buildpack/dockerimpl"
 	"github.com/traPtitech/neoshowcase/pkg/infrastructure/buildpack/k8simpl"
+	"github.com/traPtitech/neoshowcase/pkg/infrastructure/grpc"
+	"github.com/traPtitech/neoshowcase/pkg/infrastructure/repository"
 	"github.com/traPtitech/neoshowcase/pkg/infrastructure/storage"
-	"github.com/traPtitech/neoshowcase/pkg/interface/grpc"
 )
 
 type Config struct {
@@ -35,7 +35,7 @@ type Config struct {
 		PrivateKeyFile string `mapstructure:"privateKeyFile" yaml:"privateKeyFile"`
 	} `mapstructure:"repository" yaml:"repository"`
 	Controller grpc.ControllerServiceClientConfig `mapstructure:"controller" yaml:"controller"`
-	DB         admindb.Config                     `mapstructure:"db" yaml:"db"`
+	DB         repository.Config                  `mapstructure:"db" yaml:"db"`
 	Storage    domain.StorageConfig               `mapstructure:"storage" yaml:"storage"`
 	Image      builder.ImageConfig                `mapstructure:"image" yaml:"image"`
 }

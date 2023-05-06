@@ -1,6 +1,6 @@
 syntax = "proto3";
 package neoshowcase.protobuf;
-option go_package = "github.com/traPtitech/neoshowcase/pkg/interface/grpc/pb";
+option go_package = "github.com/traPtitech/neoshowcase/pkg/infrastructure/grpc/pb";
 
 import "google/protobuf/empty.proto";
 import "neoshowcase/protobuf/gateway.proto";

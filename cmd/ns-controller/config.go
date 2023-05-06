@@ -13,11 +13,11 @@ import (
 	"github.com/traPtitech/neoshowcase/pkg/domain"
 	"github.com/traPtitech/neoshowcase/pkg/domain/builder"
 	"github.com/traPtitech/neoshowcase/pkg/domain/web"
-	"github.com/traPtitech/neoshowcase/pkg/infrastructure/admindb"
 	"github.com/traPtitech/neoshowcase/pkg/infrastructure/backend/dockerimpl"
 	"github.com/traPtitech/neoshowcase/pkg/infrastructure/backend/k8simpl"
+	"github.com/traPtitech/neoshowcase/pkg/infrastructure/grpc/pb/pbconnect"
+	"github.com/traPtitech/neoshowcase/pkg/infrastructure/repository"
 	"github.com/traPtitech/neoshowcase/pkg/infrastructure/storage"
-	"github.com/traPtitech/neoshowcase/pkg/interface/grpc/pb/pbconnect"
 )
 
 const (
@@ -33,7 +33,7 @@ type Config struct {
 	Docker         dockerimpl.Config    `mapstructure:"docker" yaml:"docker"`
 	K8s            k8simpl.Config       `mapstructure:"k8s" yaml:"k8s"`
 	SSH            domain.SSHConfig     `mapstructure:"ssh" yaml:"ssh"`
-	DB             admindb.Config       `mapstructure:"db" yaml:"db"`
+	DB             repository.Config    `mapstructure:"db" yaml:"db"`
 	Storage        domain.StorageConfig `mapstructure:"storage" yaml:"storage"`
 	Image          builder.ImageConfig  `mapstructure:"image" yaml:"image"`
 }

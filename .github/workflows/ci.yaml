@@ -31,7 +31,7 @@ jobs:
         uses: actions/cache@v3
         id: go-proto-cache
         with:
-          path: ./pkg/interface/grpc/pb
+          path: ./pkg/infrastructure/grpc/pb
           key: ${{ runner.os }}-proto-${{ hashFiles('**/*.proto') }}
       - name: Install proto tools
         run: |
@@ -62,7 +62,7 @@ jobs:
       - name: Use generated codes
         uses: actions/cache@v3
         with:
-          path: ./pkg/interface/grpc/pb
+          path: ./pkg/infrastructure/grpc/pb
           key: ${{ runner.os }}-proto-${{ hashFiles('**/*.proto') }}
       - run: go build ./cmd/${{ matrix.component }}
   lint:
@@ -81,7 +81,7 @@ jobs:
       - name: Use generated codes
         uses: actions/cache@v3
         with:
-          path: ./pkg/interface/grpc/pb
+          path: ./pkg/infrastructure/grpc/pb
           key: ${{ runner.os }}-proto-${{ hashFiles('**/*.proto') }}
       - name: Run golangci-lint
         run: golangci-lint run --out-format=line-number | reviewdog -f=golangci-lint -name=golangci-lint -reporter=github-check
@@ -119,7 +119,7 @@ jobs:
       - name: Use generated codes
         uses: actions/cache@v3
         with:
-          path: ./pkg/interface/grpc/pb
+          path: ./pkg/infrastructure/grpc/pb
           key: ${{ runner.os }}-proto-${{ hashFiles('**/*.proto') }}
       - name: Run migration
         run: |
@@ -143,7 +143,7 @@ jobs:
       - name: Use generated codes
         uses: actions/cache@v3
         with:
-          path: ./pkg/interface/grpc/pb
+          path: ./pkg/infrastructure/grpc/pb
           key: ${{ runner.os }}-proto-${{ hashFiles('**/*.proto') }}
       - name: Create single cluster
         uses: AbsaOSS/k3d-action@v2

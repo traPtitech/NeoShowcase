@@ -6,9 +6,8 @@ package main
 import (
 	"github.com/google/wire"
 
-	"github.com/traPtitech/neoshowcase/pkg/infrastructure/admindb"
-	"github.com/traPtitech/neoshowcase/pkg/interface/grpc"
-	"github.com/traPtitech/neoshowcase/pkg/interface/repository"
+	"github.com/traPtitech/neoshowcase/pkg/infrastructure/grpc"
+	"github.com/traPtitech/neoshowcase/pkg/infrastructure/repository"
 	"github.com/traPtitech/neoshowcase/pkg/usecase"
 )
 
@@ -16,10 +15,10 @@ func New(c Config) (*Server, error) {
 	wire.Build(
 		grpc.NewControllerBuilderServiceClient,
 		usecase.NewBuilderService,
+		repository.New,
 		repository.NewArtifactRepository,
 		repository.NewBuildRepository,
 		repository.NewGitRepositoryRepository,
-		admindb.New,
 		provideBuildpackBackend,
 		provideStorage,
 		initBuildkitClient,

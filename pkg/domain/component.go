@@ -3,8 +3,8 @@ package domain
 import (
 	"context"
 
-	"github.com/traPtitech/neoshowcase/pkg/interface/grpc/pb"
-	"github.com/traPtitech/neoshowcase/pkg/interface/grpc/pb/pbconnect"
+	"github.com/traPtitech/neoshowcase/pkg/infrastructure/grpc/pb"
+	"github.com/traPtitech/neoshowcase/pkg/infrastructure/grpc/pb/pbconnect"
 )
 
 type ControllerServiceClient interface {

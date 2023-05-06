@@ -16,7 +16,7 @@ import (
 	"github.com/moby/buildkit/session/auth/authprovider"
 	"github.com/samber/lo"
 
-	"github.com/traPtitech/neoshowcase/pkg/interface/grpc/pbconvert"
+	"github.com/traPtitech/neoshowcase/pkg/infrastructure/grpc/pbconvert"
 
 	"github.com/friendsofgo/errors"
 	"github.com/go-git/go-git/v5"
@@ -33,8 +33,8 @@ import (
 
 	"github.com/traPtitech/neoshowcase/pkg/domain"
 	"github.com/traPtitech/neoshowcase/pkg/domain/builder"
-	"github.com/traPtitech/neoshowcase/pkg/interface/grpc/pb"
-	"github.com/traPtitech/neoshowcase/pkg/interface/repository"
+	"github.com/traPtitech/neoshowcase/pkg/infrastructure/grpc/pb"
+	"github.com/traPtitech/neoshowcase/pkg/infrastructure/repository"
 	"github.com/traPtitech/neoshowcase/pkg/util/optional"
 	"github.com/traPtitech/neoshowcase/pkg/util/retry"
 )
