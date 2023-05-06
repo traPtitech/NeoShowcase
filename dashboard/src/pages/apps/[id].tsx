@@ -7,79 +7,19 @@ import { StatusIcon } from '/@/components/StatusIcon'
 import { titleCase } from '/@/libs/casing'
 import { Application_ContainerState, BuildConfig, DeployType } from '/@/api/neoshowcase/protobuf/gateway_pb'
 import { DiffHuman, shortSha } from '/@/libs/format'
-import { vars } from '/@/theme'
-import { styled } from '@macaron-css/solid'
 import { CenterInline, Container } from '/@/libs/layout'
 import { URLText } from '/@/components/URLText'
 import { Button } from '/@/components/Button'
 import { AppNav } from '/@/components/AppNav'
-
-const CardsContainer = styled('div', {
-  base: {
-    marginTop: '24px',
-    display: 'flex',
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: '40px',
-  },
-})
-
-const Card = styled('div', {
-  base: {
-    minWidth: '320px',
-    borderRadius: '4px',
-    border: `1px solid ${vars.bg.white4}`,
-    background: vars.bg.white1,
-    padding: '24px 36px',
-
-    display: 'flex',
-    flexDirection: 'column',
-    gap: '24px',
-  },
-})
-
-const CardTitle = styled('div', {
-  base: {
-    fontSize: '24px',
-    fontWeight: 600,
-  },
-})
-
-const CardItems = styled('div', {
-  base: {
-    display: 'flex',
-    flexDirection: 'column',
-    gap: '20px',
-  },
-})
-
-const CardItem = styled('div', {
-  base: {
-    display: 'flex',
-    flexDirection: 'row',
-    gap: '8px',
-  },
-})
-
-const CardItemTitle = styled('div', {
-  base: {
-    fontSize: '16px',
-    color: vars.text.black3,
-  },
-})
-
-const CardItemContent = styled('div', {
-  base: {
-    marginLeft: 'auto',
-    fontSize: '16px',
-    color: vars.text.black1,
-
-    display: 'flex',
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: '4px',
-  },
-})
+import {
+  Card,
+  CardItem,
+  CardItemContent,
+  CardItems,
+  CardItemTitle,
+  CardsContainer,
+  CardTitle,
+} from '/@/components/Card'
 
 interface BuildConfigInfoProps {
   config: BuildConfig
@@ -178,6 +118,7 @@ export default () => {
         <AppNav appID={app().id} appName={app().name} repoName={repo().name} />
         <CardsContainer>
           <Card>
+            <CardTitle>Actions</CardTitle>
             <Show when={!app().running}>
               <Button color='black1' size='large' onclick={startApp}>
                 Start App

@@ -1,6 +1,6 @@
 import { createMemo, createResource, For } from 'solid-js'
 import { client } from '/@/libs/api'
-import { useParams } from '@solidjs/router'
+import { A, useParams } from '@solidjs/router'
 import { Container } from '/@/libs/layout'
 import { Header } from '/@/components/Header'
 import { Show } from 'solid-js'
@@ -105,21 +105,23 @@ export default () => {
         <AppNav repoName={repo().name} appName={app().name} appID={app().id} />
         <BuildsContainer>
           <For each={sortedBuilds()} children={(b, i) => (
-            <BuildContainer upperBorder={i() > 0 && i() < sortedBuilds().length-1 ? 'line' : 'none'}>
-              <BuildStatusIcon state={b.status} />
-              <BuildDetail>
-                <BuildName>Build {b.id}</BuildName>
-                <BuildFooter>
-                  <div>{shortSha(b.commit)}</div>
-                  <BuildFooterRight>
-                    {/* TODO: use queued_at */}
-                    <Show when={b.startedAt.valid}>
-                      <DiffHuman target={b.startedAt.timestamp.toDate()} />
-                    </Show>
-                  </BuildFooterRight>
-                </BuildFooter>
-              </BuildDetail>
-            </BuildContainer>
+            <A href={`/apps/${app().id}/builds/${b.id}`}>
+              <BuildContainer upperBorder={i() > 0 && i() < sortedBuilds().length-1 ? 'line' : 'none'}>
+                <BuildStatusIcon state={b.status} />
+                <BuildDetail>
+                  <BuildName>Build {b.id}</BuildName>
+                  <BuildFooter>
+                    <div>{shortSha(b.commit)}</div>
+                    <BuildFooterRight>
+                      {/* TODO: use queued_at */}
+                      <Show when={b.startedAt.valid}>
+                        <DiffHuman target={b.startedAt.timestamp.toDate()} />
+                      </Show>
+                    </BuildFooterRight>
+                  </BuildFooter>
+                </BuildDetail>
+              </BuildContainer>
+            </A>
           )} />
         </BuildsContainer>
       </Show>
