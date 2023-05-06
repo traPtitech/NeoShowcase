@@ -20,22 +20,7 @@ import { BuildStatusIcon } from '/@/components/BuildStatusIcon'
 import { buildStatusStr } from '/@/libs/application'
 import { concatBuffers, toUTF8WithAnsi } from '/@/libs/buffers'
 import { sleep } from '/@/libs/sleep'
-import { styled } from '@macaron-css/solid'
-import { vars } from '/@/theme'
-
-const LogContainer = styled('div', {
-  base: {
-    backgroundColor: vars.bg.black1,
-    padding: '10px',
-    color: vars.text.white1,
-    borderRadius: '4px',
-
-    whiteSpace: 'pre-wrap',
-    overflowWrap: 'anywhere',
-    maxHeight: '500px',
-    overflowY: 'scroll',
-  }
-})
+import { LogContainer } from '/@/components/Log'
 
 export default () => {
   const params = useParams()

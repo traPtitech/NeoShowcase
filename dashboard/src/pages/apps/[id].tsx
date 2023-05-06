@@ -1,11 +1,16 @@
 import { A, useParams } from '@solidjs/router'
-import { createResource, For, onCleanup, Show } from 'solid-js'
+import { createEffect, createMemo, createResource, createSignal, For, onCleanup, Ref, Show } from 'solid-js'
 import { client } from '/@/libs/api'
 import { Header } from '/@/components/Header'
 import { applicationState, buildTypeStr, getWebsiteURL, providerToIcon } from '/@/libs/application'
 import { StatusIcon } from '/@/components/StatusIcon'
 import { titleCase } from '/@/libs/casing'
-import { Application_ContainerState, BuildConfig, DeployType } from '/@/api/neoshowcase/protobuf/gateway_pb'
+import {
+  Application_ContainerState,
+  ApplicationOutput,
+  BuildConfig,
+  DeployType,
+} from '/@/api/neoshowcase/protobuf/gateway_pb'
 import { DiffHuman, shortSha } from '/@/libs/format'
 import { CenterInline, Container } from '/@/libs/layout'
 import { URLText } from '/@/components/URLText'
@@ -20,6 +25,9 @@ import {
   CardsContainer,
   CardTitle,
 } from '/@/components/Card'
+import { LogContainer } from '/@/components/Log'
+import { sleep } from '/@/libs/sleep'
+import { Timestamp } from '@bufbuild/protobuf'
 
 interface BuildConfigInfoProps {
   config: BuildConfig
@@ -110,6 +118,44 @@ export default () => {
     await client.stopApplication({ id: app().id })
     await refetchApp()
   }
+
+  const now = new Date()
+  const [log] = createResource(
+    () => app()?.deployType === DeployType.RUNTIME && app()?.id,
+    (id) => client.getOutput({ applicationId: id, before: Timestamp.fromDate(now) }),
+  )
+  const reversedLog = createMemo(() => log() && [...log().outputs].reverse() as ApplicationOutput[])
+  const [logStream] = createResource(
+    () => app()?.container === Application_ContainerState.RUNNING && app()?.id,
+    (id) => client.getOutputStream({ applicationId: id, after: Timestamp.fromDate(now) }),
+  )
+  const [streamedLog, setStreamedLog] = createSignal<string[]>([])
+  createEffect(() => {
+    const stream = logStream()
+    if (!stream) {
+      setStreamedLog([])
+      return
+    }
+
+    const iterate = async () => {
+      for await (const log of stream) {
+        setStreamedLog(prev => prev.concat(log.log))
+      }
+      await sleep(1000)
+      await refetchApp()
+    }
+    void iterate()
+  })
+
+  let logRef: Ref<HTMLDivElement>
+  createEffect(() => {
+    if (!log() || !streamedLog()) return
+    const ref = logRef as HTMLDivElement
+    if (!ref) return
+    setTimeout(() => {
+      ref.scrollTop = ref.scrollHeight
+    })
+  })
 
   return (
     <Container>
@@ -254,6 +300,19 @@ export default () => {
               </Show>
             </CardItems>
           </Card>
+          <Show when={log()}>
+            <Card>
+              <CardTitle>Container Log</CardTitle>
+              <LogContainer ref={logRef} overflowX='scroll'>
+                <For each={reversedLog()} children={(l) => (
+                  <span>{l.log}</span>
+                )} />
+                <For each={streamedLog()} children={(line) => (
+                  <span>{line}</span>
+                )} />
+              </LogContainer>
+            </Card>
+          </Show>
         </CardsContainer>
       </Show>
     </Container>
