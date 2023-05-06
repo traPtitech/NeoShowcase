@@ -29,6 +29,7 @@
     "@bufbuild/connect-web": "0.8.6",
     "@bufbuild/protobuf": "1.2.0",
     "@solidjs/router": "0.8.2",
+    "ansi-to-html": "0.7.2",
     "solid-icons": "1.0.4",
     "solid-js": "1.7.3"
   }

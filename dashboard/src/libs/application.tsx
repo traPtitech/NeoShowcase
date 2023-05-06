@@ -1,5 +1,11 @@
 import { Provider } from '/@/components/RepositoryRow'
-import { Application, BuildConfig, DeployType, Website } from '/@/api/neoshowcase/protobuf/gateway_pb'
+import {
+  Application,
+  Build_BuildStatus,
+  BuildConfig,
+  DeployType,
+  Website,
+} from '/@/api/neoshowcase/protobuf/gateway_pb'
 import { JSXElement } from 'solid-js'
 import { AiFillGithub, AiFillGitlab } from 'solid-icons/ai'
 import { SiGitea } from 'solid-icons/si'
@@ -11,6 +17,15 @@ export const buildTypeStr: Record<BuildConfig['buildConfig']['case'], string> = 
   runtimeDockerfile: 'Runtime (Dockerfile)',
   staticCmd: 'Static (command)',
   staticDockerfile: 'Static (Dockerfile)',
+}
+
+export const buildStatusStr: Record<Build_BuildStatus, string> = {
+  [Build_BuildStatus.QUEUED]: 'Queued',
+  [Build_BuildStatus.BUILDING]: 'Building',
+  [Build_BuildStatus.SUCCEEDED]: 'Succeeded',
+  [Build_BuildStatus.FAILED]: 'Failed',
+  [Build_BuildStatus.CANCELLED]: 'Cancelled',
+  [Build_BuildStatus.SKIPPED]: 'Skipped',
 }
 
 export enum ApplicationState {

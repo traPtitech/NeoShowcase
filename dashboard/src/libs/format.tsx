@@ -1,3 +1,5 @@
+import { createMemo } from 'solid-js'
+
 export const shortSha = (sha1: string): string => sha1.substring(0, 7)
 
 export const durationHuman = (millis: number): string => {
@@ -21,8 +23,7 @@ export interface DiffHumanProps {
 }
 
 export const DiffHuman = (props: DiffHumanProps) => {
-  const now = new Date()
-  const diff = () => now.getTime() - props.target.getTime()
+  const diff = createMemo(() => new Date().getTime() - props.target.getTime())
   const suffix = () => (diff() > 0 ? 'ago' : 'from now')
   const human = () => durationHuman(Math.abs(diff()))
   const tooltip = () => props.target.toLocaleString()

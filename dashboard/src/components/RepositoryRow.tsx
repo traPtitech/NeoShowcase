@@ -1,4 +1,4 @@
-import { JSXElement } from 'solid-js'
+import { For, JSXElement } from 'solid-js'
 import { StatusIcon } from '/@/components/StatusIcon'
 import { Application, Repository } from '/@/api/neoshowcase/protobuf/gateway_pb'
 import { applicationState, providerToIcon, repositoryURLToProvider } from '/@/libs/application'
@@ -147,9 +147,9 @@ export const RepositoryRow = ({ repo, apps }: Props): JSXElement => {
           <div>Add&nbsp;branch</div>
         </AddBranchButton>
       </Header>
-      {apps.map((app, i) => (
+      <For each={apps} children={(app, i) => (
         <A href={`/apps/${app.id}`}>
-          <ApplicationContainer upperBorder={i === apps.length - 1 ? 'none' : 'line'}>
+          <ApplicationContainer upperBorder={i() === apps.length - 1 ? 'none' : 'line'}>
             <StatusIcon state={applicationState(app)} />
             <AppDetail>
               <AppName>{app.name}</AppName>
@@ -163,7 +163,7 @@ export const RepositoryRow = ({ repo, apps }: Props): JSXElement => {
             </AppDetail>
           </ApplicationContainer>
         </A>
-      ))}
+      )} />
     </Container>
   )
 }
