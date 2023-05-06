@@ -65,6 +65,9 @@ const (
 	// APIServiceUpdateRepositoryProcedure is the fully-qualified name of the APIService's
 	// UpdateRepository RPC.
 	APIServiceUpdateRepositoryProcedure = "/neoshowcase.protobuf.APIService/UpdateRepository"
+	// APIServiceRefreshRepositoryProcedure is the fully-qualified name of the APIService's
+	// RefreshRepository RPC.
+	APIServiceRefreshRepositoryProcedure = "/neoshowcase.protobuf.APIService/RefreshRepository"
 	// APIServiceDeleteRepositoryProcedure is the fully-qualified name of the APIService's
 	// DeleteRepository RPC.
 	APIServiceDeleteRepositoryProcedure = "/neoshowcase.protobuf.APIService/DeleteRepository"
@@ -141,6 +144,8 @@ type APIServiceClient interface {
 	GetRepository(context.Context, *connect_go.Request[pb.RepositoryIdRequest]) (*connect_go.Response[pb.Repository], error)
 	// UpdateRepository リポジトリ情報を更新します
 	UpdateRepository(context.Context, *connect_go.Request[pb.UpdateRepositoryRequest]) (*connect_go.Response[emptypb.Empty], error)
+	// RefreshRepository 自動更新間隔を待たず、手動でリモートリポジトリの最新情報に追従させます
+	RefreshRepository(context.Context, *connect_go.Request[pb.RepositoryIdRequest]) (*connect_go.Response[emptypb.Empty], error)
 	// DeleteRepository リポジトリを削除します 関連する全てのアプリケーションの削除が必要です
 	DeleteRepository(context.Context, *connect_go.Request[pb.RepositoryIdRequest]) (*connect_go.Response[emptypb.Empty], error)
 	// CreateApplication アプリを作成します
@@ -244,6 +249,11 @@ func NewAPIServiceClient(httpClient connect_go.HTTPClient, baseURL string, opts 
 		updateRepository: connect_go.NewClient[pb.UpdateRepositoryRequest, emptypb.Empty](
 			httpClient,
 			baseURL+APIServiceUpdateRepositoryProcedure,
+			opts...,
+		),
+		refreshRepository: connect_go.NewClient[pb.RepositoryIdRequest, emptypb.Empty](
+			httpClient,
+			baseURL+APIServiceRefreshRepositoryProcedure,
 			opts...,
 		),
 		deleteRepository: connect_go.NewClient[pb.RepositoryIdRequest, emptypb.Empty](
@@ -357,6 +367,7 @@ type aPIServiceClient struct {
 	getRepositories     *connect_go.Client[emptypb.Empty, pb.GetRepositoriesResponse]
 	getRepository       *connect_go.Client[pb.RepositoryIdRequest, pb.Repository]
 	updateRepository    *connect_go.Client[pb.UpdateRepositoryRequest, emptypb.Empty]
+	refreshRepository   *connect_go.Client[pb.RepositoryIdRequest, emptypb.Empty]
 	deleteRepository    *connect_go.Client[pb.RepositoryIdRequest, emptypb.Empty]
 	createApplication   *connect_go.Client[pb.CreateApplicationRequest, pb.Application]
 	getApplications     *connect_go.Client[emptypb.Empty, pb.GetApplicationsResponse]
@@ -431,6 +442,11 @@ func (c *aPIServiceClient) GetRepository(ctx context.Context, req *connect_go.Re
 // UpdateRepository calls neoshowcase.protobuf.APIService.UpdateRepository.
 func (c *aPIServiceClient) UpdateRepository(ctx context.Context, req *connect_go.Request[pb.UpdateRepositoryRequest]) (*connect_go.Response[emptypb.Empty], error) {
 	return c.updateRepository.CallUnary(ctx, req)
+}
+
+// RefreshRepository calls neoshowcase.protobuf.APIService.RefreshRepository.
+func (c *aPIServiceClient) RefreshRepository(ctx context.Context, req *connect_go.Request[pb.RepositoryIdRequest]) (*connect_go.Response[emptypb.Empty], error) {
+	return c.refreshRepository.CallUnary(ctx, req)
 }
 
 // DeleteRepository calls neoshowcase.protobuf.APIService.DeleteRepository.
@@ -552,6 +568,8 @@ type APIServiceHandler interface {
 	GetRepository(context.Context, *connect_go.Request[pb.RepositoryIdRequest]) (*connect_go.Response[pb.Repository], error)
 	// UpdateRepository リポジトリ情報を更新します
 	UpdateRepository(context.Context, *connect_go.Request[pb.UpdateRepositoryRequest]) (*connect_go.Response[emptypb.Empty], error)
+	// RefreshRepository 自動更新間隔を待たず、手動でリモートリポジトリの最新情報に追従させます
+	RefreshRepository(context.Context, *connect_go.Request[pb.RepositoryIdRequest]) (*connect_go.Response[emptypb.Empty], error)
 	// DeleteRepository リポジトリを削除します 関連する全てのアプリケーションの削除が必要です
 	DeleteRepository(context.Context, *connect_go.Request[pb.RepositoryIdRequest]) (*connect_go.Response[emptypb.Empty], error)
 	// CreateApplication アプリを作成します
@@ -652,6 +670,11 @@ func NewAPIServiceHandler(svc APIServiceHandler, opts ...connect_go.HandlerOptio
 	mux.Handle(APIServiceUpdateRepositoryProcedure, connect_go.NewUnaryHandler(
 		APIServiceUpdateRepositoryProcedure,
 		svc.UpdateRepository,
+		opts...,
+	))
+	mux.Handle(APIServiceRefreshRepositoryProcedure, connect_go.NewUnaryHandler(
+		APIServiceRefreshRepositoryProcedure,
+		svc.RefreshRepository,
 		opts...,
 	))
 	mux.Handle(APIServiceDeleteRepositoryProcedure, connect_go.NewUnaryHandler(
@@ -797,6 +820,10 @@ func (UnimplementedAPIServiceHandler) GetRepository(context.Context, *connect_go
 
 func (UnimplementedAPIServiceHandler) UpdateRepository(context.Context, *connect_go.Request[pb.UpdateRepositoryRequest]) (*connect_go.Response[emptypb.Empty], error) {
 	return nil, connect_go.NewError(connect_go.CodeUnimplemented, errors.New("neoshowcase.protobuf.APIService.UpdateRepository is not implemented"))
+}
+
+func (UnimplementedAPIServiceHandler) RefreshRepository(context.Context, *connect_go.Request[pb.RepositoryIdRequest]) (*connect_go.Response[emptypb.Empty], error) {
+	return nil, connect_go.NewError(connect_go.CodeUnimplemented, errors.New("neoshowcase.protobuf.APIService.RefreshRepository is not implemented"))
 }
 
 func (UnimplementedAPIServiceHandler) DeleteRepository(context.Context, *connect_go.Request[pb.RepositoryIdRequest]) (*connect_go.Response[emptypb.Empty], error) {

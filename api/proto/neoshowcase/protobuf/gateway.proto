@@ -352,6 +352,8 @@ service APIService {
   rpc GetRepository(RepositoryIdRequest) returns (Repository);
   // UpdateRepository リポジトリ情報を更新します
   rpc UpdateRepository(UpdateRepositoryRequest) returns (google.protobuf.Empty);
+  // RefreshRepository 自動更新間隔を待たず、手動でリモートリポジトリの最新情報に追従させます
+  rpc RefreshRepository(RepositoryIdRequest) returns (google.protobuf.Empty);
   // DeleteRepository リポジトリを削除します 関連する全てのアプリケーションの削除が必要です
   rpc DeleteRepository(RepositoryIdRequest) returns (google.protobuf.Empty);
 
