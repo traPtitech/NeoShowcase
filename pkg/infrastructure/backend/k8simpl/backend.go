@@ -22,8 +22,8 @@ import (
 
 const (
 	appLabel             = "neoshowcase.trap.jp/app"
-	appIDLabel           = "neoshowcase.trap.jp/appId"
-	appRestartAnnotation = "neoshowcase.trap.jp/startedAt"
+	appIDLabel           = "neoshowcase.trap.jp/app-id"
+	appRestartAnnotation = "neoshowcase.trap.jp/restarted-at"
 	fieldManager         = "neoshowcase"
 )
 
