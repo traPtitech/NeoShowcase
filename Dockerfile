@@ -42,10 +42,6 @@ FROM --platform=$BUILDPLATFORM builder as builder-ns-gateway
 RUN --mount=type=cache,target=/go/pkg/mod --mount=type=cache,target=/root/.cache/go-build \
     go build -o /app/ns-gateway -ldflags "-s -w -X main.version=$APP_VERSION -X main.revision=$APP_REVISION" ./cmd/ns-gateway
 
-FROM --platform=$BUILDPLATFORM builder as builder-ns-mc
-RUN --mount=type=cache,target=/go/pkg/mod --mount=type=cache,target=/root/.cache/go-build \
-    go build -o /app/ns-mc -ldflags "-s -w -X main.version=$APP_VERSION -X main.revision=$APP_REVISION" ./cmd/ns-mc
-
 FROM --platform=$BUILDPLATFORM builder as builder-ns-ssgen
 RUN --mount=type=cache,target=/go/pkg/mod --mount=type=cache,target=/root/.cache/go-build \
     go build -o /app/ns-ssgen -ldflags "-s -w -X main.version=$APP_VERSION -X main.revision=$APP_REVISION" ./cmd/ns-ssgen
@@ -89,12 +85,6 @@ COPY --from=builder-ns-gateway /app/ns-gateway ./
 ENTRYPOINT ["/app/ns-gateway"]
 CMD ["run"]
 
-FROM base as ns-mc
-EXPOSE 8080
-COPY --from=builder-ns-mc /app/ns-mc ./
-ENTRYPOINT ["/app/ns-mc"]
-CMD ["serve"]
-
 FROM base as ns-ssgen
 EXPOSE 8080
 COPY --from=builder-ns-ssgen /app/ns-ssgen ./
@@ -106,5 +96,4 @@ EXPOSE 8080 10000
 COPY --from=builder-ns-builder /app/ns-builder ./
 COPY --from=builder-ns-controller /app/ns-controller ./
 COPY --from=builder-ns-gateway /app/ns-gateway ./
-COPY --from=builder-ns-mc /app/ns-mc ./
 COPY --from=builder-ns-ssgen /app/ns-ssgen ./
