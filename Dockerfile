@@ -54,14 +54,17 @@ RUN --mount=type=cache,target=/go/pkg/mod --mount=type=cache,target=/tmp/go/cach
 FROM alpine:3 as base
 WORKDIR /app
 
+ARG APP_VERSION=dev
+ARG APP_REVISION=local
+ENV APP_VERSION=$APP_VERSION
+ENV APP_REVISION=$APP_REVISION
+
 FROM base AS ns-auth-dev
 EXPOSE 4181
 COPY --from=builder-ns-auth-dev /app/ns-auth-dev ./
 ENTRYPOINT ["/app/ns-auth-dev"]
 
 FROM base as ns-migrate
-ENV APP_VERSION=$APP_VERSION
-ENV APP_REVISION=$APP_REVISION
 
 COPY ./migrations/entrypoint.sh ./
 COPY ./migrations/schema.sql ./
