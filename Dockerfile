@@ -24,7 +24,7 @@ RUN --mount=type=cache,target=/go/pkg/mod --mount=type=cache,target=/root/.cache
     go build -o /app/ns-auth-dev -ldflags "-s -w -X main.version=$APP_VERSION -X main.revision=$APP_REVISION" ./cmd/ns-auth-dev
 
 FROM --platform=$BUILDPLATFORM builder as builder-ns-migrate
-ARG SQLDEF_VERSION=v0.15.22
+ARG SQLDEF_VERSION=v0.15.23
 RUN --mount=type=cache,target=/go/pkg/mod --mount=type=cache,target=/root/.cache/go-build \
     go install -ldflags "-s -w -X main.version=$SQLDEF_VERSION" github.com/k0kubun/sqldef/cmd/mysqldef@$SQLDEF_VERSION
 # keep output directory the same between platforms; workaround for https://github.com/golang/go/issues/57485
