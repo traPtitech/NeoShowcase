@@ -17,6 +17,7 @@ import (
 	"github.com/traPtitech/neoshowcase/pkg/infrastructure/dbmanager"
 	"github.com/traPtitech/neoshowcase/pkg/infrastructure/grpc"
 	"github.com/traPtitech/neoshowcase/pkg/infrastructure/repository"
+	"github.com/traPtitech/neoshowcase/pkg/infrastructure/webhook"
 	"github.com/traPtitech/neoshowcase/pkg/usecase"
 )
 
@@ -36,6 +37,7 @@ var commonSet = wire.NewSet(
 	grpc.NewControllerService,
 	grpc.NewControllerBuilderService,
 	grpc.NewControllerSSGenService,
+	webhook.NewReceiver,
 	usecase.NewAPIServerService,
 	usecase.NewAppBuildHelper,
 	usecase.NewAppDeployHelper,
@@ -48,7 +50,7 @@ var commonSet = wire.NewSet(
 	providePublicKey,
 	provideStorage,
 	provideControllerServer,
-	wire.FieldsOf(new(Config), "Docker", "K8s", "SSH", "DB", "Storage", "Image"),
+	wire.FieldsOf(new(Config), "Docker", "K8s", "SSH", "Webhook", "DB", "Storage", "Image"),
 	wire.Struct(new(Server), "*"),
 )
 

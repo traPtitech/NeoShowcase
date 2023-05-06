@@ -15,6 +15,7 @@ import (
 	"github.com/traPtitech/neoshowcase/pkg/infrastructure/dbmanager"
 	"github.com/traPtitech/neoshowcase/pkg/infrastructure/grpc"
 	"github.com/traPtitech/neoshowcase/pkg/infrastructure/repository"
+	"github.com/traPtitech/neoshowcase/pkg/infrastructure/webhook"
 	"github.com/traPtitech/neoshowcase/pkg/usecase"
 	"github.com/traefik/traefik/v2/pkg/provider/kubernetes/crd/generated/clientset/versioned/typed/traefikio/v1alpha1"
 	"k8s.io/client-go/kubernetes"
@@ -70,6 +71,8 @@ func NewWithDocker(c2 Config) (*Server, error) {
 	sshConfig := c2.SSH
 	userRepository := repository.NewUserRepository(db)
 	sshServer := usecase.NewSSHServer(sshConfig, publicKeys, backend, applicationRepository, userRepository)
+	receiverConfig := c2.Webhook
+	receiver := webhook.NewReceiver(receiverConfig, gitRepositoryRepository, repositoryFetcherService)
 	artifactRepository := repository.NewArtifactRepository(db)
 	storageConfig := c2.Storage
 	storage, err := provideStorage(storageConfig)
@@ -85,6 +88,7 @@ func NewWithDocker(c2 Config) (*Server, error) {
 		db:               db,
 		backend:          backend,
 		sshServer:        sshServer,
+		webhook:          receiver,
 		cdService:        continuousDeploymentService,
 		fetcherService:   repositoryFetcherService,
 		cleanerService:   cleanerService,
@@ -147,6 +151,8 @@ func NewWithK8S(c2 Config) (*Server, error) {
 	sshConfig := c2.SSH
 	userRepository := repository.NewUserRepository(db)
 	sshServer := usecase.NewSSHServer(sshConfig, publicKeys, backend, applicationRepository, userRepository)
+	receiverConfig := c2.Webhook
+	receiver := webhook.NewReceiver(receiverConfig, gitRepositoryRepository, repositoryFetcherService)
 	artifactRepository := repository.NewArtifactRepository(db)
 	storageConfig := c2.Storage
 	storage, err := provideStorage(storageConfig)
@@ -162,6 +168,7 @@ func NewWithK8S(c2 Config) (*Server, error) {
 		db:               db,
 		backend:          backend,
 		sshServer:        sshServer,
+		webhook:          receiver,
 		cdService:        continuousDeploymentService,
 		fetcherService:   repositoryFetcherService,
 		cleanerService:   cleanerService,
@@ -171,9 +178,9 @@ func NewWithK8S(c2 Config) (*Server, error) {
 
 // wire.go:
 
-var commonSet = wire.NewSet(dbmanager.NewMariaDBManager, dbmanager.NewMongoDBManager, repository.New, repository.NewApplicationRepository, repository.NewAvailableDomainRepository, repository.NewGitRepositoryRepository, repository.NewEnvironmentRepository, repository.NewBuildRepository, repository.NewArtifactRepository, repository.NewUserRepository, grpc.NewAPIServiceServer, grpc.NewAuthInterceptor, grpc.NewControllerService, grpc.NewControllerBuilderService, grpc.NewControllerSSGenService, usecase.NewAPIServerService, usecase.NewAppBuildHelper, usecase.NewAppDeployHelper, usecase.NewContinuousDeploymentService, usecase.NewRepositoryFetcherService, usecase.NewCleanerService, usecase.NewLogStreamService, usecase.NewContainerStateMutator, usecase.NewSSHServer, providePublicKey,
+var commonSet = wire.NewSet(dbmanager.NewMariaDBManager, dbmanager.NewMongoDBManager, repository.New, repository.NewApplicationRepository, repository.NewAvailableDomainRepository, repository.NewGitRepositoryRepository, repository.NewEnvironmentRepository, repository.NewBuildRepository, repository.NewArtifactRepository, repository.NewUserRepository, grpc.NewAPIServiceServer, grpc.NewAuthInterceptor, grpc.NewControllerService, grpc.NewControllerBuilderService, grpc.NewControllerSSGenService, webhook.NewReceiver, usecase.NewAPIServerService, usecase.NewAppBuildHelper, usecase.NewAppDeployHelper, usecase.NewContinuousDeploymentService, usecase.NewRepositoryFetcherService, usecase.NewCleanerService, usecase.NewLogStreamService, usecase.NewContainerStateMutator, usecase.NewSSHServer, providePublicKey,
 	provideStorage,
-	provideControllerServer, wire.FieldsOf(new(Config), "Docker", "K8s", "SSH", "DB", "Storage", "Image"), wire.Struct(new(Server), "*"),
+	provideControllerServer, wire.FieldsOf(new(Config), "Docker", "K8s", "SSH", "Webhook", "DB", "Storage", "Image"), wire.Struct(new(Server), "*"),
 )
 
 func New(c2 Config) (*Server, error) {

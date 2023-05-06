@@ -14,12 +14,13 @@ import (
 	log "github.com/sirupsen/logrus"
 
 	"github.com/traPtitech/neoshowcase/pkg/domain"
+	"github.com/traPtitech/neoshowcase/pkg/util/ds"
 	"github.com/traPtitech/neoshowcase/pkg/util/optional"
 )
 
 type RepositoryFetcherService interface {
 	Run()
-	Fetch(repositoryID string)
+	Fetch(repositoryIDs []string)
 	Stop(ctx context.Context) error
 }
 
@@ -29,7 +30,7 @@ type repositoryFetcherService struct {
 	pubKey  *ssh.PublicKeys
 	cd      ContinuousDeploymentService
 
-	fetcher   chan<- string
+	fetcher   chan<- []string
 	run       func()
 	runOnce   sync.Once
 	close     func()
@@ -49,7 +50,7 @@ func NewRepositoryFetcherService(
 		cd:      cd,
 	}
 
-	fetcher := make(chan string, 10)
+	fetcher := make(chan []string, 100)
 	r.fetcher = fetcher
 	ctx, cancel := context.WithCancel(context.Background())
 	r.run = func() {
@@ -64,21 +65,21 @@ func (r *repositoryFetcherService) Run() {
 	r.runOnce.Do(r.run)
 }
 
-func (r *repositoryFetcherService) Fetch(repositoryID string) {
+func (r *repositoryFetcherService) Fetch(repositoryIDs []string) {
 	// non-blocking; fetch operation is eventually consistent
 	select {
-	case r.fetcher <- repositoryID:
+	case r.fetcher <- repositoryIDs:
 	default:
 	}
 }
 
-func (r *repositoryFetcherService) fetchLoop(ctx context.Context, fetcher <-chan string) {
+func (r *repositoryFetcherService) fetchLoop(ctx context.Context, fetcher <-chan []string) {
 	ticker := time.NewTicker(3 * time.Minute)
 	defer ticker.Stop()
 
-	doSync := func(repositoryID optional.Of[string]) {
+	doSync := func(repositoryIDs optional.Of[[]string]) {
 		start := time.Now()
-		if err := r.fetch(repositoryID); err != nil {
+		if err := r.fetch(repositoryIDs); err != nil {
 			log.Errorf("failed to fetch repositories: %+v", err)
 			return
 		}
@@ -87,35 +88,33 @@ func (r *repositoryFetcherService) fetchLoop(ctx context.Context, fetcher <-chan
 		r.cd.RegisterBuilds()
 	}
 
-	doSync(optional.None[string]())
+	doSync(optional.None[[]string]())
 
 	for {
 		select {
-		case id := <-fetcher:
-			doSync(optional.From(id))
+		case ids := <-fetcher:
+			// coalesce specific repository fetch request
+			additional := lo.Flatten(ds.ReadAll(fetcher))
+			ids = append(ids, additional...)
+			doSync(optional.From(ids))
 		case <-ticker.C:
-			doSync(optional.None[string]())
+			doSync(optional.None[[]string]())
 		case <-ctx.Done():
 			return
 		}
 	}
 }
 
-func (r *repositoryFetcherService) fetch(repositoryID optional.Of[string]) error {
+func (r *repositoryFetcherService) fetch(repositoryIDs optional.Of[[]string]) error {
 	ctx := context.Background()
-	var repositories []*domain.Repository
-	var err error
-	if repositoryID.Valid {
-		repository, err := r.gitRepo.GetRepository(ctx, repositoryID.V)
-		if err != nil {
-			return err
-		}
-		repositories = append(repositories, repository)
-	} else {
-		repositories, err = r.gitRepo.GetRepositories(ctx, domain.GetRepositoryCondition{})
-		if err != nil {
-			return err
-		}
+
+	var getCond domain.GetRepositoryCondition
+	if repositoryIDs.Valid {
+		getCond.IDs = repositoryIDs
+	}
+	repositories, err := r.gitRepo.GetRepositories(ctx, getCond)
+	if err != nil {
+		return err
 	}
 	repos := lo.SliceToMap(repositories, func(repo *domain.Repository) (string, *domain.Repository) { return repo.ID, repo })
 

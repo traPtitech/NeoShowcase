@@ -67,6 +67,9 @@ services:
         condition: service_completed_successfully
     labels:
       - "traefik.enable=true"
+      - "traefik.http.routers.ns_controller_webhook.rule=Host(`ns.local.trapti.tech`) && PathPrefix(`/api/webhook`)"
+      - "traefik.http.routers.ns_controller_webhook.service=ns_controller_webhook"
+      - "traefik.http.services.ns_controller_webhook.loadbalancer.server.port=8080"
       - "traefik.tcp.routers.ns_controller.entrypoints=ns-ssh"
       - "traefik.tcp.routers.ns_controller.rule=HostSNI(`*`)"
       - "traefik.tcp.routers.ns_controller.service=ns_controller"
