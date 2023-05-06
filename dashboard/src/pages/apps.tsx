@@ -10,6 +10,7 @@ import { StatusCheckbox } from '/@/components/StatusCheckbox'
 import { styled } from '@macaron-css/solid'
 import { vars } from '/@/theme'
 import { Container } from '/@/libs/layout'
+import { Button } from '/@/components/Button'
 
 const [repos] = createResource(() => client.getRepositories({}))
 const [apps] = createResource(() => client.getApplications({}))
@@ -108,23 +109,6 @@ const SearchBar = styled('input', {
   },
 })
 
-const CreateAppButton = styled('div', {
-  base: {
-    display: 'flex',
-    borderRadius: '4px',
-    backgroundColor: vars.bg.black1,
-  },
-})
-
-const CreateAppText = styled('div', {
-  base: {
-    margin: 'auto',
-    color: vars.text.white1,
-    fontSize: '16px',
-    fontWeight: 'bold',
-  },
-})
-
 const RepositoriesContainer = styled('div', {
   base: {
     display: 'flex',
@@ -181,9 +165,9 @@ export default () => {
         <MainContainer>
           <SearchBarContainer>
             <SearchBar placeholder='Search...' />
-            <CreateAppButton>
-              <CreateAppText>+ Create new app</CreateAppText>
-            </CreateAppButton>
+            <Button color='black1' size='large'>
+              + Create new app
+            </Button>
           </SearchBarContainer>
           <RepositoriesContainer>
             {loaded() && repos().repositories.map((r) => <RepositoryRow repo={r} apps={appsByRepo()[r.id] || []} />)}
