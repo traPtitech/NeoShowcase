@@ -143,14 +143,22 @@ CREATE TABLE `application_owners`
 
 CREATE TABLE `builds`
 (
-    `id`             CHAR(22)                                                                  NOT NULL COMMENT 'ビルドID',
-    `commit`         CHAR(40)                                                                  NOT NULL COMMENT 'コミットハッシュ',
-    `status`         ENUM ('building', 'succeeded', 'failed', 'canceled', 'queued', 'skipped') NOT NULL COMMENT 'ビルドの状態',
-    `started_at`     DATETIME(6) DEFAULT NULL COMMENT 'ビルド開始日時',
-    `updated_at`     DATETIME(6) DEFAULT NULL COMMENT 'ビルド更新日時',
-    `finished_at`    DATETIME(6) DEFAULT NULL COMMENT 'ビルド終了日時',
-    `retriable`      TINYINT(1)                                                                NOT NULL COMMENT '再ビルド可能フラグ',
-    `application_id` CHAR(22)                                                                  NOT NULL COMMENT 'アプリケーションID',
+    `id`             CHAR(22)    NOT NULL COMMENT 'ビルドID',
+    `commit`         CHAR(40)    NOT NULL COMMENT 'コミットハッシュ',
+    `status`         ENUM (
+        'building',
+        'succeeded',
+        'failed',
+        'canceled',
+        'queued',
+        'skipped'
+        )                        NOT NULL COMMENT 'ビルドの状態',
+    `queued_at`      DATETIME(6) NOT NULL COMMENT 'ビルド追加日時',
+    `started_at`     DATETIME(6) NULL COMMENT 'ビルド開始日時',
+    `updated_at`     DATETIME(6) NULL COMMENT 'ビルド更新日時',
+    `finished_at`    DATETIME(6) NULL COMMENT 'ビルド終了日時',
+    `retriable`      TINYINT(1)  NOT NULL COMMENT '再ビルド可能フラグ',
+    `application_id` CHAR(22)    NOT NULL COMMENT 'アプリケーションID',
     PRIMARY KEY (`id`),
     KEY `fk_builds_status` (`status`),
     KEY `fk_builds_application_id` (`application_id`),

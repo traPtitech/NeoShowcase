@@ -96,9 +96,7 @@ export default () => {
     () =>
       builds() &&
       [...builds().builds].sort((b1, b2) => {
-        if (!b1.startedAt.valid) return -1
-        if (!b2.startedAt.valid) return 1
-        return b2.startedAt.timestamp.toDate().getTime() - b1.startedAt.timestamp.toDate().getTime()
+        return b2.queuedAt.toDate().getTime() - b1.queuedAt.toDate().getTime()
       }),
   )
 
@@ -119,10 +117,7 @@ export default () => {
                     <BuildFooter>
                       <div>{shortSha(b.commit)}</div>
                       <BuildFooterRight>
-                        {/* TODO: use queued_at */}
-                        <Show when={b.startedAt.valid}>
-                          <DiffHuman target={b.startedAt.timestamp.toDate()} />
-                        </Show>
+                        <DiffHuman target={b.queuedAt.toDate()} />
                       </BuildFooterRight>
                     </BuildFooter>
                   </BuildDetail>

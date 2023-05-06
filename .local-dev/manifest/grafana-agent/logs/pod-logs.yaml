@@ -20,17 +20,6 @@ spec:
       targetLabel: container
 
   namespaceSelector:
-    matchNames:
-      - default
-      - argocd
-      - kubernetes-dashboard
-      - traefik
-      - argo
-      - ns-system
-      - neoshowcase-apps
-      - loki
-      - grafana-agent-operator
-      - grafana
-      - grafana-agent
+    any: true
   selector:
     matchLabels: {}

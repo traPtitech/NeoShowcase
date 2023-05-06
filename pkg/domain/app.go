@@ -392,6 +392,7 @@ type Build struct {
 	Commit        string
 	Status        BuildStatus
 	ApplicationID string
+	QueuedAt      time.Time
 	StartedAt     optional.Of[time.Time]
 	UpdatedAt     optional.Of[time.Time]
 	FinishedAt    optional.Of[time.Time]
@@ -405,6 +406,7 @@ func NewBuild(applicationID string, commit string) *Build {
 		Commit:        commit,
 		Status:        BuildStatusQueued,
 		ApplicationID: applicationID,
+		QueuedAt:      time.Now(),
 	}
 }
 

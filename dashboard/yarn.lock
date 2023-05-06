@@ -1091,10 +1091,10 @@
   dependencies:
     "@babel/types" "^7.3.0"
 
-"@types/node@18.16.3":
-  version "18.16.3"
-  resolved "https://registry.yarnpkg.com/@types/node/-/node-18.16.3.tgz#6bda7819aae6ea0b386ebc5b24bdf602f1b42b01"
-  integrity sha512-OPs5WnnT1xkCBiuQrZA4+YAV4HEJejmHneyraIaxsbev5yCEr6KMwINNFP9wQeFIw8FWcoTqF3vQsa5CDaI+8Q==
+"@types/node@20.1.0":
+  version "20.1.0"
+  resolved "https://registry.yarnpkg.com/@types/node/-/node-20.1.0.tgz#258805edc37c327cf706e64c6957f241ca4c4c20"
+  integrity sha512-O+z53uwx64xY7D6roOi4+jApDGFg0qn6WHcxe5QeqjMaTezBO/mxdfFXIVAVVyNWKx84OmPB3L8kbVYOTeN34A==
 
 "@vanilla-extract/babel-plugin-debug-ids@^1.0.1":
   version "1.0.1"
@@ -2006,10 +2006,10 @@ solid-icons@1.0.4:
   resolved "https://registry.yarnpkg.com/solid-icons/-/solid-icons-1.0.4.tgz#13eb122fe927110e2463c96d226492fb837a9802"
   integrity sha512-gJTp4in3+OYCs9WvDkSLt4Los2unR3Uoder8wjh15GsfP20xiNOLfPTJllXmn+fI8+k3x7bRYtLGIgWd9fUQug==
 
-solid-js@1.7.3:
-  version "1.7.3"
-  resolved "https://registry.yarnpkg.com/solid-js/-/solid-js-1.7.3.tgz#3e2e2ce7f2415336f5c96668f9524ad51f6a718b"
-  integrity sha512-4hwaF/zV/xbNeBBIYDyu3dcReOZBECbO//mrra6GqOrKy4Soyo+fnKjpZSa0nODm6j1aL0iQRh/7ofYowH+jzw==
+solid-js@1.7.5:
+  version "1.7.5"
+  resolved "https://registry.yarnpkg.com/solid-js/-/solid-js-1.7.5.tgz#2ef7834c6c8eef9d1b46c25b1c51da4c67492a13"
+  integrity sha512-GfJ8na1e9FG1oAF5xC24BM+ATLym0sfH+ZblkbBFpueYdq3fWAoA5Ve+jGeIeLI7jmMGfa0rUaKruszNm2sH8w==
   dependencies:
     csstype "^3.1.0"
     seroval "^0.5.0"
@@ -2149,18 +2149,7 @@ vite-plugin-solid@2.7.0:
     solid-refresh "^0.5.0"
     vitefu "^0.2.3"
 
-vite@4.3.3:
-  version "4.3.3"
-  resolved "https://registry.yarnpkg.com/vite/-/vite-4.3.3.tgz#26adb4aa01439fc4546c480ea547674d87289396"
-  integrity sha512-MwFlLBO4udZXd+VBcezo3u8mC77YQk+ik+fbc0GZWGgzfbPP+8Kf0fldhARqvSYmtIWoAJ5BXPClUbMTlqFxrA==
-  dependencies:
-    esbuild "^0.17.5"
-    postcss "^8.4.23"
-    rollup "^3.21.0"
-  optionalDependencies:
-    fsevents "~2.3.2"
-
-"vite@^3.0.0 || ^4.0.0", vite@^4.1.4:
+vite@4.3.5, "vite@^3.0.0 || ^4.0.0", vite@^4.1.4:
   version "4.3.5"
   resolved "https://registry.yarnpkg.com/vite/-/vite-4.3.5.tgz#3871fe0f4b582ea7f49a85386ac80e84826367d9"
   integrity sha512-0gEnL9wiRFxgz40o/i/eTBwm+NEbpUeTWhzKrZDSdKm6nplj+z4lKz8ANDgildxHm47Vg8EUia0aicKbawUVVA==

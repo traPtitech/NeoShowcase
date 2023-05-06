@@ -39,6 +39,8 @@ func NewReceiver(
 	}
 
 	e := echo.New()
+	e.HidePort = true
+	e.HideBanner = true
 	e.Any(path.Join(config.BasePath, "github"), r.githubHandler)
 	e.Any(path.Join(config.BasePath, "gitea"), r.giteaHandler)
 	r.echo = e

@@ -1,6 +1,8 @@
 package pbconvert
 
 import (
+	"google.golang.org/protobuf/types/known/timestamppb"
+
 	"github.com/traPtitech/neoshowcase/pkg/domain"
 	"github.com/traPtitech/neoshowcase/pkg/infrastructure/grpc/pb"
 	"github.com/traPtitech/neoshowcase/pkg/util/mapper"
@@ -20,6 +22,7 @@ func ToPBBuild(build *domain.Build) *pb.Build {
 		Id:         build.ID,
 		Commit:     build.Commit,
 		Status:     BuildStatusMapper.IntoMust(build.Status),
+		QueuedAt:   timestamppb.New(build.QueuedAt),
 		StartedAt:  ToPBNullTimestamp(build.StartedAt),
 		UpdatedAt:  ToPBNullTimestamp(build.UpdatedAt),
 		FinishedAt: ToPBNullTimestamp(build.FinishedAt),

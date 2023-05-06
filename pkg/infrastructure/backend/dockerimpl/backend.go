@@ -21,8 +21,8 @@ import (
 
 const (
 	appLabel            = "neoshowcase.trap.jp/app"
-	appIDLabel          = "neoshowcase.trap.jp/appId"
-	appRestartedAtLabel = "neoshowcase.trap.jp/restartedAt"
+	appIDLabel          = "neoshowcase.trap.jp/app-id"
+	appRestartedAtLabel = "neoshowcase.trap.jp/restarted-at"
 )
 
 const (
