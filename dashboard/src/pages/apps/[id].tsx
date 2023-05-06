@@ -11,6 +11,7 @@ import { vars } from '/@/theme'
 import { styled } from '@macaron-css/solid'
 import { Container } from '/@/libs/layout'
 import { URLText } from '/@/components/URLText'
+import { Button } from '/@/components/Button'
 
 const AppTitleContainer = styled('div', {
   base: {
@@ -177,7 +178,7 @@ const BuildConfigInfo = (props: BuildConfigInfoProps) => {
 
 export default () => {
   const params = useParams()
-  const [app] = createResource(
+  const [app, { refetch: refetchApp }] = createResource(
     () => params.id,
     (id) => client.getApplication({ id }),
   )
@@ -185,6 +186,15 @@ export default () => {
     () => app()?.repositoryId,
     (id) => client.getRepository({ repositoryId: id }),
   )
+
+  const startApp = async () => {
+    await client.startApplication({ id: app().id })
+    await refetchApp()
+  }
+  const stopApp = async () => {
+    await client.stopApplication({ id: app().id })
+    await refetchApp()
+  }
 
   return (
     <Container>
@@ -198,6 +208,23 @@ export default () => {
         </AppTitle>
       </AppTitleContainer>
       <CardsContainer>
+        <Card>
+          {app() && !app().running && (
+            <Button color='black1' size='large' onclick={startApp}>
+              Start App
+            </Button>
+          )}
+          {app() && app().running && (
+            <Button color='black1' size='large' onclick={startApp}>
+              Restart App
+            </Button>
+          )}
+          {app() && app().running && (
+            <Button color='black1' size='large' onclick={stopApp}>
+              Stop App
+            </Button>
+          )}
+        </Card>
         <Card>
           <CardTitle>Overall</CardTitle>
           <CardItems>
