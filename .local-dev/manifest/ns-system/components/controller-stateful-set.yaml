@@ -26,6 +26,8 @@ spec:
           ports:
             - containerPort: 2201
               name: ssh
+            - containerPort: 8080
+              name: webhook
             - containerPort: 10000
               name: grpc
           volumeMounts:

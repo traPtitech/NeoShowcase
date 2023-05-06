@@ -11,6 +11,9 @@ spec:
     - port: 2201
       targetPort: ssh
       name: ssh
+    - port: 8080
+      targetPort: webhook
+      name: webhook
     - port: 10000
       targetPort: grpc
       name: grpc

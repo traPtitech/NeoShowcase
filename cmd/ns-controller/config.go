@@ -18,6 +18,7 @@ import (
 	"github.com/traPtitech/neoshowcase/pkg/infrastructure/grpc/pb/pbconnect"
 	"github.com/traPtitech/neoshowcase/pkg/infrastructure/repository"
 	"github.com/traPtitech/neoshowcase/pkg/infrastructure/storage"
+	"github.com/traPtitech/neoshowcase/pkg/infrastructure/webhook"
 )
 
 const (
@@ -26,16 +27,17 @@ const (
 )
 
 type Config struct {
-	Port           int                  `mapstructure:"port" yaml:"port"`
-	Debug          bool                 `mapstructure:"debug" yaml:"debug"`
-	PrivateKeyFile string               `mapstructure:"privateKeyFile" yaml:"privateKeyFile"`
-	Mode           string               `mapstructure:"mode" yaml:"mode"`
-	Docker         dockerimpl.Config    `mapstructure:"docker" yaml:"docker"`
-	K8s            k8simpl.Config       `mapstructure:"k8s" yaml:"k8s"`
-	SSH            domain.SSHConfig     `mapstructure:"ssh" yaml:"ssh"`
-	DB             repository.Config    `mapstructure:"db" yaml:"db"`
-	Storage        domain.StorageConfig `mapstructure:"storage" yaml:"storage"`
-	Image          builder.ImageConfig  `mapstructure:"image" yaml:"image"`
+	Port           int                    `mapstructure:"port" yaml:"port"`
+	Debug          bool                   `mapstructure:"debug" yaml:"debug"`
+	PrivateKeyFile string                 `mapstructure:"privateKeyFile" yaml:"privateKeyFile"`
+	Mode           string                 `mapstructure:"mode" yaml:"mode"`
+	Docker         dockerimpl.Config      `mapstructure:"docker" yaml:"docker"`
+	K8s            k8simpl.Config         `mapstructure:"k8s" yaml:"k8s"`
+	SSH            domain.SSHConfig       `mapstructure:"ssh" yaml:"ssh"`
+	Webhook        webhook.ReceiverConfig `mapstructure:"webhook" yaml:"webhook"`
+	DB             repository.Config      `mapstructure:"db" yaml:"db"`
+	Storage        domain.StorageConfig   `mapstructure:"storage" yaml:"storage"`
+	Image          builder.ImageConfig    `mapstructure:"image" yaml:"image"`
 }
 
 func init() {
@@ -79,6 +81,9 @@ func init() {
 	viper.SetDefault("k8s.resources.limits.memory", "1G")
 
 	viper.SetDefault("ssh.port", 2201)
+
+	viper.SetDefault("webhook.basePath", "/api/webhook")
+	viper.SetDefault("webhook.port", 8080)
 
 	viper.SetDefault("db.host", "127.0.0.1")
 	viper.SetDefault("db.port", 3306)

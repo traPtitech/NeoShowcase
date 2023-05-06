@@ -44,7 +44,7 @@ func (s *ControllerService) AuthAvailable(_ context.Context, c *connect.Request[
 }
 
 func (s *ControllerService) FetchRepository(_ context.Context, c *connect.Request[pb.RepositoryIdRequest]) (*connect.Response[emptypb.Empty], error) {
-	s.fetcher.Fetch(c.Msg.RepositoryId)
+	s.fetcher.Fetch([]string{c.Msg.RepositoryId})
 	res := connect.NewResponse(&emptypb.Empty{})
 	return res, nil
 }

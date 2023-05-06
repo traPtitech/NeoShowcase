@@ -134,6 +134,8 @@ type EnvironmentRepository interface {
 }
 
 type GetRepositoryCondition struct {
+	IDs    optional.Of[[]string]
+	URLs   optional.Of[[]string]
 	UserID optional.Of[string]
 }
 

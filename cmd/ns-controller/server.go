@@ -7,6 +7,7 @@ import (
 	"golang.org/x/sync/errgroup"
 
 	"github.com/traPtitech/neoshowcase/pkg/domain"
+	"github.com/traPtitech/neoshowcase/pkg/infrastructure/webhook"
 	"github.com/traPtitech/neoshowcase/pkg/usecase"
 )
 
@@ -16,6 +17,7 @@ type Server struct {
 	db             *sql.DB
 	backend        domain.Backend
 	sshServer      usecase.SSHServer
+	webhook        *webhook.Receiver
 	cdService      usecase.ContinuousDeploymentService
 	fetcherService usecase.RepositoryFetcherService
 	cleanerService usecase.CleanerService
@@ -29,6 +31,9 @@ func (s *Server) Start(ctx context.Context) error {
 	})
 	eg.Go(func() error {
 		return s.sshServer.Start()
+	})
+	eg.Go(func() error {
+		return s.webhook.Start(ctx)
 	})
 	eg.Go(func() error {
 		s.cdService.Run()
@@ -59,6 +64,9 @@ func (s *Server) Shutdown(ctx context.Context) error {
 	})
 	eg.Go(func() error {
 		return s.sshServer.Close()
+	})
+	eg.Go(func() error {
+		return s.webhook.Shutdown(ctx)
 	})
 	eg.Go(func() error {
 		return s.cdService.Stop(ctx)

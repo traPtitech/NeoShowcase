@@ -36,6 +36,10 @@ docker:
 ssh:
   port: 2201
 
+webhook:
+  basePath: /api/webhook
+  port: 8080
+
 db:
   host: mysql
   port: 3306

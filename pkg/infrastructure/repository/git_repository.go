@@ -31,6 +31,12 @@ func (r *gitRepositoryRepository) GetRepositories(ctx context.Context, cond doma
 		qm.Load(models.RepositoryRels.Users),
 	}
 
+	if cond.IDs.Valid {
+		mods = append(mods, models.RepositoryWhere.ID.IN(cond.IDs.V))
+	}
+	if cond.URLs.Valid {
+		mods = append(mods, models.RepositoryWhere.URL.IN(cond.URLs.V))
+	}
 	if cond.UserID.Valid {
 		mods = append(mods,
 			qm.InnerJoin(fmt.Sprintf(
