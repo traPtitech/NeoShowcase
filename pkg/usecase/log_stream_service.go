@@ -55,6 +55,9 @@ func (st *buildLogStream) unsubscribe(sub chan<- []byte) {
 	st.lock.Lock()
 	defer st.lock.Unlock()
 
+	if !lo.Contains(st.subs, sub) {
+		return // already closed
+	}
 	st.subs = lo.Without(st.subs, sub)
 	close(sub)
 }
@@ -66,6 +69,7 @@ func (st *buildLogStream) close() {
 	for _, sub := range st.subs {
 		close(sub)
 	}
+	st.subs = nil
 }
 
 func (l *LogStreamService) StartBuildLog(id string) {
