@@ -119,6 +119,12 @@ export default () => {
                 </CardItemContent>
               </CardItem>
               <CardItem>
+                <CardItemTitle>Queued at</CardItemTitle>
+                <CardItemContent>
+                  <DiffHuman target={build().queuedAt.toDate()} />
+                </CardItemContent>
+              </CardItem>
+              <CardItem>
                 <CardItemTitle>Started at</CardItemTitle>
                 <CardItemContent>
                   <Show when={build().startedAt.valid} fallback={'-'}>

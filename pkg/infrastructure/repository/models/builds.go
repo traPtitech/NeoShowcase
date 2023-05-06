@@ -29,6 +29,8 @@ type Build struct { // ビルドID
 	Commit string `boil:"commit" json:"commit" toml:"commit" yaml:"commit"`
 	// ビルドの状態
 	Status string `boil:"status" json:"status" toml:"status" yaml:"status"`
+	// ビルド追加日時
+	QueuedAt time.Time `boil:"queued_at" json:"queued_at" toml:"queued_at" yaml:"queued_at"`
 	// ビルド開始日時
 	StartedAt null.Time `boil:"started_at" json:"started_at,omitempty" toml:"started_at" yaml:"started_at,omitempty"`
 	// ビルド更新日時
@@ -48,6 +50,7 @@ var BuildColumns = struct {
 	ID            string
 	Commit        string
 	Status        string
+	QueuedAt      string
 	StartedAt     string
 	UpdatedAt     string
 	FinishedAt    string
@@ -57,6 +60,7 @@ var BuildColumns = struct {
 	ID:            "id",
 	Commit:        "commit",
 	Status:        "status",
+	QueuedAt:      "queued_at",
 	StartedAt:     "started_at",
 	UpdatedAt:     "updated_at",
 	FinishedAt:    "finished_at",
@@ -68,6 +72,7 @@ var BuildTableColumns = struct {
 	ID            string
 	Commit        string
 	Status        string
+	QueuedAt      string
 	StartedAt     string
 	UpdatedAt     string
 	FinishedAt    string
@@ -77,6 +82,7 @@ var BuildTableColumns = struct {
 	ID:            "builds.id",
 	Commit:        "builds.commit",
 	Status:        "builds.status",
+	QueuedAt:      "builds.queued_at",
 	StartedAt:     "builds.started_at",
 	UpdatedAt:     "builds.updated_at",
 	FinishedAt:    "builds.finished_at",
@@ -90,6 +96,7 @@ var BuildWhere = struct {
 	ID            whereHelperstring
 	Commit        whereHelperstring
 	Status        whereHelperstring
+	QueuedAt      whereHelpertime_Time
 	StartedAt     whereHelpernull_Time
 	UpdatedAt     whereHelpernull_Time
 	FinishedAt    whereHelpernull_Time
@@ -99,6 +106,7 @@ var BuildWhere = struct {
 	ID:            whereHelperstring{field: "`builds`.`id`"},
 	Commit:        whereHelperstring{field: "`builds`.`commit`"},
 	Status:        whereHelperstring{field: "`builds`.`status`"},
+	QueuedAt:      whereHelpertime_Time{field: "`builds`.`queued_at`"},
 	StartedAt:     whereHelpernull_Time{field: "`builds`.`started_at`"},
 	UpdatedAt:     whereHelpernull_Time{field: "`builds`.`updated_at`"},
 	FinishedAt:    whereHelpernull_Time{field: "`builds`.`finished_at`"},
@@ -144,8 +152,8 @@ func (r *buildR) GetArtifact() *Artifact {
 type buildL struct{}
 
 var (
-	buildAllColumns            = []string{"id", "commit", "status", "started_at", "updated_at", "finished_at", "retriable", "application_id"}
-	buildColumnsWithoutDefault = []string{"id", "commit", "status", "started_at", "updated_at", "finished_at", "retriable", "application_id"}
+	buildAllColumns            = []string{"id", "commit", "status", "queued_at", "started_at", "updated_at", "finished_at", "retriable", "application_id"}
+	buildColumnsWithoutDefault = []string{"id", "commit", "status", "queued_at", "started_at", "updated_at", "finished_at", "retriable", "application_id"}
 	buildColumnsWithDefault    = []string{}
 	buildPrimaryKeyColumns     = []string{"id"}
 	buildGeneratedColumns      = []string{}

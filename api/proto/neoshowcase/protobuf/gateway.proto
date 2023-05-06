@@ -271,11 +271,12 @@ message Build {
   string id = 1;
   string commit = 2;
   BuildStatus status = 3;
-  neoshowcase.protobuf.NullTimestamp started_at = 4;
-  neoshowcase.protobuf.NullTimestamp updated_at = 5;
-  neoshowcase.protobuf.NullTimestamp finished_at = 6;
-  bool retriable = 7;
-  Artifact artifact = 8;
+  google.protobuf.Timestamp queued_at = 4;
+  neoshowcase.protobuf.NullTimestamp started_at = 5;
+  neoshowcase.protobuf.NullTimestamp updated_at = 6;
+  neoshowcase.protobuf.NullTimestamp finished_at = 7;
+  bool retriable = 8;
+  Artifact artifact = 9;
 }
 
 message BuildLog {

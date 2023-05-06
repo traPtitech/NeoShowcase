@@ -1975,27 +1975,32 @@ export class Build extends Message<Build> {
   status = Build_BuildStatus.QUEUED;
 
   /**
-   * @generated from field: neoshowcase.protobuf.NullTimestamp started_at = 4;
+   * @generated from field: google.protobuf.Timestamp queued_at = 4;
+   */
+  queuedAt?: Timestamp;
+
+  /**
+   * @generated from field: neoshowcase.protobuf.NullTimestamp started_at = 5;
    */
   startedAt?: NullTimestamp;
 
   /**
-   * @generated from field: neoshowcase.protobuf.NullTimestamp updated_at = 5;
+   * @generated from field: neoshowcase.protobuf.NullTimestamp updated_at = 6;
    */
   updatedAt?: NullTimestamp;
 
   /**
-   * @generated from field: neoshowcase.protobuf.NullTimestamp finished_at = 6;
+   * @generated from field: neoshowcase.protobuf.NullTimestamp finished_at = 7;
    */
   finishedAt?: NullTimestamp;
 
   /**
-   * @generated from field: bool retriable = 7;
+   * @generated from field: bool retriable = 8;
    */
   retriable = false;
 
   /**
-   * @generated from field: neoshowcase.protobuf.Artifact artifact = 8;
+   * @generated from field: neoshowcase.protobuf.Artifact artifact = 9;
    */
   artifact?: Artifact;
 
@@ -2010,11 +2015,12 @@ export class Build extends Message<Build> {
     { no: 1, name: "id", kind: "scalar", T: 9 /* ScalarType.STRING */ },
     { no: 2, name: "commit", kind: "scalar", T: 9 /* ScalarType.STRING */ },
     { no: 3, name: "status", kind: "enum", T: proto3.getEnumType(Build_BuildStatus) },
-    { no: 4, name: "started_at", kind: "message", T: NullTimestamp },
-    { no: 5, name: "updated_at", kind: "message", T: NullTimestamp },
-    { no: 6, name: "finished_at", kind: "message", T: NullTimestamp },
-    { no: 7, name: "retriable", kind: "scalar", T: 8 /* ScalarType.BOOL */ },
-    { no: 8, name: "artifact", kind: "message", T: Artifact },
+    { no: 4, name: "queued_at", kind: "message", T: Timestamp },
+    { no: 5, name: "started_at", kind: "message", T: NullTimestamp },
+    { no: 6, name: "updated_at", kind: "message", T: NullTimestamp },
+    { no: 7, name: "finished_at", kind: "message", T: NullTimestamp },
+    { no: 8, name: "retriable", kind: "scalar", T: 8 /* ScalarType.BOOL */ },
+    { no: 9, name: "artifact", kind: "message", T: Artifact },
   ]);
 
   static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): Build {
