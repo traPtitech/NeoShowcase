@@ -10,12 +10,11 @@ import (
 	"fmt"
 	"github.com/cert-manager/cert-manager/pkg/client/clientset/versioned"
 	"github.com/google/wire"
-	"github.com/traPtitech/neoshowcase/pkg/infrastructure/admindb"
 	"github.com/traPtitech/neoshowcase/pkg/infrastructure/backend/dockerimpl"
 	"github.com/traPtitech/neoshowcase/pkg/infrastructure/backend/k8simpl"
 	"github.com/traPtitech/neoshowcase/pkg/infrastructure/dbmanager"
-	"github.com/traPtitech/neoshowcase/pkg/interface/grpc"
-	"github.com/traPtitech/neoshowcase/pkg/interface/repository"
+	"github.com/traPtitech/neoshowcase/pkg/infrastructure/grpc"
+	"github.com/traPtitech/neoshowcase/pkg/infrastructure/repository"
 	"github.com/traPtitech/neoshowcase/pkg/usecase"
 	"github.com/traefik/traefik/v2/pkg/provider/kubernetes/crd/generated/clientset/versioned/typed/traefikio/v1alpha1"
 	"k8s.io/client-go/kubernetes"
@@ -39,8 +38,8 @@ func NewWithDocker(c2 Config) (*Server, error) {
 	if err != nil {
 		return nil, err
 	}
-	admindbConfig := c2.DB
-	db, err := admindb.New(admindbConfig)
+	repositoryConfig := c2.DB
+	db, err := repository.New(repositoryConfig)
 	if err != nil {
 		return nil, err
 	}
@@ -115,8 +114,8 @@ func NewWithK8S(c2 Config) (*Server, error) {
 	if err != nil {
 		return nil, err
 	}
-	admindbConfig := c2.DB
-	db, err := admindb.New(admindbConfig)
+	repositoryConfig := c2.DB
+	db, err := repository.New(repositoryConfig)
 	if err != nil {
 		return nil, err
 	}
@@ -172,7 +171,7 @@ func NewWithK8S(c2 Config) (*Server, error) {
 
 // wire.go:
 
-var commonSet = wire.NewSet(admindb.New, dbmanager.NewMariaDBManager, dbmanager.NewMongoDBManager, repository.NewApplicationRepository, repository.NewAvailableDomainRepository, repository.NewGitRepositoryRepository, repository.NewEnvironmentRepository, repository.NewBuildRepository, repository.NewArtifactRepository, repository.NewUserRepository, grpc.NewAPIServiceServer, grpc.NewAuthInterceptor, grpc.NewControllerService, grpc.NewControllerBuilderService, grpc.NewControllerSSGenService, usecase.NewAPIServerService, usecase.NewAppBuildHelper, usecase.NewAppDeployHelper, usecase.NewContinuousDeploymentService, usecase.NewRepositoryFetcherService, usecase.NewCleanerService, usecase.NewLogStreamService, usecase.NewContainerStateMutator, usecase.NewSSHServer, providePublicKey,
+var commonSet = wire.NewSet(dbmanager.NewMariaDBManager, dbmanager.NewMongoDBManager, repository.New, repository.NewApplicationRepository, repository.NewAvailableDomainRepository, repository.NewGitRepositoryRepository, repository.NewEnvironmentRepository, repository.NewBuildRepository, repository.NewArtifactRepository, repository.NewUserRepository, grpc.NewAPIServiceServer, grpc.NewAuthInterceptor, grpc.NewControllerService, grpc.NewControllerBuilderService, grpc.NewControllerSSGenService, usecase.NewAPIServerService, usecase.NewAppBuildHelper, usecase.NewAppDeployHelper, usecase.NewContinuousDeploymentService, usecase.NewRepositoryFetcherService, usecase.NewCleanerService, usecase.NewLogStreamService, usecase.NewContainerStateMutator, usecase.NewSSHServer, providePublicKey,
 	provideStorage,
 	provideControllerServer, wire.FieldsOf(new(Config), "Docker", "K8s", "SSH", "DB", "Storage", "Image"), wire.Struct(new(Server), "*"),
 )

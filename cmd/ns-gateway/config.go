@@ -13,12 +13,12 @@ import (
 
 	"github.com/traPtitech/neoshowcase/pkg/domain"
 	"github.com/traPtitech/neoshowcase/pkg/domain/web"
-	"github.com/traPtitech/neoshowcase/pkg/infrastructure/admindb"
 	"github.com/traPtitech/neoshowcase/pkg/infrastructure/dbmanager"
+	"github.com/traPtitech/neoshowcase/pkg/infrastructure/grpc"
+	"github.com/traPtitech/neoshowcase/pkg/infrastructure/grpc/pb/pbconnect"
 	"github.com/traPtitech/neoshowcase/pkg/infrastructure/log/loki"
+	"github.com/traPtitech/neoshowcase/pkg/infrastructure/repository"
 	"github.com/traPtitech/neoshowcase/pkg/infrastructure/storage"
-	"github.com/traPtitech/neoshowcase/pkg/interface/grpc"
-	"github.com/traPtitech/neoshowcase/pkg/interface/grpc/pb/pbconnect"
 )
 
 type Config struct {
@@ -26,7 +26,7 @@ type Config struct {
 	Debug      bool                               `mapstructure:"debug" yaml:"debug"`
 	AuthHeader grpc.AuthHeader                    `mapstructure:"authHeader" yaml:"authHeader"`
 	Controller grpc.ControllerServiceClientConfig `mapstructure:"controller" yaml:"controller"`
-	DB         admindb.Config                     `mapstructure:"db" yaml:"db"`
+	DB         repository.Config                  `mapstructure:"db" yaml:"db"`
 	MariaDB    dbmanager.MariaDBConfig            `mapstructure:"mariadb" yaml:"mariadb"`
 	MongoDB    dbmanager.MongoDBConfig            `mapstructure:"mongodb" yaml:"mongodb"`
 	Storage    domain.StorageConfig               `mapstructure:"storage" yaml:"storage"`

@@ -7,9 +7,8 @@
 package main
 
 import (
-	"github.com/traPtitech/neoshowcase/pkg/infrastructure/admindb"
-	"github.com/traPtitech/neoshowcase/pkg/interface/grpc"
-	"github.com/traPtitech/neoshowcase/pkg/interface/repository"
+	"github.com/traPtitech/neoshowcase/pkg/infrastructure/grpc"
+	"github.com/traPtitech/neoshowcase/pkg/infrastructure/repository"
 	"github.com/traPtitech/neoshowcase/pkg/usecase"
 )
 
@@ -17,7 +16,7 @@ import (
 
 func New(c2 Config) (*Server, error) {
 	config := c2.DB
-	db, err := admindb.New(config)
+	db, err := repository.New(config)
 	if err != nil {
 		return nil, err
 	}

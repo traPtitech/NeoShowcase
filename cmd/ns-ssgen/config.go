@@ -4,8 +4,8 @@ import (
 	"github.com/spf13/viper"
 
 	"github.com/traPtitech/neoshowcase/pkg/domain"
-	"github.com/traPtitech/neoshowcase/pkg/infrastructure/admindb"
-	"github.com/traPtitech/neoshowcase/pkg/interface/grpc"
+	"github.com/traPtitech/neoshowcase/pkg/infrastructure/grpc"
+	"github.com/traPtitech/neoshowcase/pkg/infrastructure/repository"
 )
 
 type Config struct {
@@ -14,7 +14,7 @@ type Config struct {
 		Port int `mapstructure:"port" yaml:"port"`
 	} `mapstructure:"builtIn" yaml:"builtIn"`
 	Controller grpc.ControllerServiceClientConfig `mapstructure:"controller" yaml:"controller"`
-	DB         admindb.Config                     `mapstructure:"db" yaml:"db"`
+	DB         repository.Config                  `mapstructure:"db" yaml:"db"`
 	Storage    domain.StorageConfig               `mapstructure:"storage" yaml:"storage"`
 }
 

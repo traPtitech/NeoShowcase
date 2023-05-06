@@ -1,4 +1,4 @@
-output = "pkg/infrastructure/admindb/models"
+output = "pkg/infrastructure/repository/models"
 wipe = true
 no-tests = true
 

@@ -3,8 +3,8 @@ package usecase
 import (
 	"github.com/traPtitech/neoshowcase/pkg/domain"
 	"github.com/traPtitech/neoshowcase/pkg/domain/builder"
-	"github.com/traPtitech/neoshowcase/pkg/interface/grpc/pb"
-	"github.com/traPtitech/neoshowcase/pkg/interface/grpc/pbconvert"
+	"github.com/traPtitech/neoshowcase/pkg/infrastructure/grpc/pb"
+	"github.com/traPtitech/neoshowcase/pkg/infrastructure/grpc/pbconvert"
 )
 
 type AppBuildHelper struct {
