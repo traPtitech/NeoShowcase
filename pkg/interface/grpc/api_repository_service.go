@@ -70,6 +70,15 @@ func (s *APIService) UpdateRepository(ctx context.Context, req *connect.Request[
 	return res, nil
 }
 
+func (s *APIService) RefreshRepository(ctx context.Context, req *connect.Request[pb.RepositoryIdRequest]) (*connect.Response[emptypb.Empty], error) {
+	err := s.svc.RefreshRepository(ctx, req.Msg.RepositoryId)
+	if err != nil {
+		return nil, handleUseCaseError(err)
+	}
+	res := connect.NewResponse(&emptypb.Empty{})
+	return res, nil
+}
+
 func (s *APIService) DeleteRepository(ctx context.Context, req *connect.Request[pb.RepositoryIdRequest]) (*connect.Response[emptypb.Empty], error) {
 	err := s.svc.DeleteRepository(ctx, req.Msg.RepositoryId)
 	if err != nil {

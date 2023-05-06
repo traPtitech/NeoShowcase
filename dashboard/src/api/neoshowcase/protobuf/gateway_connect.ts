@@ -136,6 +136,17 @@ export const APIService = {
       kind: MethodKind.Unary,
     },
     /**
+     * RefreshRepository 自動更新間隔を待たず、手動でリモートリポジトリの最新情報に追従させます
+     *
+     * @generated from rpc neoshowcase.protobuf.APIService.RefreshRepository
+     */
+    refreshRepository: {
+      name: "RefreshRepository",
+      I: RepositoryIdRequest,
+      O: Empty,
+      kind: MethodKind.Unary,
+    },
+    /**
      * DeleteRepository リポジトリを削除します 関連する全てのアプリケーションの削除が必要です
      *
      * @generated from rpc neoshowcase.protobuf.APIService.DeleteRepository

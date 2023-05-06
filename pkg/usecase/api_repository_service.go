@@ -43,6 +43,14 @@ func (s *APIServerService) UpdateRepository(ctx context.Context, id string, args
 	return s.gitRepo.UpdateRepository(ctx, id, args)
 }
 
+func (s *APIServerService) RefreshRepository(ctx context.Context, id string) error {
+	err := s.controller.FetchRepository(ctx, id)
+	if err != nil {
+		return errors.Wrap(err, "requesting controller")
+	}
+	return nil
+}
+
 func (s *APIServerService) DeleteRepository(ctx context.Context, id string) error {
 	err := s.isRepositoryOwner(ctx, id)
 	if err != nil {
