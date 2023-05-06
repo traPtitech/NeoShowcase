@@ -1,29 +1,15 @@
 import { Header } from '/@/components/Header'
-import {
-  appsTitle,
-  container,
-  contentContainer,
-  createAppButton,
-  createAppText,
-  mainContentContainer,
-  repositoriesContainer,
-  searchBar,
-  searchBarContainer,
-  sidebarContainer,
-  sidebarOptions,
-  sidebarSection,
-  sidebarTitle,
-  statusCheckboxContainer,
-  statusCheckboxContainerLeft,
-} from '/@/pages/apps.css'
 import { Checkbox } from '/@/components/Checkbox'
-import { StatusIcon } from '/@/components/StatusIcon'
-import { createResource, JSX } from 'solid-js'
+import { createResource } from 'solid-js'
 import { Radio, RadioItem } from '/@/components/Radio'
 import { client } from '/@/libs/api'
 import { Application } from '/@/api/neoshowcase/protobuf/gateway_pb'
 import { RepositoryRow } from '/@/components/RepositoryRow'
-import { applicationState, ApplicationState } from '/@/libs/application'
+import { ApplicationState } from '/@/libs/application'
+import { StatusCheckbox } from '/@/components/StatusCheckbox'
+import { styled } from '@macaron-css/solid'
+import { vars } from '/@/theme'
+import { Container } from '/@/libs/layout'
 
 const [repos] = createResource(() => client.getRepositories({}))
 const [apps] = createResource(() => client.getApplications({}))
@@ -34,23 +20,118 @@ const sortItems: RadioItem[] = [
   { value: 'asc', title: '古い順' },
 ]
 
-interface StatusCheckboxProps {
-  state: ApplicationState
-  title: string
-}
+const AppsTitle = styled('div', {
+  base: {
+    marginTop: '48px',
+    fontSize: '32px',
+    fontWeight: 'bold',
+    color: vars.text.black1,
+  },
+})
 
-const StatusCheckbox = (props: StatusCheckboxProps): JSX.Element => {
-  const num = () => loaded() && apps().applications.filter((app) => applicationState(app) === props.state).length
-  return (
-    <div class={statusCheckboxContainer}>
-      <div class={statusCheckboxContainerLeft}>
-        <StatusIcon state={props.state} />
-        <div>{props.title}</div>
-      </div>
-      <div>{num()}</div>
-    </div>
-  )
-}
+const ContentContainer = styled('div', {
+  base: {
+    marginTop: '24px',
+    display: 'grid',
+    gridTemplateColumns: '380px 1fr',
+    gap: '40px',
+  },
+})
+
+const SidebarContainer = styled('div', {
+  base: {
+    display: 'flex',
+    flexDirection: 'column',
+    gap: '22px',
+
+    padding: '24px 40px',
+    backgroundColor: vars.bg.white1,
+    borderRadius: '4px',
+    border: `1px solid ${vars.bg.white4}`,
+  },
+})
+
+const SidebarSection = styled('div', {
+  base: {
+    display: 'flex',
+    flexDirection: 'column',
+    gap: '16px',
+  },
+})
+
+const SidebarTitle = styled('div', {
+  base: {
+    fontSize: '24px',
+    fontWeight: 500,
+    color: vars.text.black1,
+  },
+})
+
+const SidebarOptions = styled('div', {
+  base: {
+    display: 'flex',
+    flexDirection: 'column',
+    gap: '12px',
+
+    fontSize: '20px',
+    color: vars.text.black1,
+  },
+})
+
+const MainContainer = styled('div', {
+  base: {
+    display: 'flex',
+    flexDirection: 'column',
+    gap: '20px',
+  },
+})
+
+const SearchBarContainer = styled('div', {
+  base: {
+    display: 'grid',
+    gridTemplateColumns: '1fr 180px',
+    gap: '20px',
+    height: '44px',
+  },
+})
+
+const SearchBar = styled('input', {
+  base: {
+    padding: '12px 20px',
+    borderRadius: '4px',
+    border: `1px solid ${vars.bg.white4}`,
+    fontSize: '14px',
+
+    '::placeholder': {
+      color: vars.text.black3,
+    },
+  },
+})
+
+const CreateAppButton = styled('div', {
+  base: {
+    display: 'flex',
+    borderRadius: '4px',
+    backgroundColor: vars.bg.black1,
+  },
+})
+
+const CreateAppText = styled('div', {
+  base: {
+    margin: 'auto',
+    color: vars.text.white1,
+    fontSize: '16px',
+    fontWeight: 'bold',
+  },
+})
+
+const RepositoriesContainer = styled('div', {
+  base: {
+    display: 'flex',
+    flexDirection: 'column',
+    gap: '20px',
+  },
+})
 
 export default () => {
   const appsByRepo = () =>
@@ -62,53 +143,53 @@ export default () => {
     }, {} as Record<string, Application[]>)
 
   return (
-    <div class={container}>
+    <Container>
       <Header />
-      <div class={appsTitle}>Apps</div>
-      <div class={contentContainer}>
-        <div class={sidebarContainer}>
-          <div class={sidebarSection}>
-            <div class={sidebarTitle}>Status</div>
-            <div class={sidebarOptions}>
+      <AppsTitle>Apps</AppsTitle>
+      <ContentContainer>
+        <SidebarContainer>
+          <SidebarSection>
+            <SidebarTitle>Status</SidebarTitle>
+            <SidebarOptions>
               <Checkbox>
-                <StatusCheckbox state={ApplicationState.Idle} title='Idle' />
+                <StatusCheckbox apps={apps()?.applications} state={ApplicationState.Idle} title='Idle' />
               </Checkbox>
               <Checkbox>
-                <StatusCheckbox state={ApplicationState.Deploying} title='Deploying' />
+                <StatusCheckbox apps={apps()?.applications} state={ApplicationState.Deploying} title='Deploying' />
               </Checkbox>
               <Checkbox>
-                <StatusCheckbox state={ApplicationState.Running} title='Running' />
+                <StatusCheckbox apps={apps()?.applications} state={ApplicationState.Running} title='Running' />
               </Checkbox>
               <Checkbox>
-                <StatusCheckbox state={ApplicationState.Static} title='Static' />
+                <StatusCheckbox apps={apps()?.applications} state={ApplicationState.Static} title='Static' />
               </Checkbox>
-            </div>
-          </div>
-          <div class={sidebarSection}>
-            <div class={sidebarTitle}>Provider</div>
-            <div class={sidebarOptions}>
+            </SidebarOptions>
+          </SidebarSection>
+          <SidebarSection>
+            <SidebarTitle>Provider</SidebarTitle>
+            <SidebarOptions>
               <Checkbox>GitHub</Checkbox>
               <Checkbox>Gitea</Checkbox>
               <Checkbox>GitLab</Checkbox>
-            </div>
-          </div>
-          <div class={sidebarOptions}>
-            <div class={sidebarTitle}>Sort</div>
+            </SidebarOptions>
+          </SidebarSection>
+          <SidebarOptions>
+            <SidebarTitle>Sort</SidebarTitle>
             <Radio items={sortItems} />
-          </div>
-        </div>
-        <div class={mainContentContainer}>
-          <div class={searchBarContainer}>
-            <input placeholder='Search...' class={searchBar} />
-            <div class={createAppButton}>
-              <div class={createAppText}>+ Create new app</div>
-            </div>
-          </div>
-          <div class={repositoriesContainer}>
+          </SidebarOptions>
+        </SidebarContainer>
+        <MainContainer>
+          <SearchBarContainer>
+            <SearchBar placeholder='Search...' />
+            <CreateAppButton>
+              <CreateAppText>+ Create new app</CreateAppText>
+            </CreateAppButton>
+          </SearchBarContainer>
+          <RepositoriesContainer>
             {loaded() && repos().repositories.map((r) => <RepositoryRow repo={r} apps={appsByRepo()[r.id] || []} />)}
-          </div>
-        </div>
-      </div>
-    </div>
+          </RepositoriesContainer>
+        </MainContainer>
+      </ContentContainer>
+    </Container>
   )
 }

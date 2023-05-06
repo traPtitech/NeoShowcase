@@ -3,7 +3,7 @@ import { Application, BuildConfig, DeployType, Website } from '/@/api/neoshowcas
 import { JSXElement } from 'solid-js'
 import { AiFillGithub, AiFillGitlab } from 'solid-icons/ai'
 import { SiGitea } from 'solid-icons/si'
-import { vars } from '/@/theme.css'
+import { vars } from '/@/theme'
 
 export const buildTypeStr: Record<BuildConfig['buildConfig']['case'], string> = {
   runtimeBuildpack: 'Runtime (Buildpack)',
