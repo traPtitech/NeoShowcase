@@ -1,6 +1,6 @@
 import { Header } from '/@/components/Header'
 import { Checkbox } from '/@/components/Checkbox'
-import { createResource } from 'solid-js'
+import { createResource, For, Show } from 'solid-js'
 import { Radio, RadioItem } from '/@/components/Radio'
 import { client } from '/@/libs/api'
 import { Application } from '/@/api/neoshowcase/protobuf/gateway_pb'
@@ -11,10 +11,6 @@ import { styled } from '@macaron-css/solid'
 import { vars } from '/@/theme'
 import { Container } from '/@/libs/layout'
 import { Button } from '/@/components/Button'
-
-const [repos] = createResource(() => client.getRepositories({}))
-const [apps] = createResource(() => client.getApplications({}))
-const loaded = () => !!(repos() && apps())
 
 const sortItems: RadioItem[] = [
   { value: 'desc', title: '最新順' },
@@ -118,6 +114,10 @@ const RepositoriesContainer = styled('div', {
 })
 
 export default () => {
+  const [repos] = createResource(() => client.getRepositories({}))
+  const [apps] = createResource(() => client.getApplications({}))
+  const loaded = () => !!(repos() && apps())
+
   const appsByRepo = () =>
     loaded() &&
     apps().applications.reduce((acc, app) => {
@@ -130,50 +130,54 @@ export default () => {
     <Container>
       <Header />
       <AppsTitle>Apps</AppsTitle>
-      <ContentContainer>
-        <SidebarContainer>
-          <SidebarSection>
-            <SidebarTitle>Status</SidebarTitle>
+      <Show when={loaded()}>
+        <ContentContainer>
+          <SidebarContainer>
+            <SidebarSection>
+              <SidebarTitle>Status</SidebarTitle>
+              <SidebarOptions>
+                <Checkbox>
+                  <StatusCheckbox apps={apps().applications} state={ApplicationState.Idle} title='Idle' />
+                </Checkbox>
+                <Checkbox>
+                  <StatusCheckbox apps={apps().applications} state={ApplicationState.Deploying} title='Deploying' />
+                </Checkbox>
+                <Checkbox>
+                  <StatusCheckbox apps={apps().applications} state={ApplicationState.Running} title='Running' />
+                </Checkbox>
+                <Checkbox>
+                  <StatusCheckbox apps={apps().applications} state={ApplicationState.Static} title='Static' />
+                </Checkbox>
+              </SidebarOptions>
+            </SidebarSection>
+            <SidebarSection>
+              <SidebarTitle>Provider</SidebarTitle>
+              <SidebarOptions>
+                <Checkbox>GitHub</Checkbox>
+                <Checkbox>Gitea</Checkbox>
+                <Checkbox>GitLab</Checkbox>
+              </SidebarOptions>
+            </SidebarSection>
             <SidebarOptions>
-              <Checkbox>
-                <StatusCheckbox apps={apps()?.applications} state={ApplicationState.Idle} title='Idle' />
-              </Checkbox>
-              <Checkbox>
-                <StatusCheckbox apps={apps()?.applications} state={ApplicationState.Deploying} title='Deploying' />
-              </Checkbox>
-              <Checkbox>
-                <StatusCheckbox apps={apps()?.applications} state={ApplicationState.Running} title='Running' />
-              </Checkbox>
-              <Checkbox>
-                <StatusCheckbox apps={apps()?.applications} state={ApplicationState.Static} title='Static' />
-              </Checkbox>
+              <SidebarTitle>Sort</SidebarTitle>
+              <Radio items={sortItems} />
             </SidebarOptions>
-          </SidebarSection>
-          <SidebarSection>
-            <SidebarTitle>Provider</SidebarTitle>
-            <SidebarOptions>
-              <Checkbox>GitHub</Checkbox>
-              <Checkbox>Gitea</Checkbox>
-              <Checkbox>GitLab</Checkbox>
-            </SidebarOptions>
-          </SidebarSection>
-          <SidebarOptions>
-            <SidebarTitle>Sort</SidebarTitle>
-            <Radio items={sortItems} />
-          </SidebarOptions>
-        </SidebarContainer>
-        <MainContainer>
-          <SearchBarContainer>
-            <SearchBar placeholder='Search...' />
-            <Button color='black1' size='large'>
-              + Create new app
-            </Button>
-          </SearchBarContainer>
-          <RepositoriesContainer>
-            {loaded() && repos().repositories.map((r) => <RepositoryRow repo={r} apps={appsByRepo()[r.id] || []} />)}
-          </RepositoriesContainer>
-        </MainContainer>
-      </ContentContainer>
+          </SidebarContainer>
+          <MainContainer>
+            <SearchBarContainer>
+              <SearchBar placeholder='Search...' />
+              <Button color='black1' size='large'>
+                + Create new app
+              </Button>
+            </SearchBarContainer>
+            <RepositoriesContainer>
+              <For each={repos().repositories} children={(r) => (
+                <RepositoryRow repo={r} apps={appsByRepo()[r.id] || []} />
+              )} />
+            </RepositoriesContainer>
+          </MainContainer>
+        </ContentContainer>
+      </Show>
     </Container>
   )
 }

@@ -1,5 +1,5 @@
 import { A, useParams } from '@solidjs/router'
-import { createResource } from 'solid-js'
+import { createResource, For, onCleanup, Show } from 'solid-js'
 import { client } from '/@/libs/api'
 import { Header } from '/@/components/Header'
 import { applicationState, buildTypeStr, getWebsiteURL, providerToIcon } from '/@/libs/application'
@@ -186,6 +186,10 @@ export default () => {
     () => app()?.repositoryId,
     (id) => client.getRepository({ repositoryId: id }),
   )
+  const loaded = () => !!(app() && repo())
+
+  const refetchTimer = setInterval(refetchApp, 10000)
+  onCleanup(() => clearInterval(refetchTimer))
 
   const startApp = async () => {
     await client.startApplication({ id: app().id })
@@ -199,149 +203,154 @@ export default () => {
   return (
     <Container>
       <Header />
-      <AppTitleContainer>
-        <CenterInline>{providerToIcon('GitHub', 36)}</CenterInline>
-        <AppTitle>
-          <div>{repo()?.name}</div>
-          <div>/</div>
-          <div>{app()?.name}</div>
-        </AppTitle>
-      </AppTitleContainer>
-      <CardsContainer>
-        <Card>
-          {app() && !app().running && (
-            <Button color='black1' size='large' onclick={startApp}>
-              Start App
-            </Button>
-          )}
-          {app() && app().running && (
-            <Button color='black1' size='large' onclick={startApp}>
-              Restart App
-            </Button>
-          )}
-          {app() && app().running && (
-            <Button color='black1' size='large' onclick={stopApp}>
-              Stop App
-            </Button>
-          )}
-        </Card>
-        <Card>
-          <CardTitle>Overall</CardTitle>
-          <CardItems>
-            <CardItem>
-              <CardItemTitle>状態</CardItemTitle>
-              <CardItemContent>
-                {app() && <StatusIcon state={applicationState(app())} size={24} />}
-                {app() && applicationState(app())}
-              </CardItemContent>
-            </CardItem>
-            {app() && app().deployType === DeployType.RUNTIME && (
+      <Show when={loaded()}>
+        <AppTitleContainer>
+          <CenterInline>{providerToIcon('GitHub', 36)}</CenterInline>
+          <AppTitle>
+            <div>{repo().name}</div>
+            <div>/</div>
+            <div>{app().name}</div>
+          </AppTitle>
+        </AppTitleContainer>
+        <CardsContainer>
+          <Card>
+            <Show when={!app().running}>
+              <Button color='black1' size='large' onclick={startApp}>
+                Start App
+              </Button>
+            </Show>
+            <Show when={app().running}>
+              <Button color='black1' size='large' onclick={startApp}>
+                Restart App
+              </Button>
+            </Show>
+            <Show when={app().running}>
+              <Button color='black1' size='large' onclick={stopApp}>
+                Stop App
+              </Button>
+            </Show>
+          </Card>
+          <Card>
+            <CardTitle>Overall</CardTitle>
+            <CardItems>
               <CardItem>
-                <CardItemTitle>コンテナの状態</CardItemTitle>
-                <CardItemContent>{app() && titleCase(Application_ContainerState[app().container])}</CardItemContent>
-              </CardItem>
-            )}
-            <CardItem>
-              <CardItemTitle>起動時刻</CardItemTitle>
-              <CardItemContent>
-                {app()?.running && <DiffHuman target={app().updatedAt.toDate()} />}
-                {app() && !app().running && '-'}
-              </CardItemContent>
-            </CardItem>
-            <CardItem>
-              <CardItemTitle>作成日</CardItemTitle>
-              <CardItemContent>{app() && <DiffHuman target={app().createdAt.toDate()} />}</CardItemContent>
-            </CardItem>
-            {app() && app().websites.length > 0 && (
-              <CardItem>
-                <CardItemTitle>URLs</CardItemTitle>
-              </CardItem>
-            )}
-            {app() && app().websites.length > 0 && (
-              <CardItem>
-                <CardItemTitle>
-                  {app()?.websites.map((website) => (
-                    <URLText href={getWebsiteURL(website)} target='_blank' rel="noreferrer">
-                      {getWebsiteURL(website)}
-                    </URLText>
-                  ))}
-                </CardItemTitle>
-              </CardItem>
-            )}
-          </CardItems>
-        </Card>
-        <Card>
-          <CardTitle>Info</CardTitle>
-          <CardItems>
-            <CardItem>
-              <CardItemTitle>ID</CardItemTitle>
-              <CardItemContent>{app()?.id}</CardItemContent>
-            </CardItem>
-            <CardItem>
-              <CardItemTitle>Name</CardItemTitle>
-              <CardItemContent>{app()?.name}</CardItemContent>
-            </CardItem>
-            <A href={`/repos/${repo()?.id}`}>
-              <CardItem>
-                <CardItemTitle>Repository</CardItemTitle>
+                <CardItemTitle>状態</CardItemTitle>
                 <CardItemContent>
-                  <CenterInline>{providerToIcon('GitHub', 20)}</CenterInline>
-                  {repo()?.name}
+                  <StatusIcon state={applicationState(app())} size={24} />
+                  {applicationState(app())}
                 </CardItemContent>
               </CardItem>
-            </A>
-            <CardItem>
-              <CardItemTitle>Git ref (short)</CardItemTitle>
-              <CardItemContent>{app()?.refName}</CardItemContent>
-            </CardItem>
-            <CardItem>
-              <CardItemTitle>Deploy type</CardItemTitle>
-              <CardItemContent>{app() && titleCase(DeployType[app().deployType])}</CardItemContent>
-            </CardItem>
-            <CardItem>
-              <CardItemTitle>Commit</CardItemTitle>
-              <CardItemContent>
-                {app() && app().currentCommit !== app().wantCommit && (
-                  <div>
-                    {shortSha(app().currentCommit)} → {shortSha(app().wantCommit)} (Deploying)
-                  </div>
-                )}
-                {app() && app().currentCommit === app().wantCommit && <div>{shortSha(app().currentCommit)}</div>}
-              </CardItemContent>
-            </CardItem>
-            <CardItem>
-              <CardItemTitle>Use MariaDB</CardItemTitle>
-              <CardItemContent>{app() && `${app().config.useMariadb}`}</CardItemContent>
-            </CardItem>
-            <CardItem>
-              <CardItemTitle>Use MongoDB</CardItemTitle>
-              <CardItemContent>{app() && `${app().config.useMongodb}`}</CardItemContent>
-            </CardItem>
-          </CardItems>
-        </Card>
-        <Card>
-          <CardTitle>Build Config</CardTitle>
-          <CardItems>
-            <CardItem>
-              <CardItemTitle>Build Type</CardItemTitle>
-              <CardItemContent>{app() && buildTypeStr[app().config.buildConfig.buildConfig.case]}</CardItemContent>
-            </CardItem>
-            {app()?.config.buildConfig && <BuildConfigInfo config={app().config.buildConfig} />}
-            {app()?.config.entrypoint && (
+              <Show when={app().deployType === DeployType.RUNTIME}>
+                <CardItem>
+                  <CardItemTitle>コンテナの状態</CardItemTitle>
+                  <CardItemContent>{app() && titleCase(Application_ContainerState[app().container])}</CardItemContent>
+                </CardItem>
+              </Show>
               <CardItem>
-                <CardItemTitle>Entrypoint</CardItemTitle>
-                <CardItemContent>{app()?.config.entrypoint}</CardItemContent>
+                <CardItemTitle>起動時刻</CardItemTitle>
+                <CardItemContent>
+                  <Show when={app().running} fallback={'-'}>
+                    <DiffHuman target={app().updatedAt.toDate()} />
+                  </Show>
+                </CardItemContent>
               </CardItem>
-            )}
-            {app()?.config.command && (
               <CardItem>
-                <CardItemTitle>Command</CardItemTitle>
-                <CardItemContent>{app()?.config.command}</CardItemContent>
+                <CardItemTitle>作成日</CardItemTitle>
+                <CardItemContent>
+                  <DiffHuman target={app().createdAt.toDate()} />
+                </CardItemContent>
               </CardItem>
-            )}
-          </CardItems>
-        </Card>
-      </CardsContainer>
+              <Show when={app().websites.length > 0}>
+                <CardItem>
+                  <CardItemTitle>URLs</CardItemTitle>
+                </CardItem>
+                <CardItem>
+                  <CardItemTitle>
+                    <For each={app().websites} children={(website) => (
+                      <URLText href={getWebsiteURL(website)} target='_blank' rel="noreferrer">
+                        {getWebsiteURL(website)}
+                      </URLText>
+                    )} />
+                  </CardItemTitle>
+                </CardItem>
+              </Show>
+            </CardItems>
+          </Card>
+          <Card>
+            <CardTitle>Info</CardTitle>
+            <CardItems>
+              <CardItem>
+                <CardItemTitle>ID</CardItemTitle>
+                <CardItemContent>{app().id}</CardItemContent>
+              </CardItem>
+              <CardItem>
+                <CardItemTitle>Name</CardItemTitle>
+                <CardItemContent>{app().name}</CardItemContent>
+              </CardItem>
+              <A href={`/repos/${repo().id}`}>
+                <CardItem>
+                  <CardItemTitle>Repository</CardItemTitle>
+                  <CardItemContent>
+                    <CenterInline>{providerToIcon('GitHub', 20)}</CenterInline>
+                    {repo().name}
+                  </CardItemContent>
+                </CardItem>
+              </A>
+              <CardItem>
+                <CardItemTitle>Git ref (short)</CardItemTitle>
+                <CardItemContent>{app().refName}</CardItemContent>
+              </CardItem>
+              <CardItem>
+                <CardItemTitle>Deploy type</CardItemTitle>
+                <CardItemContent>{titleCase(DeployType[app().deployType])}</CardItemContent>
+              </CardItem>
+              <CardItem>
+                <CardItemTitle>Commit</CardItemTitle>
+                <CardItemContent>
+                  <Show
+                    when={app().currentCommit !== app().wantCommit}
+                    fallback={<div>{shortSha(app().currentCommit)}</div>}
+                  >
+                    <div>
+                      {shortSha(app().currentCommit)} → {shortSha(app().wantCommit)} (Deploying)
+                    </div>
+                  </Show>
+                </CardItemContent>
+              </CardItem>
+              <CardItem>
+                <CardItemTitle>Use MariaDB</CardItemTitle>
+                <CardItemContent>{`${app().config.useMariadb}`}</CardItemContent>
+              </CardItem>
+              <CardItem>
+                <CardItemTitle>Use MongoDB</CardItemTitle>
+                <CardItemContent>{`${app().config.useMongodb}`}</CardItemContent>
+              </CardItem>
+            </CardItems>
+          </Card>
+          <Card>
+            <CardTitle>Build Config</CardTitle>
+            <CardItems>
+              <CardItem>
+                <CardItemTitle>Build Type</CardItemTitle>
+                <CardItemContent>{buildTypeStr[app().config.buildConfig.buildConfig.case]}</CardItemContent>
+              </CardItem>A
+              <BuildConfigInfo config={app().config.buildConfig} />
+              <Show when={app().config.entrypoint}>
+                <CardItem>
+                  <CardItemTitle>Entrypoint</CardItemTitle>
+                  <CardItemContent>{app()?.config.entrypoint}</CardItemContent>
+                </CardItem>
+              </Show>
+              <Show when={app().config.command}>
+                <CardItem>
+                  <CardItemTitle>Command</CardItemTitle>
+                  <CardItemContent>{app()?.config.command}</CardItemContent>
+                </CardItem>
+              </Show>
+            </CardItems>
+          </Card>
+        </CardsContainer>
+      </Show>
     </Container>
   )
 }
