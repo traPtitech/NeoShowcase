@@ -117,7 +117,7 @@ export default () => {
                     <BuildFooter>
                       <div>{shortSha(b.commit)}</div>
                       <BuildFooterRight>
-                          <DiffHuman target={b.queuedAt.toDate()} />
+                        <DiffHuman target={b.queuedAt.toDate()} />
                       </BuildFooterRight>
                     </BuildFooter>
                   </BuildDetail>
