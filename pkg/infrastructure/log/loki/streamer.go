@@ -89,12 +89,14 @@ func (l *lokiStreamer) Stream(ctx context.Context, appID string, after time.Time
 
 	ch := make(chan *domain.ContainerLog, 100)
 
+	ctx, cancel := context.WithCancel(ctx)
 	go func() {
 		<-ctx.Done()
 		_ = conn.Close()
 		defer close(ch)
 	}()
 	go func() {
+		defer cancel()
 		defer log.Infof("closing loki websocket stream")
 		log.Infof("new loki websocket stream")
 
