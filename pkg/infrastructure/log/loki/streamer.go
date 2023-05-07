@@ -102,6 +102,11 @@ func (l *lokiStreamer) Stream(ctx context.Context, appID string, after time.Time
 
 		for {
 			typ, b, err := conn.ReadMessage()
+			select { // check if context was cancelled
+			case <-ctx.Done():
+				return
+			default:
+			}
 			if err != nil {
 				log.Errorf("failed to read ws message: %+v", err)
 				return
