@@ -126,7 +126,7 @@ export default () => {
   )
   const reversedLog = createMemo(() => log() && ([...log().outputs].reverse() as ApplicationOutput[]))
   const [logStream] = createResource(
-    () => app()?.container === Application_ContainerState.RUNNING && app()?.id,
+    () => app()?.deployType === DeployType.RUNTIME && app()?.id,
     (id) => client.getOutputStream({ applicationId: id, after: Timestamp.fromDate(now) }),
   )
   const [streamedLog, setStreamedLog] = createSignal<string[]>([])
@@ -145,6 +145,11 @@ export default () => {
       await refetchApp()
     }
     void iterate()
+  })
+  onCleanup(() => {
+    if (logStream()) {
+      const st = logStream()
+    }
   })
 
   let logRef: Ref<HTMLDivElement>
