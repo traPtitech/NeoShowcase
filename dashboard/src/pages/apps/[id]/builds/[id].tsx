@@ -1,5 +1,5 @@
 import { useParams } from '@solidjs/router'
-import { createEffect, createResource, createSignal, Ref } from 'solid-js'
+import { createEffect, createResource, createSignal, onCleanup, Ref } from 'solid-js'
 import { client } from '/@/libs/api'
 import { Container } from '/@/libs/layout'
 import { Header } from '/@/components/Header'
@@ -21,6 +21,7 @@ import { buildStatusStr } from '/@/libs/application'
 import { concatBuffers, toUTF8WithAnsi } from '/@/libs/buffers'
 import { sleep } from '/@/libs/sleep'
 import { LogContainer } from '/@/components/Log'
+import { Code, ConnectError } from '@bufbuild/connect'
 
 export default () => {
   const params = useParams()
@@ -43,9 +44,10 @@ export default () => {
     () => buildFinished() && build()?.id,
     (id) => client.getBuildLog({ buildId: id }),
   )
+  const logStreamAbort = new AbortController()
   const [buildLogStream] = createResource(
     () => !buildFinished() && build()?.id,
-    (id) => client.getBuildLogStream({ buildId: id }),
+    (id) => client.getBuildLogStream({ buildId: id }, { signal: logStreamAbort.signal }),
   )
   const [streamedLog, setStreamedLog] = createSignal(new Uint8Array())
   createEffect(() => {
@@ -53,13 +55,25 @@ export default () => {
     if (!stream) return
 
     const iterate = async () => {
-      for await (const log of stream) {
-        setStreamedLog((prev) => concatBuffers(prev, log.log))
+      try {
+        for await (const log of stream) {
+          setStreamedLog((prev) => concatBuffers(prev, log.log))
+        }
+      } catch (err) {
+        // ignore abort error
+        const isAbortErr = err instanceof ConnectError && err.code === Code.Canceled
+        if (!isAbortErr) {
+          console.trace(err)
+          return
+        }
       }
       await sleep(1000)
       await refetchBuild() // refetch build on stream end
     }
     void iterate()
+  })
+  onCleanup(() => {
+    logStreamAbort.abort()
   })
 
   let logRef: Ref<HTMLDivElement>

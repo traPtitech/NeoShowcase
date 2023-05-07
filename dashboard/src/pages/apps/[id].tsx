@@ -28,6 +28,7 @@ import {
 import { LogContainer } from '/@/components/Log'
 import { sleep } from '/@/libs/sleep'
 import { Timestamp } from '@bufbuild/protobuf'
+import { Code, ConnectError } from '@bufbuild/connect'
 
 interface BuildConfigInfoProps {
   config: BuildConfig
@@ -125,9 +126,10 @@ export default () => {
     (id) => client.getOutput({ applicationId: id, before: Timestamp.fromDate(now) }),
   )
   const reversedLog = createMemo(() => log() && ([...log().outputs].reverse() as ApplicationOutput[]))
+  const logStreamAbort = new AbortController()
   const [logStream] = createResource(
     () => app()?.deployType === DeployType.RUNTIME && app()?.id,
-    (id) => client.getOutputStream({ applicationId: id, after: Timestamp.fromDate(now) }),
+    (id) => client.getOutputStream({ applicationId: id, after: Timestamp.fromDate(now) }, { signal: logStreamAbort.signal }),
   )
   const [streamedLog, setStreamedLog] = createSignal<string[]>([])
   createEffect(() => {
@@ -138,8 +140,17 @@ export default () => {
     }
 
     const iterate = async () => {
-      for await (const log of stream) {
-        setStreamedLog((prev) => prev.concat(log.log))
+      try {
+        for await (const log of stream) {
+          setStreamedLog((prev) => prev.concat(log.log))
+        }
+      } catch (err) {
+        // ignore abort error
+        const isAbortErr = err instanceof ConnectError && err.code === Code.Canceled
+        if (!isAbortErr) {
+          console.trace(err)
+          return
+        }
       }
       await sleep(1000)
       await refetchApp()
@@ -147,9 +158,7 @@ export default () => {
     void iterate()
   })
   onCleanup(() => {
-    if (logStream()) {
-      const st = logStream()
-    }
+    logStreamAbort.abort()
   })
 
   let logRef: Ref<HTMLDivElement>
