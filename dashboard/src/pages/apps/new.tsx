@@ -18,7 +18,7 @@ import {
   sidebarTitle,
   statusCheckboxContainer,
   statusCheckboxContainerLeft,
-} from '/@/pages/newapp_select_repo.css'
+} from '/@/pages/newapp.css'
 import { Checkbox } from '/@/components/Checkbox'
 import { StatusIcon } from '/@/components/StatusIcon'
 import { createResource, JSX } from 'solid-js'
