@@ -23,7 +23,7 @@ export default useRoutes([
     component: lazy(() => import('/@/pages/apps/[id]/builds/[id]')),
   },
   {
-    path: '/newapp_select_repo',
-    component: lazy(() => import('/@/pages/newapp_select_repo')),
+    path: '/apps/new',
+    component: lazy(() => import('/@/pages/apps/new')),
   },
 ])

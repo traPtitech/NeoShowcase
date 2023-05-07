@@ -24,9 +24,10 @@ export type Provider = 'GitHub' | 'GitLab' | 'Gitea'
 export interface Props {
   repo: Repository
   apps: Application[]
+  func: Function
 }
 
-export const RepositoryRow = ({ repo, apps }: Props): JSXElement => {
+export const RepositoryRow = ({ repo, apps, func }: Props): JSXElement => {
   const provider = repositoryURLToProvider(repo.url)
   const sortedApps = apps.sort((a, b) => {
     if (a.updatedAt.toDate() < b.updatedAt.toDate()) {
@@ -50,7 +51,7 @@ export const RepositoryRow = ({ repo, apps }: Props): JSXElement => {
           </div>
         </div>
         <div class={addSelectButton}>
-          <div>Select</div>
+          <div onclick={void func}>Select</div>
         </div>
       </div>
       {/*{apps.map((app, i) => (*/}
