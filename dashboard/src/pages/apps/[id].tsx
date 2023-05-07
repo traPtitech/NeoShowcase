@@ -129,7 +129,8 @@ export default () => {
   const logStreamAbort = new AbortController()
   const [logStream] = createResource(
     () => app()?.deployType === DeployType.RUNTIME && app()?.id,
-    (id) => client.getOutputStream({ applicationId: id, after: Timestamp.fromDate(now) }, { signal: logStreamAbort.signal }),
+    (id) =>
+      client.getOutputStream({ applicationId: id, after: Timestamp.fromDate(now) }, { signal: logStreamAbort.signal }),
   )
   const [streamedLog, setStreamedLog] = createSignal<string[]>([])
   createEffect(() => {
