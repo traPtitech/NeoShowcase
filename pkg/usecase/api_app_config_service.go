@@ -5,7 +5,6 @@ import (
 	"time"
 
 	"github.com/friendsofgo/errors"
-	log "github.com/sirupsen/logrus"
 
 	"github.com/traPtitech/neoshowcase/pkg/domain"
 	"github.com/traPtitech/neoshowcase/pkg/util/optional"
@@ -64,7 +63,6 @@ func (s *APIServerService) GetOutputStream(ctx context.Context, id string, after
 				return errors.Wrap(err, "failed to send log")
 			}
 		case <-ctx.Done():
-			log.Infof("closing output stream")
 			return nil
 		}
 	}
