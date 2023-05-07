@@ -170,3 +170,40 @@ export const RepositoryRow = ({ repo, apps }: Props): JSXElement => {
     </Container>
   )
 }
+
+export interface NamedProps {
+  repo: Repository
+  apps: Application[]
+  onNewAppClick: ()=>void
+}
+
+export const RepositoryNameRow = ({ repo, apps, onNewAppClick }: NamedProps): JSXElement => {
+  const provider = repositoryURLToProvider(repo.url)
+  const sortedApps = apps.sort((a, b) => {
+    if (a.updatedAt.toDate() < b.updatedAt.toDate()) {
+      return 1
+    }
+    if (a.updatedAt.toDate() > b.updatedAt.toDate()) {
+      return -1
+    }
+    return 0
+  })
+  return (
+      <Container>
+        <Header>
+          <HeaderLeft>
+            {providerToIcon(provider)}
+            <RepoName>{repo.name}</RepoName>
+            <AppsCount>
+              {apps.length && ` ${sortedApps[0].refName}/${sortedApps[0].currentCommit.slice(0, 7)}`}
+              {apps.length && <DiffHuman target={sortedApps[0].updatedAt.toDate()} />}
+            </AppsCount>
+          </HeaderLeft>
+          <AddBranchButton onclick={onNewAppClick}>
+            <div>Create&nbsp;App</div>
+          </AddBranchButton>
+        </Header>
+      </Container>
+  )
+}
+

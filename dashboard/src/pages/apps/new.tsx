@@ -1,35 +1,14 @@
 import { Header } from '/@/components/Header'
-import {
-  appsTitle,
-  appTitle,
-  arrow,
-  subTitle,
-  container,
-  contentContainer,
-  createAppButton,
-  createAppText,
-  mainContentContainer,
-  repositoriesContainer,
-  searchBar,
-  searchBarContainer,
-  sidebarContainer,
-  sidebarOptions,
-  sidebarSection,
-  sidebarTitle,
-  statusCheckboxContainer,
-  statusCheckboxContainerLeft,
-} from '/@/pages/apps/new.css'
-import { Checkbox } from '/@/components/Checkbox'
-import { StatusIcon } from '/@/components/StatusIcon'
 import {createResource, createSignal, JSX, Show} from 'solid-js'
 import { Radio, RadioItem } from '/@/components/Radio'
 import { client } from '/@/libs/api'
 import { Application } from '/@/api/neoshowcase/protobuf/gateway_pb'
-import { RepositoryRow } from '/@/components/RepositoryNameRow'
-import { applicationState, ApplicationState } from '/@/libs/application'
-import { Routes, Route, A } from '@solidjs/router'
-import { ImArrowLeft2 } from 'solid-icons/im'
+import { RepositoryNameRow } from '/@/components/RepositoryRow'
+import { A } from '@solidjs/router'
 import { BsArrowLeftShort } from 'solid-icons/bs'
+import {Container} from "/@/libs/layout";
+import { vars } from '/@/theme'
+import { styled } from '@macaron-css/solid'
 
 const [repos] = createResource(() => client.getRepositories({}))
 const [apps] = createResource(() => client.getApplications({}))
@@ -46,7 +25,7 @@ const providerItems: RadioItem[] = [
 const organizationItems: RadioItem[] = [
   { value: 'traP', title: 'traP' },
   { value: 'hoge', title: 'hoge' },
-  { value: 'huga', title: 'huga' },
+  { value: 'fuga', title: 'fuga' },
   { value: 'aaa', title: 'aaa' },
 ]
 
@@ -55,30 +34,163 @@ const sortItems: RadioItem[] = [
   { value: 'asc', title: '古い順' },
 ]
 
+const  AppTitle = styled('div',{
+  base: {
+    marginTop: '48px',
 
-interface StatusCheckboxProps {
-  state: ApplicationState
-  title: string
-}
+    display: 'flex',
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+})
+
+const AppsTitle = styled('div',{
+  base: {
+    display: 'flex',
+    flexDirection: 'row',
+    alignItems: 'center',
+    fontSize: '32px',
+    fontWeight: 700,
+    color: vars.text.black1,
+  }
+})
+
+const Arrow = styled('div',{
+  base: {
+    display: 'flex',
+    flexDirection: 'row',
+    alignItems: 'center',
+
+    width: '320x',
+    height: '32',
+    fontWeight: 'bold',
+    color: vars.text.black1,
+  }
+})
+
+const SubTitle = styled('div',{
+  base: {
+    marginTop: '30px',
+    fontSize: '32px',
+    fontWeight: 500,
+    color: vars.text.black1,
+  }
+})
+
+const ContentContainer = styled('div',{
+  base: {
+    marginTop: '24px',
+    display: 'grid',
+    gridTemplateColumns: '380px 1fr',
+    gap: '40px',
+  }
+})
+
+const SidebarContainer = styled('div',{
+  base: {
+    display: 'flex',
+    flexDirection: 'column',
+    gap: '22px',
+
+    padding: '24px 40px',
+    backgroundColor: vars.bg.white1,
+    borderRadius: '4px',
+    border: `1px solid ${vars.bg.white4}`,
+  }
+})
+
+const SidebarTitle = styled('div',{
+  base: {
+    fontSize: '24px',
+    fontWeight: 500,
+    color: vars.text.black1,
+  }
+})
+
+const SidebarOptions = styled('div',{
+  base: {
+    display: 'flex',
+    flexDirection: 'column',
+    gap: '12px',
+
+    fontSize: '20px',
+    color: vars.text.black1,
+  }
+})
+styled('div',{
+  base: {
+    display: 'flex',
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    width: '100%',
+  }
+});
+
+styled('div',{
+  base: {
+    display: 'flex',
+    flexDirection: 'row',
+    gap: '8px',
+    alignItems: 'center',
+  }
+});
+
+const MainContentContainer = styled('div',{
+  base: {
+    display: 'flex',
+    flexDirection: 'column',
+    gap: '20px',
+  }
+})
+
+const SearchBarContainer = styled('div',{
+  base: {
+    display: 'grid',
+    height: '44px',
+  }
+})
+
+const SearchBar = styled('input',{
+  base: {
+    padding: '12px 20px',
+    borderRadius: '4px',
+    border: `1px solid ${vars.bg.white4}`,
+    fontSize: '14px',
+
+    '::placeholder': {
+      color: vars.text.black3,
+    },
+  }
+})
+styled('div',{
+  base: {
+    display: 'flex',
+    borderRadius: '4px',
+    backgroundColor: vars.bg.black1,
+  }
+});
+
+styled('div',{
+  base: {
+    margin: 'auto',
+    color: vars.text.white1,
+    fontSize: '16px',
+    fontWeight: 'bold',
+  }
+});
+
+const RepositoriesContainer = styled('div',{
+  base: {
+    display: 'flex',
+    flexDirection: 'column',
+    gap: '20px',
+  }
+})
 interface SelectedRepositoryProps {
   name: string;
   id: number;
 }
-
-
-const StatusCheckbox = (props: StatusCheckboxProps): JSX.Element => {
-  const num = () => loaded() && apps().applications.filter((app) => applicationState(app) === props.state).length
-  return (
-    <div class={statusCheckboxContainer}>
-      <div class={statusCheckboxContainerLeft}>
-        <StatusIcon state={props.state} />
-        <div>{props.title}</div>
-      </div>
-      <div>{num()}</div>
-    </div>
-  )
-}
-
 export default () => {
   const appsByRepo = () =>
     loaded() &&
@@ -88,40 +200,35 @@ export default () => {
       return acc
     }, {} as Record<string, Application[]>)
 
-  const SelectRepositry = (): JSX.Element => {
+  const SelectRepository = (): JSX.Element => {
     return (
       <>
-        <div class={subTitle}>Select repository </div>
-        <div class={contentContainer}>
-          <div class={sidebarContainer}>
-            <div class={sidebarOptions}>
-              <div class={sidebarTitle}>Provider</div>
+        <SubTitle>Select repository </SubTitle>
+        <ContentContainer>
+          <SidebarContainer>
+            <SidebarOptions>
+              <SidebarTitle>Provider</SidebarTitle>
               <Radio items={providerItems} />
-            </div>
-            <div class={sidebarOptions}>
-              <div class={sidebarTitle}>Organization</div>
+            </SidebarOptions>
+            <SidebarOptions>
+              <SidebarTitle>Organization</SidebarTitle>
               <Radio items={organizationItems} />
-            </div>
-            <div class={sidebarOptions}>
-              <div class={sidebarTitle}>Sort</div>
+            </SidebarOptions>
+            <SidebarOptions>
+              <SidebarTitle>Sort</SidebarTitle>
               <Radio items={sortItems} />
-            </div>
-          </div>
+            </SidebarOptions>
+          </SidebarContainer>
 
-          <div class={mainContentContainer}>
-            <div class={searchBarContainer}>
-              <input placeholder='Search...' class={searchBar} />
-              {/*<A href='/newapp_select_repo'>*/}
-              {/*  <div class={createAppButton}>*/}
-              {/*    <div class={createAppText}>+ Create new app</div>*/}
-              {/*  </div>*/}
-              {/*</A>*/}
-            </div>
-            <div class={repositoriesContainer}>
-              {loaded() && repos().repositories.map((r) => <RepositoryRow repo={r} apps={appsByRepo()[r.id]  || []} func={Add} />)}
-            </div>
-          </div>
-        </div>
+          <MainContentContainer>
+            <SearchBarContainer>
+              <SearchBar placeholder='Search...' />
+            </SearchBarContainer>
+            <RepositoriesContainer>
+              {loaded() && repos().repositories.map((r) => <RepositoryNameRow repo={r} apps={appsByRepo()[r.id]  || []} onNewAppClick={Add} />)}
+            </RepositoriesContainer>
+          </MainContentContainer>
+        </ContentContainer>
       </>
     )
   }
@@ -136,25 +243,23 @@ export default () => {
 
   const [num, setNum] = createSignal(0);
   const Add = () => {
-    console.log("a")
-    setNum(num() + 1);
+    setNum(num() ^ 1);
   };
 
   return (
-    <div class={container}>
+    <Container>
       <Header />
-      <div class={appTitle}>
-        <div class={arrow}><A href={'/apps'}><BsArrowLeftShort /></A></div>
-        <div class={appsTitle}>New app</div>
-      </div>
+      <AppTitle>
+        <Arrow><A href={'/apps'}><BsArrowLeftShort /></A></Arrow>
+        <AppsTitle>New app</AppsTitle>
+      </AppTitle>
 
       <Show
-        when={num()<=2}
+        when={num()==0}
         fallback={<Bookshelf name={"pikachu"} id={num()}/>}>
-        <SelectRepositry />
-        <div id="text-button" onclick={Add}>{num()}Click</div>
+        <SelectRepository />
       </Show>
 
-    </div>
+    </Container>
   )
 }
