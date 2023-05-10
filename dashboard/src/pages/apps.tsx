@@ -1,6 +1,6 @@
 import { Header } from '/@/components/Header'
 import { Checkbox } from '/@/components/Checkbox'
-import { createResource, For, Show } from 'solid-js'
+import { createResource, createSignal, For, Show } from 'solid-js'
 import { Radio, RadioItem } from '/@/components/Radio'
 import { client } from '/@/libs/api'
 import { Application } from '/@/api/neoshowcase/protobuf/gateway_pb'
@@ -127,6 +127,8 @@ export default () => {
       return acc
     }, {} as Record<string, Application[]>)
 
+  const [selected, setSelected] = createSignal()
+
   return (
     <Container>
       <Header />
@@ -161,7 +163,7 @@ export default () => {
             </SidebarSection>
             <SidebarOptions>
               <SidebarTitle>Sort</SidebarTitle>
-              <Radio items={sortItems} />
+              <Radio items={sortItems} selected={selected} setSelected={setSelected}/>
             </SidebarOptions>
           </SidebarContainer>
           <MainContainer>

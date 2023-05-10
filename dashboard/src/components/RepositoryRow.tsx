@@ -143,9 +143,11 @@ export const RepositoryRow = ({ repo, apps }: Props): JSXElement => {
             {apps.length} {apps.length === 1 ? 'app' : 'apps'}
           </AppsCount>
         </HeaderLeft>
+        <A href={`/apps/new?repositoryID=${repo.id}`}>
         <AddBranchButton>
-          <div>Add&nbsp;branch</div>
+          <div>Create&nbsp;new&nbsp;app</div>
         </AddBranchButton>
+        </A>
       </Header>
       <For
         each={apps}
