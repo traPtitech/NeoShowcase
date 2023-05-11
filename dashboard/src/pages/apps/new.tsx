@@ -4,7 +4,7 @@ import { Radio, RadioItem } from '/@/components/Radio'
 import { client } from '/@/libs/api'
 import { Application, Repository } from '/@/api/neoshowcase/protobuf/gateway_pb'
 import { RepositoryNameRow } from '/@/components/RepositoryRow'
-import { A } from '@solidjs/router'
+import { A, useSearchParams } from '@solidjs/router'
 import { BsArrowLeftShort } from 'solid-icons/bs'
 import { Container } from '/@/libs/layout'
 import { vars } from '/@/theme'
@@ -305,19 +305,10 @@ export default () => {
       return acc
     }, {} as Record<string, Application[]>)
 
-  const [repositoryID, setRepositoryID] = createSignal('')
-  const urlParams = new URLSearchParams(window.location.search)
-  setRepositoryID(urlParams.get('repositoryID'))
-  for (let step = 0; step < 5; step++) {
-    window.setTimeout(() => {
-      const urlParams = new URLSearchParams(window.location.search)
-      setRepositoryID(urlParams.get('repositoryID'))
-    }, step)
-  }
-
   const [buildConfigSelected, buildConfigSetSelected] = createSignal('')
   const [websites, setWebsites] = createSignal(initialWebsiteStructs)
-
+  const [searchParams, setSearchParams] = useSearchParams()
+  const repositoryID = searchParams.repositoryID
   const SelectRepository = (): JSX.Element => {
     return (
       <>
@@ -326,7 +317,7 @@ export default () => {
             <RepositoriesContainer>
               {loaded() &&
                 repos()
-                  .repositories.filter((r) => r.id === repositoryID())
+                  .repositories.filter((r) => r.id === repositoryID)
                   .map((r) => <RepositoryNameRow repo={r} apps={appsByRepo()[r.id] || []} onNewAppClick={() => {}} />)}
             </RepositoriesContainer>
             <InputFormContainer>
@@ -337,7 +328,7 @@ export default () => {
 
               <InputForm>
                 <InputFormText>RepositoryID</InputFormText>
-                <InputBar placeholder={repositoryID() ?? '6caba7b91ea72c05d8f65e'} />
+                <InputBar placeholder={repositoryID ?? '6caba7b91ea72c05d8f65e'} />
               </InputForm>
 
               <InputForm>
@@ -487,6 +478,10 @@ export default () => {
             {/*<Button onclick={() => {}} color='black1' size='large'>*/}
             {/*  Debug*/}
             {/*</Button>*/}
+            {/*<div>*/}
+            {/*  <span>Page: {searchParams.repositoryID}</span>*/}
+            {/*  <button onClick={() => setSearchParams({ page: searchParams.page + 1 })}>Next Page</button>*/}
+            {/*</div>*/}
           </MainContentContainer>
         </ContentContainer>
       </>
