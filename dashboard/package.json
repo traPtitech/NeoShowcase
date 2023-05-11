@@ -7,6 +7,7 @@
     "serve": "vite preview",
     "fmt": "rome format src --write",
     "lint": "rome check src --apply",
+    "lint:noapply": "rome check src",
     "lint:force": "rome check src --apply-unsafe",
     "typecheck": "tsc --noEmit",
     "ci": "rome ci src"
