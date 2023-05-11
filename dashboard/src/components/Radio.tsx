@@ -32,8 +32,8 @@ export interface RadioItem {
 
 export interface Props {
   items: RadioItem[]
-  selected: Accessor<any>
-  setSelected: Setter<any>
+  selected: Accessor<string>
+  setSelected: Setter<string>
   init?: string
 }
 

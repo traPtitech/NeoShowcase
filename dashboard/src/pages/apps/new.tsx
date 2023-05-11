@@ -274,7 +274,7 @@ export default () => {
   const repositoryID = urlParams.get('repositoryID')
 
   const SelectRepository = (): JSX.Element => {
-    const [selected, setSelected] = createSignal()
+    const [selected, setSelected] = createSignal('')
     return (
       <>
         <ContentContainer>
@@ -315,13 +315,13 @@ export default () => {
                   <InputForm>
                     <Radio items={buildConfigItems} selected={selected} setSelected={setSelected} />
                   </InputForm>
-                  <Show when={selected() == buildConfigItems[0].value}>
+                  <Show when={selected() === buildConfigItems[0].value}>
                     <InputForm>
                       <InputFormText>Context</InputFormText>
                       <InputBar placeholder='context' />
                     </InputForm>
                   </Show>
-                  <Show when={selected() == buildConfigItems[1].value}>
+                  <Show when={selected() === buildConfigItems[1].value}>
                     <InputForm>
                       <InputFormText>Base image</InputFormText>
                       <InputBar placeholder='base_image' />
@@ -337,7 +337,7 @@ export default () => {
                       </InputFormCheckBox>
                     </InputForm>
                   </Show>
-                  <Show when={selected() == buildConfigItems[2].value}>
+                  <Show when={selected() === buildConfigItems[2].value}>
                     <InputForm>
                       <InputFormText>Dockerfile name</InputFormText>
                       <InputBar placeholder='dockerfile_name' />
@@ -347,7 +347,7 @@ export default () => {
                       <InputBar placeholder='context' />
                     </InputForm>
                   </Show>
-                  <Show when={selected() == buildConfigItems[3].value}>
+                  <Show when={selected() === buildConfigItems[3].value}>
                     <InputForm>
                       <InputFormText>Base image</InputFormText>
                       <InputBar placeholder='base_image' />
@@ -367,7 +367,7 @@ export default () => {
                       <InputBar placeholder='artifact_path' />
                     </InputForm>
                   </Show>
-                  <Show when={selected() == buildConfigItems[4].value}>
+                  <Show when={selected() === buildConfigItems[4].value}>
                     <InputForm>
                       <InputFormText>Dockerfile name</InputFormText>
                       <InputBar placeholder='dockerfile_name' />
@@ -457,7 +457,7 @@ export default () => {
         <AppsTitle>Create Application</AppsTitle>
       </AppTitle>
 
-      <Show when={num() == 0} fallback={<Bookshelf name={'pikachu'} id={num()} />}>
+      <Show when={num() === 0} fallback={<Bookshelf name={'pikachu'} id={num()} />}>
         <SelectRepository />
       </Show>
     </Container>
