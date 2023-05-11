@@ -11,7 +11,7 @@ import { styled } from '@macaron-css/solid'
 import { vars } from '/@/theme'
 import { Container } from '/@/libs/layout'
 import { Button } from '/@/components/Button'
-import {A} from "@solidjs/router";
+import { A } from '@solidjs/router'
 
 const sortItems: RadioItem[] = [
   { value: 'desc', title: '最新順' },
@@ -163,7 +163,7 @@ export default () => {
             </SidebarSection>
             <SidebarOptions>
               <SidebarTitle>Sort</SidebarTitle>
-              <Radio items={sortItems} selected={selected} setSelected={setSelected}/>
+              <Radio items={sortItems} selected={selected} setSelected={setSelected} />
             </SidebarOptions>
           </SidebarContainer>
           <MainContainer>

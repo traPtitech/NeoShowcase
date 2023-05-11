@@ -145,9 +145,9 @@ export const RepositoryRow = ({ repo, apps }: Props): JSXElement => {
           </AppsCount>
         </HeaderLeft>
         <A href={`/apps/new?repositoryID=${repo.id}`}>
-        <AddBranchButton>
-          <div>Create&nbsp;new&nbsp;app</div>
-        </AddBranchButton>
+          <AddBranchButton>
+            <div>Create&nbsp;new&nbsp;app</div>
+          </AddBranchButton>
         </A>
       </Header>
       <For
@@ -177,7 +177,7 @@ export const RepositoryRow = ({ repo, apps }: Props): JSXElement => {
 export interface NamedProps {
   repo: Repository
   apps: Application[]
-  onNewAppClick: ()=>void
+  onNewAppClick: () => void
 }
 
 export const RepositoryNameRow = ({ repo, apps, onNewAppClick }: NamedProps): JSXElement => {
@@ -192,21 +192,20 @@ export const RepositoryNameRow = ({ repo, apps, onNewAppClick }: NamedProps): JS
     return 0
   })
   return (
-      <Container>
-        <Header>
-          <HeaderLeft>
-            {providerToIcon(provider)}
-            <RepoName>{repo.name}</RepoName>
-            <AppsCount>
-              {apps.length && ` ${sortedApps[0].refName}/${sortedApps[0].currentCommit.slice(0, 7)}・`}
-              {apps.length && <DiffHuman target={sortedApps[0].updatedAt.toDate()} />}
-            </AppsCount>
-          </HeaderLeft>
-          <AddBranchButton onclick={onNewAppClick}>
-            <div>Create&nbsp;App</div>
-          </AddBranchButton>
-        </Header>
-      </Container>
+    <Container>
+      <Header>
+        <HeaderLeft>
+          {providerToIcon(provider)}
+          <RepoName>{repo.name}</RepoName>
+          <AppsCount>
+            {apps.length && ` ${sortedApps[0].refName}/${sortedApps[0].currentCommit.slice(0, 7)}・`}
+            {apps.length && <DiffHuman target={sortedApps[0].updatedAt.toDate()} />}
+          </AppsCount>
+        </HeaderLeft>
+        <AddBranchButton onclick={onNewAppClick}>
+          <div>Create&nbsp;App</div>
+        </AddBranchButton>
+      </Header>
+    </Container>
   )
 }
-

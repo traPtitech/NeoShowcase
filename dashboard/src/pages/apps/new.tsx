@@ -67,7 +67,6 @@ const AppsTitle = styled('div', {
   },
 })
 
-
 const Arrow = styled('div', {
   base: {
     fontSize: '32px',
@@ -169,12 +168,11 @@ const InputFormContainer = styled('div', {
     border: `1px solid ${vars.bg.white4}`,
     borderRadius: '4px',
     padding: '8px 12px',
-  }
+  },
 })
 
 const InputForm = styled('div', {
-  base: {
-  },
+  base: {},
 })
 
 const InputFormText = styled('div', {
@@ -185,7 +183,7 @@ const InputFormText = styled('div', {
     color: vars.text.black1,
 
     marginBottom: '4px',
-  }
+  },
 })
 
 const InputBar = styled('input', {
@@ -216,7 +214,7 @@ const InputFormCheckBox = styled('div', {
     padding: '8px 12px',
 
     width: '160px',
-  }
+  },
 })
 
 const InputFormRadio = styled('div', {
@@ -230,7 +228,7 @@ const InputFormRadio = styled('div', {
     display: 'flex',
     flexDirection: 'column',
     gap: '12px',
-  }
+  },
 })
 
 styled('div', {
@@ -259,8 +257,8 @@ const RepositoriesContainer = styled('div', {
 })
 
 interface SelectedRepositoryProps {
-  name: string;
-  id: number;
+  name: string
+  id: number
 }
 
 export default () => {
@@ -282,8 +280,10 @@ export default () => {
         <ContentContainer>
           <MainContentContainer>
             <RepositoriesContainer>
-              {loaded() && repos().repositories.map((r) => <RepositoryNameRow repo={r} apps={appsByRepo()[r.id] || []}
-                                                                              onNewAppClick={Add} />)}
+              {loaded() &&
+                repos().repositories.map((r) => (
+                  <RepositoryNameRow repo={r} apps={appsByRepo()[r.id] || []} onNewAppClick={Add} />
+                ))}
             </RepositoriesContainer>
             <InputFormContainer>
               <InputForm>
@@ -293,7 +293,7 @@ export default () => {
 
               <InputForm>
                 <InputFormText>RepositoryID</InputFormText>
-                <InputBar placeholder={repositoryID ?? "6caba7b91ea72c05d8f65e"} />
+                <InputBar placeholder={repositoryID ?? '6caba7b91ea72c05d8f65e'} />
               </InputForm>
 
               <InputForm>
@@ -304,12 +304,8 @@ export default () => {
               <InputForm>
                 <InputFormText>Database (使うデーターベースにチェック)</InputFormText>
                 <InputFormCheckBox>
-                  <Checkbox>
-                    MariaDB
-                  </Checkbox>
-                  <Checkbox>
-                    MongoDB
-                  </Checkbox>
+                  <Checkbox>MariaDB</Checkbox>
+                  <Checkbox>MongoDB</Checkbox>
                 </InputFormCheckBox>
               </InputForm>
 
@@ -319,15 +315,13 @@ export default () => {
                   <InputForm>
                     <Radio items={buildConfigItems} selected={selected} setSelected={setSelected} />
                   </InputForm>
-                  <Show
-                  when={selected() == buildConfigItems[0].value}>
-                  <InputForm>
-                    <InputFormText>Context</InputFormText>
-                    <InputBar placeholder='context' />
-                  </InputForm>
+                  <Show when={selected() == buildConfigItems[0].value}>
+                    <InputForm>
+                      <InputFormText>Context</InputFormText>
+                      <InputBar placeholder='context' />
+                    </InputForm>
                   </Show>
-                  <Show
-                    when={selected() == buildConfigItems[1].value}>
+                  <Show when={selected() == buildConfigItems[1].value}>
                     <InputForm>
                       <InputFormText>Base image</InputFormText>
                       <InputBar placeholder='base_image' />
@@ -339,14 +333,11 @@ export default () => {
                     <InputForm>
                       <InputFormText>Build cmd shell</InputFormText>
                       <InputFormCheckBox>
-                        <Checkbox>
-                          build_cmd_shell
-                        </Checkbox>
+                        <Checkbox>build_cmd_shell</Checkbox>
                       </InputFormCheckBox>
                     </InputForm>
                   </Show>
-                  <Show
-                    when={selected() == buildConfigItems[2].value}>
+                  <Show when={selected() == buildConfigItems[2].value}>
                     <InputForm>
                       <InputFormText>Dockerfile name</InputFormText>
                       <InputBar placeholder='dockerfile_name' />
@@ -356,8 +347,7 @@ export default () => {
                       <InputBar placeholder='context' />
                     </InputForm>
                   </Show>
-                  <Show
-                    when={selected() == buildConfigItems[3].value}>
+                  <Show when={selected() == buildConfigItems[3].value}>
                     <InputForm>
                       <InputFormText>Base image</InputFormText>
                       <InputBar placeholder='base_image' />
@@ -369,9 +359,7 @@ export default () => {
                     <InputForm>
                       <InputFormText>Build cmd shell</InputFormText>
                       <InputFormCheckBox>
-                        <Checkbox>
-                          build_cmd_shell
-                        </Checkbox>
+                        <Checkbox>build_cmd_shell</Checkbox>
                       </InputFormCheckBox>
                     </InputForm>
                     <InputForm>
@@ -379,8 +367,7 @@ export default () => {
                       <InputBar placeholder='artifact_path' />
                     </InputForm>
                   </Show>
-                  <Show
-                    when={selected() == buildConfigItems[4].value}>
+                  <Show when={selected() == buildConfigItems[4].value}>
                     <InputForm>
                       <InputFormText>Dockerfile name</InputFormText>
                       <InputBar placeholder='dockerfile_name' />
@@ -410,9 +397,7 @@ export default () => {
               <InputForm>
                 <InputFormText>Start on create</InputFormText>
                 <InputFormCheckBox>
-                  <Checkbox>
-                    start_on_create
-                  </Checkbox>
+                  <Checkbox>start_on_create</Checkbox>
                 </InputFormCheckBox>
               </InputForm>
 
@@ -421,10 +406,14 @@ export default () => {
               </Button>
             </InputFormContainer>
 
-            <Button onclick={() => {
-              console.log(selected())
-              console.log(buildConfigItems[0])
-            }} color='black1' size='large'>
+            <Button
+              onclick={() => {
+                console.log(selected())
+                console.log(buildConfigItems[0])
+              }}
+              color='black1'
+              size='large'
+            >
               DEBUG
             </Button>
 
@@ -461,17 +450,16 @@ export default () => {
       <Header />
       <AppTitle>
         <A href={'/apps'}>
-          <Arrow><BsArrowLeftShort /></Arrow>
+          <Arrow>
+            <BsArrowLeftShort />
+          </Arrow>
         </A>
         <AppsTitle>Create Application</AppsTitle>
       </AppTitle>
 
-      <Show
-        when={num() == 0}
-        fallback={<Bookshelf name={'pikachu'} id={num()} />}>
+      <Show when={num() == 0} fallback={<Bookshelf name={'pikachu'} id={num()} />}>
         <SelectRepository />
       </Show>
-
     </Container>
   )
 }
