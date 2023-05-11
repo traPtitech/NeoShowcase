@@ -1,8 +1,8 @@
 import { Header } from '/@/components/Header'
-import { createResource, createSignal, JSX, Show } from 'solid-js'
+import { Accessor, createResource, createSignal, JSX, Setter, Show, Signal, For } from 'solid-js'
 import { Radio, RadioItem } from '/@/components/Radio'
 import { client } from '/@/libs/api'
-import { Application } from '/@/api/neoshowcase/protobuf/gateway_pb'
+import { Application, Repository } from '/@/api/neoshowcase/protobuf/gateway_pb'
 import { RepositoryNameRow } from '/@/components/RepositoryRow'
 import { A } from '@solidjs/router'
 import { BsArrowLeftShort } from 'solid-icons/bs'
@@ -44,6 +44,12 @@ const buildConfigItems: RadioItem[] = [
   { value: 'runtime_dockerfile', title: 'runtime dockerfile' },
   { value: 'static_cmd', title: 'static cmd' },
   { value: 'static_dockerfile', title: 'static dockerfile' },
+]
+
+const authenticationTypeItems: RadioItem[] = [
+  { value: 'OFF', title: 'OFF' },
+  { value: 'SOFT', title: 'SOFT' },
+  { value: 'HARD', title: 'HARD' },
 ]
 
 const AppTitle = styled('div', {
@@ -217,6 +223,29 @@ const InputFormCheckBox = styled('div', {
   },
 })
 
+const InputFormWebsite = styled('div', {
+  base: {
+    background: vars.bg.white2,
+    border: `1px solid ${vars.bg.white4}`,
+    borderRadius: '4px',
+    marginLeft: '4px',
+    padding: '8px 12px',
+
+    display: 'flex',
+    flexDirection: 'column',
+    gap: '12px',
+  },
+})
+
+const InputFormWebsiteButton = styled('div', {
+  base: {
+    display: 'flex',
+    gap: '8px',
+    marginBottom: '4px',
+    marginLeft: '4px',
+  },
+})
+
 const InputFormRadio = styled('div', {
   base: {
     background: vars.bg.white2,
@@ -261,6 +290,63 @@ interface SelectedRepositoryProps {
   id: number
 }
 
+interface WebsiteProps {
+  selected: Accessor<string>
+  setSelected: Setter<string>
+}
+
+const Website = (props: WebsiteProps) => {
+  return (
+    <InputFormWebsite>
+      <InputForm>
+        <InputFormText>fqdn</InputFormText>
+        <InputBar placeholder='fqdn' />
+      </InputForm>
+      <InputForm>
+        <InputFormText>Path prefix</InputFormText>
+        <InputBar placeholder='path_prefix' />
+      </InputForm>
+      <InputForm>
+        <InputFormCheckBox>
+          <Checkbox>strip_prefix</Checkbox>
+          <Checkbox>https</Checkbox>
+          <Checkbox>h2c</Checkbox>
+        </InputFormCheckBox>
+      </InputForm>
+      <InputForm>
+        <InputFormText>Http port</InputFormText>
+        <InputBar placeholder='http_port' />
+      </InputForm>
+      <InputForm>
+        <Radio items={authenticationTypeItems} selected={props.selected} setSelected={props.setSelected} />
+      </InputForm>
+    </InputFormWebsite>
+  )
+}
+
+interface WebsitesProps {
+  websites: WebsiteStruct[]
+}
+
+const Websites = (props: WebsitesProps) => {
+  return (
+    <For each={props.websites}>
+      {(website) => {
+        return <Website selected={website.signal[0]} setSelected={website.signal[1]}></Website>;
+      }}
+    </For>
+  )
+}
+
+export type WebsiteStruct = {
+  signal: Signal<string>
+  // authenticationType: Accessor<string>
+  // setAuthenticationType: Setter<string>
+};
+
+const EmptyWebsite: WebsiteStruct = { signal: createSignal('') };
+const initialWebsiteStructs: WebsiteStruct[] = []
+
 export default () => {
   const appsByRepo = () =>
     loaded() &&
@@ -273,8 +359,10 @@ export default () => {
   const urlParams = new URLSearchParams(window.location.search)
   const repositoryID = urlParams.get('repositoryID')
 
+  const [buildConfigSelected, buildConfigSetSelected] = createSignal('')
+  const [websites, setWebsites] = createSignal(initialWebsiteStructs)
+
   const SelectRepository = (): JSX.Element => {
-    const [selected, setSelected] = createSignal('')
     return (
       <>
         <ContentContainer>
@@ -313,15 +401,15 @@ export default () => {
                 <InputFormText>Build Config</InputFormText>
                 <InputFormRadio>
                   <InputForm>
-                    <Radio items={buildConfigItems} selected={selected} setSelected={setSelected} />
+                    <Radio items={buildConfigItems} selected={buildConfigSelected} setSelected={buildConfigSetSelected} />
                   </InputForm>
-                  <Show when={selected() === buildConfigItems[0].value}>
+                  <Show when={buildConfigSelected() === buildConfigItems[0].value}>
                     <InputForm>
                       <InputFormText>Context</InputFormText>
                       <InputBar placeholder='context' />
                     </InputForm>
                   </Show>
-                  <Show when={selected() === buildConfigItems[1].value}>
+                  <Show when={buildConfigSelected() === buildConfigItems[1].value}>
                     <InputForm>
                       <InputFormText>Base image</InputFormText>
                       <InputBar placeholder='base_image' />
@@ -337,7 +425,7 @@ export default () => {
                       </InputFormCheckBox>
                     </InputForm>
                   </Show>
-                  <Show when={selected() === buildConfigItems[2].value}>
+                  <Show when={buildConfigSelected() === buildConfigItems[2].value}>
                     <InputForm>
                       <InputFormText>Dockerfile name</InputFormText>
                       <InputBar placeholder='dockerfile_name' />
@@ -347,7 +435,7 @@ export default () => {
                       <InputBar placeholder='context' />
                     </InputForm>
                   </Show>
-                  <Show when={selected() === buildConfigItems[3].value}>
+                  <Show when={buildConfigSelected() === buildConfigItems[3].value}>
                     <InputForm>
                       <InputFormText>Base image</InputFormText>
                       <InputBar placeholder='base_image' />
@@ -367,7 +455,7 @@ export default () => {
                       <InputBar placeholder='artifact_path' />
                     </InputForm>
                   </Show>
-                  <Show when={selected() === buildConfigItems[4].value}>
+                  <Show when={buildConfigSelected() === buildConfigItems[4].value}>
                     <InputForm>
                       <InputFormText>Dockerfile name</InputFormText>
                       <InputBar placeholder='dockerfile_name' />
@@ -390,8 +478,37 @@ export default () => {
               </InputForm>
 
               <InputForm>
-                <InputFormText>Create Website Request</InputFormText>
-                <InputBar placeholder='CreateWebsiteRequest' />
+                <InputFormText>Website Setting</InputFormText>
+
+                <InputFormWebsiteButton>
+                  <Button
+                    onclick={() => {
+                      const [newWebsite, setNewWebsite] = createSignal(EmptyWebsite)
+                      setWebsites((newWebsites) => [...newWebsites, newWebsite()])
+                    }}
+                    color='black1'
+                    size='large'
+                  >
+                    Add website setting
+                  </Button>
+                  <Button
+                    onclick={() => {
+                      setWebsites((newWebsites) => {
+                        newWebsites.pop()
+                        return [...newWebsites]
+                      })}}
+                    color='black1'
+                    size='large'
+                  >
+                    Delete website setting
+                  </Button>
+                </InputFormWebsiteButton>
+
+                <For each={websites()}>
+                  {(website) => {
+                    return <Website selected={website.signal[0]} setSelected={website.signal[1]}></Website>;
+                  }}
+                </For>
               </InputForm>
 
               <InputForm>
@@ -408,35 +525,17 @@ export default () => {
 
             <Button
               onclick={() => {
-                console.log(selected())
-                console.log(buildConfigItems[0])
+                const [newWebsite, setNewWebsite] = createSignal(EmptyWebsite);
+                setWebsites((newWebsites) => [...newWebsites, newWebsite()]);
               }}
               color='black1'
               size='large'
             >
-              DEBUG
+              Debug
             </Button>
-
-            {/*<input*/}
-            {/*  id="author"*/}
-            {/*  value={"a"}*/}
-            {/*  onInput={(e) => {*/}
-            {/*  }}*/}
-            {/*/>*/}
-            {/*<button type="submit">*/}
-
-            {/*</button>*/}
           </MainContentContainer>
         </ContentContainer>
       </>
-    )
-  }
-
-  function Bookshelf(props: SelectedRepositoryProps) {
-    return (
-      <div>
-        <h1>{props.name}</h1>
-      </div>
     )
   }
 
@@ -456,10 +555,7 @@ export default () => {
         </A>
         <AppsTitle>Create Application</AppsTitle>
       </AppTitle>
-
-      <Show when={num() === 0} fallback={<Bookshelf name={'pikachu'} id={num()} />}>
-        <SelectRepository />
-      </Show>
+      <SelectRepository />
     </Container>
   )
 }
