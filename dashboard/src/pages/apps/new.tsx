@@ -4,39 +4,18 @@ import { Radio, RadioItem } from '/@/components/Radio'
 import { client } from '/@/libs/api'
 import { Application, Repository } from '/@/api/neoshowcase/protobuf/gateway_pb'
 import { RepositoryNameRow } from '/@/components/RepositoryRow'
-import { A, useParams, useSearchParams } from '@solidjs/router'
+import { A } from '@solidjs/router'
 import { BsArrowLeftShort } from 'solid-icons/bs'
 import { Container } from '/@/libs/layout'
 import { vars } from '/@/theme'
 import { styled } from '@macaron-css/solid'
 import { Button } from '/@/components/Button'
 import { Checkbox } from '/@/components/Checkbox'
-import { StatusCheckbox } from '/@/components/StatusCheckbox'
-import { ApplicationState } from '/@/libs/application'
 
 const [repos] = createResource(() => client.getRepositories({}))
 const [apps] = createResource(() => client.getApplications({}))
 
 const loaded = () => !!(repos() && apps())
-
-const providerItems: RadioItem[] = [
-  { value: 'Github', title: 'Github' },
-  { value: 'Gitea', title: 'Gitea' },
-  { value: 'Gitlab', title: 'Gitlab' },
-  { value: 'hoge', title: 'hoge' },
-]
-
-const organizationItems: RadioItem[] = [
-  { value: 'traP', title: 'traP' },
-  { value: 'hoge', title: 'hoge' },
-  { value: 'fuga', title: 'fuga' },
-  { value: 'aaa', title: 'aaa' },
-]
-
-const sortItems: RadioItem[] = [
-  { value: 'desc', title: '最新順' },
-  { value: 'asc', title: '古い順' },
-]
 
 const buildConfigItems: RadioItem[] = [
   { value: 'runtime_buildpack', title: 'runtime buildpack' },
@@ -81,15 +60,6 @@ const Arrow = styled('div', {
   },
 })
 
-const SubTitle = styled('div', {
-  base: {
-    marginTop: '30px',
-    fontSize: '32px',
-    fontWeight: 500,
-    color: vars.text.black1,
-  },
-})
-
 const ContentContainer = styled('div', {
   base: {
     marginTop: '24px',
@@ -97,29 +67,14 @@ const ContentContainer = styled('div', {
     gap: '40px',
   },
 })
-
-const SidebarContainer = styled('div', {
-  base: {
-    display: 'flex',
-    flexDirection: 'column',
-    gap: '22px',
-
-    padding: '24px 40px',
-    backgroundColor: vars.bg.white1,
-    borderRadius: '4px',
-    border: `1px solid ${vars.bg.white4}`,
-  },
-})
-
-const SidebarTitle = styled('div', {
+styled('div', {
   base: {
     fontSize: '24px',
     fontWeight: 500,
     color: vars.text.black1,
   },
 })
-
-const SidebarOptions = styled('div', {
+styled('div', {
   base: {
     display: 'flex',
     flexDirection: 'column',
@@ -156,8 +111,7 @@ const MainContentContainer = styled('div', {
     gap: '20px',
   },
 })
-
-const SearchBarContainer = styled('div', {
+styled('div', {
   base: {
     display: 'grid',
     height: '44px',
@@ -285,11 +239,6 @@ const RepositoriesContainer = styled('div', {
   },
 })
 
-interface SelectedRepositoryProps {
-  name: string
-  id: number
-}
-
 interface WebsiteProps {
   selected: Accessor<string>
   setSelected: Setter<string>
@@ -348,7 +297,6 @@ const EmptyWebsite: WebsiteStruct = { signal: createSignal('') }
 const initialWebsiteStructs: WebsiteStruct[] = []
 
 export default () => {
-  const [searchParams, setSearchParams] = useSearchParams()
   const appsByRepo = () =>
     loaded() &&
     apps().applications.reduce((acc, app) => {
@@ -379,7 +327,7 @@ export default () => {
               {loaded() &&
                 repos()
                   .repositories.filter((r) => r.id === repositoryID())
-                  .map((r) => <RepositoryNameRow repo={r} apps={appsByRepo()[r.id] || []} onNewAppClick={Add} />)}
+                  .map((r) => <RepositoryNameRow repo={r} apps={appsByRepo()[r.id] || []} onNewAppClick={() => {}} />)}
             </RepositoriesContainer>
             <InputFormContainer>
               <InputForm>
@@ -495,7 +443,7 @@ export default () => {
                 <InputFormWebsiteButton>
                   <Button
                     onclick={() => {
-                      const [newWebsite, setNewWebsite] = createSignal(EmptyWebsite)
+                      const [newWebsite] = createSignal(EmptyWebsite)
                       setWebsites((newWebsites) => [...newWebsites, newWebsite()])
                     }}
                     color='black1'
@@ -543,11 +491,6 @@ export default () => {
         </ContentContainer>
       </>
     )
-  }
-
-  const [num, setNum] = createSignal(0)
-  const Add = () => {
-    setNum(num() ^ 1)
   }
 
   return (
