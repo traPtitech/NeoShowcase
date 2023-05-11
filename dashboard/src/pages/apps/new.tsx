@@ -4,7 +4,7 @@ import { Radio, RadioItem } from '/@/components/Radio'
 import { client } from '/@/libs/api'
 import { Application, Repository } from '/@/api/neoshowcase/protobuf/gateway_pb'
 import { RepositoryNameRow } from '/@/components/RepositoryRow'
-import { A } from '@solidjs/router'
+import { A, useParams, useSearchParams } from '@solidjs/router'
 import { BsArrowLeftShort } from 'solid-icons/bs'
 import { Container } from '/@/libs/layout'
 import { vars } from '/@/theme'
@@ -348,6 +348,7 @@ const EmptyWebsite: WebsiteStruct = { signal: createSignal('') }
 const initialWebsiteStructs: WebsiteStruct[] = []
 
 export default () => {
+  const [searchParams, setSearchParams] = useSearchParams()
   const appsByRepo = () =>
     loaded() &&
     apps().applications.reduce((acc, app) => {
@@ -369,9 +370,9 @@ export default () => {
           <MainContentContainer>
             <RepositoriesContainer>
               {loaded() &&
-                repos().repositories.map((r) => (
-                  <RepositoryNameRow repo={r} apps={appsByRepo()[r.id] || []} onNewAppClick={Add} />
-                ))}
+                repos()
+                  .repositories.filter((r) => r.id === repositoryID)
+                  .map((r) => <RepositoryNameRow repo={r} apps={appsByRepo()[r.id] || []} onNewAppClick={Add} />)}
             </RepositoriesContainer>
             <InputFormContainer>
               <InputForm>
@@ -530,8 +531,9 @@ export default () => {
 
             <Button
               onclick={() => {
-                const [newWebsite, setNewWebsite] = createSignal(EmptyWebsite)
-                setWebsites((newWebsites) => [...newWebsites, newWebsite()])
+                console.log(repos().repositories.filter((r) => r.id !== repositoryID))
+                console.log(urlParams.get('repositoryID'))
+                console.log(searchParams)
               }}
               color='black1'
               size='large'
