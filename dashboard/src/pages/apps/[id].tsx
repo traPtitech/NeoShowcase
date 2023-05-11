@@ -111,7 +111,10 @@ export default () => {
   const refetchTimer = setInterval(refetchApp, 10000)
   onCleanup(() => clearInterval(refetchTimer))
 
+  const [disableRefresh, setDisableRefresh] = createSignal(false)
   const refreshRepo = async () => {
+    setDisableRefresh(true)
+    setTimeout(() => setDisableRefresh(false), 3000)
     await client.refreshRepository({ repositoryId: repo().id })
     await refetchApp()
   }
@@ -184,7 +187,7 @@ export default () => {
         <CardsContainer>
           <Card>
             <CardTitle>Actions</CardTitle>
-            <Button color='black1' size='large' onclick={refreshRepo}>
+            <Button color='black1' size='large' onclick={refreshRepo} disabled={disableRefresh()}>
               Refresh Commit
             </Button>
             <Show when={!app().running}>

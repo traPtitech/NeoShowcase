@@ -2,7 +2,7 @@ import { styled } from '@macaron-css/solid'
 import { vars } from '/@/theme'
 import { JSXElement } from 'solid-js'
 
-const Container = styled('div', {
+const Container = styled('button', {
   base: {
     display: 'flex',
     borderRadius: '4px',
@@ -17,6 +17,9 @@ const Container = styled('div', {
     color: {
       black1: {
         backgroundColor: vars.bg.black1,
+        '&:disabled': {
+          backgroundColor: vars.text.black4,
+        },
       },
     },
     size: {
@@ -51,16 +54,19 @@ export interface Props {
   children: JSXElement
   color: 'black1'
   size: 'large'
+  disabled?: boolean
   onclick?: () => void
 }
 
 export const Button = (props: Props) => {
+  const cursor = () => (props.onclick !== undefined && !props.disabled ? 'pointer' : 'none')
   return (
     <Container
       color={props.color}
       size={props.size}
-      cursor={props.onclick !== undefined ? 'pointer' : 'none'}
+      cursor={cursor()}
       onclick={props.onclick}
+      disabled={props.disabled}
     >
       <Text color={props.color} size={props.size}>
         {props.children}
