@@ -484,9 +484,9 @@ export default () => {
               </Button>
             </InputFormContainer>
 
-            <Button onclick={() => {}} color='black1' size='large'>
-              Debug
-            </Button>
+            {/*<Button onclick={() => {}} color='black1' size='large'>*/}
+            {/*  Debug*/}
+            {/*</Button>*/}
           </MainContentContainer>
         </ContentContainer>
       </>
