@@ -127,7 +127,7 @@ export default () => {
       return acc
     }, {} as Record<string, Application[]>)
 
-  const [selected, setSelected] = createSignal()
+  const [selected, setSelected] = createSignal('')
 
   return (
     <Container>
