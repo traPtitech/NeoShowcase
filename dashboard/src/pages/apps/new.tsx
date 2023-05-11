@@ -357,8 +357,15 @@ export default () => {
       return acc
     }, {} as Record<string, Application[]>)
 
+  const [repositoryID, setRepositoryID] = createSignal('')
   const urlParams = new URLSearchParams(window.location.search)
-  const repositoryID = urlParams.get('repositoryID')
+  setRepositoryID(urlParams.get('repositoryID'))
+  for (let step = 0; step < 5; step++) {
+    window.setTimeout(() => {
+      const urlParams = new URLSearchParams(window.location.search)
+      setRepositoryID(urlParams.get('repositoryID'))
+    }, step)
+  }
 
   const [buildConfigSelected, buildConfigSetSelected] = createSignal('')
   const [websites, setWebsites] = createSignal(initialWebsiteStructs)
@@ -371,7 +378,7 @@ export default () => {
             <RepositoriesContainer>
               {loaded() &&
                 repos()
-                  .repositories.filter((r) => r.id === repositoryID)
+                  .repositories.filter((r) => r.id === repositoryID())
                   .map((r) => <RepositoryNameRow repo={r} apps={appsByRepo()[r.id] || []} onNewAppClick={Add} />)}
             </RepositoriesContainer>
             <InputFormContainer>
@@ -382,7 +389,7 @@ export default () => {
 
               <InputForm>
                 <InputFormText>RepositoryID</InputFormText>
-                <InputBar placeholder={repositoryID ?? '6caba7b91ea72c05d8f65e'} />
+                <InputBar placeholder={repositoryID() ?? '6caba7b91ea72c05d8f65e'} />
               </InputForm>
 
               <InputForm>
@@ -529,15 +536,7 @@ export default () => {
               </Button>
             </InputFormContainer>
 
-            <Button
-              onclick={() => {
-                console.log(repos().repositories.filter((r) => r.id !== repositoryID))
-                console.log(urlParams.get('repositoryID'))
-                console.log(searchParams)
-              }}
-              color='black1'
-              size='large'
-            >
+            <Button onclick={() => {}} color='black1' size='large'>
               Debug
             </Button>
           </MainContentContainer>

@@ -202,9 +202,9 @@ export const RepositoryNameRow = ({ repo, apps, onNewAppClick }: NamedProps): JS
             {apps.length && <DiffHuman target={sortedApps[0].updatedAt.toDate()} />}
           </AppsCount>
         </HeaderLeft>
-        <AddBranchButton onclick={onNewAppClick}>
-          <div>Create&nbsp;App</div>
-        </AddBranchButton>
+        {/*<AddBranchButton onclick={onNewAppClick}>*/}
+        {/*  <div>Create&nbsp;App</div>*/}
+        {/*</AddBranchButton>*/}
       </Header>
     </Container>
   )
