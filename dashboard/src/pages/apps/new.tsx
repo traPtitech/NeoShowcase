@@ -332,7 +332,7 @@ const Websites = (props: WebsitesProps) => {
   return (
     <For each={props.websites}>
       {(website) => {
-        return <Website selected={website.signal[0]} setSelected={website.signal[1]}></Website>;
+        return <Website selected={website.signal[0]} setSelected={website.signal[1]} />
       }}
     </For>
   )
@@ -342,9 +342,9 @@ export type WebsiteStruct = {
   signal: Signal<string>
   // authenticationType: Accessor<string>
   // setAuthenticationType: Setter<string>
-};
+}
 
-const EmptyWebsite: WebsiteStruct = { signal: createSignal('') };
+const EmptyWebsite: WebsiteStruct = { signal: createSignal('') }
 const initialWebsiteStructs: WebsiteStruct[] = []
 
 export default () => {
@@ -401,7 +401,11 @@ export default () => {
                 <InputFormText>Build Config</InputFormText>
                 <InputFormRadio>
                   <InputForm>
-                    <Radio items={buildConfigItems} selected={buildConfigSelected} setSelected={buildConfigSetSelected} />
+                    <Radio
+                      items={buildConfigItems}
+                      selected={buildConfigSelected}
+                      setSelected={buildConfigSetSelected}
+                    />
                   </InputForm>
                   <Show when={buildConfigSelected() === buildConfigItems[0].value}>
                     <InputForm>
@@ -496,7 +500,8 @@ export default () => {
                       setWebsites((newWebsites) => {
                         newWebsites.pop()
                         return [...newWebsites]
-                      })}}
+                      })
+                    }}
                     color='black1'
                     size='large'
                   >
@@ -506,7 +511,7 @@ export default () => {
 
                 <For each={websites()}>
                   {(website) => {
-                    return <Website selected={website.signal[0]} setSelected={website.signal[1]}></Website>;
+                    return <Website selected={website.signal[0]} setSelected={website.signal[1]} />
                   }}
                 </For>
               </InputForm>
@@ -525,8 +530,8 @@ export default () => {
 
             <Button
               onclick={() => {
-                const [newWebsite, setNewWebsite] = createSignal(EmptyWebsite);
-                setWebsites((newWebsites) => [...newWebsites, newWebsite()]);
+                const [newWebsite, setNewWebsite] = createSignal(EmptyWebsite)
+                setWebsites((newWebsites) => [...newWebsites, newWebsite()])
               }}
               color='black1'
               size='large'
