@@ -47,6 +47,7 @@ const RepoName = styled('div', {
 
 const AppsCount = styled('div', {
   base: {
+    display: 'flex',
     fontSize: '11px',
     color: vars.text.black3,
   },
@@ -197,7 +198,7 @@ export const RepositoryNameRow = ({ repo, apps, onNewAppClick }: NamedProps): JS
             {providerToIcon(provider)}
             <RepoName>{repo.name}</RepoName>
             <AppsCount>
-              {apps.length && ` ${sortedApps[0].refName}/${sortedApps[0].currentCommit.slice(0, 7)}`}
+              {apps.length && ` ${sortedApps[0].refName}/${sortedApps[0].currentCommit.slice(0, 7)}・`}
               {apps.length && <DiffHuman target={sortedApps[0].updatedAt.toDate()} />}
             </AppsCount>
           </HeaderLeft>

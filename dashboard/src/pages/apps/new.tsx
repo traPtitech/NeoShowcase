@@ -49,6 +49,8 @@ const buildConfigItems: RadioItem[] = [
 const AppTitle = styled('div', {
   base: {
     marginTop: '48px',
+    height: '46px',
+    lineHeight: '46px',
 
     display: 'flex',
     flexDirection: 'row',
@@ -58,25 +60,19 @@ const AppTitle = styled('div', {
 
 const AppsTitle = styled('div', {
   base: {
-    display: 'flex',
-    flexDirection: 'row',
-    alignItems: 'center',
     fontSize: '32px',
     fontWeight: 700,
     color: vars.text.black1,
+    display: 'flex',
   },
 })
 
+
 const Arrow = styled('div', {
   base: {
-    display: 'flex',
-    flexDirection: 'row',
-    alignItems: 'center',
-
-    width: '320x',
-    height: '32',
-    fontWeight: 'bold',
+    fontSize: '32px',
     color: vars.text.black1,
+    display: 'flex',
   },
 })
 
@@ -163,18 +159,80 @@ const SearchBarContainer = styled('div', {
   },
 })
 
-const SearchBar = styled('input', {
+const InputFormContainer = styled('div', {
   base: {
-    padding: '12px 20px',
+    display: 'flex',
+    flexDirection: 'column',
+    gap: '12px',
+
+    background: vars.bg.white3,
+    border: `1px solid ${vars.bg.white4}`,
+    borderRadius: '4px',
+    padding: '8px 12px',
+  }
+})
+
+const InputForm = styled('div', {
+  base: {
+  },
+})
+
+const InputFormText = styled('div', {
+  base: {
+    fontSize: '16px',
+    alignItems: 'center',
+    fontWeight: 700,
+    color: vars.text.black1,
+
+    marginBottom: '4px',
+  }
+})
+
+const InputBar = styled('input', {
+  base: {
+    padding: '8px 12px',
     borderRadius: '4px',
     border: `1px solid ${vars.bg.white4}`,
     fontSize: '14px',
+    marginLeft: '4px',
+
+    width: '300px',
+
+    display: 'flex',
+    flexDirection: 'column',
 
     '::placeholder': {
       color: vars.text.black3,
     },
   },
 })
+
+const InputFormCheckBox = styled('div', {
+  base: {
+    background: vars.bg.white1,
+    border: `1px solid ${vars.bg.white4}`,
+    borderRadius: '4px',
+    marginLeft: '4px',
+    padding: '8px 12px',
+
+    width: '160px',
+  }
+})
+
+const InputFormRadio = styled('div', {
+  base: {
+    background: vars.bg.white2,
+    border: `1px solid ${vars.bg.white4}`,
+    borderRadius: '4px',
+    marginLeft: '4px',
+    padding: '8px 12px',
+
+    display: 'flex',
+    flexDirection: 'column',
+    gap: '12px',
+  }
+})
+
 styled('div', {
   base: {
     display: 'flex',
@@ -227,26 +285,149 @@ export default () => {
               {loaded() && repos().repositories.map((r) => <RepositoryNameRow repo={r} apps={appsByRepo()[r.id] || []}
                                                                               onNewAppClick={Add} />)}
             </RepositoriesContainer>
-            <h1>Application Config</h1>
-            <SearchBarContainer>
-              <SearchBar placeholder='Application Name' />
-              <SearchBar placeholder={repositoryID} />
-              <SearchBar placeholder='Ref name maintoka' />
-              <Checkbox>
-                MariaDB
-              </Checkbox>
-              <Checkbox>
-                MongoDB
-              </Checkbox>
-              <h2>build Config</h2>
+            <InputFormContainer>
+              <InputForm>
+                <InputFormText>Application Name</InputFormText>
+                <InputBar placeholder='name' />
+              </InputForm>
 
-              <Radio items={buildConfigItems} selected={selected} setSelected={setSelected} />
-              <SearchBar placeholder='Runtime_buildpack' />
+              <InputForm>
+                <InputFormText>RepositoryID</InputFormText>
+                <InputBar placeholder={repositoryID ?? "6caba7b91ea72c05d8f65e"} />
+              </InputForm>
+
+              <InputForm>
+                <InputFormText>Branch Name</InputFormText>
+                <InputBar placeholder='master' />
+              </InputForm>
+
+              <InputForm>
+                <InputFormText>Database (使うデーターベースにチェック)</InputFormText>
+                <InputFormCheckBox>
+                  <Checkbox>
+                    MariaDB
+                  </Checkbox>
+                  <Checkbox>
+                    MongoDB
+                  </Checkbox>
+                </InputFormCheckBox>
+              </InputForm>
+
+              <InputForm>
+                <InputFormText>Build Config</InputFormText>
+                <InputFormRadio>
+                  <InputForm>
+                    <Radio items={buildConfigItems} selected={selected} setSelected={setSelected} />
+                  </InputForm>
+                  <Show
+                  when={selected() == buildConfigItems[0].value}>
+                  <InputForm>
+                    <InputFormText>Context</InputFormText>
+                    <InputBar placeholder='context' />
+                  </InputForm>
+                  </Show>
+                  <Show
+                    when={selected() == buildConfigItems[1].value}>
+                    <InputForm>
+                      <InputFormText>Base image</InputFormText>
+                      <InputBar placeholder='base_image' />
+                    </InputForm>
+                    <InputForm>
+                      <InputFormText>Build cmd</InputFormText>
+                      <InputBar placeholder='build_cmd' />
+                    </InputForm>
+                    <InputForm>
+                      <InputFormText>Build cmd shell</InputFormText>
+                      <InputFormCheckBox>
+                        <Checkbox>
+                          build_cmd_shell
+                        </Checkbox>
+                      </InputFormCheckBox>
+                    </InputForm>
+                  </Show>
+                  <Show
+                    when={selected() == buildConfigItems[2].value}>
+                    <InputForm>
+                      <InputFormText>Dockerfile name</InputFormText>
+                      <InputBar placeholder='dockerfile_name' />
+                    </InputForm>
+                    <InputForm>
+                      <InputFormText>Context</InputFormText>
+                      <InputBar placeholder='context' />
+                    </InputForm>
+                  </Show>
+                  <Show
+                    when={selected() == buildConfigItems[3].value}>
+                    <InputForm>
+                      <InputFormText>Base image</InputFormText>
+                      <InputBar placeholder='base_image' />
+                    </InputForm>
+                    <InputForm>
+                      <InputFormText>Build cmd</InputFormText>
+                      <InputBar placeholder='build_cmd' />
+                    </InputForm>
+                    <InputForm>
+                      <InputFormText>Build cmd shell</InputFormText>
+                      <InputFormCheckBox>
+                        <Checkbox>
+                          build_cmd_shell
+                        </Checkbox>
+                      </InputFormCheckBox>
+                    </InputForm>
+                    <InputForm>
+                      <InputFormText>Artifact path</InputFormText>
+                      <InputBar placeholder='artifact_path' />
+                    </InputForm>
+                  </Show>
+                  <Show
+                    when={selected() == buildConfigItems[4].value}>
+                    <InputForm>
+                      <InputFormText>Dockerfile name</InputFormText>
+                      <InputBar placeholder='dockerfile_name' />
+                    </InputForm>
+                    <InputForm>
+                      <InputFormText>Context</InputFormText>
+                      <InputBar placeholder='context' />
+                    </InputForm>
+                    <InputForm>
+                      <InputFormText>Artifact path</InputFormText>
+                      <InputBar placeholder='artifact_path' />
+                    </InputForm>
+                  </Show>
+                </InputFormRadio>
+              </InputForm>
+
+              <InputForm>
+                <InputFormText>Runtime Buildpack</InputFormText>
+                <InputBar placeholder='Runtime_buildpack' />
+              </InputForm>
+
+              <InputForm>
+                <InputFormText>Create Website Request</InputFormText>
+                <InputBar placeholder='CreateWebsiteRequest' />
+              </InputForm>
+
+              <InputForm>
+                <InputFormText>Start on create</InputFormText>
+                <InputFormCheckBox>
+                  <Checkbox>
+                    start_on_create
+                  </Checkbox>
+                </InputFormCheckBox>
+              </InputForm>
 
               <Button color='black1' size='large'>
                 + Create new app
               </Button>
-            </SearchBarContainer>
+            </InputFormContainer>
+
+            <Button onclick={() => {
+              console.log(selected())
+              console.log(buildConfigItems[0])
+            }} color='black1' size='large'>
+              DEBUG
+            </Button>
+
             {/*<input*/}
             {/*  id="author"*/}
             {/*  value={"a"}*/}
@@ -279,8 +460,10 @@ export default () => {
     <Container>
       <Header />
       <AppTitle>
-        <Arrow><A href={'/apps'}><BsArrowLeftShort /></A></Arrow>
-        <AppsTitle>New app</AppsTitle>
+        <A href={'/apps'}>
+          <Arrow><BsArrowLeftShort /></Arrow>
+        </A>
+        <AppsTitle>Create Application</AppsTitle>
       </AppTitle>
 
       <Show
