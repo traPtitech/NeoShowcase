@@ -146,7 +146,7 @@ export const RepositoryRow = ({ repo, apps }: Props): JSXElement => {
         </HeaderLeft>
         <A href={`/apps/new?repositoryID=${repo.id}`}>
           <AddBranchButton>
-            <div>Create&nbsp;new&nbsp;app</div>
+            <div>New&nbsp;App</div>
           </AddBranchButton>
         </A>
       </Header>
