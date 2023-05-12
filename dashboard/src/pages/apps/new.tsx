@@ -308,7 +308,6 @@ export default () => {
   const [buildConfigSelected, buildConfigSetSelected] = createSignal('')
   const [websites, setWebsites] = createSignal(initialWebsiteStructs)
   const [searchParams, setSearchParams] = useSearchParams()
-  const repositoryID = searchParams.repositoryID
   const SelectRepository = (): JSX.Element => {
     return (
       <>
@@ -317,7 +316,7 @@ export default () => {
             <RepositoriesContainer>
               {loaded() &&
                 repos()
-                  .repositories.filter((r) => r.id === repositoryID)
+                  .repositories.filter((r) => r.id === searchParams.repositoryID)
                   .map((r) => <RepositoryNameRow repo={r} apps={appsByRepo()[r.id] || []} onNewAppClick={() => {}} />)}
             </RepositoriesContainer>
             <InputFormContainer>
@@ -328,7 +327,7 @@ export default () => {
 
               <InputForm>
                 <InputFormText>RepositoryID</InputFormText>
-                <InputBar placeholder={repositoryID ?? '6caba7b91ea72c05d8f65e'} />
+                <InputBar placeholder={searchParams.repositoryID ?? '6caba7b91ea72c05d8f65e'} />
               </InputForm>
 
               <InputForm>
