@@ -13,6 +13,7 @@ import (
 
 	"github.com/traPtitech/neoshowcase/pkg/domain"
 	"github.com/traPtitech/neoshowcase/pkg/util/coalesce"
+	"github.com/traPtitech/neoshowcase/pkg/util/ds"
 	"github.com/traPtitech/neoshowcase/pkg/util/loop"
 	"github.com/traPtitech/neoshowcase/pkg/util/optional"
 )
@@ -160,7 +161,7 @@ func (cd *continuousDeploymentService) registerBuilds(ctx context.Context) error
 	if err != nil {
 		return err
 	}
-	commits := lo.Map(applications, func(app *domain.Application, i int) string { return app.WantCommit })
+	commits := ds.Map(applications, func(app *domain.Application) string { return app.WantCommit })
 	builds, err := cd.buildRepo.GetBuilds(ctx, domain.GetBuildCondition{CommitIn: optional.From(commits)})
 	if err != nil {
 		return err
@@ -197,7 +198,7 @@ func (cd *continuousDeploymentService) startBuilds(ctx context.Context) error {
 	if err != nil {
 		return err
 	}
-	appIDs := lo.Map(builds, func(b *domain.Build, i int) string { return b.ApplicationID })
+	appIDs := ds.Map(builds, func(b *domain.Build) string { return b.ApplicationID })
 	apps, err := cd.appRepo.GetApplications(ctx, domain.GetApplicationCondition{IDIn: optional.From(appIDs)})
 	if err != nil {
 		return err
@@ -221,7 +222,7 @@ func (cd *continuousDeploymentService) detectBuildCrash(ctx context.Context) err
 	if err != nil {
 		return errors.Wrap(err, "failed to get running builds")
 	}
-	crashed := lo.Filter(builds, func(build *domain.Build, i int) bool {
+	crashed := lo.Filter(builds, func(build *domain.Build, _ int) bool {
 		return now.Sub(build.UpdatedAt.ValueOrZero()) > crashDetectThreshold
 	})
 	for _, build := range crashed {

@@ -5,12 +5,11 @@ import (
 
 	"github.com/bufbuild/connect-go"
 	"github.com/friendsofgo/errors"
-	"github.com/samber/lo"
 	"google.golang.org/protobuf/types/known/emptypb"
 
-	"github.com/traPtitech/neoshowcase/pkg/domain"
 	"github.com/traPtitech/neoshowcase/pkg/infrastructure/grpc/pb"
 	"github.com/traPtitech/neoshowcase/pkg/infrastructure/grpc/pbconvert"
+	"github.com/traPtitech/neoshowcase/pkg/util/ds"
 )
 
 func (s *APIService) GetBuilds(ctx context.Context, req *connect.Request[pb.ApplicationIdRequest]) (*connect.Response[pb.GetBuildsResponse], error) {
@@ -19,9 +18,7 @@ func (s *APIService) GetBuilds(ctx context.Context, req *connect.Request[pb.Appl
 		return nil, handleUseCaseError(err)
 	}
 	res := connect.NewResponse(&pb.GetBuildsResponse{
-		Builds: lo.Map(builds, func(build *domain.Build, i int) *pb.Build {
-			return pbconvert.ToPBBuild(build)
-		}),
+		Builds: ds.Map(builds, pbconvert.ToPBBuild),
 	})
 	return res, nil
 }

@@ -5,13 +5,13 @@ import (
 	"database/sql"
 
 	"github.com/friendsofgo/errors"
-	"github.com/samber/lo"
 	"github.com/volatiletech/sqlboiler/v4/boil"
 	"github.com/volatiletech/sqlboiler/v4/queries/qm"
 
 	"github.com/traPtitech/neoshowcase/pkg/domain"
 	"github.com/traPtitech/neoshowcase/pkg/infrastructure/repository/models"
 	"github.com/traPtitech/neoshowcase/pkg/infrastructure/repository/repoconvert"
+	"github.com/traPtitech/neoshowcase/pkg/util/ds"
 	"github.com/traPtitech/neoshowcase/pkg/util/optional"
 )
 
@@ -59,9 +59,7 @@ func (r *buildRepository) GetBuilds(ctx context.Context, cond domain.GetBuildCon
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to get builds")
 	}
-	return lo.Map(builds, func(b *models.Build, i int) *domain.Build {
-		return repoconvert.ToDomainBuild(b)
-	}), nil
+	return ds.Map(builds, repoconvert.ToDomainBuild), nil
 }
 
 func (r *buildRepository) GetBuild(ctx context.Context, buildID string) (*domain.Build, error) {

@@ -728,7 +728,7 @@ func GetActiveStaticSites(ctx context.Context, appRepo ApplicationRepository, bu
 		return nil, err
 	}
 
-	commits := lo.Map(applications, func(app *Application, i int) string { return app.CurrentCommit })
+	commits := ds.Map(applications, func(app *Application) string { return app.CurrentCommit })
 	builds, err := buildRepo.GetBuilds(ctx, GetBuildCondition{CommitIn: optional.From(commits), Status: optional.From(BuildStatusSucceeded)})
 	if err != nil {
 		return nil, err

@@ -1,10 +1,9 @@
 package repoconvert
 
 import (
-	"github.com/samber/lo"
-
 	"github.com/traPtitech/neoshowcase/pkg/domain"
 	"github.com/traPtitech/neoshowcase/pkg/infrastructure/repository/models"
+	"github.com/traPtitech/neoshowcase/pkg/util/ds"
 	"github.com/traPtitech/neoshowcase/pkg/util/mapper"
 	"github.com/traPtitech/neoshowcase/pkg/util/optional"
 )
@@ -46,7 +45,7 @@ func ToDomainRepository(repo *models.Repository) *domain.Repository {
 		ID:       repo.ID,
 		Name:     repo.Name,
 		URL:      repo.URL,
-		OwnerIDs: lo.Map(repo.R.Users, func(user *models.User, i int) string { return user.ID }),
+		OwnerIDs: ds.Map(repo.R.Users, func(user *models.User) string { return user.ID }),
 	}
 	if repo.R.RepositoryAuth != nil {
 		ret.Auth = optional.From(ToDomainRepositoryAuth(repo.R.RepositoryAuth))

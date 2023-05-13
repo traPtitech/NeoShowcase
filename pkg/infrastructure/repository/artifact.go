@@ -6,13 +6,13 @@ import (
 	"fmt"
 
 	"github.com/friendsofgo/errors"
-	"github.com/samber/lo"
 	"github.com/volatiletech/sqlboiler/v4/boil"
 	"github.com/volatiletech/sqlboiler/v4/queries/qm"
 
 	"github.com/traPtitech/neoshowcase/pkg/domain"
 	"github.com/traPtitech/neoshowcase/pkg/infrastructure/repository/models"
 	"github.com/traPtitech/neoshowcase/pkg/infrastructure/repository/repoconvert"
+	"github.com/traPtitech/neoshowcase/pkg/util/ds"
 	"github.com/traPtitech/neoshowcase/pkg/util/optional"
 )
 
@@ -54,9 +54,7 @@ func (r *artifactRepository) GetArtifacts(ctx context.Context, cond domain.GetAr
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to get artifacts")
 	}
-	return lo.Map(artifacts, func(a *models.Artifact, i int) *domain.Artifact {
-		return repoconvert.ToDomainArtifact(a)
-	}), nil
+	return ds.Map(artifacts, repoconvert.ToDomainArtifact), nil
 }
 
 func (r *artifactRepository) CreateArtifact(ctx context.Context, artifact *domain.Artifact) error {

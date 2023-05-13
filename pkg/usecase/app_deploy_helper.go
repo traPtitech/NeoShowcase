@@ -8,6 +8,7 @@ import (
 	"github.com/traPtitech/neoshowcase/pkg/domain"
 	"github.com/traPtitech/neoshowcase/pkg/domain/builder"
 	"github.com/traPtitech/neoshowcase/pkg/infrastructure/grpc/pb"
+	"github.com/traPtitech/neoshowcase/pkg/util/ds"
 	"github.com/traPtitech/neoshowcase/pkg/util/optional"
 )
 
@@ -39,7 +40,7 @@ func NewAppDeployHelper(
 }
 
 func (s *AppDeployHelper) _getEnv(ctx context.Context, apps []*domain.Application) (map[string]map[string]string, error) {
-	appIDs := lo.Map(apps, func(app *domain.Application, i int) string { return app.ID })
+	appIDs := ds.Map(apps, func(app *domain.Application) string { return app.ID })
 	envs, err := s.envRepo.GetEnv(ctx, domain.GetEnvCondition{ApplicationIDIn: optional.From(appIDs)})
 	if err != nil {
 		return nil, err
@@ -74,13 +75,13 @@ func (s *AppDeployHelper) _runtimeDesiredStates(ctx context.Context) ([]*domain.
 		return nil, err
 	}
 	buildExists := lo.SliceToMap(builds, func(b *domain.Build) (string, bool) { return b.ApplicationID + b.Commit, true })
-	syncableApps := lo.Filter(apps, func(app *domain.Application, i int) bool { return buildExists[app.ID+app.WantCommit] })
+	syncableApps := lo.Filter(apps, func(app *domain.Application, _ int) bool { return buildExists[app.ID+app.WantCommit] })
 
 	envs, err := s._getEnv(ctx, syncableApps)
 	if err != nil {
 		return nil, err
 	}
-	desiredStates := lo.Map(syncableApps, func(app *domain.Application, i int) *domain.RuntimeDesiredState {
+	desiredStates := ds.Map(syncableApps, func(app *domain.Application) *domain.RuntimeDesiredState {
 		return &domain.RuntimeDesiredState{
 			App:       app,
 			ImageName: s.image.FullImageName(app.ID),

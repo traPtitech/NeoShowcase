@@ -1,8 +1,6 @@
 package repoconvert
 
 import (
-	"github.com/samber/lo"
-
 	"github.com/traPtitech/neoshowcase/pkg/domain"
 	"github.com/traPtitech/neoshowcase/pkg/infrastructure/repository/models"
 	"github.com/traPtitech/neoshowcase/pkg/util/ds"
@@ -56,6 +54,6 @@ func ToDomainApplication(app *models.Application) *domain.Application {
 		Config:           ToDomainApplicationConfig(app.R.ApplicationConfig),
 		Websites:         ds.Map(app.R.Websites, ToDomainWebsite),
 		PortPublications: ds.Map(app.R.PortPublications, ToDomainPortPublication),
-		OwnerIDs:         lo.Map(app.R.Users, func(user *models.User, i int) string { return user.ID }),
+		OwnerIDs:         ds.Map(app.R.Users, func(user *models.User) string { return user.ID }),
 	}
 }

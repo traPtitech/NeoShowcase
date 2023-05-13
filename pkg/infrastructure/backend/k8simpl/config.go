@@ -121,7 +121,7 @@ func (c *Config) podSchedulingTolerations() []v1.Toleration {
 	if len(c.Scheduling.Tolerations) == 0 {
 		return nil
 	}
-	return lo.Map(c.Scheduling.Tolerations, func(t *toleration, _ int) v1.Toleration {
+	return ds.Map(c.Scheduling.Tolerations, func(t *toleration) v1.Toleration {
 		return v1.Toleration{
 			Key:               t.Key,
 			Operator:          tolerationOperatorMapper.IntoMust(t.Operator),

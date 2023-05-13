@@ -146,7 +146,7 @@ func (c *cleanerService) pruneImages(ctx context.Context, r *registry.Registry) 
 		app, ok := appsMap[appID]
 		var danglingTags []string
 		if ok {
-			danglingTags = lo.Reject(tags, func(tag string, i int) bool { return app.WantCommit == tag || app.CurrentCommit == tag })
+			danglingTags = lo.Reject(tags, func(tag string, _ int) bool { return app.WantCommit == tag || app.CurrentCommit == tag })
 		} else {
 			danglingTags = tags
 		}
