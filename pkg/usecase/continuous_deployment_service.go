@@ -222,7 +222,7 @@ func (cd *continuousDeploymentService) detectBuildCrash(ctx context.Context) err
 	if err != nil {
 		return errors.Wrap(err, "failed to get running builds")
 	}
-	crashed := lo.Filter(builds, func(build *domain.Build, i int) bool {
+	crashed := lo.Filter(builds, func(build *domain.Build, _ int) bool {
 		return now.Sub(build.UpdatedAt.ValueOrZero()) > crashDetectThreshold
 	})
 	for _, build := range crashed {

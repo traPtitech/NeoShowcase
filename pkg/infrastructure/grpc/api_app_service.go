@@ -78,7 +78,7 @@ func (s *APIService) UpdateApplication(ctx context.Context, req *connect.Request
 		websites = append(websites, pbconvert.FromPBCreateWebsiteRequest(createReq))
 	}
 	for _, deleteReq := range msg.DeleteWebsites {
-		websites = lo.Reject(websites, func(w *domain.Website, i int) bool { return w.ID == deleteReq.Id })
+		websites = lo.Reject(websites, func(w *domain.Website, _ int) bool { return w.ID == deleteReq.Id })
 	}
 
 	err = s.svc.UpdateApplication(ctx, msg.Id, &domain.UpdateApplicationArgs{

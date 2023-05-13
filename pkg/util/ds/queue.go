@@ -42,7 +42,7 @@ func (q *Queue[T]) DeleteIf(predicate func(elt T) bool) (deleted int) {
 	defer q.mutex.Unlock()
 
 	lenBefore := len(q.data)
-	q.data = lo.Filter(q.data, func(elt T, i int) bool {
+	q.data = lo.Filter(q.data, func(elt T, _ int) bool {
 		return !predicate(elt)
 	})
 	return lenBefore - len(q.data)
