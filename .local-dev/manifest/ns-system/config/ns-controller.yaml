@@ -34,7 +34,7 @@ k8s:
   imagePullSecret: ""
   resources:
     requests:
-      cpu: 50m
+      cpu: 10m
       memory: 50M
     limits:
       cpu: 1600m
