@@ -17,6 +17,7 @@ import (
 
 	"github.com/traPtitech/neoshowcase/pkg/domain"
 	"github.com/traPtitech/neoshowcase/pkg/domain/web"
+	"github.com/traPtitech/neoshowcase/pkg/util/mapper"
 )
 
 func (b *k8sBackend) runtimeService(app *domain.Application, website *domain.Website) *v1.Service {
@@ -37,6 +38,34 @@ func (b *k8sBackend) runtimeService(app *domain.Application, website *domain.Web
 				Protocol:   "TCP",
 				Port:       80,
 				TargetPort: intstr.FromInt(website.HTTPPort),
+			}},
+		},
+	}
+}
+
+var protocolMapper = mapper.MustNewValueMapper(map[domain.PortPublicationProtocol]v1.Protocol{
+	domain.PortPublicationProtocolTCP: v1.ProtocolTCP,
+	domain.PortPublicationProtocolUDP: v1.ProtocolUDP,
+})
+
+func (b *k8sBackend) runtimePortService(app *domain.Application, port *domain.PortPublication) *v1.Service {
+	return &v1.Service{
+		TypeMeta: metav1.TypeMeta{
+			Kind:       "Service",
+			APIVersion: "v1",
+		},
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      portServiceName(port),
+			Namespace: b.config.Namespace,
+			Labels:    b.appLabel(app.ID),
+		},
+		Spec: v1.ServiceSpec{
+			Type:     "LoadBalancer",
+			Selector: appSelector(app.ID),
+			Ports: []v1.ServicePort{{
+				Protocol:   protocolMapper.IntoMust(port.Protocol),
+				Port:       int32(port.InternetPort),
+				TargetPort: intstr.FromInt(port.ApplicationPort),
 			}},
 		},
 	}

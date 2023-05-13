@@ -29,6 +29,18 @@ func (b *k8sBackend) statefulSet(app *domain.RuntimeDesiredState) *appsv1.Statef
 	if app.App.Config.Command != "" {
 		cont.Args = app.App.Config.CommandArgs()
 	}
+	for _, website := range app.App.Websites {
+		cont.Ports = append(cont.Ports, v1.ContainerPort{
+			ContainerPort: int32(website.HTTPPort),
+			Protocol:      v1.ProtocolTCP,
+		})
+	}
+	for _, p := range app.App.PortPublications {
+		cont.Ports = append(cont.Ports, v1.ContainerPort{
+			ContainerPort: int32(p.ApplicationPort),
+			Protocol:      protocolMapper.IntoMust(p.Protocol),
+		})
+	}
 	ss := &appsv1.StatefulSet{
 		TypeMeta: metav1.TypeMeta{
 			Kind:       "StatefulSet",
@@ -76,6 +88,9 @@ func (b *k8sBackend) runtimeResources(next *resources, apps []*domain.RuntimeDes
 			next.middlewares = append(next.middlewares, mw...)
 			next.ingressRoutes = append(next.ingressRoutes, ingressRoute)
 			next.certificates = append(next.certificates, certs...)
+		}
+		for _, p := range app.App.PortPublications {
+			next.services = append(next.services, b.runtimePortService(app.App, p))
 		}
 	}
 }

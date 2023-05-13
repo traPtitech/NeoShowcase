@@ -164,6 +164,10 @@ func serviceName(website *domain.Website) string {
 	return fmt.Sprintf("nsapp-%s", website.ID)
 }
 
+func portServiceName(port *domain.PortPublication) string {
+	return fmt.Sprintf("nsapp-port-%s-%d", port.Protocol, port.InternetPort)
+}
+
 func stripMiddlewareName(website *domain.Website) string {
 	return serviceName(website) + "-strip"
 }
