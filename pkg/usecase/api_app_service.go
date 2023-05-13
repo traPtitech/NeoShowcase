@@ -46,8 +46,11 @@ func (s *APIServerService) CreateApplication(ctx context.Context, app *domain.Ap
 		return nil, errors.Wrap(err, "getting used ports")
 	}
 	valErr, err := app.Validate(ctx, web.GetUser(ctx), s.controller, domains, existingApps, ports, existingPorts)
+	if err != nil {
+		return nil, errors.Wrap(err, "validating application")
+	}
 	if valErr != nil {
-		return nil, newError(ErrorTypeBadRequest, "invalid application", err)
+		return nil, newError(ErrorTypeBadRequest, "invalid application", valErr)
 	}
 
 	// Create
@@ -187,8 +190,11 @@ func (s *APIServerService) UpdateApplication(ctx context.Context, id string, arg
 		return errors.Wrap(err, "getting used ports")
 	}
 	valErr, err := app.Validate(ctx, web.GetUser(ctx), s.controller, domains, existingApps, ports, existingPorts)
+	if err != nil {
+		return errors.Wrap(err, "validating application")
+	}
 	if valErr != nil {
-		return newError(ErrorTypeBadRequest, "invalid application", err)
+		return newError(ErrorTypeBadRequest, "invalid application", valErr)
 	}
 
 	return s.appRepo.UpdateApplication(ctx, id, args)
