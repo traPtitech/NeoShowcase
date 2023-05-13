@@ -1,5 +1,13 @@
 package ds
 
+func Map[T, U any](s []T, mapper func(item T) U) []U {
+	ret := make([]U, len(s))
+	for i := range s {
+		ret[i] = mapper(s[i])
+	}
+	return ret
+}
+
 func SliceOfPtr[T any](s []T) []*T {
 	ret := make([]*T, len(s))
 	for i := range s {

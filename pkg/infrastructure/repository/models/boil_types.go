@@ -104,6 +104,19 @@ func AllApplicationsContainer() []string {
 	}
 }
 
+// Enum values for AvailablePortsProtocol
+const (
+	AvailablePortsProtocolTCP string = "tcp"
+	AvailablePortsProtocolUDP string = "udp"
+)
+
+func AllAvailablePortsProtocol() []string {
+	return []string{
+		AvailablePortsProtocolTCP,
+		AvailablePortsProtocolUDP,
+	}
+}
+
 // Enum values for BuildsStatus
 const (
 	BuildsStatusBuilding  string = "building"
@@ -122,6 +135,19 @@ func AllBuildsStatus() []string {
 		BuildsStatusCanceled,
 		BuildsStatusQueued,
 		BuildsStatusSkipped,
+	}
+}
+
+// Enum values for PortPublicationsProtocol
+const (
+	PortPublicationsProtocolTCP string = "tcp"
+	PortPublicationsProtocolUDP string = "udp"
+)
+
+func AllPortPublicationsProtocol() []string {
+	return []string{
+		PortPublicationsProtocolTCP,
+		PortPublicationsProtocolUDP,
 	}
 }
 

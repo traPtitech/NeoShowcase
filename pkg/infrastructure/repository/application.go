@@ -30,6 +30,7 @@ func (r *applicationRepository) GetApplications(ctx context.Context, cond domain
 		qm.Load(models.ApplicationRels.ApplicationConfig),
 		qm.Load(models.ApplicationRels.Repository),
 		qm.Load(models.ApplicationRels.Websites),
+		qm.Load(models.ApplicationRels.PortPublications),
 		qm.Load(models.ApplicationRels.Users),
 	}
 
@@ -79,6 +80,7 @@ func (r *applicationRepository) getApplication(ctx context.Context, id string, f
 		qm.Load(models.ApplicationRels.ApplicationConfig),
 		qm.Load(models.ApplicationRels.Repository),
 		qm.Load(models.ApplicationRels.Websites),
+		qm.Load(models.ApplicationRels.PortPublications),
 		qm.Load(models.ApplicationRels.Users),
 	}
 	if forUpdate {
@@ -121,6 +123,11 @@ func (r *applicationRepository) CreateApplication(ctx context.Context, app *doma
 	}
 
 	err = r.setWebsites(ctx, tx, ma, app.Websites)
+	if err != nil {
+		return err
+	}
+
+	err = r.setPortPublications(ctx, tx, ma, app.PortPublications)
 	if err != nil {
 		return err
 	}
@@ -194,6 +201,12 @@ func (r *applicationRepository) UpdateApplication(ctx context.Context, id string
 			return err
 		}
 	}
+	if args.PortPublications.Valid {
+		err = r.setPortPublications(ctx, tx, app, args.PortPublications.V)
+		if err != nil {
+			return err
+		}
+	}
 	if args.OwnerIDs.Valid {
 		err = r.setOwners(ctx, tx, app, args.OwnerIDs.V)
 		if err != nil {
@@ -230,6 +243,10 @@ func (r *applicationRepository) DeleteApplication(ctx context.Context, id string
 	if err != nil {
 		return errors.Wrap(err, "failed to delete application owners")
 	}
+	_, err = app.R.PortPublications.DeleteAll(ctx, r.db)
+	if err != nil {
+		return errors.Wrap(err, "failed to delete port publications")
+	}
 	_, err = app.R.Websites.DeleteAll(ctx, r.db)
 	if err != nil {
 		return errors.Wrap(err, "failed to delete websites")
@@ -257,6 +274,23 @@ func (r *applicationRepository) setWebsites(ctx context.Context, ex boil.Context
 		err := mw.Insert(ctx, ex, boil.Blacklist())
 		if err != nil {
 			return errors.Wrap(err, "failed to insert website")
+		}
+	}
+	return nil
+}
+
+func (r *applicationRepository) setPortPublications(ctx context.Context, ex boil.ContextExecutor, app *models.Application, ports []*domain.PortPublication) error {
+	if app.R != nil && app.R.PortPublications != nil {
+		_, err := app.R.PortPublications.DeleteAll(ctx, ex)
+		if err != nil {
+			return errors.Wrap(err, "deleting existing port publications")
+		}
+	}
+	for _, p := range ports {
+		mp := repoconvert.FromDomainPortPublication(app.ID, p)
+		err := mp.Insert(ctx, ex, boil.Blacklist())
+		if err != nil {
+			return errors.Wrap(err, "inserting port publication")
 		}
 	}
 	return nil

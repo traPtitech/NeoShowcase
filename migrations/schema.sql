@@ -7,6 +7,16 @@ CREATE TABLE `available_domains`
   DEFAULT CHARSET = utf8mb4
   COLLATE = utf8mb4_general_ci COMMENT ='利用可能ドメインテーブル';
 
+CREATE TABLE `available_ports`
+(
+    `start_port` INT(11) NOT NULL COMMENT 'Start of port range (inclusive)',
+    `end_port` INT(11) NOT NULL COMMENT 'End of port range (exclusive)',
+    `protocol` ENUM ('tcp', 'udp') COMMENT 'Protocol',
+    PRIMARY KEY (`start_port`, `end_port`, `protocol`)
+) ENGINE = InnoDB
+  DEFAULT CHARSET = utf8mb4
+  COLLATE = utf8mb4_general_ci COMMENT = '利用可能ポートテーブル';
+
 CREATE TABLE `users`
 (
     `id`    CHAR(22)     NOT NULL COMMENT 'ユーザーID',
@@ -128,6 +138,18 @@ CREATE TABLE `websites`
 ) ENGINE = InnoDB
   DEFAULT CHARSET = utf8mb4
   COLLATE = utf8mb4_general_ci COMMENT ='Webサイトテーブル';
+
+CREATE TABLE `port_publications`
+(
+    `application_id` CHAR(22) NOT NULL COMMENT 'アプリケーションID',
+    `internet_port` INT(11) NOT NULL COMMENT '公開側ポート',
+    `application_port` INT(11) NOT NULL COMMENT 'アプリケーション側ポート',
+    `protocol` ENUM ('tcp', 'udp') COMMENT 'プロトコル',
+    PRIMARY KEY (`internet_port`, `protocol`),
+    CONSTRAINT `fk_port_publications_application_id` FOREIGN KEY (`application_id`) REFERENCES `applications` (`id`)
+) ENGINE = InnoDB
+  DEFAULT CHARSET = utf8mb4
+  COLLATE = utf8mb4_general_ci COMMENT = '公開ポートテーブル';
 
 CREATE TABLE `application_owners`
 (

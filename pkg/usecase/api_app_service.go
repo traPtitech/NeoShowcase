@@ -29,7 +29,7 @@ func (s *APIServerService) CreateApplication(ctx context.Context, app *domain.Ap
 	}
 
 	// Validate
-	existing, err := s.appRepo.GetApplications(ctx, domain.GetApplicationCondition{})
+	existingApps, err := s.appRepo.GetApplications(ctx, domain.GetApplicationCondition{})
 	if err != nil {
 		return nil, errors.Wrap(err, "getting existing applications")
 	}
@@ -37,7 +37,15 @@ func (s *APIServerService) CreateApplication(ctx context.Context, app *domain.Ap
 	if err != nil {
 		return nil, errors.Wrap(err, "getting available domains")
 	}
-	valErr, err := app.Validate(ctx, web.GetUser(ctx), existing, s.controller, domains)
+	ports, err := s.apRepo.GetAvailablePorts(ctx)
+	if err != nil {
+		return nil, errors.Wrap(err, "getting available ports")
+	}
+	existingPorts, err := s.apRepo.GetUsedPorts(ctx)
+	if err != nil {
+		return nil, errors.Wrap(err, "getting used ports")
+	}
+	valErr, err := app.Validate(ctx, web.GetUser(ctx), s.controller, domains, existingApps, ports, existingPorts)
 	if valErr != nil {
 		return nil, newError(ErrorTypeBadRequest, "invalid application", err)
 	}
@@ -162,7 +170,7 @@ func (s *APIServerService) UpdateApplication(ctx context.Context, id string, arg
 	app.Apply(args)
 
 	// Validate
-	existing, err := s.appRepo.GetApplications(ctx, domain.GetApplicationCondition{})
+	existingApps, err := s.appRepo.GetApplications(ctx, domain.GetApplicationCondition{})
 	if err != nil {
 		return errors.Wrap(err, "getting existing applications")
 	}
@@ -170,7 +178,15 @@ func (s *APIServerService) UpdateApplication(ctx context.Context, id string, arg
 	if err != nil {
 		return errors.Wrap(err, "getting available domains")
 	}
-	valErr, err := app.Validate(ctx, web.GetUser(ctx), existing, s.controller, domains)
+	ports, err := s.apRepo.GetAvailablePorts(ctx)
+	if err != nil {
+		return errors.Wrap(err, "getting available ports")
+	}
+	existingPorts, err := s.apRepo.GetUsedPorts(ctx)
+	if err != nil {
+		return errors.Wrap(err, "getting used ports")
+	}
+	valErr, err := app.Validate(ctx, web.GetUser(ctx), s.controller, domains, existingApps, ports, existingPorts)
 	if valErr != nil {
 		return newError(ErrorTypeBadRequest, "invalid application", err)
 	}
