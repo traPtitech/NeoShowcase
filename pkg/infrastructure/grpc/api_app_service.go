@@ -22,21 +22,19 @@ func (s *APIService) CreateApplication(ctx context.Context, req *connect.Request
 	now := time.Now()
 	config := pbconvert.FromPBApplicationConfig(msg.Config)
 	app := &domain.Application{
-		ID:            domain.NewID(),
-		Name:          msg.Name,
-		RepositoryID:  msg.RepositoryId,
-		RefName:       msg.RefName,
-		DeployType:    config.BuildConfig.BuildType().DeployType(),
-		Running:       msg.StartOnCreate,
-		Container:     domain.ContainerStateMissing,
-		CurrentCommit: domain.EmptyCommit,
-		WantCommit:    domain.EmptyCommit,
-		CreatedAt:     now,
-		UpdatedAt:     now,
-		Config:        config,
-		Websites: lo.Map(msg.Websites, func(website *pb.CreateWebsiteRequest, i int) *domain.Website {
-			return pbconvert.FromPBCreateWebsiteRequest(website)
-		}),
+		ID:               domain.NewID(),
+		Name:             msg.Name,
+		RepositoryID:     msg.RepositoryId,
+		RefName:          msg.RefName,
+		DeployType:       config.BuildConfig.BuildType().DeployType(),
+		Running:          msg.StartOnCreate,
+		Container:        domain.ContainerStateMissing,
+		CurrentCommit:    domain.EmptyCommit,
+		WantCommit:       domain.EmptyCommit,
+		CreatedAt:        now,
+		UpdatedAt:        now,
+		Config:           config,
+		Websites:         ds.Map(msg.Websites, pbconvert.FromPBCreateWebsiteRequest),
 		PortPublications: ds.Map(msg.PortPublications, pbconvert.FromPBPortPublication),
 		OwnerIDs:         []string{user.ID},
 	}
@@ -54,9 +52,7 @@ func (s *APIService) GetApplications(ctx context.Context, _ *connect.Request[emp
 		return nil, handleUseCaseError(err)
 	}
 	res := connect.NewResponse(&pb.GetApplicationsResponse{
-		Applications: lo.Map(applications, func(app *domain.Application, i int) *pb.Application {
-			return pbconvert.ToPBApplication(app)
-		}),
+		Applications: ds.Map(applications, pbconvert.ToPBApplication),
 	})
 	return res, nil
 }

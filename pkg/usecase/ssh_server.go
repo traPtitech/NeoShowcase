@@ -11,6 +11,7 @@ import (
 	log "github.com/sirupsen/logrus"
 
 	"github.com/traPtitech/neoshowcase/pkg/domain"
+	"github.com/traPtitech/neoshowcase/pkg/util/ds"
 	"github.com/traPtitech/neoshowcase/pkg/util/fig"
 	"github.com/traPtitech/neoshowcase/pkg/util/optional"
 )
@@ -105,7 +106,7 @@ func (s *sshServer) publicKeyHandler(ctx ssh.Context, key ssh.PublicKey) bool {
 
 	var eligibleUsers []string
 	eligibleUsers = append(eligibleUsers, app.OwnerIDs...)
-	eligibleUsers = append(eligibleUsers, lo.Map(admins, func(u *domain.User, _ int) string { return u.ID })...)
+	eligibleUsers = append(eligibleUsers, ds.Map(admins, func(u *domain.User) string { return u.ID })...)
 	keys, err := s.userRepo.GetUserKeys(ctx, domain.GetUserKeyCondition{UserIDs: optional.From(eligibleUsers)})
 	if err != nil {
 		log.Errorf("retrieving user keys of app id %v: %+v", appID, err)

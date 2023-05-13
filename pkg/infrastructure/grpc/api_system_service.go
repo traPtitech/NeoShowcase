@@ -4,7 +4,6 @@ import (
 	"context"
 
 	"github.com/bufbuild/connect-go"
-	"github.com/samber/lo"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/types/known/emptypb"
@@ -29,9 +28,7 @@ func (s *APIService) GetAvailableDomains(ctx context.Context, _ *connect.Request
 		return nil, status.Errorf(codes.Internal, "%v", err)
 	}
 	res := connect.NewResponse(&pb.AvailableDomains{
-		Domains: lo.Map(domains, func(ad *domain.AvailableDomain, i int) *pb.AvailableDomain {
-			return pbconvert.ToPBAvailableDomain(ad)
-		}),
+		Domains: ds.Map(domains, pbconvert.ToPBAvailableDomain),
 	})
 	return res, nil
 }

@@ -13,6 +13,7 @@ import (
 	"github.com/traPtitech/neoshowcase/pkg/domain"
 	"github.com/traPtitech/neoshowcase/pkg/infrastructure/repository/models"
 	"github.com/traPtitech/neoshowcase/pkg/infrastructure/repository/repoconvert"
+	"github.com/traPtitech/neoshowcase/pkg/util/ds"
 )
 
 type gitRepositoryRepository struct {
@@ -53,9 +54,7 @@ func (r *gitRepositoryRepository) GetRepositories(ctx context.Context, cond doma
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to get repositories")
 	}
-	return lo.Map(repos, func(repo *models.Repository, i int) *domain.Repository {
-		return repoconvert.ToDomainRepository(repo)
-	}), nil
+	return ds.Map(repos, repoconvert.ToDomainRepository), nil
 }
 
 func (r *gitRepositoryRepository) getRepository(ctx context.Context, ex boil.ContextExecutor, id string) (*models.Repository, error) {

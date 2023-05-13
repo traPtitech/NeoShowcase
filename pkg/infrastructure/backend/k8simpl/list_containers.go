@@ -4,11 +4,11 @@ import (
 	"context"
 
 	"github.com/friendsofgo/errors"
-	"github.com/samber/lo"
 	"k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
 	"github.com/traPtitech/neoshowcase/pkg/domain"
+	"github.com/traPtitech/neoshowcase/pkg/util/ds"
 )
 
 func (b *k8sBackend) GetContainer(ctx context.Context, appID string) (*domain.Container, error) {
@@ -39,7 +39,7 @@ func (b *k8sBackend) ListContainers(ctx context.Context) ([]*domain.Container, e
 		return nil, errors.Wrap(err, "failed to fetch pods")
 	}
 
-	result := lo.Map(list.Items, func(pod v1.Pod, i int) *domain.Container {
+	result := ds.Map(list.Items, func(pod v1.Pod) *domain.Container {
 		return &domain.Container{
 			ApplicationID: pod.Labels[appIDLabel],
 			State:         getContainerState(pod.Status),

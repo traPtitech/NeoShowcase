@@ -6,12 +6,12 @@ import (
 	"fmt"
 
 	"github.com/friendsofgo/errors"
-	"github.com/samber/lo"
 	"github.com/volatiletech/sqlboiler/v4/boil"
 
 	"github.com/traPtitech/neoshowcase/pkg/domain"
 	"github.com/traPtitech/neoshowcase/pkg/infrastructure/repository/models"
 	"github.com/traPtitech/neoshowcase/pkg/infrastructure/repository/repoconvert"
+	"github.com/traPtitech/neoshowcase/pkg/util/ds"
 )
 
 type availableDomainRepository struct {
@@ -29,9 +29,7 @@ func (r *availableDomainRepository) GetAvailableDomains(ctx context.Context) (do
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to get available domains")
 	}
-	dDomains := lo.Map(domains, func(ad *models.AvailableDomain, i int) *domain.AvailableDomain {
-		return repoconvert.ToDomainAvailableDomain(ad)
-	})
+	dDomains := ds.Map(domains, repoconvert.ToDomainAvailableDomain)
 	return dDomains, nil
 }
 

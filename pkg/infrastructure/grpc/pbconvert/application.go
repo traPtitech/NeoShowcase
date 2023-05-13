@@ -1,11 +1,11 @@
 package pbconvert
 
 import (
-	"github.com/samber/lo"
 	"google.golang.org/protobuf/types/known/timestamppb"
 
 	"github.com/traPtitech/neoshowcase/pkg/domain"
 	"github.com/traPtitech/neoshowcase/pkg/infrastructure/grpc/pb"
+	"github.com/traPtitech/neoshowcase/pkg/util/ds"
 	"github.com/traPtitech/neoshowcase/pkg/util/mapper"
 )
 
@@ -37,9 +37,7 @@ func ToPBApplication(app *domain.Application) *pb.Application {
 		CreatedAt:     timestamppb.New(app.CreatedAt),
 		UpdatedAt:     timestamppb.New(app.UpdatedAt),
 		Config:        ToPBApplicationConfig(app.Config),
-		Websites: lo.Map(app.Websites, func(website *domain.Website, i int) *pb.Website {
-			return ToPBWebsite(website)
-		}),
-		OwnerIds: app.OwnerIDs,
+		Websites:      ds.Map(app.Websites, ToPBWebsite),
+		OwnerIds:      app.OwnerIDs,
 	}
 }

@@ -4,13 +4,12 @@ import (
 	"context"
 
 	"github.com/bufbuild/connect-go"
-	"github.com/samber/lo"
 	"google.golang.org/protobuf/types/known/emptypb"
 
-	"github.com/traPtitech/neoshowcase/pkg/domain"
 	"github.com/traPtitech/neoshowcase/pkg/domain/web"
 	"github.com/traPtitech/neoshowcase/pkg/infrastructure/grpc/pb"
 	"github.com/traPtitech/neoshowcase/pkg/infrastructure/grpc/pbconvert"
+	"github.com/traPtitech/neoshowcase/pkg/util/ds"
 )
 
 func (s *APIService) GetMe(ctx context.Context, _ *connect.Request[emptypb.Empty]) (*connect.Response[pb.User], error) {
@@ -34,7 +33,7 @@ func (s *APIService) GetUserKeys(ctx context.Context, _ *connect.Request[emptypb
 		return nil, handleUseCaseError(err)
 	}
 	res := connect.NewResponse(&pb.GetUserKeysResponse{
-		Keys: lo.Map(keys, func(key *domain.UserKey, _ int) *pb.UserKey { return pbconvert.ToPBUserKey(key) }),
+		Keys: ds.Map(keys, pbconvert.ToPBUserKey),
 	})
 	return res, nil
 }

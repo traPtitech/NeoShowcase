@@ -5,13 +5,13 @@ import (
 	"database/sql"
 
 	"github.com/friendsofgo/errors"
-	"github.com/samber/lo"
 	"github.com/volatiletech/sqlboiler/v4/boil"
 	"github.com/volatiletech/sqlboiler/v4/queries/qm"
 
 	"github.com/traPtitech/neoshowcase/pkg/domain"
 	"github.com/traPtitech/neoshowcase/pkg/infrastructure/repository/models"
 	"github.com/traPtitech/neoshowcase/pkg/infrastructure/repository/repoconvert"
+	"github.com/traPtitech/neoshowcase/pkg/util/ds"
 )
 
 type environmentRepository struct {
@@ -41,9 +41,7 @@ func (r *environmentRepository) GetEnv(ctx context.Context, cond domain.GetEnvCo
 	if err != nil {
 		return nil, err
 	}
-	return lo.Map(environments, func(env *models.Environment, i int) *domain.Environment {
-		return repoconvert.ToDomainEnvironment(env)
-	}), nil
+	return ds.Map(environments, repoconvert.ToDomainEnvironment), nil
 }
 
 func (r *environmentRepository) SetEnv(ctx context.Context, env *domain.Environment) error {

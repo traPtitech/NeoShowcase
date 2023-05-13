@@ -4,13 +4,13 @@ import (
 	"context"
 
 	"github.com/bufbuild/connect-go"
-	"github.com/samber/lo"
 	"google.golang.org/protobuf/types/known/emptypb"
 
 	"github.com/traPtitech/neoshowcase/pkg/domain"
 	"github.com/traPtitech/neoshowcase/pkg/domain/web"
 	"github.com/traPtitech/neoshowcase/pkg/infrastructure/grpc/pb"
 	"github.com/traPtitech/neoshowcase/pkg/infrastructure/grpc/pbconvert"
+	"github.com/traPtitech/neoshowcase/pkg/util/ds"
 	"github.com/traPtitech/neoshowcase/pkg/util/optional"
 )
 
@@ -38,9 +38,7 @@ func (s *APIService) GetRepositories(ctx context.Context, _ *connect.Request[emp
 		return nil, handleUseCaseError(err)
 	}
 	res := connect.NewResponse(&pb.GetRepositoriesResponse{
-		Repositories: lo.Map(repositories, func(repo *domain.Repository, i int) *pb.Repository {
-			return pbconvert.ToPBRepository(repo)
-		}),
+		Repositories: ds.Map(repositories, pbconvert.ToPBRepository),
 	})
 	return res, nil
 }

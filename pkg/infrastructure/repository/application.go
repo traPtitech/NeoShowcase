@@ -13,6 +13,7 @@ import (
 	"github.com/traPtitech/neoshowcase/pkg/domain"
 	"github.com/traPtitech/neoshowcase/pkg/infrastructure/repository/models"
 	"github.com/traPtitech/neoshowcase/pkg/infrastructure/repository/repoconvert"
+	"github.com/traPtitech/neoshowcase/pkg/util/ds"
 )
 
 type applicationRepository struct {
@@ -69,9 +70,7 @@ func (r *applicationRepository) GetApplications(ctx context.Context, cond domain
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to get applications")
 	}
-	return lo.Map(applications, func(app *models.Application, i int) *domain.Application {
-		return repoconvert.ToDomainApplication(app)
-	}), nil
+	return ds.Map(applications, repoconvert.ToDomainApplication), nil
 }
 
 func (r *applicationRepository) getApplication(ctx context.Context, id string, forUpdate bool, ex boil.ContextExecutor) (*models.Application, error) {

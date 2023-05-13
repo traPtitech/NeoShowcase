@@ -8,9 +8,9 @@ import (
 	"github.com/docker/docker/api/types"
 	"github.com/docker/docker/api/types/filters"
 	"github.com/friendsofgo/errors"
-	"github.com/samber/lo"
 
 	"github.com/traPtitech/neoshowcase/pkg/domain"
+	"github.com/traPtitech/neoshowcase/pkg/util/ds"
 )
 
 func (b *dockerBackend) GetContainer(ctx context.Context, appID string) (*domain.Container, error) {
@@ -48,7 +48,7 @@ func (b *dockerBackend) ListContainers(ctx context.Context) ([]*domain.Container
 		return nil, errors.Wrap(err, "failed to fetch containers")
 	}
 
-	result := lo.Map(containers, func(c types.Container, i int) *domain.Container {
+	result := ds.Map(containers, func(c types.Container) *domain.Container {
 		return &domain.Container{
 			ApplicationID: c.Labels[appIDLabel],
 			State:         getContainerState(&c),

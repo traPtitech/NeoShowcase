@@ -5,13 +5,13 @@ import (
 	"database/sql"
 
 	"github.com/friendsofgo/errors"
-	"github.com/samber/lo"
 	"github.com/volatiletech/sqlboiler/v4/boil"
 	"github.com/volatiletech/sqlboiler/v4/queries/qm"
 
 	"github.com/traPtitech/neoshowcase/pkg/domain"
 	"github.com/traPtitech/neoshowcase/pkg/infrastructure/repository/models"
 	"github.com/traPtitech/neoshowcase/pkg/infrastructure/repository/repoconvert"
+	"github.com/traPtitech/neoshowcase/pkg/util/ds"
 )
 
 type userRepository struct {
@@ -35,9 +35,7 @@ func (r *userRepository) GetUsers(ctx context.Context, cond domain.GetUserCondit
 	if err != nil {
 		return nil, errors.Wrap(err, "getting users")
 	}
-	return lo.Map(users, func(u *models.User, _ int) *domain.User {
-		return repoconvert.ToDomainUser(u)
-	}), nil
+	return ds.Map(users, repoconvert.ToDomainUser), nil
 }
 
 func (r *userRepository) GetOrCreateUser(ctx context.Context, name string) (*domain.User, error) {
@@ -83,9 +81,7 @@ func (r *userRepository) GetUserKeys(ctx context.Context, cond domain.GetUserKey
 	if err != nil {
 		return nil, errors.Wrap(err, "getting user keys")
 	}
-	return lo.Map(keys, func(key *models.UserKey, _ int) *domain.UserKey {
-		return repoconvert.ToDomainUserKey(key)
-	}), nil
+	return ds.Map(keys, repoconvert.ToDomainUserKey), nil
 }
 
 func (r *userRepository) CreateUserKey(ctx context.Context, key *domain.UserKey) error {

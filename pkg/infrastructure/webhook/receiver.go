@@ -6,11 +6,11 @@ import (
 	"path"
 
 	"github.com/labstack/echo/v4"
-	"github.com/samber/lo"
 	log "github.com/sirupsen/logrus"
 
 	"github.com/traPtitech/neoshowcase/pkg/domain"
 	"github.com/traPtitech/neoshowcase/pkg/usecase"
+	"github.com/traPtitech/neoshowcase/pkg/util/ds"
 	"github.com/traPtitech/neoshowcase/pkg/util/optional"
 )
 
@@ -66,6 +66,6 @@ func (r *Receiver) updateURLs(urls []string) {
 	if len(repos) == 0 {
 		return
 	}
-	ids := lo.Map(repos, func(repo *domain.Repository, _ int) string { return repo.ID })
+	ids := ds.Map(repos, func(repo *domain.Repository) string { return repo.ID })
 	r.fetcher.Fetch(ids)
 }

@@ -5,12 +5,12 @@ import (
 	"time"
 
 	"github.com/bufbuild/connect-go"
-	"github.com/samber/lo"
 	"google.golang.org/protobuf/types/known/emptypb"
 
 	"github.com/traPtitech/neoshowcase/pkg/domain"
 	"github.com/traPtitech/neoshowcase/pkg/infrastructure/grpc/pb"
 	"github.com/traPtitech/neoshowcase/pkg/infrastructure/grpc/pbconvert"
+	"github.com/traPtitech/neoshowcase/pkg/util/ds"
 )
 
 func (s *APIService) GetEnvVars(ctx context.Context, req *connect.Request[pb.ApplicationIdRequest]) (*connect.Response[pb.ApplicationEnvVars], error) {
@@ -19,9 +19,7 @@ func (s *APIService) GetEnvVars(ctx context.Context, req *connect.Request[pb.App
 		return nil, handleUseCaseError(err)
 	}
 	res := connect.NewResponse(&pb.ApplicationEnvVars{
-		Variables: lo.Map(environments, func(env *domain.Environment, i int) *pb.ApplicationEnvVar {
-			return pbconvert.ToPBEnvironment(env)
-		}),
+		Variables: ds.Map(environments, pbconvert.ToPBEnvironment),
 	})
 	return res, nil
 }
@@ -47,9 +45,7 @@ func (s *APIService) GetOutput(ctx context.Context, req *connect.Request[pb.GetO
 		return nil, handleUseCaseError(err)
 	}
 	res := connect.NewResponse(&pb.GetOutputResponse{
-		Outputs: lo.Map(logs, func(l *domain.ContainerLog, i int) *pb.ApplicationOutput {
-			return pbconvert.ToPBApplicationOutput(l)
-		}),
+		Outputs: ds.Map(logs, pbconvert.ToPBApplicationOutput),
 	})
 	return res, nil
 }
