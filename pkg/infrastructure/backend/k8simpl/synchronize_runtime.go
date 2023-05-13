@@ -1,6 +1,7 @@
 package k8simpl
 
 import (
+	"fmt"
 	"time"
 
 	"github.com/samber/lo"
@@ -41,6 +42,7 @@ func (b *k8sBackend) statefulSet(app *domain.RuntimeDesiredState) *appsv1.Statef
 			Protocol:      protocolMapper.IntoMust(p.Protocol),
 		})
 	}
+	cont.Ports = lo.UniqBy(cont.Ports, func(port v1.ContainerPort) string { return fmt.Sprintf("%d/%s", port.ContainerPort, port.Protocol) })
 	ss := &appsv1.StatefulSet{
 		TypeMeta: metav1.TypeMeta{
 			Kind:       "StatefulSet",
