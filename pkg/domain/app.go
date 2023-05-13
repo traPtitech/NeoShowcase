@@ -211,9 +211,10 @@ type Application struct {
 	CreatedAt     time.Time
 	UpdatedAt     time.Time
 
-	Config   ApplicationConfig
-	Websites []*Website
-	OwnerIDs []string
+	Config           ApplicationConfig
+	Websites         []*Website
+	PortPublications []*PortPublication
+	OwnerIDs         []string
 }
 
 func (a *Application) SelfValidate() error {
@@ -234,6 +235,11 @@ func (a *Application) SelfValidate() error {
 			return errors.Wrap(err, "invalid website")
 		}
 	}
+	for _, p := range a.PortPublications {
+		if err := p.Validate(); err != nil {
+			return errors.Wrap(err, "invalid port publication")
+		}
+	}
 	if len(a.OwnerIDs) == 0 {
 		return errors.New("owner_ids cannot be empty")
 	}
@@ -243,9 +249,10 @@ func (a *Application) SelfValidate() error {
 func (a *Application) Validate(
 	ctx context.Context,
 	actor *User,
-	existing []*Application,
 	controller ControllerServiceClient,
+	existingApps []*Application,
 	domains AvailableDomainSlice,
+	ports AvailablePortSlice,
 ) (validateErr error, err error) {
 	if err = a.SelfValidate(); err != nil {
 		return err, nil
@@ -270,8 +277,20 @@ func (a *Application) Validate(
 		}
 	}
 
-	if a.WebsiteConflicts(existing, actor) {
+	// exclude self if contained
+	existingApps = lo.Filter(existingApps, func(app *Application, _ int) bool { return app.ID != a.ID })
+
+	if a.WebsiteConflicts(existingApps, actor) {
 		return errors.New("website conflict"), nil
+	}
+
+	for _, p := range a.PortPublications {
+		if !ports.IsAvailable(p.InternetPort, p.Protocol) {
+			return errors.Errorf("port %d/%s not available", p.InternetPort, p.Protocol), nil
+		}
+		if p.ConflictsWith(existingApps) {
+			return errors.Errorf("port %d/%s conflicts with existing port publication", p.InternetPort, p.Protocol), nil
+		}
 	}
 
 	return nil, nil
@@ -365,6 +384,52 @@ func (s AvailableDomainSlice) IsAvailable(fqdn string) bool {
 		}
 	}
 	return false
+}
+
+type PortPublicationProtocol string
+
+const (
+	PortPublicationProtocolTCP PortPublicationProtocol = "tcp"
+	PortPublicationProtocolUDP PortPublicationProtocol = "udp"
+)
+
+type AvailablePort struct {
+	StartPort int
+	EndPort   int
+	Protocol  PortPublicationProtocol
+}
+
+type AvailablePortSlice []*AvailablePort
+
+func isValidPort(port int) error {
+	if !(0 <= port && port < 65536) {
+		return errors.New("invalid port (needs to be within 0 to 65535)")
+	}
+	return nil
+}
+
+func (ap *AvailablePort) Validate() error {
+	if err := isValidPort(ap.StartPort); err != nil {
+		return errors.Wrap(err, "invalid start port")
+	}
+	if err := isValidPort(ap.EndPort); err != nil {
+		return errors.Wrap(err, "invalid end port")
+	}
+	if ap.EndPort < ap.StartPort {
+		return errors.New("end port comes before start port")
+	}
+	return nil
+}
+
+func (s AvailablePortSlice) IsAvailable(port int, protocol PortPublicationProtocol) bool {
+	return lo.ContainsBy(s, func(ap *AvailablePort) bool {
+		return ap.Protocol == protocol && ap.StartPort <= port && port <= ap.EndPort
+	})
+}
+
+type UnavailablePort struct {
+	Port     int
+	Protocol PortPublicationProtocol
 }
 
 type BuildStatus int
@@ -532,8 +597,8 @@ func (w *Website) Validate() error {
 	if u.EscapedPath() != w.PathPrefix {
 		return errors.New("invalid path: either not escaped or contains non-path elements")
 	}
-	if !(0 <= w.HTTPPort && w.HTTPPort < 65536) {
-		return errors.New("invalid port number (requires 0 ~ 65535)")
+	if err = isValidPort(w.HTTPPort); err != nil {
+		return errors.Wrap(err, "invalid http port")
 	}
 	return nil
 }
@@ -589,6 +654,37 @@ func (a *Application) WebsiteConflicts(existing []*Application, actor *User) boo
 		}
 	}
 	return false
+}
+
+type PortPublication struct {
+	InternetPort    int
+	ApplicationPort int
+	Protocol        PortPublicationProtocol
+}
+
+func (p *PortPublication) Validate() error {
+	if err := isValidPort(p.InternetPort); err != nil {
+		return errors.Wrap(err, "invalid internet port")
+	}
+	if err := isValidPort(p.ApplicationPort); err != nil {
+		return errors.Wrap(err, "invalid application port")
+	}
+	return nil
+}
+
+func (p *PortPublication) ToUnavailablePort() *UnavailablePort {
+	return &UnavailablePort{
+		Port:     p.InternetPort,
+		Protocol: p.Protocol,
+	}
+}
+
+func (p *PortPublication) ConflictsWith(existing []*Application) bool {
+	return lo.ContainsBy(existing, func(app *Application) bool {
+		return lo.ContainsBy(app.PortPublications, func(used *PortPublication) bool {
+			return used.InternetPort == p.InternetPort && used.Protocol == p.Protocol
+		})
+	})
 }
 
 func GetArtifactsInUse(ctx context.Context, appRepo ApplicationRepository, buildRepo BuildRepository) ([]*Artifact, error) {

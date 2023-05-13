@@ -5,6 +5,7 @@ import (
 
 	"github.com/traPtitech/neoshowcase/pkg/domain"
 	"github.com/traPtitech/neoshowcase/pkg/infrastructure/repository/models"
+	"github.com/traPtitech/neoshowcase/pkg/util/ds"
 	"github.com/traPtitech/neoshowcase/pkg/util/mapper"
 )
 
@@ -52,8 +53,9 @@ func ToDomainApplication(app *models.Application) *domain.Application {
 		CreatedAt:     app.CreatedAt,
 		UpdatedAt:     app.UpdatedAt,
 
-		Config:   ToDomainApplicationConfig(app.R.ApplicationConfig),
-		Websites: lo.Map(app.R.Websites, func(website *models.Website, i int) *domain.Website { return ToDomainWebsite(website) }),
-		OwnerIDs: lo.Map(app.R.Users, func(user *models.User, i int) string { return user.ID }),
+		Config:           ToDomainApplicationConfig(app.R.ApplicationConfig),
+		Websites:         ds.Map(app.R.Websites, ToDomainWebsite),
+		PortPublications: ds.Map(app.R.PortPublications, ToDomainPortPublication),
+		OwnerIDs:         lo.Map(app.R.Users, func(user *models.User, i int) string { return user.ID }),
 	}
 }

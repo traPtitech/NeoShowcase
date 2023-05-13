@@ -164,6 +164,17 @@ message DeleteWebsiteRequest {
   string id = 1;
 }
 
+enum PortPublicationProtocol {
+  TCP = 0;
+  UDP = 1;
+}
+
+message PortPublication {
+  int32 internet_port = 1;
+  int32 application_port = 2;
+  PortPublicationProtocol protocol = 3;
+}
+
 message Application {
   enum ContainerState {
     MISSING = 0;
@@ -186,7 +197,8 @@ message Application {
   google.protobuf.Timestamp updated_at = 11;
   ApplicationConfig config = 12;
   repeated Website websites = 13;
-  repeated string owner_ids = 14;
+  repeated PortPublication port_publications = 14;
+  repeated string owner_ids = 15;
 }
 
 message CreateApplicationRequest {
@@ -195,7 +207,8 @@ message CreateApplicationRequest {
   string ref_name = 3;
   ApplicationConfig config = 4;
   repeated CreateWebsiteRequest websites = 5;
-  bool start_on_create = 6;
+  repeated PortPublication port_publications = 6;
+  bool start_on_create = 7;
 }
 
 message UpdateApplicationRequest {
@@ -205,7 +218,8 @@ message UpdateApplicationRequest {
   UpdateApplicationConfigRequest config = 4;
   repeated CreateWebsiteRequest new_websites = 5;
   repeated DeleteWebsiteRequest delete_websites = 6;
-  repeated string owner_ids = 7;
+  repeated PortPublication port_publications = 7;
+  repeated string owner_ids = 8;
 }
 
 message AvailableDomain {
@@ -215,6 +229,22 @@ message AvailableDomain {
 
 message AvailableDomains {
   repeated AvailableDomain domains = 1;
+}
+
+message AvailablePort {
+  int32 start_port = 1;
+  int32 end_port = 2;
+  PortPublicationProtocol protocol = 3;
+}
+
+message UnavailablePort {
+  int32 port = 1;
+  PortPublicationProtocol protocol = 2;
+}
+
+message AvailablePorts {
+  repeated AvailablePort available_ports = 1;
+  repeated UnavailablePort unavailable_ports = 2;
 }
 
 message ApplicationEnvVar {
@@ -331,6 +361,10 @@ service APIService {
   rpc GetAvailableDomains(google.protobuf.Empty) returns (AvailableDomains);
   // AddAvailableDomain 使用可能なドメインを登録します（admin only）
   rpc AddAvailableDomain(AvailableDomain) returns (google.protobuf.Empty);
+  // GetAvailablePorts 使用可能なポート一覧を取得します
+  rpc GetAvailablePorts(google.protobuf.Empty) returns (AvailablePorts);
+  // AddAvailablePorts 使用可能なポートを登録します（admin only）
+  rpc AddAvailablePort(AvailablePort) returns (google.protobuf.Empty);
 
   // User
 

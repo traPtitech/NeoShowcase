@@ -12,6 +12,7 @@ import (
 	"github.com/traPtitech/neoshowcase/pkg/domain/web"
 	"github.com/traPtitech/neoshowcase/pkg/infrastructure/grpc/pb"
 	"github.com/traPtitech/neoshowcase/pkg/infrastructure/grpc/pbconvert"
+	"github.com/traPtitech/neoshowcase/pkg/util/ds"
 	"github.com/traPtitech/neoshowcase/pkg/util/optional"
 )
 
@@ -36,7 +37,8 @@ func (s *APIService) CreateApplication(ctx context.Context, req *connect.Request
 		Websites: lo.Map(msg.Websites, func(website *pb.CreateWebsiteRequest, i int) *domain.Website {
 			return pbconvert.FromPBCreateWebsiteRequest(website)
 		}),
-		OwnerIDs: []string{user.ID},
+		PortPublications: ds.Map(msg.PortPublications, pbconvert.FromPBPortPublication),
+		OwnerIDs:         []string{user.ID},
 	}
 	app, err := s.svc.CreateApplication(ctx, app)
 	if err != nil {
@@ -94,8 +96,9 @@ func (s *APIService) UpdateApplication(ctx context.Context, req *connect.Request
 			Entrypoint:  msg.Config.Entrypoint,
 			Command:     msg.Config.Command,
 		}),
-		Websites: optional.From(websites),
-		OwnerIDs: optional.From(msg.OwnerIds),
+		Websites:         optional.From(websites),
+		PortPublications: optional.From(ds.Map(msg.PortPublications, pbconvert.FromPBPortPublication)),
+		OwnerIDs:         optional.From(msg.OwnerIds),
 	})
 	if err != nil {
 		return nil, handleUseCaseError(err)

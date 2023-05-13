@@ -54,6 +54,26 @@ proto3.util.setEnumType(AuthenticationType, "neoshowcase.protobuf.Authentication
 ]);
 
 /**
+ * @generated from enum neoshowcase.protobuf.PortPublicationProtocol
+ */
+export enum PortPublicationProtocol {
+  /**
+   * @generated from enum value: TCP = 0;
+   */
+  TCP = 0,
+
+  /**
+   * @generated from enum value: UDP = 1;
+   */
+  UDP = 1,
+}
+// Retrieve enum metadata with: proto3.getEnumType(PortPublicationProtocol)
+proto3.util.setEnumType(PortPublicationProtocol, "neoshowcase.protobuf.PortPublicationProtocol", [
+  { no: 0, name: "TCP" },
+  { no: 1, name: "UDP" },
+]);
+
+/**
  * @generated from message neoshowcase.protobuf.User
  */
 export class User extends Message<User> {
@@ -1225,6 +1245,55 @@ export class DeleteWebsiteRequest extends Message<DeleteWebsiteRequest> {
 }
 
 /**
+ * @generated from message neoshowcase.protobuf.PortPublication
+ */
+export class PortPublication extends Message<PortPublication> {
+  /**
+   * @generated from field: int32 internet_port = 1;
+   */
+  internetPort = 0;
+
+  /**
+   * @generated from field: int32 application_port = 2;
+   */
+  applicationPort = 0;
+
+  /**
+   * @generated from field: neoshowcase.protobuf.PortPublicationProtocol protocol = 3;
+   */
+  protocol = PortPublicationProtocol.TCP;
+
+  constructor(data?: PartialMessage<PortPublication>) {
+    super();
+    proto3.util.initPartial(data, this);
+  }
+
+  static readonly runtime: typeof proto3 = proto3;
+  static readonly typeName = "neoshowcase.protobuf.PortPublication";
+  static readonly fields: FieldList = proto3.util.newFieldList(() => [
+    { no: 1, name: "internet_port", kind: "scalar", T: 5 /* ScalarType.INT32 */ },
+    { no: 2, name: "application_port", kind: "scalar", T: 5 /* ScalarType.INT32 */ },
+    { no: 3, name: "protocol", kind: "enum", T: proto3.getEnumType(PortPublicationProtocol) },
+  ]);
+
+  static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): PortPublication {
+    return new PortPublication().fromBinary(bytes, options);
+  }
+
+  static fromJson(jsonValue: JsonValue, options?: Partial<JsonReadOptions>): PortPublication {
+    return new PortPublication().fromJson(jsonValue, options);
+  }
+
+  static fromJsonString(jsonString: string, options?: Partial<JsonReadOptions>): PortPublication {
+    return new PortPublication().fromJsonString(jsonString, options);
+  }
+
+  static equals(a: PortPublication | PlainMessage<PortPublication> | undefined, b: PortPublication | PlainMessage<PortPublication> | undefined): boolean {
+    return proto3.util.equals(PortPublication, a, b);
+  }
+}
+
+/**
  * @generated from message neoshowcase.protobuf.Application
  */
 export class Application extends Message<Application> {
@@ -1294,7 +1363,12 @@ export class Application extends Message<Application> {
   websites: Website[] = [];
 
   /**
-   * @generated from field: repeated string owner_ids = 14;
+   * @generated from field: repeated neoshowcase.protobuf.PortPublication port_publications = 14;
+   */
+  portPublications: PortPublication[] = [];
+
+  /**
+   * @generated from field: repeated string owner_ids = 15;
    */
   ownerIds: string[] = [];
 
@@ -1319,7 +1393,8 @@ export class Application extends Message<Application> {
     { no: 11, name: "updated_at", kind: "message", T: Timestamp },
     { no: 12, name: "config", kind: "message", T: ApplicationConfig },
     { no: 13, name: "websites", kind: "message", T: Website, repeated: true },
-    { no: 14, name: "owner_ids", kind: "scalar", T: 9 /* ScalarType.STRING */, repeated: true },
+    { no: 14, name: "port_publications", kind: "message", T: PortPublication, repeated: true },
+    { no: 15, name: "owner_ids", kind: "scalar", T: 9 /* ScalarType.STRING */, repeated: true },
   ]);
 
   static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): Application {
@@ -1413,7 +1488,12 @@ export class CreateApplicationRequest extends Message<CreateApplicationRequest> 
   websites: CreateWebsiteRequest[] = [];
 
   /**
-   * @generated from field: bool start_on_create = 6;
+   * @generated from field: repeated neoshowcase.protobuf.PortPublication port_publications = 6;
+   */
+  portPublications: PortPublication[] = [];
+
+  /**
+   * @generated from field: bool start_on_create = 7;
    */
   startOnCreate = false;
 
@@ -1430,7 +1510,8 @@ export class CreateApplicationRequest extends Message<CreateApplicationRequest> 
     { no: 3, name: "ref_name", kind: "scalar", T: 9 /* ScalarType.STRING */ },
     { no: 4, name: "config", kind: "message", T: ApplicationConfig },
     { no: 5, name: "websites", kind: "message", T: CreateWebsiteRequest, repeated: true },
-    { no: 6, name: "start_on_create", kind: "scalar", T: 8 /* ScalarType.BOOL */ },
+    { no: 6, name: "port_publications", kind: "message", T: PortPublication, repeated: true },
+    { no: 7, name: "start_on_create", kind: "scalar", T: 8 /* ScalarType.BOOL */ },
   ]);
 
   static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): CreateApplicationRequest {
@@ -1485,7 +1566,12 @@ export class UpdateApplicationRequest extends Message<UpdateApplicationRequest> 
   deleteWebsites: DeleteWebsiteRequest[] = [];
 
   /**
-   * @generated from field: repeated string owner_ids = 7;
+   * @generated from field: repeated neoshowcase.protobuf.PortPublication port_publications = 7;
+   */
+  portPublications: PortPublication[] = [];
+
+  /**
+   * @generated from field: repeated string owner_ids = 8;
    */
   ownerIds: string[] = [];
 
@@ -1503,7 +1589,8 @@ export class UpdateApplicationRequest extends Message<UpdateApplicationRequest> 
     { no: 4, name: "config", kind: "message", T: UpdateApplicationConfigRequest },
     { no: 5, name: "new_websites", kind: "message", T: CreateWebsiteRequest, repeated: true },
     { no: 6, name: "delete_websites", kind: "message", T: DeleteWebsiteRequest, repeated: true },
-    { no: 7, name: "owner_ids", kind: "scalar", T: 9 /* ScalarType.STRING */, repeated: true },
+    { no: 7, name: "port_publications", kind: "message", T: PortPublication, repeated: true },
+    { no: 8, name: "owner_ids", kind: "scalar", T: 9 /* ScalarType.STRING */, repeated: true },
   ]);
 
   static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): UpdateApplicationRequest {
@@ -1600,6 +1687,141 @@ export class AvailableDomains extends Message<AvailableDomains> {
 
   static equals(a: AvailableDomains | PlainMessage<AvailableDomains> | undefined, b: AvailableDomains | PlainMessage<AvailableDomains> | undefined): boolean {
     return proto3.util.equals(AvailableDomains, a, b);
+  }
+}
+
+/**
+ * @generated from message neoshowcase.protobuf.AvailablePort
+ */
+export class AvailablePort extends Message<AvailablePort> {
+  /**
+   * @generated from field: int32 start_port = 1;
+   */
+  startPort = 0;
+
+  /**
+   * @generated from field: int32 end_port = 2;
+   */
+  endPort = 0;
+
+  /**
+   * @generated from field: neoshowcase.protobuf.PortPublicationProtocol protocol = 3;
+   */
+  protocol = PortPublicationProtocol.TCP;
+
+  constructor(data?: PartialMessage<AvailablePort>) {
+    super();
+    proto3.util.initPartial(data, this);
+  }
+
+  static readonly runtime: typeof proto3 = proto3;
+  static readonly typeName = "neoshowcase.protobuf.AvailablePort";
+  static readonly fields: FieldList = proto3.util.newFieldList(() => [
+    { no: 1, name: "start_port", kind: "scalar", T: 5 /* ScalarType.INT32 */ },
+    { no: 2, name: "end_port", kind: "scalar", T: 5 /* ScalarType.INT32 */ },
+    { no: 3, name: "protocol", kind: "enum", T: proto3.getEnumType(PortPublicationProtocol) },
+  ]);
+
+  static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): AvailablePort {
+    return new AvailablePort().fromBinary(bytes, options);
+  }
+
+  static fromJson(jsonValue: JsonValue, options?: Partial<JsonReadOptions>): AvailablePort {
+    return new AvailablePort().fromJson(jsonValue, options);
+  }
+
+  static fromJsonString(jsonString: string, options?: Partial<JsonReadOptions>): AvailablePort {
+    return new AvailablePort().fromJsonString(jsonString, options);
+  }
+
+  static equals(a: AvailablePort | PlainMessage<AvailablePort> | undefined, b: AvailablePort | PlainMessage<AvailablePort> | undefined): boolean {
+    return proto3.util.equals(AvailablePort, a, b);
+  }
+}
+
+/**
+ * @generated from message neoshowcase.protobuf.UnavailablePort
+ */
+export class UnavailablePort extends Message<UnavailablePort> {
+  /**
+   * @generated from field: int32 port = 1;
+   */
+  port = 0;
+
+  /**
+   * @generated from field: neoshowcase.protobuf.PortPublicationProtocol protocol = 2;
+   */
+  protocol = PortPublicationProtocol.TCP;
+
+  constructor(data?: PartialMessage<UnavailablePort>) {
+    super();
+    proto3.util.initPartial(data, this);
+  }
+
+  static readonly runtime: typeof proto3 = proto3;
+  static readonly typeName = "neoshowcase.protobuf.UnavailablePort";
+  static readonly fields: FieldList = proto3.util.newFieldList(() => [
+    { no: 1, name: "port", kind: "scalar", T: 5 /* ScalarType.INT32 */ },
+    { no: 2, name: "protocol", kind: "enum", T: proto3.getEnumType(PortPublicationProtocol) },
+  ]);
+
+  static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): UnavailablePort {
+    return new UnavailablePort().fromBinary(bytes, options);
+  }
+
+  static fromJson(jsonValue: JsonValue, options?: Partial<JsonReadOptions>): UnavailablePort {
+    return new UnavailablePort().fromJson(jsonValue, options);
+  }
+
+  static fromJsonString(jsonString: string, options?: Partial<JsonReadOptions>): UnavailablePort {
+    return new UnavailablePort().fromJsonString(jsonString, options);
+  }
+
+  static equals(a: UnavailablePort | PlainMessage<UnavailablePort> | undefined, b: UnavailablePort | PlainMessage<UnavailablePort> | undefined): boolean {
+    return proto3.util.equals(UnavailablePort, a, b);
+  }
+}
+
+/**
+ * @generated from message neoshowcase.protobuf.AvailablePorts
+ */
+export class AvailablePorts extends Message<AvailablePorts> {
+  /**
+   * @generated from field: repeated neoshowcase.protobuf.AvailablePort available_ports = 1;
+   */
+  availablePorts: AvailablePort[] = [];
+
+  /**
+   * @generated from field: repeated neoshowcase.protobuf.UnavailablePort unavailable_ports = 2;
+   */
+  unavailablePorts: UnavailablePort[] = [];
+
+  constructor(data?: PartialMessage<AvailablePorts>) {
+    super();
+    proto3.util.initPartial(data, this);
+  }
+
+  static readonly runtime: typeof proto3 = proto3;
+  static readonly typeName = "neoshowcase.protobuf.AvailablePorts";
+  static readonly fields: FieldList = proto3.util.newFieldList(() => [
+    { no: 1, name: "available_ports", kind: "message", T: AvailablePort, repeated: true },
+    { no: 2, name: "unavailable_ports", kind: "message", T: UnavailablePort, repeated: true },
+  ]);
+
+  static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): AvailablePorts {
+    return new AvailablePorts().fromBinary(bytes, options);
+  }
+
+  static fromJson(jsonValue: JsonValue, options?: Partial<JsonReadOptions>): AvailablePorts {
+    return new AvailablePorts().fromJson(jsonValue, options);
+  }
+
+  static fromJsonString(jsonString: string, options?: Partial<JsonReadOptions>): AvailablePorts {
+    return new AvailablePorts().fromJsonString(jsonString, options);
+  }
+
+  static equals(a: AvailablePorts | PlainMessage<AvailablePorts> | undefined, b: AvailablePorts | PlainMessage<AvailablePorts> | undefined): boolean {
+    return proto3.util.equals(AvailablePorts, a, b);
   }
 }
 

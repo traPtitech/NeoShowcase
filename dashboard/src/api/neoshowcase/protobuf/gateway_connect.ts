@@ -4,7 +4,7 @@
 // @ts-nocheck
 
 import { Empty, MethodKind } from "@bufbuild/protobuf";
-import { Application, ApplicationEnvVars, ApplicationIdRequest, ApplicationOutput, ArtifactContent, ArtifactIdRequest, AvailableDomain, AvailableDomains, Build, BuildIdRequest, BuildLog, CreateApplicationRequest, CreateRepositoryRequest, CreateUserKeyRequest, DeleteUserKeyRequest, GetApplicationsResponse, GetBuildsResponse, GetOutputRequest, GetOutputResponse, GetOutputStreamRequest, GetRepositoriesResponse, GetSystemPublicKeyResponse, GetUserKeysResponse, Repository, RepositoryIdRequest, RetryCommitBuildRequest, SetApplicationEnvVarRequest, UpdateApplicationRequest, UpdateRepositoryRequest, User, UserKey } from "./gateway_pb.js";
+import { Application, ApplicationEnvVars, ApplicationIdRequest, ApplicationOutput, ArtifactContent, ArtifactIdRequest, AvailableDomain, AvailableDomains, AvailablePort, AvailablePorts, Build, BuildIdRequest, BuildLog, CreateApplicationRequest, CreateRepositoryRequest, CreateUserKeyRequest, DeleteUserKeyRequest, GetApplicationsResponse, GetBuildsResponse, GetOutputRequest, GetOutputResponse, GetOutputStreamRequest, GetRepositoriesResponse, GetSystemPublicKeyResponse, GetUserKeysResponse, Repository, RepositoryIdRequest, RetryCommitBuildRequest, SetApplicationEnvVarRequest, UpdateApplicationRequest, UpdateRepositoryRequest, User, UserKey } from "./gateway_pb.js";
 
 /**
  * General / System
@@ -44,6 +44,28 @@ export const APIService = {
     addAvailableDomain: {
       name: "AddAvailableDomain",
       I: AvailableDomain,
+      O: Empty,
+      kind: MethodKind.Unary,
+    },
+    /**
+     * GetAvailablePorts 使用可能なポート一覧を取得します
+     *
+     * @generated from rpc neoshowcase.protobuf.APIService.GetAvailablePorts
+     */
+    getAvailablePorts: {
+      name: "GetAvailablePorts",
+      I: Empty,
+      O: AvailablePorts,
+      kind: MethodKind.Unary,
+    },
+    /**
+     * AddAvailablePorts 使用可能なポートを登録します（admin only）
+     *
+     * @generated from rpc neoshowcase.protobuf.APIService.AddAvailablePort
+     */
+    addAvailablePort: {
+      name: "AddAvailablePort",
+      I: AvailablePort,
       O: Empty,
       kind: MethodKind.Unary,
     },

@@ -20,16 +20,17 @@ type GetApplicationCondition struct {
 }
 
 type UpdateApplicationArgs struct {
-	Name          optional.Of[string]
-	RefName       optional.Of[string]
-	Running       optional.Of[bool]
-	Container     optional.Of[ContainerState]
-	CurrentCommit optional.Of[string]
-	WantCommit    optional.Of[string]
-	UpdatedAt     optional.Of[time.Time]
-	Config        optional.Of[ApplicationConfig]
-	Websites      optional.Of[[]*Website]
-	OwnerIDs      optional.Of[[]string]
+	Name             optional.Of[string]
+	RefName          optional.Of[string]
+	Running          optional.Of[bool]
+	Container        optional.Of[ContainerState]
+	CurrentCommit    optional.Of[string]
+	WantCommit       optional.Of[string]
+	UpdatedAt        optional.Of[time.Time]
+	Config           optional.Of[ApplicationConfig]
+	Websites         optional.Of[[]*Website]
+	PortPublications optional.Of[[]*PortPublication]
+	OwnerIDs         optional.Of[[]string]
 }
 
 func (a *Application) Apply(args *UpdateApplicationArgs) {
@@ -59,6 +60,9 @@ func (a *Application) Apply(args *UpdateApplicationArgs) {
 	}
 	if args.Websites.Valid {
 		a.Websites = args.Websites.V
+	}
+	if args.PortPublications.Valid {
+		a.PortPublications = args.PortPublications.V
 	}
 	if args.OwnerIDs.Valid {
 		a.OwnerIDs = args.OwnerIDs.V
@@ -94,6 +98,12 @@ type AvailableDomainRepository interface {
 	GetAvailableDomains(ctx context.Context) (AvailableDomainSlice, error)
 	AddAvailableDomain(ctx context.Context, ad *AvailableDomain) error
 	DeleteAvailableDomain(ctx context.Context, domain string) error
+}
+
+type AvailablePortRepository interface {
+	GetAvailablePorts(ctx context.Context) (AvailablePortSlice, error)
+	AddAvailablePort(ctx context.Context, ap *AvailablePort) error
+	DeleteAvailablePort(ctx context.Context, ap *AvailablePort) error
 }
 
 type GetBuildCondition struct {

@@ -29,7 +29,7 @@ func (s *APIServerService) CreateApplication(ctx context.Context, app *domain.Ap
 	}
 
 	// Validate
-	existing, err := s.appRepo.GetApplications(ctx, domain.GetApplicationCondition{})
+	existingApps, err := s.appRepo.GetApplications(ctx, domain.GetApplicationCondition{})
 	if err != nil {
 		return nil, errors.Wrap(err, "getting existing applications")
 	}
@@ -37,9 +37,16 @@ func (s *APIServerService) CreateApplication(ctx context.Context, app *domain.Ap
 	if err != nil {
 		return nil, errors.Wrap(err, "getting available domains")
 	}
-	valErr, err := app.Validate(ctx, web.GetUser(ctx), existing, s.controller, domains)
+	ports, err := s.apRepo.GetAvailablePorts(ctx)
+	if err != nil {
+		return nil, errors.Wrap(err, "getting available ports")
+	}
+	valErr, err := app.Validate(ctx, web.GetUser(ctx), s.controller, existingApps, domains, ports)
+	if err != nil {
+		return nil, errors.Wrap(err, "validating application")
+	}
 	if valErr != nil {
-		return nil, newError(ErrorTypeBadRequest, "invalid application", err)
+		return nil, newError(ErrorTypeBadRequest, "invalid application", valErr)
 	}
 
 	// Create
@@ -162,7 +169,7 @@ func (s *APIServerService) UpdateApplication(ctx context.Context, id string, arg
 	app.Apply(args)
 
 	// Validate
-	existing, err := s.appRepo.GetApplications(ctx, domain.GetApplicationCondition{})
+	existingApps, err := s.appRepo.GetApplications(ctx, domain.GetApplicationCondition{})
 	if err != nil {
 		return errors.Wrap(err, "getting existing applications")
 	}
@@ -170,12 +177,35 @@ func (s *APIServerService) UpdateApplication(ctx context.Context, id string, arg
 	if err != nil {
 		return errors.Wrap(err, "getting available domains")
 	}
-	valErr, err := app.Validate(ctx, web.GetUser(ctx), existing, s.controller, domains)
+	ports, err := s.apRepo.GetAvailablePorts(ctx)
+	if err != nil {
+		return errors.Wrap(err, "getting available ports")
+	}
+	valErr, err := app.Validate(ctx, web.GetUser(ctx), s.controller, existingApps, domains, ports)
+	if err != nil {
+		return errors.Wrap(err, "validating application")
+	}
 	if valErr != nil {
-		return newError(ErrorTypeBadRequest, "invalid application", err)
+		return newError(ErrorTypeBadRequest, "invalid application", valErr)
 	}
 
-	return s.appRepo.UpdateApplication(ctx, id, args)
+	// Update
+	err = s.appRepo.UpdateApplication(ctx, id, args)
+	if err != nil {
+		return errors.Wrap(err, "updating application")
+	}
+
+	// Sync
+	err = s.controller.FetchRepository(ctx, app.RepositoryID)
+	if err != nil {
+		return errors.Wrap(err, "requesting fetch repository")
+	}
+	err = s.controller.SyncDeployments(ctx)
+	if err != nil {
+		return errors.Wrap(err, "requesting sync deployments")
+	}
+
+	return nil
 }
 
 func (s *APIServerService) DeleteApplication(ctx context.Context, id string) error {

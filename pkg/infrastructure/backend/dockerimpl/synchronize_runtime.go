@@ -4,12 +4,14 @@ import (
 	"context"
 	"fmt"
 	"io"
+	"strconv"
 	"time"
 
 	"github.com/docker/docker/api/types"
 	"github.com/docker/docker/api/types/container"
 	"github.com/docker/docker/api/types/filters"
 	"github.com/docker/docker/api/types/network"
+	"github.com/docker/go-connections/nat"
 	"github.com/friendsofgo/errors"
 	"github.com/samber/lo"
 	log "github.com/sirupsen/logrus"
@@ -67,9 +69,10 @@ func (b *dockerBackend) syncAppContainer(ctx context.Context, app *domain.Runtim
 		return key + "=" + value
 	})
 	config := &container.Config{
-		Image:  newImageName,
-		Labels: b.containerLabels(app.App),
-		Env:    envs,
+		Image:        newImageName,
+		Labels:       b.containerLabels(app.App),
+		Env:          envs,
+		ExposedPorts: make(map[nat.Port]struct{}),
 	}
 	if app.App.Config.Entrypoint != "" {
 		config.Entrypoint = app.App.Config.EntrypointArgs()
@@ -77,11 +80,25 @@ func (b *dockerBackend) syncAppContainer(ctx context.Context, app *domain.Runtim
 	if app.App.Config.Command != "" {
 		config.Cmd = app.App.Config.CommandArgs()
 	}
+	for _, website := range app.App.Websites {
+		config.ExposedPorts[nat.Port(fmt.Sprintf("%d/tcp", website.HTTPPort))] = struct{}{}
+	}
+	for _, p := range app.App.PortPublications {
+		config.ExposedPorts[nat.Port(fmt.Sprintf("%d/%s", p.ApplicationPort, p.Protocol))] = struct{}{}
+	}
 	hostConfig := &container.HostConfig{
+		PortBindings: make(map[nat.Port][]nat.PortBinding),
 		RestartPolicy: container.RestartPolicy{
 			Name:              "on-failure",
 			MaximumRetryCount: 5,
 		},
+	}
+	for _, p := range app.App.PortPublications {
+		appPort := nat.Port(fmt.Sprintf("%d/%s", p.ApplicationPort, p.Protocol))
+		hostConfig.PortBindings[appPort] = append(hostConfig.PortBindings[appPort], nat.PortBinding{
+			HostIP:   "0.0.0.0/0",
+			HostPort: strconv.Itoa(p.InternetPort),
+		})
 	}
 	if b.config.Resources.CPUs != 0 {
 		hostConfig.NanoCPUs = int64(b.config.Resources.CPUs * 1e9)
