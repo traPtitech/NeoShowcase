@@ -1,4 +1,4 @@
-TBLS_VERSION := 1.62.1
+TBLS_VERSION := 1.65.3
 SPECTRAL_VERSION := 6.4.0
 
 GO_REPO_ROOT_PACKAGE := "github.com/traPtitech/neoshowcase"
@@ -38,10 +38,7 @@ protoc: ## Generate proto sources
 
 .PHONY: db-gen-docs
 db-gen-docs: ## Generate db schema docs
-	@if [ -d "./docs/dbschema" ]; then \
-		rm -r ./docs/dbschema; \
-	fi
-	@$(TBLS_CMD) doc
+	@$(TBLS_CMD) doc --rm-dist
 
 .PHONY: db-diff-docs
 db-diff-docs: ## Calculate diff with current db schema docs
