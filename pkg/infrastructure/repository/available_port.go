@@ -32,15 +32,6 @@ func (r *availablePortRepository) GetAvailablePorts(ctx context.Context) (domain
 	return dPorts, nil
 }
 
-func (r *availablePortRepository) GetUsedPorts(ctx context.Context) ([]*domain.PortPublication, error) {
-	used, err := models.PortPublications().All(ctx, r.db)
-	if err != nil {
-		return nil, errors.Wrap(err, "getting port publications")
-	}
-	dUsed := ds.Map(used, repoconvert.ToDomainPortPublication)
-	return dUsed, nil
-}
-
 func (r *availablePortRepository) AddAvailablePort(ctx context.Context, ap *domain.AvailablePort) error {
 	modelAp := repoconvert.FromDomainAvailablePort(ap)
 	err := modelAp.Insert(ctx, r.db, boil.Blacklist())

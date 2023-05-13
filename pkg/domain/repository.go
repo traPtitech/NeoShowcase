@@ -102,7 +102,6 @@ type AvailableDomainRepository interface {
 
 type AvailablePortRepository interface {
 	GetAvailablePorts(ctx context.Context) (AvailablePortSlice, error)
-	GetUsedPorts(ctx context.Context) ([]*PortPublication, error)
 	AddAvailablePort(ctx context.Context, ap *AvailablePort) error
 	DeleteAvailablePort(ctx context.Context, ap *AvailablePort) error
 }

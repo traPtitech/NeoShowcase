@@ -250,10 +250,9 @@ func (a *Application) Validate(
 	ctx context.Context,
 	actor *User,
 	controller ControllerServiceClient,
-	domains AvailableDomainSlice,
 	existingApps []*Application,
+	domains AvailableDomainSlice,
 	ports AvailablePortSlice,
-	existingPorts []*PortPublication,
 ) (validateErr error, err error) {
 	if err = a.SelfValidate(); err != nil {
 		return err, nil
@@ -278,16 +277,18 @@ func (a *Application) Validate(
 		}
 	}
 
+	// exclude self if contained
+	existingApps = lo.Filter(existingApps, func(app *Application, _ int) bool { return app.ID != a.ID })
+
 	if a.WebsiteConflicts(existingApps, actor) {
 		return errors.New("website conflict"), nil
 	}
 
-	usedPorts := ds.Map(existingPorts, (*PortPublication).ToUnavailablePort)
 	for _, p := range a.PortPublications {
 		if !ports.IsAvailable(p.InternetPort, p.Protocol) {
 			return errors.Errorf("port %d/%s not available", p.InternetPort, p.Protocol), nil
 		}
-		if p.ConflictsWith(usedPorts) {
+		if p.ConflictsWith(existingApps) {
 			return errors.Errorf("port %d/%s conflicts with existing port publication", p.InternetPort, p.Protocol), nil
 		}
 	}
@@ -678,9 +679,11 @@ func (p *PortPublication) ToUnavailablePort() *UnavailablePort {
 	}
 }
 
-func (p *PortPublication) ConflictsWith(existing []*UnavailablePort) bool {
-	return lo.ContainsBy(existing, func(up *UnavailablePort) bool {
-		return up.Port == p.InternetPort && up.Protocol == p.Protocol
+func (p *PortPublication) ConflictsWith(existing []*Application) bool {
+	return lo.ContainsBy(existing, func(app *Application) bool {
+		return lo.ContainsBy(app.PortPublications, func(used *PortPublication) bool {
+			return used.InternetPort == p.InternetPort && used.Protocol == p.Protocol
+		})
 	})
 }
 

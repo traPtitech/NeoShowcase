@@ -3,6 +3,8 @@ package usecase
 import (
 	"context"
 
+	"github.com/samber/lo"
+
 	"github.com/traPtitech/neoshowcase/pkg/domain"
 	"github.com/traPtitech/neoshowcase/pkg/util/ds"
 )
@@ -28,11 +30,12 @@ func (s *APIServerService) GetAvailablePorts(ctx context.Context) (domain.Availa
 	if err != nil {
 		return nil, nil, err
 	}
-	used, err := s.apRepo.GetUsedPorts(ctx)
+	apps, err := s.appRepo.GetApplications(ctx, domain.GetApplicationCondition{})
 	if err != nil {
 		return nil, nil, err
 	}
-	unavailable := ds.Map(used, (*domain.PortPublication).ToUnavailablePort)
+	usedPorts := ds.Map(apps, func(app *domain.Application) []*domain.PortPublication { return app.PortPublications })
+	unavailable := ds.Map(lo.Flatten(usedPorts), (*domain.PortPublication).ToUnavailablePort)
 	return available, unavailable, nil
 }
 
