@@ -189,7 +189,23 @@ func (s *APIServerService) UpdateApplication(ctx context.Context, id string, arg
 		return newError(ErrorTypeBadRequest, "invalid application", valErr)
 	}
 
-	return s.appRepo.UpdateApplication(ctx, id, args)
+	// Update
+	err = s.appRepo.UpdateApplication(ctx, id, args)
+	if err != nil {
+		return errors.Wrap(err, "updating application")
+	}
+
+	// Sync
+	err = s.controller.FetchRepository(ctx, app.RepositoryID)
+	if err != nil {
+		return errors.Wrap(err, "requesting fetch repository")
+	}
+	err = s.controller.SyncDeployments(ctx)
+	if err != nil {
+		return errors.Wrap(err, "requesting sync deployments")
+	}
+
+	return nil
 }
 
 func (s *APIServerService) DeleteApplication(ctx context.Context, id string) error {
