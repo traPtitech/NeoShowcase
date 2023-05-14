@@ -41,19 +41,11 @@ func NewS3Storage(bucket, accessKey, accessSecret, region, endpoint string) (*S3
 
 // Save ファイルをアップロードする
 func (s3s *S3Storage) Save(filename string, src io.Reader) error {
-	file, err := os.Create(filename)
-	if err != nil {
-		return err
-	}
 	uploader := s3manager.NewUploader(s3s.sess)
-	_, err = io.Copy(file, src)
-	if err != nil {
-		return err
-	}
-	_, err = uploader.Upload(&s3manager.UploadInput{
+	_, err := uploader.Upload(&s3manager.UploadInput{
 		Bucket: aws.String(s3s.bucket),
 		Key:    aws.String(filename),
-		Body:   file,
+		Body:   src,
 	})
 	if err != nil {
 		return err
