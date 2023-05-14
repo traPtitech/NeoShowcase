@@ -1,5 +1,6 @@
 dsn: mariadb://root:password@localhost:5004/neoshowcase
 docPath: docs/dbschema
+disableOutputSchema: true
 er:
   format: mermaid
 
