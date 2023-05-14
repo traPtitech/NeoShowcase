@@ -49,7 +49,30 @@ CREATE TABLE `artifacts` (
 
 ## Relations
 
-![er](artifacts.svg)
+```mermaid
+erDiagram
+
+"artifacts" |o--|| "builds" : "FOREIGN KEY (build_id) REFERENCES builds (id)"
+
+"artifacts" {
+  char_22_ id PK
+  bigint_20_ size
+  datetime_6_ created_at
+  datetime_6_ deleted_at
+  varchar_22_ build_id FK
+}
+"builds" {
+  char_22_ id PK
+  char_40_ commit
+  enum__building___succeeded___failed___canceled___queued___skipped__ status
+  datetime_6_ queued_at
+  datetime_6_ started_at
+  datetime_6_ updated_at
+  datetime_6_ finished_at
+  tinyint_1_ retriable
+  char_22_ application_id FK
+}
+```
 
 ---
 

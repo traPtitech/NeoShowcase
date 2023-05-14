@@ -44,7 +44,31 @@ CREATE TABLE `environments` (
 
 ## Relations
 
-![er](environments.svg)
+```mermaid
+erDiagram
+
+"environments" }o--|| "applications" : "FOREIGN KEY (application_id) REFERENCES applications (id)"
+
+"environments" {
+  char_22_ application_id PK
+  varchar_100_ key PK
+  text value
+  tinyint_1_ system
+}
+"applications" {
+  char_22_ id PK
+  varchar_100_ name
+  varchar_22_ repository_id FK
+  varchar_100_ ref_name
+  enum__runtime___static__ deploy_type
+  tinyint_1_ running
+  enum__missing___starting___running___exited___errored___unknown__ container
+  char_40_ current_commit
+  char_40_ want_commit
+  datetime_6_ created_at
+  datetime_6_ updated_at
+}
+```
 
 ---
 

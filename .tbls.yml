@@ -1,7 +1,7 @@
 dsn: mariadb://root:password@localhost:5004/neoshowcase
 docPath: docs/dbschema
 er:
-  format: svg
+  format: mermaid
 
 lint:
   requireTableComment:
