@@ -2,6 +2,8 @@
 
 ## Description
 
+アプリケーション詳細設定テーブル
+
 <details>
 <summary><strong>Table Definition</strong></summary>
 
@@ -21,7 +23,7 @@ CREATE TABLE `application_config` (
   `command` text NOT NULL COMMENT 'Command(args)',
   PRIMARY KEY (`application_id`),
   CONSTRAINT `fk_application_config_application_id` FOREIGN KEY (`application_id`) REFERENCES `applications` (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci COMMENT='アプリケーション詳細設定テーブル'
 ```
 
 </details>

@@ -118,7 +118,7 @@ CREATE TABLE `application_config`
     CONSTRAINT `fk_application_config_application_id` FOREIGN KEY (`application_id`) REFERENCES `applications` (`id`)
 ) ENGINE = InnoDB
   DEFAULT CHARSET = utf8mb4
-  COLLATE = utf8mb4_general_ci;
+  COLLATE = utf8mb4_general_ci COMMENT = 'アプリケーション詳細設定テーブル';
 
 CREATE TABLE `websites`
 (
