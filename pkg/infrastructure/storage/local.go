@@ -58,31 +58,6 @@ func (ls *LocalStorage) Delete(filename string) error {
 	return os.Remove(path)
 }
 
-// Move ファイルをdestPathへ移動する
-func (ls *LocalStorage) Move(filename, destPath string) error {
-	inputFile, err := os.Open(filename)
-	if err != nil {
-		return errors.Wrap(err, "couldn't open source file")
-	}
-	outputFile, err := os.Create(ls.getFilePath(destPath))
-	if err != nil {
-		inputFile.Close()
-		return errors.Wrap(err, "couldn't open dest file")
-	}
-	defer outputFile.Close()
-	_, err = io.Copy(outputFile, inputFile)
-	inputFile.Close()
-	if err != nil {
-		return errors.Wrap(err, "writing to output file failed")
-	}
-	// The copy was successful, so now delete the original file
-	err = os.Remove(filename)
-	if err != nil {
-		return errors.Wrap(err, "failed removing original file")
-	}
-	return nil
-}
-
 func (ls *LocalStorage) getFilePath(filename string) string {
 	return filepath.Join(ls.localDir, filename)
 }

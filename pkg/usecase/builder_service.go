@@ -255,7 +255,7 @@ func (s *builderService) tryStartTask(task *builder.Task) error {
 }
 
 func (s *builderService) finalize(ctx context.Context, st *state, status domain.BuildStatus) {
-	err := domain.SaveBuildLog(s.storage, st.logWriter.LogReader(), st.task.BuildID)
+	err := domain.SaveBuildLog(s.storage, st.task.BuildID, st.logWriter.LogReader())
 	if err != nil {
 		log.Errorf("failed to save build log: %+v", err)
 	}
@@ -439,7 +439,12 @@ func (s *builderService) saveArtifact(ctx context.Context, st *state) error {
 		return errors.Wrap(err, "creating artifact record")
 	}
 
-	err = domain.SaveArtifact(s.storage, filename, artifact.ID)
+	file, err := os.Open(filename)
+	if err != nil {
+		return errors.Wrap(err, "opening artifact")
+	}
+	defer file.Close()
+	err = domain.SaveArtifact(s.storage, filename, file)
 	if err != nil {
 		return errors.Wrap(err, "saving artifact")
 	}

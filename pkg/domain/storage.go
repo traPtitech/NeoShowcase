@@ -19,7 +19,6 @@ type Storage interface {
 	Save(filename string, src io.Reader) error
 	Open(filename string) (io.ReadCloser, error)
 	Delete(filename string) error
-	Move(filename, destPath string) error // LocalFile to Storage
 }
 
 func buildLogPath(buildID string) string {
@@ -27,7 +26,7 @@ func buildLogPath(buildID string) string {
 	return filepath.Join(buildLogDirectory, buildID)
 }
 
-func SaveBuildLog(s Storage, src io.Reader, buildID string) error {
+func SaveBuildLog(s Storage, buildID string, src io.Reader) error {
 	err := s.Save(buildLogPath(buildID), src)
 	if err != nil {
 		return errors.Wrap(err, "saving build log")
@@ -58,8 +57,8 @@ func artifactPath(id string) string {
 }
 
 // SaveArtifact Artifactをtar形式で保存する
-func SaveArtifact(s Storage, filename string, artifactID string) error {
-	if err := s.Move(filename, artifactPath(artifactID)); err != nil {
+func SaveArtifact(s Storage, artifactID string, src io.Reader) error {
+	if err := s.Save(artifactPath(artifactID), src); err != nil {
 		return errors.Wrap(err, "failed to save artifact")
 	}
 	return nil

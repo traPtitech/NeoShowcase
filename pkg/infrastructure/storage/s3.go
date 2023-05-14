@@ -80,28 +80,3 @@ func (s3s *S3Storage) Delete(filename string) error {
 	}
 	return nil
 }
-
-// Move 指定したローカルのファイルをストレージへ移動する。destPathは使用されない。
-func (s3s *S3Storage) Move(filename, destPath string) error {
-	// Move LocalDir to Swift Storage
-	inputFile, err := os.Open(filename)
-	if err != nil {
-		return errors.Wrap(err, "couldn't open source file")
-	}
-	uploader := s3manager.NewUploader(s3s.sess)
-	_, err = uploader.Upload(&s3manager.UploadInput{
-		Bucket: aws.String(s3s.bucket),
-		Key:    aws.String(destPath),
-		Body:   inputFile,
-	})
-	inputFile.Close()
-	if err != nil {
-		return errors.Wrap(err, "writing to output file failed")
-	}
-	// The copy was successful, so now delete the original file
-	err = os.Remove(filename)
-	if err != nil {
-		return errors.Wrap(err, "failed removing original file")
-	}
-	return nil
-}

@@ -2,9 +2,7 @@ package storage
 
 import (
 	"io"
-	"os"
 
-	"github.com/friendsofgo/errors"
 	"github.com/ncw/swift"
 
 	"github.com/traPtitech/neoshowcase/pkg/domain"
@@ -67,25 +65,6 @@ func (ss *SwiftStorage) Delete(filename string) error {
 			return domain.ErrFileNotFound
 		}
 		return err
-	}
-	return nil
-}
-
-// Move 指定したローカルのファイルをストレージのdestPathへ移動する
-func (ss *SwiftStorage) Move(filename, destPath string) error {
-	inputFile, err := os.Open(filename)
-	if err != nil {
-		return errors.Wrap(err, "couldn't open source file")
-	}
-	_, err = ss.conn.ObjectPut(ss.container, destPath, inputFile, true, "", "", swift.Headers{})
-	inputFile.Close()
-	if err != nil {
-		return errors.Wrap(err, "writing to output file failed")
-	}
-	// The copy was successful, so now delete the original file
-	err = os.Remove(filename)
-	if err != nil {
-		return errors.Wrap(err, "failed removing original file")
 	}
 	return nil
 }
