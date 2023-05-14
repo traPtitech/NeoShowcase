@@ -203,9 +203,7 @@ jobs:
         run: |
           go install github.com/k0kubun/sqldef/cmd/mysqldef@latest
           DB_PORT=5004 ./migrations/entrypoint.sh ./migrations/schema.sql
-      - name: Lint
-        run: |
-          source <(curl https://raw.githubusercontent.com/k1LoW/tbls/main/use)
-          tbls lint
+      - uses: k1low/setup-tbls@v1
+      - run: tbls lint
         env:
           TBLS_DSN: "mariadb://root:password@127.0.0.1:5004/neoshowcase"
