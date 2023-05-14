@@ -174,11 +174,22 @@ func (b *dockerBackend) authConfig() (string, error) {
 	return base64.URLEncoding.EncodeToString(bytes), nil
 }
 
+func getRestartedAt(c *types.Container) time.Time {
+	if c == nil {
+		return time.Time{}
+	}
+	t, err := time.Parse(time.RFC3339Nano, c.Labels[appRestartedAtLabel])
+	if err != nil {
+		return time.Time{}
+	}
+	return t
+}
+
 func (b *dockerBackend) containerLabels(app *domain.Application) map[string]string {
 	return ds.MergeMap(b.config.labels(), map[string]string{
 		appLabel:            "true",
 		appIDLabel:          app.ID,
-		appRestartedAtLabel: app.UpdatedAt.Format(time.RFC3339),
+		appRestartedAtLabel: app.UpdatedAt.Format(time.RFC3339Nano),
 	})
 }
 

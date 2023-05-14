@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"io"
 	"strconv"
-	"time"
 
 	"github.com/docker/docker/api/types"
 	"github.com/docker/docker/api/types/container"
@@ -21,23 +20,14 @@ import (
 
 func (b *dockerBackend) syncAppContainer(ctx context.Context, app *domain.RuntimeDesiredState, oldContainer *types.Container) error {
 	newImageName := app.ImageName + ":" + app.ImageTag
-	var oldRestartedAt time.Time
-	var err error
-	if oldContainer != nil {
-		oldRestartedAt, err = time.Parse(time.RFC3339, oldContainer.Labels[appRestartedAtLabel])
-		if err != nil {
-			oldRestartedAt = time.Time{}
-		}
-	} else {
-		oldRestartedAt = time.Time{}
-	}
+	oldRestartedAt := getRestartedAt(oldContainer)
 	doDeploy := oldContainer == nil || oldContainer.Image != newImageName || !oldRestartedAt.Equal(app.App.UpdatedAt)
 	if !doDeploy {
 		return nil
 	}
 
 	if oldContainer != nil {
-		err = b.c.ContainerRemove(ctx, oldContainer.ID, types.ContainerRemoveOptions{
+		err := b.c.ContainerRemove(ctx, oldContainer.ID, types.ContainerRemoveOptions{
 			RemoveVolumes: true,
 			Force:         true,
 		})
