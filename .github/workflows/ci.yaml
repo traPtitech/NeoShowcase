@@ -183,8 +183,6 @@ jobs:
   tbls:
     name: TBLS
     runs-on: ubuntu-latest
-    env:
-      TBLS_VERSION: v1.62.1
     services:
       mysql:
         image: mariadb:10.8.3
@@ -204,6 +202,8 @@ jobs:
           go install github.com/k0kubun/sqldef/cmd/mysqldef@latest
           DB_PORT=5004 ./migrations/entrypoint.sh ./migrations/schema.sql
       - uses: k1low/setup-tbls@v1
+        with:
+          version: v1.65.3
       - run: tbls lint
         env:
           TBLS_DSN: "mariadb://root:password@127.0.0.1:5004/neoshowcase"
