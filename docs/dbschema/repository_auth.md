@@ -46,7 +46,24 @@ CREATE TABLE `repository_auth` (
 
 ## Relations
 
-![er](repository_auth.svg)
+```mermaid
+erDiagram
+
+"repository_auth" |o--|| "repositories" : "FOREIGN KEY (repository_id) REFERENCES repositories (id)"
+
+"repository_auth" {
+  char_22_ repository_id PK
+  enum__basic___ssh__ method
+  varchar_256_ username
+  varchar_256_ password
+  text ssh_key
+}
+"repositories" {
+  char_22_ id PK
+  varchar_256_ name
+  varchar_256_ url
+}
+```
 
 ---
 

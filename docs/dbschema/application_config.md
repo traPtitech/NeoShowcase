@@ -2,6 +2,8 @@
 
 ## Description
 
+アプリケーション詳細設定テーブル
+
 <details>
 <summary><strong>Table Definition</strong></summary>
 
@@ -10,17 +12,18 @@ CREATE TABLE `application_config` (
   `application_id` char(22) NOT NULL COMMENT 'アプリケーションID',
   `use_mariadb` tinyint(1) NOT NULL COMMENT 'MariaDBを使用するか',
   `use_mongodb` tinyint(1) NOT NULL COMMENT 'MongoDBを使用するか',
-  `build_type` enum('runtime-cmd','runtime-dockerfile','static-cmd','static-dockerfile') NOT NULL COMMENT 'ビルドタイプ',
+  `build_type` enum('runtime-buildpack','runtime-cmd','runtime-dockerfile','static-cmd','static-dockerfile') NOT NULL COMMENT 'ビルドタイプ',
   `base_image` varchar(1000) NOT NULL COMMENT 'ベースイメージの名前',
   `build_cmd` text NOT NULL COMMENT 'ビルドコマンド',
   `build_cmd_shell` tinyint(1) NOT NULL COMMENT 'ビルドコマンドをshellで実行するか',
   `artifact_path` varchar(100) NOT NULL COMMENT '静的成果物のパス',
   `dockerfile_name` varchar(100) NOT NULL COMMENT 'Dockerfile名',
+  `context` varchar(100) NOT NULL COMMENT 'ビルド時のcontext',
   `entrypoint` text NOT NULL COMMENT 'Entrypoint(args)',
   `command` text NOT NULL COMMENT 'Command(args)',
   PRIMARY KEY (`application_id`),
   CONSTRAINT `fk_application_config_application_id` FOREIGN KEY (`application_id`) REFERENCES `applications` (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci COMMENT='アプリケーション詳細設定テーブル'
 ```
 
 </details>
@@ -32,12 +35,13 @@ CREATE TABLE `application_config` (
 | application_id | char(22) |  | false |  | [applications](applications.md) | アプリケーションID |
 | use_mariadb | tinyint(1) |  | false |  |  | MariaDBを使用するか |
 | use_mongodb | tinyint(1) |  | false |  |  | MongoDBを使用するか |
-| build_type | enum('runtime-cmd','runtime-dockerfile','static-cmd','static-dockerfile') |  | false |  |  | ビルドタイプ |
+| build_type | enum('runtime-buildpack','runtime-cmd','runtime-dockerfile','static-cmd','static-dockerfile') |  | false |  |  | ビルドタイプ |
 | base_image | varchar(1000) |  | false |  |  | ベースイメージの名前 |
 | build_cmd | text |  | false |  |  | ビルドコマンド |
 | build_cmd_shell | tinyint(1) |  | false |  |  | ビルドコマンドをshellで実行するか |
 | artifact_path | varchar(100) |  | false |  |  | 静的成果物のパス |
 | dockerfile_name | varchar(100) |  | false |  |  | Dockerfile名 |
+| context | varchar(100) |  | false |  |  | ビルド時のcontext |
 | entrypoint | text |  | false |  |  | Entrypoint(args) |
 | command | text |  | false |  |  | Command(args) |
 
@@ -56,7 +60,39 @@ CREATE TABLE `application_config` (
 
 ## Relations
 
-![er](application_config.svg)
+```mermaid
+erDiagram
+
+"application_config" |o--|| "applications" : "FOREIGN KEY (application_id) REFERENCES applications (id)"
+
+"application_config" {
+  char_22_ application_id PK
+  tinyint_1_ use_mariadb
+  tinyint_1_ use_mongodb
+  enum__runtime-buildpack___runtime-cmd___runtime-dockerfile___static-cmd___static-dockerfile__ build_type
+  varchar_1000_ base_image
+  text build_cmd
+  tinyint_1_ build_cmd_shell
+  varchar_100_ artifact_path
+  varchar_100_ dockerfile_name
+  varchar_100_ context
+  text entrypoint
+  text command
+}
+"applications" {
+  char_22_ id PK
+  varchar_100_ name
+  varchar_22_ repository_id FK
+  varchar_100_ ref_name
+  enum__runtime___static__ deploy_type
+  tinyint_1_ running
+  enum__missing___starting___running___exited___errored___unknown__ container
+  char_40_ current_commit
+  char_40_ want_commit
+  datetime_6_ created_at
+  datetime_6_ updated_at
+}
+```
 
 ---
 

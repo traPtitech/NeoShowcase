@@ -12,6 +12,7 @@ CREATE TABLE `builds` (
   `id` char(22) NOT NULL COMMENT 'ビルドID',
   `commit` char(40) NOT NULL COMMENT 'コミットハッシュ',
   `status` enum('building','succeeded','failed','canceled','queued','skipped') NOT NULL COMMENT 'ビルドの状態',
+  `queued_at` datetime(6) NOT NULL COMMENT 'ビルド追加日時',
   `started_at` datetime(6) DEFAULT NULL COMMENT 'ビルド開始日時',
   `updated_at` datetime(6) DEFAULT NULL COMMENT 'ビルド更新日時',
   `finished_at` datetime(6) DEFAULT NULL COMMENT 'ビルド終了日時',
@@ -33,6 +34,7 @@ CREATE TABLE `builds` (
 | id | char(22) |  | false | [artifacts](artifacts.md) |  | ビルドID |
 | commit | char(40) |  | false |  |  | コミットハッシュ |
 | status | enum('building','succeeded','failed','canceled','queued','skipped') |  | false |  |  | ビルドの状態 |
+| queued_at | datetime(6) |  | false |  |  | ビルド追加日時 |
 | started_at | datetime(6) | NULL | true |  |  | ビルド開始日時 |
 | updated_at | datetime(6) | NULL | true |  |  | ビルド更新日時 |
 | finished_at | datetime(6) | NULL | true |  |  | ビルド終了日時 |
@@ -56,7 +58,44 @@ CREATE TABLE `builds` (
 
 ## Relations
 
-![er](builds.svg)
+```mermaid
+erDiagram
+
+"artifacts" |o--|| "builds" : "FOREIGN KEY (build_id) REFERENCES builds (id)"
+"builds" }o--|| "applications" : "FOREIGN KEY (application_id) REFERENCES applications (id)"
+
+"builds" {
+  char_22_ id PK
+  char_40_ commit
+  enum__building___succeeded___failed___canceled___queued___skipped__ status
+  datetime_6_ queued_at
+  datetime_6_ started_at
+  datetime_6_ updated_at
+  datetime_6_ finished_at
+  tinyint_1_ retriable
+  char_22_ application_id FK
+}
+"artifacts" {
+  char_22_ id PK
+  bigint_20_ size
+  datetime_6_ created_at
+  datetime_6_ deleted_at
+  varchar_22_ build_id FK
+}
+"applications" {
+  char_22_ id PK
+  varchar_100_ name
+  varchar_22_ repository_id FK
+  varchar_100_ ref_name
+  enum__runtime___static__ deploy_type
+  tinyint_1_ running
+  enum__missing___starting___running___exited___errored___unknown__ container
+  char_40_ current_commit
+  char_40_ want_commit
+  datetime_6_ created_at
+  datetime_6_ updated_at
+}
+```
 
 ---
 

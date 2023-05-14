@@ -38,7 +38,15 @@ CREATE TABLE `available_domains` (
 
 ## Relations
 
-![er](available_domains.svg)
+```mermaid
+erDiagram
+
+
+"available_domains" {
+  varchar_100_ domain PK
+  tinyint_1_ available
+}
+```
 
 ---
 

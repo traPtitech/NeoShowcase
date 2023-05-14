@@ -43,7 +43,43 @@ CREATE TABLE `repositories` (
 
 ## Relations
 
-![er](repositories.svg)
+```mermaid
+erDiagram
+
+"applications" }o--|| "repositories" : "FOREIGN KEY (repository_id) REFERENCES repositories (id)"
+"repository_auth" |o--|| "repositories" : "FOREIGN KEY (repository_id) REFERENCES repositories (id)"
+"repository_owners" }o--|| "repositories" : "FOREIGN KEY (repository_id) REFERENCES repositories (id)"
+
+"repositories" {
+  char_22_ id PK
+  varchar_256_ name
+  varchar_256_ url
+}
+"applications" {
+  char_22_ id PK
+  varchar_100_ name
+  varchar_22_ repository_id FK
+  varchar_100_ ref_name
+  enum__runtime___static__ deploy_type
+  tinyint_1_ running
+  enum__missing___starting___running___exited___errored___unknown__ container
+  char_40_ current_commit
+  char_40_ want_commit
+  datetime_6_ created_at
+  datetime_6_ updated_at
+}
+"repository_auth" {
+  char_22_ repository_id PK
+  enum__basic___ssh__ method
+  varchar_256_ username
+  varchar_256_ password
+  text ssh_key
+}
+"repository_owners" {
+  char_22_ user_id PK
+  char_22_ repository_id PK
+}
+```
 
 ---
 

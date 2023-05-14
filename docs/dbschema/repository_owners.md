@@ -44,7 +44,27 @@ CREATE TABLE `repository_owners` (
 
 ## Relations
 
-![er](repository_owners.svg)
+```mermaid
+erDiagram
+
+"repository_owners" }o--|| "users" : "FOREIGN KEY (user_id) REFERENCES users (id)"
+"repository_owners" }o--|| "repositories" : "FOREIGN KEY (repository_id) REFERENCES repositories (id)"
+
+"repository_owners" {
+  char_22_ user_id PK
+  char_22_ repository_id PK
+}
+"users" {
+  char_22_ id PK
+  varchar_255_ name
+  tinyint_1_ admin
+}
+"repositories" {
+  char_22_ id PK
+  varchar_256_ name
+  varchar_256_ url
+}
+```
 
 ---
 

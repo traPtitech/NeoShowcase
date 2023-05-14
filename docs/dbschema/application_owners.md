@@ -44,7 +44,35 @@ CREATE TABLE `application_owners` (
 
 ## Relations
 
-![er](application_owners.svg)
+```mermaid
+erDiagram
+
+"application_owners" }o--|| "users" : "FOREIGN KEY (user_id) REFERENCES users (id)"
+"application_owners" }o--|| "applications" : "FOREIGN KEY (application_id) REFERENCES applications (id)"
+
+"application_owners" {
+  char_22_ user_id PK
+  char_22_ application_id PK
+}
+"users" {
+  char_22_ id PK
+  varchar_255_ name
+  tinyint_1_ admin
+}
+"applications" {
+  char_22_ id PK
+  varchar_100_ name
+  varchar_22_ repository_id FK
+  varchar_100_ ref_name
+  enum__runtime___static__ deploy_type
+  tinyint_1_ running
+  enum__missing___starting___running___exited___errored___unknown__ container
+  char_40_ current_commit
+  char_40_ want_commit
+  datetime_6_ created_at
+  datetime_6_ updated_at
+}
+```
 
 ---
 

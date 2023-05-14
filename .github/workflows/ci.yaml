@@ -16,6 +16,7 @@ jobs:
         with:
           go-version-file: ./go.mod
       - run: go mod download
+
   protoc:
     name: Proto
     runs-on: ubuntu-latest
@@ -43,6 +44,7 @@ jobs:
         run: make protoc
         env:
           GO_REPO_ROOT_PACKAGE: github.com/traPtitech/neoshowcase
+
   build:
     name: Build Components
     runs-on: ubuntu-latest
@@ -65,6 +67,7 @@ jobs:
           path: ./pkg/infrastructure/grpc/pb
           key: ${{ runner.os }}-proto-${{ hashFiles('**/*.proto') }}
       - run: go build ./cmd/${{ matrix.component }}
+
   lint:
     name: Lint
     runs-on: ubuntu-latest
@@ -87,6 +90,7 @@ jobs:
         run: golangci-lint run --out-format=line-number | reviewdog -f=golangci-lint -name=golangci-lint -reporter=github-check
         env:
           REVIEWDOG_GITHUB_API_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
   test:
     name: Test
     runs-on: ubuntu-latest
@@ -129,6 +133,7 @@ jobs:
         run: go test ./... -v -race -coverprofile=coverage.out -covermode=atomic -vet=off
       - name: Upload coverage to Codecov
         run: bash <(curl -s https://codecov.io/bash)
+
   k8s-test:
     name: Test (k8s)
     runs-on: ubuntu-latest
@@ -174,11 +179,10 @@ jobs:
         run: go test ./pkg/infrastructure/backend/k8simpl -v -coverprofile=coverage.out -covermode=atomic -vet=off
       - name: Upload coverage to Codecov
         run: bash <(curl -s https://codecov.io/bash)
+
   tbls:
     name: TBLS
     runs-on: ubuntu-latest
-    env:
-      TBLS_VERSION: v1.62.1
     services:
       mysql:
         image: mariadb:10.8.3
@@ -197,19 +201,9 @@ jobs:
         run: |
           go install github.com/k0kubun/sqldef/cmd/mysqldef@latest
           DB_PORT=5004 ./migrations/entrypoint.sh ./migrations/schema.sql
-      - name: Lint
-        run: |
-          source <(curl https://raw.githubusercontent.com/k1LoW/tbls/main/use)
-          tbls lint
+      - uses: k1low/setup-tbls@v1
+        with:
+          version: v1.65.3
+      - run: tbls lint
         env:
           TBLS_DSN: "mariadb://root:password@127.0.0.1:5004/neoshowcase"
-  spectral:
-    name: Spectral
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v3
-      - name: Spectral checks
-        uses: stoplightio/spectral-action@v0.8.10
-        with:
-          file_glob: api/http/swagger.yaml
-          repo_token: ${{ secrets.GITHUB_TOKEN }}

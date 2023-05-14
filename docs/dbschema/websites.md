@@ -14,7 +14,8 @@ CREATE TABLE `websites` (
   `path_prefix` varchar(100) NOT NULL COMMENT 'サイトPathのPrefix',
   `strip_prefix` tinyint(1) NOT NULL COMMENT 'PathのPrefixを落とすかどうか',
   `https` tinyint(1) NOT NULL COMMENT 'httpsの接続かどうか',
-  `http_port` int(11) NOT NULL DEFAULT 80 COMMENT 'コンテナhttpポート番号',
+  `h2c` tinyint(1) NOT NULL COMMENT '(advanced)プロキシとアプリの通信にh2c protocolを使うかどうか',
+  `http_port` int(11) NOT NULL DEFAULT 80 COMMENT '(runtime only)コンテナhttpポート番号',
   `authentication` enum('off','soft','hard') NOT NULL COMMENT 'traP部員認証タイプ',
   `application_id` char(22) NOT NULL COMMENT 'アプリケーションID',
   PRIMARY KEY (`id`),
@@ -35,7 +36,8 @@ CREATE TABLE `websites` (
 | path_prefix | varchar(100) |  | false |  |  | サイトPathのPrefix |
 | strip_prefix | tinyint(1) |  | false |  |  | PathのPrefixを落とすかどうか |
 | https | tinyint(1) |  | false |  |  | httpsの接続かどうか |
-| http_port | int(11) | 80 | false |  |  | コンテナhttpポート番号 |
+| h2c | tinyint(1) |  | false |  |  | (advanced)プロキシとアプリの通信にh2c protocolを使うかどうか |
+| http_port | int(11) | 80 | false |  |  | (runtime only)コンテナhttpポート番号 |
 | authentication | enum('off','soft','hard') |  | false |  |  | traP部員認証タイプ |
 | application_id | char(22) |  | false |  | [applications](applications.md) | アプリケーションID |
 
@@ -57,7 +59,36 @@ CREATE TABLE `websites` (
 
 ## Relations
 
-![er](websites.svg)
+```mermaid
+erDiagram
+
+"websites" }o--|| "applications" : "FOREIGN KEY (application_id) REFERENCES applications (id)"
+
+"websites" {
+  char_22_ id PK
+  varchar_100_ fqdn
+  varchar_100_ path_prefix
+  tinyint_1_ strip_prefix
+  tinyint_1_ https
+  tinyint_1_ h2c
+  int_11_ http_port
+  enum__off___soft___hard__ authentication
+  char_22_ application_id FK
+}
+"applications" {
+  char_22_ id PK
+  varchar_100_ name
+  varchar_22_ repository_id FK
+  varchar_100_ ref_name
+  enum__runtime___static__ deploy_type
+  tinyint_1_ running
+  enum__missing___starting___running___exited___errored___unknown__ container
+  char_40_ current_commit
+  char_40_ want_commit
+  datetime_6_ created_at
+  datetime_6_ updated_at
+}
+```
 
 ---
 

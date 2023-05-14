@@ -267,6 +267,72 @@ func (mr *MockAvailableDomainRepositoryMockRecorder) GetAvailableDomains(ctx int
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetAvailableDomains", reflect.TypeOf((*MockAvailableDomainRepository)(nil).GetAvailableDomains), ctx)
 }
 
+// MockAvailablePortRepository is a mock of AvailablePortRepository interface.
+type MockAvailablePortRepository struct {
+	ctrl     *gomock.Controller
+	recorder *MockAvailablePortRepositoryMockRecorder
+}
+
+// MockAvailablePortRepositoryMockRecorder is the mock recorder for MockAvailablePortRepository.
+type MockAvailablePortRepositoryMockRecorder struct {
+	mock *MockAvailablePortRepository
+}
+
+// NewMockAvailablePortRepository creates a new mock instance.
+func NewMockAvailablePortRepository(ctrl *gomock.Controller) *MockAvailablePortRepository {
+	mock := &MockAvailablePortRepository{ctrl: ctrl}
+	mock.recorder = &MockAvailablePortRepositoryMockRecorder{mock}
+	return mock
+}
+
+// EXPECT returns an object that allows the caller to indicate expected use.
+func (m *MockAvailablePortRepository) EXPECT() *MockAvailablePortRepositoryMockRecorder {
+	return m.recorder
+}
+
+// AddAvailablePort mocks base method.
+func (m *MockAvailablePortRepository) AddAvailablePort(ctx context.Context, ap *domain.AvailablePort) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "AddAvailablePort", ctx, ap)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// AddAvailablePort indicates an expected call of AddAvailablePort.
+func (mr *MockAvailablePortRepositoryMockRecorder) AddAvailablePort(ctx, ap interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AddAvailablePort", reflect.TypeOf((*MockAvailablePortRepository)(nil).AddAvailablePort), ctx, ap)
+}
+
+// DeleteAvailablePort mocks base method.
+func (m *MockAvailablePortRepository) DeleteAvailablePort(ctx context.Context, ap *domain.AvailablePort) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "DeleteAvailablePort", ctx, ap)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// DeleteAvailablePort indicates an expected call of DeleteAvailablePort.
+func (mr *MockAvailablePortRepositoryMockRecorder) DeleteAvailablePort(ctx, ap interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteAvailablePort", reflect.TypeOf((*MockAvailablePortRepository)(nil).DeleteAvailablePort), ctx, ap)
+}
+
+// GetAvailablePorts mocks base method.
+func (m *MockAvailablePortRepository) GetAvailablePorts(ctx context.Context) (domain.AvailablePortSlice, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetAvailablePorts", ctx)
+	ret0, _ := ret[0].(domain.AvailablePortSlice)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetAvailablePorts indicates an expected call of GetAvailablePorts.
+func (mr *MockAvailablePortRepositoryMockRecorder) GetAvailablePorts(ctx interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetAvailablePorts", reflect.TypeOf((*MockAvailablePortRepository)(nil).GetAvailablePorts), ctx)
+}
+
 // MockBuildRepository is a mock of BuildRepository interface.
 type MockBuildRepository struct {
 	ctrl     *gomock.Controller

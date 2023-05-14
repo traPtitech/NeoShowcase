@@ -1,4 +1,4 @@
-TBLS_VERSION := 1.62.1
+TBLS_VERSION := 1.65.3
 SPECTRAL_VERSION := 6.4.0
 
 GO_REPO_ROOT_PACKAGE := "github.com/traPtitech/neoshowcase"
@@ -8,7 +8,6 @@ PROTOC_SOURCES ?= $(shell find ./api/proto/neoshowcase -type f -name "*.proto" -
 PROTOC_SOURCES_CLIENT := ./api/proto/neoshowcase/protobuf/gateway.proto ./api/proto/neoshowcase/protobuf/null.proto
 
 TBLS_CMD := docker run --rm --net=host -v $$(pwd):/work --workdir /work -u $$(id -u):$$(id -g) ghcr.io/k1low/tbls:v$(TBLS_VERSION)
-SPECTRAL_CMD := docker run --rm -it -v $$(pwd):/tmp stoplight/spectral:$(SPECTRAL_VERSION)
 SQLDEF_CMD := APP_VERSION=local APP_REVISION=makefile mysqldef --port=5004 --user=root --password=password neoshowcase
 EVANS_CMD := evans
 
@@ -38,10 +37,7 @@ protoc: ## Generate proto sources
 
 .PHONY: db-gen-docs
 db-gen-docs: ## Generate db schema docs
-	@if [ -d "./docs/dbschema" ]; then \
-		rm -r ./docs/dbschema; \
-	fi
-	@$(TBLS_CMD) doc
+	@$(TBLS_CMD) doc --rm-dist
 
 .PHONY: db-diff-docs
 db-diff-docs: ## Calculate diff with current db schema docs
