@@ -1,6 +1,7 @@
 package usecase
 
 import (
+	"bytes"
 	"context"
 	"fmt"
 	"io"
@@ -215,13 +216,16 @@ func (s *builderService) tryStartTask(task *builder.Task) error {
 		return err
 	}
 
+	st, err := newState(task, repo, s.response)
+	if err != nil {
+		return err
+	}
 	ctx, cancel := context.WithCancel(context.Background())
-	finish := make(chan struct{})
-	st := newState(task, repo, s.response)
+	finishWait := make(chan struct{})
 	s.state = st
 	s.stateCancel = func() {
 		cancel()
-		<-finish
+		<-finishWait
 	}
 
 	go func() {
@@ -236,9 +240,10 @@ func (s *builderService) tryStartTask(task *builder.Task) error {
 			BuildId:       task.BuildID,
 			Reason:        toPBSettleReason(status),
 		}}}
+		st.Cleanup()
 
 		cancel()
-		close(finish)
+		close(finishWait)
 		s.statusLock.Lock()
 		s.state = nil
 		s.stateCancel = nil
@@ -249,24 +254,110 @@ func (s *builderService) tryStartTask(task *builder.Task) error {
 	return nil
 }
 
+func (s *builderService) finalize(ctx context.Context, st *state, status domain.BuildStatus) {
+	err := domain.SaveBuildLog(s.storage, st.logWriter.LogReader(), st.task.BuildID)
+	if err != nil {
+		log.Errorf("failed to save build log: %+v", err)
+	}
+
+	now := time.Now()
+	updateArgs := domain.UpdateBuildArgs{
+		Status:     optional.From(status),
+		UpdatedAt:  optional.From(now),
+		FinishedAt: optional.From(now),
+	}
+	if err := s.buildRepo.UpdateBuild(ctx, st.task.BuildID, updateArgs); err != nil {
+		log.Errorf("failed to update build: %+v", err)
+	}
+}
+
+type buildStep struct {
+	desc string
+	fn   func() error
+}
+
+func (s *builderService) buildSteps(ctx context.Context, st *state) ([]buildStep, error) {
+	var steps []buildStep
+
+	steps = append(steps, buildStep{"Repository Clone", func() error {
+		return s.cloneRepository(ctx, st)
+	}})
+
+	switch bc := st.task.BuildConfig.(type) {
+	case *domain.BuildConfigRuntimeBuildpack:
+		steps = append(steps, buildStep{"Build (Runtime Buildpack)", func() error {
+			return s.buildImageBuildpack(ctx, st, bc)
+		}})
+	case *domain.BuildConfigRuntimeCmd:
+		steps = append(steps, buildStep{"Build (Runtime Command)", func() error {
+			return withBuildkitProgress(ctx, st.logWriter, func(ctx context.Context, ch chan *buildkit.SolveStatus) error {
+				return s.buildImageWithCmd(ctx, st, ch, bc)
+			})
+		}})
+	case *domain.BuildConfigRuntimeDockerfile:
+		steps = append(steps, buildStep{"Build (Runtime Dockerfile)", func() error {
+			return withBuildkitProgress(ctx, st.logWriter, func(ctx context.Context, ch chan *buildkit.SolveStatus) error {
+				return s.buildImageWithDockerfile(ctx, st, ch, bc)
+			})
+		}})
+	case *domain.BuildConfigStaticCmd:
+		steps = append(steps, buildStep{"Build (Static Command)", func() error {
+			return withBuildkitProgress(ctx, st.logWriter, func(ctx context.Context, ch chan *buildkit.SolveStatus) error {
+				return s.buildStaticWithCmd(ctx, st, ch, bc)
+			})
+		}})
+		steps = append(steps, buildStep{"Save Artifact", func() error {
+			return s.saveArtifact(ctx, st)
+		}})
+	case *domain.BuildConfigStaticDockerfile:
+		steps = append(steps, buildStep{"Build (Static Command)", func() error {
+			return withBuildkitProgress(ctx, st.logWriter, func(ctx context.Context, ch chan *buildkit.SolveStatus) error {
+				return s.buildStaticWithDockerfile(ctx, st, ch, bc)
+			})
+		}})
+		steps = append(steps, buildStep{"Save Artifact", func() error {
+			return s.saveArtifact(ctx, st)
+		}})
+	default:
+		return nil, errors.New("unknown build config type")
+	}
+
+	return steps, nil
+}
+
 func (s *builderService) process(ctx context.Context, st *state) domain.BuildStatus {
 	ctx, cancel := context.WithCancel(ctx)
 	defer cancel()
 	go s.updateStatusLoop(ctx, st.task.BuildID)
 
-	err := st.initTempFiles()
+	steps, err := s.buildSteps(ctx, st)
 	if err != nil {
-		log.Errorf("failed to init temp files: %+v", err)
+		log.Errorf("calculating build steps: %+v", err)
+		st.WriteLog(fmt.Sprintf("[ns-builder] Error calculating build steps: %v", err))
 		return domain.BuildStatusFailed
 	}
 
-	err = s.cloneRepository(ctx, st)
-	if err != nil {
-		log.Errorf("failed to clone repository: %+v", err)
-		return domain.BuildStatusFailed
+	for i, step := range steps {
+		st.WriteLog(fmt.Sprintf("[ns-builder] ==> (%d/%d) %s", i+1, len(steps), step.desc))
+		start := time.Now()
+		err := step.fn()
+		if errors.Is(err, context.Canceled) ||
+			errors.Is(err, context.DeadlineExceeded) ||
+			errors.Is(err, gstatus.FromContextError(context.Canceled).Err()) {
+			st.WriteLog("[ns-builder] Build cancelled.")
+			return domain.BuildStatusCanceled
+		}
+		if err != nil {
+			msg := fmt.Sprintf("%+v", err)
+			log.Error(msg)
+			st.WriteLog("[ns-builder] Build failed:")
+			st.WriteLog(msg)
+			return domain.BuildStatusFailed
+		}
+		st.WriteLog(fmt.Sprintf("[ns-builder] ==> (%d/%d) Done (%v).", i+1, len(steps), time.Since(start)))
 	}
 
-	return s.build(ctx, st)
+	return domain.BuildStatusSucceeded
 }
 
 func (s *builderService) updateStatusLoop(ctx context.Context, buildID string) {
@@ -334,102 +425,40 @@ func (s *builderService) cloneRepository(ctx context.Context, st *state) error {
 	return nil
 }
 
-func (s *builderService) finalize(ctx context.Context, st *state, status domain.BuildStatus) {
-	// ログファイルの保存
-	if st.logTempFile != nil {
-		_ = st.logTempFile.Close()
-		if err := domain.SaveBuildLog(s.storage, st.logTempFile.Name(), st.task.BuildID); err != nil {
-			log.Errorf("failed to save build log: %+v", err)
-		}
+func (s *builderService) saveArtifact(ctx context.Context, st *state) error {
+	filename := st.artifactTempFile.Name()
+
+	stat, err := os.Stat(filename)
+	if err != nil {
+		return errors.Wrap(err, "opening artifact")
 	}
 
-	// 生成物tarの保存
-	if st.artifactTempFile != nil {
-		_ = st.artifactTempFile.Close()
-		if status == domain.BuildStatusSucceeded {
-			err := func() error {
-				filename := st.artifactTempFile.Name()
-				stat, err := os.Stat(filename)
-				if err != nil {
-					return errors.Wrap(err, "failed to open artifact")
-				}
-				artifact := domain.NewArtifact(st.task.BuildID, stat.Size())
-				err = s.artifactRepo.CreateArtifact(ctx, artifact)
-				if err != nil {
-					return errors.Wrap(err, "failed to create artifact")
-				}
-				err = domain.SaveArtifact(s.storage, filename, artifact.ID)
-				if err != nil {
-					return errors.Wrap(err, "failed to save artifact")
-				}
-				return nil
-			}()
-			if err != nil {
-				log.Errorf("failed to process artifact: %+v", err)
-			}
-		} else {
-			_ = os.Remove(st.artifactTempFile.Name())
-		}
+	artifact := domain.NewArtifact(st.task.BuildID, stat.Size())
+	err = s.artifactRepo.CreateArtifact(ctx, artifact)
+	if err != nil {
+		return errors.Wrap(err, "creating artifact record")
 	}
 
-	// 一時リポジトリディレクトリの削除
-	if st.repositoryTempDir != "" {
-		_ = os.RemoveAll(st.repositoryTempDir)
+	err = domain.SaveArtifact(s.storage, filename, artifact.ID)
+	if err != nil {
+		return errors.Wrap(err, "saving artifact")
 	}
 
-	// Build更新
-	now := time.Now()
-	updateArgs := domain.UpdateBuildArgs{
-		Status:     optional.From(status),
-		UpdatedAt:  optional.From(now),
-		FinishedAt: optional.From(now),
-	}
-	if err := s.buildRepo.UpdateBuild(ctx, st.task.BuildID, updateArgs); err != nil {
-		log.Errorf("failed to update build: %+v", err)
-	}
+	return nil
 }
 
-func (s *builderService) build(ctx context.Context, st *state) domain.BuildStatus {
-	st.writeLog("[ns-builder] Build started.")
-
+func withBuildkitProgress(ctx context.Context, logger io.Writer, buildFn func(ctx context.Context, ch chan *buildkit.SolveStatus) error) error {
 	ch := make(chan *buildkit.SolveStatus)
 	eg, ctx := errgroup.WithContext(ctx)
-	eg.Go(func() (err error) {
-		switch bc := st.task.BuildConfig.(type) {
-		case *domain.BuildConfigRuntimeBuildpack:
-			defer close(ch)
-			return s.buildImageBuildpack(ctx, st, bc)
-		case *domain.BuildConfigRuntimeCmd:
-			return s.buildImageWithCmd(ctx, st, ch, bc)
-		case *domain.BuildConfigRuntimeDockerfile:
-			return s.buildImageWithDockerfile(ctx, st, ch, bc)
-		case *domain.BuildConfigStaticCmd:
-			return s.buildStaticWithCmd(ctx, st, ch, bc)
-		case *domain.BuildConfigStaticDockerfile:
-			return s.buildStaticWithDockerfile(ctx, st, ch, bc)
-		default:
-			return errors.New("unknown build config type")
-		}
+	eg.Go(func() error {
+		return buildFn(ctx, ch)
 	})
 	eg.Go(func() error {
-		// ビルドログを収集
 		// TODO: VertexWarningを使う (LLBのどのvertexに問題があったか)
-		_, err := progressui.DisplaySolveStatus(ctx, "", nil, st.getLogWriter(), ch)
+		_, err := progressui.DisplaySolveStatus(ctx, "", nil, logger, ch)
 		return err
 	})
-
-	err := eg.Wait()
-	if err != nil {
-		if err == context.Canceled || err == context.DeadlineExceeded || errors.Is(err, gstatus.FromContextError(context.Canceled).Err()) {
-			st.writeLog("[ns-builder] Build cancelled.")
-			return domain.BuildStatusCanceled
-		}
-		log.Errorf("failed to build: %+v", err)
-		return domain.BuildStatusFailed
-	}
-
-	st.writeLog("[ns-builder] Build succeeded!")
-	return domain.BuildStatusSucceeded
+	return eg.Wait()
 }
 
 func (s *builderService) buildImageBuildpack(
@@ -439,7 +468,7 @@ func (s *builderService) buildImageBuildpack(
 ) error {
 	contextDir := lo.Ternary(bc.Context != "", bc.Context, ".")
 	buildDir := filepath.Join(st.repositoryTempDir, contextDir)
-	return s.buildpack.Pack(ctx, buildDir, st.getLogWriter(), st.task.DestImage())
+	return s.buildpack.Pack(ctx, buildDir, st.Logger(), st.task.DestImage())
 }
 
 func (s *builderService) buildImageWithCmd(
@@ -646,18 +675,16 @@ func createScriptFile(filename string, script string) error {
 type state struct {
 	task       *builder.Task
 	repository *domain.Repository
-	response   chan<- *pb.BuilderResponse
+	logWriter  *logWriter
 
 	repositoryTempDir string
-	logTempFile       *os.File
-	logWriter         *logWriter
 	artifactTempFile  *os.File
 }
 
 type logWriter struct {
 	buildID  string
 	response chan<- *pb.BuilderResponse
-	logFile  *os.File
+	buf      bytes.Buffer
 }
 
 func (l *logWriter) toBuilderResponse(p []byte) *pb.BuilderResponse {
@@ -666,8 +693,12 @@ func (l *logWriter) toBuilderResponse(p []byte) *pb.BuilderResponse {
 	}}
 }
 
+func (l *logWriter) LogReader() io.Reader {
+	return &l.buf
+}
+
 func (l *logWriter) Write(p []byte) (n int, err error) {
-	n, err = l.logFile.Write(p)
+	n, err = l.buf.Write(p)
 	if err != nil {
 		return
 	}
@@ -678,54 +709,37 @@ func (l *logWriter) Write(p []byte) (n int, err error) {
 	return
 }
 
-func newState(task *builder.Task, repo *domain.Repository, response chan<- *pb.BuilderResponse) *state {
-	return &state{
+func newState(task *builder.Task, repo *domain.Repository, response chan<- *pb.BuilderResponse) (*state, error) {
+	st := &state{
 		task:       task,
 		repository: repo,
-		response:   response,
+		logWriter: &logWriter{
+			buildID:  task.BuildID,
+			response: response,
+		},
 	}
-}
-
-func (s *state) static() bool {
-	return s.task.BuildConfig.BuildType().DeployType() == domain.DeployTypeStatic
-}
-
-func (s *state) initTempFiles() error {
 	var err error
-
-	// ログ用一時ファイル作成
-	s.logTempFile, err = os.CreateTemp("", "buildlog-")
+	st.repositoryTempDir, err = os.MkdirTemp("", "repository-")
 	if err != nil {
-		return errors.Wrap(err, "failed to create tmp log file")
+		return nil, errors.Wrap(err, "failed to create tmp repository dir")
 	}
-	s.logWriter = &logWriter{
-		buildID:  s.task.BuildID,
-		response: s.response,
-		logFile:  s.logTempFile,
-	}
-
-	// 成果物tarの一時保存先作成
-	if s.static() {
-		s.artifactTempFile, err = os.CreateTemp("", "artifacts-")
-		if err != nil {
-			return errors.Wrap(err, "failed to create tmp artifact file")
-		}
-	}
-
-	// リポジトリクローン用の一時ディレクトリ作成
-	s.repositoryTempDir, err = os.MkdirTemp("", "repository-")
+	st.artifactTempFile, err = os.CreateTemp("", "artifacts-")
 	if err != nil {
-		return errors.Wrap(err, "failed to create tmp repository dir")
+		return nil, errors.Wrap(err, "failed to create tmp artifact file")
 	}
-
-	return nil
+	return st, nil
 }
 
-func (s *state) getLogWriter() io.Writer {
+func (s *state) Cleanup() {
+	_ = os.RemoveAll(s.repositoryTempDir)
+	_ = os.Remove(s.artifactTempFile.Name())
+}
+
+func (s *state) Logger() io.Writer {
 	return s.logWriter
 }
 
-func (s *state) writeLog(a ...interface{}) {
+func (s *state) WriteLog(a ...interface{}) {
 	_, _ = fmt.Fprintln(s.logWriter, a...)
 }
 

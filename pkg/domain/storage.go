@@ -27,9 +27,10 @@ func buildLogPath(buildID string) string {
 	return filepath.Join(buildLogDirectory, buildID)
 }
 
-func SaveBuildLog(s Storage, filename string, buildID string) error {
-	if err := s.Move(filename, buildLogPath(buildID)); err != nil {
-		return errors.Wrap(err, "failed to move build log")
+func SaveBuildLog(s Storage, src io.Reader, buildID string) error {
+	err := s.Save(buildLogPath(buildID), src)
+	if err != nil {
+		return errors.Wrap(err, "saving build log")
 	}
 	return nil
 }

@@ -62,7 +62,7 @@ func (b *k8sBackend) statefulSet(app *domain.RuntimeDesiredState) *appsv1.Statef
 				ObjectMeta: metav1.ObjectMeta{
 					Labels: b.appLabel(app.App.ID),
 					Annotations: map[string]string{
-						appRestartAnnotation: app.App.UpdatedAt.Format(time.RFC3339),
+						appRestartAnnotation: app.App.UpdatedAt.Format(time.RFC3339Nano),
 					},
 				},
 				Spec: v1.PodSpec{
