@@ -254,27 +254,87 @@ func (s *builderService) tryStartTask(task *builder.Task) error {
 	return nil
 }
 
+func (s *builderService) finalize(ctx context.Context, st *state, status domain.BuildStatus) {
+	err := domain.SaveBuildLog(s.storage, st.logWriter.LogReader(), st.task.BuildID)
+	if err != nil {
+		log.Errorf("failed to save build log: %+v", err)
+	}
+
+	now := time.Now()
+	updateArgs := domain.UpdateBuildArgs{
+		Status:     optional.From(status),
+		UpdatedAt:  optional.From(now),
+		FinishedAt: optional.From(now),
+	}
+	if err := s.buildRepo.UpdateBuild(ctx, st.task.BuildID, updateArgs); err != nil {
+		log.Errorf("failed to update build: %+v", err)
+	}
+}
+
+type buildStep struct {
+	desc string
+	fn   func() error
+}
+
+func (s *builderService) buildSteps(ctx context.Context, st *state) ([]buildStep, error) {
+	var steps []buildStep
+
+	steps = append(steps, buildStep{"Repository Clone", func() error {
+		return s.cloneRepository(ctx, st)
+	}})
+
+	switch bc := st.task.BuildConfig.(type) {
+	case *domain.BuildConfigRuntimeBuildpack:
+		steps = append(steps, buildStep{"Build (Runtime Buildpack)", func() error {
+			return s.buildImageBuildpack(ctx, st, bc)
+		}})
+	case *domain.BuildConfigRuntimeCmd:
+		steps = append(steps, buildStep{"Build (Runtime Command)", func() error {
+			return withBuildkitProgress(ctx, st.logWriter, func(ctx context.Context, ch chan *buildkit.SolveStatus) error {
+				return s.buildImageWithCmd(ctx, st, ch, bc)
+			})
+		}})
+	case *domain.BuildConfigRuntimeDockerfile:
+		steps = append(steps, buildStep{"Build (Runtime Dockerfile)", func() error {
+			return withBuildkitProgress(ctx, st.logWriter, func(ctx context.Context, ch chan *buildkit.SolveStatus) error {
+				return s.buildImageWithDockerfile(ctx, st, ch, bc)
+			})
+		}})
+	case *domain.BuildConfigStaticCmd:
+		steps = append(steps, buildStep{"Build (Static Command)", func() error {
+			return withBuildkitProgress(ctx, st.logWriter, func(ctx context.Context, ch chan *buildkit.SolveStatus) error {
+				return s.buildStaticWithCmd(ctx, st, ch, bc)
+			})
+		}})
+		steps = append(steps, buildStep{"Save Artifact", func() error {
+			return s.saveArtifact(ctx, st)
+		}})
+	case *domain.BuildConfigStaticDockerfile:
+		steps = append(steps, buildStep{"Build (Static Command)", func() error {
+			return withBuildkitProgress(ctx, st.logWriter, func(ctx context.Context, ch chan *buildkit.SolveStatus) error {
+				return s.buildStaticWithDockerfile(ctx, st, ch, bc)
+			})
+		}})
+		steps = append(steps, buildStep{"Save Artifact", func() error {
+			return s.saveArtifact(ctx, st)
+		}})
+	default:
+		return nil, errors.New("unknown build config type")
+	}
+
+	return steps, nil
+}
+
 func (s *builderService) process(ctx context.Context, st *state) domain.BuildStatus {
 	ctx, cancel := context.WithCancel(ctx)
 	defer cancel()
 	go s.updateStatusLoop(ctx, st.task.BuildID)
 
-	type buildStep struct {
-		desc string
-		fn   func() error
-	}
-	steps := []buildStep{
-		{"Repository Clone", func() error {
-			return s.cloneRepository(ctx, st)
-		}},
-		{"Application Build", func() error {
-			return s.build(ctx, st)
-		}},
-	}
-	if st.task.BuildConfig.BuildType().DeployType() == domain.DeployTypeStatic {
-		steps = append(steps, buildStep{"Save Artifact", func() error {
-			return s.saveArtifact(ctx, st)
-		}})
+	steps, err := s.buildSteps(ctx, st)
+	if err != nil {
+		log.Errorf("calculating build steps: %+v", err)
+		st.WriteLog(fmt.Sprintf("[ns-builder] Error calculating build steps: %v", err))
+		return domain.BuildStatusFailed
 	}
 
 	for i, step := range steps {
@@ -387,47 +447,15 @@ func (s *builderService) saveArtifact(ctx context.Context, st *state) error {
 	return nil
 }
 
-func (s *builderService) finalize(ctx context.Context, st *state, status domain.BuildStatus) {
-	err := domain.SaveBuildLog(s.storage, st.logWriter.LogReader(), st.task.BuildID)
-	if err != nil {
-		log.Errorf("failed to save build log: %+v", err)
-	}
-
-	now := time.Now()
-	updateArgs := domain.UpdateBuildArgs{
-		Status:     optional.From(status),
-		UpdatedAt:  optional.From(now),
-		FinishedAt: optional.From(now),
-	}
-	if err := s.buildRepo.UpdateBuild(ctx, st.task.BuildID, updateArgs); err != nil {
-		log.Errorf("failed to update build: %+v", err)
-	}
-}
-
-func (s *builderService) build(ctx context.Context, st *state) error {
+func withBuildkitProgress(ctx context.Context, logger io.Writer, buildFn func(ctx context.Context, ch chan *buildkit.SolveStatus) error) error {
 	ch := make(chan *buildkit.SolveStatus)
 	eg, ctx := errgroup.WithContext(ctx)
-	eg.Go(func() (err error) {
-		switch bc := st.task.BuildConfig.(type) {
-		case *domain.BuildConfigRuntimeBuildpack:
-			defer close(ch)
-			return s.buildImageBuildpack(ctx, st, bc)
-		case *domain.BuildConfigRuntimeCmd:
-			return s.buildImageWithCmd(ctx, st, ch, bc)
-		case *domain.BuildConfigRuntimeDockerfile:
-			return s.buildImageWithDockerfile(ctx, st, ch, bc)
-		case *domain.BuildConfigStaticCmd:
-			return s.buildStaticWithCmd(ctx, st, ch, bc)
-		case *domain.BuildConfigStaticDockerfile:
-			return s.buildStaticWithDockerfile(ctx, st, ch, bc)
-		default:
-			return errors.New("unknown build config type")
-		}
+	eg.Go(func() error {
+		return buildFn(ctx, ch)
 	})
 	eg.Go(func() error {
-		// ビルドログを収集
 		// TODO: VertexWarningを使う (LLBのどのvertexに問題があったか)
-		_, err := progressui.DisplaySolveStatus(ctx, "", nil, st.Logger(), ch)
+		_, err := progressui.DisplaySolveStatus(ctx, "", nil, logger, ch)
 		return err
 	})
 	return eg.Wait()
