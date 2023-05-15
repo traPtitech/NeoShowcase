@@ -193,8 +193,8 @@ const Website = (props: WebsiteProps) => {
         <InputBar placeholder='example.ns.trap.jp' />
       </InputForm>
       <InputForm>
-        <InputFormText>Path prefix</InputFormText>
-        <InputBar placeholder='path_prefix' />
+        <InputFormText>Path Prefix</InputFormText>
+        <InputBar placeholder='/' />
       </InputForm>
       <InputForm>
         <InputFormCheckBox>
