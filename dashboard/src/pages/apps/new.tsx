@@ -189,8 +189,8 @@ const Website = (props: WebsiteProps) => {
   return (
     <InputFormWebsite>
       <InputForm>
-        <InputFormText>fqdn</InputFormText>
-        <InputBar placeholder='fqdn' />
+        <InputFormText>ドメイン名</InputFormText>
+        <InputBar placeholder='example.ns.trap.jp' />
       </InputForm>
       <InputForm>
         <InputFormText>Path prefix</InputFormText>
