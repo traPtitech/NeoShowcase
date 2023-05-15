@@ -245,7 +245,7 @@ export default () => {
       return acc
     }, {} as Record<string, Application[]>)
 
-  const [buildConfigSelected, buildConfigSetSelected] = createSignal(buildConfigItems[0].value)
+  const [buildConfig, setBuildConfig] = createSignal(buildConfigItems[0].value)
   const [websites, setWebsites] = createSignal<WebsiteStruct[]>([])
   const [searchParams, setSearchParams] = useSearchParams()
   const SelectRepository = (): JSX.Element => {
