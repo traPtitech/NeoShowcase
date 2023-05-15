@@ -198,9 +198,9 @@ const Website = (props: WebsiteProps) => {
       </InputForm>
       <InputForm>
         <InputFormCheckBox>
-          <Checkbox>strip_prefix</Checkbox>
+          <Checkbox>Strip Path Prefix</Checkbox>
           <Checkbox>https</Checkbox>
-          <Checkbox>h2c</Checkbox>
+          <Checkbox>(advanced) アプリ通信にh2cを用いる</Checkbox>
         </InputFormCheckBox>
       </InputForm>
       <InputForm>
