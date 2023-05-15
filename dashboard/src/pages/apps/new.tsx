@@ -2,7 +2,7 @@ import { Header } from '/@/components/Header'
 import { Accessor, createResource, createSignal, JSX, Setter, Show, Signal, For } from 'solid-js'
 import { Radio, RadioItem } from '/@/components/Radio'
 import { client } from '/@/libs/api'
-import { Application, Repository } from '/@/api/neoshowcase/protobuf/gateway_pb'
+import { Application, Repository, Website } from '/@/api/neoshowcase/protobuf/gateway_pb'
 import { RepositoryNameRow } from '/@/components/RepositoryRow'
 import { A, useSearchParams } from '@solidjs/router'
 import { BsArrowLeftShort } from 'solid-icons/bs'
@@ -235,7 +235,6 @@ export type WebsiteStruct = {
 }
 
 const EmptyWebsite: WebsiteStruct = { signal: createSignal(authenticationTypeItems[0].value) }
-const initialWebsiteStructs: WebsiteStruct[] = []
 
 export default () => {
   const appsByRepo = () =>
@@ -247,7 +246,7 @@ export default () => {
     }, {} as Record<string, Application[]>)
 
   const [buildConfigSelected, buildConfigSetSelected] = createSignal(buildConfigItems[0].value)
-  const [websites, setWebsites] = createSignal(initialWebsiteStructs)
+  const [websites, setWebsites] = createSignal<WebsiteStruct[]>([])
   const [searchParams, setSearchParams] = useSearchParams()
   const SelectRepository = (): JSX.Element => {
     return (
