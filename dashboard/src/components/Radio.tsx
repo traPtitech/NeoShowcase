@@ -34,11 +34,9 @@ export interface Props {
   items: RadioItem[]
   selected: Accessor<string>
   setSelected: Setter<string>
-  init?: string
 }
 
 export const Radio = (props: Props): JSXElement => {
-  props.setSelected(props.init ?? props.items[0].value)
 
   return (
     <Container>

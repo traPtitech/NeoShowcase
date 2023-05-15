@@ -127,7 +127,7 @@ export default () => {
       return acc
     }, {} as Record<string, Application[]>)
 
-  const [selected, setSelected] = createSignal('')
+  const [sort, setSort] = createSignal(sortItems[0].value)
 
   return (
     <Container>
@@ -163,7 +163,7 @@ export default () => {
             </SidebarSection>
             <SidebarOptions>
               <SidebarTitle>Sort</SidebarTitle>
-              <Radio items={sortItems} selected={selected} setSelected={setSelected} />
+              <Radio items={sortItems} selected={sort} setSelected={setSort} />
             </SidebarOptions>
           </SidebarContainer>
           <MainContainer>

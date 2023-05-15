@@ -293,7 +293,7 @@ export type WebsiteStruct = {
   // setAuthenticationType: Setter<string>
 }
 
-const EmptyWebsite: WebsiteStruct = { signal: createSignal('') }
+const EmptyWebsite: WebsiteStruct = { signal: createSignal(authenticationTypeItems[0].value) }
 const initialWebsiteStructs: WebsiteStruct[] = []
 
 export default () => {
@@ -305,7 +305,7 @@ export default () => {
       return acc
     }, {} as Record<string, Application[]>)
 
-  const [buildConfigSelected, buildConfigSetSelected] = createSignal('')
+  const [buildConfigSelected, buildConfigSetSelected] = createSignal(buildConfigItems[0].value)
   const [websites, setWebsites] = createSignal(initialWebsiteStructs)
   const [searchParams, setSearchParams] = useSearchParams()
   const SelectRepository = (): JSX.Element => {
