@@ -375,7 +375,7 @@ export default () => {
                   <Button
                     onclick={() => {
                       const [newWebsite] = createSignal(EmptyWebsite)
-                      setWebsites((newWebsites) => [...newWebsites, newWebsite()])
+                      setWebsites((prevWebsites) => [...prevWebsites, newWebsite()])
                     }}
                     color='black1'
                     size='large'
