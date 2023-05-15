@@ -327,7 +327,7 @@ export default () => {
 
               <InputForm>
                 <InputFormText>RepositoryID</InputFormText>
-                <InputBar placeholder={searchParams.repositoryID ?? '6caba7b91ea72c05d8f65e'} />
+                <InputBar placeholder={searchParams.repositoryID} />
               </InputForm>
 
               <InputForm>
