@@ -163,7 +163,7 @@ export default () => {
             </SidebarSection>
             <SidebarOptions>
               <SidebarTitle>Sort</SidebarTitle>
-              <Radio items={sortItems} selected={sort} setSelected={setSort} />
+              <Radio items={sortItems} selected={sort()} setSelected={setSort} />
             </SidebarOptions>
           </SidebarContainer>
           <MainContainer>

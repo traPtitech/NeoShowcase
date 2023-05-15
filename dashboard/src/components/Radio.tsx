@@ -32,7 +32,7 @@ export interface RadioItem {
 
 export interface Props {
   items: RadioItem[]
-  selected: Accessor<string>
+  selected: string
   setSelected: Setter<string>
 }
 
@@ -42,7 +42,7 @@ export const Radio = (props: Props): JSXElement => {
     <Container>
       {props.items.map(({ value, title }) => (
         <ItemContainer onclick={() => props.setSelected(value)}>
-          {props.selected() === value ? (
+          {props.selected === value ? (
             <ImRadioChecked size={20} color={vars.text.black2} />
           ) : (
             <ImRadioUnchecked size={20} color={vars.text.black4} />

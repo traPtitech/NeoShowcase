@@ -267,7 +267,7 @@ const Website = (props: WebsiteProps) => {
         <InputBar placeholder='http_port' />
       </InputForm>
       <InputForm>
-        <Radio items={authenticationTypeItems} selected={props.selected} setSelected={props.setSelected} />
+        <Radio items={authenticationTypeItems} selected={props.selected()} setSelected={props.setSelected} />
       </InputForm>
     </InputFormWebsite>
   )
@@ -349,7 +349,7 @@ export default () => {
                   <InputForm>
                     <Radio
                       items={buildConfigItems}
-                      selected={buildConfigSelected}
+                      selected={buildConfigSelected()}
                       setSelected={buildConfigSetSelected}
                     />
                   </InputForm>
