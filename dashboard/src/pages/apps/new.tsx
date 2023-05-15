@@ -67,54 +67,12 @@ const ContentContainer = styled('div', {
     gap: '40px',
   },
 })
-styled('div', {
-  base: {
-    fontSize: '24px',
-    fontWeight: 500,
-    color: vars.text.black1,
-  },
-})
-styled('div', {
-  base: {
-    display: 'flex',
-    flexDirection: 'column',
-    gap: '12px',
-
-    fontSize: '20px',
-    color: vars.text.black1,
-  },
-})
-
-styled('div', {
-  base: {
-    display: 'flex',
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    width: '100%',
-  },
-})
-
-styled('div', {
-  base: {
-    display: 'flex',
-    flexDirection: 'row',
-    gap: '8px',
-    alignItems: 'center',
-  },
-})
 
 const MainContentContainer = styled('div', {
   base: {
     display: 'flex',
     flexDirection: 'column',
     gap: '20px',
-  },
-})
-styled('div', {
-  base: {
-    display: 'grid',
-    height: '44px',
   },
 })
 
@@ -211,23 +169,6 @@ const InputFormRadio = styled('div', {
     display: 'flex',
     flexDirection: 'column',
     gap: '12px',
-  },
-})
-
-styled('div', {
-  base: {
-    display: 'flex',
-    borderRadius: '4px',
-    backgroundColor: vars.bg.black1,
-  },
-})
-
-styled('div', {
-  base: {
-    margin: 'auto',
-    color: vars.text.white1,
-    fontSize: '16px',
-    fontWeight: 'bold',
   },
 })
 
