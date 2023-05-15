@@ -204,8 +204,8 @@ const Website = (props: WebsiteProps) => {
         </InputFormCheckBox>
       </InputForm>
       <InputForm>
-        <InputFormText>Http port</InputFormText>
-        <InputBar placeholder='http_port' />
+        <InputFormText>アプリのHTTP Port番号</InputFormText>
+        <InputBar placeholder='80' />
       </InputForm>
       <InputForm>
         <Radio items={authenticationTypeItems} selected={props.selected()} setSelected={props.setSelected} />
