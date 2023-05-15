@@ -2,7 +2,7 @@ import { Header } from '/@/components/Header'
 import { Accessor, createResource, createSignal, JSX, Setter, Show, Signal, For } from 'solid-js'
 import { Radio, RadioItem } from '/@/components/Radio'
 import { client } from '/@/libs/api'
-import { Application, Repository, Website } from '/@/api/neoshowcase/protobuf/gateway_pb'
+import { Application, Repository } from '/@/api/neoshowcase/protobuf/gateway_pb'
 import { RepositoryNameRow } from '/@/components/RepositoryRow'
 import { A, useSearchParams } from '@solidjs/router'
 import { BsArrowLeftShort } from 'solid-icons/bs'
@@ -289,17 +289,17 @@ export default () => {
                   <InputForm>
                     <Radio
                       items={buildConfigItems}
-                      selected={buildConfigSelected()}
-                      setSelected={buildConfigSetSelected}
+                      selected={buildConfig()}
+                      setSelected={setBuildConfig}
                     />
                   </InputForm>
-                  <Show when={buildConfigSelected() === buildConfigItems[0].value}>
+                  <Show when={buildConfig() === buildConfigItems[0].value}>
                     <InputForm>
                       <InputFormText>Context</InputFormText>
                       <InputBar placeholder='context' />
                     </InputForm>
                   </Show>
-                  <Show when={buildConfigSelected() === buildConfigItems[1].value}>
+                  <Show when={buildConfig() === buildConfigItems[1].value}>
                     <InputForm>
                       <InputFormText>Base image</InputFormText>
                       <InputBar placeholder='base_image' />
@@ -315,7 +315,7 @@ export default () => {
                       </InputFormCheckBox>
                     </InputForm>
                   </Show>
-                  <Show when={buildConfigSelected() === buildConfigItems[2].value}>
+                  <Show when={buildConfig() === buildConfigItems[2].value}>
                     <InputForm>
                       <InputFormText>Dockerfile name</InputFormText>
                       <InputBar placeholder='dockerfile_name' />
@@ -325,7 +325,7 @@ export default () => {
                       <InputBar placeholder='context' />
                     </InputForm>
                   </Show>
-                  <Show when={buildConfigSelected() === buildConfigItems[3].value}>
+                  <Show when={buildConfig() === buildConfigItems[3].value}>
                     <InputForm>
                       <InputFormText>Base image</InputFormText>
                       <InputBar placeholder='base_image' />
@@ -345,7 +345,7 @@ export default () => {
                       <InputBar placeholder='artifact_path' />
                     </InputForm>
                   </Show>
-                  <Show when={buildConfigSelected() === buildConfigItems[4].value}>
+                  <Show when={buildConfig() === buildConfigItems[4].value}>
                     <InputForm>
                       <InputFormText>Dockerfile name</InputFormText>
                       <InputBar placeholder='dockerfile_name' />
