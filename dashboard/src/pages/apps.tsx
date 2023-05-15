@@ -171,7 +171,7 @@ export default () => {
               <SearchBar placeholder='Search...' />
               <A href="/repos/new">
                 <Button color='black1' size='large'>
-                  + Create New Repository
+                  + New Repository
                 </Button>
               </A>
             </SearchBarContainer>
