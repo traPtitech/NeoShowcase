@@ -373,16 +373,6 @@ export default () => {
                 <InputFormWebsiteButton>
                   <Button
                     onclick={() => {
-                      const [newWebsite] = createSignal(EmptyWebsite)
-                      setWebsites((prevWebsites) => [...prevWebsites, newWebsite()])
-                    }}
-                    color='black1'
-                    size='large'
-                  >
-                    Add website setting
-                  </Button>
-                  <Button
-                    onclick={() => {
                       setWebsites((newWebsites) => {
                         newWebsites.pop()
                         return [...newWebsites]
@@ -400,6 +390,17 @@ export default () => {
                     return <Website selected={website.signal[0]} setSelected={website.signal[1]} />
                   }}
                 </For>
+
+                <Button
+                  onclick={() => {
+                    const [newWebsite] = createSignal(EmptyWebsite)
+                    setWebsites((prevWebsites) => [...prevWebsites, newWebsite()])
+                  }}
+                  color='black1'
+                  size='large'
+                >
+                  Add website setting
+                </Button>
               </InputForm>
 
               <InputForm>
