@@ -190,7 +190,7 @@ const EmptyWebsite : Website = { fqdn: '', authenticationType: '' }
 
 interface WebsiteProps {
   website: Website
-  setWebsite: Setter<Website>
+  setWebsite: (string) => void
 }
 
 const Website = (props: WebsiteProps) => {
@@ -392,7 +392,10 @@ export default () => {
                   {(website, i) => (
                     <Website
                       website={website}
-                      setWebsite={setWebsites}
+                      setWebsite={(website) => setWebsites((current) => {
+                        current[i()] = website
+                        return current
+                      })}
                     />
                   )}
                 </For>
