@@ -33,7 +33,7 @@ export interface RadioItem {
 export interface Props {
   items: RadioItem[]
   selected: string
-  setSelected: Setter<string>
+  setSelected: (s: string) => void
 }
 
 export const Radio = (props: Props): JSXElement => {

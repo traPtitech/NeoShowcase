@@ -131,7 +131,7 @@ const InputFormCheckBox = styled('div', {
     marginLeft: '4px',
     padding: '8px 12px',
 
-    width: '160px',
+    width: '320px',
   },
 })
 
@@ -180,9 +180,15 @@ const RepositoriesContainer = styled('div', {
   },
 })
 
+interface Website {
+  fqdn: string
+  authenticationType: string
+  // その他のフィールド ...
+}
+
 interface WebsiteProps {
-  selected: Accessor<string>
-  setSelected: Setter<string>
+  website: Website
+  setWebsite: Setter<Website>
 }
 
 const Website = (props: WebsiteProps) => {
@@ -208,33 +214,27 @@ const Website = (props: WebsiteProps) => {
         <InputBar placeholder='80' />
       </InputForm>
       <InputForm>
-        <Radio items={authenticationTypeItems} selected={props.selected()} setSelected={props.setSelected} />
+        <Radio items={authenticationTypeItems} selected={props.website.authenticationType} setSelected={props.setWebsite} />
       </InputForm>
     </InputFormWebsite>
   )
 }
 
-interface WebsitesProps {
-  websites: WebsiteStruct[]
-}
+// interface WebsitesProps {
+//   websites: WebsiteStruct[]
+// }
+//
+// const Websites = (props: WebsitesProps) => {
+//   return (
+//     <For each={props.websites}>
+//       {(website) => {
+//         return <Website selected={website.signal[0]} setSelected={website.signal[1]} />
+//       }}
+//     </For>
+//   )
+// }
 
-const Websites = (props: WebsitesProps) => {
-  return (
-    <For each={props.websites}>
-      {(website) => {
-        return <Website selected={website.signal[0]} setSelected={website.signal[1]} />
-      }}
-    </For>
-  )
-}
-
-export type WebsiteStruct = {
-  signal: Signal<string>
-  // authenticationType: Accessor<string>
-  // setAuthenticationType: Setter<string>
-}
-
-const EmptyWebsite: WebsiteStruct = { signal: createSignal(authenticationTypeItems[0].value) }
+// const EmptyWebsite: WebsiteStruct = { signal: createSignal(authenticationTypeItems[0].value) }
 
 export default () => {
   const appsByRepo = () =>
@@ -246,7 +246,7 @@ export default () => {
     }, {} as Record<string, Application[]>)
 
   const [buildConfig, setBuildConfig] = createSignal(buildConfigItems[0].value)
-  const [websites, setWebsites] = createSignal<WebsiteStruct[]>([])
+  const [websites, setWebsites] = createSignal<Website[]>([])
   const [searchParams, setSearchParams] = useSearchParams()
   const SelectRepository = (): JSX.Element => {
     return (
@@ -385,15 +385,25 @@ export default () => {
                   </Button>
                 </InputFormWebsiteButton>
 
+
                 <For each={websites()}>
-                  {(website) => {
-                    return <Website selected={website.signal[0]} setSelected={website.signal[1]} />
-                  }}
+                  {(website, i) => (
+                    <Website
+                      website={website}
+                      setWebsite={setWebsites}
+                    />
+                  )}
                 </For>
+
+                {/*<For each={websites()}>*/}
+                {/*  {(website) => {*/}
+                {/*    return <Website selected={website.signal[0]} setSelected={website.signal[1]} />*/}
+                {/*  }}*/}
+                {/*</For>*/}
 
                 <Button
                   onclick={() => {
-                    const [newWebsite] = createSignal(EmptyWebsite)
+                    let preWebsites = [...websites(), ]
                     setWebsites((prevWebsites) => [...prevWebsites, newWebsite()])
                   }}
                   color='black1'
