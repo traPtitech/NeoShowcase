@@ -33,10 +33,12 @@ func TestApplicationConfig_Validate(t *testing.T) {
 			deployType: DeployTypeRuntime,
 			config: ApplicationConfig{
 				BuildConfig: &BuildConfigRuntimeCmd{
+					RuntimeConfig: RuntimeConfig{
+						Entrypoint: "./main",
+					},
 					BaseImage: "golang:1.20",
 					BuildCmd:  "go build -o main",
 				},
-				Entrypoint: "./main",
 			},
 			wantErr: false,
 		},
@@ -45,10 +47,12 @@ func TestApplicationConfig_Validate(t *testing.T) {
 			deployType: DeployTypeRuntime,
 			config: ApplicationConfig{
 				BuildConfig: &BuildConfigRuntimeCmd{
+					RuntimeConfig: RuntimeConfig{
+						Entrypoint: "python3 main.py",
+					},
 					BaseImage: "python:3",
 					BuildCmd:  "",
 				},
-				Entrypoint: "python3 main.py",
 			},
 			wantErr: false,
 		},
@@ -57,10 +61,12 @@ func TestApplicationConfig_Validate(t *testing.T) {
 			deployType: DeployTypeRuntime,
 			config: ApplicationConfig{
 				BuildConfig: &BuildConfigRuntimeCmd{
+					RuntimeConfig: RuntimeConfig{
+						Entrypoint: "./my-binary",
+					},
 					BaseImage: "",
 					BuildCmd:  "",
 				},
-				Entrypoint: "./my-binary",
 			},
 			wantErr: false,
 		},
@@ -69,10 +75,12 @@ func TestApplicationConfig_Validate(t *testing.T) {
 			deployType: DeployTypeRuntime,
 			config: ApplicationConfig{
 				BuildConfig: &BuildConfigRuntimeCmd{
+					RuntimeConfig: RuntimeConfig{
+						Entrypoint: "",
+					},
 					BaseImage: "golang:1.20",
 					BuildCmd:  "go build -o main",
 				},
-				Entrypoint: "",
 			},
 			wantErr: true,
 		},
