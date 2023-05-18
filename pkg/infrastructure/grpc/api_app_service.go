@@ -82,16 +82,10 @@ func (s *APIService) UpdateApplication(ctx context.Context, req *connect.Request
 	}
 
 	err = s.svc.UpdateApplication(ctx, msg.Id, &domain.UpdateApplicationArgs{
-		Name:      optional.From(msg.Name),
-		RefName:   optional.From(msg.RefName),
-		UpdatedAt: optional.From(time.Now()),
-		Config: optional.From(domain.ApplicationConfig{
-			UseMariaDB:  app.Config.UseMariaDB,
-			UseMongoDB:  app.Config.UseMongoDB,
-			BuildConfig: pbconvert.FromPBBuildConfig(msg.Config.BuildConfig),
-			Entrypoint:  msg.Config.Entrypoint,
-			Command:     msg.Config.Command,
-		}),
+		Name:             optional.From(msg.Name),
+		RefName:          optional.From(msg.RefName),
+		UpdatedAt:        optional.From(time.Now()),
+		Config:           optional.From(pbconvert.FromPBApplicationConfig(msg.Config)),
 		Websites:         optional.From(websites),
 		PortPublications: optional.From(ds.Map(msg.PortPublications, pbconvert.FromPBPortPublication)),
 		OwnerIDs:         optional.From(msg.OwnerIds),

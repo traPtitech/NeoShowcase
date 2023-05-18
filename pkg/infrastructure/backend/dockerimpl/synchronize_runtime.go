@@ -64,11 +64,11 @@ func (b *dockerBackend) syncAppContainer(ctx context.Context, app *domain.Runtim
 		Env:          envs,
 		ExposedPorts: make(map[nat.Port]struct{}),
 	}
-	if app.App.Config.Entrypoint != "" {
-		config.Entrypoint = app.App.Config.EntrypointArgs()
+	if args := app.App.Config.BuildConfig.EntrypointArgs(); len(args) > 0 {
+		config.Entrypoint = args
 	}
-	if app.App.Config.Command != "" {
-		config.Cmd = app.App.Config.CommandArgs()
+	if args := app.App.Config.BuildConfig.CommandArgs(); len(args) > 0 {
+		config.Cmd = args
 	}
 	for _, website := range app.App.Websites {
 		config.ExposedPorts[nat.Port(fmt.Sprintf("%d/tcp", website.HTTPPort))] = struct{}{}

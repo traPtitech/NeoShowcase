@@ -175,7 +175,7 @@ func (s *builderService) onRequest(req *pb.BuilderRequest) {
 			Commit:        b.Commit,
 			ImageName:     b.ImageName,
 			ImageTag:      b.ImageTag,
-			BuildConfig:   pbconvert.FromPBBuildConfig(b.BuildConfig),
+			BuildConfig:   pbconvert.FromPBBuildConfig(b.Config),
 		})
 		if err != nil {
 			log.Errorf("failed to start build: %+v", err)

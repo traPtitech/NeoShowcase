@@ -7,9 +7,10 @@ import { StatusIcon } from '/@/components/StatusIcon'
 import { titleCase } from '/@/libs/casing'
 import {
   Application_ContainerState,
+  ApplicationConfig,
   ApplicationOutput,
-  BuildConfig,
   DeployType,
+  RuntimeConfig,
 } from '/@/api/neoshowcase/protobuf/gateway_pb'
 import { DiffHuman, shortSha } from '/@/libs/format'
 import { CenterInline, Container } from '/@/libs/layout'
@@ -30,16 +31,58 @@ import { sleep } from '/@/libs/sleep'
 import { Timestamp } from '@bufbuild/protobuf'
 import { Code, ConnectError } from '@bufbuild/connect'
 
-interface BuildConfigInfoProps {
-  config: BuildConfig
+interface RuntimeConfigInfoProps {
+  config: RuntimeConfig
 }
 
-const BuildConfigInfo = (props: BuildConfigInfoProps) => {
+const RuntimeConfigInfo = (props: RuntimeConfigInfoProps) => {
+  return (
+    <>
+      <CardItem>
+        <CardItemTitle>Use MariaDB</CardItemTitle>
+        <CardItemContent>{`${props.config.useMariadb}`}</CardItemContent>
+      </CardItem>
+      <CardItem>
+        <CardItemTitle>Use MongoDB</CardItemTitle>
+        <CardItemContent>{`${props.config.useMongodb}`}</CardItemContent>
+      </CardItem>
+      <Show when={props.config.entrypoint !== ''}>
+        <CardItem>
+          <CardItemTitle>Entrypoint</CardItemTitle>
+          <CardItemContent>{props.config.entrypoint}</CardItemContent>
+        </CardItem>
+      </Show>
+      <Show when={props.config.command !== ''}>
+        <CardItem>
+          <CardItemTitle>Command</CardItemTitle>
+          <CardItemContent>{props.config.command}</CardItemContent>
+        </CardItem>
+      </Show>
+    </>
+  )
+}
+
+interface ApplicationConfigInfoProps {
+  config: ApplicationConfig
+}
+
+const ApplicationConfigInfo = (props: ApplicationConfigInfoProps) => {
   const c = props.config.buildConfig
   switch (c.case) {
+    case 'runtimeBuildpack':
+      return (
+        <>
+          <RuntimeConfigInfo config={c.value.runtimeConfig} />
+          <CardItem>
+            <CardItemTitle>Context</CardItemTitle>
+            <CardItemContent>{c.value.context}</CardItemContent>
+          </CardItem>
+        </>
+      )
     case 'runtimeCmd':
       return (
         <>
+          <RuntimeConfigInfo config={c.value.runtimeConfig} />
           <CardItem>
             <CardItemTitle>Base Image</CardItemTitle>
             <CardItemContent>{c.value.baseImage || 'Scratch'}</CardItemContent>
@@ -55,9 +98,14 @@ const BuildConfigInfo = (props: BuildConfigInfoProps) => {
     case 'runtimeDockerfile':
       return (
         <>
+          <RuntimeConfigInfo config={c.value.runtimeConfig} />
           <CardItem>
             <CardItemTitle>Dockerfile</CardItemTitle>
             <CardItemContent>{c.value.dockerfileName}</CardItemContent>
+          </CardItem>
+          <CardItem>
+            <CardItemTitle>Context</CardItemTitle>
+            <CardItemContent>{c.value.context}</CardItemContent>
           </CardItem>
         </>
       )
@@ -85,11 +133,15 @@ const BuildConfigInfo = (props: BuildConfigInfoProps) => {
         <>
           <CardItem>
             <CardItemTitle>Dockerfile</CardItemTitle>
-            <div>{c.value.dockerfileName}</div>
+            <CardItemContent>{c.value.dockerfileName}</CardItemContent>
+          </CardItem>
+          <CardItem>
+            <CardItemTitle>Context</CardItemTitle>
+            <CardItemContent>{c.value.context}</CardItemContent>
           </CardItem>
           <CardItem>
             <CardItemTitle>Artifact Path</CardItemTitle>
-            <div>{c.value.artifactPath}</div>
+            <CardItemContent>{c.value.artifactPath}</CardItemContent>
           </CardItem>
         </>
       )
@@ -296,37 +348,16 @@ export default () => {
                   </Show>
                 </CardItemContent>
               </CardItem>
-              <CardItem>
-                <CardItemTitle>Use MariaDB</CardItemTitle>
-                <CardItemContent>{`${app().config.useMariadb}`}</CardItemContent>
-              </CardItem>
-              <CardItem>
-                <CardItemTitle>Use MongoDB</CardItemTitle>
-                <CardItemContent>{`${app().config.useMongodb}`}</CardItemContent>
-              </CardItem>
             </CardItems>
           </Card>
           <Card>
-            <CardTitle>Build Config</CardTitle>
+            <CardTitle>Config</CardTitle>
             <CardItems>
               <CardItem>
                 <CardItemTitle>Build Type</CardItemTitle>
-                <CardItemContent>{buildTypeStr[app().config.buildConfig.buildConfig.case]}</CardItemContent>
+                <CardItemContent>{buildTypeStr[app().config.buildConfig.case]}</CardItemContent>
               </CardItem>
-              A
-              <BuildConfigInfo config={app().config.buildConfig} />
-              <Show when={app().config.entrypoint}>
-                <CardItem>
-                  <CardItemTitle>Entrypoint</CardItemTitle>
-                  <CardItemContent>{app()?.config.entrypoint}</CardItemContent>
-                </CardItem>
-              </Show>
-              <Show when={app().config.command}>
-                <CardItem>
-                  <CardItemTitle>Command</CardItemTitle>
-                  <CardItemContent>{app()?.config.command}</CardItemContent>
-                </CardItem>
-              </Show>
+              <ApplicationConfigInfo config={app().config} />
             </CardItems>
           </Card>
           <Show when={log()}>

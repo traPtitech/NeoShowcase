@@ -20,7 +20,7 @@ message StartBuildRequest {
   string commit = 4;
   string image_name = 5; // empty on static site build
   string image_tag = 6; // empty on static site build
-  BuildConfig build_config = 7;
+  ApplicationConfig config = 7;
 }
 
 message BuilderRequest {

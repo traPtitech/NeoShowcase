@@ -642,11 +642,71 @@ export class RepositoryIdRequest extends Message<RepositoryIdRequest> {
 }
 
 /**
+ * @generated from message neoshowcase.protobuf.RuntimeConfig
+ */
+export class RuntimeConfig extends Message<RuntimeConfig> {
+  /**
+   * @generated from field: bool use_mariadb = 1;
+   */
+  useMariadb = false;
+
+  /**
+   * @generated from field: bool use_mongodb = 2;
+   */
+  useMongodb = false;
+
+  /**
+   * @generated from field: string entrypoint = 3;
+   */
+  entrypoint = "";
+
+  /**
+   * @generated from field: string command = 4;
+   */
+  command = "";
+
+  constructor(data?: PartialMessage<RuntimeConfig>) {
+    super();
+    proto3.util.initPartial(data, this);
+  }
+
+  static readonly runtime: typeof proto3 = proto3;
+  static readonly typeName = "neoshowcase.protobuf.RuntimeConfig";
+  static readonly fields: FieldList = proto3.util.newFieldList(() => [
+    { no: 1, name: "use_mariadb", kind: "scalar", T: 8 /* ScalarType.BOOL */ },
+    { no: 2, name: "use_mongodb", kind: "scalar", T: 8 /* ScalarType.BOOL */ },
+    { no: 3, name: "entrypoint", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+    { no: 4, name: "command", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+  ]);
+
+  static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): RuntimeConfig {
+    return new RuntimeConfig().fromBinary(bytes, options);
+  }
+
+  static fromJson(jsonValue: JsonValue, options?: Partial<JsonReadOptions>): RuntimeConfig {
+    return new RuntimeConfig().fromJson(jsonValue, options);
+  }
+
+  static fromJsonString(jsonString: string, options?: Partial<JsonReadOptions>): RuntimeConfig {
+    return new RuntimeConfig().fromJsonString(jsonString, options);
+  }
+
+  static equals(a: RuntimeConfig | PlainMessage<RuntimeConfig> | undefined, b: RuntimeConfig | PlainMessage<RuntimeConfig> | undefined): boolean {
+    return proto3.util.equals(RuntimeConfig, a, b);
+  }
+}
+
+/**
  * @generated from message neoshowcase.protobuf.BuildConfigRuntimeBuildpack
  */
 export class BuildConfigRuntimeBuildpack extends Message<BuildConfigRuntimeBuildpack> {
   /**
-   * @generated from field: string context = 1;
+   * @generated from field: neoshowcase.protobuf.RuntimeConfig runtime_config = 1;
+   */
+  runtimeConfig?: RuntimeConfig;
+
+  /**
+   * @generated from field: string context = 2;
    */
   context = "";
 
@@ -658,7 +718,8 @@ export class BuildConfigRuntimeBuildpack extends Message<BuildConfigRuntimeBuild
   static readonly runtime: typeof proto3 = proto3;
   static readonly typeName = "neoshowcase.protobuf.BuildConfigRuntimeBuildpack";
   static readonly fields: FieldList = proto3.util.newFieldList(() => [
-    { no: 1, name: "context", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+    { no: 1, name: "runtime_config", kind: "message", T: RuntimeConfig },
+    { no: 2, name: "context", kind: "scalar", T: 9 /* ScalarType.STRING */ },
   ]);
 
   static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): BuildConfigRuntimeBuildpack {
@@ -683,17 +744,22 @@ export class BuildConfigRuntimeBuildpack extends Message<BuildConfigRuntimeBuild
  */
 export class BuildConfigRuntimeCmd extends Message<BuildConfigRuntimeCmd> {
   /**
-   * @generated from field: string base_image = 1;
+   * @generated from field: neoshowcase.protobuf.RuntimeConfig runtime_config = 1;
+   */
+  runtimeConfig?: RuntimeConfig;
+
+  /**
+   * @generated from field: string base_image = 2;
    */
   baseImage = "";
 
   /**
-   * @generated from field: string build_cmd = 2;
+   * @generated from field: string build_cmd = 3;
    */
   buildCmd = "";
 
   /**
-   * @generated from field: bool build_cmd_shell = 3;
+   * @generated from field: bool build_cmd_shell = 4;
    */
   buildCmdShell = false;
 
@@ -705,9 +771,10 @@ export class BuildConfigRuntimeCmd extends Message<BuildConfigRuntimeCmd> {
   static readonly runtime: typeof proto3 = proto3;
   static readonly typeName = "neoshowcase.protobuf.BuildConfigRuntimeCmd";
   static readonly fields: FieldList = proto3.util.newFieldList(() => [
-    { no: 1, name: "base_image", kind: "scalar", T: 9 /* ScalarType.STRING */ },
-    { no: 2, name: "build_cmd", kind: "scalar", T: 9 /* ScalarType.STRING */ },
-    { no: 3, name: "build_cmd_shell", kind: "scalar", T: 8 /* ScalarType.BOOL */ },
+    { no: 1, name: "runtime_config", kind: "message", T: RuntimeConfig },
+    { no: 2, name: "base_image", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+    { no: 3, name: "build_cmd", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+    { no: 4, name: "build_cmd_shell", kind: "scalar", T: 8 /* ScalarType.BOOL */ },
   ]);
 
   static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): BuildConfigRuntimeCmd {
@@ -732,12 +799,17 @@ export class BuildConfigRuntimeCmd extends Message<BuildConfigRuntimeCmd> {
  */
 export class BuildConfigRuntimeDockerfile extends Message<BuildConfigRuntimeDockerfile> {
   /**
-   * @generated from field: string dockerfile_name = 1;
+   * @generated from field: neoshowcase.protobuf.RuntimeConfig runtime_config = 1;
+   */
+  runtimeConfig?: RuntimeConfig;
+
+  /**
+   * @generated from field: string dockerfile_name = 2;
    */
   dockerfileName = "";
 
   /**
-   * @generated from field: string context = 2;
+   * @generated from field: string context = 3;
    */
   context = "";
 
@@ -749,8 +821,9 @@ export class BuildConfigRuntimeDockerfile extends Message<BuildConfigRuntimeDock
   static readonly runtime: typeof proto3 = proto3;
   static readonly typeName = "neoshowcase.protobuf.BuildConfigRuntimeDockerfile";
   static readonly fields: FieldList = proto3.util.newFieldList(() => [
-    { no: 1, name: "dockerfile_name", kind: "scalar", T: 9 /* ScalarType.STRING */ },
-    { no: 2, name: "context", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+    { no: 1, name: "runtime_config", kind: "message", T: RuntimeConfig },
+    { no: 2, name: "dockerfile_name", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+    { no: 3, name: "context", kind: "scalar", T: 9 /* ScalarType.STRING */ },
   ]);
 
   static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): BuildConfigRuntimeDockerfile {
@@ -875,11 +948,11 @@ export class BuildConfigStaticDockerfile extends Message<BuildConfigStaticDocker
 }
 
 /**
- * @generated from message neoshowcase.protobuf.BuildConfig
+ * @generated from message neoshowcase.protobuf.ApplicationConfig
  */
-export class BuildConfig extends Message<BuildConfig> {
+export class ApplicationConfig extends Message<ApplicationConfig> {
   /**
-   * @generated from oneof neoshowcase.protobuf.BuildConfig.build_config
+   * @generated from oneof neoshowcase.protobuf.ApplicationConfig.build_config
    */
   buildConfig: {
     /**
@@ -913,67 +986,6 @@ export class BuildConfig extends Message<BuildConfig> {
     case: "staticDockerfile";
   } | { case: undefined; value?: undefined } = { case: undefined };
 
-  constructor(data?: PartialMessage<BuildConfig>) {
-    super();
-    proto3.util.initPartial(data, this);
-  }
-
-  static readonly runtime: typeof proto3 = proto3;
-  static readonly typeName = "neoshowcase.protobuf.BuildConfig";
-  static readonly fields: FieldList = proto3.util.newFieldList(() => [
-    { no: 1, name: "runtime_buildpack", kind: "message", T: BuildConfigRuntimeBuildpack, oneof: "build_config" },
-    { no: 2, name: "runtime_cmd", kind: "message", T: BuildConfigRuntimeCmd, oneof: "build_config" },
-    { no: 3, name: "runtime_dockerfile", kind: "message", T: BuildConfigRuntimeDockerfile, oneof: "build_config" },
-    { no: 4, name: "static_cmd", kind: "message", T: BuildConfigStaticCmd, oneof: "build_config" },
-    { no: 5, name: "static_dockerfile", kind: "message", T: BuildConfigStaticDockerfile, oneof: "build_config" },
-  ]);
-
-  static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): BuildConfig {
-    return new BuildConfig().fromBinary(bytes, options);
-  }
-
-  static fromJson(jsonValue: JsonValue, options?: Partial<JsonReadOptions>): BuildConfig {
-    return new BuildConfig().fromJson(jsonValue, options);
-  }
-
-  static fromJsonString(jsonString: string, options?: Partial<JsonReadOptions>): BuildConfig {
-    return new BuildConfig().fromJsonString(jsonString, options);
-  }
-
-  static equals(a: BuildConfig | PlainMessage<BuildConfig> | undefined, b: BuildConfig | PlainMessage<BuildConfig> | undefined): boolean {
-    return proto3.util.equals(BuildConfig, a, b);
-  }
-}
-
-/**
- * @generated from message neoshowcase.protobuf.ApplicationConfig
- */
-export class ApplicationConfig extends Message<ApplicationConfig> {
-  /**
-   * @generated from field: bool use_mariadb = 1;
-   */
-  useMariadb = false;
-
-  /**
-   * @generated from field: bool use_mongodb = 2;
-   */
-  useMongodb = false;
-
-  /**
-   * @generated from field: neoshowcase.protobuf.BuildConfig build_config = 3;
-   */
-  buildConfig?: BuildConfig;
-
-  /**
-   * @generated from field: string entrypoint = 4;
-   */
-  entrypoint = "";
-
-  /**
-   * @generated from field: string command = 5;
-   */
-  command = "";
-
   constructor(data?: PartialMessage<ApplicationConfig>) {
     super();
     proto3.util.initPartial(data, this);
@@ -982,11 +994,11 @@ export class ApplicationConfig extends Message<ApplicationConfig> {
   static readonly runtime: typeof proto3 = proto3;
   static readonly typeName = "neoshowcase.protobuf.ApplicationConfig";
   static readonly fields: FieldList = proto3.util.newFieldList(() => [
-    { no: 1, name: "use_mariadb", kind: "scalar", T: 8 /* ScalarType.BOOL */ },
-    { no: 2, name: "use_mongodb", kind: "scalar", T: 8 /* ScalarType.BOOL */ },
-    { no: 3, name: "build_config", kind: "message", T: BuildConfig },
-    { no: 4, name: "entrypoint", kind: "scalar", T: 9 /* ScalarType.STRING */ },
-    { no: 5, name: "command", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+    { no: 1, name: "runtime_buildpack", kind: "message", T: BuildConfigRuntimeBuildpack, oneof: "build_config" },
+    { no: 2, name: "runtime_cmd", kind: "message", T: BuildConfigRuntimeCmd, oneof: "build_config" },
+    { no: 3, name: "runtime_dockerfile", kind: "message", T: BuildConfigRuntimeDockerfile, oneof: "build_config" },
+    { no: 4, name: "static_cmd", kind: "message", T: BuildConfigStaticCmd, oneof: "build_config" },
+    { no: 5, name: "static_dockerfile", kind: "message", T: BuildConfigStaticDockerfile, oneof: "build_config" },
   ]);
 
   static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): ApplicationConfig {
@@ -1003,55 +1015,6 @@ export class ApplicationConfig extends Message<ApplicationConfig> {
 
   static equals(a: ApplicationConfig | PlainMessage<ApplicationConfig> | undefined, b: ApplicationConfig | PlainMessage<ApplicationConfig> | undefined): boolean {
     return proto3.util.equals(ApplicationConfig, a, b);
-  }
-}
-
-/**
- * @generated from message neoshowcase.protobuf.UpdateApplicationConfigRequest
- */
-export class UpdateApplicationConfigRequest extends Message<UpdateApplicationConfigRequest> {
-  /**
-   * @generated from field: neoshowcase.protobuf.BuildConfig build_config = 1;
-   */
-  buildConfig?: BuildConfig;
-
-  /**
-   * @generated from field: string entrypoint = 2;
-   */
-  entrypoint = "";
-
-  /**
-   * @generated from field: string command = 3;
-   */
-  command = "";
-
-  constructor(data?: PartialMessage<UpdateApplicationConfigRequest>) {
-    super();
-    proto3.util.initPartial(data, this);
-  }
-
-  static readonly runtime: typeof proto3 = proto3;
-  static readonly typeName = "neoshowcase.protobuf.UpdateApplicationConfigRequest";
-  static readonly fields: FieldList = proto3.util.newFieldList(() => [
-    { no: 1, name: "build_config", kind: "message", T: BuildConfig },
-    { no: 2, name: "entrypoint", kind: "scalar", T: 9 /* ScalarType.STRING */ },
-    { no: 3, name: "command", kind: "scalar", T: 9 /* ScalarType.STRING */ },
-  ]);
-
-  static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): UpdateApplicationConfigRequest {
-    return new UpdateApplicationConfigRequest().fromBinary(bytes, options);
-  }
-
-  static fromJson(jsonValue: JsonValue, options?: Partial<JsonReadOptions>): UpdateApplicationConfigRequest {
-    return new UpdateApplicationConfigRequest().fromJson(jsonValue, options);
-  }
-
-  static fromJsonString(jsonString: string, options?: Partial<JsonReadOptions>): UpdateApplicationConfigRequest {
-    return new UpdateApplicationConfigRequest().fromJsonString(jsonString, options);
-  }
-
-  static equals(a: UpdateApplicationConfigRequest | PlainMessage<UpdateApplicationConfigRequest> | undefined, b: UpdateApplicationConfigRequest | PlainMessage<UpdateApplicationConfigRequest> | undefined): boolean {
-    return proto3.util.equals(UpdateApplicationConfigRequest, a, b);
   }
 }
 
@@ -1551,9 +1514,9 @@ export class UpdateApplicationRequest extends Message<UpdateApplicationRequest> 
   refName = "";
 
   /**
-   * @generated from field: neoshowcase.protobuf.UpdateApplicationConfigRequest config = 4;
+   * @generated from field: neoshowcase.protobuf.ApplicationConfig config = 4;
    */
-  config?: UpdateApplicationConfigRequest;
+  config?: ApplicationConfig;
 
   /**
    * @generated from field: repeated neoshowcase.protobuf.CreateWebsiteRequest new_websites = 5;
@@ -1586,7 +1549,7 @@ export class UpdateApplicationRequest extends Message<UpdateApplicationRequest> 
     { no: 1, name: "id", kind: "scalar", T: 9 /* ScalarType.STRING */ },
     { no: 2, name: "name", kind: "scalar", T: 9 /* ScalarType.STRING */ },
     { no: 3, name: "ref_name", kind: "scalar", T: 9 /* ScalarType.STRING */ },
-    { no: 4, name: "config", kind: "message", T: UpdateApplicationConfigRequest },
+    { no: 4, name: "config", kind: "message", T: ApplicationConfig },
     { no: 5, name: "new_websites", kind: "message", T: CreateWebsiteRequest, repeated: true },
     { no: 6, name: "delete_websites", kind: "message", T: DeleteWebsiteRequest, repeated: true },
     { no: 7, name: "port_publications", kind: "message", T: PortPublication, repeated: true },

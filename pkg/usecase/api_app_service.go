@@ -71,7 +71,7 @@ func (s *APIServerService) CreateApplication(ctx context.Context, app *domain.Ap
 func (s *APIServerService) createApplicationDatabase(ctx context.Context, app *domain.Application) error {
 	dbName := domain.DBName(app.ID)
 
-	if app.Config.UseMariaDB {
+	if app.Config.BuildConfig.MariaDB() {
 		host, port := s.mariaDBManager.GetHost()
 		dbPassword := random.SecureGeneratePassword(32)
 		dbSetting := domain.CreateArgs{
@@ -98,7 +98,7 @@ func (s *APIServerService) createApplicationDatabase(ctx context.Context, app *d
 		}
 	}
 
-	if app.Config.UseMongoDB {
+	if app.Config.BuildConfig.MongoDB() {
 		host, port := s.mongoDBManager.GetHost()
 		dbPassword := random.SecureGeneratePassword(32)
 		dbSetting := domain.CreateArgs{
@@ -131,14 +131,14 @@ func (s *APIServerService) createApplicationDatabase(ctx context.Context, app *d
 func (s *APIServerService) deleteApplicationDatabase(ctx context.Context, app *domain.Application) error {
 	dbName := domain.DBName(app.ID)
 
-	if app.Config.UseMariaDB {
+	if app.Config.BuildConfig.MariaDB() {
 		err := s.mariaDBManager.Delete(ctx, domain.DeleteArgs{Database: dbName})
 		if err != nil {
 			return err
 		}
 	}
 
-	if app.Config.UseMongoDB {
+	if app.Config.BuildConfig.MongoDB() {
 		err := s.mongoDBManager.Delete(ctx, domain.DeleteArgs{Database: dbName})
 		if err != nil {
 			return err
@@ -169,24 +169,39 @@ func (s *APIServerService) UpdateApplication(ctx context.Context, id string, arg
 	app.Apply(args)
 
 	// Validate
-	existingApps, err := s.appRepo.GetApplications(ctx, domain.GetApplicationCondition{})
-	if err != nil {
-		return errors.Wrap(err, "getting existing applications")
+	{
+		existingApps, err := s.appRepo.GetApplications(ctx, domain.GetApplicationCondition{})
+		if err != nil {
+			return errors.Wrap(err, "getting existing applications")
+		}
+		domains, err := s.adRepo.GetAvailableDomains(ctx)
+		if err != nil {
+			return errors.Wrap(err, "getting available domains")
+		}
+		ports, err := s.apRepo.GetAvailablePorts(ctx)
+		if err != nil {
+			return errors.Wrap(err, "getting available ports")
+		}
+		valErr, err := app.Validate(ctx, web.GetUser(ctx), s.controller, existingApps, domains, ports)
+		if err != nil {
+			return errors.Wrap(err, "validating application")
+		}
+		if valErr != nil {
+			return newError(ErrorTypeBadRequest, "invalid application", valErr)
+		}
 	}
-	domains, err := s.adRepo.GetAvailableDomains(ctx)
-	if err != nil {
-		return errors.Wrap(err, "getting available domains")
-	}
-	ports, err := s.apRepo.GetAvailablePorts(ctx)
-	if err != nil {
-		return errors.Wrap(err, "getting available ports")
-	}
-	valErr, err := app.Validate(ctx, web.GetUser(ctx), s.controller, existingApps, domains, ports)
-	if err != nil {
-		return errors.Wrap(err, "validating application")
-	}
-	if valErr != nil {
-		return newError(ErrorTypeBadRequest, "invalid application", valErr)
+	// Validate immutable fields
+	{
+		appBefore, err := s.appRepo.GetApplication(ctx, id)
+		if err != nil {
+			return err
+		}
+		if appBefore.Config.BuildConfig.MariaDB() != app.Config.BuildConfig.MariaDB() {
+			return newError(ErrorTypeBadRequest, "use_mariadb is immutable", nil)
+		}
+		if appBefore.Config.BuildConfig.MongoDB() != app.Config.BuildConfig.MongoDB() {
+			return newError(ErrorTypeBadRequest, "use_mongodb is immutable", nil)
+		}
 	}
 
 	// Update

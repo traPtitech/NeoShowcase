@@ -81,19 +81,29 @@ enum DeployType {
   STATIC = 1;
 }
 
+message RuntimeConfig {
+  bool use_mariadb = 1;
+  bool use_mongodb = 2;
+  string entrypoint = 3;
+  string command = 4;
+}
+
 message BuildConfigRuntimeBuildpack {
-  string context = 1;
+  RuntimeConfig runtime_config = 1;
+  string context = 2;
 }
 
 message BuildConfigRuntimeCmd {
-  string base_image = 1;
-  string build_cmd = 2;
-  bool build_cmd_shell = 3;
+  RuntimeConfig runtime_config = 1;
+  string base_image = 2;
+  string build_cmd = 3;
+  bool build_cmd_shell = 4;
 }
 
 message BuildConfigRuntimeDockerfile {
-  string dockerfile_name = 1;
-  string context = 2;
+  RuntimeConfig runtime_config = 1;
+  string dockerfile_name = 2;
+  string context = 3;
 }
 
 message BuildConfigStaticCmd {
@@ -109,7 +119,7 @@ message BuildConfigStaticDockerfile {
   string artifact_path = 3;
 }
 
-message BuildConfig {
+message ApplicationConfig {
   oneof build_config {
     BuildConfigRuntimeBuildpack runtime_buildpack = 1;
     BuildConfigRuntimeCmd runtime_cmd = 2;
@@ -117,20 +127,6 @@ message BuildConfig {
     BuildConfigStaticCmd static_cmd = 4;
     BuildConfigStaticDockerfile static_dockerfile = 5;
   }
-}
-
-message ApplicationConfig {
-  bool use_mariadb = 1;
-  bool use_mongodb = 2;
-  BuildConfig build_config = 3;
-  string entrypoint = 4;
-  string command = 5;
-}
-
-message UpdateApplicationConfigRequest {
-  BuildConfig build_config = 1;
-  string entrypoint = 2;
-  string command = 3;
 }
 
 enum AuthenticationType {
@@ -215,7 +211,7 @@ message UpdateApplicationRequest {
   string id = 1;
   string name = 2;
   string ref_name = 3;
-  UpdateApplicationConfigRequest config = 4;
+  ApplicationConfig config = 4;
   repeated CreateWebsiteRequest new_websites = 5;
   repeated DeleteWebsiteRequest delete_websites = 6;
   repeated PortPublication port_publications = 7;
