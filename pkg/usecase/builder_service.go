@@ -444,7 +444,7 @@ func (s *builderService) saveArtifact(ctx context.Context, st *state) error {
 		return errors.Wrap(err, "opening artifact")
 	}
 	defer file.Close()
-	err = domain.SaveArtifact(s.storage, filename, file)
+	err = domain.SaveArtifact(s.storage, artifact.ID, file)
 	if err != nil {
 		return errors.Wrap(err, "saving artifact")
 	}
