@@ -1,6 +1,7 @@
 package staticserver
 
 import (
+	"compress/gzip"
 	"context"
 	"fmt"
 	"os"
@@ -14,6 +15,7 @@ import (
 
 	"github.com/traPtitech/neoshowcase/pkg/domain"
 	"github.com/traPtitech/neoshowcase/pkg/domain/web"
+	"github.com/traPtitech/neoshowcase/pkg/util/tarfs"
 )
 
 type BuiltIn struct {
@@ -121,10 +123,9 @@ func (b *BuiltIn) syncArtifacts(sites []*domain.StaticSite) error {
 		if _, ok := currentArtifacts[artifactID]; ok {
 			continue
 		}
-		artifactDir := filepath.Join(b.docsRoot, artifactID)
-		err = domain.ExtractTarToDir(b.storage, artifactID, artifactDir)
+		err = b.extractArtifact(artifactID)
 		if err != nil {
-			return errors.Wrap(err, "failed to extract artifact tar")
+			return err
 		}
 	}
 
@@ -139,5 +140,24 @@ func (b *BuiltIn) syncArtifacts(sites []*domain.StaticSite) error {
 		}
 	}
 
+	return nil
+}
+
+func (b *BuiltIn) extractArtifact(artifactID string) error {
+	destDir := filepath.Join(b.docsRoot, artifactID)
+	_, r, err := domain.GetArtifact(b.storage, artifactID)
+	if err != nil {
+		return errors.Wrap(err, "getting artifact")
+	}
+	defer r.Close()
+	tarReader, err := gzip.NewReader(r)
+	if err != nil {
+		return errors.Wrap(err, "preparing gzip reader")
+	}
+	defer tarReader.Close()
+	err = tarfs.Extract(tarReader, destDir)
+	if err != nil {
+		return errors.Wrap(err, "failed to extract artifact tar")
+	}
 	return nil
 }
