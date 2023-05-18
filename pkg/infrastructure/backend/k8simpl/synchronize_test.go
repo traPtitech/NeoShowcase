@@ -25,6 +25,9 @@ func TestK8sBackend_Synchronize(t *testing.T) {
 		app := domain.Application{
 			ID:        appID,
 			UpdatedAt: time.Now(),
+			Config: domain.ApplicationConfig{
+				BuildConfig: &domain.BuildConfigRuntimeBuildpack{},
+			},
 		}
 		st := domain.DesiredState{
 			Runtime: []*domain.RuntimeDesiredState{{
@@ -57,7 +60,10 @@ func TestK8sBackend_Synchronize(t *testing.T) {
 			HTTPPort:    80,
 		}
 		app := domain.Application{
-			ID:        appID,
+			ID: appID,
+			Config: domain.ApplicationConfig{
+				BuildConfig: &domain.BuildConfigRuntimeBuildpack{},
+			},
 			Websites:  []*domain.Website{website},
 			UpdatedAt: time.Now(),
 		}
@@ -96,7 +102,10 @@ func TestK8sBackend_Synchronize(t *testing.T) {
 			HTTPPort:    80,
 		}
 		app := domain.Application{
-			ID:        appID,
+			ID: appID,
+			Config: domain.ApplicationConfig{
+				BuildConfig: &domain.BuildConfigRuntimeBuildpack{},
+			},
 			Websites:  []*domain.Website{website},
 			UpdatedAt: time.Now(),
 		}

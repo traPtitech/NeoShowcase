@@ -24,11 +24,11 @@ func (b *k8sBackend) statefulSet(app *domain.RuntimeDesiredState) *appsv1.Statef
 		Resources:       b.config.resourceRequirements(),
 		ImagePullPolicy: v1.PullAlways,
 	}
-	if app.App.Config.Entrypoint != "" {
-		cont.Command = app.App.Config.EntrypointArgs()
+	if args := app.App.Config.BuildConfig.EntrypointArgs(); len(args) > 0 {
+		cont.Command = args
 	}
-	if app.App.Config.Command != "" {
-		cont.Args = app.App.Config.CommandArgs()
+	if args := app.App.Config.BuildConfig.CommandArgs(); len(args) > 0 {
+		cont.Args = args
 	}
 	for _, website := range app.App.Websites {
 		cont.Ports = append(cont.Ports, v1.ContainerPort{

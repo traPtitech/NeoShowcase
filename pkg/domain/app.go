@@ -41,10 +41,74 @@ func (b BuildType) DeployType() DeployType {
 	}
 }
 
+type RuntimeConfig struct {
+	UseMariaDB bool
+	UseMongoDB bool
+	Entrypoint string
+	Command    string
+}
+
+func parseArgs(s string) ([]string, error) {
+	if s == "" {
+		return nil, nil
+	}
+	return shellwords.Parse(s)
+}
+
+func (rc *RuntimeConfig) Validate() error {
+	if _, err := parseArgs(rc.Entrypoint); err != nil {
+		return errors.Wrap(err, "invalid entrypoint")
+	}
+	if _, err := parseArgs(rc.Command); err != nil {
+		return errors.Wrap(err, "invalid command")
+	}
+	return nil
+}
+
+func (rc *RuntimeConfig) MariaDB() bool {
+	return rc.UseMariaDB
+}
+
+func (rc *RuntimeConfig) MongoDB() bool {
+	return rc.UseMongoDB
+}
+
+func (rc *RuntimeConfig) EntrypointArgs() []string {
+	args, _ := parseArgs(rc.Entrypoint)
+	return args
+}
+
+func (rc *RuntimeConfig) CommandArgs() []string {
+	args, _ := parseArgs(rc.Command)
+	return args
+}
+
+type StaticConfig struct{}
+
+func (sc *StaticConfig) MariaDB() bool {
+	return false
+}
+
+func (sc *StaticConfig) MongoDB() bool {
+	return false
+}
+
+func (sc *StaticConfig) EntrypointArgs() []string {
+	panic("no entrypoint for static config")
+}
+
+func (sc *StaticConfig) CommandArgs() []string {
+	panic("no command for static config")
+}
+
 type BuildConfig interface {
 	isBuildConfig()
 	BuildType() BuildType
 	Validate() error
+	MariaDB() bool
+	MongoDB() bool
+	EntrypointArgs() []string
+	CommandArgs() []string
 }
 
 type buildConfigEmbed struct{}
@@ -52,6 +116,7 @@ type buildConfigEmbed struct{}
 func (buildConfigEmbed) isBuildConfig() {}
 
 type BuildConfigRuntimeBuildpack struct {
+	RuntimeConfig
 	Context string
 	buildConfigEmbed
 }
@@ -61,11 +126,15 @@ func (bc *BuildConfigRuntimeBuildpack) BuildType() BuildType {
 }
 
 func (bc *BuildConfigRuntimeBuildpack) Validate() error {
+	if err := bc.RuntimeConfig.Validate(); err != nil {
+		return err
+	}
 	// NOTE: context is not necessary
 	return nil
 }
 
 type BuildConfigRuntimeCmd struct {
+	RuntimeConfig
 	BaseImage     string
 	BuildCmd      string
 	BuildCmdShell bool
@@ -77,12 +146,19 @@ func (bc *BuildConfigRuntimeCmd) BuildType() BuildType {
 }
 
 func (bc *BuildConfigRuntimeCmd) Validate() error {
+	if err := bc.RuntimeConfig.Validate(); err != nil {
+		return err
+	}
+	if bc.Entrypoint == "" && bc.Command == "" {
+		return errors.New("entrypoint or command is required")
+	}
 	// NOTE: base image is not necessary (default: scratch)
 	// NOTE: build cmd is not necessary
 	return nil
 }
 
 type BuildConfigRuntimeDockerfile struct {
+	RuntimeConfig
 	DockerfileName string
 	Context        string
 	buildConfigEmbed
@@ -93,13 +169,19 @@ func (bc *BuildConfigRuntimeDockerfile) BuildType() BuildType {
 }
 
 func (bc *BuildConfigRuntimeDockerfile) Validate() error {
+	if err := bc.RuntimeConfig.Validate(); err != nil {
+		return err
+	}
 	if bc.DockerfileName == "" {
 		return errors.New("dockerfile_name is required")
 	}
+	// NOTE: Runtime Dockerfile build could have no entrypoint/command but is impossible to catch only from config
+	// (can only catch at runtime)
 	return nil
 }
 
 type BuildConfigStaticCmd struct {
+	StaticConfig
 	BaseImage     string
 	BuildCmd      string
 	BuildCmdShell bool
@@ -121,6 +203,7 @@ func (bc *BuildConfigStaticCmd) Validate() error {
 }
 
 type BuildConfigStaticDockerfile struct {
+	StaticConfig
 	DockerfileName string
 	Context        string
 	ArtifactPath   string
@@ -142,16 +225,7 @@ func (bc *BuildConfigStaticDockerfile) Validate() error {
 }
 
 type ApplicationConfig struct {
-	UseMariaDB  bool
-	UseMongoDB  bool
 	BuildConfig BuildConfig
-	Entrypoint  string
-	Command     string
-}
-
-func validateCommand(s string) error {
-	_, err := shellwords.Parse(s)
-	return err
 }
 
 func (c *ApplicationConfig) Validate(deployType DeployType) error {
@@ -161,32 +235,7 @@ func (c *ApplicationConfig) Validate(deployType DeployType) error {
 	if err := c.BuildConfig.Validate(); err != nil {
 		return errors.Wrap(err, "invalid build_config")
 	}
-	if c.BuildConfig.BuildType() == BuildTypeRuntimeCmd && c.Entrypoint == "" && c.Command == "" {
-		return errors.New("entrypoint or command is required for runtime_cmd build type")
-	}
-	// NOTE: Runtime Dockerfile build could have no entrypoint/command but is impossible to catch only from config
-	// (can only catch at runtime)
-	if c.Entrypoint != "" {
-		if err := validateCommand(c.Entrypoint); err != nil {
-			return errors.Wrap(err, "invalid entrypoint")
-		}
-	}
-	if c.Command != "" {
-		if err := validateCommand(c.Command); err != nil {
-			return errors.Wrap(err, "invalid command")
-		}
-	}
 	return nil
-}
-
-func (c *ApplicationConfig) EntrypointArgs() []string {
-	args, _ := shellwords.Parse(c.Entrypoint)
-	return args
-}
-
-func (c *ApplicationConfig) CommandArgs() []string {
-	args, _ := shellwords.Parse(c.Command)
-	return args
 }
 
 type DeployType int

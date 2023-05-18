@@ -32,7 +32,7 @@ func (s *AppBuildHelper) tryStartBuild(app *domain.Application, build *domain.Bu
 			Commit:        build.Commit,
 			ImageName:     s.image.FullImageName(app.ID),
 			ImageTag:      build.Commit,
-			BuildConfig:   pbconvert.ToPBBuildConfig(app.Config.BuildConfig),
+			Config:        pbconvert.ToPBApplicationConfig(app.Config),
 		}},
 	})
 }

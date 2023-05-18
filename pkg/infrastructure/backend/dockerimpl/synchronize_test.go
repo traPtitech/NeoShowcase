@@ -20,6 +20,9 @@ func TestDockerBackend_CreateContainer(t *testing.T) {
 		app := domain.Application{
 			ID:        "test",
 			UpdatedAt: time.Now(),
+			Config: domain.ApplicationConfig{
+				BuildConfig: &domain.BuildConfigRuntimeBuildpack{},
+			},
 		}
 		st := domain.DesiredState{
 			Runtime: []*domain.RuntimeDesiredState{{
@@ -40,6 +43,9 @@ func TestDockerBackend_CreateContainer(t *testing.T) {
 		app := domain.Application{
 			ID:        appID,
 			UpdatedAt: time.Now(),
+			Config: domain.ApplicationConfig{
+				BuildConfig: &domain.BuildConfigRuntimeBuildpack{},
+			},
 		}
 		st := domain.DesiredState{
 			Runtime: []*domain.RuntimeDesiredState{{
@@ -72,6 +78,9 @@ func TestDockerBackend_CreateContainer(t *testing.T) {
 		app := domain.Application{
 			ID:        appID,
 			UpdatedAt: time.Now(),
+			Config: domain.ApplicationConfig{
+				BuildConfig: &domain.BuildConfigRuntimeBuildpack{},
+			},
 		}
 		st := domain.DesiredState{
 			Runtime: []*domain.RuntimeDesiredState{{
