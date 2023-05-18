@@ -186,6 +186,8 @@ interface Website {
   // その他のフィールド ...
 }
 
+const EmptyWebsite : Website = { fqdn: '', authenticationType: '' }
+
 interface WebsiteProps {
   website: Website
   setWebsite: Setter<Website>
@@ -403,8 +405,7 @@ export default () => {
 
                 <Button
                   onclick={() => {
-                    let preWebsites = [...websites(), ]
-                    setWebsites((prevWebsites) => [...prevWebsites, newWebsite()])
+                    setWebsites( [...websites(), EmptyWebsite])
                   }}
                   color='black1'
                   size='large'
