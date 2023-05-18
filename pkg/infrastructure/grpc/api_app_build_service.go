@@ -78,12 +78,12 @@ func (s *APIService) GetBuildLogStream(ctx context.Context, req *connect.Request
 }
 
 func (s *APIService) GetBuildArtifact(ctx context.Context, req *connect.Request[pb.ArtifactIdRequest]) (*connect.Response[pb.ArtifactContent], error) {
-	content, err := s.svc.GetArtifact(ctx, req.Msg.ArtifactId)
+	filename, content, err := s.svc.GetArtifact(ctx, req.Msg.ArtifactId)
 	if err != nil {
 		return nil, handleUseCaseError(err)
 	}
 	res := connect.NewResponse(&pb.ArtifactContent{
-		Filename: req.Msg.ArtifactId + ".tar",
+		Filename: filename,
 		Content:  content,
 	})
 	return res, nil

@@ -79,6 +79,6 @@ func (s *APIServerService) GetBuildLogStream(ctx context.Context, buildID string
 	return ch, nil
 }
 
-func (s *APIServerService) GetArtifact(_ context.Context, artifactID string) ([]byte, error) {
+func (s *APIServerService) GetArtifact(_ context.Context, artifactID string) (filename string, b []byte, err error) {
 	return domain.GetArtifact(s.storage, artifactID)
 }
