@@ -23,6 +23,7 @@ import { sleep } from '/@/libs/sleep'
 import { LogContainer } from '/@/components/Log'
 import { Code, ConnectError } from '@bufbuild/connect'
 import { Build_BuildStatus } from '/@/api/neoshowcase/protobuf/gateway_pb'
+import { DeployType } from '/@/api/neoshowcase/protobuf/gateway_pb'
 
 export default () => {
   const params = useParams()
@@ -106,6 +107,19 @@ export default () => {
     await refetchBuild()
   }
 
+  const downloadArtifact = async () => {
+    const artifactId = build().artifact?.id
+    const data = await client.getBuildArtifact({ artifactId })
+    const dataBlob = new Blob([data.content], { type: 'application/gzip' })
+    const blobUrl = URL.createObjectURL(dataBlob)
+    const anchor = document.createElement('a')
+    anchor.href = blobUrl
+    anchor.target = '_blank'
+    anchor.download = data.filename
+    anchor.click()
+    URL.revokeObjectURL(blobUrl)
+  }
+
   return (
     <Container>
       <Header />
@@ -122,6 +136,11 @@ export default () => {
             <Show when={build().status === Build_BuildStatus.BUILDING}>
               <Button color='black1' size='large' onclick={cancelBuild}>
                 Cancel build
+              </Button>
+            </Show>
+            <Show when={app().deployType === DeployType.STATIC && build().status === Build_BuildStatus.SUCCEEDED}>
+              <Button color='black1' size='large' onclick={downloadArtifact}>
+                Download build result (tar.gz)
               </Button>
             </Show>
           </Card>
