@@ -2,7 +2,6 @@ package storage
 
 import (
 	"io"
-	"os"
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/credentials"
@@ -47,10 +46,7 @@ func (s3s *S3Storage) Save(filename string, src io.Reader) error {
 		Key:    aws.String(filename),
 		Body:   src,
 	})
-	if err != nil {
-		return err
-	}
-	return os.Remove(filename)
+	return err
 }
 
 // Open ファイルを開く
