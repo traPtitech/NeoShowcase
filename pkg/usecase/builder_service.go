@@ -2,6 +2,7 @@ package usecase
 
 import (
 	"bytes"
+	"compress/gzip"
 	"context"
 	"fmt"
 	"io"
@@ -444,7 +445,26 @@ func (s *builderService) saveArtifact(ctx context.Context, st *state) error {
 		return errors.Wrap(err, "opening artifact")
 	}
 	defer file.Close()
-	err = domain.SaveArtifact(s.storage, artifact.ID, file)
+
+	pr, pw := io.Pipe()
+	gzipWriter := gzip.NewWriter(pw)
+	if err != nil {
+		return errors.Wrap(err, "creating gzip stream")
+	}
+	go func() {
+		defer pw.Close()
+		_, err := io.Copy(gzipWriter, file)
+		if err != nil {
+			_ = pw.CloseWithError(errors.Wrap(err, "copying file to pipe writer"))
+			return
+		}
+		err = gzipWriter.Close()
+		if err != nil {
+			_ = pw.CloseWithError(errors.Wrap(err, "flushing gzip writer"))
+			return
+		}
+	}()
+	err = domain.SaveArtifact(s.storage, artifact.ID, pr)
 	if err != nil {
 		return errors.Wrap(err, "saving artifact")
 	}

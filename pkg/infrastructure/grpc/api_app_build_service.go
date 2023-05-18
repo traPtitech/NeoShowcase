@@ -2,6 +2,7 @@ package grpc
 
 import (
 	"context"
+	"io"
 
 	"github.com/bufbuild/connect-go"
 	"github.com/friendsofgo/errors"
@@ -78,9 +79,14 @@ func (s *APIService) GetBuildLogStream(ctx context.Context, req *connect.Request
 }
 
 func (s *APIService) GetBuildArtifact(ctx context.Context, req *connect.Request[pb.ArtifactIdRequest]) (*connect.Response[pb.ArtifactContent], error) {
-	filename, content, err := s.svc.GetArtifact(ctx, req.Msg.ArtifactId)
+	filename, r, err := s.svc.GetArtifact(ctx, req.Msg.ArtifactId)
 	if err != nil {
 		return nil, handleUseCaseError(err)
+	}
+	defer r.Close()
+	content, err := io.ReadAll(r)
+	if err != nil {
+		return nil, err
 	}
 	res := connect.NewResponse(&pb.ArtifactContent{
 		Filename: filename,

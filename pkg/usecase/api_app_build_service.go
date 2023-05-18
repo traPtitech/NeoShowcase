@@ -2,6 +2,7 @@ package usecase
 
 import (
 	"context"
+	"io"
 
 	"github.com/friendsofgo/errors"
 
@@ -79,6 +80,6 @@ func (s *APIServerService) GetBuildLogStream(ctx context.Context, buildID string
 	return ch, nil
 }
 
-func (s *APIServerService) GetArtifact(_ context.Context, artifactID string) (filename string, b []byte, err error) {
+func (s *APIServerService) GetArtifact(_ context.Context, artifactID string) (filename string, r io.ReadCloser, err error) {
 	return domain.GetArtifact(s.storage, artifactID)
 }

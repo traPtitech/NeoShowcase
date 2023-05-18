@@ -5,8 +5,6 @@ import (
 	"path/filepath"
 
 	"github.com/friendsofgo/errors"
-
-	"github.com/traPtitech/neoshowcase/pkg/util/tarfs"
 )
 
 var (
@@ -56,7 +54,7 @@ func artifactPath(artifactID string) string {
 }
 
 func artifactFilename(artifactID string) string {
-	return artifactID + ".tar"
+	return artifactID + ".tar.gz"
 }
 
 // SaveArtifact Artifactをtar形式で保存する
@@ -67,14 +65,12 @@ func SaveArtifact(s Storage, artifactID string, src io.Reader) error {
 	return nil
 }
 
-func GetArtifact(s Storage, artifactID string) (filename string, b []byte, err error) {
-	r, err := s.Open(artifactPath(artifactID))
+func GetArtifact(s Storage, artifactID string) (filename string, r io.ReadCloser, err error) {
+	r, err = s.Open(artifactPath(artifactID))
 	if err != nil {
 		return "", nil, errors.Wrap(err, "failed to open artifact")
 	}
-	defer r.Close()
-	b, err = io.ReadAll(r)
-	return artifactFilename(artifactID), b, err
+	return artifactFilename(artifactID), r, nil
 }
 
 func DeleteArtifact(s Storage, artifactID string) error {
@@ -83,17 +79,6 @@ func DeleteArtifact(s Storage, artifactID string) error {
 		return errors.Wrap(err, "failed to delete artifact")
 	}
 	return nil
-}
-
-// ExtractTarToDir tarファイルをディレクトリに展開する
-func ExtractTarToDir(s Storage, artifactID string, destPath string) error {
-	inputFile, err := s.Open(artifactPath(artifactID))
-	if err != nil {
-		return errors.Wrap(err, "couldn't open source file")
-	}
-	defer inputFile.Close()
-
-	return tarfs.Extract(inputFile, destPath)
 }
 
 type StorageConfig struct {
