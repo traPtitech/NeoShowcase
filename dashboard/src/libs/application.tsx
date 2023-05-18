@@ -1,8 +1,8 @@
 import { Provider } from '/@/components/RepositoryRow'
 import {
   Application,
+  ApplicationConfig,
   Build_BuildStatus,
-  BuildConfig,
   DeployType,
   Website,
 } from '/@/api/neoshowcase/protobuf/gateway_pb'
@@ -11,7 +11,7 @@ import { AiFillGithub, AiFillGitlab } from 'solid-icons/ai'
 import { SiGitea } from 'solid-icons/si'
 import { vars } from '/@/theme'
 
-export const buildTypeStr: Record<BuildConfig['buildConfig']['case'], string> = {
+export const buildTypeStr: Record<ApplicationConfig['buildConfig']['case'], string> = {
   runtimeBuildpack: 'Runtime (Buildpack)',
   runtimeCmd: 'Runtime (command)',
   runtimeDockerfile: 'Runtime (Dockerfile)',
