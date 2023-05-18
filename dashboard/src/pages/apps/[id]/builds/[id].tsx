@@ -22,6 +22,7 @@ import { concatBuffers, toUTF8WithAnsi } from '/@/libs/buffers'
 import { sleep } from '/@/libs/sleep'
 import { LogContainer } from '/@/components/Log'
 import { Code, ConnectError } from '@bufbuild/connect'
+import { Build_BuildStatus } from '/@/api/neoshowcase/protobuf/gateway_pb'
 
 export default () => {
   const params = useParams()
@@ -100,6 +101,11 @@ export default () => {
     await refetchBuild()
   }
 
+  const cancelBuild = async () => {
+    await client.cancelBuild({ buildId: build().id })
+    await refetchBuild()
+  }
+
   return (
     <Container>
       <Header />
@@ -111,6 +117,11 @@ export default () => {
             <Show when={!build().retriable}>
               <Button color='black1' size='large' onclick={retryBuild}>
                 Retry build
+              </Button>
+            </Show>
+            <Show when={build().status === Build_BuildStatus.BUILDING}>
+              <Button color='black1' size='large' onclick={cancelBuild}>
+                Cancel build
               </Button>
             </Show>
           </Card>
