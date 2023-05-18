@@ -311,7 +311,7 @@ func (s *builderService) buildSteps(ctx context.Context, st *state) ([]buildStep
 			return s.saveArtifact(ctx, st)
 		}})
 	case *domain.BuildConfigStaticDockerfile:
-		steps = append(steps, buildStep{"Build (Static Command)", func() error {
+		steps = append(steps, buildStep{"Build (Static Dockerfile)", func() error {
 			return withBuildkitProgress(ctx, st.logWriter, func(ctx context.Context, ch chan *buildkit.SolveStatus) error {
 				return s.buildStaticWithDockerfile(ctx, st, ch, bc)
 			})
