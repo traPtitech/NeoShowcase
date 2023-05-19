@@ -114,7 +114,6 @@ export default () => {
     const blobUrl = URL.createObjectURL(dataBlob)
     const anchor = document.createElement('a')
     anchor.href = blobUrl
-    anchor.target = '_blank'
     anchor.download = data.filename
     anchor.click()
     URL.revokeObjectURL(blobUrl)
