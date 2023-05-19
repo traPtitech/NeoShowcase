@@ -148,7 +148,7 @@ func (d *dockerBackend) Pack(ctx context.Context, repoDir string, logWriter io.W
 		return errors.Wrap(err, "setting remote repo owner")
 	}
 	defer func() {
-		err := d.exec(ctx, d.config.RemoteDir, []string{"rm", "-r", dstRepoPath}, nil, io.Discard, io.Discard)
+		err := d.exec(context.Background(), d.config.RemoteDir, []string{"rm", "-r", dstRepoPath}, nil, io.Discard, io.Discard)
 		if err != nil {
 			log.Errorf("failed to remove remote repo dir: %+v", err)
 		}
