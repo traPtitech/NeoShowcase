@@ -190,7 +190,7 @@ const EmptyWebsite : Website = { fqdn: '', authenticationType: '' }
 
 interface WebsiteProps {
   website: Website
-  setWebsite: (string) => void
+  setWebsite: (Website) => void
 }
 
 const Website = (props: WebsiteProps) => {
@@ -218,6 +218,21 @@ const Website = (props: WebsiteProps) => {
       <InputForm>
         <Radio items={authenticationTypeItems} selected={props.website.authenticationType} setSelected={props.setWebsite} />
       </InputForm>
+
+      <InputFormWebsiteButton>
+        <Button
+          onclick={() => {
+            props.setWebsite((newWebsites) => {
+              newWebsites.pop()
+              return [...newWebsites]
+            })
+          }}
+          color='black1'
+          size='large'
+        >
+          Delete website setting
+        </Button>
+      </InputFormWebsiteButton>
     </InputFormWebsite>
   )
 }
@@ -371,22 +386,6 @@ export default () => {
 
               <InputForm>
                 <InputFormText>Website Setting</InputFormText>
-
-                <InputFormWebsiteButton>
-                  <Button
-                    onclick={() => {
-                      setWebsites((newWebsites) => {
-                        newWebsites.pop()
-                        return [...newWebsites]
-                      })
-                    }}
-                    color='black1'
-                    size='large'
-                  >
-                    Delete website setting
-                  </Button>
-                </InputFormWebsiteButton>
-
 
                 <For each={websites()}>
                   {(website, i) => (
