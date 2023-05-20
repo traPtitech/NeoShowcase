@@ -26,14 +26,14 @@ const ItemContainer = styled('div', {
 })
 
 export interface RadioItem {
-  value: string
-  title: string
+  value: string | number
+  title: string | number
 }
 
 export interface Props {
   items: RadioItem[]
-  selected: string
-  setSelected: (s: string) => void
+  selected: string | number
+  setSelected: (s: string | number) => void
 }
 
 export const Radio = (props: Props): JSXElement => {
