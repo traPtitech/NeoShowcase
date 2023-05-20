@@ -2,7 +2,7 @@ import { Header } from '/@/components/Header'
 import { createResource, createSignal, JSX, Show, For } from 'solid-js'
 import { Radio, RadioItem } from '/@/components/Radio'
 import { client } from '/@/libs/api'
-import { Application, PortPublicationProtocol } from '/@/api/neoshowcase/protobuf/gateway_pb'
+import { Application, AuthenticationType, PortPublicationProtocol } from '/@/api/neoshowcase/protobuf/gateway_pb'
 import { RepositoryNameRow } from '/@/components/RepositoryRow'
 import { A, useSearchParams } from '@solidjs/router'
 import { BsArrowLeftShort } from 'solid-icons/bs'
@@ -165,7 +165,6 @@ const InputFormWebsiteButton = styled('div', {
     display: 'flex',
     gap: '8px',
     marginBottom: '4px',
-    marginLeft: '4px',
   },
 })
 
@@ -201,11 +200,11 @@ const SettingsContainer = styled('div', {
 
 interface Website {
   fqdn: string
-  authenticationType: string
+  authenticationType: number
   // その他のフィールド ...
 }
 
-const EmptyWebsite: Website = { fqdn: '', authenticationType: '' }
+const EmptyWebsite: Website = { fqdn: '', authenticationType: AuthenticationType.OFF }
 
 interface WebsiteProps {
   website: Website
@@ -252,9 +251,9 @@ const Website = (props: WebsiteProps) => {
 }
 
 const authenticationTypeItems: RadioItem[] = [
-  { value: 'OFF', title: 'OFF' },
-  { value: 'SOFT', title: 'SOFT' },
-  { value: 'HARD', title: 'HARD' },
+  { value: 0, title: 'OFF' },
+  { value: 1, title: 'SOFT' },
+  { value: 2, title: 'HARD' },
 ]
 
 interface PortPublication {
