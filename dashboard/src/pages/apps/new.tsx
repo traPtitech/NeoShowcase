@@ -74,7 +74,7 @@ const InputFormContainer = styled('div', {
   base: {
     display: 'flex',
     flexDirection: 'column',
-    gap: '12px',
+    gap: '20px',
 
     background: vars.bg.white3,
     border: `1px solid ${vars.bg.white4}`,
@@ -104,6 +104,17 @@ const InputFormText = styled('div', {
   },
 })
 
+const InputFormTextBig = styled('div', {
+  base: {
+    fontSize: '20px',
+    alignItems: 'center',
+    fontWeight: 900,
+    color: vars.text.black1,
+
+    marginBottom: '4px',
+  },
+})
+
 const InputBar = styled('input', {
   base: {
     padding: '8px 12px',
@@ -112,7 +123,7 @@ const InputBar = styled('input', {
     fontSize: '14px',
     marginLeft: '4px',
 
-    width: '300px',
+    width: '320px',
 
     display: 'flex',
     flexDirection: 'column',
@@ -252,7 +263,11 @@ interface PortPublication {
   protocol: number
 }
 
-const EmptyPortPublication: PortPublication = { internet_port: 0, application_port: 0, protocol: PortPublicationProtocol.TCP }
+const EmptyPortPublication: PortPublication = {
+  internet_port: 0,
+  application_port: 0,
+  protocol: PortPublicationProtocol.TCP,
+}
 
 interface PortPublicationProps {
   portPublication: PortPublication
@@ -292,7 +307,7 @@ const protocolItems: RadioItem[] = [
   { value: 1, title: 'UDP' },
 ]
 
-const InputFormRuntimeConfig = ( ) => {
+const InputFormRuntimeConfig = () => {
   return (
     <>
       <InputForm>
@@ -356,20 +371,20 @@ export default () => {
               </InputForm>
 
               <InputForm>
-                <InputFormText>Build Config</InputFormText>
+                <InputFormTextBig>Build Config</InputFormTextBig>
                 <InputFormRadio>
                   <InputForm>
                     <Radio items={buildConfigItems} selected={buildConfig()} setSelected={setBuildConfig} />
                   </InputForm>
                   <Show when={buildConfig() === buildConfigItems[0].value}>
-                    <InputFormRuntimeConfig/>
+                    <InputFormRuntimeConfig />
                     <InputForm>
                       <InputFormText>Context</InputFormText>
                       <InputBar placeholder='context' />
                     </InputForm>
                   </Show>
                   <Show when={buildConfig() === buildConfigItems[1].value}>
-                    <InputFormRuntimeConfig/>
+                    <InputFormRuntimeConfig />
                     <InputForm>
                       <InputFormText>Base image</InputFormText>
                       <InputBar placeholder='base_image' />
@@ -386,7 +401,7 @@ export default () => {
                     </InputForm>
                   </Show>
                   <Show when={buildConfig() === buildConfigItems[2].value}>
-                    <InputFormRuntimeConfig/>
+                    <InputFormRuntimeConfig />
                     <InputForm>
                       <InputFormText>Dockerfile name</InputFormText>
                       <InputBar placeholder='dockerfile_name' />
@@ -434,8 +449,8 @@ export default () => {
               </InputForm>
 
               <InputForm>
-                <InputFormText>Website Setting</InputFormText>
-                <WebsiteSettingContainer>
+                <InputFormTextBig>Website Setting</InputFormTextBig>
+                <SettingsContainer>
                   <For each={websites()}>
                     {(website, i) => (
                       <Website
@@ -472,7 +487,11 @@ export default () => {
                       <PortPublication
                         portPublication={portPublication}
                         setPortPublication={(portPublication) =>
-                          setPortPublications((current) => [...current.slice(0, i()), portPublication, ...current.slice(i() + 1)])
+                          setPortPublications((current) => [
+                            ...current.slice(0, i()),
+                            portPublication,
+                            ...current.slice(i() + 1),
+                          ])
                         }
                         deletePortPublication={() =>
                           setPortPublications((current) => [...current.slice(0, i()), ...current.slice(i() + 1)])
