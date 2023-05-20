@@ -25,12 +25,6 @@ const buildConfigItems: RadioItem[] = [
   { value: 'static_dockerfile', title: 'static dockerfile' },
 ]
 
-const authenticationTypeItems: RadioItem[] = [
-  { value: 'OFF', title: 'OFF' },
-  { value: 'SOFT', title: 'SOFT' },
-  { value: 'HARD', title: 'HARD' },
-]
-
 const AppTitle = styled('div', {
   base: {
     marginTop: '48px',
@@ -186,7 +180,7 @@ const RepositoriesContainer = styled('div', {
   },
 })
 
-const WebsiteSettingContainer = styled('div', {
+const SettingsContainer = styled('div', {
   base: {
     display: 'flex',
     flexDirection: 'column',
@@ -246,10 +240,11 @@ const Website = (props: WebsiteProps) => {
   )
 }
 
-interface PortPublicationProtocol {
-  TCP : 0
-  UDP : 1
-}
+const authenticationTypeItems: RadioItem[] = [
+  { value: 'OFF', title: 'OFF' },
+  { value: 'SOFT', title: 'SOFT' },
+  { value: 'HARD', title: 'HARD' },
+]
 
 interface PortPublication {
   internet_port: number
@@ -264,6 +259,38 @@ interface PortPublicationProps {
   setPortPublication: (PortPublication) => void
   deletePortPublication: () => void
 }
+
+const PortPublication = (props: PortPublicationProps) => {
+  return (
+    <InputFormWebsite>
+      <InputForm>
+        <InputFormText>Internet Port</InputFormText>
+        <InputBar placeholder='TODO kokonani irerebayoika wakaranai' />
+      </InputForm>
+      <InputForm>
+        <InputFormText>Application Port</InputFormText>
+        <InputBar placeholder='TODO kokonani irerebayoika wakaranai' />
+      </InputForm>
+      <InputForm>
+        <Radio
+          items={protocolItems}
+          selected={props.portPublication.protocol}
+          setSelected={(proto) => props.setPortPublication({ ...props.portPublication, protocol: proto })}
+        />
+      </InputForm>
+      <InputFormWebsiteButton>
+        <Button onclick={props.deletePortPublication} color='black1' size='large'>
+          Delete port publication
+        </Button>
+      </InputFormWebsiteButton>
+    </InputFormWebsite>
+  )
+}
+
+const protocolItems: RadioItem[] = [
+  { value: 0, title: 'TCP' },
+  { value: 1, title: 'UDP' },
+]
 
 const InputFormRuntimeConfig = ( ) => {
   return (
@@ -298,6 +325,7 @@ export default () => {
 
   const [buildConfig, setBuildConfig] = createSignal(buildConfigItems[0].value)
   const [websites, setWebsites] = createSignal<Website[]>([])
+  const [portPublications, setPortPublications] = createSignal<PortPublication[]>([])
   const [searchParams] = useSearchParams()
   const SelectRepository = (): JSX.Element => {
     return (
@@ -433,21 +461,21 @@ export default () => {
                       Add website setting
                     </Button>
                   </InputFormButton>
-                </WebsiteSettingContainer>
+                </SettingsContainer>
               </InputForm>
 
               <InputForm>
-                <InputFormText>Port Publication Setting</InputFormText>
-                <WebsiteSettingContainer>
-                  <For each={websites()}>
-                    {(website, i) => (
-                      <Website
-                        website={website}
-                        setWebsite={(website) =>
-                          setWebsites((current) => [...current.slice(0, i()), website, ...current.slice(i() + 1)])
+                <InputFormTextBig>Port Publication Setting</InputFormTextBig>
+                <SettingsContainer>
+                  <For each={portPublications()}>
+                    {(portPublication, i) => (
+                      <PortPublication
+                        portPublication={portPublication}
+                        setPortPublication={(portPublication) =>
+                          setPortPublications((current) => [...current.slice(0, i()), portPublication, ...current.slice(i() + 1)])
                         }
-                        deleteWebsite={() =>
-                          setWebsites((current) => [...current.slice(0, i()), ...current.slice(i() + 1)])
+                        deletePortPublication={() =>
+                          setPortPublications((current) => [...current.slice(0, i()), ...current.slice(i() + 1)])
                         }
                       />
                     )}
@@ -456,7 +484,7 @@ export default () => {
                   <InputFormButton>
                     <Button
                       onclick={() => {
-                        setWebsites([...websites(), EmptyWebsite])
+                        setPortPublications([...portPublications(), EmptyPortPublication])
                       }}
                       color='black1'
                       size='large'
@@ -464,7 +492,7 @@ export default () => {
                       Add port publication
                     </Button>
                   </InputFormButton>
-                </WebsiteSettingContainer>
+                </SettingsContainer>
               </InputForm>
 
               <InputForm>
