@@ -2,7 +2,12 @@ import { Header } from '/@/components/Header'
 import { createResource, createSignal, JSX, Show, For } from 'solid-js'
 import { Radio, RadioItem } from '/@/components/Radio'
 import { client } from '/@/libs/api'
-import { Application, AuthenticationType, PortPublicationProtocol } from '/@/api/neoshowcase/protobuf/gateway_pb'
+import {
+  Application,
+  AuthenticationType,
+  PortPublicationProtocol,
+  CreateApplicationRequest,
+} from '/@/api/neoshowcase/protobuf/gateway_pb'
 import { RepositoryNameRow } from '/@/components/RepositoryRow'
 import { A, useSearchParams } from '@solidjs/router'
 import { BsArrowLeftShort } from 'solid-icons/bs'
@@ -200,11 +205,23 @@ const SettingsContainer = styled('div', {
 
 interface Website {
   fqdn: string
+  path_prefix: string
+  strip_prefix: boolean
+  https: boolean
+  h2c: boolean
+  http_port: number
   authenticationType: number
-  // その他のフィールド ...
 }
 
-const EmptyWebsite: Website = { fqdn: '', authenticationType: AuthenticationType.OFF }
+const EmptyWebsite: Website = {
+  fqdn: '',
+  path_prefix: '',
+  strip_prefix: false,
+  https: false,
+  h2c: false,
+  http_port: 0,
+  authenticationType: AuthenticationType.OFF,
+}
 
 interface WebsiteProps {
   website: Website
@@ -279,11 +296,11 @@ const PortPublication = (props: PortPublicationProps) => {
     <InputFormWebsite>
       <InputForm>
         <InputFormText>Internet Port</InputFormText>
-        <InputBar placeholder='TODO kokonani irerebayoika wakaranai' />
+        <InputBar placeholder='internet_port' />
       </InputForm>
       <InputForm>
         <InputFormText>Application Port</InputFormText>
-        <InputBar placeholder='TODO kokonani irerebayoika wakaranai' />
+        <InputBar placeholder='application_port' />
       </InputForm>
       <InputForm>
         <Radio
