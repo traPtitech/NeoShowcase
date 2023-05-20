@@ -191,6 +191,7 @@ const EmptyWebsite : Website = { fqdn: '', authenticationType: '' }
 interface WebsiteProps {
   website: Website
   setWebsite: (Website) => void
+  deleteWebsite: () => void
 }
 
 const Website = (props: WebsiteProps) => {
@@ -216,20 +217,14 @@ const Website = (props: WebsiteProps) => {
         <InputBar placeholder='80' />
       </InputForm>
       <InputForm>
-        <Radio items={authenticationTypeItems} selected={props.website.authenticationType} setSelected={props.setWebsite} />
+        <Radio
+          items={authenticationTypeItems}
+          selected={props.website.authenticationType}
+          setSelected={(auth) => props.setWebsite({ ...props.website, authenticationType: auth })}
+        />
       </InputForm>
-
       <InputFormWebsiteButton>
-        <Button
-          onclick={() => {
-            props.setWebsite((newWebsites) => {
-              newWebsites.pop()
-              return [...newWebsites]
-            })
-          }}
-          color='black1'
-          size='large'
-        >
+        <Button onclick={props.deleteWebsite} color='black1' size='large'>
           Delete website setting
         </Button>
       </InputFormWebsiteButton>
@@ -391,10 +386,12 @@ export default () => {
                   {(website, i) => (
                     <Website
                       website={website}
-                      setWebsite={(website) => setWebsites((current) => {
-                        current[i()] = website
-                        return current
-                      })}
+                      setWebsite={(website) =>
+                        setWebsites((current) => [...current.slice(0, i()), website, ...current.slice(i() + 1)])
+                      }
+                      deleteWebsite={() =>
+                        setWebsites((current) => [...current.slice(0, i()), ...current.slice(i() + 1)])
+                      }
                     />
                   )}
                 </For>
