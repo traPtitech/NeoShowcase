@@ -2,7 +2,7 @@ import { Header } from '/@/components/Header'
 import { createResource, createSignal, JSX, Show, For } from 'solid-js'
 import { Radio, RadioItem } from '/@/components/Radio'
 import { client } from '/@/libs/api'
-import { Application } from '/@/api/neoshowcase/protobuf/gateway_pb'
+import { Application, PortPublicationProtocol } from '/@/api/neoshowcase/protobuf/gateway_pb'
 import { RepositoryNameRow } from '/@/components/RepositoryRow'
 import { A, useSearchParams } from '@solidjs/router'
 import { BsArrowLeftShort } from 'solid-icons/bs'
@@ -246,6 +246,47 @@ const Website = (props: WebsiteProps) => {
   )
 }
 
+interface PortPublicationProtocol {
+  TCP : 0
+  UDP : 1
+}
+
+interface PortPublication {
+  internet_port: number
+  application_port: number
+  protocol: number
+}
+
+const EmptyPortPublication: PortPublication = { internet_port: 0, application_port: 0, protocol: PortPublicationProtocol.TCP }
+
+interface PortPublicationProps {
+  portPublication: PortPublication
+  setPortPublication: (PortPublication) => void
+  deletePortPublication: () => void
+}
+
+const InputFormRuntimeConfig = ( ) => {
+  return (
+    <>
+      <InputForm>
+        <InputFormText>Database (使うデーターベースにチェック)</InputFormText>
+        <InputFormCheckBox>
+          <Checkbox>MariaDB</Checkbox>
+          <Checkbox>MongoDB</Checkbox>
+        </InputFormCheckBox>
+      </InputForm>
+      <InputForm>
+        <InputFormText>Entrypoint</InputFormText>
+        <InputBar placeholder='entrypoint' />
+      </InputForm>
+      <InputForm>
+        <InputFormText>Command</InputFormText>
+        <InputBar placeholder='command' />
+      </InputForm>
+    </>
+  )
+}
+
 export default () => {
   const appsByRepo = () =>
     loaded() &&
@@ -395,6 +436,36 @@ export default () => {
                 </WebsiteSettingContainer>
               </InputForm>
 
+              <InputForm>
+                <InputFormText>Port Publication Setting</InputFormText>
+                <WebsiteSettingContainer>
+                  <For each={websites()}>
+                    {(website, i) => (
+                      <Website
+                        website={website}
+                        setWebsite={(website) =>
+                          setWebsites((current) => [...current.slice(0, i()), website, ...current.slice(i() + 1)])
+                        }
+                        deleteWebsite={() =>
+                          setWebsites((current) => [...current.slice(0, i()), ...current.slice(i() + 1)])
+                        }
+                      />
+                    )}
+                  </For>
+
+                  <InputFormButton>
+                    <Button
+                      onclick={() => {
+                        setWebsites([...websites(), EmptyWebsite])
+                      }}
+                      color='black1'
+                      size='large'
+                    >
+                      Add port publication
+                    </Button>
+                  </InputFormButton>
+                </WebsiteSettingContainer>
+              </InputForm>
 
               <InputForm>
                 <InputFormText>Start on create</InputFormText>
