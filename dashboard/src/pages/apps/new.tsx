@@ -269,6 +269,7 @@ export default () => {
                   .repositories.filter((r) => r.id === searchParams.repositoryID)
                   .map((r) => <RepositoryNameRow repo={r} apps={appsByRepo()[r.id] || []} onNewAppClick={() => {}} />)}
             </RepositoriesContainer>
+
             <InputFormContainer>
               <InputForm>
                 <InputFormText>Application Name</InputFormText>
@@ -286,26 +287,20 @@ export default () => {
               </InputForm>
 
               <InputForm>
-                <InputFormText>Database (使うデーターベースにチェック)</InputFormText>
-                <InputFormCheckBox>
-                  <Checkbox>MariaDB</Checkbox>
-                  <Checkbox>MongoDB</Checkbox>
-                </InputFormCheckBox>
-              </InputForm>
-
-              <InputForm>
                 <InputFormText>Build Config</InputFormText>
                 <InputFormRadio>
                   <InputForm>
                     <Radio items={buildConfigItems} selected={buildConfig()} setSelected={setBuildConfig} />
                   </InputForm>
                   <Show when={buildConfig() === buildConfigItems[0].value}>
+                    <InputFormRuntimeConfig/>
                     <InputForm>
                       <InputFormText>Context</InputFormText>
                       <InputBar placeholder='context' />
                     </InputForm>
                   </Show>
                   <Show when={buildConfig() === buildConfigItems[1].value}>
+                    <InputFormRuntimeConfig/>
                     <InputForm>
                       <InputFormText>Base image</InputFormText>
                       <InputBar placeholder='base_image' />
@@ -322,6 +317,7 @@ export default () => {
                     </InputForm>
                   </Show>
                   <Show when={buildConfig() === buildConfigItems[2].value}>
+                    <InputFormRuntimeConfig/>
                     <InputForm>
                       <InputFormText>Dockerfile name</InputFormText>
                       <InputBar placeholder='dockerfile_name' />
@@ -369,38 +365,36 @@ export default () => {
               </InputForm>
 
               <InputForm>
-                <InputFormText>Runtime Buildpack</InputFormText>
-                <InputBar placeholder='Runtime_buildpack' />
+                <InputFormText>Website Setting</InputFormText>
+                <WebsiteSettingContainer>
+                  <For each={websites()}>
+                    {(website, i) => (
+                      <Website
+                        website={website}
+                        setWebsite={(website) =>
+                          setWebsites((current) => [...current.slice(0, i()), website, ...current.slice(i() + 1)])
+                        }
+                        deleteWebsite={() =>
+                          setWebsites((current) => [...current.slice(0, i()), ...current.slice(i() + 1)])
+                        }
+                      />
+                    )}
+                  </For>
+
+                  <InputFormButton>
+                    <Button
+                      onclick={() => {
+                        setWebsites([...websites(), EmptyWebsite])
+                      }}
+                      color='black1'
+                      size='large'
+                    >
+                      Add website setting
+                    </Button>
+                  </InputFormButton>
+                </WebsiteSettingContainer>
               </InputForm>
 
-              <WebsiteSettingContainer>
-                <InputFormText>Website Setting</InputFormText>
-                <For each={websites()}>
-                  {(website, i) => (
-                    <Website
-                      website={website}
-                      setWebsite={(website) =>
-                        setWebsites((current) => [...current.slice(0, i()), website, ...current.slice(i() + 1)])
-                      }
-                      deleteWebsite={() =>
-                        setWebsites((current) => [...current.slice(0, i()), ...current.slice(i() + 1)])
-                      }
-                    />
-                  )}
-                </For>
-
-                <InputFormButton>
-                  <Button
-                    onclick={() => {
-                      setWebsites([...websites(), EmptyWebsite])
-                    }}
-                    color='black1'
-                    size='large'
-                  >
-                    Add website setting
-                  </Button>
-                </InputFormButton>
-              </WebsiteSettingContainer>
 
               <InputForm>
                 <InputFormText>Start on create</InputFormText>
