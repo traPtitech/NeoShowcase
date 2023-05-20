@@ -1,8 +1,8 @@
 import { Header } from '/@/components/Header'
-import { Accessor, createResource, createSignal, JSX, Setter, Show, Signal, For } from 'solid-js'
+import { createResource, createSignal, JSX, Show, For } from 'solid-js'
 import { Radio, RadioItem } from '/@/components/Radio'
 import { client } from '/@/libs/api'
-import { Application, Repository } from '/@/api/neoshowcase/protobuf/gateway_pb'
+import { Application } from '/@/api/neoshowcase/protobuf/gateway_pb'
 import { RepositoryNameRow } from '/@/components/RepositoryRow'
 import { A, useSearchParams } from '@solidjs/router'
 import { BsArrowLeftShort } from 'solid-icons/bs'
@@ -93,6 +93,12 @@ const InputForm = styled('div', {
   base: {},
 })
 
+const InputFormButton = styled('div', {
+  base: {
+    marginLeft: '8px',
+  },
+})
+
 const InputFormText = styled('div', {
   base: {
     fontSize: '16px',
@@ -180,13 +186,21 @@ const RepositoriesContainer = styled('div', {
   },
 })
 
+const WebsiteSettingContainer = styled('div', {
+  base: {
+    display: 'flex',
+    flexDirection: 'column',
+    gap: '10px',
+  },
+})
+
 interface Website {
   fqdn: string
   authenticationType: string
   // その他のフィールド ...
 }
 
-const EmptyWebsite : Website = { fqdn: '', authenticationType: '' }
+const EmptyWebsite: Website = { fqdn: '', authenticationType: '' }
 
 interface WebsiteProps {
   website: Website
@@ -232,22 +246,6 @@ const Website = (props: WebsiteProps) => {
   )
 }
 
-// interface WebsitesProps {
-//   websites: WebsiteStruct[]
-// }
-//
-// const Websites = (props: WebsitesProps) => {
-//   return (
-//     <For each={props.websites}>
-//       {(website) => {
-//         return <Website selected={website.signal[0]} setSelected={website.signal[1]} />
-//       }}
-//     </For>
-//   )
-// }
-
-// const EmptyWebsite: WebsiteStruct = { signal: createSignal(authenticationTypeItems[0].value) }
-
 export default () => {
   const appsByRepo = () =>
     loaded() &&
@@ -259,7 +257,7 @@ export default () => {
 
   const [buildConfig, setBuildConfig] = createSignal(buildConfigItems[0].value)
   const [websites, setWebsites] = createSignal<Website[]>([])
-  const [searchParams, setSearchParams] = useSearchParams()
+  const [searchParams] = useSearchParams()
   const SelectRepository = (): JSX.Element => {
     return (
       <>
@@ -299,11 +297,7 @@ export default () => {
                 <InputFormText>Build Config</InputFormText>
                 <InputFormRadio>
                   <InputForm>
-                    <Radio
-                      items={buildConfigItems}
-                      selected={buildConfig()}
-                      setSelected={setBuildConfig}
-                    />
+                    <Radio items={buildConfigItems} selected={buildConfig()} setSelected={setBuildConfig} />
                   </InputForm>
                   <Show when={buildConfig() === buildConfigItems[0].value}>
                     <InputForm>
@@ -379,9 +373,8 @@ export default () => {
                 <InputBar placeholder='Runtime_buildpack' />
               </InputForm>
 
-              <InputForm>
+              <WebsiteSettingContainer>
                 <InputFormText>Website Setting</InputFormText>
-
                 <For each={websites()}>
                   {(website, i) => (
                     <Website
@@ -396,22 +389,18 @@ export default () => {
                   )}
                 </For>
 
-                {/*<For each={websites()}>*/}
-                {/*  {(website) => {*/}
-                {/*    return <Website selected={website.signal[0]} setSelected={website.signal[1]} />*/}
-                {/*  }}*/}
-                {/*</For>*/}
-
-                <Button
-                  onclick={() => {
-                    setWebsites( [...websites(), EmptyWebsite])
-                  }}
-                  color='black1'
-                  size='large'
-                >
-                  Add website setting
-                </Button>
-              </InputForm>
+                <InputFormButton>
+                  <Button
+                    onclick={() => {
+                      setWebsites([...websites(), EmptyWebsite])
+                    }}
+                    color='black1'
+                    size='large'
+                  >
+                    Add website setting
+                  </Button>
+                </InputFormButton>
+              </WebsiteSettingContainer>
 
               <InputForm>
                 <InputFormText>Start on create</InputFormText>
@@ -424,14 +413,6 @@ export default () => {
                 + Create new app
               </Button>
             </InputFormContainer>
-
-            {/*<Button onclick={() => {}} color='black1' size='large'>*/}
-            {/*  Debug*/}
-            {/*</Button>*/}
-            {/*<div>*/}
-            {/*  <span>Page: {searchParams.repositoryID}</span>*/}
-            {/*  <button onClick={() => setSearchParams({ page: searchParams.page + 1 })}>Next Page</button>*/}
-            {/*</div>*/}
           </MainContentContainer>
         </ContentContainer>
       </>
