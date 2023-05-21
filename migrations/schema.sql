@@ -1,22 +1,3 @@
-CREATE TABLE `available_domains`
-(
-    `domain`    VARCHAR(100) NOT NULL COMMENT 'ドメイン',
-    `available` TINYINT(1)   NOT NULL COMMENT '利用可能かどうか',
-    PRIMARY KEY (`domain`)
-) ENGINE = InnoDB
-  DEFAULT CHARSET = utf8mb4
-  COLLATE = utf8mb4_general_ci COMMENT ='利用可能ドメインテーブル';
-
-CREATE TABLE `available_ports`
-(
-    `start_port` INT(11) NOT NULL COMMENT 'Start of port range (inclusive)',
-    `end_port` INT(11) NOT NULL COMMENT 'End of port range (exclusive)',
-    `protocol` ENUM ('tcp', 'udp') COMMENT 'Protocol',
-    PRIMARY KEY (`start_port`, `end_port`, `protocol`)
-) ENGINE = InnoDB
-  DEFAULT CHARSET = utf8mb4
-  COLLATE = utf8mb4_general_ci COMMENT = '利用可能ポートテーブル';
-
 CREATE TABLE `users`
 (
     `id`    CHAR(22)     NOT NULL COMMENT 'ユーザーID',

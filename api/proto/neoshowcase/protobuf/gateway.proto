@@ -220,7 +220,8 @@ message UpdateApplicationRequest {
 
 message AvailableDomain {
   string domain = 1;
-  bool available = 2;
+  repeated string exclude_domains = 2;
+  bool auth_available = 3;
 }
 
 message AvailableDomains {
@@ -233,14 +234,8 @@ message AvailablePort {
   PortPublicationProtocol protocol = 3;
 }
 
-message UnavailablePort {
-  int32 port = 1;
-  PortPublicationProtocol protocol = 2;
-}
-
 message AvailablePorts {
   repeated AvailablePort available_ports = 1;
-  repeated UnavailablePort unavailable_ports = 2;
 }
 
 message ApplicationEnvVar {
@@ -355,12 +350,8 @@ service APIService {
   rpc GetSystemPublicKey(google.protobuf.Empty) returns (GetSystemPublicKeyResponse);
   // GetAvailableDomains 使用可能なドメイン一覧を取得します
   rpc GetAvailableDomains(google.protobuf.Empty) returns (AvailableDomains);
-  // AddAvailableDomain 使用可能なドメインを登録します（admin only）
-  rpc AddAvailableDomain(AvailableDomain) returns (google.protobuf.Empty);
   // GetAvailablePorts 使用可能なポート一覧を取得します
   rpc GetAvailablePorts(google.protobuf.Empty) returns (AvailablePorts);
-  // AddAvailablePorts 使用可能なポートを登録します（admin only）
-  rpc AddAvailablePort(AvailablePort) returns (google.protobuf.Empty);
 
   // User
 

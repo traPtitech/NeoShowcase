@@ -7,14 +7,16 @@ import (
 
 func FromPBAvailableDomain(ad *pb.AvailableDomain) *domain.AvailableDomain {
 	return &domain.AvailableDomain{
-		Domain:    ad.Domain,
-		Available: ad.Available,
+		Domain:         ad.Domain,
+		ExcludeDomains: ad.ExcludeDomains,
+		AuthAvailable:  ad.AuthAvailable,
 	}
 }
 
 func ToPBAvailableDomain(ad *domain.AvailableDomain) *pb.AvailableDomain {
 	return &pb.AvailableDomain{
-		Domain:    ad.Domain,
-		Available: ad.Available,
+		Domain:         ad.Domain,
+		ExcludeDomains: ad.ExcludeDomains,
+		AuthAvailable:  ad.AuthAvailable,
 	}
 }

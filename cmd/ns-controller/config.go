@@ -47,7 +47,8 @@ func init() {
 	viper.SetDefault("mode", "docker")
 
 	viper.SetDefault("docker.confDir", "/opt/traefik/conf")
-	viper.SetDefault("docker.middlewares.auth", nil)
+	viper.SetDefault("docker.domains", nil)
+	viper.SetDefault("docker.ports", nil)
 	viper.SetDefault("docker.ss.url", "")
 	viper.SetDefault("docker.network", "neoshowcase_apps")
 	viper.SetDefault("docker.labels", nil)
@@ -58,7 +59,8 @@ func init() {
 	viper.SetDefault("docker.resources.memorySwap", -1 /* unlimited swap */)
 	viper.SetDefault("docker.resources.memoryReservation", 256*1e6 /* 256MB */)
 
-	viper.SetDefault("k8s.middlewares.auth", nil)
+	viper.SetDefault("k8s.domains", nil)
+	viper.SetDefault("k8s.ports", nil)
 	viper.SetDefault("k8s.ss.namespace", "default")
 	viper.SetDefault("k8s.ss.kind", "Service")
 	viper.SetDefault("k8s.ss.name", "")

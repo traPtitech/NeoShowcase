@@ -7,12 +7,46 @@ import (
 	"github.com/samber/lo"
 
 	"github.com/traPtitech/neoshowcase/pkg/domain"
+	"github.com/traPtitech/neoshowcase/pkg/util/mapper"
 )
 
-type authConf = struct {
-	Domain string   `mapstructure:"domain" yaml:"domain"`
-	Soft   []string `mapstructure:"soft" yaml:"soft"`
-	Hard   []string `mapstructure:"hard" yaml:"hard"`
+type domainAuthConf = struct {
+	Available bool     `mapstructure:"available" yaml:"available"`
+	Soft      []string `mapstructure:"soft" yaml:"soft"`
+	Hard      []string `mapstructure:"hard" yaml:"hard"`
+}
+
+type domainConf struct {
+	Domain   string          `mapstructure:"domain" yaml:"domain"`
+	Excludes []string        `mapstructure:"excludes" yaml:"excludes"`
+	Auth     *domainAuthConf `mapstructure:"auth" yaml:"auth"`
+}
+
+func (dc *domainConf) toDomainAD() *domain.AvailableDomain {
+	return &domain.AvailableDomain{
+		Domain:         dc.Domain,
+		ExcludeDomains: dc.Excludes,
+		AuthAvailable:  dc.Auth.Available,
+	}
+}
+
+type portConf struct {
+	StartPort int    `mapstructure:"startPort" yaml:"startPort"`
+	EndPort   int    `mapstructure:"endPort" yaml:"endPort"`
+	Protocol  string `mapstructure:"protocol" yaml:"protocol"`
+}
+
+var portProtocolMapper = mapper.MustNewValueMapper(map[string]domain.PortPublicationProtocol{
+	"tcp": domain.PortPublicationProtocolTCP,
+	"udp": domain.PortPublicationProtocolUDP,
+})
+
+func (pc *portConf) toDomainAP() *domain.AvailablePort {
+	return &domain.AvailablePort{
+		StartPort: pc.StartPort,
+		EndPort:   pc.EndPort,
+		Protocol:  portProtocolMapper.IntoMust(pc.Protocol),
+	}
 }
 
 type labelConf = struct {
@@ -21,11 +55,10 @@ type labelConf = struct {
 }
 
 type Config struct {
-	ConfDir     string `mapstructure:"confDir" yaml:"confDir"`
-	Middlewares struct {
-		Auth []*authConf `mapstructure:"auth" yaml:"auth"`
-	} `mapstructure:"middlewares" yaml:"middlewares"`
-	SS struct {
+	ConfDir string        `mapstructure:"confDir" yaml:"confDir"`
+	Domains []*domainConf `mapstructure:"domains" yaml:"domains"`
+	Ports   []*portConf   `mapstructure:"ports" yaml:"ports"`
+	SS      struct {
 		URL string `mapstructure:"url" yaml:"url"`
 	} `mapstructure:"ss" yaml:"ss"`
 	Network string       `mapstructure:"network" yaml:"network"`
@@ -51,10 +84,14 @@ func (c *Config) labels() map[string]string {
 }
 
 func (c *Config) Validate() error {
-	for _, ac := range c.Middlewares.Auth {
-		ad := domain.AvailableDomain{Domain: ac.Domain}
-		if err := ad.Validate(); err != nil {
-			return errors.Wrapf(err, "invalid domain %s for middleware config", ac.Domain)
+	for _, dc := range c.Domains {
+		if err := dc.toDomainAD().Validate(); err != nil {
+			return errors.Wrap(err, "invalid domain config")
+		}
+	}
+	for _, pc := range c.Ports {
+		if err := pc.toDomainAP().Validate(); err != nil {
+			return errors.Wrap(err, "invalid port config")
 		}
 	}
 

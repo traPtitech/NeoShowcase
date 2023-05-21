@@ -8,8 +8,6 @@ var TableNames = struct {
 	ApplicationOwners string
 	Applications      string
 	Artifacts         string
-	AvailableDomains  string
-	AvailablePorts    string
 	Builds            string
 	Environments      string
 	PortPublications  string
@@ -24,8 +22,6 @@ var TableNames = struct {
 	ApplicationOwners: "application_owners",
 	Applications:      "applications",
 	Artifacts:         "artifacts",
-	AvailableDomains:  "available_domains",
-	AvailablePorts:    "available_ports",
 	Builds:            "builds",
 	Environments:      "environments",
 	PortPublications:  "port_publications",

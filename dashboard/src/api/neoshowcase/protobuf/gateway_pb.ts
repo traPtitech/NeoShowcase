@@ -1583,9 +1583,14 @@ export class AvailableDomain extends Message<AvailableDomain> {
   domain = "";
 
   /**
-   * @generated from field: bool available = 2;
+   * @generated from field: repeated string exclude_domains = 2;
    */
-  available = false;
+  excludeDomains: string[] = [];
+
+  /**
+   * @generated from field: bool auth_available = 3;
+   */
+  authAvailable = false;
 
   constructor(data?: PartialMessage<AvailableDomain>) {
     super();
@@ -1596,7 +1601,8 @@ export class AvailableDomain extends Message<AvailableDomain> {
   static readonly typeName = "neoshowcase.protobuf.AvailableDomain";
   static readonly fields: FieldList = proto3.util.newFieldList(() => [
     { no: 1, name: "domain", kind: "scalar", T: 9 /* ScalarType.STRING */ },
-    { no: 2, name: "available", kind: "scalar", T: 8 /* ScalarType.BOOL */ },
+    { no: 2, name: "exclude_domains", kind: "scalar", T: 9 /* ScalarType.STRING */, repeated: true },
+    { no: 3, name: "auth_available", kind: "scalar", T: 8 /* ScalarType.BOOL */ },
   ]);
 
   static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): AvailableDomain {
@@ -1703,49 +1709,6 @@ export class AvailablePort extends Message<AvailablePort> {
 }
 
 /**
- * @generated from message neoshowcase.protobuf.UnavailablePort
- */
-export class UnavailablePort extends Message<UnavailablePort> {
-  /**
-   * @generated from field: int32 port = 1;
-   */
-  port = 0;
-
-  /**
-   * @generated from field: neoshowcase.protobuf.PortPublicationProtocol protocol = 2;
-   */
-  protocol = PortPublicationProtocol.TCP;
-
-  constructor(data?: PartialMessage<UnavailablePort>) {
-    super();
-    proto3.util.initPartial(data, this);
-  }
-
-  static readonly runtime: typeof proto3 = proto3;
-  static readonly typeName = "neoshowcase.protobuf.UnavailablePort";
-  static readonly fields: FieldList = proto3.util.newFieldList(() => [
-    { no: 1, name: "port", kind: "scalar", T: 5 /* ScalarType.INT32 */ },
-    { no: 2, name: "protocol", kind: "enum", T: proto3.getEnumType(PortPublicationProtocol) },
-  ]);
-
-  static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): UnavailablePort {
-    return new UnavailablePort().fromBinary(bytes, options);
-  }
-
-  static fromJson(jsonValue: JsonValue, options?: Partial<JsonReadOptions>): UnavailablePort {
-    return new UnavailablePort().fromJson(jsonValue, options);
-  }
-
-  static fromJsonString(jsonString: string, options?: Partial<JsonReadOptions>): UnavailablePort {
-    return new UnavailablePort().fromJsonString(jsonString, options);
-  }
-
-  static equals(a: UnavailablePort | PlainMessage<UnavailablePort> | undefined, b: UnavailablePort | PlainMessage<UnavailablePort> | undefined): boolean {
-    return proto3.util.equals(UnavailablePort, a, b);
-  }
-}
-
-/**
  * @generated from message neoshowcase.protobuf.AvailablePorts
  */
 export class AvailablePorts extends Message<AvailablePorts> {
@@ -1753,11 +1716,6 @@ export class AvailablePorts extends Message<AvailablePorts> {
    * @generated from field: repeated neoshowcase.protobuf.AvailablePort available_ports = 1;
    */
   availablePorts: AvailablePort[] = [];
-
-  /**
-   * @generated from field: repeated neoshowcase.protobuf.UnavailablePort unavailable_ports = 2;
-   */
-  unavailablePorts: UnavailablePort[] = [];
 
   constructor(data?: PartialMessage<AvailablePorts>) {
     super();
@@ -1768,7 +1726,6 @@ export class AvailablePorts extends Message<AvailablePorts> {
   static readonly typeName = "neoshowcase.protobuf.AvailablePorts";
   static readonly fields: FieldList = proto3.util.newFieldList(() => [
     { no: 1, name: "available_ports", kind: "message", T: AvailablePort, repeated: true },
-    { no: 2, name: "unavailable_ports", kind: "message", T: UnavailablePort, repeated: true },
   ]);
 
   static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): AvailablePorts {

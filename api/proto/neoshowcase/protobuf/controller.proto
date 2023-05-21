@@ -5,14 +5,6 @@ option go_package = "github.com/traPtitech/neoshowcase/pkg/infrastructure/grpc/p
 import "google/protobuf/empty.proto";
 import "neoshowcase/protobuf/gateway.proto";
 
-message AuthAvailableRequest {
-  string fqdn = 1;
-}
-
-message AuthAvailableResponse {
-  bool available = 1;
-}
-
 message StartBuildRequest {
   string application_id = 1;
   string build_id = 2;
@@ -79,7 +71,9 @@ message SSGenRequest {
 }
 
 service ControllerService {
-  rpc AuthAvailable(AuthAvailableRequest) returns (AuthAvailableResponse);
+  rpc GetAvailableDomains(google.protobuf.Empty) returns (AvailableDomains);
+  rpc GetAvailablePorts(google.protobuf.Empty) returns (AvailablePorts);
+
   rpc FetchRepository(RepositoryIdRequest) returns (google.protobuf.Empty);
   rpc RegisterBuilds(google.protobuf.Empty) returns (google.protobuf.Empty);
   rpc SyncDeployments(google.protobuf.Empty) returns (google.protobuf.Empty);

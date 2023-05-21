@@ -20,10 +20,3 @@ func ToPBAvailablePort(ap *domain.AvailablePort) *pb.AvailablePort {
 		Protocol:  PortPublicationProtocolMapper.IntoMust(ap.Protocol),
 	}
 }
-
-func ToPBUnavailablePort(up *domain.UnavailablePort) *pb.UnavailablePort {
-	return &pb.UnavailablePort{
-		Port:     int32(up.Port),
-		Protocol: PortPublicationProtocolMapper.IntoMust(up.Protocol),
-	}
-}

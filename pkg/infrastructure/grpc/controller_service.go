@@ -10,7 +10,9 @@ import (
 	"github.com/traPtitech/neoshowcase/pkg/domain"
 	"github.com/traPtitech/neoshowcase/pkg/infrastructure/grpc/pb"
 	"github.com/traPtitech/neoshowcase/pkg/infrastructure/grpc/pb/pbconnect"
+	"github.com/traPtitech/neoshowcase/pkg/infrastructure/grpc/pbconvert"
 	"github.com/traPtitech/neoshowcase/pkg/usecase"
+	"github.com/traPtitech/neoshowcase/pkg/util/ds"
 )
 
 type ControllerService struct {
@@ -37,9 +39,19 @@ func NewControllerService(
 	}
 }
 
-func (s *ControllerService) AuthAvailable(_ context.Context, c *connect.Request[pb.AuthAvailableRequest]) (*connect.Response[pb.AuthAvailableResponse], error) {
-	available := s.backend.AuthAllowed(c.Msg.Fqdn)
-	res := connect.NewResponse(&pb.AuthAvailableResponse{Available: available})
+func (s *ControllerService) GetAvailableDomains(_ context.Context, _ *connect.Request[emptypb.Empty]) (*connect.Response[pb.AvailableDomains], error) {
+	ad := s.backend.AvailableDomains()
+	res := connect.NewResponse(&pb.AvailableDomains{
+		Domains: ds.Map(ad, pbconvert.ToPBAvailableDomain),
+	})
+	return res, nil
+}
+
+func (s *ControllerService) GetAvailablePorts(_ context.Context, _ *connect.Request[emptypb.Empty]) (*connect.Response[pb.AvailablePorts], error) {
+	ap := s.backend.AvailablePorts()
+	res := connect.NewResponse(&pb.AvailablePorts{
+		AvailablePorts: ds.Map(ap, pbconvert.ToPBAvailablePort),
+	})
 	return res, nil
 }
 

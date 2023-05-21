@@ -26,7 +26,6 @@ var commonSet = wire.NewSet(
 	dbmanager.NewMongoDBManager,
 	repository.New,
 	repository.NewApplicationRepository,
-	repository.NewAvailableDomainRepository,
 	repository.NewGitRepositoryRepository,
 	repository.NewEnvironmentRepository,
 	repository.NewBuildRepository,

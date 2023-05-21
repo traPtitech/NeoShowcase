@@ -94,18 +94,6 @@ type ArtifactRepository interface {
 	HardDeleteArtifacts(ctx context.Context, cond GetArtifactCondition) error
 }
 
-type AvailableDomainRepository interface {
-	GetAvailableDomains(ctx context.Context) (AvailableDomainSlice, error)
-	AddAvailableDomain(ctx context.Context, ad *AvailableDomain) error
-	DeleteAvailableDomain(ctx context.Context, domain string) error
-}
-
-type AvailablePortRepository interface {
-	GetAvailablePorts(ctx context.Context) (AvailablePortSlice, error)
-	AddAvailablePort(ctx context.Context, ap *AvailablePort) error
-	DeleteAvailablePort(ctx context.Context, ap *AvailablePort) error
-}
-
 type GetBuildCondition struct {
 	ApplicationID optional.Of[string]
 	Commit        optional.Of[string]
