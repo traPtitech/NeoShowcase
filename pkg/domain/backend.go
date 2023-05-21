@@ -51,7 +51,7 @@ func (wd WildcardDomains) Validate() error {
 
 func (wd WildcardDomains) TLSTargetDomain(website *Website) string {
 	for _, d := range wd {
-		if MatchDomain(d, website.FQDN) {
+		if ContainsDomain(d, website.FQDN) {
 			websiteParts := strings.Split(website.FQDN, ".")
 			websiteParts[0] = "*"
 			return strings.Join(websiteParts, ".")
@@ -64,7 +64,8 @@ type Backend interface {
 	Start(ctx context.Context) error
 	Dispose(ctx context.Context) error
 
-	AuthAllowed(targetDomain string) bool
+	AvailableDomains() AvailableDomainSlice
+	AvailablePorts() AvailablePortSlice
 	ListenContainerEvents() (sub <-chan *ContainerEvent, unsub func())
 	Synchronize(ctx context.Context, s *DesiredState) error
 	GetContainer(ctx context.Context, appID string) (*Container, error)

@@ -5,9 +5,11 @@ mode: docker
 
 docker:
   confDir: /opt/traefik/conf
-  middlewares:
-    auth:
-      - domain: "*.local.trapti.tech"
+  domains:
+    - domain: "*.local.trapti.tech"
+      excludes: []
+      auth:
+        available: true
         soft:
           - nsapp_auth_soft@file
           - nsapp_auth@file
@@ -16,6 +18,13 @@ docker:
           - nsapp_auth_hard@file
           - nsapp_auth@file
           # - ns_auth_dev@file
+  ports:
+    - startPort: 30000
+      endPort: 31000
+      protocol: tcp
+    - startPort: 30000
+      endPort: 31000
+      protocol: udp
   ss:
     url: http://ns-ssgen:8080/
   network: neoshowcase_apps

@@ -33,33 +33,13 @@ func (s *APIService) GetAvailableDomains(ctx context.Context, _ *connect.Request
 	return res, nil
 }
 
-func (s *APIService) AddAvailableDomain(ctx context.Context, req *connect.Request[pb.AvailableDomain]) (*connect.Response[emptypb.Empty], error) {
-	err := s.svc.AddAvailableDomain(ctx, pbconvert.FromPBAvailableDomain(req.Msg))
-	if err != nil {
-		return nil, handleUseCaseError(err)
-	}
-	res := connect.NewResponse(&emptypb.Empty{})
-	return res, nil
-}
-
 func (s *APIService) GetAvailablePorts(ctx context.Context, _ *connect.Request[emptypb.Empty]) (*connect.Response[pb.AvailablePorts], error) {
-	available, unavailable, err := s.svc.GetAvailablePorts(ctx)
+	available, err := s.svc.GetAvailablePorts(ctx)
 	if err != nil {
 		return nil, handleUseCaseError(err)
 	}
 	res := connect.NewResponse(&pb.AvailablePorts{
-		AvailablePorts:   ds.Map(available, pbconvert.ToPBAvailablePort),
-		UnavailablePorts: ds.Map(unavailable, pbconvert.ToPBUnavailablePort),
+		AvailablePorts: ds.Map(available, pbconvert.ToPBAvailablePort),
 	})
-	return res, nil
-}
-
-func (s *APIService) AddAvailablePort(ctx context.Context, c *connect.Request[pb.AvailablePort]) (*connect.Response[emptypb.Empty], error) {
-	ap := pbconvert.FromPBAvailablePort(c.Msg)
-	err := s.svc.AddAvailablePort(ctx, ap)
-	if err != nil {
-		return nil, handleUseCaseError(err)
-	}
-	res := connect.NewResponse(&emptypb.Empty{})
 	return res, nil
 }

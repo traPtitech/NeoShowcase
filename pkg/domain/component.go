@@ -8,7 +8,9 @@ import (
 )
 
 type ControllerServiceClient interface {
-	AuthAvailable(ctx context.Context, fqdn string) (bool, error)
+	GetAvailableDomains(ctx context.Context) (AvailableDomainSlice, error)
+	GetAvailablePorts(ctx context.Context) (AvailablePortSlice, error)
+
 	FetchRepository(ctx context.Context, repositoryID string) error
 	RegisterBuilds(ctx context.Context) error
 	SyncDeployments(ctx context.Context) error

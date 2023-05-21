@@ -97,22 +97,21 @@ func (b *k8sBackend) Dispose(_ context.Context) error {
 	return nil
 }
 
-func (b *k8sBackend) AuthAllowed(fqdn string) bool {
-	for _, ac := range b.config.Middlewares.Auth {
-		if domain.MatchDomain(ac.Domain, fqdn) {
-			return true
-		}
-	}
-	return false
+func (b *k8sBackend) AvailableDomains() domain.AvailableDomainSlice {
+	return ds.Map(b.config.Domains, (*domainConf).toDomainAD)
 }
 
-func (b *k8sBackend) targetAuth(fqdn string) *authConf {
-	for _, ac := range b.config.Middlewares.Auth {
-		if domain.MatchDomain(ac.Domain, fqdn) {
-			return ac
+func (b *k8sBackend) targetAuth(fqdn string) *domainAuthConf {
+	for _, dc := range b.config.Domains {
+		if dc.Auth.Available && dc.toDomainAD().Match(fqdn) {
+			return dc.Auth
 		}
 	}
 	return nil
+}
+
+func (b *k8sBackend) AvailablePorts() domain.AvailablePortSlice {
+	return ds.Map(b.config.Ports, (*portConf).toDomainAP)
 }
 
 func (b *k8sBackend) ListenContainerEvents() (sub <-chan *domain.ContainerEvent, unsub func()) {

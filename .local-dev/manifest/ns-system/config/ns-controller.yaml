@@ -4,15 +4,24 @@ privateKeyFile: /keys/id_ed25519
 mode: k8s
 
 k8s:
-  middlewares:
-    auth:
-      - domain: "*.local.trapti.tech"
+  domains:
+    - domain: "*.local.trapti.tech"
+      excludes: []
+      auth:
+        available: true
         soft:
           - nsapp-auth-soft
           - nsapp-auth
         hard:
           - nsapp-auth-hard
           - nsapp-auth
+  ports:
+    - startPort: 30000
+      endPort: 31000
+      protocol: tcp
+    - startPort: 30000
+      endPort: 31000
+      protocol: udp
   ss:
     namespace: ns-system
     kind: Service

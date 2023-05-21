@@ -18,8 +18,6 @@ func NewServer(c Config) (*Server, error) {
 		dbmanager.NewMariaDBManager,
 		dbmanager.NewMongoDBManager,
 		repository.NewApplicationRepository,
-		repository.NewAvailableDomainRepository,
-		repository.NewAvailablePortRepository,
 		repository.NewGitRepositoryRepository,
 		repository.NewEnvironmentRepository,
 		repository.NewBuildRepository,

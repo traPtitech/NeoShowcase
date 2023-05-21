@@ -296,9 +296,7 @@ func (a *Application) SelfValidate() error {
 }
 
 func (a *Application) Validate(
-	ctx context.Context,
 	actor *User,
-	controller ControllerServiceClient,
 	existingApps []*Application,
 	domains AvailableDomainSlice,
 	ports AvailablePortSlice,
@@ -307,36 +305,28 @@ func (a *Application) Validate(
 		return err, nil
 	}
 
+	// resource availability check
 	for _, website := range a.Websites {
-		if website.Authentication == AuthenticationTypeOff {
-			continue
-		}
-		available, err := controller.AuthAvailable(ctx, website.FQDN)
-		if err != nil {
-			return nil, errors.Wrap(err, "checking auth availability")
-		}
-		if !available {
+		if website.Authentication != AuthenticationTypeOff && !domains.IsAuthAvailable(website.FQDN) {
 			return errors.Errorf("auth not available for domain %s", website.FQDN), nil
 		}
-	}
-
-	for _, website := range a.Websites {
 		if !domains.IsAvailable(website.FQDN) {
 			return errors.Errorf("domain %s not available", website.FQDN), nil
 		}
 	}
-
-	// exclude self if contained
-	existingApps = lo.Filter(existingApps, func(app *Application, _ int) bool { return app.ID != a.ID })
-
-	if a.WebsiteConflicts(existingApps, actor) {
-		return errors.New("website conflict"), nil
-	}
-
 	for _, p := range a.PortPublications {
 		if !ports.IsAvailable(p.InternetPort, p.Protocol) {
 			return errors.Errorf("port %d/%s not available", p.InternetPort, p.Protocol), nil
 		}
+	}
+
+	// resource conflict check
+	// exclude self if contained
+	existingApps = lo.Filter(existingApps, func(app *Application, _ int) bool { return app.ID != a.ID })
+	if a.WebsiteConflicts(existingApps, actor) {
+		return errors.New("website conflict"), nil
+	}
+	for _, p := range a.PortPublications {
 		if p.ConflictsWith(existingApps) {
 			return errors.Errorf("port %d/%s conflicts with existing port publication", p.InternetPort, p.Protocol), nil
 		}
@@ -369,33 +359,41 @@ func NewArtifact(buildID string, size int64) *Artifact {
 func ValidateDomain(domain string) error {
 	// 面倒なのでtrailing dotは無しで統一
 	if strings.HasSuffix(domain, ".") {
-		return errors.New("trailing dot not allowed in domain")
+		return errors.Errorf("trailing dot not allowed in domain %v", domain)
 	}
 	if strings.HasPrefix(domain, ".") {
-		return errors.New("leading dot not allowed in domain")
+		return errors.Errorf("leading dot not allowed in domain %v", domain)
 	}
 	_, err := idna.Lookup.ToUnicode(domain)
 	if err != nil {
-		return errors.Wrap(err, "invalid domain")
+		return errors.Wrap(err, fmt.Sprintf("invalid domain %v", domain))
 	}
 	return nil
 }
 
 func ValidateWildcardDomain(domain string) error {
 	if !strings.HasPrefix(domain, "*.") {
-		return errors.New("wildcard domain needs to begin with *.")
+		return errors.Errorf("wildcard domain needs to begin with *. (got %v)", domain)
 	}
 	baseDomain := strings.TrimPrefix(domain, "*.")
 	return ValidateDomain(baseDomain)
 }
 
-func MatchDomain(source, target string) bool {
+func ValidatePossibleWildcardDomain(domain string) error {
+	err := ValidateWildcardDomain(domain)
+	if err == nil {
+		return nil
+	}
+	return ValidateDomain(domain)
+}
+
+func ContainsDomain(source, target string) bool {
 	if source == target {
 		return true
 	}
 	if strings.HasPrefix(source, "*.") {
-		baseDomain := strings.TrimPrefix(source, "*")
-		if strings.HasSuffix(target, baseDomain) {
+		baseSource := strings.TrimPrefix(source, "*")
+		if strings.HasSuffix(target, baseSource) {
 			return true
 		}
 	}
@@ -403,36 +401,47 @@ func MatchDomain(source, target string) bool {
 }
 
 type AvailableDomain struct {
-	Domain    string
-	Available bool
+	Domain         string
+	ExcludeDomains []string
+	AuthAvailable  bool
 }
 
 type AvailableDomainSlice []*AvailableDomain
 
 func (a *AvailableDomain) Validate() error {
-	err := ValidateWildcardDomain(a.Domain)
-	if err == nil {
-		return nil
+	if err := ValidatePossibleWildcardDomain(a.Domain); err != nil {
+		return err
 	}
-	return ValidateDomain(a.Domain)
+	for _, excludeDomain := range a.ExcludeDomains {
+		if err := ValidatePossibleWildcardDomain(excludeDomain); err != nil {
+			return err
+		}
+		if !ContainsDomain(a.Domain, excludeDomain) {
+			return errors.Errorf("exclude domain %v is not contained within %v", excludeDomain, a.Domain)
+		}
+	}
+	return nil
 }
 
-func (a *AvailableDomain) match(fqdn string) bool {
-	return MatchDomain(a.Domain, fqdn)
-}
-
-func (s AvailableDomainSlice) IsAvailable(fqdn string) bool {
-	for _, a := range s {
-		if !a.Available && a.match(fqdn) {
+func (a *AvailableDomain) Match(fqdn string) bool {
+	for _, excludeDomain := range a.ExcludeDomains {
+		if ContainsDomain(excludeDomain, fqdn) {
 			return false
 		}
 	}
-	for _, a := range s {
-		if a.Available && a.match(fqdn) {
-			return true
-		}
-	}
-	return false
+	return ContainsDomain(a.Domain, fqdn)
+}
+
+func (s AvailableDomainSlice) IsAvailable(fqdn string) bool {
+	return lo.ContainsBy(s, func(ad *AvailableDomain) bool {
+		return ad.Match(fqdn)
+	})
+}
+
+func (s AvailableDomainSlice) IsAuthAvailable(fqdn string) bool {
+	return lo.ContainsBy(s, func(ad *AvailableDomain) bool {
+		return ad.Match(fqdn) && ad.AuthAvailable
+	})
 }
 
 type PortPublicationProtocol string
@@ -474,11 +483,6 @@ func (s AvailablePortSlice) IsAvailable(port int, protocol PortPublicationProtoc
 	return lo.ContainsBy(s, func(ap *AvailablePort) bool {
 		return ap.Protocol == protocol && ap.StartPort <= port && port <= ap.EndPort
 	})
-}
-
-type UnavailablePort struct {
-	Port     int
-	Protocol PortPublicationProtocol
 }
 
 type BuildStatus int
@@ -719,13 +723,6 @@ func (p *PortPublication) Validate() error {
 		return errors.Wrap(err, "invalid application port")
 	}
 	return nil
-}
-
-func (p *PortPublication) ToUnavailablePort() *UnavailablePort {
-	return &UnavailablePort{
-		Port:     p.InternetPort,
-		Protocol: p.Protocol,
-	}
 }
 
 func (p *PortPublication) ConflictsWith(existing []*Application) bool {

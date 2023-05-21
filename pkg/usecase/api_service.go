@@ -22,8 +22,6 @@ func handleRepoError[T any](entity T, err error) (T, error) {
 type APIServerService struct {
 	artifactRepo    domain.ArtifactRepository
 	appRepo         domain.ApplicationRepository
-	adRepo          domain.AvailableDomainRepository
-	apRepo          domain.AvailablePortRepository
 	buildRepo       domain.BuildRepository
 	envRepo         domain.EnvironmentRepository
 	gitRepo         domain.GitRepositoryRepository
@@ -38,8 +36,6 @@ type APIServerService struct {
 func NewAPIServerService(
 	artifactRepo domain.ArtifactRepository,
 	appRepo domain.ApplicationRepository,
-	adRepo domain.AvailableDomainRepository,
-	apRepo domain.AvailablePortRepository,
 	buildRepo domain.BuildRepository,
 	envRepo domain.EnvironmentRepository,
 	gitRepo domain.GitRepositoryRepository,
@@ -53,8 +49,6 @@ func NewAPIServerService(
 	return &APIServerService{
 		artifactRepo:    artifactRepo,
 		appRepo:         appRepo,
-		adRepo:          adRepo,
-		apRepo:          apRepo,
 		buildRepo:       buildRepo,
 		envRepo:         envRepo,
 		gitRepo:         gitRepo,

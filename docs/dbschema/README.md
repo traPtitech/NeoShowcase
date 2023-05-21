@@ -8,8 +8,6 @@
 | [application_config](application_config.md) | 12 | アプリケーション詳細設定テーブル | BASE TABLE |
 | [application_owners](application_owners.md) | 2 | アプリケーション所有者テーブル | BASE TABLE |
 | [artifacts](artifacts.md) | 5 | 静的ファイル生成物テーブル | BASE TABLE |
-| [available_domains](available_domains.md) | 2 | 利用可能ドメインテーブル | BASE TABLE |
-| [available_ports](available_ports.md) | 3 | 利用可能ポートテーブル | BASE TABLE |
 | [builds](builds.md) | 9 | ビルドテーブル | BASE TABLE |
 | [environments](environments.md) | 4 | 環境変数テーブル | BASE TABLE |
 | [port_publications](port_publications.md) | 4 | 公開ポートテーブル | BASE TABLE |
@@ -76,15 +74,6 @@ erDiagram
   datetime_6_ created_at
   datetime_6_ deleted_at
   varchar_22_ build_id FK
-}
-"available_domains" {
-  varchar_100_ domain PK
-  tinyint_1_ available
-}
-"available_ports" {
-  int_11_ start_port PK
-  int_11_ end_port PK
-  enum__tcp___udp__ protocol PK
 }
 "builds" {
   char_22_ id PK

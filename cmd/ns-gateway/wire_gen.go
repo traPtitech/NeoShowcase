@@ -27,8 +27,6 @@ func NewServer(c2 Config) (*Server, error) {
 	}
 	artifactRepository := repository.NewArtifactRepository(db)
 	applicationRepository := repository.NewApplicationRepository(db)
-	availableDomainRepository := repository.NewAvailableDomainRepository(db)
-	availablePortRepository := repository.NewAvailablePortRepository(db)
 	buildRepository := repository.NewBuildRepository(db)
 	environmentRepository := repository.NewEnvironmentRepository(db)
 	gitRepositoryRepository := repository.NewGitRepositoryRepository(db)
@@ -54,7 +52,7 @@ func NewServer(c2 Config) (*Server, error) {
 	}
 	controllerServiceClientConfig := c2.Controller
 	controllerServiceClient := grpc.NewControllerServiceClient(controllerServiceClientConfig)
-	apiServerService := usecase.NewAPIServerService(artifactRepository, applicationRepository, availableDomainRepository, availablePortRepository, buildRepository, environmentRepository, gitRepositoryRepository, userRepository, storage, mariaDBManager, mongoDBManager, containerLogger, controllerServiceClient)
+	apiServerService := usecase.NewAPIServerService(artifactRepository, applicationRepository, buildRepository, environmentRepository, gitRepositoryRepository, userRepository, storage, mariaDBManager, mongoDBManager, containerLogger, controllerServiceClient)
 	publicKeys, err := provideRepositoryPublicKey(c2)
 	if err != nil {
 		return nil, err

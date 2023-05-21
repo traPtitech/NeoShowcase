@@ -33,15 +33,15 @@ func (s *APIServerService) CreateApplication(ctx context.Context, app *domain.Ap
 	if err != nil {
 		return nil, errors.Wrap(err, "getting existing applications")
 	}
-	domains, err := s.adRepo.GetAvailableDomains(ctx)
+	domains, err := s.controller.GetAvailableDomains(ctx)
 	if err != nil {
 		return nil, errors.Wrap(err, "getting available domains")
 	}
-	ports, err := s.apRepo.GetAvailablePorts(ctx)
+	ports, err := s.controller.GetAvailablePorts(ctx)
 	if err != nil {
 		return nil, errors.Wrap(err, "getting available ports")
 	}
-	valErr, err := app.Validate(ctx, web.GetUser(ctx), s.controller, existingApps, domains, ports)
+	valErr, err := app.Validate(web.GetUser(ctx), existingApps, domains, ports)
 	if err != nil {
 		return nil, errors.Wrap(err, "validating application")
 	}
@@ -174,15 +174,15 @@ func (s *APIServerService) UpdateApplication(ctx context.Context, id string, arg
 		if err != nil {
 			return errors.Wrap(err, "getting existing applications")
 		}
-		domains, err := s.adRepo.GetAvailableDomains(ctx)
+		domains, err := s.controller.GetAvailableDomains(ctx)
 		if err != nil {
 			return errors.Wrap(err, "getting available domains")
 		}
-		ports, err := s.apRepo.GetAvailablePorts(ctx)
+		ports, err := s.controller.GetAvailablePorts(ctx)
 		if err != nil {
 			return errors.Wrap(err, "getting available ports")
 		}
-		valErr, err := app.Validate(ctx, web.GetUser(ctx), s.controller, existingApps, domains, ports)
+		valErr, err := app.Validate(web.GetUser(ctx), existingApps, domains, ports)
 		if err != nil {
 			return errors.Wrap(err, "validating application")
 		}

@@ -40,15 +40,9 @@ const (
 	// APIServiceGetAvailableDomainsProcedure is the fully-qualified name of the APIService's
 	// GetAvailableDomains RPC.
 	APIServiceGetAvailableDomainsProcedure = "/neoshowcase.protobuf.APIService/GetAvailableDomains"
-	// APIServiceAddAvailableDomainProcedure is the fully-qualified name of the APIService's
-	// AddAvailableDomain RPC.
-	APIServiceAddAvailableDomainProcedure = "/neoshowcase.protobuf.APIService/AddAvailableDomain"
 	// APIServiceGetAvailablePortsProcedure is the fully-qualified name of the APIService's
 	// GetAvailablePorts RPC.
 	APIServiceGetAvailablePortsProcedure = "/neoshowcase.protobuf.APIService/GetAvailablePorts"
-	// APIServiceAddAvailablePortProcedure is the fully-qualified name of the APIService's
-	// AddAvailablePort RPC.
-	APIServiceAddAvailablePortProcedure = "/neoshowcase.protobuf.APIService/AddAvailablePort"
 	// APIServiceGetMeProcedure is the fully-qualified name of the APIService's GetMe RPC.
 	APIServiceGetMeProcedure = "/neoshowcase.protobuf.APIService/GetMe"
 	// APIServiceCreateUserKeyProcedure is the fully-qualified name of the APIService's CreateUserKey
@@ -132,12 +126,8 @@ type APIServiceClient interface {
 	GetSystemPublicKey(context.Context, *connect_go.Request[emptypb.Empty]) (*connect_go.Response[pb.GetSystemPublicKeyResponse], error)
 	// GetAvailableDomains 使用可能なドメイン一覧を取得します
 	GetAvailableDomains(context.Context, *connect_go.Request[emptypb.Empty]) (*connect_go.Response[pb.AvailableDomains], error)
-	// AddAvailableDomain 使用可能なドメインを登録します（admin only）
-	AddAvailableDomain(context.Context, *connect_go.Request[pb.AvailableDomain]) (*connect_go.Response[emptypb.Empty], error)
 	// GetAvailablePorts 使用可能なポート一覧を取得します
 	GetAvailablePorts(context.Context, *connect_go.Request[emptypb.Empty]) (*connect_go.Response[pb.AvailablePorts], error)
-	// AddAvailablePorts 使用可能なポートを登録します（admin only）
-	AddAvailablePort(context.Context, *connect_go.Request[pb.AvailablePort]) (*connect_go.Response[emptypb.Empty], error)
 	// GetMe 自身の情報を取得します プロキシ認証のため常に成功します
 	GetMe(context.Context, *connect_go.Request[emptypb.Empty]) (*connect_go.Response[pb.User], error)
 	// CreateUserKey アプリコンテナSSH用の公開鍵を登録します
@@ -216,19 +206,9 @@ func NewAPIServiceClient(httpClient connect_go.HTTPClient, baseURL string, opts 
 			baseURL+APIServiceGetAvailableDomainsProcedure,
 			opts...,
 		),
-		addAvailableDomain: connect_go.NewClient[pb.AvailableDomain, emptypb.Empty](
-			httpClient,
-			baseURL+APIServiceAddAvailableDomainProcedure,
-			opts...,
-		),
 		getAvailablePorts: connect_go.NewClient[emptypb.Empty, pb.AvailablePorts](
 			httpClient,
 			baseURL+APIServiceGetAvailablePortsProcedure,
-			opts...,
-		),
-		addAvailablePort: connect_go.NewClient[pb.AvailablePort, emptypb.Empty](
-			httpClient,
-			baseURL+APIServiceAddAvailablePortProcedure,
 			opts...,
 		),
 		getMe: connect_go.NewClient[emptypb.Empty, pb.User](
@@ -378,9 +358,7 @@ func NewAPIServiceClient(httpClient connect_go.HTTPClient, baseURL string, opts 
 type aPIServiceClient struct {
 	getSystemPublicKey  *connect_go.Client[emptypb.Empty, pb.GetSystemPublicKeyResponse]
 	getAvailableDomains *connect_go.Client[emptypb.Empty, pb.AvailableDomains]
-	addAvailableDomain  *connect_go.Client[pb.AvailableDomain, emptypb.Empty]
 	getAvailablePorts   *connect_go.Client[emptypb.Empty, pb.AvailablePorts]
-	addAvailablePort    *connect_go.Client[pb.AvailablePort, emptypb.Empty]
 	getMe               *connect_go.Client[emptypb.Empty, pb.User]
 	createUserKey       *connect_go.Client[pb.CreateUserKeyRequest, pb.UserKey]
 	getUserKeys         *connect_go.Client[emptypb.Empty, pb.GetUserKeysResponse]
@@ -421,19 +399,9 @@ func (c *aPIServiceClient) GetAvailableDomains(ctx context.Context, req *connect
 	return c.getAvailableDomains.CallUnary(ctx, req)
 }
 
-// AddAvailableDomain calls neoshowcase.protobuf.APIService.AddAvailableDomain.
-func (c *aPIServiceClient) AddAvailableDomain(ctx context.Context, req *connect_go.Request[pb.AvailableDomain]) (*connect_go.Response[emptypb.Empty], error) {
-	return c.addAvailableDomain.CallUnary(ctx, req)
-}
-
 // GetAvailablePorts calls neoshowcase.protobuf.APIService.GetAvailablePorts.
 func (c *aPIServiceClient) GetAvailablePorts(ctx context.Context, req *connect_go.Request[emptypb.Empty]) (*connect_go.Response[pb.AvailablePorts], error) {
 	return c.getAvailablePorts.CallUnary(ctx, req)
-}
-
-// AddAvailablePort calls neoshowcase.protobuf.APIService.AddAvailablePort.
-func (c *aPIServiceClient) AddAvailablePort(ctx context.Context, req *connect_go.Request[pb.AvailablePort]) (*connect_go.Response[emptypb.Empty], error) {
-	return c.addAvailablePort.CallUnary(ctx, req)
 }
 
 // GetMe calls neoshowcase.protobuf.APIService.GetMe.
@@ -582,12 +550,8 @@ type APIServiceHandler interface {
 	GetSystemPublicKey(context.Context, *connect_go.Request[emptypb.Empty]) (*connect_go.Response[pb.GetSystemPublicKeyResponse], error)
 	// GetAvailableDomains 使用可能なドメイン一覧を取得します
 	GetAvailableDomains(context.Context, *connect_go.Request[emptypb.Empty]) (*connect_go.Response[pb.AvailableDomains], error)
-	// AddAvailableDomain 使用可能なドメインを登録します（admin only）
-	AddAvailableDomain(context.Context, *connect_go.Request[pb.AvailableDomain]) (*connect_go.Response[emptypb.Empty], error)
 	// GetAvailablePorts 使用可能なポート一覧を取得します
 	GetAvailablePorts(context.Context, *connect_go.Request[emptypb.Empty]) (*connect_go.Response[pb.AvailablePorts], error)
-	// AddAvailablePorts 使用可能なポートを登録します（admin only）
-	AddAvailablePort(context.Context, *connect_go.Request[pb.AvailablePort]) (*connect_go.Response[emptypb.Empty], error)
 	// GetMe 自身の情報を取得します プロキシ認証のため常に成功します
 	GetMe(context.Context, *connect_go.Request[emptypb.Empty]) (*connect_go.Response[pb.User], error)
 	// CreateUserKey アプリコンテナSSH用の公開鍵を登録します
@@ -663,19 +627,9 @@ func NewAPIServiceHandler(svc APIServiceHandler, opts ...connect_go.HandlerOptio
 		svc.GetAvailableDomains,
 		opts...,
 	))
-	mux.Handle(APIServiceAddAvailableDomainProcedure, connect_go.NewUnaryHandler(
-		APIServiceAddAvailableDomainProcedure,
-		svc.AddAvailableDomain,
-		opts...,
-	))
 	mux.Handle(APIServiceGetAvailablePortsProcedure, connect_go.NewUnaryHandler(
 		APIServiceGetAvailablePortsProcedure,
 		svc.GetAvailablePorts,
-		opts...,
-	))
-	mux.Handle(APIServiceAddAvailablePortProcedure, connect_go.NewUnaryHandler(
-		APIServiceAddAvailablePortProcedure,
-		svc.AddAvailablePort,
 		opts...,
 	))
 	mux.Handle(APIServiceGetMeProcedure, connect_go.NewUnaryHandler(
@@ -832,16 +786,8 @@ func (UnimplementedAPIServiceHandler) GetAvailableDomains(context.Context, *conn
 	return nil, connect_go.NewError(connect_go.CodeUnimplemented, errors.New("neoshowcase.protobuf.APIService.GetAvailableDomains is not implemented"))
 }
 
-func (UnimplementedAPIServiceHandler) AddAvailableDomain(context.Context, *connect_go.Request[pb.AvailableDomain]) (*connect_go.Response[emptypb.Empty], error) {
-	return nil, connect_go.NewError(connect_go.CodeUnimplemented, errors.New("neoshowcase.protobuf.APIService.AddAvailableDomain is not implemented"))
-}
-
 func (UnimplementedAPIServiceHandler) GetAvailablePorts(context.Context, *connect_go.Request[emptypb.Empty]) (*connect_go.Response[pb.AvailablePorts], error) {
 	return nil, connect_go.NewError(connect_go.CodeUnimplemented, errors.New("neoshowcase.protobuf.APIService.GetAvailablePorts is not implemented"))
-}
-
-func (UnimplementedAPIServiceHandler) AddAvailablePort(context.Context, *connect_go.Request[pb.AvailablePort]) (*connect_go.Response[emptypb.Empty], error) {
-	return nil, connect_go.NewError(connect_go.CodeUnimplemented, errors.New("neoshowcase.protobuf.APIService.AddAvailablePort is not implemented"))
 }
 
 func (UnimplementedAPIServiceHandler) GetMe(context.Context, *connect_go.Request[emptypb.Empty]) (*connect_go.Response[pb.User], error) {
