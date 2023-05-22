@@ -132,29 +132,29 @@ export interface Props {
   apps: Application[]
 }
 
-export const RepositoryRow = ({ repo, apps }: Props): JSXElement => {
-  const provider = repositoryURLToProvider(repo.url)
+export const RepositoryRow = (props: Props): JSXElement => {
+  const provider = repositoryURLToProvider(props.repo.url)
   return (
     <Container>
       <Header>
         <HeaderLeft>
           {providerToIcon(provider)}
-          <RepoName>{repo.name}</RepoName>
+          <RepoName>{props.repo.name}</RepoName>
           <AppsCount>
-            {apps.length} {apps.length === 1 ? 'app' : 'apps'}
+            {props.apps.length} {props.apps.length === 1 ? 'app' : 'apps'}
           </AppsCount>
         </HeaderLeft>
-        <A href={`/apps/new?repositoryID=${repo.id}`}>
+        <A href={`/apps/new?repositoryID=${props.repo.id}`}>
           <AddBranchButton>
             <div>New&nbsp;App</div>
           </AddBranchButton>
         </A>
       </Header>
       <For
-        each={apps}
+        each={props.apps}
         children={(app, i) => (
           <A href={`/apps/${app.id}`}>
-            <ApplicationContainer upperBorder={i() === apps.length - 1 ? 'none' : 'line'}>
+            <ApplicationContainer upperBorder={i() === props.apps.length - 1 ? 'none' : 'line'}>
               <StatusIcon state={applicationState(app)} />
               <AppDetail>
                 <AppName>{app.name}</AppName>
@@ -170,42 +170,6 @@ export const RepositoryRow = ({ repo, apps }: Props): JSXElement => {
           </A>
         )}
       />
-    </Container>
-  )
-}
-
-export interface NamedProps {
-  repo: Repository
-  apps: Application[]
-  onNewAppClick: () => void
-}
-
-export const RepositoryNameRow = ({ repo, apps, onNewAppClick }: NamedProps): JSXElement => {
-  const provider = repositoryURLToProvider(repo.url)
-  const sortedApps = apps.sort((a, b) => {
-    if (a.updatedAt.toDate() < b.updatedAt.toDate()) {
-      return 1
-    }
-    if (a.updatedAt.toDate() > b.updatedAt.toDate()) {
-      return -1
-    }
-    return 0
-  })
-  return (
-    <Container>
-      <Header>
-        <HeaderLeft>
-          {providerToIcon(provider)}
-          <RepoName>{repo.name}</RepoName>
-          <AppsCount>
-            {apps.length && ` ${sortedApps[0].refName}/${sortedApps[0].currentCommit.slice(0, 7)}・`}
-            {apps.length && <DiffHuman target={sortedApps[0].updatedAt.toDate()} />}
-          </AppsCount>
-        </HeaderLeft>
-        {/*<AddBranchButton onclick={onNewAppClick}>*/}
-        {/*  <div>Create&nbsp;App</div>*/}
-        {/*</AddBranchButton>*/}
-      </Header>
     </Container>
   )
 }

@@ -1,14 +1,14 @@
 import { Header } from '/@/components/Header'
-import { createResource, createSignal, JSX, Show, For } from 'solid-js'
+import { createResource, createSignal, JSX, Show, For, JSXElement } from 'solid-js'
 import { Radio, RadioItem } from '/@/components/Radio'
 import { client } from '/@/libs/api'
 import {
   Application,
+  Repository,
   AuthenticationType,
   PortPublicationProtocol,
   CreateApplicationRequest,
 } from '/@/api/neoshowcase/protobuf/gateway_pb'
-import { RepositoryNameRow } from '/@/components/RepositoryRow'
 import { A, useSearchParams } from '@solidjs/router'
 import { BsArrowLeftShort } from 'solid-icons/bs'
 import { Container } from '/@/libs/layout'
@@ -16,6 +16,7 @@ import { vars } from '/@/theme'
 import { styled } from '@macaron-css/solid'
 import { Button } from '/@/components/Button'
 import { Checkbox } from '/@/components/Checkbox'
+import { providerToIcon, repositoryURLToProvider } from '/@/libs/application'
 
 const [repos] = createResource(() => client.getRepositories({}))
 const [apps] = createResource(() => client.getApplications({}))
@@ -191,7 +192,7 @@ const RepositoriesContainer = styled('div', {
   base: {
     display: 'flex',
     flexDirection: 'column',
-    gap: '20px',
+    gap: 'px',
   },
 })
 
@@ -345,6 +346,60 @@ const InputFormRuntimeConfig = () => {
   )
 }
 
+const RepositoryInfoContainer = styled('div', {
+  base: {
+    display: 'flex',
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: '10px',
+  },
+})
+
+const RepoName = styled('div', {
+  base: {
+    fontSize: '16px',
+    fontWeight: 500,
+    color: vars.text.black1,
+  },
+})
+
+export interface RepositoryInfoProps {
+  repo: Repository
+  apps: Application[]
+}
+
+const RepositoryInfoBackground = styled('div', {
+  base: {
+    display: 'flex',
+
+    background: vars.bg.white3,
+    border: `1px solid ${vars.bg.white4}`,
+    borderRadius: '4px',
+    padding: '8px 12px',
+  },
+})
+
+const SmallText = styled('div', {
+  base: {
+    display: 'flex',
+    fontSize: '11px',
+    color: vars.text.black3,
+  },
+})
+
+const RepositoryInfo = (props: RepositoryInfoProps): JSXElement => {
+  const provider = repositoryURLToProvider(props.repo.url)
+  return (
+    <RepositoryInfoBackground>
+      <RepositoryInfoContainer>
+        {providerToIcon(provider)}
+        <RepoName>{props.repo.name}</RepoName>
+        <SmallText>{props.repo.url}</SmallText>
+      </RepositoryInfoContainer>
+    </RepositoryInfoBackground>
+  )
+}
+
 export default () => {
   const appsByRepo = () =>
     loaded() &&
@@ -358,17 +413,16 @@ export default () => {
   const [websites, setWebsites] = createSignal<Website[]>([])
   const [portPublications, setPortPublications] = createSignal<PortPublication[]>([])
   const [searchParams] = useSearchParams()
+
   const SelectRepository = (): JSX.Element => {
     return (
       <>
         <ContentContainer>
           <MainContentContainer>
-            <RepositoriesContainer>
-              {loaded() &&
-                repos()
-                  .repositories.filter((r) => r.id === searchParams.repositoryID)
-                  .map((r) => <RepositoryNameRow repo={r} apps={appsByRepo()[r.id] || []} onNewAppClick={() => {}} />)}
-            </RepositoriesContainer>
+            {loaded() &&
+              repos()
+                .repositories.filter((r) => r.id === searchParams.repositoryID)
+                .map((r) => <RepositoryInfo repo={r} apps={appsByRepo()[r.id] || []} />)}
 
             <InputFormContainer>
               <InputForm>
