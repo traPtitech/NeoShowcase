@@ -336,11 +336,11 @@ const InputFormRuntimeConfig = () => {
       </InputForm>
       <InputForm>
         <InputFormText>Entrypoint</InputFormText>
-        <InputBar placeholder='entrypoint' />
+        <InputBar placeholder='' />
       </InputForm>
       <InputForm>
         <InputFormText>Command</InputFormText>
-        <InputBar placeholder='command' />
+        <InputBar placeholder='' />
       </InputForm>
     </>
   )
@@ -427,7 +427,7 @@ export default () => {
             <InputFormContainer>
               <InputForm>
                 <InputFormText>Application Name</InputFormText>
-                <InputBar placeholder='name' />
+                <InputBar placeholder='' />
               </InputForm>
 
               <InputForm>
@@ -466,7 +466,7 @@ export default () => {
                     <InputForm>
                       <InputFormText>Build cmd shell</InputFormText>
                       <InputFormCheckBox>
-                        <Checkbox>build_cmd_shell</Checkbox>
+                        <Checkbox>Run build cmd with shell</Checkbox>
                       </InputFormCheckBox>
                     </InputForm>
                   </Show>
@@ -493,7 +493,7 @@ export default () => {
                     <InputForm>
                       <InputFormText>Build cmd shell</InputFormText>
                       <InputFormCheckBox>
-                        <Checkbox>build_cmd_shell</Checkbox>
+                        <Checkbox>Run build cmd with shell</Checkbox>
                       </InputFormCheckBox>
                     </InputForm>
                     <InputForm>
