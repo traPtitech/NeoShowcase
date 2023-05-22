@@ -296,11 +296,11 @@ const PortPublication = (props: PortPublicationProps) => {
     <InputFormWebsite>
       <InputForm>
         <InputFormText>Internet Port</InputFormText>
-        <InputBar placeholder='internet_port' />
+        <InputBar placeholder='30000' />
       </InputForm>
       <InputForm>
         <InputFormText>Application Port</InputFormText>
-        <InputBar placeholder='application_port' />
+        <InputBar placeholder='30001' />
       </InputForm>
       <InputForm>
         <Radio
