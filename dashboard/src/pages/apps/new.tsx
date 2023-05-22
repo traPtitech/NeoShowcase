@@ -17,6 +17,7 @@ import { styled } from '@macaron-css/solid'
 import { Button } from '/@/components/Button'
 import { Checkbox } from '/@/components/Checkbox'
 import { providerToIcon, repositoryURLToProvider } from '/@/libs/application'
+import { createStore } from 'solid-js/store'
 
 const [repos] = createResource(() => client.getRepositories({}))
 const [apps] = createResource(() => client.getApplications({}))
@@ -414,6 +415,9 @@ export default () => {
   const [portPublications, setPortPublications] = createSignal<PortPublication[]>([])
   const [searchParams] = useSearchParams()
 
+  let createNewAppRequest = new CreateApplicationRequest
+  const [fields, setFields] = createStore(createNewAppRequest);
+
   const SelectRepository = (): JSX.Element => {
     return (
       <>
@@ -427,7 +431,7 @@ export default () => {
             <InputFormContainer>
               <InputForm>
                 <InputFormText>Application Name</InputFormText>
-                <InputBar placeholder='' />
+                <InputBar placeholder='' onInput={(e) => setFields("name", e.target.value)}/>
               </InputForm>
 
               <InputForm>
