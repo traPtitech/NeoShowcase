@@ -1,6 +1,6 @@
 import { Header } from '/@/components/Header'
 import { Checkbox } from '/@/components/Checkbox'
-import { createResource, For, Show } from 'solid-js'
+import { createResource, createSignal, For, Show } from 'solid-js'
 import { Radio, RadioItem } from '/@/components/Radio'
 import { client } from '/@/libs/api'
 import { Application } from '/@/api/neoshowcase/protobuf/gateway_pb'
@@ -11,6 +11,7 @@ import { styled } from '@macaron-css/solid'
 import { vars } from '/@/theme'
 import { Container } from '/@/libs/layout'
 import { Button } from '/@/components/Button'
+import { A } from '@solidjs/router'
 
 const sortItems: RadioItem[] = [
   { value: 'desc', title: '最新順' },
@@ -126,6 +127,8 @@ export default () => {
       return acc
     }, {} as Record<string, Application[]>)
 
+  const [sort, setSort] = createSignal(sortItems[0].value)
+
   return (
     <Container>
       <Header />
@@ -160,15 +163,17 @@ export default () => {
             </SidebarSection>
             <SidebarOptions>
               <SidebarTitle>Sort</SidebarTitle>
-              <Radio items={sortItems} />
+              <Radio items={sortItems} selected={sort()} setSelected={setSort} />
             </SidebarOptions>
           </SidebarContainer>
           <MainContainer>
             <SearchBarContainer>
               <SearchBar placeholder='Search...' />
-              <Button color='black1' size='large'>
-                + Create new app
-              </Button>
+              <A href="/repos/new">
+                <Button color='black1' size='large'>
+                  + New Repository
+                </Button>
+              </A>
             </SearchBarContainer>
             <RepositoriesContainer>
               <For

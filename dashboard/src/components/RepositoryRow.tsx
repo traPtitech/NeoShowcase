@@ -47,6 +47,7 @@ const RepoName = styled('div', {
 
 const AppsCount = styled('div', {
   base: {
+    display: 'flex',
     fontSize: '11px',
     color: vars.text.black3,
   },
@@ -131,27 +132,29 @@ export interface Props {
   apps: Application[]
 }
 
-export const RepositoryRow = ({ repo, apps }: Props): JSXElement => {
-  const provider = repositoryURLToProvider(repo.url)
+export const RepositoryRow = (props: Props): JSXElement => {
+  const provider = repositoryURLToProvider(props.repo.url)
   return (
     <Container>
       <Header>
         <HeaderLeft>
           {providerToIcon(provider)}
-          <RepoName>{repo.name}</RepoName>
+          <RepoName>{props.repo.name}</RepoName>
           <AppsCount>
-            {apps.length} {apps.length === 1 ? 'app' : 'apps'}
+            {props.apps.length} {props.apps.length === 1 ? 'app' : 'apps'}
           </AppsCount>
         </HeaderLeft>
-        <AddBranchButton>
-          <div>Add&nbsp;branch</div>
-        </AddBranchButton>
+        <A href={`/apps/new?repositoryID=${props.repo.id}`}>
+          <AddBranchButton>
+            <div>New&nbsp;App</div>
+          </AddBranchButton>
+        </A>
       </Header>
       <For
-        each={apps}
+        each={props.apps}
         children={(app, i) => (
           <A href={`/apps/${app.id}`}>
-            <ApplicationContainer upperBorder={i() === apps.length - 1 ? 'none' : 'line'}>
+            <ApplicationContainer upperBorder={i() === props.apps.length - 1 ? 'none' : 'line'}>
               <StatusIcon state={applicationState(app)} />
               <AppDetail>
                 <AppName>{app.name}</AppName>

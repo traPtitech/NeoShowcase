@@ -22,4 +22,8 @@ export default useRoutes([
     path: '/apps/:id/builds/:buildID',
     component: lazy(() => import('/@/pages/apps/[id]/builds/[id]')),
   },
+  {
+    path: '/apps/new',
+    component: lazy(() => import('/@/pages/apps/new')),
+  },
 ])
