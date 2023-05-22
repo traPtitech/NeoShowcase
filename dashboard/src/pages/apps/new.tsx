@@ -431,11 +431,6 @@ export default () => {
               </InputForm>
 
               <InputForm>
-                <InputFormText>RepositoryID</InputFormText>
-                <InputBar placeholder={searchParams.repositoryID} />
-              </InputForm>
-
-              <InputForm>
                 <InputFormText>Branch Name</InputFormText>
                 <InputBar placeholder='master' />
               </InputForm>
@@ -450,18 +445,18 @@ export default () => {
                     <InputFormRuntimeConfig />
                     <InputForm>
                       <InputFormText>Context</InputFormText>
-                      <InputBar placeholder='context' />
+                      <InputBar placeholder='' />
                     </InputForm>
                   </Show>
                   <Show when={buildConfig() === buildConfigItems[1].value}>
                     <InputFormRuntimeConfig />
                     <InputForm>
                       <InputFormText>Base image</InputFormText>
-                      <InputBar placeholder='base_image' />
+                      <InputBar placeholder='' />
                     </InputForm>
                     <InputForm>
                       <InputFormText>Build cmd</InputFormText>
-                      <InputBar placeholder='build_cmd' />
+                      <InputBar placeholder='' />
                     </InputForm>
                     <InputForm>
                       <InputFormText>Build cmd shell</InputFormText>
@@ -474,21 +469,21 @@ export default () => {
                     <InputFormRuntimeConfig />
                     <InputForm>
                       <InputFormText>Dockerfile name</InputFormText>
-                      <InputBar placeholder='dockerfile_name' />
+                      <InputBar placeholder='' />
                     </InputForm>
                     <InputForm>
                       <InputFormText>Context</InputFormText>
-                      <InputBar placeholder='context' />
+                      <InputBar placeholder='' />
                     </InputForm>
                   </Show>
                   <Show when={buildConfig() === buildConfigItems[3].value}>
                     <InputForm>
                       <InputFormText>Base image</InputFormText>
-                      <InputBar placeholder='base_image' />
+                      <InputBar placeholder='' />
                     </InputForm>
                     <InputForm>
                       <InputFormText>Build cmd</InputFormText>
-                      <InputBar placeholder='build_cmd' />
+                      <InputBar placeholder='' />
                     </InputForm>
                     <InputForm>
                       <InputFormText>Build cmd shell</InputFormText>
@@ -498,21 +493,21 @@ export default () => {
                     </InputForm>
                     <InputForm>
                       <InputFormText>Artifact path</InputFormText>
-                      <InputBar placeholder='artifact_path' />
+                      <InputBar placeholder='' />
                     </InputForm>
                   </Show>
                   <Show when={buildConfig() === buildConfigItems[4].value}>
                     <InputForm>
                       <InputFormText>Dockerfile name</InputFormText>
-                      <InputBar placeholder='dockerfile_name' />
+                      <InputBar placeholder='' />
                     </InputForm>
                     <InputForm>
                       <InputFormText>Context</InputFormText>
-                      <InputBar placeholder='context' />
+                      <InputBar placeholder='' />
                     </InputForm>
                     <InputForm>
                       <InputFormText>Artifact path</InputFormText>
-                      <InputBar placeholder='artifact_path' />
+                      <InputBar placeholder='' />
                     </InputForm>
                   </Show>
                 </InputFormRadio>
