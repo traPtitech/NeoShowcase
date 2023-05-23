@@ -1,4 +1,4 @@
-import { For, JSX, JSXElement, Match, Show, Switch, createEffect, createResource, createSignal } from 'solid-js'
+import { JSX, JSXElement, Match, Show, Switch, createEffect, createResource, createSignal } from 'solid-js'
 import { createStore } from 'solid-js/store'
 import { Empty } from '@bufbuild/protobuf'
 import { styled } from '@macaron-css/solid'
@@ -10,6 +10,7 @@ import {
 } from '/@/api/neoshowcase/protobuf/gateway_pb'
 import { Button } from '/@/components/Button'
 import { Header } from '/@/components/Header'
+import { Radio } from '/@/components/Radio'
 import { client } from '/@/libs/api'
 import { Container } from '/@/libs/layout'
 import { vars } from '/@/theme'
@@ -96,36 +97,6 @@ const Form = (props: FormProps): JSXElement => {
         onInput={props.onInput}
       />
     </InputForm>
-  )
-}
-
-const ToggleButtonsWrapper = styled('div', {
-  base: {
-    display: 'flex',
-    flexDirection: 'row',
-  },
-})
-
-interface ToggleButtonsProps<T> {
-  items: {
-    value: T
-    label: string
-  }[]
-  selected: T
-  onChange: (value: T) => void
-}
-
-const ToggleButtons = <T extends unknown>(props: ToggleButtonsProps<T>): JSXElement => {
-  return (
-    <ToggleButtonsWrapper>
-      <For each={props.items}>
-        {(item) => (
-          <Button color='black1' size='large' onclick={() => props.onChange(item.value)}>
-            {item.label}
-          </Button>
-        )}
-      </For>
-    </ToggleButtonsWrapper>
   )
 }
 
@@ -236,15 +207,18 @@ export default () => {
               })
             }
           />
-          <ToggleButtons<AuthMethod>
-            items={[
-              { label: '認証を使用しない', value: 'none' },
-              { label: 'Basic認証を使用', value: 'basic' },
-              { label: 'SSH認証を使用', value: 'ssh' },
-            ]}
-            selected={authMethod()}
-            onChange={setAuthMethod}
-          />
+          <InputForm>
+            <InputFormText>認証方法</InputFormText>
+            <Radio
+              items={[
+                { title: '認証を使用しない', value: 'none' },
+                { title: 'Basic認証を使用', value: 'basic' },
+                { title: 'SSH認証を使用', value: 'ssh' },
+              ]}
+              selected={authMethod()}
+              setSelected={setAuthMethod}
+            />
+          </InputForm>
           <Switch>
             <Match when={authMethod() === 'basic'}>
               <Form
