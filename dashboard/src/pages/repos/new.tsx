@@ -32,6 +32,51 @@ const ContentContainer = styled('div', {
   },
 })
 
+// copy from /pages/apps/new
+const InputFormContainer = styled('div', {
+  base: {
+    display: 'flex',
+    flexDirection: 'column',
+    gap: '20px',
+
+    background: vars.bg.white3,
+    border: `1px solid ${vars.bg.white4}`,
+    borderRadius: '4px',
+    padding: '8px 12px',
+  },
+})
+const InputForm = styled('div', {
+  base: {},
+})
+const InputFormText = styled('div', {
+  base: {
+    fontSize: '16px',
+    alignItems: 'center',
+    fontWeight: 700,
+    color: vars.text.black1,
+
+    marginBottom: '4px',
+  },
+})
+const InputBar = styled('input', {
+  base: {
+    padding: '8px 12px',
+    borderRadius: '4px',
+    border: `1px solid ${vars.bg.white4}`,
+    fontSize: '14px',
+    marginLeft: '4px',
+
+    width: '320px',
+
+    display: 'flex',
+    flexDirection: 'column',
+
+    '::placeholder': {
+      color: vars.text.black3,
+    },
+  },
+})
+
 interface FormProps {
   label: string
   type?: JSX.InputHTMLAttributes<HTMLInputElement>['type']
@@ -42,15 +87,15 @@ interface FormProps {
 
 const Form = (props: FormProps): JSXElement => {
   return (
-    <div>
-      <label>{props.label}</label>
-      <input
+    <InputForm>
+      <InputFormText>{props.label}</InputFormText>
+      <InputBar
         type={props.type ?? 'text'}
         placeholder={props.placeholder ?? ''}
         value={props.value}
         onInput={props.onInput}
       />
-    </div>
+    </InputForm>
   )
 }
 
@@ -140,65 +185,67 @@ export default () => {
       <Header />
       <PageTitle>Create Repository</PageTitle>
       <ContentContainer>
-        <Form
-          label='URL'
-          type='url'
-          placeholder='https://example.com/my-app.git'
-          value={requestConfig.url}
-          onInput={(e) =>
-            setRequestConfig({
-              url: e.currentTarget.value,
-            })
-          }
-        />
-        <Form
-          label='リポジトリ名'
-          placeholder='my-app'
-          value={requestConfig.name}
-          onInput={(e) =>
-            setRequestConfig({
-              name: e.currentTarget.value,
-            })
-          }
-        />
-        <ToggleButtons<AuthMethod>
-          items={[
-            { label: '認証を使用しない', value: 'none' },
-            { label: 'Basic認証を使用', value: 'basic' },
-            { label: 'SSH認証を使用', value: 'ssh' },
-          ]}
-          selected={authMethod()}
-          onChange={setAuthMethod}
-        />
-        <Switch>
-          <Match when={authMethod() === 'basic'}>
-            <Form
-              label='ユーザー名'
-              value={basicAuthConfig.username}
-              onInput={(e) => setBasicAuthConfig('username', e.currentTarget.value)}
-            />
-            <Form
-              label='パスワード'
-              type='password'
-              value={basicAuthConfig.password}
-              onInput={(e) => setBasicAuthConfig('password', e.currentTarget.value)}
-            />
-          </Match>
-          <Match when={authMethod() === 'ssh'}>
-            <Form
-              label='SSH公開鍵'
-              placeholder='ssh-ed25519 ******'
-              value={sshAuthConfig.sshKey}
-              onInput={(e) => setSshAuthConfig('sshKey', e.currentTarget.value)}
-            />
-            <Show when={sshAuthConfig.sshKey.length === 0}>
-              <SystemPublicKey />
-            </Show>
-          </Match>
-        </Switch>
-        <Button color='black1' size='large' onclick={createRepository}>
-          + Create new Repository
-        </Button>
+        <InputFormContainer>
+          <Form
+            label='URL'
+            type='url'
+            placeholder='https://example.com/my-app.git'
+            value={requestConfig.url}
+            onInput={(e) =>
+              setRequestConfig({
+                url: e.currentTarget.value,
+              })
+            }
+          />
+          <Form
+            label='リポジトリ名'
+            placeholder='my-app'
+            value={requestConfig.name}
+            onInput={(e) =>
+              setRequestConfig({
+                name: e.currentTarget.value,
+              })
+            }
+          />
+          <ToggleButtons<AuthMethod>
+            items={[
+              { label: '認証を使用しない', value: 'none' },
+              { label: 'Basic認証を使用', value: 'basic' },
+              { label: 'SSH認証を使用', value: 'ssh' },
+            ]}
+            selected={authMethod()}
+            onChange={setAuthMethod}
+          />
+          <Switch>
+            <Match when={authMethod() === 'basic'}>
+              <Form
+                label='ユーザー名'
+                value={basicAuthConfig.username}
+                onInput={(e) => setBasicAuthConfig('username', e.currentTarget.value)}
+              />
+              <Form
+                label='パスワード'
+                type='password'
+                value={basicAuthConfig.password}
+                onInput={(e) => setBasicAuthConfig('password', e.currentTarget.value)}
+              />
+            </Match>
+            <Match when={authMethod() === 'ssh'}>
+              <Form
+                label='SSH公開鍵'
+                placeholder='ssh-ed25519 ******'
+                value={sshAuthConfig.sshKey}
+                onInput={(e) => setSshAuthConfig('sshKey', e.currentTarget.value)}
+              />
+              <Show when={sshAuthConfig.sshKey.length === 0}>
+                <SystemPublicKey />
+              </Show>
+            </Match>
+          </Switch>
+          <Button color='black1' size='large' onclick={createRepository}>
+            + Create new Repository
+          </Button>
+        </InputFormContainer>
       </ContentContainer>
     </Container>
   )
