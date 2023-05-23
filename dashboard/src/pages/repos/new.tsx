@@ -13,7 +13,6 @@ import { Header } from '/@/components/Header'
 import { client } from '/@/libs/api'
 import { Container } from '/@/libs/layout'
 import { vars } from '/@/theme'
-import { ImClipboard } from 'solid-icons/im'
 
 // copy from /pages/apps AppsTitle component
 const PageTitle = styled('div', {
