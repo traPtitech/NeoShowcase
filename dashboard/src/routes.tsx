@@ -26,4 +26,8 @@ export default useRoutes([
     path: '/apps/new',
     component: lazy(() => import('/@/pages/apps/new')),
   },
+  {
+    path: '/repos/new',
+    component: lazy(() => import('/@/pages/repos/new')),
+  },
 ])
