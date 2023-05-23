@@ -120,26 +120,6 @@ const PublicKeyCode = styled('code', {
   },
 })
 
-const SystemPublicKey = (): JSXElement => {
-  const [systemPublicKey] = createResource(() => client.getSystemPublicKey({}))
-
-  return (
-    <div>
-      <SshDetails>
-        秘密鍵を入力せずにSSH認証でリポジトリを登録する場合、以下のSSH公開鍵が認証に使用されます。
-      </SshDetails>
-      <Switch>
-        <Match when={systemPublicKey.loading}>
-          <div>Loading...</div>
-        </Match>
-        <Match when={systemPublicKey()}>
-          <PublicKeyCode>{systemPublicKey().publicKey}</PublicKeyCode>
-        </Match>
-      </Switch>
-    </div>
-  )
-}
-
 export default () => {
   // 認証方法 ("none" | "ssh" | "basic")
   type AuthMethod = CreateRepositoryAuth['auth']['case']
@@ -179,6 +159,8 @@ export default () => {
     const repositoryName = lastSegment?.replace(/\.git$/, '') ?? ''
     setRequestConfig('name', repositoryName)
   })
+
+  const [systemPublicKey] = createResource(() => client.getSystemPublicKey({}))
 
   return (
     <Container>
@@ -241,7 +223,19 @@ export default () => {
                 onInput={(e) => setSshAuthConfig('sshKey', e.currentTarget.value)}
               />
               <Show when={sshAuthConfig.sshKey.length === 0}>
-                <SystemPublicKey />
+                <div>
+                  <SshDetails>
+                    秘密鍵を入力せずにSSH認証でリポジトリを登録する場合、以下のSSH公開鍵が認証に使用されます。
+                  </SshDetails>
+                  <Switch>
+                    <Match when={systemPublicKey.loading}>
+                      <div>Loading...</div>
+                    </Match>
+                    <Match when={systemPublicKey()}>
+                      <PublicKeyCode>{systemPublicKey().publicKey}</PublicKeyCode>
+                    </Match>
+                  </Switch>
+                </div>
               </Show>
             </Match>
           </Switch>
