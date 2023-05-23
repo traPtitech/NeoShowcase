@@ -14,6 +14,7 @@ import { client } from '/@/libs/api'
 import { Container } from '/@/libs/layout'
 import { vars } from '/@/theme'
 
+// copy from /pages/apps AppsTitle component
 const PageTitle = styled('div', {
   base: {
     marginTop: '48px',
@@ -23,6 +24,8 @@ const PageTitle = styled('div', {
   },
 })
 
+// copy from /pages/apps
+// and delete unnecessary styles
 const ContentContainer = styled('div', {
   base: {
     marginTop: '24px',
