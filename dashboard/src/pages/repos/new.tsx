@@ -126,7 +126,7 @@ const SystemPublicKey = (): JSXElement => {
   return (
     <div>
       <SshDetails>
-        公開鍵を入力せずにSSH認証でリポジトリを登録する場合、以下のSSH公開鍵が認証に使用されます。
+        秘密鍵を入力せずにSSH認証でリポジトリを登録する場合、以下のSSH公開鍵が認証に使用されます。
       </SshDetails>
       <Switch>
         <Match when={systemPublicKey.loading}>
@@ -235,8 +235,8 @@ export default () => {
             </Match>
             <Match when={authMethod() === 'ssh'}>
               <Form
-                label='SSH公開鍵'
-                placeholder='ssh-ed25519 ******'
+                label='SSH秘密鍵'
+                placeholder=''
                 value={sshAuthConfig.sshKey}
                 onInput={(e) => setSshAuthConfig('sshKey', e.currentTarget.value)}
               />
