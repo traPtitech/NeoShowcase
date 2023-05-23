@@ -13,6 +13,7 @@ import { Header } from '/@/components/Header'
 import { client } from '/@/libs/api'
 import { Container } from '/@/libs/layout'
 import { vars } from '/@/theme'
+import { ImClipboard } from 'solid-icons/im'
 
 // copy from /pages/apps AppsTitle component
 const PageTitle = styled('div', {
@@ -99,6 +100,13 @@ const Form = (props: FormProps): JSXElement => {
   )
 }
 
+const ToggleButtonsWrapper = styled('div', {
+  base: {
+    display: 'flex',
+    flexDirection: 'row',
+  },
+})
+
 interface ToggleButtonsProps<T> {
   items: {
     value: T
@@ -110,7 +118,7 @@ interface ToggleButtonsProps<T> {
 
 const ToggleButtons = <T extends unknown>(props: ToggleButtonsProps<T>): JSXElement => {
   return (
-    <div>
+    <ToggleButtonsWrapper>
       <For each={props.items}>
         {(item) => (
           <Button color='black1' size='large' onclick={() => props.onChange(item.value)}>
@@ -118,22 +126,44 @@ const ToggleButtons = <T extends unknown>(props: ToggleButtonsProps<T>): JSXElem
           </Button>
         )}
       </For>
-    </div>
+    </ToggleButtonsWrapper>
   )
 }
+
+const SshDetails = styled('div', {
+  base: {
+    color: vars.text.black2,
+    marginBottom: '4px',
+  },
+})
+
+const PublicKeyCode = styled('code', {
+  base: {
+    display: 'block',
+    padding: '8px 12px',
+    fontFamily: 'monospace',
+    fontSize: '14px',
+    background: vars.bg.white2,
+    color: vars.text.black1,
+    border: `1px solid ${vars.bg.white4}`,
+    borderRadius: '4px',
+  },
+})
 
 const SystemPublicKey = (): JSXElement => {
   const [systemPublicKey] = createResource(() => client.getSystemPublicKey({}))
 
   return (
     <div>
-      <div>公開鍵を入力せずにSSH認証でリポジトリを登録する場合、以下のSSH公開鍵が認証に使用されます。</div>
+      <SshDetails>
+        公開鍵を入力せずにSSH認証でリポジトリを登録する場合、以下のSSH公開鍵が認証に使用されます。
+      </SshDetails>
       <Switch>
         <Match when={systemPublicKey.loading}>
           <div>Loading...</div>
         </Match>
         <Match when={systemPublicKey()}>
-          <code>{systemPublicKey().publicKey}</code>
+          <PublicKeyCode>{systemPublicKey().publicKey}</PublicKeyCode>
         </Match>
       </Switch>
     </div>
