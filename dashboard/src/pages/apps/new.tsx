@@ -7,7 +7,7 @@ import {
   Repository,
   AuthenticationType,
   PortPublicationProtocol,
-  CreateApplicationRequest,
+  CreateApplicationRequest, ApplicationConfig, BuildConfigRuntimeBuildpack,
 } from '/@/api/neoshowcase/protobuf/gateway_pb'
 import { A, useSearchParams } from '@solidjs/router'
 import { BsArrowLeftShort } from 'solid-icons/bs'
@@ -416,7 +416,13 @@ export default () => {
   const [searchParams] = useSearchParams()
 
   let createNewAppRequest = new CreateApplicationRequest
-  const [fields, setFields] = createStore(createNewAppRequest);
+  let createNewAppRequestApplicationConfig = new ApplicationConfig
+  const [fields, setFields] = createStore(new CreateApplicationRequest);
+  const [fieldsApplicationConfig, setFieldsApplicationConfig] = createStore(createNewAppRequestApplicationConfig);
+  const [fieldsBuildConfig, setFieldsBuildConfig] = createStore(new BuildConfigRuntimeBuildpack)
+  setFields("repositoryId",searchParams.repositoryID)
+  setFieldsApplicationConfig("buildConfig", {case: "runtimeBuildpack", value: fieldsBuildConfig})
+  setFields("config", fieldsApplicationConfig)
 
   const SelectRepository = (): JSX.Element => {
     return (
@@ -436,7 +442,7 @@ export default () => {
 
               <InputForm>
                 <InputFormText>Branch Name</InputFormText>
-                <InputBar placeholder='master' />
+                <InputBar placeholder='master' onInput={(e) => setFields("refName", e.target.value)}/>
               </InputForm>
 
               <InputForm>
@@ -592,6 +598,12 @@ export default () => {
 
               <Button color='black1' size='large'>
                 + Create new app
+              </Button>
+
+              <Button onclick={() => {
+                console.log(fields)
+                  }} color='black1' size='large'>
+                Debug
               </Button>
             </InputFormContainer>
           </MainContentContainer>
