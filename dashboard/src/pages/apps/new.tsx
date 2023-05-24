@@ -458,11 +458,11 @@ export default () => {
   const [fieldsPortPublication, setFieldsPortPublication] = createStore<PortPublication[]>([])
 
   setFields('repositoryId', searchParams.repositoryID)
-  setFieldsApplicationConfig('buildConfig', { case: 'runtimeBuildpack', value: fieldsBuildConfig })
-  setFields('config', fieldsApplicationConfig)
-  setFields('websites', fieldsCreateWebsiteRequest)
-  setFields('portPublications', fieldsPortPublication)
-  setFields('startOnCreate', checkBoxStartOnCreate())
+
+  // setFieldsApplicationConfig('buildConfig', { case: 'runtimeBuildpack', value: fieldsBuildConfig })
+  // setFields('config', fieldsApplicationConfig)
+  // setFields('websites', fieldsCreateWebsiteRequest)
+  // setFields('portPublications', fieldsPortPublication)
 
   const SelectRepository = (): JSX.Element => {
     return (
@@ -657,7 +657,11 @@ export default () => {
               <InputForm>
                 <InputFormText>Start on create</InputFormText>
                 <InputFormCheckBox>
-                  <Checkbox selected={checkBoxStartOnCreate()} setSelected={setCheckBoxStartOnCreate}>
+                  <Checkbox
+                    selected={checkBoxStartOnCreate()}
+                    setSelected={setCheckBoxStartOnCreate}
+                    onClick={() => setFields('startOnCreate', checkBoxStartOnCreate())}
+                  >
                     start_on_create
                   </Checkbox>
                 </InputFormCheckBox>
@@ -669,9 +673,7 @@ export default () => {
 
               <Button
                 onclick={() => {
-                  setFields('startOnCreate', checkBoxStartOnCreate())
                   console.log(fields)
-                  console.log(checkBoxStartOnCreate())
                 }}
                 color='black1'
                 size='large'
