@@ -231,6 +231,12 @@ interface WebsiteProps {
   website: Website
   setWebsite: (Website) => void
   deleteWebsite: () => void
+  checkBox1: boolean
+  setCheckBox1: (boolean) => void
+  checkBox2: boolean
+  setCheckBox2: (boolean) => void
+  checkBox3: boolean
+  setCheckBox3: (boolean) => void
 }
 
 const Website = (props: WebsiteProps) => {
@@ -246,9 +252,15 @@ const Website = (props: WebsiteProps) => {
       </InputForm>
       <InputForm>
         <InputFormCheckBox>
-          <Checkbox>Strip Path Prefix</Checkbox>
-          <Checkbox>https</Checkbox>
-          <Checkbox>(advanced) アプリ通信にh2cを用いる</Checkbox>
+          <Checkbox selected={props.checkBox1} setSelected={props.setCheckBox1}>
+            Strip Path Prefix
+          </Checkbox>
+          <Checkbox selected={props.checkBox2} setSelected={props.setCheckBox2}>
+            https
+          </Checkbox>
+          <Checkbox selected={props.checkBox3} setSelected={props.setCheckBox3}>
+            (advanced) アプリ通信にh2cを用いる
+          </Checkbox>
         </InputFormCheckBox>
       </InputForm>
       <InputForm>
@@ -427,9 +439,13 @@ export default () => {
   const [websites, setWebsites] = createSignal<Website[]>([])
   const [portPublications, setPortPublications] = createSignal<PortPublication[]>([])
 
-  const [startOnCreate, setStartOnCreate] = createSignal(false)
+  const [checkBoxStartOnCreate, setCheckBoxStartOnCreate] = createSignal(false)
   const [checkBoxMariaDB, setCheckBoxMariaDB] = createSignal(false)
   const [checkBoxMongoDB, setCheckBoxMongoDB] = createSignal(false)
+  const [checkBoxBuildCmdShell, setCheckBoxBuildCmdShell] = createSignal(false)
+  const [checkBoxWebsite1, setCheckBoxWebsite1] = createSignal(false)
+  const [checkBoxWebsite2, setCheckBoxWebsite2] = createSignal(false)
+  const [checkBoxWebsite3, setCheckBoxWebsite3] = createSignal(false)
 
   const [searchParams] = useSearchParams()
 
@@ -499,7 +515,9 @@ export default () => {
                     <InputForm>
                       <InputFormText>Build cmd shell</InputFormText>
                       <InputFormCheckBox>
-                        <Checkbox>Run build cmd with shell</Checkbox>
+                        <Checkbox selected={checkBoxBuildCmdShell()} setSelected={setCheckBoxBuildCmdShell}>
+                          Run build cmd with shell
+                        </Checkbox>
                       </InputFormCheckBox>
                     </InputForm>
                   </Show>
@@ -531,7 +549,9 @@ export default () => {
                     <InputForm>
                       <InputFormText>Build cmd shell</InputFormText>
                       <InputFormCheckBox>
-                        <Checkbox>Run build cmd with shell</Checkbox>
+                        <Checkbox selected={checkBoxBuildCmdShell()} setSelected={setCheckBoxBuildCmdShell}>
+                          Run build cmd with shell
+                        </Checkbox>
                       </InputFormCheckBox>
                     </InputForm>
                     <InputForm>
@@ -569,6 +589,12 @@ export default () => {
                         deleteWebsite={() =>
                           setWebsites((current) => [...current.slice(0, i()), ...current.slice(i() + 1)])
                         }
+                        checkBox1={checkBoxWebsite1()}
+                        setCheckBox1={setCheckBoxWebsite1}
+                        checkBox2={checkBoxWebsite2()}
+                        setCheckBox2={setCheckBoxWebsite2}
+                        checkBox3={checkBoxWebsite3()}
+                        setCheckBox3={setCheckBoxWebsite3}
                       />
                     )}
                   </For>
@@ -625,7 +651,7 @@ export default () => {
               <InputForm>
                 <InputFormText>Start on create</InputFormText>
                 <InputFormCheckBox>
-                  <Checkbox selected={startOnCreate()} setSelected={setStartOnCreate}>
+                  <Checkbox selected={checkBoxStartOnCreate()} setSelected={setCheckBoxStartOnCreate}>
                     start_on_create
                   </Checkbox>
                 </InputFormCheckBox>
