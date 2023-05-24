@@ -173,21 +173,13 @@ export default () => {
             type='url'
             placeholder='https://example.com/my-app.git'
             value={requestConfig.url}
-            onInput={(e) =>
-              setRequestConfig({
-                url: e.currentTarget.value,
-              })
-            }
+            onInput={(e) => setRequestConfig('url', e.currentTarget.value)}
           />
           <Form
             label='リポジトリ名'
             placeholder='my-app'
             value={requestConfig.name}
-            onInput={(e) =>
-              setRequestConfig({
-                name: e.currentTarget.value,
-              })
-            }
+            onInput={(e) => setRequestConfig('name', e.currentTarget.value)}
           />
           <InputForm>
             <InputFormText>認証方法</InputFormText>
