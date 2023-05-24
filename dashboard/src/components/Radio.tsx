@@ -34,6 +34,7 @@ export interface Props {
   items: RadioItem[]
   selected: string | number
   setSelected: (s: string | number) => void
+  onClick?: () => void
 }
 
 export const Radio = (props: Props): JSXElement => {
@@ -41,7 +42,10 @@ export const Radio = (props: Props): JSXElement => {
     <Container>
       <For each={props.items}>
         {(item: RadioItem) => (
-          <ItemContainer onClick={() => props.setSelected(item.value)}>
+          <ItemContainer onClick={() => {
+            props.setSelected(item.value)
+            props.onClick?.()
+          }}>
             {props.selected === item.value ? (
               <ImRadioChecked size={20} color={vars.text.black2} />
             ) : (
