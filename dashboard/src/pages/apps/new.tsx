@@ -623,49 +623,77 @@ export default () => {
                       />
                       <InputForm>
                         <InputFormText>Dockerfile name</InputFormText>
-                        <InputBar placeholder='' />
+                        <InputBar
+                          placeholder=''
+                          onInput={(e) => setFieldsBuildConfigRuntimeDockerfile('dockerfileName', e.target.value)}
+                        />
                       </InputForm>
                       <InputForm>
                         <InputFormText>Context</InputFormText>
-                        <InputBar placeholder='' />
+                        <InputBar
+                          placeholder=''
+                          onInput={(e) => setFieldsBuildConfigRuntimeDockerfile('context', e.target.value)}
+                        />
                       </InputForm>
                     </Match>
 
                     <Match when={buildConfig() === buildConfigItems[3].value}>
                       <InputForm>
                         <InputFormText>Base image</InputFormText>
-                        <InputBar placeholder='' />
+                        <InputBar
+                          placeholder=''
+                          onInput={(e) => setFieldsBuildConfigStaticCmd('baseImage', e.target.value)}
+                        />
                       </InputForm>
                       <InputForm>
                         <InputFormText>Build cmd</InputFormText>
-                        <InputBar placeholder='' />
+                        <InputBar
+                          placeholder=''
+                          onInput={(e) => setFieldsBuildConfigStaticCmd('buildCmd', e.target.value)}
+                        />
                       </InputForm>
                       <InputForm>
                         <InputFormText>Build cmd shell</InputFormText>
                         <InputFormCheckBox>
-                          <Checkbox selected={checkBoxBuildCmdShell()} setSelected={setCheckBoxBuildCmdShell}>
+                          <Checkbox
+                            selected={checkBoxBuildCmdShell()}
+                            setSelected={setCheckBoxBuildCmdShell}
+                            onClick={() => setFieldsBuildConfigStaticCmd('buildCmdShell', checkBoxBuildCmdShell())}
+                          >
                             Run build cmd with shell
                           </Checkbox>
                         </InputFormCheckBox>
                       </InputForm>
                       <InputForm>
                         <InputFormText>Artifact path</InputFormText>
-                        <InputBar placeholder='' />
+                        <InputBar
+                          placeholder=''
+                          onInput={(e) => setFieldsBuildConfigStaticCmd('artifactPath', e.target.value)}
+                        />
                       </InputForm>
                     </Match>
 
                     <Match when={buildConfig() === buildConfigItems[4].value}>
                       <InputForm>
                         <InputFormText>Dockerfile name</InputFormText>
-                        <InputBar placeholder='' />
+                        <InputBar
+                          placeholder=''
+                          onInput={(e) => setFieldsBuildConfigStaticDockerfile('dockerfileName', e.target.value)}
+                        />
                       </InputForm>
                       <InputForm>
                         <InputFormText>Context</InputFormText>
-                        <InputBar placeholder='' />
+                        <InputBar
+                          placeholder=''
+                          onInput={(e) => setFieldsBuildConfigStaticDockerfile('context', e.target.value)}
+                        />
                       </InputForm>
                       <InputForm>
                         <InputFormText>Artifact path</InputFormText>
-                        <InputBar placeholder='' />
+                        <InputBar
+                          placeholder=''
+                          onInput={(e) => setFieldsBuildConfigStaticDockerfile('artifactPath', e.target.value)}
+                        />
                       </InputForm>
                     </Match>
                   </Switch>
