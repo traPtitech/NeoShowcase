@@ -10,6 +10,7 @@ import {
   CreateApplicationRequest,
   ApplicationConfig,
   BuildConfigRuntimeBuildpack,
+  CreateWebsiteRequest,
 } from '/@/api/neoshowcase/protobuf/gateway_pb'
 import { A, useSearchParams } from '@solidjs/router'
 import { BsArrowLeftShort } from 'solid-icons/bs'
@@ -449,14 +450,18 @@ export default () => {
 
   const [searchParams] = useSearchParams()
 
-  let createNewAppRequest = new CreateApplicationRequest()
-  let createNewAppRequestApplicationConfig = new ApplicationConfig()
+  const createNewAppRequest = new CreateApplicationRequest()
+  const createNewAppRequestApplicationConfig = new ApplicationConfig()
+  const createNewAppRequestCreateWebsiteRequest = new CreateWebsiteRequest()
   const [fields, setFields] = createStore(new CreateApplicationRequest())
-  const [fieldsApplicationConfig, setFieldsApplicationConfig] = createStore(createNewAppRequestApplicationConfig)
+  const [fieldsApplicationConfig, setFieldsApplicationConfig] = createStore(new ApplicationConfig())
   const [fieldsBuildConfig, setFieldsBuildConfig] = createStore(new BuildConfigRuntimeBuildpack())
+  const [fieldsCreateWebsiteRequest, setFieldsCreateWebsiteRequest] = createStore<CreateWebsiteRequest[]>([])
+
   setFields('repositoryId', searchParams.repositoryID)
   setFieldsApplicationConfig('buildConfig', { case: 'runtimeBuildpack', value: fieldsBuildConfig })
   setFields('config', fieldsApplicationConfig)
+  setFields('startOnCreate', checkBoxStartOnCreate())
 
   const SelectRepository = (): JSX.Element => {
     return (
