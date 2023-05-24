@@ -7,7 +7,9 @@ import {
   Repository,
   AuthenticationType,
   PortPublicationProtocol,
-  CreateApplicationRequest, ApplicationConfig, BuildConfigRuntimeBuildpack,
+  CreateApplicationRequest,
+  ApplicationConfig,
+  BuildConfigRuntimeBuildpack,
 } from '/@/api/neoshowcase/protobuf/gateway_pb'
 import { A, useSearchParams } from '@solidjs/router'
 import { BsArrowLeftShort } from 'solid-icons/bs'
@@ -413,6 +415,8 @@ export default () => {
   const [buildConfig, setBuildConfig] = createSignal(buildConfigItems[0].value)
   const [websites, setWebsites] = createSignal<Website[]>([])
   const [portPublications, setPortPublications] = createSignal<PortPublication[]>([])
+
+  const [startOnCreate, setStartOnCreate] = createSignal(false)
   const [searchParams] = useSearchParams()
 
   let createNewAppRequest = new CreateApplicationRequest
@@ -592,7 +596,9 @@ export default () => {
               <InputForm>
                 <InputFormText>Start on create</InputFormText>
                 <InputFormCheckBox>
-                  <Checkbox>start_on_create</Checkbox>
+                  <Checkbox selected={startOnCreate()} setSelected={setStartOnCreate}>
+                    start_on_create
+                  </Checkbox>
                 </InputFormCheckBox>
               </InputForm>
 
@@ -600,9 +606,13 @@ export default () => {
                 + Create new app
               </Button>
 
-              <Button onclick={() => {
-                console.log(fields)
-                  }} color='black1' size='large'>
+              <Button
+                onclick={() => {
+                  console.log(fields)
+                }}
+                color='black1'
+                size='large'
+              >
                 Debug
               </Button>
             </InputFormContainer>
