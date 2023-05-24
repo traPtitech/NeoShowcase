@@ -630,6 +630,10 @@ type Website struct {
 	Authentication AuthenticationType
 }
 
+func (w *Website) Compare(other *Website) bool {
+	return strings.Compare(w.ID, other.ID) < 0
+}
+
 func (w *Website) Validate() error {
 	if err := ValidateDomain(w.FQDN); err != nil {
 		return errors.Wrap(err, "invalid domain")
@@ -731,6 +735,13 @@ func (p *PortPublication) ConflictsWith(existing []*Application) bool {
 			return used.InternetPort == p.InternetPort && used.Protocol == p.Protocol
 		})
 	})
+}
+
+func (p *PortPublication) Compare(other *PortPublication) bool {
+	if p.Protocol != other.Protocol {
+		return strings.Compare(string(p.Protocol), string(other.Protocol)) < 0
+	}
+	return p.InternetPort < other.InternetPort
 }
 
 func GetArtifactsInUse(ctx context.Context, appRepo ApplicationRepository, buildRepo BuildRepository) ([]*Artifact, error) {
