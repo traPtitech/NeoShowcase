@@ -457,7 +457,13 @@ export default () => {
 
   const [fields, setFields] = createStore(new CreateApplicationRequest())
   const [fieldsApplicationConfig, setFieldsApplicationConfig] = createStore(new ApplicationConfig())
-  const [fieldsBuildConfig, setFieldsBuildConfig] = createStore<BuildConfigRuntimeBuildpack|BuildConfigRuntimeCmd|BuildConfigRuntimeDockerfile|BuildConfigStaticCmd|BuildConfigStaticDockerfile>(new BuildConfigRuntimeBuildpack())
+  const [fieldsBuildConfig, setFieldsBuildConfig] = createStore<
+    | BuildConfigRuntimeBuildpack
+    | BuildConfigRuntimeCmd
+    | BuildConfigRuntimeDockerfile
+    | BuildConfigStaticCmd
+    | BuildConfigStaticDockerfile
+  >(new BuildConfigRuntimeBuildpack())
   const [fieldsCreateWebsiteRequest, setFieldsCreateWebsiteRequest] = createStore<CreateWebsiteRequest[]>([])
   const [fieldsPortPublication, setFieldsPortPublication] = createStore<PortPublication[]>([])
 
@@ -493,7 +499,30 @@ export default () => {
                 <InputFormTextBig>Build Config</InputFormTextBig>
                 <InputFormRadio>
                   <InputForm>
-                    <Radio items={buildConfigItems} selected={buildConfig()} setSelected={setBuildConfig} />
+                    <Radio
+                      items={buildConfigItems}
+                      selected={buildConfig()}
+                      setSelected={setBuildConfig}
+                      onClick={() => {
+                        switch (buildConfig()) {
+                          case buildConfigItems[0].value:
+                            setFieldsBuildConfig(new BuildConfigRuntimeBuildpack())
+                            break
+                          case buildConfigItems[1].value:
+                            setFieldsBuildConfig(new BuildConfigRuntimeCmd())
+                            break
+                          case buildConfigItems[2].value:
+                            setFieldsBuildConfig(new BuildConfigRuntimeDockerfile())
+                            break
+                          case buildConfigItems[3].value:
+                            setFieldsBuildConfig(new BuildConfigStaticCmd())
+                            break
+                          case buildConfigItems[4].value:
+                            setFieldsBuildConfig(new BuildConfigStaticDockerfile())
+                            break
+                        }
+                      }}
+                    />
                   </InputForm>
                   <Switch>
                     <Match when={buildConfig() === buildConfigItems[0].value}>
@@ -505,7 +534,7 @@ export default () => {
                       />
                       <InputForm>
                         <InputFormText>Context</InputFormText>
-                        <InputBar placeholder='' />
+                        <InputBar placeholder='' onInput={(e) => setFieldsBuildConfig('context', e.target.value)} />
                       </InputForm>
                     </Match>
                     <Match when={buildConfig() === buildConfigItems[1].value}>

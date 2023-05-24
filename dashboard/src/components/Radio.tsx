@@ -42,10 +42,12 @@ export const Radio = (props: Props): JSXElement => {
     <Container>
       <For each={props.items}>
         {(item: RadioItem) => (
-          <ItemContainer onClick={() => {
-            props.setSelected(item.value)
-            props.onClick?.()
-          }}>
+          <ItemContainer
+            onClick={() => {
+              props.setSelected(item.value)
+              props.onClick?.()
+            }}
+          >
             {props.selected === item.value ? (
               <ImRadioChecked size={20} color={vars.text.black2} />
             ) : (
