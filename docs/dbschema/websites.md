@@ -19,7 +19,6 @@ CREATE TABLE `websites` (
   `authentication` enum('off','soft','hard') NOT NULL COMMENT 'traP部員認証タイプ',
   `application_id` char(22) NOT NULL COMMENT 'アプリケーションID',
   PRIMARY KEY (`id`),
-  UNIQUE KEY `fqdn` (`fqdn`,`path_prefix`),
   KEY `fk_websites_application_id` (`application_id`),
   CONSTRAINT `fk_websites_application_id` FOREIGN KEY (`application_id`) REFERENCES `applications` (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci COMMENT='Webサイトテーブル'
@@ -46,7 +45,6 @@ CREATE TABLE `websites` (
 | Name | Type | Definition |
 | ---- | ---- | ---------- |
 | fk_websites_application_id | FOREIGN KEY | FOREIGN KEY (application_id) REFERENCES applications (id) |
-| fqdn | UNIQUE | UNIQUE KEY fqdn (fqdn, path_prefix) |
 | PRIMARY | PRIMARY KEY | PRIMARY KEY (id) |
 
 ## Indexes
@@ -55,7 +53,6 @@ CREATE TABLE `websites` (
 | ---- | ---------- |
 | fk_websites_application_id | KEY fk_websites_application_id (application_id) USING BTREE |
 | PRIMARY | PRIMARY KEY (id) USING BTREE |
-| fqdn | UNIQUE KEY fqdn (fqdn, path_prefix) USING BTREE |
 
 ## Relations
 

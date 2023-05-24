@@ -113,7 +113,6 @@ CREATE TABLE `websites`
     `authentication` ENUM ('off','soft','hard') NOT NULL COMMENT 'traP部員認証タイプ',
     `application_id` CHAR(22)                   NOT NULL COMMENT 'アプリケーションID',
     PRIMARY KEY (`id`),
-    UNIQUE KEY `fqdn` (`fqdn`, `path_prefix`),
     KEY `fk_websites_application_id` (`application_id`),
     CONSTRAINT `fk_websites_application_id` FOREIGN KEY (`application_id`) REFERENCES `applications` (`id`)
 ) ENGINE = InnoDB
