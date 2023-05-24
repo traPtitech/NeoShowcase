@@ -14,9 +14,27 @@ import (
 	"github.com/traPtitech/neoshowcase/pkg/domain"
 )
 
-func (b *k8sBackend) statefulSet(app *domain.RuntimeDesiredState) *appsv1.StatefulSet {
+func (b *k8sBackend) runtimeSpec(app *domain.RuntimeDesiredState) (*appsv1.StatefulSet, *v1.Secret) {
+	var secret *v1.Secret
+	if len(app.Envs) > 0 {
+		secret = &v1.Secret{
+			TypeMeta: metav1.TypeMeta{
+				Kind:       "Secret",
+				APIVersion: "v1",
+			},
+			ObjectMeta: metav1.ObjectMeta{
+				Name:      deploymentName(app.App.ID),
+				Namespace: b.config.Namespace,
+				Labels:    b.appLabel(app.App.ID),
+			},
+			StringData: app.Envs,
+		}
+	}
 	envs := lo.MapToSlice(app.Envs, func(key string, value string) v1.EnvVar {
-		return v1.EnvVar{Name: key, Value: value}
+		return v1.EnvVar{Name: key, ValueFrom: &v1.EnvVarSource{SecretKeyRef: &v1.SecretKeySelector{
+			LocalObjectReference: v1.LocalObjectReference{Name: deploymentName(app.App.ID)},
+			Key:                  key,
+		}}}
 	})
 	// make sure computed result is stable
 	slices.SortFunc(envs, func(a, b v1.EnvVar) bool { return strings.Compare(a.Name, b.Name) < 0 })
@@ -86,12 +104,16 @@ func (b *k8sBackend) statefulSet(app *domain.RuntimeDesiredState) *appsv1.Statef
 		ss.Spec.Template.Spec.ImagePullSecrets = []v1.LocalObjectReference{{Name: b.config.ImagePullSecret}}
 	}
 
-	return ss
+	return ss, secret
 }
 
 func (b *k8sBackend) runtimeResources(next *resources, apps []*domain.RuntimeDesiredState) {
 	for _, app := range apps {
-		next.statefulSets = append(next.statefulSets, b.statefulSet(app))
+		ss, secret := b.runtimeSpec(app)
+		next.statefulSets = append(next.statefulSets, ss)
+		if secret != nil {
+			next.secrets = append(next.secrets, secret)
+		}
 		for _, website := range app.App.Websites {
 			next.services = append(next.services, b.runtimeService(app.App, website))
 			ingressRoute, mw, certs := b.ingressRoute(app.App, website, b.runtimeServiceRef(app.App, website))

@@ -34,6 +34,9 @@ func TestK8sBackend_Synchronize(t *testing.T) {
 				App:       &app,
 				ImageName: image,
 				ImageTag:  "latest",
+				Envs: map[string]string{
+					"TEST": "value",
+				},
 			}},
 		}
 		err := m.Synchronize(context.Background(), &st)

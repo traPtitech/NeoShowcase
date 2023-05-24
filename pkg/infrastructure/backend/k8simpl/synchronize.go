@@ -17,6 +17,7 @@ import (
 
 type resources struct {
 	statefulSets  []*appsv1.StatefulSet
+	secrets       []*v1.Secret
 	services      []*v1.Service
 	middlewares   []*traefikv1alpha1.Middleware
 	ingressRoutes []*traefikv1alpha1.IngressRoute
@@ -32,6 +33,12 @@ func (b *k8sBackend) listCurrentResources(ctx context.Context) (*resources, erro
 		return nil, errors.Wrap(err, "failed to get stateful sets")
 	}
 	rsc.statefulSets = ds.SliceOfPtr(ss.Items)
+
+	secrets, err := b.client.CoreV1().Secrets(b.config.Namespace).List(ctx, listOpt)
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to get secrets")
+	}
+	rsc.secrets = ds.SliceOfPtr(secrets.Items)
 
 	svc, err := b.client.CoreV1().Services(b.config.Namespace).List(ctx, listOpt)
 	if err != nil {
@@ -85,6 +92,12 @@ func (b *k8sBackend) Synchronize(ctx context.Context, s *domain.DesiredState) er
 			return errors.Wrap(err, "failed to patch stateful set")
 		}
 	}
+	for _, secret := range next.secrets {
+		err = patch[*v1.Secret](ctx, secret.Name, secret, b.client.CoreV1().Secrets(b.config.Namespace))
+		if err != nil {
+			return errors.Wrap(err, "failed to patch secret")
+		}
+	}
 	for _, svc := range next.services {
 		err = patch[*v1.Service](ctx, svc.Name, svc, b.client.CoreV1().Services(b.config.Namespace))
 		if err != nil {
@@ -117,6 +130,10 @@ func (b *k8sBackend) Synchronize(ctx context.Context, s *domain.DesiredState) er
 	err = prune[*appsv1.StatefulSet](ctx, diff(old.statefulSets, next.statefulSets), b.client.AppsV1().StatefulSets(b.config.Namespace))
 	if err != nil {
 		return errors.Wrap(err, "failed to prune stateful sets")
+	}
+	err = prune[*v1.Secret](ctx, diff(old.secrets, next.secrets), b.client.CoreV1().Secrets(b.config.Namespace))
+	if err != nil {
+		return errors.Wrap(err, "failed to prune secrets")
 	}
 	err = prune[*v1.Service](ctx, diff(old.services, next.services), b.client.CoreV1().Services(b.config.Namespace))
 	if err != nil {
