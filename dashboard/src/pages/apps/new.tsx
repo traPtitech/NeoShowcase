@@ -1,5 +1,5 @@
 import { Header } from '/@/components/Header'
-import { createResource, createSignal, JSX, Show, For, JSXElement } from 'solid-js'
+import { createResource, createSignal, JSX, Show, For, JSXElement, Switch, Match } from 'solid-js'
 import { Radio, RadioItem } from '/@/components/Radio'
 import { client } from '/@/libs/api'
 import {
@@ -12,6 +12,10 @@ import {
   BuildConfigRuntimeBuildpack,
   CreateWebsiteRequest,
   PortPublication,
+  BuildConfigRuntimeCmd,
+  BuildConfigRuntimeDockerfile,
+  BuildConfigStaticCmd,
+  BuildConfigStaticDockerfile,
 } from '/@/api/neoshowcase/protobuf/gateway_pb'
 import { A, useSearchParams } from '@solidjs/router'
 import { BsArrowLeftShort } from 'solid-icons/bs'
@@ -453,7 +457,7 @@ export default () => {
 
   const [fields, setFields] = createStore(new CreateApplicationRequest())
   const [fieldsApplicationConfig, setFieldsApplicationConfig] = createStore(new ApplicationConfig())
-  const [fieldsBuildConfig, setFieldsBuildConfig] = createStore(new BuildConfigRuntimeBuildpack())
+  const [fieldsBuildConfig, setFieldsBuildConfig] = createStore<BuildConfigRuntimeBuildpack|BuildConfigRuntimeCmd|BuildConfigRuntimeDockerfile|BuildConfigStaticCmd|BuildConfigStaticDockerfile>(new BuildConfigRuntimeBuildpack())
   const [fieldsCreateWebsiteRequest, setFieldsCreateWebsiteRequest] = createStore<CreateWebsiteRequest[]>([])
   const [fieldsPortPublication, setFieldsPortPublication] = createStore<PortPublication[]>([])
 
@@ -491,94 +495,96 @@ export default () => {
                   <InputForm>
                     <Radio items={buildConfigItems} selected={buildConfig()} setSelected={setBuildConfig} />
                   </InputForm>
-                  <Show when={buildConfig() === buildConfigItems[0].value}>
-                    <InputFormRuntimeConfig
-                      checkBoxMariaDB={checkBoxMariaDB()}
-                      setCheckBoxMariaDB={setCheckBoxMariaDB}
-                      checkBoxMongoDB={checkBoxMongoDB()}
-                      setCheckBoxMongoDB={setCheckBoxMongoDB}
-                    />
-                    <InputForm>
-                      <InputFormText>Context</InputFormText>
-                      <InputBar placeholder='' />
-                    </InputForm>
-                  </Show>
-                  <Show when={buildConfig() === buildConfigItems[1].value}>
-                    <InputFormRuntimeConfig
-                      checkBoxMariaDB={checkBoxMariaDB()}
-                      setCheckBoxMariaDB={setCheckBoxMariaDB}
-                      checkBoxMongoDB={checkBoxMongoDB()}
-                      setCheckBoxMongoDB={setCheckBoxMongoDB}
-                    />
-                    <InputForm>
-                      <InputFormText>Base image</InputFormText>
-                      <InputBar placeholder='' />
-                    </InputForm>
-                    <InputForm>
-                      <InputFormText>Build cmd</InputFormText>
-                      <InputBar placeholder='' />
-                    </InputForm>
-                    <InputForm>
-                      <InputFormText>Build cmd shell</InputFormText>
-                      <InputFormCheckBox>
-                        <Checkbox selected={checkBoxBuildCmdShell()} setSelected={setCheckBoxBuildCmdShell}>
-                          Run build cmd with shell
-                        </Checkbox>
-                      </InputFormCheckBox>
-                    </InputForm>
-                  </Show>
-                  <Show when={buildConfig() === buildConfigItems[2].value}>
-                    <InputFormRuntimeConfig
-                      checkBoxMariaDB={checkBoxMariaDB()}
-                      setCheckBoxMariaDB={setCheckBoxMariaDB}
-                      checkBoxMongoDB={checkBoxMongoDB()}
-                      setCheckBoxMongoDB={setCheckBoxMongoDB}
-                    />
-                    <InputForm>
-                      <InputFormText>Dockerfile name</InputFormText>
-                      <InputBar placeholder='' />
-                    </InputForm>
-                    <InputForm>
-                      <InputFormText>Context</InputFormText>
-                      <InputBar placeholder='' />
-                    </InputForm>
-                  </Show>
-                  <Show when={buildConfig() === buildConfigItems[3].value}>
-                    <InputForm>
-                      <InputFormText>Base image</InputFormText>
-                      <InputBar placeholder='' />
-                    </InputForm>
-                    <InputForm>
-                      <InputFormText>Build cmd</InputFormText>
-                      <InputBar placeholder='' />
-                    </InputForm>
-                    <InputForm>
-                      <InputFormText>Build cmd shell</InputFormText>
-                      <InputFormCheckBox>
-                        <Checkbox selected={checkBoxBuildCmdShell()} setSelected={setCheckBoxBuildCmdShell}>
-                          Run build cmd with shell
-                        </Checkbox>
-                      </InputFormCheckBox>
-                    </InputForm>
-                    <InputForm>
-                      <InputFormText>Artifact path</InputFormText>
-                      <InputBar placeholder='' />
-                    </InputForm>
-                  </Show>
-                  <Show when={buildConfig() === buildConfigItems[4].value}>
-                    <InputForm>
-                      <InputFormText>Dockerfile name</InputFormText>
-                      <InputBar placeholder='' />
-                    </InputForm>
-                    <InputForm>
-                      <InputFormText>Context</InputFormText>
-                      <InputBar placeholder='' />
-                    </InputForm>
-                    <InputForm>
-                      <InputFormText>Artifact path</InputFormText>
-                      <InputBar placeholder='' />
-                    </InputForm>
-                  </Show>
+                  <Switch>
+                    <Match when={buildConfig() === buildConfigItems[0].value}>
+                      <InputFormRuntimeConfig
+                        checkBoxMariaDB={checkBoxMariaDB()}
+                        setCheckBoxMariaDB={setCheckBoxMariaDB}
+                        checkBoxMongoDB={checkBoxMongoDB()}
+                        setCheckBoxMongoDB={setCheckBoxMongoDB}
+                      />
+                      <InputForm>
+                        <InputFormText>Context</InputFormText>
+                        <InputBar placeholder='' />
+                      </InputForm>
+                    </Match>
+                    <Match when={buildConfig() === buildConfigItems[1].value}>
+                      <InputFormRuntimeConfig
+                        checkBoxMariaDB={checkBoxMariaDB()}
+                        setCheckBoxMariaDB={setCheckBoxMariaDB}
+                        checkBoxMongoDB={checkBoxMongoDB()}
+                        setCheckBoxMongoDB={setCheckBoxMongoDB}
+                      />
+                      <InputForm>
+                        <InputFormText>Base image</InputFormText>
+                        <InputBar placeholder='' />
+                      </InputForm>
+                      <InputForm>
+                        <InputFormText>Build cmd</InputFormText>
+                        <InputBar placeholder='' />
+                      </InputForm>
+                      <InputForm>
+                        <InputFormText>Build cmd shell</InputFormText>
+                        <InputFormCheckBox>
+                          <Checkbox selected={checkBoxBuildCmdShell()} setSelected={setCheckBoxBuildCmdShell}>
+                            Run build cmd with shell
+                          </Checkbox>
+                        </InputFormCheckBox>
+                      </InputForm>
+                    </Match>
+                    <Match when={buildConfig() === buildConfigItems[2].value}>
+                      <InputFormRuntimeConfig
+                        checkBoxMariaDB={checkBoxMariaDB()}
+                        setCheckBoxMariaDB={setCheckBoxMariaDB}
+                        checkBoxMongoDB={checkBoxMongoDB()}
+                        setCheckBoxMongoDB={setCheckBoxMongoDB}
+                      />
+                      <InputForm>
+                        <InputFormText>Dockerfile name</InputFormText>
+                        <InputBar placeholder='' />
+                      </InputForm>
+                      <InputForm>
+                        <InputFormText>Context</InputFormText>
+                        <InputBar placeholder='' />
+                      </InputForm>
+                    </Match>
+                    <Match when={buildConfig() === buildConfigItems[3].value}>
+                      <InputForm>
+                        <InputFormText>Base image</InputFormText>
+                        <InputBar placeholder='' />
+                      </InputForm>
+                      <InputForm>
+                        <InputFormText>Build cmd</InputFormText>
+                        <InputBar placeholder='' />
+                      </InputForm>
+                      <InputForm>
+                        <InputFormText>Build cmd shell</InputFormText>
+                        <InputFormCheckBox>
+                          <Checkbox selected={checkBoxBuildCmdShell()} setSelected={setCheckBoxBuildCmdShell}>
+                            Run build cmd with shell
+                          </Checkbox>
+                        </InputFormCheckBox>
+                      </InputForm>
+                      <InputForm>
+                        <InputFormText>Artifact path</InputFormText>
+                        <InputBar placeholder='' />
+                      </InputForm>
+                    </Match>
+                    <Match when={buildConfig() === buildConfigItems[4].value}>
+                      <InputForm>
+                        <InputFormText>Dockerfile name</InputFormText>
+                        <InputBar placeholder='' />
+                      </InputForm>
+                      <InputForm>
+                        <InputFormText>Context</InputFormText>
+                        <InputBar placeholder='' />
+                      </InputForm>
+                      <InputForm>
+                        <InputFormText>Artifact path</InputFormText>
+                        <InputBar placeholder='' />
+                      </InputForm>
+                    </Match>
+                  </Switch>
                 </InputFormRadio>
               </InputForm>
 
