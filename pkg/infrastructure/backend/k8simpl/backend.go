@@ -118,6 +118,11 @@ func (b *k8sBackend) ListenContainerEvents() (sub <-chan *domain.ContainerEvent,
 	return b.eventSubs.Subscribe()
 }
 
+// generalLabelWithoutManagement returns labels that indicates not directly managed by this backend
+func (b *k8sBackend) generalLabelWithoutManagement() map[string]string {
+	return b.config.labels()
+}
+
 func (b *k8sBackend) generalLabel() map[string]string {
 	return ds.MergeMap(b.config.labels(), map[string]string{
 		appLabel: "true",

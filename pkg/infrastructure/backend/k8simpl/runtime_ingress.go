@@ -116,7 +116,7 @@ func (b *k8sBackend) certificate(targetDomain string) *certmanagerv1.Certificate
 		Spec: certmanagerv1.CertificateSpec{
 			SecretName: tlsSecretName(targetDomain),
 			SecretTemplate: &certmanagerv1.CertificateSecretTemplate{
-				Labels: b.generalLabel(),
+				Labels: b.generalLabelWithoutManagement(),
 			},
 			Duration:    &metav1.Duration{Duration: 90 * 24 * time.Hour},
 			RenewBefore: &metav1.Duration{Duration: 15 * 24 * time.Hour},
