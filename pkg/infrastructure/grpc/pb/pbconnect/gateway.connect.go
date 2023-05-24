@@ -129,7 +129,7 @@ type APIServiceClient interface {
 	// GetAvailablePorts 使用可能なポート一覧を取得します
 	GetAvailablePorts(context.Context, *connect_go.Request[emptypb.Empty]) (*connect_go.Response[pb.AvailablePorts], error)
 	// GetMe 自身の情報を取得します プロキシ認証のため常に成功します
-	GetMe(context.Context, *connect_go.Request[emptypb.Empty]) (*connect_go.Response[pb.User], error)
+	GetMe(context.Context, *connect_go.Request[emptypb.Empty]) (*connect_go.Response[pb.GetMeResponse], error)
 	// CreateUserKey アプリコンテナSSH用の公開鍵を登録します
 	CreateUserKey(context.Context, *connect_go.Request[pb.CreateUserKeyRequest]) (*connect_go.Response[pb.UserKey], error)
 	// GetUserKeys 登録した公開鍵一覧を取得します
@@ -211,7 +211,7 @@ func NewAPIServiceClient(httpClient connect_go.HTTPClient, baseURL string, opts 
 			baseURL+APIServiceGetAvailablePortsProcedure,
 			opts...,
 		),
-		getMe: connect_go.NewClient[emptypb.Empty, pb.User](
+		getMe: connect_go.NewClient[emptypb.Empty, pb.GetMeResponse](
 			httpClient,
 			baseURL+APIServiceGetMeProcedure,
 			opts...,
@@ -359,7 +359,7 @@ type aPIServiceClient struct {
 	getSystemPublicKey  *connect_go.Client[emptypb.Empty, pb.GetSystemPublicKeyResponse]
 	getAvailableDomains *connect_go.Client[emptypb.Empty, pb.AvailableDomains]
 	getAvailablePorts   *connect_go.Client[emptypb.Empty, pb.AvailablePorts]
-	getMe               *connect_go.Client[emptypb.Empty, pb.User]
+	getMe               *connect_go.Client[emptypb.Empty, pb.GetMeResponse]
 	createUserKey       *connect_go.Client[pb.CreateUserKeyRequest, pb.UserKey]
 	getUserKeys         *connect_go.Client[emptypb.Empty, pb.GetUserKeysResponse]
 	deleteUserKey       *connect_go.Client[pb.DeleteUserKeyRequest, emptypb.Empty]
@@ -405,7 +405,7 @@ func (c *aPIServiceClient) GetAvailablePorts(ctx context.Context, req *connect_g
 }
 
 // GetMe calls neoshowcase.protobuf.APIService.GetMe.
-func (c *aPIServiceClient) GetMe(ctx context.Context, req *connect_go.Request[emptypb.Empty]) (*connect_go.Response[pb.User], error) {
+func (c *aPIServiceClient) GetMe(ctx context.Context, req *connect_go.Request[emptypb.Empty]) (*connect_go.Response[pb.GetMeResponse], error) {
 	return c.getMe.CallUnary(ctx, req)
 }
 
@@ -553,7 +553,7 @@ type APIServiceHandler interface {
 	// GetAvailablePorts 使用可能なポート一覧を取得します
 	GetAvailablePorts(context.Context, *connect_go.Request[emptypb.Empty]) (*connect_go.Response[pb.AvailablePorts], error)
 	// GetMe 自身の情報を取得します プロキシ認証のため常に成功します
-	GetMe(context.Context, *connect_go.Request[emptypb.Empty]) (*connect_go.Response[pb.User], error)
+	GetMe(context.Context, *connect_go.Request[emptypb.Empty]) (*connect_go.Response[pb.GetMeResponse], error)
 	// CreateUserKey アプリコンテナSSH用の公開鍵を登録します
 	CreateUserKey(context.Context, *connect_go.Request[pb.CreateUserKeyRequest]) (*connect_go.Response[pb.UserKey], error)
 	// GetUserKeys 登録した公開鍵一覧を取得します
@@ -790,7 +790,7 @@ func (UnimplementedAPIServiceHandler) GetAvailablePorts(context.Context, *connec
 	return nil, connect_go.NewError(connect_go.CodeUnimplemented, errors.New("neoshowcase.protobuf.APIService.GetAvailablePorts is not implemented"))
 }
 
-func (UnimplementedAPIServiceHandler) GetMe(context.Context, *connect_go.Request[emptypb.Empty]) (*connect_go.Response[pb.User], error) {
+func (UnimplementedAPIServiceHandler) GetMe(context.Context, *connect_go.Request[emptypb.Empty]) (*connect_go.Response[pb.GetMeResponse], error) {
 	return nil, connect_go.NewError(connect_go.CodeUnimplemented, errors.New("neoshowcase.protobuf.APIService.GetMe is not implemented"))
 }
 

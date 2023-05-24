@@ -10,6 +10,12 @@ import (
 	"github.com/traPtitech/neoshowcase/pkg/util/optional"
 )
 
+func (s *APIServerService) GetMe(ctx context.Context) (user *domain.User, avatarURL string) {
+	user = web.GetUser(ctx)
+	avatarURL = s.avatarBaseURL + user.Name
+	return
+}
+
 func (s *APIServerService) CreateUserKey(ctx context.Context, publicKey string) (*domain.UserKey, error) {
 	user := web.GetUser(ctx)
 	key, err := domain.NewUserKey(user.ID, publicKey)

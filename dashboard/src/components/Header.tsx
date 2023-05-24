@@ -94,8 +94,8 @@ export const Header = (): JSXElement => {
         </NavContainer>
       </LeftContainer>
       <RightContainer>
-        {user() && <UserIcon src={`https://q.trap.jp/api/1.0/public/icon/${user().name}`} alt="icon" />}
-        {user() && <UserName>{user().name}</UserName>}
+        {user() && <UserIcon src={user().avatarUrl} alt="icon" />}
+        {user() && <UserName>{user().user.name}</UserName>}
       </RightContainer>
     </Container>
   )

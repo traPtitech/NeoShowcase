@@ -6,15 +6,17 @@ import (
 	"github.com/bufbuild/connect-go"
 	"google.golang.org/protobuf/types/known/emptypb"
 
-	"github.com/traPtitech/neoshowcase/pkg/domain/web"
 	"github.com/traPtitech/neoshowcase/pkg/infrastructure/grpc/pb"
 	"github.com/traPtitech/neoshowcase/pkg/infrastructure/grpc/pbconvert"
 	"github.com/traPtitech/neoshowcase/pkg/util/ds"
 )
 
-func (s *APIService) GetMe(ctx context.Context, _ *connect.Request[emptypb.Empty]) (*connect.Response[pb.User], error) {
-	user := web.GetUser(ctx)
-	res := connect.NewResponse(pbconvert.ToPBUser(user))
+func (s *APIService) GetMe(ctx context.Context, _ *connect.Request[emptypb.Empty]) (*connect.Response[pb.GetMeResponse], error) {
+	user, avatarURL := s.svc.GetMe(ctx)
+	res := connect.NewResponse(&pb.GetMeResponse{
+		User:      pbconvert.ToPBUser(user),
+		AvatarUrl: avatarURL,
+	})
 	return res, nil
 }
 

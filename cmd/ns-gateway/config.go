@@ -19,18 +19,20 @@ import (
 	"github.com/traPtitech/neoshowcase/pkg/infrastructure/log/loki"
 	"github.com/traPtitech/neoshowcase/pkg/infrastructure/repository"
 	"github.com/traPtitech/neoshowcase/pkg/infrastructure/storage"
+	"github.com/traPtitech/neoshowcase/pkg/usecase"
 )
 
 type Config struct {
-	Port       int                                `mapstructure:"port" yaml:"port"`
-	Debug      bool                               `mapstructure:"debug" yaml:"debug"`
-	AuthHeader grpc.AuthHeader                    `mapstructure:"authHeader" yaml:"authHeader"`
-	Controller grpc.ControllerServiceClientConfig `mapstructure:"controller" yaml:"controller"`
-	DB         repository.Config                  `mapstructure:"db" yaml:"db"`
-	MariaDB    dbmanager.MariaDBConfig            `mapstructure:"mariadb" yaml:"mariadb"`
-	MongoDB    dbmanager.MongoDBConfig            `mapstructure:"mongodb" yaml:"mongodb"`
-	Storage    domain.StorageConfig               `mapstructure:"storage" yaml:"storage"`
-	Log        struct {
+	Port          int                                `mapstructure:"port" yaml:"port"`
+	Debug         bool                               `mapstructure:"debug" yaml:"debug"`
+	AvatarBaseURL usecase.AvatarBaseURL              `mapstructure:"avatarBaseURL" yaml:"avatarBaseURL"`
+	AuthHeader    grpc.AuthHeader                    `mapstructure:"authHeader" yaml:"authHeader"`
+	Controller    grpc.ControllerServiceClientConfig `mapstructure:"controller" yaml:"controller"`
+	DB            repository.Config                  `mapstructure:"db" yaml:"db"`
+	MariaDB       dbmanager.MariaDBConfig            `mapstructure:"mariadb" yaml:"mariadb"`
+	MongoDB       dbmanager.MongoDBConfig            `mapstructure:"mongodb" yaml:"mongodb"`
+	Storage       domain.StorageConfig               `mapstructure:"storage" yaml:"storage"`
+	Log           struct {
 		Type string      `mapstructure:"type" yaml:"type"`
 		Loki loki.Config `mapstructure:"loki" yaml:"loki"`
 	} `mapstructure:"log" yaml:"log"`
@@ -42,6 +44,7 @@ type Config struct {
 func init() {
 	viper.SetDefault("port", 8080)
 	viper.SetDefault("debug", false)
+	viper.SetDefault("avatarBaseURL", "https://q.trap.jp/api/v3/public/icon/")
 	viper.SetDefault("authHeader", "X-Showcase-User")
 
 	viper.SetDefault("controller.url", "http://ns-controller:10000")

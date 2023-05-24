@@ -12,6 +12,11 @@ message User {
   bool admin = 3;
 }
 
+message GetMeResponse {
+  User user = 1;
+  string avatar_url = 2;
+}
+
 message UserKey {
   string id = 1;
   string user_id = 2;
@@ -356,7 +361,7 @@ service APIService {
   // User
 
   // GetMe 自身の情報を取得します プロキシ認証のため常に成功します
-  rpc GetMe(google.protobuf.Empty) returns (User);
+  rpc GetMe(google.protobuf.Empty) returns (GetMeResponse);
   // CreateUserKey アプリコンテナSSH用の公開鍵を登録します
   rpc CreateUserKey(CreateUserKeyRequest) returns (UserKey);
   // GetUserKeys 登録した公開鍵一覧を取得します
