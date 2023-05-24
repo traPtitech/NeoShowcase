@@ -327,14 +327,25 @@ const protocolItems: RadioItem[] = [
   { value: 1, title: 'UDP' },
 ]
 
-const InputFormRuntimeConfig = () => {
+export interface InputFormRuntimeConfigProps {
+  checkBoxMariaDB: boolean
+  setCheckBoxMariaDB: (boolean) => void
+  checkBoxMongoDB: boolean
+  setCheckBoxMongoDB: (boolean) => void
+}
+
+const InputFormRuntimeConfig = (props: InputFormRuntimeConfigProps) => {
   return (
     <>
       <InputForm>
         <InputFormText>Database (使うデーターベースにチェック)</InputFormText>
         <InputFormCheckBox>
-          <Checkbox>MariaDB</Checkbox>
-          <Checkbox>MongoDB</Checkbox>
+          <Checkbox selected={props.checkBoxMariaDB} setSelected={props.setCheckBoxMariaDB}>
+            MariaDB
+          </Checkbox>
+          <Checkbox selected={props.checkBoxMongoDB} setSelected={props.setCheckBoxMongoDB}>
+            MongoDB
+          </Checkbox>
         </InputFormCheckBox>
       </InputForm>
       <InputForm>
@@ -417,16 +428,19 @@ export default () => {
   const [portPublications, setPortPublications] = createSignal<PortPublication[]>([])
 
   const [startOnCreate, setStartOnCreate] = createSignal(false)
+  const [checkBoxMariaDB, setCheckBoxMariaDB] = createSignal(false)
+  const [checkBoxMongoDB, setCheckBoxMongoDB] = createSignal(false)
+
   const [searchParams] = useSearchParams()
 
-  let createNewAppRequest = new CreateApplicationRequest
-  let createNewAppRequestApplicationConfig = new ApplicationConfig
-  const [fields, setFields] = createStore(new CreateApplicationRequest);
-  const [fieldsApplicationConfig, setFieldsApplicationConfig] = createStore(createNewAppRequestApplicationConfig);
-  const [fieldsBuildConfig, setFieldsBuildConfig] = createStore(new BuildConfigRuntimeBuildpack)
-  setFields("repositoryId",searchParams.repositoryID)
-  setFieldsApplicationConfig("buildConfig", {case: "runtimeBuildpack", value: fieldsBuildConfig})
-  setFields("config", fieldsApplicationConfig)
+  let createNewAppRequest = new CreateApplicationRequest()
+  let createNewAppRequestApplicationConfig = new ApplicationConfig()
+  const [fields, setFields] = createStore(new CreateApplicationRequest())
+  const [fieldsApplicationConfig, setFieldsApplicationConfig] = createStore(createNewAppRequestApplicationConfig)
+  const [fieldsBuildConfig, setFieldsBuildConfig] = createStore(new BuildConfigRuntimeBuildpack())
+  setFields('repositoryId', searchParams.repositoryID)
+  setFieldsApplicationConfig('buildConfig', { case: 'runtimeBuildpack', value: fieldsBuildConfig })
+  setFields('config', fieldsApplicationConfig)
 
   const SelectRepository = (): JSX.Element => {
     return (
@@ -441,12 +455,12 @@ export default () => {
             <InputFormContainer>
               <InputForm>
                 <InputFormText>Application Name</InputFormText>
-                <InputBar placeholder='' onInput={(e) => setFields("name", e.target.value)}/>
+                <InputBar placeholder='' onInput={(e) => setFields('name', e.target.value)} />
               </InputForm>
 
               <InputForm>
                 <InputFormText>Branch Name</InputFormText>
-                <InputBar placeholder='master' onInput={(e) => setFields("refName", e.target.value)}/>
+                <InputBar placeholder='master' onInput={(e) => setFields('refName', e.target.value)} />
               </InputForm>
 
               <InputForm>
@@ -456,14 +470,24 @@ export default () => {
                     <Radio items={buildConfigItems} selected={buildConfig()} setSelected={setBuildConfig} />
                   </InputForm>
                   <Show when={buildConfig() === buildConfigItems[0].value}>
-                    <InputFormRuntimeConfig />
+                    <InputFormRuntimeConfig
+                      checkBoxMariaDB={checkBoxMariaDB()}
+                      setCheckBoxMariaDB={setCheckBoxMariaDB}
+                      checkBoxMongoDB={checkBoxMongoDB()}
+                      setCheckBoxMongoDB={setCheckBoxMongoDB}
+                    />
                     <InputForm>
                       <InputFormText>Context</InputFormText>
                       <InputBar placeholder='' />
                     </InputForm>
                   </Show>
                   <Show when={buildConfig() === buildConfigItems[1].value}>
-                    <InputFormRuntimeConfig />
+                    <InputFormRuntimeConfig
+                      checkBoxMariaDB={checkBoxMariaDB()}
+                      setCheckBoxMariaDB={setCheckBoxMariaDB}
+                      checkBoxMongoDB={checkBoxMongoDB()}
+                      setCheckBoxMongoDB={setCheckBoxMongoDB}
+                    />
                     <InputForm>
                       <InputFormText>Base image</InputFormText>
                       <InputBar placeholder='' />
@@ -480,7 +504,12 @@ export default () => {
                     </InputForm>
                   </Show>
                   <Show when={buildConfig() === buildConfigItems[2].value}>
-                    <InputFormRuntimeConfig />
+                    <InputFormRuntimeConfig
+                      checkBoxMariaDB={checkBoxMariaDB()}
+                      setCheckBoxMariaDB={setCheckBoxMariaDB}
+                      checkBoxMongoDB={checkBoxMongoDB()}
+                      setCheckBoxMongoDB={setCheckBoxMongoDB}
+                    />
                     <InputForm>
                       <InputFormText>Dockerfile name</InputFormText>
                       <InputBar placeholder='' />
