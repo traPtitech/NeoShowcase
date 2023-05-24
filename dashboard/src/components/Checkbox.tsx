@@ -18,11 +18,17 @@ interface Props {
   children: JSXElement
   selected: boolean
   setSelected: (s: boolean) => void
+  onClick?: () => void
 }
 
 export const Checkbox = (props: Props): JSXElement => {
   return (
-    <Container onclick={() => props.setSelected(!props.selected)}>
+    <Container
+      onClick={() => {
+        props.setSelected(!props.selected)
+        props.onClick?.()
+      }}
+    >
       {props.selected ? (
         <ImCheckboxChecked size={20} color={vars.text.black2} />
       ) : (
