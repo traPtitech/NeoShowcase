@@ -210,7 +210,6 @@ export default () => {
             <Match when={authMethod() === 'ssh'}>
               <Form
                 label='SSH秘密鍵'
-                placeholder=''
                 value={sshAuthConfig.sshKey}
                 onInput={(e) => setSshAuthConfig('sshKey', e.currentTarget.value)}
               />
