@@ -22,7 +22,7 @@ interface Props {
 
 export const Checkbox = (props: Props): JSXElement => {
   return (
-    <Container onclick={(prev) => props.setSelected(!prev)}>
+    <Container onclick={() => props.setSelected(!props.selected)}>
       {props.selected ? (
         <ImCheckboxChecked size={20} color={vars.text.black2} />
       ) : (
