@@ -97,6 +97,7 @@ func (b *k8sBackend) runtimeSpec(app *domain.RuntimeDesiredState) (*appsv1.State
 					Tolerations:                  b.config.podSchedulingTolerations(),
 				},
 			},
+			RevisionHistoryLimit: lo.ToPtr(int32(0)),
 		},
 	}
 
