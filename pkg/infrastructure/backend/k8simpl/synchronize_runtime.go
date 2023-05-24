@@ -2,9 +2,11 @@ package k8simpl
 
 import (
 	"fmt"
+	"strings"
 	"time"
 
 	"github.com/samber/lo"
+	"golang.org/x/exp/slices"
 	appsv1 "k8s.io/api/apps/v1"
 	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -16,6 +18,8 @@ func (b *k8sBackend) statefulSet(app *domain.RuntimeDesiredState) *appsv1.Statef
 	envs := lo.MapToSlice(app.Envs, func(key string, value string) v1.EnvVar {
 		return v1.EnvVar{Name: key, Value: value}
 	})
+	// make sure computed result is stable
+	slices.SortFunc(envs, func(a, b v1.EnvVar) bool { return strings.Compare(a.Name, b.Name) < 0 })
 
 	cont := v1.Container{
 		Name:            podContainerName,
@@ -30,12 +34,14 @@ func (b *k8sBackend) statefulSet(app *domain.RuntimeDesiredState) *appsv1.Statef
 	if args := app.App.Config.BuildConfig.CommandArgs(); len(args) > 0 {
 		cont.Args = args
 	}
+	slices.SortFunc(app.App.Websites, (*domain.Website).Compare)
 	for _, website := range app.App.Websites {
 		cont.Ports = append(cont.Ports, v1.ContainerPort{
 			ContainerPort: int32(website.HTTPPort),
 			Protocol:      v1.ProtocolTCP,
 		})
 	}
+	slices.SortFunc(app.App.PortPublications, (*domain.PortPublication).Compare)
 	for _, p := range app.App.PortPublications {
 		cont.Ports = append(cont.Ports, v1.ContainerPort{
 			ContainerPort: int32(p.ApplicationPort),
