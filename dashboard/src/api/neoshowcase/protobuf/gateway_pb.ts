@@ -123,6 +123,49 @@ export class User extends Message<User> {
 }
 
 /**
+ * @generated from message neoshowcase.protobuf.GetMeResponse
+ */
+export class GetMeResponse extends Message<GetMeResponse> {
+  /**
+   * @generated from field: neoshowcase.protobuf.User user = 1;
+   */
+  user?: User;
+
+  /**
+   * @generated from field: string avatar_url = 2;
+   */
+  avatarUrl = "";
+
+  constructor(data?: PartialMessage<GetMeResponse>) {
+    super();
+    proto3.util.initPartial(data, this);
+  }
+
+  static readonly runtime: typeof proto3 = proto3;
+  static readonly typeName = "neoshowcase.protobuf.GetMeResponse";
+  static readonly fields: FieldList = proto3.util.newFieldList(() => [
+    { no: 1, name: "user", kind: "message", T: User },
+    { no: 2, name: "avatar_url", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+  ]);
+
+  static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): GetMeResponse {
+    return new GetMeResponse().fromBinary(bytes, options);
+  }
+
+  static fromJson(jsonValue: JsonValue, options?: Partial<JsonReadOptions>): GetMeResponse {
+    return new GetMeResponse().fromJson(jsonValue, options);
+  }
+
+  static fromJsonString(jsonString: string, options?: Partial<JsonReadOptions>): GetMeResponse {
+    return new GetMeResponse().fromJsonString(jsonString, options);
+  }
+
+  static equals(a: GetMeResponse | PlainMessage<GetMeResponse> | undefined, b: GetMeResponse | PlainMessage<GetMeResponse> | undefined): boolean {
+    return proto3.util.equals(GetMeResponse, a, b);
+  }
+}
+
+/**
  * @generated from message neoshowcase.protobuf.UserKey
  */
 export class UserKey extends Message<UserKey> {
