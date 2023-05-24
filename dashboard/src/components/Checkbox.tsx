@@ -16,20 +16,19 @@ const Container = styled('div', {
 
 interface Props {
   children: JSXElement
-  init?: boolean
+  selected: boolean
+  setSelected: (s: boolean) => void
 }
 
-export const Checkbox = ({ children, init = false }: Props): JSXElement => {
-  const [checked, setChecked] = createSignal(init)
-
+export const Checkbox = (props: Props): JSXElement => {
   return (
-    <Container onclick={() => setChecked((prev) => !prev)}>
-      {checked() ? (
+    <Container onclick={(prev) => props.setSelected(!prev)}>
+      {props.selected ? (
         <ImCheckboxChecked size={20} color={vars.text.black2} />
       ) : (
         <ImCheckboxUnchecked size={20} color={vars.text.black4} />
       )}
-      {children}
+      {props.children}
     </Container>
   )
 }
