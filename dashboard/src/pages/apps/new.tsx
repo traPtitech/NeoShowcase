@@ -11,6 +11,7 @@ import {
   ApplicationConfig,
   BuildConfigRuntimeBuildpack,
   CreateWebsiteRequest,
+  PortPublication,
 } from '/@/api/neoshowcase/protobuf/gateway_pb'
 import { A, useSearchParams } from '@solidjs/router'
 import { BsArrowLeftShort } from 'solid-icons/bs'
@@ -290,25 +291,25 @@ const authenticationTypeItems: RadioItem[] = [
   { value: 2, title: 'HARD' },
 ]
 
-interface PortPublication {
+interface Ports {
   internet_port: number
   application_port: number
   protocol: number
 }
 
-const EmptyPortPublication: PortPublication = {
+const EmptyPortPublication: Ports = {
   internet_port: 0,
   application_port: 0,
   protocol: PortPublicationProtocol.TCP,
 }
 
 interface PortPublicationProps {
-  portPublication: PortPublication
-  setPortPublication: (PortPublication) => void
+  portPublication: Ports
+  setPortPublication: (Ports) => void
   deletePortPublication: () => void
 }
 
-const PortPublication = (props: PortPublicationProps) => {
+const PortPublications = (props: PortPublicationProps) => {
   return (
     <InputFormWebsite>
       <InputForm>
@@ -438,7 +439,7 @@ export default () => {
 
   const [buildConfig, setBuildConfig] = createSignal(buildConfigItems[0].value)
   const [websites, setWebsites] = createSignal<Website[]>([])
-  const [portPublications, setPortPublications] = createSignal<PortPublication[]>([])
+  const [portPublications, setPortPublications] = createSignal<Ports[]>([])
 
   const [checkBoxStartOnCreate, setCheckBoxStartOnCreate] = createSignal(false)
   const [checkBoxMariaDB, setCheckBoxMariaDB] = createSignal(false)
@@ -450,17 +451,17 @@ export default () => {
 
   const [searchParams] = useSearchParams()
 
-  const createNewAppRequest = new CreateApplicationRequest()
-  const createNewAppRequestApplicationConfig = new ApplicationConfig()
-  const createNewAppRequestCreateWebsiteRequest = new CreateWebsiteRequest()
   const [fields, setFields] = createStore(new CreateApplicationRequest())
   const [fieldsApplicationConfig, setFieldsApplicationConfig] = createStore(new ApplicationConfig())
   const [fieldsBuildConfig, setFieldsBuildConfig] = createStore(new BuildConfigRuntimeBuildpack())
   const [fieldsCreateWebsiteRequest, setFieldsCreateWebsiteRequest] = createStore<CreateWebsiteRequest[]>([])
+  const [fieldsPortPublication, setFieldsPortPublication] = createStore<PortPublication[]>([])
 
   setFields('repositoryId', searchParams.repositoryID)
   setFieldsApplicationConfig('buildConfig', { case: 'runtimeBuildpack', value: fieldsBuildConfig })
   setFields('config', fieldsApplicationConfig)
+  setFields('websites', fieldsCreateWebsiteRequest)
+  setFields('portPublications', fieldsPortPublication)
   setFields('startOnCreate', checkBoxStartOnCreate())
 
   const SelectRepository = (): JSX.Element => {
@@ -623,7 +624,7 @@ export default () => {
                 <SettingsContainer>
                   <For each={portPublications()}>
                     {(portPublication, i) => (
-                      <PortPublication
+                      <PortPublications
                         portPublication={portPublication}
                         setPortPublication={(portPublication) =>
                           setPortPublications((current) => [
@@ -668,7 +669,9 @@ export default () => {
 
               <Button
                 onclick={() => {
+                  setFields('startOnCreate', checkBoxStartOnCreate())
                   console.log(fields)
+                  console.log(checkBoxStartOnCreate())
                 }}
                 color='black1'
                 size='large'
