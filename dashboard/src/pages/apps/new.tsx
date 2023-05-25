@@ -520,34 +520,34 @@ export default () => {
                       setSelected={setBuildConfig}
                       onClick={() => {
                         switch (buildConfig()) {
-                          case buildConfigItems[0].value:
+                          case 'runtime_buildpack':
                             setFieldsBuildConfigRuntimeBuildpack('runtimeConfig', fieldsRuntimeConfig)
                             setFieldsApplicationConfig('buildConfig', {
                               case: 'runtimeBuildpack',
                               value: fieldsBuildConfigRuntimeBuildpack,
                             })
                             break
-                          case buildConfigItems[1].value:
+                          case 'runtime_cmd':
                             setFieldsBuildConfigRuntimeCmd('runtimeConfig', fieldsRuntimeConfig)
                             setFieldsApplicationConfig('buildConfig', {
                               case: 'runtimeCmd',
                               value: fieldsBuildConfigRuntimeCmd,
                             })
                             break
-                          case buildConfigItems[2].value:
+                          case 'runtime_dockerfile':
                             setFieldsBuildConfigRuntimeDockerfile('runtimeConfig', fieldsRuntimeConfig)
                             setFieldsApplicationConfig('buildConfig', {
                               case: 'runtimeDockerfile',
                               value: fieldsBuildConfigRuntimeDockerfile,
                             })
                             break
-                          case buildConfigItems[3].value:
+                          case 'static_cmd':
                             setFieldsApplicationConfig('buildConfig', {
                               case: 'staticCmd',
                               value: fieldsBuildConfigStaticCmd,
                             })
                             break
-                          case buildConfigItems[4].value:
+                          case 'static_dockerfile':
                             setFieldsApplicationConfig('buildConfig', {
                               case: 'staticDockerfile',
                               value: fieldsBuildConfigStaticDockerfile,
