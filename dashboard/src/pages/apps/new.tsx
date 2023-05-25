@@ -465,7 +465,7 @@ export default () => {
 
   const [searchParams] = useSearchParams()
 
-  const [fields, setFields] = createStore(new CreateApplicationRequest())
+  const [fieldsApp, setFieldsApp] = createStore(new CreateApplicationRequest())
   const [fieldsApplicationConfig, setFieldsApplicationConfig] = createStore(new ApplicationConfig())
   const [fieldsRuntimeConfig, setFieldsRuntimeConfig] = createStore(new RuntimeConfig())
   const [fieldsBuildConfigRuntimeBuildpack, setFieldsBuildConfigRuntimeBuildpack] = createStore(
@@ -482,7 +482,7 @@ export default () => {
   const [fieldsCreateWebsiteRequest, setFieldsCreateWebsiteRequest] = createStore<CreateWebsiteRequest[]>([])
   const [fieldsPortPublication, setFieldsPortPublication] = createStore<PortPublication[]>([])
 
-  setFields('repositoryId', searchParams.repositoryID)
+  setFieldsApp('repositoryId', searchParams.repositoryID)
 
   // setFieldsApplicationConfig('buildConfig', { case: 'runtimeBuildpack', value: fieldsBuildConfig })
   // setFields('config', fieldsApplicationConfig)
@@ -502,12 +502,12 @@ export default () => {
             <InputFormContainer>
               <InputForm>
                 <InputFormText>Application Name</InputFormText>
-                <InputBar placeholder='' onInput={(e) => setFields('name', e.target.value)} />
+                <InputBar placeholder='' onInput={(e) => setFieldsApp('name', e.target.value)} />
               </InputForm>
 
               <InputForm>
                 <InputFormText>Branch Name</InputFormText>
-                <InputBar placeholder='master' onInput={(e) => setFields('refName', e.target.value)} />
+                <InputBar placeholder='master' onInput={(e) => setFieldsApp('refName', e.target.value)} />
               </InputForm>
 
               <InputForm>
@@ -554,7 +554,7 @@ export default () => {
                             })
                             break
                         }
-                        setFields('config', fieldsApplicationConfig)
+                        setFieldsApp('config', fieldsApplicationConfig)
                       }}
                     />
                   </InputForm>
@@ -778,7 +778,7 @@ export default () => {
                   <Checkbox
                     selected={checkBoxStartOnCreate()}
                     setSelected={setCheckBoxStartOnCreate}
-                    onClick={() => setFields('startOnCreate', checkBoxStartOnCreate())}
+                    onClick={() => setFieldsApp('startOnCreate', checkBoxStartOnCreate())}
                   >
                     start_on_create
                   </Checkbox>
@@ -791,7 +791,7 @@ export default () => {
 
               <Button
                 onclick={() => {
-                  console.log(fields)
+                  console.log(fieldsApp)
                 }}
                 color='black1'
                 size='large'
