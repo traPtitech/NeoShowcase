@@ -127,8 +127,26 @@ export default () => {
   type AuthMethod = CreateRepositoryAuth['auth']['case']
   const [authMethod, setAuthMethod] = createSignal<AuthMethod>('none')
 
-  const [sshAuthConfig, setSshAuthConfig] = createStore(new CreateRepositoryAuthSSH())
-  const [basicAuthConfig, setBasicAuthConfig] = createStore(new CreateRepositoryAuthBasic())
+  // 認証情報
+  // 認証方法の切り替え時に情報を保持するために、storeを使用して3種類の認証情報を保持する
+  const [authConfig, setAuthConfig] = createStore<{
+    [K in AuthMethod]: Extract<CreateRepositoryAuth['auth'], { case: K }>
+  }>(
+    {
+      "none": {
+        case: "none",
+        value: new Empty(),
+      },
+      basic: {
+        case: "basic",
+        value: new CreateRepositoryAuthBasic(),
+      },
+      ssh: {
+        case: "ssh",
+        value: new CreateRepositoryAuthSSH(),
+      }
+    }
+  )
 
   const [requestConfig, setRequestConfig] = createStore(
     new CreateRepositoryRequest({
@@ -144,19 +162,7 @@ export default () => {
 
     // validate form
     if (formContainer.reportValidity()) {
-      // 認証方法に応じて認証情報を設定
-      switch (authMethod()) {
-        case 'none':
-          setRequestConfig('auth', 'auth', { value: new Empty(), case: 'none' })
-          break
-        case 'ssh':
-          setRequestConfig('auth', 'auth', { value: sshAuthConfig, case: 'ssh' })
-          break
-        case 'basic':
-          setRequestConfig('auth', 'auth', { value: basicAuthConfig, case: 'basic' })
-          break
-      }
-
+      setRequestConfig("auth", "auth", authConfig[authMethod()])
       const res = await client.createRepository(requestConfig)
       // TODO: navigate to repository page when success / show error message when failed
     }
@@ -210,23 +216,23 @@ export default () => {
             <Match when={authMethod() === 'basic'}>
               <Form
                 label='ユーザー名'
-                value={basicAuthConfig.username}
-                onInput={(e) => setBasicAuthConfig('username', e.currentTarget.value)}
+                value={authConfig.basic.value.username}
+                onInput={(e) => setAuthConfig('basic', "value" , "username",e.currentTarget.value)}
               />
               <Form
                 label='パスワード'
                 type='password'
-                value={basicAuthConfig.password}
-                onInput={(e) => setBasicAuthConfig('password', e.currentTarget.value)}
+                value={authConfig.basic.value.password}
+                onInput={(e) => setAuthConfig('basic', "value" , "password", e.currentTarget.value)}
               />
             </Match>
             <Match when={authMethod() === 'ssh'}>
               <Form
                 label='SSH秘密鍵'
-                value={sshAuthConfig.sshKey}
-                onInput={(e) => setSshAuthConfig('sshKey', e.currentTarget.value)}
+                value={authConfig.ssh.value.sshKey}
+                onInput={(e) => setAuthConfig('ssh', "value" , "sshKey", e.currentTarget.value)}
               />
-              <Show when={sshAuthConfig.sshKey.length === 0}>
+              <Show when={authConfig.ssh.value.sshKey.length === 0}>
                 <div>
                   <SshDetails>
                     秘密鍵を入力せずにSSH認証でリポジトリを登録する場合、以下のSSH公開鍵が認証に使用されます。
