@@ -34,7 +34,7 @@ const ContentContainer = styled('div', {
 })
 
 // copy from /pages/apps/new
-const InputFormContainer = styled('div', {
+const InputFormContainer = styled('form', {
   base: {
     display: 'flex',
     flexDirection: 'column',
@@ -84,6 +84,7 @@ interface FormProps {
   placeholder?: JSX.InputHTMLAttributes<HTMLInputElement>['placeholder']
   value: JSX.InputHTMLAttributes<HTMLInputElement>['value']
   onInput: JSX.InputHTMLAttributes<HTMLInputElement>['onInput']
+  required?: JSX.InputHTMLAttributes<HTMLInputElement>['required']
 }
 
 const Form = (props: FormProps): JSXElement => {
@@ -95,6 +96,7 @@ const Form = (props: FormProps): JSXElement => {
         placeholder={props.placeholder ?? ''}
         value={props.value}
         onInput={props.onInput}
+        required={props.required}
       />
     </InputForm>
   )
@@ -134,22 +136,30 @@ export default () => {
     }),
   )
 
-  const createRepository = async () => {
-    // 認証方法に応じて認証情報を設定
-    switch (authMethod()) {
-      case 'none':
-        setRequestConfig('auth', 'auth', { value: new Empty(), case: 'none' })
-        break
-      case 'ssh':
-        setRequestConfig('auth', 'auth', { value: sshAuthConfig, case: 'ssh' })
-        break
-      case 'basic':
-        setRequestConfig('auth', 'auth', { value: basicAuthConfig, case: 'basic' })
-        break
-    }
+  let formContainer: HTMLFormElement
 
-    const res = await client.createRepository(requestConfig)
-    // TODO: navigate to repository page when success / show error message when failed
+  const createRepository: JSX.EventHandler<HTMLInputElement, MouseEvent> = async (e) => {
+    // prevent default form submit (reload page)
+    e.preventDefault()
+
+    // validate form
+    if (formContainer.reportValidity()) {
+      // 認証方法に応じて認証情報を設定
+      switch (authMethod()) {
+        case 'none':
+          setRequestConfig('auth', 'auth', { value: new Empty(), case: 'none' })
+          break
+        case 'ssh':
+          setRequestConfig('auth', 'auth', { value: sshAuthConfig, case: 'ssh' })
+          break
+        case 'basic':
+          setRequestConfig('auth', 'auth', { value: basicAuthConfig, case: 'basic' })
+          break
+      }
+
+      const res = await client.createRepository(requestConfig)
+      // TODO: navigate to repository page when success / show error message when failed
+    }
   }
 
   // URLからリポジトリ名を自動入力
@@ -167,19 +177,22 @@ export default () => {
       <Header />
       <PageTitle>Create Repository</PageTitle>
       <ContentContainer>
-        <InputFormContainer>
+        <InputFormContainer ref={formContainer}>
           <Form
             label='URL'
-            type='url'
+            // SSH URLはURLとしては不正なのでtypeを変更
+            type={authMethod() === 'ssh' ? 'text' : 'url'}
             placeholder='https://example.com/my-app.git'
             value={requestConfig.url}
             onInput={(e) => setRequestConfig('url', e.currentTarget.value)}
+            required
           />
           <Form
             label='リポジトリ名'
             placeholder='my-app'
             value={requestConfig.name}
             onInput={(e) => setRequestConfig('name', e.currentTarget.value)}
+            required
           />
           <InputForm>
             <InputFormText>認証方法</InputFormText>
@@ -230,7 +243,7 @@ export default () => {
               </Show>
             </Match>
           </Switch>
-          <Button color='black1' size='large' onclick={createRepository}>
+          <Button color='black1' size='large' onclick={createRepository} type="submit">
             + Create new Repository
           </Button>
         </InputFormContainer>
