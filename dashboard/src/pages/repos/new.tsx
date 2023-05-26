@@ -131,22 +131,20 @@ export default () => {
   // 認証方法の切り替え時に情報を保持するために、storeを使用して3種類の認証情報を保持する
   const [authConfig, setAuthConfig] = createStore<{
     [K in AuthMethod]: Extract<CreateRepositoryAuth['auth'], { case: K }>
-  }>(
-    {
-      "none": {
-        case: "none",
-        value: new Empty(),
-      },
-      basic: {
-        case: "basic",
-        value: new CreateRepositoryAuthBasic(),
-      },
-      ssh: {
-        case: "ssh",
-        value: new CreateRepositoryAuthSSH(),
-      }
-    }
-  )
+  }>({
+    none: {
+      case: 'none',
+      value: new Empty(),
+    },
+    basic: {
+      case: 'basic',
+      value: new CreateRepositoryAuthBasic(),
+    },
+    ssh: {
+      case: 'ssh',
+      value: new CreateRepositoryAuthSSH(),
+    },
+  })
 
   const [requestConfig, setRequestConfig] = createStore(
     new CreateRepositoryRequest({
@@ -162,7 +160,7 @@ export default () => {
 
     // validate form
     if (formContainer.reportValidity()) {
-      setRequestConfig("auth", "auth", authConfig[authMethod()])
+      setRequestConfig('auth', 'auth', authConfig[authMethod()])
       const res = await client.createRepository(requestConfig)
       // TODO: navigate to repository page when success / show error message when failed
     }
@@ -217,20 +215,20 @@ export default () => {
               <Form
                 label='ユーザー名'
                 value={authConfig.basic.value.username}
-                onInput={(e) => setAuthConfig('basic', "value" , "username",e.currentTarget.value)}
+                onInput={(e) => setAuthConfig('basic', 'value', 'username', e.currentTarget.value)}
               />
               <Form
                 label='パスワード'
                 type='password'
                 value={authConfig.basic.value.password}
-                onInput={(e) => setAuthConfig('basic', "value" , "password", e.currentTarget.value)}
+                onInput={(e) => setAuthConfig('basic', 'value', 'password', e.currentTarget.value)}
               />
             </Match>
             <Match when={authMethod() === 'ssh'}>
               <Form
                 label='SSH秘密鍵'
                 value={authConfig.ssh.value.sshKey}
-                onInput={(e) => setAuthConfig('ssh', "value" , "sshKey", e.currentTarget.value)}
+                onInput={(e) => setAuthConfig('ssh', 'value', 'sshKey', e.currentTarget.value)}
               />
               <Show when={authConfig.ssh.value.sshKey.length === 0}>
                 <div>
