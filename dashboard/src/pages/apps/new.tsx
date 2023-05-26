@@ -238,12 +238,12 @@ interface WebsiteProps {
   website: Website
   setWebsite: (Website) => void
   deleteWebsite: () => void
-  checkBox1: boolean
-  setCheckBox1: (boolean) => void
-  checkBox2: boolean
-  setCheckBox2: (boolean) => void
-  checkBox3: boolean
-  setCheckBox3: (boolean) => void
+  checkBoxStripPrefix: boolean
+  setCheckBoxStripPrefix: (boolean) => void
+  checkBoxHttps: boolean
+  setCheckBoxHttps: (boolean) => void
+  checkBoxH2c: boolean
+  setCheckBoxH2c: (boolean) => void
 }
 
 const Website = (props: WebsiteProps) => {
@@ -259,13 +259,13 @@ const Website = (props: WebsiteProps) => {
       </InputForm>
       <InputForm>
         <InputFormCheckBox>
-          <Checkbox selected={props.checkBox1} setSelected={props.setCheckBox1}>
+          <Checkbox selected={props.checkBoxStripPrefix} setSelected={props.setCheckBoxStripPrefix}>
             Strip Path Prefix
           </Checkbox>
-          <Checkbox selected={props.checkBox2} setSelected={props.setCheckBox2}>
+          <Checkbox selected={props.checkBoxHttps} setSelected={props.setCheckBoxHttps}>
             https
           </Checkbox>
-          <Checkbox selected={props.checkBox3} setSelected={props.setCheckBox3}>
+          <Checkbox selected={props.checkBoxH2c} setSelected={props.setCheckBoxH2c}>
             (advanced) アプリ通信にh2cを用いる
           </Checkbox>
         </InputFormCheckBox>
@@ -459,9 +459,9 @@ export default () => {
   const [checkBoxMariaDB, setCheckBoxMariaDB] = createSignal(false)
   const [checkBoxMongoDB, setCheckBoxMongoDB] = createSignal(false)
   const [checkBoxBuildCmdShell, setCheckBoxBuildCmdShell] = createSignal(false)
-  const [checkBoxWebsite1, setCheckBoxWebsite1] = createSignal(false)
-  const [checkBoxWebsite2, setCheckBoxWebsite2] = createSignal(false)
-  const [checkBoxWebsite3, setCheckBoxWebsite3] = createSignal(false)
+  const [checkBoxWebsiteStripPrefix, setCheckBoxWebsiteStripPrefix] = createSignal(false)
+  const [checkBoxWebsiteHttps, setCheckBoxWebsiteHttps] = createSignal(false)
+  const [checkBoxWebsiteH2c, setCheckBoxWebsiteH2c] = createSignal(false)
 
   const [searchParams] = useSearchParams()
 
@@ -713,12 +713,12 @@ export default () => {
                         deleteWebsite={() =>
                           setWebsites((current) => [...current.slice(0, i()), ...current.slice(i() + 1)])
                         }
-                        checkBox1={checkBoxWebsite1()}
-                        setCheckBox1={setCheckBoxWebsite1}
-                        checkBox2={checkBoxWebsite2()}
-                        setCheckBox2={setCheckBoxWebsite2}
-                        checkBox3={checkBoxWebsite3()}
-                        setCheckBox3={setCheckBoxWebsite3}
+                        checkBoxStripPrefix={checkBoxWebsiteStripPrefix()}
+                        setCheckBoxStripPrefix={setCheckBoxWebsiteStripPrefix}
+                        checkBoxHttps={checkBoxWebsiteHttps()}
+                        setCheckBoxHttps={setCheckBoxWebsiteHttps}
+                        checkBoxH2c={checkBoxWebsiteH2c()}
+                        setCheckBoxH2c={setCheckBoxWebsiteH2c}
                       />
                     )}
                   </For>
