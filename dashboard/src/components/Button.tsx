@@ -1,6 +1,6 @@
 import { styled } from '@macaron-css/solid'
 import { vars } from '/@/theme'
-import { JSXElement } from 'solid-js'
+import { JSX, ParentComponent, splitProps } from 'solid-js'
 
 const Container = styled('button', {
   base: {
@@ -50,25 +50,18 @@ const Text = styled('div', {
   },
 })
 
-export interface Props {
-  children: JSXElement
+export interface Props extends JSX.ButtonHTMLAttributes<HTMLButtonElement> {
   color: 'black1'
   size: 'large'
-  disabled?: boolean
-  onclick?: () => void
 }
 
-export const Button = (props: Props) => {
-  const cursor = () => (props.onclick !== undefined && !props.disabled ? 'pointer' : 'none')
+export const Button: ParentComponent<Props> = (props) => {
+  const [addedProps, originalButtonProps] = splitProps(props, ['color', 'size'])
+
+  const cursor = () => (originalButtonProps.onclick !== undefined && !originalButtonProps.disabled ? 'pointer' : 'none')
   return (
-    <Container
-      color={props.color}
-      size={props.size}
-      cursor={cursor()}
-      onclick={props.onclick}
-      disabled={props.disabled}
-    >
-      <Text color={props.color} size={props.size}>
+    <Container color={addedProps.color} size={addedProps.size} cursor={cursor()} {...originalButtonProps}>
+      <Text color={addedProps.color} size={addedProps.size}>
         {props.children}
       </Text>
     </Container>
