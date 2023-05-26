@@ -16,11 +16,11 @@ k8s:
           - nsapp-auth-hard
           - nsapp-auth
   ports:
-    - startPort: 30000
-      endPort: 31000
+    - startPort: 39000
+      endPort: 39999
       protocol: tcp
-    - startPort: 30000
-      endPort: 31000
+    - startPort: 39000
+      endPort: 39999
       protocol: udp
   ss:
     namespace: ns-system
