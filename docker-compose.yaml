@@ -57,6 +57,7 @@ services:
       - ./.local-dev/local-storage:/data
       - ./.local-dev/keys:/keys
       - ./.local-dev/traefik:/opt/traefik/conf
+      - ~/.ssh/known_hosts:/root/.ssh/known_hosts
     ports:
       # for debug
       - 10000:10000
@@ -116,6 +117,7 @@ services:
       - ./.local-dev/config/ns-builder.yaml:/config.yaml
       - ./.local-dev/keys:/keys
       - ./.local-dev/local-storage:/data
+      - ~/.ssh/known_hosts:/root/.ssh/known_hosts
     depends_on:
       mysql:
         condition: service_healthy

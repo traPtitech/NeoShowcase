@@ -108,7 +108,7 @@ func provideRepositoryPublicKey(c Config) (*ssh.PublicKeys, error) {
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to open private key file")
 	}
-	return ssh.NewPublicKeys("", bytes, "")
+	return domain.NewPublicKey(bytes)
 }
 
 func provideStorage(c domain.StorageConfig) (domain.Storage, error) {
