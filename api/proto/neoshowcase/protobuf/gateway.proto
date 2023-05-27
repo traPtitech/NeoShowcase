@@ -44,6 +44,7 @@ message Repository {
   string name = 2;
   string url = 3;
   AuthMethod auth_method = 4;
+  repeated string owner_ids = 5;
 }
 
 message CreateRepositoryAuthBasic {

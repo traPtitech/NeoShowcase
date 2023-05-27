@@ -349,6 +349,11 @@ export class Repository extends Message<Repository> {
    */
   authMethod = Repository_AuthMethod.BASIC;
 
+  /**
+   * @generated from field: repeated string owner_ids = 5;
+   */
+  ownerIds: string[] = [];
+
   constructor(data?: PartialMessage<Repository>) {
     super();
     proto3.util.initPartial(data, this);
@@ -361,6 +366,7 @@ export class Repository extends Message<Repository> {
     { no: 2, name: "name", kind: "scalar", T: 9 /* ScalarType.STRING */ },
     { no: 3, name: "url", kind: "scalar", T: 9 /* ScalarType.STRING */ },
     { no: 4, name: "auth_method", kind: "enum", T: proto3.getEnumType(Repository_AuthMethod) },
+    { no: 5, name: "owner_ids", kind: "scalar", T: 9 /* ScalarType.STRING */, repeated: true },
   ]);
 
   static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): Repository {
