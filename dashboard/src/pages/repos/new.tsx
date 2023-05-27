@@ -4,6 +4,7 @@ import toast from 'solid-toast'
 import { ConnectError } from '@bufbuild/connect'
 import { Empty } from '@bufbuild/protobuf'
 import { styled } from '@macaron-css/solid'
+import { useNavigate } from '@solidjs/router'
 import {
   CreateRepositoryAuth,
   CreateRepositoryAuthBasic,
@@ -125,6 +126,7 @@ const PublicKeyCode = styled('code', {
 })
 
 export default () => {
+  const navigate = useNavigate()
   // 認証方法 ("none" | "ssh" | "basic")
   type AuthMethod = CreateRepositoryAuth['auth']['case']
   const [authMethod, setAuthMethod] = createSignal<AuthMethod>('none')
@@ -166,6 +168,8 @@ export default () => {
       try {
         const res = await client.createRepository(requestConfig)
         toast.success('リポジトリを登録しました')
+        // リポジトリページに遷移
+        navigate(`/repos/${res.id}`)
       } catch (e) {
         console.error(e)
         // gRPCエラー
