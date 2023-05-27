@@ -6,16 +6,27 @@ import (
 	"github.com/bufbuild/connect-go"
 	"google.golang.org/protobuf/types/known/emptypb"
 
+	"github.com/traPtitech/neoshowcase/pkg/domain"
 	"github.com/traPtitech/neoshowcase/pkg/infrastructure/grpc/pb"
 	"github.com/traPtitech/neoshowcase/pkg/infrastructure/grpc/pbconvert"
 	"github.com/traPtitech/neoshowcase/pkg/util/ds"
 )
 
-func (s *APIService) GetMe(ctx context.Context, _ *connect.Request[emptypb.Empty]) (*connect.Response[pb.GetMeResponse], error) {
-	user, avatarURL := s.svc.GetMe(ctx)
-	res := connect.NewResponse(&pb.GetMeResponse{
-		User:      pbconvert.ToPBUser(user),
-		AvatarUrl: avatarURL,
+func (s *APIService) GetMe(ctx context.Context, _ *connect.Request[emptypb.Empty]) (*connect.Response[pb.User], error) {
+	user := s.svc.GetMe(ctx)
+	res := connect.NewResponse(pbconvert.ToPBUser(user, s.avatarBaseURL))
+	return res, nil
+}
+
+func (s *APIService) GetUsers(ctx context.Context, _ *connect.Request[emptypb.Empty]) (*connect.Response[pb.GetUsersResponse], error) {
+	users, err := s.svc.GetUsers(ctx)
+	if err != nil {
+		return nil, handleUseCaseError(err)
+	}
+	res := connect.NewResponse(&pb.GetUsersResponse{
+		Users: ds.Map(users, func(user *domain.User) *pb.User {
+			return pbconvert.ToPBUser(user, s.avatarBaseURL)
+		}),
 	})
 	return res, nil
 }

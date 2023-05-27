@@ -5,6 +5,8 @@ import (
 	"golang.org/x/crypto/ssh"
 )
 
+type AvatarBaseURL string
+
 func NewUser(name string) *User {
 	return &User{
 		ID:    NewID(),
@@ -17,6 +19,10 @@ type User struct {
 	ID    string
 	Name  string
 	Admin bool
+}
+
+func (u *User) AvatarURL(baseURL AvatarBaseURL) string {
+	return string(baseURL) + u.Name
 }
 
 type UserKey struct {

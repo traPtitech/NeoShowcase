@@ -95,7 +95,7 @@ export const Header = (): JSXElement => {
       </LeftContainer>
       <RightContainer>
         {user() && <UserIcon src={user().avatarUrl} alt="icon" />}
-        {user() && <UserName>{user().user.name}</UserName>}
+        {user() && <UserName>{user().name}</UserName>}
       </RightContainer>
     </Container>
   )
