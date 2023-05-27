@@ -5,11 +5,12 @@ import (
 	"github.com/traPtitech/neoshowcase/pkg/infrastructure/grpc/pb"
 )
 
-func ToPBUser(user *domain.User) *pb.User {
+func ToPBUser(user *domain.User, avatarBaseURL domain.AvatarBaseURL) *pb.User {
 	return &pb.User{
-		Id:    user.ID,
-		Name:  user.Name,
-		Admin: user.Admin,
+		Id:        user.ID,
+		Name:      user.Name,
+		Admin:     user.Admin,
+		AvatarUrl: user.AvatarURL(avatarBaseURL),
 	}
 }
 

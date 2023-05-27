@@ -34,9 +34,10 @@ var RepoAuthMethodMapper = mapper.MustNewValueMapper(map[domain.RepositoryAuthMe
 
 func ToPBRepository(repo *domain.Repository) *pb.Repository {
 	ret := &pb.Repository{
-		Id:   repo.ID,
-		Name: repo.Name,
-		Url:  repo.URL,
+		Id:       repo.ID,
+		Name:     repo.Name,
+		Url:      repo.URL,
+		OwnerIds: repo.OwnerIDs,
 	}
 	if repo.Auth.Valid {
 		ret.AuthMethod = RepoAuthMethodMapper.IntoMust(repo.Auth.V.Method)

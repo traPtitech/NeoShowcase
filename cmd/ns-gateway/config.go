@@ -19,13 +19,12 @@ import (
 	"github.com/traPtitech/neoshowcase/pkg/infrastructure/log/loki"
 	"github.com/traPtitech/neoshowcase/pkg/infrastructure/repository"
 	"github.com/traPtitech/neoshowcase/pkg/infrastructure/storage"
-	"github.com/traPtitech/neoshowcase/pkg/usecase"
 )
 
 type Config struct {
 	Port          int                                `mapstructure:"port" yaml:"port"`
 	Debug         bool                               `mapstructure:"debug" yaml:"debug"`
-	AvatarBaseURL usecase.AvatarBaseURL              `mapstructure:"avatarBaseURL" yaml:"avatarBaseURL"`
+	AvatarBaseURL domain.AvatarBaseURL               `mapstructure:"avatarBaseURL" yaml:"avatarBaseURL"`
 	AuthHeader    grpc.AuthHeader                    `mapstructure:"authHeader" yaml:"authHeader"`
 	Controller    grpc.ControllerServiceClientConfig `mapstructure:"controller" yaml:"controller"`
 	DB            repository.Config                  `mapstructure:"db" yaml:"db"`

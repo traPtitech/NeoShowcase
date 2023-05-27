@@ -19,10 +19,7 @@ func handleRepoError[T any](entity T, err error) (T, error) {
 	}
 }
 
-type AvatarBaseURL string
-
 type APIServerService struct {
-	avatarBaseURL   string
 	artifactRepo    domain.ArtifactRepository
 	appRepo         domain.ApplicationRepository
 	buildRepo       domain.BuildRepository
@@ -37,7 +34,6 @@ type APIServerService struct {
 }
 
 func NewAPIServerService(
-	avatarBaseURL AvatarBaseURL,
 	artifactRepo domain.ArtifactRepository,
 	appRepo domain.ApplicationRepository,
 	buildRepo domain.BuildRepository,
@@ -51,7 +47,6 @@ func NewAPIServerService(
 	controller domain.ControllerServiceClient,
 ) *APIServerService {
 	return &APIServerService{
-		avatarBaseURL:   string(avatarBaseURL),
 		artifactRepo:    artifactRepo,
 		appRepo:         appRepo,
 		buildRepo:       buildRepo,

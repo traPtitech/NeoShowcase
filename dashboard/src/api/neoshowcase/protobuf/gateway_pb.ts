@@ -92,6 +92,11 @@ export class User extends Message<User> {
    */
   admin = false;
 
+  /**
+   * @generated from field: string avatar_url = 4;
+   */
+  avatarUrl = "";
+
   constructor(data?: PartialMessage<User>) {
     super();
     proto3.util.initPartial(data, this);
@@ -103,6 +108,7 @@ export class User extends Message<User> {
     { no: 1, name: "id", kind: "scalar", T: 9 /* ScalarType.STRING */ },
     { no: 2, name: "name", kind: "scalar", T: 9 /* ScalarType.STRING */ },
     { no: 3, name: "admin", kind: "scalar", T: 8 /* ScalarType.BOOL */ },
+    { no: 4, name: "avatar_url", kind: "scalar", T: 9 /* ScalarType.STRING */ },
   ]);
 
   static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): User {
@@ -123,45 +129,39 @@ export class User extends Message<User> {
 }
 
 /**
- * @generated from message neoshowcase.protobuf.GetMeResponse
+ * @generated from message neoshowcase.protobuf.GetUsersResponse
  */
-export class GetMeResponse extends Message<GetMeResponse> {
+export class GetUsersResponse extends Message<GetUsersResponse> {
   /**
-   * @generated from field: neoshowcase.protobuf.User user = 1;
+   * @generated from field: repeated neoshowcase.protobuf.User users = 1;
    */
-  user?: User;
+  users: User[] = [];
 
-  /**
-   * @generated from field: string avatar_url = 2;
-   */
-  avatarUrl = "";
-
-  constructor(data?: PartialMessage<GetMeResponse>) {
+  constructor(data?: PartialMessage<GetUsersResponse>) {
     super();
     proto3.util.initPartial(data, this);
   }
 
   static readonly runtime: typeof proto3 = proto3;
-  static readonly typeName = "neoshowcase.protobuf.GetMeResponse";
+  static readonly typeName = "neoshowcase.protobuf.GetUsersResponse";
   static readonly fields: FieldList = proto3.util.newFieldList(() => [
-    { no: 1, name: "user", kind: "message", T: User },
-    { no: 2, name: "avatar_url", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+    { no: 1, name: "users", kind: "message", T: User, repeated: true },
   ]);
 
-  static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): GetMeResponse {
-    return new GetMeResponse().fromBinary(bytes, options);
+  static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): GetUsersResponse {
+    return new GetUsersResponse().fromBinary(bytes, options);
   }
 
-  static fromJson(jsonValue: JsonValue, options?: Partial<JsonReadOptions>): GetMeResponse {
-    return new GetMeResponse().fromJson(jsonValue, options);
+  static fromJson(jsonValue: JsonValue, options?: Partial<JsonReadOptions>): GetUsersResponse {
+    return new GetUsersResponse().fromJson(jsonValue, options);
   }
 
-  static fromJsonString(jsonString: string, options?: Partial<JsonReadOptions>): GetMeResponse {
-    return new GetMeResponse().fromJsonString(jsonString, options);
+  static fromJsonString(jsonString: string, options?: Partial<JsonReadOptions>): GetUsersResponse {
+    return new GetUsersResponse().fromJsonString(jsonString, options);
   }
 
-  static equals(a: GetMeResponse | PlainMessage<GetMeResponse> | undefined, b: GetMeResponse | PlainMessage<GetMeResponse> | undefined): boolean {
-    return proto3.util.equals(GetMeResponse, a, b);
+  static equals(a: GetUsersResponse | PlainMessage<GetUsersResponse> | undefined, b: GetUsersResponse | PlainMessage<GetUsersResponse> | undefined): boolean {
+    return proto3.util.equals(GetUsersResponse, a, b);
   }
 }
 
@@ -349,6 +349,11 @@ export class Repository extends Message<Repository> {
    */
   authMethod = Repository_AuthMethod.BASIC;
 
+  /**
+   * @generated from field: repeated string owner_ids = 5;
+   */
+  ownerIds: string[] = [];
+
   constructor(data?: PartialMessage<Repository>) {
     super();
     proto3.util.initPartial(data, this);
@@ -361,6 +366,7 @@ export class Repository extends Message<Repository> {
     { no: 2, name: "name", kind: "scalar", T: 9 /* ScalarType.STRING */ },
     { no: 3, name: "url", kind: "scalar", T: 9 /* ScalarType.STRING */ },
     { no: 4, name: "auth_method", kind: "enum", T: proto3.getEnumType(Repository_AuthMethod) },
+    { no: 5, name: "owner_ids", kind: "scalar", T: 9 /* ScalarType.STRING */, repeated: true },
   ]);
 
   static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): Repository {
