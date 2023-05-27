@@ -1,5 +1,7 @@
 import { JSX, JSXElement, Match, Show, Switch, createEffect, createResource, createSignal } from 'solid-js'
 import { createStore } from 'solid-js/store'
+import toast from 'solid-toast'
+import { ConnectError } from '@bufbuild/connect'
 import { Empty } from '@bufbuild/protobuf'
 import { styled } from '@macaron-css/solid'
 import {
@@ -161,8 +163,16 @@ export default () => {
     // validate form
     if (formContainer.reportValidity()) {
       setRequestConfig('auth', 'auth', authConfig[authMethod()])
-      const res = await client.createRepository(requestConfig)
-      // TODO: navigate to repository page when success / show error message when failed
+      try {
+        const res = await client.createRepository(requestConfig)
+        toast.success('リポジトリを登録しました')
+      } catch (e) {
+        console.error(e)
+        // gRPCエラー
+        if (e instanceof ConnectError) {
+          toast.error('リポジトリの登録に失敗しました\n' + e.message)
+        }
+      }
     }
   }
 
