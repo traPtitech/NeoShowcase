@@ -137,13 +137,15 @@ export const RepositoryRow = (props: Props): JSXElement => {
   return (
     <Container>
       <Header>
-        <HeaderLeft>
-          {providerToIcon(provider)}
-          <RepoName>{props.repo.name}</RepoName>
-          <AppsCount>
-            {props.apps.length} {props.apps.length === 1 ? 'app' : 'apps'}
-          </AppsCount>
-        </HeaderLeft>
+        <A href={`/repos/${props.repo.id}`}>
+          <HeaderLeft>
+            {providerToIcon(provider)}
+            <RepoName>{props.repo.name}</RepoName>
+            <AppsCount>
+              {props.apps.length} {props.apps.length === 1 ? 'app' : 'apps'}
+            </AppsCount>
+          </HeaderLeft>
+        </A>
         <A href={`/apps/new?repositoryID=${props.repo.id}`}>
           <AddBranchButton>
             <div>New&nbsp;App</div>
