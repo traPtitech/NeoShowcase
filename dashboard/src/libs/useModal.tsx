@@ -1,4 +1,4 @@
-import { ParentComponent, Show, createSignal, onMount } from 'solid-js'
+import { ParentComponent, Show, createSignal, onCleanup, onMount } from 'solid-js'
 import { Portal } from 'solid-js/web'
 import { styled } from '@macaron-css/solid'
 import { vars } from '/@/theme'
@@ -33,13 +33,18 @@ const useModal = (mount?: Node) => {
   // モーダルを閉じるときはclose()を呼ぶ
   const close = () => setIsOpen(false)
 
+  // ESCキーでモーダルを閉じる
+  const closeOnEsc = (e: KeyboardEvent) => {
+    if (e.key === 'Escape') {
+      close()
+    }
+  }
+
   onMount(() => {
-    // ESCキーでモーダルを閉じる
-    document.addEventListener('keydown', (e) => {
-      if (e.key === 'Escape') {
-        close()
-      }
-    })
+    document.addEventListener('keydown', closeOnEsc)
+  })
+  onCleanup(() => {
+    document.removeEventListener('keydown', closeOnEsc)
   })
 
   const Modal: ParentComponent = (props) => {
