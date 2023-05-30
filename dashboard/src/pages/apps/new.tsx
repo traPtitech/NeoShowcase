@@ -285,7 +285,7 @@ const Website = (props: WebsiteProps) => {
         />
       </InputForm>
       <InputFormWebsiteButton>
-        <Button onclick={props.deleteWebsite} color='black1' size='large'>
+        <Button onclick={props.deleteWebsite} color='black1' size='large' type='button'>
           Delete website setting
         </Button>
       </InputFormWebsiteButton>
@@ -336,7 +336,7 @@ const PortPublications = (props: PortPublicationProps) => {
         />
       </InputForm>
       <InputFormWebsiteButton>
-        <Button onclick={props.deletePortPublication} color='black1' size='large'>
+        <Button onclick={props.deletePortPublication} color='black1' size='large' type='button'>
           Delete port publication
         </Button>
       </InputFormWebsiteButton>
@@ -735,6 +735,7 @@ export default () => {
                       }}
                       color='black1'
                       size='large'
+                      type='button'
                     >
                       Add website setting
                     </Button>
@@ -770,6 +771,7 @@ export default () => {
                       }}
                       color='black1'
                       size='large'
+                      type='button'
                     >
                       Add port publication
                     </Button>
@@ -800,6 +802,7 @@ export default () => {
                 }}
                 color='black1'
                 size='large'
+                type='button'
               >
                 Debug
               </Button>
