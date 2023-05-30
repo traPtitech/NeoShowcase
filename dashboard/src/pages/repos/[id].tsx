@@ -77,9 +77,7 @@ export default () => {
 
   const { Modal: DeleteRepoModal, open: openDeleteRepoModal, close: closeDeleteRepoModal } = useModal()
 
-  onCleanup(() => {
-    closeDeleteRepoModal()
-  })
+  onCleanup(closeDeleteRepoModal)
 
   // リポジトリに紐づくアプリケーションが存在するかどうか
   const canDeleteRepository = (): boolean => apps()?.length === 0
@@ -114,9 +112,7 @@ export default () => {
             <CardTitle>Actions</CardTitle>
             <CardItems>
               <Button
-                onclick={() => {
-                  openDeleteRepoModal()
-                }}
+                onclick={openDeleteRepoModal}
                 color='black1'
                 size='large'
                 disabled={!canDeleteRepository()}
@@ -134,9 +130,7 @@ export default () => {
                 <ModalText>本当に削除しますか?</ModalText>
                 <ModalButtonsContainer>
                   <Button
-                    onclick={() => {
-                      closeDeleteRepoModal()
-                    }}
+                    onclick={closeDeleteRepoModal}
                     color='black1'
                     size='large'
                   >
