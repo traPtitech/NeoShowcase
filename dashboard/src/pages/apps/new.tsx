@@ -374,11 +374,19 @@ const InputFormRuntimeConfig = (props: InputFormRuntimeConfigProps) => {
       </InputForm>
       <InputForm>
         <InputFormText>Entrypoint</InputFormText>
-        <InputBar placeholder='' onInput={(e) => props.setRuntimeConfig('entrypoint', e.target.value)} />
+        <InputBar
+          placeholder=''
+          value={props.runtimeConfig.entrypoint}
+          onInput={(e) => props.setRuntimeConfig('entrypoint', e.target.value)}
+        />
       </InputForm>
       <InputForm>
         <InputFormText>Command</InputFormText>
-        <InputBar placeholder='' onInput={(e) => props.setRuntimeConfig('command', e.target.value)} />
+        <InputBar
+          placeholder=''
+          value={props.runtimeConfig.command}
+          onInput={(e) => props.setRuntimeConfig('command', e.target.value)}
+        />
       </InputForm>
     </>
   )
@@ -519,13 +527,18 @@ export default () => {
             <InputFormContainer>
               <InputForm>
                 <InputFormText>Application Name</InputFormText>
-                <InputBar placeholder='' onInput={(e) => setCreateApplicationRequest('name', e.target.value)} />
+                <InputBar
+                  placeholder=''
+                  value={createApplicationRequest.name}
+                  onInput={(e) => setCreateApplicationRequest('name', e.target.value)}
+                />
               </InputForm>
 
               <InputForm>
                 <InputFormText>Branch Name</InputFormText>
                 <InputBar
                   placeholder='master'
+                  value={createApplicationRequest.refName}
                   onInput={(e) => setCreateApplicationRequest('refName', e.target.value)}
                 />
               </InputForm>
@@ -544,6 +557,7 @@ export default () => {
                         <InputFormText>Context</InputFormText>
                         <InputBar
                           placeholder=''
+                          value={buildConfig.runtimeBuildpack.value.context}
                           onInput={(e) => setBuildConfig('runtimeBuildpack', 'value', 'context', e.target.value)}
                         />
                       </InputForm>
@@ -555,6 +569,7 @@ export default () => {
                         <InputFormText>Base image</InputFormText>
                         <InputBar
                           placeholder=''
+                          value={buildConfig.runtimeCmd.value.baseImage}
                           onInput={(e) => setBuildConfig('runtimeCmd', 'value', 'baseImage', e.target.value)}
                         />
                       </InputForm>
@@ -562,6 +577,7 @@ export default () => {
                         <InputFormText>Build cmd</InputFormText>
                         <InputBar
                           placeholder=''
+                          value={buildConfig.runtimeCmd.value.buildCmd}
                           onInput={(e) => setBuildConfig('runtimeCmd', 'value', 'buildCmd', e.target.value)}
                         />
                       </InputForm>
@@ -581,6 +597,7 @@ export default () => {
                         <InputFormText>Dockerfile name</InputFormText>
                         <InputBar
                           placeholder=''
+                          value={buildConfig.runtimeDockerfile.value.dockerfileName}
                           onInput={(e) =>
                             setBuildConfig('runtimeDockerfile', 'value', 'dockerfileName', e.target.value)
                           }
@@ -590,6 +607,7 @@ export default () => {
                         <InputFormText>Context</InputFormText>
                         <InputBar
                           placeholder=''
+                          value={buildConfig.runtimeDockerfile.value.context}
                           onInput={(e) => setBuildConfig('runtimeDockerfile', 'value', 'context', e.target.value)}
                         />
                       </InputForm>
@@ -600,6 +618,7 @@ export default () => {
                         <InputFormText>Base image</InputFormText>
                         <InputBar
                           placeholder=''
+                          value={buildConfig.staticCmd.value.baseImage}
                           onInput={(e) => setBuildConfig('staticCmd', 'value', 'baseImage', e.target.value)}
                         />
                       </InputForm>
@@ -607,6 +626,7 @@ export default () => {
                         <InputFormText>Build cmd</InputFormText>
                         <InputBar
                           placeholder=''
+                          value={buildConfig.staticCmd.value.buildCmd}
                           onInput={(e) => setBuildConfig('staticCmd', 'value', 'buildCmd', e.target.value)}
                         />
                       </InputForm>
@@ -622,6 +642,7 @@ export default () => {
                         <InputFormText>Artifact path</InputFormText>
                         <InputBar
                           placeholder=''
+                          value={buildConfig.staticCmd.value.artifactPath}
                           onInput={(e) => setBuildConfig('staticCmd', 'value', 'artifactPath', e.target.value)}
                         />
                       </InputForm>
@@ -632,6 +653,7 @@ export default () => {
                         <InputFormText>Dockerfile name</InputFormText>
                         <InputBar
                           placeholder=''
+                          value={buildConfig.staticDockerfile.value.dockerfileName}
                           onInput={(e) => setBuildConfig('staticDockerfile', 'value', 'dockerfileName', e.target.value)}
                         />
                       </InputForm>
@@ -639,6 +661,7 @@ export default () => {
                         <InputFormText>Context</InputFormText>
                         <InputBar
                           placeholder=''
+                          value={buildConfig.staticDockerfile.value.context}
                           onInput={(e) => setBuildConfig('staticDockerfile', 'value', 'context', e.target.value)}
                         />
                       </InputForm>
@@ -646,6 +669,7 @@ export default () => {
                         <InputFormText>Artifact path</InputFormText>
                         <InputBar
                           placeholder=''
+                          value={buildConfig.staticDockerfile.value.artifactPath}
                           onInput={(e) => setBuildConfig('staticDockerfile', 'value', 'artifactPath', e.target.value)}
                         />
                       </InputForm>
