@@ -1,5 +1,5 @@
 import { Header } from '/@/components/Header'
-import { createResource, createSignal, JSX, Show, For, JSXElement, Switch, Match } from 'solid-js'
+import { createResource, createSignal, JSX, For, JSXElement, Switch, Match } from 'solid-js'
 import { Radio, RadioItem } from '/@/components/Radio'
 import { client } from '/@/libs/api'
 import {
@@ -27,6 +27,7 @@ import { Button } from '/@/components/Button'
 import { Checkbox } from '/@/components/Checkbox'
 import { providerToIcon, repositoryURLToProvider } from '/@/libs/application'
 import { createStore, SetStoreFunction } from 'solid-js/store'
+import { Empty } from '@bufbuild/protobuf'
 
 const [repos] = createResource(() => client.getRepositories({}))
 const [apps] = createResource(() => client.getApplications({}))
@@ -34,11 +35,11 @@ const [apps] = createResource(() => client.getApplications({}))
 const loaded = () => !!(repos() && apps())
 
 const buildConfigItems: RadioItem[] = [
-  { value: 'runtime_buildpack', title: 'runtime buildpack' },
-  { value: 'runtime_cmd', title: 'runtime cmd' },
-  { value: 'runtime_dockerfile', title: 'runtime dockerfile' },
-  { value: 'static_cmd', title: 'static cmd' },
-  { value: 'static_dockerfile', title: 'static dockerfile' },
+  { value: 'runtimeBuildpack', title: 'runtime buildpack' },
+  { value: 'runtimeCmd', title: 'runtime cmd' },
+  { value: 'runtimeDockerfile', title: 'runtime dockerfile' },
+  { value: 'staticCmd', title: 'static cmd' },
+  { value: 'staticDockerfile', title: 'static dockerfile' },
 ]
 
 const AppTitle = styled('div', {
@@ -347,10 +348,7 @@ const protocolItems: RadioItem[] = [
 ]
 
 export interface InputFormRuntimeConfigProps {
-  checkBoxMariaDB: boolean
-  setCheckBoxMariaDB: (boolean) => void
-  checkBoxMongoDB: boolean
-  setCheckBoxMongoDB: (boolean) => void
+  runtimeConfig: RuntimeConfig
   setRuntimeConfig: SetStoreFunction<RuntimeConfig>
 }
 
@@ -361,16 +359,14 @@ const InputFormRuntimeConfig = (props: InputFormRuntimeConfigProps) => {
         <InputFormText>Database (使うデーターベースにチェック)</InputFormText>
         <InputFormCheckBox>
           <Checkbox
-            selected={props.checkBoxMariaDB}
-            setSelected={props.setCheckBoxMariaDB}
-            onClick={() => props.setRuntimeConfig('useMariadb', props.checkBoxMariaDB)}
+            selected={props.runtimeConfig.useMariadb}
+            setSelected={(useMariadb) => props.setRuntimeConfig('useMariadb', useMariadb)}
           >
             MariaDB
           </Checkbox>
           <Checkbox
-            selected={props.checkBoxMongoDB}
-            setSelected={props.setCheckBoxMongoDB}
-            onClick={() => props.setRuntimeConfig('useMongodb', props.checkBoxMongoDB)}
+            selected={props.runtimeConfig.useMongodb}
+            setSelected={(useMongodb) => props.setRuntimeConfig('useMongodb', useMongodb)}
           >
             MongoDB
           </Checkbox>
@@ -451,43 +447,64 @@ export default () => {
       return acc
     }, {} as Record<string, Application[]>)
 
-  const [buildConfig, setBuildConfig] = createSignal(buildConfigItems[0].value)
   const [websites, setWebsites] = createSignal<Website[]>([])
   const [portPublications, setPortPublications] = createSignal<Ports[]>([])
 
   const [checkBoxStartOnCreate, setCheckBoxStartOnCreate] = createSignal(false)
-  const [checkBoxMariaDB, setCheckBoxMariaDB] = createSignal(false)
-  const [checkBoxMongoDB, setCheckBoxMongoDB] = createSignal(false)
   const [checkBoxBuildCmdShell, setCheckBoxBuildCmdShell] = createSignal(false)
+
   const [checkBoxWebsiteStripPrefix, setCheckBoxWebsiteStripPrefix] = createSignal(false)
   const [checkBoxWebsiteHttps, setCheckBoxWebsiteHttps] = createSignal(false)
   const [checkBoxWebsiteH2c, setCheckBoxWebsiteH2c] = createSignal(false)
 
-  const [searchParams] = useSearchParams()
+  const [createApplicationRequest, setCreateApplicationRequest] = createStore(
+    new CreateApplicationRequest({
+      config: new ApplicationConfig(),
+      websites: [new CreateWebsiteRequest()],
+      portPublications: [new PortPublication()],
+    }),
+  )
 
-  const [fieldsApp, setFieldsApp] = createStore(new CreateApplicationRequest())
-  const [fieldsApplicationConfig, setFieldsApplicationConfig] = createStore(new ApplicationConfig())
-  const [fieldsRuntimeConfig, setFieldsRuntimeConfig] = createStore(new RuntimeConfig())
-  const [fieldsBuildConfigRuntimeBuildpack, setFieldsBuildConfigRuntimeBuildpack] = createStore(
-    new BuildConfigRuntimeBuildpack(),
-  )
-  const [fieldsBuildConfigRuntimeCmd, setFieldsBuildConfigRuntimeCmd] = createStore(new BuildConfigRuntimeCmd())
-  const [fieldsBuildConfigRuntimeDockerfile, setFieldsBuildConfigRuntimeDockerfile] = createStore(
-    new BuildConfigRuntimeDockerfile(),
-  )
-  const [fieldsBuildConfigStaticCmd, setFieldsBuildConfigStaticCmd] = createStore(new BuildConfigStaticCmd())
-  const [fieldsBuildConfigStaticDockerfile, setFieldsBuildConfigStaticDockerfile] = createStore(
-    new BuildConfigStaticDockerfile(),
-  )
   const [fieldsCreateWebsiteRequest, setFieldsCreateWebsiteRequest] = createStore<CreateWebsiteRequest[]>([])
   const [fieldsPortPublication, setFieldsPortPublication] = createStore<PortPublication[]>([])
 
-  setFieldsApp('repositoryId', searchParams.repositoryID)
+  // Build Config
+  type BuildConfigMethod = ApplicationConfig['buildConfig']['case']
+  const [runtimeConfig, setRuntimeConfig] = createStore<RuntimeConfig>(new RuntimeConfig())
+  const [buildConfigMethod, setBuildConfigMethod] = createSignal<BuildConfigMethod>()
+  const [buildConfig, setBuildConfig] = createStore<{
+    [K in BuildConfigMethod]: Extract<ApplicationConfig['buildConfig'], { case: K }>
+  }>({
+    runtimeBuildpack: {
+      case: 'runtimeBuildpack',
+      value: new BuildConfigRuntimeBuildpack({
+        runtimeConfig: new RuntimeConfig(),
+      }),
+    },
+    runtimeCmd: {
+      case: 'runtimeCmd',
+      value: new BuildConfigRuntimeCmd({
+        runtimeConfig: new RuntimeConfig(),
+      }),
+    },
+    runtimeDockerfile: {
+      case: 'runtimeDockerfile',
+      value: new BuildConfigRuntimeDockerfile({
+        runtimeConfig: new RuntimeConfig(),
+      }),
+    },
+    staticCmd: {
+      case: 'staticCmd',
+      value: new BuildConfigStaticCmd(),
+    },
+    staticDockerfile: {
+      case: 'staticDockerfile',
+      value: new BuildConfigStaticDockerfile(),
+    },
+  })
 
-  // setFieldsApplicationConfig('buildConfig', { case: 'runtimeBuildpack', value: fieldsBuildConfig })
-  // setFields('config', fieldsApplicationConfig)
-  // setFields('websites', fieldsCreateWebsiteRequest)
-  // setFields('portPublications', fieldsPortPublication)
+  const [searchParams] = useSearchParams()
+  setCreateApplicationRequest('repositoryId', searchParams.repositoryID)
 
   const SelectRepository = (): JSX.Element => {
     return (
@@ -502,164 +519,101 @@ export default () => {
             <InputFormContainer>
               <InputForm>
                 <InputFormText>Application Name</InputFormText>
-                <InputBar placeholder='' onInput={(e) => setFieldsApp('name', e.target.value)} />
+                <InputBar placeholder='' onInput={(e) => setCreateApplicationRequest('name', e.target.value)} />
               </InputForm>
 
               <InputForm>
                 <InputFormText>Branch Name</InputFormText>
-                <InputBar placeholder='master' onInput={(e) => setFieldsApp('refName', e.target.value)} />
+                <InputBar
+                  placeholder='master'
+                  onInput={(e) => setCreateApplicationRequest('refName', e.target.value)}
+                />
               </InputForm>
 
               <InputForm>
                 <InputFormTextBig>Build Config</InputFormTextBig>
                 <InputFormRadio>
                   <InputForm>
-                    <Radio
-                      items={buildConfigItems}
-                      selected={buildConfig()}
-                      setSelected={setBuildConfig}
-                      onClick={() => {
-                        switch (buildConfig()) {
-                          case 'runtime_buildpack':
-                            setFieldsBuildConfigRuntimeBuildpack('runtimeConfig', fieldsRuntimeConfig)
-                            setFieldsApplicationConfig('buildConfig', {
-                              case: 'runtimeBuildpack',
-                              value: fieldsBuildConfigRuntimeBuildpack,
-                            })
-                            break
-                          case 'runtime_cmd':
-                            setFieldsBuildConfigRuntimeCmd('runtimeConfig', fieldsRuntimeConfig)
-                            setFieldsApplicationConfig('buildConfig', {
-                              case: 'runtimeCmd',
-                              value: fieldsBuildConfigRuntimeCmd,
-                            })
-                            break
-                          case 'runtime_dockerfile':
-                            setFieldsBuildConfigRuntimeDockerfile('runtimeConfig', fieldsRuntimeConfig)
-                            setFieldsApplicationConfig('buildConfig', {
-                              case: 'runtimeDockerfile',
-                              value: fieldsBuildConfigRuntimeDockerfile,
-                            })
-                            break
-                          case 'static_cmd':
-                            setFieldsApplicationConfig('buildConfig', {
-                              case: 'staticCmd',
-                              value: fieldsBuildConfigStaticCmd,
-                            })
-                            break
-                          case 'static_dockerfile':
-                            setFieldsApplicationConfig('buildConfig', {
-                              case: 'staticDockerfile',
-                              value: fieldsBuildConfigStaticDockerfile,
-                            })
-                            break
-                        }
-                        setFieldsApp('config', fieldsApplicationConfig)
-                      }}
-                    />
+                    <Radio items={buildConfigItems} selected={buildConfigMethod()} setSelected={setBuildConfigMethod} />
                   </InputForm>
 
                   <Switch>
-                    <Match when={buildConfig() === buildConfigItems[0].value}>
-                      <InputFormRuntimeConfig
-                        checkBoxMariaDB={checkBoxMariaDB()}
-                        setCheckBoxMariaDB={setCheckBoxMariaDB}
-                        checkBoxMongoDB={checkBoxMongoDB()}
-                        setCheckBoxMongoDB={setCheckBoxMongoDB}
-                        setRuntimeConfig={setFieldsRuntimeConfig}
-                      />
+                    <Match when={buildConfigMethod() === 'runtimeBuildpack'}>
+                      <InputFormRuntimeConfig runtimeConfig={runtimeConfig} setRuntimeConfig={setRuntimeConfig} />
                       <InputForm>
                         <InputFormText>Context</InputFormText>
                         <InputBar
                           placeholder=''
-                          onInput={(e) => setFieldsBuildConfigRuntimeBuildpack('context', e.target.value)}
+                          onInput={(e) => setBuildConfig('runtimeBuildpack', 'value', 'context', e.target.value)}
                         />
                       </InputForm>
                     </Match>
 
-                    <Match when={buildConfig() === buildConfigItems[1].value}>
-                      <InputFormRuntimeConfig
-                        checkBoxMariaDB={checkBoxMariaDB()}
-                        setCheckBoxMariaDB={setCheckBoxMariaDB}
-                        checkBoxMongoDB={checkBoxMongoDB()}
-                        setCheckBoxMongoDB={setCheckBoxMongoDB}
-                        setRuntimeConfig={setFieldsRuntimeConfig}
-                      />
+                    <Match when={buildConfigMethod() === 'runtimeCmd'}>
+                      <InputFormRuntimeConfig runtimeConfig={runtimeConfig} setRuntimeConfig={setRuntimeConfig} />
                       <InputForm>
                         <InputFormText>Base image</InputFormText>
                         <InputBar
                           placeholder=''
-                          onInput={(e) => setFieldsBuildConfigRuntimeCmd('baseImage', e.target.value)}
+                          onInput={(e) => setBuildConfig('runtimeCmd', 'value', 'baseImage', e.target.value)}
                         />
                       </InputForm>
                       <InputForm>
                         <InputFormText>Build cmd</InputFormText>
                         <InputBar
                           placeholder=''
-                          onInput={(e) => setFieldsBuildConfigRuntimeCmd('buildCmd', e.target.value)}
+                          onInput={(e) => setBuildConfig('runtimeCmd', 'value', 'buildCmd', e.target.value)}
                         />
                       </InputForm>
                       <InputForm>
                         <InputFormText>Build cmd shell</InputFormText>
                         <InputFormCheckBox>
-                          <Checkbox
-                            selected={checkBoxBuildCmdShell()}
-                            setSelected={setCheckBoxBuildCmdShell}
-                            onClick={() => setFieldsBuildConfigRuntimeCmd('buildCmdShell', checkBoxBuildCmdShell())}
-                          >
+                          <Checkbox selected={checkBoxBuildCmdShell()} setSelected={setCheckBoxBuildCmdShell}>
                             Run build cmd with shell
                           </Checkbox>
                         </InputFormCheckBox>
                       </InputForm>
                     </Match>
 
-                    <Match when={buildConfig() === buildConfigItems[2].value}>
-                      <InputFormRuntimeConfig
-                        checkBoxMariaDB={checkBoxMariaDB()}
-                        setCheckBoxMariaDB={setCheckBoxMariaDB}
-                        checkBoxMongoDB={checkBoxMongoDB()}
-                        setCheckBoxMongoDB={setCheckBoxMongoDB}
-                        setRuntimeConfig={setFieldsRuntimeConfig}
-                      />
+                    <Match when={buildConfigMethod() === 'runtimeDockerfile'}>
+                      <InputFormRuntimeConfig runtimeConfig={runtimeConfig} setRuntimeConfig={setRuntimeConfig} />
                       <InputForm>
                         <InputFormText>Dockerfile name</InputFormText>
                         <InputBar
                           placeholder=''
-                          onInput={(e) => setFieldsBuildConfigRuntimeDockerfile('dockerfileName', e.target.value)}
+                          onInput={(e) =>
+                            setBuildConfig('runtimeDockerfile', 'value', 'dockerfileName', e.target.value)
+                          }
                         />
                       </InputForm>
                       <InputForm>
                         <InputFormText>Context</InputFormText>
                         <InputBar
                           placeholder=''
-                          onInput={(e) => setFieldsBuildConfigRuntimeDockerfile('context', e.target.value)}
+                          onInput={(e) => setBuildConfig('runtimeDockerfile', 'value', 'context', e.target.value)}
                         />
                       </InputForm>
                     </Match>
 
-                    <Match when={buildConfig() === buildConfigItems[3].value}>
+                    <Match when={buildConfigMethod() === 'staticCmd'}>
                       <InputForm>
                         <InputFormText>Base image</InputFormText>
                         <InputBar
                           placeholder=''
-                          onInput={(e) => setFieldsBuildConfigStaticCmd('baseImage', e.target.value)}
+                          onInput={(e) => setBuildConfig('staticCmd', 'value', 'baseImage', e.target.value)}
                         />
                       </InputForm>
                       <InputForm>
                         <InputFormText>Build cmd</InputFormText>
                         <InputBar
                           placeholder=''
-                          onInput={(e) => setFieldsBuildConfigStaticCmd('buildCmd', e.target.value)}
+                          onInput={(e) => setBuildConfig('staticCmd', 'value', 'buildCmd', e.target.value)}
                         />
                       </InputForm>
                       <InputForm>
                         <InputFormText>Build cmd shell</InputFormText>
                         <InputFormCheckBox>
-                          <Checkbox
-                            selected={checkBoxBuildCmdShell()}
-                            setSelected={setCheckBoxBuildCmdShell}
-                            onClick={() => setFieldsBuildConfigStaticCmd('buildCmdShell', checkBoxBuildCmdShell())}
-                          >
+                          <Checkbox selected={checkBoxBuildCmdShell()} setSelected={setCheckBoxBuildCmdShell}>
                             Run build cmd with shell
                           </Checkbox>
                         </InputFormCheckBox>
@@ -668,31 +622,31 @@ export default () => {
                         <InputFormText>Artifact path</InputFormText>
                         <InputBar
                           placeholder=''
-                          onInput={(e) => setFieldsBuildConfigStaticCmd('artifactPath', e.target.value)}
+                          onInput={(e) => setBuildConfig('staticCmd', 'value', 'artifactPath', e.target.value)}
                         />
                       </InputForm>
                     </Match>
 
-                    <Match when={buildConfig() === buildConfigItems[4].value}>
+                    <Match when={buildConfigMethod() === 'staticDockerfile'}>
                       <InputForm>
                         <InputFormText>Dockerfile name</InputFormText>
                         <InputBar
                           placeholder=''
-                          onInput={(e) => setFieldsBuildConfigStaticDockerfile('dockerfileName', e.target.value)}
+                          onInput={(e) => setBuildConfig('staticDockerfile', 'value', 'dockerfileName', e.target.value)}
                         />
                       </InputForm>
                       <InputForm>
                         <InputFormText>Context</InputFormText>
                         <InputBar
                           placeholder=''
-                          onInput={(e) => setFieldsBuildConfigStaticDockerfile('context', e.target.value)}
+                          onInput={(e) => setBuildConfig('staticDockerfile', 'value', 'context', e.target.value)}
                         />
                       </InputForm>
                       <InputForm>
                         <InputFormText>Artifact path</InputFormText>
                         <InputBar
                           placeholder=''
-                          onInput={(e) => setFieldsBuildConfigStaticDockerfile('artifactPath', e.target.value)}
+                          onInput={(e) => setBuildConfig('staticDockerfile', 'value', 'artifactPath', e.target.value)}
                         />
                       </InputForm>
                     </Match>
@@ -778,7 +732,7 @@ export default () => {
                   <Checkbox
                     selected={checkBoxStartOnCreate()}
                     setSelected={setCheckBoxStartOnCreate}
-                    onClick={() => setFieldsApp('startOnCreate', checkBoxStartOnCreate())}
+                    onClick={() => setCreateApplicationRequest('startOnCreate', checkBoxStartOnCreate())}
                   >
                     start_on_create
                   </Checkbox>
@@ -791,7 +745,7 @@ export default () => {
 
               <Button
                 onclick={() => {
-                  console.log(fieldsApp)
+                  console.log(createApplicationRequest)
                 }}
                 color='black1'
                 size='large'
