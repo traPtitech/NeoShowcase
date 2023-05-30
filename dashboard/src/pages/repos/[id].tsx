@@ -129,11 +129,7 @@ export default () => {
               <ModalContainer>
                 <ModalText>本当に削除しますか?</ModalText>
                 <ModalButtonsContainer>
-                  <Button
-                    onclick={closeDeleteRepoModal}
-                    color='black1'
-                    size='large'
-                  >
+                  <Button onclick={closeDeleteRepoModal} color='black1' size='large'>
                     キャンセル
                   </Button>
                   <Button onclick={handleDeleteRepository} color='black1' size='large'>
