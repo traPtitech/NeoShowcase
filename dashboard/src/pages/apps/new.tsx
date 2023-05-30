@@ -18,7 +18,7 @@ import {
   BuildConfigStaticDockerfile,
   RuntimeConfig,
 } from '/@/api/neoshowcase/protobuf/gateway_pb'
-import { A, useSearchParams } from '@solidjs/router'
+import { A, useNavigate, useSearchParams } from '@solidjs/router'
 import { BsArrowLeftShort } from 'solid-icons/bs'
 import { Container } from '/@/libs/layout'
 import { vars } from '/@/theme'
@@ -28,6 +28,8 @@ import { Checkbox } from '/@/components/Checkbox'
 import { providerToIcon, repositoryURLToProvider } from '/@/libs/application'
 import { createStore, SetStoreFunction } from 'solid-js/store'
 import { Empty } from '@bufbuild/protobuf'
+import toast from 'solid-toast'
+import { ConnectError } from '@bufbuild/connect'
 
 const [repos] = createResource(() => client.getRepositories({}))
 const [apps] = createResource(() => client.getApplications({}))
@@ -87,7 +89,7 @@ const MainContentContainer = styled('div', {
   },
 })
 
-const InputFormContainer = styled('div', {
+const InputFormContainer = styled('form', {
   base: {
     display: 'flex',
     flexDirection: 'column',
@@ -447,6 +449,7 @@ const RepositoryInfo = (props: RepositoryInfoProps): JSXElement => {
 }
 
 export default () => {
+  const navigate = useNavigate()
   const appsByRepo = () =>
     loaded() &&
     apps().applications.reduce((acc, app) => {
@@ -468,8 +471,8 @@ export default () => {
   const [createApplicationRequest, setCreateApplicationRequest] = createStore(
     new CreateApplicationRequest({
       config: new ApplicationConfig(),
-      websites: [new CreateWebsiteRequest()],
-      portPublications: [new PortPublication()],
+      websites: [],
+      portPublications: [],
     }),
   )
 
@@ -479,7 +482,7 @@ export default () => {
   // Build Config
   type BuildConfigMethod = ApplicationConfig['buildConfig']['case']
   const [runtimeConfig, setRuntimeConfig] = createStore<RuntimeConfig>(new RuntimeConfig())
-  const [buildConfigMethod, setBuildConfigMethod] = createSignal<BuildConfigMethod>()
+  const [buildConfigMethod, setBuildConfigMethod] = createSignal<BuildConfigMethod>('runtimeBuildpack')
   const [buildConfig, setBuildConfig] = createStore<{
     [K in BuildConfigMethod]: Extract<ApplicationConfig['buildConfig'], { case: K }>
   }>({
@@ -514,6 +517,30 @@ export default () => {
   const [searchParams] = useSearchParams()
   setCreateApplicationRequest('repositoryId', searchParams.repositoryID)
 
+  let formContainer: HTMLFormElement
+
+  const createApplication: JSX.EventHandler<HTMLInputElement, MouseEvent> = async (e) => {
+    // prevent default form submit (reload page)
+    e.preventDefault()
+
+    // validate form
+    if (formContainer.reportValidity()) {
+      setCreateApplicationRequest('config', 'buildConfig', buildConfig[buildConfigMethod()])
+      try {
+        const res = await client.createApplication(createApplicationRequest)
+        toast.success('アプリケーションを登録しました')
+        // Application詳細ページに遷移
+        navigate(`/apps/${res.id}`)
+      } catch (e) {
+        console.error(e)
+        // gRPCエラー
+        if (e instanceof ConnectError) {
+          toast.error('アプリケーションの登録に失敗しました\n' + e.message)
+        }
+      }
+    }
+  }
+
   const SelectRepository = (): JSX.Element => {
     return (
       <>
@@ -524,7 +551,7 @@ export default () => {
                 .repositories.filter((r) => r.id === searchParams.repositoryID)
                 .map((r) => <RepositoryInfo repo={r} apps={appsByRepo()[r.id] || []} />)}
 
-            <InputFormContainer>
+            <InputFormContainer ref={formContainer}>
               <InputForm>
                 <InputFormText>Application Name</InputFormText>
                 <InputBar
@@ -763,8 +790,8 @@ export default () => {
                 </InputFormCheckBox>
               </InputForm>
 
-              <Button color='black1' size='large'>
-                + Create new app
+              <Button color='black1' size='large' onclick={createApplication} type="submit">
+                + Create new Application
               </Button>
 
               <Button
