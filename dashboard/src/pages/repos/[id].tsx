@@ -107,7 +107,7 @@ export default () => {
       <Show when={repo()}>
         <RepoTitleContainer>
           <CenterInline>{providerToIcon(repositoryURLToProvider(repo().url), 36)}</CenterInline>
-          {repo()?.name}
+          {repo().name}
         </RepoTitleContainer>
         <CardsContainer>
           <Card>
@@ -154,17 +154,17 @@ export default () => {
             <CardItems>
               <CardItem>
                 <CardItemTitle>ID</CardItemTitle>
-                <CardItemContent>{repo()?.id}</CardItemContent>
+                <CardItemContent>{repo().id}</CardItemContent>
               </CardItem>
               <CardItem>
                 <CardItemTitle>Name</CardItemTitle>
-                <CardItemContent>{repo()?.name}</CardItemContent>
+                <CardItemContent>{repo().name}</CardItemContent>
               </CardItem>
               <CardItem>
                 <CardItemTitle>URL</CardItemTitle>
                 <CardItemContent>
-                  <URLText href={repo()?.url} target='_blank' rel='noreferrer'>
-                    {repo()?.url}
+                  <URLText href={repo().url} target='_blank' rel='noreferrer'>
+                    {repo().url}
                   </URLText>
                 </CardItemContent>
               </CardItem>
