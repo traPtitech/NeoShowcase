@@ -99,6 +99,10 @@ export default () => {
     }
   }
 
+  const handleCreateApplication: JSX.EventHandler<HTMLButtonElement, MouseEvent> = async () => {
+    navigate(`/apps/new?repositoryID=${repo()?.id}`)
+  }
+
   return (
     <Container>
       <Header />
@@ -111,6 +115,14 @@ export default () => {
           <Card>
             <CardTitle>Actions</CardTitle>
             <CardItems>
+              <Button
+                onclick={handleCreateApplication}
+                color='black1'
+                size='large'
+                title='このリポジトリからアプリケーションを作成します'
+              >
+                Create New Application
+              </Button>
               <Button
                 onclick={openDeleteRepoModal}
                 color='black1'
