@@ -1,8 +1,9 @@
-import { createResource, JSX, onCleanup, Show } from 'solid-js'
+import { createResource, For, JSX, onCleanup, Show } from 'solid-js'
 import toast from 'solid-toast'
 import { ConnectError } from '@bufbuild/connect'
 import { styled } from '@macaron-css/solid'
 import { useNavigate, useParams } from '@solidjs/router'
+import AppRow from '/@/components/AppRow'
 import { Button } from '/@/components/Button'
 import {
   Card,
@@ -171,6 +172,16 @@ export default () => {
                 </CardItemContent>
               </CardItem>
             </CardItems>
+          </Card>
+          <Card
+            style={{
+              width: '100%',
+            }}
+          >
+            <CardTitle>Apps</CardTitle>
+            <div>
+              <For each={apps()}>{(app) => <AppRow app={app} />}</For>
+            </div>
           </Card>
         </CardsContainer>
       </Show>
