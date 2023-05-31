@@ -82,6 +82,9 @@ func (b *k8sBackend) runtimeSpec(app *domain.RuntimeDesiredState) (*appsv1.State
 			Selector: &metav1.LabelSelector{
 				MatchLabels: appSelector(app.App.ID),
 			},
+			// to not wait for Pods to become Running and Ready or completely terminated prior to launching or terminating another Pod
+			// https://kubernetes.io/docs/concepts/workloads/controllers/statefulset/#parallel-pod-management
+			PodManagementPolicy: appsv1.ParallelPodManagement,
 			Template: v1.PodTemplateSpec{
 				ObjectMeta: metav1.ObjectMeta{
 					Labels: b.appLabel(app.App.ID),
