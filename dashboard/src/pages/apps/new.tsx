@@ -535,278 +535,274 @@ export default () => {
 
   const SelectRepository = (): JSX.Element => {
     return (
-      <>
-        <ContentContainer>
-          <MainContentContainer>
-            {loaded() &&
-              repos()
-                .repositories.filter((r) => r.id === searchParams.repositoryID)
-                .map((r) => <RepositoryInfo repo={r} apps={appsByRepo()[r.id] || []} />)}
+      <ContentContainer>
+        <MainContentContainer>
+          {loaded() &&
+            repos()
+              .repositories.filter((r) => r.id === searchParams.repositoryID)
+              .map((r) => <RepositoryInfo repo={r} apps={appsByRepo()[r.id] || []} />)}
 
-            <FormContainer ref={formContainer}>
-              <Form>
-                <InputLabel>Application Name</InputLabel>
-                <InputBar
-                  placeholder='my-app'
-                  value={createApplicationRequest.name}
-                  onInput={(e) => setCreateApplicationRequest('name', e.target.value)}
-                  required
-                />
-              </Form>
+          <FormContainer ref={formContainer}>
+            <Form>
+              <InputLabel>Application Name</InputLabel>
+              <InputBar
+                placeholder='my-app'
+                value={createApplicationRequest.name}
+                onInput={(e) => setCreateApplicationRequest('name', e.target.value)}
+                required
+              />
+            </Form>
 
-              <Form>
-                <InputLabel>Branch Name</InputLabel>
-                <InputBar
-                  placeholder='master'
-                  value={createApplicationRequest.refName}
-                  onInput={(e) => setCreateApplicationRequest('refName', e.target.value)}
-                  required
-                />
-              </Form>
+            <Form>
+              <InputLabel>Branch Name</InputLabel>
+              <InputBar
+                placeholder='master'
+                value={createApplicationRequest.refName}
+                onInput={(e) => setCreateApplicationRequest('refName', e.target.value)}
+                required
+              />
+            </Form>
 
-              <Form>
-                <FormTextBig>Build Config</FormTextBig>
-                <FormRadio>
-                  <Form>
-                    <Radio items={buildConfigItems} selected={buildConfigMethod()} setSelected={setBuildConfigMethod} />
-                  </Form>
+            <Form>
+              <FormTextBig>Build Config</FormTextBig>
+              <FormRadio>
+                <Form>
+                  <Radio items={buildConfigItems} selected={buildConfigMethod()} setSelected={setBuildConfigMethod} />
+                </Form>
 
-                  <Switch>
-                    <Match when={buildConfigMethod() === 'runtimeBuildpack'}>
-                      <FormRuntimeConfig runtimeConfig={runtimeConfig} setRuntimeConfig={setRuntimeConfig} />
-                      <Form>
-                        <InputLabel>Context</InputLabel>
-                        <InputBar
-                          placeholder=''
-                          value={buildConfig.runtimeBuildpack.value.context}
-                          onInput={(e) => setBuildConfig('runtimeBuildpack', 'value', 'context', e.target.value)}
-                        />
-                      </Form>
-                    </Match>
-
-                    <Match when={buildConfigMethod() === 'runtimeCmd'}>
-                      <FormRuntimeConfig runtimeConfig={runtimeConfig} setRuntimeConfig={setRuntimeConfig} />
-                      <Form>
-                        <InputLabel>Base image</InputLabel>
-                        <InputBar
-                          placeholder=''
-                          value={buildConfig.runtimeCmd.value.baseImage}
-                          onInput={(e) => setBuildConfig('runtimeCmd', 'value', 'baseImage', e.target.value)}
-                        />
-                      </Form>
-                      <Form>
-                        <InputLabel>Build command</InputLabel>
-                        <InputBar
-                          placeholder=''
-                          value={buildConfig.runtimeCmd.value.buildCmd}
-                          onInput={(e) => setBuildConfig('runtimeCmd', 'value', 'buildCmd', e.target.value)}
-                        />
-                      </Form>
-                      <Form>
-                        <InputLabel>Build command shell</InputLabel>
-                        <FormCheckBox>
-                          <Checkbox
-                            selected={buildConfig.runtimeCmd.value.buildCmdShell}
-                            setSelected={(selected) => setBuildConfig('runtimeCmd', 'value', 'buildCmdShell', selected)}
-                          >
-                            Run build command with shell
-                          </Checkbox>
-                        </FormCheckBox>
-                      </Form>
-                    </Match>
-
-                    <Match when={buildConfigMethod() === 'runtimeDockerfile'}>
-                      <FormRuntimeConfig runtimeConfig={runtimeConfig} setRuntimeConfig={setRuntimeConfig} />
-                      <Form>
-                        <InputLabel>Dockerfile name</InputLabel>
-                        <InputBar
-                          placeholder=''
-                          value={buildConfig.runtimeDockerfile.value.dockerfileName}
-                          onInput={(e) =>
-                            setBuildConfig('runtimeDockerfile', 'value', 'dockerfileName', e.target.value)
-                          }
-                        />
-                      </Form>
-                      <Form>
-                        <InputLabel>Context</InputLabel>
-                        <InputBar
-                          placeholder=''
-                          value={buildConfig.runtimeDockerfile.value.context}
-                          onInput={(e) => setBuildConfig('runtimeDockerfile', 'value', 'context', e.target.value)}
-                        />
-                      </Form>
-                    </Match>
-
-                    <Match when={buildConfigMethod() === 'staticCmd'}>
-                      <Form>
-                        <InputLabel>Base image</InputLabel>
-                        <InputBar
-                          placeholder=''
-                          value={buildConfig.staticCmd.value.baseImage}
-                          onInput={(e) => setBuildConfig('staticCmd', 'value', 'baseImage', e.target.value)}
-                        />
-                      </Form>
-                      <Form>
-                        <InputLabel>Build command</InputLabel>
-                        <InputBar
-                          placeholder=''
-                          value={buildConfig.staticCmd.value.buildCmd}
-                          onInput={(e) => setBuildConfig('staticCmd', 'value', 'buildCmd', e.target.value)}
-                        />
-                      </Form>
-                      <Form>
-                        <InputLabel>Build command shell</InputLabel>
-                        <FormCheckBox>
-                          <Checkbox
-                            selected={buildConfig.staticCmd.value.buildCmdShell}
-                            setSelected={(selected) => setBuildConfig('staticCmd', 'value', 'buildCmdShell', selected)}
-                          >
-                            Run build command with shell
-                          </Checkbox>
-                        </FormCheckBox>
-                      </Form>
-                      <Form>
-                        <InputLabel>Artifact path</InputLabel>
-                        <InputBar
-                          placeholder=''
-                          value={buildConfig.staticCmd.value.artifactPath}
-                          onInput={(e) => setBuildConfig('staticCmd', 'value', 'artifactPath', e.target.value)}
-                        />
-                      </Form>
-                    </Match>
-
-                    <Match when={buildConfigMethod() === 'staticDockerfile'}>
-                      <Form>
-                        <InputLabel>Dockerfile name</InputLabel>
-                        <InputBar
-                          placeholder=''
-                          value={buildConfig.staticDockerfile.value.dockerfileName}
-                          onInput={(e) => setBuildConfig('staticDockerfile', 'value', 'dockerfileName', e.target.value)}
-                        />
-                      </Form>
-                      <Form>
-                        <InputLabel>Context</InputLabel>
-                        <InputBar
-                          placeholder=''
-                          value={buildConfig.staticDockerfile.value.context}
-                          onInput={(e) => setBuildConfig('staticDockerfile', 'value', 'context', e.target.value)}
-                        />
-                      </Form>
-                      <Form>
-                        <InputLabel>Artifact path</InputLabel>
-                        <InputBar
-                          placeholder=''
-                          value={buildConfig.staticDockerfile.value.artifactPath}
-                          onInput={(e) => setBuildConfig('staticDockerfile', 'value', 'artifactPath', e.target.value)}
-                        />
-                      </Form>
-                    </Match>
-                  </Switch>
-                </FormRadio>
-              </Form>
-
-              <Form>
-                <FormTextBig>Website Setting</FormTextBig>
-                <SettingsContainer>
-                  <For each={websiteConfigs}>
-                    {(website, i) => (
-                      <Website
-                        website={website}
-                        setWebsite={(valueName, value) =>
-                          setWebsiteConfigs((prev) => {
-                            const newWebsites = [...prev]
-                            newWebsites[i()][valueName] = value
-                            return newWebsites
-                          })
-                        }
-                        deleteWebsite={() =>
-                          setWebsiteConfigs((current) => [...current.slice(0, i()), ...current.slice(i() + 1)])
-                        }
+                <Switch>
+                  <Match when={buildConfigMethod() === 'runtimeBuildpack'}>
+                    <FormRuntimeConfig runtimeConfig={runtimeConfig} setRuntimeConfig={setRuntimeConfig} />
+                    <Form>
+                      <InputLabel>Context</InputLabel>
+                      <InputBar
+                        placeholder=''
+                        value={buildConfig.runtimeBuildpack.value.context}
+                        onInput={(e) => setBuildConfig('runtimeBuildpack', 'value', 'context', e.target.value)}
                       />
-                    )}
-                  </For>
+                    </Form>
+                  </Match>
 
-                  <FormButton>
-                    <Button
-                      onclick={() => {
-                        setWebsiteConfigs([...websiteConfigs, new CreateWebsiteRequest()])
-                      }}
-                      color='black1'
-                      size='large'
-                      type='button'
-                    >
-                      Add website setting
-                    </Button>
-                  </FormButton>
-                </SettingsContainer>
-              </Form>
-
-              <Form>
-                <FormTextBig>Port Publication Setting</FormTextBig>
-                <SettingsContainer>
-                  <For each={portPublications()}>
-                    {(portPublication, i) => (
-                      <PortPublications
-                        portPublication={portPublication}
-                        setPortPublication={(portPublication) =>
-                          setPortPublications((current) => [
-                            ...current.slice(0, i()),
-                            portPublication,
-                            ...current.slice(i() + 1),
-                          ])
-                        }
-                        deletePortPublication={() =>
-                          setPortPublications((current) => [...current.slice(0, i()), ...current.slice(i() + 1)])
-                        }
+                  <Match when={buildConfigMethod() === 'runtimeCmd'}>
+                    <FormRuntimeConfig runtimeConfig={runtimeConfig} setRuntimeConfig={setRuntimeConfig} />
+                    <Form>
+                      <InputLabel>Base image</InputLabel>
+                      <InputBar
+                        placeholder=''
+                        value={buildConfig.runtimeCmd.value.baseImage}
+                        onInput={(e) => setBuildConfig('runtimeCmd', 'value', 'baseImage', e.target.value)}
                       />
-                    )}
-                  </For>
+                    </Form>
+                    <Form>
+                      <InputLabel>Build command</InputLabel>
+                      <InputBar
+                        placeholder=''
+                        value={buildConfig.runtimeCmd.value.buildCmd}
+                        onInput={(e) => setBuildConfig('runtimeCmd', 'value', 'buildCmd', e.target.value)}
+                      />
+                    </Form>
+                    <Form>
+                      <InputLabel>Build command shell</InputLabel>
+                      <FormCheckBox>
+                        <Checkbox
+                          selected={buildConfig.runtimeCmd.value.buildCmdShell}
+                          setSelected={(selected) => setBuildConfig('runtimeCmd', 'value', 'buildCmdShell', selected)}
+                        >
+                          Run build command with shell
+                        </Checkbox>
+                      </FormCheckBox>
+                    </Form>
+                  </Match>
 
-                  <FormButton>
-                    <Button
-                      onclick={() => {
-                        setPortPublications([...portPublications(), EmptyPortPublication])
-                      }}
-                      color='black1'
-                      size='large'
-                      type='button'
-                    >
-                      Add port publication
-                    </Button>
-                  </FormButton>
-                </SettingsContainer>
-              </Form>
+                  <Match when={buildConfigMethod() === 'runtimeDockerfile'}>
+                    <FormRuntimeConfig runtimeConfig={runtimeConfig} setRuntimeConfig={setRuntimeConfig} />
+                    <Form>
+                      <InputLabel>Dockerfile name</InputLabel>
+                      <InputBar
+                        placeholder=''
+                        value={buildConfig.runtimeDockerfile.value.dockerfileName}
+                        onInput={(e) => setBuildConfig('runtimeDockerfile', 'value', 'dockerfileName', e.target.value)}
+                      />
+                    </Form>
+                    <Form>
+                      <InputLabel>Context</InputLabel>
+                      <InputBar
+                        placeholder=''
+                        value={buildConfig.runtimeDockerfile.value.context}
+                        onInput={(e) => setBuildConfig('runtimeDockerfile', 'value', 'context', e.target.value)}
+                      />
+                    </Form>
+                  </Match>
 
-              <Form>
-                <InputLabel>Start on create</InputLabel>
-                <FormCheckBox>
-                  <Checkbox
-                    selected={createApplicationRequest.startOnCreate}
-                    setSelected={(selected) => setCreateApplicationRequest('startOnCreate', selected)}
+                  <Match when={buildConfigMethod() === 'staticCmd'}>
+                    <Form>
+                      <InputLabel>Base image</InputLabel>
+                      <InputBar
+                        placeholder=''
+                        value={buildConfig.staticCmd.value.baseImage}
+                        onInput={(e) => setBuildConfig('staticCmd', 'value', 'baseImage', e.target.value)}
+                      />
+                    </Form>
+                    <Form>
+                      <InputLabel>Build command</InputLabel>
+                      <InputBar
+                        placeholder=''
+                        value={buildConfig.staticCmd.value.buildCmd}
+                        onInput={(e) => setBuildConfig('staticCmd', 'value', 'buildCmd', e.target.value)}
+                      />
+                    </Form>
+                    <Form>
+                      <InputLabel>Build command shell</InputLabel>
+                      <FormCheckBox>
+                        <Checkbox
+                          selected={buildConfig.staticCmd.value.buildCmdShell}
+                          setSelected={(selected) => setBuildConfig('staticCmd', 'value', 'buildCmdShell', selected)}
+                        >
+                          Run build command with shell
+                        </Checkbox>
+                      </FormCheckBox>
+                    </Form>
+                    <Form>
+                      <InputLabel>Artifact path</InputLabel>
+                      <InputBar
+                        placeholder=''
+                        value={buildConfig.staticCmd.value.artifactPath}
+                        onInput={(e) => setBuildConfig('staticCmd', 'value', 'artifactPath', e.target.value)}
+                      />
+                    </Form>
+                  </Match>
+
+                  <Match when={buildConfigMethod() === 'staticDockerfile'}>
+                    <Form>
+                      <InputLabel>Dockerfile name</InputLabel>
+                      <InputBar
+                        placeholder=''
+                        value={buildConfig.staticDockerfile.value.dockerfileName}
+                        onInput={(e) => setBuildConfig('staticDockerfile', 'value', 'dockerfileName', e.target.value)}
+                      />
+                    </Form>
+                    <Form>
+                      <InputLabel>Context</InputLabel>
+                      <InputBar
+                        placeholder=''
+                        value={buildConfig.staticDockerfile.value.context}
+                        onInput={(e) => setBuildConfig('staticDockerfile', 'value', 'context', e.target.value)}
+                      />
+                    </Form>
+                    <Form>
+                      <InputLabel>Artifact path</InputLabel>
+                      <InputBar
+                        placeholder=''
+                        value={buildConfig.staticDockerfile.value.artifactPath}
+                        onInput={(e) => setBuildConfig('staticDockerfile', 'value', 'artifactPath', e.target.value)}
+                      />
+                    </Form>
+                  </Match>
+                </Switch>
+              </FormRadio>
+            </Form>
+
+            <Form>
+              <FormTextBig>Website Setting</FormTextBig>
+              <SettingsContainer>
+                <For each={websiteConfigs}>
+                  {(website, i) => (
+                    <Website
+                      website={website}
+                      setWebsite={(valueName, value) =>
+                        setWebsiteConfigs((prev) => {
+                          const newWebsites = [...prev]
+                          newWebsites[i()][valueName] = value
+                          return newWebsites
+                        })
+                      }
+                      deleteWebsite={() =>
+                        setWebsiteConfigs((current) => [...current.slice(0, i()), ...current.slice(i() + 1)])
+                      }
+                    />
+                  )}
+                </For>
+
+                <FormButton>
+                  <Button
+                    onclick={() => {
+                      setWebsiteConfigs([...websiteConfigs, new CreateWebsiteRequest()])
+                    }}
+                    color='black1'
+                    size='large'
+                    type='button'
                   >
-                    start_on_create
-                  </Checkbox>
-                </FormCheckBox>
-              </Form>
+                    Add website setting
+                  </Button>
+                </FormButton>
+              </SettingsContainer>
+            </Form>
 
-              <Button color='black1' size='large' onclick={createApplication} type="submit">
-                + Create new Application
-              </Button>
+            <Form>
+              <FormTextBig>Port Publication Setting</FormTextBig>
+              <SettingsContainer>
+                <For each={portPublications()}>
+                  {(portPublication, i) => (
+                    <PortPublications
+                      portPublication={portPublication}
+                      setPortPublication={(portPublication) =>
+                        setPortPublications((current) => [
+                          ...current.slice(0, i()),
+                          portPublication,
+                          ...current.slice(i() + 1),
+                        ])
+                      }
+                      deletePortPublication={() =>
+                        setPortPublications((current) => [...current.slice(0, i()), ...current.slice(i() + 1)])
+                      }
+                    />
+                  )}
+                </For>
 
-              <Button
-                onclick={() => {
-                  console.log(websiteConfigs)
-                }}
-                color='black1'
-                size='large'
-                type='button'
-              >
-                Debug
-              </Button>
-            </FormContainer>
-          </MainContentContainer>
-        </ContentContainer>
-      </>
+                <FormButton>
+                  <Button
+                    onclick={() => {
+                      setPortPublications([...portPublications(), EmptyPortPublication])
+                    }}
+                    color='black1'
+                    size='large'
+                    type='button'
+                  >
+                    Add port publication
+                  </Button>
+                </FormButton>
+              </SettingsContainer>
+            </Form>
+
+            <Form>
+              <InputLabel>Start on create</InputLabel>
+              <FormCheckBox>
+                <Checkbox
+                  selected={createApplicationRequest.startOnCreate}
+                  setSelected={(selected) => setCreateApplicationRequest('startOnCreate', selected)}
+                >
+                  start_on_create
+                </Checkbox>
+              </FormCheckBox>
+            </Form>
+
+            <Button color='black1' size='large' onclick={createApplication} type="submit">
+              + Create new Application
+            </Button>
+
+            <Button
+              onclick={() => {
+                console.log(websiteConfigs)
+              }}
+              color='black1'
+              size='large'
+              type='button'
+            >
+              Debug
+            </Button>
+          </FormContainer>
+        </MainContentContainer>
+      </ContentContainer>
     )
   }
 
