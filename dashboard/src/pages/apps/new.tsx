@@ -256,7 +256,10 @@ const Website = (props: WebsiteProps) => {
       </InputForm>
       <InputForm>
         <InputFormCheckBox>
-          <Checkbox selected={props.website.stripPrefix} setSelected={(selected) => props.setWebsite('stripPrefix', selected)}>
+          <Checkbox
+            selected={props.website.stripPrefix}
+            setSelected={(selected) => props.setWebsite('stripPrefix', selected)}
+          >
             Strip Path Prefix
           </Checkbox>
           <Checkbox selected={props.website.https} setSelected={(selected) => props.setWebsite('https', selected)}>
@@ -600,7 +603,10 @@ export default () => {
                       <InputForm>
                         <InputFormText>Build cmd shell</InputFormText>
                         <InputFormCheckBox>
-                          <Checkbox selected={checkBoxBuildCmdShell()} setSelected={setCheckBoxBuildCmdShell}>
+                          <Checkbox
+                            selected={buildConfig.runtimeCmd.value.buildCmdShell}
+                            setSelected={(selected) => setBuildConfig('runtimeCmd', 'value', 'buildCmdShell', selected)}
+                          >
                             Run build cmd with shell
                           </Checkbox>
                         </InputFormCheckBox>
@@ -649,7 +655,10 @@ export default () => {
                       <InputForm>
                         <InputFormText>Build cmd shell</InputFormText>
                         <InputFormCheckBox>
-                          <Checkbox selected={checkBoxBuildCmdShell()} setSelected={setCheckBoxBuildCmdShell}>
+                          <Checkbox
+                            selected={buildConfig.staticCmd.value.buildCmdShell}
+                            setSelected={(selected) => setBuildConfig('staticCmd', 'value', 'buildCmdShell', selected)}
+                          >
                             Run build cmd with shell
                           </Checkbox>
                         </InputFormCheckBox>
@@ -701,11 +710,13 @@ export default () => {
                     {(website, i) => (
                       <Website
                         website={website}
-                        setWebsite={(valueName, value) => setWebsiteConfigs((prev) => {
-                          const newWebsites = [...prev]
-                          newWebsites[i()][valueName] = value
-                          return newWebsites
-                        })}
+                        setWebsite={(valueName, value) =>
+                          setWebsiteConfigs((prev) => {
+                            const newWebsites = [...prev]
+                            newWebsites[i()][valueName] = value
+                            return newWebsites
+                          })
+                        }
                         deleteWebsite={() =>
                           setWebsiteConfigs((current) => [...current.slice(0, i()), ...current.slice(i() + 1)])
                         }
@@ -716,7 +727,7 @@ export default () => {
                   <InputFormButton>
                     <Button
                       onclick={() => {
-                        setWebsiteConfigs([...websiteConfigs, new CreateWebsiteRequest])
+                        setWebsiteConfigs([...websiteConfigs, new CreateWebsiteRequest()])
                       }}
                       color='black1'
                       size='large'
