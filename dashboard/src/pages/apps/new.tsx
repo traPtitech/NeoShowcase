@@ -238,15 +238,9 @@ const EmptyWebsite: Website = {
 }
 
 interface WebsiteProps {
-  website: Website
-  setWebsite: (Website) => void
+  website: CreateWebsiteRequest
+  setWebsite: (valueName, value) => void
   deleteWebsite: () => void
-  checkBoxStripPrefix: boolean
-  setCheckBoxStripPrefix: (boolean) => void
-  checkBoxHttps: boolean
-  setCheckBoxHttps: (boolean) => void
-  checkBoxH2c: boolean
-  setCheckBoxH2c: (boolean) => void
 }
 
 const Website = (props: WebsiteProps) => {
@@ -262,13 +256,13 @@ const Website = (props: WebsiteProps) => {
       </InputForm>
       <InputForm>
         <InputFormCheckBox>
-          <Checkbox selected={props.checkBoxStripPrefix} setSelected={props.setCheckBoxStripPrefix}>
+          <Checkbox selected={props.website.stripPrefix} setSelected={(selected) => props.setWebsite('stripPrefix', selected)}>
             Strip Path Prefix
           </Checkbox>
-          <Checkbox selected={props.checkBoxHttps} setSelected={props.setCheckBoxHttps}>
+          <Checkbox selected={props.website.https} setSelected={(selected) => props.setWebsite('https', selected)}>
             https
           </Checkbox>
-          <Checkbox selected={props.checkBoxH2c} setSelected={props.setCheckBoxH2c}>
+          <Checkbox selected={props.website.h2c} setSelected={(selected) => props.setWebsite('h2c', selected)}>
             (advanced) アプリ通信にh2cを用いる
           </Checkbox>
         </InputFormCheckBox>
@@ -280,8 +274,8 @@ const Website = (props: WebsiteProps) => {
       <InputForm>
         <Radio
           items={authenticationTypeItems}
-          selected={props.website.authenticationType}
-          setSelected={(auth) => props.setWebsite({ ...props.website, authenticationType: auth })}
+          selected={props.website.authentication}
+          setSelected={(selected) => props.setWebsite('authentication', selected)}
         />
       </InputForm>
       <InputFormWebsiteButton>
@@ -294,9 +288,9 @@ const Website = (props: WebsiteProps) => {
 }
 
 const authenticationTypeItems: RadioItem[] = [
-  { value: 0, title: 'OFF' },
-  { value: 1, title: 'SOFT' },
-  { value: 2, title: 'HARD' },
+  { value: AuthenticationType.OFF, title: 'OFF' },
+  { value: AuthenticationType.SOFT, title: 'SOFT' },
+  { value: AuthenticationType.HARD, title: 'HARD' },
 ]
 
 interface Ports {
@@ -461,12 +455,7 @@ export default () => {
   const [websites, setWebsites] = createSignal<Website[]>([])
   const [portPublications, setPortPublications] = createSignal<Ports[]>([])
 
-  const [checkBoxStartOnCreate, setCheckBoxStartOnCreate] = createSignal(false)
   const [checkBoxBuildCmdShell, setCheckBoxBuildCmdShell] = createSignal(false)
-
-  const [checkBoxWebsiteStripPrefix, setCheckBoxWebsiteStripPrefix] = createSignal(false)
-  const [checkBoxWebsiteHttps, setCheckBoxWebsiteHttps] = createSignal(false)
-  const [checkBoxWebsiteH2c, setCheckBoxWebsiteH2c] = createSignal(false)
 
   const [createApplicationRequest, setCreateApplicationRequest] = createStore(
     new CreateApplicationRequest({
@@ -476,7 +465,7 @@ export default () => {
     }),
   )
 
-  const [fieldsCreateWebsiteRequest, setFieldsCreateWebsiteRequest] = createStore<CreateWebsiteRequest[]>([])
+  const [websiteConfigs, setWebsiteConfigs] = createStore<CreateWebsiteRequest[]>([])
   const [fieldsPortPublication, setFieldsPortPublication] = createStore<PortPublication[]>([])
 
   // Build Config
@@ -708,22 +697,18 @@ export default () => {
               <InputForm>
                 <InputFormTextBig>Website Setting</InputFormTextBig>
                 <SettingsContainer>
-                  <For each={websites()}>
+                  <For each={websiteConfigs}>
                     {(website, i) => (
                       <Website
                         website={website}
-                        setWebsite={(website) =>
-                          setWebsites((current) => [...current.slice(0, i()), website, ...current.slice(i() + 1)])
-                        }
+                        setWebsite={(valueName, value) => setWebsiteConfigs((prev) => {
+                          const newWebsites = [...prev]
+                          newWebsites[i()][valueName] = value
+                          return newWebsites
+                        })}
                         deleteWebsite={() =>
-                          setWebsites((current) => [...current.slice(0, i()), ...current.slice(i() + 1)])
+                          setWebsiteConfigs((current) => [...current.slice(0, i()), ...current.slice(i() + 1)])
                         }
-                        checkBoxStripPrefix={checkBoxWebsiteStripPrefix()}
-                        setCheckBoxStripPrefix={setCheckBoxWebsiteStripPrefix}
-                        checkBoxHttps={checkBoxWebsiteHttps()}
-                        setCheckBoxHttps={setCheckBoxWebsiteHttps}
-                        checkBoxH2c={checkBoxWebsiteH2c()}
-                        setCheckBoxH2c={setCheckBoxWebsiteH2c}
                       />
                     )}
                   </For>
@@ -731,7 +716,7 @@ export default () => {
                   <InputFormButton>
                     <Button
                       onclick={() => {
-                        setWebsites([...websites(), EmptyWebsite])
+                        setWebsiteConfigs([...websiteConfigs, new CreateWebsiteRequest])
                       }}
                       color='black1'
                       size='large'
@@ -783,9 +768,8 @@ export default () => {
                 <InputFormText>Start on create</InputFormText>
                 <InputFormCheckBox>
                   <Checkbox
-                    selected={checkBoxStartOnCreate()}
-                    setSelected={setCheckBoxStartOnCreate}
-                    onClick={() => setCreateApplicationRequest('startOnCreate', checkBoxStartOnCreate())}
+                    selected={createApplicationRequest.startOnCreate}
+                    setSelected={(selected) => setCreateApplicationRequest('startOnCreate', selected)}
                   >
                     start_on_create
                   </Checkbox>
@@ -798,7 +782,7 @@ export default () => {
 
               <Button
                 onclick={() => {
-                  console.log(createApplicationRequest)
+                  console.log(websiteConfigs)
                 }}
                 color='black1'
                 size='large'
