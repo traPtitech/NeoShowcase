@@ -547,9 +547,10 @@ export default () => {
               <Form>
                 <InputLabel>Application Name</InputLabel>
                 <InputBar
-                  placeholder=''
+                  placeholder='my-app'
                   value={createApplicationRequest.name}
                   onInput={(e) => setCreateApplicationRequest('name', e.target.value)}
+                  required
                 />
               </Form>
 
@@ -559,6 +560,7 @@ export default () => {
                   placeholder='master'
                   value={createApplicationRequest.refName}
                   onInput={(e) => setCreateApplicationRequest('refName', e.target.value)}
+                  required
                 />
               </Form>
 
@@ -593,7 +595,7 @@ export default () => {
                         />
                       </Form>
                       <Form>
-                        <InputLabel>Build cmd</InputLabel>
+                        <InputLabel>Build command</InputLabel>
                         <InputBar
                           placeholder=''
                           value={buildConfig.runtimeCmd.value.buildCmd}
@@ -601,13 +603,13 @@ export default () => {
                         />
                       </Form>
                       <Form>
-                        <InputLabel>Build cmd shell</InputLabel>
+                        <InputLabel>Build command shell</InputLabel>
                         <FormCheckBox>
                           <Checkbox
                             selected={buildConfig.runtimeCmd.value.buildCmdShell}
                             setSelected={(selected) => setBuildConfig('runtimeCmd', 'value', 'buildCmdShell', selected)}
                           >
-                            Run build cmd with shell
+                            Run build command with shell
                           </Checkbox>
                         </FormCheckBox>
                       </Form>
@@ -645,7 +647,7 @@ export default () => {
                         />
                       </Form>
                       <Form>
-                        <InputLabel>Build cmd</InputLabel>
+                        <InputLabel>Build command</InputLabel>
                         <InputBar
                           placeholder=''
                           value={buildConfig.staticCmd.value.buildCmd}
@@ -653,13 +655,13 @@ export default () => {
                         />
                       </Form>
                       <Form>
-                        <InputLabel>Build cmd shell</InputLabel>
+                        <InputLabel>Build command shell</InputLabel>
                         <FormCheckBox>
                           <Checkbox
                             selected={buildConfig.staticCmd.value.buildCmdShell}
                             setSelected={(selected) => setBuildConfig('staticCmd', 'value', 'buildCmdShell', selected)}
                           >
-                            Run build cmd with shell
+                            Run build command with shell
                           </Checkbox>
                         </FormCheckBox>
                       </Form>
