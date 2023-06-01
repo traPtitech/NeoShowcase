@@ -124,9 +124,11 @@ func (r *buildRepository) UpdateBuild(ctx context.Context, id string, args domai
 		cols = append(cols, models.BuildColumns.FinishedAt)
 	}
 
-	_, err = build.Update(ctx, tx, boil.Whitelist(cols...))
-	if err != nil {
-		return errors.Wrap(err, "failed to update build")
+	if len(cols) > 0 {
+		_, err = build.Update(ctx, tx, boil.Whitelist(cols...))
+		if err != nil {
+			return errors.Wrap(err, "failed to update build")
+		}
 	}
 
 	err = tx.Commit()

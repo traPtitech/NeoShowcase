@@ -185,7 +185,12 @@ func (r *applicationRepository) UpdateApplication(ctx context.Context, id string
 		cols = append(cols, models.ApplicationColumns.UpdatedAt)
 	}
 
-	_, err = app.Update(ctx, tx, boil.Whitelist(cols...))
+	if len(cols) > 0 {
+		_, err = app.Update(ctx, tx, boil.Whitelist(cols...))
+		if err != nil {
+			return errors.Wrap(err, "updating application")
+		}
+	}
 
 	if args.Config.Valid {
 		mac := repoconvert.FromDomainApplicationConfig(app.ID, &args.Config.V)
