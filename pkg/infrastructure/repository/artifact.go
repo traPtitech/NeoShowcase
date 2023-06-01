@@ -77,10 +77,13 @@ func (r *artifactRepository) UpdateArtifact(ctx context.Context, id string, args
 		cols = append(cols, models.ArtifactColumns.DeletedAt)
 	}
 
-	_, err = artifact.Update(ctx, r.db, boil.Whitelist(cols...))
-	if err != nil {
-		return errors.Wrap(err, "failed to update artifact")
+	if len(cols) > 0 {
+		_, err = artifact.Update(ctx, r.db, boil.Whitelist(cols...))
+		if err != nil {
+			return errors.Wrap(err, "failed to update artifact")
+		}
 	}
+
 	return nil
 }
 

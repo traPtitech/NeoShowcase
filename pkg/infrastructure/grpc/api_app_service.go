@@ -82,13 +82,13 @@ func (s *APIService) UpdateApplication(ctx context.Context, req *connect.Request
 	}
 
 	err = s.svc.UpdateApplication(ctx, msg.Id, &domain.UpdateApplicationArgs{
-		Name:             optional.From(msg.Name),
-		RefName:          optional.From(msg.RefName),
+		Name:             optional.FromNonZero(msg.Name),
+		RefName:          optional.FromNonZero(msg.RefName),
 		UpdatedAt:        optional.From(time.Now()),
-		Config:           optional.From(pbconvert.FromPBApplicationConfig(msg.Config)),
-		Websites:         optional.From(websites),
-		PortPublications: optional.From(ds.Map(msg.PortPublications, pbconvert.FromPBPortPublication)),
-		OwnerIDs:         optional.From(msg.OwnerIds),
+		Config:           optional.Map(optional.FromNonZero(msg.Config), pbconvert.FromPBApplicationConfig),
+		Websites:         optional.FromNonZeroSlice(websites),
+		PortPublications: optional.FromNonZeroSlice(ds.Map(msg.PortPublications, pbconvert.FromPBPortPublication)),
+		OwnerIDs:         optional.FromNonZeroSlice(msg.OwnerIds),
 	})
 	if err != nil {
 		return nil, handleUseCaseError(err)

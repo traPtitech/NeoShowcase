@@ -593,6 +593,8 @@ export class CreateRepositoryRequest extends Message<CreateRepositoryRequest> {
 }
 
 /**
+ * UpdateRepositoryRequest id以外はoptional
+ *
  * @generated from message neoshowcase.protobuf.UpdateRepositoryRequest
  */
 export class UpdateRepositoryRequest extends Message<UpdateRepositoryRequest> {
@@ -1544,6 +1546,8 @@ export class CreateApplicationRequest extends Message<CreateApplicationRequest> 
 }
 
 /**
+ * UpdateApplicationRequest id以外はoptional
+ *
  * @generated from message neoshowcase.protobuf.UpdateApplicationRequest
  */
 export class UpdateApplicationRequest extends Message<UpdateApplicationRequest> {

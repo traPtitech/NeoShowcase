@@ -129,9 +129,11 @@ func (r *gitRepositoryRepository) UpdateRepository(ctx context.Context, id strin
 		cols = append(cols, models.RepositoryColumns.URL)
 	}
 
-	_, err = repo.Update(ctx, tx, boil.Whitelist(cols...))
-	if err != nil {
-		return errors.Wrap(err, "failed to update repository")
+	if len(cols) > 0 {
+		_, err = repo.Update(ctx, tx, boil.Whitelist(cols...))
+		if err != nil {
+			return errors.Wrap(err, "failed to update repository")
+		}
 	}
 
 	if args.Auth.Valid {

@@ -70,6 +70,7 @@ message CreateRepositoryRequest {
   CreateRepositoryAuth auth = 3;
 }
 
+// UpdateRepositoryRequest id以外はoptional
 message UpdateRepositoryRequest {
   string id = 1;
   string name = 2;
@@ -213,6 +214,7 @@ message CreateApplicationRequest {
   bool start_on_create = 7;
 }
 
+// UpdateApplicationRequest id以外はoptional
 message UpdateApplicationRequest {
   string id = 1;
   string name = 2;

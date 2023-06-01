@@ -986,6 +986,7 @@ func (x *CreateRepositoryRequest) GetAuth() *CreateRepositoryAuth {
 	return nil
 }
 
+// UpdateRepositoryRequest id以外はoptional
 type UpdateRepositoryRequest struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
@@ -2191,6 +2192,7 @@ func (x *CreateApplicationRequest) GetStartOnCreate() bool {
 	return false
 }
 
+// UpdateApplicationRequest id以外はoptional
 type UpdateApplicationRequest struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
