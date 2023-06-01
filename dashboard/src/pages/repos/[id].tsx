@@ -21,7 +21,7 @@ import { URLText } from '/@/components/URLText'
 import { client } from '/@/libs/api'
 import { providerToIcon, repositoryURLToProvider } from '/@/libs/application'
 import { CenterInline, Container } from '/@/libs/layout'
-import { allUsersResource } from '/@/libs/useAllUsers'
+import { allUsersResource, userFromId } from '/@/libs/useAllUsers'
 import useModal from '/@/libs/useModal'
 import { vars } from '/@/theme'
 
@@ -126,10 +126,6 @@ export default () => {
       return repo() ? allAppsRes.applications.filter((app) => app.repositoryId === repo()?.id) : []
     },
   )
-
-  const userFromId = (userId: string): User | undefined => {
-    return allUsersResource()?.find((user) => user.id === userId)
-  }
 
   const { Modal: DeleteRepoModal, open: openDeleteRepoModal, close: closeDeleteRepoModal } = useModal()
 
