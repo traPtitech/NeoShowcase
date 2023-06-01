@@ -26,6 +26,8 @@ jobs:
         with:
           go-version-file: ./go.mod
       - uses: arduino/setup-protoc@v2
+        with:
+          version: '22.0'
       - name: Install proto tools
         run: make init-protoc
       - name: Generate code
