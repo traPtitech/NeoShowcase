@@ -988,10 +988,10 @@
   resolved "https://registry.yarnpkg.com/@macaron-css/solid/-/solid-1.4.1.tgz#5c83c98409b271354bed894a664fe18398afbef6"
   integrity sha512-YWY3TH1XtbOHXv4ASLePCn+S4rUw31kYOYExROpJ5K5bJctSId4sFn3bZpY6fDrQ88p+pkIuf16ZkdMgiJZmOw==
 
-"@macaron-css/vite@1.3.0":
-  version "1.3.0"
-  resolved "https://registry.yarnpkg.com/@macaron-css/vite/-/vite-1.3.0.tgz#27c4717dea90456deef4579b3034a3439a78c7d1"
-  integrity sha512-eIc4cemgtZJaLMBo2auXC7hOTMAw+UEddQV1/ZPGArrRoYKNOBJiGDuh46AeBTrvGQSkKYUp7PR86aHCzSBLUA==
+"@macaron-css/vite@1.4.2":
+  version "1.4.2"
+  resolved "https://registry.yarnpkg.com/@macaron-css/vite/-/vite-1.4.2.tgz#ed5c0d0364a68f0e1810fb301d620c1bae95ce8c"
+  integrity sha512-T9oEt6VfOPBnMsE0RZpAKVY05knu294Sl8YZL1v9axssDkPm/pqNoFT591/BUTYCuZmO+727RSZ51Xy2H67vGw==
   dependencies:
     "@macaron-css/integration" "1.3.0"
     "@vanilla-extract/integration" "^6.0.0"
