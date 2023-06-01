@@ -188,6 +188,7 @@ export default () => {
   const handleAddOwner = async (user: User): Promise<void> => {
     try {
       await client.updateRepository({
+        id: repo()?.id,
         ownerIds: repo()?.ownerIds.concat(user.id),
       })
       toast.success('リポジトリのオーナーを追加しました')
@@ -202,6 +203,7 @@ export default () => {
   const handleDeleteOwner = async (user: User): Promise<void> => {
     try {
       await client.updateRepository({
+        id: repo()?.id,
         ownerIds: repo()?.ownerIds.filter((id) => id !== user.id),
       })
       toast.success('リポジトリのオーナーを削除しました')
