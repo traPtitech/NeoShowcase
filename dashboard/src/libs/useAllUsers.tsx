@@ -1,4 +1,4 @@
-import { createMemo, createResource } from 'solid-js'
+import { createMemo, createResource, createRoot } from 'solid-js'
 import { User } from '/@/api/neoshowcase/protobuf/gateway_pb'
 import { client } from '/@/libs/api'
 
@@ -10,9 +10,11 @@ const [allUsersResource, { mutate: mutateAllUsers, refetch: refetchAllUsers }] =
 export { allUsersResource, mutateAllUsers, refetchAllUsers }
 
 // keyにID, valueにユーザー情報を持つMap
-const allUsersMap = createMemo(() => {
-  if (!allUsersResource()) return new Map<string, User>()
-  return new Map(allUsersResource().map((user) => [user.id, user]))
-})
+const allUsersMap = createRoot(() =>
+  createMemo(() => {
+    if (!allUsersResource()) return new Map<string, User>()
+    return new Map(allUsersResource().map((user) => [user.id, user]))
+  }),
+)
 
 export const userFromId = (id: string) => allUsersMap().get(id)
