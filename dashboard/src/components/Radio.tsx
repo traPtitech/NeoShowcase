@@ -25,23 +25,23 @@ const ItemContainer = styled('div', {
   },
 })
 
-export interface RadioItem {
-  value: string | number
-  title: string | number
+export interface RadioItem<T extends string | number> {
+  value: T
+  title: T
 }
 
-export interface Props {
-  items: RadioItem[]
-  selected: string | number
-  setSelected: (s: string | number) => void
+export interface Props<T extends string | number> {
+  items: RadioItem<T>[]
+  selected: T
+  setSelected: (s: T) => void
   onClick?: () => void
 }
 
-export const Radio = (props: Props): JSXElement => {
+export const Radio = <T extends string | number>(props: Props<T>): JSXElement => {
   return (
     <Container>
       <For each={props.items}>
-        {(item: RadioItem) => (
+        {(item: RadioItem<T>) => (
           <ItemContainer
             onClick={() => {
               props.setSelected(item.value)
