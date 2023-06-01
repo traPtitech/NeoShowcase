@@ -326,8 +326,8 @@ const EmptyPortPublication: Ports = {
 }
 
 interface PortPublicationProps {
-  portPublication: Ports
-  setPortPublication: (Ports) => void
+  portPublication: PortPublication
+  setPortPublication: (valueName, value) => void
   deletePortPublication: () => void
 }
 
@@ -336,17 +336,27 @@ const PortPublications = (props: PortPublicationProps) => {
     <FormWebsite>
       <Form>
         <InputLabel>Internet Port</InputLabel>
-        <InputBar placeholder='30000' />
+        <InputBar
+          placeholder='30000'
+          type="number"
+          value={props.portPublication.internetPort}
+          onInput={(e) => props.setPortPublication('internetPort', e.target.value)}
+        />
       </Form>
       <Form>
         <InputLabel>Application Port</InputLabel>
-        <InputBar placeholder='30001' />
+        <InputBar
+          placeholder='30001'
+          type="number"
+          value={props.portPublication.applicationPort}
+          onInput={(e) => props.setPortPublication('applicationPort', e.target.value)}
+        />
       </Form>
       <Form>
         <Radio
           items={protocolItems}
           selected={props.portPublication.protocol}
-          setSelected={(proto) => props.setPortPublication({ ...props.portPublication, protocol: proto })}
+          setSelected={(proto) => props.setPortPublication('protocol', proto)}
         />
       </Form>
       <FormWebsiteButton>
@@ -472,11 +482,6 @@ export default () => {
       return acc
     }, {} as Record<string, Application[]>)
 
-  const [websites, setWebsites] = createSignal<Website[]>([])
-  const [portPublications, setPortPublications] = createSignal<Ports[]>([])
-
-  const [checkBoxBuildCmdShell, setCheckBoxBuildCmdShell] = createSignal(false)
-
   const [createApplicationRequest, setCreateApplicationRequest] = createStore(
     new CreateApplicationRequest({
       config: new ApplicationConfig(),
@@ -486,7 +491,7 @@ export default () => {
   )
 
   const [websiteConfigs, setWebsiteConfigs] = createStore<CreateWebsiteRequest[]>([])
-  const [fieldsPortPublication, setFieldsPortPublication] = createStore<PortPublication[]>([])
+  const [portPublications, setPortPublications] = createStore<PortPublication[]>([])
 
   // Build Config
   type BuildConfigMethod = ApplicationConfig['buildConfig']['case']
@@ -536,6 +541,7 @@ export default () => {
     if (formContainer.reportValidity()) {
       setCreateApplicationRequest('config', 'buildConfig', buildConfig[buildConfigMethod()])
       setCreateApplicationRequest('websites', websiteConfigs)
+      setCreateApplicationRequest('portPublications', portPublications)
       try {
         const res = await client.createApplication(createApplicationRequest)
         toast.success('アプリケーションを登録しました')
@@ -755,17 +761,13 @@ export default () => {
             <Form>
               <FormTextBig>Port Publication Setting</FormTextBig>
               <SettingsContainer>
-                <For each={portPublications()}>
+                <For each={portPublications}>
                   {(portPublication, i) => (
                     <PortPublications
                       portPublication={portPublication}
-                      setPortPublication={(portPublication) =>
-                        setPortPublications((current) => [
-                          ...current.slice(0, i()),
-                          portPublication,
-                          ...current.slice(i() + 1),
-                        ])
-                      }
+                      setPortPublication={(valueName, value) => {
+                        setPortPublications(i(), valueName, value)
+                      }}
                       deletePortPublication={() =>
                         setPortPublications((current) => [...current.slice(0, i()), ...current.slice(i() + 1)])
                       }
@@ -776,7 +778,7 @@ export default () => {
                 <FormButton>
                   <Button
                     onclick={() => {
-                      setPortPublications([...portPublications(), EmptyPortPublication])
+                      setPortPublications([...portPublications, storify(new PortPublication())])
                     }}
                     color='black1'
                     size='large'
@@ -806,7 +808,7 @@ export default () => {
 
             <Button
               onclick={() => {
-                console.log(websiteConfigs)
+                console.log(portPublications)
               }}
               color='black1'
               size='large'
