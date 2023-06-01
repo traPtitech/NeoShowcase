@@ -27,7 +27,7 @@ const ItemContainer = styled('div', {
 
 export interface RadioItem<T extends string | number> {
   value: T
-  title: T
+  title: string
 }
 
 export interface Props<T extends string | number> {

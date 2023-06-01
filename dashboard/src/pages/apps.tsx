@@ -13,7 +13,7 @@ import { Container } from '/@/libs/layout'
 import { Button } from '/@/components/Button'
 import { A } from '@solidjs/router'
 
-const sortItems: RadioItem[] = [
+const sortItems: RadioItem<string>[] = [
   { value: 'desc', title: '最新順' },
   { value: 'asc', title: '古い順' },
 ]

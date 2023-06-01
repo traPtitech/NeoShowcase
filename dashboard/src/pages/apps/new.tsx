@@ -40,7 +40,7 @@ const [apps] = createResource(() => client.getApplications({}))
 
 const loaded = () => !!(repos() && apps())
 
-const buildConfigItems: RadioItem[] = [
+const buildConfigItems: RadioItem<string>[] = [
   { value: 'runtimeBuildpack', title: 'runtime buildpack' },
   { value: 'runtimeCmd', title: 'runtime cmd' },
   { value: 'runtimeDockerfile', title: 'runtime dockerfile' },
@@ -307,7 +307,7 @@ const Website = (props: WebsiteProps) => {
   )
 }
 
-const authenticationTypeItems: RadioItem[] = [
+const authenticationTypeItems: RadioItem<AuthenticationType>[] = [
   { value: AuthenticationType.OFF, title: 'OFF' },
   { value: AuthenticationType.SOFT, title: 'SOFT' },
   { value: AuthenticationType.HARD, title: 'HARD' },
@@ -368,7 +368,7 @@ const PortPublications = (props: PortPublicationProps) => {
   )
 }
 
-const protocolItems: RadioItem[] = [
+const protocolItems: RadioItem<number>[] = [
   { value: 0, title: 'TCP' },
   { value: 1, title: 'UDP' },
 ]
