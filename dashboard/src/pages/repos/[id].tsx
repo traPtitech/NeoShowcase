@@ -1,5 +1,5 @@
 import Fuse from 'fuse.js'
-import { Component, createEffect, createResource, createSignal, For, JSX, onCleanup, Show } from 'solid-js'
+import { Component, createEffect, createMemo, createResource, createSignal, For, JSX, onCleanup, Show } from 'solid-js'
 import toast from 'solid-toast'
 import { ConnectError } from '@bufbuild/connect'
 import { styled } from '@macaron-css/solid'
@@ -160,22 +160,25 @@ export default () => {
   const [userSearchResults, setUserSearchResults] = createSignal<User[]>([])
 
   // ユーザー検索
-  // - users()の更新時にFuseインスタンスを再生成する
-  // - userSearchQuery()の更新時に検索を実行する
-  // ため二重にcreateEffectを使用している
+  // users()の更新時にFuseインスタンスを再生成する
+  const fuse = createMemo(
+    () =>
+      new Fuse(allUsersResource() ?? [], {
+        keys: ['name'],
+      }),
+  )
+  // userSearchQuery()の更新時に検索を実行する
   createEffect(() => {
-    const fuse = new Fuse(allUsersResource() ?? [], {
-      keys: ['name'],
-    })
-
-    createEffect(() => {
-      // 検索クエリが空の場合は全ユーザーを表示する
-      if (userSearchQuery() === '') {
-        setUserSearchResults(allUsersResource() ?? [])
-      } else {
-        setUserSearchResults(fuse.search(userSearchQuery()).map((result) => result.item))
-      }
-    })
+    // 検索クエリが空の場合は全ユーザーを表示する
+    if (userSearchQuery() === '') {
+      setUserSearchResults(allUsersResource() ?? [])
+    } else {
+      setUserSearchResults(
+        fuse()
+          .search(userSearchQuery())
+          .map((result) => result.item),
+      )
+    }
   })
 
   const handleAddOwner = async (user: User): Promise<void> => {
