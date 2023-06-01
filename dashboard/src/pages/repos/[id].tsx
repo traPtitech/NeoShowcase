@@ -1,8 +1,9 @@
-import { createResource, For, JSX, onCleanup, Show } from 'solid-js'
+import { Component, createResource, For, JSX, onCleanup, Show } from 'solid-js'
 import toast from 'solid-toast'
 import { ConnectError } from '@bufbuild/connect'
 import { styled } from '@macaron-css/solid'
 import { useNavigate, useParams } from '@solidjs/router'
+import { User } from '/@/api/neoshowcase/protobuf/gateway_pb'
 import AppRow from '/@/components/AppRow'
 import { Button } from '/@/components/Button'
 import {
@@ -61,6 +62,28 @@ const ModalText = styled('div', {
   },
 })
 
+const UserContainer = styled('div', {
+  base: {
+    display: 'flex',
+    flexDirection: 'row',
+    gap: '8px',
+    alignItems: 'center',
+  },
+})
+const UserAvatar = styled('img', {
+  base: {
+    width: '32px',
+    height: '32px',
+    borderRadius: '50%',
+  },
+})
+const UserName = styled('div', {
+  base: {
+    fontSize: '16px',
+    color: vars.text.black1,
+  },
+})
+
 export default () => {
   const navigate = useNavigate()
   const params = useParams()
@@ -75,6 +98,14 @@ export default () => {
       return repo() ? allAppsRes.applications.filter((app) => app.repositoryId === repo()?.id) : []
     },
   )
+  const [users] = createResource(async () => {
+    const allUsersRes = await client.getUsers({})
+    return allUsersRes.users
+  })
+
+  const userFromId = (userId: string): User | undefined => {
+    return users()?.find((user) => user.id === userId)
+  }
 
   const { Modal: DeleteRepoModal, open: openDeleteRepoModal, close: closeDeleteRepoModal } = useModal()
 
@@ -102,6 +133,41 @@ export default () => {
 
   const handleCreateApplication: JSX.EventHandler<HTMLButtonElement, MouseEvent> = async () => {
     navigate(`/apps/new?repositoryID=${repo()?.id}`)
+  }
+
+  const handleDeleteOwner = async (user: User): Promise<void> => {
+    try {
+      await client.updateRepository({
+        ownerIds: repo()?.ownerIds.filter((id) => id !== user.id),
+      })
+      toast.success('リポジトリのオーナーを削除しました')
+    } catch (e) {
+      console.error(e)
+      // gRPCエラー
+      if (e instanceof ConnectError) {
+        toast.error('リポジトリのオーナーの削除に失敗しました\n' + e.message)
+      }
+    }
+  }
+
+  const OwnerRow: Component<{
+    user: User
+  }> = (props) => {
+    return (
+      <UserContainer>
+        <UserAvatar src={props.user.avatarUrl} />
+        <UserName>{props.user.name}</UserName>
+        <Button
+          color='black1'
+          size='large'
+          onclick={() => {
+            handleDeleteOwner(props.user)
+          }}
+        >
+          削除
+        </Button>
+      </UserContainer>
+    )
   }
 
   return (
@@ -183,6 +249,23 @@ export default () => {
               <For each={apps()}>{(app) => <AppRow app={app} />}</For>
             </div>
           </Card>
+          <Show when={users()}>
+            <Card
+              style={{
+                width: '100%',
+              }}
+            >
+              <CardTitle>Owners</CardTitle>
+              <div>
+                <For each={repo().ownerIds}>
+                  {(ownerId) => {
+                    const user = userFromId(ownerId)
+                    return <OwnerRow user={user} />
+                  }}
+                </For>
+              </div>
+            </Card>
+          </Show>
         </CardsContainer>
       </Show>
     </Container>
