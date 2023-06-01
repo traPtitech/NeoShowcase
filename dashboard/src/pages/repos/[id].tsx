@@ -160,10 +160,15 @@ export default () => {
   const [userSearchResults, setUserSearchResults] = createSignal<User[]>([])
 
   // ユーザー検索
+  const nonOwnerUsers = createMemo(() => {
+    if (!allUsersResource() || !repo()) return []
+    return allUsersResource().filter((user) => !repo().ownerIds.includes(user.id))
+  })
+
   // users()の更新時にFuseインスタンスを再生成する
   const fuse = createMemo(
     () =>
-      new Fuse(allUsersResource() ?? [], {
+      new Fuse(nonOwnerUsers(), {
         keys: ['name'],
       }),
   )
@@ -171,7 +176,7 @@ export default () => {
   createEffect(() => {
     // 検索クエリが空の場合は全ユーザーを表示する
     if (userSearchQuery() === '') {
-      setUserSearchResults(allUsersResource() ?? [])
+      setUserSearchResults(nonOwnerUsers())
     } else {
       setUserSearchResults(
         fuse()
