@@ -983,10 +983,10 @@
     "@vanilla-extract/integration" "^6.0.0"
     esbuild "^0.14.42"
 
-"@macaron-css/solid@1.0.1":
-  version "1.0.1"
-  resolved "https://registry.yarnpkg.com/@macaron-css/solid/-/solid-1.0.1.tgz#bb2f1f51f5915fce6aabf4996a21bcc5c813280c"
-  integrity sha512-M/NOsagaNFYbYASMVRNRe+vpSzv1UAT1c601cE7BqnTyUZ8NyWTXVTzZlbThPTfNNRuvTcoirk0fF/iUshzGNw==
+"@macaron-css/solid@1.4.1":
+  version "1.4.1"
+  resolved "https://registry.yarnpkg.com/@macaron-css/solid/-/solid-1.4.1.tgz#5c83c98409b271354bed894a664fe18398afbef6"
+  integrity sha512-YWY3TH1XtbOHXv4ASLePCn+S4rUw31kYOYExROpJ5K5bJctSId4sFn3bZpY6fDrQ88p+pkIuf16ZkdMgiJZmOw==
 
 "@macaron-css/vite@1.3.0":
   version "1.3.0"
