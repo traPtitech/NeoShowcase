@@ -1713,7 +1713,7 @@ fsevents@~2.3.2:
   resolved "https://registry.yarnpkg.com/fsevents/-/fsevents-2.3.2.tgz#8a526f78b8fdf4623b709e0b975c52c24c02fd1a"
   integrity sha512-xiqMQR4xAeHTuB9uWm+fFRcIOgKBMiOBP+eXiyT7jsgVCq1bkVygt00oASowB7EdtpOHaaPgKt812P9ab+DDKA==
 
-fuse.js@^6.6.2:
+fuse.js@6.6.2:
   version "6.6.2"
   resolved "https://registry.yarnpkg.com/fuse.js/-/fuse.js-6.6.2.tgz#fe463fed4b98c0226ac3da2856a415576dc9a111"
   integrity sha512-cJaJkxCCxC8qIIcPBF9yGxY0W/tVZS3uEISDxhYIdtk8OL93pe+6Zj7LjCqVV4dzbqcriOZ+kQ/NE4RXZHsIGA==
@@ -2028,7 +2028,7 @@ solid-refresh@^0.5.0:
     "@babel/helper-module-imports" "^7.18.6"
     "@babel/types" "^7.21.2"
 
-solid-toast@^0.5.0:
+solid-toast@0.5.0:
   version "0.5.0"
   resolved "https://registry.yarnpkg.com/solid-toast/-/solid-toast-0.5.0.tgz#ed31363aad38434a67c1da1c423fd1492460c6ba"
   integrity sha512-t770JakjyS2P9b8Qa1zMLOD51KYKWXbTAyJePVUoYex5c5FH5S/HtUBUbZAWFcqRCKmAE8KhyIiCvDZA8bOnxQ==
