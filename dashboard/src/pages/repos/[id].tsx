@@ -345,7 +345,7 @@ export default () => {
             <Card>
               <CardTitle>Owners</CardTitle>
               <Button onclick={openEditOwnerModal} color='black1' size='large'>
-                リポジトリ所有者を追加する
+                リポジトリオーナーを追加する
               </Button>
               <EditOwnerModal>
                 <OwnerEditorContainer>
