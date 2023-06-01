@@ -367,16 +367,18 @@ export default () => {
               </div>
             </Card>
           </Show>
-          <Card
-            style={{
-              width: '100%',
-            }}
-          >
-            <CardTitle>Apps</CardTitle>
-            <div>
-              <For each={apps()}>{(app) => <AppRow app={app} />}</For>
-            </div>
-          </Card>
+          <Show when={apps()}>
+            <Card
+              style={{
+                width: '100%',
+              }}
+            >
+              <CardTitle>Apps</CardTitle>
+              <div>
+                <For each={apps()}>{(app) => <AppRow app={app} />}</For>
+              </div>
+            </Card>
+          </Show>
         </CardsContainer>
       </Show>
     </Container>
