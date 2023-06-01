@@ -129,8 +129,6 @@ export default () => {
 
   const { Modal: DeleteRepoModal, open: openDeleteRepoModal, close: closeDeleteRepoModal } = useModal()
 
-  onCleanup(closeDeleteRepoModal)
-
   // リポジトリに紐づくアプリケーションが存在するかどうか
   const canDeleteRepository = (): boolean => apps()?.length === 0
 
