@@ -6,7 +6,7 @@ import { client } from '/@/libs/api'
  * ```typescript
  * const [users, { mutate, refetch }] = createAllUsersResource()
  * ```
- * 
+ *
  * @returns ```typescript
  * [Resource<User[]>, { mutate: Setter<User[]>, refetch: () => void }]
  * ```
