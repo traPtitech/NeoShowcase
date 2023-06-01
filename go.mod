@@ -196,7 +196,5 @@ replace (
 // github.com/cert-manager/cert-manager
 replace github.com/Venafi/vcert/v4 => github.com/jetstack/vcert/v4 v4.9.6-0.20230127103832-3aa3dfd6613d
 
-replace github.com/docker/docker => github.com/docker/docker v20.10.3-0.20220414164044-61404de7df1a+incompatible
-
 // https://github.com/heroku/docker-registry-client/pull/79
 replace github.com/heroku/docker-registry-client => github.com/motoki317/docker-registry-client v0.0.2
