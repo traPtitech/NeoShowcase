@@ -21,6 +21,7 @@ import { URLText } from '/@/components/URLText'
 import { client } from '/@/libs/api'
 import { providerToIcon, repositoryURLToProvider } from '/@/libs/application'
 import { CenterInline, Container } from '/@/libs/layout'
+import useAllUsers from '/@/libs/useAllUsers'
 import useModal from '/@/libs/useModal'
 import { vars } from '/@/theme'
 
@@ -125,10 +126,7 @@ export default () => {
       return repo() ? allAppsRes.applications.filter((app) => app.repositoryId === repo()?.id) : []
     },
   )
-  const [users] = createResource(async () => {
-    const allUsersRes = await client.getUsers({})
-    return allUsersRes.users
-  })
+  const [users] = useAllUsers()
 
   const userFromId = (userId: string): User | undefined => {
     return users()?.find((user) => user.id === userId)
