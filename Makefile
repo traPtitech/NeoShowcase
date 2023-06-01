@@ -1,3 +1,4 @@
+PROTOC_VERSION := 23.2
 TBLS_VERSION := 1.65.3
 SPECTRAL_VERSION := 6.4.0
 
@@ -17,14 +18,18 @@ EVANS_CMD := evans
 help: ## Display this help screen
 	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-20s\033[0m %s\n", $$1, $$2}'
 
-.PHONY: init-protoc
-init-protoc: ## Install protoc commands
+.PHONY: init-protoc ## Install protoc
+init-protoc:
+	@PROTOC_VERSION=$(PROTOC_VERSION) ./.local-dev/install-protoc.sh
+
+.PHONY: init-protoc-tools
+init-protoc-tools: ## Install other protoc tools
 	go install google.golang.org/protobuf/cmd/protoc-gen-go@latest
 	go install github.com/bufbuild/connect-go/cmd/protoc-gen-connect-go@latest
 	yarn global add @bufbuild/protoc-gen-connect-es @bufbuild/protoc-gen-es
 
 .PHONY: init
-init: init-protoc ## Install commands
+init: init-protoc init-protoc-tools ## Install commands
 	go mod download
 	go install github.com/k0kubun/sqldef/cmd/mysqldef@latest
 	go install github.com/ktr0731/evans@latest
