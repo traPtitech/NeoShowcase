@@ -67,6 +67,14 @@ const UserContainer = styled('div', {
   base: {
     display: 'flex',
     flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+})
+const UserRowLeft = styled('div', {
+  base: {
+    display: 'flex',
+    flexDirection: 'row',
     gap: '8px',
     alignItems: 'center',
   },
@@ -90,7 +98,16 @@ const OwnerEditorContainer = styled('div', {
     display: 'flex',
     flexDirection: 'column',
     gap: '8px',
-    maxHeight: '480px',
+    height: '480px',
+  },
+})
+
+const OwnerEditorUserList = styled('div', {
+  base: {
+    display: 'flex',
+    flexDirection: 'column',
+    gap: '8px',
+    overflowY: 'auto',
   },
 })
 
@@ -207,8 +224,10 @@ export default () => {
         {(user) => {
           return (
             <UserContainer>
-              <UserAvatar src={user.avatarUrl} />
-              <UserName>{user.name}</UserName>
+              <UserRowLeft>
+                <UserAvatar src={user.avatarUrl} />
+                <UserName>{user.name}</UserName>
+              </UserRowLeft>
               <Button
                 color='black1'
                 size='large'
@@ -230,8 +249,10 @@ export default () => {
   }> = (props) => {
     return (
       <UserContainer>
-        <UserAvatar src={props.user.avatarUrl} />
-        <UserName>{props.user.name}</UserName>
+        <UserRowLeft>
+          <UserAvatar src={props.user.avatarUrl} />
+          <UserName>{props.user.name}</UserName>
+        </UserRowLeft>
         <Button
           color='black1'
           size='large'
@@ -341,9 +362,9 @@ export default () => {
                       setUserSearchQuery(e.currentTarget.value)
                     }}
                   />
-                  <div style={{ 'overflow-y': 'hidden' }}>
+                  <OwnerEditorUserList>
                     <OwnerSuggestions users={userSearchResults()} />
-                  </div>
+                  </OwnerEditorUserList>
                 </OwnerEditorContainer>
               </EditOwnerModal>
               <div>
