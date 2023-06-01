@@ -1,4 +1,5 @@
-import { Component, createResource, For, JSX, onCleanup, Show } from 'solid-js'
+import Fuse from 'fuse.js'
+import { Component, createEffect, createResource, createSignal, For, JSX, onCleanup, Show } from 'solid-js'
 import toast from 'solid-toast'
 import { ConnectError } from '@bufbuild/connect'
 import { styled } from '@macaron-css/solid'
@@ -84,6 +85,15 @@ const UserName = styled('div', {
   },
 })
 
+const OwnerEditorContainer = styled('div', {
+  base: {
+    display: 'flex',
+    flexDirection: 'column',
+    gap: '8px',
+    maxHeight: '480px',
+  },
+})
+
 export default () => {
   const navigate = useNavigate()
   const params = useParams()
@@ -135,6 +145,45 @@ export default () => {
     navigate(`/apps/new?repositoryID=${repo()?.id}`)
   }
 
+  // リポジトリのオーナー編集処理
+  const { Modal: EditOwnerModal, open: openEditOwnerModal, close: closeEditOwnerModal } = useModal()
+
+  const [userSearchQuery, setUserSearchQuery] = createSignal('')
+  const [userSearchResults, setUserSearchResults] = createSignal<User[]>([])
+
+  // ユーザー検索
+  // - users()の更新時にFuseインスタンスを再生成する
+  // - userSearchQuery()の更新時に検索を実行する
+  // ため二重にcreateEffectを使用している
+  createEffect(() => {
+    const fuse = new Fuse(users() ?? [], {
+      keys: ['name'],
+    })
+
+    createEffect(() => {
+      // 検索クエリが空の場合は全ユーザーを表示する
+      if (userSearchQuery() === '') {
+        setUserSearchResults(users() ?? [])
+      } else {
+        setUserSearchResults(fuse.search(userSearchQuery()).map((result) => result.item))
+      }
+    })
+  })
+
+  const handleAddOwner = async (user: User): Promise<void> => {
+    try {
+      await client.updateRepository({
+        ownerIds: repo()?.ownerIds.concat(user.id),
+      })
+      toast.success('リポジトリのオーナーを追加しました')
+    } catch (e) {
+      // gRPCエラー
+      if (e instanceof ConnectError) {
+        toast.error('リポジトリのオーナーの追加に失敗しました\n' + e.message)
+      }
+    }
+  }
+
   const handleDeleteOwner = async (user: User): Promise<void> => {
     try {
       await client.updateRepository({
@@ -148,6 +197,32 @@ export default () => {
         toast.error('リポジトリのオーナーの削除に失敗しました\n' + e.message)
       }
     }
+  }
+
+  const OwnerSuggestions: Component<{
+    users: User[]
+  }> = (props) => {
+    return (
+      <For each={props.users}>
+        {(user) => {
+          return (
+            <UserContainer>
+              <UserAvatar src={user.avatarUrl} />
+              <UserName>{user.name}</UserName>
+              <Button
+                color='black1'
+                size='large'
+                onclick={() => {
+                  handleAddOwner(user)
+                }}
+              >
+                追加
+              </Button>
+            </UserContainer>
+          )
+        }}
+      </For>
+    )
   }
 
   const OwnerRow: Component<{
@@ -250,12 +325,27 @@ export default () => {
             </div>
           </Card>
           <Show when={users()}>
-            <Card
-              style={{
-                width: '100%',
-              }}
-            >
+            <Card>
               <CardTitle>Owners</CardTitle>
+              <Button onclick={openEditOwnerModal} color='black1' size='large'>
+                リポジトリ所有者を追加する
+              </Button>
+              <EditOwnerModal>
+                <OwnerEditorContainer>
+                  ユーザーを検索して追加
+                  <input
+                    type="text"
+                    value={userSearchQuery()}
+                    placeholder='ユーザー名'
+                    oninput={(e) => {
+                      setUserSearchQuery(e.currentTarget.value)
+                    }}
+                  />
+                  <div style={{ 'overflow-y': 'hidden' }}>
+                    <OwnerSuggestions users={userSearchResults()} />
+                  </div>
+                </OwnerEditorContainer>
+              </EditOwnerModal>
               <div>
                 <For each={repo().ownerIds}>
                   {(ownerId) => {
