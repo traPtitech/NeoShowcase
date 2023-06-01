@@ -8,10 +8,11 @@ require (
 	github.com/cert-manager/cert-manager v1.11.1
 	github.com/docker/cli v24.0.0-rc.2+incompatible
 	github.com/docker/docker v23.0.5+incompatible
+	github.com/docker/go-connections v0.4.0
 	github.com/friendsofgo/errors v0.9.2
 	github.com/gliderlabs/ssh v0.3.5
 	github.com/go-git/go-git/v5 v5.6.1
-	github.com/go-playground/webhooks/v6 v6.0.1
+	github.com/go-playground/webhooks/v6 v6.1.0
 	github.com/go-sql-driver/mysql v1.7.1
 	github.com/golang/mock v1.6.0
 	github.com/google/wire v0.5.0
@@ -69,7 +70,6 @@ require (
 	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/docker/distribution v2.8.1+incompatible // indirect
 	github.com/docker/docker-credential-helpers v0.7.0 // indirect
-	github.com/docker/go-connections v0.4.0 // indirect
 	github.com/docker/go-units v0.5.0 // indirect
 	github.com/docker/libtrust v0.0.0-20160708172513-aabc10ec26b7 // indirect
 	github.com/emicklei/go-restful/v3 v3.10.2 // indirect
