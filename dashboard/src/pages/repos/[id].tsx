@@ -115,7 +115,7 @@ const OwnerEditorUserList = styled('div', {
 export default () => {
   const navigate = useNavigate()
   const params = useParams()
-  const [repo] = createResource(
+  const [repo, { refetch: refetchRepository }] = createResource(
     () => params.id,
     (id) => client.getRepository({ repositoryId: id }),
   )
@@ -191,6 +191,7 @@ export default () => {
         id: repo()?.id,
         ownerIds: repo()?.ownerIds.concat(user.id),
       })
+      refetchRepository()
       toast.success('リポジトリのオーナーを追加しました')
     } catch (e) {
       // gRPCエラー
@@ -206,6 +207,7 @@ export default () => {
         id: repo()?.id,
         ownerIds: repo()?.ownerIds.filter((id) => id !== user.id),
       })
+      refetchRepository()
       toast.success('リポジトリのオーナーを削除しました')
     } catch (e) {
       console.error(e)
