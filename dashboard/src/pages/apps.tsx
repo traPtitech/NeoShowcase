@@ -169,17 +169,14 @@ export default () => {
           <MainContainer>
             <SearchBarContainer>
               <SearchBar placeholder='Search...' />
-              <A href="/repos/new">
+              <A href='/repos/new'>
                 <Button color='black1' size='large'>
                   + New Repository
                 </Button>
               </A>
             </SearchBarContainer>
             <RepositoriesContainer>
-              <For
-                each={repos().repositories}
-                children={(r) => <RepositoryRow repo={r} apps={appsByRepo()[r.id] || []} />}
-              />
+              <For each={repos().repositories}>{(r) => <RepositoryRow repo={r} apps={appsByRepo()[r.id] || []} />}</For>
             </RepositoriesContainer>
           </MainContainer>
         </ContentContainer>

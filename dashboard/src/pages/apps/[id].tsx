@@ -294,14 +294,13 @@ export default () => {
                 </CardItem>
                 <CardItem>
                   <CardItemTitle>
-                    <For
-                      each={app().websites}
-                      children={(website) => (
-                        <URLText href={getWebsiteURL(website)} target='_blank' rel="noreferrer">
+                    <For each={app().websites}>
+                      {(website) => (
+                        <URLText href={getWebsiteURL(website)} target='_blank' rel='noreferrer'>
                           {getWebsiteURL(website)}
                         </URLText>
                       )}
-                    />
+                    </For>
                   </CardItemTitle>
                 </CardItem>
               </Show>
@@ -364,10 +363,8 @@ export default () => {
             <Card>
               <CardTitle>Container Log</CardTitle>
               <LogContainer ref={logRef} overflowX='scroll'>
-                {/* rome-ignore lint: Avoid passing children using a prop */}
-                <For each={reversedLog()} children={(l) => <span>{l.log}</span>} />
-                {/* rome-ignore lint: Avoid passing children using a prop */}
-                <For each={streamedLog()} children={(line) => <span>{line}</span>} />
+                <For each={reversedLog()}>{(l) => <span>{l.log}</span>}</For>
+                <For each={streamedLog()}>{(line) => <span>{line}</span>}</For>
               </LogContainer>
             </Card>
           </Show>
