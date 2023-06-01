@@ -21,7 +21,7 @@ import { URLText } from '/@/components/URLText'
 import { client } from '/@/libs/api'
 import { providerToIcon, repositoryURLToProvider } from '/@/libs/application'
 import { CenterInline, Container } from '/@/libs/layout'
-import useAllUsers from '/@/libs/useAllUsers'
+import { allUsersResource } from '/@/libs/useAllUsers'
 import useModal from '/@/libs/useModal'
 import { vars } from '/@/theme'
 
@@ -126,10 +126,9 @@ export default () => {
       return repo() ? allAppsRes.applications.filter((app) => app.repositoryId === repo()?.id) : []
     },
   )
-  const [users] = useAllUsers()
 
   const userFromId = (userId: string): User | undefined => {
-    return users()?.find((user) => user.id === userId)
+    return allUsersResource()?.find((user) => user.id === userId)
   }
 
   const { Modal: DeleteRepoModal, open: openDeleteRepoModal, close: closeDeleteRepoModal } = useModal()
@@ -171,14 +170,14 @@ export default () => {
   // - userSearchQuery()の更新時に検索を実行する
   // ため二重にcreateEffectを使用している
   createEffect(() => {
-    const fuse = new Fuse(users() ?? [], {
+    const fuse = new Fuse(allUsersResource() ?? [], {
       keys: ['name'],
     })
 
     createEffect(() => {
       // 検索クエリが空の場合は全ユーザーを表示する
       if (userSearchQuery() === '') {
-        setUserSearchResults(users() ?? [])
+        setUserSearchResults(allUsersResource() ?? [])
       } else {
         setUserSearchResults(fuse.search(userSearchQuery()).map((result) => result.item))
       }
@@ -341,7 +340,7 @@ export default () => {
               </CardItem>
             </CardItems>
           </Card>
-          <Show when={users()}>
+          <Show when={allUsersResource()}>
             <Card>
               <CardTitle>Owners</CardTitle>
               <Button onclick={openEditOwnerModal} color='black1' size='large'>
