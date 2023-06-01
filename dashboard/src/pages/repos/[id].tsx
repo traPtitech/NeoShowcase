@@ -163,7 +163,7 @@ export default () => {
   }
 
   // リポジトリのオーナー編集処理
-  const { Modal: EditOwnerModal, open: openEditOwnerModal, close: closeEditOwnerModal } = useModal()
+  const { Modal: EditOwnerModal, open: openEditOwnerModal } = useModal()
 
   const [userSearchQuery, setUserSearchQuery] = createSignal('')
   const [userSearchResults, setUserSearchResults] = createSignal<User[]>([])
