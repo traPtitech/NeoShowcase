@@ -149,7 +149,7 @@ export default () => {
     }
   }
 
-  const handleCreateApplication: JSX.EventHandler<HTMLButtonElement, MouseEvent> = async () => {
+  const handleCreateApplication = async () => {
     navigate(`/apps/new?repositoryID=${repo()?.id}`)
   }
 
