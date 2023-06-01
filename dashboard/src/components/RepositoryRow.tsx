@@ -1,18 +1,10 @@
 import { For, JSXElement } from 'solid-js'
-import { StatusIcon } from '/@/components/StatusIcon'
 import { Application, Repository } from '/@/api/neoshowcase/protobuf/gateway_pb'
-import { applicationState, providerToIcon, repositoryURLToProvider } from '/@/libs/application'
-import { DiffHuman, shortSha } from '/@/libs/format'
+import { providerToIcon, repositoryURLToProvider } from '/@/libs/application'
 import { A } from '@solidjs/router'
 import { styled } from '@macaron-css/solid'
 import { vars } from '/@/theme'
-
-const Container = styled('div', {
-  base: {
-    borderRadius: '4px',
-    border: `1px solid ${vars.bg.white4}`,
-  },
-})
+import AppRow from '/@/components/AppRow'
 
 const Header = styled('div', {
   base: {
@@ -24,6 +16,17 @@ const Header = styled('div', {
 
     padding: '0 20px',
     backgroundColor: vars.bg.white3,
+
+    borderRadius: '4px',
+    border: `1px solid ${vars.bg.white4}`,
+    overflow: 'hidden',
+
+    selectors: {
+      '&:not(:last-child)': {
+        borderBottom: 'none',
+        borderRadius: '4px 4px 0 0',
+      },
+    },
   },
 })
 
@@ -67,64 +70,6 @@ const AddBranchButton = styled('div', {
   },
 })
 
-const ApplicationContainer = styled('div', {
-  base: {
-    height: '40px',
-    display: 'grid',
-    gridTemplateColumns: '20px 1fr',
-    gap: '8px',
-    padding: '12px 20px',
-
-    backgroundColor: vars.bg.white1,
-  },
-  variants: {
-    upperBorder: {
-      none: {},
-      line: {
-        borderWidth: '1px 0',
-        borderStyle: 'solid',
-        borderColor: vars.bg.white4,
-      },
-    },
-  },
-})
-
-const AppDetail = styled('div', {
-  base: {
-    display: 'flex',
-    flexDirection: 'column',
-    gap: '4px',
-  },
-})
-
-const AppName = styled('div', {
-  base: {
-    fontSize: '14px',
-    fontWeight: 500,
-    color: vars.text.black1,
-  },
-})
-
-const AppFooter = styled('div', {
-  base: {
-    display: 'flex',
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    width: '100%',
-
-    fontSize: '11px',
-    color: vars.text.black3,
-  },
-})
-
-const AppFooterRight = styled('div', {
-  base: {
-    display: 'flex',
-    flexDirection: 'row',
-    gap: '48px',
-  },
-})
-
 export type Provider = 'GitHub' | 'GitLab' | 'Gitea'
 
 export interface Props {
@@ -135,7 +80,7 @@ export interface Props {
 export const RepositoryRow = (props: Props): JSXElement => {
   const provider = repositoryURLToProvider(props.repo.url)
   return (
-    <Container>
+    <div>
       <Header>
         <A href={`/repos/${props.repo.id}`}>
           <HeaderLeft>
@@ -152,26 +97,7 @@ export const RepositoryRow = (props: Props): JSXElement => {
           </AddBranchButton>
         </A>
       </Header>
-      <For
-        each={props.apps}
-        children={(app, i) => (
-          <A href={`/apps/${app.id}`}>
-            <ApplicationContainer upperBorder={i() === props.apps.length - 1 ? 'none' : 'line'}>
-              <StatusIcon state={applicationState(app)} />
-              <AppDetail>
-                <AppName>{app.name}</AppName>
-                <AppFooter>
-                  <div>{shortSha(app.currentCommit)}</div>
-                  <AppFooterRight>
-                    <div>{app.websites[0]?.fqdn || ''}</div>
-                    <DiffHuman target={app.updatedAt.toDate()} />
-                  </AppFooterRight>
-                </AppFooter>
-              </AppDetail>
-            </ApplicationContainer>
-          </A>
-        )}
-      />
-    </Container>
+      <For each={props.apps}>{(app) => <AppRow app={app} />}</For>
+    </div>
   )
 }
