@@ -713,13 +713,9 @@ export default () => {
                   {(website, i) => (
                     <Website
                       website={website}
-                      setWebsite={(valueName, value) =>
-                        setWebsiteConfigs((prev) => {
-                          const newWebsites = [...prev]
-                          newWebsites[i()][valueName] = value
-                          return newWebsites
-                        })
-                      }
+                      setWebsite={(valueName, value) => {
+                        setWebsiteConfigs(i(), valueName, value)
+                      }}
                       deleteWebsite={() =>
                         setWebsiteConfigs((current) => [...current.slice(0, i()), ...current.slice(i() + 1)])
                       }
@@ -730,7 +726,7 @@ export default () => {
                 <FormButton>
                   <Button
                     onclick={() => {
-                      setWebsiteConfigs([...websiteConfigs, new CreateWebsiteRequest()])
+                      setWebsiteConfigs([...websiteConfigs, storify(new CreateWebsiteRequest())])
                     }}
                     color='black1'
                     size='large'
