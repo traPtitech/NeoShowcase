@@ -402,7 +402,7 @@ service APIService {
   // DeleteApplication アプリを削除します 先にアプリのシャットダウンが必要です
   rpc DeleteApplication(ApplicationIdRequest) returns (google.protobuf.Empty);
 
-  // Application info / config
+  // Application config
 
   // GetEnvVars アプリの環境変数を取得します
   rpc GetEnvVars(ApplicationIdRequest) returns (ApplicationEnvVars);
