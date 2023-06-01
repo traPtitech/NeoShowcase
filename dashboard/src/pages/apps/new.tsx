@@ -252,11 +252,19 @@ const Website = (props: WebsiteProps) => {
     <FormWebsite>
       <Form>
         <InputLabel>ドメイン名</InputLabel>
-        <InputBar placeholder='example.ns.trap.jp' />
+        <InputBar
+          placeholder='example.ns.trap.jp'
+          value={props.website.fqdn}
+          onInput={(e) => props.setWebsite('fqdn', e.target.value)}
+        />
       </Form>
       <Form>
         <InputLabel>Path Prefix</InputLabel>
-        <InputBar placeholder='/' />
+        <InputBar
+          placeholder='/'
+          value={props.website.pathPrefix}
+          onInput={(e) => props.setWebsite('pathPrefix', e.target.value)}
+        />
       </Form>
       <Form>
         <FormCheckBox>
@@ -276,7 +284,12 @@ const Website = (props: WebsiteProps) => {
       </Form>
       <Form>
         <InputLabel>アプリのHTTP Port番号</InputLabel>
-        <InputBar placeholder='80' />
+        <InputBar
+          placeholder='80'
+          type="number"
+          // value={props.website.httpPort} // 入れると初期値が0になってしまう。
+          onChange={(e) => props.setWebsite('httpPort', e.target.value)}
+        />
       </Form>
       <Form>
         <Radio
@@ -522,6 +535,7 @@ export default () => {
     // validate form
     if (formContainer.reportValidity()) {
       setCreateApplicationRequest('config', 'buildConfig', buildConfig[buildConfigMethod()])
+      setCreateApplicationRequest('websites', websiteConfigs)
       try {
         const res = await client.createApplication(createApplicationRequest)
         toast.success('アプリケーションを登録しました')
