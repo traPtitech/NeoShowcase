@@ -103,7 +103,7 @@ const OwnerEditorContainer = styled('div', {
   },
 })
 
-const OwnerEditorUserList = styled('div', {
+const UsersList = styled('div', {
   base: {
     display: 'flex',
     flexDirection: 'column',
@@ -354,19 +354,19 @@ export default () => {
                       setUserSearchQuery(e.currentTarget.value)
                     }}
                   />
-                  <OwnerEditorUserList>
+                  <UsersList>
                     <OwnerSuggestions users={userSearchResults()} />
-                  </OwnerEditorUserList>
+                  </UsersList>
                 </OwnerEditorContainer>
               </EditOwnerModal>
-              <div>
+              <UsersList>
                 <For each={repo().ownerIds}>
                   {(ownerId) => {
                     const user = userFromId(ownerId)
                     return <OwnerRow user={user} />
                   }}
                 </For>
-              </div>
+              </UsersList>
             </Card>
           </Show>
           <Show when={apps()}>
