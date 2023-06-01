@@ -17,12 +17,15 @@ EVANS_CMD := evans
 help: ## Display this help screen
 	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-20s\033[0m %s\n", $$1, $$2}'
 
-.PHONY: init
-init: ## Install commands
-	go mod download
+.PHONY: init-protoc
+init-protoc: ## Install protoc commands
 	go install google.golang.org/protobuf/cmd/protoc-gen-go@latest
 	go install github.com/bufbuild/connect-go/cmd/protoc-gen-connect-go@latest
 	yarn global add @bufbuild/protoc-gen-connect-es @bufbuild/protoc-gen-es
+
+.PHONY: init
+init: init-protoc ## Install commands
+	go mod download
 	go install github.com/k0kubun/sqldef/cmd/mysqldef@latest
 	go install github.com/ktr0731/evans@latest
 

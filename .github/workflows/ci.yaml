@@ -25,30 +25,20 @@ jobs:
       - uses: actions/setup-go@v4
         with:
           go-version-file: ./go.mod
-      - uses: arduino/setup-protoc@v1
-        with:
-          version: '3.9.1'
-      - name: Load cache of generated codes
-        uses: actions/cache@v3
-        id: go-proto-cache
-        with:
-          path: ./pkg/infrastructure/grpc/pb
-          key: ${{ runner.os }}-proto-${{ hashFiles('**/*.proto') }}
+      - uses: arduino/setup-protoc@v2
       - name: Install proto tools
-        run: |
-          go install google.golang.org/protobuf/cmd/protoc-gen-go@latest
-          go install github.com/bufbuild/connect-go/cmd/protoc-gen-connect-go@latest
-          yarn global add @bufbuild/protoc-gen-connect-es @bufbuild/protoc-gen-es
+        run: make init-protoc
       - name: Generate code
-        if: steps.go-proto-cache.outputs.cache-hit != 'true'
         run: make protoc
         env:
           GO_REPO_ROOT_PACKAGE: github.com/traPtitech/neoshowcase
+      - name: Check diff
+        run: git diff --exit-code --quiet
 
   build:
     name: Build Components
     runs-on: ubuntu-latest
-    needs: [ mod, protoc ]
+    needs: [mod]
     strategy:
       matrix:
         component:
@@ -61,17 +51,12 @@ jobs:
       - uses: actions/setup-go@v4
         with:
           go-version-file: ./go.mod
-      - name: Use generated codes
-        uses: actions/cache@v3
-        with:
-          path: ./pkg/infrastructure/grpc/pb
-          key: ${{ runner.os }}-proto-${{ hashFiles('**/*.proto') }}
       - run: go build ./cmd/${{ matrix.component }}
 
   lint:
     name: Lint
     runs-on: ubuntu-latest
-    needs: [ mod, protoc ]
+    needs: [mod]
     steps:
       - uses: actions/checkout@v3
       - uses: actions/setup-go@v4
@@ -81,11 +66,6 @@ jobs:
         run: curl -sfL https://raw.githubusercontent.com/reviewdog/reviewdog/master/install.sh | sh -s -- -b $(go env GOPATH)/bin
       - name: Install golangci-lint
         run: curl -sfL https://install.goreleaser.com/github.com/golangci/golangci-lint.sh | sh -s -- -b $(go env GOPATH)/bin
-      - name: Use generated codes
-        uses: actions/cache@v3
-        with:
-          path: ./pkg/infrastructure/grpc/pb
-          key: ${{ runner.os }}-proto-${{ hashFiles('**/*.proto') }}
       - name: Run golangci-lint
         run: golangci-lint run --out-format=line-number | reviewdog -f=golangci-lint -name=golangci-lint -reporter=github-check
         env:
@@ -94,7 +74,7 @@ jobs:
   test:
     name: Test
     runs-on: ubuntu-latest
-    needs: [ mod, protoc ]
+    needs: [mod]
     env:
       ENABLE_DB_TESTS: "true"
       ENABLE_DOCKER_TESTS: "true"
@@ -120,11 +100,6 @@ jobs:
       - uses: actions/setup-go@v4
         with:
           go-version-file: ./go.mod
-      - name: Use generated codes
-        uses: actions/cache@v3
-        with:
-          path: ./pkg/infrastructure/grpc/pb
-          key: ${{ runner.os }}-proto-${{ hashFiles('**/*.proto') }}
       - name: Run migration
         run: |
           go install github.com/k0kubun/sqldef/cmd/mysqldef@latest
@@ -137,7 +112,7 @@ jobs:
   k8s-test:
     name: Test (k8s)
     runs-on: ubuntu-latest
-    needs: [ mod, protoc ]
+    needs: [mod]
     env:
       ENABLE_K8S_TESTS: "true"
     steps:
@@ -145,11 +120,6 @@ jobs:
       - uses: actions/setup-go@v4
         with:
           go-version-file: ./go.mod
-      - name: Use generated codes
-        uses: actions/cache@v3
-        with:
-          path: ./pkg/infrastructure/grpc/pb
-          key: ${{ runner.os }}-proto-${{ hashFiles('**/*.proto') }}
       - name: Create single cluster
         uses: AbsaOSS/k3d-action@v2
         id: single-cluster
