@@ -50,15 +50,15 @@ export const applicationState = (app: Application): ApplicationState => {
 }
 
 export const repositoryURLToProvider = (url: string): Provider => {
-  url = url.toLowerCase()
-  if (url.includes('github')) return 'GitHub'
-  if (url.includes('gitlab')) return 'GitLab'
-  if (url.includes('gitea')) return 'Gitea'
-  if (url.includes('git.trap.jp')) return 'Gitea'
+  const normalizedURL = url.toLowerCase()
+  if (normalizedURL.includes('github')) return 'GitHub'
+  if (normalizedURL.includes('gitlab')) return 'GitLab'
+  if (normalizedURL.includes('gitea')) return 'Gitea'
+  if (normalizedURL.includes('git.trap.jp')) return 'Gitea'
   return 'GitHub' // fallback?
 }
 
-export const providerToIcon = (provider: Provider, size: number = 20): JSXElement => {
+export const providerToIcon = (provider: Provider, size = 20): JSXElement => {
   switch (provider) {
     case 'GitHub':
       return <AiFillGithub size={size} color={vars.text.black1} />

@@ -351,7 +351,7 @@ export default () => {
                 <OwnerEditorContainer>
                   ユーザーを検索して追加
                   <input
-                    type="text"
+                    type='text'
                     value={userSearchQuery()}
                     placeholder='ユーザー名'
                     oninput={(e) => {

@@ -106,9 +106,8 @@ export default () => {
       <Show when={loaded()}>
         <AppNav repoName={repo().name} appName={app().name} appID={app().id} />
         <BuildsContainer>
-          <For
-            each={sortedBuilds()}
-            children={(b, i) => (
+          <For each={sortedBuilds()}>
+            {(b, i) => (
               <A href={`/apps/${app().id}/builds/${b.id}`}>
                 <BuildContainer upperBorder={i() > 0 && i() < sortedBuilds().length - 1 ? 'line' : 'none'}>
                   <BuildStatusIcon state={b.status} />
@@ -124,7 +123,7 @@ export default () => {
                 </BuildContainer>
               </A>
             )}
-          />
+          </For>
         </BuildsContainer>
       </Show>
     </Container>

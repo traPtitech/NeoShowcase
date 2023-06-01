@@ -261,7 +261,7 @@ export default () => {
               </Show>
             </Match>
           </Switch>
-          <Button color='black1' size='large' onclick={createRepository} type="submit">
+          <Button color='black1' size='large' onclick={createRepository} type='submit'>
             + Create new Repository
           </Button>
         </InputFormContainer>
