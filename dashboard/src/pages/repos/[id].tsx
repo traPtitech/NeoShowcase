@@ -186,6 +186,10 @@ export default () => {
   })
 
   const handleAddOwner = async (user: User): Promise<void> => {
+    if (repo().ownerIds.includes(user.id)) {
+      toast.error('既にリポジトリのオーナーです')
+      return
+    }
     try {
       await client.updateRepository({
         id: repo()?.id,
