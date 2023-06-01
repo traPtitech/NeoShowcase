@@ -6,17 +6,10 @@ import (
 	"github.com/friendsofgo/errors"
 	"github.com/go-playground/webhooks/v6/github"
 	"github.com/labstack/echo/v4"
+	"github.com/samber/lo"
 )
 
-var githubHook *github.Webhook
-
-func init() {
-	hook, err := github.New()
-	if err != nil {
-		panic(err)
-	}
-	githubHook = hook
-}
+var githubHook = lo.Must(github.New())
 
 func (r *Receiver) githubHandler(c echo.Context) error {
 	rawPayload, err := githubHook.Parse(c.Request(), github.PushEvent)
