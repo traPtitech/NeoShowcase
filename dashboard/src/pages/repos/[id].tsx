@@ -335,16 +335,6 @@ export default () => {
               </CardItem>
             </CardItems>
           </Card>
-          <Card
-            style={{
-              width: '100%',
-            }}
-          >
-            <CardTitle>Apps</CardTitle>
-            <div>
-              <For each={apps()}>{(app) => <AppRow app={app} />}</For>
-            </div>
-          </Card>
           <Show when={users()}>
             <Card>
               <CardTitle>Owners</CardTitle>
@@ -377,6 +367,16 @@ export default () => {
               </div>
             </Card>
           </Show>
+          <Card
+            style={{
+              width: '100%',
+            }}
+          >
+            <CardTitle>Apps</CardTitle>
+            <div>
+              <For each={apps()}>{(app) => <AppRow app={app} />}</For>
+            </div>
+          </Card>
         </CardsContainer>
       </Show>
     </Container>
