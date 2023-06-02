@@ -29,11 +29,8 @@ import { providerToIcon, repositoryURLToProvider } from '/@/libs/application'
 import { createStore, SetStoreFunction } from 'solid-js/store'
 import toast from 'solid-toast'
 import { ConnectError } from '@bufbuild/connect'
-// ストアを作成するためのユーティリティ関数
-const storify = <T extends {},>(class_: T) => {
-  const [store, _] = createStore(class_)
-  return store
-}
+import { storify } from '/@/libs/storify'
+
 const [repos] = createResource(() => client.getRepositories({}))
 const [apps] = createResource(() => client.getApplications({}))
 
