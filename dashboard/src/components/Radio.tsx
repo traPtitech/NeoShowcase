@@ -41,7 +41,7 @@ export const Radio = <T extends string | number>(props: Props<T>): JSXElement =>
   return (
     <Container>
       <For each={props.items}>
-        {(item: RadioItem<T>) => (
+        {(item) => (
           <ItemContainer
             onClick={() => {
               props.setSelected(item.value)
