@@ -371,7 +371,7 @@ export default () => {
               </UsersList>
             </Card>
           </Show>
-          <Show when={apps()}>
+          <Show when={apps()?.length > 0}>
             <Card
               style={{
                 width: '100%',
