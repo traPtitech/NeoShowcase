@@ -364,7 +364,6 @@ const FormRuntimeConfig = (props: FormRuntimeConfigProps) => {
       <Form>
         <InputLabel>Entrypoint</InputLabel>
         <InputBar
-          placeholder=''
           value={props.runtimeConfig.entrypoint}
           onInput={(e) => props.setRuntimeConfig('entrypoint', e.target.value)}
         />
@@ -372,7 +371,6 @@ const FormRuntimeConfig = (props: FormRuntimeConfigProps) => {
       <Form>
         <InputLabel>Command</InputLabel>
         <InputBar
-          placeholder=''
           value={props.runtimeConfig.command}
           onInput={(e) => props.setRuntimeConfig('command', e.target.value)}
         />
@@ -569,7 +567,6 @@ export default () => {
                     <Form>
                       <InputLabel>Context</InputLabel>
                       <InputBar
-                        placeholder=''
                         value={buildConfig.runtimeBuildpack.value.context}
                         onInput={(e) => setBuildConfig('runtimeBuildpack', 'value', 'context', e.target.value)}
                       />
@@ -581,7 +578,6 @@ export default () => {
                     <Form>
                       <InputLabel>Base image</InputLabel>
                       <InputBar
-                        placeholder=''
                         value={buildConfig.runtimeCmd.value.baseImage}
                         onInput={(e) => setBuildConfig('runtimeCmd', 'value', 'baseImage', e.target.value)}
                       />
@@ -589,7 +585,6 @@ export default () => {
                     <Form>
                       <InputLabel>Build command</InputLabel>
                       <InputBar
-                        placeholder=''
                         value={buildConfig.runtimeCmd.value.buildCmd}
                         onInput={(e) => setBuildConfig('runtimeCmd', 'value', 'buildCmd', e.target.value)}
                       />
@@ -612,7 +607,6 @@ export default () => {
                     <Form>
                       <InputLabel>Dockerfile name</InputLabel>
                       <InputBar
-                        placeholder=''
                         value={buildConfig.runtimeDockerfile.value.dockerfileName}
                         onInput={(e) => setBuildConfig('runtimeDockerfile', 'value', 'dockerfileName', e.target.value)}
                       />
@@ -620,7 +614,6 @@ export default () => {
                     <Form>
                       <InputLabel>Context</InputLabel>
                       <InputBar
-                        placeholder=''
                         value={buildConfig.runtimeDockerfile.value.context}
                         onInput={(e) => setBuildConfig('runtimeDockerfile', 'value', 'context', e.target.value)}
                       />
@@ -631,7 +624,6 @@ export default () => {
                     <Form>
                       <InputLabel>Base image</InputLabel>
                       <InputBar
-                        placeholder=''
                         value={buildConfig.staticCmd.value.baseImage}
                         onInput={(e) => setBuildConfig('staticCmd', 'value', 'baseImage', e.target.value)}
                       />
@@ -639,7 +631,6 @@ export default () => {
                     <Form>
                       <InputLabel>Build command</InputLabel>
                       <InputBar
-                        placeholder=''
                         value={buildConfig.staticCmd.value.buildCmd}
                         onInput={(e) => setBuildConfig('staticCmd', 'value', 'buildCmd', e.target.value)}
                       />
@@ -658,7 +649,6 @@ export default () => {
                     <Form>
                       <InputLabel>Artifact path</InputLabel>
                       <InputBar
-                        placeholder=''
                         value={buildConfig.staticCmd.value.artifactPath}
                         onInput={(e) => setBuildConfig('staticCmd', 'value', 'artifactPath', e.target.value)}
                       />
@@ -669,7 +659,6 @@ export default () => {
                     <Form>
                       <InputLabel>Dockerfile name</InputLabel>
                       <InputBar
-                        placeholder=''
                         value={buildConfig.staticDockerfile.value.dockerfileName}
                         onInput={(e) => setBuildConfig('staticDockerfile', 'value', 'dockerfileName', e.target.value)}
                       />
@@ -677,7 +666,6 @@ export default () => {
                     <Form>
                       <InputLabel>Context</InputLabel>
                       <InputBar
-                        placeholder=''
                         value={buildConfig.staticDockerfile.value.context}
                         onInput={(e) => setBuildConfig('staticDockerfile', 'value', 'context', e.target.value)}
                       />
@@ -685,7 +673,6 @@ export default () => {
                     <Form>
                       <InputLabel>Artifact path</InputLabel>
                       <InputBar
-                        placeholder=''
                         value={buildConfig.staticDockerfile.value.artifactPath}
                         onInput={(e) => setBuildConfig('staticDockerfile', 'value', 'artifactPath', e.target.value)}
                       />
