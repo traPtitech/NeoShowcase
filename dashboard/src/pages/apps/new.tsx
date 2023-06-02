@@ -309,7 +309,7 @@ const PortPublications = (props: PortPublicationProps) => {
       <Form>
         <InputLabel>Application Port</InputLabel>
         <InputBar
-          placeholder='30001'
+          placeholder='8080'
           type="number"
           // value={props.portPublication.applicationPort}
           onChange={(e) => props.setPortPublication('applicationPort', +e.target.value)}
