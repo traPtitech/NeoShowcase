@@ -38,7 +38,6 @@ var commonSet = wire.NewSet(
 	grpc.NewControllerSSGenService,
 	webhook.NewReceiver,
 	usecase.NewAPIServerService,
-	usecase.NewAppBuildHelper,
 	usecase.NewAppDeployHelper,
 	usecase.NewContinuousDeploymentService,
 	usecase.NewRepositoryFetcherService,
