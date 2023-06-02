@@ -12,11 +12,14 @@ import (
 	"github.com/go-git/go-git/v5/plumbing/transport/ssh"
 	"github.com/samber/lo"
 	log "github.com/sirupsen/logrus"
+	"github.com/sourcegraph/conc/pool"
 
 	"github.com/traPtitech/neoshowcase/pkg/domain"
 	"github.com/traPtitech/neoshowcase/pkg/util/ds"
 	"github.com/traPtitech/neoshowcase/pkg/util/optional"
 )
+
+const fetcherConcurrency = 10
 
 type RepositoryFetcherService interface {
 	Run()
@@ -127,12 +130,16 @@ func (r *repositoryFetcherService) fetch(repositoryIDs optional.Of[[]string]) er
 		reposToApps[app.RepositoryID] = append(reposToApps[app.RepositoryID], app)
 	}
 
+	p := pool.New().WithMaxGoroutines(fetcherConcurrency)
 	for _, repo := range repos {
-		err = r.updateApps(ctx, repo, reposToApps[repo.ID])
-		if err != nil {
-			return errors.Wrap(err, "failed to update repo")
-		}
+		p.Go(func() {
+			err := r.updateApps(ctx, repo, reposToApps[repo.ID])
+			if err != nil {
+				log.Warnf("failed to update repo: %+v", err)
+			}
+		})
 	}
+	p.Wait()
 	return nil
 }
 
