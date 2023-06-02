@@ -21,7 +21,7 @@ import { URLText } from '/@/components/URLText'
 import { client } from '/@/libs/api'
 import { providerToIcon, repositoryURLToProvider } from '/@/libs/application'
 import { CenterInline, Container } from '/@/libs/layout'
-import { allUsersResource, userFromId } from '/@/libs/useAllUsers'
+import { users, userFromId } from '/@/libs/useAllUsers'
 import useModal from '/@/libs/useModal'
 import { vars } from '/@/theme'
 
@@ -161,8 +161,8 @@ export default () => {
 
   // ユーザー検索
   const nonOwnerUsers = createMemo(() => {
-    if (!allUsersResource() || !repo()) return []
-    return allUsersResource().filter((user) => !repo().ownerIds.includes(user.id))
+    if (!users() || !repo()) return []
+    return users().filter((user) => !repo().ownerIds.includes(user.id))
   })
 
   // users()の更新時にFuseインスタンスを再生成する
@@ -342,7 +342,7 @@ export default () => {
               </CardItem>
             </CardItems>
           </Card>
-          <Show when={allUsersResource()}>
+          <Show when={users()}>
             <Card>
               <CardTitle>Owners</CardTitle>
               <Button onclick={openEditOwnerModal} color='black1' size='large'>
