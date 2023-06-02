@@ -240,12 +240,9 @@ func (s *builderService) tryStartTask(buildID string) error {
 		s.response <- &pb.BuilderResponse{Type: pb.BuilderResponse_BUILD_STARTED, Body: &pb.BuilderResponse_Started{Started: &pb.BuildStarted{
 			BuildId: buildID,
 		}}}
+
 		status := s.process(ctx, st)
 		s.finalize(context.Background(), st, status) // don't want finalization tasks to be cancelled
-		s.response <- &pb.BuilderResponse{Type: pb.BuilderResponse_BUILD_SETTLED, Body: &pb.BuilderResponse_Settled{Settled: &pb.BuildSettled{
-			BuildId: buildID,
-			Reason:  toPBSettleReason(status),
-		}}}
 		st.Cleanup()
 
 		cancel()
@@ -255,6 +252,11 @@ func (s *builderService) tryStartTask(buildID string) error {
 		s.stateCancel = nil
 		s.statusLock.Unlock()
 		log.Infof("Build settled for %v", buildID)
+		// Send settled response *after* unlocking internal state for next build
+		s.response <- &pb.BuilderResponse{Type: pb.BuilderResponse_BUILD_SETTLED, Body: &pb.BuilderResponse_Settled{Settled: &pb.BuildSettled{
+			BuildId: buildID,
+			Reason:  toPBSettleReason(status),
+		}}}
 	}()
 
 	return nil
