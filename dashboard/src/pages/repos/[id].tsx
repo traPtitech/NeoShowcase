@@ -157,7 +157,6 @@ export default () => {
   const { Modal: EditOwnerModal, open: openEditOwnerModal } = useModal()
 
   const [userSearchQuery, setUserSearchQuery] = createSignal('')
-  const [userSearchResults, setUserSearchResults] = createSignal<User[]>([])
 
   // ユーザー検索
   const nonOwnerUsers = createMemo(() => {
@@ -173,16 +172,14 @@ export default () => {
       }),
   )
   // userSearchQuery()の更新時に検索を実行する
-  createEffect(() => {
+  const userSearchResults = createMemo(() => {
     // 検索クエリが空の場合は全ユーザーを表示する
     if (userSearchQuery() === '') {
-      setUserSearchResults(nonOwnerUsers())
+      return nonOwnerUsers()
     } else {
-      setUserSearchResults(
-        fuse()
-          .search(userSearchQuery())
-          .map((result) => result.item),
-      )
+      return fuse()
+        .search(userSearchQuery())
+        .map((result) => result.item)
     }
   })
 
