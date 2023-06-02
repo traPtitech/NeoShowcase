@@ -2,7 +2,6 @@ package usecase
 
 import (
 	"context"
-	"fmt"
 	"sync"
 	"time"
 
@@ -30,7 +29,7 @@ type continuousDeploymentService struct {
 	appRepo   domain.ApplicationRepository
 	buildRepo domain.BuildRepository
 	backend   domain.Backend
-	builder   *AppBuildHelper
+	builder   domain.ControllerBuilderService
 	deployer  *AppDeployHelper
 	mutator   *ContainerStateMutator
 
@@ -47,8 +46,7 @@ func NewContinuousDeploymentService(
 	appRepo domain.ApplicationRepository,
 	buildRepo domain.BuildRepository,
 	backend domain.Backend,
-	builder *AppBuildHelper,
-	builderSvc domain.ControllerBuilderService,
+	builder domain.ControllerBuilderService,
 	deployer *AppDeployHelper,
 	mutator *ContainerStateMutator,
 ) (ContinuousDeploymentService, error) {
@@ -114,13 +112,13 @@ func NewContinuousDeploymentService(
 
 	cd.run = func() {
 		go func() {
-			sub, _ := builderSvc.ListenBuilderIdle()
+			sub, _ := builder.ListenBuilderIdle()
 			for range sub {
 				go cd.doStartBuild()
 			}
 		}()
 		go func() {
-			sub, _ := builderSvc.ListenBuildSettled()
+			sub, _ := builder.ListenBuildSettled()
 			for range sub {
 				go cd.doSyncDeploy()
 			}
@@ -198,19 +196,9 @@ func (cd *continuousDeploymentService) startBuilds(ctx context.Context) error {
 	if err != nil {
 		return err
 	}
-	appIDs := ds.Map(builds, func(b *domain.Build) string { return b.ApplicationID })
-	apps, err := cd.appRepo.GetApplications(ctx, domain.GetApplicationCondition{IDIn: optional.From(appIDs)})
-	if err != nil {
-		return err
-	}
-	appByID := lo.SliceToMap(apps, func(app *domain.Application) (string, *domain.Application) { return app.ID, app })
-	for _, build := range builds {
-		app, ok := appByID[build.ApplicationID]
-		if !ok {
-			return fmt.Errorf("app %v not found", build.ApplicationID)
-		}
-		cd.builder.tryStartBuild(app, build)
-	}
+	slices.SortFunc(builds, func(a, b *domain.Build) bool { return a.QueuedAt.Before(b.QueuedAt) })
+	buildIDs := ds.Map(builds, func(build *domain.Build) string { return build.ID })
+	cd.builder.StartBuilds(buildIDs)
 	return nil
 }
 

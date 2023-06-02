@@ -18,8 +18,6 @@ import (
 	"github.com/moby/buildkit/session/auth/authprovider"
 	"github.com/samber/lo"
 
-	"github.com/traPtitech/neoshowcase/pkg/infrastructure/grpc/pbconvert"
-
 	"github.com/friendsofgo/errors"
 	"github.com/go-git/go-git/v5"
 	"github.com/go-git/go-git/v5/config"
@@ -58,6 +56,7 @@ type builderService struct {
 	pubKey    *ssh.PublicKeys
 	config    builder.ImageConfig
 
+	appRepo      domain.ApplicationRepository
 	artifactRepo domain.ArtifactRepository
 	buildRepo    domain.BuildRepository
 	gitRepo      domain.GitRepositoryRepository
@@ -76,6 +75,7 @@ func NewBuilderService(
 	storage domain.Storage,
 	pubKey *ssh.PublicKeys,
 	config builder.ImageConfig,
+	appRepo domain.ApplicationRepository,
 	artifactRepo domain.ArtifactRepository,
 	buildRepo domain.BuildRepository,
 	gitRepo domain.GitRepositoryRepository,
@@ -87,10 +87,15 @@ func NewBuilderService(
 		storage:      storage,
 		pubKey:       pubKey,
 		config:       config,
+		appRepo:      appRepo,
 		artifactRepo: artifactRepo,
 		buildRepo:    buildRepo,
 		gitRepo:      gitRepo,
 	}
+}
+
+func (s *builderService) destImage(app *domain.Application, build *domain.Build) string {
+	return s.config.FullImageName(app.ID) + ":" + build.Commit
 }
 
 func (s *builderService) Start(_ context.Context) error {
@@ -144,7 +149,7 @@ func (s *builderService) cancelBuild(buildID string) {
 	defer s.statusLock.Unlock()
 
 	if s.state != nil && s.stateCancel != nil {
-		if s.state.task.BuildID == buildID {
+		if s.state.build.ID == buildID {
 			s.stateCancel()
 		}
 	}
@@ -168,15 +173,7 @@ func (s *builderService) onRequest(req *pb.BuilderRequest) {
 	switch req.Type {
 	case pb.BuilderRequest_START_BUILD:
 		b := req.Body.(*pb.BuilderRequest_StartBuild).StartBuild
-		err := s.tryStartTask(&builder.Task{
-			ApplicationID: b.ApplicationId,
-			BuildID:       b.BuildId,
-			RepositoryID:  b.RepositoryId,
-			Commit:        b.Commit,
-			ImageName:     b.ImageName,
-			ImageTag:      b.ImageTag,
-			BuildConfig:   pbconvert.FromPBBuildConfig(b.Config),
-		})
+		err := s.tryStartTask(b.BuildId)
 		if err != nil {
 			log.Errorf("failed to start build: %+v", err)
 		}
@@ -188,16 +185,17 @@ func (s *builderService) onRequest(req *pb.BuilderRequest) {
 	}
 }
 
-func (s *builderService) tryStartTask(task *builder.Task) error {
+func (s *builderService) tryStartTask(buildID string) error {
 	s.statusLock.Lock()
 	defer s.statusLock.Unlock()
 
 	if s.state != nil {
-		return errors.New("builder unavailable")
+		log.Infof("skipping build request for %v, builder busy", buildID)
+		return nil // Builder busy - skip
 	}
 
 	now := time.Now()
-	err := s.buildRepo.UpdateBuild(context.Background(), task.BuildID, domain.UpdateBuildArgs{
+	err := s.buildRepo.UpdateBuild(context.Background(), buildID, domain.UpdateBuildArgs{
 		FromStatus: optional.From(domain.BuildStatusQueued),
 		Status:     optional.From(domain.BuildStatusBuilding),
 		StartedAt:  optional.From(now),
@@ -210,14 +208,23 @@ func (s *builderService) tryStartTask(task *builder.Task) error {
 		return err
 	}
 
-	log.Infof("Starting build for %v", task.BuildID)
+	// Acquired build lock
+	log.Infof("Starting build for %v", buildID)
 
-	repo, err := s.gitRepo.GetRepository(context.Background(), task.RepositoryID)
+	build, err := s.buildRepo.GetBuild(context.Background(), buildID)
+	if err != nil {
+		return err
+	}
+	app, err := s.appRepo.GetApplication(context.Background(), build.ApplicationID)
+	if err != nil {
+		return err
+	}
+	repo, err := s.gitRepo.GetRepository(context.Background(), app.RepositoryID)
 	if err != nil {
 		return err
 	}
 
-	st, err := newState(task, repo, s.response)
+	st, err := newState(app, build, repo, s.response)
 	if err != nil {
 		return err
 	}
@@ -231,15 +238,13 @@ func (s *builderService) tryStartTask(task *builder.Task) error {
 
 	go func() {
 		s.response <- &pb.BuilderResponse{Type: pb.BuilderResponse_BUILD_STARTED, Body: &pb.BuilderResponse_Started{Started: &pb.BuildStarted{
-			ApplicationId: task.ApplicationID,
-			BuildId:       task.BuildID,
+			BuildId: buildID,
 		}}}
 		status := s.process(ctx, st)
 		s.finalize(context.Background(), st, status) // don't want finalization tasks to be cancelled
 		s.response <- &pb.BuilderResponse{Type: pb.BuilderResponse_BUILD_SETTLED, Body: &pb.BuilderResponse_Settled{Settled: &pb.BuildSettled{
-			ApplicationId: task.ApplicationID,
-			BuildId:       task.BuildID,
-			Reason:        toPBSettleReason(status),
+			BuildId: buildID,
+			Reason:  toPBSettleReason(status),
 		}}}
 		st.Cleanup()
 
@@ -249,14 +254,14 @@ func (s *builderService) tryStartTask(task *builder.Task) error {
 		s.state = nil
 		s.stateCancel = nil
 		s.statusLock.Unlock()
-		log.Infof("Build settled for %v", task.BuildID)
+		log.Infof("Build settled for %v", buildID)
 	}()
 
 	return nil
 }
 
 func (s *builderService) finalize(ctx context.Context, st *state, status domain.BuildStatus) {
-	err := domain.SaveBuildLog(s.storage, st.task.BuildID, st.logWriter.LogReader())
+	err := domain.SaveBuildLog(s.storage, st.build.ID, st.logWriter.LogReader())
 	if err != nil {
 		log.Errorf("failed to save build log: %+v", err)
 	}
@@ -267,7 +272,7 @@ func (s *builderService) finalize(ctx context.Context, st *state, status domain.
 		UpdatedAt:  optional.From(now),
 		FinishedAt: optional.From(now),
 	}
-	if err := s.buildRepo.UpdateBuild(ctx, st.task.BuildID, updateArgs); err != nil {
+	if err := s.buildRepo.UpdateBuild(ctx, st.build.ID, updateArgs); err != nil {
 		log.Errorf("failed to update build: %+v", err)
 	}
 }
@@ -284,7 +289,7 @@ func (s *builderService) buildSteps(ctx context.Context, st *state) ([]buildStep
 		return s.cloneRepository(ctx, st)
 	}})
 
-	switch bc := st.task.BuildConfig.(type) {
+	switch bc := st.app.Config.BuildConfig.(type) {
 	case *domain.BuildConfigRuntimeBuildpack:
 		steps = append(steps, buildStep{"Build (Runtime Buildpack)", func() error {
 			return s.buildImageBuildpack(ctx, st, bc)
@@ -329,7 +334,7 @@ func (s *builderService) buildSteps(ctx context.Context, st *state) ([]buildStep
 func (s *builderService) process(ctx context.Context, st *state) domain.BuildStatus {
 	ctx, cancel := context.WithCancel(ctx)
 	defer cancel()
-	go s.updateStatusLoop(ctx, st.task.BuildID)
+	go s.updateStatusLoop(ctx, st.build.ID)
 
 	steps, err := s.buildSteps(ctx, st)
 	if err != nil {
@@ -382,13 +387,13 @@ func (s *builderService) cloneRepository(ctx context.Context, st *state) error {
 	if err != nil {
 		return errors.Wrap(err, "failed to init repository")
 	}
-	auth, err := domain.GitAuthMethod(st.repository, s.pubKey)
+	auth, err := domain.GitAuthMethod(st.repo, s.pubKey)
 	if err != nil {
 		return err
 	}
 	remote, err := repo.CreateRemote(&config.RemoteConfig{
 		Name: "origin",
-		URLs: []string{st.repository.URL},
+		URLs: []string{st.repo.URL},
 	})
 	if err != nil {
 		return errors.Wrap(err, "failed to add remote")
@@ -396,7 +401,7 @@ func (s *builderService) cloneRepository(ctx context.Context, st *state) error {
 	targetRef := plumbing.NewRemoteReferenceName("origin", "target")
 	err = remote.FetchContext(ctx, &git.FetchOptions{
 		RemoteName: "origin",
-		RefSpecs:   []config.RefSpec{config.RefSpec(fmt.Sprintf("+%s:%s", st.task.Commit, targetRef))},
+		RefSpecs:   []config.RefSpec{config.RefSpec(fmt.Sprintf("+%s:%s", st.build.Commit, targetRef))},
 		Depth:      1,
 		Auth:       auth,
 	})
@@ -434,7 +439,7 @@ func (s *builderService) saveArtifact(ctx context.Context, st *state) error {
 		return errors.Wrap(err, "opening artifact")
 	}
 
-	artifact := domain.NewArtifact(st.task.BuildID, stat.Size())
+	artifact := domain.NewArtifact(st.build.ID, stat.Size())
 	err = s.artifactRepo.CreateArtifact(ctx, artifact)
 	if err != nil {
 		return errors.Wrap(err, "creating artifact record")
@@ -493,7 +498,7 @@ func (s *builderService) buildImageBuildpack(
 ) error {
 	contextDir := lo.Ternary(bc.Context != "", bc.Context, ".")
 	buildDir := filepath.Join(st.repositoryTempDir, contextDir)
-	return s.buildpack.Pack(ctx, buildDir, st.Logger(), st.task.DestImage())
+	return s.buildpack.Pack(ctx, buildDir, st.Logger(), s.destImage(st.app, st.build))
 }
 
 func (s *builderService) buildImageWithCmd(
@@ -541,7 +546,7 @@ func (s *builderService) buildImageWithCmd(
 		Exports: []buildkit.ExportEntry{{
 			Type: buildkit.ExporterImage,
 			Attrs: map[string]string{
-				"name": st.task.DestImage(),
+				"name": s.destImage(st.app, st.build),
 				"push": "true",
 			},
 		}},
@@ -565,7 +570,7 @@ func (s *builderService) buildImageWithDockerfile(
 		Exports: []buildkit.ExportEntry{{
 			Type: buildkit.ExporterImage,
 			Attrs: map[string]string{
-				"name": st.task.DestImage(),
+				"name": s.destImage(st.app, st.build),
 				"push": "true",
 			},
 		}},
@@ -698,9 +703,10 @@ func createScriptFile(filename string, script string) error {
 }
 
 type state struct {
-	task       *builder.Task
-	repository *domain.Repository
-	logWriter  *logWriter
+	app       *domain.Application
+	build     *domain.Build
+	repo      *domain.Repository
+	logWriter *logWriter
 
 	repositoryTempDir string
 	artifactTempFile  *os.File
@@ -734,12 +740,13 @@ func (l *logWriter) Write(p []byte) (n int, err error) {
 	return
 }
 
-func newState(task *builder.Task, repo *domain.Repository, response chan<- *pb.BuilderResponse) (*state, error) {
+func newState(app *domain.Application, build *domain.Build, repo *domain.Repository, response chan<- *pb.BuilderResponse) (*state, error) {
 	st := &state{
-		task:       task,
-		repository: repo,
+		app:   app,
+		build: build,
+		repo:  repo,
 		logWriter: &logWriter{
-			buildID:  task.BuildID,
+			buildID:  build.ID,
 			response: response,
 		},
 	}

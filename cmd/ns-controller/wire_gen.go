@@ -53,12 +53,11 @@ func NewWithDocker(c2 Config) (*Server, error) {
 	buildRepository := repository.NewBuildRepository(db)
 	logStreamService := usecase.NewLogStreamService()
 	controllerBuilderService := grpc.NewControllerBuilderService(logStreamService)
-	appBuildHelper := usecase.NewAppBuildHelper(controllerBuilderService, imageConfig)
 	environmentRepository := repository.NewEnvironmentRepository(db)
 	controllerSSGenService := grpc.NewControllerSSGenService()
 	appDeployHelper := usecase.NewAppDeployHelper(backend, applicationRepository, buildRepository, environmentRepository, controllerSSGenService, imageConfig)
 	containerStateMutator := usecase.NewContainerStateMutator(applicationRepository, backend)
-	continuousDeploymentService, err := usecase.NewContinuousDeploymentService(applicationRepository, buildRepository, backend, appBuildHelper, controllerBuilderService, appDeployHelper, containerStateMutator)
+	continuousDeploymentService, err := usecase.NewContinuousDeploymentService(applicationRepository, buildRepository, backend, controllerBuilderService, appDeployHelper, containerStateMutator)
 	if err != nil {
 		return nil, err
 	}
@@ -132,13 +131,12 @@ func NewWithK8S(c2 Config) (*Server, error) {
 	buildRepository := repository.NewBuildRepository(db)
 	logStreamService := usecase.NewLogStreamService()
 	controllerBuilderService := grpc.NewControllerBuilderService(logStreamService)
-	imageConfig := c2.Image
-	appBuildHelper := usecase.NewAppBuildHelper(controllerBuilderService, imageConfig)
 	environmentRepository := repository.NewEnvironmentRepository(db)
 	controllerSSGenService := grpc.NewControllerSSGenService()
+	imageConfig := c2.Image
 	appDeployHelper := usecase.NewAppDeployHelper(backend, applicationRepository, buildRepository, environmentRepository, controllerSSGenService, imageConfig)
 	containerStateMutator := usecase.NewContainerStateMutator(applicationRepository, backend)
-	continuousDeploymentService, err := usecase.NewContinuousDeploymentService(applicationRepository, buildRepository, backend, appBuildHelper, controllerBuilderService, appDeployHelper, containerStateMutator)
+	continuousDeploymentService, err := usecase.NewContinuousDeploymentService(applicationRepository, buildRepository, backend, controllerBuilderService, appDeployHelper, containerStateMutator)
 	if err != nil {
 		return nil, err
 	}
@@ -178,7 +176,7 @@ func NewWithK8S(c2 Config) (*Server, error) {
 
 // wire.go:
 
-var commonSet = wire.NewSet(dbmanager.NewMariaDBManager, dbmanager.NewMongoDBManager, repository.New, repository.NewApplicationRepository, repository.NewGitRepositoryRepository, repository.NewEnvironmentRepository, repository.NewBuildRepository, repository.NewArtifactRepository, repository.NewUserRepository, grpc.NewAPIServiceServer, grpc.NewAuthInterceptor, grpc.NewControllerService, grpc.NewControllerBuilderService, grpc.NewControllerSSGenService, webhook.NewReceiver, usecase.NewAPIServerService, usecase.NewAppBuildHelper, usecase.NewAppDeployHelper, usecase.NewContinuousDeploymentService, usecase.NewRepositoryFetcherService, usecase.NewCleanerService, usecase.NewLogStreamService, usecase.NewContainerStateMutator, usecase.NewSSHServer, providePublicKey,
+var commonSet = wire.NewSet(dbmanager.NewMariaDBManager, dbmanager.NewMongoDBManager, repository.New, repository.NewApplicationRepository, repository.NewGitRepositoryRepository, repository.NewEnvironmentRepository, repository.NewBuildRepository, repository.NewArtifactRepository, repository.NewUserRepository, grpc.NewAPIServiceServer, grpc.NewAuthInterceptor, grpc.NewControllerService, grpc.NewControllerBuilderService, grpc.NewControllerSSGenService, webhook.NewReceiver, usecase.NewAPIServerService, usecase.NewAppDeployHelper, usecase.NewContinuousDeploymentService, usecase.NewRepositoryFetcherService, usecase.NewCleanerService, usecase.NewLogStreamService, usecase.NewContainerStateMutator, usecase.NewSSHServer, providePublicKey,
 	provideStorage,
 	provideControllerServer, wire.FieldsOf(new(Config), "Docker", "K8s", "SSH", "Webhook", "DB", "Storage", "Image"), wire.Struct(new(Server), "*"),
 )

@@ -16,6 +16,7 @@ func New(c Config) (*Server, error) {
 		grpc.NewControllerBuilderServiceClient,
 		usecase.NewBuilderService,
 		repository.New,
+		repository.NewApplicationRepository,
 		repository.NewArtifactRepository,
 		repository.NewBuildRepository,
 		repository.NewGitRepositoryRepository,

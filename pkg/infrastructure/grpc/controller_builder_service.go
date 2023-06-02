@@ -13,6 +13,7 @@ import (
 	"github.com/traPtitech/neoshowcase/pkg/domain"
 	"github.com/traPtitech/neoshowcase/pkg/infrastructure/grpc/pb"
 	"github.com/traPtitech/neoshowcase/pkg/usecase"
+	"github.com/traPtitech/neoshowcase/pkg/util/ds"
 )
 
 type builderConnection struct {
@@ -112,14 +113,31 @@ func (s *ControllerBuilderService) ListenBuildSettled() (sub <-chan struct{}, un
 	return s.settled.Subscribe()
 }
 
-func (s *ControllerBuilderService) BroadcastBuilder(req *pb.BuilderRequest) {
-	s.lock.Lock()
-	defer s.lock.Unlock()
-
+func (s *ControllerBuilderService) broadcast(req *pb.BuilderRequest) {
 	for _, builder := range s.builderConnections {
 		select {
 		case builder.reqSender <- req:
 		default:
 		}
 	}
+}
+
+func (s *ControllerBuilderService) StartBuilds(buildIDs []string) {
+	s.lock.Lock()
+	defer s.lock.Unlock()
+
+	// Send at most n (= number of builders) build requests
+	n := len(s.builderConnections)
+	for _, buildID := range ds.FirstN(buildIDs, n) {
+		s.broadcast(&pb.BuilderRequest{
+			Type: pb.BuilderRequest_START_BUILD,
+			Body: &pb.BuilderRequest_StartBuild{StartBuild: &pb.StartBuildRequest{BuildId: buildID}},
+		})
+	}
+}
+
+func (s *ControllerBuilderService) BroadcastBuilder(req *pb.BuilderRequest) {
+	s.lock.Lock()
+	defer s.lock.Unlock()
+	s.broadcast(req)
 }

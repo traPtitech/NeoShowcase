@@ -6,13 +6,7 @@ import "google/protobuf/empty.proto";
 import "neoshowcase/protobuf/gateway.proto";
 
 message StartBuildRequest {
-  string application_id = 1;
-  string build_id = 2;
-  string repository_id = 3;
-  string commit = 4;
-  string image_name = 5; // empty on static site build
-  string image_tag = 6; // empty on static site build
-  ApplicationConfig config = 7;
+  string build_id = 1;
 }
 
 message BuilderRequest {
@@ -28,8 +22,7 @@ message BuilderRequest {
 }
 
 message BuildStarted {
-  string application_id = 1;
-  string build_id = 2;
+  string build_id = 1;
 }
 
 message BuildSettled {
@@ -38,9 +31,8 @@ message BuildSettled {
     FAILED = 1;
     CANCELLED = 2;
   }
-  string application_id = 1;
-  string build_id = 2;
-  Reason reason = 3;
+  string build_id = 1;
+  Reason reason = 2;
 }
 
 message BuildLogPortion {
