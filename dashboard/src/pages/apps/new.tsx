@@ -27,7 +27,6 @@ import { Button } from '/@/components/Button'
 import { Checkbox } from '/@/components/Checkbox'
 import { providerToIcon, repositoryURLToProvider } from '/@/libs/application'
 import { createStore, SetStoreFunction } from 'solid-js/store'
-import { Empty } from '@bufbuild/protobuf'
 import toast from 'solid-toast'
 import { ConnectError } from '@bufbuild/connect'
 // ストアを作成するためのユーティリティ関数
@@ -204,15 +203,13 @@ const FormRadio = styled('div', {
     gap: '12px',
   },
 })
-
-const RepositoriesContainer = styled('div', {
+styled('div', {
   base: {
     display: 'flex',
     flexDirection: 'column',
     gap: 'px',
   },
 })
-
 const SettingsContainer = styled('div', {
   base: {
     display: 'flex',
@@ -220,27 +217,6 @@ const SettingsContainer = styled('div', {
     gap: '10px',
   },
 })
-
-interface Website {
-  fqdn: string
-  path_prefix: string
-  strip_prefix: boolean
-  https: boolean
-  h2c: boolean
-  http_port: number
-  authenticationType: number
-}
-
-const EmptyWebsite: Website = {
-  fqdn: '',
-  path_prefix: '',
-  strip_prefix: false,
-  https: false,
-  h2c: false,
-  http_port: 0,
-  authenticationType: AuthenticationType.OFF,
-}
-
 interface WebsiteProps {
   website: CreateWebsiteRequest
   setWebsite: (valueName, value) => void
@@ -312,19 +288,6 @@ const authenticationTypeItems: RadioItem<AuthenticationType>[] = [
   { value: AuthenticationType.SOFT, title: 'SOFT' },
   { value: AuthenticationType.HARD, title: 'HARD' },
 ]
-
-interface Ports {
-  internet_port: number
-  application_port: number
-  protocol: number
-}
-
-const EmptyPortPublication: Ports = {
-  internet_port: 0,
-  application_port: 0,
-  protocol: PortPublicationProtocol.TCP,
-}
-
 interface PortPublicationProps {
   portPublication: PortPublication
   setPortPublication: (valueName, value) => void
