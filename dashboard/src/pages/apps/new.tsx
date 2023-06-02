@@ -502,29 +502,29 @@ export default () => {
   }>({
     runtimeBuildpack: {
       case: 'runtimeBuildpack',
-      value: new BuildConfigRuntimeBuildpack({
-        runtimeConfig: new RuntimeConfig(),
-      }),
+      value: storify (new BuildConfigRuntimeBuildpack({
+        runtimeConfig: runtimeConfig,
+      })),
     },
     runtimeCmd: {
       case: 'runtimeCmd',
-      value: new BuildConfigRuntimeCmd({
-        runtimeConfig: new RuntimeConfig(),
-      }),
+      value: storify(new BuildConfigRuntimeCmd({
+        runtimeConfig: runtimeConfig,
+      })),
     },
     runtimeDockerfile: {
       case: 'runtimeDockerfile',
-      value: new BuildConfigRuntimeDockerfile({
-        runtimeConfig: new RuntimeConfig(),
-      }),
+      value: storify(new BuildConfigRuntimeDockerfile({
+        runtimeConfig: runtimeConfig,
+      })),
     },
     staticCmd: {
       case: 'staticCmd',
-      value: new BuildConfigStaticCmd(),
+      value: storify(new BuildConfigStaticCmd()),
     },
     staticDockerfile: {
       case: 'staticDockerfile',
-      value: new BuildConfigStaticDockerfile(),
+      value: storify(new BuildConfigStaticDockerfile()),
     },
   })
 
@@ -808,8 +808,24 @@ export default () => {
 
             <Button
               onclick={() => {
+                console.log(`createApplicationRequest Before`)
+                console.log(createApplicationRequest)
+                console.log(`runtimeConfig`)
+                console.log(runtimeConfig)
+                console.log(`buildConfig`)
+                console.log(buildConfig)
+                console.log(`websiteConfigs`)
                 console.log(websiteConfigs)
+                console.log(`portPublications`)
                 console.log(portPublications)
+
+                setCreateApplicationRequest('config', 'buildConfig', buildConfig[buildConfigMethod()])
+                setCreateApplicationRequest('websites', websiteConfigs)
+                setCreateApplicationRequest('portPublications', portPublications)
+
+                console.log('\ncreateApplicationRequest Finally')
+                console.log(createApplicationRequest)
+                console.log('\n\n\n\n')
               }}
               color='black1'
               size='large'
