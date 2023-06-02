@@ -502,21 +502,27 @@ export default () => {
   }>({
     runtimeBuildpack: {
       case: 'runtimeBuildpack',
-      value: storify (new BuildConfigRuntimeBuildpack({
-        runtimeConfig: runtimeConfig,
-      })),
+      value: storify(
+        new BuildConfigRuntimeBuildpack({
+          runtimeConfig: runtimeConfig,
+        }),
+      ),
     },
     runtimeCmd: {
       case: 'runtimeCmd',
-      value: storify(new BuildConfigRuntimeCmd({
-        runtimeConfig: runtimeConfig,
-      })),
+      value: storify(
+        new BuildConfigRuntimeCmd({
+          runtimeConfig: runtimeConfig,
+        }),
+      ),
     },
     runtimeDockerfile: {
       case: 'runtimeDockerfile',
-      value: storify(new BuildConfigRuntimeDockerfile({
-        runtimeConfig: runtimeConfig,
-      })),
+      value: storify(
+        new BuildConfigRuntimeDockerfile({
+          runtimeConfig: runtimeConfig,
+        }),
+      ),
     },
     staticCmd: {
       case: 'staticCmd',
@@ -808,15 +814,15 @@ export default () => {
 
             <Button
               onclick={() => {
-                console.log(`createApplicationRequest Before`)
+                console.log('createApplicationRequest Before')
                 console.log(createApplicationRequest)
-                console.log(`runtimeConfig`)
+                console.log('runtimeConfig')
                 console.log(runtimeConfig)
-                console.log(`buildConfig`)
+                console.log('buildConfig')
                 console.log(buildConfig)
-                console.log(`websiteConfigs`)
+                console.log('websiteConfigs')
                 console.log(websiteConfigs)
-                console.log(`portPublications`)
+                console.log('portPublications')
                 console.log(portPublications)
 
                 setCreateApplicationRequest('config', 'buildConfig', buildConfig[buildConfigMethod()])

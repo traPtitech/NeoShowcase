@@ -16,8 +16,8 @@ const Container = styled('div', {
 
 interface Props {
   children: JSXElement
-  selected: boolean
-  setSelected: (s: boolean) => void
+  selected?: boolean
+  setSelected?: (s: boolean) => void
   onClick?: () => void
 }
 
