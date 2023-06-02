@@ -288,7 +288,7 @@ const Website = (props: WebsiteProps) => {
           placeholder='80'
           type="number"
           // value={props.website.httpPort} // 入れると初期値が0になってしまう。
-          onChange={(e) => props.setWebsite('httpPort', e.target.value)}
+          onChange={(e) => props.setWebsite('httpPort', +e.target.value)}
         />
       </Form>
       <Form>
@@ -339,8 +339,8 @@ const PortPublications = (props: PortPublicationProps) => {
         <InputBar
           placeholder='30000'
           type="number"
-          value={props.portPublication.internetPort}
-          onInput={(e) => props.setPortPublication('internetPort', e.target.value)}
+          // value={props.portPublication.internetPort}
+          onChange={(e) => props.setPortPublication('internetPort', +e.target.value)}
         />
       </Form>
       <Form>
@@ -348,8 +348,8 @@ const PortPublications = (props: PortPublicationProps) => {
         <InputBar
           placeholder='30001'
           type="number"
-          value={props.portPublication.applicationPort}
-          onInput={(e) => props.setPortPublication('applicationPort', e.target.value)}
+          // value={props.portPublication.applicationPort}
+          onChange={(e) => props.setPortPublication('applicationPort', +e.target.value)}
         />
       </Form>
       <Form>
@@ -368,9 +368,9 @@ const PortPublications = (props: PortPublicationProps) => {
   )
 }
 
-const protocolItems: RadioItem<number>[] = [
-  { value: 0, title: 'TCP' },
-  { value: 1, title: 'UDP' },
+const protocolItems: RadioItem<PortPublicationProtocol>[] = [
+  { value: PortPublicationProtocol.TCP, title: 'TCP' },
+  { value: PortPublicationProtocol.UDP, title: 'UDP' },
 ]
 
 export interface FormRuntimeConfigProps {
@@ -808,6 +808,7 @@ export default () => {
 
             <Button
               onclick={() => {
+                console.log(websiteConfigs)
                 console.log(portPublications)
               }}
               color='black1'
