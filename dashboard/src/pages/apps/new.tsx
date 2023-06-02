@@ -219,7 +219,7 @@ const SettingsContainer = styled('div', {
 })
 interface WebsiteProps {
   website: CreateWebsiteRequest
-  setWebsite: (valueName, value) => void
+  setWebsite: <T extends keyof CreateWebsiteRequest>(valueName: T, value: CreateWebsiteRequest[T]) => void
   deleteWebsite: () => void
 }
 
