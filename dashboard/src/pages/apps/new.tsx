@@ -259,7 +259,7 @@ const Website = (props: WebsiteProps) => {
         <InputLabel>アプリのHTTP Port番号</InputLabel>
         <InputBar
           placeholder='80'
-          type="number"
+          type='number'
           // value={props.website.httpPort} // 入れると初期値が0になってしまう。
           onChange={(e) => props.setWebsite('httpPort', +e.target.value)}
         />
@@ -298,7 +298,7 @@ const PortPublications = (props: PortPublicationProps) => {
         <InputLabel>Internet Port</InputLabel>
         <InputBar
           placeholder='39000'
-          type="number"
+          type='number'
           // value={props.portPublication.internetPort}
           onChange={(e) => props.setPortPublication('internetPort', +e.target.value)}
         />
@@ -307,7 +307,7 @@ const PortPublications = (props: PortPublicationProps) => {
         <InputLabel>Application Port</InputLabel>
         <InputBar
           placeholder='8080'
-          type="number"
+          type='number'
           // value={props.portPublication.applicationPort}
           onChange={(e) => props.setPortPublication('applicationPort', +e.target.value)}
         />
@@ -502,7 +502,9 @@ export default () => {
     e.preventDefault()
 
     // validate form
-    if (!formContainer.reportValidity()) {return}
+    if (!formContainer.reportValidity()) {
+      return
+    }
 
     setCreateApplicationRequest('config', 'buildConfig', buildConfig[buildConfigMethod()])
     setCreateApplicationRequest('websites', websiteConfigs)
@@ -755,7 +757,7 @@ export default () => {
               </FormCheckBox>
             </Form>
 
-            <Button color='black1' size='large' onclick={createApplication} type="submit">
+            <Button color='black1' size='large' onclick={createApplication} type='submit'>
               + Create new Application
             </Button>
 
