@@ -502,21 +502,21 @@ export default () => {
     e.preventDefault()
 
     // validate form
-    if (formContainer.reportValidity()) {
-      setCreateApplicationRequest('config', 'buildConfig', buildConfig[buildConfigMethod()])
-      setCreateApplicationRequest('websites', websiteConfigs)
-      setCreateApplicationRequest('portPublications', portPublications)
-      try {
-        const res = await client.createApplication(createApplicationRequest)
-        toast.success('アプリケーションを登録しました')
-        // Application詳細ページに遷移
-        navigate(`/apps/${res.id}`)
-      } catch (e) {
-        console.error(e)
-        // gRPCエラー
-        if (e instanceof ConnectError) {
-          toast.error('アプリケーションの登録に失敗しました\n' + e.message)
-        }
+    if (!formContainer.reportValidity()) {return}
+
+    setCreateApplicationRequest('config', 'buildConfig', buildConfig[buildConfigMethod()])
+    setCreateApplicationRequest('websites', websiteConfigs)
+    setCreateApplicationRequest('portPublications', portPublications)
+    try {
+      const res = await client.createApplication(createApplicationRequest)
+      toast.success('アプリケーションを登録しました')
+      // Application詳細ページに遷移
+      navigate(`/apps/${res.id}`)
+    } catch (e) {
+      console.error(e)
+      // gRPCエラー
+      if (e instanceof ConnectError) {
+        toast.error('アプリケーションの登録に失敗しました\n' + e.message)
       }
     }
   }
