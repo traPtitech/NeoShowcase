@@ -1,10 +1,9 @@
 import { Header } from '/@/components/Header'
-import { createResource, createSignal, JSX, For, Switch, Match } from 'solid-js'
+import { createResource, createSignal, JSX, Switch, Match } from 'solid-js'
 import { Radio, RadioItem } from '/@/components/Radio'
 import { client } from '/@/libs/api'
 import {
   Application,
-  PortPublicationProtocol,
   CreateApplicationRequest,
   ApplicationConfig,
   BuildConfigRuntimeBuildpack,
@@ -29,8 +28,9 @@ import { ConnectError } from '@bufbuild/connect'
 import { storify } from '/@/libs/storify'
 import { RepositoryInfo } from '/@/components/RepositoryInfo'
 import { InputBar, InputLabel } from '/@/components/Input'
-import { FormButton, FormCheckBox, FormRadio, FormTextBig, SettingsContainer } from '/@/components/AppsNew'
+import { FormCheckBox, FormRadio, FormTextBig } from '/@/components/AppsNew'
 import { WebsiteSettings } from '/@/components/WebsiteSettings'
+import { PortPublicationSettings } from '/@/components/PortPublications'
 
 const [repos] = createResource(() => client.getRepositories({}))
 const [apps] = createResource(() => client.getApplications({}))
@@ -102,52 +102,6 @@ const FormContainer = styled('form', {
     padding: '8px 12px',
   },
 })
-
-interface PortPublicationProps {
-  portPublication: PortPublication
-  setPortPublication: <T extends keyof PortPublication>(valueName: T, value: PortPublication[T]) => void
-  deletePortPublication: () => void
-}
-
-const PortPublications = (props: PortPublicationProps) => {
-  return (
-    <FormSettings>
-      <div>
-        <InputLabel>Internet Port</InputLabel>
-        <InputBar
-          placeholder='39000'
-          type='number'
-          onChange={(e) => props.setPortPublication('internetPort', +e.target.value)}
-        />
-      </div>
-      <div>
-        <InputLabel>Application Port</InputLabel>
-        <InputBar
-          placeholder='8080'
-          type='number'
-          onChange={(e) => props.setPortPublication('applicationPort', +e.target.value)}
-        />
-      </div>
-      <div>
-        <Radio
-          items={protocolItems}
-          selected={props.portPublication.protocol}
-          setSelected={(proto) => props.setPortPublication('protocol', proto)}
-        />
-      </div>
-      <FormSettingsButton>
-        <Button onclick={props.deletePortPublication} color='black1' size='large' type='button'>
-          Delete port publication
-        </Button>
-      </FormSettingsButton>
-    </FormSettings>
-  )
-}
-
-const protocolItems: RadioItem<PortPublicationProtocol>[] = [
-  { value: PortPublicationProtocol.TCP, title: 'TCP' },
-  { value: PortPublicationProtocol.UDP, title: 'UDP' },
-]
 
 export interface FormRuntimeConfigProps {
   runtimeConfig: RuntimeConfig
@@ -450,34 +404,7 @@ export default () => {
 
             <div>
               <FormTextBig>Port Publication Setting</FormTextBig>
-              <SettingsContainer>
-                <For each={portPublications}>
-                  {(portPublication, i) => (
-                    <PortPublications
-                      portPublication={portPublication}
-                      setPortPublication={(valueName, value) => {
-                        setPortPublications(i(), valueName, value)
-                      }}
-                      deletePortPublication={() =>
-                        setPortPublications((current) => [...current.slice(0, i()), ...current.slice(i() + 1)])
-                      }
-                    />
-                  )}
-                </For>
-
-                <FormButton>
-                  <Button
-                    onclick={() => {
-                      setPortPublications([...portPublications, storify(new PortPublication())])
-                    }}
-                    color='black1'
-                    size='large'
-                    type='button'
-                  >
-                    Add port publication
-                  </Button>
-                </FormButton>
-              </SettingsContainer>
+              <PortPublicationSettings portPublications={portPublications} setPortPublications={setPortPublications} />
             </div>
 
             <div>
