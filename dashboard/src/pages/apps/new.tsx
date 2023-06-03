@@ -547,7 +547,7 @@ export default () => {
             <Form>
               <InputLabel>Branch Name</InputLabel>
               <InputBar
-                placeholder='master'
+                placeholder='main'
                 value={createApplicationRequest.refName}
                 onInput={(e) => setCreateApplicationRequest('refName', e.target.value)}
                 required
