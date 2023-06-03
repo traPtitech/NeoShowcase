@@ -147,29 +147,15 @@ const RuntimeConfigs = (props: FormRuntimeConfigProps) => {
 }
 
 export interface BuildConfigsProps {
-  buildConfigMethod: Accessor<
-    'runtimeBuildpack' | 'runtimeCmd' | 'runtimeDockerfile' | 'staticCmd' | 'staticDockerfile'
-  >
+  buildConfigMethod: 'runtimeBuildpack' | 'runtimeCmd' | 'runtimeDockerfile' | 'staticCmd' | 'staticDockerfile'
   setBuildConfigMethod: Setter<
     'runtimeBuildpack' | 'runtimeCmd' | 'runtimeDockerfile' | 'staticCmd' | 'staticDockerfile'
   >
   buildConfig: {
-    runtimeBuildpack:
-      | { value: BuildConfigRuntimeBuildpack; case: 'runtimeBuildpack' }
-      | { case: undefined; value?: undefined }
-    runtimeCmd: { value: BuildConfigRuntimeCmd; case: 'runtimeCmd' } | { case: undefined; value?: undefined }
-    runtimeDockerfile: {} | { case: undefined; value?: undefined }
-    staticCmd: {} | { case: undefined; value?: undefined }
-    staticDockerfile: {} | { case: undefined; value?: undefined }
+    [K in ApplicationConfig['buildConfig']['case']]: Extract<ApplicationConfig['buildConfig'], { case: K }>
   }
   setBuildConfig: SetStoreFunction<{
-    runtimeBuildpack:
-      | { value: BuildConfigRuntimeBuildpack; case: 'runtimeBuildpack' }
-      | { case: undefined; value?: undefined }
-    runtimeCmd: { value: BuildConfigRuntimeCmd; case: 'runtimeCmd' } | { case: undefined; value?: undefined }
-    runtimeDockerfile: {} | { case: undefined; value?: undefined }
-    staticCmd: {} | { case: undefined; value?: undefined }
-    staticDockerfile: {} | { case: undefined; value?: undefined }
+    [K in ApplicationConfig['buildConfig']['case']]: Extract<ApplicationConfig['buildConfig'], { case: K }>
   }>
   runtimeConfig: RuntimeConfig
   setRuntimeConfig: SetStoreFunction<RuntimeConfig>
@@ -178,11 +164,11 @@ export const BuildConfigs = (props: BuildConfigsProps) => {
   return (
     <FormSettings>
       <div>
-        <Radio items={buildConfigItems} selected={props.buildConfigMethod()} setSelected={props.setBuildConfigMethod} />
+        <Radio items={buildConfigItems} selected={props.buildConfigMethod} setSelected={props.setBuildConfigMethod} />
       </div>
 
       <Switch>
-        <Match when={props.buildConfigMethod() === 'runtimeBuildpack'}>
+        <Match when={props.buildConfigMethod === 'runtimeBuildpack'}>
           <RuntimeConfigs runtimeConfig={props.runtimeConfig} setRuntimeConfig={props.setRuntimeConfig} />
           <div>
             <InputLabel>Context</InputLabel>
@@ -193,7 +179,7 @@ export const BuildConfigs = (props: BuildConfigsProps) => {
           </div>
         </Match>
 
-        <Match when={props.buildConfigMethod() === 'runtimeCmd'}>
+        <Match when={props.buildConfigMethod === 'runtimeCmd'}>
           <RuntimeConfigs runtimeConfig={props.runtimeConfig} setRuntimeConfig={props.setRuntimeConfig} />
           <div>
             <InputLabel>Base image</InputLabel>
@@ -222,7 +208,7 @@ export const BuildConfigs = (props: BuildConfigsProps) => {
           </div>
         </Match>
 
-        <Match when={props.buildConfigMethod() === 'runtimeDockerfile'}>
+        <Match when={props.buildConfigMethod === 'runtimeDockerfile'}>
           <RuntimeConfigs runtimeConfig={props.runtimeConfig} setRuntimeConfig={props.setRuntimeConfig} />
           <div>
             <InputLabel>Dockerfile name</InputLabel>
@@ -240,7 +226,7 @@ export const BuildConfigs = (props: BuildConfigsProps) => {
           </div>
         </Match>
 
-        <Match when={props.buildConfigMethod() === 'staticCmd'}>
+        <Match when={props.buildConfigMethod === 'staticCmd'}>
           <div>
             <InputLabel>Base image</InputLabel>
             <InputBar
@@ -275,7 +261,7 @@ export const BuildConfigs = (props: BuildConfigsProps) => {
           </div>
         </Match>
 
-        <Match when={props.buildConfigMethod() === 'staticDockerfile'}>
+        <Match when={props.buildConfigMethod === 'staticDockerfile'}>
           <div>
             <InputLabel>Dockerfile name</InputLabel>
             <InputBar
@@ -433,6 +419,7 @@ export default () => {
                 buildConfig={buildConfig}
                 runtimeConfig={runtimeConfig}
                 setRuntimeConfig={setRuntimeConfig}
+                buildConfigMethod={buildConfigMethod()}
                 setBuildConfigMethod={setBuildConfigMethod}
               />
             </div>
