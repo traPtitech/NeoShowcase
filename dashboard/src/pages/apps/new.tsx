@@ -1,5 +1,5 @@
 import { Header } from '/@/components/Header'
-import { createResource, createSignal, JSX, Switch, Match } from 'solid-js'
+import { createResource, createSignal, JSX, Switch, Match, Accessor, Setter } from 'solid-js'
 import { Radio, RadioItem } from '/@/components/Radio'
 import { client } from '/@/libs/api'
 import {
@@ -28,7 +28,7 @@ import { ConnectError } from '@bufbuild/connect'
 import { storify } from '/@/libs/storify'
 import { RepositoryInfo } from '/@/components/RepositoryInfo'
 import { InputBar, InputLabel } from '/@/components/Input'
-import { FormCheckBox, FormRadio, FormTextBig } from '/@/components/AppsNew'
+import { FormCheckBox, FormSettings, FormTextBig } from '/@/components/AppsNew'
 import { WebsiteSettings } from '/@/components/WebsiteSettings'
 import { PortPublicationSettings } from '/@/components/PortPublications'
 
@@ -108,7 +108,7 @@ export interface FormRuntimeConfigProps {
   setRuntimeConfig: SetStoreFunction<RuntimeConfig>
 }
 
-const FormRuntimeConfig = (props: FormRuntimeConfigProps) => {
+const RuntimeConfigs = (props: FormRuntimeConfigProps) => {
   return (
     <>
       <div>
@@ -143,6 +143,163 @@ const FormRuntimeConfig = (props: FormRuntimeConfigProps) => {
         />
       </div>
     </>
+  )
+}
+
+export interface BuildConfigsProps {
+  buildConfigMethod: Accessor<
+    'runtimeBuildpack' | 'runtimeCmd' | 'runtimeDockerfile' | 'staticCmd' | 'staticDockerfile'
+  >
+  setBuildConfigMethod: Setter<
+    'runtimeBuildpack' | 'runtimeCmd' | 'runtimeDockerfile' | 'staticCmd' | 'staticDockerfile'
+  >
+  buildConfig: {
+    runtimeBuildpack:
+      | { value: BuildConfigRuntimeBuildpack; case: 'runtimeBuildpack' }
+      | { case: undefined; value?: undefined }
+    runtimeCmd: { value: BuildConfigRuntimeCmd; case: 'runtimeCmd' } | { case: undefined; value?: undefined }
+    runtimeDockerfile: {} | { case: undefined; value?: undefined }
+    staticCmd: {} | { case: undefined; value?: undefined }
+    staticDockerfile: {} | { case: undefined; value?: undefined }
+  }
+  setBuildConfig: SetStoreFunction<{
+    runtimeBuildpack:
+      | { value: BuildConfigRuntimeBuildpack; case: 'runtimeBuildpack' }
+      | { case: undefined; value?: undefined }
+    runtimeCmd: { value: BuildConfigRuntimeCmd; case: 'runtimeCmd' } | { case: undefined; value?: undefined }
+    runtimeDockerfile: {} | { case: undefined; value?: undefined }
+    staticCmd: {} | { case: undefined; value?: undefined }
+    staticDockerfile: {} | { case: undefined; value?: undefined }
+  }>
+  runtimeConfig: RuntimeConfig
+  setRuntimeConfig: SetStoreFunction<RuntimeConfig>
+}
+export const BuildConfigs = (props: BuildConfigsProps) => {
+  return (
+    <FormSettings>
+      <div>
+        <Radio items={buildConfigItems} selected={props.buildConfigMethod()} setSelected={props.setBuildConfigMethod} />
+      </div>
+
+      <Switch>
+        <Match when={props.buildConfigMethod() === 'runtimeBuildpack'}>
+          <RuntimeConfigs runtimeConfig={props.runtimeConfig} setRuntimeConfig={props.setRuntimeConfig} />
+          <div>
+            <InputLabel>Context</InputLabel>
+            <InputBar
+              value={props.buildConfig.runtimeBuildpack.value.context}
+              onInput={(e) => props.setBuildConfig('runtimeBuildpack', 'value', 'context', e.target.value)}
+            />
+          </div>
+        </Match>
+
+        <Match when={props.buildConfigMethod() === 'runtimeCmd'}>
+          <RuntimeConfigs runtimeConfig={props.runtimeConfig} setRuntimeConfig={props.setRuntimeConfig} />
+          <div>
+            <InputLabel>Base image</InputLabel>
+            <InputBar
+              value={props.buildConfig.runtimeCmd.value.baseImage}
+              onInput={(e) => props.setBuildConfig('runtimeCmd', 'value', 'baseImage', e.target.value)}
+            />
+          </div>
+          <div>
+            <InputLabel>Build command</InputLabel>
+            <InputBar
+              value={props.buildConfig.runtimeCmd.value.buildCmd}
+              onInput={(e) => props.setBuildConfig('runtimeCmd', 'value', 'buildCmd', e.target.value)}
+            />
+          </div>
+          <div>
+            <InputLabel>Build command shell</InputLabel>
+            <FormCheckBox>
+              <Checkbox
+                selected={props.buildConfig.runtimeCmd.value.buildCmdShell}
+                setSelected={(selected) => props.setBuildConfig('runtimeCmd', 'value', 'buildCmdShell', selected)}
+              >
+                Run build command with shell
+              </Checkbox>
+            </FormCheckBox>
+          </div>
+        </Match>
+
+        <Match when={props.buildConfigMethod() === 'runtimeDockerfile'}>
+          <RuntimeConfigs runtimeConfig={props.runtimeConfig} setRuntimeConfig={props.setRuntimeConfig} />
+          <div>
+            <InputLabel>Dockerfile name</InputLabel>
+            <InputBar
+              value={props.buildConfig.runtimeDockerfile.value.dockerfileName}
+              onInput={(e) => props.setBuildConfig('runtimeDockerfile', 'value', 'dockerfileName', e.target.value)}
+            />
+          </div>
+          <div>
+            <InputLabel>Context</InputLabel>
+            <InputBar
+              value={props.buildConfig.runtimeDockerfile.value.context}
+              onInput={(e) => props.setBuildConfig('runtimeDockerfile', 'value', 'context', e.target.value)}
+            />
+          </div>
+        </Match>
+
+        <Match when={props.buildConfigMethod() === 'staticCmd'}>
+          <div>
+            <InputLabel>Base image</InputLabel>
+            <InputBar
+              value={props.buildConfig.staticCmd.value.baseImage}
+              onInput={(e) => props.setBuildConfig('staticCmd', 'value', 'baseImage', e.target.value)}
+            />
+          </div>
+          <div>
+            <InputLabel>Build command</InputLabel>
+            <InputBar
+              value={props.buildConfig.staticCmd.value.buildCmd}
+              onInput={(e) => props.setBuildConfig('staticCmd', 'value', 'buildCmd', e.target.value)}
+            />
+          </div>
+          <div>
+            <InputLabel>Build command shell</InputLabel>
+            <FormCheckBox>
+              <Checkbox
+                selected={props.buildConfig.staticCmd.value.buildCmdShell}
+                setSelected={(selected) => props.setBuildConfig('staticCmd', 'value', 'buildCmdShell', selected)}
+              >
+                Run build command with shell
+              </Checkbox>
+            </FormCheckBox>
+          </div>
+          <div>
+            <InputLabel>Artifact path</InputLabel>
+            <InputBar
+              value={props.buildConfig.staticCmd.value.artifactPath}
+              onInput={(e) => props.setBuildConfig('staticCmd', 'value', 'artifactPath', e.target.value)}
+            />
+          </div>
+        </Match>
+
+        <Match when={props.buildConfigMethod() === 'staticDockerfile'}>
+          <div>
+            <InputLabel>Dockerfile name</InputLabel>
+            <InputBar
+              value={props.buildConfig.staticDockerfile.value.dockerfileName}
+              onInput={(e) => props.setBuildConfig('staticDockerfile', 'value', 'dockerfileName', e.target.value)}
+            />
+          </div>
+          <div>
+            <InputLabel>Context</InputLabel>
+            <InputBar
+              value={props.buildConfig.staticDockerfile.value.context}
+              onInput={(e) => props.setBuildConfig('staticDockerfile', 'value', 'context', e.target.value)}
+            />
+          </div>
+          <div>
+            <InputLabel>Artifact path</InputLabel>
+            <InputBar
+              value={props.buildConfig.staticDockerfile.value.artifactPath}
+              onInput={(e) => props.setBuildConfig('staticDockerfile', 'value', 'artifactPath', e.target.value)}
+            />
+          </div>
+        </Match>
+      </Switch>
+    </FormSettings>
   )
 }
 
@@ -271,130 +428,13 @@ export default () => {
 
             <div>
               <FormTextBig>Build Config</FormTextBig>
-              <FormRadio>
-                <div>
-                  <Radio items={buildConfigItems} selected={buildConfigMethod()} setSelected={setBuildConfigMethod} />
-                </div>
-
-                <Switch>
-                  <Match when={buildConfigMethod() === 'runtimeBuildpack'}>
-                    <FormRuntimeConfig runtimeConfig={runtimeConfig} setRuntimeConfig={setRuntimeConfig} />
-                    <div>
-                      <InputLabel>Context</InputLabel>
-                      <InputBar
-                        value={buildConfig.runtimeBuildpack.value.context}
-                        onInput={(e) => setBuildConfig('runtimeBuildpack', 'value', 'context', e.target.value)}
-                      />
-                    </div>
-                  </Match>
-
-                  <Match when={buildConfigMethod() === 'runtimeCmd'}>
-                    <FormRuntimeConfig runtimeConfig={runtimeConfig} setRuntimeConfig={setRuntimeConfig} />
-                    <div>
-                      <InputLabel>Base image</InputLabel>
-                      <InputBar
-                        value={buildConfig.runtimeCmd.value.baseImage}
-                        onInput={(e) => setBuildConfig('runtimeCmd', 'value', 'baseImage', e.target.value)}
-                      />
-                    </div>
-                    <div>
-                      <InputLabel>Build command</InputLabel>
-                      <InputBar
-                        value={buildConfig.runtimeCmd.value.buildCmd}
-                        onInput={(e) => setBuildConfig('runtimeCmd', 'value', 'buildCmd', e.target.value)}
-                      />
-                    </div>
-                    <div>
-                      <InputLabel>Build command shell</InputLabel>
-                      <FormCheckBox>
-                        <Checkbox
-                          selected={buildConfig.runtimeCmd.value.buildCmdShell}
-                          setSelected={(selected) => setBuildConfig('runtimeCmd', 'value', 'buildCmdShell', selected)}
-                        >
-                          Run build command with shell
-                        </Checkbox>
-                      </FormCheckBox>
-                    </div>
-                  </Match>
-
-                  <Match when={buildConfigMethod() === 'runtimeDockerfile'}>
-                    <FormRuntimeConfig runtimeConfig={runtimeConfig} setRuntimeConfig={setRuntimeConfig} />
-                    <div>
-                      <InputLabel>Dockerfile name</InputLabel>
-                      <InputBar
-                        value={buildConfig.runtimeDockerfile.value.dockerfileName}
-                        onInput={(e) => setBuildConfig('runtimeDockerfile', 'value', 'dockerfileName', e.target.value)}
-                      />
-                    </div>
-                    <div>
-                      <InputLabel>Context</InputLabel>
-                      <InputBar
-                        value={buildConfig.runtimeDockerfile.value.context}
-                        onInput={(e) => setBuildConfig('runtimeDockerfile', 'value', 'context', e.target.value)}
-                      />
-                    </div>
-                  </Match>
-
-                  <Match when={buildConfigMethod() === 'staticCmd'}>
-                    <div>
-                      <InputLabel>Base image</InputLabel>
-                      <InputBar
-                        value={buildConfig.staticCmd.value.baseImage}
-                        onInput={(e) => setBuildConfig('staticCmd', 'value', 'baseImage', e.target.value)}
-                      />
-                    </div>
-                    <div>
-                      <InputLabel>Build command</InputLabel>
-                      <InputBar
-                        value={buildConfig.staticCmd.value.buildCmd}
-                        onInput={(e) => setBuildConfig('staticCmd', 'value', 'buildCmd', e.target.value)}
-                      />
-                    </div>
-                    <div>
-                      <InputLabel>Build command shell</InputLabel>
-                      <FormCheckBox>
-                        <Checkbox
-                          selected={buildConfig.staticCmd.value.buildCmdShell}
-                          setSelected={(selected) => setBuildConfig('staticCmd', 'value', 'buildCmdShell', selected)}
-                        >
-                          Run build command with shell
-                        </Checkbox>
-                      </FormCheckBox>
-                    </div>
-                    <div>
-                      <InputLabel>Artifact path</InputLabel>
-                      <InputBar
-                        value={buildConfig.staticCmd.value.artifactPath}
-                        onInput={(e) => setBuildConfig('staticCmd', 'value', 'artifactPath', e.target.value)}
-                      />
-                    </div>
-                  </Match>
-
-                  <Match when={buildConfigMethod() === 'staticDockerfile'}>
-                    <div>
-                      <InputLabel>Dockerfile name</InputLabel>
-                      <InputBar
-                        value={buildConfig.staticDockerfile.value.dockerfileName}
-                        onInput={(e) => setBuildConfig('staticDockerfile', 'value', 'dockerfileName', e.target.value)}
-                      />
-                    </div>
-                    <div>
-                      <InputLabel>Context</InputLabel>
-                      <InputBar
-                        value={buildConfig.staticDockerfile.value.context}
-                        onInput={(e) => setBuildConfig('staticDockerfile', 'value', 'context', e.target.value)}
-                      />
-                    </div>
-                    <div>
-                      <InputLabel>Artifact path</InputLabel>
-                      <InputBar
-                        value={buildConfig.staticDockerfile.value.artifactPath}
-                        onInput={(e) => setBuildConfig('staticDockerfile', 'value', 'artifactPath', e.target.value)}
-                      />
-                    </div>
-                  </Match>
-                </Switch>
-              </FormRadio>
+              <BuildConfigs
+                setBuildConfig={setBuildConfig}
+                buildConfig={buildConfig}
+                runtimeConfig={runtimeConfig}
+                setRuntimeConfig={setRuntimeConfig}
+                setBuildConfigMethod={setBuildConfigMethod}
+              />
             </div>
 
             <div>

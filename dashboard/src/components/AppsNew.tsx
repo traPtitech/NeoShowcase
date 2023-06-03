@@ -30,20 +30,6 @@ export const FormCheckBox = styled('div', {
   },
 })
 
-export const FormRadio = styled('div', {
-  base: {
-    background: vars.bg.white2,
-    border: `1px solid ${vars.bg.white4}`,
-    borderRadius: '4px',
-    marginLeft: '4px',
-    padding: '8px 12px',
-
-    display: 'flex',
-    flexDirection: 'column',
-    gap: '12px',
-  },
-})
-
 export const SettingsContainer = styled('div', {
   base: {
     display: 'flex',
