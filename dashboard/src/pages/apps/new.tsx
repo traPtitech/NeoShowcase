@@ -261,7 +261,6 @@ const Website = (props: WebsiteProps) => {
         <InputBar
           placeholder='80'
           type='number'
-          // value={props.website.httpPort} // 入れると初期値が0になってしまう。
           onChange={(e) => props.setWebsite('httpPort', +e.target.value)}
         />
       </Form>
@@ -300,7 +299,6 @@ const PortPublications = (props: PortPublicationProps) => {
         <InputBar
           placeholder='39000'
           type='number'
-          // value={props.portPublication.internetPort}
           onChange={(e) => props.setPortPublication('internetPort', +e.target.value)}
         />
       </Form>
@@ -309,7 +307,6 @@ const PortPublications = (props: PortPublicationProps) => {
         <InputBar
           placeholder='8080'
           type='number'
-          // value={props.portPublication.applicationPort}
           onChange={(e) => props.setPortPublication('applicationPort', +e.target.value)}
         />
       </Form>
