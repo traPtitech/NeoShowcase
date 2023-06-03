@@ -287,7 +287,7 @@ const authenticationTypeItems: RadioItem<AuthenticationType>[] = [
 ]
 interface PortPublicationProps {
   portPublication: PortPublication
-  setPortPublication: (valueName, value) => void
+  setPortPublication: <T extends keyof PortPublication>(valueName: T, value: PortPublication[T]) => void
   deletePortPublication: () => void
 }
 
