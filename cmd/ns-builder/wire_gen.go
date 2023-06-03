@@ -40,10 +40,11 @@ func New(c2 Config) (*Server, error) {
 		return nil, err
 	}
 	imageConfig := c2.Image
+	applicationRepository := repository.NewApplicationRepository(db)
 	artifactRepository := repository.NewArtifactRepository(db)
 	buildRepository := repository.NewBuildRepository(db)
 	gitRepositoryRepository := repository.NewGitRepositoryRepository(db)
-	builderService := usecase.NewBuilderService(controllerBuilderServiceClient, client, buildpackBackend, storage, publicKeys, imageConfig, artifactRepository, buildRepository, gitRepositoryRepository)
+	builderService := usecase.NewBuilderService(controllerBuilderServiceClient, client, buildpackBackend, storage, publicKeys, imageConfig, applicationRepository, artifactRepository, buildRepository, gitRepositoryRepository)
 	server := &Server{
 		db:       db,
 		buildkit: client,

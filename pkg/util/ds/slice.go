@@ -27,3 +27,10 @@ func Equals[T comparable](s, t []T) bool {
 	}
 	return true
 }
+
+func FirstN[T any](s []T, n int) []T {
+	if len(s) < n {
+		return s
+	}
+	return s[:n]
+}
