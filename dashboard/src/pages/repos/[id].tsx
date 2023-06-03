@@ -1,5 +1,5 @@
 import Fuse from 'fuse.js'
-import { Component, createEffect, createResource, createSignal, For, JSX, onCleanup, Show } from 'solid-js'
+import { Component, createEffect, createMemo, createResource, createSignal, For, JSX, onCleanup, Show } from 'solid-js'
 import toast from 'solid-toast'
 import { ConnectError } from '@bufbuild/connect'
 import { styled } from '@macaron-css/solid'
@@ -21,7 +21,7 @@ import { URLText } from '/@/components/URLText'
 import { client } from '/@/libs/api'
 import { providerToIcon, repositoryURLToProvider } from '/@/libs/application'
 import { CenterInline, Container } from '/@/libs/layout'
-import useAllUsers from '/@/libs/useAllUsers'
+import { users, userFromId } from '/@/libs/useAllUsers'
 import useModal from '/@/libs/useModal'
 import { vars } from '/@/theme'
 
@@ -126,15 +126,8 @@ export default () => {
       return repo() ? allAppsRes.applications.filter((app) => app.repositoryId === repo()?.id) : []
     },
   )
-  const [users] = useAllUsers()
-
-  const userFromId = (userId: string): User | undefined => {
-    return users()?.find((user) => user.id === userId)
-  }
 
   const { Modal: DeleteRepoModal, open: openDeleteRepoModal, close: closeDeleteRepoModal } = useModal()
-
-  onCleanup(closeDeleteRepoModal)
 
   // リポジトリに紐づくアプリケーションが存在するかどうか
   const canDeleteRepository = (): boolean => apps()?.length === 0
@@ -156,7 +149,7 @@ export default () => {
     }
   }
 
-  const handleCreateApplication: JSX.EventHandler<HTMLButtonElement, MouseEvent> = async () => {
+  const handleCreateApplication = async () => {
     navigate(`/apps/new?repositoryID=${repo()?.id}`)
   }
 
@@ -164,25 +157,30 @@ export default () => {
   const { Modal: EditOwnerModal, open: openEditOwnerModal } = useModal()
 
   const [userSearchQuery, setUserSearchQuery] = createSignal('')
-  const [userSearchResults, setUserSearchResults] = createSignal<User[]>([])
 
   // ユーザー検索
-  // - users()の更新時にFuseインスタンスを再生成する
-  // - userSearchQuery()の更新時に検索を実行する
-  // ため二重にcreateEffectを使用している
-  createEffect(() => {
-    const fuse = new Fuse(users() ?? [], {
-      keys: ['name'],
-    })
+  const nonOwnerUsers = createMemo(() => {
+    if (!users() || !repo()) return []
+    return users().filter((user) => !repo().ownerIds.includes(user.id))
+  })
 
-    createEffect(() => {
-      // 検索クエリが空の場合は全ユーザーを表示する
-      if (userSearchQuery() === '') {
-        setUserSearchResults(users() ?? [])
-      } else {
-        setUserSearchResults(fuse.search(userSearchQuery()).map((result) => result.item))
-      }
-    })
+  // users()の更新時にFuseインスタンスを再生成する
+  const fuse = createMemo(
+    () =>
+      new Fuse(nonOwnerUsers(), {
+        keys: ['name'],
+      }),
+  )
+  // userSearchQuery()の更新時に検索を実行する
+  const userSearchResults = createMemo(() => {
+    // 検索クエリが空の場合は全ユーザーを表示する
+    if (userSearchQuery() === '') {
+      return nonOwnerUsers()
+    } else {
+      return fuse()
+        .search(userSearchQuery())
+        .map((result) => result.item)
+    }
   })
 
   const handleAddOwner = async (user: User): Promise<void> => {
@@ -373,7 +371,7 @@ export default () => {
               </UsersList>
             </Card>
           </Show>
-          <Show when={apps()}>
+          <Show when={apps()?.length > 0}>
             <Card
               style={{
                 width: '100%',
