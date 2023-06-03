@@ -1,11 +1,9 @@
 import { Header } from '/@/components/Header'
-import { createResource, createSignal, JSX, For, JSXElement, Switch, Match } from 'solid-js'
+import { createResource, createSignal, JSX, For, Switch, Match } from 'solid-js'
 import { Radio, RadioItem } from '/@/components/Radio'
 import { client } from '/@/libs/api'
 import {
   Application,
-  Repository,
-  AuthenticationType,
   PortPublicationProtocol,
   CreateApplicationRequest,
   ApplicationConfig,
@@ -25,12 +23,14 @@ import { vars } from '/@/theme'
 import { styled } from '@macaron-css/solid'
 import { Button } from '/@/components/Button'
 import { Checkbox } from '/@/components/Checkbox'
-import { providerToIcon, repositoryURLToProvider } from '/@/libs/application'
 import { createStore, SetStoreFunction } from 'solid-js/store'
 import toast from 'solid-toast'
 import { ConnectError } from '@bufbuild/connect'
 import { storify } from '/@/libs/storify'
 import { RepositoryInfo } from '/@/components/RepositoryInfo'
+import { InputBar, InputLabel } from '/@/components/Input'
+import { FormButton, FormCheckBox, FormRadio, FormTextBig, SettingsContainer } from '/@/components/AppsNew'
+import { WebsiteSettings } from '/@/components/WebsiteSettings'
 
 const [repos] = createResource(() => client.getRepositories({}))
 const [apps] = createResource(() => client.getApplications({}))
@@ -103,188 +103,6 @@ const FormContainer = styled('form', {
   },
 })
 
-const Form = styled('div', {
-  base: {},
-})
-
-const FormButton = styled('div', {
-  base: {
-    marginLeft: '8px',
-  },
-})
-
-const InputLabel = styled('div', {
-  base: {
-    fontSize: '16px',
-    alignItems: 'center',
-    fontWeight: 700,
-    color: vars.text.black1,
-
-    marginBottom: '4px',
-  },
-})
-
-const FormTextBig = styled('div', {
-  base: {
-    fontSize: '20px',
-    alignItems: 'center',
-    fontWeight: 900,
-    color: vars.text.black1,
-
-    marginBottom: '4px',
-  },
-})
-
-const InputBar = styled('input', {
-  base: {
-    padding: '8px 12px',
-    borderRadius: '4px',
-    border: `1px solid ${vars.bg.white4}`,
-    fontSize: '14px',
-    marginLeft: '4px',
-
-    width: '320px',
-
-    display: 'flex',
-    flexDirection: 'column',
-
-    '::placeholder': {
-      color: vars.text.black3,
-    },
-  },
-})
-
-const FormCheckBox = styled('div', {
-  base: {
-    background: vars.bg.white1,
-    border: `1px solid ${vars.bg.white4}`,
-    borderRadius: '4px',
-    marginLeft: '4px',
-    padding: '8px 12px',
-
-    width: '320px',
-  },
-})
-
-const FormWebsite = styled('div', {
-  base: {
-    background: vars.bg.white2,
-    border: `1px solid ${vars.bg.white4}`,
-    borderRadius: '4px',
-    marginLeft: '4px',
-    padding: '8px 12px',
-
-    display: 'flex',
-    flexDirection: 'column',
-    gap: '12px',
-  },
-})
-
-const FormWebsiteButton = styled('div', {
-  base: {
-    display: 'flex',
-    gap: '8px',
-    marginBottom: '4px',
-  },
-})
-
-const FormRadio = styled('div', {
-  base: {
-    background: vars.bg.white2,
-    border: `1px solid ${vars.bg.white4}`,
-    borderRadius: '4px',
-    marginLeft: '4px',
-    padding: '8px 12px',
-
-    display: 'flex',
-    flexDirection: 'column',
-    gap: '12px',
-  },
-})
-styled('div', {
-  base: {
-    display: 'flex',
-    flexDirection: 'column',
-    gap: 'px',
-  },
-})
-const SettingsContainer = styled('div', {
-  base: {
-    display: 'flex',
-    flexDirection: 'column',
-    gap: '10px',
-  },
-})
-interface WebsiteProps {
-  website: CreateWebsiteRequest
-  setWebsite: <T extends keyof CreateWebsiteRequest>(valueName: T, value: CreateWebsiteRequest[T]) => void
-  deleteWebsite: () => void
-}
-
-const Website = (props: WebsiteProps) => {
-  return (
-    <FormWebsite>
-      <Form>
-        <InputLabel>ドメイン名</InputLabel>
-        <InputBar
-          placeholder='example.ns.trap.jp'
-          value={props.website.fqdn}
-          onInput={(e) => props.setWebsite('fqdn', e.target.value)}
-        />
-      </Form>
-      <Form>
-        <InputLabel>Path Prefix</InputLabel>
-        <InputBar
-          placeholder='/'
-          value={props.website.pathPrefix}
-          onInput={(e) => props.setWebsite('pathPrefix', e.target.value)}
-        />
-      </Form>
-      <Form>
-        <FormCheckBox>
-          <Checkbox
-            selected={props.website.stripPrefix}
-            setSelected={(selected) => props.setWebsite('stripPrefix', selected)}
-          >
-            Strip Path Prefix
-          </Checkbox>
-          <Checkbox selected={props.website.https} setSelected={(selected) => props.setWebsite('https', selected)}>
-            https
-          </Checkbox>
-          <Checkbox selected={props.website.h2c} setSelected={(selected) => props.setWebsite('h2c', selected)}>
-            (advanced) アプリ通信にh2cを用いる
-          </Checkbox>
-        </FormCheckBox>
-      </Form>
-      <Form>
-        <InputLabel>アプリのHTTP Port番号</InputLabel>
-        <InputBar
-          placeholder='80'
-          type='number'
-          onChange={(e) => props.setWebsite('httpPort', +e.target.value)}
-        />
-      </Form>
-      <Form>
-        <Radio
-          items={authenticationTypeItems}
-          selected={props.website.authentication}
-          setSelected={(selected) => props.setWebsite('authentication', selected)}
-        />
-      </Form>
-      <FormWebsiteButton>
-        <Button onclick={props.deleteWebsite} color='black1' size='large' type='button'>
-          Delete website setting
-        </Button>
-      </FormWebsiteButton>
-    </FormWebsite>
-  )
-}
-
-const authenticationTypeItems: RadioItem<AuthenticationType>[] = [
-  { value: AuthenticationType.OFF, title: 'OFF' },
-  { value: AuthenticationType.SOFT, title: 'SOFT' },
-  { value: AuthenticationType.HARD, title: 'HARD' },
-]
 interface PortPublicationProps {
   portPublication: PortPublication
   setPortPublication: <T extends keyof PortPublication>(valueName: T, value: PortPublication[T]) => void
@@ -293,36 +111,36 @@ interface PortPublicationProps {
 
 const PortPublications = (props: PortPublicationProps) => {
   return (
-    <FormWebsite>
-      <Form>
+    <FormSettings>
+      <div>
         <InputLabel>Internet Port</InputLabel>
         <InputBar
           placeholder='39000'
           type='number'
           onChange={(e) => props.setPortPublication('internetPort', +e.target.value)}
         />
-      </Form>
-      <Form>
+      </div>
+      <div>
         <InputLabel>Application Port</InputLabel>
         <InputBar
           placeholder='8080'
           type='number'
           onChange={(e) => props.setPortPublication('applicationPort', +e.target.value)}
         />
-      </Form>
-      <Form>
+      </div>
+      <div>
         <Radio
           items={protocolItems}
           selected={props.portPublication.protocol}
           setSelected={(proto) => props.setPortPublication('protocol', proto)}
         />
-      </Form>
-      <FormWebsiteButton>
+      </div>
+      <FormSettingsButton>
         <Button onclick={props.deletePortPublication} color='black1' size='large' type='button'>
           Delete port publication
         </Button>
-      </FormWebsiteButton>
-    </FormWebsite>
+      </FormSettingsButton>
+    </FormSettings>
   )
 }
 
@@ -339,7 +157,7 @@ export interface FormRuntimeConfigProps {
 const FormRuntimeConfig = (props: FormRuntimeConfigProps) => {
   return (
     <>
-      <Form>
+      <div>
         <InputLabel>Database (使うデーターベースにチェック)</InputLabel>
         <FormCheckBox>
           <Checkbox
@@ -355,21 +173,21 @@ const FormRuntimeConfig = (props: FormRuntimeConfigProps) => {
             MongoDB
           </Checkbox>
         </FormCheckBox>
-      </Form>
-      <Form>
+      </div>
+      <div>
         <InputLabel>Entrypoint</InputLabel>
         <InputBar
           value={props.runtimeConfig.entrypoint}
           onInput={(e) => props.setRuntimeConfig('entrypoint', e.target.value)}
         />
-      </Form>
-      <Form>
+      </div>
+      <div>
         <InputLabel>Command</InputLabel>
         <InputBar
           value={props.runtimeConfig.command}
           onInput={(e) => props.setRuntimeConfig('command', e.target.value)}
         />
-      </Form>
+      </div>
     </>
   )
 }
@@ -477,7 +295,7 @@ export default () => {
               .map((r) => <RepositoryInfo repo={r} apps={appsByRepo()[r.id] || []} />)}
 
           <FormContainer ref={formContainer}>
-            <Form>
+            <div>
               <InputLabel>Application Name</InputLabel>
               <InputBar
                 placeholder='my-app'
@@ -485,9 +303,9 @@ export default () => {
                 onInput={(e) => setCreateApplicationRequest('name', e.target.value)}
                 required
               />
-            </Form>
+            </div>
 
-            <Form>
+            <div>
               <InputLabel>Branch Name</InputLabel>
               <InputBar
                 placeholder='main'
@@ -495,44 +313,44 @@ export default () => {
                 onInput={(e) => setCreateApplicationRequest('refName', e.target.value)}
                 required
               />
-            </Form>
+            </div>
 
-            <Form>
+            <div>
               <FormTextBig>Build Config</FormTextBig>
               <FormRadio>
-                <Form>
+                <div>
                   <Radio items={buildConfigItems} selected={buildConfigMethod()} setSelected={setBuildConfigMethod} />
-                </Form>
+                </div>
 
                 <Switch>
                   <Match when={buildConfigMethod() === 'runtimeBuildpack'}>
                     <FormRuntimeConfig runtimeConfig={runtimeConfig} setRuntimeConfig={setRuntimeConfig} />
-                    <Form>
+                    <div>
                       <InputLabel>Context</InputLabel>
                       <InputBar
                         value={buildConfig.runtimeBuildpack.value.context}
                         onInput={(e) => setBuildConfig('runtimeBuildpack', 'value', 'context', e.target.value)}
                       />
-                    </Form>
+                    </div>
                   </Match>
 
                   <Match when={buildConfigMethod() === 'runtimeCmd'}>
                     <FormRuntimeConfig runtimeConfig={runtimeConfig} setRuntimeConfig={setRuntimeConfig} />
-                    <Form>
+                    <div>
                       <InputLabel>Base image</InputLabel>
                       <InputBar
                         value={buildConfig.runtimeCmd.value.baseImage}
                         onInput={(e) => setBuildConfig('runtimeCmd', 'value', 'baseImage', e.target.value)}
                       />
-                    </Form>
-                    <Form>
+                    </div>
+                    <div>
                       <InputLabel>Build command</InputLabel>
                       <InputBar
                         value={buildConfig.runtimeCmd.value.buildCmd}
                         onInput={(e) => setBuildConfig('runtimeCmd', 'value', 'buildCmd', e.target.value)}
                       />
-                    </Form>
-                    <Form>
+                    </div>
+                    <div>
                       <InputLabel>Build command shell</InputLabel>
                       <FormCheckBox>
                         <Checkbox
@@ -542,43 +360,43 @@ export default () => {
                           Run build command with shell
                         </Checkbox>
                       </FormCheckBox>
-                    </Form>
+                    </div>
                   </Match>
 
                   <Match when={buildConfigMethod() === 'runtimeDockerfile'}>
                     <FormRuntimeConfig runtimeConfig={runtimeConfig} setRuntimeConfig={setRuntimeConfig} />
-                    <Form>
+                    <div>
                       <InputLabel>Dockerfile name</InputLabel>
                       <InputBar
                         value={buildConfig.runtimeDockerfile.value.dockerfileName}
                         onInput={(e) => setBuildConfig('runtimeDockerfile', 'value', 'dockerfileName', e.target.value)}
                       />
-                    </Form>
-                    <Form>
+                    </div>
+                    <div>
                       <InputLabel>Context</InputLabel>
                       <InputBar
                         value={buildConfig.runtimeDockerfile.value.context}
                         onInput={(e) => setBuildConfig('runtimeDockerfile', 'value', 'context', e.target.value)}
                       />
-                    </Form>
+                    </div>
                   </Match>
 
                   <Match when={buildConfigMethod() === 'staticCmd'}>
-                    <Form>
+                    <div>
                       <InputLabel>Base image</InputLabel>
                       <InputBar
                         value={buildConfig.staticCmd.value.baseImage}
                         onInput={(e) => setBuildConfig('staticCmd', 'value', 'baseImage', e.target.value)}
                       />
-                    </Form>
-                    <Form>
+                    </div>
+                    <div>
                       <InputLabel>Build command</InputLabel>
                       <InputBar
                         value={buildConfig.staticCmd.value.buildCmd}
                         onInput={(e) => setBuildConfig('staticCmd', 'value', 'buildCmd', e.target.value)}
                       />
-                    </Form>
-                    <Form>
+                    </div>
+                    <div>
                       <InputLabel>Build command shell</InputLabel>
                       <FormCheckBox>
                         <Checkbox
@@ -588,76 +406,49 @@ export default () => {
                           Run build command with shell
                         </Checkbox>
                       </FormCheckBox>
-                    </Form>
-                    <Form>
+                    </div>
+                    <div>
                       <InputLabel>Artifact path</InputLabel>
                       <InputBar
                         value={buildConfig.staticCmd.value.artifactPath}
                         onInput={(e) => setBuildConfig('staticCmd', 'value', 'artifactPath', e.target.value)}
                       />
-                    </Form>
+                    </div>
                   </Match>
 
                   <Match when={buildConfigMethod() === 'staticDockerfile'}>
-                    <Form>
+                    <div>
                       <InputLabel>Dockerfile name</InputLabel>
                       <InputBar
                         value={buildConfig.staticDockerfile.value.dockerfileName}
                         onInput={(e) => setBuildConfig('staticDockerfile', 'value', 'dockerfileName', e.target.value)}
                       />
-                    </Form>
-                    <Form>
+                    </div>
+                    <div>
                       <InputLabel>Context</InputLabel>
                       <InputBar
                         value={buildConfig.staticDockerfile.value.context}
                         onInput={(e) => setBuildConfig('staticDockerfile', 'value', 'context', e.target.value)}
                       />
-                    </Form>
-                    <Form>
+                    </div>
+                    <div>
                       <InputLabel>Artifact path</InputLabel>
                       <InputBar
                         value={buildConfig.staticDockerfile.value.artifactPath}
                         onInput={(e) => setBuildConfig('staticDockerfile', 'value', 'artifactPath', e.target.value)}
                       />
-                    </Form>
+                    </div>
                   </Match>
                 </Switch>
               </FormRadio>
-            </Form>
+            </div>
 
-            <Form>
+            <div>
               <FormTextBig>Website Setting</FormTextBig>
-              <SettingsContainer>
-                <For each={websiteConfigs}>
-                  {(website, i) => (
-                    <Website
-                      website={website}
-                      setWebsite={(valueName, value) => {
-                        setWebsiteConfigs(i(), valueName, value)
-                      }}
-                      deleteWebsite={() =>
-                        setWebsiteConfigs((current) => [...current.slice(0, i()), ...current.slice(i() + 1)])
-                      }
-                    />
-                  )}
-                </For>
+              <WebsiteSettings websiteConfigs={websiteConfigs} setWebsiteConfigs={setWebsiteConfigs} />
+            </div>
 
-                <FormButton>
-                  <Button
-                    onclick={() => {
-                      setWebsiteConfigs([...websiteConfigs, storify(new CreateWebsiteRequest())])
-                    }}
-                    color='black1'
-                    size='large'
-                    type='button'
-                  >
-                    Add website setting
-                  </Button>
-                </FormButton>
-              </SettingsContainer>
-            </Form>
-
-            <Form>
+            <div>
               <FormTextBig>Port Publication Setting</FormTextBig>
               <SettingsContainer>
                 <For each={portPublications}>
@@ -687,9 +478,9 @@ export default () => {
                   </Button>
                 </FormButton>
               </SettingsContainer>
-            </Form>
+            </div>
 
-            <Form>
+            <div>
               <InputLabel>Start on create</InputLabel>
               <FormCheckBox>
                 <Checkbox
@@ -699,7 +490,7 @@ export default () => {
                   start_on_create
                 </Checkbox>
               </FormCheckBox>
-            </Form>
+            </div>
 
             <Button color='black1' size='large' onclick={createApplication} type='submit'>
               + Create new Application
