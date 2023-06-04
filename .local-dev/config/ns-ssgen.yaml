@@ -3,7 +3,7 @@ artifactsRoot: /artifacts
 builtIn:
   port: 8080
 
-ns:
+controller:
   url: http://ns:10000
 
 db:
