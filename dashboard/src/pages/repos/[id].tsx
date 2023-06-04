@@ -1,5 +1,5 @@
 import Fuse from 'fuse.js'
-import { Component, createEffect, createMemo, createResource, createSignal, For, JSX, onCleanup, Show } from 'solid-js'
+import { Component, createMemo, createResource, createSignal, For, JSX, onCleanup, Show } from 'solid-js'
 import toast from 'solid-toast'
 import { ConnectError } from '@bufbuild/connect'
 import { styled } from '@macaron-css/solid'
@@ -18,12 +18,13 @@ import {
 } from '/@/components/Card'
 import { Header } from '/@/components/Header'
 import { URLText } from '/@/components/URLText'
-import { client } from '/@/libs/api'
+import { client, handleAPIError } from '/@/libs/api'
 import { providerToIcon, repositoryURLToProvider } from '/@/libs/application'
 import { CenterInline, Container } from '/@/libs/layout'
 import { users, userFromId } from '/@/libs/useAllUsers'
 import useModal from '/@/libs/useModal'
 import { vars } from '/@/theme'
+import { ModalButtonsContainer, ModalContainer, ModalText } from '/@/components/Modal'
 
 // copy from AppTitleContainer in AppNav.tsx
 const RepoTitleContainer = styled('div', {
@@ -37,30 +38,6 @@ const RepoTitleContainer = styled('div', {
     fontSize: '32px',
     fontWeight: 'bold',
     color: vars.text.black1,
-  },
-})
-
-const ModalContainer = styled('div', {
-  base: {
-    display: 'flex',
-    flexDirection: 'column',
-    gap: '24px',
-  },
-})
-const ModalButtonsContainer = styled('div', {
-  base: {
-    display: 'flex',
-    flexDirection: 'row',
-    gap: '16px',
-    justifyContent: 'center',
-  },
-})
-const ModalText = styled('div', {
-  base: {
-    fontSize: '16px',
-    fontWeight: 'bold',
-    color: vars.text.black1,
-    textAlign: 'center',
   },
 })
 
@@ -141,11 +118,7 @@ export default () => {
       // アプリ一覧ページに遷移
       navigate('/apps')
     } catch (e) {
-      console.error(e)
-      // gRPCエラー
-      if (e instanceof ConnectError) {
-        toast.error('リポジトリの削除に失敗しました\n' + e.message)
-      }
+      handleAPIError(e, 'リポジトリの削除に失敗しました')
     }
   }
 
