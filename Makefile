@@ -118,6 +118,7 @@ k3s-import: ## Import images to k3s environment
 	docker save ghcr.io/traptitech/ns-builder:main | sudo k3s ctr images import -
 	docker save ghcr.io/traptitech/ns-controller:main | sudo k3s ctr images import -
 	docker save ghcr.io/traptitech/ns-gateway:main | sudo k3s ctr images import -
+	docker save ghcr.io/traptitech/ns-gitea-integration:main | sudo k3s ctr images import -
 	docker save ghcr.io/traptitech/ns-migrate:main | sudo k3s ctr images import -
 	docker save ghcr.io/traptitech/ns-ssgen:main | sudo k3s ctr images import -
 
