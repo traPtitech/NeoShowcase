@@ -1,6 +1,6 @@
-import { A, useParams } from '@solidjs/router'
+import { A, useNavigate, useParams } from '@solidjs/router'
 import { createEffect, createMemo, createResource, createSignal, For, onCleanup, Ref, Show } from 'solid-js'
-import { client } from '/@/libs/api'
+import { client, handleAPIError } from '/@/libs/api'
 import { Header } from '/@/components/Header'
 import { applicationState, buildTypeStr, getWebsiteURL, providerToIcon } from '/@/libs/application'
 import { StatusIcon } from '/@/components/StatusIcon'
@@ -30,6 +30,9 @@ import { LogContainer } from '/@/components/Log'
 import { sleep } from '/@/libs/sleep'
 import { Timestamp } from '@bufbuild/protobuf'
 import { Code, ConnectError } from '@bufbuild/connect'
+import useModal from '/@/libs/useModal'
+import { ModalButtonsContainer, ModalContainer, ModalText } from '/@/components/Modal'
+import toast from 'solid-toast'
 
 interface RuntimeConfigInfoProps {
   config: RuntimeConfig
@@ -149,6 +152,7 @@ const ApplicationConfigInfo = (props: ApplicationConfigInfoProps) => {
 }
 
 export default () => {
+  const navigate = useNavigate()
   const params = useParams()
   const [app, { refetch: refetchApp }] = createResource(
     () => params.id,
@@ -178,6 +182,17 @@ export default () => {
     await client.stopApplication({ id: app().id })
     await refetchApp()
   }
+  const deleteApp = async () => {
+    try {
+      await client.deleteApplication({ id: app().id })
+    } catch (e) {
+      handleAPIError(e, 'アプリケーションの削除に失敗しました')
+      return
+    }
+    toast.success('アプリケーションを削除しました')
+    navigate('/apps')
+  }
+  const { Modal: DeleteAppModal, open: openDeleteAppModal, close: closeDeleteAppModal } = useModal()
 
   const now = new Date()
   const [log] = createResource(
@@ -242,6 +257,30 @@ export default () => {
             <Button color='black1' size='large' onclick={refreshRepo} disabled={disableRefresh()}>
               Refresh Commit
             </Button>
+            <Button
+              onclick={openDeleteAppModal}
+              color='black1'
+              size='large'
+              disabled={app().running}
+              title={
+                app().running ? 'アプリケーションを削除します' : 'アプリケーションが起動しているため削除できません'
+              }
+            >
+              Delete Repository
+            </Button>
+            <DeleteAppModal>
+              <ModalContainer>
+                <ModalText>本当に削除しますか?</ModalText>
+                <ModalButtonsContainer>
+                  <Button onclick={closeDeleteAppModal} color='black1' size='large'>
+                    キャンセル
+                  </Button>
+                  <Button onclick={deleteApp} color='black1' size='large'>
+                    削除
+                  </Button>
+                </ModalButtonsContainer>
+              </ModalContainer>
+            </DeleteAppModal>
             <Show when={!app().running}>
               <Button color='black1' size='large' onclick={startApp}>
                 Start App
