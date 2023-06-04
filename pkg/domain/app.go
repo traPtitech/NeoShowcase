@@ -776,7 +776,7 @@ func GetArtifactsInUse(ctx context.Context, appRepo ApplicationRepository, build
 	slices.SortFunc(builds, func(a, b *Build) bool { return a.StartedAt.ValueOrZero().Before(b.StartedAt.ValueOrZero()) })
 	commitToBuild := lo.SliceToMap(builds, func(b *Build) (string, *Build) { return b.Commit, b })
 
-	artifacts := make([]*Artifact, len(commitToBuild))
+	artifacts := make([]*Artifact, 0, len(commitToBuild))
 	for _, build := range commitToBuild {
 		if !build.Artifact.Valid {
 			continue
