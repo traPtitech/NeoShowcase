@@ -1,4 +1,4 @@
-import { createSignal, JSXElement } from 'solid-js'
+import { JSXElement } from 'solid-js'
 import { vars } from '/@/theme'
 import { ImCheckboxChecked, ImCheckboxUnchecked } from 'solid-icons/im'
 import { styled } from '@macaron-css/solid'
@@ -16,20 +16,25 @@ const Container = styled('div', {
 
 interface Props {
   children: JSXElement
-  init?: boolean
+  selected?: boolean
+  setSelected?: (s: boolean) => void
+  onClick?: () => void
 }
 
-export const Checkbox = ({ children, init = false }: Props): JSXElement => {
-  const [checked, setChecked] = createSignal(init)
-
+export const Checkbox = (props: Props): JSXElement => {
   return (
-    <Container onclick={() => setChecked((prev) => !prev)}>
-      {checked() ? (
+    <Container
+      onClick={() => {
+        props.setSelected(!props.selected)
+        props.onClick?.()
+      }}
+    >
+      {props.selected ? (
         <ImCheckboxChecked size={20} color={vars.text.black2} />
       ) : (
         <ImCheckboxUnchecked size={20} color={vars.text.black4} />
       )}
-      {children}
+      {props.children}
     </Container>
   )
 }

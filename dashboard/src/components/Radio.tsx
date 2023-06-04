@@ -1,4 +1,4 @@
-import { Accessor, For, JSXElement, Setter } from 'solid-js'
+import { For, JSXElement } from 'solid-js'
 import { vars } from '/@/theme'
 import { ImRadioChecked, ImRadioUnchecked } from 'solid-icons/im'
 import { styled } from '@macaron-css/solid'
@@ -25,23 +25,29 @@ const ItemContainer = styled('div', {
   },
 })
 
-export interface RadioItem {
-  value: string | number
-  title: string | number
+export interface RadioItem<T extends string | number> {
+  value: T
+  title: string
 }
 
-export interface Props {
-  items: RadioItem[]
-  selected: string | number
-  setSelected: (s: string | number) => void
+export interface Props<T extends string | number> {
+  items: RadioItem<T>[]
+  selected: T
+  setSelected: (s: T) => void
+  onClick?: () => void
 }
 
-export const Radio = (props: Props): JSXElement => {
+export const Radio = <T extends string | number>(props: Props<T>): JSXElement => {
   return (
     <Container>
       <For each={props.items}>
-        {(item: RadioItem) => (
-          <ItemContainer onClick={() => props.setSelected(item.value)}>
+        {(item) => (
+          <ItemContainer
+            onClick={() => {
+              props.setSelected(item.value)
+              props.onClick?.()
+            }}
+          >
             {props.selected === item.value ? (
               <ImRadioChecked size={20} color={vars.text.black2} />
             ) : (
