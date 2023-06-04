@@ -11,6 +11,8 @@ spec:
       app: traefik
   serviceName: traefik
   replicas: 1
+  podManagementPolicy: Parallel
+  revisionHistoryLimit: 0
   template:
     metadata:
       labels:

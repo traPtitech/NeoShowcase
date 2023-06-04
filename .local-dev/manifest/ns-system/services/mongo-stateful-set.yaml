@@ -6,6 +6,8 @@ metadata:
 spec:
   replicas: 1
   serviceName: mongo
+  podManagementPolicy: Parallel
+  revisionHistoryLimit: 0
   selector:
     matchLabels:
       app: mongo

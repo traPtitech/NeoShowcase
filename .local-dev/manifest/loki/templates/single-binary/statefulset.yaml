@@ -15,12 +15,12 @@ metadata:
 spec:
   replicas: 1
   podManagementPolicy: Parallel
+  revisionHistoryLimit: 0
   updateStrategy:
     rollingUpdate:
       partition: 0
   serviceName: loki-headless
-  revisionHistoryLimit: 10
-  
+
   persistentVolumeClaimRetentionPolicy:
     whenDeleted: Delete
     whenScaled: Delete

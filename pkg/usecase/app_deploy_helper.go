@@ -4,6 +4,7 @@ import (
 	"context"
 
 	"github.com/samber/lo"
+	log "github.com/sirupsen/logrus"
 
 	"github.com/traPtitech/neoshowcase/pkg/domain"
 	"github.com/traPtitech/neoshowcase/pkg/domain/builder"
@@ -103,6 +104,7 @@ func (s *AppDeployHelper) synchronize(ctx context.Context) error {
 	if err != nil {
 		return err
 	}
+	log.Infof("%v runtime, %v static sites active", len(st.Runtime), len(st.StaticSites))
 
 	// Synchronize
 	s.ssgen.BroadcastSSGen(&pb.SSGenRequest{Type: pb.SSGenRequest_RELOAD})
