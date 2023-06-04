@@ -84,7 +84,9 @@ func (s *staticSiteServerService) reload(ctx context.Context) error {
 	defer s.reloadLock.Unlock()
 
 	start := time.Now()
-	defer log.Infof("reloaded static server in %v", time.Since(start))
+	defer func() {
+		log.Infof("reloaded static server in %v", time.Since(start))
+	}()
 
 	data, err := domain.GetActiveStaticSites(ctx, s.appRepo, s.buildRepo)
 	if err != nil {
