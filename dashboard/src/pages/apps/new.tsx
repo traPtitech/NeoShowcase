@@ -255,34 +255,6 @@ export default () => {
             <Button color='black1' size='large' onclick={createApplication} type='submit'>
               + Create new Application
             </Button>
-
-            <Button
-              onclick={() => {
-                console.log('createApplicationRequest Before')
-                console.log(createApplicationRequest)
-                console.log('runtimeConfig')
-                console.log(runtimeConfig)
-                console.log('buildConfig')
-                console.log(buildConfig)
-                console.log('websiteConfigs')
-                console.log(websiteConfigs)
-                console.log('portPublications')
-                console.log(portPublications)
-
-                setCreateApplicationRequest('config', 'buildConfig', buildConfig[buildConfigMethod()])
-                setCreateApplicationRequest('websites', websiteConfigs)
-                setCreateApplicationRequest('portPublications', portPublications)
-
-                console.log('\ncreateApplicationRequest Finally')
-                console.log(createApplicationRequest)
-                console.log('\n\n\n\n')
-              }}
-              color='black1'
-              size='large'
-              type='button'
-            >
-              Debug
-            </Button>
           </FormContainer>
         </MainContentContainer>
       </ContentContainer>

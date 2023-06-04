@@ -1,4 +1,4 @@
-import { createSignal, JSXElement } from 'solid-js'
+import { JSXElement } from 'solid-js'
 import { vars } from '/@/theme'
 import { ImCheckboxChecked, ImCheckboxUnchecked } from 'solid-icons/im'
 import { styled } from '@macaron-css/solid'
