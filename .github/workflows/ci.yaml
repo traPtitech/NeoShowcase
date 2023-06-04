@@ -27,6 +27,7 @@ jobs:
           - ns-builder
           - ns-controller
           - ns-gateway
+          - ns-gitea-integration
           - ns-ssgen
     steps:
       - uses: actions/checkout@v3

@@ -180,7 +180,8 @@ type GetUserKeyCondition struct {
 }
 
 type UserRepository interface {
-	GetOrCreateUser(ctx context.Context, name string) (*User, error)
+	EnsureUser(ctx context.Context, name string) (*User, error)
+	EnsureUsers(ctx context.Context, names []string) ([]*User, error)
 	GetUsers(ctx context.Context, cond GetUserCondition) ([]*User, error)
 	GetUserKeys(ctx context.Context, cond GetUserKeyCondition) ([]*UserKey, error)
 	CreateUserKey(ctx context.Context, key *UserKey) error

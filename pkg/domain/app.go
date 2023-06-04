@@ -543,6 +543,16 @@ type Repository struct {
 	OwnerIDs []string
 }
 
+func NewRepository(name, url string, auth optional.Of[RepositoryAuth], ownerIDs []string) *Repository {
+	return &Repository{
+		ID:       NewID(),
+		Name:     name,
+		URL:      url,
+		Auth:     auth,
+		OwnerIDs: ownerIDs,
+	}
+}
+
 func (r *Repository) Validate() error {
 	if r.Name == "" {
 		return errors.New("name is required")

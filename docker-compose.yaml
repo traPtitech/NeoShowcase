@@ -78,6 +78,24 @@ services:
     networks:
       - default
 
+# Uncomment if testing gitea integration
+#  ns-gitea-integration:
+#    build:
+#      context: .
+#      target: ns-gitea-integration
+#    image: ghcr.io/traptitech/ns-gitea-integration:main
+#    command: run --debug --loglevel=trace --config=/config.yaml
+#    restart: always
+#    volumes:
+#      - ./.local-dev/config/ns-gitea-integration.yaml:/config.yaml
+#    depends_on:
+#      mysql:
+#        condition: service_healthy
+#      ns-migrate:
+#        condition: service_completed_successfully
+#    networks:
+#      - default
+
   ns-auth:
     image: ghcr.io/traptitech/traefik-forward-auth:2.5.2
     restart: always

@@ -27,7 +27,7 @@ func NewAuthInterceptor(
 ) *AuthInterceptor {
 	return &AuthInterceptor{
 		userCache: sc.NewMust(func(ctx context.Context, name string) (*domain.User, error) {
-			return userRepo.GetOrCreateUser(ctx, name)
+			return userRepo.EnsureUser(ctx, name)
 		}, 1*time.Minute, 2*time.Minute),
 		header: string(header),
 	}
