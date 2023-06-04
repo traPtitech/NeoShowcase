@@ -219,7 +219,7 @@ export default () => {
             </div>
 
             <div>
-              <FormTextBig>Build Config</FormTextBig>
+              <FormTextBig>Build Setting</FormTextBig>
               <BuildConfigs
                 setBuildConfig={setBuildConfig}
                 buildConfig={buildConfig}
@@ -241,19 +241,19 @@ export default () => {
             </div>
 
             <div>
-              <InputLabel>Start on create</InputLabel>
+              <InputLabel>Start on Create</InputLabel>
               <FormCheckBox>
                 <Checkbox
                   selected={createApplicationRequest.startOnCreate}
                   setSelected={(selected) => setCreateApplicationRequest('startOnCreate', selected)}
                 >
-                  start_on_create
+                  今すぐ起動する
                 </Checkbox>
               </FormCheckBox>
             </div>
 
             <Button color='black1' size='large' onclick={createApplication} type='submit'>
-              + Create new Application
+              + Create New Application
             </Button>
           </FormContainer>
         </MainContentContainer>

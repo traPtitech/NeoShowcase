@@ -7,11 +7,11 @@ import { Match, Setter, Switch } from 'solid-js'
 import { Radio, RadioItem } from '/@/components/Radio'
 
 const buildConfigItems: RadioItem<string>[] = [
-  { value: 'runtimeBuildpack', title: 'runtime buildpack' },
-  { value: 'runtimeCmd', title: 'runtime cmd' },
-  { value: 'runtimeDockerfile', title: 'runtime dockerfile' },
-  { value: 'staticCmd', title: 'static cmd' },
-  { value: 'staticDockerfile', title: 'static dockerfile' },
+  { value: 'runtimeBuildpack', title: 'Runtime Buildpack' },
+  { value: 'runtimeCmd', title: 'Runtime Command' },
+  { value: 'runtimeDockerfile', title: 'Runtime Dockerfile' },
+  { value: 'staticCmd', title: 'Static Command' },
+  { value: 'staticDockerfile', title: 'Static Dockerfile' },
 ]
 
 export interface FormRuntimeConfigProps {
@@ -85,6 +85,7 @@ export const BuildConfigs = (props: BuildConfigsProps) => {
             <InputLabel>Context</InputLabel>
             <InputBar
               value={props.buildConfig.runtimeBuildpack.value.context}
+              placeholder={'.'}
               onInput={(e) => props.setBuildConfig('runtimeBuildpack', 'value', 'context', e.target.value)}
             />
           </div>
@@ -96,6 +97,7 @@ export const BuildConfigs = (props: BuildConfigsProps) => {
             <InputLabel>Base image</InputLabel>
             <InputBar
               value={props.buildConfig.runtimeCmd.value.baseImage}
+              placeholder={'golang:1-alpine'}
               onInput={(e) => props.setBuildConfig('runtimeCmd', 'value', 'baseImage', e.target.value)}
             />
           </div>
@@ -125,6 +127,7 @@ export const BuildConfigs = (props: BuildConfigsProps) => {
             <InputLabel>Dockerfile name</InputLabel>
             <InputBar
               value={props.buildConfig.runtimeDockerfile.value.dockerfileName}
+              placeholder={'Dockerfile'}
               onInput={(e) => props.setBuildConfig('runtimeDockerfile', 'value', 'dockerfileName', e.target.value)}
             />
           </div>
@@ -132,6 +135,7 @@ export const BuildConfigs = (props: BuildConfigsProps) => {
             <InputLabel>Context</InputLabel>
             <InputBar
               value={props.buildConfig.runtimeDockerfile.value.context}
+              placeholder={'.'}
               onInput={(e) => props.setBuildConfig('runtimeDockerfile', 'value', 'context', e.target.value)}
             />
           </div>
@@ -167,6 +171,7 @@ export const BuildConfigs = (props: BuildConfigsProps) => {
             <InputLabel>Artifact path</InputLabel>
             <InputBar
               value={props.buildConfig.staticCmd.value.artifactPath}
+              placeholder={'dist'}
               onInput={(e) => props.setBuildConfig('staticCmd', 'value', 'artifactPath', e.target.value)}
             />
           </div>
@@ -177,6 +182,7 @@ export const BuildConfigs = (props: BuildConfigsProps) => {
             <InputLabel>Dockerfile name</InputLabel>
             <InputBar
               value={props.buildConfig.staticDockerfile.value.dockerfileName}
+              placeholder={'Dockerfile'}
               onInput={(e) => props.setBuildConfig('staticDockerfile', 'value', 'dockerfileName', e.target.value)}
             />
           </div>
@@ -184,6 +190,7 @@ export const BuildConfigs = (props: BuildConfigsProps) => {
             <InputLabel>Context</InputLabel>
             <InputBar
               value={props.buildConfig.staticDockerfile.value.context}
+              placeholder={'.'}
               onInput={(e) => props.setBuildConfig('staticDockerfile', 'value', 'context', e.target.value)}
             />
           </div>
@@ -191,6 +198,7 @@ export const BuildConfigs = (props: BuildConfigsProps) => {
             <InputLabel>Artifact path</InputLabel>
             <InputBar
               value={props.buildConfig.staticDockerfile.value.artifactPath}
+              placeholder={'dist'}
               onInput={(e) => props.setBuildConfig('staticDockerfile', 'value', 'artifactPath', e.target.value)}
             />
           </div>
