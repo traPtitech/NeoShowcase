@@ -266,7 +266,7 @@ export default () => {
                 app().running ? 'アプリケーションを削除します' : 'アプリケーションが起動しているため削除できません'
               }
             >
-              Delete Repository
+              Delete Application
             </Button>
             <DeleteAppModal>
               <ModalContainer>
