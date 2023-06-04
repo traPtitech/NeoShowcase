@@ -8,10 +8,9 @@ import (
 	"time"
 
 	"github.com/friendsofgo/errors"
-	"github.com/mattn/go-shellwords"
-
 	"github.com/go-git/go-git/v5/plumbing/transport"
 	"github.com/go-git/go-git/v5/plumbing/transport/ssh"
+	"github.com/mattn/go-shellwords"
 	"github.com/samber/lo"
 	"golang.org/x/exp/slices"
 	"golang.org/x/net/idna"
@@ -772,12 +771,12 @@ func GetArtifactsInUse(ctx context.Context, appRepo ApplicationRepository, build
 		return nil, err
 	}
 
-	// Last succeeded builds for each commit
+	// Last succeeded builds for each app+commit
 	slices.SortFunc(builds, func(a, b *Build) bool { return a.StartedAt.ValueOrZero().Before(b.StartedAt.ValueOrZero()) })
-	commitToBuild := lo.SliceToMap(builds, func(b *Build) (string, *Build) { return b.Commit, b })
+	buildMap := lo.SliceToMap(builds, func(b *Build) (string, *Build) { return b.ApplicationID + b.Commit, b })
 
-	artifacts := make([]*Artifact, 0, len(commitToBuild))
-	for _, build := range commitToBuild {
+	artifacts := make([]*Artifact, 0, len(buildMap))
+	for _, build := range buildMap {
 		if !build.Artifact.Valid {
 			continue
 		}
@@ -802,13 +801,13 @@ func GetActiveStaticSites(ctx context.Context, appRepo ApplicationRepository, bu
 		return nil, err
 	}
 
-	// Last succeeded builds for each commit
+	// Last succeeded builds for each app+commit
 	slices.SortFunc(builds, func(a, b *Build) bool { return a.StartedAt.ValueOrZero().Before(b.StartedAt.ValueOrZero()) })
-	commitToBuild := lo.SliceToMap(builds, func(b *Build) (string, *Build) { return b.Commit, b })
+	buildMap := lo.SliceToMap(builds, func(b *Build) (string, *Build) { return b.ApplicationID + b.Commit, b })
 
 	var sites []*StaticSite
 	for _, app := range applications {
-		build, ok := commitToBuild[app.CurrentCommit]
+		build, ok := buildMap[app.ID+app.CurrentCommit]
 		if !ok {
 			continue
 		}
