@@ -3,6 +3,7 @@ module github.com/traPtitech/neoshowcase
 go 1.20
 
 require (
+	code.gitea.io/sdk/gitea v0.15.1
 	github.com/aws/aws-sdk-go v1.44.273
 	github.com/bufbuild/connect-go v1.8.0
 	github.com/cert-manager/cert-manager v1.11.1
@@ -101,6 +102,7 @@ require (
 	github.com/gorilla/mux v1.8.0 // indirect
 	github.com/grpc-ecosystem/go-grpc-middleware v1.4.0 // indirect
 	github.com/grpc-ecosystem/grpc-gateway/v2 v2.15.2 // indirect
+	github.com/hashicorp/go-version v1.6.0 // indirect
 	github.com/hashicorp/hcl v1.0.0 // indirect
 	github.com/huandu/xstrings v1.4.0 // indirect
 	github.com/imdario/mergo v0.3.15 // indirect

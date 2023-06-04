@@ -46,8 +46,9 @@ func (s *APIService) CreateApplication(ctx context.Context, req *connect.Request
 	return res, nil
 }
 
-func (s *APIService) GetApplications(ctx context.Context, _ *connect.Request[emptypb.Empty]) (*connect.Response[pb.GetApplicationsResponse], error) {
-	applications, err := s.svc.GetApplications(ctx)
+func (s *APIService) GetApplications(ctx context.Context, req *connect.Request[pb.GetApplicationsRequest]) (*connect.Response[pb.GetApplicationsResponse], error) {
+	all := req.Msg.Scope == pb.GetApplicationsRequest_ALL
+	applications, err := s.svc.GetApplications(ctx, all)
 	if err != nil {
 		return nil, handleUseCaseError(err)
 	}

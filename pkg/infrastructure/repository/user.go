@@ -5,6 +5,7 @@ import (
 	"database/sql"
 
 	"github.com/friendsofgo/errors"
+	"github.com/samber/lo"
 	"github.com/volatiletech/sqlboiler/v4/boil"
 	"github.com/volatiletech/sqlboiler/v4/queries/qm"
 
@@ -38,7 +39,7 @@ func (r *userRepository) GetUsers(ctx context.Context, cond domain.GetUserCondit
 	return ds.Map(users, repoconvert.ToDomainUser), nil
 }
 
-func (r *userRepository) GetOrCreateUser(ctx context.Context, name string) (*domain.User, error) {
+func (r *userRepository) EnsureUser(ctx context.Context, name string) (*domain.User, error) {
 	tx, err := r.db.BeginTx(ctx, nil)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to begin transaction")
@@ -68,6 +69,45 @@ func (r *userRepository) GetOrCreateUser(ctx context.Context, name string) (*dom
 	}
 
 	return repoconvert.ToDomainUser(mu), nil
+}
+
+func (r *userRepository) EnsureUsers(ctx context.Context, names []string) ([]*domain.User, error) {
+	tx, err := r.db.BeginTx(ctx, nil)
+	if err != nil {
+		return nil, errors.Wrap(err, "beginning transaction")
+	}
+	defer tx.Rollback()
+
+	mus, err := models.Users(
+		models.UserWhere.Name.IN(names),
+		qm.For("UPDATE"),
+	).All(ctx, tx)
+	if err != nil {
+		return nil, errors.Wrap(err, "getting users")
+	}
+
+	modelUsers := lo.SliceToMap(mus, func(mu *models.User) (string, *models.User) { return mu.Name, mu })
+	for _, name := range names {
+		if _, ok := modelUsers[name]; ok {
+			continue
+		}
+		user := domain.NewUser(name)
+		mu := repoconvert.FromDomainUser(user)
+		err = mu.Insert(ctx, tx, boil.Blacklist())
+		if err != nil {
+			return nil, errors.Wrap(err, "inserting user")
+		}
+		modelUsers[name] = mu
+	}
+
+	err = tx.Commit()
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to commit")
+	}
+
+	return lo.MapToSlice(modelUsers, func(name string, mu *models.User) *domain.User {
+		return repoconvert.ToDomainUser(mu)
+	}), nil
 }
 
 func (r *userRepository) GetUserKeys(ctx context.Context, cond domain.GetUserKeyCondition) ([]*domain.UserKey, error) {

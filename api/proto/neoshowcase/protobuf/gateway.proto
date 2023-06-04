@@ -70,6 +70,16 @@ message CreateRepositoryRequest {
   CreateRepositoryAuth auth = 3;
 }
 
+message GetRepositoriesRequest {
+  enum Scope {
+    MINE = 0;
+    PUBLIC = 1;
+    // admin only
+    ALL = 2;
+  }
+  Scope scope = 1;
+}
+
 // UpdateRepositoryRequest id以外はoptional
 message UpdateRepositoryRequest {
   string id = 1;
@@ -212,6 +222,14 @@ message CreateApplicationRequest {
   repeated CreateWebsiteRequest websites = 5;
   repeated PortPublication port_publications = 6;
   bool start_on_create = 7;
+}
+
+message GetApplicationsRequest {
+  enum Scope {
+    MINE = 0;
+    ALL = 1;
+  }
+  Scope scope = 1;
 }
 
 // UpdateApplicationRequest id以外はoptional
@@ -379,7 +397,7 @@ service APIService {
   // CreateRepository リポジトリを登録します
   rpc CreateRepository(CreateRepositoryRequest) returns (Repository);
   // GetRepositories リポジトリ一覧を取得します
-  rpc GetRepositories(google.protobuf.Empty) returns (GetRepositoriesResponse);
+  rpc GetRepositories(GetRepositoriesRequest) returns (GetRepositoriesResponse);
   // GetRepository リポジトリを取得します
   rpc GetRepository(RepositoryIdRequest) returns (Repository);
   // UpdateRepository リポジトリ情報を更新します
@@ -394,7 +412,7 @@ service APIService {
   // CreateApplication アプリを作成します
   rpc CreateApplication(CreateApplicationRequest) returns (Application);
   // GetApplications アプリ一覧を取得します
-  rpc GetApplications(google.protobuf.Empty) returns (GetApplicationsResponse);
+  rpc GetApplications(GetApplicationsRequest) returns (GetApplicationsResponse);
   // GetApplication アプリを取得します
   rpc GetApplication(ApplicationIdRequest) returns (Application);
   // UpdateApplication アプリ情報を更新します

@@ -1,8 +1,7 @@
 import { Header } from '/@/components/Header'
-import { createResource, createSignal, JSX } from 'solid-js'
+import { createResource, createSignal, JSX, Show } from 'solid-js'
 import { client } from '/@/libs/api'
 import {
-  Application,
   CreateApplicationRequest,
   ApplicationConfig,
   BuildConfigRuntimeBuildpack,
@@ -31,11 +30,6 @@ import { FormCheckBox, FormTextBig } from '/@/components/AppsNew'
 import { WebsiteSettings } from '/@/components/WebsiteSettings'
 import { PortPublicationSettings } from '/@/components/PortPublications'
 import { BuildConfigs } from '/@/components/BuildConfigs'
-
-const [repos] = createResource(() => client.getRepositories({}))
-const [apps] = createResource(() => client.getApplications({}))
-
-const loaded = () => !!(repos() && apps())
 
 const AppTitle = styled('div', {
   base: {
@@ -97,13 +91,12 @@ const FormContainer = styled('form', {
 
 export default () => {
   const navigate = useNavigate()
-  const appsByRepo = () =>
-    loaded() &&
-    apps().applications.reduce((acc, app) => {
-      if (!acc[app.repositoryId]) acc[app.repositoryId] = []
-      acc[app.repositoryId].push(app)
-      return acc
-    }, {} as Record<string, Application[]>)
+  const [searchParams] = useSearchParams()
+
+  const [repo] = createResource(
+    () => searchParams.repositoryID,
+    (id) => client.getRepository({ repositoryId: id }),
+  )
 
   const [createApplicationRequest, setCreateApplicationRequest] = createStore(
     new CreateApplicationRequest({
@@ -157,7 +150,6 @@ export default () => {
     },
   })
 
-  const [searchParams] = useSearchParams()
   setCreateApplicationRequest('repositoryId', searchParams.repositoryID)
 
   let formContainer: HTMLFormElement
@@ -192,10 +184,9 @@ export default () => {
     return (
       <ContentContainer>
         <MainContentContainer>
-          {loaded() &&
-            repos()
-              .repositories.filter((r) => r.id === searchParams.repositoryID)
-              .map((r) => <RepositoryInfo repo={r} apps={appsByRepo()[r.id] || []} />)}
+          <Show when={repo()}>
+            <RepositoryInfo repo={repo()} />
+          </Show>
 
           <FormContainer ref={formContainer}>
             <div>

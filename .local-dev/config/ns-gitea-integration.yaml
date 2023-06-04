@@ -1,0 +1,13 @@
+debug: true
+
+gitea:
+  url: https://git.trap.jp
+  token: ""
+  intervalSeconds: 600
+
+db:
+  host: mysql
+  port: 3306
+  username: root
+  password: password
+  database: neoshowcase

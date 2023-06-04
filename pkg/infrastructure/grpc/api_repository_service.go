@@ -17,13 +17,7 @@ import (
 func (s *APIService) CreateRepository(ctx context.Context, req *connect.Request[pb.CreateRepositoryRequest]) (*connect.Response[pb.Repository], error) {
 	msg := req.Msg
 	user := web.GetUser(ctx)
-	repo := &domain.Repository{
-		ID:       domain.NewID(),
-		Name:     msg.Name,
-		URL:      msg.Url,
-		Auth:     pbconvert.FromPBRepositoryAuth(msg.Auth),
-		OwnerIDs: []string{user.ID},
-	}
+	repo := domain.NewRepository(msg.Name, msg.Url, pbconvert.FromPBRepositoryAuth(msg.Auth), []string{user.ID})
 	err := s.svc.CreateRepository(ctx, repo)
 	if err != nil {
 		return nil, handleUseCaseError(err)
@@ -32,8 +26,8 @@ func (s *APIService) CreateRepository(ctx context.Context, req *connect.Request[
 	return res, nil
 }
 
-func (s *APIService) GetRepositories(ctx context.Context, _ *connect.Request[emptypb.Empty]) (*connect.Response[pb.GetRepositoriesResponse], error) {
-	repositories, err := s.svc.GetRepositories(ctx)
+func (s *APIService) GetRepositories(ctx context.Context, req *connect.Request[pb.GetRepositoriesRequest]) (*connect.Response[pb.GetRepositoriesResponse], error) {
+	repositories, err := s.svc.GetRepositories(ctx, pbconvert.RepoScopeMapper.FromMust(req.Msg.Scope))
 	if err != nil {
 		return nil, handleUseCaseError(err)
 	}

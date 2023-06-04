@@ -42,6 +42,10 @@ FROM --platform=$BUILDPLATFORM builder as builder-ns-gateway
 RUN --mount=type=cache,target=/go/pkg/mod --mount=type=cache,target=/root/.cache/go-build \
     go build -o /app/ns-gateway -ldflags "-s -w -X main.version=$APP_VERSION -X main.revision=$APP_REVISION" ./cmd/ns-gateway
 
+FROM --platform=$BUILDPLATFORM builder as builder-ns-gitea-integration
+RUN --mount=type=cache,target=/go/pkg/mod --mount=type=cache,target=/root/.cache/go-build \
+    go build -o /app/ns-gitea-integration -ldflags "-s -w -X main.version=$APP_VERSION -X main.revision=$APP_REVISION" ./cmd/ns-gitea-integration
+
 FROM --platform=$BUILDPLATFORM builder as builder-ns-ssgen
 RUN --mount=type=cache,target=/go/pkg/mod --mount=type=cache,target=/root/.cache/go-build \
     go build -o /app/ns-ssgen -ldflags "-s -w -X main.version=$APP_VERSION -X main.revision=$APP_REVISION" ./cmd/ns-ssgen
@@ -85,6 +89,11 @@ COPY --from=builder-ns-gateway /app/ns-gateway ./
 ENTRYPOINT ["/app/ns-gateway"]
 CMD ["run"]
 
+FROM base as ns-gitea-integration
+COPY --from=builder-ns-gitea-integration /app/ns-gitea-integration ./
+ENTRYPOINT ["/app/ns-gitea-integration"]
+CMD ["run"]
+
 FROM base as ns-ssgen
 EXPOSE 8080
 COPY --from=builder-ns-ssgen /app/ns-ssgen ./
@@ -96,4 +105,5 @@ EXPOSE 8080 10000
 COPY --from=builder-ns-builder /app/ns-builder ./
 COPY --from=builder-ns-controller /app/ns-controller ./
 COPY --from=builder-ns-gateway /app/ns-gateway ./
+COPY --from=builder-ns-gitea-integration /app/ns-gitea-integration ./
 COPY --from=builder-ns-ssgen /app/ns-ssgen ./

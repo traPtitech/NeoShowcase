@@ -2,7 +2,7 @@ import { JSXElement } from 'solid-js'
 import { providerToIcon, repositoryURLToProvider } from '/@/libs/application'
 import { styled } from '@macaron-css/solid'
 import { vars } from '/@/theme'
-import { Application, Repository } from '/@/api/neoshowcase/protobuf/gateway_pb'
+import { Repository } from '/@/api/neoshowcase/protobuf/gateway_pb'
 
 const RepositoryInfoContainer = styled('div', {
   base: {
@@ -42,7 +42,6 @@ const SmallText = styled('div', {
 
 export interface RepositoryInfoProps {
   repo: Repository
-  apps: Application[]
 }
 
 export const RepositoryInfo = (props: RepositoryInfoProps): JSXElement => {

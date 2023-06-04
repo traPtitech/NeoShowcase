@@ -2,8 +2,12 @@ import { Header } from '/@/components/Header'
 import { Checkbox } from '/@/components/Checkbox'
 import { createResource, createSignal, For, Show } from 'solid-js'
 import { Radio, RadioItem } from '/@/components/Radio'
-import { client } from '/@/libs/api'
-import { Application } from '/@/api/neoshowcase/protobuf/gateway_pb'
+import { client, user } from '/@/libs/api'
+import {
+  Application,
+  GetApplicationsRequest_Scope,
+  GetRepositoriesRequest_Scope,
+} from '/@/api/neoshowcase/protobuf/gateway_pb'
 import { RepositoryRow } from '/@/components/RepositoryRow'
 import { ApplicationState } from '/@/libs/application'
 import { StatusCheckbox } from '/@/components/StatusCheckbox'
@@ -17,6 +21,17 @@ const sortItems: RadioItem<string>[] = [
   { value: 'desc', title: '最新順' },
   { value: 'asc', title: '古い順' },
 ]
+
+const scopeItems = (admin: boolean) => {
+  const items: RadioItem<GetRepositoriesRequest_Scope>[] = [
+    { value: GetRepositoriesRequest_Scope.MINE, title: '自分のアプリ' },
+    { value: GetRepositoriesRequest_Scope.PUBLIC, title: 'すべてのアプリ' }
+  ]
+  if (admin) {
+    items.push({ value: GetRepositoriesRequest_Scope.ALL, title: 'すべてのアプリ (admin)' })
+  }
+  return items
+}
 
 const AppsTitle = styled('div', {
   base: {
@@ -115,9 +130,21 @@ const RepositoriesContainer = styled('div', {
 })
 
 export default () => {
-  const [repos] = createResource(() => client.getRepositories({}))
-  const [apps] = createResource(() => client.getApplications({}))
-  const loaded = () => !!(repos() && apps())
+  const [scope, setScope] = createSignal(GetRepositoriesRequest_Scope.MINE)
+  const appScope = () => {
+    const mine = scope() === GetRepositoriesRequest_Scope.MINE
+    return mine ? GetApplicationsRequest_Scope.MINE : GetApplicationsRequest_Scope.ALL
+  }
+
+  const [repos] = createResource(
+    () => scope(),
+    (scope) => client.getRepositories({ scope })
+  )
+  const [apps] = createResource(
+    () => appScope(),
+    (scope) => client.getApplications({ scope })
+  )
+  const loaded = () => !!(user() && repos() && apps())
 
   const appsByRepo = () =>
     loaded() &&
@@ -154,11 +181,9 @@ export default () => {
               </SidebarOptions>
             </SidebarSection>
             <SidebarSection>
-              <SidebarTitle>Provider</SidebarTitle>
+              <SidebarTitle>Scope</SidebarTitle>
               <SidebarOptions>
-                <Checkbox>GitHub</Checkbox>
-                <Checkbox>Gitea</Checkbox>
-                <Checkbox>GitLab</Checkbox>
+                <Radio items={scopeItems(user().admin)} selected={scope()} setSelected={setScope} />
               </SidebarOptions>
             </SidebarSection>
             <SidebarOptions>

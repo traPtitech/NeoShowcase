@@ -17,6 +17,7 @@ jobs:
           - ns-builder
           - ns-controller
           - ns-gateway
+          - ns-gitea-integration
           - ns-migrate
           - ns-ssgen
     steps:
