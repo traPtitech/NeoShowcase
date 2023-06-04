@@ -2,6 +2,7 @@ package usecase
 
 import (
 	"context"
+	"fmt"
 	"strings"
 	"sync"
 	"time"
@@ -156,7 +157,7 @@ func (c *cleanerService) pruneArtifacts(ctx context.Context) error {
 		}
 		err = domain.DeleteArtifact(c.storage, artifact.ID)
 		if err != nil {
-			return err
+			return errors.Wrap(err, fmt.Sprintf("deleting artifact %v", artifact.ID))
 		}
 		err = c.artifactRepo.UpdateArtifact(ctx, artifact.ID, domain.UpdateArtifactArgs{DeletedAt: optional.From(time.Now())})
 		if err != nil {
