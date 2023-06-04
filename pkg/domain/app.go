@@ -781,7 +781,8 @@ func GetArtifactsInUse(ctx context.Context, appRepo ApplicationRepository, build
 		if !build.Artifact.Valid {
 			continue
 		}
-		artifacts = append(artifacts, &build.Artifact.V)
+		artifact := build.Artifact.V
+		artifacts = append(artifacts, &artifact)
 	}
 	return artifacts, nil
 }
