@@ -26,8 +26,8 @@ func (s *APIService) CreateRepository(ctx context.Context, req *connect.Request[
 	return res, nil
 }
 
-func (s *APIService) GetRepositories(ctx context.Context, _ *connect.Request[emptypb.Empty]) (*connect.Response[pb.GetRepositoriesResponse], error) {
-	repositories, err := s.svc.GetRepositories(ctx)
+func (s *APIService) GetRepositories(ctx context.Context, req *connect.Request[pb.GetRepositoriesRequest]) (*connect.Response[pb.GetRepositoriesResponse], error) {
+	repositories, err := s.svc.GetRepositories(ctx, pbconvert.RepoScopeMapper.FromMust(req.Msg.Scope))
 	if err != nil {
 		return nil, handleUseCaseError(err)
 	}

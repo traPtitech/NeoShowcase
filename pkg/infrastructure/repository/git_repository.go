@@ -50,11 +50,21 @@ func (r *gitRepositoryRepository) GetRepositories(ctx context.Context, cond doma
 		)
 	}
 
-	repos, err := models.Repositories(mods...).All(ctx, r.db)
+	modelRepos, err := models.Repositories(mods...).All(ctx, r.db)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to get repositories")
 	}
-	return ds.Map(repos, repoconvert.ToDomainRepository), nil
+
+	repos := ds.Map(modelRepos, repoconvert.ToDomainRepository)
+
+	if cond.PublicOrOwnedBy.Valid {
+		userID := cond.PublicOrOwnedBy.V
+		repos = lo.Filter(repos, func(repo *domain.Repository, _ int) bool {
+			return lo.Contains(repo.OwnerIDs, userID) || !repo.Auth.Valid
+		})
+	}
+
+	return repos, nil
 }
 
 func (r *gitRepositoryRepository) getRepository(ctx context.Context, ex boil.ContextExecutor, id string) (*models.Repository, error) {

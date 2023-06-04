@@ -132,9 +132,10 @@ type EnvironmentRepository interface {
 }
 
 type GetRepositoryCondition struct {
-	IDs    optional.Of[[]string]
-	URLs   optional.Of[[]string]
-	UserID optional.Of[string]
+	IDs             optional.Of[[]string]
+	URLs            optional.Of[[]string]
+	PublicOrOwnedBy optional.Of[string]
+	UserID          optional.Of[string]
 }
 
 type UpdateRepositoryArgs struct {

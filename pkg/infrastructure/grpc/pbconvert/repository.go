@@ -3,9 +3,16 @@ package pbconvert
 import (
 	"github.com/traPtitech/neoshowcase/pkg/domain"
 	"github.com/traPtitech/neoshowcase/pkg/infrastructure/grpc/pb"
+	"github.com/traPtitech/neoshowcase/pkg/usecase"
 	"github.com/traPtitech/neoshowcase/pkg/util/mapper"
 	"github.com/traPtitech/neoshowcase/pkg/util/optional"
 )
+
+var RepoScopeMapper = mapper.MustNewValueMapper(map[usecase.GetRepoScope]pb.GetRepositoriesRequest_Scope{
+	usecase.GetRepoScopeMine:   pb.GetRepositoriesRequest_MINE,
+	usecase.GetRepoScopePublic: pb.GetRepositoriesRequest_PUBLIC,
+	usecase.GetRepoScopeAll:    pb.GetRepositoriesRequest_ALL,
+})
 
 func FromPBRepositoryAuth(req *pb.CreateRepositoryAuth) optional.Of[domain.RepositoryAuth] {
 	switch v := req.Auth.(type) {

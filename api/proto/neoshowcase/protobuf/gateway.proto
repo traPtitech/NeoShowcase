@@ -70,6 +70,16 @@ message CreateRepositoryRequest {
   CreateRepositoryAuth auth = 3;
 }
 
+message GetRepositoriesRequest {
+  enum Scope {
+    MINE = 0;
+    PUBLIC = 1;
+    // admin only
+    ALL = 2;
+  }
+  Scope scope = 1;
+}
+
 // UpdateRepositoryRequest id以外はoptional
 message UpdateRepositoryRequest {
   string id = 1;
@@ -379,7 +389,7 @@ service APIService {
   // CreateRepository リポジトリを登録します
   rpc CreateRepository(CreateRepositoryRequest) returns (Repository);
   // GetRepositories リポジトリ一覧を取得します
-  rpc GetRepositories(google.protobuf.Empty) returns (GetRepositoriesResponse);
+  rpc GetRepositories(GetRepositoriesRequest) returns (GetRepositoriesResponse);
   // GetRepository リポジトリを取得します
   rpc GetRepository(RepositoryIdRequest) returns (Repository);
   // UpdateRepository リポジトリ情報を更新します

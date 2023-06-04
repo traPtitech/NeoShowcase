@@ -143,7 +143,7 @@ type APIServiceClient interface {
 	// CreateRepository リポジトリを登録します
 	CreateRepository(context.Context, *connect_go.Request[pb.CreateRepositoryRequest]) (*connect_go.Response[pb.Repository], error)
 	// GetRepositories リポジトリ一覧を取得します
-	GetRepositories(context.Context, *connect_go.Request[emptypb.Empty]) (*connect_go.Response[pb.GetRepositoriesResponse], error)
+	GetRepositories(context.Context, *connect_go.Request[pb.GetRepositoriesRequest]) (*connect_go.Response[pb.GetRepositoriesResponse], error)
 	// GetRepository リポジトリを取得します
 	GetRepository(context.Context, *connect_go.Request[pb.RepositoryIdRequest]) (*connect_go.Response[pb.Repository], error)
 	// UpdateRepository リポジトリ情報を更新します
@@ -245,7 +245,7 @@ func NewAPIServiceClient(httpClient connect_go.HTTPClient, baseURL string, opts 
 			baseURL+APIServiceCreateRepositoryProcedure,
 			opts...,
 		),
-		getRepositories: connect_go.NewClient[emptypb.Empty, pb.GetRepositoriesResponse](
+		getRepositories: connect_go.NewClient[pb.GetRepositoriesRequest, pb.GetRepositoriesResponse](
 			httpClient,
 			baseURL+APIServiceGetRepositoriesProcedure,
 			opts...,
@@ -374,7 +374,7 @@ type aPIServiceClient struct {
 	getUserKeys         *connect_go.Client[emptypb.Empty, pb.GetUserKeysResponse]
 	deleteUserKey       *connect_go.Client[pb.DeleteUserKeyRequest, emptypb.Empty]
 	createRepository    *connect_go.Client[pb.CreateRepositoryRequest, pb.Repository]
-	getRepositories     *connect_go.Client[emptypb.Empty, pb.GetRepositoriesResponse]
+	getRepositories     *connect_go.Client[pb.GetRepositoriesRequest, pb.GetRepositoriesResponse]
 	getRepository       *connect_go.Client[pb.RepositoryIdRequest, pb.Repository]
 	updateRepository    *connect_go.Client[pb.UpdateRepositoryRequest, emptypb.Empty]
 	refreshRepository   *connect_go.Client[pb.RepositoryIdRequest, emptypb.Empty]
@@ -445,7 +445,7 @@ func (c *aPIServiceClient) CreateRepository(ctx context.Context, req *connect_go
 }
 
 // GetRepositories calls neoshowcase.protobuf.APIService.GetRepositories.
-func (c *aPIServiceClient) GetRepositories(ctx context.Context, req *connect_go.Request[emptypb.Empty]) (*connect_go.Response[pb.GetRepositoriesResponse], error) {
+func (c *aPIServiceClient) GetRepositories(ctx context.Context, req *connect_go.Request[pb.GetRepositoriesRequest]) (*connect_go.Response[pb.GetRepositoriesResponse], error) {
 	return c.getRepositories.CallUnary(ctx, req)
 }
 
@@ -580,7 +580,7 @@ type APIServiceHandler interface {
 	// CreateRepository リポジトリを登録します
 	CreateRepository(context.Context, *connect_go.Request[pb.CreateRepositoryRequest]) (*connect_go.Response[pb.Repository], error)
 	// GetRepositories リポジトリ一覧を取得します
-	GetRepositories(context.Context, *connect_go.Request[emptypb.Empty]) (*connect_go.Response[pb.GetRepositoriesResponse], error)
+	GetRepositories(context.Context, *connect_go.Request[pb.GetRepositoriesRequest]) (*connect_go.Response[pb.GetRepositoriesResponse], error)
 	// GetRepository リポジトリを取得します
 	GetRepository(context.Context, *connect_go.Request[pb.RepositoryIdRequest]) (*connect_go.Response[pb.Repository], error)
 	// UpdateRepository リポジトリ情報を更新します
@@ -836,7 +836,7 @@ func (UnimplementedAPIServiceHandler) CreateRepository(context.Context, *connect
 	return nil, connect_go.NewError(connect_go.CodeUnimplemented, errors.New("neoshowcase.protobuf.APIService.CreateRepository is not implemented"))
 }
 
-func (UnimplementedAPIServiceHandler) GetRepositories(context.Context, *connect_go.Request[emptypb.Empty]) (*connect_go.Response[pb.GetRepositoriesResponse], error) {
+func (UnimplementedAPIServiceHandler) GetRepositories(context.Context, *connect_go.Request[pb.GetRepositoriesRequest]) (*connect_go.Response[pb.GetRepositoriesResponse], error) {
 	return nil, connect_go.NewError(connect_go.CodeUnimplemented, errors.New("neoshowcase.protobuf.APIService.GetRepositories is not implemented"))
 }
 
