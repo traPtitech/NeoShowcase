@@ -150,12 +150,12 @@ func (b *k8sBackend) ingressRoute(
 	if authConfig != nil {
 		switch website.Authentication {
 		case domain.AuthenticationTypeSoft:
-			for _, middlewareName := range authConfig.Soft {
-				middlewareRefs = append(middlewareRefs, traefikv1alpha1.MiddlewareRef{Name: middlewareName})
+			for _, mw := range authConfig.Soft {
+				middlewareRefs = append(middlewareRefs, mw.toRef())
 			}
 		case domain.AuthenticationTypeHard:
-			for _, middlewareName := range authConfig.Hard {
-				middlewareRefs = append(middlewareRefs, traefikv1alpha1.MiddlewareRef{Name: middlewareName})
+			for _, mw := range authConfig.Hard {
+				middlewareRefs = append(middlewareRefs, mw.toRef())
 			}
 		}
 	} else if website.Authentication != domain.AuthenticationTypeOff {

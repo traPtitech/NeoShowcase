@@ -10,11 +10,15 @@ k8s:
       auth:
         available: true
         soft:
-          - nsapp-auth-soft
-          - nsapp-auth
+          - name: nsapp-auth-soft
+            namespace: ns-apps
+          - name: nsapp-auth
+            namespace: ns-apps
         hard:
-          - nsapp-auth-hard
-          - nsapp-auth
+          - name: nsapp-auth-hard
+            namespace: ns-apps
+          - name: nsapp-auth
+            namespace: ns-apps
   ports:
     - startPort: 39000
       endPort: 39999

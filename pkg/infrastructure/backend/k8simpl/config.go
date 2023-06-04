@@ -3,6 +3,7 @@ package k8simpl
 import (
 	"github.com/friendsofgo/errors"
 	"github.com/samber/lo"
+	traefikv1alpha1 "github.com/traefik/traefik/v2/pkg/provider/kubernetes/crd/traefikio/v1alpha1"
 	v1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
 
@@ -16,10 +17,22 @@ const (
 	tlsTypeCertManager = "cert-manager"
 )
 
+type middleware struct {
+	Name      string `mapstructure:"name" yaml:"name"`
+	Namespace string `mapstructure:"namespace" yaml:"namespace"`
+}
+
+func (mw *middleware) toRef() traefikv1alpha1.MiddlewareRef {
+	return traefikv1alpha1.MiddlewareRef{
+		Name:      mw.Name,
+		Namespace: mw.Namespace,
+	}
+}
+
 type domainAuthConf = struct {
-	Available bool     `mapstructure:"available" yaml:"available"`
-	Soft      []string `mapstructure:"soft" yaml:"soft"`
-	Hard      []string `mapstructure:"hard" yaml:"hard"`
+	Available bool         `mapstructure:"available" yaml:"available"`
+	Soft      []middleware `mapstructure:"soft" yaml:"soft"`
+	Hard      []middleware `mapstructure:"hard" yaml:"hard"`
 }
 
 type domainConf struct {
