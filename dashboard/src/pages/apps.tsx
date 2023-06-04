@@ -25,7 +25,7 @@ const sortItems: RadioItem<string>[] = [
 const scopeItems = (admin: boolean) => {
   const items: RadioItem<GetRepositoriesRequest_Scope>[] = [
     { value: GetRepositoriesRequest_Scope.MINE, title: '自分のアプリ' },
-    { value: GetRepositoriesRequest_Scope.PUBLIC, title: 'すべてのアプリ' }
+    { value: GetRepositoriesRequest_Scope.PUBLIC, title: 'すべてのアプリ' },
   ]
   if (admin) {
     items.push({ value: GetRepositoriesRequest_Scope.ALL, title: 'すべてのアプリ (admin)' })
@@ -138,11 +138,11 @@ export default () => {
 
   const [repos] = createResource(
     () => scope(),
-    (scope) => client.getRepositories({ scope })
+    (scope) => client.getRepositories({ scope }),
   )
   const [apps] = createResource(
     () => appScope(),
-    (scope) => client.getApplications({ scope })
+    (scope) => client.getApplications({ scope }),
   )
   const loaded = () => !!(user() && repos() && apps())
 
