@@ -13,6 +13,7 @@ import (
 
 	"github.com/traPtitech/neoshowcase/pkg/domain"
 	"github.com/traPtitech/neoshowcase/pkg/domain/builder"
+	"github.com/traPtitech/neoshowcase/pkg/util/loop"
 	"github.com/traPtitech/neoshowcase/pkg/util/optional"
 )
 
@@ -56,7 +57,24 @@ func NewCleanerService(
 
 	ctx, cancel := context.WithCancel(context.Background())
 	c.start = func() {
-		go c.pruneImagesLoop(ctx, r)
+		go loop.Loop(ctx, func(ctx context.Context) {
+			start := time.Now()
+			err := c.pruneImages(ctx, r)
+			if err != nil {
+				log.Errorf("failed to prune images: %+v", err)
+				return
+			}
+			log.Infof("Pruned images in %v", time.Since(start))
+		}, 1*time.Hour, true)
+		go loop.Loop(ctx, func(ctx context.Context) {
+			start := time.Now()
+			err := c.pruneArtifacts(ctx)
+			if err != nil {
+				log.Errorf("failed to prune artifacts: %+v", err)
+				return
+			}
+			log.Infof("Pruned artifacts in %v", time.Since(start))
+		}, 1*time.Hour, true)
 	}
 	c.shutdown = cancel
 
@@ -71,54 +89,6 @@ func (c *cleanerService) Start(_ context.Context) error {
 func (c *cleanerService) Shutdown(_ context.Context) error {
 	c.shutdownOnce.Do(c.shutdown)
 	return nil
-}
-
-func (c *cleanerService) pruneImagesLoop(ctx context.Context, r *registry.Registry) {
-	ticker := time.NewTicker(1 * time.Hour)
-	defer ticker.Stop()
-
-	doPrune := func() {
-		start := time.Now()
-		err := c.pruneImages(ctx, r)
-		if err != nil {
-			log.Errorf("failed to prune images: %+v", err)
-			return
-		}
-		log.Infof("Pruned images in %v", time.Since(start))
-	}
-
-	for {
-		select {
-		case <-ticker.C:
-			doPrune()
-		case <-ctx.Done():
-			return
-		}
-	}
-}
-
-func (c *cleanerService) pruneArtifactsLoop(ctx context.Context) {
-	ticker := time.NewTicker(1 * time.Hour)
-	defer ticker.Stop()
-
-	doPrune := func() {
-		start := time.Now()
-		err := c.pruneArtifacts(ctx)
-		if err != nil {
-			log.Errorf("failed to prune artifacts: %+v", err)
-			return
-		}
-		log.Infof("Pruned artifacts in %v", time.Since(start))
-	}
-
-	for {
-		select {
-		case <-ticker.C:
-			doPrune()
-		case <-ctx.Done():
-			return
-		}
-	}
 }
 
 func (c *cleanerService) pruneImages(ctx context.Context, r *registry.Registry) error {
