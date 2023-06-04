@@ -188,7 +188,7 @@ export default () => {
     }
   }
 
-  const SelectRepository = (): JSX.Element => {
+  const CreateApplicationSettingsInputForm = (): JSX.Element => {
     return (
       <ContentContainer>
         <MainContentContainer>
@@ -272,7 +272,7 @@ export default () => {
         </A>
         <AppsTitle>Create Application</AppsTitle>
       </AppTitle>
-      <SelectRepository />
+      <CreateApplicationSettingsInputForm />
     </Container>
   )
 }
