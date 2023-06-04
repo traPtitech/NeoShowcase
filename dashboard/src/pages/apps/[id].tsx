@@ -32,6 +32,7 @@ import { Timestamp } from '@bufbuild/protobuf'
 import { Code, ConnectError } from '@bufbuild/connect'
 import useModal from '/@/libs/useModal'
 import { ModalButtonsContainer, ModalContainer, ModalText } from '/@/components/Modal'
+import toast from 'solid-toast'
 
 interface RuntimeConfigInfoProps {
   config: RuntimeConfig
@@ -184,10 +185,12 @@ export default () => {
   const deleteApp = async () => {
     try {
       await client.deleteApplication({ id: app().id })
-      navigate('/apps')
     } catch (e) {
       handleAPIError(e, 'アプリケーションの削除に失敗しました')
+      return
     }
+    toast.success('アプリケーションを削除しました')
+    navigate('/apps')
   }
   const { Modal: DeleteAppModal, open: openDeleteAppModal, close: closeDeleteAppModal } = useModal()
 
