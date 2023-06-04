@@ -1611,6 +1611,63 @@ export class CreateApplicationRequest extends Message<CreateApplicationRequest> 
 }
 
 /**
+ * @generated from message neoshowcase.protobuf.GetApplicationsRequest
+ */
+export class GetApplicationsRequest extends Message<GetApplicationsRequest> {
+  /**
+   * @generated from field: neoshowcase.protobuf.GetApplicationsRequest.Scope scope = 1;
+   */
+  scope = GetApplicationsRequest_Scope.MINE;
+
+  constructor(data?: PartialMessage<GetApplicationsRequest>) {
+    super();
+    proto3.util.initPartial(data, this);
+  }
+
+  static readonly runtime: typeof proto3 = proto3;
+  static readonly typeName = "neoshowcase.protobuf.GetApplicationsRequest";
+  static readonly fields: FieldList = proto3.util.newFieldList(() => [
+    { no: 1, name: "scope", kind: "enum", T: proto3.getEnumType(GetApplicationsRequest_Scope) },
+  ]);
+
+  static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): GetApplicationsRequest {
+    return new GetApplicationsRequest().fromBinary(bytes, options);
+  }
+
+  static fromJson(jsonValue: JsonValue, options?: Partial<JsonReadOptions>): GetApplicationsRequest {
+    return new GetApplicationsRequest().fromJson(jsonValue, options);
+  }
+
+  static fromJsonString(jsonString: string, options?: Partial<JsonReadOptions>): GetApplicationsRequest {
+    return new GetApplicationsRequest().fromJsonString(jsonString, options);
+  }
+
+  static equals(a: GetApplicationsRequest | PlainMessage<GetApplicationsRequest> | undefined, b: GetApplicationsRequest | PlainMessage<GetApplicationsRequest> | undefined): boolean {
+    return proto3.util.equals(GetApplicationsRequest, a, b);
+  }
+}
+
+/**
+ * @generated from enum neoshowcase.protobuf.GetApplicationsRequest.Scope
+ */
+export enum GetApplicationsRequest_Scope {
+  /**
+   * @generated from enum value: MINE = 0;
+   */
+  MINE = 0,
+
+  /**
+   * @generated from enum value: ALL = 1;
+   */
+  ALL = 1,
+}
+// Retrieve enum metadata with: proto3.getEnumType(GetApplicationsRequest_Scope)
+proto3.util.setEnumType(GetApplicationsRequest_Scope, "neoshowcase.protobuf.GetApplicationsRequest.Scope", [
+  { no: 0, name: "MINE" },
+  { no: 1, name: "ALL" },
+]);
+
+/**
  * UpdateApplicationRequest id以外はoptional
  *
  * @generated from message neoshowcase.protobuf.UpdateApplicationRequest

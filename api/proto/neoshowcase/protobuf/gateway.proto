@@ -224,6 +224,14 @@ message CreateApplicationRequest {
   bool start_on_create = 7;
 }
 
+message GetApplicationsRequest {
+  enum Scope {
+    MINE = 0;
+    ALL = 1;
+  }
+  Scope scope = 1;
+}
+
 // UpdateApplicationRequest id以外はoptional
 message UpdateApplicationRequest {
   string id = 1;
@@ -404,7 +412,7 @@ service APIService {
   // CreateApplication アプリを作成します
   rpc CreateApplication(CreateApplicationRequest) returns (Application);
   // GetApplications アプリ一覧を取得します
-  rpc GetApplications(google.protobuf.Empty) returns (GetApplicationsResponse);
+  rpc GetApplications(GetApplicationsRequest) returns (GetApplicationsResponse);
   // GetApplication アプリを取得します
   rpc GetApplication(ApplicationIdRequest) returns (Application);
   // UpdateApplication アプリ情報を更新します

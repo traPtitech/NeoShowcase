@@ -148,8 +148,12 @@ func (s *APIServerService) deleteApplicationDatabase(ctx context.Context, app *d
 	return nil
 }
 
-func (s *APIServerService) GetApplications(ctx context.Context) ([]*domain.Application, error) {
-	return s.appRepo.GetApplications(ctx, domain.GetApplicationCondition{})
+func (s *APIServerService) GetApplications(ctx context.Context, all bool) ([]*domain.Application, error) {
+	var cond domain.GetApplicationCondition
+	if !all {
+		cond.UserID = optional.From(web.GetUser(ctx).ID)
+	}
+	return s.appRepo.GetApplications(ctx, cond)
 }
 
 func (s *APIServerService) GetApplication(ctx context.Context, id string) (*domain.Application, error) {

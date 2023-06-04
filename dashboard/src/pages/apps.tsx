@@ -3,7 +3,11 @@ import { Checkbox } from '/@/components/Checkbox'
 import { createResource, createSignal, For, Show } from 'solid-js'
 import { Radio, RadioItem } from '/@/components/Radio'
 import { client, user } from '/@/libs/api'
-import { Application, GetRepositoriesRequest_Scope } from '/@/api/neoshowcase/protobuf/gateway_pb'
+import {
+  Application,
+  GetApplicationsRequest_Scope,
+  GetRepositoriesRequest_Scope,
+} from '/@/api/neoshowcase/protobuf/gateway_pb'
 import { RepositoryRow } from '/@/components/RepositoryRow'
 import { ApplicationState } from '/@/libs/application'
 import { StatusCheckbox } from '/@/components/StatusCheckbox'
@@ -127,12 +131,19 @@ const RepositoriesContainer = styled('div', {
 
 export default () => {
   const [scope, setScope] = createSignal(GetRepositoriesRequest_Scope.MINE)
+  const appScope = () => {
+    const mine = scope() === GetRepositoriesRequest_Scope.MINE
+    return mine ? GetApplicationsRequest_Scope.MINE : GetApplicationsRequest_Scope.ALL
+  }
 
   const [repos] = createResource(
     () => scope(),
     (scope) => client.getRepositories({ scope })
   )
-  const [apps] = createResource(() => client.getApplications({}))
+  const [apps] = createResource(
+    () => appScope(),
+    (scope) => client.getApplications({ scope })
+  )
   const loaded = () => !!(user() && repos() && apps())
 
   const appsByRepo = () =>

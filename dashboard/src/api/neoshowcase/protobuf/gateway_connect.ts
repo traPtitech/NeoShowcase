@@ -4,7 +4,7 @@
 // @ts-nocheck
 
 import { Empty, MethodKind } from "@bufbuild/protobuf";
-import { Application, ApplicationEnvVars, ApplicationIdRequest, ApplicationOutput, ArtifactContent, ArtifactIdRequest, AvailableDomains, AvailablePorts, Build, BuildIdRequest, BuildLog, CreateApplicationRequest, CreateRepositoryRequest, CreateUserKeyRequest, DeleteUserKeyRequest, GetApplicationsResponse, GetBuildsResponse, GetOutputRequest, GetOutputResponse, GetOutputStreamRequest, GetRepositoriesRequest, GetRepositoriesResponse, GetSystemPublicKeyResponse, GetUserKeysResponse, GetUsersResponse, Repository, RepositoryIdRequest, RetryCommitBuildRequest, SetApplicationEnvVarRequest, UpdateApplicationRequest, UpdateRepositoryRequest, User, UserKey } from "./gateway_pb.js";
+import { Application, ApplicationEnvVars, ApplicationIdRequest, ApplicationOutput, ArtifactContent, ArtifactIdRequest, AvailableDomains, AvailablePorts, Build, BuildIdRequest, BuildLog, CreateApplicationRequest, CreateRepositoryRequest, CreateUserKeyRequest, DeleteUserKeyRequest, GetApplicationsRequest, GetApplicationsResponse, GetBuildsResponse, GetOutputRequest, GetOutputResponse, GetOutputStreamRequest, GetRepositoriesRequest, GetRepositoriesResponse, GetSystemPublicKeyResponse, GetUserKeysResponse, GetUsersResponse, Repository, RepositoryIdRequest, RetryCommitBuildRequest, SetApplicationEnvVarRequest, UpdateApplicationRequest, UpdateRepositoryRequest, User, UserKey } from "./gateway_pb.js";
 
 /**
  * General / System
@@ -186,7 +186,7 @@ export const APIService = {
      */
     getApplications: {
       name: "GetApplications",
-      I: Empty,
+      I: GetApplicationsRequest,
       O: GetApplicationsResponse,
       kind: MethodKind.Unary,
     },

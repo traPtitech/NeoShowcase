@@ -155,7 +155,7 @@ type APIServiceClient interface {
 	// CreateApplication アプリを作成します
 	CreateApplication(context.Context, *connect_go.Request[pb.CreateApplicationRequest]) (*connect_go.Response[pb.Application], error)
 	// GetApplications アプリ一覧を取得します
-	GetApplications(context.Context, *connect_go.Request[emptypb.Empty]) (*connect_go.Response[pb.GetApplicationsResponse], error)
+	GetApplications(context.Context, *connect_go.Request[pb.GetApplicationsRequest]) (*connect_go.Response[pb.GetApplicationsResponse], error)
 	// GetApplication アプリを取得します
 	GetApplication(context.Context, *connect_go.Request[pb.ApplicationIdRequest]) (*connect_go.Response[pb.Application], error)
 	// UpdateApplication アプリ情報を更新します
@@ -275,7 +275,7 @@ func NewAPIServiceClient(httpClient connect_go.HTTPClient, baseURL string, opts 
 			baseURL+APIServiceCreateApplicationProcedure,
 			opts...,
 		),
-		getApplications: connect_go.NewClient[emptypb.Empty, pb.GetApplicationsResponse](
+		getApplications: connect_go.NewClient[pb.GetApplicationsRequest, pb.GetApplicationsResponse](
 			httpClient,
 			baseURL+APIServiceGetApplicationsProcedure,
 			opts...,
@@ -380,7 +380,7 @@ type aPIServiceClient struct {
 	refreshRepository   *connect_go.Client[pb.RepositoryIdRequest, emptypb.Empty]
 	deleteRepository    *connect_go.Client[pb.RepositoryIdRequest, emptypb.Empty]
 	createApplication   *connect_go.Client[pb.CreateApplicationRequest, pb.Application]
-	getApplications     *connect_go.Client[emptypb.Empty, pb.GetApplicationsResponse]
+	getApplications     *connect_go.Client[pb.GetApplicationsRequest, pb.GetApplicationsResponse]
 	getApplication      *connect_go.Client[pb.ApplicationIdRequest, pb.Application]
 	updateApplication   *connect_go.Client[pb.UpdateApplicationRequest, emptypb.Empty]
 	deleteApplication   *connect_go.Client[pb.ApplicationIdRequest, emptypb.Empty]
@@ -475,7 +475,7 @@ func (c *aPIServiceClient) CreateApplication(ctx context.Context, req *connect_g
 }
 
 // GetApplications calls neoshowcase.protobuf.APIService.GetApplications.
-func (c *aPIServiceClient) GetApplications(ctx context.Context, req *connect_go.Request[emptypb.Empty]) (*connect_go.Response[pb.GetApplicationsResponse], error) {
+func (c *aPIServiceClient) GetApplications(ctx context.Context, req *connect_go.Request[pb.GetApplicationsRequest]) (*connect_go.Response[pb.GetApplicationsResponse], error) {
 	return c.getApplications.CallUnary(ctx, req)
 }
 
@@ -592,7 +592,7 @@ type APIServiceHandler interface {
 	// CreateApplication アプリを作成します
 	CreateApplication(context.Context, *connect_go.Request[pb.CreateApplicationRequest]) (*connect_go.Response[pb.Application], error)
 	// GetApplications アプリ一覧を取得します
-	GetApplications(context.Context, *connect_go.Request[emptypb.Empty]) (*connect_go.Response[pb.GetApplicationsResponse], error)
+	GetApplications(context.Context, *connect_go.Request[pb.GetApplicationsRequest]) (*connect_go.Response[pb.GetApplicationsResponse], error)
 	// GetApplication アプリを取得します
 	GetApplication(context.Context, *connect_go.Request[pb.ApplicationIdRequest]) (*connect_go.Response[pb.Application], error)
 	// UpdateApplication アプリ情報を更新します
@@ -860,7 +860,7 @@ func (UnimplementedAPIServiceHandler) CreateApplication(context.Context, *connec
 	return nil, connect_go.NewError(connect_go.CodeUnimplemented, errors.New("neoshowcase.protobuf.APIService.CreateApplication is not implemented"))
 }
 
-func (UnimplementedAPIServiceHandler) GetApplications(context.Context, *connect_go.Request[emptypb.Empty]) (*connect_go.Response[pb.GetApplicationsResponse], error) {
+func (UnimplementedAPIServiceHandler) GetApplications(context.Context, *connect_go.Request[pb.GetApplicationsRequest]) (*connect_go.Response[pb.GetApplicationsResponse], error) {
 	return nil, connect_go.NewError(connect_go.CodeUnimplemented, errors.New("neoshowcase.protobuf.APIService.GetApplications is not implemented"))
 }
 

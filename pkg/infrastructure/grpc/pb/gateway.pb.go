@@ -317,6 +317,52 @@ func (Application_ContainerState) EnumDescriptor() ([]byte, []int) {
 	return file_neoshowcase_protobuf_gateway_proto_rawDescGZIP(), []int{25, 0}
 }
 
+type GetApplicationsRequest_Scope int32
+
+const (
+	GetApplicationsRequest_MINE GetApplicationsRequest_Scope = 0
+	GetApplicationsRequest_ALL  GetApplicationsRequest_Scope = 1
+)
+
+// Enum value maps for GetApplicationsRequest_Scope.
+var (
+	GetApplicationsRequest_Scope_name = map[int32]string{
+		0: "MINE",
+		1: "ALL",
+	}
+	GetApplicationsRequest_Scope_value = map[string]int32{
+		"MINE": 0,
+		"ALL":  1,
+	}
+)
+
+func (x GetApplicationsRequest_Scope) Enum() *GetApplicationsRequest_Scope {
+	p := new(GetApplicationsRequest_Scope)
+	*p = x
+	return p
+}
+
+func (x GetApplicationsRequest_Scope) String() string {
+	return protoimpl.X.EnumStringOf(x.Descriptor(), protoreflect.EnumNumber(x))
+}
+
+func (GetApplicationsRequest_Scope) Descriptor() protoreflect.EnumDescriptor {
+	return file_neoshowcase_protobuf_gateway_proto_enumTypes[6].Descriptor()
+}
+
+func (GetApplicationsRequest_Scope) Type() protoreflect.EnumType {
+	return &file_neoshowcase_protobuf_gateway_proto_enumTypes[6]
+}
+
+func (x GetApplicationsRequest_Scope) Number() protoreflect.EnumNumber {
+	return protoreflect.EnumNumber(x)
+}
+
+// Deprecated: Use GetApplicationsRequest_Scope.Descriptor instead.
+func (GetApplicationsRequest_Scope) EnumDescriptor() ([]byte, []int) {
+	return file_neoshowcase_protobuf_gateway_proto_rawDescGZIP(), []int{27, 0}
+}
+
 type Build_BuildStatus int32
 
 const (
@@ -359,11 +405,11 @@ func (x Build_BuildStatus) String() string {
 }
 
 func (Build_BuildStatus) Descriptor() protoreflect.EnumDescriptor {
-	return file_neoshowcase_protobuf_gateway_proto_enumTypes[6].Descriptor()
+	return file_neoshowcase_protobuf_gateway_proto_enumTypes[7].Descriptor()
 }
 
 func (Build_BuildStatus) Type() protoreflect.EnumType {
-	return &file_neoshowcase_protobuf_gateway_proto_enumTypes[6]
+	return &file_neoshowcase_protobuf_gateway_proto_enumTypes[7]
 }
 
 func (x Build_BuildStatus) Number() protoreflect.EnumNumber {
@@ -372,7 +418,7 @@ func (x Build_BuildStatus) Number() protoreflect.EnumNumber {
 
 // Deprecated: Use Build_BuildStatus.Descriptor instead.
 func (Build_BuildStatus) EnumDescriptor() ([]byte, []int) {
-	return file_neoshowcase_protobuf_gateway_proto_rawDescGZIP(), []int{40, 0}
+	return file_neoshowcase_protobuf_gateway_proto_rawDescGZIP(), []int{41, 0}
 }
 
 type User struct {
@@ -2289,6 +2335,53 @@ func (x *CreateApplicationRequest) GetStartOnCreate() bool {
 	return false
 }
 
+type GetApplicationsRequest struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	Scope GetApplicationsRequest_Scope `protobuf:"varint,1,opt,name=scope,proto3,enum=neoshowcase.protobuf.GetApplicationsRequest_Scope" json:"scope,omitempty"`
+}
+
+func (x *GetApplicationsRequest) Reset() {
+	*x = GetApplicationsRequest{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_neoshowcase_protobuf_gateway_proto_msgTypes[27]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *GetApplicationsRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*GetApplicationsRequest) ProtoMessage() {}
+
+func (x *GetApplicationsRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_neoshowcase_protobuf_gateway_proto_msgTypes[27]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use GetApplicationsRequest.ProtoReflect.Descriptor instead.
+func (*GetApplicationsRequest) Descriptor() ([]byte, []int) {
+	return file_neoshowcase_protobuf_gateway_proto_rawDescGZIP(), []int{27}
+}
+
+func (x *GetApplicationsRequest) GetScope() GetApplicationsRequest_Scope {
+	if x != nil {
+		return x.Scope
+	}
+	return GetApplicationsRequest_MINE
+}
+
 // UpdateApplicationRequest id以外はoptional
 type UpdateApplicationRequest struct {
 	state         protoimpl.MessageState
@@ -2308,7 +2401,7 @@ type UpdateApplicationRequest struct {
 func (x *UpdateApplicationRequest) Reset() {
 	*x = UpdateApplicationRequest{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_neoshowcase_protobuf_gateway_proto_msgTypes[27]
+		mi := &file_neoshowcase_protobuf_gateway_proto_msgTypes[28]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -2321,7 +2414,7 @@ func (x *UpdateApplicationRequest) String() string {
 func (*UpdateApplicationRequest) ProtoMessage() {}
 
 func (x *UpdateApplicationRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_neoshowcase_protobuf_gateway_proto_msgTypes[27]
+	mi := &file_neoshowcase_protobuf_gateway_proto_msgTypes[28]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2334,7 +2427,7 @@ func (x *UpdateApplicationRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use UpdateApplicationRequest.ProtoReflect.Descriptor instead.
 func (*UpdateApplicationRequest) Descriptor() ([]byte, []int) {
-	return file_neoshowcase_protobuf_gateway_proto_rawDescGZIP(), []int{27}
+	return file_neoshowcase_protobuf_gateway_proto_rawDescGZIP(), []int{28}
 }
 
 func (x *UpdateApplicationRequest) GetId() string {
@@ -2406,7 +2499,7 @@ type AvailableDomain struct {
 func (x *AvailableDomain) Reset() {
 	*x = AvailableDomain{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_neoshowcase_protobuf_gateway_proto_msgTypes[28]
+		mi := &file_neoshowcase_protobuf_gateway_proto_msgTypes[29]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -2419,7 +2512,7 @@ func (x *AvailableDomain) String() string {
 func (*AvailableDomain) ProtoMessage() {}
 
 func (x *AvailableDomain) ProtoReflect() protoreflect.Message {
-	mi := &file_neoshowcase_protobuf_gateway_proto_msgTypes[28]
+	mi := &file_neoshowcase_protobuf_gateway_proto_msgTypes[29]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2432,7 +2525,7 @@ func (x *AvailableDomain) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use AvailableDomain.ProtoReflect.Descriptor instead.
 func (*AvailableDomain) Descriptor() ([]byte, []int) {
-	return file_neoshowcase_protobuf_gateway_proto_rawDescGZIP(), []int{28}
+	return file_neoshowcase_protobuf_gateway_proto_rawDescGZIP(), []int{29}
 }
 
 func (x *AvailableDomain) GetDomain() string {
@@ -2467,7 +2560,7 @@ type AvailableDomains struct {
 func (x *AvailableDomains) Reset() {
 	*x = AvailableDomains{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_neoshowcase_protobuf_gateway_proto_msgTypes[29]
+		mi := &file_neoshowcase_protobuf_gateway_proto_msgTypes[30]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -2480,7 +2573,7 @@ func (x *AvailableDomains) String() string {
 func (*AvailableDomains) ProtoMessage() {}
 
 func (x *AvailableDomains) ProtoReflect() protoreflect.Message {
-	mi := &file_neoshowcase_protobuf_gateway_proto_msgTypes[29]
+	mi := &file_neoshowcase_protobuf_gateway_proto_msgTypes[30]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2493,7 +2586,7 @@ func (x *AvailableDomains) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use AvailableDomains.ProtoReflect.Descriptor instead.
 func (*AvailableDomains) Descriptor() ([]byte, []int) {
-	return file_neoshowcase_protobuf_gateway_proto_rawDescGZIP(), []int{29}
+	return file_neoshowcase_protobuf_gateway_proto_rawDescGZIP(), []int{30}
 }
 
 func (x *AvailableDomains) GetDomains() []*AvailableDomain {
@@ -2516,7 +2609,7 @@ type AvailablePort struct {
 func (x *AvailablePort) Reset() {
 	*x = AvailablePort{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_neoshowcase_protobuf_gateway_proto_msgTypes[30]
+		mi := &file_neoshowcase_protobuf_gateway_proto_msgTypes[31]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -2529,7 +2622,7 @@ func (x *AvailablePort) String() string {
 func (*AvailablePort) ProtoMessage() {}
 
 func (x *AvailablePort) ProtoReflect() protoreflect.Message {
-	mi := &file_neoshowcase_protobuf_gateway_proto_msgTypes[30]
+	mi := &file_neoshowcase_protobuf_gateway_proto_msgTypes[31]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2542,7 +2635,7 @@ func (x *AvailablePort) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use AvailablePort.ProtoReflect.Descriptor instead.
 func (*AvailablePort) Descriptor() ([]byte, []int) {
-	return file_neoshowcase_protobuf_gateway_proto_rawDescGZIP(), []int{30}
+	return file_neoshowcase_protobuf_gateway_proto_rawDescGZIP(), []int{31}
 }
 
 func (x *AvailablePort) GetStartPort() int32 {
@@ -2577,7 +2670,7 @@ type AvailablePorts struct {
 func (x *AvailablePorts) Reset() {
 	*x = AvailablePorts{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_neoshowcase_protobuf_gateway_proto_msgTypes[31]
+		mi := &file_neoshowcase_protobuf_gateway_proto_msgTypes[32]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -2590,7 +2683,7 @@ func (x *AvailablePorts) String() string {
 func (*AvailablePorts) ProtoMessage() {}
 
 func (x *AvailablePorts) ProtoReflect() protoreflect.Message {
-	mi := &file_neoshowcase_protobuf_gateway_proto_msgTypes[31]
+	mi := &file_neoshowcase_protobuf_gateway_proto_msgTypes[32]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2603,7 +2696,7 @@ func (x *AvailablePorts) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use AvailablePorts.ProtoReflect.Descriptor instead.
 func (*AvailablePorts) Descriptor() ([]byte, []int) {
-	return file_neoshowcase_protobuf_gateway_proto_rawDescGZIP(), []int{31}
+	return file_neoshowcase_protobuf_gateway_proto_rawDescGZIP(), []int{32}
 }
 
 func (x *AvailablePorts) GetAvailablePorts() []*AvailablePort {
@@ -2626,7 +2719,7 @@ type ApplicationEnvVar struct {
 func (x *ApplicationEnvVar) Reset() {
 	*x = ApplicationEnvVar{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_neoshowcase_protobuf_gateway_proto_msgTypes[32]
+		mi := &file_neoshowcase_protobuf_gateway_proto_msgTypes[33]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -2639,7 +2732,7 @@ func (x *ApplicationEnvVar) String() string {
 func (*ApplicationEnvVar) ProtoMessage() {}
 
 func (x *ApplicationEnvVar) ProtoReflect() protoreflect.Message {
-	mi := &file_neoshowcase_protobuf_gateway_proto_msgTypes[32]
+	mi := &file_neoshowcase_protobuf_gateway_proto_msgTypes[33]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2652,7 +2745,7 @@ func (x *ApplicationEnvVar) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ApplicationEnvVar.ProtoReflect.Descriptor instead.
 func (*ApplicationEnvVar) Descriptor() ([]byte, []int) {
-	return file_neoshowcase_protobuf_gateway_proto_rawDescGZIP(), []int{32}
+	return file_neoshowcase_protobuf_gateway_proto_rawDescGZIP(), []int{33}
 }
 
 func (x *ApplicationEnvVar) GetKey() string {
@@ -2687,7 +2780,7 @@ type ApplicationEnvVars struct {
 func (x *ApplicationEnvVars) Reset() {
 	*x = ApplicationEnvVars{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_neoshowcase_protobuf_gateway_proto_msgTypes[33]
+		mi := &file_neoshowcase_protobuf_gateway_proto_msgTypes[34]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -2700,7 +2793,7 @@ func (x *ApplicationEnvVars) String() string {
 func (*ApplicationEnvVars) ProtoMessage() {}
 
 func (x *ApplicationEnvVars) ProtoReflect() protoreflect.Message {
-	mi := &file_neoshowcase_protobuf_gateway_proto_msgTypes[33]
+	mi := &file_neoshowcase_protobuf_gateway_proto_msgTypes[34]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2713,7 +2806,7 @@ func (x *ApplicationEnvVars) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ApplicationEnvVars.ProtoReflect.Descriptor instead.
 func (*ApplicationEnvVars) Descriptor() ([]byte, []int) {
-	return file_neoshowcase_protobuf_gateway_proto_rawDescGZIP(), []int{33}
+	return file_neoshowcase_protobuf_gateway_proto_rawDescGZIP(), []int{34}
 }
 
 func (x *ApplicationEnvVars) GetVariables() []*ApplicationEnvVar {
@@ -2737,7 +2830,7 @@ type Artifact struct {
 func (x *Artifact) Reset() {
 	*x = Artifact{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_neoshowcase_protobuf_gateway_proto_msgTypes[34]
+		mi := &file_neoshowcase_protobuf_gateway_proto_msgTypes[35]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -2750,7 +2843,7 @@ func (x *Artifact) String() string {
 func (*Artifact) ProtoMessage() {}
 
 func (x *Artifact) ProtoReflect() protoreflect.Message {
-	mi := &file_neoshowcase_protobuf_gateway_proto_msgTypes[34]
+	mi := &file_neoshowcase_protobuf_gateway_proto_msgTypes[35]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2763,7 +2856,7 @@ func (x *Artifact) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Artifact.ProtoReflect.Descriptor instead.
 func (*Artifact) Descriptor() ([]byte, []int) {
-	return file_neoshowcase_protobuf_gateway_proto_rawDescGZIP(), []int{34}
+	return file_neoshowcase_protobuf_gateway_proto_rawDescGZIP(), []int{35}
 }
 
 func (x *Artifact) GetId() string {
@@ -2806,7 +2899,7 @@ type ArtifactContent struct {
 func (x *ArtifactContent) Reset() {
 	*x = ArtifactContent{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_neoshowcase_protobuf_gateway_proto_msgTypes[35]
+		mi := &file_neoshowcase_protobuf_gateway_proto_msgTypes[36]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -2819,7 +2912,7 @@ func (x *ArtifactContent) String() string {
 func (*ArtifactContent) ProtoMessage() {}
 
 func (x *ArtifactContent) ProtoReflect() protoreflect.Message {
-	mi := &file_neoshowcase_protobuf_gateway_proto_msgTypes[35]
+	mi := &file_neoshowcase_protobuf_gateway_proto_msgTypes[36]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2832,7 +2925,7 @@ func (x *ArtifactContent) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ArtifactContent.ProtoReflect.Descriptor instead.
 func (*ArtifactContent) Descriptor() ([]byte, []int) {
-	return file_neoshowcase_protobuf_gateway_proto_rawDescGZIP(), []int{35}
+	return file_neoshowcase_protobuf_gateway_proto_rawDescGZIP(), []int{36}
 }
 
 func (x *ArtifactContent) GetFilename() string {
@@ -2862,7 +2955,7 @@ type GetOutputRequest struct {
 func (x *GetOutputRequest) Reset() {
 	*x = GetOutputRequest{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_neoshowcase_protobuf_gateway_proto_msgTypes[36]
+		mi := &file_neoshowcase_protobuf_gateway_proto_msgTypes[37]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -2875,7 +2968,7 @@ func (x *GetOutputRequest) String() string {
 func (*GetOutputRequest) ProtoMessage() {}
 
 func (x *GetOutputRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_neoshowcase_protobuf_gateway_proto_msgTypes[36]
+	mi := &file_neoshowcase_protobuf_gateway_proto_msgTypes[37]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2888,7 +2981,7 @@ func (x *GetOutputRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetOutputRequest.ProtoReflect.Descriptor instead.
 func (*GetOutputRequest) Descriptor() ([]byte, []int) {
-	return file_neoshowcase_protobuf_gateway_proto_rawDescGZIP(), []int{36}
+	return file_neoshowcase_protobuf_gateway_proto_rawDescGZIP(), []int{37}
 }
 
 func (x *GetOutputRequest) GetApplicationId() string {
@@ -2917,7 +3010,7 @@ type ApplicationOutput struct {
 func (x *ApplicationOutput) Reset() {
 	*x = ApplicationOutput{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_neoshowcase_protobuf_gateway_proto_msgTypes[37]
+		mi := &file_neoshowcase_protobuf_gateway_proto_msgTypes[38]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -2930,7 +3023,7 @@ func (x *ApplicationOutput) String() string {
 func (*ApplicationOutput) ProtoMessage() {}
 
 func (x *ApplicationOutput) ProtoReflect() protoreflect.Message {
-	mi := &file_neoshowcase_protobuf_gateway_proto_msgTypes[37]
+	mi := &file_neoshowcase_protobuf_gateway_proto_msgTypes[38]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2943,7 +3036,7 @@ func (x *ApplicationOutput) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ApplicationOutput.ProtoReflect.Descriptor instead.
 func (*ApplicationOutput) Descriptor() ([]byte, []int) {
-	return file_neoshowcase_protobuf_gateway_proto_rawDescGZIP(), []int{37}
+	return file_neoshowcase_protobuf_gateway_proto_rawDescGZIP(), []int{38}
 }
 
 func (x *ApplicationOutput) GetTime() *timestamppb.Timestamp {
@@ -2971,7 +3064,7 @@ type GetOutputResponse struct {
 func (x *GetOutputResponse) Reset() {
 	*x = GetOutputResponse{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_neoshowcase_protobuf_gateway_proto_msgTypes[38]
+		mi := &file_neoshowcase_protobuf_gateway_proto_msgTypes[39]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -2984,7 +3077,7 @@ func (x *GetOutputResponse) String() string {
 func (*GetOutputResponse) ProtoMessage() {}
 
 func (x *GetOutputResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_neoshowcase_protobuf_gateway_proto_msgTypes[38]
+	mi := &file_neoshowcase_protobuf_gateway_proto_msgTypes[39]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2997,7 +3090,7 @@ func (x *GetOutputResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetOutputResponse.ProtoReflect.Descriptor instead.
 func (*GetOutputResponse) Descriptor() ([]byte, []int) {
-	return file_neoshowcase_protobuf_gateway_proto_rawDescGZIP(), []int{38}
+	return file_neoshowcase_protobuf_gateway_proto_rawDescGZIP(), []int{39}
 }
 
 func (x *GetOutputResponse) GetOutputs() []*ApplicationOutput {
@@ -3019,7 +3112,7 @@ type GetOutputStreamRequest struct {
 func (x *GetOutputStreamRequest) Reset() {
 	*x = GetOutputStreamRequest{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_neoshowcase_protobuf_gateway_proto_msgTypes[39]
+		mi := &file_neoshowcase_protobuf_gateway_proto_msgTypes[40]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -3032,7 +3125,7 @@ func (x *GetOutputStreamRequest) String() string {
 func (*GetOutputStreamRequest) ProtoMessage() {}
 
 func (x *GetOutputStreamRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_neoshowcase_protobuf_gateway_proto_msgTypes[39]
+	mi := &file_neoshowcase_protobuf_gateway_proto_msgTypes[40]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -3045,7 +3138,7 @@ func (x *GetOutputStreamRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetOutputStreamRequest.ProtoReflect.Descriptor instead.
 func (*GetOutputStreamRequest) Descriptor() ([]byte, []int) {
-	return file_neoshowcase_protobuf_gateway_proto_rawDescGZIP(), []int{39}
+	return file_neoshowcase_protobuf_gateway_proto_rawDescGZIP(), []int{40}
 }
 
 func (x *GetOutputStreamRequest) GetApplicationId() string {
@@ -3081,7 +3174,7 @@ type Build struct {
 func (x *Build) Reset() {
 	*x = Build{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_neoshowcase_protobuf_gateway_proto_msgTypes[40]
+		mi := &file_neoshowcase_protobuf_gateway_proto_msgTypes[41]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -3094,7 +3187,7 @@ func (x *Build) String() string {
 func (*Build) ProtoMessage() {}
 
 func (x *Build) ProtoReflect() protoreflect.Message {
-	mi := &file_neoshowcase_protobuf_gateway_proto_msgTypes[40]
+	mi := &file_neoshowcase_protobuf_gateway_proto_msgTypes[41]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -3107,7 +3200,7 @@ func (x *Build) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Build.ProtoReflect.Descriptor instead.
 func (*Build) Descriptor() ([]byte, []int) {
-	return file_neoshowcase_protobuf_gateway_proto_rawDescGZIP(), []int{40}
+	return file_neoshowcase_protobuf_gateway_proto_rawDescGZIP(), []int{41}
 }
 
 func (x *Build) GetId() string {
@@ -3184,7 +3277,7 @@ type BuildLog struct {
 func (x *BuildLog) Reset() {
 	*x = BuildLog{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_neoshowcase_protobuf_gateway_proto_msgTypes[41]
+		mi := &file_neoshowcase_protobuf_gateway_proto_msgTypes[42]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -3197,7 +3290,7 @@ func (x *BuildLog) String() string {
 func (*BuildLog) ProtoMessage() {}
 
 func (x *BuildLog) ProtoReflect() protoreflect.Message {
-	mi := &file_neoshowcase_protobuf_gateway_proto_msgTypes[41]
+	mi := &file_neoshowcase_protobuf_gateway_proto_msgTypes[42]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -3210,7 +3303,7 @@ func (x *BuildLog) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use BuildLog.ProtoReflect.Descriptor instead.
 func (*BuildLog) Descriptor() ([]byte, []int) {
-	return file_neoshowcase_protobuf_gateway_proto_rawDescGZIP(), []int{41}
+	return file_neoshowcase_protobuf_gateway_proto_rawDescGZIP(), []int{42}
 }
 
 func (x *BuildLog) GetLog() []byte {
@@ -3231,7 +3324,7 @@ type GetRepositoriesResponse struct {
 func (x *GetRepositoriesResponse) Reset() {
 	*x = GetRepositoriesResponse{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_neoshowcase_protobuf_gateway_proto_msgTypes[42]
+		mi := &file_neoshowcase_protobuf_gateway_proto_msgTypes[43]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -3244,7 +3337,7 @@ func (x *GetRepositoriesResponse) String() string {
 func (*GetRepositoriesResponse) ProtoMessage() {}
 
 func (x *GetRepositoriesResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_neoshowcase_protobuf_gateway_proto_msgTypes[42]
+	mi := &file_neoshowcase_protobuf_gateway_proto_msgTypes[43]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -3257,7 +3350,7 @@ func (x *GetRepositoriesResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetRepositoriesResponse.ProtoReflect.Descriptor instead.
 func (*GetRepositoriesResponse) Descriptor() ([]byte, []int) {
-	return file_neoshowcase_protobuf_gateway_proto_rawDescGZIP(), []int{42}
+	return file_neoshowcase_protobuf_gateway_proto_rawDescGZIP(), []int{43}
 }
 
 func (x *GetRepositoriesResponse) GetRepositories() []*Repository {
@@ -3278,7 +3371,7 @@ type GetApplicationsResponse struct {
 func (x *GetApplicationsResponse) Reset() {
 	*x = GetApplicationsResponse{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_neoshowcase_protobuf_gateway_proto_msgTypes[43]
+		mi := &file_neoshowcase_protobuf_gateway_proto_msgTypes[44]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -3291,7 +3384,7 @@ func (x *GetApplicationsResponse) String() string {
 func (*GetApplicationsResponse) ProtoMessage() {}
 
 func (x *GetApplicationsResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_neoshowcase_protobuf_gateway_proto_msgTypes[43]
+	mi := &file_neoshowcase_protobuf_gateway_proto_msgTypes[44]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -3304,7 +3397,7 @@ func (x *GetApplicationsResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetApplicationsResponse.ProtoReflect.Descriptor instead.
 func (*GetApplicationsResponse) Descriptor() ([]byte, []int) {
-	return file_neoshowcase_protobuf_gateway_proto_rawDescGZIP(), []int{43}
+	return file_neoshowcase_protobuf_gateway_proto_rawDescGZIP(), []int{44}
 }
 
 func (x *GetApplicationsResponse) GetApplications() []*Application {
@@ -3325,7 +3418,7 @@ type GetSystemPublicKeyResponse struct {
 func (x *GetSystemPublicKeyResponse) Reset() {
 	*x = GetSystemPublicKeyResponse{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_neoshowcase_protobuf_gateway_proto_msgTypes[44]
+		mi := &file_neoshowcase_protobuf_gateway_proto_msgTypes[45]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -3338,7 +3431,7 @@ func (x *GetSystemPublicKeyResponse) String() string {
 func (*GetSystemPublicKeyResponse) ProtoMessage() {}
 
 func (x *GetSystemPublicKeyResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_neoshowcase_protobuf_gateway_proto_msgTypes[44]
+	mi := &file_neoshowcase_protobuf_gateway_proto_msgTypes[45]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -3351,7 +3444,7 @@ func (x *GetSystemPublicKeyResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetSystemPublicKeyResponse.ProtoReflect.Descriptor instead.
 func (*GetSystemPublicKeyResponse) Descriptor() ([]byte, []int) {
-	return file_neoshowcase_protobuf_gateway_proto_rawDescGZIP(), []int{44}
+	return file_neoshowcase_protobuf_gateway_proto_rawDescGZIP(), []int{45}
 }
 
 func (x *GetSystemPublicKeyResponse) GetPublicKey() string {
@@ -3372,7 +3465,7 @@ type ApplicationIdRequest struct {
 func (x *ApplicationIdRequest) Reset() {
 	*x = ApplicationIdRequest{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_neoshowcase_protobuf_gateway_proto_msgTypes[45]
+		mi := &file_neoshowcase_protobuf_gateway_proto_msgTypes[46]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -3385,7 +3478,7 @@ func (x *ApplicationIdRequest) String() string {
 func (*ApplicationIdRequest) ProtoMessage() {}
 
 func (x *ApplicationIdRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_neoshowcase_protobuf_gateway_proto_msgTypes[45]
+	mi := &file_neoshowcase_protobuf_gateway_proto_msgTypes[46]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -3398,7 +3491,7 @@ func (x *ApplicationIdRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ApplicationIdRequest.ProtoReflect.Descriptor instead.
 func (*ApplicationIdRequest) Descriptor() ([]byte, []int) {
-	return file_neoshowcase_protobuf_gateway_proto_rawDescGZIP(), []int{45}
+	return file_neoshowcase_protobuf_gateway_proto_rawDescGZIP(), []int{46}
 }
 
 func (x *ApplicationIdRequest) GetId() string {
@@ -3419,7 +3512,7 @@ type BuildIdRequest struct {
 func (x *BuildIdRequest) Reset() {
 	*x = BuildIdRequest{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_neoshowcase_protobuf_gateway_proto_msgTypes[46]
+		mi := &file_neoshowcase_protobuf_gateway_proto_msgTypes[47]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -3432,7 +3525,7 @@ func (x *BuildIdRequest) String() string {
 func (*BuildIdRequest) ProtoMessage() {}
 
 func (x *BuildIdRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_neoshowcase_protobuf_gateway_proto_msgTypes[46]
+	mi := &file_neoshowcase_protobuf_gateway_proto_msgTypes[47]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -3445,7 +3538,7 @@ func (x *BuildIdRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use BuildIdRequest.ProtoReflect.Descriptor instead.
 func (*BuildIdRequest) Descriptor() ([]byte, []int) {
-	return file_neoshowcase_protobuf_gateway_proto_rawDescGZIP(), []int{46}
+	return file_neoshowcase_protobuf_gateway_proto_rawDescGZIP(), []int{47}
 }
 
 func (x *BuildIdRequest) GetBuildId() string {
@@ -3466,7 +3559,7 @@ type ArtifactIdRequest struct {
 func (x *ArtifactIdRequest) Reset() {
 	*x = ArtifactIdRequest{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_neoshowcase_protobuf_gateway_proto_msgTypes[47]
+		mi := &file_neoshowcase_protobuf_gateway_proto_msgTypes[48]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -3479,7 +3572,7 @@ func (x *ArtifactIdRequest) String() string {
 func (*ArtifactIdRequest) ProtoMessage() {}
 
 func (x *ArtifactIdRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_neoshowcase_protobuf_gateway_proto_msgTypes[47]
+	mi := &file_neoshowcase_protobuf_gateway_proto_msgTypes[48]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -3492,7 +3585,7 @@ func (x *ArtifactIdRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ArtifactIdRequest.ProtoReflect.Descriptor instead.
 func (*ArtifactIdRequest) Descriptor() ([]byte, []int) {
-	return file_neoshowcase_protobuf_gateway_proto_rawDescGZIP(), []int{47}
+	return file_neoshowcase_protobuf_gateway_proto_rawDescGZIP(), []int{48}
 }
 
 func (x *ArtifactIdRequest) GetArtifactId() string {
@@ -3513,7 +3606,7 @@ type GetBuildsResponse struct {
 func (x *GetBuildsResponse) Reset() {
 	*x = GetBuildsResponse{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_neoshowcase_protobuf_gateway_proto_msgTypes[48]
+		mi := &file_neoshowcase_protobuf_gateway_proto_msgTypes[49]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -3526,7 +3619,7 @@ func (x *GetBuildsResponse) String() string {
 func (*GetBuildsResponse) ProtoMessage() {}
 
 func (x *GetBuildsResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_neoshowcase_protobuf_gateway_proto_msgTypes[48]
+	mi := &file_neoshowcase_protobuf_gateway_proto_msgTypes[49]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -3539,7 +3632,7 @@ func (x *GetBuildsResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetBuildsResponse.ProtoReflect.Descriptor instead.
 func (*GetBuildsResponse) Descriptor() ([]byte, []int) {
-	return file_neoshowcase_protobuf_gateway_proto_rawDescGZIP(), []int{48}
+	return file_neoshowcase_protobuf_gateway_proto_rawDescGZIP(), []int{49}
 }
 
 func (x *GetBuildsResponse) GetBuilds() []*Build {
@@ -3562,7 +3655,7 @@ type SetApplicationEnvVarRequest struct {
 func (x *SetApplicationEnvVarRequest) Reset() {
 	*x = SetApplicationEnvVarRequest{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_neoshowcase_protobuf_gateway_proto_msgTypes[49]
+		mi := &file_neoshowcase_protobuf_gateway_proto_msgTypes[50]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -3575,7 +3668,7 @@ func (x *SetApplicationEnvVarRequest) String() string {
 func (*SetApplicationEnvVarRequest) ProtoMessage() {}
 
 func (x *SetApplicationEnvVarRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_neoshowcase_protobuf_gateway_proto_msgTypes[49]
+	mi := &file_neoshowcase_protobuf_gateway_proto_msgTypes[50]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -3588,7 +3681,7 @@ func (x *SetApplicationEnvVarRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use SetApplicationEnvVarRequest.ProtoReflect.Descriptor instead.
 func (*SetApplicationEnvVarRequest) Descriptor() ([]byte, []int) {
-	return file_neoshowcase_protobuf_gateway_proto_rawDescGZIP(), []int{49}
+	return file_neoshowcase_protobuf_gateway_proto_rawDescGZIP(), []int{50}
 }
 
 func (x *SetApplicationEnvVarRequest) GetApplicationId() string {
@@ -3624,7 +3717,7 @@ type RetryCommitBuildRequest struct {
 func (x *RetryCommitBuildRequest) Reset() {
 	*x = RetryCommitBuildRequest{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_neoshowcase_protobuf_gateway_proto_msgTypes[50]
+		mi := &file_neoshowcase_protobuf_gateway_proto_msgTypes[51]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -3637,7 +3730,7 @@ func (x *RetryCommitBuildRequest) String() string {
 func (*RetryCommitBuildRequest) ProtoMessage() {}
 
 func (x *RetryCommitBuildRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_neoshowcase_protobuf_gateway_proto_msgTypes[50]
+	mi := &file_neoshowcase_protobuf_gateway_proto_msgTypes[51]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -3650,7 +3743,7 @@ func (x *RetryCommitBuildRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use RetryCommitBuildRequest.ProtoReflect.Descriptor instead.
 func (*RetryCommitBuildRequest) Descriptor() ([]byte, []int) {
-	return file_neoshowcase_protobuf_gateway_proto_rawDescGZIP(), []int{50}
+	return file_neoshowcase_protobuf_gateway_proto_rawDescGZIP(), []int{51}
 }
 
 func (x *RetryCommitBuildRequest) GetApplicationId() string {
@@ -3984,7 +4077,15 @@ var file_neoshowcase_protobuf_gateway_proto_rawDesc = []byte{
 	0x62, 0x6c, 0x69, 0x63, 0x61, 0x74, 0x69, 0x6f, 0x6e, 0x73, 0x12, 0x26, 0x0a, 0x0f, 0x73, 0x74,
 	0x61, 0x72, 0x74, 0x5f, 0x6f, 0x6e, 0x5f, 0x63, 0x72, 0x65, 0x61, 0x74, 0x65, 0x18, 0x07, 0x20,
 	0x01, 0x28, 0x08, 0x52, 0x0d, 0x73, 0x74, 0x61, 0x72, 0x74, 0x4f, 0x6e, 0x43, 0x72, 0x65, 0x61,
-	0x74, 0x65, 0x22, 0xaf, 0x03, 0x0a, 0x18, 0x55, 0x70, 0x64, 0x61, 0x74, 0x65, 0x41, 0x70, 0x70,
+	0x74, 0x65, 0x22, 0x7e, 0x0a, 0x16, 0x47, 0x65, 0x74, 0x41, 0x70, 0x70, 0x6c, 0x69, 0x63, 0x61,
+	0x74, 0x69, 0x6f, 0x6e, 0x73, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x12, 0x48, 0x0a, 0x05,
+	0x73, 0x63, 0x6f, 0x70, 0x65, 0x18, 0x01, 0x20, 0x01, 0x28, 0x0e, 0x32, 0x32, 0x2e, 0x6e, 0x65,
+	0x6f, 0x73, 0x68, 0x6f, 0x77, 0x63, 0x61, 0x73, 0x65, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x62,
+	0x75, 0x66, 0x2e, 0x47, 0x65, 0x74, 0x41, 0x70, 0x70, 0x6c, 0x69, 0x63, 0x61, 0x74, 0x69, 0x6f,
+	0x6e, 0x73, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x2e, 0x53, 0x63, 0x6f, 0x70, 0x65, 0x52,
+	0x05, 0x73, 0x63, 0x6f, 0x70, 0x65, 0x22, 0x1a, 0x0a, 0x05, 0x53, 0x63, 0x6f, 0x70, 0x65, 0x12,
+	0x08, 0x0a, 0x04, 0x4d, 0x49, 0x4e, 0x45, 0x10, 0x00, 0x12, 0x07, 0x0a, 0x03, 0x41, 0x4c, 0x4c,
+	0x10, 0x01, 0x22, 0xaf, 0x03, 0x0a, 0x18, 0x55, 0x70, 0x64, 0x61, 0x74, 0x65, 0x41, 0x70, 0x70,
 	0x6c, 0x69, 0x63, 0x61, 0x74, 0x69, 0x6f, 0x6e, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x12,
 	0x0e, 0x0a, 0x02, 0x69, 0x64, 0x18, 0x01, 0x20, 0x01, 0x28, 0x09, 0x52, 0x02, 0x69, 0x64, 0x12,
 	0x12, 0x0a, 0x04, 0x6e, 0x61, 0x6d, 0x65, 0x18, 0x02, 0x20, 0x01, 0x28, 0x09, 0x52, 0x04, 0x6e,
@@ -4178,7 +4279,7 @@ var file_neoshowcase_protobuf_gateway_proto_rawDesc = []byte{
 	0x53, 0x4f, 0x46, 0x54, 0x10, 0x01, 0x12, 0x08, 0x0a, 0x04, 0x48, 0x41, 0x52, 0x44, 0x10, 0x02,
 	0x2a, 0x2b, 0x0a, 0x17, 0x50, 0x6f, 0x72, 0x74, 0x50, 0x75, 0x62, 0x6c, 0x69, 0x63, 0x61, 0x74,
 	0x69, 0x6f, 0x6e, 0x50, 0x72, 0x6f, 0x74, 0x6f, 0x63, 0x6f, 0x6c, 0x12, 0x07, 0x0a, 0x03, 0x54,
-	0x43, 0x50, 0x10, 0x00, 0x12, 0x07, 0x0a, 0x03, 0x55, 0x44, 0x50, 0x10, 0x01, 0x32, 0xdc, 0x16,
+	0x43, 0x50, 0x10, 0x00, 0x12, 0x07, 0x0a, 0x03, 0x55, 0x44, 0x50, 0x10, 0x01, 0x32, 0xf2, 0x16,
 	0x0a, 0x0a, 0x41, 0x50, 0x49, 0x53, 0x65, 0x72, 0x76, 0x69, 0x63, 0x65, 0x12, 0x5e, 0x0a, 0x12,
 	0x47, 0x65, 0x74, 0x53, 0x79, 0x73, 0x74, 0x65, 0x6d, 0x50, 0x75, 0x62, 0x6c, 0x69, 0x63, 0x4b,
 	0x65, 0x79, 0x12, 0x16, 0x2e, 0x67, 0x6f, 0x6f, 0x67, 0x6c, 0x65, 0x2e, 0x70, 0x72, 0x6f, 0x74,
@@ -4263,109 +4364,110 @@ var file_neoshowcase_protobuf_gateway_proto_rawDesc = []byte{
 	0x74, 0x65, 0x41, 0x70, 0x70, 0x6c, 0x69, 0x63, 0x61, 0x74, 0x69, 0x6f, 0x6e, 0x52, 0x65, 0x71,
 	0x75, 0x65, 0x73, 0x74, 0x1a, 0x21, 0x2e, 0x6e, 0x65, 0x6f, 0x73, 0x68, 0x6f, 0x77, 0x63, 0x61,
 	0x73, 0x65, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x62, 0x75, 0x66, 0x2e, 0x41, 0x70, 0x70, 0x6c,
-	0x69, 0x63, 0x61, 0x74, 0x69, 0x6f, 0x6e, 0x12, 0x58, 0x0a, 0x0f, 0x47, 0x65, 0x74, 0x41, 0x70,
-	0x70, 0x6c, 0x69, 0x63, 0x61, 0x74, 0x69, 0x6f, 0x6e, 0x73, 0x12, 0x16, 0x2e, 0x67, 0x6f, 0x6f,
-	0x67, 0x6c, 0x65, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x62, 0x75, 0x66, 0x2e, 0x45, 0x6d, 0x70,
-	0x74, 0x79, 0x1a, 0x2d, 0x2e, 0x6e, 0x65, 0x6f, 0x73, 0x68, 0x6f, 0x77, 0x63, 0x61, 0x73, 0x65,
-	0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x62, 0x75, 0x66, 0x2e, 0x47, 0x65, 0x74, 0x41, 0x70, 0x70,
-	0x6c, 0x69, 0x63, 0x61, 0x74, 0x69, 0x6f, 0x6e, 0x73, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73,
-	0x65, 0x12, 0x5f, 0x0a, 0x0e, 0x47, 0x65, 0x74, 0x41, 0x70, 0x70, 0x6c, 0x69, 0x63, 0x61, 0x74,
-	0x69, 0x6f, 0x6e, 0x12, 0x2a, 0x2e, 0x6e, 0x65, 0x6f, 0x73, 0x68, 0x6f, 0x77, 0x63, 0x61, 0x73,
-	0x65, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x62, 0x75, 0x66, 0x2e, 0x41, 0x70, 0x70, 0x6c, 0x69,
-	0x63, 0x61, 0x74, 0x69, 0x6f, 0x6e, 0x49, 0x64, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x1a,
-	0x21, 0x2e, 0x6e, 0x65, 0x6f, 0x73, 0x68, 0x6f, 0x77, 0x63, 0x61, 0x73, 0x65, 0x2e, 0x70, 0x72,
-	0x6f, 0x74, 0x6f, 0x62, 0x75, 0x66, 0x2e, 0x41, 0x70, 0x70, 0x6c, 0x69, 0x63, 0x61, 0x74, 0x69,
-	0x6f, 0x6e, 0x12, 0x5b, 0x0a, 0x11, 0x55, 0x70, 0x64, 0x61, 0x74, 0x65, 0x41, 0x70, 0x70, 0x6c,
-	0x69, 0x63, 0x61, 0x74, 0x69, 0x6f, 0x6e, 0x12, 0x2e, 0x2e, 0x6e, 0x65, 0x6f, 0x73, 0x68, 0x6f,
-	0x77, 0x63, 0x61, 0x73, 0x65, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x62, 0x75, 0x66, 0x2e, 0x55,
-	0x70, 0x64, 0x61, 0x74, 0x65, 0x41, 0x70, 0x70, 0x6c, 0x69, 0x63, 0x61, 0x74, 0x69, 0x6f, 0x6e,
-	0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x1a, 0x16, 0x2e, 0x67, 0x6f, 0x6f, 0x67, 0x6c, 0x65,
-	0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x62, 0x75, 0x66, 0x2e, 0x45, 0x6d, 0x70, 0x74, 0x79, 0x12,
-	0x57, 0x0a, 0x11, 0x44, 0x65, 0x6c, 0x65, 0x74, 0x65, 0x41, 0x70, 0x70, 0x6c, 0x69, 0x63, 0x61,
-	0x74, 0x69, 0x6f, 0x6e, 0x12, 0x2a, 0x2e, 0x6e, 0x65, 0x6f, 0x73, 0x68, 0x6f, 0x77, 0x63, 0x61,
-	0x73, 0x65, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x62, 0x75, 0x66, 0x2e, 0x41, 0x70, 0x70, 0x6c,
-	0x69, 0x63, 0x61, 0x74, 0x69, 0x6f, 0x6e, 0x49, 0x64, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74,
-	0x1a, 0x16, 0x2e, 0x67, 0x6f, 0x6f, 0x67, 0x6c, 0x65, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x62,
-	0x75, 0x66, 0x2e, 0x45, 0x6d, 0x70, 0x74, 0x79, 0x12, 0x62, 0x0a, 0x0a, 0x47, 0x65, 0x74, 0x45,
-	0x6e, 0x76, 0x56, 0x61, 0x72, 0x73, 0x12, 0x2a, 0x2e, 0x6e, 0x65, 0x6f, 0x73, 0x68, 0x6f, 0x77,
-	0x63, 0x61, 0x73, 0x65, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x62, 0x75, 0x66, 0x2e, 0x41, 0x70,
-	0x70, 0x6c, 0x69, 0x63, 0x61, 0x74, 0x69, 0x6f, 0x6e, 0x49, 0x64, 0x52, 0x65, 0x71, 0x75, 0x65,
-	0x73, 0x74, 0x1a, 0x28, 0x2e, 0x6e, 0x65, 0x6f, 0x73, 0x68, 0x6f, 0x77, 0x63, 0x61, 0x73, 0x65,
-	0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x62, 0x75, 0x66, 0x2e, 0x41, 0x70, 0x70, 0x6c, 0x69, 0x63,
-	0x61, 0x74, 0x69, 0x6f, 0x6e, 0x45, 0x6e, 0x76, 0x56, 0x61, 0x72, 0x73, 0x12, 0x56, 0x0a, 0x09,
-	0x53, 0x65, 0x74, 0x45, 0x6e, 0x76, 0x56, 0x61, 0x72, 0x12, 0x31, 0x2e, 0x6e, 0x65, 0x6f, 0x73,
-	0x68, 0x6f, 0x77, 0x63, 0x61, 0x73, 0x65, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x62, 0x75, 0x66,
-	0x2e, 0x53, 0x65, 0x74, 0x41, 0x70, 0x70, 0x6c, 0x69, 0x63, 0x61, 0x74, 0x69, 0x6f, 0x6e, 0x45,
-	0x6e, 0x76, 0x56, 0x61, 0x72, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x1a, 0x16, 0x2e, 0x67,
-	0x6f, 0x6f, 0x67, 0x6c, 0x65, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x62, 0x75, 0x66, 0x2e, 0x45,
-	0x6d, 0x70, 0x74, 0x79, 0x12, 0x5c, 0x0a, 0x09, 0x47, 0x65, 0x74, 0x4f, 0x75, 0x74, 0x70, 0x75,
-	0x74, 0x12, 0x26, 0x2e, 0x6e, 0x65, 0x6f, 0x73, 0x68, 0x6f, 0x77, 0x63, 0x61, 0x73, 0x65, 0x2e,
-	0x70, 0x72, 0x6f, 0x74, 0x6f, 0x62, 0x75, 0x66, 0x2e, 0x47, 0x65, 0x74, 0x4f, 0x75, 0x74, 0x70,
-	0x75, 0x74, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x1a, 0x27, 0x2e, 0x6e, 0x65, 0x6f, 0x73,
-	0x68, 0x6f, 0x77, 0x63, 0x61, 0x73, 0x65, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x62, 0x75, 0x66,
-	0x2e, 0x47, 0x65, 0x74, 0x4f, 0x75, 0x74, 0x70, 0x75, 0x74, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e,
-	0x73, 0x65, 0x12, 0x6a, 0x0a, 0x0f, 0x47, 0x65, 0x74, 0x4f, 0x75, 0x74, 0x70, 0x75, 0x74, 0x53,
-	0x74, 0x72, 0x65, 0x61, 0x6d, 0x12, 0x2c, 0x2e, 0x6e, 0x65, 0x6f, 0x73, 0x68, 0x6f, 0x77, 0x63,
-	0x61, 0x73, 0x65, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x62, 0x75, 0x66, 0x2e, 0x47, 0x65, 0x74,
-	0x4f, 0x75, 0x74, 0x70, 0x75, 0x74, 0x53, 0x74, 0x72, 0x65, 0x61, 0x6d, 0x52, 0x65, 0x71, 0x75,
-	0x65, 0x73, 0x74, 0x1a, 0x27, 0x2e, 0x6e, 0x65, 0x6f, 0x73, 0x68, 0x6f, 0x77, 0x63, 0x61, 0x73,
-	0x65, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x62, 0x75, 0x66, 0x2e, 0x41, 0x70, 0x70, 0x6c, 0x69,
-	0x63, 0x61, 0x74, 0x69, 0x6f, 0x6e, 0x4f, 0x75, 0x74, 0x70, 0x75, 0x74, 0x30, 0x01, 0x12, 0x56,
-	0x0a, 0x10, 0x53, 0x74, 0x61, 0x72, 0x74, 0x41, 0x70, 0x70, 0x6c, 0x69, 0x63, 0x61, 0x74, 0x69,
-	0x6f, 0x6e, 0x12, 0x2a, 0x2e, 0x6e, 0x65, 0x6f, 0x73, 0x68, 0x6f, 0x77, 0x63, 0x61, 0x73, 0x65,
-	0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x62, 0x75, 0x66, 0x2e, 0x41, 0x70, 0x70, 0x6c, 0x69, 0x63,
-	0x61, 0x74, 0x69, 0x6f, 0x6e, 0x49, 0x64, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x1a, 0x16,
-	0x2e, 0x67, 0x6f, 0x6f, 0x67, 0x6c, 0x65, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x62, 0x75, 0x66,
-	0x2e, 0x45, 0x6d, 0x70, 0x74, 0x79, 0x12, 0x55, 0x0a, 0x0f, 0x53, 0x74, 0x6f, 0x70, 0x41, 0x70,
+	0x69, 0x63, 0x61, 0x74, 0x69, 0x6f, 0x6e, 0x12, 0x6e, 0x0a, 0x0f, 0x47, 0x65, 0x74, 0x41, 0x70,
+	0x70, 0x6c, 0x69, 0x63, 0x61, 0x74, 0x69, 0x6f, 0x6e, 0x73, 0x12, 0x2c, 0x2e, 0x6e, 0x65, 0x6f,
+	0x73, 0x68, 0x6f, 0x77, 0x63, 0x61, 0x73, 0x65, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x62, 0x75,
+	0x66, 0x2e, 0x47, 0x65, 0x74, 0x41, 0x70, 0x70, 0x6c, 0x69, 0x63, 0x61, 0x74, 0x69, 0x6f, 0x6e,
+	0x73, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x1a, 0x2d, 0x2e, 0x6e, 0x65, 0x6f, 0x73, 0x68,
+	0x6f, 0x77, 0x63, 0x61, 0x73, 0x65, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x62, 0x75, 0x66, 0x2e,
+	0x47, 0x65, 0x74, 0x41, 0x70, 0x70, 0x6c, 0x69, 0x63, 0x61, 0x74, 0x69, 0x6f, 0x6e, 0x73, 0x52,
+	0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x12, 0x5f, 0x0a, 0x0e, 0x47, 0x65, 0x74, 0x41, 0x70,
 	0x70, 0x6c, 0x69, 0x63, 0x61, 0x74, 0x69, 0x6f, 0x6e, 0x12, 0x2a, 0x2e, 0x6e, 0x65, 0x6f, 0x73,
 	0x68, 0x6f, 0x77, 0x63, 0x61, 0x73, 0x65, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x62, 0x75, 0x66,
 	0x2e, 0x41, 0x70, 0x70, 0x6c, 0x69, 0x63, 0x61, 0x74, 0x69, 0x6f, 0x6e, 0x49, 0x64, 0x52, 0x65,
-	0x71, 0x75, 0x65, 0x73, 0x74, 0x1a, 0x16, 0x2e, 0x67, 0x6f, 0x6f, 0x67, 0x6c, 0x65, 0x2e, 0x70,
-	0x72, 0x6f, 0x74, 0x6f, 0x62, 0x75, 0x66, 0x2e, 0x45, 0x6d, 0x70, 0x74, 0x79, 0x12, 0x60, 0x0a,
-	0x09, 0x47, 0x65, 0x74, 0x42, 0x75, 0x69, 0x6c, 0x64, 0x73, 0x12, 0x2a, 0x2e, 0x6e, 0x65, 0x6f,
+	0x71, 0x75, 0x65, 0x73, 0x74, 0x1a, 0x21, 0x2e, 0x6e, 0x65, 0x6f, 0x73, 0x68, 0x6f, 0x77, 0x63,
+	0x61, 0x73, 0x65, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x62, 0x75, 0x66, 0x2e, 0x41, 0x70, 0x70,
+	0x6c, 0x69, 0x63, 0x61, 0x74, 0x69, 0x6f, 0x6e, 0x12, 0x5b, 0x0a, 0x11, 0x55, 0x70, 0x64, 0x61,
+	0x74, 0x65, 0x41, 0x70, 0x70, 0x6c, 0x69, 0x63, 0x61, 0x74, 0x69, 0x6f, 0x6e, 0x12, 0x2e, 0x2e,
+	0x6e, 0x65, 0x6f, 0x73, 0x68, 0x6f, 0x77, 0x63, 0x61, 0x73, 0x65, 0x2e, 0x70, 0x72, 0x6f, 0x74,
+	0x6f, 0x62, 0x75, 0x66, 0x2e, 0x55, 0x70, 0x64, 0x61, 0x74, 0x65, 0x41, 0x70, 0x70, 0x6c, 0x69,
+	0x63, 0x61, 0x74, 0x69, 0x6f, 0x6e, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x1a, 0x16, 0x2e,
+	0x67, 0x6f, 0x6f, 0x67, 0x6c, 0x65, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x62, 0x75, 0x66, 0x2e,
+	0x45, 0x6d, 0x70, 0x74, 0x79, 0x12, 0x57, 0x0a, 0x11, 0x44, 0x65, 0x6c, 0x65, 0x74, 0x65, 0x41,
+	0x70, 0x70, 0x6c, 0x69, 0x63, 0x61, 0x74, 0x69, 0x6f, 0x6e, 0x12, 0x2a, 0x2e, 0x6e, 0x65, 0x6f,
 	0x73, 0x68, 0x6f, 0x77, 0x63, 0x61, 0x73, 0x65, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x62, 0x75,
 	0x66, 0x2e, 0x41, 0x70, 0x70, 0x6c, 0x69, 0x63, 0x61, 0x74, 0x69, 0x6f, 0x6e, 0x49, 0x64, 0x52,
-	0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x1a, 0x27, 0x2e, 0x6e, 0x65, 0x6f, 0x73, 0x68, 0x6f, 0x77,
-	0x63, 0x61, 0x73, 0x65, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x62, 0x75, 0x66, 0x2e, 0x47, 0x65,
-	0x74, 0x42, 0x75, 0x69, 0x6c, 0x64, 0x73, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x12,
-	0x4d, 0x0a, 0x08, 0x47, 0x65, 0x74, 0x42, 0x75, 0x69, 0x6c, 0x64, 0x12, 0x24, 0x2e, 0x6e, 0x65,
+	0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x1a, 0x16, 0x2e, 0x67, 0x6f, 0x6f, 0x67, 0x6c, 0x65, 0x2e,
+	0x70, 0x72, 0x6f, 0x74, 0x6f, 0x62, 0x75, 0x66, 0x2e, 0x45, 0x6d, 0x70, 0x74, 0x79, 0x12, 0x62,
+	0x0a, 0x0a, 0x47, 0x65, 0x74, 0x45, 0x6e, 0x76, 0x56, 0x61, 0x72, 0x73, 0x12, 0x2a, 0x2e, 0x6e,
+	0x65, 0x6f, 0x73, 0x68, 0x6f, 0x77, 0x63, 0x61, 0x73, 0x65, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f,
+	0x62, 0x75, 0x66, 0x2e, 0x41, 0x70, 0x70, 0x6c, 0x69, 0x63, 0x61, 0x74, 0x69, 0x6f, 0x6e, 0x49,
+	0x64, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x1a, 0x28, 0x2e, 0x6e, 0x65, 0x6f, 0x73, 0x68,
+	0x6f, 0x77, 0x63, 0x61, 0x73, 0x65, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x62, 0x75, 0x66, 0x2e,
+	0x41, 0x70, 0x70, 0x6c, 0x69, 0x63, 0x61, 0x74, 0x69, 0x6f, 0x6e, 0x45, 0x6e, 0x76, 0x56, 0x61,
+	0x72, 0x73, 0x12, 0x56, 0x0a, 0x09, 0x53, 0x65, 0x74, 0x45, 0x6e, 0x76, 0x56, 0x61, 0x72, 0x12,
+	0x31, 0x2e, 0x6e, 0x65, 0x6f, 0x73, 0x68, 0x6f, 0x77, 0x63, 0x61, 0x73, 0x65, 0x2e, 0x70, 0x72,
+	0x6f, 0x74, 0x6f, 0x62, 0x75, 0x66, 0x2e, 0x53, 0x65, 0x74, 0x41, 0x70, 0x70, 0x6c, 0x69, 0x63,
+	0x61, 0x74, 0x69, 0x6f, 0x6e, 0x45, 0x6e, 0x76, 0x56, 0x61, 0x72, 0x52, 0x65, 0x71, 0x75, 0x65,
+	0x73, 0x74, 0x1a, 0x16, 0x2e, 0x67, 0x6f, 0x6f, 0x67, 0x6c, 0x65, 0x2e, 0x70, 0x72, 0x6f, 0x74,
+	0x6f, 0x62, 0x75, 0x66, 0x2e, 0x45, 0x6d, 0x70, 0x74, 0x79, 0x12, 0x5c, 0x0a, 0x09, 0x47, 0x65,
+	0x74, 0x4f, 0x75, 0x74, 0x70, 0x75, 0x74, 0x12, 0x26, 0x2e, 0x6e, 0x65, 0x6f, 0x73, 0x68, 0x6f,
+	0x77, 0x63, 0x61, 0x73, 0x65, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x62, 0x75, 0x66, 0x2e, 0x47,
+	0x65, 0x74, 0x4f, 0x75, 0x74, 0x70, 0x75, 0x74, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x1a,
+	0x27, 0x2e, 0x6e, 0x65, 0x6f, 0x73, 0x68, 0x6f, 0x77, 0x63, 0x61, 0x73, 0x65, 0x2e, 0x70, 0x72,
+	0x6f, 0x74, 0x6f, 0x62, 0x75, 0x66, 0x2e, 0x47, 0x65, 0x74, 0x4f, 0x75, 0x74, 0x70, 0x75, 0x74,
+	0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x12, 0x6a, 0x0a, 0x0f, 0x47, 0x65, 0x74, 0x4f,
+	0x75, 0x74, 0x70, 0x75, 0x74, 0x53, 0x74, 0x72, 0x65, 0x61, 0x6d, 0x12, 0x2c, 0x2e, 0x6e, 0x65,
+	0x6f, 0x73, 0x68, 0x6f, 0x77, 0x63, 0x61, 0x73, 0x65, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x62,
+	0x75, 0x66, 0x2e, 0x47, 0x65, 0x74, 0x4f, 0x75, 0x74, 0x70, 0x75, 0x74, 0x53, 0x74, 0x72, 0x65,
+	0x61, 0x6d, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x1a, 0x27, 0x2e, 0x6e, 0x65, 0x6f, 0x73,
+	0x68, 0x6f, 0x77, 0x63, 0x61, 0x73, 0x65, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x62, 0x75, 0x66,
+	0x2e, 0x41, 0x70, 0x70, 0x6c, 0x69, 0x63, 0x61, 0x74, 0x69, 0x6f, 0x6e, 0x4f, 0x75, 0x74, 0x70,
+	0x75, 0x74, 0x30, 0x01, 0x12, 0x56, 0x0a, 0x10, 0x53, 0x74, 0x61, 0x72, 0x74, 0x41, 0x70, 0x70,
+	0x6c, 0x69, 0x63, 0x61, 0x74, 0x69, 0x6f, 0x6e, 0x12, 0x2a, 0x2e, 0x6e, 0x65, 0x6f, 0x73, 0x68,
+	0x6f, 0x77, 0x63, 0x61, 0x73, 0x65, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x62, 0x75, 0x66, 0x2e,
+	0x41, 0x70, 0x70, 0x6c, 0x69, 0x63, 0x61, 0x74, 0x69, 0x6f, 0x6e, 0x49, 0x64, 0x52, 0x65, 0x71,
+	0x75, 0x65, 0x73, 0x74, 0x1a, 0x16, 0x2e, 0x67, 0x6f, 0x6f, 0x67, 0x6c, 0x65, 0x2e, 0x70, 0x72,
+	0x6f, 0x74, 0x6f, 0x62, 0x75, 0x66, 0x2e, 0x45, 0x6d, 0x70, 0x74, 0x79, 0x12, 0x55, 0x0a, 0x0f,
+	0x53, 0x74, 0x6f, 0x70, 0x41, 0x70, 0x70, 0x6c, 0x69, 0x63, 0x61, 0x74, 0x69, 0x6f, 0x6e, 0x12,
+	0x2a, 0x2e, 0x6e, 0x65, 0x6f, 0x73, 0x68, 0x6f, 0x77, 0x63, 0x61, 0x73, 0x65, 0x2e, 0x70, 0x72,
+	0x6f, 0x74, 0x6f, 0x62, 0x75, 0x66, 0x2e, 0x41, 0x70, 0x70, 0x6c, 0x69, 0x63, 0x61, 0x74, 0x69,
+	0x6f, 0x6e, 0x49, 0x64, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x1a, 0x16, 0x2e, 0x67, 0x6f,
+	0x6f, 0x67, 0x6c, 0x65, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x62, 0x75, 0x66, 0x2e, 0x45, 0x6d,
+	0x70, 0x74, 0x79, 0x12, 0x60, 0x0a, 0x09, 0x47, 0x65, 0x74, 0x42, 0x75, 0x69, 0x6c, 0x64, 0x73,
+	0x12, 0x2a, 0x2e, 0x6e, 0x65, 0x6f, 0x73, 0x68, 0x6f, 0x77, 0x63, 0x61, 0x73, 0x65, 0x2e, 0x70,
+	0x72, 0x6f, 0x74, 0x6f, 0x62, 0x75, 0x66, 0x2e, 0x41, 0x70, 0x70, 0x6c, 0x69, 0x63, 0x61, 0x74,
+	0x69, 0x6f, 0x6e, 0x49, 0x64, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x1a, 0x27, 0x2e, 0x6e,
+	0x65, 0x6f, 0x73, 0x68, 0x6f, 0x77, 0x63, 0x61, 0x73, 0x65, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f,
+	0x62, 0x75, 0x66, 0x2e, 0x47, 0x65, 0x74, 0x42, 0x75, 0x69, 0x6c, 0x64, 0x73, 0x52, 0x65, 0x73,
+	0x70, 0x6f, 0x6e, 0x73, 0x65, 0x12, 0x4d, 0x0a, 0x08, 0x47, 0x65, 0x74, 0x42, 0x75, 0x69, 0x6c,
+	0x64, 0x12, 0x24, 0x2e, 0x6e, 0x65, 0x6f, 0x73, 0x68, 0x6f, 0x77, 0x63, 0x61, 0x73, 0x65, 0x2e,
+	0x70, 0x72, 0x6f, 0x74, 0x6f, 0x62, 0x75, 0x66, 0x2e, 0x42, 0x75, 0x69, 0x6c, 0x64, 0x49, 0x64,
+	0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x1a, 0x1b, 0x2e, 0x6e, 0x65, 0x6f, 0x73, 0x68, 0x6f,
+	0x77, 0x63, 0x61, 0x73, 0x65, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x62, 0x75, 0x66, 0x2e, 0x42,
+	0x75, 0x69, 0x6c, 0x64, 0x12, 0x59, 0x0a, 0x10, 0x52, 0x65, 0x74, 0x72, 0x79, 0x43, 0x6f, 0x6d,
+	0x6d, 0x69, 0x74, 0x42, 0x75, 0x69, 0x6c, 0x64, 0x12, 0x2d, 0x2e, 0x6e, 0x65, 0x6f, 0x73, 0x68,
+	0x6f, 0x77, 0x63, 0x61, 0x73, 0x65, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x62, 0x75, 0x66, 0x2e,
+	0x52, 0x65, 0x74, 0x72, 0x79, 0x43, 0x6f, 0x6d, 0x6d, 0x69, 0x74, 0x42, 0x75, 0x69, 0x6c, 0x64,
+	0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x1a, 0x16, 0x2e, 0x67, 0x6f, 0x6f, 0x67, 0x6c, 0x65,
+	0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x62, 0x75, 0x66, 0x2e, 0x45, 0x6d, 0x70, 0x74, 0x79, 0x12,
+	0x4b, 0x0a, 0x0b, 0x43, 0x61, 0x6e, 0x63, 0x65, 0x6c, 0x42, 0x75, 0x69, 0x6c, 0x64, 0x12, 0x24,
+	0x2e, 0x6e, 0x65, 0x6f, 0x73, 0x68, 0x6f, 0x77, 0x63, 0x61, 0x73, 0x65, 0x2e, 0x70, 0x72, 0x6f,
+	0x74, 0x6f, 0x62, 0x75, 0x66, 0x2e, 0x42, 0x75, 0x69, 0x6c, 0x64, 0x49, 0x64, 0x52, 0x65, 0x71,
+	0x75, 0x65, 0x73, 0x74, 0x1a, 0x16, 0x2e, 0x67, 0x6f, 0x6f, 0x67, 0x6c, 0x65, 0x2e, 0x70, 0x72,
+	0x6f, 0x74, 0x6f, 0x62, 0x75, 0x66, 0x2e, 0x45, 0x6d, 0x70, 0x74, 0x79, 0x12, 0x53, 0x0a, 0x0b,
+	0x47, 0x65, 0x74, 0x42, 0x75, 0x69, 0x6c, 0x64, 0x4c, 0x6f, 0x67, 0x12, 0x24, 0x2e, 0x6e, 0x65,
 	0x6f, 0x73, 0x68, 0x6f, 0x77, 0x63, 0x61, 0x73, 0x65, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x62,
 	0x75, 0x66, 0x2e, 0x42, 0x75, 0x69, 0x6c, 0x64, 0x49, 0x64, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73,
-	0x74, 0x1a, 0x1b, 0x2e, 0x6e, 0x65, 0x6f, 0x73, 0x68, 0x6f, 0x77, 0x63, 0x61, 0x73, 0x65, 0x2e,
-	0x70, 0x72, 0x6f, 0x74, 0x6f, 0x62, 0x75, 0x66, 0x2e, 0x42, 0x75, 0x69, 0x6c, 0x64, 0x12, 0x59,
-	0x0a, 0x10, 0x52, 0x65, 0x74, 0x72, 0x79, 0x43, 0x6f, 0x6d, 0x6d, 0x69, 0x74, 0x42, 0x75, 0x69,
-	0x6c, 0x64, 0x12, 0x2d, 0x2e, 0x6e, 0x65, 0x6f, 0x73, 0x68, 0x6f, 0x77, 0x63, 0x61, 0x73, 0x65,
-	0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x62, 0x75, 0x66, 0x2e, 0x52, 0x65, 0x74, 0x72, 0x79, 0x43,
-	0x6f, 0x6d, 0x6d, 0x69, 0x74, 0x42, 0x75, 0x69, 0x6c, 0x64, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73,
-	0x74, 0x1a, 0x16, 0x2e, 0x67, 0x6f, 0x6f, 0x67, 0x6c, 0x65, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f,
-	0x62, 0x75, 0x66, 0x2e, 0x45, 0x6d, 0x70, 0x74, 0x79, 0x12, 0x4b, 0x0a, 0x0b, 0x43, 0x61, 0x6e,
-	0x63, 0x65, 0x6c, 0x42, 0x75, 0x69, 0x6c, 0x64, 0x12, 0x24, 0x2e, 0x6e, 0x65, 0x6f, 0x73, 0x68,
-	0x6f, 0x77, 0x63, 0x61, 0x73, 0x65, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x62, 0x75, 0x66, 0x2e,
-	0x42, 0x75, 0x69, 0x6c, 0x64, 0x49, 0x64, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x1a, 0x16,
-	0x2e, 0x67, 0x6f, 0x6f, 0x67, 0x6c, 0x65, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x62, 0x75, 0x66,
-	0x2e, 0x45, 0x6d, 0x70, 0x74, 0x79, 0x12, 0x53, 0x0a, 0x0b, 0x47, 0x65, 0x74, 0x42, 0x75, 0x69,
-	0x6c, 0x64, 0x4c, 0x6f, 0x67, 0x12, 0x24, 0x2e, 0x6e, 0x65, 0x6f, 0x73, 0x68, 0x6f, 0x77, 0x63,
-	0x61, 0x73, 0x65, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x62, 0x75, 0x66, 0x2e, 0x42, 0x75, 0x69,
-	0x6c, 0x64, 0x49, 0x64, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x1a, 0x1e, 0x2e, 0x6e, 0x65,
-	0x6f, 0x73, 0x68, 0x6f, 0x77, 0x63, 0x61, 0x73, 0x65, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x62,
-	0x75, 0x66, 0x2e, 0x42, 0x75, 0x69, 0x6c, 0x64, 0x4c, 0x6f, 0x67, 0x12, 0x5b, 0x0a, 0x11, 0x47,
-	0x65, 0x74, 0x42, 0x75, 0x69, 0x6c, 0x64, 0x4c, 0x6f, 0x67, 0x53, 0x74, 0x72, 0x65, 0x61, 0x6d,
-	0x12, 0x24, 0x2e, 0x6e, 0x65, 0x6f, 0x73, 0x68, 0x6f, 0x77, 0x63, 0x61, 0x73, 0x65, 0x2e, 0x70,
-	0x72, 0x6f, 0x74, 0x6f, 0x62, 0x75, 0x66, 0x2e, 0x42, 0x75, 0x69, 0x6c, 0x64, 0x49, 0x64, 0x52,
-	0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x1a, 0x1e, 0x2e, 0x6e, 0x65, 0x6f, 0x73, 0x68, 0x6f, 0x77,
+	0x74, 0x1a, 0x1e, 0x2e, 0x6e, 0x65, 0x6f, 0x73, 0x68, 0x6f, 0x77, 0x63, 0x61, 0x73, 0x65, 0x2e,
+	0x70, 0x72, 0x6f, 0x74, 0x6f, 0x62, 0x75, 0x66, 0x2e, 0x42, 0x75, 0x69, 0x6c, 0x64, 0x4c, 0x6f,
+	0x67, 0x12, 0x5b, 0x0a, 0x11, 0x47, 0x65, 0x74, 0x42, 0x75, 0x69, 0x6c, 0x64, 0x4c, 0x6f, 0x67,
+	0x53, 0x74, 0x72, 0x65, 0x61, 0x6d, 0x12, 0x24, 0x2e, 0x6e, 0x65, 0x6f, 0x73, 0x68, 0x6f, 0x77,
 	0x63, 0x61, 0x73, 0x65, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x62, 0x75, 0x66, 0x2e, 0x42, 0x75,
-	0x69, 0x6c, 0x64, 0x4c, 0x6f, 0x67, 0x30, 0x01, 0x12, 0x62, 0x0a, 0x10, 0x47, 0x65, 0x74, 0x42,
-	0x75, 0x69, 0x6c, 0x64, 0x41, 0x72, 0x74, 0x69, 0x66, 0x61, 0x63, 0x74, 0x12, 0x27, 0x2e, 0x6e,
+	0x69, 0x6c, 0x64, 0x49, 0x64, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x1a, 0x1e, 0x2e, 0x6e,
 	0x65, 0x6f, 0x73, 0x68, 0x6f, 0x77, 0x63, 0x61, 0x73, 0x65, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f,
-	0x62, 0x75, 0x66, 0x2e, 0x41, 0x72, 0x74, 0x69, 0x66, 0x61, 0x63, 0x74, 0x49, 0x64, 0x52, 0x65,
-	0x71, 0x75, 0x65, 0x73, 0x74, 0x1a, 0x25, 0x2e, 0x6e, 0x65, 0x6f, 0x73, 0x68, 0x6f, 0x77, 0x63,
-	0x61, 0x73, 0x65, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x62, 0x75, 0x66, 0x2e, 0x41, 0x72, 0x74,
-	0x69, 0x66, 0x61, 0x63, 0x74, 0x43, 0x6f, 0x6e, 0x74, 0x65, 0x6e, 0x74, 0x42, 0x3e, 0x5a, 0x3c,
-	0x67, 0x69, 0x74, 0x68, 0x75, 0x62, 0x2e, 0x63, 0x6f, 0x6d, 0x2f, 0x74, 0x72, 0x61, 0x50, 0x74,
-	0x69, 0x74, 0x65, 0x63, 0x68, 0x2f, 0x6e, 0x65, 0x6f, 0x73, 0x68, 0x6f, 0x77, 0x63, 0x61, 0x73,
-	0x65, 0x2f, 0x70, 0x6b, 0x67, 0x2f, 0x69, 0x6e, 0x66, 0x72, 0x61, 0x73, 0x74, 0x72, 0x75, 0x63,
-	0x74, 0x75, 0x72, 0x65, 0x2f, 0x67, 0x72, 0x70, 0x63, 0x2f, 0x70, 0x62, 0x62, 0x06, 0x70, 0x72,
-	0x6f, 0x74, 0x6f, 0x33,
+	0x62, 0x75, 0x66, 0x2e, 0x42, 0x75, 0x69, 0x6c, 0x64, 0x4c, 0x6f, 0x67, 0x30, 0x01, 0x12, 0x62,
+	0x0a, 0x10, 0x47, 0x65, 0x74, 0x42, 0x75, 0x69, 0x6c, 0x64, 0x41, 0x72, 0x74, 0x69, 0x66, 0x61,
+	0x63, 0x74, 0x12, 0x27, 0x2e, 0x6e, 0x65, 0x6f, 0x73, 0x68, 0x6f, 0x77, 0x63, 0x61, 0x73, 0x65,
+	0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x62, 0x75, 0x66, 0x2e, 0x41, 0x72, 0x74, 0x69, 0x66, 0x61,
+	0x63, 0x74, 0x49, 0x64, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x1a, 0x25, 0x2e, 0x6e, 0x65,
+	0x6f, 0x73, 0x68, 0x6f, 0x77, 0x63, 0x61, 0x73, 0x65, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x62,
+	0x75, 0x66, 0x2e, 0x41, 0x72, 0x74, 0x69, 0x66, 0x61, 0x63, 0x74, 0x43, 0x6f, 0x6e, 0x74, 0x65,
+	0x6e, 0x74, 0x42, 0x3e, 0x5a, 0x3c, 0x67, 0x69, 0x74, 0x68, 0x75, 0x62, 0x2e, 0x63, 0x6f, 0x6d,
+	0x2f, 0x74, 0x72, 0x61, 0x50, 0x74, 0x69, 0x74, 0x65, 0x63, 0x68, 0x2f, 0x6e, 0x65, 0x6f, 0x73,
+	0x68, 0x6f, 0x77, 0x63, 0x61, 0x73, 0x65, 0x2f, 0x70, 0x6b, 0x67, 0x2f, 0x69, 0x6e, 0x66, 0x72,
+	0x61, 0x73, 0x74, 0x72, 0x75, 0x63, 0x74, 0x75, 0x72, 0x65, 0x2f, 0x67, 0x72, 0x70, 0x63, 0x2f,
+	0x70, 0x62, 0x62, 0x06, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x33,
 }
 
 var (
@@ -4380,8 +4482,8 @@ func file_neoshowcase_protobuf_gateway_proto_rawDescGZIP() []byte {
 	return file_neoshowcase_protobuf_gateway_proto_rawDescData
 }
 
-var file_neoshowcase_protobuf_gateway_proto_enumTypes = make([]protoimpl.EnumInfo, 7)
-var file_neoshowcase_protobuf_gateway_proto_msgTypes = make([]protoimpl.MessageInfo, 51)
+var file_neoshowcase_protobuf_gateway_proto_enumTypes = make([]protoimpl.EnumInfo, 8)
+var file_neoshowcase_protobuf_gateway_proto_msgTypes = make([]protoimpl.MessageInfo, 52)
 var file_neoshowcase_protobuf_gateway_proto_goTypes = []interface{}{
 	(DeployType)(0),                      // 0: neoshowcase.protobuf.DeployType
 	(AuthenticationType)(0),              // 1: neoshowcase.protobuf.AuthenticationType
@@ -4389,185 +4491,188 @@ var file_neoshowcase_protobuf_gateway_proto_goTypes = []interface{}{
 	(Repository_AuthMethod)(0),           // 3: neoshowcase.protobuf.Repository.AuthMethod
 	(GetRepositoriesRequest_Scope)(0),    // 4: neoshowcase.protobuf.GetRepositoriesRequest.Scope
 	(Application_ContainerState)(0),      // 5: neoshowcase.protobuf.Application.ContainerState
-	(Build_BuildStatus)(0),               // 6: neoshowcase.protobuf.Build.BuildStatus
-	(*User)(nil),                         // 7: neoshowcase.protobuf.User
-	(*GetUsersResponse)(nil),             // 8: neoshowcase.protobuf.GetUsersResponse
-	(*UserKey)(nil),                      // 9: neoshowcase.protobuf.UserKey
-	(*GetUserKeysResponse)(nil),          // 10: neoshowcase.protobuf.GetUserKeysResponse
-	(*CreateUserKeyRequest)(nil),         // 11: neoshowcase.protobuf.CreateUserKeyRequest
-	(*DeleteUserKeyRequest)(nil),         // 12: neoshowcase.protobuf.DeleteUserKeyRequest
-	(*Repository)(nil),                   // 13: neoshowcase.protobuf.Repository
-	(*CreateRepositoryAuthBasic)(nil),    // 14: neoshowcase.protobuf.CreateRepositoryAuthBasic
-	(*CreateRepositoryAuthSSH)(nil),      // 15: neoshowcase.protobuf.CreateRepositoryAuthSSH
-	(*CreateRepositoryAuth)(nil),         // 16: neoshowcase.protobuf.CreateRepositoryAuth
-	(*CreateRepositoryRequest)(nil),      // 17: neoshowcase.protobuf.CreateRepositoryRequest
-	(*GetRepositoriesRequest)(nil),       // 18: neoshowcase.protobuf.GetRepositoriesRequest
-	(*UpdateRepositoryRequest)(nil),      // 19: neoshowcase.protobuf.UpdateRepositoryRequest
-	(*RepositoryIdRequest)(nil),          // 20: neoshowcase.protobuf.RepositoryIdRequest
-	(*RuntimeConfig)(nil),                // 21: neoshowcase.protobuf.RuntimeConfig
-	(*BuildConfigRuntimeBuildpack)(nil),  // 22: neoshowcase.protobuf.BuildConfigRuntimeBuildpack
-	(*BuildConfigRuntimeCmd)(nil),        // 23: neoshowcase.protobuf.BuildConfigRuntimeCmd
-	(*BuildConfigRuntimeDockerfile)(nil), // 24: neoshowcase.protobuf.BuildConfigRuntimeDockerfile
-	(*BuildConfigStaticCmd)(nil),         // 25: neoshowcase.protobuf.BuildConfigStaticCmd
-	(*BuildConfigStaticDockerfile)(nil),  // 26: neoshowcase.protobuf.BuildConfigStaticDockerfile
-	(*ApplicationConfig)(nil),            // 27: neoshowcase.protobuf.ApplicationConfig
-	(*Website)(nil),                      // 28: neoshowcase.protobuf.Website
-	(*CreateWebsiteRequest)(nil),         // 29: neoshowcase.protobuf.CreateWebsiteRequest
-	(*DeleteWebsiteRequest)(nil),         // 30: neoshowcase.protobuf.DeleteWebsiteRequest
-	(*PortPublication)(nil),              // 31: neoshowcase.protobuf.PortPublication
-	(*Application)(nil),                  // 32: neoshowcase.protobuf.Application
-	(*CreateApplicationRequest)(nil),     // 33: neoshowcase.protobuf.CreateApplicationRequest
-	(*UpdateApplicationRequest)(nil),     // 34: neoshowcase.protobuf.UpdateApplicationRequest
-	(*AvailableDomain)(nil),              // 35: neoshowcase.protobuf.AvailableDomain
-	(*AvailableDomains)(nil),             // 36: neoshowcase.protobuf.AvailableDomains
-	(*AvailablePort)(nil),                // 37: neoshowcase.protobuf.AvailablePort
-	(*AvailablePorts)(nil),               // 38: neoshowcase.protobuf.AvailablePorts
-	(*ApplicationEnvVar)(nil),            // 39: neoshowcase.protobuf.ApplicationEnvVar
-	(*ApplicationEnvVars)(nil),           // 40: neoshowcase.protobuf.ApplicationEnvVars
-	(*Artifact)(nil),                     // 41: neoshowcase.protobuf.Artifact
-	(*ArtifactContent)(nil),              // 42: neoshowcase.protobuf.ArtifactContent
-	(*GetOutputRequest)(nil),             // 43: neoshowcase.protobuf.GetOutputRequest
-	(*ApplicationOutput)(nil),            // 44: neoshowcase.protobuf.ApplicationOutput
-	(*GetOutputResponse)(nil),            // 45: neoshowcase.protobuf.GetOutputResponse
-	(*GetOutputStreamRequest)(nil),       // 46: neoshowcase.protobuf.GetOutputStreamRequest
-	(*Build)(nil),                        // 47: neoshowcase.protobuf.Build
-	(*BuildLog)(nil),                     // 48: neoshowcase.protobuf.BuildLog
-	(*GetRepositoriesResponse)(nil),      // 49: neoshowcase.protobuf.GetRepositoriesResponse
-	(*GetApplicationsResponse)(nil),      // 50: neoshowcase.protobuf.GetApplicationsResponse
-	(*GetSystemPublicKeyResponse)(nil),   // 51: neoshowcase.protobuf.GetSystemPublicKeyResponse
-	(*ApplicationIdRequest)(nil),         // 52: neoshowcase.protobuf.ApplicationIdRequest
-	(*BuildIdRequest)(nil),               // 53: neoshowcase.protobuf.BuildIdRequest
-	(*ArtifactIdRequest)(nil),            // 54: neoshowcase.protobuf.ArtifactIdRequest
-	(*GetBuildsResponse)(nil),            // 55: neoshowcase.protobuf.GetBuildsResponse
-	(*SetApplicationEnvVarRequest)(nil),  // 56: neoshowcase.protobuf.SetApplicationEnvVarRequest
-	(*RetryCommitBuildRequest)(nil),      // 57: neoshowcase.protobuf.RetryCommitBuildRequest
-	(*emptypb.Empty)(nil),                // 58: google.protobuf.Empty
-	(*timestamppb.Timestamp)(nil),        // 59: google.protobuf.Timestamp
-	(*NullTimestamp)(nil),                // 60: neoshowcase.protobuf.NullTimestamp
+	(GetApplicationsRequest_Scope)(0),    // 6: neoshowcase.protobuf.GetApplicationsRequest.Scope
+	(Build_BuildStatus)(0),               // 7: neoshowcase.protobuf.Build.BuildStatus
+	(*User)(nil),                         // 8: neoshowcase.protobuf.User
+	(*GetUsersResponse)(nil),             // 9: neoshowcase.protobuf.GetUsersResponse
+	(*UserKey)(nil),                      // 10: neoshowcase.protobuf.UserKey
+	(*GetUserKeysResponse)(nil),          // 11: neoshowcase.protobuf.GetUserKeysResponse
+	(*CreateUserKeyRequest)(nil),         // 12: neoshowcase.protobuf.CreateUserKeyRequest
+	(*DeleteUserKeyRequest)(nil),         // 13: neoshowcase.protobuf.DeleteUserKeyRequest
+	(*Repository)(nil),                   // 14: neoshowcase.protobuf.Repository
+	(*CreateRepositoryAuthBasic)(nil),    // 15: neoshowcase.protobuf.CreateRepositoryAuthBasic
+	(*CreateRepositoryAuthSSH)(nil),      // 16: neoshowcase.protobuf.CreateRepositoryAuthSSH
+	(*CreateRepositoryAuth)(nil),         // 17: neoshowcase.protobuf.CreateRepositoryAuth
+	(*CreateRepositoryRequest)(nil),      // 18: neoshowcase.protobuf.CreateRepositoryRequest
+	(*GetRepositoriesRequest)(nil),       // 19: neoshowcase.protobuf.GetRepositoriesRequest
+	(*UpdateRepositoryRequest)(nil),      // 20: neoshowcase.protobuf.UpdateRepositoryRequest
+	(*RepositoryIdRequest)(nil),          // 21: neoshowcase.protobuf.RepositoryIdRequest
+	(*RuntimeConfig)(nil),                // 22: neoshowcase.protobuf.RuntimeConfig
+	(*BuildConfigRuntimeBuildpack)(nil),  // 23: neoshowcase.protobuf.BuildConfigRuntimeBuildpack
+	(*BuildConfigRuntimeCmd)(nil),        // 24: neoshowcase.protobuf.BuildConfigRuntimeCmd
+	(*BuildConfigRuntimeDockerfile)(nil), // 25: neoshowcase.protobuf.BuildConfigRuntimeDockerfile
+	(*BuildConfigStaticCmd)(nil),         // 26: neoshowcase.protobuf.BuildConfigStaticCmd
+	(*BuildConfigStaticDockerfile)(nil),  // 27: neoshowcase.protobuf.BuildConfigStaticDockerfile
+	(*ApplicationConfig)(nil),            // 28: neoshowcase.protobuf.ApplicationConfig
+	(*Website)(nil),                      // 29: neoshowcase.protobuf.Website
+	(*CreateWebsiteRequest)(nil),         // 30: neoshowcase.protobuf.CreateWebsiteRequest
+	(*DeleteWebsiteRequest)(nil),         // 31: neoshowcase.protobuf.DeleteWebsiteRequest
+	(*PortPublication)(nil),              // 32: neoshowcase.protobuf.PortPublication
+	(*Application)(nil),                  // 33: neoshowcase.protobuf.Application
+	(*CreateApplicationRequest)(nil),     // 34: neoshowcase.protobuf.CreateApplicationRequest
+	(*GetApplicationsRequest)(nil),       // 35: neoshowcase.protobuf.GetApplicationsRequest
+	(*UpdateApplicationRequest)(nil),     // 36: neoshowcase.protobuf.UpdateApplicationRequest
+	(*AvailableDomain)(nil),              // 37: neoshowcase.protobuf.AvailableDomain
+	(*AvailableDomains)(nil),             // 38: neoshowcase.protobuf.AvailableDomains
+	(*AvailablePort)(nil),                // 39: neoshowcase.protobuf.AvailablePort
+	(*AvailablePorts)(nil),               // 40: neoshowcase.protobuf.AvailablePorts
+	(*ApplicationEnvVar)(nil),            // 41: neoshowcase.protobuf.ApplicationEnvVar
+	(*ApplicationEnvVars)(nil),           // 42: neoshowcase.protobuf.ApplicationEnvVars
+	(*Artifact)(nil),                     // 43: neoshowcase.protobuf.Artifact
+	(*ArtifactContent)(nil),              // 44: neoshowcase.protobuf.ArtifactContent
+	(*GetOutputRequest)(nil),             // 45: neoshowcase.protobuf.GetOutputRequest
+	(*ApplicationOutput)(nil),            // 46: neoshowcase.protobuf.ApplicationOutput
+	(*GetOutputResponse)(nil),            // 47: neoshowcase.protobuf.GetOutputResponse
+	(*GetOutputStreamRequest)(nil),       // 48: neoshowcase.protobuf.GetOutputStreamRequest
+	(*Build)(nil),                        // 49: neoshowcase.protobuf.Build
+	(*BuildLog)(nil),                     // 50: neoshowcase.protobuf.BuildLog
+	(*GetRepositoriesResponse)(nil),      // 51: neoshowcase.protobuf.GetRepositoriesResponse
+	(*GetApplicationsResponse)(nil),      // 52: neoshowcase.protobuf.GetApplicationsResponse
+	(*GetSystemPublicKeyResponse)(nil),   // 53: neoshowcase.protobuf.GetSystemPublicKeyResponse
+	(*ApplicationIdRequest)(nil),         // 54: neoshowcase.protobuf.ApplicationIdRequest
+	(*BuildIdRequest)(nil),               // 55: neoshowcase.protobuf.BuildIdRequest
+	(*ArtifactIdRequest)(nil),            // 56: neoshowcase.protobuf.ArtifactIdRequest
+	(*GetBuildsResponse)(nil),            // 57: neoshowcase.protobuf.GetBuildsResponse
+	(*SetApplicationEnvVarRequest)(nil),  // 58: neoshowcase.protobuf.SetApplicationEnvVarRequest
+	(*RetryCommitBuildRequest)(nil),      // 59: neoshowcase.protobuf.RetryCommitBuildRequest
+	(*emptypb.Empty)(nil),                // 60: google.protobuf.Empty
+	(*timestamppb.Timestamp)(nil),        // 61: google.protobuf.Timestamp
+	(*NullTimestamp)(nil),                // 62: neoshowcase.protobuf.NullTimestamp
 }
 var file_neoshowcase_protobuf_gateway_proto_depIdxs = []int32{
-	7,  // 0: neoshowcase.protobuf.GetUsersResponse.users:type_name -> neoshowcase.protobuf.User
-	9,  // 1: neoshowcase.protobuf.GetUserKeysResponse.keys:type_name -> neoshowcase.protobuf.UserKey
+	8,  // 0: neoshowcase.protobuf.GetUsersResponse.users:type_name -> neoshowcase.protobuf.User
+	10, // 1: neoshowcase.protobuf.GetUserKeysResponse.keys:type_name -> neoshowcase.protobuf.UserKey
 	3,  // 2: neoshowcase.protobuf.Repository.auth_method:type_name -> neoshowcase.protobuf.Repository.AuthMethod
-	58, // 3: neoshowcase.protobuf.CreateRepositoryAuth.none:type_name -> google.protobuf.Empty
-	14, // 4: neoshowcase.protobuf.CreateRepositoryAuth.basic:type_name -> neoshowcase.protobuf.CreateRepositoryAuthBasic
-	15, // 5: neoshowcase.protobuf.CreateRepositoryAuth.ssh:type_name -> neoshowcase.protobuf.CreateRepositoryAuthSSH
-	16, // 6: neoshowcase.protobuf.CreateRepositoryRequest.auth:type_name -> neoshowcase.protobuf.CreateRepositoryAuth
+	60, // 3: neoshowcase.protobuf.CreateRepositoryAuth.none:type_name -> google.protobuf.Empty
+	15, // 4: neoshowcase.protobuf.CreateRepositoryAuth.basic:type_name -> neoshowcase.protobuf.CreateRepositoryAuthBasic
+	16, // 5: neoshowcase.protobuf.CreateRepositoryAuth.ssh:type_name -> neoshowcase.protobuf.CreateRepositoryAuthSSH
+	17, // 6: neoshowcase.protobuf.CreateRepositoryRequest.auth:type_name -> neoshowcase.protobuf.CreateRepositoryAuth
 	4,  // 7: neoshowcase.protobuf.GetRepositoriesRequest.scope:type_name -> neoshowcase.protobuf.GetRepositoriesRequest.Scope
-	16, // 8: neoshowcase.protobuf.UpdateRepositoryRequest.auth:type_name -> neoshowcase.protobuf.CreateRepositoryAuth
-	21, // 9: neoshowcase.protobuf.BuildConfigRuntimeBuildpack.runtime_config:type_name -> neoshowcase.protobuf.RuntimeConfig
-	21, // 10: neoshowcase.protobuf.BuildConfigRuntimeCmd.runtime_config:type_name -> neoshowcase.protobuf.RuntimeConfig
-	21, // 11: neoshowcase.protobuf.BuildConfigRuntimeDockerfile.runtime_config:type_name -> neoshowcase.protobuf.RuntimeConfig
-	22, // 12: neoshowcase.protobuf.ApplicationConfig.runtime_buildpack:type_name -> neoshowcase.protobuf.BuildConfigRuntimeBuildpack
-	23, // 13: neoshowcase.protobuf.ApplicationConfig.runtime_cmd:type_name -> neoshowcase.protobuf.BuildConfigRuntimeCmd
-	24, // 14: neoshowcase.protobuf.ApplicationConfig.runtime_dockerfile:type_name -> neoshowcase.protobuf.BuildConfigRuntimeDockerfile
-	25, // 15: neoshowcase.protobuf.ApplicationConfig.static_cmd:type_name -> neoshowcase.protobuf.BuildConfigStaticCmd
-	26, // 16: neoshowcase.protobuf.ApplicationConfig.static_dockerfile:type_name -> neoshowcase.protobuf.BuildConfigStaticDockerfile
+	17, // 8: neoshowcase.protobuf.UpdateRepositoryRequest.auth:type_name -> neoshowcase.protobuf.CreateRepositoryAuth
+	22, // 9: neoshowcase.protobuf.BuildConfigRuntimeBuildpack.runtime_config:type_name -> neoshowcase.protobuf.RuntimeConfig
+	22, // 10: neoshowcase.protobuf.BuildConfigRuntimeCmd.runtime_config:type_name -> neoshowcase.protobuf.RuntimeConfig
+	22, // 11: neoshowcase.protobuf.BuildConfigRuntimeDockerfile.runtime_config:type_name -> neoshowcase.protobuf.RuntimeConfig
+	23, // 12: neoshowcase.protobuf.ApplicationConfig.runtime_buildpack:type_name -> neoshowcase.protobuf.BuildConfigRuntimeBuildpack
+	24, // 13: neoshowcase.protobuf.ApplicationConfig.runtime_cmd:type_name -> neoshowcase.protobuf.BuildConfigRuntimeCmd
+	25, // 14: neoshowcase.protobuf.ApplicationConfig.runtime_dockerfile:type_name -> neoshowcase.protobuf.BuildConfigRuntimeDockerfile
+	26, // 15: neoshowcase.protobuf.ApplicationConfig.static_cmd:type_name -> neoshowcase.protobuf.BuildConfigStaticCmd
+	27, // 16: neoshowcase.protobuf.ApplicationConfig.static_dockerfile:type_name -> neoshowcase.protobuf.BuildConfigStaticDockerfile
 	1,  // 17: neoshowcase.protobuf.Website.authentication:type_name -> neoshowcase.protobuf.AuthenticationType
 	1,  // 18: neoshowcase.protobuf.CreateWebsiteRequest.authentication:type_name -> neoshowcase.protobuf.AuthenticationType
 	2,  // 19: neoshowcase.protobuf.PortPublication.protocol:type_name -> neoshowcase.protobuf.PortPublicationProtocol
 	0,  // 20: neoshowcase.protobuf.Application.deploy_type:type_name -> neoshowcase.protobuf.DeployType
 	5,  // 21: neoshowcase.protobuf.Application.container:type_name -> neoshowcase.protobuf.Application.ContainerState
-	59, // 22: neoshowcase.protobuf.Application.created_at:type_name -> google.protobuf.Timestamp
-	59, // 23: neoshowcase.protobuf.Application.updated_at:type_name -> google.protobuf.Timestamp
-	27, // 24: neoshowcase.protobuf.Application.config:type_name -> neoshowcase.protobuf.ApplicationConfig
-	28, // 25: neoshowcase.protobuf.Application.websites:type_name -> neoshowcase.protobuf.Website
-	31, // 26: neoshowcase.protobuf.Application.port_publications:type_name -> neoshowcase.protobuf.PortPublication
-	27, // 27: neoshowcase.protobuf.CreateApplicationRequest.config:type_name -> neoshowcase.protobuf.ApplicationConfig
-	29, // 28: neoshowcase.protobuf.CreateApplicationRequest.websites:type_name -> neoshowcase.protobuf.CreateWebsiteRequest
-	31, // 29: neoshowcase.protobuf.CreateApplicationRequest.port_publications:type_name -> neoshowcase.protobuf.PortPublication
-	27, // 30: neoshowcase.protobuf.UpdateApplicationRequest.config:type_name -> neoshowcase.protobuf.ApplicationConfig
-	29, // 31: neoshowcase.protobuf.UpdateApplicationRequest.new_websites:type_name -> neoshowcase.protobuf.CreateWebsiteRequest
-	30, // 32: neoshowcase.protobuf.UpdateApplicationRequest.delete_websites:type_name -> neoshowcase.protobuf.DeleteWebsiteRequest
-	31, // 33: neoshowcase.protobuf.UpdateApplicationRequest.port_publications:type_name -> neoshowcase.protobuf.PortPublication
-	35, // 34: neoshowcase.protobuf.AvailableDomains.domains:type_name -> neoshowcase.protobuf.AvailableDomain
-	2,  // 35: neoshowcase.protobuf.AvailablePort.protocol:type_name -> neoshowcase.protobuf.PortPublicationProtocol
-	37, // 36: neoshowcase.protobuf.AvailablePorts.available_ports:type_name -> neoshowcase.protobuf.AvailablePort
-	39, // 37: neoshowcase.protobuf.ApplicationEnvVars.variables:type_name -> neoshowcase.protobuf.ApplicationEnvVar
-	59, // 38: neoshowcase.protobuf.Artifact.created_at:type_name -> google.protobuf.Timestamp
-	60, // 39: neoshowcase.protobuf.Artifact.deleted_at:type_name -> neoshowcase.protobuf.NullTimestamp
-	59, // 40: neoshowcase.protobuf.GetOutputRequest.before:type_name -> google.protobuf.Timestamp
-	59, // 41: neoshowcase.protobuf.ApplicationOutput.time:type_name -> google.protobuf.Timestamp
-	44, // 42: neoshowcase.protobuf.GetOutputResponse.outputs:type_name -> neoshowcase.protobuf.ApplicationOutput
-	59, // 43: neoshowcase.protobuf.GetOutputStreamRequest.after:type_name -> google.protobuf.Timestamp
-	6,  // 44: neoshowcase.protobuf.Build.status:type_name -> neoshowcase.protobuf.Build.BuildStatus
-	59, // 45: neoshowcase.protobuf.Build.queued_at:type_name -> google.protobuf.Timestamp
-	60, // 46: neoshowcase.protobuf.Build.started_at:type_name -> neoshowcase.protobuf.NullTimestamp
-	60, // 47: neoshowcase.protobuf.Build.updated_at:type_name -> neoshowcase.protobuf.NullTimestamp
-	60, // 48: neoshowcase.protobuf.Build.finished_at:type_name -> neoshowcase.protobuf.NullTimestamp
-	41, // 49: neoshowcase.protobuf.Build.artifact:type_name -> neoshowcase.protobuf.Artifact
-	13, // 50: neoshowcase.protobuf.GetRepositoriesResponse.repositories:type_name -> neoshowcase.protobuf.Repository
-	32, // 51: neoshowcase.protobuf.GetApplicationsResponse.applications:type_name -> neoshowcase.protobuf.Application
-	47, // 52: neoshowcase.protobuf.GetBuildsResponse.builds:type_name -> neoshowcase.protobuf.Build
-	58, // 53: neoshowcase.protobuf.APIService.GetSystemPublicKey:input_type -> google.protobuf.Empty
-	58, // 54: neoshowcase.protobuf.APIService.GetAvailableDomains:input_type -> google.protobuf.Empty
-	58, // 55: neoshowcase.protobuf.APIService.GetAvailablePorts:input_type -> google.protobuf.Empty
-	58, // 56: neoshowcase.protobuf.APIService.GetMe:input_type -> google.protobuf.Empty
-	58, // 57: neoshowcase.protobuf.APIService.GetUsers:input_type -> google.protobuf.Empty
-	11, // 58: neoshowcase.protobuf.APIService.CreateUserKey:input_type -> neoshowcase.protobuf.CreateUserKeyRequest
-	58, // 59: neoshowcase.protobuf.APIService.GetUserKeys:input_type -> google.protobuf.Empty
-	12, // 60: neoshowcase.protobuf.APIService.DeleteUserKey:input_type -> neoshowcase.protobuf.DeleteUserKeyRequest
-	17, // 61: neoshowcase.protobuf.APIService.CreateRepository:input_type -> neoshowcase.protobuf.CreateRepositoryRequest
-	18, // 62: neoshowcase.protobuf.APIService.GetRepositories:input_type -> neoshowcase.protobuf.GetRepositoriesRequest
-	20, // 63: neoshowcase.protobuf.APIService.GetRepository:input_type -> neoshowcase.protobuf.RepositoryIdRequest
-	19, // 64: neoshowcase.protobuf.APIService.UpdateRepository:input_type -> neoshowcase.protobuf.UpdateRepositoryRequest
-	20, // 65: neoshowcase.protobuf.APIService.RefreshRepository:input_type -> neoshowcase.protobuf.RepositoryIdRequest
-	20, // 66: neoshowcase.protobuf.APIService.DeleteRepository:input_type -> neoshowcase.protobuf.RepositoryIdRequest
-	33, // 67: neoshowcase.protobuf.APIService.CreateApplication:input_type -> neoshowcase.protobuf.CreateApplicationRequest
-	58, // 68: neoshowcase.protobuf.APIService.GetApplications:input_type -> google.protobuf.Empty
-	52, // 69: neoshowcase.protobuf.APIService.GetApplication:input_type -> neoshowcase.protobuf.ApplicationIdRequest
-	34, // 70: neoshowcase.protobuf.APIService.UpdateApplication:input_type -> neoshowcase.protobuf.UpdateApplicationRequest
-	52, // 71: neoshowcase.protobuf.APIService.DeleteApplication:input_type -> neoshowcase.protobuf.ApplicationIdRequest
-	52, // 72: neoshowcase.protobuf.APIService.GetEnvVars:input_type -> neoshowcase.protobuf.ApplicationIdRequest
-	56, // 73: neoshowcase.protobuf.APIService.SetEnvVar:input_type -> neoshowcase.protobuf.SetApplicationEnvVarRequest
-	43, // 74: neoshowcase.protobuf.APIService.GetOutput:input_type -> neoshowcase.protobuf.GetOutputRequest
-	46, // 75: neoshowcase.protobuf.APIService.GetOutputStream:input_type -> neoshowcase.protobuf.GetOutputStreamRequest
-	52, // 76: neoshowcase.protobuf.APIService.StartApplication:input_type -> neoshowcase.protobuf.ApplicationIdRequest
-	52, // 77: neoshowcase.protobuf.APIService.StopApplication:input_type -> neoshowcase.protobuf.ApplicationIdRequest
-	52, // 78: neoshowcase.protobuf.APIService.GetBuilds:input_type -> neoshowcase.protobuf.ApplicationIdRequest
-	53, // 79: neoshowcase.protobuf.APIService.GetBuild:input_type -> neoshowcase.protobuf.BuildIdRequest
-	57, // 80: neoshowcase.protobuf.APIService.RetryCommitBuild:input_type -> neoshowcase.protobuf.RetryCommitBuildRequest
-	53, // 81: neoshowcase.protobuf.APIService.CancelBuild:input_type -> neoshowcase.protobuf.BuildIdRequest
-	53, // 82: neoshowcase.protobuf.APIService.GetBuildLog:input_type -> neoshowcase.protobuf.BuildIdRequest
-	53, // 83: neoshowcase.protobuf.APIService.GetBuildLogStream:input_type -> neoshowcase.protobuf.BuildIdRequest
-	54, // 84: neoshowcase.protobuf.APIService.GetBuildArtifact:input_type -> neoshowcase.protobuf.ArtifactIdRequest
-	51, // 85: neoshowcase.protobuf.APIService.GetSystemPublicKey:output_type -> neoshowcase.protobuf.GetSystemPublicKeyResponse
-	36, // 86: neoshowcase.protobuf.APIService.GetAvailableDomains:output_type -> neoshowcase.protobuf.AvailableDomains
-	38, // 87: neoshowcase.protobuf.APIService.GetAvailablePorts:output_type -> neoshowcase.protobuf.AvailablePorts
-	7,  // 88: neoshowcase.protobuf.APIService.GetMe:output_type -> neoshowcase.protobuf.User
-	8,  // 89: neoshowcase.protobuf.APIService.GetUsers:output_type -> neoshowcase.protobuf.GetUsersResponse
-	9,  // 90: neoshowcase.protobuf.APIService.CreateUserKey:output_type -> neoshowcase.protobuf.UserKey
-	10, // 91: neoshowcase.protobuf.APIService.GetUserKeys:output_type -> neoshowcase.protobuf.GetUserKeysResponse
-	58, // 92: neoshowcase.protobuf.APIService.DeleteUserKey:output_type -> google.protobuf.Empty
-	13, // 93: neoshowcase.protobuf.APIService.CreateRepository:output_type -> neoshowcase.protobuf.Repository
-	49, // 94: neoshowcase.protobuf.APIService.GetRepositories:output_type -> neoshowcase.protobuf.GetRepositoriesResponse
-	13, // 95: neoshowcase.protobuf.APIService.GetRepository:output_type -> neoshowcase.protobuf.Repository
-	58, // 96: neoshowcase.protobuf.APIService.UpdateRepository:output_type -> google.protobuf.Empty
-	58, // 97: neoshowcase.protobuf.APIService.RefreshRepository:output_type -> google.protobuf.Empty
-	58, // 98: neoshowcase.protobuf.APIService.DeleteRepository:output_type -> google.protobuf.Empty
-	32, // 99: neoshowcase.protobuf.APIService.CreateApplication:output_type -> neoshowcase.protobuf.Application
-	50, // 100: neoshowcase.protobuf.APIService.GetApplications:output_type -> neoshowcase.protobuf.GetApplicationsResponse
-	32, // 101: neoshowcase.protobuf.APIService.GetApplication:output_type -> neoshowcase.protobuf.Application
-	58, // 102: neoshowcase.protobuf.APIService.UpdateApplication:output_type -> google.protobuf.Empty
-	58, // 103: neoshowcase.protobuf.APIService.DeleteApplication:output_type -> google.protobuf.Empty
-	40, // 104: neoshowcase.protobuf.APIService.GetEnvVars:output_type -> neoshowcase.protobuf.ApplicationEnvVars
-	58, // 105: neoshowcase.protobuf.APIService.SetEnvVar:output_type -> google.protobuf.Empty
-	45, // 106: neoshowcase.protobuf.APIService.GetOutput:output_type -> neoshowcase.protobuf.GetOutputResponse
-	44, // 107: neoshowcase.protobuf.APIService.GetOutputStream:output_type -> neoshowcase.protobuf.ApplicationOutput
-	58, // 108: neoshowcase.protobuf.APIService.StartApplication:output_type -> google.protobuf.Empty
-	58, // 109: neoshowcase.protobuf.APIService.StopApplication:output_type -> google.protobuf.Empty
-	55, // 110: neoshowcase.protobuf.APIService.GetBuilds:output_type -> neoshowcase.protobuf.GetBuildsResponse
-	47, // 111: neoshowcase.protobuf.APIService.GetBuild:output_type -> neoshowcase.protobuf.Build
-	58, // 112: neoshowcase.protobuf.APIService.RetryCommitBuild:output_type -> google.protobuf.Empty
-	58, // 113: neoshowcase.protobuf.APIService.CancelBuild:output_type -> google.protobuf.Empty
-	48, // 114: neoshowcase.protobuf.APIService.GetBuildLog:output_type -> neoshowcase.protobuf.BuildLog
-	48, // 115: neoshowcase.protobuf.APIService.GetBuildLogStream:output_type -> neoshowcase.protobuf.BuildLog
-	42, // 116: neoshowcase.protobuf.APIService.GetBuildArtifact:output_type -> neoshowcase.protobuf.ArtifactContent
-	85, // [85:117] is the sub-list for method output_type
-	53, // [53:85] is the sub-list for method input_type
-	53, // [53:53] is the sub-list for extension type_name
-	53, // [53:53] is the sub-list for extension extendee
-	0,  // [0:53] is the sub-list for field type_name
+	61, // 22: neoshowcase.protobuf.Application.created_at:type_name -> google.protobuf.Timestamp
+	61, // 23: neoshowcase.protobuf.Application.updated_at:type_name -> google.protobuf.Timestamp
+	28, // 24: neoshowcase.protobuf.Application.config:type_name -> neoshowcase.protobuf.ApplicationConfig
+	29, // 25: neoshowcase.protobuf.Application.websites:type_name -> neoshowcase.protobuf.Website
+	32, // 26: neoshowcase.protobuf.Application.port_publications:type_name -> neoshowcase.protobuf.PortPublication
+	28, // 27: neoshowcase.protobuf.CreateApplicationRequest.config:type_name -> neoshowcase.protobuf.ApplicationConfig
+	30, // 28: neoshowcase.protobuf.CreateApplicationRequest.websites:type_name -> neoshowcase.protobuf.CreateWebsiteRequest
+	32, // 29: neoshowcase.protobuf.CreateApplicationRequest.port_publications:type_name -> neoshowcase.protobuf.PortPublication
+	6,  // 30: neoshowcase.protobuf.GetApplicationsRequest.scope:type_name -> neoshowcase.protobuf.GetApplicationsRequest.Scope
+	28, // 31: neoshowcase.protobuf.UpdateApplicationRequest.config:type_name -> neoshowcase.protobuf.ApplicationConfig
+	30, // 32: neoshowcase.protobuf.UpdateApplicationRequest.new_websites:type_name -> neoshowcase.protobuf.CreateWebsiteRequest
+	31, // 33: neoshowcase.protobuf.UpdateApplicationRequest.delete_websites:type_name -> neoshowcase.protobuf.DeleteWebsiteRequest
+	32, // 34: neoshowcase.protobuf.UpdateApplicationRequest.port_publications:type_name -> neoshowcase.protobuf.PortPublication
+	37, // 35: neoshowcase.protobuf.AvailableDomains.domains:type_name -> neoshowcase.protobuf.AvailableDomain
+	2,  // 36: neoshowcase.protobuf.AvailablePort.protocol:type_name -> neoshowcase.protobuf.PortPublicationProtocol
+	39, // 37: neoshowcase.protobuf.AvailablePorts.available_ports:type_name -> neoshowcase.protobuf.AvailablePort
+	41, // 38: neoshowcase.protobuf.ApplicationEnvVars.variables:type_name -> neoshowcase.protobuf.ApplicationEnvVar
+	61, // 39: neoshowcase.protobuf.Artifact.created_at:type_name -> google.protobuf.Timestamp
+	62, // 40: neoshowcase.protobuf.Artifact.deleted_at:type_name -> neoshowcase.protobuf.NullTimestamp
+	61, // 41: neoshowcase.protobuf.GetOutputRequest.before:type_name -> google.protobuf.Timestamp
+	61, // 42: neoshowcase.protobuf.ApplicationOutput.time:type_name -> google.protobuf.Timestamp
+	46, // 43: neoshowcase.protobuf.GetOutputResponse.outputs:type_name -> neoshowcase.protobuf.ApplicationOutput
+	61, // 44: neoshowcase.protobuf.GetOutputStreamRequest.after:type_name -> google.protobuf.Timestamp
+	7,  // 45: neoshowcase.protobuf.Build.status:type_name -> neoshowcase.protobuf.Build.BuildStatus
+	61, // 46: neoshowcase.protobuf.Build.queued_at:type_name -> google.protobuf.Timestamp
+	62, // 47: neoshowcase.protobuf.Build.started_at:type_name -> neoshowcase.protobuf.NullTimestamp
+	62, // 48: neoshowcase.protobuf.Build.updated_at:type_name -> neoshowcase.protobuf.NullTimestamp
+	62, // 49: neoshowcase.protobuf.Build.finished_at:type_name -> neoshowcase.protobuf.NullTimestamp
+	43, // 50: neoshowcase.protobuf.Build.artifact:type_name -> neoshowcase.protobuf.Artifact
+	14, // 51: neoshowcase.protobuf.GetRepositoriesResponse.repositories:type_name -> neoshowcase.protobuf.Repository
+	33, // 52: neoshowcase.protobuf.GetApplicationsResponse.applications:type_name -> neoshowcase.protobuf.Application
+	49, // 53: neoshowcase.protobuf.GetBuildsResponse.builds:type_name -> neoshowcase.protobuf.Build
+	60, // 54: neoshowcase.protobuf.APIService.GetSystemPublicKey:input_type -> google.protobuf.Empty
+	60, // 55: neoshowcase.protobuf.APIService.GetAvailableDomains:input_type -> google.protobuf.Empty
+	60, // 56: neoshowcase.protobuf.APIService.GetAvailablePorts:input_type -> google.protobuf.Empty
+	60, // 57: neoshowcase.protobuf.APIService.GetMe:input_type -> google.protobuf.Empty
+	60, // 58: neoshowcase.protobuf.APIService.GetUsers:input_type -> google.protobuf.Empty
+	12, // 59: neoshowcase.protobuf.APIService.CreateUserKey:input_type -> neoshowcase.protobuf.CreateUserKeyRequest
+	60, // 60: neoshowcase.protobuf.APIService.GetUserKeys:input_type -> google.protobuf.Empty
+	13, // 61: neoshowcase.protobuf.APIService.DeleteUserKey:input_type -> neoshowcase.protobuf.DeleteUserKeyRequest
+	18, // 62: neoshowcase.protobuf.APIService.CreateRepository:input_type -> neoshowcase.protobuf.CreateRepositoryRequest
+	19, // 63: neoshowcase.protobuf.APIService.GetRepositories:input_type -> neoshowcase.protobuf.GetRepositoriesRequest
+	21, // 64: neoshowcase.protobuf.APIService.GetRepository:input_type -> neoshowcase.protobuf.RepositoryIdRequest
+	20, // 65: neoshowcase.protobuf.APIService.UpdateRepository:input_type -> neoshowcase.protobuf.UpdateRepositoryRequest
+	21, // 66: neoshowcase.protobuf.APIService.RefreshRepository:input_type -> neoshowcase.protobuf.RepositoryIdRequest
+	21, // 67: neoshowcase.protobuf.APIService.DeleteRepository:input_type -> neoshowcase.protobuf.RepositoryIdRequest
+	34, // 68: neoshowcase.protobuf.APIService.CreateApplication:input_type -> neoshowcase.protobuf.CreateApplicationRequest
+	35, // 69: neoshowcase.protobuf.APIService.GetApplications:input_type -> neoshowcase.protobuf.GetApplicationsRequest
+	54, // 70: neoshowcase.protobuf.APIService.GetApplication:input_type -> neoshowcase.protobuf.ApplicationIdRequest
+	36, // 71: neoshowcase.protobuf.APIService.UpdateApplication:input_type -> neoshowcase.protobuf.UpdateApplicationRequest
+	54, // 72: neoshowcase.protobuf.APIService.DeleteApplication:input_type -> neoshowcase.protobuf.ApplicationIdRequest
+	54, // 73: neoshowcase.protobuf.APIService.GetEnvVars:input_type -> neoshowcase.protobuf.ApplicationIdRequest
+	58, // 74: neoshowcase.protobuf.APIService.SetEnvVar:input_type -> neoshowcase.protobuf.SetApplicationEnvVarRequest
+	45, // 75: neoshowcase.protobuf.APIService.GetOutput:input_type -> neoshowcase.protobuf.GetOutputRequest
+	48, // 76: neoshowcase.protobuf.APIService.GetOutputStream:input_type -> neoshowcase.protobuf.GetOutputStreamRequest
+	54, // 77: neoshowcase.protobuf.APIService.StartApplication:input_type -> neoshowcase.protobuf.ApplicationIdRequest
+	54, // 78: neoshowcase.protobuf.APIService.StopApplication:input_type -> neoshowcase.protobuf.ApplicationIdRequest
+	54, // 79: neoshowcase.protobuf.APIService.GetBuilds:input_type -> neoshowcase.protobuf.ApplicationIdRequest
+	55, // 80: neoshowcase.protobuf.APIService.GetBuild:input_type -> neoshowcase.protobuf.BuildIdRequest
+	59, // 81: neoshowcase.protobuf.APIService.RetryCommitBuild:input_type -> neoshowcase.protobuf.RetryCommitBuildRequest
+	55, // 82: neoshowcase.protobuf.APIService.CancelBuild:input_type -> neoshowcase.protobuf.BuildIdRequest
+	55, // 83: neoshowcase.protobuf.APIService.GetBuildLog:input_type -> neoshowcase.protobuf.BuildIdRequest
+	55, // 84: neoshowcase.protobuf.APIService.GetBuildLogStream:input_type -> neoshowcase.protobuf.BuildIdRequest
+	56, // 85: neoshowcase.protobuf.APIService.GetBuildArtifact:input_type -> neoshowcase.protobuf.ArtifactIdRequest
+	53, // 86: neoshowcase.protobuf.APIService.GetSystemPublicKey:output_type -> neoshowcase.protobuf.GetSystemPublicKeyResponse
+	38, // 87: neoshowcase.protobuf.APIService.GetAvailableDomains:output_type -> neoshowcase.protobuf.AvailableDomains
+	40, // 88: neoshowcase.protobuf.APIService.GetAvailablePorts:output_type -> neoshowcase.protobuf.AvailablePorts
+	8,  // 89: neoshowcase.protobuf.APIService.GetMe:output_type -> neoshowcase.protobuf.User
+	9,  // 90: neoshowcase.protobuf.APIService.GetUsers:output_type -> neoshowcase.protobuf.GetUsersResponse
+	10, // 91: neoshowcase.protobuf.APIService.CreateUserKey:output_type -> neoshowcase.protobuf.UserKey
+	11, // 92: neoshowcase.protobuf.APIService.GetUserKeys:output_type -> neoshowcase.protobuf.GetUserKeysResponse
+	60, // 93: neoshowcase.protobuf.APIService.DeleteUserKey:output_type -> google.protobuf.Empty
+	14, // 94: neoshowcase.protobuf.APIService.CreateRepository:output_type -> neoshowcase.protobuf.Repository
+	51, // 95: neoshowcase.protobuf.APIService.GetRepositories:output_type -> neoshowcase.protobuf.GetRepositoriesResponse
+	14, // 96: neoshowcase.protobuf.APIService.GetRepository:output_type -> neoshowcase.protobuf.Repository
+	60, // 97: neoshowcase.protobuf.APIService.UpdateRepository:output_type -> google.protobuf.Empty
+	60, // 98: neoshowcase.protobuf.APIService.RefreshRepository:output_type -> google.protobuf.Empty
+	60, // 99: neoshowcase.protobuf.APIService.DeleteRepository:output_type -> google.protobuf.Empty
+	33, // 100: neoshowcase.protobuf.APIService.CreateApplication:output_type -> neoshowcase.protobuf.Application
+	52, // 101: neoshowcase.protobuf.APIService.GetApplications:output_type -> neoshowcase.protobuf.GetApplicationsResponse
+	33, // 102: neoshowcase.protobuf.APIService.GetApplication:output_type -> neoshowcase.protobuf.Application
+	60, // 103: neoshowcase.protobuf.APIService.UpdateApplication:output_type -> google.protobuf.Empty
+	60, // 104: neoshowcase.protobuf.APIService.DeleteApplication:output_type -> google.protobuf.Empty
+	42, // 105: neoshowcase.protobuf.APIService.GetEnvVars:output_type -> neoshowcase.protobuf.ApplicationEnvVars
+	60, // 106: neoshowcase.protobuf.APIService.SetEnvVar:output_type -> google.protobuf.Empty
+	47, // 107: neoshowcase.protobuf.APIService.GetOutput:output_type -> neoshowcase.protobuf.GetOutputResponse
+	46, // 108: neoshowcase.protobuf.APIService.GetOutputStream:output_type -> neoshowcase.protobuf.ApplicationOutput
+	60, // 109: neoshowcase.protobuf.APIService.StartApplication:output_type -> google.protobuf.Empty
+	60, // 110: neoshowcase.protobuf.APIService.StopApplication:output_type -> google.protobuf.Empty
+	57, // 111: neoshowcase.protobuf.APIService.GetBuilds:output_type -> neoshowcase.protobuf.GetBuildsResponse
+	49, // 112: neoshowcase.protobuf.APIService.GetBuild:output_type -> neoshowcase.protobuf.Build
+	60, // 113: neoshowcase.protobuf.APIService.RetryCommitBuild:output_type -> google.protobuf.Empty
+	60, // 114: neoshowcase.protobuf.APIService.CancelBuild:output_type -> google.protobuf.Empty
+	50, // 115: neoshowcase.protobuf.APIService.GetBuildLog:output_type -> neoshowcase.protobuf.BuildLog
+	50, // 116: neoshowcase.protobuf.APIService.GetBuildLogStream:output_type -> neoshowcase.protobuf.BuildLog
+	44, // 117: neoshowcase.protobuf.APIService.GetBuildArtifact:output_type -> neoshowcase.protobuf.ArtifactContent
+	86, // [86:118] is the sub-list for method output_type
+	54, // [54:86] is the sub-list for method input_type
+	54, // [54:54] is the sub-list for extension type_name
+	54, // [54:54] is the sub-list for extension extendee
+	0,  // [0:54] is the sub-list for field type_name
 }
 
 func init() { file_neoshowcase_protobuf_gateway_proto_init() }
@@ -4902,7 +5007,7 @@ func file_neoshowcase_protobuf_gateway_proto_init() {
 			}
 		}
 		file_neoshowcase_protobuf_gateway_proto_msgTypes[27].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*UpdateApplicationRequest); i {
+			switch v := v.(*GetApplicationsRequest); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -4914,7 +5019,7 @@ func file_neoshowcase_protobuf_gateway_proto_init() {
 			}
 		}
 		file_neoshowcase_protobuf_gateway_proto_msgTypes[28].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*AvailableDomain); i {
+			switch v := v.(*UpdateApplicationRequest); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -4926,7 +5031,7 @@ func file_neoshowcase_protobuf_gateway_proto_init() {
 			}
 		}
 		file_neoshowcase_protobuf_gateway_proto_msgTypes[29].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*AvailableDomains); i {
+			switch v := v.(*AvailableDomain); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -4938,7 +5043,7 @@ func file_neoshowcase_protobuf_gateway_proto_init() {
 			}
 		}
 		file_neoshowcase_protobuf_gateway_proto_msgTypes[30].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*AvailablePort); i {
+			switch v := v.(*AvailableDomains); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -4950,7 +5055,7 @@ func file_neoshowcase_protobuf_gateway_proto_init() {
 			}
 		}
 		file_neoshowcase_protobuf_gateway_proto_msgTypes[31].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*AvailablePorts); i {
+			switch v := v.(*AvailablePort); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -4962,7 +5067,7 @@ func file_neoshowcase_protobuf_gateway_proto_init() {
 			}
 		}
 		file_neoshowcase_protobuf_gateway_proto_msgTypes[32].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*ApplicationEnvVar); i {
+			switch v := v.(*AvailablePorts); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -4974,7 +5079,7 @@ func file_neoshowcase_protobuf_gateway_proto_init() {
 			}
 		}
 		file_neoshowcase_protobuf_gateway_proto_msgTypes[33].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*ApplicationEnvVars); i {
+			switch v := v.(*ApplicationEnvVar); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -4986,7 +5091,7 @@ func file_neoshowcase_protobuf_gateway_proto_init() {
 			}
 		}
 		file_neoshowcase_protobuf_gateway_proto_msgTypes[34].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*Artifact); i {
+			switch v := v.(*ApplicationEnvVars); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -4998,7 +5103,7 @@ func file_neoshowcase_protobuf_gateway_proto_init() {
 			}
 		}
 		file_neoshowcase_protobuf_gateway_proto_msgTypes[35].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*ArtifactContent); i {
+			switch v := v.(*Artifact); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -5010,7 +5115,7 @@ func file_neoshowcase_protobuf_gateway_proto_init() {
 			}
 		}
 		file_neoshowcase_protobuf_gateway_proto_msgTypes[36].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*GetOutputRequest); i {
+			switch v := v.(*ArtifactContent); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -5022,7 +5127,7 @@ func file_neoshowcase_protobuf_gateway_proto_init() {
 			}
 		}
 		file_neoshowcase_protobuf_gateway_proto_msgTypes[37].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*ApplicationOutput); i {
+			switch v := v.(*GetOutputRequest); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -5034,7 +5139,7 @@ func file_neoshowcase_protobuf_gateway_proto_init() {
 			}
 		}
 		file_neoshowcase_protobuf_gateway_proto_msgTypes[38].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*GetOutputResponse); i {
+			switch v := v.(*ApplicationOutput); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -5046,7 +5151,7 @@ func file_neoshowcase_protobuf_gateway_proto_init() {
 			}
 		}
 		file_neoshowcase_protobuf_gateway_proto_msgTypes[39].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*GetOutputStreamRequest); i {
+			switch v := v.(*GetOutputResponse); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -5058,7 +5163,7 @@ func file_neoshowcase_protobuf_gateway_proto_init() {
 			}
 		}
 		file_neoshowcase_protobuf_gateway_proto_msgTypes[40].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*Build); i {
+			switch v := v.(*GetOutputStreamRequest); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -5070,7 +5175,7 @@ func file_neoshowcase_protobuf_gateway_proto_init() {
 			}
 		}
 		file_neoshowcase_protobuf_gateway_proto_msgTypes[41].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*BuildLog); i {
+			switch v := v.(*Build); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -5082,7 +5187,7 @@ func file_neoshowcase_protobuf_gateway_proto_init() {
 			}
 		}
 		file_neoshowcase_protobuf_gateway_proto_msgTypes[42].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*GetRepositoriesResponse); i {
+			switch v := v.(*BuildLog); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -5094,7 +5199,7 @@ func file_neoshowcase_protobuf_gateway_proto_init() {
 			}
 		}
 		file_neoshowcase_protobuf_gateway_proto_msgTypes[43].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*GetApplicationsResponse); i {
+			switch v := v.(*GetRepositoriesResponse); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -5106,7 +5211,7 @@ func file_neoshowcase_protobuf_gateway_proto_init() {
 			}
 		}
 		file_neoshowcase_protobuf_gateway_proto_msgTypes[44].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*GetSystemPublicKeyResponse); i {
+			switch v := v.(*GetApplicationsResponse); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -5118,7 +5223,7 @@ func file_neoshowcase_protobuf_gateway_proto_init() {
 			}
 		}
 		file_neoshowcase_protobuf_gateway_proto_msgTypes[45].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*ApplicationIdRequest); i {
+			switch v := v.(*GetSystemPublicKeyResponse); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -5130,7 +5235,7 @@ func file_neoshowcase_protobuf_gateway_proto_init() {
 			}
 		}
 		file_neoshowcase_protobuf_gateway_proto_msgTypes[46].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*BuildIdRequest); i {
+			switch v := v.(*ApplicationIdRequest); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -5142,7 +5247,7 @@ func file_neoshowcase_protobuf_gateway_proto_init() {
 			}
 		}
 		file_neoshowcase_protobuf_gateway_proto_msgTypes[47].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*ArtifactIdRequest); i {
+			switch v := v.(*BuildIdRequest); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -5154,7 +5259,7 @@ func file_neoshowcase_protobuf_gateway_proto_init() {
 			}
 		}
 		file_neoshowcase_protobuf_gateway_proto_msgTypes[48].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*GetBuildsResponse); i {
+			switch v := v.(*ArtifactIdRequest); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -5166,7 +5271,7 @@ func file_neoshowcase_protobuf_gateway_proto_init() {
 			}
 		}
 		file_neoshowcase_protobuf_gateway_proto_msgTypes[49].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*SetApplicationEnvVarRequest); i {
+			switch v := v.(*GetBuildsResponse); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -5178,6 +5283,18 @@ func file_neoshowcase_protobuf_gateway_proto_init() {
 			}
 		}
 		file_neoshowcase_protobuf_gateway_proto_msgTypes[50].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*SetApplicationEnvVarRequest); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
+		file_neoshowcase_protobuf_gateway_proto_msgTypes[51].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*RetryCommitBuildRequest); i {
 			case 0:
 				return &v.state
@@ -5207,8 +5324,8 @@ func file_neoshowcase_protobuf_gateway_proto_init() {
 		File: protoimpl.DescBuilder{
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: file_neoshowcase_protobuf_gateway_proto_rawDesc,
-			NumEnums:      7,
-			NumMessages:   51,
+			NumEnums:      8,
+			NumMessages:   52,
 			NumExtensions: 0,
 			NumServices:   1,
 		},

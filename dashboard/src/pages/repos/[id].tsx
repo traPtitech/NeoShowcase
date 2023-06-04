@@ -1,10 +1,10 @@
 import Fuse from 'fuse.js'
-import { Component, createMemo, createResource, createSignal, For, JSX, onCleanup, Show } from 'solid-js'
+import { Component, createMemo, createResource, createSignal, For, JSX, Show } from 'solid-js'
 import toast from 'solid-toast'
 import { ConnectError } from '@bufbuild/connect'
 import { styled } from '@macaron-css/solid'
 import { useNavigate, useParams } from '@solidjs/router'
-import { User } from '/@/api/neoshowcase/protobuf/gateway_pb'
+import { GetApplicationsRequest_Scope, User } from '/@/api/neoshowcase/protobuf/gateway_pb'
 import AppRow from '/@/components/AppRow'
 import { Button } from '/@/components/Button'
 import {
@@ -99,7 +99,7 @@ export default () => {
   const [apps] = createResource(
     () => params.id,
     async () => {
-      const allAppsRes = await client.getApplications({})
+      const allAppsRes = await client.getApplications({ scope: GetApplicationsRequest_Scope.ALL })
       return repo() ? allAppsRes.applications.filter((app) => app.repositoryId === repo()?.id) : []
     },
   )
