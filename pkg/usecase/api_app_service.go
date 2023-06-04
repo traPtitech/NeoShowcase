@@ -84,11 +84,11 @@ func (s *APIServerService) createApplicationDatabase(ctx context.Context, app *d
 		}
 
 		envs := []*domain.Environment{
-			{ApplicationID: app.ID, Key: domain.EnvMySQLHostnameKey, Value: host, System: true},
-			{ApplicationID: app.ID, Key: domain.EnvMySQLPortKey, Value: strconv.Itoa(port), System: true},
-			{ApplicationID: app.ID, Key: domain.EnvMySQLUserKey, Value: dbName, System: true},
-			{ApplicationID: app.ID, Key: domain.EnvMySQLPasswordKey, Value: dbPassword, System: true},
-			{ApplicationID: app.ID, Key: domain.EnvMySQLDatabaseKey, Value: dbName, System: true},
+			{ApplicationID: app.ID, Key: domain.EnvMariaDBHostnameKey, Value: host, System: true},
+			{ApplicationID: app.ID, Key: domain.EnvMariaDBPortKey, Value: strconv.Itoa(port), System: true},
+			{ApplicationID: app.ID, Key: domain.EnvMariaDBUserKey, Value: dbName, System: true},
+			{ApplicationID: app.ID, Key: domain.EnvMariaDBPasswordKey, Value: dbPassword, System: true},
+			{ApplicationID: app.ID, Key: domain.EnvMariaDBDatabaseKey, Value: dbName, System: true},
 		}
 		for _, env := range envs {
 			err = s.envRepo.SetEnv(ctx, env)

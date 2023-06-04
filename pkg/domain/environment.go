@@ -4,11 +4,11 @@ package domain
 const (
 	EnvPrefix = "NS_"
 
-	EnvMySQLHostnameKey = EnvPrefix + "MYSQL_HOSTNAME"
-	EnvMySQLPortKey     = EnvPrefix + "MYSQL_PORT"
-	EnvMySQLUserKey     = EnvPrefix + "MYSQL_USER"
-	EnvMySQLPasswordKey = EnvPrefix + "MYSQL_PASSWORD"
-	EnvMySQLDatabaseKey = EnvPrefix + "MYSQL_DATABASE"
+	EnvMariaDBHostnameKey = EnvPrefix + "MARIADB_HOSTNAME"
+	EnvMariaDBPortKey     = EnvPrefix + "MARIADB_PORT"
+	EnvMariaDBUserKey     = EnvPrefix + "MARIADB_USER"
+	EnvMariaDBPasswordKey = EnvPrefix + "MARIADB_PASSWORD"
+	EnvMariaDBDatabaseKey = EnvPrefix + "MARIADB_DATABASE"
 
 	EnvMongoDBHostnameKey = EnvPrefix + "MONGODB_HOSTNAME"
 	EnvMongoDBPortKey     = EnvPrefix + "MONGODB_PORT"
