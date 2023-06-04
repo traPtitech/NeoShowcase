@@ -49,6 +49,9 @@ func (r *gitRepositoryRepository) GetRepositories(ctx context.Context, cond doma
 			qm.Where(fmt.Sprintf("%s.user_id = ?", models.TableNames.RepositoryOwners), cond.UserID.V),
 		)
 	}
+	if cond.PublicOrOwnedBy.Valid {
+		mods = append(mods, qm.Load(models.RepositoryRels.Applications))
+	}
 
 	modelRepos, err := models.Repositories(mods...).All(ctx, r.db)
 	if err != nil {
@@ -58,9 +61,15 @@ func (r *gitRepositoryRepository) GetRepositories(ctx context.Context, cond doma
 	repos := ds.Map(modelRepos, repoconvert.ToDomainRepository)
 
 	if cond.PublicOrOwnedBy.Valid {
+		hasApp := lo.SliceToMap(modelRepos, func(mr *models.Repository) (string, bool) {
+			return mr.ID, len(mr.R.Applications) > 0
+		})
 		userID := cond.PublicOrOwnedBy.V
+
 		repos = lo.Filter(repos, func(repo *domain.Repository, _ int) bool {
-			return lo.Contains(repo.OwnerIDs, userID) || !repo.Auth.Valid
+			public := !repo.Auth.Valid || hasApp[repo.ID]
+			owned := lo.Contains(repo.OwnerIDs, userID)
+			return public || owned
 		})
 	}
 
