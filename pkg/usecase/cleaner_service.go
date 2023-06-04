@@ -169,8 +169,6 @@ func (c *cleanerService) pruneImages(ctx context.Context, r *registry.Registry) 
 }
 
 func (c *cleanerService) pruneArtifacts(ctx context.Context) error {
-	const artifactDeletionThreshold = 7 * 24 * time.Hour
-
 	inUse, err := domain.GetArtifactsInUse(ctx, c.appRepo, c.buildRepo)
 	if err != nil {
 		return errors.Wrap(err, "failed to get artifacts in use")
@@ -182,12 +180,8 @@ func (c *cleanerService) pruneArtifacts(ctx context.Context) error {
 		return errors.Wrap(err, "failed to get existing artifacts")
 	}
 
-	deletionThreshold := time.Now().Add(-artifactDeletionThreshold)
 	for _, artifact := range artifacts {
 		if inUseIDs[artifact.ID] {
-			continue
-		}
-		if artifact.CreatedAt.After(deletionThreshold) {
 			continue
 		}
 		err = domain.DeleteArtifact(c.storage, artifact.ID)
