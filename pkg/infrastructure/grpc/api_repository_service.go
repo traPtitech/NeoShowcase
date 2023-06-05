@@ -6,19 +6,20 @@ import (
 	"github.com/bufbuild/connect-go"
 	"google.golang.org/protobuf/types/known/emptypb"
 
-	"github.com/traPtitech/neoshowcase/pkg/domain"
-	"github.com/traPtitech/neoshowcase/pkg/domain/web"
 	"github.com/traPtitech/neoshowcase/pkg/infrastructure/grpc/pb"
 	"github.com/traPtitech/neoshowcase/pkg/infrastructure/grpc/pbconvert"
+	"github.com/traPtitech/neoshowcase/pkg/usecase"
 	"github.com/traPtitech/neoshowcase/pkg/util/ds"
 	"github.com/traPtitech/neoshowcase/pkg/util/optional"
 )
 
 func (s *APIService) CreateRepository(ctx context.Context, req *connect.Request[pb.CreateRepositoryRequest]) (*connect.Response[pb.Repository], error) {
 	msg := req.Msg
-	user := web.GetUser(ctx)
-	repo := domain.NewRepository(msg.Name, msg.Url, pbconvert.FromPBRepositoryAuth(msg.Auth), []string{user.ID})
-	err := s.svc.CreateRepository(ctx, repo)
+	repo, err := s.svc.CreateRepository(ctx,
+		msg.Name,
+		msg.Url,
+		pbconvert.FromPBRepositoryAuth(msg.Auth),
+	)
 	if err != nil {
 		return nil, handleUseCaseError(err)
 	}
@@ -48,7 +49,7 @@ func (s *APIService) GetRepository(ctx context.Context, req *connect.Request[pb.
 
 func (s *APIService) UpdateRepository(ctx context.Context, req *connect.Request[pb.UpdateRepositoryRequest]) (*connect.Response[emptypb.Empty], error) {
 	msg := req.Msg
-	args := &domain.UpdateRepositoryArgs{
+	args := &usecase.UpdateRepositoryArgs{
 		Name:     optional.FromNonZero(msg.Name),
 		URL:      optional.FromNonZero(msg.Url),
 		Auth:     optional.Map(optional.FromNonZero(msg.Auth), pbconvert.FromPBRepositoryAuth),

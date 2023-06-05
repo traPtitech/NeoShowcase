@@ -21,7 +21,6 @@ func handleRepoError[T any](entity T, err error) (T, error) {
 }
 
 type APIServerService struct {
-	pubKey          *ssh.PublicKeys
 	artifactRepo    domain.ArtifactRepository
 	appRepo         domain.ApplicationRepository
 	buildRepo       domain.BuildRepository
@@ -33,10 +32,12 @@ type APIServerService struct {
 	mongoDBManager  domain.MongoDBManager
 	containerLogger domain.ContainerLogger
 	controller      domain.ControllerServiceClient
+
+	pubKey  *ssh.PublicKeys
+	tmpKeys *tmpKeyPairService
 }
 
 func NewAPIServerService(
-	pubKey *ssh.PublicKeys,
 	artifactRepo domain.ArtifactRepository,
 	appRepo domain.ApplicationRepository,
 	buildRepo domain.BuildRepository,
@@ -48,9 +49,9 @@ func NewAPIServerService(
 	mongoDBManager domain.MongoDBManager,
 	containerLogger domain.ContainerLogger,
 	controller domain.ControllerServiceClient,
+	pubKey *ssh.PublicKeys,
 ) *APIServerService {
 	return &APIServerService{
-		pubKey:          pubKey,
 		artifactRepo:    artifactRepo,
 		appRepo:         appRepo,
 		buildRepo:       buildRepo,
@@ -62,6 +63,9 @@ func NewAPIServerService(
 		mongoDBManager:  mongoDBManager,
 		containerLogger: containerLogger,
 		controller:      controller,
+
+		pubKey:  pubKey,
+		tmpKeys: newTmpKeyPairService(),
 	}
 }
 

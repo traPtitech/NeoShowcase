@@ -42,3 +42,15 @@ func (s *APIService) GetAvailablePorts(ctx context.Context, _ *connect.Request[e
 	})
 	return res, nil
 }
+
+func (s *APIService) GenerateKeyPair(ctx context.Context, _ *connect.Request[emptypb.Empty]) (*connect.Response[pb.GenerateKeyPairResponse], error) {
+	keyID, pubKey, err := s.svc.GenerateKeyPair(ctx)
+	if err != nil {
+		return nil, handleUseCaseError(err)
+	}
+	res := connect.NewResponse(&pb.GenerateKeyPairResponse{
+		KeyId:     keyID,
+		PublicKey: pubKey,
+	})
+	return res, nil
+}
