@@ -8,16 +8,15 @@ import (
 	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/types/known/emptypb"
 
-	"github.com/traPtitech/neoshowcase/pkg/domain"
 	"github.com/traPtitech/neoshowcase/pkg/infrastructure/grpc/pb"
 	"github.com/traPtitech/neoshowcase/pkg/infrastructure/grpc/pbconvert"
 	"github.com/traPtitech/neoshowcase/pkg/util/ds"
 )
 
-func (s *APIService) GetSystemPublicKey(_ context.Context, _ *connect.Request[emptypb.Empty]) (*connect.Response[pb.GetSystemPublicKeyResponse], error) {
-	encoded := domain.Base64EncodedPublicKey(s.pubKey)
+func (s *APIService) GetSystemPublicKey(ctx context.Context, _ *connect.Request[emptypb.Empty]) (*connect.Response[pb.GetSystemPublicKeyResponse], error) {
+	key := s.svc.GetSystemPublicKey(ctx)
 	res := connect.NewResponse(&pb.GetSystemPublicKeyResponse{
-		PublicKey: encoded,
+		PublicKey: key,
 	})
 	return res, nil
 }

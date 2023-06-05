@@ -4,6 +4,7 @@ import (
 	"context"
 
 	"github.com/friendsofgo/errors"
+	"github.com/go-git/go-git/v5/plumbing/transport/ssh"
 
 	"github.com/traPtitech/neoshowcase/pkg/domain"
 	"github.com/traPtitech/neoshowcase/pkg/domain/web"
@@ -20,6 +21,7 @@ func handleRepoError[T any](entity T, err error) (T, error) {
 }
 
 type APIServerService struct {
+	pubKey          *ssh.PublicKeys
 	artifactRepo    domain.ArtifactRepository
 	appRepo         domain.ApplicationRepository
 	buildRepo       domain.BuildRepository
@@ -34,6 +36,7 @@ type APIServerService struct {
 }
 
 func NewAPIServerService(
+	pubKey *ssh.PublicKeys,
 	artifactRepo domain.ArtifactRepository,
 	appRepo domain.ApplicationRepository,
 	buildRepo domain.BuildRepository,
@@ -47,6 +50,7 @@ func NewAPIServerService(
 	controller domain.ControllerServiceClient,
 ) *APIServerService {
 	return &APIServerService{
+		pubKey:          pubKey,
 		artifactRepo:    artifactRepo,
 		appRepo:         appRepo,
 		buildRepo:       buildRepo,

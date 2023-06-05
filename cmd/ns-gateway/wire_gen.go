@@ -20,6 +20,10 @@ import (
 // Injectors from wire.go:
 
 func NewServer(c2 Config) (*Server, error) {
+	publicKeys, err := provideRepositoryPublicKey(c2)
+	if err != nil {
+		return nil, err
+	}
 	config := c2.DB
 	db, err := repository.New(config)
 	if err != nil {
@@ -52,13 +56,9 @@ func NewServer(c2 Config) (*Server, error) {
 	}
 	controllerServiceClientConfig := c2.Controller
 	controllerServiceClient := grpc.NewControllerServiceClient(controllerServiceClientConfig)
-	apiServerService := usecase.NewAPIServerService(artifactRepository, applicationRepository, buildRepository, environmentRepository, gitRepositoryRepository, userRepository, storage, mariaDBManager, mongoDBManager, containerLogger, controllerServiceClient)
-	publicKeys, err := provideRepositoryPublicKey(c2)
-	if err != nil {
-		return nil, err
-	}
+	apiServerService := usecase.NewAPIServerService(publicKeys, artifactRepository, applicationRepository, buildRepository, environmentRepository, gitRepositoryRepository, userRepository, storage, mariaDBManager, mongoDBManager, containerLogger, controllerServiceClient)
 	avatarBaseURL := c2.AvatarBaseURL
-	apiServiceHandler := grpc.NewAPIServiceServer(apiServerService, publicKeys, avatarBaseURL)
+	apiServiceHandler := grpc.NewAPIServiceServer(apiServerService, avatarBaseURL)
 	authHeader := c2.AuthHeader
 	authInterceptor := grpc.NewAuthInterceptor(userRepository, authHeader)
 	mainGatewayServer := provideGatewayServer(c2, apiServiceHandler, authInterceptor)

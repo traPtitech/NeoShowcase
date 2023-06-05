@@ -2,7 +2,6 @@ package grpc
 
 import (
 	"github.com/bufbuild/connect-go"
-	"github.com/go-git/go-git/v5/plumbing/transport/ssh"
 
 	"github.com/traPtitech/neoshowcase/pkg/domain"
 	"github.com/traPtitech/neoshowcase/pkg/infrastructure/grpc/pb/pbconnect"
@@ -28,18 +27,15 @@ func handleUseCaseError(err error) error {
 
 type APIService struct {
 	svc           *usecase.APIServerService
-	pubKey        *ssh.PublicKeys
 	avatarBaseURL domain.AvatarBaseURL
 }
 
 func NewAPIServiceServer(
 	svc *usecase.APIServerService,
-	pubKey *ssh.PublicKeys,
 	avatarBaseURL domain.AvatarBaseURL,
 ) pbconnect.APIServiceHandler {
 	return &APIService{
 		svc:           svc,
-		pubKey:        pubKey,
 		avatarBaseURL: avatarBaseURL,
 	}
 }

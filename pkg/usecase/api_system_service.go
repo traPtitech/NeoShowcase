@@ -6,6 +6,11 @@ import (
 	"github.com/traPtitech/neoshowcase/pkg/domain"
 )
 
+func (s *APIServerService) GetSystemPublicKey(_ context.Context) string {
+	encoded := domain.Base64EncodedPublicKey(s.pubKey)
+	return encoded + " NeoShowcase"
+}
+
 func (s *APIServerService) GetAvailableDomains(ctx context.Context) (domain.AvailableDomainSlice, error) {
 	return s.controller.GetAvailableDomains(ctx)
 }
