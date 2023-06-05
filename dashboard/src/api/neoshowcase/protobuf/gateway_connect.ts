@@ -4,7 +4,7 @@
 // @ts-nocheck
 
 import { Empty, MethodKind } from "@bufbuild/protobuf";
-import { Application, ApplicationEnvVars, ApplicationIdRequest, ApplicationOutput, ArtifactContent, ArtifactIdRequest, AvailableDomains, AvailablePorts, Build, BuildIdRequest, BuildLog, CreateApplicationRequest, CreateRepositoryRequest, CreateUserKeyRequest, DeleteUserKeyRequest, GetApplicationsRequest, GetApplicationsResponse, GetBuildsResponse, GetOutputRequest, GetOutputResponse, GetOutputStreamRequest, GetRepositoriesRequest, GetRepositoriesResponse, GetSystemPublicKeyResponse, GetUserKeysResponse, GetUsersResponse, Repository, RepositoryIdRequest, RetryCommitBuildRequest, SetApplicationEnvVarRequest, UpdateApplicationRequest, UpdateRepositoryRequest, User, UserKey } from "./gateway_pb.js";
+import { Application, ApplicationEnvVars, ApplicationIdRequest, ApplicationOutput, ArtifactContent, ArtifactIdRequest, AvailableDomains, AvailablePorts, Build, BuildIdRequest, BuildLog, CreateApplicationRequest, CreateRepositoryRequest, CreateUserKeyRequest, DeleteUserKeyRequest, GenerateKeyPairResponse, GetApplicationsRequest, GetApplicationsResponse, GetBuildsResponse, GetOutputRequest, GetOutputResponse, GetOutputStreamRequest, GetRepositoriesRequest, GetRepositoriesResponse, GetSystemPublicKeyResponse, GetUserKeysResponse, GetUsersResponse, Repository, RepositoryIdRequest, RetryCommitBuildRequest, SetApplicationEnvVarRequest, UpdateApplicationRequest, UpdateRepositoryRequest, User, UserKey } from "./gateway_pb.js";
 
 /**
  * General / System
@@ -45,6 +45,17 @@ export const APIService = {
       name: "GetAvailablePorts",
       I: Empty,
       O: AvailablePorts,
+      kind: MethodKind.Unary,
+    },
+    /**
+     * GenerateKeyPair リポジトリ登録で使用する鍵ペアを一時的に生成します
+     *
+     * @generated from rpc neoshowcase.protobuf.APIService.GenerateKeyPair
+     */
+    generateKeyPair: {
+      name: "GenerateKeyPair",
+      I: Empty,
+      O: GenerateKeyPairResponse,
       kind: MethodKind.Unary,
     },
     /**

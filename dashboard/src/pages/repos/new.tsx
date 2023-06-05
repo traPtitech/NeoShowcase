@@ -131,6 +131,18 @@ export default () => {
   type AuthMethod = CreateRepositoryAuth['auth']['case']
   const [authMethod, setAuthMethod] = createSignal<AuthMethod>('none')
 
+  const [systemPublicKey] = createResource(() => client.getSystemPublicKey({}))
+  const [useTmpKey, setUseTmpKey] = createSignal(false)
+  const [tmpKey] = createResource(
+    () => (useTmpKey() ? true : undefined),
+    () => client.generateKeyPair({}),
+  )
+  createEffect(() => {
+    if (!tmpKey()) return
+    setAuthConfig('ssh', 'value', 'keyId', tmpKey().keyId)
+  })
+  const publicKey = () => (useTmpKey() ? tmpKey()?.publicKey : systemPublicKey()?.publicKey)
+
   // 認証情報
   // 認証方法の切り替え時に情報を保持するために、storeを使用して3種類の認証情報を保持する
   const [authConfig, setAuthConfig] = createStore<{
@@ -188,8 +200,6 @@ export default () => {
     setRequestConfig('name', repositoryName)
   })
 
-  const [systemPublicKey] = createResource(() => client.getSystemPublicKey({}))
-
   return (
     <Container>
       <Header />
@@ -239,25 +249,14 @@ export default () => {
               />
             </Match>
             <Match when={authMethod() === 'ssh'}>
-              <Form
-                label='SSH秘密鍵'
-                value={authConfig.ssh.value.sshKey}
-                onInput={(e) => setAuthConfig('ssh', 'value', 'sshKey', e.currentTarget.value)}
-              />
-              <Show when={authConfig.ssh.value.sshKey.length === 0}>
-                <div>
-                  <SshDetails>
-                    秘密鍵を入力せずにSSH認証でリポジトリを登録する場合、以下のSSH公開鍵が認証に使用されます。
-                  </SshDetails>
-                  <Switch>
-                    <Match when={systemPublicKey.loading}>
-                      <div>Loading...</div>
-                    </Match>
-                    <Match when={systemPublicKey()}>
-                      <PublicKeyCode>{systemPublicKey().publicKey}</PublicKeyCode>
-                    </Match>
-                  </Switch>
-                </div>
+              <SshDetails>
+                以下のSSH公開鍵{!useTmpKey() && ' (システムデフォルト) '}をリポジトリに登録してください。
+              </SshDetails>
+              <PublicKeyCode>{publicKey()}</PublicKeyCode>
+              <Show when={!useTmpKey()}>
+                <Button color='black1' size='large' onclick={() => setUseTmpKey(true)} type='submit'>
+                  新たなSSH鍵を生成する (for github.com)
+                </Button>
               </Show>
             </Match>
           </Switch>

@@ -4,6 +4,7 @@ import (
 	"context"
 
 	"github.com/friendsofgo/errors"
+	"github.com/go-git/go-git/v5/plumbing/transport/ssh"
 
 	"github.com/traPtitech/neoshowcase/pkg/domain"
 	"github.com/traPtitech/neoshowcase/pkg/domain/web"
@@ -31,6 +32,9 @@ type APIServerService struct {
 	mongoDBManager  domain.MongoDBManager
 	containerLogger domain.ContainerLogger
 	controller      domain.ControllerServiceClient
+
+	pubKey  *ssh.PublicKeys
+	tmpKeys *tmpKeyPairService
 }
 
 func NewAPIServerService(
@@ -45,6 +49,7 @@ func NewAPIServerService(
 	mongoDBManager domain.MongoDBManager,
 	containerLogger domain.ContainerLogger,
 	controller domain.ControllerServiceClient,
+	pubKey *ssh.PublicKeys,
 ) *APIServerService {
 	return &APIServerService{
 		artifactRepo:    artifactRepo,
@@ -58,6 +63,9 @@ func NewAPIServerService(
 		mongoDBManager:  mongoDBManager,
 		containerLogger: containerLogger,
 		controller:      controller,
+
+		pubKey:  pubKey,
+		tmpKeys: newTmpKeyPairService(),
 	}
 }
 

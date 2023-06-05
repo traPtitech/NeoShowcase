@@ -6,6 +6,11 @@ import "google/protobuf/empty.proto";
 import "google/protobuf/timestamp.proto";
 import "neoshowcase/protobuf/null.proto";
 
+message GenerateKeyPairResponse {
+  string key_id = 1;
+  string public_key = 2;
+}
+
 message User {
   string id = 1;
   string name = 2;
@@ -53,7 +58,7 @@ message CreateRepositoryAuthBasic {
 }
 
 message CreateRepositoryAuthSSH {
-  string ssh_key = 1;
+  string key_id = 1;
 }
 
 message CreateRepositoryAuth {
@@ -378,6 +383,8 @@ service APIService {
   rpc GetAvailableDomains(google.protobuf.Empty) returns (AvailableDomains);
   // GetAvailablePorts 使用可能なポート一覧を取得します
   rpc GetAvailablePorts(google.protobuf.Empty) returns (AvailablePorts);
+  // GenerateKeyPair リポジトリ登録で使用する鍵ペアを一時的に生成します
+  rpc GenerateKeyPair(google.protobuf.Empty) returns (GenerateKeyPairResponse);
 
   // User
 

@@ -22,7 +22,7 @@ require (
 	github.com/lukesampson/figlet v0.0.0-20190211215653-8a3ef4a6ac42
 	github.com/mattn/go-shellwords v1.0.12
 	github.com/moby/buildkit v0.11.6
-	github.com/motoki317/sc v1.5.0
+	github.com/motoki317/sc v1.6.0
 	github.com/ncw/swift v1.0.53
 	github.com/samber/lo v1.38.1
 	github.com/shiguredo/websocket v1.6.0

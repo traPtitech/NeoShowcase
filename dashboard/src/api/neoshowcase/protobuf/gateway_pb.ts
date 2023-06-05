@@ -74,6 +74,49 @@ proto3.util.setEnumType(PortPublicationProtocol, "neoshowcase.protobuf.PortPubli
 ]);
 
 /**
+ * @generated from message neoshowcase.protobuf.GenerateKeyPairResponse
+ */
+export class GenerateKeyPairResponse extends Message<GenerateKeyPairResponse> {
+  /**
+   * @generated from field: string key_id = 1;
+   */
+  keyId = "";
+
+  /**
+   * @generated from field: string public_key = 2;
+   */
+  publicKey = "";
+
+  constructor(data?: PartialMessage<GenerateKeyPairResponse>) {
+    super();
+    proto3.util.initPartial(data, this);
+  }
+
+  static readonly runtime: typeof proto3 = proto3;
+  static readonly typeName = "neoshowcase.protobuf.GenerateKeyPairResponse";
+  static readonly fields: FieldList = proto3.util.newFieldList(() => [
+    { no: 1, name: "key_id", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+    { no: 2, name: "public_key", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+  ]);
+
+  static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): GenerateKeyPairResponse {
+    return new GenerateKeyPairResponse().fromBinary(bytes, options);
+  }
+
+  static fromJson(jsonValue: JsonValue, options?: Partial<JsonReadOptions>): GenerateKeyPairResponse {
+    return new GenerateKeyPairResponse().fromJson(jsonValue, options);
+  }
+
+  static fromJsonString(jsonString: string, options?: Partial<JsonReadOptions>): GenerateKeyPairResponse {
+    return new GenerateKeyPairResponse().fromJsonString(jsonString, options);
+  }
+
+  static equals(a: GenerateKeyPairResponse | PlainMessage<GenerateKeyPairResponse> | undefined, b: GenerateKeyPairResponse | PlainMessage<GenerateKeyPairResponse> | undefined): boolean {
+    return proto3.util.equals(GenerateKeyPairResponse, a, b);
+  }
+}
+
+/**
  * @generated from message neoshowcase.protobuf.User
  */
 export class User extends Message<User> {
@@ -454,9 +497,9 @@ export class CreateRepositoryAuthBasic extends Message<CreateRepositoryAuthBasic
  */
 export class CreateRepositoryAuthSSH extends Message<CreateRepositoryAuthSSH> {
   /**
-   * @generated from field: string ssh_key = 1;
+   * @generated from field: string key_id = 1;
    */
-  sshKey = "";
+  keyId = "";
 
   constructor(data?: PartialMessage<CreateRepositoryAuthSSH>) {
     super();
@@ -466,7 +509,7 @@ export class CreateRepositoryAuthSSH extends Message<CreateRepositoryAuthSSH> {
   static readonly runtime: typeof proto3 = proto3;
   static readonly typeName = "neoshowcase.protobuf.CreateRepositoryAuthSSH";
   static readonly fields: FieldList = proto3.util.newFieldList(() => [
-    { no: 1, name: "ssh_key", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+    { no: 1, name: "key_id", kind: "scalar", T: 9 /* ScalarType.STRING */ },
   ]);
 
   static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): CreateRepositoryAuthSSH {

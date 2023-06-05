@@ -43,6 +43,9 @@ const (
 	// APIServiceGetAvailablePortsProcedure is the fully-qualified name of the APIService's
 	// GetAvailablePorts RPC.
 	APIServiceGetAvailablePortsProcedure = "/neoshowcase.protobuf.APIService/GetAvailablePorts"
+	// APIServiceGenerateKeyPairProcedure is the fully-qualified name of the APIService's
+	// GenerateKeyPair RPC.
+	APIServiceGenerateKeyPairProcedure = "/neoshowcase.protobuf.APIService/GenerateKeyPair"
 	// APIServiceGetMeProcedure is the fully-qualified name of the APIService's GetMe RPC.
 	APIServiceGetMeProcedure = "/neoshowcase.protobuf.APIService/GetMe"
 	// APIServiceGetUsersProcedure is the fully-qualified name of the APIService's GetUsers RPC.
@@ -130,6 +133,8 @@ type APIServiceClient interface {
 	GetAvailableDomains(context.Context, *connect_go.Request[emptypb.Empty]) (*connect_go.Response[pb.AvailableDomains], error)
 	// GetAvailablePorts 使用可能なポート一覧を取得します
 	GetAvailablePorts(context.Context, *connect_go.Request[emptypb.Empty]) (*connect_go.Response[pb.AvailablePorts], error)
+	// GenerateKeyPair リポジトリ登録で使用する鍵ペアを一時的に生成します
+	GenerateKeyPair(context.Context, *connect_go.Request[emptypb.Empty]) (*connect_go.Response[pb.GenerateKeyPairResponse], error)
 	// GetMe 自身の情報を取得します プロキシ認証のため常に成功します
 	GetMe(context.Context, *connect_go.Request[emptypb.Empty]) (*connect_go.Response[pb.User], error)
 	// GetUsers 全てのユーザーの情報を取得します
@@ -213,6 +218,11 @@ func NewAPIServiceClient(httpClient connect_go.HTTPClient, baseURL string, opts 
 		getAvailablePorts: connect_go.NewClient[emptypb.Empty, pb.AvailablePorts](
 			httpClient,
 			baseURL+APIServiceGetAvailablePortsProcedure,
+			opts...,
+		),
+		generateKeyPair: connect_go.NewClient[emptypb.Empty, pb.GenerateKeyPairResponse](
+			httpClient,
+			baseURL+APIServiceGenerateKeyPairProcedure,
 			opts...,
 		),
 		getMe: connect_go.NewClient[emptypb.Empty, pb.User](
@@ -368,6 +378,7 @@ type aPIServiceClient struct {
 	getSystemPublicKey  *connect_go.Client[emptypb.Empty, pb.GetSystemPublicKeyResponse]
 	getAvailableDomains *connect_go.Client[emptypb.Empty, pb.AvailableDomains]
 	getAvailablePorts   *connect_go.Client[emptypb.Empty, pb.AvailablePorts]
+	generateKeyPair     *connect_go.Client[emptypb.Empty, pb.GenerateKeyPairResponse]
 	getMe               *connect_go.Client[emptypb.Empty, pb.User]
 	getUsers            *connect_go.Client[emptypb.Empty, pb.GetUsersResponse]
 	createUserKey       *connect_go.Client[pb.CreateUserKeyRequest, pb.UserKey]
@@ -412,6 +423,11 @@ func (c *aPIServiceClient) GetAvailableDomains(ctx context.Context, req *connect
 // GetAvailablePorts calls neoshowcase.protobuf.APIService.GetAvailablePorts.
 func (c *aPIServiceClient) GetAvailablePorts(ctx context.Context, req *connect_go.Request[emptypb.Empty]) (*connect_go.Response[pb.AvailablePorts], error) {
 	return c.getAvailablePorts.CallUnary(ctx, req)
+}
+
+// GenerateKeyPair calls neoshowcase.protobuf.APIService.GenerateKeyPair.
+func (c *aPIServiceClient) GenerateKeyPair(ctx context.Context, req *connect_go.Request[emptypb.Empty]) (*connect_go.Response[pb.GenerateKeyPairResponse], error) {
+	return c.generateKeyPair.CallUnary(ctx, req)
 }
 
 // GetMe calls neoshowcase.protobuf.APIService.GetMe.
@@ -567,6 +583,8 @@ type APIServiceHandler interface {
 	GetAvailableDomains(context.Context, *connect_go.Request[emptypb.Empty]) (*connect_go.Response[pb.AvailableDomains], error)
 	// GetAvailablePorts 使用可能なポート一覧を取得します
 	GetAvailablePorts(context.Context, *connect_go.Request[emptypb.Empty]) (*connect_go.Response[pb.AvailablePorts], error)
+	// GenerateKeyPair リポジトリ登録で使用する鍵ペアを一時的に生成します
+	GenerateKeyPair(context.Context, *connect_go.Request[emptypb.Empty]) (*connect_go.Response[pb.GenerateKeyPairResponse], error)
 	// GetMe 自身の情報を取得します プロキシ認証のため常に成功します
 	GetMe(context.Context, *connect_go.Request[emptypb.Empty]) (*connect_go.Response[pb.User], error)
 	// GetUsers 全てのユーザーの情報を取得します
@@ -647,6 +665,11 @@ func NewAPIServiceHandler(svc APIServiceHandler, opts ...connect_go.HandlerOptio
 	mux.Handle(APIServiceGetAvailablePortsProcedure, connect_go.NewUnaryHandler(
 		APIServiceGetAvailablePortsProcedure,
 		svc.GetAvailablePorts,
+		opts...,
+	))
+	mux.Handle(APIServiceGenerateKeyPairProcedure, connect_go.NewUnaryHandler(
+		APIServiceGenerateKeyPairProcedure,
+		svc.GenerateKeyPair,
 		opts...,
 	))
 	mux.Handle(APIServiceGetMeProcedure, connect_go.NewUnaryHandler(
@@ -810,6 +833,10 @@ func (UnimplementedAPIServiceHandler) GetAvailableDomains(context.Context, *conn
 
 func (UnimplementedAPIServiceHandler) GetAvailablePorts(context.Context, *connect_go.Request[emptypb.Empty]) (*connect_go.Response[pb.AvailablePorts], error) {
 	return nil, connect_go.NewError(connect_go.CodeUnimplemented, errors.New("neoshowcase.protobuf.APIService.GetAvailablePorts is not implemented"))
+}
+
+func (UnimplementedAPIServiceHandler) GenerateKeyPair(context.Context, *connect_go.Request[emptypb.Empty]) (*connect_go.Response[pb.GenerateKeyPairResponse], error) {
+	return nil, connect_go.NewError(connect_go.CodeUnimplemented, errors.New("neoshowcase.protobuf.APIService.GenerateKeyPair is not implemented"))
 }
 
 func (UnimplementedAPIServiceHandler) GetMe(context.Context, *connect_go.Request[emptypb.Empty]) (*connect_go.Response[pb.User], error) {

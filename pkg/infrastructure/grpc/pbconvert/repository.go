@@ -14,20 +14,20 @@ var RepoScopeMapper = mapper.MustNewValueMapper(map[usecase.GetRepoScope]pb.GetR
 	usecase.GetRepoScopeAll:    pb.GetRepositoriesRequest_ALL,
 })
 
-func FromPBRepositoryAuth(req *pb.CreateRepositoryAuth) optional.Of[domain.RepositoryAuth] {
+func FromPBRepositoryAuth(req *pb.CreateRepositoryAuth) optional.Of[usecase.CreateRepositoryAuth] {
 	switch v := req.Auth.(type) {
 	case *pb.CreateRepositoryAuth_None:
-		return optional.Of[domain.RepositoryAuth]{}
+		return optional.Of[usecase.CreateRepositoryAuth]{}
 	case *pb.CreateRepositoryAuth_Basic:
-		return optional.From(domain.RepositoryAuth{
+		return optional.From(usecase.CreateRepositoryAuth{
 			Method:   domain.RepositoryAuthMethodBasic,
 			Username: v.Basic.Username,
 			Password: v.Basic.Password,
 		})
 	case *pb.CreateRepositoryAuth_Ssh:
-		return optional.From(domain.RepositoryAuth{
+		return optional.From(usecase.CreateRepositoryAuth{
 			Method: domain.RepositoryAuthMethodSSH,
-			SSHKey: v.Ssh.SshKey,
+			KeyID:  v.Ssh.KeyId,
 		})
 	default:
 		panic("unknown auth type")
