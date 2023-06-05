@@ -34,6 +34,14 @@ func Map[T, U any](o Of[T], mapper func(T) U) Of[U] {
 	return None[U]()
 }
 
+func MapErr[T, U any](o Of[T], mapper func(T) (U, error)) (Of[U], error) {
+	if o.Valid {
+		v, err := mapper(o.V)
+		return From(v), err
+	}
+	return None[U](), nil
+}
+
 func FromNonZero[T comparable](v T) Of[T] {
 	var zero T
 	if v == zero {

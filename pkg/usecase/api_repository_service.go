@@ -46,16 +46,12 @@ func (s *APIServerService) convertRepositoryAuth(a CreateRepositoryAuth) (domain
 }
 
 func (s *APIServerService) CreateRepository(ctx context.Context, name, url string, auth optional.Of[CreateRepositoryAuth]) (*domain.Repository, error) {
-	var domainAuth optional.Of[domain.RepositoryAuth]
-	if auth.Valid {
-		da, err := s.convertRepositoryAuth(auth.V)
-		if err != nil {
-			return nil, err
-		}
-		domainAuth = optional.From(da)
+	dAuth, err := optional.MapErr(auth, s.convertRepositoryAuth)
+	if err != nil {
+		return nil, err
 	}
 	user := web.GetUser(ctx)
-	repo := domain.NewRepository(name, url, domainAuth, []string{user.ID})
+	repo := domain.NewRepository(name, url, dAuth, []string{user.ID})
 
 	if err := repo.Validate(); err != nil {
 		return nil, newError(ErrorTypeBadRequest, "invalid repository", err)
@@ -99,22 +95,16 @@ type UpdateRepositoryArgs struct {
 }
 
 func (s *APIServerService) convertUpdateRepositoryArgs(a *UpdateRepositoryArgs) (*domain.UpdateRepositoryArgs, error) {
-	var auth optional.Of[optional.Of[domain.RepositoryAuth]]
-	if a.Auth.Valid {
-		if a.Auth.V.Valid {
-			da, err := s.convertRepositoryAuth(a.Auth.V.V)
-			if err != nil {
-				return nil, err
-			}
-			auth = optional.From(optional.From(da))
-		} else {
-			auth = optional.From(optional.None[domain.RepositoryAuth]())
-		}
+	dAuth, err := optional.MapErr(a.Auth, func(t optional.Of[CreateRepositoryAuth]) (optional.Of[domain.RepositoryAuth], error) {
+		return optional.MapErr(t, s.convertRepositoryAuth)
+	})
+	if err != nil {
+		return nil, err
 	}
 	return &domain.UpdateRepositoryArgs{
 		Name:     a.Name,
 		URL:      a.URL,
-		Auth:     auth,
+		Auth:     dAuth,
 		OwnerIDs: a.OwnerIDs,
 	}, nil
 }
