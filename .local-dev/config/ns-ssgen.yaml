@@ -1,7 +1,10 @@
 artifactsRoot: /artifacts
+healthPort: 8081
 
-builtIn:
-  port: 8080
+server:
+  type: builtIn
+  builtIn:
+    port: 8080
 
 controller:
   url: http://ns:10000
