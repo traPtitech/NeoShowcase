@@ -7,6 +7,8 @@ import (
 	"net/http"
 	"path/filepath"
 
+	"github.com/friendsofgo/errors"
+
 	"github.com/traPtitech/neoshowcase/pkg/domain"
 	"github.com/traPtitech/neoshowcase/pkg/domain/web"
 )
@@ -63,6 +65,12 @@ func (s *server) postConfig(b []byte) error {
 		return err
 	}
 	req.Header.Set("Content-Type", "text/caddyfile")
-	_, err = http.DefaultClient.Do(req)
-	return err
+	res, err := http.DefaultClient.Do(req)
+	if err != nil {
+		return err
+	}
+	if !(200 <= res.StatusCode && res.StatusCode < 300) {
+		return errors.Errorf("expected 2xx, invalid status code %v", res.StatusCode)
+	}
+	return nil
 }
