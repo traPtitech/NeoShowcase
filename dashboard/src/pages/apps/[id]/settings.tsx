@@ -1,5 +1,5 @@
 import { useParams } from '@solidjs/router'
-import { Component, For, JSX, Show, createEffect, createResource, createSignal, onMount } from 'solid-js'
+import { Component, For, JSX, Show, createEffect, createMemo, createResource, createSignal, onMount } from 'solid-js'
 import { client, handleAPIError } from '/@/libs/api'
 import { Container } from '/@/libs/layout'
 import { Header } from '/@/components/Header'
@@ -19,6 +19,7 @@ import {
   PortPublication,
   RuntimeConfig,
   UpdateApplicationRequest,
+  User,
   Website,
 } from '/@/api/neoshowcase/protobuf/gateway_pb'
 import { BuildConfigs } from '/@/components/BuildConfigs'
@@ -29,6 +30,9 @@ import { InputLabel } from '/@/components/Input'
 import { InputBar } from '/@/components/Input'
 import { FormButton, FormTextBig } from '/@/components/AppsNew'
 import { PortPublicationSettings } from '/@/components/PortPublications'
+import { userFromId, users } from '/@/libs/useAllUsers'
+import { UserSearch } from '/@/components/UserSearch'
+import useModal from '/@/libs/useModal'
 
 const ConfigsContainer = styled('div', {
   base: {
@@ -352,6 +356,82 @@ export default () => {
     )
   }
 
+  const OwnerConfigContainer: Component = () => {
+    const { Modal, open } = useModal()
+
+    const nonOwnerUsers = createMemo(() => {
+      return users()?.filter((user) => !app().ownerIds.includes(user.id)) ?? []
+    })
+
+    const handleAddOwner = async (user: User) => {
+      const updateApplicationRequest = new UpdateApplicationRequest({
+        id: app().id,
+        ownerIds: app().ownerIds.concat(user.id),
+      })
+
+      try {
+        await client.updateApplication(updateApplicationRequest)
+        toast.success('アプリオーナーを追加しました')
+        refetchApp()
+      } catch (e) {
+        handleAPIError(e, 'アプリオーナーの追加に失敗しました')
+      }
+    }
+    const handleDeleteOwner = async (owner: User) => {
+      const updateApplicationRequest = new UpdateApplicationRequest({
+        id: app().id,
+        ownerIds: app().ownerIds.filter((id) => id !== owner.id),
+      })
+
+      try {
+        await client.updateApplication(updateApplicationRequest)
+        toast.success('アプリのオーナーを削除しました')
+        refetchApp()
+      } catch (e) {
+        handleAPIError(e, 'アプリのオーナーの削除に失敗しました')
+      }
+    }
+
+    return (
+      <>
+        <SettingFieldSet>
+          <FormTextBig>Owner Settings</FormTextBig>
+          <Button color='black1' size='large' onclick={open}>
+            アプリオーナーを追加する
+          </Button>
+          <UserSearch users={app().ownerIds.map((userId) => userFromId(userId))}>
+            {(user) => (
+              <Button
+                color='black1'
+                size='large'
+                onclick={() => {
+                  handleDeleteOwner(user)
+                }}
+              >
+                削除
+              </Button>
+            )}
+          </UserSearch>
+        </SettingFieldSet>
+        <Modal>
+          <UserSearch users={nonOwnerUsers()}>
+            {(user) => (
+              <Button
+                color='black1'
+                size='large'
+                onclick={() => {
+                  handleAddOwner(user)
+                }}
+              >
+                追加
+              </Button>
+            )}
+          </UserSearch>
+        </Modal>
+      </>
+    )
+  }
+
   return (
     <Container>
       <Header />
@@ -362,6 +442,7 @@ export default () => {
           <BuildConfigsContainer />
           <WebsitesConfigContainer />
           <PortPublicationConfigContainer />
+          <OwnerConfigContainer />
         </ConfigsContainer>
       </Show>
     </Container>
