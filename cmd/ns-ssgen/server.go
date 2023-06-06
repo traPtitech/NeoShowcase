@@ -7,13 +7,15 @@ import (
 	"golang.org/x/sync/errgroup"
 
 	"github.com/traPtitech/neoshowcase/pkg/domain"
+	"github.com/traPtitech/neoshowcase/pkg/usecase/healthcheck"
 	"github.com/traPtitech/neoshowcase/pkg/usecase/ssgen"
 )
 
 type Server struct {
 	db     *sql.DB
 	svc    ssgen.GeneratorService
-	engine domain.SSEngine
+	health healthcheck.Server
+	engine domain.StaticServer
 }
 
 func (s *Server) Start(ctx context.Context) error {
@@ -21,6 +23,9 @@ func (s *Server) Start(ctx context.Context) error {
 
 	eg.Go(func() error {
 		return s.svc.Start(ctx)
+	})
+	eg.Go(func() error {
+		return s.health.Start(ctx)
 	})
 	eg.Go(func() error {
 		return s.engine.Start(ctx)
@@ -37,6 +42,9 @@ func (s *Server) Shutdown(ctx context.Context) error {
 	})
 	eg.Go(func() error {
 		return s.svc.Shutdown(ctx)
+	})
+	eg.Go(func() error {
+		return s.health.Shutdown(ctx)
 	})
 	eg.Go(func() error {
 		return s.engine.Shutdown(ctx)

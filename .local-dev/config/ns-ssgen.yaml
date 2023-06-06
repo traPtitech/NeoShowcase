@@ -1,10 +1,14 @@
 artifactsRoot: /artifacts
+healthPort: 8081
 
-builtIn:
-  port: 8080
+server:
+  type: caddy
+  caddy:
+    adminAPI: http://static-server:2019
+    docsRoot: /artifacts
 
 controller:
-  url: http://ns:10000
+  url: http://ns-controller:10000
 
 db:
   host: mysql

@@ -12,7 +12,11 @@ import (
 	"github.com/spf13/cobra"
 
 	"github.com/traPtitech/neoshowcase/pkg/domain"
+	"github.com/traPtitech/neoshowcase/pkg/infrastructure/staticserver/builtin"
+	"github.com/traPtitech/neoshowcase/pkg/infrastructure/staticserver/caddy"
 	"github.com/traPtitech/neoshowcase/pkg/infrastructure/storage"
+	"github.com/traPtitech/neoshowcase/pkg/usecase/healthcheck"
+	"github.com/traPtitech/neoshowcase/pkg/usecase/ssgen"
 	"github.com/traPtitech/neoshowcase/pkg/util/cli"
 )
 
@@ -77,11 +81,22 @@ func main() {
 	}
 }
 
-func provideWebServerPort(c Config) domain.StaticServerPort {
-	return domain.StaticServerPort(c.BuiltIn.Port)
+func provideHealthCheckFunc(gen ssgen.GeneratorService) healthcheck.Func {
+	return gen.Healthy
 }
 
-func provideWebServerDocumentRootPath(c Config) domain.StaticServerDocumentRootPath {
+func provideStaticServer(c Config) (domain.StaticServer, error) {
+	switch c.Server.Type {
+	case "builtIn":
+		return builtin.NewServer(c.Server.BuiltIn, c.ArtifactsRoot), nil
+	case "caddy":
+		return caddy.NewServer(c.Server.Caddy), nil
+	default:
+		return nil, errors.Errorf("invalid static server type: %v", c.Server.Type)
+	}
+}
+
+func provideStaticServerDocumentRootPath(c Config) domain.StaticServerDocumentRootPath {
 	return domain.StaticServerDocumentRootPath(c.ArtifactsRoot)
 }
 

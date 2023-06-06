@@ -33,6 +33,26 @@ spec:
           ports:
             - containerPort: 80
               name: http
+            - containerPort: 8081
+              name: probe
+          startupProbe:
+            httpGet:
+              port: probe
+              path: /healthz
+            periodSeconds: 1
+            failureThreshold: 300
+          readinessProbe:
+            httpGet:
+              port: probe
+              path: /healthz
+            periodSeconds: 1
+            failureThreshold: 60
+          livenessProbe:
+            httpGet:
+              port: probe
+              path: /healthz
+            periodSeconds: 10
+            failureThreshold: 3
       volumes:
         - name: artifacts
           emptyDir: {}
