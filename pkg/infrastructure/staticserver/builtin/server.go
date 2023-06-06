@@ -18,9 +18,10 @@ type Config struct {
 }
 
 type server struct {
-	port   int
-	server *echo.Echo
-	sites  map[string]*host
+	port     int
+	docsRoot string
+	server   *echo.Echo
+	sites    map[string]*host
 
 	sitesLock sync.RWMutex
 }
@@ -30,10 +31,11 @@ type host struct {
 	Site *domain.StaticSite
 }
 
-func NewServer(c Config) domain.StaticServer {
+func NewServer(c Config, docsRoot string) domain.StaticServer {
 	b := &server{
-		port:  c.Port,
-		sites: make(map[string]*host),
+		port:     c.Port,
+		docsRoot: docsRoot,
+		sites:    make(map[string]*host),
 	}
 
 	e := echo.New()
@@ -70,10 +72,10 @@ func (b *server) Shutdown(ctx context.Context) error {
 	return b.server.Shutdown(ctx)
 }
 
-func (b *server) Reconcile(docsRoot string, sites []*domain.StaticSite) error {
+func (b *server) Reconcile(sites []*domain.StaticSite) error {
 	siteMap := map[string]*host{}
 	for _, site := range sites {
-		artifactDir := filepath.Join(docsRoot, site.ArtifactID)
+		artifactDir := filepath.Join(b.docsRoot, site.ArtifactID)
 		e := echo.New()
 		e.Use(middleware.StaticWithConfig(middleware.StaticConfig{
 			Root:  artifactDir,

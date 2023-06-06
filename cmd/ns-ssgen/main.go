@@ -88,7 +88,7 @@ func provideHealthCheckFunc(gen ssgen.GeneratorService) healthcheck.Func {
 func provideStaticServer(c Config) (domain.StaticServer, error) {
 	switch c.Server.Type {
 	case "builtIn":
-		return builtin.NewServer(c.Server.BuiltIn), nil
+		return builtin.NewServer(c.Server.BuiltIn, c.ArtifactsRoot), nil
 	case "caddy":
 		return caddy.NewServer(c.Server.Caddy), nil
 	default:

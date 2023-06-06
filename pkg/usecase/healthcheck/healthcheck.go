@@ -25,6 +25,8 @@ type server struct {
 
 func NewServer(port Port, fn Func) Server {
 	e := echo.New()
+	e.HidePort = true
+	e.HideBanner = true
 	e.GET("/healthz", func(c echo.Context) error {
 		if fn() {
 			return c.NoContent(http.StatusOK)

@@ -146,6 +146,17 @@ services:
     networks:
       - default
 
+  static-server:
+    image: caddy:2-alpine
+    restart: always
+    environment:
+      # Do not bind to all addresses in production!
+      CADDY_ADMIN: ":2019"
+    volumes:
+      - ./.local-dev/staticsite/artifacts:/artifacts
+    networks:
+      - default
+
   ns-ssgen:
     build:
       context: .

@@ -10,7 +10,7 @@ type StaticServerDocumentRootPath string
 
 type StaticServer interface {
 	Start(ctx context.Context) error
-	Reconcile(docsRoot string, sites []*StaticSite) error
+	Reconcile(sites []*StaticSite) error
 	Shutdown(ctx context.Context) error
 }
 

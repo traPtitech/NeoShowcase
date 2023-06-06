@@ -114,10 +114,11 @@ func (s *generatorService) _reload(ctx context.Context) error {
 		return err
 	}
 	// Reconcile server config
-	err = s.engine.Reconcile(s.docsRoot, sites)
+	err = s.engine.Reconcile(sites)
 	if err != nil {
 		return err
 	}
+	s.reloaded.Store(true)
 	log.Infof("reloaded static server in %v (%v sites active)", time.Since(start), len(sites))
 	return nil
 }

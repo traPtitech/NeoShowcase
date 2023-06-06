@@ -26,7 +26,7 @@ docker:
       endPort: 31000
       protocol: udp
   ss:
-    url: http://ns-ssgen:8080/
+    url: http://static-server:80/
   network: neoshowcase_apps
   labels:
     # test additional labels

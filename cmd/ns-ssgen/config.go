@@ -31,7 +31,7 @@ func init() {
 	viper.SetDefault("server.type", "builtIn")
 	viper.SetDefault("server.builtIn.port", 8080)
 	viper.SetDefault("server.caddy.adminAPI", "http://localhost:2019")
-	viper.SetDefault("server.caddy.configRoot", "/caddy-config")
+	viper.SetDefault("server.caddy.docsRoot", "/srv/artifacts")
 
 	viper.SetDefault("controller.url", "http://ns-controller:10000")
 
