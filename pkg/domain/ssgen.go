@@ -6,14 +6,11 @@ import (
 	"github.com/traPtitech/neoshowcase/pkg/util/optional"
 )
 
-type (
-	StaticServerDocumentRootPath string
-	StaticServerPort             int
-)
+type StaticServerDocumentRootPath string
 
-type SSEngine interface {
+type StaticServer interface {
 	Start(ctx context.Context) error
-	Reconcile(sites []*StaticSite) error
+	Reconcile(docsRoot string, sites []*StaticSite) error
 	Shutdown(ctx context.Context) error
 }
 

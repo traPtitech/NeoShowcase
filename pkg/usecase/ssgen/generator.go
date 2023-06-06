@@ -35,7 +35,7 @@ type generatorService struct {
 	appRepo   domain.ApplicationRepository
 	buildRepo domain.BuildRepository
 	storage   domain.Storage
-	engine    domain.SSEngine
+	engine    domain.StaticServer
 	docsRoot  string
 
 	cancel   func()
@@ -49,7 +49,7 @@ func NewGeneratorService(
 	appRepo domain.ApplicationRepository,
 	buildRepo domain.BuildRepository,
 	storage domain.Storage,
-	engine domain.SSEngine,
+	engine domain.StaticServer,
 	path domain.StaticServerDocumentRootPath,
 ) GeneratorService {
 	g := &generatorService{
@@ -103,11 +103,18 @@ func (s *generatorService) reload() {
 
 func (s *generatorService) _reload(ctx context.Context) error {
 	start := time.Now()
+	// Calculate active sites
 	sites, err := domain.GetActiveStaticSites(ctx, s.appRepo, s.buildRepo)
 	if err != nil {
 		return err
 	}
-	err = s.engine.Reconcile(sites)
+	// Sync artifacts on disk (download)
+	err = s.syncArtifacts(sites)
+	if err != nil {
+		return err
+	}
+	// Reconcile server config
+	err = s.engine.Reconcile(s.docsRoot, sites)
 	if err != nil {
 		return err
 	}

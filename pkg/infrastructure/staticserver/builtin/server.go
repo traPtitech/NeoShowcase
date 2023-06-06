@@ -1,4 +1,4 @@
-package staticserver
+package builtin
 
 import (
 	"context"
@@ -13,26 +13,28 @@ import (
 	"github.com/traPtitech/neoshowcase/pkg/domain/web"
 )
 
-type BuiltIn struct {
-	docsRoot      string
-	port          int
-	server        *echo.Echo
-	sites         map[string]*builtInHost
+type Config struct {
+	Port int `mapstructure:"port" yaml:"port"`
+}
+
+type server struct {
+	port   int
+	server *echo.Echo
+	sites  map[string]*host
+
 	sitesLock     sync.RWMutex
 	reconcileLock sync.Mutex
 }
 
-type builtInHost struct {
+type host struct {
 	Echo *echo.Echo
 	Site *domain.StaticSite
 }
 
-func NewBuiltIn(path domain.StaticServerDocumentRootPath, port domain.StaticServerPort) domain.SSEngine {
-	b := &BuiltIn{
-		docsRoot: string(path),
-		port:     int(port),
-		server:   nil,
-		sites:    map[string]*builtInHost{},
+func NewServer(c Config) domain.StaticServer {
+	b := &server{
+		port:  c.Port,
+		sites: make(map[string]*host),
 	}
 
 	e := echo.New()
@@ -61,27 +63,27 @@ func NewBuiltIn(path domain.StaticServerDocumentRootPath, port domain.StaticServ
 	return b
 }
 
-func (b *BuiltIn) Start(_ context.Context) error {
+func (b *server) Start(_ context.Context) error {
 	return b.server.Start(fmt.Sprintf(":%d", b.port))
 }
 
-func (b *BuiltIn) Shutdown(ctx context.Context) error {
+func (b *server) Shutdown(ctx context.Context) error {
 	return b.server.Shutdown(ctx)
 }
 
-func (b *BuiltIn) Reconcile(sites []*domain.StaticSite) error {
+func (b *server) Reconcile(docsRoot string, sites []*domain.StaticSite) error {
 	b.reconcileLock.Lock()
 	defer b.reconcileLock.Unlock()
 
-	siteMap := map[string]*builtInHost{}
+	siteMap := map[string]*host{}
 	for _, site := range sites {
-		artifactDir := filepath.Join(b.docsRoot, site.ArtifactID)
+		artifactDir := filepath.Join(docsRoot, site.ArtifactID)
 		e := echo.New()
 		e.Use(middleware.StaticWithConfig(middleware.StaticConfig{
 			Root:  artifactDir,
 			Index: "index.html",
 		}))
-		siteMap[site.Application.ID] = &builtInHost{
+		siteMap[site.Application.ID] = &host{
 			Echo: e,
 			Site: site,
 		}

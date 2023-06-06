@@ -13,7 +13,7 @@ import (
 type Server struct {
 	db     *sql.DB
 	svc    ssgen.GeneratorService
-	engine domain.SSEngine
+	engine domain.StaticServer
 }
 
 func (s *Server) Start(ctx context.Context) error {

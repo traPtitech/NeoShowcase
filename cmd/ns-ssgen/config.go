@@ -6,13 +6,16 @@ import (
 	"github.com/traPtitech/neoshowcase/pkg/domain"
 	"github.com/traPtitech/neoshowcase/pkg/infrastructure/grpc"
 	"github.com/traPtitech/neoshowcase/pkg/infrastructure/repository"
+	"github.com/traPtitech/neoshowcase/pkg/infrastructure/staticserver/builtin"
 )
 
 type Config struct {
 	ArtifactsRoot string `mapstructure:"artifactsRoot" yaml:"artifactsRoot"`
-	BuiltIn       struct {
-		Port int `mapstructure:"port" yaml:"port"`
-	} `mapstructure:"builtIn" yaml:"builtIn"`
+	HealthPort    int    `mapstructure:"healthPort" yaml:"healthPort"`
+	Server        struct {
+		Type    string         `mapstructure:"type" yaml:"type"`
+		BuiltIn builtin.Config `mapstructure:"builtIn" yaml:"builtIn"`
+	} `mapstructure:"server" yaml:"server"`
 	Controller grpc.ControllerServiceClientConfig `mapstructure:"controller" yaml:"controller"`
 	DB         repository.Config                  `mapstructure:"db" yaml:"db"`
 	Storage    domain.StorageConfig               `mapstructure:"storage" yaml:"storage"`
@@ -20,8 +23,10 @@ type Config struct {
 
 func init() {
 	viper.SetDefault("artifactsRoot", "/srv/artifacts")
+	viper.SetDefault("healthPort", 8081)
 
-	viper.SetDefault("builtIn.port", 8080)
+	viper.SetDefault("server.type", "builtIn")
+	viper.SetDefault("server.builtIn.port", 8080)
 
 	viper.SetDefault("controller.url", "http://ns-controller:10000")
 
