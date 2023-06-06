@@ -9,13 +9,13 @@ import (
 	"github.com/traPtitech/neoshowcase/pkg/infrastructure/grpc"
 	"github.com/traPtitech/neoshowcase/pkg/infrastructure/repository"
 	"github.com/traPtitech/neoshowcase/pkg/infrastructure/staticserver"
-	"github.com/traPtitech/neoshowcase/pkg/usecase"
+	"github.com/traPtitech/neoshowcase/pkg/usecase/ssgen"
 )
 
 func New(c Config) (*Server, error) {
 	wire.Build(
 		grpc.NewControllerSSGenServiceClient,
-		usecase.NewStaticSiteServerService,
+		ssgen.NewGeneratorService,
 		repository.New,
 		repository.NewApplicationRepository,
 		repository.NewBuildRepository,

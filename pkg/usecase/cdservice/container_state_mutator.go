@@ -1,4 +1,4 @@
-package usecase
+package cdservice
 
 import (
 	"context"
@@ -36,14 +36,13 @@ func (m *ContainerStateMutator) _subscribe(backend domain.Backend) {
 	sub, _ := backend.ListenContainerEvents()
 	updateOne := sc.NewMust[string, struct{}](m._updateOne, 0, 0, sc.EnableStrictCoalescing())
 	for e := range sub {
-		appID := e.ApplicationID
 		// coalesce events
-		go func() {
+		go func(appID string) {
 			_, err := updateOne.Get(context.Background(), appID)
 			if err != nil {
 				log.Errorf("failed to update app container state: %+v", err)
 			}
-		}()
+		}(e.ApplicationID)
 	}
 }
 

@@ -1,4 +1,4 @@
-package usecase
+package cleaner
 
 import (
 	"context"
@@ -18,7 +18,7 @@ import (
 	"github.com/traPtitech/neoshowcase/pkg/util/optional"
 )
 
-type CleanerService interface {
+type Service interface {
 	Start(ctx context.Context) error
 	Shutdown(ctx context.Context) error
 }
@@ -36,13 +36,13 @@ type cleanerService struct {
 	shutdownOnce sync.Once
 }
 
-func NewCleanerService(
+func NewService(
 	artifactRepo domain.ArtifactRepository,
 	appRepo domain.ApplicationRepository,
 	buildRepo domain.BuildRepository,
 	image builder.ImageConfig,
 	storage domain.Storage,
-) (CleanerService, error) {
+) (Service, error) {
 	c := &cleanerService{
 		artifactRepo: artifactRepo,
 		appRepo:      appRepo,
@@ -139,8 +139,31 @@ func (c *cleanerService) pruneImages(ctx context.Context, r *registry.Registry) 
 	return nil
 }
 
+func (c *cleanerService) getArtifactsInUse(ctx context.Context) ([]*domain.Artifact, error) {
+	applications, err := c.appRepo.GetApplications(ctx, domain.GetApplicationCondition{
+		DeployType: optional.From(domain.DeployTypeStatic),
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	builds, err := domain.GetSuccessBuilds(ctx, c.buildRepo, applications)
+	if err != nil {
+		return nil, err
+	}
+	artifacts := make([]*domain.Artifact, 0, len(builds))
+	for _, build := range builds {
+		if !build.Artifact.Valid {
+			continue
+		}
+		artifact := build.Artifact.V
+		artifacts = append(artifacts, &artifact)
+	}
+	return artifacts, nil
+}
+
 func (c *cleanerService) pruneArtifacts(ctx context.Context) error {
-	inUse, err := domain.GetArtifactsInUse(ctx, c.appRepo, c.buildRepo)
+	inUse, err := c.getArtifactsInUse(ctx)
 	if err != nil {
 		return errors.Wrap(err, "failed to get artifacts in use")
 	}

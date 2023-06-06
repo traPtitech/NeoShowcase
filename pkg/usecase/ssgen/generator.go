@@ -1,4 +1,4 @@
-package usecase
+package ssgen
 
 import (
 	"context"
@@ -17,12 +17,12 @@ type SiteReloadTarget struct {
 	BuildID       string
 }
 
-type StaticSiteServerService interface {
+type GeneratorService interface {
 	Start(ctx context.Context) error
 	Shutdown(ctx context.Context) error
 }
 
-type staticSiteServerService struct {
+type generatorService struct {
 	client    domain.ControllerSSGenServiceClient
 	appRepo   domain.ApplicationRepository
 	buildRepo domain.BuildRepository
@@ -32,13 +32,13 @@ type staticSiteServerService struct {
 	reloadLock sync.Mutex
 }
 
-func NewStaticSiteServerService(
+func NewGeneratorService(
 	client domain.ControllerSSGenServiceClient,
 	appRepo domain.ApplicationRepository,
 	buildRepo domain.BuildRepository,
 	engine domain.SSEngine,
-) StaticSiteServerService {
-	return &staticSiteServerService{
+) GeneratorService {
+	return &generatorService{
 		client:    client,
 		appRepo:   appRepo,
 		buildRepo: buildRepo,
@@ -46,7 +46,7 @@ func NewStaticSiteServerService(
 	}
 }
 
-func (s *staticSiteServerService) Start(_ context.Context) error {
+func (s *generatorService) Start(_ context.Context) error {
 	ctx, cancel := context.WithCancel(context.Background())
 	s.cancel = cancel
 
@@ -64,12 +64,12 @@ func (s *staticSiteServerService) Start(_ context.Context) error {
 	return nil
 }
 
-func (s *staticSiteServerService) Shutdown(_ context.Context) error {
+func (s *generatorService) Shutdown(_ context.Context) error {
 	s.cancel()
 	return nil
 }
 
-func (s *staticSiteServerService) onRequest(req *pb.SSGenRequest) {
+func (s *generatorService) onRequest(req *pb.SSGenRequest) {
 	switch req.Type {
 	case pb.SSGenRequest_RELOAD:
 		err := s.reload(context.Background())
@@ -79,7 +79,7 @@ func (s *staticSiteServerService) onRequest(req *pb.SSGenRequest) {
 	}
 }
 
-func (s *staticSiteServerService) reload(ctx context.Context) error {
+func (s *generatorService) reload(ctx context.Context) error {
 	s.reloadLock.Lock()
 	defer s.reloadLock.Unlock()
 

@@ -11,24 +11,26 @@ import (
 	"github.com/traPtitech/neoshowcase/pkg/infrastructure/grpc/pb"
 	"github.com/traPtitech/neoshowcase/pkg/infrastructure/grpc/pb/pbconnect"
 	"github.com/traPtitech/neoshowcase/pkg/infrastructure/grpc/pbconvert"
-	"github.com/traPtitech/neoshowcase/pkg/usecase"
+	"github.com/traPtitech/neoshowcase/pkg/usecase/cdservice"
+	"github.com/traPtitech/neoshowcase/pkg/usecase/logstream"
+	"github.com/traPtitech/neoshowcase/pkg/usecase/repofetcher"
 	"github.com/traPtitech/neoshowcase/pkg/util/ds"
 )
 
 type ControllerService struct {
 	backend   domain.Backend
-	fetcher   usecase.RepositoryFetcherService
-	cd        usecase.ContinuousDeploymentService
+	fetcher   repofetcher.Service
+	cd        cdservice.Service
 	builder   domain.ControllerBuilderService
-	logStream *usecase.LogStreamService
+	logStream *logstream.Service
 }
 
 func NewControllerService(
 	backend domain.Backend,
-	fetcher usecase.RepositoryFetcherService,
-	cd usecase.ContinuousDeploymentService,
+	fetcher repofetcher.Service,
+	cd cdservice.Service,
 	builder domain.ControllerBuilderService,
-	logStream *usecase.LogStreamService,
+	logStream *logstream.Service,
 ) pbconnect.ControllerServiceHandler {
 	return &ControllerService{
 		backend:   backend,

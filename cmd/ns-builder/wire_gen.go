@@ -9,7 +9,7 @@ package main
 import (
 	"github.com/traPtitech/neoshowcase/pkg/infrastructure/grpc"
 	"github.com/traPtitech/neoshowcase/pkg/infrastructure/repository"
-	"github.com/traPtitech/neoshowcase/pkg/usecase"
+	"github.com/traPtitech/neoshowcase/pkg/usecase/builder"
 )
 
 // Injectors from wire.go:
@@ -44,11 +44,11 @@ func New(c2 Config) (*Server, error) {
 	artifactRepository := repository.NewArtifactRepository(db)
 	buildRepository := repository.NewBuildRepository(db)
 	gitRepositoryRepository := repository.NewGitRepositoryRepository(db)
-	builderService := usecase.NewBuilderService(controllerBuilderServiceClient, client, buildpackBackend, storage, publicKeys, imageConfig, applicationRepository, artifactRepository, buildRepository, gitRepositoryRepository)
+	service := builder.NewService(controllerBuilderServiceClient, client, buildpackBackend, storage, publicKeys, imageConfig, applicationRepository, artifactRepository, buildRepository, gitRepositoryRepository)
 	server := &Server{
 		db:       db,
 		buildkit: client,
-		builder:  builderService,
+		builder:  service,
 	}
 	return server, nil
 }

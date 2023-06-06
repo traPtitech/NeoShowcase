@@ -18,7 +18,12 @@ import (
 	"github.com/traPtitech/neoshowcase/pkg/infrastructure/grpc"
 	"github.com/traPtitech/neoshowcase/pkg/infrastructure/repository"
 	"github.com/traPtitech/neoshowcase/pkg/infrastructure/webhook"
-	"github.com/traPtitech/neoshowcase/pkg/usecase"
+	"github.com/traPtitech/neoshowcase/pkg/usecase/apiserver"
+	"github.com/traPtitech/neoshowcase/pkg/usecase/cdservice"
+	"github.com/traPtitech/neoshowcase/pkg/usecase/cleaner"
+	"github.com/traPtitech/neoshowcase/pkg/usecase/logstream"
+	"github.com/traPtitech/neoshowcase/pkg/usecase/repofetcher"
+	"github.com/traPtitech/neoshowcase/pkg/usecase/sshserver"
 )
 
 var commonSet = wire.NewSet(
@@ -37,14 +42,14 @@ var commonSet = wire.NewSet(
 	grpc.NewControllerBuilderService,
 	grpc.NewControllerSSGenService,
 	webhook.NewReceiver,
-	usecase.NewAPIServerService,
-	usecase.NewAppDeployHelper,
-	usecase.NewContinuousDeploymentService,
-	usecase.NewRepositoryFetcherService,
-	usecase.NewCleanerService,
-	usecase.NewLogStreamService,
-	usecase.NewContainerStateMutator,
-	usecase.NewSSHServer,
+	apiserver.NewService,
+	cdservice.NewAppDeployHelper,
+	cdservice.NewContainerStateMutator,
+	cdservice.NewService,
+	repofetcher.NewService,
+	cleaner.NewService,
+	logstream.NewService,
+	sshserver.NewSSHServer,
 	providePublicKey,
 	provideStorage,
 	provideControllerServer,

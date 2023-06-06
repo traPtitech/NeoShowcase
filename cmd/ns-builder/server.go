@@ -5,16 +5,15 @@ import (
 	"database/sql"
 
 	buildkit "github.com/moby/buildkit/client"
-
-	"github.com/traPtitech/neoshowcase/pkg/usecase"
-
 	"golang.org/x/sync/errgroup"
+
+	"github.com/traPtitech/neoshowcase/pkg/usecase/builder"
 )
 
 type Server struct {
 	db       *sql.DB
 	buildkit *buildkit.Client
-	builder  usecase.BuilderService
+	builder  builder.Service
 }
 
 func (s *Server) Start(ctx context.Context) error {

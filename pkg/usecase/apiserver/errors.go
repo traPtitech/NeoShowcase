@@ -1,4 +1,4 @@
-package usecase
+package apiserver
 
 import (
 	"github.com/friendsofgo/errors"

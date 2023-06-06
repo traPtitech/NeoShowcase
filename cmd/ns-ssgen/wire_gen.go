@@ -10,7 +10,7 @@ import (
 	"github.com/traPtitech/neoshowcase/pkg/infrastructure/grpc"
 	"github.com/traPtitech/neoshowcase/pkg/infrastructure/repository"
 	"github.com/traPtitech/neoshowcase/pkg/infrastructure/staticserver"
-	"github.com/traPtitech/neoshowcase/pkg/usecase"
+	"github.com/traPtitech/neoshowcase/pkg/usecase/ssgen"
 )
 
 // Injectors from wire.go:
@@ -33,10 +33,10 @@ func New(c2 Config) (*Server, error) {
 	staticServerDocumentRootPath := provideWebServerDocumentRootPath(c2)
 	staticServerPort := provideWebServerPort(c2)
 	ssEngine := staticserver.NewBuiltIn(storage, staticServerDocumentRootPath, staticServerPort)
-	staticSiteServerService := usecase.NewStaticSiteServerService(controllerSSGenServiceClient, applicationRepository, buildRepository, ssEngine)
+	generatorService := ssgen.NewGeneratorService(controllerSSGenServiceClient, applicationRepository, buildRepository, ssEngine)
 	server := &Server{
 		db:     db,
-		svc:    staticSiteServerService,
+		svc:    generatorService,
 		engine: ssEngine,
 	}
 	return server, nil

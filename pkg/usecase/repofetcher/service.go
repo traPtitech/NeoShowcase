@@ -1,4 +1,4 @@
-package usecase
+package repofetcher
 
 import (
 	"context"
@@ -15,23 +15,24 @@ import (
 	"github.com/sourcegraph/conc/pool"
 
 	"github.com/traPtitech/neoshowcase/pkg/domain"
+	"github.com/traPtitech/neoshowcase/pkg/usecase/cdservice"
 	"github.com/traPtitech/neoshowcase/pkg/util/ds"
 	"github.com/traPtitech/neoshowcase/pkg/util/optional"
 )
 
 const fetcherConcurrency = 10
 
-type RepositoryFetcherService interface {
+type Service interface {
 	Run()
 	Fetch(repositoryIDs []string)
 	Stop(ctx context.Context) error
 }
 
-type repositoryFetcherService struct {
+type service struct {
 	appRepo domain.ApplicationRepository
 	gitRepo domain.GitRepositoryRepository
 	pubKey  *ssh.PublicKeys
-	cd      ContinuousDeploymentService
+	cd      cdservice.Service
 
 	fetcher   chan<- []string
 	run       func()
@@ -40,13 +41,13 @@ type repositoryFetcherService struct {
 	closeOnce sync.Once
 }
 
-func NewRepositoryFetcherService(
+func NewService(
 	appRepo domain.ApplicationRepository,
 	gitRepo domain.GitRepositoryRepository,
 	pubKey *ssh.PublicKeys,
-	cd ContinuousDeploymentService,
-) (RepositoryFetcherService, error) {
-	r := &repositoryFetcherService{
+	cd cdservice.Service,
+) (Service, error) {
+	r := &service{
 		appRepo: appRepo,
 		gitRepo: gitRepo,
 		pubKey:  pubKey,
@@ -64,11 +65,11 @@ func NewRepositoryFetcherService(
 	return r, nil
 }
 
-func (r *repositoryFetcherService) Run() {
+func (r *service) Run() {
 	r.runOnce.Do(r.run)
 }
 
-func (r *repositoryFetcherService) Fetch(repositoryIDs []string) {
+func (r *service) Fetch(repositoryIDs []string) {
 	// non-blocking; fetch operation is eventually consistent
 	select {
 	case r.fetcher <- repositoryIDs:
@@ -76,7 +77,7 @@ func (r *repositoryFetcherService) Fetch(repositoryIDs []string) {
 	}
 }
 
-func (r *repositoryFetcherService) fetchLoop(ctx context.Context, fetcher <-chan []string) {
+func (r *service) fetchLoop(ctx context.Context, fetcher <-chan []string) {
 	ticker := time.NewTicker(3 * time.Minute)
 	defer ticker.Stop()
 
@@ -108,7 +109,7 @@ func (r *repositoryFetcherService) fetchLoop(ctx context.Context, fetcher <-chan
 	}
 }
 
-func (r *repositoryFetcherService) fetch(repositoryIDs optional.Of[[]string]) error {
+func (r *service) fetch(repositoryIDs optional.Of[[]string]) error {
 	ctx := context.Background()
 
 	var getCond domain.GetRepositoryCondition
@@ -143,7 +144,7 @@ func (r *repositoryFetcherService) fetch(repositoryIDs optional.Of[[]string]) er
 	return nil
 }
 
-func (r *repositoryFetcherService) resolveRefs(ctx context.Context, repo *domain.Repository) (refToCommit map[string]string, err error) {
+func (r *service) resolveRefs(ctx context.Context, repo *domain.Repository) (refToCommit map[string]string, err error) {
 	auth, err := domain.GitAuthMethod(repo, r.pubKey)
 	if err != nil {
 		return nil, err
@@ -177,7 +178,7 @@ func (r *repositoryFetcherService) resolveRefs(ctx context.Context, repo *domain
 	return refToCommit, nil
 }
 
-func (r *repositoryFetcherService) updateApps(ctx context.Context, repo *domain.Repository, apps []*domain.Application) error {
+func (r *service) updateApps(ctx context.Context, repo *domain.Repository, apps []*domain.Application) error {
 	if len(apps) == 0 {
 		return nil
 	}
@@ -201,7 +202,7 @@ func (r *repositoryFetcherService) updateApps(ctx context.Context, repo *domain.
 	return nil
 }
 
-func (r *repositoryFetcherService) Stop(_ context.Context) error {
+func (r *service) Stop(_ context.Context) error {
 	r.closeOnce.Do(r.close)
 	return nil
 }

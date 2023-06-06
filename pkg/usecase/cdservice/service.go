@@ -1,4 +1,4 @@
-package usecase
+package cdservice
 
 import (
 	"context"
@@ -17,7 +17,7 @@ import (
 	"github.com/traPtitech/neoshowcase/pkg/util/optional"
 )
 
-type ContinuousDeploymentService interface {
+type Service interface {
 	Run()
 	RegisterBuilds()
 	StartBuilds()
@@ -25,7 +25,7 @@ type ContinuousDeploymentService interface {
 	Stop(ctx context.Context) error
 }
 
-type continuousDeploymentService struct {
+type service struct {
 	appRepo   domain.ApplicationRepository
 	buildRepo domain.BuildRepository
 	backend   domain.Backend
@@ -42,15 +42,15 @@ type continuousDeploymentService struct {
 	closeOnce       sync.Once
 }
 
-func NewContinuousDeploymentService(
+func NewService(
 	appRepo domain.ApplicationRepository,
 	buildRepo domain.BuildRepository,
 	backend domain.Backend,
 	builder domain.ControllerBuilderService,
 	deployer *AppDeployHelper,
 	mutator *ContainerStateMutator,
-) (ContinuousDeploymentService, error) {
-	cd := &continuousDeploymentService{
+) (Service, error) {
+	cd := &service{
 		appRepo:   appRepo,
 		buildRepo: buildRepo,
 		backend:   backend,
@@ -133,28 +133,28 @@ func NewContinuousDeploymentService(
 	return cd, nil
 }
 
-func (cd *continuousDeploymentService) Run() {
+func (cd *service) Run() {
 	cd.runOnce.Do(cd.run)
 }
 
-func (cd *continuousDeploymentService) RegisterBuilds() {
+func (cd *service) RegisterBuilds() {
 	go cd.doRegisterBuild()
 }
 
-func (cd *continuousDeploymentService) StartBuilds() {
+func (cd *service) StartBuilds() {
 	go cd.doStartBuild()
 }
 
-func (cd *continuousDeploymentService) SyncDeployments() {
+func (cd *service) SyncDeployments() {
 	go cd.doSyncDeploy()
 }
 
-func (cd *continuousDeploymentService) Stop(_ context.Context) error {
+func (cd *service) Stop(_ context.Context) error {
 	cd.closeOnce.Do(cd.close)
 	return nil
 }
 
-func (cd *continuousDeploymentService) registerBuilds(ctx context.Context) error {
+func (cd *service) registerBuilds(ctx context.Context) error {
 	applications, err := cd.appRepo.GetApplications(ctx, domain.GetApplicationCondition{})
 	if err != nil {
 		return err
@@ -191,7 +191,7 @@ func (cd *continuousDeploymentService) registerBuilds(ctx context.Context) error
 	return nil
 }
 
-func (cd *continuousDeploymentService) startBuilds(ctx context.Context) error {
+func (cd *service) startBuilds(ctx context.Context) error {
 	builds, err := cd.buildRepo.GetBuilds(ctx, domain.GetBuildCondition{Status: optional.From(domain.BuildStatusQueued)})
 	if err != nil {
 		return err
@@ -202,7 +202,7 @@ func (cd *continuousDeploymentService) startBuilds(ctx context.Context) error {
 	return nil
 }
 
-func (cd *continuousDeploymentService) detectBuildCrash(ctx context.Context) error {
+func (cd *service) detectBuildCrash(ctx context.Context) error {
 	const crashDetectThreshold = 60 * time.Second
 	now := time.Now()
 
@@ -226,7 +226,7 @@ func (cd *continuousDeploymentService) detectBuildCrash(ctx context.Context) err
 	return nil
 }
 
-func (cd *continuousDeploymentService) _syncAppFields(ctx context.Context) error {
+func (cd *service) _syncAppFields(ctx context.Context) error {
 	// Get all running applications
 	apps, err := cd.appRepo.GetApplications(ctx, domain.GetApplicationCondition{
 		Running: optional.From(true),
@@ -234,23 +234,16 @@ func (cd *continuousDeploymentService) _syncAppFields(ctx context.Context) error
 	if err != nil {
 		return err
 	}
-	commits := lo.SliceToMap(apps, func(app *domain.Application) (string, struct{}) { return app.WantCommit, struct{}{} })
-	builds, err := cd.buildRepo.GetBuilds(ctx, domain.GetBuildCondition{
-		CommitIn: optional.From(lo.Keys(commits)),
-		Status:   optional.From(domain.BuildStatusSucceeded),
-	})
+
+	builds, err := domain.GetSuccessBuilds(ctx, cd.buildRepo, apps)
 	if err != nil {
 		return err
 	}
-
-	slices.SortFunc(builds, func(b1, b2 *domain.Build) bool { return b1.FinishedAt.V.Before(b2.FinishedAt.V) })
-	latestBuild := lo.SliceToMap(builds, func(b *domain.Build) (string, *domain.Build) { return b.ApplicationID + b.Commit, b })
-
 	for _, app := range apps {
 		// Check if build has succeeded, if so sync 'current_commit' and 'updated_at' fields for restarting app
-		if b, ok := latestBuild[app.ID+app.WantCommit]; ok {
-			isSynced := app.CurrentCommit == app.WantCommit && !app.UpdatedAt.Before(b.FinishedAt.V)
-			if isSynced {
+		if b, ok := builds[app.ID+app.WantCommit]; ok {
+			toSync := app.CurrentCommit != app.WantCommit || app.UpdatedAt.Before(b.FinishedAt.V)
+			if !toSync {
 				continue
 			}
 			err = cd.appRepo.UpdateApplication(ctx, app.ID, &domain.UpdateApplicationArgs{
@@ -265,7 +258,7 @@ func (cd *continuousDeploymentService) _syncAppFields(ctx context.Context) error
 	return nil
 }
 
-func (cd *continuousDeploymentService) syncDeployments(ctx context.Context) error {
+func (cd *service) syncDeployments(ctx context.Context) error {
 	// Sync app fields from build result
 	err := cd._syncAppFields(ctx)
 	if err != nil {

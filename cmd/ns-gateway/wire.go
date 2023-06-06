@@ -9,7 +9,7 @@ import (
 	"github.com/traPtitech/neoshowcase/pkg/infrastructure/dbmanager"
 	"github.com/traPtitech/neoshowcase/pkg/infrastructure/grpc"
 	"github.com/traPtitech/neoshowcase/pkg/infrastructure/repository"
-	"github.com/traPtitech/neoshowcase/pkg/usecase"
+	"github.com/traPtitech/neoshowcase/pkg/usecase/apiserver"
 )
 
 func NewServer(c Config) (*Server, error) {
@@ -26,7 +26,7 @@ func NewServer(c Config) (*Server, error) {
 		grpc.NewAPIServiceServer,
 		grpc.NewAuthInterceptor,
 		grpc.NewControllerServiceClient,
-		usecase.NewAPIServerService,
+		apiserver.NewService,
 		provideRepositoryPublicKey,
 		provideStorage,
 		provideContainerLogger,

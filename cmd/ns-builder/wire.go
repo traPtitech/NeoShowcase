@@ -8,13 +8,13 @@ import (
 
 	"github.com/traPtitech/neoshowcase/pkg/infrastructure/grpc"
 	"github.com/traPtitech/neoshowcase/pkg/infrastructure/repository"
-	"github.com/traPtitech/neoshowcase/pkg/usecase"
+	"github.com/traPtitech/neoshowcase/pkg/usecase/builder"
 )
 
 func New(c Config) (*Server, error) {
 	wire.Build(
 		grpc.NewControllerBuilderServiceClient,
-		usecase.NewBuilderService,
+		builder.NewService,
 		repository.New,
 		repository.NewApplicationRepository,
 		repository.NewArtifactRepository,
