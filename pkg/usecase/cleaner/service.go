@@ -11,6 +11,7 @@ import (
 	"github.com/heroku/docker-registry-client/registry"
 	"github.com/samber/lo"
 	log "github.com/sirupsen/logrus"
+	"golang.org/x/exp/slices"
 
 	"github.com/traPtitech/neoshowcase/pkg/domain"
 	"github.com/traPtitech/neoshowcase/pkg/domain/builder"
@@ -139,8 +140,41 @@ func (c *cleanerService) pruneImages(ctx context.Context, r *registry.Registry) 
 	return nil
 }
 
+func (c *cleanerService) getArtifactsInUse(ctx context.Context) ([]*domain.Artifact, error) {
+	applications, err := c.appRepo.GetApplications(ctx, domain.GetApplicationCondition{
+		DeployType: optional.From(domain.DeployTypeStatic),
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	commits := make(map[string]struct{}, 2*len(applications))
+	for _, app := range applications {
+		commits[app.WantCommit] = struct{}{}
+		commits[app.CurrentCommit] = struct{}{}
+	}
+	builds, err := c.buildRepo.GetBuilds(ctx, domain.GetBuildCondition{CommitIn: optional.From(lo.Keys(commits)), Status: optional.From(domain.BuildStatusSucceeded)})
+	if err != nil {
+		return nil, err
+	}
+
+	// Last succeeded builds for each app+commit
+	slices.SortFunc(builds, func(a, b *domain.Build) bool { return a.StartedAt.ValueOrZero().Before(b.StartedAt.ValueOrZero()) })
+	buildMap := lo.SliceToMap(builds, func(b *domain.Build) (string, *domain.Build) { return b.ApplicationID + b.Commit, b })
+
+	artifacts := make([]*domain.Artifact, 0, len(buildMap))
+	for _, build := range buildMap {
+		if !build.Artifact.Valid {
+			continue
+		}
+		artifact := build.Artifact.V
+		artifacts = append(artifacts, &artifact)
+	}
+	return artifacts, nil
+}
+
 func (c *cleanerService) pruneArtifacts(ctx context.Context) error {
-	inUse, err := domain.GetArtifactsInUse(ctx, c.appRepo, c.buildRepo)
+	inUse, err := c.getArtifactsInUse(ctx)
 	if err != nil {
 		return errors.Wrap(err, "failed to get artifacts in use")
 	}
