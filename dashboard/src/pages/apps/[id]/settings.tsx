@@ -168,9 +168,11 @@ export default () => {
     // 現在のビルド設定を反映
     onMount(() => {
       setBuildConfigMethod(app().config.buildConfig.case)
-      setBuildConfig(app().config.buildConfig.case, {
-        case: app().config.buildConfig.case,
-        value: storify(app().config.buildConfig.value),
+      setBuildConfig({
+        [app().config.buildConfig.case]: {
+          case: app().config.buildConfig.case,
+          value: storify(app().config.buildConfig.value),
+        },
       })
     })
 
