@@ -23,6 +23,10 @@ export default useRoutes([
     component: lazy(() => import('/@/pages/apps/[id]/builds/[id]')),
   },
   {
+    path: '/apps/:id/settings',
+    component: lazy(() => import('/@/pages/apps/[id]/settings')),
+  },
+  {
     path: '/apps/new',
     component: lazy(() => import('/@/pages/apps/new')),
   },

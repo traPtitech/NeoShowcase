@@ -65,6 +65,11 @@ export const AppNav = (props: AppNavProps): JSXElement => {
             Builds
           </Button>
         </A>
+        <A href={`/apps/${props.appID}/settings`}>
+          <Button color='black1' size='large'>
+            Settings
+          </Button>
+        </A>
       </AppNavContainer>
     </>
   )

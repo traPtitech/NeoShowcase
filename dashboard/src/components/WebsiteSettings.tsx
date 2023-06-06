@@ -4,15 +4,16 @@ import { Checkbox } from '/@/components/Checkbox'
 import { Radio, RadioItem } from '/@/components/Radio'
 import { Button } from '/@/components/Button'
 import { SetStoreFunction } from 'solid-js/store'
-import { For } from 'solid-js'
+import { For, Show } from 'solid-js'
 import { storify } from '/@/libs/storify'
 import { InputBar, InputLabel } from '/@/components/Input'
 import { FormButton, FormCheckBox, FormSettings, FormSettingsButton, SettingsContainer } from '/@/components/AppsNew'
 
-interface WebsiteProps {
+interface WebsiteSettingProps {
   website: CreateWebsiteRequest
   setWebsite: <T extends keyof CreateWebsiteRequest>(valueName: T, value: CreateWebsiteRequest[T]) => void
   deleteWebsite: () => void
+  saveWebsite?: () => void
 }
 
 const authenticationTypeItems: RadioItem<AuthenticationType>[] = [
@@ -21,7 +22,7 @@ const authenticationTypeItems: RadioItem<AuthenticationType>[] = [
   { value: AuthenticationType.HARD, title: 'HARD' },
 ]
 
-const Website = (props: WebsiteProps) => {
+export const WebsiteSetting = (props: WebsiteSettingProps) => {
   return (
     <FormSettings>
       <div>
@@ -71,6 +72,11 @@ const Website = (props: WebsiteProps) => {
         <Button onclick={props.deleteWebsite} color='black1' size='large' type='button'>
           Delete website setting
         </Button>
+        <Show when={props.saveWebsite}>
+          <Button onclick={props.saveWebsite} color='black1' size='large' type='button'>
+            Save
+          </Button>
+        </Show>
       </FormSettingsButton>
     </FormSettings>
   )
@@ -86,7 +92,7 @@ export const WebsiteSettings = (props: WebsiteSettingsProps) => {
     <SettingsContainer>
       <For each={props.websiteConfigs}>
         {(website, i) => (
-          <Website
+          <WebsiteSetting
             website={website}
             setWebsite={(valueName, value) => {
               props.setWebsiteConfigs(i(), valueName, value)
