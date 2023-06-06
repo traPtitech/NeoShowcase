@@ -1,7 +1,11 @@
 package domain
 
 import (
+	"context"
 	"time"
+
+	"github.com/samber/lo"
+	"golang.org/x/exp/slices"
 
 	"github.com/traPtitech/neoshowcase/pkg/util/optional"
 )
@@ -47,4 +51,21 @@ func NewBuild(applicationID string, commit string) *Build {
 		ApplicationID: applicationID,
 		QueuedAt:      time.Now(),
 	}
+}
+
+// GetSuccessBuilds returns a map of (app id + build id) -> build.
+func GetSuccessBuilds(ctx context.Context, buildRepo BuildRepository, apps []*Application) (map[string]*Build, error) {
+	commits := make(map[string]struct{}, 2*len(apps))
+	for _, app := range apps {
+		commits[app.WantCommit] = struct{}{}
+		commits[app.CurrentCommit] = struct{}{}
+	}
+	builds, err := buildRepo.GetBuilds(ctx, GetBuildCondition{CommitIn: optional.From(lo.Keys(commits)), Status: optional.From(BuildStatusSucceeded)})
+	if err != nil {
+		return nil, err
+	}
+	// Last succeeded builds for each app+commit
+	slices.SortFunc(builds, func(a, b *Build) bool { return a.QueuedAt.Before(b.QueuedAt) })
+	buildMap := lo.SliceToMap(builds, func(b *Build) (string, *Build) { return b.ApplicationID + b.Commit, b })
+	return buildMap, nil
 }

@@ -67,16 +67,14 @@ func (s *AppDeployHelper) _runtimeDesiredStates(ctx context.Context) ([]*domain.
 	}
 
 	// Calculate deploy-able applications
-	commits := lo.SliceToMap(apps, func(app *domain.Application) (string, struct{}) { return app.CurrentCommit, struct{}{} })
-	builds, err := s.buildRepo.GetBuilds(ctx, domain.GetBuildCondition{
-		CommitIn: optional.From(lo.Keys(commits)),
-		Status:   optional.From(domain.BuildStatusSucceeded),
-	})
+	buildsInUse, err := domain.GetSuccessBuilds(ctx, s.buildRepo, apps)
 	if err != nil {
 		return nil, err
 	}
-	buildExists := lo.SliceToMap(builds, func(b *domain.Build) (string, bool) { return b.ApplicationID + b.Commit, true })
-	syncableApps := lo.Filter(apps, func(app *domain.Application, _ int) bool { return buildExists[app.ID+app.WantCommit] })
+	syncableApps := lo.Filter(apps, func(app *domain.Application, _ int) bool {
+		_, ok := buildsInUse[app.ID+app.CurrentCommit]
+		return ok
+	})
 
 	envs, err := s._getEnv(ctx, syncableApps)
 	if err != nil {

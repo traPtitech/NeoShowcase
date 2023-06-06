@@ -234,23 +234,16 @@ func (cd *service) _syncAppFields(ctx context.Context) error {
 	if err != nil {
 		return err
 	}
-	commits := lo.SliceToMap(apps, func(app *domain.Application) (string, struct{}) { return app.WantCommit, struct{}{} })
-	builds, err := cd.buildRepo.GetBuilds(ctx, domain.GetBuildCondition{
-		CommitIn: optional.From(lo.Keys(commits)),
-		Status:   optional.From(domain.BuildStatusSucceeded),
-	})
+
+	builds, err := domain.GetSuccessBuilds(ctx, cd.buildRepo, apps)
 	if err != nil {
 		return err
 	}
-
-	slices.SortFunc(builds, func(b1, b2 *domain.Build) bool { return b1.FinishedAt.V.Before(b2.FinishedAt.V) })
-	latestBuild := lo.SliceToMap(builds, func(b *domain.Build) (string, *domain.Build) { return b.ApplicationID + b.Commit, b })
-
 	for _, app := range apps {
 		// Check if build has succeeded, if so sync 'current_commit' and 'updated_at' fields for restarting app
-		if b, ok := latestBuild[app.ID+app.WantCommit]; ok {
-			isSynced := app.CurrentCommit == app.WantCommit && !app.UpdatedAt.Before(b.FinishedAt.V)
-			if isSynced {
+		if b, ok := builds[app.ID+app.WantCommit]; ok {
+			toSync := app.CurrentCommit != app.WantCommit || app.UpdatedAt.Before(b.FinishedAt.V)
+			if !toSync {
 				continue
 			}
 			err = cd.appRepo.UpdateApplication(ctx, app.ID, &domain.UpdateApplicationArgs{

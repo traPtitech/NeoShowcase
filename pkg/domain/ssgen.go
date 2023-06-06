@@ -3,10 +3,6 @@ package domain
 import (
 	"context"
 
-	"github.com/samber/lo"
-	"golang.org/x/exp/slices"
-
-	"github.com/traPtitech/neoshowcase/pkg/util/ds"
 	"github.com/traPtitech/neoshowcase/pkg/util/optional"
 )
 
@@ -36,19 +32,13 @@ func GetActiveStaticSites(ctx context.Context, appRepo ApplicationRepository, bu
 		return nil, err
 	}
 
-	commits := ds.Map(applications, func(app *Application) string { return app.CurrentCommit })
-	builds, err := buildRepo.GetBuilds(ctx, GetBuildCondition{CommitIn: optional.From(commits), Status: optional.From(BuildStatusSucceeded)})
+	builds, err := GetSuccessBuilds(ctx, buildRepo, applications)
 	if err != nil {
 		return nil, err
 	}
-
-	// Last succeeded builds for each app+commit
-	slices.SortFunc(builds, func(a, b *Build) bool { return a.StartedAt.ValueOrZero().Before(b.StartedAt.ValueOrZero()) })
-	buildMap := lo.SliceToMap(builds, func(b *Build) (string, *Build) { return b.ApplicationID + b.Commit, b })
-
 	var sites []*StaticSite
 	for _, app := range applications {
-		build, ok := buildMap[app.ID+app.CurrentCommit]
+		build, ok := builds[app.ID+app.CurrentCommit]
 		if !ok {
 			continue
 		}
