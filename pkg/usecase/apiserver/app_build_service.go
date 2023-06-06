@@ -1,4 +1,4 @@
-package usecase
+package apiserver
 
 import (
 	"context"
@@ -11,16 +11,16 @@ import (
 	"github.com/traPtitech/neoshowcase/pkg/util/optional"
 )
 
-func (s *APIServerService) GetBuilds(ctx context.Context, applicationID string) ([]*domain.Build, error) {
+func (s *Service) GetBuilds(ctx context.Context, applicationID string) ([]*domain.Build, error) {
 	return s.buildRepo.GetBuilds(ctx, domain.GetBuildCondition{ApplicationID: optional.From(applicationID)})
 }
 
-func (s *APIServerService) GetBuild(ctx context.Context, buildID string) (*domain.Build, error) {
+func (s *Service) GetBuild(ctx context.Context, buildID string) (*domain.Build, error) {
 	build, err := s.buildRepo.GetBuild(ctx, buildID)
 	return handleRepoError(build, err)
 }
 
-func (s *APIServerService) RetryCommitBuild(ctx context.Context, applicationID string, commit string) error {
+func (s *Service) RetryCommitBuild(ctx context.Context, applicationID string, commit string) error {
 	err := s.isApplicationOwner(ctx, applicationID)
 	if err != nil {
 		return err
@@ -38,7 +38,7 @@ func (s *APIServerService) RetryCommitBuild(ctx context.Context, applicationID s
 	return nil
 }
 
-func (s *APIServerService) CancelBuild(ctx context.Context, buildID string) error {
+func (s *Service) CancelBuild(ctx context.Context, buildID string) error {
 	err := s.isBuildOwner(ctx, buildID)
 	if err != nil {
 		return err
@@ -51,7 +51,7 @@ func (s *APIServerService) CancelBuild(ctx context.Context, buildID string) erro
 	return nil
 }
 
-func (s *APIServerService) GetBuildLog(ctx context.Context, buildID string) ([]byte, error) {
+func (s *Service) GetBuildLog(ctx context.Context, buildID string) ([]byte, error) {
 	err := s.isBuildOwner(ctx, buildID)
 	if err != nil {
 		return nil, err
@@ -67,7 +67,7 @@ func (s *APIServerService) GetBuildLog(ctx context.Context, buildID string) ([]b
 	return domain.GetBuildLog(s.storage, buildID)
 }
 
-func (s *APIServerService) GetBuildLogStream(ctx context.Context, buildID string) (<-chan *pb.BuildLog, error) {
+func (s *Service) GetBuildLogStream(ctx context.Context, buildID string) (<-chan *pb.BuildLog, error) {
 	err := s.isBuildOwner(ctx, buildID)
 	if err != nil {
 		return nil, err
@@ -80,6 +80,6 @@ func (s *APIServerService) GetBuildLogStream(ctx context.Context, buildID string
 	return ch, nil
 }
 
-func (s *APIServerService) GetArtifact(_ context.Context, artifactID string) (filename string, r io.ReadCloser, err error) {
+func (s *Service) GetArtifact(_ context.Context, artifactID string) (filename string, r io.ReadCloser, err error) {
 	return domain.GetArtifact(s.storage, artifactID)
 }

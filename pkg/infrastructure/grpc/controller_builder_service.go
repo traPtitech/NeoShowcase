@@ -12,7 +12,7 @@ import (
 
 	"github.com/traPtitech/neoshowcase/pkg/domain"
 	"github.com/traPtitech/neoshowcase/pkg/infrastructure/grpc/pb"
-	"github.com/traPtitech/neoshowcase/pkg/usecase"
+	"github.com/traPtitech/neoshowcase/pkg/usecase/logstream"
 	"github.com/traPtitech/neoshowcase/pkg/util/ds"
 )
 
@@ -21,7 +21,7 @@ type builderConnection struct {
 }
 
 type ControllerBuilderService struct {
-	logStream *usecase.LogStreamService
+	logStream *logstream.Service
 
 	idle    domain.PubSub[struct{}]
 	settled domain.PubSub[struct{}]
@@ -31,7 +31,7 @@ type ControllerBuilderService struct {
 }
 
 func NewControllerBuilderService(
-	logStream *usecase.LogStreamService,
+	logStream *logstream.Service,
 ) domain.ControllerBuilderService {
 	return &ControllerBuilderService{
 		logStream: logStream,

@@ -1,4 +1,4 @@
-package usecase
+package apiserver
 
 import (
 	"context"
@@ -12,16 +12,16 @@ import (
 	"github.com/traPtitech/neoshowcase/pkg/domain"
 )
 
-func (s *APIServerService) GetSystemPublicKey(_ context.Context) string {
+func (s *Service) GetSystemPublicKey(_ context.Context) string {
 	encoded := domain.Base64EncodedPublicKey(s.pubKey.Signer.PublicKey())
 	return encoded + " neoshowcase"
 }
 
-func (s *APIServerService) GetAvailableDomains(ctx context.Context) (domain.AvailableDomainSlice, error) {
+func (s *Service) GetAvailableDomains(ctx context.Context) (domain.AvailableDomainSlice, error) {
 	return s.controller.GetAvailableDomains(ctx)
 }
 
-func (s *APIServerService) GetAvailablePorts(ctx context.Context) (domain.AvailablePortSlice, error) {
+func (s *Service) GetAvailablePorts(ctx context.Context) (domain.AvailablePortSlice, error) {
 	available, err := s.controller.GetAvailablePorts(ctx)
 	if err != nil {
 		return nil, err
@@ -45,7 +45,7 @@ func newTmpKeyPairService() *tmpKeyPairService {
 	}
 }
 
-func (s *APIServerService) GenerateKeyPair(ctx context.Context) (keyID string, publicKey string, err error) {
+func (s *Service) GenerateKeyPair(ctx context.Context) (keyID string, publicKey string, err error) {
 	keyID = domain.NewID()
 	privKey, err := s.tmpKeys.Get(ctx, keyID)
 	if err != nil {

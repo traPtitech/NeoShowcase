@@ -1,4 +1,4 @@
-package usecase
+package apiserver
 
 import (
 	"context"
@@ -18,7 +18,7 @@ type CreateRepositoryAuth struct {
 	KeyID    string
 }
 
-func (s *APIServerService) convertRepositoryAuth(a CreateRepositoryAuth) (domain.RepositoryAuth, error) {
+func (s *Service) convertRepositoryAuth(a CreateRepositoryAuth) (domain.RepositoryAuth, error) {
 	switch a.Method {
 	case domain.RepositoryAuthMethodBasic:
 		return domain.RepositoryAuth{
@@ -45,7 +45,7 @@ func (s *APIServerService) convertRepositoryAuth(a CreateRepositoryAuth) (domain
 	}
 }
 
-func (s *APIServerService) CreateRepository(ctx context.Context, name, url string, auth optional.Of[CreateRepositoryAuth]) (*domain.Repository, error) {
+func (s *Service) CreateRepository(ctx context.Context, name, url string, auth optional.Of[CreateRepositoryAuth]) (*domain.Repository, error) {
 	dAuth, err := optional.MapErr(auth, s.convertRepositoryAuth)
 	if err != nil {
 		return nil, err
@@ -68,7 +68,7 @@ const (
 	GetRepoScopeAll
 )
 
-func (s *APIServerService) GetRepositories(ctx context.Context, scope GetRepoScope) ([]*domain.Repository, error) {
+func (s *Service) GetRepositories(ctx context.Context, scope GetRepoScope) ([]*domain.Repository, error) {
 	var cond domain.GetRepositoryCondition
 	switch scope {
 	case GetRepoScopeMine:
@@ -83,7 +83,7 @@ func (s *APIServerService) GetRepositories(ctx context.Context, scope GetRepoSco
 	return s.gitRepo.GetRepositories(ctx, cond)
 }
 
-func (s *APIServerService) GetRepository(ctx context.Context, id string) (*domain.Repository, error) {
+func (s *Service) GetRepository(ctx context.Context, id string) (*domain.Repository, error) {
 	return handleRepoError(s.gitRepo.GetRepository(ctx, id))
 }
 
@@ -94,7 +94,7 @@ type UpdateRepositoryArgs struct {
 	OwnerIDs optional.Of[[]string]
 }
 
-func (s *APIServerService) convertUpdateRepositoryArgs(a *UpdateRepositoryArgs) (*domain.UpdateRepositoryArgs, error) {
+func (s *Service) convertUpdateRepositoryArgs(a *UpdateRepositoryArgs) (*domain.UpdateRepositoryArgs, error) {
 	dAuth, err := optional.MapErr(a.Auth, func(t optional.Of[CreateRepositoryAuth]) (optional.Of[domain.RepositoryAuth], error) {
 		return optional.MapErr(t, s.convertRepositoryAuth)
 	})
@@ -109,7 +109,7 @@ func (s *APIServerService) convertUpdateRepositoryArgs(a *UpdateRepositoryArgs) 
 	}, nil
 }
 
-func (s *APIServerService) UpdateRepository(ctx context.Context, id string, args *UpdateRepositoryArgs) error {
+func (s *Service) UpdateRepository(ctx context.Context, id string, args *UpdateRepositoryArgs) error {
 	err := s.isRepositoryOwner(ctx, id)
 	if err != nil {
 		return err
@@ -132,7 +132,7 @@ func (s *APIServerService) UpdateRepository(ctx context.Context, id string, args
 	return s.gitRepo.UpdateRepository(ctx, id, dArgs)
 }
 
-func (s *APIServerService) RefreshRepository(ctx context.Context, id string) error {
+func (s *Service) RefreshRepository(ctx context.Context, id string) error {
 	err := s.controller.FetchRepository(ctx, id)
 	if err != nil {
 		return errors.Wrap(err, "requesting controller")
@@ -140,7 +140,7 @@ func (s *APIServerService) RefreshRepository(ctx context.Context, id string) err
 	return nil
 }
 
-func (s *APIServerService) DeleteRepository(ctx context.Context, id string) error {
+func (s *Service) DeleteRepository(ctx context.Context, id string) error {
 	err := s.isRepositoryOwner(ctx, id)
 	if err != nil {
 		return err

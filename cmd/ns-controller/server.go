@@ -8,7 +8,10 @@ import (
 
 	"github.com/traPtitech/neoshowcase/pkg/domain"
 	"github.com/traPtitech/neoshowcase/pkg/infrastructure/webhook"
-	"github.com/traPtitech/neoshowcase/pkg/usecase"
+	"github.com/traPtitech/neoshowcase/pkg/usecase/cdservice"
+	"github.com/traPtitech/neoshowcase/pkg/usecase/cleaner"
+	"github.com/traPtitech/neoshowcase/pkg/usecase/repofetcher"
+	"github.com/traPtitech/neoshowcase/pkg/usecase/sshserver"
 )
 
 type Server struct {
@@ -16,11 +19,11 @@ type Server struct {
 
 	db             *sql.DB
 	backend        domain.Backend
-	sshServer      usecase.SSHServer
+	sshServer      sshserver.SSHServer
 	webhook        *webhook.Receiver
-	cdService      usecase.ContinuousDeploymentService
-	fetcherService usecase.RepositoryFetcherService
-	cleanerService usecase.CleanerService
+	cdService      cdservice.Service
+	fetcherService repofetcher.Service
+	cleanerService cleaner.Service
 }
 
 func (s *Server) Start(ctx context.Context) error {

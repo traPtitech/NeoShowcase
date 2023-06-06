@@ -5,20 +5,20 @@ import (
 
 	"github.com/traPtitech/neoshowcase/pkg/domain"
 	"github.com/traPtitech/neoshowcase/pkg/infrastructure/grpc/pb/pbconnect"
-	"github.com/traPtitech/neoshowcase/pkg/usecase"
+	"github.com/traPtitech/neoshowcase/pkg/usecase/apiserver"
 )
 
 func handleUseCaseError(err error) error {
-	underlying, typ, ok := usecase.DecomposeError(err)
+	underlying, typ, ok := apiserver.DecomposeError(err)
 	if ok {
 		switch typ {
-		case usecase.ErrorTypeBadRequest:
+		case apiserver.ErrorTypeBadRequest:
 			return connect.NewError(connect.CodeInvalidArgument, underlying)
-		case usecase.ErrorTypeNotFound:
+		case apiserver.ErrorTypeNotFound:
 			return connect.NewError(connect.CodeNotFound, underlying)
-		case usecase.ErrorTypeAlreadyExists:
+		case apiserver.ErrorTypeAlreadyExists:
 			return connect.NewError(connect.CodeAlreadyExists, underlying)
-		case usecase.ErrorTypeForbidden:
+		case apiserver.ErrorTypeForbidden:
 			return connect.NewError(connect.CodePermissionDenied, underlying)
 		}
 	}
@@ -26,12 +26,12 @@ func handleUseCaseError(err error) error {
 }
 
 type APIService struct {
-	svc           *usecase.APIServerService
+	svc           *apiserver.Service
 	avatarBaseURL domain.AvatarBaseURL
 }
 
 func NewAPIServiceServer(
-	svc *usecase.APIServerService,
+	svc *apiserver.Service,
 	avatarBaseURL domain.AvatarBaseURL,
 ) pbconnect.APIServiceHandler {
 	return &APIService{

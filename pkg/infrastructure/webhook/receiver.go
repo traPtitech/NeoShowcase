@@ -9,7 +9,7 @@ import (
 	log "github.com/sirupsen/logrus"
 
 	"github.com/traPtitech/neoshowcase/pkg/domain"
-	"github.com/traPtitech/neoshowcase/pkg/usecase"
+	"github.com/traPtitech/neoshowcase/pkg/usecase/repofetcher"
 	"github.com/traPtitech/neoshowcase/pkg/util/ds"
 	"github.com/traPtitech/neoshowcase/pkg/util/optional"
 )
@@ -22,7 +22,7 @@ type ReceiverConfig struct {
 type Receiver struct {
 	config  ReceiverConfig
 	gitRepo domain.GitRepositoryRepository
-	fetcher usecase.RepositoryFetcherService
+	fetcher repofetcher.Service
 
 	echo *echo.Echo
 }
@@ -30,7 +30,7 @@ type Receiver struct {
 func NewReceiver(
 	config ReceiverConfig,
 	gitRepo domain.GitRepositoryRepository,
-	fetcher usecase.RepositoryFetcherService,
+	fetcher repofetcher.Service,
 ) *Receiver {
 	r := &Receiver{
 		config:  config,

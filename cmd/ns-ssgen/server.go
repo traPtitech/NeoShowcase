@@ -7,12 +7,12 @@ import (
 	"golang.org/x/sync/errgroup"
 
 	"github.com/traPtitech/neoshowcase/pkg/domain"
-	"github.com/traPtitech/neoshowcase/pkg/usecase"
+	"github.com/traPtitech/neoshowcase/pkg/usecase/ssgen"
 )
 
 type Server struct {
 	db     *sql.DB
-	svc    usecase.StaticSiteServerService
+	svc    ssgen.GeneratorService
 	engine domain.SSEngine
 }
 

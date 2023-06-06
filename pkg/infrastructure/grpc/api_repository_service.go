@@ -8,7 +8,7 @@ import (
 
 	"github.com/traPtitech/neoshowcase/pkg/infrastructure/grpc/pb"
 	"github.com/traPtitech/neoshowcase/pkg/infrastructure/grpc/pbconvert"
-	"github.com/traPtitech/neoshowcase/pkg/usecase"
+	"github.com/traPtitech/neoshowcase/pkg/usecase/apiserver"
 	"github.com/traPtitech/neoshowcase/pkg/util/ds"
 	"github.com/traPtitech/neoshowcase/pkg/util/optional"
 )
@@ -49,7 +49,7 @@ func (s *APIService) GetRepository(ctx context.Context, req *connect.Request[pb.
 
 func (s *APIService) UpdateRepository(ctx context.Context, req *connect.Request[pb.UpdateRepositoryRequest]) (*connect.Response[emptypb.Empty], error) {
 	msg := req.Msg
-	args := &usecase.UpdateRepositoryArgs{
+	args := &apiserver.UpdateRepositoryArgs{
 		Name:     optional.FromNonZero(msg.Name),
 		URL:      optional.FromNonZero(msg.Url),
 		Auth:     optional.Map(optional.FromNonZero(msg.Auth), pbconvert.FromPBRepositoryAuth),

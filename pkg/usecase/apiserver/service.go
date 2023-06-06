@@ -1,4 +1,4 @@
-package usecase
+package apiserver
 
 import (
 	"context"
@@ -20,7 +20,7 @@ func handleRepoError[T any](entity T, err error) (T, error) {
 	}
 }
 
-type APIServerService struct {
+type Service struct {
 	artifactRepo    domain.ArtifactRepository
 	appRepo         domain.ApplicationRepository
 	buildRepo       domain.BuildRepository
@@ -37,7 +37,7 @@ type APIServerService struct {
 	tmpKeys *tmpKeyPairService
 }
 
-func NewAPIServerService(
+func NewService(
 	artifactRepo domain.ArtifactRepository,
 	appRepo domain.ApplicationRepository,
 	buildRepo domain.BuildRepository,
@@ -50,8 +50,8 @@ func NewAPIServerService(
 	containerLogger domain.ContainerLogger,
 	controller domain.ControllerServiceClient,
 	pubKey *ssh.PublicKeys,
-) *APIServerService {
-	return &APIServerService{
+) *Service {
+	return &Service{
 		artifactRepo:    artifactRepo,
 		appRepo:         appRepo,
 		buildRepo:       buildRepo,
@@ -69,7 +69,7 @@ func NewAPIServerService(
 	}
 }
 
-func (s *APIServerService) isRepositoryOwner(ctx context.Context, repoID string) error {
+func (s *Service) isRepositoryOwner(ctx context.Context, repoID string) error {
 	user := web.GetUser(ctx)
 	repo, err := s.gitRepo.GetRepository(ctx, repoID)
 	if err != nil {
@@ -81,7 +81,7 @@ func (s *APIServerService) isRepositoryOwner(ctx context.Context, repoID string)
 	return nil
 }
 
-func (s *APIServerService) isApplicationOwner(ctx context.Context, appID string) error {
+func (s *Service) isApplicationOwner(ctx context.Context, appID string) error {
 	user := web.GetUser(ctx)
 	app, err := s.appRepo.GetApplication(ctx, appID)
 	if err != nil {
@@ -93,7 +93,7 @@ func (s *APIServerService) isApplicationOwner(ctx context.Context, appID string)
 	return nil
 }
 
-func (s *APIServerService) isBuildOwner(ctx context.Context, buildID string) error {
+func (s *Service) isBuildOwner(ctx context.Context, buildID string) error {
 	user := web.GetUser(ctx)
 	build, err := s.buildRepo.GetBuild(ctx, buildID)
 	if err != nil {
@@ -109,7 +109,7 @@ func (s *APIServerService) isBuildOwner(ctx context.Context, buildID string) err
 	return nil
 }
 
-func (s *APIServerService) isAdmin(ctx context.Context) error {
+func (s *Service) isAdmin(ctx context.Context) error {
 	user := web.GetUser(ctx)
 	if !user.Admin {
 		return newError(ErrorTypeForbidden, "you do not have permission for this action", nil)

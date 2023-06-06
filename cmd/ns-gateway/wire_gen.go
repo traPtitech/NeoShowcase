@@ -10,7 +10,7 @@ import (
 	"github.com/traPtitech/neoshowcase/pkg/infrastructure/dbmanager"
 	"github.com/traPtitech/neoshowcase/pkg/infrastructure/grpc"
 	"github.com/traPtitech/neoshowcase/pkg/infrastructure/repository"
-	"github.com/traPtitech/neoshowcase/pkg/usecase"
+	"github.com/traPtitech/neoshowcase/pkg/usecase/apiserver"
 )
 
 import (
@@ -56,9 +56,9 @@ func NewServer(c2 Config) (*Server, error) {
 	if err != nil {
 		return nil, err
 	}
-	apiServerService := usecase.NewAPIServerService(artifactRepository, applicationRepository, buildRepository, environmentRepository, gitRepositoryRepository, userRepository, storage, mariaDBManager, mongoDBManager, containerLogger, controllerServiceClient, publicKeys)
+	service := apiserver.NewService(artifactRepository, applicationRepository, buildRepository, environmentRepository, gitRepositoryRepository, userRepository, storage, mariaDBManager, mongoDBManager, containerLogger, controllerServiceClient, publicKeys)
 	avatarBaseURL := c2.AvatarBaseURL
-	apiServiceHandler := grpc.NewAPIServiceServer(apiServerService, avatarBaseURL)
+	apiServiceHandler := grpc.NewAPIServiceServer(service, avatarBaseURL)
 	authHeader := c2.AuthHeader
 	authInterceptor := grpc.NewAuthInterceptor(userRepository, authHeader)
 	mainGatewayServer := provideGatewayServer(c2, apiServiceHandler, authInterceptor)

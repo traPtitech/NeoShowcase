@@ -1,4 +1,4 @@
-package usecase
+package cleaner
 
 import (
 	"context"
@@ -18,7 +18,7 @@ import (
 	"github.com/traPtitech/neoshowcase/pkg/util/optional"
 )
 
-type CleanerService interface {
+type Service interface {
 	Start(ctx context.Context) error
 	Shutdown(ctx context.Context) error
 }
@@ -36,13 +36,13 @@ type cleanerService struct {
 	shutdownOnce sync.Once
 }
 
-func NewCleanerService(
+func NewService(
 	artifactRepo domain.ArtifactRepository,
 	appRepo domain.ApplicationRepository,
 	buildRepo domain.BuildRepository,
 	image builder.ImageConfig,
 	storage domain.Storage,
-) (CleanerService, error) {
+) (Service, error) {
 	c := &cleanerService{
 		artifactRepo: artifactRepo,
 		appRepo:      appRepo,

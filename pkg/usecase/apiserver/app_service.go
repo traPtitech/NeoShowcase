@@ -1,4 +1,4 @@
-package usecase
+package apiserver
 
 import (
 	"context"
@@ -13,7 +13,7 @@ import (
 	"github.com/traPtitech/neoshowcase/pkg/util/random"
 )
 
-func (s *APIServerService) CreateApplication(ctx context.Context, app *domain.Application) (*domain.Application, error) {
+func (s *Service) CreateApplication(ctx context.Context, app *domain.Application) (*domain.Application, error) {
 	repo, err := s.gitRepo.GetRepository(ctx, app.RepositoryID)
 	if err != nil {
 		return nil, err
@@ -68,7 +68,7 @@ func (s *APIServerService) CreateApplication(ctx context.Context, app *domain.Ap
 	return s.GetApplication(ctx, app.ID)
 }
 
-func (s *APIServerService) createApplicationDatabase(ctx context.Context, app *domain.Application) error {
+func (s *Service) createApplicationDatabase(ctx context.Context, app *domain.Application) error {
 	dbName := domain.DBName(app.ID)
 
 	if app.Config.BuildConfig.MariaDB() {
@@ -128,7 +128,7 @@ func (s *APIServerService) createApplicationDatabase(ctx context.Context, app *d
 	return nil
 }
 
-func (s *APIServerService) deleteApplicationDatabase(ctx context.Context, app *domain.Application) error {
+func (s *Service) deleteApplicationDatabase(ctx context.Context, app *domain.Application) error {
 	dbName := domain.DBName(app.ID)
 
 	if app.Config.BuildConfig.MariaDB() {
@@ -148,7 +148,7 @@ func (s *APIServerService) deleteApplicationDatabase(ctx context.Context, app *d
 	return nil
 }
 
-func (s *APIServerService) GetApplications(ctx context.Context, all bool) ([]*domain.Application, error) {
+func (s *Service) GetApplications(ctx context.Context, all bool) ([]*domain.Application, error) {
 	var cond domain.GetApplicationCondition
 	if !all {
 		cond.UserID = optional.From(web.GetUser(ctx).ID)
@@ -156,11 +156,11 @@ func (s *APIServerService) GetApplications(ctx context.Context, all bool) ([]*do
 	return s.appRepo.GetApplications(ctx, cond)
 }
 
-func (s *APIServerService) GetApplication(ctx context.Context, id string) (*domain.Application, error) {
+func (s *Service) GetApplication(ctx context.Context, id string) (*domain.Application, error) {
 	return handleRepoError(s.appRepo.GetApplication(ctx, id))
 }
 
-func (s *APIServerService) UpdateApplication(ctx context.Context, id string, args *domain.UpdateApplicationArgs) error {
+func (s *Service) UpdateApplication(ctx context.Context, id string, args *domain.UpdateApplicationArgs) error {
 	err := s.isApplicationOwner(ctx, id)
 	if err != nil {
 		return err
@@ -227,7 +227,7 @@ func (s *APIServerService) UpdateApplication(ctx context.Context, id string, arg
 	return nil
 }
 
-func (s *APIServerService) DeleteApplication(ctx context.Context, id string) error {
+func (s *Service) DeleteApplication(ctx context.Context, id string) error {
 	err := s.isApplicationOwner(ctx, id)
 	if err != nil {
 		return err

@@ -1,4 +1,4 @@
-package usecase
+package apiserver
 
 import (
 	"context"
@@ -10,7 +10,7 @@ import (
 	"github.com/traPtitech/neoshowcase/pkg/util/optional"
 )
 
-func (s *APIServerService) GetEnvironmentVariables(ctx context.Context, applicationID string) ([]*domain.Environment, error) {
+func (s *Service) GetEnvironmentVariables(ctx context.Context, applicationID string) ([]*domain.Environment, error) {
 	err := s.isApplicationOwner(ctx, applicationID)
 	if err != nil {
 		return nil, err
@@ -19,7 +19,7 @@ func (s *APIServerService) GetEnvironmentVariables(ctx context.Context, applicat
 	return s.envRepo.GetEnv(ctx, domain.GetEnvCondition{ApplicationID: optional.From(applicationID)})
 }
 
-func (s *APIServerService) SetEnvironmentVariable(ctx context.Context, applicationID string, key string, value string) error {
+func (s *Service) SetEnvironmentVariable(ctx context.Context, applicationID string, key string, value string) error {
 	err := s.isApplicationOwner(ctx, applicationID)
 	if err != nil {
 		return err
@@ -29,7 +29,7 @@ func (s *APIServerService) SetEnvironmentVariable(ctx context.Context, applicati
 	return s.envRepo.SetEnv(ctx, env)
 }
 
-func (s *APIServerService) GetOutput(ctx context.Context, id string, before time.Time) ([]*domain.ContainerLog, error) {
+func (s *Service) GetOutput(ctx context.Context, id string, before time.Time) ([]*domain.ContainerLog, error) {
 	err := s.isApplicationOwner(ctx, id)
 	if err != nil {
 		return nil, err
@@ -38,7 +38,7 @@ func (s *APIServerService) GetOutput(ctx context.Context, id string, before time
 	return s.containerLogger.Get(ctx, id, before)
 }
 
-func (s *APIServerService) GetOutputStream(ctx context.Context, id string, after time.Time, send func(l *domain.ContainerLog) error) error {
+func (s *Service) GetOutputStream(ctx context.Context, id string, after time.Time, send func(l *domain.ContainerLog) error) error {
 	err := s.isApplicationOwner(ctx, id)
 	if err != nil {
 		return err
@@ -68,7 +68,7 @@ func (s *APIServerService) GetOutputStream(ctx context.Context, id string, after
 	}
 }
 
-func (s *APIServerService) StartApplication(ctx context.Context, id string) error {
+func (s *Service) StartApplication(ctx context.Context, id string) error {
 	err := s.isApplicationOwner(ctx, id)
 	if err != nil {
 		return err
@@ -93,7 +93,7 @@ func (s *APIServerService) StartApplication(ctx context.Context, id string) erro
 	return nil
 }
 
-func (s *APIServerService) StopApplication(ctx context.Context, id string) error {
+func (s *Service) StopApplication(ctx context.Context, id string) error {
 	err := s.isApplicationOwner(ctx, id)
 	if err != nil {
 		return err
