@@ -13,7 +13,10 @@ import (
 
 	"github.com/traPtitech/neoshowcase/pkg/domain"
 	"github.com/traPtitech/neoshowcase/pkg/infrastructure/staticserver/builtin"
+	"github.com/traPtitech/neoshowcase/pkg/infrastructure/staticserver/caddy"
 	"github.com/traPtitech/neoshowcase/pkg/infrastructure/storage"
+	"github.com/traPtitech/neoshowcase/pkg/usecase/healthcheck"
+	"github.com/traPtitech/neoshowcase/pkg/usecase/ssgen"
 	"github.com/traPtitech/neoshowcase/pkg/util/cli"
 )
 
@@ -78,10 +81,16 @@ func main() {
 	}
 }
 
+func provideHealthCheckFunc(gen ssgen.GeneratorService) healthcheck.Func {
+	return gen.Healthy
+}
+
 func provideStaticServer(c Config) (domain.StaticServer, error) {
 	switch c.Server.Type {
 	case "builtIn":
 		return builtin.NewServer(c.Server.BuiltIn), nil
+	case "caddy":
+		return caddy.NewServer(c.Server.Caddy), nil
 	default:
 		return nil, errors.Errorf("invalid static server type: %v", c.Server.Type)
 	}

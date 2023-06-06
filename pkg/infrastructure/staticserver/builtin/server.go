@@ -22,8 +22,7 @@ type server struct {
 	server *echo.Echo
 	sites  map[string]*host
 
-	sitesLock     sync.RWMutex
-	reconcileLock sync.Mutex
+	sitesLock sync.RWMutex
 }
 
 type host struct {
@@ -72,9 +71,6 @@ func (b *server) Shutdown(ctx context.Context) error {
 }
 
 func (b *server) Reconcile(docsRoot string, sites []*domain.StaticSite) error {
-	b.reconcileLock.Lock()
-	defer b.reconcileLock.Unlock()
-
 	siteMap := map[string]*host{}
 	for _, site := range sites {
 		artifactDir := filepath.Join(docsRoot, site.ArtifactID)

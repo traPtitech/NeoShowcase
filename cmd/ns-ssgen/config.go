@@ -7,14 +7,17 @@ import (
 	"github.com/traPtitech/neoshowcase/pkg/infrastructure/grpc"
 	"github.com/traPtitech/neoshowcase/pkg/infrastructure/repository"
 	"github.com/traPtitech/neoshowcase/pkg/infrastructure/staticserver/builtin"
+	"github.com/traPtitech/neoshowcase/pkg/infrastructure/staticserver/caddy"
+	"github.com/traPtitech/neoshowcase/pkg/usecase/healthcheck"
 )
 
 type Config struct {
-	ArtifactsRoot string `mapstructure:"artifactsRoot" yaml:"artifactsRoot"`
-	HealthPort    int    `mapstructure:"healthPort" yaml:"healthPort"`
+	ArtifactsRoot string           `mapstructure:"artifactsRoot" yaml:"artifactsRoot"`
+	HealthPort    healthcheck.Port `mapstructure:"healthPort" yaml:"healthPort"`
 	Server        struct {
 		Type    string         `mapstructure:"type" yaml:"type"`
 		BuiltIn builtin.Config `mapstructure:"builtIn" yaml:"builtIn"`
+		Caddy   caddy.Config   `mapstructure:"caddy" yaml:"caddy"`
 	} `mapstructure:"server" yaml:"server"`
 	Controller grpc.ControllerServiceClientConfig `mapstructure:"controller" yaml:"controller"`
 	DB         repository.Config                  `mapstructure:"db" yaml:"db"`
@@ -27,6 +30,8 @@ func init() {
 
 	viper.SetDefault("server.type", "builtIn")
 	viper.SetDefault("server.builtIn.port", 8080)
+	viper.SetDefault("server.caddy.adminAPI", "http://localhost:2019")
+	viper.SetDefault("server.caddy.configRoot", "/caddy-config")
 
 	viper.SetDefault("controller.url", "http://ns-controller:10000")
 

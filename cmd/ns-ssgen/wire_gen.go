@@ -9,6 +9,7 @@ package main
 import (
 	"github.com/traPtitech/neoshowcase/pkg/infrastructure/grpc"
 	"github.com/traPtitech/neoshowcase/pkg/infrastructure/repository"
+	"github.com/traPtitech/neoshowcase/pkg/usecase/healthcheck"
 	"github.com/traPtitech/neoshowcase/pkg/usecase/ssgen"
 )
 
@@ -35,10 +36,14 @@ func New(c2 Config) (*Server, error) {
 	}
 	staticServerDocumentRootPath := provideStaticServerDocumentRootPath(c2)
 	generatorService := ssgen.NewGeneratorService(controllerSSGenServiceClient, applicationRepository, buildRepository, storage, staticServer, staticServerDocumentRootPath)
-	server := &Server{
+	port := c2.HealthPort
+	healthcheckFunc := provideHealthCheckFunc(generatorService)
+	server := healthcheck.NewServer(port, healthcheckFunc)
+	mainServer := &Server{
 		db:     db,
 		svc:    generatorService,
+		health: server,
 		engine: staticServer,
 	}
-	return server, nil
+	return mainServer, nil
 }
