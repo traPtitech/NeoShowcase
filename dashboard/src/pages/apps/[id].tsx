@@ -263,7 +263,7 @@ export default () => {
               size='large'
               disabled={app().running}
               title={
-                app().running ? 'アプリケーションを削除します' : 'アプリケーションが起動しているため削除できません'
+                app().running ? 'アプリケーションが起動しているため削除できません' : 'アプリケーションを削除します'
               }
             >
               Delete Application
