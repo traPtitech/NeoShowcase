@@ -32,8 +32,8 @@ func New(c2 Config) (*Server, error) {
 	}
 	staticServerDocumentRootPath := provideWebServerDocumentRootPath(c2)
 	staticServerPort := provideWebServerPort(c2)
-	ssEngine := staticserver.NewBuiltIn(storage, staticServerDocumentRootPath, staticServerPort)
-	generatorService := ssgen.NewGeneratorService(controllerSSGenServiceClient, applicationRepository, buildRepository, ssEngine)
+	ssEngine := staticserver.NewBuiltIn(staticServerDocumentRootPath, staticServerPort)
+	generatorService := ssgen.NewGeneratorService(controllerSSGenServiceClient, applicationRepository, buildRepository, storage, ssEngine, staticServerDocumentRootPath)
 	server := &Server{
 		db:     db,
 		svc:    generatorService,
