@@ -170,7 +170,7 @@ export default () => {
 
   let formContainer: HTMLFormElement
 
-  const createRepository: JSX.EventHandler<HTMLInputElement, MouseEvent> = async (e) => {
+  const createRepository: JSX.EventHandler<HTMLButtonElement, MouseEvent> = async (e) => {
     // prevent default form submit (reload page)
     e.preventDefault()
 
