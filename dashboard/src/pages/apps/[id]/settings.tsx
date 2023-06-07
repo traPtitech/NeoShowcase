@@ -34,9 +34,48 @@ import { userFromId, users } from '/@/libs/useAllUsers'
 import { UserSearch } from '/@/components/UserSearch'
 import useModal from '/@/libs/useModal'
 
-const ConfigsContainer = styled('div', {
+const ContentContainer = styled('div', {
   base: {
     marginTop: '24px',
+    display: 'grid',
+    gridTemplateColumns: '380px 1fr',
+    gap: '40px',
+    position: 'relative',
+  },
+})
+const SidebarContainer = styled('div', {
+  base: {
+    position: 'sticky',
+    top: '64px',
+    padding: '24px 40px',
+    backgroundColor: vars.bg.white1,
+    borderRadius: '4px',
+    border: `1px solid ${vars.bg.white4}`,
+  },
+})
+const SidebarOptions = styled('div', {
+  base: {
+    display: 'flex',
+    flexDirection: 'column',
+    gap: '12px',
+
+    fontSize: '20px',
+    color: vars.text.black1,
+  },
+})
+const SidebarNavAnchor = styled('a', {
+  base: {
+    color: vars.text.black2,
+    textDecoration: 'none',
+    selectors: {
+      '&:hover': {
+        color: vars.text.black1,
+      },
+    },
+  },
+})
+const ConfigsContainer = styled('div', {
+  base: {
     display: 'flex',
     flexDirection: 'column',
     gap: '24px',
@@ -101,7 +140,7 @@ export default () => {
     return (
       <form ref={formContainer}>
         <SettingFieldSet>
-          <FormTextBig>General settings</FormTextBig>
+          <FormTextBig id='general-settings'>General settings</FormTextBig>
           <div>
             <InputLabel>Application Name</InputLabel>
             <InputBar
@@ -202,7 +241,7 @@ export default () => {
 
     return (
       <SettingFieldSet>
-        <FormTextBig>Build Settings</FormTextBig>
+        <FormTextBig id='build-settings'>Build Settings</FormTextBig>
         <BuildConfigs
           setBuildConfig={setBuildConfig}
           buildConfig={buildConfig}
@@ -275,7 +314,7 @@ export default () => {
 
     return (
       <SettingFieldSet>
-        <FormTextBig>Website Settings</FormTextBig>
+        <FormTextBig id='website-settings'>Website Settings</FormTextBig>
         <For each={websites}>
           {(website, i) => (
             <WebsiteSetting
@@ -344,7 +383,7 @@ export default () => {
 
     return (
       <SettingFieldSet>
-        <FormTextBig>Port Publication Settings</FormTextBig>
+        <FormTextBig id='port-settings'>Port Publication Settings</FormTextBig>
         <PortPublicationSettings
           portPublications={currentPortPublications}
           setPortPublications={setCurrentPortPublications}
@@ -395,7 +434,7 @@ export default () => {
     return (
       <>
         <SettingFieldSet>
-          <FormTextBig>Owner Settings</FormTextBig>
+          <FormTextBig id='owner-settings'>Owner Settings</FormTextBig>
           <Button color='black1' size='large' onclick={open}>
             アプリオーナーを追加する
           </Button>
@@ -437,13 +476,26 @@ export default () => {
       <Header />
       <Show when={loaded()}>
         <AppNav repoName={repo().name} appName={app().name} appID={app().id} />
-        <ConfigsContainer>
-          <GeneralConfigsContainer />
-          <BuildConfigsContainer />
-          <WebsitesConfigContainer />
-          <PortPublicationConfigContainer />
-          <OwnerConfigContainer />
-        </ConfigsContainer>
+        <ContentContainer>
+          <div>
+            <SidebarContainer>
+              <SidebarOptions>
+                <SidebarNavAnchor href='#general-settings'>General</SidebarNavAnchor>
+                <SidebarNavAnchor href='#build-settings'>Build</SidebarNavAnchor>
+                <SidebarNavAnchor href='#website-settings'>Website</SidebarNavAnchor>
+                <SidebarNavAnchor href='#port-settings'>Port Publication</SidebarNavAnchor>
+                <SidebarNavAnchor href='#owner-settings'>Owner</SidebarNavAnchor>
+              </SidebarOptions>
+            </SidebarContainer>
+          </div>
+          <ConfigsContainer>
+            <GeneralConfigsContainer />
+            <BuildConfigsContainer />
+            <WebsitesConfigContainer />
+            <PortPublicationConfigContainer />
+            <OwnerConfigContainer />
+          </ConfigsContainer>
+        </ContentContainer>
       </Show>
     </Container>
   )

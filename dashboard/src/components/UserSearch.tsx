@@ -10,7 +10,7 @@ const UserSearchContainer = styled('div', {
   base: {
     display: 'flex',
     flexDirection: 'column',
-    gap: '8px',
+    gap: '16px',
   },
 })
 const UserRow = styled('div', {
@@ -19,6 +19,7 @@ const UserRow = styled('div', {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
+    gap: '16px',
   },
 })
 const UserContainer = styled('div', {
@@ -42,6 +43,12 @@ const UsersList = styled('div', {
     gap: '8px',
     overflowY: 'auto',
     maxHeight: '400px',
+  },
+})
+const NoUsersFound = styled('div', {
+  base: {
+    color: vars.text.black2,
+    textAlign: 'center',
   },
 })
 
@@ -93,7 +100,7 @@ export const UserSearch: FlowComponent<
           )}
         </For>
         <Show when={userSearchResults().length === 0}>
-          <div>No Users Found</div>
+          <NoUsersFound>No Users Found</NoUsersFound>
         </Show>
       </UsersList>
     </UserSearchContainer>
