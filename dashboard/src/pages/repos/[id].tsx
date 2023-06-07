@@ -25,6 +25,7 @@ import { users, userFromId } from '/@/libs/useAllUsers'
 import useModal from '/@/libs/useModal'
 import { vars } from '/@/theme'
 import { ModalButtonsContainer, ModalContainer, ModalText } from '/@/components/Modal'
+import { UserSearch } from '/@/components/UserSearch'
 
 // copy from AppTitleContainer in AppNav.tsx
 const RepoTitleContainer = styled('div', {
@@ -129,38 +130,13 @@ export default () => {
   // リポジトリのオーナー編集処理
   const { Modal: EditOwnerModal, open: openEditOwnerModal } = useModal()
 
-  const [userSearchQuery, setUserSearchQuery] = createSignal('')
-
   // ユーザー検索
   const nonOwnerUsers = createMemo(() => {
     if (!users() || !repo()) return []
     return users().filter((user) => !repo().ownerIds.includes(user.id))
   })
 
-  // users()の更新時にFuseインスタンスを再生成する
-  const fuse = createMemo(
-    () =>
-      new Fuse(nonOwnerUsers(), {
-        keys: ['name'],
-      }),
-  )
-  // userSearchQuery()の更新時に検索を実行する
-  const userSearchResults = createMemo(() => {
-    // 検索クエリが空の場合は全ユーザーを表示する
-    if (userSearchQuery() === '') {
-      return nonOwnerUsers()
-    } else {
-      return fuse()
-        .search(userSearchQuery())
-        .map((result) => result.item)
-    }
-  })
-
   const handleAddOwner = async (user: User): Promise<void> => {
-    if (repo().ownerIds.includes(user.id)) {
-      toast.error('既にリポジトリのオーナーです')
-      return
-    }
     try {
       await client.updateRepository({
         id: repo()?.id,
@@ -191,56 +167,6 @@ export default () => {
         toast.error('リポジトリのオーナーの削除に失敗しました\n' + e.message)
       }
     }
-  }
-
-  const OwnerSuggestions: Component<{
-    users: User[]
-  }> = (props) => {
-    return (
-      <For each={props.users}>
-        {(user) => {
-          return (
-            <UserContainer>
-              <UserRowLeft>
-                <UserAvatar src={user.avatarUrl} />
-                <UserName>{user.name}</UserName>
-              </UserRowLeft>
-              <Button
-                color='black1'
-                size='large'
-                onclick={() => {
-                  handleAddOwner(user)
-                }}
-              >
-                追加
-              </Button>
-            </UserContainer>
-          )
-        }}
-      </For>
-    )
-  }
-
-  const OwnerRow: Component<{
-    user: User
-  }> = (props) => {
-    return (
-      <UserContainer>
-        <UserRowLeft>
-          <UserAvatar src={props.user.avatarUrl} />
-          <UserName>{props.user.name}</UserName>
-        </UserRowLeft>
-        <Button
-          color='black1'
-          size='large'
-          onclick={() => {
-            handleDeleteOwner(props.user)
-          }}
-        >
-          削除
-        </Button>
-      </UserContainer>
-    )
   }
 
   return (
@@ -313,35 +239,41 @@ export default () => {
             </CardItems>
           </Card>
           <Show when={users()}>
+            {/* TODO: リポジトリ設定画面に移動
+            see: https://github.com/traPtitech/NeoShowcase/issues/570 */}
             <Card>
               <CardTitle>Owners</CardTitle>
               <Button onclick={openEditOwnerModal} color='black1' size='large'>
                 リポジトリオーナーを追加する
               </Button>
               <EditOwnerModal>
-                <OwnerEditorContainer>
-                  ユーザーを検索して追加
-                  <input
-                    type='text'
-                    value={userSearchQuery()}
-                    placeholder='ユーザー名'
-                    oninput={(e) => {
-                      setUserSearchQuery(e.currentTarget.value)
-                    }}
-                  />
-                  <UsersList>
-                    <OwnerSuggestions users={userSearchResults()} />
-                  </UsersList>
-                </OwnerEditorContainer>
+                <UserSearch users={nonOwnerUsers()}>
+                  {(user) => (
+                    <Button
+                      color='black1'
+                      size='large'
+                      onclick={() => {
+                        handleAddOwner(user)
+                      }}
+                    >
+                      追加
+                    </Button>
+                  )}
+                </UserSearch>
               </EditOwnerModal>
-              <UsersList>
-                <For each={repo().ownerIds}>
-                  {(ownerId) => {
-                    const user = userFromId(ownerId)
-                    return <OwnerRow user={user} />
-                  }}
-                </For>
-              </UsersList>
+              <UserSearch users={repo().ownerIds.map((userId) => userFromId(userId))}>
+                {(user) => (
+                  <Button
+                    color='black1'
+                    size='large'
+                    onclick={() => {
+                      handleDeleteOwner(user)
+                    }}
+                  >
+                    削除
+                  </Button>
+                )}
+              </UserSearch>
             </Card>
           </Show>
           <Show when={apps()?.length > 0}>

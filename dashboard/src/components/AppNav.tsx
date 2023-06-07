@@ -2,9 +2,9 @@ import { styled } from '@macaron-css/solid'
 import { vars } from '/@/theme'
 import { providerToIcon } from '/@/libs/application'
 import { A } from '@solidjs/router'
-import { Button } from '/@/components/Button'
 import { JSXElement } from 'solid-js'
 import { CenterInline } from '/@/libs/layout'
+import { style } from '@macaron-css/core'
 
 const AppTitleContainer = styled('div', {
   base: {
@@ -37,6 +37,24 @@ const AppNavContainer = styled('div', {
   },
 })
 
+const AnchorStyle = style({
+  fontSize: '24px',
+  fontWeight: 'medium',
+  color: vars.text.black3,
+  textDecoration: 'none',
+  padding: '4px 12px',
+  selectors: {
+    '&:hover': {
+      color: vars.text.black2,
+    },
+  },
+})
+
+const AnchorActiveStyle = style({
+  color: vars.text.black1,
+  borderBottom: `2px solid ${vars.text.black1}`,
+})
+
 export interface AppNavProps {
   repoName: string
   appName: string
@@ -55,15 +73,14 @@ export const AppNav = (props: AppNavProps): JSXElement => {
         </AppTitle>
       </AppTitleContainer>
       <AppNavContainer>
-        <A href={`/apps/${props.appID}`}>
-          <Button color='black1' size='large'>
-            General
-          </Button>
+        <A href={`/apps/${props.appID}`} class={AnchorStyle} activeClass={AnchorActiveStyle} end>
+          General
         </A>
-        <A href={`/apps/${props.appID}/builds`}>
-          <Button color='black1' size='large'>
-            Builds
-          </Button>
+        <A href={`/apps/${props.appID}/builds`} class={AnchorStyle} activeClass={AnchorActiveStyle}>
+          Builds
+        </A>
+        <A href={`/apps/${props.appID}/settings`} class={AnchorStyle} activeClass={AnchorActiveStyle}>
+          Settings
         </A>
       </AppNavContainer>
     </>
