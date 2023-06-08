@@ -20,7 +20,7 @@ export const InputBar = styled('input', {
     fontSize: '14px',
     marginLeft: '4px',
 
-    width: '320px',
+    width: '100%',
 
     display: 'flex',
     flexDirection: 'column',
