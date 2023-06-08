@@ -243,10 +243,9 @@ message UpdateApplicationRequest {
   string name = 2;
   string ref_name = 3;
   ApplicationConfig config = 4;
-  repeated CreateWebsiteRequest new_websites = 5;
-  repeated DeleteWebsiteRequest delete_websites = 6;
-  repeated PortPublication port_publications = 7;
-  repeated string owner_ids = 8;
+  repeated CreateWebsiteRequest websites = 5;
+  repeated PortPublication port_publications = 6;
+  repeated string owner_ids = 7;
 }
 
 message AvailableDomain {
