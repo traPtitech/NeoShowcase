@@ -467,11 +467,13 @@ export default () => {
         e.preventDefault()
 
         try {
-          // TODO: 環境変数を削除する
-          throw new Error('not implemented')
-          // toast.success('環境変数を削除しました')
-          // refetchApp()
-          // setIsEditing(false)
+          await client.deleteEnvVar({
+            applicationId: app().id,
+            key: props.envVar.key,
+          })
+          toast.success('環境変数を削除しました')
+          refetchApp()
+          setIsEditing(false)
         } catch (e) {
           handleAPIError(e, '環境変数の削除に失敗しました')
         }
