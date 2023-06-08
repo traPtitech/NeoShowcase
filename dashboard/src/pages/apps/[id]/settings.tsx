@@ -448,7 +448,12 @@ export default () => {
         }
 
         try {
-          // TODO: key変更時は旧keyの環境変数を削除する
+          // delete old env var
+          await client.deleteEnvVar({
+            applicationId: app().id,
+            key: props.envVar.key,
+          })
+          // create new env var
           await client.setEnvVar({
             applicationId: app().id,
             key: keyInputRef.value,
