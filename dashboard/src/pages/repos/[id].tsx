@@ -185,6 +185,7 @@ export default () => {
                 onclick={handleCreateApplication}
                 color='black1'
                 size='large'
+                width='full'
                 title='このリポジトリからアプリケーションを作成します'
               >
                 Create New Application
@@ -193,6 +194,7 @@ export default () => {
                 onclick={openDeleteRepoModal}
                 color='black1'
                 size='large'
+                width='full'
                 disabled={!canDeleteRepository()}
                 title={
                   canDeleteRepository()
@@ -207,10 +209,10 @@ export default () => {
               <ModalContainer>
                 <ModalText>本当に削除しますか?</ModalText>
                 <ModalButtonsContainer>
-                  <Button onclick={closeDeleteRepoModal} color='black1' size='large'>
+                  <Button onclick={closeDeleteRepoModal} color='black1' size='large' width='full'>
                     キャンセル
                   </Button>
-                  <Button onclick={handleDeleteRepository} color='black1' size='large'>
+                  <Button onclick={handleDeleteRepository} color='black1' size='large' width='full'>
                     削除
                   </Button>
                 </ModalButtonsContainer>
@@ -243,7 +245,7 @@ export default () => {
             see: https://github.com/traPtitech/NeoShowcase/issues/570 */}
             <Card>
               <CardTitle>Owners</CardTitle>
-              <Button onclick={openEditOwnerModal} color='black1' size='large'>
+              <Button onclick={openEditOwnerModal} color='black1' size='large' width='full'>
                 リポジトリオーナーを追加する
               </Button>
               <EditOwnerModal>
@@ -252,6 +254,7 @@ export default () => {
                     <Button
                       color='black1'
                       size='large'
+                      width='auto'
                       onclick={() => {
                         handleAddOwner(user)
                       }}
@@ -266,6 +269,7 @@ export default () => {
                   <Button
                     color='black1'
                     size='large'
+                    width='auto'
                     onclick={() => {
                       handleDeleteOwner(user)
                     }}

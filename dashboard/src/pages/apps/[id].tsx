@@ -254,13 +254,14 @@ export default () => {
         <CardsContainer>
           <Card>
             <CardTitle>Actions</CardTitle>
-            <Button color='black1' size='large' onclick={refreshRepo} disabled={disableRefresh()}>
+            <Button color='black1' size='large' width='full' onclick={refreshRepo} disabled={disableRefresh()}>
               Refresh Commit
             </Button>
             <Button
               onclick={openDeleteAppModal}
               color='black1'
               size='large'
+              width='full'
               disabled={app().running}
               title={
                 app().running ? 'アプリケーションが起動しているため削除できません' : 'アプリケーションを削除します'
@@ -272,27 +273,27 @@ export default () => {
               <ModalContainer>
                 <ModalText>本当に削除しますか?</ModalText>
                 <ModalButtonsContainer>
-                  <Button onclick={closeDeleteAppModal} color='black1' size='large'>
+                  <Button onclick={closeDeleteAppModal} color='black1' size='large' width='full'>
                     キャンセル
                   </Button>
-                  <Button onclick={deleteApp} color='black1' size='large'>
+                  <Button onclick={deleteApp} color='black1' size='large' width='full'>
                     削除
                   </Button>
                 </ModalButtonsContainer>
               </ModalContainer>
             </DeleteAppModal>
             <Show when={!app().running}>
-              <Button color='black1' size='large' onclick={startApp}>
+              <Button color='black1' size='large' width='full' onclick={startApp}>
                 Start App
               </Button>
             </Show>
             <Show when={app().running}>
-              <Button color='black1' size='large' onclick={startApp}>
+              <Button color='black1' size='large' width='full' onclick={startApp}>
                 Restart App
               </Button>
             </Show>
             <Show when={app().running}>
-              <Button color='black1' size='large' onclick={stopApp}>
+              <Button color='black1' size='large' width='full' onclick={stopApp}>
                 Stop App
               </Button>
             </Show>

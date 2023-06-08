@@ -161,7 +161,7 @@ export default () => {
               required
             />
           </div>
-          <Button color='black1' size='large' onclick={updateGeneralSettings} type='submit'>
+          <Button color='black1' size='large' width='auto' onclick={updateGeneralSettings} type='submit'>
             Save
           </Button>
         </SettingFieldSet>
@@ -252,7 +252,7 @@ export default () => {
           buildConfigMethod={buildConfigMethod()}
           setBuildConfigMethod={setBuildConfigMethod}
         />
-        <Button color='black1' size='large' onclick={updateBuildSettings} type='submit'>
+        <Button color='black1' size='large' width='auto' onclick={updateBuildSettings} type='submit'>
           Save
         </Button>
       </SettingFieldSet>
@@ -352,6 +352,7 @@ export default () => {
             }}
             color='black1'
             size='large'
+            width='auto'
             type='button'
           >
             Add website setting
@@ -390,7 +391,7 @@ export default () => {
           portPublications={currentPortPublications}
           setPortPublications={setCurrentPortPublications}
         />
-        <Button color='black1' size='large' onclick={updatePortPublications} type='submit'>
+        <Button color='black1' size='large' width='auto' onclick={updatePortPublications} type='submit'>
           Save
         </Button>
       </SettingFieldSet>
@@ -437,7 +438,7 @@ export default () => {
       <>
         <SettingFieldSet>
           <FormTextBig id='owner-settings'>Owner Settings</FormTextBig>
-          <Button color='black1' size='large' onclick={open}>
+          <Button color='black1' size='large' width='auto' onclick={open}>
             アプリオーナーを追加する
           </Button>
           <UserSearch users={app().ownerIds.map((userId) => userFromId(userId))}>
@@ -445,6 +446,7 @@ export default () => {
               <Button
                 color='black1'
                 size='large'
+                width='auto'
                 onclick={() => {
                   handleDeleteOwner(user)
                 }}
@@ -460,6 +462,7 @@ export default () => {
               <Button
                 color='black1'
                 size='large'
+                width='auto'
                 onclick={() => {
                   handleAddOwner(user)
                 }}
@@ -547,15 +550,15 @@ export default () => {
           <Show
             when={!isEditing()}
             fallback={
-              <Button color='black1' size='large' type='submit' onclick={handleUpdateEnvVar}>
+              <Button color='black1' size='large' width='auto' type='submit' onclick={handleUpdateEnvVar}>
                 Save
               </Button>
             }
           >
-            <Button color='black1' size='large' type='button' onclick={() => setIsEditing(true)}>
+            <Button color='black1' size='large' width='auto' type='button' onclick={() => setIsEditing(true)}>
               Edit
             </Button>
-            <Button color='black1' size='large' type='button' onclick={handleDeleteEnvVar}>
+            <Button color='black1' size='large' width='auto' type='button' onclick={handleDeleteEnvVar}>
               Delete
             </Button>
           </Show>
@@ -594,7 +597,7 @@ export default () => {
         <form ref={formRef}>
           <InputBar type='text' required placeholder='KEY' ref={keyInputRef} />
           <InputBar type='text' required placeholder='VALUE' ref={valueInputRef} />
-          <Button color='black1' size='large' type='submit' onclick={handleAddEnvVar}>
+          <Button color='black1' size='large' width='auto' type='submit' onclick={handleAddEnvVar}>
             Add
           </Button>
         </form>

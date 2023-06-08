@@ -69,11 +69,11 @@ export const WebsiteSetting = (props: WebsiteSettingProps) => {
         />
       </div>
       <FormSettingsButton>
-        <Button onclick={props.deleteWebsite} color='black1' size='large' type='button'>
+        <Button onclick={props.deleteWebsite} color='black1' size='large' width='auto' type='button'>
           Delete website setting
         </Button>
         <Show when={props.saveWebsite}>
-          <Button onclick={props.saveWebsite} color='black1' size='large' type='button'>
+          <Button onclick={props.saveWebsite} color='black1' size='large' width='auto' type='button'>
             Save
           </Button>
         </Show>
@@ -111,6 +111,7 @@ export const WebsiteSettings = (props: WebsiteSettingsProps) => {
           }}
           color='black1'
           size='large'
+          width='auto'
           type='button'
         >
           Add website setting
