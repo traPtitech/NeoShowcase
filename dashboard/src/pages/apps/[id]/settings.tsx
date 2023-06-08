@@ -575,10 +575,26 @@ export default () => {
                 </Button>
               }
             >
-              <Button color='black1' size='large' width='full' type='button' onclick={() => setIsEditing(true)}>
+              <Button
+                color='black1'
+                size='large'
+                width='full'
+                type='button'
+                onclick={() => setIsEditing(true)}
+                disabled={props.envVar.system}
+                title={props.envVar.system ? 'システム環境変数は編集できません' : undefined}
+              >
                 Edit
               </Button>
-              <Button color='black1' size='large' width='full' type='button' onclick={handleDeleteEnvVar}>
+              <Button
+                color='black1'
+                size='large'
+                width='full'
+                type='button'
+                onclick={handleDeleteEnvVar}
+                disabled={props.envVar.system}
+                title={props.envVar.system ? 'システム環境変数は削除できません' : undefined}
+              >
                 Delete
               </Button>
             </Show>
