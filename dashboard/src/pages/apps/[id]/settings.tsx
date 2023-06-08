@@ -10,6 +10,7 @@ import { vars } from '/@/theme'
 import { createStore } from 'solid-js/store'
 import {
   ApplicationConfig,
+  ApplicationEnvVar,
   BuildConfigRuntimeBuildpack,
   BuildConfigRuntimeCmd,
   BuildConfigRuntimeDockerfile,
@@ -33,6 +34,7 @@ import { PortPublicationSettings } from '/@/components/PortPublications'
 import { userFromId, users } from '/@/libs/useAllUsers'
 import { UserSearch } from '/@/components/UserSearch'
 import useModal from '/@/libs/useModal'
+import { notEqual } from 'assert'
 
 const ContentContainer = styled('div', {
   base: {
@@ -471,6 +473,149 @@ export default () => {
     )
   }
 
+  const EnvVarConfigContainer: Component = () => {
+    const [envVars] = createResource(
+      () => app().id,
+      (id) => client.getEnvVars({ id }),
+    )
+
+    const EditEnvVarContainer: Component<{
+      envVar: ApplicationEnvVar
+    }> = (props) => {
+      const [isEditing, setIsEditing] = createSignal(false)
+      let formRef: HTMLFormElement
+      let keyInputRef: HTMLInputElement
+      let valueInputRef: HTMLInputElement
+
+      const handleUpdateEnvVar: JSX.EventHandler<HTMLButtonElement, MouseEvent> = async (e) => {
+        // prevent default form submit (reload page)
+        e.preventDefault()
+
+        // validate form
+        if (!formRef.reportValidity()) {
+          return
+        }
+
+        try {
+          // TODO: key変更時は旧keyの環境変数を削除する
+          await client.setEnvVar({
+            applicationId: app().id,
+            key: keyInputRef.value,
+            value: valueInputRef.value,
+          })
+          toast.success('環境変数を更新しました')
+          refetchApp()
+          setIsEditing(false)
+        } catch (e) {
+          handleAPIError(e, '環境変数の更新に失敗しました')
+        }
+      }
+
+      const handleDeleteEnvVar: JSX.EventHandler<HTMLButtonElement, MouseEvent> = async (e) => {
+        // prevent default form submit (reload page)
+        e.preventDefault()
+
+        try {
+          // TODO: 環境変数を削除する
+          throw new Error('not implemented')
+          // toast.success('環境変数を削除しました')
+          // refetchApp()
+          // setIsEditing(false)
+        } catch (e) {
+          handleAPIError(e, '環境変数の削除に失敗しました')
+        }
+      }
+
+      return (
+        <form ref={formRef}>
+          <InputBar
+            type='text'
+            disabled={!isEditing()}
+            required
+            placeholder='KEY'
+            ref={keyInputRef}
+            value={props.envVar.key}
+          />
+          <InputBar
+            type='text'
+            disabled={!isEditing()}
+            required
+            placeholder='VALUE'
+            ref={valueInputRef}
+            value={props.envVar.value}
+          />
+          <Show
+            when={!isEditing()}
+            fallback={
+              <Button color='black1' size='large' type='submit' onclick={handleUpdateEnvVar}>
+                Save
+              </Button>
+            }
+          >
+            <Button color='black1' size='large' type='button' onclick={() => setIsEditing(true)}>
+              Edit
+            </Button>
+            <Button color='black1' size='large' type='button' onclick={handleDeleteEnvVar}>
+              Delete
+            </Button>
+          </Show>
+        </form>
+      )
+    }
+
+    const AddEnvVarContainer: Component = () => {
+      let formRef: HTMLFormElement
+      let keyInputRef: HTMLInputElement
+      let valueInputRef: HTMLInputElement
+
+      const handleAddEnvVar: JSX.EventHandler<HTMLButtonElement, MouseEvent> = async (e) => {
+        // prevent default form submit (reload page)
+        e.preventDefault()
+
+        // validate form
+        if (!formRef.reportValidity()) {
+          return
+        }
+
+        try {
+          await client.setEnvVar({
+            applicationId: app().id,
+            key: keyInputRef.value,
+            value: valueInputRef.value,
+          })
+          toast.success('環境変数を追加しました')
+          refetchApp()
+        } catch (e) {
+          handleAPIError(e, '環境変数の追加に失敗しました')
+        }
+      }
+
+      return (
+        <form ref={formRef}>
+          <InputBar type='text' required placeholder='KEY' ref={keyInputRef} />
+          <InputBar type='text' required placeholder='VALUE' ref={valueInputRef} />
+          <Button color='black1' size='large' type='submit' onclick={handleAddEnvVar}>
+            Add
+          </Button>
+        </form>
+      )
+    }
+
+    return (
+      <SettingFieldSet>
+        <FormTextBig id='env-var-settings'>Environment Variable Settings</FormTextBig>
+        <div>
+          <For each={envVars()?.variables}>
+            {(envVar) => {
+              return <EditEnvVarContainer envVar={envVar} />
+            }}
+          </For>
+          <AddEnvVarContainer />
+        </div>
+      </SettingFieldSet>
+    )
+  }
+
   return (
     <Container>
       <Header />
@@ -485,6 +630,7 @@ export default () => {
                 <SidebarNavAnchor href='#website-settings'>Website</SidebarNavAnchor>
                 <SidebarNavAnchor href='#port-settings'>Port Publication</SidebarNavAnchor>
                 <SidebarNavAnchor href='#owner-settings'>Owner</SidebarNavAnchor>
+                <SidebarNavAnchor href='#env-var-settings'>Environment Variable</SidebarNavAnchor>
               </SidebarOptions>
             </SidebarContainer>
           </div>
@@ -494,6 +640,7 @@ export default () => {
             <WebsitesConfigContainer />
             <PortPublicationConfigContainer />
             <OwnerConfigContainer />
+            <EnvVarConfigContainer />
           </ConfigsContainer>
         </ContentContainer>
       </Show>
