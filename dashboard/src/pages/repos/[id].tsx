@@ -1,5 +1,4 @@
-import Fuse from 'fuse.js'
-import { Component, createMemo, createResource, createSignal, For, JSX, Show } from 'solid-js'
+import { createMemo, createResource, For, JSX, Show } from 'solid-js'
 import toast from 'solid-toast'
 import { ConnectError } from '@bufbuild/connect'
 import { styled } from '@macaron-css/solid'
@@ -39,54 +38,6 @@ const RepoTitleContainer = styled('div', {
     fontSize: '32px',
     fontWeight: 'bold',
     color: vars.text.black1,
-  },
-})
-
-const UserContainer = styled('div', {
-  base: {
-    display: 'flex',
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-  },
-})
-const UserRowLeft = styled('div', {
-  base: {
-    display: 'flex',
-    flexDirection: 'row',
-    gap: '8px',
-    alignItems: 'center',
-  },
-})
-const UserAvatar = styled('img', {
-  base: {
-    width: '32px',
-    height: '32px',
-    borderRadius: '50%',
-  },
-})
-const UserName = styled('div', {
-  base: {
-    fontSize: '16px',
-    color: vars.text.black1,
-  },
-})
-
-const OwnerEditorContainer = styled('div', {
-  base: {
-    display: 'flex',
-    flexDirection: 'column',
-    gap: '8px',
-    height: '480px',
-  },
-})
-
-const UsersList = styled('div', {
-  base: {
-    display: 'flex',
-    flexDirection: 'column',
-    gap: '8px',
-    overflowY: 'auto',
   },
 })
 
