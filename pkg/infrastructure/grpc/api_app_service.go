@@ -73,8 +73,8 @@ func (s *APIService) UpdateApplication(ctx context.Context, req *connect.Request
 		RefName:          optional.FromNonZero(msg.RefName),
 		UpdatedAt:        optional.From(time.Now()),
 		Config:           optional.Map(optional.FromNonZero(msg.Config), pbconvert.FromPBApplicationConfig),
-		Websites:         optional.FromNonZeroSlice(ds.Map(msg.Websites, pbconvert.FromPBCreateWebsiteRequest)),
-		PortPublications: optional.FromNonZeroSlice(ds.Map(msg.PortPublications, pbconvert.FromPBPortPublication)),
+		Websites:         optional.MapSlice(optional.FromNonZeroSlice(msg.Websites), pbconvert.FromPBCreateWebsiteRequest),
+		PortPublications: optional.MapSlice(optional.FromNonZeroSlice(msg.PortPublications), pbconvert.FromPBPortPublication),
 		OwnerIDs:         optional.FromNonZeroSlice(msg.OwnerIds),
 	})
 	if err != nil {
