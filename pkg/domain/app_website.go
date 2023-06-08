@@ -188,6 +188,7 @@ func (w *Website) conflictsWith(target *Website) bool {
 
 func (a *Application) WebsiteConflicts(existing []*Application, actor *User) bool {
 	for _, w := range a.Websites {
+		// check with existing websites
 		for _, ex := range existing {
 			for _, w2 := range ex.Websites {
 				if w.Equals(w2) {
@@ -196,6 +197,16 @@ func (a *Application) WebsiteConflicts(existing []*Application, actor *User) boo
 				if w.conflictsWith(w2) && !ex.IsOwner(actor) {
 					return true
 				}
+			}
+		}
+
+		// check with self
+		for _, w2 := range a.Websites {
+			if w.ID == w2.ID {
+				continue
+			}
+			if w.Equals(w2) {
+				return true
 			}
 		}
 	}

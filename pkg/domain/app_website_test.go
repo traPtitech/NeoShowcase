@@ -366,6 +366,27 @@ func TestApplication_WebsiteConflicts(t *testing.T) {
 			actor:    admin,
 			want:     false,
 		},
+		{
+			name: "ng (self conflict)",
+			target: &Application{
+				Websites: []*Website{
+					{
+						ID:         "w1",
+						FQDN:       "foo.trap.games",
+						PathPrefix: "/api",
+					},
+					{
+						ID:         "w2",
+						FQDN:       "foo.trap.games",
+						PathPrefix: "/api",
+					},
+				},
+				OwnerIDs: []string{u1.ID, u3.ID},
+			},
+			existing: existing,
+			actor:    u1,
+			want:     true,
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
