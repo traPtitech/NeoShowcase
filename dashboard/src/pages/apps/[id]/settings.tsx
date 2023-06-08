@@ -425,9 +425,9 @@ export default () => {
   }
 
   const EnvVarConfigContainer: Component = () => {
-    const [envVars] = createResource(
-      () => app(),
-      (app) => client.getEnvVars({ id: app.id }),
+    const [envVars, { refetch: refetchEnvVar }] = createResource(
+      () => app().id,
+      (id) => client.getEnvVars({ id }),
     )
 
     const EditEnvVarContainer: Component<{
@@ -455,7 +455,7 @@ export default () => {
             value: valueInputRef.value,
           })
           toast.success('環境変数を更新しました')
-          refetchApp()
+          refetchEnvVar()
           setIsEditing(false)
         } catch (e) {
           handleAPIError(e, '環境変数の更新に失敗しました')
@@ -472,7 +472,7 @@ export default () => {
             key: props.envVar.key,
           })
           toast.success('環境変数を削除しました')
-          refetchApp()
+          refetchEnvVar()
           setIsEditing(false)
         } catch (e) {
           handleAPIError(e, '環境変数の削除に失敗しました')
@@ -557,7 +557,7 @@ export default () => {
           toast.success('環境変数を追加しました')
           keyInputRef.value = ''
           valueInputRef.value = ''
-          refetchApp()
+          refetchEnvVar()
         } catch (e) {
           handleAPIError(e, '環境変数の追加に失敗しました')
         }
