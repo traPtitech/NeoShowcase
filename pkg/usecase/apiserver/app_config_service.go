@@ -29,6 +29,18 @@ func (s *Service) SetEnvironmentVariable(ctx context.Context, applicationID stri
 	return s.envRepo.SetEnv(ctx, env)
 }
 
+func (s *Service) DeleteEnvironmentVariable(ctx context.Context, applicationID string, key string) error {
+	err := s.isApplicationOwner(ctx, applicationID)
+	if err != nil {
+		return err
+	}
+
+	return s.envRepo.DeleteEnv(ctx, domain.GetEnvCondition{
+		ApplicationID: optional.From(applicationID),
+		Key:           optional.From(key),
+	})
+}
+
 func (s *Service) GetOutput(ctx context.Context, id string, before time.Time) ([]*domain.ContainerLog, error) {
 	err := s.isApplicationOwner(ctx, id)
 	if err != nil {

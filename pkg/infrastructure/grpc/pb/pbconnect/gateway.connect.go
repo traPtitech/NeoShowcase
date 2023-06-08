@@ -95,6 +95,8 @@ const (
 	APIServiceGetEnvVarsProcedure = "/neoshowcase.protobuf.APIService/GetEnvVars"
 	// APIServiceSetEnvVarProcedure is the fully-qualified name of the APIService's SetEnvVar RPC.
 	APIServiceSetEnvVarProcedure = "/neoshowcase.protobuf.APIService/SetEnvVar"
+	// APIServiceDeleteEnvVarProcedure is the fully-qualified name of the APIService's DeleteEnvVar RPC.
+	APIServiceDeleteEnvVarProcedure = "/neoshowcase.protobuf.APIService/DeleteEnvVar"
 	// APIServiceGetOutputProcedure is the fully-qualified name of the APIService's GetOutput RPC.
 	APIServiceGetOutputProcedure = "/neoshowcase.protobuf.APIService/GetOutput"
 	// APIServiceGetOutputStreamProcedure is the fully-qualified name of the APIService's
@@ -171,6 +173,8 @@ type APIServiceClient interface {
 	GetEnvVars(context.Context, *connect_go.Request[pb.ApplicationIdRequest]) (*connect_go.Response[pb.ApplicationEnvVars], error)
 	// SetEnvVar アプリの環境変数をセットします システムによって設定された環境変数は上書きできません
 	SetEnvVar(context.Context, *connect_go.Request[pb.SetApplicationEnvVarRequest]) (*connect_go.Response[emptypb.Empty], error)
+	// DeleteEnvVar アプリの環境変数を削除します システムによって設定された環境変数は削除できません
+	DeleteEnvVar(context.Context, *connect_go.Request[pb.DeleteApplicationEnvVarRequest]) (*connect_go.Response[emptypb.Empty], error)
 	// GetOutput アプリの出力を取得します
 	GetOutput(context.Context, *connect_go.Request[pb.GetOutputRequest]) (*connect_go.Response[pb.GetOutputResponse], error)
 	// GetOutputStream アプリの出力をストリーム形式で取得します
@@ -315,6 +319,11 @@ func NewAPIServiceClient(httpClient connect_go.HTTPClient, baseURL string, opts 
 			baseURL+APIServiceSetEnvVarProcedure,
 			opts...,
 		),
+		deleteEnvVar: connect_go.NewClient[pb.DeleteApplicationEnvVarRequest, emptypb.Empty](
+			httpClient,
+			baseURL+APIServiceDeleteEnvVarProcedure,
+			opts...,
+		),
 		getOutput: connect_go.NewClient[pb.GetOutputRequest, pb.GetOutputResponse](
 			httpClient,
 			baseURL+APIServiceGetOutputProcedure,
@@ -397,6 +406,7 @@ type aPIServiceClient struct {
 	deleteApplication   *connect_go.Client[pb.ApplicationIdRequest, emptypb.Empty]
 	getEnvVars          *connect_go.Client[pb.ApplicationIdRequest, pb.ApplicationEnvVars]
 	setEnvVar           *connect_go.Client[pb.SetApplicationEnvVarRequest, emptypb.Empty]
+	deleteEnvVar        *connect_go.Client[pb.DeleteApplicationEnvVarRequest, emptypb.Empty]
 	getOutput           *connect_go.Client[pb.GetOutputRequest, pb.GetOutputResponse]
 	getOutputStream     *connect_go.Client[pb.GetOutputStreamRequest, pb.ApplicationOutput]
 	startApplication    *connect_go.Client[pb.ApplicationIdRequest, emptypb.Empty]
@@ -520,6 +530,11 @@ func (c *aPIServiceClient) SetEnvVar(ctx context.Context, req *connect_go.Reques
 	return c.setEnvVar.CallUnary(ctx, req)
 }
 
+// DeleteEnvVar calls neoshowcase.protobuf.APIService.DeleteEnvVar.
+func (c *aPIServiceClient) DeleteEnvVar(ctx context.Context, req *connect_go.Request[pb.DeleteApplicationEnvVarRequest]) (*connect_go.Response[emptypb.Empty], error) {
+	return c.deleteEnvVar.CallUnary(ctx, req)
+}
+
 // GetOutput calls neoshowcase.protobuf.APIService.GetOutput.
 func (c *aPIServiceClient) GetOutput(ctx context.Context, req *connect_go.Request[pb.GetOutputRequest]) (*connect_go.Response[pb.GetOutputResponse], error) {
 	return c.getOutput.CallUnary(ctx, req)
@@ -621,6 +636,8 @@ type APIServiceHandler interface {
 	GetEnvVars(context.Context, *connect_go.Request[pb.ApplicationIdRequest]) (*connect_go.Response[pb.ApplicationEnvVars], error)
 	// SetEnvVar アプリの環境変数をセットします システムによって設定された環境変数は上書きできません
 	SetEnvVar(context.Context, *connect_go.Request[pb.SetApplicationEnvVarRequest]) (*connect_go.Response[emptypb.Empty], error)
+	// DeleteEnvVar アプリの環境変数を削除します システムによって設定された環境変数は削除できません
+	DeleteEnvVar(context.Context, *connect_go.Request[pb.DeleteApplicationEnvVarRequest]) (*connect_go.Response[emptypb.Empty], error)
 	// GetOutput アプリの出力を取得します
 	GetOutput(context.Context, *connect_go.Request[pb.GetOutputRequest]) (*connect_go.Response[pb.GetOutputResponse], error)
 	// GetOutputStream アプリの出力をストリーム形式で取得します
@@ -760,6 +777,11 @@ func NewAPIServiceHandler(svc APIServiceHandler, opts ...connect_go.HandlerOptio
 	mux.Handle(APIServiceSetEnvVarProcedure, connect_go.NewUnaryHandler(
 		APIServiceSetEnvVarProcedure,
 		svc.SetEnvVar,
+		opts...,
+	))
+	mux.Handle(APIServiceDeleteEnvVarProcedure, connect_go.NewUnaryHandler(
+		APIServiceDeleteEnvVarProcedure,
+		svc.DeleteEnvVar,
 		opts...,
 	))
 	mux.Handle(APIServiceGetOutputProcedure, connect_go.NewUnaryHandler(
@@ -909,6 +931,10 @@ func (UnimplementedAPIServiceHandler) GetEnvVars(context.Context, *connect_go.Re
 
 func (UnimplementedAPIServiceHandler) SetEnvVar(context.Context, *connect_go.Request[pb.SetApplicationEnvVarRequest]) (*connect_go.Response[emptypb.Empty], error) {
 	return nil, connect_go.NewError(connect_go.CodeUnimplemented, errors.New("neoshowcase.protobuf.APIService.SetEnvVar is not implemented"))
+}
+
+func (UnimplementedAPIServiceHandler) DeleteEnvVar(context.Context, *connect_go.Request[pb.DeleteApplicationEnvVarRequest]) (*connect_go.Response[emptypb.Empty], error) {
+	return nil, connect_go.NewError(connect_go.CodeUnimplemented, errors.New("neoshowcase.protobuf.APIService.DeleteEnvVar is not implemented"))
 }
 
 func (UnimplementedAPIServiceHandler) GetOutput(context.Context, *connect_go.Request[pb.GetOutputRequest]) (*connect_go.Response[pb.GetOutputResponse], error) {

@@ -13,7 +13,6 @@ interface WebsiteSettingProps {
   website: CreateWebsiteRequest
   setWebsite: <T extends keyof CreateWebsiteRequest>(valueName: T, value: CreateWebsiteRequest[T]) => void
   deleteWebsite: () => void
-  saveWebsite?: () => void
 }
 
 const authenticationTypeItems: RadioItem<AuthenticationType>[] = [
@@ -72,11 +71,6 @@ export const WebsiteSetting = (props: WebsiteSettingProps) => {
         <Button onclick={props.deleteWebsite} color='black1' size='large' width='auto' type='button'>
           Delete website setting
         </Button>
-        <Show when={props.saveWebsite}>
-          <Button onclick={props.saveWebsite} color='black1' size='large' width='auto' type='button'>
-            Save
-          </Button>
-        </Show>
       </FormSettingsButton>
     </FormSettings>
   )

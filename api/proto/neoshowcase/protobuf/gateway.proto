@@ -243,10 +243,9 @@ message UpdateApplicationRequest {
   string name = 2;
   string ref_name = 3;
   ApplicationConfig config = 4;
-  repeated CreateWebsiteRequest new_websites = 5;
-  repeated DeleteWebsiteRequest delete_websites = 6;
-  repeated PortPublication port_publications = 7;
-  repeated string owner_ids = 8;
+  repeated CreateWebsiteRequest websites = 5;
+  repeated PortPublication port_publications = 6;
+  repeated string owner_ids = 7;
 }
 
 message AvailableDomain {
@@ -369,6 +368,11 @@ message SetApplicationEnvVarRequest {
   string value = 3;
 }
 
+message DeleteApplicationEnvVarRequest {
+  string application_id = 1;
+  string key = 2;
+}
+
 message RetryCommitBuildRequest {
   string application_id = 1;
   string commit = 2;
@@ -433,6 +437,8 @@ service APIService {
   rpc GetEnvVars(ApplicationIdRequest) returns (ApplicationEnvVars);
   // SetEnvVar アプリの環境変数をセットします システムによって設定された環境変数は上書きできません
   rpc SetEnvVar(SetApplicationEnvVarRequest) returns (google.protobuf.Empty);
+  // DeleteEnvVar アプリの環境変数を削除します システムによって設定された環境変数は削除できません
+  rpc DeleteEnvVar(DeleteApplicationEnvVarRequest) returns (google.protobuf.Empty);
   // GetOutput アプリの出力を取得します
   rpc GetOutput(GetOutputRequest) returns (GetOutputResponse);
   // GetOutputStream アプリの出力をストリーム形式で取得します
