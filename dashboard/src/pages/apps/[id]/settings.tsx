@@ -1,5 +1,5 @@
 import { useParams } from '@solidjs/router'
-import { Component, For, JSX, Show, createEffect, createMemo, createResource, createSignal, onMount } from 'solid-js'
+import { Component, JSX, Show, createEffect, createMemo, createResource, createSignal, onMount } from 'solid-js'
 import { client, handleAPIError } from '/@/libs/api'
 import { Container } from '/@/libs/layout'
 import { Header } from '/@/components/Header'
@@ -20,15 +20,14 @@ import {
   RuntimeConfig,
   UpdateApplicationRequest,
   User,
-  Website,
 } from '/@/api/neoshowcase/protobuf/gateway_pb'
 import { BuildConfigs } from '/@/components/BuildConfigs'
 import { storify } from '/@/libs/storify'
 import toast from 'solid-toast'
-import { WebsiteSetting } from '/@/components/WebsiteSettings'
+import { WebsiteSettings } from '/@/components/WebsiteSettings'
 import { InputLabel } from '/@/components/Input'
 import { InputBar } from '/@/components/Input'
-import { FormButton, FormTextBig } from '/@/components/AppsNew'
+import { FormTextBig } from '/@/components/AppsNew'
 import { PortPublicationSettings } from '/@/components/PortPublications'
 import { userFromId, users } from '/@/libs/useAllUsers'
 import { UserSearch } from '/@/components/UserSearch'
@@ -258,49 +257,16 @@ export default () => {
   }
 
   const WebsitesConfigContainer: Component = () => {
-    // アプリにすでに存在するウェブサイト設定: `Website`
-    // 新規追加するウェブサイト設定: `CreateWebsiteRequest`
-    const [websites, setWebsites] = createStore<(Website | CreateWebsiteRequest)[]>([])
+    const [websites, setWebsites] = createStore<CreateWebsiteRequest[]>([])
     // 現在のウェブサイト設定を反映 (`onMount`ではrefetch時に反映されないので`createEffect`を使用)
     createEffect(() => {
       setWebsites(app().websites.map((website) => storify(website)))
     })
 
-    const AddWebsites = async (website: CreateWebsiteRequest) => {
+    const updateWebsites = async () => {
       const updateApplicationRequest = new UpdateApplicationRequest({
         id: app().id,
-        newWebsites: [website],
-      })
-
-      try {
-        await client.updateApplication(updateApplicationRequest)
-        toast.success('ウェブサイト設定を追加しました')
-        refetchApp()
-      } catch (e) {
-        handleAPIError(e, 'ウェブサイト設定の追加に失敗しました')
-      }
-    }
-
-    const deleteWebsites = async (websiteId: Website['id']) => {
-      const updateApplicationRequest = new UpdateApplicationRequest({
-        id: app().id,
-        deleteWebsites: [{ id: websiteId }],
-      })
-
-      try {
-        await client.updateApplication(updateApplicationRequest)
-        toast.success('ウェブサイト設定を削除しました')
-        refetchApp()
-      } catch (e) {
-        handleAPIError(e, 'ウェブサイト設定の削除に失敗しました')
-      }
-    }
-
-    const updateWebsites = async (website: Website) => {
-      const updateApplicationRequest = new UpdateApplicationRequest({
-        id: app().id,
-        deleteWebsites: [{ id: website.id }],
-        newWebsites: [website],
+        websites: websites,
       })
 
       try {
@@ -315,46 +281,10 @@ export default () => {
     return (
       <SettingFieldSet>
         <FormTextBig id='website-settings'>Website Settings</FormTextBig>
-        <For each={websites}>
-          {(website, i) => (
-            <WebsiteSetting
-              website={website}
-              deleteWebsite={() => {
-                if (website instanceof CreateWebsiteRequest) {
-                  // 新規に追加したウェブサイト設定は配列から削除する
-                  setWebsites([...websites.slice(0, i()), ...websites.slice(i() + 1)])
-                } else {
-                  // もとからあるウェブサイト設定は削除リクエストを送る
-                  deleteWebsites(website.id)
-                }
-              }}
-              setWebsite={(key, value) => {
-                setWebsites(i(), key, value)
-              }}
-              saveWebsite={() => {
-                if (website instanceof CreateWebsiteRequest) {
-                  // 新規に追加したウェブサイト設定は追加リクエストを送る
-                  AddWebsites(website)
-                } else {
-                  // もとからあるウェブサイト設定は更新処理を実行する
-                  updateWebsites(website)
-                }
-              }}
-            />
-          )}
-        </For>
-        <FormButton>
-          <Button
-            onclick={() => {
-              setWebsites([...websites, storify(new CreateWebsiteRequest())])
-            }}
-            color='black1'
-            size='large'
-            type='button'
-          >
-            Add website setting
-          </Button>
-        </FormButton>
+        <WebsiteSettings websiteConfigs={websites} setWebsiteConfigs={setWebsites} />
+        <Button color='black1' size='large' onclick={updateWebsites} type='submit'>
+          Save
+        </Button>
       </SettingFieldSet>
     )
   }

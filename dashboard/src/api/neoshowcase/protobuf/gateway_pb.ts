@@ -1737,22 +1737,17 @@ export class UpdateApplicationRequest extends Message<UpdateApplicationRequest> 
   config?: ApplicationConfig;
 
   /**
-   * @generated from field: repeated neoshowcase.protobuf.CreateWebsiteRequest new_websites = 5;
+   * @generated from field: repeated neoshowcase.protobuf.CreateWebsiteRequest websites = 5;
    */
-  newWebsites: CreateWebsiteRequest[] = [];
+  websites: CreateWebsiteRequest[] = [];
 
   /**
-   * @generated from field: repeated neoshowcase.protobuf.DeleteWebsiteRequest delete_websites = 6;
-   */
-  deleteWebsites: DeleteWebsiteRequest[] = [];
-
-  /**
-   * @generated from field: repeated neoshowcase.protobuf.PortPublication port_publications = 7;
+   * @generated from field: repeated neoshowcase.protobuf.PortPublication port_publications = 6;
    */
   portPublications: PortPublication[] = [];
 
   /**
-   * @generated from field: repeated string owner_ids = 8;
+   * @generated from field: repeated string owner_ids = 7;
    */
   ownerIds: string[] = [];
 
@@ -1768,10 +1763,9 @@ export class UpdateApplicationRequest extends Message<UpdateApplicationRequest> 
     { no: 2, name: "name", kind: "scalar", T: 9 /* ScalarType.STRING */ },
     { no: 3, name: "ref_name", kind: "scalar", T: 9 /* ScalarType.STRING */ },
     { no: 4, name: "config", kind: "message", T: ApplicationConfig },
-    { no: 5, name: "new_websites", kind: "message", T: CreateWebsiteRequest, repeated: true },
-    { no: 6, name: "delete_websites", kind: "message", T: DeleteWebsiteRequest, repeated: true },
-    { no: 7, name: "port_publications", kind: "message", T: PortPublication, repeated: true },
-    { no: 8, name: "owner_ids", kind: "scalar", T: 9 /* ScalarType.STRING */, repeated: true },
+    { no: 5, name: "websites", kind: "message", T: CreateWebsiteRequest, repeated: true },
+    { no: 6, name: "port_publications", kind: "message", T: PortPublication, repeated: true },
+    { no: 7, name: "owner_ids", kind: "scalar", T: 9 /* ScalarType.STRING */, repeated: true },
   ]);
 
   static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): UpdateApplicationRequest {
@@ -2786,6 +2780,49 @@ export class SetApplicationEnvVarRequest extends Message<SetApplicationEnvVarReq
 
   static equals(a: SetApplicationEnvVarRequest | PlainMessage<SetApplicationEnvVarRequest> | undefined, b: SetApplicationEnvVarRequest | PlainMessage<SetApplicationEnvVarRequest> | undefined): boolean {
     return proto3.util.equals(SetApplicationEnvVarRequest, a, b);
+  }
+}
+
+/**
+ * @generated from message neoshowcase.protobuf.DeleteApplicationEnvVarRequest
+ */
+export class DeleteApplicationEnvVarRequest extends Message<DeleteApplicationEnvVarRequest> {
+  /**
+   * @generated from field: string application_id = 1;
+   */
+  applicationId = "";
+
+  /**
+   * @generated from field: string key = 2;
+   */
+  key = "";
+
+  constructor(data?: PartialMessage<DeleteApplicationEnvVarRequest>) {
+    super();
+    proto3.util.initPartial(data, this);
+  }
+
+  static readonly runtime: typeof proto3 = proto3;
+  static readonly typeName = "neoshowcase.protobuf.DeleteApplicationEnvVarRequest";
+  static readonly fields: FieldList = proto3.util.newFieldList(() => [
+    { no: 1, name: "application_id", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+    { no: 2, name: "key", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+  ]);
+
+  static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): DeleteApplicationEnvVarRequest {
+    return new DeleteApplicationEnvVarRequest().fromBinary(bytes, options);
+  }
+
+  static fromJson(jsonValue: JsonValue, options?: Partial<JsonReadOptions>): DeleteApplicationEnvVarRequest {
+    return new DeleteApplicationEnvVarRequest().fromJson(jsonValue, options);
+  }
+
+  static fromJsonString(jsonString: string, options?: Partial<JsonReadOptions>): DeleteApplicationEnvVarRequest {
+    return new DeleteApplicationEnvVarRequest().fromJsonString(jsonString, options);
+  }
+
+  static equals(a: DeleteApplicationEnvVarRequest | PlainMessage<DeleteApplicationEnvVarRequest> | undefined, b: DeleteApplicationEnvVarRequest | PlainMessage<DeleteApplicationEnvVarRequest> | undefined): boolean {
+    return proto3.util.equals(DeleteApplicationEnvVarRequest, a, b);
   }
 }
 

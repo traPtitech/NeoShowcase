@@ -5,7 +5,6 @@ import (
 	"time"
 
 	"github.com/bufbuild/connect-go"
-	"github.com/samber/lo"
 	"google.golang.org/protobuf/types/known/emptypb"
 
 	"github.com/traPtitech/neoshowcase/pkg/domain"
@@ -69,25 +68,12 @@ func (s *APIService) GetApplication(ctx context.Context, req *connect.Request[pb
 
 func (s *APIService) UpdateApplication(ctx context.Context, req *connect.Request[pb.UpdateApplicationRequest]) (*connect.Response[emptypb.Empty], error) {
 	msg := req.Msg
-	app, err := s.svc.GetApplication(ctx, msg.Id)
-	if err != nil {
-		return nil, handleUseCaseError(err)
-	}
-
-	websites := app.Websites
-	for _, createReq := range msg.NewWebsites {
-		websites = append(websites, pbconvert.FromPBCreateWebsiteRequest(createReq))
-	}
-	for _, deleteReq := range msg.DeleteWebsites {
-		websites = lo.Reject(websites, func(w *domain.Website, _ int) bool { return w.ID == deleteReq.Id })
-	}
-
-	err = s.svc.UpdateApplication(ctx, msg.Id, &domain.UpdateApplicationArgs{
+	err := s.svc.UpdateApplication(ctx, msg.Id, &domain.UpdateApplicationArgs{
 		Name:             optional.FromNonZero(msg.Name),
 		RefName:          optional.FromNonZero(msg.RefName),
 		UpdatedAt:        optional.From(time.Now()),
 		Config:           optional.Map(optional.FromNonZero(msg.Config), pbconvert.FromPBApplicationConfig),
-		Websites:         optional.FromNonZeroSlice(websites),
+		Websites:         optional.FromNonZeroSlice(ds.Map(msg.Websites, pbconvert.FromPBCreateWebsiteRequest)),
 		PortPublications: optional.FromNonZeroSlice(ds.Map(msg.PortPublications, pbconvert.FromPBPortPublication)),
 		OwnerIDs:         optional.FromNonZeroSlice(msg.OwnerIds),
 	})
