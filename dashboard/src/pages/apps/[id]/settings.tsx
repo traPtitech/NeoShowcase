@@ -34,7 +34,7 @@ import { PortPublicationSettings } from '/@/components/PortPublications'
 import { userFromId, users } from '/@/libs/useAllUsers'
 import { UserSearch } from '/@/components/UserSearch'
 import useModal from '/@/libs/useModal'
-import { notEqual } from 'assert'
+import { style } from '@macaron-css/core'
 
 const ContentContainer = styled('div', {
   base: {
@@ -92,6 +92,25 @@ const SettingFieldSet = styled('div', {
     border: `1px solid ${vars.bg.white4}`,
     borderRadius: '4px',
     background: vars.bg.white1,
+  },
+})
+const EnvVarContainerClass = style({
+  display: 'grid',
+  gridTemplateColumns: '1fr 1fr 1fr',
+  gap: '16px',
+})
+const EnvVarsContainer = styled('div', {
+  base: {
+    display: 'flex',
+    flexDirection: 'column',
+    gap: '8px',
+  },
+})
+const EnvVarButtonContainer = styled('div', {
+  base: {
+    display: 'flex',
+    justifyContent: 'space-between',
+    gap: '16px',
   },
 })
 
@@ -478,8 +497,8 @@ export default () => {
 
   const EnvVarConfigContainer: Component = () => {
     const [envVars] = createResource(
-      () => app().id,
-      (id) => client.getEnvVars({ id }),
+      () => app(),
+      (app) => client.getEnvVars({ id: app.id }),
     )
 
     const EditEnvVarContainer: Component<{
@@ -530,7 +549,7 @@ export default () => {
       }
 
       return (
-        <form ref={formRef}>
+        <form class={EnvVarContainerClass} ref={formRef}>
           <InputBar
             type='text'
             disabled={!isEditing()}
@@ -547,21 +566,23 @@ export default () => {
             ref={valueInputRef}
             value={props.envVar.value}
           />
-          <Show
-            when={!isEditing()}
-            fallback={
-              <Button color='black1' size='large' width='auto' type='submit' onclick={handleUpdateEnvVar}>
-                Save
+          <EnvVarButtonContainer>
+            <Show
+              when={!isEditing()}
+              fallback={
+                <Button color='black1' size='large' width='full' type='submit' onclick={handleUpdateEnvVar}>
+                  Save
+                </Button>
+              }
+            >
+              <Button color='black1' size='large' width='full' type='button' onclick={() => setIsEditing(true)}>
+                Edit
               </Button>
-            }
-          >
-            <Button color='black1' size='large' width='auto' type='button' onclick={() => setIsEditing(true)}>
-              Edit
-            </Button>
-            <Button color='black1' size='large' width='auto' type='button' onclick={handleDeleteEnvVar}>
-              Delete
-            </Button>
-          </Show>
+              <Button color='black1' size='large' width='full' type='button' onclick={handleDeleteEnvVar}>
+                Delete
+              </Button>
+            </Show>
+          </EnvVarButtonContainer>
         </form>
       )
     }
@@ -587,6 +608,8 @@ export default () => {
             value: valueInputRef.value,
           })
           toast.success('環境変数を追加しました')
+          keyInputRef.value = ''
+          valueInputRef.value = ''
           refetchApp()
         } catch (e) {
           handleAPIError(e, '環境変数の追加に失敗しました')
@@ -594,10 +617,10 @@ export default () => {
       }
 
       return (
-        <form ref={formRef}>
+        <form class={EnvVarContainerClass} ref={formRef}>
           <InputBar type='text' required placeholder='KEY' ref={keyInputRef} />
           <InputBar type='text' required placeholder='VALUE' ref={valueInputRef} />
-          <Button color='black1' size='large' width='auto' type='submit' onclick={handleAddEnvVar}>
+          <Button color='black1' size='large' width='full' type='submit' onclick={handleAddEnvVar}>
             Add
           </Button>
         </form>
@@ -608,12 +631,18 @@ export default () => {
       <SettingFieldSet>
         <FormTextBig id='env-var-settings'>Environment Variable Settings</FormTextBig>
         <div>
-          <For each={envVars()?.variables}>
-            {(envVar) => {
-              return <EditEnvVarContainer envVar={envVar} />
-            }}
-          </For>
-          <AddEnvVarContainer />
+          <EnvVarsContainer>
+            <div class={EnvVarContainerClass}>
+              <div>key</div>
+              <div>value</div>
+            </div>
+            <For each={envVars()?.variables}>
+              {(envVar) => {
+                return <EditEnvVarContainer envVar={envVar} />
+              }}
+            </For>
+            <AddEnvVarContainer />
+          </EnvVarsContainer>
         </div>
       </SettingFieldSet>
     )
