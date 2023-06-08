@@ -2784,6 +2784,49 @@ export class SetApplicationEnvVarRequest extends Message<SetApplicationEnvVarReq
 }
 
 /**
+ * @generated from message neoshowcase.protobuf.DeleteApplicationEnvVarRequest
+ */
+export class DeleteApplicationEnvVarRequest extends Message<DeleteApplicationEnvVarRequest> {
+  /**
+   * @generated from field: string application_id = 1;
+   */
+  applicationId = "";
+
+  /**
+   * @generated from field: string key = 2;
+   */
+  key = "";
+
+  constructor(data?: PartialMessage<DeleteApplicationEnvVarRequest>) {
+    super();
+    proto3.util.initPartial(data, this);
+  }
+
+  static readonly runtime: typeof proto3 = proto3;
+  static readonly typeName = "neoshowcase.protobuf.DeleteApplicationEnvVarRequest";
+  static readonly fields: FieldList = proto3.util.newFieldList(() => [
+    { no: 1, name: "application_id", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+    { no: 2, name: "key", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+  ]);
+
+  static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): DeleteApplicationEnvVarRequest {
+    return new DeleteApplicationEnvVarRequest().fromBinary(bytes, options);
+  }
+
+  static fromJson(jsonValue: JsonValue, options?: Partial<JsonReadOptions>): DeleteApplicationEnvVarRequest {
+    return new DeleteApplicationEnvVarRequest().fromJson(jsonValue, options);
+  }
+
+  static fromJsonString(jsonString: string, options?: Partial<JsonReadOptions>): DeleteApplicationEnvVarRequest {
+    return new DeleteApplicationEnvVarRequest().fromJsonString(jsonString, options);
+  }
+
+  static equals(a: DeleteApplicationEnvVarRequest | PlainMessage<DeleteApplicationEnvVarRequest> | undefined, b: DeleteApplicationEnvVarRequest | PlainMessage<DeleteApplicationEnvVarRequest> | undefined): boolean {
+    return proto3.util.equals(DeleteApplicationEnvVarRequest, a, b);
+  }
+}
+
+/**
  * @generated from message neoshowcase.protobuf.RetryCommitBuildRequest
  */
 export class RetryCommitBuildRequest extends Message<RetryCommitBuildRequest> {

@@ -368,6 +368,11 @@ message SetApplicationEnvVarRequest {
   string value = 3;
 }
 
+message DeleteApplicationEnvVarRequest {
+  string application_id = 1;
+  string key = 2;
+}
+
 message RetryCommitBuildRequest {
   string application_id = 1;
   string commit = 2;
@@ -432,6 +437,8 @@ service APIService {
   rpc GetEnvVars(ApplicationIdRequest) returns (ApplicationEnvVars);
   // SetEnvVar アプリの環境変数をセットします システムによって設定された環境変数は上書きできません
   rpc SetEnvVar(SetApplicationEnvVarRequest) returns (google.protobuf.Empty);
+  // DeleteEnvVar アプリの環境変数を削除します システムによって設定された環境変数は削除できません
+  rpc DeleteEnvVar(DeleteApplicationEnvVarRequest) returns (google.protobuf.Empty);
   // GetOutput アプリの出力を取得します
   rpc GetOutput(GetOutputRequest) returns (GetOutputResponse);
   // GetOutputStream アプリの出力をストリーム形式で取得します

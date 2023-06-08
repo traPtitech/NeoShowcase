@@ -34,6 +34,16 @@ func (s *APIService) SetEnvVar(ctx context.Context, req *connect.Request[pb.SetA
 	return res, nil
 }
 
+func (s *APIService) DeleteEnvVar(ctx context.Context, req *connect.Request[pb.DeleteApplicationEnvVarRequest]) (*connect.Response[emptypb.Empty], error) {
+	msg := req.Msg
+	err := s.svc.DeleteEnvironmentVariable(ctx, msg.ApplicationId, msg.Key)
+	if err != nil {
+		return nil, handleUseCaseError(err)
+	}
+	res := connect.NewResponse(&emptypb.Empty{})
+	return res, nil
+}
+
 func (s *APIService) GetOutput(ctx context.Context, req *connect.Request[pb.GetOutputRequest]) (*connect.Response[pb.GetOutputResponse], error) {
 	msg := req.Msg
 	before := time.Now()
