@@ -34,6 +34,7 @@ import { userFromId, users } from '/@/libs/useAllUsers'
 import { UserSearch } from '/@/components/UserSearch'
 import useModal from '/@/libs/useModal'
 import { style } from '@macaron-css/core'
+import { ModalButtonsContainer, ModalContainer, ModalText } from '/@/components/Modal'
 
 const ContentContainer = styled('div', {
   base: {
@@ -437,6 +438,7 @@ export default () => {
       let formRef: HTMLFormElement
       let keyInputRef: HTMLInputElement
       let valueInputRef: HTMLInputElement
+      const { Modal: DeleteEnvVarModal, open: openDeleteEnvVarModal, close: closeDeleteEnvVarModal } = useModal()
 
       const handleUpdateEnvVar: JSX.EventHandler<HTMLButtonElement, MouseEvent> = async (e) => {
         // prevent default form submit (reload page)
@@ -527,12 +529,25 @@ export default () => {
                 size='large'
                 width='full'
                 type='button'
-                onclick={handleDeleteEnvVar}
+                onclick={openDeleteEnvVarModal}
                 disabled={props.envVar.system}
                 title={props.envVar.system ? 'システム環境変数は削除できません' : undefined}
               >
                 Delete
               </Button>
+              <DeleteEnvVarModal>
+                <ModalContainer>
+                  <ModalText>本当に削除しますか?</ModalText>
+                  <ModalButtonsContainer>
+                    <Button onclick={closeDeleteEnvVarModal} color='black1' size='large' width='full'>
+                      キャンセル
+                    </Button>
+                    <Button onclick={handleDeleteEnvVar} color='black1' size='large' width='full'>
+                      削除
+                    </Button>
+                  </ModalButtonsContainer>
+                </ModalContainer>
+              </DeleteEnvVarModal>
             </Show>
           </EnvVarButtonContainer>
         </form>
