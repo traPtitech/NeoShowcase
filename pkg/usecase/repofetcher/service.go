@@ -2,6 +2,7 @@ package repofetcher
 
 import (
 	"context"
+	"fmt"
 	"sync"
 	"time"
 
@@ -157,7 +158,7 @@ func (r *service) resolveRefs(ctx context.Context, repo *domain.Repository) (ref
 		Auth: auth,
 	})
 	if err != nil {
-		return nil, errors.Wrap(err, "failed to list remote refs")
+		return nil, errors.Wrap(err, fmt.Sprintf("failed to list remote refs at %v", repo.URL))
 	}
 
 	refToCommit = make(map[string]string, 2*len(refs))
