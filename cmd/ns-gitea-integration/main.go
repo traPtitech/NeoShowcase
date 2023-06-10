@@ -24,7 +24,7 @@ var (
 )
 
 var rootCommand = &cobra.Command{
-	Use:   "ns-gitea integration",
+	Use:   "ns-gitea-integration",
 	Short: "NeoShowcase Gitea Integration (optional component)",
 	Long: `Synchronizes gitea user / organization repositories and its owners with configured interval.
 Operator needs to ensure that usernames of NeoShowcase and gitea are equivalent via SSO or some other method.

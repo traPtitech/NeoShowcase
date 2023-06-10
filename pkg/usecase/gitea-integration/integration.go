@@ -45,7 +45,12 @@ func NewIntegration(
 		return nil, err
 	}
 
-	client, err := gitea.NewClient(c.URL, gitea.SetToken(c.Token))
+	client, err := gitea.NewClient(
+		c.URL,
+		gitea.SetToken(c.Token),
+		// Skip version check (traP fork versioned such as 'traP-1.19.3-2' regarded "Malformed version")
+		gitea.SetGiteaVersion(""),
+	)
 	if err != nil {
 		return nil, err
 	}
