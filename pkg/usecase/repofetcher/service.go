@@ -134,6 +134,7 @@ func (r *service) fetch(repositoryIDs optional.Of[[]string]) error {
 
 	p := pool.New().WithMaxGoroutines(fetcherConcurrency)
 	for _, repo := range repos {
+		repo := repo
 		p.Go(func() {
 			err := r.updateApps(ctx, repo, reposToApps[repo.ID])
 			if err != nil {
