@@ -1,10 +1,13 @@
 package builder
 
 import (
+	"bytes"
 	"context"
+	"fmt"
 	"io"
 	"os"
 	"path/filepath"
+	"strings"
 
 	"github.com/docker/cli/cli/config/configfile"
 	"github.com/docker/cli/cli/config/types"
@@ -20,9 +23,13 @@ import (
 	"golang.org/x/sync/errgroup"
 
 	"github.com/traPtitech/neoshowcase/pkg/domain"
+	"github.com/traPtitech/neoshowcase/pkg/util/ds"
 )
 
-const buildScriptName = "neoshowcase_internal_build.sh"
+const (
+	buildScriptName   = "neoshowcase_internal_build.sh"
+	tmpDockerfileName = "neoshowcase_internal_dockerfile"
+)
 
 func withBuildkitProgress(ctx context.Context, logger io.Writer, buildFn func(ctx context.Context, ch chan *buildkit.SolveStatus) error) error {
 	ch := make(chan *buildkit.SolveStatus)
@@ -38,17 +45,27 @@ func withBuildkitProgress(ctx context.Context, logger io.Writer, buildFn func(ct
 	return eg.Wait()
 }
 
-func createScriptFile(filename string, script string) error {
+func createFile(filename string, content string) error {
 	f, err := os.OpenFile(filename, os.O_RDWR|os.O_CREATE|os.O_TRUNC, os.ModePerm)
 	if err != nil {
 		return err
 	}
 	defer f.Close()
-	_, err = f.WriteString("#!/bin/sh\nset -eux\n" + script)
+	_, err = f.WriteString(content)
 	if err != nil {
 		return err
 	}
 	return nil
+}
+
+func createScriptFile(filename string, script string) error {
+	return createFile(filename, "#!/bin/sh\nset -eux\n"+script)
+}
+
+func toJSONExecFormat(args []string) string {
+	return strings.Join(ds.Map(args, func(s string) string {
+		return `"` + strings.ReplaceAll(s, `"`, `\"`) + `"`
+	}), ", ")
 }
 
 func (s *builderService) authSessions() []session.Attachable {
@@ -71,19 +88,14 @@ func (s *builderService) buildImageWithCmd(
 	ch chan *buildkit.SolveStatus,
 	bc *domain.BuildConfigRuntimeCmd,
 ) error {
-	var ls llb.State
+	var dockerfile bytes.Buffer
 	if bc.BaseImage == "" {
-		ls = llb.Scratch()
+		dockerfile.WriteString("FROM scratch\n")
 	} else {
-		ls = llb.Image(bc.BaseImage)
+		dockerfile.WriteString(fmt.Sprintf("FROM %v\n", bc.BaseImage))
 	}
-	ls = ls.
-		Dir("/srv").
-		File(llb.Copy(llb.Local("local-src"), ".", ".", &llb.CopyInfo{
-			CopyDirContentsOnly: true,
-			AllowWildcard:       true,
-			CreateDestPath:      true,
-		}))
+	dockerfile.WriteString("WORKDIR /srv\n")
+	dockerfile.WriteString("COPY . .\n")
 
 	if bc.BuildCmd != "" {
 		if bc.BuildCmdShell {
@@ -91,22 +103,21 @@ func (s *builderService) buildImageWithCmd(
 			if err != nil {
 				return err
 			}
-			ls = ls.Run(llb.Args([]string{"./" + buildScriptName})).Root()
+			dockerfile.WriteString(fmt.Sprintf("RUN ./%v\n", buildScriptName))
 		} else {
 			args, err := shellwords.Parse(bc.BuildCmd)
 			if err != nil {
 				return err
 			}
-			ls = ls.Run(llb.Args(args)).Root()
+			dockerfile.WriteString(fmt.Sprintf("RUN [%v]\n", toJSONExecFormat(args)))
 		}
 	}
 
-	def, err := ls.Marshal(ctx)
+	err := createFile(filepath.Join(st.repositoryTempDir, tmpDockerfileName), dockerfile.String())
 	if err != nil {
-		return errors.Wrap(err, "failed to marshal llb")
+		return err
 	}
-
-	_, err = s.buildkit.Solve(ctx, def, buildkit.SolveOpt{
+	_, err = s.buildkit.Solve(ctx, nil, buildkit.SolveOpt{
 		Exports: []buildkit.ExportEntry{{
 			Type: buildkit.ExporterImage,
 			Attrs: map[string]string{
@@ -115,9 +126,12 @@ func (s *builderService) buildImageWithCmd(
 			},
 		}},
 		LocalDirs: map[string]string{
-			"local-src": st.repositoryTempDir,
+			"context":    st.repositoryTempDir,
+			"dockerfile": st.repositoryTempDir,
 		},
-		Session: s.authSessions(),
+		Frontend:      "dockerfile.v0",
+		FrontendAttrs: map[string]string{"filename": tmpDockerfileName},
+		Session:       s.authSessions(),
 	}, ch)
 	return err
 }
