@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	"fmt"
+	"io"
 	"net/http"
 	"path/filepath"
 
@@ -69,8 +70,10 @@ func (s *server) postConfig(b []byte) error {
 	if err != nil {
 		return err
 	}
+	defer res.Body.Close()
 	if !(200 <= res.StatusCode && res.StatusCode < 300) {
-		return errors.Errorf("expected 2xx, invalid status code %v", res.StatusCode)
+		resBody, _ := io.ReadAll(res.Body)
+		return errors.Errorf("expected 2xx, invalid status code %v: %v", res.StatusCode, string(resBody))
 	}
 	return nil
 }
