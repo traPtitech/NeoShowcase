@@ -9,6 +9,7 @@ import (
 	"path/filepath"
 
 	"github.com/friendsofgo/errors"
+	"github.com/samber/lo"
 
 	"github.com/traPtitech/neoshowcase/pkg/domain"
 	"github.com/traPtitech/neoshowcase/pkg/domain/web"
@@ -46,6 +47,7 @@ file_server @%v {
 func (s *server) Reconcile(sites []*domain.StaticSite) error {
 	var b bytes.Buffer
 	b.WriteString(":80 {\n")
+	sites = lo.UniqBy(sites, func(site *domain.StaticSite) string { return site.Application.ID })
 	for _, site := range sites {
 		matcherName := fmt.Sprintf("nsapp-%v", site.Application.ID)
 		b.WriteString(fmt.Sprintf(
