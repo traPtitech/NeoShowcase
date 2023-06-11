@@ -7,6 +7,7 @@ import {
   Application,
   GetApplicationsRequest_Scope,
   GetRepositoriesRequest_Scope,
+  Repository,
 } from '/@/api/neoshowcase/protobuf/gateway_pb'
 import { RepositoryRow } from '/@/components/RepositoryRow'
 import { ApplicationState } from '/@/libs/application'
@@ -16,6 +17,7 @@ import { vars } from '/@/theme'
 import { Container } from '/@/libs/layout'
 import { Button } from '/@/components/Button'
 import { A } from '@solidjs/router'
+import Fuse from 'fuse.js'
 
 const sortItems: RadioItem<'asc' | 'desc'>[] = [
   { value: 'desc', title: '最新順' },
@@ -129,7 +131,28 @@ const RepositoriesContainer = styled('div', {
   },
 })
 
+interface RepoWithApp {
+  repo: Repository
+  apps: Application[]
+}
+
 const newestAppDate = (apps: Application[]): number => Math.max(0, ...apps.map((a) => a.updatedAt.toDate().getTime()))
+const compareRepoWithApp = (sort: 'asc' | 'desc') => (a: RepoWithApp, b: RepoWithApp): number => {
+  // Sort by apps updated at
+  if (a.apps.length > 0 && b.apps.length > 0) {
+    if (sort === 'asc') {
+      return newestAppDate(a.apps) - newestAppDate(b.apps)
+    } else {
+      return newestAppDate(b.apps) - newestAppDate(a.apps)
+    }
+  }
+  // Bring up repositories with 1 or more apps at top
+  if ((a.apps.length > 0 && b.apps.length === 0) || (a.apps.length === 0 && b.apps.length > 0)) {
+    return b.apps.length - a.apps.length
+  }
+  // Fallback to sort by repository id
+  return a.repo.id.localeCompare(b.repo.id)
+}
 
 export default () => {
   const [scope, setScope] = createSignal(GetRepositoriesRequest_Scope.MINE)
@@ -137,6 +160,7 @@ export default () => {
     const mine = scope() === GetRepositoriesRequest_Scope.MINE
     return mine ? GetApplicationsRequest_Scope.MINE : GetApplicationsRequest_Scope.ALL
   }
+  const [query, setQuery] = createSignal('')
   const [sort, setSort] = createSignal(sortItems[0].value)
 
   const [repos] = createResource(
@@ -149,39 +173,30 @@ export default () => {
   )
   const loaded = () => !!(user() && repos() && apps())
 
-  const appsByRepo = createMemo(() => {
-    if (!apps()) return
-    const map = {} as Record<string, Application[]>
+  const repoWithApps = createMemo(() => {
+    if (!repos() || !apps()) return
+    const appsMap = {} as Record<string, Application[]>
     for (const app of apps().applications) {
-      if (!map[app.repositoryId]) map[app.repositoryId] = []
-      map[app.repositoryId].push(app)
+      if (!appsMap[app.repositoryId]) appsMap[app.repositoryId] = []
+      appsMap[app.repositoryId].push(app)
     }
-    return map
+    const res = repos().repositories.map((repo): RepoWithApp => ({ repo, apps: appsMap[repo.id] || [] }))
+    res.sort(compareRepoWithApp(sort()))
+    return res
   })
-  const repoApps = (repositoryId: string) => appsByRepo()[repositoryId] || []
 
-  const sortedRepos = createMemo(() => {
-    if (!appsByRepo()) return
-    const r = [...repos().repositories]
-    r.sort((a, b) => {
-      const appsA = repoApps(a.id)
-      const appsB = repoApps(b.id)
-      // Sort by apps updated at
-      if (appsA.length > 0 && appsB.length > 0) {
-        if (sort() === 'asc') {
-          return newestAppDate(appsA) - newestAppDate(appsB)
-        } else {
-          return newestAppDate(appsB) - newestAppDate(appsA)
-        }
-      }
-      // Bring up repositories with 1 or more apps at top
-      if ((appsA.length > 0 && appsB.length === 0) || (appsA.length === 0 && appsB.length > 0)) {
-        return appsB.length - appsA.length
-      }
-      // Fallback to sort by repository id
-      return a.id.localeCompare(b.id)
+  const fuse = createMemo(() => {
+    if (!repoWithApps()) return
+    return new Fuse(repoWithApps(), {
+      keys: ['repo.name', 'apps.name'],
     })
-    return r
+  })
+  const filtered = createMemo(() => {
+    if (!repoWithApps()) return
+    if (query() === '') return repoWithApps()
+    return fuse()
+      .search(query())
+      .map((r) => r.item)
   })
 
   return (
@@ -221,7 +236,7 @@ export default () => {
           </SidebarContainer>
           <MainContainer>
             <SearchBarContainer>
-              <SearchBar placeholder='Search...' />
+              <SearchBar value={query()} onInput={(e) => setQuery(e.target.value)} placeholder='Search...' />
               <A href='/repos/new'>
                 <Button color='black1' size='large'>
                   + New Repository
@@ -229,7 +244,7 @@ export default () => {
               </A>
             </SearchBarContainer>
             <RepositoriesContainer>
-              <For each={sortedRepos()}>{(r) => <RepositoryRow repo={r} apps={repoApps(r.id)} />}</For>
+              <For each={filtered()}>{(r) => <RepositoryRow repo={r.repo} apps={r.apps} />}</For>
             </RepositoriesContainer>
           </MainContainer>
         </ContentContainer>
