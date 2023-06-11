@@ -17,7 +17,7 @@ import { Container } from '/@/libs/layout'
 import { Button } from '/@/components/Button'
 import { A } from '@solidjs/router'
 
-const sortItems: RadioItem<string>[] = [
+const sortItems: RadioItem<'asc' | 'desc'>[] = [
   { value: 'desc', title: '最新順' },
   { value: 'asc', title: '古い順' },
 ]
@@ -137,6 +137,7 @@ export default () => {
     const mine = scope() === GetRepositoriesRequest_Scope.MINE
     return mine ? GetApplicationsRequest_Scope.MINE : GetApplicationsRequest_Scope.ALL
   }
+  const [sort, setSort] = createSignal(sortItems[0].value)
 
   const [repos] = createResource(
     () => scope(),
@@ -167,7 +168,11 @@ export default () => {
       const appsB = repoApps(b.id)
       // Sort by apps updated at
       if (appsA.length > 0 && appsB.length > 0) {
-        return newestAppDate(appsB) - newestAppDate(appsA)
+        if (sort() === 'asc') {
+          return newestAppDate(appsA) - newestAppDate(appsB)
+        } else {
+          return newestAppDate(appsB) - newestAppDate(appsA)
+        }
       }
       // Bring up repositories with 1 or more apps at top
       if ((appsA.length > 0 && appsB.length === 0) || (appsA.length === 0 && appsB.length > 0)) {
@@ -178,8 +183,6 @@ export default () => {
     })
     return r
   })
-
-  const [sort, setSort] = createSignal(sortItems[0].value)
 
   return (
     <Container>
