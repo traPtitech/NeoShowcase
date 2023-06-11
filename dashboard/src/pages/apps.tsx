@@ -1,6 +1,6 @@
 import { Header } from '/@/components/Header'
 import { Checkbox } from '/@/components/Checkbox'
-import { createResource, createSignal, For, Show } from 'solid-js'
+import { createMemo, createResource, createSignal, For, Show } from 'solid-js'
 import { Radio, RadioItem } from '/@/components/Radio'
 import { client, user } from '/@/libs/api'
 import {
@@ -129,6 +129,8 @@ const RepositoriesContainer = styled('div', {
   },
 })
 
+const newestAppDate = (apps: Application[]): number => Math.max(0, ...apps.map((a) => a.updatedAt.toDate().getTime()))
+
 export default () => {
   const [scope, setScope] = createSignal(GetRepositoriesRequest_Scope.MINE)
   const appScope = () => {
@@ -146,13 +148,36 @@ export default () => {
   )
   const loaded = () => !!(user() && repos() && apps())
 
-  const appsByRepo = () =>
-    loaded() &&
-    apps().applications.reduce((acc, app) => {
-      if (!acc[app.repositoryId]) acc[app.repositoryId] = []
-      acc[app.repositoryId].push(app)
-      return acc
-    }, {} as Record<string, Application[]>)
+  const appsByRepo = createMemo(() => {
+    if (!apps()) return
+    const map = {} as Record<string, Application[]>
+    for (const app of apps().applications) {
+      if (!map[app.repositoryId]) map[app.repositoryId] = []
+      map[app.repositoryId].push(app)
+    }
+    return map
+  })
+  const repoApps = (repositoryId: string) => appsByRepo()[repositoryId] || []
+
+  const sortedRepos = createMemo(() => {
+    if (!appsByRepo()) return
+    const r = [...repos().repositories]
+    r.sort((a, b) => {
+      const appsA = repoApps(a.id)
+      const appsB = repoApps(b.id)
+      // Sort by apps updated at
+      if (appsA.length > 0 && appsB.length > 0) {
+        return newestAppDate(appsB) - newestAppDate(appsA)
+      }
+      // Bring up repositories with 1 or more apps at top
+      if ((appsA.length > 0 && appsB.length === 0) || (appsA.length === 0 && appsB.length > 0)) {
+        return appsB.length - appsA.length
+      }
+      // Fallback to sort by repository id
+      return a.id.localeCompare(b.id)
+    })
+    return r
+  })
 
   const [sort, setSort] = createSignal(sortItems[0].value)
 
@@ -201,7 +226,7 @@ export default () => {
               </A>
             </SearchBarContainer>
             <RepositoriesContainer>
-              <For each={repos().repositories}>{(r) => <RepositoryRow repo={r} apps={appsByRepo()[r.id] || []} />}</For>
+              <For each={sortedRepos()}>{(r) => <RepositoryRow repo={r} apps={repoApps(r.id)} />}</For>
             </RepositoriesContainer>
           </MainContainer>
         </ContentContainer>
