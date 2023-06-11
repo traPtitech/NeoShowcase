@@ -106,6 +106,18 @@ const EnvVarsContainer = styled('div', {
     gap: '8px',
   },
 })
+const EnvVarKeyCode = styled('code', {
+  base: {
+    padding: '8px 12px',
+    borderRadius: '4px',
+    fontSize: '14px',
+    marginLeft: '4px',
+
+    width: '100%',
+    display: 'flex',
+    alignItems: 'center',
+  },
+})
 const EnvVarButtonContainer = styled('div', {
   base: {
     display: 'flex',
@@ -436,7 +448,6 @@ export default () => {
     }> = (props) => {
       const [isEditing, setIsEditing] = createSignal(false)
       let formRef: HTMLFormElement
-      let keyInputRef: HTMLInputElement
       let valueInputRef: HTMLInputElement
       const { Modal: DeleteEnvVarModal, open: openDeleteEnvVarModal, close: closeDeleteEnvVarModal } = useModal()
 
@@ -450,15 +461,9 @@ export default () => {
         }
 
         try {
-          // delete old env var
-          await client.deleteEnvVar({
-            applicationId: app().id,
-            key: props.envVar.key,
-          })
-          // create new env var
           await client.setEnvVar({
             applicationId: app().id,
-            key: keyInputRef.value,
+            key: props.envVar.key,
             value: valueInputRef.value,
           })
           toast.success('環境変数を更新しました')
@@ -488,14 +493,7 @@ export default () => {
 
       return (
         <form class={EnvVarContainerClass} ref={formRef}>
-          <InputBar
-            type='text'
-            disabled={!isEditing()}
-            required
-            placeholder='KEY'
-            ref={keyInputRef}
-            value={props.envVar.key}
-          />
+          <EnvVarKeyCode>{props.envVar.key}</EnvVarKeyCode>
           <InputBar
             type='text'
             disabled={!isEditing()}
