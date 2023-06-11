@@ -3,6 +3,7 @@ import { globalStyle } from '@macaron-css/core'
 
 globalStyle('*', {
   fontFamily: 'Noto Sans JP',
+  boxSizing: 'border-box',
 })
 
 globalStyle('a', {

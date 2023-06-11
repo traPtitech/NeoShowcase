@@ -254,13 +254,13 @@ export default () => {
               </SshDetails>
               <PublicKeyCode>{publicKey()}</PublicKeyCode>
               <Show when={!useTmpKey()}>
-                <Button color='black1' size='large' onclick={() => setUseTmpKey(true)} type='submit'>
+                <Button color='black1' size='large' width='auto' onclick={() => setUseTmpKey(true)} type='submit'>
                   新たなSSH鍵を生成する (for github.com)
                 </Button>
               </Show>
             </Match>
           </Switch>
-          <Button color='black1' size='large' onclick={createRepository} type='submit'>
+          <Button color='black1' size='large' width='auto' onclick={createRepository} type='submit'>
             + Create new Repository
           </Button>
         </InputFormContainer>

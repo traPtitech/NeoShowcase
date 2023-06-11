@@ -1,5 +1,4 @@
-import Fuse from 'fuse.js'
-import { Component, createMemo, createResource, createSignal, For, JSX, Show } from 'solid-js'
+import { createMemo, createResource, For, JSX, Show } from 'solid-js'
 import toast from 'solid-toast'
 import { ConnectError } from '@bufbuild/connect'
 import { styled } from '@macaron-css/solid'
@@ -39,54 +38,6 @@ const RepoTitleContainer = styled('div', {
     fontSize: '32px',
     fontWeight: 'bold',
     color: vars.text.black1,
-  },
-})
-
-const UserContainer = styled('div', {
-  base: {
-    display: 'flex',
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-  },
-})
-const UserRowLeft = styled('div', {
-  base: {
-    display: 'flex',
-    flexDirection: 'row',
-    gap: '8px',
-    alignItems: 'center',
-  },
-})
-const UserAvatar = styled('img', {
-  base: {
-    width: '32px',
-    height: '32px',
-    borderRadius: '50%',
-  },
-})
-const UserName = styled('div', {
-  base: {
-    fontSize: '16px',
-    color: vars.text.black1,
-  },
-})
-
-const OwnerEditorContainer = styled('div', {
-  base: {
-    display: 'flex',
-    flexDirection: 'column',
-    gap: '8px',
-    height: '480px',
-  },
-})
-
-const UsersList = styled('div', {
-  base: {
-    display: 'flex',
-    flexDirection: 'column',
-    gap: '8px',
-    overflowY: 'auto',
   },
 })
 
@@ -185,6 +136,7 @@ export default () => {
                 onclick={handleCreateApplication}
                 color='black1'
                 size='large'
+                width='full'
                 title='このリポジトリからアプリケーションを作成します'
               >
                 Create New Application
@@ -193,6 +145,7 @@ export default () => {
                 onclick={openDeleteRepoModal}
                 color='black1'
                 size='large'
+                width='full'
                 disabled={!canDeleteRepository()}
                 title={
                   canDeleteRepository()
@@ -207,10 +160,10 @@ export default () => {
               <ModalContainer>
                 <ModalText>本当に削除しますか?</ModalText>
                 <ModalButtonsContainer>
-                  <Button onclick={closeDeleteRepoModal} color='black1' size='large'>
+                  <Button onclick={closeDeleteRepoModal} color='black1' size='large' width='full'>
                     キャンセル
                   </Button>
-                  <Button onclick={handleDeleteRepository} color='black1' size='large'>
+                  <Button onclick={handleDeleteRepository} color='black1' size='large' width='full'>
                     削除
                   </Button>
                 </ModalButtonsContainer>
@@ -243,7 +196,7 @@ export default () => {
             see: https://github.com/traPtitech/NeoShowcase/issues/570 */}
             <Card>
               <CardTitle>Owners</CardTitle>
-              <Button onclick={openEditOwnerModal} color='black1' size='large'>
+              <Button onclick={openEditOwnerModal} color='black1' size='large' width='full'>
                 リポジトリオーナーを追加する
               </Button>
               <EditOwnerModal>
@@ -252,6 +205,7 @@ export default () => {
                     <Button
                       color='black1'
                       size='large'
+                      width='auto'
                       onclick={() => {
                         handleAddOwner(user)
                       }}
@@ -266,6 +220,7 @@ export default () => {
                   <Button
                     color='black1'
                     size='large'
+                    width='auto'
                     onclick={() => {
                       handleDeleteOwner(user)
                     }}

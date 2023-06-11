@@ -243,7 +243,7 @@ export default () => {
               </FormCheckBox>
             </div>
 
-            <Button color='black1' size='large' onclick={createApplication} type='submit'>
+            <Button color='black1' size='large' width='auto' onclick={createApplication} type='submit'>
               + Create New Application
             </Button>
           </FormContainer>

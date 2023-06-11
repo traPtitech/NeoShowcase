@@ -1,10 +1,9 @@
-import { styled } from '@macaron-css/solid'
 import { AuthenticationType, CreateWebsiteRequest } from '/@/api/neoshowcase/protobuf/gateway_pb'
 import { Checkbox } from '/@/components/Checkbox'
 import { Radio, RadioItem } from '/@/components/Radio'
 import { Button } from '/@/components/Button'
 import { SetStoreFunction } from 'solid-js/store'
-import { For, Show } from 'solid-js'
+import { For } from 'solid-js'
 import { storify } from '/@/libs/storify'
 import { InputBar, InputLabel } from '/@/components/Input'
 import { FormButton, FormCheckBox, FormSettings, FormSettingsButton, SettingsContainer } from '/@/components/AppsNew'
@@ -68,7 +67,7 @@ export const WebsiteSetting = (props: WebsiteSettingProps) => {
         />
       </div>
       <FormSettingsButton>
-        <Button onclick={props.deleteWebsite} color='black1' size='large' type='button'>
+        <Button onclick={props.deleteWebsite} color='black1' size='large' width='auto' type='button'>
           Delete website setting
         </Button>
       </FormSettingsButton>
@@ -105,6 +104,7 @@ export const WebsiteSettings = (props: WebsiteSettingsProps) => {
           }}
           color='black1'
           size='large'
+          width='auto'
           type='button'
         >
           Add website setting

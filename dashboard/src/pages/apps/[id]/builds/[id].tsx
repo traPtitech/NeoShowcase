@@ -128,17 +128,17 @@ export default () => {
           <Card>
             <CardTitle>Actions</CardTitle>
             <Show when={!build().retriable}>
-              <Button color='black1' size='large' onclick={retryBuild}>
+              <Button color='black1' size='large' width='full' onclick={retryBuild}>
                 Retry build
               </Button>
             </Show>
             <Show when={build().status === Build_BuildStatus.BUILDING}>
-              <Button color='black1' size='large' onclick={cancelBuild}>
+              <Button color='black1' size='large' width='full' onclick={cancelBuild}>
                 Cancel build
               </Button>
             </Show>
             <Show when={app().deployType === DeployType.STATIC && build().status === Build_BuildStatus.SUCCEEDED}>
-              <Button color='black1' size='large' onclick={downloadArtifact}>
+              <Button color='black1' size='large' width='full' onclick={downloadArtifact}>
                 Download build result (tar.gz)
               </Button>
             </Show>

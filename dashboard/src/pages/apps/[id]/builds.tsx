@@ -20,7 +20,6 @@ const BuildsContainer = styled('div', {
 
 const BuildContainer = styled('div', {
   base: {
-    height: '40px',
     display: 'grid',
     gridTemplateColumns: '20px 1fr',
     gap: '8px',

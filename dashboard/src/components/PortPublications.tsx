@@ -40,7 +40,7 @@ const PortPublications = (props: PortPublicationProps) => {
         />
       </div>
       <FormSettingsButton>
-        <Button onclick={props.deletePortPublication} color='black1' size='large' type='button'>
+        <Button onclick={props.deletePortPublication} color='black1' size='large' width='auto' type='button'>
           Delete port publication
         </Button>
       </FormSettingsButton>
@@ -82,6 +82,7 @@ export const PortPublicationSettings = (props: PortPublicationSettingsProps) => 
           }}
           color='black1'
           size='large'
+          width='auto'
           type='button'
         >
           Add port publication
