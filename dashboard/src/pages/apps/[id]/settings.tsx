@@ -209,13 +209,20 @@ export default () => {
 
     // 現在のビルド設定を反映
     onMount(() => {
-      setBuildConfigMethod(app().config.buildConfig.case)
+      const conf = app().config.buildConfig
+      setBuildConfigMethod(conf.case)
       setBuildConfig({
-        [app().config.buildConfig.case]: {
-          case: app().config.buildConfig.case,
-          value: storify(app().config.buildConfig.value),
+        [conf.case]: {
+          case: conf.case,
+          value: storify(conf.value),
         },
       })
+      switch (conf.case) {
+        case 'runtimeBuildpack':
+        case 'runtimeCmd':
+        case 'runtimeDockerfile':
+          setRuntimeConfig(conf.value.runtimeConfig)
+      }
     })
 
     const updateBuildSettings: JSX.EventHandler<HTMLButtonElement, MouseEvent> = async (e) => {
