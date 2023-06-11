@@ -10,14 +10,15 @@ import {
   Repository,
 } from '/@/api/neoshowcase/protobuf/gateway_pb'
 import { RepositoryRow } from '/@/components/RepositoryRow'
-import { ApplicationState } from '/@/libs/application'
-import { StatusCheckbox } from '/@/components/StatusCheckbox'
+import { applicationState, ApplicationState } from '/@/libs/application'
+import { AppStatus } from '/@/components/AppStatus'
 import { styled } from '@macaron-css/solid'
 import { vars } from '/@/theme'
 import { Container } from '/@/libs/layout'
 import { Button } from '/@/components/Button'
 import { A } from '@solidjs/router'
 import Fuse from 'fuse.js'
+import { unique } from '/@/libs/unique'
 
 const sortItems: RadioItem<'asc' | 'desc'>[] = [
   { value: 'desc', title: '最新順' },
@@ -154,7 +155,23 @@ const compareRepoWithApp = (sort: 'asc' | 'desc') => (a: RepoWithApp, b: RepoWit
   return a.repo.id.localeCompare(b.repo.id)
 }
 
+const allStatuses = [
+  ApplicationState.Idle,
+  ApplicationState.Deploying,
+  ApplicationState.Running,
+  ApplicationState.Static,
+]
+
 export default () => {
+  const [statuses, setStatuses] = createSignal([...allStatuses])
+  const checkStatus = (status: ApplicationState, checked: boolean) => {
+    if (checked) {
+      setStatuses((statuses) => unique([status, ...statuses]))
+    } else {
+      setStatuses((statuses) => statuses.filter((s) => s !== status))
+    }
+  }
+
   const [scope, setScope] = createSignal(GetRepositoriesRequest_Scope.MINE)
   const appScope = () => {
     const mine = scope() === GetRepositoriesRequest_Scope.MINE
@@ -173,10 +190,15 @@ export default () => {
   )
   const loaded = () => !!(user() && repos() && apps())
 
+  const filteredApps = createMemo(() => {
+    if (!apps()) return
+    const s = statuses()
+    return apps().applications.filter((a) => s.includes(applicationState(a)))
+  })
   const repoWithApps = createMemo(() => {
-    if (!repos() || !apps()) return
+    if (!repos() || !filteredApps()) return
     const appsMap = {} as Record<string, Application[]>
-    for (const app of apps().applications) {
+    for (const app of filteredApps()) {
       if (!appsMap[app.repositoryId]) appsMap[app.repositoryId] = []
       appsMap[app.repositoryId].push(app)
     }
@@ -191,7 +213,7 @@ export default () => {
       keys: ['repo.name', 'apps.name'],
     })
   })
-  const filtered = createMemo(() => {
+  const filteredRepos = createMemo(() => {
     if (!repoWithApps()) return
     if (query() === '') return repoWithApps()
     return fuse()
@@ -209,18 +231,13 @@ export default () => {
             <SidebarSection>
               <SidebarTitle>Status</SidebarTitle>
               <SidebarOptions>
-                <Checkbox>
-                  <StatusCheckbox apps={apps().applications} state={ApplicationState.Idle} title='Idle' />
-                </Checkbox>
-                <Checkbox>
-                  <StatusCheckbox apps={apps().applications} state={ApplicationState.Deploying} title='Deploying' />
-                </Checkbox>
-                <Checkbox>
-                  <StatusCheckbox apps={apps().applications} state={ApplicationState.Running} title='Running' />
-                </Checkbox>
-                <Checkbox>
-                  <StatusCheckbox apps={apps().applications} state={ApplicationState.Static} title='Static' />
-                </Checkbox>
+                <For each={allStatuses}>
+                  {(status) => (
+                    <Checkbox selected={statuses().includes(status)} setSelected={(s) => checkStatus(status, s)}>
+                      <AppStatus apps={apps().applications} state={status} />
+                    </Checkbox>
+                  )}
+                </For>
               </SidebarOptions>
             </SidebarSection>
             <SidebarSection>
@@ -244,7 +261,7 @@ export default () => {
               </A>
             </SearchBarContainer>
             <RepositoriesContainer>
-              <For each={filtered()}>{(r) => <RepositoryRow repo={r.repo} apps={r.apps} />}</For>
+              <For each={filteredRepos()}>{(r) => <RepositoryRow repo={r.repo} apps={r.apps} />}</For>
             </RepositoriesContainer>
           </MainContainer>
         </ContentContainer>

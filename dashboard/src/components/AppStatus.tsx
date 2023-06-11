@@ -23,19 +23,18 @@ const ContainerLeft = styled('div', {
   },
 })
 
-interface StatusCheckboxProps {
+interface AppStatusProps {
   apps: Application[] | undefined
   state: ApplicationState
-  title: string
 }
 
-export const StatusCheckbox = (props: StatusCheckboxProps): JSX.Element => {
+export const AppStatus = (props: AppStatusProps): JSX.Element => {
   const num = () => props.apps?.filter((app) => applicationState(app) === props.state)?.length ?? 0
   return (
     <Container>
       <ContainerLeft>
         <StatusIcon state={props.state} />
-        <div>{props.title}</div>
+        <div>{props.state}</div>
       </ContainerLeft>
       <div>{num()}</div>
     </Container>
