@@ -33,6 +33,7 @@ import { Code, ConnectError } from '@bufbuild/connect'
 import useModal from '/@/libs/useModal'
 import { ModalButtonsContainer, ModalContainer, ModalText } from '/@/components/Modal'
 import toast from 'solid-toast'
+import { styled } from '@macaron-css/solid'
 
 interface RuntimeConfigInfoProps {
   config: RuntimeConfig
@@ -150,6 +151,14 @@ const ApplicationConfigInfo = (props: ApplicationConfigInfoProps) => {
       )
   }
 }
+
+const URLsContainer = styled('div', {
+  base: {
+    display: 'flex',
+    flexDirection: 'column',
+    gap: '8px',
+  },
+})
 
 export default () => {
   const navigate = useNavigate()
@@ -334,13 +343,15 @@ export default () => {
                 </CardItem>
                 <CardItem>
                   <CardItemTitle>
-                    <For each={app().websites}>
-                      {(website) => (
-                        <URLText href={getWebsiteURL(website)} target='_blank' rel='noreferrer'>
-                          {getWebsiteURL(website)}
-                        </URLText>
-                      )}
-                    </For>
+                    <URLsContainer>
+                      <For each={app().websites}>
+                        {(website) => (
+                          <URLText href={getWebsiteURL(website)} target='_blank' rel='noreferrer'>
+                            {getWebsiteURL(website)}
+                          </URLText>
+                        )}
+                      </For>
+                    </URLsContainer>
                   </CardItemTitle>
                 </CardItem>
               </Show>

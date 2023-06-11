@@ -83,7 +83,7 @@ type toleration = struct {
 	Operator          string `mapstructure:"operator" yaml:"operator"`
 	Value             string `mapstructure:"value" yaml:"value"`
 	Effect            string `mapstructure:"effect" yaml:"effect"`
-	TolerationSeconds int    `mapstructure:"tolerationSeconds" yaml:"tolerationSeconds"`
+	TolerationSeconds *int64 `mapstructure:"tolerationSeconds" yaml:"tolerationSeconds"`
 }
 
 type Config struct {
@@ -172,7 +172,7 @@ func (c *Config) podSchedulingTolerations() []v1.Toleration {
 			Operator:          tolerationOperatorMapper.IntoMust(t.Operator),
 			Value:             t.Value,
 			Effect:            taintEffectMapper.IntoMust(t.Effect),
-			TolerationSeconds: lo.ToPtr(int64(t.TolerationSeconds)),
+			TolerationSeconds: t.TolerationSeconds,
 		}
 	})
 }
