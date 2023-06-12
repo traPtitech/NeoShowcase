@@ -73,3 +73,10 @@ export const getWebsiteURL = (website: Website): string => {
   const scheme = website.https ? 'https' : 'http'
   return `${scheme}://${website.fqdn}${website.pathPrefix}`
 }
+
+export const extractRepositoryNameFromURL = (url: string): string => {
+  const segments = url.split('/')
+  const lastSegment = segments.pop() || segments.pop() // 末尾のスラッシュを除去
+  const repositoryName = lastSegment?.replace(/\.git$/, '') ?? ''
+  return repositoryName
+}

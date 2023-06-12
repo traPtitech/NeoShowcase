@@ -17,6 +17,7 @@ import { Radio } from '/@/components/Radio'
 import { client } from '/@/libs/api'
 import { Container } from '/@/libs/layout'
 import { vars } from '/@/theme'
+import { extractRepositoryNameFromURL } from '/@/libs/application'
 
 // copy from /pages/apps AppsTitle component
 const PageTitle = styled('div', {
@@ -194,9 +195,7 @@ export default () => {
 
   // URLからリポジトリ名を自動入力
   createEffect(() => {
-    const segments = requestConfig.url.split('/')
-    const lastSegment = segments.pop() || segments.pop() // 末尾のスラッシュを除去
-    const repositoryName = lastSegment?.replace(/\.git$/, '') ?? ''
+    const repositoryName = extractRepositoryNameFromURL(requestConfig.url)
     setRequestConfig('name', repositoryName)
   })
 

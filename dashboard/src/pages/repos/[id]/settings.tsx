@@ -26,6 +26,7 @@ import RepositoryNav from '/@/components/RepositoryNav'
 import { Empty } from '@bufbuild/protobuf'
 import { Match } from 'solid-js'
 import { Radio } from '/@/components/Radio'
+import { extractRepositoryNameFromURL } from '/@/libs/application'
 
 const ContentContainer = styled('div', {
   base: {
@@ -158,9 +159,7 @@ export default () => {
 
     // URLからリポジトリ名を自動入力
     createEffect(() => {
-      const segments = generalConfig.url.split('/')
-      const lastSegment = segments.pop() || segments.pop() // 末尾のスラッシュを除去
-      const repositoryName = lastSegment?.replace(/\.git$/, '') ?? ''
+      const repositoryName = extractRepositoryNameFromURL(generalConfig.url)
       setGeneralConfig('name', repositoryName)
     })
 
