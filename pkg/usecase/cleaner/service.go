@@ -108,34 +108,45 @@ func (c *cleanerService) pruneImages(ctx context.Context, r *registry.Registry) 
 		if !strings.HasPrefix(imageName, c.image.NamePrefix) {
 			continue
 		}
-		appID := strings.TrimPrefix(imageName, c.image.NamePrefix)
-
-		tags, err := r.Tags(imageName)
+		err = c.pruneImage(ctx, r, imageName, appsMap)
 		if err != nil {
-			return errors.Wrap(err, "failed to get tags for image")
-		}
-		app, ok := appsMap[appID]
-		var danglingTags []string
-		if ok {
-			danglingTags = lo.Reject(tags, func(tag string, _ int) bool { return app.WantCommit == tag || app.CurrentCommit == tag })
-		} else {
-			danglingTags = tags
-		}
-		for _, tag := range danglingTags {
-			digest, err := r.ManifestDigest(imageName, tag)
-			if err != nil {
-				return errors.Wrap(err, "failed to get manifest digest")
-			}
-			// NOTE: needs manual execution of "registry garbage-collect <config> --delete-untagged" in docker registry side
-			// to actually delete the layers
-			// https://docs.docker.com/registry/garbage-collection/
-			err = r.DeleteManifest(imageName, digest)
-			if err != nil {
-				return errors.Wrap(err, "failed to delete manifest")
-			}
+			log.Errorf("pruning image %v: %+v", imageNames, err)
+			// fail-safe for each image
 		}
 	}
 
+	return nil
+}
+
+func (c *cleanerService) pruneImage(_ context.Context, r *registry.Registry, imageName string, appsMap map[string]*domain.Application) error {
+	appID := strings.TrimPrefix(imageName, c.image.NamePrefix)
+
+	tags, err := r.Tags(imageName)
+	if err != nil {
+		return errors.Wrap(err, "getting tags")
+	}
+	app, ok := appsMap[appID]
+	var danglingTags []string
+	if ok {
+		// app still exists
+		danglingTags = lo.Reject(tags, func(tag string, _ int) bool { return app.WantCommit == tag || app.CurrentCommit == tag })
+	} else {
+		// app was deleted
+		danglingTags = tags
+	}
+	for _, tag := range danglingTags {
+		digest, err := r.ManifestDigest(imageName, tag)
+		if err != nil {
+			return errors.Wrap(err, "getting manifest digest")
+		}
+		// NOTE: needs manual execution of "registry garbage-collect <config> --delete-untagged" in docker registry side
+		// to actually delete the layers
+		// https://docs.docker.com/registry/garbage-collection/
+		err = r.DeleteManifest(imageName, digest)
+		if err != nil {
+			return errors.Wrap(err, "deleting manifest")
+		}
+	}
 	return nil
 }
 
