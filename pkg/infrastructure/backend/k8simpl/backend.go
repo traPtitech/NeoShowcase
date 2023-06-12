@@ -27,6 +27,8 @@ const (
 	appIDLabel = "ns.trap.jp/app-id"
 	// appRestartAnnotation instructs StatefulSets to restart pods when necessary.
 	appRestartAnnotation = "ns.trap.jp/restarted-at"
+	// resourceHashAnnotation is hex-encoded 64-bit XXH3 hash of the resource before this annotation is applied.
+	resourceHashAnnotation = "ns.trap.jp/hash"
 	// fieldManager is the name of this controller.
 	fieldManager = "neoshowcase"
 )

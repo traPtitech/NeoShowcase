@@ -102,7 +102,7 @@ func (s *AppDeployHelper) synchronize(ctx context.Context) error {
 	if err != nil {
 		return err
 	}
-	log.Infof("%v runtime, %v static sites active", len(st.Runtime), len(st.StaticSites))
+	log.Debugf("%v runtime, %v static sites active", len(st.Runtime), len(st.StaticSites))
 
 	// Synchronize
 	s.ssgen.BroadcastSSGen(&pb.SSGenRequest{Type: pb.SSGenRequest_RELOAD})
