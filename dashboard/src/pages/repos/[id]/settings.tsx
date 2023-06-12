@@ -13,6 +13,7 @@ import {
   CreateRepositoryAuthSSH,
   Repository_AuthMethod,
   UpdateRepositoryRequest,
+  UpdateRepositoryRequest_UpdateOwners,
   User,
 } from '/@/api/neoshowcase/protobuf/gateway_pb'
 import toast from 'solid-toast'
@@ -288,7 +289,9 @@ export default () => {
     const handleAddOwner = async (user: User) => {
       const updateApplicationRequest = new UpdateRepositoryRequest({
         id: repo().id,
-        ownerIds: repo().ownerIds.concat(user.id),
+        ownerIds: {
+          ownerIds: repo().ownerIds.concat(user.id),
+        },
       })
 
       try {
@@ -302,7 +305,9 @@ export default () => {
     const handleDeleteOwner = async (owner: User) => {
       const updateApplicationRequest = new UpdateRepositoryRequest({
         id: repo().id,
-        ownerIds: repo().ownerIds.filter((id) => id !== owner.id),
+        ownerIds: {
+          ownerIds: repo().ownerIds.filter((id) => id !== owner.id),
+        },
       })
 
       try {
