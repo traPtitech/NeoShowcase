@@ -177,9 +177,11 @@ export default () => {
         id: repo().id,
         name: generalConfig.name,
         url: generalConfig.url,
-        auth: {
-          auth: authConfig[authMethod()],
-        },
+        auth: updateAuthConfig()
+          ? {
+              auth: authConfig[authMethod()],
+            }
+          : undefined,
       })
 
       try {
