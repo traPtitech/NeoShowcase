@@ -187,13 +187,17 @@ func ssHeaderMiddlewareName(ss *domain.StaticSite) string {
 }
 
 func certificateName(fqdn string) string {
-	if strings.HasPrefix(fqdn, "*.") {
+	wildcard := strings.HasPrefix(fqdn, "*.")
+	if wildcard {
 		fqdn = strings.TrimPrefix(fqdn, "*.")
-		fqdn = strings.ReplaceAll(fqdn, ".", "-")
-		return fmt.Sprintf("nsapp-%s-wildcard", fqdn)
 	}
+	fqdn = strings.ReplaceAll(fqdn, "-", "--")
 	fqdn = strings.ReplaceAll(fqdn, ".", "-")
-	return fmt.Sprintf("nsapp-%s", fqdn)
+	if wildcard {
+		return fmt.Sprintf("nsapp-%s-wildcard", fqdn)
+	} else {
+		return fmt.Sprintf("nsapp-%s", fqdn)
+	}
 }
 
 func tlsSecretName(fqdn string) string {
