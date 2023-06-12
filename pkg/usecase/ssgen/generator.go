@@ -39,7 +39,6 @@ type generatorService struct {
 	docsRoot  string
 
 	cancel   func()
-	running  atomic.Bool
 	reloaded atomic.Bool
 	reloader *coalesce.Coalescer
 }
@@ -81,17 +80,15 @@ func (s *generatorService) Start(_ context.Context) error {
 		}
 	}()
 
-	s.running.Store(true)
 	return nil
 }
 
 func (s *generatorService) Healthy() bool {
-	return s.running.Load() && s.reloaded.Load()
+	return s.reloaded.Load()
 }
 
 func (s *generatorService) Shutdown(_ context.Context) error {
 	s.cancel()
-	s.running.Store(false)
 	return nil
 }
 

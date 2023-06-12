@@ -34,6 +34,10 @@ func FromPBRepositoryAuth(req *pb.CreateRepositoryAuth) optional.Of[apiserver.Cr
 	}
 }
 
+func FromPBUpdateRepositoryOwners(req *pb.UpdateRepositoryRequest_UpdateOwners) []string {
+	return req.OwnerIds
+}
+
 var RepoAuthMethodMapper = mapper.MustNewValueMapper(map[domain.RepositoryAuthMethod]pb.Repository_AuthMethod{
 	domain.RepositoryAuthMethodBasic: pb.Repository_BASIC,
 	domain.RepositoryAuthMethodSSH:   pb.Repository_SSH,

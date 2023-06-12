@@ -85,13 +85,15 @@ message GetRepositoriesRequest {
   Scope scope = 1;
 }
 
-// UpdateRepositoryRequest id以外はoptional
 message UpdateRepositoryRequest {
   string id = 1;
-  string name = 2;
-  string url = 3;
-  CreateRepositoryAuth auth = 4;
-  repeated string owner_ids = 5;
+  optional string name = 2;
+  optional string url = 3;
+  optional CreateRepositoryAuth auth = 4;
+  message UpdateOwners {
+    repeated string owner_ids = 1;
+  }
+  optional UpdateOwners owner_ids = 5;
 }
 
 message RepositoryIdRequest {
@@ -237,15 +239,23 @@ message GetApplicationsRequest {
   Scope scope = 1;
 }
 
-// UpdateApplicationRequest id以外はoptional
 message UpdateApplicationRequest {
   string id = 1;
-  string name = 2;
-  string ref_name = 3;
-  ApplicationConfig config = 4;
-  repeated CreateWebsiteRequest websites = 5;
-  repeated PortPublication port_publications = 6;
-  repeated string owner_ids = 7;
+  optional string name = 2;
+  optional string ref_name = 3;
+  optional ApplicationConfig config = 4;
+  message UpdateWebsites {
+    repeated CreateWebsiteRequest websites = 1;
+  }
+  optional UpdateWebsites websites = 5;
+  message UpdatePorts {
+    repeated PortPublication port_publications = 1;
+  }
+  optional UpdatePorts port_publications = 6;
+  message UpdateOwners {
+    repeated string owner_ids = 1;
+  }
+  optional UpdateOwners owner_ids = 7;
 }
 
 message AvailableDomain {

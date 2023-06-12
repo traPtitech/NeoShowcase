@@ -41,3 +41,7 @@ func ToPBApplication(app *domain.Application) *pb.Application {
 		OwnerIds:      app.OwnerIDs,
 	}
 }
+
+func FromPBUpdateOwners(req *pb.UpdateApplicationRequest_UpdateOwners) []string {
+	return req.OwnerIds
+}

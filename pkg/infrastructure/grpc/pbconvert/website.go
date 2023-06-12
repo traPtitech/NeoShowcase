@@ -3,6 +3,7 @@ package pbconvert
 import (
 	"github.com/traPtitech/neoshowcase/pkg/domain"
 	"github.com/traPtitech/neoshowcase/pkg/infrastructure/grpc/pb"
+	"github.com/traPtitech/neoshowcase/pkg/util/ds"
 	"github.com/traPtitech/neoshowcase/pkg/util/mapper"
 )
 
@@ -23,6 +24,10 @@ func FromPBCreateWebsiteRequest(req *pb.CreateWebsiteRequest) *domain.Website {
 		HTTPPort:       int(req.HttpPort),
 		Authentication: AuthTypeMapper.FromMust(req.Authentication),
 	}
+}
+
+func FromPBUpdateWebsites(req *pb.UpdateApplicationRequest_UpdateWebsites) []*domain.Website {
+	return ds.Map(req.Websites, FromPBCreateWebsiteRequest)
 }
 
 func ToPBWebsite(website *domain.Website) *pb.Website {

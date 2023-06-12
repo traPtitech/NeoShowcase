@@ -92,7 +92,7 @@ export default () => {
     try {
       await client.updateRepository({
         id: repo()?.id,
-        ownerIds: repo()?.ownerIds.concat(user.id),
+        ownerIds: { ownerIds: repo()?.ownerIds.concat(user.id) },
       })
       refetchRepository()
       toast.success('リポジトリのオーナーを追加しました')
@@ -108,7 +108,7 @@ export default () => {
     try {
       await client.updateRepository({
         id: repo()?.id,
-        ownerIds: repo()?.ownerIds.filter((id) => id !== user.id),
+        ownerIds: { ownerIds: repo()?.ownerIds.filter((id) => id !== user.id) },
       })
       refetchRepository()
       toast.success('リポジトリのオーナーを削除しました')

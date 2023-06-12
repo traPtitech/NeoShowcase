@@ -21,10 +21,16 @@ import (
 )
 
 const (
-	appLabel             = "neoshowcase.trap.jp/app"
-	appIDLabel           = "neoshowcase.trap.jp/app-id"
-	appRestartAnnotation = "neoshowcase.trap.jp/restarted-at"
-	fieldManager         = "neoshowcase"
+	// managedLabel (always "true") indicates the resource is managed by NeoShowcase.
+	managedLabel = "ns.trap.jp/managed"
+	// appIDLabel indicates the related application ID.
+	appIDLabel = "ns.trap.jp/app-id"
+	// appRestartAnnotation instructs StatefulSets to restart pods when necessary.
+	appRestartAnnotation = "ns.trap.jp/restarted-at"
+	// resourceHashAnnotation is hex-encoded 64-bit XXH3 hash of the resource before this annotation is applied.
+	resourceHashAnnotation = "ns.trap.jp/hash"
+	// fieldManager is the name of this controller.
+	fieldManager = "neoshowcase"
 )
 
 type k8sBackend struct {
@@ -65,7 +71,7 @@ func (b *k8sBackend) Start(_ context.Context) error {
 	var err error
 	b.podWatcher, err = b.client.CoreV1().Pods(b.config.Namespace).Watch(context.Background(), metav1.ListOptions{
 		LabelSelector: metav1.FormatLabelSelector(&metav1.LabelSelector{MatchLabels: map[string]string{
-			appLabel: "true",
+			managedLabel: "true",
 		}}),
 	})
 	if err != nil {
@@ -125,14 +131,14 @@ func (b *k8sBackend) generalLabelWithoutManagement() map[string]string {
 
 func (b *k8sBackend) generalLabel() map[string]string {
 	return ds.MergeMap(b.config.labels(), map[string]string{
-		appLabel: "true",
+		managedLabel: "true",
 	})
 }
 
 func (b *k8sBackend) appLabel(appID string) map[string]string {
 	return ds.MergeMap(b.config.labels(), map[string]string{
-		appLabel:   "true",
-		appIDLabel: appID,
+		managedLabel: "true",
+		appIDLabel:   appID,
 	})
 }
 
@@ -144,7 +150,7 @@ func toSelectorString(matchLabels map[string]string) string {
 
 func allSelector() map[string]string {
 	return map[string]string{
-		appLabel: "true",
+		managedLabel: "true",
 	}
 }
 
@@ -181,13 +187,17 @@ func ssHeaderMiddlewareName(ss *domain.StaticSite) string {
 }
 
 func certificateName(fqdn string) string {
-	if strings.HasPrefix(fqdn, "*.") {
+	wildcard := strings.HasPrefix(fqdn, "*.")
+	if wildcard {
 		fqdn = strings.TrimPrefix(fqdn, "*.")
-		fqdn = strings.ReplaceAll(fqdn, ".", "-")
-		return fmt.Sprintf("nsapp-%s-wildcard", fqdn)
 	}
+	fqdn = strings.ReplaceAll(fqdn, "-", "--")
 	fqdn = strings.ReplaceAll(fqdn, ".", "-")
-	return fmt.Sprintf("nsapp-%s", fqdn)
+	if wildcard {
+		return fmt.Sprintf("nsapp-%s-wildcard", fqdn)
+	} else {
+		return fmt.Sprintf("nsapp-%s", fqdn)
+	}
 }
 
 func tlsSecretName(fqdn string) string {
