@@ -179,7 +179,7 @@ export default () => {
       <ContentContainer>
         <MainContentContainer>
           <UserKeysContainer>
-            <SidebarTitle>User Keys</SidebarTitle>
+            <SidebarTitle>登録済みSSH公開鍵</SidebarTitle>
             <For each={userKeysMemo()}>
               {(key, i) => (
                 <PublicKeyContainer>
@@ -197,7 +197,7 @@ export default () => {
                       }}
                       type='submit'
                     >
-                      + Delete Key
+                      削除
                     </Button>
                   </FormButton>
                 </PublicKeyContainer>
@@ -210,12 +210,12 @@ export default () => {
               when={createKeyToggle()}
               fallback={
                 <Button color='black1' size='large' width='auto' onClick={() => setCreateKeyToggle(true)}>
-                  Add Key
+                  SSH公開鍵の追加
                 </Button>
               }
             >
               <CreatingKeyContainer>
-                <InputLabel>Add Key</InputLabel>
+                <InputLabel>SSH公開鍵の追加</InputLabel>
                 <InputBar
                   placeholder='my-app'
                   value={createKey.publicKey}
@@ -223,7 +223,7 @@ export default () => {
                   required
                 />
                 <Button color='black1' size='large' width='auto' onclick={createKeyRequest} type='submit'>
-                  + Add Key
+                  + SSH公開鍵の追加
                 </Button>
               </CreatingKeyContainer>
             </Show>
