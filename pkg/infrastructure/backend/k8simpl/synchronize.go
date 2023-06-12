@@ -73,83 +73,42 @@ func (b *k8sBackend) Synchronize(ctx context.Context, s *domain.DesiredState) er
 	b.reloadLock.Lock()
 	defer b.reloadLock.Unlock()
 
-	// List old resources
-	old, err := b.listCurrentResources(ctx)
-	if err != nil {
-		return err
-	}
-
 	// Calculate next resources to apply
 	var next resources
 	b.runtimeResources(&next, s.Runtime)
 	b.ssResources(&next, s.StaticSites)
 	next.certificates = lo.UniqBy(next.certificates, func(cert *certmanagerv1.Certificate) string { return cert.Name })
 
-	// Apply resources
-	for _, ss := range next.statefulSets {
-		err = patch[*appsv1.StatefulSet](ctx, ss.Name, ss, b.client.AppsV1().StatefulSets(b.config.Namespace))
-		if err != nil {
-			return errors.Wrap(err, "failed to patch stateful set")
-		}
-	}
-	for _, secret := range next.secrets {
-		err = patch[*v1.Secret](ctx, secret.Name, secret, b.client.CoreV1().Secrets(b.config.Namespace))
-		if err != nil {
-			return errors.Wrap(err, "failed to patch secret")
-		}
-	}
-	for _, svc := range next.services {
-		err = patch[*v1.Service](ctx, svc.Name, svc, b.client.CoreV1().Services(b.config.Namespace))
-		if err != nil {
-			return errors.Wrap(err, "failed to patch service")
-		}
-	}
-	for _, mw := range next.middlewares {
-		err = patch[*traefikv1alpha1.Middleware](ctx, mw.Name, mw, b.traefikClient.Middlewares(b.config.Namespace))
-		if err != nil {
-			return errors.Wrap(err, "failed to patch middleware")
-		}
-	}
-	for _, ir := range next.ingressRoutes {
-		err = patch[*traefikv1alpha1.IngressRoute](ctx, ir.Name, ir, b.traefikClient.IngressRoutes(b.config.Namespace))
-		if err != nil {
-			return errors.Wrap(err, "failed to patch ingress route")
-		}
-	}
-	for _, cert := range next.certificates {
-		err = patch[*certmanagerv1.Certificate](ctx, cert.Name, cert, b.certManagerClient.CertmanagerV1().Certificates(b.config.Namespace))
-		if err != nil {
-			return errors.Wrap(err, "failed to patch certificate")
-		}
+	// List old resources
+	old, err := b.listCurrentResources(ctx)
+	if err != nil {
+		return err
 	}
 
-	// Prune old resources
-	// NOTE: stateful set does not provide any guarantees to (order of) termination of pods when deleted
-	// NOTE: stateful set does not delete volumes
-	// https://kubernetes.io/docs/concepts/workloads/controllers/statefulset/#limitations
-	err = prune[*appsv1.StatefulSet](ctx, diff(old.statefulSets, next.statefulSets), b.client.AppsV1().StatefulSets(b.config.Namespace))
+	// Synchronize resources
+	err = syncResources[*appsv1.StatefulSet](ctx, "statefulsets", old.statefulSets, next.statefulSets, b.client.AppsV1().StatefulSets(b.config.Namespace))
 	if err != nil {
-		return errors.Wrap(err, "failed to prune stateful sets")
+		return errors.Wrap(err, "failed to sync stateful sets")
 	}
-	err = prune[*v1.Secret](ctx, diff(old.secrets, next.secrets), b.client.CoreV1().Secrets(b.config.Namespace))
+	err = syncResources[*v1.Secret](ctx, "secrets", old.secrets, next.secrets, b.client.CoreV1().Secrets(b.config.Namespace))
 	if err != nil {
-		return errors.Wrap(err, "failed to prune secrets")
+		return errors.Wrap(err, "failed to sync secrets")
 	}
-	err = prune[*v1.Service](ctx, diff(old.services, next.services), b.client.CoreV1().Services(b.config.Namespace))
+	err = syncResources[*v1.Service](ctx, "services", old.services, next.services, b.client.CoreV1().Services(b.config.Namespace))
 	if err != nil {
-		return errors.Wrap(err, "failed to prune services")
+		return errors.Wrap(err, "failed to sync services")
 	}
-	err = prune[*traefikv1alpha1.Middleware](ctx, diff(old.middlewares, next.middlewares), b.traefikClient.Middlewares(b.config.Namespace))
+	err = syncResources[*traefikv1alpha1.Middleware](ctx, "middlewares", old.middlewares, next.middlewares, b.traefikClient.Middlewares(b.config.Namespace))
 	if err != nil {
-		return errors.Wrap(err, "failed to prune middlewares")
+		return errors.Wrap(err, "failed to sync middlewares")
 	}
-	err = prune[*traefikv1alpha1.IngressRoute](ctx, diff(old.ingressRoutes, next.ingressRoutes), b.traefikClient.IngressRoutes(b.config.Namespace))
+	err = syncResources[*traefikv1alpha1.IngressRoute](ctx, "ingressroutes", old.ingressRoutes, next.ingressRoutes, b.traefikClient.IngressRoutes(b.config.Namespace))
 	if err != nil {
-		return errors.Wrap(err, "failed to prune ingress routes")
+		return errors.Wrap(err, "failed to sync ingressroutes")
 	}
-	err = prune[*certmanagerv1.Certificate](ctx, diff(old.certificates, next.certificates), b.certManagerClient.CertmanagerV1().Certificates(b.config.Namespace))
+	err = syncResources[*certmanagerv1.Certificate](ctx, "certificates", old.certificates, next.certificates, b.certManagerClient.CertmanagerV1().Certificates(b.config.Namespace))
 	if err != nil {
-		return errors.Wrap(err, "failed to prune certificates")
+		return errors.Wrap(err, "failed to sync certificates")
 	}
 
 	return nil
