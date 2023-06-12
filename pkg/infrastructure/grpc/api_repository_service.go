@@ -50,10 +50,10 @@ func (s *APIService) GetRepository(ctx context.Context, req *connect.Request[pb.
 func (s *APIService) UpdateRepository(ctx context.Context, req *connect.Request[pb.UpdateRepositoryRequest]) (*connect.Response[emptypb.Empty], error) {
 	msg := req.Msg
 	args := &apiserver.UpdateRepositoryArgs{
-		Name:     optional.FromNonZero(msg.Name),
-		URL:      optional.FromNonZero(msg.Url),
+		Name:     optional.FromPtr(msg.Name),
+		URL:      optional.FromPtr(msg.Url),
 		Auth:     optional.Map(optional.FromNonZero(msg.Auth), pbconvert.FromPBRepositoryAuth),
-		OwnerIDs: optional.FromNonZeroSlice(msg.OwnerIds),
+		OwnerIDs: optional.Map(optional.FromNonZero(msg.OwnerIds), pbconvert.FromPBUpdateRepositoryOwners),
 	}
 	err := s.svc.UpdateRepository(ctx, msg.Id, args)
 	if err != nil {

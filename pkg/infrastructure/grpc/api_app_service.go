@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"github.com/bufbuild/connect-go"
+	log "github.com/sirupsen/logrus"
 	"google.golang.org/protobuf/types/known/emptypb"
 
 	"github.com/traPtitech/neoshowcase/pkg/domain"
@@ -68,14 +69,15 @@ func (s *APIService) GetApplication(ctx context.Context, req *connect.Request[pb
 
 func (s *APIService) UpdateApplication(ctx context.Context, req *connect.Request[pb.UpdateApplicationRequest]) (*connect.Response[emptypb.Empty], error) {
 	msg := req.Msg
+	log.Infof("websites: %v, is nil: %v", msg.GetWebsites(), msg.GetWebsites() == nil)
 	err := s.svc.UpdateApplication(ctx, msg.Id, &domain.UpdateApplicationArgs{
-		Name:             optional.FromNonZero(msg.Name),
-		RefName:          optional.FromNonZero(msg.RefName),
+		Name:             optional.FromPtr(msg.Name),
+		RefName:          optional.FromPtr(msg.RefName),
 		UpdatedAt:        optional.From(time.Now()),
 		Config:           optional.Map(optional.FromNonZero(msg.Config), pbconvert.FromPBApplicationConfig),
-		Websites:         optional.MapSlice(optional.FromNonZeroSlice(msg.Websites), pbconvert.FromPBCreateWebsiteRequest),
-		PortPublications: optional.MapSlice(optional.FromNonZeroSlice(msg.PortPublications), pbconvert.FromPBPortPublication),
-		OwnerIDs:         optional.FromNonZeroSlice(msg.OwnerIds),
+		Websites:         optional.Map(optional.FromNonZero(msg.Websites), pbconvert.FromPBUpdateWebsites),
+		PortPublications: optional.Map(optional.FromNonZero(msg.PortPublications), pbconvert.FromPBUpdatePorts),
+		OwnerIDs:         optional.Map(optional.FromNonZero(msg.OwnerIds), pbconvert.FromPBUpdateOwners),
 	})
 	if err != nil {
 		return nil, handleUseCaseError(err)
