@@ -137,10 +137,6 @@ export default () => {
     })
     const publicKey = () => (useTmpKey() ? tmpKey()?.publicKey : systemPublicKey()?.publicKey)
 
-    createEffect(() => {
-      console.log(authConfig)
-    })
-
     // 認証情報
     // 認証方法の切り替え時に情報を保持するために、storeを使用して3種類の認証情報を保持する
     const [authConfig, setAuthConfig] = createStore<{
