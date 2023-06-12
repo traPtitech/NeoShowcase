@@ -3,6 +3,7 @@ package pbconvert
 import (
 	"github.com/traPtitech/neoshowcase/pkg/domain"
 	"github.com/traPtitech/neoshowcase/pkg/infrastructure/grpc/pb"
+	"github.com/traPtitech/neoshowcase/pkg/util/ds"
 	"github.com/traPtitech/neoshowcase/pkg/util/mapper"
 )
 
@@ -17,4 +18,8 @@ func FromPBPortPublication(p *pb.PortPublication) *domain.PortPublication {
 		ApplicationPort: int(p.ApplicationPort),
 		Protocol:        PortPublicationProtocolMapper.FromMust(p.Protocol),
 	}
+}
+
+func FromPBUpdatePorts(p *pb.UpdateApplicationRequest_UpdatePorts) []*domain.PortPublication {
+	return ds.Map(p.PortPublications, FromPBPortPublication)
 }

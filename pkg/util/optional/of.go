@@ -1,9 +1,5 @@
 package optional
 
-import (
-	"github.com/traPtitech/neoshowcase/pkg/util/ds"
-)
-
 type Of[T any] struct {
 	V     T
 	Valid bool
@@ -46,11 +42,11 @@ func MapErr[T, U any](o Of[T], mapper func(T) (U, error)) (Of[U], error) {
 	return None[U](), nil
 }
 
-func MapSlice[T, U any](o Of[[]T], mapper func(T) U) Of[[]U] {
-	if o.Valid {
-		return From(ds.Map(o.V, mapper))
+func FromPtr[T any](v *T) Of[T] {
+	if v == nil {
+		return None[T]()
 	}
-	return None[[]U]()
+	return From(*v)
 }
 
 func FromNonZero[T comparable](v T) Of[T] {

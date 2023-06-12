@@ -305,13 +305,14 @@ export default () => {
     })
 
     const updateWebsites = async () => {
-      const updateApplicationRequest = new UpdateApplicationRequest({
-        id: app().id,
-        websites: websites,
-      })
+      console.log(`websites: ${websites.length}`)
+      console.log(websites)
 
       try {
-        await client.updateApplication(updateApplicationRequest)
+        await client.updateApplication({
+          id: app().id,
+          websites: { websites },
+        })
         toast.success('ウェブサイト設定を更新しました')
         refetchApp()
       } catch (e) {
@@ -331,16 +332,16 @@ export default () => {
   }
 
   const PortPublicationConfigContainer: Component = () => {
-    const [currentPortPublications, setCurrentPortPublications] = createStore<PortPublication[]>([])
+    const [portPublications, setPortPublications] = createStore<PortPublication[]>([])
     // 現在のポート設定を反映
     onMount(() => {
-      setCurrentPortPublications(app().portPublications.map((PortPublication) => storify(PortPublication)))
+      setPortPublications(app().portPublications.map((PortPublication) => storify(PortPublication)))
     })
 
     const updatePortPublications = async () => {
       const updateApplicationRequest = new UpdateApplicationRequest({
         id: app().id,
-        portPublications: currentPortPublications,
+        portPublications: { portPublications },
       })
 
       try {
@@ -355,10 +356,7 @@ export default () => {
     return (
       <SettingFieldSet>
         <FormTextBig id='port-settings'>Port Publication Settings</FormTextBig>
-        <PortPublicationSettings
-          portPublications={currentPortPublications}
-          setPortPublications={setCurrentPortPublications}
-        />
+        <PortPublicationSettings portPublications={portPublications} setPortPublications={setPortPublications} />
         <Button color='black1' size='large' width='auto' onclick={updatePortPublications} type='submit'>
           Save
         </Button>
@@ -376,7 +374,7 @@ export default () => {
     const handleAddOwner = async (user: User) => {
       const updateApplicationRequest = new UpdateApplicationRequest({
         id: app().id,
-        ownerIds: app().ownerIds.concat(user.id),
+        ownerIds: { ownerIds: app().ownerIds.concat(user.id) },
       })
 
       try {
@@ -390,7 +388,7 @@ export default () => {
     const handleDeleteOwner = async (owner: User) => {
       const updateApplicationRequest = new UpdateApplicationRequest({
         id: app().id,
-        ownerIds: app().ownerIds.filter((id) => id !== owner.id),
+        ownerIds: { ownerIds: app().ownerIds.filter((id) => id !== owner.id) },
       })
 
       try {

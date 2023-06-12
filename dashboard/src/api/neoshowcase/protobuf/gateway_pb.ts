@@ -1711,8 +1711,6 @@ proto3.util.setEnumType(GetApplicationsRequest_Scope, "neoshowcase.protobuf.GetA
 ]);
 
 /**
- * UpdateApplicationRequest id以外はoptional
- *
  * @generated from message neoshowcase.protobuf.UpdateApplicationRequest
  */
 export class UpdateApplicationRequest extends Message<UpdateApplicationRequest> {
@@ -1722,34 +1720,34 @@ export class UpdateApplicationRequest extends Message<UpdateApplicationRequest> 
   id = "";
 
   /**
-   * @generated from field: string name = 2;
+   * @generated from field: optional string name = 2;
    */
-  name = "";
+  name?: string;
 
   /**
-   * @generated from field: string ref_name = 3;
+   * @generated from field: optional string ref_name = 3;
    */
-  refName = "";
+  refName?: string;
 
   /**
-   * @generated from field: neoshowcase.protobuf.ApplicationConfig config = 4;
+   * @generated from field: optional neoshowcase.protobuf.ApplicationConfig config = 4;
    */
   config?: ApplicationConfig;
 
   /**
-   * @generated from field: repeated neoshowcase.protobuf.CreateWebsiteRequest websites = 5;
+   * @generated from field: optional neoshowcase.protobuf.UpdateApplicationRequest.UpdateWebsites websites = 5;
    */
-  websites: CreateWebsiteRequest[] = [];
+  websites?: UpdateApplicationRequest_UpdateWebsites;
 
   /**
-   * @generated from field: repeated neoshowcase.protobuf.PortPublication port_publications = 6;
+   * @generated from field: optional neoshowcase.protobuf.UpdateApplicationRequest.UpdatePorts port_publications = 6;
    */
-  portPublications: PortPublication[] = [];
+  portPublications?: UpdateApplicationRequest_UpdatePorts;
 
   /**
-   * @generated from field: repeated string owner_ids = 7;
+   * @generated from field: optional neoshowcase.protobuf.UpdateApplicationRequest.UpdateOwners owner_ids = 7;
    */
-  ownerIds: string[] = [];
+  ownerIds?: UpdateApplicationRequest_UpdateOwners;
 
   constructor(data?: PartialMessage<UpdateApplicationRequest>) {
     super();
@@ -1760,12 +1758,12 @@ export class UpdateApplicationRequest extends Message<UpdateApplicationRequest> 
   static readonly typeName = "neoshowcase.protobuf.UpdateApplicationRequest";
   static readonly fields: FieldList = proto3.util.newFieldList(() => [
     { no: 1, name: "id", kind: "scalar", T: 9 /* ScalarType.STRING */ },
-    { no: 2, name: "name", kind: "scalar", T: 9 /* ScalarType.STRING */ },
-    { no: 3, name: "ref_name", kind: "scalar", T: 9 /* ScalarType.STRING */ },
-    { no: 4, name: "config", kind: "message", T: ApplicationConfig },
-    { no: 5, name: "websites", kind: "message", T: CreateWebsiteRequest, repeated: true },
-    { no: 6, name: "port_publications", kind: "message", T: PortPublication, repeated: true },
-    { no: 7, name: "owner_ids", kind: "scalar", T: 9 /* ScalarType.STRING */, repeated: true },
+    { no: 2, name: "name", kind: "scalar", T: 9 /* ScalarType.STRING */, opt: true },
+    { no: 3, name: "ref_name", kind: "scalar", T: 9 /* ScalarType.STRING */, opt: true },
+    { no: 4, name: "config", kind: "message", T: ApplicationConfig, opt: true },
+    { no: 5, name: "websites", kind: "message", T: UpdateApplicationRequest_UpdateWebsites, opt: true },
+    { no: 6, name: "port_publications", kind: "message", T: UpdateApplicationRequest_UpdatePorts, opt: true },
+    { no: 7, name: "owner_ids", kind: "message", T: UpdateApplicationRequest_UpdateOwners, opt: true },
   ]);
 
   static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): UpdateApplicationRequest {
@@ -1782,6 +1780,117 @@ export class UpdateApplicationRequest extends Message<UpdateApplicationRequest> 
 
   static equals(a: UpdateApplicationRequest | PlainMessage<UpdateApplicationRequest> | undefined, b: UpdateApplicationRequest | PlainMessage<UpdateApplicationRequest> | undefined): boolean {
     return proto3.util.equals(UpdateApplicationRequest, a, b);
+  }
+}
+
+/**
+ * @generated from message neoshowcase.protobuf.UpdateApplicationRequest.UpdateWebsites
+ */
+export class UpdateApplicationRequest_UpdateWebsites extends Message<UpdateApplicationRequest_UpdateWebsites> {
+  /**
+   * @generated from field: repeated neoshowcase.protobuf.CreateWebsiteRequest websites = 1;
+   */
+  websites: CreateWebsiteRequest[] = [];
+
+  constructor(data?: PartialMessage<UpdateApplicationRequest_UpdateWebsites>) {
+    super();
+    proto3.util.initPartial(data, this);
+  }
+
+  static readonly runtime: typeof proto3 = proto3;
+  static readonly typeName = "neoshowcase.protobuf.UpdateApplicationRequest.UpdateWebsites";
+  static readonly fields: FieldList = proto3.util.newFieldList(() => [
+    { no: 1, name: "websites", kind: "message", T: CreateWebsiteRequest, repeated: true },
+  ]);
+
+  static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): UpdateApplicationRequest_UpdateWebsites {
+    return new UpdateApplicationRequest_UpdateWebsites().fromBinary(bytes, options);
+  }
+
+  static fromJson(jsonValue: JsonValue, options?: Partial<JsonReadOptions>): UpdateApplicationRequest_UpdateWebsites {
+    return new UpdateApplicationRequest_UpdateWebsites().fromJson(jsonValue, options);
+  }
+
+  static fromJsonString(jsonString: string, options?: Partial<JsonReadOptions>): UpdateApplicationRequest_UpdateWebsites {
+    return new UpdateApplicationRequest_UpdateWebsites().fromJsonString(jsonString, options);
+  }
+
+  static equals(a: UpdateApplicationRequest_UpdateWebsites | PlainMessage<UpdateApplicationRequest_UpdateWebsites> | undefined, b: UpdateApplicationRequest_UpdateWebsites | PlainMessage<UpdateApplicationRequest_UpdateWebsites> | undefined): boolean {
+    return proto3.util.equals(UpdateApplicationRequest_UpdateWebsites, a, b);
+  }
+}
+
+/**
+ * @generated from message neoshowcase.protobuf.UpdateApplicationRequest.UpdatePorts
+ */
+export class UpdateApplicationRequest_UpdatePorts extends Message<UpdateApplicationRequest_UpdatePorts> {
+  /**
+   * @generated from field: repeated neoshowcase.protobuf.PortPublication port_publications = 1;
+   */
+  portPublications: PortPublication[] = [];
+
+  constructor(data?: PartialMessage<UpdateApplicationRequest_UpdatePorts>) {
+    super();
+    proto3.util.initPartial(data, this);
+  }
+
+  static readonly runtime: typeof proto3 = proto3;
+  static readonly typeName = "neoshowcase.protobuf.UpdateApplicationRequest.UpdatePorts";
+  static readonly fields: FieldList = proto3.util.newFieldList(() => [
+    { no: 1, name: "port_publications", kind: "message", T: PortPublication, repeated: true },
+  ]);
+
+  static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): UpdateApplicationRequest_UpdatePorts {
+    return new UpdateApplicationRequest_UpdatePorts().fromBinary(bytes, options);
+  }
+
+  static fromJson(jsonValue: JsonValue, options?: Partial<JsonReadOptions>): UpdateApplicationRequest_UpdatePorts {
+    return new UpdateApplicationRequest_UpdatePorts().fromJson(jsonValue, options);
+  }
+
+  static fromJsonString(jsonString: string, options?: Partial<JsonReadOptions>): UpdateApplicationRequest_UpdatePorts {
+    return new UpdateApplicationRequest_UpdatePorts().fromJsonString(jsonString, options);
+  }
+
+  static equals(a: UpdateApplicationRequest_UpdatePorts | PlainMessage<UpdateApplicationRequest_UpdatePorts> | undefined, b: UpdateApplicationRequest_UpdatePorts | PlainMessage<UpdateApplicationRequest_UpdatePorts> | undefined): boolean {
+    return proto3.util.equals(UpdateApplicationRequest_UpdatePorts, a, b);
+  }
+}
+
+/**
+ * @generated from message neoshowcase.protobuf.UpdateApplicationRequest.UpdateOwners
+ */
+export class UpdateApplicationRequest_UpdateOwners extends Message<UpdateApplicationRequest_UpdateOwners> {
+  /**
+   * @generated from field: repeated string owner_ids = 1;
+   */
+  ownerIds: string[] = [];
+
+  constructor(data?: PartialMessage<UpdateApplicationRequest_UpdateOwners>) {
+    super();
+    proto3.util.initPartial(data, this);
+  }
+
+  static readonly runtime: typeof proto3 = proto3;
+  static readonly typeName = "neoshowcase.protobuf.UpdateApplicationRequest.UpdateOwners";
+  static readonly fields: FieldList = proto3.util.newFieldList(() => [
+    { no: 1, name: "owner_ids", kind: "scalar", T: 9 /* ScalarType.STRING */, repeated: true },
+  ]);
+
+  static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): UpdateApplicationRequest_UpdateOwners {
+    return new UpdateApplicationRequest_UpdateOwners().fromBinary(bytes, options);
+  }
+
+  static fromJson(jsonValue: JsonValue, options?: Partial<JsonReadOptions>): UpdateApplicationRequest_UpdateOwners {
+    return new UpdateApplicationRequest_UpdateOwners().fromJson(jsonValue, options);
+  }
+
+  static fromJsonString(jsonString: string, options?: Partial<JsonReadOptions>): UpdateApplicationRequest_UpdateOwners {
+    return new UpdateApplicationRequest_UpdateOwners().fromJsonString(jsonString, options);
+  }
+
+  static equals(a: UpdateApplicationRequest_UpdateOwners | PlainMessage<UpdateApplicationRequest_UpdateOwners> | undefined, b: UpdateApplicationRequest_UpdateOwners | PlainMessage<UpdateApplicationRequest_UpdateOwners> | undefined): boolean {
+    return proto3.util.equals(UpdateApplicationRequest_UpdateOwners, a, b);
   }
 }
 
