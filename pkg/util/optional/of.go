@@ -56,10 +56,3 @@ func FromNonZero[T comparable](v T) Of[T] {
 	}
 	return From(v)
 }
-
-func FromNonZeroSlice[T any](s []T) Of[[]T] {
-	if s == nil {
-		return None[[]T]()
-	}
-	return From(s)
-}

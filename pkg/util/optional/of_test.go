@@ -42,6 +42,40 @@ func TestMap(t *testing.T) {
 	}
 }
 
+func TestFromPtr(t *testing.T) {
+	someStr := "test"
+	emptyStr := ""
+	type testCase[T any] struct {
+		name string
+		v    *T
+		want Of[T]
+	}
+	tests := []testCase[string]{
+		{
+			"nil ptr",
+			nil,
+			None[string](),
+		},
+		{
+			"non nil ptr",
+			&someStr,
+			From("test"),
+		},
+		{
+			"non nil ptr (empty str)",
+			&emptyStr,
+			From(""),
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := FromPtr(tt.v); !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("FromPtr() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
 type nonZeroTestCase[T comparable] struct {
 	name string
 	v    T
@@ -88,36 +122,4 @@ func TestFromNonZero(t *testing.T) {
 		},
 	}
 	runTestFromNonZero(t, testsStr)
-}
-
-func TestFromNonZeroSlice(t *testing.T) {
-	type testCase[T any] struct {
-		name string
-		s    []T
-		want Of[[]T]
-	}
-	tests := []testCase[string]{
-		{
-			"non zero",
-			[]string{"a"},
-			From([]string{"a"}),
-		},
-		{
-			"non zero (empty slice)",
-			[]string{},
-			From([]string{}),
-		},
-		{
-			"zero",
-			nil,
-			None[[]string](),
-		},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			if got := FromNonZeroSlice(tt.s); !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("FromNonZeroSlice() = %v, want %v", got, tt.want)
-			}
-		})
-	}
 }

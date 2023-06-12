@@ -701,8 +701,6 @@ proto3.util.setEnumType(GetRepositoriesRequest_Scope, "neoshowcase.protobuf.GetR
 ]);
 
 /**
- * UpdateRepositoryRequest id以外はoptional
- *
  * @generated from message neoshowcase.protobuf.UpdateRepositoryRequest
  */
 export class UpdateRepositoryRequest extends Message<UpdateRepositoryRequest> {
@@ -712,24 +710,24 @@ export class UpdateRepositoryRequest extends Message<UpdateRepositoryRequest> {
   id = "";
 
   /**
-   * @generated from field: string name = 2;
+   * @generated from field: optional string name = 2;
    */
-  name = "";
+  name?: string;
 
   /**
-   * @generated from field: string url = 3;
+   * @generated from field: optional string url = 3;
    */
-  url = "";
+  url?: string;
 
   /**
-   * @generated from field: neoshowcase.protobuf.CreateRepositoryAuth auth = 4;
+   * @generated from field: optional neoshowcase.protobuf.CreateRepositoryAuth auth = 4;
    */
   auth?: CreateRepositoryAuth;
 
   /**
-   * @generated from field: repeated string owner_ids = 5;
+   * @generated from field: optional neoshowcase.protobuf.UpdateRepositoryRequest.UpdateOwners owner_ids = 5;
    */
-  ownerIds: string[] = [];
+  ownerIds?: UpdateRepositoryRequest_UpdateOwners;
 
   constructor(data?: PartialMessage<UpdateRepositoryRequest>) {
     super();
@@ -740,10 +738,10 @@ export class UpdateRepositoryRequest extends Message<UpdateRepositoryRequest> {
   static readonly typeName = "neoshowcase.protobuf.UpdateRepositoryRequest";
   static readonly fields: FieldList = proto3.util.newFieldList(() => [
     { no: 1, name: "id", kind: "scalar", T: 9 /* ScalarType.STRING */ },
-    { no: 2, name: "name", kind: "scalar", T: 9 /* ScalarType.STRING */ },
-    { no: 3, name: "url", kind: "scalar", T: 9 /* ScalarType.STRING */ },
-    { no: 4, name: "auth", kind: "message", T: CreateRepositoryAuth },
-    { no: 5, name: "owner_ids", kind: "scalar", T: 9 /* ScalarType.STRING */, repeated: true },
+    { no: 2, name: "name", kind: "scalar", T: 9 /* ScalarType.STRING */, opt: true },
+    { no: 3, name: "url", kind: "scalar", T: 9 /* ScalarType.STRING */, opt: true },
+    { no: 4, name: "auth", kind: "message", T: CreateRepositoryAuth, opt: true },
+    { no: 5, name: "owner_ids", kind: "message", T: UpdateRepositoryRequest_UpdateOwners, opt: true },
   ]);
 
   static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): UpdateRepositoryRequest {
@@ -760,6 +758,43 @@ export class UpdateRepositoryRequest extends Message<UpdateRepositoryRequest> {
 
   static equals(a: UpdateRepositoryRequest | PlainMessage<UpdateRepositoryRequest> | undefined, b: UpdateRepositoryRequest | PlainMessage<UpdateRepositoryRequest> | undefined): boolean {
     return proto3.util.equals(UpdateRepositoryRequest, a, b);
+  }
+}
+
+/**
+ * @generated from message neoshowcase.protobuf.UpdateRepositoryRequest.UpdateOwners
+ */
+export class UpdateRepositoryRequest_UpdateOwners extends Message<UpdateRepositoryRequest_UpdateOwners> {
+  /**
+   * @generated from field: repeated string owner_ids = 1;
+   */
+  ownerIds: string[] = [];
+
+  constructor(data?: PartialMessage<UpdateRepositoryRequest_UpdateOwners>) {
+    super();
+    proto3.util.initPartial(data, this);
+  }
+
+  static readonly runtime: typeof proto3 = proto3;
+  static readonly typeName = "neoshowcase.protobuf.UpdateRepositoryRequest.UpdateOwners";
+  static readonly fields: FieldList = proto3.util.newFieldList(() => [
+    { no: 1, name: "owner_ids", kind: "scalar", T: 9 /* ScalarType.STRING */, repeated: true },
+  ]);
+
+  static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): UpdateRepositoryRequest_UpdateOwners {
+    return new UpdateRepositoryRequest_UpdateOwners().fromBinary(bytes, options);
+  }
+
+  static fromJson(jsonValue: JsonValue, options?: Partial<JsonReadOptions>): UpdateRepositoryRequest_UpdateOwners {
+    return new UpdateRepositoryRequest_UpdateOwners().fromJson(jsonValue, options);
+  }
+
+  static fromJsonString(jsonString: string, options?: Partial<JsonReadOptions>): UpdateRepositoryRequest_UpdateOwners {
+    return new UpdateRepositoryRequest_UpdateOwners().fromJsonString(jsonString, options);
+  }
+
+  static equals(a: UpdateRepositoryRequest_UpdateOwners | PlainMessage<UpdateRepositoryRequest_UpdateOwners> | undefined, b: UpdateRepositoryRequest_UpdateOwners | PlainMessage<UpdateRepositoryRequest_UpdateOwners> | undefined): boolean {
+    return proto3.util.equals(UpdateRepositoryRequest_UpdateOwners, a, b);
   }
 }
 
