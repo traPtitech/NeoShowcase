@@ -11,6 +11,7 @@ import { InputBar, InputLabel } from '/@/components/Input'
 import toast from 'solid-toast'
 import { ConnectError } from '@bufbuild/connect'
 import { useNavigate } from '@solidjs/router'
+import { ReactNode } from 'react'
 
 // copy from /pages/apps AppsTitle component
 const PageTitle = styled('div', {
@@ -61,6 +62,19 @@ const UserKeysContainer = styled('div', {
 
 const PublicKey = styled('div', {
   base: {
+    background: vars.bg.white1,
+    border: `1px solid ${vars.bg.white5}`,
+    borderRadius: '4px',
+    padding: '8px 12px',
+  },
+})
+
+const PublicKeyContainer = styled('div', {
+  base: {
+    display: 'flex',
+    flexDirection: 'column',
+    gap: '6px',
+
     background: vars.bg.white2,
     border: `1px solid ${vars.bg.white5}`,
     borderRadius: '4px',
@@ -87,6 +101,12 @@ const CreatingKeyContainer = styled('form', {
     border: `1px solid ${vars.bg.white5}`,
     borderRadius: '4px',
     padding: '8px 12px',
+  },
+})
+
+export const FormButton = styled('div', {
+  base: {
+    marginLeft: '4px',
   },
 })
 
@@ -162,24 +182,25 @@ export default () => {
             <SidebarTitle>User Keys</SidebarTitle>
             <For each={userKeysMemo()}>
               {(key, i) => (
-                <div>
+                <PublicKeyContainer>
                   <div>
-                    {i()}
                     <PublicKey>{key.publicKey}</PublicKey>
                   </div>
-                  <Button
-                    color='black1'
-                    size='large'
-                    width='auto'
-                    onclick={(e) => {
-                      setDeleteKeyID('keyId', key.id)
-                      deleteKeyRequest(e)
-                    }}
-                    type='submit'
-                  >
-                    + Delete Key
-                  </Button>
-                </div>
+                  <FormButton>
+                    <Button
+                      color='black1'
+                      size='large'
+                      width='auto'
+                      onclick={(e) => {
+                        setDeleteKeyID('keyId', key.id)
+                        deleteKeyRequest(e)
+                      }}
+                      type='submit'
+                    >
+                      + Delete Key
+                    </Button>
+                  </FormButton>
+                </PublicKeyContainer>
               )}
             </For>
           </UserKeysContainer>
