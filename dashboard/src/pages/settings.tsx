@@ -1,7 +1,7 @@
 import { Header } from '/@/components/Header'
 import { createMemo, createResource, createSignal, For, JSX, Show } from 'solid-js'
 import { client } from '/@/libs/api'
-import { CreateUserKeyRequest } from '/@/api/neoshowcase/protobuf/gateway_pb'
+import { CreateUserKeyRequest, DeleteUserKeyRequest } from '/@/api/neoshowcase/protobuf/gateway_pb'
 import { styled } from '@macaron-css/solid'
 import { vars } from '/@/theme'
 import { Container } from '/@/libs/layout'
@@ -103,6 +103,8 @@ export default () => {
   const [createKeyToggle, setCreateKeyToggle] = createSignal(false)
   const [createKey, setCreateKey] = createStore(new CreateUserKeyRequest())
 
+  const [deleteKeyID, setDeleteKeyID] = createStore(new DeleteUserKeyRequest())
+
   let formContainer: HTMLFormElement
   const createKeyRequest: JSX.EventHandler<HTMLButtonElement, MouseEvent> = async (e) => {
     // prevent default form submit (reload page)
@@ -127,6 +129,29 @@ export default () => {
     }
   }
 
+  const deleteKeyRequest: JSX.EventHandler<HTMLButtonElement, MouseEvent> = async (e) => {
+    // prevent default form submit (reload page)
+    e.preventDefault()
+
+    // validate form
+    // if (!formContainer.reportValidity()) {
+    //   return
+    // }
+
+    try {
+      const res = await client.deleteUserKey(deleteKeyID)
+      toast.success('User Key を削除しました')
+
+      navigate('/settings')
+    } catch (e) {
+      console.error(e)
+      // gRPCエラー
+      if (e instanceof ConnectError) {
+        toast.error('User Key の削除に失敗しました\n' + e.message)
+      }
+    }
+  }
+
   return (
     <Container>
       <Header />
@@ -138,8 +163,22 @@ export default () => {
             <For each={userKeysMemo()}>
               {(key, i) => (
                 <div>
-                  {i()}
-                  <PublicKey>{key.publicKey}</PublicKey>
+                  <div>
+                    {i()}
+                    <PublicKey>{key.publicKey}</PublicKey>
+                  </div>
+                  <Button
+                    color='black1'
+                    size='large'
+                    width='auto'
+                    onclick={(e) => {
+                      setDeleteKeyID('keyId', key.id)
+                      deleteKeyRequest(e)
+                    }}
+                    type='submit'
+                  >
+                    + Delete Key
+                  </Button>
                 </div>
               )}
             </For>
