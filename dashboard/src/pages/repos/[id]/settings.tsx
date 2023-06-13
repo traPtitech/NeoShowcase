@@ -116,7 +116,12 @@ export default () => {
           keyId: '',
         },
       },
-      authMethod: repo().authMethod === Repository_AuthMethod.BASIC ? 'basic' : 'ssh',
+      authMethod:
+        repo().authMethod === Repository_AuthMethod.NONE
+          ? 'none'
+          : repo().authMethod === Repository_AuthMethod.BASIC
+          ? 'basic'
+          : 'ssh',
     })
 
     // URLからリポジトリ名を自動入力
