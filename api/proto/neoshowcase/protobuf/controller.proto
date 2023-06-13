@@ -68,7 +68,7 @@ service ControllerService {
   rpc GetAvailablePorts(google.protobuf.Empty) returns (AvailablePorts);
 
   rpc FetchRepository(RepositoryIdRequest) returns (google.protobuf.Empty);
-  rpc RegisterBuilds(google.protobuf.Empty) returns (google.protobuf.Empty);
+  rpc RegisterBuild(ApplicationIdRequest) returns (google.protobuf.Empty);
   rpc SyncDeployments(google.protobuf.Empty) returns (google.protobuf.Empty);
   rpc StreamBuildLog(BuildIdRequest) returns (stream BuildLog);
   rpc CancelBuild(BuildIdRequest) returns (google.protobuf.Empty);

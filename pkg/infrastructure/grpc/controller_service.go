@@ -69,13 +69,13 @@ func (s *ControllerService) GetAvailablePorts(_ context.Context, _ *connect.Requ
 }
 
 func (s *ControllerService) FetchRepository(_ context.Context, c *connect.Request[pb.RepositoryIdRequest]) (*connect.Response[emptypb.Empty], error) {
-	s.fetcher.Fetch([]string{c.Msg.RepositoryId})
+	s.fetcher.Fetch(c.Msg.RepositoryId)
 	res := connect.NewResponse(&emptypb.Empty{})
 	return res, nil
 }
 
-func (s *ControllerService) RegisterBuilds(_ context.Context, _ *connect.Request[emptypb.Empty]) (*connect.Response[emptypb.Empty], error) {
-	s.cd.RegisterBuilds()
+func (s *ControllerService) RegisterBuild(_ context.Context, req *connect.Request[pb.ApplicationIdRequest]) (*connect.Response[emptypb.Empty], error) {
+	s.cd.RegisterBuild(req.Msg.Id)
 	res := connect.NewResponse(&emptypb.Empty{})
 	return res, nil
 }

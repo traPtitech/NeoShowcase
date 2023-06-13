@@ -3,6 +3,7 @@ package repofetcher
 import (
 	"context"
 	"fmt"
+	"math"
 	"sync"
 	"time"
 
@@ -21,11 +22,26 @@ import (
 	"github.com/traPtitech/neoshowcase/pkg/util/optional"
 )
 
-const fetcherConcurrency = 10
+const (
+	fetcherConcurrency = 10
+	fetcherInterval    = 5 * time.Minute
+)
+
+// fetchInterval calculates the interval the repository should be fetched in, given the last activity time.
+func fetchInterval(now time.Time, updatedAt time.Time) int {
+	// note: to reach maximum interval of 1 day, 288 days needs to be elapsed from the last update
+	const maxInterval = int(24 * time.Hour / fetcherInterval)
+	epochsElapsed := float64(now.Sub(updatedAt)) / float64(fetcherInterval)
+	if epochsElapsed < 0 {
+		epochsElapsed = 0
+	}
+	interval := int(math.Ceil(math.Sqrt(epochsElapsed)))
+	return lo.Clamp(interval, 1, maxInterval)
+}
 
 type Service interface {
 	Run()
-	Fetch(repositoryIDs []string)
+	Fetch(repositoryID string)
 	Stop(ctx context.Context) error
 }
 
@@ -35,7 +51,7 @@ type service struct {
 	pubKey  *ssh.PublicKeys
 	cd      cdservice.Service
 
-	fetcher   chan<- []string
+	fetcher   chan<- string
 	run       func()
 	runOnce   sync.Once
 	close     func()
@@ -55,7 +71,7 @@ func NewService(
 		cd:      cd,
 	}
 
-	fetcher := make(chan []string, 100)
+	fetcher := make(chan string, 100)
 	r.fetcher = fetcher
 	ctx, cancel := context.WithCancel(context.Background())
 	r.run = func() {
@@ -70,80 +86,98 @@ func (r *service) Run() {
 	r.runOnce.Do(r.run)
 }
 
-func (r *service) Fetch(repositoryIDs []string) {
+func (r *service) Fetch(repositoryID string) {
 	// non-blocking; fetch operation is eventually consistent
 	select {
-	case r.fetcher <- repositoryIDs:
+	case r.fetcher <- repositoryID:
 	default:
 	}
 }
 
-func (r *service) fetchLoop(ctx context.Context, fetcher <-chan []string) {
-	ticker := time.NewTicker(3 * time.Minute)
+func (r *service) fetchLoop(ctx context.Context, fetcher <-chan string) {
+	ticker := time.NewTicker(fetcherInterval)
 	defer ticker.Stop()
 
-	doSync := func(repositoryIDs optional.Of[[]string]) {
+	epoch := 0
+	runFetchEpoch := func() {
 		start := time.Now()
-		if err := r.fetch(repositoryIDs); err != nil {
+		n, err := r.doFetchEpoch(ctx, epoch)
+		if err != nil {
 			log.Errorf("failed to fetch repositories: %+v", err)
-			return
 		}
-		log.Infof("Fetched repositories in %v", time.Since(start))
-
-		r.cd.RegisterBuilds()
+		log.Infof("Fetched %v repositories in %v", n, time.Since(start))
+		epoch++
 	}
 
-	doSync(optional.None[[]string]())
+	runFetchEpoch()
 
 	for {
 		select {
-		case ids := <-fetcher:
-			// coalesce specific repository fetch request
-			additional := lo.Flatten(ds.ReadAll(fetcher))
-			ids = append(ids, additional...)
-			doSync(optional.From(ids))
+		case id := <-fetcher:
+			err := r.fetchOne(ctx, id)
+			if err != nil {
+				log.Errorf("failed to fetch repository %v: %+v", id, err)
+			}
 		case <-ticker.C:
-			doSync(optional.None[[]string]())
+			runFetchEpoch()
 		case <-ctx.Done():
 			return
 		}
 	}
 }
 
-func (r *service) fetch(repositoryIDs optional.Of[[]string]) error {
-	ctx := context.Background()
-
-	var getCond domain.GetRepositoryCondition
-	if repositoryIDs.Valid {
-		getCond.IDs = repositoryIDs
-	}
-	repositories, err := r.gitRepo.GetRepositories(ctx, getCond)
+func (r *service) doFetchEpoch(ctx context.Context, epoch int) (int, error) {
+	repos, err := r.gitRepo.GetRepositories(ctx, domain.GetRepositoryCondition{})
 	if err != nil {
-		return err
+		return 0, err
 	}
-	repos := lo.SliceToMap(repositories, func(repo *domain.Repository) (string, *domain.Repository) { return repo.ID, repo })
-
-	applications, err := r.appRepo.GetApplications(ctx, domain.GetApplicationCondition{})
+	apps, err := r.appRepo.GetApplications(ctx, domain.GetApplicationCondition{})
 	if err != nil {
-		return err
+		return 0, err
 	}
-	reposToApps := make(map[string][]*domain.Application)
-	for _, app := range applications {
-		reposToApps[app.RepositoryID] = append(reposToApps[app.RepositoryID], app)
+	repoMap := lo.SliceToMap(repos, func(repo *domain.Repository) (string, *domain.Repository) { return repo.ID, repo })
+	repoToApps := make(map[string][]*domain.Application, len(repos))
+	for _, app := range apps {
+		repoToApps[app.RepositoryID] = append(repoToApps[app.RepositoryID], app)
 	}
+	repoLastUpdated := lo.MapValues(repoToApps, func(apps []*domain.Application, repoID string) time.Time {
+		// assert len(apps) > 0
+		updatedAts := ds.Map(apps, func(app *domain.Application) time.Time { return app.UpdatedAt })
+		return lo.MaxBy(updatedAts, func(a, b time.Time) bool { return a.Compare(b) < 0 })
+	})
 
+	now := time.Now()
+	count := 0
 	p := pool.New().WithMaxGoroutines(fetcherConcurrency)
-	for _, repo := range repos {
-		repo := repo
-		p.Go(func() {
-			err := r.updateApps(ctx, repo, reposToApps[repo.ID])
-			if err != nil {
-				log.Warnf("failed to update repo: %+v", err)
-			}
-		})
+	for repoID, lastUpdated := range repoLastUpdated {
+		interval := fetchInterval(now, lastUpdated)
+		if epoch%interval == 0 {
+			repo := repoMap[repoID]
+			count++
+			p.Go(func() { // careful not to capture loop variable
+				err := r.updateApps(ctx, repo, repoToApps[repo.ID])
+				if err != nil {
+					log.Warnf("failed to update repo: %+v", err)
+				}
+			})
+		}
 	}
 	p.Wait()
-	return nil
+	return count, nil
+}
+
+func (r *service) fetchOne(ctx context.Context, repositoryID string) error {
+	repo, err := r.gitRepo.GetRepository(ctx, repositoryID)
+	if err != nil {
+		return err
+	}
+	apps, err := r.appRepo.GetApplications(ctx, domain.GetApplicationCondition{
+		RepositoryID: optional.From(repositoryID),
+	})
+	if err != nil {
+		return err
+	}
+	return r.updateApps(ctx, repo, apps)
 }
 
 func (r *service) resolveRefs(ctx context.Context, repo *domain.Repository) (refToCommit map[string]string, err error) {
@@ -181,7 +215,8 @@ func (r *service) resolveRefs(ctx context.Context, repo *domain.Repository) (ref
 }
 
 func (r *service) updateApps(ctx context.Context, repo *domain.Repository, apps []*domain.Application) error {
-	if len(apps) == 0 {
+	someAppRunning := lo.ContainsBy(apps, func(app *domain.Application) bool { return app.Running })
+	if !someAppRunning {
 		return nil
 	}
 
@@ -200,6 +235,8 @@ func (r *service) updateApps(ctx context.Context, repo *domain.Repository, apps 
 		if err != nil {
 			return errors.Wrap(err, "failed to update application")
 		}
+		// Notify builds
+		r.cd.RegisterBuild(app.ID)
 	}
 	return nil
 }

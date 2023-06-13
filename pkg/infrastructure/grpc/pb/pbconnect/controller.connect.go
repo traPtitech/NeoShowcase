@@ -50,9 +50,9 @@ const (
 	// ControllerServiceFetchRepositoryProcedure is the fully-qualified name of the ControllerService's
 	// FetchRepository RPC.
 	ControllerServiceFetchRepositoryProcedure = "/neoshowcase.protobuf.ControllerService/FetchRepository"
-	// ControllerServiceRegisterBuildsProcedure is the fully-qualified name of the ControllerService's
-	// RegisterBuilds RPC.
-	ControllerServiceRegisterBuildsProcedure = "/neoshowcase.protobuf.ControllerService/RegisterBuilds"
+	// ControllerServiceRegisterBuildProcedure is the fully-qualified name of the ControllerService's
+	// RegisterBuild RPC.
+	ControllerServiceRegisterBuildProcedure = "/neoshowcase.protobuf.ControllerService/RegisterBuild"
 	// ControllerServiceSyncDeploymentsProcedure is the fully-qualified name of the ControllerService's
 	// SyncDeployments RPC.
 	ControllerServiceSyncDeploymentsProcedure = "/neoshowcase.protobuf.ControllerService/SyncDeployments"
@@ -76,7 +76,7 @@ type ControllerServiceClient interface {
 	GetAvailableDomains(context.Context, *connect_go.Request[emptypb.Empty]) (*connect_go.Response[pb.AvailableDomains], error)
 	GetAvailablePorts(context.Context, *connect_go.Request[emptypb.Empty]) (*connect_go.Response[pb.AvailablePorts], error)
 	FetchRepository(context.Context, *connect_go.Request[pb.RepositoryIdRequest]) (*connect_go.Response[emptypb.Empty], error)
-	RegisterBuilds(context.Context, *connect_go.Request[emptypb.Empty]) (*connect_go.Response[emptypb.Empty], error)
+	RegisterBuild(context.Context, *connect_go.Request[pb.ApplicationIdRequest]) (*connect_go.Response[emptypb.Empty], error)
 	SyncDeployments(context.Context, *connect_go.Request[emptypb.Empty]) (*connect_go.Response[emptypb.Empty], error)
 	StreamBuildLog(context.Context, *connect_go.Request[pb.BuildIdRequest]) (*connect_go.ServerStreamForClient[pb.BuildLog], error)
 	CancelBuild(context.Context, *connect_go.Request[pb.BuildIdRequest]) (*connect_go.Response[emptypb.Empty], error)
@@ -112,9 +112,9 @@ func NewControllerServiceClient(httpClient connect_go.HTTPClient, baseURL string
 			baseURL+ControllerServiceFetchRepositoryProcedure,
 			opts...,
 		),
-		registerBuilds: connect_go.NewClient[emptypb.Empty, emptypb.Empty](
+		registerBuild: connect_go.NewClient[pb.ApplicationIdRequest, emptypb.Empty](
 			httpClient,
-			baseURL+ControllerServiceRegisterBuildsProcedure,
+			baseURL+ControllerServiceRegisterBuildProcedure,
 			opts...,
 		),
 		syncDeployments: connect_go.NewClient[emptypb.Empty, emptypb.Empty](
@@ -141,7 +141,7 @@ type controllerServiceClient struct {
 	getAvailableDomains *connect_go.Client[emptypb.Empty, pb.AvailableDomains]
 	getAvailablePorts   *connect_go.Client[emptypb.Empty, pb.AvailablePorts]
 	fetchRepository     *connect_go.Client[pb.RepositoryIdRequest, emptypb.Empty]
-	registerBuilds      *connect_go.Client[emptypb.Empty, emptypb.Empty]
+	registerBuild       *connect_go.Client[pb.ApplicationIdRequest, emptypb.Empty]
 	syncDeployments     *connect_go.Client[emptypb.Empty, emptypb.Empty]
 	streamBuildLog      *connect_go.Client[pb.BuildIdRequest, pb.BuildLog]
 	cancelBuild         *connect_go.Client[pb.BuildIdRequest, emptypb.Empty]
@@ -167,9 +167,9 @@ func (c *controllerServiceClient) FetchRepository(ctx context.Context, req *conn
 	return c.fetchRepository.CallUnary(ctx, req)
 }
 
-// RegisterBuilds calls neoshowcase.protobuf.ControllerService.RegisterBuilds.
-func (c *controllerServiceClient) RegisterBuilds(ctx context.Context, req *connect_go.Request[emptypb.Empty]) (*connect_go.Response[emptypb.Empty], error) {
-	return c.registerBuilds.CallUnary(ctx, req)
+// RegisterBuild calls neoshowcase.protobuf.ControllerService.RegisterBuild.
+func (c *controllerServiceClient) RegisterBuild(ctx context.Context, req *connect_go.Request[pb.ApplicationIdRequest]) (*connect_go.Response[emptypb.Empty], error) {
+	return c.registerBuild.CallUnary(ctx, req)
 }
 
 // SyncDeployments calls neoshowcase.protobuf.ControllerService.SyncDeployments.
@@ -194,7 +194,7 @@ type ControllerServiceHandler interface {
 	GetAvailableDomains(context.Context, *connect_go.Request[emptypb.Empty]) (*connect_go.Response[pb.AvailableDomains], error)
 	GetAvailablePorts(context.Context, *connect_go.Request[emptypb.Empty]) (*connect_go.Response[pb.AvailablePorts], error)
 	FetchRepository(context.Context, *connect_go.Request[pb.RepositoryIdRequest]) (*connect_go.Response[emptypb.Empty], error)
-	RegisterBuilds(context.Context, *connect_go.Request[emptypb.Empty]) (*connect_go.Response[emptypb.Empty], error)
+	RegisterBuild(context.Context, *connect_go.Request[pb.ApplicationIdRequest]) (*connect_go.Response[emptypb.Empty], error)
 	SyncDeployments(context.Context, *connect_go.Request[emptypb.Empty]) (*connect_go.Response[emptypb.Empty], error)
 	StreamBuildLog(context.Context, *connect_go.Request[pb.BuildIdRequest], *connect_go.ServerStream[pb.BuildLog]) error
 	CancelBuild(context.Context, *connect_go.Request[pb.BuildIdRequest]) (*connect_go.Response[emptypb.Empty], error)
@@ -227,9 +227,9 @@ func NewControllerServiceHandler(svc ControllerServiceHandler, opts ...connect_g
 		svc.FetchRepository,
 		opts...,
 	))
-	mux.Handle(ControllerServiceRegisterBuildsProcedure, connect_go.NewUnaryHandler(
-		ControllerServiceRegisterBuildsProcedure,
-		svc.RegisterBuilds,
+	mux.Handle(ControllerServiceRegisterBuildProcedure, connect_go.NewUnaryHandler(
+		ControllerServiceRegisterBuildProcedure,
+		svc.RegisterBuild,
 		opts...,
 	))
 	mux.Handle(ControllerServiceSyncDeploymentsProcedure, connect_go.NewUnaryHandler(
@@ -269,8 +269,8 @@ func (UnimplementedControllerServiceHandler) FetchRepository(context.Context, *c
 	return nil, connect_go.NewError(connect_go.CodeUnimplemented, errors.New("neoshowcase.protobuf.ControllerService.FetchRepository is not implemented"))
 }
 
-func (UnimplementedControllerServiceHandler) RegisterBuilds(context.Context, *connect_go.Request[emptypb.Empty]) (*connect_go.Response[emptypb.Empty], error) {
-	return nil, connect_go.NewError(connect_go.CodeUnimplemented, errors.New("neoshowcase.protobuf.ControllerService.RegisterBuilds is not implemented"))
+func (UnimplementedControllerServiceHandler) RegisterBuild(context.Context, *connect_go.Request[pb.ApplicationIdRequest]) (*connect_go.Response[emptypb.Empty], error) {
+	return nil, connect_go.NewError(connect_go.CodeUnimplemented, errors.New("neoshowcase.protobuf.ControllerService.RegisterBuild is not implemented"))
 }
 
 func (UnimplementedControllerServiceHandler) SyncDeployments(context.Context, *connect_go.Request[emptypb.Empty]) (*connect_go.Response[emptypb.Empty], error) {

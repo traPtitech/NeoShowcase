@@ -15,6 +15,7 @@ type Config struct {
 	URL             string `mapstructure:"url" yaml:"url"`
 	Token           string `mapstructure:"token" yaml:"token"`
 	IntervalSeconds int    `mapstructure:"intervalSeconds" yaml:"intervalSeconds"`
+	ListIntervalMs  int    `mapstructure:"listIntervalMs" yaml:"listIntervalMs"`
 }
 
 func (c *Config) Validate() error {
@@ -24,13 +25,17 @@ func (c *Config) Validate() error {
 	if c.IntervalSeconds <= 0 {
 		return errors.New("provide positive interval seconds")
 	}
+	if c.ListIntervalMs <= 0 {
+		return errors.New("provide positive list interval ms")
+	}
 	return nil
 }
 
 type Integration struct {
-	c        *gitea.Client
-	interval time.Duration
-	cancel   func()
+	c            *gitea.Client
+	interval     time.Duration
+	listInterval time.Duration
+	cancel       func()
 
 	gitRepo  domain.GitRepositoryRepository
 	userRepo domain.UserRepository
@@ -55,8 +60,9 @@ func NewIntegration(
 		return nil, err
 	}
 	return &Integration{
-		c:        client,
-		interval: time.Duration(c.IntervalSeconds) * time.Second,
+		c:            client,
+		interval:     time.Duration(c.IntervalSeconds) * time.Second,
+		listInterval: time.Duration(c.ListIntervalMs) * time.Millisecond,
 
 		gitRepo:  gitRepo,
 		userRepo: userRepo,

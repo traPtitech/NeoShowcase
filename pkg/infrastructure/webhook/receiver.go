@@ -10,7 +10,6 @@ import (
 
 	"github.com/traPtitech/neoshowcase/pkg/domain"
 	"github.com/traPtitech/neoshowcase/pkg/usecase/repofetcher"
-	"github.com/traPtitech/neoshowcase/pkg/util/ds"
 	"github.com/traPtitech/neoshowcase/pkg/util/optional"
 )
 
@@ -63,9 +62,7 @@ func (r *Receiver) updateURLs(urls []string) {
 		log.Errorf("getting repositories by url: %+v", err)
 		return
 	}
-	if len(repos) == 0 {
-		return
+	for _, repo := range repos {
+		r.fetcher.Fetch(repo.ID)
 	}
-	ids := ds.Map(repos, func(repo *domain.Repository) string { return repo.ID })
-	r.fetcher.Fetch(ids)
 }

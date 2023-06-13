@@ -19,6 +19,7 @@ func init() {
 	viper.SetDefault("gitea.url", "https://git.trap.jp")
 	viper.SetDefault("gitea.token", "")
 	viper.SetDefault("gitea.intervalSeconds", 600)
+	viper.SetDefault("gitea.listIntervalMs", 250)
 
 	viper.SetDefault("db.host", "127.0.0.1")
 	viper.SetDefault("db.port", 3306)

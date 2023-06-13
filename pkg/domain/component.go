@@ -13,7 +13,7 @@ type ControllerServiceClient interface {
 	GetAvailablePorts(ctx context.Context) (AvailablePortSlice, error)
 
 	FetchRepository(ctx context.Context, repositoryID string) error
-	RegisterBuilds(ctx context.Context) error
+	RegisterBuild(ctx context.Context, appID string) error
 	SyncDeployments(ctx context.Context) error
 	StreamBuildLog(ctx context.Context, buildID string) (<-chan *pb.BuildLog, error)
 	CancelBuild(ctx context.Context, buildID string) error
