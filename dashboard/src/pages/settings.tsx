@@ -124,9 +124,7 @@ export default () => {
 
   const deleteKeyRequest = async (keyID: string) => {
     try {
-      const a = new DeleteUserKeyRequest()
-      a.keyId = keyID
-      await client.deleteUserKey(a)
+      await client.deleteUserKey({ keyId: keyID })
       toast.success('User Key を削除しました')
       refetchKeys()
     } catch (e) {
