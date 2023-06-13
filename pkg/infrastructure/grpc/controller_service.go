@@ -23,6 +23,7 @@ type ControllerService struct {
 	cd        cdservice.Service
 	builder   domain.ControllerBuilderService
 	logStream *logstream.Service
+	sshConf   domain.SSHConfig
 }
 
 func NewControllerService(
@@ -31,6 +32,7 @@ func NewControllerService(
 	cd cdservice.Service,
 	builder domain.ControllerBuilderService,
 	logStream *logstream.Service,
+	sshConf domain.SSHConfig,
 ) pbconnect.ControllerServiceHandler {
 	return &ControllerService{
 		backend:   backend,
@@ -38,7 +40,16 @@ func NewControllerService(
 		cd:        cd,
 		builder:   builder,
 		logStream: logStream,
+		sshConf:   sshConf,
 	}
+}
+
+func (s *ControllerService) GetSSHInfo(_ context.Context, _ *connect.Request[emptypb.Empty]) (*connect.Response[pb.SSHInfo], error) {
+	res := connect.NewResponse(&pb.SSHInfo{
+		Host: s.sshConf.Host,
+		Port: int32(s.sshConf.Port),
+	})
+	return res, nil
 }
 
 func (s *ControllerService) GetAvailableDomains(_ context.Context, _ *connect.Request[emptypb.Empty]) (*connect.Response[pb.AvailableDomains], error) {

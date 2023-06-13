@@ -82,6 +82,7 @@ func init() {
 	viper.SetDefault("k8s.resources.limits.cpu", "")
 	viper.SetDefault("k8s.resources.limits.memory", "")
 
+	viper.SetDefault("ssh.host", "localhost")
 	viper.SetDefault("ssh.port", 2201)
 
 	viper.SetDefault("webhook.basePath", "/api/webhook")
