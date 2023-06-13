@@ -57,7 +57,12 @@ export const WebsiteSetting = (props: WebsiteSettingProps) => {
       </div>
       <div>
         <InputLabel>アプリのHTTP Port番号</InputLabel>
-        <InputBar placeholder='80' type='number' onChange={(e) => props.setWebsite('httpPort', +e.target.value)} />
+        <InputBar
+          placeholder='80'
+          type='number'
+          value={props.website.httpPort}
+          onChange={(e) => props.setWebsite('httpPort', +e.target.value)}
+        />
       </div>
       <div>
         <Radio
