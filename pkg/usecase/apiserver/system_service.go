@@ -12,6 +12,10 @@ import (
 	"github.com/traPtitech/neoshowcase/pkg/domain"
 )
 
+func (s *Service) GetSSHInfo(ctx context.Context) (host string, port int, err error) {
+	return s.controller.GetSSHInfo(ctx)
+}
+
 func (s *Service) GetSystemPublicKey(_ context.Context) string {
 	encoded := domain.Base64EncodedPublicKey(s.pubKey.Signer.PublicKey())
 	return encoded + " neoshowcase"

@@ -70,9 +70,9 @@ func NewWithDocker(c2 Config) (*Server, error) {
 	if err != nil {
 		return nil, err
 	}
-	controllerServiceHandler := grpc.NewControllerService(backend, repofetcherService, cdserviceService, controllerBuilderService, service)
-	mainControllerServer := provideControllerServer(c2, controllerServiceHandler, controllerBuilderService, controllerSSGenService)
 	sshConfig := c2.SSH
+	controllerServiceHandler := grpc.NewControllerService(backend, repofetcherService, cdserviceService, controllerBuilderService, service, sshConfig)
+	mainControllerServer := provideControllerServer(c2, controllerServiceHandler, controllerBuilderService, controllerSSGenService)
 	userRepository := repository.NewUserRepository(db)
 	sshServer := sshserver.NewSSHServer(sshConfig, publicKeys, backend, applicationRepository, userRepository)
 	receiverConfig := c2.Webhook
@@ -149,9 +149,9 @@ func NewWithK8S(c2 Config) (*Server, error) {
 	if err != nil {
 		return nil, err
 	}
-	controllerServiceHandler := grpc.NewControllerService(backend, repofetcherService, cdserviceService, controllerBuilderService, service)
-	mainControllerServer := provideControllerServer(c2, controllerServiceHandler, controllerBuilderService, controllerSSGenService)
 	sshConfig := c2.SSH
+	controllerServiceHandler := grpc.NewControllerService(backend, repofetcherService, cdserviceService, controllerBuilderService, service, sshConfig)
+	mainControllerServer := provideControllerServer(c2, controllerServiceHandler, controllerBuilderService, controllerSSGenService)
 	userRepository := repository.NewUserRepository(db)
 	sshServer := sshserver.NewSSHServer(sshConfig, publicKeys, backend, applicationRepository, userRepository)
 	receiverConfig := c2.Webhook

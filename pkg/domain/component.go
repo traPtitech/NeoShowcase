@@ -8,6 +8,7 @@ import (
 )
 
 type ControllerServiceClient interface {
+	GetSSHInfo(ctx context.Context) (host string, port int, err error)
 	GetAvailableDomains(ctx context.Context) (AvailableDomainSlice, error)
 	GetAvailablePorts(ctx context.Context) (AvailablePortSlice, error)
 

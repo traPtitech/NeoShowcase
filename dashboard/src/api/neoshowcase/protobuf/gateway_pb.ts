@@ -74,6 +74,49 @@ proto3.util.setEnumType(PortPublicationProtocol, "neoshowcase.protobuf.PortPubli
 ]);
 
 /**
+ * @generated from message neoshowcase.protobuf.SSHInfo
+ */
+export class SSHInfo extends Message<SSHInfo> {
+  /**
+   * @generated from field: string host = 1;
+   */
+  host = "";
+
+  /**
+   * @generated from field: int32 port = 2;
+   */
+  port = 0;
+
+  constructor(data?: PartialMessage<SSHInfo>) {
+    super();
+    proto3.util.initPartial(data, this);
+  }
+
+  static readonly runtime: typeof proto3 = proto3;
+  static readonly typeName = "neoshowcase.protobuf.SSHInfo";
+  static readonly fields: FieldList = proto3.util.newFieldList(() => [
+    { no: 1, name: "host", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+    { no: 2, name: "port", kind: "scalar", T: 5 /* ScalarType.INT32 */ },
+  ]);
+
+  static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): SSHInfo {
+    return new SSHInfo().fromBinary(bytes, options);
+  }
+
+  static fromJson(jsonValue: JsonValue, options?: Partial<JsonReadOptions>): SSHInfo {
+    return new SSHInfo().fromJson(jsonValue, options);
+  }
+
+  static fromJsonString(jsonString: string, options?: Partial<JsonReadOptions>): SSHInfo {
+    return new SSHInfo().fromJsonString(jsonString, options);
+  }
+
+  static equals(a: SSHInfo | PlainMessage<SSHInfo> | undefined, b: SSHInfo | PlainMessage<SSHInfo> | undefined): boolean {
+    return proto3.util.equals(SSHInfo, a, b);
+  }
+}
+
+/**
  * @generated from message neoshowcase.protobuf.GenerateKeyPairResponse
  */
 export class GenerateKeyPairResponse extends Message<GenerateKeyPairResponse> {

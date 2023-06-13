@@ -38,6 +38,9 @@ const (
 // reflection-formatted method names, remove the leading slash and convert the remaining slash to a
 // period.
 const (
+	// ControllerServiceGetSSHInfoProcedure is the fully-qualified name of the ControllerService's
+	// GetSSHInfo RPC.
+	ControllerServiceGetSSHInfoProcedure = "/neoshowcase.protobuf.ControllerService/GetSSHInfo"
 	// ControllerServiceGetAvailableDomainsProcedure is the fully-qualified name of the
 	// ControllerService's GetAvailableDomains RPC.
 	ControllerServiceGetAvailableDomainsProcedure = "/neoshowcase.protobuf.ControllerService/GetAvailableDomains"
@@ -69,6 +72,7 @@ const (
 
 // ControllerServiceClient is a client for the neoshowcase.protobuf.ControllerService service.
 type ControllerServiceClient interface {
+	GetSSHInfo(context.Context, *connect_go.Request[emptypb.Empty]) (*connect_go.Response[pb.SSHInfo], error)
 	GetAvailableDomains(context.Context, *connect_go.Request[emptypb.Empty]) (*connect_go.Response[pb.AvailableDomains], error)
 	GetAvailablePorts(context.Context, *connect_go.Request[emptypb.Empty]) (*connect_go.Response[pb.AvailablePorts], error)
 	FetchRepository(context.Context, *connect_go.Request[pb.RepositoryIdRequest]) (*connect_go.Response[emptypb.Empty], error)
@@ -88,6 +92,11 @@ type ControllerServiceClient interface {
 func NewControllerServiceClient(httpClient connect_go.HTTPClient, baseURL string, opts ...connect_go.ClientOption) ControllerServiceClient {
 	baseURL = strings.TrimRight(baseURL, "/")
 	return &controllerServiceClient{
+		getSSHInfo: connect_go.NewClient[emptypb.Empty, pb.SSHInfo](
+			httpClient,
+			baseURL+ControllerServiceGetSSHInfoProcedure,
+			opts...,
+		),
 		getAvailableDomains: connect_go.NewClient[emptypb.Empty, pb.AvailableDomains](
 			httpClient,
 			baseURL+ControllerServiceGetAvailableDomainsProcedure,
@@ -128,6 +137,7 @@ func NewControllerServiceClient(httpClient connect_go.HTTPClient, baseURL string
 
 // controllerServiceClient implements ControllerServiceClient.
 type controllerServiceClient struct {
+	getSSHInfo          *connect_go.Client[emptypb.Empty, pb.SSHInfo]
 	getAvailableDomains *connect_go.Client[emptypb.Empty, pb.AvailableDomains]
 	getAvailablePorts   *connect_go.Client[emptypb.Empty, pb.AvailablePorts]
 	fetchRepository     *connect_go.Client[pb.RepositoryIdRequest, emptypb.Empty]
@@ -135,6 +145,11 @@ type controllerServiceClient struct {
 	syncDeployments     *connect_go.Client[emptypb.Empty, emptypb.Empty]
 	streamBuildLog      *connect_go.Client[pb.BuildIdRequest, pb.BuildLog]
 	cancelBuild         *connect_go.Client[pb.BuildIdRequest, emptypb.Empty]
+}
+
+// GetSSHInfo calls neoshowcase.protobuf.ControllerService.GetSSHInfo.
+func (c *controllerServiceClient) GetSSHInfo(ctx context.Context, req *connect_go.Request[emptypb.Empty]) (*connect_go.Response[pb.SSHInfo], error) {
+	return c.getSSHInfo.CallUnary(ctx, req)
 }
 
 // GetAvailableDomains calls neoshowcase.protobuf.ControllerService.GetAvailableDomains.
@@ -175,6 +190,7 @@ func (c *controllerServiceClient) CancelBuild(ctx context.Context, req *connect_
 // ControllerServiceHandler is an implementation of the neoshowcase.protobuf.ControllerService
 // service.
 type ControllerServiceHandler interface {
+	GetSSHInfo(context.Context, *connect_go.Request[emptypb.Empty]) (*connect_go.Response[pb.SSHInfo], error)
 	GetAvailableDomains(context.Context, *connect_go.Request[emptypb.Empty]) (*connect_go.Response[pb.AvailableDomains], error)
 	GetAvailablePorts(context.Context, *connect_go.Request[emptypb.Empty]) (*connect_go.Response[pb.AvailablePorts], error)
 	FetchRepository(context.Context, *connect_go.Request[pb.RepositoryIdRequest]) (*connect_go.Response[emptypb.Empty], error)
@@ -191,6 +207,11 @@ type ControllerServiceHandler interface {
 // and JSON codecs. They also support gzip compression.
 func NewControllerServiceHandler(svc ControllerServiceHandler, opts ...connect_go.HandlerOption) (string, http.Handler) {
 	mux := http.NewServeMux()
+	mux.Handle(ControllerServiceGetSSHInfoProcedure, connect_go.NewUnaryHandler(
+		ControllerServiceGetSSHInfoProcedure,
+		svc.GetSSHInfo,
+		opts...,
+	))
 	mux.Handle(ControllerServiceGetAvailableDomainsProcedure, connect_go.NewUnaryHandler(
 		ControllerServiceGetAvailableDomainsProcedure,
 		svc.GetAvailableDomains,
@@ -231,6 +252,10 @@ func NewControllerServiceHandler(svc ControllerServiceHandler, opts ...connect_g
 
 // UnimplementedControllerServiceHandler returns CodeUnimplemented from all methods.
 type UnimplementedControllerServiceHandler struct{}
+
+func (UnimplementedControllerServiceHandler) GetSSHInfo(context.Context, *connect_go.Request[emptypb.Empty]) (*connect_go.Response[pb.SSHInfo], error) {
+	return nil, connect_go.NewError(connect_go.CodeUnimplemented, errors.New("neoshowcase.protobuf.ControllerService.GetSSHInfo is not implemented"))
+}
 
 func (UnimplementedControllerServiceHandler) GetAvailableDomains(context.Context, *connect_go.Request[emptypb.Empty]) (*connect_go.Response[pb.AvailableDomains], error) {
 	return nil, connect_go.NewError(connect_go.CodeUnimplemented, errors.New("neoshowcase.protobuf.ControllerService.GetAvailableDomains is not implemented"))
