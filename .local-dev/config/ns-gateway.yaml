@@ -34,7 +34,7 @@ log:
   type: loki
   loki:
     endpoint: http://loki:3100
-    appIDLabel: neoshowcase_trap_jp_app_id
+    appIDLabel: ns_trap_jp_app_id
 
 repository:
   privateKeyFile: /keys/id_ed25519
