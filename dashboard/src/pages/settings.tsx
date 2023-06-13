@@ -128,7 +128,7 @@ export default () => {
       a.keyId = keyID
       await client.deleteUserKey(a)
       toast.success('User Key を削除しました')
-      refetchApp()
+      refetchKeys()
     } catch (e) {
       console.error(e)
       // gRPCエラー
@@ -156,7 +156,7 @@ export default () => {
           publicKey: keyInputRef.value,
         })
         toast.success('User Key を登録しました')
-        refetchApp()
+        refetchKeys()
       } catch (e) {
         console.error(e)
         // gRPCエラー
