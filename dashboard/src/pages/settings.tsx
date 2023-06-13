@@ -118,7 +118,7 @@ export const FormButton = styled('div', {
 })
 
 export default () => {
-  const [userKeys, { refetch: refetchApp }] = createResource(() => client.getUserKeys({}))
+  const [userKeys, { refetch: refetchKeys }] = createResource(() => client.getUserKeys({}))
 
   const [createKeyToggle, setCreateKeyToggle] = createSignal(false)
 
