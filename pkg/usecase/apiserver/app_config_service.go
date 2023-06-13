@@ -94,9 +94,13 @@ func (s *Service) StartApplication(ctx context.Context, id string) error {
 		return errors.Wrap(err, "failed to mark application as running")
 	}
 
-	err = s.controller.RegisterBuilds(ctx)
+	app, err := s.appRepo.GetApplication(ctx, id)
 	if err != nil {
-		return errors.Wrap(err, "failed to request new builds")
+		return errors.Wrap(err, "getting application")
+	}
+	err = s.controller.FetchRepository(ctx, app.RepositoryID)
+	if err != nil {
+		return errors.Wrap(err, "failed to request repository fetch")
 	}
 	err = s.controller.SyncDeployments(ctx)
 	if err != nil {

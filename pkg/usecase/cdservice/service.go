@@ -19,8 +19,7 @@ import (
 
 type Service interface {
 	Run()
-	RegisterBuilds()
-	StartBuilds()
+	RegisterBuild(appID string)
 	SyncDeployments()
 	Stop(ctx context.Context) error
 }
@@ -33,13 +32,12 @@ type service struct {
 	deployer  *AppDeployHelper
 	mutator   *ContainerStateMutator
 
-	doRegisterBuild func()
-	doStartBuild    func()
-	doSyncDeploy    func()
-	run             func()
-	runOnce         sync.Once
-	close           func()
-	closeOnce       sync.Once
+	doStartBuild func()
+	doSyncDeploy func()
+	run          func()
+	runOnce      sync.Once
+	close        func()
+	closeOnce    sync.Once
 }
 
 func NewService(
@@ -60,21 +58,6 @@ func NewService(
 	}
 
 	ctx, cancel := context.WithCancel(context.Background())
-
-	doRegisterBuild := coalesce.NewCoalescer(func(ctx context.Context) error {
-		start := time.Now()
-		if err := cd.registerBuilds(ctx); err != nil {
-			log.Errorf("failed to kickoff builds: %+v", err)
-			return nil
-		}
-		log.Infof("Synced builds in %v", time.Since(start))
-
-		go cd.doStartBuild()
-		return nil
-	})
-	cd.doRegisterBuild = func() {
-		_ = doRegisterBuild.Do(context.Background())
-	}
 
 	doStartBuild := coalesce.NewCoalescer(func(ctx context.Context) error {
 		start := time.Now()
@@ -137,12 +120,14 @@ func (cd *service) Run() {
 	cd.runOnce.Do(cd.run)
 }
 
-func (cd *service) RegisterBuilds() {
-	go cd.doRegisterBuild()
-}
-
-func (cd *service) StartBuilds() {
-	go cd.doStartBuild()
+func (cd *service) RegisterBuild(appID string) {
+	go func() {
+		if err := cd.registerBuild(context.Background(), appID); err != nil {
+			log.Errorf("failed to kickoff build for app %v: %+v", appID, err)
+			return
+		}
+		go cd.doStartBuild()
+	}()
 }
 
 func (cd *service) SyncDeployments() {
@@ -154,41 +139,34 @@ func (cd *service) Stop(_ context.Context) error {
 	return nil
 }
 
-func (cd *service) registerBuilds(ctx context.Context) error {
-	applications, err := cd.appRepo.GetApplications(ctx, domain.GetApplicationCondition{})
+func (cd *service) registerBuild(ctx context.Context, appID string) error {
+	app, err := cd.appRepo.GetApplication(ctx, appID)
 	if err != nil {
 		return err
 	}
-	commits := ds.Map(applications, func(app *domain.Application) string { return app.WantCommit })
-	builds, err := cd.buildRepo.GetBuilds(ctx, domain.GetBuildCondition{CommitIn: optional.From(commits)})
+	builds, err := cd.buildRepo.GetBuilds(ctx, domain.GetBuildCondition{
+		ApplicationID: optional.From(appID),
+		Commit:        optional.From(app.WantCommit),
+		// Do not count retriable build as 'exists' - enqueue a new build if only retriable builds exist
+		Retriable: optional.From(false),
+	})
 	if err != nil {
 		return err
 	}
-
-	buildExists := make(map[string]bool, len(applications)) // app id + commit -> bool
-	for _, build := range builds {
-		if build.Retriable {
-			continue // Do not count retriable build as 'exists'
-		}
-		buildExists[build.ApplicationID+build.Commit] = true
+	if len(builds) > 0 {
+		// Already queued for the commit
+		return nil
 	}
-	for _, app := range applications {
-		if buildExists[app.ID+app.WantCommit] {
-			continue
-		}
-		if app.WantCommit == domain.EmptyCommit {
-			continue
-		}
-		if !app.Running {
-			continue
-		}
-		build := domain.NewBuild(app.ID, app.WantCommit)
-		err = cd.buildRepo.CreateBuild(ctx, build)
-		if err != nil {
-			return errors.Wrap(err, "failed to create build")
-		}
+	if app.WantCommit == domain.EmptyCommit {
+		// Skip if still fetching commit
+		return nil
 	}
-	return nil
+	if !app.Running {
+		// Skip if app not running
+		return nil
+	}
+	build := domain.NewBuild(app.ID, app.WantCommit)
+	return cd.buildRepo.CreateBuild(ctx, build)
 }
 
 func (cd *service) startBuilds(ctx context.Context) error {

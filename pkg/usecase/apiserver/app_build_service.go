@@ -31,7 +31,7 @@ func (s *Service) RetryCommitBuild(ctx context.Context, applicationID string, co
 		return err
 	}
 	// NOTE: requires the app to be running for builds to register
-	err = s.controller.RegisterBuilds(ctx)
+	err = s.controller.RegisterBuild(ctx, applicationID)
 	if err != nil {
 		return errors.Wrap(err, "failed to request new build registration")
 	}

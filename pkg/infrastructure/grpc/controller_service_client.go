@@ -64,9 +64,9 @@ func (c *ControllerServiceClient) FetchRepository(ctx context.Context, repositor
 	return err
 }
 
-func (c *ControllerServiceClient) RegisterBuilds(ctx context.Context) error {
-	req := connect.NewRequest(&emptypb.Empty{})
-	_, err := c.client.RegisterBuilds(ctx, req)
+func (c *ControllerServiceClient) RegisterBuild(ctx context.Context, appID string) error {
+	req := connect.NewRequest(&pb.ApplicationIdRequest{Id: appID})
+	_, err := c.client.RegisterBuild(ctx, req)
 	return err
 }
 
