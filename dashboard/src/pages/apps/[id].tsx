@@ -1,6 +1,6 @@
 import { A, useNavigate, useParams } from '@solidjs/router'
 import { createEffect, createMemo, createResource, createSignal, For, onCleanup, Ref, Show } from 'solid-js'
-import { client, handleAPIError } from '/@/libs/api'
+import { client, handleAPIError, sshInfo } from '/@/libs/api'
 import { Header } from '/@/components/Header'
 import { applicationState, buildTypeStr, getWebsiteURL, providerToIcon } from '/@/libs/application'
 import { StatusIcon } from '/@/components/StatusIcon'
@@ -34,6 +34,7 @@ import useModal from '/@/libs/useModal'
 import { ModalButtonsContainer, ModalContainer, ModalText } from '/@/components/Modal'
 import toast from 'solid-toast'
 import { styled } from '@macaron-css/solid'
+import { vars } from '/@/theme'
 
 interface RuntimeConfigInfoProps {
   config: RuntimeConfig
@@ -157,6 +158,19 @@ const URLsContainer = styled('div', {
     display: 'flex',
     flexDirection: 'column',
     gap: '8px',
+  },
+})
+
+const SSHCode = styled('code', {
+  base: {
+    display: 'block',
+    padding: '8px 12px',
+    fontFamily: 'monospace',
+    fontSize: '14px',
+    background: vars.bg.white2,
+    color: vars.text.black1,
+    border: `1px solid ${vars.bg.white4}`,
+    borderRadius: '4px',
   },
 })
 
@@ -410,6 +424,21 @@ export default () => {
               <ApplicationConfigInfo config={app().config} />
             </CardItems>
           </Card>
+          <Show when={app().deployType === DeployType.RUNTIME}>
+            <Card>
+              <CardTitle>SSH Access</CardTitle>
+              <CardItems>
+                <Show
+                  when={sshInfo() && app().running}
+                  fallback={<CardItem>アプリケーションが起動している間のみSSHでアクセス可能です</CardItem>}
+                >
+                  <CardItem>
+                    <SSHCode>{`ssh -p ${sshInfo().port} ${app().id}@${sshInfo().host}`}</SSHCode>
+                  </CardItem>
+                </Show>
+              </CardItems>
+            </Card>
+          </Show>
           <Show when={log()}>
             <Card>
               <CardTitle>Container Log</CardTitle>
