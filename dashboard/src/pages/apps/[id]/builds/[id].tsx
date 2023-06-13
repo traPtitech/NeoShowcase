@@ -1,4 +1,4 @@
-import { useParams } from '@solidjs/router'
+import { useNavigate, useParams } from '@solidjs/router'
 import { createEffect, createResource, createSignal, onCleanup, Ref } from 'solid-js'
 import { client } from '/@/libs/api'
 import { Container } from '/@/libs/layout'
@@ -26,6 +26,7 @@ import { Build_BuildStatus } from '/@/api/neoshowcase/protobuf/gateway_pb'
 import { DeployType } from '/@/api/neoshowcase/protobuf/gateway_pb'
 
 export default () => {
+  const navigate = useNavigate()
   const params = useParams()
   const [app] = createResource(
     () => params.id,
@@ -99,7 +100,7 @@ export default () => {
 
   const retryBuild = async () => {
     await client.retryCommitBuild({ applicationId: params.id, commit: build().commit })
-    await refetchBuild()
+    navigate(`/apps/${app().id}/builds`)
   }
 
   const cancelBuild = async () => {
@@ -127,11 +128,16 @@ export default () => {
         <CardsContainer>
           <Card>
             <CardTitle>Actions</CardTitle>
-            <Show when={!build().retriable}>
-              <Button color='black1' size='large' width='full' onclick={retryBuild}>
-                Retry build
-              </Button>
-            </Show>
+            <Button
+              color='black1'
+              size='large'
+              width='full'
+              onclick={retryBuild}
+              disabled={build().retriable}
+              title={build().retriable ? '既に再ビルドが行われています' : '同じコミットで再ビルドします'}
+            >
+              Retry build
+            </Button>
             <Show when={build().status === Build_BuildStatus.BUILDING}>
               <Button color='black1' size='large' width='full' onclick={cancelBuild}>
                 Cancel build
