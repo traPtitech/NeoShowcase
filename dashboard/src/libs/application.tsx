@@ -4,6 +4,7 @@ import {
   ApplicationConfig,
   Build_BuildStatus,
   DeployType,
+  PortPublicationProtocol,
   Repository_AuthMethod,
   Website,
 } from '/@/api/neoshowcase/protobuf/gateway_pb'
@@ -87,4 +88,9 @@ export const authMethodMap: Record<Repository_AuthMethod, AuthMethod> = {
   [Repository_AuthMethod.NONE]: 'none',
   [Repository_AuthMethod.BASIC]: 'basic',
   [Repository_AuthMethod.SSH]: 'ssh',
+}
+
+export const portPublicationProtocolMap: Record<PortPublicationProtocol, string> = {
+  [PortPublicationProtocol.TCP]: 'TCP',
+  [PortPublicationProtocol.UDP]: 'UDP',
 }
