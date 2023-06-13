@@ -18,16 +18,8 @@ import { Container } from '/@/libs/layout'
 import { vars } from '/@/theme'
 import { extractRepositoryNameFromURL } from '/@/libs/application'
 import { AuthConfig, RepositoryAuthSettings } from '/@/components/RepositoryAuthSettings'
-
-// copy from /pages/apps AppsTitle component
-const PageTitle = styled('div', {
-  base: {
-    marginTop: '48px',
-    fontSize: '32px',
-    fontWeight: 'bold',
-    color: vars.text.black1,
-  },
-})
+import { InputBar, InputLabel } from '/@/components/Input'
+import { NavTitleContainer } from '/@/components/Nav'
 
 // copy from /pages/apps
 // and delete unnecessary styles
@@ -53,34 +45,6 @@ const InputFormContainer = styled('form', {
 const InputForm = styled('div', {
   base: {},
 })
-const InputFormText = styled('div', {
-  base: {
-    fontSize: '16px',
-    alignItems: 'center',
-    fontWeight: 700,
-    color: vars.text.black1,
-
-    marginBottom: '4px',
-  },
-})
-const InputBar = styled('input', {
-  base: {
-    padding: '8px 12px',
-    borderRadius: '4px',
-    border: `1px solid ${vars.bg.white4}`,
-    fontSize: '14px',
-    marginLeft: '4px',
-
-    width: '320px',
-
-    display: 'flex',
-    flexDirection: 'column',
-
-    '::placeholder': {
-      color: vars.text.black3,
-    },
-  },
-})
 
 interface FormProps {
   label: string
@@ -94,7 +58,7 @@ interface FormProps {
 const Form = (props: FormProps): JSXElement => {
   return (
     <InputForm>
-      <InputFormText>{props.label}</InputFormText>
+      <InputLabel>{props.label}</InputLabel>
       <InputBar
         type={props.type ?? 'text'}
         placeholder={props.placeholder ?? ''}
@@ -105,26 +69,6 @@ const Form = (props: FormProps): JSXElement => {
     </InputForm>
   )
 }
-
-const SshDetails = styled('div', {
-  base: {
-    color: vars.text.black2,
-    marginBottom: '4px',
-  },
-})
-
-const PublicKeyCode = styled('code', {
-  base: {
-    display: 'block',
-    padding: '8px 12px',
-    fontFamily: 'monospace',
-    fontSize: '14px',
-    background: vars.bg.white2,
-    color: vars.text.black1,
-    border: `1px solid ${vars.bg.white4}`,
-    borderRadius: '4px',
-  },
-})
 
 export default () => {
   const navigate = useNavigate()
@@ -188,7 +132,7 @@ export default () => {
   return (
     <Container>
       <Header />
-      <PageTitle>Create Repository</PageTitle>
+      <NavTitleContainer>Create Repository</NavTitleContainer>
       <ContentContainer>
         <InputFormContainer ref={formContainer}>
           <Form

@@ -84,24 +84,6 @@ const SettingFieldSet = styled('div', {
     background: vars.bg.white1,
   },
 })
-const SshDetails = styled('div', {
-  base: {
-    color: vars.text.black2,
-    marginBottom: '4px',
-  },
-})
-const PublicKeyCode = styled('code', {
-  base: {
-    display: 'block',
-    padding: '8px 12px',
-    fontFamily: 'monospace',
-    fontSize: '14px',
-    background: vars.bg.white2,
-    color: vars.text.black1,
-    border: `1px solid ${vars.bg.white4}`,
-    borderRadius: '4px',
-  },
-})
 
 export default () => {
   const params = useParams()
