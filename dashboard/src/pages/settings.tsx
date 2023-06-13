@@ -165,7 +165,7 @@ export default () => {
         <MainContentContainer>
           <UserKeysContainer>
             <SidebarTitle>登録済みSSH公開鍵</SidebarTitle>
-            <For each={!userKeys() || userKeys().keys}>
+            <For each={userKeys()?.keys}>
               {(key) => (
                 <PublicKeyContainer>
                   <div>
