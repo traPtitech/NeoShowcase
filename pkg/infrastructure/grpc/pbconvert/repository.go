@@ -52,6 +52,8 @@ func ToPBRepository(repo *domain.Repository) *pb.Repository {
 	}
 	if repo.Auth.Valid {
 		ret.AuthMethod = RepoAuthMethodMapper.IntoMust(repo.Auth.V.Method)
+	} else {
+		ret.AuthMethod = pb.Repository_NONE
 	}
 	return ret
 }

@@ -433,7 +433,7 @@ export class Repository extends Message<Repository> {
   /**
    * @generated from field: neoshowcase.protobuf.Repository.AuthMethod auth_method = 4;
    */
-  authMethod = Repository_AuthMethod.BASIC;
+  authMethod = Repository_AuthMethod.NONE;
 
   /**
    * @generated from field: repeated string owner_ids = 5;
@@ -477,19 +477,25 @@ export class Repository extends Message<Repository> {
  */
 export enum Repository_AuthMethod {
   /**
-   * @generated from enum value: BASIC = 0;
+   * @generated from enum value: NONE = 0;
    */
-  BASIC = 0,
+  NONE = 0,
 
   /**
-   * @generated from enum value: SSH = 1;
+   * @generated from enum value: BASIC = 1;
    */
-  SSH = 1,
+  BASIC = 1,
+
+  /**
+   * @generated from enum value: SSH = 2;
+   */
+  SSH = 2,
 }
 // Retrieve enum metadata with: proto3.getEnumType(Repository_AuthMethod)
 proto3.util.setEnumType(Repository_AuthMethod, "neoshowcase.protobuf.Repository.AuthMethod", [
-  { no: 0, name: "BASIC" },
-  { no: 1, name: "SSH" },
+  { no: 0, name: "NONE" },
+  { no: 1, name: "BASIC" },
+  { no: 2, name: "SSH" },
 ]);
 
 /**
