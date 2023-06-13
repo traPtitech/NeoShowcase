@@ -1,5 +1,5 @@
 import { useParams } from '@solidjs/router'
-import { Component, JSX, Show, Switch, createEffect, createMemo, createResource, createSignal } from 'solid-js'
+import { Component, JSX, Show, createEffect, createMemo, createResource, createSignal } from 'solid-js'
 import { client, handleAPIError } from '/@/libs/api'
 import { Container } from '/@/libs/layout'
 import { Header } from '/@/components/Header'
@@ -8,12 +8,10 @@ import { styled } from '@macaron-css/solid'
 import { vars } from '/@/theme'
 import { createStore } from 'solid-js/store'
 import {
-  CreateRepositoryAuth,
   CreateRepositoryAuthBasic,
   CreateRepositoryAuthSSH,
   Repository_AuthMethod,
   UpdateRepositoryRequest,
-  UpdateRepositoryRequest_UpdateOwners,
   User,
 } from '/@/api/neoshowcase/protobuf/gateway_pb'
 import toast from 'solid-toast'
@@ -25,9 +23,8 @@ import { UserSearch } from '/@/components/UserSearch'
 import useModal from '/@/libs/useModal'
 import RepositoryNav from '/@/components/RepositoryNav'
 import { Empty } from '@bufbuild/protobuf'
-import { Match } from 'solid-js'
-import { Radio } from '/@/components/Radio'
 import { extractRepositoryNameFromURL } from '/@/libs/application'
+import { AuthConfig, RepositoryAuthSettings } from '/@/components/RepositoryAuthSettings'
 
 const ContentContainer = styled('div', {
   base: {
@@ -123,27 +120,9 @@ export default () => {
 
     const [updateAuthConfig, setUpdateAuthConfig] = createSignal(false)
 
-    // 認証方法 ("none" | "ssh" | "basic")
-    type AuthMethod = CreateRepositoryAuth['auth']['case']
-    const [authMethod, setAuthMethod] = createSignal<AuthMethod>('none')
-
-    const [systemPublicKey] = createResource(() => client.getSystemPublicKey({}))
-    const [useTmpKey, setUseTmpKey] = createSignal(false)
-    const [tmpKey] = createResource(
-      () => (useTmpKey() ? true : undefined),
-      () => client.generateKeyPair({}),
-    )
-    createEffect(() => {
-      if (!tmpKey()) return
-      setAuthConfig('ssh', 'value', 'keyId', tmpKey().keyId)
-    })
-    const publicKey = () => (useTmpKey() ? tmpKey()?.publicKey : systemPublicKey()?.publicKey)
-
     // 認証情報
     // 認証方法の切り替え時に情報を保持するために、storeを使用して3種類の認証情報を保持する
-    const [authConfig, setAuthConfig] = createStore<{
-      [K in AuthMethod]: Extract<CreateRepositoryAuth['auth'], { case: K }>
-    }>({
+    const [authConfig, setAuthConfig] = createStore<AuthConfig>({
       none: {
         case: 'none',
         value: new Empty(),
@@ -156,6 +135,7 @@ export default () => {
         case: 'ssh',
         value: new CreateRepositoryAuthSSH(),
       },
+      authMethod: repo().authMethod === Repository_AuthMethod.BASIC ? 'basic' : 'ssh',
     })
 
     // URLからリポジトリ名を自動入力
@@ -179,7 +159,7 @@ export default () => {
         url: generalConfig.url,
         auth: updateAuthConfig()
           ? {
-              auth: authConfig[authMethod()],
+              auth: authConfig[authConfig.authMethod],
             }
           : undefined,
       })
@@ -230,46 +210,7 @@ export default () => {
             </Button>
           </Show>
           <Show when={updateAuthConfig()}>
-            <div>
-              <InputLabel>認証方法</InputLabel>
-              <Radio
-                items={[
-                  { title: '認証を使用しない', value: 'none' },
-                  { title: 'Basic認証を使用', value: 'basic' },
-                  { title: 'SSH認証を使用', value: 'ssh' },
-                ]}
-                selected={authMethod()}
-                setSelected={setAuthMethod}
-              />
-              <Switch>
-                <Match when={authMethod() === 'basic'}>
-                  <InputLabel>ユーザー名</InputLabel>
-                  <InputBar
-                    // SSH URLはURLとしては不正なのでtypeを変更
-                    value={authConfig.basic.value.username}
-                    onInput={(e) => setAuthConfig('basic', 'value', 'username', e.currentTarget.value)}
-                  />
-                  <InputLabel>パスワード</InputLabel>
-                  <InputBar
-                    // SSH URLはURLとしては不正なのでtypeを変更
-                    type='password'
-                    value={authConfig.basic.value.password}
-                    onInput={(e) => setAuthConfig('basic', 'value', 'password', e.currentTarget.value)}
-                  />
-                </Match>
-                <Match when={authMethod() === 'ssh'}>
-                  <SshDetails>
-                    以下のSSH公開鍵{!useTmpKey() && ' (システムデフォルト) '}をリポジトリに登録してください。
-                  </SshDetails>
-                  <PublicKeyCode>{publicKey()}</PublicKeyCode>
-                  <Show when={!useTmpKey()}>
-                    <Button color='black1' size='large' width='auto' onclick={() => setUseTmpKey(true)} type='submit'>
-                      新たなSSH鍵を生成する (for github.com)
-                    </Button>
-                  </Show>
-                </Match>
-              </Switch>
-            </div>
+            <RepositoryAuthSettings authConfig={authConfig} setAuthConfig={setAuthConfig} />
           </Show>
           <Button color='black1' size='large' width='auto' onclick={updateGeneralSettings} type='submit'>
             Save
