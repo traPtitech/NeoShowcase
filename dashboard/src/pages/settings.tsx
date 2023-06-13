@@ -1,16 +1,15 @@
 import { Header } from '/@/components/Header'
-import { createResource, createSignal, For, JSX, Show } from 'solid-js'
+import { Component, createResource, createSignal, For, JSX, Show } from 'solid-js'
 import { client } from '/@/libs/api'
-import { CreateUserKeyRequest, DeleteUserKeyRequest } from '/@/api/neoshowcase/protobuf/gateway_pb'
+import { DeleteUserKeyRequest } from '/@/api/neoshowcase/protobuf/gateway_pb'
 import { styled } from '@macaron-css/solid'
 import { vars } from '/@/theme'
 import { Container } from '/@/libs/layout'
 import { Button } from '/@/components/Button'
-import { createStore } from 'solid-js/store'
 import { InputBar, InputLabel } from '/@/components/Input'
 import toast from 'solid-toast'
 import { ConnectError } from '@bufbuild/connect'
-import { useParams } from '@solidjs/router'
+import { style } from '@macaron-css/core'
 
 // copy from /pages/apps AppsTitle component
 const PageTitle = styled('div', {
@@ -90,7 +89,17 @@ const CreateKeyContainer = styled('div', {
   },
 })
 
-const CreatingKeyContainer = styled('form', {
+const CreatingKeyContainerClass = style({
+  display: 'flex',
+  flexDirection: 'column',
+  gap: '16px',
+
+  background: vars.bg.white2,
+  border: `1px solid ${vars.bg.white5}`,
+  borderRadius: '4px',
+  padding: '8px 12px',
+})
+styled('form', {
   base: {
     display: 'flex',
     flexDirection: 'column',
@@ -102,7 +111,6 @@ const CreatingKeyContainer = styled('form', {
     padding: '8px 12px',
   },
 })
-
 export const FormButton = styled('div', {
   base: {
     marginLeft: '4px',
@@ -110,36 +118,9 @@ export const FormButton = styled('div', {
 })
 
 export default () => {
-  const params = useParams()
   const [userKeys, { refetch: refetchApp }] = createResource(() => client.getUserKeys({}))
 
   const [createKeyToggle, setCreateKeyToggle] = createSignal(false)
-  const [createKey, setCreateKey] = createStore(new CreateUserKeyRequest())
-
-  const [deleteKeyID, setDeleteKeyID] = createStore(new DeleteUserKeyRequest())
-
-  let formContainer: HTMLFormElement
-  const createKeyRequest: JSX.EventHandler<HTMLButtonElement, MouseEvent> = async (e) => {
-    // prevent default form submit (reload page)
-    e.preventDefault()
-
-    // validate form
-    if (!formContainer.reportValidity()) {
-      return
-    }
-
-    try {
-      const res = await client.createUserKey(createKey)
-      toast.success('User Key を登録しました')
-      refetchApp()
-    } catch (e) {
-      console.error(e)
-      // gRPCエラー
-      if (e instanceof ConnectError) {
-        toast.error('User Key の登録に失敗しました\n' + e.message)
-      }
-    }
-  }
 
   const deleteKeyRequest = (keyID: string) => {
     try {
@@ -155,6 +136,45 @@ export default () => {
         toast.error('User Key の削除に失敗しました\n' + e.message)
       }
     }
+  }
+
+  const CreatingKeyContainer: Component = () => {
+    let formRef: HTMLFormElement
+    let keyInputRef: HTMLInputElement
+
+    const createKeyRequest: JSX.EventHandler<HTMLButtonElement, MouseEvent> = async (e) => {
+      // prevent default form submit (reload page)
+      e.preventDefault()
+
+      // validate form
+      if (!formRef.reportValidity()) {
+        return
+      }
+
+      try {
+        await client.createUserKey({
+          publicKey: keyInputRef.value,
+        })
+        toast.success('User Key を登録しました')
+        refetchApp()
+      } catch (e) {
+        console.error(e)
+        // gRPCエラー
+        if (e instanceof ConnectError) {
+          toast.error('User Key の登録に失敗しました\n' + e.message)
+        }
+      }
+    }
+
+    return (
+      <form class={CreatingKeyContainerClass} ref={formRef}>
+        <InputLabel>SSH公開鍵の追加</InputLabel>
+        <InputBar placeholder='my-app' type='text' ref={keyInputRef} required />
+        <Button color='black1' size='large' width='auto' onclick={createKeyRequest} type='submit'>
+          + SSH公開鍵の追加
+        </Button>
+      </form>
+    )
   }
 
   return (
@@ -176,8 +196,7 @@ export default () => {
                       color='black1'
                       size='large'
                       width='auto'
-                      onclick={(e) => {
-                        setDeleteKeyID('keyId', key.id)
+                      onclick={() => {
                         deleteKeyRequest(key.id)
                       }}
                       type='submit'
@@ -199,18 +218,7 @@ export default () => {
                 </Button>
               }
             >
-              <CreatingKeyContainer ref={formContainer}>
-                <InputLabel>SSH公開鍵の追加</InputLabel>
-                <InputBar
-                  placeholder='my-app'
-                  value={createKey.publicKey}
-                  onInput={(e) => setCreateKey('publicKey', e.target.value)}
-                  required
-                />
-                <Button color='black1' size='large' width='auto' onclick={createKeyRequest} type='submit'>
-                  + SSH公開鍵の追加
-                </Button>
-              </CreatingKeyContainer>
+              <CreatingKeyContainer />
             </Show>
           </CreateKeyContainer>
         </MainContentContainer>
