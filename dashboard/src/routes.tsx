@@ -35,6 +35,10 @@ export default useRoutes([
     component: lazy(() => import('/@/pages/repos/[id]')),
   },
   {
+    path: '/repos/:id/settings',
+    component: lazy(() => import('/@/pages/repos/[id]/settings')),
+  },
+  {
     path: '/repos/new',
     component: lazy(() => import('/@/pages/repos/new')),
   },

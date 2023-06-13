@@ -25,6 +25,7 @@ import useModal from '/@/libs/useModal'
 import { vars } from '/@/theme'
 import { ModalButtonsContainer, ModalContainer, ModalText } from '/@/components/Modal'
 import { UserSearch } from '/@/components/UserSearch'
+import RepositoryNav from '/@/components/RepositoryNav'
 
 // copy from AppTitleContainer in AppNav.tsx
 const RepoTitleContainer = styled('div', {
@@ -124,10 +125,7 @@ export default () => {
     <Container>
       <Header />
       <Show when={repo()}>
-        <RepoTitleContainer>
-          <CenterInline>{providerToIcon(repositoryURLToProvider(repo().url), 36)}</CenterInline>
-          {repo().name}
-        </RepoTitleContainer>
+        <RepositoryNav repository={repo()} />
         <CardsContainer>
           <Card>
             <CardTitle>Actions</CardTitle>
@@ -191,46 +189,6 @@ export default () => {
               </CardItem>
             </CardItems>
           </Card>
-          <Show when={users()}>
-            {/* TODO: リポジトリ設定画面に移動
-            see: https://github.com/traPtitech/NeoShowcase/issues/570 */}
-            <Card>
-              <CardTitle>Owners</CardTitle>
-              <Button onclick={openEditOwnerModal} color='black1' size='large' width='full'>
-                リポジトリオーナーを追加する
-              </Button>
-              <EditOwnerModal>
-                <UserSearch users={nonOwnerUsers()}>
-                  {(user) => (
-                    <Button
-                      color='black1'
-                      size='large'
-                      width='auto'
-                      onclick={() => {
-                        handleAddOwner(user)
-                      }}
-                    >
-                      追加
-                    </Button>
-                  )}
-                </UserSearch>
-              </EditOwnerModal>
-              <UserSearch users={repo().ownerIds.map((userId) => userFromId(userId))}>
-                {(user) => (
-                  <Button
-                    color='black1'
-                    size='large'
-                    width='auto'
-                    onclick={() => {
-                      handleDeleteOwner(user)
-                    }}
-                  >
-                    削除
-                  </Button>
-                )}
-              </UserSearch>
-            </Card>
-          </Show>
           <Show when={apps()?.length > 0}>
             <Card
               style={{
