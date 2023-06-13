@@ -27,6 +27,13 @@ func (s *Service) convertRepositoryAuth(a CreateRepositoryAuth) (domain.Reposito
 			Password: a.Password,
 		}, nil
 	case domain.RepositoryAuthMethodSSH:
+		if a.KeyID == "" {
+			// Use system default
+			return domain.RepositoryAuth{
+				Method: domain.RepositoryAuthMethodSSH,
+				SSHKey: "",
+			}, nil
+		}
 		key, ok := s.tmpKeys.GetIfExists(a.KeyID)
 		if !ok {
 			return domain.RepositoryAuth{}, newError(ErrorTypeBadRequest, fmt.Sprintf("key %v does not exist", a.KeyID), nil)
