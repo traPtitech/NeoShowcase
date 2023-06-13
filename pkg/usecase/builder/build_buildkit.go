@@ -231,7 +231,7 @@ func (s *builderService) buildStaticWithDockerfile(
 	ch chan *buildkit.SolveStatus,
 	bc *domain.BuildConfigStaticDockerfile,
 ) error {
-	contextDir := lo.Ternary(bc.Context != "", bc.Context, filepath.Dir(bc.DockerfileName))
+	contextDir := lo.Ternary(bc.Context != "", bc.Context, ".")
 	dockerfile, err := os.ReadFile(filepath.Join(st.repositoryTempDir, contextDir, bc.DockerfileName))
 	if err != nil {
 		return err
