@@ -11,6 +11,7 @@ export const client = createPromiseClient(APIService, transport)
 
 export const [user] = createResource(() => client.getMe({}))
 export const [sshInfo] = createResource(() => client.getSSHInfo({}))
+export const [availableDomains] = createResource(() => client.getAvailableDomains({}))
 
 export const handleAPIError = (e, message: string) => {
   if (e instanceof ConnectError) {

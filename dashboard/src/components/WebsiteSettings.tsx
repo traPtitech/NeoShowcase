@@ -7,6 +7,22 @@ import { For, Show } from 'solid-js'
 import { storify } from '/@/libs/storify'
 import { InputBar, InputLabel } from '/@/components/Input'
 import { FormButton, FormCheckBox, FormSettings, FormSettingsButton, SettingsContainer } from '/@/components/AppsNew'
+import { availableDomains } from '../libs/api'
+import { styled } from '@macaron-css/solid'
+import { vars } from '../theme'
+
+const AvailableDomainContainer = styled('div', {
+  base: {
+    fontSize: '14px',
+    color: vars.text.black2,
+    padding: '8px',
+  },
+})
+const AvailableDomainUl = styled('ul', {
+  base: {
+    margin: '8px 0',
+  },
+})
 
 interface WebsiteSettingProps {
   runtime: boolean
@@ -31,6 +47,20 @@ export const WebsiteSetting = (props: WebsiteSettingProps) => {
           value={props.website.fqdn}
           onInput={(e) => props.setWebsite('fqdn', e.target.value)}
         />
+        <AvailableDomainContainer>
+          使用可能なドメイン
+          <AvailableDomainUl>
+            <For each={availableDomains()?.domains}>
+              {(domain) => (
+                <li>
+                  {domain.domain}
+                  <Show when={domain.excludeDomains.length > 0}>&nbsp;({domain.excludeDomains.join(', ')}を除く)</Show>
+                  ：{domain.authAvailable ? '部員認証の使用可能' : '部員認証の使用不可'}
+                </li>
+              )}
+            </For>
+          </AvailableDomainUl>
+        </AvailableDomainContainer>
       </div>
       <div>
         <InputLabel>Path Prefix</InputLabel>
@@ -70,6 +100,7 @@ export const WebsiteSetting = (props: WebsiteSettingProps) => {
         </div>
       </Show>
       <div>
+        <InputLabel>部員認証</InputLabel>
         <Radio
           items={authenticationTypeItems}
           selected={props.website.authentication}
