@@ -143,7 +143,6 @@ func (s *builderService) buildImageWithDockerfile(
 	bc *domain.BuildConfigRuntimeDockerfile,
 ) error {
 	contextDir := lo.Ternary(bc.Context != "", bc.Context, ".")
-	dockerfileDir := filepath.Join(contextDir, filepath.Dir(bc.DockerfileName))
 	_, err := s.buildkit.Solve(ctx, nil, buildkit.SolveOpt{
 		Exports: []buildkit.ExportEntry{{
 			Type: buildkit.ExporterImage,
@@ -154,7 +153,7 @@ func (s *builderService) buildImageWithDockerfile(
 		}},
 		LocalDirs: map[string]string{
 			"context":    filepath.Join(st.repositoryTempDir, contextDir),
-			"dockerfile": filepath.Join(st.repositoryTempDir, dockerfileDir),
+			"dockerfile": filepath.Join(st.repositoryTempDir, contextDir),
 		},
 		Frontend:      "dockerfile.v0",
 		FrontendAttrs: map[string]string{"filename": bc.DockerfileName},
@@ -231,7 +230,7 @@ func (s *builderService) buildStaticWithDockerfile(
 	ch chan *buildkit.SolveStatus,
 	bc *domain.BuildConfigStaticDockerfile,
 ) error {
-	contextDir := lo.Ternary(bc.Context != "", bc.Context, filepath.Dir(bc.DockerfileName))
+	contextDir := lo.Ternary(bc.Context != "", bc.Context, ".")
 	dockerfile, err := os.ReadFile(filepath.Join(st.repositoryTempDir, contextDir, bc.DockerfileName))
 	if err != nil {
 		return err

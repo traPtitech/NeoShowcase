@@ -113,6 +113,8 @@ export default () => {
   type BuildConfigMethod = ApplicationConfig['buildConfig']['case']
   const [runtimeConfig, setRuntimeConfig] = createStore<RuntimeConfig>(new RuntimeConfig())
   const [buildConfigMethod, setBuildConfigMethod] = createSignal<BuildConfigMethod>('runtimeBuildpack')
+  const isRuntime = () =>
+    (['runtimeBuildpack', 'runtimeCmd', 'runtimeDockerfile'] as BuildConfigMethod[]).includes(buildConfigMethod())
   const [buildConfig, setBuildConfig] = createStore<{
     [K in BuildConfigMethod]: Extract<ApplicationConfig['buildConfig'], { case: K }>
   }>({
@@ -223,7 +225,11 @@ export default () => {
 
             <div>
               <FormTextBig>Website Setting</FormTextBig>
-              <WebsiteSettings websiteConfigs={websiteConfigs} setWebsiteConfigs={setWebsiteConfigs} />
+              <WebsiteSettings
+                runtime={isRuntime()}
+                websiteConfigs={websiteConfigs}
+                setWebsiteConfigs={setWebsiteConfigs}
+              />
             </div>
 
             <div>
