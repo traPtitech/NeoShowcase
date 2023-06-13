@@ -141,12 +141,11 @@ export default () => {
     }
   }
 
-  const deleteKeyRequest: JSX.EventHandler<HTMLButtonElement, MouseEvent> = async (e) => {
-    // prevent default form submit (reload page)
-    e.preventDefault()
-
+  const deleteKeyRequest = (keyID: string) => {
     try {
-      await client.deleteUserKey(deleteKeyID)
+      const a = new DeleteUserKeyRequest()
+      a.keyId = keyID
+      client.deleteUserKey(a)
       toast.success('User Key を削除しました')
       refetchApp()
     } catch (e) {
@@ -166,8 +165,6 @@ export default () => {
         <MainContentContainer>
           <UserKeysContainer>
             <SidebarTitle>登録済みSSH公開鍵</SidebarTitle>
-            if (!userKeys()) return
-            return userKeys().keys
             <For each={!userKeys() || userKeys().keys}>
               {(key) => (
                 <PublicKeyContainer>
@@ -181,7 +178,7 @@ export default () => {
                       width='auto'
                       onclick={(e) => {
                         setDeleteKeyID('keyId', key.id)
-                        deleteKeyRequest(e)
+                        deleteKeyRequest(key.id)
                       }}
                       type='submit'
                     >
