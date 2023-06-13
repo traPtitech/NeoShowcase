@@ -3,12 +3,13 @@ import { Checkbox } from '/@/components/Checkbox'
 import { Radio, RadioItem } from '/@/components/Radio'
 import { Button } from '/@/components/Button'
 import { SetStoreFunction } from 'solid-js/store'
-import { For } from 'solid-js'
+import { For, Show } from 'solid-js'
 import { storify } from '/@/libs/storify'
 import { InputBar, InputLabel } from '/@/components/Input'
 import { FormButton, FormCheckBox, FormSettings, FormSettingsButton, SettingsContainer } from '/@/components/AppsNew'
 
 interface WebsiteSettingProps {
+  runtime: boolean
   website: CreateWebsiteRequest
   setWebsite: <T extends keyof CreateWebsiteRequest>(valueName: T, value: CreateWebsiteRequest[T]) => void
   deleteWebsite: () => void
@@ -50,20 +51,24 @@ export const WebsiteSetting = (props: WebsiteSettingProps) => {
           <Checkbox selected={props.website.https} setSelected={(selected) => props.setWebsite('https', selected)}>
             https
           </Checkbox>
-          <Checkbox selected={props.website.h2c} setSelected={(selected) => props.setWebsite('h2c', selected)}>
-            (advanced) アプリ通信にh2cを用いる
-          </Checkbox>
+          <Show when={props.runtime}>
+            <Checkbox selected={props.website.h2c} setSelected={(selected) => props.setWebsite('h2c', selected)}>
+              (advanced) アプリ通信にh2cを用いる
+            </Checkbox>
+          </Show>
         </FormCheckBox>
       </div>
-      <div>
-        <InputLabel>アプリのHTTP Port番号</InputLabel>
-        <InputBar
-          placeholder='80'
-          type='number'
-          value={props.website.httpPort}
-          onChange={(e) => props.setWebsite('httpPort', +e.target.value)}
-        />
-      </div>
+      <Show when={props.runtime}>
+        <div>
+          <InputLabel>アプリのHTTP Port番号</InputLabel>
+          <InputBar
+            placeholder='80'
+            type='number'
+            value={props.website.httpPort}
+            onChange={(e) => props.setWebsite('httpPort', +e.target.value)}
+          />
+        </div>
+      </Show>
       <div>
         <Radio
           items={authenticationTypeItems}
@@ -81,6 +86,7 @@ export const WebsiteSetting = (props: WebsiteSettingProps) => {
 }
 
 interface WebsiteSettingsProps {
+  runtime: boolean
   websiteConfigs: CreateWebsiteRequest[]
   setWebsiteConfigs: SetStoreFunction<CreateWebsiteRequest[]>
 }
@@ -91,6 +97,7 @@ export const WebsiteSettings = (props: WebsiteSettingsProps) => {
       <For each={props.websiteConfigs}>
         {(website, i) => (
           <WebsiteSetting
+            runtime={props.runtime}
             website={website}
             setWebsite={(valueName, value) => {
               props.setWebsiteConfigs(i(), valueName, value)

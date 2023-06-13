@@ -1,5 +1,5 @@
 import { useParams } from '@solidjs/router'
-import { Component, For, JSX, Show, createEffect, createMemo, createResource, createSignal, onMount } from 'solid-js'
+import { Component, createEffect, createMemo, createResource, createSignal, For, JSX, onMount, Show } from 'solid-js'
 import { client, handleAPIError } from '/@/libs/api'
 import { Container } from '/@/libs/layout'
 import { Header } from '/@/components/Header'
@@ -17,6 +17,7 @@ import {
   BuildConfigStaticCmd,
   BuildConfigStaticDockerfile,
   CreateWebsiteRequest,
+  DeployType,
   PortPublication,
   RuntimeConfig,
   UpdateApplicationRequest,
@@ -26,8 +27,7 @@ import { BuildConfigs } from '/@/components/BuildConfigs'
 import { storify } from '/@/libs/storify'
 import toast from 'solid-toast'
 import { WebsiteSettings } from '/@/components/WebsiteSettings'
-import { InputLabel } from '/@/components/Input'
-import { InputBar } from '/@/components/Input'
+import { InputBar, InputLabel } from '/@/components/Input'
 import { FormTextBig } from '/@/components/AppsNew'
 import { PortPublicationSettings } from '/@/components/PortPublications'
 import { userFromId, users } from '/@/libs/useAllUsers'
@@ -323,7 +323,11 @@ export default () => {
     return (
       <SettingFieldSet>
         <FormTextBig id='website-settings'>Website Settings</FormTextBig>
-        <WebsiteSettings websiteConfigs={websites} setWebsiteConfigs={setWebsites} />
+        <WebsiteSettings
+          runtime={app().deployType === DeployType.RUNTIME}
+          websiteConfigs={websites}
+          setWebsiteConfigs={setWebsites}
+        />
         <Button color='black1' size='large' width='auto' onclick={updateWebsites} type='submit'>
           Save
         </Button>
