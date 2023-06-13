@@ -146,6 +146,7 @@ export default () => {
             : undefined,
         })
         toast.success('リポジトリ設定を更新しました')
+        setUpdateAuthConfig(false)
         refetchRepo()
       } catch (e) {
         handleAPIError(e, 'リポジトリ設定の更新に失敗しました')
