@@ -122,11 +122,11 @@ export default () => {
 
   const [createKeyToggle, setCreateKeyToggle] = createSignal(false)
 
-  const deleteKeyRequest = (keyID: string) => {
+  const deleteKeyRequest = async (keyID: string) => {
     try {
       const a = new DeleteUserKeyRequest()
       a.keyId = keyID
-      client.deleteUserKey(a)
+      await client.deleteUserKey(a)
       toast.success('User Key を削除しました')
       refetchApp()
     } catch (e) {
