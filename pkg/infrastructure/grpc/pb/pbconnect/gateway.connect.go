@@ -37,6 +37,8 @@ const (
 	// APIServiceGetSystemPublicKeyProcedure is the fully-qualified name of the APIService's
 	// GetSystemPublicKey RPC.
 	APIServiceGetSystemPublicKeyProcedure = "/neoshowcase.protobuf.APIService/GetSystemPublicKey"
+	// APIServiceGetSSHInfoProcedure is the fully-qualified name of the APIService's GetSSHInfo RPC.
+	APIServiceGetSSHInfoProcedure = "/neoshowcase.protobuf.APIService/GetSSHInfo"
 	// APIServiceGetAvailableDomainsProcedure is the fully-qualified name of the APIService's
 	// GetAvailableDomains RPC.
 	APIServiceGetAvailableDomainsProcedure = "/neoshowcase.protobuf.APIService/GetAvailableDomains"
@@ -131,6 +133,8 @@ const (
 type APIServiceClient interface {
 	// GetSystemPublicKey システムのSSH公開鍵を取得します リポジトリごとにSSH秘密鍵を設定しないデフォルトSSH認証で使用します
 	GetSystemPublicKey(context.Context, *connect_go.Request[emptypb.Empty]) (*connect_go.Response[pb.GetSystemPublicKeyResponse], error)
+	// GetSSHInfo アプリケーションにSSH接続するための情報を取得します
+	GetSSHInfo(context.Context, *connect_go.Request[emptypb.Empty]) (*connect_go.Response[pb.SSHInfo], error)
 	// GetAvailableDomains 使用可能なドメイン一覧を取得します
 	GetAvailableDomains(context.Context, *connect_go.Request[emptypb.Empty]) (*connect_go.Response[pb.AvailableDomains], error)
 	// GetAvailablePorts 使用可能なポート一覧を取得します
@@ -212,6 +216,11 @@ func NewAPIServiceClient(httpClient connect_go.HTTPClient, baseURL string, opts 
 		getSystemPublicKey: connect_go.NewClient[emptypb.Empty, pb.GetSystemPublicKeyResponse](
 			httpClient,
 			baseURL+APIServiceGetSystemPublicKeyProcedure,
+			opts...,
+		),
+		getSSHInfo: connect_go.NewClient[emptypb.Empty, pb.SSHInfo](
+			httpClient,
+			baseURL+APIServiceGetSSHInfoProcedure,
 			opts...,
 		),
 		getAvailableDomains: connect_go.NewClient[emptypb.Empty, pb.AvailableDomains](
@@ -385,6 +394,7 @@ func NewAPIServiceClient(httpClient connect_go.HTTPClient, baseURL string, opts 
 // aPIServiceClient implements APIServiceClient.
 type aPIServiceClient struct {
 	getSystemPublicKey  *connect_go.Client[emptypb.Empty, pb.GetSystemPublicKeyResponse]
+	getSSHInfo          *connect_go.Client[emptypb.Empty, pb.SSHInfo]
 	getAvailableDomains *connect_go.Client[emptypb.Empty, pb.AvailableDomains]
 	getAvailablePorts   *connect_go.Client[emptypb.Empty, pb.AvailablePorts]
 	generateKeyPair     *connect_go.Client[emptypb.Empty, pb.GenerateKeyPairResponse]
@@ -423,6 +433,11 @@ type aPIServiceClient struct {
 // GetSystemPublicKey calls neoshowcase.protobuf.APIService.GetSystemPublicKey.
 func (c *aPIServiceClient) GetSystemPublicKey(ctx context.Context, req *connect_go.Request[emptypb.Empty]) (*connect_go.Response[pb.GetSystemPublicKeyResponse], error) {
 	return c.getSystemPublicKey.CallUnary(ctx, req)
+}
+
+// GetSSHInfo calls neoshowcase.protobuf.APIService.GetSSHInfo.
+func (c *aPIServiceClient) GetSSHInfo(ctx context.Context, req *connect_go.Request[emptypb.Empty]) (*connect_go.Response[pb.SSHInfo], error) {
+	return c.getSSHInfo.CallUnary(ctx, req)
 }
 
 // GetAvailableDomains calls neoshowcase.protobuf.APIService.GetAvailableDomains.
@@ -594,6 +609,8 @@ func (c *aPIServiceClient) GetBuildArtifact(ctx context.Context, req *connect_go
 type APIServiceHandler interface {
 	// GetSystemPublicKey システムのSSH公開鍵を取得します リポジトリごとにSSH秘密鍵を設定しないデフォルトSSH認証で使用します
 	GetSystemPublicKey(context.Context, *connect_go.Request[emptypb.Empty]) (*connect_go.Response[pb.GetSystemPublicKeyResponse], error)
+	// GetSSHInfo アプリケーションにSSH接続するための情報を取得します
+	GetSSHInfo(context.Context, *connect_go.Request[emptypb.Empty]) (*connect_go.Response[pb.SSHInfo], error)
 	// GetAvailableDomains 使用可能なドメイン一覧を取得します
 	GetAvailableDomains(context.Context, *connect_go.Request[emptypb.Empty]) (*connect_go.Response[pb.AvailableDomains], error)
 	// GetAvailablePorts 使用可能なポート一覧を取得します
@@ -672,6 +689,11 @@ func NewAPIServiceHandler(svc APIServiceHandler, opts ...connect_go.HandlerOptio
 	mux.Handle(APIServiceGetSystemPublicKeyProcedure, connect_go.NewUnaryHandler(
 		APIServiceGetSystemPublicKeyProcedure,
 		svc.GetSystemPublicKey,
+		opts...,
+	))
+	mux.Handle(APIServiceGetSSHInfoProcedure, connect_go.NewUnaryHandler(
+		APIServiceGetSSHInfoProcedure,
+		svc.GetSSHInfo,
 		opts...,
 	))
 	mux.Handle(APIServiceGetAvailableDomainsProcedure, connect_go.NewUnaryHandler(
@@ -847,6 +869,10 @@ type UnimplementedAPIServiceHandler struct{}
 
 func (UnimplementedAPIServiceHandler) GetSystemPublicKey(context.Context, *connect_go.Request[emptypb.Empty]) (*connect_go.Response[pb.GetSystemPublicKeyResponse], error) {
 	return nil, connect_go.NewError(connect_go.CodeUnimplemented, errors.New("neoshowcase.protobuf.APIService.GetSystemPublicKey is not implemented"))
+}
+
+func (UnimplementedAPIServiceHandler) GetSSHInfo(context.Context, *connect_go.Request[emptypb.Empty]) (*connect_go.Response[pb.SSHInfo], error) {
+	return nil, connect_go.NewError(connect_go.CodeUnimplemented, errors.New("neoshowcase.protobuf.APIService.GetSSHInfo is not implemented"))
 }
 
 func (UnimplementedAPIServiceHandler) GetAvailableDomains(context.Context, *connect_go.Request[emptypb.Empty]) (*connect_go.Response[pb.AvailableDomains], error) {

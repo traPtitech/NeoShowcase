@@ -13,6 +13,18 @@ import (
 	"github.com/traPtitech/neoshowcase/pkg/util/ds"
 )
 
+func (s *APIService) GetSSHInfo(ctx context.Context, _ *connect.Request[emptypb.Empty]) (*connect.Response[pb.SSHInfo], error) {
+	host, port, err := s.svc.GetSSHInfo(ctx)
+	if err != nil {
+		return nil, handleUseCaseError(err)
+	}
+	res := connect.NewResponse(&pb.SSHInfo{
+		Host: host,
+		Port: int32(port),
+	})
+	return res, nil
+}
+
 func (s *APIService) GetSystemPublicKey(ctx context.Context, _ *connect.Request[emptypb.Empty]) (*connect.Response[pb.GetSystemPublicKeyResponse], error) {
 	key := s.svc.GetSystemPublicKey(ctx)
 	res := connect.NewResponse(&pb.GetSystemPublicKeyResponse{

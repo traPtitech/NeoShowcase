@@ -1,5 +1,6 @@
 package domain
 
 type SSHConfig struct {
-	Port int `mapstructure:"port" yaml:"port"`
+	Host string `mapstructure:"host" yaml:"host"`
+	Port int    `mapstructure:"port" yaml:"port"`
 }

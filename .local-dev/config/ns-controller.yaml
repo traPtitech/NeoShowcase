@@ -43,6 +43,7 @@ docker:
     memoryReservation: 256000000 # 256MB
 
 ssh:
+  host: localhost
   port: 2201
 
 webhook:

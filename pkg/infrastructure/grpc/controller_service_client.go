@@ -31,6 +31,15 @@ func NewControllerServiceClient(
 	}
 }
 
+func (c *ControllerServiceClient) GetSSHInfo(ctx context.Context) (host string, port int, err error) {
+	req := connect.NewRequest(&emptypb.Empty{})
+	res, err := c.client.GetSSHInfo(ctx, req)
+	if err != nil {
+		return "", 0, err
+	}
+	return res.Msg.Host, int(res.Msg.Port), nil
+}
+
 func (c *ControllerServiceClient) GetAvailableDomains(ctx context.Context) (domain.AvailableDomainSlice, error) {
 	req := connect.NewRequest(&emptypb.Empty{})
 	res, err := c.client.GetAvailableDomains(ctx, req)

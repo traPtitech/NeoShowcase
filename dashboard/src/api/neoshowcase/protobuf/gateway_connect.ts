@@ -4,7 +4,7 @@
 // @ts-nocheck
 
 import { Empty, MethodKind } from "@bufbuild/protobuf";
-import { Application, ApplicationEnvVars, ApplicationIdRequest, ApplicationOutput, ArtifactContent, ArtifactIdRequest, AvailableDomains, AvailablePorts, Build, BuildIdRequest, BuildLog, CreateApplicationRequest, CreateRepositoryRequest, CreateUserKeyRequest, DeleteApplicationEnvVarRequest, DeleteUserKeyRequest, GenerateKeyPairResponse, GetApplicationsRequest, GetApplicationsResponse, GetBuildsResponse, GetOutputRequest, GetOutputResponse, GetOutputStreamRequest, GetRepositoriesRequest, GetRepositoriesResponse, GetSystemPublicKeyResponse, GetUserKeysResponse, GetUsersResponse, Repository, RepositoryIdRequest, RetryCommitBuildRequest, SetApplicationEnvVarRequest, UpdateApplicationRequest, UpdateRepositoryRequest, User, UserKey } from "./gateway_pb.js";
+import { Application, ApplicationEnvVars, ApplicationIdRequest, ApplicationOutput, ArtifactContent, ArtifactIdRequest, AvailableDomains, AvailablePorts, Build, BuildIdRequest, BuildLog, CreateApplicationRequest, CreateRepositoryRequest, CreateUserKeyRequest, DeleteApplicationEnvVarRequest, DeleteUserKeyRequest, GenerateKeyPairResponse, GetApplicationsRequest, GetApplicationsResponse, GetBuildsResponse, GetOutputRequest, GetOutputResponse, GetOutputStreamRequest, GetRepositoriesRequest, GetRepositoriesResponse, GetSystemPublicKeyResponse, GetUserKeysResponse, GetUsersResponse, Repository, RepositoryIdRequest, RetryCommitBuildRequest, SetApplicationEnvVarRequest, SSHInfo, UpdateApplicationRequest, UpdateRepositoryRequest, User, UserKey } from "./gateway_pb.js";
 
 /**
  * General / System
@@ -23,6 +23,17 @@ export const APIService = {
       name: "GetSystemPublicKey",
       I: Empty,
       O: GetSystemPublicKeyResponse,
+      kind: MethodKind.Unary,
+    },
+    /**
+     * GetSSHInfo アプリケーションにSSH接続するための情報を取得します
+     *
+     * @generated from rpc neoshowcase.protobuf.APIService.GetSSHInfo
+     */
+    getSSHInfo: {
+      name: "GetSSHInfo",
+      I: Empty,
+      O: SSHInfo,
       kind: MethodKind.Unary,
     },
     /**

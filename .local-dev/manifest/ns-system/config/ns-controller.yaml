@@ -54,6 +54,7 @@ k8s:
       memory: 1G
 
 ssh:
+  host: localhost
   port: 2201
 
 webhook:

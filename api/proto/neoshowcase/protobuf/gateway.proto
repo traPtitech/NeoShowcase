@@ -6,6 +6,11 @@ import "google/protobuf/empty.proto";
 import "google/protobuf/timestamp.proto";
 import "neoshowcase/protobuf/null.proto";
 
+message SSHInfo {
+  string host = 1;
+  int32 port = 2;
+}
+
 message GenerateKeyPairResponse {
   string key_id = 1;
   string public_key = 2;
@@ -393,6 +398,8 @@ service APIService {
 
   // GetSystemPublicKey システムのSSH公開鍵を取得します リポジトリごとにSSH秘密鍵を設定しないデフォルトSSH認証で使用します
   rpc GetSystemPublicKey(google.protobuf.Empty) returns (GetSystemPublicKeyResponse);
+  // GetSSHInfo アプリケーションにSSH接続するための情報を取得します
+  rpc GetSSHInfo(google.protobuf.Empty) returns (SSHInfo);
   // GetAvailableDomains 使用可能なドメイン一覧を取得します
   rpc GetAvailableDomains(google.protobuf.Empty) returns (AvailableDomains);
   // GetAvailablePorts 使用可能なポート一覧を取得します
