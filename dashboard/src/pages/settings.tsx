@@ -10,7 +10,7 @@ import { createStore } from 'solid-js/store'
 import { InputBar, InputLabel } from '/@/components/Input'
 import toast from 'solid-toast'
 import { ConnectError } from '@bufbuild/connect'
-import { useNavigate } from '@solidjs/router'
+import { useParams } from '@solidjs/router'
 
 // copy from /pages/apps AppsTitle component
 const PageTitle = styled('div', {
@@ -110,9 +110,8 @@ export const FormButton = styled('div', {
 })
 
 export default () => {
-  const navigate = useNavigate()
-
-  const [userKeys] = createResource(() => client.getUserKeys({}))
+  const params = useParams()
+  const [userKeys, { refetch: refetchApp }] = createResource(() => client.getUserKeys({}))
 
   const [createKeyToggle, setCreateKeyToggle] = createSignal(false)
   const [createKey, setCreateKey] = createStore(new CreateUserKeyRequest())
@@ -132,8 +131,7 @@ export default () => {
     try {
       const res = await client.createUserKey(createKey)
       toast.success('User Key を登録しました')
-
-      navigate('/settings')
+      refetchApp()
     } catch (e) {
       console.error(e)
       // gRPCエラー
@@ -150,8 +148,7 @@ export default () => {
     try {
       await client.deleteUserKey(deleteKeyID)
       toast.success('User Key を削除しました')
-
-      navigate('/settings')
+      refetchApp()
     } catch (e) {
       console.error(e)
       // gRPCエラー
@@ -169,7 +166,9 @@ export default () => {
         <MainContentContainer>
           <UserKeysContainer>
             <SidebarTitle>登録済みSSH公開鍵</SidebarTitle>
-            <For each={userKeys().keys}>
+            if (!userKeys()) return
+            return userKeys().keys
+            <For each={!userKeys() || userKeys().keys}>
               {(key) => (
                 <PublicKeyContainer>
                   <div>
