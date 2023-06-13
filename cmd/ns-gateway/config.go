@@ -83,7 +83,7 @@ func init() {
 
 	viper.SetDefault("log.type", "loki")
 	viper.SetDefault("log.loki.endpoint", "http://loki:3100")
-	viper.SetDefault("log.loki.appIDLabel", "neoshowcase_trap_jp_app_id")
+	viper.SetDefault("log.loki.appIDLabel", "ns_trap_jp_app_id")
 
 	viper.SetDefault("repository.privateKeyFile", "")
 }
