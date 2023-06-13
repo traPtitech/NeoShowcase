@@ -113,7 +113,7 @@ export default () => {
       return
     }
 
-    setRequestConfig('auth', 'auth', authConfig[authConfig.authMethod])
+    setRequestConfig('auth', { auth: authConfig[authConfig.authMethod] })
     try {
       const res = await client.createRepository(requestConfig)
       toast.success('リポジトリを登録しました')
