@@ -19,7 +19,7 @@ import { vars } from '/@/theme'
 import { extractRepositoryNameFromURL } from '/@/libs/application'
 import { AuthConfig, RepositoryAuthSettings } from '/@/components/RepositoryAuthSettings'
 import { InputBar, InputLabel } from '/@/components/Input'
-import { NavTitleContainer } from '/@/components/Nav'
+import { NavContainer, NavTitleContainer } from '/@/components/Nav'
 
 // copy from /pages/apps
 // and delete unnecessary styles
@@ -132,7 +132,9 @@ export default () => {
   return (
     <Container>
       <Header />
-      <NavTitleContainer>Create Repository</NavTitleContainer>
+      <NavContainer>
+        <NavTitleContainer>Create Repository</NavTitleContainer>
+      </NavContainer>
       <ContentContainer>
         <InputFormContainer ref={formContainer}>
           <Form
