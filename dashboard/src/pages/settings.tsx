@@ -185,28 +185,30 @@ export default () => {
         <MainContentContainer>
           <UserKeysContainer>
             <SidebarTitle>登録済みSSH公開鍵</SidebarTitle>
-            <For each={userKeys()?.keys}>
-              {(key) => (
-                <PublicKeyContainer>
-                  <div>
-                    <PublicKey>{key.publicKey}</PublicKey>
-                  </div>
-                  <FormButton>
-                    <Button
-                      color='black1'
-                      size='large'
-                      width='auto'
-                      onclick={() => {
-                        deleteKeyRequest(key.id)
-                      }}
-                      type='submit'
-                    >
-                      削除
-                    </Button>
-                  </FormButton>
-                </PublicKeyContainer>
-              )}
-            </For>
+            <Show when={userKeys()} fallback={<SidebarTitle>登録済みSSH公開鍵を読み込み中...</SidebarTitle>}>
+              <For each={userKeys()?.keys}>
+                {(key) => (
+                  <PublicKeyContainer>
+                    <div>
+                      <PublicKey>{key.publicKey}</PublicKey>
+                    </div>
+                    <FormButton>
+                      <Button
+                        color='black1'
+                        size='large'
+                        width='auto'
+                        onclick={() => {
+                          deleteKeyRequest(key.id)
+                        }}
+                        type='submit'
+                      >
+                        削除
+                      </Button>
+                    </FormButton>
+                  </PublicKeyContainer>
+                )}
+              </For>
+            </Show>
           </UserKeysContainer>
 
           <CreateKeyContainer>
