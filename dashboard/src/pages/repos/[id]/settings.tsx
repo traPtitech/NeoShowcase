@@ -170,7 +170,7 @@ export default () => {
             <InputLabel>Repository URL</InputLabel>
             <InputBar
               // SSH URLはURLとしては不正なのでtypeを変更
-              type={repo().authMethod === Repository_AuthMethod.SSH ? 'text' : 'url'}
+              type={authConfig.authMethod === 'ssh' ? 'text' : 'url'}
               placeholder='https://example.com/my-app.git'
               value={generalConfig.url}
               onChange={(e) => setGeneralConfig('url', e.currentTarget.value)}
