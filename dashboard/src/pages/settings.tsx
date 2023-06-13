@@ -11,7 +11,6 @@ import { InputBar, InputLabel } from '/@/components/Input'
 import toast from 'solid-toast'
 import { ConnectError } from '@bufbuild/connect'
 import { useNavigate } from '@solidjs/router'
-import { ReactNode } from 'react'
 
 // copy from /pages/apps AppsTitle component
 const PageTitle = styled('div', {
@@ -131,9 +130,9 @@ export default () => {
     e.preventDefault()
 
     // validate form
-    // if (!formContainer.reportValidity()) {
-    //   return
-    // }
+    if (!formContainer.reportValidity()) {
+      return
+    }
 
     try {
       const res = await client.createUserKey(createKey)
@@ -152,11 +151,6 @@ export default () => {
   const deleteKeyRequest: JSX.EventHandler<HTMLButtonElement, MouseEvent> = async (e) => {
     // prevent default form submit (reload page)
     e.preventDefault()
-
-    // validate form
-    // if (!formContainer.reportValidity()) {
-    //   return
-    // }
 
     try {
       const res = await client.deleteUserKey(deleteKeyID)
@@ -214,7 +208,7 @@ export default () => {
                 </Button>
               }
             >
-              <CreatingKeyContainer>
+              <CreatingKeyContainer ref={formContainer}>
                 <InputLabel>SSH公開鍵の追加</InputLabel>
                 <InputBar
                   placeholder='my-app'
