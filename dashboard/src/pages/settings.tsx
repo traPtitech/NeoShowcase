@@ -1,5 +1,5 @@
 import { Header } from '/@/components/Header'
-import { createMemo, createResource, createSignal, For, JSX, Show } from 'solid-js'
+import { createResource, createSignal, For, JSX, Show } from 'solid-js'
 import { client } from '/@/libs/api'
 import { CreateUserKeyRequest, DeleteUserKeyRequest } from '/@/api/neoshowcase/protobuf/gateway_pb'
 import { styled } from '@macaron-css/solid'
@@ -114,11 +114,6 @@ export default () => {
 
   const [userKeys] = createResource(() => client.getUserKeys({}))
 
-  const userKeysMemo = createMemo(() => {
-    if (!userKeys()) return
-    return userKeys().keys
-  })
-
   const [createKeyToggle, setCreateKeyToggle] = createSignal(false)
   const [createKey, setCreateKey] = createStore(new CreateUserKeyRequest())
 
@@ -153,7 +148,7 @@ export default () => {
     e.preventDefault()
 
     try {
-      const res = await client.deleteUserKey(deleteKeyID)
+      await client.deleteUserKey(deleteKeyID)
       toast.success('User Key を削除しました')
 
       navigate('/settings')
@@ -174,8 +169,8 @@ export default () => {
         <MainContentContainer>
           <UserKeysContainer>
             <SidebarTitle>登録済みSSH公開鍵</SidebarTitle>
-            <For each={userKeysMemo()}>
-              {(key, i) => (
+            <For each={userKeys().keys}>
+              {(key) => (
                 <PublicKeyContainer>
                   <div>
                     <PublicKey>{key.publicKey}</PublicKey>
