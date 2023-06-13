@@ -7,13 +7,7 @@ import { Button } from '/@/components/Button'
 import { styled } from '@macaron-css/solid'
 import { vars } from '/@/theme'
 import { createStore } from 'solid-js/store'
-import {
-  CreateRepositoryAuthBasic,
-  CreateRepositoryAuthSSH,
-  Repository_AuthMethod,
-  UpdateRepositoryRequest,
-  User,
-} from '/@/api/neoshowcase/protobuf/gateway_pb'
+import { Repository_AuthMethod, UpdateRepositoryRequest, User } from '/@/api/neoshowcase/protobuf/gateway_pb'
 import toast from 'solid-toast'
 import { InputLabel } from '/@/components/Input'
 import { InputBar } from '/@/components/Input'
@@ -22,9 +16,9 @@ import { userFromId, users } from '/@/libs/useAllUsers'
 import { UserSearch } from '/@/components/UserSearch'
 import useModal from '/@/libs/useModal'
 import RepositoryNav from '/@/components/RepositoryNav'
-import { Empty } from '@bufbuild/protobuf'
 import { extractRepositoryNameFromURL } from '/@/libs/application'
 import { AuthConfig, RepositoryAuthSettings } from '/@/components/RepositoryAuthSettings'
+import { PartialMessage } from '@bufbuild/protobuf'
 
 const ContentContainer = styled('div', {
   base: {
@@ -107,15 +101,20 @@ export default () => {
     const [authConfig, setAuthConfig] = createStore<AuthConfig>({
       none: {
         case: 'none',
-        value: new Empty(),
+        value: {},
       },
       basic: {
         case: 'basic',
-        value: new CreateRepositoryAuthBasic(),
+        value: {
+          username: '',
+          password: '',
+        },
       },
       ssh: {
         case: 'ssh',
-        value: new CreateRepositoryAuthSSH(),
+        value: {
+          keyId: '',
+        },
       },
       authMethod: repo().authMethod === Repository_AuthMethod.BASIC ? 'basic' : 'ssh',
     })
@@ -135,19 +134,17 @@ export default () => {
         return
       }
 
-      const updateRepositoryRequest = new UpdateRepositoryRequest({
-        id: repo().id,
-        name: generalConfig.name,
-        url: generalConfig.url,
-        auth: updateAuthConfig()
-          ? {
-              auth: authConfig[authConfig.authMethod],
-            }
-          : undefined,
-      })
-
       try {
-        await client.updateRepository(updateRepositoryRequest)
+        await client.updateRepository({
+          id: repo().id,
+          name: generalConfig.name,
+          url: generalConfig.url,
+          auth: updateAuthConfig()
+            ? {
+                auth: authConfig[authConfig.authMethod],
+              }
+            : undefined,
+        })
         toast.success('リポジトリ設定を更新しました')
         refetchRepo()
       } catch (e) {
@@ -210,12 +207,12 @@ export default () => {
     })
 
     const handleAddOwner = async (user: User) => {
-      const updateApplicationRequest = new UpdateRepositoryRequest({
+      const updateApplicationRequest: PartialMessage<UpdateRepositoryRequest> = {
         id: repo().id,
         ownerIds: {
           ownerIds: repo().ownerIds.concat(user.id),
         },
-      })
+      }
 
       try {
         await client.updateRepository(updateApplicationRequest)
@@ -226,12 +223,12 @@ export default () => {
       }
     }
     const handleDeleteOwner = async (owner: User) => {
-      const updateApplicationRequest = new UpdateRepositoryRequest({
+      const updateApplicationRequest: PartialMessage<UpdateRepositoryRequest> = {
         id: repo().id,
         ownerIds: {
           ownerIds: repo().ownerIds.filter((id) => id !== owner.id),
         },
-      })
+      }
 
       try {
         await client.updateRepository(updateApplicationRequest)

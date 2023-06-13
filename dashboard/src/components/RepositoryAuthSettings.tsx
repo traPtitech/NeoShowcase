@@ -7,6 +7,7 @@ import { Button } from './Button'
 import { CreateRepositoryAuth } from '../api/neoshowcase/protobuf/gateway_pb'
 import { SetStoreFunction } from 'solid-js/store'
 import { client } from '../libs/api'
+import { PlainMessage } from '@bufbuild/protobuf'
 
 const SshDetails = styled('div', {
   base: {
@@ -27,9 +28,9 @@ const PublicKeyCode = styled('code', {
   },
 })
 
-export type AuthMethod = CreateRepositoryAuth['auth']['case']
+export type AuthMethod = Exclude<CreateRepositoryAuth['auth']['case'], undefined>
 export type AuthConfig = {
-  [K in AuthMethod]: Extract<CreateRepositoryAuth['auth'], { case: K }>
+  [K in AuthMethod]: Extract<PlainMessage<CreateRepositoryAuth>['auth'], { case: K }>
 } & {
   authMethod: AuthMethod
 }
@@ -48,7 +49,7 @@ export const RepositoryAuthSettings: Component<RepositoryAuthSettingsProps> = (p
   )
   createEffect(() => {
     if (!tmpKey()) return
-    props.setAuthConfig('ssh', 'value', 'keyId', tmpKey().keyId)
+    props.setAuthConfig('ssh', 'value', { keyId: tmpKey()?.keyId })
   })
   const publicKey = () => (useTmpKey() ? tmpKey()?.publicKey : systemPublicKey()?.publicKey)
 
@@ -70,14 +71,14 @@ export const RepositoryAuthSettings: Component<RepositoryAuthSettingsProps> = (p
           <InputBar
             // SSH URLはURLとしては不正なのでtypeを変更
             value={props.authConfig.basic.value.username}
-            onInput={(e) => props.setAuthConfig('basic', 'value', 'username', e.currentTarget.value)}
+            onInput={(e) => props.setAuthConfig('basic', 'value', { username: e.currentTarget.value })}
           />
           <InputLabel>パスワード</InputLabel>
           <InputBar
             // SSH URLはURLとしては不正なのでtypeを変更
             type='password'
             value={props.authConfig.basic.value.password}
-            onInput={(e) => props.setAuthConfig('basic', 'value', 'password', e.currentTarget.value)}
+            onInput={(e) => props.setAuthConfig('basic', 'value', { password: e.currentTarget.value })}
           />
         </Match>
         <Match when={props.authConfig.authMethod === 'ssh'}>

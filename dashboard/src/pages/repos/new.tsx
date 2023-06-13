@@ -2,7 +2,7 @@ import { JSX, JSXElement, createEffect } from 'solid-js'
 import { createStore } from 'solid-js/store'
 import toast from 'solid-toast'
 import { ConnectError } from '@bufbuild/connect'
-import { Empty } from '@bufbuild/protobuf'
+import { Empty, PlainMessage } from '@bufbuild/protobuf'
 import { styled } from '@macaron-css/solid'
 import { useNavigate } from '@solidjs/router'
 import {
@@ -78,24 +78,29 @@ export default () => {
   const [authConfig, setAuthConfig] = createStore<AuthConfig>({
     none: {
       case: 'none',
-      value: new Empty(),
+      value: {},
     },
     basic: {
       case: 'basic',
-      value: new CreateRepositoryAuthBasic(),
+      value: {
+        username: '',
+        password: '',
+      },
     },
     ssh: {
       case: 'ssh',
-      value: new CreateRepositoryAuthSSH(),
+      value: {
+        keyId: '',
+      },
     },
     authMethod: 'none',
   })
 
-  const [requestConfig, setRequestConfig] = createStore(
-    new CreateRepositoryRequest({
-      auth: new CreateRepositoryAuth(),
-    }),
-  )
+  const [requestConfig, setRequestConfig] = createStore<PlainMessage<CreateRepositoryRequest>>({
+    url: '',
+    name: '',
+    auth: undefined,
+  })
 
   let formContainer: HTMLFormElement
 
