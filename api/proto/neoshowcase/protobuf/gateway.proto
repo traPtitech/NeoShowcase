@@ -47,8 +47,9 @@ message DeleteUserKeyRequest {
 
 message Repository {
   enum AuthMethod {
-    BASIC = 0;
-    SSH = 1;
+    NONE = 0;
+    BASIC = 1;
+    SSH = 2;
   }
   string id = 1;
   string name = 2;
