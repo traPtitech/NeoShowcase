@@ -16,7 +16,7 @@ import (
 	"github.com/traPtitech/neoshowcase/pkg/util/optional"
 )
 
-func listAllPages[T any](fn func(page, perPage int) ([]T, error)) ([]T, error) {
+func listAllPages[T any](fn func(page, perPage int) ([]T, error), listInterval time.Duration) ([]T, error) {
 	items := make([]T, 0)
 	for page := 1; ; page++ {
 		const perPage = 50 // max per page
@@ -28,6 +28,7 @@ func listAllPages[T any](fn func(page, perPage int) ([]T, error)) ([]T, error) {
 		if len(pageItems) < perPage {
 			break
 		}
+		time.Sleep(listInterval)
 	}
 	return items, nil
 }
@@ -49,7 +50,7 @@ func (i *Integration) _sync(ctx context.Context) error {
 			ListOptions: gitea.ListOptions{Page: page, PageSize: perPage},
 		})
 		return users, err
-	})
+	}, i.listInterval)
 	if err != nil {
 		return errors.Wrap(err, "listing users")
 	}
@@ -68,7 +69,7 @@ func (i *Integration) _sync(ctx context.Context) error {
 				ListOptions: gitea.ListOptions{Page: page, PageSize: perPage},
 			})
 			return repos, err
-		})
+		}, i.listInterval)
 		if err != nil {
 			return errors.Wrap(err, "listing user repositories")
 		}
@@ -79,6 +80,8 @@ func (i *Integration) _sync(ctx context.Context) error {
 				return errors.Wrap(err, "syncing user repository")
 			}
 		}
+
+		time.Sleep(i.listInterval)
 	}
 
 	// Sync repositories for each org
@@ -87,7 +90,7 @@ func (i *Integration) _sync(ctx context.Context) error {
 			ListOptions: gitea.ListOptions{Page: page, PageSize: perPage},
 		})
 		return orgs, err
-	})
+	}, i.listInterval)
 	if err != nil {
 		return errors.Wrap(err, "listing organizations")
 	}
@@ -97,7 +100,7 @@ func (i *Integration) _sync(ctx context.Context) error {
 				ListOptions: gitea.ListOptions{Page: page, PageSize: perPage},
 			})
 			return repos, err
-		})
+		}, i.listInterval)
 		if err != nil {
 			return errors.Wrap(err, "listing org repositories")
 		}
@@ -107,7 +110,7 @@ func (i *Integration) _sync(ctx context.Context) error {
 				ListOptions: gitea.ListOptions{Page: page, PageSize: perPage},
 			})
 			return members, err
-		})
+		}, i.listInterval)
 		if err != nil {
 			return errors.Wrap(err, "listing org members")
 		}
@@ -124,6 +127,8 @@ func (i *Integration) _sync(ctx context.Context) error {
 		for _, giteaRepo := range giteaRepos {
 			err = i.syncRepository(ctx, giteaOrg.UserName, memberIDs, giteaRepo)
 		}
+
+		time.Sleep(i.listInterval)
 	}
 
 	return nil
