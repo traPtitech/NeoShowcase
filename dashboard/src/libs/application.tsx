@@ -4,12 +4,14 @@ import {
   ApplicationConfig,
   Build_BuildStatus,
   DeployType,
+  Repository_AuthMethod,
   Website,
 } from '/@/api/neoshowcase/protobuf/gateway_pb'
 import { JSXElement } from 'solid-js'
 import { AiFillGithub, AiFillGitlab } from 'solid-icons/ai'
 import { SiGitea } from 'solid-icons/si'
 import { vars } from '/@/theme'
+import { AuthMethod } from '../components/RepositoryAuthSettings'
 
 export const buildTypeStr: Record<ApplicationConfig['buildConfig']['case'], string> = {
   runtimeBuildpack: 'Runtime (Buildpack)',
@@ -79,4 +81,10 @@ export const extractRepositoryNameFromURL = (url: string): string => {
   const lastSegment = segments.pop() || segments.pop() // 末尾のスラッシュを除去
   const repositoryName = lastSegment?.replace(/\.git$/, '') ?? ''
   return repositoryName
+}
+
+export const authMethodMap: Record<Repository_AuthMethod, AuthMethod> = {
+  [Repository_AuthMethod.NONE]: 'none',
+  [Repository_AuthMethod.BASIC]: 'basic',
+  [Repository_AuthMethod.SSH]: 'ssh',
 }

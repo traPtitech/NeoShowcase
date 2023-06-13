@@ -16,7 +16,7 @@ import { userFromId, users } from '/@/libs/useAllUsers'
 import { UserSearch } from '/@/components/UserSearch'
 import useModal from '/@/libs/useModal'
 import RepositoryNav from '/@/components/RepositoryNav'
-import { extractRepositoryNameFromURL } from '/@/libs/application'
+import { authMethodMap, extractRepositoryNameFromURL } from '/@/libs/application'
 import { AuthConfig, RepositoryAuthSettings } from '/@/components/RepositoryAuthSettings'
 import { PartialMessage } from '@bufbuild/protobuf'
 
@@ -116,12 +116,7 @@ export default () => {
           keyId: '',
         },
       },
-      authMethod:
-        repo().authMethod === Repository_AuthMethod.NONE
-          ? 'none'
-          : repo().authMethod === Repository_AuthMethod.BASIC
-          ? 'basic'
-          : 'ssh',
+      authMethod: authMethodMap[repo().authMethod],
     })
 
     // URLからリポジトリ名を自動入力
