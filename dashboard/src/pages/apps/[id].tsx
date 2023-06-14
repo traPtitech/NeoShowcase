@@ -2,7 +2,13 @@ import { A, useNavigate, useParams } from '@solidjs/router'
 import { createEffect, createMemo, createResource, createSignal, For, onCleanup, Ref, Show } from 'solid-js'
 import { client, handleAPIError, sshInfo } from '/@/libs/api'
 import { Header } from '/@/components/Header'
-import { applicationState, buildTypeStr, getWebsiteURL, providerToIcon } from '/@/libs/application'
+import {
+  applicationState,
+  buildTypeStr,
+  getWebsiteURL,
+  providerToIcon,
+  repositoryURLToProvider,
+} from '/@/libs/application'
 import { StatusIcon } from '/@/components/StatusIcon'
 import { titleCase } from '/@/libs/casing'
 import {
@@ -386,7 +392,7 @@ export default () => {
                 <CardItem>
                   <CardItemTitle>Repository</CardItemTitle>
                   <CardItemContent>
-                    <CenterInline>{providerToIcon('GitHub', 20)}</CenterInline>
+                    <CenterInline>{providerToIcon(repositoryURLToProvider(repo().url), 20)}</CenterInline>
                     {repo().name}
                   </CardItemContent>
                 </CardItem>
