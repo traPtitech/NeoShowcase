@@ -1,7 +1,7 @@
 name: バグ報告
 description: バグの報告テンプレート
 title: "[Bug]: "
-labels: ["bug"]
+labels: ["kind/bug"]
 body:
   - type: input
     attributes:
@@ -29,7 +29,7 @@ body:
       required: false
   - type: input
     attributes:
-      label: 期待する動作
+      label: 実際の動作
       description: その動作を行ったとき、実際に起こったこと
       placeholder: エラーが表示された
     validations:

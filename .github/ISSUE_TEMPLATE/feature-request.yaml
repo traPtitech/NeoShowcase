@@ -1,7 +1,7 @@
 name: 機能追加
 description: 機能追加リクエストのテンプレート
 title: "[Feature]: "
-labels: ["feature"]
+labels: ["kind/feature"]
 body:
   - type: textarea
     attributes:
