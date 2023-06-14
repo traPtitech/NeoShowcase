@@ -33,8 +33,12 @@ func (l *logWriter) Write(p []byte) (n int, err error) {
 	if err != nil {
 		return
 	}
+	// Make a copy to send to another goroutine
+	// From io.Writer's document: Implementations must not retain p.
+	toSend := make([]byte, len(p))
+	copy(toSend, p)
 	select {
-	case l.response <- l.toBuilderResponse(p):
+	case l.response <- l.toBuilderResponse(toSend):
 	default:
 	}
 	return
