@@ -117,28 +117,31 @@ func (b *k8sBackend) runtimeSpec(app *domain.RuntimeDesiredState) (*appsv1.State
 		ss.Spec.Template.Spec.ImagePullSecrets = []v1.LocalObjectReference{{Name: b.config.ImagePullSecret}}
 	}
 
-	svc := &v1.Service{
-		TypeMeta: metav1.TypeMeta{
-			Kind:       "Service",
-			APIVersion: "v1",
-		},
-		ObjectMeta: metav1.ObjectMeta{
-			Name:      deploymentName(app.App.ID),
-			Namespace: b.config.Namespace,
-			Labels:    b.appLabel(app.App.ID),
-		},
-		Spec: v1.ServiceSpec{
-			Type:           "ClusterIP",
-			IPFamilyPolicy: lo.ToPtr(v1.IPFamilyPolicyPreferDualStack),
-			Selector:       appSelector(app.App.ID),
-			Ports: ds.Map(cont.Ports, func(port v1.ContainerPort) v1.ServicePort {
-				return v1.ServicePort{
-					Protocol:   port.Protocol,
-					Port:       port.ContainerPort,
-					TargetPort: intstr.FromInt(int(port.ContainerPort)),
-				}
-			}),
-		},
+	var svc *v1.Service
+	if len(cont.Ports) > 0 {
+		svc = &v1.Service{
+			TypeMeta: metav1.TypeMeta{
+				Kind:       "Service",
+				APIVersion: "v1",
+			},
+			ObjectMeta: metav1.ObjectMeta{
+				Name:      deploymentName(app.App.ID),
+				Namespace: b.config.Namespace,
+				Labels:    b.appLabel(app.App.ID),
+			},
+			Spec: v1.ServiceSpec{
+				Type:           "ClusterIP",
+				IPFamilyPolicy: lo.ToPtr(v1.IPFamilyPolicyPreferDualStack),
+				Selector:       appSelector(app.App.ID),
+				Ports: ds.Map(cont.Ports, func(port v1.ContainerPort) v1.ServicePort {
+					return v1.ServicePort{
+						Protocol:   port.Protocol,
+						Port:       port.ContainerPort,
+						TargetPort: intstr.FromInt(int(port.ContainerPort)),
+					}
+				}),
+			},
+		}
 	}
 
 	return ss, svc, secret
@@ -188,7 +191,9 @@ func (b *k8sBackend) runtimeResources(next *resources, apps []*domain.RuntimeDes
 	for _, app := range apps {
 		ss, svc, secret := b.runtimeSpec(app)
 		next.statefulSets = append(next.statefulSets, ss)
-		next.services = append(next.services, svc)
+		if svc != nil {
+			next.services = append(next.services, svc)
+		}
 		if secret != nil {
 			next.secrets = append(next.secrets, secret)
 		}
