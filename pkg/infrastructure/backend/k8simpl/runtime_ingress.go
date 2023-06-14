@@ -6,83 +6,15 @@ import (
 
 	certmanagerv1 "github.com/cert-manager/cert-manager/pkg/apis/certmanager/v1"
 	certmetav1 "github.com/cert-manager/cert-manager/pkg/apis/meta/v1"
-	"github.com/samber/lo"
 	log "github.com/sirupsen/logrus"
 	"github.com/traefik/traefik/v2/pkg/config/dynamic"
 	traefikv1alpha1 "github.com/traefik/traefik/v2/pkg/provider/kubernetes/crd/traefikio/v1alpha1"
 	"github.com/traefik/traefik/v2/pkg/types"
-	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/apimachinery/pkg/util/intstr"
 
 	"github.com/traPtitech/neoshowcase/pkg/domain"
 	"github.com/traPtitech/neoshowcase/pkg/domain/web"
-	"github.com/traPtitech/neoshowcase/pkg/util/mapper"
 )
-
-func (b *k8sBackend) runtimeService(app *domain.Application, website *domain.Website) *v1.Service {
-	return &v1.Service{
-		TypeMeta: metav1.TypeMeta{
-			Kind:       "Service",
-			APIVersion: "v1",
-		},
-		ObjectMeta: metav1.ObjectMeta{
-			Name:      serviceName(website),
-			Namespace: b.config.Namespace,
-			Labels:    b.appLabel(app.ID),
-		},
-		Spec: v1.ServiceSpec{
-			Type:           "ClusterIP",
-			IPFamilyPolicy: lo.ToPtr(v1.IPFamilyPolicyPreferDualStack),
-			Selector:       appSelector(app.ID),
-			Ports: []v1.ServicePort{{
-				Protocol:   "TCP",
-				Port:       80,
-				TargetPort: intstr.FromInt(website.HTTPPort),
-			}},
-		},
-	}
-}
-
-var protocolMapper = mapper.MustNewValueMapper(map[domain.PortPublicationProtocol]v1.Protocol{
-	domain.PortPublicationProtocolTCP: v1.ProtocolTCP,
-	domain.PortPublicationProtocolUDP: v1.ProtocolUDP,
-})
-
-func (b *k8sBackend) runtimePortService(app *domain.Application, port *domain.PortPublication) *v1.Service {
-	return &v1.Service{
-		TypeMeta: metav1.TypeMeta{
-			Kind:       "Service",
-			APIVersion: "v1",
-		},
-		ObjectMeta: metav1.ObjectMeta{
-			Name:      portServiceName(port),
-			Namespace: b.config.Namespace,
-			Labels:    b.appLabel(app.ID),
-		},
-		Spec: v1.ServiceSpec{
-			Type:     "LoadBalancer",
-			Selector: appSelector(app.ID),
-			Ports: []v1.ServicePort{{
-				Protocol:   protocolMapper.IntoMust(port.Protocol),
-				Port:       int32(port.InternetPort),
-				TargetPort: intstr.FromInt(port.ApplicationPort),
-			}},
-		},
-	}
-}
-
-func (b *k8sBackend) runtimeServiceRef(_ *domain.Application, website *domain.Website) []traefikv1alpha1.Service {
-	return []traefikv1alpha1.Service{{
-		LoadBalancerSpec: traefikv1alpha1.LoadBalancerSpec{
-			Name:      serviceName(website),
-			Kind:      "Service",
-			Namespace: b.config.Namespace,
-			Port:      intstr.FromInt(80),
-			Scheme:    lo.Ternary(website.H2C, "h2c", "http"),
-		},
-	}}
-}
 
 func (b *k8sBackend) stripMiddleware(app *domain.Application, website *domain.Website) *traefikv1alpha1.Middleware {
 	return &traefikv1alpha1.Middleware{

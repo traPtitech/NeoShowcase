@@ -6,15 +6,23 @@ import (
 	"time"
 
 	"github.com/samber/lo"
+	traefikv1alpha1 "github.com/traefik/traefik/v2/pkg/provider/kubernetes/crd/traefikio/v1alpha1"
 	"golang.org/x/exp/slices"
 	appsv1 "k8s.io/api/apps/v1"
 	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/util/intstr"
 
 	"github.com/traPtitech/neoshowcase/pkg/domain"
+	"github.com/traPtitech/neoshowcase/pkg/util/ds"
+	"github.com/traPtitech/neoshowcase/pkg/util/mapper"
 )
 
-func (b *k8sBackend) runtimeSpec(app *domain.RuntimeDesiredState) (*appsv1.StatefulSet, *v1.Secret) {
+func comparePort(port v1.ContainerPort) string {
+	return fmt.Sprintf("%d/%s", port.ContainerPort, port.Protocol)
+}
+
+func (b *k8sBackend) runtimeSpec(app *domain.RuntimeDesiredState) (*appsv1.StatefulSet, *v1.Service, *v1.Secret) {
 	var secret *v1.Secret
 	if len(app.Envs) > 0 {
 		secret = &v1.Secret{
@@ -52,21 +60,22 @@ func (b *k8sBackend) runtimeSpec(app *domain.RuntimeDesiredState) (*appsv1.State
 	if args := app.App.Config.BuildConfig.CommandArgs(); len(args) > 0 {
 		cont.Args = args
 	}
-	slices.SortFunc(app.App.Websites, (*domain.Website).Compare)
+
 	for _, website := range app.App.Websites {
 		cont.Ports = append(cont.Ports, v1.ContainerPort{
 			ContainerPort: int32(website.HTTPPort),
 			Protocol:      v1.ProtocolTCP,
 		})
 	}
-	slices.SortFunc(app.App.PortPublications, (*domain.PortPublication).Compare)
 	for _, p := range app.App.PortPublications {
 		cont.Ports = append(cont.Ports, v1.ContainerPort{
 			ContainerPort: int32(p.ApplicationPort),
 			Protocol:      protocolMapper.IntoMust(p.Protocol),
 		})
 	}
-	cont.Ports = lo.UniqBy(cont.Ports, func(port v1.ContainerPort) string { return fmt.Sprintf("%d/%s", port.ContainerPort, port.Protocol) })
+	cont.Ports = lo.UniqBy(cont.Ports, comparePort)
+	slices.SortFunc(cont.Ports, ds.LessFunc(comparePort))
+
 	ss := &appsv1.StatefulSet{
 		TypeMeta: metav1.TypeMeta{
 			Kind:       "StatefulSet",
@@ -108,18 +117,82 @@ func (b *k8sBackend) runtimeSpec(app *domain.RuntimeDesiredState) (*appsv1.State
 		ss.Spec.Template.Spec.ImagePullSecrets = []v1.LocalObjectReference{{Name: b.config.ImagePullSecret}}
 	}
 
-	return ss, secret
+	svc := &v1.Service{
+		TypeMeta: metav1.TypeMeta{
+			Kind:       "Service",
+			APIVersion: "v1",
+		},
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      deploymentName(app.App.ID),
+			Namespace: b.config.Namespace,
+			Labels:    b.appLabel(app.App.ID),
+		},
+		Spec: v1.ServiceSpec{
+			Type:           "ClusterIP",
+			IPFamilyPolicy: lo.ToPtr(v1.IPFamilyPolicyPreferDualStack),
+			Selector:       appSelector(app.App.ID),
+			Ports: ds.Map(cont.Ports, func(port v1.ContainerPort) v1.ServicePort {
+				return v1.ServicePort{
+					Protocol:   port.Protocol,
+					Port:       port.ContainerPort,
+					TargetPort: intstr.FromInt(int(port.ContainerPort)),
+				}
+			}),
+		},
+	}
+
+	return ss, svc, secret
+}
+
+func (b *k8sBackend) runtimeServiceRef(app *domain.Application, website *domain.Website) []traefikv1alpha1.Service {
+	return []traefikv1alpha1.Service{{
+		LoadBalancerSpec: traefikv1alpha1.LoadBalancerSpec{
+			Name:      deploymentName(app.ID),
+			Kind:      "Service",
+			Namespace: b.config.Namespace,
+			Port:      intstr.FromInt(website.HTTPPort),
+			Scheme:    lo.Ternary(website.H2C, "h2c", "http"),
+		},
+	}}
+}
+
+var protocolMapper = mapper.MustNewValueMapper(map[domain.PortPublicationProtocol]v1.Protocol{
+	domain.PortPublicationProtocolTCP: v1.ProtocolTCP,
+	domain.PortPublicationProtocolUDP: v1.ProtocolUDP,
+})
+
+func (b *k8sBackend) runtimePortService(app *domain.Application, port *domain.PortPublication) *v1.Service {
+	return &v1.Service{
+		TypeMeta: metav1.TypeMeta{
+			Kind:       "Service",
+			APIVersion: "v1",
+		},
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      portServiceName(port),
+			Namespace: b.config.Namespace,
+			Labels:    b.appLabel(app.ID),
+		},
+		Spec: v1.ServiceSpec{
+			Type:     "LoadBalancer",
+			Selector: appSelector(app.ID),
+			Ports: []v1.ServicePort{{
+				Protocol:   protocolMapper.IntoMust(port.Protocol),
+				Port:       int32(port.InternetPort),
+				TargetPort: intstr.FromInt(port.ApplicationPort),
+			}},
+		},
+	}
 }
 
 func (b *k8sBackend) runtimeResources(next *resources, apps []*domain.RuntimeDesiredState) {
 	for _, app := range apps {
-		ss, secret := b.runtimeSpec(app)
+		ss, svc, secret := b.runtimeSpec(app)
 		next.statefulSets = append(next.statefulSets, ss)
+		next.services = append(next.services, svc)
 		if secret != nil {
 			next.secrets = append(next.secrets, secret)
 		}
 		for _, website := range app.App.Websites {
-			next.services = append(next.services, b.runtimeService(app.App, website))
 			ingressRoute, mw, certs := b.ingressRoute(app.App, website, b.runtimeServiceRef(app.App, website))
 			next.middlewares = append(next.middlewares, mw...)
 			next.ingressRoutes = append(next.ingressRoutes, ingressRoute)
