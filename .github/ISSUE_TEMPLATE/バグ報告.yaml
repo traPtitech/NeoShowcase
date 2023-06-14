@@ -1,0 +1,56 @@
+name: バグ報告
+description: バグの報告テンプレート
+title: "[Bug]: "
+labels: ["bug"]
+body:
+  - type: input
+    attributes:
+      label: バグの概要
+      description: バグの簡潔な説明
+      placeholder: ダッシュボードでxxxが表示されない
+    validations:
+      required: false
+  - type: textarea
+    attributes:
+      label: 再現手順
+      description: こちらでバグを再現するのに必要な手順
+      placeholder: |
+        1. ダッシュボードを開く
+        2. xxxをクリックする
+        3. エラーが表示される
+    validations:
+      required: false
+  - type: input
+    attributes:
+      label: 期待する動作
+      description: その動作を行ったとき、何が起こると期待したか
+      placeholder: xxxという情報が表示される
+    validations:
+      required: false
+  - type: input
+    attributes:
+      label: 期待する動作
+      description: その動作を行ったとき、実際に起こったこと
+      placeholder: エラーが表示された
+    validations:
+      required: false
+  - type: textarea
+    attributes:
+      label: 再現環境
+      placeholder: |
+        Windows11/Chrome 113で発生
+        iPhone/Safariでは発生しなかった
+    validations:
+      required: false
+  - type: textarea
+    attributes:
+      label: スクリーンショット
+      description: スクリーンショットなどがあると嬉しいよ
+    validations:
+      required: false
+  - type: textarea
+    attributes:
+      label: 関連情報
+      description: その他関連する情報やリンクなど
+    validations:
+      required: false
