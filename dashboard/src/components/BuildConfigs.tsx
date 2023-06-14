@@ -5,8 +5,9 @@ import { FormCheckBox, FormSettings } from '/@/components/AppsNew'
 import { Checkbox } from '/@/components/Checkbox'
 import { Match, Setter, Switch } from 'solid-js'
 import { Radio, RadioItem } from '/@/components/Radio'
+import { PlainMessage } from '@bufbuild/protobuf'
 
-const buildConfigItems: RadioItem<string>[] = [
+const buildConfigItems: RadioItem<BuildConfigMethod>[] = [
   { value: 'runtimeBuildpack', title: 'Runtime Buildpack' },
   { value: 'runtimeCmd', title: 'Runtime Command' },
   { value: 'runtimeDockerfile', title: 'Runtime Dockerfile' },
@@ -15,8 +16,8 @@ const buildConfigItems: RadioItem<string>[] = [
 ]
 
 export interface FormRuntimeConfigProps {
-  runtimeConfig: RuntimeConfig
-  setRuntimeConfig: SetStoreFunction<RuntimeConfig>
+  runtimeConfig: PlainMessage<RuntimeConfig>
+  setRuntimeConfig: SetStoreFunction<PlainMessage<RuntimeConfig>>
 }
 
 const RuntimeConfigs = (props: FormRuntimeConfigProps) => {
@@ -57,19 +58,18 @@ const RuntimeConfigs = (props: FormRuntimeConfigProps) => {
   )
 }
 
+export type BuildConfigMethod = ApplicationConfig['buildConfig']['case']
+export type BuildConfig = {
+  [K in BuildConfigMethod]: Extract<PlainMessage<ApplicationConfig>['buildConfig'], { case: K }>
+}
+
 export interface BuildConfigsProps {
-  buildConfigMethod: 'runtimeBuildpack' | 'runtimeCmd' | 'runtimeDockerfile' | 'staticCmd' | 'staticDockerfile'
-  setBuildConfigMethod: Setter<
-    'runtimeBuildpack' | 'runtimeCmd' | 'runtimeDockerfile' | 'staticCmd' | 'staticDockerfile'
-  >
-  buildConfig: {
-    [K in ApplicationConfig['buildConfig']['case']]: Extract<ApplicationConfig['buildConfig'], { case: K }>
-  }
-  setBuildConfig: SetStoreFunction<{
-    [K in ApplicationConfig['buildConfig']['case']]: Extract<ApplicationConfig['buildConfig'], { case: K }>
-  }>
-  runtimeConfig: RuntimeConfig
-  setRuntimeConfig: SetStoreFunction<RuntimeConfig>
+  buildConfigMethod: BuildConfigMethod
+  setBuildConfigMethod: Setter<BuildConfigMethod>
+  buildConfig: BuildConfig
+  setBuildConfig: SetStoreFunction<BuildConfig>
+  runtimeConfig: PlainMessage<RuntimeConfig>
+  setRuntimeConfig: SetStoreFunction<PlainMessage<RuntimeConfig>>
 }
 export const BuildConfigs = (props: BuildConfigsProps) => {
   return (

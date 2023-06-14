@@ -5,11 +5,11 @@ import { Button } from '/@/components/Button'
 import { SetStoreFunction } from 'solid-js/store'
 import { FormButton, FormSettings, FormSettingsButton, SettingsContainer } from '/@/components/AppsNew'
 import { For } from 'solid-js'
-import { storify } from '/@/libs/storify'
 import { styled } from '@macaron-css/solid'
 import { vars } from '../theme'
 import { availablePorts } from '../libs/api'
 import { portPublicationProtocolMap } from '../libs/application'
+import { PlainMessage } from '@bufbuild/protobuf'
 
 const AvailablePortContainer = styled('div', {
   base: {
@@ -25,8 +25,11 @@ const AvailableDomainUl = styled('ul', {
 })
 
 interface PortPublicationProps {
-  portPublication: PortPublication
-  setPortPublication: <T extends keyof PortPublication>(valueName: T, value: PortPublication[T]) => void
+  portPublication: PlainMessage<PortPublication>
+  setPortPublication: <T extends keyof PlainMessage<PortPublication>>(
+    valueName: T,
+    value: PlainMessage<PortPublication>[T],
+  ) => void
   deletePortPublication: () => void
 }
 
@@ -86,8 +89,8 @@ const protocolItems: RadioItem<PortPublicationProtocol>[] = [
 ]
 
 interface PortPublicationSettingsProps {
-  portPublications: PortPublication[]
-  setPortPublications: SetStoreFunction<PortPublication[]>
+  portPublications: PlainMessage<PortPublication>[]
+  setPortPublications: SetStoreFunction<PlainMessage<PortPublication>[]>
 }
 
 export const PortPublicationSettings = (props: PortPublicationSettingsProps) => {
@@ -110,7 +113,14 @@ export const PortPublicationSettings = (props: PortPublicationSettingsProps) => 
       <FormButton>
         <Button
           onclick={() => {
-            props.setPortPublications([...props.portPublications, storify(new PortPublication())])
+            props.setPortPublications([
+              ...props.portPublications,
+              {
+                internetPort: 0,
+                applicationPort: 0,
+                protocol: PortPublicationProtocol.TCP,
+              },
+            ])
           }}
           color='black1'
           size='large'
