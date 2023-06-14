@@ -135,7 +135,7 @@ func (b *k8sBackend) runtimeSpec(app *domain.RuntimeDesiredState) (*appsv1.State
 				Selector:       appSelector(app.App.ID),
 				Ports: ds.Map(cont.Ports, func(port v1.ContainerPort) v1.ServicePort {
 					return v1.ServicePort{
-						Name:       fmt.Sprintf("%v-%v", port.Protocol, port.ContainerPort),
+						Name:       fmt.Sprintf("%v-%v", strings.ToLower(string(port.Protocol)), port.ContainerPort),
 						Protocol:   port.Protocol,
 						Port:       port.ContainerPort,
 						TargetPort: intstr.FromInt(int(port.ContainerPort)),
