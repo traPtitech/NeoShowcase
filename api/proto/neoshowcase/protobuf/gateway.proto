@@ -306,24 +306,9 @@ message ArtifactContent {
   bytes content = 2;
 }
 
-message GetOutputRequest {
-  string application_id = 1;
-  // Leave empty to default to now
-  google.protobuf.Timestamp before = 2;
-}
-
 message ApplicationOutput {
   google.protobuf.Timestamp time = 1;
   string log = 2;
-}
-
-message GetOutputResponse {
-  repeated ApplicationOutput outputs = 1;
-}
-
-message GetOutputStreamRequest {
-  string application_id = 1;
-  google.protobuf.Timestamp after = 2;
 }
 
 message Build {
@@ -457,10 +442,8 @@ service APIService {
   rpc SetEnvVar(SetApplicationEnvVarRequest) returns (google.protobuf.Empty);
   // DeleteEnvVar アプリの環境変数を削除します システムによって設定された環境変数は削除できません
   rpc DeleteEnvVar(DeleteApplicationEnvVarRequest) returns (google.protobuf.Empty);
-  // GetOutput アプリの出力を取得します
-  rpc GetOutput(GetOutputRequest) returns (GetOutputResponse);
   // GetOutputStream アプリの出力をストリーム形式で取得します
-  rpc GetOutputStream(GetOutputStreamRequest) returns (stream ApplicationOutput);
+  rpc GetOutputStream(ApplicationIdRequest) returns (stream ApplicationOutput);
   // StartApplication アプリを起動します 起動中の場合は再起動します
   rpc StartApplication(ApplicationIdRequest) returns (google.protobuf.Empty);
   // StopApplication アプリをシャットダウンします

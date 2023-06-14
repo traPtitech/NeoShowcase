@@ -1,5 +1,5 @@
 import { A, useNavigate, useParams } from '@solidjs/router'
-import { createEffect, createMemo, createResource, createSignal, For, onCleanup, Ref, Show } from 'solid-js'
+import { createEffect, createResource, createSignal, For, onCleanup, Ref, Show } from 'solid-js'
 import { client, handleAPIError, sshInfo } from '/@/libs/api'
 import { Header } from '/@/components/Header'
 import {
@@ -14,7 +14,6 @@ import { titleCase } from '/@/libs/casing'
 import {
   Application_ContainerState,
   ApplicationConfig,
-  ApplicationOutput,
   DeployType,
   RuntimeConfig,
 } from '/@/api/neoshowcase/protobuf/gateway_pb'
@@ -34,7 +33,6 @@ import {
 } from '/@/components/Card'
 import { LogContainer } from '/@/components/Log'
 import { sleep } from '/@/libs/sleep'
-import { Timestamp } from '@bufbuild/protobuf'
 import { Code, ConnectError } from '@bufbuild/connect'
 import useModal from '/@/libs/useModal'
 import { ModalButtonsContainer, ModalContainer, ModalText } from '/@/components/Modal'
@@ -223,17 +221,10 @@ export default () => {
   }
   const { Modal: DeleteAppModal, open: openDeleteAppModal, close: closeDeleteAppModal } = useModal()
 
-  const now = new Date()
-  const [log] = createResource(
-    () => app()?.deployType === DeployType.RUNTIME && app()?.id,
-    (id) => client.getOutput({ applicationId: id, before: Timestamp.fromDate(now) }),
-  )
-  const reversedLog = createMemo(() => log() && ([...log().outputs].reverse() as ApplicationOutput[]))
   const logStreamAbort = new AbortController()
   const [logStream] = createResource(
     () => app()?.deployType === DeployType.RUNTIME && app()?.id,
-    (id) =>
-      client.getOutputStream({ applicationId: id, after: Timestamp.fromDate(now) }, { signal: logStreamAbort.signal }),
+    (id) => client.getOutputStream({ id }, { signal: logStreamAbort.signal }),
   )
   const [streamedLog, setStreamedLog] = createSignal<string[]>([])
   createEffect(() => {
@@ -267,7 +258,7 @@ export default () => {
 
   let logRef: Ref<HTMLDivElement>
   createEffect(() => {
-    if (!log() || !streamedLog()) return
+    if (!streamedLog()) return
     const ref = logRef as HTMLDivElement
     if (!ref) return
     setTimeout(() => {
@@ -445,11 +436,10 @@ export default () => {
               </CardItems>
             </Card>
           </Show>
-          <Show when={log()}>
+          <Show when={app().deployType === DeployType.RUNTIME}>
             <Card>
               <CardTitle>Container Log</CardTitle>
               <LogContainer ref={logRef} overflowX='scroll'>
-                <For each={reversedLog()}>{(l) => <span>{l.log}</span>}</For>
                 <For each={streamedLog()}>{(line) => <span>{line}</span>}</For>
               </LogContainer>
             </Card>
