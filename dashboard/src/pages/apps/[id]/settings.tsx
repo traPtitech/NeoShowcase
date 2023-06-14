@@ -259,6 +259,7 @@ export default () => {
         case 'runtimeCmd':
         case 'runtimeDockerfile':
           setRuntimeConfig(conf.buildConfig.value.runtimeConfig)
+          setBuildConfig(conf.buildConfig.case, 'value', { runtimeConfig: runtimeConfig })
       }
     })
 
