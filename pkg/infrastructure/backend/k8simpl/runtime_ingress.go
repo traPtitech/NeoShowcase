@@ -32,8 +32,9 @@ func (b *k8sBackend) runtimeService(app *domain.Application, website *domain.Web
 			Labels:    b.appLabel(app.ID),
 		},
 		Spec: v1.ServiceSpec{
-			Type:     "ClusterIP",
-			Selector: appSelector(app.ID),
+			Type:           "ClusterIP",
+			IPFamilyPolicy: lo.ToPtr(v1.IPFamilyPolicyPreferDualStack),
+			Selector:       appSelector(app.ID),
 			Ports: []v1.ServicePort{{
 				Protocol:   "TCP",
 				Port:       80,
