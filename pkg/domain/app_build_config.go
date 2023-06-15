@@ -136,7 +136,8 @@ func (bc *BuildConfigRuntimeCmd) Validate() error {
 	if err := bc.RuntimeConfig.Validate(); err != nil {
 		return err
 	}
-	if bc.Entrypoint == "" && bc.Command == "" {
+	// NOTE: Base image could have no entrypoint/command but is impossible to catch only from config
+	if bc.BaseImage == "" && bc.Entrypoint == "" && bc.Command == "" {
 		return errors.New("entrypoint or command is required")
 	}
 	// NOTE: base image is not necessary (default: scratch)
