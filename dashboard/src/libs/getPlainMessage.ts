@@ -6,7 +6,7 @@ export const getPlainMessage = <T extends Message<T> = AnyMessage>(message: Mess
     if (Array.isArray(value)) {
       return {
         ...acc,
-        [key]: value.map(getPlainMessage),
+        [key]: value.map((v) => (v instanceof Message ? getPlainMessage(v) : v)),
       }
     } else if (value instanceof Message) {
       return {
