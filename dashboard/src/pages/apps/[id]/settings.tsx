@@ -257,9 +257,9 @@ export default () => {
         case 'runtimeBuildpack':
         case 'runtimeCmd':
         case 'runtimeDockerfile':
-          setBuildConfig('runtimeBuildpack', 'value', 'runtimeConfig', conf.buildConfig.value.runtimeConfig)
-          setBuildConfig('runtimeCmd', 'value', 'runtimeConfig', conf.buildConfig.value.runtimeConfig)
-          setBuildConfig('runtimeDockerfile', 'value', 'runtimeConfig', conf.buildConfig.value.runtimeConfig)
+          setBuildConfig('runtimeBuildpack', 'value', { runtimeConfig: conf.buildConfig.value.runtimeConfig })
+          setBuildConfig('runtimeCmd', 'value', { runtimeConfig: conf.buildConfig.value.runtimeConfig })
+          setBuildConfig('runtimeDockerfile', 'value', { runtimeConfig: conf.buildConfig.value.runtimeConfig })
       }
     })
 
