@@ -20,9 +20,9 @@ import (
 )
 
 const (
-	appLabel            = "neoshowcase.trap.jp/app"
-	appIDLabel          = "neoshowcase.trap.jp/app-id"
-	appRestartedAtLabel = "neoshowcase.trap.jp/restarted-at"
+	appLabel            = "ns.trap.jp/app"
+	appIDLabel          = "ns.trap.jp/app-id"
+	appRestartedAtLabel = "ns.trap.jp/restarted-at"
 )
 
 const (

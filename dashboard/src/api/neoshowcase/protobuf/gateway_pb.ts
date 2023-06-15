@@ -2335,51 +2335,6 @@ export class ArtifactContent extends Message<ArtifactContent> {
 }
 
 /**
- * @generated from message neoshowcase.protobuf.GetOutputRequest
- */
-export class GetOutputRequest extends Message<GetOutputRequest> {
-  /**
-   * @generated from field: string application_id = 1;
-   */
-  applicationId = "";
-
-  /**
-   * Leave empty to default to now
-   *
-   * @generated from field: google.protobuf.Timestamp before = 2;
-   */
-  before?: Timestamp;
-
-  constructor(data?: PartialMessage<GetOutputRequest>) {
-    super();
-    proto3.util.initPartial(data, this);
-  }
-
-  static readonly runtime: typeof proto3 = proto3;
-  static readonly typeName = "neoshowcase.protobuf.GetOutputRequest";
-  static readonly fields: FieldList = proto3.util.newFieldList(() => [
-    { no: 1, name: "application_id", kind: "scalar", T: 9 /* ScalarType.STRING */ },
-    { no: 2, name: "before", kind: "message", T: Timestamp },
-  ]);
-
-  static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): GetOutputRequest {
-    return new GetOutputRequest().fromBinary(bytes, options);
-  }
-
-  static fromJson(jsonValue: JsonValue, options?: Partial<JsonReadOptions>): GetOutputRequest {
-    return new GetOutputRequest().fromJson(jsonValue, options);
-  }
-
-  static fromJsonString(jsonString: string, options?: Partial<JsonReadOptions>): GetOutputRequest {
-    return new GetOutputRequest().fromJsonString(jsonString, options);
-  }
-
-  static equals(a: GetOutputRequest | PlainMessage<GetOutputRequest> | undefined, b: GetOutputRequest | PlainMessage<GetOutputRequest> | undefined): boolean {
-    return proto3.util.equals(GetOutputRequest, a, b);
-  }
-}
-
-/**
  * @generated from message neoshowcase.protobuf.ApplicationOutput
  */
 export class ApplicationOutput extends Message<ApplicationOutput> {
@@ -2419,86 +2374,6 @@ export class ApplicationOutput extends Message<ApplicationOutput> {
 
   static equals(a: ApplicationOutput | PlainMessage<ApplicationOutput> | undefined, b: ApplicationOutput | PlainMessage<ApplicationOutput> | undefined): boolean {
     return proto3.util.equals(ApplicationOutput, a, b);
-  }
-}
-
-/**
- * @generated from message neoshowcase.protobuf.GetOutputResponse
- */
-export class GetOutputResponse extends Message<GetOutputResponse> {
-  /**
-   * @generated from field: repeated neoshowcase.protobuf.ApplicationOutput outputs = 1;
-   */
-  outputs: ApplicationOutput[] = [];
-
-  constructor(data?: PartialMessage<GetOutputResponse>) {
-    super();
-    proto3.util.initPartial(data, this);
-  }
-
-  static readonly runtime: typeof proto3 = proto3;
-  static readonly typeName = "neoshowcase.protobuf.GetOutputResponse";
-  static readonly fields: FieldList = proto3.util.newFieldList(() => [
-    { no: 1, name: "outputs", kind: "message", T: ApplicationOutput, repeated: true },
-  ]);
-
-  static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): GetOutputResponse {
-    return new GetOutputResponse().fromBinary(bytes, options);
-  }
-
-  static fromJson(jsonValue: JsonValue, options?: Partial<JsonReadOptions>): GetOutputResponse {
-    return new GetOutputResponse().fromJson(jsonValue, options);
-  }
-
-  static fromJsonString(jsonString: string, options?: Partial<JsonReadOptions>): GetOutputResponse {
-    return new GetOutputResponse().fromJsonString(jsonString, options);
-  }
-
-  static equals(a: GetOutputResponse | PlainMessage<GetOutputResponse> | undefined, b: GetOutputResponse | PlainMessage<GetOutputResponse> | undefined): boolean {
-    return proto3.util.equals(GetOutputResponse, a, b);
-  }
-}
-
-/**
- * @generated from message neoshowcase.protobuf.GetOutputStreamRequest
- */
-export class GetOutputStreamRequest extends Message<GetOutputStreamRequest> {
-  /**
-   * @generated from field: string application_id = 1;
-   */
-  applicationId = "";
-
-  /**
-   * @generated from field: google.protobuf.Timestamp after = 2;
-   */
-  after?: Timestamp;
-
-  constructor(data?: PartialMessage<GetOutputStreamRequest>) {
-    super();
-    proto3.util.initPartial(data, this);
-  }
-
-  static readonly runtime: typeof proto3 = proto3;
-  static readonly typeName = "neoshowcase.protobuf.GetOutputStreamRequest";
-  static readonly fields: FieldList = proto3.util.newFieldList(() => [
-    { no: 1, name: "application_id", kind: "scalar", T: 9 /* ScalarType.STRING */ },
-    { no: 2, name: "after", kind: "message", T: Timestamp },
-  ]);
-
-  static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): GetOutputStreamRequest {
-    return new GetOutputStreamRequest().fromBinary(bytes, options);
-  }
-
-  static fromJson(jsonValue: JsonValue, options?: Partial<JsonReadOptions>): GetOutputStreamRequest {
-    return new GetOutputStreamRequest().fromJson(jsonValue, options);
-  }
-
-  static fromJsonString(jsonString: string, options?: Partial<JsonReadOptions>): GetOutputStreamRequest {
-    return new GetOutputStreamRequest().fromJsonString(jsonString, options);
-  }
-
-  static equals(a: GetOutputStreamRequest | PlainMessage<GetOutputStreamRequest> | undefined, b: GetOutputStreamRequest | PlainMessage<GetOutputStreamRequest> | undefined): boolean {
-    return proto3.util.equals(GetOutputStreamRequest, a, b);
   }
 }
 

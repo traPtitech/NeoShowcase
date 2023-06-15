@@ -2,7 +2,6 @@ package grpc
 
 import (
 	"context"
-	"time"
 
 	"github.com/bufbuild/connect-go"
 	"google.golang.org/protobuf/types/known/emptypb"
@@ -44,29 +43,8 @@ func (s *APIService) DeleteEnvVar(ctx context.Context, req *connect.Request[pb.D
 	return res, nil
 }
 
-func (s *APIService) GetOutput(ctx context.Context, req *connect.Request[pb.GetOutputRequest]) (*connect.Response[pb.GetOutputResponse], error) {
-	msg := req.Msg
-	before := time.Now()
-	if req.Msg.Before != nil {
-		before = msg.Before.AsTime()
-	}
-	logs, err := s.svc.GetOutput(ctx, msg.ApplicationId, before)
-	if err != nil {
-		return nil, handleUseCaseError(err)
-	}
-	res := connect.NewResponse(&pb.GetOutputResponse{
-		Outputs: ds.Map(logs, pbconvert.ToPBApplicationOutput),
-	})
-	return res, nil
-}
-
-func (s *APIService) GetOutputStream(ctx context.Context, req *connect.Request[pb.GetOutputStreamRequest], st *connect.ServerStream[pb.ApplicationOutput]) error {
-	msg := req.Msg
-	after := time.Now()
-	if req.Msg.After != nil {
-		after = msg.After.AsTime()
-	}
-	err := s.svc.GetOutputStream(ctx, msg.ApplicationId, after, func(l *domain.ContainerLog) error {
+func (s *APIService) GetOutputStream(ctx context.Context, req *connect.Request[pb.ApplicationIdRequest], st *connect.ServerStream[pb.ApplicationOutput]) error {
+	err := s.svc.GetOutputStream(ctx, req.Msg.Id, func(l *domain.ContainerLog) error {
 		return st.Send(pbconvert.ToPBApplicationOutput(l))
 	})
 	if err != nil {

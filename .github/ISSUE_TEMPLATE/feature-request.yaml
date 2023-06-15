@@ -1,0 +1,32 @@
+name: 機能追加
+description: 機能追加リクエストのテンプレート
+title: "[Feature]: "
+labels: ["kind/feature"]
+body:
+  - type: textarea
+    attributes:
+      label: 問題の説明
+      description: 今の機能に問題がある場合、その説明
+      placeholder: ダッシュボードのアプリ一覧にxxが表示されていないため見にくい。
+    validations:
+      required: false
+  - type: textarea
+    attributes:
+      label: 新機能の説明
+      description: 新機能のを簡潔な提案
+      placeholder: ダッシュボードのアプリ一覧にxxを表示してほしい。
+    validations:
+      required: false
+  - type: textarea
+    attributes:
+      label: その他の案
+      description: 上の提案以外の代替案がある場合
+      placeholder: アプリの詳細ページにxxを表示してほしい。
+    validations:
+      required: false
+  - type: textarea
+    attributes:
+      label: 参考資料
+      description: その他の文脈や参考資料のリンクなど
+    validations:
+      required: false
