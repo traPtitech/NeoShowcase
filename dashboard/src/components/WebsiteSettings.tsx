@@ -4,12 +4,12 @@ import { Radio, RadioItem } from '/@/components/Radio'
 import { Button } from '/@/components/Button'
 import { SetStoreFunction } from 'solid-js/store'
 import { For, Show } from 'solid-js'
-import { storify } from '/@/libs/storify'
 import { InputBar, InputLabel } from '/@/components/Input'
 import { FormButton, FormCheckBox, FormSettings, FormSettingsButton, SettingsContainer } from '/@/components/AppsNew'
 import { availableDomains } from '../libs/api'
 import { styled } from '@macaron-css/solid'
 import { vars } from '../theme'
+import { PlainMessage } from '@bufbuild/protobuf'
 
 const AvailableDomainContainer = styled('div', {
   base: {
@@ -26,8 +26,11 @@ const AvailableDomainUl = styled('ul', {
 
 interface WebsiteSettingProps {
   runtime: boolean
-  website: CreateWebsiteRequest
-  setWebsite: <T extends keyof CreateWebsiteRequest>(valueName: T, value: CreateWebsiteRequest[T]) => void
+  website: PlainMessage<CreateWebsiteRequest>
+  setWebsite: <T extends keyof PlainMessage<CreateWebsiteRequest>>(
+    valueName: T,
+    value: PlainMessage<CreateWebsiteRequest>[T],
+  ) => void
   deleteWebsite: () => void
 }
 
@@ -118,8 +121,8 @@ export const WebsiteSetting = (props: WebsiteSettingProps) => {
 
 interface WebsiteSettingsProps {
   runtime: boolean
-  websiteConfigs: CreateWebsiteRequest[]
-  setWebsiteConfigs: SetStoreFunction<CreateWebsiteRequest[]>
+  websiteConfigs: PlainMessage<CreateWebsiteRequest>[]
+  setWebsiteConfigs: SetStoreFunction<PlainMessage<CreateWebsiteRequest>[]>
 }
 
 export const WebsiteSettings = (props: WebsiteSettingsProps) => {
@@ -143,7 +146,18 @@ export const WebsiteSettings = (props: WebsiteSettingsProps) => {
       <FormButton>
         <Button
           onclick={() => {
-            props.setWebsiteConfigs([...props.websiteConfigs, storify(new CreateWebsiteRequest())])
+            props.setWebsiteConfigs([
+              ...props.websiteConfigs,
+              {
+                fqdn: '',
+                pathPrefix: '/',
+                stripPrefix: false,
+                https: false,
+                h2c: false,
+                httpPort: 0,
+                authentication: AuthenticationType.OFF,
+              },
+            ])
           }}
           color='black1'
           size='large'

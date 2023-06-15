@@ -1,18 +1,7 @@
 import { Header } from '/@/components/Header'
-import { createResource, createSignal, JSX, Show } from 'solid-js'
+import { createResource, JSX, Show } from 'solid-js'
 import { client } from '/@/libs/api'
-import {
-  CreateApplicationRequest,
-  ApplicationConfig,
-  BuildConfigRuntimeBuildpack,
-  CreateWebsiteRequest,
-  PortPublication,
-  BuildConfigRuntimeCmd,
-  BuildConfigRuntimeDockerfile,
-  BuildConfigStaticCmd,
-  BuildConfigStaticDockerfile,
-  RuntimeConfig,
-} from '/@/api/neoshowcase/protobuf/gateway_pb'
+import { CreateApplicationRequest, CreateWebsiteRequest, PortPublication } from '/@/api/neoshowcase/protobuf/gateway_pb'
 import { A, useNavigate, useSearchParams } from '@solidjs/router'
 import { BsArrowLeftShort } from 'solid-icons/bs'
 import { Container } from '/@/libs/layout'
@@ -23,13 +12,13 @@ import { Checkbox } from '/@/components/Checkbox'
 import { createStore } from 'solid-js/store'
 import toast from 'solid-toast'
 import { ConnectError } from '@bufbuild/connect'
-import { storify } from '/@/libs/storify'
 import { RepositoryInfo } from '/@/components/RepositoryInfo'
 import { InputBar, InputLabel } from '/@/components/Input'
 import { FormCheckBox, FormTextBig } from '/@/components/AppsNew'
 import { WebsiteSettings } from '/@/components/WebsiteSettings'
 import { PortPublicationSettings } from '/@/components/PortPublications'
-import { BuildConfigs } from '/@/components/BuildConfigs'
+import { BuildConfig, BuildConfigMethod, BuildConfigs } from '/@/components/BuildConfigs'
+import { PlainMessage } from '@bufbuild/protobuf'
 
 const AppTitle = styled('div', {
   base: {
@@ -98,59 +87,80 @@ export default () => {
     (id) => client.getRepository({ repositoryId: id }),
   )
 
-  const [createApplicationRequest, setCreateApplicationRequest] = createStore(
-    new CreateApplicationRequest({
-      config: new ApplicationConfig(),
-      websites: [],
-      portPublications: [],
-    }),
-  )
-
   const [websiteConfigs, setWebsiteConfigs] = createStore<CreateWebsiteRequest[]>([])
   const [portPublications, setPortPublications] = createStore<PortPublication[]>([])
 
   // Build Config
-  type BuildConfigMethod = ApplicationConfig['buildConfig']['case']
-  const [runtimeConfig, setRuntimeConfig] = createStore<RuntimeConfig>(new RuntimeConfig())
-  const [buildConfigMethod, setBuildConfigMethod] = createSignal<BuildConfigMethod>('runtimeBuildpack')
-  const isRuntime = () =>
-    (['runtimeBuildpack', 'runtimeCmd', 'runtimeDockerfile'] as BuildConfigMethod[]).includes(buildConfigMethod())
-  const [buildConfig, setBuildConfig] = createStore<{
-    [K in BuildConfigMethod]: Extract<ApplicationConfig['buildConfig'], { case: K }>
-  }>({
+  const runtimeConfig = {
+    command: '',
+    entrypoint: '',
+    useMariadb: false,
+    useMongodb: false,
+  }
+  const [createApplicationRequest, setCreateApplicationRequest] = createStore<PlainMessage<CreateApplicationRequest>>({
+    name: '',
+    portPublications: [],
+    refName: '',
+    repositoryId: '',
+    websites: [],
+    startOnCreate: false,
+    config: {
+      buildConfig: {
+        case: 'runtimeBuildpack',
+        value: {
+          context: '',
+          runtimeConfig: runtimeConfig,
+        },
+      },
+    },
+  })
+
+  const [buildConfig, setBuildConfig] = createStore<BuildConfig>({
     runtimeBuildpack: {
       case: 'runtimeBuildpack',
-      value: storify(
-        new BuildConfigRuntimeBuildpack({
-          runtimeConfig: runtimeConfig,
-        }),
-      ),
+      value: {
+        context: '',
+        runtimeConfig: runtimeConfig,
+      },
     },
     runtimeCmd: {
       case: 'runtimeCmd',
-      value: storify(
-        new BuildConfigRuntimeCmd({
-          runtimeConfig: runtimeConfig,
-        }),
-      ),
+      value: {
+        baseImage: '',
+        buildCmd: '',
+        buildCmdShell: false,
+        runtimeConfig: runtimeConfig,
+      },
     },
     runtimeDockerfile: {
       case: 'runtimeDockerfile',
-      value: storify(
-        new BuildConfigRuntimeDockerfile({
-          runtimeConfig: runtimeConfig,
-        }),
-      ),
+      value: {
+        context: '',
+        dockerfileName: '',
+        runtimeConfig: runtimeConfig,
+      },
     },
     staticCmd: {
       case: 'staticCmd',
-      value: storify(new BuildConfigStaticCmd()),
+      value: {
+        artifactPath: '',
+        baseImage: '',
+        buildCmd: '',
+        buildCmdShell: false,
+      },
     },
     staticDockerfile: {
       case: 'staticDockerfile',
-      value: storify(new BuildConfigStaticDockerfile()),
+      value: {
+        artifactPath: '',
+        context: '',
+        dockerfileName: '',
+      },
     },
+    method: 'runtimeBuildpack',
   })
+  const isRuntime = () =>
+    (['runtimeBuildpack', 'runtimeCmd', 'runtimeDockerfile'] as BuildConfigMethod[]).includes(buildConfig.method)
 
   setCreateApplicationRequest('repositoryId', searchParams.repositoryID)
 
@@ -165,7 +175,7 @@ export default () => {
       return
     }
 
-    setCreateApplicationRequest('config', 'buildConfig', buildConfig[buildConfigMethod()])
+    setCreateApplicationRequest('config', 'buildConfig', buildConfig[buildConfig.method])
     setCreateApplicationRequest('websites', websiteConfigs)
     setCreateApplicationRequest('portPublications', portPublications)
     try {
@@ -213,14 +223,7 @@ export default () => {
 
             <div>
               <FormTextBig>Build Setting</FormTextBig>
-              <BuildConfigs
-                setBuildConfig={setBuildConfig}
-                buildConfig={buildConfig}
-                runtimeConfig={runtimeConfig}
-                setRuntimeConfig={setRuntimeConfig}
-                buildConfigMethod={buildConfigMethod()}
-                setBuildConfigMethod={setBuildConfigMethod}
-              />
+              <BuildConfigs setBuildConfig={setBuildConfig} buildConfig={buildConfig} />
             </div>
 
             <div>
