@@ -13,10 +13,9 @@ import {
   CreateWebsiteRequest,
   DeployType,
   PortPublication,
-  RuntimeConfig,
   User,
 } from '/@/api/neoshowcase/protobuf/gateway_pb'
-import { BuildConfig, BuildConfigMethod, BuildConfigs } from '/@/components/BuildConfigs'
+import { BuildConfig, BuildConfigs } from '/@/components/BuildConfigs'
 import toast from 'solid-toast'
 import { WebsiteSettings } from '/@/components/WebsiteSettings'
 import { InputBar, InputLabel } from '/@/components/Input'
@@ -193,13 +192,12 @@ export default () => {
   }
 
   const BuildConfigsContainer: Component = () => {
-    const [runtimeConfig, setRuntimeConfig] = createStore<PlainMessage<RuntimeConfig>>({
+    const runtimeConfig = {
       command: '',
       entrypoint: '',
       useMariadb: false,
       useMongodb: false,
-    })
-    const [buildConfigMethod, setBuildConfigMethod] = createSignal<BuildConfigMethod>(app().config.buildConfig.case)
+    }
     const [buildConfig, setBuildConfig] = createStore<BuildConfig>({
       runtimeBuildpack: {
         case: 'runtimeBuildpack',
@@ -242,12 +240,13 @@ export default () => {
           dockerfileName: '',
         },
       },
+      method: 'runtimeBuildpack',
     })
 
     // 現在のビルド設定を反映
     onMount(() => {
       const conf = getPlainMessage(app().config)
-      setBuildConfigMethod(conf.buildConfig.case)
+      setBuildConfig('method', conf.buildConfig.case)
       setBuildConfig({
         [conf.buildConfig.case]: {
           case: conf.buildConfig.case,
@@ -258,8 +257,9 @@ export default () => {
         case 'runtimeBuildpack':
         case 'runtimeCmd':
         case 'runtimeDockerfile':
-          setRuntimeConfig(conf.buildConfig.value.runtimeConfig)
-          setBuildConfig(conf.buildConfig.case, 'value', { runtimeConfig: runtimeConfig })
+          setBuildConfig('runtimeBuildpack', 'value', 'runtimeConfig', conf.buildConfig.value.runtimeConfig)
+          setBuildConfig('runtimeCmd', 'value', 'runtimeConfig', conf.buildConfig.value.runtimeConfig)
+          setBuildConfig('runtimeDockerfile', 'value', 'runtimeConfig', conf.buildConfig.value.runtimeConfig)
       }
     })
 
@@ -271,7 +271,7 @@ export default () => {
         await client.updateApplication({
           id: app().id,
           config: {
-            buildConfig: buildConfig[buildConfigMethod()],
+            buildConfig: buildConfig[buildConfig.method],
           },
         })
         toast.success('ビルド設定を更新しました')
@@ -284,14 +284,7 @@ export default () => {
     return (
       <SettingFieldSet>
         <FormTextBig id='build-settings'>Build Settings</FormTextBig>
-        <BuildConfigs
-          setBuildConfig={setBuildConfig}
-          buildConfig={buildConfig}
-          runtimeConfig={runtimeConfig}
-          setRuntimeConfig={setRuntimeConfig}
-          buildConfigMethod={buildConfigMethod()}
-          setBuildConfigMethod={setBuildConfigMethod}
-        />
+        <BuildConfigs setBuildConfig={setBuildConfig} buildConfig={buildConfig} />
         <Button color='black1' size='large' width='auto' onclick={updateBuildSettings} type='submit'>
           Save
         </Button>

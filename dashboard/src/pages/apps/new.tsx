@@ -1,11 +1,10 @@
 import { Header } from '/@/components/Header'
-import { createResource, createSignal, JSX, Show } from 'solid-js'
+import { createResource, JSX, Show } from 'solid-js'
 import { client } from '/@/libs/api'
 import {
   CreateApplicationRequest,
   CreateWebsiteRequest,
   PortPublication,
-  RuntimeConfig,
 } from '/@/api/neoshowcase/protobuf/gateway_pb'
 import { A, useNavigate, useSearchParams } from '@solidjs/router'
 import { BsArrowLeftShort } from 'solid-icons/bs'
@@ -96,12 +95,12 @@ export default () => {
   const [portPublications, setPortPublications] = createStore<PortPublication[]>([])
 
   // Build Config
-  const [runtimeConfig, setRuntimeConfig] = createStore<PlainMessage<RuntimeConfig>>({
+  const runtimeConfig = {
     command: '',
     entrypoint: '',
     useMariadb: false,
     useMongodb: false,
-  })
+  }
   const [createApplicationRequest, setCreateApplicationRequest] = createStore<PlainMessage<CreateApplicationRequest>>({
     name: '',
     portPublications: [],
@@ -119,9 +118,7 @@ export default () => {
       },
     },
   })
-  const [buildConfigMethod, setBuildConfigMethod] = createSignal<BuildConfigMethod>('runtimeBuildpack')
-  const isRuntime = () =>
-    (['runtimeBuildpack', 'runtimeCmd', 'runtimeDockerfile'] as BuildConfigMethod[]).includes(buildConfigMethod())
+
   const [buildConfig, setBuildConfig] = createStore<BuildConfig>({
     runtimeBuildpack: {
       case: 'runtimeBuildpack',
@@ -164,7 +161,10 @@ export default () => {
         dockerfileName: '',
       },
     },
+    method: 'runtimeBuildpack',
   })
+  const isRuntime = () =>
+    (['runtimeBuildpack', 'runtimeCmd', 'runtimeDockerfile'] as BuildConfigMethod[]).includes(buildConfig.method)
 
   setCreateApplicationRequest('repositoryId', searchParams.repositoryID)
 
@@ -179,7 +179,7 @@ export default () => {
       return
     }
 
-    setCreateApplicationRequest('config', 'buildConfig', buildConfig[buildConfigMethod()])
+    setCreateApplicationRequest('config', 'buildConfig', buildConfig[buildConfig.method])
     setCreateApplicationRequest('websites', websiteConfigs)
     setCreateApplicationRequest('portPublications', portPublications)
     try {
@@ -227,14 +227,7 @@ export default () => {
 
             <div>
               <FormTextBig>Build Setting</FormTextBig>
-              <BuildConfigs
-                setBuildConfig={setBuildConfig}
-                buildConfig={buildConfig}
-                runtimeConfig={runtimeConfig}
-                setRuntimeConfig={setRuntimeConfig}
-                buildConfigMethod={buildConfigMethod()}
-                setBuildConfigMethod={setBuildConfigMethod}
-              />
+              <BuildConfigs setBuildConfig={setBuildConfig} buildConfig={buildConfig} />
             </div>
 
             <div>

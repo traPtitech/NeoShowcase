@@ -3,7 +3,7 @@ import { SetStoreFunction } from 'solid-js/store'
 import { InputBar, InputLabel } from '/@/components/Input'
 import { FormCheckBox, FormSettings } from '/@/components/AppsNew'
 import { Checkbox } from '/@/components/Checkbox'
-import { Match, Setter, Switch } from 'solid-js'
+import { Match, Switch } from 'solid-js'
 import { Radio, RadioItem } from '/@/components/Radio'
 import { PlainMessage } from '@bufbuild/protobuf'
 
@@ -17,7 +17,7 @@ const buildConfigItems: RadioItem<BuildConfigMethod>[] = [
 
 export interface FormRuntimeConfigProps {
   runtimeConfig: PlainMessage<RuntimeConfig>
-  setRuntimeConfig: SetStoreFunction<PlainMessage<RuntimeConfig>>
+  setRuntimeConfig: <K extends keyof PlainMessage<RuntimeConfig>>(k: K, v: PlainMessage<RuntimeConfig>[K]) => void
 }
 
 const RuntimeConfigs = (props: FormRuntimeConfigProps) => {
@@ -61,26 +61,37 @@ const RuntimeConfigs = (props: FormRuntimeConfigProps) => {
 export type BuildConfigMethod = ApplicationConfig['buildConfig']['case']
 export type BuildConfig = {
   [K in BuildConfigMethod]: Extract<PlainMessage<ApplicationConfig>['buildConfig'], { case: K }>
+} & {
+  method: BuildConfigMethod
 }
 
 export interface BuildConfigsProps {
-  buildConfigMethod: BuildConfigMethod
-  setBuildConfigMethod: Setter<BuildConfigMethod>
   buildConfig: BuildConfig
   setBuildConfig: SetStoreFunction<BuildConfig>
-  runtimeConfig: PlainMessage<RuntimeConfig>
-  setRuntimeConfig: SetStoreFunction<PlainMessage<RuntimeConfig>>
 }
 export const BuildConfigs = (props: BuildConfigsProps) => {
+  const AppliedRuntimeConfigs = () => (
+    <RuntimeConfigs
+      runtimeConfig={props.buildConfig.runtimeBuildpack.value.runtimeConfig}
+      setRuntimeConfig={(k, v) => {
+        props.setBuildConfig('runtimeBuildpack', 'value', 'runtimeConfig', k, v)
+      }}
+    />
+  )
+
   return (
     <FormSettings>
       <div>
-        <Radio items={buildConfigItems} selected={props.buildConfigMethod} setSelected={props.setBuildConfigMethod} />
+        <Radio
+          items={buildConfigItems}
+          selected={props.buildConfig.method}
+          setSelected={(method) => props.setBuildConfig('method', method)}
+        />
       </div>
 
       <Switch>
-        <Match when={props.buildConfigMethod === 'runtimeBuildpack'}>
-          <RuntimeConfigs runtimeConfig={props.runtimeConfig} setRuntimeConfig={props.setRuntimeConfig} />
+        <Match when={props.buildConfig.method === 'runtimeBuildpack'}>
+          <AppliedRuntimeConfigs />
           <div>
             <InputLabel>Context</InputLabel>
             <InputBar
@@ -91,8 +102,8 @@ export const BuildConfigs = (props: BuildConfigsProps) => {
           </div>
         </Match>
 
-        <Match when={props.buildConfigMethod === 'runtimeCmd'}>
-          <RuntimeConfigs runtimeConfig={props.runtimeConfig} setRuntimeConfig={props.setRuntimeConfig} />
+        <Match when={props.buildConfig.method === 'runtimeCmd'}>
+          <AppliedRuntimeConfigs />
           <div>
             <InputLabel>Base image</InputLabel>
             <InputBar
@@ -121,8 +132,8 @@ export const BuildConfigs = (props: BuildConfigsProps) => {
           </div>
         </Match>
 
-        <Match when={props.buildConfigMethod === 'runtimeDockerfile'}>
-          <RuntimeConfigs runtimeConfig={props.runtimeConfig} setRuntimeConfig={props.setRuntimeConfig} />
+        <Match when={props.buildConfig.method === 'runtimeDockerfile'}>
+          <AppliedRuntimeConfigs />
           <div>
             <InputLabel>Dockerfile name</InputLabel>
             <InputBar
@@ -141,7 +152,7 @@ export const BuildConfigs = (props: BuildConfigsProps) => {
           </div>
         </Match>
 
-        <Match when={props.buildConfigMethod === 'staticCmd'}>
+        <Match when={props.buildConfig.method === 'staticCmd'}>
           <div>
             <InputLabel>Base image</InputLabel>
             <InputBar
@@ -177,7 +188,7 @@ export const BuildConfigs = (props: BuildConfigsProps) => {
           </div>
         </Match>
 
-        <Match when={props.buildConfigMethod === 'staticDockerfile'}>
+        <Match when={props.buildConfig.method === 'staticDockerfile'}>
           <div>
             <InputLabel>Dockerfile name</InputLabel>
             <InputBar
