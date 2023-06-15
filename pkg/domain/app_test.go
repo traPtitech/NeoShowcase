@@ -68,6 +68,20 @@ func TestApplicationConfig_Validate(t *testing.T) {
 			wantErr: false,
 		},
 		{
+			name:       "empty entrypoint cmd (runtime cmd, has base image)",
+			deployType: DeployTypeRuntime,
+			config: ApplicationConfig{
+				BuildConfig: &BuildConfigRuntimeCmd{
+					RuntimeConfig: RuntimeConfig{
+						Entrypoint: "",
+					},
+					BaseImage: "php:7-apache",
+					BuildCmd:  "",
+				},
+			},
+			wantErr: false,
+		},
+		{
 			name:       "empty entrypoint cmd (runtime cmd)",
 			deployType: DeployTypeRuntime,
 			config: ApplicationConfig{
@@ -75,8 +89,8 @@ func TestApplicationConfig_Validate(t *testing.T) {
 					RuntimeConfig: RuntimeConfig{
 						Entrypoint: "",
 					},
-					BaseImage: "golang:1.20",
-					BuildCmd:  "go build -o main",
+					BaseImage: "",
+					BuildCmd:  "",
 				},
 			},
 			wantErr: true,
