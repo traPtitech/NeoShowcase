@@ -15,11 +15,11 @@ const SshDetails = styled('div', {
     marginBottom: '4px',
   },
 })
+
 const PublicKeyCode = styled('code', {
   base: {
     display: 'block',
     padding: '8px 12px',
-    fontFamily: 'monospace',
     fontSize: '14px',
     background: vars.bg.white2,
     color: vars.text.black1,
@@ -36,8 +36,8 @@ export type AuthConfig = {
 }
 
 interface RepositoryAuthSettingsProps {
-  authConfig: AuthConfig
-  setAuthConfig: SetStoreFunction<AuthConfig>
+  authConfig: PlainMessage<CreateRepositoryAuth>
+  setAuthConfig: SetStoreFunction<PlainMessage<CreateRepositoryAuth>>
 }
 
 export const RepositoryAuthSettings: Component<RepositoryAuthSettingsProps> = (props) => {
@@ -49,7 +49,7 @@ export const RepositoryAuthSettings: Component<RepositoryAuthSettingsProps> = (p
   )
   createEffect(() => {
     if (!tmpKey()) return
-    props.setAuthConfig('ssh', 'value', { keyId: tmpKey()?.keyId })
+    props.setAuthConfig('auth', 'value', { keyId: tmpKey()?.keyId })
   })
   const publicKey = () => (useTmpKey() ? tmpKey()?.publicKey : systemPublicKey()?.publicKey)
 
@@ -62,26 +62,30 @@ export const RepositoryAuthSettings: Component<RepositoryAuthSettingsProps> = (p
           { title: 'Basic認証を使用', value: 'basic' },
           { title: 'SSH認証を使用', value: 'ssh' },
         ]}
-        selected={props.authConfig.authMethod}
-        setSelected={(v) => props.setAuthConfig('authMethod', v)}
+        selected={props.authConfig.auth.case}
+        setSelected={(v) => props.setAuthConfig('auth', 'case', v)}
       />
       <Switch>
-        <Match when={props.authConfig.authMethod === 'basic'}>
-          <InputLabel>ユーザー名</InputLabel>
-          <InputBar
-            // SSH URLはURLとしては不正なのでtypeを変更
-            value={props.authConfig.basic.value.username}
-            onInput={(e) => props.setAuthConfig('basic', 'value', { username: e.currentTarget.value })}
-          />
-          <InputLabel>パスワード</InputLabel>
-          <InputBar
-            // SSH URLはURLとしては不正なのでtypeを変更
-            type='password'
-            value={props.authConfig.basic.value.password}
-            onInput={(e) => props.setAuthConfig('basic', 'value', { password: e.currentTarget.value })}
-          />
+        <Match when={props.authConfig.auth.case === 'basic' && props.authConfig.auth.value}>
+          {(v) => (
+            <>
+              <InputLabel>ユーザー名</InputLabel>
+              <InputBar
+                // SSH URLはURLとしては不正なのでtypeを変更
+                value={v().username}
+                onInput={(e) => props.setAuthConfig('auth', 'value', { username: e.currentTarget.value })}
+              />
+              <InputLabel>パスワード</InputLabel>
+              <InputBar
+                // SSH URLはURLとしては不正なのでtypeを変更
+                type='password'
+                value={v().password}
+                onInput={(e) => props.setAuthConfig('auth', 'value', { password: e.currentTarget.value })}
+              />
+            </>
+          )}
         </Match>
-        <Match when={props.authConfig.authMethod === 'ssh'}>
+        <Match when={props.authConfig.auth.case === 'ssh'}>
           <SshDetails>
             以下のSSH公開鍵{!useTmpKey() && ' (システムデフォルト) '}をリポジトリに登録してください。
           </SshDetails>

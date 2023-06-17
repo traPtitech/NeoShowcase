@@ -1,5 +1,5 @@
 import { useParams } from '@solidjs/router'
-import { Component, JSX, Show, createEffect, createMemo, createResource, createSignal } from 'solid-js'
+import { Component, createEffect, createMemo, createResource, createSignal, JSX, Show } from 'solid-js'
 import { client, handleAPIError } from '/@/libs/api'
 import { Container } from '/@/libs/layout'
 import { Header } from '/@/components/Header'
@@ -7,18 +7,22 @@ import { Button } from '/@/components/Button'
 import { styled } from '@macaron-css/solid'
 import { vars } from '/@/theme'
 import { createStore } from 'solid-js/store'
-import { Repository_AuthMethod, UpdateRepositoryRequest, User } from '/@/api/neoshowcase/protobuf/gateway_pb'
+import {
+  CreateRepositoryAuth,
+  Repository_AuthMethod,
+  UpdateRepositoryRequest,
+  User,
+} from '/@/api/neoshowcase/protobuf/gateway_pb'
 import toast from 'solid-toast'
-import { InputLabel } from '/@/components/Input'
-import { InputBar } from '/@/components/Input'
+import { InputBar, InputLabel } from '/@/components/Input'
 import { FormTextBig } from '/@/components/AppsNew'
 import { userFromId, users } from '/@/libs/useAllUsers'
 import { UserSearch } from '/@/components/UserSearch'
 import useModal from '/@/libs/useModal'
 import RepositoryNav from '/@/components/RepositoryNav'
-import { authMethodMap, extractRepositoryNameFromURL } from '/@/libs/application'
-import { AuthConfig, RepositoryAuthSettings } from '/@/components/RepositoryAuthSettings'
-import { PartialMessage } from '@bufbuild/protobuf'
+import { extractRepositoryNameFromURL } from '/@/libs/application'
+import { RepositoryAuthSettings } from '/@/components/RepositoryAuthSettings'
+import { PartialMessage, PlainMessage } from '@bufbuild/protobuf'
 
 const ContentContainer = styled('div', {
   base: {
@@ -85,38 +89,40 @@ export default () => {
     () => params.id,
     (repositoryId) => client.getRepository({ repositoryId }),
   )
+  const loaded = () => !!(users() && repo())
+
+  const update = async (req: PlainMessage<UpdateRepositoryRequest>) => {
+    try {
+      await client.updateRepository(req)
+      toast.success('リポジトリ設定を更新しました')
+      refetchRepo()
+    } catch (e) {
+      handleAPIError(e, 'リポジトリ設定の更新に失敗しました')
+    }
+  }
 
   const GeneralConfigsContainer: Component = () => {
     let formContainer: HTMLFormElement
+
     // 現在の設定で初期化
-    const [generalConfig, setGeneralConfig] = createStore({
+    const [generalConfig, setGeneralConfig] = createStore<PlainMessage<UpdateRepositoryRequest>>({
+      id: repo().id,
       name: repo().name,
       url: repo().url,
     })
-
     const [updateAuthConfig, setUpdateAuthConfig] = createSignal(false)
-
-    // 認証情報
-    // 認証方法の切り替え時に情報を保持するために、storeを使用して3種類の認証情報を保持する
-    const [authConfig, setAuthConfig] = createStore<AuthConfig>({
-      none: {
-        case: 'none',
-        value: {},
-      },
-      basic: {
-        case: 'basic',
-        value: {
-          username: '',
-          password: '',
-        },
-      },
-      ssh: {
-        case: 'ssh',
-        value: {
-          keyId: '',
-        },
-      },
-      authMethod: authMethodMap[repo().authMethod],
+    const mapAuthMethod = (authMethod: Repository_AuthMethod): PlainMessage<CreateRepositoryAuth>['auth'] => {
+      switch (authMethod) {
+        case Repository_AuthMethod.NONE:
+          return { case: 'none', value: {} }
+        case Repository_AuthMethod.BASIC:
+          return { case: 'basic', value: { username: '', password: '' } }
+        case Repository_AuthMethod.SSH:
+          return { case: 'ssh', value: { keyId: '' } }
+      }
+    }
+    const [authConfig, setAuthConfig] = createStore<PlainMessage<CreateRepositoryAuth>>({
+      auth: mapAuthMethod(repo().authMethod),
     })
 
     // URLからリポジトリ名を自動入力
@@ -125,32 +131,12 @@ export default () => {
       setGeneralConfig('name', repositoryName)
     })
 
-    const updateGeneralSettings: JSX.EventHandler<HTMLButtonElement, MouseEvent> = async (e) => {
-      // prevent default form submit (reload page)
+    const onClickSave: JSX.EventHandler<HTMLButtonElement, MouseEvent> = async (e) => {
       e.preventDefault()
-
-      // validate form
       if (!formContainer.reportValidity()) {
         return
       }
-
-      try {
-        await client.updateRepository({
-          id: repo().id,
-          name: generalConfig.name,
-          url: generalConfig.url,
-          auth: updateAuthConfig()
-            ? {
-                auth: authConfig[authConfig.authMethod],
-              }
-            : undefined,
-        })
-        toast.success('リポジトリ設定を更新しました')
-        setUpdateAuthConfig(false)
-        refetchRepo()
-      } catch (e) {
-        handleAPIError(e, 'リポジトリ設定の更新に失敗しました')
-      }
+      return update({ ...generalConfig, auth: authConfig })
     }
 
     return (
@@ -170,7 +156,7 @@ export default () => {
             <InputLabel>Repository URL</InputLabel>
             <InputBar
               // SSH URLはURLとしては不正なのでtypeを変更
-              type={authConfig.authMethod === 'ssh' ? 'text' : 'url'}
+              type={authConfig.auth.case === 'ssh' ? 'text' : 'url'}
               placeholder='https://example.com/my-app.git'
               value={generalConfig.url}
               onChange={(e) => setGeneralConfig('url', e.currentTarget.value)}
@@ -192,7 +178,7 @@ export default () => {
           <Show when={updateAuthConfig()}>
             <RepositoryAuthSettings authConfig={authConfig} setAuthConfig={setAuthConfig} />
           </Show>
-          <Button color='black1' size='large' width='auto' onclick={updateGeneralSettings} type='submit'>
+          <Button color='black1' size='large' width='auto' onclick={onClickSave} type='submit'>
             Save
           </Button>
         </SettingFieldSet>
@@ -204,7 +190,7 @@ export default () => {
     const { Modal, open } = useModal()
 
     const nonOwnerUsers = createMemo(() => {
-      return users()?.filter((user) => !repo().ownerIds.includes(user.id)) ?? []
+      return users().filter((user) => !repo().ownerIds.includes(user.id)) ?? []
     })
 
     const handleAddOwner = async (user: User) => {
@@ -285,7 +271,7 @@ export default () => {
   return (
     <Container>
       <Header />
-      <Show when={repo()}>
+      <Show when={loaded()}>
         <RepositoryNav repository={repo()} />
         <ContentContainer>
           <div>

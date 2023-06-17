@@ -1,10 +1,12 @@
 import { styled } from '@macaron-css/solid'
 import { vars } from '/@/theme'
 
-export const LogContainer = styled('div', {
+export const LogContainer = styled('code', {
   base: {
     display: 'flex',
     flexDirection: 'column',
+    fontSize: '15px',
+    lineHeight: '20px',
 
     backgroundColor: vars.bg.black1,
     padding: '10px',

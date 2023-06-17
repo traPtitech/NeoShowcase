@@ -1,5 +1,5 @@
 import { useParams } from '@solidjs/router'
-import { Component, createEffect, createMemo, createResource, createSignal, For, JSX, onMount, Show } from 'solid-js'
+import { Component, createEffect, createMemo, createResource, createSignal, For, JSX, Show } from 'solid-js'
 import { client, handleAPIError } from '/@/libs/api'
 import { Container } from '/@/libs/layout'
 import { Header } from '/@/components/Header'
@@ -8,14 +8,8 @@ import { Button } from '/@/components/Button'
 import { styled } from '@macaron-css/solid'
 import { vars } from '/@/theme'
 import { createStore } from 'solid-js/store'
-import {
-  ApplicationEnvVar,
-  CreateWebsiteRequest,
-  DeployType,
-  PortPublication,
-  User,
-} from '/@/api/neoshowcase/protobuf/gateway_pb'
-import { BuildConfig, BuildConfigs } from '/@/components/BuildConfigs'
+import { ApplicationEnvVar, DeployType, UpdateApplicationRequest, User } from '/@/api/neoshowcase/protobuf/gateway_pb'
+import { BuildConfigs } from '/@/components/BuildConfigs'
 import toast from 'solid-toast'
 import { WebsiteSettings } from '/@/components/WebsiteSettings'
 import { InputBar, InputLabel } from '/@/components/Input'
@@ -27,7 +21,6 @@ import useModal from '/@/libs/useModal'
 import { style } from '@macaron-css/core'
 import { ModalButtonsContainer, ModalContainer, ModalText } from '/@/components/Modal'
 import { PlainMessage } from '@bufbuild/protobuf'
-import { getPlainMessage } from '../../../libs/getPlainMessage'
 
 const ContentContainer = styled('div', {
   base: {
@@ -129,7 +122,17 @@ export default () => {
     () => app()?.repositoryId,
     (id) => client.getRepository({ repositoryId: id }),
   )
-  const loaded = () => !!(app() && repo())
+  const loaded = () => !!(users() && app() && repo())
+
+  const update = async (req: PlainMessage<UpdateApplicationRequest>) => {
+    try {
+      await client.updateApplication(req)
+      toast.success('アプリ設定を更新しました')
+      refetchApp()
+    } catch (e) {
+      handleAPIError(e, 'アプリ設定の更新に失敗しました')
+    }
+  }
 
   const GeneralConfigsContainer: Component = () => {
     // 現在の設定で初期化
@@ -140,25 +143,15 @@ export default () => {
     let formContainer: HTMLFormElement
 
     const updateGeneralSettings: JSX.EventHandler<HTMLButtonElement, MouseEvent> = async (e) => {
-      // prevent default form submit (reload page)
       e.preventDefault()
-
-      // validate form
       if (!formContainer.reportValidity()) {
         return
       }
-
-      try {
-        await client.updateApplication({
-          id: app().id,
-          name: generalConfig.name,
-          refName: generalConfig.refName,
-        })
-        toast.success('アプリ設定を更新しました')
-        refetchApp()
-      } catch (e) {
-        handleAPIError(e, 'アプリ設定の更新に失敗しました')
-      }
+      return update({
+        id: app().id,
+        name: generalConfig.name,
+        refName: generalConfig.refName,
+      })
     }
 
     return (
@@ -192,76 +185,7 @@ export default () => {
   }
 
   const BuildConfigsContainer: Component = () => {
-    const runtimeConfig = {
-      command: '',
-      entrypoint: '',
-      useMariadb: false,
-      useMongodb: false,
-    }
-    const [buildConfig, setBuildConfig] = createStore<BuildConfig>({
-      runtimeBuildpack: {
-        case: 'runtimeBuildpack',
-        value: {
-          context: '',
-          runtimeConfig: runtimeConfig,
-        },
-      },
-      runtimeCmd: {
-        case: 'runtimeCmd',
-        value: {
-          baseImage: '',
-          buildCmd: '',
-          buildCmdShell: false,
-          runtimeConfig: runtimeConfig,
-        },
-      },
-      runtimeDockerfile: {
-        case: 'runtimeDockerfile',
-        value: {
-          context: '',
-          dockerfileName: '',
-          runtimeConfig: runtimeConfig,
-        },
-      },
-      staticCmd: {
-        case: 'staticCmd',
-        value: {
-          artifactPath: '',
-          baseImage: '',
-          buildCmd: '',
-          buildCmdShell: false,
-        },
-      },
-      staticDockerfile: {
-        case: 'staticDockerfile',
-        value: {
-          artifactPath: '',
-          context: '',
-          dockerfileName: '',
-        },
-      },
-      method: 'runtimeBuildpack',
-    })
-
-    // 現在のビルド設定を反映
-    onMount(() => {
-      const conf = getPlainMessage(app().config)
-      setBuildConfig('method', conf.buildConfig.case)
-      setBuildConfig({
-        [conf.buildConfig.case]: {
-          case: conf.buildConfig.case,
-          value: conf.buildConfig.value,
-        },
-      })
-      switch (conf.buildConfig.case) {
-        case 'runtimeBuildpack':
-        case 'runtimeCmd':
-        case 'runtimeDockerfile':
-          setBuildConfig('runtimeBuildpack', 'value', { runtimeConfig: conf.buildConfig.value.runtimeConfig })
-          setBuildConfig('runtimeCmd', 'value', { runtimeConfig: conf.buildConfig.value.runtimeConfig })
-          setBuildConfig('runtimeDockerfile', 'value', { runtimeConfig: conf.buildConfig.value.runtimeConfig })
-      }
-    })
+    const [config, setConfig] = createStore(structuredClone(app().config.buildConfig))
 
     const updateBuildSettings: JSX.EventHandler<HTMLButtonElement, MouseEvent> = async (e) => {
       // prevent default form submit (reload page)
@@ -270,9 +194,7 @@ export default () => {
       try {
         await client.updateApplication({
           id: app().id,
-          config: {
-            buildConfig: buildConfig[buildConfig.method],
-          },
+          config: { buildConfig: config },
         })
         toast.success('ビルド設定を更新しました')
         refetchApp()
@@ -284,7 +206,7 @@ export default () => {
     return (
       <SettingFieldSet>
         <FormTextBig id='build-settings'>Build Settings</FormTextBig>
-        <BuildConfigs setBuildConfig={setBuildConfig} buildConfig={buildConfig} />
+        <BuildConfigs buildConfig={config} setBuildConfig={setConfig} />
         <Button color='black1' size='large' width='auto' onclick={updateBuildSettings} type='submit'>
           Save
         </Button>
@@ -293,28 +215,16 @@ export default () => {
   }
 
   const WebsitesConfigContainer: Component = () => {
-    const [websites, setWebsites] = createStore<PlainMessage<CreateWebsiteRequest>[]>([])
-    // 現在のウェブサイト設定を反映 (`onMount`ではrefetch時に反映されないので`createEffect`を使用)
-    createEffect(() => {
-      // classのまま渡すとリアクティビティが失われるのでオブジェクトに変換して渡す
-      setWebsites(app().websites.map(getPlainMessage))
-    })
+    const [websites, setWebsites] = createStore(structuredClone(app().websites))
 
-    const updateWebsites = async () => {
-      console.log(`websites: ${websites.length}`)
-      console.log(websites)
+    // refetch時反映
+    createEffect(() => setWebsites(structuredClone(app().websites)))
 
-      try {
-        await client.updateApplication({
-          id: app().id,
-          websites: { websites },
-        })
-        toast.success('ウェブサイト設定を更新しました')
-        refetchApp()
-      } catch (e) {
-        handleAPIError(e, 'ウェブサイト設定の更新に失敗しました')
-      }
-    }
+    const updateWebsites = () =>
+      update({
+        id: app().id,
+        websites: { websites },
+      })
 
     return (
       <SettingFieldSet>
@@ -332,30 +242,21 @@ export default () => {
   }
 
   const PortPublicationConfigContainer: Component = () => {
-    const [portPublications, setPortPublications] = createStore<PlainMessage<PortPublication>[]>([])
-    // 現在のポート設定を反映
-    onMount(() => {
-      // classのまま渡すとリアクティビティが失われるのでオブジェクトに変換して渡す
-      setPortPublications(app().portPublications.map(getPlainMessage))
-    })
+    const [ports, setPorts] = createStore(structuredClone(app().portPublications))
 
-    const updatePortPublications = async () => {
-      try {
-        await client.updateApplication({
-          id: app().id,
-          portPublications: { portPublications },
-        })
-        toast.success('ポート設定を更新しました')
-        refetchApp()
-      } catch (e) {
-        handleAPIError(e, 'ポート設定の更新に失敗しました')
-      }
-    }
+    // refetch時反映
+    createEffect(() => setPorts(structuredClone(app().portPublications)))
+
+    const updatePortPublications = () =>
+      update({
+        id: app().id,
+        portPublications: { portPublications: ports },
+      })
 
     return (
       <SettingFieldSet>
         <FormTextBig id='port-settings'>Port Publication Settings</FormTextBig>
-        <PortPublicationSettings portPublications={portPublications} setPortPublications={setPortPublications} />
+        <PortPublicationSettings ports={ports} setPorts={setPorts} />
         <Button color='black1' size='large' width='auto' onclick={updatePortPublications} type='submit'>
           Save
         </Button>
@@ -367,33 +268,19 @@ export default () => {
     const { Modal, open } = useModal()
 
     const nonOwnerUsers = createMemo(() => {
-      return users()?.filter((user) => !app().ownerIds.includes(user.id)) ?? []
+      return users().filter((user) => !app().ownerIds.includes(user.id)) ?? []
     })
 
-    const handleAddOwner = async (user: User) => {
-      try {
-        await client.updateApplication({
-          id: app().id,
-          ownerIds: { ownerIds: app().ownerIds.concat(user.id) },
-        })
-        toast.success('アプリオーナーを追加しました')
-        refetchApp()
-      } catch (e) {
-        handleAPIError(e, 'アプリオーナーの追加に失敗しました')
-      }
-    }
-    const handleDeleteOwner = async (owner: User) => {
-      try {
-        await client.updateApplication({
-          id: app().id,
-          ownerIds: { ownerIds: app().ownerIds.filter((id) => id !== owner.id) },
-        })
-        toast.success('アプリのオーナーを削除しました')
-        refetchApp()
-      } catch (e) {
-        handleAPIError(e, 'アプリのオーナーの削除に失敗しました')
-      }
-    }
+    const handleAddOwner = (user: User) =>
+      update({
+        id: app().id,
+        ownerIds: { ownerIds: app().ownerIds.concat(user.id) },
+      })
+    const handleDeleteOwner = (owner: User) =>
+      update({
+        id: app().id,
+        ownerIds: { ownerIds: app().ownerIds.filter((id) => id !== owner.id) },
+      })
 
     return (
       <>
@@ -404,14 +291,7 @@ export default () => {
           </Button>
           <UserSearch users={app().ownerIds.map((userId) => userFromId(userId))}>
             {(user) => (
-              <Button
-                color='black1'
-                size='large'
-                width='auto'
-                onclick={() => {
-                  handleDeleteOwner(user)
-                }}
-              >
+              <Button color='black1' size='large' width='auto' onclick={() => handleDeleteOwner(user)}>
                 削除
               </Button>
             )}
@@ -420,14 +300,7 @@ export default () => {
         <Modal>
           <UserSearch users={nonOwnerUsers()}>
             {(user) => (
-              <Button
-                color='black1'
-                size='large'
-                width='auto'
-                onclick={() => {
-                  handleAddOwner(user)
-                }}
-              >
+              <Button color='black1' size='large' width='auto' onclick={() => handleAddOwner(user)}>
                 追加
               </Button>
             )}

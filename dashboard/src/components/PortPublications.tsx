@@ -4,12 +4,13 @@ import { Radio, RadioItem } from '/@/components/Radio'
 import { Button } from '/@/components/Button'
 import { SetStoreFunction } from 'solid-js/store'
 import { FormButton, FormSettings, FormSettingsButton, SettingsContainer } from '/@/components/AppsNew'
-import { For } from 'solid-js'
+import { createEffect, For } from 'solid-js'
 import { styled } from '@macaron-css/solid'
 import { vars } from '../theme'
 import { availablePorts } from '../libs/api'
 import { portPublicationProtocolMap } from '../libs/application'
 import { PlainMessage } from '@bufbuild/protobuf'
+import { pickRandom, randIntN } from '/@/libs/random'
 
 const AvailablePortContainer = styled('div', {
   base: {
@@ -25,23 +26,27 @@ const AvailableDomainUl = styled('ul', {
 })
 
 interface PortPublicationProps {
-  portPublication: PlainMessage<PortPublication>
-  setPortPublication: <T extends keyof PlainMessage<PortPublication>>(
+  port: PlainMessage<PortPublication>
+  setPort: <T extends keyof PlainMessage<PortPublication>>(
     valueName: T,
     value: PlainMessage<PortPublication>[T],
   ) => void
-  deletePortPublication: () => void
+  deletePort: () => void
 }
 
-const PortPublications = (props: PortPublicationProps) => {
+const PortSetting = (props: PortPublicationProps) => {
+  createEffect(() => {
+    props.setPort('internetPort', suggestPort(props.port.protocol))
+  })
+
   return (
     <FormSettings>
       <div>
         <InputLabel>Protocol</InputLabel>
         <Radio
           items={protocolItems}
-          selected={props.portPublication.protocol}
-          setSelected={(proto) => props.setPortPublication('protocol', proto)}
+          selected={props.port.protocol}
+          setSelected={(proto) => props.setPort('protocol', proto)}
         />
       </div>
       <div>
@@ -49,33 +54,22 @@ const PortPublications = (props: PortPublicationProps) => {
         <InputBar
           placeholder='39000'
           type='number'
-          onChange={(e) => props.setPortPublication('internetPort', +e.target.value)}
+          value={props.port.internetPort || ''}
+          onChange={(e) => props.setPort('internetPort', +e.target.value)}
         />
-        <AvailablePortContainer>
-          使用可能なポート
-          <AvailableDomainUl>
-            <For each={availablePorts()?.availablePorts}>
-              {(port) => (
-                <li>
-                  {port.startPort}/{portPublicationProtocolMap[port.protocol]}~{port.endPort}/
-                  {portPublicationProtocolMap[port.protocol]}
-                </li>
-              )}
-            </For>
-          </AvailableDomainUl>
-        </AvailablePortContainer>
       </div>
       <div>
         <InputLabel>Application Port</InputLabel>
         <InputBar
           placeholder='8080'
           type='number'
-          onChange={(e) => props.setPortPublication('applicationPort', +e.target.value)}
+          value={props.port.applicationPort || ''}
+          onChange={(e) => props.setPort('applicationPort', +e.target.value)}
         />
       </div>
 
       <FormSettingsButton>
-        <Button onclick={props.deletePortPublication} color='black1' size='large' width='auto' type='button'>
+        <Button onclick={props.deletePort} color='black1' size='large' width='auto' type='button'>
           Delete port publication
         </Button>
       </FormSettingsButton>
@@ -88,40 +82,55 @@ const protocolItems: RadioItem<PortPublicationProtocol>[] = [
   { value: PortPublicationProtocol.UDP, title: 'UDP' },
 ]
 
+const suggestPort = (proto: PortPublicationProtocol): number => {
+  const available = availablePorts()?.availablePorts.filter((a) => a.protocol === proto) || []
+  if (available.length === 0) return 0
+  const range = pickRandom(available)
+  return randIntN(range.endPort + 1 - range.startPort) + range.startPort
+}
+
+const newPort = (): PlainMessage<PortPublication> => {
+  return {
+    internetPort: 0,
+    applicationPort: 0,
+    protocol: PortPublicationProtocol.TCP,
+  }
+}
+
 interface PortPublicationSettingsProps {
-  portPublications: PlainMessage<PortPublication>[]
-  setPortPublications: SetStoreFunction<PlainMessage<PortPublication>[]>
+  ports: PlainMessage<PortPublication>[]
+  setPorts: SetStoreFunction<PlainMessage<PortPublication>[]>
 }
 
 export const PortPublicationSettings = (props: PortPublicationSettingsProps) => {
   return (
     <SettingsContainer>
-      <For each={props.portPublications}>
-        {(portPublication, i) => (
-          <PortPublications
-            portPublication={portPublication}
-            setPortPublication={(valueName, value) => {
-              props.setPortPublications(i(), valueName, value)
-            }}
-            deletePortPublication={() =>
-              props.setPortPublications((current) => [...current.slice(0, i()), ...current.slice(i() + 1)])
-            }
+      <AvailablePortContainer>
+        使用可能なポート
+        <AvailableDomainUl>
+          <For each={availablePorts()?.availablePorts || []}>
+            {(port) => (
+              <li>
+                {port.startPort}/{portPublicationProtocolMap[port.protocol]}~{port.endPort}/
+                {portPublicationProtocolMap[port.protocol]}
+              </li>
+            )}
+          </For>
+        </AvailableDomainUl>
+      </AvailablePortContainer>
+      <For each={props.ports}>
+        {(port, i) => (
+          <PortSetting
+            port={port}
+            setPort={(valueName, value) => props.setPorts(i(), valueName, value)}
+            deletePort={() => props.setPorts((current) => [...current.slice(0, i()), ...current.slice(i() + 1)])}
           />
         )}
       </For>
 
       <FormButton>
         <Button
-          onclick={() => {
-            props.setPortPublications([
-              ...props.portPublications,
-              {
-                internetPort: 0,
-                applicationPort: 0,
-                protocol: PortPublicationProtocol.TCP,
-              },
-            ])
-          }}
+          onclick={() => props.setPorts([...props.ports, newPort()])}
           color='black1'
           size='large'
           width='auto'

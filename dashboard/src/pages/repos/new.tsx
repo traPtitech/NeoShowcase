@@ -2,22 +2,17 @@ import { JSX, JSXElement, createEffect } from 'solid-js'
 import { createStore } from 'solid-js/store'
 import toast from 'solid-toast'
 import { ConnectError } from '@bufbuild/connect'
-import { Empty, PlainMessage } from '@bufbuild/protobuf'
+import { PlainMessage } from '@bufbuild/protobuf'
 import { styled } from '@macaron-css/solid'
 import { useNavigate } from '@solidjs/router'
-import {
-  CreateRepositoryAuth,
-  CreateRepositoryAuthBasic,
-  CreateRepositoryAuthSSH,
-  CreateRepositoryRequest,
-} from '/@/api/neoshowcase/protobuf/gateway_pb'
+import { CreateRepositoryAuth, CreateRepositoryRequest } from '/@/api/neoshowcase/protobuf/gateway_pb'
 import { Button } from '/@/components/Button'
 import { Header } from '/@/components/Header'
 import { client } from '/@/libs/api'
 import { Container } from '/@/libs/layout'
 import { vars } from '/@/theme'
 import { extractRepositoryNameFromURL } from '/@/libs/application'
-import { AuthConfig, RepositoryAuthSettings } from '/@/components/RepositoryAuthSettings'
+import { RepositoryAuthSettings } from '/@/components/RepositoryAuthSettings'
 import { InputBar, InputLabel } from '/@/components/Input'
 import { NavContainer, NavTitleContainer } from '/@/components/Nav'
 
@@ -73,33 +68,13 @@ const Form = (props: FormProps): JSXElement => {
 export default () => {
   const navigate = useNavigate()
 
-  // 認証情報
-  // 認証方法の切り替え時に情報を保持するために、storeを使用して3種類の認証情報を保持する
-  const [authConfig, setAuthConfig] = createStore<AuthConfig>({
-    none: {
-      case: 'none',
-      value: {},
-    },
-    basic: {
-      case: 'basic',
-      value: {
-        username: '',
-        password: '',
-      },
-    },
-    ssh: {
-      case: 'ssh',
-      value: {
-        keyId: '',
-      },
-    },
-    authMethod: 'none',
-  })
-
   const [requestConfig, setRequestConfig] = createStore<PlainMessage<CreateRepositoryRequest>>({
     url: '',
     name: '',
     auth: undefined,
+  })
+  const [authConfig, setAuthConfig] = createStore<PlainMessage<CreateRepositoryAuth>>({
+    auth: { case: 'none', value: {} },
   })
 
   let formContainer: HTMLFormElement
@@ -113,9 +88,8 @@ export default () => {
       return
     }
 
-    setRequestConfig('auth', { auth: authConfig[authConfig.authMethod] })
     try {
-      const res = await client.createRepository(requestConfig)
+      const res = await client.createRepository({ ...requestConfig, auth: authConfig })
       toast.success('リポジトリを登録しました')
       // リポジトリページに遷移
       navigate(`/repos/${res.id}`)
@@ -145,7 +119,7 @@ export default () => {
           <Form
             label='URL'
             // SSH URLはURLとしては不正なのでtypeを変更
-            type={authConfig.authMethod === 'ssh' ? 'text' : 'url'}
+            type={authConfig.auth.case === 'ssh' ? 'text' : 'url'}
             placeholder='https://example.com/my-app.git'
             value={requestConfig.url}
             onInput={(e) => setRequestConfig('url', e.currentTarget.value)}

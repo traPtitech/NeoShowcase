@@ -39,6 +39,7 @@ import { ModalButtonsContainer, ModalContainer, ModalText } from '/@/components/
 import toast from 'solid-toast'
 import { styled } from '@macaron-css/solid'
 import { vars } from '/@/theme'
+import { toWithAnsi } from '/@/libs/buffers'
 
 interface RuntimeConfigInfoProps {
   config: RuntimeConfig
@@ -440,7 +441,7 @@ export default () => {
             <Card>
               <CardTitle>Container Log</CardTitle>
               <LogContainer ref={logRef} overflowX='scroll'>
-                <For each={streamedLog()}>{(line) => <span>{line}</span>}</For>
+                <For each={streamedLog()}>{(line) => <code innerHTML={toWithAnsi(line)} />}</For>
               </LogContainer>
             </Card>
           </Show>

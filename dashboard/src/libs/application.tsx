@@ -84,12 +84,6 @@ export const extractRepositoryNameFromURL = (url: string): string => {
   return repositoryName
 }
 
-export const authMethodMap: Record<Repository_AuthMethod, AuthMethod> = {
-  [Repository_AuthMethod.NONE]: 'none',
-  [Repository_AuthMethod.BASIC]: 'basic',
-  [Repository_AuthMethod.SSH]: 'ssh',
-}
-
 export const portPublicationProtocolMap: Record<PortPublicationProtocol, string> = {
   [PortPublicationProtocol.TCP]: 'TCP',
   [PortPublicationProtocol.UDP]: 'UDP',

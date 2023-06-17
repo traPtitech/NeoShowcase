@@ -46,24 +46,10 @@ export const WebsiteSetting = (props: WebsiteSettingProps) => {
       <div>
         <InputLabel>ドメイン名</InputLabel>
         <InputBar
-          placeholder='example.ns.trap.jp'
+          placeholder='example.trap.show'
           value={props.website.fqdn}
           onInput={(e) => props.setWebsite('fqdn', e.target.value)}
         />
-        <AvailableDomainContainer>
-          使用可能なドメイン
-          <AvailableDomainUl>
-            <For each={availableDomains()?.domains}>
-              {(domain) => (
-                <li>
-                  {domain.domain}
-                  <Show when={domain.excludeDomains.length > 0}>&nbsp;({domain.excludeDomains.join(', ')}を除く)</Show>
-                  ：{domain.authAvailable ? '部員認証の使用可能' : '部員認証の使用不可'}
-                </li>
-              )}
-            </For>
-          </AvailableDomainUl>
-        </AvailableDomainContainer>
       </div>
       <div>
         <InputLabel>Path Prefix</InputLabel>
@@ -97,7 +83,7 @@ export const WebsiteSetting = (props: WebsiteSettingProps) => {
           <InputBar
             placeholder='80'
             type='number'
-            value={props.website.httpPort}
+            value={props.website.httpPort || ''}
             onChange={(e) => props.setWebsite('httpPort', +e.target.value)}
           />
         </div>
@@ -119,6 +105,16 @@ export const WebsiteSetting = (props: WebsiteSettingProps) => {
   )
 }
 
+const newWebsite = (): PlainMessage<CreateWebsiteRequest> => ({
+  fqdn: '',
+  pathPrefix: '/',
+  stripPrefix: false,
+  https: true,
+  h2c: false,
+  httpPort: 0,
+  authentication: AuthenticationType.OFF,
+})
+
 interface WebsiteSettingsProps {
   runtime: boolean
   websiteConfigs: PlainMessage<CreateWebsiteRequest>[]
@@ -128,6 +124,20 @@ interface WebsiteSettingsProps {
 export const WebsiteSettings = (props: WebsiteSettingsProps) => {
   return (
     <SettingsContainer>
+      <AvailableDomainContainer>
+        使用可能なドメイン
+        <AvailableDomainUl>
+          <For each={availableDomains()?.domains || []}>
+            {(domain) => (
+              <li>
+                {domain.domain}
+                <Show when={domain.excludeDomains.length > 0}>&nbsp;({domain.excludeDomains.join(', ')}を除く)</Show>
+                ：{domain.authAvailable ? '部員認証の使用可能' : '部員認証の使用不可'}
+              </li>
+            )}
+          </For>
+        </AvailableDomainUl>
+      </AvailableDomainContainer>
       <For each={props.websiteConfigs}>
         {(website, i) => (
           <WebsiteSetting
@@ -145,20 +155,7 @@ export const WebsiteSettings = (props: WebsiteSettingsProps) => {
 
       <FormButton>
         <Button
-          onclick={() => {
-            props.setWebsiteConfigs([
-              ...props.websiteConfigs,
-              {
-                fqdn: '',
-                pathPrefix: '/',
-                stripPrefix: false,
-                https: false,
-                h2c: false,
-                httpPort: 0,
-                authentication: AuthenticationType.OFF,
-              },
-            ])
-          }}
+          onclick={() => props.setWebsiteConfigs([...props.websiteConfigs, newWebsite()])}
           color='black1'
           size='large'
           width='auto'
