@@ -4,20 +4,19 @@ import {
   Build_BuildStatus,
   DeployType,
   PortPublicationProtocol,
-  Repository_AuthMethod,
   Website,
 } from '/@/api/neoshowcase/protobuf/gateway_pb'
 import { JSXElement } from 'solid-js'
 import { AiFillGithub, AiFillGitlab } from 'solid-icons/ai'
 import { SiGitea } from 'solid-icons/si'
 import { vars } from '/@/theme'
-import { AuthMethod } from '../components/RepositoryAuthSettings'
 import { BuildConfigMethod } from '../components/BuildConfigs'
 
 export const buildTypeStr: Record<BuildConfigMethod, string> = {
   runtimeBuildpack: 'Runtime (Buildpack)',
   runtimeCmd: 'Runtime (command)',
   runtimeDockerfile: 'Runtime (Dockerfile)',
+  staticBuildpack: 'Static (Buildpack)',
   staticCmd: 'Static (command)',
   staticDockerfile: 'Static (Dockerfile)',
 }
@@ -80,8 +79,7 @@ export const getWebsiteURL = (website: Website): string => {
 export const extractRepositoryNameFromURL = (url: string): string => {
   const segments = url.split('/')
   const lastSegment = segments.pop() || segments.pop() // 末尾のスラッシュを除去
-  const repositoryName = lastSegment?.replace(/\.git$/, '') ?? ''
-  return repositoryName
+  return lastSegment?.replace(/\.git$/, '') ?? ''
 }
 
 export const portPublicationProtocolMap: Record<PortPublicationProtocol, string> = {

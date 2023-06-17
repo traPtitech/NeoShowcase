@@ -11,11 +11,15 @@ import (
 	"github.com/traPtitech/neoshowcase/pkg/usecase/gitea-integration"
 )
 
+import (
+	_ "github.com/go-sql-driver/mysql"
+)
+
 // Injectors from wire.go:
 
-func NewServer(c Config) (*Server, error) {
-	config := c.Gitea
-	repositoryConfig := c.DB
+func NewServer(c2 Config) (*Server, error) {
+	config := c2.Gitea
+	repositoryConfig := c2.DB
 	db, err := repository.New(repositoryConfig)
 	if err != nil {
 		return nil, err

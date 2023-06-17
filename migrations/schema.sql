@@ -84,6 +84,7 @@ CREATE TABLE `application_config`
         'runtime-buildpack',
         'runtime-cmd',
         'runtime-dockerfile',
+        'static-buildpack',
         'static-cmd',
         'static-dockerfile'
         )                           NOT NULL COMMENT 'ビルドタイプ',

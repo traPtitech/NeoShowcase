@@ -1,4 +1,4 @@
-import { ApplicationConfig, RuntimeConfig } from '/@/api/neoshowcase/protobuf/gateway_pb'
+import { ApplicationConfig, RuntimeConfig, StaticConfig } from '/@/api/neoshowcase/protobuf/gateway_pb'
 import { SetStoreFunction } from 'solid-js/store'
 import { InputBar, InputLabel } from '/@/components/Input'
 import { FormCheckBox, FormSettings } from '/@/components/AppsNew'
@@ -7,21 +7,23 @@ import { Match, Switch } from 'solid-js'
 import { Radio, RadioItem } from '/@/components/Radio'
 import { PlainMessage } from '@bufbuild/protobuf'
 
+export type BuildConfigMethod = ApplicationConfig['buildConfig']['case']
 const buildConfigItems: RadioItem<BuildConfigMethod>[] = [
   { value: 'runtimeBuildpack', title: 'Runtime Buildpack' },
   { value: 'runtimeCmd', title: 'Runtime Command' },
   { value: 'runtimeDockerfile', title: 'Runtime Dockerfile' },
+  { value: 'staticBuildpack', title: 'Static Buildpack' },
   { value: 'staticCmd', title: 'Static Command' },
   { value: 'staticDockerfile', title: 'Static Dockerfile' },
 ]
 
-export interface FormRuntimeConfigProps {
+interface RuntimeConfigProps {
   // case, valueのunionを直接使っている都合上、staticからruntimeに切り替えたときにruntimeConfigフィールドが存在しない
   runtimeConfig: PlainMessage<RuntimeConfig> | undefined
   setRuntimeConfig: <K extends keyof PlainMessage<RuntimeConfig>>(k: K, v: PlainMessage<RuntimeConfig>[K]) => void
 }
 
-const RuntimeConfigs = (props: FormRuntimeConfigProps) => {
+const RuntimeConfigs = (props: RuntimeConfigProps) => {
   return (
     <>
       <div>
@@ -59,11 +61,25 @@ const RuntimeConfigs = (props: FormRuntimeConfigProps) => {
   )
 }
 
-export type BuildConfigMethod = ApplicationConfig['buildConfig']['case']
-export type BuildConfig = {
-  [K in BuildConfigMethod]: Extract<PlainMessage<ApplicationConfig>['buildConfig'], { case: K }>
-} & {
-  method: BuildConfigMethod
+interface StaticConfigProps {
+  // case, valueのunionを直接使っている都合上、runtimeからstaticに切り替えたときにstaticConfigフィールドが存在しない
+  staticConfig: PlainMessage<StaticConfig> | undefined
+  setStaticConfig: <K extends keyof PlainMessage<StaticConfig>>(k: K, v: PlainMessage<StaticConfig>[K]) => void
+}
+
+const StaticConfigs = (props: StaticConfigProps) => {
+  return (
+    <>
+      <div>
+        <InputLabel>Artifact path</InputLabel>
+        <InputBar
+          value={props.staticConfig?.artifactPath}
+          placeholder={'dist'}
+          onInput={(e) => props.setStaticConfig('artifactPath', e.target.value)}
+        />
+      </div>
+    </>
+  )
 }
 
 export interface BuildConfigsProps {
@@ -174,6 +190,28 @@ export const BuildConfigs = (props: BuildConfigsProps) => {
           )}
         </Match>
 
+        <Match when={props.buildConfig.case === 'staticBuildpack' && props.buildConfig.value}>
+          {(v) => (
+            <>
+              <div>
+                <InputLabel>Context</InputLabel>
+                <InputBar
+                  value={v().context}
+                  placeholder={'.'}
+                  onInput={(e) => props.setBuildConfig('value', { context: e.target.value })}
+                />
+              </div>
+              <StaticConfigs
+                staticConfig={v().staticConfig}
+                setStaticConfig={(k, v) => {
+                  // @ts-ignore
+                  props.setBuildConfig('value', 'staticConfig', { [k]: v })
+                }}
+              />
+            </>
+          )}
+        </Match>
+
         <Match when={props.buildConfig.case === 'staticCmd' && props.buildConfig.value}>
           {(v) => (
             <>
@@ -202,14 +240,13 @@ export const BuildConfigs = (props: BuildConfigsProps) => {
                   </Checkbox>
                 </FormCheckBox>
               </div>
-              <div>
-                <InputLabel>Artifact path</InputLabel>
-                <InputBar
-                  value={v().artifactPath}
-                  placeholder={'dist'}
-                  onInput={(e) => props.setBuildConfig('value', { artifactPath: e.target.value })}
-                />
-              </div>
+              <StaticConfigs
+                staticConfig={v().staticConfig}
+                setStaticConfig={(k, v) => {
+                  // @ts-ignore
+                  props.setBuildConfig('value', 'staticConfig', { [k]: v })
+                }}
+              />
             </>
           )}
         </Match>
@@ -233,14 +270,13 @@ export const BuildConfigs = (props: BuildConfigsProps) => {
                   onInput={(e) => props.setBuildConfig('value', { context: e.target.value })}
                 />
               </div>
-              <div>
-                <InputLabel>Artifact path</InputLabel>
-                <InputBar
-                  value={v().artifactPath}
-                  placeholder={'dist'}
-                  onInput={(e) => props.setBuildConfig('value', { artifactPath: e.target.value })}
-                />
-              </div>
+              <StaticConfigs
+                staticConfig={v().staticConfig}
+                setStaticConfig={(k, v) => {
+                  // @ts-ignore
+                  props.setBuildConfig('value', 'staticConfig', { [k]: v })
+                }}
+              />
             </>
           )}
         </Match>

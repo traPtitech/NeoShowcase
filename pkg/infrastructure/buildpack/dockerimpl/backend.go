@@ -131,21 +131,21 @@ func (d *dockerBackend) _exec(ctx context.Context, root bool, workDir string, cm
 	return nil
 }
 
-func (d *dockerBackend) Pack(ctx context.Context, repoDir string, logWriter io.Writer, imageDest string) error {
+func (d *dockerBackend) Pack(ctx context.Context, repoDir string, logWriter io.Writer, imageDest string) (path string, err error) {
 	dstRepoPath := fmt.Sprintf("repo-%s", domain.NewID())
 	remoteDstPath := filepath.Join(d.config.RemoteDir, dstRepoPath)
 
-	err := d.exec(ctx, d.config.RemoteDir, []string{"mkdir", dstRepoPath}, nil, io.Discard, io.Discard)
+	err = d.exec(ctx, d.config.RemoteDir, []string{"mkdir", dstRepoPath}, nil, io.Discard, io.Discard)
 	if err != nil {
-		return errors.Wrap(err, "making remote repo tmp dir")
+		return "", errors.Wrap(err, "making remote repo tmp dir")
 	}
 	err = d.c.CopyToContainer(ctx, d.config.ContainerName, remoteDstPath, tarfs.Compress(repoDir), types.CopyToContainerOptions{})
 	if err != nil {
-		return errors.Wrap(err, "copying file to container")
+		return "", errors.Wrap(err, "copying file to container")
 	}
 	err = d.execRoot(ctx, d.config.RemoteDir, []string{"chown", "-R", d.config.User + ":" + d.config.Group, dstRepoPath}, nil, io.Discard, io.Discard)
 	if err != nil {
-		return errors.Wrap(err, "setting remote repo owner")
+		return "", errors.Wrap(err, "setting remote repo owner")
 	}
 	defer func() {
 		err := d.exec(context.Background(), d.config.RemoteDir, []string{"rm", "-r", dstRepoPath}, nil, io.Discard, io.Discard)
@@ -165,7 +165,7 @@ func (d *dockerBackend) Pack(ctx context.Context, repoDir string, logWriter io.W
 		map[string]string{"CNB_PLATFORM_API": d.config.PlatformAPI},
 		logWriter, logWriter)
 	if err != nil {
-		return err
+		return "", err
 	}
-	return nil
+	return remoteDstPath, nil
 }

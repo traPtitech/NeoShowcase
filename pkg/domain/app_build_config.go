@@ -13,6 +13,7 @@ const (
 	BuildTypeRuntimeBuildpack BuildType = iota
 	BuildTypeRuntimeCmd
 	BuildTypeRuntimeDockerfile
+	BuildTypeStaticBuildpack
 	BuildTypeStaticCmd
 	BuildTypeStaticDockerfile
 )
@@ -21,7 +22,7 @@ func (b BuildType) DeployType() DeployType {
 	switch b {
 	case BuildTypeRuntimeBuildpack, BuildTypeRuntimeCmd, BuildTypeRuntimeDockerfile:
 		return DeployTypeRuntime
-	case BuildTypeStaticCmd, BuildTypeStaticDockerfile:
+	case BuildTypeStaticBuildpack, BuildTypeStaticCmd, BuildTypeStaticDockerfile:
 		return DeployTypeStatic
 	default:
 		panic(fmt.Sprintf("unknown build type: %v", b))
@@ -70,7 +71,16 @@ func (rc *RuntimeConfig) CommandArgs() []string {
 	return args
 }
 
-type StaticConfig struct{}
+type StaticConfig struct {
+	ArtifactPath string
+}
+
+func (sc *StaticConfig) Validate() error {
+	if sc.ArtifactPath == "" {
+		return errors.New("artifact_path is required for static builds")
+	}
+	return nil
+}
 
 func (sc *StaticConfig) MariaDB() bool {
 	return false
@@ -168,12 +178,29 @@ func (bc *BuildConfigRuntimeDockerfile) Validate() error {
 	return nil
 }
 
+type BuildConfigStaticBuildpack struct {
+	StaticConfig
+	Context string
+	buildConfigEmbed
+}
+
+func (bc *BuildConfigStaticBuildpack) BuildType() BuildType {
+	return BuildTypeStaticBuildpack
+}
+
+func (bc *BuildConfigStaticBuildpack) Validate() error {
+	if err := bc.StaticConfig.Validate(); err != nil {
+		return err
+	}
+	// NOTE: context is not necessary
+	return nil
+}
+
 type BuildConfigStaticCmd struct {
 	StaticConfig
 	BaseImage     string
 	BuildCmd      string
 	BuildCmdShell bool
-	ArtifactPath  string
 	buildConfigEmbed
 }
 
@@ -182,6 +209,9 @@ func (bc *BuildConfigStaticCmd) BuildType() BuildType {
 }
 
 func (bc *BuildConfigStaticCmd) Validate() error {
+	if err := bc.StaticConfig.Validate(); err != nil {
+		return err
+	}
 	// NOTE: base image is not necessary (default: scratch)
 	// NOTE: build cmd is not necessary
 	if bc.ArtifactPath == "" {
@@ -194,7 +224,6 @@ type BuildConfigStaticDockerfile struct {
 	StaticConfig
 	DockerfileName string
 	Context        string
-	ArtifactPath   string
 	buildConfigEmbed
 }
 
@@ -203,11 +232,11 @@ func (bc *BuildConfigStaticDockerfile) BuildType() BuildType {
 }
 
 func (bc *BuildConfigStaticDockerfile) Validate() error {
+	if err := bc.StaticConfig.Validate(); err != nil {
+		return err
+	}
 	if bc.DockerfileName == "" {
 		return errors.New("dockerfile_name is required")
-	}
-	if bc.ArtifactPath == "" {
-		return errors.New("artifact_path is required")
 	}
 	return nil
 }

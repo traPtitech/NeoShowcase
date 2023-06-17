@@ -12,7 +12,7 @@ CREATE TABLE `application_config` (
   `application_id` char(22) NOT NULL COMMENT 'アプリケーションID',
   `use_mariadb` tinyint(1) NOT NULL COMMENT 'MariaDBを使用するか',
   `use_mongodb` tinyint(1) NOT NULL COMMENT 'MongoDBを使用するか',
-  `build_type` enum('runtime-buildpack','runtime-cmd','runtime-dockerfile','static-cmd','static-dockerfile') NOT NULL COMMENT 'ビルドタイプ',
+  `build_type` enum('runtime-buildpack','runtime-cmd','runtime-dockerfile','static-buildpack','static-cmd','static-dockerfile') NOT NULL COMMENT 'ビルドタイプ',
   `base_image` varchar(1000) NOT NULL COMMENT 'ベースイメージの名前',
   `build_cmd` text NOT NULL COMMENT 'ビルドコマンド',
   `build_cmd_shell` tinyint(1) NOT NULL COMMENT 'ビルドコマンドをshellで実行するか',
@@ -35,7 +35,7 @@ CREATE TABLE `application_config` (
 | application_id | char(22) |  | false |  | [applications](applications.md) | アプリケーションID |
 | use_mariadb | tinyint(1) |  | false |  |  | MariaDBを使用するか |
 | use_mongodb | tinyint(1) |  | false |  |  | MongoDBを使用するか |
-| build_type | enum('runtime-buildpack','runtime-cmd','runtime-dockerfile','static-cmd','static-dockerfile') |  | false |  |  | ビルドタイプ |
+| build_type | enum('runtime-buildpack','runtime-cmd','runtime-dockerfile','static-buildpack','static-cmd','static-dockerfile') |  | false |  |  | ビルドタイプ |
 | base_image | varchar(1000) |  | false |  |  | ベースイメージの名前 |
 | build_cmd | text |  | false |  |  | ビルドコマンド |
 | build_cmd_shell | tinyint(1) |  | false |  |  | ビルドコマンドをshellで実行するか |
@@ -69,7 +69,7 @@ erDiagram
   char_22_ application_id PK
   tinyint_1_ use_mariadb
   tinyint_1_ use_mongodb
-  enum__runtime-buildpack___runtime-cmd___runtime-dockerfile___static-cmd___static-dockerfile__ build_type
+  enum__runtime-buildpack___runtime-cmd___runtime-dockerfile___static-buildpack___static-cmd___static-dockerfile__ build_type
   varchar_1000_ base_image
   text build_cmd
   tinyint_1_ build_cmd_shell

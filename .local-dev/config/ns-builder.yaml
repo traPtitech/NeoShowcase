@@ -35,3 +35,4 @@ image:
     username: ""
     password: ""
   namePrefix: ns-apps/
+  tmpNamePrefix: ns-apps-tmp/
