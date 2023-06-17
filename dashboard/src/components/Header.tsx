@@ -1,7 +1,7 @@
 import { JSXElement } from 'solid-js'
 import Logo from '../images/logo.svg'
 import { A } from '@solidjs/router'
-import { user } from '/@/libs/api'
+import { systemInfo, user } from '/@/libs/api'
 import { styled } from '@macaron-css/solid'
 import { vars } from '/@/theme'
 import { style } from '@macaron-css/core'
@@ -89,8 +89,10 @@ export const Header = (): JSXElement => {
         <Logo />
         <NavContainer>
           <Nav href='/apps'>APP</Nav>
-          <Nav href='/activity'>ACTIVITY</Nav>
           <Nav href='/settings'>SETTINGS</Nav>
+          <a href={systemInfo()?.adminerUrl} target='_blank' class={navInactive} rel='noreferrer'>
+            ADMINER
+          </a>
         </NavContainer>
       </LeftContainer>
       <RightContainer>

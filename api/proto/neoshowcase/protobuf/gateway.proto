@@ -32,6 +32,8 @@ message SystemInfo {
   repeated AvailableDomain domains = 3;
   // ports 使用可能なポート一覧
   repeated AvailablePort ports = 4;
+  // adminer_url ユーザー用DB管理画面URL
+  string adminer_url = 5;
 }
 
 message GenerateKeyPairResponse {

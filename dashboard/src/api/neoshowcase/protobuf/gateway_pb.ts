@@ -246,6 +246,13 @@ export class SystemInfo extends Message<SystemInfo> {
    */
   ports: AvailablePort[] = [];
 
+  /**
+   * adminer_url ユーザー用DB管理画面URL
+   *
+   * @generated from field: string adminer_url = 5;
+   */
+  adminerUrl = "";
+
   constructor(data?: PartialMessage<SystemInfo>) {
     super();
     proto3.util.initPartial(data, this);
@@ -258,6 +265,7 @@ export class SystemInfo extends Message<SystemInfo> {
     { no: 2, name: "ssh", kind: "message", T: SSHInfo },
     { no: 3, name: "domains", kind: "message", T: AvailableDomain, repeated: true },
     { no: 4, name: "ports", kind: "message", T: AvailablePort, repeated: true },
+    { no: 5, name: "adminer_url", kind: "scalar", T: 9 /* ScalarType.STRING */ },
   ]);
 
   static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): SystemInfo {

@@ -18,6 +18,7 @@ func FromPBSystemInfo(i *pb.SystemInfo) *domain.SystemInfo {
 		},
 		AvailableDomains: ds.Map(i.Domains, FromPBAvailableDomain),
 		AvailablePorts:   ds.Map(i.Ports, FromPBAvailablePort),
+		AdminerURL:       i.AdminerUrl,
 	}
 }
 
@@ -28,7 +29,8 @@ func ToPBSystemInfo(i *domain.SystemInfo) *pb.SystemInfo {
 			Host: i.SSHInfo.Host,
 			Port: int32(i.SSHInfo.Port),
 		},
-		Domains: ds.Map(i.AvailableDomains, ToPBAvailableDomain),
-		Ports:   ds.Map(i.AvailablePorts, ToPBAvailablePort),
+		Domains:    ds.Map(i.AvailableDomains, ToPBAvailableDomain),
+		Ports:      ds.Map(i.AvailablePorts, ToPBAvailablePort),
+		AdminerUrl: i.AdminerURL,
 	}
 }

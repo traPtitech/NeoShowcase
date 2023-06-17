@@ -19,13 +19,14 @@ import (
 )
 
 type ControllerService struct {
-	backend   domain.Backend
-	fetcher   repofetcher.Service
-	cd        cdservice.Service
-	builder   domain.ControllerBuilderService
-	logStream *logstream.Service
-	pubKey    *ssh.PublicKeys
-	sshConf   domain.SSHConfig
+	backend    domain.Backend
+	fetcher    repofetcher.Service
+	cd         cdservice.Service
+	builder    domain.ControllerBuilderService
+	logStream  *logstream.Service
+	pubKey     *ssh.PublicKeys
+	sshConf    domain.SSHConfig
+	adminerURL string
 }
 
 func NewControllerService(
@@ -36,15 +37,17 @@ func NewControllerService(
 	logStream *logstream.Service,
 	pubKey *ssh.PublicKeys,
 	sshConf domain.SSHConfig,
+	adminerURL domain.AdminerURL,
 ) pbconnect.ControllerServiceHandler {
 	return &ControllerService{
-		backend:   backend,
-		fetcher:   fetcher,
-		cd:        cd,
-		builder:   builder,
-		logStream: logStream,
-		pubKey:    pubKey,
-		sshConf:   sshConf,
+		backend:    backend,
+		fetcher:    fetcher,
+		cd:         cd,
+		builder:    builder,
+		logStream:  logStream,
+		pubKey:     pubKey,
+		sshConf:    sshConf,
+		adminerURL: string(adminerURL),
 	}
 }
 
@@ -57,8 +60,9 @@ func (s *ControllerService) GetSystemInfo(_ context.Context, _ *connect.Request[
 			Host: s.sshConf.Host,
 			Port: int32(s.sshConf.Port),
 		},
-		Domains: ds.Map(domains, pbconvert.ToPBAvailableDomain),
-		Ports:   ds.Map(ports, pbconvert.ToPBAvailablePort),
+		Domains:    ds.Map(domains, pbconvert.ToPBAvailableDomain),
+		Ports:      ds.Map(ports, pbconvert.ToPBAvailablePort),
+		AdminerUrl: s.adminerURL,
 	})
 	return res, nil
 }

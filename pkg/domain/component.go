@@ -15,6 +15,7 @@ type SystemInfo struct {
 	}
 	AvailableDomains AvailableDomainSlice
 	AvailablePorts   AvailablePortSlice
+	AdminerURL       string
 }
 
 type ControllerServiceClient interface {
