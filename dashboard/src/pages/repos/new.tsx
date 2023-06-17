@@ -2,15 +2,10 @@ import { JSX, JSXElement, createEffect } from 'solid-js'
 import { createStore } from 'solid-js/store'
 import toast from 'solid-toast'
 import { ConnectError } from '@bufbuild/connect'
-import { Empty, PlainMessage } from '@bufbuild/protobuf'
+import { PlainMessage } from '@bufbuild/protobuf'
 import { styled } from '@macaron-css/solid'
 import { useNavigate } from '@solidjs/router'
-import {
-  CreateRepositoryAuth,
-  CreateRepositoryAuthBasic,
-  CreateRepositoryAuthSSH,
-  CreateRepositoryRequest,
-} from '/@/api/neoshowcase/protobuf/gateway_pb'
+import { CreateRepositoryRequest } from '/@/api/neoshowcase/protobuf/gateway_pb'
 import { Button } from '/@/components/Button'
 import { Header } from '/@/components/Header'
 import { client } from '/@/libs/api'

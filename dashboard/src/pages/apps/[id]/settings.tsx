@@ -27,7 +27,7 @@ import useModal from '/@/libs/useModal'
 import { style } from '@macaron-css/core'
 import { ModalButtonsContainer, ModalContainer, ModalText } from '/@/components/Modal'
 import { PlainMessage } from '@bufbuild/protobuf'
-import { getPlainMessage } from '../../../libs/getPlainMessage'
+import { getPlainMessage } from '/@/libs/getPlainMessage'
 
 const ContentContainer = styled('div', {
   base: {
