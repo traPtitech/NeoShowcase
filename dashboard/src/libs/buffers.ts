@@ -22,7 +22,5 @@ const escapeHTML = (s: string): string =>
     }[match]
   })
 
-export const toUTF8WithAnsi = (arr: Uint8Array): string => {
-  const rawStr = utf8Decoder.decode(arr.buffer)
-  return ansiDecoder.toHtml(escapeHTML(rawStr))
-}
+export const toWithAnsi = (str: string): string => ansiDecoder.toHtml(escapeHTML(str))
+export const toUTF8WithAnsi = (arr: Uint8Array): string => toWithAnsi(utf8Decoder.decode(arr.buffer))

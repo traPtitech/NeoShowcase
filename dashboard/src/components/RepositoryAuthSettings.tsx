@@ -15,11 +15,11 @@ const SshDetails = styled('div', {
     marginBottom: '4px',
   },
 })
+
 const PublicKeyCode = styled('code', {
   base: {
     display: 'block',
     padding: '8px 12px',
-    fontFamily: 'monospace',
     fontSize: '14px',
     background: vars.bg.white2,
     color: vars.text.black1,
