@@ -36,7 +36,7 @@ type RuntimeConfig struct {
 	Command    string
 }
 
-func parseArgs(s string) ([]string, error) {
+func ParseArgs(s string) ([]string, error) {
 	if s == "" {
 		return nil, nil
 	}
@@ -44,10 +44,10 @@ func parseArgs(s string) ([]string, error) {
 }
 
 func (rc *RuntimeConfig) Validate() error {
-	if _, err := parseArgs(rc.Entrypoint); err != nil {
+	if _, err := ParseArgs(rc.Entrypoint); err != nil {
 		return errors.Wrap(err, "invalid entrypoint")
 	}
-	if _, err := parseArgs(rc.Command); err != nil {
+	if _, err := ParseArgs(rc.Command); err != nil {
 		return errors.Wrap(err, "invalid command")
 	}
 	return nil
@@ -61,18 +61,17 @@ func (rc *RuntimeConfig) MongoDB() bool {
 	return rc.UseMongoDB
 }
 
-func (rc *RuntimeConfig) EntrypointArgs() []string {
-	args, _ := parseArgs(rc.Entrypoint)
-	return args
+func (rc *RuntimeConfig) GetRuntimeConfig() RuntimeConfig {
+	return *rc
 }
 
-func (rc *RuntimeConfig) CommandArgs() []string {
-	args, _ := parseArgs(rc.Command)
-	return args
+func (rc *RuntimeConfig) GetStaticConfig() StaticConfig {
+	panic("not static config")
 }
 
 type StaticConfig struct {
 	ArtifactPath string
+	SPA          bool
 }
 
 func (sc *StaticConfig) Validate() error {
@@ -90,22 +89,24 @@ func (sc *StaticConfig) MongoDB() bool {
 	return false
 }
 
-func (sc *StaticConfig) EntrypointArgs() []string {
-	panic("no entrypoint for static config")
+func (sc *StaticConfig) GetRuntimeConfig() RuntimeConfig {
+	panic("not runtime config")
 }
 
-func (sc *StaticConfig) CommandArgs() []string {
-	panic("no command for static config")
+func (sc *StaticConfig) GetStaticConfig() StaticConfig {
+	return *sc
 }
 
 type BuildConfig interface {
 	isBuildConfig()
 	BuildType() BuildType
 	Validate() error
+
 	MariaDB() bool
 	MongoDB() bool
-	EntrypointArgs() []string
-	CommandArgs() []string
+
+	GetRuntimeConfig() RuntimeConfig
+	GetStaticConfig() StaticConfig
 }
 
 type buildConfigEmbed struct{}

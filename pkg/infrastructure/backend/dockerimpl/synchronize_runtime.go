@@ -64,10 +64,10 @@ func (b *dockerBackend) syncAppContainer(ctx context.Context, app *domain.Runtim
 		Env:          envs,
 		ExposedPorts: make(map[nat.Port]struct{}),
 	}
-	if args := app.App.Config.BuildConfig.EntrypointArgs(); len(args) > 0 {
+	if args, _ := domain.ParseArgs(app.App.Config.BuildConfig.GetRuntimeConfig().Entrypoint); len(args) > 0 {
 		config.Entrypoint = args
 	}
-	if args := app.App.Config.BuildConfig.CommandArgs(); len(args) > 0 {
+	if args, _ := domain.ParseArgs(app.App.Config.BuildConfig.GetRuntimeConfig().Command); len(args) > 0 {
 		config.Cmd = args
 	}
 	for _, website := range app.App.Websites {

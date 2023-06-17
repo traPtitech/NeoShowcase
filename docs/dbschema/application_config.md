@@ -17,6 +17,7 @@ CREATE TABLE `application_config` (
   `build_cmd` text NOT NULL COMMENT 'ビルドコマンド',
   `build_cmd_shell` tinyint(1) NOT NULL COMMENT 'ビルドコマンドをshellで実行するか',
   `artifact_path` varchar(100) NOT NULL COMMENT '静的成果物のパス',
+  `spa` tinyint(1) NOT NULL COMMENT '静的成果物をSPAとして配信するか',
   `dockerfile_name` varchar(100) NOT NULL COMMENT 'Dockerfile名',
   `context` varchar(100) NOT NULL COMMENT 'ビルド時のcontext',
   `entrypoint` text NOT NULL COMMENT 'Entrypoint(args)',
@@ -40,6 +41,7 @@ CREATE TABLE `application_config` (
 | build_cmd | text |  | false |  |  | ビルドコマンド |
 | build_cmd_shell | tinyint(1) |  | false |  |  | ビルドコマンドをshellで実行するか |
 | artifact_path | varchar(100) |  | false |  |  | 静的成果物のパス |
+| spa | tinyint(1) |  | false |  |  | 静的成果物をSPAとして配信するか |
 | dockerfile_name | varchar(100) |  | false |  |  | Dockerfile名 |
 | context | varchar(100) |  | false |  |  | ビルド時のcontext |
 | entrypoint | text |  | false |  |  | Entrypoint(args) |
@@ -74,6 +76,7 @@ erDiagram
   text build_cmd
   tinyint_1_ build_cmd_shell
   varchar_100_ artifact_path
+  tinyint_1_ spa
   varchar_100_ dockerfile_name
   varchar_100_ context
   text entrypoint

@@ -1095,6 +1095,11 @@ export class StaticConfig extends Message<StaticConfig> {
    */
   artifactPath = "";
 
+  /**
+   * @generated from field: bool spa = 2;
+   */
+  spa = false;
+
   constructor(data?: PartialMessage<StaticConfig>) {
     super();
     proto3.util.initPartial(data, this);
@@ -1104,6 +1109,7 @@ export class StaticConfig extends Message<StaticConfig> {
   static readonly typeName = "neoshowcase.protobuf.StaticConfig";
   static readonly fields: FieldList = proto3.util.newFieldList(() => [
     { no: 1, name: "artifact_path", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+    { no: 2, name: "spa", kind: "scalar", T: 8 /* ScalarType.BOOL */ },
   ]);
 
   static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): StaticConfig {

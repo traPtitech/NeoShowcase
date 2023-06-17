@@ -26,12 +26,14 @@ func ToPBRuntimeConfig(c *domain.RuntimeConfig) *pb.RuntimeConfig {
 func FromPBStaticConfig(c *pb.StaticConfig) domain.StaticConfig {
 	return domain.StaticConfig{
 		ArtifactPath: c.ArtifactPath,
+		SPA:          c.Spa,
 	}
 }
 
 func ToPBStaticConfig(c *domain.StaticConfig) *pb.StaticConfig {
 	return &pb.StaticConfig{
 		ArtifactPath: c.ArtifactPath,
+		Spa:          c.SPA,
 	}
 }
 

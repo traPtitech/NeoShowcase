@@ -38,6 +38,8 @@ type ApplicationConfig struct { // アプリケーションID
 	BuildCMDShell bool `boil:"build_cmd_shell" json:"build_cmd_shell" toml:"build_cmd_shell" yaml:"build_cmd_shell"`
 	// 静的成果物のパス
 	ArtifactPath string `boil:"artifact_path" json:"artifact_path" toml:"artifact_path" yaml:"artifact_path"`
+	// 静的成果物をSPAとして配信するか
+	Spa bool `boil:"spa" json:"spa" toml:"spa" yaml:"spa"`
 	// Dockerfile名
 	DockerfileName string `boil:"dockerfile_name" json:"dockerfile_name" toml:"dockerfile_name" yaml:"dockerfile_name"`
 	// ビルド時のcontext
@@ -60,6 +62,7 @@ var ApplicationConfigColumns = struct {
 	BuildCMD       string
 	BuildCMDShell  string
 	ArtifactPath   string
+	Spa            string
 	DockerfileName string
 	Context        string
 	Entrypoint     string
@@ -73,6 +76,7 @@ var ApplicationConfigColumns = struct {
 	BuildCMD:       "build_cmd",
 	BuildCMDShell:  "build_cmd_shell",
 	ArtifactPath:   "artifact_path",
+	Spa:            "spa",
 	DockerfileName: "dockerfile_name",
 	Context:        "context",
 	Entrypoint:     "entrypoint",
@@ -88,6 +92,7 @@ var ApplicationConfigTableColumns = struct {
 	BuildCMD       string
 	BuildCMDShell  string
 	ArtifactPath   string
+	Spa            string
 	DockerfileName string
 	Context        string
 	Entrypoint     string
@@ -101,6 +106,7 @@ var ApplicationConfigTableColumns = struct {
 	BuildCMD:       "application_config.build_cmd",
 	BuildCMDShell:  "application_config.build_cmd_shell",
 	ArtifactPath:   "application_config.artifact_path",
+	Spa:            "application_config.spa",
 	DockerfileName: "application_config.dockerfile_name",
 	Context:        "application_config.context",
 	Entrypoint:     "application_config.entrypoint",
@@ -150,6 +156,7 @@ var ApplicationConfigWhere = struct {
 	BuildCMD       whereHelperstring
 	BuildCMDShell  whereHelperbool
 	ArtifactPath   whereHelperstring
+	Spa            whereHelperbool
 	DockerfileName whereHelperstring
 	Context        whereHelperstring
 	Entrypoint     whereHelperstring
@@ -163,6 +170,7 @@ var ApplicationConfigWhere = struct {
 	BuildCMD:       whereHelperstring{field: "`application_config`.`build_cmd`"},
 	BuildCMDShell:  whereHelperbool{field: "`application_config`.`build_cmd_shell`"},
 	ArtifactPath:   whereHelperstring{field: "`application_config`.`artifact_path`"},
+	Spa:            whereHelperbool{field: "`application_config`.`spa`"},
 	DockerfileName: whereHelperstring{field: "`application_config`.`dockerfile_name`"},
 	Context:        whereHelperstring{field: "`application_config`.`context`"},
 	Entrypoint:     whereHelperstring{field: "`application_config`.`entrypoint`"},
@@ -197,8 +205,8 @@ func (r *applicationConfigR) GetApplication() *Application {
 type applicationConfigL struct{}
 
 var (
-	applicationConfigAllColumns            = []string{"application_id", "use_mariadb", "use_mongodb", "build_type", "base_image", "build_cmd", "build_cmd_shell", "artifact_path", "dockerfile_name", "context", "entrypoint", "command"}
-	applicationConfigColumnsWithoutDefault = []string{"application_id", "use_mariadb", "use_mongodb", "build_type", "base_image", "build_cmd", "build_cmd_shell", "artifact_path", "dockerfile_name", "context", "entrypoint", "command"}
+	applicationConfigAllColumns            = []string{"application_id", "use_mariadb", "use_mongodb", "build_type", "base_image", "build_cmd", "build_cmd_shell", "artifact_path", "spa", "dockerfile_name", "context", "entrypoint", "command"}
+	applicationConfigColumnsWithoutDefault = []string{"application_id", "use_mariadb", "use_mongodb", "build_type", "base_image", "build_cmd", "build_cmd_shell", "artifact_path", "spa", "dockerfile_name", "context", "entrypoint", "command"}
 	applicationConfigColumnsWithDefault    = []string{}
 	applicationConfigPrimaryKeyColumns     = []string{"application_id"}
 	applicationConfigGeneratedColumns      = []string{}

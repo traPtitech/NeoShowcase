@@ -54,10 +54,10 @@ func (b *k8sBackend) runtimeSpec(app *domain.RuntimeDesiredState) (*appsv1.State
 		Resources:       b.config.resourceRequirements(),
 		ImagePullPolicy: v1.PullAlways,
 	}
-	if args := app.App.Config.BuildConfig.EntrypointArgs(); len(args) > 0 {
+	if args, _ := domain.ParseArgs(app.App.Config.BuildConfig.GetRuntimeConfig().Entrypoint); len(args) > 0 {
 		cont.Command = args
 	}
-	if args := app.App.Config.BuildConfig.CommandArgs(); len(args) > 0 {
+	if args, _ := domain.ParseArgs(app.App.Config.BuildConfig.GetRuntimeConfig().Command); len(args) > 0 {
 		cont.Args = args
 	}
 

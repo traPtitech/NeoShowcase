@@ -48,11 +48,13 @@ func ToDomainRuntimeConfig(c *models.ApplicationConfig) domain.RuntimeConfig {
 
 func assignStaticConfig(mc *models.ApplicationConfig, c *domain.StaticConfig) {
 	mc.ArtifactPath = c.ArtifactPath
+	mc.Spa = c.SPA
 }
 
 func ToDomainStaticConfig(c *models.ApplicationConfig) domain.StaticConfig {
 	return domain.StaticConfig{
 		ArtifactPath: c.ArtifactPath,
+		SPA:          c.Spa,
 	}
 }
 

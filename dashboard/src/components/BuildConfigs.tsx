@@ -78,6 +78,16 @@ const StaticConfigs = (props: StaticConfigProps) => {
           onInput={(e) => props.setStaticConfig('artifactPath', e.target.value)}
         />
       </div>
+      <div>
+        <FormCheckBox>
+          <Checkbox
+            selected={props.staticConfig?.spa}
+            setSelected={(selected) => props.setStaticConfig('spa', selected)}
+          >
+            Single Page Application
+          </Checkbox>
+        </FormCheckBox>
+      </div>
     </>
   )
 }

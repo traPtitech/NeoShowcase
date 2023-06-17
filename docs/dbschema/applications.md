@@ -93,6 +93,7 @@ erDiagram
   text build_cmd
   tinyint_1_ build_cmd_shell
   varchar_100_ artifact_path
+  tinyint_1_ spa
   varchar_100_ dockerfile_name
   varchar_100_ context
   text entrypoint
