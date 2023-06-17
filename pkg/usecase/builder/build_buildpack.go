@@ -9,7 +9,7 @@ import (
 	"github.com/traPtitech/neoshowcase/pkg/domain"
 )
 
-func (s *builderService) buildImageBuildpack(
+func (s *builderService) buildRuntimeBuildpack(
 	ctx context.Context,
 	st *state,
 	bc *domain.BuildConfigRuntimeBuildpack,
