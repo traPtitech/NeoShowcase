@@ -4,7 +4,7 @@ import { Radio, RadioItem } from '/@/components/Radio'
 import { Button } from '/@/components/Button'
 import { SetStoreFunction } from 'solid-js/store'
 import { FormButton, FormSettings, FormSettingsButton, SettingsContainer } from '/@/components/AppsNew'
-import { createEffect, For } from 'solid-js'
+import { For } from 'solid-js'
 import { styled } from '@macaron-css/solid'
 import { vars } from '../theme'
 import { availablePorts } from '../libs/api'
@@ -35,10 +35,6 @@ interface PortPublicationProps {
 }
 
 const PortSetting = (props: PortPublicationProps) => {
-  createEffect(() => {
-    props.setPort('internetPort', suggestPort(props.port.protocol))
-  })
-
   return (
     <FormSettings>
       <div>
@@ -91,7 +87,7 @@ const suggestPort = (proto: PortPublicationProtocol): number => {
 
 const newPort = (): PlainMessage<PortPublication> => {
   return {
-    internetPort: 0,
+    internetPort: suggestPort(PortPublicationProtocol.TCP),
     applicationPort: 0,
     protocol: PortPublicationProtocol.TCP,
   }
