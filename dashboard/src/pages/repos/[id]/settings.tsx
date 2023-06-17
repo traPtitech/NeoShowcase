@@ -85,6 +85,7 @@ export default () => {
     () => params.id,
     (repositoryId) => client.getRepository({ repositoryId }),
   )
+  const loaded = () => !!(users() && repo())
 
   const GeneralConfigsContainer: Component = () => {
     let formContainer: HTMLFormElement
@@ -204,7 +205,7 @@ export default () => {
     const { Modal, open } = useModal()
 
     const nonOwnerUsers = createMemo(() => {
-      return users()?.filter((user) => !repo().ownerIds.includes(user.id)) ?? []
+      return users().filter((user) => !repo().ownerIds.includes(user.id)) ?? []
     })
 
     const handleAddOwner = async (user: User) => {
@@ -285,7 +286,7 @@ export default () => {
   return (
     <Container>
       <Header />
-      <Show when={repo()}>
+      <Show when={loaded()}>
         <RepositoryNav repository={repo()} />
         <ContentContainer>
           <div>

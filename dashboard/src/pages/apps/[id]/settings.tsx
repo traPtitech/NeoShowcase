@@ -129,7 +129,7 @@ export default () => {
     () => app()?.repositoryId,
     (id) => client.getRepository({ repositoryId: id }),
   )
-  const loaded = () => !!(app() && repo())
+  const loaded = () => !!(users() && app() && repo())
 
   const GeneralConfigsContainer: Component = () => {
     // 現在の設定で初期化
@@ -367,7 +367,7 @@ export default () => {
     const { Modal, open } = useModal()
 
     const nonOwnerUsers = createMemo(() => {
-      return users()?.filter((user) => !app().ownerIds.includes(user.id)) ?? []
+      return users().filter((user) => !app().ownerIds.includes(user.id)) ?? []
     })
 
     const handleAddOwner = async (user: User) => {
