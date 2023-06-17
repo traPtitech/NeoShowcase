@@ -4,6 +4,7 @@ import solidPlugin from 'vite-plugin-solid'
 import solidSvg from 'vite-plugin-solid-svg'
 import VitePluginFonts from 'vite-plugin-fonts'
 import { macaronVitePlugin } from '@macaron-css/vite'
+import viteCompression from 'vite-plugin-compression'
 
 export default defineConfig({
   plugins: [
@@ -18,6 +19,8 @@ export default defineConfig({
         ],
       }
     }),
+    viteCompression({ algorithm: 'gzip' }),
+    viteCompression({ algorithm: 'brotliCompress' }),
   ],
   server: {
     port: 5173,
