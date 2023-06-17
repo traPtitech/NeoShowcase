@@ -56,6 +56,7 @@ const (
 	ApplicationConfigBuildTypeRuntimeBuildpack  string = "runtime-buildpack"
 	ApplicationConfigBuildTypeRuntimeCMD        string = "runtime-cmd"
 	ApplicationConfigBuildTypeRuntimeDockerfile string = "runtime-dockerfile"
+	ApplicationConfigBuildTypeStaticBuildpack   string = "static-buildpack"
 	ApplicationConfigBuildTypeStaticCMD         string = "static-cmd"
 	ApplicationConfigBuildTypeStaticDockerfile  string = "static-dockerfile"
 )
@@ -65,6 +66,7 @@ func AllApplicationConfigBuildType() []string {
 		ApplicationConfigBuildTypeRuntimeBuildpack,
 		ApplicationConfigBuildTypeRuntimeCMD,
 		ApplicationConfigBuildTypeRuntimeDockerfile,
+		ApplicationConfigBuildTypeStaticBuildpack,
 		ApplicationConfigBuildTypeStaticCMD,
 		ApplicationConfigBuildTypeStaticDockerfile,
 	}

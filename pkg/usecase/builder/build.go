@@ -119,24 +119,39 @@ func (s *builderService) buildSteps(ctx context.Context, st *state) ([]buildStep
 	switch bc := st.app.Config.BuildConfig.(type) {
 	case *domain.BuildConfigRuntimeBuildpack:
 		steps = append(steps, buildStep{"Build (Runtime Buildpack)", func() error {
-			return s.buildImageBuildpack(ctx, st, bc)
+			return s.buildRuntimeBuildpack(ctx, st, bc)
 		}})
 	case *domain.BuildConfigRuntimeCmd:
 		steps = append(steps, buildStep{"Build (Runtime Command)", func() error {
 			return withBuildkitProgress(ctx, st.logWriter, func(ctx context.Context, ch chan *buildkit.SolveStatus) error {
-				return s.buildImageWithCmd(ctx, st, ch, bc)
+				return s.buildRuntimeCmd(ctx, st, ch, bc)
 			})
 		}})
 	case *domain.BuildConfigRuntimeDockerfile:
 		steps = append(steps, buildStep{"Build (Runtime Dockerfile)", func() error {
 			return withBuildkitProgress(ctx, st.logWriter, func(ctx context.Context, ch chan *buildkit.SolveStatus) error {
-				return s.buildImageWithDockerfile(ctx, st, ch, bc)
+				return s.buildRuntimeDockerfile(ctx, st, ch, bc)
 			})
+		}})
+	case *domain.BuildConfigStaticBuildpack:
+		steps = append(steps, buildStep{"Build (Runtime Buildpack)", func() error {
+			return s.buildStaticBuildpackPack(ctx, st, bc)
+		}})
+		steps = append(steps, buildStep{"Extract from Temporary Image", func() error {
+			return withBuildkitProgress(ctx, st.logWriter, func(ctx context.Context, ch chan *buildkit.SolveStatus) error {
+				return s.buildStaticBuildpackExtract(ctx, st, ch, bc)
+			})
+		}})
+		steps = append(steps, buildStep{"Cleanup Temporary Image", func() error {
+			return s.buildStaticBuildpackCleanup(ctx, st)
+		}})
+		steps = append(steps, buildStep{"Save Artifact", func() error {
+			return s.saveArtifact(ctx, st)
 		}})
 	case *domain.BuildConfigStaticCmd:
 		steps = append(steps, buildStep{"Build (Static Command)", func() error {
 			return withBuildkitProgress(ctx, st.logWriter, func(ctx context.Context, ch chan *buildkit.SolveStatus) error {
-				return s.buildStaticWithCmd(ctx, st, ch, bc)
+				return s.buildStaticCmd(ctx, st, ch, bc)
 			})
 		}})
 		steps = append(steps, buildStep{"Save Artifact", func() error {
@@ -145,7 +160,7 @@ func (s *builderService) buildSteps(ctx context.Context, st *state) ([]buildStep
 	case *domain.BuildConfigStaticDockerfile:
 		steps = append(steps, buildStep{"Build (Static Dockerfile)", func() error {
 			return withBuildkitProgress(ctx, st.logWriter, func(ctx context.Context, ch chan *buildkit.SolveStatus) error {
-				return s.buildStaticWithDockerfile(ctx, st, ch, bc)
+				return s.buildStaticDockerfile(ctx, st, ch, bc)
 			})
 		}})
 		steps = append(steps, buildStep{"Save Artifact", func() error {

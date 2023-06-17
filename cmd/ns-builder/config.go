@@ -90,6 +90,7 @@ func init() {
 	viper.SetDefault("image.registry.username", "")
 	viper.SetDefault("image.registry.password", "")
 	viper.SetDefault("image.namePrefix", "ns-apps/")
+	viper.SetDefault("image.tmpNamePrefix", "ns-apps-tmp/")
 }
 
 func provideBuildpackBackend(c Config) (builder.BuildpackBackend, error) {

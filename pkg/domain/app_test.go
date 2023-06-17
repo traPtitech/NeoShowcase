@@ -96,12 +96,40 @@ func TestApplicationConfig_Validate(t *testing.T) {
 			wantErr: true,
 		},
 		{
+			name:       "valid (static buildpack)",
+			deployType: DeployTypeStatic,
+			config: ApplicationConfig{
+				BuildConfig: &BuildConfigStaticBuildpack{
+					StaticConfig: StaticConfig{
+						ArtifactPath: "./dist",
+					},
+					Context: "",
+				},
+			},
+			wantErr: false,
+		},
+		{
+			name:       "empty artifact path (static buildpack)",
+			deployType: DeployTypeStatic,
+			config: ApplicationConfig{
+				BuildConfig: &BuildConfigStaticBuildpack{
+					StaticConfig: StaticConfig{
+						ArtifactPath: "",
+					},
+					Context: "",
+				},
+			},
+			wantErr: true,
+		},
+		{
 			name:       "valid (static dockerfile)",
 			deployType: DeployTypeStatic,
 			config: ApplicationConfig{
 				BuildConfig: &BuildConfigStaticDockerfile{
+					StaticConfig: StaticConfig{
+						ArtifactPath: "./dist",
+					},
 					DockerfileName: "Dockerfile",
-					ArtifactPath:   "./dist",
 				},
 			},
 			wantErr: false,
@@ -111,8 +139,10 @@ func TestApplicationConfig_Validate(t *testing.T) {
 			deployType: DeployTypeStatic,
 			config: ApplicationConfig{
 				BuildConfig: &BuildConfigStaticDockerfile{
+					StaticConfig: StaticConfig{
+						ArtifactPath: "",
+					},
 					DockerfileName: "Dockerfile",
-					ArtifactPath:   "",
 				},
 			},
 			wantErr: true,
@@ -122,9 +152,11 @@ func TestApplicationConfig_Validate(t *testing.T) {
 			deployType: DeployTypeStatic,
 			config: ApplicationConfig{
 				BuildConfig: &BuildConfigStaticCmd{
-					BaseImage:    "node:18",
-					BuildCmd:     "yarn build",
-					ArtifactPath: "./dist",
+					StaticConfig: StaticConfig{
+						ArtifactPath: "./dist",
+					},
+					BaseImage: "node:18",
+					BuildCmd:  "yarn build",
 				},
 			},
 			wantErr: false,
@@ -134,9 +166,11 @@ func TestApplicationConfig_Validate(t *testing.T) {
 			deployType: DeployTypeStatic,
 			config: ApplicationConfig{
 				BuildConfig: &BuildConfigStaticCmd{
-					BaseImage:    "alpine:latest",
-					BuildCmd:     "",
-					ArtifactPath: "./dist",
+					StaticConfig: StaticConfig{
+						ArtifactPath: "./dist",
+					},
+					BaseImage: "alpine:latest",
+					BuildCmd:  "",
 				},
 			},
 			wantErr: false,
@@ -146,9 +180,11 @@ func TestApplicationConfig_Validate(t *testing.T) {
 			deployType: DeployTypeStatic,
 			config: ApplicationConfig{
 				BuildConfig: &BuildConfigStaticCmd{
-					BaseImage:    "",
-					BuildCmd:     "",
-					ArtifactPath: "./dist",
+					StaticConfig: StaticConfig{
+						ArtifactPath: "./dist",
+					},
+					BaseImage: "",
+					BuildCmd:  "",
 				},
 			},
 			wantErr: false,
@@ -158,9 +194,11 @@ func TestApplicationConfig_Validate(t *testing.T) {
 			deployType: DeployTypeStatic,
 			config: ApplicationConfig{
 				BuildConfig: &BuildConfigStaticCmd{
-					BaseImage:    "",
-					BuildCmd:     "",
-					ArtifactPath: "",
+					StaticConfig: StaticConfig{
+						ArtifactPath: "",
+					},
+					BaseImage: "",
+					BuildCmd:  "",
 				},
 			},
 			wantErr: true,

@@ -27,4 +27,4 @@ jobs:
         env:
           GO_REPO_ROOT_PACKAGE: github.com/traPtitech/neoshowcase
       - name: Check diff
-        run: git diff --exit-code --quiet
+        run: git diff --exit-code

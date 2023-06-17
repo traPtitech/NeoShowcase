@@ -23,6 +23,18 @@ func ToPBRuntimeConfig(c *domain.RuntimeConfig) *pb.RuntimeConfig {
 	}
 }
 
+func FromPBStaticConfig(c *pb.StaticConfig) domain.StaticConfig {
+	return domain.StaticConfig{
+		ArtifactPath: c.ArtifactPath,
+	}
+}
+
+func ToPBStaticConfig(c *domain.StaticConfig) *pb.StaticConfig {
+	return &pb.StaticConfig{
+		ArtifactPath: c.ArtifactPath,
+	}
+}
+
 func FromPBBuildConfig(c *pb.ApplicationConfig) domain.BuildConfig {
 	switch bc := c.BuildConfig.(type) {
 	case *pb.ApplicationConfig_RuntimeBuildpack:
@@ -43,18 +55,23 @@ func FromPBBuildConfig(c *pb.ApplicationConfig) domain.BuildConfig {
 			DockerfileName: bc.RuntimeDockerfile.DockerfileName,
 			Context:        bc.RuntimeDockerfile.Context,
 		}
+	case *pb.ApplicationConfig_StaticBuildpack:
+		return &domain.BuildConfigStaticBuildpack{
+			StaticConfig: FromPBStaticConfig(bc.StaticBuildpack.StaticConfig),
+			Context:      bc.StaticBuildpack.Context,
+		}
 	case *pb.ApplicationConfig_StaticCmd:
 		return &domain.BuildConfigStaticCmd{
+			StaticConfig:  FromPBStaticConfig(bc.StaticCmd.StaticConfig),
 			BaseImage:     bc.StaticCmd.BaseImage,
 			BuildCmd:      bc.StaticCmd.BuildCmd,
 			BuildCmdShell: bc.StaticCmd.BuildCmdShell,
-			ArtifactPath:  bc.StaticCmd.ArtifactPath,
 		}
 	case *pb.ApplicationConfig_StaticDockerfile:
 		return &domain.BuildConfigStaticDockerfile{
+			StaticConfig:   FromPBStaticConfig(bc.StaticDockerfile.StaticConfig),
 			DockerfileName: bc.StaticDockerfile.DockerfileName,
 			Context:        bc.StaticDockerfile.Context,
-			ArtifactPath:   bc.StaticDockerfile.ArtifactPath,
 		}
 	default:
 		panic("unknown pb build config type")
@@ -93,21 +110,28 @@ func ToPBApplicationConfig(c domain.ApplicationConfig) *pb.ApplicationConfig {
 				Context:        bc.Context,
 			}},
 		}
+	case *domain.BuildConfigStaticBuildpack:
+		return &pb.ApplicationConfig{
+			BuildConfig: &pb.ApplicationConfig_StaticBuildpack{StaticBuildpack: &pb.BuildConfigStaticBuildpack{
+				StaticConfig: ToPBStaticConfig(&bc.StaticConfig),
+				Context:      bc.Context,
+			}},
+		}
 	case *domain.BuildConfigStaticCmd:
 		return &pb.ApplicationConfig{
 			BuildConfig: &pb.ApplicationConfig_StaticCmd{StaticCmd: &pb.BuildConfigStaticCmd{
+				StaticConfig:  ToPBStaticConfig(&bc.StaticConfig),
 				BaseImage:     bc.BaseImage,
 				BuildCmd:      bc.BuildCmd,
 				BuildCmdShell: bc.BuildCmdShell,
-				ArtifactPath:  bc.ArtifactPath,
 			}},
 		}
 	case *domain.BuildConfigStaticDockerfile:
 		return &pb.ApplicationConfig{
 			BuildConfig: &pb.ApplicationConfig_StaticDockerfile{StaticDockerfile: &pb.BuildConfigStaticDockerfile{
+				StaticConfig:   ToPBStaticConfig(&bc.StaticConfig),
 				DockerfileName: bc.DockerfileName,
 				Context:        bc.Context,
-				ArtifactPath:   bc.ArtifactPath,
 			}},
 		}
 	default:

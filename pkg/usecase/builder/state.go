@@ -53,6 +53,8 @@ type state struct {
 	repositoryTempDir string
 	artifactTempFile  *os.File
 	done              chan struct{}
+
+	buildpackDest string
 }
 
 func newState(app *domain.Application, build *domain.Build, repo *domain.Repository, response chan<- *pb.BuilderResponse) (*state, error) {

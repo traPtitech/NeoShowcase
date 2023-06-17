@@ -51,7 +51,7 @@ func NewService(
 		storage:      storage,
 	}
 
-	r, err := registry.New(image.Registry.Scheme+"://"+image.Registry.Addr, image.Registry.Username, image.Registry.Password)
+	r, err := image.NewRegistry()
 	if err != nil {
 		return nil, err
 	}

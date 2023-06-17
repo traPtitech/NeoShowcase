@@ -136,17 +136,26 @@ message BuildConfigRuntimeDockerfile {
   string context = 3;
 }
 
+message StaticConfig {
+  string artifact_path = 1;
+}
+
+message BuildConfigStaticBuildpack {
+  StaticConfig static_config = 1;
+  string context = 2;
+}
+
 message BuildConfigStaticCmd {
-  string base_image = 1;
-  string build_cmd = 2;
-  bool build_cmd_shell = 3;
-  string artifact_path = 4;
+  StaticConfig static_config = 1;
+  string base_image = 2;
+  string build_cmd = 3;
+  bool build_cmd_shell = 4;
 }
 
 message BuildConfigStaticDockerfile {
-  string dockerfile_name = 1;
-  string context = 2;
-  string artifact_path = 3;
+  StaticConfig static_config = 1;
+  string dockerfile_name = 2;
+  string context = 3;
 }
 
 message ApplicationConfig {
@@ -154,8 +163,9 @@ message ApplicationConfig {
     BuildConfigRuntimeBuildpack runtime_buildpack = 1;
     BuildConfigRuntimeCmd runtime_cmd = 2;
     BuildConfigRuntimeDockerfile runtime_dockerfile = 3;
-    BuildConfigStaticCmd static_cmd = 4;
-    BuildConfigStaticDockerfile static_dockerfile = 5;
+    BuildConfigStaticBuildpack static_buildpack = 4;
+    BuildConfigStaticCmd static_cmd = 5;
+    BuildConfigStaticDockerfile static_dockerfile = 6;
   }
 }
 

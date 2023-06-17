@@ -83,7 +83,7 @@ func (s *AppDeployHelper) _runtimeDesiredStates(ctx context.Context) ([]*domain.
 	desiredStates := ds.Map(syncableApps, func(app *domain.Application) *domain.RuntimeDesiredState {
 		return &domain.RuntimeDesiredState{
 			App:       app,
-			ImageName: s.image.FullImageName(app.ID),
+			ImageName: s.image.ImageName(app.ID),
 			ImageTag:  app.CurrentCommit,
 			Envs:      envs[app.ID],
 		}

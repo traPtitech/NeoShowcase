@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/go-git/go-git/v5/plumbing/transport/ssh"
+	"github.com/heroku/docker-registry-client/registry"
 	buildkit "github.com/moby/buildkit/client"
 	log "github.com/sirupsen/logrus"
 
@@ -28,6 +29,7 @@ type builderService struct {
 	storage   domain.Storage
 	pubKey    *ssh.PublicKeys
 	config    builder.ImageConfig
+	registry  *registry.Registry
 
 	appRepo      domain.ApplicationRepository
 	artifactRepo domain.ArtifactRepository
@@ -52,7 +54,11 @@ func NewService(
 	artifactRepo domain.ArtifactRepository,
 	buildRepo domain.BuildRepository,
 	gitRepo domain.GitRepositoryRepository,
-) Service {
+) (Service, error) {
+	r, err := config.NewRegistry()
+	if err != nil {
+		return nil, err
+	}
 	return &builderService{
 		client:       client,
 		buildkit:     buildkit,
@@ -64,11 +70,16 @@ func NewService(
 		artifactRepo: artifactRepo,
 		buildRepo:    buildRepo,
 		gitRepo:      gitRepo,
-	}
+		registry:     r,
+	}, nil
 }
 
 func (s *builderService) destImage(app *domain.Application, build *domain.Build) string {
-	return s.config.FullImageName(app.ID) + ":" + build.Commit
+	return s.config.ImageName(app.ID) + ":" + build.Commit
+}
+
+func (s *builderService) tmpDestImage(app *domain.Application, build *domain.Build) string {
+	return s.config.TmpImageName(app.ID) + ":" + build.Commit
 }
 
 func (s *builderService) Start(_ context.Context) error {

@@ -25,6 +25,7 @@ var BuildTypeMapper = mapper.MustNewValueMapper(map[string]domain.BuildType{
 	models.ApplicationConfigBuildTypeRuntimeBuildpack:  domain.BuildTypeRuntimeBuildpack,
 	models.ApplicationConfigBuildTypeRuntimeCMD:        domain.BuildTypeRuntimeCmd,
 	models.ApplicationConfigBuildTypeRuntimeDockerfile: domain.BuildTypeRuntimeDockerfile,
+	models.ApplicationConfigBuildTypeStaticBuildpack:   domain.BuildTypeStaticBuildpack,
 	models.ApplicationConfigBuildTypeStaticCMD:         domain.BuildTypeStaticCmd,
 	models.ApplicationConfigBuildTypeStaticDockerfile:  domain.BuildTypeStaticDockerfile,
 })
@@ -34,6 +35,25 @@ func assignRuntimeConfig(mc *models.ApplicationConfig, c *domain.RuntimeConfig) 
 	mc.UseMongodb = c.UseMongoDB
 	mc.Entrypoint = c.Entrypoint
 	mc.Command = c.Command
+}
+
+func ToDomainRuntimeConfig(c *models.ApplicationConfig) domain.RuntimeConfig {
+	return domain.RuntimeConfig{
+		UseMariaDB: c.UseMariadb,
+		UseMongoDB: c.UseMongodb,
+		Entrypoint: c.Entrypoint,
+		Command:    c.Command,
+	}
+}
+
+func assignStaticConfig(mc *models.ApplicationConfig, c *domain.StaticConfig) {
+	mc.ArtifactPath = c.ArtifactPath
+}
+
+func ToDomainStaticConfig(c *models.ApplicationConfig) domain.StaticConfig {
+	return domain.StaticConfig{
+		ArtifactPath: c.ArtifactPath,
+	}
 }
 
 func assignBuildConfig(mc *models.ApplicationConfig, c domain.BuildConfig) {
@@ -50,26 +70,20 @@ func assignBuildConfig(mc *models.ApplicationConfig, c domain.BuildConfig) {
 		assignRuntimeConfig(mc, &bc.RuntimeConfig)
 		mc.DockerfileName = bc.DockerfileName
 		mc.Context = bc.Context
+	case *domain.BuildConfigStaticBuildpack:
+		assignStaticConfig(mc, &bc.StaticConfig)
+		mc.Context = bc.Context
 	case *domain.BuildConfigStaticCmd:
+		assignStaticConfig(mc, &bc.StaticConfig)
 		mc.BaseImage = bc.BaseImage
 		mc.BuildCMD = bc.BuildCmd
 		mc.BuildCMDShell = bc.BuildCmdShell
-		mc.ArtifactPath = bc.ArtifactPath
 	case *domain.BuildConfigStaticDockerfile:
+		assignStaticConfig(mc, &bc.StaticConfig)
 		mc.DockerfileName = bc.DockerfileName
 		mc.Context = bc.Context
-		mc.ArtifactPath = bc.ArtifactPath
 	default:
 		panic("unknown domain build config type")
-	}
-}
-
-func ToDomainRuntimeConfig(c *models.ApplicationConfig) domain.RuntimeConfig {
-	return domain.RuntimeConfig{
-		UseMariaDB: c.UseMariadb,
-		UseMongoDB: c.UseMongodb,
-		Entrypoint: c.Entrypoint,
-		Command:    c.Command,
 	}
 }
 
@@ -93,18 +107,23 @@ func ToDomainBuildConfig(c *models.ApplicationConfig) domain.BuildConfig {
 			DockerfileName: c.DockerfileName,
 			Context:        c.Context,
 		}
+	case domain.BuildTypeStaticBuildpack:
+		return &domain.BuildConfigStaticBuildpack{
+			StaticConfig: ToDomainStaticConfig(c),
+			Context:      c.Context,
+		}
 	case domain.BuildTypeStaticCmd:
 		return &domain.BuildConfigStaticCmd{
+			StaticConfig:  ToDomainStaticConfig(c),
 			BaseImage:     c.BaseImage,
 			BuildCmd:      c.BuildCMD,
 			BuildCmdShell: c.BuildCMDShell,
-			ArtifactPath:  c.ArtifactPath,
 		}
 	case domain.BuildTypeStaticDockerfile:
 		return &domain.BuildConfigStaticDockerfile{
+			StaticConfig:   ToDomainStaticConfig(c),
 			DockerfileName: c.DockerfileName,
 			Context:        c.Context,
-			ArtifactPath:   c.ArtifactPath,
 		}
 	default:
 		panic("unknown build type")

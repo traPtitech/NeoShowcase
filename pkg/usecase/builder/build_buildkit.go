@@ -82,7 +82,7 @@ func (s *builderService) authSessions() []session.Attachable {
 	})}
 }
 
-func (s *builderService) buildImageWithCmd(
+func (s *builderService) buildRuntimeCmd(
 	ctx context.Context,
 	st *state,
 	ch chan *buildkit.SolveStatus,
@@ -136,7 +136,7 @@ func (s *builderService) buildImageWithCmd(
 	return err
 }
 
-func (s *builderService) buildImageWithDockerfile(
+func (s *builderService) buildRuntimeDockerfile(
 	ctx context.Context,
 	st *state,
 	ch chan *buildkit.SolveStatus,
@@ -162,7 +162,7 @@ func (s *builderService) buildImageWithDockerfile(
 	return err
 }
 
-func (s *builderService) buildStaticWithCmd(
+func (s *builderService) buildStaticCmd(
 	ctx context.Context,
 	st *state,
 	ch chan *buildkit.SolveStatus,
@@ -224,7 +224,7 @@ func (s *builderService) buildStaticWithCmd(
 	return err
 }
 
-func (s *builderService) buildStaticWithDockerfile(
+func (s *builderService) buildStaticDockerfile(
 	ctx context.Context,
 	st *state,
 	ch chan *buildkit.SolveStatus,

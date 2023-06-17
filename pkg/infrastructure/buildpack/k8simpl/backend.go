@@ -121,15 +121,15 @@ func (k *k8sBackend) exec(ctx context.Context, workDir string, cmd string, env m
 	return nil
 }
 
-func (k *k8sBackend) Pack(ctx context.Context, repoDir string, logWriter io.Writer, imageDest string) error {
+func (k *k8sBackend) Pack(ctx context.Context, repoDir string, logWriter io.Writer, imageDest string) (path string, err error) {
 	tmpID := domain.NewID()
 	dstRepoPath := fmt.Sprintf("repo-%s", tmpID)
 	localDstPath := filepath.Join(k.config.LocalDir, dstRepoPath)
 	remoteDstPath := filepath.Join(k.config.RemoteDir, dstRepoPath)
 
-	err := exec.CommandContext(ctx, "cp", "-r", repoDir, localDstPath).Run()
+	err = exec.CommandContext(ctx, "cp", "-r", repoDir, localDstPath).Run()
 	if err != nil {
-		return errors.Wrap(err, "copying repo dir")
+		return "", errors.Wrap(err, "copying repo dir")
 	}
 	defer func() {
 		err := exec.Command("rm", "-r", localDstPath).Run()
@@ -139,7 +139,7 @@ func (k *k8sBackend) Pack(ctx context.Context, repoDir string, logWriter io.Writ
 	}()
 	err = exec.CommandContext(ctx, "chown", "-R", fmt.Sprintf("%d:%d", k.config.User, k.config.Group), localDstPath).Run()
 	if err != nil {
-		return errors.Wrap(err, "setting repo owner")
+		return "", errors.Wrap(err, "setting repo owner")
 	}
 
 	// TODO: support pushing to insecure registry for local development
@@ -153,7 +153,7 @@ func (k *k8sBackend) Pack(ctx context.Context, repoDir string, logWriter io.Writ
 		map[string]string{"CNB_PLATFORM_API": k.config.PlatformAPI},
 		logWriter, logWriter)
 	if err != nil {
-		return err
+		return "", err
 	}
-	return nil
+	return remoteDstPath, nil
 }
