@@ -49,6 +49,14 @@ func (r *artifactRepository) buildMods(cond domain.GetArtifactCondition) []qm.Qu
 	return mods
 }
 
+func (r *artifactRepository) GetArtifact(ctx context.Context, id string) (*domain.Artifact, error) {
+	artifact, err := models.Artifacts(models.ArtifactWhere.ID.EQ(id)).One(ctx, r.db)
+	if err != nil {
+		return nil, errors.Wrap(err, "getting artifact")
+	}
+	return repoconvert.ToDomainArtifact(artifact), nil
+}
+
 func (r *artifactRepository) GetArtifacts(ctx context.Context, cond domain.GetArtifactCondition) ([]*domain.Artifact, error) {
 	artifacts, err := models.Artifacts(r.buildMods(cond)...).All(ctx, r.db)
 	if err != nil {

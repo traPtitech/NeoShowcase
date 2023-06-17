@@ -9,13 +9,14 @@
 
 ```sql
 CREATE TABLE `artifacts` (
-  `id` char(22) NOT NULL COMMENT '生成物ID',
-  `size` bigint(20) NOT NULL COMMENT '生成物ファイルサイズ(tar)',
+  `id` char(22) NOT NULL COMMENT '成果物ID',
+  `name` varchar(1000) NOT NULL COMMENT '成果物名',
+  `size` bigint(20) NOT NULL COMMENT '成果物ファイルサイズ',
   `created_at` datetime(6) NOT NULL COMMENT '作成日時',
   `deleted_at` datetime(6) DEFAULT NULL COMMENT '削除日時',
   `build_id` varchar(22) NOT NULL COMMENT 'ビルドID',
   PRIMARY KEY (`id`),
-  UNIQUE KEY `build_id` (`build_id`),
+  KEY `fk_artifacts_build_id` (`build_id`),
   CONSTRAINT `fk_artifacts_build_id` FOREIGN KEY (`build_id`) REFERENCES `builds` (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci COMMENT='静的ファイル生成物テーブル'
 ```
@@ -26,8 +27,9 @@ CREATE TABLE `artifacts` (
 
 | Name | Type | Default | Nullable | Children | Parents | Comment |
 | ---- | ---- | ------- | -------- | -------- | ------- | ------- |
-| id | char(22) |  | false |  |  | 生成物ID |
-| size | bigint(20) |  | false |  |  | 生成物ファイルサイズ(tar) |
+| id | char(22) |  | false |  |  | 成果物ID |
+| name | varchar(1000) |  | false |  |  | 成果物名 |
+| size | bigint(20) |  | false |  |  | 成果物ファイルサイズ |
 | created_at | datetime(6) |  | false |  |  | 作成日時 |
 | deleted_at | datetime(6) | NULL | true |  |  | 削除日時 |
 | build_id | varchar(22) |  | false |  | [builds](builds.md) | ビルドID |
@@ -36,7 +38,6 @@ CREATE TABLE `artifacts` (
 
 | Name | Type | Definition |
 | ---- | ---- | ---------- |
-| build_id | UNIQUE | UNIQUE KEY build_id (build_id) |
 | fk_artifacts_build_id | FOREIGN KEY | FOREIGN KEY (build_id) REFERENCES builds (id) |
 | PRIMARY | PRIMARY KEY | PRIMARY KEY (id) |
 
@@ -44,18 +45,19 @@ CREATE TABLE `artifacts` (
 
 | Name | Definition |
 | ---- | ---------- |
+| fk_artifacts_build_id | KEY fk_artifacts_build_id (build_id) USING BTREE |
 | PRIMARY | PRIMARY KEY (id) USING BTREE |
-| build_id | UNIQUE KEY build_id (build_id) USING BTREE |
 
 ## Relations
 
 ```mermaid
 erDiagram
 
-"artifacts" |o--|| "builds" : "FOREIGN KEY (build_id) REFERENCES builds (id)"
+"artifacts" }o--|| "builds" : "FOREIGN KEY (build_id) REFERENCES builds (id)"
 
 "artifacts" {
   char_22_ id PK
+  varchar_1000_ name
   bigint_20_ size
   datetime_6_ created_at
   datetime_6_ deleted_at

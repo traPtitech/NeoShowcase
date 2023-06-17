@@ -7,7 +7,7 @@
 | [applications](applications.md) | 11 | アプリケーションテーブル | BASE TABLE |
 | [application_config](application_config.md) | 13 | アプリケーション詳細設定テーブル | BASE TABLE |
 | [application_owners](application_owners.md) | 2 | アプリケーション所有者テーブル | BASE TABLE |
-| [artifacts](artifacts.md) | 5 | 静的ファイル生成物テーブル | BASE TABLE |
+| [artifacts](artifacts.md) | 6 | 静的ファイル生成物テーブル | BASE TABLE |
 | [builds](builds.md) | 9 | ビルドテーブル | BASE TABLE |
 | [environments](environments.md) | 4 | 環境変数テーブル | BASE TABLE |
 | [port_publications](port_publications.md) | 4 | 公開ポートテーブル | BASE TABLE |
@@ -27,7 +27,7 @@ erDiagram
 "application_config" |o--|| "applications" : "FOREIGN KEY (application_id) REFERENCES applications (id)"
 "application_owners" }o--|| "applications" : "FOREIGN KEY (application_id) REFERENCES applications (id)"
 "application_owners" }o--|| "users" : "FOREIGN KEY (user_id) REFERENCES users (id)"
-"artifacts" |o--|| "builds" : "FOREIGN KEY (build_id) REFERENCES builds (id)"
+"artifacts" }o--|| "builds" : "FOREIGN KEY (build_id) REFERENCES builds (id)"
 "builds" }o--|| "applications" : "FOREIGN KEY (application_id) REFERENCES applications (id)"
 "environments" }o--|| "applications" : "FOREIGN KEY (application_id) REFERENCES applications (id)"
 "port_publications" }o--|| "applications" : "FOREIGN KEY (application_id) REFERENCES applications (id)"
@@ -71,6 +71,7 @@ erDiagram
 }
 "artifacts" {
   char_22_ id PK
+  varchar_1000_ name
   bigint_20_ size
   datetime_6_ created_at
   datetime_6_ deleted_at

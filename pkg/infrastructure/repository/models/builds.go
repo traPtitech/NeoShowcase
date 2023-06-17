@@ -117,16 +117,16 @@ var BuildWhere = struct {
 // BuildRels is where relationship names are stored.
 var BuildRels = struct {
 	Application string
-	Artifact    string
+	Artifacts   string
 }{
 	Application: "Application",
-	Artifact:    "Artifact",
+	Artifacts:   "Artifacts",
 }
 
 // buildR is where relationships are stored.
 type buildR struct {
-	Application *Application `boil:"Application" json:"Application" toml:"Application" yaml:"Application"`
-	Artifact    *Artifact    `boil:"Artifact" json:"Artifact" toml:"Artifact" yaml:"Artifact"`
+	Application *Application  `boil:"Application" json:"Application" toml:"Application" yaml:"Application"`
+	Artifacts   ArtifactSlice `boil:"Artifacts" json:"Artifacts" toml:"Artifacts" yaml:"Artifacts"`
 }
 
 // NewStruct creates a new relationship struct
@@ -141,11 +141,11 @@ func (r *buildR) GetApplication() *Application {
 	return r.Application
 }
 
-func (r *buildR) GetArtifact() *Artifact {
+func (r *buildR) GetArtifacts() ArtifactSlice {
 	if r == nil {
 		return nil
 	}
-	return r.Artifact
+	return r.Artifacts
 }
 
 // buildL is where Load methods for each relationship are stored.
@@ -448,13 +448,16 @@ func (o *Build) Application(mods ...qm.QueryMod) applicationQuery {
 	return Applications(queryMods...)
 }
 
-// Artifact pointed to by the foreign key.
-func (o *Build) Artifact(mods ...qm.QueryMod) artifactQuery {
-	queryMods := []qm.QueryMod{
-		qm.Where("`build_id` = ?", o.ID),
+// Artifacts retrieves all the artifact's Artifacts with an executor.
+func (o *Build) Artifacts(mods ...qm.QueryMod) artifactQuery {
+	var queryMods []qm.QueryMod
+	if len(mods) != 0 {
+		queryMods = append(queryMods, mods...)
 	}
 
-	queryMods = append(queryMods, mods...)
+	queryMods = append(queryMods,
+		qm.Where("`artifacts`.`build_id`=?", o.ID),
+	)
 
 	return Artifacts(queryMods...)
 }
@@ -579,9 +582,9 @@ func (buildL) LoadApplication(ctx context.Context, e boil.ContextExecutor, singu
 	return nil
 }
 
-// LoadArtifact allows an eager lookup of values, cached into the
-// loaded structs of the objects. This is for a 1-1 relationship.
-func (buildL) LoadArtifact(ctx context.Context, e boil.ContextExecutor, singular bool, maybeBuild interface{}, mods queries.Applicator) error {
+// LoadArtifacts allows an eager lookup of values, cached into the
+// loaded structs of the objects. This is for a 1-M or N-M relationship.
+func (buildL) LoadArtifacts(ctx context.Context, e boil.ContextExecutor, singular bool, maybeBuild interface{}, mods queries.Applicator) error {
 	var slice []*Build
 	var object *Build
 
@@ -644,16 +647,16 @@ func (buildL) LoadArtifact(ctx context.Context, e boil.ContextExecutor, singular
 
 	results, err := query.QueryContext(ctx, e)
 	if err != nil {
-		return errors.Wrap(err, "failed to eager load Artifact")
+		return errors.Wrap(err, "failed to eager load artifacts")
 	}
 
 	var resultSlice []*Artifact
 	if err = queries.Bind(results, &resultSlice); err != nil {
-		return errors.Wrap(err, "failed to bind eager loaded slice Artifact")
+		return errors.Wrap(err, "failed to bind eager loaded slice artifacts")
 	}
 
 	if err = results.Close(); err != nil {
-		return errors.Wrap(err, "failed to close results of eager load for artifacts")
+		return errors.Wrap(err, "failed to close results in eager load on artifacts")
 	}
 	if err = results.Err(); err != nil {
 		return errors.Wrap(err, "error occurred during iteration of eager loaded relations for artifacts")
@@ -666,24 +669,21 @@ func (buildL) LoadArtifact(ctx context.Context, e boil.ContextExecutor, singular
 			}
 		}
 	}
-
-	if len(resultSlice) == 0 {
+	if singular {
+		object.R.Artifacts = resultSlice
+		for _, foreign := range resultSlice {
+			if foreign.R == nil {
+				foreign.R = &artifactR{}
+			}
+			foreign.R.Build = object
+		}
 		return nil
 	}
 
-	if singular {
-		foreign := resultSlice[0]
-		object.R.Artifact = foreign
-		if foreign.R == nil {
-			foreign.R = &artifactR{}
-		}
-		foreign.R.Build = object
-	}
-
-	for _, local := range slice {
-		for _, foreign := range resultSlice {
+	for _, foreign := range resultSlice {
+		for _, local := range slice {
 			if local.ID == foreign.BuildID {
-				local.R.Artifact = foreign
+				local.R.Artifacts = append(local.R.Artifacts, foreign)
 				if foreign.R == nil {
 					foreign.R = &artifactR{}
 				}
@@ -743,52 +743,55 @@ func (o *Build) SetApplication(ctx context.Context, exec boil.ContextExecutor, i
 	return nil
 }
 
-// SetArtifact of the build to the related item.
-// Sets o.R.Artifact to related.
-// Adds o to related.R.Build.
-func (o *Build) SetArtifact(ctx context.Context, exec boil.ContextExecutor, insert bool, related *Artifact) error {
+// AddArtifacts adds the given related objects to the existing relationships
+// of the build, optionally inserting them as new records.
+// Appends related to o.R.Artifacts.
+// Sets related.R.Build appropriately.
+func (o *Build) AddArtifacts(ctx context.Context, exec boil.ContextExecutor, insert bool, related ...*Artifact) error {
 	var err error
+	for _, rel := range related {
+		if insert {
+			rel.BuildID = o.ID
+			if err = rel.Insert(ctx, exec, boil.Infer()); err != nil {
+				return errors.Wrap(err, "failed to insert into foreign table")
+			}
+		} else {
+			updateQuery := fmt.Sprintf(
+				"UPDATE `artifacts` SET %s WHERE %s",
+				strmangle.SetParamNames("`", "`", 0, []string{"build_id"}),
+				strmangle.WhereClause("`", "`", 0, artifactPrimaryKeyColumns),
+			)
+			values := []interface{}{o.ID, rel.ID}
 
-	if insert {
-		related.BuildID = o.ID
+			if boil.IsDebug(ctx) {
+				writer := boil.DebugWriterFrom(ctx)
+				fmt.Fprintln(writer, updateQuery)
+				fmt.Fprintln(writer, values)
+			}
+			if _, err = exec.ExecContext(ctx, updateQuery, values...); err != nil {
+				return errors.Wrap(err, "failed to update foreign table")
+			}
 
-		if err = related.Insert(ctx, exec, boil.Infer()); err != nil {
-			return errors.Wrap(err, "failed to insert into foreign table")
+			rel.BuildID = o.ID
 		}
-	} else {
-		updateQuery := fmt.Sprintf(
-			"UPDATE `artifacts` SET %s WHERE %s",
-			strmangle.SetParamNames("`", "`", 0, []string{"build_id"}),
-			strmangle.WhereClause("`", "`", 0, artifactPrimaryKeyColumns),
-		)
-		values := []interface{}{o.ID, related.ID}
-
-		if boil.IsDebug(ctx) {
-			writer := boil.DebugWriterFrom(ctx)
-			fmt.Fprintln(writer, updateQuery)
-			fmt.Fprintln(writer, values)
-		}
-		if _, err = exec.ExecContext(ctx, updateQuery, values...); err != nil {
-			return errors.Wrap(err, "failed to update foreign table")
-		}
-
-		related.BuildID = o.ID
 	}
 
 	if o.R == nil {
 		o.R = &buildR{
-			Artifact: related,
+			Artifacts: related,
 		}
 	} else {
-		o.R.Artifact = related
+		o.R.Artifacts = append(o.R.Artifacts, related...)
 	}
 
-	if related.R == nil {
-		related.R = &artifactR{
-			Build: o,
+	for _, rel := range related {
+		if rel.R == nil {
+			rel.R = &artifactR{
+				Build: o,
+			}
+		} else {
+			rel.R.Build = o
 		}
-	} else {
-		related.R.Build = o
 	}
 	return nil
 }

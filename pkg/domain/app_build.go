@@ -7,6 +7,7 @@ import (
 	"github.com/samber/lo"
 	"golang.org/x/exp/slices"
 
+	"github.com/traPtitech/neoshowcase/pkg/util/ds"
 	"github.com/traPtitech/neoshowcase/pkg/util/optional"
 )
 
@@ -40,7 +41,7 @@ type Build struct {
 	UpdatedAt     optional.Of[time.Time]
 	FinishedAt    optional.Of[time.Time]
 	Retriable     bool
-	Artifact      optional.Of[Artifact]
+	Artifacts     []*Artifact
 }
 
 func NewBuild(applicationID string, commit string) *Build {
@@ -51,6 +52,11 @@ func NewBuild(applicationID string, commit string) *Build {
 		ApplicationID: applicationID,
 		QueuedAt:      time.Now(),
 	}
+}
+
+func (b *Build) GetWebsiteArtifact() (artifact *Artifact, ok bool) {
+	slices.SortFunc(b.Artifacts, ds.MoreFunc(func(a *Artifact) int64 { return a.CreatedAt.UnixNano() }))
+	return lo.Find(b.Artifacts, func(a *Artifact) bool { return a.Name == BuilderStaticArtifactName })
 }
 
 // GetSuccessBuilds returns a map of (app id + build id) -> build.

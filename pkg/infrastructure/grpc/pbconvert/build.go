@@ -5,6 +5,7 @@ import (
 
 	"github.com/traPtitech/neoshowcase/pkg/domain"
 	"github.com/traPtitech/neoshowcase/pkg/infrastructure/grpc/pb"
+	"github.com/traPtitech/neoshowcase/pkg/util/ds"
 	"github.com/traPtitech/neoshowcase/pkg/util/mapper"
 )
 
@@ -27,9 +28,7 @@ func ToPBBuild(build *domain.Build) *pb.Build {
 		UpdatedAt:  ToPBNullTimestamp(build.UpdatedAt),
 		FinishedAt: ToPBNullTimestamp(build.FinishedAt),
 		Retriable:  build.Retriable,
-	}
-	if build.Artifact.Valid {
-		b.Artifact = ToPBArtifact(&build.Artifact.V)
+		Artifacts:  ds.Map(build.Artifacts, ToPBArtifact),
 	}
 	return b
 }

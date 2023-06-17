@@ -10,6 +10,7 @@ import (
 func ToPBArtifact(artifact *domain.Artifact) *pb.Artifact {
 	return &pb.Artifact{
 		Id:        artifact.ID,
+		Name:      artifact.Name,
 		Size:      artifact.Size,
 		CreatedAt: timestamppb.New(artifact.CreatedAt),
 		DeletedAt: ToPBNullTimestamp(artifact.DeletedAt),

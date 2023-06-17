@@ -80,6 +80,11 @@ func (s *Service) GetBuildLogStream(ctx context.Context, buildID string) (<-chan
 	return ch, nil
 }
 
-func (s *Service) GetArtifact(_ context.Context, artifactID string) (filename string, r io.ReadCloser, err error) {
-	return domain.GetArtifact(s.storage, artifactID)
+func (s *Service) GetArtifact(ctx context.Context, artifactID string) (filename string, r io.ReadCloser, err error) {
+	artifact, err := s.artifactRepo.GetArtifact(ctx, artifactID)
+	if err != nil {
+		return "", nil, err
+	}
+	r, err = domain.GetArtifact(s.storage, artifactID)
+	return artifact.Name, r, err
 }

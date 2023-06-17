@@ -164,11 +164,7 @@ func (c *cleanerService) getArtifactsInUse(ctx context.Context) ([]*domain.Artif
 	}
 	artifacts := make([]*domain.Artifact, 0, len(builds))
 	for _, build := range builds {
-		if !build.Artifact.Valid {
-			continue
-		}
-		artifact := build.Artifact.V
-		artifacts = append(artifacts, &artifact)
+		artifacts = append(artifacts, build.Artifacts...)
 	}
 	return artifacts, nil
 }

@@ -40,14 +40,15 @@ func GetActiveStaticSites(ctx context.Context, appRepo ApplicationRepository, bu
 		if !ok {
 			continue
 		}
-		if !build.Artifact.Valid {
+		artifact, ok := build.GetWebsiteArtifact()
+		if !ok {
 			continue
 		}
 		for _, website := range app.Websites {
 			sites = append(sites, &StaticSite{
 				Application: app,
 				Website:     website,
-				ArtifactID:  build.Artifact.V.ID,
+				ArtifactID:  artifact.ID,
 				SPA:         app.Config.BuildConfig.GetStaticConfig().SPA,
 			})
 		}

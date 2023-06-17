@@ -1,5 +1,5 @@
 import { useNavigate, useParams } from '@solidjs/router'
-import { createEffect, createResource, createSignal, onCleanup, Ref } from 'solid-js'
+import { createEffect, createResource, createSignal, For, onCleanup, Ref } from 'solid-js'
 import { client } from '/@/libs/api'
 import { Container } from '/@/libs/layout'
 import { Header } from '/@/components/Header'
@@ -11,7 +11,8 @@ import {
   CardItemContent,
   CardItems,
   CardItemTitle,
-  CardsContainer,
+  CardRowsContainer,
+  CardsRow,
   CardTitle,
 } from '/@/components/Card'
 import { Button } from '/@/components/Button'
@@ -23,7 +24,15 @@ import { sleep } from '/@/libs/sleep'
 import { LogContainer } from '/@/components/Log'
 import { Code, ConnectError } from '@bufbuild/connect'
 import { Build_BuildStatus } from '/@/api/neoshowcase/protobuf/gateway_pb'
-import { DeployType } from '/@/api/neoshowcase/protobuf/gateway_pb'
+import { styled } from '@macaron-css/solid'
+import { ArtifactRow } from '/@/components/ArtifactRow'
+
+const ArtifactsContainer = styled('div', {
+  base: {
+    display: 'flex',
+    flexDirection: 'column',
+  },
+})
 
 export default () => {
   const navigate = useNavigate()
@@ -108,113 +117,111 @@ export default () => {
     await refetchBuild()
   }
 
-  const downloadArtifact = async () => {
-    const artifactId = build().artifact?.id
-    const data = await client.getBuildArtifact({ artifactId })
-    const dataBlob = new Blob([data.content], { type: 'application/gzip' })
-    const blobUrl = URL.createObjectURL(dataBlob)
-    const anchor = document.createElement('a')
-    anchor.href = blobUrl
-    anchor.download = data.filename
-    anchor.click()
-    URL.revokeObjectURL(blobUrl)
-  }
-
   return (
     <Container>
       <Header />
       <Show when={loaded()}>
         <AppNav appID={app().id} appName={app().name} repoName={repo().name} />
-        <CardsContainer>
-          <Card>
-            <CardTitle>Actions</CardTitle>
-            <Button
-              color='black1'
-              size='large'
-              width='full'
-              onclick={retryBuild}
-              disabled={build().retriable}
-              title={build().retriable ? '既に再ビルドが行われています' : '同じコミットで再ビルドします'}
-            >
-              Retry build
-            </Button>
-            <Show when={build().status === Build_BuildStatus.BUILDING}>
-              <Button color='black1' size='large' width='full' onclick={cancelBuild}>
-                Cancel build
+        <CardRowsContainer>
+          <CardsRow>
+            <Card>
+              <CardTitle>Actions</CardTitle>
+              <Button
+                color='black1'
+                size='large'
+                width='full'
+                onclick={retryBuild}
+                disabled={build().retriable}
+                title={build().retriable ? '既に再ビルドが行われています' : '同じコミットで再ビルドします'}
+              >
+                Retry build
               </Button>
-            </Show>
-            <Show when={app().deployType === DeployType.STATIC && build().status === Build_BuildStatus.SUCCEEDED}>
-              <Button color='black1' size='large' width='full' onclick={downloadArtifact}>
-                Download build result (tar.gz)
-              </Button>
-            </Show>
-          </Card>
-          <Card>
-            <CardTitle>Info</CardTitle>
-            <CardItems>
-              <CardItem>
-                <CardItemTitle>ID</CardItemTitle>
-                <CardItemContent>{build().id}</CardItemContent>
-              </CardItem>
-              <CardItem>
-                <CardItemTitle>Commit</CardItemTitle>
-                <CardItemContent>{shortSha(build().commit)}</CardItemContent>
-              </CardItem>
-              <CardItem>
-                <CardItemTitle>Status</CardItemTitle>
-                <CardItemContent>
-                  <BuildStatusIcon state={build().status} size={24} />
-                  {buildStatusStr[build().status]}
-                </CardItemContent>
-              </CardItem>
-              <CardItem>
-                <CardItemTitle>Queued at</CardItemTitle>
-                <CardItemContent>
-                  <DiffHuman target={build().queuedAt.toDate()} />
-                </CardItemContent>
-              </CardItem>
-              <CardItem>
-                <CardItemTitle>Started at</CardItemTitle>
-                <CardItemContent>
-                  <Show when={build().startedAt.valid} fallback={'-'}>
-                    <DiffHuman target={build().startedAt.timestamp.toDate()} />
-                  </Show>
-                </CardItemContent>
-              </CardItem>
-              <CardItem>
-                <CardItemTitle>Finished at</CardItemTitle>
-                <CardItemContent>
-                  <Show when={build().finishedAt.valid} fallback={'-'}>
-                    <DiffHuman target={build().finishedAt.timestamp.toDate()} />
-                  </Show>
-                </CardItemContent>
-              </CardItem>
-              <CardItem>
-                <CardItemTitle>Duration</CardItemTitle>
-                <CardItemContent>
-                  <Show when={build().startedAt.valid && build().finishedAt.valid} fallback={'-'}>
-                    {durationHuman(
-                      build().finishedAt.timestamp.toDate().getTime() - build().startedAt.timestamp.toDate().getTime(),
-                    )}
-                  </Show>
-                </CardItemContent>
-              </CardItem>
-              <CardItem>
-                <CardItemTitle>Retried</CardItemTitle>
-                <CardItemContent>{build().retriable ? 'Yes' : 'No'}</CardItemContent>
-              </CardItem>
-            </CardItems>
-          </Card>
-          <Card>
-            <CardTitle>Build Log</CardTitle>
-            <Show when={buildLog()}>
-              <LogContainer innerHTML={toUTF8WithAnsi(buildLog().log)} ref={logRef} />
-            </Show>
-            <Show when={!buildLog() && buildLogStream()}>
-              <LogContainer innerHTML={toUTF8WithAnsi(streamedLog())} ref={streamLogRef} />
-            </Show>
-          </Card>
-        </CardsContainer>
+              <Show when={build().status === Build_BuildStatus.BUILDING}>
+                <Button color='black1' size='large' width='full' onclick={cancelBuild}>
+                  Cancel build
+                </Button>
+              </Show>
+            </Card>
+            <Card>
+              <CardTitle>Info</CardTitle>
+              <CardItems>
+                <CardItem>
+                  <CardItemTitle>ID</CardItemTitle>
+                  <CardItemContent>{build().id}</CardItemContent>
+                </CardItem>
+                <CardItem>
+                  <CardItemTitle>Commit</CardItemTitle>
+                  <CardItemContent>{shortSha(build().commit)}</CardItemContent>
+                </CardItem>
+                <CardItem>
+                  <CardItemTitle>Status</CardItemTitle>
+                  <CardItemContent>
+                    <BuildStatusIcon state={build().status} size={24} />
+                    {buildStatusStr[build().status]}
+                  </CardItemContent>
+                </CardItem>
+                <CardItem>
+                  <CardItemTitle>Queued at</CardItemTitle>
+                  <CardItemContent>
+                    <DiffHuman target={build().queuedAt.toDate()} />
+                  </CardItemContent>
+                </CardItem>
+                <CardItem>
+                  <CardItemTitle>Started at</CardItemTitle>
+                  <CardItemContent>
+                    <Show when={build().startedAt.valid} fallback={'-'}>
+                      <DiffHuman target={build().startedAt.timestamp.toDate()} />
+                    </Show>
+                  </CardItemContent>
+                </CardItem>
+                <CardItem>
+                  <CardItemTitle>Finished at</CardItemTitle>
+                  <CardItemContent>
+                    <Show when={build().finishedAt.valid} fallback={'-'}>
+                      <DiffHuman target={build().finishedAt.timestamp.toDate()} />
+                    </Show>
+                  </CardItemContent>
+                </CardItem>
+                <CardItem>
+                  <CardItemTitle>Duration</CardItemTitle>
+                  <CardItemContent>
+                    <Show when={build().startedAt.valid && build().finishedAt.valid} fallback={'-'}>
+                      {durationHuman(
+                        build().finishedAt.timestamp.toDate().getTime() -
+                          build().startedAt.timestamp.toDate().getTime(),
+                      )}
+                    </Show>
+                  </CardItemContent>
+                </CardItem>
+                <CardItem>
+                  <CardItemTitle>Retried</CardItemTitle>
+                  <CardItemContent>{build().retriable ? 'Yes' : 'No'}</CardItemContent>
+                </CardItem>
+              </CardItems>
+            </Card>
+          </CardsRow>
+          <Show when={build().artifacts.length > 0}>
+            <CardsRow>
+              <Card>
+                <CardTitle>Artifacts</CardTitle>
+                <ArtifactsContainer>
+                  <For each={build().artifacts || []}>{(artifact) => <ArtifactRow artifact={artifact} />}</For>
+                </ArtifactsContainer>
+              </Card>
+            </CardsRow>
+          </Show>
+          <CardsRow>
+            <Card>
+              <CardTitle>Build Log</CardTitle>
+              <Show when={buildLog()}>
+                <LogContainer innerHTML={toUTF8WithAnsi(buildLog().log)} ref={logRef} />
+              </Show>
+              <Show when={!buildLog() && buildLogStream()}>
+                <LogContainer innerHTML={toUTF8WithAnsi(streamedLog())} ref={streamLogRef} />
+              </Show>
+            </Card>
+          </CardsRow>
+        </CardRowsContainer>
       </Show>
     </Container>
   )

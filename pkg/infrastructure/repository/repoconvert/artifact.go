@@ -9,6 +9,7 @@ import (
 func FromDomainArtifact(a *domain.Artifact) *models.Artifact {
 	return &models.Artifact{
 		ID:        a.ID,
+		Name:      a.Name,
 		Size:      a.Size,
 		CreatedAt: a.CreatedAt,
 		DeletedAt: optional.IntoTime(a.DeletedAt),
@@ -19,6 +20,7 @@ func FromDomainArtifact(a *domain.Artifact) *models.Artifact {
 func ToDomainArtifact(a *models.Artifact) *domain.Artifact {
 	return &domain.Artifact{
 		ID:        a.ID,
+		Name:      a.Name,
 		BuildID:   a.BuildID,
 		Size:      a.Size,
 		CreatedAt: a.CreatedAt,

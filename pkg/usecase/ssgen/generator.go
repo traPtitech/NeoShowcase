@@ -170,7 +170,7 @@ func (s *generatorService) syncArtifacts(sites []*domain.StaticSite) error {
 
 func (s *generatorService) extractArtifact(artifactID string) error {
 	destDir := filepath.Join(s.docsRoot, artifactID)
-	_, r, err := domain.GetArtifact(s.storage, artifactID)
+	r, err := domain.GetArtifact(s.storage, artifactID)
 	if err != nil {
 		return errors.Wrap(err, "getting artifact")
 	}

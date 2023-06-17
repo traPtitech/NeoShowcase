@@ -18,6 +18,12 @@ func LessFunc[E any, K constraints.Ordered](key func(e E) K) func(e1, e2 E) bool
 	}
 }
 
+func MoreFunc[E any, K constraints.Ordered](key func(e E) K) func(e1, e2 E) bool {
+	return func(e1, e2 E) bool {
+		return key(e1) > key(e2)
+	}
+}
+
 func SliceOfPtr[T any](s []T) []*T {
 	ret := make([]*T, len(s))
 	for i := range s {

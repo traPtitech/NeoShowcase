@@ -24,7 +24,6 @@ import { PlainMessage } from '@bufbuild/protobuf'
 
 const ContentContainer = styled('div', {
   base: {
-    marginTop: '24px',
     display: 'grid',
     gridTemplateColumns: '380px 1fr',
     gap: '40px',
