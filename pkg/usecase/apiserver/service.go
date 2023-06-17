@@ -4,7 +4,6 @@ import (
 	"context"
 
 	"github.com/friendsofgo/errors"
-	"github.com/go-git/go-git/v5/plumbing/transport/ssh"
 
 	"github.com/traPtitech/neoshowcase/pkg/domain"
 	"github.com/traPtitech/neoshowcase/pkg/domain/web"
@@ -33,8 +32,8 @@ type Service struct {
 	containerLogger domain.ContainerLogger
 	controller      domain.ControllerServiceClient
 
-	pubKey  *ssh.PublicKeys
-	tmpKeys *tmpKeyPairService
+	systemInfo *domain.SystemInfo
+	tmpKeys    *tmpKeyPairService
 }
 
 func NewService(
@@ -49,8 +48,11 @@ func NewService(
 	mongoDBManager domain.MongoDBManager,
 	containerLogger domain.ContainerLogger,
 	controller domain.ControllerServiceClient,
-	pubKey *ssh.PublicKeys,
-) *Service {
+) (*Service, error) {
+	systemInfo, err := controller.GetSystemInfo(context.Background())
+	if err != nil {
+		return nil, err
+	}
 	return &Service{
 		artifactRepo:    artifactRepo,
 		appRepo:         appRepo,
@@ -64,9 +66,9 @@ func NewService(
 		containerLogger: containerLogger,
 		controller:      controller,
 
-		pubKey:  pubKey,
-		tmpKeys: newTmpKeyPairService(),
-	}
+		systemInfo: systemInfo,
+		tmpKeys:    newTmpKeyPairService(),
+	}, nil
 }
 
 func (s *Service) isRepositoryOwner(ctx context.Context, repoID string) error {

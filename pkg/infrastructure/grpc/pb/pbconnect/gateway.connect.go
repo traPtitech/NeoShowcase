@@ -34,17 +34,9 @@ const (
 // reflection-formatted method names, remove the leading slash and convert the remaining slash to a
 // period.
 const (
-	// APIServiceGetSystemPublicKeyProcedure is the fully-qualified name of the APIService's
-	// GetSystemPublicKey RPC.
-	APIServiceGetSystemPublicKeyProcedure = "/neoshowcase.protobuf.APIService/GetSystemPublicKey"
-	// APIServiceGetSSHInfoProcedure is the fully-qualified name of the APIService's GetSSHInfo RPC.
-	APIServiceGetSSHInfoProcedure = "/neoshowcase.protobuf.APIService/GetSSHInfo"
-	// APIServiceGetAvailableDomainsProcedure is the fully-qualified name of the APIService's
-	// GetAvailableDomains RPC.
-	APIServiceGetAvailableDomainsProcedure = "/neoshowcase.protobuf.APIService/GetAvailableDomains"
-	// APIServiceGetAvailablePortsProcedure is the fully-qualified name of the APIService's
-	// GetAvailablePorts RPC.
-	APIServiceGetAvailablePortsProcedure = "/neoshowcase.protobuf.APIService/GetAvailablePorts"
+	// APIServiceGetSystemInfoProcedure is the fully-qualified name of the APIService's GetSystemInfo
+	// RPC.
+	APIServiceGetSystemInfoProcedure = "/neoshowcase.protobuf.APIService/GetSystemInfo"
 	// APIServiceGenerateKeyPairProcedure is the fully-qualified name of the APIService's
 	// GenerateKeyPair RPC.
 	APIServiceGenerateKeyPairProcedure = "/neoshowcase.protobuf.APIService/GenerateKeyPair"
@@ -129,14 +121,8 @@ const (
 
 // APIServiceClient is a client for the neoshowcase.protobuf.APIService service.
 type APIServiceClient interface {
-	// GetSystemPublicKey システムのSSH公開鍵を取得します リポジトリごとにSSH秘密鍵を設定しないデフォルトSSH認証で使用します
-	GetSystemPublicKey(context.Context, *connect_go.Request[emptypb.Empty]) (*connect_go.Response[pb.GetSystemPublicKeyResponse], error)
-	// GetSSHInfo アプリケーションにSSH接続するための情報を取得します
-	GetSSHInfo(context.Context, *connect_go.Request[emptypb.Empty]) (*connect_go.Response[pb.SSHInfo], error)
-	// GetAvailableDomains 使用可能なドメイン一覧を取得します
-	GetAvailableDomains(context.Context, *connect_go.Request[emptypb.Empty]) (*connect_go.Response[pb.AvailableDomains], error)
-	// GetAvailablePorts 使用可能なポート一覧を取得します
-	GetAvailablePorts(context.Context, *connect_go.Request[emptypb.Empty]) (*connect_go.Response[pb.AvailablePorts], error)
+	// GetSystemInfo システム固有情報を取得します
+	GetSystemInfo(context.Context, *connect_go.Request[emptypb.Empty]) (*connect_go.Response[pb.SystemInfo], error)
 	// GenerateKeyPair リポジトリ登録で使用する鍵ペアを一時的に生成します
 	GenerateKeyPair(context.Context, *connect_go.Request[emptypb.Empty]) (*connect_go.Response[pb.GenerateKeyPairResponse], error)
 	// GetMe 自身の情報を取得します プロキシ認証のため常に成功します
@@ -209,24 +195,9 @@ type APIServiceClient interface {
 func NewAPIServiceClient(httpClient connect_go.HTTPClient, baseURL string, opts ...connect_go.ClientOption) APIServiceClient {
 	baseURL = strings.TrimRight(baseURL, "/")
 	return &aPIServiceClient{
-		getSystemPublicKey: connect_go.NewClient[emptypb.Empty, pb.GetSystemPublicKeyResponse](
+		getSystemInfo: connect_go.NewClient[emptypb.Empty, pb.SystemInfo](
 			httpClient,
-			baseURL+APIServiceGetSystemPublicKeyProcedure,
-			opts...,
-		),
-		getSSHInfo: connect_go.NewClient[emptypb.Empty, pb.SSHInfo](
-			httpClient,
-			baseURL+APIServiceGetSSHInfoProcedure,
-			opts...,
-		),
-		getAvailableDomains: connect_go.NewClient[emptypb.Empty, pb.AvailableDomains](
-			httpClient,
-			baseURL+APIServiceGetAvailableDomainsProcedure,
-			opts...,
-		),
-		getAvailablePorts: connect_go.NewClient[emptypb.Empty, pb.AvailablePorts](
-			httpClient,
-			baseURL+APIServiceGetAvailablePortsProcedure,
+			baseURL+APIServiceGetSystemInfoProcedure,
 			opts...,
 		),
 		generateKeyPair: connect_go.NewClient[emptypb.Empty, pb.GenerateKeyPairResponse](
@@ -384,60 +355,42 @@ func NewAPIServiceClient(httpClient connect_go.HTTPClient, baseURL string, opts 
 
 // aPIServiceClient implements APIServiceClient.
 type aPIServiceClient struct {
-	getSystemPublicKey  *connect_go.Client[emptypb.Empty, pb.GetSystemPublicKeyResponse]
-	getSSHInfo          *connect_go.Client[emptypb.Empty, pb.SSHInfo]
-	getAvailableDomains *connect_go.Client[emptypb.Empty, pb.AvailableDomains]
-	getAvailablePorts   *connect_go.Client[emptypb.Empty, pb.AvailablePorts]
-	generateKeyPair     *connect_go.Client[emptypb.Empty, pb.GenerateKeyPairResponse]
-	getMe               *connect_go.Client[emptypb.Empty, pb.User]
-	getUsers            *connect_go.Client[emptypb.Empty, pb.GetUsersResponse]
-	createUserKey       *connect_go.Client[pb.CreateUserKeyRequest, pb.UserKey]
-	getUserKeys         *connect_go.Client[emptypb.Empty, pb.GetUserKeysResponse]
-	deleteUserKey       *connect_go.Client[pb.DeleteUserKeyRequest, emptypb.Empty]
-	createRepository    *connect_go.Client[pb.CreateRepositoryRequest, pb.Repository]
-	getRepositories     *connect_go.Client[pb.GetRepositoriesRequest, pb.GetRepositoriesResponse]
-	getRepository       *connect_go.Client[pb.RepositoryIdRequest, pb.Repository]
-	updateRepository    *connect_go.Client[pb.UpdateRepositoryRequest, emptypb.Empty]
-	refreshRepository   *connect_go.Client[pb.RepositoryIdRequest, emptypb.Empty]
-	deleteRepository    *connect_go.Client[pb.RepositoryIdRequest, emptypb.Empty]
-	createApplication   *connect_go.Client[pb.CreateApplicationRequest, pb.Application]
-	getApplications     *connect_go.Client[pb.GetApplicationsRequest, pb.GetApplicationsResponse]
-	getApplication      *connect_go.Client[pb.ApplicationIdRequest, pb.Application]
-	updateApplication   *connect_go.Client[pb.UpdateApplicationRequest, emptypb.Empty]
-	deleteApplication   *connect_go.Client[pb.ApplicationIdRequest, emptypb.Empty]
-	getEnvVars          *connect_go.Client[pb.ApplicationIdRequest, pb.ApplicationEnvVars]
-	setEnvVar           *connect_go.Client[pb.SetApplicationEnvVarRequest, emptypb.Empty]
-	deleteEnvVar        *connect_go.Client[pb.DeleteApplicationEnvVarRequest, emptypb.Empty]
-	getOutputStream     *connect_go.Client[pb.ApplicationIdRequest, pb.ApplicationOutput]
-	startApplication    *connect_go.Client[pb.ApplicationIdRequest, emptypb.Empty]
-	stopApplication     *connect_go.Client[pb.ApplicationIdRequest, emptypb.Empty]
-	getBuilds           *connect_go.Client[pb.ApplicationIdRequest, pb.GetBuildsResponse]
-	getBuild            *connect_go.Client[pb.BuildIdRequest, pb.Build]
-	retryCommitBuild    *connect_go.Client[pb.RetryCommitBuildRequest, emptypb.Empty]
-	cancelBuild         *connect_go.Client[pb.BuildIdRequest, emptypb.Empty]
-	getBuildLog         *connect_go.Client[pb.BuildIdRequest, pb.BuildLog]
-	getBuildLogStream   *connect_go.Client[pb.BuildIdRequest, pb.BuildLog]
-	getBuildArtifact    *connect_go.Client[pb.ArtifactIdRequest, pb.ArtifactContent]
+	getSystemInfo     *connect_go.Client[emptypb.Empty, pb.SystemInfo]
+	generateKeyPair   *connect_go.Client[emptypb.Empty, pb.GenerateKeyPairResponse]
+	getMe             *connect_go.Client[emptypb.Empty, pb.User]
+	getUsers          *connect_go.Client[emptypb.Empty, pb.GetUsersResponse]
+	createUserKey     *connect_go.Client[pb.CreateUserKeyRequest, pb.UserKey]
+	getUserKeys       *connect_go.Client[emptypb.Empty, pb.GetUserKeysResponse]
+	deleteUserKey     *connect_go.Client[pb.DeleteUserKeyRequest, emptypb.Empty]
+	createRepository  *connect_go.Client[pb.CreateRepositoryRequest, pb.Repository]
+	getRepositories   *connect_go.Client[pb.GetRepositoriesRequest, pb.GetRepositoriesResponse]
+	getRepository     *connect_go.Client[pb.RepositoryIdRequest, pb.Repository]
+	updateRepository  *connect_go.Client[pb.UpdateRepositoryRequest, emptypb.Empty]
+	refreshRepository *connect_go.Client[pb.RepositoryIdRequest, emptypb.Empty]
+	deleteRepository  *connect_go.Client[pb.RepositoryIdRequest, emptypb.Empty]
+	createApplication *connect_go.Client[pb.CreateApplicationRequest, pb.Application]
+	getApplications   *connect_go.Client[pb.GetApplicationsRequest, pb.GetApplicationsResponse]
+	getApplication    *connect_go.Client[pb.ApplicationIdRequest, pb.Application]
+	updateApplication *connect_go.Client[pb.UpdateApplicationRequest, emptypb.Empty]
+	deleteApplication *connect_go.Client[pb.ApplicationIdRequest, emptypb.Empty]
+	getEnvVars        *connect_go.Client[pb.ApplicationIdRequest, pb.ApplicationEnvVars]
+	setEnvVar         *connect_go.Client[pb.SetApplicationEnvVarRequest, emptypb.Empty]
+	deleteEnvVar      *connect_go.Client[pb.DeleteApplicationEnvVarRequest, emptypb.Empty]
+	getOutputStream   *connect_go.Client[pb.ApplicationIdRequest, pb.ApplicationOutput]
+	startApplication  *connect_go.Client[pb.ApplicationIdRequest, emptypb.Empty]
+	stopApplication   *connect_go.Client[pb.ApplicationIdRequest, emptypb.Empty]
+	getBuilds         *connect_go.Client[pb.ApplicationIdRequest, pb.GetBuildsResponse]
+	getBuild          *connect_go.Client[pb.BuildIdRequest, pb.Build]
+	retryCommitBuild  *connect_go.Client[pb.RetryCommitBuildRequest, emptypb.Empty]
+	cancelBuild       *connect_go.Client[pb.BuildIdRequest, emptypb.Empty]
+	getBuildLog       *connect_go.Client[pb.BuildIdRequest, pb.BuildLog]
+	getBuildLogStream *connect_go.Client[pb.BuildIdRequest, pb.BuildLog]
+	getBuildArtifact  *connect_go.Client[pb.ArtifactIdRequest, pb.ArtifactContent]
 }
 
-// GetSystemPublicKey calls neoshowcase.protobuf.APIService.GetSystemPublicKey.
-func (c *aPIServiceClient) GetSystemPublicKey(ctx context.Context, req *connect_go.Request[emptypb.Empty]) (*connect_go.Response[pb.GetSystemPublicKeyResponse], error) {
-	return c.getSystemPublicKey.CallUnary(ctx, req)
-}
-
-// GetSSHInfo calls neoshowcase.protobuf.APIService.GetSSHInfo.
-func (c *aPIServiceClient) GetSSHInfo(ctx context.Context, req *connect_go.Request[emptypb.Empty]) (*connect_go.Response[pb.SSHInfo], error) {
-	return c.getSSHInfo.CallUnary(ctx, req)
-}
-
-// GetAvailableDomains calls neoshowcase.protobuf.APIService.GetAvailableDomains.
-func (c *aPIServiceClient) GetAvailableDomains(ctx context.Context, req *connect_go.Request[emptypb.Empty]) (*connect_go.Response[pb.AvailableDomains], error) {
-	return c.getAvailableDomains.CallUnary(ctx, req)
-}
-
-// GetAvailablePorts calls neoshowcase.protobuf.APIService.GetAvailablePorts.
-func (c *aPIServiceClient) GetAvailablePorts(ctx context.Context, req *connect_go.Request[emptypb.Empty]) (*connect_go.Response[pb.AvailablePorts], error) {
-	return c.getAvailablePorts.CallUnary(ctx, req)
+// GetSystemInfo calls neoshowcase.protobuf.APIService.GetSystemInfo.
+func (c *aPIServiceClient) GetSystemInfo(ctx context.Context, req *connect_go.Request[emptypb.Empty]) (*connect_go.Response[pb.SystemInfo], error) {
+	return c.getSystemInfo.CallUnary(ctx, req)
 }
 
 // GenerateKeyPair calls neoshowcase.protobuf.APIService.GenerateKeyPair.
@@ -592,14 +545,8 @@ func (c *aPIServiceClient) GetBuildArtifact(ctx context.Context, req *connect_go
 
 // APIServiceHandler is an implementation of the neoshowcase.protobuf.APIService service.
 type APIServiceHandler interface {
-	// GetSystemPublicKey システムのSSH公開鍵を取得します リポジトリごとにSSH秘密鍵を設定しないデフォルトSSH認証で使用します
-	GetSystemPublicKey(context.Context, *connect_go.Request[emptypb.Empty]) (*connect_go.Response[pb.GetSystemPublicKeyResponse], error)
-	// GetSSHInfo アプリケーションにSSH接続するための情報を取得します
-	GetSSHInfo(context.Context, *connect_go.Request[emptypb.Empty]) (*connect_go.Response[pb.SSHInfo], error)
-	// GetAvailableDomains 使用可能なドメイン一覧を取得します
-	GetAvailableDomains(context.Context, *connect_go.Request[emptypb.Empty]) (*connect_go.Response[pb.AvailableDomains], error)
-	// GetAvailablePorts 使用可能なポート一覧を取得します
-	GetAvailablePorts(context.Context, *connect_go.Request[emptypb.Empty]) (*connect_go.Response[pb.AvailablePorts], error)
+	// GetSystemInfo システム固有情報を取得します
+	GetSystemInfo(context.Context, *connect_go.Request[emptypb.Empty]) (*connect_go.Response[pb.SystemInfo], error)
 	// GenerateKeyPair リポジトリ登録で使用する鍵ペアを一時的に生成します
 	GenerateKeyPair(context.Context, *connect_go.Request[emptypb.Empty]) (*connect_go.Response[pb.GenerateKeyPairResponse], error)
 	// GetMe 自身の情報を取得します プロキシ認証のため常に成功します
@@ -669,24 +616,9 @@ type APIServiceHandler interface {
 // and JSON codecs. They also support gzip compression.
 func NewAPIServiceHandler(svc APIServiceHandler, opts ...connect_go.HandlerOption) (string, http.Handler) {
 	mux := http.NewServeMux()
-	mux.Handle(APIServiceGetSystemPublicKeyProcedure, connect_go.NewUnaryHandler(
-		APIServiceGetSystemPublicKeyProcedure,
-		svc.GetSystemPublicKey,
-		opts...,
-	))
-	mux.Handle(APIServiceGetSSHInfoProcedure, connect_go.NewUnaryHandler(
-		APIServiceGetSSHInfoProcedure,
-		svc.GetSSHInfo,
-		opts...,
-	))
-	mux.Handle(APIServiceGetAvailableDomainsProcedure, connect_go.NewUnaryHandler(
-		APIServiceGetAvailableDomainsProcedure,
-		svc.GetAvailableDomains,
-		opts...,
-	))
-	mux.Handle(APIServiceGetAvailablePortsProcedure, connect_go.NewUnaryHandler(
-		APIServiceGetAvailablePortsProcedure,
-		svc.GetAvailablePorts,
+	mux.Handle(APIServiceGetSystemInfoProcedure, connect_go.NewUnaryHandler(
+		APIServiceGetSystemInfoProcedure,
+		svc.GetSystemInfo,
 		opts...,
 	))
 	mux.Handle(APIServiceGenerateKeyPairProcedure, connect_go.NewUnaryHandler(
@@ -845,20 +777,8 @@ func NewAPIServiceHandler(svc APIServiceHandler, opts ...connect_go.HandlerOptio
 // UnimplementedAPIServiceHandler returns CodeUnimplemented from all methods.
 type UnimplementedAPIServiceHandler struct{}
 
-func (UnimplementedAPIServiceHandler) GetSystemPublicKey(context.Context, *connect_go.Request[emptypb.Empty]) (*connect_go.Response[pb.GetSystemPublicKeyResponse], error) {
-	return nil, connect_go.NewError(connect_go.CodeUnimplemented, errors.New("neoshowcase.protobuf.APIService.GetSystemPublicKey is not implemented"))
-}
-
-func (UnimplementedAPIServiceHandler) GetSSHInfo(context.Context, *connect_go.Request[emptypb.Empty]) (*connect_go.Response[pb.SSHInfo], error) {
-	return nil, connect_go.NewError(connect_go.CodeUnimplemented, errors.New("neoshowcase.protobuf.APIService.GetSSHInfo is not implemented"))
-}
-
-func (UnimplementedAPIServiceHandler) GetAvailableDomains(context.Context, *connect_go.Request[emptypb.Empty]) (*connect_go.Response[pb.AvailableDomains], error) {
-	return nil, connect_go.NewError(connect_go.CodeUnimplemented, errors.New("neoshowcase.protobuf.APIService.GetAvailableDomains is not implemented"))
-}
-
-func (UnimplementedAPIServiceHandler) GetAvailablePorts(context.Context, *connect_go.Request[emptypb.Empty]) (*connect_go.Response[pb.AvailablePorts], error) {
-	return nil, connect_go.NewError(connect_go.CodeUnimplemented, errors.New("neoshowcase.protobuf.APIService.GetAvailablePorts is not implemented"))
+func (UnimplementedAPIServiceHandler) GetSystemInfo(context.Context, *connect_go.Request[emptypb.Empty]) (*connect_go.Response[pb.SystemInfo], error) {
+	return nil, connect_go.NewError(connect_go.CodeUnimplemented, errors.New("neoshowcase.protobuf.APIService.GetSystemInfo is not implemented"))
 }
 
 func (UnimplementedAPIServiceHandler) GenerateKeyPair(context.Context, *connect_go.Request[emptypb.Empty]) (*connect_go.Response[pb.GenerateKeyPairResponse], error) {

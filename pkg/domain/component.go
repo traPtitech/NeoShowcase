@@ -7,10 +7,18 @@ import (
 	"github.com/traPtitech/neoshowcase/pkg/infrastructure/grpc/pb/pbconnect"
 )
 
+type SystemInfo struct {
+	PublicKey string
+	SSHInfo   struct {
+		Host string
+		Port int
+	}
+	AvailableDomains AvailableDomainSlice
+	AvailablePorts   AvailablePortSlice
+}
+
 type ControllerServiceClient interface {
-	GetSSHInfo(ctx context.Context) (host string, port int, err error)
-	GetAvailableDomains(ctx context.Context) (AvailableDomainSlice, error)
-	GetAvailablePorts(ctx context.Context) (AvailablePortSlice, error)
+	GetSystemInfo(ctx context.Context) (*SystemInfo, error)
 
 	FetchRepository(ctx context.Context, repositoryID string) error
 	RegisterBuild(ctx context.Context, appID string) error

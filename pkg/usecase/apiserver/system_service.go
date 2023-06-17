@@ -12,25 +12,8 @@ import (
 	"github.com/traPtitech/neoshowcase/pkg/domain"
 )
 
-func (s *Service) GetSSHInfo(ctx context.Context) (host string, port int, err error) {
-	return s.controller.GetSSHInfo(ctx)
-}
-
-func (s *Service) GetSystemPublicKey(_ context.Context) string {
-	encoded := domain.Base64EncodedPublicKey(s.pubKey.Signer.PublicKey())
-	return encoded + " neoshowcase"
-}
-
-func (s *Service) GetAvailableDomains(ctx context.Context) (domain.AvailableDomainSlice, error) {
-	return s.controller.GetAvailableDomains(ctx)
-}
-
-func (s *Service) GetAvailablePorts(ctx context.Context) (domain.AvailablePortSlice, error) {
-	available, err := s.controller.GetAvailablePorts(ctx)
-	if err != nil {
-		return nil, err
-	}
-	return available, nil
+func (s *Service) GetSystemInfo(_ context.Context) *domain.SystemInfo {
+	return s.systemInfo
 }
 
 type tmpKeyPairService struct {

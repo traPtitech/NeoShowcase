@@ -27,7 +27,6 @@ func NewServer(c Config) (*Server, error) {
 		grpc.NewAuthInterceptor,
 		grpc.NewControllerServiceClient,
 		apiserver.NewService,
-		provideRepositoryPublicKey,
 		provideStorage,
 		provideContainerLogger,
 		provideGatewayServer,

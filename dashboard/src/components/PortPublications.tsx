@@ -7,7 +7,7 @@ import { FormButton, FormSettings, FormSettingsButton, SettingsContainer } from 
 import { For } from 'solid-js'
 import { styled } from '@macaron-css/solid'
 import { vars } from '../theme'
-import { availablePorts } from '../libs/api'
+import { systemInfo } from '../libs/api'
 import { portPublicationProtocolMap } from '../libs/application'
 import { PlainMessage } from '@bufbuild/protobuf'
 import { pickRandom, randIntN } from '/@/libs/random'
@@ -79,7 +79,7 @@ const protocolItems: RadioItem<PortPublicationProtocol>[] = [
 ]
 
 const suggestPort = (proto: PortPublicationProtocol): number => {
-  const available = availablePorts()?.availablePorts.filter((a) => a.protocol === proto) || []
+  const available = systemInfo()?.ports.filter((a) => a.protocol === proto) || []
   if (available.length === 0) return 0
   const range = pickRandom(available)
   return randIntN(range.endPort + 1 - range.startPort) + range.startPort
@@ -104,7 +104,7 @@ export const PortPublicationSettings = (props: PortPublicationSettingsProps) => 
       <AvailablePortContainer>
         使用可能なポート
         <AvailableDomainUl>
-          <For each={availablePorts()?.availablePorts || []}>
+          <For each={systemInfo()?.ports || []}>
             {(port) => (
               <li>
                 {port.startPort}/{portPublicationProtocolMap[port.protocol]}~{port.endPort}/

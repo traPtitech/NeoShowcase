@@ -4,7 +4,7 @@
 // @ts-nocheck
 
 import { Empty, MethodKind } from "@bufbuild/protobuf";
-import { Application, ApplicationEnvVars, ApplicationIdRequest, ApplicationOutput, ArtifactContent, ArtifactIdRequest, AvailableDomains, AvailablePorts, Build, BuildIdRequest, BuildLog, CreateApplicationRequest, CreateRepositoryRequest, CreateUserKeyRequest, DeleteApplicationEnvVarRequest, DeleteUserKeyRequest, GenerateKeyPairResponse, GetApplicationsRequest, GetApplicationsResponse, GetBuildsResponse, GetRepositoriesRequest, GetRepositoriesResponse, GetSystemPublicKeyResponse, GetUserKeysResponse, GetUsersResponse, Repository, RepositoryIdRequest, RetryCommitBuildRequest, SetApplicationEnvVarRequest, SSHInfo, UpdateApplicationRequest, UpdateRepositoryRequest, User, UserKey } from "./gateway_pb.js";
+import { Application, ApplicationEnvVars, ApplicationIdRequest, ApplicationOutput, ArtifactContent, ArtifactIdRequest, Build, BuildIdRequest, BuildLog, CreateApplicationRequest, CreateRepositoryRequest, CreateUserKeyRequest, DeleteApplicationEnvVarRequest, DeleteUserKeyRequest, GenerateKeyPairResponse, GetApplicationsRequest, GetApplicationsResponse, GetBuildsResponse, GetRepositoriesRequest, GetRepositoriesResponse, GetUserKeysResponse, GetUsersResponse, Repository, RepositoryIdRequest, RetryCommitBuildRequest, SetApplicationEnvVarRequest, SystemInfo, UpdateApplicationRequest, UpdateRepositoryRequest, User, UserKey } from "./gateway_pb.js";
 
 /**
  * General / System
@@ -15,47 +15,14 @@ export const APIService = {
   typeName: "neoshowcase.protobuf.APIService",
   methods: {
     /**
-     * GetSystemPublicKey システムのSSH公開鍵を取得します リポジトリごとにSSH秘密鍵を設定しないデフォルトSSH認証で使用します
+     * GetSystemInfo システム固有情報を取得します
      *
-     * @generated from rpc neoshowcase.protobuf.APIService.GetSystemPublicKey
+     * @generated from rpc neoshowcase.protobuf.APIService.GetSystemInfo
      */
-    getSystemPublicKey: {
-      name: "GetSystemPublicKey",
+    getSystemInfo: {
+      name: "GetSystemInfo",
       I: Empty,
-      O: GetSystemPublicKeyResponse,
-      kind: MethodKind.Unary,
-    },
-    /**
-     * GetSSHInfo アプリケーションにSSH接続するための情報を取得します
-     *
-     * @generated from rpc neoshowcase.protobuf.APIService.GetSSHInfo
-     */
-    getSSHInfo: {
-      name: "GetSSHInfo",
-      I: Empty,
-      O: SSHInfo,
-      kind: MethodKind.Unary,
-    },
-    /**
-     * GetAvailableDomains 使用可能なドメイン一覧を取得します
-     *
-     * @generated from rpc neoshowcase.protobuf.APIService.GetAvailableDomains
-     */
-    getAvailableDomains: {
-      name: "GetAvailableDomains",
-      I: Empty,
-      O: AvailableDomains,
-      kind: MethodKind.Unary,
-    },
-    /**
-     * GetAvailablePorts 使用可能なポート一覧を取得します
-     *
-     * @generated from rpc neoshowcase.protobuf.APIService.GetAvailablePorts
-     */
-    getAvailablePorts: {
-      name: "GetAvailablePorts",
-      I: Empty,
-      O: AvailablePorts,
+      O: SystemInfo,
       kind: MethodKind.Unary,
     },
     /**

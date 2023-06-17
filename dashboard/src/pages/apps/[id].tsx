@@ -1,6 +1,6 @@
 import { A, useNavigate, useParams } from '@solidjs/router'
 import { Component, createEffect, createResource, createSignal, For, onCleanup, Ref, Show } from 'solid-js'
-import { client, handleAPIError, sshInfo } from '/@/libs/api'
+import { client, handleAPIError, systemInfo } from '/@/libs/api'
 import { Header } from '/@/components/Header'
 import {
   applicationState,
@@ -196,7 +196,7 @@ export default () => {
     () => app()?.repositoryId,
     (id) => client.getRepository({ repositoryId: id }),
   )
-  const loaded = () => !!(app() && repo())
+  const loaded = () => !!(systemInfo() && app() && repo())
 
   const refetchTimer = setInterval(refetchApp, 10000)
   onCleanup(() => clearInterval(refetchTimer))
@@ -433,11 +433,11 @@ export default () => {
               <CardTitle>SSH Access</CardTitle>
               <CardItems>
                 <Show
-                  when={sshInfo() && app().running}
+                  when={app().running}
                   fallback={<CardItem>アプリケーションが起動している間のみSSHでアクセス可能です</CardItem>}
                 >
                   <CardItem>
-                    <SSHCode>{`ssh -p ${sshInfo().port} ${app().id}@${sshInfo().host}`}</SSHCode>
+                    <SSHCode>{`ssh -p ${systemInfo().ssh.port} ${app().id}@${systemInfo().ssh.host}`}</SSHCode>
                   </CardItem>
                 </Show>
               </CardItems>
