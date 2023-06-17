@@ -41,6 +41,7 @@ const siteTemplate = `@%v {
 }
 file_server @%v {
 	root %v
+	precompressed br gzip zstd
 }
 `
 
@@ -54,6 +55,7 @@ const siteTemplateSPA = `@%v {
 rewrite @%v {file_match.relative}
 file_server @%v {
 	root %v
+	precompressed br gzip zstd
 }
 `
 
