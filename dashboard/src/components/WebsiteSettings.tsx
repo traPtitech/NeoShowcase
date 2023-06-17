@@ -46,7 +46,7 @@ export const WebsiteSetting = (props: WebsiteSettingProps) => {
       <div>
         <InputLabel>ドメイン名</InputLabel>
         <InputBar
-          placeholder='example.ns.trap.jp'
+          placeholder='example.trap.show'
           value={props.website.fqdn}
           onInput={(e) => props.setWebsite('fqdn', e.target.value)}
         />
@@ -109,7 +109,7 @@ const newWebsite = (): PlainMessage<CreateWebsiteRequest> => ({
   fqdn: '',
   pathPrefix: '/',
   stripPrefix: false,
-  https: false,
+  https: true,
   h2c: false,
   httpPort: 0,
   authentication: AuthenticationType.OFF,
