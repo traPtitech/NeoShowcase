@@ -30,6 +30,7 @@ type Config struct {
 	Port           int                    `mapstructure:"port" yaml:"port"`
 	Debug          bool                   `mapstructure:"debug" yaml:"debug"`
 	PrivateKeyFile string                 `mapstructure:"privateKeyFile" yaml:"privateKeyFile"`
+	AdminerURL     domain.AdminerURL      `mapstructure:"adminerURL" yaml:"adminerURL"`
 	Mode           string                 `mapstructure:"mode" yaml:"mode"`
 	Docker         dockerimpl.Config      `mapstructure:"docker" yaml:"docker"`
 	K8s            k8simpl.Config         `mapstructure:"k8s" yaml:"k8s"`
@@ -44,6 +45,7 @@ func init() {
 	viper.SetDefault("port", 10000)
 	viper.SetDefault("debug", false)
 	viper.SetDefault("privateKeyFile", "")
+	viper.SetDefault("adminerURL", "http://adminer.local.trapti.tech/")
 	viper.SetDefault("mode", "docker")
 
 	viper.SetDefault("docker.confDir", "/opt/traefik/conf")

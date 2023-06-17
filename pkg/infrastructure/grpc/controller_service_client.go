@@ -12,7 +12,6 @@ import (
 	"github.com/traPtitech/neoshowcase/pkg/infrastructure/grpc/pb"
 	"github.com/traPtitech/neoshowcase/pkg/infrastructure/grpc/pb/pbconnect"
 	"github.com/traPtitech/neoshowcase/pkg/infrastructure/grpc/pbconvert"
-	"github.com/traPtitech/neoshowcase/pkg/util/ds"
 )
 
 type ControllerServiceClientConfig struct {
@@ -31,31 +30,13 @@ func NewControllerServiceClient(
 	}
 }
 
-func (c *ControllerServiceClient) GetSSHInfo(ctx context.Context) (host string, port int, err error) {
+func (c *ControllerServiceClient) GetSystemInfo(ctx context.Context) (*domain.SystemInfo, error) {
 	req := connect.NewRequest(&emptypb.Empty{})
-	res, err := c.client.GetSSHInfo(ctx, req)
-	if err != nil {
-		return "", 0, err
-	}
-	return res.Msg.Host, int(res.Msg.Port), nil
-}
-
-func (c *ControllerServiceClient) GetAvailableDomains(ctx context.Context) (domain.AvailableDomainSlice, error) {
-	req := connect.NewRequest(&emptypb.Empty{})
-	res, err := c.client.GetAvailableDomains(ctx, req)
+	res, err := c.client.GetSystemInfo(ctx, req)
 	if err != nil {
 		return nil, err
 	}
-	return ds.Map(res.Msg.Domains, pbconvert.FromPBAvailableDomain), nil
-}
-
-func (c *ControllerServiceClient) GetAvailablePorts(ctx context.Context) (domain.AvailablePortSlice, error) {
-	req := connect.NewRequest(&emptypb.Empty{})
-	res, err := c.client.GetAvailablePorts(ctx, req)
-	if err != nil {
-		return nil, err
-	}
-	return ds.Map(res.Msg.AvailablePorts, pbconvert.FromPBAvailablePort), nil
+	return pbconvert.FromPBSystemInfo(res.Msg), nil
 }
 
 func (c *ControllerServiceClient) FetchRepository(ctx context.Context, repositoryID string) error {

@@ -53,7 +53,7 @@ var commonSet = wire.NewSet(
 	providePublicKey,
 	provideStorage,
 	provideControllerServer,
-	wire.FieldsOf(new(Config), "Docker", "K8s", "SSH", "Webhook", "DB", "Storage", "Image"),
+	wire.FieldsOf(new(Config), "AdminerURL", "Docker", "K8s", "SSH", "Webhook", "DB", "Storage", "Image"),
 	wire.Struct(new(Server), "*"),
 )
 

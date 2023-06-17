@@ -5,6 +5,7 @@ import (
 
 	"github.com/bufbuild/connect-go"
 	"github.com/friendsofgo/errors"
+	"github.com/go-git/go-git/v5/plumbing/transport/ssh"
 	"google.golang.org/protobuf/types/known/emptypb"
 
 	"github.com/traPtitech/neoshowcase/pkg/domain"
@@ -18,12 +19,14 @@ import (
 )
 
 type ControllerService struct {
-	backend   domain.Backend
-	fetcher   repofetcher.Service
-	cd        cdservice.Service
-	builder   domain.ControllerBuilderService
-	logStream *logstream.Service
-	sshConf   domain.SSHConfig
+	backend    domain.Backend
+	fetcher    repofetcher.Service
+	cd         cdservice.Service
+	builder    domain.ControllerBuilderService
+	logStream  *logstream.Service
+	pubKey     *ssh.PublicKeys
+	sshConf    domain.SSHConfig
+	adminerURL string
 }
 
 func NewControllerService(
@@ -32,38 +35,34 @@ func NewControllerService(
 	cd cdservice.Service,
 	builder domain.ControllerBuilderService,
 	logStream *logstream.Service,
+	pubKey *ssh.PublicKeys,
 	sshConf domain.SSHConfig,
+	adminerURL domain.AdminerURL,
 ) pbconnect.ControllerServiceHandler {
 	return &ControllerService{
-		backend:   backend,
-		fetcher:   fetcher,
-		cd:        cd,
-		builder:   builder,
-		logStream: logStream,
-		sshConf:   sshConf,
+		backend:    backend,
+		fetcher:    fetcher,
+		cd:         cd,
+		builder:    builder,
+		logStream:  logStream,
+		pubKey:     pubKey,
+		sshConf:    sshConf,
+		adminerURL: string(adminerURL),
 	}
 }
 
-func (s *ControllerService) GetSSHInfo(_ context.Context, _ *connect.Request[emptypb.Empty]) (*connect.Response[pb.SSHInfo], error) {
-	res := connect.NewResponse(&pb.SSHInfo{
-		Host: s.sshConf.Host,
-		Port: int32(s.sshConf.Port),
-	})
-	return res, nil
-}
-
-func (s *ControllerService) GetAvailableDomains(_ context.Context, _ *connect.Request[emptypb.Empty]) (*connect.Response[pb.AvailableDomains], error) {
-	ad := s.backend.AvailableDomains()
-	res := connect.NewResponse(&pb.AvailableDomains{
-		Domains: ds.Map(ad, pbconvert.ToPBAvailableDomain),
-	})
-	return res, nil
-}
-
-func (s *ControllerService) GetAvailablePorts(_ context.Context, _ *connect.Request[emptypb.Empty]) (*connect.Response[pb.AvailablePorts], error) {
-	ap := s.backend.AvailablePorts()
-	res := connect.NewResponse(&pb.AvailablePorts{
-		AvailablePorts: ds.Map(ap, pbconvert.ToPBAvailablePort),
+func (s *ControllerService) GetSystemInfo(_ context.Context, _ *connect.Request[emptypb.Empty]) (*connect.Response[pb.SystemInfo], error) {
+	domains := s.backend.AvailableDomains()
+	ports := s.backend.AvailablePorts()
+	res := connect.NewResponse(&pb.SystemInfo{
+		PublicKey: domain.Base64EncodedPublicKey(s.pubKey.Signer.PublicKey()) + " neoshowcase",
+		Ssh: &pb.SSHInfo{
+			Host: s.sshConf.Host,
+			Port: int32(s.sshConf.Port),
+		},
+		Domains:    ds.Map(domains, pbconvert.ToPBAvailableDomain),
+		Ports:      ds.Map(ports, pbconvert.ToPBAvailablePort),
+		AdminerUrl: s.adminerURL,
 	})
 	return res, nil
 }

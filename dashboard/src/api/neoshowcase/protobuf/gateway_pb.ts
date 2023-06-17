@@ -117,6 +117,175 @@ export class SSHInfo extends Message<SSHInfo> {
 }
 
 /**
+ * @generated from message neoshowcase.protobuf.AvailableDomain
+ */
+export class AvailableDomain extends Message<AvailableDomain> {
+  /**
+   * @generated from field: string domain = 1;
+   */
+  domain = "";
+
+  /**
+   * @generated from field: repeated string exclude_domains = 2;
+   */
+  excludeDomains: string[] = [];
+
+  /**
+   * @generated from field: bool auth_available = 3;
+   */
+  authAvailable = false;
+
+  constructor(data?: PartialMessage<AvailableDomain>) {
+    super();
+    proto3.util.initPartial(data, this);
+  }
+
+  static readonly runtime: typeof proto3 = proto3;
+  static readonly typeName = "neoshowcase.protobuf.AvailableDomain";
+  static readonly fields: FieldList = proto3.util.newFieldList(() => [
+    { no: 1, name: "domain", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+    { no: 2, name: "exclude_domains", kind: "scalar", T: 9 /* ScalarType.STRING */, repeated: true },
+    { no: 3, name: "auth_available", kind: "scalar", T: 8 /* ScalarType.BOOL */ },
+  ]);
+
+  static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): AvailableDomain {
+    return new AvailableDomain().fromBinary(bytes, options);
+  }
+
+  static fromJson(jsonValue: JsonValue, options?: Partial<JsonReadOptions>): AvailableDomain {
+    return new AvailableDomain().fromJson(jsonValue, options);
+  }
+
+  static fromJsonString(jsonString: string, options?: Partial<JsonReadOptions>): AvailableDomain {
+    return new AvailableDomain().fromJsonString(jsonString, options);
+  }
+
+  static equals(a: AvailableDomain | PlainMessage<AvailableDomain> | undefined, b: AvailableDomain | PlainMessage<AvailableDomain> | undefined): boolean {
+    return proto3.util.equals(AvailableDomain, a, b);
+  }
+}
+
+/**
+ * @generated from message neoshowcase.protobuf.AvailablePort
+ */
+export class AvailablePort extends Message<AvailablePort> {
+  /**
+   * @generated from field: int32 start_port = 1;
+   */
+  startPort = 0;
+
+  /**
+   * @generated from field: int32 end_port = 2;
+   */
+  endPort = 0;
+
+  /**
+   * @generated from field: neoshowcase.protobuf.PortPublicationProtocol protocol = 3;
+   */
+  protocol = PortPublicationProtocol.TCP;
+
+  constructor(data?: PartialMessage<AvailablePort>) {
+    super();
+    proto3.util.initPartial(data, this);
+  }
+
+  static readonly runtime: typeof proto3 = proto3;
+  static readonly typeName = "neoshowcase.protobuf.AvailablePort";
+  static readonly fields: FieldList = proto3.util.newFieldList(() => [
+    { no: 1, name: "start_port", kind: "scalar", T: 5 /* ScalarType.INT32 */ },
+    { no: 2, name: "end_port", kind: "scalar", T: 5 /* ScalarType.INT32 */ },
+    { no: 3, name: "protocol", kind: "enum", T: proto3.getEnumType(PortPublicationProtocol) },
+  ]);
+
+  static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): AvailablePort {
+    return new AvailablePort().fromBinary(bytes, options);
+  }
+
+  static fromJson(jsonValue: JsonValue, options?: Partial<JsonReadOptions>): AvailablePort {
+    return new AvailablePort().fromJson(jsonValue, options);
+  }
+
+  static fromJsonString(jsonString: string, options?: Partial<JsonReadOptions>): AvailablePort {
+    return new AvailablePort().fromJsonString(jsonString, options);
+  }
+
+  static equals(a: AvailablePort | PlainMessage<AvailablePort> | undefined, b: AvailablePort | PlainMessage<AvailablePort> | undefined): boolean {
+    return proto3.util.equals(AvailablePort, a, b);
+  }
+}
+
+/**
+ * @generated from message neoshowcase.protobuf.SystemInfo
+ */
+export class SystemInfo extends Message<SystemInfo> {
+  /**
+   * public_key システムのSSH公開鍵 リポジトリごとにSSH秘密鍵を設定しないデフォルトSSH認証で使用
+   *
+   * @generated from field: string public_key = 1;
+   */
+  publicKey = "";
+
+  /**
+   * ssh アプリケーションにSSH接続するための情報
+   *
+   * @generated from field: neoshowcase.protobuf.SSHInfo ssh = 2;
+   */
+  ssh?: SSHInfo;
+
+  /**
+   * domains 使用可能なドメイン一覧
+   *
+   * @generated from field: repeated neoshowcase.protobuf.AvailableDomain domains = 3;
+   */
+  domains: AvailableDomain[] = [];
+
+  /**
+   * ports 使用可能なポート一覧
+   *
+   * @generated from field: repeated neoshowcase.protobuf.AvailablePort ports = 4;
+   */
+  ports: AvailablePort[] = [];
+
+  /**
+   * adminer_url ユーザー用DB管理画面URL
+   *
+   * @generated from field: string adminer_url = 5;
+   */
+  adminerUrl = "";
+
+  constructor(data?: PartialMessage<SystemInfo>) {
+    super();
+    proto3.util.initPartial(data, this);
+  }
+
+  static readonly runtime: typeof proto3 = proto3;
+  static readonly typeName = "neoshowcase.protobuf.SystemInfo";
+  static readonly fields: FieldList = proto3.util.newFieldList(() => [
+    { no: 1, name: "public_key", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+    { no: 2, name: "ssh", kind: "message", T: SSHInfo },
+    { no: 3, name: "domains", kind: "message", T: AvailableDomain, repeated: true },
+    { no: 4, name: "ports", kind: "message", T: AvailablePort, repeated: true },
+    { no: 5, name: "adminer_url", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+  ]);
+
+  static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): SystemInfo {
+    return new SystemInfo().fromBinary(bytes, options);
+  }
+
+  static fromJson(jsonValue: JsonValue, options?: Partial<JsonReadOptions>): SystemInfo {
+    return new SystemInfo().fromJson(jsonValue, options);
+  }
+
+  static fromJsonString(jsonString: string, options?: Partial<JsonReadOptions>): SystemInfo {
+    return new SystemInfo().fromJsonString(jsonString, options);
+  }
+
+  static equals(a: SystemInfo | PlainMessage<SystemInfo> | undefined, b: SystemInfo | PlainMessage<SystemInfo> | undefined): boolean {
+    return proto3.util.equals(SystemInfo, a, b);
+  }
+}
+
+/**
  * @generated from message neoshowcase.protobuf.GenerateKeyPairResponse
  */
 export class GenerateKeyPairResponse extends Message<GenerateKeyPairResponse> {
@@ -2072,178 +2241,6 @@ export class UpdateApplicationRequest_UpdateOwners extends Message<UpdateApplica
 }
 
 /**
- * @generated from message neoshowcase.protobuf.AvailableDomain
- */
-export class AvailableDomain extends Message<AvailableDomain> {
-  /**
-   * @generated from field: string domain = 1;
-   */
-  domain = "";
-
-  /**
-   * @generated from field: repeated string exclude_domains = 2;
-   */
-  excludeDomains: string[] = [];
-
-  /**
-   * @generated from field: bool auth_available = 3;
-   */
-  authAvailable = false;
-
-  constructor(data?: PartialMessage<AvailableDomain>) {
-    super();
-    proto3.util.initPartial(data, this);
-  }
-
-  static readonly runtime: typeof proto3 = proto3;
-  static readonly typeName = "neoshowcase.protobuf.AvailableDomain";
-  static readonly fields: FieldList = proto3.util.newFieldList(() => [
-    { no: 1, name: "domain", kind: "scalar", T: 9 /* ScalarType.STRING */ },
-    { no: 2, name: "exclude_domains", kind: "scalar", T: 9 /* ScalarType.STRING */, repeated: true },
-    { no: 3, name: "auth_available", kind: "scalar", T: 8 /* ScalarType.BOOL */ },
-  ]);
-
-  static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): AvailableDomain {
-    return new AvailableDomain().fromBinary(bytes, options);
-  }
-
-  static fromJson(jsonValue: JsonValue, options?: Partial<JsonReadOptions>): AvailableDomain {
-    return new AvailableDomain().fromJson(jsonValue, options);
-  }
-
-  static fromJsonString(jsonString: string, options?: Partial<JsonReadOptions>): AvailableDomain {
-    return new AvailableDomain().fromJsonString(jsonString, options);
-  }
-
-  static equals(a: AvailableDomain | PlainMessage<AvailableDomain> | undefined, b: AvailableDomain | PlainMessage<AvailableDomain> | undefined): boolean {
-    return proto3.util.equals(AvailableDomain, a, b);
-  }
-}
-
-/**
- * @generated from message neoshowcase.protobuf.AvailableDomains
- */
-export class AvailableDomains extends Message<AvailableDomains> {
-  /**
-   * @generated from field: repeated neoshowcase.protobuf.AvailableDomain domains = 1;
-   */
-  domains: AvailableDomain[] = [];
-
-  constructor(data?: PartialMessage<AvailableDomains>) {
-    super();
-    proto3.util.initPartial(data, this);
-  }
-
-  static readonly runtime: typeof proto3 = proto3;
-  static readonly typeName = "neoshowcase.protobuf.AvailableDomains";
-  static readonly fields: FieldList = proto3.util.newFieldList(() => [
-    { no: 1, name: "domains", kind: "message", T: AvailableDomain, repeated: true },
-  ]);
-
-  static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): AvailableDomains {
-    return new AvailableDomains().fromBinary(bytes, options);
-  }
-
-  static fromJson(jsonValue: JsonValue, options?: Partial<JsonReadOptions>): AvailableDomains {
-    return new AvailableDomains().fromJson(jsonValue, options);
-  }
-
-  static fromJsonString(jsonString: string, options?: Partial<JsonReadOptions>): AvailableDomains {
-    return new AvailableDomains().fromJsonString(jsonString, options);
-  }
-
-  static equals(a: AvailableDomains | PlainMessage<AvailableDomains> | undefined, b: AvailableDomains | PlainMessage<AvailableDomains> | undefined): boolean {
-    return proto3.util.equals(AvailableDomains, a, b);
-  }
-}
-
-/**
- * @generated from message neoshowcase.protobuf.AvailablePort
- */
-export class AvailablePort extends Message<AvailablePort> {
-  /**
-   * @generated from field: int32 start_port = 1;
-   */
-  startPort = 0;
-
-  /**
-   * @generated from field: int32 end_port = 2;
-   */
-  endPort = 0;
-
-  /**
-   * @generated from field: neoshowcase.protobuf.PortPublicationProtocol protocol = 3;
-   */
-  protocol = PortPublicationProtocol.TCP;
-
-  constructor(data?: PartialMessage<AvailablePort>) {
-    super();
-    proto3.util.initPartial(data, this);
-  }
-
-  static readonly runtime: typeof proto3 = proto3;
-  static readonly typeName = "neoshowcase.protobuf.AvailablePort";
-  static readonly fields: FieldList = proto3.util.newFieldList(() => [
-    { no: 1, name: "start_port", kind: "scalar", T: 5 /* ScalarType.INT32 */ },
-    { no: 2, name: "end_port", kind: "scalar", T: 5 /* ScalarType.INT32 */ },
-    { no: 3, name: "protocol", kind: "enum", T: proto3.getEnumType(PortPublicationProtocol) },
-  ]);
-
-  static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): AvailablePort {
-    return new AvailablePort().fromBinary(bytes, options);
-  }
-
-  static fromJson(jsonValue: JsonValue, options?: Partial<JsonReadOptions>): AvailablePort {
-    return new AvailablePort().fromJson(jsonValue, options);
-  }
-
-  static fromJsonString(jsonString: string, options?: Partial<JsonReadOptions>): AvailablePort {
-    return new AvailablePort().fromJsonString(jsonString, options);
-  }
-
-  static equals(a: AvailablePort | PlainMessage<AvailablePort> | undefined, b: AvailablePort | PlainMessage<AvailablePort> | undefined): boolean {
-    return proto3.util.equals(AvailablePort, a, b);
-  }
-}
-
-/**
- * @generated from message neoshowcase.protobuf.AvailablePorts
- */
-export class AvailablePorts extends Message<AvailablePorts> {
-  /**
-   * @generated from field: repeated neoshowcase.protobuf.AvailablePort available_ports = 1;
-   */
-  availablePorts: AvailablePort[] = [];
-
-  constructor(data?: PartialMessage<AvailablePorts>) {
-    super();
-    proto3.util.initPartial(data, this);
-  }
-
-  static readonly runtime: typeof proto3 = proto3;
-  static readonly typeName = "neoshowcase.protobuf.AvailablePorts";
-  static readonly fields: FieldList = proto3.util.newFieldList(() => [
-    { no: 1, name: "available_ports", kind: "message", T: AvailablePort, repeated: true },
-  ]);
-
-  static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): AvailablePorts {
-    return new AvailablePorts().fromBinary(bytes, options);
-  }
-
-  static fromJson(jsonValue: JsonValue, options?: Partial<JsonReadOptions>): AvailablePorts {
-    return new AvailablePorts().fromJson(jsonValue, options);
-  }
-
-  static fromJsonString(jsonString: string, options?: Partial<JsonReadOptions>): AvailablePorts {
-    return new AvailablePorts().fromJsonString(jsonString, options);
-  }
-
-  static equals(a: AvailablePorts | PlainMessage<AvailablePorts> | undefined, b: AvailablePorts | PlainMessage<AvailablePorts> | undefined): boolean {
-    return proto3.util.equals(AvailablePorts, a, b);
-  }
-}
-
-/**
  * @generated from message neoshowcase.protobuf.ApplicationEnvVar
  */
 export class ApplicationEnvVar extends Message<ApplicationEnvVar> {
@@ -2713,43 +2710,6 @@ export class GetApplicationsResponse extends Message<GetApplicationsResponse> {
 
   static equals(a: GetApplicationsResponse | PlainMessage<GetApplicationsResponse> | undefined, b: GetApplicationsResponse | PlainMessage<GetApplicationsResponse> | undefined): boolean {
     return proto3.util.equals(GetApplicationsResponse, a, b);
-  }
-}
-
-/**
- * @generated from message neoshowcase.protobuf.GetSystemPublicKeyResponse
- */
-export class GetSystemPublicKeyResponse extends Message<GetSystemPublicKeyResponse> {
-  /**
-   * @generated from field: string public_key = 1;
-   */
-  publicKey = "";
-
-  constructor(data?: PartialMessage<GetSystemPublicKeyResponse>) {
-    super();
-    proto3.util.initPartial(data, this);
-  }
-
-  static readonly runtime: typeof proto3 = proto3;
-  static readonly typeName = "neoshowcase.protobuf.GetSystemPublicKeyResponse";
-  static readonly fields: FieldList = proto3.util.newFieldList(() => [
-    { no: 1, name: "public_key", kind: "scalar", T: 9 /* ScalarType.STRING */ },
-  ]);
-
-  static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): GetSystemPublicKeyResponse {
-    return new GetSystemPublicKeyResponse().fromBinary(bytes, options);
-  }
-
-  static fromJson(jsonValue: JsonValue, options?: Partial<JsonReadOptions>): GetSystemPublicKeyResponse {
-    return new GetSystemPublicKeyResponse().fromJson(jsonValue, options);
-  }
-
-  static fromJsonString(jsonString: string, options?: Partial<JsonReadOptions>): GetSystemPublicKeyResponse {
-    return new GetSystemPublicKeyResponse().fromJsonString(jsonString, options);
-  }
-
-  static equals(a: GetSystemPublicKeyResponse | PlainMessage<GetSystemPublicKeyResponse> | undefined, b: GetSystemPublicKeyResponse | PlainMessage<GetSystemPublicKeyResponse> | undefined): boolean {
-    return proto3.util.equals(GetSystemPublicKeyResponse, a, b);
   }
 }
 

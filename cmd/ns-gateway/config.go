@@ -3,12 +3,10 @@ package main
 import (
 	"fmt"
 	"net/http"
-	"os"
 	"strings"
 
 	"github.com/bufbuild/connect-go"
 	"github.com/friendsofgo/errors"
-	"github.com/go-git/go-git/v5/plumbing/transport/ssh"
 	"github.com/spf13/viper"
 
 	"github.com/traPtitech/neoshowcase/pkg/domain"
@@ -35,9 +33,6 @@ type Config struct {
 		Type string      `mapstructure:"type" yaml:"type"`
 		Loki loki.Config `mapstructure:"loki" yaml:"loki"`
 	} `mapstructure:"log" yaml:"log"`
-	Repository struct {
-		PrivateKeyFile string `mapstructure:"privateKeyFile" yaml:"privateKeyFile"`
-	} `mapstructure:"repository" yaml:"repository"`
 }
 
 func init() {
@@ -84,16 +79,6 @@ func init() {
 	viper.SetDefault("log.type", "loki")
 	viper.SetDefault("log.loki.endpoint", "http://loki:3100")
 	viper.SetDefault("log.loki.appIDLabel", "ns_trap_jp_app_id")
-
-	viper.SetDefault("repository.privateKeyFile", "")
-}
-
-func provideRepositoryPublicKey(c Config) (*ssh.PublicKeys, error) {
-	bytes, err := os.ReadFile(c.Repository.PrivateKeyFile)
-	if err != nil {
-		return nil, errors.Wrap(err, "failed to open private key file")
-	}
-	return ssh.NewPublicKeys("", bytes, "")
 }
 
 func provideStorage(c domain.StorageConfig) (domain.Storage, error) {

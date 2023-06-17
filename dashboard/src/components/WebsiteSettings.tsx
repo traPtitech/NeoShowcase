@@ -6,7 +6,7 @@ import { SetStoreFunction } from 'solid-js/store'
 import { For, Show } from 'solid-js'
 import { InputBar, InputLabel } from '/@/components/Input'
 import { FormButton, FormCheckBox, FormSettings, FormSettingsButton, SettingsContainer } from '/@/components/AppsNew'
-import { availableDomains } from '../libs/api'
+import { systemInfo } from '../libs/api'
 import { styled } from '@macaron-css/solid'
 import { vars } from '../theme'
 import { PlainMessage } from '@bufbuild/protobuf'
@@ -127,7 +127,7 @@ export const WebsiteSettings = (props: WebsiteSettingsProps) => {
       <AvailableDomainContainer>
         使用可能なドメイン
         <AvailableDomainUl>
-          <For each={availableDomains()?.domains || []}>
+          <For each={systemInfo()?.domains || []}>
             {(domain) => (
               <li>
                 {domain.domain}

@@ -35,6 +35,3 @@ log:
   loki:
     endpoint: http://loki:3100
     appIDLabel: ns_trap_jp_app_id
-
-repository:
-  privateKeyFile: /keys/id_ed25519

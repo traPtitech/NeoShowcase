@@ -33,15 +33,7 @@ func (s *Service) CreateApplication(ctx context.Context, app *domain.Application
 	if err != nil {
 		return nil, errors.Wrap(err, "getting existing applications")
 	}
-	domains, err := s.controller.GetAvailableDomains(ctx)
-	if err != nil {
-		return nil, errors.Wrap(err, "getting available domains")
-	}
-	ports, err := s.controller.GetAvailablePorts(ctx)
-	if err != nil {
-		return nil, errors.Wrap(err, "getting available ports")
-	}
-	valErr, err := app.Validate(web.GetUser(ctx), existingApps, domains, ports)
+	valErr, err := app.Validate(web.GetUser(ctx), existingApps, s.systemInfo.AvailableDomains, s.systemInfo.AvailablePorts)
 	if err != nil {
 		return nil, errors.Wrap(err, "validating application")
 	}
@@ -178,15 +170,7 @@ func (s *Service) UpdateApplication(ctx context.Context, id string, args *domain
 		if err != nil {
 			return errors.Wrap(err, "getting existing applications")
 		}
-		domains, err := s.controller.GetAvailableDomains(ctx)
-		if err != nil {
-			return errors.Wrap(err, "getting available domains")
-		}
-		ports, err := s.controller.GetAvailablePorts(ctx)
-		if err != nil {
-			return errors.Wrap(err, "getting available ports")
-		}
-		valErr, err := app.Validate(web.GetUser(ctx), existingApps, domains, ports)
+		valErr, err := app.Validate(web.GetUser(ctx), existingApps, s.systemInfo.AvailableDomains, s.systemInfo.AvailablePorts)
 		if err != nil {
 			return errors.Wrap(err, "validating application")
 		}

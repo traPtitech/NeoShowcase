@@ -71,7 +71,8 @@ func NewWithDocker(c2 Config) (*Server, error) {
 		return nil, err
 	}
 	sshConfig := c2.SSH
-	controllerServiceHandler := grpc.NewControllerService(backend, repofetcherService, cdserviceService, controllerBuilderService, service, sshConfig)
+	adminerURL := c2.AdminerURL
+	controllerServiceHandler := grpc.NewControllerService(backend, repofetcherService, cdserviceService, controllerBuilderService, service, publicKeys, sshConfig, adminerURL)
 	mainControllerServer := provideControllerServer(c2, controllerServiceHandler, controllerBuilderService, controllerSSGenService)
 	userRepository := repository.NewUserRepository(db)
 	sshServer := sshserver.NewSSHServer(sshConfig, publicKeys, backend, applicationRepository, userRepository)
@@ -150,7 +151,8 @@ func NewWithK8S(c2 Config) (*Server, error) {
 		return nil, err
 	}
 	sshConfig := c2.SSH
-	controllerServiceHandler := grpc.NewControllerService(backend, repofetcherService, cdserviceService, controllerBuilderService, service, sshConfig)
+	adminerURL := c2.AdminerURL
+	controllerServiceHandler := grpc.NewControllerService(backend, repofetcherService, cdserviceService, controllerBuilderService, service, publicKeys, sshConfig, adminerURL)
 	mainControllerServer := provideControllerServer(c2, controllerServiceHandler, controllerBuilderService, controllerSSGenService)
 	userRepository := repository.NewUserRepository(db)
 	sshServer := sshserver.NewSSHServer(sshConfig, publicKeys, backend, applicationRepository, userRepository)
@@ -183,7 +185,7 @@ func NewWithK8S(c2 Config) (*Server, error) {
 
 var commonSet = wire.NewSet(dbmanager.NewMariaDBManager, dbmanager.NewMongoDBManager, repository.New, repository.NewApplicationRepository, repository.NewGitRepositoryRepository, repository.NewEnvironmentRepository, repository.NewBuildRepository, repository.NewArtifactRepository, repository.NewUserRepository, grpc.NewAPIServiceServer, grpc.NewAuthInterceptor, grpc.NewControllerService, grpc.NewControllerBuilderService, grpc.NewControllerSSGenService, webhook.NewReceiver, apiserver.NewService, cdservice.NewAppDeployHelper, cdservice.NewContainerStateMutator, cdservice.NewService, repofetcher.NewService, cleaner.NewService, logstream.NewService, sshserver.NewSSHServer, providePublicKey,
 	provideStorage,
-	provideControllerServer, wire.FieldsOf(new(Config), "Docker", "K8s", "SSH", "Webhook", "DB", "Storage", "Image"), wire.Struct(new(Server), "*"),
+	provideControllerServer, wire.FieldsOf(new(Config), "AdminerURL", "Docker", "K8s", "SSH", "Webhook", "DB", "Storage", "Image"), wire.Struct(new(Server), "*"),
 )
 
 func New(c2 Config) (*Server, error) {

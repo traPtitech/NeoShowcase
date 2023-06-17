@@ -63,9 +63,7 @@ message SSGenRequest {
 }
 
 service ControllerService {
-  rpc GetSSHInfo(google.protobuf.Empty) returns (SSHInfo);
-  rpc GetAvailableDomains(google.protobuf.Empty) returns (AvailableDomains);
-  rpc GetAvailablePorts(google.protobuf.Empty) returns (AvailablePorts);
+  rpc GetSystemInfo(google.protobuf.Empty) returns (SystemInfo);
 
   rpc FetchRepository(RepositoryIdRequest) returns (google.protobuf.Empty);
   rpc RegisterBuild(ApplicationIdRequest) returns (google.protobuf.Empty);

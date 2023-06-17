@@ -11,6 +11,31 @@ message SSHInfo {
   int32 port = 2;
 }
 
+message AvailableDomain {
+  string domain = 1;
+  repeated string exclude_domains = 2;
+  bool auth_available = 3;
+}
+
+message AvailablePort {
+  int32 start_port = 1;
+  int32 end_port = 2;
+  PortPublicationProtocol protocol = 3;
+}
+
+message SystemInfo {
+  // public_key システムのSSH公開鍵 リポジトリごとにSSH秘密鍵を設定しないデフォルトSSH認証で使用
+  string public_key = 1;
+  // ssh アプリケーションにSSH接続するための情報
+  SSHInfo ssh = 2;
+  // domains 使用可能なドメイン一覧
+  repeated AvailableDomain domains = 3;
+  // ports 使用可能なポート一覧
+  repeated AvailablePort ports = 4;
+  // adminer_url ユーザー用DB管理画面URL
+  string adminer_url = 5;
+}
+
 message GenerateKeyPairResponse {
   string key_id = 1;
   string public_key = 2;
@@ -275,26 +300,6 @@ message UpdateApplicationRequest {
   optional UpdateOwners owner_ids = 7;
 }
 
-message AvailableDomain {
-  string domain = 1;
-  repeated string exclude_domains = 2;
-  bool auth_available = 3;
-}
-
-message AvailableDomains {
-  repeated AvailableDomain domains = 1;
-}
-
-message AvailablePort {
-  int32 start_port = 1;
-  int32 end_port = 2;
-  PortPublicationProtocol protocol = 3;
-}
-
-message AvailablePorts {
-  repeated AvailablePort available_ports = 1;
-}
-
 message ApplicationEnvVar {
   string key = 1;
   string value = 2;
@@ -355,10 +360,6 @@ message GetApplicationsResponse {
   repeated Application applications = 1;
 }
 
-message GetSystemPublicKeyResponse {
-  string public_key = 1;
-}
-
 message ApplicationIdRequest {
   string id = 1;
 }
@@ -394,14 +395,8 @@ message RetryCommitBuildRequest {
 service APIService {
   // General / System
 
-  // GetSystemPublicKey システムのSSH公開鍵を取得します リポジトリごとにSSH秘密鍵を設定しないデフォルトSSH認証で使用します
-  rpc GetSystemPublicKey(google.protobuf.Empty) returns (GetSystemPublicKeyResponse);
-  // GetSSHInfo アプリケーションにSSH接続するための情報を取得します
-  rpc GetSSHInfo(google.protobuf.Empty) returns (SSHInfo);
-  // GetAvailableDomains 使用可能なドメイン一覧を取得します
-  rpc GetAvailableDomains(google.protobuf.Empty) returns (AvailableDomains);
-  // GetAvailablePorts 使用可能なポート一覧を取得します
-  rpc GetAvailablePorts(google.protobuf.Empty) returns (AvailablePorts);
+  // GetSystemInfo システム固有情報を取得します
+  rpc GetSystemInfo(google.protobuf.Empty) returns (SystemInfo);
   // GenerateKeyPair リポジトリ登録で使用する鍵ペアを一時的に生成します
   rpc GenerateKeyPair(google.protobuf.Empty) returns (GenerateKeyPairResponse);
 

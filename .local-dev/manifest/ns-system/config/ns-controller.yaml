@@ -1,6 +1,7 @@
 port: 10000
 debug: false
 privateKeyFile: /keys/id_ed25519
+adminerURL: http://adminer.local.trapti.tech/
 mode: k8s
 
 k8s:

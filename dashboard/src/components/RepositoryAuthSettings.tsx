@@ -6,7 +6,7 @@ import { styled } from '@macaron-css/solid'
 import { Button } from './Button'
 import { CreateRepositoryAuth } from '../api/neoshowcase/protobuf/gateway_pb'
 import { SetStoreFunction } from 'solid-js/store'
-import { client } from '../libs/api'
+import { client, systemInfo } from '../libs/api'
 import { PlainMessage } from '@bufbuild/protobuf'
 
 const SshDetails = styled('div', {
@@ -28,20 +28,12 @@ const PublicKeyCode = styled('code', {
   },
 })
 
-export type AuthMethod = Exclude<CreateRepositoryAuth['auth']['case'], undefined>
-export type AuthConfig = {
-  [K in AuthMethod]: Extract<PlainMessage<CreateRepositoryAuth>['auth'], { case: K }>
-} & {
-  authMethod: AuthMethod
-}
-
 interface RepositoryAuthSettingsProps {
   authConfig: PlainMessage<CreateRepositoryAuth>
   setAuthConfig: SetStoreFunction<PlainMessage<CreateRepositoryAuth>>
 }
 
 export const RepositoryAuthSettings: Component<RepositoryAuthSettingsProps> = (props) => {
-  const [systemPublicKey] = createResource(() => client.getSystemPublicKey({}))
   const [useTmpKey, setUseTmpKey] = createSignal(false)
   const [tmpKey] = createResource(
     () => (useTmpKey() ? true : undefined),
@@ -51,7 +43,7 @@ export const RepositoryAuthSettings: Component<RepositoryAuthSettingsProps> = (p
     if (!tmpKey()) return
     props.setAuthConfig('auth', 'value', { keyId: tmpKey()?.keyId })
   })
-  const publicKey = () => (useTmpKey() ? tmpKey()?.publicKey : systemPublicKey()?.publicKey)
+  const publicKey = () => (useTmpKey() ? tmpKey()?.publicKey : systemInfo()?.publicKey)
 
   return (
     <div>
