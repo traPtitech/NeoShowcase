@@ -25,20 +25,21 @@ var ContainerStateMapper = mapper.MustNewValueMapper(map[domain.ContainerState]p
 
 func ToPBApplication(app *domain.Application) *pb.Application {
 	return &pb.Application{
-		Id:            app.ID,
-		Name:          app.Name,
-		RepositoryId:  app.RepositoryID,
-		RefName:       app.RefName,
-		DeployType:    DeployTypeMapper.IntoMust(app.DeployType),
-		Running:       app.Running,
-		Container:     ContainerStateMapper.IntoMust(app.Container),
-		CurrentCommit: app.CurrentCommit,
-		WantCommit:    app.WantCommit,
-		CreatedAt:     timestamppb.New(app.CreatedAt),
-		UpdatedAt:     timestamppb.New(app.UpdatedAt),
-		Config:        ToPBApplicationConfig(app.Config),
-		Websites:      ds.Map(app.Websites, ToPBWebsite),
-		OwnerIds:      app.OwnerIDs,
+		Id:               app.ID,
+		Name:             app.Name,
+		RepositoryId:     app.RepositoryID,
+		RefName:          app.RefName,
+		DeployType:       DeployTypeMapper.IntoMust(app.DeployType),
+		Running:          app.Running,
+		Container:        ContainerStateMapper.IntoMust(app.Container),
+		CurrentCommit:    app.CurrentCommit,
+		WantCommit:       app.WantCommit,
+		CreatedAt:        timestamppb.New(app.CreatedAt),
+		UpdatedAt:        timestamppb.New(app.UpdatedAt),
+		Config:           ToPBApplicationConfig(app.Config),
+		Websites:         ds.Map(app.Websites, ToPBWebsite),
+		PortPublications: ds.Map(app.PortPublications, ToPBPortPublication),
+		OwnerIds:         app.OwnerIDs,
 	}
 }
 

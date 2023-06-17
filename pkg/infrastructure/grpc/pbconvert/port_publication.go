@@ -20,6 +20,14 @@ func FromPBPortPublication(p *pb.PortPublication) *domain.PortPublication {
 	}
 }
 
+func ToPBPortPublication(p *domain.PortPublication) *pb.PortPublication {
+	return &pb.PortPublication{
+		InternetPort:    int32(p.InternetPort),
+		ApplicationPort: int32(p.ApplicationPort),
+		Protocol:        PortPublicationProtocolMapper.IntoMust(p.Protocol),
+	}
+}
+
 func FromPBUpdatePorts(p *pb.UpdateApplicationRequest_UpdatePorts) []*domain.PortPublication {
 	return ds.Map(p.PortPublications, FromPBPortPublication)
 }
