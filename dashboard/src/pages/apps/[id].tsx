@@ -77,6 +77,10 @@ const StaticConfigInfo: Component<{ config: StaticConfig }> = (props) => {
         <CardItemTitle>Artifact Path</CardItemTitle>
         <CardItemContent>{props.config.artifactPath}</CardItemContent>
       </CardItem>
+      <CardItem>
+        <CardItemTitle>Single Page Application</CardItemTitle>
+        <CardItemContent>{props.config.spa}</CardItemContent>
+      </CardItem>
     </>
   )
 }

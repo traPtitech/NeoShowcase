@@ -44,19 +44,44 @@ file_server @%v {
 }
 `
 
+const siteTemplateSPA = `@%v {
+	header %v %v
+	file {
+		root %v
+		try_files {path} {path}.html {path}/ {path}/index.html /index.html =404
+	}
+}
+rewrite @%v {file_match.relative}
+file_server @%v {
+	root %v
+}
+`
+
 func (s *server) Reconcile(sites []*domain.StaticSite) error {
 	var b bytes.Buffer
 	b.WriteString(":80 {\n")
 	sites = lo.UniqBy(sites, func(site *domain.StaticSite) string { return site.Application.ID })
 	for _, site := range sites {
 		matcherName := fmt.Sprintf("nsapp-%v", site.Application.ID)
-		b.WriteString(fmt.Sprintf(
-			siteTemplate,
-			matcherName,
-			web.HeaderNameSSGenAppID, site.Application.ID,
-			matcherName,
-			filepath.Join(s.c.DocsRoot, site.ArtifactID),
-		))
+		if site.SPA {
+			b.WriteString(fmt.Sprintf(
+				siteTemplateSPA,
+				matcherName,
+				web.HeaderNameSSGenAppID, site.Application.ID,
+				filepath.Join(s.c.DocsRoot, site.ArtifactID),
+				matcherName,
+				matcherName,
+				filepath.Join(s.c.DocsRoot, site.ArtifactID),
+			))
+		} else {
+			b.WriteString(fmt.Sprintf(
+				siteTemplate,
+				matcherName,
+				web.HeaderNameSSGenAppID, site.Application.ID,
+				matcherName,
+				filepath.Join(s.c.DocsRoot, site.ArtifactID),
+			))
+		}
 	}
 	b.WriteString("}\n")
 	return s.postConfig(b.Bytes())

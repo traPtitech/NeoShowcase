@@ -138,6 +138,7 @@ message BuildConfigRuntimeDockerfile {
 
 message StaticConfig {
   string artifact_path = 1;
+  bool spa = 2;
 }
 
 message BuildConfigStaticBuildpack {

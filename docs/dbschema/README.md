@@ -5,7 +5,7 @@
 | Name | Columns | Comment | Type |
 | ---- | ------- | ------- | ---- |
 | [applications](applications.md) | 11 | アプリケーションテーブル | BASE TABLE |
-| [application_config](application_config.md) | 12 | アプリケーション詳細設定テーブル | BASE TABLE |
+| [application_config](application_config.md) | 13 | アプリケーション詳細設定テーブル | BASE TABLE |
 | [application_owners](application_owners.md) | 2 | アプリケーション所有者テーブル | BASE TABLE |
 | [artifacts](artifacts.md) | 5 | 静的ファイル生成物テーブル | BASE TABLE |
 | [builds](builds.md) | 9 | ビルドテーブル | BASE TABLE |
@@ -59,6 +59,7 @@ erDiagram
   text build_cmd
   tinyint_1_ build_cmd_shell
   varchar_100_ artifact_path
+  tinyint_1_ spa
   varchar_100_ dockerfile_name
   varchar_100_ context
   text entrypoint

@@ -92,6 +92,7 @@ CREATE TABLE `application_config`
     `build_cmd`       TEXT          NOT NULL COMMENT 'ビルドコマンド',
     `build_cmd_shell` TINYINT(1)    NOT NULL COMMENT 'ビルドコマンドをshellで実行するか',
     `artifact_path`   VARCHAR(100)  NOT NULL COMMENT '静的成果物のパス',
+    `spa`             TINYINT(1)    NOT NULL COMMENT '静的成果物をSPAとして配信するか',
     `dockerfile_name` VARCHAR(100)  NOT NULL COMMENT 'Dockerfile名',
     `context`         VARCHAR(100)  NOT NULL COMMENT 'ビルド時のcontext',
     `entrypoint`      TEXT          NOT NULL COMMENT 'Entrypoint(args)',
@@ -122,10 +123,10 @@ CREATE TABLE `websites`
 
 CREATE TABLE `port_publications`
 (
-    `application_id` CHAR(22) NOT NULL COMMENT 'アプリケーションID',
-    `internet_port` INT(11) NOT NULL COMMENT '公開側ポート',
-    `application_port` INT(11) NOT NULL COMMENT 'アプリケーション側ポート',
-    `protocol` ENUM ('tcp', 'udp') COMMENT 'プロトコル',
+    `application_id`   CHAR(22) NOT NULL COMMENT 'アプリケーションID',
+    `internet_port`    INT(11)  NOT NULL COMMENT '公開側ポート',
+    `application_port` INT(11)  NOT NULL COMMENT 'アプリケーション側ポート',
+    `protocol`         ENUM ('tcp', 'udp') COMMENT 'プロトコル',
     PRIMARY KEY (`internet_port`, `protocol`),
     CONSTRAINT `fk_port_publications_application_id` FOREIGN KEY (`application_id`) REFERENCES `applications` (`id`)
 ) ENGINE = InnoDB

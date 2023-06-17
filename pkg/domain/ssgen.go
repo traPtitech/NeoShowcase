@@ -18,6 +18,7 @@ type StaticSite struct {
 	Application *Application
 	Website     *Website
 	ArtifactID  string
+	SPA         bool
 }
 
 func GetActiveStaticSites(ctx context.Context, appRepo ApplicationRepository, buildRepo BuildRepository) ([]*StaticSite, error) {
@@ -47,6 +48,7 @@ func GetActiveStaticSites(ctx context.Context, appRepo ApplicationRepository, bu
 				Application: app,
 				Website:     website,
 				ArtifactID:  build.Artifact.V.ID,
+				SPA:         app.Config.BuildConfig.GetStaticConfig().SPA,
 			})
 		}
 	}
