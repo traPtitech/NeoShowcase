@@ -50,13 +50,20 @@ func (s *builderService) cloneRepository(ctx context.Context, st *state) error {
 	if err != nil {
 		return errors.Wrap(err, "getting submodules")
 	}
+	// Try with auth first, then try without auth
 	err = sm.Update(&git.SubmoduleUpdateOptions{
 		Init:              true,
 		RecurseSubmodules: git.DefaultSubmoduleRecursionDepth,
 		Auth:              auth,
 	})
 	if err != nil {
-		return errors.Wrap(err, "updating submodules")
+		err = sm.Update(&git.SubmoduleUpdateOptions{
+			Init:              true,
+			RecurseSubmodules: git.DefaultSubmoduleRecursionDepth,
+		})
+		if err != nil {
+			return errors.Wrap(err, "updating submodules")
+		}
 	}
 	return nil
 }
