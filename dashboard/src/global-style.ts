@@ -10,7 +10,7 @@ globalStyle('div, h1, h2, h3, h4, h5, h6, a, p, input', {
 })
 
 globalStyle('pre, code', {
-  fontFamily: 'Menlo, Monaco, Consolas, Courier New, monospace !important'
+  fontFamily: 'Menlo, Monaco, Consolas, Courier New, monospace !important',
 })
 
 globalStyle('a', {
