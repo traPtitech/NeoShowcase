@@ -155,7 +155,12 @@ func (r *service) doFetchEpoch(ctx context.Context, epoch int) (int, error) {
 			repo := repoMap[repoID]
 			count++
 			p.Go(func() { // careful not to capture loop variable
-				err := r.updateApps(ctx, repo, repoToApps[repo.ID])
+				apps := repoToApps[repo.ID]
+				someAppRunning := lo.ContainsBy(apps, func(app *domain.Application) bool { return app.Running })
+				if !someAppRunning {
+					return
+				}
+				err := r.updateApps(ctx, repo, apps)
 				if err != nil {
 					log.Warnf("failed to update repo: %+v", err)
 				}
@@ -215,11 +220,6 @@ func (r *service) resolveRefs(ctx context.Context, repo *domain.Repository) (ref
 }
 
 func (r *service) updateApps(ctx context.Context, repo *domain.Repository, apps []*domain.Application) error {
-	someAppRunning := lo.ContainsBy(apps, func(app *domain.Application) bool { return app.Running })
-	if !someAppRunning {
-		return nil
-	}
-
 	refToCommit, err := r.resolveRefs(ctx, repo)
 	if err != nil {
 		return err
