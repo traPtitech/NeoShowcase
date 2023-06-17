@@ -25,13 +25,6 @@ func NewBuildRepository(db *sql.DB) domain.BuildRepository {
 	}
 }
 
-func (r *buildRepository) getBuild(ctx context.Context, id string) (*models.Build, error) {
-	return models.Builds(
-		models.BuildWhere.ID.EQ(id),
-		qm.Load(models.BuildRels.Artifact),
-	).One(ctx, r.db)
-}
-
 func (r *buildRepository) buildMods(cond domain.GetBuildCondition) []qm.QueryMod {
 	var mods []qm.QueryMod
 	if cond.ApplicationID.Valid {
@@ -53,7 +46,7 @@ func (r *buildRepository) buildMods(cond domain.GetBuildCondition) []qm.QueryMod
 }
 
 func (r *buildRepository) GetBuilds(ctx context.Context, cond domain.GetBuildCondition) ([]*domain.Build, error) {
-	mods := []qm.QueryMod{qm.Load(models.BuildRels.Artifact)}
+	mods := []qm.QueryMod{qm.Load(models.BuildRels.Artifacts)}
 	mods = append(mods, r.buildMods(cond)...)
 	builds, err := models.Builds(mods...).All(ctx, r.db)
 	if err != nil {
@@ -63,7 +56,10 @@ func (r *buildRepository) GetBuilds(ctx context.Context, cond domain.GetBuildCon
 }
 
 func (r *buildRepository) GetBuild(ctx context.Context, buildID string) (*domain.Build, error) {
-	build, err := r.getBuild(ctx, buildID)
+	build, err := models.Builds(
+		models.BuildWhere.ID.EQ(buildID),
+		qm.Load(models.BuildRels.Artifacts),
+	).One(ctx, r.db)
 	if err != nil {
 		if isNoRowsErr(err) {
 			return nil, ErrNotFound

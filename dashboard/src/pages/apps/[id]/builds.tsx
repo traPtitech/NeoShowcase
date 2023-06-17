@@ -12,7 +12,6 @@ import { DiffHuman, shortSha } from '/@/libs/format'
 
 const BuildsContainer = styled('div', {
   base: {
-    marginTop: '24px',
     borderRadius: '4px',
     border: `1px solid ${vars.bg.white4}`,
   },

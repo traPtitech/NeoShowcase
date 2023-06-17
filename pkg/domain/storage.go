@@ -54,7 +54,7 @@ func artifactPath(artifactID string) string {
 }
 
 func artifactFilename(artifactID string) string {
-	return artifactID + ".tar.gz"
+	return artifactID + ".tar.gz" // legacy naming for backwards compatibility; has nothing to do with the actual file format
 }
 
 // SaveArtifact Artifactをtar形式で保存する
@@ -65,12 +65,12 @@ func SaveArtifact(s Storage, artifactID string, src io.Reader) error {
 	return nil
 }
 
-func GetArtifact(s Storage, artifactID string) (filename string, r io.ReadCloser, err error) {
+func GetArtifact(s Storage, artifactID string) (r io.ReadCloser, err error) {
 	r, err = s.Open(artifactPath(artifactID))
 	if err != nil {
-		return "", nil, errors.Wrap(err, "failed to open artifact")
+		return nil, errors.Wrap(err, "failed to open artifact")
 	}
-	return artifactFilename(artifactID), r, nil
+	return r, nil
 }
 
 func DeleteArtifact(s Storage, artifactID string) error {

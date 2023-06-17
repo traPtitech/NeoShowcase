@@ -2339,17 +2339,22 @@ export class Artifact extends Message<Artifact> {
   id = "";
 
   /**
-   * @generated from field: int64 size = 2;
+   * @generated from field: string name = 2;
+   */
+  name = "";
+
+  /**
+   * @generated from field: int64 size = 3;
    */
   size = protoInt64.zero;
 
   /**
-   * @generated from field: google.protobuf.Timestamp created_at = 3;
+   * @generated from field: google.protobuf.Timestamp created_at = 4;
    */
   createdAt?: Timestamp;
 
   /**
-   * @generated from field: neoshowcase.protobuf.NullTimestamp deleted_at = 4;
+   * @generated from field: neoshowcase.protobuf.NullTimestamp deleted_at = 5;
    */
   deletedAt?: NullTimestamp;
 
@@ -2362,9 +2367,10 @@ export class Artifact extends Message<Artifact> {
   static readonly typeName = "neoshowcase.protobuf.Artifact";
   static readonly fields: FieldList = proto3.util.newFieldList(() => [
     { no: 1, name: "id", kind: "scalar", T: 9 /* ScalarType.STRING */ },
-    { no: 2, name: "size", kind: "scalar", T: 3 /* ScalarType.INT64 */ },
-    { no: 3, name: "created_at", kind: "message", T: Timestamp },
-    { no: 4, name: "deleted_at", kind: "message", T: NullTimestamp },
+    { no: 2, name: "name", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+    { no: 3, name: "size", kind: "scalar", T: 3 /* ScalarType.INT64 */ },
+    { no: 4, name: "created_at", kind: "message", T: Timestamp },
+    { no: 5, name: "deleted_at", kind: "message", T: NullTimestamp },
   ]);
 
   static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): Artifact {
@@ -2515,9 +2521,9 @@ export class Build extends Message<Build> {
   retriable = false;
 
   /**
-   * @generated from field: neoshowcase.protobuf.Artifact artifact = 9;
+   * @generated from field: repeated neoshowcase.protobuf.Artifact artifacts = 9;
    */
-  artifact?: Artifact;
+  artifacts: Artifact[] = [];
 
   constructor(data?: PartialMessage<Build>) {
     super();
@@ -2535,7 +2541,7 @@ export class Build extends Message<Build> {
     { no: 6, name: "updated_at", kind: "message", T: NullTimestamp },
     { no: 7, name: "finished_at", kind: "message", T: NullTimestamp },
     { no: 8, name: "retriable", kind: "scalar", T: 8 /* ScalarType.BOOL */ },
-    { no: 9, name: "artifact", kind: "message", T: Artifact },
+    { no: 9, name: "artifacts", kind: "message", T: Artifact, repeated: true },
   ]);
 
   static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): Build {

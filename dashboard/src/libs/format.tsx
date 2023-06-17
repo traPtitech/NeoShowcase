@@ -2,6 +2,19 @@ import { createMemo } from 'solid-js'
 
 export const shortSha = (sha1: string): string => sha1.substring(0, 7)
 
+const kb = 1000
+const mb = 1000 * kb
+const gb = 1000 * mb
+const tb = 1000 * gb
+
+export const formatBytes = (bytes: number): string => {
+  if (bytes < kb) return `${bytes} byte${bytes === 1 ? '' : 's'}`
+  if (bytes < mb) return `${(bytes / kb).toPrecision(4)} KB`
+  if (bytes < gb) return `${(bytes / mb).toPrecision(4)} MB`
+  if (bytes < tb) return `${(bytes / gb).toPrecision(4)} GB`
+  return `${(bytes / tb).toPrecision(4)} TB`
+}
+
 const second = 1000
 const minute = 60 * second
 const hour = 60 * minute

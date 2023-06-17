@@ -19,7 +19,7 @@ func (s *builderService) saveArtifact(ctx context.Context, st *state) error {
 		return errors.Wrap(err, "opening artifact")
 	}
 
-	artifact := domain.NewArtifact(st.build.ID, stat.Size())
+	artifact := domain.NewArtifact(st.build.ID, domain.BuilderStaticArtifactName, stat.Size())
 	err = s.artifactRepo.CreateArtifact(ctx, artifact)
 	if err != nil {
 		return errors.Wrap(err, "creating artifact record")

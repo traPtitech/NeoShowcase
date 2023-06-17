@@ -1,10 +1,18 @@
 import { styled } from '@macaron-css/solid'
 import { vars } from '/@/theme'
 
-export const CardsContainer = styled('div', {
+export const CardRowsContainer = styled('div', {
   base: {
-    marginTop: '24px',
     display: 'flex',
+    flexDirection: 'column',
+    gap: '40px',
+  },
+})
+
+export const CardsRow = styled('div', {
+  base: {
+    display: 'flex',
+    flex: '0 1 auto',
     flexDirection: 'row',
     flexWrap: 'wrap',
     gap: '40px',

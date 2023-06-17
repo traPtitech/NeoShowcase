@@ -307,9 +307,10 @@ message ApplicationEnvVars {
 
 message Artifact {
   string id = 1;
-  int64 size = 2;
-  google.protobuf.Timestamp created_at = 3;
-  neoshowcase.protobuf.NullTimestamp deleted_at = 4;
+  string name = 2;
+  int64 size = 3;
+  google.protobuf.Timestamp created_at = 4;
+  neoshowcase.protobuf.NullTimestamp deleted_at = 5;
 }
 
 message ArtifactContent {
@@ -339,7 +340,7 @@ message Build {
   neoshowcase.protobuf.NullTimestamp updated_at = 6;
   neoshowcase.protobuf.NullTimestamp finished_at = 7;
   bool retriable = 8;
-  Artifact artifact = 9;
+  repeated Artifact artifacts = 9;
 }
 
 message BuildLog {

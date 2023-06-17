@@ -23,15 +23,7 @@ import { CenterInline, Container } from '/@/libs/layout'
 import { URLText } from '/@/components/URLText'
 import { Button } from '/@/components/Button'
 import { AppNav } from '/@/components/AppNav'
-import {
-  Card,
-  CardItem,
-  CardItemContent,
-  CardItems,
-  CardItemTitle,
-  CardsContainer,
-  CardTitle,
-} from '/@/components/Card'
+import { Card, CardItem, CardItemContent, CardItems, CardItemTitle, CardsRow, CardTitle } from '/@/components/Card'
 import { LogContainer } from '/@/components/Log'
 import { sleep } from '/@/libs/sleep'
 import { Code, ConnectError } from '@bufbuild/connect'
@@ -286,7 +278,7 @@ export default () => {
       <Header />
       <Show when={loaded()}>
         <AppNav appID={app().id} appName={app().name} repoName={repo().name} />
-        <CardsContainer>
+        <CardsRow>
           <Card>
             <CardTitle>Actions</CardTitle>
             <Button color='black1' size='large' width='full' onclick={refreshRepo} disabled={disableRefresh()}>
@@ -459,7 +451,7 @@ export default () => {
               </LogContainer>
             </Card>
           </Show>
-        </CardsContainer>
+        </CardsRow>
       </Show>
     </Container>
   )

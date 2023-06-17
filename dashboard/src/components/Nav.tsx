@@ -5,6 +5,7 @@ import { style } from '@macaron-css/core'
 export const NavContainer = styled('div', {
   base: {
     marginTop: '48px',
+    marginBottom: '24px',
   },
 })
 

@@ -173,13 +173,13 @@ CREATE TABLE `builds`
 
 CREATE TABLE `artifacts`
 (
-    `id`         CHAR(22)    NOT NULL COMMENT '生成物ID',
-    `size`       BIGINT(20)  NOT NULL COMMENT '生成物ファイルサイズ(tar)',
-    `created_at` DATETIME(6) NOT NULL COMMENT '作成日時',
+    `id`         CHAR(22)      NOT NULL COMMENT '成果物ID',
+    `name`       VARCHAR(1000) NOT NULL COMMENT '成果物名',
+    `size`       BIGINT(20)    NOT NULL COMMENT '成果物ファイルサイズ',
+    `created_at` DATETIME(6)   NOT NULL COMMENT '作成日時',
     `deleted_at` DATETIME(6) DEFAULT NULL COMMENT '削除日時',
-    `build_id`   VARCHAR(22) NOT NULL COMMENT 'ビルドID',
+    `build_id`   VARCHAR(22)   NOT NULL COMMENT 'ビルドID',
     PRIMARY KEY (`id`),
-    UNIQUE KEY `build_id` (`build_id`),
     CONSTRAINT `fk_artifacts_build_id` FOREIGN KEY (`build_id`) REFERENCES `builds` (`id`)
 ) ENGINE = InnoDB
   DEFAULT CHARSET = utf8mb4

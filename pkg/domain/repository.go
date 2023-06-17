@@ -86,6 +86,7 @@ type UpdateArtifactArgs struct {
 }
 
 type ArtifactRepository interface {
+	GetArtifact(ctx context.Context, id string) (*Artifact, error)
 	GetArtifacts(ctx context.Context, cond GetArtifactCondition) ([]*Artifact, error)
 	CreateArtifact(ctx context.Context, artifact *Artifact) error
 	UpdateArtifact(ctx context.Context, id string, args UpdateArtifactArgs) error

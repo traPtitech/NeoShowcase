@@ -3,6 +3,7 @@ package repoconvert
 import (
 	"github.com/traPtitech/neoshowcase/pkg/domain"
 	"github.com/traPtitech/neoshowcase/pkg/infrastructure/repository/models"
+	"github.com/traPtitech/neoshowcase/pkg/util/ds"
 	"github.com/traPtitech/neoshowcase/pkg/util/mapper"
 	"github.com/traPtitech/neoshowcase/pkg/util/optional"
 )
@@ -41,9 +42,7 @@ func ToDomainBuild(build *models.Build) *domain.Build {
 		UpdatedAt:     optional.FromTime(build.UpdatedAt),
 		FinishedAt:    optional.FromTime(build.FinishedAt),
 		Retriable:     build.Retriable,
-	}
-	if build.R != nil && build.R.Artifact != nil {
-		ret.Artifact = optional.From(*ToDomainArtifact(build.R.Artifact))
+		Artifacts:     ds.Map(build.R.Artifacts, ToDomainArtifact),
 	}
 	return ret
 }

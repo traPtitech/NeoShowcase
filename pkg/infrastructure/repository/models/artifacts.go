@@ -23,9 +23,11 @@ import (
 )
 
 // Artifact is an object representing the database table.
-type Artifact struct { // 生成物ID
+type Artifact struct { // 成果物ID
 	ID string `boil:"id" json:"id" toml:"id" yaml:"id"`
-	// 生成物ファイルサイズ(tar)
+	// 成果物名
+	Name string `boil:"name" json:"name" toml:"name" yaml:"name"`
+	// 成果物ファイルサイズ
 	Size int64 `boil:"size" json:"size" toml:"size" yaml:"size"`
 	// 作成日時
 	CreatedAt time.Time `boil:"created_at" json:"created_at" toml:"created_at" yaml:"created_at"`
@@ -40,12 +42,14 @@ type Artifact struct { // 生成物ID
 
 var ArtifactColumns = struct {
 	ID        string
+	Name      string
 	Size      string
 	CreatedAt string
 	DeletedAt string
 	BuildID   string
 }{
 	ID:        "id",
+	Name:      "name",
 	Size:      "size",
 	CreatedAt: "created_at",
 	DeletedAt: "deleted_at",
@@ -54,12 +58,14 @@ var ArtifactColumns = struct {
 
 var ArtifactTableColumns = struct {
 	ID        string
+	Name      string
 	Size      string
 	CreatedAt string
 	DeletedAt string
 	BuildID   string
 }{
 	ID:        "artifacts.id",
+	Name:      "artifacts.name",
 	Size:      "artifacts.size",
 	CreatedAt: "artifacts.created_at",
 	DeletedAt: "artifacts.deleted_at",
@@ -117,12 +123,14 @@ func (w whereHelpernull_Time) IsNotNull() qm.QueryMod { return qmhelper.WhereIsN
 
 var ArtifactWhere = struct {
 	ID        whereHelperstring
+	Name      whereHelperstring
 	Size      whereHelperint64
 	CreatedAt whereHelpertime_Time
 	DeletedAt whereHelpernull_Time
 	BuildID   whereHelperstring
 }{
 	ID:        whereHelperstring{field: "`artifacts`.`id`"},
+	Name:      whereHelperstring{field: "`artifacts`.`name`"},
 	Size:      whereHelperint64{field: "`artifacts`.`size`"},
 	CreatedAt: whereHelpertime_Time{field: "`artifacts`.`created_at`"},
 	DeletedAt: whereHelpernull_Time{field: "`artifacts`.`deleted_at`"},
@@ -157,8 +165,8 @@ func (r *artifactR) GetBuild() *Build {
 type artifactL struct{}
 
 var (
-	artifactAllColumns            = []string{"id", "size", "created_at", "deleted_at", "build_id"}
-	artifactColumnsWithoutDefault = []string{"id", "size", "created_at", "deleted_at", "build_id"}
+	artifactAllColumns            = []string{"id", "name", "size", "created_at", "deleted_at", "build_id"}
+	artifactColumnsWithoutDefault = []string{"id", "name", "size", "created_at", "deleted_at", "build_id"}
 	artifactColumnsWithDefault    = []string{}
 	artifactPrimaryKeyColumns     = []string{"id"}
 	artifactGeneratedColumns      = []string{}
@@ -553,7 +561,7 @@ func (artifactL) LoadBuild(ctx context.Context, e boil.ContextExecutor, singular
 		if foreign.R == nil {
 			foreign.R = &buildR{}
 		}
-		foreign.R.Artifact = object
+		foreign.R.Artifacts = append(foreign.R.Artifacts, object)
 		return nil
 	}
 
@@ -564,7 +572,7 @@ func (artifactL) LoadBuild(ctx context.Context, e boil.ContextExecutor, singular
 				if foreign.R == nil {
 					foreign.R = &buildR{}
 				}
-				foreign.R.Artifact = local
+				foreign.R.Artifacts = append(foreign.R.Artifacts, local)
 				break
 			}
 		}
@@ -575,7 +583,7 @@ func (artifactL) LoadBuild(ctx context.Context, e boil.ContextExecutor, singular
 
 // SetBuild of the artifact to the related item.
 // Sets o.R.Build to related.
-// Adds o to related.R.Artifact.
+// Adds o to related.R.Artifacts.
 func (o *Artifact) SetBuild(ctx context.Context, exec boil.ContextExecutor, insert bool, related *Build) error {
 	var err error
 	if insert {
@@ -611,10 +619,10 @@ func (o *Artifact) SetBuild(ctx context.Context, exec boil.ContextExecutor, inse
 
 	if related.R == nil {
 		related.R = &buildR{
-			Artifact: o,
+			Artifacts: ArtifactSlice{o},
 		}
 	} else {
-		related.R.Artifact = o
+		related.R.Artifacts = append(related.R.Artifacts, o)
 	}
 
 	return nil
@@ -893,7 +901,6 @@ func (o ArtifactSlice) UpdateAll(ctx context.Context, exec boil.ContextExecutor,
 
 var mySQLArtifactUniqueColumns = []string{
 	"id",
-	"build_id",
 }
 
 // Upsert attempts an insert using an executor, and does an update or ignore on conflict.

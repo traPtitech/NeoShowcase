@@ -61,7 +61,7 @@ CREATE TABLE `builds` (
 ```mermaid
 erDiagram
 
-"artifacts" |o--|| "builds" : "FOREIGN KEY (build_id) REFERENCES builds (id)"
+"artifacts" }o--|| "builds" : "FOREIGN KEY (build_id) REFERENCES builds (id)"
 "builds" }o--|| "applications" : "FOREIGN KEY (application_id) REFERENCES applications (id)"
 
 "builds" {
@@ -77,6 +77,7 @@ erDiagram
 }
 "artifacts" {
   char_22_ id PK
+  varchar_1000_ name
   bigint_20_ size
   datetime_6_ created_at
   datetime_6_ deleted_at
