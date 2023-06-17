@@ -97,7 +97,7 @@ export const WebsiteSetting = (props: WebsiteSettingProps) => {
           <InputBar
             placeholder='80'
             type='number'
-            value={props.website.httpPort}
+            value={props.website.httpPort || ''}
             onChange={(e) => props.setWebsite('httpPort', +e.target.value)}
           />
         </div>
@@ -118,6 +118,16 @@ export const WebsiteSetting = (props: WebsiteSettingProps) => {
     </FormSettings>
   )
 }
+
+const newWebsite = (): PlainMessage<CreateWebsiteRequest> => ({
+  fqdn: '',
+  pathPrefix: '/',
+  stripPrefix: false,
+  https: false,
+  h2c: false,
+  httpPort: 0,
+  authentication: AuthenticationType.OFF,
+})
 
 interface WebsiteSettingsProps {
   runtime: boolean
@@ -145,20 +155,7 @@ export const WebsiteSettings = (props: WebsiteSettingsProps) => {
 
       <FormButton>
         <Button
-          onclick={() => {
-            props.setWebsiteConfigs([
-              ...props.websiteConfigs,
-              {
-                fqdn: '',
-                pathPrefix: '/',
-                stripPrefix: false,
-                https: false,
-                h2c: false,
-                httpPort: 0,
-                authentication: AuthenticationType.OFF,
-              },
-            ])
-          }}
+          onclick={() => props.setWebsiteConfigs([...props.websiteConfigs, newWebsite()])}
           color='black1'
           size='large'
           width='auto'

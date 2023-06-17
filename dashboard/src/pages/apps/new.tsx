@@ -1,7 +1,13 @@
 import { Header } from '/@/components/Header'
 import { createResource, JSX, Show } from 'solid-js'
 import { client } from '/@/libs/api'
-import { CreateApplicationRequest, CreateWebsiteRequest, PortPublication } from '/@/api/neoshowcase/protobuf/gateway_pb'
+import {
+  ApplicationConfig,
+  CreateApplicationRequest,
+  CreateWebsiteRequest,
+  PortPublication,
+  RuntimeConfig,
+} from '/@/api/neoshowcase/protobuf/gateway_pb'
 import { A, useNavigate, useSearchParams } from '@solidjs/router'
 import { BsArrowLeftShort } from 'solid-icons/bs'
 import { Container } from '/@/libs/layout'
@@ -17,7 +23,7 @@ import { InputBar, InputLabel } from '/@/components/Input'
 import { FormCheckBox, FormTextBig } from '/@/components/AppsNew'
 import { WebsiteSettings } from '/@/components/WebsiteSettings'
 import { PortPublicationSettings } from '/@/components/PortPublications'
-import { BuildConfig, BuildConfigMethod, BuildConfigs } from '/@/components/BuildConfigs'
+import { BuildConfigMethod, BuildConfigs } from '/@/components/BuildConfigs'
 import { PlainMessage } from '@bufbuild/protobuf'
 
 const AppTitle = styled('div', {
@@ -87,82 +93,27 @@ export default () => {
     (id) => client.getRepository({ repositoryId: id }),
   )
 
-  const [websiteConfigs, setWebsiteConfigs] = createStore<CreateWebsiteRequest[]>([])
-  const [portPublications, setPortPublications] = createStore<PortPublication[]>([])
-
-  // Build Config
-  const runtimeConfig = {
-    command: '',
-    entrypoint: '',
-    useMariadb: false,
-    useMongodb: false,
-  }
-  const [createApplicationRequest, setCreateApplicationRequest] = createStore<PlainMessage<CreateApplicationRequest>>({
+  const [buildConfig, setBuildConfig] = createStore<PlainMessage<ApplicationConfig>['buildConfig']>({
+    case: 'runtimeBuildpack',
+    value: {
+      context: '',
+      runtimeConfig: structuredClone(new RuntimeConfig()),
+    },
+  })
+  const [websites, setWebsites] = createStore<PlainMessage<CreateWebsiteRequest>[]>([])
+  const [ports, setPorts] = createStore<PlainMessage<PortPublication>[]>([])
+  const [request, setRequest] = createStore<PlainMessage<CreateApplicationRequest>>({
     name: '',
-    portPublications: [],
     refName: '',
-    repositoryId: '',
-    websites: [],
+    repositoryId: searchParams.repositoryID,
+    config: { buildConfig },
+    websites: websites,
+    portPublications: ports,
     startOnCreate: false,
-    config: {
-      buildConfig: {
-        case: 'runtimeBuildpack',
-        value: {
-          context: '',
-          runtimeConfig: runtimeConfig,
-        },
-      },
-    },
   })
 
-  const [buildConfig, setBuildConfig] = createStore<BuildConfig>({
-    runtimeBuildpack: {
-      case: 'runtimeBuildpack',
-      value: {
-        context: '',
-        runtimeConfig: runtimeConfig,
-      },
-    },
-    runtimeCmd: {
-      case: 'runtimeCmd',
-      value: {
-        baseImage: '',
-        buildCmd: '',
-        buildCmdShell: false,
-        runtimeConfig: runtimeConfig,
-      },
-    },
-    runtimeDockerfile: {
-      case: 'runtimeDockerfile',
-      value: {
-        context: '',
-        dockerfileName: '',
-        runtimeConfig: runtimeConfig,
-      },
-    },
-    staticCmd: {
-      case: 'staticCmd',
-      value: {
-        artifactPath: '',
-        baseImage: '',
-        buildCmd: '',
-        buildCmdShell: false,
-      },
-    },
-    staticDockerfile: {
-      case: 'staticDockerfile',
-      value: {
-        artifactPath: '',
-        context: '',
-        dockerfileName: '',
-      },
-    },
-    method: 'runtimeBuildpack',
-  })
   const isRuntime = () =>
-    (['runtimeBuildpack', 'runtimeCmd', 'runtimeDockerfile'] as BuildConfigMethod[]).includes(buildConfig.method)
-
-  setCreateApplicationRequest('repositoryId', searchParams.repositoryID)
+    (['runtimeBuildpack', 'runtimeCmd', 'runtimeDockerfile'] as BuildConfigMethod[]).includes(buildConfig.case)
 
   let formContainer: HTMLFormElement
 
@@ -175,11 +126,8 @@ export default () => {
       return
     }
 
-    setCreateApplicationRequest('config', 'buildConfig', buildConfig[buildConfig.method])
-    setCreateApplicationRequest('websites', websiteConfigs)
-    setCreateApplicationRequest('portPublications', portPublications)
     try {
-      const res = await client.createApplication(createApplicationRequest)
+      const res = await client.createApplication(request)
       toast.success('アプリケーションを登録しました')
       // Application詳細ページに遷移
       navigate(`/apps/${res.id}`)
@@ -205,8 +153,8 @@ export default () => {
               <InputLabel>Application Name</InputLabel>
               <InputBar
                 placeholder='my-app'
-                value={createApplicationRequest.name}
-                onInput={(e) => setCreateApplicationRequest('name', e.target.value)}
+                value={request.name}
+                onInput={(e) => setRequest('name', e.target.value)}
                 required
               />
             </div>
@@ -215,8 +163,8 @@ export default () => {
               <InputLabel>Branch Name</InputLabel>
               <InputBar
                 placeholder='main'
-                value={createApplicationRequest.refName}
-                onInput={(e) => setCreateApplicationRequest('refName', e.target.value)}
+                value={request.refName}
+                onInput={(e) => setRequest('refName', e.target.value)}
                 required
               />
             </div>
@@ -228,24 +176,20 @@ export default () => {
 
             <div>
               <FormTextBig>Website Setting</FormTextBig>
-              <WebsiteSettings
-                runtime={isRuntime()}
-                websiteConfigs={websiteConfigs}
-                setWebsiteConfigs={setWebsiteConfigs}
-              />
+              <WebsiteSettings runtime={isRuntime()} websiteConfigs={websites} setWebsiteConfigs={setWebsites} />
             </div>
 
             <div>
               <FormTextBig>Port Publication Setting</FormTextBig>
-              <PortPublicationSettings portPublications={portPublications} setPortPublications={setPortPublications} />
+              <PortPublicationSettings ports={ports} setPorts={setPorts} />
             </div>
 
             <div>
               <InputLabel>Start on Create</InputLabel>
               <FormCheckBox>
                 <Checkbox
-                  selected={createApplicationRequest.startOnCreate}
-                  setSelected={(selected) => setCreateApplicationRequest('startOnCreate', selected)}
+                  selected={request.startOnCreate}
+                  setSelected={(selected) => setRequest('startOnCreate', selected)}
                 >
                   今すぐ起動する
                 </Checkbox>

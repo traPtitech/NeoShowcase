@@ -88,23 +88,29 @@ const protocolItems: RadioItem<PortPublicationProtocol>[] = [
   { value: PortPublicationProtocol.UDP, title: 'UDP' },
 ]
 
+const newPort = (): PlainMessage<PortPublication> => ({
+  internetPort: 0,
+  applicationPort: 0,
+  protocol: PortPublicationProtocol.TCP,
+})
+
 interface PortPublicationSettingsProps {
-  portPublications: PlainMessage<PortPublication>[]
-  setPortPublications: SetStoreFunction<PlainMessage<PortPublication>[]>
+  ports: PlainMessage<PortPublication>[]
+  setPorts: SetStoreFunction<PlainMessage<PortPublication>[]>
 }
 
 export const PortPublicationSettings = (props: PortPublicationSettingsProps) => {
   return (
     <SettingsContainer>
-      <For each={props.portPublications}>
+      <For each={props.ports}>
         {(portPublication, i) => (
           <PortPublications
             portPublication={portPublication}
             setPortPublication={(valueName, value) => {
-              props.setPortPublications(i(), valueName, value)
+              props.setPorts(i(), valueName, value)
             }}
             deletePortPublication={() =>
-              props.setPortPublications((current) => [...current.slice(0, i()), ...current.slice(i() + 1)])
+              props.setPorts((current) => [...current.slice(0, i()), ...current.slice(i() + 1)])
             }
           />
         )}
@@ -112,16 +118,7 @@ export const PortPublicationSettings = (props: PortPublicationSettingsProps) => 
 
       <FormButton>
         <Button
-          onclick={() => {
-            props.setPortPublications([
-              ...props.portPublications,
-              {
-                internetPort: 0,
-                applicationPort: 0,
-                protocol: PortPublicationProtocol.TCP,
-              },
-            ])
-          }}
+          onclick={() => props.setPorts([...props.ports, newPort()])}
           color='black1'
           size='large'
           width='auto'
