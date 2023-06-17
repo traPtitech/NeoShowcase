@@ -16,7 +16,7 @@ import { styled } from '@macaron-css/solid'
 import { vars } from '/@/theme'
 import { Container } from '/@/libs/layout'
 import { Button } from '/@/components/Button'
-import { A } from '@solidjs/router'
+import { useNavigate } from '@solidjs/router'
 import Fuse from 'fuse.js'
 import { unique } from '/@/libs/unique'
 
@@ -163,6 +163,8 @@ const allStatuses = [
 ]
 
 export default () => {
+  const navigate = useNavigate()
+
   const [statuses, setStatuses] = createSignal([...allStatuses])
   const checkStatus = (status: ApplicationState, checked: boolean) => {
     if (checked) {
@@ -254,11 +256,9 @@ export default () => {
           <MainContainer>
             <SearchBarContainer>
               <SearchBar value={query()} onInput={(e) => setQuery(e.target.value)} placeholder='Search...' />
-              <A href='/repos/new'>
-                <Button color='black1' size='large' width='full'>
-                  + New Repository
-                </Button>
-              </A>
+              <Button color='black1' size='large' width='full' onclick={() => navigate('/repos/new')}>
+                + New Repository
+              </Button>
             </SearchBarContainer>
             <RepositoriesContainer>
               <For each={filteredRepos()}>{(r) => <RepositoryRow repo={r.repo} apps={r.apps} />}</For>
