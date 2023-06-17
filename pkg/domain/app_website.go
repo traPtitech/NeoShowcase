@@ -20,7 +20,8 @@ func ValidateDomain(domain string) error {
 	if strings.HasPrefix(domain, ".") {
 		return errors.Errorf("leading dot not allowed in domain %v", domain)
 	}
-	_, err := idna.Lookup.ToUnicode(domain)
+	// allow underscore
+	_, err := idna.Lookup.ToUnicode(strings.ReplaceAll(domain, "_", "-"))
 	if err != nil {
 		return errors.Wrap(err, fmt.Sprintf("invalid domain %v", domain))
 	}
