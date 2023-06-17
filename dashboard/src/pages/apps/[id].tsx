@@ -1,5 +1,5 @@
 import { A, useNavigate, useParams } from '@solidjs/router'
-import { createEffect, createResource, createSignal, For, onCleanup, Ref, Show } from 'solid-js'
+import { Component, createEffect, createResource, createSignal, For, onCleanup, Ref, Show } from 'solid-js'
 import { client, handleAPIError, sshInfo } from '/@/libs/api'
 import { Header } from '/@/components/Header'
 import {
@@ -16,6 +16,7 @@ import {
   ApplicationConfig,
   DeployType,
   RuntimeConfig,
+  StaticConfig,
 } from '/@/api/neoshowcase/protobuf/gateway_pb'
 import { DiffHuman, shortSha } from '/@/libs/format'
 import { CenterInline, Container } from '/@/libs/layout'
@@ -40,12 +41,9 @@ import toast from 'solid-toast'
 import { styled } from '@macaron-css/solid'
 import { vars } from '/@/theme'
 import { toWithAnsi } from '/@/libs/buffers'
+import { unreachable } from '/@/libs/unreachable'
 
-interface RuntimeConfigInfoProps {
-  config: RuntimeConfig
-}
-
-const RuntimeConfigInfo = (props: RuntimeConfigInfoProps) => {
+const RuntimeConfigInfo: Component<{ config: RuntimeConfig }> = (props) => {
   return (
     <>
       <CardItem>
@@ -72,27 +70,33 @@ const RuntimeConfigInfo = (props: RuntimeConfigInfoProps) => {
   )
 }
 
-interface ApplicationConfigInfoProps {
-  config: ApplicationConfig
+const StaticConfigInfo: Component<{ config: StaticConfig }> = (props) => {
+  return (
+    <>
+      <CardItem>
+        <CardItemTitle>Artifact Path</CardItemTitle>
+        <CardItemContent>{props.config.artifactPath}</CardItemContent>
+      </CardItem>
+    </>
+  )
 }
 
-const ApplicationConfigInfo = (props: ApplicationConfigInfoProps) => {
+const ApplicationConfigInfo: Component<{ config: ApplicationConfig }> = (props) => {
   const c = props.config.buildConfig
   switch (c.case) {
     case 'runtimeBuildpack':
       return (
         <>
-          <RuntimeConfigInfo config={c.value.runtimeConfig} />
           <CardItem>
             <CardItemTitle>Context</CardItemTitle>
             <CardItemContent>{c.value.context}</CardItemContent>
           </CardItem>
+          <RuntimeConfigInfo config={c.value.runtimeConfig} />
         </>
       )
     case 'runtimeCmd':
       return (
         <>
-          <RuntimeConfigInfo config={c.value.runtimeConfig} />
           <CardItem>
             <CardItemTitle>Base Image</CardItemTitle>
             <CardItemContent>{c.value.baseImage || 'Scratch'}</CardItemContent>
@@ -103,16 +107,27 @@ const ApplicationConfigInfo = (props: ApplicationConfigInfoProps) => {
               <CardItemContent>{c.value.buildCmd}</CardItemContent>
             </CardItem>
           )}
+          <RuntimeConfigInfo config={c.value.runtimeConfig} />
         </>
       )
     case 'runtimeDockerfile':
       return (
         <>
-          <RuntimeConfigInfo config={c.value.runtimeConfig} />
           <CardItem>
             <CardItemTitle>Dockerfile</CardItemTitle>
             <CardItemContent>{c.value.dockerfileName}</CardItemContent>
           </CardItem>
+          <CardItem>
+            <CardItemTitle>Context</CardItemTitle>
+            <CardItemContent>{c.value.context}</CardItemContent>
+          </CardItem>
+          <RuntimeConfigInfo config={c.value.runtimeConfig} />
+        </>
+      )
+    case 'staticBuildpack':
+      return (
+        <>
+          <StaticConfigInfo config={c.value.staticConfig} />
           <CardItem>
             <CardItemTitle>Context</CardItemTitle>
             <CardItemContent>{c.value.context}</CardItemContent>
@@ -122,6 +137,7 @@ const ApplicationConfigInfo = (props: ApplicationConfigInfoProps) => {
     case 'staticCmd':
       return (
         <>
+          <StaticConfigInfo config={c.value.staticConfig} />
           <CardItem>
             <CardItemTitle>Base Image</CardItemTitle>
             <CardItemContent>{c.value.baseImage || 'Scratch'}</CardItemContent>
@@ -132,15 +148,12 @@ const ApplicationConfigInfo = (props: ApplicationConfigInfoProps) => {
               <CardItemContent>{c.value.buildCmd}</CardItemContent>
             </CardItem>
           )}
-          <CardItem>
-            <CardItemTitle>Artifact Path</CardItemTitle>
-            <CardItemContent>{c.value.artifactPath}</CardItemContent>
-          </CardItem>
         </>
       )
     case 'staticDockerfile':
       return (
         <>
+          <StaticConfigInfo config={c.value.staticConfig} />
           <CardItem>
             <CardItemTitle>Dockerfile</CardItemTitle>
             <CardItemContent>{c.value.dockerfileName}</CardItemContent>
@@ -149,13 +162,10 @@ const ApplicationConfigInfo = (props: ApplicationConfigInfoProps) => {
             <CardItemTitle>Context</CardItemTitle>
             <CardItemContent>{c.value.context}</CardItemContent>
           </CardItem>
-          <CardItem>
-            <CardItemTitle>Artifact Path</CardItemTitle>
-            <CardItemContent>{c.value.artifactPath}</CardItemContent>
-          </CardItem>
         </>
       )
   }
+  return unreachable(c)
 }
 
 const URLsContainer = styled('div', {
