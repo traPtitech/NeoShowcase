@@ -66,6 +66,7 @@ func NewService(
 			return nil
 		}
 		log.Infof("Started builds in %v", time.Since(start))
+		time.Sleep(1 * time.Second) // 1 second throttle between build checks to account for quick succession of repo checks
 		return nil
 	})
 	cd.doStartBuild = func() {

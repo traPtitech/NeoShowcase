@@ -9,4 +9,5 @@ root * /usr/share/caddy
 handle {
     file_server
     try_files {path} /index.html
+    precompressed br gzip
 }
