@@ -59,6 +59,17 @@ file_server @%v {
 }
 `
 
+// unityWebglCompressionHeader for Unity WebGL https://docs.unity3d.com/Manual/webgl-deploying.html
+const unityWebglCompressionHeader = `@gzip-suffix {
+	path *.gz
+}
+@br-suffix {
+	path *.br
+}
+header @gzip-suffix Content-Encoding gzip
+header @br-suffix Content-Encoding br
+`
+
 func (s *server) Reconcile(sites []*domain.StaticSite) error {
 	var b bytes.Buffer
 	b.WriteString(":80 {\n")
@@ -85,6 +96,7 @@ func (s *server) Reconcile(sites []*domain.StaticSite) error {
 			))
 		}
 	}
+	b.WriteString(unityWebglCompressionHeader)
 	b.WriteString("}\n")
 	return s.postConfig(b.Bytes())
 }
