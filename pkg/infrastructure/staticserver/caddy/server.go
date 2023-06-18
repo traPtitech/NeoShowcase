@@ -66,8 +66,16 @@ const unityWebglCompressionHeader = `@gzip-suffix {
 @br-suffix {
 	path *.br
 }
+@js-comp-suffix {
+	path *.js.gz *.js.br
+}
+@wasm-comp-suffix {
+	path *.wasm.gz *.wasm.br
+}
 header @gzip-suffix Content-Encoding gzip
 header @br-suffix Content-Encoding br
+header @js-comp-suffix Content-Type application/javascript
+header @wasm-comp-suffix Content-Type application/wasm
 `
 
 func (s *server) Reconcile(sites []*domain.StaticSite) error {
