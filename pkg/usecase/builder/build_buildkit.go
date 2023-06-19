@@ -27,8 +27,7 @@ import (
 )
 
 const (
-	buildScriptName   = "neoshowcase_internal_build.sh"
-	tmpDockerfileName = "neoshowcase_internal_dockerfile"
+	buildScriptName = "neoshowcase_internal_build.sh"
 )
 
 func withBuildkitProgress(ctx context.Context, logger io.Writer, buildFn func(ctx context.Context, ch chan *buildkit.SolveStatus) error) error {
@@ -129,11 +128,18 @@ func (s *builderService) buildRuntimeCmd(
 		}
 	}
 
-	err = createFile(filepath.Join(st.repositoryTempDir, tmpDockerfileName), dockerfile.String())
+	b, _, _, err := dockerfile2llb.Dockerfile2LLB(ctx, dockerfile.Bytes(), dockerfile2llb.ConvertOpt{
+		BuildArgs: env,
+	})
 	if err != nil {
 		return err
 	}
-	_, err = s.buildkit.Solve(ctx, nil, buildkit.SolveOpt{
+	def, err := b.Marshal(ctx)
+	if err != nil {
+		return err
+	}
+
+	_, err = s.buildkit.Solve(ctx, def, buildkit.SolveOpt{
 		Exports: []buildkit.ExportEntry{{
 			Type: buildkit.ExporterImage,
 			Attrs: map[string]string{
@@ -142,14 +148,8 @@ func (s *builderService) buildRuntimeCmd(
 			},
 		}},
 		LocalDirs: map[string]string{
-			"context":    st.repositoryTempDir,
-			"dockerfile": st.repositoryTempDir,
+			"context": st.repositoryTempDir,
 		},
-		Frontend: "dockerfile.v0",
-		FrontendAttrs: ds.MergeMap(
-			map[string]string{"filename": tmpDockerfileName},
-			appEnvAttributes(env),
-		),
 		Session: s.authSessions(),
 	}, ch)
 	return err
