@@ -43,8 +43,9 @@ func New(c2 Config) (*Server, error) {
 	applicationRepository := repository.NewApplicationRepository(db)
 	artifactRepository := repository.NewArtifactRepository(db)
 	buildRepository := repository.NewBuildRepository(db)
+	environmentRepository := repository.NewEnvironmentRepository(db)
 	gitRepositoryRepository := repository.NewGitRepositoryRepository(db)
-	service, err := builder.NewService(controllerBuilderServiceClient, client, buildpackBackend, storage, publicKeys, imageConfig, applicationRepository, artifactRepository, buildRepository, gitRepositoryRepository)
+	service, err := builder.NewService(controllerBuilderServiceClient, client, buildpackBackend, storage, publicKeys, imageConfig, applicationRepository, artifactRepository, buildRepository, environmentRepository, gitRepositoryRepository)
 	if err != nil {
 		return nil, err
 	}

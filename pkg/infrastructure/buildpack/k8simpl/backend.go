@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"os"
 	"os/exec"
 	"path/filepath"
 	"strings"
@@ -21,6 +22,7 @@ import (
 
 	"github.com/traPtitech/neoshowcase/pkg/domain"
 	"github.com/traPtitech/neoshowcase/pkg/domain/builder"
+	"github.com/traPtitech/neoshowcase/pkg/util/ds"
 )
 
 type k8sBackend struct {
@@ -121,26 +123,61 @@ func (k *k8sBackend) exec(ctx context.Context, workDir string, cmd string, env m
 	return nil
 }
 
-func (k *k8sBackend) Pack(ctx context.Context, repoDir string, logWriter io.Writer, imageDest string) (path string, err error) {
-	tmpID := domain.NewID()
-	dstRepoPath := fmt.Sprintf("repo-%s", tmpID)
-	localDstPath := filepath.Join(k.config.LocalDir, dstRepoPath)
-	remoteDstPath := filepath.Join(k.config.RemoteDir, dstRepoPath)
-
-	err = exec.CommandContext(ctx, "cp", "-r", repoDir, localDstPath).Run()
+func (k *k8sBackend) prepareDir(ctx context.Context, localName, remoteName string) (remotePath string, cleanup func(), err error) {
+	localVolumePath := filepath.Join(k.config.LocalDir, remoteName)
+	remotePath = filepath.Join(k.config.RemoteDir, remoteName)
+	err = exec.CommandContext(ctx, "cp", "-r", localName, localVolumePath).Run()
 	if err != nil {
-		return "", errors.Wrap(err, "copying repo dir")
+		return "", nil, errors.Wrap(err, "copying files")
 	}
-	defer func() {
-		err := exec.Command("rm", "-r", localDstPath).Run()
+	cleanup = func() {
+		err := exec.Command("rm", "-r", localVolumePath).Run()
 		if err != nil {
-			log.Errorf("failed to rm repo dir: %+v", err)
+			log.Errorf("failed to rm tmp dir: %+v", err)
 		}
-	}()
-	err = exec.CommandContext(ctx, "chown", "-R", fmt.Sprintf("%d:%d", k.config.User, k.config.Group), localDstPath).Run()
-	if err != nil {
-		return "", errors.Wrap(err, "setting repo owner")
 	}
+
+	err = exec.CommandContext(ctx, "chown", "-R", fmt.Sprintf("%d:%d", k.config.User, k.config.Group), localVolumePath).Run()
+	if err != nil {
+		cleanup()
+		return "", nil, errors.Wrap(err, "setting remote dir owner")
+	}
+	return remotePath, cleanup, nil
+}
+
+func (k *k8sBackend) Pack(
+	ctx context.Context,
+	repoDir string,
+	imageDest string,
+	env map[string]string,
+	logWriter io.Writer,
+) (path string, err error) {
+	remoteRepoPath, cleanupRepoDir, err := k.prepareDir(ctx, repoDir, fmt.Sprintf("repo-%s", domain.NewID()))
+	if err != nil {
+		return "", err
+	}
+	defer cleanupRepoDir()
+
+	localEnvTmp, err := os.MkdirTemp("", "env-")
+	if err != nil {
+		return "", errors.Wrap(err, "creating env temp dir")
+	}
+	defer os.RemoveAll(localEnvTmp)
+	err = os.Mkdir(filepath.Join(localEnvTmp, "env"), 0700)
+	if err != nil {
+		return "", errors.Wrap(err, "creating platform env dir")
+	}
+	for k, v := range env {
+		err = os.WriteFile(filepath.Join(localEnvTmp, "env", k), []byte(v), 0600)
+		if err != nil {
+			return "", errors.Wrap(err, "creating env file")
+		}
+	}
+	remoteEnvPath, cleanupEnvDir, err := k.prepareDir(ctx, localEnvTmp, fmt.Sprintf("env-%s", domain.NewID()))
+	if err != nil {
+		return "", err
+	}
+	defer cleanupEnvDir()
 
 	// TODO: support pushing to insecure registry for local development
 	// https://github.com/buildpacks/lifecycle/issues/524
@@ -148,12 +185,12 @@ func (k *k8sBackend) Pack(ctx context.Context, repoDir string, logWriter io.Writ
 	// Workaround: use registry host "*.local" to allow google/go-containerregistry to detect as http protocol
 	// see: https://github.com/traPtitech/NeoShowcase/issues/493
 	err = k.exec(ctx,
-		remoteDstPath,
-		fmt.Sprintf("/cnb/lifecycle/creator -skip-restore -app=. %s", imageDest),
-		map[string]string{"CNB_PLATFORM_API": k.config.PlatformAPI},
+		remoteRepoPath,
+		fmt.Sprintf("/cnb/lifecycle/creator -skip-restore -platform=%s -app=. %s", remoteEnvPath, imageDest),
+		ds.MergeMap(env, map[string]string{"CNB_PLATFORM_API": k.config.PlatformAPI}),
 		logWriter, logWriter)
 	if err != nil {
 		return "", err
 	}
-	return remoteDstPath, nil
+	return remoteRepoPath, nil
 }

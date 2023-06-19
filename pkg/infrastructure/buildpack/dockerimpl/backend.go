@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"os"
 	"path/filepath"
 	"strings"
 
@@ -19,6 +20,7 @@ import (
 
 	"github.com/traPtitech/neoshowcase/pkg/domain"
 	"github.com/traPtitech/neoshowcase/pkg/domain/builder"
+	"github.com/traPtitech/neoshowcase/pkg/util/ds"
 	"github.com/traPtitech/neoshowcase/pkg/util/tarfs"
 )
 
@@ -131,28 +133,65 @@ func (d *dockerBackend) _exec(ctx context.Context, root bool, workDir string, cm
 	return nil
 }
 
-func (d *dockerBackend) Pack(ctx context.Context, repoDir string, logWriter io.Writer, imageDest string) (path string, err error) {
-	dstRepoPath := fmt.Sprintf("repo-%s", domain.NewID())
-	remoteDstPath := filepath.Join(d.config.RemoteDir, dstRepoPath)
-
-	err = d.exec(ctx, d.config.RemoteDir, []string{"mkdir", dstRepoPath}, nil, io.Discard, io.Discard)
+func (d *dockerBackend) prepareDir(ctx context.Context, localName, remoteName string) (remotePath string, cleanup func(), err error) {
+	remotePath = filepath.Join(d.config.RemoteDir, remoteName)
+	err = d.exec(ctx, d.config.RemoteDir, []string{"mkdir", remotePath}, nil, io.Discard, io.Discard)
 	if err != nil {
-		return "", errors.Wrap(err, "making remote repo tmp dir")
+		return "", nil, errors.Wrap(err, "making remote tmp dir")
 	}
-	err = d.c.CopyToContainer(ctx, d.config.ContainerName, remoteDstPath, tarfs.Compress(repoDir), types.CopyToContainerOptions{})
-	if err != nil {
-		return "", errors.Wrap(err, "copying file to container")
-	}
-	err = d.execRoot(ctx, d.config.RemoteDir, []string{"chown", "-R", d.config.User + ":" + d.config.Group, dstRepoPath}, nil, io.Discard, io.Discard)
-	if err != nil {
-		return "", errors.Wrap(err, "setting remote repo owner")
-	}
-	defer func() {
-		err := d.exec(context.Background(), d.config.RemoteDir, []string{"rm", "-r", dstRepoPath}, nil, io.Discard, io.Discard)
+	cleanup = func() {
+		err := d.exec(context.Background(), d.config.RemoteDir, []string{"rm", "-r", remotePath}, nil, io.Discard, io.Discard)
 		if err != nil {
-			log.Errorf("failed to remove remote repo dir: %+v", err)
+			log.Errorf("failed to remove tmp repo dir: %+v", err)
 		}
-	}()
+	}
+
+	err = d.c.CopyToContainer(ctx, d.config.ContainerName, remotePath, tarfs.Compress(localName), types.CopyToContainerOptions{})
+	if err != nil {
+		cleanup()
+		return "", nil, errors.Wrap(err, "copying files to container")
+	}
+	err = d.execRoot(ctx, d.config.RemoteDir, []string{"chown", "-R", d.config.User + ":" + d.config.Group, remotePath}, nil, io.Discard, io.Discard)
+	if err != nil {
+		cleanup()
+		return "", nil, errors.Wrap(err, "setting remote dir owner")
+	}
+	return remotePath, cleanup, nil
+}
+
+func (d *dockerBackend) Pack(
+	ctx context.Context,
+	repoDir string,
+	imageDest string,
+	env map[string]string,
+	logWriter io.Writer,
+) (path string, err error) {
+	remoteRepoPath, cleanupRepoDir, err := d.prepareDir(ctx, repoDir, fmt.Sprintf("repo-%s", domain.NewID()))
+	if err != nil {
+		return "", err
+	}
+	defer cleanupRepoDir()
+
+	localEnvTmp, err := os.MkdirTemp("", "env-")
+	if err != nil {
+		return "", errors.Wrap(err, "creating env temp dir")
+	}
+	defer os.RemoveAll(localEnvTmp)
+	err = os.Mkdir(filepath.Join(localEnvTmp, "env"), 0700)
+	if err != nil {
+		return "", errors.Wrap(err, "creating platform env dir")
+	}
+	for k, v := range env {
+		err = os.WriteFile(filepath.Join(localEnvTmp, "env", k), []byte(v), 0600)
+		if err != nil {
+			return "", errors.Wrap(err, "creating env file")
+		}
+	}
+	remoteEnvPath, cleanupEnvDir, err := d.prepareDir(ctx, localEnvTmp, fmt.Sprintf("env-%s", domain.NewID()))
+	if err != nil {
+		return "", err
+	}
+	defer cleanupEnvDir()
 
 	// TODO: support pushing to insecure registry for local development
 	// https://github.com/buildpacks/lifecycle/issues/524
@@ -160,12 +199,12 @@ func (d *dockerBackend) Pack(ctx context.Context, repoDir string, logWriter io.W
 	// Workaround: use registry host "*.local" to allow google/go-containerregistry to detect as http protocol
 	// see: https://github.com/traPtitech/NeoShowcase/issues/493
 	err = d.exec(ctx,
-		remoteDstPath,
-		[]string{"/cnb/lifecycle/creator", "-skip-restore", "-app=.", imageDest},
-		map[string]string{"CNB_PLATFORM_API": d.config.PlatformAPI},
+		remoteRepoPath,
+		[]string{"/cnb/lifecycle/creator", "-skip-restore", "-platform=" + remoteEnvPath, "-app=.", imageDest},
+		ds.MergeMap(env, map[string]string{"CNB_PLATFORM_API": d.config.PlatformAPI}),
 		logWriter, logWriter)
 	if err != nil {
 		return "", err
 	}
-	return remoteDstPath, nil
+	return remoteRepoPath, nil
 }

@@ -8,12 +8,14 @@ import (
 	"github.com/go-git/go-git/v5/plumbing/transport/ssh"
 	"github.com/heroku/docker-registry-client/registry"
 	buildkit "github.com/moby/buildkit/client"
+	"github.com/samber/lo"
 	log "github.com/sirupsen/logrus"
 
 	"github.com/traPtitech/neoshowcase/pkg/domain"
 	"github.com/traPtitech/neoshowcase/pkg/domain/builder"
 	"github.com/traPtitech/neoshowcase/pkg/infrastructure/grpc/pb"
 	"github.com/traPtitech/neoshowcase/pkg/util/loop"
+	"github.com/traPtitech/neoshowcase/pkg/util/optional"
 	"github.com/traPtitech/neoshowcase/pkg/util/retry"
 )
 
@@ -34,6 +36,7 @@ type builderService struct {
 	appRepo      domain.ApplicationRepository
 	artifactRepo domain.ArtifactRepository
 	buildRepo    domain.BuildRepository
+	envRepo      domain.EnvironmentRepository
 	gitRepo      domain.GitRepositoryRepository
 
 	state       *state
@@ -53,6 +56,7 @@ func NewService(
 	appRepo domain.ApplicationRepository,
 	artifactRepo domain.ArtifactRepository,
 	buildRepo domain.BuildRepository,
+	envRepo domain.EnvironmentRepository,
 	gitRepo domain.GitRepositoryRepository,
 ) (Service, error) {
 	r, err := config.NewRegistry()
@@ -69,6 +73,7 @@ func NewService(
 		appRepo:      appRepo,
 		artifactRepo: artifactRepo,
 		buildRepo:    buildRepo,
+		envRepo:      envRepo,
 		gitRepo:      gitRepo,
 		registry:     r,
 	}, nil
@@ -80,6 +85,14 @@ func (s *builderService) destImage(app *domain.Application, build *domain.Build)
 
 func (s *builderService) tmpDestImage(app *domain.Application, build *domain.Build) string {
 	return s.config.TmpImageName(app.ID) + ":" + build.Commit
+}
+
+func (s *builderService) appEnv(ctx context.Context, app *domain.Application) (map[string]string, error) {
+	env, err := s.envRepo.GetEnv(ctx, domain.GetEnvCondition{ApplicationID: optional.From(app.ID)})
+	if err != nil {
+		return nil, err
+	}
+	return lo.SliceToMap(env, (*domain.Environment).GetKV), nil
 }
 
 func (s *builderService) Start(_ context.Context) error {
