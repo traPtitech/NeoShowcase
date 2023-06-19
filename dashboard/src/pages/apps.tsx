@@ -1,6 +1,6 @@
 import { Header } from '/@/components/Header'
 import { Checkbox } from '/@/components/Checkbox'
-import { createMemo, createResource, createSignal, For, Show } from 'solid-js'
+import { createMemo, createResource, For, Show } from 'solid-js'
 import { Radio, RadioItem } from '/@/components/Radio'
 import { client, user } from '/@/libs/api'
 import {
@@ -19,6 +19,7 @@ import { Button } from '/@/components/Button'
 import { useNavigate } from '@solidjs/router'
 import Fuse from 'fuse.js'
 import { unique } from '/@/libs/unique'
+import { createLocalSignal } from '/@/libs/localStore'
 
 const sortItems: RadioItem<'asc' | 'desc'>[] = [
   { value: 'desc', title: '最新順' },
@@ -165,7 +166,7 @@ const allStatuses = [
 export default () => {
   const navigate = useNavigate()
 
-  const [statuses, setStatuses] = createSignal([...allStatuses])
+  const [statuses, setStatuses] = createLocalSignal('apps-statuses', [...allStatuses])
   const checkStatus = (status: ApplicationState, checked: boolean) => {
     if (checked) {
       setStatuses((statuses) => unique([status, ...statuses]))
@@ -174,13 +175,13 @@ export default () => {
     }
   }
 
-  const [scope, setScope] = createSignal(GetRepositoriesRequest_Scope.MINE)
+  const [scope, setScope] = createLocalSignal('apps-scope', GetRepositoriesRequest_Scope.MINE)
   const appScope = () => {
     const mine = scope() === GetRepositoriesRequest_Scope.MINE
     return mine ? GetApplicationsRequest_Scope.MINE : GetApplicationsRequest_Scope.ALL
   }
-  const [query, setQuery] = createSignal('')
-  const [sort, setSort] = createSignal(sortItems[0].value)
+  const [query, setQuery] = createLocalSignal('apps-query', '')
+  const [sort, setSort] = createLocalSignal('apps-sort', sortItems[0].value)
 
   const [repos] = createResource(
     () => scope(),
