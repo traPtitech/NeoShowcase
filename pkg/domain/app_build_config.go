@@ -40,15 +40,25 @@ func ParseArgs(s string) ([]string, error) {
 	if s == "" {
 		return nil, nil
 	}
-	return shellwords.Parse(s)
+	p := shellwords.NewParser()
+	args, err := p.Parse(s)
+	if err != nil {
+		return nil, err
+	}
+	// Fast simple check: input was simple one line command
+	if p.Position == -1 {
+		return args, nil
+	} else {
+		return []string{"sh", "-c", s}, nil
+	}
 }
 
 func (rc *RuntimeConfig) Validate() error {
 	if _, err := ParseArgs(rc.Entrypoint); err != nil {
-		return errors.Wrap(err, "invalid entrypoint")
+		return errors.Wrap(err, "entrypoint")
 	}
 	if _, err := ParseArgs(rc.Command); err != nil {
-		return errors.Wrap(err, "invalid command")
+		return errors.Wrap(err, "command")
 	}
 	return nil
 }
