@@ -3,6 +3,8 @@ package builder
 import (
 	"context"
 	"fmt"
+	"os"
+	"path/filepath"
 
 	"github.com/friendsofgo/errors"
 	"github.com/go-git/go-git/v5"
@@ -50,6 +52,7 @@ func (s *builderService) cloneRepository(ctx context.Context, st *state) error {
 	if err != nil {
 		return errors.Wrap(err, "getting submodules")
 	}
+
 	// Try with auth first, then try without auth
 	err = sm.Update(&git.SubmoduleUpdateOptions{
 		Init:              true,
@@ -64,6 +67,12 @@ func (s *builderService) cloneRepository(ctx context.Context, st *state) error {
 		if err != nil {
 			return errors.Wrap(err, "updating submodules")
 		}
+	}
+
+	// Delete .git directory before passing to the builder
+	err = os.RemoveAll(filepath.Join(st.repositoryTempDir, ".git"))
+	if err != nil {
+		return errors.Wrap(err, "deleting .git directory")
 	}
 	return nil
 }
