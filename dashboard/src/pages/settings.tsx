@@ -167,7 +167,7 @@ export default () => {
     return (
       <form class={CreatingKeyContainerClass} ref={formRef}>
         <InputLabel>SSH公開鍵の追加</InputLabel>
-        <InputBar placeholder='my-app' type='text' ref={keyInputRef} required />
+        <InputBar placeholder='ssh-ed25519 AAA...' type='text' ref={keyInputRef} required />
         <Button color='black1' size='large' width='auto' onclick={createKeyRequest} type='submit'>
           + SSH公開鍵の追加
         </Button>
