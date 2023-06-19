@@ -49,7 +49,6 @@ func FromPBBuildConfig(c *pb.ApplicationConfig) domain.BuildConfig {
 			RuntimeConfig: FromPBRuntimeConfig(bc.RuntimeCmd.RuntimeConfig),
 			BaseImage:     bc.RuntimeCmd.BaseImage,
 			BuildCmd:      bc.RuntimeCmd.BuildCmd,
-			BuildCmdShell: bc.RuntimeCmd.BuildCmdShell,
 		}
 	case *pb.ApplicationConfig_RuntimeDockerfile:
 		return &domain.BuildConfigRuntimeDockerfile{
@@ -64,10 +63,9 @@ func FromPBBuildConfig(c *pb.ApplicationConfig) domain.BuildConfig {
 		}
 	case *pb.ApplicationConfig_StaticCmd:
 		return &domain.BuildConfigStaticCmd{
-			StaticConfig:  FromPBStaticConfig(bc.StaticCmd.StaticConfig),
-			BaseImage:     bc.StaticCmd.BaseImage,
-			BuildCmd:      bc.StaticCmd.BuildCmd,
-			BuildCmdShell: bc.StaticCmd.BuildCmdShell,
+			StaticConfig: FromPBStaticConfig(bc.StaticCmd.StaticConfig),
+			BaseImage:    bc.StaticCmd.BaseImage,
+			BuildCmd:     bc.StaticCmd.BuildCmd,
 		}
 	case *pb.ApplicationConfig_StaticDockerfile:
 		return &domain.BuildConfigStaticDockerfile{
@@ -101,7 +99,6 @@ func ToPBApplicationConfig(c domain.ApplicationConfig) *pb.ApplicationConfig {
 				RuntimeConfig: ToPBRuntimeConfig(&bc.RuntimeConfig),
 				BaseImage:     bc.BaseImage,
 				BuildCmd:      bc.BuildCmd,
-				BuildCmdShell: bc.BuildCmdShell,
 			}},
 		}
 	case *domain.BuildConfigRuntimeDockerfile:
@@ -122,10 +119,9 @@ func ToPBApplicationConfig(c domain.ApplicationConfig) *pb.ApplicationConfig {
 	case *domain.BuildConfigStaticCmd:
 		return &pb.ApplicationConfig{
 			BuildConfig: &pb.ApplicationConfig_StaticCmd{StaticCmd: &pb.BuildConfigStaticCmd{
-				StaticConfig:  ToPBStaticConfig(&bc.StaticConfig),
-				BaseImage:     bc.BaseImage,
-				BuildCmd:      bc.BuildCmd,
-				BuildCmdShell: bc.BuildCmdShell,
+				StaticConfig: ToPBStaticConfig(&bc.StaticConfig),
+				BaseImage:    bc.BaseImage,
+				BuildCmd:     bc.BuildCmd,
 			}},
 		}
 	case *domain.BuildConfigStaticDockerfile:

@@ -1,6 +1,6 @@
 import { ApplicationConfig, RuntimeConfig, StaticConfig } from '/@/api/neoshowcase/protobuf/gateway_pb'
 import { SetStoreFunction } from 'solid-js/store'
-import { InputBar, InputLabel } from '/@/components/Input'
+import { InputArea, InputBar, InputLabel } from '/@/components/Input'
 import { FormCheckBox, FormSettings } from '/@/components/AppsNew'
 import { Checkbox } from '/@/components/Checkbox'
 import { Match, Switch } from 'solid-js'
@@ -143,21 +143,10 @@ export const BuildConfigs = (props: BuildConfigsProps) => {
               </div>
               <div>
                 <InputLabel>Build command</InputLabel>
-                <InputBar
+                <InputArea
                   value={v().buildCmd}
                   onInput={(e) => props.setBuildConfig('value', { buildCmd: e.target.value })}
                 />
-              </div>
-              <div>
-                <InputLabel>Build command shell</InputLabel>
-                <FormCheckBox>
-                  <Checkbox
-                    selected={v().buildCmdShell}
-                    setSelected={(selected) => props.setBuildConfig('value', { buildCmdShell: selected })}
-                  >
-                    Run build command with shell
-                  </Checkbox>
-                </FormCheckBox>
               </div>
               <RuntimeConfigs
                 runtimeConfig={v().runtimeConfig}
@@ -234,21 +223,10 @@ export const BuildConfigs = (props: BuildConfigsProps) => {
               </div>
               <div>
                 <InputLabel>Build command</InputLabel>
-                <InputBar
+                <InputArea
                   value={v().buildCmd}
                   onInput={(e) => props.setBuildConfig('value', { buildCmd: e.target.value })}
                 />
-              </div>
-              <div>
-                <InputLabel>Build command shell</InputLabel>
-                <FormCheckBox>
-                  <Checkbox
-                    selected={v().buildCmdShell}
-                    setSelected={(selected) => props.setBuildConfig('value', { buildCmdShell: selected })}
-                  >
-                    Run build command with shell
-                  </Checkbox>
-                </FormCheckBox>
               </div>
               <StaticConfigs
                 staticConfig={v().staticConfig}

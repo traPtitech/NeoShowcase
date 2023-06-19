@@ -133,9 +133,8 @@ func (bc *BuildConfigRuntimeBuildpack) Validate() error {
 
 type BuildConfigRuntimeCmd struct {
 	RuntimeConfig
-	BaseImage     string
-	BuildCmd      string
-	BuildCmdShell bool
+	BaseImage string
+	BuildCmd  string
 	buildConfigEmbed
 }
 
@@ -199,9 +198,8 @@ func (bc *BuildConfigStaticBuildpack) Validate() error {
 
 type BuildConfigStaticCmd struct {
 	StaticConfig
-	BaseImage     string
-	BuildCmd      string
-	BuildCmdShell bool
+	BaseImage string
+	BuildCmd  string
 	buildConfigEmbed
 }
 

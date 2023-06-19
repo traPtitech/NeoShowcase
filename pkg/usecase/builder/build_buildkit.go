@@ -7,12 +7,10 @@ import (
 	"io"
 	"os"
 	"path/filepath"
-	"strings"
 
 	"github.com/docker/cli/cli/config/configfile"
 	"github.com/docker/cli/cli/config/types"
 	"github.com/friendsofgo/errors"
-	"github.com/mattn/go-shellwords"
 	buildkit "github.com/moby/buildkit/client"
 	"github.com/moby/buildkit/client/llb"
 	"github.com/moby/buildkit/frontend/dockerfile/dockerfile2llb"
@@ -61,12 +59,6 @@ func createScriptFile(filename string, script string) error {
 	return createFile(filename, "#!/bin/sh\nset -eux\n"+script)
 }
 
-func toJSONExecFormat(args []string) string {
-	return strings.Join(ds.Map(args, func(s string) string {
-		return `"` + strings.ReplaceAll(s, `"`, `\"`) + `"`
-	}), ", ")
-}
-
 func (s *builderService) authSessions() []session.Attachable {
 	if s.config.Registry.Username == "" && s.config.Registry.Password == "" {
 		return nil
@@ -113,20 +105,12 @@ func (s *builderService) buildRuntimeCmd(
 	dockerfile.WriteString("COPY . .\n")
 
 	if bc.BuildCmd != "" {
-		if bc.BuildCmdShell {
-			err := createScriptFile(filepath.Join(st.repositoryTempDir, buildScriptName), bc.BuildCmd)
-			if err != nil {
-				return err
-			}
-			dockerfile.WriteString(fmt.Sprintf("RUN ./%v\n", buildScriptName))
-			dockerfile.WriteString(fmt.Sprintf("RUN rm ./%v\n", buildScriptName))
-		} else {
-			args, err := shellwords.Parse(bc.BuildCmd)
-			if err != nil {
-				return err
-			}
-			dockerfile.WriteString(fmt.Sprintf("RUN [%v]\n", toJSONExecFormat(args)))
+		err := createScriptFile(filepath.Join(st.repositoryTempDir, buildScriptName), bc.BuildCmd)
+		if err != nil {
+			return err
 		}
+		dockerfile.WriteString(fmt.Sprintf("RUN ./%v\n", buildScriptName))
+		dockerfile.WriteString(fmt.Sprintf("RUN rm ./%v\n", buildScriptName))
 	}
 
 	b, _, _, err := dockerfile2llb.Dockerfile2LLB(ctx, dockerfile.Bytes(), dockerfile2llb.ConvertOpt{
@@ -220,20 +204,12 @@ func (s *builderService) buildStaticCmd(
 		}))
 
 	if bc.BuildCmd != "" {
-		if bc.BuildCmdShell {
-			err := createScriptFile(filepath.Join(st.repositoryTempDir, buildScriptName), bc.BuildCmd)
-			if err != nil {
-				return err
-			}
-			ls = ls.Run(llb.Args([]string{"./" + buildScriptName})).Root()
-			ls = ls.Run(llb.Args([]string{"rm", "./" + buildScriptName})).Root()
-		} else {
-			args, err := shellwords.Parse(bc.BuildCmd)
-			if err != nil {
-				return err
-			}
-			ls = ls.Run(llb.Args(args)).Root()
+		err := createScriptFile(filepath.Join(st.repositoryTempDir, buildScriptName), bc.BuildCmd)
+		if err != nil {
+			return err
 		}
+		ls = ls.Run(llb.Args([]string{"./" + buildScriptName})).Root()
+		ls = ls.Run(llb.Args([]string{"rm", "./" + buildScriptName})).Root()
 	}
 
 	// ビルドで生成された静的ファイルのみを含むScratchイメージを構成

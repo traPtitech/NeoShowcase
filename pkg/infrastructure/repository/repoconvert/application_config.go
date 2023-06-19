@@ -67,7 +67,6 @@ func assignBuildConfig(mc *models.ApplicationConfig, c domain.BuildConfig) {
 		assignRuntimeConfig(mc, &bc.RuntimeConfig)
 		mc.BaseImage = bc.BaseImage
 		mc.BuildCMD = bc.BuildCmd
-		mc.BuildCMDShell = bc.BuildCmdShell
 	case *domain.BuildConfigRuntimeDockerfile:
 		assignRuntimeConfig(mc, &bc.RuntimeConfig)
 		mc.DockerfileName = bc.DockerfileName
@@ -79,7 +78,6 @@ func assignBuildConfig(mc *models.ApplicationConfig, c domain.BuildConfig) {
 		assignStaticConfig(mc, &bc.StaticConfig)
 		mc.BaseImage = bc.BaseImage
 		mc.BuildCMD = bc.BuildCmd
-		mc.BuildCMDShell = bc.BuildCmdShell
 	case *domain.BuildConfigStaticDockerfile:
 		assignStaticConfig(mc, &bc.StaticConfig)
 		mc.DockerfileName = bc.DockerfileName
@@ -101,7 +99,6 @@ func ToDomainBuildConfig(c *models.ApplicationConfig) domain.BuildConfig {
 			RuntimeConfig: ToDomainRuntimeConfig(c),
 			BaseImage:     c.BaseImage,
 			BuildCmd:      c.BuildCMD,
-			BuildCmdShell: c.BuildCMDShell,
 		}
 	case domain.BuildTypeRuntimeDockerfile:
 		return &domain.BuildConfigRuntimeDockerfile{
@@ -116,10 +113,9 @@ func ToDomainBuildConfig(c *models.ApplicationConfig) domain.BuildConfig {
 		}
 	case domain.BuildTypeStaticCmd:
 		return &domain.BuildConfigStaticCmd{
-			StaticConfig:  ToDomainStaticConfig(c),
-			BaseImage:     c.BaseImage,
-			BuildCmd:      c.BuildCMD,
-			BuildCmdShell: c.BuildCMDShell,
+			StaticConfig: ToDomainStaticConfig(c),
+			BaseImage:    c.BaseImage,
+			BuildCmd:     c.BuildCMD,
 		}
 	case domain.BuildTypeStaticDockerfile:
 		return &domain.BuildConfigStaticDockerfile{
