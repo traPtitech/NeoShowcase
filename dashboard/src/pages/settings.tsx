@@ -137,7 +137,7 @@ export default () => {
 
   const CreatingKeyContainer: Component = () => {
     let formRef: HTMLFormElement
-    let keyInputRef: HTMLInputElement
+    const [input, setInput] = createSignal('')
 
     const createKeyRequest: JSX.EventHandler<HTMLButtonElement, MouseEvent> = async (e) => {
       // prevent default form submit (reload page)
@@ -149,10 +149,9 @@ export default () => {
       }
 
       try {
-        await client.createUserKey({
-          publicKey: keyInputRef.value,
-        })
+        await client.createUserKey({ publicKey: input() })
         toast.success('公開鍵を登録しました')
+        setInput('')
         refetchKeys()
       } catch (e) {
         console.error(e)
@@ -166,7 +165,13 @@ export default () => {
     return (
       <form class={CreatingKeyContainerClass} ref={formRef}>
         <InputLabel>SSH公開鍵の追加</InputLabel>
-        <InputBar placeholder='ssh-ed25519 AAA...' type='text' ref={keyInputRef} required />
+        <InputBar
+          placeholder='ssh-ed25519 AAA...'
+          type='text'
+          value={input()}
+          onInput={(e) => setInput(e.target.value)}
+          required
+        />
         <Button color='black1' size='large' width='auto' onclick={createKeyRequest} type='submit'>
           + SSH公開鍵の追加
         </Button>
