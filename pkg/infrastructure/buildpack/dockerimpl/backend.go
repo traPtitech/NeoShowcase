@@ -137,22 +137,26 @@ func (d *dockerBackend) prepareDir(ctx context.Context, localName, remoteName st
 	remotePath = filepath.Join(d.config.RemoteDir, remoteName)
 	err = d.exec(ctx, d.config.RemoteDir, []string{"mkdir", remotePath}, nil, io.Discard, io.Discard)
 	if err != nil {
-		return "", nil, errors.Wrap(err, "making remote repo tmp dir")
+		return "", nil, errors.Wrap(err, "making remote tmp dir")
 	}
+	cleanup = func() {
+		err := d.exec(context.Background(), d.config.RemoteDir, []string{"rm", "-r", remotePath}, nil, io.Discard, io.Discard)
+		if err != nil {
+			log.Errorf("failed to remove tmp repo dir: %+v", err)
+		}
+	}
+
 	err = d.c.CopyToContainer(ctx, d.config.ContainerName, remotePath, tarfs.Compress(localName), types.CopyToContainerOptions{})
 	if err != nil {
-		return "", nil, errors.Wrap(err, "copying file to container")
+		cleanup()
+		return "", nil, errors.Wrap(err, "copying files to container")
 	}
 	err = d.execRoot(ctx, d.config.RemoteDir, []string{"chown", "-R", d.config.User + ":" + d.config.Group, remotePath}, nil, io.Discard, io.Discard)
 	if err != nil {
-		return "", nil, errors.Wrap(err, "setting remote repo owner")
+		cleanup()
+		return "", nil, errors.Wrap(err, "setting remote dir owner")
 	}
-	return remotePath, func() {
-		err := d.exec(context.Background(), d.config.RemoteDir, []string{"rm", "-r", remotePath}, nil, io.Discard, io.Discard)
-		if err != nil {
-			log.Errorf("failed to remove remote repo dir: %+v", err)
-		}
-	}, nil
+	return remotePath, cleanup, nil
 }
 
 func (d *dockerBackend) Pack(
