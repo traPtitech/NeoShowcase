@@ -45,6 +45,9 @@ func ParseArgs(s string) ([]string, error) {
 	if err != nil {
 		return nil, err
 	}
+	if len(args) == 0 {
+		return nil, errors.New("cannot parse command")
+	}
 	// Fast simple check: input was simple one line command
 	if p.Position == -1 {
 		return args, nil

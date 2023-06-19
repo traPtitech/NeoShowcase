@@ -26,7 +26,7 @@ func TestParseArgs(t *testing.T) {
 			wantErr: false,
 		},
 		{
-			name:    "simple one command 2",
+			name:    "simple local exec",
 			in:      "./main",
 			want:    []string{"./main"},
 			wantErr: false,
@@ -50,9 +50,45 @@ func TestParseArgs(t *testing.T) {
 			wantErr: false,
 		},
 		{
-			name:    "has multi command shell syntax",
+			name:    "subshell syntax (current limitation, cannot parse)",
+			in:      "(npm run build)",
+			want:    nil,
+			wantErr: true,
+		},
+		{
+			name:    "multi command shell syntax (and)",
 			in:      "npm run build && npm run start",
 			want:    []string{"sh", "-c", "npm run build && npm run start"},
+			wantErr: false,
+		},
+		{
+			name:    "multi command shell syntax (or)",
+			in:      "npm run build || npm run start",
+			want:    []string{"sh", "-c", "npm run build || npm run start"},
+			wantErr: false,
+		},
+		{
+			name:    "multi command shell syntax (sequential)",
+			in:      "npm run build; npm run start",
+			want:    []string{"sh", "-c", "npm run build; npm run start"},
+			wantErr: false,
+		},
+		{
+			name:    "redirect command shell syntax",
+			in:      "npm run build > out.txt",
+			want:    []string{"sh", "-c", "npm run build > out.txt"},
+			wantErr: false,
+		},
+		{
+			name:    "input command shell syntax",
+			in:      "npm run build < in.txt",
+			want:    []string{"sh", "-c", "npm run build < in.txt"},
+			wantErr: false,
+		},
+		{
+			name:    "append command shell syntax",
+			in:      "npm run build >> out.txt",
+			want:    []string{"sh", "-c", "npm run build >> out.txt"},
 			wantErr: false,
 		},
 		{
