@@ -21,6 +21,7 @@ import (
 
 	"github.com/traPtitech/neoshowcase/pkg/domain"
 	"github.com/traPtitech/neoshowcase/pkg/domain/builder"
+	"github.com/traPtitech/neoshowcase/pkg/util/ds"
 )
 
 type k8sBackend struct {
@@ -121,7 +122,13 @@ func (k *k8sBackend) exec(ctx context.Context, workDir string, cmd string, env m
 	return nil
 }
 
-func (k *k8sBackend) Pack(ctx context.Context, repoDir string, logWriter io.Writer, imageDest string) (path string, err error) {
+func (k *k8sBackend) Pack(
+	ctx context.Context,
+	repoDir string,
+	imageDest string,
+	env map[string]string,
+	logWriter io.Writer,
+) (path string, err error) {
 	tmpID := domain.NewID()
 	dstRepoPath := fmt.Sprintf("repo-%s", tmpID)
 	localDstPath := filepath.Join(k.config.LocalDir, dstRepoPath)
@@ -150,7 +157,7 @@ func (k *k8sBackend) Pack(ctx context.Context, repoDir string, logWriter io.Writ
 	err = k.exec(ctx,
 		remoteDstPath,
 		fmt.Sprintf("/cnb/lifecycle/creator -skip-restore -app=. %s", imageDest),
-		map[string]string{"CNB_PLATFORM_API": k.config.PlatformAPI},
+		ds.MergeMap(env, map[string]string{"CNB_PLATFORM_API": k.config.PlatformAPI}),
 		logWriter, logWriter)
 	if err != nil {
 		return "", err

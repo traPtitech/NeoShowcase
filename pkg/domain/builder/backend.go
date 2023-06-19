@@ -6,5 +6,11 @@ import (
 )
 
 type BuildpackBackend interface {
-	Pack(ctx context.Context, repoDir string, logWriter io.Writer, imageDest string) (path string, err error)
+	Pack(
+		ctx context.Context,
+		repoDir string,
+		imageDest string,
+		env map[string]string,
+		logWriter io.Writer,
+	) (path string, err error)
 }
