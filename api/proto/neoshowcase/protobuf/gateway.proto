@@ -152,7 +152,6 @@ message BuildConfigRuntimeCmd {
   RuntimeConfig runtime_config = 1;
   string base_image = 2;
   string build_cmd = 3;
-  bool build_cmd_shell = 4;
 }
 
 message BuildConfigRuntimeDockerfile {
@@ -175,7 +174,6 @@ message BuildConfigStaticCmd {
   StaticConfig static_config = 1;
   string base_image = 2;
   string build_cmd = 3;
-  bool build_cmd_shell = 4;
 }
 
 message BuildConfigStaticDockerfile {

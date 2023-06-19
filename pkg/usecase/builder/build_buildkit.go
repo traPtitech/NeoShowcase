@@ -7,12 +7,10 @@ import (
 	"io"
 	"os"
 	"path/filepath"
-	"strings"
 
 	"github.com/docker/cli/cli/config/configfile"
 	"github.com/docker/cli/cli/config/types"
 	"github.com/friendsofgo/errors"
-	"github.com/mattn/go-shellwords"
 	buildkit "github.com/moby/buildkit/client"
 	"github.com/moby/buildkit/client/llb"
 	"github.com/moby/buildkit/frontend/dockerfile/dockerfile2llb"
@@ -27,8 +25,7 @@ import (
 )
 
 const (
-	buildScriptName   = "neoshowcase_internal_build.sh"
-	tmpDockerfileName = "neoshowcase_internal_dockerfile"
+	buildScriptName = "neoshowcase_internal_build.sh"
 )
 
 func withBuildkitProgress(ctx context.Context, logger io.Writer, buildFn func(ctx context.Context, ch chan *buildkit.SolveStatus) error) error {
@@ -60,12 +57,6 @@ func createFile(filename string, content string) error {
 
 func createScriptFile(filename string, script string) error {
 	return createFile(filename, "#!/bin/sh\nset -eux\n"+script)
-}
-
-func toJSONExecFormat(args []string) string {
-	return strings.Join(ds.Map(args, func(s string) string {
-		return `"` + strings.ReplaceAll(s, `"`, `\"`) + `"`
-	}), ", ")
 }
 
 func (s *builderService) authSessions() []session.Attachable {
@@ -114,26 +105,26 @@ func (s *builderService) buildRuntimeCmd(
 	dockerfile.WriteString("COPY . .\n")
 
 	if bc.BuildCmd != "" {
-		if bc.BuildCmdShell {
-			err := createScriptFile(filepath.Join(st.repositoryTempDir, buildScriptName), bc.BuildCmd)
-			if err != nil {
-				return err
-			}
-			dockerfile.WriteString(fmt.Sprintf("RUN ./%v\n", buildScriptName))
-		} else {
-			args, err := shellwords.Parse(bc.BuildCmd)
-			if err != nil {
-				return err
-			}
-			dockerfile.WriteString(fmt.Sprintf("RUN [%v]\n", toJSONExecFormat(args)))
+		err := createScriptFile(filepath.Join(st.repositoryTempDir, buildScriptName), bc.BuildCmd)
+		if err != nil {
+			return err
 		}
+		dockerfile.WriteString(fmt.Sprintf("RUN ./%v\n", buildScriptName))
+		dockerfile.WriteString(fmt.Sprintf("RUN rm ./%v\n", buildScriptName))
 	}
 
-	err = createFile(filepath.Join(st.repositoryTempDir, tmpDockerfileName), dockerfile.String())
+	b, _, _, err := dockerfile2llb.Dockerfile2LLB(ctx, dockerfile.Bytes(), dockerfile2llb.ConvertOpt{
+		BuildArgs: env,
+	})
 	if err != nil {
 		return err
 	}
-	_, err = s.buildkit.Solve(ctx, nil, buildkit.SolveOpt{
+	def, err := b.Marshal(ctx)
+	if err != nil {
+		return err
+	}
+
+	_, err = s.buildkit.Solve(ctx, def, buildkit.SolveOpt{
 		Exports: []buildkit.ExportEntry{{
 			Type: buildkit.ExporterImage,
 			Attrs: map[string]string{
@@ -142,14 +133,8 @@ func (s *builderService) buildRuntimeCmd(
 			},
 		}},
 		LocalDirs: map[string]string{
-			"context":    st.repositoryTempDir,
-			"dockerfile": st.repositoryTempDir,
+			"context": st.repositoryTempDir,
 		},
-		Frontend: "dockerfile.v0",
-		FrontendAttrs: ds.MergeMap(
-			map[string]string{"filename": tmpDockerfileName},
-			appEnvAttributes(env),
-		),
 		Session: s.authSessions(),
 	}, ch)
 	return err
@@ -219,19 +204,12 @@ func (s *builderService) buildStaticCmd(
 		}))
 
 	if bc.BuildCmd != "" {
-		if bc.BuildCmdShell {
-			err := createScriptFile(filepath.Join(st.repositoryTempDir, buildScriptName), bc.BuildCmd)
-			if err != nil {
-				return err
-			}
-			ls = ls.Run(llb.Args([]string{"./" + buildScriptName})).Root()
-		} else {
-			args, err := shellwords.Parse(bc.BuildCmd)
-			if err != nil {
-				return err
-			}
-			ls = ls.Run(llb.Args(args)).Root()
+		err := createScriptFile(filepath.Join(st.repositoryTempDir, buildScriptName), bc.BuildCmd)
+		if err != nil {
+			return err
 		}
+		ls = ls.Run(llb.Args([]string{"./" + buildScriptName})).Root()
+		ls = ls.Run(llb.Args([]string{"rm", "./" + buildScriptName})).Root()
 	}
 
 	// ビルドで生成された静的ファイルのみを含むScratchイメージを構成

@@ -98,10 +98,14 @@ const ApplicationConfigInfo: Component<{ config: ApplicationConfig }> = (props) 
             <CardItemContent>{c.value.baseImage || 'Scratch'}</CardItemContent>
           </CardItem>
           {c.value.buildCmd && (
-            <CardItem>
-              <CardItemTitle>Build Command{c.value.buildCmdShell && ' (Shell)'}</CardItemTitle>
-              <CardItemContent>{c.value.buildCmd}</CardItemContent>
-            </CardItem>
+            <>
+              <CardItem>
+                <CardItemTitle>Build Command</CardItemTitle>
+              </CardItem>
+              <CardItem>
+                <pre>{c.value.buildCmd}</pre>
+              </CardItem>
+            </>
           )}
           <RuntimeConfigInfo config={c.value.runtimeConfig} />
         </>
@@ -140,7 +144,7 @@ const ApplicationConfigInfo: Component<{ config: ApplicationConfig }> = (props) 
           </CardItem>
           {c.value.buildCmd && (
             <CardItem>
-              <CardItemTitle>Build Command{c.value.buildCmdShell && ' (Shell)'}</CardItemTitle>
+              <CardItemTitle>Build Command</CardItemTitle>
               <CardItemContent>{c.value.buildCmd}</CardItemContent>
             </CardItem>
           )}

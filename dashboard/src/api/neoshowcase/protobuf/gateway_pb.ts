@@ -1170,11 +1170,6 @@ export class BuildConfigRuntimeCmd extends Message<BuildConfigRuntimeCmd> {
    */
   buildCmd = "";
 
-  /**
-   * @generated from field: bool build_cmd_shell = 4;
-   */
-  buildCmdShell = false;
-
   constructor(data?: PartialMessage<BuildConfigRuntimeCmd>) {
     super();
     proto3.util.initPartial(data, this);
@@ -1186,7 +1181,6 @@ export class BuildConfigRuntimeCmd extends Message<BuildConfigRuntimeCmd> {
     { no: 1, name: "runtime_config", kind: "message", T: RuntimeConfig },
     { no: 2, name: "base_image", kind: "scalar", T: 9 /* ScalarType.STRING */ },
     { no: 3, name: "build_cmd", kind: "scalar", T: 9 /* ScalarType.STRING */ },
-    { no: 4, name: "build_cmd_shell", kind: "scalar", T: 8 /* ScalarType.BOOL */ },
   ]);
 
   static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): BuildConfigRuntimeCmd {
@@ -1360,11 +1354,6 @@ export class BuildConfigStaticCmd extends Message<BuildConfigStaticCmd> {
    */
   buildCmd = "";
 
-  /**
-   * @generated from field: bool build_cmd_shell = 4;
-   */
-  buildCmdShell = false;
-
   constructor(data?: PartialMessage<BuildConfigStaticCmd>) {
     super();
     proto3.util.initPartial(data, this);
@@ -1376,7 +1365,6 @@ export class BuildConfigStaticCmd extends Message<BuildConfigStaticCmd> {
     { no: 1, name: "static_config", kind: "message", T: StaticConfig },
     { no: 2, name: "base_image", kind: "scalar", T: 9 /* ScalarType.STRING */ },
     { no: 3, name: "build_cmd", kind: "scalar", T: 9 /* ScalarType.STRING */ },
-    { no: 4, name: "build_cmd_shell", kind: "scalar", T: 8 /* ScalarType.BOOL */ },
   ]);
 
   static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): BuildConfigStaticCmd {

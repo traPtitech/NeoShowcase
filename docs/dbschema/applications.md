@@ -91,7 +91,6 @@ erDiagram
   enum__runtime-buildpack___runtime-cmd___runtime-dockerfile___static-buildpack___static-cmd___static-dockerfile__ build_type
   varchar_1000_ base_image
   text build_cmd
-  tinyint_1_ build_cmd_shell
   varchar_100_ artifact_path
   tinyint_1_ spa
   varchar_100_ dockerfile_name

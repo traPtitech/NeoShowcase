@@ -15,7 +15,6 @@ CREATE TABLE `application_config` (
   `build_type` enum('runtime-buildpack','runtime-cmd','runtime-dockerfile','static-buildpack','static-cmd','static-dockerfile') NOT NULL COMMENT 'ビルドタイプ',
   `base_image` varchar(1000) NOT NULL COMMENT 'ベースイメージの名前',
   `build_cmd` text NOT NULL COMMENT 'ビルドコマンド',
-  `build_cmd_shell` tinyint(1) NOT NULL COMMENT 'ビルドコマンドをshellで実行するか',
   `artifact_path` varchar(100) NOT NULL COMMENT '静的成果物のパス',
   `spa` tinyint(1) NOT NULL COMMENT '静的成果物をSPAとして配信するか',
   `dockerfile_name` varchar(100) NOT NULL COMMENT 'Dockerfile名',
@@ -39,7 +38,6 @@ CREATE TABLE `application_config` (
 | build_type | enum('runtime-buildpack','runtime-cmd','runtime-dockerfile','static-buildpack','static-cmd','static-dockerfile') |  | false |  |  | ビルドタイプ |
 | base_image | varchar(1000) |  | false |  |  | ベースイメージの名前 |
 | build_cmd | text |  | false |  |  | ビルドコマンド |
-| build_cmd_shell | tinyint(1) |  | false |  |  | ビルドコマンドをshellで実行するか |
 | artifact_path | varchar(100) |  | false |  |  | 静的成果物のパス |
 | spa | tinyint(1) |  | false |  |  | 静的成果物をSPAとして配信するか |
 | dockerfile_name | varchar(100) |  | false |  |  | Dockerfile名 |
@@ -74,7 +72,6 @@ erDiagram
   enum__runtime-buildpack___runtime-cmd___runtime-dockerfile___static-buildpack___static-cmd___static-dockerfile__ build_type
   varchar_1000_ base_image
   text build_cmd
-  tinyint_1_ build_cmd_shell
   varchar_100_ artifact_path
   tinyint_1_ spa
   varchar_100_ dockerfile_name

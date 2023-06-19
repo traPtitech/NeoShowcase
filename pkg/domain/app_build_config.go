@@ -40,15 +40,28 @@ func ParseArgs(s string) ([]string, error) {
 	if s == "" {
 		return nil, nil
 	}
-	return shellwords.Parse(s)
+	p := shellwords.NewParser()
+	args, err := p.Parse(s)
+	if err != nil {
+		return nil, err
+	}
+	if len(args) == 0 {
+		return nil, errors.New("cannot parse command")
+	}
+	// Fast simple check: input was simple one line command
+	if p.Position == -1 {
+		return args, nil
+	} else {
+		return []string{"sh", "-c", s}, nil
+	}
 }
 
 func (rc *RuntimeConfig) Validate() error {
 	if _, err := ParseArgs(rc.Entrypoint); err != nil {
-		return errors.Wrap(err, "invalid entrypoint")
+		return errors.Wrap(err, "entrypoint")
 	}
 	if _, err := ParseArgs(rc.Command); err != nil {
-		return errors.Wrap(err, "invalid command")
+		return errors.Wrap(err, "command")
 	}
 	return nil
 }
@@ -133,9 +146,8 @@ func (bc *BuildConfigRuntimeBuildpack) Validate() error {
 
 type BuildConfigRuntimeCmd struct {
 	RuntimeConfig
-	BaseImage     string
-	BuildCmd      string
-	BuildCmdShell bool
+	BaseImage string
+	BuildCmd  string
 	buildConfigEmbed
 }
 
@@ -199,9 +211,8 @@ func (bc *BuildConfigStaticBuildpack) Validate() error {
 
 type BuildConfigStaticCmd struct {
 	StaticConfig
-	BaseImage     string
-	BuildCmd      string
-	BuildCmdShell bool
+	BaseImage string
+	BuildCmd  string
 	buildConfigEmbed
 }
 

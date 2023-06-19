@@ -90,7 +90,6 @@ CREATE TABLE `application_config`
         )                           NOT NULL COMMENT 'ビルドタイプ',
     `base_image`      VARCHAR(1000) NOT NULL COMMENT 'ベースイメージの名前',
     `build_cmd`       TEXT          NOT NULL COMMENT 'ビルドコマンド',
-    `build_cmd_shell` TINYINT(1)    NOT NULL COMMENT 'ビルドコマンドをshellで実行するか',
     `artifact_path`   VARCHAR(100)  NOT NULL COMMENT '静的成果物のパス',
     `spa`             TINYINT(1)    NOT NULL COMMENT '静的成果物をSPAとして配信するか',
     `dockerfile_name` VARCHAR(100)  NOT NULL COMMENT 'Dockerfile名',

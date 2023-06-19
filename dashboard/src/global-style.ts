@@ -5,7 +5,7 @@ globalStyle('*', {
   boxSizing: 'border-box',
 })
 
-globalStyle('div, h1, h2, h3, h4, h5, h6, a, p, input', {
+globalStyle('div, h1, h2, h3, h4, h5, h6, a, p, input, textarea', {
   fontFamily: 'Noto Sans JP',
 })
 
@@ -15,6 +15,10 @@ globalStyle('pre, code', {
 
 globalStyle('a', {
   textDecoration: 'none',
+})
+
+globalStyle('pre', {
+  margin: 0,
 })
 
 globalStyle('svg', {
