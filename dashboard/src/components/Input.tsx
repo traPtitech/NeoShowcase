@@ -45,21 +45,18 @@ const StyledInputArea = styled('textarea', {
 })
 
 interface InputAreaProps extends JSX.TextareaHTMLAttributes<HTMLTextAreaElement> {
-  onInput: (e: InputEvent) => void
+  onInput: JSX.InputEventHandler<HTMLTextAreaElement, InputEvent>
 }
 
 export const InputArea: Component<InputAreaProps> = (props) => {
   const [addedProps, inputProps] = splitProps(props, ['onInput'])
 
   let ref: HTMLTextAreaElement
-  const onInput = (e: InputEvent) => {
+  const onInput: InputAreaProps['onInput'] = (e) => {
     ref.style.height = '100px'
-    ref.style.height = (ref.scrollHeight) + 'px'
+    ref.style.height = `${ref.scrollHeight}px`
     addedProps?.onInput(e)
   }
 
-  return (
-    <StyledInputArea ref={ref} onInput={onInput} {...inputProps} />
-  )
+  return <StyledInputArea ref={ref} onInput={onInput} {...inputProps} />
 }
-
