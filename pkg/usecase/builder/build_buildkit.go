@@ -119,6 +119,7 @@ func (s *builderService) buildRuntimeCmd(
 				return err
 			}
 			dockerfile.WriteString(fmt.Sprintf("RUN ./%v\n", buildScriptName))
+			dockerfile.WriteString(fmt.Sprintf("RUN rm ./%v\n", buildScriptName))
 		} else {
 			args, err := shellwords.Parse(bc.BuildCmd)
 			if err != nil {
@@ -225,6 +226,7 @@ func (s *builderService) buildStaticCmd(
 				return err
 			}
 			ls = ls.Run(llb.Args([]string{"./" + buildScriptName})).Root()
+			ls = ls.Run(llb.Args([]string{"rm", "./" + buildScriptName})).Root()
 		} else {
 			args, err := shellwords.Parse(bc.BuildCmd)
 			if err != nil {
