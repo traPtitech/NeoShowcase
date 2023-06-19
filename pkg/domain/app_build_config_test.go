@@ -32,6 +32,12 @@ func TestParseArgs(t *testing.T) {
 			wantErr: false,
 		},
 		{
+			name:    "simple option for command",
+			in:      "--verbose",
+			want:    []string{"--verbose"},
+			wantErr: false,
+		},
+		{
 			name:    "simple one command with extra space",
 			in:      "npm run  start  ",
 			want:    []string{"npm", "run", "start"},
