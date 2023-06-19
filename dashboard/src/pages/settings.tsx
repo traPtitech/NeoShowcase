@@ -1,7 +1,6 @@
 import { Header } from '/@/components/Header'
 import { Component, createResource, createSignal, For, JSX, Show } from 'solid-js'
 import { client } from '/@/libs/api'
-import { DeleteUserKeyRequest } from '/@/api/neoshowcase/protobuf/gateway_pb'
 import { styled } from '@macaron-css/solid'
 import { vars } from '/@/theme'
 import { Container } from '/@/libs/layout'
@@ -125,13 +124,13 @@ export default () => {
   const deleteKeyRequest = async (keyID: string) => {
     try {
       await client.deleteUserKey({ keyId: keyID })
-      toast.success('User Key を削除しました')
+      toast.success('公開鍵を削除しました')
       refetchKeys()
     } catch (e) {
       console.error(e)
       // gRPCエラー
       if (e instanceof ConnectError) {
-        toast.error('User Key の削除に失敗しました\n' + e.message)
+        toast.error('公開鍵の削除に失敗しました\n' + e.message)
       }
     }
   }
@@ -153,13 +152,13 @@ export default () => {
         await client.createUserKey({
           publicKey: keyInputRef.value,
         })
-        toast.success('User Key を登録しました')
+        toast.success('公開鍵を登録しました')
         refetchKeys()
       } catch (e) {
         console.error(e)
         // gRPCエラー
         if (e instanceof ConnectError) {
-          toast.error('User Key の登録に失敗しました\n' + e.message)
+          toast.error('公開鍵の登録に失敗しました\n' + e.message)
         }
       }
     }
