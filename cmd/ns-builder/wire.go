@@ -19,6 +19,7 @@ func New(c Config) (*Server, error) {
 		repository.NewApplicationRepository,
 		repository.NewArtifactRepository,
 		repository.NewBuildRepository,
+		repository.NewEnvironmentRepository,
 		repository.NewGitRepositoryRepository,
 		provideBuildpackBackend,
 		provideStorage,

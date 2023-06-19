@@ -82,6 +82,12 @@ func (s *builderService) authSessions() []session.Attachable {
 	})}
 }
 
+func appEnvAttributes(env map[string]string) map[string]string {
+	return lo.MapEntries(env, func(k string, v string) (string, string) {
+		return "build-arg:" + k, v
+	})
+}
+
 func (s *builderService) buildRuntimeCmd(
 	ctx context.Context,
 	st *state,
@@ -94,6 +100,16 @@ func (s *builderService) buildRuntimeCmd(
 	} else {
 		dockerfile.WriteString(fmt.Sprintf("FROM %v\n", bc.BaseImage))
 	}
+
+	env, err := s.appEnv(ctx, st.app)
+	if err != nil {
+		return err
+	}
+	for key := range env {
+		dockerfile.WriteString(fmt.Sprintf("ARG %v\n", key))
+		dockerfile.WriteString(fmt.Sprintf("ENV %v=$%v\n", key, key))
+	}
+
 	dockerfile.WriteString("WORKDIR /srv\n")
 	dockerfile.WriteString("COPY . .\n")
 
@@ -113,7 +129,7 @@ func (s *builderService) buildRuntimeCmd(
 		}
 	}
 
-	err := createFile(filepath.Join(st.repositoryTempDir, tmpDockerfileName), dockerfile.String())
+	err = createFile(filepath.Join(st.repositoryTempDir, tmpDockerfileName), dockerfile.String())
 	if err != nil {
 		return err
 	}
@@ -129,9 +145,12 @@ func (s *builderService) buildRuntimeCmd(
 			"context":    st.repositoryTempDir,
 			"dockerfile": st.repositoryTempDir,
 		},
-		Frontend:      "dockerfile.v0",
-		FrontendAttrs: map[string]string{"filename": tmpDockerfileName},
-		Session:       s.authSessions(),
+		Frontend: "dockerfile.v0",
+		FrontendAttrs: ds.MergeMap(
+			map[string]string{"filename": tmpDockerfileName},
+			appEnvAttributes(env),
+		),
+		Session: s.authSessions(),
 	}, ch)
 	return err
 }
@@ -142,8 +161,13 @@ func (s *builderService) buildRuntimeDockerfile(
 	ch chan *buildkit.SolveStatus,
 	bc *domain.BuildConfigRuntimeDockerfile,
 ) error {
+	env, err := s.appEnv(ctx, st.app)
+	if err != nil {
+		return err
+	}
+
 	contextDir := lo.Ternary(bc.Context != "", bc.Context, ".")
-	_, err := s.buildkit.Solve(ctx, nil, buildkit.SolveOpt{
+	_, err = s.buildkit.Solve(ctx, nil, buildkit.SolveOpt{
 		Exports: []buildkit.ExportEntry{{
 			Type: buildkit.ExporterImage,
 			Attrs: map[string]string{
@@ -155,9 +179,12 @@ func (s *builderService) buildRuntimeDockerfile(
 			"context":    filepath.Join(st.repositoryTempDir, contextDir),
 			"dockerfile": filepath.Join(st.repositoryTempDir, contextDir),
 		},
-		Frontend:      "dockerfile.v0",
-		FrontendAttrs: map[string]string{"filename": bc.DockerfileName},
-		Session:       s.authSessions(),
+		Frontend: "dockerfile.v0",
+		FrontendAttrs: ds.MergeMap(
+			map[string]string{"filename": bc.DockerfileName},
+			appEnvAttributes(env),
+		),
+		Session: s.authSessions(),
 	}, ch)
 	return err
 }
@@ -174,6 +201,15 @@ func (s *builderService) buildStaticCmd(
 	} else {
 		ls = llb.Image(bc.BaseImage)
 	}
+
+	env, err := s.appEnv(ctx, st.app)
+	if err != nil {
+		return err
+	}
+	for key, value := range env {
+		ls = ls.AddEnv(key, value)
+	}
+
 	ls = ls.
 		Dir("/srv").
 		File(llb.Copy(llb.Local("local-src"), ".", ".", &llb.CopyInfo{
@@ -236,7 +272,14 @@ func (s *builderService) buildStaticDockerfile(
 		return err
 	}
 
-	b, _, _, err := dockerfile2llb.Dockerfile2LLB(ctx, dockerfile, dockerfile2llb.ConvertOpt{})
+	env, err := s.appEnv(ctx, st.app)
+	if err != nil {
+		return err
+	}
+
+	b, _, _, err := dockerfile2llb.Dockerfile2LLB(ctx, dockerfile, dockerfile2llb.ConvertOpt{
+		BuildArgs: env,
+	})
 	if err != nil {
 		return err
 	}
