@@ -137,6 +137,7 @@ export default () => {
     // 現在の設定で初期化
     const [generalConfig, setGeneralConfig] = createStore({
       name: app().name,
+      repositoryId: app().repositoryId,
       refName: app().refName,
     })
     let formContainer: HTMLFormElement
@@ -149,6 +150,7 @@ export default () => {
       return update({
         id: app().id,
         name: generalConfig.name,
+        repositoryId: generalConfig.repositoryId,
         refName: generalConfig.refName,
       })
     }
@@ -163,6 +165,15 @@ export default () => {
               placeholder='my-app'
               value={generalConfig.name}
               onChange={(e) => setGeneralConfig('name', e.currentTarget.value)}
+              required
+            />
+          </div>
+          <div>
+            <InputLabel>Repository ID</InputLabel>
+            <InputBar
+              placeholder='my-app'
+              value={generalConfig.repositoryId}
+              onChange={(e) => setGeneralConfig('repositoryId', e.currentTarget.value)}
               required
             />
           </div>
