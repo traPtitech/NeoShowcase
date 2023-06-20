@@ -128,8 +128,9 @@ func (s *builderService) buildRuntimeCmd(
 		Exports: []buildkit.ExportEntry{{
 			Type: buildkit.ExporterImage,
 			Attrs: map[string]string{
-				"name": s.destImage(st.app, st.build),
-				"push": "true",
+				"name":                  s.destImage(st.app, st.build),
+				"push":                  "true",
+				"containerimage.config": "{\"Config\": {\"WorkingDir\": \"/srv\"}}",
 			},
 		}},
 		LocalDirs: map[string]string{
