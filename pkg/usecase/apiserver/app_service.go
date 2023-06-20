@@ -5,6 +5,7 @@ import (
 	"strconv"
 
 	"github.com/friendsofgo/errors"
+	"github.com/samber/lo"
 	log "github.com/sirupsen/logrus"
 
 	"github.com/traPtitech/neoshowcase/pkg/domain"
@@ -120,18 +121,24 @@ func (s *Service) createApplicationDatabase(ctx context.Context, app *domain.App
 	return nil
 }
 
-func (s *Service) deleteApplicationDatabase(ctx context.Context, app *domain.Application) error {
-	dbName := domain.DBName(app.ID)
-
+func (s *Service) deleteApplicationDatabase(ctx context.Context, app *domain.Application, envs []*domain.Environment) error {
 	if app.Config.BuildConfig.MariaDB() {
-		err := s.mariaDBManager.Delete(ctx, domain.DeleteArgs{Database: dbName})
+		dbKey, ok := lo.Find(envs, func(e *domain.Environment) bool { return e.Key == domain.EnvMariaDBDatabaseKey })
+		if !ok {
+			return errors.New("failed to find mariadb name from env key")
+		}
+		err := s.mariaDBManager.Delete(ctx, domain.DeleteArgs{Database: dbKey.Value})
 		if err != nil {
 			return err
 		}
 	}
 
 	if app.Config.BuildConfig.MongoDB() {
-		err := s.mongoDBManager.Delete(ctx, domain.DeleteArgs{Database: dbName})
+		dbKey, ok := lo.Find(envs, func(e *domain.Environment) bool { return e.Key == domain.EnvMongoDBDatabaseKey })
+		if !ok {
+			return errors.New("failed to find mongodb name from env key")
+		}
+		err := s.mongoDBManager.Delete(ctx, domain.DeleteArgs{Database: dbKey.Value})
 		if err != nil {
 			return err
 		}
@@ -225,7 +232,11 @@ func (s *Service) DeleteApplication(ctx context.Context, id string) error {
 		return newError(ErrorTypeBadRequest, "stop the application first before deleting", nil)
 	}
 
-	err = s.deleteApplicationDatabase(ctx, app)
+	env, err := s.envRepo.GetEnv(ctx, domain.GetEnvCondition{ApplicationID: optional.From(id)})
+	if err != nil {
+		return err
+	}
+	err = s.deleteApplicationDatabase(ctx, app, env)
 	if err != nil {
 		return err
 	}
