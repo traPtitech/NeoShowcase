@@ -19,6 +19,7 @@ type GetApplicationCondition struct {
 
 type UpdateApplicationArgs struct {
 	Name             optional.Of[string]
+	RepositoryID     optional.Of[string]
 	RefName          optional.Of[string]
 	Running          optional.Of[bool]
 	Container        optional.Of[ContainerState]
@@ -34,6 +35,9 @@ type UpdateApplicationArgs struct {
 func (a *Application) Apply(args *UpdateApplicationArgs) {
 	if args.Name.Valid {
 		a.Name = args.Name.V
+	}
+	if args.RepositoryID.Valid {
+		a.RepositoryID = args.RepositoryID.V
 	}
 	if args.RefName.Valid {
 		a.RefName = args.RefName.V

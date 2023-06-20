@@ -2059,27 +2059,32 @@ export class UpdateApplicationRequest extends Message<UpdateApplicationRequest> 
   name?: string;
 
   /**
-   * @generated from field: optional string ref_name = 3;
+   * @generated from field: optional string repository_id = 3;
+   */
+  repositoryId?: string;
+
+  /**
+   * @generated from field: optional string ref_name = 4;
    */
   refName?: string;
 
   /**
-   * @generated from field: optional neoshowcase.protobuf.ApplicationConfig config = 4;
+   * @generated from field: optional neoshowcase.protobuf.ApplicationConfig config = 5;
    */
   config?: ApplicationConfig;
 
   /**
-   * @generated from field: optional neoshowcase.protobuf.UpdateApplicationRequest.UpdateWebsites websites = 5;
+   * @generated from field: optional neoshowcase.protobuf.UpdateApplicationRequest.UpdateWebsites websites = 6;
    */
   websites?: UpdateApplicationRequest_UpdateWebsites;
 
   /**
-   * @generated from field: optional neoshowcase.protobuf.UpdateApplicationRequest.UpdatePorts port_publications = 6;
+   * @generated from field: optional neoshowcase.protobuf.UpdateApplicationRequest.UpdatePorts port_publications = 7;
    */
   portPublications?: UpdateApplicationRequest_UpdatePorts;
 
   /**
-   * @generated from field: optional neoshowcase.protobuf.UpdateApplicationRequest.UpdateOwners owner_ids = 7;
+   * @generated from field: optional neoshowcase.protobuf.UpdateApplicationRequest.UpdateOwners owner_ids = 8;
    */
   ownerIds?: UpdateApplicationRequest_UpdateOwners;
 
@@ -2093,11 +2098,12 @@ export class UpdateApplicationRequest extends Message<UpdateApplicationRequest> 
   static readonly fields: FieldList = proto3.util.newFieldList(() => [
     { no: 1, name: "id", kind: "scalar", T: 9 /* ScalarType.STRING */ },
     { no: 2, name: "name", kind: "scalar", T: 9 /* ScalarType.STRING */, opt: true },
-    { no: 3, name: "ref_name", kind: "scalar", T: 9 /* ScalarType.STRING */, opt: true },
-    { no: 4, name: "config", kind: "message", T: ApplicationConfig, opt: true },
-    { no: 5, name: "websites", kind: "message", T: UpdateApplicationRequest_UpdateWebsites, opt: true },
-    { no: 6, name: "port_publications", kind: "message", T: UpdateApplicationRequest_UpdatePorts, opt: true },
-    { no: 7, name: "owner_ids", kind: "message", T: UpdateApplicationRequest_UpdateOwners, opt: true },
+    { no: 3, name: "repository_id", kind: "scalar", T: 9 /* ScalarType.STRING */, opt: true },
+    { no: 4, name: "ref_name", kind: "scalar", T: 9 /* ScalarType.STRING */, opt: true },
+    { no: 5, name: "config", kind: "message", T: ApplicationConfig, opt: true },
+    { no: 6, name: "websites", kind: "message", T: UpdateApplicationRequest_UpdateWebsites, opt: true },
+    { no: 7, name: "port_publications", kind: "message", T: UpdateApplicationRequest_UpdatePorts, opt: true },
+    { no: 8, name: "owner_ids", kind: "message", T: UpdateApplicationRequest_UpdateOwners, opt: true },
   ]);
 
   static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): UpdateApplicationRequest {

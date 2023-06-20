@@ -72,6 +72,7 @@ func (s *APIService) UpdateApplication(ctx context.Context, req *connect.Request
 	log.Infof("websites: %v, is nil: %v", msg.GetWebsites(), msg.GetWebsites() == nil)
 	err := s.svc.UpdateApplication(ctx, msg.Id, &domain.UpdateApplicationArgs{
 		Name:             optional.FromPtr(msg.Name),
+		RepositoryID:     optional.FromPtr(msg.RepositoryId),
 		RefName:          optional.FromPtr(msg.RefName),
 		UpdatedAt:        optional.From(time.Now()),
 		Config:           optional.Map(optional.FromNonZero(msg.Config), pbconvert.FromPBApplicationConfig),

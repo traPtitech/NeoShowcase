@@ -160,6 +160,10 @@ func (r *applicationRepository) UpdateApplication(ctx context.Context, id string
 		app.Name = args.Name.V
 		cols = append(cols, models.ApplicationColumns.Name)
 	}
+	if args.RepositoryID.Valid {
+		app.RepositoryID = args.RepositoryID.V
+		cols = append(cols, models.ApplicationColumns.RepositoryID)
+	}
 	if args.RefName.Valid {
 		app.RefName = args.RefName.V
 		cols = append(cols, models.ApplicationColumns.RefName)
