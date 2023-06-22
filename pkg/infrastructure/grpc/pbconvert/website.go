@@ -35,6 +35,7 @@ func ToPBWebsite(website *domain.Website) *pb.Website {
 		Id:             website.ID,
 		Fqdn:           website.FQDN,
 		PathPrefix:     website.PathPrefix,
+		StripPrefix:    website.StripPrefix,
 		Https:          website.HTTPS,
 		H2C:            website.H2C,
 		HttpPort:       int32(website.HTTPPort),
