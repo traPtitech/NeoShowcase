@@ -15,18 +15,15 @@ import (
 )
 
 func (s *Service) CreateApplication(ctx context.Context, app *domain.Application) (*domain.Application, error) {
+	user := web.GetUser(ctx)
+
 	repo, err := s.gitRepo.GetRepository(ctx, app.RepositoryID)
 	if err != nil {
 		return nil, err
 	}
 
-	// Only check for repository owner if repository is private;
-	// allow everyone to create application if repository is public
-	if repo.Auth.Valid {
-		err = s.isRepositoryOwner(ctx, app.RepositoryID)
-		if err != nil {
-			return nil, err
-		}
+	if !repo.CanCreateApp(user) {
+		return nil, newError(ErrorTypeBadRequest, "you cannot create application from this repository", nil)
 	}
 
 	// Validate
@@ -160,6 +157,8 @@ func (s *Service) GetApplication(ctx context.Context, id string) (*domain.Applic
 }
 
 func (s *Service) UpdateApplication(ctx context.Context, id string, args *domain.UpdateApplicationArgs) error {
+	user := web.GetUser(ctx)
+
 	err := s.isApplicationOwner(ctx, id)
 	if err != nil {
 		return err
@@ -183,6 +182,15 @@ func (s *Service) UpdateApplication(ctx context.Context, id string, args *domain
 		}
 		if valErr != nil {
 			return newError(ErrorTypeBadRequest, "invalid application", valErr)
+		}
+	}
+	if args.RepositoryID.Valid {
+		repo, err := s.gitRepo.GetRepository(ctx, args.RepositoryID.V)
+		if err != nil {
+			return errors.Wrap(err, "getting repository")
+		}
+		if !repo.CanCreateApp(user) {
+			return newError(ErrorTypeBadRequest, "you cannot create application from this repository", nil)
 		}
 	}
 	// Validate immutable fields
