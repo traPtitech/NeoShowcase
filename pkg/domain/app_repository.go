@@ -61,6 +61,12 @@ func (r *Repository) IsOwner(user *User) bool {
 	return user.Admin || lo.Contains(r.OwnerIDs, user.ID)
 }
 
+func (r *Repository) CanCreateApp(user *User) bool {
+	// Only check for repository owner if repository is private;
+	// allow everyone to create application if repository is public
+	return r.IsOwner(user) || !r.Auth.Valid
+}
+
 type RepositoryAuthMethod int
 
 const (

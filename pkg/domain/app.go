@@ -84,23 +84,23 @@ func (a *Application) Validate(
 	existingApps []*Application,
 	domains AvailableDomainSlice,
 	ports AvailablePortSlice,
-) (validateErr error, err error) {
-	if err = a.SelfValidate(); err != nil {
-		return err, nil
+) error {
+	if err := a.SelfValidate(); err != nil {
+		return err
 	}
 
 	// resource availability check
 	for _, website := range a.Websites {
 		if website.Authentication != AuthenticationTypeOff && !domains.IsAuthAvailable(website.FQDN) {
-			return errors.Errorf("auth not available for domain %s", website.FQDN), nil
+			return errors.Errorf("auth not available for domain %s", website.FQDN)
 		}
 		if !domains.IsAvailable(website.FQDN) {
-			return errors.Errorf("domain %s not available", website.FQDN), nil
+			return errors.Errorf("domain %s not available", website.FQDN)
 		}
 	}
 	for _, p := range a.PortPublications {
 		if !ports.IsAvailable(p.InternetPort, p.Protocol) {
-			return errors.Errorf("port %d/%s not available", p.InternetPort, p.Protocol), nil
+			return errors.Errorf("port %d/%s not available", p.InternetPort, p.Protocol)
 		}
 	}
 
@@ -108,15 +108,15 @@ func (a *Application) Validate(
 	// exclude self if contained
 	existingApps = lo.Filter(existingApps, func(app *Application, _ int) bool { return app.ID != a.ID })
 	if a.WebsiteConflicts(existingApps, actor) {
-		return errors.New("website conflict"), nil
+		return errors.New("website conflict")
 	}
 	for _, p := range a.PortPublications {
 		if p.ConflictsWith(existingApps) {
-			return errors.Errorf("port %d/%s conflicts with existing port publication", p.InternetPort, p.Protocol), nil
+			return errors.Errorf("port %d/%s conflicts with existing port publication", p.InternetPort, p.Protocol)
 		}
 	}
 
-	return nil, nil
+	return nil
 }
 
 func (a *Application) IsOwner(user *User) bool {
