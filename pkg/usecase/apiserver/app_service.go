@@ -31,12 +31,9 @@ func (s *Service) CreateApplication(ctx context.Context, app *domain.Application
 	if err != nil {
 		return nil, errors.Wrap(err, "getting existing applications")
 	}
-	valErr, err := app.Validate(web.GetUser(ctx), existingApps, s.systemInfo.AvailableDomains, s.systemInfo.AvailablePorts)
+	err = app.Validate(web.GetUser(ctx), existingApps, s.systemInfo.AvailableDomains, s.systemInfo.AvailablePorts)
 	if err != nil {
-		return nil, errors.Wrap(err, "validating application")
-	}
-	if valErr != nil {
-		return nil, newError(ErrorTypeBadRequest, "invalid application", valErr)
+		return nil, newError(ErrorTypeBadRequest, "invalid application", err)
 	}
 
 	// Create
@@ -176,12 +173,9 @@ func (s *Service) UpdateApplication(ctx context.Context, id string, args *domain
 		if err != nil {
 			return errors.Wrap(err, "getting existing applications")
 		}
-		valErr, err := app.Validate(web.GetUser(ctx), existingApps, s.systemInfo.AvailableDomains, s.systemInfo.AvailablePorts)
+		err = app.Validate(web.GetUser(ctx), existingApps, s.systemInfo.AvailableDomains, s.systemInfo.AvailablePorts)
 		if err != nil {
-			return errors.Wrap(err, "validating application")
-		}
-		if valErr != nil {
-			return newError(ErrorTypeBadRequest, "invalid application", valErr)
+			return newError(ErrorTypeBadRequest, "invalid application", err)
 		}
 	}
 	if args.RepositoryID.Valid {
