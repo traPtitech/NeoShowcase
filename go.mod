@@ -204,4 +204,4 @@ replace (
 replace github.com/Venafi/vcert/v4 => github.com/jetstack/vcert/v4 v4.9.6-0.20230127103832-3aa3dfd6613d
 
 // https://github.com/heroku/docker-registry-client/pull/79
-replace github.com/heroku/docker-registry-client => github.com/motoki317/docker-registry-client v0.0.2
+replace github.com/heroku/docker-registry-client => github.com/traPtitech/docker-registry-client v0.0.2

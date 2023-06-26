@@ -628,8 +628,6 @@ github.com/montanaflynn/stats v0.7.0 h1:r3y12KyNxj/Sb/iOE46ws+3mS1+MZca1wlHQFPsY
 github.com/montanaflynn/stats v0.7.0/go.mod h1:etXPPgVO6n31NxCd9KQUMvCM+ve0ruNzt6R8Bnaayow=
 github.com/morikuni/aec v1.0.0 h1:nP9CBfwrvYnBRgY6qfDQkygYDmYwOilePFkwzv4dU8A=
 github.com/morikuni/aec v1.0.0/go.mod h1:BbKIizmSmc5MMPqRYbxO4ZU0S0+P200+tUnFx7PXmsc=
-github.com/motoki317/docker-registry-client v0.0.2 h1:eAm675RtQaziGAo5S74LBWcxhJIegmz6yiOY9bnkL/s=
-github.com/motoki317/docker-registry-client v0.0.2/go.mod h1:Yho0S7KhsnHQRCC5lDraYF1SsLMeWtf/tKdufKu3TJA=
 github.com/motoki317/sc v1.6.0 h1:zVxu3ut+DhHwMTzQ3cifeHe51FJxCT5Ji2QlEhtWDOE=
 github.com/motoki317/sc v1.6.0/go.mod h1:JFH2KPwRS2StSoQuaMu0e4Kt7ebx439E6MW72Qqg2eQ=
 github.com/mozilla/tls-observatory v0.0.0-20180409132520-8791a200eb40/go.mod h1:SrKMQvPiws7F7iqYp8/TX+IhxCYhzr6N/1yb8cwHsGk=
@@ -799,6 +797,8 @@ github.com/tonistiigi/units v0.0.0-20180711220420-6950e57a87ea h1:SXhTLE6pb6eld/
 github.com/tonistiigi/units v0.0.0-20180711220420-6950e57a87ea/go.mod h1:WPnis/6cRcDZSUvVmezrxJPkiO87ThFYsoUiMwWNDJk=
 github.com/tonistiigi/vt100 v0.0.0-20210615222946-8066bb97264f h1:DLpt6B5oaaS8jyXHa9VA4rrZloBVPVXeCtrOsrFauxc=
 github.com/tonistiigi/vt100 v0.0.0-20210615222946-8066bb97264f/go.mod h1:ulncasL3N9uLrVann0m+CDlJKWsIAP34MPcOJF6VRvc=
+github.com/traPtitech/docker-registry-client v0.0.2 h1:2CiA9PzYzOJba1Q6eXtZka6wU3w1bLbNSLD1VD9UT3M=
+github.com/traPtitech/docker-registry-client v0.0.2/go.mod h1:Yho0S7KhsnHQRCC5lDraYF1SsLMeWtf/tKdufKu3TJA=
 github.com/traefik/paerser v0.2.0 h1:zqCLGSXoNlcBd+mzqSCLjon/I6phqIjeJL2xFB2ysgQ=
 github.com/traefik/paerser v0.2.0/go.mod h1:afzaVcgF8A+MpTnPG4wBr4whjanCSYA6vK5RwaYVtRc=
 github.com/traefik/traefik/v2 v2.10.1 h1:YP034U+yUkHZizCkokUMdV0wecuROJntxwqH5P70Krs=
