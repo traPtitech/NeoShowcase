@@ -797,8 +797,8 @@ github.com/tonistiigi/units v0.0.0-20180711220420-6950e57a87ea h1:SXhTLE6pb6eld/
 github.com/tonistiigi/units v0.0.0-20180711220420-6950e57a87ea/go.mod h1:WPnis/6cRcDZSUvVmezrxJPkiO87ThFYsoUiMwWNDJk=
 github.com/tonistiigi/vt100 v0.0.0-20210615222946-8066bb97264f h1:DLpt6B5oaaS8jyXHa9VA4rrZloBVPVXeCtrOsrFauxc=
 github.com/tonistiigi/vt100 v0.0.0-20210615222946-8066bb97264f/go.mod h1:ulncasL3N9uLrVann0m+CDlJKWsIAP34MPcOJF6VRvc=
-github.com/traPtitech/docker-registry-client v0.0.2 h1:2CiA9PzYzOJba1Q6eXtZka6wU3w1bLbNSLD1VD9UT3M=
-github.com/traPtitech/docker-registry-client v0.0.2/go.mod h1:Yho0S7KhsnHQRCC5lDraYF1SsLMeWtf/tKdufKu3TJA=
+github.com/traPtitech/docker-registry-client v0.0.4 h1:pmBeitIE1cXlBYLyE+TNvc8yKZ34jm26feb9h3CBJh8=
+github.com/traPtitech/docker-registry-client v0.0.4/go.mod h1:Yho0S7KhsnHQRCC5lDraYF1SsLMeWtf/tKdufKu3TJA=
 github.com/traefik/paerser v0.2.0 h1:zqCLGSXoNlcBd+mzqSCLjon/I6phqIjeJL2xFB2ysgQ=
 github.com/traefik/paerser v0.2.0/go.mod h1:afzaVcgF8A+MpTnPG4wBr4whjanCSYA6vK5RwaYVtRc=
 github.com/traefik/traefik/v2 v2.10.1 h1:YP034U+yUkHZizCkokUMdV0wecuROJntxwqH5P70Krs=
