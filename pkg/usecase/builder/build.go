@@ -134,7 +134,7 @@ func (s *builderService) buildSteps(ctx context.Context, st *state) ([]buildStep
 			})
 		}})
 	case *domain.BuildConfigStaticBuildpack:
-		steps = append(steps, buildStep{"Build (Runtime Buildpack)", func() error {
+		steps = append(steps, buildStep{"Build (Static Buildpack)", func() error {
 			return s.buildStaticBuildpackPack(ctx, st, bc)
 		}})
 		steps = append(steps, buildStep{"Extract from Temporary Image", func() error {
