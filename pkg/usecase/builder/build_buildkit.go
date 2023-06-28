@@ -3,6 +3,7 @@ package builder
 import (
 	"bytes"
 	"context"
+	"encoding/json"
 	"fmt"
 	"io"
 	"os"
@@ -13,6 +14,7 @@ import (
 	"github.com/friendsofgo/errors"
 	buildkit "github.com/moby/buildkit/client"
 	"github.com/moby/buildkit/client/llb"
+	"github.com/moby/buildkit/exporter/containerimage/exptypes"
 	"github.com/moby/buildkit/frontend/dockerfile/dockerfile2llb"
 	"github.com/moby/buildkit/session"
 	"github.com/moby/buildkit/session/auth/authprovider"
@@ -113,11 +115,15 @@ func (s *builderService) buildRuntimeCmd(
 		dockerfile.WriteString(fmt.Sprintf("RUN rm ./%v\n", buildScriptName))
 	}
 
-	b, _, _, err := dockerfile2llb.Dockerfile2LLB(ctx, dockerfile.Bytes(), dockerfile2llb.ConvertOpt{
+	b, img, _, err := dockerfile2llb.Dockerfile2LLB(ctx, dockerfile.Bytes(), dockerfile2llb.ConvertOpt{
 		BuildArgs: env,
 	})
 	if err != nil {
 		return err
+	}
+	config, err := json.Marshal(img)
+	if err != nil {
+		return errors.Wrap(err, "marshaling image config")
 	}
 	def, err := b.Marshal(ctx)
 	if err != nil {
@@ -128,9 +134,9 @@ func (s *builderService) buildRuntimeCmd(
 		Exports: []buildkit.ExportEntry{{
 			Type: buildkit.ExporterImage,
 			Attrs: map[string]string{
-				"name":                  s.destImage(st.app, st.build),
-				"push":                  "true",
-				"containerimage.config": "{\"Config\": {\"WorkingDir\": \"/srv\"}}",
+				"name":                          s.destImage(st.app, st.build),
+				"push":                          "true",
+				exptypes.ExporterImageConfigKey: string(config),
 			},
 		}},
 		LocalDirs: map[string]string{
