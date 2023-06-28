@@ -18,6 +18,7 @@ import (
 
 	"github.com/traPtitech/neoshowcase/pkg/domain"
 	"github.com/traPtitech/neoshowcase/pkg/util/ds"
+	"github.com/traPtitech/neoshowcase/pkg/util/hash"
 )
 
 const (
@@ -162,6 +163,10 @@ func appSelector(appID string) map[string]string {
 
 func deploymentName(appID string) string {
 	return fmt.Sprintf("nsapp-%s", appID)
+}
+
+func deploymentNameWithDiscriminator(appID string, content []byte) string {
+	return fmt.Sprintf("nsapp-%s-%s", appID, hash.XXH3Hex(content)[:6])
 }
 
 func generatedPodName(appID string) string {

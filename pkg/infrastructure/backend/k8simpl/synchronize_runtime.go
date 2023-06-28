@@ -1,6 +1,7 @@
 package k8simpl
 
 import (
+	"encoding/json"
 	"fmt"
 	"strings"
 	"time"
@@ -24,6 +25,7 @@ func comparePort(port v1.ContainerPort) string {
 
 func (b *k8sBackend) runtimeSpec(app *domain.RuntimeDesiredState) (*appsv1.StatefulSet, *v1.Service, *v1.Secret) {
 	var secret *v1.Secret
+	var envs []v1.EnvVar
 	if len(app.Envs) > 0 {
 		secret = &v1.Secret{
 			TypeMeta: metav1.TypeMeta{
@@ -37,15 +39,19 @@ func (b *k8sBackend) runtimeSpec(app *domain.RuntimeDesiredState) (*appsv1.State
 			},
 			StringData: app.Envs,
 		}
+		// NOTE: marshaling map[string]string is stable (json.Marshal sorts by key)
+		b, _ := json.Marshal(secret)
+		secret.Name = deploymentNameWithDiscriminator(app.App.ID, b)
+
+		envs = lo.MapToSlice(app.Envs, func(key string, value string) v1.EnvVar {
+			return v1.EnvVar{Name: key, ValueFrom: &v1.EnvVarSource{SecretKeyRef: &v1.SecretKeySelector{
+				LocalObjectReference: v1.LocalObjectReference{Name: secret.Name},
+				Key:                  key,
+			}}}
+		})
+		// make sure computed result is stable
+		slices.SortFunc(envs, func(a, b v1.EnvVar) bool { return strings.Compare(a.Name, b.Name) < 0 })
 	}
-	envs := lo.MapToSlice(app.Envs, func(key string, value string) v1.EnvVar {
-		return v1.EnvVar{Name: key, ValueFrom: &v1.EnvVarSource{SecretKeyRef: &v1.SecretKeySelector{
-			LocalObjectReference: v1.LocalObjectReference{Name: deploymentName(app.App.ID)},
-			Key:                  key,
-		}}}
-	})
-	// make sure computed result is stable
-	slices.SortFunc(envs, func(a, b v1.EnvVar) bool { return strings.Compare(a.Name, b.Name) < 0 })
 
 	cont := v1.Container{
 		Name:            podContainerName,
