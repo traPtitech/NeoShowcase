@@ -120,12 +120,17 @@ func (s *sshServer) publicKeyHandler(ctx ssh.Context, key ssh.PublicKey) bool {
 }
 
 func (s *sshServer) handler(sess ssh.Session) {
-	writeErrAndClose := func(err error) {
+	err := s.handle(sess)
+	if err != nil {
 		log.Errorf("%+v", err)
 		_, _ = sess.Write([]byte(err.Error() + "\n"))
 		_ = sess.Exit(1)
+		return
 	}
+	_ = sess.Exit(0)
+}
 
+func (s *sshServer) handle(sess ssh.Session) error {
 	appID := sess.User()
 	sessID := domain.NewID()
 	log.Infof("new ssh connection into app %s (session id: %v)", appID, sessID)
@@ -133,22 +138,49 @@ func (s *sshServer) handler(sess ssh.Session) {
 
 	app, err := s.appRepo.GetApplication(sess.Context(), appID)
 	if err != nil {
-		writeErrAndClose(errors.Wrapf(err, "retrieving app with id %v", appID))
-		return
+		return errors.Wrapf(err, "retrieving app with id %v", appID)
 	}
 
 	_, _ = sess.Write([]byte(figWelcome))
 	_, _ = sess.Write([]byte{'\n'})
-	_, _ = sess.Write([]byte(fmt.Sprintf("Welcome to NeoShowcase! Connecting to application %s (id: %s) ...\n", app.Name, appID)))
+	_, _ = sess.Write([]byte("Welcome to NeoShowcase!\n"))
+	_, _ = sess.Write([]byte{'\n'})
+	_, _ = sess.Write([]byte(fmt.Sprintf("You are now connecting to application %s (id: %s) ...\n", app.Name, appID)))
+	_, _ = sess.Write([]byte{'\n'})
 
 	cmd := sess.Command()
-	if len(cmd) == 0 {
-		cmd = []string{"/bin/sh"}
+	if len(cmd) > 0 {
+		return s.backend.ExecContainer(sess.Context(), appID, cmd, sess, sess, sess.Stderr())
 	}
-	err = s.backend.ExecContainer(sess.Context(), appID, cmd, sess, sess, sess.Stderr())
-	if err != nil {
-		writeErrAndClose(err)
-		return
+
+	_, _ = sess.Write([]byte("[1]: Launch shell process in container\n"))
+	_, _ = sess.Write([]byte("[2]: Attach to main process\n"))
+	_, _ = sess.Write([]byte{'\n'})
+
+	for {
+		_, _ = sess.Write([]byte("Choose [1/2] (default: 1): "))
+
+		var resp [1]byte
+		_, err = sess.Read(resp[:])
+		if err != nil {
+			return errors.Wrap(err, "reading response")
+		}
+
+		_, _ = sess.Write([]byte{'\n'})
+
+		switch resp[0] {
+		case '1', '\n', '\r':
+			_, _ = sess.Write([]byte("Launching shell...\n"))
+			return s.backend.ExecContainer(sess.Context(), appID, []string{"/bin/sh"}, sess, sess, sess.Stderr())
+		case '2':
+			_, _ = sess.Write([]byte("Attaching to main process...\n"))
+			return s.backend.AttachContainer(sess.Context(), appID, sess, sess, sess.Stderr())
+		}
+		_, _ = sess.Write([]byte(fmt.Sprintf("unrecognized option: %v\n", resp[0])))
+
+		// check control sequence
+		if resp[0] < 32 {
+			return nil
+		}
 	}
-	_ = sess.Exit(0)
 }

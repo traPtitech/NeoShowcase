@@ -70,5 +70,6 @@ type Backend interface {
 	Synchronize(ctx context.Context, s *DesiredState) error
 	GetContainer(ctx context.Context, appID string) (*Container, error)
 	ListContainers(ctx context.Context) ([]*Container, error)
+	AttachContainer(ctx context.Context, appID string, stdin io.Reader, stdout, stderr io.Writer) error
 	ExecContainer(ctx context.Context, appID string, cmd []string, stdin io.Reader, stdout, stderr io.Writer) error
 }
