@@ -10,6 +10,7 @@ rules:
       - secrets
       - services
       - pods
+      - pods/attach
       - pods/exec
     verbs:
       - "*"
