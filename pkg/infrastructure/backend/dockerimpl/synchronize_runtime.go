@@ -63,6 +63,8 @@ func (b *dockerBackend) syncAppContainer(ctx context.Context, app *domain.Runtim
 		Labels:       b.containerLabels(app.App),
 		Env:          envs,
 		ExposedPorts: make(map[nat.Port]struct{}),
+		OpenStdin:    true,
+		Tty:          true,
 	}
 	if args, _ := domain.ParseArgs(app.App.Config.BuildConfig.GetRuntimeConfig().Entrypoint); len(args) > 0 {
 		config.Entrypoint = args
