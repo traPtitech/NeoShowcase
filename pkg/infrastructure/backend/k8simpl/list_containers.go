@@ -4,6 +4,7 @@ import (
 	"context"
 
 	"github.com/friendsofgo/errors"
+	"github.com/samber/lo"
 	"k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
@@ -49,16 +50,22 @@ func (b *k8sBackend) ListContainers(ctx context.Context) ([]*domain.Container, e
 }
 
 func getContainerState(status v1.PodStatus) domain.ContainerState {
-	switch status.Phase {
-	case v1.PodPending:
-		return domain.ContainerStateStarting
-	case v1.PodRunning:
-		return domain.ContainerStateRunning
-	case v1.PodFailed:
-		return domain.ContainerStateErrored
-	case v1.PodSucceeded:
-		return domain.ContainerStateExited
-	default:
-		return domain.ContainerStateUnknown
+	cs, ok := lo.Find(status.ContainerStatuses, func(cs v1.ContainerStatus) bool { return cs.Name == podContainerName })
+	if !ok {
+		return domain.ContainerStateMissing
 	}
+	if cs.State.Waiting != nil {
+		return domain.ContainerStateStarting
+	}
+	if cs.State.Running != nil {
+		return domain.ContainerStateRunning
+	}
+	if cs.State.Terminated != nil {
+		if cs.State.Terminated.ExitCode == 0 {
+			return domain.ContainerStateExited
+		} else {
+			return domain.ContainerStateErrored
+		}
+	}
+	return domain.ContainerStateUnknown
 }
