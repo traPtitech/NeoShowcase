@@ -168,6 +168,12 @@ func (r *applicationRepository) UpdateApplication(ctx context.Context, id string
 		app.RefName = args.RefName.V
 		cols = append(cols, models.ApplicationColumns.RefName)
 	}
+	if args.Config.Valid {
+		app.DeployType = repoconvert.DeployTypeMapper.FromMust(
+			args.Config.V.BuildConfig.BuildType().DeployType(),
+		)
+		cols = append(cols, models.ApplicationColumns.DeployType)
+	}
 	if args.Running.Valid {
 		app.Running = args.Running.V
 		cols = append(cols, models.ApplicationColumns.Running)
