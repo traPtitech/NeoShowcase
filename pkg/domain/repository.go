@@ -58,6 +58,7 @@ func (a *Application) Apply(args *UpdateApplicationArgs) {
 		a.UpdatedAt = args.UpdatedAt.V
 	}
 	if args.Config.Valid {
+		a.DeployType = args.Config.V.BuildConfig.BuildType().DeployType()
 		a.Config = args.Config.V
 	}
 	if args.Websites.Valid {

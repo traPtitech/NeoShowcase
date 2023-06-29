@@ -14,7 +14,7 @@ type ApplicationConfig struct {
 
 func (c *ApplicationConfig) Validate(deployType DeployType) error {
 	if c.BuildConfig.BuildType().DeployType() != deployType {
-		return errors.New("cannot change deploy type from runtime to static (or vice versa)")
+		return errors.New("deploy type doesn't match build type")
 	}
 	if err := c.BuildConfig.Validate(); err != nil {
 		return errors.Wrap(err, "invalid build_config")

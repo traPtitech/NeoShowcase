@@ -5,7 +5,6 @@ import (
 	"time"
 
 	"github.com/bufbuild/connect-go"
-	log "github.com/sirupsen/logrus"
 	"google.golang.org/protobuf/types/known/emptypb"
 
 	"github.com/traPtitech/neoshowcase/pkg/domain"
@@ -69,7 +68,6 @@ func (s *APIService) GetApplication(ctx context.Context, req *connect.Request[pb
 
 func (s *APIService) UpdateApplication(ctx context.Context, req *connect.Request[pb.UpdateApplicationRequest]) (*connect.Response[emptypb.Empty], error) {
 	msg := req.Msg
-	log.Infof("websites: %v, is nil: %v", msg.GetWebsites(), msg.GetWebsites() == nil)
 	err := s.svc.UpdateApplication(ctx, msg.Id, &domain.UpdateApplicationArgs{
 		Name:             optional.FromPtr(msg.Name),
 		RepositoryID:     optional.FromPtr(msg.RepositoryId),

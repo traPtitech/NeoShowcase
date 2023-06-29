@@ -3,7 +3,7 @@ import { SetStoreFunction } from 'solid-js/store'
 import { InputArea, InputBar, InputLabel } from '/@/components/Input'
 import { FormCheckBox, FormSettings } from '/@/components/AppsNew'
 import { Checkbox } from '/@/components/Checkbox'
-import { Match, Switch } from 'solid-js'
+import { createEffect, Match, Switch } from 'solid-js'
 import { Radio, RadioItem } from '/@/components/Radio'
 import { PlainMessage } from '@bufbuild/protobuf'
 
@@ -97,6 +97,19 @@ export interface BuildConfigsProps {
   setBuildConfig: SetStoreFunction<PlainMessage<ApplicationConfig>['buildConfig']>
 }
 export const BuildConfigs = (props: BuildConfigsProps) => {
+  createEffect(() => {
+    if (!props.buildConfig.value['runtimeConfig']) {
+      // @ts-ignore
+      props.setBuildConfig('value', 'runtimeConfig', structuredClone(new RuntimeConfig()))
+    }
+  })
+  createEffect(() => {
+    if (!props.buildConfig.value['staticConfig']) {
+      // @ts-ignore
+      props.setBuildConfig('value', 'staticConfig', structuredClone(new StaticConfig()))
+    }
+  })
+
   return (
     <FormSettings>
       <div>
