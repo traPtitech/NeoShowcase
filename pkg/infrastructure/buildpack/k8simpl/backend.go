@@ -97,7 +97,7 @@ func (k *k8sBackend) exec(ctx context.Context, workDir string, cmd string, env m
 		Namespace(k.config.Namespace).SubResource("exec")
 	var shCmds []string
 	for k, v := range env {
-		shCmds = append(shCmds, fmt.Sprintf("export %v=%v", k, v))
+		shCmds = append(shCmds, fmt.Sprintf("export %v=\"%v\"", k, strings.ReplaceAll(v, `"`, `\"`)))
 	}
 	shCmds = append(shCmds,
 		"cd "+workDir,
