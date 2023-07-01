@@ -25,7 +25,7 @@ require (
 	github.com/motoki317/sc v1.6.0
 	github.com/ncw/swift v1.0.53
 	github.com/samber/lo v1.38.1
-	github.com/shiguredo/websocket v1.6.0
+	github.com/shiguredo/websocket v1.6.1
 	github.com/sirupsen/logrus v1.9.0
 	github.com/sourcegraph/conc v0.3.0
 	github.com/spf13/cobra v1.7.0
