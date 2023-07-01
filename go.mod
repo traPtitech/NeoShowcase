@@ -5,7 +5,7 @@ go 1.20
 require (
 	code.gitea.io/sdk/gitea v0.15.1
 	github.com/aws/aws-sdk-go v1.44.273
-	github.com/bufbuild/connect-go v1.8.0
+	github.com/bufbuild/connect-go v1.9.0
 	github.com/cert-manager/cert-manager v1.11.1
 	github.com/docker/cli v24.0.0-rc.2+incompatible
 	github.com/docker/docker v23.0.5+incompatible
@@ -43,7 +43,7 @@ require (
 	golang.org/x/net v0.10.0
 	golang.org/x/sync v0.2.0
 	google.golang.org/grpc v1.55.0
-	google.golang.org/protobuf v1.30.0
+	google.golang.org/protobuf v1.31.0
 	gopkg.in/yaml.v2 v2.4.0
 	k8s.io/api v0.27.1
 	k8s.io/apimachinery v0.27.1
