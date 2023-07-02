@@ -114,17 +114,14 @@ jobs:
             --k3s-arg "--disable=traefik,servicelb,metrics-server@server:0"
       - name: Show cluster info
         run: |
-          echo ${{ steps.single-cluster.outputs.network }} ${{ steps.single-cluster.outputs.subnet-CIDR }}
-          echo
-          kubectl cluster-info --context k3d-test-cluster
-      - name: Show nodes
-        # hack, wait until agents are ready...
-        run: |
+          echo ${{ steps.single-cluster.outputs.network }}
+          echo ${{ steps.single-cluster.outputs.subnet-CIDR }}
           docker ps -a
-          sleep 10
+          kubectl cluster-info --context k3d-test-cluster
           kubectl config use-context k3d-test-cluster
           kubectl get nodes -o wide
-          kubectl create ns neoshowcase-apps
+      - name: Create namespace
+        run: kubectl create ns neoshowcase-apps
       - name: Install CRDs
         run: |
           kubectl apply -f https://raw.githubusercontent.com/traefik/traefik/v2.10/docs/content/reference/dynamic-configuration/kubernetes-crd-definition-v1.yml
