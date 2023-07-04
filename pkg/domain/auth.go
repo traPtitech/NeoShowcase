@@ -37,7 +37,7 @@ func EncodePrivateKeyPem(privKey ed25519.PrivateKey) (string, error) {
 	return res.String(), nil
 }
 
-func GitAuthMethod(repo *Repository, sshFallback *ssh.PublicKeys) (transport.AuthMethod, error) {
+func GitAuthMethod(repo *Repository, fallbackKey *ssh.PublicKeys) (transport.AuthMethod, error) {
 	var auth transport.AuthMethod
 	if repo.Auth.Valid {
 		switch repo.Auth.V.Method {
@@ -54,7 +54,7 @@ func GitAuthMethod(repo *Repository, sshFallback *ssh.PublicKeys) (transport.Aut
 				}
 				auth = keys
 			} else {
-				auth = sshFallback
+				auth = fallbackKey
 			}
 		}
 	}

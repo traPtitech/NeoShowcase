@@ -3,10 +3,12 @@ package main
 import (
 	"fmt"
 	"net/http"
+	"os"
 	"strings"
 
 	"github.com/bufbuild/connect-go"
 	"github.com/friendsofgo/errors"
+	"github.com/go-git/go-git/v5/plumbing/transport/ssh"
 	"github.com/spf13/viper"
 
 	"github.com/traPtitech/neoshowcase/pkg/domain"
@@ -20,16 +22,17 @@ import (
 )
 
 type Config struct {
-	Port          int                                `mapstructure:"port" yaml:"port"`
-	Debug         bool                               `mapstructure:"debug" yaml:"debug"`
-	AvatarBaseURL domain.AvatarBaseURL               `mapstructure:"avatarBaseURL" yaml:"avatarBaseURL"`
-	AuthHeader    grpc.AuthHeader                    `mapstructure:"authHeader" yaml:"authHeader"`
-	Controller    grpc.ControllerServiceClientConfig `mapstructure:"controller" yaml:"controller"`
-	DB            repository.Config                  `mapstructure:"db" yaml:"db"`
-	MariaDB       dbmanager.MariaDBConfig            `mapstructure:"mariadb" yaml:"mariadb"`
-	MongoDB       dbmanager.MongoDBConfig            `mapstructure:"mongodb" yaml:"mongodb"`
-	Storage       domain.StorageConfig               `mapstructure:"storage" yaml:"storage"`
-	Log           struct {
+	Port           int                                `mapstructure:"port" yaml:"port"`
+	Debug          bool                               `mapstructure:"debug" yaml:"debug"`
+	PrivateKeyFile string                             `mapstructure:"privateKeyFile" yaml:"privateKeyFile"`
+	AvatarBaseURL  domain.AvatarBaseURL               `mapstructure:"avatarBaseURL" yaml:"avatarBaseURL"`
+	AuthHeader     grpc.AuthHeader                    `mapstructure:"authHeader" yaml:"authHeader"`
+	Controller     grpc.ControllerServiceClientConfig `mapstructure:"controller" yaml:"controller"`
+	DB             repository.Config                  `mapstructure:"db" yaml:"db"`
+	MariaDB        dbmanager.MariaDBConfig            `mapstructure:"mariadb" yaml:"mariadb"`
+	MongoDB        dbmanager.MongoDBConfig            `mapstructure:"mongodb" yaml:"mongodb"`
+	Storage        domain.StorageConfig               `mapstructure:"storage" yaml:"storage"`
+	Log            struct {
 		Type string      `mapstructure:"type" yaml:"type"`
 		Loki loki.Config `mapstructure:"loki" yaml:"loki"`
 	} `mapstructure:"log" yaml:"log"`
@@ -38,6 +41,7 @@ type Config struct {
 func init() {
 	viper.SetDefault("port", 8080)
 	viper.SetDefault("debug", false)
+	viper.SetDefault("privateKeyFile", "")
 	viper.SetDefault("avatarBaseURL", "https://q.trap.jp/api/v3/public/icon/")
 	viper.SetDefault("authHeader", "X-Showcase-User")
 
@@ -79,6 +83,14 @@ func init() {
 	viper.SetDefault("log.type", "loki")
 	viper.SetDefault("log.loki.endpoint", "http://loki:3100")
 	viper.SetDefault("log.loki.appIDLabel", "ns_trap_jp_app_id")
+}
+
+func providePublicKey(c Config) (*ssh.PublicKeys, error) {
+	bytes, err := os.ReadFile(c.PrivateKeyFile)
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to open private key file")
+	}
+	return domain.NewPublicKey(bytes)
 }
 
 func provideStorage(c domain.StorageConfig) (domain.Storage, error) {

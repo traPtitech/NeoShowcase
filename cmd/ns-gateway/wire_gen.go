@@ -52,7 +52,11 @@ func NewServer(c2 Config) (*Server, error) {
 	}
 	controllerServiceClientConfig := c2.Controller
 	controllerServiceClient := grpc.NewControllerServiceClient(controllerServiceClientConfig)
-	service, err := apiserver.NewService(artifactRepository, applicationRepository, buildRepository, environmentRepository, gitRepositoryRepository, userRepository, storage, mariaDBManager, mongoDBManager, containerLogger, controllerServiceClient)
+	publicKeys, err := providePublicKey(c2)
+	if err != nil {
+		return nil, err
+	}
+	service, err := apiserver.NewService(artifactRepository, applicationRepository, buildRepository, environmentRepository, gitRepositoryRepository, userRepository, storage, mariaDBManager, mongoDBManager, containerLogger, controllerServiceClient, publicKeys)
 	if err != nil {
 		return nil, err
 	}

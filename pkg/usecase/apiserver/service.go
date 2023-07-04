@@ -4,6 +4,7 @@ import (
 	"context"
 
 	"github.com/friendsofgo/errors"
+	"github.com/go-git/go-git/v5/plumbing/transport/ssh"
 
 	"github.com/traPtitech/neoshowcase/pkg/domain"
 	"github.com/traPtitech/neoshowcase/pkg/domain/web"
@@ -31,6 +32,7 @@ type Service struct {
 	mongoDBManager  domain.MongoDBManager
 	containerLogger domain.ContainerLogger
 	controller      domain.ControllerServiceClient
+	fallbackKey     *ssh.PublicKeys
 
 	systemInfo *domain.SystemInfo
 	tmpKeys    *tmpKeyPairService
@@ -48,6 +50,7 @@ func NewService(
 	mongoDBManager domain.MongoDBManager,
 	containerLogger domain.ContainerLogger,
 	controller domain.ControllerServiceClient,
+	fallbackKey *ssh.PublicKeys,
 ) (*Service, error) {
 	systemInfo, err := controller.GetSystemInfo(context.Background())
 	if err != nil {
@@ -65,6 +68,7 @@ func NewService(
 		mongoDBManager:  mongoDBManager,
 		containerLogger: containerLogger,
 		controller:      controller,
+		fallbackKey:     fallbackKey,
 
 		systemInfo: systemInfo,
 		tmpKeys:    newTmpKeyPairService(),
