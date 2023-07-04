@@ -1,5 +1,6 @@
 port: 8080
 debug: false
+privateKeyFile: /keys/id_ed25519
 avatarBaseURL: https://q.trap.jp/api/v3/public/icon/
 headerName: X-Showcase-User
 
