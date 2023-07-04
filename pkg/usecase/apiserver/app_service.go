@@ -2,6 +2,7 @@ package apiserver
 
 import (
 	"context"
+	"fmt"
 	"strconv"
 
 	"github.com/friendsofgo/errors"
@@ -14,26 +15,43 @@ import (
 	"github.com/traPtitech/neoshowcase/pkg/util/random"
 )
 
-func (s *Service) CreateApplication(ctx context.Context, app *domain.Application) (*domain.Application, error) {
-	user := web.GetUser(ctx)
-
-	repo, err := s.gitRepo.GetRepository(ctx, app.RepositoryID)
-	if err != nil {
-		return nil, err
-	}
-
-	if !repo.CanCreateApp(user) {
-		return nil, newError(ErrorTypeBadRequest, "you cannot create application from this repository", nil)
-	}
-
-	// Validate
+func (s *Service) validateApp(ctx context.Context, app *domain.Application) error {
+	// Validate app fields and conflict
 	existingApps, err := s.appRepo.GetApplications(ctx, domain.GetApplicationCondition{})
 	if err != nil {
-		return nil, errors.Wrap(err, "getting existing applications")
+		return errors.Wrap(err, "getting existing applications")
 	}
 	err = app.Validate(web.GetUser(ctx), existingApps, s.systemInfo.AvailableDomains, s.systemInfo.AvailablePorts)
 	if err != nil {
-		return nil, newError(ErrorTypeBadRequest, "invalid application", err)
+		return newError(ErrorTypeBadRequest, "invalid application", err)
+	}
+
+	// Validate repository owner
+	user := web.GetUser(ctx)
+	repo, err := s.gitRepo.GetRepository(ctx, app.RepositoryID)
+	if err != nil {
+		return err
+	}
+	if !repo.CanCreateApp(user) {
+		return newError(ErrorTypeBadRequest, "you cannot create application from this repository", nil)
+	}
+
+	// Validate ref by making request
+	refMap, err := repo.ResolveRefs(ctx, s.fallbackKey)
+	if err != nil {
+		return newError(ErrorTypeBadRequest, "cannot fetch repository, check auth setting", err)
+	}
+	if _, ok := refMap[app.RefName]; !ok {
+		return newError(ErrorTypeBadRequest, fmt.Sprintf("ref %v not found", app.RefName), nil)
+	}
+	return nil
+}
+
+func (s *Service) CreateApplication(ctx context.Context, app *domain.Application) (*domain.Application, error) {
+	// Validate
+	err := s.validateApp(ctx, app)
+	if err != nil {
+		return nil, err
 	}
 
 	// Create
@@ -154,8 +172,6 @@ func (s *Service) GetApplication(ctx context.Context, id string) (*domain.Applic
 }
 
 func (s *Service) UpdateApplication(ctx context.Context, id string, args *domain.UpdateApplicationArgs) error {
-	user := web.GetUser(ctx)
-
 	err := s.isApplicationOwner(ctx, id)
 	if err != nil {
 		return err
@@ -168,24 +184,8 @@ func (s *Service) UpdateApplication(ctx context.Context, id string, args *domain
 	app.Apply(args)
 
 	// Validate
-	{
-		existingApps, err := s.appRepo.GetApplications(ctx, domain.GetApplicationCondition{})
-		if err != nil {
-			return errors.Wrap(err, "getting existing applications")
-		}
-		err = app.Validate(web.GetUser(ctx), existingApps, s.systemInfo.AvailableDomains, s.systemInfo.AvailablePorts)
-		if err != nil {
-			return newError(ErrorTypeBadRequest, "invalid application", err)
-		}
-	}
-	if args.RepositoryID.Valid {
-		repo, err := s.gitRepo.GetRepository(ctx, args.RepositoryID.V)
-		if err != nil {
-			return errors.Wrap(err, "getting repository")
-		}
-		if !repo.CanCreateApp(user) {
-			return newError(ErrorTypeBadRequest, "you cannot create application from this repository", nil)
-		}
+	if err = s.validateApp(ctx, app); err != nil {
+		return err
 	}
 	// Validate immutable fields
 	{
