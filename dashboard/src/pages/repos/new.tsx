@@ -1,14 +1,13 @@
 import { JSX, JSXElement, createEffect } from 'solid-js'
 import { createStore } from 'solid-js/store'
 import toast from 'solid-toast'
-import { ConnectError } from '@bufbuild/connect'
 import { PlainMessage } from '@bufbuild/protobuf'
 import { styled } from '@macaron-css/solid'
 import { useNavigate } from '@solidjs/router'
 import { CreateRepositoryAuth, CreateRepositoryRequest } from '/@/api/neoshowcase/protobuf/gateway_pb'
 import { Button } from '/@/components/Button'
 import { Header } from '/@/components/Header'
-import { client } from '/@/libs/api'
+import { client, handleAPIError } from '/@/libs/api'
 import { Container } from '/@/libs/layout'
 import { vars } from '/@/theme'
 import { extractRepositoryNameFromURL } from '/@/libs/application'
@@ -94,11 +93,7 @@ export default () => {
       // リポジトリページに遷移
       navigate(`/repos/${res.id}`)
     } catch (e) {
-      console.error(e)
-      // gRPCエラー
-      if (e instanceof ConnectError) {
-        toast.error('リポジトリの登録に失敗しました\n' + e.message)
-      }
+      return handleAPIError(e, 'リポジトリの登録に失敗しました')
     }
   }
 

@@ -1,6 +1,6 @@
 import { Header } from '/@/components/Header'
 import { createResource, JSX, Show } from 'solid-js'
-import { client } from '/@/libs/api'
+import { client, handleAPIError } from '/@/libs/api'
 import {
   ApplicationConfig,
   CreateApplicationRequest,
@@ -17,7 +17,6 @@ import { Button } from '/@/components/Button'
 import { Checkbox } from '/@/components/Checkbox'
 import { createStore } from 'solid-js/store'
 import toast from 'solid-toast'
-import { ConnectError } from '@bufbuild/connect'
 import { RepositoryInfo } from '/@/components/RepositoryInfo'
 import { InputBar, InputLabel } from '/@/components/Input'
 import { FormCheckBox, FormTextBig } from '/@/components/AppsNew'
@@ -132,11 +131,7 @@ export default () => {
       // Application詳細ページに遷移
       navigate(`/apps/${res.id}`)
     } catch (e) {
-      console.error(e)
-      // gRPCエラー
-      if (e instanceof ConnectError) {
-        toast.error('アプリケーションの登録に失敗しました\n' + e.message)
-      }
+      return handleAPIError(e, 'アプリケーションの登録に失敗しました')
     }
   }
 

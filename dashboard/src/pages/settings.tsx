@@ -1,13 +1,12 @@
 import { Header } from '/@/components/Header'
 import { Component, createResource, createSignal, For, JSX, Show } from 'solid-js'
-import { client } from '/@/libs/api'
+import { client, handleAPIError } from '/@/libs/api'
 import { styled } from '@macaron-css/solid'
 import { vars } from '/@/theme'
 import { Container } from '/@/libs/layout'
 import { Button } from '/@/components/Button'
 import { InputBar, InputLabel } from '/@/components/Input'
 import toast from 'solid-toast'
-import { ConnectError } from '@bufbuild/connect'
 import { style } from '@macaron-css/core'
 
 // copy from /pages/apps AppsTitle component
@@ -127,11 +126,7 @@ export default () => {
       toast.success('公開鍵を削除しました')
       refetchKeys()
     } catch (e) {
-      console.error(e)
-      // gRPCエラー
-      if (e instanceof ConnectError) {
-        toast.error('公開鍵の削除に失敗しました\n' + e.message)
-      }
+      return handleAPIError(e, '公開鍵の削除に失敗しました')
     }
   }
 
@@ -154,11 +149,7 @@ export default () => {
         setInput('')
         refetchKeys()
       } catch (e) {
-        console.error(e)
-        // gRPCエラー
-        if (e instanceof ConnectError) {
-          toast.error('公開鍵の登録に失敗しました\n' + e.message)
-        }
+        return handleAPIError(e, '公開鍵の登録に失敗しました')
       }
     }
 
