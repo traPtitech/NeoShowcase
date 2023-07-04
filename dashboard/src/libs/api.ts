@@ -13,7 +13,8 @@ export const [user] = createResource(() => client.getMe({}))
 export const [systemInfo] = createResource(() => client.getSystemInfo({}))
 
 export const handleAPIError = (e, message: string) => {
-  if (e.message) { //' e instanceof ConnectError' does not work for some reason
+  if (e.message) {
+    //' e instanceof ConnectError' does not work for some reason
     toast.error(`${message}\n${e.message}`)
   } else {
     console.trace(e)
