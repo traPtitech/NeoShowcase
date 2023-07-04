@@ -29,7 +29,12 @@ spec:
             - mountPath: /opt/config/ns-gateway.yaml
               name: config
               subPath: ns-gateway.yaml
+            - mountPath: /keys
+              name: keys
       volumes:
         - name: config
           configMap:
             name: ns-config
+        - name: keys
+          secret:
+            secretName: ns-keys

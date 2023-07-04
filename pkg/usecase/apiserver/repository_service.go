@@ -38,7 +38,6 @@ func (s *Service) convertRepositoryAuth(a CreateRepositoryAuth) (domain.Reposito
 		if !ok {
 			return domain.RepositoryAuth{}, newError(ErrorTypeBadRequest, fmt.Sprintf("key %v does not exist", a.KeyID), nil)
 		}
-		s.tmpKeys.Forget(a.KeyID)
 		pem, err := domain.EncodePrivateKeyPem(key)
 		if err != nil {
 			return domain.RepositoryAuth{}, err
@@ -60,8 +59,11 @@ func (s *Service) CreateRepository(ctx context.Context, name, url string, auth o
 	user := web.GetUser(ctx)
 	repo := domain.NewRepository(name, url, dAuth, []string{user.ID})
 
-	if err := repo.Validate(); err != nil {
+	if err = repo.Validate(); err != nil {
 		return nil, newError(ErrorTypeBadRequest, "invalid repository", err)
+	}
+	if _, err = repo.ResolveRefs(ctx, s.fallbackKey); err != nil {
+		return nil, newError(ErrorTypeBadRequest, "cannot fetch repository, check auth setting", err)
 	}
 
 	return repo, s.gitRepo.CreateRepository(ctx, repo)
@@ -134,6 +136,9 @@ func (s *Service) UpdateRepository(ctx context.Context, id string, args *UpdateR
 	repo.Apply(dArgs)
 	if err = repo.Validate(); err != nil {
 		return newError(ErrorTypeBadRequest, "invalid repository", err)
+	}
+	if _, err = repo.ResolveRefs(ctx, s.fallbackKey); err != nil {
+		return newError(ErrorTypeBadRequest, "cannot fetch repository, check auth setting", err)
 	}
 
 	return s.gitRepo.UpdateRepository(ctx, id, dArgs)

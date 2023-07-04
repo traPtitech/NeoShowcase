@@ -3,13 +3,16 @@ package domain
 import (
 	"context"
 
+	"github.com/go-git/go-git/v5/plumbing/transport/ssh"
+
 	"github.com/traPtitech/neoshowcase/pkg/infrastructure/grpc/pb"
 	"github.com/traPtitech/neoshowcase/pkg/infrastructure/grpc/pb/pbconnect"
 )
 
 type SystemInfo struct {
-	PublicKey string
-	SSHInfo   struct {
+	PublicKey  string
+	PrivateKey *ssh.PublicKeys
+	SSHInfo    struct {
 		Host string
 		Port int
 	}

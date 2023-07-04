@@ -2,15 +2,11 @@ package repofetcher
 
 import (
 	"context"
-	"fmt"
 	"math"
 	"sync"
 	"time"
 
 	"github.com/friendsofgo/errors"
-	"github.com/go-git/go-git/v5"
-	"github.com/go-git/go-git/v5/config"
-	"github.com/go-git/go-git/v5/plumbing"
 	"github.com/go-git/go-git/v5/plumbing/transport/ssh"
 	"github.com/samber/lo"
 	log "github.com/sirupsen/logrus"
@@ -185,42 +181,8 @@ func (r *service) fetchOne(ctx context.Context, repositoryID string) error {
 	return r.updateApps(ctx, repo, apps)
 }
 
-func (r *service) resolveRefs(ctx context.Context, repo *domain.Repository) (refToCommit map[string]string, err error) {
-	auth, err := domain.GitAuthMethod(repo, r.pubKey)
-	if err != nil {
-		return nil, err
-	}
-	remote := git.NewRemote(nil, &config.RemoteConfig{
-		Name: "origin",
-		URLs: []string{repo.URL},
-	})
-	refs, err := remote.ListContext(ctx, &git.ListOptions{
-		Auth: auth,
-	})
-	if err != nil {
-		return nil, errors.Wrap(err, fmt.Sprintf("failed to list remote refs at %v", repo.URL))
-	}
-
-	refToCommit = make(map[string]string, 2*len(refs))
-	for _, ref := range refs {
-		if ref.Type() == plumbing.HashReference {
-			refToCommit[ref.Name().String()] = ref.Hash().String()
-			refToCommit[ref.Name().Short()] = ref.Hash().String()
-		}
-	}
-	for _, ref := range refs {
-		if ref.Type() == plumbing.SymbolicReference {
-			commit, ok := refToCommit[ref.Target().String()]
-			if ok {
-				refToCommit[ref.Name().String()] = commit
-			}
-		}
-	}
-	return refToCommit, nil
-}
-
 func (r *service) updateApps(ctx context.Context, repo *domain.Repository, apps []*domain.Application) error {
-	refToCommit, err := r.resolveRefs(ctx, repo)
+	refToCommit, err := repo.ResolveRefs(ctx, r.pubKey)
 	if err != nil {
 		return err
 	}

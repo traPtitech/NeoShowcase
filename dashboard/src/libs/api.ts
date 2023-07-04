@@ -1,4 +1,4 @@
-import { ConnectError, createPromiseClient } from '@bufbuild/connect'
+import { createPromiseClient } from '@bufbuild/connect'
 import { createConnectTransport } from '@bufbuild/connect-web'
 import { APIService } from '/@/api/neoshowcase/protobuf/gateway_connect'
 import { createResource } from 'solid-js'
@@ -13,7 +13,8 @@ export const [user] = createResource(() => client.getMe({}))
 export const [systemInfo] = createResource(() => client.getSystemInfo({}))
 
 export const handleAPIError = (e, message: string) => {
-  if (e instanceof ConnectError) {
+  if (e.message) {
+    //' e instanceof ConnectError' does not work for some reason
     toast.error(`${message}\n${e.message}`)
   } else {
     console.trace(e)
