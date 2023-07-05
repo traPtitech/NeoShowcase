@@ -500,7 +500,7 @@ export default () => {
     <Container>
       <Header />
       <Show when={loaded()}>
-        <AppNav repoName={repo().name} appName={app().name} appID={app().id} />
+        <AppNav repo={repo()} app={app()} />
         <ContentContainer>
           <div>
             <SidebarContainer>

@@ -102,7 +102,7 @@ export default () => {
     <Container>
       <Header />
       <Show when={loaded()}>
-        <AppNav repoName={repo().name} appName={app().name} appID={app().id} />
+        <AppNav repo={repo()} app={app()} />
         <BuildsContainer>
           <For each={sortedBuilds()}>
             {(b, i) => (
