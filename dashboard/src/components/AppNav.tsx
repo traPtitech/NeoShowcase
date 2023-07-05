@@ -1,4 +1,4 @@
-import { providerToIcon } from '/@/libs/application'
+import { providerToIcon, repositoryURLToProvider } from '/@/libs/application'
 import { A } from '@solidjs/router'
 import { JSXElement } from 'solid-js'
 import { CenterInline } from '/@/libs/layout'
@@ -10,32 +10,32 @@ import {
   NavTitle,
   NavTitleContainer,
 } from './Nav'
+import { Application, Repository } from '/@/api/neoshowcase/protobuf/gateway_pb'
 
 export interface AppNavProps {
-  repoName: string
-  appName: string
-  appID: string
+  repo: Repository
+  app: Application
 }
 
 export const AppNav = (props: AppNavProps): JSXElement => {
   return (
     <NavContainer>
       <NavTitleContainer>
-        <CenterInline>{providerToIcon('GitHub', 36)}</CenterInline>
+        <CenterInline>{providerToIcon(repositoryURLToProvider(props.repo.url), 36)}</CenterInline>
         <NavTitle>
-          <div>{props.repoName}</div>
+          <div>{props.repo.name}</div>
           <div>/</div>
-          <div>{props.appName}</div>
+          <div>{props.repo.name}</div>
         </NavTitle>
       </NavTitleContainer>
       <NavButtonsContainer>
-        <A href={`/apps/${props.appID}`} class={NavAnchorStyle} activeClass={NavAnchorActiveStyle} end>
+        <A href={`/apps/${props.app.id}`} class={NavAnchorStyle} activeClass={NavAnchorActiveStyle} end>
           General
         </A>
-        <A href={`/apps/${props.appID}/builds`} class={NavAnchorStyle} activeClass={NavAnchorActiveStyle}>
+        <A href={`/apps/${props.app.id}/builds`} class={NavAnchorStyle} activeClass={NavAnchorActiveStyle}>
           Builds
         </A>
-        <A href={`/apps/${props.appID}/settings`} class={NavAnchorStyle} activeClass={NavAnchorActiveStyle}>
+        <A href={`/apps/${props.app.id}/settings`} class={NavAnchorStyle} activeClass={NavAnchorActiveStyle}>
           Settings
         </A>
       </NavButtonsContainer>

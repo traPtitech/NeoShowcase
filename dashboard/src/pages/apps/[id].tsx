@@ -281,7 +281,7 @@ export default () => {
     <Container>
       <Header />
       <Show when={loaded()}>
-        <AppNav appID={app().id} appName={app().name} repoName={repo().name} />
+        <AppNav repo={repo()} app={app()} />
         <CardsRow>
           <Card>
             <CardTitle>Actions</CardTitle>
