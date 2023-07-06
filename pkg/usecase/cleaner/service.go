@@ -110,7 +110,7 @@ func (c *cleanerService) pruneImages(ctx context.Context, r *registry.Registry) 
 		}
 		err = c.pruneImage(ctx, r, imageName, appsMap)
 		if err != nil {
-			log.Errorf("pruning image %v: %+v", imageNames, err)
+			log.Errorf("pruning image %v: %+v", imageName, err)
 			// fail-safe for each image
 		}
 	}
