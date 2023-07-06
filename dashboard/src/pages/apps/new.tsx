@@ -24,6 +24,8 @@ import { WebsiteSettings } from '/@/components/WebsiteSettings'
 import { PortPublicationSettings } from '/@/components/PortPublications'
 import { BuildConfigMethod, BuildConfigs } from '/@/components/BuildConfigs'
 import { PlainMessage } from '@bufbuild/protobuf'
+import { InputSuggestion } from '/@/components/InputSuggestion'
+import { useBranchesSuggestion } from '/@/libs/branchesSuggestion'
 
 const AppTitle = styled('div', {
   base: {
@@ -111,6 +113,11 @@ export default () => {
     startOnCreate: false,
   })
 
+  const branchesSuggestion = useBranchesSuggestion(
+    () => searchParams.repositoryID,
+    () => request.refName,
+  )
+
   const isRuntime = () =>
     (['runtimeBuildpack', 'runtimeCmd', 'runtimeDockerfile'] as BuildConfigMethod[]).includes(buildConfig.case)
 
@@ -156,12 +163,17 @@ export default () => {
 
             <div>
               <InputLabel>Branch Name</InputLabel>
-              <InputBar
-                placeholder='main'
-                value={request.refName}
-                onInput={(e) => setRequest('refName', e.target.value)}
-                required
-              />
+              <InputSuggestion suggestions={branchesSuggestion()} onSetSuggestion={(b) => setRequest('refName', b)}>
+                <InputBar
+                  placeholder='main'
+                  value={request.refName}
+                  onInput={(e) => {
+                    console.log(`setting ref ${e.target.value}`)
+                    setRequest('refName', e.target.value)
+                  }}
+                  required
+                />
+              </InputSuggestion>
             </div>
 
             <div>

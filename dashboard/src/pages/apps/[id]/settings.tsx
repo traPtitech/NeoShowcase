@@ -21,6 +21,8 @@ import useModal from '/@/libs/useModal'
 import { style } from '@macaron-css/core'
 import { ModalButtonsContainer, ModalContainer, ModalText } from '/@/components/Modal'
 import { PlainMessage } from '@bufbuild/protobuf'
+import { InputSuggestion } from '/@/components/InputSuggestion'
+import { useBranchesSuggestion } from '/@/libs/branchesSuggestion'
 
 const ContentContainer = styled('div', {
   base: {
@@ -140,6 +142,10 @@ export default () => {
       repositoryId: app().repositoryId,
       refName: app().refName,
     })
+    const branchesSuggestion = useBranchesSuggestion(
+      () => app()?.repositoryId,
+      () => generalConfig.refName,
+    )
     let formContainer: HTMLFormElement
 
     const updateGeneralSettings: JSX.EventHandler<HTMLButtonElement, MouseEvent> = async (e) => {
@@ -179,12 +185,14 @@ export default () => {
           </div>
           <div>
             <InputLabel>Branch Name</InputLabel>
-            <InputBar
-              placeholder='main'
-              value={generalConfig.refName}
-              onChange={(e) => setGeneralConfig('refName', e.currentTarget.value)}
-              required
-            />
+            <InputSuggestion suggestions={branchesSuggestion()} onSetSuggestion={(b) => setGeneralConfig('refName', b)}>
+              <InputBar
+                placeholder='main'
+                value={generalConfig.refName}
+                onInput={(e) => setGeneralConfig('refName', e.target.value)}
+                required
+              />
+            </InputSuggestion>
           </div>
           <Button color='black1' size='large' width='auto' onclick={updateGeneralSettings} type='submit'>
             Save

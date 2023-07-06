@@ -286,49 +286,6 @@ export class SystemInfo extends Message<SystemInfo> {
 }
 
 /**
- * @generated from message neoshowcase.protobuf.GenerateKeyPairResponse
- */
-export class GenerateKeyPairResponse extends Message<GenerateKeyPairResponse> {
-  /**
-   * @generated from field: string key_id = 1;
-   */
-  keyId = "";
-
-  /**
-   * @generated from field: string public_key = 2;
-   */
-  publicKey = "";
-
-  constructor(data?: PartialMessage<GenerateKeyPairResponse>) {
-    super();
-    proto3.util.initPartial(data, this);
-  }
-
-  static readonly runtime: typeof proto3 = proto3;
-  static readonly typeName = "neoshowcase.protobuf.GenerateKeyPairResponse";
-  static readonly fields: FieldList = proto3.util.newFieldList(() => [
-    { no: 1, name: "key_id", kind: "scalar", T: 9 /* ScalarType.STRING */ },
-    { no: 2, name: "public_key", kind: "scalar", T: 9 /* ScalarType.STRING */ },
-  ]);
-
-  static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): GenerateKeyPairResponse {
-    return new GenerateKeyPairResponse().fromBinary(bytes, options);
-  }
-
-  static fromJson(jsonValue: JsonValue, options?: Partial<JsonReadOptions>): GenerateKeyPairResponse {
-    return new GenerateKeyPairResponse().fromJson(jsonValue, options);
-  }
-
-  static fromJsonString(jsonString: string, options?: Partial<JsonReadOptions>): GenerateKeyPairResponse {
-    return new GenerateKeyPairResponse().fromJsonString(jsonString, options);
-  }
-
-  static equals(a: GenerateKeyPairResponse | PlainMessage<GenerateKeyPairResponse> | undefined, b: GenerateKeyPairResponse | PlainMessage<GenerateKeyPairResponse> | undefined): boolean {
-    return proto3.util.equals(GenerateKeyPairResponse, a, b);
-  }
-}
-
-/**
  * @generated from message neoshowcase.protobuf.User
  */
 export class User extends Message<User> {
@@ -384,43 +341,6 @@ export class User extends Message<User> {
 }
 
 /**
- * @generated from message neoshowcase.protobuf.GetUsersResponse
- */
-export class GetUsersResponse extends Message<GetUsersResponse> {
-  /**
-   * @generated from field: repeated neoshowcase.protobuf.User users = 1;
-   */
-  users: User[] = [];
-
-  constructor(data?: PartialMessage<GetUsersResponse>) {
-    super();
-    proto3.util.initPartial(data, this);
-  }
-
-  static readonly runtime: typeof proto3 = proto3;
-  static readonly typeName = "neoshowcase.protobuf.GetUsersResponse";
-  static readonly fields: FieldList = proto3.util.newFieldList(() => [
-    { no: 1, name: "users", kind: "message", T: User, repeated: true },
-  ]);
-
-  static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): GetUsersResponse {
-    return new GetUsersResponse().fromBinary(bytes, options);
-  }
-
-  static fromJson(jsonValue: JsonValue, options?: Partial<JsonReadOptions>): GetUsersResponse {
-    return new GetUsersResponse().fromJson(jsonValue, options);
-  }
-
-  static fromJsonString(jsonString: string, options?: Partial<JsonReadOptions>): GetUsersResponse {
-    return new GetUsersResponse().fromJsonString(jsonString, options);
-  }
-
-  static equals(a: GetUsersResponse | PlainMessage<GetUsersResponse> | undefined, b: GetUsersResponse | PlainMessage<GetUsersResponse> | undefined): boolean {
-    return proto3.util.equals(GetUsersResponse, a, b);
-  }
-}
-
-/**
  * @generated from message neoshowcase.protobuf.UserKey
  */
 export class UserKey extends Message<UserKey> {
@@ -466,117 +386,6 @@ export class UserKey extends Message<UserKey> {
 
   static equals(a: UserKey | PlainMessage<UserKey> | undefined, b: UserKey | PlainMessage<UserKey> | undefined): boolean {
     return proto3.util.equals(UserKey, a, b);
-  }
-}
-
-/**
- * @generated from message neoshowcase.protobuf.GetUserKeysResponse
- */
-export class GetUserKeysResponse extends Message<GetUserKeysResponse> {
-  /**
-   * @generated from field: repeated neoshowcase.protobuf.UserKey keys = 1;
-   */
-  keys: UserKey[] = [];
-
-  constructor(data?: PartialMessage<GetUserKeysResponse>) {
-    super();
-    proto3.util.initPartial(data, this);
-  }
-
-  static readonly runtime: typeof proto3 = proto3;
-  static readonly typeName = "neoshowcase.protobuf.GetUserKeysResponse";
-  static readonly fields: FieldList = proto3.util.newFieldList(() => [
-    { no: 1, name: "keys", kind: "message", T: UserKey, repeated: true },
-  ]);
-
-  static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): GetUserKeysResponse {
-    return new GetUserKeysResponse().fromBinary(bytes, options);
-  }
-
-  static fromJson(jsonValue: JsonValue, options?: Partial<JsonReadOptions>): GetUserKeysResponse {
-    return new GetUserKeysResponse().fromJson(jsonValue, options);
-  }
-
-  static fromJsonString(jsonString: string, options?: Partial<JsonReadOptions>): GetUserKeysResponse {
-    return new GetUserKeysResponse().fromJsonString(jsonString, options);
-  }
-
-  static equals(a: GetUserKeysResponse | PlainMessage<GetUserKeysResponse> | undefined, b: GetUserKeysResponse | PlainMessage<GetUserKeysResponse> | undefined): boolean {
-    return proto3.util.equals(GetUserKeysResponse, a, b);
-  }
-}
-
-/**
- * @generated from message neoshowcase.protobuf.CreateUserKeyRequest
- */
-export class CreateUserKeyRequest extends Message<CreateUserKeyRequest> {
-  /**
-   * @generated from field: string public_key = 1;
-   */
-  publicKey = "";
-
-  constructor(data?: PartialMessage<CreateUserKeyRequest>) {
-    super();
-    proto3.util.initPartial(data, this);
-  }
-
-  static readonly runtime: typeof proto3 = proto3;
-  static readonly typeName = "neoshowcase.protobuf.CreateUserKeyRequest";
-  static readonly fields: FieldList = proto3.util.newFieldList(() => [
-    { no: 1, name: "public_key", kind: "scalar", T: 9 /* ScalarType.STRING */ },
-  ]);
-
-  static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): CreateUserKeyRequest {
-    return new CreateUserKeyRequest().fromBinary(bytes, options);
-  }
-
-  static fromJson(jsonValue: JsonValue, options?: Partial<JsonReadOptions>): CreateUserKeyRequest {
-    return new CreateUserKeyRequest().fromJson(jsonValue, options);
-  }
-
-  static fromJsonString(jsonString: string, options?: Partial<JsonReadOptions>): CreateUserKeyRequest {
-    return new CreateUserKeyRequest().fromJsonString(jsonString, options);
-  }
-
-  static equals(a: CreateUserKeyRequest | PlainMessage<CreateUserKeyRequest> | undefined, b: CreateUserKeyRequest | PlainMessage<CreateUserKeyRequest> | undefined): boolean {
-    return proto3.util.equals(CreateUserKeyRequest, a, b);
-  }
-}
-
-/**
- * @generated from message neoshowcase.protobuf.DeleteUserKeyRequest
- */
-export class DeleteUserKeyRequest extends Message<DeleteUserKeyRequest> {
-  /**
-   * @generated from field: string key_id = 1;
-   */
-  keyId = "";
-
-  constructor(data?: PartialMessage<DeleteUserKeyRequest>) {
-    super();
-    proto3.util.initPartial(data, this);
-  }
-
-  static readonly runtime: typeof proto3 = proto3;
-  static readonly typeName = "neoshowcase.protobuf.DeleteUserKeyRequest";
-  static readonly fields: FieldList = proto3.util.newFieldList(() => [
-    { no: 1, name: "key_id", kind: "scalar", T: 9 /* ScalarType.STRING */ },
-  ]);
-
-  static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): DeleteUserKeyRequest {
-    return new DeleteUserKeyRequest().fromBinary(bytes, options);
-  }
-
-  static fromJson(jsonValue: JsonValue, options?: Partial<JsonReadOptions>): DeleteUserKeyRequest {
-    return new DeleteUserKeyRequest().fromJson(jsonValue, options);
-  }
-
-  static fromJsonString(jsonString: string, options?: Partial<JsonReadOptions>): DeleteUserKeyRequest {
-    return new DeleteUserKeyRequest().fromJsonString(jsonString, options);
-  }
-
-  static equals(a: DeleteUserKeyRequest | PlainMessage<DeleteUserKeyRequest> | undefined, b: DeleteUserKeyRequest | PlainMessage<DeleteUserKeyRequest> | undefined): boolean {
-    return proto3.util.equals(DeleteUserKeyRequest, a, b);
   }
 }
 
@@ -666,392 +475,6 @@ proto3.util.setEnumType(Repository_AuthMethod, "neoshowcase.protobuf.Repository.
   { no: 1, name: "BASIC" },
   { no: 2, name: "SSH" },
 ]);
-
-/**
- * @generated from message neoshowcase.protobuf.CreateRepositoryAuthBasic
- */
-export class CreateRepositoryAuthBasic extends Message<CreateRepositoryAuthBasic> {
-  /**
-   * @generated from field: string username = 1;
-   */
-  username = "";
-
-  /**
-   * @generated from field: string password = 2;
-   */
-  password = "";
-
-  constructor(data?: PartialMessage<CreateRepositoryAuthBasic>) {
-    super();
-    proto3.util.initPartial(data, this);
-  }
-
-  static readonly runtime: typeof proto3 = proto3;
-  static readonly typeName = "neoshowcase.protobuf.CreateRepositoryAuthBasic";
-  static readonly fields: FieldList = proto3.util.newFieldList(() => [
-    { no: 1, name: "username", kind: "scalar", T: 9 /* ScalarType.STRING */ },
-    { no: 2, name: "password", kind: "scalar", T: 9 /* ScalarType.STRING */ },
-  ]);
-
-  static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): CreateRepositoryAuthBasic {
-    return new CreateRepositoryAuthBasic().fromBinary(bytes, options);
-  }
-
-  static fromJson(jsonValue: JsonValue, options?: Partial<JsonReadOptions>): CreateRepositoryAuthBasic {
-    return new CreateRepositoryAuthBasic().fromJson(jsonValue, options);
-  }
-
-  static fromJsonString(jsonString: string, options?: Partial<JsonReadOptions>): CreateRepositoryAuthBasic {
-    return new CreateRepositoryAuthBasic().fromJsonString(jsonString, options);
-  }
-
-  static equals(a: CreateRepositoryAuthBasic | PlainMessage<CreateRepositoryAuthBasic> | undefined, b: CreateRepositoryAuthBasic | PlainMessage<CreateRepositoryAuthBasic> | undefined): boolean {
-    return proto3.util.equals(CreateRepositoryAuthBasic, a, b);
-  }
-}
-
-/**
- * @generated from message neoshowcase.protobuf.CreateRepositoryAuthSSH
- */
-export class CreateRepositoryAuthSSH extends Message<CreateRepositoryAuthSSH> {
-  /**
-   * @generated from field: string key_id = 1;
-   */
-  keyId = "";
-
-  constructor(data?: PartialMessage<CreateRepositoryAuthSSH>) {
-    super();
-    proto3.util.initPartial(data, this);
-  }
-
-  static readonly runtime: typeof proto3 = proto3;
-  static readonly typeName = "neoshowcase.protobuf.CreateRepositoryAuthSSH";
-  static readonly fields: FieldList = proto3.util.newFieldList(() => [
-    { no: 1, name: "key_id", kind: "scalar", T: 9 /* ScalarType.STRING */ },
-  ]);
-
-  static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): CreateRepositoryAuthSSH {
-    return new CreateRepositoryAuthSSH().fromBinary(bytes, options);
-  }
-
-  static fromJson(jsonValue: JsonValue, options?: Partial<JsonReadOptions>): CreateRepositoryAuthSSH {
-    return new CreateRepositoryAuthSSH().fromJson(jsonValue, options);
-  }
-
-  static fromJsonString(jsonString: string, options?: Partial<JsonReadOptions>): CreateRepositoryAuthSSH {
-    return new CreateRepositoryAuthSSH().fromJsonString(jsonString, options);
-  }
-
-  static equals(a: CreateRepositoryAuthSSH | PlainMessage<CreateRepositoryAuthSSH> | undefined, b: CreateRepositoryAuthSSH | PlainMessage<CreateRepositoryAuthSSH> | undefined): boolean {
-    return proto3.util.equals(CreateRepositoryAuthSSH, a, b);
-  }
-}
-
-/**
- * @generated from message neoshowcase.protobuf.CreateRepositoryAuth
- */
-export class CreateRepositoryAuth extends Message<CreateRepositoryAuth> {
-  /**
-   * @generated from oneof neoshowcase.protobuf.CreateRepositoryAuth.auth
-   */
-  auth: {
-    /**
-     * @generated from field: google.protobuf.Empty none = 1;
-     */
-    value: Empty;
-    case: "none";
-  } | {
-    /**
-     * @generated from field: neoshowcase.protobuf.CreateRepositoryAuthBasic basic = 2;
-     */
-    value: CreateRepositoryAuthBasic;
-    case: "basic";
-  } | {
-    /**
-     * @generated from field: neoshowcase.protobuf.CreateRepositoryAuthSSH ssh = 3;
-     */
-    value: CreateRepositoryAuthSSH;
-    case: "ssh";
-  } | { case: undefined; value?: undefined } = { case: undefined };
-
-  constructor(data?: PartialMessage<CreateRepositoryAuth>) {
-    super();
-    proto3.util.initPartial(data, this);
-  }
-
-  static readonly runtime: typeof proto3 = proto3;
-  static readonly typeName = "neoshowcase.protobuf.CreateRepositoryAuth";
-  static readonly fields: FieldList = proto3.util.newFieldList(() => [
-    { no: 1, name: "none", kind: "message", T: Empty, oneof: "auth" },
-    { no: 2, name: "basic", kind: "message", T: CreateRepositoryAuthBasic, oneof: "auth" },
-    { no: 3, name: "ssh", kind: "message", T: CreateRepositoryAuthSSH, oneof: "auth" },
-  ]);
-
-  static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): CreateRepositoryAuth {
-    return new CreateRepositoryAuth().fromBinary(bytes, options);
-  }
-
-  static fromJson(jsonValue: JsonValue, options?: Partial<JsonReadOptions>): CreateRepositoryAuth {
-    return new CreateRepositoryAuth().fromJson(jsonValue, options);
-  }
-
-  static fromJsonString(jsonString: string, options?: Partial<JsonReadOptions>): CreateRepositoryAuth {
-    return new CreateRepositoryAuth().fromJsonString(jsonString, options);
-  }
-
-  static equals(a: CreateRepositoryAuth | PlainMessage<CreateRepositoryAuth> | undefined, b: CreateRepositoryAuth | PlainMessage<CreateRepositoryAuth> | undefined): boolean {
-    return proto3.util.equals(CreateRepositoryAuth, a, b);
-  }
-}
-
-/**
- * @generated from message neoshowcase.protobuf.CreateRepositoryRequest
- */
-export class CreateRepositoryRequest extends Message<CreateRepositoryRequest> {
-  /**
-   * @generated from field: string name = 1;
-   */
-  name = "";
-
-  /**
-   * @generated from field: string url = 2;
-   */
-  url = "";
-
-  /**
-   * @generated from field: neoshowcase.protobuf.CreateRepositoryAuth auth = 3;
-   */
-  auth?: CreateRepositoryAuth;
-
-  constructor(data?: PartialMessage<CreateRepositoryRequest>) {
-    super();
-    proto3.util.initPartial(data, this);
-  }
-
-  static readonly runtime: typeof proto3 = proto3;
-  static readonly typeName = "neoshowcase.protobuf.CreateRepositoryRequest";
-  static readonly fields: FieldList = proto3.util.newFieldList(() => [
-    { no: 1, name: "name", kind: "scalar", T: 9 /* ScalarType.STRING */ },
-    { no: 2, name: "url", kind: "scalar", T: 9 /* ScalarType.STRING */ },
-    { no: 3, name: "auth", kind: "message", T: CreateRepositoryAuth },
-  ]);
-
-  static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): CreateRepositoryRequest {
-    return new CreateRepositoryRequest().fromBinary(bytes, options);
-  }
-
-  static fromJson(jsonValue: JsonValue, options?: Partial<JsonReadOptions>): CreateRepositoryRequest {
-    return new CreateRepositoryRequest().fromJson(jsonValue, options);
-  }
-
-  static fromJsonString(jsonString: string, options?: Partial<JsonReadOptions>): CreateRepositoryRequest {
-    return new CreateRepositoryRequest().fromJsonString(jsonString, options);
-  }
-
-  static equals(a: CreateRepositoryRequest | PlainMessage<CreateRepositoryRequest> | undefined, b: CreateRepositoryRequest | PlainMessage<CreateRepositoryRequest> | undefined): boolean {
-    return proto3.util.equals(CreateRepositoryRequest, a, b);
-  }
-}
-
-/**
- * @generated from message neoshowcase.protobuf.GetRepositoriesRequest
- */
-export class GetRepositoriesRequest extends Message<GetRepositoriesRequest> {
-  /**
-   * @generated from field: neoshowcase.protobuf.GetRepositoriesRequest.Scope scope = 1;
-   */
-  scope = GetRepositoriesRequest_Scope.MINE;
-
-  constructor(data?: PartialMessage<GetRepositoriesRequest>) {
-    super();
-    proto3.util.initPartial(data, this);
-  }
-
-  static readonly runtime: typeof proto3 = proto3;
-  static readonly typeName = "neoshowcase.protobuf.GetRepositoriesRequest";
-  static readonly fields: FieldList = proto3.util.newFieldList(() => [
-    { no: 1, name: "scope", kind: "enum", T: proto3.getEnumType(GetRepositoriesRequest_Scope) },
-  ]);
-
-  static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): GetRepositoriesRequest {
-    return new GetRepositoriesRequest().fromBinary(bytes, options);
-  }
-
-  static fromJson(jsonValue: JsonValue, options?: Partial<JsonReadOptions>): GetRepositoriesRequest {
-    return new GetRepositoriesRequest().fromJson(jsonValue, options);
-  }
-
-  static fromJsonString(jsonString: string, options?: Partial<JsonReadOptions>): GetRepositoriesRequest {
-    return new GetRepositoriesRequest().fromJsonString(jsonString, options);
-  }
-
-  static equals(a: GetRepositoriesRequest | PlainMessage<GetRepositoriesRequest> | undefined, b: GetRepositoriesRequest | PlainMessage<GetRepositoriesRequest> | undefined): boolean {
-    return proto3.util.equals(GetRepositoriesRequest, a, b);
-  }
-}
-
-/**
- * @generated from enum neoshowcase.protobuf.GetRepositoriesRequest.Scope
- */
-export enum GetRepositoriesRequest_Scope {
-  /**
-   * @generated from enum value: MINE = 0;
-   */
-  MINE = 0,
-
-  /**
-   * @generated from enum value: PUBLIC = 1;
-   */
-  PUBLIC = 1,
-
-  /**
-   * admin only
-   *
-   * @generated from enum value: ALL = 2;
-   */
-  ALL = 2,
-}
-// Retrieve enum metadata with: proto3.getEnumType(GetRepositoriesRequest_Scope)
-proto3.util.setEnumType(GetRepositoriesRequest_Scope, "neoshowcase.protobuf.GetRepositoriesRequest.Scope", [
-  { no: 0, name: "MINE" },
-  { no: 1, name: "PUBLIC" },
-  { no: 2, name: "ALL" },
-]);
-
-/**
- * @generated from message neoshowcase.protobuf.UpdateRepositoryRequest
- */
-export class UpdateRepositoryRequest extends Message<UpdateRepositoryRequest> {
-  /**
-   * @generated from field: string id = 1;
-   */
-  id = "";
-
-  /**
-   * @generated from field: optional string name = 2;
-   */
-  name?: string;
-
-  /**
-   * @generated from field: optional string url = 3;
-   */
-  url?: string;
-
-  /**
-   * @generated from field: optional neoshowcase.protobuf.CreateRepositoryAuth auth = 4;
-   */
-  auth?: CreateRepositoryAuth;
-
-  /**
-   * @generated from field: optional neoshowcase.protobuf.UpdateRepositoryRequest.UpdateOwners owner_ids = 5;
-   */
-  ownerIds?: UpdateRepositoryRequest_UpdateOwners;
-
-  constructor(data?: PartialMessage<UpdateRepositoryRequest>) {
-    super();
-    proto3.util.initPartial(data, this);
-  }
-
-  static readonly runtime: typeof proto3 = proto3;
-  static readonly typeName = "neoshowcase.protobuf.UpdateRepositoryRequest";
-  static readonly fields: FieldList = proto3.util.newFieldList(() => [
-    { no: 1, name: "id", kind: "scalar", T: 9 /* ScalarType.STRING */ },
-    { no: 2, name: "name", kind: "scalar", T: 9 /* ScalarType.STRING */, opt: true },
-    { no: 3, name: "url", kind: "scalar", T: 9 /* ScalarType.STRING */, opt: true },
-    { no: 4, name: "auth", kind: "message", T: CreateRepositoryAuth, opt: true },
-    { no: 5, name: "owner_ids", kind: "message", T: UpdateRepositoryRequest_UpdateOwners, opt: true },
-  ]);
-
-  static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): UpdateRepositoryRequest {
-    return new UpdateRepositoryRequest().fromBinary(bytes, options);
-  }
-
-  static fromJson(jsonValue: JsonValue, options?: Partial<JsonReadOptions>): UpdateRepositoryRequest {
-    return new UpdateRepositoryRequest().fromJson(jsonValue, options);
-  }
-
-  static fromJsonString(jsonString: string, options?: Partial<JsonReadOptions>): UpdateRepositoryRequest {
-    return new UpdateRepositoryRequest().fromJsonString(jsonString, options);
-  }
-
-  static equals(a: UpdateRepositoryRequest | PlainMessage<UpdateRepositoryRequest> | undefined, b: UpdateRepositoryRequest | PlainMessage<UpdateRepositoryRequest> | undefined): boolean {
-    return proto3.util.equals(UpdateRepositoryRequest, a, b);
-  }
-}
-
-/**
- * @generated from message neoshowcase.protobuf.UpdateRepositoryRequest.UpdateOwners
- */
-export class UpdateRepositoryRequest_UpdateOwners extends Message<UpdateRepositoryRequest_UpdateOwners> {
-  /**
-   * @generated from field: repeated string owner_ids = 1;
-   */
-  ownerIds: string[] = [];
-
-  constructor(data?: PartialMessage<UpdateRepositoryRequest_UpdateOwners>) {
-    super();
-    proto3.util.initPartial(data, this);
-  }
-
-  static readonly runtime: typeof proto3 = proto3;
-  static readonly typeName = "neoshowcase.protobuf.UpdateRepositoryRequest.UpdateOwners";
-  static readonly fields: FieldList = proto3.util.newFieldList(() => [
-    { no: 1, name: "owner_ids", kind: "scalar", T: 9 /* ScalarType.STRING */, repeated: true },
-  ]);
-
-  static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): UpdateRepositoryRequest_UpdateOwners {
-    return new UpdateRepositoryRequest_UpdateOwners().fromBinary(bytes, options);
-  }
-
-  static fromJson(jsonValue: JsonValue, options?: Partial<JsonReadOptions>): UpdateRepositoryRequest_UpdateOwners {
-    return new UpdateRepositoryRequest_UpdateOwners().fromJson(jsonValue, options);
-  }
-
-  static fromJsonString(jsonString: string, options?: Partial<JsonReadOptions>): UpdateRepositoryRequest_UpdateOwners {
-    return new UpdateRepositoryRequest_UpdateOwners().fromJsonString(jsonString, options);
-  }
-
-  static equals(a: UpdateRepositoryRequest_UpdateOwners | PlainMessage<UpdateRepositoryRequest_UpdateOwners> | undefined, b: UpdateRepositoryRequest_UpdateOwners | PlainMessage<UpdateRepositoryRequest_UpdateOwners> | undefined): boolean {
-    return proto3.util.equals(UpdateRepositoryRequest_UpdateOwners, a, b);
-  }
-}
-
-/**
- * @generated from message neoshowcase.protobuf.RepositoryIdRequest
- */
-export class RepositoryIdRequest extends Message<RepositoryIdRequest> {
-  /**
-   * @generated from field: string repository_id = 1;
-   */
-  repositoryId = "";
-
-  constructor(data?: PartialMessage<RepositoryIdRequest>) {
-    super();
-    proto3.util.initPartial(data, this);
-  }
-
-  static readonly runtime: typeof proto3 = proto3;
-  static readonly typeName = "neoshowcase.protobuf.RepositoryIdRequest";
-  static readonly fields: FieldList = proto3.util.newFieldList(() => [
-    { no: 1, name: "repository_id", kind: "scalar", T: 9 /* ScalarType.STRING */ },
-  ]);
-
-  static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): RepositoryIdRequest {
-    return new RepositoryIdRequest().fromBinary(bytes, options);
-  }
-
-  static fromJson(jsonValue: JsonValue, options?: Partial<JsonReadOptions>): RepositoryIdRequest {
-    return new RepositoryIdRequest().fromJson(jsonValue, options);
-  }
-
-  static fromJsonString(jsonString: string, options?: Partial<JsonReadOptions>): RepositoryIdRequest {
-    return new RepositoryIdRequest().fromJsonString(jsonString, options);
-  }
-
-  static equals(a: RepositoryIdRequest | PlainMessage<RepositoryIdRequest> | undefined, b: RepositoryIdRequest | PlainMessage<RepositoryIdRequest> | undefined): boolean {
-    return proto3.util.equals(RepositoryIdRequest, a, b);
-  }
-}
 
 /**
  * @generated from message neoshowcase.protobuf.RuntimeConfig
@@ -1591,116 +1014,6 @@ export class Website extends Message<Website> {
 }
 
 /**
- * @generated from message neoshowcase.protobuf.CreateWebsiteRequest
- */
-export class CreateWebsiteRequest extends Message<CreateWebsiteRequest> {
-  /**
-   * @generated from field: string fqdn = 1;
-   */
-  fqdn = "";
-
-  /**
-   * @generated from field: string path_prefix = 2;
-   */
-  pathPrefix = "";
-
-  /**
-   * @generated from field: bool strip_prefix = 3;
-   */
-  stripPrefix = false;
-
-  /**
-   * @generated from field: bool https = 4;
-   */
-  https = false;
-
-  /**
-   * @generated from field: bool h2c = 5;
-   */
-  h2c = false;
-
-  /**
-   * @generated from field: int32 http_port = 6;
-   */
-  httpPort = 0;
-
-  /**
-   * @generated from field: neoshowcase.protobuf.AuthenticationType authentication = 7;
-   */
-  authentication = AuthenticationType.OFF;
-
-  constructor(data?: PartialMessage<CreateWebsiteRequest>) {
-    super();
-    proto3.util.initPartial(data, this);
-  }
-
-  static readonly runtime: typeof proto3 = proto3;
-  static readonly typeName = "neoshowcase.protobuf.CreateWebsiteRequest";
-  static readonly fields: FieldList = proto3.util.newFieldList(() => [
-    { no: 1, name: "fqdn", kind: "scalar", T: 9 /* ScalarType.STRING */ },
-    { no: 2, name: "path_prefix", kind: "scalar", T: 9 /* ScalarType.STRING */ },
-    { no: 3, name: "strip_prefix", kind: "scalar", T: 8 /* ScalarType.BOOL */ },
-    { no: 4, name: "https", kind: "scalar", T: 8 /* ScalarType.BOOL */ },
-    { no: 5, name: "h2c", kind: "scalar", T: 8 /* ScalarType.BOOL */ },
-    { no: 6, name: "http_port", kind: "scalar", T: 5 /* ScalarType.INT32 */ },
-    { no: 7, name: "authentication", kind: "enum", T: proto3.getEnumType(AuthenticationType) },
-  ]);
-
-  static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): CreateWebsiteRequest {
-    return new CreateWebsiteRequest().fromBinary(bytes, options);
-  }
-
-  static fromJson(jsonValue: JsonValue, options?: Partial<JsonReadOptions>): CreateWebsiteRequest {
-    return new CreateWebsiteRequest().fromJson(jsonValue, options);
-  }
-
-  static fromJsonString(jsonString: string, options?: Partial<JsonReadOptions>): CreateWebsiteRequest {
-    return new CreateWebsiteRequest().fromJsonString(jsonString, options);
-  }
-
-  static equals(a: CreateWebsiteRequest | PlainMessage<CreateWebsiteRequest> | undefined, b: CreateWebsiteRequest | PlainMessage<CreateWebsiteRequest> | undefined): boolean {
-    return proto3.util.equals(CreateWebsiteRequest, a, b);
-  }
-}
-
-/**
- * @generated from message neoshowcase.protobuf.DeleteWebsiteRequest
- */
-export class DeleteWebsiteRequest extends Message<DeleteWebsiteRequest> {
-  /**
-   * @generated from field: string id = 1;
-   */
-  id = "";
-
-  constructor(data?: PartialMessage<DeleteWebsiteRequest>) {
-    super();
-    proto3.util.initPartial(data, this);
-  }
-
-  static readonly runtime: typeof proto3 = proto3;
-  static readonly typeName = "neoshowcase.protobuf.DeleteWebsiteRequest";
-  static readonly fields: FieldList = proto3.util.newFieldList(() => [
-    { no: 1, name: "id", kind: "scalar", T: 9 /* ScalarType.STRING */ },
-  ]);
-
-  static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): DeleteWebsiteRequest {
-    return new DeleteWebsiteRequest().fromBinary(bytes, options);
-  }
-
-  static fromJson(jsonValue: JsonValue, options?: Partial<JsonReadOptions>): DeleteWebsiteRequest {
-    return new DeleteWebsiteRequest().fromJson(jsonValue, options);
-  }
-
-  static fromJsonString(jsonString: string, options?: Partial<JsonReadOptions>): DeleteWebsiteRequest {
-    return new DeleteWebsiteRequest().fromJsonString(jsonString, options);
-  }
-
-  static equals(a: DeleteWebsiteRequest | PlainMessage<DeleteWebsiteRequest> | undefined, b: DeleteWebsiteRequest | PlainMessage<DeleteWebsiteRequest> | undefined): boolean {
-    return proto3.util.equals(DeleteWebsiteRequest, a, b);
-  }
-}
-
-/**
  * @generated from message neoshowcase.protobuf.PortPublication
  */
 export class PortPublication extends Message<PortPublication> {
@@ -1913,326 +1226,6 @@ proto3.util.setEnumType(Application_ContainerState, "neoshowcase.protobuf.Applic
   { no: 4, name: "ERRORED" },
   { no: 5, name: "UNKNOWN" },
 ]);
-
-/**
- * @generated from message neoshowcase.protobuf.CreateApplicationRequest
- */
-export class CreateApplicationRequest extends Message<CreateApplicationRequest> {
-  /**
-   * @generated from field: string name = 1;
-   */
-  name = "";
-
-  /**
-   * @generated from field: string repository_id = 2;
-   */
-  repositoryId = "";
-
-  /**
-   * @generated from field: string ref_name = 3;
-   */
-  refName = "";
-
-  /**
-   * @generated from field: neoshowcase.protobuf.ApplicationConfig config = 4;
-   */
-  config?: ApplicationConfig;
-
-  /**
-   * @generated from field: repeated neoshowcase.protobuf.CreateWebsiteRequest websites = 5;
-   */
-  websites: CreateWebsiteRequest[] = [];
-
-  /**
-   * @generated from field: repeated neoshowcase.protobuf.PortPublication port_publications = 6;
-   */
-  portPublications: PortPublication[] = [];
-
-  /**
-   * @generated from field: bool start_on_create = 7;
-   */
-  startOnCreate = false;
-
-  constructor(data?: PartialMessage<CreateApplicationRequest>) {
-    super();
-    proto3.util.initPartial(data, this);
-  }
-
-  static readonly runtime: typeof proto3 = proto3;
-  static readonly typeName = "neoshowcase.protobuf.CreateApplicationRequest";
-  static readonly fields: FieldList = proto3.util.newFieldList(() => [
-    { no: 1, name: "name", kind: "scalar", T: 9 /* ScalarType.STRING */ },
-    { no: 2, name: "repository_id", kind: "scalar", T: 9 /* ScalarType.STRING */ },
-    { no: 3, name: "ref_name", kind: "scalar", T: 9 /* ScalarType.STRING */ },
-    { no: 4, name: "config", kind: "message", T: ApplicationConfig },
-    { no: 5, name: "websites", kind: "message", T: CreateWebsiteRequest, repeated: true },
-    { no: 6, name: "port_publications", kind: "message", T: PortPublication, repeated: true },
-    { no: 7, name: "start_on_create", kind: "scalar", T: 8 /* ScalarType.BOOL */ },
-  ]);
-
-  static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): CreateApplicationRequest {
-    return new CreateApplicationRequest().fromBinary(bytes, options);
-  }
-
-  static fromJson(jsonValue: JsonValue, options?: Partial<JsonReadOptions>): CreateApplicationRequest {
-    return new CreateApplicationRequest().fromJson(jsonValue, options);
-  }
-
-  static fromJsonString(jsonString: string, options?: Partial<JsonReadOptions>): CreateApplicationRequest {
-    return new CreateApplicationRequest().fromJsonString(jsonString, options);
-  }
-
-  static equals(a: CreateApplicationRequest | PlainMessage<CreateApplicationRequest> | undefined, b: CreateApplicationRequest | PlainMessage<CreateApplicationRequest> | undefined): boolean {
-    return proto3.util.equals(CreateApplicationRequest, a, b);
-  }
-}
-
-/**
- * @generated from message neoshowcase.protobuf.GetApplicationsRequest
- */
-export class GetApplicationsRequest extends Message<GetApplicationsRequest> {
-  /**
-   * @generated from field: neoshowcase.protobuf.GetApplicationsRequest.Scope scope = 1;
-   */
-  scope = GetApplicationsRequest_Scope.MINE;
-
-  constructor(data?: PartialMessage<GetApplicationsRequest>) {
-    super();
-    proto3.util.initPartial(data, this);
-  }
-
-  static readonly runtime: typeof proto3 = proto3;
-  static readonly typeName = "neoshowcase.protobuf.GetApplicationsRequest";
-  static readonly fields: FieldList = proto3.util.newFieldList(() => [
-    { no: 1, name: "scope", kind: "enum", T: proto3.getEnumType(GetApplicationsRequest_Scope) },
-  ]);
-
-  static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): GetApplicationsRequest {
-    return new GetApplicationsRequest().fromBinary(bytes, options);
-  }
-
-  static fromJson(jsonValue: JsonValue, options?: Partial<JsonReadOptions>): GetApplicationsRequest {
-    return new GetApplicationsRequest().fromJson(jsonValue, options);
-  }
-
-  static fromJsonString(jsonString: string, options?: Partial<JsonReadOptions>): GetApplicationsRequest {
-    return new GetApplicationsRequest().fromJsonString(jsonString, options);
-  }
-
-  static equals(a: GetApplicationsRequest | PlainMessage<GetApplicationsRequest> | undefined, b: GetApplicationsRequest | PlainMessage<GetApplicationsRequest> | undefined): boolean {
-    return proto3.util.equals(GetApplicationsRequest, a, b);
-  }
-}
-
-/**
- * @generated from enum neoshowcase.protobuf.GetApplicationsRequest.Scope
- */
-export enum GetApplicationsRequest_Scope {
-  /**
-   * @generated from enum value: MINE = 0;
-   */
-  MINE = 0,
-
-  /**
-   * @generated from enum value: ALL = 1;
-   */
-  ALL = 1,
-}
-// Retrieve enum metadata with: proto3.getEnumType(GetApplicationsRequest_Scope)
-proto3.util.setEnumType(GetApplicationsRequest_Scope, "neoshowcase.protobuf.GetApplicationsRequest.Scope", [
-  { no: 0, name: "MINE" },
-  { no: 1, name: "ALL" },
-]);
-
-/**
- * @generated from message neoshowcase.protobuf.UpdateApplicationRequest
- */
-export class UpdateApplicationRequest extends Message<UpdateApplicationRequest> {
-  /**
-   * @generated from field: string id = 1;
-   */
-  id = "";
-
-  /**
-   * @generated from field: optional string name = 2;
-   */
-  name?: string;
-
-  /**
-   * @generated from field: optional string repository_id = 3;
-   */
-  repositoryId?: string;
-
-  /**
-   * @generated from field: optional string ref_name = 4;
-   */
-  refName?: string;
-
-  /**
-   * @generated from field: optional neoshowcase.protobuf.ApplicationConfig config = 5;
-   */
-  config?: ApplicationConfig;
-
-  /**
-   * @generated from field: optional neoshowcase.protobuf.UpdateApplicationRequest.UpdateWebsites websites = 6;
-   */
-  websites?: UpdateApplicationRequest_UpdateWebsites;
-
-  /**
-   * @generated from field: optional neoshowcase.protobuf.UpdateApplicationRequest.UpdatePorts port_publications = 7;
-   */
-  portPublications?: UpdateApplicationRequest_UpdatePorts;
-
-  /**
-   * @generated from field: optional neoshowcase.protobuf.UpdateApplicationRequest.UpdateOwners owner_ids = 8;
-   */
-  ownerIds?: UpdateApplicationRequest_UpdateOwners;
-
-  constructor(data?: PartialMessage<UpdateApplicationRequest>) {
-    super();
-    proto3.util.initPartial(data, this);
-  }
-
-  static readonly runtime: typeof proto3 = proto3;
-  static readonly typeName = "neoshowcase.protobuf.UpdateApplicationRequest";
-  static readonly fields: FieldList = proto3.util.newFieldList(() => [
-    { no: 1, name: "id", kind: "scalar", T: 9 /* ScalarType.STRING */ },
-    { no: 2, name: "name", kind: "scalar", T: 9 /* ScalarType.STRING */, opt: true },
-    { no: 3, name: "repository_id", kind: "scalar", T: 9 /* ScalarType.STRING */, opt: true },
-    { no: 4, name: "ref_name", kind: "scalar", T: 9 /* ScalarType.STRING */, opt: true },
-    { no: 5, name: "config", kind: "message", T: ApplicationConfig, opt: true },
-    { no: 6, name: "websites", kind: "message", T: UpdateApplicationRequest_UpdateWebsites, opt: true },
-    { no: 7, name: "port_publications", kind: "message", T: UpdateApplicationRequest_UpdatePorts, opt: true },
-    { no: 8, name: "owner_ids", kind: "message", T: UpdateApplicationRequest_UpdateOwners, opt: true },
-  ]);
-
-  static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): UpdateApplicationRequest {
-    return new UpdateApplicationRequest().fromBinary(bytes, options);
-  }
-
-  static fromJson(jsonValue: JsonValue, options?: Partial<JsonReadOptions>): UpdateApplicationRequest {
-    return new UpdateApplicationRequest().fromJson(jsonValue, options);
-  }
-
-  static fromJsonString(jsonString: string, options?: Partial<JsonReadOptions>): UpdateApplicationRequest {
-    return new UpdateApplicationRequest().fromJsonString(jsonString, options);
-  }
-
-  static equals(a: UpdateApplicationRequest | PlainMessage<UpdateApplicationRequest> | undefined, b: UpdateApplicationRequest | PlainMessage<UpdateApplicationRequest> | undefined): boolean {
-    return proto3.util.equals(UpdateApplicationRequest, a, b);
-  }
-}
-
-/**
- * @generated from message neoshowcase.protobuf.UpdateApplicationRequest.UpdateWebsites
- */
-export class UpdateApplicationRequest_UpdateWebsites extends Message<UpdateApplicationRequest_UpdateWebsites> {
-  /**
-   * @generated from field: repeated neoshowcase.protobuf.CreateWebsiteRequest websites = 1;
-   */
-  websites: CreateWebsiteRequest[] = [];
-
-  constructor(data?: PartialMessage<UpdateApplicationRequest_UpdateWebsites>) {
-    super();
-    proto3.util.initPartial(data, this);
-  }
-
-  static readonly runtime: typeof proto3 = proto3;
-  static readonly typeName = "neoshowcase.protobuf.UpdateApplicationRequest.UpdateWebsites";
-  static readonly fields: FieldList = proto3.util.newFieldList(() => [
-    { no: 1, name: "websites", kind: "message", T: CreateWebsiteRequest, repeated: true },
-  ]);
-
-  static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): UpdateApplicationRequest_UpdateWebsites {
-    return new UpdateApplicationRequest_UpdateWebsites().fromBinary(bytes, options);
-  }
-
-  static fromJson(jsonValue: JsonValue, options?: Partial<JsonReadOptions>): UpdateApplicationRequest_UpdateWebsites {
-    return new UpdateApplicationRequest_UpdateWebsites().fromJson(jsonValue, options);
-  }
-
-  static fromJsonString(jsonString: string, options?: Partial<JsonReadOptions>): UpdateApplicationRequest_UpdateWebsites {
-    return new UpdateApplicationRequest_UpdateWebsites().fromJsonString(jsonString, options);
-  }
-
-  static equals(a: UpdateApplicationRequest_UpdateWebsites | PlainMessage<UpdateApplicationRequest_UpdateWebsites> | undefined, b: UpdateApplicationRequest_UpdateWebsites | PlainMessage<UpdateApplicationRequest_UpdateWebsites> | undefined): boolean {
-    return proto3.util.equals(UpdateApplicationRequest_UpdateWebsites, a, b);
-  }
-}
-
-/**
- * @generated from message neoshowcase.protobuf.UpdateApplicationRequest.UpdatePorts
- */
-export class UpdateApplicationRequest_UpdatePorts extends Message<UpdateApplicationRequest_UpdatePorts> {
-  /**
-   * @generated from field: repeated neoshowcase.protobuf.PortPublication port_publications = 1;
-   */
-  portPublications: PortPublication[] = [];
-
-  constructor(data?: PartialMessage<UpdateApplicationRequest_UpdatePorts>) {
-    super();
-    proto3.util.initPartial(data, this);
-  }
-
-  static readonly runtime: typeof proto3 = proto3;
-  static readonly typeName = "neoshowcase.protobuf.UpdateApplicationRequest.UpdatePorts";
-  static readonly fields: FieldList = proto3.util.newFieldList(() => [
-    { no: 1, name: "port_publications", kind: "message", T: PortPublication, repeated: true },
-  ]);
-
-  static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): UpdateApplicationRequest_UpdatePorts {
-    return new UpdateApplicationRequest_UpdatePorts().fromBinary(bytes, options);
-  }
-
-  static fromJson(jsonValue: JsonValue, options?: Partial<JsonReadOptions>): UpdateApplicationRequest_UpdatePorts {
-    return new UpdateApplicationRequest_UpdatePorts().fromJson(jsonValue, options);
-  }
-
-  static fromJsonString(jsonString: string, options?: Partial<JsonReadOptions>): UpdateApplicationRequest_UpdatePorts {
-    return new UpdateApplicationRequest_UpdatePorts().fromJsonString(jsonString, options);
-  }
-
-  static equals(a: UpdateApplicationRequest_UpdatePorts | PlainMessage<UpdateApplicationRequest_UpdatePorts> | undefined, b: UpdateApplicationRequest_UpdatePorts | PlainMessage<UpdateApplicationRequest_UpdatePorts> | undefined): boolean {
-    return proto3.util.equals(UpdateApplicationRequest_UpdatePorts, a, b);
-  }
-}
-
-/**
- * @generated from message neoshowcase.protobuf.UpdateApplicationRequest.UpdateOwners
- */
-export class UpdateApplicationRequest_UpdateOwners extends Message<UpdateApplicationRequest_UpdateOwners> {
-  /**
-   * @generated from field: repeated string owner_ids = 1;
-   */
-  ownerIds: string[] = [];
-
-  constructor(data?: PartialMessage<UpdateApplicationRequest_UpdateOwners>) {
-    super();
-    proto3.util.initPartial(data, this);
-  }
-
-  static readonly runtime: typeof proto3 = proto3;
-  static readonly typeName = "neoshowcase.protobuf.UpdateApplicationRequest.UpdateOwners";
-  static readonly fields: FieldList = proto3.util.newFieldList(() => [
-    { no: 1, name: "owner_ids", kind: "scalar", T: 9 /* ScalarType.STRING */, repeated: true },
-  ]);
-
-  static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): UpdateApplicationRequest_UpdateOwners {
-    return new UpdateApplicationRequest_UpdateOwners().fromBinary(bytes, options);
-  }
-
-  static fromJson(jsonValue: JsonValue, options?: Partial<JsonReadOptions>): UpdateApplicationRequest_UpdateOwners {
-    return new UpdateApplicationRequest_UpdateOwners().fromJson(jsonValue, options);
-  }
-
-  static fromJsonString(jsonString: string, options?: Partial<JsonReadOptions>): UpdateApplicationRequest_UpdateOwners {
-    return new UpdateApplicationRequest_UpdateOwners().fromJsonString(jsonString, options);
-  }
-
-  static equals(a: UpdateApplicationRequest_UpdateOwners | PlainMessage<UpdateApplicationRequest_UpdateOwners> | undefined, b: UpdateApplicationRequest_UpdateOwners | PlainMessage<UpdateApplicationRequest_UpdateOwners> | undefined): boolean {
-    return proto3.util.equals(UpdateApplicationRequest_UpdateOwners, a, b);
-  }
-}
 
 /**
  * @generated from message neoshowcase.protobuf.ApplicationEnvVar
@@ -2634,6 +1627,1056 @@ export class BuildLog extends Message<BuildLog> {
 }
 
 /**
+ * @generated from message neoshowcase.protobuf.GitRef
+ */
+export class GitRef extends Message<GitRef> {
+  /**
+   * @generated from field: string ref_name = 1;
+   */
+  refName = "";
+
+  /**
+   * @generated from field: string commit = 2;
+   */
+  commit = "";
+
+  constructor(data?: PartialMessage<GitRef>) {
+    super();
+    proto3.util.initPartial(data, this);
+  }
+
+  static readonly runtime: typeof proto3 = proto3;
+  static readonly typeName = "neoshowcase.protobuf.GitRef";
+  static readonly fields: FieldList = proto3.util.newFieldList(() => [
+    { no: 1, name: "ref_name", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+    { no: 2, name: "commit", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+  ]);
+
+  static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): GitRef {
+    return new GitRef().fromBinary(bytes, options);
+  }
+
+  static fromJson(jsonValue: JsonValue, options?: Partial<JsonReadOptions>): GitRef {
+    return new GitRef().fromJson(jsonValue, options);
+  }
+
+  static fromJsonString(jsonString: string, options?: Partial<JsonReadOptions>): GitRef {
+    return new GitRef().fromJsonString(jsonString, options);
+  }
+
+  static equals(a: GitRef | PlainMessage<GitRef> | undefined, b: GitRef | PlainMessage<GitRef> | undefined): boolean {
+    return proto3.util.equals(GitRef, a, b);
+  }
+}
+
+/**
+ * @generated from message neoshowcase.protobuf.GenerateKeyPairResponse
+ */
+export class GenerateKeyPairResponse extends Message<GenerateKeyPairResponse> {
+  /**
+   * @generated from field: string key_id = 1;
+   */
+  keyId = "";
+
+  /**
+   * @generated from field: string public_key = 2;
+   */
+  publicKey = "";
+
+  constructor(data?: PartialMessage<GenerateKeyPairResponse>) {
+    super();
+    proto3.util.initPartial(data, this);
+  }
+
+  static readonly runtime: typeof proto3 = proto3;
+  static readonly typeName = "neoshowcase.protobuf.GenerateKeyPairResponse";
+  static readonly fields: FieldList = proto3.util.newFieldList(() => [
+    { no: 1, name: "key_id", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+    { no: 2, name: "public_key", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+  ]);
+
+  static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): GenerateKeyPairResponse {
+    return new GenerateKeyPairResponse().fromBinary(bytes, options);
+  }
+
+  static fromJson(jsonValue: JsonValue, options?: Partial<JsonReadOptions>): GenerateKeyPairResponse {
+    return new GenerateKeyPairResponse().fromJson(jsonValue, options);
+  }
+
+  static fromJsonString(jsonString: string, options?: Partial<JsonReadOptions>): GenerateKeyPairResponse {
+    return new GenerateKeyPairResponse().fromJsonString(jsonString, options);
+  }
+
+  static equals(a: GenerateKeyPairResponse | PlainMessage<GenerateKeyPairResponse> | undefined, b: GenerateKeyPairResponse | PlainMessage<GenerateKeyPairResponse> | undefined): boolean {
+    return proto3.util.equals(GenerateKeyPairResponse, a, b);
+  }
+}
+
+/**
+ * @generated from message neoshowcase.protobuf.GetUsersResponse
+ */
+export class GetUsersResponse extends Message<GetUsersResponse> {
+  /**
+   * @generated from field: repeated neoshowcase.protobuf.User users = 1;
+   */
+  users: User[] = [];
+
+  constructor(data?: PartialMessage<GetUsersResponse>) {
+    super();
+    proto3.util.initPartial(data, this);
+  }
+
+  static readonly runtime: typeof proto3 = proto3;
+  static readonly typeName = "neoshowcase.protobuf.GetUsersResponse";
+  static readonly fields: FieldList = proto3.util.newFieldList(() => [
+    { no: 1, name: "users", kind: "message", T: User, repeated: true },
+  ]);
+
+  static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): GetUsersResponse {
+    return new GetUsersResponse().fromBinary(bytes, options);
+  }
+
+  static fromJson(jsonValue: JsonValue, options?: Partial<JsonReadOptions>): GetUsersResponse {
+    return new GetUsersResponse().fromJson(jsonValue, options);
+  }
+
+  static fromJsonString(jsonString: string, options?: Partial<JsonReadOptions>): GetUsersResponse {
+    return new GetUsersResponse().fromJsonString(jsonString, options);
+  }
+
+  static equals(a: GetUsersResponse | PlainMessage<GetUsersResponse> | undefined, b: GetUsersResponse | PlainMessage<GetUsersResponse> | undefined): boolean {
+    return proto3.util.equals(GetUsersResponse, a, b);
+  }
+}
+
+/**
+ * @generated from message neoshowcase.protobuf.GetUserKeysResponse
+ */
+export class GetUserKeysResponse extends Message<GetUserKeysResponse> {
+  /**
+   * @generated from field: repeated neoshowcase.protobuf.UserKey keys = 1;
+   */
+  keys: UserKey[] = [];
+
+  constructor(data?: PartialMessage<GetUserKeysResponse>) {
+    super();
+    proto3.util.initPartial(data, this);
+  }
+
+  static readonly runtime: typeof proto3 = proto3;
+  static readonly typeName = "neoshowcase.protobuf.GetUserKeysResponse";
+  static readonly fields: FieldList = proto3.util.newFieldList(() => [
+    { no: 1, name: "keys", kind: "message", T: UserKey, repeated: true },
+  ]);
+
+  static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): GetUserKeysResponse {
+    return new GetUserKeysResponse().fromBinary(bytes, options);
+  }
+
+  static fromJson(jsonValue: JsonValue, options?: Partial<JsonReadOptions>): GetUserKeysResponse {
+    return new GetUserKeysResponse().fromJson(jsonValue, options);
+  }
+
+  static fromJsonString(jsonString: string, options?: Partial<JsonReadOptions>): GetUserKeysResponse {
+    return new GetUserKeysResponse().fromJsonString(jsonString, options);
+  }
+
+  static equals(a: GetUserKeysResponse | PlainMessage<GetUserKeysResponse> | undefined, b: GetUserKeysResponse | PlainMessage<GetUserKeysResponse> | undefined): boolean {
+    return proto3.util.equals(GetUserKeysResponse, a, b);
+  }
+}
+
+/**
+ * @generated from message neoshowcase.protobuf.CreateUserKeyRequest
+ */
+export class CreateUserKeyRequest extends Message<CreateUserKeyRequest> {
+  /**
+   * @generated from field: string public_key = 1;
+   */
+  publicKey = "";
+
+  constructor(data?: PartialMessage<CreateUserKeyRequest>) {
+    super();
+    proto3.util.initPartial(data, this);
+  }
+
+  static readonly runtime: typeof proto3 = proto3;
+  static readonly typeName = "neoshowcase.protobuf.CreateUserKeyRequest";
+  static readonly fields: FieldList = proto3.util.newFieldList(() => [
+    { no: 1, name: "public_key", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+  ]);
+
+  static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): CreateUserKeyRequest {
+    return new CreateUserKeyRequest().fromBinary(bytes, options);
+  }
+
+  static fromJson(jsonValue: JsonValue, options?: Partial<JsonReadOptions>): CreateUserKeyRequest {
+    return new CreateUserKeyRequest().fromJson(jsonValue, options);
+  }
+
+  static fromJsonString(jsonString: string, options?: Partial<JsonReadOptions>): CreateUserKeyRequest {
+    return new CreateUserKeyRequest().fromJsonString(jsonString, options);
+  }
+
+  static equals(a: CreateUserKeyRequest | PlainMessage<CreateUserKeyRequest> | undefined, b: CreateUserKeyRequest | PlainMessage<CreateUserKeyRequest> | undefined): boolean {
+    return proto3.util.equals(CreateUserKeyRequest, a, b);
+  }
+}
+
+/**
+ * @generated from message neoshowcase.protobuf.DeleteUserKeyRequest
+ */
+export class DeleteUserKeyRequest extends Message<DeleteUserKeyRequest> {
+  /**
+   * @generated from field: string key_id = 1;
+   */
+  keyId = "";
+
+  constructor(data?: PartialMessage<DeleteUserKeyRequest>) {
+    super();
+    proto3.util.initPartial(data, this);
+  }
+
+  static readonly runtime: typeof proto3 = proto3;
+  static readonly typeName = "neoshowcase.protobuf.DeleteUserKeyRequest";
+  static readonly fields: FieldList = proto3.util.newFieldList(() => [
+    { no: 1, name: "key_id", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+  ]);
+
+  static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): DeleteUserKeyRequest {
+    return new DeleteUserKeyRequest().fromBinary(bytes, options);
+  }
+
+  static fromJson(jsonValue: JsonValue, options?: Partial<JsonReadOptions>): DeleteUserKeyRequest {
+    return new DeleteUserKeyRequest().fromJson(jsonValue, options);
+  }
+
+  static fromJsonString(jsonString: string, options?: Partial<JsonReadOptions>): DeleteUserKeyRequest {
+    return new DeleteUserKeyRequest().fromJsonString(jsonString, options);
+  }
+
+  static equals(a: DeleteUserKeyRequest | PlainMessage<DeleteUserKeyRequest> | undefined, b: DeleteUserKeyRequest | PlainMessage<DeleteUserKeyRequest> | undefined): boolean {
+    return proto3.util.equals(DeleteUserKeyRequest, a, b);
+  }
+}
+
+/**
+ * @generated from message neoshowcase.protobuf.CreateRepositoryAuthBasic
+ */
+export class CreateRepositoryAuthBasic extends Message<CreateRepositoryAuthBasic> {
+  /**
+   * @generated from field: string username = 1;
+   */
+  username = "";
+
+  /**
+   * @generated from field: string password = 2;
+   */
+  password = "";
+
+  constructor(data?: PartialMessage<CreateRepositoryAuthBasic>) {
+    super();
+    proto3.util.initPartial(data, this);
+  }
+
+  static readonly runtime: typeof proto3 = proto3;
+  static readonly typeName = "neoshowcase.protobuf.CreateRepositoryAuthBasic";
+  static readonly fields: FieldList = proto3.util.newFieldList(() => [
+    { no: 1, name: "username", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+    { no: 2, name: "password", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+  ]);
+
+  static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): CreateRepositoryAuthBasic {
+    return new CreateRepositoryAuthBasic().fromBinary(bytes, options);
+  }
+
+  static fromJson(jsonValue: JsonValue, options?: Partial<JsonReadOptions>): CreateRepositoryAuthBasic {
+    return new CreateRepositoryAuthBasic().fromJson(jsonValue, options);
+  }
+
+  static fromJsonString(jsonString: string, options?: Partial<JsonReadOptions>): CreateRepositoryAuthBasic {
+    return new CreateRepositoryAuthBasic().fromJsonString(jsonString, options);
+  }
+
+  static equals(a: CreateRepositoryAuthBasic | PlainMessage<CreateRepositoryAuthBasic> | undefined, b: CreateRepositoryAuthBasic | PlainMessage<CreateRepositoryAuthBasic> | undefined): boolean {
+    return proto3.util.equals(CreateRepositoryAuthBasic, a, b);
+  }
+}
+
+/**
+ * @generated from message neoshowcase.protobuf.CreateRepositoryAuthSSH
+ */
+export class CreateRepositoryAuthSSH extends Message<CreateRepositoryAuthSSH> {
+  /**
+   * @generated from field: string key_id = 1;
+   */
+  keyId = "";
+
+  constructor(data?: PartialMessage<CreateRepositoryAuthSSH>) {
+    super();
+    proto3.util.initPartial(data, this);
+  }
+
+  static readonly runtime: typeof proto3 = proto3;
+  static readonly typeName = "neoshowcase.protobuf.CreateRepositoryAuthSSH";
+  static readonly fields: FieldList = proto3.util.newFieldList(() => [
+    { no: 1, name: "key_id", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+  ]);
+
+  static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): CreateRepositoryAuthSSH {
+    return new CreateRepositoryAuthSSH().fromBinary(bytes, options);
+  }
+
+  static fromJson(jsonValue: JsonValue, options?: Partial<JsonReadOptions>): CreateRepositoryAuthSSH {
+    return new CreateRepositoryAuthSSH().fromJson(jsonValue, options);
+  }
+
+  static fromJsonString(jsonString: string, options?: Partial<JsonReadOptions>): CreateRepositoryAuthSSH {
+    return new CreateRepositoryAuthSSH().fromJsonString(jsonString, options);
+  }
+
+  static equals(a: CreateRepositoryAuthSSH | PlainMessage<CreateRepositoryAuthSSH> | undefined, b: CreateRepositoryAuthSSH | PlainMessage<CreateRepositoryAuthSSH> | undefined): boolean {
+    return proto3.util.equals(CreateRepositoryAuthSSH, a, b);
+  }
+}
+
+/**
+ * @generated from message neoshowcase.protobuf.CreateRepositoryAuth
+ */
+export class CreateRepositoryAuth extends Message<CreateRepositoryAuth> {
+  /**
+   * @generated from oneof neoshowcase.protobuf.CreateRepositoryAuth.auth
+   */
+  auth: {
+    /**
+     * @generated from field: google.protobuf.Empty none = 1;
+     */
+    value: Empty;
+    case: "none";
+  } | {
+    /**
+     * @generated from field: neoshowcase.protobuf.CreateRepositoryAuthBasic basic = 2;
+     */
+    value: CreateRepositoryAuthBasic;
+    case: "basic";
+  } | {
+    /**
+     * @generated from field: neoshowcase.protobuf.CreateRepositoryAuthSSH ssh = 3;
+     */
+    value: CreateRepositoryAuthSSH;
+    case: "ssh";
+  } | { case: undefined; value?: undefined } = { case: undefined };
+
+  constructor(data?: PartialMessage<CreateRepositoryAuth>) {
+    super();
+    proto3.util.initPartial(data, this);
+  }
+
+  static readonly runtime: typeof proto3 = proto3;
+  static readonly typeName = "neoshowcase.protobuf.CreateRepositoryAuth";
+  static readonly fields: FieldList = proto3.util.newFieldList(() => [
+    { no: 1, name: "none", kind: "message", T: Empty, oneof: "auth" },
+    { no: 2, name: "basic", kind: "message", T: CreateRepositoryAuthBasic, oneof: "auth" },
+    { no: 3, name: "ssh", kind: "message", T: CreateRepositoryAuthSSH, oneof: "auth" },
+  ]);
+
+  static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): CreateRepositoryAuth {
+    return new CreateRepositoryAuth().fromBinary(bytes, options);
+  }
+
+  static fromJson(jsonValue: JsonValue, options?: Partial<JsonReadOptions>): CreateRepositoryAuth {
+    return new CreateRepositoryAuth().fromJson(jsonValue, options);
+  }
+
+  static fromJsonString(jsonString: string, options?: Partial<JsonReadOptions>): CreateRepositoryAuth {
+    return new CreateRepositoryAuth().fromJsonString(jsonString, options);
+  }
+
+  static equals(a: CreateRepositoryAuth | PlainMessage<CreateRepositoryAuth> | undefined, b: CreateRepositoryAuth | PlainMessage<CreateRepositoryAuth> | undefined): boolean {
+    return proto3.util.equals(CreateRepositoryAuth, a, b);
+  }
+}
+
+/**
+ * @generated from message neoshowcase.protobuf.CreateRepositoryRequest
+ */
+export class CreateRepositoryRequest extends Message<CreateRepositoryRequest> {
+  /**
+   * @generated from field: string name = 1;
+   */
+  name = "";
+
+  /**
+   * @generated from field: string url = 2;
+   */
+  url = "";
+
+  /**
+   * @generated from field: neoshowcase.protobuf.CreateRepositoryAuth auth = 3;
+   */
+  auth?: CreateRepositoryAuth;
+
+  constructor(data?: PartialMessage<CreateRepositoryRequest>) {
+    super();
+    proto3.util.initPartial(data, this);
+  }
+
+  static readonly runtime: typeof proto3 = proto3;
+  static readonly typeName = "neoshowcase.protobuf.CreateRepositoryRequest";
+  static readonly fields: FieldList = proto3.util.newFieldList(() => [
+    { no: 1, name: "name", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+    { no: 2, name: "url", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+    { no: 3, name: "auth", kind: "message", T: CreateRepositoryAuth },
+  ]);
+
+  static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): CreateRepositoryRequest {
+    return new CreateRepositoryRequest().fromBinary(bytes, options);
+  }
+
+  static fromJson(jsonValue: JsonValue, options?: Partial<JsonReadOptions>): CreateRepositoryRequest {
+    return new CreateRepositoryRequest().fromJson(jsonValue, options);
+  }
+
+  static fromJsonString(jsonString: string, options?: Partial<JsonReadOptions>): CreateRepositoryRequest {
+    return new CreateRepositoryRequest().fromJsonString(jsonString, options);
+  }
+
+  static equals(a: CreateRepositoryRequest | PlainMessage<CreateRepositoryRequest> | undefined, b: CreateRepositoryRequest | PlainMessage<CreateRepositoryRequest> | undefined): boolean {
+    return proto3.util.equals(CreateRepositoryRequest, a, b);
+  }
+}
+
+/**
+ * @generated from message neoshowcase.protobuf.GetRepositoriesRequest
+ */
+export class GetRepositoriesRequest extends Message<GetRepositoriesRequest> {
+  /**
+   * @generated from field: neoshowcase.protobuf.GetRepositoriesRequest.Scope scope = 1;
+   */
+  scope = GetRepositoriesRequest_Scope.MINE;
+
+  constructor(data?: PartialMessage<GetRepositoriesRequest>) {
+    super();
+    proto3.util.initPartial(data, this);
+  }
+
+  static readonly runtime: typeof proto3 = proto3;
+  static readonly typeName = "neoshowcase.protobuf.GetRepositoriesRequest";
+  static readonly fields: FieldList = proto3.util.newFieldList(() => [
+    { no: 1, name: "scope", kind: "enum", T: proto3.getEnumType(GetRepositoriesRequest_Scope) },
+  ]);
+
+  static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): GetRepositoriesRequest {
+    return new GetRepositoriesRequest().fromBinary(bytes, options);
+  }
+
+  static fromJson(jsonValue: JsonValue, options?: Partial<JsonReadOptions>): GetRepositoriesRequest {
+    return new GetRepositoriesRequest().fromJson(jsonValue, options);
+  }
+
+  static fromJsonString(jsonString: string, options?: Partial<JsonReadOptions>): GetRepositoriesRequest {
+    return new GetRepositoriesRequest().fromJsonString(jsonString, options);
+  }
+
+  static equals(a: GetRepositoriesRequest | PlainMessage<GetRepositoriesRequest> | undefined, b: GetRepositoriesRequest | PlainMessage<GetRepositoriesRequest> | undefined): boolean {
+    return proto3.util.equals(GetRepositoriesRequest, a, b);
+  }
+}
+
+/**
+ * @generated from enum neoshowcase.protobuf.GetRepositoriesRequest.Scope
+ */
+export enum GetRepositoriesRequest_Scope {
+  /**
+   * @generated from enum value: MINE = 0;
+   */
+  MINE = 0,
+
+  /**
+   * @generated from enum value: PUBLIC = 1;
+   */
+  PUBLIC = 1,
+
+  /**
+   * admin only
+   *
+   * @generated from enum value: ALL = 2;
+   */
+  ALL = 2,
+}
+// Retrieve enum metadata with: proto3.getEnumType(GetRepositoriesRequest_Scope)
+proto3.util.setEnumType(GetRepositoriesRequest_Scope, "neoshowcase.protobuf.GetRepositoriesRequest.Scope", [
+  { no: 0, name: "MINE" },
+  { no: 1, name: "PUBLIC" },
+  { no: 2, name: "ALL" },
+]);
+
+/**
+ * @generated from message neoshowcase.protobuf.UpdateRepositoryRequest
+ */
+export class UpdateRepositoryRequest extends Message<UpdateRepositoryRequest> {
+  /**
+   * @generated from field: string id = 1;
+   */
+  id = "";
+
+  /**
+   * @generated from field: optional string name = 2;
+   */
+  name?: string;
+
+  /**
+   * @generated from field: optional string url = 3;
+   */
+  url?: string;
+
+  /**
+   * @generated from field: optional neoshowcase.protobuf.CreateRepositoryAuth auth = 4;
+   */
+  auth?: CreateRepositoryAuth;
+
+  /**
+   * @generated from field: optional neoshowcase.protobuf.UpdateRepositoryRequest.UpdateOwners owner_ids = 5;
+   */
+  ownerIds?: UpdateRepositoryRequest_UpdateOwners;
+
+  constructor(data?: PartialMessage<UpdateRepositoryRequest>) {
+    super();
+    proto3.util.initPartial(data, this);
+  }
+
+  static readonly runtime: typeof proto3 = proto3;
+  static readonly typeName = "neoshowcase.protobuf.UpdateRepositoryRequest";
+  static readonly fields: FieldList = proto3.util.newFieldList(() => [
+    { no: 1, name: "id", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+    { no: 2, name: "name", kind: "scalar", T: 9 /* ScalarType.STRING */, opt: true },
+    { no: 3, name: "url", kind: "scalar", T: 9 /* ScalarType.STRING */, opt: true },
+    { no: 4, name: "auth", kind: "message", T: CreateRepositoryAuth, opt: true },
+    { no: 5, name: "owner_ids", kind: "message", T: UpdateRepositoryRequest_UpdateOwners, opt: true },
+  ]);
+
+  static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): UpdateRepositoryRequest {
+    return new UpdateRepositoryRequest().fromBinary(bytes, options);
+  }
+
+  static fromJson(jsonValue: JsonValue, options?: Partial<JsonReadOptions>): UpdateRepositoryRequest {
+    return new UpdateRepositoryRequest().fromJson(jsonValue, options);
+  }
+
+  static fromJsonString(jsonString: string, options?: Partial<JsonReadOptions>): UpdateRepositoryRequest {
+    return new UpdateRepositoryRequest().fromJsonString(jsonString, options);
+  }
+
+  static equals(a: UpdateRepositoryRequest | PlainMessage<UpdateRepositoryRequest> | undefined, b: UpdateRepositoryRequest | PlainMessage<UpdateRepositoryRequest> | undefined): boolean {
+    return proto3.util.equals(UpdateRepositoryRequest, a, b);
+  }
+}
+
+/**
+ * @generated from message neoshowcase.protobuf.UpdateRepositoryRequest.UpdateOwners
+ */
+export class UpdateRepositoryRequest_UpdateOwners extends Message<UpdateRepositoryRequest_UpdateOwners> {
+  /**
+   * @generated from field: repeated string owner_ids = 1;
+   */
+  ownerIds: string[] = [];
+
+  constructor(data?: PartialMessage<UpdateRepositoryRequest_UpdateOwners>) {
+    super();
+    proto3.util.initPartial(data, this);
+  }
+
+  static readonly runtime: typeof proto3 = proto3;
+  static readonly typeName = "neoshowcase.protobuf.UpdateRepositoryRequest.UpdateOwners";
+  static readonly fields: FieldList = proto3.util.newFieldList(() => [
+    { no: 1, name: "owner_ids", kind: "scalar", T: 9 /* ScalarType.STRING */, repeated: true },
+  ]);
+
+  static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): UpdateRepositoryRequest_UpdateOwners {
+    return new UpdateRepositoryRequest_UpdateOwners().fromBinary(bytes, options);
+  }
+
+  static fromJson(jsonValue: JsonValue, options?: Partial<JsonReadOptions>): UpdateRepositoryRequest_UpdateOwners {
+    return new UpdateRepositoryRequest_UpdateOwners().fromJson(jsonValue, options);
+  }
+
+  static fromJsonString(jsonString: string, options?: Partial<JsonReadOptions>): UpdateRepositoryRequest_UpdateOwners {
+    return new UpdateRepositoryRequest_UpdateOwners().fromJsonString(jsonString, options);
+  }
+
+  static equals(a: UpdateRepositoryRequest_UpdateOwners | PlainMessage<UpdateRepositoryRequest_UpdateOwners> | undefined, b: UpdateRepositoryRequest_UpdateOwners | PlainMessage<UpdateRepositoryRequest_UpdateOwners> | undefined): boolean {
+    return proto3.util.equals(UpdateRepositoryRequest_UpdateOwners, a, b);
+  }
+}
+
+/**
+ * @generated from message neoshowcase.protobuf.RepositoryIdRequest
+ */
+export class RepositoryIdRequest extends Message<RepositoryIdRequest> {
+  /**
+   * @generated from field: string repository_id = 1;
+   */
+  repositoryId = "";
+
+  constructor(data?: PartialMessage<RepositoryIdRequest>) {
+    super();
+    proto3.util.initPartial(data, this);
+  }
+
+  static readonly runtime: typeof proto3 = proto3;
+  static readonly typeName = "neoshowcase.protobuf.RepositoryIdRequest";
+  static readonly fields: FieldList = proto3.util.newFieldList(() => [
+    { no: 1, name: "repository_id", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+  ]);
+
+  static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): RepositoryIdRequest {
+    return new RepositoryIdRequest().fromBinary(bytes, options);
+  }
+
+  static fromJson(jsonValue: JsonValue, options?: Partial<JsonReadOptions>): RepositoryIdRequest {
+    return new RepositoryIdRequest().fromJson(jsonValue, options);
+  }
+
+  static fromJsonString(jsonString: string, options?: Partial<JsonReadOptions>): RepositoryIdRequest {
+    return new RepositoryIdRequest().fromJsonString(jsonString, options);
+  }
+
+  static equals(a: RepositoryIdRequest | PlainMessage<RepositoryIdRequest> | undefined, b: RepositoryIdRequest | PlainMessage<RepositoryIdRequest> | undefined): boolean {
+    return proto3.util.equals(RepositoryIdRequest, a, b);
+  }
+}
+
+/**
+ * @generated from message neoshowcase.protobuf.CreateWebsiteRequest
+ */
+export class CreateWebsiteRequest extends Message<CreateWebsiteRequest> {
+  /**
+   * @generated from field: string fqdn = 1;
+   */
+  fqdn = "";
+
+  /**
+   * @generated from field: string path_prefix = 2;
+   */
+  pathPrefix = "";
+
+  /**
+   * @generated from field: bool strip_prefix = 3;
+   */
+  stripPrefix = false;
+
+  /**
+   * @generated from field: bool https = 4;
+   */
+  https = false;
+
+  /**
+   * @generated from field: bool h2c = 5;
+   */
+  h2c = false;
+
+  /**
+   * @generated from field: int32 http_port = 6;
+   */
+  httpPort = 0;
+
+  /**
+   * @generated from field: neoshowcase.protobuf.AuthenticationType authentication = 7;
+   */
+  authentication = AuthenticationType.OFF;
+
+  constructor(data?: PartialMessage<CreateWebsiteRequest>) {
+    super();
+    proto3.util.initPartial(data, this);
+  }
+
+  static readonly runtime: typeof proto3 = proto3;
+  static readonly typeName = "neoshowcase.protobuf.CreateWebsiteRequest";
+  static readonly fields: FieldList = proto3.util.newFieldList(() => [
+    { no: 1, name: "fqdn", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+    { no: 2, name: "path_prefix", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+    { no: 3, name: "strip_prefix", kind: "scalar", T: 8 /* ScalarType.BOOL */ },
+    { no: 4, name: "https", kind: "scalar", T: 8 /* ScalarType.BOOL */ },
+    { no: 5, name: "h2c", kind: "scalar", T: 8 /* ScalarType.BOOL */ },
+    { no: 6, name: "http_port", kind: "scalar", T: 5 /* ScalarType.INT32 */ },
+    { no: 7, name: "authentication", kind: "enum", T: proto3.getEnumType(AuthenticationType) },
+  ]);
+
+  static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): CreateWebsiteRequest {
+    return new CreateWebsiteRequest().fromBinary(bytes, options);
+  }
+
+  static fromJson(jsonValue: JsonValue, options?: Partial<JsonReadOptions>): CreateWebsiteRequest {
+    return new CreateWebsiteRequest().fromJson(jsonValue, options);
+  }
+
+  static fromJsonString(jsonString: string, options?: Partial<JsonReadOptions>): CreateWebsiteRequest {
+    return new CreateWebsiteRequest().fromJsonString(jsonString, options);
+  }
+
+  static equals(a: CreateWebsiteRequest | PlainMessage<CreateWebsiteRequest> | undefined, b: CreateWebsiteRequest | PlainMessage<CreateWebsiteRequest> | undefined): boolean {
+    return proto3.util.equals(CreateWebsiteRequest, a, b);
+  }
+}
+
+/**
+ * @generated from message neoshowcase.protobuf.DeleteWebsiteRequest
+ */
+export class DeleteWebsiteRequest extends Message<DeleteWebsiteRequest> {
+  /**
+   * @generated from field: string id = 1;
+   */
+  id = "";
+
+  constructor(data?: PartialMessage<DeleteWebsiteRequest>) {
+    super();
+    proto3.util.initPartial(data, this);
+  }
+
+  static readonly runtime: typeof proto3 = proto3;
+  static readonly typeName = "neoshowcase.protobuf.DeleteWebsiteRequest";
+  static readonly fields: FieldList = proto3.util.newFieldList(() => [
+    { no: 1, name: "id", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+  ]);
+
+  static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): DeleteWebsiteRequest {
+    return new DeleteWebsiteRequest().fromBinary(bytes, options);
+  }
+
+  static fromJson(jsonValue: JsonValue, options?: Partial<JsonReadOptions>): DeleteWebsiteRequest {
+    return new DeleteWebsiteRequest().fromJson(jsonValue, options);
+  }
+
+  static fromJsonString(jsonString: string, options?: Partial<JsonReadOptions>): DeleteWebsiteRequest {
+    return new DeleteWebsiteRequest().fromJsonString(jsonString, options);
+  }
+
+  static equals(a: DeleteWebsiteRequest | PlainMessage<DeleteWebsiteRequest> | undefined, b: DeleteWebsiteRequest | PlainMessage<DeleteWebsiteRequest> | undefined): boolean {
+    return proto3.util.equals(DeleteWebsiteRequest, a, b);
+  }
+}
+
+/**
+ * @generated from message neoshowcase.protobuf.CreateApplicationRequest
+ */
+export class CreateApplicationRequest extends Message<CreateApplicationRequest> {
+  /**
+   * @generated from field: string name = 1;
+   */
+  name = "";
+
+  /**
+   * @generated from field: string repository_id = 2;
+   */
+  repositoryId = "";
+
+  /**
+   * @generated from field: string ref_name = 3;
+   */
+  refName = "";
+
+  /**
+   * @generated from field: neoshowcase.protobuf.ApplicationConfig config = 4;
+   */
+  config?: ApplicationConfig;
+
+  /**
+   * @generated from field: repeated neoshowcase.protobuf.CreateWebsiteRequest websites = 5;
+   */
+  websites: CreateWebsiteRequest[] = [];
+
+  /**
+   * @generated from field: repeated neoshowcase.protobuf.PortPublication port_publications = 6;
+   */
+  portPublications: PortPublication[] = [];
+
+  /**
+   * @generated from field: bool start_on_create = 7;
+   */
+  startOnCreate = false;
+
+  constructor(data?: PartialMessage<CreateApplicationRequest>) {
+    super();
+    proto3.util.initPartial(data, this);
+  }
+
+  static readonly runtime: typeof proto3 = proto3;
+  static readonly typeName = "neoshowcase.protobuf.CreateApplicationRequest";
+  static readonly fields: FieldList = proto3.util.newFieldList(() => [
+    { no: 1, name: "name", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+    { no: 2, name: "repository_id", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+    { no: 3, name: "ref_name", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+    { no: 4, name: "config", kind: "message", T: ApplicationConfig },
+    { no: 5, name: "websites", kind: "message", T: CreateWebsiteRequest, repeated: true },
+    { no: 6, name: "port_publications", kind: "message", T: PortPublication, repeated: true },
+    { no: 7, name: "start_on_create", kind: "scalar", T: 8 /* ScalarType.BOOL */ },
+  ]);
+
+  static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): CreateApplicationRequest {
+    return new CreateApplicationRequest().fromBinary(bytes, options);
+  }
+
+  static fromJson(jsonValue: JsonValue, options?: Partial<JsonReadOptions>): CreateApplicationRequest {
+    return new CreateApplicationRequest().fromJson(jsonValue, options);
+  }
+
+  static fromJsonString(jsonString: string, options?: Partial<JsonReadOptions>): CreateApplicationRequest {
+    return new CreateApplicationRequest().fromJsonString(jsonString, options);
+  }
+
+  static equals(a: CreateApplicationRequest | PlainMessage<CreateApplicationRequest> | undefined, b: CreateApplicationRequest | PlainMessage<CreateApplicationRequest> | undefined): boolean {
+    return proto3.util.equals(CreateApplicationRequest, a, b);
+  }
+}
+
+/**
+ * @generated from message neoshowcase.protobuf.GetApplicationsRequest
+ */
+export class GetApplicationsRequest extends Message<GetApplicationsRequest> {
+  /**
+   * @generated from field: neoshowcase.protobuf.GetApplicationsRequest.Scope scope = 1;
+   */
+  scope = GetApplicationsRequest_Scope.MINE;
+
+  constructor(data?: PartialMessage<GetApplicationsRequest>) {
+    super();
+    proto3.util.initPartial(data, this);
+  }
+
+  static readonly runtime: typeof proto3 = proto3;
+  static readonly typeName = "neoshowcase.protobuf.GetApplicationsRequest";
+  static readonly fields: FieldList = proto3.util.newFieldList(() => [
+    { no: 1, name: "scope", kind: "enum", T: proto3.getEnumType(GetApplicationsRequest_Scope) },
+  ]);
+
+  static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): GetApplicationsRequest {
+    return new GetApplicationsRequest().fromBinary(bytes, options);
+  }
+
+  static fromJson(jsonValue: JsonValue, options?: Partial<JsonReadOptions>): GetApplicationsRequest {
+    return new GetApplicationsRequest().fromJson(jsonValue, options);
+  }
+
+  static fromJsonString(jsonString: string, options?: Partial<JsonReadOptions>): GetApplicationsRequest {
+    return new GetApplicationsRequest().fromJsonString(jsonString, options);
+  }
+
+  static equals(a: GetApplicationsRequest | PlainMessage<GetApplicationsRequest> | undefined, b: GetApplicationsRequest | PlainMessage<GetApplicationsRequest> | undefined): boolean {
+    return proto3.util.equals(GetApplicationsRequest, a, b);
+  }
+}
+
+/**
+ * @generated from enum neoshowcase.protobuf.GetApplicationsRequest.Scope
+ */
+export enum GetApplicationsRequest_Scope {
+  /**
+   * @generated from enum value: MINE = 0;
+   */
+  MINE = 0,
+
+  /**
+   * @generated from enum value: ALL = 1;
+   */
+  ALL = 1,
+}
+// Retrieve enum metadata with: proto3.getEnumType(GetApplicationsRequest_Scope)
+proto3.util.setEnumType(GetApplicationsRequest_Scope, "neoshowcase.protobuf.GetApplicationsRequest.Scope", [
+  { no: 0, name: "MINE" },
+  { no: 1, name: "ALL" },
+]);
+
+/**
+ * @generated from message neoshowcase.protobuf.UpdateApplicationRequest
+ */
+export class UpdateApplicationRequest extends Message<UpdateApplicationRequest> {
+  /**
+   * @generated from field: string id = 1;
+   */
+  id = "";
+
+  /**
+   * @generated from field: optional string name = 2;
+   */
+  name?: string;
+
+  /**
+   * @generated from field: optional string repository_id = 3;
+   */
+  repositoryId?: string;
+
+  /**
+   * @generated from field: optional string ref_name = 4;
+   */
+  refName?: string;
+
+  /**
+   * @generated from field: optional neoshowcase.protobuf.ApplicationConfig config = 5;
+   */
+  config?: ApplicationConfig;
+
+  /**
+   * @generated from field: optional neoshowcase.protobuf.UpdateApplicationRequest.UpdateWebsites websites = 6;
+   */
+  websites?: UpdateApplicationRequest_UpdateWebsites;
+
+  /**
+   * @generated from field: optional neoshowcase.protobuf.UpdateApplicationRequest.UpdatePorts port_publications = 7;
+   */
+  portPublications?: UpdateApplicationRequest_UpdatePorts;
+
+  /**
+   * @generated from field: optional neoshowcase.protobuf.UpdateApplicationRequest.UpdateOwners owner_ids = 8;
+   */
+  ownerIds?: UpdateApplicationRequest_UpdateOwners;
+
+  constructor(data?: PartialMessage<UpdateApplicationRequest>) {
+    super();
+    proto3.util.initPartial(data, this);
+  }
+
+  static readonly runtime: typeof proto3 = proto3;
+  static readonly typeName = "neoshowcase.protobuf.UpdateApplicationRequest";
+  static readonly fields: FieldList = proto3.util.newFieldList(() => [
+    { no: 1, name: "id", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+    { no: 2, name: "name", kind: "scalar", T: 9 /* ScalarType.STRING */, opt: true },
+    { no: 3, name: "repository_id", kind: "scalar", T: 9 /* ScalarType.STRING */, opt: true },
+    { no: 4, name: "ref_name", kind: "scalar", T: 9 /* ScalarType.STRING */, opt: true },
+    { no: 5, name: "config", kind: "message", T: ApplicationConfig, opt: true },
+    { no: 6, name: "websites", kind: "message", T: UpdateApplicationRequest_UpdateWebsites, opt: true },
+    { no: 7, name: "port_publications", kind: "message", T: UpdateApplicationRequest_UpdatePorts, opt: true },
+    { no: 8, name: "owner_ids", kind: "message", T: UpdateApplicationRequest_UpdateOwners, opt: true },
+  ]);
+
+  static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): UpdateApplicationRequest {
+    return new UpdateApplicationRequest().fromBinary(bytes, options);
+  }
+
+  static fromJson(jsonValue: JsonValue, options?: Partial<JsonReadOptions>): UpdateApplicationRequest {
+    return new UpdateApplicationRequest().fromJson(jsonValue, options);
+  }
+
+  static fromJsonString(jsonString: string, options?: Partial<JsonReadOptions>): UpdateApplicationRequest {
+    return new UpdateApplicationRequest().fromJsonString(jsonString, options);
+  }
+
+  static equals(a: UpdateApplicationRequest | PlainMessage<UpdateApplicationRequest> | undefined, b: UpdateApplicationRequest | PlainMessage<UpdateApplicationRequest> | undefined): boolean {
+    return proto3.util.equals(UpdateApplicationRequest, a, b);
+  }
+}
+
+/**
+ * @generated from message neoshowcase.protobuf.UpdateApplicationRequest.UpdateWebsites
+ */
+export class UpdateApplicationRequest_UpdateWebsites extends Message<UpdateApplicationRequest_UpdateWebsites> {
+  /**
+   * @generated from field: repeated neoshowcase.protobuf.CreateWebsiteRequest websites = 1;
+   */
+  websites: CreateWebsiteRequest[] = [];
+
+  constructor(data?: PartialMessage<UpdateApplicationRequest_UpdateWebsites>) {
+    super();
+    proto3.util.initPartial(data, this);
+  }
+
+  static readonly runtime: typeof proto3 = proto3;
+  static readonly typeName = "neoshowcase.protobuf.UpdateApplicationRequest.UpdateWebsites";
+  static readonly fields: FieldList = proto3.util.newFieldList(() => [
+    { no: 1, name: "websites", kind: "message", T: CreateWebsiteRequest, repeated: true },
+  ]);
+
+  static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): UpdateApplicationRequest_UpdateWebsites {
+    return new UpdateApplicationRequest_UpdateWebsites().fromBinary(bytes, options);
+  }
+
+  static fromJson(jsonValue: JsonValue, options?: Partial<JsonReadOptions>): UpdateApplicationRequest_UpdateWebsites {
+    return new UpdateApplicationRequest_UpdateWebsites().fromJson(jsonValue, options);
+  }
+
+  static fromJsonString(jsonString: string, options?: Partial<JsonReadOptions>): UpdateApplicationRequest_UpdateWebsites {
+    return new UpdateApplicationRequest_UpdateWebsites().fromJsonString(jsonString, options);
+  }
+
+  static equals(a: UpdateApplicationRequest_UpdateWebsites | PlainMessage<UpdateApplicationRequest_UpdateWebsites> | undefined, b: UpdateApplicationRequest_UpdateWebsites | PlainMessage<UpdateApplicationRequest_UpdateWebsites> | undefined): boolean {
+    return proto3.util.equals(UpdateApplicationRequest_UpdateWebsites, a, b);
+  }
+}
+
+/**
+ * @generated from message neoshowcase.protobuf.UpdateApplicationRequest.UpdatePorts
+ */
+export class UpdateApplicationRequest_UpdatePorts extends Message<UpdateApplicationRequest_UpdatePorts> {
+  /**
+   * @generated from field: repeated neoshowcase.protobuf.PortPublication port_publications = 1;
+   */
+  portPublications: PortPublication[] = [];
+
+  constructor(data?: PartialMessage<UpdateApplicationRequest_UpdatePorts>) {
+    super();
+    proto3.util.initPartial(data, this);
+  }
+
+  static readonly runtime: typeof proto3 = proto3;
+  static readonly typeName = "neoshowcase.protobuf.UpdateApplicationRequest.UpdatePorts";
+  static readonly fields: FieldList = proto3.util.newFieldList(() => [
+    { no: 1, name: "port_publications", kind: "message", T: PortPublication, repeated: true },
+  ]);
+
+  static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): UpdateApplicationRequest_UpdatePorts {
+    return new UpdateApplicationRequest_UpdatePorts().fromBinary(bytes, options);
+  }
+
+  static fromJson(jsonValue: JsonValue, options?: Partial<JsonReadOptions>): UpdateApplicationRequest_UpdatePorts {
+    return new UpdateApplicationRequest_UpdatePorts().fromJson(jsonValue, options);
+  }
+
+  static fromJsonString(jsonString: string, options?: Partial<JsonReadOptions>): UpdateApplicationRequest_UpdatePorts {
+    return new UpdateApplicationRequest_UpdatePorts().fromJsonString(jsonString, options);
+  }
+
+  static equals(a: UpdateApplicationRequest_UpdatePorts | PlainMessage<UpdateApplicationRequest_UpdatePorts> | undefined, b: UpdateApplicationRequest_UpdatePorts | PlainMessage<UpdateApplicationRequest_UpdatePorts> | undefined): boolean {
+    return proto3.util.equals(UpdateApplicationRequest_UpdatePorts, a, b);
+  }
+}
+
+/**
+ * @generated from message neoshowcase.protobuf.UpdateApplicationRequest.UpdateOwners
+ */
+export class UpdateApplicationRequest_UpdateOwners extends Message<UpdateApplicationRequest_UpdateOwners> {
+  /**
+   * @generated from field: repeated string owner_ids = 1;
+   */
+  ownerIds: string[] = [];
+
+  constructor(data?: PartialMessage<UpdateApplicationRequest_UpdateOwners>) {
+    super();
+    proto3.util.initPartial(data, this);
+  }
+
+  static readonly runtime: typeof proto3 = proto3;
+  static readonly typeName = "neoshowcase.protobuf.UpdateApplicationRequest.UpdateOwners";
+  static readonly fields: FieldList = proto3.util.newFieldList(() => [
+    { no: 1, name: "owner_ids", kind: "scalar", T: 9 /* ScalarType.STRING */, repeated: true },
+  ]);
+
+  static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): UpdateApplicationRequest_UpdateOwners {
+    return new UpdateApplicationRequest_UpdateOwners().fromBinary(bytes, options);
+  }
+
+  static fromJson(jsonValue: JsonValue, options?: Partial<JsonReadOptions>): UpdateApplicationRequest_UpdateOwners {
+    return new UpdateApplicationRequest_UpdateOwners().fromJson(jsonValue, options);
+  }
+
+  static fromJsonString(jsonString: string, options?: Partial<JsonReadOptions>): UpdateApplicationRequest_UpdateOwners {
+    return new UpdateApplicationRequest_UpdateOwners().fromJsonString(jsonString, options);
+  }
+
+  static equals(a: UpdateApplicationRequest_UpdateOwners | PlainMessage<UpdateApplicationRequest_UpdateOwners> | undefined, b: UpdateApplicationRequest_UpdateOwners | PlainMessage<UpdateApplicationRequest_UpdateOwners> | undefined): boolean {
+    return proto3.util.equals(UpdateApplicationRequest_UpdateOwners, a, b);
+  }
+}
+
+/**
  * @generated from message neoshowcase.protobuf.GetRepositoriesResponse
  */
 export class GetRepositoriesResponse extends Message<GetRepositoriesResponse> {
@@ -2987,6 +3030,43 @@ export class RetryCommitBuildRequest extends Message<RetryCommitBuildRequest> {
 
   static equals(a: RetryCommitBuildRequest | PlainMessage<RetryCommitBuildRequest> | undefined, b: RetryCommitBuildRequest | PlainMessage<RetryCommitBuildRequest> | undefined): boolean {
     return proto3.util.equals(RetryCommitBuildRequest, a, b);
+  }
+}
+
+/**
+ * @generated from message neoshowcase.protobuf.GetRepositoryRefsResponse
+ */
+export class GetRepositoryRefsResponse extends Message<GetRepositoryRefsResponse> {
+  /**
+   * @generated from field: repeated neoshowcase.protobuf.GitRef refs = 1;
+   */
+  refs: GitRef[] = [];
+
+  constructor(data?: PartialMessage<GetRepositoryRefsResponse>) {
+    super();
+    proto3.util.initPartial(data, this);
+  }
+
+  static readonly runtime: typeof proto3 = proto3;
+  static readonly typeName = "neoshowcase.protobuf.GetRepositoryRefsResponse";
+  static readonly fields: FieldList = proto3.util.newFieldList(() => [
+    { no: 1, name: "refs", kind: "message", T: GitRef, repeated: true },
+  ]);
+
+  static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): GetRepositoryRefsResponse {
+    return new GetRepositoryRefsResponse().fromBinary(bytes, options);
+  }
+
+  static fromJson(jsonValue: JsonValue, options?: Partial<JsonReadOptions>): GetRepositoryRefsResponse {
+    return new GetRepositoryRefsResponse().fromJson(jsonValue, options);
+  }
+
+  static fromJsonString(jsonString: string, options?: Partial<JsonReadOptions>): GetRepositoryRefsResponse {
+    return new GetRepositoryRefsResponse().fromJsonString(jsonString, options);
+  }
+
+  static equals(a: GetRepositoryRefsResponse | PlainMessage<GetRepositoryRefsResponse> | undefined, b: GetRepositoryRefsResponse | PlainMessage<GetRepositoryRefsResponse> | undefined): boolean {
+    return proto3.util.equals(GetRepositoryRefsResponse, a, b);
   }
 }
 
