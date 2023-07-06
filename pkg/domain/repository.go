@@ -99,15 +99,16 @@ type ArtifactRepository interface {
 }
 
 type GetBuildCondition struct {
+	ID            optional.Of[string]
 	ApplicationID optional.Of[string]
 	Commit        optional.Of[string]
 	CommitIn      optional.Of[[]string]
+	ConfigHash    optional.Of[string]
 	Status        optional.Of[BuildStatus]
 	Retriable     optional.Of[bool]
 }
 
 type UpdateBuildArgs struct {
-	FromStatus optional.Of[BuildStatus]
 	Status     optional.Of[BuildStatus]
 	StartedAt  optional.Of[time.Time]
 	UpdatedAt  optional.Of[time.Time]
@@ -118,7 +119,7 @@ type BuildRepository interface {
 	GetBuilds(ctx context.Context, cond GetBuildCondition) ([]*Build, error)
 	GetBuild(ctx context.Context, buildID string) (*Build, error)
 	CreateBuild(ctx context.Context, build *Build) error
-	UpdateBuild(ctx context.Context, id string, args UpdateBuildArgs) error
+	UpdateBuild(ctx context.Context, cond GetBuildCondition, args UpdateBuildArgs) error
 	MarkCommitAsRetriable(ctx context.Context, applicationID string, commit string) error
 	DeleteBuilds(ctx context.Context, cond GetBuildCondition) error
 }

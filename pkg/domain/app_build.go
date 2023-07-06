@@ -34,6 +34,7 @@ func (t BuildStatus) IsFinished() bool {
 type Build struct {
 	ID            string
 	Commit        string
+	ConfigHash    string
 	Status        BuildStatus
 	ApplicationID string
 	QueuedAt      time.Time
@@ -44,12 +45,13 @@ type Build struct {
 	Artifacts     []*Artifact
 }
 
-func NewBuild(applicationID string, commit string) *Build {
+func NewBuild(app *Application) *Build {
 	return &Build{
 		ID:            NewID(),
-		Commit:        commit,
+		Commit:        app.WantCommit,
+		ConfigHash:    app.Config.Hash(),
 		Status:        BuildStatusQueued,
-		ApplicationID: applicationID,
+		ApplicationID: app.ID,
 		QueuedAt:      time.Now(),
 	}
 }

@@ -1,11 +1,14 @@
 package domain
 
 import (
+	"encoding/json"
 	"strings"
 	"time"
 
 	"github.com/friendsofgo/errors"
 	"github.com/samber/lo"
+
+	"github.com/traPtitech/neoshowcase/pkg/util/hash"
 )
 
 type ApplicationConfig struct {
@@ -20,6 +23,11 @@ func (c *ApplicationConfig) Validate(deployType DeployType) error {
 		return errors.Wrap(err, "invalid build_config")
 	}
 	return nil
+}
+
+func (c *ApplicationConfig) Hash() string {
+	b := lo.Must(json.Marshal(c))
+	return hash.XXH3Hex(b)
 }
 
 type DeployType int

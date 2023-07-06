@@ -66,6 +66,7 @@ erDiagram
 "builds" {
   char_22_ id PK
   char_40_ commit
+  char_16_ config_hash
   enum__building___succeeded___failed___canceled___queued___skipped__ status
   datetime_6_ queued_at
   datetime_6_ started_at

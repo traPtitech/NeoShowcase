@@ -148,6 +148,7 @@ CREATE TABLE `builds`
 (
     `id`             CHAR(22)    NOT NULL COMMENT 'ビルドID',
     `commit`         CHAR(40)    NOT NULL COMMENT 'コミットハッシュ',
+    `config_hash`    CHAR(16)    NOT NULL COMMENT 'ビルド設定のハッシュ',
     `status`         ENUM (
         'building',
         'succeeded',

@@ -145,9 +145,20 @@ func (cd *service) registerBuild(ctx context.Context, appID string) error {
 	if err != nil {
 		return err
 	}
+	if !app.Running {
+		// Skip if app not running
+		return nil
+	}
+	if app.WantCommit == domain.EmptyCommit {
+		// Skip if still fetching commit
+		return nil
+	}
+
+	// Check if already queued
 	builds, err := cd.buildRepo.GetBuilds(ctx, domain.GetBuildCondition{
 		ApplicationID: optional.From(appID),
 		Commit:        optional.From(app.WantCommit),
+		ConfigHash:    optional.From(app.Config.Hash()),
 		// Do not count retriable build as 'exists' - enqueue a new build if only retriable builds exist
 		Retriable: optional.From(false),
 	})
@@ -155,19 +166,22 @@ func (cd *service) registerBuild(ctx context.Context, appID string) error {
 		return err
 	}
 	if len(builds) > 0 {
-		// Already queued for the commit
+		// Already queued for the commit / config
 		return nil
 	}
-	if app.WantCommit == domain.EmptyCommit {
-		// Skip if still fetching commit
-		return nil
+
+	// Cancel any previously queued builds
+	err = cd.buildRepo.UpdateBuild(ctx, domain.GetBuildCondition{
+		ApplicationID: optional.From(appID),
+		Status:        optional.From(domain.BuildStatusQueued),
+	}, domain.UpdateBuildArgs{
+		Status: optional.From(domain.BuildStatusCanceled),
+	})
+	if err != nil {
+		return err
 	}
-	if !app.Running {
-		// Skip if app not running
-		return nil
-	}
-	build := domain.NewBuild(app.ID, app.WantCommit)
-	return cd.buildRepo.CreateBuild(ctx, build)
+	// Queue new build
+	return cd.buildRepo.CreateBuild(ctx, domain.NewBuild(app))
 }
 
 func (cd *service) startBuilds(ctx context.Context) error {
@@ -193,9 +207,11 @@ func (cd *service) detectBuildCrash(ctx context.Context) error {
 		return now.Sub(build.UpdatedAt.ValueOrZero()) > crashDetectThreshold
 	})
 	for _, build := range crashed {
-		err = cd.buildRepo.UpdateBuild(ctx, build.ID, domain.UpdateBuildArgs{
-			FromStatus: optional.From(domain.BuildStatusBuilding),
-			Status:     optional.From(domain.BuildStatusFailed),
+		err = cd.buildRepo.UpdateBuild(ctx, domain.GetBuildCondition{
+			ID:     optional.From(build.ID),
+			Status: optional.From(domain.BuildStatusBuilding),
+		}, domain.UpdateBuildArgs{
+			Status: optional.From(domain.BuildStatusFailed),
 		})
 		if err != nil {
 			log.Errorf("failed to mark crashed build as errored: %+v", err)

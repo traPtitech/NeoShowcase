@@ -27,6 +27,8 @@ type Build struct { // ビルドID
 	ID string `boil:"id" json:"id" toml:"id" yaml:"id"`
 	// コミットハッシュ
 	Commit string `boil:"commit" json:"commit" toml:"commit" yaml:"commit"`
+	// ビルド設定のハッシュ
+	ConfigHash string `boil:"config_hash" json:"config_hash" toml:"config_hash" yaml:"config_hash"`
 	// ビルドの状態
 	Status string `boil:"status" json:"status" toml:"status" yaml:"status"`
 	// ビルド追加日時
@@ -49,6 +51,7 @@ type Build struct { // ビルドID
 var BuildColumns = struct {
 	ID            string
 	Commit        string
+	ConfigHash    string
 	Status        string
 	QueuedAt      string
 	StartedAt     string
@@ -59,6 +62,7 @@ var BuildColumns = struct {
 }{
 	ID:            "id",
 	Commit:        "commit",
+	ConfigHash:    "config_hash",
 	Status:        "status",
 	QueuedAt:      "queued_at",
 	StartedAt:     "started_at",
@@ -71,6 +75,7 @@ var BuildColumns = struct {
 var BuildTableColumns = struct {
 	ID            string
 	Commit        string
+	ConfigHash    string
 	Status        string
 	QueuedAt      string
 	StartedAt     string
@@ -81,6 +86,7 @@ var BuildTableColumns = struct {
 }{
 	ID:            "builds.id",
 	Commit:        "builds.commit",
+	ConfigHash:    "builds.config_hash",
 	Status:        "builds.status",
 	QueuedAt:      "builds.queued_at",
 	StartedAt:     "builds.started_at",
@@ -95,6 +101,7 @@ var BuildTableColumns = struct {
 var BuildWhere = struct {
 	ID            whereHelperstring
 	Commit        whereHelperstring
+	ConfigHash    whereHelperstring
 	Status        whereHelperstring
 	QueuedAt      whereHelpertime_Time
 	StartedAt     whereHelpernull_Time
@@ -105,6 +112,7 @@ var BuildWhere = struct {
 }{
 	ID:            whereHelperstring{field: "`builds`.`id`"},
 	Commit:        whereHelperstring{field: "`builds`.`commit`"},
+	ConfigHash:    whereHelperstring{field: "`builds`.`config_hash`"},
 	Status:        whereHelperstring{field: "`builds`.`status`"},
 	QueuedAt:      whereHelpertime_Time{field: "`builds`.`queued_at`"},
 	StartedAt:     whereHelpernull_Time{field: "`builds`.`started_at`"},
@@ -152,8 +160,8 @@ func (r *buildR) GetArtifacts() ArtifactSlice {
 type buildL struct{}
 
 var (
-	buildAllColumns            = []string{"id", "commit", "status", "queued_at", "started_at", "updated_at", "finished_at", "retriable", "application_id"}
-	buildColumnsWithoutDefault = []string{"id", "commit", "status", "queued_at", "started_at", "updated_at", "finished_at", "retriable", "application_id"}
+	buildAllColumns            = []string{"id", "commit", "config_hash", "status", "queued_at", "started_at", "updated_at", "finished_at", "retriable", "application_id"}
+	buildColumnsWithoutDefault = []string{"id", "commit", "config_hash", "status", "queued_at", "started_at", "updated_at", "finished_at", "retriable", "application_id"}
 	buildColumnsWithDefault    = []string{}
 	buildPrimaryKeyColumns     = []string{"id"}
 	buildGeneratedColumns      = []string{}

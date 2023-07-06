@@ -204,6 +204,7 @@ func TestApplicationConfig_Validate(t *testing.T) {
 			wantErr: true,
 		},
 	}
+
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			err := tt.config.Validate(tt.deployType)
@@ -211,6 +212,16 @@ func TestApplicationConfig_Validate(t *testing.T) {
 				assert.Error(t, err)
 			} else {
 				assert.NoError(t, err)
+			}
+		})
+	}
+	for _, tt := range tests {
+		t.Run(tt.name+" (hash)", func(t *testing.T) {
+			xxh3 := tt.config.Hash()
+			t.Logf("hash: %v", xxh3)
+			assert.Len(t, xxh3, 16)
+			for i := 0; i < 5; i++ {
+				assert.Equal(t, xxh3, tt.config.Hash())
 			}
 		})
 	}
