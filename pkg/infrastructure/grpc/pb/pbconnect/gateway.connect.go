@@ -633,168 +633,236 @@ type APIServiceHandler interface {
 // By default, handlers support the Connect, gRPC, and gRPC-Web protocols with the binary Protobuf
 // and JSON codecs. They also support gzip compression.
 func NewAPIServiceHandler(svc APIServiceHandler, opts ...connect_go.HandlerOption) (string, http.Handler) {
-	mux := http.NewServeMux()
-	mux.Handle(APIServiceGetSystemInfoProcedure, connect_go.NewUnaryHandler(
+	aPIServiceGetSystemInfoHandler := connect_go.NewUnaryHandler(
 		APIServiceGetSystemInfoProcedure,
 		svc.GetSystemInfo,
 		opts...,
-	))
-	mux.Handle(APIServiceGenerateKeyPairProcedure, connect_go.NewUnaryHandler(
+	)
+	aPIServiceGenerateKeyPairHandler := connect_go.NewUnaryHandler(
 		APIServiceGenerateKeyPairProcedure,
 		svc.GenerateKeyPair,
 		opts...,
-	))
-	mux.Handle(APIServiceGetMeProcedure, connect_go.NewUnaryHandler(
+	)
+	aPIServiceGetMeHandler := connect_go.NewUnaryHandler(
 		APIServiceGetMeProcedure,
 		svc.GetMe,
 		opts...,
-	))
-	mux.Handle(APIServiceGetUsersProcedure, connect_go.NewUnaryHandler(
+	)
+	aPIServiceGetUsersHandler := connect_go.NewUnaryHandler(
 		APIServiceGetUsersProcedure,
 		svc.GetUsers,
 		opts...,
-	))
-	mux.Handle(APIServiceCreateUserKeyProcedure, connect_go.NewUnaryHandler(
+	)
+	aPIServiceCreateUserKeyHandler := connect_go.NewUnaryHandler(
 		APIServiceCreateUserKeyProcedure,
 		svc.CreateUserKey,
 		opts...,
-	))
-	mux.Handle(APIServiceGetUserKeysProcedure, connect_go.NewUnaryHandler(
+	)
+	aPIServiceGetUserKeysHandler := connect_go.NewUnaryHandler(
 		APIServiceGetUserKeysProcedure,
 		svc.GetUserKeys,
 		opts...,
-	))
-	mux.Handle(APIServiceDeleteUserKeyProcedure, connect_go.NewUnaryHandler(
+	)
+	aPIServiceDeleteUserKeyHandler := connect_go.NewUnaryHandler(
 		APIServiceDeleteUserKeyProcedure,
 		svc.DeleteUserKey,
 		opts...,
-	))
-	mux.Handle(APIServiceCreateRepositoryProcedure, connect_go.NewUnaryHandler(
+	)
+	aPIServiceCreateRepositoryHandler := connect_go.NewUnaryHandler(
 		APIServiceCreateRepositoryProcedure,
 		svc.CreateRepository,
 		opts...,
-	))
-	mux.Handle(APIServiceGetRepositoriesProcedure, connect_go.NewUnaryHandler(
+	)
+	aPIServiceGetRepositoriesHandler := connect_go.NewUnaryHandler(
 		APIServiceGetRepositoriesProcedure,
 		svc.GetRepositories,
 		opts...,
-	))
-	mux.Handle(APIServiceGetRepositoryProcedure, connect_go.NewUnaryHandler(
+	)
+	aPIServiceGetRepositoryHandler := connect_go.NewUnaryHandler(
 		APIServiceGetRepositoryProcedure,
 		svc.GetRepository,
 		opts...,
-	))
-	mux.Handle(APIServiceGetRepositoryRefsProcedure, connect_go.NewUnaryHandler(
+	)
+	aPIServiceGetRepositoryRefsHandler := connect_go.NewUnaryHandler(
 		APIServiceGetRepositoryRefsProcedure,
 		svc.GetRepositoryRefs,
 		opts...,
-	))
-	mux.Handle(APIServiceUpdateRepositoryProcedure, connect_go.NewUnaryHandler(
+	)
+	aPIServiceUpdateRepositoryHandler := connect_go.NewUnaryHandler(
 		APIServiceUpdateRepositoryProcedure,
 		svc.UpdateRepository,
 		opts...,
-	))
-	mux.Handle(APIServiceRefreshRepositoryProcedure, connect_go.NewUnaryHandler(
+	)
+	aPIServiceRefreshRepositoryHandler := connect_go.NewUnaryHandler(
 		APIServiceRefreshRepositoryProcedure,
 		svc.RefreshRepository,
 		opts...,
-	))
-	mux.Handle(APIServiceDeleteRepositoryProcedure, connect_go.NewUnaryHandler(
+	)
+	aPIServiceDeleteRepositoryHandler := connect_go.NewUnaryHandler(
 		APIServiceDeleteRepositoryProcedure,
 		svc.DeleteRepository,
 		opts...,
-	))
-	mux.Handle(APIServiceCreateApplicationProcedure, connect_go.NewUnaryHandler(
+	)
+	aPIServiceCreateApplicationHandler := connect_go.NewUnaryHandler(
 		APIServiceCreateApplicationProcedure,
 		svc.CreateApplication,
 		opts...,
-	))
-	mux.Handle(APIServiceGetApplicationsProcedure, connect_go.NewUnaryHandler(
+	)
+	aPIServiceGetApplicationsHandler := connect_go.NewUnaryHandler(
 		APIServiceGetApplicationsProcedure,
 		svc.GetApplications,
 		opts...,
-	))
-	mux.Handle(APIServiceGetApplicationProcedure, connect_go.NewUnaryHandler(
+	)
+	aPIServiceGetApplicationHandler := connect_go.NewUnaryHandler(
 		APIServiceGetApplicationProcedure,
 		svc.GetApplication,
 		opts...,
-	))
-	mux.Handle(APIServiceUpdateApplicationProcedure, connect_go.NewUnaryHandler(
+	)
+	aPIServiceUpdateApplicationHandler := connect_go.NewUnaryHandler(
 		APIServiceUpdateApplicationProcedure,
 		svc.UpdateApplication,
 		opts...,
-	))
-	mux.Handle(APIServiceDeleteApplicationProcedure, connect_go.NewUnaryHandler(
+	)
+	aPIServiceDeleteApplicationHandler := connect_go.NewUnaryHandler(
 		APIServiceDeleteApplicationProcedure,
 		svc.DeleteApplication,
 		opts...,
-	))
-	mux.Handle(APIServiceGetEnvVarsProcedure, connect_go.NewUnaryHandler(
+	)
+	aPIServiceGetEnvVarsHandler := connect_go.NewUnaryHandler(
 		APIServiceGetEnvVarsProcedure,
 		svc.GetEnvVars,
 		opts...,
-	))
-	mux.Handle(APIServiceSetEnvVarProcedure, connect_go.NewUnaryHandler(
+	)
+	aPIServiceSetEnvVarHandler := connect_go.NewUnaryHandler(
 		APIServiceSetEnvVarProcedure,
 		svc.SetEnvVar,
 		opts...,
-	))
-	mux.Handle(APIServiceDeleteEnvVarProcedure, connect_go.NewUnaryHandler(
+	)
+	aPIServiceDeleteEnvVarHandler := connect_go.NewUnaryHandler(
 		APIServiceDeleteEnvVarProcedure,
 		svc.DeleteEnvVar,
 		opts...,
-	))
-	mux.Handle(APIServiceGetOutputStreamProcedure, connect_go.NewServerStreamHandler(
+	)
+	aPIServiceGetOutputStreamHandler := connect_go.NewServerStreamHandler(
 		APIServiceGetOutputStreamProcedure,
 		svc.GetOutputStream,
 		opts...,
-	))
-	mux.Handle(APIServiceStartApplicationProcedure, connect_go.NewUnaryHandler(
+	)
+	aPIServiceStartApplicationHandler := connect_go.NewUnaryHandler(
 		APIServiceStartApplicationProcedure,
 		svc.StartApplication,
 		opts...,
-	))
-	mux.Handle(APIServiceStopApplicationProcedure, connect_go.NewUnaryHandler(
+	)
+	aPIServiceStopApplicationHandler := connect_go.NewUnaryHandler(
 		APIServiceStopApplicationProcedure,
 		svc.StopApplication,
 		opts...,
-	))
-	mux.Handle(APIServiceGetBuildsProcedure, connect_go.NewUnaryHandler(
+	)
+	aPIServiceGetBuildsHandler := connect_go.NewUnaryHandler(
 		APIServiceGetBuildsProcedure,
 		svc.GetBuilds,
 		opts...,
-	))
-	mux.Handle(APIServiceGetBuildProcedure, connect_go.NewUnaryHandler(
+	)
+	aPIServiceGetBuildHandler := connect_go.NewUnaryHandler(
 		APIServiceGetBuildProcedure,
 		svc.GetBuild,
 		opts...,
-	))
-	mux.Handle(APIServiceRetryCommitBuildProcedure, connect_go.NewUnaryHandler(
+	)
+	aPIServiceRetryCommitBuildHandler := connect_go.NewUnaryHandler(
 		APIServiceRetryCommitBuildProcedure,
 		svc.RetryCommitBuild,
 		opts...,
-	))
-	mux.Handle(APIServiceCancelBuildProcedure, connect_go.NewUnaryHandler(
+	)
+	aPIServiceCancelBuildHandler := connect_go.NewUnaryHandler(
 		APIServiceCancelBuildProcedure,
 		svc.CancelBuild,
 		opts...,
-	))
-	mux.Handle(APIServiceGetBuildLogProcedure, connect_go.NewUnaryHandler(
+	)
+	aPIServiceGetBuildLogHandler := connect_go.NewUnaryHandler(
 		APIServiceGetBuildLogProcedure,
 		svc.GetBuildLog,
 		opts...,
-	))
-	mux.Handle(APIServiceGetBuildLogStreamProcedure, connect_go.NewServerStreamHandler(
+	)
+	aPIServiceGetBuildLogStreamHandler := connect_go.NewServerStreamHandler(
 		APIServiceGetBuildLogStreamProcedure,
 		svc.GetBuildLogStream,
 		opts...,
-	))
-	mux.Handle(APIServiceGetBuildArtifactProcedure, connect_go.NewUnaryHandler(
+	)
+	aPIServiceGetBuildArtifactHandler := connect_go.NewUnaryHandler(
 		APIServiceGetBuildArtifactProcedure,
 		svc.GetBuildArtifact,
 		opts...,
-	))
-	return "/neoshowcase.protobuf.APIService/", mux
+	)
+	return "/neoshowcase.protobuf.APIService/", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		switch r.URL.Path {
+		case APIServiceGetSystemInfoProcedure:
+			aPIServiceGetSystemInfoHandler.ServeHTTP(w, r)
+		case APIServiceGenerateKeyPairProcedure:
+			aPIServiceGenerateKeyPairHandler.ServeHTTP(w, r)
+		case APIServiceGetMeProcedure:
+			aPIServiceGetMeHandler.ServeHTTP(w, r)
+		case APIServiceGetUsersProcedure:
+			aPIServiceGetUsersHandler.ServeHTTP(w, r)
+		case APIServiceCreateUserKeyProcedure:
+			aPIServiceCreateUserKeyHandler.ServeHTTP(w, r)
+		case APIServiceGetUserKeysProcedure:
+			aPIServiceGetUserKeysHandler.ServeHTTP(w, r)
+		case APIServiceDeleteUserKeyProcedure:
+			aPIServiceDeleteUserKeyHandler.ServeHTTP(w, r)
+		case APIServiceCreateRepositoryProcedure:
+			aPIServiceCreateRepositoryHandler.ServeHTTP(w, r)
+		case APIServiceGetRepositoriesProcedure:
+			aPIServiceGetRepositoriesHandler.ServeHTTP(w, r)
+		case APIServiceGetRepositoryProcedure:
+			aPIServiceGetRepositoryHandler.ServeHTTP(w, r)
+		case APIServiceGetRepositoryRefsProcedure:
+			aPIServiceGetRepositoryRefsHandler.ServeHTTP(w, r)
+		case APIServiceUpdateRepositoryProcedure:
+			aPIServiceUpdateRepositoryHandler.ServeHTTP(w, r)
+		case APIServiceRefreshRepositoryProcedure:
+			aPIServiceRefreshRepositoryHandler.ServeHTTP(w, r)
+		case APIServiceDeleteRepositoryProcedure:
+			aPIServiceDeleteRepositoryHandler.ServeHTTP(w, r)
+		case APIServiceCreateApplicationProcedure:
+			aPIServiceCreateApplicationHandler.ServeHTTP(w, r)
+		case APIServiceGetApplicationsProcedure:
+			aPIServiceGetApplicationsHandler.ServeHTTP(w, r)
+		case APIServiceGetApplicationProcedure:
+			aPIServiceGetApplicationHandler.ServeHTTP(w, r)
+		case APIServiceUpdateApplicationProcedure:
+			aPIServiceUpdateApplicationHandler.ServeHTTP(w, r)
+		case APIServiceDeleteApplicationProcedure:
+			aPIServiceDeleteApplicationHandler.ServeHTTP(w, r)
+		case APIServiceGetEnvVarsProcedure:
+			aPIServiceGetEnvVarsHandler.ServeHTTP(w, r)
+		case APIServiceSetEnvVarProcedure:
+			aPIServiceSetEnvVarHandler.ServeHTTP(w, r)
+		case APIServiceDeleteEnvVarProcedure:
+			aPIServiceDeleteEnvVarHandler.ServeHTTP(w, r)
+		case APIServiceGetOutputStreamProcedure:
+			aPIServiceGetOutputStreamHandler.ServeHTTP(w, r)
+		case APIServiceStartApplicationProcedure:
+			aPIServiceStartApplicationHandler.ServeHTTP(w, r)
+		case APIServiceStopApplicationProcedure:
+			aPIServiceStopApplicationHandler.ServeHTTP(w, r)
+		case APIServiceGetBuildsProcedure:
+			aPIServiceGetBuildsHandler.ServeHTTP(w, r)
+		case APIServiceGetBuildProcedure:
+			aPIServiceGetBuildHandler.ServeHTTP(w, r)
+		case APIServiceRetryCommitBuildProcedure:
+			aPIServiceRetryCommitBuildHandler.ServeHTTP(w, r)
+		case APIServiceCancelBuildProcedure:
+			aPIServiceCancelBuildHandler.ServeHTTP(w, r)
+		case APIServiceGetBuildLogProcedure:
+			aPIServiceGetBuildLogHandler.ServeHTTP(w, r)
+		case APIServiceGetBuildLogStreamProcedure:
+			aPIServiceGetBuildLogStreamHandler.ServeHTTP(w, r)
+		case APIServiceGetBuildArtifactProcedure:
+			aPIServiceGetBuildArtifactHandler.ServeHTTP(w, r)
+		default:
+			http.NotFound(w, r)
+		}
+	})
 }
 
 // UnimplementedAPIServiceHandler returns CodeUnimplemented from all methods.

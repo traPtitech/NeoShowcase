@@ -174,38 +174,54 @@ type ControllerServiceHandler interface {
 // By default, handlers support the Connect, gRPC, and gRPC-Web protocols with the binary Protobuf
 // and JSON codecs. They also support gzip compression.
 func NewControllerServiceHandler(svc ControllerServiceHandler, opts ...connect_go.HandlerOption) (string, http.Handler) {
-	mux := http.NewServeMux()
-	mux.Handle(ControllerServiceGetSystemInfoProcedure, connect_go.NewUnaryHandler(
+	controllerServiceGetSystemInfoHandler := connect_go.NewUnaryHandler(
 		ControllerServiceGetSystemInfoProcedure,
 		svc.GetSystemInfo,
 		opts...,
-	))
-	mux.Handle(ControllerServiceFetchRepositoryProcedure, connect_go.NewUnaryHandler(
+	)
+	controllerServiceFetchRepositoryHandler := connect_go.NewUnaryHandler(
 		ControllerServiceFetchRepositoryProcedure,
 		svc.FetchRepository,
 		opts...,
-	))
-	mux.Handle(ControllerServiceRegisterBuildProcedure, connect_go.NewUnaryHandler(
+	)
+	controllerServiceRegisterBuildHandler := connect_go.NewUnaryHandler(
 		ControllerServiceRegisterBuildProcedure,
 		svc.RegisterBuild,
 		opts...,
-	))
-	mux.Handle(ControllerServiceSyncDeploymentsProcedure, connect_go.NewUnaryHandler(
+	)
+	controllerServiceSyncDeploymentsHandler := connect_go.NewUnaryHandler(
 		ControllerServiceSyncDeploymentsProcedure,
 		svc.SyncDeployments,
 		opts...,
-	))
-	mux.Handle(ControllerServiceStreamBuildLogProcedure, connect_go.NewServerStreamHandler(
+	)
+	controllerServiceStreamBuildLogHandler := connect_go.NewServerStreamHandler(
 		ControllerServiceStreamBuildLogProcedure,
 		svc.StreamBuildLog,
 		opts...,
-	))
-	mux.Handle(ControllerServiceCancelBuildProcedure, connect_go.NewUnaryHandler(
+	)
+	controllerServiceCancelBuildHandler := connect_go.NewUnaryHandler(
 		ControllerServiceCancelBuildProcedure,
 		svc.CancelBuild,
 		opts...,
-	))
-	return "/neoshowcase.protobuf.ControllerService/", mux
+	)
+	return "/neoshowcase.protobuf.ControllerService/", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		switch r.URL.Path {
+		case ControllerServiceGetSystemInfoProcedure:
+			controllerServiceGetSystemInfoHandler.ServeHTTP(w, r)
+		case ControllerServiceFetchRepositoryProcedure:
+			controllerServiceFetchRepositoryHandler.ServeHTTP(w, r)
+		case ControllerServiceRegisterBuildProcedure:
+			controllerServiceRegisterBuildHandler.ServeHTTP(w, r)
+		case ControllerServiceSyncDeploymentsProcedure:
+			controllerServiceSyncDeploymentsHandler.ServeHTTP(w, r)
+		case ControllerServiceStreamBuildLogProcedure:
+			controllerServiceStreamBuildLogHandler.ServeHTTP(w, r)
+		case ControllerServiceCancelBuildProcedure:
+			controllerServiceCancelBuildHandler.ServeHTTP(w, r)
+		default:
+			http.NotFound(w, r)
+		}
+	})
 }
 
 // UnimplementedControllerServiceHandler returns CodeUnimplemented from all methods.
@@ -282,13 +298,19 @@ type ControllerBuilderServiceHandler interface {
 // By default, handlers support the Connect, gRPC, and gRPC-Web protocols with the binary Protobuf
 // and JSON codecs. They also support gzip compression.
 func NewControllerBuilderServiceHandler(svc ControllerBuilderServiceHandler, opts ...connect_go.HandlerOption) (string, http.Handler) {
-	mux := http.NewServeMux()
-	mux.Handle(ControllerBuilderServiceConnectBuilderProcedure, connect_go.NewBidiStreamHandler(
+	controllerBuilderServiceConnectBuilderHandler := connect_go.NewBidiStreamHandler(
 		ControllerBuilderServiceConnectBuilderProcedure,
 		svc.ConnectBuilder,
 		opts...,
-	))
-	return "/neoshowcase.protobuf.ControllerBuilderService/", mux
+	)
+	return "/neoshowcase.protobuf.ControllerBuilderService/", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		switch r.URL.Path {
+		case ControllerBuilderServiceConnectBuilderProcedure:
+			controllerBuilderServiceConnectBuilderHandler.ServeHTTP(w, r)
+		default:
+			http.NotFound(w, r)
+		}
+	})
 }
 
 // UnimplementedControllerBuilderServiceHandler returns CodeUnimplemented from all methods.
@@ -345,13 +367,19 @@ type ControllerSSGenServiceHandler interface {
 // By default, handlers support the Connect, gRPC, and gRPC-Web protocols with the binary Protobuf
 // and JSON codecs. They also support gzip compression.
 func NewControllerSSGenServiceHandler(svc ControllerSSGenServiceHandler, opts ...connect_go.HandlerOption) (string, http.Handler) {
-	mux := http.NewServeMux()
-	mux.Handle(ControllerSSGenServiceConnectSSGenProcedure, connect_go.NewServerStreamHandler(
+	controllerSSGenServiceConnectSSGenHandler := connect_go.NewServerStreamHandler(
 		ControllerSSGenServiceConnectSSGenProcedure,
 		svc.ConnectSSGen,
 		opts...,
-	))
-	return "/neoshowcase.protobuf.ControllerSSGenService/", mux
+	)
+	return "/neoshowcase.protobuf.ControllerSSGenService/", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		switch r.URL.Path {
+		case ControllerSSGenServiceConnectSSGenProcedure:
+			controllerSSGenServiceConnectSSGenHandler.ServeHTTP(w, r)
+		default:
+			http.NotFound(w, r)
+		}
+	})
 }
 
 // UnimplementedControllerSSGenServiceHandler returns CodeUnimplemented from all methods.
