@@ -58,6 +58,11 @@ jobs:
     name: Test
     runs-on: ubuntu-latest
     needs: [mod]
+    strategy:
+      matrix:
+        race:
+          - ""
+          - -race
     env:
       ENABLE_DB_TESTS: "true"
       ENABLE_DOCKER_TESTS: "true"
@@ -88,14 +93,20 @@ jobs:
           go install github.com/k0kubun/sqldef/cmd/mysqldef@latest
           DB_PORT=5004 ./migrations/entrypoint.sh ./migrations/schema.sql
       - name: Run tests
-        run: go test ./... -v -race -coverprofile=coverage.out -covermode=atomic -vet=off
+        run: go test ./... -v ${{ matrix.race }} -coverprofile=coverage.out -covermode=atomic -vet=off
       - name: Upload coverage to Codecov
         run: bash <(curl -s https://codecov.io/bash)
+        if: matrix.race != ""
 
   k8s-test:
-    name: Test (k8s)
+    name: K8s Test
     runs-on: ubuntu-latest
     needs: [mod]
+    strategy:
+      matrix:
+        race:
+          - ""
+          - -race
     env:
       ENABLE_K8S_TESTS: "true"
     steps:
@@ -126,9 +137,10 @@ jobs:
         run: |
           kubectl apply -f https://raw.githubusercontent.com/traefik/traefik/v2.10/docs/content/reference/dynamic-configuration/kubernetes-crd-definition-v1.yml
       - name: Run tests
-        run: go test ./pkg/infrastructure/backend/k8simpl -v -coverprofile=coverage.out -covermode=atomic -vet=off
+        run: go test ./pkg/infrastructure/backend/k8simpl -v ${{ matrix.race }} -coverprofile=coverage.out -covermode=atomic -vet=off
       - name: Upload coverage to Codecov
         run: bash <(curl -s https://codecov.io/bash)
+        if: matrix.race != ""
 
   tbls:
     name: TBLS
