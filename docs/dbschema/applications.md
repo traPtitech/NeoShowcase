@@ -18,8 +18,6 @@ CREATE TABLE `applications` (
   `running` tinyint(1) NOT NULL COMMENT 'アプリを起動させるか(desired state)',
   `container` enum('missing','starting','running','exited','errored','unknown') NOT NULL COMMENT 'コンテナの状態(runtime only)',
   `current_build` char(22) NOT NULL COMMENT 'デプロイするビルド',
-  `current_commit` char(40) NOT NULL COMMENT 'デプロイされたコミット',
-  `want_commit` char(40) NOT NULL COMMENT 'デプロイを待つコミット',
   `created_at` datetime(6) NOT NULL COMMENT '作成日時',
   `updated_at` datetime(6) NOT NULL COMMENT '更新日時',
   PRIMARY KEY (`id`),
@@ -43,8 +41,6 @@ CREATE TABLE `applications` (
 | running | tinyint(1) |  | false |  |  | アプリを起動させるか(desired state) |
 | container | enum('missing','starting','running','exited','errored','unknown') |  | false |  |  | コンテナの状態(runtime only) |
 | current_build | char(22) |  | false |  |  | デプロイするビルド |
-| current_commit | char(40) |  | false |  |  | デプロイされたコミット |
-| want_commit | char(40) |  | false |  |  | デプロイを待つコミット |
 | created_at | datetime(6) |  | false |  |  | 作成日時 |
 | updated_at | datetime(6) |  | false |  |  | 更新日時 |
 
@@ -85,8 +81,6 @@ erDiagram
   tinyint_1_ running
   enum__missing___starting___running___exited___errored___unknown__ container
   char_22_ current_build
-  char_40_ current_commit
-  char_40_ want_commit
   datetime_6_ created_at
   datetime_6_ updated_at
 }

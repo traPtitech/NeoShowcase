@@ -67,8 +67,6 @@ erDiagram
   tinyint_1_ running
   enum__missing___starting___running___exited___errored___unknown__ container
   char_22_ current_build
-  char_40_ current_commit
-  char_40_ want_commit
   datetime_6_ created_at
   datetime_6_ updated_at
 }
