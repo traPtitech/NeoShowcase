@@ -84,9 +84,11 @@ erDiagram
   varchar_100_ name
   varchar_22_ repository_id FK
   varchar_100_ ref_name
+  char_40_ commit
   enum__runtime___static__ deploy_type
   tinyint_1_ running
   enum__missing___starting___running___exited___errored___unknown__ container
+  char_22_ current_build
   char_40_ current_commit
   char_40_ want_commit
   datetime_6_ created_at

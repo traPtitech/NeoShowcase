@@ -193,7 +193,7 @@ func (r *service) updateApps(ctx context.Context, repo *domain.Repository, apps 
 			log.Errorf("failed to get resolve ref %v for app %v", app.RefName, app.ID)
 			commit = domain.EmptyCommit // Mark as empty commit to signal error
 		}
-		err = r.appRepo.UpdateApplication(ctx, app.ID, &domain.UpdateApplicationArgs{WantCommit: optional.From(commit)})
+		err = r.appRepo.UpdateApplication(ctx, app.ID, &domain.UpdateApplicationArgs{Commit: optional.From(commit)})
 		if err != nil {
 			return errors.Wrap(err, "failed to update application")
 		}

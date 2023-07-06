@@ -410,14 +410,13 @@ export default () => {
               <CardItem>
                 <CardItemTitle>Commit</CardItemTitle>
                 <CardItemContent>
-                  <Show
-                    when={app().currentCommit !== app().wantCommit}
-                    fallback={<div>{shortSha(app().currentCommit)}</div>}
-                  >
-                    <div>
-                      {shortSha(app().currentCommit)} → {shortSha(app().wantCommit)} (Deploying)
-                    </div>
-                  </Show>
+                  <div>{shortSha(app().commit)}</div>
+                </CardItemContent>
+              </CardItem>
+              <CardItem>
+                <CardItemTitle>Deployed build</CardItemTitle>
+                <CardItemContent>
+                  <div>{shortSha(app().currentBuild)}</div>
                 </CardItemContent>
               </CardItem>
             </CardItems>

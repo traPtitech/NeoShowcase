@@ -11,6 +11,7 @@
 CREATE TABLE `builds` (
   `id` char(22) NOT NULL COMMENT 'ビルドID',
   `commit` char(40) NOT NULL COMMENT 'コミットハッシュ',
+  `config_hash` char(16) NOT NULL COMMENT 'ビルド設定のハッシュ',
   `status` enum('building','succeeded','failed','canceled','queued','skipped') NOT NULL COMMENT 'ビルドの状態',
   `queued_at` datetime(6) NOT NULL COMMENT 'ビルド追加日時',
   `started_at` datetime(6) DEFAULT NULL COMMENT 'ビルド開始日時',
@@ -33,6 +34,7 @@ CREATE TABLE `builds` (
 | ---- | ---- | ------- | -------- | -------- | ------- | ------- |
 | id | char(22) |  | false | [artifacts](artifacts.md) |  | ビルドID |
 | commit | char(40) |  | false |  |  | コミットハッシュ |
+| config_hash | char(16) |  | false |  |  | ビルド設定のハッシュ |
 | status | enum('building','succeeded','failed','canceled','queued','skipped') |  | false |  |  | ビルドの状態 |
 | queued_at | datetime(6) |  | false |  |  | ビルド追加日時 |
 | started_at | datetime(6) | NULL | true |  |  | ビルド開始日時 |
@@ -67,6 +69,7 @@ erDiagram
 "builds" {
   char_22_ id PK
   char_40_ commit
+  char_16_ config_hash
   enum__building___succeeded___failed___canceled___queued___skipped__ status
   datetime_6_ queued_at
   datetime_6_ started_at
@@ -88,9 +91,11 @@ erDiagram
   varchar_100_ name
   varchar_22_ repository_id FK
   varchar_100_ ref_name
+  char_40_ commit
   enum__runtime___static__ deploy_type
   tinyint_1_ running
   enum__missing___starting___running___exited___errored___unknown__ container
+  char_22_ current_build
   char_40_ current_commit
   char_40_ want_commit
   datetime_6_ created_at

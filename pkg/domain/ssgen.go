@@ -3,6 +3,8 @@ package domain
 import (
 	"context"
 
+	"github.com/samber/lo"
+
 	"github.com/traPtitech/neoshowcase/pkg/util/optional"
 )
 
@@ -30,13 +32,17 @@ func GetActiveStaticSites(ctx context.Context, appRepo ApplicationRepository, bu
 		return nil, err
 	}
 
-	builds, err := GetSuccessBuilds(ctx, buildRepo, applications)
+	buildIDs := lo.FilterMap(applications, func(app *Application, _ int) (string, bool) {
+		return app.CurrentBuild, app.CurrentBuild != ""
+	})
+	builds, err := buildRepo.GetBuilds(ctx, GetBuildCondition{IDIn: optional.From(buildIDs)})
 	if err != nil {
 		return nil, err
 	}
+	buildsMap := lo.SliceToMap(builds, func(b *Build) (string, *Build) { return b.ID, b })
 	var sites []*StaticSite
 	for _, app := range applications {
-		build, ok := builds[app.ID+app.CurrentCommit]
+		build, ok := buildsMap[app.CurrentBuild]
 		if !ok {
 			continue
 		}

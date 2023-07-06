@@ -78,7 +78,7 @@ const AppRow: Component<AppRowProps> = (props) => {
           <AppDetail>
             <AppName>{props.app.name}</AppName>
             <AppFooter>
-              <div>{shortSha(props.app.currentCommit)}</div>
+              <div>{shortSha(props.app.commit)}</div>
               <AppFooterRight>
                 <div>{props.app.websites[0]?.fqdn || ''}</div>
                 <DiffHuman target={props.app.updatedAt.toDate()} />

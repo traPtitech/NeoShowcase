@@ -80,11 +80,11 @@ func NewService(
 }
 
 func (s *builderService) destImage(app *domain.Application, build *domain.Build) string {
-	return s.config.ImageName(app.ID) + ":" + build.Commit
+	return s.config.ImageName(app.ID) + ":" + build.ID
 }
 
 func (s *builderService) tmpDestImage(app *domain.Application, build *domain.Build) string {
-	return s.config.TmpImageName(app.ID) + ":" + build.Commit
+	return s.config.TmpImageName(app.ID) + ":" + build.ID
 }
 
 func (s *builderService) appEnv(ctx context.Context, app *domain.Application) (map[string]string, error) {

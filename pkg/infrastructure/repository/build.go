@@ -27,6 +27,12 @@ func NewBuildRepository(db *sql.DB) domain.BuildRepository {
 
 func (r *buildRepository) buildMods(cond domain.GetBuildCondition) []qm.QueryMod {
 	var mods []qm.QueryMod
+	if cond.ID.Valid {
+		mods = append(mods, models.BuildWhere.ID.EQ(cond.ID.V))
+	}
+	if cond.IDIn.Valid {
+		mods = append(mods, models.BuildWhere.ID.IN(cond.IDIn.V))
+	}
 	if cond.ApplicationID.Valid {
 		mods = append(mods, models.BuildWhere.ApplicationID.EQ(cond.ApplicationID.V))
 	}
@@ -35,6 +41,9 @@ func (r *buildRepository) buildMods(cond domain.GetBuildCondition) []qm.QueryMod
 	}
 	if cond.CommitIn.Valid {
 		mods = append(mods, models.BuildWhere.Commit.IN(cond.CommitIn.V))
+	}
+	if cond.ConfigHash.Valid {
+		mods = append(mods, models.BuildWhere.ConfigHash.EQ(cond.ConfigHash.V))
 	}
 	if cond.Status.Valid {
 		mods = append(mods, models.BuildWhere.Status.EQ(repoconvert.BuildStatusMapper.FromMust(cond.Status.V)))
@@ -78,60 +87,28 @@ func (r *buildRepository) CreateBuild(ctx context.Context, build *domain.Build) 
 	return nil
 }
 
-func (r *buildRepository) UpdateBuild(ctx context.Context, id string, args domain.UpdateBuildArgs) error {
-	mods := []qm.QueryMod{
-		models.BuildWhere.ID.EQ(id),
-		qm.For("UPDATE"),
-	}
-
-	if args.FromStatus.Valid {
-		mods = append(mods, models.BuildWhere.Status.EQ(repoconvert.BuildStatusMapper.FromMust(args.FromStatus.V)))
-	}
-
-	tx, err := r.db.BeginTx(ctx, nil)
-	if err != nil {
-		return errors.Wrap(err, "failed to start transaction")
-	}
-	defer tx.Rollback()
-
-	build, err := models.Builds(mods...).One(ctx, tx)
-	if err != nil {
-		if isNoRowsErr(err) {
-			return ErrNotFound
-		}
-		return errors.Wrap(err, "failed to get build")
-	}
-
-	var cols []string
+func (r *buildRepository) UpdateBuild(ctx context.Context, cond domain.GetBuildCondition, args domain.UpdateBuildArgs) error {
+	cols := make(models.M)
 	if args.Status.Valid {
-		build.Status = repoconvert.BuildStatusMapper.FromMust(args.Status.V)
-		cols = append(cols, models.BuildColumns.Status)
+		cols[models.BuildColumns.Status] = repoconvert.BuildStatusMapper.FromMust(args.Status.V)
 	}
 	if args.StartedAt.Valid {
-		build.StartedAt = optional.IntoTime(args.StartedAt)
-		cols = append(cols, models.BuildColumns.StartedAt)
+		cols[models.BuildColumns.StartedAt] = optional.IntoTime(args.StartedAt)
 	}
 	if args.UpdatedAt.Valid {
-		build.UpdatedAt = optional.IntoTime(args.UpdatedAt)
-		cols = append(cols, models.BuildColumns.UpdatedAt)
+		cols[models.BuildColumns.UpdatedAt] = optional.IntoTime(args.UpdatedAt)
 	}
 	if args.FinishedAt.Valid {
-		build.FinishedAt = optional.IntoTime(args.FinishedAt)
-		cols = append(cols, models.BuildColumns.FinishedAt)
+		cols[models.BuildColumns.FinishedAt] = optional.IntoTime(args.FinishedAt)
+	}
+	if len(cols) == 0 {
+		return nil
 	}
 
-	if len(cols) > 0 {
-		_, err = build.Update(ctx, tx, boil.Whitelist(cols...))
-		if err != nil {
-			return errors.Wrap(err, "failed to update build")
-		}
-	}
-
-	err = tx.Commit()
+	_, err := models.Builds(r.buildMods(cond)...).UpdateAll(ctx, r.db, cols)
 	if err != nil {
-		return errors.Wrap(err, "failed to commit")
+		return errors.Wrap(err, "failed to update build")
 	}
-
 	return nil
 }
 

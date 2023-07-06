@@ -26,11 +26,13 @@ func (s *builderService) tryStartBuild(buildID string) error {
 	}
 
 	now := time.Now()
-	err := s.buildRepo.UpdateBuild(context.Background(), buildID, domain.UpdateBuildArgs{
-		FromStatus: optional.From(domain.BuildStatusQueued),
-		Status:     optional.From(domain.BuildStatusBuilding),
-		StartedAt:  optional.From(now),
-		UpdatedAt:  optional.From(now),
+	err := s.buildRepo.UpdateBuild(context.Background(), domain.GetBuildCondition{
+		ID:     optional.From(buildID),
+		Status: optional.From(domain.BuildStatusQueued),
+	}, domain.UpdateBuildArgs{
+		Status:    optional.From(domain.BuildStatusBuilding),
+		StartedAt: optional.From(now),
+		UpdatedAt: optional.From(now),
 	})
 	if err == repository.ErrNotFound {
 		return nil // other builder has acquired the build lock - skip
@@ -214,7 +216,9 @@ func (s *builderService) updateStatusLoop(ctx context.Context, buildID string) {
 	for {
 		select {
 		case <-ticker.C:
-			err := s.buildRepo.UpdateBuild(ctx, buildID, domain.UpdateBuildArgs{UpdatedAt: optional.From(time.Now())})
+			err := s.buildRepo.UpdateBuild(ctx,
+				domain.GetBuildCondition{ID: optional.From(buildID)},
+				domain.UpdateBuildArgs{UpdatedAt: optional.From(time.Now())})
 			if err != nil {
 				log.Errorf("failed to update build time: %+v", err)
 			}
@@ -231,12 +235,13 @@ func (s *builderService) finalize(ctx context.Context, st *state, status domain.
 	}
 
 	now := time.Now()
+	updateCond := domain.GetBuildCondition{ID: optional.From(st.build.ID)}
 	updateArgs := domain.UpdateBuildArgs{
 		Status:     optional.From(status),
 		UpdatedAt:  optional.From(now),
 		FinishedAt: optional.From(now),
 	}
-	if err := s.buildRepo.UpdateBuild(ctx, st.build.ID, updateArgs); err != nil {
+	if err := s.buildRepo.UpdateBuild(ctx, updateCond, updateArgs); err != nil {
 		log.Errorf("failed to update build: %+v", err)
 	}
 }

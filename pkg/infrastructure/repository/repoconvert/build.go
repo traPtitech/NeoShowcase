@@ -21,6 +21,7 @@ func FromDomainBuild(build *domain.Build) *models.Build {
 	return &models.Build{
 		ID:            build.ID,
 		Commit:        build.Commit,
+		ConfigHash:    build.ConfigHash,
 		Status:        BuildStatusMapper.FromMust(build.Status),
 		QueuedAt:      build.QueuedAt,
 		StartedAt:     optional.IntoTime(build.StartedAt),
@@ -35,6 +36,7 @@ func ToDomainBuild(build *models.Build) *domain.Build {
 	ret := &domain.Build{
 		ID:            build.ID,
 		Commit:        build.Commit,
+		ConfigHash:    build.ConfigHash,
 		Status:        BuildStatusMapper.IntoMust(build.Status),
 		ApplicationID: build.ApplicationID,
 		QueuedAt:      build.QueuedAt,

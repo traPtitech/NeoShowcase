@@ -4,11 +4,11 @@
 
 | Name | Columns | Comment | Type |
 | ---- | ------- | ------- | ---- |
-| [applications](applications.md) | 11 | アプリケーションテーブル | BASE TABLE |
+| [applications](applications.md) | 13 | アプリケーションテーブル | BASE TABLE |
 | [application_config](application_config.md) | 12 | アプリケーション詳細設定テーブル | BASE TABLE |
 | [application_owners](application_owners.md) | 2 | アプリケーション所有者テーブル | BASE TABLE |
 | [artifacts](artifacts.md) | 6 | 静的ファイル生成物テーブル | BASE TABLE |
-| [builds](builds.md) | 9 | ビルドテーブル | BASE TABLE |
+| [builds](builds.md) | 10 | ビルドテーブル | BASE TABLE |
 | [environments](environments.md) | 4 | 環境変数テーブル | BASE TABLE |
 | [port_publications](port_publications.md) | 4 | 公開ポートテーブル | BASE TABLE |
 | [repositories](repositories.md) | 3 | Gitリポジトリテーブル | BASE TABLE |
@@ -42,9 +42,11 @@ erDiagram
   varchar_100_ name
   varchar_22_ repository_id FK
   varchar_100_ ref_name
+  char_40_ commit
   enum__runtime___static__ deploy_type
   tinyint_1_ running
   enum__missing___starting___running___exited___errored___unknown__ container
+  char_22_ current_build
   char_40_ current_commit
   char_40_ want_commit
   datetime_6_ created_at
@@ -79,6 +81,7 @@ erDiagram
 "builds" {
   char_22_ id PK
   char_40_ commit
+  char_16_ config_hash
   enum__building___succeeded___failed___canceled___queued___skipped__ status
   datetime_6_ queued_at
   datetime_6_ started_at

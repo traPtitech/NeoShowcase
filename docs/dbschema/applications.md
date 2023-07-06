@@ -13,9 +13,11 @@ CREATE TABLE `applications` (
   `name` varchar(100) NOT NULL COMMENT 'アプリケーション名',
   `repository_id` varchar(22) NOT NULL COMMENT 'リポジトリID',
   `ref_name` varchar(100) NOT NULL COMMENT 'Gitブランチ・タグ名',
+  `commit` char(40) NOT NULL COMMENT '解決されたコミット',
   `deploy_type` enum('runtime','static') NOT NULL COMMENT 'デプロイタイプ',
   `running` tinyint(1) NOT NULL COMMENT 'アプリを起動させるか(desired state)',
   `container` enum('missing','starting','running','exited','errored','unknown') NOT NULL COMMENT 'コンテナの状態(runtime only)',
+  `current_build` char(22) NOT NULL COMMENT 'デプロイするビルド',
   `current_commit` char(40) NOT NULL COMMENT 'デプロイされたコミット',
   `want_commit` char(40) NOT NULL COMMENT 'デプロイを待つコミット',
   `created_at` datetime(6) NOT NULL COMMENT '作成日時',
@@ -36,9 +38,11 @@ CREATE TABLE `applications` (
 | name | varchar(100) |  | false |  |  | アプリケーション名 |
 | repository_id | varchar(22) |  | false |  | [repositories](repositories.md) | リポジトリID |
 | ref_name | varchar(100) |  | false |  |  | Gitブランチ・タグ名 |
+| commit | char(40) |  | false |  |  | 解決されたコミット |
 | deploy_type | enum('runtime','static') |  | false |  |  | デプロイタイプ |
 | running | tinyint(1) |  | false |  |  | アプリを起動させるか(desired state) |
 | container | enum('missing','starting','running','exited','errored','unknown') |  | false |  |  | コンテナの状態(runtime only) |
+| current_build | char(22) |  | false |  |  | デプロイするビルド |
 | current_commit | char(40) |  | false |  |  | デプロイされたコミット |
 | want_commit | char(40) |  | false |  |  | デプロイを待つコミット |
 | created_at | datetime(6) |  | false |  |  | 作成日時 |
@@ -76,9 +80,11 @@ erDiagram
   varchar_100_ name
   varchar_22_ repository_id FK
   varchar_100_ ref_name
+  char_40_ commit
   enum__runtime___static__ deploy_type
   tinyint_1_ running
   enum__missing___starting___running___exited___errored___unknown__ container
+  char_22_ current_build
   char_40_ current_commit
   char_40_ want_commit
   datetime_6_ created_at
@@ -105,6 +111,7 @@ erDiagram
 "builds" {
   char_22_ id PK
   char_40_ commit
+  char_16_ config_hash
   enum__building___succeeded___failed___canceled___queued___skipped__ status
   datetime_6_ queued_at
   datetime_6_ started_at

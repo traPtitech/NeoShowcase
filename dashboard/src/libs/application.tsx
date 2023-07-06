@@ -41,9 +41,6 @@ export const applicationState = (app: Application): ApplicationState => {
   if (!app.running) {
     return ApplicationState.Idle
   }
-  if (app.wantCommit !== app.currentCommit) {
-    return ApplicationState.Deploying
-  }
   if (app.deployType === DeployType.RUNTIME) {
     return ApplicationState.Running
   } else {

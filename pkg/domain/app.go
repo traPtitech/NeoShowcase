@@ -1,11 +1,14 @@
 package domain
 
 import (
+	"encoding/json"
 	"strings"
 	"time"
 
 	"github.com/friendsofgo/errors"
 	"github.com/samber/lo"
+
+	"github.com/traPtitech/neoshowcase/pkg/util/hash"
 )
 
 type ApplicationConfig struct {
@@ -22,6 +25,11 @@ func (c *ApplicationConfig) Validate(deployType DeployType) error {
 	return nil
 }
 
+func (c *ApplicationConfig) Hash() string {
+	b := lo.Must(json.Marshal(c))
+	return hash.XXH3Hex(b)
+}
+
 type DeployType int
 
 const (
@@ -32,17 +40,17 @@ const (
 var EmptyCommit = strings.Repeat("0", 40)
 
 type Application struct {
-	ID            string
-	Name          string
-	RepositoryID  string
-	RefName       string
-	DeployType    DeployType
-	Running       bool
-	Container     ContainerState
-	CurrentCommit string
-	WantCommit    string
-	CreatedAt     time.Time
-	UpdatedAt     time.Time
+	ID           string
+	Name         string
+	RepositoryID string
+	RefName      string
+	Commit       string
+	DeployType   DeployType
+	Running      bool
+	Container    ContainerState
+	CurrentBuild string
+	CreatedAt    time.Time
+	UpdatedAt    time.Time
 
 	Config           ApplicationConfig
 	Websites         []*Website

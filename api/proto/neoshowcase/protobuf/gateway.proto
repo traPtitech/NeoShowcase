@@ -175,11 +175,11 @@ message Application {
   string name = 2;
   string repository_id = 3;
   string ref_name = 4;
-  DeployType deploy_type = 5;
-  bool running = 6;
-  ContainerState container = 7;
-  string current_commit = 8;
-  string want_commit = 9;
+  string commit = 5;
+  DeployType deploy_type = 6;
+  bool running = 7;
+  ContainerState container = 8;
+  string current_build = 9;
   google.protobuf.Timestamp created_at = 10;
   google.protobuf.Timestamp updated_at = 11;
   ApplicationConfig config = 12;

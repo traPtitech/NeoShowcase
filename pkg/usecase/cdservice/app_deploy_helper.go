@@ -66,16 +66,7 @@ func (s *AppDeployHelper) _runtimeDesiredStates(ctx context.Context) ([]*domain.
 		return nil, err
 	}
 
-	// Calculate deploy-able applications
-	buildsInUse, err := domain.GetSuccessBuilds(ctx, s.buildRepo, apps)
-	if err != nil {
-		return nil, err
-	}
-	syncableApps := lo.Filter(apps, func(app *domain.Application, _ int) bool {
-		_, ok := buildsInUse[app.ID+app.CurrentCommit]
-		return ok
-	})
-
+	syncableApps := lo.Filter(apps, func(app *domain.Application, _ int) bool { return app.CurrentBuild != "" })
 	envs, err := s._getEnv(ctx, syncableApps)
 	if err != nil {
 		return nil, err
@@ -84,7 +75,7 @@ func (s *AppDeployHelper) _runtimeDesiredStates(ctx context.Context) ([]*domain.
 		return &domain.RuntimeDesiredState{
 			App:       app,
 			ImageName: s.image.ImageName(app.ID),
-			ImageTag:  app.CurrentCommit,
+			ImageTag:  app.CurrentBuild,
 			Envs:      envs[app.ID],
 		}
 	})
