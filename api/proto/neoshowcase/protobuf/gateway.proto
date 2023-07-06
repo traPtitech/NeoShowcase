@@ -6,6 +6,10 @@ import "google/protobuf/empty.proto";
 import "google/protobuf/timestamp.proto";
 import "neoshowcase/protobuf/null.proto";
 
+// ---- Basic structs ----
+
+// -- System
+
 message SSHInfo {
   string host = 1;
   int32 port = 2;
@@ -36,10 +40,7 @@ message SystemInfo {
   string adminer_url = 5;
 }
 
-message GenerateKeyPairResponse {
-  string key_id = 1;
-  string public_key = 2;
-}
+// -- User
 
 message User {
   string id = 1;
@@ -48,27 +49,13 @@ message User {
   string avatar_url = 4;
 }
 
-message GetUsersResponse {
-  repeated User users = 1;
-}
-
 message UserKey {
   string id = 1;
   string user_id = 2;
   string public_key = 3;
 }
 
-message GetUserKeysResponse {
-  repeated UserKey keys = 1;
-}
-
-message CreateUserKeyRequest {
-  string public_key = 1;
-}
-
-message DeleteUserKeyRequest {
-  string key_id = 1;
-}
+// -- Repository
 
 message Repository {
   enum AuthMethod {
@@ -83,53 +70,7 @@ message Repository {
   repeated string owner_ids = 5;
 }
 
-message CreateRepositoryAuthBasic {
-  string username = 1;
-  string password = 2;
-}
-
-message CreateRepositoryAuthSSH {
-  string key_id = 1;
-}
-
-message CreateRepositoryAuth {
-  oneof auth {
-    google.protobuf.Empty none = 1;
-    CreateRepositoryAuthBasic basic = 2;
-    CreateRepositoryAuthSSH ssh = 3;
-  }
-}
-
-message CreateRepositoryRequest {
-  string name = 1;
-  string url = 2;
-  CreateRepositoryAuth auth = 3;
-}
-
-message GetRepositoriesRequest {
-  enum Scope {
-    MINE = 0;
-    PUBLIC = 1;
-    // admin only
-    ALL = 2;
-  }
-  Scope scope = 1;
-}
-
-message UpdateRepositoryRequest {
-  string id = 1;
-  optional string name = 2;
-  optional string url = 3;
-  optional CreateRepositoryAuth auth = 4;
-  message UpdateOwners {
-    repeated string owner_ids = 1;
-  }
-  optional UpdateOwners owner_ids = 5;
-}
-
-message RepositoryIdRequest {
-  string repository_id = 1;
-}
+// -- Application
 
 enum DeployType {
   RUNTIME = 0;
@@ -210,20 +151,6 @@ message Website {
   AuthenticationType authentication = 8;
 }
 
-message CreateWebsiteRequest {
-  string fqdn = 1;
-  string path_prefix = 2;
-  bool strip_prefix = 3;
-  bool https = 4;
-  bool h2c = 5;
-  int32 http_port = 6;
-  AuthenticationType authentication = 7;
-}
-
-message DeleteWebsiteRequest {
-  string id = 1;
-}
-
 enum PortPublicationProtocol {
   TCP = 0;
   UDP = 1;
@@ -259,44 +186,6 @@ message Application {
   repeated Website websites = 13;
   repeated PortPublication port_publications = 14;
   repeated string owner_ids = 15;
-}
-
-message CreateApplicationRequest {
-  string name = 1;
-  string repository_id = 2;
-  string ref_name = 3;
-  ApplicationConfig config = 4;
-  repeated CreateWebsiteRequest websites = 5;
-  repeated PortPublication port_publications = 6;
-  bool start_on_create = 7;
-}
-
-message GetApplicationsRequest {
-  enum Scope {
-    MINE = 0;
-    ALL = 1;
-  }
-  Scope scope = 1;
-}
-
-message UpdateApplicationRequest {
-  string id = 1;
-  optional string name = 2;
-  optional string repository_id = 3;
-  optional string ref_name = 4;
-  optional ApplicationConfig config = 5;
-  message UpdateWebsites {
-    repeated CreateWebsiteRequest websites = 1;
-  }
-  optional UpdateWebsites websites = 6;
-  message UpdatePorts {
-    repeated PortPublication port_publications = 1;
-  }
-  optional UpdatePorts port_publications = 7;
-  message UpdateOwners {
-    repeated string owner_ids = 1;
-  }
-  optional UpdateOwners owner_ids = 8;
 }
 
 message ApplicationEnvVar {
@@ -351,6 +240,134 @@ message BuildLog {
   bytes log = 1;
 }
 
+message GitRef {
+  string ref_name = 1;
+  string commit = 2;
+}
+
+// ---- API requests / responses ----
+
+message GenerateKeyPairResponse {
+  string key_id = 1;
+  string public_key = 2;
+}
+
+message GetUsersResponse {
+  repeated User users = 1;
+}
+
+message GetUserKeysResponse {
+  repeated UserKey keys = 1;
+}
+
+message CreateUserKeyRequest {
+  string public_key = 1;
+}
+
+message DeleteUserKeyRequest {
+  string key_id = 1;
+}
+
+message CreateRepositoryAuthBasic {
+  string username = 1;
+  string password = 2;
+}
+
+message CreateRepositoryAuthSSH {
+  string key_id = 1;
+}
+
+message CreateRepositoryAuth {
+  oneof auth {
+    google.protobuf.Empty none = 1;
+    CreateRepositoryAuthBasic basic = 2;
+    CreateRepositoryAuthSSH ssh = 3;
+  }
+}
+
+message CreateRepositoryRequest {
+  string name = 1;
+  string url = 2;
+  CreateRepositoryAuth auth = 3;
+}
+
+message GetRepositoriesRequest {
+  enum Scope {
+    MINE = 0;
+    PUBLIC = 1;
+    // admin only
+    ALL = 2;
+  }
+  Scope scope = 1;
+}
+
+message UpdateRepositoryRequest {
+  string id = 1;
+  optional string name = 2;
+  optional string url = 3;
+  optional CreateRepositoryAuth auth = 4;
+  message UpdateOwners {
+    repeated string owner_ids = 1;
+  }
+  optional UpdateOwners owner_ids = 5;
+}
+
+message RepositoryIdRequest {
+  string repository_id = 1;
+}
+
+message CreateWebsiteRequest {
+  string fqdn = 1;
+  string path_prefix = 2;
+  bool strip_prefix = 3;
+  bool https = 4;
+  bool h2c = 5;
+  int32 http_port = 6;
+  AuthenticationType authentication = 7;
+}
+
+message DeleteWebsiteRequest {
+  string id = 1;
+}
+
+message CreateApplicationRequest {
+  string name = 1;
+  string repository_id = 2;
+  string ref_name = 3;
+  ApplicationConfig config = 4;
+  repeated CreateWebsiteRequest websites = 5;
+  repeated PortPublication port_publications = 6;
+  bool start_on_create = 7;
+}
+
+message GetApplicationsRequest {
+  enum Scope {
+    MINE = 0;
+    ALL = 1;
+  }
+  Scope scope = 1;
+}
+
+message UpdateApplicationRequest {
+  string id = 1;
+  optional string name = 2;
+  optional string repository_id = 3;
+  optional string ref_name = 4;
+  optional ApplicationConfig config = 5;
+  message UpdateWebsites {
+    repeated CreateWebsiteRequest websites = 1;
+  }
+  optional UpdateWebsites websites = 6;
+  message UpdatePorts {
+    repeated PortPublication port_publications = 1;
+  }
+  optional UpdatePorts port_publications = 7;
+  message UpdateOwners {
+    repeated string owner_ids = 1;
+  }
+  optional UpdateOwners owner_ids = 8;
+}
+
 message GetRepositoriesResponse {
   repeated Repository repositories = 1;
 }
@@ -388,11 +405,6 @@ message DeleteApplicationEnvVarRequest {
 
 message RetryCommitBuildRequest {
   string application_id = 1;
-  string commit = 2;
-}
-
-message GitRef {
-  string ref_name = 1;
   string commit = 2;
 }
 
