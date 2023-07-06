@@ -1087,29 +1087,29 @@ export class Application extends Message<Application> {
   refName = "";
 
   /**
-   * @generated from field: neoshowcase.protobuf.DeployType deploy_type = 5;
+   * @generated from field: string commit = 5;
+   */
+  commit = "";
+
+  /**
+   * @generated from field: neoshowcase.protobuf.DeployType deploy_type = 6;
    */
   deployType = DeployType.RUNTIME;
 
   /**
-   * @generated from field: bool running = 6;
+   * @generated from field: bool running = 7;
    */
   running = false;
 
   /**
-   * @generated from field: neoshowcase.protobuf.Application.ContainerState container = 7;
+   * @generated from field: neoshowcase.protobuf.Application.ContainerState container = 8;
    */
   container = Application_ContainerState.MISSING;
 
   /**
-   * @generated from field: string current_commit = 8;
+   * @generated from field: string current_build = 9;
    */
-  currentCommit = "";
-
-  /**
-   * @generated from field: string want_commit = 9;
-   */
-  wantCommit = "";
+  currentBuild = "";
 
   /**
    * @generated from field: google.protobuf.Timestamp created_at = 10;
@@ -1153,11 +1153,11 @@ export class Application extends Message<Application> {
     { no: 2, name: "name", kind: "scalar", T: 9 /* ScalarType.STRING */ },
     { no: 3, name: "repository_id", kind: "scalar", T: 9 /* ScalarType.STRING */ },
     { no: 4, name: "ref_name", kind: "scalar", T: 9 /* ScalarType.STRING */ },
-    { no: 5, name: "deploy_type", kind: "enum", T: proto3.getEnumType(DeployType) },
-    { no: 6, name: "running", kind: "scalar", T: 8 /* ScalarType.BOOL */ },
-    { no: 7, name: "container", kind: "enum", T: proto3.getEnumType(Application_ContainerState) },
-    { no: 8, name: "current_commit", kind: "scalar", T: 9 /* ScalarType.STRING */ },
-    { no: 9, name: "want_commit", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+    { no: 5, name: "commit", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+    { no: 6, name: "deploy_type", kind: "enum", T: proto3.getEnumType(DeployType) },
+    { no: 7, name: "running", kind: "scalar", T: 8 /* ScalarType.BOOL */ },
+    { no: 8, name: "container", kind: "enum", T: proto3.getEnumType(Application_ContainerState) },
+    { no: 9, name: "current_build", kind: "scalar", T: 9 /* ScalarType.STRING */ },
     { no: 10, name: "created_at", kind: "message", T: Timestamp },
     { no: 11, name: "updated_at", kind: "message", T: Timestamp },
     { no: 12, name: "config", kind: "message", T: ApplicationConfig },

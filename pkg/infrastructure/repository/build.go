@@ -30,6 +30,9 @@ func (r *buildRepository) buildMods(cond domain.GetBuildCondition) []qm.QueryMod
 	if cond.ID.Valid {
 		mods = append(mods, models.BuildWhere.ID.EQ(cond.ID.V))
 	}
+	if cond.IDIn.Valid {
+		mods = append(mods, models.BuildWhere.ID.IN(cond.IDIn.V))
+	}
 	if cond.ApplicationID.Valid {
 		mods = append(mods, models.BuildWhere.ApplicationID.EQ(cond.ApplicationID.V))
 	}

@@ -14,6 +14,7 @@ import (
 
 	"github.com/traPtitech/neoshowcase/pkg/domain"
 	"github.com/traPtitech/neoshowcase/pkg/domain/builder"
+	"github.com/traPtitech/neoshowcase/pkg/util/ds"
 	"github.com/traPtitech/neoshowcase/pkg/util/loop"
 	"github.com/traPtitech/neoshowcase/pkg/util/optional"
 )
@@ -92,6 +93,21 @@ func (c *cleanerService) Shutdown(_ context.Context) error {
 	return nil
 }
 
+func (c *cleanerService) getOlderBuilds(ctx context.Context, appID string, targetBuildID string) ([]*domain.Build, error) {
+	if targetBuildID == "" {
+		return nil, nil
+	}
+	builds, err := c.buildRepo.GetBuilds(ctx, domain.GetBuildCondition{ApplicationID: optional.From(appID)})
+	if err != nil {
+		return nil, err
+	}
+	current, ok := lo.Find(builds, func(b *domain.Build) bool { return b.ID == targetBuildID })
+	if !ok {
+		return nil, errors.Errorf("failed to find build %v in retrieved builds", targetBuildID)
+	}
+	return lo.Filter(builds, func(b *domain.Build, _ int) bool { return b.QueuedAt.Before(current.QueuedAt) }), nil
+}
+
 func (c *cleanerService) pruneImages(ctx context.Context, r *registry.Registry) error {
 	applications, err := c.appRepo.GetApplications(ctx, domain.GetApplicationCondition{DeployType: optional.From(domain.DeployTypeRuntime)})
 	if err != nil {
@@ -118,7 +134,7 @@ func (c *cleanerService) pruneImages(ctx context.Context, r *registry.Registry) 
 	return nil
 }
 
-func (c *cleanerService) pruneImage(_ context.Context, r *registry.Registry, imageName string, appsMap map[string]*domain.Application) error {
+func (c *cleanerService) pruneImage(ctx context.Context, r *registry.Registry, imageName string, appsMap map[string]*domain.Application) error {
 	appID := strings.TrimPrefix(imageName, c.image.NamePrefix)
 
 	tags, err := r.Tags(imageName)
@@ -128,8 +144,13 @@ func (c *cleanerService) pruneImage(_ context.Context, r *registry.Registry, ima
 	app, ok := appsMap[appID]
 	var danglingTags []string
 	if ok {
-		// app still exists
-		danglingTags = lo.Reject(tags, func(tag string, _ int) bool { return app.WantCommit == tag || app.CurrentCommit == tag })
+		// app still exists; compare by queued_at time, then delete any older builds
+		olderBuilds, err := c.getOlderBuilds(ctx, app.ID, app.CurrentBuild)
+		if err != nil {
+			return err
+		}
+		olderBuildIDs := ds.Map(olderBuilds, func(b *domain.Build) string { return b.ID })
+		danglingTags = lo.Filter(tags, func(tag string, _ int) bool { return lo.Contains(olderBuildIDs, tag) })
 	} else {
 		// app was deleted
 		danglingTags = tags
@@ -150,7 +171,7 @@ func (c *cleanerService) pruneImage(_ context.Context, r *registry.Registry, ima
 	return nil
 }
 
-func (c *cleanerService) getArtifactsInUse(ctx context.Context) ([]*domain.Artifact, error) {
+func (c *cleanerService) getArtifactsNoLongerInUse(ctx context.Context) ([]*domain.Artifact, error) {
 	applications, err := c.appRepo.GetApplications(ctx, domain.GetApplicationCondition{
 		DeployType: optional.From(domain.DeployTypeStatic),
 	})
@@ -158,33 +179,26 @@ func (c *cleanerService) getArtifactsInUse(ctx context.Context) ([]*domain.Artif
 		return nil, err
 	}
 
-	builds, err := domain.GetSuccessBuilds(ctx, c.buildRepo, applications)
-	if err != nil {
-		return nil, err
-	}
-	artifacts := make([]*domain.Artifact, 0, len(builds))
-	for _, build := range builds {
-		artifacts = append(artifacts, build.Artifacts...)
+	artifacts := make([]*domain.Artifact, 0, len(applications))
+	for _, app := range applications {
+		olderBuilds, err := c.getOlderBuilds(ctx, app.ID, app.CurrentBuild)
+		if err != nil {
+			return nil, err
+		}
+		for _, b := range olderBuilds {
+			artifacts = append(artifacts, b.Artifacts...)
+		}
 	}
 	return artifacts, nil
 }
 
 func (c *cleanerService) pruneArtifacts(ctx context.Context) error {
-	inUse, err := c.getArtifactsInUse(ctx)
+	notInUse, err := c.getArtifactsNoLongerInUse(ctx)
 	if err != nil {
 		return errors.Wrap(err, "failed to get artifacts in use")
 	}
-	inUseIDs := lo.SliceToMap(inUse, func(a *domain.Artifact) (string, bool) { return a.ID, true })
 
-	artifacts, err := c.artifactRepo.GetArtifacts(ctx, domain.GetArtifactCondition{IsDeleted: optional.From(false)})
-	if err != nil {
-		return errors.Wrap(err, "failed to get existing artifacts")
-	}
-
-	for _, artifact := range artifacts {
-		if inUseIDs[artifact.ID] {
-			continue
-		}
+	for _, artifact := range notInUse {
 		err = domain.DeleteArtifact(c.storage, artifact.ID)
 		if err != nil {
 			return errors.Wrap(err, fmt.Sprintf("deleting artifact %v", artifact.ID))
@@ -194,6 +208,5 @@ func (c *cleanerService) pruneArtifacts(ctx context.Context) error {
 			return errors.Wrap(err, "failed to mark artifact as deleted")
 		}
 	}
-
 	return nil
 }

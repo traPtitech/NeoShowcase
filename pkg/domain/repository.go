@@ -13,18 +13,16 @@ type GetApplicationCondition struct {
 	UserID       optional.Of[string]
 	DeployType   optional.Of[DeployType]
 	Running      optional.Of[bool]
-	// InSync WantCommit が CurrentCommit に一致する
-	InSync optional.Of[bool]
 }
 
 type UpdateApplicationArgs struct {
 	Name             optional.Of[string]
 	RepositoryID     optional.Of[string]
 	RefName          optional.Of[string]
+	Commit           optional.Of[string]
 	Running          optional.Of[bool]
 	Container        optional.Of[ContainerState]
-	CurrentCommit    optional.Of[string]
-	WantCommit       optional.Of[string]
+	CurrentBuild     optional.Of[string]
 	UpdatedAt        optional.Of[time.Time]
 	Config           optional.Of[ApplicationConfig]
 	Websites         optional.Of[[]*Website]
@@ -42,17 +40,17 @@ func (a *Application) Apply(args *UpdateApplicationArgs) {
 	if args.RefName.Valid {
 		a.RefName = args.RefName.V
 	}
+	if args.Commit.Valid {
+		a.Commit = args.Commit.V
+	}
 	if args.Running.Valid {
 		a.Running = args.Running.V
 	}
 	if args.Container.Valid {
 		a.Container = args.Container.V
 	}
-	if args.CurrentCommit.Valid {
-		a.CurrentCommit = args.CurrentCommit.V
-	}
-	if args.WantCommit.Valid {
-		a.WantCommit = args.WantCommit.V
+	if args.CurrentBuild.Valid {
+		a.CurrentBuild = args.CurrentBuild.V
 	}
 	if args.UpdatedAt.Valid {
 		a.UpdatedAt = args.UpdatedAt.V
@@ -100,6 +98,7 @@ type ArtifactRepository interface {
 
 type GetBuildCondition struct {
 	ID            optional.Of[string]
+	IDIn          optional.Of[[]string]
 	ApplicationID optional.Of[string]
 	Commit        optional.Of[string]
 	CommitIn      optional.Of[[]string]

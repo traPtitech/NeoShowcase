@@ -30,12 +30,16 @@ type Application struct { // アプリケーションID
 	RepositoryID string `boil:"repository_id" json:"repository_id" toml:"repository_id" yaml:"repository_id"`
 	// Gitブランチ・タグ名
 	RefName string `boil:"ref_name" json:"ref_name" toml:"ref_name" yaml:"ref_name"`
+	// 解決されたコミット
+	Commit string `boil:"commit" json:"commit" toml:"commit" yaml:"commit"`
 	// デプロイタイプ
 	DeployType string `boil:"deploy_type" json:"deploy_type" toml:"deploy_type" yaml:"deploy_type"`
 	// アプリを起動させるか(desired state)
 	Running bool `boil:"running" json:"running" toml:"running" yaml:"running"`
 	// コンテナの状態(runtime only)
 	Container string `boil:"container" json:"container" toml:"container" yaml:"container"`
+	// デプロイするビルド
+	CurrentBuild string `boil:"current_build" json:"current_build" toml:"current_build" yaml:"current_build"`
 	// デプロイされたコミット
 	CurrentCommit string `boil:"current_commit" json:"current_commit" toml:"current_commit" yaml:"current_commit"`
 	// デプロイを待つコミット
@@ -54,9 +58,11 @@ var ApplicationColumns = struct {
 	Name          string
 	RepositoryID  string
 	RefName       string
+	Commit        string
 	DeployType    string
 	Running       string
 	Container     string
+	CurrentBuild  string
 	CurrentCommit string
 	WantCommit    string
 	CreatedAt     string
@@ -66,9 +72,11 @@ var ApplicationColumns = struct {
 	Name:          "name",
 	RepositoryID:  "repository_id",
 	RefName:       "ref_name",
+	Commit:        "commit",
 	DeployType:    "deploy_type",
 	Running:       "running",
 	Container:     "container",
+	CurrentBuild:  "current_build",
 	CurrentCommit: "current_commit",
 	WantCommit:    "want_commit",
 	CreatedAt:     "created_at",
@@ -80,9 +88,11 @@ var ApplicationTableColumns = struct {
 	Name          string
 	RepositoryID  string
 	RefName       string
+	Commit        string
 	DeployType    string
 	Running       string
 	Container     string
+	CurrentBuild  string
 	CurrentCommit string
 	WantCommit    string
 	CreatedAt     string
@@ -92,9 +102,11 @@ var ApplicationTableColumns = struct {
 	Name:          "applications.name",
 	RepositoryID:  "applications.repository_id",
 	RefName:       "applications.ref_name",
+	Commit:        "applications.commit",
 	DeployType:    "applications.deploy_type",
 	Running:       "applications.running",
 	Container:     "applications.container",
+	CurrentBuild:  "applications.current_build",
 	CurrentCommit: "applications.current_commit",
 	WantCommit:    "applications.want_commit",
 	CreatedAt:     "applications.created_at",
@@ -129,9 +141,11 @@ var ApplicationWhere = struct {
 	Name          whereHelperstring
 	RepositoryID  whereHelperstring
 	RefName       whereHelperstring
+	Commit        whereHelperstring
 	DeployType    whereHelperstring
 	Running       whereHelperbool
 	Container     whereHelperstring
+	CurrentBuild  whereHelperstring
 	CurrentCommit whereHelperstring
 	WantCommit    whereHelperstring
 	CreatedAt     whereHelpertime_Time
@@ -141,9 +155,11 @@ var ApplicationWhere = struct {
 	Name:          whereHelperstring{field: "`applications`.`name`"},
 	RepositoryID:  whereHelperstring{field: "`applications`.`repository_id`"},
 	RefName:       whereHelperstring{field: "`applications`.`ref_name`"},
+	Commit:        whereHelperstring{field: "`applications`.`commit`"},
 	DeployType:    whereHelperstring{field: "`applications`.`deploy_type`"},
 	Running:       whereHelperbool{field: "`applications`.`running`"},
 	Container:     whereHelperstring{field: "`applications`.`container`"},
+	CurrentBuild:  whereHelperstring{field: "`applications`.`current_build`"},
 	CurrentCommit: whereHelperstring{field: "`applications`.`current_commit`"},
 	WantCommit:    whereHelperstring{field: "`applications`.`want_commit`"},
 	CreatedAt:     whereHelpertime_Time{field: "`applications`.`created_at`"},
@@ -238,8 +254,8 @@ func (r *applicationR) GetWebsites() WebsiteSlice {
 type applicationL struct{}
 
 var (
-	applicationAllColumns            = []string{"id", "name", "repository_id", "ref_name", "deploy_type", "running", "container", "current_commit", "want_commit", "created_at", "updated_at"}
-	applicationColumnsWithoutDefault = []string{"id", "name", "repository_id", "ref_name", "deploy_type", "running", "container", "current_commit", "want_commit", "created_at", "updated_at"}
+	applicationAllColumns            = []string{"id", "name", "repository_id", "ref_name", "commit", "deploy_type", "running", "container", "current_build", "current_commit", "want_commit", "created_at", "updated_at"}
+	applicationColumnsWithoutDefault = []string{"id", "name", "repository_id", "ref_name", "commit", "deploy_type", "running", "container", "current_build", "current_commit", "want_commit", "created_at", "updated_at"}
 	applicationColumnsWithDefault    = []string{}
 	applicationPrimaryKeyColumns     = []string{"id"}
 	applicationGeneratedColumns      = []string{}

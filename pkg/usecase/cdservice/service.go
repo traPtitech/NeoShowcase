@@ -149,7 +149,7 @@ func (cd *service) registerBuild(ctx context.Context, appID string) error {
 		// Skip if app not running
 		return nil
 	}
-	if app.WantCommit == domain.EmptyCommit {
+	if app.Commit == domain.EmptyCommit {
 		// Skip if still fetching commit
 		return nil
 	}
@@ -157,7 +157,7 @@ func (cd *service) registerBuild(ctx context.Context, appID string) error {
 	// Check if already queued
 	builds, err := cd.buildRepo.GetBuilds(ctx, domain.GetBuildCondition{
 		ApplicationID: optional.From(appID),
-		Commit:        optional.From(app.WantCommit),
+		Commit:        optional.From(app.Commit),
 		ConfigHash:    optional.From(app.Config.Hash()),
 		// Do not count retriable build as 'exists' - enqueue a new build if only retriable builds exist
 		Retriable: optional.From(false),
@@ -230,20 +230,40 @@ func (cd *service) _syncAppFields(ctx context.Context) error {
 		return err
 	}
 
-	builds, err := domain.GetSuccessBuilds(ctx, cd.buildRepo, apps)
+	commits := lo.Map(apps, func(app *domain.Application, _ int) string { return app.Commit })
+	builds, err := cd.buildRepo.GetBuilds(ctx, domain.GetBuildCondition{
+		CommitIn: optional.From(commits),
+		Status:   optional.From(domain.BuildStatusSucceeded),
+	})
 	if err != nil {
 		return err
 	}
+	// get last succeeded builds for each app
+	slices.SortFunc(builds, ds.LessFunc(func(b *domain.Build) int64 { return b.QueuedAt.UnixNano() }))
+	buildsMap := lo.SliceToMap(builds, func(b *domain.Build) (string, *domain.Build) { return b.ApplicationID, b })
 	for _, app := range apps {
-		// Check if build has succeeded, if so sync 'current_commit' and 'updated_at' fields for restarting app
-		if b, ok := builds[app.ID+app.WantCommit]; ok {
-			toSync := app.CurrentCommit != app.WantCommit || app.UpdatedAt.Before(b.FinishedAt.V)
-			if !toSync {
-				continue
+		nextBuild, ok := buildsMap[app.ID]
+		if !ok {
+			continue
+		}
+		toUpdate := func() bool {
+			if app.CurrentBuild == nextBuild.ID {
+				return false
 			}
+			if app.CurrentBuild == "" {
+				return true
+			}
+			beforeBuild, err := cd.buildRepo.GetBuild(ctx, app.CurrentBuild)
+			if err != nil {
+				log.Warnf("failed to retrieve build for %v", app.CurrentBuild)
+				return false
+			}
+			return beforeBuild.QueuedAt.Before(nextBuild.QueuedAt)
+		}()
+		if toUpdate {
 			err = cd.appRepo.UpdateApplication(ctx, app.ID, &domain.UpdateApplicationArgs{
-				CurrentCommit: optional.From(app.WantCommit),
-				UpdatedAt:     optional.From(b.FinishedAt.V),
+				CurrentBuild: optional.From(nextBuild.ID),
+				UpdatedAt:    optional.From(nextBuild.FinishedAt.V),
 			})
 			if err != nil {
 				return errors.Wrap(err, "failed to sync application commit")
@@ -254,7 +274,7 @@ func (cd *service) _syncAppFields(ctx context.Context) error {
 }
 
 func (cd *service) syncDeployments(ctx context.Context) error {
-	// Sync app fields from build result
+	// Sync app fields from build result in an idempotent way
 	err := cd._syncAppFields(ctx)
 	if err != nil {
 		return err

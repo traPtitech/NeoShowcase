@@ -58,13 +58,6 @@ func (r *applicationRepository) GetApplications(ctx context.Context, cond domain
 	if cond.Running.Valid {
 		mods = append(mods, models.ApplicationWhere.Running.EQ(cond.Running.V))
 	}
-	if cond.InSync.Valid {
-		if cond.InSync.V {
-			mods = append(mods, qm.Where(fmt.Sprintf("%s == %s", models.ApplicationTableColumns.WantCommit, models.ApplicationTableColumns.CurrentCommit)))
-		} else {
-			mods = append(mods, qm.Where(fmt.Sprintf("%s != %s", models.ApplicationTableColumns.WantCommit, models.ApplicationTableColumns.CurrentCommit)))
-		}
-	}
 
 	applications, err := models.Applications(mods...).All(ctx, r.db)
 	if err != nil {
@@ -168,6 +161,10 @@ func (r *applicationRepository) UpdateApplication(ctx context.Context, id string
 		app.RefName = args.RefName.V
 		cols = append(cols, models.ApplicationColumns.RefName)
 	}
+	if args.Commit.Valid {
+		app.Commit = args.Commit.V
+		cols = append(cols, models.ApplicationColumns.Commit)
+	}
 	if args.Config.Valid {
 		app.DeployType = repoconvert.DeployTypeMapper.FromMust(
 			args.Config.V.BuildConfig.BuildType().DeployType(),
@@ -182,13 +179,9 @@ func (r *applicationRepository) UpdateApplication(ctx context.Context, id string
 		app.Container = repoconvert.ContainerStateMapper.FromMust(args.Container.V)
 		cols = append(cols, models.ApplicationColumns.Container)
 	}
-	if args.CurrentCommit.Valid {
-		app.CurrentCommit = args.CurrentCommit.V
-		cols = append(cols, models.ApplicationColumns.CurrentCommit)
-	}
-	if args.WantCommit.Valid {
-		app.WantCommit = args.WantCommit.V
-		cols = append(cols, models.ApplicationColumns.WantCommit)
+	if args.CurrentBuild.Valid {
+		app.CurrentBuild = args.CurrentBuild.V
+		cols = append(cols, models.ApplicationColumns.CurrentBuild)
 	}
 	if args.UpdatedAt.Valid {
 		app.UpdatedAt = args.UpdatedAt.V

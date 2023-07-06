@@ -61,10 +61,14 @@ CREATE TABLE `applications`
     `name`           VARCHAR(100)                                                            NOT NULL COMMENT 'アプリケーション名',
     `repository_id`  VARCHAR(22)                                                             NOT NULL COMMENT 'リポジトリID',
     `ref_name`       VARCHAR(100)                                                            NOT NULL COMMENT 'Gitブランチ・タグ名',
+    `commit`         CHAR(40)                                                                NOT NULL COMMENT '解決されたコミット',
     `deploy_type`    ENUM ('runtime', 'static')                                              NOT NULL COMMENT 'デプロイタイプ',
     `running`        TINYINT(1)                                                              NOT NULL COMMENT 'アプリを起動させるか(desired state)',
     `container`      ENUM ('missing', 'starting', 'running', 'exited', 'errored', 'unknown') NOT NULL COMMENT 'コンテナの状態(runtime only)',
+    `current_build`  CHAR(22)                                                                NOT NULL COMMENT 'デプロイするビルド',
+    # TODO: remove after v0.13.1
     `current_commit` CHAR(40)                                                                NOT NULL COMMENT 'デプロイされたコミット',
+    # TODO: remove after v0.13.1
     `want_commit`    CHAR(40)                                                                NOT NULL COMMENT 'デプロイを待つコミット',
     `created_at`     DATETIME(6)                                                             NOT NULL COMMENT '作成日時',
     `updated_at`     DATETIME(6)                                                             NOT NULL COMMENT '更新日時',
