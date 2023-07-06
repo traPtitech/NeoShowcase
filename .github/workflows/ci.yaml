@@ -96,7 +96,7 @@ jobs:
         run: go test ./... -v ${{ matrix.race }} -coverprofile=coverage.out -covermode=atomic -vet=off
       - name: Upload coverage to Codecov
         run: bash <(curl -s https://codecov.io/bash)
-        if: matrix.race != ""
+        if: matrix.race != ''
 
   k8s-test:
     name: K8s Test
@@ -140,7 +140,7 @@ jobs:
         run: go test ./pkg/infrastructure/backend/k8simpl -v ${{ matrix.race }} -coverprofile=coverage.out -covermode=atomic -vet=off
       - name: Upload coverage to Codecov
         run: bash <(curl -s https://codecov.io/bash)
-        if: matrix.race != ""
+        if: matrix.race != ''
 
   tbls:
     name: TBLS
