@@ -105,6 +105,9 @@ type GetBuildCondition struct {
 	ConfigHash    optional.Of[string]
 	Status        optional.Of[BuildStatus]
 	Retriable     optional.Of[bool]
+	Offset        optional.Of[int]
+	Limit         optional.Of[int]
+	SortAsc       optional.Of[bool]
 }
 
 type UpdateBuildArgs struct {

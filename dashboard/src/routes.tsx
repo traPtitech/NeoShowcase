@@ -31,6 +31,10 @@ export default useRoutes([
     component: lazy(() => import('/@/pages/apps/new')),
   },
   {
+    path: '/builds',
+    component: lazy(() => import('/@/pages/builds')),
+  },
+  {
     path: '/repos/:id',
     component: lazy(() => import('/@/pages/repos/[id]')),
   },

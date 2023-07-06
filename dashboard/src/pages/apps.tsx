@@ -14,7 +14,7 @@ import { applicationState, ApplicationState } from '/@/libs/application'
 import { AppStatus } from '/@/components/AppStatus'
 import { styled } from '@macaron-css/solid'
 import { vars } from '/@/theme'
-import { Container } from '/@/libs/layout'
+import { Container, PageTitle } from '/@/libs/layout'
 import { Button } from '/@/components/Button'
 import { useNavigate } from '@solidjs/router'
 import Fuse from 'fuse.js'
@@ -36,15 +36,6 @@ const scopeItems = (admin: boolean) => {
   }
   return items
 }
-
-const AppsTitle = styled('div', {
-  base: {
-    marginTop: '48px',
-    fontSize: '32px',
-    fontWeight: 'bold',
-    color: vars.text.black1,
-  },
-})
 
 const ContentContainer = styled('div', {
   base: {
@@ -227,7 +218,7 @@ export default () => {
   return (
     <Container>
       <Header />
-      <AppsTitle>Apps</AppsTitle>
+      <PageTitle>Apps</PageTitle>
       <Show when={loaded()}>
         <ContentContainer>
           <SidebarContainer>

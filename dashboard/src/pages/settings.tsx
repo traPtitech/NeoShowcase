@@ -3,21 +3,11 @@ import { Component, createResource, createSignal, For, JSX, Show } from 'solid-j
 import { client, handleAPIError } from '/@/libs/api'
 import { styled } from '@macaron-css/solid'
 import { vars } from '/@/theme'
-import { Container } from '/@/libs/layout'
+import { Container, PageTitle } from '/@/libs/layout'
 import { Button } from '/@/components/Button'
 import { InputBar, InputLabel } from '/@/components/Input'
 import toast from 'solid-toast'
 import { style } from '@macaron-css/core'
-
-// copy from /pages/apps AppsTitle component
-const PageTitle = styled('div', {
-  base: {
-    marginTop: '48px',
-    fontSize: '32px',
-    fontWeight: 'bold',
-    color: vars.text.black1,
-  },
-})
 
 // copy from /pages/apps
 // and delete unnecessary styles

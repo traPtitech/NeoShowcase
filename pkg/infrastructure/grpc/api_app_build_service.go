@@ -13,6 +13,17 @@ import (
 	"github.com/traPtitech/neoshowcase/pkg/util/ds"
 )
 
+func (s *APIService) GetAllBuilds(ctx context.Context, c *connect.Request[pb.GetAllBuildsRequest]) (*connect.Response[pb.GetBuildsResponse], error) {
+	builds, err := s.svc.GetAllBuilds(ctx, int(c.Msg.Page), int(c.Msg.Limit))
+	if err != nil {
+		return nil, handleUseCaseError(err)
+	}
+	res := connect.NewResponse(&pb.GetBuildsResponse{
+		Builds: ds.Map(builds, pbconvert.ToPBBuild),
+	})
+	return res, nil
+}
+
 func (s *APIService) GetBuilds(ctx context.Context, req *connect.Request[pb.ApplicationIdRequest]) (*connect.Response[pb.GetBuildsResponse], error) {
 	builds, err := s.svc.GetBuilds(ctx, req.Msg.Id)
 	if err != nil {

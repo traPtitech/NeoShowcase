@@ -4,7 +4,7 @@
 // @ts-nocheck
 
 import { Empty, MethodKind } from "@bufbuild/protobuf";
-import { Application, ApplicationEnvVars, ApplicationIdRequest, ApplicationOutput, ArtifactContent, ArtifactIdRequest, Build, BuildIdRequest, BuildLog, CreateApplicationRequest, CreateRepositoryRequest, CreateUserKeyRequest, DeleteApplicationEnvVarRequest, DeleteUserKeyRequest, GenerateKeyPairResponse, GetApplicationsRequest, GetApplicationsResponse, GetBuildsResponse, GetRepositoriesRequest, GetRepositoriesResponse, GetRepositoryRefsResponse, GetUserKeysResponse, GetUsersResponse, Repository, RepositoryIdRequest, RetryCommitBuildRequest, SetApplicationEnvVarRequest, SystemInfo, UpdateApplicationRequest, UpdateRepositoryRequest, User, UserKey } from "./gateway_pb.js";
+import { Application, ApplicationEnvVars, ApplicationIdRequest, ApplicationOutput, ArtifactContent, ArtifactIdRequest, Build, BuildIdRequest, BuildLog, CreateApplicationRequest, CreateRepositoryRequest, CreateUserKeyRequest, DeleteApplicationEnvVarRequest, DeleteUserKeyRequest, GenerateKeyPairResponse, GetAllBuildsRequest, GetApplicationsRequest, GetApplicationsResponse, GetBuildsResponse, GetRepositoriesRequest, GetRepositoriesResponse, GetRepositoryRefsResponse, GetUserKeysResponse, GetUsersResponse, Repository, RepositoryIdRequest, RetryCommitBuildRequest, SetApplicationEnvVarRequest, SystemInfo, UpdateApplicationRequest, UpdateRepositoryRequest, User, UserKey } from "./gateway_pb.js";
 
 /**
  * General / System
@@ -287,6 +287,17 @@ export const APIService = {
       name: "StopApplication",
       I: ApplicationIdRequest,
       O: Empty,
+      kind: MethodKind.Unary,
+    },
+    /**
+     * GetAllBuilds すべてのアプリケーションのビルドキューを取得します
+     *
+     * @generated from rpc neoshowcase.protobuf.APIService.GetAllBuilds
+     */
+    getAllBuilds: {
+      name: "GetAllBuilds",
+      I: GetAllBuildsRequest,
+      O: GetBuildsResponse,
       kind: MethodKind.Unary,
     },
     /**

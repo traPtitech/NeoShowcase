@@ -20,15 +20,16 @@ var BuildStatusMapper = mapper.MustNewValueMapper(map[domain.BuildStatus]pb.Buil
 
 func ToPBBuild(build *domain.Build) *pb.Build {
 	b := &pb.Build{
-		Id:         build.ID,
-		Commit:     build.Commit,
-		Status:     BuildStatusMapper.IntoMust(build.Status),
-		QueuedAt:   timestamppb.New(build.QueuedAt),
-		StartedAt:  ToPBNullTimestamp(build.StartedAt),
-		UpdatedAt:  ToPBNullTimestamp(build.UpdatedAt),
-		FinishedAt: ToPBNullTimestamp(build.FinishedAt),
-		Retriable:  build.Retriable,
-		Artifacts:  ds.Map(build.Artifacts, ToPBArtifact),
+		Id:            build.ID,
+		ApplicationId: build.ApplicationID,
+		Commit:        build.Commit,
+		Status:        BuildStatusMapper.IntoMust(build.Status),
+		QueuedAt:      timestamppb.New(build.QueuedAt),
+		StartedAt:     ToPBNullTimestamp(build.StartedAt),
+		UpdatedAt:     ToPBNullTimestamp(build.UpdatedAt),
+		FinishedAt:    ToPBNullTimestamp(build.FinishedAt),
+		Retriable:     build.Retriable,
+		Artifacts:     ds.Map(build.Artifacts, ToPBArtifact),
 	}
 	return b
 }

@@ -1,8 +1,18 @@
 import { styled } from '@macaron-css/solid'
+import { vars } from '/@/theme'
 
 export const Container = styled('div', {
   base: {
     padding: '40px 72px',
+  },
+})
+
+export const PageTitle = styled('div', {
+  base: {
+    marginTop: '48px',
+    fontSize: '32px',
+    fontWeight: 'bold',
+    color: vars.text.black1,
   },
 })
 

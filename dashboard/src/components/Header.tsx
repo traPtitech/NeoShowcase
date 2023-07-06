@@ -89,6 +89,7 @@ export const Header = (): JSXElement => {
         <Logo />
         <NavContainer>
           <Nav href='/apps'>APP</Nav>
+          <Nav href='/builds'>QUEUE</Nav>
           <Nav href='/settings'>SETTINGS</Nav>
           <a href={systemInfo()?.adminerUrl} target='_blank' class={navInactive} rel='noreferrer'>
             ADMINER

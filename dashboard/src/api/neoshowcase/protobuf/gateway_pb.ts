@@ -1470,42 +1470,47 @@ export class Build extends Message<Build> {
   id = "";
 
   /**
-   * @generated from field: string commit = 2;
+   * @generated from field: string application_id = 2;
+   */
+  applicationId = "";
+
+  /**
+   * @generated from field: string commit = 3;
    */
   commit = "";
 
   /**
-   * @generated from field: neoshowcase.protobuf.Build.BuildStatus status = 3;
+   * @generated from field: neoshowcase.protobuf.Build.BuildStatus status = 4;
    */
   status = Build_BuildStatus.QUEUED;
 
   /**
-   * @generated from field: google.protobuf.Timestamp queued_at = 4;
+   * @generated from field: google.protobuf.Timestamp queued_at = 5;
    */
   queuedAt?: Timestamp;
 
   /**
-   * @generated from field: neoshowcase.protobuf.NullTimestamp started_at = 5;
+   * @generated from field: neoshowcase.protobuf.NullTimestamp started_at = 6;
    */
   startedAt?: NullTimestamp;
 
   /**
-   * @generated from field: neoshowcase.protobuf.NullTimestamp updated_at = 6;
+   * @generated from field: neoshowcase.protobuf.NullTimestamp updated_at = 7;
    */
   updatedAt?: NullTimestamp;
 
   /**
-   * @generated from field: neoshowcase.protobuf.NullTimestamp finished_at = 7;
+   * @generated from field: neoshowcase.protobuf.NullTimestamp finished_at = 8;
    */
   finishedAt?: NullTimestamp;
 
   /**
-   * @generated from field: bool retriable = 8;
+   * @generated from field: bool retriable = 9;
    */
   retriable = false;
 
   /**
-   * @generated from field: repeated neoshowcase.protobuf.Artifact artifacts = 9;
+   * @generated from field: repeated neoshowcase.protobuf.Artifact artifacts = 10;
    */
   artifacts: Artifact[] = [];
 
@@ -1518,14 +1523,15 @@ export class Build extends Message<Build> {
   static readonly typeName = "neoshowcase.protobuf.Build";
   static readonly fields: FieldList = proto3.util.newFieldList(() => [
     { no: 1, name: "id", kind: "scalar", T: 9 /* ScalarType.STRING */ },
-    { no: 2, name: "commit", kind: "scalar", T: 9 /* ScalarType.STRING */ },
-    { no: 3, name: "status", kind: "enum", T: proto3.getEnumType(Build_BuildStatus) },
-    { no: 4, name: "queued_at", kind: "message", T: Timestamp },
-    { no: 5, name: "started_at", kind: "message", T: NullTimestamp },
-    { no: 6, name: "updated_at", kind: "message", T: NullTimestamp },
-    { no: 7, name: "finished_at", kind: "message", T: NullTimestamp },
-    { no: 8, name: "retriable", kind: "scalar", T: 8 /* ScalarType.BOOL */ },
-    { no: 9, name: "artifacts", kind: "message", T: Artifact, repeated: true },
+    { no: 2, name: "application_id", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+    { no: 3, name: "commit", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+    { no: 4, name: "status", kind: "enum", T: proto3.getEnumType(Build_BuildStatus) },
+    { no: 5, name: "queued_at", kind: "message", T: Timestamp },
+    { no: 6, name: "started_at", kind: "message", T: NullTimestamp },
+    { no: 7, name: "updated_at", kind: "message", T: NullTimestamp },
+    { no: 8, name: "finished_at", kind: "message", T: NullTimestamp },
+    { no: 9, name: "retriable", kind: "scalar", T: 8 /* ScalarType.BOOL */ },
+    { no: 10, name: "artifacts", kind: "message", T: Artifact, repeated: true },
   ]);
 
   static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): Build {
@@ -2784,6 +2790,51 @@ export class ApplicationIdRequest extends Message<ApplicationIdRequest> {
 
   static equals(a: ApplicationIdRequest | PlainMessage<ApplicationIdRequest> | undefined, b: ApplicationIdRequest | PlainMessage<ApplicationIdRequest> | undefined): boolean {
     return proto3.util.equals(ApplicationIdRequest, a, b);
+  }
+}
+
+/**
+ * @generated from message neoshowcase.protobuf.GetAllBuildsRequest
+ */
+export class GetAllBuildsRequest extends Message<GetAllBuildsRequest> {
+  /**
+   * zero-indexed page
+   *
+   * @generated from field: int32 page = 1;
+   */
+  page = 0;
+
+  /**
+   * @generated from field: int32 limit = 2;
+   */
+  limit = 0;
+
+  constructor(data?: PartialMessage<GetAllBuildsRequest>) {
+    super();
+    proto3.util.initPartial(data, this);
+  }
+
+  static readonly runtime: typeof proto3 = proto3;
+  static readonly typeName = "neoshowcase.protobuf.GetAllBuildsRequest";
+  static readonly fields: FieldList = proto3.util.newFieldList(() => [
+    { no: 1, name: "page", kind: "scalar", T: 5 /* ScalarType.INT32 */ },
+    { no: 2, name: "limit", kind: "scalar", T: 5 /* ScalarType.INT32 */ },
+  ]);
+
+  static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): GetAllBuildsRequest {
+    return new GetAllBuildsRequest().fromBinary(bytes, options);
+  }
+
+  static fromJson(jsonValue: JsonValue, options?: Partial<JsonReadOptions>): GetAllBuildsRequest {
+    return new GetAllBuildsRequest().fromJson(jsonValue, options);
+  }
+
+  static fromJsonString(jsonString: string, options?: Partial<JsonReadOptions>): GetAllBuildsRequest {
+    return new GetAllBuildsRequest().fromJsonString(jsonString, options);
+  }
+
+  static equals(a: GetAllBuildsRequest | PlainMessage<GetAllBuildsRequest> | undefined, b: GetAllBuildsRequest | PlainMessage<GetAllBuildsRequest> | undefined): boolean {
+    return proto3.util.equals(GetAllBuildsRequest, a, b);
   }
 }
 

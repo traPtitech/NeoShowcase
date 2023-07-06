@@ -51,6 +51,19 @@ func (r *buildRepository) buildMods(cond domain.GetBuildCondition) []qm.QueryMod
 	if cond.Retriable.Valid {
 		mods = append(mods, models.BuildWhere.Retriable.EQ(cond.Retriable.V))
 	}
+	if cond.Offset.Valid {
+		mods = append(mods, qm.Offset(cond.Offset.V))
+	}
+	if cond.Limit.Valid {
+		mods = append(mods, qm.Limit(cond.Limit.V))
+	}
+	if cond.SortAsc.Valid {
+		if cond.SortAsc.V {
+			mods = append(mods, qm.OrderBy(models.BuildTableColumns.QueuedAt+" ASC"))
+		} else {
+			mods = append(mods, qm.OrderBy(models.BuildTableColumns.QueuedAt+" DESC"))
+		}
+	}
 	return mods
 }
 
