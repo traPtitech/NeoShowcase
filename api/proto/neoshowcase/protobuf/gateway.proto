@@ -226,14 +226,15 @@ message Build {
     SKIPPED = 5;
   }
   string id = 1;
-  string commit = 2;
-  BuildStatus status = 3;
-  google.protobuf.Timestamp queued_at = 4;
-  neoshowcase.protobuf.NullTimestamp started_at = 5;
-  neoshowcase.protobuf.NullTimestamp updated_at = 6;
-  neoshowcase.protobuf.NullTimestamp finished_at = 7;
-  bool retriable = 8;
-  repeated Artifact artifacts = 9;
+  string application_id = 2;
+  string commit = 3;
+  BuildStatus status = 4;
+  google.protobuf.Timestamp queued_at = 5;
+  neoshowcase.protobuf.NullTimestamp started_at = 6;
+  neoshowcase.protobuf.NullTimestamp updated_at = 7;
+  neoshowcase.protobuf.NullTimestamp finished_at = 8;
+  bool retriable = 9;
+  repeated Artifact artifacts = 10;
 }
 
 message BuildLog {
@@ -380,6 +381,12 @@ message ApplicationIdRequest {
   string id = 1;
 }
 
+message GetAllBuildsRequest {
+  // zero-indexed page
+  int32 page = 1;
+  int32 limit = 2;
+}
+
 message BuildIdRequest {
   string build_id = 1;
 }
@@ -480,6 +487,8 @@ service APIService {
 
   // Application builds
 
+  // GetAllBuilds すべてのアプリケーションのビルドキューを取得します
+  rpc GetAllBuilds(GetAllBuildsRequest) returns (GetBuildsResponse);
   // GetBuilds アプリのビルド一覧を取得します
   rpc GetBuilds(ApplicationIdRequest) returns (GetBuildsResponse);
   // GetBuild アプリのビルド情報を取得します

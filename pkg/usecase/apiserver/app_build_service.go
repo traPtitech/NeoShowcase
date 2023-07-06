@@ -11,6 +11,14 @@ import (
 	"github.com/traPtitech/neoshowcase/pkg/util/optional"
 )
 
+func (s *Service) GetAllBuilds(ctx context.Context, page, limit int) ([]*domain.Build, error) {
+	return s.buildRepo.GetBuilds(ctx, domain.GetBuildCondition{
+		Offset:  optional.From(page * limit),
+		Limit:   optional.From(limit),
+		SortAsc: optional.From(false), // desc
+	})
+}
+
 func (s *Service) GetBuilds(ctx context.Context, applicationID string) ([]*domain.Build, error) {
 	return s.buildRepo.GetBuilds(ctx, domain.GetBuildCondition{ApplicationID: optional.From(applicationID)})
 }

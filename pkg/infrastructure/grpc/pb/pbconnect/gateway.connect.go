@@ -103,6 +103,8 @@ const (
 	// APIServiceStopApplicationProcedure is the fully-qualified name of the APIService's
 	// StopApplication RPC.
 	APIServiceStopApplicationProcedure = "/neoshowcase.protobuf.APIService/StopApplication"
+	// APIServiceGetAllBuildsProcedure is the fully-qualified name of the APIService's GetAllBuilds RPC.
+	APIServiceGetAllBuildsProcedure = "/neoshowcase.protobuf.APIService/GetAllBuilds"
 	// APIServiceGetBuildsProcedure is the fully-qualified name of the APIService's GetBuilds RPC.
 	APIServiceGetBuildsProcedure = "/neoshowcase.protobuf.APIService/GetBuilds"
 	// APIServiceGetBuildProcedure is the fully-qualified name of the APIService's GetBuild RPC.
@@ -174,6 +176,8 @@ type APIServiceClient interface {
 	StartApplication(context.Context, *connect_go.Request[pb.ApplicationIdRequest]) (*connect_go.Response[emptypb.Empty], error)
 	// StopApplication アプリをシャットダウンします
 	StopApplication(context.Context, *connect_go.Request[pb.ApplicationIdRequest]) (*connect_go.Response[emptypb.Empty], error)
+	// GetAllBuilds すべてのアプリケーションのビルドキューを取得します
+	GetAllBuilds(context.Context, *connect_go.Request[pb.GetAllBuildsRequest]) (*connect_go.Response[pb.GetBuildsResponse], error)
 	// GetBuilds アプリのビルド一覧を取得します
 	GetBuilds(context.Context, *connect_go.Request[pb.ApplicationIdRequest]) (*connect_go.Response[pb.GetBuildsResponse], error)
 	// GetBuild アプリのビルド情報を取得します
@@ -325,6 +329,11 @@ func NewAPIServiceClient(httpClient connect_go.HTTPClient, baseURL string, opts 
 			baseURL+APIServiceStopApplicationProcedure,
 			opts...,
 		),
+		getAllBuilds: connect_go.NewClient[pb.GetAllBuildsRequest, pb.GetBuildsResponse](
+			httpClient,
+			baseURL+APIServiceGetAllBuildsProcedure,
+			opts...,
+		),
 		getBuilds: connect_go.NewClient[pb.ApplicationIdRequest, pb.GetBuildsResponse](
 			httpClient,
 			baseURL+APIServiceGetBuildsProcedure,
@@ -390,6 +399,7 @@ type aPIServiceClient struct {
 	getOutputStream   *connect_go.Client[pb.ApplicationIdRequest, pb.ApplicationOutput]
 	startApplication  *connect_go.Client[pb.ApplicationIdRequest, emptypb.Empty]
 	stopApplication   *connect_go.Client[pb.ApplicationIdRequest, emptypb.Empty]
+	getAllBuilds      *connect_go.Client[pb.GetAllBuildsRequest, pb.GetBuildsResponse]
 	getBuilds         *connect_go.Client[pb.ApplicationIdRequest, pb.GetBuildsResponse]
 	getBuild          *connect_go.Client[pb.BuildIdRequest, pb.Build]
 	retryCommitBuild  *connect_go.Client[pb.RetryCommitBuildRequest, emptypb.Empty]
@@ -524,6 +534,11 @@ func (c *aPIServiceClient) StopApplication(ctx context.Context, req *connect_go.
 	return c.stopApplication.CallUnary(ctx, req)
 }
 
+// GetAllBuilds calls neoshowcase.protobuf.APIService.GetAllBuilds.
+func (c *aPIServiceClient) GetAllBuilds(ctx context.Context, req *connect_go.Request[pb.GetAllBuildsRequest]) (*connect_go.Response[pb.GetBuildsResponse], error) {
+	return c.getAllBuilds.CallUnary(ctx, req)
+}
+
 // GetBuilds calls neoshowcase.protobuf.APIService.GetBuilds.
 func (c *aPIServiceClient) GetBuilds(ctx context.Context, req *connect_go.Request[pb.ApplicationIdRequest]) (*connect_go.Response[pb.GetBuildsResponse], error) {
 	return c.getBuilds.CallUnary(ctx, req)
@@ -611,6 +626,8 @@ type APIServiceHandler interface {
 	StartApplication(context.Context, *connect_go.Request[pb.ApplicationIdRequest]) (*connect_go.Response[emptypb.Empty], error)
 	// StopApplication アプリをシャットダウンします
 	StopApplication(context.Context, *connect_go.Request[pb.ApplicationIdRequest]) (*connect_go.Response[emptypb.Empty], error)
+	// GetAllBuilds すべてのアプリケーションのビルドキューを取得します
+	GetAllBuilds(context.Context, *connect_go.Request[pb.GetAllBuildsRequest]) (*connect_go.Response[pb.GetBuildsResponse], error)
 	// GetBuilds アプリのビルド一覧を取得します
 	GetBuilds(context.Context, *connect_go.Request[pb.ApplicationIdRequest]) (*connect_go.Response[pb.GetBuildsResponse], error)
 	// GetBuild アプリのビルド情報を取得します
@@ -758,6 +775,11 @@ func NewAPIServiceHandler(svc APIServiceHandler, opts ...connect_go.HandlerOptio
 		svc.StopApplication,
 		opts...,
 	)
+	aPIServiceGetAllBuildsHandler := connect_go.NewUnaryHandler(
+		APIServiceGetAllBuildsProcedure,
+		svc.GetAllBuilds,
+		opts...,
+	)
 	aPIServiceGetBuildsHandler := connect_go.NewUnaryHandler(
 		APIServiceGetBuildsProcedure,
 		svc.GetBuilds,
@@ -845,6 +867,8 @@ func NewAPIServiceHandler(svc APIServiceHandler, opts ...connect_go.HandlerOptio
 			aPIServiceStartApplicationHandler.ServeHTTP(w, r)
 		case APIServiceStopApplicationProcedure:
 			aPIServiceStopApplicationHandler.ServeHTTP(w, r)
+		case APIServiceGetAllBuildsProcedure:
+			aPIServiceGetAllBuildsHandler.ServeHTTP(w, r)
 		case APIServiceGetBuildsProcedure:
 			aPIServiceGetBuildsHandler.ServeHTTP(w, r)
 		case APIServiceGetBuildProcedure:
@@ -966,6 +990,10 @@ func (UnimplementedAPIServiceHandler) StartApplication(context.Context, *connect
 
 func (UnimplementedAPIServiceHandler) StopApplication(context.Context, *connect_go.Request[pb.ApplicationIdRequest]) (*connect_go.Response[emptypb.Empty], error) {
 	return nil, connect_go.NewError(connect_go.CodeUnimplemented, errors.New("neoshowcase.protobuf.APIService.StopApplication is not implemented"))
+}
+
+func (UnimplementedAPIServiceHandler) GetAllBuilds(context.Context, *connect_go.Request[pb.GetAllBuildsRequest]) (*connect_go.Response[pb.GetBuildsResponse], error) {
+	return nil, connect_go.NewError(connect_go.CodeUnimplemented, errors.New("neoshowcase.protobuf.APIService.GetAllBuilds is not implemented"))
 }
 
 func (UnimplementedAPIServiceHandler) GetBuilds(context.Context, *connect_go.Request[pb.ApplicationIdRequest]) (*connect_go.Response[pb.GetBuildsResponse], error) {
