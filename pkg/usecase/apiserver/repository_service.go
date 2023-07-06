@@ -96,6 +96,14 @@ func (s *Service) GetRepository(ctx context.Context, id string) (*domain.Reposit
 	return handleRepoError(s.gitRepo.GetRepository(ctx, id))
 }
 
+func (s *Service) GetRepositoryRefs(ctx context.Context, id string) (map[string]string, error) {
+	repo, err := s.gitRepo.GetRepository(ctx, id)
+	if err != nil {
+		return nil, err
+	}
+	return repo.ResolveRefs(ctx, s.fallbackKey)
+}
+
 type UpdateRepositoryArgs struct {
 	Name     optional.Of[string]
 	URL      optional.Of[string]

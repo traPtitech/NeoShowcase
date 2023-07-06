@@ -391,6 +391,15 @@ message RetryCommitBuildRequest {
   string commit = 2;
 }
 
+message GitRef {
+  string ref_name = 1;
+  string commit = 2;
+}
+
+message GetRepositoryRefsResponse {
+  repeated GitRef refs = 1;
+}
+
 service APIService {
   // General / System
 
@@ -420,6 +429,8 @@ service APIService {
   rpc GetRepositories(GetRepositoriesRequest) returns (GetRepositoriesResponse);
   // GetRepository リポジトリを取得します
   rpc GetRepository(RepositoryIdRequest) returns (Repository);
+  // GetRepositoryRefs リポジトリの現在の有効なref一覧を取得します
+  rpc GetRepositoryRefs(RepositoryIdRequest) returns (GetRepositoryRefsResponse);
   // UpdateRepository リポジトリ情報を更新します
   rpc UpdateRepository(UpdateRepositoryRequest) returns (google.protobuf.Empty);
   // RefreshRepository 自動更新間隔を待たず、手動でリモートリポジトリの最新情報に追従させます

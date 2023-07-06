@@ -2990,3 +2990,83 @@ export class RetryCommitBuildRequest extends Message<RetryCommitBuildRequest> {
   }
 }
 
+/**
+ * @generated from message neoshowcase.protobuf.GitRef
+ */
+export class GitRef extends Message<GitRef> {
+  /**
+   * @generated from field: string ref_name = 1;
+   */
+  refName = "";
+
+  /**
+   * @generated from field: string commit = 2;
+   */
+  commit = "";
+
+  constructor(data?: PartialMessage<GitRef>) {
+    super();
+    proto3.util.initPartial(data, this);
+  }
+
+  static readonly runtime: typeof proto3 = proto3;
+  static readonly typeName = "neoshowcase.protobuf.GitRef";
+  static readonly fields: FieldList = proto3.util.newFieldList(() => [
+    { no: 1, name: "ref_name", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+    { no: 2, name: "commit", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+  ]);
+
+  static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): GitRef {
+    return new GitRef().fromBinary(bytes, options);
+  }
+
+  static fromJson(jsonValue: JsonValue, options?: Partial<JsonReadOptions>): GitRef {
+    return new GitRef().fromJson(jsonValue, options);
+  }
+
+  static fromJsonString(jsonString: string, options?: Partial<JsonReadOptions>): GitRef {
+    return new GitRef().fromJsonString(jsonString, options);
+  }
+
+  static equals(a: GitRef | PlainMessage<GitRef> | undefined, b: GitRef | PlainMessage<GitRef> | undefined): boolean {
+    return proto3.util.equals(GitRef, a, b);
+  }
+}
+
+/**
+ * @generated from message neoshowcase.protobuf.GetRepositoryRefsResponse
+ */
+export class GetRepositoryRefsResponse extends Message<GetRepositoryRefsResponse> {
+  /**
+   * @generated from field: repeated neoshowcase.protobuf.GitRef refs = 1;
+   */
+  refs: GitRef[] = [];
+
+  constructor(data?: PartialMessage<GetRepositoryRefsResponse>) {
+    super();
+    proto3.util.initPartial(data, this);
+  }
+
+  static readonly runtime: typeof proto3 = proto3;
+  static readonly typeName = "neoshowcase.protobuf.GetRepositoryRefsResponse";
+  static readonly fields: FieldList = proto3.util.newFieldList(() => [
+    { no: 1, name: "refs", kind: "message", T: GitRef, repeated: true },
+  ]);
+
+  static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): GetRepositoryRefsResponse {
+    return new GetRepositoryRefsResponse().fromBinary(bytes, options);
+  }
+
+  static fromJson(jsonValue: JsonValue, options?: Partial<JsonReadOptions>): GetRepositoryRefsResponse {
+    return new GetRepositoryRefsResponse().fromJson(jsonValue, options);
+  }
+
+  static fromJsonString(jsonString: string, options?: Partial<JsonReadOptions>): GetRepositoryRefsResponse {
+    return new GetRepositoryRefsResponse().fromJsonString(jsonString, options);
+  }
+
+  static equals(a: GetRepositoryRefsResponse | PlainMessage<GetRepositoryRefsResponse> | undefined, b: GetRepositoryRefsResponse | PlainMessage<GetRepositoryRefsResponse> | undefined): boolean {
+    return proto3.util.equals(GetRepositoryRefsResponse, a, b);
+  }
+}
+

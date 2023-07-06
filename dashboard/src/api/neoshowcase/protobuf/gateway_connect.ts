@@ -4,7 +4,7 @@
 // @ts-nocheck
 
 import { Empty, MethodKind } from "@bufbuild/protobuf";
-import { Application, ApplicationEnvVars, ApplicationIdRequest, ApplicationOutput, ArtifactContent, ArtifactIdRequest, Build, BuildIdRequest, BuildLog, CreateApplicationRequest, CreateRepositoryRequest, CreateUserKeyRequest, DeleteApplicationEnvVarRequest, DeleteUserKeyRequest, GenerateKeyPairResponse, GetApplicationsRequest, GetApplicationsResponse, GetBuildsResponse, GetRepositoriesRequest, GetRepositoriesResponse, GetUserKeysResponse, GetUsersResponse, Repository, RepositoryIdRequest, RetryCommitBuildRequest, SetApplicationEnvVarRequest, SystemInfo, UpdateApplicationRequest, UpdateRepositoryRequest, User, UserKey } from "./gateway_pb.js";
+import { Application, ApplicationEnvVars, ApplicationIdRequest, ApplicationOutput, ArtifactContent, ArtifactIdRequest, Build, BuildIdRequest, BuildLog, CreateApplicationRequest, CreateRepositoryRequest, CreateUserKeyRequest, DeleteApplicationEnvVarRequest, DeleteUserKeyRequest, GenerateKeyPairResponse, GetApplicationsRequest, GetApplicationsResponse, GetBuildsResponse, GetRepositoriesRequest, GetRepositoriesResponse, GetRepositoryRefsResponse, GetUserKeysResponse, GetUsersResponse, Repository, RepositoryIdRequest, RetryCommitBuildRequest, SetApplicationEnvVarRequest, SystemInfo, UpdateApplicationRequest, UpdateRepositoryRequest, User, UserKey } from "./gateway_pb.js";
 
 /**
  * General / System
@@ -122,6 +122,17 @@ export const APIService = {
       name: "GetRepository",
       I: RepositoryIdRequest,
       O: Repository,
+      kind: MethodKind.Unary,
+    },
+    /**
+     * GetRepositoryRefs リポジトリの現在の有効なref一覧を取得します
+     *
+     * @generated from rpc neoshowcase.protobuf.APIService.GetRepositoryRefs
+     */
+    getRepositoryRefs: {
+      name: "GetRepositoryRefs",
+      I: RepositoryIdRequest,
+      O: GetRepositoryRefsResponse,
       kind: MethodKind.Unary,
     },
     /**

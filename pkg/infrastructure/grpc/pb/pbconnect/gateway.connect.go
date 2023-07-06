@@ -61,6 +61,9 @@ const (
 	// APIServiceGetRepositoryProcedure is the fully-qualified name of the APIService's GetRepository
 	// RPC.
 	APIServiceGetRepositoryProcedure = "/neoshowcase.protobuf.APIService/GetRepository"
+	// APIServiceGetRepositoryRefsProcedure is the fully-qualified name of the APIService's
+	// GetRepositoryRefs RPC.
+	APIServiceGetRepositoryRefsProcedure = "/neoshowcase.protobuf.APIService/GetRepositoryRefs"
 	// APIServiceUpdateRepositoryProcedure is the fully-qualified name of the APIService's
 	// UpdateRepository RPC.
 	APIServiceUpdateRepositoryProcedure = "/neoshowcase.protobuf.APIService/UpdateRepository"
@@ -141,6 +144,8 @@ type APIServiceClient interface {
 	GetRepositories(context.Context, *connect_go.Request[pb.GetRepositoriesRequest]) (*connect_go.Response[pb.GetRepositoriesResponse], error)
 	// GetRepository リポジトリを取得します
 	GetRepository(context.Context, *connect_go.Request[pb.RepositoryIdRequest]) (*connect_go.Response[pb.Repository], error)
+	// GetRepositoryRefs リポジトリの現在の有効なref一覧を取得します
+	GetRepositoryRefs(context.Context, *connect_go.Request[pb.RepositoryIdRequest]) (*connect_go.Response[pb.GetRepositoryRefsResponse], error)
 	// UpdateRepository リポジトリ情報を更新します
 	UpdateRepository(context.Context, *connect_go.Request[pb.UpdateRepositoryRequest]) (*connect_go.Response[emptypb.Empty], error)
 	// RefreshRepository 自動更新間隔を待たず、手動でリモートリポジトリの最新情報に追従させます
@@ -243,6 +248,11 @@ func NewAPIServiceClient(httpClient connect_go.HTTPClient, baseURL string, opts 
 		getRepository: connect_go.NewClient[pb.RepositoryIdRequest, pb.Repository](
 			httpClient,
 			baseURL+APIServiceGetRepositoryProcedure,
+			opts...,
+		),
+		getRepositoryRefs: connect_go.NewClient[pb.RepositoryIdRequest, pb.GetRepositoryRefsResponse](
+			httpClient,
+			baseURL+APIServiceGetRepositoryRefsProcedure,
 			opts...,
 		),
 		updateRepository: connect_go.NewClient[pb.UpdateRepositoryRequest, emptypb.Empty](
@@ -365,6 +375,7 @@ type aPIServiceClient struct {
 	createRepository  *connect_go.Client[pb.CreateRepositoryRequest, pb.Repository]
 	getRepositories   *connect_go.Client[pb.GetRepositoriesRequest, pb.GetRepositoriesResponse]
 	getRepository     *connect_go.Client[pb.RepositoryIdRequest, pb.Repository]
+	getRepositoryRefs *connect_go.Client[pb.RepositoryIdRequest, pb.GetRepositoryRefsResponse]
 	updateRepository  *connect_go.Client[pb.UpdateRepositoryRequest, emptypb.Empty]
 	refreshRepository *connect_go.Client[pb.RepositoryIdRequest, emptypb.Empty]
 	deleteRepository  *connect_go.Client[pb.RepositoryIdRequest, emptypb.Empty]
@@ -436,6 +447,11 @@ func (c *aPIServiceClient) GetRepositories(ctx context.Context, req *connect_go.
 // GetRepository calls neoshowcase.protobuf.APIService.GetRepository.
 func (c *aPIServiceClient) GetRepository(ctx context.Context, req *connect_go.Request[pb.RepositoryIdRequest]) (*connect_go.Response[pb.Repository], error) {
 	return c.getRepository.CallUnary(ctx, req)
+}
+
+// GetRepositoryRefs calls neoshowcase.protobuf.APIService.GetRepositoryRefs.
+func (c *aPIServiceClient) GetRepositoryRefs(ctx context.Context, req *connect_go.Request[pb.RepositoryIdRequest]) (*connect_go.Response[pb.GetRepositoryRefsResponse], error) {
+	return c.getRepositoryRefs.CallUnary(ctx, req)
 }
 
 // UpdateRepository calls neoshowcase.protobuf.APIService.UpdateRepository.
@@ -565,6 +581,8 @@ type APIServiceHandler interface {
 	GetRepositories(context.Context, *connect_go.Request[pb.GetRepositoriesRequest]) (*connect_go.Response[pb.GetRepositoriesResponse], error)
 	// GetRepository リポジトリを取得します
 	GetRepository(context.Context, *connect_go.Request[pb.RepositoryIdRequest]) (*connect_go.Response[pb.Repository], error)
+	// GetRepositoryRefs リポジトリの現在の有効なref一覧を取得します
+	GetRepositoryRefs(context.Context, *connect_go.Request[pb.RepositoryIdRequest]) (*connect_go.Response[pb.GetRepositoryRefsResponse], error)
 	// UpdateRepository リポジトリ情報を更新します
 	UpdateRepository(context.Context, *connect_go.Request[pb.UpdateRepositoryRequest]) (*connect_go.Response[emptypb.Empty], error)
 	// RefreshRepository 自動更新間隔を待たず、手動でリモートリポジトリの最新情報に追従させます
@@ -664,6 +682,11 @@ func NewAPIServiceHandler(svc APIServiceHandler, opts ...connect_go.HandlerOptio
 	mux.Handle(APIServiceGetRepositoryProcedure, connect_go.NewUnaryHandler(
 		APIServiceGetRepositoryProcedure,
 		svc.GetRepository,
+		opts...,
+	))
+	mux.Handle(APIServiceGetRepositoryRefsProcedure, connect_go.NewUnaryHandler(
+		APIServiceGetRepositoryRefsProcedure,
+		svc.GetRepositoryRefs,
 		opts...,
 	))
 	mux.Handle(APIServiceUpdateRepositoryProcedure, connect_go.NewUnaryHandler(
@@ -815,6 +838,10 @@ func (UnimplementedAPIServiceHandler) GetRepositories(context.Context, *connect_
 
 func (UnimplementedAPIServiceHandler) GetRepository(context.Context, *connect_go.Request[pb.RepositoryIdRequest]) (*connect_go.Response[pb.Repository], error) {
 	return nil, connect_go.NewError(connect_go.CodeUnimplemented, errors.New("neoshowcase.protobuf.APIService.GetRepository is not implemented"))
+}
+
+func (UnimplementedAPIServiceHandler) GetRepositoryRefs(context.Context, *connect_go.Request[pb.RepositoryIdRequest]) (*connect_go.Response[pb.GetRepositoryRefsResponse], error) {
+	return nil, connect_go.NewError(connect_go.CodeUnimplemented, errors.New("neoshowcase.protobuf.APIService.GetRepositoryRefs is not implemented"))
 }
 
 func (UnimplementedAPIServiceHandler) UpdateRepository(context.Context, *connect_go.Request[pb.UpdateRepositoryRequest]) (*connect_go.Response[emptypb.Empty], error) {

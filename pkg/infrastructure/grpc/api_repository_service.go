@@ -4,6 +4,8 @@ import (
 	"context"
 
 	"github.com/bufbuild/connect-go"
+	"github.com/samber/lo"
+	"golang.org/x/exp/slices"
 	"google.golang.org/protobuf/types/known/emptypb"
 
 	"github.com/traPtitech/neoshowcase/pkg/infrastructure/grpc/pb"
@@ -44,6 +46,22 @@ func (s *APIService) GetRepository(ctx context.Context, req *connect.Request[pb.
 		return nil, handleUseCaseError(err)
 	}
 	res := connect.NewResponse(pbconvert.ToPBRepository(repository))
+	return res, nil
+}
+
+func (s *APIService) GetRepositoryRefs(ctx context.Context, req *connect.Request[pb.RepositoryIdRequest]) (*connect.Response[pb.GetRepositoryRefsResponse], error) {
+	refs, err := s.svc.GetRepositoryRefs(ctx, req.Msg.RepositoryId)
+	if err != nil {
+		return nil, handleUseCaseError(err)
+	}
+	pbRefs := lo.MapToSlice(refs, func(ref, commit string) *pb.GitRef {
+		return &pb.GitRef{
+			RefName: ref,
+			Commit:  commit,
+		}
+	})
+	slices.SortFunc(pbRefs, ds.LessFunc(func(r *pb.GitRef) string { return r.RefName }))
+	res := connect.NewResponse(&pb.GetRepositoryRefsResponse{Refs: pbRefs})
 	return res, nil
 }
 
