@@ -136,14 +136,17 @@ export const ContainerLog: Component<ContainerLogProps> = (props) => {
 
   return (
     <LogContainer ref={logRef} overflowX='scroll' onScroll={onScroll}>
-      <LoadMoreContainer>
-        Loaded until {loadedUntil().toDate().toLocaleString()}
-        <Show when={!loadDisabled()} fallback={<span>(reached load limit)</span>}>
-          <Show when={!loading()} fallback={<span>Loading...</span>}>
-            <LoadMoreButton onClick={load}>Load more</LoadMoreButton>
+      {/* cannot distinguish zero log and loading (but should be enough for most use-cases) */}
+      <Show when={streamedLog().length > 0}>
+        <LoadMoreContainer>
+          Loaded until {loadedUntil().toDate().toLocaleString()}
+          <Show when={!loadDisabled()} fallback={<span>(reached load limit)</span>}>
+            <Show when={!loading()} fallback={<span>Loading...</span>}>
+              <LoadMoreButton onClick={load}>Load more</LoadMoreButton>
+            </Show>
           </Show>
-        </Show>
-      </LoadMoreContainer>
+        </LoadMoreContainer>
+      </Show>
       <For each={olderLogs()}>{(log) => <code innerHTML={toWithAnsi(log.log)} />}</For>
       <For each={streamedLog()}>{(log) => <code innerHTML={toWithAnsi(log.log)} />}</For>
     </LogContainer>
