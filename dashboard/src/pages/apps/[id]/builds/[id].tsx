@@ -19,13 +19,10 @@ import { Button } from '/@/components/Button'
 import { DiffHuman, durationHuman, shortSha } from '/@/libs/format'
 import { BuildStatusIcon } from '/@/components/BuildStatusIcon'
 import { buildStatusStr } from '/@/libs/application'
-import { concatBuffers, toUTF8WithAnsi } from '/@/libs/buffers'
-import { sleep } from '/@/libs/sleep'
-import { LogContainer } from '/@/components/Log'
-import { Code, ConnectError } from '@bufbuild/connect'
 import { Build_BuildStatus } from '/@/api/neoshowcase/protobuf/gateway_pb'
 import { styled } from '@macaron-css/solid'
 import { ArtifactRow } from '/@/components/ArtifactRow'
+import { BuildLog } from '/@/components/BuildLog'
 
 const ArtifactsContainer = styled('div', {
   base: {
@@ -52,60 +49,6 @@ export default () => {
   const loaded = () => !!(app() && repo() && build())
 
   const buildFinished = () => build()?.finishedAt.valid
-  const [buildLog] = createResource(
-    () => buildFinished() && build()?.id,
-    (id) => client.getBuildLog({ buildId: id }),
-  )
-  const logStreamAbort = new AbortController()
-  const [buildLogStream] = createResource(
-    () => !buildFinished() && build()?.id,
-    (id) => client.getBuildLogStream({ buildId: id }, { signal: logStreamAbort.signal }),
-  )
-  const [streamedLog, setStreamedLog] = createSignal(new Uint8Array())
-  createEffect(() => {
-    const stream = buildLogStream()
-    if (!stream) return
-
-    const iterate = async () => {
-      try {
-        for await (const log of stream) {
-          setStreamedLog((prev) => concatBuffers(prev, log.log))
-        }
-      } catch (err) {
-        // ignore abort error
-        const isAbortErr = err instanceof ConnectError && err.code === Code.Canceled
-        if (!isAbortErr) {
-          console.trace(err)
-          return
-        }
-      }
-      await sleep(1000)
-      await refetchBuild() // refetch build on stream end
-    }
-    void iterate()
-  })
-  onCleanup(() => {
-    logStreamAbort.abort()
-  })
-
-  let logRef: Ref<HTMLDivElement>
-  let streamLogRef: Ref<HTMLDivElement>
-  createEffect(() => {
-    if (!buildLog()) return
-    const ref = logRef as HTMLDivElement
-    if (!ref) return
-    setTimeout(() => {
-      ref.scrollTop = ref.scrollHeight
-    })
-  })
-  createEffect(() => {
-    if (!streamedLog()) return
-    const ref = streamLogRef as HTMLDivElement
-    if (!ref) return
-    setTimeout(() => {
-      ref.scrollTop = ref.scrollHeight
-    })
-  })
 
   const retryBuild = async () => {
     await client.retryCommitBuild({ applicationId: params.id, commit: build().commit })
@@ -213,12 +156,7 @@ export default () => {
           <CardsRow>
             <Card>
               <CardTitle>Build Log</CardTitle>
-              <Show when={buildLog()}>
-                <LogContainer innerHTML={toUTF8WithAnsi(buildLog().log)} ref={logRef} />
-              </Show>
-              <Show when={!buildLog() && buildLogStream()}>
-                <LogContainer innerHTML={toUTF8WithAnsi(streamedLog())} ref={streamLogRef} />
-              </Show>
+              <BuildLog buildID={build().id} finished={buildFinished()} refetchBuild={refetchBuild} />
             </Card>
           </CardsRow>
         </CardRowsContainer>

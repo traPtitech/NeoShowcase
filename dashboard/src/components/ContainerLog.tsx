@@ -55,10 +55,8 @@ export const ContainerLog: Component<ContainerLogProps> = (props) => {
     }
   })
 
-  const [atBottom, setAtBottom] = createSignal(false)
-  const onScroll = (e: UIEvent & {currentTarget: HTMLElement, target: Element}) => {
-    setAtBottom(isScrolledToBottom(e.target))
-  }
+  const [atBottom, setAtBottom] = createSignal(true)
+  const onScroll = (e: { target: Element }) => setAtBottom(isScrolledToBottom(e.target))
 
   return (
     <LogContainer ref={logRef} overflowX='scroll' onScroll={onScroll}>
