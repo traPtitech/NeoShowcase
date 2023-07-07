@@ -216,6 +216,10 @@ message ApplicationOutput {
   string log = 2;
 }
 
+message ApplicationOutputs {
+  repeated ApplicationOutput outputs = 1;
+}
+
 message Build {
   enum BuildStatus {
     QUEUED = 0;
@@ -410,6 +414,11 @@ message DeleteApplicationEnvVarRequest {
   string key = 2;
 }
 
+message GetOutputRequest {
+  string application_id = 1;
+  google.protobuf.Timestamp before = 2;
+}
+
 message RetryCommitBuildRequest {
   string application_id = 1;
   string commit = 2;
@@ -478,6 +487,8 @@ service APIService {
   rpc SetEnvVar(SetApplicationEnvVarRequest) returns (google.protobuf.Empty);
   // DeleteEnvVar アプリの環境変数を削除します システムによって設定された環境変数は削除できません
   rpc DeleteEnvVar(DeleteApplicationEnvVarRequest) returns (google.protobuf.Empty);
+  // GetOutput アプリの出力を取得します
+  rpc GetOutput(GetOutputRequest) returns (ApplicationOutputs);
   // GetOutputStream アプリの出力をストリーム形式で取得します
   rpc GetOutputStream(ApplicationIdRequest) returns (stream ApplicationOutput);
   // StartApplication アプリを起動します 起動中の場合は再起動します

@@ -1461,6 +1461,43 @@ export class ApplicationOutput extends Message<ApplicationOutput> {
 }
 
 /**
+ * @generated from message neoshowcase.protobuf.ApplicationOutputs
+ */
+export class ApplicationOutputs extends Message<ApplicationOutputs> {
+  /**
+   * @generated from field: repeated neoshowcase.protobuf.ApplicationOutput outputs = 1;
+   */
+  outputs: ApplicationOutput[] = [];
+
+  constructor(data?: PartialMessage<ApplicationOutputs>) {
+    super();
+    proto3.util.initPartial(data, this);
+  }
+
+  static readonly runtime: typeof proto3 = proto3;
+  static readonly typeName = "neoshowcase.protobuf.ApplicationOutputs";
+  static readonly fields: FieldList = proto3.util.newFieldList(() => [
+    { no: 1, name: "outputs", kind: "message", T: ApplicationOutput, repeated: true },
+  ]);
+
+  static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): ApplicationOutputs {
+    return new ApplicationOutputs().fromBinary(bytes, options);
+  }
+
+  static fromJson(jsonValue: JsonValue, options?: Partial<JsonReadOptions>): ApplicationOutputs {
+    return new ApplicationOutputs().fromJson(jsonValue, options);
+  }
+
+  static fromJsonString(jsonString: string, options?: Partial<JsonReadOptions>): ApplicationOutputs {
+    return new ApplicationOutputs().fromJsonString(jsonString, options);
+  }
+
+  static equals(a: ApplicationOutputs | PlainMessage<ApplicationOutputs> | undefined, b: ApplicationOutputs | PlainMessage<ApplicationOutputs> | undefined): boolean {
+    return proto3.util.equals(ApplicationOutputs, a, b);
+  }
+}
+
+/**
  * @generated from message neoshowcase.protobuf.Build
  */
 export class Build extends Message<Build> {
@@ -3038,6 +3075,49 @@ export class DeleteApplicationEnvVarRequest extends Message<DeleteApplicationEnv
 
   static equals(a: DeleteApplicationEnvVarRequest | PlainMessage<DeleteApplicationEnvVarRequest> | undefined, b: DeleteApplicationEnvVarRequest | PlainMessage<DeleteApplicationEnvVarRequest> | undefined): boolean {
     return proto3.util.equals(DeleteApplicationEnvVarRequest, a, b);
+  }
+}
+
+/**
+ * @generated from message neoshowcase.protobuf.GetOutputRequest
+ */
+export class GetOutputRequest extends Message<GetOutputRequest> {
+  /**
+   * @generated from field: string application_id = 1;
+   */
+  applicationId = "";
+
+  /**
+   * @generated from field: google.protobuf.Timestamp before = 2;
+   */
+  before?: Timestamp;
+
+  constructor(data?: PartialMessage<GetOutputRequest>) {
+    super();
+    proto3.util.initPartial(data, this);
+  }
+
+  static readonly runtime: typeof proto3 = proto3;
+  static readonly typeName = "neoshowcase.protobuf.GetOutputRequest";
+  static readonly fields: FieldList = proto3.util.newFieldList(() => [
+    { no: 1, name: "application_id", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+    { no: 2, name: "before", kind: "message", T: Timestamp },
+  ]);
+
+  static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): GetOutputRequest {
+    return new GetOutputRequest().fromBinary(bytes, options);
+  }
+
+  static fromJson(jsonValue: JsonValue, options?: Partial<JsonReadOptions>): GetOutputRequest {
+    return new GetOutputRequest().fromJson(jsonValue, options);
+  }
+
+  static fromJsonString(jsonString: string, options?: Partial<JsonReadOptions>): GetOutputRequest {
+    return new GetOutputRequest().fromJsonString(jsonString, options);
+  }
+
+  static equals(a: GetOutputRequest | PlainMessage<GetOutputRequest> | undefined, b: GetOutputRequest | PlainMessage<GetOutputRequest> | undefined): boolean {
+    return proto3.util.equals(GetOutputRequest, a, b);
   }
 }
 

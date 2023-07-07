@@ -12,15 +12,29 @@ import (
 )
 
 const (
-	streamPath = "/loki/api/v1/tail"
-	startLimit = 30 * 24 * time.Hour
+	queryRangePath = "/loki/api/v1/query_range"
+	streamPath     = "/loki/api/v1/tail"
+	startLimit     = 30 * 24 * time.Hour
 )
+
+func (l *lokiStreamer) queryRangeEndpoint() string {
+	return l.config.Endpoint + queryRangePath
+}
 
 func (l *lokiStreamer) streamEndpoint() string {
 	wsEndpoint := l.config.Endpoint
 	wsEndpoint = strings.ReplaceAll(wsEndpoint, "http://", "ws://")
 	wsEndpoint = strings.ReplaceAll(wsEndpoint, "https://", "wss://")
 	return wsEndpoint + streamPath
+}
+
+type queryRangeResponse struct {
+	Status string `json:"status"`
+	Data   struct {
+		ResultType string       `json:"resultType"`
+		Result     streamValues `json:"result"`
+		// Stats map[string]any `json:"stats"`
+	} `json:"data"`
 }
 
 type streamValue struct {

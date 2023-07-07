@@ -44,6 +44,38 @@ func (l *lokiStreamer) logQL(appID string) string {
 	return fmt.Sprintf("{%s=\"%s\"}", l.config.AppIDLabel, appID)
 }
 
+func (l *lokiStreamer) Get(ctx context.Context, appID string, before time.Time) ([]*domain.ContainerLog, error) {
+	req, err := http.NewRequestWithContext(ctx, "GET", l.queryRangeEndpoint(), nil)
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to create http request")
+	}
+	q := req.URL.Query()
+	q.Set("query", l.logQL(appID))
+	q.Set("limit", "100")
+	q.Set("end", fmt.Sprintf("%d", before.UnixNano()))
+	q.Set("since", "1h")
+	q.Set("direction", "backward")
+	req.URL.RawQuery = q.Encode()
+
+	hres, err := l.client.Do(req)
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to perform http request")
+	}
+	var res queryRangeResponse
+	err = json.NewDecoder(hres.Body).Decode(&res)
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to decode response")
+	}
+
+	if res.Status != "success" {
+		return nil, errors.Errorf("expected response status to be success, got %s", res.Status)
+	}
+	if res.Data.ResultType != "streams" {
+		return nil, errors.Errorf("expected result type to be streams, got %s", res.Data.ResultType)
+	}
+	return res.Data.Result.toSortedResponse(false)
+}
+
 func (l *lokiStreamer) Stream(ctx context.Context, appID string) (<-chan *domain.ContainerLog, error) {
 	q := make(url.Values)
 	q.Set("query", l.logQL(appID))

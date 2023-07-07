@@ -4,6 +4,7 @@ import (
 	"context"
 
 	"github.com/bufbuild/connect-go"
+	"github.com/friendsofgo/errors"
 	"google.golang.org/protobuf/types/known/emptypb"
 
 	"github.com/traPtitech/neoshowcase/pkg/domain"
@@ -40,6 +41,22 @@ func (s *APIService) DeleteEnvVar(ctx context.Context, req *connect.Request[pb.D
 		return nil, handleUseCaseError(err)
 	}
 	res := connect.NewResponse(&emptypb.Empty{})
+	return res, nil
+}
+
+func (s *APIService) GetOutput(ctx context.Context, req *connect.Request[pb.GetOutputRequest]) (*connect.Response[pb.ApplicationOutputs], error) {
+	msg := req.Msg
+	if msg.Before == nil {
+		return nil, connect.NewError(connect.CodeInvalidArgument, errors.New("before cannot be null"))
+	}
+	before := msg.Before.AsTime()
+	logs, err := s.svc.GetOutput(ctx, msg.ApplicationId, before)
+	if err != nil {
+		return nil, handleUseCaseError(err)
+	}
+	res := connect.NewResponse(&pb.ApplicationOutputs{
+		Outputs: ds.Map(logs, pbconvert.ToPBApplicationOutput),
+	})
 	return res, nil
 }
 
