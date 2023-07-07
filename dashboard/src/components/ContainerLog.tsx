@@ -18,7 +18,7 @@ const LoadMoreContainer = styled('div', {
     gap: '8px',
     marginBottom: '6px',
     fontSize: '16px',
-  }
+  },
 })
 
 const LoadMoreButton = styled('div', {
@@ -31,9 +31,9 @@ const LoadMoreButton = styled('div', {
     selectors: {
       '&:hover': {
         background: vars.text.black3,
-      }
-    }
-  }
+      },
+    },
+  },
 })
 
 const loadLimitSeconds = 7 * 86400
@@ -44,8 +44,9 @@ const loadLogChunk = async (appID: string, before: Timestamp): Promise<Applicati
   return res.outputs
 }
 
-const oldestTimestamp = (ts: ApplicationOutput[]): Timestamp => ts.reduce((acc, t) => minTimestamp(acc, t.time), Timestamp.now())
-const sortByTimestamp = (ts: ApplicationOutput[]) => ts.sort((a, b) => lessTimestamp(a.time, b.time) ? -1 : 1)
+const oldestTimestamp = (ts: ApplicationOutput[]): Timestamp =>
+  ts.reduce((acc, t) => minTimestamp(acc, t.time), Timestamp.now())
+const sortByTimestamp = (ts: ApplicationOutput[]) => ts.sort((a, b) => (lessTimestamp(a.time, b.time) ? -1 : 1))
 
 export interface ContainerLogProps {
   appID: string
@@ -55,7 +56,7 @@ export const ContainerLog: Component<ContainerLogProps> = (props) => {
   const [loadedUntil, setLoadedUntil] = createSignal(Timestamp.now())
   const [olderLogs, setOlderLogs] = createSignal<ApplicationOutput[]>([])
 
-  const loadDisabled = () => (Timestamp.now().seconds - loadedUntil().seconds) >= loadLimitSeconds
+  const loadDisabled = () => Timestamp.now().seconds - loadedUntil().seconds >= loadLimitSeconds
   const [loading, setLoading] = createSignal(false)
   const load = async () => {
     setLoading(true)
@@ -67,7 +68,7 @@ export const ContainerLog: Component<ContainerLogProps> = (props) => {
         setLoadedUntil(oldestTimestamp(loadedOlderLogs))
       }
       sortByTimestamp(loadedOlderLogs)
-      setOlderLogs(prev => loadedOlderLogs.concat(prev))
+      setOlderLogs((prev) => loadedOlderLogs.concat(prev))
     } catch (e) {
       handleAPIError(e, 'ログの読み込み中にエラーが発生しました')
     }
