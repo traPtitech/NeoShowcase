@@ -53,7 +53,7 @@ func (l *lokiStreamer) Get(ctx context.Context, appID string, before time.Time) 
 	q.Set("query", l.logQL(appID))
 	q.Set("limit", "100")
 	q.Set("end", fmt.Sprintf("%d", before.UnixNano()))
-	q.Set("since", "1h")
+	q.Set("since", "1d")
 	q.Set("direction", "backward")
 	req.URL.RawQuery = q.Encode()
 
