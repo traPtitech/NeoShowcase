@@ -1,5 +1,5 @@
 import { A, useNavigate, useParams } from '@solidjs/router'
-import { Component, createEffect, createResource, createSignal, For, onCleanup, Ref, Show } from 'solid-js'
+import { Component, createResource, createSignal, For, onCleanup, Show } from 'solid-js'
 import { client, handleAPIError, systemInfo } from '/@/libs/api'
 import { Header } from '/@/components/Header'
 import {
@@ -24,16 +24,13 @@ import { URLText } from '/@/components/URLText'
 import { Button } from '/@/components/Button'
 import { AppNav } from '/@/components/AppNav'
 import { Card, CardItem, CardItemContent, CardItems, CardItemTitle, CardsRow, CardTitle } from '/@/components/Card'
-import { LogContainer } from '/@/components/Log'
-import { sleep } from '/@/libs/sleep'
-import { Code, ConnectError } from '@bufbuild/connect'
 import useModal from '/@/libs/useModal'
 import { ModalButtonsContainer, ModalContainer, ModalText } from '/@/components/Modal'
 import toast from 'solid-toast'
 import { styled } from '@macaron-css/solid'
 import { vars } from '/@/theme'
-import { toWithAnsi } from '/@/libs/buffers'
 import { unreachable } from '/@/libs/unreachable'
+import { ContainerLog } from '/@/components/ContainerLog'
 
 const RuntimeConfigInfo: Component<{ config: RuntimeConfig }> = (props) => {
   return (
@@ -232,51 +229,6 @@ export default () => {
   }
   const { Modal: DeleteAppModal, open: openDeleteAppModal, close: closeDeleteAppModal } = useModal()
 
-  const logStreamAbort = new AbortController()
-  const [logStream] = createResource(
-    () => app()?.deployType === DeployType.RUNTIME && app()?.id,
-    (id) => client.getOutputStream({ id }, { signal: logStreamAbort.signal }),
-  )
-  const [streamedLog, setStreamedLog] = createSignal<string[]>([])
-  createEffect(() => {
-    const stream = logStream()
-    if (!stream) {
-      setStreamedLog([])
-      return
-    }
-
-    const iterate = async () => {
-      try {
-        for await (const log of stream) {
-          setStreamedLog((prev) => prev.concat(log.log))
-        }
-      } catch (err) {
-        // ignore abort error
-        const isAbortErr = err instanceof ConnectError && err.code === Code.Canceled
-        if (!isAbortErr) {
-          console.trace(err)
-          return
-        }
-      }
-      await sleep(1000)
-      await refetchApp()
-    }
-    void iterate()
-  })
-  onCleanup(() => {
-    logStreamAbort.abort()
-  })
-
-  let logRef: Ref<HTMLDivElement>
-  createEffect(() => {
-    if (!streamedLog()) return
-    const ref = logRef as HTMLDivElement
-    if (!ref) return
-    setTimeout(() => {
-      ref.scrollTop = ref.scrollHeight
-    })
-  })
-
   return (
     <Container>
       <Header />
@@ -449,9 +401,7 @@ export default () => {
           <Show when={app().deployType === DeployType.RUNTIME}>
             <Card>
               <CardTitle>Container Log</CardTitle>
-              <LogContainer ref={logRef} overflowX='scroll'>
-                <For each={streamedLog()}>{(line) => <code innerHTML={toWithAnsi(line)} />}</For>
-              </LogContainer>
+              <ContainerLog appID={app().id} />
             </Card>
           </Show>
         </CardsRow>

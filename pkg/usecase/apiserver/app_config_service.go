@@ -41,6 +41,14 @@ func (s *Service) DeleteEnvironmentVariable(ctx context.Context, applicationID s
 	})
 }
 
+func (s *Service) GetOutput(ctx context.Context, id string, before time.Time) ([]*domain.ContainerLog, error) {
+	err := s.isApplicationOwner(ctx, id)
+	if err != nil {
+		return nil, err
+	}
+	return s.containerLogger.Get(ctx, id, before)
+}
+
 func (s *Service) GetOutputStream(ctx context.Context, id string, send func(l *domain.ContainerLog) error) error {
 	err := s.isApplicationOwner(ctx, id)
 	if err != nil {
