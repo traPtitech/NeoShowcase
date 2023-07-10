@@ -118,7 +118,9 @@ func (r *buildRepository) UpdateBuild(ctx context.Context, cond domain.GetBuildC
 		return nil
 	}
 
-	_, err := models.Builds(r.buildMods(cond)...).UpdateAll(ctx, r.db, cols)
+	mods := []qm.QueryMod{qm.For("UPDATE")}
+	mods = append(mods, r.buildMods(cond)...)
+	_, err := models.Builds(mods...).UpdateAll(ctx, r.db, cols)
 	if err != nil {
 		return errors.Wrap(err, "failed to update build")
 	}
