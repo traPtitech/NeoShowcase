@@ -50,6 +50,7 @@ const sortByTimestamp = (ts: ApplicationOutput[]) => ts.sort((a, b) => (lessTime
 
 export interface ContainerLogProps {
   appID: string
+  showTimestamp: boolean
 }
 
 export const ContainerLog: Component<ContainerLogProps> = (props) => {
@@ -147,8 +148,12 @@ export const ContainerLog: Component<ContainerLogProps> = (props) => {
           </Show>
         </LoadMoreContainer>
       </Show>
-      <For each={olderLogs()}>{(log) => <code innerHTML={toWithAnsi(log.log)} />}</For>
-      <For each={streamedLog()}>{(log) => <code innerHTML={toWithAnsi(log.log)} />}</For>
+      <For each={olderLogs()}>{(log) => <code innerHTML={formatLogLine(log, props.showTimestamp)} />}</For>
+      <For each={streamedLog()}>{(log) => <code innerHTML={formatLogLine(log, props.showTimestamp)} />}</For>
     </LogContainer>
   )
+}
+
+const formatLogLine = (log: ApplicationOutput, withTimestamp: boolean): string => {
+  return (withTimestamp ? `${log.time.toDate().toLocaleString()} ` : '') + toWithAnsi(log.log)
 }

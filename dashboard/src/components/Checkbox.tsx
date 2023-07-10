@@ -1,4 +1,4 @@
-import { JSXElement } from 'solid-js'
+import { ParentComponent } from 'solid-js'
 import { vars } from '/@/theme'
 import { ImCheckboxChecked, ImCheckboxUnchecked } from 'solid-icons/im'
 import { styled } from '@macaron-css/solid'
@@ -15,13 +15,12 @@ const Container = styled('div', {
 })
 
 interface Props {
-  children: JSXElement
-  selected?: boolean
-  setSelected?: (s: boolean) => void
+  selected: boolean
+  setSelected: (s: boolean) => void
   onClick?: () => void
 }
 
-export const Checkbox = (props: Props): JSXElement => {
+export const Checkbox: ParentComponent<Props> = (props) => {
   return (
     <Container
       onClick={() => {
