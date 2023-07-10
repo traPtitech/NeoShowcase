@@ -12,7 +12,6 @@ import (
 
 	"github.com/traPtitech/neoshowcase/pkg/domain"
 	"github.com/traPtitech/neoshowcase/pkg/infrastructure/grpc/pb"
-	"github.com/traPtitech/neoshowcase/pkg/infrastructure/repository"
 	"github.com/traPtitech/neoshowcase/pkg/util/optional"
 )
 
@@ -26,7 +25,7 @@ func (s *builderService) tryStartBuild(buildID string) error {
 	}
 
 	now := time.Now()
-	err := s.buildRepo.UpdateBuild(context.Background(), domain.GetBuildCondition{
+	n, err := s.buildRepo.UpdateBuild(context.Background(), domain.GetBuildCondition{
 		ID:     optional.From(buildID),
 		Status: optional.From(domain.BuildStatusQueued),
 	}, domain.UpdateBuildArgs{
@@ -34,11 +33,11 @@ func (s *builderService) tryStartBuild(buildID string) error {
 		StartedAt: optional.From(now),
 		UpdatedAt: optional.From(now),
 	})
-	if err == repository.ErrNotFound {
-		return nil // other builder has acquired the build lock - skip
-	}
 	if err != nil {
 		return err
+	}
+	if n == 0 {
+		return nil // other builder has acquired the build lock - skip
 	}
 
 	// Acquired build lock
@@ -216,7 +215,7 @@ func (s *builderService) updateStatusLoop(ctx context.Context, buildID string) {
 	for {
 		select {
 		case <-ticker.C:
-			err := s.buildRepo.UpdateBuild(ctx,
+			_, err := s.buildRepo.UpdateBuild(ctx,
 				domain.GetBuildCondition{ID: optional.From(buildID)},
 				domain.UpdateBuildArgs{UpdatedAt: optional.From(time.Now())})
 			if err != nil {
@@ -241,7 +240,7 @@ func (s *builderService) finalize(ctx context.Context, st *state, status domain.
 		UpdatedAt:  optional.From(now),
 		FinishedAt: optional.From(now),
 	}
-	if err := s.buildRepo.UpdateBuild(ctx, updateCond, updateArgs); err != nil {
+	if _, err = s.buildRepo.UpdateBuild(ctx, updateCond, updateArgs); err != nil {
 		log.Errorf("failed to update build: %+v", err)
 	}
 }

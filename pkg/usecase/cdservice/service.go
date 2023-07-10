@@ -171,7 +171,7 @@ func (cd *service) registerBuild(ctx context.Context, appID string) error {
 	}
 
 	// Cancel any previously queued builds
-	err = cd.buildRepo.UpdateBuild(ctx, domain.GetBuildCondition{
+	_, err = cd.buildRepo.UpdateBuild(ctx, domain.GetBuildCondition{
 		ApplicationID: optional.From(appID),
 		Status:        optional.From(domain.BuildStatusQueued),
 	}, domain.UpdateBuildArgs{
@@ -207,7 +207,7 @@ func (cd *service) detectBuildCrash(ctx context.Context) error {
 		return now.Sub(build.UpdatedAt.ValueOrZero()) > crashDetectThreshold
 	})
 	for _, build := range crashed {
-		err = cd.buildRepo.UpdateBuild(ctx, domain.GetBuildCondition{
+		_, err = cd.buildRepo.UpdateBuild(ctx, domain.GetBuildCondition{
 			ID:     optional.From(build.ID),
 			Status: optional.From(domain.BuildStatusBuilding),
 		}, domain.UpdateBuildArgs{

@@ -100,7 +100,7 @@ func (r *buildRepository) CreateBuild(ctx context.Context, build *domain.Build) 
 	return nil
 }
 
-func (r *buildRepository) UpdateBuild(ctx context.Context, cond domain.GetBuildCondition, args domain.UpdateBuildArgs) error {
+func (r *buildRepository) UpdateBuild(ctx context.Context, cond domain.GetBuildCondition, args domain.UpdateBuildArgs) (int64, error) {
 	cols := make(models.M)
 	if args.Status.Valid {
 		cols[models.BuildColumns.Status] = repoconvert.BuildStatusMapper.FromMust(args.Status.V)
@@ -115,16 +115,14 @@ func (r *buildRepository) UpdateBuild(ctx context.Context, cond domain.GetBuildC
 		cols[models.BuildColumns.FinishedAt] = optional.IntoTime(args.FinishedAt)
 	}
 	if len(cols) == 0 {
-		return nil
+		return 0, nil
 	}
 
-	mods := []qm.QueryMod{qm.For("UPDATE")}
-	mods = append(mods, r.buildMods(cond)...)
-	_, err := models.Builds(mods...).UpdateAll(ctx, r.db, cols)
+	n, err := models.Builds(r.buildMods(cond)...).UpdateAll(ctx, r.db, cols)
 	if err != nil {
-		return errors.Wrap(err, "failed to update build")
+		return 0, errors.Wrap(err, "failed to update build")
 	}
-	return nil
+	return n, nil
 }
 
 func (r *buildRepository) MarkCommitAsRetriable(ctx context.Context, applicationID string, commit string) error {

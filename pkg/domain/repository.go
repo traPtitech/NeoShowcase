@@ -121,7 +121,7 @@ type BuildRepository interface {
 	GetBuilds(ctx context.Context, cond GetBuildCondition) ([]*Build, error)
 	GetBuild(ctx context.Context, buildID string) (*Build, error)
 	CreateBuild(ctx context.Context, build *Build) error
-	UpdateBuild(ctx context.Context, cond GetBuildCondition, args UpdateBuildArgs) error
+	UpdateBuild(ctx context.Context, cond GetBuildCondition, args UpdateBuildArgs) (int64, error)
 	MarkCommitAsRetriable(ctx context.Context, applicationID string, commit string) error
 	DeleteBuilds(ctx context.Context, cond GetBuildCondition) error
 }
