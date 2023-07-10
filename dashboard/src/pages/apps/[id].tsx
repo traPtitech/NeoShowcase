@@ -31,6 +31,7 @@ import { styled } from '@macaron-css/solid'
 import { vars } from '/@/theme'
 import { unreachable } from '/@/libs/unreachable'
 import { ContainerLog } from '/@/components/ContainerLog'
+import { Checkbox } from '/@/components/Checkbox'
 
 const RuntimeConfigInfo: Component<{ config: RuntimeConfig }> = (props) => {
   return (
@@ -229,6 +230,8 @@ export default () => {
   }
   const { Modal: DeleteAppModal, open: openDeleteAppModal, close: closeDeleteAppModal } = useModal()
 
+  const [showLogTimestamp, setShowLogTimestamp] = createSignal(true)
+
   return (
     <Container>
       <Header />
@@ -401,7 +404,10 @@ export default () => {
           <Show when={app().deployType === DeployType.RUNTIME}>
             <Card>
               <CardTitle>Container Log</CardTitle>
-              <ContainerLog appID={app().id} />
+              <Checkbox selected={showLogTimestamp()} setSelected={setShowLogTimestamp}>
+                Show Timestamps
+              </Checkbox>
+              <ContainerLog appID={app().id} showTimestamp={showLogTimestamp()} />
             </Card>
           </Show>
         </CardsRow>
