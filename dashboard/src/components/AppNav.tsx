@@ -25,7 +25,7 @@ export const AppNav = (props: AppNavProps): JSXElement => {
         <NavTitle>
           <div>{props.repo.name}</div>
           <div>/</div>
-          <div>{props.repo.name}</div>
+          <div>{props.app.name}</div>
         </NavTitle>
       </NavTitleContainer>
       <NavButtonsContainer>
