@@ -3,6 +3,7 @@ kind: Application
 metadata:
   name: ns-apps
   namespace: argocd
+
 spec:
   destination:
     namespace: ns-apps

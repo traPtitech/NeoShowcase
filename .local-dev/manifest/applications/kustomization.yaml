@@ -8,3 +8,4 @@ resources:
   - ns-apps.yaml
   - ns-system.yaml
   - traefik.yaml
+  - victoria-metrics.yaml
