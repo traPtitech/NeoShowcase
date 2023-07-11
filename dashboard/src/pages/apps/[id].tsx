@@ -1,6 +1,6 @@
 import { A, useNavigate, useParams } from '@solidjs/router'
 import { Component, createResource, createSignal, For, onCleanup, Show } from 'solid-js'
-import { client, handleAPIError, systemInfo } from '/@/libs/api'
+import { availableMetrics, client, handleAPIError, systemInfo } from '/@/libs/api'
 import { Header } from '/@/components/Header'
 import {
   applicationState,
@@ -41,6 +41,7 @@ import { vars } from '/@/theme'
 import { unreachable } from '/@/libs/unreachable'
 import { ContainerLog } from '/@/components/ContainerLog'
 import { Checkbox } from '/@/components/Checkbox'
+import { AppMetrics } from '/@/components/AppMetrics'
 
 const RuntimeConfigInfo: Component<{ config: RuntimeConfig }> = (props) => {
   return (
@@ -199,8 +200,9 @@ const SSHCode = styled('code', {
 export default () => {
   const navigate = useNavigate()
   const params = useParams()
+  const id = params.id
   const [app, { refetch: refetchApp }] = createResource(
-    () => params.id,
+    () => id,
     (id) => client.getApplication({ id }),
   )
   const [repo] = createResource(
@@ -397,6 +399,20 @@ export default () => {
               </CardItems>
             </Card>
           </CardsRow>
+          <Show when={app().deployType === DeployType.RUNTIME && availableMetrics()}>
+            <CardsRow>
+              <For each={availableMetrics().metricsNames || []}>
+                {(name) => (
+                  <Card>
+                    <CardTitle>{name}</CardTitle>
+                    <CardItems>
+                      <AppMetrics appID={id} metricsName={name} />
+                    </CardItems>
+                  </Card>
+                )}
+              </For>
+            </CardsRow>
+          </Show>
           <Show when={app().deployType === DeployType.RUNTIME}>
             <CardsRow>
               <Card>

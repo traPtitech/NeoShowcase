@@ -15,6 +15,8 @@ export const formatBytes = (bytes: number): string => {
   return `${(bytes / tb).toPrecision(4)} TB`
 }
 
+export const formatPercent = (ratio: number): string => `${(ratio * 100).toPrecision(3)}%`
+
 const second = 1000
 const minute = 60 * second
 const hour = 60 * minute

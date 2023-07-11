@@ -11,6 +11,7 @@ export const client = createPromiseClient(APIService, transport)
 
 export const [user] = createResource(() => client.getMe({}))
 export const [systemInfo] = createResource(() => client.getSystemInfo({}))
+export const [availableMetrics] = createResource(() => client.getAvailableMetrics({}))
 
 export const handleAPIError = (e, message: string) => {
   if (e.message) {
