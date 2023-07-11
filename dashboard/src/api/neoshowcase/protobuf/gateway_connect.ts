@@ -4,7 +4,7 @@
 // @ts-nocheck
 
 import { Empty, MethodKind } from "@bufbuild/protobuf";
-import { Application, ApplicationEnvVars, ApplicationIdRequest, ApplicationOutput, ApplicationOutputs, ArtifactContent, ArtifactIdRequest, Build, BuildIdRequest, BuildLog, CreateApplicationRequest, CreateRepositoryRequest, CreateUserKeyRequest, DeleteApplicationEnvVarRequest, DeleteUserKeyRequest, GenerateKeyPairResponse, GetAllBuildsRequest, GetApplicationsRequest, GetApplicationsResponse, GetBuildsResponse, GetOutputRequest, GetRepositoriesRequest, GetRepositoriesResponse, GetRepositoryRefsResponse, GetUserKeysResponse, GetUsersResponse, Repository, RepositoryIdRequest, RetryCommitBuildRequest, SetApplicationEnvVarRequest, SystemInfo, UpdateApplicationRequest, UpdateRepositoryRequest, User, UserKey } from "./gateway_pb.js";
+import { Application, ApplicationEnvVars, ApplicationIdRequest, ApplicationMetrics, ApplicationOutput, ApplicationOutputs, ArtifactContent, ArtifactIdRequest, AvailableMetrics, Build, BuildIdRequest, BuildLog, CreateApplicationRequest, CreateRepositoryRequest, CreateUserKeyRequest, DeleteApplicationEnvVarRequest, DeleteUserKeyRequest, GenerateKeyPairResponse, GetAllBuildsRequest, GetApplicationMetricsRequest, GetApplicationsRequest, GetApplicationsResponse, GetBuildsResponse, GetOutputRequest, GetRepositoriesRequest, GetRepositoriesResponse, GetRepositoryRefsResponse, GetUserKeysResponse, GetUsersResponse, Repository, RepositoryIdRequest, RetryCommitBuildRequest, SetApplicationEnvVarRequest, SystemInfo, UpdateApplicationRequest, UpdateRepositoryRequest, User, UserKey } from "./gateway_pb.js";
 
 /**
  * General / System
@@ -224,6 +224,50 @@ export const APIService = {
       kind: MethodKind.Unary,
     },
     /**
+     * GetAvailableMetrics 取得可能メトリクス一覧を取得します
+     *
+     * @generated from rpc neoshowcase.protobuf.APIService.GetAvailableMetrics
+     */
+    getAvailableMetrics: {
+      name: "GetAvailableMetrics",
+      I: Empty,
+      O: AvailableMetrics,
+      kind: MethodKind.Unary,
+    },
+    /**
+     * GetApplicationMetrics アプリのメトリクスを取得します
+     *
+     * @generated from rpc neoshowcase.protobuf.APIService.GetApplicationMetrics
+     */
+    getApplicationMetrics: {
+      name: "GetApplicationMetrics",
+      I: GetApplicationMetricsRequest,
+      O: ApplicationMetrics,
+      kind: MethodKind.Unary,
+    },
+    /**
+     * GetOutput アプリの出力を取得します
+     *
+     * @generated from rpc neoshowcase.protobuf.APIService.GetOutput
+     */
+    getOutput: {
+      name: "GetOutput",
+      I: GetOutputRequest,
+      O: ApplicationOutputs,
+      kind: MethodKind.Unary,
+    },
+    /**
+     * GetOutputStream アプリの出力をストリーム形式で取得します
+     *
+     * @generated from rpc neoshowcase.protobuf.APIService.GetOutputStream
+     */
+    getOutputStream: {
+      name: "GetOutputStream",
+      I: ApplicationIdRequest,
+      O: ApplicationOutput,
+      kind: MethodKind.ServerStreaming,
+    },
+    /**
      * GetEnvVars アプリの環境変数を取得します
      *
      * @generated from rpc neoshowcase.protobuf.APIService.GetEnvVars
@@ -255,28 +299,6 @@ export const APIService = {
       I: DeleteApplicationEnvVarRequest,
       O: Empty,
       kind: MethodKind.Unary,
-    },
-    /**
-     * GetOutput アプリの出力を取得します
-     *
-     * @generated from rpc neoshowcase.protobuf.APIService.GetOutput
-     */
-    getOutput: {
-      name: "GetOutput",
-      I: GetOutputRequest,
-      O: ApplicationOutputs,
-      kind: MethodKind.Unary,
-    },
-    /**
-     * GetOutputStream アプリの出力をストリーム形式で取得します
-     *
-     * @generated from rpc neoshowcase.protobuf.APIService.GetOutputStream
-     */
-    getOutputStream: {
-      name: "GetOutputStream",
-      I: ApplicationIdRequest,
-      O: ApplicationOutput,
-      kind: MethodKind.ServerStreaming,
     },
     /**
      * StartApplication アプリを起動します 起動中の場合は再起動します

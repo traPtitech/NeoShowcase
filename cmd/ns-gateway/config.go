@@ -17,6 +17,7 @@ import (
 	"github.com/traPtitech/neoshowcase/pkg/infrastructure/grpc"
 	"github.com/traPtitech/neoshowcase/pkg/infrastructure/grpc/pb/pbconnect"
 	"github.com/traPtitech/neoshowcase/pkg/infrastructure/log/loki"
+	"github.com/traPtitech/neoshowcase/pkg/infrastructure/metrics/prometheus"
 	"github.com/traPtitech/neoshowcase/pkg/infrastructure/repository"
 	"github.com/traPtitech/neoshowcase/pkg/infrastructure/storage"
 )
@@ -36,6 +37,10 @@ type Config struct {
 		Type string      `mapstructure:"type" yaml:"type"`
 		Loki loki.Config `mapstructure:"loki" yaml:"loki"`
 	} `mapstructure:"log" yaml:"log"`
+	Metrics struct {
+		Type       string            `mapstructure:"type" yaml:"type"`
+		Prometheus prometheus.Config `mapstructure:"prometheus" yaml:"prometheus"`
+	}
 }
 
 func init() {
@@ -82,7 +87,11 @@ func init() {
 
 	viper.SetDefault("log.type", "loki")
 	viper.SetDefault("log.loki.endpoint", "http://loki:3100")
-	viper.SetDefault("log.loki.queryTemplate", `{ns_trap_jp_app_id="{{ .App.ID }}"}`)
+	viper.SetDefault("log.loki.queryTemplate", loki.DefaultQueryTemplate())
+
+	viper.SetDefault("metrics.type", "prometheus")
+	viper.SetDefault("metrics.endpoint", "http://prometheus:9090")
+	viper.SetDefault("metric.queries", prometheus.DefaultQueriesConfig())
 }
 
 func providePublicKey(c Config) (*ssh.PublicKeys, error) {
@@ -112,6 +121,15 @@ func provideContainerLogger(c Config) (domain.ContainerLogger, error) {
 		return loki.NewLokiStreamer(c.Log.Loki)
 	default:
 		return nil, errors.Errorf("invalid log type: %v (supported values: loki)", c.Log.Type)
+	}
+}
+
+func provideMetricsService(c Config) (domain.MetricsService, error) {
+	switch c.Metrics.Type {
+	case "prometheus":
+		return prometheus.NewPromClient(c.Metrics.Prometheus)
+	default:
+		return nil, errors.Errorf("invalid metrics type: %v (supported values: prometheus)", c.Metrics.Type)
 	}
 }
 

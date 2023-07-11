@@ -36,3 +36,13 @@ log:
   loki:
     endpoint: http://loki:3100
     queryTemplate: "{ns_trap_jp_app_id=\"{{ .App.ID }}\"}"
+
+metrics:
+  type: prometheus
+  prometheus:
+    endpoint: http://prometheus:9090
+    queries:
+      - name: CPU
+        template: "TODO"
+      - name: Memory
+        template: "TODO"

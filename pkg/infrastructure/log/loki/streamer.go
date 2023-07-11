@@ -22,6 +22,10 @@ type Config struct {
 	QueryTemplate string `mapstructure:"queryTemplate" yaml:"queryTemplate"`
 }
 
+func DefaultQueryTemplate() string {
+	return `{ns_trap_jp_app_id="{{ .App.ID }}"}`
+}
+
 type lokiStreamer struct {
 	config Config
 	tmpl   *template.Template

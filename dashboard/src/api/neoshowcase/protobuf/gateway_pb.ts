@@ -1418,6 +1418,123 @@ export class ArtifactContent extends Message<ArtifactContent> {
 }
 
 /**
+ * @generated from message neoshowcase.protobuf.AvailableMetrics
+ */
+export class AvailableMetrics extends Message<AvailableMetrics> {
+  /**
+   * @generated from field: repeated string metrics_names = 1;
+   */
+  metricsNames: string[] = [];
+
+  constructor(data?: PartialMessage<AvailableMetrics>) {
+    super();
+    proto3.util.initPartial(data, this);
+  }
+
+  static readonly runtime: typeof proto3 = proto3;
+  static readonly typeName = "neoshowcase.protobuf.AvailableMetrics";
+  static readonly fields: FieldList = proto3.util.newFieldList(() => [
+    { no: 1, name: "metrics_names", kind: "scalar", T: 9 /* ScalarType.STRING */, repeated: true },
+  ]);
+
+  static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): AvailableMetrics {
+    return new AvailableMetrics().fromBinary(bytes, options);
+  }
+
+  static fromJson(jsonValue: JsonValue, options?: Partial<JsonReadOptions>): AvailableMetrics {
+    return new AvailableMetrics().fromJson(jsonValue, options);
+  }
+
+  static fromJsonString(jsonString: string, options?: Partial<JsonReadOptions>): AvailableMetrics {
+    return new AvailableMetrics().fromJsonString(jsonString, options);
+  }
+
+  static equals(a: AvailableMetrics | PlainMessage<AvailableMetrics> | undefined, b: AvailableMetrics | PlainMessage<AvailableMetrics> | undefined): boolean {
+    return proto3.util.equals(AvailableMetrics, a, b);
+  }
+}
+
+/**
+ * @generated from message neoshowcase.protobuf.ApplicationMetric
+ */
+export class ApplicationMetric extends Message<ApplicationMetric> {
+  /**
+   * @generated from field: google.protobuf.Timestamp time = 1;
+   */
+  time?: Timestamp;
+
+  /**
+   * @generated from field: double value = 2;
+   */
+  value = 0;
+
+  constructor(data?: PartialMessage<ApplicationMetric>) {
+    super();
+    proto3.util.initPartial(data, this);
+  }
+
+  static readonly runtime: typeof proto3 = proto3;
+  static readonly typeName = "neoshowcase.protobuf.ApplicationMetric";
+  static readonly fields: FieldList = proto3.util.newFieldList(() => [
+    { no: 1, name: "time", kind: "message", T: Timestamp },
+    { no: 2, name: "value", kind: "scalar", T: 1 /* ScalarType.DOUBLE */ },
+  ]);
+
+  static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): ApplicationMetric {
+    return new ApplicationMetric().fromBinary(bytes, options);
+  }
+
+  static fromJson(jsonValue: JsonValue, options?: Partial<JsonReadOptions>): ApplicationMetric {
+    return new ApplicationMetric().fromJson(jsonValue, options);
+  }
+
+  static fromJsonString(jsonString: string, options?: Partial<JsonReadOptions>): ApplicationMetric {
+    return new ApplicationMetric().fromJsonString(jsonString, options);
+  }
+
+  static equals(a: ApplicationMetric | PlainMessage<ApplicationMetric> | undefined, b: ApplicationMetric | PlainMessage<ApplicationMetric> | undefined): boolean {
+    return proto3.util.equals(ApplicationMetric, a, b);
+  }
+}
+
+/**
+ * @generated from message neoshowcase.protobuf.ApplicationMetrics
+ */
+export class ApplicationMetrics extends Message<ApplicationMetrics> {
+  /**
+   * @generated from field: repeated neoshowcase.protobuf.ApplicationMetric metrics = 1;
+   */
+  metrics: ApplicationMetric[] = [];
+
+  constructor(data?: PartialMessage<ApplicationMetrics>) {
+    super();
+    proto3.util.initPartial(data, this);
+  }
+
+  static readonly runtime: typeof proto3 = proto3;
+  static readonly typeName = "neoshowcase.protobuf.ApplicationMetrics";
+  static readonly fields: FieldList = proto3.util.newFieldList(() => [
+    { no: 1, name: "metrics", kind: "message", T: ApplicationMetric, repeated: true },
+  ]);
+
+  static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): ApplicationMetrics {
+    return new ApplicationMetrics().fromBinary(bytes, options);
+  }
+
+  static fromJson(jsonValue: JsonValue, options?: Partial<JsonReadOptions>): ApplicationMetrics {
+    return new ApplicationMetrics().fromJson(jsonValue, options);
+  }
+
+  static fromJsonString(jsonString: string, options?: Partial<JsonReadOptions>): ApplicationMetrics {
+    return new ApplicationMetrics().fromJsonString(jsonString, options);
+  }
+
+  static equals(a: ApplicationMetrics | PlainMessage<ApplicationMetrics> | undefined, b: ApplicationMetrics | PlainMessage<ApplicationMetrics> | undefined): boolean {
+    return proto3.util.equals(ApplicationMetrics, a, b);
+  }
+}
+
+/**
  * @generated from message neoshowcase.protobuf.ApplicationOutput
  */
 export class ApplicationOutput extends Message<ApplicationOutput> {
@@ -3075,6 +3192,61 @@ export class DeleteApplicationEnvVarRequest extends Message<DeleteApplicationEnv
 
   static equals(a: DeleteApplicationEnvVarRequest | PlainMessage<DeleteApplicationEnvVarRequest> | undefined, b: DeleteApplicationEnvVarRequest | PlainMessage<DeleteApplicationEnvVarRequest> | undefined): boolean {
     return proto3.util.equals(DeleteApplicationEnvVarRequest, a, b);
+  }
+}
+
+/**
+ * @generated from message neoshowcase.protobuf.GetApplicationMetricsRequest
+ */
+export class GetApplicationMetricsRequest extends Message<GetApplicationMetricsRequest> {
+  /**
+   * @generated from field: string application_id = 1;
+   */
+  applicationId = "";
+
+  /**
+   * @generated from field: string metrics_name = 2;
+   */
+  metricsName = "";
+
+  /**
+   * @generated from field: google.protobuf.Timestamp before = 3;
+   */
+  before?: Timestamp;
+
+  /**
+   * @generated from field: int64 limit_seconds = 4;
+   */
+  limitSeconds = protoInt64.zero;
+
+  constructor(data?: PartialMessage<GetApplicationMetricsRequest>) {
+    super();
+    proto3.util.initPartial(data, this);
+  }
+
+  static readonly runtime: typeof proto3 = proto3;
+  static readonly typeName = "neoshowcase.protobuf.GetApplicationMetricsRequest";
+  static readonly fields: FieldList = proto3.util.newFieldList(() => [
+    { no: 1, name: "application_id", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+    { no: 2, name: "metrics_name", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+    { no: 3, name: "before", kind: "message", T: Timestamp },
+    { no: 4, name: "limit_seconds", kind: "scalar", T: 3 /* ScalarType.INT64 */ },
+  ]);
+
+  static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): GetApplicationMetricsRequest {
+    return new GetApplicationMetricsRequest().fromBinary(bytes, options);
+  }
+
+  static fromJson(jsonValue: JsonValue, options?: Partial<JsonReadOptions>): GetApplicationMetricsRequest {
+    return new GetApplicationMetricsRequest().fromJson(jsonValue, options);
+  }
+
+  static fromJsonString(jsonString: string, options?: Partial<JsonReadOptions>): GetApplicationMetricsRequest {
+    return new GetApplicationMetricsRequest().fromJsonString(jsonString, options);
+  }
+
+  static equals(a: GetApplicationMetricsRequest | PlainMessage<GetApplicationMetricsRequest> | undefined, b: GetApplicationMetricsRequest | PlainMessage<GetApplicationMetricsRequest> | undefined): boolean {
+    return proto3.util.equals(GetApplicationMetricsRequest, a, b);
   }
 }
 

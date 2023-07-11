@@ -30,6 +30,7 @@ func NewServer(c Config) (*Server, error) {
 		providePublicKey,
 		provideStorage,
 		provideContainerLogger,
+		provideMetricsService,
 		provideGatewayServer,
 		wire.FieldsOf(new(Config), "AvatarBaseURL", "AuthHeader", "Controller", "DB", "MariaDB", "MongoDB", "Storage"),
 		wire.Struct(new(Server), "*"),
