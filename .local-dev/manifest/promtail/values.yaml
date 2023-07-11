@@ -1,0 +1,14 @@
+tolerations:
+  - operator: Exists
+
+configmap:
+  enabled: true
+
+config:
+  clients:
+    - url: http://loki.loki.svc.cluster.local:3100/loki/api/v1/push
+  snippets:
+    extraRelabelConfigs:
+      - action: labelmap
+        regex: __meta_kubernetes_pod_label_(.+)
+        replacement: $1

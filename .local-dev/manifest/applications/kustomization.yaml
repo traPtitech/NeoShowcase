@@ -1,10 +1,9 @@
 resources:
   - charts/grafana.yaml
-  - charts/grafana-agent-operator.yaml
+  - charts/promtail.yaml
   - argo-workflow.yaml
   - argocd.yaml
   - grafana.yaml
-  - grafana-agent.yaml
   - loki.yaml
   - ns-apps.yaml
   - ns-system.yaml
