@@ -35,4 +35,4 @@ log:
   type: loki
   loki:
     endpoint: http://loki:3100
-    appIDLabel: ns_trap_jp_app_id
+    queryTemplate: "{ns_trap_jp_app_id=\"{{ .App.ID }}\"}"

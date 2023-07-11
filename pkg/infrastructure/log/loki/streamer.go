@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"net/http"
 	"net/url"
+	"text/template"
 	"time"
 
 	"github.com/friendsofgo/errors"
@@ -17,20 +18,27 @@ import (
 )
 
 type Config struct {
-	Endpoint   string `mapstructure:"endpoint" yaml:"endpoint"`
-	AppIDLabel string `mapstructure:"appIDLabel" yaml:"appIDLabel"`
+	Endpoint      string `mapstructure:"endpoint" yaml:"endpoint"`
+	QueryTemplate string `mapstructure:"queryTemplate" yaml:"queryTemplate"`
 }
 
 type lokiStreamer struct {
 	config Config
+	tmpl   *template.Template
 	client *http.Client
 }
 
 func NewLokiStreamer(
 	config Config,
-) domain.ContainerLogger {
-	return &lokiStreamer{
+) (domain.ContainerLogger, error) {
+	tmpl, err := template.New("logQL templater").Parse(config.QueryTemplate)
+	if err != nil {
+		return nil, errors.Wrap(err, "invalid logQL template")
+	}
+
+	l := &lokiStreamer{
 		config: config,
+		tmpl:   tmpl,
 		client: &http.Client{
 			Transport: &http.Transport{
 				MaxConnsPerHost:     30,
@@ -38,19 +46,43 @@ func NewLokiStreamer(
 			},
 		},
 	}
+
+	// check template validity
+	var dummy domain.Application
+	_, err = l.logQL(&dummy)
+	if err != nil {
+		return nil, errors.Wrap(err, "executing logQL template")
+	}
+
+	return l, nil
 }
 
-func (l *lokiStreamer) logQL(appID string) string {
-	return fmt.Sprintf("{%s=\"%s\"}", l.config.AppIDLabel, appID)
+type m = map[string]any
+
+func templateStr(tmpl *template.Template, data any) (string, error) {
+	var buf bytes.Buffer
+	err := tmpl.Execute(&buf, data)
+	if err != nil {
+		return "", err
+	}
+	return buf.String(), nil
 }
 
-func (l *lokiStreamer) Get(ctx context.Context, appID string, before time.Time) ([]*domain.ContainerLog, error) {
+func (l *lokiStreamer) logQL(app *domain.Application) (string, error) {
+	return templateStr(l.tmpl, m{"App": app})
+}
+
+func (l *lokiStreamer) Get(ctx context.Context, app *domain.Application, before time.Time) ([]*domain.ContainerLog, error) {
 	req, err := http.NewRequestWithContext(ctx, "GET", l.queryRangeEndpoint(), nil)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to create http request")
 	}
+	logQL, err := l.logQL(app)
+	if err != nil {
+		return nil, errors.Wrap(err, "templating logQL")
+	}
 	q := req.URL.Query()
-	q.Set("query", l.logQL(appID))
+	q.Set("query", logQL)
 	q.Set("limit", "100")
 	q.Set("end", fmt.Sprintf("%d", before.UnixNano()))
 	q.Set("since", "1d")
@@ -76,9 +108,13 @@ func (l *lokiStreamer) Get(ctx context.Context, appID string, before time.Time) 
 	return res.Data.Result.toSortedResponse(false)
 }
 
-func (l *lokiStreamer) Stream(ctx context.Context, appID string) (<-chan *domain.ContainerLog, error) {
+func (l *lokiStreamer) Stream(ctx context.Context, app *domain.Application) (<-chan *domain.ContainerLog, error) {
+	logQL, err := l.logQL(app)
+	if err != nil {
+		return nil, errors.Wrap(err, "templating logQL")
+	}
 	q := make(url.Values)
-	q.Set("query", l.logQL(appID))
+	q.Set("query", logQL)
 	q.Set("limit", "100")
 	q.Set("start", fmt.Sprintf("%d", time.Now().Add(-startLimit).UnixNano()))
 

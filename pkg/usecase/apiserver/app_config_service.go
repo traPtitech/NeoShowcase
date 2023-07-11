@@ -46,7 +46,11 @@ func (s *Service) GetOutput(ctx context.Context, id string, before time.Time) ([
 	if err != nil {
 		return nil, err
 	}
-	return s.containerLogger.Get(ctx, id, before)
+	app, err := s.appRepo.GetApplication(ctx, id)
+	if err != nil {
+		return nil, err
+	}
+	return s.containerLogger.Get(ctx, app, before)
 }
 
 func (s *Service) GetOutputStream(ctx context.Context, id string, send func(l *domain.ContainerLog) error) error {
@@ -55,10 +59,15 @@ func (s *Service) GetOutputStream(ctx context.Context, id string, send func(l *d
 		return err
 	}
 
+	app, err := s.appRepo.GetApplication(ctx, id)
+	if err != nil {
+		return err
+	}
+
 	ctx, cancel := context.WithCancel(ctx)
 	defer cancel()
 
-	ch, err := s.containerLogger.Stream(ctx, id)
+	ch, err := s.containerLogger.Stream(ctx, app)
 	if err != nil {
 		return errors.Wrap(err, "failed to connect to stream")
 	}

@@ -82,7 +82,7 @@ func init() {
 
 	viper.SetDefault("log.type", "loki")
 	viper.SetDefault("log.loki.endpoint", "http://loki:3100")
-	viper.SetDefault("log.loki.appIDLabel", "ns_trap_jp_app_id")
+	viper.SetDefault("log.loki.queryTemplate", `{ns_trap_jp_app_id="{{ .App.ID }}"}`)
 }
 
 func providePublicKey(c Config) (*ssh.PublicKeys, error) {
@@ -109,7 +109,7 @@ func provideStorage(c domain.StorageConfig) (domain.Storage, error) {
 func provideContainerLogger(c Config) (domain.ContainerLogger, error) {
 	switch c.Log.Type {
 	case "loki":
-		return loki.NewLokiStreamer(c.Log.Loki), nil
+		return loki.NewLokiStreamer(c.Log.Loki)
 	default:
 		return nil, errors.Errorf("invalid log type: %v (supported values: loki)", c.Log.Type)
 	}
