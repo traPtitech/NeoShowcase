@@ -40,9 +40,13 @@ log:
 metrics:
   type: prometheus
   prometheus:
-    endpoint: http://prometheus:9090
+    endpoint: http://victoria-metrics:8428
     queries:
       - name: CPU
-        template: "TODO"
+        template: >-
+          rate(container_cpu_user_seconds_total{name="nsapp-{{ .App.ID }}"}[5m])
+           + rate(container_cpu_system_seconds_total{name="nsapp-{{ .App.ID }}"}[5m])
       - name: Memory
-        template: "TODO"
+        template: >-
+          container_memory_usage_bytes{name="nsapp-{{ .App.ID }}"}
+           + container_memory_swap{name="nsapp-{{ .App.ID }}"}

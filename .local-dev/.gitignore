@@ -12,3 +12,4 @@
 /staticsite
 /traefik/*
 !/traefik/middlewares.yaml
+/victoria-metrics
