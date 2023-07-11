@@ -211,6 +211,19 @@ message ArtifactContent {
   bytes content = 2;
 }
 
+message AvailableMetrics {
+  repeated string metrics_names = 1;
+}
+
+message ApplicationMetric {
+  google.protobuf.Timestamp time = 1;
+  double value = 2;
+}
+
+message ApplicationMetrics {
+  repeated ApplicationMetric metrics = 1;
+}
+
 message ApplicationOutput {
   google.protobuf.Timestamp time = 1;
   string log = 2;
@@ -414,6 +427,13 @@ message DeleteApplicationEnvVarRequest {
   string key = 2;
 }
 
+message GetApplicationMetricsRequest {
+  string application_id = 1;
+  string metrics_name = 2;
+  google.protobuf.Timestamp before = 3;
+  int64 limit_seconds = 4;
+}
+
 message GetOutputRequest {
   string application_id = 1;
   google.protobuf.Timestamp before = 2;
@@ -479,6 +499,17 @@ service APIService {
   // DeleteApplication アプリを削除します 先にアプリのシャットダウンが必要です
   rpc DeleteApplication(ApplicationIdRequest) returns (google.protobuf.Empty);
 
+  // Application info
+
+  // GetAvailableMetrics 取得可能メトリクス一覧を取得します
+  rpc GetAvailableMetrics(google.protobuf.Empty) returns (AvailableMetrics);
+  // GetApplicationMetrics アプリのメトリクスを取得します
+  rpc GetApplicationMetrics(GetApplicationMetricsRequest) returns (ApplicationMetrics);
+  // GetOutput アプリの出力を取得します
+  rpc GetOutput(GetOutputRequest) returns (ApplicationOutputs);
+  // GetOutputStream アプリの出力をストリーム形式で取得します
+  rpc GetOutputStream(ApplicationIdRequest) returns (stream ApplicationOutput);
+
   // Application config
 
   // GetEnvVars アプリの環境変数を取得します
@@ -487,10 +518,6 @@ service APIService {
   rpc SetEnvVar(SetApplicationEnvVarRequest) returns (google.protobuf.Empty);
   // DeleteEnvVar アプリの環境変数を削除します システムによって設定された環境変数は削除できません
   rpc DeleteEnvVar(DeleteApplicationEnvVarRequest) returns (google.protobuf.Empty);
-  // GetOutput アプリの出力を取得します
-  rpc GetOutput(GetOutputRequest) returns (ApplicationOutputs);
-  // GetOutputStream アプリの出力をストリーム形式で取得します
-  rpc GetOutputStream(ApplicationIdRequest) returns (stream ApplicationOutput);
   // StartApplication アプリを起動します 起動中の場合は再起動します
   rpc StartApplication(ApplicationIdRequest) returns (google.protobuf.Empty);
   // StopApplication アプリをシャットダウンします

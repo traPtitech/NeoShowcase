@@ -1,16 +1,17 @@
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
-  name: grafana-agent
+  name: victoria-metrics
   namespace: argocd
+
 spec:
   destination:
-    namespace: grafana-agent
+    namespace: victoria-metrics
     server: https://kubernetes.default.svc
   project: default
   source:
     repoURL: https://github.com/traPtitech/NeoShowcase
-    path: .local-dev/manifest/grafana-agent
+    path: .local-dev/manifest/victoria-metrics
     targetRevision: main
   syncPolicy:
     syncOptions:

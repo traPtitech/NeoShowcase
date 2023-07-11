@@ -39,4 +39,18 @@ log:
   type: loki
   loki:
     endpoint: http://loki.loki.svc.cluster.local:3100
-    appIDLabel: ns_trap_jp_app_id
+    queryTemplate: "{ns_trap_jp_app_id=\"{{ .App.ID }}\"}"
+
+metrics:
+  type: prometheus
+  prometheus:
+    endpoint: http://victoria-metrics.victoria-metrics.svc.cluster.local
+    queries:
+      - name: CPU
+        template: >-
+          rate(container_cpu_user_seconds_total{namespace="ns-apps", pod="nsapp-{{ .App.ID }}-0", container="app"}[5m])
+           + rate(container_cpu_system_seconds_total{namespace="ns-apps", pod="nsapp-{{ .App.ID }}-0", container="app"}[5m])
+      - name: Memory
+        template: >-
+          container_memory_usage_bytes{namespace="ns-apps", pod="nsapp-{{ .App.ID }}-0", container="app"}
+           + container_memory_swap{namespace="ns-apps", pod="nsapp-{{ .App.ID }}-0", container="app"}

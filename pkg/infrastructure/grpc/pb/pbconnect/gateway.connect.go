@@ -88,17 +88,23 @@ const (
 	// APIServiceDeleteApplicationProcedure is the fully-qualified name of the APIService's
 	// DeleteApplication RPC.
 	APIServiceDeleteApplicationProcedure = "/neoshowcase.protobuf.APIService/DeleteApplication"
+	// APIServiceGetAvailableMetricsProcedure is the fully-qualified name of the APIService's
+	// GetAvailableMetrics RPC.
+	APIServiceGetAvailableMetricsProcedure = "/neoshowcase.protobuf.APIService/GetAvailableMetrics"
+	// APIServiceGetApplicationMetricsProcedure is the fully-qualified name of the APIService's
+	// GetApplicationMetrics RPC.
+	APIServiceGetApplicationMetricsProcedure = "/neoshowcase.protobuf.APIService/GetApplicationMetrics"
+	// APIServiceGetOutputProcedure is the fully-qualified name of the APIService's GetOutput RPC.
+	APIServiceGetOutputProcedure = "/neoshowcase.protobuf.APIService/GetOutput"
+	// APIServiceGetOutputStreamProcedure is the fully-qualified name of the APIService's
+	// GetOutputStream RPC.
+	APIServiceGetOutputStreamProcedure = "/neoshowcase.protobuf.APIService/GetOutputStream"
 	// APIServiceGetEnvVarsProcedure is the fully-qualified name of the APIService's GetEnvVars RPC.
 	APIServiceGetEnvVarsProcedure = "/neoshowcase.protobuf.APIService/GetEnvVars"
 	// APIServiceSetEnvVarProcedure is the fully-qualified name of the APIService's SetEnvVar RPC.
 	APIServiceSetEnvVarProcedure = "/neoshowcase.protobuf.APIService/SetEnvVar"
 	// APIServiceDeleteEnvVarProcedure is the fully-qualified name of the APIService's DeleteEnvVar RPC.
 	APIServiceDeleteEnvVarProcedure = "/neoshowcase.protobuf.APIService/DeleteEnvVar"
-	// APIServiceGetOutputProcedure is the fully-qualified name of the APIService's GetOutput RPC.
-	APIServiceGetOutputProcedure = "/neoshowcase.protobuf.APIService/GetOutput"
-	// APIServiceGetOutputStreamProcedure is the fully-qualified name of the APIService's
-	// GetOutputStream RPC.
-	APIServiceGetOutputStreamProcedure = "/neoshowcase.protobuf.APIService/GetOutputStream"
 	// APIServiceStartApplicationProcedure is the fully-qualified name of the APIService's
 	// StartApplication RPC.
 	APIServiceStartApplicationProcedure = "/neoshowcase.protobuf.APIService/StartApplication"
@@ -166,16 +172,20 @@ type APIServiceClient interface {
 	UpdateApplication(context.Context, *connect_go.Request[pb.UpdateApplicationRequest]) (*connect_go.Response[emptypb.Empty], error)
 	// DeleteApplication アプリを削除します 先にアプリのシャットダウンが必要です
 	DeleteApplication(context.Context, *connect_go.Request[pb.ApplicationIdRequest]) (*connect_go.Response[emptypb.Empty], error)
+	// GetAvailableMetrics 取得可能メトリクス一覧を取得します
+	GetAvailableMetrics(context.Context, *connect_go.Request[emptypb.Empty]) (*connect_go.Response[pb.AvailableMetrics], error)
+	// GetApplicationMetrics アプリのメトリクスを取得します
+	GetApplicationMetrics(context.Context, *connect_go.Request[pb.GetApplicationMetricsRequest]) (*connect_go.Response[pb.ApplicationMetrics], error)
+	// GetOutput アプリの出力を取得します
+	GetOutput(context.Context, *connect_go.Request[pb.GetOutputRequest]) (*connect_go.Response[pb.ApplicationOutputs], error)
+	// GetOutputStream アプリの出力をストリーム形式で取得します
+	GetOutputStream(context.Context, *connect_go.Request[pb.ApplicationIdRequest]) (*connect_go.ServerStreamForClient[pb.ApplicationOutput], error)
 	// GetEnvVars アプリの環境変数を取得します
 	GetEnvVars(context.Context, *connect_go.Request[pb.ApplicationIdRequest]) (*connect_go.Response[pb.ApplicationEnvVars], error)
 	// SetEnvVar アプリの環境変数をセットします システムによって設定された環境変数は上書きできません
 	SetEnvVar(context.Context, *connect_go.Request[pb.SetApplicationEnvVarRequest]) (*connect_go.Response[emptypb.Empty], error)
 	// DeleteEnvVar アプリの環境変数を削除します システムによって設定された環境変数は削除できません
 	DeleteEnvVar(context.Context, *connect_go.Request[pb.DeleteApplicationEnvVarRequest]) (*connect_go.Response[emptypb.Empty], error)
-	// GetOutput アプリの出力を取得します
-	GetOutput(context.Context, *connect_go.Request[pb.GetOutputRequest]) (*connect_go.Response[pb.ApplicationOutputs], error)
-	// GetOutputStream アプリの出力をストリーム形式で取得します
-	GetOutputStream(context.Context, *connect_go.Request[pb.ApplicationIdRequest]) (*connect_go.ServerStreamForClient[pb.ApplicationOutput], error)
 	// StartApplication アプリを起動します 起動中の場合は再起動します
 	StartApplication(context.Context, *connect_go.Request[pb.ApplicationIdRequest]) (*connect_go.Response[emptypb.Empty], error)
 	// StopApplication アプリをシャットダウンします
@@ -303,6 +313,26 @@ func NewAPIServiceClient(httpClient connect_go.HTTPClient, baseURL string, opts 
 			baseURL+APIServiceDeleteApplicationProcedure,
 			opts...,
 		),
+		getAvailableMetrics: connect_go.NewClient[emptypb.Empty, pb.AvailableMetrics](
+			httpClient,
+			baseURL+APIServiceGetAvailableMetricsProcedure,
+			opts...,
+		),
+		getApplicationMetrics: connect_go.NewClient[pb.GetApplicationMetricsRequest, pb.ApplicationMetrics](
+			httpClient,
+			baseURL+APIServiceGetApplicationMetricsProcedure,
+			opts...,
+		),
+		getOutput: connect_go.NewClient[pb.GetOutputRequest, pb.ApplicationOutputs](
+			httpClient,
+			baseURL+APIServiceGetOutputProcedure,
+			opts...,
+		),
+		getOutputStream: connect_go.NewClient[pb.ApplicationIdRequest, pb.ApplicationOutput](
+			httpClient,
+			baseURL+APIServiceGetOutputStreamProcedure,
+			opts...,
+		),
 		getEnvVars: connect_go.NewClient[pb.ApplicationIdRequest, pb.ApplicationEnvVars](
 			httpClient,
 			baseURL+APIServiceGetEnvVarsProcedure,
@@ -316,16 +346,6 @@ func NewAPIServiceClient(httpClient connect_go.HTTPClient, baseURL string, opts 
 		deleteEnvVar: connect_go.NewClient[pb.DeleteApplicationEnvVarRequest, emptypb.Empty](
 			httpClient,
 			baseURL+APIServiceDeleteEnvVarProcedure,
-			opts...,
-		),
-		getOutput: connect_go.NewClient[pb.GetOutputRequest, pb.ApplicationOutputs](
-			httpClient,
-			baseURL+APIServiceGetOutputProcedure,
-			opts...,
-		),
-		getOutputStream: connect_go.NewClient[pb.ApplicationIdRequest, pb.ApplicationOutput](
-			httpClient,
-			baseURL+APIServiceGetOutputStreamProcedure,
 			opts...,
 		),
 		startApplication: connect_go.NewClient[pb.ApplicationIdRequest, emptypb.Empty](
@@ -383,40 +403,42 @@ func NewAPIServiceClient(httpClient connect_go.HTTPClient, baseURL string, opts 
 
 // aPIServiceClient implements APIServiceClient.
 type aPIServiceClient struct {
-	getSystemInfo     *connect_go.Client[emptypb.Empty, pb.SystemInfo]
-	generateKeyPair   *connect_go.Client[emptypb.Empty, pb.GenerateKeyPairResponse]
-	getMe             *connect_go.Client[emptypb.Empty, pb.User]
-	getUsers          *connect_go.Client[emptypb.Empty, pb.GetUsersResponse]
-	createUserKey     *connect_go.Client[pb.CreateUserKeyRequest, pb.UserKey]
-	getUserKeys       *connect_go.Client[emptypb.Empty, pb.GetUserKeysResponse]
-	deleteUserKey     *connect_go.Client[pb.DeleteUserKeyRequest, emptypb.Empty]
-	createRepository  *connect_go.Client[pb.CreateRepositoryRequest, pb.Repository]
-	getRepositories   *connect_go.Client[pb.GetRepositoriesRequest, pb.GetRepositoriesResponse]
-	getRepository     *connect_go.Client[pb.RepositoryIdRequest, pb.Repository]
-	getRepositoryRefs *connect_go.Client[pb.RepositoryIdRequest, pb.GetRepositoryRefsResponse]
-	updateRepository  *connect_go.Client[pb.UpdateRepositoryRequest, emptypb.Empty]
-	refreshRepository *connect_go.Client[pb.RepositoryIdRequest, emptypb.Empty]
-	deleteRepository  *connect_go.Client[pb.RepositoryIdRequest, emptypb.Empty]
-	createApplication *connect_go.Client[pb.CreateApplicationRequest, pb.Application]
-	getApplications   *connect_go.Client[pb.GetApplicationsRequest, pb.GetApplicationsResponse]
-	getApplication    *connect_go.Client[pb.ApplicationIdRequest, pb.Application]
-	updateApplication *connect_go.Client[pb.UpdateApplicationRequest, emptypb.Empty]
-	deleteApplication *connect_go.Client[pb.ApplicationIdRequest, emptypb.Empty]
-	getEnvVars        *connect_go.Client[pb.ApplicationIdRequest, pb.ApplicationEnvVars]
-	setEnvVar         *connect_go.Client[pb.SetApplicationEnvVarRequest, emptypb.Empty]
-	deleteEnvVar      *connect_go.Client[pb.DeleteApplicationEnvVarRequest, emptypb.Empty]
-	getOutput         *connect_go.Client[pb.GetOutputRequest, pb.ApplicationOutputs]
-	getOutputStream   *connect_go.Client[pb.ApplicationIdRequest, pb.ApplicationOutput]
-	startApplication  *connect_go.Client[pb.ApplicationIdRequest, emptypb.Empty]
-	stopApplication   *connect_go.Client[pb.ApplicationIdRequest, emptypb.Empty]
-	getAllBuilds      *connect_go.Client[pb.GetAllBuildsRequest, pb.GetBuildsResponse]
-	getBuilds         *connect_go.Client[pb.ApplicationIdRequest, pb.GetBuildsResponse]
-	getBuild          *connect_go.Client[pb.BuildIdRequest, pb.Build]
-	retryCommitBuild  *connect_go.Client[pb.RetryCommitBuildRequest, emptypb.Empty]
-	cancelBuild       *connect_go.Client[pb.BuildIdRequest, emptypb.Empty]
-	getBuildLog       *connect_go.Client[pb.BuildIdRequest, pb.BuildLog]
-	getBuildLogStream *connect_go.Client[pb.BuildIdRequest, pb.BuildLog]
-	getBuildArtifact  *connect_go.Client[pb.ArtifactIdRequest, pb.ArtifactContent]
+	getSystemInfo         *connect_go.Client[emptypb.Empty, pb.SystemInfo]
+	generateKeyPair       *connect_go.Client[emptypb.Empty, pb.GenerateKeyPairResponse]
+	getMe                 *connect_go.Client[emptypb.Empty, pb.User]
+	getUsers              *connect_go.Client[emptypb.Empty, pb.GetUsersResponse]
+	createUserKey         *connect_go.Client[pb.CreateUserKeyRequest, pb.UserKey]
+	getUserKeys           *connect_go.Client[emptypb.Empty, pb.GetUserKeysResponse]
+	deleteUserKey         *connect_go.Client[pb.DeleteUserKeyRequest, emptypb.Empty]
+	createRepository      *connect_go.Client[pb.CreateRepositoryRequest, pb.Repository]
+	getRepositories       *connect_go.Client[pb.GetRepositoriesRequest, pb.GetRepositoriesResponse]
+	getRepository         *connect_go.Client[pb.RepositoryIdRequest, pb.Repository]
+	getRepositoryRefs     *connect_go.Client[pb.RepositoryIdRequest, pb.GetRepositoryRefsResponse]
+	updateRepository      *connect_go.Client[pb.UpdateRepositoryRequest, emptypb.Empty]
+	refreshRepository     *connect_go.Client[pb.RepositoryIdRequest, emptypb.Empty]
+	deleteRepository      *connect_go.Client[pb.RepositoryIdRequest, emptypb.Empty]
+	createApplication     *connect_go.Client[pb.CreateApplicationRequest, pb.Application]
+	getApplications       *connect_go.Client[pb.GetApplicationsRequest, pb.GetApplicationsResponse]
+	getApplication        *connect_go.Client[pb.ApplicationIdRequest, pb.Application]
+	updateApplication     *connect_go.Client[pb.UpdateApplicationRequest, emptypb.Empty]
+	deleteApplication     *connect_go.Client[pb.ApplicationIdRequest, emptypb.Empty]
+	getAvailableMetrics   *connect_go.Client[emptypb.Empty, pb.AvailableMetrics]
+	getApplicationMetrics *connect_go.Client[pb.GetApplicationMetricsRequest, pb.ApplicationMetrics]
+	getOutput             *connect_go.Client[pb.GetOutputRequest, pb.ApplicationOutputs]
+	getOutputStream       *connect_go.Client[pb.ApplicationIdRequest, pb.ApplicationOutput]
+	getEnvVars            *connect_go.Client[pb.ApplicationIdRequest, pb.ApplicationEnvVars]
+	setEnvVar             *connect_go.Client[pb.SetApplicationEnvVarRequest, emptypb.Empty]
+	deleteEnvVar          *connect_go.Client[pb.DeleteApplicationEnvVarRequest, emptypb.Empty]
+	startApplication      *connect_go.Client[pb.ApplicationIdRequest, emptypb.Empty]
+	stopApplication       *connect_go.Client[pb.ApplicationIdRequest, emptypb.Empty]
+	getAllBuilds          *connect_go.Client[pb.GetAllBuildsRequest, pb.GetBuildsResponse]
+	getBuilds             *connect_go.Client[pb.ApplicationIdRequest, pb.GetBuildsResponse]
+	getBuild              *connect_go.Client[pb.BuildIdRequest, pb.Build]
+	retryCommitBuild      *connect_go.Client[pb.RetryCommitBuildRequest, emptypb.Empty]
+	cancelBuild           *connect_go.Client[pb.BuildIdRequest, emptypb.Empty]
+	getBuildLog           *connect_go.Client[pb.BuildIdRequest, pb.BuildLog]
+	getBuildLogStream     *connect_go.Client[pb.BuildIdRequest, pb.BuildLog]
+	getBuildArtifact      *connect_go.Client[pb.ArtifactIdRequest, pb.ArtifactContent]
 }
 
 // GetSystemInfo calls neoshowcase.protobuf.APIService.GetSystemInfo.
@@ -514,6 +536,26 @@ func (c *aPIServiceClient) DeleteApplication(ctx context.Context, req *connect_g
 	return c.deleteApplication.CallUnary(ctx, req)
 }
 
+// GetAvailableMetrics calls neoshowcase.protobuf.APIService.GetAvailableMetrics.
+func (c *aPIServiceClient) GetAvailableMetrics(ctx context.Context, req *connect_go.Request[emptypb.Empty]) (*connect_go.Response[pb.AvailableMetrics], error) {
+	return c.getAvailableMetrics.CallUnary(ctx, req)
+}
+
+// GetApplicationMetrics calls neoshowcase.protobuf.APIService.GetApplicationMetrics.
+func (c *aPIServiceClient) GetApplicationMetrics(ctx context.Context, req *connect_go.Request[pb.GetApplicationMetricsRequest]) (*connect_go.Response[pb.ApplicationMetrics], error) {
+	return c.getApplicationMetrics.CallUnary(ctx, req)
+}
+
+// GetOutput calls neoshowcase.protobuf.APIService.GetOutput.
+func (c *aPIServiceClient) GetOutput(ctx context.Context, req *connect_go.Request[pb.GetOutputRequest]) (*connect_go.Response[pb.ApplicationOutputs], error) {
+	return c.getOutput.CallUnary(ctx, req)
+}
+
+// GetOutputStream calls neoshowcase.protobuf.APIService.GetOutputStream.
+func (c *aPIServiceClient) GetOutputStream(ctx context.Context, req *connect_go.Request[pb.ApplicationIdRequest]) (*connect_go.ServerStreamForClient[pb.ApplicationOutput], error) {
+	return c.getOutputStream.CallServerStream(ctx, req)
+}
+
 // GetEnvVars calls neoshowcase.protobuf.APIService.GetEnvVars.
 func (c *aPIServiceClient) GetEnvVars(ctx context.Context, req *connect_go.Request[pb.ApplicationIdRequest]) (*connect_go.Response[pb.ApplicationEnvVars], error) {
 	return c.getEnvVars.CallUnary(ctx, req)
@@ -527,16 +569,6 @@ func (c *aPIServiceClient) SetEnvVar(ctx context.Context, req *connect_go.Reques
 // DeleteEnvVar calls neoshowcase.protobuf.APIService.DeleteEnvVar.
 func (c *aPIServiceClient) DeleteEnvVar(ctx context.Context, req *connect_go.Request[pb.DeleteApplicationEnvVarRequest]) (*connect_go.Response[emptypb.Empty], error) {
 	return c.deleteEnvVar.CallUnary(ctx, req)
-}
-
-// GetOutput calls neoshowcase.protobuf.APIService.GetOutput.
-func (c *aPIServiceClient) GetOutput(ctx context.Context, req *connect_go.Request[pb.GetOutputRequest]) (*connect_go.Response[pb.ApplicationOutputs], error) {
-	return c.getOutput.CallUnary(ctx, req)
-}
-
-// GetOutputStream calls neoshowcase.protobuf.APIService.GetOutputStream.
-func (c *aPIServiceClient) GetOutputStream(ctx context.Context, req *connect_go.Request[pb.ApplicationIdRequest]) (*connect_go.ServerStreamForClient[pb.ApplicationOutput], error) {
-	return c.getOutputStream.CallServerStream(ctx, req)
 }
 
 // StartApplication calls neoshowcase.protobuf.APIService.StartApplication.
@@ -629,16 +661,20 @@ type APIServiceHandler interface {
 	UpdateApplication(context.Context, *connect_go.Request[pb.UpdateApplicationRequest]) (*connect_go.Response[emptypb.Empty], error)
 	// DeleteApplication アプリを削除します 先にアプリのシャットダウンが必要です
 	DeleteApplication(context.Context, *connect_go.Request[pb.ApplicationIdRequest]) (*connect_go.Response[emptypb.Empty], error)
+	// GetAvailableMetrics 取得可能メトリクス一覧を取得します
+	GetAvailableMetrics(context.Context, *connect_go.Request[emptypb.Empty]) (*connect_go.Response[pb.AvailableMetrics], error)
+	// GetApplicationMetrics アプリのメトリクスを取得します
+	GetApplicationMetrics(context.Context, *connect_go.Request[pb.GetApplicationMetricsRequest]) (*connect_go.Response[pb.ApplicationMetrics], error)
+	// GetOutput アプリの出力を取得します
+	GetOutput(context.Context, *connect_go.Request[pb.GetOutputRequest]) (*connect_go.Response[pb.ApplicationOutputs], error)
+	// GetOutputStream アプリの出力をストリーム形式で取得します
+	GetOutputStream(context.Context, *connect_go.Request[pb.ApplicationIdRequest], *connect_go.ServerStream[pb.ApplicationOutput]) error
 	// GetEnvVars アプリの環境変数を取得します
 	GetEnvVars(context.Context, *connect_go.Request[pb.ApplicationIdRequest]) (*connect_go.Response[pb.ApplicationEnvVars], error)
 	// SetEnvVar アプリの環境変数をセットします システムによって設定された環境変数は上書きできません
 	SetEnvVar(context.Context, *connect_go.Request[pb.SetApplicationEnvVarRequest]) (*connect_go.Response[emptypb.Empty], error)
 	// DeleteEnvVar アプリの環境変数を削除します システムによって設定された環境変数は削除できません
 	DeleteEnvVar(context.Context, *connect_go.Request[pb.DeleteApplicationEnvVarRequest]) (*connect_go.Response[emptypb.Empty], error)
-	// GetOutput アプリの出力を取得します
-	GetOutput(context.Context, *connect_go.Request[pb.GetOutputRequest]) (*connect_go.Response[pb.ApplicationOutputs], error)
-	// GetOutputStream アプリの出力をストリーム形式で取得します
-	GetOutputStream(context.Context, *connect_go.Request[pb.ApplicationIdRequest], *connect_go.ServerStream[pb.ApplicationOutput]) error
 	// StartApplication アプリを起動します 起動中の場合は再起動します
 	StartApplication(context.Context, *connect_go.Request[pb.ApplicationIdRequest]) (*connect_go.Response[emptypb.Empty], error)
 	// StopApplication アプリをシャットダウンします
@@ -762,6 +798,26 @@ func NewAPIServiceHandler(svc APIServiceHandler, opts ...connect_go.HandlerOptio
 		svc.DeleteApplication,
 		opts...,
 	)
+	aPIServiceGetAvailableMetricsHandler := connect_go.NewUnaryHandler(
+		APIServiceGetAvailableMetricsProcedure,
+		svc.GetAvailableMetrics,
+		opts...,
+	)
+	aPIServiceGetApplicationMetricsHandler := connect_go.NewUnaryHandler(
+		APIServiceGetApplicationMetricsProcedure,
+		svc.GetApplicationMetrics,
+		opts...,
+	)
+	aPIServiceGetOutputHandler := connect_go.NewUnaryHandler(
+		APIServiceGetOutputProcedure,
+		svc.GetOutput,
+		opts...,
+	)
+	aPIServiceGetOutputStreamHandler := connect_go.NewServerStreamHandler(
+		APIServiceGetOutputStreamProcedure,
+		svc.GetOutputStream,
+		opts...,
+	)
 	aPIServiceGetEnvVarsHandler := connect_go.NewUnaryHandler(
 		APIServiceGetEnvVarsProcedure,
 		svc.GetEnvVars,
@@ -775,16 +831,6 @@ func NewAPIServiceHandler(svc APIServiceHandler, opts ...connect_go.HandlerOptio
 	aPIServiceDeleteEnvVarHandler := connect_go.NewUnaryHandler(
 		APIServiceDeleteEnvVarProcedure,
 		svc.DeleteEnvVar,
-		opts...,
-	)
-	aPIServiceGetOutputHandler := connect_go.NewUnaryHandler(
-		APIServiceGetOutputProcedure,
-		svc.GetOutput,
-		opts...,
-	)
-	aPIServiceGetOutputStreamHandler := connect_go.NewServerStreamHandler(
-		APIServiceGetOutputStreamProcedure,
-		svc.GetOutputStream,
 		opts...,
 	)
 	aPIServiceStartApplicationHandler := connect_go.NewUnaryHandler(
@@ -877,16 +923,20 @@ func NewAPIServiceHandler(svc APIServiceHandler, opts ...connect_go.HandlerOptio
 			aPIServiceUpdateApplicationHandler.ServeHTTP(w, r)
 		case APIServiceDeleteApplicationProcedure:
 			aPIServiceDeleteApplicationHandler.ServeHTTP(w, r)
+		case APIServiceGetAvailableMetricsProcedure:
+			aPIServiceGetAvailableMetricsHandler.ServeHTTP(w, r)
+		case APIServiceGetApplicationMetricsProcedure:
+			aPIServiceGetApplicationMetricsHandler.ServeHTTP(w, r)
+		case APIServiceGetOutputProcedure:
+			aPIServiceGetOutputHandler.ServeHTTP(w, r)
+		case APIServiceGetOutputStreamProcedure:
+			aPIServiceGetOutputStreamHandler.ServeHTTP(w, r)
 		case APIServiceGetEnvVarsProcedure:
 			aPIServiceGetEnvVarsHandler.ServeHTTP(w, r)
 		case APIServiceSetEnvVarProcedure:
 			aPIServiceSetEnvVarHandler.ServeHTTP(w, r)
 		case APIServiceDeleteEnvVarProcedure:
 			aPIServiceDeleteEnvVarHandler.ServeHTTP(w, r)
-		case APIServiceGetOutputProcedure:
-			aPIServiceGetOutputHandler.ServeHTTP(w, r)
-		case APIServiceGetOutputStreamProcedure:
-			aPIServiceGetOutputStreamHandler.ServeHTTP(w, r)
 		case APIServiceStartApplicationProcedure:
 			aPIServiceStartApplicationHandler.ServeHTTP(w, r)
 		case APIServiceStopApplicationProcedure:
@@ -992,6 +1042,22 @@ func (UnimplementedAPIServiceHandler) DeleteApplication(context.Context, *connec
 	return nil, connect_go.NewError(connect_go.CodeUnimplemented, errors.New("neoshowcase.protobuf.APIService.DeleteApplication is not implemented"))
 }
 
+func (UnimplementedAPIServiceHandler) GetAvailableMetrics(context.Context, *connect_go.Request[emptypb.Empty]) (*connect_go.Response[pb.AvailableMetrics], error) {
+	return nil, connect_go.NewError(connect_go.CodeUnimplemented, errors.New("neoshowcase.protobuf.APIService.GetAvailableMetrics is not implemented"))
+}
+
+func (UnimplementedAPIServiceHandler) GetApplicationMetrics(context.Context, *connect_go.Request[pb.GetApplicationMetricsRequest]) (*connect_go.Response[pb.ApplicationMetrics], error) {
+	return nil, connect_go.NewError(connect_go.CodeUnimplemented, errors.New("neoshowcase.protobuf.APIService.GetApplicationMetrics is not implemented"))
+}
+
+func (UnimplementedAPIServiceHandler) GetOutput(context.Context, *connect_go.Request[pb.GetOutputRequest]) (*connect_go.Response[pb.ApplicationOutputs], error) {
+	return nil, connect_go.NewError(connect_go.CodeUnimplemented, errors.New("neoshowcase.protobuf.APIService.GetOutput is not implemented"))
+}
+
+func (UnimplementedAPIServiceHandler) GetOutputStream(context.Context, *connect_go.Request[pb.ApplicationIdRequest], *connect_go.ServerStream[pb.ApplicationOutput]) error {
+	return connect_go.NewError(connect_go.CodeUnimplemented, errors.New("neoshowcase.protobuf.APIService.GetOutputStream is not implemented"))
+}
+
 func (UnimplementedAPIServiceHandler) GetEnvVars(context.Context, *connect_go.Request[pb.ApplicationIdRequest]) (*connect_go.Response[pb.ApplicationEnvVars], error) {
 	return nil, connect_go.NewError(connect_go.CodeUnimplemented, errors.New("neoshowcase.protobuf.APIService.GetEnvVars is not implemented"))
 }
@@ -1002,14 +1068,6 @@ func (UnimplementedAPIServiceHandler) SetEnvVar(context.Context, *connect_go.Req
 
 func (UnimplementedAPIServiceHandler) DeleteEnvVar(context.Context, *connect_go.Request[pb.DeleteApplicationEnvVarRequest]) (*connect_go.Response[emptypb.Empty], error) {
 	return nil, connect_go.NewError(connect_go.CodeUnimplemented, errors.New("neoshowcase.protobuf.APIService.DeleteEnvVar is not implemented"))
-}
-
-func (UnimplementedAPIServiceHandler) GetOutput(context.Context, *connect_go.Request[pb.GetOutputRequest]) (*connect_go.Response[pb.ApplicationOutputs], error) {
-	return nil, connect_go.NewError(connect_go.CodeUnimplemented, errors.New("neoshowcase.protobuf.APIService.GetOutput is not implemented"))
-}
-
-func (UnimplementedAPIServiceHandler) GetOutputStream(context.Context, *connect_go.Request[pb.ApplicationIdRequest], *connect_go.ServerStream[pb.ApplicationOutput]) error {
-	return connect_go.NewError(connect_go.CodeUnimplemented, errors.New("neoshowcase.protobuf.APIService.GetOutputStream is not implemented"))
 }
 
 func (UnimplementedAPIServiceHandler) StartApplication(context.Context, *connect_go.Request[pb.ApplicationIdRequest]) (*connect_go.Response[emptypb.Empty], error) {

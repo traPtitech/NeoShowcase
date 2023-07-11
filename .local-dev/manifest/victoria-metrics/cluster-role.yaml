@@ -1,7 +1,7 @@
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
-  name: grafana-agent
+  name: victoria-metrics
 
 rules:
   - apiGroups:
@@ -13,21 +13,23 @@ rules:
       - services
       - endpoints
       - pods
-      - events
+      - ingresses
+      - configmaps
     verbs:
       - get
       - list
       - watch
   - apiGroups:
-      - networking.k8s.io
+      - "extensions"
+      - "networking.k8s.io"
     resources:
+      - ingresses/status
       - ingresses
     verbs:
       - get
       - list
       - watch
   - nonResourceURLs:
-      - /metrics
-      - /metrics/cadvisor
+      - "/metrics"
     verbs:
       - get

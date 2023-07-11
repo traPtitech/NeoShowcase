@@ -1,0 +1,11 @@
+resources:
+  - cluster-role.yaml
+  - cluster-role-binding.yaml
+  - service.yaml
+  - service-account.yaml
+  - stateful-set.yaml
+
+configMapGenerator:
+  - name: prometheus-config
+    files:
+      - config/prometheus.yml

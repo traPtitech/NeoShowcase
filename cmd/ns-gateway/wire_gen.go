@@ -46,6 +46,10 @@ func NewServer(c2 Config) (*Server, error) {
 	if err != nil {
 		return nil, err
 	}
+	metricsService, err := provideMetricsService(c2)
+	if err != nil {
+		return nil, err
+	}
 	containerLogger, err := provideContainerLogger(c2)
 	if err != nil {
 		return nil, err
@@ -56,7 +60,7 @@ func NewServer(c2 Config) (*Server, error) {
 	if err != nil {
 		return nil, err
 	}
-	service, err := apiserver.NewService(artifactRepository, applicationRepository, buildRepository, environmentRepository, gitRepositoryRepository, userRepository, storage, mariaDBManager, mongoDBManager, containerLogger, controllerServiceClient, publicKeys)
+	service, err := apiserver.NewService(artifactRepository, applicationRepository, buildRepository, environmentRepository, gitRepositoryRepository, userRepository, storage, mariaDBManager, mongoDBManager, metricsService, containerLogger, controllerServiceClient, publicKeys)
 	if err != nil {
 		return nil, err
 	}

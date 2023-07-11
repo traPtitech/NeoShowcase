@@ -298,7 +298,7 @@ services:
       - default
 
   grafana:
-    image: grafana/grafana:9.4.7
+    image: grafana/grafana:10.0.1
     restart: always
     labels:
       - "traefik.enable=true"
@@ -335,6 +335,34 @@ services:
       - /var/run/docker.sock:/var/run/docker.sock
     networks:
       - default
+
+  victoria-metrics:
+    image: victoriametrics/victoria-metrics:v1.91.3
+    command:
+      - --promscrape.config=/etc/config/prometheus.yml
+      - --promscrape.maxScrapeSize=256MB
+      - --maxLabelsPerTimeseries=128
+      - --storageDataPath=/data
+      - --retentionPeriod=7d
+    expose:
+      - 8428
+    volumes:
+      - ./.local-dev/config/prometheus.yml:/etc/config/prometheus.yml:ro
+      - ./.local-dev/victoria-metrics:/data
+
+  cadvisor:
+    image: gcr.io/cadvisor/cadvisor:v0.47.2
+    privileged: true
+    devices:
+      - /dev/kmsg
+    expose:
+      - 8080
+    volumes:
+      - /:/rootfs:ro
+      - /var/run:/var/run:ro
+      - /sys:/sys:ro
+      - /var/lib/docker/:/var/lib/docker:ro
+      - /dev/disk/:/dev/disk:ro
 
   traefik:
     image: traefik:2.10

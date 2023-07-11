@@ -1,6 +1,6 @@
 import { A, useNavigate, useParams } from '@solidjs/router'
 import { Component, createResource, createSignal, For, onCleanup, Show } from 'solid-js'
-import { client, handleAPIError, systemInfo } from '/@/libs/api'
+import { availableMetrics, client, handleAPIError, systemInfo } from '/@/libs/api'
 import { Header } from '/@/components/Header'
 import {
   applicationState,
@@ -23,7 +23,16 @@ import { CenterInline, Container } from '/@/libs/layout'
 import { URLText } from '/@/components/URLText'
 import { Button } from '/@/components/Button'
 import { AppNav } from '/@/components/AppNav'
-import { Card, CardItem, CardItemContent, CardItems, CardItemTitle, CardsRow, CardTitle } from '/@/components/Card'
+import {
+  Card,
+  CardItem,
+  CardItemContent,
+  CardItems,
+  CardItemTitle,
+  CardRowsContainer,
+  CardsRow,
+  CardTitle,
+} from '/@/components/Card'
 import useModal from '/@/libs/useModal'
 import { ModalButtonsContainer, ModalContainer, ModalText } from '/@/components/Modal'
 import toast from 'solid-toast'
@@ -32,6 +41,7 @@ import { vars } from '/@/theme'
 import { unreachable } from '/@/libs/unreachable'
 import { ContainerLog } from '/@/components/ContainerLog'
 import { Checkbox } from '/@/components/Checkbox'
+import { AppMetrics } from '/@/components/AppMetrics'
 
 const RuntimeConfigInfo: Component<{ config: RuntimeConfig }> = (props) => {
   return (
@@ -190,8 +200,9 @@ const SSHCode = styled('code', {
 export default () => {
   const navigate = useNavigate()
   const params = useParams()
+  const id = params.id
   const [app, { refetch: refetchApp }] = createResource(
-    () => params.id,
+    () => id,
     (id) => client.getApplication({ id }),
   )
   const [repo] = createResource(
@@ -237,180 +248,200 @@ export default () => {
       <Header />
       <Show when={loaded()}>
         <AppNav repo={repo()} app={app()} />
-        <CardsRow>
-          <Card>
-            <CardTitle>Actions</CardTitle>
-            <Button color='black1' size='large' width='full' onclick={refreshRepo} disabled={disableRefresh()}>
-              Refresh Commit
-            </Button>
-            <Button
-              onclick={openDeleteAppModal}
-              color='black1'
-              size='large'
-              width='full'
-              disabled={app().running}
-              title={
-                app().running ? 'アプリケーションが起動しているため削除できません' : 'アプリケーションを削除します'
-              }
-            >
-              Delete Application
-            </Button>
-            <DeleteAppModal>
-              <ModalContainer>
-                <ModalText>本当に削除しますか?</ModalText>
-                <ModalButtonsContainer>
-                  <Button onclick={closeDeleteAppModal} color='black1' size='large' width='full'>
-                    キャンセル
-                  </Button>
-                  <Button onclick={deleteApp} color='black1' size='large' width='full'>
-                    削除
-                  </Button>
-                </ModalButtonsContainer>
-              </ModalContainer>
-            </DeleteAppModal>
-            <Show when={!app().running}>
-              <Button color='black1' size='large' width='full' onclick={startApp}>
-                Start App
+        <CardRowsContainer>
+          <CardsRow>
+            <Card>
+              <CardTitle>Actions</CardTitle>
+              <Button color='black1' size='large' width='full' onclick={refreshRepo} disabled={disableRefresh()}>
+                Refresh Commit
               </Button>
-            </Show>
-            <Show when={app().running}>
-              <Button color='black1' size='large' width='full' onclick={startApp}>
-                Restart App
+              <Button
+                onclick={openDeleteAppModal}
+                color='black1'
+                size='large'
+                width='full'
+                disabled={app().running}
+                title={
+                  app().running ? 'アプリケーションが起動しているため削除できません' : 'アプリケーションを削除します'
+                }
+              >
+                Delete Application
               </Button>
-            </Show>
-            <Show when={app().running}>
-              <Button color='black1' size='large' width='full' onclick={stopApp}>
-                Stop App
-              </Button>
-            </Show>
-          </Card>
-          <Card>
-            <CardTitle>Overall</CardTitle>
-            <CardItems>
-              <CardItem>
-                <CardItemTitle>状態</CardItemTitle>
-                <CardItemContent>
-                  <StatusIcon state={applicationState(app())} size={24} />
-                  {applicationState(app())}
-                </CardItemContent>
-              </CardItem>
-              <Show when={app().deployType === DeployType.RUNTIME}>
-                <CardItem>
-                  <CardItemTitle>コンテナの状態</CardItemTitle>
-                  <CardItemContent>{app() && titleCase(Application_ContainerState[app().container])}</CardItemContent>
-                </CardItem>
+              <DeleteAppModal>
+                <ModalContainer>
+                  <ModalText>本当に削除しますか?</ModalText>
+                  <ModalButtonsContainer>
+                    <Button onclick={closeDeleteAppModal} color='black1' size='large' width='full'>
+                      キャンセル
+                    </Button>
+                    <Button onclick={deleteApp} color='black1' size='large' width='full'>
+                      削除
+                    </Button>
+                  </ModalButtonsContainer>
+                </ModalContainer>
+              </DeleteAppModal>
+              <Show when={!app().running}>
+                <Button color='black1' size='large' width='full' onclick={startApp}>
+                  Start App
+                </Button>
               </Show>
-              <CardItem>
-                <CardItemTitle>起動時刻</CardItemTitle>
-                <CardItemContent>
-                  <Show when={app().running} fallback={'-'}>
-                    <DiffHuman target={app().updatedAt.toDate()} />
-                  </Show>
-                </CardItemContent>
-              </CardItem>
-              <CardItem>
-                <CardItemTitle>作成日</CardItemTitle>
-                <CardItemContent>
-                  <DiffHuman target={app().createdAt.toDate()} />
-                </CardItemContent>
-              </CardItem>
-              <Show when={app().websites.length > 0}>
-                <CardItem>
-                  <CardItemTitle>URLs</CardItemTitle>
-                </CardItem>
-                <CardItem>
-                  <CardItemTitle>
-                    <URLsContainer>
-                      <For each={app().websites}>
-                        {(website) => (
-                          <URLText href={getWebsiteURL(website)} target='_blank' rel='noreferrer'>
-                            {getWebsiteURL(website)}
-                          </URLText>
-                        )}
-                      </For>
-                    </URLsContainer>
-                  </CardItemTitle>
-                </CardItem>
+              <Show when={app().running}>
+                <Button color='black1' size='large' width='full' onclick={startApp}>
+                  Restart App
+                </Button>
               </Show>
-            </CardItems>
-          </Card>
-          <Card>
-            <CardTitle>Info</CardTitle>
-            <CardItems>
-              <CardItem>
-                <CardItemTitle>ID</CardItemTitle>
-                <CardItemContent>{app().id}</CardItemContent>
-              </CardItem>
-              <CardItem>
-                <CardItemTitle>Name</CardItemTitle>
-                <CardItemContent>{app().name}</CardItemContent>
-              </CardItem>
-              <A href={`/repos/${repo().id}`}>
+              <Show when={app().running}>
+                <Button color='black1' size='large' width='full' onclick={stopApp}>
+                  Stop App
+                </Button>
+              </Show>
+            </Card>
+            <Card>
+              <CardTitle>Overall</CardTitle>
+              <CardItems>
                 <CardItem>
-                  <CardItemTitle>Repository</CardItemTitle>
+                  <CardItemTitle>状態</CardItemTitle>
                   <CardItemContent>
-                    <CenterInline>{providerToIcon(repositoryURLToProvider(repo().url), 20)}</CenterInline>
-                    {repo().name}
+                    <StatusIcon state={applicationState(app())} size={24} />
+                    {applicationState(app())}
                   </CardItemContent>
                 </CardItem>
-              </A>
-              <CardItem>
-                <CardItemTitle>Git ref (short)</CardItemTitle>
-                <CardItemContent>{app().refName}</CardItemContent>
-              </CardItem>
-              <CardItem>
-                <CardItemTitle>Deploy type</CardItemTitle>
-                <CardItemContent>{titleCase(DeployType[app().deployType])}</CardItemContent>
-              </CardItem>
-              <CardItem>
-                <CardItemTitle>Commit</CardItemTitle>
-                <CardItemContent>
-                  <div>{shortSha(app().commit)}</div>
-                </CardItemContent>
-              </CardItem>
-              <CardItem>
-                <CardItemTitle>Deployed build</CardItemTitle>
-                <CardItemContent>
-                  <div>{shortSha(app().currentBuild)}</div>
-                </CardItemContent>
-              </CardItem>
-            </CardItems>
-          </Card>
-          <Card>
-            <CardTitle>Config</CardTitle>
-            <CardItems>
-              <CardItem>
-                <CardItemTitle>Build Type</CardItemTitle>
-                <CardItemContent>{buildTypeStr[app().config.buildConfig.case]}</CardItemContent>
-              </CardItem>
-              <ApplicationConfigInfo config={app().config} />
-            </CardItems>
-          </Card>
-          <Show when={app().deployType === DeployType.RUNTIME}>
-            <Card>
-              <CardTitle>SSH Access</CardTitle>
-              <CardItems>
-                <Show
-                  when={app().running}
-                  fallback={<CardItem>アプリケーションが起動している間のみSSHでアクセス可能です</CardItem>}
-                >
+                <Show when={app().deployType === DeployType.RUNTIME}>
                   <CardItem>
-                    <SSHCode>{`ssh -p ${systemInfo().ssh.port} ${app().id}@${systemInfo().ssh.host}`}</SSHCode>
+                    <CardItemTitle>コンテナの状態</CardItemTitle>
+                    <CardItemContent>{app() && titleCase(Application_ContainerState[app().container])}</CardItemContent>
+                  </CardItem>
+                </Show>
+                <CardItem>
+                  <CardItemTitle>起動時刻</CardItemTitle>
+                  <CardItemContent>
+                    <Show when={app().running} fallback={'-'}>
+                      <DiffHuman target={app().updatedAt.toDate()} />
+                    </Show>
+                  </CardItemContent>
+                </CardItem>
+                <CardItem>
+                  <CardItemTitle>作成日</CardItemTitle>
+                  <CardItemContent>
+                    <DiffHuman target={app().createdAt.toDate()} />
+                  </CardItemContent>
+                </CardItem>
+                <Show when={app().websites.length > 0}>
+                  <CardItem>
+                    <CardItemTitle>URLs</CardItemTitle>
+                  </CardItem>
+                  <CardItem>
+                    <CardItemTitle>
+                      <URLsContainer>
+                        <For each={app().websites}>
+                          {(website) => (
+                            <URLText href={getWebsiteURL(website)} target='_blank' rel='noreferrer'>
+                              {getWebsiteURL(website)}
+                            </URLText>
+                          )}
+                        </For>
+                      </URLsContainer>
+                    </CardItemTitle>
                   </CardItem>
                 </Show>
               </CardItems>
             </Card>
+            <Card>
+              <CardTitle>Info</CardTitle>
+              <CardItems>
+                <CardItem>
+                  <CardItemTitle>ID</CardItemTitle>
+                  <CardItemContent>{app().id}</CardItemContent>
+                </CardItem>
+                <CardItem>
+                  <CardItemTitle>Name</CardItemTitle>
+                  <CardItemContent>{app().name}</CardItemContent>
+                </CardItem>
+                <A href={`/repos/${repo().id}`}>
+                  <CardItem>
+                    <CardItemTitle>Repository</CardItemTitle>
+                    <CardItemContent>
+                      <CenterInline>{providerToIcon(repositoryURLToProvider(repo().url), 20)}</CenterInline>
+                      {repo().name}
+                    </CardItemContent>
+                  </CardItem>
+                </A>
+                <CardItem>
+                  <CardItemTitle>Git ref (short)</CardItemTitle>
+                  <CardItemContent>{app().refName}</CardItemContent>
+                </CardItem>
+                <CardItem>
+                  <CardItemTitle>Deploy type</CardItemTitle>
+                  <CardItemContent>{titleCase(DeployType[app().deployType])}</CardItemContent>
+                </CardItem>
+                <CardItem>
+                  <CardItemTitle>Commit</CardItemTitle>
+                  <CardItemContent>
+                    <div>{shortSha(app().commit)}</div>
+                  </CardItemContent>
+                </CardItem>
+                <CardItem>
+                  <CardItemTitle>Deployed build</CardItemTitle>
+                  <CardItemContent>
+                    <div>{shortSha(app().currentBuild)}</div>
+                  </CardItemContent>
+                </CardItem>
+              </CardItems>
+            </Card>
+            <Card>
+              <CardTitle>Config</CardTitle>
+              <CardItems>
+                <CardItem>
+                  <CardItemTitle>Build Type</CardItemTitle>
+                  <CardItemContent>{buildTypeStr[app().config.buildConfig.case]}</CardItemContent>
+                </CardItem>
+                <ApplicationConfigInfo config={app().config} />
+              </CardItems>
+            </Card>
+          </CardsRow>
+          <Show when={app().deployType === DeployType.RUNTIME && availableMetrics()}>
+            <CardsRow>
+              <For each={availableMetrics().metricsNames || []}>
+                {(name) => (
+                  <Card>
+                    <CardTitle>{name}</CardTitle>
+                    <CardItems>
+                      <AppMetrics appID={id} metricsName={name} />
+                    </CardItems>
+                  </Card>
+                )}
+              </For>
+            </CardsRow>
           </Show>
           <Show when={app().deployType === DeployType.RUNTIME}>
-            <Card>
-              <CardTitle>Container Log</CardTitle>
-              <Checkbox selected={showLogTimestamp()} setSelected={setShowLogTimestamp}>
-                Show Timestamps
-              </Checkbox>
-              <ContainerLog appID={app().id} showTimestamp={showLogTimestamp()} />
-            </Card>
+            <CardsRow>
+              <Card>
+                <CardTitle>SSH Access</CardTitle>
+                <CardItems>
+                  <Show
+                    when={app().running}
+                    fallback={<CardItem>アプリケーションが起動している間のみSSHでアクセス可能です</CardItem>}
+                  >
+                    <CardItem>
+                      <SSHCode>{`ssh -p ${systemInfo().ssh.port} ${app().id}@${systemInfo().ssh.host}`}</SSHCode>
+                    </CardItem>
+                  </Show>
+                </CardItems>
+              </Card>
+            </CardsRow>
           </Show>
-        </CardsRow>
+          <Show when={app().deployType === DeployType.RUNTIME}>
+            <CardsRow>
+              <Card>
+                <CardTitle>Container Log</CardTitle>
+                <Checkbox selected={showLogTimestamp()} setSelected={setShowLogTimestamp}>
+                  Show Timestamps
+                </Checkbox>
+                <ContainerLog appID={app().id} showTimestamp={showLogTimestamp()} />
+              </Card>
+            </CardsRow>
+          </Show>
+        </CardRowsContainer>
       </Show>
     </Container>
   )

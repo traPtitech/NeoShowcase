@@ -11,6 +11,6 @@ type ContainerLog struct {
 }
 
 type ContainerLogger interface {
-	Get(ctx context.Context, appID string, before time.Time) ([]*ContainerLog, error)
-	Stream(ctx context.Context, appID string) (<-chan *ContainerLog, error)
+	Get(ctx context.Context, app *Application, before time.Time) ([]*ContainerLog, error)
+	Stream(ctx context.Context, app *Application) (<-chan *ContainerLog, error)
 }

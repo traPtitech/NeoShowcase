@@ -30,6 +30,7 @@ type Service struct {
 	storage         domain.Storage
 	mariaDBManager  domain.MariaDBManager
 	mongoDBManager  domain.MongoDBManager
+	metricsService  domain.MetricsService
 	containerLogger domain.ContainerLogger
 	controller      domain.ControllerServiceClient
 	fallbackKey     *ssh.PublicKeys
@@ -48,6 +49,7 @@ func NewService(
 	storage domain.Storage,
 	mariaDBManager domain.MariaDBManager,
 	mongoDBManager domain.MongoDBManager,
+	metricsService domain.MetricsService,
 	containerLogger domain.ContainerLogger,
 	controller domain.ControllerServiceClient,
 	fallbackKey *ssh.PublicKeys,
@@ -66,6 +68,7 @@ func NewService(
 		storage:         storage,
 		mariaDBManager:  mariaDBManager,
 		mongoDBManager:  mongoDBManager,
+		metricsService:  metricsService,
 		containerLogger: containerLogger,
 		controller:      controller,
 		fallbackKey:     fallbackKey,

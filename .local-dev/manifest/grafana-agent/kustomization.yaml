@@ -1,7 +1,0 @@
-resources:
-  - logs/logs-instance.yaml
-  - logs/pod-logs.yaml
-  - cluster-role.yaml
-  - cluster-role-binding.yaml
-  - grafana-agent.yaml
-  - service-account.yaml
