@@ -84,7 +84,7 @@ func (s *builderService) buildStaticBuildpackCleanup(
 	st *state,
 ) error {
 	imageName := s.config.PartialTmpImageName(st.app.ID)
-	digest, err := s.registry.ManifestDigest(imageName, st.build.Commit)
+	digest, err := s.registry.ManifestDigest(imageName, st.build.ID)
 	if err != nil {
 		return err
 	}
