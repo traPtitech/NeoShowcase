@@ -20,7 +20,6 @@ import (
 	"k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/remotecommand"
 
-	"github.com/traPtitech/neoshowcase/pkg/domain"
 	"github.com/traPtitech/neoshowcase/pkg/domain/builder"
 	"github.com/traPtitech/neoshowcase/pkg/util/ds"
 )
@@ -152,7 +151,8 @@ func (k *k8sBackend) Pack(
 	env map[string]string,
 	logWriter io.Writer,
 ) (path string, err error) {
-	remoteRepoPath, cleanupRepoDir, err := k.prepareDir(ctx, repoDir, fmt.Sprintf("repo-%s", domain.NewID()))
+	// NOTE: safe to use the same remote name between builds, under the assumption that buildpack pod is not shared
+	remoteRepoPath, cleanupRepoDir, err := k.prepareDir(ctx, repoDir, "ns-repo")
 	if err != nil {
 		return "", err
 	}
@@ -173,7 +173,7 @@ func (k *k8sBackend) Pack(
 			return "", errors.Wrap(err, "creating env file")
 		}
 	}
-	remoteEnvPath, cleanupEnvDir, err := k.prepareDir(ctx, localEnvTmp, fmt.Sprintf("env-%s", domain.NewID()))
+	remoteEnvPath, cleanupEnvDir, err := k.prepareDir(ctx, localEnvTmp, "ns-env")
 	if err != nil {
 		return "", err
 	}

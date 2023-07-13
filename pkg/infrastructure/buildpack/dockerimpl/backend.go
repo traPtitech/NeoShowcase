@@ -18,7 +18,6 @@ import (
 	"github.com/samber/lo"
 	log "github.com/sirupsen/logrus"
 
-	"github.com/traPtitech/neoshowcase/pkg/domain"
 	"github.com/traPtitech/neoshowcase/pkg/domain/builder"
 	"github.com/traPtitech/neoshowcase/pkg/util/ds"
 	"github.com/traPtitech/neoshowcase/pkg/util/tarfs"
@@ -166,7 +165,7 @@ func (d *dockerBackend) Pack(
 	env map[string]string,
 	logWriter io.Writer,
 ) (path string, err error) {
-	remoteRepoPath, cleanupRepoDir, err := d.prepareDir(ctx, repoDir, fmt.Sprintf("repo-%s", domain.NewID()))
+	remoteRepoPath, cleanupRepoDir, err := d.prepareDir(ctx, repoDir, "ns-repo")
 	if err != nil {
 		return "", err
 	}
@@ -187,7 +186,7 @@ func (d *dockerBackend) Pack(
 			return "", errors.Wrap(err, "creating env file")
 		}
 	}
-	remoteEnvPath, cleanupEnvDir, err := d.prepareDir(ctx, localEnvTmp, fmt.Sprintf("env-%s", domain.NewID()))
+	remoteEnvPath, cleanupEnvDir, err := d.prepareDir(ctx, localEnvTmp, "ns-env")
 	if err != nil {
 		return "", err
 	}
