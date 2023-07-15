@@ -164,15 +164,15 @@ export default () => {
             <div>
               <InputLabel>Branch Name</InputLabel>
               <InputSuggestion suggestions={branchesSuggestion()} onSetSuggestion={(b) => setRequest('refName', b)}>
-                <InputBar
-                  placeholder='main'
-                  value={request.refName}
-                  onInput={(e) => {
-                    console.log(`setting ref ${e.target.value}`)
-                    setRequest('refName', e.target.value)
-                  }}
-                  required
-                />
+                {(onFocus) => (
+                  <InputBar
+                    placeholder='main'
+                    value={request.refName}
+                    onInput={(e) => setRequest('refName', e.target.value)}
+                    onFocus={onFocus}
+                    required
+                  />
+                )}
               </InputSuggestion>
             </div>
 

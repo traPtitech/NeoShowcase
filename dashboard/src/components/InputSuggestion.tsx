@@ -1,6 +1,6 @@
 import { styled } from '@macaron-css/solid'
 import { vars } from '/@/theme'
-import { createSignal, For, ParentComponent, Show } from 'solid-js'
+import { createSignal, FlowComponent, For, JSX, ParentComponent, Show } from 'solid-js'
 import { clickInside as clickInsideDir, clickOutside as clickOutsideDir } from '/@/libs/useClickInout'
 
 // https://github.com/solidjs/solid/discussions/845
@@ -47,12 +47,14 @@ export interface InputSuggestionProps {
   onSetSuggestion: (selected: string) => void
 }
 
-export const InputSuggestion: ParentComponent<InputSuggestionProps> = (props) => {
+export type InputSuggestionChildren = (onFocus: () => void) => JSX.Element
+
+export const InputSuggestion: FlowComponent<InputSuggestionProps, InputSuggestionChildren> = (props) => {
   const [focused, setFocused] = createSignal(false)
 
   return (
     <div use:clickInside={() => setFocused(true)} use:clickOutside={() => setFocused(false)}>
-      {props.children}
+      {props.children(() => setFocused(true))}
       <Show when={focused()}>
         <SuggestionOuterContainer>
           <SuggestionContainer>

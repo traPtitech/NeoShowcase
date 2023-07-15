@@ -186,12 +186,15 @@ export default () => {
           <div>
             <InputLabel>Branch Name</InputLabel>
             <InputSuggestion suggestions={branchesSuggestion()} onSetSuggestion={(b) => setGeneralConfig('refName', b)}>
-              <InputBar
-                placeholder='main'
-                value={generalConfig.refName}
-                onInput={(e) => setGeneralConfig('refName', e.target.value)}
-                required
-              />
+              {(onFocus) => (
+                <InputBar
+                  placeholder='main'
+                  value={generalConfig.refName}
+                  onInput={(e) => setGeneralConfig('refName', e.target.value)}
+                  onFocus={onFocus}
+                  required
+                />
+              )}
             </InputSuggestion>
           </div>
           <Button color='black1' size='large' width='auto' onclick={updateGeneralSettings} type='submit'>
