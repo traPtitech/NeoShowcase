@@ -140,6 +140,7 @@ export const BuildConfigs = (props: BuildConfigsProps) => {
               'Command: ビルド設定を直接設定',
               'Dockerfile: Dockerfileを用いる',
             ]}
+            style='left'
           />
         </InputLabel>
         <Select
