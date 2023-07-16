@@ -11,10 +11,10 @@ import (
 	"golang.org/x/exp/slices"
 
 	"github.com/traPtitech/neoshowcase/pkg/domain"
-	"github.com/traPtitech/neoshowcase/pkg/util/coalesce"
 	"github.com/traPtitech/neoshowcase/pkg/util/ds"
 	"github.com/traPtitech/neoshowcase/pkg/util/loop"
 	"github.com/traPtitech/neoshowcase/pkg/util/optional"
+	"github.com/traPtitech/neoshowcase/pkg/util/scutil"
 )
 
 type Service interface {
@@ -59,7 +59,7 @@ func NewService(
 
 	ctx, cancel := context.WithCancel(context.Background())
 
-	doStartBuild := coalesce.NewCoalescer(func(ctx context.Context) error {
+	doStartBuild := scutil.NewCoalescer(func(ctx context.Context) error {
 		start := time.Now()
 		if err := cd.startBuilds(ctx); err != nil {
 			log.Errorf("failed to start builds: %+v", err)
@@ -73,7 +73,7 @@ func NewService(
 		_ = doStartBuild.Do(context.Background())
 	}
 
-	doSyncDeploy := coalesce.NewCoalescer(func(ctx context.Context) error {
+	doSyncDeploy := scutil.NewCoalescer(func(ctx context.Context) error {
 		start := time.Now()
 		if err := cd.syncDeployments(ctx); err != nil {
 			log.Errorf("failed to sync deployments: %+v", err)
