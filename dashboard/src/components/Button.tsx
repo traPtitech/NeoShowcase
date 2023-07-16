@@ -60,6 +60,7 @@ export interface Props extends JSX.ButtonHTMLAttributes<HTMLButtonElement> {
   color: 'black1'
   size: 'large'
   width: 'auto' | 'full'
+  tooltip?: string
 }
 
 export const Button: ParentComponent<Props> = (props) => {

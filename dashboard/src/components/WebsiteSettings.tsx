@@ -10,6 +10,7 @@ import { systemInfo } from '../libs/api'
 import { styled } from '@macaron-css/solid'
 import { vars } from '../theme'
 import { PlainMessage } from '@bufbuild/protobuf'
+import { InfoTooltip } from '/@/components/InfoTooltip'
 
 const AvailableDomainContainer = styled('div', {
   base: {
@@ -52,7 +53,10 @@ export const WebsiteSetting = (props: WebsiteSettingProps) => {
         />
       </div>
       <div>
-        <InputLabel>Path Prefix</InputLabel>
+        <InputLabel>
+          Path Prefix
+          <InfoTooltip tooltip={['(Advanced) 指定Prefixが付いていたときのみアプリへルーティング']} />
+        </InputLabel>
         <InputBar
           placeholder='/'
           value={props.website.pathPrefix}
@@ -61,18 +65,20 @@ export const WebsiteSetting = (props: WebsiteSettingProps) => {
       </div>
       <div>
         <FormCheckBox>
+          <Checkbox selected={props.website.https} setSelected={(selected) => props.setWebsite('https', selected)}>
+            https
+          </Checkbox>
           <Checkbox
             selected={props.website.stripPrefix}
             setSelected={(selected) => props.setWebsite('stripPrefix', selected)}
           >
             Strip Path Prefix
-          </Checkbox>
-          <Checkbox selected={props.website.https} setSelected={(selected) => props.setWebsite('https', selected)}>
-            https
+            <InfoTooltip tooltip={['(Advanced) 指定Prefixをアプリへのリクエスト時に削除']} />
           </Checkbox>
           <Show when={props.runtime}>
             <Checkbox selected={props.website.h2c} setSelected={(selected) => props.setWebsite('h2c', selected)}>
-              (advanced) アプリ通信にh2cを用いる
+              h2c
+              <InfoTooltip tooltip={['(Advanced) アプリ通信に強制的にh2cを用いる']} />
             </Checkbox>
           </Show>
         </FormCheckBox>
@@ -89,7 +95,17 @@ export const WebsiteSetting = (props: WebsiteSettingProps) => {
         </div>
       </Show>
       <div>
-        <InputLabel>部員認証</InputLabel>
+        <InputLabel>
+          部員認証
+          <InfoTooltip
+            tooltip={[
+              'OFF: 誰でもアクセス可能',
+              'SOFT: 部員の場合X-Forwarded-Userをセット',
+              'HARD: 部員のみアクセス可能',
+            ]}
+            style='left'
+          />
+        </InputLabel>
         <Radio
           items={authenticationTypeItems}
           selected={props.website.authentication}

@@ -82,7 +82,12 @@ export const InfoTooltip: Component<InfoTooltipProps> = (props) => {
   })
 
   return (
-    <div use:tippy={{ props: { content: content(), animation: 'shift-away-subtle', allowHTML: true }, hidden: true }}>
+    <div
+      use:tippy={{
+        props: { content: content(), animation: 'shift-away-subtle', allowHTML: true, maxWidth: 1000 },
+        hidden: true,
+      }}
+    >
       <Container>
         <AiOutlineInfoCircle />
       </Container>
