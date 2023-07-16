@@ -252,7 +252,14 @@ export default () => {
           <CardsRow>
             <Card>
               <CardTitle>Actions</CardTitle>
-              <Button color='black1' size='large' width='full' onclick={refreshRepo} disabled={disableRefresh()}>
+              <Button
+                color='black1'
+                size='large'
+                width='full'
+                onclick={refreshRepo}
+                disabled={disableRefresh()}
+                tooltip='最新のコミットを取得します'
+              >
                 Refresh Commit
               </Button>
               <Button
@@ -269,7 +276,10 @@ export default () => {
               </Button>
               <DeleteAppModal>
                 <ModalContainer>
-                  <ModalText>本当に削除しますか?</ModalText>
+                  <ModalText>
+                    <div>本当に削除しますか?</div>
+                    <div>データベースを利用している場合、中身のデータも削除されます</div>
+                  </ModalText>
                   <ModalButtonsContainer>
                     <Button onclick={closeDeleteAppModal} color='black1' size='large' width='full'>
                       キャンセル
