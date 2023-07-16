@@ -9,7 +9,7 @@ import { styled } from '@macaron-css/solid'
 import { vars } from '/@/theme'
 import { createStore } from 'solid-js/store'
 import { ApplicationEnvVar, DeployType, UpdateApplicationRequest, User } from '/@/api/neoshowcase/protobuf/gateway_pb'
-import { BuildConfigs, buildConfigTooltips } from '/@/components/BuildConfigs'
+import { BuildConfigs } from '/@/components/BuildConfigs'
 import toast from 'solid-toast'
 import { WebsiteSettings } from '/@/components/WebsiteSettings'
 import { InputBar, InputLabel } from '/@/components/Input'
@@ -165,7 +165,7 @@ export default () => {
     return (
       <form ref={formContainer}>
         <SettingFieldSet>
-          <FormTextBig id='general-settings'>General settings</FormTextBig>
+          <FormTextBig id='general-settings'>General Settings</FormTextBig>
           <div>
             <InputLabel>Application Name</InputLabel>
             <InputBar
@@ -235,7 +235,6 @@ export default () => {
       <SettingFieldSet>
         <FormTextBig id='build-settings'>
           Build Settings
-          <InfoTooltip tooltip={buildConfigTooltips} style='left' />
         </FormTextBig>
         <BuildConfigs buildConfig={config} setBuildConfig={setConfig} />
         <Button color='black1' size='large' width='auto' onclick={updateBuildSettings} type='submit'>

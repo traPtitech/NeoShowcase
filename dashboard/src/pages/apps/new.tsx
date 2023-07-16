@@ -22,7 +22,7 @@ import { InputBar, InputLabel } from '/@/components/Input'
 import { FormCheckBox, FormTextBig } from '/@/components/AppsNew'
 import { WebsiteSettings } from '/@/components/WebsiteSettings'
 import { PortPublicationSettings } from '/@/components/PortPublications'
-import { BuildConfigMethod, BuildConfigs, buildConfigTooltips } from '/@/components/BuildConfigs'
+import { BuildConfigMethod, BuildConfigs } from '/@/components/BuildConfigs'
 import { PlainMessage } from '@bufbuild/protobuf'
 import { InputSuggestion } from '/@/components/InputSuggestion'
 import { useBranchesSuggestion } from '/@/libs/branchesSuggestion'
@@ -183,7 +183,6 @@ export default () => {
             <div>
               <FormTextBig>
                 Build Setting
-                <InfoTooltip tooltip={buildConfigTooltips} style='left' />
               </FormTextBig>
               <BuildConfigs setBuildConfig={setBuildConfig} buildConfig={buildConfig} />
             </div>

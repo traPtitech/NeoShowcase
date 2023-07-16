@@ -4,9 +4,10 @@ import { InputArea, InputBar, InputLabel } from '/@/components/Input'
 import { FormCheckBox, FormSettings } from '/@/components/AppsNew'
 import { Checkbox } from '/@/components/Checkbox'
 import { createEffect, Match, Switch } from 'solid-js'
-import { Radio, RadioItem } from '/@/components/Radio'
+import { RadioItem } from '/@/components/Radio'
 import { PlainMessage } from '@bufbuild/protobuf'
 import { InfoTooltip } from '/@/components/InfoTooltip'
+import { Select } from '/@/components/Select'
 
 export type BuildConfigMethod = ApplicationConfig['buildConfig']['case']
 const buildConfigItems: RadioItem<BuildConfigMethod>[] = [
@@ -109,12 +110,6 @@ const StaticConfigs = (props: StaticConfigProps) => {
   )
 }
 
-export const buildConfigTooltips = [
-  'Buildpack: ビルド設定自動検出 (オススメ)',
-  'Command: ビルド設定を直接設定',
-  'Dockerfile: Dockerfileを用いる',
-]
-
 export interface BuildConfigsProps {
   buildConfig: PlainMessage<ApplicationConfig>['buildConfig']
   setBuildConfig: SetStoreFunction<PlainMessage<ApplicationConfig>['buildConfig']>
@@ -137,10 +132,18 @@ export const BuildConfigs = (props: BuildConfigsProps) => {
   return (
     <FormSettings>
       <div>
-        <Radio
+        <InputLabel>
+          Type
+          <InfoTooltip tooltip={[
+            'Buildpack: ビルド設定自動検出 (オススメ)',
+            'Command: ビルド設定を直接設定',
+            'Dockerfile: Dockerfileを用いる',
+          ]} />
+        </InputLabel>
+        <Select
           items={buildConfigItems}
           selected={props.buildConfig.case}
-          setSelected={(method) => props.setBuildConfig('case', method)}
+          onSelect={(method) => props.setBuildConfig('case', method)}
         />
       </div>
 

@@ -142,7 +142,7 @@ export default () => {
     return (
       <form ref={formContainer}>
         <SettingFieldSet>
-          <FormTextBig id='general-settings'>General settings</FormTextBig>
+          <FormTextBig id='general-settings'>General Settings</FormTextBig>
           <div>
             <InputLabel>Repository Name</InputLabel>
             <InputBar
@@ -229,7 +229,7 @@ export default () => {
     return (
       <>
         <SettingFieldSet>
-          <FormTextBig id='owner-settings'>Owner Settings</FormTextBig>
+          <FormTextBig id='owner-settings'>Owners</FormTextBig>
           <Button color='black1' size='large' width='auto' onclick={open}>
             リポジトリオーナーを追加する
           </Button>
