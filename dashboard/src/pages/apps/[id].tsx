@@ -261,7 +261,7 @@ export default () => {
                 size='large'
                 width='full'
                 disabled={app().running}
-                title={
+                tooltip={
                   app().running ? 'アプリケーションが起動しているため削除できません' : 'アプリケーションを削除します'
                 }
               >

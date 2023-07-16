@@ -1,6 +1,10 @@
 import { styled } from '@macaron-css/solid'
 import { vars } from '/@/theme'
 import { JSX, ParentComponent, splitProps } from 'solid-js'
+import { tippy as tippyDir } from 'solid-tippy'
+
+// https://github.com/solidjs/solid/discussions/845
+const tippy = tippyDir
 
 const Container = styled('button', {
   base: {
@@ -68,10 +72,18 @@ export const Button: ParentComponent<Props> = (props) => {
 
   const cursor = () => (originalButtonProps.onclick !== undefined && !originalButtonProps.disabled ? 'pointer' : 'none')
   return (
-    <Container color={addedProps.color} width={addedProps.width} cursor={cursor()} {...originalButtonProps}>
-      <Text color={addedProps.color} size={addedProps.size}>
-        {props.children}
-      </Text>
-    </Container>
+    <span
+      use:tippy={{
+        props: { content: props.tooltip, maxWidth: 1000 },
+        disabled: !props.tooltip,
+        hidden: true,
+      }}
+    >
+      <Container color={addedProps.color} width={addedProps.width} cursor={cursor()} {...originalButtonProps}>
+        <Text color={addedProps.color} size={addedProps.size}>
+          {props.children}
+        </Text>
+      </Container>
+    </span>
   )
 }

@@ -437,7 +437,7 @@ export default () => {
                 type='button'
                 onclick={() => setIsEditing(true)}
                 disabled={props.envVar.system}
-                title={props.envVar.system ? 'システム環境変数は編集できません' : undefined}
+                tooltip={props.envVar.system && 'システム環境変数は編集できません'}
               >
                 Edit
               </Button>
@@ -448,7 +448,7 @@ export default () => {
                 type='button'
                 onclick={openDeleteEnvVarModal}
                 disabled={props.envVar.system}
-                title={props.envVar.system ? 'システム環境変数は削除できません' : undefined}
+                tooltip={props.envVar.system && 'システム環境変数は削除できません'}
               >
                 Delete
               </Button>
