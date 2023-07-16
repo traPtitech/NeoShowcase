@@ -233,9 +233,7 @@ export default () => {
 
     return (
       <SettingFieldSet>
-        <FormTextBig id='build-settings'>
-          Build Settings
-        </FormTextBig>
+        <FormTextBig id='build-settings'>Build Settings</FormTextBig>
         <BuildConfigs buildConfig={config} setBuildConfig={setConfig} />
         <Button color='black1' size='large' width='auto' onclick={updateBuildSettings} type='submit'>
           Save

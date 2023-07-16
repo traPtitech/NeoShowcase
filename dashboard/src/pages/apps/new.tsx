@@ -181,9 +181,7 @@ export default () => {
             </div>
 
             <div>
-              <FormTextBig>
-                Build Setting
-              </FormTextBig>
+              <FormTextBig>Build Setting</FormTextBig>
               <BuildConfigs setBuildConfig={setBuildConfig} buildConfig={buildConfig} />
             </div>
 

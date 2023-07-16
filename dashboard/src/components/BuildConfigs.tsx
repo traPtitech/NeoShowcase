@@ -134,11 +134,13 @@ export const BuildConfigs = (props: BuildConfigsProps) => {
       <div>
         <InputLabel>
           Type
-          <InfoTooltip tooltip={[
-            'Buildpack: ビルド設定自動検出 (オススメ)',
-            'Command: ビルド設定を直接設定',
-            'Dockerfile: Dockerfileを用いる',
-          ]} />
+          <InfoTooltip
+            tooltip={[
+              'Buildpack: ビルド設定自動検出 (オススメ)',
+              'Command: ビルド設定を直接設定',
+              'Dockerfile: Dockerfileを用いる',
+            ]}
+          />
         </InputLabel>
         <Select
           items={buildConfigItems}
