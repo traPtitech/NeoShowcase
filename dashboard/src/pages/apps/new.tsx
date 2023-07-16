@@ -22,7 +22,7 @@ import { InputBar, InputLabel } from '/@/components/Input'
 import { FormCheckBox, FormTextBig } from '/@/components/AppsNew'
 import { WebsiteSettings } from '/@/components/WebsiteSettings'
 import { PortPublicationSettings } from '/@/components/PortPublications'
-import { BuildConfigMethod, BuildConfigs } from '/@/components/BuildConfigs'
+import { BuildConfigMethod, BuildConfigs, buildConfigTooltips } from '/@/components/BuildConfigs'
 import { PlainMessage } from '@bufbuild/protobuf'
 import { InputSuggestion } from '/@/components/InputSuggestion'
 import { useBranchesSuggestion } from '/@/libs/branchesSuggestion'
@@ -165,7 +165,7 @@ export default () => {
             <div>
               <InputLabel>
                 Branch Name
-                <InfoTooltip tooltip='デプロイするGitブランチ名またはRef' />
+                <InfoTooltip tooltip={['Gitブランチ名またはRef', '入力欄をクリックして候補を表示']} />
               </InputLabel>
               <InputSuggestion suggestions={branchesSuggestion()} onSetSuggestion={(b) => setRequest('refName', b)}>
                 {(onFocus) => (
@@ -181,22 +181,36 @@ export default () => {
             </div>
 
             <div>
-              <FormTextBig>Build Setting</FormTextBig>
+              <FormTextBig>
+                Build Setting
+                <InfoTooltip tooltip={buildConfigTooltips} style='left' />
+              </FormTextBig>
               <BuildConfigs setBuildConfig={setBuildConfig} buildConfig={buildConfig} />
             </div>
 
             <div>
-              <FormTextBig>Website Setting</FormTextBig>
+              <FormTextBig>
+                Website Setting
+                <InfoTooltip tooltip={['アプリへアクセスするURLの設定', '(複数設定可能)']} />
+              </FormTextBig>
               <WebsiteSettings runtime={isRuntime()} websiteConfigs={websites} setWebsiteConfigs={setWebsites} />
             </div>
 
             <div>
-              <FormTextBig>Port Publication Setting</FormTextBig>
+              <FormTextBig>
+                Port Forwarding
+                <InfoTooltip tooltip={['(Advanced) TCP/UDPポート公開設定', '(複数設定可能)']} />
+              </FormTextBig>
               <PortPublicationSettings ports={ports} setPorts={setPorts} />
             </div>
 
             <div>
-              <InputLabel>Start on Create</InputLabel>
+              <InputLabel>
+                Start Immediately
+                <InfoTooltip
+                  tooltip={['この設定で今すぐ起動するかどうか', '(環境変数はアプリ作成後設定可能になります)']}
+                />
+              </InputLabel>
               <FormCheckBox>
                 <Checkbox
                   selected={request.startOnCreate}

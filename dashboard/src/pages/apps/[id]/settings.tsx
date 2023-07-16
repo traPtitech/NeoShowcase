@@ -9,7 +9,7 @@ import { styled } from '@macaron-css/solid'
 import { vars } from '/@/theme'
 import { createStore } from 'solid-js/store'
 import { ApplicationEnvVar, DeployType, UpdateApplicationRequest, User } from '/@/api/neoshowcase/protobuf/gateway_pb'
-import { BuildConfigs } from '/@/components/BuildConfigs'
+import { BuildConfigs, buildConfigTooltips } from '/@/components/BuildConfigs'
 import toast from 'solid-toast'
 import { WebsiteSettings } from '/@/components/WebsiteSettings'
 import { InputBar, InputLabel } from '/@/components/Input'
@@ -23,6 +23,7 @@ import { ModalButtonsContainer, ModalContainer, ModalText } from '/@/components/
 import { PlainMessage } from '@bufbuild/protobuf'
 import { InputSuggestion } from '/@/components/InputSuggestion'
 import { useBranchesSuggestion } from '/@/libs/branchesSuggestion'
+import { InfoTooltip } from '/@/components/InfoTooltip'
 
 const ContentContainer = styled('div', {
   base: {
@@ -175,7 +176,10 @@ export default () => {
             />
           </div>
           <div>
-            <InputLabel>Repository ID</InputLabel>
+            <InputLabel>
+              Repository ID
+              <InfoTooltip tooltip={['リポジトリを移管する場合IDを変更']} />
+            </InputLabel>
             <InputBar
               placeholder='my-app'
               value={generalConfig.repositoryId}
@@ -184,7 +188,10 @@ export default () => {
             />
           </div>
           <div>
-            <InputLabel>Branch Name</InputLabel>
+            <InputLabel>
+              Branch Name
+              <InfoTooltip tooltip={['Gitブランチ名またはRef', '入力欄をクリックして候補を表示']} />
+            </InputLabel>
             <InputSuggestion suggestions={branchesSuggestion()} onSetSuggestion={(b) => setGeneralConfig('refName', b)}>
               {(onFocus) => (
                 <InputBar
@@ -226,7 +233,10 @@ export default () => {
 
     return (
       <SettingFieldSet>
-        <FormTextBig id='build-settings'>Build Settings</FormTextBig>
+        <FormTextBig id='build-settings'>
+          Build Settings
+          <InfoTooltip tooltip={buildConfigTooltips} style='left' />
+        </FormTextBig>
         <BuildConfigs buildConfig={config} setBuildConfig={setConfig} />
         <Button color='black1' size='large' width='auto' onclick={updateBuildSettings} type='submit'>
           Save
@@ -249,7 +259,10 @@ export default () => {
 
     return (
       <SettingFieldSet>
-        <FormTextBig id='website-settings'>Website Settings</FormTextBig>
+        <FormTextBig id='website-settings'>
+          Website Settings
+          <InfoTooltip tooltip={['アプリへアクセスするURLの設定', '(複数設定可能)']} />
+        </FormTextBig>
         <WebsiteSettings
           runtime={app().deployType === DeployType.RUNTIME}
           websiteConfigs={websites}
@@ -276,7 +289,10 @@ export default () => {
 
     return (
       <SettingFieldSet>
-        <FormTextBig id='port-settings'>Port Publication Settings</FormTextBig>
+        <FormTextBig id='port-settings'>
+          Port Forwarding
+          <InfoTooltip tooltip={['(Advanced) TCP/UDPポート公開設定', '(複数設定可能)']} />
+        </FormTextBig>
         <PortPublicationSettings ports={ports} setPorts={setPorts} />
         <Button color='black1' size='large' width='auto' onclick={updatePortPublications} type='submit'>
           Save
@@ -306,7 +322,19 @@ export default () => {
     return (
       <>
         <SettingFieldSet>
-          <FormTextBig id='owner-settings'>Owner Settings</FormTextBig>
+          <FormTextBig id='owner-settings'>
+            Owners
+            <InfoTooltip
+              tooltip={[
+                'オーナーは以下が可能になります',
+                'アプリの設定を変更',
+                'アプリのログ/メトリクスを閲覧',
+                '環境変数を閲覧',
+                'ビルドログを閲覧',
+              ]}
+              style='bullets-with-title'
+            />
+          </FormTextBig>
           <Button color='black1' size='large' width='auto' onclick={open}>
             アプリオーナーを追加する
           </Button>
@@ -488,7 +516,10 @@ export default () => {
 
     return (
       <SettingFieldSet>
-        <FormTextBig id='env-var-settings'>Environment Variable Settings</FormTextBig>
+        <FormTextBig id='env-var-settings'>
+          Environment Variables
+          <InfoTooltip tooltip={['ビルド時と実行時の両方に渡されます']} />
+        </FormTextBig>
         <div>
           <EnvVarsContainer>
             <div class={EnvVarContainerClass}>

@@ -34,29 +34,58 @@ const TooltipContainer = styled('div', {
   base: {
     display: 'flex',
     flexDirection: 'column',
-    alignItems: 'center',
+  },
+  variants: {
+    align: {
+      left: {
+        alignItems: 'flex-start',
+      },
+      center: {
+        alignItems: 'center',
+      },
+    },
   },
 })
 
 export interface InfoTooltipProps {
   tooltip: string | string[]
+  style?: 'bullets' | 'bullets-with-title' | 'left' | 'center'
 }
 
 export const InfoTooltip: Component<InfoTooltipProps> = (props) => {
   const content = createMemo((): Content => {
     if (typeof props.tooltip === 'string') return props.tooltip
+    if (props.style === 'bullets-with-title') {
+      return (
+        <TooltipContainer align='left'>
+          {props.tooltip[0]}
+          <ul>
+            <For each={props.tooltip.slice(1)}>{(line) => <li>{line}</li>}</For>
+          </ul>
+        </TooltipContainer>
+      ) as Element
+    }
+    if (props.style === 'bullets') {
+      return (
+        <TooltipContainer align='left'>
+          <ul>
+            <For each={props.tooltip}>{(line) => <li>{line}</li>}</For>
+          </ul>
+        </TooltipContainer>
+      ) as Element
+    }
     return (
-      <TooltipContainer>
+      <TooltipContainer align={props.style ?? 'center'}>
         <For each={props.tooltip}>{(line) => <span>{line}</span>}</For>
       </TooltipContainer>
     ) as Element
   })
 
   return (
-    <Container>
-      <div use:tippy={{ props: { content: content(), animation: 'shift-away-subtle', allowHTML: true }, hidden: true }}>
+    <div use:tippy={{ props: { content: content(), animation: 'shift-away-subtle', allowHTML: true }, hidden: true }}>
+      <Container>
         <AiOutlineInfoCircle />
-      </div>
-    </Container>
+      </Container>
+    </div>
   )
 }
