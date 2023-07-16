@@ -193,13 +193,15 @@ export default () => {
               <WebsiteSettings runtime={isRuntime()} websiteConfigs={websites} setWebsiteConfigs={setWebsites} />
             </div>
 
-            <div>
-              <FormTextBig>
-                Port Forwarding
-                <InfoTooltip tooltip={['(Advanced) TCP/UDPポート公開設定', '(複数設定可能)']} />
-              </FormTextBig>
-              <PortPublicationSettings ports={ports} setPorts={setPorts} />
-            </div>
+            <Show when={isRuntime()}>
+              <div>
+                <FormTextBig>
+                  Port Forwarding
+                  <InfoTooltip tooltip={['(Advanced) TCP/UDPポート公開設定', '(複数設定可能)']} />
+                </FormTextBig>
+                <PortPublicationSettings ports={ports} setPorts={setPorts} />
+              </div>
+            </Show>
 
             <div>
               <InputLabel>

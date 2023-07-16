@@ -547,7 +547,9 @@ export default () => {
                 <SidebarNavAnchor href='#general-settings'>General</SidebarNavAnchor>
                 <SidebarNavAnchor href='#build-settings'>Build</SidebarNavAnchor>
                 <SidebarNavAnchor href='#website-settings'>Website</SidebarNavAnchor>
-                <SidebarNavAnchor href='#port-settings'>Port Publication</SidebarNavAnchor>
+                <Show when={app().deployType === DeployType.RUNTIME}>
+                  <SidebarNavAnchor href='#port-settings'>Port Forwarding</SidebarNavAnchor>
+                </Show>
                 <SidebarNavAnchor href='#owner-settings'>Owner</SidebarNavAnchor>
                 <SidebarNavAnchor href='#env-var-settings'>Environment Variable</SidebarNavAnchor>
               </SidebarOptions>
@@ -557,7 +559,9 @@ export default () => {
             <GeneralConfigsContainer />
             <BuildConfigsContainer />
             <WebsitesConfigContainer />
-            <PortPublicationConfigContainer />
+            <Show when={app().deployType === DeployType.RUNTIME}>
+              <PortPublicationConfigContainer />
+            </Show>
             <OwnerConfigContainer />
             <EnvVarConfigContainer />
           </ConfigsContainer>
