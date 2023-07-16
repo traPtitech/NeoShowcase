@@ -1,18 +1,8 @@
 import { Component, createMemo, For } from 'solid-js'
 import { styled } from '@macaron-css/solid'
 import { AiOutlineInfoCircle } from 'solid-icons/ai'
-import { tippy as tippyDir, TippyOptions } from 'solid-tippy'
-import 'tippy.js/dist/tippy.css'
-import 'tippy.js/animations/shift-away-subtle.css'
+import { tippy as tippyDir } from 'solid-tippy'
 import { Content } from 'tippy.js'
-
-declare module 'solid-js' {
-  namespace JSX {
-    interface Directives {
-      tippy: TippyOptions
-    }
-  }
-}
 
 // https://github.com/solidjs/solid/discussions/845
 const tippy = tippyDir

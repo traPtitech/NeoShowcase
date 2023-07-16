@@ -1,6 +1,5 @@
 import { AuthenticationType, CreateWebsiteRequest } from '/@/api/neoshowcase/protobuf/gateway_pb'
 import { Checkbox } from '/@/components/Checkbox'
-import { Radio, RadioItem } from '/@/components/Radio'
 import { Button } from '/@/components/Button'
 import { SetStoreFunction } from 'solid-js/store'
 import { For, Show } from 'solid-js'
@@ -11,6 +10,9 @@ import { styled } from '@macaron-css/solid'
 import { vars } from '../theme'
 import { PlainMessage } from '@bufbuild/protobuf'
 import { InfoTooltip } from '/@/components/InfoTooltip'
+import { Select, SelectItem } from '/@/components/Select'
+import { FaRegularTrashCan } from 'solid-icons/fa'
+import { AiOutlinePlusCircle } from 'solid-icons/ai'
 
 const AvailableDomainContainer = styled('div', {
   base: {
@@ -19,9 +21,19 @@ const AvailableDomainContainer = styled('div', {
     padding: '8px',
   },
 })
+
 const AvailableDomainUl = styled('ul', {
   base: {
     margin: '8px 0',
+  },
+})
+
+const URLContainer = styled('div', {
+  base: {
+    display: 'flex',
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: '2px',
   },
 })
 
@@ -35,7 +47,12 @@ interface WebsiteSettingProps {
   deleteWebsite: () => void
 }
 
-const authenticationTypeItems: RadioItem<AuthenticationType>[] = [
+const schemeOptions: SelectItem<'http' | 'https'>[] = [
+  { value: 'http', title: 'http' },
+  { value: 'https', title: 'https' },
+]
+
+const authenticationTypeItems: SelectItem<AuthenticationType>[] = [
   { value: AuthenticationType.OFF, title: 'OFF' },
   { value: AuthenticationType.SOFT, title: 'SOFT' },
   { value: AuthenticationType.HARD, title: 'HARD' },
@@ -45,29 +62,63 @@ export const WebsiteSetting = (props: WebsiteSettingProps) => {
   return (
     <FormSettings>
       <div>
-        <InputLabel>ドメイン名</InputLabel>
-        <InputBar
-          placeholder='example.trap.show'
-          value={props.website.fqdn}
-          onInput={(e) => props.setWebsite('fqdn', e.target.value)}
-        />
+        <InputLabel>URL</InputLabel>
+        <URLContainer>
+          <Select
+            items={schemeOptions}
+            selected={props.website.https ? 'https' : 'http'}
+            onSelect={(selected) => props.setWebsite('https', selected === 'https')}
+          />
+          <span>://</span>
+          <InputBar
+            placeholder='example.trap.show'
+            value={props.website.fqdn}
+            onInput={(e) => props.setWebsite('fqdn', e.target.value)}
+            width='middle'
+            tooltip='ドメイン名'
+          />
+          <span>/</span>
+          <InputBar
+            value={props.website.pathPrefix.slice(1)}
+            onInput={(e) => props.setWebsite('pathPrefix', `/${e.target.value}`)}
+            width='short'
+            tooltip='(Advanced) 指定Prefixが付いていたときのみアプリへルーティング'
+          />
+          <Show when={props.runtime}>
+            <span> → </span>
+            <InputBar
+              placeholder='80'
+              type='number'
+              value={props.website.httpPort || ''}
+              onChange={(e) => props.setWebsite('httpPort', +e.target.value)}
+              width='tiny'
+              tooltip='アプリのHTTP Port番号'
+            />
+            <span>/TCP</span>
+          </Show>
+        </URLContainer>
       </div>
       <div>
         <InputLabel>
-          Path Prefix
-          <InfoTooltip tooltip={['(Advanced) 指定Prefixが付いていたときのみアプリへルーティング']} />
+          部員認証
+          <InfoTooltip
+            tooltip={[
+              'OFF: 誰でもアクセス可能',
+              'SOFT: 部員の場合X-Forwarded-Userをセット',
+              'HARD: 部員のみアクセス可能',
+            ]}
+            style='left'
+          />
         </InputLabel>
-        <InputBar
-          placeholder='/'
-          value={props.website.pathPrefix}
-          onInput={(e) => props.setWebsite('pathPrefix', e.target.value)}
+        <Select
+          items={authenticationTypeItems}
+          selected={props.website.authentication}
+          onSelect={(selected) => props.setWebsite('authentication', selected)}
         />
       </div>
       <div>
+        <InputLabel>Advanced</InputLabel>
         <FormCheckBox>
-          <Checkbox selected={props.website.https} setSelected={(selected) => props.setWebsite('https', selected)}>
-            https
-          </Checkbox>
           <Checkbox
             selected={props.website.stripPrefix}
             setSelected={(selected) => props.setWebsite('stripPrefix', selected)}
@@ -83,38 +134,10 @@ export const WebsiteSetting = (props: WebsiteSettingProps) => {
           </Show>
         </FormCheckBox>
       </div>
-      <Show when={props.runtime}>
-        <div>
-          <InputLabel>アプリのHTTP Port番号</InputLabel>
-          <InputBar
-            placeholder='80'
-            type='number'
-            value={props.website.httpPort || ''}
-            onChange={(e) => props.setWebsite('httpPort', +e.target.value)}
-          />
-        </div>
-      </Show>
-      <div>
-        <InputLabel>
-          部員認証
-          <InfoTooltip
-            tooltip={[
-              'OFF: 誰でもアクセス可能',
-              'SOFT: 部員の場合X-Forwarded-Userをセット',
-              'HARD: 部員のみアクセス可能',
-            ]}
-            style='left'
-          />
-        </InputLabel>
-        <Radio
-          items={authenticationTypeItems}
-          selected={props.website.authentication}
-          setSelected={(selected) => props.setWebsite('authentication', selected)}
-        />
-      </div>
       <FormSettingsButton>
         <Button onclick={props.deleteWebsite} color='black1' size='large' width='auto' type='button'>
-          Delete website setting
+          <FaRegularTrashCan />
+          <span> このURLを削除</span>
         </Button>
       </FormSettingsButton>
     </FormSettings>
@@ -177,7 +200,8 @@ export const WebsiteSettings = (props: WebsiteSettingsProps) => {
           width='auto'
           type='button'
         >
-          Add website setting
+          <AiOutlinePlusCircle />
+          <span> アクセス可能なURLを追加</span>
         </Button>
       </FormButton>
     </SettingsContainer>
