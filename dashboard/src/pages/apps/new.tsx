@@ -26,6 +26,7 @@ import { BuildConfigMethod, BuildConfigs } from '/@/components/BuildConfigs'
 import { PlainMessage } from '@bufbuild/protobuf'
 import { InputSuggestion } from '/@/components/InputSuggestion'
 import { useBranchesSuggestion } from '/@/libs/branchesSuggestion'
+import { InfoTooltip } from '/@/components/InfoTooltip'
 
 const AppTitle = styled('div', {
   base: {
@@ -162,7 +163,10 @@ export default () => {
             </div>
 
             <div>
-              <InputLabel>Branch Name</InputLabel>
+              <InputLabel>
+                Branch Name
+                <InfoTooltip tooltip='デプロイするGitブランチ名またはRef' />
+              </InputLabel>
               <InputSuggestion suggestions={branchesSuggestion()} onSetSuggestion={(b) => setRequest('refName', b)}>
                 {(onFocus) => (
                   <InputBar

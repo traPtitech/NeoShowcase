@@ -5,8 +5,11 @@ import { Component, JSX, splitProps } from 'solid-js'
 
 export const InputLabel = styled('div', {
   base: {
-    fontSize: '16px',
+    display: 'flex',
     alignItems: 'center',
+    gap: '4px',
+
+    fontSize: '16px',
     fontWeight: 700,
     color: vars.text.black1,
 
