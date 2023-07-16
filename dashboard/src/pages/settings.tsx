@@ -8,6 +8,7 @@ import { Button } from '/@/components/Button'
 import { InputBar, InputLabel } from '/@/components/Input'
 import toast from 'solid-toast'
 import { style } from '@macaron-css/core'
+import { InfoTooltip } from '/@/components/InfoTooltip'
 
 // copy from /pages/apps
 // and delete unnecessary styles
@@ -19,6 +20,11 @@ const ContentContainer = styled('div', {
 
 const SidebarTitle = styled('div', {
   base: {
+    display: 'flex',
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: '8px',
+
     fontSize: '24px',
     fontWeight: 500,
     color: vars.text.black1,
@@ -167,7 +173,10 @@ export default () => {
       <ContentContainer>
         <MainContentContainer>
           <UserKeysContainer>
-            <SidebarTitle>登録済みSSH公開鍵</SidebarTitle>
+            <SidebarTitle>
+              登録済みSSH公開鍵
+              <InfoTooltip tooltip='アプリへSSH接続時に使用します' />
+            </SidebarTitle>
             <Show when={userKeys()} fallback={<SidebarTitle>登録済みSSH公開鍵を読み込み中...</SidebarTitle>}>
               <For each={userKeys()?.keys}>
                 {(key) => (
