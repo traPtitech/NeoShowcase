@@ -4,8 +4,10 @@ import { InputArea, InputBar, InputLabel } from '/@/components/Input'
 import { FormCheckBox, FormSettings } from '/@/components/AppsNew'
 import { Checkbox } from '/@/components/Checkbox'
 import { createEffect, Match, Switch } from 'solid-js'
-import { Radio, RadioItem } from '/@/components/Radio'
+import { RadioItem } from '/@/components/Radio'
 import { PlainMessage } from '@bufbuild/protobuf'
+import { InfoTooltip } from '/@/components/InfoTooltip'
+import { Select } from '/@/components/Select'
 
 export type BuildConfigMethod = ApplicationConfig['buildConfig']['case']
 const buildConfigItems: RadioItem<BuildConfigMethod>[] = [
@@ -27,7 +29,10 @@ const RuntimeConfigs = (props: RuntimeConfigProps) => {
   return (
     <>
       <div>
-        <InputLabel>Database (使うデーターベースにチェック)</InputLabel>
+        <InputLabel>
+          Database
+          <InfoTooltip tooltip={['使うデーターベースにチェック', '後から変更は不可能']} />
+        </InputLabel>
         <FormCheckBox>
           <Checkbox
             selected={props.runtimeConfig?.useMariadb}
@@ -44,14 +49,20 @@ const RuntimeConfigs = (props: RuntimeConfigProps) => {
         </FormCheckBox>
       </div>
       <div>
-        <InputLabel>Entrypoint</InputLabel>
+        <InputLabel>
+          Entrypoint
+          <InfoTooltip tooltip='(Advanced) コンテナのEntrypoint' />
+        </InputLabel>
         <InputBar
           value={props.runtimeConfig?.entrypoint}
           onInput={(e) => props.setRuntimeConfig('entrypoint', e.target.value)}
         />
       </div>
       <div>
-        <InputLabel>Command</InputLabel>
+        <InputLabel>
+          Command
+          <InfoTooltip tooltip='(Advanced) コンテナのCommand' />
+        </InputLabel>
         <InputBar
           value={props.runtimeConfig?.command}
           onInput={(e) => props.setRuntimeConfig('command', e.target.value)}
@@ -71,7 +82,10 @@ const StaticConfigs = (props: StaticConfigProps) => {
   return (
     <>
       <div>
-        <InputLabel>Artifact path</InputLabel>
+        <InputLabel>
+          Artifact path
+          <InfoTooltip tooltip={['静的ファイルが生成されるディレクトリ', '(リポジトリルートからの相対パス)']} />
+        </InputLabel>
         <InputBar
           value={props.staticConfig?.artifactPath}
           placeholder={'dist'}
@@ -79,12 +93,16 @@ const StaticConfigs = (props: StaticConfigProps) => {
         />
       </div>
       <div>
+        <InputLabel>
+          SPA
+          <InfoTooltip tooltip={['配信するファイルがSPAである', '(いい感じのフォールバック設定が付きます)']} />
+        </InputLabel>
         <FormCheckBox>
           <Checkbox
             selected={props.staticConfig?.spa}
             setSelected={(selected) => props.setStaticConfig('spa', selected)}
           >
-            Single Page Application
+            SPA (Single Page Application)
           </Checkbox>
         </FormCheckBox>
       </div>
@@ -96,6 +114,7 @@ export interface BuildConfigsProps {
   buildConfig: PlainMessage<ApplicationConfig>['buildConfig']
   setBuildConfig: SetStoreFunction<PlainMessage<ApplicationConfig>['buildConfig']>
 }
+
 export const BuildConfigs = (props: BuildConfigsProps) => {
   createEffect(() => {
     if (!props.buildConfig.value['runtimeConfig']) {
@@ -113,10 +132,21 @@ export const BuildConfigs = (props: BuildConfigsProps) => {
   return (
     <FormSettings>
       <div>
-        <Radio
+        <InputLabel>
+          Type
+          <InfoTooltip
+            tooltip={[
+              'Buildpack: ビルド設定自動検出 (オススメ)',
+              'Command: ビルド設定を直接設定',
+              'Dockerfile: Dockerfileを用いる',
+            ]}
+            style='left'
+          />
+        </InputLabel>
+        <Select
           items={buildConfigItems}
           selected={props.buildConfig.case}
-          setSelected={(method) => props.setBuildConfig('case', method)}
+          onSelect={(method) => props.setBuildConfig('case', method)}
         />
       </div>
 
@@ -125,7 +155,10 @@ export const BuildConfigs = (props: BuildConfigsProps) => {
           {(v) => (
             <>
               <div>
-                <InputLabel>Context</InputLabel>
+                <InputLabel>
+                  Context
+                  <InfoTooltip tooltip={['ビルド対象ディレクトリ', '(リポジトリルートからの相対パス)']} />
+                </InputLabel>
                 <InputBar
                   value={v().context}
                   placeholder={'.'}
@@ -147,7 +180,10 @@ export const BuildConfigs = (props: BuildConfigsProps) => {
           {(v) => (
             <>
               <div>
-                <InputLabel>Base image</InputLabel>
+                <InputLabel>
+                  Base image
+                  <InfoTooltip tooltip={['ベースとなるDocker Image', '「イメージ名:タグ名」の形式']} />
+                </InputLabel>
                 <InputBar
                   value={v().baseImage}
                   placeholder={'golang:1-alpine'}
@@ -155,7 +191,10 @@ export const BuildConfigs = (props: BuildConfigsProps) => {
                 />
               </div>
               <div>
-                <InputLabel>Build command</InputLabel>
+                <InputLabel>
+                  Build command
+                  <InfoTooltip tooltip={['イメージ上でビルド時に実行するコマンド', 'リポジトリルートで実行されます']} />
+                </InputLabel>
                 <InputArea
                   value={v().buildCmd}
                   onInput={(e) => props.setBuildConfig('value', { buildCmd: e.target.value })}
@@ -176,7 +215,10 @@ export const BuildConfigs = (props: BuildConfigsProps) => {
           {(v) => (
             <>
               <div>
-                <InputLabel>Dockerfile name</InputLabel>
+                <InputLabel>
+                  Dockerfile name
+                  <InfoTooltip tooltip={['Dockerfileへのパス', '(Contextからの相対パス)']} />
+                </InputLabel>
                 <InputBar
                   value={v().dockerfileName}
                   placeholder={'Dockerfile'}
@@ -184,7 +226,10 @@ export const BuildConfigs = (props: BuildConfigsProps) => {
                 />
               </div>
               <div>
-                <InputLabel>Context</InputLabel>
+                <InputLabel>
+                  Context
+                  <InfoTooltip tooltip={['ビルドContext', '(リポジトリルートからの相対パス)']} />
+                </InputLabel>
                 <InputBar
                   value={v().context}
                   placeholder={'.'}
@@ -206,7 +251,10 @@ export const BuildConfigs = (props: BuildConfigsProps) => {
           {(v) => (
             <>
               <div>
-                <InputLabel>Context</InputLabel>
+                <InputLabel>
+                  Context
+                  <InfoTooltip tooltip={['ビルド対象ディレクトリ', '(リポジトリルートからの相対パス)']} />
+                </InputLabel>
                 <InputBar
                   value={v().context}
                   placeholder={'.'}
@@ -228,14 +276,20 @@ export const BuildConfigs = (props: BuildConfigsProps) => {
           {(v) => (
             <>
               <div>
-                <InputLabel>Base image</InputLabel>
+                <InputLabel>
+                  Base image
+                  <InfoTooltip tooltip={['ベースとなるDocker Image', '「イメージ名:タグ名」の形式']} />
+                </InputLabel>
                 <InputBar
                   value={v().baseImage}
                   onInput={(e) => props.setBuildConfig('value', { baseImage: e.target.value })}
                 />
               </div>
               <div>
-                <InputLabel>Build command</InputLabel>
+                <InputLabel>
+                  Build command
+                  <InfoTooltip tooltip={['イメージ上でビルド時に実行するコマンド', 'リポジトリルートで実行されます']} />
+                </InputLabel>
                 <InputArea
                   value={v().buildCmd}
                   onInput={(e) => props.setBuildConfig('value', { buildCmd: e.target.value })}

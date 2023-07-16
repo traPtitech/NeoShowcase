@@ -2,11 +2,18 @@ import { styled } from '@macaron-css/solid'
 import { vars } from '/@/theme'
 import { ComplexStyleRule } from '@macaron-css/core'
 import { Component, JSX, splitProps } from 'solid-js'
+import { tippy as tippyDir } from 'solid-tippy'
+
+// https://github.com/solidjs/solid/discussions/845
+const tippy = tippyDir
 
 export const InputLabel = styled('div', {
   base: {
-    fontSize: '16px',
+    display: 'flex',
     alignItems: 'center',
+    gap: '4px',
+
+    fontSize: '16px',
     fontWeight: 700,
     color: vars.text.black1,
 
@@ -31,11 +38,51 @@ const inputStyle: ComplexStyleRule = {
   },
 }
 
-export const InputBar = styled('input', {
+const StyledInput = styled('input', {
   base: {
     ...inputStyle,
   },
+  variants: {
+    width: {
+      full: {
+        width: '100%',
+      },
+      middle: {
+        width: '320px',
+      },
+      short: {
+        width: '160px',
+      },
+      tiny: {
+        width: '80px',
+      },
+    },
+  },
+  defaultVariants: {
+    width: 'full',
+  },
 })
+
+interface InputBarProps extends JSX.InputHTMLAttributes<HTMLInputElement> {
+  width?: 'full' | 'middle' | 'short' | 'tiny'
+  tooltip?: string
+}
+
+export const InputBar: Component<InputBarProps> = (props) => {
+  const [addedProps, inputProps] = splitProps(props, ['width'])
+
+  return (
+    <span
+      use:tippy={{
+        props: { content: props.tooltip, trigger: 'focusin', maxWidth: 1000 },
+        disabled: !props.tooltip,
+        hidden: true,
+      }}
+    >
+      <StyledInput width={addedProps.width} {...inputProps} />
+    </span>
+  )
+}
 
 const StyledInputArea = styled('textarea', {
   base: {

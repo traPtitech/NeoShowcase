@@ -11,6 +11,9 @@ import { systemInfo } from '../libs/api'
 import { portPublicationProtocolMap } from '../libs/application'
 import { PlainMessage } from '@bufbuild/protobuf'
 import { pickRandom, randIntN } from '/@/libs/random'
+import { FaRegularTrashCan } from 'solid-icons/fa'
+import { AiOutlinePlusCircle } from 'solid-icons/ai'
+import { Select, SelectItem } from '/@/components/Select'
 
 const AvailablePortContainer = styled('div', {
   base: {
@@ -19,11 +22,31 @@ const AvailablePortContainer = styled('div', {
     padding: '8px',
   },
 })
+
 const AvailableDomainUl = styled('ul', {
   base: {
     margin: '8px 0',
   },
 })
+
+const PortVisualContainer = styled('div', {
+  base: {
+    display: 'flex',
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: '2px',
+  },
+})
+
+const protocolItems: SelectItem<PortPublicationProtocol>[] = [
+  { value: PortPublicationProtocol.TCP, title: 'TCP' },
+  { value: PortPublicationProtocol.UDP, title: 'UDP' },
+]
+
+const protoToName: Record<PortPublicationProtocol, string> = {
+  [PortPublicationProtocol.TCP]: 'TCP',
+  [PortPublicationProtocol.UDP]: 'UDP',
+}
 
 interface PortPublicationProps {
   port: PlainMessage<PortPublication>
@@ -37,46 +60,44 @@ interface PortPublicationProps {
 const PortSetting = (props: PortPublicationProps) => {
   return (
     <FormSettings>
-      <div>
-        <InputLabel>Protocol</InputLabel>
-        <Radio
-          items={protocolItems}
-          selected={props.port.protocol}
-          setSelected={(proto) => props.setPort('protocol', proto)}
-        />
-      </div>
-      <div>
-        <InputLabel>Internet Port</InputLabel>
+      <PortVisualContainer>
         <InputBar
           placeholder='39000'
           type='number'
           value={props.port.internetPort || ''}
           onChange={(e) => props.setPort('internetPort', +e.target.value)}
+          width='tiny'
+          tooltip='インターネット側ポート'
         />
-      </div>
-      <div>
-        <InputLabel>Application Port</InputLabel>
+        <span>/</span>
+        <Select
+          items={protocolItems}
+          selected={props.port.protocol}
+          onSelect={(proto) => {
+            console.log(`setting ${proto}, type: ${typeof proto}`)
+            props.setPort('protocol', proto)
+          }}
+        />
+        <span> → </span>
         <InputBar
           placeholder='8080'
           type='number'
           value={props.port.applicationPort || ''}
           onChange={(e) => props.setPort('applicationPort', +e.target.value)}
+          width='tiny'
+          tooltip='アプリ側ポート'
         />
-      </div>
-
+        <span>/{protoToName[props.port.protocol]}</span>
+      </PortVisualContainer>
       <FormSettingsButton>
         <Button onclick={props.deletePort} color='black1' size='large' width='auto' type='button'>
-          Delete port publication
+          <FaRegularTrashCan />
+          <span> この設定を削除</span>
         </Button>
       </FormSettingsButton>
     </FormSettings>
   )
 }
-
-const protocolItems: RadioItem<PortPublicationProtocol>[] = [
-  { value: PortPublicationProtocol.TCP, title: 'TCP' },
-  { value: PortPublicationProtocol.UDP, title: 'UDP' },
-]
 
 const suggestPort = (proto: PortPublicationProtocol): number => {
   const available = systemInfo()?.ports.filter((a) => a.protocol === proto) || []
@@ -132,7 +153,8 @@ export const PortPublicationSettings = (props: PortPublicationSettingsProps) => 
           width='auto'
           type='button'
         >
-          Add port publication
+          <AiOutlinePlusCircle />
+          <span> 設定を追加</span>
         </Button>
       </FormButton>
     </SettingsContainer>

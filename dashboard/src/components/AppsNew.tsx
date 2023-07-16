@@ -9,8 +9,12 @@ export const FormButton = styled('div', {
 
 export const FormTextBig = styled('div', {
   base: {
-    fontSize: '20px',
+    display: 'flex',
+    flexDirection: 'row',
     alignItems: 'center',
+    gap: '4px',
+
+    fontSize: '20px',
     fontWeight: 900,
     color: vars.text.black1,
 

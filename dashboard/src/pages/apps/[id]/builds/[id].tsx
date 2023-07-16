@@ -75,7 +75,7 @@ export default () => {
                 width='full'
                 onclick={retryBuild}
                 disabled={build().retriable}
-                title={build().retriable ? '既に再ビルドが行われています' : '同じコミットで再ビルドします'}
+                tooltip={build().retriable ? '既に再ビルドが行われています' : '同じコミットで再ビルドします'}
               >
                 Retry build
               </Button>

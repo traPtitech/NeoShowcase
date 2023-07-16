@@ -64,7 +64,7 @@ export default () => {
                 color='black1'
                 size='large'
                 width='full'
-                title='このリポジトリからアプリケーションを作成します'
+                tooltip='このリポジトリからアプリケーションを作成します'
               >
                 Create New Application
               </Button>
@@ -74,7 +74,7 @@ export default () => {
                 size='large'
                 width='full'
                 disabled={!canDeleteRepository()}
-                title={
+                tooltip={
                   canDeleteRepository()
                     ? 'リポジトリを削除します'
                     : 'リポジトリに紐づくアプリケーションが存在するため削除できません'

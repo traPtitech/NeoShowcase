@@ -23,6 +23,7 @@ import { ModalButtonsContainer, ModalContainer, ModalText } from '/@/components/
 import { PlainMessage } from '@bufbuild/protobuf'
 import { InputSuggestion } from '/@/components/InputSuggestion'
 import { useBranchesSuggestion } from '/@/libs/branchesSuggestion'
+import { InfoTooltip } from '/@/components/InfoTooltip'
 
 const ContentContainer = styled('div', {
   base: {
@@ -164,7 +165,7 @@ export default () => {
     return (
       <form ref={formContainer}>
         <SettingFieldSet>
-          <FormTextBig id='general-settings'>General settings</FormTextBig>
+          <FormTextBig id='general-settings'>General Settings</FormTextBig>
           <div>
             <InputLabel>Application Name</InputLabel>
             <InputBar
@@ -175,7 +176,10 @@ export default () => {
             />
           </div>
           <div>
-            <InputLabel>Repository ID</InputLabel>
+            <InputLabel>
+              Repository ID
+              <InfoTooltip tooltip={['リポジトリを移管する場合IDを変更']} />
+            </InputLabel>
             <InputBar
               placeholder='my-app'
               value={generalConfig.repositoryId}
@@ -184,7 +188,10 @@ export default () => {
             />
           </div>
           <div>
-            <InputLabel>Branch Name</InputLabel>
+            <InputLabel>
+              Branch Name
+              <InfoTooltip tooltip={['Gitブランチ名またはRef', '入力欄をクリックして候補を表示']} />
+            </InputLabel>
             <InputSuggestion suggestions={branchesSuggestion()} onSetSuggestion={(b) => setGeneralConfig('refName', b)}>
               {(onFocus) => (
                 <InputBar
@@ -249,7 +256,10 @@ export default () => {
 
     return (
       <SettingFieldSet>
-        <FormTextBig id='website-settings'>Website Settings</FormTextBig>
+        <FormTextBig id='website-settings'>
+          Website Settings
+          <InfoTooltip tooltip={['アプリへアクセスするURLの設定', '(複数設定可能)']} />
+        </FormTextBig>
         <WebsiteSettings
           runtime={app().deployType === DeployType.RUNTIME}
           websiteConfigs={websites}
@@ -276,7 +286,10 @@ export default () => {
 
     return (
       <SettingFieldSet>
-        <FormTextBig id='port-settings'>Port Publication Settings</FormTextBig>
+        <FormTextBig id='port-settings'>
+          Port Forwarding
+          <InfoTooltip tooltip={['(Advanced) TCP/UDPポート公開設定', '(複数設定可能)']} />
+        </FormTextBig>
         <PortPublicationSettings ports={ports} setPorts={setPorts} />
         <Button color='black1' size='large' width='auto' onclick={updatePortPublications} type='submit'>
           Save
@@ -306,7 +319,19 @@ export default () => {
     return (
       <>
         <SettingFieldSet>
-          <FormTextBig id='owner-settings'>Owner Settings</FormTextBig>
+          <FormTextBig id='owner-settings'>
+            Owners
+            <InfoTooltip
+              tooltip={[
+                'オーナーは以下が可能になります',
+                'アプリの設定を変更',
+                'アプリのログ/メトリクスを閲覧',
+                '環境変数を閲覧',
+                'ビルドログを閲覧',
+              ]}
+              style='bullets-with-title'
+            />
+          </FormTextBig>
           <Button color='black1' size='large' width='auto' onclick={open}>
             アプリオーナーを追加する
           </Button>
@@ -412,7 +437,7 @@ export default () => {
                 type='button'
                 onclick={() => setIsEditing(true)}
                 disabled={props.envVar.system}
-                title={props.envVar.system ? 'システム環境変数は編集できません' : undefined}
+                tooltip={props.envVar.system && 'システム環境変数は編集できません'}
               >
                 Edit
               </Button>
@@ -423,7 +448,7 @@ export default () => {
                 type='button'
                 onclick={openDeleteEnvVarModal}
                 disabled={props.envVar.system}
-                title={props.envVar.system ? 'システム環境変数は削除できません' : undefined}
+                tooltip={props.envVar.system && 'システム環境変数は削除できません'}
               >
                 Delete
               </Button>
@@ -488,7 +513,10 @@ export default () => {
 
     return (
       <SettingFieldSet>
-        <FormTextBig id='env-var-settings'>Environment Variable Settings</FormTextBig>
+        <FormTextBig id='env-var-settings'>
+          Environment Variables
+          <InfoTooltip tooltip={['ビルド時と実行時の両方に渡されます']} />
+        </FormTextBig>
         <div>
           <EnvVarsContainer>
             <div class={EnvVarContainerClass}>
@@ -519,7 +547,9 @@ export default () => {
                 <SidebarNavAnchor href='#general-settings'>General</SidebarNavAnchor>
                 <SidebarNavAnchor href='#build-settings'>Build</SidebarNavAnchor>
                 <SidebarNavAnchor href='#website-settings'>Website</SidebarNavAnchor>
-                <SidebarNavAnchor href='#port-settings'>Port Publication</SidebarNavAnchor>
+                <Show when={app().deployType === DeployType.RUNTIME}>
+                  <SidebarNavAnchor href='#port-settings'>Port Forwarding</SidebarNavAnchor>
+                </Show>
                 <SidebarNavAnchor href='#owner-settings'>Owner</SidebarNavAnchor>
                 <SidebarNavAnchor href='#env-var-settings'>Environment Variable</SidebarNavAnchor>
               </SidebarOptions>
@@ -529,7 +559,9 @@ export default () => {
             <GeneralConfigsContainer />
             <BuildConfigsContainer />
             <WebsitesConfigContainer />
-            <PortPublicationConfigContainer />
+            <Show when={app().deployType === DeployType.RUNTIME}>
+              <PortPublicationConfigContainer />
+            </Show>
             <OwnerConfigContainer />
             <EnvVarConfigContainer />
           </ConfigsContainer>

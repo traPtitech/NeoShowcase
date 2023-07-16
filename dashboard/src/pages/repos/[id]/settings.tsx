@@ -23,6 +23,7 @@ import RepositoryNav from '/@/components/RepositoryNav'
 import { extractRepositoryNameFromURL } from '/@/libs/application'
 import { RepositoryAuthSettings } from '/@/components/RepositoryAuthSettings'
 import { PartialMessage, PlainMessage } from '@bufbuild/protobuf'
+import { InfoTooltip } from '/@/components/InfoTooltip'
 
 const ContentContainer = styled('div', {
   base: {
@@ -142,7 +143,7 @@ export default () => {
     return (
       <form ref={formContainer}>
         <SettingFieldSet>
-          <FormTextBig id='general-settings'>General settings</FormTextBig>
+          <FormTextBig id='general-settings'>General Settings</FormTextBig>
           <div>
             <InputLabel>Repository Name</InputLabel>
             <InputBar
@@ -229,7 +230,13 @@ export default () => {
     return (
       <>
         <SettingFieldSet>
-          <FormTextBig id='owner-settings'>Owner Settings</FormTextBig>
+          <FormTextBig id='owner-settings'>
+            Owners
+            <InfoTooltip
+              tooltip={['オーナーは以下が可能になります', 'リポジトリの設定を変更']}
+              style='bullets-with-title'
+            />
+          </FormTextBig>
           <Button color='black1' size='large' width='auto' onclick={open}>
             リポジトリオーナーを追加する
           </Button>

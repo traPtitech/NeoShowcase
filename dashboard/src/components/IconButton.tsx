@@ -1,6 +1,10 @@
 import { FlowComponent } from 'solid-js'
 import { styled } from '@macaron-css/solid'
 import { vars } from '/@/theme'
+import { tippy as tippyDir } from 'solid-tippy'
+
+// https://github.com/solidjs/solid/discussions/845
+const tippy = tippyDir
 
 const Container = styled('div', {
   base: {
@@ -46,13 +50,20 @@ interface IconButtonProps {
 
 export const IconButton: FlowComponent<IconButtonProps> = (props) => {
   return (
-    <Container
-      onclick={props.onClick}
-      cursor={props.onClick ? 'pointer' : 'none'}
-      title={props.tooltip}
-      color={props.disabled ? 'disabled' : 'normal'}
+    <span
+      use:tippy={{
+        props: { content: props.tooltip, maxWidth: 1000 },
+        disabled: !props.tooltip,
+        hidden: true,
+      }}
     >
-      {props.children}
-    </Container>
+      <Container
+        onclick={props.onClick}
+        cursor={props.onClick ? 'pointer' : 'none'}
+        color={props.disabled ? 'disabled' : 'normal'}
+      >
+        {props.children}
+      </Container>
+    </span>
   )
 }

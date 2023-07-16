@@ -26,6 +26,7 @@ import { BuildConfigMethod, BuildConfigs } from '/@/components/BuildConfigs'
 import { PlainMessage } from '@bufbuild/protobuf'
 import { InputSuggestion } from '/@/components/InputSuggestion'
 import { useBranchesSuggestion } from '/@/libs/branchesSuggestion'
+import { InfoTooltip } from '/@/components/InfoTooltip'
 
 const AppTitle = styled('div', {
   base: {
@@ -162,7 +163,10 @@ export default () => {
             </div>
 
             <div>
-              <InputLabel>Branch Name</InputLabel>
+              <InputLabel>
+                Branch Name
+                <InfoTooltip tooltip={['Gitブランチ名またはRef', '入力欄をクリックして候補を表示']} />
+              </InputLabel>
               <InputSuggestion suggestions={branchesSuggestion()} onSetSuggestion={(b) => setRequest('refName', b)}>
                 {(onFocus) => (
                   <InputBar
@@ -182,17 +186,30 @@ export default () => {
             </div>
 
             <div>
-              <FormTextBig>Website Setting</FormTextBig>
+              <FormTextBig>
+                Website Setting
+                <InfoTooltip tooltip={['アプリへアクセスするURLの設定', '(複数設定可能)']} />
+              </FormTextBig>
               <WebsiteSettings runtime={isRuntime()} websiteConfigs={websites} setWebsiteConfigs={setWebsites} />
             </div>
 
-            <div>
-              <FormTextBig>Port Publication Setting</FormTextBig>
-              <PortPublicationSettings ports={ports} setPorts={setPorts} />
-            </div>
+            <Show when={isRuntime()}>
+              <div>
+                <FormTextBig>
+                  Port Forwarding
+                  <InfoTooltip tooltip={['(Advanced) TCP/UDPポート公開設定', '(複数設定可能)']} />
+                </FormTextBig>
+                <PortPublicationSettings ports={ports} setPorts={setPorts} />
+              </div>
+            </Show>
 
             <div>
-              <InputLabel>Start on Create</InputLabel>
+              <InputLabel>
+                Start Immediately
+                <InfoTooltip
+                  tooltip={['この設定で今すぐ起動するかどうか', '(環境変数はアプリ作成後設定可能になります)']}
+                />
+              </InputLabel>
               <FormCheckBox>
                 <Checkbox
                   selected={request.startOnCreate}
