@@ -12,8 +12,8 @@ import (
 	"github.com/traPtitech/neoshowcase/pkg/domain"
 )
 
-func (s *Service) GetSystemInfo(_ context.Context) *domain.SystemInfo {
-	return s.systemInfo
+func (s *Service) GetSystemInfo(ctx context.Context) (*domain.SystemInfo, error) {
+	return s.systemInfo(ctx)
 }
 
 type tmpKeyPairService struct {
