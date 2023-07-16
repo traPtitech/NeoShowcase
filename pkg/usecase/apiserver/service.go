@@ -9,6 +9,7 @@ import (
 	"github.com/traPtitech/neoshowcase/pkg/domain"
 	"github.com/traPtitech/neoshowcase/pkg/domain/web"
 	"github.com/traPtitech/neoshowcase/pkg/infrastructure/repository"
+	"github.com/traPtitech/neoshowcase/pkg/util/scutil"
 )
 
 func handleRepoError[T any](entity T, err error) (T, error) {
@@ -35,7 +36,7 @@ type Service struct {
 	controller      domain.ControllerServiceClient
 	fallbackKey     *ssh.PublicKeys
 
-	systemInfo *domain.SystemInfo
+	systemInfo func(ctx context.Context) (*domain.SystemInfo, error)
 	tmpKeys    *tmpKeyPairService
 }
 
@@ -54,10 +55,6 @@ func NewService(
 	controller domain.ControllerServiceClient,
 	fallbackKey *ssh.PublicKeys,
 ) (*Service, error) {
-	systemInfo, err := controller.GetSystemInfo(context.Background())
-	if err != nil {
-		return nil, err
-	}
 	return &Service{
 		artifactRepo:    artifactRepo,
 		appRepo:         appRepo,
@@ -73,7 +70,7 @@ func NewService(
 		controller:      controller,
 		fallbackKey:     fallbackKey,
 
-		systemInfo: systemInfo,
+		systemInfo: scutil.Once(controller.GetSystemInfo),
 		tmpKeys:    newTmpKeyPairService(),
 	}, nil
 }

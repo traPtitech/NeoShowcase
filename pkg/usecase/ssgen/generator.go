@@ -14,8 +14,8 @@ import (
 
 	"github.com/traPtitech/neoshowcase/pkg/domain"
 	"github.com/traPtitech/neoshowcase/pkg/infrastructure/grpc/pb"
-	"github.com/traPtitech/neoshowcase/pkg/util/coalesce"
 	"github.com/traPtitech/neoshowcase/pkg/util/retry"
+	"github.com/traPtitech/neoshowcase/pkg/util/scutil"
 	"github.com/traPtitech/neoshowcase/pkg/util/tarfs"
 )
 
@@ -40,7 +40,7 @@ type generatorService struct {
 
 	cancel   func()
 	reloaded atomic.Bool
-	reloader *coalesce.Coalescer
+	reloader *scutil.Coalescer
 }
 
 func NewGeneratorService(
@@ -59,7 +59,7 @@ func NewGeneratorService(
 		engine:    engine,
 		docsRoot:  string(path),
 	}
-	g.reloader = coalesce.NewCoalescer(g._reload)
+	g.reloader = scutil.NewCoalescer(g._reload)
 	return g
 }
 

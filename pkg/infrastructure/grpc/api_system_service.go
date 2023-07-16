@@ -11,7 +11,10 @@ import (
 )
 
 func (s *APIService) GetSystemInfo(ctx context.Context, _ *connect.Request[emptypb.Empty]) (*connect.Response[pb.SystemInfo], error) {
-	i := s.svc.GetSystemInfo(ctx)
+	i, err := s.svc.GetSystemInfo(ctx)
+	if err != nil {
+		return nil, handleUseCaseError(err)
+	}
 	res := connect.NewResponse(pbconvert.ToPBSystemInfo(i))
 	return res, nil
 }
