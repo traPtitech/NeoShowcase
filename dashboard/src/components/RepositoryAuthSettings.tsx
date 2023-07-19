@@ -8,6 +8,7 @@ import { CreateRepositoryAuth } from '../api/neoshowcase/protobuf/gateway_pb'
 import { SetStoreFunction } from 'solid-js/store'
 import { client, systemInfo } from '../libs/api'
 import { PlainMessage } from '@bufbuild/protobuf'
+import { InfoTooltip } from '/@/components/InfoTooltip'
 
 const SshDetails = styled('div', {
   base: {
@@ -25,6 +26,15 @@ const PublicKeyCode = styled('code', {
     color: vars.text.black1,
     border: `1px solid ${vars.bg.white4}`,
     borderRadius: '4px',
+  },
+})
+
+const Row = styled('div', {
+  base: {
+    display: 'flex',
+    flexDirection: 'row',
+    gap: '8px',
+    alignItems: 'center',
   },
 })
 
@@ -78,14 +88,21 @@ export const RepositoryAuthSettings: Component<RepositoryAuthSettingsProps> = (p
           )}
         </Match>
         <Match when={props.authConfig.auth.case === 'ssh'}>
-          <SshDetails>
-            以下のSSH公開鍵{!useTmpKey() && ' (システムデフォルト) '}をリポジトリに登録してください。
-          </SshDetails>
+          <SshDetails>以下のSSH公開鍵{!useTmpKey() && ' (システム共通) '}をリポジトリに登録してください。</SshDetails>
           <PublicKeyCode>{publicKey()}</PublicKeyCode>
           <Show when={!useTmpKey()}>
-            <Button color='black1' size='large' width='auto' onclick={() => setUseTmpKey(true)} type='submit'>
-              新たなSSH鍵を生成する (for github.com)
-            </Button>
+            <Row>
+              <Button color='black1' size='large' width='auto' onclick={() => setUseTmpKey(true)} type='submit'>
+                新たな鍵ペアを生成 (for github.com)
+              </Button>
+              <InfoTooltip
+                tooltip={[
+                  '新しく鍵ペアを生成します',
+                  'システム共通の鍵ペアでは動かない場合に利用します',
+                  'github.com の場合は必ず生成してください',
+                ]}
+              />
+            </Row>
           </Show>
         </Match>
       </Switch>
