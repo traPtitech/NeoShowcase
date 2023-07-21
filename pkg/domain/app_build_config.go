@@ -2,9 +2,11 @@ package domain
 
 import (
 	"fmt"
+	"strings"
 
 	"github.com/friendsofgo/errors"
-	"github.com/mattn/go-shellwords"
+	"github.com/google/shlex"
+	"github.com/samber/lo"
 )
 
 type BuildType int
@@ -36,24 +38,23 @@ type RuntimeConfig struct {
 	Command    string
 }
 
+const shellSpecialCharacters = "`" + `~#$&*()\|[]{};'"<>?!=`
+
 func ParseArgs(s string) ([]string, error) {
 	if s == "" {
 		return nil, nil
 	}
-	p := shellwords.NewParser()
-	args, err := p.Parse(s)
+	args, err := shlex.Split(s)
 	if err != nil {
-		return nil, err
+		return nil, errors.Wrap(err, "cannot parse command")
 	}
-	if len(args) == 0 {
-		return nil, errors.New("cannot parse command")
-	}
-	// Fast simple check: input was simple one line command
-	if p.Position == -1 {
-		return args, nil
-	} else {
+	shellSyntax := lo.ContainsBy(args, func(arg string) bool {
+		return strings.ContainsAny(arg, shellSpecialCharacters)
+	})
+	if shellSyntax {
 		return []string{"sh", "-c", s}, nil
 	}
+	return args, nil
 }
 
 func (rc *RuntimeConfig) Validate() error {

@@ -50,16 +50,16 @@ func TestParseArgs(t *testing.T) {
 			wantErr: false,
 		},
 		{
-			name:    "has env shell syntax (current limitation, cannot recognize envs)",
+			name:    "has env shell syntax",
 			in:      "NODE_ENV=production npm run start",
-			want:    []string{"NODE_ENV=production", "npm", "run", "start"},
+			want:    []string{"sh", "-c", "NODE_ENV=production npm run start"},
 			wantErr: false,
 		},
 		{
-			name:    "subshell syntax (current limitation, cannot parse)",
+			name:    "subshell syntax",
 			in:      "(npm run build)",
-			want:    nil,
-			wantErr: true,
+			want:    []string{"sh", "-c", "(npm run build)"},
+			wantErr: false,
 		},
 		{
 			name:    "multi command shell syntax (and)",
@@ -99,9 +99,15 @@ func TestParseArgs(t *testing.T) {
 		},
 		{
 			name:    "invalid shell line",
-			in:      "hello world `",
+			in:      "hello world \"",
 			want:    nil,
 			wantErr: true,
+		},
+		{
+			name:    "invalid shell line 2 (current limitation",
+			in:      "hello world `",
+			want:    []string{"sh", "-c", "hello world `"}, // want nil
+			wantErr: false,                                 // want true
 		},
 	}
 	for _, tt := range tests {
