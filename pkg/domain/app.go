@@ -2,6 +2,7 @@ package domain
 
 import (
 	"encoding/json"
+	"sort"
 	"strings"
 	"time"
 
@@ -25,8 +26,11 @@ func (c *ApplicationConfig) Validate(deployType DeployType) error {
 	return nil
 }
 
-func (c *ApplicationConfig) Hash() string {
+func (c *ApplicationConfig) Hash(env []*Environment) string {
 	b := lo.Must(json.Marshal(c))
+	sort.SliceStable(env, func(i, j int) bool { return env[i].Key < env[j].Key })
+	e := lo.Must(json.Marshal(env))
+	b = append(b, e...)
 	return hash.XXH3Hex(b)
 }
 

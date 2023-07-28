@@ -44,11 +44,11 @@ type Build struct {
 	Artifacts     []*Artifact
 }
 
-func NewBuild(app *Application) *Build {
+func NewBuild(app *Application, env []*Environment) *Build {
 	return &Build{
 		ID:            NewID(),
 		Commit:        app.Commit,
-		ConfigHash:    app.Config.Hash(),
+		ConfigHash:    app.Config.Hash(env),
 		Status:        BuildStatusQueued,
 		ApplicationID: app.ID,
 		QueuedAt:      time.Now(),
