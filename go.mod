@@ -13,7 +13,7 @@ require (
 	github.com/friendsofgo/errors v0.9.2
 	github.com/gliderlabs/ssh v0.3.5
 	github.com/go-git/go-git/v5 v5.7.0
-	github.com/go-playground/webhooks/v6 v6.1.0
+	github.com/go-playground/webhooks/v6 v6.2.0
 	github.com/go-sql-driver/mysql v1.7.1
 	github.com/golang/mock v1.6.0
 	github.com/google/shlex v0.0.0-20191202100458-e7afc7fbc510
@@ -37,7 +37,7 @@ require (
 	github.com/traefik/traefik/v2 v2.10.1
 	github.com/volatiletech/null/v8 v8.1.2
 	github.com/volatiletech/sqlboiler/v4 v4.14.2
-	github.com/volatiletech/strmangle v0.0.4
+	github.com/volatiletech/strmangle v0.0.5
 	github.com/zeebo/xxh3 v1.0.2
 	go.mongodb.org/mongo-driver v1.11.6
 	golang.org/x/crypto v0.10.0
@@ -47,8 +47,8 @@ require (
 	google.golang.org/grpc v1.55.0
 	google.golang.org/protobuf v1.31.0
 	gopkg.in/yaml.v2 v2.4.0
-	k8s.io/api v0.27.2
-	k8s.io/apimachinery v0.27.2
+	k8s.io/api v0.27.4
+	k8s.io/apimachinery v0.27.4
 	k8s.io/client-go v0.27.2
 )
 
