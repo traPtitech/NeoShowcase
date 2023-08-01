@@ -7,8 +7,8 @@ require (
 	github.com/aws/aws-sdk-go v1.44.273
 	github.com/bufbuild/connect-go v1.9.0
 	github.com/cert-manager/cert-manager v1.12.2
-	github.com/docker/cli v24.0.0-rc.2+incompatible
-	github.com/docker/docker v23.0.5+incompatible
+	github.com/docker/cli v24.0.5+incompatible
+	github.com/docker/docker v24.0.5+incompatible
 	github.com/docker/go-connections v0.4.0
 	github.com/friendsofgo/errors v0.9.2
 	github.com/gliderlabs/ssh v0.3.5
