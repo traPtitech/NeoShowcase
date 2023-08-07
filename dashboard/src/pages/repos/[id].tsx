@@ -111,9 +111,7 @@ export default () => {
               <CardItem>
                 <CardItemTitle>URL</CardItemTitle>
                 <CardItemContent>
-                  <URLText href={repo().url} target='_blank' rel='noreferrer'>
-                    {repo().url}
-                  </URLText>
+                  <URLText text={repo().url} href={repo().htmlUrl} />
                 </CardItemContent>
               </CardItem>
             </CardItems>
