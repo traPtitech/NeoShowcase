@@ -149,6 +149,55 @@ func TestRepository_Validate(t *testing.T) {
 	}
 }
 
+func TestRepository_HTMLURL(t *testing.T) {
+	tests := []struct {
+		name string
+		url  string
+		auth optional.Of[RepositoryAuth]
+		want string
+	}{
+		{
+			name: "without auth",
+			url:  "https://github.com/traPtitech/traQ.git",
+			auth: optional.None[RepositoryAuth](),
+			want: "https://github.com/traPtitech/traQ.git",
+		},
+		{
+			name: "basic auth",
+			url:  "https://github.com/traPtitech/traQ.git",
+			auth: optional.From(RepositoryAuth{
+				Method: RepositoryAuthMethodBasic,
+			}),
+			want: "https://github.com/traPtitech/traQ.git",
+		},
+		{
+			name: "ssh auth (github-type url)",
+			url:  "git@github.com:traPtitech/traQ.git",
+			auth: optional.From(RepositoryAuth{
+				Method: RepositoryAuthMethodSSH,
+			}),
+			want: "https://github.com/traPtitech/traQ.git",
+		},
+		{
+			name: "ssh auth (generic ssh url)",
+			url:  "ssh://git@git.trap.jp:2200/SysAd/Showcase.git",
+			auth: optional.From(RepositoryAuth{
+				Method: RepositoryAuthMethodSSH,
+			}),
+			want: "https://git.trap.jp/SysAd/Showcase.git",
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			r := &Repository{
+				URL:  tt.url,
+				Auth: tt.auth,
+			}
+			assert.Equalf(t, tt.want, r.HTMLURL(), "HTMLURL()")
+		})
+	}
+}
+
 func TestRepositoryAuth_Validate(t *testing.T) {
 	tests := []struct {
 		name    string
