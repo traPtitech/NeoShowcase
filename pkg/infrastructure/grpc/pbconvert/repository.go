@@ -48,6 +48,7 @@ func ToPBRepository(repo *domain.Repository) *pb.Repository {
 		Id:       repo.ID,
 		Name:     repo.Name,
 		Url:      repo.URL,
+		HtmlUrl:  repo.HTMLURL(),
 		OwnerIds: repo.OwnerIDs,
 	}
 	if repo.Auth.Valid {

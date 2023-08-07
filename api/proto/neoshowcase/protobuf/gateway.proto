@@ -66,8 +66,9 @@ message Repository {
   string id = 1;
   string name = 2;
   string url = 3;
-  AuthMethod auth_method = 4;
-  repeated string owner_ids = 5;
+  string html_url = 4;
+  AuthMethod auth_method = 5;
+  repeated string owner_ids = 6;
 }
 
 // -- Application
