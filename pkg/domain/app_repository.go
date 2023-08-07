@@ -3,6 +3,7 @@ package domain
 import (
 	"context"
 	"fmt"
+	"strings"
 
 	"github.com/friendsofgo/errors"
 	"github.com/go-git/go-git/v5"
@@ -11,6 +12,7 @@ import (
 	"github.com/go-git/go-git/v5/plumbing/transport"
 	"github.com/go-git/go-git/v5/plumbing/transport/ssh"
 	"github.com/samber/lo"
+	giturls "github.com/whilp/git-urls"
 
 	"github.com/traPtitech/neoshowcase/pkg/util/optional"
 )
@@ -71,6 +73,31 @@ func (r *Repository) CanCreateApp(user *User) bool {
 	// Only check for repository owner if repository is private;
 	// allow everyone to create application if repository is public
 	return r.IsOwner(user) || !r.Auth.Valid
+}
+
+// HTMLURL returns human-readable HTML page URL.
+// Since there is no 'official' mapping from git-readable URL to human-readable HTML URL,
+// the conversion is done heuristically.
+func (r *Repository) HTMLURL() string {
+	if !r.Auth.Valid {
+		return r.URL // Expect a human-readable page
+	}
+	switch r.Auth.V.Method {
+	case RepositoryAuthMethodBasic:
+		return r.URL // Expect a human-readable page
+	case RepositoryAuthMethodSSH:
+		u, err := giturls.Parse(r.URL)
+		if err != nil {
+			return r.URL // Fallback
+		}
+		path := u.Path
+		if !strings.HasPrefix(path, "/") {
+			path = "/" + path
+		}
+		return "https://" + u.Hostname() + path + u.RawQuery
+	default:
+		return r.URL
+	}
 }
 
 func (r *Repository) ResolveRefs(ctx context.Context, fallbackKey *ssh.PublicKeys) (refToCommit map[string]string, err error) {

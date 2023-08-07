@@ -344,11 +344,7 @@ export default () => {
                     <CardItemTitle>
                       <URLsContainer>
                         <For each={app().websites}>
-                          {(website) => (
-                            <URLText href={getWebsiteURL(website)} target='_blank' rel='noreferrer'>
-                              {getWebsiteURL(website)}
-                            </URLText>
-                          )}
+                          {(website) => <URLText text={getWebsiteURL(website)} href={getWebsiteURL(website)} />}
                         </For>
                       </URLsContainer>
                     </CardItemTitle>
