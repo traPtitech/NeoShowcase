@@ -83,7 +83,7 @@ export const WebsiteSetting = (props: WebsiteSettingProps) => {
             value={props.website.fqdn}
             onInput={(e) => props.setWebsite('fqdn', e.target.value)}
             width='middle'
-            tooltip='ドメイン名'
+            tooltip='ホスト名'
           />
           <span>/</span>
           <InputBar
@@ -175,7 +175,7 @@ export const WebsiteSettings = (props: WebsiteSettingsProps) => {
   return (
     <SettingsContainer>
       <AvailableDomainContainer>
-        使用可能なドメイン
+        使用可能なホスト
         <AvailableDomainUl>
           <For each={systemInfo()?.domains || []}>
             {(domain) => (
