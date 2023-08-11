@@ -37,6 +37,14 @@ const URLContainer = styled('div', {
   },
 })
 
+const URLWarning = styled('div', {
+  base: {
+    color: vars.icon.error,
+    fontWeight: 700,
+    marginTop: '4px',
+  },
+})
+
 interface WebsiteSettingProps {
   runtime: boolean
   website: PlainMessage<CreateWebsiteRequest>
@@ -97,6 +105,9 @@ export const WebsiteSetting = (props: WebsiteSettingProps) => {
             <span>/TCP</span>
           </Show>
         </URLContainer>
+        <Show when={props.website.fqdn.includes('_')}>
+          <URLWarning>_ が含まれるホスト名は非推奨です</URLWarning>
+        </Show>
       </div>
       <div>
         <InputLabel>
