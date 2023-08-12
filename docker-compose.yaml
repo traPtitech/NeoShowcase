@@ -232,7 +232,7 @@ services:
       - default
 
   buildpack:
-    image: paketobuildpacks/builder:base
+    image: paketobuildpacks/builder-jammy-full:latest
     restart: always
     entrypoint:
       - sleep
