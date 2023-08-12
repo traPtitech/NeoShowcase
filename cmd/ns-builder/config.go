@@ -54,7 +54,7 @@ func init() {
 	viper.SetDefault("buildpack.k8s.containerName", "buildpack")
 	viper.SetDefault("buildpack.k8s.localDir", "/neoshowcase/buildpack")
 	viper.SetDefault("buildpack.k8s.remoteDir", "/workspace")
-	viper.SetDefault("buildpack.k8s.user", 1000)
+	viper.SetDefault("buildpack.k8s.user", 1001)
 	viper.SetDefault("buildpack.k8s.group", 1000)
 	viper.SetDefault("buildpack.k8s.platformAPI", "0.11")
 
