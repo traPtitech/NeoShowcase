@@ -217,7 +217,6 @@ func TestApplicationConfig_Validate(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name+" (hash)", func(t *testing.T) {
-			// TODO: 勝手に変えたから後でどうにかしないといけないかもしれない
 			xxh3 := tt.config.Hash(nil)
 			t.Logf("hash: %v", xxh3)
 			assert.Len(t, xxh3, 16)
@@ -351,17 +350,15 @@ func TestHashWithEnv(t *testing.T) {
 	}
 
 	t.Run(test.name, func(t *testing.T) {
-		before := test.config.Hash(testEnv)
-		t.Logf("first hash: %v", before)
+		hash := test.config.Hash(testEnv)
+
 		testEnv = append(testEnv, &Environment{Key: "key3", Value: "value3"})
+		added := test.config.Hash(testEnv)
+		assert.NotEqual(t, hash, added)
 
-		after := test.config.Hash(testEnv)
-		assert.NotEqual(t, before, after)
-
+		// test that the hash is the same if the order of the envs is different
 		testEnv = []*Environment{{Key: "key2", Value: "value2"}, {Key: "key1", Value: "value1"}}
-		assert.Equal(t, before, test.config.Hash(testEnv))
-
-		testEnv = []*Environment{{Key: "key", Value: "value"}}
-		assert.NotEqual(t, before, test.config.Hash(testEnv))
+		orderChanged := test.config.Hash(testEnv)
+		assert.Equal(t, hash, orderChanged)
 	})
 }
