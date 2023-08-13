@@ -17,7 +17,7 @@ spec:
       serviceAccountName: ns-builder
       containers:
         - name: buildpack
-          image: paketobuildpacks/builder:base
+          image: paketobuildpacks/builder-jammy-full:latest
           imagePullPolicy: Always
           command:
             - sleep

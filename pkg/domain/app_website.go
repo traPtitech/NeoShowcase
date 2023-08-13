@@ -20,7 +20,8 @@ func ValidateDomain(domain string) error {
 	if strings.HasPrefix(domain, ".") {
 		return errors.Errorf("leading dot not allowed in domain %v", domain)
 	}
-	// allow underscore
+	// allow underscore; Showcaseとのcompatibilityのため 本来はホスト名にunderscoreが入るのはダメ
+	// https://stackoverflow.com/questions/2180465/can-domain-name-subdomains-have-an-underscore-in-it
 	_, err := idna.Lookup.ToUnicode(strings.ReplaceAll(domain, "_", "-"))
 	if err != nil {
 		return errors.Wrap(err, fmt.Sprintf("invalid domain %v", domain))

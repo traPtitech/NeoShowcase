@@ -141,6 +141,13 @@ func (k *k8sBackend) prepareDir(ctx context.Context, localName, remoteName strin
 		cleanup()
 		return "", nil, errors.Wrap(err, "setting remote dir owner")
 	}
+	// Build user (cnb 1001) and run user (cnb 1002) is different for paketobuildpacks/builder-jammy series
+	// Setting all file bits to 777 as a workaround, but not sure if this is the right way to handle this
+	err = exec.CommandContext(ctx, "chmod", "-R", "777", localVolumePath).Run()
+	if err != nil {
+		cleanup()
+		return "", nil, errors.Wrap(err, "setting remote dir mode")
+	}
 	return remotePath, cleanup, nil
 }
 

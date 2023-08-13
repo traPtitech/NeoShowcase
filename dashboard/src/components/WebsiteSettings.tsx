@@ -37,6 +37,14 @@ const URLContainer = styled('div', {
   },
 })
 
+const URLWarning = styled('div', {
+  base: {
+    color: vars.icon.error,
+    fontWeight: 700,
+    marginTop: '4px',
+  },
+})
+
 interface WebsiteSettingProps {
   runtime: boolean
   website: PlainMessage<CreateWebsiteRequest>
@@ -75,7 +83,7 @@ export const WebsiteSetting = (props: WebsiteSettingProps) => {
             value={props.website.fqdn}
             onInput={(e) => props.setWebsite('fqdn', e.target.value)}
             width='middle'
-            tooltip='ドメイン名'
+            tooltip='ホスト名'
           />
           <span>/</span>
           <InputBar
@@ -97,6 +105,9 @@ export const WebsiteSetting = (props: WebsiteSettingProps) => {
             <span>/TCP</span>
           </Show>
         </URLContainer>
+        <Show when={props.website.fqdn.includes('_')}>
+          <URLWarning>_ が含まれるホスト名は非推奨です</URLWarning>
+        </Show>
       </div>
       <div>
         <InputLabel>
@@ -164,7 +175,7 @@ export const WebsiteSettings = (props: WebsiteSettingsProps) => {
   return (
     <SettingsContainer>
       <AvailableDomainContainer>
-        使用可能なドメイン
+        使用可能なホスト
         <AvailableDomainUl>
           <For each={systemInfo()?.domains || []}>
             {(domain) => (
