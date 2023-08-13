@@ -324,41 +324,27 @@ func TestApplication_SelfValidate(t *testing.T) {
 }
 
 func TestHashWithEnv(t *testing.T) {
-	runtimeValidConfig := ApplicationConfig{
+	config := ApplicationConfig{
 		BuildConfig: &BuildConfigRuntimeDockerfile{DockerfileName: "Dockerfile"},
 	}
-	require.NoError(t, runtimeValidConfig.Validate(DeployTypeRuntime))
+	require.NoError(t, config.Validate(DeployTypeRuntime))
 
-	test := struct {
-		name       string
-		deployType DeployType
-		config     ApplicationConfig
-		wantErr    bool
-	}{
-		name:       "valid (runtime dockerfile)",
-		deployType: DeployTypeRuntime,
-		config: ApplicationConfig{
-			BuildConfig: &BuildConfigRuntimeDockerfile{
-				DockerfileName: "Dockerfile",
-			},
-		},
-		wantErr: false,
-	}
 	testEnv := []*Environment{
 		{Key: "key1", Value: "value1"},
 		{Key: "key2", Value: "value2"},
 	}
+	hash := config.Hash(testEnv)
 
-	t.Run(test.name, func(t *testing.T) {
-		hash := test.config.Hash(testEnv)
+	testEnv = append(testEnv, &Environment{Key: "key3", Value: "value3"})
+	t.Run("add env", func(t *testing.T) {
+		assert.NotEqual(t, hash, config.Hash(testEnv))
+	})
 
-		testEnv = append(testEnv, &Environment{Key: "key3", Value: "value3"})
-		added := test.config.Hash(testEnv)
-		assert.NotEqual(t, hash, added)
-
-		// test that the hash is the same if the order of the envs is different
-		testEnv = []*Environment{{Key: "key2", Value: "value2"}, {Key: "key1", Value: "value1"}}
-		orderChanged := test.config.Hash(testEnv)
-		assert.Equal(t, hash, orderChanged)
+	testEnv = []*Environment{
+		{Key: "key2", Value: "value2"},
+		{Key: "key1", Value: "value1"},
+	}
+	t.Run("change order", func(t *testing.T) {
+		assert.Equal(t, hash, config.Hash(testEnv))
 	})
 }
