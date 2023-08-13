@@ -335,16 +335,20 @@ func TestHashWithEnv(t *testing.T) {
 	}
 	hash := config.Hash(testEnv)
 
-	testEnv = append(testEnv, &Environment{Key: "key3", Value: "value3"})
-	t.Run("add env", func(t *testing.T) {
-		assert.NotEqual(t, hash, config.Hash(testEnv))
+	t.Run("hash should be equal when env is different", func(t *testing.T) {
+		testEnv2 := []*Environment{
+			{Key: "key1", Value: "value1"},
+			{Key: "key2", Value: "value2"},
+			{Key: "key3", Value: "value3"},
+		}
+		assert.NotEqual(t, hash, config.Hash(testEnv2))
 	})
 
-	testEnv = []*Environment{
-		{Key: "key2", Value: "value2"},
-		{Key: "key1", Value: "value1"},
-	}
-	t.Run("change order", func(t *testing.T) {
-		assert.Equal(t, hash, config.Hash(testEnv))
+	t.Run("order should not matter", func(t *testing.T) {
+		reversedTestEnv := []*Environment{
+			{Key: "key2", Value: "value2"},
+			{Key: "key1", Value: "value1"},
+		}
+		assert.Equal(t, hash, config.Hash(reversedTestEnv))
 	})
 }
