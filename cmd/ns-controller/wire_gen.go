@@ -56,13 +56,13 @@ func NewWithDocker(c2 Config) (*Server, error) {
 		return nil, err
 	}
 	buildRepository := repository.NewBuildRepository(db)
+	environmentRepository := repository.NewEnvironmentRepository(db)
 	service := logstream.NewService()
 	controllerBuilderService := grpc.NewControllerBuilderService(service)
-	environmentRepository := repository.NewEnvironmentRepository(db)
 	controllerSSGenService := grpc.NewControllerSSGenService()
 	appDeployHelper := cdservice.NewAppDeployHelper(backend, applicationRepository, buildRepository, environmentRepository, controllerSSGenService, imageConfig)
 	containerStateMutator := cdservice.NewContainerStateMutator(applicationRepository, backend)
-	cdserviceService, err := cdservice.NewService(applicationRepository, buildRepository, backend, controllerBuilderService, appDeployHelper, containerStateMutator)
+	cdserviceService, err := cdservice.NewService(applicationRepository, buildRepository, environmentRepository, backend, controllerBuilderService, appDeployHelper, containerStateMutator)
 	if err != nil {
 		return nil, err
 	}
@@ -135,14 +135,14 @@ func NewWithK8S(c2 Config) (*Server, error) {
 		return nil, err
 	}
 	buildRepository := repository.NewBuildRepository(db)
+	environmentRepository := repository.NewEnvironmentRepository(db)
 	service := logstream.NewService()
 	controllerBuilderService := grpc.NewControllerBuilderService(service)
-	environmentRepository := repository.NewEnvironmentRepository(db)
 	controllerSSGenService := grpc.NewControllerSSGenService()
 	imageConfig := c2.Image
 	appDeployHelper := cdservice.NewAppDeployHelper(backend, applicationRepository, buildRepository, environmentRepository, controllerSSGenService, imageConfig)
 	containerStateMutator := cdservice.NewContainerStateMutator(applicationRepository, backend)
-	cdserviceService, err := cdservice.NewService(applicationRepository, buildRepository, backend, controllerBuilderService, appDeployHelper, containerStateMutator)
+	cdserviceService, err := cdservice.NewService(applicationRepository, buildRepository, environmentRepository, backend, controllerBuilderService, appDeployHelper, containerStateMutator)
 	if err != nil {
 		return nil, err
 	}

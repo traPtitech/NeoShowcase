@@ -27,6 +27,7 @@ type Service interface {
 type service struct {
 	appRepo   domain.ApplicationRepository
 	buildRepo domain.BuildRepository
+	envRepo   domain.EnvironmentRepository
 	backend   domain.Backend
 	builder   domain.ControllerBuilderService
 	deployer  *AppDeployHelper
@@ -43,6 +44,7 @@ type service struct {
 func NewService(
 	appRepo domain.ApplicationRepository,
 	buildRepo domain.BuildRepository,
+	envRepo domain.EnvironmentRepository,
 	backend domain.Backend,
 	builder domain.ControllerBuilderService,
 	deployer *AppDeployHelper,
@@ -51,6 +53,7 @@ func NewService(
 	cd := &service{
 		appRepo:   appRepo,
 		buildRepo: buildRepo,
+		envRepo:   envRepo,
 		backend:   backend,
 		builder:   builder,
 		deployer:  deployer,
@@ -154,11 +157,18 @@ func (cd *service) registerBuild(ctx context.Context, appID string) error {
 		return nil
 	}
 
+	env, err := cd.envRepo.GetEnv(ctx, domain.GetEnvCondition{
+		ApplicationID: optional.From(appID),
+	})
+	if err != nil {
+		return err
+	}
+
 	// Check if already queued
 	builds, err := cd.buildRepo.GetBuilds(ctx, domain.GetBuildCondition{
 		ApplicationID: optional.From(appID),
 		Commit:        optional.From(app.Commit),
-		ConfigHash:    optional.From(app.Config.Hash()),
+		ConfigHash:    optional.From(app.Config.Hash(env)),
 		// Do not count retriable build as 'exists' - enqueue a new build if only retriable builds exist
 		Retriable: optional.From(false),
 	})
@@ -181,7 +191,7 @@ func (cd *service) registerBuild(ctx context.Context, appID string) error {
 		return err
 	}
 	// Queue new build
-	return cd.buildRepo.CreateBuild(ctx, domain.NewBuild(app))
+	return cd.buildRepo.CreateBuild(ctx, domain.NewBuild(app, env))
 }
 
 func (cd *service) startBuilds(ctx context.Context) error {

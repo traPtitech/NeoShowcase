@@ -217,11 +217,11 @@ func TestApplicationConfig_Validate(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name+" (hash)", func(t *testing.T) {
-			xxh3 := tt.config.Hash()
+			xxh3 := tt.config.Hash(nil)
 			t.Logf("hash: %v", xxh3)
 			assert.Len(t, xxh3, 16)
 			for i := 0; i < 5; i++ {
-				assert.Equal(t, xxh3, tt.config.Hash())
+				assert.Equal(t, xxh3, tt.config.Hash(nil))
 			}
 		})
 	}
@@ -321,4 +321,34 @@ func TestApplication_SelfValidate(t *testing.T) {
 			}
 		})
 	}
+}
+
+func TestHashWithEnv(t *testing.T) {
+	config := ApplicationConfig{
+		BuildConfig: &BuildConfigRuntimeDockerfile{DockerfileName: "Dockerfile"},
+	}
+	require.NoError(t, config.Validate(DeployTypeRuntime))
+
+	testEnv := []*Environment{
+		{Key: "key1", Value: "value1"},
+		{Key: "key2", Value: "value2"},
+	}
+	hash := config.Hash(testEnv)
+
+	t.Run("hash should be equal when env is different", func(t *testing.T) {
+		testEnv2 := []*Environment{
+			{Key: "key1", Value: "value1"},
+			{Key: "key2", Value: "value2"},
+			{Key: "key3", Value: "value3"},
+		}
+		assert.NotEqual(t, hash, config.Hash(testEnv2))
+	})
+
+	t.Run("order should not matter", func(t *testing.T) {
+		reversedTestEnv := []*Environment{
+			{Key: "key2", Value: "value2"},
+			{Key: "key1", Value: "value1"},
+		}
+		assert.Equal(t, hash, config.Hash(reversedTestEnv))
+	})
 }
