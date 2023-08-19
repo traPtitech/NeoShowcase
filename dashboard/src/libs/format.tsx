@@ -1,4 +1,8 @@
 import { createMemo } from 'solid-js'
+import { tippy as tippyDir } from 'solid-tippy'
+
+// https://github.com/solidjs/solid/discussions/845
+const tippy = tippyDir
 
 export const shortSha = (sha1: string): string => sha1.substring(0, 7)
 
@@ -49,7 +53,12 @@ export const DiffHuman = (props: DiffHumanProps) => {
   const human = () => durationHuman(Math.abs(diff()))
   const tooltip = () => props.target.toLocaleString()
   return (
-    <div title={tooltip()}>
+    <div
+      use:tippy={{
+        props: { content: tooltip(), maxWidth: 1000 },
+        hidden: true,
+      }}
+    >
       {human()} {suffix()}
     </div>
   )
