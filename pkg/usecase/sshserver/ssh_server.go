@@ -166,6 +166,7 @@ func (s *sshServer) handle(sess ssh.Session) error {
 			return errors.Wrap(err, "reading response")
 		}
 
+		_, _ = sess.Write(resp[:])
 		_, _ = sess.Write([]byte{'\n'})
 
 		switch resp[0] {
@@ -176,7 +177,7 @@ func (s *sshServer) handle(sess ssh.Session) error {
 			_, _ = sess.Write([]byte("Attaching to main process...\n"))
 			return s.backend.AttachContainer(sess.Context(), appID, sess, sess, sess.Stderr())
 		}
-		_, _ = sess.Write([]byte(fmt.Sprintf("unrecognized option: %v\n", resp[0])))
+		_, _ = sess.Write([]byte(fmt.Sprintf("Option not recognized, try again.\n")))
 
 		// check control sequence
 		if resp[0] < 32 {
