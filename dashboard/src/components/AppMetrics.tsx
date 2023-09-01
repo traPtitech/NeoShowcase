@@ -47,7 +47,7 @@ export const AppMetrics: Component<AppMetricsProps> = (props) => {
       }),
   )
 
-  const refetchTimer = setInterval(refetchData, 10000)
+  const refetchTimer = setInterval(refetchData, 60000)
   onCleanup(() => clearInterval(refetchTimer))
 
   const maxDataVal = createMemo(() => data() && Math.max(...data().metrics.map((m) => m.value)))
