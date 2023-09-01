@@ -36,7 +36,7 @@ require (
 	github.com/stretchr/testify v1.8.4
 	github.com/traefik/traefik/v2 v2.10.1
 	github.com/volatiletech/null/v8 v8.1.2
-	github.com/volatiletech/sqlboiler/v4 v4.14.2
+	github.com/volatiletech/sqlboiler/v4 v4.15.0
 	github.com/volatiletech/strmangle v0.0.5
 	github.com/whilp/git-urls v1.0.0
 	github.com/zeebo/xxh3 v1.0.2
