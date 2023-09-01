@@ -1,4 +1,4 @@
-import { Component, createEffect, createMemo, mergeProps, Show, splitProps } from 'solid-js'
+import { Component, createEffect, createMemo, mergeProps, onCleanup, Show, splitProps } from 'solid-js'
 import { Chart, ChartData, ChartOptions, Colors, Filler, Legend, Title, Tooltip } from 'chart.js'
 import { Line } from 'solid-chartjs'
 import { createResource } from 'solid-js'
@@ -36,7 +36,7 @@ export const AppMetrics: Component<AppMetricsProps> = (props) => {
   const [basicProps, givenOptions] = splitProps(props, ['appID', 'metricsName'])
   const options = mergeProps(knownOptions, givenOptions)
 
-  const [data] = createResource(
+  const [data, { refetch: refetchData }] = createResource(
     () => ({ appID: basicProps.appID, name: basicProps.metricsName }),
     ({ appID, name }) =>
       client.getApplicationMetrics({
@@ -46,6 +46,9 @@ export const AppMetrics: Component<AppMetricsProps> = (props) => {
         limitSeconds: 3600n,
       }),
   )
+
+  const refetchTimer = setInterval(refetchData, 60000)
+  onCleanup(() => clearInterval(refetchTimer))
 
   const maxDataVal = createMemo(() => data() && Math.max(...data().metrics.map((m) => m.value)))
   const chartData = (): ChartData => {
