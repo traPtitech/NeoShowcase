@@ -31,6 +31,8 @@ updates:
       patches:
         update-types:
           - "patch"
+        exclude-patterns:
+          - "vite-plugin-solid-svg" # broken patch update (v0.6.4)
   - package-ecosystem: "docker"
     directory: "/dashboard"
     open-pull-requests-limit: 50
