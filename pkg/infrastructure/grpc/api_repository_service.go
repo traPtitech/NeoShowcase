@@ -3,7 +3,7 @@ package grpc
 import (
 	"context"
 
-	"github.com/bufbuild/connect-go"
+	"connectrpc.com/connect"
 	"github.com/samber/lo"
 	"golang.org/x/exp/slices"
 	"google.golang.org/protobuf/types/known/emptypb"

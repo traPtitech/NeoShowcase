@@ -12,15 +12,29 @@ func Map[T, U any](s []T, mapper func(item T) U) []U {
 	return ret
 }
 
-func LessFunc[E any, K constraints.Ordered](key func(e E) K) func(e1, e2 E) bool {
-	return func(e1, e2 E) bool {
-		return key(e1) < key(e2)
+func LessFunc[E any, K constraints.Ordered](key func(e E) K) func(e1, e2 E) int {
+	return func(e1, e2 E) int {
+		k1, k2 := key(e1), key(e2)
+		if k1 < k2 {
+			return -1
+		} else if k1 == k2 {
+			return 0
+		} else {
+			return 1
+		}
 	}
 }
 
-func MoreFunc[E any, K constraints.Ordered](key func(e E) K) func(e1, e2 E) bool {
-	return func(e1, e2 E) bool {
-		return key(e1) > key(e2)
+func MoreFunc[E any, K constraints.Ordered](key func(e E) K) func(e1, e2 E) int {
+	return func(e1, e2 E) int {
+		k1, k2 := key(e1), key(e2)
+		if k1 < k2 {
+			return 1
+		} else if k1 == k2 {
+			return 0
+		} else {
+			return -1
+		}
 	}
 }
 

@@ -5,9 +5,9 @@
 package pbconnect
 
 import (
+	connect "connectrpc.com/connect"
 	context "context"
 	errors "errors"
-	connect_go "github.com/bufbuild/connect-go"
 	pb "github.com/traPtitech/neoshowcase/pkg/infrastructure/grpc/pb"
 	emptypb "google.golang.org/protobuf/types/known/emptypb"
 	http "net/http"
@@ -19,7 +19,7 @@ import (
 // generated with a version of connect newer than the one compiled into your binary. You can fix the
 // problem by either regenerating this code with an older version of connect or updating the connect
 // version compiled into your binary.
-const _ = connect_go.IsAtLeastVersion0_1_0
+const _ = connect.IsAtLeastVersion0_1_0
 
 const (
 	// APIServiceName is the fully-qualified name of the APIService service.
@@ -135,77 +135,77 @@ const (
 // APIServiceClient is a client for the neoshowcase.protobuf.APIService service.
 type APIServiceClient interface {
 	// GetSystemInfo システム固有情報を取得します
-	GetSystemInfo(context.Context, *connect_go.Request[emptypb.Empty]) (*connect_go.Response[pb.SystemInfo], error)
+	GetSystemInfo(context.Context, *connect.Request[emptypb.Empty]) (*connect.Response[pb.SystemInfo], error)
 	// GenerateKeyPair リポジトリ登録で使用する鍵ペアを一時的に生成します
-	GenerateKeyPair(context.Context, *connect_go.Request[emptypb.Empty]) (*connect_go.Response[pb.GenerateKeyPairResponse], error)
+	GenerateKeyPair(context.Context, *connect.Request[emptypb.Empty]) (*connect.Response[pb.GenerateKeyPairResponse], error)
 	// GetMe 自身の情報を取得します プロキシ認証のため常に成功します
-	GetMe(context.Context, *connect_go.Request[emptypb.Empty]) (*connect_go.Response[pb.User], error)
+	GetMe(context.Context, *connect.Request[emptypb.Empty]) (*connect.Response[pb.User], error)
 	// GetUsers 全てのユーザーの情報を取得します
-	GetUsers(context.Context, *connect_go.Request[emptypb.Empty]) (*connect_go.Response[pb.GetUsersResponse], error)
+	GetUsers(context.Context, *connect.Request[emptypb.Empty]) (*connect.Response[pb.GetUsersResponse], error)
 	// CreateUserKey アプリコンテナSSH用の公開鍵を登録します
-	CreateUserKey(context.Context, *connect_go.Request[pb.CreateUserKeyRequest]) (*connect_go.Response[pb.UserKey], error)
+	CreateUserKey(context.Context, *connect.Request[pb.CreateUserKeyRequest]) (*connect.Response[pb.UserKey], error)
 	// GetUserKeys 登録した公開鍵一覧を取得します
-	GetUserKeys(context.Context, *connect_go.Request[emptypb.Empty]) (*connect_go.Response[pb.GetUserKeysResponse], error)
+	GetUserKeys(context.Context, *connect.Request[emptypb.Empty]) (*connect.Response[pb.GetUserKeysResponse], error)
 	// DeleteUserKey 登録した公開鍵を削除します
-	DeleteUserKey(context.Context, *connect_go.Request[pb.DeleteUserKeyRequest]) (*connect_go.Response[emptypb.Empty], error)
+	DeleteUserKey(context.Context, *connect.Request[pb.DeleteUserKeyRequest]) (*connect.Response[emptypb.Empty], error)
 	// CreateRepository リポジトリを登録します
-	CreateRepository(context.Context, *connect_go.Request[pb.CreateRepositoryRequest]) (*connect_go.Response[pb.Repository], error)
+	CreateRepository(context.Context, *connect.Request[pb.CreateRepositoryRequest]) (*connect.Response[pb.Repository], error)
 	// GetRepositories リポジトリ一覧を取得します
-	GetRepositories(context.Context, *connect_go.Request[pb.GetRepositoriesRequest]) (*connect_go.Response[pb.GetRepositoriesResponse], error)
+	GetRepositories(context.Context, *connect.Request[pb.GetRepositoriesRequest]) (*connect.Response[pb.GetRepositoriesResponse], error)
 	// GetRepository リポジトリを取得します
-	GetRepository(context.Context, *connect_go.Request[pb.RepositoryIdRequest]) (*connect_go.Response[pb.Repository], error)
+	GetRepository(context.Context, *connect.Request[pb.RepositoryIdRequest]) (*connect.Response[pb.Repository], error)
 	// GetRepositoryRefs リポジトリの現在の有効なref一覧を取得します
-	GetRepositoryRefs(context.Context, *connect_go.Request[pb.RepositoryIdRequest]) (*connect_go.Response[pb.GetRepositoryRefsResponse], error)
+	GetRepositoryRefs(context.Context, *connect.Request[pb.RepositoryIdRequest]) (*connect.Response[pb.GetRepositoryRefsResponse], error)
 	// UpdateRepository リポジトリ情報を更新します
-	UpdateRepository(context.Context, *connect_go.Request[pb.UpdateRepositoryRequest]) (*connect_go.Response[emptypb.Empty], error)
+	UpdateRepository(context.Context, *connect.Request[pb.UpdateRepositoryRequest]) (*connect.Response[emptypb.Empty], error)
 	// RefreshRepository 自動更新間隔を待たず、手動でリモートリポジトリの最新情報に追従させます
-	RefreshRepository(context.Context, *connect_go.Request[pb.RepositoryIdRequest]) (*connect_go.Response[emptypb.Empty], error)
+	RefreshRepository(context.Context, *connect.Request[pb.RepositoryIdRequest]) (*connect.Response[emptypb.Empty], error)
 	// DeleteRepository リポジトリを削除します 関連する全てのアプリケーションの削除が必要です
-	DeleteRepository(context.Context, *connect_go.Request[pb.RepositoryIdRequest]) (*connect_go.Response[emptypb.Empty], error)
+	DeleteRepository(context.Context, *connect.Request[pb.RepositoryIdRequest]) (*connect.Response[emptypb.Empty], error)
 	// CreateApplication アプリを作成します
-	CreateApplication(context.Context, *connect_go.Request[pb.CreateApplicationRequest]) (*connect_go.Response[pb.Application], error)
+	CreateApplication(context.Context, *connect.Request[pb.CreateApplicationRequest]) (*connect.Response[pb.Application], error)
 	// GetApplications アプリ一覧を取得します
-	GetApplications(context.Context, *connect_go.Request[pb.GetApplicationsRequest]) (*connect_go.Response[pb.GetApplicationsResponse], error)
+	GetApplications(context.Context, *connect.Request[pb.GetApplicationsRequest]) (*connect.Response[pb.GetApplicationsResponse], error)
 	// GetApplication アプリを取得します
-	GetApplication(context.Context, *connect_go.Request[pb.ApplicationIdRequest]) (*connect_go.Response[pb.Application], error)
+	GetApplication(context.Context, *connect.Request[pb.ApplicationIdRequest]) (*connect.Response[pb.Application], error)
 	// UpdateApplication アプリ情報を更新します
-	UpdateApplication(context.Context, *connect_go.Request[pb.UpdateApplicationRequest]) (*connect_go.Response[emptypb.Empty], error)
+	UpdateApplication(context.Context, *connect.Request[pb.UpdateApplicationRequest]) (*connect.Response[emptypb.Empty], error)
 	// DeleteApplication アプリを削除します 先にアプリのシャットダウンが必要です
-	DeleteApplication(context.Context, *connect_go.Request[pb.ApplicationIdRequest]) (*connect_go.Response[emptypb.Empty], error)
+	DeleteApplication(context.Context, *connect.Request[pb.ApplicationIdRequest]) (*connect.Response[emptypb.Empty], error)
 	// GetAvailableMetrics 取得可能メトリクス一覧を取得します
-	GetAvailableMetrics(context.Context, *connect_go.Request[emptypb.Empty]) (*connect_go.Response[pb.AvailableMetrics], error)
+	GetAvailableMetrics(context.Context, *connect.Request[emptypb.Empty]) (*connect.Response[pb.AvailableMetrics], error)
 	// GetApplicationMetrics アプリのメトリクスを取得します
-	GetApplicationMetrics(context.Context, *connect_go.Request[pb.GetApplicationMetricsRequest]) (*connect_go.Response[pb.ApplicationMetrics], error)
+	GetApplicationMetrics(context.Context, *connect.Request[pb.GetApplicationMetricsRequest]) (*connect.Response[pb.ApplicationMetrics], error)
 	// GetOutput アプリの出力を取得します
-	GetOutput(context.Context, *connect_go.Request[pb.GetOutputRequest]) (*connect_go.Response[pb.ApplicationOutputs], error)
+	GetOutput(context.Context, *connect.Request[pb.GetOutputRequest]) (*connect.Response[pb.ApplicationOutputs], error)
 	// GetOutputStream アプリの出力をストリーム形式で取得します
-	GetOutputStream(context.Context, *connect_go.Request[pb.ApplicationIdRequest]) (*connect_go.ServerStreamForClient[pb.ApplicationOutput], error)
+	GetOutputStream(context.Context, *connect.Request[pb.ApplicationIdRequest]) (*connect.ServerStreamForClient[pb.ApplicationOutput], error)
 	// GetEnvVars アプリの環境変数を取得します
-	GetEnvVars(context.Context, *connect_go.Request[pb.ApplicationIdRequest]) (*connect_go.Response[pb.ApplicationEnvVars], error)
+	GetEnvVars(context.Context, *connect.Request[pb.ApplicationIdRequest]) (*connect.Response[pb.ApplicationEnvVars], error)
 	// SetEnvVar アプリの環境変数をセットします システムによって設定された環境変数は上書きできません
-	SetEnvVar(context.Context, *connect_go.Request[pb.SetApplicationEnvVarRequest]) (*connect_go.Response[emptypb.Empty], error)
+	SetEnvVar(context.Context, *connect.Request[pb.SetApplicationEnvVarRequest]) (*connect.Response[emptypb.Empty], error)
 	// DeleteEnvVar アプリの環境変数を削除します システムによって設定された環境変数は削除できません
-	DeleteEnvVar(context.Context, *connect_go.Request[pb.DeleteApplicationEnvVarRequest]) (*connect_go.Response[emptypb.Empty], error)
+	DeleteEnvVar(context.Context, *connect.Request[pb.DeleteApplicationEnvVarRequest]) (*connect.Response[emptypb.Empty], error)
 	// StartApplication アプリを起動します 起動中の場合は再起動します
-	StartApplication(context.Context, *connect_go.Request[pb.ApplicationIdRequest]) (*connect_go.Response[emptypb.Empty], error)
+	StartApplication(context.Context, *connect.Request[pb.ApplicationIdRequest]) (*connect.Response[emptypb.Empty], error)
 	// StopApplication アプリをシャットダウンします
-	StopApplication(context.Context, *connect_go.Request[pb.ApplicationIdRequest]) (*connect_go.Response[emptypb.Empty], error)
+	StopApplication(context.Context, *connect.Request[pb.ApplicationIdRequest]) (*connect.Response[emptypb.Empty], error)
 	// GetAllBuilds すべてのアプリケーションのビルドキューを取得します
-	GetAllBuilds(context.Context, *connect_go.Request[pb.GetAllBuildsRequest]) (*connect_go.Response[pb.GetBuildsResponse], error)
+	GetAllBuilds(context.Context, *connect.Request[pb.GetAllBuildsRequest]) (*connect.Response[pb.GetBuildsResponse], error)
 	// GetBuilds アプリのビルド一覧を取得します
-	GetBuilds(context.Context, *connect_go.Request[pb.ApplicationIdRequest]) (*connect_go.Response[pb.GetBuildsResponse], error)
+	GetBuilds(context.Context, *connect.Request[pb.ApplicationIdRequest]) (*connect.Response[pb.GetBuildsResponse], error)
 	// GetBuild アプリのビルド情報を取得します
-	GetBuild(context.Context, *connect_go.Request[pb.BuildIdRequest]) (*connect_go.Response[pb.Build], error)
+	GetBuild(context.Context, *connect.Request[pb.BuildIdRequest]) (*connect.Response[pb.Build], error)
 	// RetryCommitBuild アプリの該当コミットのビルドをやり直します
-	RetryCommitBuild(context.Context, *connect_go.Request[pb.RetryCommitBuildRequest]) (*connect_go.Response[emptypb.Empty], error)
+	RetryCommitBuild(context.Context, *connect.Request[pb.RetryCommitBuildRequest]) (*connect.Response[emptypb.Empty], error)
 	// CancelBuild 該当ビルドが進行中の場合キャンセルします
-	CancelBuild(context.Context, *connect_go.Request[pb.BuildIdRequest]) (*connect_go.Response[emptypb.Empty], error)
+	CancelBuild(context.Context, *connect.Request[pb.BuildIdRequest]) (*connect.Response[emptypb.Empty], error)
 	// GetBuildLog 終了したビルドのログを取得します
-	GetBuildLog(context.Context, *connect_go.Request[pb.BuildIdRequest]) (*connect_go.Response[pb.BuildLog], error)
+	GetBuildLog(context.Context, *connect.Request[pb.BuildIdRequest]) (*connect.Response[pb.BuildLog], error)
 	// GetBuildLogStream ビルド中のログをストリーム形式で取得します
-	GetBuildLogStream(context.Context, *connect_go.Request[pb.BuildIdRequest]) (*connect_go.ServerStreamForClient[pb.BuildLog], error)
+	GetBuildLogStream(context.Context, *connect.Request[pb.BuildIdRequest]) (*connect.ServerStreamForClient[pb.BuildLog], error)
 	// GetBuildArtifact 静的サイトアプリの場合ビルド成果物（静的ファイルのtar）を取得します
-	GetBuildArtifact(context.Context, *connect_go.Request[pb.ArtifactIdRequest]) (*connect_go.Response[pb.ArtifactContent], error)
+	GetBuildArtifact(context.Context, *connect.Request[pb.ArtifactIdRequest]) (*connect.Response[pb.ArtifactContent], error)
 }
 
 // NewAPIServiceClient constructs a client for the neoshowcase.protobuf.APIService service. By
@@ -215,185 +215,185 @@ type APIServiceClient interface {
 //
 // The URL supplied here should be the base URL for the Connect or gRPC server (for example,
 // http://api.acme.com or https://acme.com/grpc).
-func NewAPIServiceClient(httpClient connect_go.HTTPClient, baseURL string, opts ...connect_go.ClientOption) APIServiceClient {
+func NewAPIServiceClient(httpClient connect.HTTPClient, baseURL string, opts ...connect.ClientOption) APIServiceClient {
 	baseURL = strings.TrimRight(baseURL, "/")
 	return &aPIServiceClient{
-		getSystemInfo: connect_go.NewClient[emptypb.Empty, pb.SystemInfo](
+		getSystemInfo: connect.NewClient[emptypb.Empty, pb.SystemInfo](
 			httpClient,
 			baseURL+APIServiceGetSystemInfoProcedure,
 			opts...,
 		),
-		generateKeyPair: connect_go.NewClient[emptypb.Empty, pb.GenerateKeyPairResponse](
+		generateKeyPair: connect.NewClient[emptypb.Empty, pb.GenerateKeyPairResponse](
 			httpClient,
 			baseURL+APIServiceGenerateKeyPairProcedure,
 			opts...,
 		),
-		getMe: connect_go.NewClient[emptypb.Empty, pb.User](
+		getMe: connect.NewClient[emptypb.Empty, pb.User](
 			httpClient,
 			baseURL+APIServiceGetMeProcedure,
 			opts...,
 		),
-		getUsers: connect_go.NewClient[emptypb.Empty, pb.GetUsersResponse](
+		getUsers: connect.NewClient[emptypb.Empty, pb.GetUsersResponse](
 			httpClient,
 			baseURL+APIServiceGetUsersProcedure,
 			opts...,
 		),
-		createUserKey: connect_go.NewClient[pb.CreateUserKeyRequest, pb.UserKey](
+		createUserKey: connect.NewClient[pb.CreateUserKeyRequest, pb.UserKey](
 			httpClient,
 			baseURL+APIServiceCreateUserKeyProcedure,
 			opts...,
 		),
-		getUserKeys: connect_go.NewClient[emptypb.Empty, pb.GetUserKeysResponse](
+		getUserKeys: connect.NewClient[emptypb.Empty, pb.GetUserKeysResponse](
 			httpClient,
 			baseURL+APIServiceGetUserKeysProcedure,
 			opts...,
 		),
-		deleteUserKey: connect_go.NewClient[pb.DeleteUserKeyRequest, emptypb.Empty](
+		deleteUserKey: connect.NewClient[pb.DeleteUserKeyRequest, emptypb.Empty](
 			httpClient,
 			baseURL+APIServiceDeleteUserKeyProcedure,
 			opts...,
 		),
-		createRepository: connect_go.NewClient[pb.CreateRepositoryRequest, pb.Repository](
+		createRepository: connect.NewClient[pb.CreateRepositoryRequest, pb.Repository](
 			httpClient,
 			baseURL+APIServiceCreateRepositoryProcedure,
 			opts...,
 		),
-		getRepositories: connect_go.NewClient[pb.GetRepositoriesRequest, pb.GetRepositoriesResponse](
+		getRepositories: connect.NewClient[pb.GetRepositoriesRequest, pb.GetRepositoriesResponse](
 			httpClient,
 			baseURL+APIServiceGetRepositoriesProcedure,
 			opts...,
 		),
-		getRepository: connect_go.NewClient[pb.RepositoryIdRequest, pb.Repository](
+		getRepository: connect.NewClient[pb.RepositoryIdRequest, pb.Repository](
 			httpClient,
 			baseURL+APIServiceGetRepositoryProcedure,
 			opts...,
 		),
-		getRepositoryRefs: connect_go.NewClient[pb.RepositoryIdRequest, pb.GetRepositoryRefsResponse](
+		getRepositoryRefs: connect.NewClient[pb.RepositoryIdRequest, pb.GetRepositoryRefsResponse](
 			httpClient,
 			baseURL+APIServiceGetRepositoryRefsProcedure,
 			opts...,
 		),
-		updateRepository: connect_go.NewClient[pb.UpdateRepositoryRequest, emptypb.Empty](
+		updateRepository: connect.NewClient[pb.UpdateRepositoryRequest, emptypb.Empty](
 			httpClient,
 			baseURL+APIServiceUpdateRepositoryProcedure,
 			opts...,
 		),
-		refreshRepository: connect_go.NewClient[pb.RepositoryIdRequest, emptypb.Empty](
+		refreshRepository: connect.NewClient[pb.RepositoryIdRequest, emptypb.Empty](
 			httpClient,
 			baseURL+APIServiceRefreshRepositoryProcedure,
 			opts...,
 		),
-		deleteRepository: connect_go.NewClient[pb.RepositoryIdRequest, emptypb.Empty](
+		deleteRepository: connect.NewClient[pb.RepositoryIdRequest, emptypb.Empty](
 			httpClient,
 			baseURL+APIServiceDeleteRepositoryProcedure,
 			opts...,
 		),
-		createApplication: connect_go.NewClient[pb.CreateApplicationRequest, pb.Application](
+		createApplication: connect.NewClient[pb.CreateApplicationRequest, pb.Application](
 			httpClient,
 			baseURL+APIServiceCreateApplicationProcedure,
 			opts...,
 		),
-		getApplications: connect_go.NewClient[pb.GetApplicationsRequest, pb.GetApplicationsResponse](
+		getApplications: connect.NewClient[pb.GetApplicationsRequest, pb.GetApplicationsResponse](
 			httpClient,
 			baseURL+APIServiceGetApplicationsProcedure,
 			opts...,
 		),
-		getApplication: connect_go.NewClient[pb.ApplicationIdRequest, pb.Application](
+		getApplication: connect.NewClient[pb.ApplicationIdRequest, pb.Application](
 			httpClient,
 			baseURL+APIServiceGetApplicationProcedure,
 			opts...,
 		),
-		updateApplication: connect_go.NewClient[pb.UpdateApplicationRequest, emptypb.Empty](
+		updateApplication: connect.NewClient[pb.UpdateApplicationRequest, emptypb.Empty](
 			httpClient,
 			baseURL+APIServiceUpdateApplicationProcedure,
 			opts...,
 		),
-		deleteApplication: connect_go.NewClient[pb.ApplicationIdRequest, emptypb.Empty](
+		deleteApplication: connect.NewClient[pb.ApplicationIdRequest, emptypb.Empty](
 			httpClient,
 			baseURL+APIServiceDeleteApplicationProcedure,
 			opts...,
 		),
-		getAvailableMetrics: connect_go.NewClient[emptypb.Empty, pb.AvailableMetrics](
+		getAvailableMetrics: connect.NewClient[emptypb.Empty, pb.AvailableMetrics](
 			httpClient,
 			baseURL+APIServiceGetAvailableMetricsProcedure,
 			opts...,
 		),
-		getApplicationMetrics: connect_go.NewClient[pb.GetApplicationMetricsRequest, pb.ApplicationMetrics](
+		getApplicationMetrics: connect.NewClient[pb.GetApplicationMetricsRequest, pb.ApplicationMetrics](
 			httpClient,
 			baseURL+APIServiceGetApplicationMetricsProcedure,
 			opts...,
 		),
-		getOutput: connect_go.NewClient[pb.GetOutputRequest, pb.ApplicationOutputs](
+		getOutput: connect.NewClient[pb.GetOutputRequest, pb.ApplicationOutputs](
 			httpClient,
 			baseURL+APIServiceGetOutputProcedure,
 			opts...,
 		),
-		getOutputStream: connect_go.NewClient[pb.ApplicationIdRequest, pb.ApplicationOutput](
+		getOutputStream: connect.NewClient[pb.ApplicationIdRequest, pb.ApplicationOutput](
 			httpClient,
 			baseURL+APIServiceGetOutputStreamProcedure,
 			opts...,
 		),
-		getEnvVars: connect_go.NewClient[pb.ApplicationIdRequest, pb.ApplicationEnvVars](
+		getEnvVars: connect.NewClient[pb.ApplicationIdRequest, pb.ApplicationEnvVars](
 			httpClient,
 			baseURL+APIServiceGetEnvVarsProcedure,
 			opts...,
 		),
-		setEnvVar: connect_go.NewClient[pb.SetApplicationEnvVarRequest, emptypb.Empty](
+		setEnvVar: connect.NewClient[pb.SetApplicationEnvVarRequest, emptypb.Empty](
 			httpClient,
 			baseURL+APIServiceSetEnvVarProcedure,
 			opts...,
 		),
-		deleteEnvVar: connect_go.NewClient[pb.DeleteApplicationEnvVarRequest, emptypb.Empty](
+		deleteEnvVar: connect.NewClient[pb.DeleteApplicationEnvVarRequest, emptypb.Empty](
 			httpClient,
 			baseURL+APIServiceDeleteEnvVarProcedure,
 			opts...,
 		),
-		startApplication: connect_go.NewClient[pb.ApplicationIdRequest, emptypb.Empty](
+		startApplication: connect.NewClient[pb.ApplicationIdRequest, emptypb.Empty](
 			httpClient,
 			baseURL+APIServiceStartApplicationProcedure,
 			opts...,
 		),
-		stopApplication: connect_go.NewClient[pb.ApplicationIdRequest, emptypb.Empty](
+		stopApplication: connect.NewClient[pb.ApplicationIdRequest, emptypb.Empty](
 			httpClient,
 			baseURL+APIServiceStopApplicationProcedure,
 			opts...,
 		),
-		getAllBuilds: connect_go.NewClient[pb.GetAllBuildsRequest, pb.GetBuildsResponse](
+		getAllBuilds: connect.NewClient[pb.GetAllBuildsRequest, pb.GetBuildsResponse](
 			httpClient,
 			baseURL+APIServiceGetAllBuildsProcedure,
 			opts...,
 		),
-		getBuilds: connect_go.NewClient[pb.ApplicationIdRequest, pb.GetBuildsResponse](
+		getBuilds: connect.NewClient[pb.ApplicationIdRequest, pb.GetBuildsResponse](
 			httpClient,
 			baseURL+APIServiceGetBuildsProcedure,
 			opts...,
 		),
-		getBuild: connect_go.NewClient[pb.BuildIdRequest, pb.Build](
+		getBuild: connect.NewClient[pb.BuildIdRequest, pb.Build](
 			httpClient,
 			baseURL+APIServiceGetBuildProcedure,
 			opts...,
 		),
-		retryCommitBuild: connect_go.NewClient[pb.RetryCommitBuildRequest, emptypb.Empty](
+		retryCommitBuild: connect.NewClient[pb.RetryCommitBuildRequest, emptypb.Empty](
 			httpClient,
 			baseURL+APIServiceRetryCommitBuildProcedure,
 			opts...,
 		),
-		cancelBuild: connect_go.NewClient[pb.BuildIdRequest, emptypb.Empty](
+		cancelBuild: connect.NewClient[pb.BuildIdRequest, emptypb.Empty](
 			httpClient,
 			baseURL+APIServiceCancelBuildProcedure,
 			opts...,
 		),
-		getBuildLog: connect_go.NewClient[pb.BuildIdRequest, pb.BuildLog](
+		getBuildLog: connect.NewClient[pb.BuildIdRequest, pb.BuildLog](
 			httpClient,
 			baseURL+APIServiceGetBuildLogProcedure,
 			opts...,
 		),
-		getBuildLogStream: connect_go.NewClient[pb.BuildIdRequest, pb.BuildLog](
+		getBuildLogStream: connect.NewClient[pb.BuildIdRequest, pb.BuildLog](
 			httpClient,
 			baseURL+APIServiceGetBuildLogStreamProcedure,
 			opts...,
 		),
-		getBuildArtifact: connect_go.NewClient[pb.ArtifactIdRequest, pb.ArtifactContent](
+		getBuildArtifact: connect.NewClient[pb.ArtifactIdRequest, pb.ArtifactContent](
 			httpClient,
 			baseURL+APIServiceGetBuildArtifactProcedure,
 			opts...,
@@ -403,298 +403,298 @@ func NewAPIServiceClient(httpClient connect_go.HTTPClient, baseURL string, opts 
 
 // aPIServiceClient implements APIServiceClient.
 type aPIServiceClient struct {
-	getSystemInfo         *connect_go.Client[emptypb.Empty, pb.SystemInfo]
-	generateKeyPair       *connect_go.Client[emptypb.Empty, pb.GenerateKeyPairResponse]
-	getMe                 *connect_go.Client[emptypb.Empty, pb.User]
-	getUsers              *connect_go.Client[emptypb.Empty, pb.GetUsersResponse]
-	createUserKey         *connect_go.Client[pb.CreateUserKeyRequest, pb.UserKey]
-	getUserKeys           *connect_go.Client[emptypb.Empty, pb.GetUserKeysResponse]
-	deleteUserKey         *connect_go.Client[pb.DeleteUserKeyRequest, emptypb.Empty]
-	createRepository      *connect_go.Client[pb.CreateRepositoryRequest, pb.Repository]
-	getRepositories       *connect_go.Client[pb.GetRepositoriesRequest, pb.GetRepositoriesResponse]
-	getRepository         *connect_go.Client[pb.RepositoryIdRequest, pb.Repository]
-	getRepositoryRefs     *connect_go.Client[pb.RepositoryIdRequest, pb.GetRepositoryRefsResponse]
-	updateRepository      *connect_go.Client[pb.UpdateRepositoryRequest, emptypb.Empty]
-	refreshRepository     *connect_go.Client[pb.RepositoryIdRequest, emptypb.Empty]
-	deleteRepository      *connect_go.Client[pb.RepositoryIdRequest, emptypb.Empty]
-	createApplication     *connect_go.Client[pb.CreateApplicationRequest, pb.Application]
-	getApplications       *connect_go.Client[pb.GetApplicationsRequest, pb.GetApplicationsResponse]
-	getApplication        *connect_go.Client[pb.ApplicationIdRequest, pb.Application]
-	updateApplication     *connect_go.Client[pb.UpdateApplicationRequest, emptypb.Empty]
-	deleteApplication     *connect_go.Client[pb.ApplicationIdRequest, emptypb.Empty]
-	getAvailableMetrics   *connect_go.Client[emptypb.Empty, pb.AvailableMetrics]
-	getApplicationMetrics *connect_go.Client[pb.GetApplicationMetricsRequest, pb.ApplicationMetrics]
-	getOutput             *connect_go.Client[pb.GetOutputRequest, pb.ApplicationOutputs]
-	getOutputStream       *connect_go.Client[pb.ApplicationIdRequest, pb.ApplicationOutput]
-	getEnvVars            *connect_go.Client[pb.ApplicationIdRequest, pb.ApplicationEnvVars]
-	setEnvVar             *connect_go.Client[pb.SetApplicationEnvVarRequest, emptypb.Empty]
-	deleteEnvVar          *connect_go.Client[pb.DeleteApplicationEnvVarRequest, emptypb.Empty]
-	startApplication      *connect_go.Client[pb.ApplicationIdRequest, emptypb.Empty]
-	stopApplication       *connect_go.Client[pb.ApplicationIdRequest, emptypb.Empty]
-	getAllBuilds          *connect_go.Client[pb.GetAllBuildsRequest, pb.GetBuildsResponse]
-	getBuilds             *connect_go.Client[pb.ApplicationIdRequest, pb.GetBuildsResponse]
-	getBuild              *connect_go.Client[pb.BuildIdRequest, pb.Build]
-	retryCommitBuild      *connect_go.Client[pb.RetryCommitBuildRequest, emptypb.Empty]
-	cancelBuild           *connect_go.Client[pb.BuildIdRequest, emptypb.Empty]
-	getBuildLog           *connect_go.Client[pb.BuildIdRequest, pb.BuildLog]
-	getBuildLogStream     *connect_go.Client[pb.BuildIdRequest, pb.BuildLog]
-	getBuildArtifact      *connect_go.Client[pb.ArtifactIdRequest, pb.ArtifactContent]
+	getSystemInfo         *connect.Client[emptypb.Empty, pb.SystemInfo]
+	generateKeyPair       *connect.Client[emptypb.Empty, pb.GenerateKeyPairResponse]
+	getMe                 *connect.Client[emptypb.Empty, pb.User]
+	getUsers              *connect.Client[emptypb.Empty, pb.GetUsersResponse]
+	createUserKey         *connect.Client[pb.CreateUserKeyRequest, pb.UserKey]
+	getUserKeys           *connect.Client[emptypb.Empty, pb.GetUserKeysResponse]
+	deleteUserKey         *connect.Client[pb.DeleteUserKeyRequest, emptypb.Empty]
+	createRepository      *connect.Client[pb.CreateRepositoryRequest, pb.Repository]
+	getRepositories       *connect.Client[pb.GetRepositoriesRequest, pb.GetRepositoriesResponse]
+	getRepository         *connect.Client[pb.RepositoryIdRequest, pb.Repository]
+	getRepositoryRefs     *connect.Client[pb.RepositoryIdRequest, pb.GetRepositoryRefsResponse]
+	updateRepository      *connect.Client[pb.UpdateRepositoryRequest, emptypb.Empty]
+	refreshRepository     *connect.Client[pb.RepositoryIdRequest, emptypb.Empty]
+	deleteRepository      *connect.Client[pb.RepositoryIdRequest, emptypb.Empty]
+	createApplication     *connect.Client[pb.CreateApplicationRequest, pb.Application]
+	getApplications       *connect.Client[pb.GetApplicationsRequest, pb.GetApplicationsResponse]
+	getApplication        *connect.Client[pb.ApplicationIdRequest, pb.Application]
+	updateApplication     *connect.Client[pb.UpdateApplicationRequest, emptypb.Empty]
+	deleteApplication     *connect.Client[pb.ApplicationIdRequest, emptypb.Empty]
+	getAvailableMetrics   *connect.Client[emptypb.Empty, pb.AvailableMetrics]
+	getApplicationMetrics *connect.Client[pb.GetApplicationMetricsRequest, pb.ApplicationMetrics]
+	getOutput             *connect.Client[pb.GetOutputRequest, pb.ApplicationOutputs]
+	getOutputStream       *connect.Client[pb.ApplicationIdRequest, pb.ApplicationOutput]
+	getEnvVars            *connect.Client[pb.ApplicationIdRequest, pb.ApplicationEnvVars]
+	setEnvVar             *connect.Client[pb.SetApplicationEnvVarRequest, emptypb.Empty]
+	deleteEnvVar          *connect.Client[pb.DeleteApplicationEnvVarRequest, emptypb.Empty]
+	startApplication      *connect.Client[pb.ApplicationIdRequest, emptypb.Empty]
+	stopApplication       *connect.Client[pb.ApplicationIdRequest, emptypb.Empty]
+	getAllBuilds          *connect.Client[pb.GetAllBuildsRequest, pb.GetBuildsResponse]
+	getBuilds             *connect.Client[pb.ApplicationIdRequest, pb.GetBuildsResponse]
+	getBuild              *connect.Client[pb.BuildIdRequest, pb.Build]
+	retryCommitBuild      *connect.Client[pb.RetryCommitBuildRequest, emptypb.Empty]
+	cancelBuild           *connect.Client[pb.BuildIdRequest, emptypb.Empty]
+	getBuildLog           *connect.Client[pb.BuildIdRequest, pb.BuildLog]
+	getBuildLogStream     *connect.Client[pb.BuildIdRequest, pb.BuildLog]
+	getBuildArtifact      *connect.Client[pb.ArtifactIdRequest, pb.ArtifactContent]
 }
 
 // GetSystemInfo calls neoshowcase.protobuf.APIService.GetSystemInfo.
-func (c *aPIServiceClient) GetSystemInfo(ctx context.Context, req *connect_go.Request[emptypb.Empty]) (*connect_go.Response[pb.SystemInfo], error) {
+func (c *aPIServiceClient) GetSystemInfo(ctx context.Context, req *connect.Request[emptypb.Empty]) (*connect.Response[pb.SystemInfo], error) {
 	return c.getSystemInfo.CallUnary(ctx, req)
 }
 
 // GenerateKeyPair calls neoshowcase.protobuf.APIService.GenerateKeyPair.
-func (c *aPIServiceClient) GenerateKeyPair(ctx context.Context, req *connect_go.Request[emptypb.Empty]) (*connect_go.Response[pb.GenerateKeyPairResponse], error) {
+func (c *aPIServiceClient) GenerateKeyPair(ctx context.Context, req *connect.Request[emptypb.Empty]) (*connect.Response[pb.GenerateKeyPairResponse], error) {
 	return c.generateKeyPair.CallUnary(ctx, req)
 }
 
 // GetMe calls neoshowcase.protobuf.APIService.GetMe.
-func (c *aPIServiceClient) GetMe(ctx context.Context, req *connect_go.Request[emptypb.Empty]) (*connect_go.Response[pb.User], error) {
+func (c *aPIServiceClient) GetMe(ctx context.Context, req *connect.Request[emptypb.Empty]) (*connect.Response[pb.User], error) {
 	return c.getMe.CallUnary(ctx, req)
 }
 
 // GetUsers calls neoshowcase.protobuf.APIService.GetUsers.
-func (c *aPIServiceClient) GetUsers(ctx context.Context, req *connect_go.Request[emptypb.Empty]) (*connect_go.Response[pb.GetUsersResponse], error) {
+func (c *aPIServiceClient) GetUsers(ctx context.Context, req *connect.Request[emptypb.Empty]) (*connect.Response[pb.GetUsersResponse], error) {
 	return c.getUsers.CallUnary(ctx, req)
 }
 
 // CreateUserKey calls neoshowcase.protobuf.APIService.CreateUserKey.
-func (c *aPIServiceClient) CreateUserKey(ctx context.Context, req *connect_go.Request[pb.CreateUserKeyRequest]) (*connect_go.Response[pb.UserKey], error) {
+func (c *aPIServiceClient) CreateUserKey(ctx context.Context, req *connect.Request[pb.CreateUserKeyRequest]) (*connect.Response[pb.UserKey], error) {
 	return c.createUserKey.CallUnary(ctx, req)
 }
 
 // GetUserKeys calls neoshowcase.protobuf.APIService.GetUserKeys.
-func (c *aPIServiceClient) GetUserKeys(ctx context.Context, req *connect_go.Request[emptypb.Empty]) (*connect_go.Response[pb.GetUserKeysResponse], error) {
+func (c *aPIServiceClient) GetUserKeys(ctx context.Context, req *connect.Request[emptypb.Empty]) (*connect.Response[pb.GetUserKeysResponse], error) {
 	return c.getUserKeys.CallUnary(ctx, req)
 }
 
 // DeleteUserKey calls neoshowcase.protobuf.APIService.DeleteUserKey.
-func (c *aPIServiceClient) DeleteUserKey(ctx context.Context, req *connect_go.Request[pb.DeleteUserKeyRequest]) (*connect_go.Response[emptypb.Empty], error) {
+func (c *aPIServiceClient) DeleteUserKey(ctx context.Context, req *connect.Request[pb.DeleteUserKeyRequest]) (*connect.Response[emptypb.Empty], error) {
 	return c.deleteUserKey.CallUnary(ctx, req)
 }
 
 // CreateRepository calls neoshowcase.protobuf.APIService.CreateRepository.
-func (c *aPIServiceClient) CreateRepository(ctx context.Context, req *connect_go.Request[pb.CreateRepositoryRequest]) (*connect_go.Response[pb.Repository], error) {
+func (c *aPIServiceClient) CreateRepository(ctx context.Context, req *connect.Request[pb.CreateRepositoryRequest]) (*connect.Response[pb.Repository], error) {
 	return c.createRepository.CallUnary(ctx, req)
 }
 
 // GetRepositories calls neoshowcase.protobuf.APIService.GetRepositories.
-func (c *aPIServiceClient) GetRepositories(ctx context.Context, req *connect_go.Request[pb.GetRepositoriesRequest]) (*connect_go.Response[pb.GetRepositoriesResponse], error) {
+func (c *aPIServiceClient) GetRepositories(ctx context.Context, req *connect.Request[pb.GetRepositoriesRequest]) (*connect.Response[pb.GetRepositoriesResponse], error) {
 	return c.getRepositories.CallUnary(ctx, req)
 }
 
 // GetRepository calls neoshowcase.protobuf.APIService.GetRepository.
-func (c *aPIServiceClient) GetRepository(ctx context.Context, req *connect_go.Request[pb.RepositoryIdRequest]) (*connect_go.Response[pb.Repository], error) {
+func (c *aPIServiceClient) GetRepository(ctx context.Context, req *connect.Request[pb.RepositoryIdRequest]) (*connect.Response[pb.Repository], error) {
 	return c.getRepository.CallUnary(ctx, req)
 }
 
 // GetRepositoryRefs calls neoshowcase.protobuf.APIService.GetRepositoryRefs.
-func (c *aPIServiceClient) GetRepositoryRefs(ctx context.Context, req *connect_go.Request[pb.RepositoryIdRequest]) (*connect_go.Response[pb.GetRepositoryRefsResponse], error) {
+func (c *aPIServiceClient) GetRepositoryRefs(ctx context.Context, req *connect.Request[pb.RepositoryIdRequest]) (*connect.Response[pb.GetRepositoryRefsResponse], error) {
 	return c.getRepositoryRefs.CallUnary(ctx, req)
 }
 
 // UpdateRepository calls neoshowcase.protobuf.APIService.UpdateRepository.
-func (c *aPIServiceClient) UpdateRepository(ctx context.Context, req *connect_go.Request[pb.UpdateRepositoryRequest]) (*connect_go.Response[emptypb.Empty], error) {
+func (c *aPIServiceClient) UpdateRepository(ctx context.Context, req *connect.Request[pb.UpdateRepositoryRequest]) (*connect.Response[emptypb.Empty], error) {
 	return c.updateRepository.CallUnary(ctx, req)
 }
 
 // RefreshRepository calls neoshowcase.protobuf.APIService.RefreshRepository.
-func (c *aPIServiceClient) RefreshRepository(ctx context.Context, req *connect_go.Request[pb.RepositoryIdRequest]) (*connect_go.Response[emptypb.Empty], error) {
+func (c *aPIServiceClient) RefreshRepository(ctx context.Context, req *connect.Request[pb.RepositoryIdRequest]) (*connect.Response[emptypb.Empty], error) {
 	return c.refreshRepository.CallUnary(ctx, req)
 }
 
 // DeleteRepository calls neoshowcase.protobuf.APIService.DeleteRepository.
-func (c *aPIServiceClient) DeleteRepository(ctx context.Context, req *connect_go.Request[pb.RepositoryIdRequest]) (*connect_go.Response[emptypb.Empty], error) {
+func (c *aPIServiceClient) DeleteRepository(ctx context.Context, req *connect.Request[pb.RepositoryIdRequest]) (*connect.Response[emptypb.Empty], error) {
 	return c.deleteRepository.CallUnary(ctx, req)
 }
 
 // CreateApplication calls neoshowcase.protobuf.APIService.CreateApplication.
-func (c *aPIServiceClient) CreateApplication(ctx context.Context, req *connect_go.Request[pb.CreateApplicationRequest]) (*connect_go.Response[pb.Application], error) {
+func (c *aPIServiceClient) CreateApplication(ctx context.Context, req *connect.Request[pb.CreateApplicationRequest]) (*connect.Response[pb.Application], error) {
 	return c.createApplication.CallUnary(ctx, req)
 }
 
 // GetApplications calls neoshowcase.protobuf.APIService.GetApplications.
-func (c *aPIServiceClient) GetApplications(ctx context.Context, req *connect_go.Request[pb.GetApplicationsRequest]) (*connect_go.Response[pb.GetApplicationsResponse], error) {
+func (c *aPIServiceClient) GetApplications(ctx context.Context, req *connect.Request[pb.GetApplicationsRequest]) (*connect.Response[pb.GetApplicationsResponse], error) {
 	return c.getApplications.CallUnary(ctx, req)
 }
 
 // GetApplication calls neoshowcase.protobuf.APIService.GetApplication.
-func (c *aPIServiceClient) GetApplication(ctx context.Context, req *connect_go.Request[pb.ApplicationIdRequest]) (*connect_go.Response[pb.Application], error) {
+func (c *aPIServiceClient) GetApplication(ctx context.Context, req *connect.Request[pb.ApplicationIdRequest]) (*connect.Response[pb.Application], error) {
 	return c.getApplication.CallUnary(ctx, req)
 }
 
 // UpdateApplication calls neoshowcase.protobuf.APIService.UpdateApplication.
-func (c *aPIServiceClient) UpdateApplication(ctx context.Context, req *connect_go.Request[pb.UpdateApplicationRequest]) (*connect_go.Response[emptypb.Empty], error) {
+func (c *aPIServiceClient) UpdateApplication(ctx context.Context, req *connect.Request[pb.UpdateApplicationRequest]) (*connect.Response[emptypb.Empty], error) {
 	return c.updateApplication.CallUnary(ctx, req)
 }
 
 // DeleteApplication calls neoshowcase.protobuf.APIService.DeleteApplication.
-func (c *aPIServiceClient) DeleteApplication(ctx context.Context, req *connect_go.Request[pb.ApplicationIdRequest]) (*connect_go.Response[emptypb.Empty], error) {
+func (c *aPIServiceClient) DeleteApplication(ctx context.Context, req *connect.Request[pb.ApplicationIdRequest]) (*connect.Response[emptypb.Empty], error) {
 	return c.deleteApplication.CallUnary(ctx, req)
 }
 
 // GetAvailableMetrics calls neoshowcase.protobuf.APIService.GetAvailableMetrics.
-func (c *aPIServiceClient) GetAvailableMetrics(ctx context.Context, req *connect_go.Request[emptypb.Empty]) (*connect_go.Response[pb.AvailableMetrics], error) {
+func (c *aPIServiceClient) GetAvailableMetrics(ctx context.Context, req *connect.Request[emptypb.Empty]) (*connect.Response[pb.AvailableMetrics], error) {
 	return c.getAvailableMetrics.CallUnary(ctx, req)
 }
 
 // GetApplicationMetrics calls neoshowcase.protobuf.APIService.GetApplicationMetrics.
-func (c *aPIServiceClient) GetApplicationMetrics(ctx context.Context, req *connect_go.Request[pb.GetApplicationMetricsRequest]) (*connect_go.Response[pb.ApplicationMetrics], error) {
+func (c *aPIServiceClient) GetApplicationMetrics(ctx context.Context, req *connect.Request[pb.GetApplicationMetricsRequest]) (*connect.Response[pb.ApplicationMetrics], error) {
 	return c.getApplicationMetrics.CallUnary(ctx, req)
 }
 
 // GetOutput calls neoshowcase.protobuf.APIService.GetOutput.
-func (c *aPIServiceClient) GetOutput(ctx context.Context, req *connect_go.Request[pb.GetOutputRequest]) (*connect_go.Response[pb.ApplicationOutputs], error) {
+func (c *aPIServiceClient) GetOutput(ctx context.Context, req *connect.Request[pb.GetOutputRequest]) (*connect.Response[pb.ApplicationOutputs], error) {
 	return c.getOutput.CallUnary(ctx, req)
 }
 
 // GetOutputStream calls neoshowcase.protobuf.APIService.GetOutputStream.
-func (c *aPIServiceClient) GetOutputStream(ctx context.Context, req *connect_go.Request[pb.ApplicationIdRequest]) (*connect_go.ServerStreamForClient[pb.ApplicationOutput], error) {
+func (c *aPIServiceClient) GetOutputStream(ctx context.Context, req *connect.Request[pb.ApplicationIdRequest]) (*connect.ServerStreamForClient[pb.ApplicationOutput], error) {
 	return c.getOutputStream.CallServerStream(ctx, req)
 }
 
 // GetEnvVars calls neoshowcase.protobuf.APIService.GetEnvVars.
-func (c *aPIServiceClient) GetEnvVars(ctx context.Context, req *connect_go.Request[pb.ApplicationIdRequest]) (*connect_go.Response[pb.ApplicationEnvVars], error) {
+func (c *aPIServiceClient) GetEnvVars(ctx context.Context, req *connect.Request[pb.ApplicationIdRequest]) (*connect.Response[pb.ApplicationEnvVars], error) {
 	return c.getEnvVars.CallUnary(ctx, req)
 }
 
 // SetEnvVar calls neoshowcase.protobuf.APIService.SetEnvVar.
-func (c *aPIServiceClient) SetEnvVar(ctx context.Context, req *connect_go.Request[pb.SetApplicationEnvVarRequest]) (*connect_go.Response[emptypb.Empty], error) {
+func (c *aPIServiceClient) SetEnvVar(ctx context.Context, req *connect.Request[pb.SetApplicationEnvVarRequest]) (*connect.Response[emptypb.Empty], error) {
 	return c.setEnvVar.CallUnary(ctx, req)
 }
 
 // DeleteEnvVar calls neoshowcase.protobuf.APIService.DeleteEnvVar.
-func (c *aPIServiceClient) DeleteEnvVar(ctx context.Context, req *connect_go.Request[pb.DeleteApplicationEnvVarRequest]) (*connect_go.Response[emptypb.Empty], error) {
+func (c *aPIServiceClient) DeleteEnvVar(ctx context.Context, req *connect.Request[pb.DeleteApplicationEnvVarRequest]) (*connect.Response[emptypb.Empty], error) {
 	return c.deleteEnvVar.CallUnary(ctx, req)
 }
 
 // StartApplication calls neoshowcase.protobuf.APIService.StartApplication.
-func (c *aPIServiceClient) StartApplication(ctx context.Context, req *connect_go.Request[pb.ApplicationIdRequest]) (*connect_go.Response[emptypb.Empty], error) {
+func (c *aPIServiceClient) StartApplication(ctx context.Context, req *connect.Request[pb.ApplicationIdRequest]) (*connect.Response[emptypb.Empty], error) {
 	return c.startApplication.CallUnary(ctx, req)
 }
 
 // StopApplication calls neoshowcase.protobuf.APIService.StopApplication.
-func (c *aPIServiceClient) StopApplication(ctx context.Context, req *connect_go.Request[pb.ApplicationIdRequest]) (*connect_go.Response[emptypb.Empty], error) {
+func (c *aPIServiceClient) StopApplication(ctx context.Context, req *connect.Request[pb.ApplicationIdRequest]) (*connect.Response[emptypb.Empty], error) {
 	return c.stopApplication.CallUnary(ctx, req)
 }
 
 // GetAllBuilds calls neoshowcase.protobuf.APIService.GetAllBuilds.
-func (c *aPIServiceClient) GetAllBuilds(ctx context.Context, req *connect_go.Request[pb.GetAllBuildsRequest]) (*connect_go.Response[pb.GetBuildsResponse], error) {
+func (c *aPIServiceClient) GetAllBuilds(ctx context.Context, req *connect.Request[pb.GetAllBuildsRequest]) (*connect.Response[pb.GetBuildsResponse], error) {
 	return c.getAllBuilds.CallUnary(ctx, req)
 }
 
 // GetBuilds calls neoshowcase.protobuf.APIService.GetBuilds.
-func (c *aPIServiceClient) GetBuilds(ctx context.Context, req *connect_go.Request[pb.ApplicationIdRequest]) (*connect_go.Response[pb.GetBuildsResponse], error) {
+func (c *aPIServiceClient) GetBuilds(ctx context.Context, req *connect.Request[pb.ApplicationIdRequest]) (*connect.Response[pb.GetBuildsResponse], error) {
 	return c.getBuilds.CallUnary(ctx, req)
 }
 
 // GetBuild calls neoshowcase.protobuf.APIService.GetBuild.
-func (c *aPIServiceClient) GetBuild(ctx context.Context, req *connect_go.Request[pb.BuildIdRequest]) (*connect_go.Response[pb.Build], error) {
+func (c *aPIServiceClient) GetBuild(ctx context.Context, req *connect.Request[pb.BuildIdRequest]) (*connect.Response[pb.Build], error) {
 	return c.getBuild.CallUnary(ctx, req)
 }
 
 // RetryCommitBuild calls neoshowcase.protobuf.APIService.RetryCommitBuild.
-func (c *aPIServiceClient) RetryCommitBuild(ctx context.Context, req *connect_go.Request[pb.RetryCommitBuildRequest]) (*connect_go.Response[emptypb.Empty], error) {
+func (c *aPIServiceClient) RetryCommitBuild(ctx context.Context, req *connect.Request[pb.RetryCommitBuildRequest]) (*connect.Response[emptypb.Empty], error) {
 	return c.retryCommitBuild.CallUnary(ctx, req)
 }
 
 // CancelBuild calls neoshowcase.protobuf.APIService.CancelBuild.
-func (c *aPIServiceClient) CancelBuild(ctx context.Context, req *connect_go.Request[pb.BuildIdRequest]) (*connect_go.Response[emptypb.Empty], error) {
+func (c *aPIServiceClient) CancelBuild(ctx context.Context, req *connect.Request[pb.BuildIdRequest]) (*connect.Response[emptypb.Empty], error) {
 	return c.cancelBuild.CallUnary(ctx, req)
 }
 
 // GetBuildLog calls neoshowcase.protobuf.APIService.GetBuildLog.
-func (c *aPIServiceClient) GetBuildLog(ctx context.Context, req *connect_go.Request[pb.BuildIdRequest]) (*connect_go.Response[pb.BuildLog], error) {
+func (c *aPIServiceClient) GetBuildLog(ctx context.Context, req *connect.Request[pb.BuildIdRequest]) (*connect.Response[pb.BuildLog], error) {
 	return c.getBuildLog.CallUnary(ctx, req)
 }
 
 // GetBuildLogStream calls neoshowcase.protobuf.APIService.GetBuildLogStream.
-func (c *aPIServiceClient) GetBuildLogStream(ctx context.Context, req *connect_go.Request[pb.BuildIdRequest]) (*connect_go.ServerStreamForClient[pb.BuildLog], error) {
+func (c *aPIServiceClient) GetBuildLogStream(ctx context.Context, req *connect.Request[pb.BuildIdRequest]) (*connect.ServerStreamForClient[pb.BuildLog], error) {
 	return c.getBuildLogStream.CallServerStream(ctx, req)
 }
 
 // GetBuildArtifact calls neoshowcase.protobuf.APIService.GetBuildArtifact.
-func (c *aPIServiceClient) GetBuildArtifact(ctx context.Context, req *connect_go.Request[pb.ArtifactIdRequest]) (*connect_go.Response[pb.ArtifactContent], error) {
+func (c *aPIServiceClient) GetBuildArtifact(ctx context.Context, req *connect.Request[pb.ArtifactIdRequest]) (*connect.Response[pb.ArtifactContent], error) {
 	return c.getBuildArtifact.CallUnary(ctx, req)
 }
 
 // APIServiceHandler is an implementation of the neoshowcase.protobuf.APIService service.
 type APIServiceHandler interface {
 	// GetSystemInfo システム固有情報を取得します
-	GetSystemInfo(context.Context, *connect_go.Request[emptypb.Empty]) (*connect_go.Response[pb.SystemInfo], error)
+	GetSystemInfo(context.Context, *connect.Request[emptypb.Empty]) (*connect.Response[pb.SystemInfo], error)
 	// GenerateKeyPair リポジトリ登録で使用する鍵ペアを一時的に生成します
-	GenerateKeyPair(context.Context, *connect_go.Request[emptypb.Empty]) (*connect_go.Response[pb.GenerateKeyPairResponse], error)
+	GenerateKeyPair(context.Context, *connect.Request[emptypb.Empty]) (*connect.Response[pb.GenerateKeyPairResponse], error)
 	// GetMe 自身の情報を取得します プロキシ認証のため常に成功します
-	GetMe(context.Context, *connect_go.Request[emptypb.Empty]) (*connect_go.Response[pb.User], error)
+	GetMe(context.Context, *connect.Request[emptypb.Empty]) (*connect.Response[pb.User], error)
 	// GetUsers 全てのユーザーの情報を取得します
-	GetUsers(context.Context, *connect_go.Request[emptypb.Empty]) (*connect_go.Response[pb.GetUsersResponse], error)
+	GetUsers(context.Context, *connect.Request[emptypb.Empty]) (*connect.Response[pb.GetUsersResponse], error)
 	// CreateUserKey アプリコンテナSSH用の公開鍵を登録します
-	CreateUserKey(context.Context, *connect_go.Request[pb.CreateUserKeyRequest]) (*connect_go.Response[pb.UserKey], error)
+	CreateUserKey(context.Context, *connect.Request[pb.CreateUserKeyRequest]) (*connect.Response[pb.UserKey], error)
 	// GetUserKeys 登録した公開鍵一覧を取得します
-	GetUserKeys(context.Context, *connect_go.Request[emptypb.Empty]) (*connect_go.Response[pb.GetUserKeysResponse], error)
+	GetUserKeys(context.Context, *connect.Request[emptypb.Empty]) (*connect.Response[pb.GetUserKeysResponse], error)
 	// DeleteUserKey 登録した公開鍵を削除します
-	DeleteUserKey(context.Context, *connect_go.Request[pb.DeleteUserKeyRequest]) (*connect_go.Response[emptypb.Empty], error)
+	DeleteUserKey(context.Context, *connect.Request[pb.DeleteUserKeyRequest]) (*connect.Response[emptypb.Empty], error)
 	// CreateRepository リポジトリを登録します
-	CreateRepository(context.Context, *connect_go.Request[pb.CreateRepositoryRequest]) (*connect_go.Response[pb.Repository], error)
+	CreateRepository(context.Context, *connect.Request[pb.CreateRepositoryRequest]) (*connect.Response[pb.Repository], error)
 	// GetRepositories リポジトリ一覧を取得します
-	GetRepositories(context.Context, *connect_go.Request[pb.GetRepositoriesRequest]) (*connect_go.Response[pb.GetRepositoriesResponse], error)
+	GetRepositories(context.Context, *connect.Request[pb.GetRepositoriesRequest]) (*connect.Response[pb.GetRepositoriesResponse], error)
 	// GetRepository リポジトリを取得します
-	GetRepository(context.Context, *connect_go.Request[pb.RepositoryIdRequest]) (*connect_go.Response[pb.Repository], error)
+	GetRepository(context.Context, *connect.Request[pb.RepositoryIdRequest]) (*connect.Response[pb.Repository], error)
 	// GetRepositoryRefs リポジトリの現在の有効なref一覧を取得します
-	GetRepositoryRefs(context.Context, *connect_go.Request[pb.RepositoryIdRequest]) (*connect_go.Response[pb.GetRepositoryRefsResponse], error)
+	GetRepositoryRefs(context.Context, *connect.Request[pb.RepositoryIdRequest]) (*connect.Response[pb.GetRepositoryRefsResponse], error)
 	// UpdateRepository リポジトリ情報を更新します
-	UpdateRepository(context.Context, *connect_go.Request[pb.UpdateRepositoryRequest]) (*connect_go.Response[emptypb.Empty], error)
+	UpdateRepository(context.Context, *connect.Request[pb.UpdateRepositoryRequest]) (*connect.Response[emptypb.Empty], error)
 	// RefreshRepository 自動更新間隔を待たず、手動でリモートリポジトリの最新情報に追従させます
-	RefreshRepository(context.Context, *connect_go.Request[pb.RepositoryIdRequest]) (*connect_go.Response[emptypb.Empty], error)
+	RefreshRepository(context.Context, *connect.Request[pb.RepositoryIdRequest]) (*connect.Response[emptypb.Empty], error)
 	// DeleteRepository リポジトリを削除します 関連する全てのアプリケーションの削除が必要です
-	DeleteRepository(context.Context, *connect_go.Request[pb.RepositoryIdRequest]) (*connect_go.Response[emptypb.Empty], error)
+	DeleteRepository(context.Context, *connect.Request[pb.RepositoryIdRequest]) (*connect.Response[emptypb.Empty], error)
 	// CreateApplication アプリを作成します
-	CreateApplication(context.Context, *connect_go.Request[pb.CreateApplicationRequest]) (*connect_go.Response[pb.Application], error)
+	CreateApplication(context.Context, *connect.Request[pb.CreateApplicationRequest]) (*connect.Response[pb.Application], error)
 	// GetApplications アプリ一覧を取得します
-	GetApplications(context.Context, *connect_go.Request[pb.GetApplicationsRequest]) (*connect_go.Response[pb.GetApplicationsResponse], error)
+	GetApplications(context.Context, *connect.Request[pb.GetApplicationsRequest]) (*connect.Response[pb.GetApplicationsResponse], error)
 	// GetApplication アプリを取得します
-	GetApplication(context.Context, *connect_go.Request[pb.ApplicationIdRequest]) (*connect_go.Response[pb.Application], error)
+	GetApplication(context.Context, *connect.Request[pb.ApplicationIdRequest]) (*connect.Response[pb.Application], error)
 	// UpdateApplication アプリ情報を更新します
-	UpdateApplication(context.Context, *connect_go.Request[pb.UpdateApplicationRequest]) (*connect_go.Response[emptypb.Empty], error)
+	UpdateApplication(context.Context, *connect.Request[pb.UpdateApplicationRequest]) (*connect.Response[emptypb.Empty], error)
 	// DeleteApplication アプリを削除します 先にアプリのシャットダウンが必要です
-	DeleteApplication(context.Context, *connect_go.Request[pb.ApplicationIdRequest]) (*connect_go.Response[emptypb.Empty], error)
+	DeleteApplication(context.Context, *connect.Request[pb.ApplicationIdRequest]) (*connect.Response[emptypb.Empty], error)
 	// GetAvailableMetrics 取得可能メトリクス一覧を取得します
-	GetAvailableMetrics(context.Context, *connect_go.Request[emptypb.Empty]) (*connect_go.Response[pb.AvailableMetrics], error)
+	GetAvailableMetrics(context.Context, *connect.Request[emptypb.Empty]) (*connect.Response[pb.AvailableMetrics], error)
 	// GetApplicationMetrics アプリのメトリクスを取得します
-	GetApplicationMetrics(context.Context, *connect_go.Request[pb.GetApplicationMetricsRequest]) (*connect_go.Response[pb.ApplicationMetrics], error)
+	GetApplicationMetrics(context.Context, *connect.Request[pb.GetApplicationMetricsRequest]) (*connect.Response[pb.ApplicationMetrics], error)
 	// GetOutput アプリの出力を取得します
-	GetOutput(context.Context, *connect_go.Request[pb.GetOutputRequest]) (*connect_go.Response[pb.ApplicationOutputs], error)
+	GetOutput(context.Context, *connect.Request[pb.GetOutputRequest]) (*connect.Response[pb.ApplicationOutputs], error)
 	// GetOutputStream アプリの出力をストリーム形式で取得します
-	GetOutputStream(context.Context, *connect_go.Request[pb.ApplicationIdRequest], *connect_go.ServerStream[pb.ApplicationOutput]) error
+	GetOutputStream(context.Context, *connect.Request[pb.ApplicationIdRequest], *connect.ServerStream[pb.ApplicationOutput]) error
 	// GetEnvVars アプリの環境変数を取得します
-	GetEnvVars(context.Context, *connect_go.Request[pb.ApplicationIdRequest]) (*connect_go.Response[pb.ApplicationEnvVars], error)
+	GetEnvVars(context.Context, *connect.Request[pb.ApplicationIdRequest]) (*connect.Response[pb.ApplicationEnvVars], error)
 	// SetEnvVar アプリの環境変数をセットします システムによって設定された環境変数は上書きできません
-	SetEnvVar(context.Context, *connect_go.Request[pb.SetApplicationEnvVarRequest]) (*connect_go.Response[emptypb.Empty], error)
+	SetEnvVar(context.Context, *connect.Request[pb.SetApplicationEnvVarRequest]) (*connect.Response[emptypb.Empty], error)
 	// DeleteEnvVar アプリの環境変数を削除します システムによって設定された環境変数は削除できません
-	DeleteEnvVar(context.Context, *connect_go.Request[pb.DeleteApplicationEnvVarRequest]) (*connect_go.Response[emptypb.Empty], error)
+	DeleteEnvVar(context.Context, *connect.Request[pb.DeleteApplicationEnvVarRequest]) (*connect.Response[emptypb.Empty], error)
 	// StartApplication アプリを起動します 起動中の場合は再起動します
-	StartApplication(context.Context, *connect_go.Request[pb.ApplicationIdRequest]) (*connect_go.Response[emptypb.Empty], error)
+	StartApplication(context.Context, *connect.Request[pb.ApplicationIdRequest]) (*connect.Response[emptypb.Empty], error)
 	// StopApplication アプリをシャットダウンします
-	StopApplication(context.Context, *connect_go.Request[pb.ApplicationIdRequest]) (*connect_go.Response[emptypb.Empty], error)
+	StopApplication(context.Context, *connect.Request[pb.ApplicationIdRequest]) (*connect.Response[emptypb.Empty], error)
 	// GetAllBuilds すべてのアプリケーションのビルドキューを取得します
-	GetAllBuilds(context.Context, *connect_go.Request[pb.GetAllBuildsRequest]) (*connect_go.Response[pb.GetBuildsResponse], error)
+	GetAllBuilds(context.Context, *connect.Request[pb.GetAllBuildsRequest]) (*connect.Response[pb.GetBuildsResponse], error)
 	// GetBuilds アプリのビルド一覧を取得します
-	GetBuilds(context.Context, *connect_go.Request[pb.ApplicationIdRequest]) (*connect_go.Response[pb.GetBuildsResponse], error)
+	GetBuilds(context.Context, *connect.Request[pb.ApplicationIdRequest]) (*connect.Response[pb.GetBuildsResponse], error)
 	// GetBuild アプリのビルド情報を取得します
-	GetBuild(context.Context, *connect_go.Request[pb.BuildIdRequest]) (*connect_go.Response[pb.Build], error)
+	GetBuild(context.Context, *connect.Request[pb.BuildIdRequest]) (*connect.Response[pb.Build], error)
 	// RetryCommitBuild アプリの該当コミットのビルドをやり直します
-	RetryCommitBuild(context.Context, *connect_go.Request[pb.RetryCommitBuildRequest]) (*connect_go.Response[emptypb.Empty], error)
+	RetryCommitBuild(context.Context, *connect.Request[pb.RetryCommitBuildRequest]) (*connect.Response[emptypb.Empty], error)
 	// CancelBuild 該当ビルドが進行中の場合キャンセルします
-	CancelBuild(context.Context, *connect_go.Request[pb.BuildIdRequest]) (*connect_go.Response[emptypb.Empty], error)
+	CancelBuild(context.Context, *connect.Request[pb.BuildIdRequest]) (*connect.Response[emptypb.Empty], error)
 	// GetBuildLog 終了したビルドのログを取得します
-	GetBuildLog(context.Context, *connect_go.Request[pb.BuildIdRequest]) (*connect_go.Response[pb.BuildLog], error)
+	GetBuildLog(context.Context, *connect.Request[pb.BuildIdRequest]) (*connect.Response[pb.BuildLog], error)
 	// GetBuildLogStream ビルド中のログをストリーム形式で取得します
-	GetBuildLogStream(context.Context, *connect_go.Request[pb.BuildIdRequest], *connect_go.ServerStream[pb.BuildLog]) error
+	GetBuildLogStream(context.Context, *connect.Request[pb.BuildIdRequest], *connect.ServerStream[pb.BuildLog]) error
 	// GetBuildArtifact 静的サイトアプリの場合ビルド成果物（静的ファイルのtar）を取得します
-	GetBuildArtifact(context.Context, *connect_go.Request[pb.ArtifactIdRequest]) (*connect_go.Response[pb.ArtifactContent], error)
+	GetBuildArtifact(context.Context, *connect.Request[pb.ArtifactIdRequest]) (*connect.Response[pb.ArtifactContent], error)
 }
 
 // NewAPIServiceHandler builds an HTTP handler from the service implementation. It returns the path
@@ -702,183 +702,183 @@ type APIServiceHandler interface {
 //
 // By default, handlers support the Connect, gRPC, and gRPC-Web protocols with the binary Protobuf
 // and JSON codecs. They also support gzip compression.
-func NewAPIServiceHandler(svc APIServiceHandler, opts ...connect_go.HandlerOption) (string, http.Handler) {
-	aPIServiceGetSystemInfoHandler := connect_go.NewUnaryHandler(
+func NewAPIServiceHandler(svc APIServiceHandler, opts ...connect.HandlerOption) (string, http.Handler) {
+	aPIServiceGetSystemInfoHandler := connect.NewUnaryHandler(
 		APIServiceGetSystemInfoProcedure,
 		svc.GetSystemInfo,
 		opts...,
 	)
-	aPIServiceGenerateKeyPairHandler := connect_go.NewUnaryHandler(
+	aPIServiceGenerateKeyPairHandler := connect.NewUnaryHandler(
 		APIServiceGenerateKeyPairProcedure,
 		svc.GenerateKeyPair,
 		opts...,
 	)
-	aPIServiceGetMeHandler := connect_go.NewUnaryHandler(
+	aPIServiceGetMeHandler := connect.NewUnaryHandler(
 		APIServiceGetMeProcedure,
 		svc.GetMe,
 		opts...,
 	)
-	aPIServiceGetUsersHandler := connect_go.NewUnaryHandler(
+	aPIServiceGetUsersHandler := connect.NewUnaryHandler(
 		APIServiceGetUsersProcedure,
 		svc.GetUsers,
 		opts...,
 	)
-	aPIServiceCreateUserKeyHandler := connect_go.NewUnaryHandler(
+	aPIServiceCreateUserKeyHandler := connect.NewUnaryHandler(
 		APIServiceCreateUserKeyProcedure,
 		svc.CreateUserKey,
 		opts...,
 	)
-	aPIServiceGetUserKeysHandler := connect_go.NewUnaryHandler(
+	aPIServiceGetUserKeysHandler := connect.NewUnaryHandler(
 		APIServiceGetUserKeysProcedure,
 		svc.GetUserKeys,
 		opts...,
 	)
-	aPIServiceDeleteUserKeyHandler := connect_go.NewUnaryHandler(
+	aPIServiceDeleteUserKeyHandler := connect.NewUnaryHandler(
 		APIServiceDeleteUserKeyProcedure,
 		svc.DeleteUserKey,
 		opts...,
 	)
-	aPIServiceCreateRepositoryHandler := connect_go.NewUnaryHandler(
+	aPIServiceCreateRepositoryHandler := connect.NewUnaryHandler(
 		APIServiceCreateRepositoryProcedure,
 		svc.CreateRepository,
 		opts...,
 	)
-	aPIServiceGetRepositoriesHandler := connect_go.NewUnaryHandler(
+	aPIServiceGetRepositoriesHandler := connect.NewUnaryHandler(
 		APIServiceGetRepositoriesProcedure,
 		svc.GetRepositories,
 		opts...,
 	)
-	aPIServiceGetRepositoryHandler := connect_go.NewUnaryHandler(
+	aPIServiceGetRepositoryHandler := connect.NewUnaryHandler(
 		APIServiceGetRepositoryProcedure,
 		svc.GetRepository,
 		opts...,
 	)
-	aPIServiceGetRepositoryRefsHandler := connect_go.NewUnaryHandler(
+	aPIServiceGetRepositoryRefsHandler := connect.NewUnaryHandler(
 		APIServiceGetRepositoryRefsProcedure,
 		svc.GetRepositoryRefs,
 		opts...,
 	)
-	aPIServiceUpdateRepositoryHandler := connect_go.NewUnaryHandler(
+	aPIServiceUpdateRepositoryHandler := connect.NewUnaryHandler(
 		APIServiceUpdateRepositoryProcedure,
 		svc.UpdateRepository,
 		opts...,
 	)
-	aPIServiceRefreshRepositoryHandler := connect_go.NewUnaryHandler(
+	aPIServiceRefreshRepositoryHandler := connect.NewUnaryHandler(
 		APIServiceRefreshRepositoryProcedure,
 		svc.RefreshRepository,
 		opts...,
 	)
-	aPIServiceDeleteRepositoryHandler := connect_go.NewUnaryHandler(
+	aPIServiceDeleteRepositoryHandler := connect.NewUnaryHandler(
 		APIServiceDeleteRepositoryProcedure,
 		svc.DeleteRepository,
 		opts...,
 	)
-	aPIServiceCreateApplicationHandler := connect_go.NewUnaryHandler(
+	aPIServiceCreateApplicationHandler := connect.NewUnaryHandler(
 		APIServiceCreateApplicationProcedure,
 		svc.CreateApplication,
 		opts...,
 	)
-	aPIServiceGetApplicationsHandler := connect_go.NewUnaryHandler(
+	aPIServiceGetApplicationsHandler := connect.NewUnaryHandler(
 		APIServiceGetApplicationsProcedure,
 		svc.GetApplications,
 		opts...,
 	)
-	aPIServiceGetApplicationHandler := connect_go.NewUnaryHandler(
+	aPIServiceGetApplicationHandler := connect.NewUnaryHandler(
 		APIServiceGetApplicationProcedure,
 		svc.GetApplication,
 		opts...,
 	)
-	aPIServiceUpdateApplicationHandler := connect_go.NewUnaryHandler(
+	aPIServiceUpdateApplicationHandler := connect.NewUnaryHandler(
 		APIServiceUpdateApplicationProcedure,
 		svc.UpdateApplication,
 		opts...,
 	)
-	aPIServiceDeleteApplicationHandler := connect_go.NewUnaryHandler(
+	aPIServiceDeleteApplicationHandler := connect.NewUnaryHandler(
 		APIServiceDeleteApplicationProcedure,
 		svc.DeleteApplication,
 		opts...,
 	)
-	aPIServiceGetAvailableMetricsHandler := connect_go.NewUnaryHandler(
+	aPIServiceGetAvailableMetricsHandler := connect.NewUnaryHandler(
 		APIServiceGetAvailableMetricsProcedure,
 		svc.GetAvailableMetrics,
 		opts...,
 	)
-	aPIServiceGetApplicationMetricsHandler := connect_go.NewUnaryHandler(
+	aPIServiceGetApplicationMetricsHandler := connect.NewUnaryHandler(
 		APIServiceGetApplicationMetricsProcedure,
 		svc.GetApplicationMetrics,
 		opts...,
 	)
-	aPIServiceGetOutputHandler := connect_go.NewUnaryHandler(
+	aPIServiceGetOutputHandler := connect.NewUnaryHandler(
 		APIServiceGetOutputProcedure,
 		svc.GetOutput,
 		opts...,
 	)
-	aPIServiceGetOutputStreamHandler := connect_go.NewServerStreamHandler(
+	aPIServiceGetOutputStreamHandler := connect.NewServerStreamHandler(
 		APIServiceGetOutputStreamProcedure,
 		svc.GetOutputStream,
 		opts...,
 	)
-	aPIServiceGetEnvVarsHandler := connect_go.NewUnaryHandler(
+	aPIServiceGetEnvVarsHandler := connect.NewUnaryHandler(
 		APIServiceGetEnvVarsProcedure,
 		svc.GetEnvVars,
 		opts...,
 	)
-	aPIServiceSetEnvVarHandler := connect_go.NewUnaryHandler(
+	aPIServiceSetEnvVarHandler := connect.NewUnaryHandler(
 		APIServiceSetEnvVarProcedure,
 		svc.SetEnvVar,
 		opts...,
 	)
-	aPIServiceDeleteEnvVarHandler := connect_go.NewUnaryHandler(
+	aPIServiceDeleteEnvVarHandler := connect.NewUnaryHandler(
 		APIServiceDeleteEnvVarProcedure,
 		svc.DeleteEnvVar,
 		opts...,
 	)
-	aPIServiceStartApplicationHandler := connect_go.NewUnaryHandler(
+	aPIServiceStartApplicationHandler := connect.NewUnaryHandler(
 		APIServiceStartApplicationProcedure,
 		svc.StartApplication,
 		opts...,
 	)
-	aPIServiceStopApplicationHandler := connect_go.NewUnaryHandler(
+	aPIServiceStopApplicationHandler := connect.NewUnaryHandler(
 		APIServiceStopApplicationProcedure,
 		svc.StopApplication,
 		opts...,
 	)
-	aPIServiceGetAllBuildsHandler := connect_go.NewUnaryHandler(
+	aPIServiceGetAllBuildsHandler := connect.NewUnaryHandler(
 		APIServiceGetAllBuildsProcedure,
 		svc.GetAllBuilds,
 		opts...,
 	)
-	aPIServiceGetBuildsHandler := connect_go.NewUnaryHandler(
+	aPIServiceGetBuildsHandler := connect.NewUnaryHandler(
 		APIServiceGetBuildsProcedure,
 		svc.GetBuilds,
 		opts...,
 	)
-	aPIServiceGetBuildHandler := connect_go.NewUnaryHandler(
+	aPIServiceGetBuildHandler := connect.NewUnaryHandler(
 		APIServiceGetBuildProcedure,
 		svc.GetBuild,
 		opts...,
 	)
-	aPIServiceRetryCommitBuildHandler := connect_go.NewUnaryHandler(
+	aPIServiceRetryCommitBuildHandler := connect.NewUnaryHandler(
 		APIServiceRetryCommitBuildProcedure,
 		svc.RetryCommitBuild,
 		opts...,
 	)
-	aPIServiceCancelBuildHandler := connect_go.NewUnaryHandler(
+	aPIServiceCancelBuildHandler := connect.NewUnaryHandler(
 		APIServiceCancelBuildProcedure,
 		svc.CancelBuild,
 		opts...,
 	)
-	aPIServiceGetBuildLogHandler := connect_go.NewUnaryHandler(
+	aPIServiceGetBuildLogHandler := connect.NewUnaryHandler(
 		APIServiceGetBuildLogProcedure,
 		svc.GetBuildLog,
 		opts...,
 	)
-	aPIServiceGetBuildLogStreamHandler := connect_go.NewServerStreamHandler(
+	aPIServiceGetBuildLogStreamHandler := connect.NewServerStreamHandler(
 		APIServiceGetBuildLogStreamProcedure,
 		svc.GetBuildLogStream,
 		opts...,
 	)
-	aPIServiceGetBuildArtifactHandler := connect_go.NewUnaryHandler(
+	aPIServiceGetBuildArtifactHandler := connect.NewUnaryHandler(
 		APIServiceGetBuildArtifactProcedure,
 		svc.GetBuildArtifact,
 		opts...,
@@ -966,146 +966,146 @@ func NewAPIServiceHandler(svc APIServiceHandler, opts ...connect_go.HandlerOptio
 // UnimplementedAPIServiceHandler returns CodeUnimplemented from all methods.
 type UnimplementedAPIServiceHandler struct{}
 
-func (UnimplementedAPIServiceHandler) GetSystemInfo(context.Context, *connect_go.Request[emptypb.Empty]) (*connect_go.Response[pb.SystemInfo], error) {
-	return nil, connect_go.NewError(connect_go.CodeUnimplemented, errors.New("neoshowcase.protobuf.APIService.GetSystemInfo is not implemented"))
+func (UnimplementedAPIServiceHandler) GetSystemInfo(context.Context, *connect.Request[emptypb.Empty]) (*connect.Response[pb.SystemInfo], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("neoshowcase.protobuf.APIService.GetSystemInfo is not implemented"))
 }
 
-func (UnimplementedAPIServiceHandler) GenerateKeyPair(context.Context, *connect_go.Request[emptypb.Empty]) (*connect_go.Response[pb.GenerateKeyPairResponse], error) {
-	return nil, connect_go.NewError(connect_go.CodeUnimplemented, errors.New("neoshowcase.protobuf.APIService.GenerateKeyPair is not implemented"))
+func (UnimplementedAPIServiceHandler) GenerateKeyPair(context.Context, *connect.Request[emptypb.Empty]) (*connect.Response[pb.GenerateKeyPairResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("neoshowcase.protobuf.APIService.GenerateKeyPair is not implemented"))
 }
 
-func (UnimplementedAPIServiceHandler) GetMe(context.Context, *connect_go.Request[emptypb.Empty]) (*connect_go.Response[pb.User], error) {
-	return nil, connect_go.NewError(connect_go.CodeUnimplemented, errors.New("neoshowcase.protobuf.APIService.GetMe is not implemented"))
+func (UnimplementedAPIServiceHandler) GetMe(context.Context, *connect.Request[emptypb.Empty]) (*connect.Response[pb.User], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("neoshowcase.protobuf.APIService.GetMe is not implemented"))
 }
 
-func (UnimplementedAPIServiceHandler) GetUsers(context.Context, *connect_go.Request[emptypb.Empty]) (*connect_go.Response[pb.GetUsersResponse], error) {
-	return nil, connect_go.NewError(connect_go.CodeUnimplemented, errors.New("neoshowcase.protobuf.APIService.GetUsers is not implemented"))
+func (UnimplementedAPIServiceHandler) GetUsers(context.Context, *connect.Request[emptypb.Empty]) (*connect.Response[pb.GetUsersResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("neoshowcase.protobuf.APIService.GetUsers is not implemented"))
 }
 
-func (UnimplementedAPIServiceHandler) CreateUserKey(context.Context, *connect_go.Request[pb.CreateUserKeyRequest]) (*connect_go.Response[pb.UserKey], error) {
-	return nil, connect_go.NewError(connect_go.CodeUnimplemented, errors.New("neoshowcase.protobuf.APIService.CreateUserKey is not implemented"))
+func (UnimplementedAPIServiceHandler) CreateUserKey(context.Context, *connect.Request[pb.CreateUserKeyRequest]) (*connect.Response[pb.UserKey], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("neoshowcase.protobuf.APIService.CreateUserKey is not implemented"))
 }
 
-func (UnimplementedAPIServiceHandler) GetUserKeys(context.Context, *connect_go.Request[emptypb.Empty]) (*connect_go.Response[pb.GetUserKeysResponse], error) {
-	return nil, connect_go.NewError(connect_go.CodeUnimplemented, errors.New("neoshowcase.protobuf.APIService.GetUserKeys is not implemented"))
+func (UnimplementedAPIServiceHandler) GetUserKeys(context.Context, *connect.Request[emptypb.Empty]) (*connect.Response[pb.GetUserKeysResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("neoshowcase.protobuf.APIService.GetUserKeys is not implemented"))
 }
 
-func (UnimplementedAPIServiceHandler) DeleteUserKey(context.Context, *connect_go.Request[pb.DeleteUserKeyRequest]) (*connect_go.Response[emptypb.Empty], error) {
-	return nil, connect_go.NewError(connect_go.CodeUnimplemented, errors.New("neoshowcase.protobuf.APIService.DeleteUserKey is not implemented"))
+func (UnimplementedAPIServiceHandler) DeleteUserKey(context.Context, *connect.Request[pb.DeleteUserKeyRequest]) (*connect.Response[emptypb.Empty], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("neoshowcase.protobuf.APIService.DeleteUserKey is not implemented"))
 }
 
-func (UnimplementedAPIServiceHandler) CreateRepository(context.Context, *connect_go.Request[pb.CreateRepositoryRequest]) (*connect_go.Response[pb.Repository], error) {
-	return nil, connect_go.NewError(connect_go.CodeUnimplemented, errors.New("neoshowcase.protobuf.APIService.CreateRepository is not implemented"))
+func (UnimplementedAPIServiceHandler) CreateRepository(context.Context, *connect.Request[pb.CreateRepositoryRequest]) (*connect.Response[pb.Repository], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("neoshowcase.protobuf.APIService.CreateRepository is not implemented"))
 }
 
-func (UnimplementedAPIServiceHandler) GetRepositories(context.Context, *connect_go.Request[pb.GetRepositoriesRequest]) (*connect_go.Response[pb.GetRepositoriesResponse], error) {
-	return nil, connect_go.NewError(connect_go.CodeUnimplemented, errors.New("neoshowcase.protobuf.APIService.GetRepositories is not implemented"))
+func (UnimplementedAPIServiceHandler) GetRepositories(context.Context, *connect.Request[pb.GetRepositoriesRequest]) (*connect.Response[pb.GetRepositoriesResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("neoshowcase.protobuf.APIService.GetRepositories is not implemented"))
 }
 
-func (UnimplementedAPIServiceHandler) GetRepository(context.Context, *connect_go.Request[pb.RepositoryIdRequest]) (*connect_go.Response[pb.Repository], error) {
-	return nil, connect_go.NewError(connect_go.CodeUnimplemented, errors.New("neoshowcase.protobuf.APIService.GetRepository is not implemented"))
+func (UnimplementedAPIServiceHandler) GetRepository(context.Context, *connect.Request[pb.RepositoryIdRequest]) (*connect.Response[pb.Repository], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("neoshowcase.protobuf.APIService.GetRepository is not implemented"))
 }
 
-func (UnimplementedAPIServiceHandler) GetRepositoryRefs(context.Context, *connect_go.Request[pb.RepositoryIdRequest]) (*connect_go.Response[pb.GetRepositoryRefsResponse], error) {
-	return nil, connect_go.NewError(connect_go.CodeUnimplemented, errors.New("neoshowcase.protobuf.APIService.GetRepositoryRefs is not implemented"))
+func (UnimplementedAPIServiceHandler) GetRepositoryRefs(context.Context, *connect.Request[pb.RepositoryIdRequest]) (*connect.Response[pb.GetRepositoryRefsResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("neoshowcase.protobuf.APIService.GetRepositoryRefs is not implemented"))
 }
 
-func (UnimplementedAPIServiceHandler) UpdateRepository(context.Context, *connect_go.Request[pb.UpdateRepositoryRequest]) (*connect_go.Response[emptypb.Empty], error) {
-	return nil, connect_go.NewError(connect_go.CodeUnimplemented, errors.New("neoshowcase.protobuf.APIService.UpdateRepository is not implemented"))
+func (UnimplementedAPIServiceHandler) UpdateRepository(context.Context, *connect.Request[pb.UpdateRepositoryRequest]) (*connect.Response[emptypb.Empty], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("neoshowcase.protobuf.APIService.UpdateRepository is not implemented"))
 }
 
-func (UnimplementedAPIServiceHandler) RefreshRepository(context.Context, *connect_go.Request[pb.RepositoryIdRequest]) (*connect_go.Response[emptypb.Empty], error) {
-	return nil, connect_go.NewError(connect_go.CodeUnimplemented, errors.New("neoshowcase.protobuf.APIService.RefreshRepository is not implemented"))
+func (UnimplementedAPIServiceHandler) RefreshRepository(context.Context, *connect.Request[pb.RepositoryIdRequest]) (*connect.Response[emptypb.Empty], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("neoshowcase.protobuf.APIService.RefreshRepository is not implemented"))
 }
 
-func (UnimplementedAPIServiceHandler) DeleteRepository(context.Context, *connect_go.Request[pb.RepositoryIdRequest]) (*connect_go.Response[emptypb.Empty], error) {
-	return nil, connect_go.NewError(connect_go.CodeUnimplemented, errors.New("neoshowcase.protobuf.APIService.DeleteRepository is not implemented"))
+func (UnimplementedAPIServiceHandler) DeleteRepository(context.Context, *connect.Request[pb.RepositoryIdRequest]) (*connect.Response[emptypb.Empty], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("neoshowcase.protobuf.APIService.DeleteRepository is not implemented"))
 }
 
-func (UnimplementedAPIServiceHandler) CreateApplication(context.Context, *connect_go.Request[pb.CreateApplicationRequest]) (*connect_go.Response[pb.Application], error) {
-	return nil, connect_go.NewError(connect_go.CodeUnimplemented, errors.New("neoshowcase.protobuf.APIService.CreateApplication is not implemented"))
+func (UnimplementedAPIServiceHandler) CreateApplication(context.Context, *connect.Request[pb.CreateApplicationRequest]) (*connect.Response[pb.Application], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("neoshowcase.protobuf.APIService.CreateApplication is not implemented"))
 }
 
-func (UnimplementedAPIServiceHandler) GetApplications(context.Context, *connect_go.Request[pb.GetApplicationsRequest]) (*connect_go.Response[pb.GetApplicationsResponse], error) {
-	return nil, connect_go.NewError(connect_go.CodeUnimplemented, errors.New("neoshowcase.protobuf.APIService.GetApplications is not implemented"))
+func (UnimplementedAPIServiceHandler) GetApplications(context.Context, *connect.Request[pb.GetApplicationsRequest]) (*connect.Response[pb.GetApplicationsResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("neoshowcase.protobuf.APIService.GetApplications is not implemented"))
 }
 
-func (UnimplementedAPIServiceHandler) GetApplication(context.Context, *connect_go.Request[pb.ApplicationIdRequest]) (*connect_go.Response[pb.Application], error) {
-	return nil, connect_go.NewError(connect_go.CodeUnimplemented, errors.New("neoshowcase.protobuf.APIService.GetApplication is not implemented"))
+func (UnimplementedAPIServiceHandler) GetApplication(context.Context, *connect.Request[pb.ApplicationIdRequest]) (*connect.Response[pb.Application], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("neoshowcase.protobuf.APIService.GetApplication is not implemented"))
 }
 
-func (UnimplementedAPIServiceHandler) UpdateApplication(context.Context, *connect_go.Request[pb.UpdateApplicationRequest]) (*connect_go.Response[emptypb.Empty], error) {
-	return nil, connect_go.NewError(connect_go.CodeUnimplemented, errors.New("neoshowcase.protobuf.APIService.UpdateApplication is not implemented"))
+func (UnimplementedAPIServiceHandler) UpdateApplication(context.Context, *connect.Request[pb.UpdateApplicationRequest]) (*connect.Response[emptypb.Empty], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("neoshowcase.protobuf.APIService.UpdateApplication is not implemented"))
 }
 
-func (UnimplementedAPIServiceHandler) DeleteApplication(context.Context, *connect_go.Request[pb.ApplicationIdRequest]) (*connect_go.Response[emptypb.Empty], error) {
-	return nil, connect_go.NewError(connect_go.CodeUnimplemented, errors.New("neoshowcase.protobuf.APIService.DeleteApplication is not implemented"))
+func (UnimplementedAPIServiceHandler) DeleteApplication(context.Context, *connect.Request[pb.ApplicationIdRequest]) (*connect.Response[emptypb.Empty], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("neoshowcase.protobuf.APIService.DeleteApplication is not implemented"))
 }
 
-func (UnimplementedAPIServiceHandler) GetAvailableMetrics(context.Context, *connect_go.Request[emptypb.Empty]) (*connect_go.Response[pb.AvailableMetrics], error) {
-	return nil, connect_go.NewError(connect_go.CodeUnimplemented, errors.New("neoshowcase.protobuf.APIService.GetAvailableMetrics is not implemented"))
+func (UnimplementedAPIServiceHandler) GetAvailableMetrics(context.Context, *connect.Request[emptypb.Empty]) (*connect.Response[pb.AvailableMetrics], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("neoshowcase.protobuf.APIService.GetAvailableMetrics is not implemented"))
 }
 
-func (UnimplementedAPIServiceHandler) GetApplicationMetrics(context.Context, *connect_go.Request[pb.GetApplicationMetricsRequest]) (*connect_go.Response[pb.ApplicationMetrics], error) {
-	return nil, connect_go.NewError(connect_go.CodeUnimplemented, errors.New("neoshowcase.protobuf.APIService.GetApplicationMetrics is not implemented"))
+func (UnimplementedAPIServiceHandler) GetApplicationMetrics(context.Context, *connect.Request[pb.GetApplicationMetricsRequest]) (*connect.Response[pb.ApplicationMetrics], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("neoshowcase.protobuf.APIService.GetApplicationMetrics is not implemented"))
 }
 
-func (UnimplementedAPIServiceHandler) GetOutput(context.Context, *connect_go.Request[pb.GetOutputRequest]) (*connect_go.Response[pb.ApplicationOutputs], error) {
-	return nil, connect_go.NewError(connect_go.CodeUnimplemented, errors.New("neoshowcase.protobuf.APIService.GetOutput is not implemented"))
+func (UnimplementedAPIServiceHandler) GetOutput(context.Context, *connect.Request[pb.GetOutputRequest]) (*connect.Response[pb.ApplicationOutputs], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("neoshowcase.protobuf.APIService.GetOutput is not implemented"))
 }
 
-func (UnimplementedAPIServiceHandler) GetOutputStream(context.Context, *connect_go.Request[pb.ApplicationIdRequest], *connect_go.ServerStream[pb.ApplicationOutput]) error {
-	return connect_go.NewError(connect_go.CodeUnimplemented, errors.New("neoshowcase.protobuf.APIService.GetOutputStream is not implemented"))
+func (UnimplementedAPIServiceHandler) GetOutputStream(context.Context, *connect.Request[pb.ApplicationIdRequest], *connect.ServerStream[pb.ApplicationOutput]) error {
+	return connect.NewError(connect.CodeUnimplemented, errors.New("neoshowcase.protobuf.APIService.GetOutputStream is not implemented"))
 }
 
-func (UnimplementedAPIServiceHandler) GetEnvVars(context.Context, *connect_go.Request[pb.ApplicationIdRequest]) (*connect_go.Response[pb.ApplicationEnvVars], error) {
-	return nil, connect_go.NewError(connect_go.CodeUnimplemented, errors.New("neoshowcase.protobuf.APIService.GetEnvVars is not implemented"))
+func (UnimplementedAPIServiceHandler) GetEnvVars(context.Context, *connect.Request[pb.ApplicationIdRequest]) (*connect.Response[pb.ApplicationEnvVars], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("neoshowcase.protobuf.APIService.GetEnvVars is not implemented"))
 }
 
-func (UnimplementedAPIServiceHandler) SetEnvVar(context.Context, *connect_go.Request[pb.SetApplicationEnvVarRequest]) (*connect_go.Response[emptypb.Empty], error) {
-	return nil, connect_go.NewError(connect_go.CodeUnimplemented, errors.New("neoshowcase.protobuf.APIService.SetEnvVar is not implemented"))
+func (UnimplementedAPIServiceHandler) SetEnvVar(context.Context, *connect.Request[pb.SetApplicationEnvVarRequest]) (*connect.Response[emptypb.Empty], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("neoshowcase.protobuf.APIService.SetEnvVar is not implemented"))
 }
 
-func (UnimplementedAPIServiceHandler) DeleteEnvVar(context.Context, *connect_go.Request[pb.DeleteApplicationEnvVarRequest]) (*connect_go.Response[emptypb.Empty], error) {
-	return nil, connect_go.NewError(connect_go.CodeUnimplemented, errors.New("neoshowcase.protobuf.APIService.DeleteEnvVar is not implemented"))
+func (UnimplementedAPIServiceHandler) DeleteEnvVar(context.Context, *connect.Request[pb.DeleteApplicationEnvVarRequest]) (*connect.Response[emptypb.Empty], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("neoshowcase.protobuf.APIService.DeleteEnvVar is not implemented"))
 }
 
-func (UnimplementedAPIServiceHandler) StartApplication(context.Context, *connect_go.Request[pb.ApplicationIdRequest]) (*connect_go.Response[emptypb.Empty], error) {
-	return nil, connect_go.NewError(connect_go.CodeUnimplemented, errors.New("neoshowcase.protobuf.APIService.StartApplication is not implemented"))
+func (UnimplementedAPIServiceHandler) StartApplication(context.Context, *connect.Request[pb.ApplicationIdRequest]) (*connect.Response[emptypb.Empty], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("neoshowcase.protobuf.APIService.StartApplication is not implemented"))
 }
 
-func (UnimplementedAPIServiceHandler) StopApplication(context.Context, *connect_go.Request[pb.ApplicationIdRequest]) (*connect_go.Response[emptypb.Empty], error) {
-	return nil, connect_go.NewError(connect_go.CodeUnimplemented, errors.New("neoshowcase.protobuf.APIService.StopApplication is not implemented"))
+func (UnimplementedAPIServiceHandler) StopApplication(context.Context, *connect.Request[pb.ApplicationIdRequest]) (*connect.Response[emptypb.Empty], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("neoshowcase.protobuf.APIService.StopApplication is not implemented"))
 }
 
-func (UnimplementedAPIServiceHandler) GetAllBuilds(context.Context, *connect_go.Request[pb.GetAllBuildsRequest]) (*connect_go.Response[pb.GetBuildsResponse], error) {
-	return nil, connect_go.NewError(connect_go.CodeUnimplemented, errors.New("neoshowcase.protobuf.APIService.GetAllBuilds is not implemented"))
+func (UnimplementedAPIServiceHandler) GetAllBuilds(context.Context, *connect.Request[pb.GetAllBuildsRequest]) (*connect.Response[pb.GetBuildsResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("neoshowcase.protobuf.APIService.GetAllBuilds is not implemented"))
 }
 
-func (UnimplementedAPIServiceHandler) GetBuilds(context.Context, *connect_go.Request[pb.ApplicationIdRequest]) (*connect_go.Response[pb.GetBuildsResponse], error) {
-	return nil, connect_go.NewError(connect_go.CodeUnimplemented, errors.New("neoshowcase.protobuf.APIService.GetBuilds is not implemented"))
+func (UnimplementedAPIServiceHandler) GetBuilds(context.Context, *connect.Request[pb.ApplicationIdRequest]) (*connect.Response[pb.GetBuildsResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("neoshowcase.protobuf.APIService.GetBuilds is not implemented"))
 }
 
-func (UnimplementedAPIServiceHandler) GetBuild(context.Context, *connect_go.Request[pb.BuildIdRequest]) (*connect_go.Response[pb.Build], error) {
-	return nil, connect_go.NewError(connect_go.CodeUnimplemented, errors.New("neoshowcase.protobuf.APIService.GetBuild is not implemented"))
+func (UnimplementedAPIServiceHandler) GetBuild(context.Context, *connect.Request[pb.BuildIdRequest]) (*connect.Response[pb.Build], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("neoshowcase.protobuf.APIService.GetBuild is not implemented"))
 }
 
-func (UnimplementedAPIServiceHandler) RetryCommitBuild(context.Context, *connect_go.Request[pb.RetryCommitBuildRequest]) (*connect_go.Response[emptypb.Empty], error) {
-	return nil, connect_go.NewError(connect_go.CodeUnimplemented, errors.New("neoshowcase.protobuf.APIService.RetryCommitBuild is not implemented"))
+func (UnimplementedAPIServiceHandler) RetryCommitBuild(context.Context, *connect.Request[pb.RetryCommitBuildRequest]) (*connect.Response[emptypb.Empty], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("neoshowcase.protobuf.APIService.RetryCommitBuild is not implemented"))
 }
 
-func (UnimplementedAPIServiceHandler) CancelBuild(context.Context, *connect_go.Request[pb.BuildIdRequest]) (*connect_go.Response[emptypb.Empty], error) {
-	return nil, connect_go.NewError(connect_go.CodeUnimplemented, errors.New("neoshowcase.protobuf.APIService.CancelBuild is not implemented"))
+func (UnimplementedAPIServiceHandler) CancelBuild(context.Context, *connect.Request[pb.BuildIdRequest]) (*connect.Response[emptypb.Empty], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("neoshowcase.protobuf.APIService.CancelBuild is not implemented"))
 }
 
-func (UnimplementedAPIServiceHandler) GetBuildLog(context.Context, *connect_go.Request[pb.BuildIdRequest]) (*connect_go.Response[pb.BuildLog], error) {
-	return nil, connect_go.NewError(connect_go.CodeUnimplemented, errors.New("neoshowcase.protobuf.APIService.GetBuildLog is not implemented"))
+func (UnimplementedAPIServiceHandler) GetBuildLog(context.Context, *connect.Request[pb.BuildIdRequest]) (*connect.Response[pb.BuildLog], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("neoshowcase.protobuf.APIService.GetBuildLog is not implemented"))
 }
 
-func (UnimplementedAPIServiceHandler) GetBuildLogStream(context.Context, *connect_go.Request[pb.BuildIdRequest], *connect_go.ServerStream[pb.BuildLog]) error {
-	return connect_go.NewError(connect_go.CodeUnimplemented, errors.New("neoshowcase.protobuf.APIService.GetBuildLogStream is not implemented"))
+func (UnimplementedAPIServiceHandler) GetBuildLogStream(context.Context, *connect.Request[pb.BuildIdRequest], *connect.ServerStream[pb.BuildLog]) error {
+	return connect.NewError(connect.CodeUnimplemented, errors.New("neoshowcase.protobuf.APIService.GetBuildLogStream is not implemented"))
 }
 
-func (UnimplementedAPIServiceHandler) GetBuildArtifact(context.Context, *connect_go.Request[pb.ArtifactIdRequest]) (*connect_go.Response[pb.ArtifactContent], error) {
-	return nil, connect_go.NewError(connect_go.CodeUnimplemented, errors.New("neoshowcase.protobuf.APIService.GetBuildArtifact is not implemented"))
+func (UnimplementedAPIServiceHandler) GetBuildArtifact(context.Context, *connect.Request[pb.ArtifactIdRequest]) (*connect.Response[pb.ArtifactContent], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("neoshowcase.protobuf.APIService.GetBuildArtifact is not implemented"))
 }

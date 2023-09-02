@@ -5,9 +5,9 @@
 package pbconnect
 
 import (
+	connect "connectrpc.com/connect"
 	context "context"
 	errors "errors"
-	connect_go "github.com/bufbuild/connect-go"
 	pb "github.com/traPtitech/neoshowcase/pkg/infrastructure/grpc/pb"
 	emptypb "google.golang.org/protobuf/types/known/emptypb"
 	http "net/http"
@@ -19,7 +19,7 @@ import (
 // generated with a version of connect newer than the one compiled into your binary. You can fix the
 // problem by either regenerating this code with an older version of connect or updating the connect
 // version compiled into your binary.
-const _ = connect_go.IsAtLeastVersion0_1_0
+const _ = connect.IsAtLeastVersion0_1_0
 
 const (
 	// ControllerServiceName is the fully-qualified name of the ControllerService service.
@@ -66,12 +66,12 @@ const (
 
 // ControllerServiceClient is a client for the neoshowcase.protobuf.ControllerService service.
 type ControllerServiceClient interface {
-	GetSystemInfo(context.Context, *connect_go.Request[emptypb.Empty]) (*connect_go.Response[pb.SystemInfo], error)
-	FetchRepository(context.Context, *connect_go.Request[pb.RepositoryIdRequest]) (*connect_go.Response[emptypb.Empty], error)
-	RegisterBuild(context.Context, *connect_go.Request[pb.ApplicationIdRequest]) (*connect_go.Response[emptypb.Empty], error)
-	SyncDeployments(context.Context, *connect_go.Request[emptypb.Empty]) (*connect_go.Response[emptypb.Empty], error)
-	StreamBuildLog(context.Context, *connect_go.Request[pb.BuildIdRequest]) (*connect_go.ServerStreamForClient[pb.BuildLog], error)
-	CancelBuild(context.Context, *connect_go.Request[pb.BuildIdRequest]) (*connect_go.Response[emptypb.Empty], error)
+	GetSystemInfo(context.Context, *connect.Request[emptypb.Empty]) (*connect.Response[pb.SystemInfo], error)
+	FetchRepository(context.Context, *connect.Request[pb.RepositoryIdRequest]) (*connect.Response[emptypb.Empty], error)
+	RegisterBuild(context.Context, *connect.Request[pb.ApplicationIdRequest]) (*connect.Response[emptypb.Empty], error)
+	SyncDeployments(context.Context, *connect.Request[emptypb.Empty]) (*connect.Response[emptypb.Empty], error)
+	StreamBuildLog(context.Context, *connect.Request[pb.BuildIdRequest]) (*connect.ServerStreamForClient[pb.BuildLog], error)
+	CancelBuild(context.Context, *connect.Request[pb.BuildIdRequest]) (*connect.Response[emptypb.Empty], error)
 }
 
 // NewControllerServiceClient constructs a client for the neoshowcase.protobuf.ControllerService
@@ -81,35 +81,35 @@ type ControllerServiceClient interface {
 //
 // The URL supplied here should be the base URL for the Connect or gRPC server (for example,
 // http://api.acme.com or https://acme.com/grpc).
-func NewControllerServiceClient(httpClient connect_go.HTTPClient, baseURL string, opts ...connect_go.ClientOption) ControllerServiceClient {
+func NewControllerServiceClient(httpClient connect.HTTPClient, baseURL string, opts ...connect.ClientOption) ControllerServiceClient {
 	baseURL = strings.TrimRight(baseURL, "/")
 	return &controllerServiceClient{
-		getSystemInfo: connect_go.NewClient[emptypb.Empty, pb.SystemInfo](
+		getSystemInfo: connect.NewClient[emptypb.Empty, pb.SystemInfo](
 			httpClient,
 			baseURL+ControllerServiceGetSystemInfoProcedure,
 			opts...,
 		),
-		fetchRepository: connect_go.NewClient[pb.RepositoryIdRequest, emptypb.Empty](
+		fetchRepository: connect.NewClient[pb.RepositoryIdRequest, emptypb.Empty](
 			httpClient,
 			baseURL+ControllerServiceFetchRepositoryProcedure,
 			opts...,
 		),
-		registerBuild: connect_go.NewClient[pb.ApplicationIdRequest, emptypb.Empty](
+		registerBuild: connect.NewClient[pb.ApplicationIdRequest, emptypb.Empty](
 			httpClient,
 			baseURL+ControllerServiceRegisterBuildProcedure,
 			opts...,
 		),
-		syncDeployments: connect_go.NewClient[emptypb.Empty, emptypb.Empty](
+		syncDeployments: connect.NewClient[emptypb.Empty, emptypb.Empty](
 			httpClient,
 			baseURL+ControllerServiceSyncDeploymentsProcedure,
 			opts...,
 		),
-		streamBuildLog: connect_go.NewClient[pb.BuildIdRequest, pb.BuildLog](
+		streamBuildLog: connect.NewClient[pb.BuildIdRequest, pb.BuildLog](
 			httpClient,
 			baseURL+ControllerServiceStreamBuildLogProcedure,
 			opts...,
 		),
-		cancelBuild: connect_go.NewClient[pb.BuildIdRequest, emptypb.Empty](
+		cancelBuild: connect.NewClient[pb.BuildIdRequest, emptypb.Empty](
 			httpClient,
 			baseURL+ControllerServiceCancelBuildProcedure,
 			opts...,
@@ -119,53 +119,53 @@ func NewControllerServiceClient(httpClient connect_go.HTTPClient, baseURL string
 
 // controllerServiceClient implements ControllerServiceClient.
 type controllerServiceClient struct {
-	getSystemInfo   *connect_go.Client[emptypb.Empty, pb.SystemInfo]
-	fetchRepository *connect_go.Client[pb.RepositoryIdRequest, emptypb.Empty]
-	registerBuild   *connect_go.Client[pb.ApplicationIdRequest, emptypb.Empty]
-	syncDeployments *connect_go.Client[emptypb.Empty, emptypb.Empty]
-	streamBuildLog  *connect_go.Client[pb.BuildIdRequest, pb.BuildLog]
-	cancelBuild     *connect_go.Client[pb.BuildIdRequest, emptypb.Empty]
+	getSystemInfo   *connect.Client[emptypb.Empty, pb.SystemInfo]
+	fetchRepository *connect.Client[pb.RepositoryIdRequest, emptypb.Empty]
+	registerBuild   *connect.Client[pb.ApplicationIdRequest, emptypb.Empty]
+	syncDeployments *connect.Client[emptypb.Empty, emptypb.Empty]
+	streamBuildLog  *connect.Client[pb.BuildIdRequest, pb.BuildLog]
+	cancelBuild     *connect.Client[pb.BuildIdRequest, emptypb.Empty]
 }
 
 // GetSystemInfo calls neoshowcase.protobuf.ControllerService.GetSystemInfo.
-func (c *controllerServiceClient) GetSystemInfo(ctx context.Context, req *connect_go.Request[emptypb.Empty]) (*connect_go.Response[pb.SystemInfo], error) {
+func (c *controllerServiceClient) GetSystemInfo(ctx context.Context, req *connect.Request[emptypb.Empty]) (*connect.Response[pb.SystemInfo], error) {
 	return c.getSystemInfo.CallUnary(ctx, req)
 }
 
 // FetchRepository calls neoshowcase.protobuf.ControllerService.FetchRepository.
-func (c *controllerServiceClient) FetchRepository(ctx context.Context, req *connect_go.Request[pb.RepositoryIdRequest]) (*connect_go.Response[emptypb.Empty], error) {
+func (c *controllerServiceClient) FetchRepository(ctx context.Context, req *connect.Request[pb.RepositoryIdRequest]) (*connect.Response[emptypb.Empty], error) {
 	return c.fetchRepository.CallUnary(ctx, req)
 }
 
 // RegisterBuild calls neoshowcase.protobuf.ControllerService.RegisterBuild.
-func (c *controllerServiceClient) RegisterBuild(ctx context.Context, req *connect_go.Request[pb.ApplicationIdRequest]) (*connect_go.Response[emptypb.Empty], error) {
+func (c *controllerServiceClient) RegisterBuild(ctx context.Context, req *connect.Request[pb.ApplicationIdRequest]) (*connect.Response[emptypb.Empty], error) {
 	return c.registerBuild.CallUnary(ctx, req)
 }
 
 // SyncDeployments calls neoshowcase.protobuf.ControllerService.SyncDeployments.
-func (c *controllerServiceClient) SyncDeployments(ctx context.Context, req *connect_go.Request[emptypb.Empty]) (*connect_go.Response[emptypb.Empty], error) {
+func (c *controllerServiceClient) SyncDeployments(ctx context.Context, req *connect.Request[emptypb.Empty]) (*connect.Response[emptypb.Empty], error) {
 	return c.syncDeployments.CallUnary(ctx, req)
 }
 
 // StreamBuildLog calls neoshowcase.protobuf.ControllerService.StreamBuildLog.
-func (c *controllerServiceClient) StreamBuildLog(ctx context.Context, req *connect_go.Request[pb.BuildIdRequest]) (*connect_go.ServerStreamForClient[pb.BuildLog], error) {
+func (c *controllerServiceClient) StreamBuildLog(ctx context.Context, req *connect.Request[pb.BuildIdRequest]) (*connect.ServerStreamForClient[pb.BuildLog], error) {
 	return c.streamBuildLog.CallServerStream(ctx, req)
 }
 
 // CancelBuild calls neoshowcase.protobuf.ControllerService.CancelBuild.
-func (c *controllerServiceClient) CancelBuild(ctx context.Context, req *connect_go.Request[pb.BuildIdRequest]) (*connect_go.Response[emptypb.Empty], error) {
+func (c *controllerServiceClient) CancelBuild(ctx context.Context, req *connect.Request[pb.BuildIdRequest]) (*connect.Response[emptypb.Empty], error) {
 	return c.cancelBuild.CallUnary(ctx, req)
 }
 
 // ControllerServiceHandler is an implementation of the neoshowcase.protobuf.ControllerService
 // service.
 type ControllerServiceHandler interface {
-	GetSystemInfo(context.Context, *connect_go.Request[emptypb.Empty]) (*connect_go.Response[pb.SystemInfo], error)
-	FetchRepository(context.Context, *connect_go.Request[pb.RepositoryIdRequest]) (*connect_go.Response[emptypb.Empty], error)
-	RegisterBuild(context.Context, *connect_go.Request[pb.ApplicationIdRequest]) (*connect_go.Response[emptypb.Empty], error)
-	SyncDeployments(context.Context, *connect_go.Request[emptypb.Empty]) (*connect_go.Response[emptypb.Empty], error)
-	StreamBuildLog(context.Context, *connect_go.Request[pb.BuildIdRequest], *connect_go.ServerStream[pb.BuildLog]) error
-	CancelBuild(context.Context, *connect_go.Request[pb.BuildIdRequest]) (*connect_go.Response[emptypb.Empty], error)
+	GetSystemInfo(context.Context, *connect.Request[emptypb.Empty]) (*connect.Response[pb.SystemInfo], error)
+	FetchRepository(context.Context, *connect.Request[pb.RepositoryIdRequest]) (*connect.Response[emptypb.Empty], error)
+	RegisterBuild(context.Context, *connect.Request[pb.ApplicationIdRequest]) (*connect.Response[emptypb.Empty], error)
+	SyncDeployments(context.Context, *connect.Request[emptypb.Empty]) (*connect.Response[emptypb.Empty], error)
+	StreamBuildLog(context.Context, *connect.Request[pb.BuildIdRequest], *connect.ServerStream[pb.BuildLog]) error
+	CancelBuild(context.Context, *connect.Request[pb.BuildIdRequest]) (*connect.Response[emptypb.Empty], error)
 }
 
 // NewControllerServiceHandler builds an HTTP handler from the service implementation. It returns
@@ -173,33 +173,33 @@ type ControllerServiceHandler interface {
 //
 // By default, handlers support the Connect, gRPC, and gRPC-Web protocols with the binary Protobuf
 // and JSON codecs. They also support gzip compression.
-func NewControllerServiceHandler(svc ControllerServiceHandler, opts ...connect_go.HandlerOption) (string, http.Handler) {
-	controllerServiceGetSystemInfoHandler := connect_go.NewUnaryHandler(
+func NewControllerServiceHandler(svc ControllerServiceHandler, opts ...connect.HandlerOption) (string, http.Handler) {
+	controllerServiceGetSystemInfoHandler := connect.NewUnaryHandler(
 		ControllerServiceGetSystemInfoProcedure,
 		svc.GetSystemInfo,
 		opts...,
 	)
-	controllerServiceFetchRepositoryHandler := connect_go.NewUnaryHandler(
+	controllerServiceFetchRepositoryHandler := connect.NewUnaryHandler(
 		ControllerServiceFetchRepositoryProcedure,
 		svc.FetchRepository,
 		opts...,
 	)
-	controllerServiceRegisterBuildHandler := connect_go.NewUnaryHandler(
+	controllerServiceRegisterBuildHandler := connect.NewUnaryHandler(
 		ControllerServiceRegisterBuildProcedure,
 		svc.RegisterBuild,
 		opts...,
 	)
-	controllerServiceSyncDeploymentsHandler := connect_go.NewUnaryHandler(
+	controllerServiceSyncDeploymentsHandler := connect.NewUnaryHandler(
 		ControllerServiceSyncDeploymentsProcedure,
 		svc.SyncDeployments,
 		opts...,
 	)
-	controllerServiceStreamBuildLogHandler := connect_go.NewServerStreamHandler(
+	controllerServiceStreamBuildLogHandler := connect.NewServerStreamHandler(
 		ControllerServiceStreamBuildLogProcedure,
 		svc.StreamBuildLog,
 		opts...,
 	)
-	controllerServiceCancelBuildHandler := connect_go.NewUnaryHandler(
+	controllerServiceCancelBuildHandler := connect.NewUnaryHandler(
 		ControllerServiceCancelBuildProcedure,
 		svc.CancelBuild,
 		opts...,
@@ -227,34 +227,34 @@ func NewControllerServiceHandler(svc ControllerServiceHandler, opts ...connect_g
 // UnimplementedControllerServiceHandler returns CodeUnimplemented from all methods.
 type UnimplementedControllerServiceHandler struct{}
 
-func (UnimplementedControllerServiceHandler) GetSystemInfo(context.Context, *connect_go.Request[emptypb.Empty]) (*connect_go.Response[pb.SystemInfo], error) {
-	return nil, connect_go.NewError(connect_go.CodeUnimplemented, errors.New("neoshowcase.protobuf.ControllerService.GetSystemInfo is not implemented"))
+func (UnimplementedControllerServiceHandler) GetSystemInfo(context.Context, *connect.Request[emptypb.Empty]) (*connect.Response[pb.SystemInfo], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("neoshowcase.protobuf.ControllerService.GetSystemInfo is not implemented"))
 }
 
-func (UnimplementedControllerServiceHandler) FetchRepository(context.Context, *connect_go.Request[pb.RepositoryIdRequest]) (*connect_go.Response[emptypb.Empty], error) {
-	return nil, connect_go.NewError(connect_go.CodeUnimplemented, errors.New("neoshowcase.protobuf.ControllerService.FetchRepository is not implemented"))
+func (UnimplementedControllerServiceHandler) FetchRepository(context.Context, *connect.Request[pb.RepositoryIdRequest]) (*connect.Response[emptypb.Empty], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("neoshowcase.protobuf.ControllerService.FetchRepository is not implemented"))
 }
 
-func (UnimplementedControllerServiceHandler) RegisterBuild(context.Context, *connect_go.Request[pb.ApplicationIdRequest]) (*connect_go.Response[emptypb.Empty], error) {
-	return nil, connect_go.NewError(connect_go.CodeUnimplemented, errors.New("neoshowcase.protobuf.ControllerService.RegisterBuild is not implemented"))
+func (UnimplementedControllerServiceHandler) RegisterBuild(context.Context, *connect.Request[pb.ApplicationIdRequest]) (*connect.Response[emptypb.Empty], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("neoshowcase.protobuf.ControllerService.RegisterBuild is not implemented"))
 }
 
-func (UnimplementedControllerServiceHandler) SyncDeployments(context.Context, *connect_go.Request[emptypb.Empty]) (*connect_go.Response[emptypb.Empty], error) {
-	return nil, connect_go.NewError(connect_go.CodeUnimplemented, errors.New("neoshowcase.protobuf.ControllerService.SyncDeployments is not implemented"))
+func (UnimplementedControllerServiceHandler) SyncDeployments(context.Context, *connect.Request[emptypb.Empty]) (*connect.Response[emptypb.Empty], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("neoshowcase.protobuf.ControllerService.SyncDeployments is not implemented"))
 }
 
-func (UnimplementedControllerServiceHandler) StreamBuildLog(context.Context, *connect_go.Request[pb.BuildIdRequest], *connect_go.ServerStream[pb.BuildLog]) error {
-	return connect_go.NewError(connect_go.CodeUnimplemented, errors.New("neoshowcase.protobuf.ControllerService.StreamBuildLog is not implemented"))
+func (UnimplementedControllerServiceHandler) StreamBuildLog(context.Context, *connect.Request[pb.BuildIdRequest], *connect.ServerStream[pb.BuildLog]) error {
+	return connect.NewError(connect.CodeUnimplemented, errors.New("neoshowcase.protobuf.ControllerService.StreamBuildLog is not implemented"))
 }
 
-func (UnimplementedControllerServiceHandler) CancelBuild(context.Context, *connect_go.Request[pb.BuildIdRequest]) (*connect_go.Response[emptypb.Empty], error) {
-	return nil, connect_go.NewError(connect_go.CodeUnimplemented, errors.New("neoshowcase.protobuf.ControllerService.CancelBuild is not implemented"))
+func (UnimplementedControllerServiceHandler) CancelBuild(context.Context, *connect.Request[pb.BuildIdRequest]) (*connect.Response[emptypb.Empty], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("neoshowcase.protobuf.ControllerService.CancelBuild is not implemented"))
 }
 
 // ControllerBuilderServiceClient is a client for the neoshowcase.protobuf.ControllerBuilderService
 // service.
 type ControllerBuilderServiceClient interface {
-	ConnectBuilder(context.Context) *connect_go.BidiStreamForClient[pb.BuilderResponse, pb.BuilderRequest]
+	ConnectBuilder(context.Context) *connect.BidiStreamForClient[pb.BuilderResponse, pb.BuilderRequest]
 }
 
 // NewControllerBuilderServiceClient constructs a client for the
@@ -265,10 +265,10 @@ type ControllerBuilderServiceClient interface {
 //
 // The URL supplied here should be the base URL for the Connect or gRPC server (for example,
 // http://api.acme.com or https://acme.com/grpc).
-func NewControllerBuilderServiceClient(httpClient connect_go.HTTPClient, baseURL string, opts ...connect_go.ClientOption) ControllerBuilderServiceClient {
+func NewControllerBuilderServiceClient(httpClient connect.HTTPClient, baseURL string, opts ...connect.ClientOption) ControllerBuilderServiceClient {
 	baseURL = strings.TrimRight(baseURL, "/")
 	return &controllerBuilderServiceClient{
-		connectBuilder: connect_go.NewClient[pb.BuilderResponse, pb.BuilderRequest](
+		connectBuilder: connect.NewClient[pb.BuilderResponse, pb.BuilderRequest](
 			httpClient,
 			baseURL+ControllerBuilderServiceConnectBuilderProcedure,
 			opts...,
@@ -278,18 +278,18 @@ func NewControllerBuilderServiceClient(httpClient connect_go.HTTPClient, baseURL
 
 // controllerBuilderServiceClient implements ControllerBuilderServiceClient.
 type controllerBuilderServiceClient struct {
-	connectBuilder *connect_go.Client[pb.BuilderResponse, pb.BuilderRequest]
+	connectBuilder *connect.Client[pb.BuilderResponse, pb.BuilderRequest]
 }
 
 // ConnectBuilder calls neoshowcase.protobuf.ControllerBuilderService.ConnectBuilder.
-func (c *controllerBuilderServiceClient) ConnectBuilder(ctx context.Context) *connect_go.BidiStreamForClient[pb.BuilderResponse, pb.BuilderRequest] {
+func (c *controllerBuilderServiceClient) ConnectBuilder(ctx context.Context) *connect.BidiStreamForClient[pb.BuilderResponse, pb.BuilderRequest] {
 	return c.connectBuilder.CallBidiStream(ctx)
 }
 
 // ControllerBuilderServiceHandler is an implementation of the
 // neoshowcase.protobuf.ControllerBuilderService service.
 type ControllerBuilderServiceHandler interface {
-	ConnectBuilder(context.Context, *connect_go.BidiStream[pb.BuilderResponse, pb.BuilderRequest]) error
+	ConnectBuilder(context.Context, *connect.BidiStream[pb.BuilderResponse, pb.BuilderRequest]) error
 }
 
 // NewControllerBuilderServiceHandler builds an HTTP handler from the service implementation. It
@@ -297,8 +297,8 @@ type ControllerBuilderServiceHandler interface {
 //
 // By default, handlers support the Connect, gRPC, and gRPC-Web protocols with the binary Protobuf
 // and JSON codecs. They also support gzip compression.
-func NewControllerBuilderServiceHandler(svc ControllerBuilderServiceHandler, opts ...connect_go.HandlerOption) (string, http.Handler) {
-	controllerBuilderServiceConnectBuilderHandler := connect_go.NewBidiStreamHandler(
+func NewControllerBuilderServiceHandler(svc ControllerBuilderServiceHandler, opts ...connect.HandlerOption) (string, http.Handler) {
+	controllerBuilderServiceConnectBuilderHandler := connect.NewBidiStreamHandler(
 		ControllerBuilderServiceConnectBuilderProcedure,
 		svc.ConnectBuilder,
 		opts...,
@@ -316,14 +316,14 @@ func NewControllerBuilderServiceHandler(svc ControllerBuilderServiceHandler, opt
 // UnimplementedControllerBuilderServiceHandler returns CodeUnimplemented from all methods.
 type UnimplementedControllerBuilderServiceHandler struct{}
 
-func (UnimplementedControllerBuilderServiceHandler) ConnectBuilder(context.Context, *connect_go.BidiStream[pb.BuilderResponse, pb.BuilderRequest]) error {
-	return connect_go.NewError(connect_go.CodeUnimplemented, errors.New("neoshowcase.protobuf.ControllerBuilderService.ConnectBuilder is not implemented"))
+func (UnimplementedControllerBuilderServiceHandler) ConnectBuilder(context.Context, *connect.BidiStream[pb.BuilderResponse, pb.BuilderRequest]) error {
+	return connect.NewError(connect.CodeUnimplemented, errors.New("neoshowcase.protobuf.ControllerBuilderService.ConnectBuilder is not implemented"))
 }
 
 // ControllerSSGenServiceClient is a client for the neoshowcase.protobuf.ControllerSSGenService
 // service.
 type ControllerSSGenServiceClient interface {
-	ConnectSSGen(context.Context, *connect_go.Request[emptypb.Empty]) (*connect_go.ServerStreamForClient[pb.SSGenRequest], error)
+	ConnectSSGen(context.Context, *connect.Request[emptypb.Empty]) (*connect.ServerStreamForClient[pb.SSGenRequest], error)
 }
 
 // NewControllerSSGenServiceClient constructs a client for the
@@ -334,10 +334,10 @@ type ControllerSSGenServiceClient interface {
 //
 // The URL supplied here should be the base URL for the Connect or gRPC server (for example,
 // http://api.acme.com or https://acme.com/grpc).
-func NewControllerSSGenServiceClient(httpClient connect_go.HTTPClient, baseURL string, opts ...connect_go.ClientOption) ControllerSSGenServiceClient {
+func NewControllerSSGenServiceClient(httpClient connect.HTTPClient, baseURL string, opts ...connect.ClientOption) ControllerSSGenServiceClient {
 	baseURL = strings.TrimRight(baseURL, "/")
 	return &controllerSSGenServiceClient{
-		connectSSGen: connect_go.NewClient[emptypb.Empty, pb.SSGenRequest](
+		connectSSGen: connect.NewClient[emptypb.Empty, pb.SSGenRequest](
 			httpClient,
 			baseURL+ControllerSSGenServiceConnectSSGenProcedure,
 			opts...,
@@ -347,18 +347,18 @@ func NewControllerSSGenServiceClient(httpClient connect_go.HTTPClient, baseURL s
 
 // controllerSSGenServiceClient implements ControllerSSGenServiceClient.
 type controllerSSGenServiceClient struct {
-	connectSSGen *connect_go.Client[emptypb.Empty, pb.SSGenRequest]
+	connectSSGen *connect.Client[emptypb.Empty, pb.SSGenRequest]
 }
 
 // ConnectSSGen calls neoshowcase.protobuf.ControllerSSGenService.ConnectSSGen.
-func (c *controllerSSGenServiceClient) ConnectSSGen(ctx context.Context, req *connect_go.Request[emptypb.Empty]) (*connect_go.ServerStreamForClient[pb.SSGenRequest], error) {
+func (c *controllerSSGenServiceClient) ConnectSSGen(ctx context.Context, req *connect.Request[emptypb.Empty]) (*connect.ServerStreamForClient[pb.SSGenRequest], error) {
 	return c.connectSSGen.CallServerStream(ctx, req)
 }
 
 // ControllerSSGenServiceHandler is an implementation of the
 // neoshowcase.protobuf.ControllerSSGenService service.
 type ControllerSSGenServiceHandler interface {
-	ConnectSSGen(context.Context, *connect_go.Request[emptypb.Empty], *connect_go.ServerStream[pb.SSGenRequest]) error
+	ConnectSSGen(context.Context, *connect.Request[emptypb.Empty], *connect.ServerStream[pb.SSGenRequest]) error
 }
 
 // NewControllerSSGenServiceHandler builds an HTTP handler from the service implementation. It
@@ -366,8 +366,8 @@ type ControllerSSGenServiceHandler interface {
 //
 // By default, handlers support the Connect, gRPC, and gRPC-Web protocols with the binary Protobuf
 // and JSON codecs. They also support gzip compression.
-func NewControllerSSGenServiceHandler(svc ControllerSSGenServiceHandler, opts ...connect_go.HandlerOption) (string, http.Handler) {
-	controllerSSGenServiceConnectSSGenHandler := connect_go.NewServerStreamHandler(
+func NewControllerSSGenServiceHandler(svc ControllerSSGenServiceHandler, opts ...connect.HandlerOption) (string, http.Handler) {
+	controllerSSGenServiceConnectSSGenHandler := connect.NewServerStreamHandler(
 		ControllerSSGenServiceConnectSSGenProcedure,
 		svc.ConnectSSGen,
 		opts...,
@@ -385,6 +385,6 @@ func NewControllerSSGenServiceHandler(svc ControllerSSGenServiceHandler, opts ..
 // UnimplementedControllerSSGenServiceHandler returns CodeUnimplemented from all methods.
 type UnimplementedControllerSSGenServiceHandler struct{}
 
-func (UnimplementedControllerSSGenServiceHandler) ConnectSSGen(context.Context, *connect_go.Request[emptypb.Empty], *connect_go.ServerStream[pb.SSGenRequest]) error {
-	return connect_go.NewError(connect_go.CodeUnimplemented, errors.New("neoshowcase.protobuf.ControllerSSGenService.ConnectSSGen is not implemented"))
+func (UnimplementedControllerSSGenServiceHandler) ConnectSSGen(context.Context, *connect.Request[emptypb.Empty], *connect.ServerStream[pb.SSGenRequest]) error {
+	return connect.NewError(connect.CodeUnimplemented, errors.New("neoshowcase.protobuf.ControllerSSGenService.ConnectSSGen is not implemented"))
 }

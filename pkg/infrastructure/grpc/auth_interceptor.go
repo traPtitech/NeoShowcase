@@ -5,7 +5,7 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/bufbuild/connect-go"
+	"connectrpc.com/connect"
 	"github.com/motoki317/sc"
 
 	"github.com/traPtitech/neoshowcase/pkg/domain"

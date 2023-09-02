@@ -3,7 +3,7 @@ package grpc
 import (
 	"context"
 
-	"github.com/bufbuild/connect-go"
+	"connectrpc.com/connect"
 	"github.com/friendsofgo/errors"
 	"github.com/go-git/go-git/v5/plumbing/transport/ssh"
 	"google.golang.org/protobuf/types/known/emptypb"
