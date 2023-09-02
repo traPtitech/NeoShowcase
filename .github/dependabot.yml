@@ -28,6 +28,8 @@ updates:
     groups:
       dev-deps:
         dependency-type: "development"
+        exclude-patterns:
+          - "vite-plugin-solid-svg" # broken patch update (v0.6.4)
       patches:
         update-types:
           - "patch"
