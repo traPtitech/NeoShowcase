@@ -11,6 +11,9 @@ updates:
     open-pull-requests-limit: 50
     schedule:
       interval: "monthly"
+    groups:
+      patches:
+        update-types: "patch"
   - package-ecosystem: "docker"
     directory: "/"
     open-pull-requests-limit: 50
@@ -21,6 +24,11 @@ updates:
     open-pull-requests-limit: 50
     schedule:
       interval: "monthly"
+    groups:
+      dev-deps:
+        dependency-type: "development"
+      patches:
+        update-types: "patch"
   - package-ecosystem: "docker"
     directory: "/dashboard"
     open-pull-requests-limit: 50
@@ -31,9 +39,3 @@ updates:
     open-pull-requests-limit: 50
     schedule:
       interval: "monthly"
-
-groups:
-  dev-deps:
-    dependency-type: "development"
-  patches:
-    update-types: "patch"
