@@ -9,6 +9,7 @@ import (
 	"golang.org/x/exp/slices"
 
 	"github.com/traPtitech/neoshowcase/pkg/domain"
+	"github.com/traPtitech/neoshowcase/pkg/util/ds"
 )
 
 const (
@@ -78,9 +79,9 @@ func (values streamValues) toSortedResponse(asc bool) ([]*domain.ContainerLog, e
 		}
 	}
 	if asc {
-		slices.SortFunc(logs, func(a, b *domain.ContainerLog) bool { return a.Time.Before(b.Time) })
+		slices.SortFunc(logs, ds.LessFunc(func(a *domain.ContainerLog) int64 { return a.Time.UnixNano() }))
 	} else {
-		slices.SortFunc(logs, func(a, b *domain.ContainerLog) bool { return b.Time.Before(a.Time) })
+		slices.SortFunc(logs, ds.MoreFunc(func(a *domain.ContainerLog) int64 { return a.Time.UnixNano() }))
 	}
 	return logs, nil
 }

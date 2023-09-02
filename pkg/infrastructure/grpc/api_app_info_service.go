@@ -4,7 +4,7 @@ import (
 	"context"
 	"time"
 
-	"github.com/bufbuild/connect-go"
+	"connectrpc.com/connect"
 	"github.com/friendsofgo/errors"
 	"google.golang.org/protobuf/types/known/emptypb"
 

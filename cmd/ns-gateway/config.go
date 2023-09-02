@@ -6,7 +6,7 @@ import (
 	"os"
 	"strings"
 
-	"github.com/bufbuild/connect-go"
+	"connectrpc.com/connect"
 	"github.com/friendsofgo/errors"
 	"github.com/go-git/go-git/v5/plumbing/transport/ssh"
 	"github.com/spf13/viper"

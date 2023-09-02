@@ -50,7 +50,7 @@ func (b *k8sBackend) runtimeSpec(app *domain.RuntimeDesiredState) (*appsv1.State
 			}}}
 		})
 		// make sure computed result is stable
-		slices.SortFunc(envs, func(a, b v1.EnvVar) bool { return strings.Compare(a.Name, b.Name) < 0 })
+		slices.SortFunc(envs, ds.LessFunc(func(a v1.EnvVar) string { return a.Name }))
 	}
 
 	cont := v1.Container{

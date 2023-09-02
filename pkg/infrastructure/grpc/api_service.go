@@ -1,7 +1,7 @@
 package grpc
 
 import (
-	"github.com/bufbuild/connect-go"
+	"connectrpc.com/connect"
 
 	"github.com/traPtitech/neoshowcase/pkg/domain"
 	"github.com/traPtitech/neoshowcase/pkg/infrastructure/grpc/pb/pbconnect"

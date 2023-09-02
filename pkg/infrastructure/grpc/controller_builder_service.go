@@ -5,7 +5,7 @@ import (
 	"io"
 	"sync"
 
-	"github.com/bufbuild/connect-go"
+	"connectrpc.com/connect"
 	"github.com/friendsofgo/errors"
 	"github.com/samber/lo"
 	log "github.com/sirupsen/logrus"
