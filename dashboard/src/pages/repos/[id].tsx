@@ -1,17 +1,17 @@
-import { createResource, For, JSX, Show } from 'solid-js'
-import toast from 'solid-toast'
-import { useNavigate, useParams } from '@solidjs/router'
 import { GetApplicationsRequest_Scope } from '/@/api/neoshowcase/protobuf/gateway_pb'
 import AppRow from '/@/components/AppRow'
 import { Button } from '/@/components/Button'
-import { Card, CardItem, CardItemContent, CardItems, CardItemTitle, CardsRow, CardTitle } from '/@/components/Card'
+import { Card, CardItem, CardItemContent, CardItemTitle, CardItems, CardTitle, CardsRow } from '/@/components/Card'
 import { Header } from '/@/components/Header'
+import { ModalButtonsContainer, ModalContainer, ModalText } from '/@/components/Modal'
+import RepositoryNav from '/@/components/RepositoryNav'
 import { URLText } from '/@/components/URLText'
 import { client, handleAPIError } from '/@/libs/api'
 import { Container } from '/@/libs/layout'
 import useModal from '/@/libs/useModal'
-import { ModalButtonsContainer, ModalContainer, ModalText } from '/@/components/Modal'
-import RepositoryNav from '/@/components/RepositoryNav'
+import { useNavigate, useParams } from '@solidjs/router'
+import { For, JSX, Show, createResource } from 'solid-js'
+import toast from 'solid-toast'
 
 export default () => {
   const navigate = useNavigate()
@@ -61,18 +61,18 @@ export default () => {
             <CardItems>
               <Button
                 onclick={handleCreateApplication}
-                color='black1'
-                size='large'
-                width='full'
-                tooltip='このリポジトリからアプリケーションを作成します'
+                color="black1"
+                size="large"
+                width="full"
+                tooltip="このリポジトリからアプリケーションを作成します"
               >
                 Create New Application
               </Button>
               <Button
                 onclick={openDeleteRepoModal}
-                color='black1'
-                size='large'
-                width='full'
+                color="black1"
+                size="large"
+                width="full"
                 disabled={!canDeleteRepository()}
                 tooltip={
                   canDeleteRepository()
@@ -87,10 +87,10 @@ export default () => {
               <ModalContainer>
                 <ModalText>本当に削除しますか?</ModalText>
                 <ModalButtonsContainer>
-                  <Button onclick={closeDeleteRepoModal} color='black1' size='large' width='full'>
+                  <Button onclick={closeDeleteRepoModal} color="black1" size="large" width="full">
                     キャンセル
                   </Button>
-                  <Button onclick={handleDeleteRepository} color='black1' size='large' width='full'>
+                  <Button onclick={handleDeleteRepository} color="black1" size="large" width="full">
                     削除
                   </Button>
                 </ModalButtonsContainer>

@@ -1,8 +1,8 @@
-import { styled } from '@macaron-css/solid'
 import { vars } from '/@/theme'
+import { styled } from '@macaron-css/solid'
+import { VsLinkExternal } from 'solid-icons/vs'
 import { Component } from 'solid-js'
 import { tippy as tippyDir } from 'solid-tippy'
-import { VsLinkExternal } from 'solid-icons/vs'
 
 // https://github.com/solidjs/solid/discussions/845
 const tippy = tippyDir
@@ -36,7 +36,7 @@ export const URLText: Component<URLTextProps> = (props) => {
         hidden: true,
       }}
     >
-      <StyledAnchor href={props.href} target='_blank' rel='noreferrer'>
+      <StyledAnchor href={props.href} target="_blank" rel="noreferrer">
         <ContentContainer>
           {props.text}
           <VsLinkExternal />

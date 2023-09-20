@@ -1,6 +1,3 @@
-import { Header } from '/@/components/Header'
-import { createResource, JSX, Show } from 'solid-js'
-import { client, handleAPIError } from '/@/libs/api'
 import {
   ApplicationConfig,
   CreateApplicationRequest,
@@ -8,25 +5,28 @@ import {
   PortPublication,
   RuntimeConfig,
 } from '/@/api/neoshowcase/protobuf/gateway_pb'
-import { A, useNavigate, useSearchParams } from '@solidjs/router'
-import { BsArrowLeftShort } from 'solid-icons/bs'
-import { Container } from '/@/libs/layout'
-import { vars } from '/@/theme'
-import { styled } from '@macaron-css/solid'
+import { FormCheckBox, FormTextBig } from '/@/components/AppsNew'
+import { BuildConfigMethod, BuildConfigs } from '/@/components/BuildConfigs'
 import { Button } from '/@/components/Button'
 import { Checkbox } from '/@/components/Checkbox'
+import { Header } from '/@/components/Header'
+import { InfoTooltip } from '/@/components/InfoTooltip'
+import { InputBar, InputLabel } from '/@/components/Input'
+import { InputSuggestion } from '/@/components/InputSuggestion'
+import { PortPublicationSettings } from '/@/components/PortPublications'
+import { RepositoryInfo } from '/@/components/RepositoryInfo'
+import { WebsiteSettings } from '/@/components/WebsiteSettings'
+import { client, handleAPIError } from '/@/libs/api'
+import { useBranchesSuggestion } from '/@/libs/branchesSuggestion'
+import { Container } from '/@/libs/layout'
+import { vars } from '/@/theme'
+import { PlainMessage } from '@bufbuild/protobuf'
+import { styled } from '@macaron-css/solid'
+import { A, useNavigate, useSearchParams } from '@solidjs/router'
+import { BsArrowLeftShort } from 'solid-icons/bs'
+import { JSX, Show, createResource } from 'solid-js'
 import { createStore } from 'solid-js/store'
 import toast from 'solid-toast'
-import { RepositoryInfo } from '/@/components/RepositoryInfo'
-import { InputBar, InputLabel } from '/@/components/Input'
-import { FormCheckBox, FormTextBig } from '/@/components/AppsNew'
-import { WebsiteSettings } from '/@/components/WebsiteSettings'
-import { PortPublicationSettings } from '/@/components/PortPublications'
-import { BuildConfigMethod, BuildConfigs } from '/@/components/BuildConfigs'
-import { PlainMessage } from '@bufbuild/protobuf'
-import { InputSuggestion } from '/@/components/InputSuggestion'
-import { useBranchesSuggestion } from '/@/libs/branchesSuggestion'
-import { InfoTooltip } from '/@/components/InfoTooltip'
 
 const AppTitle = styled('div', {
   base: {
@@ -155,7 +155,7 @@ export default () => {
             <div>
               <InputLabel>Application Name</InputLabel>
               <InputBar
-                placeholder='my-app'
+                placeholder="my-app"
                 value={request.name}
                 onInput={(e) => setRequest('name', e.target.value)}
                 required
@@ -170,7 +170,7 @@ export default () => {
               <InputSuggestion suggestions={branchesSuggestion()} onSetSuggestion={(b) => setRequest('refName', b)}>
                 {(onFocus) => (
                   <InputBar
-                    placeholder='main'
+                    placeholder="main"
                     value={request.refName}
                     onInput={(e) => setRequest('refName', e.target.value)}
                     onFocus={onFocus}
@@ -220,7 +220,7 @@ export default () => {
               </FormCheckBox>
             </div>
 
-            <Button color='black1' size='large' width='auto' onclick={createApplication} type='submit'>
+            <Button color="black1" size="large" width="auto" onclick={createApplication} type="submit">
               + Create New Application
             </Button>
           </FormContainer>

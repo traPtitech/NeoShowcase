@@ -1,8 +1,8 @@
-import { JSXElement } from 'solid-js'
-import { AiFillCheckCircle, AiFillExclamationCircle, AiFillMinusCircle } from 'solid-icons/ai'
-import { vars } from '/@/theme'
-import { IoReloadCircle } from 'solid-icons/io'
 import { Build_BuildStatus } from '/@/api/neoshowcase/protobuf/gateway_pb'
+import { vars } from '/@/theme'
+import { AiFillCheckCircle, AiFillExclamationCircle, AiFillMinusCircle } from 'solid-icons/ai'
+import { IoReloadCircle } from 'solid-icons/io'
+import { JSXElement } from 'solid-js'
 import { Dynamic } from 'solid-js/web'
 
 interface IconProps {

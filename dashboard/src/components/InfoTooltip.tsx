@@ -1,6 +1,6 @@
-import { Component, createMemo, For } from 'solid-js'
 import { styled } from '@macaron-css/solid'
 import { AiOutlineInfoCircle } from 'solid-icons/ai'
+import { Component, For, createMemo } from 'solid-js'
 import { tippy as tippyDir } from 'solid-tippy'
 import { Content } from 'tippy.js'
 
@@ -47,7 +47,7 @@ export const InfoTooltip: Component<InfoTooltipProps> = (props) => {
     if (typeof props.tooltip === 'string') return props.tooltip
     if (props.style === 'bullets-with-title') {
       return (
-        <TooltipContainer align='left'>
+        <TooltipContainer align="left">
           {props.tooltip[0]}
           <ul>
             <For each={props.tooltip.slice(1)}>{(line) => <li>{line}</li>}</For>
@@ -57,7 +57,7 @@ export const InfoTooltip: Component<InfoTooltipProps> = (props) => {
     }
     if (props.style === 'bullets') {
       return (
-        <TooltipContainer align='left'>
+        <TooltipContainer align="left">
           <ul>
             <For each={props.tooltip}>{(line) => <li>{line}</li>}</For>
           </ul>

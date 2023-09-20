@@ -1,8 +1,8 @@
-import { JSXElement } from 'solid-js'
-import { providerToIcon, repositoryURLToProvider } from '/@/libs/application'
-import { styled } from '@macaron-css/solid'
-import { vars } from '/@/theme'
 import { Repository } from '/@/api/neoshowcase/protobuf/gateway_pb'
+import { providerToIcon, repositoryURLToProvider } from '/@/libs/application'
+import { vars } from '/@/theme'
+import { styled } from '@macaron-css/solid'
+import { JSXElement } from 'solid-js'
 
 const RepositoryInfoContainer = styled('div', {
   base: {

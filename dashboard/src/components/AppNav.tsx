@@ -1,7 +1,8 @@
+import { Application, Repository } from '/@/api/neoshowcase/protobuf/gateway_pb'
 import { providerToIcon, repositoryURLToProvider } from '/@/libs/application'
+import { CenterInline } from '/@/libs/layout'
 import { A } from '@solidjs/router'
 import { JSXElement } from 'solid-js'
-import { CenterInline } from '/@/libs/layout'
 import {
   NavAnchorActiveStyle,
   NavAnchorStyle,
@@ -10,7 +11,6 @@ import {
   NavTitle,
   NavTitleContainer,
 } from './Nav'
-import { Application, Repository } from '/@/api/neoshowcase/protobuf/gateway_pb'
 
 export interface AppNavProps {
   repo: Repository

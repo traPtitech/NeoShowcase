@@ -1,10 +1,10 @@
-import { createResource } from 'solid-js'
+import { BuildList } from '/@/components/BuildList'
+import { Header } from '/@/components/Header'
 import { client } from '/@/libs/api'
 import { Container, PageTitle } from '/@/libs/layout'
-import { Header } from '/@/components/Header'
-import { Show } from 'solid-js'
-import { BuildList } from '/@/components/BuildList'
 import { styled } from '@macaron-css/solid'
+import { createResource } from 'solid-js'
+import { Show } from 'solid-js'
 
 const PageContainer = styled('div', {
   base: {

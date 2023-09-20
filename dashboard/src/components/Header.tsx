@@ -1,10 +1,10 @@
-import { JSXElement } from 'solid-js'
-import Logo from '../images/logo.svg'
-import { A } from '@solidjs/router'
 import { systemInfo, user } from '/@/libs/api'
-import { styled } from '@macaron-css/solid'
 import { vars } from '/@/theme'
 import { style } from '@macaron-css/core'
+import { styled } from '@macaron-css/solid'
+import { A } from '@solidjs/router'
+import { JSXElement } from 'solid-js'
+import Logo from '../images/logo.svg'
 
 const Container = styled('div', {
   base: {
@@ -88,16 +88,16 @@ export const Header = (): JSXElement => {
       <LeftContainer>
         <Logo />
         <NavContainer>
-          <Nav href='/apps'>APP</Nav>
-          <Nav href='/builds'>QUEUE</Nav>
-          <Nav href='/settings'>SETTINGS</Nav>
-          <a href={systemInfo()?.adminerUrl} target='_blank' class={navInactive} rel='noreferrer'>
+          <Nav href="/apps">APP</Nav>
+          <Nav href="/builds">QUEUE</Nav>
+          <Nav href="/settings">SETTINGS</Nav>
+          <a href={systemInfo()?.adminerUrl} target="_blank" class={navInactive} rel="noreferrer">
             ADMINER
           </a>
         </NavContainer>
       </LeftContainer>
       <RightContainer>
-        {user() && <UserIcon src={user().avatarUrl} alt='icon' />}
+        {user() && <UserIcon src={user().avatarUrl} alt="icon" />}
         {user() && <UserName>{user().name}</UserName>}
       </RightContainer>
     </Container>

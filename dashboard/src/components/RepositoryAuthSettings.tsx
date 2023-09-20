@@ -1,14 +1,14 @@
+import { InfoTooltip } from '/@/components/InfoTooltip'
+import { PlainMessage } from '@bufbuild/protobuf'
+import { styled } from '@macaron-css/solid'
 import { Component, Match, Show, Switch, createEffect, createResource, createSignal } from 'solid-js'
+import { SetStoreFunction } from 'solid-js/store'
+import { CreateRepositoryAuth } from '../api/neoshowcase/protobuf/gateway_pb'
+import { client, systemInfo } from '../libs/api'
+import { vars } from '../theme'
+import { Button } from './Button'
 import { InputBar, InputLabel } from './Input'
 import { Radio } from './Radio'
-import { vars } from '../theme'
-import { styled } from '@macaron-css/solid'
-import { Button } from './Button'
-import { CreateRepositoryAuth } from '../api/neoshowcase/protobuf/gateway_pb'
-import { SetStoreFunction } from 'solid-js/store'
-import { client, systemInfo } from '../libs/api'
-import { PlainMessage } from '@bufbuild/protobuf'
-import { InfoTooltip } from '/@/components/InfoTooltip'
 
 const SshDetails = styled('div', {
   base: {
@@ -80,7 +80,7 @@ export const RepositoryAuthSettings: Component<RepositoryAuthSettingsProps> = (p
               <InputLabel>パスワード</InputLabel>
               <InputBar
                 // SSH URLはURLとしては不正なのでtypeを変更
-                type='password'
+                type="password"
                 value={v().password}
                 onInput={(e) => props.setAuthConfig('auth', 'value', { password: e.currentTarget.value })}
               />
@@ -92,7 +92,7 @@ export const RepositoryAuthSettings: Component<RepositoryAuthSettingsProps> = (p
           <PublicKeyCode>{publicKey()}</PublicKeyCode>
           <Show when={!useTmpKey()}>
             <Row>
-              <Button color='black1' size='large' width='auto' onclick={() => setUseTmpKey(true)} type='submit'>
+              <Button color="black1" size="large" width="auto" onclick={() => setUseTmpKey(true)} type="submit">
                 新たな鍵ペアを生成 (for github.com)
               </Button>
               <InfoTooltip

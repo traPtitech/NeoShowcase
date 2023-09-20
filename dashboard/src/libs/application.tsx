@@ -1,4 +1,3 @@
-import { Provider } from '/@/components/RepositoryRow'
 import {
   Application,
   Build_BuildStatus,
@@ -6,10 +5,11 @@ import {
   PortPublicationProtocol,
   Website,
 } from '/@/api/neoshowcase/protobuf/gateway_pb'
-import { JSXElement } from 'solid-js'
+import { Provider } from '/@/components/RepositoryRow'
+import { vars } from '/@/theme'
 import { AiFillGithub, AiFillGitlab } from 'solid-icons/ai'
 import { SiGitea } from 'solid-icons/si'
-import { vars } from '/@/theme'
+import { JSXElement } from 'solid-js'
 import { BuildConfigMethod } from '../components/BuildConfigs'
 
 export const buildTypeStr: Record<BuildConfigMethod, string> = {
@@ -62,7 +62,7 @@ export const providerToIcon = (provider: Provider, size = 20): JSXElement => {
     case 'GitHub':
       return <AiFillGithub size={size} color={vars.text.black1} />
     case 'GitLab':
-      return <AiFillGitlab size={size} color='#FC6D26' />
+      return <AiFillGitlab size={size} color="#FC6D26" />
     case 'Gitea':
       return <SiGitea size={size} color={vars.text.black1} />
   }

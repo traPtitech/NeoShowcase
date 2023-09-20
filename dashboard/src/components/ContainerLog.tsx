@@ -1,14 +1,14 @@
-import { LogContainer } from '/@/components/Log'
-import { Component, createEffect, createMemo, createResource, createSignal, For, onCleanup, Ref, Show } from 'solid-js'
-import { toWithAnsi } from '/@/libs/buffers'
-import { client, handleAPIError } from '/@/libs/api'
-import { Code, ConnectError } from '@bufbuild/connect'
-import { isScrolledToBottom } from '/@/libs/scroll'
 import { ApplicationOutput } from '/@/api/neoshowcase/protobuf/gateway_pb'
+import { LogContainer } from '/@/components/Log'
+import { client, handleAPIError } from '/@/libs/api'
+import { toWithAnsi } from '/@/libs/buffers'
+import { isScrolledToBottom } from '/@/libs/scroll'
 import { addTimestamp, lessTimestamp, minTimestamp } from '/@/libs/timestamp'
+import { vars } from '/@/theme'
+import { Code, ConnectError } from '@bufbuild/connect'
 import { Timestamp } from '@bufbuild/protobuf'
 import { styled } from '@macaron-css/solid'
-import { vars } from '/@/theme'
+import { Component, For, Ref, Show, createEffect, createMemo, createResource, createSignal, onCleanup } from 'solid-js'
 
 const LoadMoreContainer = styled('div', {
   base: {
@@ -136,7 +136,7 @@ export const ContainerLog: Component<ContainerLogProps> = (props) => {
   const onScroll = (e: { target: Element }) => setAtBottom(isScrolledToBottom(e.target))
 
   return (
-    <LogContainer ref={logRef} overflowX='scroll' onScroll={onScroll}>
+    <LogContainer ref={logRef} overflowX="scroll" onScroll={onScroll}>
       {/* cannot distinguish zero log and loading (but should be enough for most use-cases) */}
       <Show when={streamedLog().length > 0}>
         <LoadMoreContainer>

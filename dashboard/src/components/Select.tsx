@@ -1,6 +1,6 @@
-import { For } from 'solid-js'
-import { styled } from '@macaron-css/solid'
 import { vars } from '/@/theme'
+import { styled } from '@macaron-css/solid'
+import { For } from 'solid-js'
 
 const StyledSelect = styled('select', {
   base: {

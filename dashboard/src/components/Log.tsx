@@ -1,5 +1,5 @@
-import { styled } from '@macaron-css/solid'
 import { vars } from '/@/theme'
+import { styled } from '@macaron-css/solid'
 
 export const LogContainer = styled('code', {
   base: {

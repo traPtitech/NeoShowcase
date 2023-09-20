@@ -1,13 +1,13 @@
 import { ApplicationConfig, RuntimeConfig, StaticConfig } from '/@/api/neoshowcase/protobuf/gateway_pb'
-import { SetStoreFunction } from 'solid-js/store'
-import { InputArea, InputBar, InputLabel } from '/@/components/Input'
 import { FormCheckBox, FormSettings } from '/@/components/AppsNew'
 import { Checkbox } from '/@/components/Checkbox'
-import { createEffect, Match, Switch } from 'solid-js'
-import { RadioItem } from '/@/components/Radio'
-import { PlainMessage } from '@bufbuild/protobuf'
 import { InfoTooltip } from '/@/components/InfoTooltip'
+import { InputArea, InputBar, InputLabel } from '/@/components/Input'
+import { RadioItem } from '/@/components/Radio'
 import { Select } from '/@/components/Select'
+import { PlainMessage } from '@bufbuild/protobuf'
+import { Match, Switch, createEffect } from 'solid-js'
+import { SetStoreFunction } from 'solid-js/store'
 
 export type BuildConfigMethod = ApplicationConfig['buildConfig']['case']
 const buildConfigItems: RadioItem<BuildConfigMethod>[] = [
@@ -51,7 +51,7 @@ const RuntimeConfigs = (props: RuntimeConfigProps) => {
       <div>
         <InputLabel>
           Entrypoint
-          <InfoTooltip tooltip='(Advanced) コンテナのEntrypoint' />
+          <InfoTooltip tooltip="(Advanced) コンテナのEntrypoint" />
         </InputLabel>
         <InputBar
           value={props.runtimeConfig?.entrypoint}
@@ -61,7 +61,7 @@ const RuntimeConfigs = (props: RuntimeConfigProps) => {
       <div>
         <InputLabel>
           Command
-          <InfoTooltip tooltip='(Advanced) コンテナのCommand' />
+          <InfoTooltip tooltip="(Advanced) コンテナのCommand" />
         </InputLabel>
         <InputBar
           value={props.runtimeConfig?.command}
@@ -117,13 +117,13 @@ export interface BuildConfigsProps {
 
 export const BuildConfigs = (props: BuildConfigsProps) => {
   createEffect(() => {
-    if (!props.buildConfig.value['runtimeConfig']) {
+    if (!props.buildConfig.value.runtimeConfig) {
       // @ts-ignore
       props.setBuildConfig('value', 'runtimeConfig', structuredClone(new RuntimeConfig()))
     }
   })
   createEffect(() => {
-    if (!props.buildConfig.value['staticConfig']) {
+    if (!props.buildConfig.value.staticConfig) {
       // @ts-ignore
       props.setBuildConfig('value', 'staticConfig', structuredClone(new StaticConfig()))
     }
@@ -140,7 +140,7 @@ export const BuildConfigs = (props: BuildConfigsProps) => {
               'Command: ビルド設定を直接設定',
               'Dockerfile: Dockerfileを用いる',
             ]}
-            style='left'
+            style="left"
           />
         </InputLabel>
         <Select

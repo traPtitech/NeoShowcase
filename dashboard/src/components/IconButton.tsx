@@ -1,6 +1,6 @@
-import { FlowComponent } from 'solid-js'
-import { styled } from '@macaron-css/solid'
 import { vars } from '/@/theme'
+import { styled } from '@macaron-css/solid'
+import { FlowComponent } from 'solid-js'
 import { tippy as tippyDir } from 'solid-tippy'
 
 // https://github.com/solidjs/solid/discussions/845

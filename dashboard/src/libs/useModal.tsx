@@ -1,7 +1,7 @@
+import { vars } from '/@/theme'
+import { styled } from '@macaron-css/solid'
 import { ParentComponent, Show, createSignal, onCleanup, onMount } from 'solid-js'
 import { Portal } from 'solid-js/web'
-import { styled } from '@macaron-css/solid'
-import { vars } from '/@/theme'
 
 const ModalWrapper = styled('div', {
   base: {

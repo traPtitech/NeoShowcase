@@ -1,10 +1,10 @@
-import { Component, For } from 'solid-js'
-import { A } from '@solidjs/router'
-import { styled } from '@macaron-css/solid'
-import { vars } from '/@/theme'
+import { Build } from '/@/api/neoshowcase/protobuf/gateway_pb'
 import { BuildStatusIcon } from '/@/components/BuildStatusIcon'
 import { DiffHuman, shortSha } from '/@/libs/format'
-import { Build } from '/@/api/neoshowcase/protobuf/gateway_pb'
+import { vars } from '/@/theme'
+import { styled } from '@macaron-css/solid'
+import { A } from '@solidjs/router'
+import { Component, For } from 'solid-js'
 
 const BuildsContainer = styled('div', {
   base: {

@@ -4,7 +4,7 @@ import { lazy } from 'solid-js'
 export default useRoutes([
   {
     path: '/',
-    component: () => <Navigate href='/apps' />,
+    component: () => <Navigate href="/apps" />,
   },
   {
     path: '/apps',

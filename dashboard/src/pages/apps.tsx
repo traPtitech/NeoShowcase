@@ -1,25 +1,25 @@
-import { Header } from '/@/components/Header'
-import { Checkbox } from '/@/components/Checkbox'
-import { createMemo, createResource, For, Show } from 'solid-js'
-import { Radio, RadioItem } from '/@/components/Radio'
-import { client, user } from '/@/libs/api'
 import {
   Application,
   GetApplicationsRequest_Scope,
   GetRepositoriesRequest_Scope,
   Repository,
 } from '/@/api/neoshowcase/protobuf/gateway_pb'
-import { RepositoryRow } from '/@/components/RepositoryRow'
-import { applicationState, ApplicationState } from '/@/libs/application'
 import { AppStatus } from '/@/components/AppStatus'
-import { styled } from '@macaron-css/solid'
-import { vars } from '/@/theme'
-import { Container, PageTitle } from '/@/libs/layout'
 import { Button } from '/@/components/Button'
+import { Checkbox } from '/@/components/Checkbox'
+import { Header } from '/@/components/Header'
+import { Radio, RadioItem } from '/@/components/Radio'
+import { RepositoryRow } from '/@/components/RepositoryRow'
+import { client, user } from '/@/libs/api'
+import { ApplicationState, applicationState } from '/@/libs/application'
+import { Container, PageTitle } from '/@/libs/layout'
+import { createLocalSignal } from '/@/libs/localStore'
+import { unique } from '/@/libs/unique'
+import { vars } from '/@/theme'
+import { styled } from '@macaron-css/solid'
 import { useNavigate } from '@solidjs/router'
 import Fuse from 'fuse.js'
-import { unique } from '/@/libs/unique'
-import { createLocalSignal } from '/@/libs/localStore'
+import { For, Show, createMemo, createResource } from 'solid-js'
 
 const sortItems: RadioItem<'asc' | 'desc'>[] = [
   { value: 'desc', title: '最新順' },
@@ -247,8 +247,8 @@ export default () => {
           </SidebarContainer>
           <MainContainer>
             <SearchBarContainer>
-              <SearchBar value={query()} onInput={(e) => setQuery(e.target.value)} placeholder='Search...' />
-              <Button color='black1' size='large' width='full' onclick={() => navigate('/repos/new')}>
+              <SearchBar value={query()} onInput={(e) => setQuery(e.target.value)} placeholder="Search..." />
+              <Button color="black1" size="large" width="full" onclick={() => navigate('/repos/new')}>
                 + New Repository
               </Button>
             </SearchBarContainer>

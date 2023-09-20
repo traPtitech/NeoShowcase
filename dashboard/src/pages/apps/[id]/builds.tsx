@@ -1,11 +1,11 @@
-import { createMemo, createResource } from 'solid-js'
-import { client } from '/@/libs/api'
-import { useParams } from '@solidjs/router'
-import { Container } from '/@/libs/layout'
-import { Header } from '/@/components/Header'
-import { Show } from 'solid-js'
 import { AppNav } from '/@/components/AppNav'
 import { BuildList } from '/@/components/BuildList'
+import { Header } from '/@/components/Header'
+import { client } from '/@/libs/api'
+import { Container } from '/@/libs/layout'
+import { useParams } from '@solidjs/router'
+import { createMemo, createResource } from 'solid-js'
+import { Show } from 'solid-js'
 
 export default () => {
   const params = useParams()

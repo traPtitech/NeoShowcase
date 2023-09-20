@@ -1,19 +1,19 @@
 import { PortPublication, PortPublicationProtocol } from '/@/api/neoshowcase/protobuf/gateway_pb'
+import { FormButton, FormSettings, FormSettingsButton, SettingsContainer } from '/@/components/AppsNew'
+import { Button } from '/@/components/Button'
 import { InputBar, InputLabel } from '/@/components/Input'
 import { Radio, RadioItem } from '/@/components/Radio'
-import { Button } from '/@/components/Button'
-import { SetStoreFunction } from 'solid-js/store'
-import { FormButton, FormSettings, FormSettingsButton, SettingsContainer } from '/@/components/AppsNew'
-import { For } from 'solid-js'
+import { Select, SelectItem } from '/@/components/Select'
+import { pickRandom, randIntN } from '/@/libs/random'
+import { PlainMessage } from '@bufbuild/protobuf'
 import { styled } from '@macaron-css/solid'
-import { vars } from '../theme'
+import { AiOutlinePlusCircle } from 'solid-icons/ai'
+import { FaRegularTrashCan } from 'solid-icons/fa'
+import { For } from 'solid-js'
+import { SetStoreFunction } from 'solid-js/store'
 import { systemInfo } from '../libs/api'
 import { portPublicationProtocolMap } from '../libs/application'
-import { PlainMessage } from '@bufbuild/protobuf'
-import { pickRandom, randIntN } from '/@/libs/random'
-import { FaRegularTrashCan } from 'solid-icons/fa'
-import { AiOutlinePlusCircle } from 'solid-icons/ai'
-import { Select, SelectItem } from '/@/components/Select'
+import { vars } from '../theme'
 
 const AvailablePortContainer = styled('div', {
   base: {
@@ -62,12 +62,12 @@ const PortSetting = (props: PortPublicationProps) => {
     <FormSettings>
       <PortVisualContainer>
         <InputBar
-          placeholder='39000'
-          type='number'
+          placeholder="39000"
+          type="number"
           value={props.port.internetPort || ''}
           onChange={(e) => props.setPort('internetPort', +e.target.value)}
-          width='tiny'
-          tooltip='インターネット側ポート'
+          width="tiny"
+          tooltip="インターネット側ポート"
         />
         <span>/</span>
         <Select
@@ -80,17 +80,17 @@ const PortSetting = (props: PortPublicationProps) => {
         />
         <span> → </span>
         <InputBar
-          placeholder='8080'
-          type='number'
+          placeholder="8080"
+          type="number"
           value={props.port.applicationPort || ''}
           onChange={(e) => props.setPort('applicationPort', +e.target.value)}
-          width='tiny'
-          tooltip='アプリ側ポート'
+          width="tiny"
+          tooltip="アプリ側ポート"
         />
         <span>/{protoToName[props.port.protocol]}</span>
       </PortVisualContainer>
       <FormSettingsButton>
-        <Button onclick={props.deletePort} color='black1' size='large' width='auto' type='button'>
+        <Button onclick={props.deletePort} color="black1" size="large" width="auto" type="button">
           <FaRegularTrashCan />
           <span> この設定を削除</span>
         </Button>
@@ -148,10 +148,10 @@ export const PortPublicationSettings = (props: PortPublicationSettingsProps) => 
       <FormButton>
         <Button
           onclick={() => props.setPorts([...props.ports, newPort()])}
-          color='black1'
-          size='large'
-          width='auto'
-          type='button'
+          color="black1"
+          size="large"
+          width="auto"
+          type="button"
         >
           <AiOutlinePlusCircle />
           <span> 設定を追加</span>
