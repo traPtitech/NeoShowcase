@@ -117,12 +117,14 @@ export interface BuildConfigsProps {
 
 export const BuildConfigs = (props: BuildConfigsProps) => {
   createEffect(() => {
+    // @ts-ignore
     if (!props.buildConfig.value.runtimeConfig) {
       // @ts-ignore
       props.setBuildConfig('value', 'runtimeConfig', structuredClone(new RuntimeConfig()))
     }
   })
   createEffect(() => {
+    // @ts-ignore
     if (!props.buildConfig.value.staticConfig) {
       // @ts-ignore
       props.setBuildConfig('value', 'staticConfig', structuredClone(new StaticConfig()))
