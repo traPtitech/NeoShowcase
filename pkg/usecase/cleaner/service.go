@@ -8,7 +8,8 @@ import (
 	"time"
 
 	"github.com/friendsofgo/errors"
-	"github.com/heroku/docker-registry-client/registry"
+	"github.com/regclient/regclient"
+	"github.com/regclient/regclient/types/ref"
 	"github.com/samber/lo"
 	log "github.com/sirupsen/logrus"
 
@@ -17,6 +18,7 @@ import (
 	"github.com/traPtitech/neoshowcase/pkg/util/ds"
 	"github.com/traPtitech/neoshowcase/pkg/util/loop"
 	"github.com/traPtitech/neoshowcase/pkg/util/optional"
+	"github.com/traPtitech/neoshowcase/pkg/util/regutil"
 )
 
 type Service interface {
@@ -52,16 +54,13 @@ func NewService(
 		storage:      storage,
 	}
 
-	r, err := image.NewRegistry()
-	if err != nil {
-		return nil, err
-	}
+	r := image.NewRegistry()
 
 	ctx, cancel := context.WithCancel(context.Background())
 	c.start = func() {
 		go loop.Loop(ctx, func(ctx context.Context) {
 			start := time.Now()
-			err := c.pruneImages(ctx, r)
+			err := c.pruneImages(ctx, r, image.Registry.Addr)
 			if err != nil {
 				log.Errorf("failed to prune images: %+v", err)
 				return
@@ -108,23 +107,23 @@ func (c *cleanerService) getOlderBuilds(ctx context.Context, appID string, targe
 	return lo.Filter(builds, func(b *domain.Build, _ int) bool { return b.QueuedAt.Before(current.QueuedAt) }), nil
 }
 
-func (c *cleanerService) pruneImages(ctx context.Context, r *registry.Registry) error {
+func (c *cleanerService) pruneImages(ctx context.Context, r *regclient.RegClient, regHost string) error {
 	applications, err := c.appRepo.GetApplications(ctx, domain.GetApplicationCondition{DeployType: optional.From(domain.DeployTypeRuntime)})
 	if err != nil {
 		return err
 	}
 	appsMap := lo.SliceToMap(applications, func(app *domain.Application) (string, *domain.Application) { return app.ID, app })
 
-	imageNames, err := r.Repositories()
+	repos, err := regutil.RepoList(ctx, r, regHost)
 	if err != nil {
 		return errors.Wrap(err, "failed to get image repositories")
 	}
 
-	for _, imageName := range imageNames {
+	for _, imageName := range repos {
 		if !strings.HasPrefix(imageName, c.image.NamePrefix) {
 			continue
 		}
-		err = c.pruneImage(ctx, r, imageName, appsMap)
+		err = c.pruneImage(ctx, r, regHost, imageName, appsMap)
 		if err != nil {
 			log.Errorf("pruning image %v: %+v", imageName, err)
 			// fail-safe for each image
@@ -134,10 +133,10 @@ func (c *cleanerService) pruneImages(ctx context.Context, r *registry.Registry) 
 	return nil
 }
 
-func (c *cleanerService) pruneImage(ctx context.Context, r *registry.Registry, imageName string, appsMap map[string]*domain.Application) error {
+func (c *cleanerService) pruneImage(ctx context.Context, r *regclient.RegClient, regHost string, imageName string, appsMap map[string]*domain.Application) error {
 	appID := strings.TrimPrefix(imageName, c.image.NamePrefix)
 
-	tags, err := r.Tags(imageName)
+	tags, err := regutil.TagList(ctx, r, regHost, imageName)
 	if err != nil {
 		return errors.Wrap(err, "getting tags")
 	}
@@ -156,16 +155,16 @@ func (c *cleanerService) pruneImage(ctx context.Context, r *registry.Registry, i
 		danglingTags = tags
 	}
 	for _, tag := range danglingTags {
-		digest, err := r.ManifestDigest(imageName, tag)
-		if err != nil {
-			return errors.Wrap(err, "getting manifest digest")
-		}
 		// NOTE: needs manual execution of "registry garbage-collect <config> --delete-untagged" in docker registry side
 		// to actually delete the layers
 		// https://docs.docker.com/registry/garbage-collection/
-		err = r.DeleteManifest(imageName, digest)
+		tagRef, err := ref.New(regHost + "/" + imageName + ":" + tag)
 		if err != nil {
-			return errors.Wrap(err, "deleting manifest")
+			return err
+		}
+		err = r.TagDelete(ctx, tagRef)
+		if err != nil {
+			return errors.Wrap(err, "deleting tag")
 		}
 	}
 	return nil
