@@ -1,8 +1,8 @@
-import { styled } from '@macaron-css/solid'
-import { applicationState, ApplicationState } from '/@/libs/application'
-import { JSX } from 'solid-js'
-import { StatusIcon } from '/@/components/StatusIcon'
 import { Application } from '/@/api/neoshowcase/protobuf/gateway_pb'
+import { StatusIcon } from '/@/components/StatusIcon'
+import { ApplicationState, applicationState } from '/@/libs/application'
+import { styled } from '@macaron-css/solid'
+import { JSX } from 'solid-js'
 
 const Container = styled('div', {
   base: {

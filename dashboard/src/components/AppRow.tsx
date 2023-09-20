@@ -1,11 +1,11 @@
-import { Component } from 'solid-js'
-import { styled } from '@macaron-css/solid'
-import { A } from '@solidjs/router'
 import { Application } from '/@/api/neoshowcase/protobuf/gateway_pb'
 import { StatusIcon } from '/@/components/StatusIcon'
 import { applicationState } from '/@/libs/application'
 import { DiffHuman, shortSha } from '/@/libs/format'
 import { vars } from '/@/theme'
+import { styled } from '@macaron-css/solid'
+import { A } from '@solidjs/router'
+import { Component } from 'solid-js'
 
 const BorderContainer = styled('div', {
   base: {

@@ -1,14 +1,14 @@
-import { Header } from '/@/components/Header'
-import { Component, createResource, createSignal, For, JSX, Show } from 'solid-js'
-import { client, handleAPIError } from '/@/libs/api'
-import { styled } from '@macaron-css/solid'
-import { vars } from '/@/theme'
-import { Container, PageTitle } from '/@/libs/layout'
 import { Button } from '/@/components/Button'
-import { InputBar, InputLabel } from '/@/components/Input'
-import toast from 'solid-toast'
-import { style } from '@macaron-css/core'
+import { Header } from '/@/components/Header'
 import { InfoTooltip } from '/@/components/InfoTooltip'
+import { InputBar, InputLabel } from '/@/components/Input'
+import { client, handleAPIError } from '/@/libs/api'
+import { Container, PageTitle } from '/@/libs/layout'
+import { vars } from '/@/theme'
+import { style } from '@macaron-css/core'
+import { styled } from '@macaron-css/solid'
+import { Component, For, JSX, Show, createResource, createSignal } from 'solid-js'
+import toast from 'solid-toast'
 
 // copy from /pages/apps
 // and delete unnecessary styles
@@ -153,13 +153,13 @@ export default () => {
       <form class={CreatingKeyContainerClass} ref={formRef}>
         <InputLabel>SSH公開鍵の追加</InputLabel>
         <InputBar
-          placeholder='ssh-ed25519 AAA...'
-          type='text'
+          placeholder="ssh-ed25519 AAA..."
+          type="text"
           value={input()}
           onInput={(e) => setInput(e.target.value)}
           required
         />
-        <Button color='black1' size='large' width='auto' onclick={createKeyRequest} type='submit'>
+        <Button color="black1" size="large" width="auto" onclick={createKeyRequest} type="submit">
           + SSH公開鍵の追加
         </Button>
       </form>
@@ -175,7 +175,7 @@ export default () => {
           <UserKeysContainer>
             <SidebarTitle>
               登録済みSSH公開鍵
-              <InfoTooltip tooltip='アプリへSSH接続時に使用します' />
+              <InfoTooltip tooltip="アプリへSSH接続時に使用します" />
             </SidebarTitle>
             <Show when={userKeys()} fallback={<SidebarTitle>登録済みSSH公開鍵を読み込み中...</SidebarTitle>}>
               <For each={userKeys()?.keys}>
@@ -186,13 +186,13 @@ export default () => {
                     </div>
                     <FormButton>
                       <Button
-                        color='black1'
-                        size='large'
-                        width='auto'
+                        color="black1"
+                        size="large"
+                        width="auto"
                         onclick={() => {
                           deleteKeyRequest(key.id)
                         }}
-                        type='submit'
+                        type="submit"
                       >
                         削除
                       </Button>
@@ -207,7 +207,7 @@ export default () => {
             <Show
               when={createKeyToggle()}
               fallback={
-                <Button color='black1' size='large' width='auto' onClick={() => setCreateKeyToggle(true)}>
+                <Button color="black1" size="large" width="auto" onClick={() => setCreateKeyToggle(true)}>
                   SSH公開鍵の追加
                 </Button>
               }

@@ -1,6 +1,6 @@
-import { createMemo, createResource } from 'solid-js'
 import { client } from '/@/libs/api'
 import Fuse from 'fuse.js'
+import { createMemo, createResource } from 'solid-js'
 
 export const useBranchesSuggestion = (repoID: () => string, current: () => string): (() => string[]) => {
   const [refs] = createResource(

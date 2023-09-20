@@ -1,18 +1,18 @@
 import { AuthenticationType, CreateWebsiteRequest } from '/@/api/neoshowcase/protobuf/gateway_pb'
-import { Checkbox } from '/@/components/Checkbox'
-import { Button } from '/@/components/Button'
-import { SetStoreFunction } from 'solid-js/store'
-import { For, Show } from 'solid-js'
-import { InputBar, InputLabel } from '/@/components/Input'
 import { FormButton, FormCheckBox, FormSettings, FormSettingsButton, SettingsContainer } from '/@/components/AppsNew'
-import { systemInfo } from '../libs/api'
-import { styled } from '@macaron-css/solid'
-import { vars } from '../theme'
-import { PlainMessage } from '@bufbuild/protobuf'
+import { Button } from '/@/components/Button'
+import { Checkbox } from '/@/components/Checkbox'
 import { InfoTooltip } from '/@/components/InfoTooltip'
+import { InputBar, InputLabel } from '/@/components/Input'
 import { Select, SelectItem } from '/@/components/Select'
-import { FaRegularTrashCan } from 'solid-icons/fa'
+import { PlainMessage } from '@bufbuild/protobuf'
+import { styled } from '@macaron-css/solid'
 import { AiOutlinePlusCircle } from 'solid-icons/ai'
+import { FaRegularTrashCan } from 'solid-icons/fa'
+import { For, Show } from 'solid-js'
+import { SetStoreFunction } from 'solid-js/store'
+import { systemInfo } from '../libs/api'
+import { vars } from '../theme'
 
 const AvailableDomainContainer = styled('div', {
   base: {
@@ -79,28 +79,28 @@ export const WebsiteSetting = (props: WebsiteSettingProps) => {
           />
           <span>://</span>
           <InputBar
-            placeholder='example.trap.show'
+            placeholder="example.trap.show"
             value={props.website.fqdn}
             onInput={(e) => props.setWebsite('fqdn', e.target.value)}
-            width='middle'
-            tooltip='ホスト名'
+            width="middle"
+            tooltip="ホスト名"
           />
           <span>/</span>
           <InputBar
             value={props.website.pathPrefix.slice(1)}
             onInput={(e) => props.setWebsite('pathPrefix', `/${e.target.value}`)}
-            width='short'
-            tooltip='(Advanced) 指定Prefixが付いていたときのみアプリへルーティング'
+            width="short"
+            tooltip="(Advanced) 指定Prefixが付いていたときのみアプリへルーティング"
           />
           <Show when={props.runtime}>
             <span> → </span>
             <InputBar
-              placeholder='80'
-              type='number'
+              placeholder="80"
+              type="number"
               value={props.website.httpPort || ''}
               onChange={(e) => props.setWebsite('httpPort', +e.target.value)}
-              width='tiny'
-              tooltip='アプリのHTTP Port番号'
+              width="tiny"
+              tooltip="アプリのHTTP Port番号"
             />
             <span>/TCP</span>
           </Show>
@@ -118,7 +118,7 @@ export const WebsiteSetting = (props: WebsiteSettingProps) => {
               'SOFT: 部員の場合X-Forwarded-Userをセット',
               'HARD: 部員のみアクセス可能',
             ]}
-            style='left'
+            style="left"
           />
         </InputLabel>
         <Select
@@ -146,7 +146,7 @@ export const WebsiteSetting = (props: WebsiteSettingProps) => {
         </FormCheckBox>
       </div>
       <FormSettingsButton>
-        <Button onclick={props.deleteWebsite} color='black1' size='large' width='auto' type='button'>
+        <Button onclick={props.deleteWebsite} color="black1" size="large" width="auto" type="button">
           <FaRegularTrashCan />
           <span> このURLを削除</span>
         </Button>
@@ -206,10 +206,10 @@ export const WebsiteSettings = (props: WebsiteSettingsProps) => {
       <FormButton>
         <Button
           onclick={() => props.setWebsiteConfigs([...props.websiteConfigs, newWebsite()])}
-          color='black1'
-          size='large'
-          width='auto'
-          type='button'
+          color="black1"
+          size="large"
+          width="auto"
+          type="button"
         >
           <AiOutlinePlusCircle />
           <span> アクセス可能なURLを追加</span>

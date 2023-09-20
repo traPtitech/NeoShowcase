@@ -1,7 +1,30 @@
-import { A, useNavigate, useParams } from '@solidjs/router'
-import { Component, createResource, createSignal, For, onCleanup, Show } from 'solid-js'
-import { availableMetrics, client, handleAPIError, systemInfo } from '/@/libs/api'
+import {
+  ApplicationConfig,
+  Application_ContainerState,
+  DeployType,
+  RuntimeConfig,
+  StaticConfig,
+} from '/@/api/neoshowcase/protobuf/gateway_pb'
+import { AppMetrics } from '/@/components/AppMetrics'
+import { AppNav } from '/@/components/AppNav'
+import { Button } from '/@/components/Button'
+import {
+  Card,
+  CardItem,
+  CardItemContent,
+  CardItemTitle,
+  CardItems,
+  CardRowsContainer,
+  CardTitle,
+  CardsRow,
+} from '/@/components/Card'
+import { Checkbox } from '/@/components/Checkbox'
+import { ContainerLog } from '/@/components/ContainerLog'
 import { Header } from '/@/components/Header'
+import { ModalButtonsContainer, ModalContainer, ModalText } from '/@/components/Modal'
+import { StatusIcon } from '/@/components/StatusIcon'
+import { URLText } from '/@/components/URLText'
+import { availableMetrics, client, handleAPIError, systemInfo } from '/@/libs/api'
 import {
   applicationState,
   buildTypeStr,
@@ -9,39 +32,16 @@ import {
   providerToIcon,
   repositoryURLToProvider,
 } from '/@/libs/application'
-import { StatusIcon } from '/@/components/StatusIcon'
 import { titleCase } from '/@/libs/casing'
-import {
-  Application_ContainerState,
-  ApplicationConfig,
-  DeployType,
-  RuntimeConfig,
-  StaticConfig,
-} from '/@/api/neoshowcase/protobuf/gateway_pb'
 import { DiffHuman, shortSha } from '/@/libs/format'
 import { CenterInline, Container } from '/@/libs/layout'
-import { URLText } from '/@/components/URLText'
-import { Button } from '/@/components/Button'
-import { AppNav } from '/@/components/AppNav'
-import {
-  Card,
-  CardItem,
-  CardItemContent,
-  CardItems,
-  CardItemTitle,
-  CardRowsContainer,
-  CardsRow,
-  CardTitle,
-} from '/@/components/Card'
-import useModal from '/@/libs/useModal'
-import { ModalButtonsContainer, ModalContainer, ModalText } from '/@/components/Modal'
-import toast from 'solid-toast'
-import { styled } from '@macaron-css/solid'
-import { vars } from '/@/theme'
 import { unreachable } from '/@/libs/unreachable'
-import { ContainerLog } from '/@/components/ContainerLog'
-import { Checkbox } from '/@/components/Checkbox'
-import { AppMetrics } from '/@/components/AppMetrics'
+import useModal from '/@/libs/useModal'
+import { vars } from '/@/theme'
+import { styled } from '@macaron-css/solid'
+import { A, useNavigate, useParams } from '@solidjs/router'
+import { Component, For, Show, createResource, createSignal, onCleanup } from 'solid-js'
+import toast from 'solid-toast'
 
 const RuntimeConfigInfo: Component<{ config: RuntimeConfig }> = (props) => {
   return (
@@ -253,20 +253,20 @@ export default () => {
             <Card>
               <CardTitle>Actions</CardTitle>
               <Button
-                color='black1'
-                size='large'
-                width='full'
+                color="black1"
+                size="large"
+                width="full"
                 onclick={refreshRepo}
                 disabled={disableRefresh()}
-                tooltip='最新のコミットを取得します'
+                tooltip="最新のコミットを取得します"
               >
                 Refresh Commit
               </Button>
               <Button
                 onclick={openDeleteAppModal}
-                color='black1'
-                size='large'
-                width='full'
+                color="black1"
+                size="large"
+                width="full"
                 disabled={app().running}
                 tooltip={
                   app().running ? 'アプリケーションが起動しているため削除できません' : 'アプリケーションを削除します'
@@ -281,27 +281,27 @@ export default () => {
                     <div>データベースを利用している場合、中身のデータも削除されます</div>
                   </ModalText>
                   <ModalButtonsContainer>
-                    <Button onclick={closeDeleteAppModal} color='black1' size='large' width='full'>
+                    <Button onclick={closeDeleteAppModal} color="black1" size="large" width="full">
                       キャンセル
                     </Button>
-                    <Button onclick={deleteApp} color='black1' size='large' width='full'>
+                    <Button onclick={deleteApp} color="black1" size="large" width="full">
                       削除
                     </Button>
                   </ModalButtonsContainer>
                 </ModalContainer>
               </DeleteAppModal>
               <Show when={!app().running}>
-                <Button color='black1' size='large' width='full' onclick={startApp}>
+                <Button color="black1" size="large" width="full" onclick={startApp}>
                   Start App
                 </Button>
               </Show>
               <Show when={app().running}>
-                <Button color='black1' size='large' width='full' onclick={startApp}>
+                <Button color="black1" size="large" width="full" onclick={startApp}>
                   Restart App
                 </Button>
               </Show>
               <Show when={app().running}>
-                <Button color='black1' size='large' width='full' onclick={stopApp}>
+                <Button color="black1" size="large" width="full" onclick={stopApp}>
                   Stop App
                 </Button>
               </Show>

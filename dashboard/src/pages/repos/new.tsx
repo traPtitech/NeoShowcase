@@ -1,19 +1,19 @@
-import { JSX, JSXElement, createEffect } from 'solid-js'
-import { createStore } from 'solid-js/store'
-import toast from 'solid-toast'
-import { PlainMessage } from '@bufbuild/protobuf'
-import { styled } from '@macaron-css/solid'
-import { useNavigate } from '@solidjs/router'
 import { CreateRepositoryAuth, CreateRepositoryRequest } from '/@/api/neoshowcase/protobuf/gateway_pb'
 import { Button } from '/@/components/Button'
 import { Header } from '/@/components/Header'
-import { client, handleAPIError } from '/@/libs/api'
-import { Container } from '/@/libs/layout'
-import { vars } from '/@/theme'
-import { extractRepositoryNameFromURL } from '/@/libs/application'
-import { RepositoryAuthSettings } from '/@/components/RepositoryAuthSettings'
 import { InputBar, InputLabel } from '/@/components/Input'
 import { NavContainer, NavTitleContainer } from '/@/components/Nav'
+import { RepositoryAuthSettings } from '/@/components/RepositoryAuthSettings'
+import { client, handleAPIError } from '/@/libs/api'
+import { extractRepositoryNameFromURL } from '/@/libs/application'
+import { Container } from '/@/libs/layout'
+import { vars } from '/@/theme'
+import { PlainMessage } from '@bufbuild/protobuf'
+import { styled } from '@macaron-css/solid'
+import { useNavigate } from '@solidjs/router'
+import { JSX, JSXElement, createEffect } from 'solid-js'
+import { createStore } from 'solid-js/store'
+import toast from 'solid-toast'
 
 // copy from /pages/apps
 // and delete unnecessary styles
@@ -112,23 +112,23 @@ export default () => {
       <ContentContainer>
         <InputFormContainer ref={formContainer}>
           <Form
-            label='URL'
+            label="URL"
             // SSH URLはURLとしては不正なのでtypeを変更
             type={authConfig.auth.case === 'ssh' ? 'text' : 'url'}
-            placeholder='https://example.com/my-app.git'
+            placeholder="https://example.com/my-app.git"
             value={requestConfig.url}
             onInput={(e) => setRequestConfig('url', e.currentTarget.value)}
             required
           />
           <Form
-            label='リポジトリ名'
-            placeholder='my-app'
+            label="リポジトリ名"
+            placeholder="my-app"
             value={requestConfig.name}
             onInput={(e) => setRequestConfig('name', e.currentTarget.value)}
             required
           />
           <RepositoryAuthSettings authConfig={authConfig} setAuthConfig={setAuthConfig} />
-          <Button color='black1' size='large' width='auto' onclick={createRepository} type='submit'>
+          <Button color="black1" size="large" width="auto" onclick={createRepository} type="submit">
             + Create new Repository
           </Button>
         </InputFormContainer>

@@ -1,6 +1,6 @@
-import { styled } from '@macaron-css/solid'
-import { JSX, Component, splitProps } from 'solid-js'
 import { User } from '/@/api/neoshowcase/protobuf/gateway_pb'
+import { styled } from '@macaron-css/solid'
+import { Component, JSX, splitProps } from 'solid-js'
 
 const UserAvatarImg = styled('img', {
   base: {

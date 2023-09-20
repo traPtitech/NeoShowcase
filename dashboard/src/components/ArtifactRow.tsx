@@ -1,11 +1,11 @@
-import { Component, Show } from 'solid-js'
-import { styled } from '@macaron-css/solid'
 import { Artifact } from '/@/api/neoshowcase/protobuf/gateway_pb'
-import { DiffHuman, formatBytes } from '/@/libs/format'
-import { vars } from '/@/theme'
 import { IconButton } from '/@/components/IconButton'
 import { client, handleAPIError } from '/@/libs/api'
+import { DiffHuman, formatBytes } from '/@/libs/format'
+import { vars } from '/@/theme'
+import { styled } from '@macaron-css/solid'
 import { AiOutlineDownload } from 'solid-icons/ai'
+import { Component, Show } from 'solid-js'
 
 const BorderContainer = styled('div', {
   base: {
@@ -99,7 +99,7 @@ export const ArtifactRow: Component<ArtifactRowProps> = (props) => {
         <Show
           when={!props.artifact.deletedAt.valid}
           fallback={
-            <IconButton tooltip='削除されたためダウンロードできません' disabled>
+            <IconButton tooltip="削除されたためダウンロードできません" disabled>
               <AiOutlineDownload size={24} color={vars.text.black2} />
             </IconButton>
           }

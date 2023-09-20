@@ -1,7 +1,7 @@
-import { ParentComponent } from 'solid-js'
 import { vars } from '/@/theme'
-import { ImCheckboxChecked, ImCheckboxUnchecked } from 'solid-icons/im'
 import { styled } from '@macaron-css/solid'
+import { ImCheckboxChecked, ImCheckboxUnchecked } from 'solid-icons/im'
+import { ParentComponent } from 'solid-js'
 
 const Container = styled('div', {
   base: {

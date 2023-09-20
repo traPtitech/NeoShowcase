@@ -1,9 +1,9 @@
-import { Component } from 'solid-js'
 import { Repository } from '/@/api/neoshowcase/protobuf/gateway_pb'
-import { CenterInline } from '../libs/layout'
-import { providerToIcon, repositoryURLToProvider } from '../libs/application'
-import { NavAnchorActiveStyle, NavAnchorStyle, NavButtonsContainer, NavContainer, NavTitleContainer } from './Nav'
 import { A } from '@solidjs/router'
+import { Component } from 'solid-js'
+import { providerToIcon, repositoryURLToProvider } from '../libs/application'
+import { CenterInline } from '../libs/layout'
+import { NavAnchorActiveStyle, NavAnchorStyle, NavButtonsContainer, NavContainer, NavTitleContainer } from './Nav'
 
 export interface RepositoryNavProps {
   repository: Repository

@@ -1,28 +1,28 @@
-import { useNavigate, useParams } from '@solidjs/router'
-import { createEffect, createResource, createSignal, For, onCleanup, Ref } from 'solid-js'
-import { client } from '/@/libs/api'
-import { Container } from '/@/libs/layout'
-import { Header } from '/@/components/Header'
-import { Show } from 'solid-js'
+import { Build_BuildStatus } from '/@/api/neoshowcase/protobuf/gateway_pb'
 import { AppNav } from '/@/components/AppNav'
+import { ArtifactRow } from '/@/components/ArtifactRow'
+import { BuildLog } from '/@/components/BuildLog'
+import { BuildStatusIcon } from '/@/components/BuildStatusIcon'
+import { Button } from '/@/components/Button'
 import {
   Card,
   CardItem,
   CardItemContent,
-  CardItems,
   CardItemTitle,
+  CardItems,
   CardRowsContainer,
-  CardsRow,
   CardTitle,
+  CardsRow,
 } from '/@/components/Card'
-import { Button } from '/@/components/Button'
-import { DiffHuman, durationHuman, shortSha } from '/@/libs/format'
-import { BuildStatusIcon } from '/@/components/BuildStatusIcon'
+import { Header } from '/@/components/Header'
+import { client } from '/@/libs/api'
 import { buildStatusStr } from '/@/libs/application'
-import { Build_BuildStatus } from '/@/api/neoshowcase/protobuf/gateway_pb'
+import { DiffHuman, durationHuman, shortSha } from '/@/libs/format'
+import { Container } from '/@/libs/layout'
 import { styled } from '@macaron-css/solid'
-import { ArtifactRow } from '/@/components/ArtifactRow'
-import { BuildLog } from '/@/components/BuildLog'
+import { useNavigate, useParams } from '@solidjs/router'
+import { For, Ref, createEffect, createResource, createSignal, onCleanup } from 'solid-js'
+import { Show } from 'solid-js'
 
 const ArtifactsContainer = styled('div', {
   base: {
@@ -70,9 +70,9 @@ export default () => {
             <Card>
               <CardTitle>Actions</CardTitle>
               <Button
-                color='black1'
-                size='large'
-                width='full'
+                color="black1"
+                size="large"
+                width="full"
                 onclick={retryBuild}
                 disabled={build().retriable}
                 tooltip={build().retriable ? '既に再ビルドが行われています' : '同じコミットで再ビルドします'}
@@ -80,7 +80,7 @@ export default () => {
                 Retry build
               </Button>
               <Show when={build().status === Build_BuildStatus.BUILDING}>
-                <Button color='black1' size='large' width='full' onclick={cancelBuild}>
+                <Button color="black1" size="large" width="full" onclick={cancelBuild}>
                   Cancel build
                 </Button>
               </Show>

@@ -1,29 +1,29 @@
-import { useParams } from '@solidjs/router'
-import { Component, createEffect, createMemo, createResource, createSignal, For, JSX, Show } from 'solid-js'
-import { client, handleAPIError } from '/@/libs/api'
-import { Container } from '/@/libs/layout'
-import { Header } from '/@/components/Header'
-import { AppNav } from '/@/components/AppNav'
-import { Button } from '/@/components/Button'
-import { styled } from '@macaron-css/solid'
-import { vars } from '/@/theme'
-import { createStore } from 'solid-js/store'
 import { ApplicationEnvVar, DeployType, UpdateApplicationRequest, User } from '/@/api/neoshowcase/protobuf/gateway_pb'
-import { BuildConfigs } from '/@/components/BuildConfigs'
-import toast from 'solid-toast'
-import { WebsiteSettings } from '/@/components/WebsiteSettings'
-import { InputBar, InputLabel } from '/@/components/Input'
+import { AppNav } from '/@/components/AppNav'
 import { FormTextBig } from '/@/components/AppsNew'
-import { PortPublicationSettings } from '/@/components/PortPublications'
-import { userFromId, users } from '/@/libs/useAllUsers'
-import { UserSearch } from '/@/components/UserSearch'
-import useModal from '/@/libs/useModal'
-import { style } from '@macaron-css/core'
-import { ModalButtonsContainer, ModalContainer, ModalText } from '/@/components/Modal'
-import { PlainMessage } from '@bufbuild/protobuf'
-import { InputSuggestion } from '/@/components/InputSuggestion'
-import { useBranchesSuggestion } from '/@/libs/branchesSuggestion'
+import { BuildConfigs } from '/@/components/BuildConfigs'
+import { Button } from '/@/components/Button'
+import { Header } from '/@/components/Header'
 import { InfoTooltip } from '/@/components/InfoTooltip'
+import { InputBar, InputLabel } from '/@/components/Input'
+import { InputSuggestion } from '/@/components/InputSuggestion'
+import { ModalButtonsContainer, ModalContainer, ModalText } from '/@/components/Modal'
+import { PortPublicationSettings } from '/@/components/PortPublications'
+import { UserSearch } from '/@/components/UserSearch'
+import { WebsiteSettings } from '/@/components/WebsiteSettings'
+import { client, handleAPIError } from '/@/libs/api'
+import { useBranchesSuggestion } from '/@/libs/branchesSuggestion'
+import { Container } from '/@/libs/layout'
+import { userFromId, users } from '/@/libs/useAllUsers'
+import useModal from '/@/libs/useModal'
+import { vars } from '/@/theme'
+import { PlainMessage } from '@bufbuild/protobuf'
+import { style } from '@macaron-css/core'
+import { styled } from '@macaron-css/solid'
+import { useParams } from '@solidjs/router'
+import { Component, For, JSX, Show, createEffect, createMemo, createResource, createSignal } from 'solid-js'
+import { createStore } from 'solid-js/store'
+import toast from 'solid-toast'
 
 const ContentContainer = styled('div', {
   base: {
@@ -165,11 +165,11 @@ export default () => {
     return (
       <form ref={formContainer}>
         <SettingFieldSet>
-          <FormTextBig id='general-settings'>General Settings</FormTextBig>
+          <FormTextBig id="general-settings">General Settings</FormTextBig>
           <div>
             <InputLabel>Application Name</InputLabel>
             <InputBar
-              placeholder='my-app'
+              placeholder="my-app"
               value={generalConfig.name}
               onChange={(e) => setGeneralConfig('name', e.currentTarget.value)}
               required
@@ -181,7 +181,7 @@ export default () => {
               <InfoTooltip tooltip={['リポジトリを移管する場合IDを変更']} />
             </InputLabel>
             <InputBar
-              placeholder='my-app'
+              placeholder="my-app"
               value={generalConfig.repositoryId}
               onChange={(e) => setGeneralConfig('repositoryId', e.currentTarget.value)}
               required
@@ -195,7 +195,7 @@ export default () => {
             <InputSuggestion suggestions={branchesSuggestion()} onSetSuggestion={(b) => setGeneralConfig('refName', b)}>
               {(onFocus) => (
                 <InputBar
-                  placeholder='main'
+                  placeholder="main"
                   value={generalConfig.refName}
                   onInput={(e) => setGeneralConfig('refName', e.target.value)}
                   onFocus={onFocus}
@@ -204,7 +204,7 @@ export default () => {
               )}
             </InputSuggestion>
           </div>
-          <Button color='black1' size='large' width='auto' onclick={updateGeneralSettings} type='submit'>
+          <Button color="black1" size="large" width="auto" onclick={updateGeneralSettings} type="submit">
             Save
           </Button>
         </SettingFieldSet>
@@ -233,9 +233,9 @@ export default () => {
 
     return (
       <SettingFieldSet>
-        <FormTextBig id='build-settings'>Build Settings</FormTextBig>
+        <FormTextBig id="build-settings">Build Settings</FormTextBig>
         <BuildConfigs buildConfig={config} setBuildConfig={setConfig} />
-        <Button color='black1' size='large' width='auto' onclick={updateBuildSettings} type='submit'>
+        <Button color="black1" size="large" width="auto" onclick={updateBuildSettings} type="submit">
           Save
         </Button>
       </SettingFieldSet>
@@ -256,7 +256,7 @@ export default () => {
 
     return (
       <SettingFieldSet>
-        <FormTextBig id='website-settings'>
+        <FormTextBig id="website-settings">
           Website Settings
           <InfoTooltip tooltip={['アプリへアクセスするURLの設定', '(複数設定可能)']} />
         </FormTextBig>
@@ -265,7 +265,7 @@ export default () => {
           websiteConfigs={websites}
           setWebsiteConfigs={setWebsites}
         />
-        <Button color='black1' size='large' width='auto' onclick={updateWebsites} type='submit'>
+        <Button color="black1" size="large" width="auto" onclick={updateWebsites} type="submit">
           Save
         </Button>
       </SettingFieldSet>
@@ -286,12 +286,12 @@ export default () => {
 
     return (
       <SettingFieldSet>
-        <FormTextBig id='port-settings'>
+        <FormTextBig id="port-settings">
           Port Forwarding
           <InfoTooltip tooltip={['(Advanced) TCP/UDPポート公開設定', '(複数設定可能)']} />
         </FormTextBig>
         <PortPublicationSettings ports={ports} setPorts={setPorts} />
-        <Button color='black1' size='large' width='auto' onclick={updatePortPublications} type='submit'>
+        <Button color="black1" size="large" width="auto" onclick={updatePortPublications} type="submit">
           Save
         </Button>
       </SettingFieldSet>
@@ -319,7 +319,7 @@ export default () => {
     return (
       <>
         <SettingFieldSet>
-          <FormTextBig id='owner-settings'>
+          <FormTextBig id="owner-settings">
             Owners
             <InfoTooltip
               tooltip={[
@@ -329,15 +329,15 @@ export default () => {
                 '環境変数を閲覧',
                 'ビルドログを閲覧',
               ]}
-              style='bullets-with-title'
+              style="bullets-with-title"
             />
           </FormTextBig>
-          <Button color='black1' size='large' width='auto' onclick={open}>
+          <Button color="black1" size="large" width="auto" onclick={open}>
             アプリオーナーを追加する
           </Button>
           <UserSearch users={app().ownerIds.map((userId) => userFromId(userId))}>
             {(user) => (
-              <Button color='black1' size='large' width='auto' onclick={() => handleDeleteOwner(user)}>
+              <Button color="black1" size="large" width="auto" onclick={() => handleDeleteOwner(user)}>
                 削除
               </Button>
             )}
@@ -346,7 +346,7 @@ export default () => {
         <Modal>
           <UserSearch users={nonOwnerUsers()}>
             {(user) => (
-              <Button color='black1' size='large' width='auto' onclick={() => handleAddOwner(user)}>
+              <Button color="black1" size="large" width="auto" onclick={() => handleAddOwner(user)}>
                 追加
               </Button>
             )}
@@ -414,10 +414,10 @@ export default () => {
         <form class={EnvVarContainerClass} ref={formRef}>
           <EnvVarKeyCode>{props.envVar.key}</EnvVarKeyCode>
           <InputBar
-            type='text'
+            type="text"
             disabled={!isEditing()}
             required
-            placeholder='VALUE'
+            placeholder="VALUE"
             ref={valueInputRef}
             value={props.envVar.value}
           />
@@ -425,16 +425,16 @@ export default () => {
             <Show
               when={!isEditing()}
               fallback={
-                <Button color='black1' size='large' width='full' type='submit' onclick={handleUpdateEnvVar}>
+                <Button color="black1" size="large" width="full" type="submit" onclick={handleUpdateEnvVar}>
                   Save
                 </Button>
               }
             >
               <Button
-                color='black1'
-                size='large'
-                width='full'
-                type='button'
+                color="black1"
+                size="large"
+                width="full"
+                type="button"
                 onclick={() => setIsEditing(true)}
                 disabled={props.envVar.system}
                 tooltip={props.envVar.system && 'システム環境変数は編集できません'}
@@ -442,10 +442,10 @@ export default () => {
                 Edit
               </Button>
               <Button
-                color='black1'
-                size='large'
-                width='full'
-                type='button'
+                color="black1"
+                size="large"
+                width="full"
+                type="button"
                 onclick={openDeleteEnvVarModal}
                 disabled={props.envVar.system}
                 tooltip={props.envVar.system && 'システム環境変数は削除できません'}
@@ -456,10 +456,10 @@ export default () => {
                 <ModalContainer>
                   <ModalText>本当に削除しますか?</ModalText>
                   <ModalButtonsContainer>
-                    <Button onclick={closeDeleteEnvVarModal} color='black1' size='large' width='full'>
+                    <Button onclick={closeDeleteEnvVarModal} color="black1" size="large" width="full">
                       キャンセル
                     </Button>
-                    <Button onclick={handleDeleteEnvVar} color='black1' size='large' width='full'>
+                    <Button onclick={handleDeleteEnvVar} color="black1" size="large" width="full">
                       削除
                     </Button>
                   </ModalButtonsContainer>
@@ -502,9 +502,9 @@ export default () => {
 
       return (
         <form class={EnvVarContainerClass} ref={formRef}>
-          <InputBar type='text' required placeholder='KEY' ref={keyInputRef} />
-          <InputBar type='text' required placeholder='VALUE' ref={valueInputRef} />
-          <Button color='black1' size='large' width='full' type='submit' onclick={handleAddEnvVar}>
+          <InputBar type="text" required placeholder="KEY" ref={keyInputRef} />
+          <InputBar type="text" required placeholder="VALUE" ref={valueInputRef} />
+          <Button color="black1" size="large" width="full" type="submit" onclick={handleAddEnvVar}>
             Add
           </Button>
         </form>
@@ -513,7 +513,7 @@ export default () => {
 
     return (
       <SettingFieldSet>
-        <FormTextBig id='env-var-settings'>
+        <FormTextBig id="env-var-settings">
           Environment Variables
           <InfoTooltip tooltip={['ビルド時と実行時の両方に渡されます']} />
         </FormTextBig>
@@ -544,14 +544,14 @@ export default () => {
           <div>
             <SidebarContainer>
               <SidebarOptions>
-                <SidebarNavAnchor href='#general-settings'>General</SidebarNavAnchor>
-                <SidebarNavAnchor href='#build-settings'>Build</SidebarNavAnchor>
-                <SidebarNavAnchor href='#website-settings'>Website</SidebarNavAnchor>
+                <SidebarNavAnchor href="#general-settings">General</SidebarNavAnchor>
+                <SidebarNavAnchor href="#build-settings">Build</SidebarNavAnchor>
+                <SidebarNavAnchor href="#website-settings">Website</SidebarNavAnchor>
                 <Show when={app().deployType === DeployType.RUNTIME}>
-                  <SidebarNavAnchor href='#port-settings'>Port Forwarding</SidebarNavAnchor>
+                  <SidebarNavAnchor href="#port-settings">Port Forwarding</SidebarNavAnchor>
                 </Show>
-                <SidebarNavAnchor href='#owner-settings'>Owner</SidebarNavAnchor>
-                <SidebarNavAnchor href='#env-var-settings'>Environment Variable</SidebarNavAnchor>
+                <SidebarNavAnchor href="#owner-settings">Owner</SidebarNavAnchor>
+                <SidebarNavAnchor href="#env-var-settings">Environment Variable</SidebarNavAnchor>
               </SidebarOptions>
             </SidebarContainer>
           </div>

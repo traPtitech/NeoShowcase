@@ -1,6 +1,6 @@
+import { style } from '@macaron-css/core'
 import { styled } from '@macaron-css/solid'
 import { vars } from '../theme'
-import { style } from '@macaron-css/core'
 
 export const NavContainer = styled('div', {
   base: {

@@ -1,10 +1,10 @@
-import { Component, createEffect, createResource, createSignal, onCleanup, Ref, Show } from 'solid-js'
+import { LogContainer } from '/@/components/Log'
 import { client } from '/@/libs/api'
 import { concatBuffers, toUTF8WithAnsi } from '/@/libs/buffers'
-import { Code, ConnectError } from '@bufbuild/connect'
-import { sleep } from '/@/libs/sleep'
-import { LogContainer } from '/@/components/Log'
 import { isScrolledToBottom } from '/@/libs/scroll'
+import { sleep } from '/@/libs/sleep'
+import { Code, ConnectError } from '@bufbuild/connect'
+import { Component, Ref, Show, createEffect, createResource, createSignal, onCleanup } from 'solid-js'
 
 export interface BuildLogProps {
   buildID: string

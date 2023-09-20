@@ -1,10 +1,10 @@
+import { User } from '/@/api/neoshowcase/protobuf/gateway_pb'
+import { InputBar } from '/@/components/Input'
+import UserAvatar from '/@/components/UserAvatar'
+import { vars } from '/@/theme'
 import { styled } from '@macaron-css/solid'
 import Fuse from 'fuse.js'
 import { FlowComponent, For, JSX, Show, createMemo, createSignal } from 'solid-js'
-import { User } from '/@/api/neoshowcase/protobuf/gateway_pb'
-import { vars } from '/@/theme'
-import { InputBar } from '/@/components/Input'
-import UserAvatar from '/@/components/UserAvatar'
 
 const UserSearchContainer = styled('div', {
   base: {
@@ -82,10 +82,10 @@ export const UserSearch: FlowComponent<
   return (
     <UserSearchContainer>
       <InputBar
-        type='text'
+        type="text"
         value={userSearchQuery()}
         onInput={(e) => setUserSearchQuery(e.target.value)}
-        placeholder='search users...'
+        placeholder="search users..."
       />
       <UsersList>
         <For each={userSearchResults()}>

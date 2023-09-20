@@ -1,5 +1,5 @@
-import { styled } from '@macaron-css/solid'
 import { vars } from '/@/theme'
+import { styled } from '@macaron-css/solid'
 import { JSX, ParentComponent, splitProps } from 'solid-js'
 import { tippy as tippyDir } from 'solid-tippy'
 

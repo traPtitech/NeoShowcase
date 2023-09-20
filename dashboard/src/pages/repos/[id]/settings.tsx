@@ -1,29 +1,29 @@
-import { useParams } from '@solidjs/router'
-import { Component, createEffect, createMemo, createResource, createSignal, JSX, Show } from 'solid-js'
-import { client, handleAPIError } from '/@/libs/api'
-import { Container } from '/@/libs/layout'
-import { Header } from '/@/components/Header'
-import { Button } from '/@/components/Button'
-import { styled } from '@macaron-css/solid'
-import { vars } from '/@/theme'
-import { createStore } from 'solid-js/store'
 import {
   CreateRepositoryAuth,
   Repository_AuthMethod,
   UpdateRepositoryRequest,
   User,
 } from '/@/api/neoshowcase/protobuf/gateway_pb'
-import toast from 'solid-toast'
-import { InputBar, InputLabel } from '/@/components/Input'
 import { FormTextBig } from '/@/components/AppsNew'
-import { userFromId, users } from '/@/libs/useAllUsers'
-import { UserSearch } from '/@/components/UserSearch'
-import useModal from '/@/libs/useModal'
-import RepositoryNav from '/@/components/RepositoryNav'
-import { extractRepositoryNameFromURL } from '/@/libs/application'
-import { RepositoryAuthSettings } from '/@/components/RepositoryAuthSettings'
-import { PartialMessage, PlainMessage } from '@bufbuild/protobuf'
+import { Button } from '/@/components/Button'
+import { Header } from '/@/components/Header'
 import { InfoTooltip } from '/@/components/InfoTooltip'
+import { InputBar, InputLabel } from '/@/components/Input'
+import { RepositoryAuthSettings } from '/@/components/RepositoryAuthSettings'
+import RepositoryNav from '/@/components/RepositoryNav'
+import { UserSearch } from '/@/components/UserSearch'
+import { client, handleAPIError } from '/@/libs/api'
+import { extractRepositoryNameFromURL } from '/@/libs/application'
+import { Container } from '/@/libs/layout'
+import { userFromId, users } from '/@/libs/useAllUsers'
+import useModal from '/@/libs/useModal'
+import { vars } from '/@/theme'
+import { PartialMessage, PlainMessage } from '@bufbuild/protobuf'
+import { styled } from '@macaron-css/solid'
+import { useParams } from '@solidjs/router'
+import { Component, JSX, Show, createEffect, createMemo, createResource, createSignal } from 'solid-js'
+import { createStore } from 'solid-js/store'
+import toast from 'solid-toast'
 
 const ContentContainer = styled('div', {
   base: {
@@ -143,11 +143,11 @@ export default () => {
     return (
       <form ref={formContainer}>
         <SettingFieldSet>
-          <FormTextBig id='general-settings'>General Settings</FormTextBig>
+          <FormTextBig id="general-settings">General Settings</FormTextBig>
           <div>
             <InputLabel>Repository Name</InputLabel>
             <InputBar
-              placeholder='my-app'
+              placeholder="my-app"
               value={generalConfig.name}
               onChange={(e) => setGeneralConfig('name', e.currentTarget.value)}
               required
@@ -158,7 +158,7 @@ export default () => {
             <InputBar
               // SSH URLはURLとしては不正なのでtypeを変更
               type={authConfig.auth.case === 'ssh' ? 'text' : 'url'}
-              placeholder='https://example.com/my-app.git'
+              placeholder="https://example.com/my-app.git"
               value={generalConfig.url}
               onChange={(e) => setGeneralConfig('url', e.currentTarget.value)}
               required
@@ -167,19 +167,19 @@ export default () => {
           <Show
             when={!updateAuthConfig()}
             fallback={
-              <Button color='black1' size='large' width='auto' onclick={() => setUpdateAuthConfig(false)}>
+              <Button color="black1" size="large" width="auto" onclick={() => setUpdateAuthConfig(false)}>
                 認証方法の更新をキャンセルする
               </Button>
             }
           >
-            <Button color='black1' size='large' width='auto' onclick={() => setUpdateAuthConfig(true)}>
+            <Button color="black1" size="large" width="auto" onclick={() => setUpdateAuthConfig(true)}>
               認証方法を更新する
             </Button>
           </Show>
           <Show when={updateAuthConfig()}>
             <RepositoryAuthSettings authConfig={authConfig} setAuthConfig={setAuthConfig} />
           </Show>
-          <Button color='black1' size='large' width='auto' onclick={onClickSave} type='submit'>
+          <Button color="black1" size="large" width="auto" onclick={onClickSave} type="submit">
             Save
           </Button>
         </SettingFieldSet>
@@ -230,22 +230,22 @@ export default () => {
     return (
       <>
         <SettingFieldSet>
-          <FormTextBig id='owner-settings'>
+          <FormTextBig id="owner-settings">
             Owners
             <InfoTooltip
               tooltip={['オーナーは以下が可能になります', 'リポジトリの設定を変更']}
-              style='bullets-with-title'
+              style="bullets-with-title"
             />
           </FormTextBig>
-          <Button color='black1' size='large' width='auto' onclick={open}>
+          <Button color="black1" size="large" width="auto" onclick={open}>
             リポジトリオーナーを追加する
           </Button>
           <UserSearch users={repo().ownerIds.map((userId) => userFromId(userId))}>
             {(user) => (
               <Button
-                color='black1'
-                size='large'
-                width='auto'
+                color="black1"
+                size="large"
+                width="auto"
                 onclick={() => {
                   handleDeleteOwner(user)
                 }}
@@ -259,9 +259,9 @@ export default () => {
           <UserSearch users={nonOwnerUsers()}>
             {(user) => (
               <Button
-                color='black1'
-                size='large'
-                width='auto'
+                color="black1"
+                size="large"
+                width="auto"
                 onclick={() => {
                   handleAddOwner(user)
                 }}
@@ -284,8 +284,8 @@ export default () => {
           <div>
             <SidebarContainer>
               <SidebarOptions>
-                <SidebarNavAnchor href='#general-settings'>General</SidebarNavAnchor>
-                <SidebarNavAnchor href='#owner-settings'>Owner</SidebarNavAnchor>
+                <SidebarNavAnchor href="#general-settings">General</SidebarNavAnchor>
+                <SidebarNavAnchor href="#owner-settings">Owner</SidebarNavAnchor>
               </SidebarOptions>
             </SidebarContainer>
           </div>
