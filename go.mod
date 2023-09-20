@@ -27,6 +27,7 @@ require (
 	github.com/ncw/swift v1.0.53
 	github.com/prometheus/client_golang v1.16.0
 	github.com/prometheus/common v0.44.0
+	github.com/regclient/regclient v0.5.1
 	github.com/samber/lo v1.38.1
 	github.com/shiguredo/websocket v1.6.1
 	github.com/sirupsen/logrus v1.9.3
@@ -53,8 +54,6 @@ require (
 	k8s.io/apimachinery v0.28.1
 	k8s.io/client-go v0.28.1
 )
-
-require github.com/regclient/regclient v0.5.1
 
 require (
 	dario.cat/mergo v1.0.0 // indirect
