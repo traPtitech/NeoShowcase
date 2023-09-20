@@ -8,6 +8,7 @@ import (
 	"github.com/friendsofgo/errors"
 	buildkit "github.com/moby/buildkit/client"
 	"github.com/moby/buildkit/client/llb"
+	"github.com/regclient/regclient/types/ref"
 	"github.com/samber/lo"
 
 	"github.com/traPtitech/neoshowcase/pkg/domain"
@@ -80,13 +81,12 @@ func (s *builderService) buildStaticBuildpackExtract(
 }
 
 func (s *builderService) buildStaticBuildpackCleanup(
-	_ context.Context,
+	ctx context.Context,
 	st *state,
 ) error {
-	imageName := s.config.PartialTmpImageName(st.app.ID)
-	digest, err := s.registry.ManifestDigest(imageName, st.build.ID)
+	tagRef, err := ref.New(s.config.TmpImageName(st.app.ID) + ":" + st.build.ID)
 	if err != nil {
 		return err
 	}
-	return s.registry.DeleteManifest(imageName, digest)
+	return s.registry.TagDelete(ctx, tagRef)
 }

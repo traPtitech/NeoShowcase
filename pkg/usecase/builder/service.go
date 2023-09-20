@@ -6,8 +6,8 @@ import (
 	"time"
 
 	"github.com/go-git/go-git/v5/plumbing/transport/ssh"
-	"github.com/heroku/docker-registry-client/registry"
 	buildkit "github.com/moby/buildkit/client"
+	"github.com/regclient/regclient"
 	"github.com/samber/lo"
 	log "github.com/sirupsen/logrus"
 
@@ -31,7 +31,7 @@ type builderService struct {
 	storage   domain.Storage
 	pubKey    *ssh.PublicKeys
 	config    builder.ImageConfig
-	registry  *registry.Registry
+	registry  *regclient.RegClient
 
 	appRepo      domain.ApplicationRepository
 	artifactRepo domain.ArtifactRepository
@@ -59,10 +59,7 @@ func NewService(
 	envRepo domain.EnvironmentRepository,
 	gitRepo domain.GitRepositoryRepository,
 ) (Service, error) {
-	r, err := config.NewRegistry()
-	if err != nil {
-		return nil, err
-	}
+	r := config.NewRegistry()
 	return &builderService{
 		client:       client,
 		buildkit:     buildkit,

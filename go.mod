@@ -20,7 +20,6 @@ require (
 	github.com/golang/mock v1.6.0
 	github.com/google/shlex v0.0.0-20191202100458-e7afc7fbc510
 	github.com/google/wire v0.5.0
-	github.com/heroku/docker-registry-client v0.0.0-20211012143308-9463674c8930
 	github.com/labstack/echo/v4 v4.11.1
 	github.com/lukesampson/figlet v0.0.0-20190211215653-8a3ef4a6ac42
 	github.com/moby/buildkit v0.11.6 // NOTE: Requires github.com/docker/docker master tag (v25) as of v0.12.2, making it hard to upgrade
@@ -28,6 +27,7 @@ require (
 	github.com/ncw/swift v1.0.53
 	github.com/prometheus/client_golang v1.16.0
 	github.com/prometheus/common v0.44.0
+	github.com/regclient/regclient v0.5.1
 	github.com/samber/lo v1.38.1
 	github.com/shiguredo/websocket v1.6.1
 	github.com/sirupsen/logrus v1.9.3
@@ -210,6 +210,3 @@ replace (
 
 // github.com/cert-manager/cert-manager
 replace github.com/Venafi/vcert/v4 => github.com/jetstack/vcert/v4 v4.9.6-0.20230127103832-3aa3dfd6613d
-
-// https://github.com/heroku/docker-registry-client/pull/79
-replace github.com/heroku/docker-registry-client => github.com/traPtitech/docker-registry-client v0.0.4

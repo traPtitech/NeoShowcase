@@ -1,7 +1,8 @@
 package builder
 
 import (
-	"github.com/heroku/docker-registry-client/registry"
+	"github.com/regclient/regclient"
+	"github.com/regclient/regclient/config"
 )
 
 type ImageConfig struct {
@@ -15,8 +16,19 @@ type ImageConfig struct {
 	TmpNamePrefix string `mapstructure:"tmpNamePrefix" yaml:"tmpNamePrefix"`
 }
 
-func (c *ImageConfig) NewRegistry() (*registry.Registry, error) {
-	return registry.New(c.Registry.Scheme+"://"+c.Registry.Addr, c.Registry.Username, c.Registry.Password)
+func (c *ImageConfig) NewRegistry() *regclient.RegClient {
+	var opts []regclient.Opt
+
+	host := config.HostNewName(c.Registry.Scheme + "://" + c.Registry.Addr)
+	if c.Registry.Username != "" {
+		host.User = c.Registry.Username
+	}
+	if c.Registry.Password != "" {
+		host.Pass = c.Registry.Password
+	}
+	opts = append(opts, regclient.WithConfigHost(*host))
+
+	return regclient.New(opts...)
 }
 
 func (c *ImageConfig) ImageName(appID string) string {
@@ -25,8 +37,4 @@ func (c *ImageConfig) ImageName(appID string) string {
 
 func (c *ImageConfig) TmpImageName(appID string) string {
 	return c.Registry.Addr + "/" + c.TmpNamePrefix + appID
-}
-
-func (c *ImageConfig) PartialTmpImageName(appID string) string {
-	return c.TmpNamePrefix + appID
 }
