@@ -113,7 +113,7 @@ func (b *k8sBackend) runtimeSpec(app *domain.RuntimeDesiredState) (*appsv1.State
 					AutomountServiceAccountToken: lo.ToPtr(false),
 					EnableServiceLinks:           lo.ToPtr(false),
 					Containers:                   []v1.Container{cont},
-					NodeSelector:                 b.config.podSchedulingNodeSelector(),
+					NodeSelector:                 b.config.podSchedulingNodeSelector(app.App.ID),
 					Tolerations:                  b.config.podSchedulingTolerations(),
 				},
 			},

@@ -1,6 +1,8 @@
 package k8simpl
 
 import (
+	"strconv"
+
 	"github.com/friendsofgo/errors"
 	"github.com/samber/lo"
 	traefikv1alpha1 "github.com/traefik/traefik/v2/pkg/provider/kubernetes/crd/traefikio/v1alpha1"
@@ -9,12 +11,15 @@ import (
 
 	"github.com/traPtitech/neoshowcase/pkg/domain"
 	"github.com/traPtitech/neoshowcase/pkg/util/ds"
+	"github.com/traPtitech/neoshowcase/pkg/util/hash"
 	"github.com/traPtitech/neoshowcase/pkg/util/mapper"
 )
 
 const (
 	tlsTypeTraefik     = "traefik"
 	tlsTypeCertManager = "cert-manager"
+
+	nodeSelectorKey = "kubernetes.io/hostname"
 )
 
 type middleware struct {
@@ -123,6 +128,7 @@ type Config struct {
 	Scheduling      struct {
 		NodeSelector []*nodeSelector `mapstructure:"nodeSelector" yaml:"nodeSelector"`
 		Tolerations  []*toleration   `mapstructure:"tolerations" yaml:"tolerations"`
+		ForceHosts   []string        `mapstructure:"forceHosts" yaml:"forceHosts"`
 	} `mapstructure:"scheduling" yaml:"scheduling"`
 	Resources struct {
 		Requests struct {
@@ -142,13 +148,25 @@ func (c *Config) labels() map[string]string {
 	})
 }
 
-func (c *Config) podSchedulingNodeSelector() map[string]string {
+func (c *Config) podSchedulingNodeSelector(appID string) map[string]string {
 	if len(c.Scheduling.NodeSelector) == 0 {
 		return nil
 	}
-	return lo.SliceToMap(c.Scheduling.NodeSelector, func(ns *nodeSelector) (string, string) {
+	ns := lo.SliceToMap(c.Scheduling.NodeSelector, func(ns *nodeSelector) (string, string) {
 		return ns.Key, ns.Value
 	})
+	host := c.selectNode(appID)
+	return ds.MergeMap(ns, host)
+}
+
+func (c *Config) selectNode(appID string) map[string]string {
+	if len(c.Scheduling.ForceHosts) == 0 {
+		return nil
+	}
+	// NOTE: XXH3Hex always returns a 64-bit hex string
+	hex, _ := strconv.ParseUint(hash.XXH3Hex([]byte(appID)), 16, 64)
+	host := c.Scheduling.ForceHosts[hex%uint64(len(c.Scheduling.ForceHosts))]
+	return map[string]string{nodeSelectorKey: host}
 }
 
 var tolerationOperatorMapper = mapper.MustNewValueMapper(map[string]v1.TolerationOperator{
