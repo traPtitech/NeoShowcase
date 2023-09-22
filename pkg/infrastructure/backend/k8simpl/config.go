@@ -19,7 +19,7 @@ const (
 	tlsTypeTraefik     = "traefik"
 	tlsTypeCertManager = "cert-manager"
 
-	nodeSelectorKey = "kubernetes.io/hostname"
+	hostnameNodeSelectorLabel = "kubernetes.io/hostname"
 )
 
 type middleware struct {
@@ -149,9 +149,6 @@ func (c *Config) labels() map[string]string {
 }
 
 func (c *Config) podSchedulingNodeSelector(appID string) map[string]string {
-	if len(c.Scheduling.NodeSelector) == 0 {
-		return nil
-	}
 	ns := lo.SliceToMap(c.Scheduling.NodeSelector, func(ns *nodeSelector) (string, string) {
 		return ns.Key, ns.Value
 	})
@@ -166,7 +163,7 @@ func (c *Config) selectNode(appID string) map[string]string {
 	// NOTE: XXH3Hex always returns a 64-bit hex string
 	hex, _ := strconv.ParseUint(hash.XXH3Hex([]byte(appID)), 16, 64)
 	host := c.Scheduling.ForceHosts[hex%uint64(len(c.Scheduling.ForceHosts))]
-	return map[string]string{nodeSelectorKey: host}
+	return map[string]string{hostnameNodeSelectorLabel: host}
 }
 
 var tolerationOperatorMapper = mapper.MustNewValueMapper(map[string]v1.TolerationOperator{
