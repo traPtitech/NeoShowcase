@@ -152,6 +152,7 @@ const allStatuses = [
   ApplicationState.Deploying,
   ApplicationState.Running,
   ApplicationState.Static,
+  ApplicationState.Error,
 ]
 
 export default () => {

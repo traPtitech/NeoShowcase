@@ -1,5 +1,6 @@
 import {
   Application,
+  Application_ContainerState,
   Build_BuildStatus,
   DeployType,
   PortPublicationProtocol,
@@ -35,6 +36,7 @@ export enum ApplicationState {
   Deploying = 'Deploying',
   Running = 'Running',
   Static = 'Static',
+  Error = 'Error',
 }
 
 export const applicationState = (app: Application): ApplicationState => {
@@ -42,7 +44,18 @@ export const applicationState = (app: Application): ApplicationState => {
     return ApplicationState.Idle
   }
   if (app.deployType === DeployType.RUNTIME) {
-    return ApplicationState.Running
+    switch (app.container) {
+      case Application_ContainerState.MISSING:
+      case Application_ContainerState.STARTING:
+        return ApplicationState.Deploying
+      case Application_ContainerState.RUNNING:
+        return ApplicationState.Running
+      case Application_ContainerState.RESTARTING:
+      case Application_ContainerState.EXITED:
+      case Application_ContainerState.ERRORED:
+      case Application_ContainerState.UNKNOWN:
+        return ApplicationState.Error
+    }
   } else {
     return ApplicationState.Static
   }
