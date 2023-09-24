@@ -9,13 +9,13 @@ import (
 	"github.com/traPtitech/neoshowcase/pkg/util/mapper"
 )
 
-var BuildStatusMapper = mapper.MustNewValueMapper(map[domain.BuildStatus]pb.Build_BuildStatus{
-	domain.BuildStatusQueued:    pb.Build_QUEUED,
-	domain.BuildStatusBuilding:  pb.Build_BUILDING,
-	domain.BuildStatusSucceeded: pb.Build_SUCCEEDED,
-	domain.BuildStatusFailed:    pb.Build_FAILED,
-	domain.BuildStatusCanceled:  pb.Build_CANCELLED,
-	domain.BuildStatusSkipped:   pb.Build_SKIPPED,
+var BuildStatusMapper = mapper.MustNewValueMapper(map[domain.BuildStatus]pb.BuildStatus{
+	domain.BuildStatusQueued:    pb.BuildStatus_QUEUED,
+	domain.BuildStatusBuilding:  pb.BuildStatus_BUILDING,
+	domain.BuildStatusSucceeded: pb.BuildStatus_SUCCEEDED,
+	domain.BuildStatusFailed:    pb.BuildStatus_FAILED,
+	domain.BuildStatusCanceled:  pb.BuildStatus_CANCELLED,
+	domain.BuildStatusSkipped:   pb.BuildStatus_SKIPPED,
 })
 
 func ToPBBuild(build *domain.Build) *pb.Build {

@@ -11,6 +11,7 @@ import (
 	"github.com/traPtitech/neoshowcase/pkg/domain/web"
 	"github.com/traPtitech/neoshowcase/pkg/infrastructure/grpc/pb"
 	"github.com/traPtitech/neoshowcase/pkg/infrastructure/grpc/pbconvert"
+	"github.com/traPtitech/neoshowcase/pkg/usecase/apiserver"
 	"github.com/traPtitech/neoshowcase/pkg/util/ds"
 	"github.com/traPtitech/neoshowcase/pkg/util/optional"
 )
@@ -41,28 +42,30 @@ func (s *APIService) CreateApplication(ctx context.Context, req *connect.Request
 	if err != nil {
 		return nil, handleUseCaseError(err)
 	}
-	res := connect.NewResponse(pbconvert.ToPBApplication(app))
+	res := connect.NewResponse(pbconvert.ToPBApplication(app, nil))
 	return res, nil
 }
 
 func (s *APIService) GetApplications(ctx context.Context, req *connect.Request[pb.GetApplicationsRequest]) (*connect.Response[pb.GetApplicationsResponse], error) {
 	all := req.Msg.Scope == pb.GetApplicationsRequest_ALL
-	applications, err := s.svc.GetApplications(ctx, all)
+	apps, err := s.svc.GetApplications(ctx, all)
 	if err != nil {
 		return nil, handleUseCaseError(err)
 	}
 	res := connect.NewResponse(&pb.GetApplicationsResponse{
-		Applications: ds.Map(applications, pbconvert.ToPBApplication),
+		Applications: ds.Map(apps, func(app *apiserver.TopAppInfo) *pb.Application {
+			return pbconvert.ToPBApplication(app.App, app.LatestBuild)
+		}),
 	})
 	return res, nil
 }
 
 func (s *APIService) GetApplication(ctx context.Context, req *connect.Request[pb.ApplicationIdRequest]) (*connect.Response[pb.Application], error) {
-	application, err := s.svc.GetApplication(ctx, req.Msg.Id)
+	app, err := s.svc.GetApplication(ctx, req.Msg.Id)
 	if err != nil {
 		return nil, handleUseCaseError(err)
 	}
-	res := connect.NewResponse(pbconvert.ToPBApplication(application))
+	res := connect.NewResponse(pbconvert.ToPBApplication(app.App, app.LatestBuild))
 	return res, nil
 }
 

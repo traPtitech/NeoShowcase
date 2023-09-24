@@ -1,6 +1,6 @@
 import { ApplicationState } from '/@/libs/application'
 import { vars } from '/@/theme'
-import { AiFillCheckCircle, AiFillMinusCircle } from 'solid-icons/ai'
+import { AiFillCheckCircle, AiFillExclamationCircle, AiFillMinusCircle } from 'solid-icons/ai'
 import { IoReloadCircle } from 'solid-icons/io'
 import { JSXElement } from 'solid-js'
 import { Dynamic } from 'solid-js/web'
@@ -13,6 +13,7 @@ const components: Record<ApplicationState, (props: IconProps) => JSXElement> = {
   Deploying: (props) => <IoReloadCircle size={props.size} color={vars.icon.pending} />,
   Running: (props) => <AiFillCheckCircle size={props.size} color={vars.icon.success1} />,
   Static: (props) => <AiFillCheckCircle size={props.size} color={vars.icon.success2} />,
+  Error: (props) => <AiFillExclamationCircle size={props.size} color={vars.icon.error} />,
 }
 
 interface Props {

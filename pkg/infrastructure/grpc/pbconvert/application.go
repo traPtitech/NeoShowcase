@@ -24,8 +24,8 @@ var ContainerStateMapper = mapper.MustNewValueMapper(map[domain.ContainerState]p
 	domain.ContainerStateUnknown:    pb.Application_UNKNOWN,
 })
 
-func ToPBApplication(app *domain.Application) *pb.Application {
-	return &pb.Application{
+func ToPBApplication(app *domain.Application, latestBuild *domain.Build) *pb.Application {
+	pbApp := &pb.Application{
 		Id:               app.ID,
 		Name:             app.Name,
 		RepositoryId:     app.RepositoryID,
@@ -43,6 +43,11 @@ func ToPBApplication(app *domain.Application) *pb.Application {
 		PortPublications: ds.Map(app.PortPublications, ToPBPortPublication),
 		OwnerIds:         app.OwnerIDs,
 	}
+	if latestBuild != nil {
+		status := BuildStatusMapper.IntoMust(latestBuild.Status)
+		pbApp.LatestBuildStatus = &status
+	}
+	return pbApp
 }
 
 func FromPBUpdateOwners(req *pb.UpdateApplicationRequest_UpdateOwners) []string {

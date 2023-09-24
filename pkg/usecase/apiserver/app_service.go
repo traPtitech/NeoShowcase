@@ -11,6 +11,7 @@ import (
 
 	"github.com/traPtitech/neoshowcase/pkg/domain"
 	"github.com/traPtitech/neoshowcase/pkg/domain/web"
+	"github.com/traPtitech/neoshowcase/pkg/util/ds"
 	"github.com/traPtitech/neoshowcase/pkg/util/optional"
 	"github.com/traPtitech/neoshowcase/pkg/util/random"
 )
@@ -74,7 +75,7 @@ func (s *Service) CreateApplication(ctx context.Context, app *domain.Application
 		return nil, errors.Wrap(err, "failed to request to fetch repository")
 	}
 
-	return s.GetApplication(ctx, app.ID)
+	return handleRepoError(s.appRepo.GetApplication(ctx, app.ID))
 }
 
 func (s *Service) createApplicationDatabase(ctx context.Context, app *domain.Application) error {
@@ -163,16 +164,58 @@ func (s *Service) deleteApplicationDatabase(ctx context.Context, app *domain.App
 	return nil
 }
 
-func (s *Service) GetApplications(ctx context.Context, all bool) ([]*domain.Application, error) {
+type TopAppInfo struct {
+	App         *domain.Application
+	LatestBuild *domain.Build
+}
+
+func (s *Service) GetApplications(ctx context.Context, all bool) ([]*TopAppInfo, error) {
+	// Fetch apps
 	var cond domain.GetApplicationCondition
 	if !all {
 		cond.UserID = optional.From(web.GetUser(ctx).ID)
 	}
-	return s.appRepo.GetApplications(ctx, cond)
+	apps, err := s.appRepo.GetApplications(ctx, cond)
+	if err != nil {
+		return nil, err
+	}
+
+	// Fetch latest builds
+	appIDs := ds.Map(apps, func(app *domain.Application) string { return app.ID })
+	builds, err := s.buildRepo.GetLatestBuilds(ctx, appIDs)
+	if err != nil {
+		return nil, err
+	}
+	buildsMap := lo.SliceToMap(builds, func(b *domain.Build) (string, *domain.Build) { return b.ApplicationID, b })
+
+	// Construct
+	return ds.Map(apps, func(app *domain.Application) *TopAppInfo {
+		return &TopAppInfo{
+			App:         app,
+			LatestBuild: buildsMap[app.ID],
+		}
+	}), nil
 }
 
-func (s *Service) GetApplication(ctx context.Context, id string) (*domain.Application, error) {
-	return handleRepoError(s.appRepo.GetApplication(ctx, id))
+func (s *Service) GetApplication(ctx context.Context, id string) (*TopAppInfo, error) {
+	// Fetch app
+	app, err := s.appRepo.GetApplication(ctx, id)
+	if err != nil {
+		return nil, err
+	}
+	// Fetch latest build
+	builds, err := s.buildRepo.GetLatestBuilds(ctx, []string{app.ID})
+	if err != nil {
+		return nil, err
+	}
+	// Construct
+	info := &TopAppInfo{
+		App: app,
+	}
+	if len(builds) > 0 {
+		info.LatestBuild = builds[0]
+	}
+	return info, nil
 }
 
 func (s *Service) UpdateApplication(ctx context.Context, id string, args *domain.UpdateApplicationArgs) error {

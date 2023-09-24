@@ -3,6 +3,7 @@ package repository
 import (
 	"context"
 	"database/sql"
+	"strings"
 
 	"github.com/friendsofgo/errors"
 	"github.com/volatiletech/sqlboiler/v4/boil"
@@ -73,6 +74,25 @@ func (r *buildRepository) GetBuilds(ctx context.Context, cond domain.GetBuildCon
 	builds, err := models.Builds(mods...).All(ctx, r.db)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to get builds")
+	}
+	return ds.Map(builds, repoconvert.ToDomainBuild), nil
+}
+
+func (r *buildRepository) GetLatestBuilds(ctx context.Context, appIDIn []string) ([]*domain.Build, error) {
+	// NOTE: safe to do raw sql building because appIDIn is always in form of app's ID
+	inClause := strings.Join(
+		ds.Map(appIDIn, func(s string) string { return `'` + s + `'` }),
+		", ")
+	builds, err := models.Builds(
+		qm.SQL(`
+SELECT b1.*
+FROM builds b1
+  LEFT JOIN builds b2
+    ON b1.application_id = b2.application_id AND b1.queued_at < b2.queued_at
+WHERE b2.application_id IS NULL AND b1.application_id IN (`+inClause+`)`),
+	).All(ctx, r.db)
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to list latest builds")
 	}
 	return ds.Map(builds, repoconvert.ToDomainBuild), nil
 }

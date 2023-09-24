@@ -1,6 +1,7 @@
 import {
   Application,
-  Build_BuildStatus,
+  Application_ContainerState,
+  BuildStatus,
   DeployType,
   PortPublicationProtocol,
   Website,
@@ -21,13 +22,13 @@ export const buildTypeStr: Record<BuildConfigMethod, string> = {
   staticDockerfile: 'Static (Dockerfile)',
 }
 
-export const buildStatusStr: Record<Build_BuildStatus, string> = {
-  [Build_BuildStatus.QUEUED]: 'Queued',
-  [Build_BuildStatus.BUILDING]: 'Building',
-  [Build_BuildStatus.SUCCEEDED]: 'Succeeded',
-  [Build_BuildStatus.FAILED]: 'Failed',
-  [Build_BuildStatus.CANCELLED]: 'Cancelled',
-  [Build_BuildStatus.SKIPPED]: 'Skipped',
+export const buildStatusStr: Record<BuildStatus, string> = {
+  [BuildStatus.QUEUED]: 'Queued',
+  [BuildStatus.BUILDING]: 'Building',
+  [BuildStatus.SUCCEEDED]: 'Succeeded',
+  [BuildStatus.FAILED]: 'Failed',
+  [BuildStatus.CANCELLED]: 'Cancelled',
+  [BuildStatus.SKIPPED]: 'Skipped',
 }
 
 export enum ApplicationState {
@@ -35,16 +36,45 @@ export enum ApplicationState {
   Deploying = 'Deploying',
   Running = 'Running',
   Static = 'Static',
+  Error = 'Error',
+}
+
+const useDeployState = (app: Application): ApplicationState => {
+  if (app.deployType === DeployType.RUNTIME) {
+    switch (app.container) {
+      case Application_ContainerState.MISSING:
+      case Application_ContainerState.STARTING:
+        return ApplicationState.Deploying
+      case Application_ContainerState.RUNNING:
+        return ApplicationState.Running
+      case Application_ContainerState.RESTARTING:
+      case Application_ContainerState.EXITED:
+      case Application_ContainerState.ERRORED:
+      case Application_ContainerState.UNKNOWN:
+        return ApplicationState.Error
+    }
+  } else {
+    return ApplicationState.Static
+  }
 }
 
 export const applicationState = (app: Application): ApplicationState => {
   if (!app.running) {
     return ApplicationState.Idle
   }
-  if (app.deployType === DeployType.RUNTIME) {
-    return ApplicationState.Running
-  } else {
-    return ApplicationState.Static
+  switch (app.latestBuildStatus) {
+    case BuildStatus.QUEUED:
+      return ApplicationState.Deploying
+    case BuildStatus.BUILDING:
+      return ApplicationState.Deploying
+    case BuildStatus.SUCCEEDED:
+      return useDeployState(app)
+    case BuildStatus.FAILED:
+      return ApplicationState.Error
+    case BuildStatus.CANCELLED:
+      return useDeployState(app)
+    case BuildStatus.SKIPPED:
+      return useDeployState(app)
   }
 }
 
