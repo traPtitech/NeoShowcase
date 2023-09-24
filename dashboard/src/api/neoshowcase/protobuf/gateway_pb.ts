@@ -1113,37 +1113,42 @@ export class Application extends Message<Application> {
   container = Application_ContainerState.MISSING;
 
   /**
-   * @generated from field: string current_build = 9;
+   * @generated from field: string container_message = 9;
+   */
+  containerMessage = "";
+
+  /**
+   * @generated from field: string current_build = 10;
    */
   currentBuild = "";
 
   /**
-   * @generated from field: google.protobuf.Timestamp created_at = 10;
+   * @generated from field: google.protobuf.Timestamp created_at = 11;
    */
   createdAt?: Timestamp;
 
   /**
-   * @generated from field: google.protobuf.Timestamp updated_at = 11;
+   * @generated from field: google.protobuf.Timestamp updated_at = 12;
    */
   updatedAt?: Timestamp;
 
   /**
-   * @generated from field: neoshowcase.protobuf.ApplicationConfig config = 12;
+   * @generated from field: neoshowcase.protobuf.ApplicationConfig config = 13;
    */
   config?: ApplicationConfig;
 
   /**
-   * @generated from field: repeated neoshowcase.protobuf.Website websites = 13;
+   * @generated from field: repeated neoshowcase.protobuf.Website websites = 14;
    */
   websites: Website[] = [];
 
   /**
-   * @generated from field: repeated neoshowcase.protobuf.PortPublication port_publications = 14;
+   * @generated from field: repeated neoshowcase.protobuf.PortPublication port_publications = 15;
    */
   portPublications: PortPublication[] = [];
 
   /**
-   * @generated from field: repeated string owner_ids = 15;
+   * @generated from field: repeated string owner_ids = 16;
    */
   ownerIds: string[] = [];
 
@@ -1163,13 +1168,14 @@ export class Application extends Message<Application> {
     { no: 6, name: "deploy_type", kind: "enum", T: proto3.getEnumType(DeployType) },
     { no: 7, name: "running", kind: "scalar", T: 8 /* ScalarType.BOOL */ },
     { no: 8, name: "container", kind: "enum", T: proto3.getEnumType(Application_ContainerState) },
-    { no: 9, name: "current_build", kind: "scalar", T: 9 /* ScalarType.STRING */ },
-    { no: 10, name: "created_at", kind: "message", T: Timestamp },
-    { no: 11, name: "updated_at", kind: "message", T: Timestamp },
-    { no: 12, name: "config", kind: "message", T: ApplicationConfig },
-    { no: 13, name: "websites", kind: "message", T: Website, repeated: true },
-    { no: 14, name: "port_publications", kind: "message", T: PortPublication, repeated: true },
-    { no: 15, name: "owner_ids", kind: "scalar", T: 9 /* ScalarType.STRING */, repeated: true },
+    { no: 9, name: "container_message", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+    { no: 10, name: "current_build", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+    { no: 11, name: "created_at", kind: "message", T: Timestamp },
+    { no: 12, name: "updated_at", kind: "message", T: Timestamp },
+    { no: 13, name: "config", kind: "message", T: ApplicationConfig },
+    { no: 14, name: "websites", kind: "message", T: Website, repeated: true },
+    { no: 15, name: "port_publications", kind: "message", T: PortPublication, repeated: true },
+    { no: 16, name: "owner_ids", kind: "scalar", T: 9 /* ScalarType.STRING */, repeated: true },
   ]);
 
   static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): Application {

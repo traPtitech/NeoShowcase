@@ -33,6 +33,7 @@ func ToPBApplication(app *domain.Application) *pb.Application {
 		DeployType:       DeployTypeMapper.IntoMust(app.DeployType),
 		Running:          app.Running,
 		Container:        ContainerStateMapper.IntoMust(app.Container),
+		ContainerMessage: app.ContainerMessage,
 		CurrentBuild:     app.CurrentBuild,
 		CreatedAt:        timestamppb.New(app.CreatedAt),
 		UpdatedAt:        timestamppb.New(app.UpdatedAt),

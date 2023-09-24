@@ -498,7 +498,7 @@ func (userL) LoadApplications(ctx context.Context, e boil.ContextExecutor, singu
 	}
 
 	query := NewQuery(
-		qm.Select("`applications`.`id`, `applications`.`name`, `applications`.`repository_id`, `applications`.`ref_name`, `applications`.`commit`, `applications`.`deploy_type`, `applications`.`running`, `applications`.`container`, `applications`.`current_build`, `applications`.`created_at`, `applications`.`updated_at`, `a`.`user_id`"),
+		qm.Select("`applications`.`id`, `applications`.`name`, `applications`.`repository_id`, `applications`.`ref_name`, `applications`.`commit`, `applications`.`deploy_type`, `applications`.`running`, `applications`.`container`, `applications`.`container_message`, `applications`.`current_build`, `applications`.`created_at`, `applications`.`updated_at`, `a`.`user_id`"),
 		qm.From("`applications`"),
 		qm.InnerJoin("`application_owners` as `a` on `applications`.`id` = `a`.`application_id`"),
 		qm.WhereIn("`a`.`user_id` in ?", args...),
@@ -519,7 +519,7 @@ func (userL) LoadApplications(ctx context.Context, e boil.ContextExecutor, singu
 		one := new(Application)
 		var localJoinCol string
 
-		err = results.Scan(&one.ID, &one.Name, &one.RepositoryID, &one.RefName, &one.Commit, &one.DeployType, &one.Running, &one.Container, &one.CurrentBuild, &one.CreatedAt, &one.UpdatedAt, &localJoinCol)
+		err = results.Scan(&one.ID, &one.Name, &one.RepositoryID, &one.RefName, &one.Commit, &one.DeployType, &one.Running, &one.Container, &one.ContainerMessage, &one.CurrentBuild, &one.CreatedAt, &one.UpdatedAt, &localJoinCol)
 		if err != nil {
 			return errors.Wrap(err, "failed to scan eager loaded results for applications")
 		}

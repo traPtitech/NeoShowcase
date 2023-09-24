@@ -38,6 +38,8 @@ type Application struct { // アプリケーションID
 	Running bool `boil:"running" json:"running" toml:"running" yaml:"running"`
 	// コンテナの状態(runtime only)
 	Container string `boil:"container" json:"container" toml:"container" yaml:"container"`
+	// コンテナの状態の詳細な情報(runtime only)
+	ContainerMessage string `boil:"container_message" json:"container_message" toml:"container_message" yaml:"container_message"`
 	// デプロイするビルド
 	CurrentBuild string `boil:"current_build" json:"current_build" toml:"current_build" yaml:"current_build"`
 	// 作成日時
@@ -50,55 +52,59 @@ type Application struct { // アプリケーションID
 }
 
 var ApplicationColumns = struct {
-	ID           string
-	Name         string
-	RepositoryID string
-	RefName      string
-	Commit       string
-	DeployType   string
-	Running      string
-	Container    string
-	CurrentBuild string
-	CreatedAt    string
-	UpdatedAt    string
+	ID               string
+	Name             string
+	RepositoryID     string
+	RefName          string
+	Commit           string
+	DeployType       string
+	Running          string
+	Container        string
+	ContainerMessage string
+	CurrentBuild     string
+	CreatedAt        string
+	UpdatedAt        string
 }{
-	ID:           "id",
-	Name:         "name",
-	RepositoryID: "repository_id",
-	RefName:      "ref_name",
-	Commit:       "commit",
-	DeployType:   "deploy_type",
-	Running:      "running",
-	Container:    "container",
-	CurrentBuild: "current_build",
-	CreatedAt:    "created_at",
-	UpdatedAt:    "updated_at",
+	ID:               "id",
+	Name:             "name",
+	RepositoryID:     "repository_id",
+	RefName:          "ref_name",
+	Commit:           "commit",
+	DeployType:       "deploy_type",
+	Running:          "running",
+	Container:        "container",
+	ContainerMessage: "container_message",
+	CurrentBuild:     "current_build",
+	CreatedAt:        "created_at",
+	UpdatedAt:        "updated_at",
 }
 
 var ApplicationTableColumns = struct {
-	ID           string
-	Name         string
-	RepositoryID string
-	RefName      string
-	Commit       string
-	DeployType   string
-	Running      string
-	Container    string
-	CurrentBuild string
-	CreatedAt    string
-	UpdatedAt    string
+	ID               string
+	Name             string
+	RepositoryID     string
+	RefName          string
+	Commit           string
+	DeployType       string
+	Running          string
+	Container        string
+	ContainerMessage string
+	CurrentBuild     string
+	CreatedAt        string
+	UpdatedAt        string
 }{
-	ID:           "applications.id",
-	Name:         "applications.name",
-	RepositoryID: "applications.repository_id",
-	RefName:      "applications.ref_name",
-	Commit:       "applications.commit",
-	DeployType:   "applications.deploy_type",
-	Running:      "applications.running",
-	Container:    "applications.container",
-	CurrentBuild: "applications.current_build",
-	CreatedAt:    "applications.created_at",
-	UpdatedAt:    "applications.updated_at",
+	ID:               "applications.id",
+	Name:             "applications.name",
+	RepositoryID:     "applications.repository_id",
+	RefName:          "applications.ref_name",
+	Commit:           "applications.commit",
+	DeployType:       "applications.deploy_type",
+	Running:          "applications.running",
+	Container:        "applications.container",
+	ContainerMessage: "applications.container_message",
+	CurrentBuild:     "applications.current_build",
+	CreatedAt:        "applications.created_at",
+	UpdatedAt:        "applications.updated_at",
 }
 
 // Generated where
@@ -125,29 +131,31 @@ func (w whereHelpertime_Time) GTE(x time.Time) qm.QueryMod {
 }
 
 var ApplicationWhere = struct {
-	ID           whereHelperstring
-	Name         whereHelperstring
-	RepositoryID whereHelperstring
-	RefName      whereHelperstring
-	Commit       whereHelperstring
-	DeployType   whereHelperstring
-	Running      whereHelperbool
-	Container    whereHelperstring
-	CurrentBuild whereHelperstring
-	CreatedAt    whereHelpertime_Time
-	UpdatedAt    whereHelpertime_Time
+	ID               whereHelperstring
+	Name             whereHelperstring
+	RepositoryID     whereHelperstring
+	RefName          whereHelperstring
+	Commit           whereHelperstring
+	DeployType       whereHelperstring
+	Running          whereHelperbool
+	Container        whereHelperstring
+	ContainerMessage whereHelperstring
+	CurrentBuild     whereHelperstring
+	CreatedAt        whereHelpertime_Time
+	UpdatedAt        whereHelpertime_Time
 }{
-	ID:           whereHelperstring{field: "`applications`.`id`"},
-	Name:         whereHelperstring{field: "`applications`.`name`"},
-	RepositoryID: whereHelperstring{field: "`applications`.`repository_id`"},
-	RefName:      whereHelperstring{field: "`applications`.`ref_name`"},
-	Commit:       whereHelperstring{field: "`applications`.`commit`"},
-	DeployType:   whereHelperstring{field: "`applications`.`deploy_type`"},
-	Running:      whereHelperbool{field: "`applications`.`running`"},
-	Container:    whereHelperstring{field: "`applications`.`container`"},
-	CurrentBuild: whereHelperstring{field: "`applications`.`current_build`"},
-	CreatedAt:    whereHelpertime_Time{field: "`applications`.`created_at`"},
-	UpdatedAt:    whereHelpertime_Time{field: "`applications`.`updated_at`"},
+	ID:               whereHelperstring{field: "`applications`.`id`"},
+	Name:             whereHelperstring{field: "`applications`.`name`"},
+	RepositoryID:     whereHelperstring{field: "`applications`.`repository_id`"},
+	RefName:          whereHelperstring{field: "`applications`.`ref_name`"},
+	Commit:           whereHelperstring{field: "`applications`.`commit`"},
+	DeployType:       whereHelperstring{field: "`applications`.`deploy_type`"},
+	Running:          whereHelperbool{field: "`applications`.`running`"},
+	Container:        whereHelperstring{field: "`applications`.`container`"},
+	ContainerMessage: whereHelperstring{field: "`applications`.`container_message`"},
+	CurrentBuild:     whereHelperstring{field: "`applications`.`current_build`"},
+	CreatedAt:        whereHelpertime_Time{field: "`applications`.`created_at`"},
+	UpdatedAt:        whereHelpertime_Time{field: "`applications`.`updated_at`"},
 }
 
 // ApplicationRels is where relationship names are stored.
@@ -238,8 +246,8 @@ func (r *applicationR) GetWebsites() WebsiteSlice {
 type applicationL struct{}
 
 var (
-	applicationAllColumns            = []string{"id", "name", "repository_id", "ref_name", "commit", "deploy_type", "running", "container", "current_build", "created_at", "updated_at"}
-	applicationColumnsWithoutDefault = []string{"id", "name", "repository_id", "ref_name", "commit", "deploy_type", "running", "container", "current_build", "created_at", "updated_at"}
+	applicationAllColumns            = []string{"id", "name", "repository_id", "ref_name", "commit", "deploy_type", "running", "container", "container_message", "current_build", "created_at", "updated_at"}
+	applicationColumnsWithoutDefault = []string{"id", "name", "repository_id", "ref_name", "commit", "deploy_type", "running", "container", "container_message", "current_build", "created_at", "updated_at"}
 	applicationColumnsWithDefault    = []string{}
 	applicationPrimaryKeyColumns     = []string{"id"}
 	applicationGeneratedColumns      = []string{}

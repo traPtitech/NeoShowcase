@@ -17,6 +17,7 @@ CREATE TABLE `applications` (
   `deploy_type` enum('runtime','static') NOT NULL COMMENT 'デプロイタイプ',
   `running` tinyint(1) NOT NULL COMMENT 'アプリを起動させるか(desired state)',
   `container` enum('missing','starting','running','exited','errored','unknown') NOT NULL COMMENT 'コンテナの状態(runtime only)',
+  `container_message` text NOT NULL COMMENT 'コンテナの状態の詳細な情報(runtime only)',
   `current_build` char(22) NOT NULL COMMENT 'デプロイするビルド',
   `created_at` datetime(6) NOT NULL COMMENT '作成日時',
   `updated_at` datetime(6) NOT NULL COMMENT '更新日時',
@@ -40,6 +41,7 @@ CREATE TABLE `applications` (
 | deploy_type | enum('runtime','static') |  | false |  |  | デプロイタイプ |
 | running | tinyint(1) |  | false |  |  | アプリを起動させるか(desired state) |
 | container | enum('missing','starting','running','exited','errored','unknown') |  | false |  |  | コンテナの状態(runtime only) |
+| container_message | text |  | false |  |  | コンテナの状態の詳細な情報(runtime only) |
 | current_build | char(22) |  | false |  |  | デプロイするビルド |
 | created_at | datetime(6) |  | false |  |  | 作成日時 |
 | updated_at | datetime(6) |  | false |  |  | 更新日時 |
@@ -80,6 +82,7 @@ erDiagram
   enum__runtime___static__ deploy_type
   tinyint_1_ running
   enum__missing___starting___running___exited___errored___unknown__ container
+  text container_message
   char_22_ current_build
   datetime_6_ created_at
   datetime_6_ updated_at

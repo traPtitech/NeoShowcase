@@ -44,17 +44,18 @@ const (
 var EmptyCommit = strings.Repeat("0", 40)
 
 type Application struct {
-	ID           string
-	Name         string
-	RepositoryID string
-	RefName      string
-	Commit       string
-	DeployType   DeployType
-	Running      bool
-	Container    ContainerState
-	CurrentBuild string
-	CreatedAt    time.Time
-	UpdatedAt    time.Time
+	ID               string
+	Name             string
+	RepositoryID     string
+	RefName          string
+	Commit           string
+	DeployType       DeployType
+	Running          bool
+	Container        ContainerState
+	ContainerMessage string
+	CurrentBuild     string
+	CreatedAt        time.Time
+	UpdatedAt        time.Time
 
 	Config           ApplicationConfig
 	Websites         []*Website
