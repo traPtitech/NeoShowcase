@@ -80,6 +80,7 @@ func init() {
 	viper.SetDefault("k8s.scheduling.nodeSelector", nil)
 	viper.SetDefault("k8s.scheduling.tolerations", nil)
 	viper.SetDefault("k8s.scheduling.forceHosts", nil)
+	viper.SetDefault("k8s.scheduling.spreadConstraints", nil)
 	viper.SetDefault("k8s.resources.requests.cpu", "")
 	viper.SetDefault("k8s.resources.requests.memory", "")
 	viper.SetDefault("k8s.resources.limits.cpu", "")

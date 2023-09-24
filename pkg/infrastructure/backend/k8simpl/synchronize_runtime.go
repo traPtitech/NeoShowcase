@@ -115,6 +115,7 @@ func (b *k8sBackend) runtimeSpec(app *domain.RuntimeDesiredState) (*appsv1.State
 					Containers:                   []v1.Container{cont},
 					NodeSelector:                 b.config.podSchedulingNodeSelector(app.App.ID),
 					Tolerations:                  b.config.podSchedulingTolerations(),
+					TopologySpreadConstraints:    b.config.podSpreadConstraints(),
 				},
 			},
 			RevisionHistoryLimit: lo.ToPtr(int32(0)),

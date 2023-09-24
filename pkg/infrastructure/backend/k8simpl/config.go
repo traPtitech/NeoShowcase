@@ -8,6 +8,7 @@ import (
 	traefikv1alpha1 "github.com/traefik/traefik/v2/pkg/provider/kubernetes/crd/traefikio/v1alpha1"
 	v1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
 	"github.com/traPtitech/neoshowcase/pkg/domain"
 	"github.com/traPtitech/neoshowcase/pkg/util/ds"
@@ -73,6 +74,41 @@ func (pc *portConf) toDomainAP() *domain.AvailablePort {
 	}
 }
 
+type labelSelector = struct {
+	MatchExpressions []*labelExpression `mapstructure:"matchExpressions" yaml:"matchExpressions"`
+	MatchLabels      []*labelConf       `mapstructure:"matchLabels" yaml:"matchLabels"`
+}
+
+func toLabelSelector(l *labelSelector) *metav1.LabelSelector {
+	return &metav1.LabelSelector{
+		MatchLabels: lo.SliceToMap(l.MatchLabels, func(l *labelConf) (string, string) {
+			return l.Key, l.Value
+		}),
+		MatchExpressions: ds.Map(l.MatchExpressions, toLabelExpression),
+	}
+}
+
+type labelExpression = struct {
+	Key      string   `mapstructure:"key" yaml:"key"`
+	Operator string   `mapstructure:"operator" yaml:"operator"`
+	Values   []string `mapstructure:"values" yaml:"values"`
+}
+
+var labelSelectorOperatorMapper = mapper.MustNewValueMapper(map[string]metav1.LabelSelectorOperator{
+	string(metav1.LabelSelectorOpIn):           metav1.LabelSelectorOpIn,
+	string(metav1.LabelSelectorOpNotIn):        metav1.LabelSelectorOpNotIn,
+	string(metav1.LabelSelectorOpExists):       metav1.LabelSelectorOpExists,
+	string(metav1.LabelSelectorOpDoesNotExist): metav1.LabelSelectorOpDoesNotExist,
+})
+
+func toLabelExpression(l *labelExpression) metav1.LabelSelectorRequirement {
+	return metav1.LabelSelectorRequirement{
+		Key:      l.Key,
+		Operator: labelSelectorOperatorMapper.IntoMust(l.Operator),
+		Values:   l.Values,
+	}
+}
+
 type labelConf = struct {
 	Key   string `mapstructure:"key" yaml:"key"`
 	Value string `mapstructure:"value" yaml:"value"`
@@ -89,6 +125,30 @@ type toleration = struct {
 	Value             string `mapstructure:"value" yaml:"value"`
 	Effect            string `mapstructure:"effect" yaml:"effect"`
 	TolerationSeconds *int64 `mapstructure:"tolerationSeconds" yaml:"tolerationSeconds"`
+}
+
+var nodeInclusionPolicyMapper = mapper.MustNewValueMapper(map[string]v1.NodeInclusionPolicy{
+	string(v1.NodeInclusionPolicyIgnore): v1.NodeInclusionPolicyIgnore,
+	string(v1.NodeInclusionPolicyHonor):  v1.NodeInclusionPolicyHonor,
+})
+
+func nodeInclusionPolicyMap(s string) *v1.NodeInclusionPolicy {
+	if s == "" {
+		return nil
+	}
+	policy := nodeInclusionPolicyMapper.IntoMust(s)
+	return &policy
+}
+
+type spreadConstraint = struct {
+	MaxSkew            int32          `mapstructure:"maxSkew" yaml:"maxSkew"`
+	MinDomains         *int32         `mapstructure:"minDomains" yaml:"minDomains"`
+	TopologyKey        string         `mapstructure:"topologyKey" yaml:"topologyKey"`
+	WhenUnsatisfiable  string         `mapstructure:"whenUnsatisfiable" yaml:"whenUnsatisfiable"`
+	LabelSelector      *labelSelector `mapstructure:"labelSelector" yaml:"labelSelector"`
+	MatchLabelKeys     []string       `mapstructure:"matchLabelKeys" yaml:"matchLabelKeys"`
+	NodeAffinityPolicy string         `mapstructure:"nodeAffinityPolicy" yaml:"nodeAffinityPolicy"`
+	NodeTaintsPolicy   string         `mapstructure:"nodeTaintsPolicy" yaml:"nodeTaintsPolicy"`
 }
 
 type Config struct {
@@ -126,9 +186,10 @@ type Config struct {
 	// ImagePullSecret required if registry is private
 	ImagePullSecret string `mapstructure:"imagePullSecret" yaml:"imagePullSecret"`
 	Scheduling      struct {
-		NodeSelector []*nodeSelector `mapstructure:"nodeSelector" yaml:"nodeSelector"`
-		Tolerations  []*toleration   `mapstructure:"tolerations" yaml:"tolerations"`
-		ForceHosts   []string        `mapstructure:"forceHosts" yaml:"forceHosts"`
+		NodeSelector      []*nodeSelector     `mapstructure:"nodeSelector" yaml:"nodeSelector"`
+		Tolerations       []*toleration       `mapstructure:"tolerations" yaml:"tolerations"`
+		SpreadConstraints []*spreadConstraint `mapstructure:"spreadConstraints" yaml:"spreadConstraints"`
+		ForceHosts        []string            `mapstructure:"forceHosts" yaml:"forceHosts"`
 	} `mapstructure:"scheduling" yaml:"scheduling"`
 	Resources struct {
 		Requests struct {
@@ -177,10 +238,12 @@ var taintEffectMapper = mapper.MustNewValueMapper(map[string]v1.TaintEffect{
 	string(v1.TaintEffectPreferNoSchedule): v1.TaintEffectPreferNoSchedule,
 })
 
+var unsatisfiableMapper = mapper.MustNewValueMapper(map[string]v1.UnsatisfiableConstraintAction{
+	string(v1.DoNotSchedule):  v1.DoNotSchedule,
+	string(v1.ScheduleAnyway): v1.ScheduleAnyway,
+})
+
 func (c *Config) podSchedulingTolerations() []v1.Toleration {
-	if len(c.Scheduling.Tolerations) == 0 {
-		return nil
-	}
 	return ds.Map(c.Scheduling.Tolerations, func(t *toleration) v1.Toleration {
 		return v1.Toleration{
 			Key:               t.Key,
@@ -188,6 +251,21 @@ func (c *Config) podSchedulingTolerations() []v1.Toleration {
 			Value:             t.Value,
 			Effect:            taintEffectMapper.IntoMust(t.Effect),
 			TolerationSeconds: t.TolerationSeconds,
+		}
+	})
+}
+
+func (c *Config) podSpreadConstraints() []v1.TopologySpreadConstraint {
+	return ds.Map(c.Scheduling.SpreadConstraints, func(c *spreadConstraint) v1.TopologySpreadConstraint {
+		return v1.TopologySpreadConstraint{
+			MaxSkew:            c.MaxSkew,
+			TopologyKey:        c.TopologyKey,
+			WhenUnsatisfiable:  unsatisfiableMapper.IntoMust(c.WhenUnsatisfiable),
+			LabelSelector:      toLabelSelector(c.LabelSelector),
+			MinDomains:         c.MinDomains,
+			NodeAffinityPolicy: nodeInclusionPolicyMap(c.NodeAffinityPolicy),
+			NodeTaintsPolicy:   nodeInclusionPolicyMap(c.NodeTaintsPolicy),
+			MatchLabelKeys:     c.MatchLabelKeys,
 		}
 	})
 }
