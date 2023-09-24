@@ -1,4 +1,4 @@
-import { Build_BuildStatus } from '/@/api/neoshowcase/protobuf/gateway_pb'
+import { BuildStatus } from '/@/api/neoshowcase/protobuf/gateway_pb'
 import { AppNav } from '/@/components/AppNav'
 import { ArtifactRow } from '/@/components/ArtifactRow'
 import { BuildLog } from '/@/components/BuildLog'
@@ -79,7 +79,7 @@ export default () => {
               >
                 Retry build
               </Button>
-              <Show when={build().status === Build_BuildStatus.BUILDING}>
+              <Show when={build().status === BuildStatus.BUILDING}>
                 <Button color="black1" size="large" width="full" onclick={cancelBuild}>
                   Cancel build
                 </Button>

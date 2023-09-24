@@ -74,6 +74,50 @@ proto3.util.setEnumType(PortPublicationProtocol, "neoshowcase.protobuf.PortPubli
 ]);
 
 /**
+ * @generated from enum neoshowcase.protobuf.BuildStatus
+ */
+export enum BuildStatus {
+  /**
+   * @generated from enum value: QUEUED = 0;
+   */
+  QUEUED = 0,
+
+  /**
+   * @generated from enum value: BUILDING = 1;
+   */
+  BUILDING = 1,
+
+  /**
+   * @generated from enum value: SUCCEEDED = 2;
+   */
+  SUCCEEDED = 2,
+
+  /**
+   * @generated from enum value: FAILED = 3;
+   */
+  FAILED = 3,
+
+  /**
+   * @generated from enum value: CANCELLED = 4;
+   */
+  CANCELLED = 4,
+
+  /**
+   * @generated from enum value: SKIPPED = 5;
+   */
+  SKIPPED = 5,
+}
+// Retrieve enum metadata with: proto3.getEnumType(BuildStatus)
+proto3.util.setEnumType(BuildStatus, "neoshowcase.protobuf.BuildStatus", [
+  { no: 0, name: "QUEUED" },
+  { no: 1, name: "BUILDING" },
+  { no: 2, name: "SUCCEEDED" },
+  { no: 3, name: "FAILED" },
+  { no: 4, name: "CANCELLED" },
+  { no: 5, name: "SKIPPED" },
+]);
+
+/**
  * @generated from message neoshowcase.protobuf.SSHInfo
  */
 export class SSHInfo extends Message<SSHInfo> {
@@ -1152,6 +1196,11 @@ export class Application extends Message<Application> {
    */
   ownerIds: string[] = [];
 
+  /**
+   * @generated from field: optional neoshowcase.protobuf.BuildStatus latest_build_status = 17;
+   */
+  latestBuildStatus?: BuildStatus;
+
   constructor(data?: PartialMessage<Application>) {
     super();
     proto3.util.initPartial(data, this);
@@ -1176,6 +1225,7 @@ export class Application extends Message<Application> {
     { no: 14, name: "websites", kind: "message", T: Website, repeated: true },
     { no: 15, name: "port_publications", kind: "message", T: PortPublication, repeated: true },
     { no: 16, name: "owner_ids", kind: "scalar", T: 9 /* ScalarType.STRING */, repeated: true },
+    { no: 17, name: "latest_build_status", kind: "enum", T: proto3.getEnumType(BuildStatus), opt: true },
   ]);
 
   static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): Application {
@@ -1652,9 +1702,9 @@ export class Build extends Message<Build> {
   commit = "";
 
   /**
-   * @generated from field: neoshowcase.protobuf.Build.BuildStatus status = 4;
+   * @generated from field: neoshowcase.protobuf.BuildStatus status = 4;
    */
-  status = Build_BuildStatus.QUEUED;
+  status = BuildStatus.QUEUED;
 
   /**
    * @generated from field: google.protobuf.Timestamp queued_at = 5;
@@ -1697,7 +1747,7 @@ export class Build extends Message<Build> {
     { no: 1, name: "id", kind: "scalar", T: 9 /* ScalarType.STRING */ },
     { no: 2, name: "application_id", kind: "scalar", T: 9 /* ScalarType.STRING */ },
     { no: 3, name: "commit", kind: "scalar", T: 9 /* ScalarType.STRING */ },
-    { no: 4, name: "status", kind: "enum", T: proto3.getEnumType(Build_BuildStatus) },
+    { no: 4, name: "status", kind: "enum", T: proto3.getEnumType(BuildStatus) },
     { no: 5, name: "queued_at", kind: "message", T: Timestamp },
     { no: 6, name: "started_at", kind: "message", T: NullTimestamp },
     { no: 7, name: "updated_at", kind: "message", T: NullTimestamp },
@@ -1722,50 +1772,6 @@ export class Build extends Message<Build> {
     return proto3.util.equals(Build, a, b);
   }
 }
-
-/**
- * @generated from enum neoshowcase.protobuf.Build.BuildStatus
- */
-export enum Build_BuildStatus {
-  /**
-   * @generated from enum value: QUEUED = 0;
-   */
-  QUEUED = 0,
-
-  /**
-   * @generated from enum value: BUILDING = 1;
-   */
-  BUILDING = 1,
-
-  /**
-   * @generated from enum value: SUCCEEDED = 2;
-   */
-  SUCCEEDED = 2,
-
-  /**
-   * @generated from enum value: FAILED = 3;
-   */
-  FAILED = 3,
-
-  /**
-   * @generated from enum value: CANCELLED = 4;
-   */
-  CANCELLED = 4,
-
-  /**
-   * @generated from enum value: SKIPPED = 5;
-   */
-  SKIPPED = 5,
-}
-// Retrieve enum metadata with: proto3.getEnumType(Build_BuildStatus)
-proto3.util.setEnumType(Build_BuildStatus, "neoshowcase.protobuf.Build.BuildStatus", [
-  { no: 0, name: "QUEUED" },
-  { no: 1, name: "BUILDING" },
-  { no: 2, name: "SUCCEEDED" },
-  { no: 3, name: "FAILED" },
-  { no: 4, name: "CANCELLED" },
-  { no: 5, name: "SKIPPED" },
-]);
 
 /**
  * @generated from message neoshowcase.protobuf.BuildLog

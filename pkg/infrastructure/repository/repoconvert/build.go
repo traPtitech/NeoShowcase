@@ -44,7 +44,9 @@ func ToDomainBuild(build *models.Build) *domain.Build {
 		UpdatedAt:     optional.FromTime(build.UpdatedAt),
 		FinishedAt:    optional.FromTime(build.FinishedAt),
 		Retriable:     build.Retriable,
-		Artifacts:     ds.Map(build.R.Artifacts, ToDomainArtifact),
+	}
+	if build.R != nil {
+		ret.Artifacts = ds.Map(build.R.Artifacts, ToDomainArtifact)
 	}
 	return ret
 }

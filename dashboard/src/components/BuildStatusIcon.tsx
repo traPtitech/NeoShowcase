@@ -1,4 +1,4 @@
-import { Build_BuildStatus } from '/@/api/neoshowcase/protobuf/gateway_pb'
+import { BuildStatus } from '/@/api/neoshowcase/protobuf/gateway_pb'
 import { vars } from '/@/theme'
 import { AiFillCheckCircle, AiFillExclamationCircle, AiFillMinusCircle } from 'solid-icons/ai'
 import { IoReloadCircle } from 'solid-icons/io'
@@ -8,17 +8,17 @@ import { Dynamic } from 'solid-js/web'
 interface IconProps {
   size: number
 }
-const components: Record<Build_BuildStatus, (size: IconProps) => JSXElement> = {
-  [Build_BuildStatus.QUEUED]: (props) => <AiFillMinusCircle size={props.size} color={vars.text.black4} />,
-  [Build_BuildStatus.BUILDING]: (props) => <IoReloadCircle size={props.size} color={vars.icon.pending} />,
-  [Build_BuildStatus.SUCCEEDED]: (props) => <AiFillCheckCircle size={props.size} color={vars.icon.success1} />,
-  [Build_BuildStatus.FAILED]: (props) => <AiFillExclamationCircle size={props.size} color={vars.icon.error} />,
-  [Build_BuildStatus.CANCELLED]: (props) => <AiFillExclamationCircle size={props.size} color={vars.text.black4} />,
-  [Build_BuildStatus.SKIPPED]: (props) => <AiFillExclamationCircle size={props.size} color={vars.text.black4} />,
+const components: Record<BuildStatus, (size: IconProps) => JSXElement> = {
+  [BuildStatus.QUEUED]: (props) => <AiFillMinusCircle size={props.size} color={vars.text.black4} />,
+  [BuildStatus.BUILDING]: (props) => <IoReloadCircle size={props.size} color={vars.icon.pending} />,
+  [BuildStatus.SUCCEEDED]: (props) => <AiFillCheckCircle size={props.size} color={vars.icon.success1} />,
+  [BuildStatus.FAILED]: (props) => <AiFillExclamationCircle size={props.size} color={vars.icon.error} />,
+  [BuildStatus.CANCELLED]: (props) => <AiFillExclamationCircle size={props.size} color={vars.text.black4} />,
+  [BuildStatus.SKIPPED]: (props) => <AiFillExclamationCircle size={props.size} color={vars.text.black4} />,
 }
 
 interface Props {
-  state: Build_BuildStatus
+  state: BuildStatus
   size?: number
 }
 

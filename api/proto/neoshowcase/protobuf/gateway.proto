@@ -189,6 +189,8 @@ message Application {
   repeated Website websites = 14;
   repeated PortPublication port_publications = 15;
   repeated string owner_ids = 16;
+
+  optional BuildStatus latest_build_status = 17;
 }
 
 message ApplicationEnvVar {
@@ -236,15 +238,16 @@ message ApplicationOutputs {
   repeated ApplicationOutput outputs = 1;
 }
 
+enum BuildStatus {
+  QUEUED = 0;
+  BUILDING = 1;
+  SUCCEEDED = 2;
+  FAILED = 3;
+  CANCELLED = 4;
+  SKIPPED = 5;
+}
+
 message Build {
-  enum BuildStatus {
-    QUEUED = 0;
-    BUILDING = 1;
-    SUCCEEDED = 2;
-    FAILED = 3;
-    CANCELLED = 4;
-    SKIPPED = 5;
-  }
   string id = 1;
   string application_id = 2;
   string commit = 3;

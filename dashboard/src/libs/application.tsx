@@ -1,7 +1,7 @@
 import {
   Application,
   Application_ContainerState,
-  Build_BuildStatus,
+  BuildStatus,
   DeployType,
   PortPublicationProtocol,
   Website,
@@ -22,13 +22,13 @@ export const buildTypeStr: Record<BuildConfigMethod, string> = {
   staticDockerfile: 'Static (Dockerfile)',
 }
 
-export const buildStatusStr: Record<Build_BuildStatus, string> = {
-  [Build_BuildStatus.QUEUED]: 'Queued',
-  [Build_BuildStatus.BUILDING]: 'Building',
-  [Build_BuildStatus.SUCCEEDED]: 'Succeeded',
-  [Build_BuildStatus.FAILED]: 'Failed',
-  [Build_BuildStatus.CANCELLED]: 'Cancelled',
-  [Build_BuildStatus.SKIPPED]: 'Skipped',
+export const buildStatusStr: Record<BuildStatus, string> = {
+  [BuildStatus.QUEUED]: 'Queued',
+  [BuildStatus.BUILDING]: 'Building',
+  [BuildStatus.SUCCEEDED]: 'Succeeded',
+  [BuildStatus.FAILED]: 'Failed',
+  [BuildStatus.CANCELLED]: 'Cancelled',
+  [BuildStatus.SKIPPED]: 'Skipped',
 }
 
 export enum ApplicationState {
