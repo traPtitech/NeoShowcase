@@ -167,10 +167,11 @@ message Application {
   enum ContainerState {
     MISSING = 0;
     STARTING = 1;
-    RUNNING = 2;
-    EXITED = 3;
-    ERRORED = 4;
-    UNKNOWN = 5;
+    RESTARTING = 2;
+    RUNNING = 3;
+    EXITED = 4;
+    ERRORED = 5;
+    UNKNOWN = 6;
   }
   string id = 1;
   string name = 2;

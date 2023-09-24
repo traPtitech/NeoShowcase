@@ -13,12 +13,13 @@ var DeployTypeMapper = mapper.MustNewValueMapper(map[string]domain.DeployType{
 })
 
 var ContainerStateMapper = mapper.MustNewValueMapper(map[string]domain.ContainerState{
-	models.ApplicationsContainerMissing:  domain.ContainerStateMissing,
-	models.ApplicationsContainerStarting: domain.ContainerStateStarting,
-	models.ApplicationsContainerRunning:  domain.ContainerStateRunning,
-	models.ApplicationsContainerExited:   domain.ContainerStateExited,
-	models.ApplicationsContainerErrored:  domain.ContainerStateErrored,
-	models.ApplicationsContainerUnknown:  domain.ContainerStateUnknown,
+	models.ApplicationsContainerMissing:    domain.ContainerStateMissing,
+	models.ApplicationsContainerStarting:   domain.ContainerStateStarting,
+	models.ApplicationsContainerRestarting: domain.ContainerStateRestarting,
+	models.ApplicationsContainerRunning:    domain.ContainerStateRunning,
+	models.ApplicationsContainerExited:     domain.ContainerStateExited,
+	models.ApplicationsContainerErrored:    domain.ContainerStateErrored,
+	models.ApplicationsContainerUnknown:    domain.ContainerStateUnknown,
 })
 
 func FromDomainApplication(app *domain.Application) *models.Application {

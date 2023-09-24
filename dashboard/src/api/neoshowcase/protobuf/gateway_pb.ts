@@ -1210,33 +1210,39 @@ export enum Application_ContainerState {
   STARTING = 1,
 
   /**
-   * @generated from enum value: RUNNING = 2;
+   * @generated from enum value: RESTARTING = 2;
    */
-  RUNNING = 2,
+  RESTARTING = 2,
 
   /**
-   * @generated from enum value: EXITED = 3;
+   * @generated from enum value: RUNNING = 3;
    */
-  EXITED = 3,
+  RUNNING = 3,
 
   /**
-   * @generated from enum value: ERRORED = 4;
+   * @generated from enum value: EXITED = 4;
    */
-  ERRORED = 4,
+  EXITED = 4,
 
   /**
-   * @generated from enum value: UNKNOWN = 5;
+   * @generated from enum value: ERRORED = 5;
    */
-  UNKNOWN = 5,
+  ERRORED = 5,
+
+  /**
+   * @generated from enum value: UNKNOWN = 6;
+   */
+  UNKNOWN = 6,
 }
 // Retrieve enum metadata with: proto3.getEnumType(Application_ContainerState)
 proto3.util.setEnumType(Application_ContainerState, "neoshowcase.protobuf.Application.ContainerState", [
   { no: 0, name: "MISSING" },
   { no: 1, name: "STARTING" },
-  { no: 2, name: "RUNNING" },
-  { no: 3, name: "EXITED" },
-  { no: 4, name: "ERRORED" },
-  { no: 5, name: "UNKNOWN" },
+  { no: 2, name: "RESTARTING" },
+  { no: 3, name: "RUNNING" },
+  { no: 4, name: "EXITED" },
+  { no: 5, name: "ERRORED" },
+  { no: 6, name: "UNKNOWN" },
 ]);
 
 /**
