@@ -87,18 +87,20 @@ func AllApplicationsDeployType() []string {
 
 // Enum values for ApplicationsContainer
 const (
-	ApplicationsContainerMissing  string = "missing"
-	ApplicationsContainerStarting string = "starting"
-	ApplicationsContainerRunning  string = "running"
-	ApplicationsContainerExited   string = "exited"
-	ApplicationsContainerErrored  string = "errored"
-	ApplicationsContainerUnknown  string = "unknown"
+	ApplicationsContainerMissing    string = "missing"
+	ApplicationsContainerStarting   string = "starting"
+	ApplicationsContainerRestarting string = "restarting"
+	ApplicationsContainerRunning    string = "running"
+	ApplicationsContainerExited     string = "exited"
+	ApplicationsContainerErrored    string = "errored"
+	ApplicationsContainerUnknown    string = "unknown"
 )
 
 func AllApplicationsContainer() []string {
 	return []string{
 		ApplicationsContainerMissing,
 		ApplicationsContainerStarting,
+		ApplicationsContainerRestarting,
 		ApplicationsContainerRunning,
 		ApplicationsContainerExited,
 		ApplicationsContainerErrored,

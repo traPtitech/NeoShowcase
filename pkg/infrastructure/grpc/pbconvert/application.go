@@ -15,12 +15,13 @@ var DeployTypeMapper = mapper.MustNewValueMapper(map[domain.DeployType]pb.Deploy
 })
 
 var ContainerStateMapper = mapper.MustNewValueMapper(map[domain.ContainerState]pb.Application_ContainerState{
-	domain.ContainerStateMissing:  pb.Application_MISSING,
-	domain.ContainerStateStarting: pb.Application_STARTING,
-	domain.ContainerStateRunning:  pb.Application_RUNNING,
-	domain.ContainerStateExited:   pb.Application_EXITED,
-	domain.ContainerStateErrored:  pb.Application_ERRORED,
-	domain.ContainerStateUnknown:  pb.Application_UNKNOWN,
+	domain.ContainerStateMissing:    pb.Application_MISSING,
+	domain.ContainerStateStarting:   pb.Application_STARTING,
+	domain.ContainerStateRestarting: pb.Application_RESTARTING,
+	domain.ContainerStateRunning:    pb.Application_RUNNING,
+	domain.ContainerStateExited:     pb.Application_EXITED,
+	domain.ContainerStateErrored:    pb.Application_ERRORED,
+	domain.ContainerStateUnknown:    pb.Application_UNKNOWN,
 })
 
 func ToPBApplication(app *domain.Application) *pb.Application {
@@ -33,6 +34,7 @@ func ToPBApplication(app *domain.Application) *pb.Application {
 		DeployType:       DeployTypeMapper.IntoMust(app.DeployType),
 		Running:          app.Running,
 		Container:        ContainerStateMapper.IntoMust(app.Container),
+		ContainerMessage: app.ContainerMessage,
 		CurrentBuild:     app.CurrentBuild,
 		CreatedAt:        timestamppb.New(app.CreatedAt),
 		UpdatedAt:        timestamppb.New(app.UpdatedAt),

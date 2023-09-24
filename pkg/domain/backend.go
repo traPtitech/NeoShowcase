@@ -25,6 +25,7 @@ type ContainerEvent struct {
 type Container struct {
 	ApplicationID string
 	State         ContainerState
+	Message       string
 }
 
 type ContainerState int
@@ -32,6 +33,7 @@ type ContainerState int
 const (
 	ContainerStateMissing ContainerState = iota
 	ContainerStateStarting
+	ContainerStateRestarting
 	ContainerStateRunning
 	ContainerStateExited
 	ContainerStateErrored

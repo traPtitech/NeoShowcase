@@ -1113,37 +1113,42 @@ export class Application extends Message<Application> {
   container = Application_ContainerState.MISSING;
 
   /**
-   * @generated from field: string current_build = 9;
+   * @generated from field: string container_message = 9;
+   */
+  containerMessage = "";
+
+  /**
+   * @generated from field: string current_build = 10;
    */
   currentBuild = "";
 
   /**
-   * @generated from field: google.protobuf.Timestamp created_at = 10;
+   * @generated from field: google.protobuf.Timestamp created_at = 11;
    */
   createdAt?: Timestamp;
 
   /**
-   * @generated from field: google.protobuf.Timestamp updated_at = 11;
+   * @generated from field: google.protobuf.Timestamp updated_at = 12;
    */
   updatedAt?: Timestamp;
 
   /**
-   * @generated from field: neoshowcase.protobuf.ApplicationConfig config = 12;
+   * @generated from field: neoshowcase.protobuf.ApplicationConfig config = 13;
    */
   config?: ApplicationConfig;
 
   /**
-   * @generated from field: repeated neoshowcase.protobuf.Website websites = 13;
+   * @generated from field: repeated neoshowcase.protobuf.Website websites = 14;
    */
   websites: Website[] = [];
 
   /**
-   * @generated from field: repeated neoshowcase.protobuf.PortPublication port_publications = 14;
+   * @generated from field: repeated neoshowcase.protobuf.PortPublication port_publications = 15;
    */
   portPublications: PortPublication[] = [];
 
   /**
-   * @generated from field: repeated string owner_ids = 15;
+   * @generated from field: repeated string owner_ids = 16;
    */
   ownerIds: string[] = [];
 
@@ -1163,13 +1168,14 @@ export class Application extends Message<Application> {
     { no: 6, name: "deploy_type", kind: "enum", T: proto3.getEnumType(DeployType) },
     { no: 7, name: "running", kind: "scalar", T: 8 /* ScalarType.BOOL */ },
     { no: 8, name: "container", kind: "enum", T: proto3.getEnumType(Application_ContainerState) },
-    { no: 9, name: "current_build", kind: "scalar", T: 9 /* ScalarType.STRING */ },
-    { no: 10, name: "created_at", kind: "message", T: Timestamp },
-    { no: 11, name: "updated_at", kind: "message", T: Timestamp },
-    { no: 12, name: "config", kind: "message", T: ApplicationConfig },
-    { no: 13, name: "websites", kind: "message", T: Website, repeated: true },
-    { no: 14, name: "port_publications", kind: "message", T: PortPublication, repeated: true },
-    { no: 15, name: "owner_ids", kind: "scalar", T: 9 /* ScalarType.STRING */, repeated: true },
+    { no: 9, name: "container_message", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+    { no: 10, name: "current_build", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+    { no: 11, name: "created_at", kind: "message", T: Timestamp },
+    { no: 12, name: "updated_at", kind: "message", T: Timestamp },
+    { no: 13, name: "config", kind: "message", T: ApplicationConfig },
+    { no: 14, name: "websites", kind: "message", T: Website, repeated: true },
+    { no: 15, name: "port_publications", kind: "message", T: PortPublication, repeated: true },
+    { no: 16, name: "owner_ids", kind: "scalar", T: 9 /* ScalarType.STRING */, repeated: true },
   ]);
 
   static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): Application {
@@ -1204,33 +1210,39 @@ export enum Application_ContainerState {
   STARTING = 1,
 
   /**
-   * @generated from enum value: RUNNING = 2;
+   * @generated from enum value: RESTARTING = 2;
    */
-  RUNNING = 2,
+  RESTARTING = 2,
 
   /**
-   * @generated from enum value: EXITED = 3;
+   * @generated from enum value: RUNNING = 3;
    */
-  EXITED = 3,
+  RUNNING = 3,
 
   /**
-   * @generated from enum value: ERRORED = 4;
+   * @generated from enum value: EXITED = 4;
    */
-  ERRORED = 4,
+  EXITED = 4,
 
   /**
-   * @generated from enum value: UNKNOWN = 5;
+   * @generated from enum value: ERRORED = 5;
    */
-  UNKNOWN = 5,
+  ERRORED = 5,
+
+  /**
+   * @generated from enum value: UNKNOWN = 6;
+   */
+  UNKNOWN = 6,
 }
 // Retrieve enum metadata with: proto3.getEnumType(Application_ContainerState)
 proto3.util.setEnumType(Application_ContainerState, "neoshowcase.protobuf.Application.ContainerState", [
   { no: 0, name: "MISSING" },
   { no: 1, name: "STARTING" },
-  { no: 2, name: "RUNNING" },
-  { no: 3, name: "EXITED" },
-  { no: 4, name: "ERRORED" },
-  { no: 5, name: "UNKNOWN" },
+  { no: 2, name: "RESTARTING" },
+  { no: 3, name: "RUNNING" },
+  { no: 4, name: "EXITED" },
+  { no: 5, name: "ERRORED" },
+  { no: 6, name: "UNKNOWN" },
 ]);
 
 /**

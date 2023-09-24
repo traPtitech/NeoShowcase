@@ -43,6 +43,14 @@ import { A, useNavigate, useParams } from '@solidjs/router'
 import { Component, For, Show, createResource, createSignal, onCleanup } from 'solid-js'
 import toast from 'solid-toast'
 
+const CodeAlignRight = styled('pre', {
+  base: {
+    display: 'block',
+    width: '100%',
+    textAlign: 'right',
+  },
+})
+
 const RuntimeConfigInfo: Component<{ config: RuntimeConfig }> = (props) => {
   return (
     <>
@@ -111,7 +119,7 @@ const ApplicationConfigInfo: Component<{ config: ApplicationConfig }> = (props) 
                 <CardItemTitle>Build Command</CardItemTitle>
               </CardItem>
               <CardItem>
-                <pre>{c.value.buildCmd}</pre>
+                <CodeAlignRight>{c.value.buildCmd}</CodeAlignRight>
               </CardItem>
             </>
           )}
@@ -321,6 +329,11 @@ export default () => {
                     <CardItemTitle>コンテナの状態</CardItemTitle>
                     <CardItemContent>{app() && titleCase(Application_ContainerState[app().container])}</CardItemContent>
                   </CardItem>
+                  <Show when={app().containerMessage !== ''}>
+                    <CardItem>
+                      <CodeAlignRight>{app().containerMessage}</CodeAlignRight>
+                    </CardItem>
+                  </Show>
                 </Show>
                 <CardItem>
                   <CardItemTitle>起動時刻</CardItemTitle>

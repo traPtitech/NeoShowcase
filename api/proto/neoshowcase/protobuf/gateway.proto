@@ -167,10 +167,11 @@ message Application {
   enum ContainerState {
     MISSING = 0;
     STARTING = 1;
-    RUNNING = 2;
-    EXITED = 3;
-    ERRORED = 4;
-    UNKNOWN = 5;
+    RESTARTING = 2;
+    RUNNING = 3;
+    EXITED = 4;
+    ERRORED = 5;
+    UNKNOWN = 6;
   }
   string id = 1;
   string name = 2;
@@ -180,13 +181,14 @@ message Application {
   DeployType deploy_type = 6;
   bool running = 7;
   ContainerState container = 8;
-  string current_build = 9;
-  google.protobuf.Timestamp created_at = 10;
-  google.protobuf.Timestamp updated_at = 11;
-  ApplicationConfig config = 12;
-  repeated Website websites = 13;
-  repeated PortPublication port_publications = 14;
-  repeated string owner_ids = 15;
+  string container_message = 9;
+  string current_build = 10;
+  google.protobuf.Timestamp created_at = 11;
+  google.protobuf.Timestamp updated_at = 12;
+  ApplicationConfig config = 13;
+  repeated Website websites = 14;
+  repeated PortPublication port_publications = 15;
+  repeated string owner_ids = 16;
 }
 
 message ApplicationEnvVar {

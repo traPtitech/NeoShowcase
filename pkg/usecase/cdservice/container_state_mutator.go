@@ -50,11 +50,14 @@ func (m *ContainerStateMutator) _updateOne(ctx context.Context, appID string) (s
 	m.lock.Lock()
 	defer m.lock.Unlock()
 
-	state, err := m.backend.GetContainer(ctx, appID)
+	container, err := m.backend.GetContainer(ctx, appID)
 	if err != nil {
 		return struct{}{}, errors.Wrap(err, "failed to get container state")
 	}
-	err = m.appRepo.UpdateApplication(ctx, appID, &domain.UpdateApplicationArgs{Container: optional.From(state.State)})
+	err = m.appRepo.UpdateApplication(ctx, appID, &domain.UpdateApplicationArgs{
+		Container:        optional.From(container.State),
+		ContainerMessage: optional.From(container.Message),
+	})
 	if err != nil {
 		return struct{}{}, errors.Wrap(err, "failed to update application")
 	}
@@ -66,23 +69,33 @@ func (m *ContainerStateMutator) updateAll(ctx context.Context) error {
 	m.lock.Lock()
 	defer m.lock.Unlock()
 
-	apps, err := m.appRepo.GetApplications(ctx, domain.GetApplicationCondition{DeployType: optional.From(domain.DeployTypeRuntime)})
+	// Fetch all runtime apps
+	allRuntimeApps, err := m.appRepo.GetApplications(ctx, domain.GetApplicationCondition{DeployType: optional.From(domain.DeployTypeRuntime)})
 	if err != nil {
 		return errors.Wrap(err, "failed to get all runtime applications")
 	}
 
+	// Fetch actual states
 	containers, err := m.backend.ListContainers(ctx)
 	if err != nil {
 		return errors.Wrap(err, "failed to list containers")
 	}
-	stateMap := lo.SliceToMap(containers, func(c *domain.Container) (string, domain.ContainerState) {
-		return c.ApplicationID, c.State
-	})
 
-	appStates := lo.SliceToMap(apps, func(app *domain.Application) (string, domain.ContainerState) {
-		return app.ID, lo.ValueOr(stateMap, app.ID, domain.ContainerStateMissing)
+	// If actual state is not found, update state as "missing"
+	stateExists := lo.SliceToMap(containers, func(c *domain.Container) (string, bool) {
+		return c.ApplicationID, true
 	})
-	err = m.appRepo.BulkUpdateState(ctx, appStates)
+	for _, app := range allRuntimeApps {
+		if !stateExists[app.ID] {
+			containers = append(containers, &domain.Container{
+				ApplicationID: app.ID,
+				State:         domain.ContainerStateMissing,
+			})
+		}
+	}
+
+	// Update
+	err = m.appRepo.BulkUpdateState(ctx, containers)
 	if err != nil {
 		return errors.Wrap(err, "failed to bulk update state")
 	}

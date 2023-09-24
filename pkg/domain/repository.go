@@ -22,6 +22,7 @@ type UpdateApplicationArgs struct {
 	Commit           optional.Of[string]
 	Running          optional.Of[bool]
 	Container        optional.Of[ContainerState]
+	ContainerMessage optional.Of[string]
 	CurrentBuild     optional.Of[string]
 	UpdatedAt        optional.Of[time.Time]
 	Config           optional.Of[ApplicationConfig]
@@ -49,6 +50,9 @@ func (a *Application) Apply(args *UpdateApplicationArgs) {
 	if args.Container.Valid {
 		a.Container = args.Container.V
 	}
+	if args.ContainerMessage.Valid {
+		a.ContainerMessage = args.ContainerMessage.V
+	}
 	if args.CurrentBuild.Valid {
 		a.CurrentBuild = args.CurrentBuild.V
 	}
@@ -75,7 +79,7 @@ type ApplicationRepository interface {
 	GetApplication(ctx context.Context, id string) (*Application, error)
 	CreateApplication(ctx context.Context, app *Application) error
 	UpdateApplication(ctx context.Context, id string, args *UpdateApplicationArgs) error
-	BulkUpdateState(ctx context.Context, m map[string]ContainerState) error
+	BulkUpdateState(ctx context.Context, states []*Container) error
 	DeleteApplication(ctx context.Context, id string) error
 }
 

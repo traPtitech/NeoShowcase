@@ -31,9 +31,11 @@ func (b *dockerBackend) GetContainer(ctx context.Context, appID string) (*domain
 			State:         domain.ContainerStateMissing,
 		}, nil
 	}
+	state, msg := getContainerState(&containers[0])
 	return &domain.Container{
 		ApplicationID: appID,
-		State:         getContainerState(&containers[0]),
+		State:         state,
+		Message:       msg,
 	}, nil
 }
 
@@ -49,33 +51,35 @@ func (b *dockerBackend) ListContainers(ctx context.Context) ([]*domain.Container
 	}
 
 	result := ds.Map(containers, func(c types.Container) *domain.Container {
+		state, msg := getContainerState(&c)
 		return &domain.Container{
 			ApplicationID: c.Labels[appIDLabel],
-			State:         getContainerState(&c),
+			State:         state,
+			Message:       msg,
 		}
 	})
 	return result, nil
 }
 
-func getContainerState(c *types.Container) domain.ContainerState {
+func getContainerState(c *types.Container) (state domain.ContainerState, message string) {
 	// https://docs.docker.com/engine/api/v1.42/#tag/Container/operation/ContainerList
 	switch strings.ToLower(c.State) {
 	case "created":
-		return domain.ContainerStateStarting
+		return domain.ContainerStateStarting, c.Status
 	case "restarting":
-		return domain.ContainerStateRunning // to match with k8s pod phase
+		return domain.ContainerStateRestarting, c.Status
 	case "running":
-		return domain.ContainerStateRunning
+		return domain.ContainerStateRunning, c.Status
 	case "exited":
 		status := strings.ToLower(c.Status)
 		if strings.HasPrefix(status, "exited (0)") || strings.HasPrefix(status, "exit 0") {
-			return domain.ContainerStateExited
+			return domain.ContainerStateExited, c.Status
 		} else {
-			return domain.ContainerStateErrored
+			return domain.ContainerStateErrored, c.Status
 		}
 	case "dead":
-		return domain.ContainerStateErrored
+		return domain.ContainerStateErrored, c.Status
 	default:
-		return domain.ContainerStateUnknown
+		return domain.ContainerStateUnknown, c.Status
 	}
 }
