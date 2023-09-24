@@ -2,6 +2,7 @@ package k8simpl
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/friendsofgo/errors"
 	"github.com/samber/lo"
@@ -26,9 +27,11 @@ func (b *k8sBackend) GetContainer(ctx context.Context, appID string) (*domain.Co
 			State:         domain.ContainerStateMissing,
 		}, nil
 	}
+	state, msg := getContainerState(list.Items[0].Status)
 	return &domain.Container{
 		ApplicationID: appID,
-		State:         getContainerState(list.Items[0].Status),
+		State:         state,
+		Message:       msg,
 	}, nil
 }
 
@@ -41,31 +44,52 @@ func (b *k8sBackend) ListContainers(ctx context.Context) ([]*domain.Container, e
 	}
 
 	result := ds.Map(list.Items, func(pod v1.Pod) *domain.Container {
+		state, msg := getContainerState(pod.Status)
 		return &domain.Container{
 			ApplicationID: pod.Labels[appIDLabel],
-			State:         getContainerState(pod.Status),
+			State:         state,
+			Message:       msg,
 		}
 	})
 	return result, nil
 }
 
-func getContainerState(status v1.PodStatus) domain.ContainerState {
+func getContainerState(status v1.PodStatus) (state domain.ContainerState, message string) {
 	cs, ok := lo.Find(status.ContainerStatuses, func(cs v1.ContainerStatus) bool { return cs.Name == podContainerName })
 	if !ok {
-		return domain.ContainerStateMissing
+		return domain.ContainerStateMissing, ""
 	}
 	if cs.State.Waiting != nil {
-		return domain.ContainerStateStarting
+		if cs.LastTerminationState.Terminated != nil {
+			return domain.ContainerStateRestarting, terminatedMessage(cs.LastTerminationState.Terminated)
+		}
+		return domain.ContainerStateStarting, ""
 	}
 	if cs.State.Running != nil {
-		return domain.ContainerStateRunning
+		return domain.ContainerStateRunning, ""
 	}
 	if cs.State.Terminated != nil {
 		if cs.State.Terminated.ExitCode == 0 {
-			return domain.ContainerStateExited
+			return domain.ContainerStateExited, terminatedMessage(cs.State.Terminated)
 		} else {
-			return domain.ContainerStateErrored
+			return domain.ContainerStateErrored, terminatedMessage(cs.State.Terminated)
 		}
 	}
-	return domain.ContainerStateUnknown
+	return domain.ContainerStateUnknown, ""
+}
+
+func terminatedMessage(state *v1.ContainerStateTerminated) string {
+	msg := fmt.Sprintf("Exited with status %d", state.ExitCode)
+	if state.Signal != 0 {
+		msg += fmt.Sprintf(" (signal %d)", state.Signal)
+	}
+	if state.Reason != "" {
+		msg += ": "
+		msg += state.Reason
+	}
+	if state.Message != "" {
+		msg += ": "
+		msg += state.Message
+	}
+	return msg
 }

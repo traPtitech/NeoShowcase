@@ -179,6 +179,10 @@ func (r *applicationRepository) UpdateApplication(ctx context.Context, id string
 		app.Container = repoconvert.ContainerStateMapper.FromMust(args.Container.V)
 		cols = append(cols, models.ApplicationColumns.Container)
 	}
+	if args.ContainerMessage.Valid {
+		app.ContainerMessage = args.ContainerMessage.V
+		cols = append(cols, models.ApplicationColumns.ContainerMessage)
+	}
 	if args.CurrentBuild.Valid {
 		app.CurrentBuild = args.CurrentBuild.V
 		cols = append(cols, models.ApplicationColumns.CurrentBuild)
@@ -229,11 +233,18 @@ func (r *applicationRepository) UpdateApplication(ctx context.Context, id string
 	return err
 }
 
-func (r *applicationRepository) BulkUpdateState(ctx context.Context, m map[string]domain.ContainerState) error {
+func (r *applicationRepository) BulkUpdateState(ctx context.Context, states []*domain.Container) error {
 	// NOTE: sqlboiler does not support bulk insert/update by default, could use custom templating
-	for appID, state := range m {
-		ma := models.Application{ID: appID, Container: repoconvert.ContainerStateMapper.FromMust(state)}
-		_, err := ma.Update(ctx, r.db, boil.Whitelist(models.ApplicationColumns.Container))
+	for _, state := range states {
+		ma := models.Application{
+			ID:               state.ApplicationID,
+			Container:        repoconvert.ContainerStateMapper.FromMust(state.State),
+			ContainerMessage: state.Message,
+		}
+		_, err := ma.Update(ctx, r.db, boil.Whitelist(
+			models.ApplicationColumns.Container,
+			models.ApplicationColumns.ContainerMessage,
+		))
 		if err != nil {
 			return errors.Wrap(err, "failed to update container state")
 		}
