@@ -25,7 +25,7 @@ require (
 	github.com/moby/buildkit v0.11.6 // NOTE: Requires github.com/docker/docker master tag (v25) as of v0.12.2, making it hard to upgrade
 	github.com/motoki317/sc v1.6.0
 	github.com/ncw/swift v1.0.53
-	github.com/prometheus/client_golang v1.16.0
+	github.com/prometheus/client_golang v1.17.0
 	github.com/prometheus/common v0.44.0
 	github.com/regclient/regclient v0.5.2
 	github.com/samber/lo v1.38.1
