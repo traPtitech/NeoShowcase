@@ -21,7 +21,7 @@ jobs:
           - ns-migrate
           - ns-ssgen
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - name: Set APP_VERSION env
         run: echo "APP_VERSION=$(echo ${GITHUB_REF:11})" >> $GITHUB_ENV
       - name: Set APP_REVISION env
@@ -63,7 +63,7 @@ jobs:
     name: Build Dashboard Image
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - name: Set APP_VERSION env
         run: echo "APP_VERSION=$(echo ${GITHUB_REF:11})" >> $GITHUB_ENV
 
@@ -116,7 +116,7 @@ jobs:
   release:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - name: Release
         uses: softprops/action-gh-release@v1
         with:

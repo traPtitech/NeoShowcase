@@ -14,7 +14,7 @@ jobs:
       - name: Set PR_NUMBER env
         run: echo "PR_NUMBER=$(echo $GITHUB_REF | sed -e 's/[^0-9]//g')" >> $GITHUB_ENV
 
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v3
