@@ -54,18 +54,17 @@ spec:
             - mountPath: /run/buildkit
               name: socket
             - mountPath: /etc/buildkit/buildkitd.toml
-              name: buildkit-config
+              name: config
               subPath: buildkitd.toml
 
         - name: builder
           image: ghcr.io/traptitech/ns-builder:main
           imagePullPolicy: Never
           args:
-            - run
             - --loglevel=debug
-            - --config=/opt/config/config.yaml
+            - --config=/opt/config/ns.yaml
           env:
-            - name: NS_BUILDPACK_K8S_PODNAME
+            - name: NS_COMPONENTS_BUILDER_BUILDPACK_K8S_PODNAME
               valueFrom:
                 fieldRef:
                   fieldPath: metadata.name
@@ -74,9 +73,9 @@ spec:
               name: buildpack
             - mountPath: /run/buildkit
               name: socket
-            - mountPath: /opt/config/config.yaml
+            - mountPath: /opt/config/ns.yaml
               name: config
-              subPath: config.yaml
+              subPath: confnsig.yaml
             - mountPath: /keys
               name: keys
             # - mountPath: /.docker
@@ -89,15 +88,6 @@ spec:
         - name: config
           configMap:
             name: ns-config
-            items:
-              - key: ns-builder.yaml
-                path: config.yaml
-        - name: buildkit-config
-          configMap:
-            name: ns-config
-            items:
-              - key: buildkitd.toml
-                path: buildkitd.toml
         - name: keys
           secret:
             secretName: ns-keys

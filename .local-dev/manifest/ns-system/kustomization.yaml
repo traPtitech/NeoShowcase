@@ -46,11 +46,8 @@ configMapGenerator:
   - name: ns-config
     files:
       - config/buildkitd.toml
+      - config/ns.yaml
       - config/ns-auth.ini
-      - config/ns-builder.yaml
-      - config/ns-controller.yaml
-      - config/ns-gateway.yaml
-      - config/ns-ssgen.yaml
     literals:
       - MariaDBHost=mariadb.ns-system.svc.cluster.local
       - MariaDBPort=3306

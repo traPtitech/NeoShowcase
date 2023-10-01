@@ -1,29 +1,36 @@
-package main
+package gateway
 
 import (
 	"context"
 	"database/sql"
 
+	_ "github.com/go-sql-driver/mysql"
 	"golang.org/x/sync/errgroup"
+
+	"github.com/traPtitech/neoshowcase/pkg/domain/web"
 )
 
+type APIServer struct {
+	*web.H2CServer
+}
+
 type Server struct {
-	appServer *gatewayServer
-	db        *sql.DB
+	APIServer *APIServer
+	DB        *sql.DB
 }
 
 func (s *Server) Start(ctx context.Context) error {
-	return s.appServer.Start(ctx)
+	return s.APIServer.Start(ctx)
 }
 
 func (s *Server) Shutdown(ctx context.Context) error {
 	eg, ctx := errgroup.WithContext(ctx)
 
 	eg.Go(func() error {
-		return s.appServer.Shutdown(ctx)
+		return s.APIServer.Shutdown(ctx)
 	})
 	eg.Go(func() error {
-		return s.db.Close()
+		return s.DB.Close()
 	})
 
 	return eg.Wait()

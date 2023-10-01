@@ -5,6 +5,7 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
 	"github.com/spf13/viper"
+	"github.com/volatiletech/sqlboiler/v4/boil"
 )
 
 var Debug = false
@@ -17,6 +18,7 @@ func SetupDebugFlag(flags *pflag.FlagSet) {
 		if Debug {
 			log.SetLevel(log.DebugLevel)
 			log.SetReportCaller(true)
+			boil.DebugMode = true
 		}
 	})
 }

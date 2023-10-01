@@ -24,7 +24,7 @@ type resources struct {
 	certificates  []*certmanagerv1.Certificate
 }
 
-func (b *k8sBackend) listCurrentResources(ctx context.Context) (*resources, error) {
+func (b *Backend) listCurrentResources(ctx context.Context) (*resources, error) {
 	var rsc resources
 	listOpt := metav1.ListOptions{LabelSelector: toSelectorString(allSelector())}
 
@@ -69,7 +69,7 @@ func (b *k8sBackend) listCurrentResources(ctx context.Context) (*resources, erro
 	return &rsc, nil
 }
 
-func (b *k8sBackend) Synchronize(ctx context.Context, s *domain.DesiredState) error {
+func (b *Backend) Synchronize(ctx context.Context, s *domain.DesiredState) error {
 	b.reloadLock.Lock()
 	defer b.reloadLock.Unlock()
 

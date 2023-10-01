@@ -10,7 +10,6 @@ import (
 	_ "github.com/go-sql-driver/mysql"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
-	"github.com/volatiletech/sqlboiler/v4/boil"
 
 	"github.com/traPtitech/neoshowcase/pkg/util/cli"
 )
@@ -22,27 +21,32 @@ var (
 
 var (
 	configFilePath string
-	c              Config
+	config         Config
 )
 
 var rootCommand = &cobra.Command{
-	Use:              "ns-controller",
-	Short:            "NeoShowcase Controller Server",
+	Use:              "ns",
+	Short:            "NeoShowcase",
 	Version:          fmt.Sprintf("%s (%s)", version, revision),
 	PersistentPreRun: cli.PrintVersion,
 }
 
-func runCommand() *cobra.Command {
-	cmd := &cobra.Command{
-		Use: "run",
+type component interface {
+	Start(ctx context.Context) error
+	Shutdown(ctx context.Context) error
+}
+
+type componentGenF = func(c Config) (component, error)
+
+func componentCommand(name string, gen componentGenF, longDesc string) *cobra.Command {
+	return &cobra.Command{
+		Use:   name,
+		Short: fmt.Sprintf("NeoShowcase %s component", name),
+		Long:  longDesc,
 		RunE: func(cmd *cobra.Command, args []string) error {
-			service, err := New(c)
+			service, err := gen(config)
 			if err != nil {
 				return err
-			}
-
-			if c.Debug {
-				boil.DebugMode = true
 			}
 
 			go func() {
@@ -51,23 +55,29 @@ func runCommand() *cobra.Command {
 					log.Fatalf("failed to start service: %+v", err)
 				}
 			}()
+			log.Infof("NeoShowcase %s started", name)
 
-			log.Info("NeoShowcase Controller started")
 			cli.WaitSIGINT()
 			ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 			defer cancel()
 			return service.Shutdown(ctx)
 		},
 	}
-	return cmd
 }
 
 func main() {
-	cobra.OnInitialize(cli.CobraOnInitializeFunc(&configFilePath, &c))
+	cobra.OnInitialize(cli.CobraOnInitializeFunc(&configFilePath, &config))
 
 	rootCommand.AddCommand(
-		runCommand(),
-		cli.PrintConfCommand(&c),
+		componentCommand("auth-dev", NewAuthDev, ""),
+		componentCommand("builder", NewBuilder, ""),
+		componentCommand("controller", NewController, ""),
+		componentCommand("gateway", NewGateway, ""),
+		componentCommand("gitea-integration", NewGiteaIntegration, `Synchronizes gitea user / organization repositories and its owners with configured interval.
+Operator needs to ensure that usernames of NeoShowcase and gitea are equivalent via SSO or some other method.
+Admin token required.`),
+		componentCommand("ssgen", NewSSGen, ""),
+		cli.PrintConfCommand(&config),
 	)
 
 	flags := rootCommand.PersistentFlags()

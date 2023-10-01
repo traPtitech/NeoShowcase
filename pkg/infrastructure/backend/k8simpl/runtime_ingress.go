@@ -16,7 +16,7 @@ import (
 	"github.com/traPtitech/neoshowcase/pkg/domain/web"
 )
 
-func (b *k8sBackend) stripMiddleware(app *domain.Application, website *domain.Website) *traefikv1alpha1.Middleware {
+func (b *Backend) stripMiddleware(app *domain.Application, website *domain.Website) *traefikv1alpha1.Middleware {
 	return &traefikv1alpha1.Middleware{
 		TypeMeta: metav1.TypeMeta{
 			Kind:       "Middleware",
@@ -35,7 +35,7 @@ func (b *k8sBackend) stripMiddleware(app *domain.Application, website *domain.We
 	}
 }
 
-func (b *k8sBackend) certificate(targetDomain string) *certmanagerv1.Certificate {
+func (b *Backend) certificate(targetDomain string) *certmanagerv1.Certificate {
 	return &certmanagerv1.Certificate{
 		TypeMeta: metav1.TypeMeta{
 			APIVersion: "cert-manager.io/v1",
@@ -62,7 +62,7 @@ func (b *k8sBackend) certificate(targetDomain string) *certmanagerv1.Certificate
 	}
 }
 
-func (b *k8sBackend) ingressRoute(
+func (b *Backend) ingressRoute(
 	app *domain.Application,
 	website *domain.Website,
 	serviceRefs []traefikv1alpha1.Service,

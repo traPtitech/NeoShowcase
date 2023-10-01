@@ -6,7 +6,7 @@ import (
 	"github.com/traPtitech/neoshowcase/pkg/domain"
 )
 
-func (b *dockerBackend) Synchronize(ctx context.Context, s *domain.DesiredState) error {
+func (b *Backend) Synchronize(ctx context.Context, s *domain.DesiredState) error {
 	b.reloadLock.Lock()
 	defer b.reloadLock.Unlock()
 

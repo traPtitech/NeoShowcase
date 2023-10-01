@@ -1,12 +1,14 @@
-package main
+package controller
 
 import (
 	"context"
 	"database/sql"
 
+	_ "github.com/go-sql-driver/mysql"
 	"golang.org/x/sync/errgroup"
 
 	"github.com/traPtitech/neoshowcase/pkg/domain"
+	"github.com/traPtitech/neoshowcase/pkg/domain/web"
 	"github.com/traPtitech/neoshowcase/pkg/infrastructure/webhook"
 	"github.com/traPtitech/neoshowcase/pkg/usecase/cdservice"
 	"github.com/traPtitech/neoshowcase/pkg/usecase/cleaner"
@@ -14,43 +16,47 @@ import (
 	"github.com/traPtitech/neoshowcase/pkg/usecase/sshserver"
 )
 
-type Server struct {
-	controllerServer *controllerServer
+type APIServer struct {
+	*web.H2CServer
+}
 
-	db             *sql.DB
-	backend        domain.Backend
-	sshServer      sshserver.SSHServer
-	webhook        *webhook.Receiver
-	cdService      cdservice.Service
-	fetcherService repofetcher.Service
-	cleanerService cleaner.Service
+type Server struct {
+	APIServer *APIServer
+
+	DB             *sql.DB
+	Backend        domain.Backend
+	SSHServer      sshserver.SSHServer
+	Webhook        *webhook.Receiver
+	CDService      cdservice.Service
+	FetcherService repofetcher.Service
+	CleanerService cleaner.Service
 }
 
 func (s *Server) Start(ctx context.Context) error {
 	eg, ctx := errgroup.WithContext(ctx)
 
 	eg.Go(func() error {
-		return s.backend.Start(ctx)
+		return s.Backend.Start(ctx)
 	})
 	eg.Go(func() error {
-		return s.sshServer.Start()
+		return s.SSHServer.Start()
 	})
 	eg.Go(func() error {
-		return s.webhook.Start(ctx)
+		return s.Webhook.Start(ctx)
 	})
 	eg.Go(func() error {
-		s.cdService.Run()
+		s.CDService.Run()
 		return nil
 	})
 	eg.Go(func() error {
-		s.fetcherService.Run()
+		s.FetcherService.Run()
 		return nil
 	})
 	eg.Go(func() error {
-		return s.cleanerService.Start(ctx)
+		return s.CleanerService.Start(ctx)
 	})
 	eg.Go(func() error {
-		return s.controllerServer.Start(ctx)
+		return s.APIServer.Start(ctx)
 	})
 
 	return eg.Wait()
@@ -60,28 +66,28 @@ func (s *Server) Shutdown(ctx context.Context) error {
 	eg, ctx := errgroup.WithContext(ctx)
 
 	eg.Go(func() error {
-		return s.db.Close()
+		return s.DB.Close()
 	})
 	eg.Go(func() error {
-		return s.backend.Dispose(ctx)
+		return s.Backend.Dispose(ctx)
 	})
 	eg.Go(func() error {
-		return s.sshServer.Close()
+		return s.SSHServer.Close()
 	})
 	eg.Go(func() error {
-		return s.webhook.Shutdown(ctx)
+		return s.Webhook.Shutdown(ctx)
 	})
 	eg.Go(func() error {
-		return s.cdService.Stop(ctx)
+		return s.CDService.Stop(ctx)
 	})
 	eg.Go(func() error {
-		return s.fetcherService.Stop(ctx)
+		return s.FetcherService.Stop(ctx)
 	})
 	eg.Go(func() error {
-		return s.cleanerService.Shutdown(ctx)
+		return s.CleanerService.Shutdown(ctx)
 	})
 	eg.Go(func() error {
-		return s.controllerServer.Shutdown(ctx)
+		return s.APIServer.Shutdown(ctx)
 	})
 
 	return eg.Wait()

@@ -21,7 +21,7 @@ import (
 	"github.com/traPtitech/neoshowcase/pkg/domain"
 )
 
-func prepareManager(t *testing.T) (*k8sBackend, *kubernetes.Clientset, *traefikv1alpha1.TraefikV1alpha1Client) {
+func prepareManager(t *testing.T) (*Backend, *kubernetes.Clientset, *traefikv1alpha1.TraefikV1alpha1Client) {
 	const appsNamespace = "neoshowcase-apps"
 
 	t.Helper()
@@ -69,7 +69,7 @@ func prepareManager(t *testing.T) (*k8sBackend, *kubernetes.Clientset, *traefikv
 		_ = b.Dispose(context.Background())
 	})
 
-	return b.(*k8sBackend), client, traefikClient
+	return b, client, traefikClient
 }
 
 func waitCondition(t *testing.T, cond func() (ok bool, err error)) {
@@ -87,7 +87,7 @@ func waitCondition(t *testing.T, cond func() (ok bool, err error)) {
 	}
 }
 
-func waitPodRunning(t *testing.T, b *k8sBackend, appID string) {
+func waitPodRunning(t *testing.T, b *Backend, appID string) {
 	t.Helper()
 	waitCondition(t, func() (ok bool, err error) {
 		status, err := b.GetContainer(context.Background(), appID)
@@ -98,7 +98,7 @@ func waitPodRunning(t *testing.T, b *k8sBackend, appID string) {
 	})
 }
 
-func waitPodDeleted(t *testing.T, b *k8sBackend, appID string) {
+func waitPodDeleted(t *testing.T, b *Backend, appID string) {
 	t.Helper()
 	waitCondition(t, func() (ok bool, err error) {
 		status, err := b.GetContainer(context.Background(), appID)

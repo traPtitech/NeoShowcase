@@ -19,16 +19,15 @@ spec:
           image: ghcr.io/traptitech/ns-gateway:main
           imagePullPolicy: Never
           args:
-            - run
             - --loglevel=debug
             - --config=/opt/config/ns-gateway.yaml
           ports:
             - containerPort: 8080
               name: http
           volumeMounts:
-            - mountPath: /opt/config/ns-gateway.yaml
+            - mountPath: /opt/config/ns.yaml
               name: config
-              subPath: ns-gateway.yaml
+              subPath: ns.yaml
             - mountPath: /keys
               name: keys
       volumes:

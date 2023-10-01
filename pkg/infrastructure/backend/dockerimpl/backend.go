@@ -31,7 +31,9 @@ const (
 	traefikSSServiceName   = "ss"
 )
 
-type dockerBackend struct {
+var _ domain.Backend = (*Backend)(nil)
+
+type Backend struct {
 	c      *client.Client
 	config Config
 	image  builder.ImageConfig
@@ -50,12 +52,12 @@ func NewDockerBackend(
 	c *client.Client,
 	config Config,
 	image builder.ImageConfig,
-) (domain.Backend, error) {
+) (*Backend, error) {
 	err := config.Validate()
 	if err != nil {
 		return nil, err
 	}
-	b := &dockerBackend{
+	b := &Backend{
 		c:      c,
 		config: config,
 		image:  image,
@@ -63,7 +65,7 @@ func NewDockerBackend(
 	return b, nil
 }
 
-func (b *dockerBackend) Start(ctx context.Context) error {
+func (b *Backend) Start(ctx context.Context) error {
 	// showcase用のネットワークを用意
 	if err := b.initNetworks(ctx); err != nil {
 		return errors.Wrap(err, "failed to init networks")
@@ -76,7 +78,7 @@ func (b *dockerBackend) Start(ctx context.Context) error {
 	return nil
 }
 
-func (b *dockerBackend) eventListenerLoop(ctx context.Context) {
+func (b *Backend) eventListenerLoop(ctx context.Context) {
 	for {
 		err := b.eventListener(ctx)
 		if err == nil {
@@ -91,7 +93,7 @@ func (b *dockerBackend) eventListenerLoop(ctx context.Context) {
 	}
 }
 
-func (b *dockerBackend) eventListener(ctx context.Context) error {
+func (b *Backend) eventListener(ctx context.Context) error {
 	// https://docs.docker.com/engine/reference/commandline/events/
 	ch, errCh := b.c.Events(ctx, types.EventsOptions{Filters: filters.NewArgs(filters.Arg("type", "container"))})
 	for {
@@ -117,16 +119,16 @@ func (b *dockerBackend) eventListener(ctx context.Context) error {
 	}
 }
 
-func (b *dockerBackend) Dispose(_ context.Context) error {
+func (b *Backend) Dispose(_ context.Context) error {
 	b.eventCancel()
 	return nil
 }
 
-func (b *dockerBackend) AvailableDomains() domain.AvailableDomainSlice {
+func (b *Backend) AvailableDomains() domain.AvailableDomainSlice {
 	return ds.Map(b.config.Domains, (*domainConf).toDomainAD)
 }
 
-func (b *dockerBackend) targetAuth(fqdn string) *domainAuthConf {
+func (b *Backend) targetAuth(fqdn string) *domainAuthConf {
 	for _, dc := range b.config.Domains {
 		if dc.Auth.Available && dc.toDomainAD().Match(fqdn) {
 			return dc.Auth
@@ -135,15 +137,15 @@ func (b *dockerBackend) targetAuth(fqdn string) *domainAuthConf {
 	return nil
 }
 
-func (b *dockerBackend) AvailablePorts() domain.AvailablePortSlice {
+func (b *Backend) AvailablePorts() domain.AvailablePortSlice {
 	return ds.Map(b.config.Ports, (*portConf).toDomainAP)
 }
 
-func (b *dockerBackend) ListenContainerEvents() (sub <-chan *domain.ContainerEvent, unsub func()) {
+func (b *Backend) ListenContainerEvents() (sub <-chan *domain.ContainerEvent, unsub func()) {
 	return b.eventSubs.Subscribe()
 }
 
-func (b *dockerBackend) initNetworks(ctx context.Context) error {
+func (b *Backend) initNetworks(ctx context.Context) error {
 	networks, err := b.c.NetworkList(ctx, types.NetworkListOptions{})
 	if err != nil {
 		return errors.Wrap(err, "failed to list networks")
@@ -158,7 +160,7 @@ func (b *dockerBackend) initNetworks(ctx context.Context) error {
 	return err
 }
 
-func (b *dockerBackend) authConfig() (string, error) {
+func (b *Backend) authConfig() (string, error) {
 	if b.image.Registry.Username == "" && b.image.Registry.Password == "" {
 		return "", nil
 	}
@@ -184,7 +186,7 @@ func getRestartedAt(c *types.Container) time.Time {
 	return t
 }
 
-func (b *dockerBackend) containerLabels(app *domain.Application) map[string]string {
+func (b *Backend) containerLabels(app *domain.Application) map[string]string {
 	return ds.MergeMap(b.config.labels(), map[string]string{
 		appLabel:            "true",
 		appIDLabel:          app.ID,

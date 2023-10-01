@@ -4,10 +4,10 @@ services:
       context: .
       target: ns-gateway
     image: ghcr.io/traptitech/ns-gateway:main
-    command: run --debug --loglevel=trace --config=/config.yaml
+    command: --debug --loglevel=trace --config=/config.yaml
     restart: always
     volumes:
-      - ./.local-dev/config/ns-gateway.yaml:/config.yaml
+      - ./.local-dev/config/ns.yaml:/config.yaml
       - ./.local-dev/local-storage:/data
       - ./.local-dev/keys:/keys
     labels:
@@ -49,11 +49,11 @@ services:
       context: .
       target: ns-controller
     image: ghcr.io/traptitech/ns-controller:main
-    command: run --debug --loglevel=trace --config=/config.yaml
+    command: --debug --loglevel=trace --config=/config.yaml
     restart: always
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
-      - ./.local-dev/config/ns-controller.yaml:/config.yaml
+      - ./.local-dev/config/ns.yaml:/config.yaml
       - ./.local-dev/local-storage:/data
       - ./.local-dev/keys:/keys
       - ./.local-dev/traefik:/opt/traefik/conf
@@ -84,10 +84,10 @@ services:
 #      context: .
 #      target: ns-gitea-integration
 #    image: ghcr.io/traptitech/ns-gitea-integration:main
-#    command: run --debug --loglevel=trace --config=/config.yaml
+#    command: --debug --loglevel=trace --config=/config.yaml
 #    restart: always
 #    volumes:
-#      - ./.local-dev/config/ns-gitea-integration.yaml:/config.yaml
+#      - ./.local-dev/config/ns.yaml:/config.yaml
 #    depends_on:
 #      mysql:
 #        condition: service_healthy
@@ -128,11 +128,11 @@ services:
       context: .
       target: ns-builder
     image: ghcr.io/traptitech/ns-builder:main
-    command: run --debug --loglevel=trace --config=/config.yaml
+    command: --debug --loglevel=trace --config=/config.yaml
     restart: always
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
-      - ./.local-dev/config/ns-builder.yaml:/config.yaml
+      - ./.local-dev/config/ns.yaml:/config.yaml
       - ./.local-dev/keys:/keys
       - ./.local-dev/local-storage:/data
       - ~/.ssh/known_hosts:/root/.ssh/known_hosts
@@ -162,10 +162,10 @@ services:
       context: .
       target: ns-ssgen
     image: ghcr.io/traptitech/ns-ssgen:main
-    command: run --debug --loglevel=trace --config=/config.yaml
+    command: --debug --loglevel=trace --config=/config.yaml
     restart: always
     volumes:
-      - ./.local-dev/config/ns-ssgen.yaml:/config.yaml
+      - ./.local-dev/config/ns.yaml:/config.yaml
       - ./.local-dev/staticsite/artifacts:/artifacts
       - ./.local-dev/local-storage:/data
     depends_on:

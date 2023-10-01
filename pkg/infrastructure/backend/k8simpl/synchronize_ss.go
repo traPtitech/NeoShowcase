@@ -10,7 +10,7 @@ import (
 	"github.com/traPtitech/neoshowcase/pkg/domain/web"
 )
 
-func (b *k8sBackend) ssServiceRef() []traefikv1alpha1.Service {
+func (b *Backend) ssServiceRef() []traefikv1alpha1.Service {
 	return []traefikv1alpha1.Service{{
 		LoadBalancerSpec: traefikv1alpha1.LoadBalancerSpec{
 			Name:      b.config.SS.Name,
@@ -22,7 +22,7 @@ func (b *k8sBackend) ssServiceRef() []traefikv1alpha1.Service {
 	}}
 }
 
-func (b *k8sBackend) ssHeaderMiddleware(ss *domain.StaticSite) *traefikv1alpha1.Middleware {
+func (b *Backend) ssHeaderMiddleware(ss *domain.StaticSite) *traefikv1alpha1.Middleware {
 	return &traefikv1alpha1.Middleware{
 		TypeMeta: metav1.TypeMeta{
 			Kind:       "Middleware",
@@ -43,7 +43,7 @@ func (b *k8sBackend) ssHeaderMiddleware(ss *domain.StaticSite) *traefikv1alpha1.
 	}
 }
 
-func (b *k8sBackend) ssResources(next *resources, sites []*domain.StaticSite) {
+func (b *Backend) ssResources(next *resources, sites []*domain.StaticSite) {
 	for _, site := range sites {
 		ingressRoute, mw, certs := b.ingressRoute(site.Application, site.Website, b.ssServiceRef())
 
