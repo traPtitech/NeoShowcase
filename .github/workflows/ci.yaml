@@ -11,7 +11,7 @@ jobs:
     name: Modules
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - uses: actions/setup-go@v4
         with:
           go-version-file: ./go.mod
@@ -30,7 +30,7 @@ jobs:
           - ns-gitea-integration
           - ns-ssgen
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - uses: actions/setup-go@v4
         with:
           go-version-file: ./go.mod
@@ -41,7 +41,7 @@ jobs:
     runs-on: ubuntu-latest
     needs: [mod]
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - uses: actions/setup-go@v4
         with:
           go-version-file: ./go.mod
@@ -84,7 +84,7 @@ jobs:
         ports:
           - 5010:27017
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - uses: actions/setup-go@v4
         with:
           go-version-file: ./go.mod
@@ -110,7 +110,7 @@ jobs:
     env:
       ENABLE_K8S_TESTS: "true"
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - uses: actions/setup-go@v4
         with:
           go-version-file: ./go.mod
@@ -155,7 +155,7 @@ jobs:
         ports:
           - 5004:3306
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - uses: actions/setup-go@v4
         with:
           go-version-file: ./go.mod
