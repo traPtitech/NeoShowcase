@@ -20,7 +20,7 @@
     "@macaron-css/core": "1.2.0",
     "@macaron-css/solid": "1.4.1",
     "@macaron-css/vite": "1.4.3",
-    "@types/node": "20.5.8",
+    "@types/node": "20.8.0",
     "typescript": "5.2.2",
     "vite": "4.4.9",
     "vite-plugin-compression": "0.5.1",
