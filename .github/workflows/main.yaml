@@ -9,15 +9,6 @@ jobs:
   build-base-image:
     name: Build Base Image
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        component:
-          - ns-builder
-          - ns-controller
-          - ns-gateway
-          - ns-gitea-integration
-          - ns-migrate
-          - ns-ssgen
     steps:
       - uses: actions/checkout@v4
       - run: echo "APP_VERSION=main-SNAPSHOT" >> $GITHUB_ENV

@@ -48,6 +48,8 @@ jobs:
   build-component-images:
     name: Build Component Images
     runs-on: ubuntu-latest
+    needs:
+      - build-base-image
     strategy:
       matrix:
         component:
