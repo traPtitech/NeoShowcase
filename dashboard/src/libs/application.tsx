@@ -58,9 +58,14 @@ const useDeployState = (app: Application): ApplicationState => {
   }
 }
 
+const errorCommit = '0'.repeat(40)
+
 export const applicationState = (app: Application): ApplicationState => {
   if (!app.running) {
     return ApplicationState.Idle
+  }
+  if (app.commit === errorCommit) {
+    return ApplicationState.Error
   }
   switch (app.latestBuildStatus) {
     case BuildStatus.QUEUED:
