@@ -19,7 +19,7 @@ type (
 	a []any
 )
 
-func (b *dockerBackend) routerBase(website *domain.Website, svcName string) (router m, middlewares m) {
+func (b *Backend) routerBase(website *domain.Website, svcName string) (router m, middlewares m) {
 	middlewares = make(m)
 
 	var entrypoints []string
@@ -92,7 +92,7 @@ func newRuntimeConfigBuilder() *runtimeConfigBuilder {
 	}
 }
 
-func (b *runtimeConfigBuilder) addWebsite(backend *dockerBackend, app *domain.Application, website *domain.Website) {
+func (b *runtimeConfigBuilder) addWebsite(backend *Backend, app *domain.Application, website *domain.Website) {
 	svcName := traefikName(website)
 
 	router, middlewares := backend.routerBase(website, svcName)
@@ -139,7 +139,7 @@ func (b *runtimeConfigBuilder) build() m {
 	}
 }
 
-func (b *dockerBackend) writeConfig(filename string, config any) error {
+func (b *Backend) writeConfig(filename string, config any) error {
 	file, err := os.OpenFile(filepath.Join(b.config.ConfDir, filename), os.O_CREATE|os.O_TRUNC|os.O_WRONLY, 0644)
 	if err != nil {
 		return errors.Wrap(err, "failed to open config file")

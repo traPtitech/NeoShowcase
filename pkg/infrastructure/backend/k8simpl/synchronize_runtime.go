@@ -23,7 +23,7 @@ func comparePort(port v1.ContainerPort) string {
 	return fmt.Sprintf("%d/%s", port.ContainerPort, port.Protocol)
 }
 
-func (b *k8sBackend) runtimeSpec(app *domain.RuntimeDesiredState) (*appsv1.StatefulSet, *v1.Service, *v1.Secret) {
+func (b *Backend) runtimeSpec(app *domain.RuntimeDesiredState) (*appsv1.StatefulSet, *v1.Service, *v1.Secret) {
 	var secret *v1.Secret
 	var envs []v1.EnvVar
 	if len(app.Envs) > 0 {
@@ -157,7 +157,7 @@ func (b *k8sBackend) runtimeSpec(app *domain.RuntimeDesiredState) (*appsv1.State
 	return ss, svc, secret
 }
 
-func (b *k8sBackend) runtimeServiceRef(app *domain.Application, website *domain.Website) []traefikv1alpha1.Service {
+func (b *Backend) runtimeServiceRef(app *domain.Application, website *domain.Website) []traefikv1alpha1.Service {
 	return []traefikv1alpha1.Service{{
 		LoadBalancerSpec: traefikv1alpha1.LoadBalancerSpec{
 			Name:      deploymentName(app.ID),
@@ -174,7 +174,7 @@ var protocolMapper = mapper.MustNewValueMapper(map[domain.PortPublicationProtoco
 	domain.PortPublicationProtocolUDP: v1.ProtocolUDP,
 })
 
-func (b *k8sBackend) runtimePortService(app *domain.Application, port *domain.PortPublication) *v1.Service {
+func (b *Backend) runtimePortService(app *domain.Application, port *domain.PortPublication) *v1.Service {
 	return &v1.Service{
 		TypeMeta: metav1.TypeMeta{
 			Kind:       "Service",
@@ -197,7 +197,7 @@ func (b *k8sBackend) runtimePortService(app *domain.Application, port *domain.Po
 	}
 }
 
-func (b *k8sBackend) runtimeResources(next *resources, apps []*domain.RuntimeDesiredState) {
+func (b *Backend) runtimeResources(next *resources, apps []*domain.RuntimeDesiredState) {
 	for _, app := range apps {
 		ss, svc, secret := b.runtimeSpec(app)
 		next.statefulSets = append(next.statefulSets, ss)

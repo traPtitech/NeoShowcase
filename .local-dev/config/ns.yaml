@@ -1,0 +1,137 @@
+privateKeyFile: /keys/id_ed25519
+adminerURL: http://adminer.local.trapti.tech/
+
+db:
+  host: mysql
+  port: 3306
+  username: root
+  password: password
+  database: neoshowcase
+
+storage:
+  type: local
+  local:
+    dir: /data
+
+image:
+  registry:
+    scheme: http
+    addr: registry.local
+    username: ""
+    password: ""
+  namePrefix: ns-apps/
+  tmpNamePrefix: ns-apps-tmp/
+
+components:
+  builder:
+    buildkit:
+      address: tcp://buildkitd:1234
+    buildpack:
+      backend: docker
+      docker:
+        containerName: neoshowcase-buildpack-1
+        remoteDir: /workspace
+        user: cnb
+        group: cnb
+        platformAPI: "0.11"
+    controller:
+      url: http://ns-controller:10000
+
+  controller:
+    port: 10000
+    mode: docker
+    docker:
+      confDir: /opt/traefik/conf
+      domains:
+        - domain: "*.local.trapti.tech"
+          excludes: []
+          auth:
+            available: true
+            soft:
+              - nsapp_auth_soft@file
+              - nsapp_auth@file
+              # - ns_auth_dev@file
+            hard:
+              - nsapp_auth_hard@file
+              - nsapp_auth@file
+              # - ns_auth_dev@file
+      ports:
+        - startPort: 30000
+          endPort: 31000
+          protocol: tcp
+        - startPort: 30000
+          endPort: 31000
+          protocol: udp
+      ss:
+        url: http://static-server:80/
+      network: neoshowcase_apps
+      labels:
+        # test additional labels
+        - key: neoshowcase.trap.jp/test
+          value: ns-apps
+      tls:
+        certResolver: nsresolver
+        wildcard:
+          domains: []
+      resources:
+        cpus: 1.6
+        memory: 1000000000 # 1GB
+        memorySwap: -1
+        memoryReservation: 256000000 # 256MB
+    ssh:
+      host: localhost
+      port: 2201
+    webhook:
+      basePath: /api/webhook
+      port: 8080
+
+  gateway:
+    port: 8080
+    avatarBaseURL: https://q.trap.jp/api/v3/public/icon/
+    authHeader: X-Showcase-User
+    controller:
+      url: http://ns-controller:10000
+    mariadb:
+      host: mysql
+      port: 3306
+      adminUser: root
+      adminPassword: password
+    mongodb:
+      host: mongo
+      port: 27017
+      adminUser: root
+      adminPassword: password
+    log:
+      type: loki
+      loki:
+        endpoint: http://loki:3100
+        queryTemplate: "{ns_trap_jp_app_id=\"{{ .App.ID }}\"}"
+    metrics:
+      type: prometheus
+      prometheus:
+        endpoint: http://victoria-metrics:8428
+        queries:
+          - name: CPU
+            template: >-
+              rate(container_cpu_user_seconds_total{name="nsapp-{{ .App.ID }}"}[5m])
+               + rate(container_cpu_system_seconds_total{name="nsapp-{{ .App.ID }}"}[5m])
+          - name: Memory
+            template: >-
+              container_memory_usage_bytes{name="nsapp-{{ .App.ID }}"}
+               + container_memory_swap{name="nsapp-{{ .App.ID }}"}
+
+  giteaIntegration:
+    url: https://git.trap.jp
+    token: ""
+    intervalSeconds: 600
+
+  ssgen:
+    artifactsRoot: /artifacts
+    healthPort: 8081
+    server:
+      type: caddy
+      caddy:
+        adminAPI: http://static-server:2019
+        docsRoot: /artifacts
+    controller:
+      url: http://ns-controller:10000

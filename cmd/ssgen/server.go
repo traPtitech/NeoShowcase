@@ -1,4 +1,4 @@
-package main
+package ssgen
 
 import (
 	"context"
@@ -12,23 +12,23 @@ import (
 )
 
 type Server struct {
-	db     *sql.DB
-	svc    ssgen.GeneratorService
-	health healthcheck.Server
-	engine domain.StaticServer
+	DB      *sql.DB
+	Service ssgen.GeneratorService
+	Health  healthcheck.Server
+	Engine  domain.StaticServer
 }
 
 func (s *Server) Start(ctx context.Context) error {
 	eg, ctx := errgroup.WithContext(ctx)
 
 	eg.Go(func() error {
-		return s.svc.Start(ctx)
+		return s.Service.Start(ctx)
 	})
 	eg.Go(func() error {
-		return s.health.Start(ctx)
+		return s.Health.Start(ctx)
 	})
 	eg.Go(func() error {
-		return s.engine.Start(ctx)
+		return s.Engine.Start(ctx)
 	})
 
 	return eg.Wait()
@@ -38,16 +38,16 @@ func (s *Server) Shutdown(ctx context.Context) error {
 	eg, ctx := errgroup.WithContext(ctx)
 
 	eg.Go(func() error {
-		return s.db.Close()
+		return s.DB.Close()
 	})
 	eg.Go(func() error {
-		return s.svc.Shutdown(ctx)
+		return s.Service.Shutdown(ctx)
 	})
 	eg.Go(func() error {
-		return s.health.Shutdown(ctx)
+		return s.Health.Shutdown(ctx)
 	})
 	eg.Go(func() error {
-		return s.engine.Shutdown(ctx)
+		return s.Engine.Shutdown(ctx)
 	})
 
 	return eg.Wait()

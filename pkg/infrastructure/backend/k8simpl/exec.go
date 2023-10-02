@@ -10,7 +10,7 @@ import (
 	"k8s.io/client-go/tools/remotecommand"
 )
 
-func (b *k8sBackend) AttachContainer(ctx context.Context, appID string, stdin io.Reader, stdout, stderr io.Writer) error {
+func (b *Backend) AttachContainer(ctx context.Context, appID string, stdin io.Reader, stdout, stderr io.Writer) error {
 	req := b.client.CoreV1().RESTClient().Post().
 		Resource("pods").Name(generatedPodName(appID)).
 		Namespace(b.config.Namespace).SubResource("attach")
@@ -38,7 +38,7 @@ func (b *k8sBackend) AttachContainer(ctx context.Context, appID string, stdin io
 	return nil
 }
 
-func (b *k8sBackend) ExecContainer(ctx context.Context, appID string, cmd []string, stdin io.Reader, stdout, stderr io.Writer) error {
+func (b *Backend) ExecContainer(ctx context.Context, appID string, cmd []string, stdin io.Reader, stdout, stderr io.Writer) error {
 	req := b.client.CoreV1().RESTClient().Post().
 		Resource("pods").Name(generatedPodName(appID)).
 		Namespace(b.config.Namespace).SubResource("exec")

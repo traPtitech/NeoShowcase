@@ -37,7 +37,7 @@ func streamHijackedResp(ctx context.Context, res types.HijackedResponse, stdin i
 	return eg.Wait()
 }
 
-func (b *dockerBackend) AttachContainer(ctx context.Context, appID string, stdin io.Reader, stdout, stderr io.Writer) error {
+func (b *Backend) AttachContainer(ctx context.Context, appID string, stdin io.Reader, stdout, stderr io.Writer) error {
 	res, err := b.c.ContainerAttach(ctx, containerName(appID), types.ContainerAttachOptions{
 		Stream:     true,
 		Stdin:      true,
@@ -52,7 +52,7 @@ func (b *dockerBackend) AttachContainer(ctx context.Context, appID string, stdin
 	return streamHijackedResp(ctx, res, stdin, stdout, stderr)
 }
 
-func (b *dockerBackend) ExecContainer(ctx context.Context, appID string, cmd []string, stdin io.Reader, stdout, stderr io.Writer) error {
+func (b *Backend) ExecContainer(ctx context.Context, appID string, cmd []string, stdin io.Reader, stdout, stderr io.Writer) error {
 	execConf := types.ExecConfig{
 		Tty:          true,
 		AttachStdin:  true,

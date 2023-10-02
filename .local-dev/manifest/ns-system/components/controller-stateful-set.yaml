@@ -22,9 +22,8 @@ spec:
           image: ghcr.io/traptitech/ns-controller:main
           imagePullPolicy: Never
           args:
-            - run
             - --loglevel=debug
-            - --config=/opt/config/ns-controller.yaml
+            - --config=/opt/config/ns.yaml
           ports:
             - containerPort: 2201
               name: ssh
@@ -35,9 +34,9 @@ spec:
           volumeMounts:
             - mountPath: /opt/repo-cache
               name: repository-cache
-            - mountPath: /opt/config/ns-controller.yaml
+            - mountPath: /opt/config/ns.yaml
               name: config
-              subPath: ns-controller.yaml
+              subPath: ns.yaml
             - mountPath: /keys
               name: keys
       volumes:

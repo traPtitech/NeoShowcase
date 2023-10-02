@@ -13,7 +13,7 @@ import (
 	"github.com/traPtitech/neoshowcase/pkg/util/ds"
 )
 
-func (b *dockerBackend) GetContainer(ctx context.Context, appID string) (*domain.Container, error) {
+func (b *Backend) GetContainer(ctx context.Context, appID string) (*domain.Container, error) {
 	containers, err := b.c.ContainerList(ctx, types.ContainerListOptions{
 		All: true,
 		Filters: filters.NewArgs(
@@ -39,7 +39,7 @@ func (b *dockerBackend) GetContainer(ctx context.Context, appID string) (*domain
 	}, nil
 }
 
-func (b *dockerBackend) ListContainers(ctx context.Context) ([]*domain.Container, error) {
+func (b *Backend) ListContainers(ctx context.Context) ([]*domain.Container, error) {
 	containers, err := b.c.ContainerList(ctx, types.ContainerListOptions{
 		All: true,
 		Filters: filters.NewArgs(

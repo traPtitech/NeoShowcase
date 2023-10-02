@@ -13,7 +13,7 @@ import (
 	"github.com/traPtitech/neoshowcase/pkg/util/ds"
 )
 
-func (b *k8sBackend) GetContainer(ctx context.Context, appID string) (*domain.Container, error) {
+func (b *Backend) GetContainer(ctx context.Context, appID string) (*domain.Container, error) {
 	list, err := b.client.CoreV1().Pods(b.config.Namespace).List(ctx, metav1.ListOptions{
 		LabelSelector: toSelectorString(appSelector(appID)),
 	})
@@ -35,7 +35,7 @@ func (b *k8sBackend) GetContainer(ctx context.Context, appID string) (*domain.Co
 	}, nil
 }
 
-func (b *k8sBackend) ListContainers(ctx context.Context) ([]*domain.Container, error) {
+func (b *Backend) ListContainers(ctx context.Context) ([]*domain.Container, error) {
 	list, err := b.client.CoreV1().Pods(b.config.Namespace).List(ctx, metav1.ListOptions{
 		LabelSelector: toSelectorString(allSelector()),
 	})

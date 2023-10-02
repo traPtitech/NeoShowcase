@@ -34,7 +34,9 @@ const (
 	fieldManager = "neoshowcase"
 )
 
-type k8sBackend struct {
+var _ domain.Backend = (*Backend)(nil)
+
+type Backend struct {
 	restConfig        *rest.Config
 	client            *kubernetes.Clientset
 	traefikClient     *traefikv1alpha1.TraefikV1alpha1Client
@@ -53,12 +55,12 @@ func NewK8SBackend(
 	traefikClient *traefikv1alpha1.TraefikV1alpha1Client,
 	certManagerClient *certmanagerv1.Clientset,
 	config Config,
-) (domain.Backend, error) {
+) (*Backend, error) {
 	err := config.Validate()
 	if err != nil {
 		return nil, err
 	}
-	b := &k8sBackend{
+	b := &Backend{
 		restConfig:        restConfig,
 		client:            k8sCSet,
 		traefikClient:     traefikClient,
@@ -68,7 +70,7 @@ func NewK8SBackend(
 	return b, nil
 }
 
-func (b *k8sBackend) Start(_ context.Context) error {
+func (b *Backend) Start(_ context.Context) error {
 	var err error
 	b.podWatcher, err = b.client.CoreV1().Pods(b.config.Namespace).Watch(context.Background(), metav1.ListOptions{
 		LabelSelector: metav1.FormatLabelSelector(&metav1.LabelSelector{MatchLabels: map[string]string{
@@ -83,7 +85,7 @@ func (b *k8sBackend) Start(_ context.Context) error {
 	return nil
 }
 
-func (b *k8sBackend) eventListener() {
+func (b *Backend) eventListener() {
 	for ev := range b.podWatcher.ResultChan() {
 		p, ok := ev.Object.(*apiv1.Pod)
 		if !ok {
@@ -99,16 +101,16 @@ func (b *k8sBackend) eventListener() {
 	}
 }
 
-func (b *k8sBackend) Dispose(_ context.Context) error {
+func (b *Backend) Dispose(_ context.Context) error {
 	b.podWatcher.Stop()
 	return nil
 }
 
-func (b *k8sBackend) AvailableDomains() domain.AvailableDomainSlice {
+func (b *Backend) AvailableDomains() domain.AvailableDomainSlice {
 	return ds.Map(b.config.Domains, (*domainConf).toDomainAD)
 }
 
-func (b *k8sBackend) targetAuth(fqdn string) *domainAuthConf {
+func (b *Backend) targetAuth(fqdn string) *domainAuthConf {
 	for _, dc := range b.config.Domains {
 		if dc.Auth.Available && dc.toDomainAD().Match(fqdn) {
 			return dc.Auth
@@ -117,26 +119,26 @@ func (b *k8sBackend) targetAuth(fqdn string) *domainAuthConf {
 	return nil
 }
 
-func (b *k8sBackend) AvailablePorts() domain.AvailablePortSlice {
+func (b *Backend) AvailablePorts() domain.AvailablePortSlice {
 	return ds.Map(b.config.Ports, (*portConf).toDomainAP)
 }
 
-func (b *k8sBackend) ListenContainerEvents() (sub <-chan *domain.ContainerEvent, unsub func()) {
+func (b *Backend) ListenContainerEvents() (sub <-chan *domain.ContainerEvent, unsub func()) {
 	return b.eventSubs.Subscribe()
 }
 
 // generalLabelWithoutManagement returns labels that indicates not directly managed by this backend
-func (b *k8sBackend) generalLabelWithoutManagement() map[string]string {
+func (b *Backend) generalLabelWithoutManagement() map[string]string {
 	return b.config.labels()
 }
 
-func (b *k8sBackend) generalLabel() map[string]string {
+func (b *Backend) generalLabel() map[string]string {
 	return ds.MergeMap(b.config.labels(), map[string]string{
 		managedLabel: "true",
 	})
 }
 
-func (b *k8sBackend) appLabel(appID string) map[string]string {
+func (b *Backend) appLabel(appID string) map[string]string {
 	return ds.MergeMap(b.config.labels(), map[string]string{
 		managedLabel: "true",
 		appIDLabel:   appID,

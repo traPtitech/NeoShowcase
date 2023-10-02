@@ -14,7 +14,7 @@ import (
 	"github.com/traPtitech/neoshowcase/pkg/domain/builder"
 )
 
-func prepareManager(t *testing.T) (*dockerBackend, *client.Client) {
+func prepareManager(t *testing.T) (*Backend, *client.Client) {
 	t.Helper()
 	if ok, _ := strconv.ParseBool(os.Getenv("ENABLE_DOCKER_TESTS")); !ok {
 		t.SkipNow()
@@ -40,5 +40,5 @@ func prepareManager(t *testing.T) (*dockerBackend, *client.Client) {
 	require.NoError(t, err)
 	require.NoError(t, res.Close())
 
-	return m.(*dockerBackend), c
+	return m, c
 }

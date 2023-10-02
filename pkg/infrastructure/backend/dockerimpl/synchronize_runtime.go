@@ -18,7 +18,7 @@ import (
 	"github.com/traPtitech/neoshowcase/pkg/domain"
 )
 
-func (b *dockerBackend) syncAppContainer(ctx context.Context, app *domain.RuntimeDesiredState, oldContainer *types.Container) error {
+func (b *Backend) syncAppContainer(ctx context.Context, app *domain.RuntimeDesiredState, oldContainer *types.Container) error {
 	newImageName := app.ImageName + ":" + app.ImageTag
 	oldRestartedAt := getRestartedAt(oldContainer)
 	doDeploy := oldContainer == nil || oldContainer.Image != newImageName || !oldRestartedAt.Equal(app.App.UpdatedAt)
@@ -124,7 +124,7 @@ func (b *dockerBackend) syncAppContainer(ctx context.Context, app *domain.Runtim
 	return nil
 }
 
-func (b *dockerBackend) synchronizeRuntime(ctx context.Context, apps []*domain.RuntimeDesiredState) error {
+func (b *Backend) synchronizeRuntime(ctx context.Context, apps []*domain.RuntimeDesiredState) error {
 	// List old resources
 	oldContainers, err := b.c.ContainerList(ctx, types.ContainerListOptions{
 		All: true,

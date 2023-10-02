@@ -12,10 +12,10 @@ import (
 )
 
 type Config struct {
-	URL             string `mapstructure:"url" yaml:"url"`
-	Token           string `mapstructure:"token" yaml:"token"`
-	IntervalSeconds int    `mapstructure:"intervalSeconds" yaml:"intervalSeconds"`
-	ListIntervalMs  int    `mapstructure:"listIntervalMs" yaml:"listIntervalMs"`
+	URL             string
+	Token           string
+	IntervalSeconds int
+	ListIntervalMs  int
 }
 
 func (c *Config) Validate() error {
