@@ -105,7 +105,6 @@ type SSGenConfig struct {
 }
 
 func init() {
-	viper.SetDefault("debug", false)
 	viper.SetDefault("privateKeyFile", "")
 	viper.SetDefault("adminerURL", "http://adminer.local.trapti.tech/")
 
@@ -131,6 +130,13 @@ func init() {
 	viper.SetDefault("storage.swift.tenantId", "")
 	viper.SetDefault("storage.swift.container", "neoshowcase")
 	viper.SetDefault("storage.swift.authUrl", "")
+
+	viper.SetDefault("image.registry.scheme", "https")
+	viper.SetDefault("image.registry.addr", "localhost")
+	viper.SetDefault("image.registry.username", "")
+	viper.SetDefault("image.registry.password", "")
+	viper.SetDefault("image.namePrefix", "ns-apps/")
+	viper.SetDefault("image.tmpNamePrefix", "ns-apps-tmp/")
 
 	viper.SetDefault("components.authDev.header", "X-Showcase-User")
 	viper.SetDefault("components.authDev.port", 4181)
