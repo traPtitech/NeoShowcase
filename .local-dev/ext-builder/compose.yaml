@@ -1,0 +1,33 @@
+services:
+  ns-builder:
+    image: ghcr.io/traptitech/ns-builder:main
+    command: --debug --loglevel=trace --config=/config.yaml
+    restart: always
+    environment:
+      NS_DB_PASSWORD:
+      NS_STORAGE_S3_ACCESSKEY:
+      NS_STORAGE_S3_ACCESSSECRET:
+      NS_IMAGE_REGISTRY_PASSWORD:
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock # for buildpack docker backend
+      - ./id_ed25519:/keys/id_ed25519
+      - ./config.yaml:/config.yaml
+      - ~/.ssh/known_hosts:/root/.ssh/known_hosts
+    depends_on:
+      buildkitd:
+        condition: service_started
+    extra_hosts:
+      - host.docker.internal:host-gateway
+
+  buildpack:
+    image: paketobuildpacks/builder-jammy-full:latest
+    restart: always
+    entrypoint:
+      - sleep
+      - infinity
+
+  buildkitd:
+    image: moby/buildkit:latest
+    restart: always
+    privileged: true
+    command: --addr tcp://0.0.0.0:1234
