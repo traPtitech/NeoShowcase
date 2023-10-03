@@ -164,7 +164,8 @@ func (c *cleanerService) pruneImage(ctx context.Context, r *regclient.RegClient,
 		}
 		err = r.TagDelete(ctx, tagRef)
 		if err != nil {
-			return errors.Wrap(err, "deleting tag")
+			log.Errorf("deleting tag %s:%s: %+v", imageName, tag, err)
+			// fail-safe and continue
 		}
 	}
 	return nil
