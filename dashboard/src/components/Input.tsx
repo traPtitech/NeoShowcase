@@ -26,7 +26,6 @@ const inputStyle: ComplexStyleRule = {
   borderRadius: '4px',
   border: `1px solid ${vars.bg.white4}`,
   fontSize: '14px',
-  marginLeft: '4px',
 
   width: '100%',
 
@@ -77,6 +76,9 @@ export const InputBar: Component<InputBarProps> = (props) => {
         props: { content: props.tooltip, trigger: 'focusin', maxWidth: 1000 },
         disabled: !props.tooltip,
         hidden: true,
+      }}
+      style={{
+        width: props.width === 'full' ? '100%' : 'fit-content',
       }}
     >
       <StyledInput width={addedProps.width} {...inputProps} />

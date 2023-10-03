@@ -1,12 +1,15 @@
 import { InfoTooltip } from '/@/components/InfoTooltip'
 import { PlainMessage } from '@bufbuild/protobuf'
 import { styled } from '@macaron-css/solid'
+import { OcCopy2 } from 'solid-icons/oc'
 import { Component, Match, Show, Switch, createEffect, createResource, createSignal } from 'solid-js'
 import { SetStoreFunction } from 'solid-js/store'
 import { CreateRepositoryAuth } from '../api/neoshowcase/protobuf/gateway_pb'
 import { client, systemInfo } from '../libs/api'
+import { writeToClipboard } from '../libs/clipboard'
 import { vars } from '../theme'
 import { Button } from './Button'
+import { IconButton } from './IconButton'
 import { InputBar, InputLabel } from './Input'
 import { Radio } from './Radio'
 
@@ -55,6 +58,8 @@ export const RepositoryAuthSettings: Component<RepositoryAuthSettingsProps> = (p
   })
   const publicKey = () => (useTmpKey() ? tmpKey()?.publicKey : systemInfo()?.publicKey)
 
+  const handleCopyPublicKey = () => writeToClipboard(publicKey())
+
   return (
     <div>
       <InputLabel>認証方法</InputLabel>
@@ -75,21 +80,37 @@ export const RepositoryAuthSettings: Component<RepositoryAuthSettingsProps> = (p
               <InputBar
                 // SSH URLはURLとしては不正なのでtypeを変更
                 value={v().username}
-                onInput={(e) => props.setAuthConfig('auth', 'value', { username: e.currentTarget.value })}
+                onInput={(e) =>
+                  props.setAuthConfig('auth', 'value', {
+                    username: e.currentTarget.value,
+                  })
+                }
               />
               <InputLabel>パスワード</InputLabel>
               <InputBar
                 // SSH URLはURLとしては不正なのでtypeを変更
                 type="password"
                 value={v().password}
-                onInput={(e) => props.setAuthConfig('auth', 'value', { password: e.currentTarget.value })}
+                onInput={(e) =>
+                  props.setAuthConfig('auth', 'value', {
+                    password: e.currentTarget.value,
+                  })
+                }
               />
             </>
           )}
         </Match>
         <Match when={props.authConfig.auth.case === 'ssh'}>
-          <SshDetails>以下のSSH公開鍵{!useTmpKey() && ' (システム共通) '}をリポジトリに登録してください。</SshDetails>
-          <PublicKeyCode>{publicKey()}</PublicKeyCode>
+          <SshDetails>
+            以下のSSH公開鍵{!useTmpKey() && ' (システム共通) '}
+            をリポジトリに登録してください。
+          </SshDetails>
+          <Row>
+            <PublicKeyCode>{publicKey()}</PublicKeyCode>
+            <IconButton onClick={handleCopyPublicKey} tooltip="クリップボードにコピー">
+              <OcCopy2 size={18} color={vars.text.black2} />
+            </IconButton>
+          </Row>
           <Show when={!useTmpKey()}>
             <Row>
               <Button color="black1" size="large" width="auto" onclick={() => setUseTmpKey(true)} type="submit">
