@@ -4,6 +4,7 @@ import { FormTextBig } from '/@/components/AppsNew'
 import { BuildConfigs } from '/@/components/BuildConfigs'
 import { Button } from '/@/components/Button'
 import { Header } from '/@/components/Header'
+import { IconButton } from '/@/components/IconButton'
 import { InfoTooltip } from '/@/components/InfoTooltip'
 import { InputBar, InputLabel } from '/@/components/Input'
 import { InputSuggestion } from '/@/components/InputSuggestion'
@@ -13,6 +14,7 @@ import { UserSearch } from '/@/components/UserSearch'
 import { WebsiteSettings } from '/@/components/WebsiteSettings'
 import { client, handleAPIError } from '/@/libs/api'
 import { useBranchesSuggestion } from '/@/libs/branchesSuggestion'
+import { writeToClipboard } from '/@/libs/clipboard'
 import { Container } from '/@/libs/layout'
 import { userFromId, users } from '/@/libs/useAllUsers'
 import useModal from '/@/libs/useModal'
@@ -21,6 +23,7 @@ import { PlainMessage } from '@bufbuild/protobuf'
 import { style } from '@macaron-css/core'
 import { styled } from '@macaron-css/solid'
 import { useParams } from '@solidjs/router'
+import { OcCopy2 } from 'solid-icons/oc'
 import { Component, For, JSX, Show, createEffect, createMemo, createResource, createSignal } from 'solid-js'
 import { createStore } from 'solid-js/store'
 import toast from 'solid-toast'
@@ -99,11 +102,17 @@ const EnvVarKeyCode = styled('code', {
     padding: '8px 12px',
     borderRadius: '4px',
     fontSize: '14px',
-    marginLeft: '4px',
 
     width: '100%',
     display: 'flex',
     alignItems: 'center',
+  },
+})
+const EnvVarInputContainer = styled('div', {
+  base: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: '4px',
   },
 })
 const EnvVarButtonContainer = styled('div', {
@@ -370,6 +379,8 @@ export default () => {
       let valueInputRef: HTMLInputElement
       const { Modal: DeleteEnvVarModal, open: openDeleteEnvVarModal, close: closeDeleteEnvVarModal } = useModal()
 
+      const handleCopyEnvVarValue = () => writeToClipboard(props.envVar.value)
+
       const handleUpdateEnvVar: JSX.EventHandler<HTMLButtonElement, MouseEvent> = async (e) => {
         // prevent default form submit (reload page)
         e.preventDefault()
@@ -413,14 +424,22 @@ export default () => {
       return (
         <form class={EnvVarContainerClass} ref={formRef}>
           <EnvVarKeyCode>{props.envVar.key}</EnvVarKeyCode>
-          <InputBar
-            type="text"
-            disabled={!isEditing()}
-            required
-            placeholder="VALUE"
-            ref={valueInputRef}
-            value={props.envVar.value}
-          />
+          <EnvVarInputContainer>
+            <InputBar
+              type="text"
+              disabled={!isEditing()}
+              required
+              placeholder="VALUE"
+              ref={valueInputRef}
+              value={props.envVar.value}
+              width="full"
+            />
+            <Show when={!isEditing()}>
+              <IconButton onClick={handleCopyEnvVarValue} tooltip="クリップボードにコピー">
+                <OcCopy2 size={18} color={vars.text.black2} />
+              </IconButton>
+            </Show>
+          </EnvVarInputContainer>
           <EnvVarButtonContainer>
             <Show
               when={!isEditing()}
@@ -502,8 +521,8 @@ export default () => {
 
       return (
         <form class={EnvVarContainerClass} ref={formRef}>
-          <InputBar type="text" required placeholder="KEY" ref={keyInputRef} />
-          <InputBar type="text" required placeholder="VALUE" ref={valueInputRef} />
+          <InputBar type="text" required placeholder="KEY" width="full" ref={keyInputRef} />
+          <InputBar type="text" required placeholder="VALUE" width="full" ref={valueInputRef} />
           <Button color="black1" size="large" width="full" type="submit" onclick={handleAddEnvVar}>
             Add
           </Button>
