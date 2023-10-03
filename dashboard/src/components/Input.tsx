@@ -78,6 +78,9 @@ export const InputBar: Component<InputBarProps> = (props) => {
         disabled: !props.tooltip,
         hidden: true,
       }}
+      style={{
+        width: props.width === 'full' ? '100%' : 'fit-content',
+      }}
     >
       <StyledInput width={addedProps.width} {...inputProps} />
     </span>

@@ -78,6 +78,9 @@ export const Button: ParentComponent<Props> = (props) => {
         disabled: !props.tooltip,
         hidden: true,
       }}
+      style={{
+        width: props.width === 'full' ? '100%' : 'fit-content',
+      }}
     >
       <Container color={addedProps.color} width={addedProps.width} cursor={cursor()} {...originalButtonProps}>
         <Text color={addedProps.color} size={addedProps.size}>
