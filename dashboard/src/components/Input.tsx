@@ -26,7 +26,6 @@ const inputStyle: ComplexStyleRule = {
   borderRadius: '4px',
   border: `1px solid ${vars.bg.white4}`,
   fontSize: '14px',
-  marginLeft: '4px',
 
   width: '100%',
 
