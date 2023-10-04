@@ -1,13 +1,11 @@
 import { Application } from '/@/api/neoshowcase/protobuf/gateway_pb'
 import { applicationState, getWebsiteURL } from '/@/libs/application'
-import { colorOverlay } from '/@/libs/colorOverlay'
 import { DiffHuman, shortSha } from '/@/libs/format'
 import { colorVars, textVars } from '/@/theme'
 import { styled } from '@macaron-css/solid'
 import { A } from '@solidjs/router'
 import { Component, Show } from 'solid-js'
 import { AppStatus } from '../UI/AppStatus'
-import { Button } from '../UI/Button'
 
 const Container = styled('div', {
   base: {
@@ -67,6 +65,7 @@ const LastCommitName = styled('div', {
 const UrlContainer = styled('div', {
   base: {
     width: '100%',
+    textAlign: 'right',
     overflow: 'hidden',
     textOverflow: 'ellipsis',
     whiteSpace: 'nowrap',
