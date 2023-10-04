@@ -50,6 +50,7 @@ const MainViewContainer = styled('div', {
     width: '100%',
     height: '100%',
     padding: '40px 32px',
+    overflowY: 'auto',
     background: colorVars.semantic.ui.background,
   },
 })
