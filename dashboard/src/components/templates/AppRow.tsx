@@ -59,6 +59,17 @@ const MetaContainer = styled('div', {
 const LastCommitName = styled('div', {
   base: {
     width: '100%',
+    overflow: 'hidden',
+    textOverflow: 'ellipsis',
+    whiteSpace: 'nowrap',
+  },
+})
+const UrlContainer = styled('div', {
+  base: {
+    width: '100%',
+    overflow: 'hidden',
+    textOverflow: 'ellipsis',
+    whiteSpace: 'nowrap',
   },
 })
 const UrlCount = styled('div', {
