@@ -9,12 +9,13 @@ import SearchIcon from '/@/assets/icons/24/search.svg'
 import { Header } from '/@/components/templates/Header'
 import { MultiSelect, SelectItem, SingleSelect } from '/@/components/templates/Select'
 import { client, user } from '/@/libs/api'
-import { ApplicationState, applicationState } from '/@/libs/application'
+import { ApplicationState, applicationState, repositoryURLToProvider } from '/@/libs/application'
 import { createLocalSignal } from '/@/libs/localStore'
 import { styled } from '@macaron-css/solid'
 import { useNavigate } from '@solidjs/router'
 import Fuse from 'fuse.js'
 import { For, Show, createMemo, createResource } from 'solid-js'
+import { Provider } from '../components/RepositoryRow'
 import { TabRound } from '../components/UI/TabRound'
 import { TextInput } from '../components/UI/TextInput'
 import { AppsNav } from '../components/templates/AppsNav'
@@ -145,6 +146,11 @@ const allStatuses: SelectItem<ApplicationState>[] = [
   { title: 'Static', value: ApplicationState.Static },
   { title: 'Error', value: ApplicationState.Error },
 ]
+const allProviders: SelectItem<Provider>[] = [
+  { title: 'GitHub', value: 'GitHub' },
+  { title: 'GitLab', value: 'GitLab' },
+  { title: 'Gitea', value: 'Gitea' },
+]
 
 export default () => {
   const navigate = useNavigate()
@@ -153,8 +159,8 @@ export default () => {
     'apps-statuses',
     allStatuses.map((s) => s.value),
   )
-
   const [scope, setScope] = createLocalSignal('apps-scope', GetRepositoriesRequest_Scope.MINE)
+  const [provider, setProvider] = createLocalSignal<Provider[]>('apps-provider', ['GitHub', 'GitLab', 'Gitea'])
   const appScope = () => {
     const mine = scope() === GetRepositoriesRequest_Scope.MINE
     return mine ? GetApplicationsRequest_Scope.MINE : GetApplicationsRequest_Scope.ALL
@@ -172,19 +178,24 @@ export default () => {
   )
   const loaded = () => !!(user() && repos() && apps())
 
+  const filteredReposByProvider = createMemo(() => {
+    if (!repos()) return
+    const p = provider()
+    return repos()?.repositories.filter((r) => p.includes(repositoryURLToProvider(r.url)))
+  })
   const filteredApps = createMemo(() => {
     if (!apps()) return
     const s = statuses()
     return apps()?.applications.filter((a) => s.includes(applicationState(a)))
   })
   const repoWithApps = createMemo(() => {
-    if (!repos() || !filteredApps()) return
+    if (!filteredReposByProvider() || !filteredApps()) return
     const appsMap = {} as Record<string, Application[]>
     for (const app of filteredApps()) {
       if (!appsMap[app.repositoryId]) appsMap[app.repositoryId] = []
       appsMap[app.repositoryId].push(app)
     }
-    const res = repos()?.repositories.map((repo): RepoWithApp => ({ repo, apps: appsMap[repo.id] || [] }))
+    const res = filteredReposByProvider().map((repo): RepoWithApp => ({ repo, apps: appsMap[repo.id] || [] }))
     res.sort(compareRepoWithApp(sort()))
     return res
   })
@@ -235,6 +246,12 @@ export default () => {
               />
               <SortSelects>
                 <MultiSelect placeHolder="Status" items={allStatuses} selected={statuses()} setSelected={setStatuses} />
+                <MultiSelect
+                  placeHolder="Provider"
+                  items={allProviders}
+                  selected={provider()}
+                  setSelected={setProvider}
+                />
                 <SingleSelect
                   placeHolder="Sort"
                   items={Object.values(sortItems)}
