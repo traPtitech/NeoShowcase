@@ -180,7 +180,7 @@ export default () => {
     if (!repos() || !filteredApps()) return
     const appsMap = {} as Record<string, Application[]>
     for (const app of filteredApps()) {
-      if (appsMap[app.repositoryId]) appsMap[app.repositoryId] = []
+      if (!appsMap[app.repositoryId]) appsMap[app.repositoryId] = []
       appsMap[app.repositoryId].push(app)
     }
     const res = repos()?.repositories.map((repo): RepoWithApp => ({ repo, apps: appsMap[repo.id] || [] }))
