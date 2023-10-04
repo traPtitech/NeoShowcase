@@ -15,7 +15,7 @@ export default defineConfig({
       google: {
         families: [
           'Mulish',
-          'Noto Sans JP',
+          'Lato',
         ],
       }
     }),

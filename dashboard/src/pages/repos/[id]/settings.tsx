@@ -4,74 +4,54 @@ import {
   UpdateRepositoryRequest,
   User,
 } from '/@/api/neoshowcase/protobuf/gateway_pb'
+import GeneralIcon from '/@/assets/icons/24/browse_activity.svg'
+import AuthIcon from '/@/assets/icons/24/conversion_path.svg'
+import OwnerIcon from '/@/assets/icons/24/person.svg'
 import { FormTextBig } from '/@/components/AppsNew'
-import { Button } from '/@/components/Button'
-import { Header } from '/@/components/Header'
 import { InfoTooltip } from '/@/components/InfoTooltip'
 import { InputBar, InputLabel } from '/@/components/Input'
 import { RepositoryAuthSettings } from '/@/components/RepositoryAuthSettings'
-import RepositoryNav from '/@/components/RepositoryNav'
+import { Button } from '/@/components/UI/Button'
 import { UserSearch } from '/@/components/UserSearch'
 import { client, handleAPIError } from '/@/libs/api'
 import { extractRepositoryNameFromURL } from '/@/libs/application'
-import { Container } from '/@/libs/layout'
 import { userFromId, users } from '/@/libs/useAllUsers'
 import useModal from '/@/libs/useModal'
 import { vars } from '/@/theme'
 import { PartialMessage, PlainMessage } from '@bufbuild/protobuf'
 import { styled } from '@macaron-css/solid'
-import { useParams } from '@solidjs/router'
+import { Outlet, useMatch, useNavigate, useParams } from '@solidjs/router'
 import { Component, JSX, Show, createEffect, createMemo, createResource, createSignal } from 'solid-js'
 import { createStore } from 'solid-js/store'
 import toast from 'solid-toast'
 
-const ContentContainer = styled('div', {
+const Container = styled('div', {
   base: {
-    marginTop: '24px',
+    width: '100%',
+    height: '100%',
+    padding: '40px 32px',
+    overflowY: 'auto',
+  },
+})
+const MainView = styled('div', {
+  base: {
+    width: '100%',
+    height: '100%',
+    maxWidth: '1000px',
+    margin: '0 auto',
     display: 'grid',
-    gridTemplateColumns: '380px 1fr',
-    gap: '40px',
-    position: 'relative',
+    gridTemplateColumns: '235px 1fr',
+    gap: '48px',
   },
 })
-const SidebarContainer = styled('div', {
+const SideMenu = styled('div', {
   base: {
-    position: 'sticky',
-    top: '64px',
-    padding: '24px 40px',
-    backgroundColor: vars.bg.white1,
-    borderRadius: '4px',
-    border: `1px solid ${vars.bg.white4}`,
-  },
-})
-const SidebarOptions = styled('div', {
-  base: {
+    width: '100%',
     display: 'flex',
     flexDirection: 'column',
-    gap: '12px',
+  },
+})
 
-    fontSize: '20px',
-    color: vars.text.black1,
-  },
-})
-const SidebarNavAnchor = styled('a', {
-  base: {
-    color: vars.text.black2,
-    textDecoration: 'none',
-    selectors: {
-      '&:hover': {
-        color: vars.text.black1,
-      },
-    },
-  },
-})
-const ConfigsContainer = styled('div', {
-  base: {
-    display: 'flex',
-    flexDirection: 'column',
-    gap: '24px',
-  },
-})
 const SettingFieldSet = styled('div', {
   base: {
     display: 'flex',
@@ -91,6 +71,10 @@ export default () => {
     (repositoryId) => client.getRepository({ repositoryId }),
   )
   const loaded = () => !!(users() && repo())
+  const navigator = useNavigate()
+  const matchGeneralPage = useMatch(() => `/repos/${repo()?.id}/settings/`)
+  const matchAuthPage = useMatch(() => `/repos/${repo()?.id}/settings/authorization`)
+  const matchOwnerPage = useMatch(() => `/repos/${repo()?.id}/settings/owner`)
 
   const update = async (req: PlainMessage<UpdateRepositoryRequest>) => {
     try {
@@ -277,23 +261,48 @@ export default () => {
 
   return (
     <Container>
-      <Header />
       <Show when={loaded()}>
-        <RepositoryNav repository={repo()} />
-        <ContentContainer>
-          <div>
-            <SidebarContainer>
-              <SidebarOptions>
-                <SidebarNavAnchor href="#general-settings">General</SidebarNavAnchor>
-                <SidebarNavAnchor href="#owner-settings">Owner</SidebarNavAnchor>
-              </SidebarOptions>
-            </SidebarContainer>
-          </div>
-          <ConfigsContainer>
-            <GeneralConfigsContainer />
-            <OwnerConfigContainer />
-          </ConfigsContainer>
-        </ContentContainer>
+        <MainView>
+          <SideMenu>
+            <Button
+              color="text"
+              size="medium"
+              full
+              active={!!matchGeneralPage()}
+              onclick={() => {
+                navigator(`/repos/${repo()?.id}/settings/`)
+              }}
+              leftIcon={<GeneralIcon />}
+            >
+              General
+            </Button>
+            <Button
+              color="text"
+              size="medium"
+              full
+              active={!!matchAuthPage()}
+              onclick={() => {
+                navigator(`/repos/${repo()?.id}/settings/authorization`)
+              }}
+              leftIcon={<AuthIcon />}
+            >
+              Authorization
+            </Button>
+            <Button
+              color="text"
+              size="medium"
+              full
+              active={!!matchOwnerPage()}
+              onclick={() => {
+                navigator(`/repos/${repo()?.id}/settings/owner`)
+              }}
+              leftIcon={<OwnerIcon />}
+            >
+              Owner
+            </Button>
+          </SideMenu>
+          <Outlet />
+        </MainView>
       </Show>
     </Container>
   )

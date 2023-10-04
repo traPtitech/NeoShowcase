@@ -2,11 +2,7 @@
   "compilerOptions": {
     "target": "ESNext",
     "module": "ESNext",
-    "lib": [
-      "ESNext",
-      "DOM",
-      "DOM.Iterable"
-    ],
+    "lib": ["ESNext", "DOM", "DOM.Iterable"],
     "moduleResolution": "node",
     "allowSyntheticDefaultImports": true,
     "esModuleInterop": true,
@@ -16,12 +12,8 @@
     "isolatedModules": true,
     "baseUrl": ".",
     "paths": {
-      "/@/*": [
-        "src/*"
-      ]
+      "/@/*": ["src/*"]
     },
-    "types": [
-      "vite/client"
-    ]
+    "types": ["vite-plugin-solid-svg/types-component-solid", "vite/client"],
   }
 }

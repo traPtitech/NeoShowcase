@@ -4,132 +4,122 @@ import {
   GetRepositoriesRequest_Scope,
   Repository,
 } from '/@/api/neoshowcase/protobuf/gateway_pb'
-import { AppStatus } from '/@/components/AppStatus'
-import { Button } from '/@/components/Button'
-import { Checkbox } from '/@/components/Checkbox'
-import { Header } from '/@/components/Header'
-import { Radio, RadioItem } from '/@/components/Radio'
-import { RepositoryRow } from '/@/components/RepositoryRow'
+import DeployedCodeIcon from '/@/assets/icons/24/deployed_code.svg'
+import SearchIcon from '/@/assets/icons/24/search.svg'
+import { Header } from '/@/components/templates/Header'
+import { MultiSelect, SelectItem, SingleSelect } from '/@/components/templates/Select'
 import { client, user } from '/@/libs/api'
 import { ApplicationState, applicationState } from '/@/libs/application'
-import { Container, PageTitle } from '/@/libs/layout'
 import { createLocalSignal } from '/@/libs/localStore'
-import { unique } from '/@/libs/unique'
-import { vars } from '/@/theme'
 import { styled } from '@macaron-css/solid'
 import { useNavigate } from '@solidjs/router'
 import Fuse from 'fuse.js'
 import { For, Show, createMemo, createResource } from 'solid-js'
+import { TabRound } from '../components/UI/TabRound'
+import { TextInput } from '../components/UI/TextInput'
+import { AppsNav } from '../components/templates/AppsNav'
+import { RepositoryList } from '../components/templates/List'
+import { colorVars } from '../theme'
 
-const sortItems: RadioItem<'asc' | 'desc'>[] = [
-  { value: 'desc', title: '最新順' },
-  { value: 'asc', title: '古い順' },
-]
-
-const scopeItems = (admin: boolean) => {
-  const items: RadioItem<GetRepositoriesRequest_Scope>[] = [
-    { value: GetRepositoriesRequest_Scope.MINE, title: '自分のアプリ' },
-    { value: GetRepositoriesRequest_Scope.PUBLIC, title: 'すべてのアプリ' },
-  ]
-  if (admin) {
-    items.push({ value: GetRepositoriesRequest_Scope.ALL, title: 'すべてのアプリ (admin)' })
-  }
-  return items
-}
-
-const ContentContainer = styled('div', {
+const Container = styled('div', {
   base: {
-    marginTop: '24px',
-    display: 'grid',
-    gridTemplateColumns: '380px 1fr',
-    gap: '40px',
-  },
-})
-
-const SidebarContainer = styled('div', {
-  base: {
+    width: '100%',
+    height: '100%',
     display: 'flex',
     flexDirection: 'column',
-    gap: '22px',
-
-    padding: '24px 40px',
-    backgroundColor: vars.bg.white1,
-    borderRadius: '4px',
-    border: `1px solid ${vars.bg.white4}`,
   },
 })
-
-const SidebarSection = styled('div', {
+const NavTabContainer = styled('div', {
   base: {
+    width: '100%',
+    padding: '0 32px 16px',
+    borderBottom: `1px solid ${colorVars.semantic.ui.border}`,
+  },
+})
+const NavTabs = styled('div', {
+  base: {
+    width: '100%',
+    maxWidth: '1000px',
+    margin: '0 auto',
+    display: 'flex',
+    gap: '8px',
+  },
+})
+const MainViewContainer = styled('div', {
+  base: {
+    width: '100%',
+    height: '100%',
+    padding: '40px 32px',
+    background: colorVars.semantic.ui.background,
+  },
+})
+const MainView = styled('div', {
+  base: {
+    width: '100%',
+    maxWidth: '1000px',
+    margin: '0 auto',
+    display: 'flex',
+    flexDirection: 'column',
+    gap: '32px',
+  },
+})
+const SortContainer = styled('div', {
+  base: {
+    width: '100%',
+    display: 'flex',
+    alignItems: 'center',
+    gap: '16px',
+  },
+})
+const SearchIconContainer = styled('div', {
+  base: {
+    width: '24px',
+    height: '24px',
+    color: colorVars.semantic.text.disabled,
+  },
+})
+const SortSelects = styled('div', {
+  base: {
+    width: '100%',
+    display: 'flex',
+    alignItems: 'center',
+    gap: '8px',
+  },
+})
+const Repositories = styled('div', {
+  base: {
+    width: '100%',
     display: 'flex',
     flexDirection: 'column',
     gap: '16px',
   },
 })
 
-const SidebarTitle = styled('div', {
-  base: {
-    fontSize: '24px',
-    fontWeight: 500,
-    color: vars.text.black1,
-  },
-})
+const sortItems: { [k in 'desc' | 'asc']: SelectItem<k> } = {
+  desc: { value: 'desc', title: 'Newest' },
+  asc: { value: 'asc', title: 'Oldest' },
+}
 
-const SidebarOptions = styled('div', {
-  base: {
-    display: 'flex',
-    flexDirection: 'column',
-    gap: '12px',
-
-    fontSize: '20px',
-    color: vars.text.black1,
-  },
-})
-
-const MainContainer = styled('div', {
-  base: {
-    display: 'flex',
-    flexDirection: 'column',
-    gap: '20px',
-  },
-})
-
-const SearchBarContainer = styled('div', {
-  base: {
-    display: 'grid',
-    gridTemplateColumns: '1fr 180px',
-    gap: '20px',
-    height: '44px',
-  },
-})
-
-const SearchBar = styled('input', {
-  base: {
-    padding: '12px 20px',
-    borderRadius: '4px',
-    border: `1px solid ${vars.bg.white4}`,
-    fontSize: '14px',
-
-    '::placeholder': {
-      color: vars.text.black3,
-    },
-  },
-})
-
-const RepositoriesContainer = styled('div', {
-  base: {
-    display: 'flex',
-    flexDirection: 'column',
-    gap: '20px',
-  },
-})
-
+const scopeItems = (admin: boolean) => {
+  const items: SelectItem<GetRepositoriesRequest_Scope>[] = [
+    { value: GetRepositoriesRequest_Scope.MINE, title: 'My Apps' },
+    { value: GetRepositoriesRequest_Scope.PUBLIC, title: 'All Apps' },
+  ]
+  if (admin) {
+    items.push({
+      value: GetRepositoriesRequest_Scope.ALL,
+      title: 'All Apps (admin)',
+    })
+  }
+  return items
+}
 interface RepoWithApp {
   repo: Repository
   apps: Application[]
 }
 
-const newestAppDate = (apps: Application[]): number => Math.max(0, ...apps.map((a) => a.updatedAt.toDate().getTime()))
+const newestAppDate = (apps: Application[]): number =>
+  Math.max(0, ...apps.map((a) => a.updatedAt?.toDate().getTime() ?? 0))
 const compareRepoWithApp = (sort: 'asc' | 'desc') => (a: RepoWithApp, b: RepoWithApp): number => {
   // Sort by apps updated at
   if (a.apps.length > 0 && b.apps.length > 0) {
@@ -147,25 +137,21 @@ const compareRepoWithApp = (sort: 'asc' | 'desc') => (a: RepoWithApp, b: RepoWit
   return a.repo.id.localeCompare(b.repo.id)
 }
 
-const allStatuses = [
-  ApplicationState.Idle,
-  ApplicationState.Deploying,
-  ApplicationState.Running,
-  ApplicationState.Static,
-  ApplicationState.Error,
+const allStatuses: SelectItem<ApplicationState>[] = [
+  { title: 'Idle', value: ApplicationState.Idle },
+  { title: 'Deploying', value: ApplicationState.Deploying },
+  { title: 'Running', value: ApplicationState.Running },
+  { title: 'Static', value: ApplicationState.Static },
+  { title: 'Error', value: ApplicationState.Error },
 ]
 
 export default () => {
   const navigate = useNavigate()
 
-  const [statuses, setStatuses] = createLocalSignal('apps-statuses', [...allStatuses])
-  const checkStatus = (status: ApplicationState, checked: boolean) => {
-    if (checked) {
-      setStatuses((statuses) => unique([status, ...statuses]))
-    } else {
-      setStatuses((statuses) => statuses.filter((s) => s !== status))
-    }
-  }
+  const [statuses, setStatuses] = createLocalSignal(
+    'apps-statuses',
+    allStatuses.map((s) => s.value),
+  )
 
   const [scope, setScope] = createLocalSignal('apps-scope', GetRepositoriesRequest_Scope.MINE)
   const appScope = () => {
@@ -173,7 +159,7 @@ export default () => {
     return mine ? GetApplicationsRequest_Scope.MINE : GetApplicationsRequest_Scope.ALL
   }
   const [query, setQuery] = createLocalSignal('apps-query', '')
-  const [sort, setSort] = createLocalSignal('apps-sort', sortItems[0].value)
+  const [sort, setSort] = createLocalSignal<keyof typeof sortItems>('apps-sort', sortItems.asc.value)
 
   const [repos] = createResource(
     () => scope(),
@@ -188,16 +174,16 @@ export default () => {
   const filteredApps = createMemo(() => {
     if (!apps()) return
     const s = statuses()
-    return apps().applications.filter((a) => s.includes(applicationState(a)))
+    return apps()?.applications.filter((a) => s.includes(applicationState(a)))
   })
   const repoWithApps = createMemo(() => {
     if (!repos() || !filteredApps()) return
     const appsMap = {} as Record<string, Application[]>
     for (const app of filteredApps()) {
-      if (!appsMap[app.repositoryId]) appsMap[app.repositoryId] = []
+      if (appsMap[app.repositoryId]) appsMap[app.repositoryId] = []
       appsMap[app.repositoryId].push(app)
     }
-    const res = repos().repositories.map((repo): RepoWithApp => ({ repo, apps: appsMap[repo.id] || [] }))
+    const res = repos()?.repositories.map((repo): RepoWithApp => ({ repo, apps: appsMap[repo.id] || [] }))
     res.sort(compareRepoWithApp(sort()))
     return res
   })
@@ -219,45 +205,48 @@ export default () => {
   return (
     <Container>
       <Header />
-      <PageTitle>Apps</PageTitle>
+      <AppsNav />
       <Show when={loaded()}>
-        <ContentContainer>
-          <SidebarContainer>
-            <SidebarSection>
-              <SidebarTitle>Status</SidebarTitle>
-              <SidebarOptions>
-                <For each={allStatuses}>
-                  {(status) => (
-                    <Checkbox selected={statuses().includes(status)} setSelected={(s) => checkStatus(status, s)}>
-                      <AppStatus apps={apps().applications} state={status} />
-                    </Checkbox>
-                  )}
-                </For>
-              </SidebarOptions>
-            </SidebarSection>
-            <SidebarSection>
-              <SidebarTitle>Scope</SidebarTitle>
-              <SidebarOptions>
-                <Radio items={scopeItems(user().admin)} selected={scope()} setSelected={setScope} />
-              </SidebarOptions>
-            </SidebarSection>
-            <SidebarOptions>
-              <SidebarTitle>Sort</SidebarTitle>
-              <Radio items={sortItems} selected={sort()} setSelected={setSort} />
-            </SidebarOptions>
-          </SidebarContainer>
-          <MainContainer>
-            <SearchBarContainer>
-              <SearchBar value={query()} onInput={(e) => setQuery(e.target.value)} placeholder="Search..." />
-              <Button color="black1" size="large" width="full" onclick={() => navigate('/repos/new')}>
-                + New Repository
-              </Button>
-            </SearchBarContainer>
-            <RepositoriesContainer>
-              <For each={filteredRepos()}>{(r) => <RepositoryRow repo={r.repo} apps={r.apps} />}</For>
-            </RepositoriesContainer>
-          </MainContainer>
-        </ContentContainer>
+        <NavTabContainer>
+          <NavTabs>
+            <For each={scopeItems(user()?.admin)}>
+              {(s) => (
+                <TabRound state={s.value === scope() ? 'active' : 'default'} onClick={() => setScope(s.value)}>
+                  <DeployedCodeIcon />
+                  {s.title}
+                </TabRound>
+              )}
+            </For>
+          </NavTabs>
+        </NavTabContainer>
+        <MainViewContainer>
+          <MainView>
+            <SortContainer>
+              <TextInput
+                placeholder="Search"
+                value={query()}
+                onInput={(e) => setQuery(e.target.value)}
+                leftIcon={
+                  <SearchIconContainer>
+                    <SearchIcon />
+                  </SearchIconContainer>
+                }
+              />
+              <SortSelects>
+                <MultiSelect placeHolder="Status" items={allStatuses} selected={statuses()} setSelected={setStatuses} />
+                <SingleSelect
+                  placeHolder="Sort"
+                  items={Object.values(sortItems)}
+                  selected={sort()}
+                  setSelected={setSort}
+                />
+              </SortSelects>
+            </SortContainer>
+            <Repositories>
+              <For each={filteredRepos()}>{(r) => <RepositoryList repository={r.repo} apps={r.apps} />}</For>
+            </Repositories>
+          </MainView>
+        </MainViewContainer>
       </Show>
     </Container>
   )

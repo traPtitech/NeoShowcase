@@ -1,4 +1,4 @@
-import { vars } from '/@/theme'
+import { colorVars } from '/@/theme'
 import { globalStyle } from '@macaron-css/core'
 import { TippyOptions } from 'solid-tippy'
 import 'tippy.js/animations/shift-away-subtle.css'
@@ -12,12 +12,14 @@ declare module 'solid-js' {
   }
 }
 
-globalStyle('*', {
+globalStyle('*, ::before, ::after', {
   boxSizing: 'border-box',
+  margin: 0,
+  padding: 0,
 })
 
-globalStyle('div, h1, h2, h3, h4, h5, h6, a, p, input, select, textarea', {
-  fontFamily: 'Noto Sans JP',
+globalStyle('*', {
+  fontFamily: 'Lato',
 })
 
 globalStyle('pre, code', {
@@ -37,6 +39,11 @@ globalStyle('svg', {
 })
 
 globalStyle('body', {
-  margin: '0',
-  backgroundColor: vars.bg.white2,
+  height: '100vh',
+  overflow: 'hidden',
+  backgroundColor: colorVars.semantic.ui.primary,
+})
+
+globalStyle('#root', {
+  height: '100%',
 })
