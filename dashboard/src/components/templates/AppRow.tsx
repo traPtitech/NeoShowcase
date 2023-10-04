@@ -1,7 +1,7 @@
 import { Application } from '/@/api/neoshowcase/protobuf/gateway_pb'
 import { applicationState, getWebsiteURL } from '/@/libs/application'
 import { colorOverlay } from '/@/libs/colorOverlay'
-import { DiffHuman } from '/@/libs/format'
+import { DiffHuman, shortSha } from '/@/libs/format'
 import { colorVars, textVars } from '/@/theme'
 import { styled } from '@macaron-css/solid'
 import { A } from '@solidjs/router'
@@ -103,7 +103,7 @@ export const AppRow: Component<Props> = (props) => {
           </Show>
         </TitleContainer>
         <MetaContainer>
-          <LastCommitName>LastCommitName</LastCommitName>
+          <LastCommitName>{shortSha(props.app.commit)}</LastCommitName>
           <Show when={props.app.websites.length > 0}>
             <div>{getWebsiteURL(props.app.websites[0])}</div>
             <Show when={props.app.websites.length > 1}>
