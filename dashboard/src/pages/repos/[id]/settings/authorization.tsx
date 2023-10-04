@@ -89,10 +89,11 @@ export default () => {
   const loaded = () => !!repo()
 
   return (
-    <div>
+    <Container>
+      Authorization
       <Show when={loaded()}>
         <AuthConfig repo={repo()} />
       </Show>
-    </div>
+    </Container>
   )
 }
