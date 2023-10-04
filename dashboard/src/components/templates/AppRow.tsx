@@ -105,7 +105,7 @@ export const AppRow: Component<Props> = (props) => {
         <MetaContainer>
           <LastCommitName>{shortSha(props.app.commit)}</LastCommitName>
           <Show when={props.app.websites.length > 0}>
-            <div>{getWebsiteURL(props.app.websites[0])}</div>
+            <UrlContainer>{getWebsiteURL(props.app.websites[0])}</UrlContainer>
             <Show when={props.app.websites.length > 1}>
               <UrlCount>{`+${props.app.websites.length - 1}`}</UrlCount>
             </Show>
