@@ -1,4 +1,8 @@
-import { CreateRepositoryAuth, Repository_AuthMethod } from '/@/api/neoshowcase/protobuf/gateway_pb'
+import {
+  CreateRepositoryAuth,
+  CreateRepositoryAuthBasic,
+  Repository_AuthMethod,
+} from '/@/api/neoshowcase/protobuf/gateway_pb'
 import { client, systemInfo } from '/@/libs/api'
 import { writeToClipboard } from '/@/libs/clipboard'
 import { colorVars, textVars } from '/@/theme'
@@ -59,19 +63,38 @@ export const RepositoryAuthSettings: Component<Props> = (props) => {
         />
       </Container>
       <Switch>
-        <Match when={props.authConfig.auth.case === 'basic'}>
-          <FormItem title="UserName" required>
-            <TextInput />
-          </FormItem>
-          <FormItem title="Password" required>
-            <TextInput type="password" />
-          </FormItem>
+        <Match when={props.authConfig.auth.case === 'basic' && props.authConfig.auth.value}>
+          {(v) => (
+            <>
+              <FormItem title="UserName" required>
+                <TextInput
+                  value={v().username}
+                  onInput={(e) =>
+                    props.setAuthConfig('auth', 'value', {
+                      username: e.currentTarget.value,
+                    })
+                  }
+                />
+              </FormItem>
+              <FormItem title="Password" required>
+                <TextInput
+                  type="password"
+                  value={v().password}
+                  onInput={(e) =>
+                    props.setAuthConfig('auth', 'value', {
+                      password: e.currentTarget.value,
+                    })
+                  }
+                />
+              </FormItem>
+            </>
+          )}
         </Match>
         <Match when={props.authConfig.auth.case === 'ssh'}>
           <Container>
             SSH公開鍵 以下のSSH公開鍵{!useTmpKey() && '(システムデフォルト)'}
             をリポジトリに登録してください。
-            <TextInput value={publicKey()} />
+            <TextInput value={publicKey()} readOnly />
             <button onClick={handleCopyPublicKey} type="button">
               Copy
             </button>

@@ -7,10 +7,11 @@ const RepositoryData: RouteDataFunc<
   unknown,
   {
     repo: Resource<Repository>
+    refetchRepo: () => void
     apps: Resource<Application[]>
   }
 > = ({ params }) => {
-  const [repo] = createResource(
+  const [repo, { refetch: refetchRepo }] = createResource(
     () => params.id,
     (id) => client.getRepository({ repositoryId: id }),
   )
@@ -22,6 +23,7 @@ const RepositoryData: RouteDataFunc<
   })
   return {
     repo,
+    refetchRepo,
     apps,
   }
 }

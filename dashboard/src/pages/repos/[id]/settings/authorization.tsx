@@ -9,12 +9,14 @@ import { TextInput } from '/@/components/UI/TextInput'
 import FormBox from '/@/components/layouts/FormBox'
 import { FormItem } from '/@/components/templates/FormItem'
 import { RepositoryAuthSettings } from '/@/components/templates/RepositoryAuthSettings'
+import { client, handleAPIError } from '/@/libs/api'
 import { useRepositoryData } from '/@/routes'
 import { colorVars, textVars } from '/@/theme'
 import { PlainMessage } from '@bufbuild/protobuf'
 import { styled } from '@macaron-css/solid'
 import { Component, Show } from 'solid-js'
 import { createStore } from 'solid-js/store'
+import toast from 'solid-toast'
 
 const Container = styled('div', {
   base: {
@@ -40,6 +42,7 @@ const ItemsContainer = styled('div', {
 
 const AuthConfig: Component<{
   repo: Repository
+  refetchRepo: () => void
 }> = (props) => {
   const [updateReq, setUpdateReq] = createStore<PlainMessage<UpdateRepositoryRequest>>({
     id: props.repo.id,
@@ -59,6 +62,23 @@ const AuthConfig: Component<{
     auth: mapAuthMethod(props.repo.authMethod),
   })
 
+  const discardChanges = () => {
+    setUpdateReq({
+      id: props.repo.id,
+      url: props.repo.url,
+    })
+    setAuthConfig({ auth: mapAuthMethod(props.repo.authMethod) })
+  }
+  const saveChanges = async () => {
+    try {
+      await client.updateRepository({ ...updateReq, auth: authConfig })
+      toast.success('リポジトリの設定を更新しました')
+      props.refetchRepo()
+    } catch (e) {
+      handleAPIError(e, 'リポジトリの設定の更新に失敗しました')
+    }
+  }
+
   return (
     <FormBox.Container>
       <FormBox.Forms>
@@ -73,10 +93,10 @@ const AuthConfig: Component<{
         </ItemsContainer>
       </FormBox.Forms>
       <FormBox.Actions>
-        <Button color="borderError" size="small">
+        <Button color="borderError" size="small" onClick={discardChanges}>
           Discard Changes
         </Button>
-        <Button color="primary" size="small">
+        <Button color="primary" size="small" onClick={saveChanges}>
           Save
         </Button>
       </FormBox.Actions>
@@ -85,14 +105,14 @@ const AuthConfig: Component<{
 }
 
 export default () => {
-  const { repo } = useRepositoryData()
+  const { repo, refetchRepo } = useRepositoryData()
   const loaded = () => !!repo()
 
   return (
     <Container>
       Authorization
       <Show when={loaded()}>
-        <AuthConfig repo={repo()} />
+        <AuthConfig repo={repo()} refetchRepo={refetchRepo} />
       </Show>
     </Container>
   )
