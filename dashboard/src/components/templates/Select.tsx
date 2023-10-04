@@ -1,9 +1,15 @@
 import DropDownIcon from '/@/assets/icons/24/expand_more.svg'
+import { clickInside as clickInsideDir, clickOutside as clickOutsideDir } from '/@/libs/useClickInout'
 import { colorVars, textVars } from '/@/theme'
+import { style } from '@macaron-css/core'
 import { styled } from '@macaron-css/solid'
 import { For, JSX, Show, createSignal } from 'solid-js'
 import { Button } from '../UI/Button'
 import { CheckBoxIcon } from '../UI/CheckBoxIcon'
+
+// https://github.com/solidjs/solid/discussions/845
+const clickInside = clickInsideDir
+const clickOutside = clickOutsideDir
 
 const Container = styled('div', {
   base: {
@@ -75,23 +81,21 @@ const DropDownIconContainer = styled('div', {
     flexShrink: 0,
   },
 })
-const OptionsContainer = styled('div', {
-  base: {
-    position: 'absolute',
-    width: '100%',
-    maxHeight: '250px',
-    top: '56px',
-    overflowY: 'auto',
-    padding: '6px',
+const optionsContainerClass = style({
+  position: 'absolute',
+  width: '100%',
+  maxHeight: '250px',
+  top: '56px',
+  overflowY: 'auto',
+  padding: '6px',
 
-    display: 'flex',
-    flexDirection: 'column',
+  display: 'flex',
+  flexDirection: 'column',
 
-    background: colorVars.semantic.ui.primary,
-    borderRadius: '6px',
-    boxShadow: '0px 0px 20px 0px rgba(0, 0, 0, 0.10)',
-    zIndex: 1,
-  },
+  background: colorVars.semantic.ui.primary,
+  borderRadius: '6px',
+  boxShadow: '0px 0px 20px 0px rgba(0, 0, 0, 0.10)',
+  zIndex: 1,
 })
 
 export interface SelectItem<T> {
@@ -141,7 +145,11 @@ export const SingleSelect = <T,>(props: SingleSelectProps<T>): JSX.Element => {
       </SelectButton>
       {/* TODO: help text */}
       <Show when={showOptions()}>
-        <OptionsContainer>
+        <div
+          use:clickInside={() => setShowOptions(true)}
+          use:clickOutside={() => setShowOptions(false)}
+          class={optionsContainerClass}
+        >
           <For each={props.items}>
             {(item) => (
               <Button color="text" size="medium" full onClick={() => handleSelect(item)}>
@@ -149,13 +157,13 @@ export const SingleSelect = <T,>(props: SingleSelectProps<T>): JSX.Element => {
               </Button>
             )}
           </For>
-        </OptionsContainer>
+        </div>
       </Show>
     </Container>
   )
 }
 
-export type MultiSelectProps<T,> = {
+export type MultiSelectProps<T> = {
   items: SelectItem<T>[]
   setSelected: (s: T[]) => void
   disabled?: boolean
@@ -206,7 +214,11 @@ export const MultiSelect = <T,>(props: MultiSelectProps<T>): JSX.Element => {
       </SelectButton>
       {/* TODO: help text */}
       <Show when={showOptions()}>
-        <OptionsContainer>
+        <div
+          use:clickInside={() => setShowOptions(true)}
+          use:clickOutside={() => setShowOptions(false)}
+          class={optionsContainerClass}
+        >
           <For each={props.items}>
             {(item) => {
               const checked = () => props.selected?.includes(item.value) ?? false
@@ -224,7 +236,7 @@ export const MultiSelect = <T,>(props: MultiSelectProps<T>): JSX.Element => {
               )
             }}
           </For>
-        </OptionsContainer>
+        </div>
       </Show>
     </Container>
   )
