@@ -65,7 +65,7 @@ export const CopyableInput: Component<{
   return (
     <Container>
       <Input value={props.value} readOnly />
-      <CopyButton onClick={handleCopy}>
+      <CopyButton onClick={handleCopy} type="button">
         <CopyIcon />
       </CopyButton>
     </Container>

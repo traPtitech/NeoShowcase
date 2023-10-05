@@ -47,7 +47,7 @@ export const TabRound: ParentComponent<Props> = (props) => {
   const [addedProps, originalButtonProps] = splitProps(props, ['state', 'children', 'icon'])
 
   return (
-    <Container state={addedProps.state} {...originalButtonProps}>
+    <Container state={addedProps.state} {...originalButtonProps} type="button">
       {addedProps.children}
     </Container>
   )

@@ -137,6 +137,7 @@ export const SingleSelect = <T,>(props: SingleSelectProps<T>): JSX.Element => {
         }}
         opened={showOptions()}
         disabled={props.disabled}
+        type="button"
       >
         <Title placeholder={showPlaceHolder()}>{selectedTitle()}</Title>
         <DropDownIconContainer>

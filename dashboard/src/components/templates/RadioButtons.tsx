@@ -70,6 +70,7 @@ export const RadioButtons = <T,>(props: Props<T>): JSX.Element => {
             selected={props.selected === item.value}
             disabled={props.disabled}
             onClick={() => props.setSelected(item.value)}
+            type="button"
           >
             {item.title}
             <RadioIcon selected={props.selected === item.value} disabled={props.disabled} />
