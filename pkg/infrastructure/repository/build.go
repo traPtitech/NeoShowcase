@@ -79,6 +79,9 @@ func (r *buildRepository) GetBuilds(ctx context.Context, cond domain.GetBuildCon
 }
 
 func (r *buildRepository) GetLatestBuilds(ctx context.Context, appIDIn []string) ([]*domain.Build, error) {
+	if len(appIDIn) == 0 {
+		return nil, nil
+	}
 	// NOTE: safe to do raw sql building because appIDIn is always in form of app's ID
 	inClause := strings.Join(
 		ds.Map(appIDIn, func(s string) string { return `'` + s + `'` }),
