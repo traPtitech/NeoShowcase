@@ -1,9 +1,9 @@
 import { colorVars, textVars } from '/@/theme'
 import { styled } from '@macaron-css/solid'
-import { Component, ParentComponent, Show } from 'solid-js'
+import { ParentComponent, Show } from 'solid-js'
 import { InfoTooltip } from '../InfoTooltip'
 
-const Container = styled('div', {
+const Container = styled('label', {
   base: {
     width: '100%',
     display: 'flex',
