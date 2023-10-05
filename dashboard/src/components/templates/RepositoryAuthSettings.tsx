@@ -4,7 +4,7 @@ import { client, systemInfo } from '/@/libs/api'
 import { colorVars, textVars } from '/@/theme'
 import { PlainMessage } from '@bufbuild/protobuf'
 import { styled } from '@macaron-css/solid'
-import { Component, Match, Switch, createEffect, createSignal } from 'solid-js'
+import { Component, Match, Show, Switch, createEffect, createSignal } from 'solid-js'
 import { createResource } from 'solid-js'
 import { SetStoreFunction } from 'solid-js/store'
 import { Button } from '../UI/Button'
@@ -116,12 +116,14 @@ export const RepositoryAuthSettings: Component<Props> = (props) => {
               以下のSSH公開鍵{!useTmpKey() && '(システムデフォルト)'}
               をリポジトリに登録してください
               <CopyableInput value={publicKey()} />
-              <RefreshButtonContainer>
-                <Button color="textError" size="small" onClick={() => setUseTmpKey(true)} leftIcon={<RefreshIcon />}>
-                  再生成する
-                </Button>
-                For Github.com
-              </RefreshButtonContainer>
+              <Show when={!useTmpKey()}>
+                <RefreshButtonContainer>
+                  <Button color="textError" size="small" onClick={() => setUseTmpKey(true)} leftIcon={<RefreshIcon />}>
+                    再生成する
+                  </Button>
+                  For Github.com
+                </RefreshButtonContainer>
+              </Show>
             </SshKeyContainer>
           </Container>
         </Match>
