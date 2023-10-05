@@ -1,4 +1,3 @@
-import CheckMark from '/@/assets/icons/check.svg'
 import { colorOverlay } from '/@/libs/colorOverlay'
 import { colorVars } from '/@/theme'
 import { styled } from '@macaron-css/solid'

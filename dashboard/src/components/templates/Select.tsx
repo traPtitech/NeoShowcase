@@ -1,4 +1,3 @@
-import DropDownIcon from '/@/assets/icons/24/expand_more.svg'
 import { clickInside as clickInsideDir, clickOutside as clickOutsideDir } from '/@/libs/useClickInout'
 import { colorVars, textVars } from '/@/theme'
 import { style } from '@macaron-css/core'
@@ -6,6 +5,7 @@ import { styled } from '@macaron-css/solid'
 import { For, JSX, Show, createSignal } from 'solid-js'
 import { Button } from '../UI/Button'
 import { CheckBoxIcon } from '../UI/CheckBoxIcon'
+import { MaterialSymbols } from '../UI/MaterialSymbols'
 
 // https://github.com/solidjs/solid/discussions/845
 const clickInside = clickInsideDir
@@ -141,7 +141,7 @@ export const SingleSelect = <T,>(props: SingleSelectProps<T>): JSX.Element => {
       >
         <Title placeholder={showPlaceHolder()}>{selectedTitle()}</Title>
         <DropDownIconContainer>
-          <DropDownIcon />
+          <MaterialSymbols>expand_more</MaterialSymbols>
         </DropDownIconContainer>
       </SelectButton>
       {/* TODO: help text */}
@@ -210,7 +210,7 @@ export const MultiSelect = <T,>(props: MultiSelectProps<T>): JSX.Element => {
       >
         <Title placeholder={showPlaceHolder()}>{selectedTitle()}</Title>
         <DropDownIconContainer>
-          <DropDownIcon />
+          <MaterialSymbols>expand_more</MaterialSymbols>
         </DropDownIconContainer>
       </SelectButton>
       {/* TODO: help text */}

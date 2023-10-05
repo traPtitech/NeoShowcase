@@ -1,8 +1,8 @@
-import OpenInNewIcon from '/@/assets/icons/24/open_in_new.svg'
 import { colorVars, textVars } from '/@/theme'
 import { styled } from '@macaron-css/solid'
 import { Component } from 'solid-js'
 import { tippy as tippyDir } from 'solid-tippy'
+import { MaterialSymbols } from './MaterialSymbols'
 
 // https://github.com/solidjs/solid/discussions/845
 const tippy = tippyDir
@@ -39,7 +39,7 @@ export const URLText: Component<URLTextProps> = (props) => {
       <StyledAnchor href={props.href} target="_blank" rel="noreferrer">
         <ContentContainer>
           {props.text}
-          <OpenInNewIcon />
+          <MaterialSymbols>open_in_new</MaterialSymbols>
         </ContentContainer>
       </StyledAnchor>
     </div>

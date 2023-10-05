@@ -1,8 +1,8 @@
-import CopyIcon from '/@/assets/icons/24/content_copy.svg'
 import { writeToClipboard } from '/@/libs/clipboard'
 import { colorVars, textVars } from '/@/theme'
 import { styled } from '@macaron-css/solid'
 import { Component } from 'solid-js'
+import { MaterialSymbols } from '../UI/MaterialSymbols'
 
 const Container = styled('div', {
   base: {
@@ -66,7 +66,7 @@ export const CopyableInput: Component<{
     <Container>
       <Input value={props.value} readOnly />
       <CopyButton onClick={handleCopy} type="button">
-        <CopyIcon />
+        <MaterialSymbols>content_copy</MaterialSymbols>
       </CopyButton>
     </Container>
   )

@@ -5,16 +5,14 @@ import {
   UpdateRepositoryRequest,
 } from '/@/api/neoshowcase/protobuf/gateway_pb'
 import { Button } from '/@/components/UI/Button'
-import { TextInput } from '/@/components/UI/TextInput'
 import FormBox from '/@/components/layouts/FormBox'
-import { FormItem } from '/@/components/templates/FormItem'
 import { RepositoryAuthSettings } from '/@/components/templates/RepositoryAuthSettings'
 import { client, handleAPIError } from '/@/libs/api'
 import { useRepositoryData } from '/@/routes'
 import { colorVars, textVars } from '/@/theme'
 import { PlainMessage } from '@bufbuild/protobuf'
 import { styled } from '@macaron-css/solid'
-import { Component, Show } from 'solid-js'
+import { Component, Show, onMount } from 'solid-js'
 import { createStore } from 'solid-js/store'
 import toast from 'solid-toast'
 
@@ -44,6 +42,8 @@ const AuthConfig: Component<{
   repo: Repository
   refetchRepo: () => void
 }> = (props) => {
+  let formRef: HTMLFormElement
+
   const [updateReq, setUpdateReq] = createStore<PlainMessage<UpdateRepositoryRequest>>({
     id: props.repo.id,
     url: props.repo.url,
@@ -71,6 +71,10 @@ const AuthConfig: Component<{
   }
   const saveChanges = async () => {
     try {
+      // validate form
+      if (!formRef.reportValidity()) {
+        return
+      }
       await client.updateRepository({ ...updateReq, auth: authConfig })
       toast.success('リポジトリの設定を更新しました')
       props.refetchRepo()
@@ -80,23 +84,22 @@ const AuthConfig: Component<{
   }
 
   return (
-    <FormBox.Container>
+    <FormBox.Container ref={formRef}>
       <FormBox.Forms>
         <ItemsContainer>
-          <FormItem title="Repository URL" required>
-            <TextInput
-              value={updateReq.url}
-              onInput={(e) => setUpdateReq('url', (e.target as HTMLInputElement).value)}
-            />
-          </FormItem>
-          <RepositoryAuthSettings authConfig={authConfig} setAuthConfig={setAuthConfig} />
+          <RepositoryAuthSettings
+            url={updateReq.url}
+            setUrl={(v) => setUpdateReq('url', v)}
+            authConfig={authConfig}
+            setAuthConfig={setAuthConfig}
+          />
         </ItemsContainer>
       </FormBox.Forms>
       <FormBox.Actions>
-        <Button color="borderError" size="small" onClick={discardChanges}>
+        <Button color="borderError" size="small" onClick={discardChanges} type="button">
           Discard Changes
         </Button>
-        <Button color="primary" size="small" onClick={saveChanges}>
+        <Button color="primary" size="small" onClick={saveChanges} type="button">
           Save
         </Button>
       </FormBox.Actions>

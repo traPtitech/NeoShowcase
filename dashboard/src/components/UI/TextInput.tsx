@@ -63,6 +63,9 @@ const LeftIcon = styled('div', {
     height: '24px',
     left: '16px',
     top: '12px',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
   },
 })
 const RightIcon = styled('div', {
@@ -70,8 +73,11 @@ const RightIcon = styled('div', {
     position: 'absolute',
     width: '24px',
     height: '24px',
-    left: '16px',
+    right: '16px',
     top: '12px',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
   },
 })
 const HelpText = styled('div', {

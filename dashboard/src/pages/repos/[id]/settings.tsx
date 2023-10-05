@@ -1,7 +1,5 @@
-import GeneralIcon from '/@/assets/icons/24/browse_activity.svg'
-import AuthIcon from '/@/assets/icons/24/conversion_path.svg'
-import OwnerIcon from '/@/assets/icons/24/person.svg'
 import { Button } from '/@/components/UI/Button'
+import { MaterialSymbols } from '/@/components/UI/MaterialSymbols'
 import { client } from '/@/libs/api'
 import { users } from '/@/libs/useAllUsers'
 import { styled } from '@macaron-css/solid'
@@ -68,7 +66,7 @@ export default () => {
                 onclick={() => {
                   navigator(`/repos/${repo()?.id}/settings/`)
                 }}
-                leftIcon={<GeneralIcon />}
+                leftIcon={<MaterialSymbols>browse_activity</MaterialSymbols>}
               >
                 General
               </Button>
@@ -80,7 +78,7 @@ export default () => {
                 onclick={() => {
                   navigator(`/repos/${repo()?.id}/settings/authorization`)
                 }}
-                leftIcon={<AuthIcon />}
+                leftIcon={<MaterialSymbols>conversion_path</MaterialSymbols>}
               >
                 Authorization
               </Button>
@@ -92,7 +90,7 @@ export default () => {
                 onclick={() => {
                   navigator(`/repos/${repo()?.id}/settings/owner`)
                 }}
-                leftIcon={<OwnerIcon />}
+                leftIcon={<MaterialSymbols>person</MaterialSymbols>}
               >
                 Owner
               </Button>

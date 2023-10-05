@@ -30,11 +30,11 @@ const Container = styled('button', {
     size: {
       medium: {
         height: '44px',
-        padding: '8px 16px',
+        padding: '0 16px',
       },
       small: {
         height: '32px',
-        padding: '8px 12px',
+        padding: '0 12px',
       },
     },
     full: {
@@ -159,8 +159,8 @@ const IconContainer = styled('div', {
         height: '24px',
       },
       small: {
-        width: '16px',
-        height: '16px',
+        width: '20px',
+        height: '20px',
       },
     },
   },

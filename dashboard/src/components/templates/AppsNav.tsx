@@ -1,6 +1,6 @@
-import AddIcon from '/@/assets/icons/24/add.svg'
 import { Component } from 'solid-js'
 import { Button } from '../UI/Button'
+import { MaterialSymbols } from '../UI/MaterialSymbols'
 import { Nav } from './Nav'
 
 export const AppsNav: Component = () => {
@@ -8,7 +8,7 @@ export const AppsNav: Component = () => {
     <Nav
       title="Apps"
       action={
-        <Button color="primary" size="medium" leftIcon={<AddIcon />}>
+        <Button color="primary" size="medium" leftIcon={<MaterialSymbols>add</MaterialSymbols>}>
           Add New App
         </Button>
       }

@@ -1,8 +1,8 @@
-import ArrowBackIcon from '/@/assets/icons/24/arrow_back.svg'
 import { Button } from '/@/components/UI/Button'
 import { textVars } from '/@/theme'
 import { styled } from '@macaron-css/solid'
 import { Component, JSX, Show } from 'solid-js'
+import { MaterialSymbols } from '../UI/MaterialSymbols'
 
 const Container = styled('div', {
   base: {
@@ -47,7 +47,7 @@ export const Nav: Component<Props> = (props) => {
           onClick={() => {
             window.history.back()
           }}
-          leftIcon={<ArrowBackIcon />}
+          leftIcon={<MaterialSymbols>arrow_back</MaterialSymbols>}
         >
           {props.backToTitle}
         </Button>

@@ -1,6 +1,6 @@
-import AddIcon from '/@/assets/icons/24/add.svg'
 import AppsPlaceholder from '/@/assets/icons/apps_placeholder.svg'
 import { Button } from '/@/components/UI/Button'
+import { MaterialSymbols } from '/@/components/UI/MaterialSymbols'
 import { URLText } from '/@/components/UI/URLText'
 import { AppsList, ListContainer } from '/@/components/templates/List'
 import { useRepositoryData } from '/@/routes'
@@ -106,7 +106,7 @@ export default () => {
                 <Button
                   color="primary"
                   size="medium"
-                  leftIcon={<AddIcon />}
+                  leftIcon={<MaterialSymbols>add</MaterialSymbols>}
                   onClick={() => {
                     navigator(`/apps/new?repositoryID=${repo()?.id}`)
                   }}
@@ -123,7 +123,7 @@ export default () => {
                   <Button
                     color="primary"
                     size="medium"
-                    leftIcon={<AddIcon />}
+                    leftIcon={<MaterialSymbols>add</MaterialSymbols>}
                     onClick={() => {
                       navigator(`/apps/new?repositoryID=${repo()?.id}`)
                     }}

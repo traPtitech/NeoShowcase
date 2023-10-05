@@ -1,5 +1,4 @@
-import ChartIcon from '/@/assets/icons/24/insert_chart.svg'
-import SettingsIcon from '/@/assets/icons/24/settings.svg'
+import { MaterialSymbols } from '/@/components/UI/MaterialSymbols'
 import { TabRound } from '/@/components/UI/TabRound'
 import { Header } from '/@/components/templates/Header'
 import { RepositoryNav } from '/@/components/templates/RepositoryNav'
@@ -49,14 +48,14 @@ export default () => {
         <NavTabContainer>
           <NavTabs>
             <TabRound onClick={() => navigate(`/repos/${repo()?.id}`)} state={matchIndexPage() ? 'active' : 'default'}>
-              <ChartIcon />
+              <MaterialSymbols>insert_chart</MaterialSymbols>
               Project
             </TabRound>
             <TabRound
               onClick={() => navigate(`/repos/${repo()?.id}/settings`)}
               state={matchSettingsPage() ? 'active' : 'default'}
             >
-              <SettingsIcon />
+              <MaterialSymbols>settings</MaterialSymbols>
               Settings
             </TabRound>
           </NavTabs>

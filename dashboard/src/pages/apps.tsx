@@ -4,8 +4,6 @@ import {
   GetRepositoriesRequest_Scope,
   Repository,
 } from '/@/api/neoshowcase/protobuf/gateway_pb'
-import DeployedCodeIcon from '/@/assets/icons/24/deployed_code.svg'
-import SearchIcon from '/@/assets/icons/24/search.svg'
 import { Header } from '/@/components/templates/Header'
 import { MultiSelect, SelectItem, SingleSelect } from '/@/components/templates/Select'
 import { client, user } from '/@/libs/api'
@@ -16,6 +14,7 @@ import { useNavigate } from '@solidjs/router'
 import Fuse from 'fuse.js'
 import { For, Show, createMemo, createResource } from 'solid-js'
 import { Provider } from '../components/RepositoryRow'
+import { MaterialSymbols } from '../components/UI/MaterialSymbols'
 import { TabRound } from '../components/UI/TabRound'
 import { TextInput } from '../components/UI/TextInput'
 import { AppsNav } from '../components/templates/AppsNav'
@@ -224,7 +223,7 @@ export default () => {
             <For each={scopeItems(user()?.admin)}>
               {(s) => (
                 <TabRound state={s.value === scope() ? 'active' : 'default'} onClick={() => setScope(s.value)}>
-                  <DeployedCodeIcon />
+                  <MaterialSymbols>deployed_code</MaterialSymbols>
                   {s.title}
                 </TabRound>
               )}
@@ -240,7 +239,7 @@ export default () => {
                 onInput={(e) => setQuery(e.target.value)}
                 leftIcon={
                   <SearchIconContainer>
-                    <SearchIcon />
+                    <MaterialSymbols>search</MaterialSymbols>
                   </SearchIconContainer>
                 }
               />
