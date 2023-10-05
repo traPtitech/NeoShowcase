@@ -63,6 +63,7 @@ export const colorVars = createGlobalTheme(':root', {
       100: 'rgba(0, 0, 0, 0.06)',
       200: 'rgba(0, 0, 0, 0.08)',
       300: 'rgba(0, 0, 0, 0.16)',
+      600: 'rgba(0, 0, 0, 0.48)',
     },
   },
 })

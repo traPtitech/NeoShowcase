@@ -352,7 +352,7 @@ export default () => {
             )}
           </UserSearch>
         </SettingFieldSet>
-        <Modal>
+        <Modal.Container>
           <UserSearch users={nonOwnerUsers()}>
             {(user) => (
               <Button color="black1" size="large" width="auto" onclick={() => handleAddOwner(user)}>
@@ -360,7 +360,7 @@ export default () => {
               </Button>
             )}
           </UserSearch>
-        </Modal>
+        </Modal.Container>
       </>
     )
   }
@@ -471,7 +471,7 @@ export default () => {
               >
                 Delete
               </Button>
-              <DeleteEnvVarModal>
+              <DeleteEnvVarModal.Container>
                 <ModalContainer>
                   <ModalText>本当に削除しますか?</ModalText>
                   <ModalButtonsContainer>
@@ -483,7 +483,7 @@ export default () => {
                     </Button>
                   </ModalButtonsContainer>
                 </ModalContainer>
-              </DeleteEnvVarModal>
+              </DeleteEnvVarModal.Container>
             </Show>
           </EnvVarButtonContainer>
         </form>

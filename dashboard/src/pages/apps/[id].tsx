@@ -282,7 +282,7 @@ export default () => {
               >
                 Delete Application
               </Button>
-              <DeleteAppModal>
+              <DeleteAppModal.Container>
                 <ModalContainer>
                   <ModalText>
                     <div>本当に削除しますか?</div>
@@ -297,7 +297,7 @@ export default () => {
                     </Button>
                   </ModalButtonsContainer>
                 </ModalContainer>
-              </DeleteAppModal>
+              </DeleteAppModal.Container>
               <Show when={!app().running}>
                 <Button color="black1" size="large" width="full" onclick={startApp}>
                   Start App
