@@ -19,7 +19,6 @@ const Container = styled('div', {
 const MainView = styled('div', {
   base: {
     width: '100%',
-    height: '100%',
     maxWidth: '1000px',
     margin: '0 auto',
     display: 'grid',
@@ -27,9 +26,17 @@ const MainView = styled('div', {
     gap: '48px',
   },
 })
-const SideMenu = styled('div', {
+const SideMenuContainer = styled('div', {
   base: {
     width: '100%',
+    height: '100%',
+  },
+})
+const SideMenu = styled('div', {
+  base: {
+    position: 'sticky',
+    width: '100%',
+    top: '0',
     display: 'flex',
     flexDirection: 'column',
   },
@@ -51,44 +58,46 @@ export default () => {
     <Container>
       <Show when={loaded()}>
         <MainView>
-          <SideMenu>
-            <Button
-              color="text"
-              size="medium"
-              full
-              active={!!matchGeneralPage()}
-              onclick={() => {
-                navigator(`/repos/${repo()?.id}/settings/`)
-              }}
-              leftIcon={<GeneralIcon />}
-            >
-              General
-            </Button>
-            <Button
-              color="text"
-              size="medium"
-              full
-              active={!!matchAuthPage()}
-              onclick={() => {
-                navigator(`/repos/${repo()?.id}/settings/authorization`)
-              }}
-              leftIcon={<AuthIcon />}
-            >
-              Authorization
-            </Button>
-            <Button
-              color="text"
-              size="medium"
-              full
-              active={!!matchOwnerPage()}
-              onclick={() => {
-                navigator(`/repos/${repo()?.id}/settings/owner`)
-              }}
-              leftIcon={<OwnerIcon />}
-            >
-              Owner
-            </Button>
-          </SideMenu>
+          <SideMenuContainer>
+            <SideMenu>
+              <Button
+                color="text"
+                size="medium"
+                full
+                active={!!matchGeneralPage()}
+                onclick={() => {
+                  navigator(`/repos/${repo()?.id}/settings/`)
+                }}
+                leftIcon={<GeneralIcon />}
+              >
+                General
+              </Button>
+              <Button
+                color="text"
+                size="medium"
+                full
+                active={!!matchAuthPage()}
+                onclick={() => {
+                  navigator(`/repos/${repo()?.id}/settings/authorization`)
+                }}
+                leftIcon={<AuthIcon />}
+              >
+                Authorization
+              </Button>
+              <Button
+                color="text"
+                size="medium"
+                full
+                active={!!matchOwnerPage()}
+                onclick={() => {
+                  navigator(`/repos/${repo()?.id}/settings/owner`)
+                }}
+                leftIcon={<OwnerIcon />}
+              >
+                Owner
+              </Button>
+            </SideMenu>
+          </SideMenuContainer>
           <Outlet />
         </MainView>
       </Show>
