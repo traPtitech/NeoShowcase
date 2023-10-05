@@ -21,6 +21,7 @@ const Container = styled('button', {
     selectors: {
       '&:disabled': {
         cursor: 'not-allowed',
+        border: 'none !important',
         color: `${colorVars.semantic.text.black} !important`,
         background: `${colorVars.semantic.text.disabled} !important`,
       },
