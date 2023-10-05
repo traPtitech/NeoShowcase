@@ -150,9 +150,18 @@ const Text = styled('div', {
   },
 })
 const IconContainer = styled('div', {
-  base: {
-    width: '24px',
-    height: '24px',
+  base: {},
+  variants: {
+    size: {
+      medium: {
+        width: '24px',
+        height: '24px',
+      },
+      small: {
+        width: '16px',
+        height: '16px',
+      },
+    },
   },
 })
 
@@ -200,13 +209,13 @@ export const Button: ParentComponent<Props> = (props) => {
         {...originalButtonProps}
       >
         <Show when={addedProps.leftIcon}>
-          <IconContainer>{addedProps.leftIcon}</IconContainer>
+          <IconContainer size={addedProps.size}>{addedProps.leftIcon}</IconContainer>
         </Show>
         <Text color={addedProps.color} size={addedProps.size}>
           {addedProps.children}
         </Text>
         <Show when={addedProps.rightIcon}>
-          <IconContainer>{addedProps.rightIcon}</IconContainer>
+          <IconContainer size={addedProps.size}>{addedProps.rightIcon}</IconContainer>
         </Show>
       </Container>
     </span>

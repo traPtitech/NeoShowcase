@@ -1,10 +1,6 @@
-import {
-  CreateRepositoryAuth,
-  CreateRepositoryAuthBasic,
-  Repository_AuthMethod,
-} from '/@/api/neoshowcase/protobuf/gateway_pb'
+import { CreateRepositoryAuth } from '/@/api/neoshowcase/protobuf/gateway_pb'
+import RefreshIcon from '/@/assets/icons/20/replay.svg'
 import { client, systemInfo } from '/@/libs/api'
-import { writeToClipboard } from '/@/libs/clipboard'
 import { colorVars, textVars } from '/@/theme'
 import { PlainMessage } from '@bufbuild/protobuf'
 import { styled } from '@macaron-css/solid'
@@ -13,6 +9,7 @@ import { createResource } from 'solid-js'
 import { SetStoreFunction } from 'solid-js/store'
 import { Button } from '../UI/Button'
 import { TextInput } from '../UI/TextInput'
+import { CopyableInput } from './CopyableInput'
 import { FormItem } from './FormItem'
 import { RadioButtons, RadioItem } from './RadioButtons'
 
@@ -25,6 +22,29 @@ const Container = styled('div', {
 
     color: colorVars.semantic.text.black,
     ...textVars.text.bold,
+  },
+})
+const SshKeyContainer = styled('div', {
+  base: {
+    width: '100%',
+    display: 'flex',
+    flexDirection: 'column',
+    gap: '16px',
+
+    color: colorVars.semantic.text.grey,
+    ...textVars.caption.regular,
+  },
+})
+const RefreshButtonContainer = styled('div', {
+  base: {
+    width: '100%',
+    display: 'flex',
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: '8px',
+
+    color: colorVars.semantic.accent.error,
+    ...textVars.caption.regular,
   },
 })
 
@@ -50,7 +70,6 @@ export const RepositoryAuthSettings: Component<Props> = (props) => {
     props.setAuthConfig('auth', 'value', { keyId: tmpKey()?.keyId })
   })
   const publicKey = () => (useTmpKey() ? tmpKey()?.publicKey : systemInfo()?.publicKey)
-  const handleCopyPublicKey = () => writeToClipboard(publicKey())
 
   return (
     <>
@@ -92,15 +111,18 @@ export const RepositoryAuthSettings: Component<Props> = (props) => {
         </Match>
         <Match when={props.authConfig.auth.case === 'ssh'}>
           <Container>
-            SSH公開鍵 以下のSSH公開鍵{!useTmpKey() && '(システムデフォルト)'}
-            をリポジトリに登録してください。
-            <TextInput value={publicKey()} readOnly />
-            <button onClick={handleCopyPublicKey} type="button">
-              Copy
-            </button>
-            <Button color="textError" size="small" onClick={() => setUseTmpKey(true)}>
-              再生成する
-            </Button>
+            SSH公開鍵
+            <SshKeyContainer>
+              以下のSSH公開鍵{!useTmpKey() && '(システムデフォルト)'}
+              をリポジトリに登録してください
+              <CopyableInput value={publicKey()} />
+              <RefreshButtonContainer>
+                <Button color="textError" size="small" onClick={() => setUseTmpKey(true)} leftIcon={<RefreshIcon />}>
+                  再生成する
+                </Button>
+                For Github.com
+              </RefreshButtonContainer>
+            </SshKeyContainer>
           </Container>
         </Match>
       </Switch>
