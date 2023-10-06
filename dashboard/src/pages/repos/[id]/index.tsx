@@ -2,6 +2,7 @@ import AppsPlaceholder from '/@/assets/icons/apps_placeholder.svg'
 import { Button } from '/@/components/UI/Button'
 import { MaterialSymbols } from '/@/components/UI/MaterialSymbols'
 import { URLText } from '/@/components/UI/URLText'
+import { DataTable } from '/@/components/layouts/DataTable'
 import { AppsList, ListContainer } from '/@/components/templates/List'
 import { useRepositoryData } from '/@/routes'
 import { colorVars, textVars } from '/@/theme'
@@ -25,25 +26,6 @@ const MainView = styled('div', {
     display: 'flex',
     flexDirection: 'column',
     gap: '32px',
-  },
-})
-const DataContainer = styled('div', {
-  base: {
-    width: '100%',
-    display: 'flex',
-    flexDirection: 'column',
-    gap: '16px',
-  },
-})
-const DataTitle = styled('h2', {
-  base: {
-    width: '100%',
-    display: 'flex',
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    color: colorVars.semantic.text.black,
-    ...textVars.h2.medium,
   },
 })
 const PlaceHolder = styled('div', {
@@ -99,8 +81,8 @@ export default () => {
     <Container>
       <MainView>
         <Show when={loaded()}>
-          <DataContainer>
-            <DataTitle>
+          <DataTable.Container>
+            <DataTable.Title>
               Apps
               <Show when={!showPlaceHolder()}>
                 <Button
@@ -114,7 +96,7 @@ export default () => {
                   Add New App
                 </Button>
               </Show>
-            </DataTitle>
+            </DataTable.Title>
             <Show when={showPlaceHolder()} fallback={<AppsList apps={apps()} />}>
               <ListContainer>
                 <PlaceHolder>
@@ -133,9 +115,9 @@ export default () => {
                 </PlaceHolder>
               </ListContainer>
             </Show>
-          </DataContainer>
-          <DataContainer>
-            <DataTitle>Information</DataTitle>
+          </DataTable.Container>
+          <DataTable.Container>
+            <DataTable.Title>Information</DataTable.Title>
             <ListContainer>
               <TableRow>
                 <TableTitle>ID</TableTitle>
@@ -152,7 +134,7 @@ export default () => {
                 </TableData>
               </TableRow>
             </ListContainer>
-          </DataContainer>
+          </DataTable.Container>
         </Show>
       </MainView>
     </Container>

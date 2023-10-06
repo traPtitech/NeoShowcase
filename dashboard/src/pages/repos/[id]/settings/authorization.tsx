@@ -5,15 +5,14 @@ import {
   UpdateRepositoryRequest,
 } from '/@/api/neoshowcase/protobuf/gateway_pb'
 import { Button } from '/@/components/UI/Button'
+import { DataTable } from '/@/components/layouts/DataTable'
 import FormBox from '/@/components/layouts/FormBox'
-import { SettingsContainer } from '/@/components/layouts/SettingsContainer'
 import { RepositoryAuthSettings } from '/@/components/templates/RepositoryAuthSettings'
 import { client, handleAPIError } from '/@/libs/api'
 import { useRepositoryData } from '/@/routes'
-import { colorVars, textVars } from '/@/theme'
 import { PlainMessage } from '@bufbuild/protobuf'
 import { styled } from '@macaron-css/solid'
-import { Component, Show, onMount } from 'solid-js'
+import { Component, Show } from 'solid-js'
 import { createStore } from 'solid-js/store'
 import toast from 'solid-toast'
 
@@ -100,11 +99,11 @@ export default () => {
   const loaded = () => !!repo()
 
   return (
-    <SettingsContainer>
-      Authorization
+    <DataTable.Container>
+      <DataTable.Title>Authorization</DataTable.Title>
       <Show when={loaded()}>
         <AuthConfig repo={repo()} refetchRepo={refetchRepo} />
       </Show>
-    </SettingsContainer>
+    </DataTable.Container>
   )
 }

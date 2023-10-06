@@ -1,8 +1,8 @@
 import { Application, Repository, UpdateRepositoryRequest } from '/@/api/neoshowcase/protobuf/gateway_pb'
 import { Button } from '/@/components/UI/Button'
 import { TextInput } from '/@/components/UI/TextInput'
+import { DataTable } from '/@/components/layouts/DataTable'
 import FormBox from '/@/components/layouts/FormBox'
-import { SettingsContainer } from '/@/components/layouts/SettingsContainer'
 import { FormItem } from '/@/components/templates/FormItem'
 import { client, handleAPIError } from '/@/libs/api'
 import { providerToIcon, repositoryURLToProvider } from '/@/libs/application'
@@ -155,12 +155,12 @@ export default () => {
   const loaded = () => !!(repo() && apps())
 
   return (
-    <SettingsContainer>
-      General
+    <DataTable.Container>
+      <DataTable.Title>General</DataTable.Title>
       <Show when={loaded()}>
         <NameConfig repo={repo()} refetchRepo={refetchRepo} />
         <DeleteProject repo={repo()} apps={apps()} />
       </Show>
-    </SettingsContainer>
+    </DataTable.Container>
   )
 }

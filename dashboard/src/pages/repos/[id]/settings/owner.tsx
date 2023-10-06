@@ -3,7 +3,7 @@ import { Button } from '/@/components/UI/Button'
 import { MaterialSymbols } from '/@/components/UI/MaterialSymbols'
 import { TextInput } from '/@/components/UI/TextInput'
 import UserAvatar from '/@/components/UserAvatar'
-import { SettingsContainer } from '/@/components/layouts/SettingsContainer'
+import { DataTable } from '/@/components/layouts/DataTable'
 import { client, handleAPIError } from '/@/libs/api'
 import { userFromId, users } from '/@/libs/useAllUsers'
 import useModal from '/@/libs/useModal'
@@ -11,7 +11,7 @@ import { useRepositoryData } from '/@/routes'
 import { colorVars, textVars } from '/@/theme'
 import { styled } from '@macaron-css/solid'
 import Fuse from 'fuse.js'
-import { Component, For, Show, createEffect, createMemo, createSignal } from 'solid-js'
+import { Component, For, Show, createMemo, createSignal } from 'solid-js'
 import toast from 'solid-toast'
 
 const SearchUserRow = styled('div', {
@@ -235,8 +235,8 @@ export default () => {
   }
 
   return (
-    <SettingsContainer>
-      Owner
+    <DataTable.Container>
+      <DataTable.Title>Owner</DataTable.Title>
       <Show when={loaded()}>
         <SearchUserRow>
           <TextInput
@@ -267,6 +267,6 @@ export default () => {
           </Show>
         </UsersContainer>
       </Show>
-    </SettingsContainer>
+    </DataTable.Container>
   )
 }
