@@ -237,11 +237,7 @@ export default () => {
                 placeholder="Search"
                 value={query()}
                 onInput={(e) => setQuery(e.target.value)}
-                leftIcon={
-                  <SearchIconContainer>
-                    <MaterialSymbols>search</MaterialSymbols>
-                  </SearchIconContainer>
-                }
+                leftIcon={<MaterialSymbols>search</MaterialSymbols>}
               />
               <SortSelects>
                 <MultiSelect placeHolder="Status" items={allStatuses} selected={statuses()} setSelected={setStatuses} />

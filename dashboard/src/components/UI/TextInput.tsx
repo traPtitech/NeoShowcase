@@ -58,6 +58,7 @@ const StyledInput = styled('input', {
 })
 const LeftIcon = styled('div', {
   base: {
+    color: colorVars.semantic.text.disabled,
     position: 'absolute',
     width: '24px',
     height: '24px',
@@ -70,6 +71,7 @@ const LeftIcon = styled('div', {
 })
 const RightIcon = styled('div', {
   base: {
+    color: colorVars.semantic.text.disabled,
     position: 'absolute',
     width: '24px',
     height: '24px',
