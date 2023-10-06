@@ -1,4 +1,4 @@
-import { User } from '/@/api/neoshowcase/protobuf/gateway_pb'
+import { Repository, User } from '/@/api/neoshowcase/protobuf/gateway_pb'
 import { Button } from '/@/components/UI/Button'
 import { MaterialSymbols } from '/@/components/UI/MaterialSymbols'
 import { TextInput } from '/@/components/UI/TextInput'
@@ -182,11 +182,13 @@ const OwnerRow: Component<{ user: User; deleteOwner: (user: User) => void }> = (
   )
 }
 
-export default () => {
-  const { repo, refetchRepo } = useRepositoryData()
-  const loaded = () => !!(repo() && users())
+const OwnerConfig: Component<{
+  repo: Repository
+  users: User[]
+  refetchRepo: () => void
+}> = (props) => {
   const [searchUserQuery, setSearchUserQuery] = createSignal('')
-  const owners = () => repo().ownerIds.map(userFromId)
+  const owners = () => props.repo.ownerIds.map(userFromId)
   const fuse = createMemo(
     () =>
       new Fuse(owners(), {
@@ -203,69 +205,80 @@ export default () => {
     }
   })
   const handleDeleteOwner = async (user: User) => {
-    const newOwnerIds = repo().ownerIds.filter((id) => id !== user.id)
+    const newOwnerIds = props.repo.ownerIds.filter((id) => id !== user.id)
     try {
-      await client.updateRepository({
-        id: repo().id,
+      await client.updateApplication({
+        id: props.repo.id,
         ownerIds: { ownerIds: newOwnerIds },
       })
       toast.success('リポジトリオーナーを削除しました')
-      refetchRepo()
+      props.refetchRepo()
     } catch (e) {
       handleAPIError(e, 'リポジトリオーナーの削除に失敗しました')
     }
   }
 
-  const nonOwners = createMemo(() => users().filter((u) => !owners().some((o) => o.id === u.id)))
+  const nonOwners = createMemo(() => props.users.filter((u) => !owners().some((o) => o.id === u.id)))
   const { Modal: AddUserModal, open: openAddUserModal } = useModal({
     showCloseButton: true,
   })
   const handleAddOwner = async (user: User) => {
-    const newOwnerIds = repo().ownerIds.concat(user.id)
+    const newOwnerIds = props.repo.ownerIds.concat(user.id)
     try {
-      await client.updateRepository({
-        id: repo().id,
+      await client.updateApplication({
+        id: props.repo.id,
         ownerIds: { ownerIds: newOwnerIds },
       })
       toast.success('リポジトリオーナーを追加しました')
-      refetchRepo()
+      props.refetchRepo()
     } catch (e) {
       handleAPIError(e, 'リポジトリオーナーの追加に失敗しました')
     }
   }
 
   return (
+    <>
+      <SearchUserRow>
+        <TextInput
+          placeholder="Search UserID"
+          leftIcon={<MaterialSymbols>search</MaterialSymbols>}
+          value={searchUserQuery()}
+          onInput={(e) => setSearchUserQuery(e.target.value)}
+        />
+        <Button
+          color="primary"
+          size="medium"
+          leftIcon={<MaterialSymbols>add</MaterialSymbols>}
+          onClick={openAddUserModal}
+        >
+          Add Owners
+        </Button>
+        <AddUserModal.Container>
+          <AddUserModal.Header>Add Owner</AddUserModal.Header>
+          <AddUserModal.Body>
+            <AddOwners addOwner={handleAddOwner} nonOwners={nonOwners()} />
+          </AddUserModal.Body>
+        </AddUserModal.Container>
+      </SearchUserRow>
+      <UsersContainer>
+        <For each={filteredOwners()}>{(owner) => <OwnerRow user={owner} deleteOwner={handleDeleteOwner} />}</For>
+        <Show when={filteredOwners().length === 0}>
+          <UserPlaceholder>No Owners Found</UserPlaceholder>
+        </Show>
+      </UsersContainer>
+    </>
+  )
+}
+
+export default () => {
+  const { repo, refetchRepo } = useRepositoryData()
+  const loaded = () => !!(repo() && users())
+
+  return (
     <DataTable.Container>
       <DataTable.Title>Owner</DataTable.Title>
       <Show when={loaded()}>
-        <SearchUserRow>
-          <TextInput
-            placeholder="Search UserID"
-            leftIcon={<MaterialSymbols>search</MaterialSymbols>}
-            value={searchUserQuery()}
-            onInput={(e) => setSearchUserQuery(e.target.value)}
-          />
-          <Button
-            color="primary"
-            size="medium"
-            leftIcon={<MaterialSymbols>add</MaterialSymbols>}
-            onClick={openAddUserModal}
-          >
-            Add Owners
-          </Button>
-          <AddUserModal.Container>
-            <AddUserModal.Header>Add Owner</AddUserModal.Header>
-            <AddUserModal.Body>
-              <AddOwners addOwner={handleAddOwner} nonOwners={nonOwners()} />
-            </AddUserModal.Body>
-          </AddUserModal.Container>
-        </SearchUserRow>
-        <UsersContainer>
-          <For each={filteredOwners()}>{(owner) => <OwnerRow user={owner} deleteOwner={handleDeleteOwner} />}</For>
-          <Show when={filteredOwners().length === 0}>
-            <UserPlaceholder>No Owners Found</UserPlaceholder>
-          </Show>
-        </UsersContainer>
+        <OwnerConfig repo={repo()} users={users()} refetchRepo={refetchRepo} />
       </Show>
     </DataTable.Container>
   )

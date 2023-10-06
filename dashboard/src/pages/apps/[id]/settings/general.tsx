@@ -47,10 +47,6 @@ const GeneralConfig: Component<{
     () => updateReq.refName,
   )
 
-  createEffect(() => {
-    console.log(updateReq.refName)
-  })
-
   const saveChanges = async () => {
     try {
       // validate form
@@ -74,7 +70,7 @@ const GeneralConfig: Component<{
               required
               value={updateReq.name}
               onInput={(e) => {
-                setUpdateReq('name', (e.target as HTMLInputElement).value)
+                setUpdateReq('name', e.target.value)
               }}
             />
           </FormItem>
@@ -83,7 +79,7 @@ const GeneralConfig: Component<{
               required
               value={updateReq.repositoryId}
               onInput={(e) => {
-                setUpdateReq('repositoryId', (e.target as HTMLInputElement).value)
+                setUpdateReq('repositoryId', e.target.value)
               }}
             />
           </FormItem>
