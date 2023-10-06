@@ -31,6 +31,7 @@ export const MaterialSymbols: ParentComponent<Props> = (props) => {
           'opsz' ${mergedProps.opticalSize}`,
         width: `${mergedProps.opticalSize}px`,
         height: `${mergedProps.opticalSize}px`,
+        'font-size': `${mergedProps.opticalSize}px`,
         'line-height': `${mergedProps.opticalSize}px`,
         overflow: 'hidden',
       }}

@@ -3,7 +3,7 @@ import { Button } from '/@/components/UI/Button'
 import { MaterialSymbols } from '/@/components/UI/MaterialSymbols'
 import { URLText } from '/@/components/UI/URLText'
 import { DataTable } from '/@/components/layouts/DataTable'
-import { AppsList, ListContainer } from '/@/components/templates/List'
+import { AppsList, List } from '/@/components/templates/List'
 import { useRepositoryData } from '/@/routes'
 import { colorVars, textVars } from '/@/theme'
 import { styled } from '@macaron-css/solid'
@@ -42,34 +42,6 @@ const PlaceHolder = styled('div', {
     ...textVars.h4.medium,
   },
 })
-const TableRow = styled('div', {
-  base: {
-    width: '100%',
-    padding: '16px 20px',
-    display: 'flex',
-    flexDirection: 'column',
-    alignItems: 'flex-start',
-
-    borderBottom: `1px solid ${colorVars.semantic.ui.border}`,
-    selectors: {
-      '&:last-child': {
-        borderBottom: 'none',
-      },
-    },
-  },
-})
-const TableTitle = styled('h3', {
-  base: {
-    color: colorVars.semantic.text.grey,
-    ...textVars.text.medium,
-  },
-})
-const TableData = styled('div', {
-  base: {
-    color: colorVars.semantic.text.black,
-    ...textVars.text.regular,
-  },
-})
 
 export default () => {
   const { repo, apps } = useRepositoryData()
@@ -98,7 +70,7 @@ export default () => {
               </Show>
             </DataTable.Title>
             <Show when={showPlaceHolder()} fallback={<AppsList apps={apps()} />}>
-              <ListContainer>
+              <List.Container>
                 <PlaceHolder>
                   <AppsPlaceholder />
                   No Apps
@@ -113,27 +85,33 @@ export default () => {
                     Add New App
                   </Button>
                 </PlaceHolder>
-              </ListContainer>
+              </List.Container>
             </Show>
           </DataTable.Container>
           <DataTable.Container>
             <DataTable.Title>Information</DataTable.Title>
-            <ListContainer>
-              <TableRow>
-                <TableTitle>ID</TableTitle>
-                <TableData>{repo()?.id}</TableData>
-              </TableRow>
-              <TableRow>
-                <TableTitle>Name</TableTitle>
-                <TableData>{repo()?.name}</TableData>
-              </TableRow>
-              <TableRow>
-                <TableTitle>URL</TableTitle>
-                <TableData>
-                  <URLText text={repo()?.url} href={repo()?.htmlUrl} />
-                </TableData>
-              </TableRow>
-            </ListContainer>
+            <List.Container>
+              <List.Row>
+                <List.RowContent>
+                  <List.RowTitle>ID</List.RowTitle>
+                  <List.RowData>{repo()?.id}</List.RowData>
+                </List.RowContent>
+              </List.Row>
+              <List.Row>
+                <List.RowContent>
+                  <List.RowTitle>Name</List.RowTitle>
+                  <List.RowData>{repo()?.name}</List.RowData>
+                </List.RowContent>
+              </List.Row>
+              <List.Row>
+                <List.RowContent>
+                  <List.RowTitle>URL</List.RowTitle>
+                  <List.RowData>
+                    <URLText text={repo()?.url} href={repo()?.htmlUrl} />
+                  </List.RowData>
+                </List.RowContent>
+              </List.Row>
+            </List.Container>
           </DataTable.Container>
         </Show>
       </MainView>

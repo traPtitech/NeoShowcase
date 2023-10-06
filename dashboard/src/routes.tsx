@@ -29,6 +29,30 @@ const RepositoryData: RouteDataFunc<
 }
 export const useRepositoryData = () => useRouteData<ReturnType<typeof RepositoryData>>()
 
+const ApplicationData: RouteDataFunc<
+  unknown,
+  {
+    app: Resource<Application>
+    refetchApp: () => void
+    repo: Resource<Repository>
+  }
+> = ({ params }) => {
+  const [app, { refetch: refetchApp }] = createResource(
+    () => params.id,
+    (id) => client.getApplication({ id }),
+  )
+  const [repo] = createResource(
+    () => app()?.repositoryId,
+    (id) => client.getRepository({ repositoryId: id }),
+  )
+  return {
+    app,
+    refetchApp,
+    repo,
+  }
+}
+export const useApplicationData = () => useRouteData<ReturnType<typeof ApplicationData>>()
+
 export default useRoutes([
   {
     path: '/',
@@ -41,18 +65,25 @@ export default useRoutes([
   {
     path: '/apps/:id',
     component: lazy(() => import('/@/pages/apps/[id]')),
-  },
-  {
-    path: '/apps/:id/builds',
-    component: lazy(() => import('/@/pages/apps/[id]/builds')),
-  },
-  {
-    path: '/apps/:id/builds/:buildID',
-    component: lazy(() => import('/@/pages/apps/[id]/builds/[id]')),
-  },
-  {
-    path: '/apps/:id/settings',
-    component: lazy(() => import('/@/pages/apps/[id]/settings')),
+    data: ApplicationData,
+    children: [
+      {
+        path: '/',
+        component: lazy(() => import('/@/pages/apps/[id]/index')),
+      },
+      {
+        path: '/builds',
+        component: lazy(() => import('/@/pages/apps/[id]/builds')),
+      },
+      {
+        path: '/builds/:buildID',
+        component: lazy(() => import('/@/pages/apps/[id]/builds/[id]')),
+      },
+      {
+        path: '/settings',
+        component: lazy(() => import('/@/pages/apps/[id]/settings')),
+      },
+    ],
   },
   {
     path: '/apps/new',

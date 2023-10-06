@@ -1,11 +1,11 @@
 import { Application, Repository } from '/@/api/neoshowcase/protobuf/gateway_pb'
-import { colorVars } from '/@/theme'
+import { colorVars, textVars } from '/@/theme'
 import { styled } from '@macaron-css/solid'
-import { Component, For, ParentComponent, Show, createSignal } from 'solid-js'
+import { Component, For, Show, createSignal } from 'solid-js'
 import { AppRow } from './AppRow'
 import { RepositoryRow } from './RepositoryRow'
 
-export const ListContainer = styled('div', {
+const Container = styled('div', {
   base: {
     width: '100%',
     overflow: 'hidden',
@@ -13,6 +13,70 @@ export const ListContainer = styled('div', {
     borderRadius: '8px',
   },
 })
+const Row = styled('div', {
+  base: {
+    width: '100%',
+    padding: '16px 20px',
+    display: 'flex',
+    flexDirection: 'row',
+    gap: '8px',
+
+    borderBottom: `1px solid ${colorVars.semantic.ui.border}`,
+    selectors: {
+      '&:last-child': {
+        borderBottom: 'none',
+      },
+    },
+  },
+})
+const RowContent = styled('div', {
+  base: {
+    width: '100%',
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'flex-start',
+  },
+})
+const RowTitle = styled('h3', {
+  base: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: '4px',
+    color: colorVars.semantic.text.grey,
+    ...textVars.text.medium,
+  },
+})
+const RowData = styled('div', {
+  base: {
+    color: colorVars.semantic.text.black,
+    ...textVars.text.regular,
+  },
+  variants: {
+    code: {
+      true: {
+        width: '100%',
+        marginTop: '4px',
+        whiteSpace: 'pre-wrap',
+        overflowX: 'auto',
+        padding: '4px 8px',
+        fontSize: '16px',
+        lineHeight: '1.5',
+        fontFamily: 'Menlo, Monaco, Consolas, Courier New, monospace !important',
+        background: colorVars.semantic.ui.secondary,
+        borderRadius: '4px',
+      },
+    },
+  },
+})
+
+export const List = {
+  Container,
+  Row,
+  RowContent,
+  RowTitle,
+  RowData,
+}
+
 const AppsContainer = styled('div', {
   base: {
     width: '100%',
@@ -38,7 +102,7 @@ export const RepositoryList: Component<{
   const [showApps, setShowApps] = createSignal(false)
 
   return (
-    <ListContainer>
+    <Container>
       <Bordered onClick={() => setShowApps((s) => !s)}>
         <RepositoryRow repository={props.repository} appCount={props.apps.length} />
       </Bordered>
@@ -53,13 +117,13 @@ export const RepositoryList: Component<{
           )}
         </For>
       </Show>
-    </ListContainer>
+    </Container>
   )
 }
 
 export const AppsList: Component<{ apps: Application[] }> = (props) => {
   return (
-    <ListContainer>
+    <Container>
       <For each={props.apps}>
         {(app) => (
           <Bordered>
@@ -67,6 +131,6 @@ export const AppsList: Component<{ apps: Application[] }> = (props) => {
           </Bordered>
         )}
       </For>
-    </ListContainer>
+    </Container>
   )
 }

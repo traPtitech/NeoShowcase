@@ -77,8 +77,9 @@ const UrlCount = styled('div', {
     padding: '0 8px',
     borderRadius: '9999px',
 
-    color: colorVars.semantic.text.black,
     background: colorVars.primitive.blackAlpha[200],
+    color: colorVars.semantic.text.black,
+    ...textVars.caption.regular,
   },
 })
 

@@ -1,11 +1,18 @@
-import { AppNav } from '/@/components/AppNav'
 import { BuildList } from '/@/components/BuildList'
-import { Header } from '/@/components/Header'
 import { client } from '/@/libs/api'
-import { Container } from '/@/libs/layout'
+import { styled } from '@macaron-css/solid'
 import { useParams } from '@solidjs/router'
 import { createMemo, createResource } from 'solid-js'
 import { Show } from 'solid-js'
+
+const Container = styled('div', {
+  base: {
+    width: '100%',
+    height: '100%',
+    padding: '40px 32px 72px 32px',
+    overflowY: 'auto',
+  },
+})
 
 export default () => {
   const params = useParams()
@@ -33,9 +40,7 @@ export default () => {
 
   return (
     <Container>
-      <Header />
       <Show when={loaded()}>
-        <AppNav repo={repo()} app={app()} />
         <BuildList builds={sortedBuilds()} showAppID={false} />
       </Show>
     </Container>

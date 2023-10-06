@@ -39,7 +39,7 @@ export const URLText: Component<URLTextProps> = (props) => {
       <StyledAnchor href={props.href} target="_blank" rel="noreferrer">
         <ContentContainer>
           {props.text}
-          <MaterialSymbols>open_in_new</MaterialSymbols>
+          <MaterialSymbols opticalSize={20}>open_in_new</MaterialSymbols>
         </ContentContainer>
       </StyledAnchor>
     </div>

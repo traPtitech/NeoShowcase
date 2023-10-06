@@ -43,6 +43,17 @@ export const durationHuman = (millis: number): string => {
   return `${remainMillis} ms`
 }
 
+export const diffHuman = (target: Date) => {
+  const diff = new Date().getTime() - target.getTime()
+  const suffix = diff > 0 ? 'ago' : 'from now'
+  const human = durationHuman(Math.abs(diff))
+  const localeString = target.toLocaleString()
+  return {
+    diff: `${human} ${suffix}`,
+    localeString,
+  }
+}
+
 export interface DiffHumanProps {
   target: Date
 }

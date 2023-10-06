@@ -18,12 +18,19 @@ import { Header } from '/@/components/Header'
 import { client } from '/@/libs/api'
 import { buildStatusStr } from '/@/libs/application'
 import { DiffHuman, durationHuman, shortSha } from '/@/libs/format'
-import { Container } from '/@/libs/layout'
 import { styled } from '@macaron-css/solid'
 import { useNavigate, useParams } from '@solidjs/router'
 import { For, Ref, createEffect, createResource, createSignal, onCleanup } from 'solid-js'
 import { Show } from 'solid-js'
 
+const Container = styled('div', {
+  base: {
+    width: '100%',
+    height: '100%',
+    padding: '40px 32px 72px 32px',
+    overflowY: 'auto',
+  },
+})
 const ArtifactsContainer = styled('div', {
   base: {
     display: 'flex',
@@ -62,9 +69,7 @@ export default () => {
 
   return (
     <Container>
-      <Header />
       <Show when={loaded()}>
-        <AppNav repo={repo()} app={app()} />
         <CardRowsContainer>
           <CardsRow>
             <Card>

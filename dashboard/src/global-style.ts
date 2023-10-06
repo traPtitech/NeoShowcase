@@ -40,7 +40,6 @@ globalStyle('svg', {
 
 globalStyle('body', {
   height: '100vh',
-  overflow: 'hidden',
   backgroundColor: colorVars.semantic.ui.primary,
 })
 

@@ -1,9 +1,7 @@
 import { ApplicationEnvVar, DeployType, UpdateApplicationRequest, User } from '/@/api/neoshowcase/protobuf/gateway_pb'
-import { AppNav } from '/@/components/AppNav'
 import { FormTextBig } from '/@/components/AppsNew'
 import { BuildConfigs } from '/@/components/BuildConfigs'
 import { Button } from '/@/components/Button'
-import { Header } from '/@/components/Header'
 import { IconButton } from '/@/components/IconButton'
 import { InfoTooltip } from '/@/components/InfoTooltip'
 import { InputBar, InputLabel } from '/@/components/Input'
@@ -15,7 +13,6 @@ import { WebsiteSettings } from '/@/components/WebsiteSettings'
 import { client, handleAPIError } from '/@/libs/api'
 import { useBranchesSuggestion } from '/@/libs/branchesSuggestion'
 import { writeToClipboard } from '/@/libs/clipboard'
-import { Container } from '/@/libs/layout'
 import { userFromId, users } from '/@/libs/useAllUsers'
 import useModal from '/@/libs/useModal'
 import { vars } from '/@/theme'
@@ -28,6 +25,14 @@ import { Component, For, JSX, Show, createEffect, createMemo, createResource, cr
 import { createStore } from 'solid-js/store'
 import toast from 'solid-toast'
 
+const Container = styled('div', {
+  base: {
+    width: '100%',
+    height: '100%',
+    padding: '40px 32px 72px 32px',
+    overflowY: 'auto',
+  },
+})
 const ContentContainer = styled('div', {
   base: {
     display: 'grid',
@@ -39,7 +44,7 @@ const ContentContainer = styled('div', {
 const SidebarContainer = styled('div', {
   base: {
     position: 'sticky',
-    top: '64px',
+    top: '0',
     padding: '24px 40px',
     backgroundColor: vars.bg.white1,
     borderRadius: '4px',
@@ -556,9 +561,7 @@ export default () => {
 
   return (
     <Container>
-      <Header />
       <Show when={loaded()}>
-        <AppNav repo={repo()} app={app()} />
         <ContentContainer>
           <div>
             <SidebarContainer>
