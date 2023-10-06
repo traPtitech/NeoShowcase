@@ -82,6 +82,32 @@ export default useRoutes([
       {
         path: '/settings',
         component: lazy(() => import('/@/pages/apps/[id]/settings')),
+        children: [
+          {
+            path: '/',
+            component: lazy(() => import('/@/pages/apps/[id]/settings/general')),
+          },
+          {
+            path: '/build',
+            component: lazy(() => import('/@/pages/apps/[id]/settings/build')),
+          },
+          {
+            path: '/domains',
+            component: lazy(() => import('/@/pages/apps/[id]/settings/domains')),
+          },
+          {
+            path: '/portForwarding',
+            component: lazy(() => import('/@/pages/apps/[id]/settings/portForwarding')),
+          },
+          {
+            path: '/envVars',
+            component: lazy(() => import('/@/pages/apps/[id]/settings/envVars')),
+          },
+          {
+            path: '/owner',
+            component: lazy(() => import('/@/pages/apps/[id]/settings/owner')),
+          },
+        ],
       },
     ],
   },

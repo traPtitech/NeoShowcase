@@ -2,10 +2,11 @@ import { clickInside as clickInsideDir, clickOutside as clickOutsideDir } from '
 import { colorVars, textVars } from '/@/theme'
 import { style } from '@macaron-css/core'
 import { styled } from '@macaron-css/solid'
-import { For, JSX, Show, createSignal } from 'solid-js'
+import { For, JSX, Show, createSignal, splitProps } from 'solid-js'
 import { Button } from '../UI/Button'
 import { CheckBoxIcon } from '../UI/CheckBoxIcon'
 import { MaterialSymbols } from '../UI/MaterialSymbols'
+import { TextInput } from '../UI/TextInput'
 
 // https://github.com/solidjs/solid/discussions/845
 const clickInside = clickInsideDir
@@ -240,5 +241,55 @@ export const MultiSelect = <T,>(props: MultiSelectProps<T>): JSX.Element => {
         </div>
       </Show>
     </Container>
+  )
+}
+
+export type ComboBoxProps<T> = Partial<JSX.InputHTMLAttributes<HTMLInputElement>> & {
+  items: SelectItem<T>[]
+  setSelected: (s: T) => void
+  disabled?: boolean
+}
+
+export const ComboBox = <T,>(props: ComboBoxProps<T>): JSX.Element => {
+  const [addedProps, originalProps] = splitProps(props, ['items', 'setSelected', 'disabled', 'onFocus', 'onBlur'])
+
+  const [showOptions, setShowOptions] = createSignal(false)
+
+  const handleSelect = (item: SelectItem<T>) => {
+    addedProps.setSelected(item.value)
+    setShowOptions(false)
+  }
+
+  return (
+    <div use:clickInside={() => setShowOptions(true)} use:clickOutside={() => setShowOptions(false)}>
+      <Container>
+        <TextInput
+          rightIcon={<MaterialSymbols>expand_more</MaterialSymbols>}
+          onFocus={(e) => {
+            if (addedProps.onFocus) {
+              if (typeof addedProps.onFocus === 'function') {
+                addedProps.onFocus(e)
+              } else {
+                addedProps.onFocus[0](addedProps.onFocus[1], e)
+              }
+            }
+            setShowOptions(true)
+          }}
+          {...originalProps}
+        />
+        {/* TODO: help text */}
+        <Show when={showOptions()}>
+          <div class={optionsContainerClass}>
+            <For each={addedProps.items}>
+              {(item) => (
+                <Button color="text" size="medium" full onClick={() => handleSelect(item)}>
+                  {item.title}
+                </Button>
+              )}
+            </For>
+          </div>
+        </Show>
+      </Container>
+    </div>
   )
 }

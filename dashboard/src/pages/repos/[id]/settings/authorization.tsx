@@ -11,19 +11,9 @@ import { RepositoryAuthSettings } from '/@/components/templates/RepositoryAuthSe
 import { client, handleAPIError } from '/@/libs/api'
 import { useRepositoryData } from '/@/routes'
 import { PlainMessage } from '@bufbuild/protobuf'
-import { styled } from '@macaron-css/solid'
 import { Component, Show } from 'solid-js'
 import { createStore } from 'solid-js/store'
 import toast from 'solid-toast'
-
-const ItemsContainer = styled('div', {
-  base: {
-    width: '100%',
-    display: 'flex',
-    flexDirection: 'column',
-    gap: '24px',
-  },
-})
 
 const AuthConfig: Component<{
   repo: Repository
@@ -73,14 +63,12 @@ const AuthConfig: Component<{
   return (
     <FormBox.Container ref={formRef}>
       <FormBox.Forms>
-        <ItemsContainer>
-          <RepositoryAuthSettings
-            url={updateReq.url}
-            setUrl={(v) => setUpdateReq('url', v)}
-            authConfig={authConfig}
-            setAuthConfig={setAuthConfig}
-          />
-        </ItemsContainer>
+        <RepositoryAuthSettings
+          url={updateReq.url}
+          setUrl={(v) => setUpdateReq('url', v)}
+          authConfig={authConfig}
+          setAuthConfig={setAuthConfig}
+        />
       </FormBox.Forms>
       <FormBox.Actions>
         <Button color="borderError" size="small" onClick={discardChanges} type="button">

@@ -25,6 +25,7 @@ import { styled } from '@macaron-css/solid'
 import { A } from '@solidjs/router'
 import { Component, For, Match, Show, Switch, createSignal, onCleanup } from 'solid-js'
 import { tippy as tippyDir } from 'solid-tippy'
+import toast from 'solid-toast'
 
 // https://github.com/solidjs/solid/discussions/845
 const tippy = tippyDir
@@ -79,17 +80,33 @@ const DeploymentContainer = styled('div', {
 })
 const AppStateContainer = styled('div', {
   base: {
+    gridArea: '1 / 1 / 5 / 2',
     width: '100%',
+    display: 'grid',
+    gridTemplateRows: '1fr 2fr 1fr',
+    justifyItems: 'center',
+
+    cursor: 'pointer',
+    background: colorVars.semantic.ui.primary,
+    color: colorVars.semantic.text.black,
+    ...textVars.h3.medium,
+  },
+})
+const AppState = styled('div', {
+  base: {
     display: 'flex',
     flexDirection: 'column',
     alignItems: 'center',
     justifyContent: 'center',
     gap: '8px',
-    gridArea: '1 / 1 / 5 / 2',
-
-    background: colorVars.semantic.ui.primary,
-    color: colorVars.semantic.text.black,
-    ...textVars.h3.medium,
+  },
+})
+const ActionButtons = styled('div', {
+  base: {
+    display: 'flex',
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: '8px',
   },
 })
 const DeployInfoContainer = styled('div', {
@@ -123,15 +140,50 @@ const UrlCount = styled('div', {
 })
 const DeploymentInfo: Component<{
   app: Application
+  refetchApp: () => void
   repo: Repository
   refreshRepo: () => void
   disableRefresh: () => boolean
 }> = (props) => {
+  const [showActions, setShowActions] = createSignal(false)
+
+  const restartApp = async () => {
+    try {
+      await client.startApplication({ id: props.app.id })
+      await props.refetchApp()
+      toast.success('アプリケーションを再起動しました')
+    } catch (e) {
+      handleAPIError(e, 'アプリケーションの再起動に失敗しました')
+    }
+  }
+  const stopApp = async () => {
+    try {
+      await client.stopApplication({ id: props.app.id })
+      await props.refetchApp()
+      toast.success('アプリケーションを停止しました')
+    } catch (e) {
+      handleAPIError(e, 'アプリケーションの停止に失敗しました')
+    }
+  }
+
   return (
     <DeploymentContainer>
-      <AppStateContainer>
-        <StatusIcon state={applicationState(props.app)} size={80} />
-        {applicationState(props.app)}
+      <AppStateContainer onMouseEnter={() => setShowActions(true)} onMouseLeave={() => setShowActions(false)}>
+        <div />
+        <AppState>
+          <StatusIcon state={applicationState(props.app)} size={80} />
+          {applicationState(props.app)}
+        </AppState>
+        <Show when={showActions()}>
+          <ActionButtons>
+            <Button color="borderError" size="small" onClick={restartApp} disabled={props.disableRefresh()}>
+              Restart App
+            </Button>
+            <Button color="borderError" size="small" onClick={stopApp} disabled={props.disableRefresh()}>
+              Stop App
+            </Button>
+          </ActionButtons>
+        </Show>
       </AppStateContainer>
       <DeployInfoContainer>
         <List.RowContent>
@@ -674,7 +726,13 @@ export default () => {
           <MainView>
             <DataTable.Container>
               <DataTable.Title>Deployment</DataTable.Title>
-              <DeploymentInfo app={app()} repo={repo()} refreshRepo={refreshRepo} disableRefresh={disableRefresh} />
+              <DeploymentInfo
+                app={app()}
+                refetchApp={refetchApp}
+                repo={repo()}
+                refreshRepo={refreshRepo}
+                disableRefresh={disableRefresh}
+              />
             </DataTable.Container>
           </MainView>
         </MainViewContainer>

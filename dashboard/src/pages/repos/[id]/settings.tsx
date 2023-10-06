@@ -1,10 +1,9 @@
 import { Button } from '/@/components/UI/Button'
 import { MaterialSymbols } from '/@/components/UI/MaterialSymbols'
-import { client } from '/@/libs/api'
-import { users } from '/@/libs/useAllUsers'
+import { useRepositoryData } from '/@/routes'
 import { styled } from '@macaron-css/solid'
-import { Outlet, useMatch, useNavigate, useParams } from '@solidjs/router'
-import { Show, createResource } from 'solid-js'
+import { Outlet, useMatch, useNavigate } from '@solidjs/router'
+import { Show } from 'solid-js'
 
 const Container = styled('div', {
   base: {
@@ -41,12 +40,8 @@ const SideMenu = styled('div', {
 })
 
 export default () => {
-  const params = useParams()
-  const [repo] = createResource(
-    () => params.id,
-    (repositoryId) => client.getRepository({ repositoryId }),
-  )
-  const loaded = () => !!(users() && repo())
+  const { repo } = useRepositoryData()
+  const loaded = () => !!repo()
   const navigator = useNavigate()
   const matchGeneralPage = useMatch(() => `/repos/${repo()?.id}/settings/`)
   const matchAuthPage = useMatch(() => `/repos/${repo()?.id}/settings/authorization`)

@@ -6,14 +6,16 @@ const Container = styled('form', {
     width: '100%',
     borderRadius: '8px',
     border: `1px solid ${colorVars.semantic.ui.border}`,
-    overflow: 'hidden',
+    background: colorVars.semantic.ui.primary,
   },
 })
 const Forms = styled('div', {
   base: {
     width: '100%',
     padding: '20px 24px',
-    background: colorVars.semantic.ui.primary,
+    display: 'flex',
+    flexDirection: 'column',
+    gap: '24px',
   },
 })
 const Actions = styled('div', {
@@ -27,6 +29,7 @@ const Actions = styled('div', {
     gap: '8px',
     background: colorVars.semantic.ui.secondary,
     borderTop: `1px solid ${colorVars.semantic.ui.border}`,
+    borderRadius: '0 0 8px 8px',
   },
 })
 
