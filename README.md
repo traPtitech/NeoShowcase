@@ -17,3 +17,7 @@ See [development.md](./docs/development.md).
 See:
 - [architecture.md](./docs/architecture.md) for big picture of the architecture
 - [components.md](./docs/components.md) for detailed explanation of components and libraries
+
+## Production Deployment
+
+See [deployment.md](./docs/deployment.md).
