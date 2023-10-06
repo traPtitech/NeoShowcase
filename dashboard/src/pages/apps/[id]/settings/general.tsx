@@ -188,7 +188,7 @@ const DeleteApp: Component<{
 
 export default () => {
   const { app, refetchApp, repo } = useApplicationData()
-  const loaded = () => !!app()
+  const loaded = () => !!(app() && repo())
   return (
     <DataTable.Container>
       <DataTable.Title>General</DataTable.Title>

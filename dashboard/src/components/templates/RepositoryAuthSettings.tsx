@@ -107,7 +107,7 @@ export const RepositoryAuthSettings: Component<Props> = (props) => {
         />
       </Container>
       <FormItem title="Repository URL" required>
-        <TextInput value={props.url} onInput={(e) => props.setUrl((e.target as HTMLInputElement).value)} required />
+        <TextInput value={props.url} onInput={(e) => props.setUrl(e.target.value)} required />
       </FormItem>
       <Switch>
         <Match when={props.authConfig.auth.case === 'basic' && props.authConfig.auth.value}>

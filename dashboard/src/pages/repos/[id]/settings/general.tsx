@@ -54,7 +54,7 @@ const NameConfig: Component<{
             required
             value={updateReq.name}
             onInput={(e) => {
-              setUpdateReq('name', (e.target as HTMLInputElement).value)
+              setUpdateReq('name', e.target.value)
             }}
           />
         </FormItem>
