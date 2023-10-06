@@ -10,15 +10,4 @@ This application is a successor to [kaz/showcase](https://github.com/kaz/showcas
 
 ## Development
 
-- `make`: Display Makefile help
-- `make up`: Spin up development environment
-- `make down`: Tear down development environment
-
-### Workaround
-
-Add following to your `/etc/hosts` before executing `make up`
-(workaround to issue #493)
-
-```
-127.0.0.1 registry.local
-```
+See [development.md](./docs/development.md).
