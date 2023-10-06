@@ -1,10 +1,10 @@
 import { colorOverlay } from '/@/libs/colorOverlay'
 import { colorVars, textVars } from '/@/theme'
 import { styled } from '@macaron-css/solid'
-import { For, JSX } from 'solid-js'
-import { RadioIcon } from '../UI/RadioIcon'
+import { Component } from 'solid-js'
+import { CheckBoxIcon } from '../UI/CheckBoxIcon'
 
-const Container = styled('div', {
+export const CheckBoxesContainer = styled('div', {
   base: {
     width: '100%',
     display: 'flex',
@@ -12,6 +12,7 @@ const Container = styled('div', {
     gap: '16px',
   },
 })
+
 const Button = styled('button', {
   base: {
     width: 'fit-content',
@@ -50,34 +51,23 @@ const Button = styled('button', {
   },
 })
 
-export interface RadioItem<T> {
-  value: T
+export interface Props {
   title: string
-}
-
-export interface Props<T> {
-  items: RadioItem<T>[]
-  selected: T
-  setSelected: (s: T) => void
+  checked: boolean
+  setChecked: (checked: boolean) => void
   disabled?: boolean
 }
 
-export const RadioButtons = <T,>(props: Props<T>): JSX.Element => {
+export const CheckBox: Component<Props> = (props) => {
   return (
-    <Container>
-      <For each={props.items}>
-        {(item) => (
-          <Button
-            selected={props.selected === item.value}
-            disabled={props.disabled}
-            onClick={() => props.setSelected(item.value)}
-            type="button"
-          >
-            {item.title}
-            <RadioIcon selected={props.selected === item.value} disabled={props.disabled} />
-          </Button>
-        )}
-      </For>
-    </Container>
+    <Button
+      selected={props.checked}
+      disabled={props.disabled}
+      onClick={() => props.setChecked(!props.checked)}
+      type="button"
+    >
+      {props.title}
+      <CheckBoxIcon checked={props.checked} disabled={props.disabled} />
+    </Button>
   )
 }

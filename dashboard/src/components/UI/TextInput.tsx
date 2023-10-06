@@ -21,16 +21,18 @@ const StyledInput = styled('input', {
     width: '100%',
     height: '48px',
     padding: '10px 16px',
+
     background: colorVars.semantic.ui.primary,
     borderRadius: '8px',
     border: 'none',
     outline: `1px solid ${colorVars.semantic.ui.border}`,
     color: colorVars.semantic.text.black,
     ...textVars.text.regular,
-    '::placeholder': {
-      color: colorVars.semantic.text.disabled,
-    },
+
     selectors: {
+      '&::placeholder': {
+        color: colorVars.semantic.text.disabled,
+      },
       '&:focus': {
         outline: `2px solid ${colorVars.semantic.primary.main}`,
       },
@@ -97,7 +99,7 @@ export interface Props extends JSX.InputHTMLAttributes<HTMLInputElement> {
 }
 
 export const TextInput: Component<Props> = (props) => {
-  const [addedProps, originalInputProps] = splitProps(props, ['helpText', 'leftIcon', 'rightIcon'])
+  const [addedProps, originalProps] = splitProps(props, ['helpText', 'leftIcon', 'rightIcon'])
 
   return (
     <Container>
@@ -105,8 +107,8 @@ export const TextInput: Component<Props> = (props) => {
         <StyledInput
           hasLeftIcon={addedProps.leftIcon !== undefined}
           hasRightIcon={addedProps.rightIcon !== undefined}
-          {...originalInputProps}
-          type={originalInputProps.type ?? 'text'}
+          {...originalProps}
+          type={originalProps.type ?? 'text'}
         />
         <Show when={addedProps.leftIcon}>
           <LeftIcon>{addedProps.leftIcon}</LeftIcon>
@@ -115,7 +117,7 @@ export const TextInput: Component<Props> = (props) => {
           <RightIcon>{addedProps.rightIcon}</RightIcon>
         </Show>
       </InputContainer>
-      <Show when={props.helpText}>
+      <Show when={addedProps.helpText}>
         <HelpText>{addedProps.helpText}</HelpText>
       </Show>
     </Container>
