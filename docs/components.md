@@ -46,6 +46,13 @@ Connectによって生成されたサーバーまたはクライアントのコ�
 Connect protocolのWebクライアントはデフォルトでapplication/jsonで通信を行うため、人間が理解しやすく、既存のRESTful APIのエコシステムにも上手くハマる。
 NeoShowcaseではこの利点を生かしてtraefik forward auth middlewareに認証を委譲している。
 
+### [traefik proxy](https://doc.traefik.io/traefik/)
+
+モダンなリバースプロキシ
+
+各コンポーネントの接続と、ユーザーのアプリへのルーティングに使用している。
+K8s backendでは、Ingress Controllerとして使用。
+
 ### [protoc (Protocol Buffer Compiler)](https://github.com/protocolbuffers/protobuf)
 
 `.proto`ファイルから`.go`ファイルなどを生成するときに使うコンパイラ
