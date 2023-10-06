@@ -3,7 +3,6 @@ package builder
 import (
 	"bytes"
 	"context"
-	"encoding/json"
 	"fmt"
 	"io"
 	"os"
@@ -14,7 +13,6 @@ import (
 	"github.com/friendsofgo/errors"
 	buildkit "github.com/moby/buildkit/client"
 	"github.com/moby/buildkit/client/llb"
-	"github.com/moby/buildkit/exporter/containerimage/exptypes"
 	"github.com/moby/buildkit/frontend/dockerfile/dockerfile2llb"
 	"github.com/moby/buildkit/frontend/dockerui"
 	"github.com/moby/buildkit/session"
@@ -118,35 +116,33 @@ func (s *builderService) buildRuntimeCmd(
 		dockerfile.WriteString(fmt.Sprintf("RUN rm ./%v\n", buildScriptName))
 	}
 
-	b, img, _, err := dockerfile2llb.Dockerfile2LLB(ctx, dockerfile.Bytes(), dockerfile2llb.ConvertOpt{
-		Config: dockerui.Config{
-			BuildArgs: env,
-		},
-	})
+	tmpDockerfile, err := os.CreateTemp("", "dockerfile-*")
 	if err != nil {
-		return err
+		return errors.Wrap(err, "creating tmp dockerfile")
 	}
-	config, err := json.Marshal(img)
+	defer os.Remove(tmpDockerfile.Name())
+	_, err = io.Copy(tmpDockerfile, &dockerfile)
 	if err != nil {
-		return errors.Wrap(err, "marshaling image config")
-	}
-	def, err := b.Marshal(ctx)
-	if err != nil {
-		return err
+		return errors.Wrap(err, "writing tmp dockerfile")
 	}
 
-	_, err = s.buildkit.Solve(ctx, def, buildkit.SolveOpt{
+	_, err = s.buildkit.Solve(ctx, nil, buildkit.SolveOpt{
 		Exports: []buildkit.ExportEntry{{
 			Type: buildkit.ExporterImage,
 			Attrs: map[string]string{
-				"name":                          s.destImage(st.app, st.build),
-				"push":                          "true",
-				exptypes.ExporterImageConfigKey: string(config),
+				"name": s.destImage(st.app, st.build),
+				"push": "true",
 			},
 		}},
 		LocalDirs: map[string]string{
-			"context": st.repositoryTempDir,
+			"context":    st.repositoryTempDir,
+			"dockerfile": filepath.Dir(tmpDockerfile.Name()),
 		},
+		Frontend: "dockerfile.v0",
+		FrontendAttrs: ds.MergeMap(
+			map[string]string{"filename": filepath.Base(tmpDockerfile.Name())},
+			appEnvAttributes(env),
+		),
 		Session: s.authSessions(),
 	}, ch)
 	return err
