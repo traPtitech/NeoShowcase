@@ -10,13 +10,12 @@ import {
 import { StatusIcon } from '/@/components/StatusIcon'
 import { BuildStatusIcon } from '/@/components/UI/BuildStatusIcon'
 import { Button } from '/@/components/UI/Button'
-import { MaterialSymbols } from '/@/components/UI/MaterialSymbols'
 import { URLText } from '/@/components/UI/URLText'
 import { DataTable } from '/@/components/layouts/DataTable'
 import { AppMetrics } from '/@/components/templates/AppMetrics'
 import { ContainerLog } from '/@/components/templates/ContainerLog'
 import { List } from '/@/components/templates/List'
-import { client, handleAPIError, systemInfo } from '/@/libs/api'
+import { availableMetrics, client, handleAPIError, systemInfo } from '/@/libs/api'
 import { applicationState, buildStatusStr, buildTypeStr, getWebsiteURL } from '/@/libs/application'
 import { titleCase } from '/@/libs/casing'
 import { diffHuman, shortSha } from '/@/libs/format'
@@ -603,32 +602,33 @@ const ChartContainer = styled('div', {
 })
 
 const Metrics: Component<{ app: Application }> = (props) => {
-  const [currentView, setCurrentView] = createSignal<'CPU' | 'Memory'>('CPU')
+  const { metricsNames } = availableMetrics()
+  const [currentView, setCurrentView] = createSignal(metricsNames[0])
 
   return (
     <MetricsContainer>
       <MetricsTypeButtons>
-        <Button
-          color="text"
-          size="medium"
-          onClick={() => setCurrentView('CPU')}
-          active={currentView() === 'CPU'}
-          leftIcon={<MaterialSymbols>developer_board</MaterialSymbols>}
-        >
-          CPU
-        </Button>
-        <Button
-          color="text"
-          size="medium"
-          onClick={() => setCurrentView('Memory')}
-          active={currentView() === 'Memory'}
-          leftIcon={<MaterialSymbols>memory</MaterialSymbols>}
-        >
-          Memory
-        </Button>
+        <For each={metricsNames}>
+          {(metrics) => (
+            <Button
+              color="text"
+              size="medium"
+              onClick={() => setCurrentView(metrics)}
+              active={currentView() === metrics}
+            >
+              {metrics}
+            </Button>
+          )}
+        </For>
       </MetricsTypeButtons>
       <ChartContainer>
-        <AppMetrics appID={props.app.id} metricsName={currentView()} />
+        <For each={metricsNames}>
+          {(metrics) => (
+            <Show when={currentView() === metrics}>
+              <AppMetrics appID={props.app.id} metricsName={metrics} />
+            </Show>
+          )}
+        </For>
       </ChartContainer>
     </MetricsContainer>
   )
