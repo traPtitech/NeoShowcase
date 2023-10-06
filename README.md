@@ -11,3 +11,9 @@ This application is a successor to [kaz/showcase](https://github.com/kaz/showcas
 ## Development
 
 See [development.md](./docs/development.md).
+
+## Architecture
+
+See:
+- [architecture.md](./docs/architecture.md) for big picture of the architecture
+- [components.md](./docs/components.md) for detailed explanation of components and libraries
