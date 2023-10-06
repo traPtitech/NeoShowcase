@@ -20,7 +20,8 @@ const TitleStickyContainer = styled('div', {
 const TitleContainer = styled('div', {
   base: {
     position: 'sticky',
-    width: 'fit-content',
+    width: '100%',
+    maxWidth: '1000px',
     height: '44px',
     left: 'calc((100% - 1000px) / 2)',
     display: 'flex',
@@ -30,10 +31,10 @@ const TitleContainer = styled('div', {
 })
 const Title = styled('h1', {
   base: {
+    width: '100%',
     ...textVars.h1.medium,
   },
 })
-
 export interface Props {
   title: string
   icon?: JSX.Element
