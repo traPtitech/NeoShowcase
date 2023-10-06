@@ -186,16 +186,16 @@ export default () => {
   const { repo, refetchRepo } = useRepositoryData()
   const loaded = () => !!(repo() && users())
   const [searchUserQuery, setSearchUserQuery] = createSignal('')
-  const owners = repo().ownerIds.map(userFromId)
+  const owners = () => repo().ownerIds.map(userFromId)
   const fuse = createMemo(
     () =>
-      new Fuse(owners, {
+      new Fuse(owners(), {
         keys: ['name'],
       }),
   )
   const filteredOwners = createMemo(() => {
     if (searchUserQuery() === '') {
-      return owners
+      return owners()
     } else {
       return fuse()
         .search(searchUserQuery())
@@ -216,7 +216,7 @@ export default () => {
     }
   }
 
-  const nonOwners = createMemo(() => users().filter((u) => !owners.some((o) => o.id === u.id)))
+  const nonOwners = createMemo(() => users().filter((u) => !owners().some((o) => o.id === u.id)))
   const { Modal: AddUserModal, open: openAddUserModal } = useModal({
     showCloseButton: true,
   })
