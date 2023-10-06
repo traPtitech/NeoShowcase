@@ -6,6 +6,7 @@ import {
 } from '/@/api/neoshowcase/protobuf/gateway_pb'
 import { Button } from '/@/components/UI/Button'
 import FormBox from '/@/components/layouts/FormBox'
+import { SettingsContainer } from '/@/components/layouts/SettingsContainer'
 import { RepositoryAuthSettings } from '/@/components/templates/RepositoryAuthSettings'
 import { client, handleAPIError } from '/@/libs/api'
 import { useRepositoryData } from '/@/routes'
@@ -16,19 +17,6 @@ import { Component, Show, onMount } from 'solid-js'
 import { createStore } from 'solid-js/store'
 import toast from 'solid-toast'
 
-const Container = styled('div', {
-  base: {
-    width: '100%',
-    height: '100%',
-    display: 'flex',
-    flexDirection: 'column',
-    gap: '16px',
-    overflowY: 'auto',
-
-    color: colorVars.semantic.text.black,
-    ...textVars.h2.medium,
-  },
-})
 const ItemsContainer = styled('div', {
   base: {
     width: '100%',
@@ -112,11 +100,11 @@ export default () => {
   const loaded = () => !!repo()
 
   return (
-    <Container>
+    <SettingsContainer>
       Authorization
       <Show when={loaded()}>
         <AuthConfig repo={repo()} refetchRepo={refetchRepo} />
       </Show>
-    </Container>
+    </SettingsContainer>
   )
 }

@@ -2,6 +2,7 @@ import { Application, Repository, UpdateRepositoryRequest } from '/@/api/neoshow
 import { Button } from '/@/components/UI/Button'
 import { TextInput } from '/@/components/UI/TextInput'
 import FormBox from '/@/components/layouts/FormBox'
+import { SettingsContainer } from '/@/components/layouts/SettingsContainer'
 import { FormItem } from '/@/components/templates/FormItem'
 import { client, handleAPIError } from '/@/libs/api'
 import { providerToIcon, repositoryURLToProvider } from '/@/libs/application'
@@ -14,20 +15,6 @@ import { useNavigate } from '@solidjs/router'
 import { Component, Show } from 'solid-js'
 import { createStore } from 'solid-js/store'
 import toast from 'solid-toast'
-
-const Container = styled('div', {
-  base: {
-    width: '100%',
-    height: '100%',
-    display: 'flex',
-    flexDirection: 'column',
-    gap: '16px',
-    overflowY: 'auto',
-
-    color: colorVars.semantic.text.black,
-    ...textVars.h2.medium,
-  },
-})
 
 const NameConfig: Component<{
   repo: Repository
@@ -168,12 +155,12 @@ export default () => {
   const loaded = () => !!(repo() && apps())
 
   return (
-    <Container>
+    <SettingsContainer>
       General
       <Show when={loaded()}>
         <NameConfig repo={repo()} refetchRepo={refetchRepo} />
         <DeleteProject repo={repo()} apps={apps()} />
       </Show>
-    </Container>
+    </SettingsContainer>
   )
 }

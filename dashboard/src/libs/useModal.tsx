@@ -11,6 +11,7 @@ const ModalBackground = styled('div', {
     left: 0,
     right: 0,
     bottom: 0,
+    padding: '32px',
     background: colorVars.primitive.blackAlpha[600],
     display: 'grid',
     placeItems: 'center',
@@ -21,6 +22,10 @@ const ModalWrapper = styled('div', {
     position: 'relative',
     width: '100%',
     maxWidth: '568px',
+    height: 'auto',
+    maxHeight: '100%',
+    display: 'flex',
+    flexDirection: 'column',
     background: colorVars.semantic.ui.primary,
     borderRadius: '12px',
     opacity: 1,
@@ -33,6 +38,7 @@ const ModalHeader = styled('div', {
     width: '100%',
     height: '72px',
     padding: '8px 32px',
+    flexShrink: 0,
     display: 'flex',
     flexDirection: 'row',
     alignItems: 'center',
@@ -50,6 +56,10 @@ const ModalHeader = styled('div', {
 const ModalBody = styled('div', {
   base: {
     width: '100%',
+    height: 'auto',
+    maxHeight: '100%',
+    display: 'flex',
+    overflowY: 'hidden',
     padding: '24px 32px',
     selectors: {
       '&:not(:last-child)': {
@@ -63,6 +73,7 @@ const ModalFooter = styled('div', {
     width: '100%',
     height: '72px',
     padding: '8px 32px',
+    flexShrink: 0,
     display: 'flex',
     flexDirection: 'row',
     justifyContent: 'flex-end',
