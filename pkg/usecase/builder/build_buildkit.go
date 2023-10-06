@@ -39,7 +39,9 @@ func withBuildkitProgress(ctx context.Context, logger io.Writer, buildFn func(ct
 	})
 	eg.Go(func() error {
 		// TODO: VertexWarningを使う (LLBのどのvertexに問題があったか)
-		_, err := progressui.DisplaySolveStatus(ctx, nil, logger, ch)
+		// NOTE: https://github.com/moby/buildkit/pull/1721#issuecomment-703937866
+		// DisplaySolveStatus's context should not be cancelled, in order to receive 'cancelled' events from buildkit API call.
+		_, err := progressui.DisplaySolveStatus(context.WithoutCancel(ctx), nil, logger, ch)
 		return err
 	})
 	return eg.Wait()
