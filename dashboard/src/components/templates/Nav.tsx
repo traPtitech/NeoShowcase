@@ -8,16 +8,21 @@ const Container = styled('div', {
   base: {
     width: '100%',
     padding: '32px',
-    display: 'grid',
-    gridTemplateColumns: '104px 1fr 104px',
+    display: 'flex',
+    gap: '8px',
+  },
+})
+const TitleStickyContainer = styled('div', {
+  base: {
+    width: '100%',
   },
 })
 const TitleContainer = styled('div', {
   base: {
-    width: '100%',
+    position: 'sticky',
+    width: 'fit-content',
     height: '44px',
-    maxWidth: '1000px',
-    margin: '0 auto',
+    left: 'calc((100% - 1000px) / 2)',
     display: 'flex',
     alignItems: 'center',
     gap: '8px',
@@ -25,7 +30,6 @@ const TitleContainer = styled('div', {
 })
 const Title = styled('h1', {
   base: {
-    width: '100%',
     ...textVars.h1.medium,
   },
 })
@@ -52,12 +56,13 @@ export const Nav: Component<Props> = (props) => {
           {props.backToTitle}
         </Button>
       </Show>
-      <TitleContainer>
-        <Show when={props.icon}>{props.icon}</Show>
-        <Title>{props.title}</Title>
-        <Show when={props.action}>{props.action}</Show>
-      </TitleContainer>
-      <div />
+      <TitleStickyContainer>
+        <TitleContainer>
+          <Show when={props.icon}>{props.icon}</Show>
+          <Title>{props.title}</Title>
+          <Show when={props.action}>{props.action}</Show>
+        </TitleContainer>
+      </TitleStickyContainer>
     </Container>
   )
 }
