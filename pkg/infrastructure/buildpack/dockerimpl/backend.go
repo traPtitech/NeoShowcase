@@ -33,7 +33,12 @@ func NewBuildpackBackend(
 	config Config,
 	image builder.ImageConfig,
 ) (builder.BuildpackBackend, error) {
-	c, err := client.NewClientWithOpts(client.FromEnv)
+	c, err := client.NewClientWithOpts(
+		client.FromEnv,
+		// Using github.com/moby/moby of v25 master@8e51b8b59cb8 (2023-07-18), required by github.com/moby/buildkit@v0.12.2,
+		// defaults to API version 1.44, which currently available docker installation does not support.
+		client.WithVersion("1.43"),
+	)
 	if err != nil {
 		return nil, err
 	}

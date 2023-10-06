@@ -16,6 +16,7 @@ import (
 	"github.com/moby/buildkit/client/llb"
 	"github.com/moby/buildkit/exporter/containerimage/exptypes"
 	"github.com/moby/buildkit/frontend/dockerfile/dockerfile2llb"
+	"github.com/moby/buildkit/frontend/dockerui"
 	"github.com/moby/buildkit/session"
 	"github.com/moby/buildkit/session/auth/authprovider"
 	"github.com/moby/buildkit/util/progress/progressui"
@@ -38,7 +39,7 @@ func withBuildkitProgress(ctx context.Context, logger io.Writer, buildFn func(ct
 	})
 	eg.Go(func() error {
 		// TODO: VertexWarningを使う (LLBのどのvertexに問題があったか)
-		_, err := progressui.DisplaySolveStatus(ctx, "", nil, logger, ch)
+		_, err := progressui.DisplaySolveStatus(ctx, nil, logger, ch)
 		return err
 	})
 	return eg.Wait()
@@ -116,7 +117,9 @@ func (s *builderService) buildRuntimeCmd(
 	}
 
 	b, img, _, err := dockerfile2llb.Dockerfile2LLB(ctx, dockerfile.Bytes(), dockerfile2llb.ConvertOpt{
-		BuildArgs: env,
+		Config: dockerui.Config{
+			BuildArgs: env,
+		},
 	})
 	if err != nil {
 		return err
@@ -263,7 +266,9 @@ func (s *builderService) buildStaticDockerfile(
 	}
 
 	b, _, _, err := dockerfile2llb.Dockerfile2LLB(ctx, dockerfile, dockerfile2llb.ConvertOpt{
-		BuildArgs: env,
+		Config: dockerui.Config{
+			BuildArgs: env,
+		},
 	})
 	if err != nil {
 		return err
