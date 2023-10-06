@@ -8,6 +8,7 @@ import (
 	"sync"
 	"time"
 
+	clitypes "github.com/docker/cli/cli/config/types"
 	"github.com/docker/docker/api/types"
 	"github.com/docker/docker/api/types/filters"
 	"github.com/docker/docker/client"
@@ -45,7 +46,12 @@ type Backend struct {
 }
 
 func NewClientFromEnv() (*client.Client, error) {
-	return client.NewClientWithOpts(client.FromEnv)
+	return client.NewClientWithOpts(
+		client.FromEnv,
+		// Using github.com/moby/moby of v25 master@8e51b8b59cb8 (2023-07-18), required by github.com/moby/buildkit@v0.12.2,
+		// defaults to API version 1.44, which currently available docker installation does not support.
+		client.WithVersion("1.43"),
+	)
 }
 
 func NewDockerBackend(
@@ -164,7 +170,7 @@ func (b *Backend) authConfig() (string, error) {
 	if b.image.Registry.Username == "" && b.image.Registry.Password == "" {
 		return "", nil
 	}
-	c := types.AuthConfig{
+	c := clitypes.AuthConfig{
 		Username: b.image.Registry.Username,
 		Password: b.image.Registry.Password,
 	}
