@@ -6,9 +6,9 @@ import { RadioIcon } from '../UI/RadioIcon'
 
 const Container = styled('div', {
   base: {
-    width: '100%',
+    width: 'fit-content',
     display: 'flex',
-    flexWrap: 'nowrap',
+    flexWrap: 'wrap',
     gap: '16px',
   },
 })

@@ -3,6 +3,7 @@ import { colorVars, textVars } from '/@/theme'
 import { styled } from '@macaron-css/solid'
 import { JSX, ParentComponent, Show, splitProps } from 'solid-js'
 import { tippy as tippyDir } from 'solid-tippy'
+import { ToolTip, TooltipProps } from './ToolTip'
 
 // https://github.com/solidjs/solid/discussions/845
 const tippy = tippyDir
@@ -173,7 +174,7 @@ export interface Props extends JSX.ButtonHTMLAttributes<HTMLButtonElement> {
   active?: boolean
   hasCheckbox?: boolean
   full?: boolean
-  tooltip?: string
+  tooltip?: TooltipProps
   leftIcon?: JSX.Element
   rightIcon?: JSX.Element
 }
@@ -192,34 +193,31 @@ export const Button: ParentComponent<Props> = (props) => {
   ])
 
   return (
-    <span
-      use:tippy={{
-        props: { content: addedProps.tooltip, maxWidth: 1000 },
-        disabled: !addedProps.tooltip,
-        hidden: true,
-      }}
-      style={{
-        width: addedProps.full ? '100%' : 'auto',
-      }}
-    >
-      <Container
-        color={addedProps.color}
-        size={addedProps.size}
-        data-active={addedProps.active}
-        hasCheckbox={addedProps.hasCheckbox}
-        full={addedProps.full}
-        {...originalButtonProps}
+    <ToolTip {...addedProps.tooltip}>
+      <span // ボタンがdisabledの時もTippy.jsのtooltipが表示されるようにするためのラッパー
+        style={{
+          width: addedProps.full ? '100%' : 'fit-content',
+        }}
       >
-        <Show when={addedProps.leftIcon}>
-          <IconContainer size={addedProps.size}>{addedProps.leftIcon}</IconContainer>
-        </Show>
-        <Text color={addedProps.color} size={addedProps.size}>
-          {addedProps.children}
-        </Text>
-        <Show when={addedProps.rightIcon}>
-          <IconContainer size={addedProps.size}>{addedProps.rightIcon}</IconContainer>
-        </Show>
-      </Container>
-    </span>
+        <Container
+          color={addedProps.color}
+          size={addedProps.size}
+          data-active={addedProps.active}
+          hasCheckbox={addedProps.hasCheckbox}
+          full={addedProps.full}
+          {...originalButtonProps}
+        >
+          <Show when={addedProps.leftIcon}>
+            <IconContainer size={addedProps.size}>{addedProps.leftIcon}</IconContainer>
+          </Show>
+          <Text color={addedProps.color} size={addedProps.size}>
+            {addedProps.children}
+          </Text>
+          <Show when={addedProps.rightIcon}>
+            <IconContainer size={addedProps.size}>{addedProps.rightIcon}</IconContainer>
+          </Show>
+        </Container>
+      </span>
+    </ToolTip>
   )
 }

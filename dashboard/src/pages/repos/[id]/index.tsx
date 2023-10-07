@@ -49,6 +49,24 @@ export default () => {
   const navigator = useNavigate()
   const showPlaceHolder = () => apps()?.length === 0
 
+  const AddNewAppButton = () => (
+    <Button
+      color="primary"
+      size="medium"
+      leftIcon={<MaterialSymbols>add</MaterialSymbols>}
+      onClick={() => {
+        navigator(`/apps/new?repositoryID=${repo()?.id}`)
+      }}
+      tooltip={{
+        props: {
+          content: 'このリポジトリからアプリケーションを作成します',
+        },
+      }}
+    >
+      Add New App
+    </Button>
+  )
+
   return (
     <Container>
       <MainView>
@@ -57,16 +75,7 @@ export default () => {
             <DataTable.Title>
               Apps
               <Show when={!showPlaceHolder()}>
-                <Button
-                  color="primary"
-                  size="medium"
-                  leftIcon={<MaterialSymbols>add</MaterialSymbols>}
-                  onClick={() => {
-                    navigator(`/apps/new?repositoryID=${repo()?.id}`)
-                  }}
-                >
-                  Add New App
-                </Button>
+                <AddNewAppButton />
               </Show>
             </DataTable.Title>
             <Show when={showPlaceHolder()} fallback={<AppsList apps={apps()} />}>
@@ -74,16 +83,7 @@ export default () => {
                 <PlaceHolder>
                   <AppsPlaceholder />
                   No Apps
-                  <Button
-                    color="primary"
-                    size="medium"
-                    leftIcon={<MaterialSymbols>add</MaterialSymbols>}
-                    onClick={() => {
-                      navigator(`/apps/new?repositoryID=${repo()?.id}`)
-                    }}
-                  >
-                    Add New App
-                  </Button>
+                  <AddNewAppButton />
                 </PlaceHolder>
               </List.Container>
             </Show>

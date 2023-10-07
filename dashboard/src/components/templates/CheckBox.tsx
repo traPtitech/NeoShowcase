@@ -4,11 +4,11 @@ import { styled } from '@macaron-css/solid'
 import { Component } from 'solid-js'
 import { CheckBoxIcon } from '../UI/CheckBoxIcon'
 
-export const CheckBoxesContainer = styled('div', {
+const Container = styled('div', {
   base: {
-    width: '100%',
+    width: 'fit-content',
     display: 'flex',
-    flexWrap: 'nowrap',
+    flexWrap: 'wrap',
     gap: '16px',
   },
 })
@@ -58,7 +58,7 @@ export interface Props {
   disabled?: boolean
 }
 
-export const CheckBox: Component<Props> = (props) => {
+const Option: Component<Props> = (props) => {
   return (
     <Button
       selected={props.checked}
@@ -70,4 +70,9 @@ export const CheckBox: Component<Props> = (props) => {
       <CheckBoxIcon checked={props.checked} disabled={props.disabled} />
     </Button>
   )
+}
+
+export const CheckBox = {
+  Container,
+  Option,
 }

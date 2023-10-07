@@ -11,6 +11,7 @@ import {
 import { AppStatusIcon } from '/@/components/UI/AppStatusIcon'
 import { BuildStatusIcon } from '/@/components/UI/BuildStatusIcon'
 import { Button } from '/@/components/UI/Button'
+import { ToolTip } from '/@/components/UI/ToolTip'
 import { URLText } from '/@/components/UI/URLText'
 import { DataTable } from '/@/components/layouts/DataTable'
 import { AppMetrics } from '/@/components/templates/AppMetrics'
@@ -288,7 +289,17 @@ const DeploymentInfo: Component<{
           <List.RowTitle>Source Commit</List.RowTitle>
           <List.RowData>{shortSha(props.app.commit)}</List.RowData>
         </List.RowContent>
-        <Button color="ghost" size="medium" onClick={props.refreshRepo} disabled={props.disableRefresh()}>
+        <Button
+          color="ghost"
+          size="medium"
+          onClick={props.refreshRepo}
+          disabled={props.disableRefresh()}
+          tooltip={{
+            props: {
+              content: 'リポジトリの最新コミットを取得',
+            },
+          }}
+        >
           Refresh Commit
         </Button>
       </DeployInfoContainer>
@@ -376,7 +387,17 @@ const BuildStatusTable: Component<{
           {buildStatusStr[props.latestBuild.status]}
         </BuildStatusLabel>
         <Show when={!props.latestBuild.retriable}>
-          <Button color="borderError" size="small" onClick={rebuild} disabled={props.disableRefresh()}>
+          <Button
+            color="borderError"
+            size="small"
+            onClick={rebuild}
+            disabled={props.disableRefresh()}
+            tooltip={{
+              props: {
+                content: '同じコミットで再ビルド',
+              },
+            }}
+          >
             Rebuild
           </Button>
         </Show>
@@ -401,7 +422,17 @@ const BuildStatusTable: Component<{
             {props.app.refName} ({shortSha(props.app.commit)})
           </List.RowData>
         </List.RowContent>
-        <Button color="ghost" size="medium" onClick={props.refreshRepo} disabled={props.disableRefresh()}>
+        <Button
+          color="ghost"
+          size="medium"
+          onClick={props.refreshRepo}
+          disabled={props.disableRefresh()}
+          tooltip={{
+            props: {
+              content: 'リポジトリの最新コミットを取得',
+            },
+          }}
+        >
           Refresh Commit
         </Button>
       </List.Row>
@@ -608,16 +639,9 @@ const Information: Component<{ app: Application }> = (props) => {
               <List.Row>
                 <List.RowContent>
                   <List.RowTitle>起動時刻</List.RowTitle>
-                  <List.RowData>
-                    <span
-                      use:tippy={{
-                        props: { content: localeString, maxWidth: 1000 },
-                        hidden: true,
-                      }}
-                    >
-                      {diff}
-                    </span>
-                  </List.RowData>
+                  <ToolTip props={{ content: localeString }}>
+                    <List.RowData>{diff}</List.RowData>
+                  </ToolTip>
                 </List.RowContent>
               </List.Row>
             )
@@ -630,16 +654,9 @@ const Information: Component<{ app: Application }> = (props) => {
               <List.Row>
                 <List.RowContent>
                   <List.RowTitle>作成日</List.RowTitle>
-                  <List.RowData>
-                    <span
-                      use:tippy={{
-                        props: { content: localeString, maxWidth: 1000 },
-                        hidden: true,
-                      }}
-                    >
-                      {diff}
-                    </span>
-                  </List.RowData>
+                  <ToolTip props={{ content: localeString }}>
+                    <List.RowData>{diff}</List.RowData>
+                  </ToolTip>
                 </List.RowContent>
               </List.Row>
             )

@@ -1,11 +1,12 @@
 import { Application } from '/@/api/neoshowcase/protobuf/gateway_pb'
 import { applicationState, getWebsiteURL } from '/@/libs/application'
-import { DiffHuman, shortSha } from '/@/libs/format'
+import { diffHuman, shortSha } from '/@/libs/format'
 import { colorVars, textVars } from '/@/theme'
 import { styled } from '@macaron-css/solid'
 import { A } from '@solidjs/router'
 import { Component, Show } from 'solid-js'
 import { AppStatusIcon } from '../UI/AppStatusIcon'
+import { ToolTip } from '../UI/ToolTip'
 
 const Container = styled('div', {
   base: {
@@ -95,11 +96,14 @@ export const AppRow: Component<Props> = (props) => {
           <AppStatusIcon state={applicationState(props.app)} />
           <AppName>{props.app.name}</AppName>
           <Show when={props.app.updatedAt}>
-            {(nonNullUpdatedAt) => (
-              <UpdatedAt>
-                <DiffHuman target={nonNullUpdatedAt().toDate()} />
-              </UpdatedAt>
-            )}
+            {(nonNullUpdatedAt) => {
+              const { diff, localeString } = diffHuman(nonNullUpdatedAt().toDate())
+              return (
+                <ToolTip props={{ content: localeString }}>
+                  <UpdatedAt>{diff}</UpdatedAt>
+                </ToolTip>
+              )
+            }}
           </Show>
         </TitleContainer>
         <MetaContainer>

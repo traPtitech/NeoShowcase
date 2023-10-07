@@ -74,7 +74,15 @@ const GeneralConfig: Component<{
               }}
             />
           </FormItem>
-          <FormItem title="Repository ID" required>
+          <FormItem
+            title="Repository ID"
+            required
+            tooltip={{
+              props: {
+                content: 'リポジトリを移管する場合はIDを変更',
+              },
+            }}
+          >
             <TextInput
               required
               value={updateReq.repositoryId}
@@ -83,7 +91,20 @@ const GeneralConfig: Component<{
               }}
             />
           </FormItem>
-          <FormItem title="Branch" required>
+          <FormItem
+            title="Branch"
+            required
+            tooltip={{
+              props: {
+                content: (
+                  <>
+                    <div>Gitブランチ名またはRef</div>
+                    <div>入力欄をクリックして候補を表示</div>
+                  </>
+                ),
+              },
+            }}
+          >
             <ComboBox
               required
               value={updateReq.refName}

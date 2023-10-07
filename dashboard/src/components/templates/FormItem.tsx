@@ -1,7 +1,8 @@
 import { colorVars, textVars } from '/@/theme'
 import { styled } from '@macaron-css/solid'
 import { ParentComponent, Show } from 'solid-js'
-import { InfoTooltip } from '../InfoTooltip'
+import { TooltipProps } from '../UI/ToolTip'
+import { TooltipInfoIcon } from '../UI/TooltipInfoIcon'
 
 const Container = styled('label', {
   base: {
@@ -43,7 +44,7 @@ interface Props {
   title: string
   required?: boolean
   helpText?: string
-  tooltip?: string | string[]
+  tooltip?: TooltipProps
 }
 
 export const FormItem: ParentComponent<Props> = (props) => {
@@ -55,7 +56,7 @@ export const FormItem: ParentComponent<Props> = (props) => {
           <Required>*</Required>
         </Show>
         <Show when={props.tooltip}>
-          <InfoTooltip tooltip={props.tooltip} />
+          <TooltipInfoIcon {...props.tooltip} />
         </Show>
         <Show when={props.helpText}>
           <HelpText>{props.helpText}</HelpText>

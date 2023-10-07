@@ -1,11 +1,8 @@
 import { colorVars, textVars } from '/@/theme'
 import { styled } from '@macaron-css/solid'
 import { Component } from 'solid-js'
-import { tippy as tippyDir } from 'solid-tippy'
 import { MaterialSymbols } from './MaterialSymbols'
-
-// https://github.com/solidjs/solid/discussions/845
-const tippy = tippyDir
+import { ToolTip } from './ToolTip'
 
 const StyledAnchor = styled('a', {
   base: {
@@ -29,12 +26,11 @@ export interface URLTextProps {
 
 export const URLText: Component<URLTextProps> = (props) => {
   return (
-    <div
-      use:tippy={{
-        props: { content: props.href, maxWidth: 1000 },
-        disabled: props.text === props.href,
-        hidden: true,
+    <ToolTip
+      props={{
+        content: props.href,
       }}
+      disabled={props.text === props.href}
     >
       <StyledAnchor href={props.href} target="_blank" rel="noreferrer">
         <ContentContainer>
@@ -42,6 +38,6 @@ export const URLText: Component<URLTextProps> = (props) => {
           <MaterialSymbols opticalSize={20}>open_in_new</MaterialSymbols>
         </ContentContainer>
       </StyledAnchor>
-    </div>
+    </ToolTip>
   )
 }

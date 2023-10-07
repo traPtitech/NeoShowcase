@@ -4,7 +4,8 @@ import { Component, Match, Show, Switch, createEffect, createSignal } from 'soli
 import { SetStoreFunction } from 'solid-js/store'
 import { TextInput } from '../UI/TextInput'
 import { Textarea } from '../UI/Textarea'
-import { CheckBox, CheckBoxesContainer } from './CheckBox'
+import { ToolTip } from '../UI/ToolTip'
+import { CheckBox } from './CheckBox'
 import { FormItem } from './FormItem'
 import { RadioButtons } from './RadioButtons'
 import { SelectItem, SingleSelect } from './Select'
@@ -31,35 +32,68 @@ const RuntimeConfigs: Component<RuntimeConfigProps> = (props) => {
 
   return (
     <>
-      <FormItem title="Use Database">
-        <RadioButtons
-          items={[
-            { value: true, title: 'Yes' },
-            { value: false, title: 'No' },
-          ]}
-          selected={useDB()}
-          setSelected={setUseDB}
-          disabled={props.disableEditDB}
-        />
+      <FormItem
+        title="Use Database"
+        tooltip={{
+          props: {
+            content: (
+              <>
+                <div>データーベースを使用する場合はチェック</div>
+                <div>後から変更は不可能です</div>
+              </>
+            ),
+          },
+        }}
+      >
+        <ToolTip
+          disabled={!props.disableEditDB}
+          props={{
+            content: <>アプリ作成後は変更できません</>,
+          }}
+        >
+          <RadioButtons
+            items={[
+              { value: true, title: 'Yes' },
+              { value: false, title: 'No' },
+            ]}
+            selected={useDB()}
+            setSelected={setUseDB}
+            disabled={props.disableEditDB}
+          />
+        </ToolTip>
       </FormItem>
       <Show when={useDB()}>
         <FormItem title="Database">
-          <CheckBoxesContainer>
-            <CheckBox
-              title="MariaDB"
-              checked={props.runtimeConfig?.useMariadb ?? false}
-              setChecked={(v) => props.setRuntimeConfig('useMariadb', v)}
-              disabled={props.disableEditDB}
-            />
-            <CheckBox
-              title="MongoDB"
-              checked={props.runtimeConfig?.useMongodb ?? false}
-              setChecked={(v) => props.setRuntimeConfig('useMongodb', v)}
-              disabled={props.disableEditDB}
-            />
-          </CheckBoxesContainer>
+          <ToolTip
+            disabled={!props.disableEditDB}
+            props={{
+              content: <>アプリ作成後は変更できません</>,
+            }}
+          >
+            <CheckBox.Container>
+              <CheckBox.Option
+                title="MariaDB"
+                checked={props.runtimeConfig?.useMariadb ?? false}
+                setChecked={(v) => props.setRuntimeConfig('useMariadb', v)}
+                disabled={props.disableEditDB}
+              />
+              <CheckBox.Option
+                title="MongoDB"
+                checked={props.runtimeConfig?.useMongodb ?? false}
+                setChecked={(v) => props.setRuntimeConfig('useMongodb', v)}
+                disabled={props.disableEditDB}
+              />
+            </CheckBox.Container>
+          </ToolTip>
         </FormItem>
-        <FormItem title="Entrypoint">
+        <FormItem
+          title="Entrypoint"
+          tooltip={{
+            props: {
+              content: '(Advanced) コンテナのEntrypoint',
+            },
+          }}
+        >
           <TextInput
             value={props.runtimeConfig?.entrypoint}
             onInput={(e) => {
@@ -67,7 +101,14 @@ const RuntimeConfigs: Component<RuntimeConfigProps> = (props) => {
             }}
           />
         </FormItem>
-        <FormItem title="Command">
+        <FormItem
+          title="Command"
+          tooltip={{
+            props: {
+              content: '(Advanced) コンテナのCommand',
+            },
+          }}
+        >
           <TextInput
             value={props.runtimeConfig?.command}
             onInput={(e) => {
@@ -89,7 +130,19 @@ interface StaticConfigProps {
 const StaticConfigs = (props: StaticConfigProps) => {
   return (
     <>
-      <FormItem title="Artifact Path">
+      <FormItem
+        title="Artifact Path"
+        tooltip={{
+          props: {
+            content: (
+              <>
+                <div>静的ファイルが生成されるディレクトリ</div>
+                <div>(リポジトリルートからの相対パス)</div>
+              </>
+            ),
+          },
+        }}
+      >
         <TextInput
           value={props.staticConfig?.artifactPath}
           onInput={(e) => {
@@ -97,7 +150,19 @@ const StaticConfigs = (props: StaticConfigProps) => {
           }}
         />
       </FormItem>
-      <FormItem title="is SPA (Single Page Application)">
+      <FormItem
+        title="is SPA (Single Page Application)"
+        tooltip={{
+          props: {
+            content: (
+              <>
+                <div>配信するファイルがSPAである</div>
+                <div>(いい感じのフォールバック設定が付きます)</div>
+              </>
+            ),
+          },
+        }}
+      >
         <RadioButtons
           items={[
             { value: true, title: 'Yes' },
@@ -143,7 +208,22 @@ export const BuildConfigs: Component<BuildConfigsProps> = (props) => {
 
   return (
     <>
-      <FormItem title="Type" required>
+      <FormItem
+        title="Type"
+        required
+        tooltip={{
+          style: 'left',
+          props: {
+            content: (
+              <>
+                <div>Buildpack: ビルド設定自動検出 (オススメ)</div>
+                <div>Command: ビルド設定を直接設定</div>
+                <div>Dockerfile: Dockerfileを用いる</div>
+              </>
+            ),
+          },
+        }}
+      >
         <SingleSelect
           items={buildConfigItems}
           selected={props.buildConfig.case}
@@ -155,7 +235,19 @@ export const BuildConfigs: Component<BuildConfigsProps> = (props) => {
         <Match when={props.buildConfig.case === 'runtimeBuildpack' && props.buildConfig.value}>
           {(v) => (
             <>
-              <FormItem title="Context">
+              <FormItem
+                title="Context"
+                tooltip={{
+                  props: {
+                    content: (
+                      <>
+                        <div>ビルド対象ディレクトリ</div>
+                        <div>(リポジトリルートからの相対パス)</div>
+                      </>
+                    ),
+                  },
+                }}
+              >
                 <TextInput
                   value={v().context}
                   onInput={(e) => {
@@ -180,7 +272,19 @@ export const BuildConfigs: Component<BuildConfigsProps> = (props) => {
         <Match when={props.buildConfig.case === 'runtimeCmd' && props.buildConfig.value}>
           {(v) => (
             <>
-              <FormItem title="Base Image">
+              <FormItem
+                title="Base Image"
+                tooltip={{
+                  props: {
+                    content: (
+                      <>
+                        <div>ベースとなるDocker Image</div>
+                        <div>「イメージ名:タグ名」の形式</div>
+                      </>
+                    ),
+                  },
+                }}
+              >
                 <TextInput
                   value={v().baseImage}
                   onInput={(e) => {
@@ -190,7 +294,19 @@ export const BuildConfigs: Component<BuildConfigsProps> = (props) => {
                   }}
                 />
               </FormItem>
-              <FormItem title="Build Command">
+              <FormItem
+                title="Build Command"
+                tooltip={{
+                  props: {
+                    content: (
+                      <>
+                        <div>イメージ上でビルド時に実行するコマンド</div>
+                        <div>リポジトリルートで実行されます</div>
+                      </>
+                    ),
+                  },
+                }}
+              >
                 <Textarea
                   value={v().buildCmd}
                   onInput={(e) => {
@@ -215,7 +331,20 @@ export const BuildConfigs: Component<BuildConfigsProps> = (props) => {
         <Match when={props.buildConfig.case === 'runtimeDockerfile' && props.buildConfig.value}>
           {(v) => (
             <>
-              <FormItem title="Dockerfile Name" required>
+              <FormItem
+                title="Dockerfile Name"
+                required
+                tooltip={{
+                  props: {
+                    content: (
+                      <>
+                        <div>Dockerfileへのパス</div>
+                        <div>(Contextからの相対パス)</div>
+                      </>
+                    ),
+                  },
+                }}
+              >
                 <TextInput
                   value={v().dockerfileName}
                   onInput={(e) => {
@@ -226,7 +355,19 @@ export const BuildConfigs: Component<BuildConfigsProps> = (props) => {
                   required
                 />
               </FormItem>
-              <FormItem title="Context">
+              <FormItem
+                title="Context"
+                tooltip={{
+                  props: {
+                    content: (
+                      <>
+                        <div>ビルドContext</div>
+                        <div>(リポジトリルートからの相対パス)</div>
+                      </>
+                    ),
+                  },
+                }}
+              >
                 <TextInput
                   value={v().context}
                   onInput={(e) => {
@@ -251,7 +392,19 @@ export const BuildConfigs: Component<BuildConfigsProps> = (props) => {
         <Match when={props.buildConfig.case === 'staticBuildpack' && props.buildConfig.value}>
           {(v) => (
             <>
-              <FormItem title="Context">
+              <FormItem
+                title="Context"
+                tooltip={{
+                  props: {
+                    content: (
+                      <>
+                        <div>ビルド対象ディレクトリ</div>
+                        <div>(リポジトリルートからの相対パス)</div>
+                      </>
+                    ),
+                  },
+                }}
+              >
                 <TextInput
                   value={v().context}
                   onInput={(e) => {
@@ -275,7 +428,19 @@ export const BuildConfigs: Component<BuildConfigsProps> = (props) => {
         <Match when={props.buildConfig.case === 'staticCmd' && props.buildConfig.value}>
           {(v) => (
             <>
-              <FormItem title="Base Image">
+              <FormItem
+                title="Base Image"
+                tooltip={{
+                  props: {
+                    content: (
+                      <>
+                        <div>ベースとなるDocker Image</div>
+                        <div>「イメージ名:タグ名」の形式</div>
+                      </>
+                    ),
+                  },
+                }}
+              >
                 <TextInput
                   value={v().baseImage}
                   onInput={(e) => {
@@ -285,7 +450,19 @@ export const BuildConfigs: Component<BuildConfigsProps> = (props) => {
                   }}
                 />
               </FormItem>
-              <FormItem title="Build Command">
+              <FormItem
+                title="Build Command"
+                tooltip={{
+                  props: {
+                    content: (
+                      <>
+                        <div>イメージ上でビルド時に実行するコマンド</div>
+                        <div>リポジトリルートで実行されます</div>
+                      </>
+                    ),
+                  },
+                }}
+              >
                 <Textarea
                   value={v().buildCmd}
                   onInput={(e) => {
@@ -309,7 +486,20 @@ export const BuildConfigs: Component<BuildConfigsProps> = (props) => {
         <Match when={props.buildConfig.case === 'staticDockerfile' && props.buildConfig.value}>
           {(v) => (
             <>
-              <FormItem title="Dockerfile Name" required>
+              <FormItem
+                title="Dockerfile Name"
+                required
+                tooltip={{
+                  props: {
+                    content: (
+                      <>
+                        <div>Dockerfileへのパス</div>
+                        <div>(Contextからの相対パス)</div>
+                      </>
+                    ),
+                  },
+                }}
+              >
                 <TextInput
                   value={v().dockerfileName}
                   onInput={(e) => {
@@ -320,7 +510,19 @@ export const BuildConfigs: Component<BuildConfigsProps> = (props) => {
                   required
                 />
               </FormItem>
-              <FormItem title="Context">
+              <FormItem
+                title="Context"
+                tooltip={{
+                  props: {
+                    content: (
+                      <>
+                        <div>ビルドContext</div>
+                        <div>(リポジトリルートからの相対パス)</div>
+                      </>
+                    ),
+                  },
+                }}
+              >
                 <TextInput
                   value={v().context}
                   onInput={(e) => {

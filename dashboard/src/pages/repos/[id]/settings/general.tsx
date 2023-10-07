@@ -124,7 +124,18 @@ const DeleteProject: Component<{
           </FormItem>
         </FormBox.Forms>
         <FormBox.Actions>
-          <Button color="primaryError" size="small" onClick={open} type="button" disabled={!canDeleteRepository()}>
+          <Button
+            color="primaryError"
+            size="small"
+            onClick={open}
+            type="button"
+            disabled={!canDeleteRepository()}
+            tooltip={{
+              props: {
+                content: !canDeleteRepository() ? 'Project内にAppが存在するため削除できません' : undefined,
+              },
+            }}
+          >
             Delete Project
           </Button>
         </FormBox.Actions>

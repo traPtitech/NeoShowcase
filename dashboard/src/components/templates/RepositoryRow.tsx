@@ -72,6 +72,11 @@ export const RepositoryRow: Component<Props> = (props) => {
           onClick={() => {
             navigator(`/apps/new?repositoryID=${props.repository.id}`)
           }}
+          tooltip={{
+            props: {
+              content: 'このリポジトリからアプリケーションを作成します',
+            },
+          }}
         >
           Add New App
         </Button>
