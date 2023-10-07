@@ -270,7 +270,7 @@ const DeploymentInfo: Component<{
         <List.RowContent>
           <List.RowTitle>Deployed Build</List.RowTitle>
           <List.RowData>
-            {shortSha(props.app.currentBuild) ?? 'No, Deployed'}
+            {props.app.currentBuild ? shortSha(props.app.currentBuild) : 'No, Deployed'}
             <Show when={props.app.currentBuild === props.latestBuildId}>
               <LatestBadge>Latest</LatestBadge>
             </Show>
