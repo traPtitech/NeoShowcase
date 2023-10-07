@@ -1,14 +1,26 @@
-import { ParentComponent, mergeProps } from 'solid-js'
+import { JSX, ParentComponent, mergeProps, splitProps } from 'solid-js'
 
-export interface Props {
+export interface Props extends JSX.HTMLAttributes<HTMLSpanElement> {
   type?: 'rounded'
-  fill?: false
+  fill?: boolean
   weight?: 300
   grade?: 0
   opticalSize?: 20 | 24
+  displaySize?: number
+  color?: string
 }
 
 export const MaterialSymbols: ParentComponent<Props> = (props) => {
+  const [addedProps, originalProps] = splitProps(props, [
+    'children',
+    'type',
+    'fill',
+    'weight',
+    'grade',
+    'opticalSize',
+    'displaySize',
+    'color',
+  ])
   const mergedProps = mergeProps(
     {
       type: 'rounded',
@@ -16,9 +28,11 @@ export const MaterialSymbols: ParentComponent<Props> = (props) => {
       weight: 300,
       grade: 0,
       opticalSize: 24,
+      color: 'currentColor',
     },
-    props,
+    addedProps,
   )
+  const size = () => `${mergedProps.displaySize}px` ?? `${mergedProps.opticalSize}px`
 
   return (
     <span
@@ -29,12 +43,14 @@ export const MaterialSymbols: ParentComponent<Props> = (props) => {
           'wght' ${mergedProps.weight},
           'GRAD' ${mergedProps.grade},
           'opsz' ${mergedProps.opticalSize}`,
-        width: `${mergedProps.opticalSize}px`,
-        height: `${mergedProps.opticalSize}px`,
-        'font-size': `${mergedProps.opticalSize}px`,
-        'line-height': `${mergedProps.opticalSize}px`,
+        width: size(),
+        height: size(),
+        'font-size': size(),
+        'line-height': size(),
         overflow: 'hidden',
+        color: mergedProps.color,
       }}
+      {...originalProps}
       class={`material-symbols-${mergedProps.type}`}
     >
       {mergedProps.children}

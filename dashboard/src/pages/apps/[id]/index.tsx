@@ -1,13 +1,14 @@
 import {
   Application,
   ApplicationConfig,
+  Build,
   BuildStatus,
   DeployType,
   Repository,
   RuntimeConfig,
   StaticConfig,
 } from '/@/api/neoshowcase/protobuf/gateway_pb'
-import { StatusIcon } from '/@/components/StatusIcon'
+import { AppStatusIcon } from '/@/components/UI/AppStatusIcon'
 import { BuildStatusIcon } from '/@/components/UI/BuildStatusIcon'
 import { Button } from '/@/components/UI/Button'
 import { URLText } from '/@/components/UI/URLText'
@@ -16,14 +17,15 @@ import { AppMetrics } from '/@/components/templates/AppMetrics'
 import { ContainerLog } from '/@/components/templates/ContainerLog'
 import { List } from '/@/components/templates/List'
 import { availableMetrics, client, handleAPIError, systemInfo } from '/@/libs/api'
-import { applicationState, buildStatusStr, buildTypeStr, getWebsiteURL } from '/@/libs/application'
+import { ApplicationState, applicationState, buildStatusStr, buildTypeStr, getWebsiteURL } from '/@/libs/application'
 import { titleCase } from '/@/libs/casing'
+import { colorOverlay } from '/@/libs/colorOverlay'
 import { diffHuman, shortSha } from '/@/libs/format'
 import { useApplicationData } from '/@/routes'
 import { colorVars, textVars } from '/@/theme'
 import { styled } from '@macaron-css/solid'
 import { A } from '@solidjs/router'
-import { Component, For, Match, Show, Switch, createSignal, onCleanup } from 'solid-js'
+import { Component, For, Match, Show, Switch, createEffect, createResource, createSignal, onCleanup } from 'solid-js'
 import { tippy as tippyDir } from 'solid-tippy'
 import toast from 'solid-toast'
 
@@ -80,6 +82,7 @@ const DeploymentContainer = styled('div', {
 })
 const AppStateContainer = styled('div', {
   base: {
+    position: 'relative',
     gridArea: '1 / 1 / 5 / 2',
     width: '100%',
     display: 'grid',
@@ -87,9 +90,52 @@ const AppStateContainer = styled('div', {
     justifyItems: 'center',
 
     cursor: 'pointer',
-    background: colorVars.semantic.ui.primary,
     color: colorVars.semantic.text.black,
     ...textVars.h3.medium,
+  },
+  variants: {
+    variant: {
+      Running: {
+        background: colorOverlay(colorVars.semantic.ui.primary, colorVars.semantic.transparent.successSelected),
+        selectors: {
+          '&:hover': {
+            background: colorOverlay(colorVars.semantic.ui.primary, colorVars.semantic.transparent.successHover),
+          },
+        },
+      },
+      Static: {
+        background: colorOverlay(colorVars.semantic.ui.primary, colorVars.semantic.transparent.successSelected),
+        selectors: {
+          '&:hover': {
+            background: colorOverlay(colorVars.semantic.ui.primary, colorVars.semantic.transparent.successHover),
+          },
+        },
+      },
+      Idle: {
+        background: colorOverlay(colorVars.semantic.ui.primary, colorVars.primitive.blackAlpha[200]),
+        selectors: {
+          '&:hover': {
+            background: colorOverlay(colorVars.semantic.ui.primary, colorVars.primitive.blackAlpha[100]),
+          },
+        },
+      },
+      Deploying: {
+        background: colorOverlay(colorVars.semantic.ui.primary, colorVars.semantic.transparent.warnSelected),
+        selectors: {
+          '&:hover': {
+            background: colorOverlay(colorVars.semantic.ui.primary, colorVars.semantic.transparent.warnHover),
+          },
+        },
+      },
+      Error: {
+        background: colorOverlay(colorVars.semantic.ui.primary, colorVars.semantic.transparent.errorSelected),
+        selectors: {
+          '&:hover': {
+            background: colorOverlay(colorVars.semantic.ui.primary, colorVars.semantic.transparent.errorHover),
+          },
+        },
+      },
+    },
   },
 })
 const AppState = styled('div', {
@@ -127,6 +173,17 @@ const DeployInfoContainer = styled('div', {
     },
   },
 })
+const LatestBadge = styled('div', {
+  base: {
+    height: '20px',
+    padding: '0 8px',
+    borderRadius: '9999px',
+
+    background: colorVars.semantic.transparent.successHover,
+    color: colorVars.semantic.accent.success,
+    ...textVars.caption.regular,
+  },
+})
 const UrlCount = styled('div', {
   base: {
     height: '20px',
@@ -144,6 +201,7 @@ const DeploymentInfo: Component<{
   repo: Repository
   refreshRepo: () => void
   disableRefresh: () => boolean
+  latestBuildId: string
 }> = (props) => {
   const [showActions, setShowActions] = createSignal(false)
 
@@ -168,18 +226,27 @@ const DeploymentInfo: Component<{
 
   return (
     <DeploymentContainer>
-      <AppStateContainer onMouseEnter={() => setShowActions(true)} onMouseLeave={() => setShowActions(false)}>
+      <AppStateContainer
+        onMouseEnter={() => setShowActions(true)}
+        onMouseLeave={() => setShowActions(false)}
+        variant={applicationState(props.app)}
+      >
         <div />
         <AppState>
-          <StatusIcon state={applicationState(props.app)} size={80} />
+          <AppStatusIcon state={applicationState(props.app)} size={80} />
           {applicationState(props.app)}
         </AppState>
         <Show when={showActions()}>
           <ActionButtons>
             <Button color="borderError" size="small" onClick={restartApp} disabled={props.disableRefresh()}>
-              Restart App
+              {props.app.running ? 'Restart App' : 'Start App'}
             </Button>
-            <Button color="borderError" size="small" onClick={stopApp} disabled={props.disableRefresh()}>
+            <Button
+              color="borderError"
+              size="small"
+              onClick={stopApp}
+              disabled={props.disableRefresh() || applicationState(props.app) === ApplicationState.Idle}
+            >
               Stop App
             </Button>
           </ActionButtons>
@@ -202,7 +269,12 @@ const DeploymentInfo: Component<{
       <DeployInfoContainer>
         <List.RowContent>
           <List.RowTitle>Deployed Build</List.RowTitle>
-          <List.RowData>{shortSha(props.app.currentBuild)}</List.RowData>
+          <List.RowData>
+            {shortSha(props.app.currentBuild) ?? 'No, Deployed'}
+            <Show when={props.app.currentBuild === props.latestBuildId}>
+              <LatestBadge>Latest</LatestBadge>
+            </Show>
+          </List.RowData>
         </List.RowContent>
       </DeployInfoContainer>
       <DeployInfoContainer>
@@ -271,56 +343,48 @@ const BuildStatusTable: Component<{
   repo: Repository
   refreshRepo: () => void
   disableRefresh: () => boolean
+  latestBuild: Build
+  refetchLatestBuild: () => void
 }> = (props) => {
-  const canRebuild = () =>
-    props.app.latestBuildStatus === BuildStatus.SUCCEEDED ||
-    props.app.latestBuildStatus === BuildStatus.FAILED ||
-    props.app.latestBuildStatus === BuildStatus.CANCELLED
-
   const rebuild = async () => {
     try {
       await client.retryCommitBuild({
         applicationId: props.app.id,
         commit: props.app.commit,
       })
-      await props.refetchApp()
+      await props.refetchLatestBuild()
     } catch (e) {
       handleAPIError(e, '再ビルドに失敗しました')
     }
   }
-  // const cancelBuild = async () => {
-  //   try {
-  //     await client.cancelBuild({
-  //       buildId: props.app.currentBuild,
-  //     });
-  //     await props.refetchApp();
-  //   } catch (e) {
-  //     handleAPIError(e, "再ビルドに失敗しました");
-  //   }
-  // };
+  const cancelBuild = async () => {
+    try {
+      await client.cancelBuild({
+        buildId: props.latestBuild.id,
+      })
+      await props.refetchLatestBuild()
+    } catch (e) {
+      handleAPIError(e, 'ビルドのキャンセルに失敗しました')
+    }
+  }
 
   return (
     <List.Container>
       <BuildStatusRow>
         <BuildStatusLabel>
-          <BuildStatusIcon state={props.app.latestBuildStatus} size={24} />
-          {buildStatusStr[props.app.latestBuildStatus]}
+          <BuildStatusIcon state={props.latestBuild.status} size={24} />
+          {buildStatusStr[props.latestBuild.status]}
         </BuildStatusLabel>
-        <Show when={canRebuild()}>
+        <Show when={!props.latestBuild.retriable}>
           <Button color="borderError" size="small" onClick={rebuild} disabled={props.disableRefresh()}>
             Rebuild
           </Button>
         </Show>
-        {/* <Show when={props.app.latestBuildStatus === BuildStatus.BUILDING}>
-          <Button
-            color="borderError"
-            size="small"
-            onClick={cancelBuild}
-            disabled={disableRefresh()}
-          >
+        <Show when={props.latestBuild.status === BuildStatus.BUILDING}>
+          <Button color="borderError" size="small" onClick={cancelBuild} disabled={props.disableRefresh()}>
             Cancel Build
           </Button>
-        </Show> */}
+        </Show>
       </BuildStatusRow>
       <List.Row>
         <List.RowContent>
@@ -706,7 +770,15 @@ const Logs: Component<{ app: Application }> = (props) => {
 
 export default () => {
   const { app, refetchApp, repo } = useApplicationData()
-  const loaded = () => !!(systemInfo() && app() && repo())
+  const [latestBuild, { refetch: refetchLatestBuild }] = createResource(
+    () => app().id,
+    (appId) =>
+      client
+        .getBuilds({ id: appId })
+        .then((res) => res.builds.sort((b1, b2) => b2.queuedAt.toDate().getTime() - b1.queuedAt.toDate().getTime())[0]),
+  )
+
+  const loaded = () => !!(systemInfo() && app() && repo() && latestBuild())
 
   const [disableRefresh, setDisableRefresh] = createSignal(false)
   const refreshRepo = async () => {
@@ -716,8 +788,17 @@ export default () => {
     await refetchApp()
   }
 
-  const refetchTimer = setInterval(refetchApp, 10000)
-  onCleanup(() => clearInterval(refetchTimer))
+  const refetchAppTimer = setInterval(refetchApp, 10000)
+  onCleanup(() => clearInterval(refetchAppTimer))
+
+  const refetchLatestBuildTimer = setInterval(refetchLatestBuild, 10000)
+  // ビルドが終了した(ビルド中/キュー中でなくなった)らタイマーを止める
+  createEffect(() => {
+    if (!(latestBuild()?.status === BuildStatus.BUILDING) && !(latestBuild()?.status === BuildStatus.QUEUED)) {
+      clearInterval(refetchLatestBuildTimer)
+    }
+  })
+  onCleanup(() => clearInterval(refetchLatestBuildTimer))
 
   return (
     <Container>
@@ -732,6 +813,7 @@ export default () => {
                 repo={repo()}
                 refreshRepo={refreshRepo}
                 disableRefresh={disableRefresh}
+                latestBuildId={latestBuild().id}
               />
             </DataTable.Container>
           </MainView>
@@ -746,6 +828,8 @@ export default () => {
                 repo={repo()}
                 refreshRepo={refreshRepo}
                 disableRefresh={disableRefresh}
+                latestBuild={latestBuild()}
+                refetchLatestBuild={refetchLatestBuild}
               />
             </DataTable.Container>
             <DataTable.Container>

@@ -39,6 +39,10 @@ export const colorVars = createGlobalTheme(':root', {
     transparent: {
       primaryHover: 'rgba(0, 91, 172, 0.06)',
       primarySelected: 'rgba(0, 91, 172, 0.10)',
+      successHover: 'rgba(32, 189, 119, 0.06)',
+      successSelected: 'rgba(32, 189, 119, 0.10)',
+      warnHover: 'rgba(241, 182, 30, 0.06)',
+      warnSelected: 'rgba(241, 182, 30, 0.10)',
       errorHover: 'rgba(242, 81, 81, 0.06)',
       errorSelected: 'rgba(242, 81, 81, 0.10)',
     },

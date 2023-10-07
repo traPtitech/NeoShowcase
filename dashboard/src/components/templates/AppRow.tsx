@@ -5,7 +5,7 @@ import { colorVars, textVars } from '/@/theme'
 import { styled } from '@macaron-css/solid'
 import { A } from '@solidjs/router'
 import { Component, Show } from 'solid-js'
-import { AppStatus } from '../UI/AppStatus'
+import { AppStatusIcon } from '../UI/AppStatusIcon'
 
 const Container = styled('div', {
   base: {
@@ -92,7 +92,7 @@ export const AppRow: Component<Props> = (props) => {
     <A href={`/apps/${props.app.id}`}>
       <Container>
         <TitleContainer>
-          <AppStatus state={applicationState(props.app)} />
+          <AppStatusIcon state={applicationState(props.app)} />
           <AppName>{props.app.name}</AppName>
           <Show when={props.app.updatedAt}>
             {(nonNullUpdatedAt) => (

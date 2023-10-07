@@ -48,6 +48,10 @@ const RowTitle = styled('h3', {
 })
 const RowData = styled('div', {
   base: {
+    display: 'flex',
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: '4px',
     color: colorVars.semantic.text.black,
     ...textVars.text.regular,
   },
