@@ -2,11 +2,7 @@ import { colorOverlay } from '/@/libs/colorOverlay'
 import { colorVars, textVars } from '/@/theme'
 import { styled } from '@macaron-css/solid'
 import { JSX, ParentComponent, Show, splitProps } from 'solid-js'
-import { tippy as tippyDir } from 'solid-tippy'
 import { ToolTip, TooltipProps } from './ToolTip'
-
-// https://github.com/solidjs/solid/discussions/845
-const tippy = tippyDir
 
 const Container = styled('button', {
   base: {

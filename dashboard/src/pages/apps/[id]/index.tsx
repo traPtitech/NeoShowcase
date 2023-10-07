@@ -26,12 +26,8 @@ import { useApplicationData } from '/@/routes'
 import { colorVars, textVars } from '/@/theme'
 import { styled } from '@macaron-css/solid'
 import { A } from '@solidjs/router'
-import { Component, For, Match, Show, Switch, createEffect, createResource, createSignal, onCleanup } from 'solid-js'
-import { tippy as tippyDir } from 'solid-tippy'
+import { Component, For, Match, Show, Switch, createResource, createSignal, onCleanup } from 'solid-js'
 import toast from 'solid-toast'
-
-// https://github.com/solidjs/solid/discussions/845
-const tippy = tippyDir
 
 const Container = styled('div', {
   base: {

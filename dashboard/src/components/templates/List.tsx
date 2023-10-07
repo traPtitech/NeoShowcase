@@ -18,8 +18,8 @@ const Row = styled('div', {
     width: '100%',
     padding: '16px 20px',
     display: 'flex',
-    alignItems: 'center',
     flexDirection: 'row',
+    alignItems: 'center',
     gap: '8px',
 
     borderBottom: `1px solid ${colorVars.semantic.ui.border}`,
