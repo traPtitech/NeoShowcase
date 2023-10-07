@@ -32,7 +32,7 @@ export const MaterialSymbols: ParentComponent<Props> = (props) => {
     },
     addedProps,
   )
-  const size = () => `${mergedProps.displaySize}px` ?? `${mergedProps.opticalSize}px`
+  const size = () => (mergedProps.displaySize ? `${mergedProps.displaySize}px` : `${mergedProps.opticalSize}px`)
 
   return (
     <span
