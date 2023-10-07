@@ -612,6 +612,14 @@ const ApplicationConfigInfo: Component<{ config: ApplicationConfig }> = (props) 
   )
 }
 
+const ShowMoreButtonContainer = styled('div', {
+  base: {
+    width: '100%',
+    display: 'flex',
+    justifyContent: 'center',
+  },
+})
+
 const Information: Component<{ app: Application }> = (props) => {
   const [showDetails, setShowDetails] = createSignal(false)
   const sshAccessCommand = () => `ssh -p ${systemInfo().ssh.port} ${props.app.id}@${systemInfo().ssh.host}`
@@ -664,16 +672,11 @@ const Information: Component<{ app: Application }> = (props) => {
         </Show>
       </List.Container>
       <Show when={!showDetails()}>
-        <Button
-          color="ghost"
-          size="small"
-          onClick={() => setShowDetails(true)}
-          style={{
-            margin: '0 auto',
-          }}
-        >
-          Show More
-        </Button>
+        <ShowMoreButtonContainer>
+          <Button color="ghost" size="small" onClick={() => setShowDetails(true)}>
+            Show More
+          </Button>
+        </ShowMoreButtonContainer>
       </Show>
       <Show when={showDetails()}>
         <List.Container>

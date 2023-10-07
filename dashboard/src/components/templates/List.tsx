@@ -18,6 +18,7 @@ const Row = styled('div', {
     width: '100%',
     padding: '16px 20px',
     display: 'flex',
+    alignItems: 'center',
     flexDirection: 'row',
     gap: '8px',
 
