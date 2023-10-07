@@ -792,12 +792,6 @@ export default () => {
   onCleanup(() => clearInterval(refetchAppTimer))
 
   const refetchLatestBuildTimer = setInterval(refetchLatestBuild, 10000)
-  // ビルドが終了した(ビルド中/キュー中でなくなった)らタイマーを止める
-  createEffect(() => {
-    if (!(latestBuild()?.status === BuildStatus.BUILDING) && !(latestBuild()?.status === BuildStatus.QUEUED)) {
-      clearInterval(refetchLatestBuildTimer)
-    }
-  })
   onCleanup(() => clearInterval(refetchLatestBuildTimer))
 
   return (
