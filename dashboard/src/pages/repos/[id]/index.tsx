@@ -3,6 +3,7 @@ import { Button } from '/@/components/UI/Button'
 import { MaterialSymbols } from '/@/components/UI/MaterialSymbols'
 import { URLText } from '/@/components/UI/URLText'
 import { DataTable } from '/@/components/layouts/DataTable'
+import { MainViewContainer } from '/@/components/layouts/MainView'
 import { AppsList, List } from '/@/components/templates/List'
 import { useRepositoryData } from '/@/routes'
 import { colorVars, textVars } from '/@/theme'
@@ -10,20 +11,9 @@ import { styled } from '@macaron-css/solid'
 import { useNavigate } from '@solidjs/router'
 import { Show } from 'solid-js'
 
-const Container = styled('div', {
-  base: {
-    width: '100%',
-    height: '100%',
-    padding: '40px 32px 72px 32px',
-    overflowY: 'auto',
-    scrollbarGutter: 'stable',
-  },
-})
 const MainView = styled('div', {
   base: {
     width: '100%',
-    maxWidth: '1000px',
-    margin: '0 auto',
     display: 'flex',
     flexDirection: 'column',
     gap: '32px',
@@ -69,7 +59,7 @@ export default () => {
   )
 
   return (
-    <Container>
+    <MainViewContainer>
       <MainView>
         <Show when={loaded()}>
           <DataTable.Container>
@@ -116,6 +106,6 @@ export default () => {
           </DataTable.Container>
         </Show>
       </MainView>
-    </Container>
+    </MainViewContainer>
   )
 }

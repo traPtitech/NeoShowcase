@@ -15,27 +15,14 @@ import { Provider } from '../components/RepositoryRow'
 import { MaterialSymbols } from '../components/UI/MaterialSymbols'
 import { TabRound } from '../components/UI/TabRound'
 import { TextInput } from '../components/UI/TextInput'
+import { MainViewContainer } from '../components/layouts/MainView'
 import { WithNav } from '../components/layouts/WithNav'
 import { AppsNav } from '../components/templates/AppsNav'
 import { RepositoryList } from '../components/templates/List'
-import { colorVars } from '../theme'
 
-const MainViewContainer = styled('div', {
-  base: {
-    width: '100%',
-    height: '100%',
-    padding: '40px 32px 72px 32px',
-    overflowY: 'auto',
-    scrollbarGutter: 'stable',
-
-    background: colorVars.semantic.ui.background,
-  },
-})
 const MainView = styled('div', {
   base: {
     width: '100%',
-    maxWidth: '1000px',
-    margin: '0 auto',
     display: 'flex',
     flexDirection: 'column',
     gap: '32px',
@@ -220,7 +207,7 @@ export default () => {
           </WithNav.Tabs>
         </WithNav.Navs>
         <WithNav.Body>
-          <MainViewContainer>
+          <MainViewContainer background="grey">
             <MainView>
               <SortContainer>
                 <TextInput

@@ -33,6 +33,13 @@ const TabContainer = styled('div', {
     display: 'flex',
     gap: '8px',
     padding: '0 0 16px 0',
+    overflowX: 'auto',
+
+    '@media': {
+      'screen and (max-width: 768px)': {
+        maxWidth: 'min(1000px, calc(100% - 32px))',
+      },
+    },
   },
 })
 

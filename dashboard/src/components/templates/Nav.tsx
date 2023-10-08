@@ -12,6 +12,12 @@ const Container = styled('div', {
     paddingRight: 'max(calc(50% - 500px), 32px)',
     display: 'flex',
     gap: '8px',
+
+    '@media': {
+      'screen and (max-width: 768px)': {
+        padding: '32px 16px',
+      },
+    },
   },
 })
 const TitleStickyContainer = styled('div', {

@@ -26,19 +26,8 @@ import { diffHuman, shortSha } from '/@/libs/format'
 import { useApplicationData } from '/@/routes'
 import { colorVars, textVars } from '/@/theme'
 import { styled } from '@macaron-css/solid'
-import { A, useNavigate } from '@solidjs/router'
-import {
-  Component,
-  For,
-  JSX,
-  Match,
-  Show,
-  Switch,
-  VoidComponent,
-  createResource,
-  createSignal,
-  onCleanup,
-} from 'solid-js'
+import { A } from '@solidjs/router'
+import { Component, For, Match, Show, Switch, VoidComponent, createResource, createSignal, onCleanup } from 'solid-js'
 import toast from 'solid-toast'
 
 const Container = styled('div', {
@@ -52,7 +41,13 @@ const Container = styled('div', {
 const MainViewContainer = styled('div', {
   base: {
     width: '100%',
-    padding: '40px 32px 72px 32px',
+    padding: '40px 32px 72px',
+
+    '@media': {
+      'screen and (max-width: 768px)': {
+        padding: '40px 16px 72px',
+      },
+    },
   },
   variants: {
     gray: {
@@ -119,13 +114,19 @@ const DeploymentContainer = styled('div', {
     width: '100%',
     display: 'grid',
     gridTemplateColumns: '32% 1fr 1fr',
-    gridTemplateRows: 'repeat(4, auto)',
+    gridTemplateRows: 'auto',
     gap: '1px',
 
     background: colorVars.semantic.ui.border,
     border: `1px solid ${colorVars.semantic.ui.border}`,
     borderRadius: '8px',
     overflow: 'hidden',
+
+    '@media': {
+      'screen and (max-width: 768px)': {
+        gridTemplateColumns: '1fr 1fr',
+      },
+    },
   },
 })
 const AppStateContainer = styled('div', {
@@ -140,6 +141,12 @@ const AppStateContainer = styled('div', {
     cursor: 'pointer',
     color: colorVars.semantic.text.black,
     ...textVars.h3.medium,
+
+    '@media': {
+      'screen and (max-width: 768px)': {
+        gridArea: '1 / 1 / 2 / 3',
+      },
+    },
   },
   variants: {
     variant: {
@@ -217,14 +224,14 @@ const DeployInfoContainer = styled('div', {
   variants: {
     long: {
       true: {
-        gridColumn: '2 / 4',
+        gridColumn: 'span 2',
       },
     },
   },
 })
 const LatestBadge = styled('div', {
   base: {
-    height: '20px',
+    height: '1.43em', // 20px
     padding: '0 8px',
     borderRadius: '9999px',
 
@@ -235,7 +242,7 @@ const LatestBadge = styled('div', {
 })
 const UrlCount = styled('div', {
   base: {
-    height: '20px',
+    height: '1.43em', // 20px
     padding: '0 8px',
     borderRadius: '9999px',
 

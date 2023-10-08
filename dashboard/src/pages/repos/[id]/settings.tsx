@@ -1,24 +1,14 @@
 import { Button } from '/@/components/UI/Button'
 import { MaterialSymbols } from '/@/components/UI/MaterialSymbols'
+import { MainViewContainer } from '/@/components/layouts/MainView'
 import { useRepositoryData } from '/@/routes'
 import { styled } from '@macaron-css/solid'
 import { Outlet, useMatch, useNavigate } from '@solidjs/router'
 import { Show } from 'solid-js'
 
-const Container = styled('div', {
-  base: {
-    width: '100%',
-    height: '100%',
-    padding: '40px 32px 72px 32px',
-    overflowY: 'auto',
-    scrollbarGutter: 'stable',
-  },
-})
 const MainView = styled('div', {
   base: {
     width: '100%',
-    maxWidth: '1000px',
-    margin: '0 auto',
     display: 'grid',
     gridTemplateColumns: '235px 1fr',
     gap: '48px',
@@ -49,7 +39,7 @@ export default () => {
   const matchOwnerPage = useMatch(() => `/repos/${repo()?.id}/settings/owner`)
 
   return (
-    <Container>
+    <MainViewContainer>
       <Show when={loaded()}>
         <MainView>
           <SideMenuContainer>
@@ -95,6 +85,6 @@ export default () => {
           <Outlet />
         </MainView>
       </Show>
-    </Container>
+    </MainViewContainer>
   )
 }
