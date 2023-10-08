@@ -1,37 +1,10 @@
 import { MaterialSymbols } from '/@/components/UI/MaterialSymbols'
 import { TabRound } from '/@/components/UI/TabRound'
-import { Header } from '/@/components/templates/Header'
+import { WithNav } from '/@/components/layouts/WithNav'
 import { RepositoryNav } from '/@/components/templates/RepositoryNav'
 import { useRepositoryData } from '/@/routes'
-import { colorVars } from '/@/theme'
-import { styled } from '@macaron-css/solid'
 import { Outlet, useMatch, useNavigate } from '@solidjs/router'
 import { Show } from 'solid-js'
-
-const Container = styled('div', {
-  base: {
-    width: '100%',
-    height: '100%',
-    display: 'flex',
-    flexDirection: 'column',
-  },
-})
-const NavTabContainer = styled('div', {
-  base: {
-    width: '100%',
-    padding: '0 32px 16px',
-    borderBottom: `1px solid ${colorVars.semantic.ui.border}`,
-  },
-})
-const NavTabs = styled('div', {
-  base: {
-    width: '100%',
-    maxWidth: '1000px',
-    margin: '0 auto',
-    display: 'flex',
-    gap: '8px',
-  },
-})
 
 export default () => {
   const navigate = useNavigate()
@@ -41,12 +14,11 @@ export default () => {
   const matchSettingsPage = useMatch(() => `/repos/${repo()?.id}/settings/*`)
 
   return (
-    <Container>
-      <Header />
-      <Show when={repo()}>
-        <RepositoryNav repository={repo()} />
-        <NavTabContainer>
-          <NavTabs>
+    <Show when={repo()}>
+      <WithNav.Container>
+        <WithNav.Navs>
+          <RepositoryNav repository={repo()} />
+          <WithNav.Tabs>
             <TabRound onClick={() => navigate(`/repos/${repo()?.id}`)} state={matchIndexPage() ? 'active' : 'default'}>
               <MaterialSymbols>insert_chart</MaterialSymbols>
               Project
@@ -58,10 +30,12 @@ export default () => {
               <MaterialSymbols>settings</MaterialSymbols>
               Settings
             </TabRound>
-          </NavTabs>
-        </NavTabContainer>
-        <Outlet />
-      </Show>
-    </Container>
+          </WithNav.Tabs>
+        </WithNav.Navs>
+        <WithNav.Body>
+          <Outlet />
+        </WithNav.Body>
+      </WithNav.Container>
+    </Show>
   )
 }

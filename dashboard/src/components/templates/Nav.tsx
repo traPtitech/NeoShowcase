@@ -7,6 +7,7 @@ import { MaterialSymbols } from '../UI/MaterialSymbols'
 const Container = styled('div', {
   base: {
     width: '100%',
+    overflowX: 'hidden',
     padding: '32px',
     display: 'flex',
     gap: '8px',
@@ -32,6 +33,9 @@ const TitleContainer = styled('div', {
 const Title = styled('h1', {
   base: {
     width: '100%',
+    overflow: 'hidden',
+    textOverflow: 'ellipsis',
+    whiteSpace: 'nowrap',
     ...textVars.h1.medium,
   },
 })

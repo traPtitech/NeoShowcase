@@ -4,47 +4,22 @@ import {
   GetRepositoriesRequest_Scope,
   Repository,
 } from '/@/api/neoshowcase/protobuf/gateway_pb'
-import { Header } from '/@/components/templates/Header'
 import { MultiSelect, SelectItem, SingleSelect } from '/@/components/templates/Select'
 import { client, user } from '/@/libs/api'
 import { ApplicationState, applicationState, repositoryURLToProvider } from '/@/libs/application'
 import { createLocalSignal } from '/@/libs/localStore'
 import { styled } from '@macaron-css/solid'
-import { useNavigate } from '@solidjs/router'
 import Fuse from 'fuse.js'
 import { For, Show, createMemo, createResource } from 'solid-js'
 import { Provider } from '../components/RepositoryRow'
 import { MaterialSymbols } from '../components/UI/MaterialSymbols'
 import { TabRound } from '../components/UI/TabRound'
 import { TextInput } from '../components/UI/TextInput'
+import { WithNav } from '../components/layouts/WithNav'
 import { AppsNav } from '../components/templates/AppsNav'
 import { RepositoryList } from '../components/templates/List'
 import { colorVars } from '../theme'
 
-const Container = styled('div', {
-  base: {
-    width: '100%',
-    height: '100%',
-    display: 'flex',
-    flexDirection: 'column',
-  },
-})
-const NavTabContainer = styled('div', {
-  base: {
-    width: '100%',
-    padding: '0 32px 16px',
-    borderBottom: `1px solid ${colorVars.semantic.ui.border}`,
-  },
-})
-const NavTabs = styled('div', {
-  base: {
-    width: '100%',
-    maxWidth: '1000px',
-    margin: '0 auto',
-    display: 'flex',
-    gap: '8px',
-  },
-})
 const MainViewContainer = styled('div', {
   base: {
     width: '100%',
@@ -70,13 +45,6 @@ const SortContainer = styled('div', {
     display: 'flex',
     alignItems: 'center',
     gap: '16px',
-  },
-})
-const SearchIconContainer = styled('div', {
-  base: {
-    width: '24px',
-    height: '24px',
-    color: colorVars.semantic.text.disabled,
   },
 })
 const SortSelects = styled('div', {
@@ -152,8 +120,6 @@ const allProviders: SelectItem<Provider>[] = [
 ]
 
 export default () => {
-  const navigate = useNavigate()
-
   const [statuses, setStatuses] = createLocalSignal(
     'apps-statuses',
     allStatuses.map((s) => s.value),
@@ -214,12 +180,11 @@ export default () => {
   })
 
   return (
-    <Container>
-      <Header />
-      <AppsNav />
-      <Show when={loaded()}>
-        <NavTabContainer>
-          <NavTabs>
+    <Show when={loaded()}>
+      <WithNav.Container>
+        <WithNav.Navs>
+          <AppsNav />
+          <WithNav.Tabs>
             <For each={scopeItems(user()?.admin)}>
               {(s) => (
                 <TabRound state={s.value === scope() ? 'active' : 'default'} onClick={() => setScope(s.value)}>
@@ -228,39 +193,46 @@ export default () => {
                 </TabRound>
               )}
             </For>
-          </NavTabs>
-        </NavTabContainer>
-        <MainViewContainer>
-          <MainView>
-            <SortContainer>
-              <TextInput
-                placeholder="Search"
-                value={query()}
-                onInput={(e) => setQuery(e.target.value)}
-                leftIcon={<MaterialSymbols>search</MaterialSymbols>}
-              />
-              <SortSelects>
-                <MultiSelect placeHolder="Status" items={allStatuses} selected={statuses()} setSelected={setStatuses} />
-                <MultiSelect
-                  placeHolder="Provider"
-                  items={allProviders}
-                  selected={provider()}
-                  setSelected={setProvider}
+          </WithNav.Tabs>
+        </WithNav.Navs>
+        <WithNav.Body>
+          <MainViewContainer>
+            <MainView>
+              <SortContainer>
+                <TextInput
+                  placeholder="Search"
+                  value={query()}
+                  onInput={(e) => setQuery(e.target.value)}
+                  leftIcon={<MaterialSymbols>search</MaterialSymbols>}
                 />
-                <SingleSelect
-                  placeHolder="Sort"
-                  items={Object.values(sortItems)}
-                  selected={sort()}
-                  setSelected={setSort}
-                />
-              </SortSelects>
-            </SortContainer>
-            <Repositories>
-              <For each={filteredRepos()}>{(r) => <RepositoryList repository={r.repo} apps={r.apps} />}</For>
-            </Repositories>
-          </MainView>
-        </MainViewContainer>
-      </Show>
-    </Container>
+                <SortSelects>
+                  <MultiSelect
+                    placeHolder="Status"
+                    items={allStatuses}
+                    selected={statuses()}
+                    setSelected={setStatuses}
+                  />
+                  <MultiSelect
+                    placeHolder="Provider"
+                    items={allProviders}
+                    selected={provider()}
+                    setSelected={setProvider}
+                  />
+                  <SingleSelect
+                    placeHolder="Sort"
+                    items={Object.values(sortItems)}
+                    selected={sort()}
+                    setSelected={setSort}
+                  />
+                </SortSelects>
+              </SortContainer>
+              <Repositories>
+                <For each={filteredRepos()}>{(r) => <RepositoryList repository={r.repo} apps={r.apps} />}</For>
+              </Repositories>
+            </MainView>
+          </MainViewContainer>
+        </WithNav.Body>
+      </WithNav.Container>
+    </Show>
   )
 }
