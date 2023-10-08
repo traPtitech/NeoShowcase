@@ -1,6 +1,6 @@
 import { colorVars, textVars } from '/@/theme'
 import { styled } from '@macaron-css/solid'
-import { Component, JSX, splitProps } from 'solid-js'
+import { JSX, splitProps } from 'solid-js'
 import { ParentComponent } from 'solid-js'
 
 const Container = styled('button', {
@@ -10,17 +10,11 @@ const Container = styled('button', {
     padding: '0 16px',
     display: 'flex',
     alignItems: 'center',
+    gap: '4px',
     borderRadius: '9999px',
     ...textVars.h4.medium,
     whiteSpace: 'nowrap',
     cursor: 'pointer',
-    selectors: {
-      '&:hover': {
-        background: colorVars.semantic.transparent.primaryHover,
-        color: colorVars.semantic.text.grey,
-        border: `solid 1px ${colorVars.semantic.ui.border}`,
-      },
-    },
   },
   variants: {
     state: {
@@ -35,19 +29,43 @@ const Container = styled('button', {
         border: `solid 1px ${colorVars.semantic.ui.border}`,
       },
     },
+    variant: {
+      primary: {
+        selectors: {
+          '&:hover': {
+            background: colorVars.semantic.transparent.primaryHover,
+            color: colorVars.semantic.text.grey,
+            border: `solid 1px ${colorVars.semantic.ui.border}`,
+          },
+        },
+      },
+      ghost: {
+        border: 'none',
+        background: colorVars.primitive.blackAlpha[50],
+        color: colorVars.semantic.text.black,
+        selectors: {
+          '&:hover': {
+            background: colorVars.primitive.blackAlpha[200],
+          },
+        },
+      },
+    },
+  },
+  defaultVariants: {
+    variant: 'primary',
   },
 })
 
 export interface Props extends JSX.ButtonHTMLAttributes<HTMLButtonElement> {
-  state: 'active' | 'default'
-  icon?: JSX.Element
+  state?: 'active' | 'default'
+  variant?: 'primary' | 'ghost'
 }
 
 export const TabRound: ParentComponent<Props> = (props) => {
-  const [addedProps, originalButtonProps] = splitProps(props, ['state', 'children', 'icon'])
+  const [addedProps, originalButtonProps] = splitProps(props, ['state', 'variant', 'children'])
 
   return (
-    <Container state={addedProps.state} {...originalButtonProps} type="button">
+    <Container state={addedProps.state} variant={addedProps.variant} {...originalButtonProps} type="button">
       {addedProps.children}
     </Container>
   )

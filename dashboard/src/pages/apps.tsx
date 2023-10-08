@@ -5,7 +5,7 @@ import {
   Repository,
 } from '/@/api/neoshowcase/protobuf/gateway_pb'
 import { MultiSelect, SelectItem, SingleSelect } from '/@/components/templates/Select'
-import { client, user } from '/@/libs/api'
+import { client, systemInfo, user } from '/@/libs/api'
 import { ApplicationState, applicationState, repositoryURLToProvider } from '/@/libs/application'
 import { createLocalSignal } from '/@/libs/localStore'
 import { styled } from '@macaron-css/solid'
@@ -202,6 +202,21 @@ export default () => {
                 </TabRound>
               )}
             </For>
+            <Show when={systemInfo()?.adminerUrl}>
+              <a
+                href={systemInfo()?.adminerUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                style={{
+                  'margin-left': 'auto',
+                }}
+              >
+                <TabRound variant="ghost">
+                  Adminer
+                  <MaterialSymbols>open_in_new</MaterialSymbols>
+                </TabRound>
+              </a>
+            </Show>
           </WithNav.Tabs>
         </WithNav.Navs>
         <WithNav.Body>
