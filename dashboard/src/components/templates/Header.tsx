@@ -1,8 +1,10 @@
 import LogoImage from '/@/assets/logo.svg?url'
+import { user } from '/@/libs/api'
 import { colorVars } from '/@/theme'
 import { styled } from '@macaron-css/solid'
 import { A } from '@solidjs/router'
-import { Component } from 'solid-js'
+import { Component, Show } from 'solid-js'
+import { UserMenuButton } from '../UI/UserMenuButton'
 
 const Container = styled('div', {
   base: {
@@ -23,6 +25,7 @@ export const Header: Component = () => {
       <A href="/">
         <img src={LogoImage} alt="NeoShowcase logo" />
       </A>
+      <Show when={user()}>{(user) => <UserMenuButton user={user()} />}</Show>
     </Container>
   )
 }
