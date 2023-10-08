@@ -151,10 +151,10 @@ const AppStateContainer = styled('div', {
         },
       },
       Static: {
-        background: colorOverlay(colorVars.semantic.ui.primary, colorVars.semantic.transparent.successSelected),
+        background: colorOverlay(colorVars.semantic.ui.primary, colorVars.semantic.transparent.primarySelected),
         selectors: {
           '&:hover': {
-            background: colorOverlay(colorVars.semantic.ui.primary, colorVars.semantic.transparent.successHover),
+            background: colorOverlay(colorVars.semantic.ui.primary, colorVars.semantic.transparent.primaryHover),
           },
         },
       },
