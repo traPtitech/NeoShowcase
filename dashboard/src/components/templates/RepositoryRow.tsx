@@ -14,7 +14,7 @@ const Container = styled('div', {
     padding: '16px 16px 16px 20px',
     display: 'flex',
     alignItems: 'center',
-    gap: '4px',
+    gap: '32px',
 
     background: colorVars.semantic.ui.primary,
     cursor: 'pointer',
@@ -32,18 +32,28 @@ const TitleContainer = styled('div', {
     display: 'flex',
     alignItems: 'center',
     gap: '8px',
+    overflow: 'hidden',
   },
 })
 const RepositoryName = styled('div', {
   base: {
+    overflow: 'hidden',
+    textOverflow: 'ellipsis',
+    whiteSpace: 'nowrap',
     color: colorVars.semantic.text.black,
     ...textVars.h4.bold,
   },
 })
 const AppCount = styled('div', {
   base: {
+    whiteSpace: 'nowrap',
     color: colorVars.semantic.text.grey,
     ...textVars.caption.regular,
+  },
+})
+const AddNewAppButtonContainer = styled('div', {
+  base: {
+    flexShrink: 0,
   },
 })
 
@@ -60,26 +70,33 @@ export const RepositoryRow: Component<Props> = (props) => {
   return (
     <Container onMouseEnter={() => setShowNewAppButton(true)} onMouseLeave={() => setShowNewAppButton(false)}>
       <TitleContainer>
-        <A href={`/repos/${props.repository.id}`}>
+        <A
+          href={`/repos/${props.repository.id}`}
+          style={{
+            overflow: 'hidden',
+          }}
+        >
           <RepositoryName>{props.repository.name}</RepositoryName>
         </A>
         <AppCount>{`${props.appCount} apps`}</AppCount>
       </TitleContainer>
       <Show when={canEdit() && showNewAppButton()}>
-        <Button
-          color="border"
-          size="medium"
-          onClick={() => {
-            navigator(`/apps/new?repositoryID=${props.repository.id}`)
-          }}
-          tooltip={{
-            props: {
-              content: 'このリポジトリからアプリケーションを作成します',
-            },
-          }}
-        >
-          Add New App
-        </Button>
+        <AddNewAppButtonContainer>
+          <Button
+            color="border"
+            size="medium"
+            onClick={() => {
+              navigator(`/apps/new?repositoryID=${props.repository.id}`)
+            }}
+            tooltip={{
+              props: {
+                content: 'このリポジトリからアプリケーションを作成します',
+              },
+            }}
+          >
+            Add New App
+          </Button>
+        </AddNewAppButtonContainer>
       </Show>
     </Container>
   )

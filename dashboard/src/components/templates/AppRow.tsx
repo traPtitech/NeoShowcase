@@ -32,6 +32,9 @@ const TitleContainer = styled('div', {
 const AppName = styled('div', {
   base: {
     width: '100%',
+    overflow: 'hidden',
+    textOverflow: 'ellipsis',
+    whiteSpace: 'nowrap',
     color: colorVars.semantic.text.black,
     ...textVars.h4.regular,
   },
@@ -57,7 +60,7 @@ const MetaContainer = styled('div', {
 })
 const LastCommitName = styled('div', {
   base: {
-    width: '100%',
+    width: 'fit-content',
     overflow: 'hidden',
     textOverflow: 'ellipsis',
     whiteSpace: 'nowrap',
@@ -65,7 +68,8 @@ const LastCommitName = styled('div', {
 })
 const UrlContainer = styled('div', {
   base: {
-    width: '100%',
+    width: 'fit-content',
+    marginLeft: 'auto',
     textAlign: 'right',
     overflow: 'hidden',
     textOverflow: 'ellipsis',
