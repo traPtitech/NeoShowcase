@@ -1,6 +1,6 @@
 import { Navigate, RouteDataFunc, useRouteData, useRoutes } from '@solidjs/router'
 import { Resource, createResource, lazy } from 'solid-js'
-import { Application, GetApplicationsRequest_Scope, Repository } from './api/neoshowcase/protobuf/gateway_pb'
+import { Application, Build, GetApplicationsRequest_Scope, Repository } from './api/neoshowcase/protobuf/gateway_pb'
 import { client } from './libs/api'
 
 const RepositoryData: RouteDataFunc<
@@ -53,6 +53,33 @@ const ApplicationData: RouteDataFunc<
 }
 export const useApplicationData = () => useRouteData<ReturnType<typeof ApplicationData>>()
 
+const BuildData: RouteDataFunc<
+  unknown,
+  {
+    app: Resource<Application>
+    refetchApp: () => void
+    build: Resource<Build>
+    refetchBuild: () => void
+  }
+> = ({ params }) => {
+  const [app, { refetch: refetchApp }] = createResource(
+    () => params.id,
+    (id) => client.getApplication({ id }),
+  )
+  const [build, { refetch: refetchBuild }] = createResource(
+    () => params.buildID,
+    (buildId) => client.getBuild({ buildId }),
+  )
+
+  return {
+    app,
+    refetchApp,
+    build,
+    refetchBuild,
+  }
+}
+export const useBuildData = () => useRouteData<ReturnType<typeof BuildData>>()
+
 export default useRoutes([
   {
     path: '/',
@@ -78,6 +105,7 @@ export default useRoutes([
       {
         path: '/builds/:buildID',
         component: lazy(() => import('/@/pages/apps/[id]/builds/[id]')),
+        data: BuildData,
       },
       {
         path: '/settings',

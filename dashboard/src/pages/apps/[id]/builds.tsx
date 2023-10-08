@@ -1,31 +1,33 @@
-import { BuildList } from '/@/components/BuildList'
+import { MaterialSymbols } from '/@/components/UI/MaterialSymbols'
+import { DataTable } from '/@/components/layouts/DataTable'
+import { MainViewContainer } from '/@/components/layouts/MainView'
+import { BuildList, List } from '/@/components/templates/List'
 import { client } from '/@/libs/api'
+import { useApplicationData } from '/@/routes'
+import { colorVars, textVars } from '/@/theme'
 import { styled } from '@macaron-css/solid'
-import { useParams } from '@solidjs/router'
 import { createMemo, createResource } from 'solid-js'
 import { Show } from 'solid-js'
 
-const Container = styled('div', {
+const PlaceHolder = styled('div', {
   base: {
     width: '100%',
-    height: '100%',
-    padding: '40px 32px 72px 32px',
-    overflowY: 'auto',
+    height: '400px',
+    display: 'flex',
+    flexDirection: 'column',
+    gap: '24px',
+    alignItems: 'center',
+    justifyContent: 'center',
+
+    color: colorVars.semantic.text.black,
+    ...textVars.h4.medium,
   },
 })
 
 export default () => {
-  const params = useParams()
-  const [app] = createResource(
-    () => params.id,
-    (id) => client.getApplication({ id }),
-  )
-  const [repo] = createResource(
-    () => app()?.repositoryId,
-    (id) => client.getRepository({ repositoryId: id }),
-  )
+  const { app, repo } = useApplicationData()
   const [builds] = createResource(
-    () => params.id,
+    () => app()?.id,
     (id) => client.getBuilds({ id }),
   )
   const loaded = () => !!(app() && repo() && builds())
@@ -37,12 +39,23 @@ export default () => {
         return b2.queuedAt.toDate().getTime() - b1.queuedAt.toDate().getTime()
       }),
   )
+  const showPlaceHolder = () => builds()?.builds.length === 0
 
   return (
-    <Container>
+    <MainViewContainer>
       <Show when={loaded()}>
-        <BuildList builds={sortedBuilds()} showAppID={false} />
+        <DataTable.Container>
+          <DataTable.Title>Builds</DataTable.Title>
+          <Show when={showPlaceHolder()} fallback={<BuildList builds={sortedBuilds()} showAppID={false} />}>
+            <List.Container>
+              <PlaceHolder>
+                <MaterialSymbols displaySize={80}>deployed_code</MaterialSymbols>
+                No Builds
+              </PlaceHolder>
+            </List.Container>
+          </Show>
+        </DataTable.Container>
       </Show>
-    </Container>
+    </MainViewContainer>
   )
 }

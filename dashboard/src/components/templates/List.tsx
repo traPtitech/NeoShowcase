@@ -1,8 +1,9 @@
-import { Application, Repository } from '/@/api/neoshowcase/protobuf/gateway_pb'
+import { Application, Build, Repository } from '/@/api/neoshowcase/protobuf/gateway_pb'
 import { colorVars, textVars } from '/@/theme'
 import { styled } from '@macaron-css/solid'
 import { Component, For, Show, createSignal } from 'solid-js'
 import { AppRow } from './AppRow'
+import { BuildRow } from './BuildRow'
 import { RepositoryRow } from './RepositoryRow'
 
 const Container = styled('div', {
@@ -134,6 +135,20 @@ export const AppsList: Component<{ apps: Application[] }> = (props) => {
         {(app) => (
           <Bordered>
             <AppRow app={app} />
+          </Bordered>
+        )}
+      </For>
+    </Container>
+  )
+}
+
+export const BuildList: Component<{ builds: Build[]; showAppID: boolean }> = (props) => {
+  return (
+    <Container>
+      <For each={props.builds}>
+        {(b) => (
+          <Bordered>
+            <BuildRow appId={b.applicationId} build={b} showAppId={props.showAppID} />
           </Bordered>
         )}
       </For>

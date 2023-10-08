@@ -1,4 +1,3 @@
-import AppsPlaceholder from '/@/assets/icons/apps_placeholder.svg'
 import { Button } from '/@/components/UI/Button'
 import { MaterialSymbols } from '/@/components/UI/MaterialSymbols'
 import { URLText } from '/@/components/UI/URLText'
@@ -72,7 +71,7 @@ export default () => {
             <Show when={showPlaceHolder()} fallback={<AppsList apps={apps()} />}>
               <List.Container>
                 <PlaceHolder>
-                  <AppsPlaceholder />
+                  <MaterialSymbols displaySize={80}>deployed_code</MaterialSymbols>
                   No Apps
                   <AddNewAppButton />
                 </PlaceHolder>
