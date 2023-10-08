@@ -3,6 +3,7 @@ import { colorVars } from '/@/theme'
 import { JSXElement } from 'solid-js'
 import { Dynamic } from 'solid-js/web'
 import { MaterialSymbols } from './MaterialSymbols'
+import { ToolTip } from './ToolTip'
 
 interface IconProps {
   size: number
@@ -41,5 +42,13 @@ interface Props {
 }
 
 export const AppStatusIcon = (props: Props): JSXElement => {
-  return <Dynamic component={components[props.state]} size={props.size ?? 24} />
+  return (
+    <ToolTip
+      props={{
+        content: props.state,
+      }}
+    >
+      <Dynamic component={components[props.state]} size={props.size ?? 24} />
+    </ToolTip>
+  )
 }

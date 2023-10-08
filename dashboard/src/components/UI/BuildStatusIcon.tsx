@@ -1,8 +1,10 @@
 import { BuildStatus } from '/@/api/neoshowcase/protobuf/gateway_pb'
+import { buildStatusStr } from '/@/libs/application'
 import { colorVars } from '/@/theme'
 import { JSXElement } from 'solid-js'
 import { Dynamic } from 'solid-js/web'
 import { MaterialSymbols } from './MaterialSymbols'
+import { ToolTip } from './ToolTip'
 
 interface IconProps {
   size: number
@@ -46,5 +48,13 @@ interface Props {
 }
 
 export const BuildStatusIcon = (props: Props): JSXElement => {
-  return <Dynamic component={components[props.state]} size={props.size ?? 24} />
+  return (
+    <ToolTip
+      props={{
+        content: buildStatusStr[props.state],
+      }}
+    >
+      <Dynamic component={components[props.state]} size={props.size ?? 24} />
+    </ToolTip>
+  )
 }
