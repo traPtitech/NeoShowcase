@@ -8,7 +8,8 @@ const Container = styled('div', {
   base: {
     width: '100%',
     overflowX: 'hidden',
-    padding: '32px',
+    padding: '32px 32px 32px 32px',
+    paddingRight: 'max(calc(50% - 500px), 32px)',
     display: 'flex',
     gap: '8px',
   },
@@ -25,7 +26,7 @@ const TitleContainer = styled('div', {
     width: '100%',
     maxWidth: '1000px',
     height: '44px',
-    left: 'calc((100% - 1000px) / 2)',
+    left: 'calc(75% - 250px)',
     display: 'flex',
     alignItems: 'center',
     gap: '8px',
