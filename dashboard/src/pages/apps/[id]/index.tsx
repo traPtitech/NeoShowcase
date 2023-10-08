@@ -11,6 +11,7 @@ import {
 import { AppStatusIcon } from '/@/components/UI/AppStatusIcon'
 import { BuildStatusIcon } from '/@/components/UI/BuildStatusIcon'
 import { Button } from '/@/components/UI/Button'
+import { MaterialSymbols } from '/@/components/UI/MaterialSymbols'
 import { ToolTip } from '/@/components/UI/ToolTip'
 import { URLText } from '/@/components/UI/URLText'
 import { DataTable } from '/@/components/layouts/DataTable'
@@ -25,8 +26,19 @@ import { diffHuman, shortSha } from '/@/libs/format'
 import { useApplicationData } from '/@/routes'
 import { colorVars, textVars } from '/@/theme'
 import { styled } from '@macaron-css/solid'
-import { A } from '@solidjs/router'
-import { Component, For, Match, Show, Switch, createResource, createSignal, onCleanup } from 'solid-js'
+import { A, useNavigate } from '@solidjs/router'
+import {
+  Component,
+  For,
+  JSX,
+  Match,
+  Show,
+  Switch,
+  VoidComponent,
+  createResource,
+  createSignal,
+  onCleanup,
+} from 'solid-js'
 import toast from 'solid-toast'
 
 const Container = styled('div', {
@@ -62,6 +74,44 @@ const MainView = styled('div', {
     gap: '32px',
   },
 })
+const JumpButtonContainer = styled('div', {
+  base: {
+    width: '32px',
+    height: '32px',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+
+    flexShrink: 0,
+    background: 'none',
+    border: 'none',
+    borderRadius: '6px',
+    cursor: 'pointer',
+    color: colorVars.semantic.text.black,
+    selectors: {
+      '&:hover': {
+        background: colorVars.semantic.transparent.primaryHover,
+      },
+      '&:active, &[data-active="true"]': {
+        color: colorVars.semantic.primary.main,
+        background: colorVars.semantic.transparent.primarySelected,
+      },
+      '&:disabled': {
+        cursor: 'not-allowed',
+        border: 'none !important',
+        color: `${colorVars.semantic.text.black} !important`,
+        background: `${colorVars.semantic.text.disabled} !important`,
+      },
+    },
+  },
+})
+const JumpButton: VoidComponent<{ href: string }> = (props) => (
+  <A href={props.href}>
+    <JumpButtonContainer>
+      <MaterialSymbols opticalSize={20}>arrow_outward</MaterialSymbols>
+    </JumpButtonContainer>
+  </A>
+)
 
 const DeploymentContainer = styled('div', {
   base: {
@@ -158,6 +208,7 @@ const DeployInfoContainer = styled('div', {
     padding: '16px 20px',
     display: 'flex',
     flexDirection: 'row',
+    alignItems: 'center',
     gap: '8px',
 
     background: colorVars.semantic.ui.primary,
@@ -262,6 +313,7 @@ const DeploymentInfo: Component<{
           <List.RowTitle>Source Branch</List.RowTitle>
           <List.RowData>{props.app.refName}</List.RowData>
         </List.RowContent>
+        <JumpButton href={`/apps/${props.app.id}/settings`} />
       </DeployInfoContainer>
       <DeployInfoContainer>
         <List.RowContent>
@@ -279,6 +331,7 @@ const DeploymentInfo: Component<{
           <List.RowTitle>Deploy Type</List.RowTitle>
           <List.RowData>{titleCase(DeployType[props.app.deployType])}</List.RowData>
         </List.RowContent>
+        <JumpButton href={`/apps/${props.app.id}/settings/build`} />
       </DeployInfoContainer>
       <DeployInfoContainer long>
         <List.RowContent>
@@ -313,6 +366,7 @@ const DeploymentInfo: Component<{
             )}
           </For>
         </List.RowContent>
+        <JumpButton href={`/apps/${props.app.id}/settings/domains`} />
       </DeployInfoContainer>
     </DeploymentContainer>
   )
@@ -418,6 +472,7 @@ const BuildStatusTable: Component<{
             {props.app.refName} ({shortSha(props.app.commit)})
           </List.RowData>
         </List.RowContent>
+        <JumpButton href={`/apps/${props.app.id}/settings`} />
         <Button
           color="ghost"
           size="medium"
@@ -437,6 +492,7 @@ const BuildStatusTable: Component<{
           <List.RowTitle>Build Type</List.RowTitle>
           <List.RowData>{buildTypeStr[props.app.config.buildConfig.case]}</List.RowData>
         </List.RowContent>
+        <JumpButton href={`/apps/${props.app.id}/settings/build`} />
       </List.Row>
     </List.Container>
   )
@@ -634,6 +690,7 @@ const Information: Component<{ app: Application }> = (props) => {
             <List.RowTitle>Name</List.RowTitle>
             <List.RowData>{props.app.name}</List.RowData>
           </List.RowContent>
+          <JumpButton href={`/apps/${props.app.id}/settings`} />
         </List.Row>
         <Show when={props.app.updatedAt}>
           {(nonNullUpdatedAt) => {
