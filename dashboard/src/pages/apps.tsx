@@ -45,6 +45,13 @@ const SortContainer = styled('div', {
     display: 'flex',
     alignItems: 'center',
     gap: '16px',
+
+    '@media': {
+      'screen and (max-width: 768px)': {
+        flexDirection: 'column',
+        gap: '8px',
+      },
+    },
   },
 })
 const SortSelects = styled('div', {

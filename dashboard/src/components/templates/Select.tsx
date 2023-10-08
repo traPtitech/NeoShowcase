@@ -84,10 +84,9 @@ const DropDownIconContainer = styled('div', {
 })
 const optionsContainerClass = style({
   position: 'absolute',
-  width: '100%',
-  maxHeight: '250px',
+  width: 'fit-content',
+  minWidth: '100%',
   top: '56px',
-  overflowY: 'auto',
   padding: '6px',
 
   display: 'flex',
