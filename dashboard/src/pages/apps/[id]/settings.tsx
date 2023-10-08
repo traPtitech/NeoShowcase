@@ -11,6 +11,7 @@ const Container = styled('div', {
     height: '100%',
     padding: '40px 32px 72px 32px',
     overflowY: 'auto',
+    scrollbarGutter: 'stable',
   },
 })
 const MainView = styled('div', {

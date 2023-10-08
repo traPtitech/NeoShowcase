@@ -38,6 +38,7 @@ const UsersContainer = styled('div', {
     height: 'auto',
     maxHeight: '100%',
     overflowY: 'auto',
+    scrollbarGutter: 'stable',
     display: 'flex',
     flexDirection: 'column',
 
