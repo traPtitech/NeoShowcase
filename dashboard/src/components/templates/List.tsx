@@ -53,6 +53,7 @@ const RowData = styled('div', {
     flexDirection: 'row',
     alignItems: 'center',
     gap: '4px',
+    overflowWrap: 'anywhere',
     color: colorVars.semantic.text.black,
     ...textVars.text.regular,
   },

@@ -16,6 +16,7 @@ const Container = styled('div', {
 const TitleStickyContainer = styled('div', {
   base: {
     width: '100%',
+    overflowX: 'clip',
   },
 })
 const TitleContainer = styled('div', {
@@ -28,6 +29,7 @@ const TitleContainer = styled('div', {
     display: 'flex',
     alignItems: 'center',
     gap: '8px',
+    overflowX: 'hidden',
   },
 })
 const Title = styled('h1', {

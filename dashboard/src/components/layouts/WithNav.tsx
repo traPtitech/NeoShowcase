@@ -1,6 +1,5 @@
 import { colorVars } from '/@/theme'
 import { styled } from '@macaron-css/solid'
-import { ParentComponent } from 'solid-js'
 
 const Container = styled('div', {
   base: {
@@ -15,6 +14,7 @@ const Navs = styled('div', {
   base: {
     width: '100%',
     height: 'auto',
+    overflowX: 'hidden',
     borderBottom: `1px solid ${colorVars.semantic.ui.border}`,
   },
 })

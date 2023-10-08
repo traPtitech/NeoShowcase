@@ -28,6 +28,7 @@ globalStyle('pre, code', {
 
 globalStyle('a', {
   textDecoration: 'none',
+  overflowWrap: 'anywhere',
 })
 
 globalStyle('pre', {
