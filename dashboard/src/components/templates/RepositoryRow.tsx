@@ -1,5 +1,6 @@
 import { Repository } from '/@/api/neoshowcase/protobuf/gateway_pb'
 import { user } from '/@/libs/api'
+import { providerToIcon, repositoryURLToProvider } from '/@/libs/application'
 import { colorOverlay } from '/@/libs/colorOverlay'
 import { colorVars, textVars } from '/@/theme'
 import { styled } from '@macaron-css/solid'
@@ -70,6 +71,7 @@ export const RepositoryRow: Component<Props> = (props) => {
   return (
     <Container onMouseEnter={() => setShowNewAppButton(true)} onMouseLeave={() => setShowNewAppButton(false)}>
       <TitleContainer>
+        {providerToIcon(repositoryURLToProvider(props.repository.url), 24)}
         <A
           href={`/repos/${props.repository.id}`}
           style={{

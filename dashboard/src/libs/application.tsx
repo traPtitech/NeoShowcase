@@ -7,7 +7,7 @@ import {
   Website,
 } from '/@/api/neoshowcase/protobuf/gateway_pb'
 import { Provider } from '/@/components/RepositoryRow'
-import { vars } from '/@/theme'
+import { colorVars, vars } from '/@/theme'
 import { AiFillGithub, AiFillGitlab } from 'solid-icons/ai'
 import { SiGitea } from 'solid-icons/si'
 import { JSXElement } from 'solid-js'
@@ -95,11 +95,11 @@ export const repositoryURLToProvider = (url: string): Provider => {
 export const providerToIcon = (provider: Provider, size = 20): JSXElement => {
   switch (provider) {
     case 'GitHub':
-      return <AiFillGithub size={size} color={vars.text.black1} />
+      return <AiFillGithub size={size} color={colorVars.semantic.text.black} />
     case 'GitLab':
       return <AiFillGitlab size={size} color="#FC6D26" />
     case 'Gitea':
-      return <SiGitea size={size} color={vars.text.black1} />
+      return <SiGitea size={size} color={colorVars.semantic.text.black} />
   }
 }
 
