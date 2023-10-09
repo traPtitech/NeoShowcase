@@ -18,13 +18,12 @@ const TextareaContainer = styled('div', {
 })
 const DummyTextArea = styled('div', {
   base: {
-    minHeight: '48px',
+    minHeight: '200px',
     overflow: 'hidden',
     visibility: 'hidden',
     padding: '10px 16px',
     whiteSpace: 'pre-wrap',
-    wordWrap: 'break-word',
-    overflowWrap: 'break-word',
+    wordBreak: 'break-all',
     ...textVars.text.regular,
   },
 })
@@ -42,6 +41,7 @@ const StyledTextArea = styled('textarea', {
     borderRadius: '8px',
     border: 'none',
     outline: `1px solid ${colorVars.semantic.ui.border}`,
+    wordBreak: 'break-all',
     color: colorVars.semantic.text.black,
     ...textVars.text.regular,
     resize: 'none',
@@ -73,17 +73,14 @@ const HelpText = styled('div', {
 
 export interface Props extends JSX.TextareaHTMLAttributes<HTMLTextAreaElement> {
   helpText?: string
-  leftIcon?: JSX.Element
-  rightIcon?: JSX.Element
+  ref?: HTMLTextAreaElement | ((ref: HTMLTextAreaElement) => void)
 }
 
 export const Textarea: Component<Props> = (props) => {
   let dummyRef: HTMLDivElement
-  let textAreaRef: HTMLTextAreaElement
+  const [addedProps, originalProps] = splitProps(props, ['helpText', 'ref'])
 
-  const [addedProps, originalProps] = splitProps(props, ['helpText', 'leftIcon', 'rightIcon'])
-
-  createEffect(() => {
+  onMount(() => {
     dummyRef.textContent = `${originalProps.value}\u200b`
   })
 
@@ -91,7 +88,20 @@ export const Textarea: Component<Props> = (props) => {
     <Container>
       <TextareaContainer>
         <DummyTextArea ref={dummyRef} />
-        <StyledTextArea {...originalProps} ref={textAreaRef} />
+        <StyledTextArea
+          {...originalProps}
+          ref={addedProps.ref}
+          onInput={(e) => {
+            dummyRef.textContent = `${e.currentTarget.value}\u200b`
+            if (originalProps.onInput) {
+              if (typeof originalProps.onInput === 'function') {
+                originalProps.onInput(e)
+              } else {
+                originalProps.onInput[0](originalProps.onInput[1], e)
+              }
+            }
+          }}
+        />
       </TextareaContainer>
       <Show when={addedProps.helpText}>
         <HelpText>{addedProps.helpText}</HelpText>

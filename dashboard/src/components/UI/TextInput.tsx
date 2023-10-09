@@ -96,10 +96,11 @@ export interface Props extends JSX.InputHTMLAttributes<HTMLInputElement> {
   helpText?: string
   leftIcon?: JSX.Element
   rightIcon?: JSX.Element
+  ref?: HTMLInputElement | ((ref: HTMLInputElement) => void)
 }
 
 export const TextInput: Component<Props> = (props) => {
-  const [addedProps, originalProps] = splitProps(props, ['helpText', 'leftIcon', 'rightIcon'])
+  const [addedProps, originalProps] = splitProps(props, ['helpText', 'leftIcon', 'rightIcon', 'ref'])
 
   return (
     <Container>
@@ -109,6 +110,7 @@ export const TextInput: Component<Props> = (props) => {
           hasRightIcon={addedProps.rightIcon !== undefined}
           {...originalProps}
           type={originalProps.type ?? 'text'}
+          ref={addedProps.ref}
         />
         <Show when={addedProps.leftIcon}>
           <LeftIcon>{addedProps.leftIcon}</LeftIcon>
