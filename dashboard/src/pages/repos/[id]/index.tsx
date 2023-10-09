@@ -8,7 +8,7 @@ import { useRepositoryData } from '/@/routes'
 import { colorVars, textVars } from '/@/theme'
 import { styled } from '@macaron-css/solid'
 import { useNavigate } from '@solidjs/router'
-import { Show } from 'solid-js'
+import { Show, createMemo } from 'solid-js'
 
 const MainView = styled('div', {
   base: {
@@ -37,7 +37,7 @@ export default () => {
   const { repo, apps } = useRepositoryData()
   const loaded = () => !!(repo() && apps())
   const navigator = useNavigate()
-  const showPlaceHolder = () => apps()?.length === 0
+  const showPlaceHolder = createMemo(() => apps()?.length === 0)
 
   const AddNewAppButton = () => (
     <Button
