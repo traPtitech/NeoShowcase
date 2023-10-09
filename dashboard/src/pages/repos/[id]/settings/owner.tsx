@@ -278,6 +278,7 @@ export default () => {
   return (
     <DataTable.Container>
       <DataTable.Title>Owner</DataTable.Title>
+      <DataTable.SubTitle>オーナーはリポジトリ設定の変更が可能になります</DataTable.SubTitle>
       <Show when={loaded()}>
         <OwnerConfig repo={repo()} users={users()} refetchRepo={refetchRepo} />
       </Show>

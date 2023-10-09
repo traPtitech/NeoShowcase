@@ -20,8 +20,23 @@ const Title = styled('h2', {
     ...textVars.h2.medium,
   },
 })
+const SubTitle = styled('div', {
+  base: {
+    color: colorVars.semantic.text.grey,
+    ...textVars.caption.medium,
+  },
+})
+const Titles = styled('div', {
+  base: {
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'flex-start',
+  },
+})
 
 export const DataTable = {
   Container,
+  Titles,
   Title,
+  SubTitle,
 }

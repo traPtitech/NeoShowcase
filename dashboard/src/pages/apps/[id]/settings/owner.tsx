@@ -279,6 +279,9 @@ export default () => {
   return (
     <DataTable.Container>
       <DataTable.Title>Owner</DataTable.Title>
+      <DataTable.SubTitle>
+        オーナーはアプリ設定の変更, アプリログ/メトリクスの閲覧, 環境変数の閲覧, ビルドログの閲覧が可能になります
+      </DataTable.SubTitle>
       <Show when={loaded()}>
         <OwnerConfig app={app()} users={users()} refetchApp={refetchApp} />
       </Show>
