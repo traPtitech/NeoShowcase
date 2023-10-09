@@ -1,25 +1,12 @@
 import { Button } from '/@/components/UI/Button'
 import { MaterialSymbols } from '/@/components/UI/MaterialSymbols'
 import { MainViewContainer } from '/@/components/layouts/MainView'
+import { SideView } from '/@/components/layouts/SideView'
 import { useApplicationData } from '/@/routes'
 import { styled } from '@macaron-css/solid'
 import { Outlet, useMatch, useNavigate } from '@solidjs/router'
 import { Show } from 'solid-js'
 
-const MainView = styled('div', {
-  base: {
-    width: '100%',
-    display: 'grid',
-    gridTemplateColumns: '235px 1fr',
-    gap: '48px',
-  },
-})
-const SideMenuContainer = styled('div', {
-  base: {
-    width: '100%',
-    height: '100%',
-  },
-})
 const SideMenu = styled('div', {
   base: {
     position: 'sticky',
@@ -44,8 +31,8 @@ export default () => {
   return (
     <MainViewContainer>
       <Show when={loaded()}>
-        <MainView>
-          <SideMenuContainer>
+        <SideView.Container>
+          <SideView.Side>
             <SideMenu>
               <Button
                 color="text"
@@ -120,9 +107,11 @@ export default () => {
                 Owner
               </Button>
             </SideMenu>
-          </SideMenuContainer>
-          <Outlet />
-        </MainView>
+          </SideView.Side>
+          <SideView.Main>
+            <Outlet />
+          </SideView.Main>
+        </SideView.Container>
       </Show>
     </MainViewContainer>
   )
