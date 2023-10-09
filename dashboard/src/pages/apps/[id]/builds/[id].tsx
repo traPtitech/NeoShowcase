@@ -274,18 +274,20 @@ export default () => {
               </List.Row>
             </List.Container>
           </DataTable.Container>
-          <DataTable.Container>
-            <DataTable.Title>Artifacts</DataTable.Title>
-            <List.Container>
-              <For each={build()?.artifacts ?? []}>
-                {(artifact) => (
-                  <Bordered>
-                    <ArtifactRow artifact={artifact} />
-                  </Bordered>
-                )}
-              </For>
-            </List.Container>
-          </DataTable.Container>
+          <Show when={build()?.artifacts?.length > 0}>
+            <DataTable.Container>
+              <DataTable.Title>Artifacts</DataTable.Title>
+              <List.Container>
+                <For each={build()?.artifacts}>
+                  {(artifact) => (
+                    <Bordered>
+                      <ArtifactRow artifact={artifact} />
+                    </Bordered>
+                  )}
+                </For>
+              </List.Container>
+            </DataTable.Container>
+          </Show>
           <DataTable.Container>
             <DataTable.Title>Build Log</DataTable.Title>
             <LogContainer>
