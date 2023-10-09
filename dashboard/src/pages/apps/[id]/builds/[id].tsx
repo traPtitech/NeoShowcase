@@ -1,5 +1,5 @@
 import { BuildStatus } from '/@/api/neoshowcase/protobuf/gateway_pb'
-import { BuildStatusIcon } from '/@/components/BuildStatusIcon'
+import { BuildStatusIcon } from '/@/components/UI/BuildStatusIcon'
 import { Button } from '/@/components/UI/Button'
 import { MaterialSymbols } from '/@/components/UI/MaterialSymbols'
 import { ToolTip } from '/@/components/UI/ToolTip'
