@@ -1,4 +1,5 @@
 import LogoImage from '/@/assets/logo.svg?url'
+import SmallLogoImage from '/@/assets/logo_small.svg?url'
 import { user } from '/@/libs/api'
 import { colorVars } from '/@/theme'
 import { styled } from '@macaron-css/solid'
@@ -23,7 +24,11 @@ export const Header: Component = () => {
   return (
     <Container>
       <A href="/">
-        <img src={LogoImage} alt="NeoShowcase logo" />
+        <picture>
+          {/* 画面幅が768px以下の時はSmallLogoImageを表示する */}
+          <source srcset={SmallLogoImage} media="(max-width: 768px)" />
+          <img src={LogoImage} alt="NeoShowcase logo" />
+        </picture>
       </A>
       <Show when={user()}>{(user) => <UserMenuButton user={user()} />}</Show>
     </Container>

@@ -6,6 +6,14 @@ const Container = styled('div', {
     display: 'grid',
     gridTemplateColumns: '235px minmax(0, 1fr)',
     gap: '48px',
+
+    '@media': {
+      'screen and (max-width: 768px)': {
+        gridTemplateColumns: '1fr',
+        gridTemplateRows: 'auto auto',
+        gap: '24px',
+      },
+    },
   },
 })
 const Side = styled('div', {
