@@ -85,6 +85,14 @@ const DeleteConfirm = styled('div', {
     background: colorVars.semantic.ui.secondary,
   },
 })
+const FormContainer = styled('form', {
+  base: {
+    width: '100%',
+    display: 'flex',
+    flexDirection: 'column',
+    gap: '8px',
+  },
+})
 
 const SshKeyRow: Component<{ key: UserKey; refetchKeys: () => void }> = (props) => {
   const { Modal, open, close } = useModal()
@@ -138,9 +146,14 @@ export default () => {
   const [userKeys, { refetch: refetchKeys }] = createResource(() => client.getUserKeys({}))
   const { Modal: AddNewKeyModal, open: newKeyOpen, close: newKeyClose } = useModal()
 
+  let formRef: HTMLFormElement
   let textareaRef: HTMLTextAreaElement
   const handleAddNewKey = () => {
     try {
+      // validate form
+      if (!formRef.reportValidity()) {
+        return
+      }
       client.createUserKey({ publicKey: textareaRef.value })
       toast.success('公開鍵を追加しました')
       newKeyClose()
@@ -196,9 +209,11 @@ export default () => {
       <AddNewKeyModal.Container>
         <AddNewKeyModal.Header>Add New SSH Key</AddNewKeyModal.Header>
         <AddNewKeyModal.Body>
-          <FormItem title="Key" required>
-            <Textarea placeholder="ssh-ed25519 AAA..." ref={textareaRef} />
-          </FormItem>
+          <FormContainer ref={formRef}>
+            <FormItem title="Key" required>
+              <Textarea placeholder="ssh-ed25519 AAA..." ref={textareaRef} required />
+            </FormItem>
+          </FormContainer>
         </AddNewKeyModal.Body>
         <AddNewKeyModal.Footer>
           <Button color="text" size="medium" onClick={newKeyClose}>
