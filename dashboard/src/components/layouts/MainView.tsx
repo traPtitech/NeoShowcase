@@ -6,8 +6,6 @@ export const MainViewContainer = styled('div', {
     width: '100%',
     height: '100%',
     padding: '40px max(calc(50% - 500px), 32px) 72px',
-    overflowY: 'auto',
-    scrollbarGutter: 'stable',
 
     '@media': {
       'screen and (max-width: 768px)': {
