@@ -36,6 +36,7 @@ const StyledTextArea = styled('textarea', {
     height: '100%',
     padding: '10px 16px',
     display: 'block',
+    overflowY: 'hidden',
 
     background: colorVars.semantic.ui.primary,
     borderRadius: '8px',
