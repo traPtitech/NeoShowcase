@@ -40,7 +40,7 @@ globalStyle('svg', {
 })
 
 globalStyle('body', {
-  height: '100vh',
+  height: '100dvh',
   backgroundColor: colorVars.semantic.ui.primary,
 })
 
