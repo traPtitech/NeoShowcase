@@ -60,15 +60,19 @@ const AuthConfig: Component<{
     }
   }
 
+  const Auth = RepositoryAuthSettings({
+    url: updateReq.url,
+    setUrl: (v) => setUpdateReq('url', v),
+    authConfig: authConfig,
+    setAuthConfig: setAuthConfig,
+  })
+
   return (
     <FormBox.Container ref={formRef}>
       <FormBox.Forms>
-        <RepositoryAuthSettings
-          url={updateReq.url}
-          setUrl={(v) => setUpdateReq('url', v)}
-          authConfig={authConfig}
-          setAuthConfig={setAuthConfig}
-        />
+        <Auth.Url />
+        <Auth.AuthMethod />
+        <Auth.AuthConfig />
       </FormBox.Forms>
       <FormBox.Actions>
         <Button color="borderError" size="small" onClick={discardChanges} type="button">

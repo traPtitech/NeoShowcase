@@ -83,7 +83,7 @@ interface Props {
   setAuthConfig: SetStoreFunction<PlainMessage<CreateRepositoryAuth>>
 }
 
-export const RepositoryAuthSettings: Component<Props> = (props) => {
+export const RepositoryAuthSettings = (props: Props) => {
   const [showPassword, setShowPassword] = createSignal(false)
   const [useTmpKey, setUseTmpKey] = createSignal(false)
   const [tmpKey] = createResource(
@@ -96,80 +96,88 @@ export const RepositoryAuthSettings: Component<Props> = (props) => {
   })
   const publicKey = () => (useTmpKey() ? tmpKey()?.publicKey : systemInfo()?.publicKey)
 
-  return (
-    <>
-      <Container>
-        認証方法
-        <RadioButtons
-          items={AuthMethods}
-          selected={props.authConfig.auth.case}
-          setSelected={(v) => props.setAuthConfig('auth', 'case', v)}
-        />
-      </Container>
-      <FormItem title="Repository URL" required>
-        <TextInput value={props.url} onInput={(e) => props.setUrl(e.target.value)} required />
-      </FormItem>
-      <Switch>
-        <Match when={props.authConfig.auth.case === 'basic' && props.authConfig.auth.value}>
-          {(v) => (
-            <>
-              <FormItem title="UserName" required>
-                <TextInput
-                  value={v().username}
-                  onInput={(e) =>
-                    props.setAuthConfig('auth', 'value', {
-                      username: e.currentTarget.value,
-                    })
-                  }
-                  required
-                />
-              </FormItem>
-              <FormItem title="Password" required>
-                <TextInput
-                  type={showPassword() ? 'text' : 'password'}
-                  value={v().password}
-                  onInput={(e) =>
-                    props.setAuthConfig('auth', 'value', {
-                      password: e.currentTarget.value,
-                    })
-                  }
-                  required
-                  rightIcon={
-                    <VisibilityButton onClick={() => setShowPassword((s) => !s)} type="button">
-                      <Show when={showPassword()} fallback={<MaterialSymbols>visibility_off</MaterialSymbols>}>
-                        <MaterialSymbols>visibility</MaterialSymbols>
-                      </Show>
-                    </VisibilityButton>
-                  }
-                />
-              </FormItem>
-            </>
-          )}
-        </Match>
-        <Match when={props.authConfig.auth.case === 'ssh'}>
-          <Container>
-            SSH公開鍵
-            <SshKeyContainer>
-              以下のSSH公開鍵{!useTmpKey() && '(システムデフォルト)'}
-              をリポジトリに登録してください
-              <CopyableInput value={publicKey()} />
-              <Show when={!useTmpKey()}>
-                <RefreshButtonContainer>
-                  <Button
-                    color="textError"
-                    size="small"
-                    onClick={() => setUseTmpKey(true)}
-                    leftIcon={<MaterialSymbols opticalSize={20}>replay</MaterialSymbols>}
-                  >
-                    再生成する
-                  </Button>
-                  For Github.com
-                </RefreshButtonContainer>
-              </Show>
-            </SshKeyContainer>
-          </Container>
-        </Match>
-      </Switch>
-    </>
+  const AuthMethod = () => (
+    <FormItem title="認証方法">
+      <RadioButtons
+        items={AuthMethods}
+        selected={props.authConfig.auth.case}
+        setSelected={(v) => props.setAuthConfig('auth', 'case', v)}
+      />
+    </FormItem>
   )
+
+  const Url = () => (
+    <FormItem title="Repository URL" required>
+      <TextInput value={props.url} onInput={(e) => props.setUrl(e.target.value)} required />
+    </FormItem>
+  )
+
+  const AuthConfig = () => (
+    <Switch>
+      <Match when={props.authConfig.auth.case === 'basic' && props.authConfig.auth.value}>
+        {(v) => (
+          <>
+            <FormItem title="UserName" required>
+              <TextInput
+                value={v().username}
+                onInput={(e) =>
+                  props.setAuthConfig('auth', 'value', {
+                    username: e.currentTarget.value,
+                  })
+                }
+                required
+              />
+            </FormItem>
+            <FormItem title="Password" required>
+              <TextInput
+                type={showPassword() ? 'text' : 'password'}
+                value={v().password}
+                onInput={(e) =>
+                  props.setAuthConfig('auth', 'value', {
+                    password: e.currentTarget.value,
+                  })
+                }
+                required
+                rightIcon={
+                  <VisibilityButton onClick={() => setShowPassword((s) => !s)} type="button">
+                    <Show when={showPassword()} fallback={<MaterialSymbols>visibility_off</MaterialSymbols>}>
+                      <MaterialSymbols>visibility</MaterialSymbols>
+                    </Show>
+                  </VisibilityButton>
+                }
+              />
+            </FormItem>
+          </>
+        )}
+      </Match>
+      <Match when={props.authConfig.auth.case === 'ssh'}>
+        <FormItem title="SSH公開鍵">
+          <SshKeyContainer>
+            以下のSSH公開鍵{!useTmpKey() && '(システムデフォルト)'}
+            をリポジトリに登録してください
+            <CopyableInput value={publicKey()} />
+            <Show when={!useTmpKey()}>
+              <RefreshButtonContainer>
+                <Button
+                  color="textError"
+                  size="small"
+                  onClick={() => setUseTmpKey(true)}
+                  leftIcon={<MaterialSymbols opticalSize={20}>replay</MaterialSymbols>}
+                >
+                  再生成する
+                </Button>
+                For Github.com
+              </RefreshButtonContainer>
+            </Show>
+          </SshKeyContainer>
+        </FormItem>
+      </Match>
+    </Switch>
+  )
+
+  return {
+    AuthMethod,
+    Url,
+    AuthConfig,
+  }
 }
