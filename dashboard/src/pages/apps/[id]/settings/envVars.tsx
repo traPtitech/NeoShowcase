@@ -126,6 +126,12 @@ const EnvVarConfig: Component<{
                   }}
                   required={envVar.value !== ''}
                   disabled={envVar.system}
+                  tooltip={{
+                    props: {
+                      content: 'システム環境変数は変更できません',
+                    },
+                    disabled: !envVar.system,
+                  }}
                 />
                 <TextInput
                   value={envVar.value}
@@ -135,6 +141,12 @@ const EnvVarConfig: Component<{
                     updateEnvVars()
                   }}
                   disabled={envVar.system}
+                  tooltip={{
+                    props: {
+                      content: 'システム環境変数は変更できません',
+                    },
+                    disabled: !envVar.system,
+                  }}
                 />
               </>
             )}
