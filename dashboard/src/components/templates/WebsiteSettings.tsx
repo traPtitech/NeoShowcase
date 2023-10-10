@@ -113,7 +113,10 @@ export const WebsiteSetting = (props: WebsiteSettingProps) => {
 
     const matchDomain = wildCardDomains().find((d) => fqdn.endsWith(d.domain.replace(/\*/g, '')))
     if (matchDomain === undefined) {
-      throw new Error('Invalid FQDN')
+      return {
+        host: '',
+        domain: systemInfo()?.domains[0],
+      }
     }
     return {
       host: fqdn.slice(0, -matchDomain.domain.length + 1),
@@ -164,16 +167,18 @@ export const WebsiteSetting = (props: WebsiteSettingProps) => {
                 </ToolTip>
               </HttpSelectContainer>
               <span>://</span>
-              <TextInput
-                placeholder="example.trap.show"
-                value={host()}
-                onInput={(e) => setHost(e.target.value)}
-                tooltip={{
-                  props: {
-                    content: 'ホスト名',
-                  },
-                }}
-              />
+              <Show when={domain()?.domain.startsWith('*')}>
+                <TextInput
+                  placeholder="example.trap.show"
+                  value={host()}
+                  onInput={(e) => setHost(e.target.value)}
+                  tooltip={{
+                    props: {
+                      content: 'ホスト名',
+                    },
+                  }}
+                />
+              </Show>
               <ToolTip
                 props={{
                   content: 'ドメイン',
@@ -209,18 +214,20 @@ export const WebsiteSetting = (props: WebsiteSettingProps) => {
               />
               <Show when={props.isRuntimeApp}>
                 <span> → </span>
-                <TextInput
-                  placeholder="80"
-                  type="number"
-                  min="0"
-                  value={props.website.httpPort || ''}
-                  onChange={(e) => props.setWebsite('httpPort', +e.target.value)}
-                  tooltip={{
-                    props: {
-                      content: 'アプリのHTTP Port番号',
-                    },
-                  }}
-                />
+                <HttpSelectContainer>
+                  <TextInput
+                    placeholder="80"
+                    type="number"
+                    min="0"
+                    value={props.website.httpPort || ''}
+                    onChange={(e) => props.setWebsite('httpPort', +e.target.value)}
+                    tooltip={{
+                      props: {
+                        content: 'アプリのHTTP Port番号',
+                      },
+                    }}
+                  />
+                </HttpSelectContainer>
                 <span>/TCP</span>
               </Show>
             </URLContainer>
