@@ -53,7 +53,7 @@ const UserName = styled('span', {
 const optionsContainerClass = style({
   position: 'absolute',
   width: 'fit-content',
-  minWidth: '178px',
+  minWidth: 'min(178px, 100%)',
   top: '56px',
   right: '0',
   padding: '6px',

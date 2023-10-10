@@ -15,7 +15,7 @@ const Container = styled('div', {
 const Button = styled('button', {
   base: {
     width: 'fit-content',
-    minWidth: '200px',
+    minWidth: 'min(200px, 100%)',
     padding: '16px',
     display: 'grid',
     gridTemplateColumns: '1fr 20px',
