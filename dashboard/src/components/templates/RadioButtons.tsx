@@ -64,7 +64,7 @@ export interface Props<T> {
 
 export const RadioButtons = <T,>(props: Props<T>): JSX.Element => {
   return (
-    <Container>
+    <Container role="radiogroup">
       <For each={props.items}>
         {(item) => (
           <Button
@@ -72,6 +72,8 @@ export const RadioButtons = <T,>(props: Props<T>): JSX.Element => {
             disabled={props.disabled}
             onClick={() => props.setSelected(item.value)}
             type="button"
+            role="radio"
+            aria-checked={props.selected === item.value}
           >
             {item.title}
             <RadioIcon selected={props.selected === item.value} disabled={props.disabled} />

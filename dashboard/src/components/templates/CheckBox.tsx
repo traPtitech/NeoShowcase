@@ -3,6 +3,7 @@ import { colorVars, textVars } from '/@/theme'
 import { styled } from '@macaron-css/solid'
 import { Component } from 'solid-js'
 import { CheckBoxIcon } from '../UI/CheckBoxIcon'
+import { ToolTip, TooltipProps } from '../UI/ToolTip'
 
 const Container = styled('div', {
   base: {
@@ -56,19 +57,29 @@ export interface Props {
   checked: boolean
   setChecked: (checked: boolean) => void
   disabled?: boolean
+  tooltip?: TooltipProps
 }
 
 const Option: Component<Props> = (props) => {
   return (
-    <Button
-      selected={props.checked}
-      disabled={props.disabled}
-      onClick={() => props.setChecked(!props.checked)}
-      type="button"
-    >
-      {props.title}
-      <CheckBoxIcon checked={props.checked} disabled={props.disabled} />
-    </Button>
+    <ToolTip {...props.tooltip}>
+      <span
+        //ボタンがdisabledの時もTippy.jsのtooltipが表示されるようにするためのラッパー
+        style={{
+          width: 'fit-content',
+        }}
+      >
+        <Button
+          selected={props.checked}
+          disabled={props.disabled}
+          onClick={() => props.setChecked(!props.checked)}
+          type="button"
+        >
+          {props.title}
+          <CheckBoxIcon checked={props.checked} disabled={props.disabled} />
+        </Button>
+      </span>
+    </ToolTip>
   )
 }
 

@@ -153,7 +153,7 @@ export const SingleSelect = <T,>(props: SingleSelectProps<T>): JSX.Element => {
         >
           <For each={props.items}>
             {(item) => (
-              <Button color="text" size="medium" full onClick={() => handleSelect(item)}>
+              <Button color="text" size="medium" full onClick={() => handleSelect(item)} type="button">
                 {item.title}
               </Button>
             )}

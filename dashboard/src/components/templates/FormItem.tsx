@@ -4,7 +4,7 @@ import { ParentComponent, Show } from 'solid-js'
 import { TooltipProps } from '../UI/ToolTip'
 import { TooltipInfoIcon } from '../UI/TooltipInfoIcon'
 
-const Container = styled('label', {
+const Container = styled('div', {
   base: {
     width: '100%',
     display: 'flex',

@@ -1,6 +1,7 @@
 import { colorVars, textVars } from '/@/theme'
 import { styled } from '@macaron-css/solid'
 import { Component, JSX, Show, splitProps } from 'solid-js'
+import { ToolTip, TooltipProps } from './ToolTip'
 
 const Container = styled('div', {
   base: {
@@ -97,28 +98,31 @@ export interface Props extends JSX.InputHTMLAttributes<HTMLInputElement> {
   leftIcon?: JSX.Element
   rightIcon?: JSX.Element
   ref?: HTMLInputElement | ((ref: HTMLInputElement) => void)
+  tooltip?: TooltipProps
 }
 
 export const TextInput: Component<Props> = (props) => {
-  const [addedProps, originalProps] = splitProps(props, ['helpText', 'leftIcon', 'rightIcon', 'ref'])
+  const [addedProps, originalProps] = splitProps(props, ['helpText', 'leftIcon', 'rightIcon', 'ref', 'tooltip'])
 
   return (
     <Container>
-      <InputContainer>
-        <StyledInput
-          hasLeftIcon={addedProps.leftIcon !== undefined}
-          hasRightIcon={addedProps.rightIcon !== undefined}
-          {...originalProps}
-          type={originalProps.type ?? 'text'}
-          ref={addedProps.ref}
-        />
-        <Show when={addedProps.leftIcon}>
-          <LeftIcon>{addedProps.leftIcon}</LeftIcon>
-        </Show>
-        <Show when={addedProps.rightIcon}>
-          <RightIcon>{addedProps.rightIcon}</RightIcon>
-        </Show>
-      </InputContainer>
+      <ToolTip {...addedProps.tooltip}>
+        <InputContainer>
+          <StyledInput
+            hasLeftIcon={addedProps.leftIcon !== undefined}
+            hasRightIcon={addedProps.rightIcon !== undefined}
+            {...originalProps}
+            type={originalProps.type ?? 'text'}
+            ref={addedProps.ref}
+          />
+          <Show when={addedProps.leftIcon}>
+            <LeftIcon>{addedProps.leftIcon}</LeftIcon>
+          </Show>
+          <Show when={addedProps.rightIcon}>
+            <RightIcon>{addedProps.rightIcon}</RightIcon>
+          </Show>
+        </InputContainer>
+      </ToolTip>
       <Show when={addedProps.helpText}>
         <HelpText>{addedProps.helpText}</HelpText>
       </Show>

@@ -2,12 +2,14 @@ import {
   Application,
   Application_ContainerState,
   BuildStatus,
+  CreateWebsiteRequest,
   DeployType,
   PortPublicationProtocol,
   Website,
 } from '/@/api/neoshowcase/protobuf/gateway_pb'
 import { Provider } from '/@/components/RepositoryRow'
 import { colorVars, vars } from '/@/theme'
+import { PlainMessage } from '@bufbuild/protobuf'
 import { AiFillGithub, AiFillGitlab } from 'solid-icons/ai'
 import { SiGitea } from 'solid-icons/si'
 import { JSXElement } from 'solid-js'
@@ -103,7 +105,7 @@ export const providerToIcon = (provider: Provider, size = 20): JSXElement => {
   }
 }
 
-export const getWebsiteURL = (website: Website): string => {
+export const getWebsiteURL = (website: PlainMessage<Website | CreateWebsiteRequest>): string => {
   const scheme = website.https ? 'https' : 'http'
   return `${scheme}://${website.fqdn}${website.pathPrefix}`
 }
