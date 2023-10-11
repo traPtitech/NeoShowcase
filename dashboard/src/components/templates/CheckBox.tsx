@@ -7,17 +7,17 @@ import { ToolTip, TooltipProps } from '../UI/ToolTip'
 
 const Container = styled('div', {
   base: {
-    width: 'fit-content',
-    display: 'flex',
-    flexWrap: 'wrap',
+    width: 'auto',
+    maxWidth: '100%',
+    display: 'grid',
+    gridTemplateColumns: 'repeat(auto-fill, 200px)',
     gap: '16px',
   },
 })
 
 const Button = styled('button', {
   base: {
-    width: 'fit-content',
-    minWidth: '200px',
+    width: '100%',
     padding: '16px',
     display: 'grid',
     gridTemplateColumns: '1fr 20px',
@@ -67,6 +67,7 @@ const Option: Component<Props> = (props) => {
         //ボタンがdisabledの時もTippy.jsのtooltipが表示されるようにするためのラッパー
         style={{
           width: 'fit-content',
+          'min-width': 'min(200px, 100%)',
         }}
       >
         <Button
