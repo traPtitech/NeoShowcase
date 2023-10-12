@@ -86,37 +86,37 @@ const RuntimeConfigs: Component<RuntimeConfigProps> = (props) => {
             </CheckBox.Container>
           </ToolTip>
         </FormItem>
-        <FormItem
-          title="Entrypoint"
-          tooltip={{
-            props: {
-              content: '(Advanced) コンテナのEntrypoint',
-            },
-          }}
-        >
-          <TextInput
-            value={props.runtimeConfig?.entrypoint}
-            onInput={(e) => {
-              props.setRuntimeConfig('entrypoint', e.target.value)
-            }}
-          />
-        </FormItem>
-        <FormItem
-          title="Command"
-          tooltip={{
-            props: {
-              content: '(Advanced) コンテナのCommand',
-            },
-          }}
-        >
-          <TextInput
-            value={props.runtimeConfig?.command}
-            onInput={(e) => {
-              props.setRuntimeConfig('command', e.target.value)
-            }}
-          />
-        </FormItem>
       </Show>
+      <FormItem
+        title="Entrypoint"
+        tooltip={{
+          props: {
+            content: '(Advanced) コンテナのEntrypoint',
+          },
+        }}
+      >
+        <TextInput
+          value={props.runtimeConfig?.entrypoint}
+          onInput={(e) => {
+            props.setRuntimeConfig('entrypoint', e.target.value)
+          }}
+        />
+      </FormItem>
+      <FormItem
+        title="Command"
+        tooltip={{
+          props: {
+            content: '(Advanced) コンテナのCommand',
+          },
+        }}
+      >
+        <TextInput
+          value={props.runtimeConfig?.command}
+          onInput={(e) => {
+            props.setRuntimeConfig('command', e.target.value)
+          }}
+        />
+      </FormItem>
     </>
   )
 }
