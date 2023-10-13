@@ -3,6 +3,8 @@ package k8simpl
 import (
 	"context"
 	"fmt"
+	"github.com/traPtitech/neoshowcase/pkg/util/fmtutil"
+	"time"
 
 	"github.com/friendsofgo/errors"
 	"github.com/samber/lo"
@@ -63,10 +65,10 @@ func getContainerState(status v1.PodStatus) (state domain.ContainerState, messag
 		if cs.LastTerminationState.Terminated != nil {
 			return domain.ContainerStateRestarting, terminatedMessage(cs.LastTerminationState.Terminated)
 		}
-		return domain.ContainerStateStarting, ""
+		return domain.ContainerStateStarting, waitingMessage(cs.State.Waiting)
 	}
 	if cs.State.Running != nil {
-		return domain.ContainerStateRunning, ""
+		return domain.ContainerStateRunning, runningMessage(cs.State.Running)
 	}
 	if cs.State.Terminated != nil {
 		if cs.State.Terminated.ExitCode == 0 {
@@ -75,7 +77,21 @@ func getContainerState(status v1.PodStatus) (state domain.ContainerState, messag
 			return domain.ContainerStateErrored, terminatedMessage(cs.State.Terminated)
 		}
 	}
-	return domain.ContainerStateUnknown, ""
+	return domain.ContainerStateUnknown, "internal error: state unknown"
+}
+
+func waitingMessage(state *v1.ContainerStateWaiting) string {
+	msg := state.Reason
+	if state.Message != "" {
+		msg += ": "
+		msg += state.Message
+	}
+	return msg
+}
+
+func runningMessage(state *v1.ContainerStateRunning) string {
+	runningFor := time.Since(state.StartedAt.Time)
+	return "Running for " + fmtutil.DurationHuman(runningFor)
 }
 
 func terminatedMessage(state *v1.ContainerStateTerminated) string {
