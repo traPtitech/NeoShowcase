@@ -8,7 +8,7 @@ const Container = styled('div', {
     gap: '48px',
 
     '@media': {
-      'screen and (max-width: 768px)': {
+      'screen and (max-width: 1024px)': {
         gridTemplateColumns: '1fr',
         gridTemplateRows: 'auto auto',
         gap: '24px',
