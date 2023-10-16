@@ -38,12 +38,14 @@ type Integration struct {
 	cancel       func()
 
 	gitRepo  domain.GitRepositoryRepository
+	appRepo  domain.ApplicationRepository
 	userRepo domain.UserRepository
 }
 
 func NewIntegration(
 	c Config,
 	gitRepo domain.GitRepositoryRepository,
+	appRepo domain.ApplicationRepository,
 	userRepo domain.UserRepository,
 ) (*Integration, error) {
 	if err := c.Validate(); err != nil {
@@ -65,6 +67,7 @@ func NewIntegration(
 		listInterval: time.Duration(c.ListIntervalMs) * time.Millisecond,
 
 		gitRepo:  gitRepo,
+		appRepo:  appRepo,
 		userRepo: userRepo,
 	}, nil
 }
