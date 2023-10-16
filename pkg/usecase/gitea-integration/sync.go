@@ -188,7 +188,7 @@ func (i *Integration) syncApplication(ctx context.Context, app *domain.Applicati
 	allOwnersAdded := lo.EveryBy(giteaOwnerIDs, func(ownerID string) bool { return slices.Contains(app.OwnerIDs, ownerID) })
 	if !allOwnersAdded {
 		newOwners := ds.UniqMergeSlice(app.OwnerIDs, giteaOwnerIDs)
-		log.Infof("Syncing application %v (id: %v) owners, %v users -> %v users", app.Name, app.ID, len(app.OwnerIDs), newOwners)
+		log.Infof("Syncing application %v (id: %v) owners, %v users -> %v users", app.Name, app.ID, len(app.OwnerIDs), len(newOwners))
 		err := i.appRepo.UpdateApplication(ctx, app.ID, &domain.UpdateApplicationArgs{OwnerIDs: optional.From(newOwners)})
 		if err != nil {
 			return err
