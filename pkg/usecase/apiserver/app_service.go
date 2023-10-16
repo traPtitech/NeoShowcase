@@ -53,8 +53,15 @@ func (s *Service) validateApp(ctx context.Context, app *domain.Application) erro
 }
 
 func (s *Service) CreateApplication(ctx context.Context, app *domain.Application) (*domain.Application, error) {
+	// Fill owners field
+	repo, err := s.gitRepo.GetRepository(ctx, app.RepositoryID)
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to get repository metadata")
+	}
+	app.OwnerIDs = repo.OwnerIDs
+
 	// Validate
-	err := s.validateApp(ctx, app)
+	err = s.validateApp(ctx, app)
 	if err != nil {
 		return nil, err
 	}
