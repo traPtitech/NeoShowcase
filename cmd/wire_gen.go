@@ -310,8 +310,9 @@ func NewGiteaIntegration(c Config) (component, error) {
 		return nil, err
 	}
 	gitRepositoryRepository := repository.NewGitRepositoryRepository(db)
+	applicationRepository := repository.NewApplicationRepository(db)
 	userRepository := repository.NewUserRepository(db)
-	integration, err := giteaintegration.NewIntegration(giteaintegrationConfig, gitRepositoryRepository, userRepository)
+	integration, err := giteaintegration.NewIntegration(giteaintegrationConfig, gitRepositoryRepository, applicationRepository, userRepository)
 	if err != nil {
 		return nil, err
 	}
