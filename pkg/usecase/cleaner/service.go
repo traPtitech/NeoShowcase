@@ -3,7 +3,6 @@ package cleaner
 import (
 	"context"
 	"fmt"
-	"strings"
 	"sync"
 	"time"
 
@@ -97,20 +96,11 @@ func (c *cleanerService) pruneImages(ctx context.Context, r *regclient.RegClient
 	if err != nil {
 		return err
 	}
-	appsMap := lo.SliceToMap(applications, func(app *domain.Application) (string, *domain.Application) { return app.ID, app })
 
-	repos, err := regutil.RepoList(ctx, r, regHost)
-	if err != nil {
-		return errors.Wrap(err, "failed to get image repositories")
-	}
-
-	for _, imageName := range repos {
-		if !strings.HasPrefix(imageName, c.image.NamePrefix) {
-			continue
-		}
-		err = c.pruneImage(ctx, r, regHost, imageName, appsMap)
+	for _, app := range applications {
+		err = c.pruneImage(ctx, r, regHost, c.image.NamePrefix, app)
 		if err != nil {
-			log.Errorf("pruning image %v: %+v", imageName, err)
+			log.Errorf("pruning image %v: %+v", c.image.NamePrefix+app.ID, err)
 			// fail-safe for each image
 		}
 	}
@@ -118,27 +108,21 @@ func (c *cleanerService) pruneImages(ctx context.Context, r *regclient.RegClient
 	return nil
 }
 
-func (c *cleanerService) pruneImage(ctx context.Context, r *regclient.RegClient, regHost string, imageName string, appsMap map[string]*domain.Application) error {
-	appID := strings.TrimPrefix(imageName, c.image.NamePrefix)
-
+func (c *cleanerService) pruneImage(ctx context.Context, r *regclient.RegClient, regHost string, imagePrefix string, app *domain.Application) error {
+	imageName := imagePrefix + app.ID
 	tags, err := regutil.TagList(ctx, r, regHost, imageName)
 	if err != nil {
 		return errors.Wrap(err, "getting tags")
 	}
-	app, ok := appsMap[appID]
-	var danglingTags []string
-	if ok {
-		// app still exists; compare by queued_at time, then delete any older builds
-		olderBuilds, err := c.getOlderBuilds(ctx, app.ID, app.CurrentBuild)
-		if err != nil {
-			return err
-		}
-		olderBuildIDs := ds.Map(olderBuilds, func(b *domain.Build) string { return b.ID })
-		danglingTags = lo.Filter(tags, func(tag string, _ int) bool { return lo.Contains(olderBuildIDs, tag) })
-	} else {
-		// app was deleted
-		danglingTags = tags
+
+	// compare by queued_at time, then delete any older builds
+	olderBuilds, err := c.getOlderBuilds(ctx, app.ID, app.CurrentBuild)
+	if err != nil {
+		return err
 	}
+	olderBuildIDs := ds.Map(olderBuilds, func(b *domain.Build) string { return b.ID })
+	danglingTags := lo.Filter(tags, func(tag string, _ int) bool { return lo.Contains(olderBuildIDs, tag) })
+
 	for _, tag := range danglingTags {
 		// NOTE: needs manual execution of "registry garbage-collect <config> --delete-untagged" in docker registry side
 		// to actually delete the layers
