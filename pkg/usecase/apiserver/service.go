@@ -2,6 +2,8 @@ package apiserver
 
 import (
 	"context"
+	"github.com/regclient/regclient"
+	"github.com/traPtitech/neoshowcase/pkg/domain/builder"
 
 	"github.com/friendsofgo/errors"
 	"github.com/go-git/go-git/v5/plumbing/transport/ssh"
@@ -35,6 +37,8 @@ type Service struct {
 	containerLogger domain.ContainerLogger
 	controller      domain.ControllerServiceClient
 	fallbackKey     *ssh.PublicKeys
+	image           builder.ImageConfig
+	registry        *regclient.RegClient
 
 	systemInfo func(ctx context.Context) (*domain.SystemInfo, error)
 	tmpKeys    *tmpKeyPairService
@@ -53,6 +57,7 @@ func NewService(
 	metricsService domain.MetricsService,
 	containerLogger domain.ContainerLogger,
 	controller domain.ControllerServiceClient,
+	image builder.ImageConfig,
 	fallbackKey *ssh.PublicKeys,
 ) (*Service, error) {
 	return &Service{
@@ -69,6 +74,8 @@ func NewService(
 		containerLogger: containerLogger,
 		controller:      controller,
 		fallbackKey:     fallbackKey,
+		image:           image,
+		registry:        image.NewRegistry(),
 
 		systemInfo: scutil.Once(controller.GetSystemInfo),
 		tmpKeys:    newTmpKeyPairService(),

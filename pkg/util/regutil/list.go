@@ -27,7 +27,7 @@ func RepoList(ctx context.Context, r *regclient.RegClient, regHost string) ([]st
 	}
 }
 
-func TagList(ctx context.Context, r *regclient.RegClient, regHost string, imageName string) ([]string, error) {
+func TagList(ctx context.Context, r *regclient.RegClient, imageName string) ([]string, error) {
 	const limit = 100
 	var tags []string
 	for {
@@ -35,7 +35,7 @@ func TagList(ctx context.Context, r *regclient.RegClient, regHost string, imageN
 		if len(tags) > 0 {
 			opts = append(opts, scheme.WithTagLast(tags[len(tags)-1]))
 		}
-		repoRef, err := ref.New(regHost + "/" + imageName)
+		repoRef, err := ref.New(imageName)
 		if err != nil {
 			return nil, err
 		}
