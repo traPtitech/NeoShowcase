@@ -59,7 +59,7 @@ func NewService(
 	c.start = func() {
 		go loop.Loop(ctx, func(ctx context.Context) {
 			start := time.Now()
-			err := c.pruneImages(ctx, r, image.Registry.Addr)
+			err := c.pruneImages(ctx, r)
 			if err != nil {
 				log.Errorf("failed to prune images: %+v", err)
 				return
@@ -91,14 +91,14 @@ func (c *cleanerService) Shutdown(_ context.Context) error {
 	return nil
 }
 
-func (c *cleanerService) pruneImages(ctx context.Context, r *regclient.RegClient, regHost string) error {
+func (c *cleanerService) pruneImages(ctx context.Context, r *regclient.RegClient) error {
 	applications, err := c.appRepo.GetApplications(ctx, domain.GetApplicationCondition{DeployType: optional.From(domain.DeployTypeRuntime)})
 	if err != nil {
 		return err
 	}
 
 	for _, app := range applications {
-		err = c.pruneImage(ctx, r, regHost, c.image.NamePrefix, app)
+		err = c.pruneImage(ctx, r, app)
 		if err != nil {
 			log.Errorf("pruning image %v: %+v", c.image.NamePrefix+app.ID, err)
 			// fail-safe for each image
@@ -108,9 +108,9 @@ func (c *cleanerService) pruneImages(ctx context.Context, r *regclient.RegClient
 	return nil
 }
 
-func (c *cleanerService) pruneImage(ctx context.Context, r *regclient.RegClient, regHost string, imagePrefix string, app *domain.Application) error {
-	imageName := imagePrefix + app.ID
-	tags, err := regutil.TagList(ctx, r, regHost, imageName)
+func (c *cleanerService) pruneImage(ctx context.Context, r *regclient.RegClient, app *domain.Application) error {
+	imageName := c.image.ImageName(app.ID)
+	tags, err := regutil.TagList(ctx, r, imageName)
 	if err != nil {
 		return errors.Wrap(err, "getting tags")
 	}
@@ -127,7 +127,7 @@ func (c *cleanerService) pruneImage(ctx context.Context, r *regclient.RegClient,
 		// NOTE: needs manual execution of "registry garbage-collect <config> --delete-untagged" in docker registry side
 		// to actually delete the layers
 		// https://docs.docker.com/registry/garbage-collection/
-		tagRef, err := ref.New(regHost + "/" + imageName + ":" + tag)
+		tagRef, err := ref.New(imageName + ":" + tag)
 		if err != nil {
 			return err
 		}

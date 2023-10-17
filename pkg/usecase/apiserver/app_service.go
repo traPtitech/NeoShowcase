@@ -3,6 +3,8 @@ package apiserver
 import (
 	"context"
 	"fmt"
+	"github.com/regclient/regclient/types/ref"
+	"github.com/traPtitech/neoshowcase/pkg/util/regutil"
 	"strconv"
 
 	"github.com/friendsofgo/errors"
@@ -274,7 +276,31 @@ func (s *Service) deleteApplicationDatabase(ctx context.Context, app *domain.App
 	return nil
 }
 
+func (s *Service) deleteApplicationImages(ctx context.Context, app *domain.Application) error {
+	if app.DeployType != domain.DeployTypeRuntime {
+		return nil
+	}
+
+	imageName := s.image.ImageName(app.ID)
+	tags, err := regutil.TagList(ctx, s.registry, imageName)
+	if err != nil {
+		return err
+	}
+	for _, tag := range tags {
+		tagRef, err := ref.New(imageName + ":" + tag)
+		if err != nil {
+			return err
+		}
+		err = s.registry.TagDelete(ctx, tagRef)
+		if err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
 func (s *Service) DeleteApplication(ctx context.Context, id string) error {
+	// Validate
 	err := s.isApplicationOwner(ctx, id)
 	if err != nil {
 		return err
@@ -288,6 +314,7 @@ func (s *Service) DeleteApplication(ctx context.Context, id string) error {
 		return newError(ErrorTypeBadRequest, "stop the application first before deleting", nil)
 	}
 
+	// Delete app database
 	env, err := s.envRepo.GetEnv(ctx, domain.GetEnvCondition{ApplicationID: optional.From(id)})
 	if err != nil {
 		return err
@@ -296,6 +323,13 @@ func (s *Service) DeleteApplication(ctx context.Context, id string) error {
 	if err != nil {
 		return err
 	}
+	// Delete runtime app image in background
+	go func() {
+		err := s.deleteApplicationImages(context.WithoutCancel(ctx), app)
+		if err != nil {
+			log.Errorf("Deleting application %v (id: %v) image: %+v", app.Name, app.ID, err)
+		}
+	}()
 
 	// delete artifacts
 	artifacts, err := s.artifactRepo.GetArtifacts(ctx, domain.GetArtifactCondition{ApplicationID: optional.From(app.ID)})
