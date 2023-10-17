@@ -145,32 +145,6 @@ func (s *Service) createApplicationDatabase(ctx context.Context, app *domain.App
 	return nil
 }
 
-func (s *Service) deleteApplicationDatabase(ctx context.Context, app *domain.Application, envs []*domain.Environment) error {
-	if app.Config.BuildConfig.MariaDB() {
-		dbKey, ok := lo.Find(envs, func(e *domain.Environment) bool { return e.Key == domain.EnvMariaDBDatabaseKey })
-		if !ok {
-			return errors.New("failed to find mariadb name from env key")
-		}
-		err := s.mariaDBManager.Delete(ctx, domain.DeleteArgs{Database: dbKey.Value})
-		if err != nil {
-			return err
-		}
-	}
-
-	if app.Config.BuildConfig.MongoDB() {
-		dbKey, ok := lo.Find(envs, func(e *domain.Environment) bool { return e.Key == domain.EnvMongoDBDatabaseKey })
-		if !ok {
-			return errors.New("failed to find mongodb name from env key")
-		}
-		err := s.mongoDBManager.Delete(ctx, domain.DeleteArgs{Database: dbKey.Value})
-		if err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
 type TopAppInfo struct {
 	App         *domain.Application
 	LatestBuild *domain.Build
@@ -269,6 +243,32 @@ func (s *Service) UpdateApplication(ctx context.Context, id string, args *domain
 	err = s.controller.SyncDeployments(ctx)
 	if err != nil {
 		return errors.Wrap(err, "requesting sync deployments")
+	}
+
+	return nil
+}
+
+func (s *Service) deleteApplicationDatabase(ctx context.Context, app *domain.Application, envs []*domain.Environment) error {
+	if app.Config.BuildConfig.MariaDB() {
+		dbKey, ok := lo.Find(envs, func(e *domain.Environment) bool { return e.Key == domain.EnvMariaDBDatabaseKey })
+		if !ok {
+			return errors.New("failed to find mariadb name from env key")
+		}
+		err := s.mariaDBManager.Delete(ctx, domain.DeleteArgs{Database: dbKey.Value})
+		if err != nil {
+			return err
+		}
+	}
+
+	if app.Config.BuildConfig.MongoDB() {
+		dbKey, ok := lo.Find(envs, func(e *domain.Environment) bool { return e.Key == domain.EnvMongoDBDatabaseKey })
+		if !ok {
+			return errors.New("failed to find mongodb name from env key")
+		}
+		err := s.mongoDBManager.Delete(ctx, domain.DeleteArgs{Database: dbKey.Value})
+		if err != nil {
+			return err
+		}
 	}
 
 	return nil
