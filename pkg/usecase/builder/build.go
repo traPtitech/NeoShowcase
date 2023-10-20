@@ -213,10 +213,8 @@ func (s *builderService) process(ctx context.Context, st *state) domain.BuildSta
 			return domain.BuildStatusCanceled
 		}
 		if err != nil {
-			msg := fmt.Sprintf("%+v", err)
-			log.Error(msg)
-			st.WriteLog("[ns-builder] Build failed:")
-			st.WriteLog(msg)
+			log.Errorf("Build failed for %v: %+v", st.build.ID, err)
+			st.WriteLog(fmt.Sprintf("[ns-builder] Build failed: %v", err))
 			return domain.BuildStatusFailed
 		}
 		st.WriteLog(fmt.Sprintf("[ns-builder] ==> (%d/%d) Done (%v).", i+1, len(steps), time.Since(start)))
