@@ -53,13 +53,11 @@ func NewService(
 		storage:      storage,
 	}
 
-	r := image.NewRegistry()
-
 	ctx, cancel := context.WithCancel(context.Background())
 	c.start = func() {
 		go loop.Loop(ctx, func(ctx context.Context) {
 			start := time.Now()
-			err := c.pruneImages(ctx, r)
+			err := c.pruneImages(ctx)
 			if err != nil {
 				log.Errorf("failed to prune images: %+v", err)
 				return
@@ -91,13 +89,14 @@ func (c *cleanerService) Shutdown(_ context.Context) error {
 	return nil
 }
 
-func (c *cleanerService) pruneImages(ctx context.Context, r *regclient.RegClient) error {
+func (c *cleanerService) pruneImages(ctx context.Context) error {
 	applications, err := c.appRepo.GetApplications(ctx, domain.GetApplicationCondition{DeployType: optional.From(domain.DeployTypeRuntime)})
 	if err != nil {
 		return err
 	}
 
 	for _, app := range applications {
+		r := c.image.NewRegistry()
 		err = c.pruneImage(ctx, r, app)
 		if err != nil {
 			log.Errorf("pruning image %v: %+v", c.image.NamePrefix+app.ID, err)

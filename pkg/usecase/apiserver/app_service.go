@@ -281,8 +281,9 @@ func (s *Service) deleteApplicationImages(ctx context.Context, app *domain.Appli
 		return nil
 	}
 
+	r := s.image.NewRegistry()
 	imageName := s.image.ImageName(app.ID)
-	tags, err := regutil.TagList(ctx, s.registry, imageName)
+	tags, err := regutil.TagList(ctx, r, imageName)
 	if err != nil {
 		return err
 	}
@@ -291,7 +292,7 @@ func (s *Service) deleteApplicationImages(ctx context.Context, app *domain.Appli
 		if err != nil {
 			return err
 		}
-		err = s.registry.TagDelete(ctx, tagRef)
+		err = r.TagDelete(ctx, tagRef)
 		if err != nil {
 			return err
 		}

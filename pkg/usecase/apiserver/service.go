@@ -2,13 +2,12 @@ package apiserver
 
 import (
 	"context"
-	"github.com/regclient/regclient"
-	"github.com/traPtitech/neoshowcase/pkg/domain/builder"
 
 	"github.com/friendsofgo/errors"
 	"github.com/go-git/go-git/v5/plumbing/transport/ssh"
 
 	"github.com/traPtitech/neoshowcase/pkg/domain"
+	"github.com/traPtitech/neoshowcase/pkg/domain/builder"
 	"github.com/traPtitech/neoshowcase/pkg/domain/web"
 	"github.com/traPtitech/neoshowcase/pkg/infrastructure/repository"
 	"github.com/traPtitech/neoshowcase/pkg/util/scutil"
@@ -38,7 +37,6 @@ type Service struct {
 	controller      domain.ControllerServiceClient
 	fallbackKey     *ssh.PublicKeys
 	image           builder.ImageConfig
-	registry        *regclient.RegClient
 
 	systemInfo func(ctx context.Context) (*domain.SystemInfo, error)
 	tmpKeys    *tmpKeyPairService
@@ -75,7 +73,6 @@ func NewService(
 		controller:      controller,
 		fallbackKey:     fallbackKey,
 		image:           image,
-		registry:        image.NewRegistry(),
 
 		systemInfo: scutil.Once(controller.GetSystemInfo),
 		tmpKeys:    newTmpKeyPairService(),

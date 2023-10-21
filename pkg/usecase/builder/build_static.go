@@ -49,5 +49,6 @@ func (s *builderService) buildStaticCleanup(
 	if err != nil {
 		return err
 	}
-	return s.registry.TagDelete(ctx, tagRef)
+	r := s.config.NewRegistry()
+	return r.TagDelete(ctx, tagRef)
 }

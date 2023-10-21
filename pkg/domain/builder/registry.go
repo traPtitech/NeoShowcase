@@ -16,6 +16,12 @@ type ImageConfig struct {
 	TmpNamePrefix string `mapstructure:"tmpNamePrefix" yaml:"tmpNamePrefix"`
 }
 
+// NewRegistry generates a new regclient instance.
+//
+// NOTE: should generate a new instance for each image repository access,
+// because it internally stores JWT scopes for each repository it accesses.
+// Accessing large number of repositories with a single regclient instance
+// will result in a bloating "Authorization" header.
 func (c *ImageConfig) NewRegistry() *regclient.RegClient {
 	var opts []regclient.Opt
 
