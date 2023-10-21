@@ -151,6 +151,10 @@ func (w *Website) Validate() error {
 	return nil
 }
 
+func (w *Website) Normalize() {
+	w.FQDN = strings.ToLower(w.FQDN)
+}
+
 func (w *Website) pathComponents() []string {
 	// NOTE: empty PathPrefix must not exist
 	if w.PathPrefix == "/" {

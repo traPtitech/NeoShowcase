@@ -62,6 +62,9 @@ func (s *Service) CreateApplication(ctx context.Context, app *domain.Application
 	}
 	app.OwnerIDs = repo.OwnerIDs
 
+	for _, website := range app.Websites {
+		website.Normalize()
+	}
 	// Validate
 	err = s.validateApp(ctx, app)
 	if err != nil {
@@ -213,6 +216,9 @@ func (s *Service) UpdateApplication(ctx context.Context, id string, args *domain
 	}
 	app.Apply(args)
 
+	for _, website := range app.Websites {
+		website.Normalize()
+	}
 	// Validate
 	if err = s.validateApp(ctx, app); err != nil {
 		return err
