@@ -1,138 +1,20 @@
 import { Application, Repository, UpdateApplicationRequest } from '/@/api/neoshowcase/protobuf/gateway_pb'
 import { Button } from '/@/components/UI/Button'
-import { TextInput } from '/@/components/UI/TextInput'
 import { DataTable } from '/@/components/layouts/DataTable'
 import FormBox from '/@/components/layouts/FormBox'
 import { FormItem } from '/@/components/templates/FormItem'
-import { ComboBox } from '/@/components/templates/Select'
+import { GeneralConfig } from '/@/components/templates/GeneralConfig'
 import { client, handleAPIError } from '/@/libs/api'
 import { providerToIcon, repositoryURLToProvider } from '/@/libs/application'
-import { useBranchesSuggestion } from '/@/libs/branchesSuggestion'
 import useModal from '/@/libs/useModal'
 import { useApplicationData } from '/@/routes'
 import { colorVars, textVars } from '/@/theme'
 import { PlainMessage } from '@bufbuild/protobuf'
 import { styled } from '@macaron-css/solid'
 import { useNavigate } from '@solidjs/router'
-import { Component, Show, createEffect } from 'solid-js'
+import { Component, Show } from 'solid-js'
 import { createStore } from 'solid-js/store'
 import toast from 'solid-toast'
-
-const GeneralConfig: Component<{
-  app: Application
-  refetchApp: () => void
-  repo: Repository
-}> = (props) => {
-  let formRef: HTMLFormElement
-
-  const [updateReq, setUpdateReq] = createStore<PlainMessage<UpdateApplicationRequest>>({
-    id: props.app.id,
-    name: props.app.name,
-    repositoryId: props.app.repositoryId,
-    refName: props.app.refName,
-  })
-  const discardChanges = () => {
-    setUpdateReq({
-      name: props.app.name,
-      repositoryId: props.app.repositoryId,
-      refName: props.app.refName,
-    })
-  }
-  const configChanged = () =>
-    props.app.name !== updateReq.name ||
-    props.app.repositoryId !== updateReq.repositoryId ||
-    props.app.refName !== updateReq.refName
-  const branchesSuggestion = useBranchesSuggestion(
-    () => props.repo.id,
-    () => updateReq.refName,
-  )
-
-  const saveChanges = async () => {
-    try {
-      // validate form
-      if (!formRef.reportValidity()) {
-        return
-      }
-      await client.updateApplication(updateReq)
-      toast.success('アプリケーション設定を更新しました')
-      props.refetchApp()
-    } catch (e) {
-      handleAPIError(e, 'アプリケーション設定の更新に失敗しました')
-    }
-  }
-
-  return (
-    <>
-      <FormBox.Container ref={formRef}>
-        <FormBox.Forms>
-          <FormItem title="Application Name" required>
-            <TextInput
-              required
-              value={updateReq.name}
-              onInput={(e) => {
-                setUpdateReq('name', e.target.value)
-              }}
-            />
-          </FormItem>
-          <FormItem
-            title="Repository ID"
-            required
-            tooltip={{
-              props: {
-                content: 'リポジトリを移管する場合はIDを変更',
-              },
-            }}
-          >
-            <TextInput
-              required
-              value={updateReq.repositoryId}
-              onInput={(e) => {
-                setUpdateReq('repositoryId', e.target.value)
-              }}
-            />
-          </FormItem>
-          <FormItem
-            title="Branch"
-            required
-            tooltip={{
-              props: {
-                content: (
-                  <>
-                    <div>Gitブランチ名またはRef</div>
-                    <div>入力欄をクリックして候補を表示</div>
-                  </>
-                ),
-              },
-            }}
-          >
-            <ComboBox
-              required
-              value={updateReq.refName}
-              onInput={(e) => setUpdateReq('refName', e.target.value)}
-              items={branchesSuggestion().map((branch) => ({
-                title: branch,
-                value: branch,
-              }))}
-              setSelected={(branch) => {
-                setUpdateReq('refName', branch)
-              }}
-            />
-          </FormItem>
-        </FormBox.Forms>
-        <FormBox.Actions>
-          <Show when={configChanged()}>
-            <Button color="borderError" size="small" onClick={discardChanges} type="button">
-              Discard Changes
-            </Button>
-          </Show>
-          <Button color="primary" size="small" onClick={saveChanges} type="button" disabled={!configChanged()}>
-            Save
-          </Button>
-        </FormBox.Actions>
-      </FormBox.Container>
-    </>
-  )
-}
 
 const DeleteAppNotice = styled('div', {
   base: {
@@ -210,11 +92,59 @@ const DeleteApp: Component<{
 export default () => {
   const { app, refetchApp, repo } = useApplicationData()
   const loaded = () => !!(app() && repo())
+
+  let formRef: HTMLFormElement
+  const [updateReq, setUpdateReq] = createStore<PlainMessage<UpdateApplicationRequest>>({
+    id: app()?.id,
+    name: app()?.name,
+    repositoryId: app()?.repositoryId,
+    refName: app()?.refName,
+  })
+  const discardChanges = () => {
+    setUpdateReq({
+      name: app()?.name,
+      repositoryId: app()?.repositoryId,
+      refName: app()?.refName,
+    })
+  }
+  const configChanged = () =>
+    app()?.name !== updateReq.name ||
+    app()?.repositoryId !== updateReq.repositoryId ||
+    app()?.refName !== updateReq.refName
+
+  const saveChanges = async () => {
+    try {
+      // validate form
+      if (!formRef.reportValidity()) {
+        return
+      }
+      await client.updateApplication(updateReq)
+      toast.success('アプリケーション設定を更新しました')
+      refetchApp()
+    } catch (e) {
+      handleAPIError(e, 'アプリケーション設定の更新に失敗しました')
+    }
+  }
+
   return (
     <DataTable.Container>
       <DataTable.Title>General</DataTable.Title>
       <Show when={loaded()}>
-        <GeneralConfig app={app()} refetchApp={refetchApp} repo={repo()} />
+        <FormBox.Container ref={formRef}>
+          <FormBox.Forms>
+            <GeneralConfig repo={repo()} config={updateReq} setConfig={setUpdateReq} editBranchId />
+          </FormBox.Forms>
+          <FormBox.Actions>
+            <Show when={configChanged()}>
+              <Button color="borderError" size="small" onClick={discardChanges} type="button">
+                Discard Changes
+              </Button>
+            </Show>
+            <Button color="primary" size="small" onClick={saveChanges} type="button" disabled={!configChanged()}>
+              Save
+            </Button>
+          </FormBox.Actions>
+        </FormBox.Container>
         <DeleteApp app={app()} repo={repo()} />
       </Show>
     </DataTable.Container>

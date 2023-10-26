@@ -1,99 +1,59 @@
 import {
+  Application,
   ApplicationConfig,
   CreateApplicationRequest,
-  CreateWebsiteRequest,
-  PortPublication,
+  DeployType,
+  Repository,
   RuntimeConfig,
 } from '/@/api/neoshowcase/protobuf/gateway_pb'
-import { FormCheckBox, FormTextBig } from '/@/components/AppsNew'
-import { BuildConfigMethod, BuildConfigs } from '/@/components/BuildConfigs'
-import { Button } from '/@/components/Button'
-import { Checkbox } from '/@/components/Checkbox'
-import { Header } from '/@/components/Header'
-import { InfoTooltip } from '/@/components/InfoTooltip'
-import { InputBar, InputLabel } from '/@/components/Input'
-import { InputSuggestion } from '/@/components/InputSuggestion'
-import { PortPublicationSettings } from '/@/components/PortPublications'
-import { RepositoryInfo } from '/@/components/RepositoryInfo'
-import { WebsiteSettings } from '/@/components/WebsiteSettings'
-import { client, handleAPIError } from '/@/libs/api'
-import { useBranchesSuggestion } from '/@/libs/branchesSuggestion'
-import { Container } from '/@/libs/layout'
-import { vars } from '/@/theme'
+import { Button } from '/@/components/UI/Button'
+import { MaterialSymbols } from '/@/components/UI/MaterialSymbols'
+import { Progress } from '/@/components/UI/StepProgress'
+import { MainViewContainer } from '/@/components/layouts/MainView'
+import { WithNav } from '/@/components/layouts/WithNav'
+import { BuildConfigs } from '/@/components/templates/BuildConfigs'
+import { CheckBox } from '/@/components/templates/CheckBox'
+import { FormItem } from '/@/components/templates/FormItem'
+import { GeneralConfig } from '/@/components/templates/GeneralConfig'
+import { List } from '/@/components/templates/List'
+import { Nav } from '/@/components/templates/Nav'
+import { WebsiteSetting, newWebsite } from '/@/components/templates/WebsiteSettings'
+import { client, handleAPIError, systemInfo } from '/@/libs/api'
+import { colorVars, textVars } from '/@/theme'
 import { PlainMessage } from '@bufbuild/protobuf'
 import { styled } from '@macaron-css/solid'
-import { A, useNavigate, useSearchParams } from '@solidjs/router'
-import { BsArrowLeftShort } from 'solid-icons/bs'
-import { JSX, Show, createResource } from 'solid-js'
+import { useNavigate, useSearchParams } from '@solidjs/router'
+import { Component, For, JSX, Match, Show, Switch, createResource, createSignal } from 'solid-js'
 import { createStore } from 'solid-js/store'
 import toast from 'solid-toast'
 
-const AppTitle = styled('div', {
+const Container = styled('div', {
   base: {
-    marginTop: '48px',
-    height: '46px',
-    lineHeight: '46px',
-
+    width: '100%',
     display: 'flex',
-    flexDirection: 'row',
+    flexDirection: 'column',
     alignItems: 'center',
-  },
-})
-
-const AppsTitle = styled('div', {
-  base: {
-    fontSize: '32px',
-    fontWeight: 700,
-    color: vars.text.black1,
-    display: 'flex',
-  },
-})
-
-const Arrow = styled('div', {
-  base: {
-    fontSize: '32px',
-    color: vars.text.black1,
-    display: 'flex',
-  },
-})
-
-const ContentContainer = styled('div', {
-  base: {
-    marginTop: '24px',
-    display: 'grid',
     gap: '40px',
   },
 })
-
-const MainContentContainer = styled('div', {
-  base: {
-    display: 'flex',
-    flexDirection: 'column',
-    gap: '20px',
-  },
-})
-
 const FormContainer = styled('form', {
   base: {
+    width: '100%',
+    padding: '24px',
     display: 'flex',
     flexDirection: 'column',
     gap: '20px',
 
-    background: vars.bg.white3,
-    border: `1px solid ${vars.bg.white4}`,
-    borderRadius: '4px',
-    padding: '8px 12px',
+    background: colorVars.semantic.ui.primary,
+    borderRadius: '8px',
   },
 })
 
-export default () => {
-  const navigate = useNavigate()
-  const [searchParams] = useSearchParams()
-
-  const [repo] = createResource(
-    () => searchParams.repositoryID,
-    (id) => client.getRepository({ repositoryId: id }),
-  )
+const GeneralStep: Component<{
+  repo: Repository
+  gotoNextStep: (appId: string) => void
+}> = (props) => {
+  let formContainer: HTMLFormElement
 
   const [buildConfig, setBuildConfig] = createStore<PlainMessage<ApplicationConfig>['buildConfig']>({
     case: 'runtimeBuildpack',
@@ -102,27 +62,15 @@ export default () => {
       runtimeConfig: structuredClone(new RuntimeConfig()),
     },
   })
-  const [websites, setWebsites] = createStore<PlainMessage<CreateWebsiteRequest>[]>([])
-  const [ports, setPorts] = createStore<PlainMessage<PortPublication>[]>([])
   const [request, setRequest] = createStore<PlainMessage<CreateApplicationRequest>>({
     name: '',
     refName: '',
-    repositoryId: searchParams.repositoryID,
+    repositoryId: props.repo.id,
     config: { buildConfig },
-    websites: websites,
-    portPublications: ports,
+    websites: [],
+    portPublications: [],
     startOnCreate: false,
   })
-
-  const branchesSuggestion = useBranchesSuggestion(
-    () => searchParams.repositoryID,
-    () => request.refName,
-  )
-
-  const isRuntime = () =>
-    (['runtimeBuildpack', 'runtimeCmd', 'runtimeDockerfile'] as BuildConfigMethod[]).includes(buildConfig.case)
-
-  let formContainer: HTMLFormElement
 
   const createApplication: JSX.EventHandler<HTMLButtonElement, MouseEvent> = async (e) => {
     // prevent default form submit (reload page)
@@ -134,113 +82,256 @@ export default () => {
     }
 
     try {
-      const res = await client.createApplication(request)
+      const createdApp = await client.createApplication(request)
       toast.success('アプリケーションを登録しました')
-      // Application詳細ページに遷移
-      navigate(`/apps/${res.id}`)
+      props.gotoNextStep(createdApp.id)
     } catch (e) {
       return handleAPIError(e, 'アプリケーションの登録に失敗しました')
     }
   }
 
-  const CreateApplicationSettingsInputForm = (): JSX.Element => {
-    return (
-      <ContentContainer>
-        <MainContentContainer>
-          <Show when={repo()}>
-            <RepositoryInfo repo={repo()} />
-          </Show>
+  return (
+    <Container>
+      <FormContainer ref={formContainer}>
+        <GeneralConfig repo={props.repo} config={request} setConfig={setRequest} />
+        <BuildConfigs buildConfig={buildConfig} setBuildConfig={setBuildConfig} disableEditDB={false} />
+        <FormItem
+          title="Start Immediately"
+          tooltip={{
+            props: {
+              content: (
+                <>
+                  <div>この設定で今すぐ起動するかどうか</div>
+                  <div>(環境変数はアプリ作成後設定可能になります)</div>
+                </>
+              ),
+            },
+          }}
+        >
+          <CheckBox.Option
+            checked={request.startOnCreate}
+            setChecked={(checked) => setRequest('startOnCreate', checked)}
+            title="今すぐ起動する"
+          />
+        </FormItem>
+      </FormContainer>
+      <Button
+        size="medium"
+        color="primary"
+        rightIcon={<MaterialSymbols>arrow_forward</MaterialSymbols>}
+        onClick={createApplication}
+      >
+        Next
+      </Button>
+    </Container>
+  )
+}
 
-          <FormContainer ref={formContainer}>
-            <div>
-              <InputLabel>Application Name</InputLabel>
-              <InputBar
-                placeholder="my-app"
-                value={request.name}
-                onInput={(e) => setRequest('name', e.target.value)}
-                required
-              />
-            </div>
+const DomainsContainer = styled('form', {
+  base: {
+    width: '100%',
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'center',
+    gap: '24px',
+  },
+})
+const ButtonsContainer = styled('div', {
+  base: {
+    display: 'flex',
+    gap: '20px',
+  },
+})
+const PlaceHolder = styled('div', {
+  base: {
+    width: '100%',
+    height: '400px',
+    display: 'flex',
+    flexDirection: 'column',
+    gap: '24px',
+    alignItems: 'center',
+    justifyContent: 'center',
 
-            <div>
-              <InputLabel>
-                Branch Name
-                <InfoTooltip tooltip={['Gitブランチ名またはRef', '入力欄をクリックして候補を表示']} />
-              </InputLabel>
-              <InputSuggestion suggestions={branchesSuggestion()} onSetSuggestion={(b) => setRequest('refName', b)}>
-                {(onFocus) => (
-                  <InputBar
-                    placeholder="main"
-                    value={request.refName}
-                    onInput={(e) => setRequest('refName', e.target.value)}
-                    onFocus={onFocus}
-                    required
-                  />
-                )}
-              </InputSuggestion>
-            </div>
+    color: colorVars.semantic.text.black,
+    ...textVars.h4.medium,
+  },
+})
 
-            <div>
-              <FormTextBig>Build Setting</FormTextBig>
-              <BuildConfigs setBuildConfig={setBuildConfig} buildConfig={buildConfig} />
-            </div>
+const WebsiteStep: Component<{
+  app: Application
+}> = (props) => {
+  const [websiteConfigs, setWebsiteConfigs] = createStore<WebsiteSetting[]>([])
 
-            <div>
-              <FormTextBig>
-                Website Setting
-                <InfoTooltip tooltip={['アプリへアクセスするURLの設定', '(複数設定可能)']} />
-              </FormTextBig>
-              <WebsiteSettings runtime={isRuntime()} websiteConfigs={websites} setWebsiteConfigs={setWebsites} />
-            </div>
+  const navigate = useNavigate()
+  const skipWebsiteConfig = () => {
+    navigate(`/apps/${props.app.id}`)
+  }
 
-            <Show when={isRuntime()}>
-              <div>
-                <FormTextBig>
-                  Port Forwarding
-                  <InfoTooltip tooltip={['(Advanced) TCP/UDPポート公開設定', '(複数設定可能)']} />
-                </FormTextBig>
-                <PortPublicationSettings ports={ports} setPorts={setPorts} />
-              </div>
-            </Show>
+  const addWebsite = () =>
+    setWebsiteConfigs([
+      ...websiteConfigs,
+      {
+        state: 'added',
+        website: newWebsite(),
+      },
+    ])
 
-            <div>
-              <InputLabel>
-                Start Immediately
-                <InfoTooltip
-                  tooltip={['この設定で今すぐ起動するかどうか', '(環境変数はアプリ作成後設定可能になります)']}
-                />
-              </InputLabel>
-              <FormCheckBox>
-                <Checkbox
-                  selected={request.startOnCreate}
-                  setSelected={(selected) => setRequest('startOnCreate', selected)}
-                >
-                  今すぐ起動する
-                </Checkbox>
-              </FormCheckBox>
-            </div>
-
-            <Button color="black1" size="large" width="auto" onclick={createApplication} type="submit">
-              + Create New Application
-            </Button>
-          </FormContainer>
-        </MainContentContainer>
-      </ContentContainer>
-    )
+  const saveWebsiteConfig = async () => {
+    try {
+      const websitesToSave = websiteConfigs.map((website) => website.website)
+      await client.updateApplication({
+        id: props.app.id,
+        websites: {
+          websites: websitesToSave,
+        },
+      })
+      toast.success('ウェブサイト設定を保存しました')
+      navigate(`/apps/${props.app.id}`)
+    } catch (e) {
+      handleAPIError(e, 'Failed to save website settings')
+    }
   }
 
   return (
-    <Container>
-      <Header />
-      <AppTitle>
-        <A href={'/apps'}>
-          <Arrow>
-            <BsArrowLeftShort />
-          </Arrow>
-        </A>
-        <AppsTitle>Create Application</AppsTitle>
-      </AppTitle>
-      <CreateApplicationSettingsInputForm />
-    </Container>
+    <Show when={systemInfo()}>
+      <Container>
+        <DomainsContainer>
+          <For
+            each={websiteConfigs}
+            fallback={
+              <List.Container>
+                <PlaceHolder>
+                  <MaterialSymbols displaySize={80}>link_off</MaterialSymbols>
+                  No Websites Configured
+                  <Button
+                    color="primary"
+                    size="medium"
+                    rightIcon={<MaterialSymbols>add</MaterialSymbols>}
+                    onClick={addWebsite}
+                  >
+                    Add Website
+                  </Button>
+                </PlaceHolder>
+              </List.Container>
+            }
+          >
+            {(config, i) => (
+              <WebsiteSetting
+                isRuntimeApp={props.app.deployType === DeployType.RUNTIME}
+                state={config.state}
+                website={config.website}
+                setWebsite={(valueName, value) => {
+                  setWebsiteConfigs(i(), 'website', valueName, value)
+                }}
+                deleteWebsite={() =>
+                  setWebsiteConfigs((current) => [...current.slice(0, i()), ...current.slice(i() + 1)])
+                }
+              />
+            )}
+          </For>
+          <Show when={websiteConfigs.length > 0}>
+            <Button
+              onclick={addWebsite}
+              color="border"
+              size="small"
+              type="button"
+              leftIcon={<MaterialSymbols opticalSize={20}>add</MaterialSymbols>}
+            >
+              Add More
+            </Button>
+          </Show>
+        </DomainsContainer>
+        <ButtonsContainer>
+          <Button
+            size="medium"
+            color="ghost"
+            rightIcon={<MaterialSymbols>skip_next</MaterialSymbols>}
+            onClick={skipWebsiteConfig}
+          >
+            Skip
+          </Button>
+          <Button size="medium" color="primary" onClick={saveWebsiteConfig}>
+            Save Website Config
+          </Button>
+        </ButtonsContainer>
+      </Container>
+    </Show>
+  )
+}
+
+const formStep = {
+  general: 0,
+  website: 1,
+} as const
+type FormStep = typeof formStep[keyof typeof formStep]
+
+export default () => {
+  const [searchParams] = useSearchParams()
+  const [currentStep, setCurrentStep] = createSignal<FormStep>(formStep.general)
+  const [appId, setAppId] = createSignal<string | undefined>(undefined)
+
+  const [repo] = createResource(
+    () => searchParams.repositoryID,
+    (id) => client.getRepository({ repositoryId: id }),
+  )
+  const [app] = createResource(
+    () => appId(),
+    (id) => client.getApplication({ id }),
+  )
+
+  return (
+    <WithNav.Container>
+      <WithNav.Navs>
+        <Nav title="Create Application" backToTitle="Back" />
+      </WithNav.Navs>
+      <WithNav.Body>
+        <MainViewContainer background="grey">
+          <Container>
+            <Progress.Container>
+              <Progress.Step
+                title="Build Settings"
+                description="ビルド設定"
+                state={
+                  currentStep() === formStep.general
+                    ? 'current'
+                    : currentStep() > formStep.general
+                    ? 'complete'
+                    : 'incomplete'
+                }
+              />
+              <Progress.Step
+                title="Domains"
+                description="アクセスURLの設定"
+                state={
+                  currentStep() === formStep.website
+                    ? 'current'
+                    : currentStep() > formStep.website
+                    ? 'complete'
+                    : 'incomplete'
+                }
+              />
+            </Progress.Container>
+            <Switch>
+              <Match when={currentStep() === formStep.general}>
+                <Show when={repo()}>
+                  {(nonNullRepo) => (
+                    <GeneralStep
+                      repo={nonNullRepo()}
+                      gotoNextStep={(appId) => {
+                        setAppId(appId)
+                        setCurrentStep(formStep.website)
+                      }}
+                    />
+                  )}
+                </Show>
+              </Match>
+              <Match when={currentStep() === formStep.website}>
+                <Show when={app()}>{(nonNullApp) => <WebsiteStep app={nonNullApp()} />}</Show>
+              </Match>
+            </Switch>
+          </Container>
+        </MainViewContainer>
+      </WithNav.Body>
+    </WithNav.Container>
   )
 }
