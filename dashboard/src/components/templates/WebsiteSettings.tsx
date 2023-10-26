@@ -20,6 +20,7 @@ import { ToolTip } from '../UI/ToolTip'
 import FormBox from '../layouts/FormBox'
 import { CheckBox } from './CheckBox'
 import { FormItem } from './FormItem'
+import { List } from './List'
 import { RadioButtons } from './RadioButtons'
 import { SelectItem, SingleSelect } from './Select'
 
@@ -72,9 +73,9 @@ interface WebsiteSettingProps {
     valueName: T,
     value: PlainMessage<CreateWebsiteRequest>[T],
   ) => void
-  saveWebsite: () => void
+  saveWebsite?: () => void
   deleteWebsite: () => void
-  discardChanges: () => void
+  discardChanges?: () => void
 }
 
 const schemeOptions: SelectItem<boolean>[] = [
@@ -297,17 +298,19 @@ export const WebsiteSetting = (props: WebsiteSettingProps) => {
               Discard Changes
             </Button>
           </Show>
-          <Button
-            onclick={props.saveWebsite}
-            color="primary"
-            size="small"
-            type="button"
-            disabled={props.state === 'noChange'}
-          >
-            <Show when={props.state === 'added'} fallback={'Save'}>
-              Add
-            </Show>
-          </Button>
+          <Show when={props.saveWebsite !== undefined}>
+            <Button
+              onclick={props.saveWebsite}
+              color="primary"
+              size="small"
+              type="button"
+              disabled={props.state === 'noChange'}
+            >
+              <Show when={props.state === 'added'} fallback={'Save'}>
+                Add
+              </Show>
+            </Button>
+          </Show>
         </FormBox.Actions>
       </FormBox.Container>
       <Modal.Container>
@@ -353,7 +356,7 @@ export type WebsiteSetting =
       website: PlainMessage<CreateWebsiteRequest>
     }
 
-const newWebsite = (): PlainMessage<CreateWebsiteRequest> => ({
+export const newWebsite = (): PlainMessage<CreateWebsiteRequest> => ({
   fqdn: '',
   pathPrefix: '/',
   stripPrefix: false,
@@ -361,6 +364,21 @@ const newWebsite = (): PlainMessage<CreateWebsiteRequest> => ({
   h2c: false,
   httpPort: 0,
   authentication: AuthenticationType.OFF,
+})
+
+const PlaceHolder = styled('div', {
+  base: {
+    width: '100%',
+    height: '400px',
+    display: 'flex',
+    flexDirection: 'column',
+    gap: '24px',
+    alignItems: 'center',
+    justifyContent: 'center',
+
+    color: colorVars.semantic.text.black,
+    ...textVars.h4.medium,
+  },
 })
 
 interface WebsiteSettingsProps {
@@ -372,9 +390,36 @@ interface WebsiteSettingsProps {
 }
 
 export const WebsiteSettings = (props: WebsiteSettingsProps) => {
+  const addWebsite = () =>
+    props.setWebsiteConfigs([
+      ...props.websiteConfigs,
+      {
+        state: 'added',
+        website: newWebsite(),
+      },
+    ])
+
   return (
     <Show when={systemInfo()}>
-      <For each={props.websiteConfigs}>
+      <For
+        each={props.websiteConfigs}
+        fallback={
+          <List.Container>
+            <PlaceHolder>
+              <MaterialSymbols displaySize={80}>link_off</MaterialSymbols>
+              No Websites Configured
+              <Button
+                color="primary"
+                size="medium"
+                rightIcon={<MaterialSymbols>add</MaterialSymbols>}
+                onClick={addWebsite}
+              >
+                Add Website
+              </Button>
+            </PlaceHolder>
+          </List.Container>
+        }
+      >
         {(config, i) => (
           <WebsiteSetting
             isRuntimeApp={props.isRuntimeApp}
@@ -405,24 +450,18 @@ export const WebsiteSettings = (props: WebsiteSettingsProps) => {
           />
         )}
       </For>
-      <AddMoreButtonContainer>
-        <Button
-          onclick={() =>
-            props.setWebsiteConfigs([
-              ...props.websiteConfigs,
-              {
-                state: 'added',
-                website: newWebsite(),
-              },
-            ])
-          }
-          color="border"
-          size="small"
-          leftIcon={<MaterialSymbols opticalSize={20}>add</MaterialSymbols>}
-        >
-          Add More
-        </Button>
-      </AddMoreButtonContainer>
+      <Show when={props.websiteConfigs.length > 0}>
+        <AddMoreButtonContainer>
+          <Button
+            onclick={addWebsite}
+            color="border"
+            size="small"
+            leftIcon={<MaterialSymbols opticalSize={20}>add</MaterialSymbols>}
+          >
+            Add More
+          </Button>
+        </AddMoreButtonContainer>
+      </Show>
     </Show>
   )
 }
