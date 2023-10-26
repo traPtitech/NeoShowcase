@@ -45,15 +45,27 @@ export default () => {
 
   const handleApplyChanges = async () => {
     try {
+      // modifiedの変更前の設定
+      const fetched =
+        structuredClone(
+          app()?.websites.filter((website) => {
+            const modified = websites.find(
+              (w) => 'id' in w.website && w.website.id === website.id && w.state === 'modified',
+            )
+            return modified !== undefined
+          }),
+        ) ?? []
       /**
        * 送信するWebsite設定
        * - 変更がないもの ( = `noChange`)
        * - 変更または追加して保存するもの ( = `readyToSave`)
+       * - 変更したが反映はしないもの ( = `modified`となっている設定の変更前)
        * - 削除しないもの ( = not `readyToDelete`)
        */
       const websitesToSave = websites
         .filter((website) => website.state === 'noChange' || website.state === 'readyToSave')
         .map((website) => website.website)
+        .concat(fetched)
       await client.updateApplication({
         id: app()?.id,
         websites: {
