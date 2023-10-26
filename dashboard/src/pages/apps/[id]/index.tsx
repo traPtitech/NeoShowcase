@@ -257,7 +257,7 @@ const DeploymentInfo: Component<{
   repo: Repository
   refreshRepo: () => void
   disableRefresh: () => boolean
-  latestBuildId: string
+  latestBuildId: string | undefined
 }> = (props) => {
   const [showActions, setShowActions] = createSignal(false)
 
@@ -849,17 +849,35 @@ const Logs: Component<{ app: Application }> = (props) => {
   )
 }
 
+const PlaceHolder = styled('div', {
+  base: {
+    width: '100%',
+    height: '400px',
+    display: 'flex',
+    flexDirection: 'column',
+    gap: '24px',
+    alignItems: 'center',
+    justifyContent: 'center',
+
+    color: colorVars.semantic.text.black,
+    ...textVars.h4.medium,
+  },
+})
+
+const getLatestBuild = (appId: Application['id']): Promise<Build | undefined> =>
+  client
+    .getBuilds({ id: appId })
+    .then((res) => res.builds.sort((b1, b2) => b2.queuedAt.toDate().getTime() - b1.queuedAt.toDate().getTime())[0])
+
 export default () => {
   const { app, refetchApp, repo } = useApplicationData()
+
   const [latestBuild, { refetch: refetchLatestBuild }] = createResource(
     () => app().id,
-    (appId) =>
-      client
-        .getBuilds({ id: appId })
-        .then((res) => res.builds.sort((b1, b2) => b2.queuedAt.toDate().getTime() - b1.queuedAt.toDate().getTime())[0]),
+    (appId) => getLatestBuild(appId),
   )
 
-  const loaded = () => !!(systemInfo() && app() && repo() && latestBuild())
+  const loaded = () => !!(systemInfo() && app() && repo())
 
   const [disableRefresh, setDisableRefresh] = createSignal(false)
   const refreshRepo = async () => {
@@ -888,7 +906,7 @@ export default () => {
                 repo={repo()}
                 refreshRepo={refreshRepo}
                 disableRefresh={disableRefresh}
-                latestBuildId={latestBuild().id}
+                latestBuildId={latestBuild()?.id}
               />
             </DataTable.Container>
           </MainView>
@@ -897,15 +915,29 @@ export default () => {
           <MainView>
             <DataTable.Container>
               <DataTable.Title>Build Status</DataTable.Title>
-              <BuildStatusTable
-                app={app()}
-                refetchApp={refetchApp}
-                repo={repo()}
-                refreshRepo={refreshRepo}
-                disableRefresh={disableRefresh}
-                latestBuild={latestBuild()}
-                refetchLatestBuild={refetchLatestBuild}
-              />
+              <Show
+                when={latestBuild()}
+                fallback={
+                  <List.Container>
+                    <PlaceHolder>
+                      <MaterialSymbols displaySize={80}>deployed_code</MaterialSymbols>
+                      No Builds
+                    </PlaceHolder>
+                  </List.Container>
+                }
+              >
+                {(nonNullLatestBuild) => (
+                  <BuildStatusTable
+                    app={app()}
+                    refetchApp={refetchApp}
+                    repo={repo()}
+                    refreshRepo={refreshRepo}
+                    disableRefresh={disableRefresh}
+                    latestBuild={nonNullLatestBuild()}
+                    refetchLatestBuild={refetchLatestBuild}
+                  />
+                )}
+              </Show>
             </DataTable.Container>
             <DataTable.Container>
               <DataTable.Title>Information</DataTable.Title>
