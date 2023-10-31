@@ -75,7 +75,7 @@ spec:
               name: socket
             - mountPath: /opt/config/ns.yaml
               name: config
-              subPath: confnsig.yaml
+              subPath: ns.yaml
             - mountPath: /keys
               name: keys
             # - mountPath: /.docker
