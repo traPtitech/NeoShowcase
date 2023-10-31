@@ -5,6 +5,7 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
+	"github.com/traPtitech/neoshowcase/pkg/util/retry"
 	"sync"
 	"time"
 
@@ -13,8 +14,6 @@ import (
 	"github.com/docker/docker/api/types/filters"
 	"github.com/docker/docker/client"
 	"github.com/friendsofgo/errors"
-	log "github.com/sirupsen/logrus"
-
 	"github.com/traPtitech/neoshowcase/pkg/domain"
 	"github.com/traPtitech/neoshowcase/pkg/domain/builder"
 	"github.com/traPtitech/neoshowcase/pkg/util/ds"
@@ -40,7 +39,7 @@ type Backend struct {
 	image  builder.ImageConfig
 
 	eventSubs   domain.PubSub[*domain.ContainerEvent]
-	eventCancel func()
+	stopWatcher func()
 
 	reloadLock sync.Mutex
 }
@@ -78,25 +77,10 @@ func (b *Backend) Start(ctx context.Context) error {
 	}
 
 	eventCtx, eventCancel := context.WithCancel(context.Background())
-	b.eventCancel = eventCancel
-	go b.eventListenerLoop(eventCtx)
+	b.stopWatcher = eventCancel
+	go retry.Do(eventCtx, b.eventListener, "container watcher")
 
 	return nil
-}
-
-func (b *Backend) eventListenerLoop(ctx context.Context) {
-	for {
-		err := b.eventListener(ctx)
-		if err == nil {
-			return
-		}
-		log.Errorf("docker event listner errored, retrying in 1s: %+v", err)
-		select {
-		case <-time.After(time.Second):
-		case <-ctx.Done():
-			return
-		}
-	}
 }
 
 func (b *Backend) eventListener(ctx context.Context) error {
@@ -126,7 +110,7 @@ func (b *Backend) eventListener(ctx context.Context) error {
 }
 
 func (b *Backend) Dispose(_ context.Context) error {
-	b.eventCancel()
+	b.stopWatcher()
 	return nil
 }
 
