@@ -3,6 +3,7 @@ package k8simpl
 import (
 	"context"
 	"fmt"
+	"github.com/traPtitech/neoshowcase/pkg/util/retry"
 	"strings"
 	"sync"
 
@@ -12,7 +13,6 @@ import (
 	traefikv1alpha1 "github.com/traefik/traefik/v2/pkg/provider/kubernetes/crd/generated/clientset/versioned/typed/traefikio/v1alpha1"
 	apiv1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/apimachinery/pkg/watch"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
 
@@ -43,9 +43,9 @@ type Backend struct {
 	certManagerClient *certmanagerv1.Clientset
 	config            Config
 
-	eventSubs domain.PubSub[*domain.ContainerEvent]
+	eventSubs   domain.PubSub[*domain.ContainerEvent]
+	stopWatcher func()
 
-	podWatcher watch.Interface
 	reloadLock sync.Mutex
 }
 
@@ -71,8 +71,14 @@ func NewK8SBackend(
 }
 
 func (b *Backend) Start(_ context.Context) error {
-	var err error
-	b.podWatcher, err = b.client.CoreV1().Pods(b.config.Namespace).Watch(context.Background(), metav1.ListOptions{
+	ctx, cancel := context.WithCancel(context.Background())
+	b.stopWatcher = cancel
+	go retry.Do(ctx, b.eventListener, "pod watcher")
+	return nil
+}
+
+func (b *Backend) eventListener(ctx context.Context) error {
+	podWatcher, err := b.client.CoreV1().Pods(b.config.Namespace).Watch(ctx, metav1.ListOptions{
 		LabelSelector: metav1.FormatLabelSelector(&metav1.LabelSelector{MatchLabels: map[string]string{
 			managedLabel: "true",
 		}}),
@@ -80,13 +86,9 @@ func (b *Backend) Start(_ context.Context) error {
 	if err != nil {
 		return errors.Wrap(err, "failed to watch pods")
 	}
-	go b.eventListener()
+	defer podWatcher.Stop()
 
-	return nil
-}
-
-func (b *Backend) eventListener() {
-	for ev := range b.podWatcher.ResultChan() {
+	for ev := range podWatcher.ResultChan() {
 		p, ok := ev.Object.(*apiv1.Pod)
 		if !ok {
 			log.Warnf("unexpected type: %v", ev)
@@ -99,10 +101,11 @@ func (b *Backend) eventListener() {
 		}
 		b.eventSubs.Publish(&domain.ContainerEvent{ApplicationID: appID})
 	}
+	return nil
 }
 
 func (b *Backend) Dispose(_ context.Context) error {
-	b.podWatcher.Stop()
+	b.stopWatcher()
 	return nil
 }
 
