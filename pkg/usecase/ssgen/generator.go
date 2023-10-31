@@ -69,7 +69,7 @@ func (s *generatorService) Start(_ context.Context) error {
 
 	go retry.Do(ctx, func(ctx context.Context) error {
 		return s.client.ConnectSSGen(ctx, s.onRequest)
-	})
+	}, "connect to controller")
 	go func() {
 		for i := 0; i < 300; i++ {
 			s.reload()

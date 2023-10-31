@@ -97,7 +97,7 @@ func (s *builderService) Start(_ context.Context) error {
 
 	go retry.Do(ctx, func(ctx context.Context) error {
 		return s.client.ConnectBuilder(ctx, s.onRequest, response)
-	})
+	}, "connect to controller")
 	go loop.Loop(ctx, s.prune, 1*time.Hour, false)
 
 	return nil
