@@ -10,7 +10,7 @@ require (
 	github.com/aws/aws-sdk-go v1.47.0
 	github.com/cert-manager/cert-manager v1.13.2
 	github.com/docker/cli v24.0.7+incompatible
-	github.com/docker/docker v24.0.0-rc.2.0.20230905130451-032797ea4bcb+incompatible // v25 master@032797ea4bcb (2023-09-05), required by github.com/moby/buildkit@v0.12.3
+	github.com/docker/docker v24.0.7+incompatible // v25 master@032797ea4bcb (2023-09-05), required by github.com/moby/buildkit@v0.12.3
 	github.com/docker/go-connections v0.4.0
 	github.com/friendsofgo/errors v0.9.2
 	github.com/gliderlabs/ssh v0.3.5
@@ -75,7 +75,6 @@ require (
 	github.com/cyphar/filepath-securejoin v0.2.4 // indirect
 	github.com/davecgh/go-spew v1.1.2-0.20180830191138-d8f796af33cc // indirect
 	github.com/davidmz/go-pageant v1.0.2 // indirect
-	github.com/distribution/reference v0.5.0 // indirect
 	github.com/docker/distribution v2.8.2+incompatible // indirect
 	github.com/docker/docker-credential-helpers v0.8.0 // indirect
 	github.com/docker/go-units v0.5.0 // indirect
