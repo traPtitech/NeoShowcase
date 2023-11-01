@@ -3,7 +3,7 @@ import { client } from '/@/libs/api'
 import { concatBuffers, toUTF8WithAnsi } from '/@/libs/buffers'
 import { isScrolledToBottom } from '/@/libs/scroll'
 import { sleep } from '/@/libs/sleep'
-import { Code, ConnectError } from '@bufbuild/connect'
+import { Code, ConnectError } from '@connectrpc/connect'
 import { Component, Ref, Show, createEffect, createResource, createSignal, onCleanup } from 'solid-js'
 
 export interface BuildLogProps {

@@ -1,4 +1,4 @@
-PROTOC_VERSION := 24.2
+PROTOC_VERSION := 24.4
 TBLS_VERSION := 1.65.3
 SPECTRAL_VERSION := 6.4.0
 
@@ -26,7 +26,7 @@ init-protoc:
 init-protoc-tools: ## Install other protoc tools
 	go install google.golang.org/protobuf/cmd/protoc-gen-go@latest
 	go install connectrpc.com/connect/cmd/protoc-gen-connect-go@latest
-	yarn global add @bufbuild/protoc-gen-connect-es @bufbuild/protoc-gen-es
+	yarn global add @connectrpc/protoc-gen-connect-es @bufbuild/protoc-gen-es
 
 .PHONY: init
 init: init-protoc init-protoc-tools ## Install commands

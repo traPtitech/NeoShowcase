@@ -582,22 +582,20 @@
   resolved "https://registry.yarnpkg.com/@biomejs/cli-win32-x64/-/cli-win32-x64-1.2.2.tgz#583e50d8a1a1cc81381200d3cb2f34669c6afd35"
   integrity sha512-bfaFJwqJ9ApFga2o88OaROSd3pasYRzRGXHJWAE9VUUKdSNSTYxHOqVrNvV54yYPtL6Kt9xkuZa4HNu9it3TaA==
 
-"@bufbuild/connect-web@0.13.0":
-  version "0.13.0"
-  resolved "https://registry.yarnpkg.com/@bufbuild/connect-web/-/connect-web-0.13.0.tgz#87301c92d49d3c3f9acb99729c2f7505d739aa4a"
-  integrity sha512-Ys9VFDWYktD9yFQSLOlkpsD42LonDNMCysLCfjXFuxlupYuf4f7qg0zkT5bESyTfqk4xtRDSSGR3xygaj/ONIQ==
-  dependencies:
-    "@bufbuild/connect" "0.13.0"
+"@bufbuild/protobuf@1.4.1":
+  version "1.4.1"
+  resolved "https://registry.yarnpkg.com/@bufbuild/protobuf/-/protobuf-1.4.1.tgz#2a827da66aebe904edca21f7085724154aa7868d"
+  integrity sha512-4dthhwBGD9nlpY35ic8dMQC5R0dsND2b2xyeVO3qf+hBk8m7Y9dUs+SmMh6rqO2pGLUTKHefGXLDW+z19hBPdQ==
 
-"@bufbuild/connect@0.13.0":
-  version "0.13.0"
-  resolved "https://registry.yarnpkg.com/@bufbuild/connect/-/connect-0.13.0.tgz#97a84a2cac747c7a52d4421a3382d8d165f61c99"
-  integrity sha512-eZSMbVLyUFtXiZNORgCEvv580xKZeYQdMOWj2i/nxOcpXQcrEzTMTA7SZzWv4k4gveWCOSRoWmYDeOhfWXJv0g==
+"@connectrpc/connect-web@1.1.2":
+  version "1.1.2"
+  resolved "https://registry.yarnpkg.com/@connectrpc/connect-web/-/connect-web-1.1.2.tgz#e862a4027406dc772ead3ae179f058c26b1fcf0f"
+  integrity sha512-6Osvp4d/5Qvf0dsbUmqgzCPFIong9KBm5G24g2gapPW2huAtyVj+KwdG6453EKCirPZ5qZHY0FywLef57op9YQ==
 
-"@bufbuild/protobuf@1.3.1":
-  version "1.3.1"
-  resolved "https://registry.yarnpkg.com/@bufbuild/protobuf/-/protobuf-1.3.1.tgz#c4de66bacbe7ac97fe054e68314aeba6f45177f9"
-  integrity sha512-BUyJWutgP2S8K/1NphOJokuwDckXS4qI2T1pGZAlkFdZchWae3jm6fCdkcGbLlM1QLOcNFFePd+7Feo4BYGrJQ==
+"@connectrpc/connect@1.1.2":
+  version "1.1.2"
+  resolved "https://registry.yarnpkg.com/@connectrpc/connect/-/connect-1.1.2.tgz#d1b5fa1dcec310a8210c1523c99abdc227643f4b"
+  integrity sha512-oDuKJFRORtzyH4IhZyNgIQ5DKjlDnbP72AH55Aabpc0fwApyus/h4cmYU1KDvahVbqsvUOpd5qUTyMH8IhMmLA==
 
 "@emotion/hash@^0.8.0":
   version "0.8.0"
