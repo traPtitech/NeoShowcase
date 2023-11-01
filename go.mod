@@ -9,8 +9,8 @@ require (
 	connectrpc.com/connect v1.11.1
 	github.com/aws/aws-sdk-go v1.45.19
 	github.com/cert-manager/cert-manager v1.13.1
-	github.com/docker/cli v24.0.6+incompatible
-	github.com/docker/docker v24.0.0-rc.2.0.20230718135204-8e51b8b59cb8+incompatible // v25 master@8e51b8b59cb8 (2023-07-18), required by github.com/moby/buildkit@v0.12.2
+	github.com/docker/cli v24.0.7+incompatible
+	github.com/docker/docker v24.0.0-rc.2.0.20230905130451-032797ea4bcb+incompatible // v25 master@032797ea4bcb (2023-09-05), required by github.com/moby/buildkit@v0.12.3
 	github.com/docker/go-connections v0.4.0
 	github.com/friendsofgo/errors v0.9.2
 	github.com/gliderlabs/ssh v0.3.5
@@ -22,7 +22,7 @@ require (
 	github.com/google/wire v0.5.0
 	github.com/labstack/echo/v4 v4.11.1
 	github.com/lukesampson/figlet v0.0.0-20190211215653-8a3ef4a6ac42
-	github.com/moby/buildkit v0.12.2
+	github.com/moby/buildkit v0.12.3
 	github.com/motoki317/sc v1.6.0
 	github.com/ncw/swift v1.0.53
 	github.com/prometheus/client_golang v1.17.0
@@ -65,18 +65,17 @@ require (
 	github.com/Microsoft/go-winio v0.6.1 // indirect
 	github.com/ProtonMail/go-crypto v0.0.0-20230828082145-3c4c8a2d2371 // indirect
 	github.com/acomagu/bufpipe v1.0.4 // indirect
-	github.com/agext/levenshtein v1.2.3 // indirect
 	github.com/anmitsu/go-shlex v0.0.0-20200514113438-38f4b401e2be // indirect
 	github.com/cenkalti/backoff/v4 v4.2.1 // indirect
 	github.com/cloudflare/circl v1.3.3 // indirect
 	github.com/containerd/console v1.0.3 // indirect
 	github.com/containerd/containerd v1.7.2 // indirect
 	github.com/containerd/continuity v0.4.1 // indirect
-	github.com/containerd/ttrpc v1.2.2 // indirect
 	github.com/containerd/typeurl/v2 v2.1.1 // indirect
 	github.com/cyphar/filepath-securejoin v0.2.4 // indirect
 	github.com/davecgh/go-spew v1.1.2-0.20180830191138-d8f796af33cc // indirect
 	github.com/davidmz/go-pageant v1.0.2 // indirect
+	github.com/distribution/reference v0.5.0 // indirect
 	github.com/docker/distribution v2.8.2+incompatible // indirect
 	github.com/docker/docker-credential-helpers v0.8.0 // indirect
 	github.com/docker/go-units v0.5.0 // indirect
@@ -132,7 +131,6 @@ require (
 	github.com/mitchellh/copystructure v1.2.0 // indirect
 	github.com/mitchellh/mapstructure v1.5.0 // indirect
 	github.com/mitchellh/reflectwalk v1.0.2 // indirect
-	github.com/moby/locker v1.0.1 // indirect
 	github.com/moby/patternmatcher v0.6.0 // indirect
 	github.com/moby/spdystream v0.2.0 // indirect
 	github.com/moby/sys/signal v0.7.0 // indirect
@@ -150,7 +148,6 @@ require (
 	github.com/pmezard/go-difflib v1.0.1-0.20181226105442-5d4384ee4fb2 // indirect
 	github.com/secure-systems-lab/go-securesystemslib v0.7.0 // indirect
 	github.com/sergi/go-diff v1.3.1 // indirect
-	github.com/shibumi/go-pathspec v1.3.0 // indirect
 	github.com/shopspring/decimal v1.3.1 // indirect
 	github.com/skeema/knownhosts v1.2.0 // indirect
 	github.com/spf13/afero v1.9.5 // indirect
