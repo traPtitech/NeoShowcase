@@ -5,15 +5,17 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
-	"github.com/traPtitech/neoshowcase/pkg/util/retry"
 	"sync"
 	"time"
+
+	"github.com/traPtitech/neoshowcase/pkg/util/retry"
 
 	clitypes "github.com/docker/cli/cli/config/types"
 	"github.com/docker/docker/api/types"
 	"github.com/docker/docker/api/types/filters"
 	"github.com/docker/docker/client"
 	"github.com/friendsofgo/errors"
+
 	"github.com/traPtitech/neoshowcase/pkg/domain"
 	"github.com/traPtitech/neoshowcase/pkg/domain/builder"
 	"github.com/traPtitech/neoshowcase/pkg/util/ds"
@@ -47,7 +49,7 @@ type Backend struct {
 func NewClientFromEnv() (*client.Client, error) {
 	return client.NewClientWithOpts(
 		client.FromEnv,
-		// Using github.com/moby/moby of v25 master@8e51b8b59cb8 (2023-07-18), required by github.com/moby/buildkit@v0.12.2,
+		// Using github.com/moby/moby of v25 master@032797ea4bcb (2023-09-05), required by github.com/moby/buildkit@v0.12.3,
 		// defaults to API version 1.44, which currently available docker installation does not support.
 		client.WithVersion("1.43"),
 	)
