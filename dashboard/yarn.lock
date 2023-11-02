@@ -934,6 +934,11 @@
     "@vanilla-extract/integration" "^6.0.0"
     "@vanilla-extract/vite-plugin" "^3.1.6"
 
+"@modular-forms/solid@^0.20.0":
+  version "0.20.0"
+  resolved "https://registry.yarnpkg.com/@modular-forms/solid/-/solid-0.20.0.tgz#7fce5fd983f25be89f4d33906487612adaa6b43c"
+  integrity sha512-CyXoeo2cwNel2N753c+iDzA+4DgtBrLNAS87DY/aODFZG7QoY0A9YSxdUxRf0N5NDwkzmn1O0XqwMP+EAiOHbA==
+
 "@nodelib/fs.scandir@2.1.5":
   version "2.1.5"
   resolved "https://registry.yarnpkg.com/@nodelib/fs.scandir/-/fs.scandir-2.1.5.tgz#7619c2eb21b25483f6d167548b4cfd5a7488c3d5"

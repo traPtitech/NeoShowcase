@@ -35,7 +35,7 @@ const Required = styled('div', {
 })
 const HelpText = styled('div', {
   base: {
-    color: colorVars.semantic.text.grey,
+    color: colorVars.semantic.accent.error,
     ...textVars.caption.regular,
   },
 })
@@ -43,7 +43,7 @@ const HelpText = styled('div', {
 interface Props {
   title: string
   required?: boolean
-  helpText?: string
+  error?: string
   tooltip?: TooltipProps
 }
 
@@ -58,8 +58,8 @@ export const FormItem: ParentComponent<Props> = (props) => {
         <Show when={props.tooltip}>
           <TooltipInfoIcon {...props.tooltip} />
         </Show>
-        <Show when={props.helpText}>
-          <HelpText>{props.helpText}</HelpText>
+        <Show when={props.error !== ''}>
+          <HelpText>{props.error}</HelpText>
         </Show>
       </TitleContainer>
       {props.children}

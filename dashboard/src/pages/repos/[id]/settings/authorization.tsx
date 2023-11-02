@@ -1,58 +1,81 @@
-import {
-  CreateRepositoryAuth,
-  Repository,
-  Repository_AuthMethod,
-  UpdateRepositoryRequest,
-} from '/@/api/neoshowcase/protobuf/gateway_pb'
+import { CreateRepositoryAuth, Repository, Repository_AuthMethod } from '/@/api/neoshowcase/protobuf/gateway_pb'
 import { Button } from '/@/components/UI/Button'
 import { DataTable } from '/@/components/layouts/DataTable'
 import FormBox from '/@/components/layouts/FormBox'
-import { RepositoryAuthSettings } from '/@/components/templates/RepositoryAuthSettings'
+import { AuthForm, RepositoryAuthSettings } from '/@/components/templates/RepositoryAuthSettings'
 import { client, handleAPIError } from '/@/libs/api'
 import { useRepositoryData } from '/@/routes'
 import { PlainMessage } from '@bufbuild/protobuf'
+import { SubmitHandler, createForm, getValue, reset } from '@modular-forms/solid'
 import { Component, Show } from 'solid-js'
-import { createStore } from 'solid-js/store'
 import toast from 'solid-toast'
+
+const mapAuthMethod = (authMethod: Repository_AuthMethod): PlainMessage<CreateRepositoryAuth>['auth']['case'] => {
+  switch (authMethod) {
+    case Repository_AuthMethod.NONE:
+      return 'none'
+    case Repository_AuthMethod.BASIC:
+      return 'basic'
+    case Repository_AuthMethod.SSH:
+      return 'ssh'
+  }
+}
 
 const AuthConfig: Component<{
   repo: Repository
   refetchRepo: () => void
 }> = (props) => {
-  let formRef: HTMLFormElement
-
-  const [updateReq, setUpdateReq] = createStore<PlainMessage<UpdateRepositoryRequest>>({
-    id: props.repo.id,
-    url: props.repo.url,
-  })
-  const mapAuthMethod = (authMethod: Repository_AuthMethod): PlainMessage<CreateRepositoryAuth>['auth'] => {
-    switch (authMethod) {
-      case Repository_AuthMethod.NONE:
-        return { case: 'none', value: {} }
-      case Repository_AuthMethod.BASIC:
-        return { case: 'basic', value: { username: '', password: '' } }
-      case Repository_AuthMethod.SSH:
-        return { case: 'ssh', value: { keyId: '' } }
-    }
-  }
-  const [authConfig, setAuthConfig] = createStore<PlainMessage<CreateRepositoryAuth>>({
-    auth: mapAuthMethod(props.repo.authMethod),
-  })
-
-  const discardChanges = () => {
-    setUpdateReq({
-      id: props.repo.id,
+  const [authForm, Auth] = createForm<AuthForm>({
+    initialValues: {
       url: props.repo.url,
-    })
-    setAuthConfig({ auth: mapAuthMethod(props.repo.authMethod) })
+      case: mapAuthMethod(props.repo.authMethod),
+      auth: {
+        basic: {
+          username: '',
+          password: '',
+        },
+        ssh: {
+          keyId: '',
+        },
+      },
+    },
+  })
+  const authValue = (): PlainMessage<CreateRepositoryAuth>['auth'] => {
+    const authMethod = getValue(authForm, 'case')
+    switch (authMethod) {
+      case 'none':
+        return {
+          case: 'none',
+          value: '',
+        }
+      case 'basic':
+        return {
+          case: 'basic',
+          value: {
+            username: getValue(authForm, 'auth.basic.username'),
+            password: getValue(authForm, 'auth.basic.password'),
+          },
+        }
+      case 'ssh':
+        return {
+          case: 'ssh',
+          value: {
+            keyId: getValue(authForm, 'auth.ssh.keyId'),
+          },
+        }
+    }
+    throw new Error('unreachable')
   }
-  const saveChanges = async () => {
+
+  const handleSubmit: SubmitHandler<AuthForm> = async (values) => {
     try {
-      // validate form
-      if (!formRef.reportValidity()) {
-        return
-      }
-      await client.updateRepository({ ...updateReq, auth: authConfig })
+      await client.updateRepository({
+        id: props.repo.id,
+        url: values.url,
+        auth: {
+          auth: authValue(),
+        },
+      })
       toast.success('リポジトリの設定を更新しました')
       props.refetchRepo()
     } catch (e) {
@@ -60,29 +83,40 @@ const AuthConfig: Component<{
     }
   }
 
-  const Auth = RepositoryAuthSettings({
-    url: updateReq.url,
-    setUrl: (v) => setUpdateReq('url', v),
-    authConfig: authConfig,
-    setAuthConfig: setAuthConfig,
+  const discardChanges = () => {
+    reset(authForm)
+  }
+
+  const AuthSetting = RepositoryAuthSettings({
+    formStore: authForm,
+    Form: Auth,
   })
 
   return (
-    <FormBox.Container ref={formRef}>
-      <FormBox.Forms>
-        <Auth.Url />
-        <Auth.AuthMethod />
-        <Auth.AuthConfig />
-      </FormBox.Forms>
-      <FormBox.Actions>
-        <Button color="borderError" size="small" onClick={discardChanges} type="button">
-          Discard Changes
-        </Button>
-        <Button color="primary" size="small" onClick={saveChanges} type="button">
-          Save
-        </Button>
-      </FormBox.Actions>
-    </FormBox.Container>
+    <Auth.Form onSubmit={handleSubmit}>
+      <FormBox.Container>
+        <FormBox.Forms>
+          <AuthSetting.Url />
+          <AuthSetting.AuthMethod />
+          <AuthSetting.AuthConfig />
+        </FormBox.Forms>
+        <FormBox.Actions>
+          <Show when={authForm.dirty && !authForm.submitting}>
+            <Button color="borderError" size="small" onClick={discardChanges} type="button">
+              Discard Changes
+            </Button>
+          </Show>
+          <Button
+            color="primary"
+            size="small"
+            type="submit"
+            disabled={authForm.invalid || !authForm.dirty || authForm.submitting}
+          >
+            Save
+          </Button>
+        </FormBox.Actions>
+      </FormBox.Container>
+    </Auth.Form>
   )
 }
 

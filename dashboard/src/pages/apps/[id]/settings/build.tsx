@@ -1,26 +1,35 @@
 import { Button } from '/@/components/UI/Button'
 import { DataTable } from '/@/components/layouts/DataTable'
 import FormBox from '/@/components/layouts/FormBox'
-import { BuildConfigs } from '/@/components/templates/BuildConfigs'
+import { BuildConfigForm, BuildConfigs, configToForm, formToConfig } from '/@/components/templates/BuildConfigs'
 import { client, handleAPIError } from '/@/libs/api'
 import { useApplicationData } from '/@/routes'
-import { Show } from 'solid-js'
-import { createStore } from 'solid-js/store'
+import { SubmitHandler, createForm, reset } from '@modular-forms/solid'
+import { Show, createEffect } from 'solid-js'
 import toast from 'solid-toast'
 
 export default () => {
   const { app, refetchApp } = useApplicationData()
   const loaded = () => !!app()
-  const [buildConfig, setBuildConfig] = createStore(structuredClone(app().config.buildConfig))
+
+  const [buildConfig, BuildConfig] = createForm<BuildConfigForm>()
+
+  createEffect(() => {
+    reset(buildConfig, {
+      initialValues: configToForm(app()?.config),
+    })
+  })
 
   const discardChanges = () => {
-    setBuildConfig(structuredClone(app().config.buildConfig))
+    reset(buildConfig)
   }
-  const saveChanges = async () => {
+  const handleSubmit: SubmitHandler<BuildConfigForm> = async (values) => {
     try {
       await client.updateApplication({
-        id: app().id,
-        config: { buildConfig: buildConfig },
+        id: app()?.id,
+        config: {
+          buildConfig: formToConfig(values),
+        },
       })
       toast.success('ビルド設定を更新しました')
       refetchApp()
@@ -33,19 +42,28 @@ export default () => {
     <DataTable.Container>
       <Show when={loaded()}>
         <DataTable.Title>Build</DataTable.Title>
-        <FormBox.Container>
-          <FormBox.Forms>
-            <BuildConfigs buildConfig={buildConfig} setBuildConfig={setBuildConfig} disableEditDB />
-          </FormBox.Forms>
-          <FormBox.Actions>
-            <Button color="borderError" size="small" onClick={discardChanges} type="button">
-              Discard Changes
-            </Button>
-            <Button color="primary" size="small" onClick={saveChanges} type="button">
-              Save
-            </Button>
-          </FormBox.Actions>
-        </FormBox.Container>
+        <BuildConfig.Form onSubmit={handleSubmit}>
+          <FormBox.Container>
+            <FormBox.Forms>
+              <BuildConfigs Form={BuildConfig} formStore={buildConfig} disableEditDB />
+            </FormBox.Forms>
+            <FormBox.Actions>
+              <Show when={buildConfig.dirty && !buildConfig.submitting}>
+                <Button color="borderError" size="small" onClick={discardChanges} type="button">
+                  Discard Changes
+                </Button>
+              </Show>
+              <Button
+                color="primary"
+                size="small"
+                type="submit"
+                disabled={buildConfig.invalid || !buildConfig.dirty || buildConfig.submitting}
+              >
+                Save
+              </Button>
+            </FormBox.Actions>
+          </FormBox.Container>
+        </BuildConfig.Form>
       </Show>
     </DataTable.Container>
   )

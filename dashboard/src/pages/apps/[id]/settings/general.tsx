@@ -1,19 +1,19 @@
-import { Application, Repository, UpdateApplicationRequest } from '/@/api/neoshowcase/protobuf/gateway_pb'
+import { Application, Repository } from '/@/api/neoshowcase/protobuf/gateway_pb'
 import { Button } from '/@/components/UI/Button'
 import { DataTable } from '/@/components/layouts/DataTable'
 import FormBox from '/@/components/layouts/FormBox'
 import { FormItem } from '/@/components/templates/FormItem'
-import { GeneralConfig } from '/@/components/templates/GeneralConfig'
+import { AppGeneralForm, GeneralConfig } from '/@/components/templates/GeneralConfig'
 import { client, handleAPIError } from '/@/libs/api'
 import { providerToIcon, repositoryURLToProvider } from '/@/libs/application'
 import useModal from '/@/libs/useModal'
 import { useApplicationData } from '/@/routes'
 import { colorVars, textVars } from '/@/theme'
-import { PlainMessage } from '@bufbuild/protobuf'
 import { styled } from '@macaron-css/solid'
+import { SubmitHandler, createForm, reset } from '@modular-forms/solid'
 import { useNavigate } from '@solidjs/router'
-import { Component, Show } from 'solid-js'
-import { createStore } from 'solid-js/store'
+import { Component, Show, createEffect } from 'solid-js'
+import { on } from 'solid-js'
 import toast from 'solid-toast'
 
 const DeleteAppNotice = styled('div', {
@@ -93,58 +93,68 @@ export default () => {
   const { app, refetchApp, repo } = useApplicationData()
   const loaded = () => !!(app() && repo())
 
-  let formRef: HTMLFormElement
-  const [updateReq, setUpdateReq] = createStore<PlainMessage<UpdateApplicationRequest>>({
-    id: app()?.id,
-    name: app()?.name,
-    repositoryId: app()?.repositoryId,
-    refName: app()?.refName,
-  })
-  const discardChanges = () => {
-    setUpdateReq({
+  const [generalForm, General] = createForm<AppGeneralForm>({
+    initialValues: {
       name: app()?.name,
       repositoryId: app()?.repositoryId,
       refName: app()?.refName,
-    })
-  }
-  const configChanged = () =>
-    app()?.name !== updateReq.name ||
-    app()?.repositoryId !== updateReq.repositoryId ||
-    app()?.refName !== updateReq.refName
+    },
+  })
 
-  const saveChanges = async () => {
+  createEffect(
+    on(app, (app) => {
+      reset(generalForm, {
+        initialValues: {
+          name: app?.name,
+          repositoryId: app?.repositoryId,
+          refName: app?.refName,
+        },
+      })
+    }),
+  )
+
+  const handleSubmit: SubmitHandler<AppGeneralForm> = async (values) => {
     try {
-      // validate form
-      if (!formRef.reportValidity()) {
-        return
-      }
-      await client.updateApplication(updateReq)
+      await client.updateApplication({
+        id: app()?.id,
+        ...values,
+      })
       toast.success('アプリケーション設定を更新しました')
       refetchApp()
     } catch (e) {
       handleAPIError(e, 'アプリケーション設定の更新に失敗しました')
     }
   }
+  const discardChanges = () => {
+    reset(generalForm)
+  }
 
   return (
     <DataTable.Container>
       <DataTable.Title>General</DataTable.Title>
       <Show when={loaded()}>
-        <FormBox.Container ref={formRef}>
-          <FormBox.Forms>
-            <GeneralConfig repo={repo()} config={updateReq} setConfig={setUpdateReq} editBranchId />
-          </FormBox.Forms>
-          <FormBox.Actions>
-            <Show when={configChanged()}>
-              <Button color="borderError" size="small" onClick={discardChanges} type="button">
-                Discard Changes
+        <General.Form onSubmit={handleSubmit}>
+          <FormBox.Container>
+            <FormBox.Forms>
+              <GeneralConfig repo={repo()} formStore={generalForm} Form={General} editBranchId />
+            </FormBox.Forms>
+            <FormBox.Actions>
+              <Show when={generalForm.dirty && !generalForm.submitting}>
+                <Button color="borderError" size="small" onClick={discardChanges} type="button">
+                  Discard Changes
+                </Button>
+              </Show>
+              <Button
+                color="primary"
+                size="small"
+                type="submit"
+                disabled={generalForm.invalid || !generalForm.dirty || generalForm.submitting}
+              >
+                Save
               </Button>
-            </Show>
-            <Button color="primary" size="small" onClick={saveChanges} type="button" disabled={!configChanged()}>
-              Save
-            </Button>
-          </FormBox.Actions>
-        </FormBox.Container>
+            </FormBox.Actions>
+          </FormBox.Container>
+        </General.Form>
         <DeleteApp app={app()} repo={repo()} />
       </Show>
     </DataTable.Container>

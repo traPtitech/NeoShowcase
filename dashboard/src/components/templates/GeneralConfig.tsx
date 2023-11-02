@@ -1,82 +1,88 @@
 import { CreateApplicationRequest, Repository, UpdateApplicationRequest } from '/@/api/neoshowcase/protobuf/gateway_pb'
 import { useBranchesSuggestion } from '/@/libs/branchesSuggestion'
 import { PlainMessage } from '@bufbuild/protobuf'
+import { createForm, getValue, required, setValue } from '@modular-forms/solid'
 import { Component, Show } from 'solid-js'
-import { SetStoreFunction } from 'solid-js/store'
 import { TextInput } from '../UI/TextInput'
 import { FormItem } from './FormItem'
 import { ComboBox } from './Select'
 
+export type AppGeneralForm = Pick<
+  PlainMessage<CreateApplicationRequest> | PlainMessage<UpdateApplicationRequest>,
+  'name' | 'repositoryId' | 'refName'
+>
+
 interface GeneralConfigProps {
   repo: Repository
-  config: PlainMessage<CreateApplicationRequest> | PlainMessage<UpdateApplicationRequest>
-  setConfig: SetStoreFunction<GeneralConfigProps['config']>
+  formStore: ReturnType<typeof createForm<AppGeneralForm>>[0]
+  Form: ReturnType<typeof createForm<AppGeneralForm>>[1]
   editBranchId?: boolean
 }
 
 export const GeneralConfig: Component<GeneralConfigProps> = (props) => {
   const branchesSuggestion = useBranchesSuggestion(
     () => props.repo.id,
-    () => props.config.refName ?? '',
+    () => getValue(props.formStore, 'refName') ?? '',
   )
 
   return (
     <>
-      <FormItem title="Application Name" required>
-        <TextInput
-          required
-          value={props.config.name}
-          onInput={(e) => {
-            props.setConfig('name', e.target.value)
-          }}
-        />
-      </FormItem>
+      <props.Form.Field name="name" validate={required('Please Enter Application Name')}>
+        {(field, fieldProps) => (
+          <FormItem title="Application Name" required>
+            <TextInput value={field.value} error={field.error} {...fieldProps} />
+          </FormItem>
+        )}
+      </props.Form.Field>
       <Show when={props.editBranchId}>
-        <FormItem
-          title="Repository ID"
-          required
-          tooltip={{
-            props: {
-              content: 'リポジトリを移管する場合はIDを変更',
-            },
-          }}
-        >
-          <TextInput
-            required
-            value={props.config.repositoryId}
-            onInput={(e) => {
-              props.setConfig('repositoryId', e.target.value)
-            }}
-          />
-        </FormItem>
+        <props.Form.Field name="repositoryId" validate={required('Please Enter Repository ID')}>
+          {(field, fieldProps) => (
+            <FormItem
+              title="Repository ID"
+              required
+              tooltip={{
+                props: {
+                  content: 'リポジトリを移管する場合はIDを変更',
+                },
+              }}
+            >
+              <TextInput required value={field.value} error={field.error} {...fieldProps} />
+            </FormItem>
+          )}
+        </props.Form.Field>
       </Show>
-      <FormItem
-        title="Branch"
-        required
-        tooltip={{
-          props: {
-            content: (
-              <>
-                <div>Gitブランチ名またはRef</div>
-                <div>入力欄をクリックして候補を表示</div>
-              </>
-            ),
-          },
-        }}
-      >
-        <ComboBox
-          required
-          value={props.config.refName}
-          onInput={(e) => props.setConfig('refName', e.target.value)}
-          items={branchesSuggestion().map((branch) => ({
-            title: branch,
-            value: branch,
-          }))}
-          setSelected={(branch) => {
-            props.setConfig('refName', branch)
-          }}
-        />
-      </FormItem>
+      <props.Form.Field name="refName" validate={required('Please Enter Branch Name')}>
+        {(field, fieldProps) => (
+          <FormItem
+            title="Branch"
+            required
+            tooltip={{
+              props: {
+                content: (
+                  <>
+                    <div>Gitブランチ名またはRef</div>
+                    <div>入力欄をクリックして候補を表示</div>
+                  </>
+                ),
+              },
+            }}
+          >
+            <ComboBox
+              required
+              value={field.value}
+              items={branchesSuggestion().map((branch) => ({
+                title: branch,
+                value: branch,
+              }))}
+              setSelected={(v) => {
+                setValue(props.formStore, 'refName', v)
+              }}
+              error={field.error}
+              {...fieldProps}
+            />
+          </FormItem>
+        )}
+      </props.Form.Field>
     </>
   )
 }

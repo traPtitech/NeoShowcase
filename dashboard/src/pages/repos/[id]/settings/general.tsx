@@ -11,65 +11,74 @@ import { useRepositoryData } from '/@/routes'
 import { colorVars, textVars } from '/@/theme'
 import { PlainMessage } from '@bufbuild/protobuf'
 import { styled } from '@macaron-css/solid'
+import { SubmitHandler, createForm, required, reset } from '@modular-forms/solid'
 import { useNavigate } from '@solidjs/router'
-import { Component, Show } from 'solid-js'
-import { createStore } from 'solid-js/store'
+import { Component, Show, createEffect, on } from 'solid-js'
 import toast from 'solid-toast'
+
+type GeneralForm = Required<Pick<PlainMessage<UpdateRepositoryRequest>, 'name'>>
 
 const NameConfig: Component<{
   repo: Repository
   refetchRepo: () => void
 }> = (props) => {
-  let formRef: HTMLFormElement
-
-  const [updateReq, setUpdateReq] = createStore<PlainMessage<UpdateRepositoryRequest>>({
-    id: props.repo.id,
-    name: props.repo.name,
-  })
-  const discardChanges = () => {
-    setUpdateReq({
+  const [generalForm, General] = createForm<GeneralForm>({
+    initialValues: {
       name: props.repo.name,
+    },
+  })
+
+  createEffect(() => {
+    reset(generalForm, 'name', {
+      initialValue: props.repo.name,
     })
-  }
-  const nameChanged = () => props.repo.name !== updateReq.name
-  const saveChanges = async () => {
+  })
+
+  const handleSubmit: SubmitHandler<GeneralForm> = async (values) => {
     try {
-      // validate form
-      if (!formRef.reportValidity()) {
-        return
-      }
-      await client.updateRepository(updateReq)
+      await client.updateRepository({
+        id: props.repo.id,
+        name: values.name,
+      })
       toast.success('Project名を更新しました')
       props.refetchRepo()
     } catch (e) {
       handleAPIError(e, 'Project名の更新に失敗しました')
     }
   }
+  const discardChanges = () => {
+    reset(generalForm)
+  }
 
   return (
-    <FormBox.Container ref={formRef}>
-      <FormBox.Forms>
-        <FormItem title="Project Name" required>
-          <TextInput
-            required
-            value={updateReq.name}
-            onInput={(e) => {
-              setUpdateReq('name', e.target.value)
-            }}
-          />
-        </FormItem>
-      </FormBox.Forms>
-      <FormBox.Actions>
-        <Show when={nameChanged()}>
-          <Button color="borderError" size="small" onClick={discardChanges} type="button">
-            Discard Changes
+    <General.Form onSubmit={handleSubmit}>
+      <FormBox.Container>
+        <FormBox.Forms>
+          <General.Field name="name" validate={[required('Enter Project Name')]}>
+            {(field, props) => (
+              <FormItem title="Project Name" required>
+                <TextInput value={field.value} error={field.error} {...props} />
+              </FormItem>
+            )}
+          </General.Field>
+        </FormBox.Forms>
+        <FormBox.Actions>
+          <Show when={generalForm.dirty && !generalForm.submitting}>
+            <Button color="borderError" size="small" onClick={discardChanges} type="button">
+              Discard Changes
+            </Button>
+          </Show>
+          <Button
+            color="primary"
+            size="small"
+            type="submit"
+            disabled={generalForm.invalid || !generalForm.dirty || generalForm.submitting}
+          >
+            Save
           </Button>
-        </Show>
-        <Button color="primary" size="small" onClick={saveChanges} type="button" disabled={!nameChanged()}>
-          Save
-        </Button>
-      </FormBox.Actions>
-    </FormBox.Container>
+        </FormBox.Actions>
+      </FormBox.Container>
+    </General.Form>
   )
 }
 

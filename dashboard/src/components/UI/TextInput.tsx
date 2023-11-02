@@ -41,7 +41,7 @@ const StyledInput = styled('input', {
         cursor: 'not-allowed',
         background: colorVars.semantic.ui.tertiary,
       },
-      '&:invalid': {
+      '&:invalid, &.invalid': {
         outline: `2px solid ${colorVars.semantic.accent.error}`,
       },
     },
@@ -85,16 +85,16 @@ const RightIcon = styled('div', {
     justifyContent: 'center',
   },
 })
-const HelpText = styled('div', {
+const ErrorText = styled('div', {
   base: {
     width: '100%',
-    color: colorVars.semantic.text.grey,
+    color: colorVars.semantic.accent.error,
     ...textVars.text.regular,
   },
 })
 
 export interface Props extends JSX.InputHTMLAttributes<HTMLInputElement> {
-  helpText?: string
+  error?: string
   leftIcon?: JSX.Element
   rightIcon?: JSX.Element
   ref?: HTMLInputElement | ((ref: HTMLInputElement) => void)
@@ -102,7 +102,7 @@ export interface Props extends JSX.InputHTMLAttributes<HTMLInputElement> {
 }
 
 export const TextInput: Component<Props> = (props) => {
-  const [addedProps, originalProps] = splitProps(props, ['helpText', 'leftIcon', 'rightIcon', 'ref', 'tooltip'])
+  const [addedProps, originalProps] = splitProps(props, ['error', 'leftIcon', 'rightIcon', 'ref', 'tooltip'])
 
   return (
     <Container>
@@ -114,6 +114,9 @@ export const TextInput: Component<Props> = (props) => {
             {...originalProps}
             type={originalProps.type ?? 'text'}
             ref={addedProps.ref}
+            classList={{
+              invalid: addedProps.error !== undefined && addedProps.error !== '',
+            }}
           />
           <Show when={addedProps.leftIcon}>
             <LeftIcon>{addedProps.leftIcon}</LeftIcon>
@@ -123,8 +126,8 @@ export const TextInput: Component<Props> = (props) => {
           </Show>
         </InputContainer>
       </ToolTip>
-      <Show when={addedProps.helpText}>
-        <HelpText>{addedProps.helpText}</HelpText>
+      <Show when={addedProps.error}>
+        <ErrorText>{addedProps.error}</ErrorText>
       </Show>
     </Container>
   )

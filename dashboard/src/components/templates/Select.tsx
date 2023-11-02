@@ -245,12 +245,20 @@ export const MultiSelect = <T,>(props: MultiSelectProps<T>): JSX.Element => {
 
 export type ComboBoxProps<T> = Partial<JSX.InputHTMLAttributes<HTMLInputElement>> & {
   items: SelectItem<T>[]
+  error?: string
   setSelected: (s: T) => void
   disabled?: boolean
 }
 
 export const ComboBox = <T,>(props: ComboBoxProps<T>): JSX.Element => {
-  const [addedProps, originalProps] = splitProps(props, ['items', 'setSelected', 'disabled', 'onFocus', 'onBlur'])
+  const [addedProps, originalProps] = splitProps(props, [
+    'items',
+    'setSelected',
+    'disabled',
+    'error',
+    'onFocus',
+    'onBlur',
+  ])
 
   const [showOptions, setShowOptions] = createSignal(false)
 
@@ -274,6 +282,17 @@ export const ComboBox = <T,>(props: ComboBoxProps<T>): JSX.Element => {
             }
             setShowOptions(true)
           }}
+          onBlur={(e) => {
+            if (addedProps.onBlur) {
+              if (typeof addedProps.onBlur === 'function') {
+                addedProps.onBlur(e)
+              } else {
+                addedProps.onBlur[0](addedProps.onBlur[1], e)
+              }
+            }
+            setShowOptions(false)
+          }}
+          error={addedProps.error}
           {...originalProps}
         />
         {/* TODO: help text */}

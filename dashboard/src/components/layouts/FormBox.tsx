@@ -1,7 +1,7 @@
 import { colorVars } from '/@/theme'
 import { styled } from '@macaron-css/solid'
 
-const Container = styled('form', {
+const Container = styled('div', {
   base: {
     width: '100%',
     borderRadius: '8px',
