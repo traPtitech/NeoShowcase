@@ -7,7 +7,7 @@ import { client, systemInfo } from '/@/libs/api'
 import { colorVars, textVars } from '/@/theme'
 import { PlainMessage } from '@bufbuild/protobuf'
 import { styled } from '@macaron-css/solid'
-import { ValidateField, createForm, getValue, required, setValue } from '@modular-forms/solid'
+import { Field, FormStore, ValidateField, getValue, required, setValue } from '@modular-forms/solid'
 import { Match, Show, Switch, createEffect, createSignal } from 'solid-js'
 import { createResource } from 'solid-js'
 import { Button } from '../UI/Button'
@@ -82,9 +82,35 @@ export type AuthForm = {
   auth: AuthMethods
 }
 
+export const formToAuth = <T extends AuthForm>(form: T): PlainMessage<CreateRepositoryAuth>['auth'] => {
+  const authMethod = form.case
+  switch (authMethod) {
+    case 'none':
+      return {
+        case: 'none',
+        value: '',
+      }
+    case 'basic':
+      return {
+        case: 'basic',
+        value: {
+          username: form.auth.basic.username,
+          password: form.auth.basic.password,
+        },
+      }
+    case 'ssh':
+      return {
+        case: 'ssh',
+        value: {
+          keyId: form.auth.ssh.keyId,
+        },
+      }
+  }
+  throw new Error('unreachable')
+}
+
 interface Props {
-  formStore: ReturnType<typeof createForm<AuthForm>>[0]
-  Form: ReturnType<typeof createForm<AuthForm>>[1]
+  formStore: FormStore<AuthForm, undefined>
 }
 
 export const RepositoryAuthSettings = (props: Props) => {
@@ -101,7 +127,7 @@ export const RepositoryAuthSettings = (props: Props) => {
   const publicKey = () => (useTmpKey() ? tmpKey()?.publicKey : systemInfo()?.publicKey ?? '')
 
   const AuthMethod = () => (
-    <props.Form.Field name="case">
+    <Field of={props.formStore} name="case">
       {(field, fieldProps) => (
         <FormItem title="認証方法" error={field.error}>
           <RadioButtons
@@ -114,27 +140,24 @@ export const RepositoryAuthSettings = (props: Props) => {
           />
         </FormItem>
       )}
-    </props.Form.Field>
+    </Field>
   )
 
   const validateUrl: ValidateField<AuthForm['url']> = (url) => {
-    const authMethod = getValue(props.formStore, 'case')
-    if (authMethod === 'ssh' && !url?.startsWith('ssh')) {
-      return 'SSH認証を使用する場合、URLはssh://から始まる必要があります'
-    } else if (authMethod === 'basic' && !url?.startsWith('https')) {
+    if (getValue(props.formStore, 'case') === 'basic' && !url?.startsWith('https')) {
       return 'Basic認証を使用する場合、URLはhttps://から始まる必要があります'
     }
     return ''
   }
   const Url = () => {
     return (
-      <props.Form.Field name="url" validate={validateUrl}>
+      <Field of={props.formStore} name="url" validate={[required('Enter Repository URL'), validateUrl]}>
         {(field, fieldProps) => (
           <FormItem title="Repository URL" required>
-            <TextInput value={field.value} required {...fieldProps} type="text" error={field.error} />
+            <TextInput value={field.value} error={field.error} {...fieldProps} />
           </FormItem>
         )}
-      </props.Form.Field>
+      </Field>
     )
   }
 
@@ -143,14 +166,14 @@ export const RepositoryAuthSettings = (props: Props) => {
     return (
       <Switch>
         <Match when={authMethod() === 'basic'}>
-          <props.Form.Field name="auth.basic.username" validate={required('Enter UserName')}>
+          <Field of={props.formStore} name="auth.basic.username" validate={required('Enter UserName')}>
             {(field, fieldProps) => (
               <FormItem title="UserName" required>
                 <TextInput value={field.value} error={field.error} {...fieldProps} />
               </FormItem>
             )}
-          </props.Form.Field>
-          <props.Form.Field name="auth.basic.password" validate={required('Enter Password')}>
+          </Field>
+          <Field of={props.formStore} name="auth.basic.password" validate={required('Enter Password')}>
             {(field, fieldProps) => (
               <FormItem title="Password" required>
                 <TextInput
@@ -168,10 +191,10 @@ export const RepositoryAuthSettings = (props: Props) => {
                 />
               </FormItem>
             )}
-          </props.Form.Field>
+          </Field>
         </Match>
         <Match when={authMethod() === 'ssh'}>
-          <props.Form.Field name="auth.ssh.keyId">
+          <Field of={props.formStore} name="auth.ssh.keyId">
             {() => (
               <FormItem title="SSH公開鍵">
                 <SshKeyContainer>
@@ -196,7 +219,7 @@ export const RepositoryAuthSettings = (props: Props) => {
                 </SshKeyContainer>
               </FormItem>
             )}
-          </props.Form.Field>
+          </Field>
         </Match>
       </Switch>
     )

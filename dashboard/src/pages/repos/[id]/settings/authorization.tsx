@@ -2,11 +2,11 @@ import { CreateRepositoryAuth, Repository, Repository_AuthMethod } from '/@/api/
 import { Button } from '/@/components/UI/Button'
 import { DataTable } from '/@/components/layouts/DataTable'
 import FormBox from '/@/components/layouts/FormBox'
-import { AuthForm, RepositoryAuthSettings } from '/@/components/templates/RepositoryAuthSettings'
+import { AuthForm, RepositoryAuthSettings, formToAuth } from '/@/components/templates/RepositoryAuthSettings'
 import { client, handleAPIError } from '/@/libs/api'
 import { useRepositoryData } from '/@/routes'
 import { PlainMessage } from '@bufbuild/protobuf'
-import { SubmitHandler, createForm, getValue, reset } from '@modular-forms/solid'
+import { SubmitHandler, createForm, reset } from '@modular-forms/solid'
 import { Component, Show } from 'solid-js'
 import toast from 'solid-toast'
 
@@ -40,32 +40,6 @@ const AuthConfig: Component<{
       },
     },
   })
-  const authValue = (): PlainMessage<CreateRepositoryAuth>['auth'] => {
-    const authMethod = getValue(authForm, 'case')
-    switch (authMethod) {
-      case 'none':
-        return {
-          case: 'none',
-          value: '',
-        }
-      case 'basic':
-        return {
-          case: 'basic',
-          value: {
-            username: getValue(authForm, 'auth.basic.username'),
-            password: getValue(authForm, 'auth.basic.password'),
-          },
-        }
-      case 'ssh':
-        return {
-          case: 'ssh',
-          value: {
-            keyId: getValue(authForm, 'auth.ssh.keyId'),
-          },
-        }
-    }
-    throw new Error('unreachable')
-  }
 
   const handleSubmit: SubmitHandler<AuthForm> = async (values) => {
     try {
@@ -73,7 +47,7 @@ const AuthConfig: Component<{
         id: props.repo.id,
         url: values.url,
         auth: {
-          auth: authValue(),
+          auth: formToAuth(values),
         },
       })
       toast.success('リポジトリの設定を更新しました')
@@ -89,7 +63,6 @@ const AuthConfig: Component<{
 
   const AuthSetting = RepositoryAuthSettings({
     formStore: authForm,
-    Form: Auth,
   })
 
   return (
