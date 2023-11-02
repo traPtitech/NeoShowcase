@@ -262,7 +262,7 @@ export default () => {
               <List.Row>
                 <List.RowContent>
                   <List.RowTitle>ビルド時間</List.RowTitle>
-                  <Show when={build()?.startedAt?.valid && build()?.startedAt?.valid} fallback={'-'}>
+                  <Show when={build()?.finishedAt?.valid && build()?.startedAt?.valid} fallback={'-'}>
                     <List.RowData>
                       {durationHuman(
                         build()?.finishedAt?.timestamp?.toDate().getTime() -
