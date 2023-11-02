@@ -1,6 +1,6 @@
 import { ApplicationConfig, RuntimeConfig, StaticConfig } from '/@/api/neoshowcase/protobuf/gateway_pb'
 import { PlainMessage } from '@bufbuild/protobuf'
-import { createForm, getValue, setValue } from '@modular-forms/solid'
+import { Field, FormStore, getValue, setValue } from '@modular-forms/solid'
 import { Component, Match, Show, Switch, createSignal } from 'solid-js'
 import { TextInput } from '../UI/TextInput'
 import { Textarea } from '../UI/Textarea'
@@ -21,8 +21,7 @@ const buildConfigItems: SelectItem<BuildConfigMethod>[] = [
 ]
 
 interface RuntimeConfigProps {
-  formStore: ReturnType<typeof createForm<BuildConfigForm>>[0]
-  Form: ReturnType<typeof createForm<BuildConfigForm>>[1]
+  formStore: FormStore<BuildConfigForm, undefined>
   disableEditDB: boolean
 }
 
@@ -74,7 +73,7 @@ const RuntimeConfigs: Component<RuntimeConfigProps> = (props) => {
             }}
           >
             <CheckBox.Container>
-              <props.Form.Field name="config.runtimeConfig.useMariadb" type="boolean">
+              <Field of={props.formStore} name="config.runtimeConfig.useMariadb" type="boolean">
                 {(field, fieldProps) => (
                   <CheckBox.Option
                     title="MariaDB"
@@ -84,8 +83,8 @@ const RuntimeConfigs: Component<RuntimeConfigProps> = (props) => {
                     {...fieldProps}
                   />
                 )}
-              </props.Form.Field>
-              <props.Form.Field name="config.runtimeConfig.useMongodb" type="boolean">
+              </Field>
+              <Field of={props.formStore} name="config.runtimeConfig.useMongodb" type="boolean">
                 {(field, fieldProps) => (
                   <CheckBox.Option
                     title="MongoDB"
@@ -95,12 +94,12 @@ const RuntimeConfigs: Component<RuntimeConfigProps> = (props) => {
                     {...fieldProps}
                   />
                 )}
-              </props.Form.Field>
+              </Field>
             </CheckBox.Container>
           </ToolTip>
         </FormItem>
       </Show>
-      <props.Form.Field name="config.runtimeConfig.entrypoint">
+      <Field of={props.formStore} name="config.runtimeConfig.entrypoint">
         {(field, fieldProps) => (
           <FormItem
             title="Entrypoint"
@@ -113,8 +112,8 @@ const RuntimeConfigs: Component<RuntimeConfigProps> = (props) => {
             <TextInput value={field.value} error={field.error} {...fieldProps} />
           </FormItem>
         )}
-      </props.Form.Field>
-      <props.Form.Field name="config.runtimeConfig.command">
+      </Field>
+      <Field of={props.formStore} name="config.runtimeConfig.command">
         {(field, fieldProps) => (
           <FormItem
             title="Command"
@@ -127,20 +126,19 @@ const RuntimeConfigs: Component<RuntimeConfigProps> = (props) => {
             <TextInput value={field.value} error={field.error} {...fieldProps} />
           </FormItem>
         )}
-      </props.Form.Field>
+      </Field>
     </>
   )
 }
 
 interface StaticConfigProps {
-  formStore: ReturnType<typeof createForm<BuildConfigForm>>[0]
-  Form: ReturnType<typeof createForm<BuildConfigForm>>[1]
+  formStore: FormStore<BuildConfigForm, undefined>
 }
 
 const StaticConfigs = (props: StaticConfigProps) => {
   return (
     <>
-      <props.Form.Field name="config.staticConfig.artifactPath">
+      <Field of={props.formStore} name="config.staticConfig.artifactPath">
         {(field, fieldProps) => (
           <FormItem
             title="Artifact Path"
@@ -158,8 +156,8 @@ const StaticConfigs = (props: StaticConfigProps) => {
             <TextInput value={field.value} error={field.error} {...fieldProps} />
           </FormItem>
         )}
-      </props.Form.Field>
-      <props.Form.Field name="config.staticConfig.spa" type="boolean">
+      </Field>
+      <Field of={props.formStore} name="config.staticConfig.spa" type="boolean">
         {(field, fieldProps) => (
           <FormItem
             title="is SPA (Single Page Application)"
@@ -185,18 +183,17 @@ const StaticConfigs = (props: StaticConfigProps) => {
             />
           </FormItem>
         )}
-      </props.Form.Field>
+      </Field>
     </>
   )
 }
 interface BuildPackConfigProps {
-  formStore: ReturnType<typeof createForm<BuildConfigForm>>[0]
-  Form: ReturnType<typeof createForm<BuildConfigForm>>[1]
+  formStore: FormStore<BuildConfigForm, undefined>
 }
 
 const BuildPackConfigs = (props: BuildPackConfigProps) => {
   return (
-    <props.Form.Field name="config.buildPackConfig.context">
+    <Field of={props.formStore} name="config.buildPackConfig.context">
       {(field, fieldProps) => (
         <FormItem
           title="Context"
@@ -214,18 +211,17 @@ const BuildPackConfigs = (props: BuildPackConfigProps) => {
           <TextInput value={field.value} error={field.error} {...fieldProps} />
         </FormItem>
       )}
-    </props.Form.Field>
+    </Field>
   )
 }
 interface CmdConfigProps {
-  formStore: ReturnType<typeof createForm<BuildConfigForm>>[0]
-  Form: ReturnType<typeof createForm<BuildConfigForm>>[1]
+  formStore: FormStore<BuildConfigForm, undefined>
 }
 
 const CmdConfigs = (props: CmdConfigProps) => {
   return (
     <>
-      <props.Form.Field name="config.cmdConfig.baseImage">
+      <Field of={props.formStore} name="config.cmdConfig.baseImage">
         {(field, fieldProps) => (
           <FormItem
             title="Base Image"
@@ -243,8 +239,8 @@ const CmdConfigs = (props: CmdConfigProps) => {
             <TextInput value={field.value} error={field.error} {...fieldProps} />
           </FormItem>
         )}
-      </props.Form.Field>
-      <props.Form.Field name="config.cmdConfig.buildCmd">
+      </Field>
+      <Field of={props.formStore} name="config.cmdConfig.buildCmd">
         {(field, fieldProps) => (
           <FormItem
             title="Build Command"
@@ -262,19 +258,18 @@ const CmdConfigs = (props: CmdConfigProps) => {
             <Textarea value={field.value} {...fieldProps} />
           </FormItem>
         )}
-      </props.Form.Field>
+      </Field>
     </>
   )
 }
 interface DockerConfigProps {
-  formStore: ReturnType<typeof createForm<BuildConfigForm>>[0]
-  Form: ReturnType<typeof createForm<BuildConfigForm>>[1]
+  formStore: FormStore<BuildConfigForm, undefined>
 }
 
 const DockerConfigs = (props: DockerConfigProps) => {
   return (
     <>
-      <props.Form.Field name="config.dockerfileConfig.dockerfileName">
+      <Field of={props.formStore} name="config.dockerfileConfig.dockerfileName">
         {(field, fieldProps) => (
           <FormItem
             title="Dockerfile Name"
@@ -293,8 +288,8 @@ const DockerConfigs = (props: DockerConfigProps) => {
             <TextInput value={field.value} error={field.error} {...fieldProps} />
           </FormItem>
         )}
-      </props.Form.Field>
-      <props.Form.Field name="config.dockerfileConfig.dockerfileName">
+      </Field>
+      <Field of={props.formStore} name="config.dockerfileConfig.dockerfileName">
         {(field, fieldProps) => (
           <FormItem
             title="Context"
@@ -312,7 +307,7 @@ const DockerConfigs = (props: DockerConfigProps) => {
             <TextInput value={field.value} error={field.error} {...fieldProps} />
           </FormItem>
         )}
-      </props.Form.Field>
+      </Field>
     </>
   )
 }
@@ -480,8 +475,7 @@ export const configToForm = (config: PlainMessage<ApplicationConfig>): BuildConf
 }
 
 export interface BuildConfigsProps {
-  formStore: ReturnType<typeof createForm<BuildConfigForm>>[0]
-  Form: ReturnType<typeof createForm<BuildConfigForm>>[1]
+  formStore: FormStore<BuildConfigForm, undefined>
   disableEditDB: boolean
 }
 
@@ -490,7 +484,7 @@ export const BuildConfigs: Component<BuildConfigsProps> = (props) => {
 
   return (
     <>
-      <props.Form.Field name="case">
+      <Field of={props.formStore} name="case">
         {(field, fieldProps) => (
           <FormItem
             title="Type"
@@ -516,37 +510,37 @@ export const BuildConfigs: Component<BuildConfigsProps> = (props) => {
             />
           </FormItem>
         )}
-      </props.Form.Field>
+      </Field>
 
       <Switch>
         <Match when={buildType() === 'runtimeBuildpack'}>
-          <BuildPackConfigs formStore={props.formStore} Form={props.Form} />
-          <RuntimeConfigs formStore={props.formStore} Form={props.Form} disableEditDB={props.disableEditDB} />
+          <BuildPackConfigs formStore={props.formStore} />
+          <RuntimeConfigs formStore={props.formStore} disableEditDB={props.disableEditDB} />
         </Match>
 
         <Match when={buildType() === 'runtimeCmd'}>
-          <CmdConfigs formStore={props.formStore} Form={props.Form} />
-          <RuntimeConfigs formStore={props.formStore} Form={props.Form} disableEditDB={props.disableEditDB} />
+          <CmdConfigs formStore={props.formStore} />
+          <RuntimeConfigs formStore={props.formStore} disableEditDB={props.disableEditDB} />
         </Match>
 
         <Match when={buildType() === 'runtimeDockerfile'}>
-          <DockerConfigs formStore={props.formStore} Form={props.Form} />
-          <RuntimeConfigs formStore={props.formStore} Form={props.Form} disableEditDB={props.disableEditDB} />
+          <DockerConfigs formStore={props.formStore} />
+          <RuntimeConfigs formStore={props.formStore} disableEditDB={props.disableEditDB} />
         </Match>
 
         <Match when={buildType() === 'staticBuildpack'}>
-          <BuildPackConfigs formStore={props.formStore} Form={props.Form} />
-          <StaticConfigs formStore={props.formStore} Form={props.Form} />
+          <BuildPackConfigs formStore={props.formStore} />
+          <StaticConfigs formStore={props.formStore} />
         </Match>
 
         <Match when={buildType() === 'staticCmd'}>
-          <CmdConfigs formStore={props.formStore} Form={props.Form} />
-          <StaticConfigs formStore={props.formStore} Form={props.Form} />
+          <CmdConfigs formStore={props.formStore} />
+          <StaticConfigs formStore={props.formStore} />
         </Match>
 
         <Match when={buildType() === 'staticDockerfile'}>
-          <DockerConfigs formStore={props.formStore} Form={props.Form} />
-          <StaticConfigs formStore={props.formStore} Form={props.Form} />
+          <DockerConfigs formStore={props.formStore} />
+          <StaticConfigs formStore={props.formStore} />
         </Match>
       </Switch>
     </>

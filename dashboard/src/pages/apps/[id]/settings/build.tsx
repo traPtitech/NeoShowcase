@@ -45,7 +45,7 @@ export default () => {
         <BuildConfig.Form onSubmit={handleSubmit}>
           <FormBox.Container>
             <FormBox.Forms>
-              <BuildConfigs Form={BuildConfig} formStore={buildConfig} disableEditDB />
+              <BuildConfigs formStore={buildConfig} disableEditDB />
             </FormBox.Forms>
             <FormBox.Actions>
               <Show when={buildConfig.dirty && !buildConfig.submitting}>
