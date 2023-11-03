@@ -12,11 +12,14 @@ export default () => {
   const { app, refetchApp } = useApplicationData()
   const loaded = () => !!app()
 
-  const [buildConfig, BuildConfig] = createForm<BuildConfigForm>()
+  const [buildConfig, BuildConfig] = createForm<BuildConfigForm>({
+    initialValues: configToForm(structuredClone(app()?.config)),
+  })
 
+  // reset form when app updated
   createEffect(() => {
     reset(buildConfig, {
-      initialValues: configToForm(app()?.config),
+      initialValues: configToForm(structuredClone(app()?.config)),
     })
   })
 

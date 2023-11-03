@@ -1,6 +1,6 @@
 import { ApplicationConfig, RuntimeConfig, StaticConfig } from '/@/api/neoshowcase/protobuf/gateway_pb'
 import { PlainMessage } from '@bufbuild/protobuf'
-import { Field, FormStore, getValue, required, setValue } from '@modular-forms/solid'
+import { Field, FormStore, getValue, required, setValue, validate } from '@modular-forms/solid'
 import { Component, Match, Show, Switch, createSignal } from 'solid-js'
 import { TextInput } from '../UI/TextInput'
 import { Textarea } from '../UI/Textarea'
@@ -270,7 +270,11 @@ interface DockerConfigProps {
 const DockerConfigs = (props: DockerConfigProps) => {
   return (
     <>
-      <Field of={props.formStore} name="config.dockerfileConfig.dockerfileName">
+      <Field
+        of={props.formStore}
+        name="config.dockerfileConfig.dockerfileName"
+        validate={[required('Enter Dockerfile Name')]}
+      >
         {(field, fieldProps) => (
           <FormItem
             title="Dockerfile Name"
@@ -290,7 +294,7 @@ const DockerConfigs = (props: DockerConfigProps) => {
           </FormItem>
         )}
       </Field>
-      <Field of={props.formStore} name="config.dockerfileConfig.dockerfileName">
+      <Field of={props.formStore} name="config.dockerfileConfig.context">
         {(field, fieldProps) => (
           <FormItem
             title="Context"
@@ -485,7 +489,7 @@ export const BuildConfigs: Component<BuildConfigsProps> = (props) => {
 
   return (
     <>
-      <Field of={props.formStore} name="case">
+      <Field of={props.formStore} name="case" type="string">
         {(field, fieldProps) => (
           <FormItem
             title="Type"
@@ -506,7 +510,10 @@ export const BuildConfigs: Component<BuildConfigsProps> = (props) => {
             <SingleSelect
               items={buildConfigItems}
               selected={field.value}
-              setSelected={(v) => setValue(props.formStore, 'case', v)}
+              setSelected={(v) => {
+                setValue(props.formStore, 'case', v)
+                validate(props.formStore)
+              }}
               {...fieldProps}
             />
           </FormItem>
