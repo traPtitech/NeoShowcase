@@ -8,8 +8,18 @@ import { useApplicationData } from '/@/routes'
 import { colorVars, textVars } from '/@/theme'
 import { PlainMessage } from '@bufbuild/protobuf'
 import { styled } from '@macaron-css/solid'
-import { Component, For, Show, createEffect, createResource } from 'solid-js'
-import { createStore } from 'solid-js/store'
+import {
+  SubmitHandler,
+  createForm,
+  custom,
+  getValue,
+  getValues,
+  insert,
+  remove,
+  required,
+  reset,
+} from '@modular-forms/solid'
+import { Component, For, Show, createEffect, createReaction, createResource, on } from 'solid-js'
 import toast from 'solid-toast'
 
 const EnvVarsContainer = styled('div', {
@@ -30,48 +40,68 @@ const EnvVarConfig: Component<{
   envVars: PlainMessage<ApplicationEnvVars>
   refetchEnvVars: () => void
 }> = (props) => {
-  let formRef: HTMLFormElement
-  const [envVars, setEnvVars] = createStore<
-    {
-      key: string
-      value: string
-      system: boolean
-    }[]
-  >(props.envVars.variables)
-
-  const updateEnvVars = () => {
-    setEnvVars((prev) =>
-      prev
-        // strip empty env var
-        .filter((envVar) => envVar.key !== '' || envVar.value !== '')
-        // add empty env var
-        .concat({
-          key: '',
-          value: '',
-          system: false,
-        }),
-    )
-  }
-  createEffect(updateEnvVars)
+  const [envVarForm, EnvVar] = createForm<PlainMessage<ApplicationEnvVars>>({
+    initialValues: {
+      variables: props.envVars.variables,
+    },
+  })
 
   const discardChanges = () => {
-    setEnvVars(props.envVars.variables)
-    updateEnvVars()
+    reset(envVarForm, {
+      initialValues: {
+        variables: props.envVars.variables,
+      },
+    })
+    stripEnvVars()
   }
 
-  const existSameKey = (key: string) => {
-    const sameKey = envVars.map((envVar) => envVar.key).filter((k) => k === key)
-    return sameKey.length > 1
+  // reset form when envVars updated
+  createEffect(
+    on(
+      () => props.envVars,
+      () => {
+        discardChanges()
+      },
+    ),
+  )
+
+  const stripEnvVars = () => {
+    const forms = getValues(envVarForm, 'variables') as PlainMessage<ApplicationEnvVars>['variables']
+    // remove all empty env vars
+    forms
+      .map((envVar, index) => (envVar.key === '' && envVar.value === '' ? index : null))
+      .filter((index): index is number => index !== null)
+      .reverse()
+      .forEach((index) => {
+        remove(envVarForm, 'variables', { at: index })
+      })
+    // add empty env var
+    insert(envVarForm, 'variables', {
+      value: { key: '', value: '', system: false },
+    })
+    track(() => {
+      getValues(envVarForm, 'variables')
+    })
+  }
+  const track = createReaction(() => {
+    stripEnvVars()
+  })
+
+  const isUniqueKey = (key?: string) => {
+    const sameKey = (getValues(envVarForm, 'variables') as PlainMessage<ApplicationEnvVars>['variables'])
+      .map((envVar) => envVar.key)
+      .filter((k) => k === key)
+    return sameKey.length === 1
   }
 
-  const saveChanges = async () => {
-    if (!formRef.reportValidity()) return
-
+  const handleSubmit: SubmitHandler<PlainMessage<ApplicationEnvVars>> = async (values) => {
     const oldVars = new Map(
       props.envVars.variables.filter((envVar) => !envVar.system).map((envVar) => [envVar.key, envVar.value]),
     )
     const newVars = new Map(
-      envVars.filter((envVar) => !envVar.system && envVar.key !== '').map((envVar) => [envVar.key, envVar.value]),
+      values.variables
+        .filter((envVar) => !envVar.system && envVar.key !== '')
+        .map((envVar) => [envVar.key, envVar.value]),
     )
 
     const addedKeys = [...newVars.keys()].filter((key) => !oldVars.has(key))
@@ -103,67 +133,81 @@ const EnvVarConfig: Component<{
   }
 
   return (
-    <FormBox.Container ref={formRef}>
-      <FormBox.Forms>
-        <EnvVarsContainer>
-          <div>Key</div>
-          <div>Value</div>
-          <For each={envVars}>
-            {(envVar, index) => (
-              <>
-                <TextInput
-                  value={envVar.key}
-                  readOnly={envVar.system}
-                  onInput={(e) => {
-                    setEnvVars(index(), 'key', e.currentTarget.value)
-                    updateEnvVars()
-
-                    if (existSameKey(envVar.key)) {
-                      e.currentTarget.setCustomValidity('Keyはユニークである必要があります')
-                    } else {
-                      e.currentTarget.setCustomValidity('')
-                    }
-                  }}
-                  required={envVar.value !== ''}
-                  disabled={envVar.system}
-                  tooltip={{
-                    props: {
-                      content: 'システム環境変数は変更できません',
-                    },
-                    disabled: !envVar.system,
-                  }}
-                />
-                <TextInput
-                  value={envVar.value}
-                  readOnly={envVar.system}
-                  onInput={(e) => {
-                    setEnvVars(index(), 'value', e.currentTarget.value)
-                    updateEnvVars()
-                  }}
-                  disabled={envVar.system}
-                  tooltip={{
-                    props: {
-                      content: 'システム環境変数は変更できません',
-                    },
-                    disabled: !envVar.system,
-                  }}
-                />
-              </>
-            )}
-          </For>
-        </EnvVarsContainer>
-      </FormBox.Forms>
-      <FormBox.Actions>
-        <Show when={true}>
-          <Button color="borderError" size="small" type="button" onClick={discardChanges}>
-            Discard Changes
+    <EnvVar.Form onSubmit={handleSubmit}>
+      <FormBox.Container>
+        <FormBox.Forms>
+          <EnvVarsContainer>
+            <div>Key</div>
+            <div>Value</div>
+            <EnvVar.FieldArray name="variables">
+              {(fieldArray) => (
+                <For each={fieldArray.items}>
+                  {(_, index) => (
+                    <>
+                      <EnvVar.Field
+                        name={`variables.${index()}.key`}
+                        validate={[
+                          // required if not the last item
+                          !(index() === fieldArray.items.length - 1) ? required('キーを入力してください') : () => '',
+                          custom(isUniqueKey, '同じキーの環境変数が存在します'),
+                        ]}
+                      >
+                        {(field, fieldProps) => (
+                          <TextInput
+                            value={field.value}
+                            error={field.error}
+                            {...fieldProps}
+                            readOnly={getValue(envVarForm, `variables.${index()}.system`)}
+                            disabled={getValue(envVarForm, `variables.${index()}.system`)}
+                            tooltip={{
+                              props: {
+                                content: 'システム環境変数は変更できません',
+                              },
+                              disabled: !getValue(envVarForm, `variables.${index()}.system`),
+                            }}
+                          />
+                        )}
+                      </EnvVar.Field>
+                      <EnvVar.Field name={`variables.${index()}.value`}>
+                        {(field, fieldProps) => (
+                          <TextInput
+                            value={field.value}
+                            {...fieldProps}
+                            readOnly={getValue(envVarForm, `variables.${index()}.system`)}
+                            disabled={getValue(envVarForm, `variables.${index()}.system`)}
+                            tooltip={{
+                              props: {
+                                content: 'システム環境変数は変更できません',
+                              },
+                              disabled: !getValue(envVarForm, `variables.${index()}.system`),
+                            }}
+                          />
+                        )}
+                      </EnvVar.Field>
+                    </>
+                  )}
+                </For>
+              )}
+            </EnvVar.FieldArray>
+          </EnvVarsContainer>
+        </FormBox.Forms>
+        <FormBox.Actions>
+          <Show when={envVarForm.dirty && !envVarForm.submitting}>
+            <Button color="borderError" size="small" type="button" onClick={discardChanges}>
+              Discard Changes
+            </Button>
+          </Show>
+          <Button
+            color="primary"
+            size="small"
+            type="submit"
+            disabled={envVarForm.invalid || !envVarForm.dirty || envVarForm.submitting}
+          >
+            Save
           </Button>
-        </Show>
-        <Button color="primary" size="small" type="button" onClick={saveChanges} disabled={false}>
-          Save
-        </Button>
-      </FormBox.Actions>
-    </FormBox.Container>
+        </FormBox.Actions>
+      </FormBox.Container>
+    </EnvVar.Form>
   )
 }
 
