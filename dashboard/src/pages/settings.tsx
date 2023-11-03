@@ -2,6 +2,7 @@ import { Button } from '/@/components/UI/Button'
 import { client, handleAPIError } from '/@/libs/api'
 import { colorVars, textVars } from '/@/theme'
 import { styled } from '@macaron-css/solid'
+import { SubmitHandler, createForm, required } from '@modular-forms/solid'
 import { Component, For, Show, createMemo, createResource } from 'solid-js'
 import toast from 'solid-toast'
 import { DeleteUserKeyRequest, UserKey } from '../api/neoshowcase/protobuf/gateway_pb'
@@ -85,7 +86,7 @@ const DeleteConfirm = styled('div', {
     background: colorVars.semantic.ui.secondary,
   },
 })
-const FormContainer = styled('form', {
+const FormContainer = styled('div', {
   base: {
     width: '100%',
     display: 'flex',
@@ -142,19 +143,24 @@ const SshKeys: Component<{ keys: UserKey[]; refetchKeys: () => void }> = (props)
   )
 }
 
+type AddNewKeyForm = {
+  value: string
+}
+
 export default () => {
   const [userKeys, { refetch: refetchKeys }] = createResource(() => client.getUserKeys({}))
   const { Modal: AddNewKeyModal, open: newKeyOpen, close: newKeyClose } = useModal()
 
-  let formRef: HTMLFormElement
-  let textareaRef: HTMLTextAreaElement
-  const handleAddNewKey = () => {
+  const [key, Key] = createForm<AddNewKeyForm>({
+    initialValues: {
+      value: '',
+    },
+  })
+
+  const handleSubmit: SubmitHandler<AddNewKeyForm> = async (values) => {
+    console.log(values)
     try {
-      // validate form
-      if (!formRef.reportValidity()) {
-        return
-      }
-      client.createUserKey({ publicKey: textareaRef.value })
+      await client.createUserKey({ publicKey: values.value })
       toast.success('公開鍵を追加しました')
       newKeyClose()
       refetchKeys()
@@ -207,22 +213,33 @@ export default () => {
         </WithNav.Body>
       </WithNav.Container>
       <AddNewKeyModal.Container>
-        <AddNewKeyModal.Header>Add New SSH Key</AddNewKeyModal.Header>
-        <AddNewKeyModal.Body>
-          <FormContainer ref={formRef}>
-            <FormItem title="Key" required>
-              <Textarea placeholder="ssh-ed25519 AAA..." ref={textareaRef} required />
-            </FormItem>
-          </FormContainer>
-        </AddNewKeyModal.Body>
-        <AddNewKeyModal.Footer>
-          <Button color="text" size="medium" onClick={newKeyClose}>
-            Cancel
-          </Button>
-          <Button color="primary" size="medium" onClick={() => handleAddNewKey()}>
-            Add
-          </Button>
-        </AddNewKeyModal.Footer>
+        <Key.Form onSubmit={handleSubmit}>
+          <AddNewKeyModal.Header>Add New SSH Key</AddNewKeyModal.Header>
+          <AddNewKeyModal.Body>
+            <FormContainer>
+              <Key.Field name="value" validate={[required('Enter SSH Public Key')]}>
+                {(field, fieldProps) => (
+                  <FormItem title="Key" required>
+                    <Textarea
+                      placeholder="ssh-ed25519 AAA..."
+                      value={field.value}
+                      error={field.error}
+                      {...fieldProps}
+                    />
+                  </FormItem>
+                )}
+              </Key.Field>
+            </FormContainer>
+          </AddNewKeyModal.Body>
+          <AddNewKeyModal.Footer>
+            <Button color="text" size="medium" type="button" onClick={newKeyClose}>
+              Cancel
+            </Button>
+            <Button color="primary" size="medium" type="submit" disabled={key.invalid || key.submitting}>
+              Add
+            </Button>
+          </AddNewKeyModal.Footer>
+        </Key.Form>
       </AddNewKeyModal.Container>
     </>
   )

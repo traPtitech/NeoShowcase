@@ -1,6 +1,6 @@
 import { colorVars, textVars } from '/@/theme'
 import { styled } from '@macaron-css/solid'
-import { Component, JSX, Show, createEffect, onMount, splitProps } from 'solid-js'
+import { Component, JSX, Show, onMount, splitProps } from 'solid-js'
 
 const Container = styled('div', {
   base: {
@@ -58,7 +58,7 @@ const StyledTextArea = styled('textarea', {
         cursor: 'not-allowed',
         background: colorVars.semantic.ui.tertiary,
       },
-      '&:invalid': {
+      '&:invalid, &.invalid': {
         outline: `2px solid ${colorVars.semantic.accent.error}`,
       },
     },
@@ -67,19 +67,19 @@ const StyledTextArea = styled('textarea', {
 const HelpText = styled('div', {
   base: {
     width: '100%',
-    color: colorVars.semantic.text.grey,
+    color: colorVars.semantic.accent.error,
     ...textVars.text.regular,
   },
 })
 
 export interface Props extends JSX.TextareaHTMLAttributes<HTMLTextAreaElement> {
-  helpText?: string
+  error?: string
   ref?: HTMLTextAreaElement | ((ref: HTMLTextAreaElement) => void)
 }
 
 export const Textarea: Component<Props> = (props) => {
   let dummyRef: HTMLDivElement
-  const [addedProps, originalProps] = splitProps(props, ['helpText', 'ref'])
+  const [addedProps, originalProps] = splitProps(props, ['error', 'ref'])
 
   onMount(() => {
     dummyRef.textContent = `${originalProps.value}\u200b`
@@ -102,10 +102,13 @@ export const Textarea: Component<Props> = (props) => {
               }
             }
           }}
+          classList={{
+            invalid: addedProps.error !== undefined && addedProps.error !== '',
+          }}
         />
       </TextareaContainer>
-      <Show when={addedProps.helpText}>
-        <HelpText>{addedProps.helpText}</HelpText>
+      <Show when={addedProps.error}>
+        <HelpText>{addedProps.error}</HelpText>
       </Show>
     </Container>
   )
