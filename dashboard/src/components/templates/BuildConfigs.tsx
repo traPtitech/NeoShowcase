@@ -1,6 +1,6 @@
 import { ApplicationConfig, RuntimeConfig, StaticConfig } from '/@/api/neoshowcase/protobuf/gateway_pb'
 import { PlainMessage } from '@bufbuild/protobuf'
-import { Field, FormStore, getValue, setValue } from '@modular-forms/solid'
+import { Field, FormStore, getValue, required, setValue } from '@modular-forms/solid'
 import { Component, Match, Show, Switch, createSignal } from 'solid-js'
 import { TextInput } from '../UI/TextInput'
 import { Textarea } from '../UI/Textarea'
@@ -138,10 +138,11 @@ interface StaticConfigProps {
 const StaticConfigs = (props: StaticConfigProps) => {
   return (
     <>
-      <Field of={props.formStore} name="config.staticConfig.artifactPath">
+      <Field of={props.formStore} name="config.staticConfig.artifactPath" validate={[required('Enter Artifact Path')]}>
         {(field, fieldProps) => (
           <FormItem
             title="Artifact Path"
+            required
             tooltip={{
               props: {
                 content: (

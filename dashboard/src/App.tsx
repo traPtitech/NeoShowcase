@@ -10,7 +10,7 @@ const App: Component = () => {
       <Toaster
         toastOptions={{
           duration: 10000,
-          position: 'bottom-right',
+          position: 'bottom-left',
         }}
       />
       <Router>
