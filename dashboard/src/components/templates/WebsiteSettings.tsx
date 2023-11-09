@@ -5,14 +5,13 @@ import {
   Website,
 } from '/@/api/neoshowcase/protobuf/gateway_pb'
 import { Button } from '/@/components/UI/Button'
-import { getWebsiteURL } from '/@/libs/application'
 import useModal from '/@/libs/useModal'
 import { colorVars, textVars } from '/@/theme'
 import { PlainMessage } from '@bufbuild/protobuf'
 import { styled } from '@macaron-css/solid'
+import { Field, Form, FormStore, getValue, reset, setValue, toCustom } from '@modular-forms/solid'
 import { For, Show, createEffect, createMemo, createSignal } from 'solid-js'
 import { on } from 'solid-js'
-import { SetStoreFunction } from 'solid-js/store'
 import { systemInfo } from '../../libs/api'
 import { MaterialSymbols } from '../UI/MaterialSymbols'
 import { TextInput } from '../UI/TextInput'
@@ -67,15 +66,9 @@ const AddMoreButtonContainer = styled('div', {
 
 interface WebsiteSettingProps {
   isRuntimeApp: boolean
-  state: WebsiteSetting['state']
-  website: PlainMessage<CreateWebsiteRequest>
-  setWebsite: <T extends keyof PlainMessage<CreateWebsiteRequest>>(
-    valueName: T,
-    value: PlainMessage<CreateWebsiteRequest>[T],
-  ) => void
+  formStore: FormStore<WebsiteSetting, undefined>
   saveWebsite?: () => void
   deleteWebsite: () => void
-  discardChanges?: () => void
 }
 
 const schemeOptions: SelectItem<boolean>[] = [
@@ -93,10 +86,19 @@ export const WebsiteSetting = (props: WebsiteSettingProps) => {
   const [host, setHost] = createSignal('')
   const [domain, setDomain] = createSignal<PlainMessage<AvailableDomain>>()
 
+  const state = () => getValue(props.formStore, 'state')
+  const discardChanges = () => reset(props.formStore)
+
   const { Modal, open, close } = useModal()
 
   const nonWildcardDomains = createMemo(() => systemInfo()?.domains.filter((d) => !d.domain.startsWith('*')) ?? [])
   const wildCardDomains = createMemo(() => systemInfo()?.domains.filter((d) => d.domain.startsWith('*')) ?? [])
+  const websiteUrl = () => {
+    const scheme = getValue(props.formStore, 'website.https') ? 'https' : 'http'
+    const fqdn = getValue(props.formStore, 'website.fqdn')
+    const pathPrefix = getValue(props.formStore, 'website.pathPrefix')
+    return `${scheme}://${fqdn}${pathPrefix}`
+  }
 
   const extractHost = (
     fqdn: string,
@@ -112,11 +114,13 @@ export const WebsiteSetting = (props: WebsiteSettingProps) => {
       }
     }
 
-    const matchDomain = wildCardDomains().find((d) => fqdn.endsWith(d.domain.replace(/\*/g, '')))
+    const matchDomain = wildCardDomains().find((d) => fqdn?.endsWith(d.domain.replace(/\*/g, '')))
     if (matchDomain === undefined) {
+      const fallbackDomain = systemInfo()?.domains[0]
+      if (fallbackDomain === undefined) throw new Error('No domain available')
       return {
         host: '',
-        domain: systemInfo()?.domains[0],
+        domain: fallbackDomain,
       }
     }
     return {
@@ -126,164 +130,233 @@ export const WebsiteSetting = (props: WebsiteSettingProps) => {
   }
 
   createEffect(() => {
-    const { host, domain } = extractHost(props.website.fqdn)
+    // set host and domain from fqdn on fqdn change
+    const fqdn = getValue(props.formStore, 'website.fqdn')
+    if (fqdn === undefined) return
+    const { host, domain } = extractHost(fqdn)
     setHost(host)
     setDomain(domain)
   })
 
   createEffect(
-    on([host, domain], () => {
-      props.setWebsite('fqdn', `${host()}${domain()?.domain.replace(/\*/g, '')}`)
+    on([host, domain], ([host, domain]) => {
+      // set fqdn from host and domain on host or domain change
+      if (host === undefined || domain === undefined) return
+      const fqdn = `${host}${domain?.domain.replace(/\*/g, '')}`
+      setValue(props.formStore, 'website.fqdn', fqdn)
     }),
   )
 
   createEffect(() => {
     if (domain()?.authAvailable === false) {
-      props.setWebsite('authentication', AuthenticationType.OFF)
+      setValue(props.formStore, 'website.authentication', AuthenticationType.OFF)
     }
   })
 
   return (
-    <>
+    <Form
+      of={props.formStore}
+      onSubmit={() => {
+        if (props.saveWebsite) props.saveWebsite()
+      }}
+    >
+      {/* 
+          To make a field active, it must be included in the DOM
+          see: https://modularforms.dev/solid/guides/add-fields-to-form#active-state
+        */}
+      <Field of={props.formStore} name={'state'}>
+        {() => <></>}
+      </Field>
+      <Field of={props.formStore} name={'website.id'}>
+        {() => <></>}
+      </Field>
       <FormBox.Container>
         <FormBox.Forms>
           <FormItem title="URL" required>
             <URLContainer>
               <HttpSelectContainer>
-                <ToolTip
-                  props={{
-                    content: (
-                      <>
-                        <div>スキーム</div>
-                        <div>通常はhttpsが推奨です</div>
-                      </>
-                    ),
-                  }}
-                >
-                  <SingleSelect
-                    items={schemeOptions}
-                    selected={props.website.https}
-                    setSelected={(selected) => props.setWebsite('https', selected)}
-                  />
-                </ToolTip>
+                <Field of={props.formStore} name={'website.https'} type="boolean">
+                  {(field, fieldProps) => (
+                    <ToolTip
+                      props={{
+                        content: (
+                          <>
+                            <div>スキーム</div>
+                            <div>通常はhttpsが推奨です</div>
+                          </>
+                        ),
+                      }}
+                    >
+                      <SingleSelect
+                        items={schemeOptions}
+                        selected={field.value}
+                        setSelected={(selected) => {
+                          if (selected !== undefined) {
+                            setValue(props.formStore, 'website.https', selected)
+                          }
+                        }}
+                        {...fieldProps}
+                      />
+                    </ToolTip>
+                  )}
+                </Field>
               </HttpSelectContainer>
               <span>://</span>
-              <Show when={domain()?.domain.startsWith('*')}>
-                <TextInput
-                  placeholder="example.trap.show"
-                  value={host()}
-                  onInput={(e) => setHost(e.target.value)}
-                  tooltip={{
-                    props: {
-                      content: 'ホスト名',
-                    },
-                  }}
-                />
-              </Show>
-              <ToolTip
-                props={{
-                  content: 'ドメイン',
-                }}
-              >
-                <SingleSelect
-                  selected={domain()}
-                  setSelected={(selected) => {
-                    setDomain(selected)
-                  }}
-                  items={
-                    systemInfo()?.domains.map((domain) => {
-                      const domainName = domain.domain.replace(/\*/g, '')
-                      return {
-                        value: domain,
-                        title: domainName,
-                      }
-                    }) ?? []
-                  }
-                />
-              </ToolTip>
+              <Field of={props.formStore} name={'website.fqdn'}>
+                {() => (
+                  <>
+                    <Show when={domain()?.domain.startsWith('*')}>
+                      <TextInput
+                        placeholder="example.trap.show"
+                        value={host()}
+                        onInput={(e) => setHost(e.target.value)}
+                        tooltip={{
+                          props: {
+                            content: 'ホスト名',
+                          },
+                        }}
+                      />
+                    </Show>
+                    <ToolTip
+                      props={{
+                        content: 'ドメイン',
+                      }}
+                    >
+                      <SingleSelect
+                        selected={domain()}
+                        setSelected={(selected) => {
+                          setDomain(selected)
+                        }}
+                        items={
+                          systemInfo()?.domains.map((domain) => {
+                            const domainName = domain.domain.replace(/\*/g, '')
+                            return {
+                              value: domain,
+                              title: domainName,
+                            }
+                          }) ?? []
+                        }
+                      />
+                    </ToolTip>
+                  </>
+                )}
+              </Field>
             </URLContainer>
             <URLContainer>
               <span>/</span>
-              <TextInput
-                value={props.website.pathPrefix.slice(1)}
-                onInput={(e) => props.setWebsite('pathPrefix', `/${e.target.value}`)}
-                tooltip={{
-                  props: {
-                    content: '(Advanced) 指定Prefixが付いていたときのみアプリへルーティング',
-                  },
-                }}
-              />
+              <Field
+                of={props.formStore}
+                name={'website.pathPrefix'}
+                transform={toCustom((value) => `/${value}` as string, {
+                  on: 'input',
+                })}
+              >
+                {(field, fieldProps) => (
+                  <TextInput
+                    value={field.value?.slice(1)}
+                    tooltip={{
+                      props: {
+                        content: '(Advanced) 指定Prefixが付いていたときのみアプリへルーティング',
+                      },
+                    }}
+                    {...fieldProps}
+                  />
+                )}
+              </Field>
               <Show when={props.isRuntimeApp}>
                 <span> → </span>
                 <HttpSelectContainer>
-                  <TextInput
-                    placeholder="80"
-                    type="number"
-                    min="0"
-                    value={props.website.httpPort || ''}
-                    onChange={(e) => props.setWebsite('httpPort', +e.target.value)}
-                    tooltip={{
-                      props: {
-                        content: 'アプリのHTTP Port番号',
-                      },
-                    }}
-                  />
+                  <Field of={props.formStore} name={'website.httpPort'} type="number">
+                    {(field, fieldProps) => (
+                      <TextInput
+                        placeholder="80"
+                        type="number"
+                        min="0"
+                        value={field.value}
+                        tooltip={{
+                          props: {
+                            content: 'アプリのHTTP Port番号',
+                          },
+                        }}
+                        {...fieldProps}
+                      />
+                    )}
+                  </Field>
                 </HttpSelectContainer>
                 <span>/TCP</span>
               </Show>
             </URLContainer>
           </FormItem>
-          <FormItem
-            title="部員認証"
-            tooltip={{
-              style: 'left',
-              props: {
-                content: (
-                  <>
-                    <div>OFF: 誰でもアクセス可能</div>
-                    <div>SOFT: 部員の場合X-Forwarded-Userをセット</div>
-                    <div>HARD: 部員のみアクセス可能</div>
-                  </>
-                ),
-              },
-            }}
-          >
-            <ToolTip
-              props={{
-                content: `${domain()?.domain}では部員認証が使用できません`,
-              }}
-              disabled={domain()?.authAvailable}
-            >
-              <RadioButtons
-                items={authenticationTypeItems}
-                selected={props.website.authentication}
-                setSelected={(selected) => props.setWebsite('authentication', selected)}
-                disabled={domain()?.authAvailable === false}
-              />
-            </ToolTip>
-          </FormItem>
-          <FormItem title="高度な設定">
-            <CheckBox.Option
-              title="Strip Path Prefix"
-              checked={props.website.stripPrefix}
-              setChecked={(selected) => props.setWebsite('stripPrefix', selected)}
-              tooltip={{
-                props: {
-                  content: '(Advanced) 指定Prefixをアプリへのリクエスト時に削除',
-                },
-              }}
-            />
-            <Show when={props.isRuntimeApp}>
-              <CheckBox.Option
-                title="Use h2c"
-                checked={props.website.h2c}
-                setChecked={(selected) => props.setWebsite('h2c', selected)}
+          <Field of={props.formStore} name={'website.authentication'} type="number">
+            {(field, fieldProps) => (
+              <FormItem
+                title="部員認証"
                 tooltip={{
+                  style: 'left',
                   props: {
-                    content: '(Advanced) アプリ通信に強制的にh2cを用いる',
+                    content: (
+                      <>
+                        <div>OFF: 誰でもアクセス可能</div>
+                        <div>SOFT: 部員の場合X-Forwarded-Userをセット</div>
+                        <div>HARD: 部員のみアクセス可能</div>
+                      </>
+                    ),
                   },
                 }}
-              />
+              >
+                <ToolTip
+                  props={{
+                    content: `${domain()?.domain}では部員認証が使用できません`,
+                  }}
+                  disabled={domain()?.authAvailable}
+                >
+                  <RadioButtons
+                    items={authenticationTypeItems}
+                    selected={field.value}
+                    setSelected={(selected) => {
+                      if (selected !== undefined) {
+                        setValue(props.formStore, 'website.authentication', selected)
+                      }
+                    }}
+                    disabled={domain()?.authAvailable === false}
+                    {...fieldProps}
+                  />
+                </ToolTip>
+              </FormItem>
+            )}
+          </Field>
+          <FormItem title="高度な設定">
+            <Field of={props.formStore} name={'website.stripPrefix'} type="boolean">
+              {(field, fieldProps) => (
+                <CheckBox.Option
+                  title="Strip Path Prefix"
+                  checked={field.value ?? false}
+                  setChecked={(selected) => setValue(props.formStore, 'website.stripPrefix', selected)}
+                  tooltip={{
+                    props: {
+                      content: '(Advanced) 指定Prefixをアプリへのリクエスト時に削除',
+                    },
+                  }}
+                  {...fieldProps}
+                />
+              )}
+            </Field>
+            <Show when={props.isRuntimeApp}>
+              <Field of={props.formStore} name={'website.h2c'} type="boolean">
+                {(field, fieldProps) => (
+                  <CheckBox.Option
+                    title="Use h2c"
+                    checked={field.value ?? false}
+                    setChecked={(selected) => setValue(props.formStore, 'website.h2c', selected)}
+                    tooltip={{
+                      props: {
+                        content: '(Advanced) アプリ通信に強制的にh2cを用いる',
+                      },
+                    }}
+                    {...fieldProps}
+                  />
+                )}
+              </Field>
             </Show>
           </FormItem>
         </FormBox.Forms>
@@ -293,22 +366,19 @@ export const WebsiteSetting = (props: WebsiteSettingProps) => {
               Delete
             </Button>
           </DeleteButtonContainer>
-          <Show when={props.state === 'modified'}>
-            <Button onclick={props.discardChanges} color="borderError" size="small" type="button">
+          <Show when={state() !== 'added' && props.formStore.dirty}>
+            <Button onclick={discardChanges} color="borderError" size="small" type="button">
               Discard Changes
             </Button>
           </Show>
           <Show when={props.saveWebsite !== undefined}>
             <Button
-              onclick={props.saveWebsite}
               color="primary"
               size="small"
-              type="button"
-              disabled={props.state === 'noChange'}
+              type="submit"
+              disabled={props.formStore.invalid || !props.formStore.dirty || props.formStore.submitting}
             >
-              <Show when={props.state === 'added'} fallback={'Save'}>
-                Add
-              </Show>
+              {state() === 'added' ? 'Add' : 'Save'}
             </Button>
           </Show>
         </FormBox.Actions>
@@ -316,45 +386,42 @@ export const WebsiteSetting = (props: WebsiteSettingProps) => {
       <Modal.Container>
         <Modal.Header>Delete Website</Modal.Header>
         <Modal.Body>
-          <DeleteConfirm>{getWebsiteURL(props.website)}</DeleteConfirm>
+          <DeleteConfirm>{websiteUrl()}</DeleteConfirm>
         </Modal.Body>
         <Modal.Footer>
           <Button onclick={close} color="text" size="medium" type="button">
             No, Cancel
           </Button>
-          <Button
-            onclick={props.deleteWebsite}
-            color="primaryError"
-            size="medium"
-            type="button"
-            disabled={props.state === 'noChange'}
-          >
+          <Button onclick={props.deleteWebsite} color="primaryError" size="medium" type="button">
             Yes, Delete
           </Button>
         </Modal.Footer>
       </Modal.Container>
-    </>
+    </Form>
   )
 }
 
 export type WebsiteSetting =
   | {
       /**
-       *  - `modified`: 既存の設定を変更した
        *  - `noChange`: 既存の設定を変更していない
+       *  - `readyToChange`: 次の保存時に変更を反映する
        *  - `readyToDelete`: 次の保存時に削除する
        */
-      state: 'modified' | 'noChange' | 'readyToDelete'
+      state: 'noChange' | 'readyToChange' | 'readyToDelete'
       website: PlainMessage<Website>
     }
   | {
       /**
        *  - `added`: 新規に設定を追加した
-       *  - `readyToSave`: 次の保存時に変更を反映する
        */
-      state: 'added' | 'readyToSave'
+      state: 'added'
       website: PlainMessage<CreateWebsiteRequest>
     }
+
+export type WebsiteSettingForm = {
+  websites: WebsiteSetting[]
+}
 
 export const newWebsite = (): PlainMessage<CreateWebsiteRequest> => ({
   fqdn: '',
@@ -383,26 +450,17 @@ const PlaceHolder = styled('div', {
 
 interface WebsiteSettingsProps {
   isRuntimeApp: boolean
-  websiteConfigs: WebsiteSetting[]
-  setWebsiteConfigs: SetStoreFunction<WebsiteSetting[]>
+  formStores: FormStore<WebsiteSetting, undefined>[]
+  addWebsite: () => void
   applyChanges: () => void
   refetchApp: () => void
 }
 
 export const WebsiteSettings = (props: WebsiteSettingsProps) => {
-  const addWebsite = () =>
-    props.setWebsiteConfigs([
-      ...props.websiteConfigs,
-      {
-        state: 'added',
-        website: newWebsite(),
-      },
-    ])
-
   return (
     <Show when={systemInfo()}>
       <For
-        each={props.websiteConfigs}
+        each={props.formStores}
         fallback={
           <List.Container>
             <PlaceHolder>
@@ -412,7 +470,7 @@ export const WebsiteSettings = (props: WebsiteSettingsProps) => {
                 color="primary"
                 size="medium"
                 rightIcon={<MaterialSymbols>add</MaterialSymbols>}
-                onClick={addWebsite}
+                onClick={props.addWebsite}
               >
                 Add Website
               </Button>
@@ -420,40 +478,33 @@ export const WebsiteSettings = (props: WebsiteSettingsProps) => {
           </List.Container>
         }
       >
-        {(config, i) => (
+        {(form, index) => (
           <WebsiteSetting
             isRuntimeApp={props.isRuntimeApp}
-            state={config.state}
-            website={config.website}
-            setWebsite={(valueName, value) => {
-              if (config.state === 'noChange') {
-                props.setWebsiteConfigs(i(), 'state', 'modified')
-              }
-              props.setWebsiteConfigs(i(), 'website', valueName, value)
-            }}
+            formStore={form}
             saveWebsite={() => {
-              props.setWebsiteConfigs(i(), 'state', 'readyToSave')
+              if (getValue(props.formStores[index()], 'state') === 'noChange') {
+                setValue(props.formStores[index()], 'state', 'readyToChange')
+              }
               props.applyChanges()
             }}
             deleteWebsite={() => {
-              if (config.state === 'added') {
-                props.setWebsiteConfigs((current) => [...current.slice(0, i()), ...current.slice(i() + 1)])
+              if (getValue(props.formStores[index()], 'state') === 'added') {
+                // 新規追加した設定をformStoresから削除
+                props.formStores.splice(index(), 1)
               } else {
-                props.setWebsiteConfigs(i(), 'state', 'readyToDelete')
+                // すでに保存されている設定を削除
+                setValue(props.formStores[index()], 'state', 'readyToDelete')
                 props.applyChanges()
               }
-            }}
-            discardChanges={() => {
-              props.setWebsiteConfigs(i(), 'state', 'noChange')
-              props.refetchApp()
             }}
           />
         )}
       </For>
-      <Show when={props.websiteConfigs.length > 0}>
+      <Show when={props.formStores.length > 0}>
         <AddMoreButtonContainer>
           <Button
-            onclick={addWebsite}
+            onclick={props.addWebsite}
             color="border"
             size="small"
             leftIcon={<MaterialSymbols opticalSize={20}>add</MaterialSymbols>}

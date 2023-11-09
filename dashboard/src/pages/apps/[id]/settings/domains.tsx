@@ -1,71 +1,63 @@
 import { DeployType } from '/@/api/neoshowcase/protobuf/gateway_pb'
 import { DataTable } from '/@/components/layouts/DataTable'
-import { WebsiteSetting, WebsiteSettings } from '/@/components/templates/WebsiteSettings'
+import { WebsiteSetting, WebsiteSettings, newWebsite } from '/@/components/templates/WebsiteSettings'
 import { client, handleAPIError } from '/@/libs/api'
 import { useApplicationData } from '/@/routes'
-import { Show, createEffect } from 'solid-js'
-import { createStore } from 'solid-js/store'
+import { createForm, getValues, setValue } from '@modular-forms/solid'
+import { Show, createResource } from 'solid-js'
 import toast from 'solid-toast'
 
 export default () => {
   const { app, refetchApp } = useApplicationData()
-  const [websites, setWebsites] = createStore<WebsiteSetting[]>([])
 
-  // appのrefetch時にwebsitesを更新する
-  createEffect(() => {
-    // fetchしたappのwebsites
-    const fetched = structuredClone(
-      app()?.websites.map((website) => ({
-        state: 'noChange' as const,
-        website,
-      })),
-    )
-    if (fetched === undefined) return
-
-    setWebsites((prevSettings) => {
-      // UI上で追加されたが変更が反映されていなかった設定
-      const addedSettings = prevSettings.filter((website) => website.state === 'added')
-
-      const mergedSettings = fetched.map((newSetting) => {
-        // fetch前にmodifiedとなっていた設定がある場合、
-        // その設定で上書きする
-        const modifiedSetting = prevSettings.find(
-          (p) => 'id' in p.website && p.website.id === newSetting.website.id && p.state === 'modified',
-        )
-        if (modifiedSetting !== undefined) {
-          return modifiedSetting
-        } else {
-          return newSetting
-        }
+  const [websiteForms, { mutate }] = createResource(app, (app) => {
+    return app.websites.map((website) => {
+      const [form] = createForm<WebsiteSetting>({
+        initialValues: {
+          state: 'noChange',
+          website: structuredClone(website),
+        },
       })
-
-      return [...mergedSettings, ...addedSettings]
+      return form
     })
   })
+  const addWebsiteForm = () => {
+    const [form] = createForm<WebsiteSetting>({
+      initialValues: {
+        state: 'added',
+        website: newWebsite(),
+      },
+    })
+    mutate((forms) => {
+      return forms?.concat([form])
+    })
+  }
 
   const handleApplyChanges = async () => {
     try {
-      // modifiedの変更前の設定
-      const fetched =
-        structuredClone(
-          app()?.websites.filter((website) => {
-            const modified = websites.find(
-              (w) => 'id' in w.website && w.website.id === website.id && w.state === 'modified',
-            )
-            return modified !== undefined
-          }),
-        ) ?? []
       /**
        * 送信するWebsite設定
-       * - 変更がないもの ( = `noChange`)
-       * - 変更または追加して保存するもの ( = `readyToSave`)
-       * - 変更したが反映はしないもの ( = `modified`となっている設定の変更前)
+       * - 変更を保存しないものの、initial value
+       * - 変更して保存するもの ( = `readyToSave`)
+       * - 追加するもの ( = `added`)
        * - 削除しないもの ( = not `readyToDelete`)
        */
-      const websitesToSave = websites
-        .filter((website) => website.state === 'noChange' || website.state === 'readyToSave')
-        .map((website) => website.website)
-        .concat(fetched)
+      const websitesToSave = websiteForms()
+        ?.map((form) => {
+          const values = getValues(form)
+          switch (values.state) {
+            case 'noChange':
+              return form.internal.initialValues.website
+            case 'readyToChange':
+              return values.website
+            case 'added':
+              return values.website
+            case 'readyToDelete':
+              return undefined
+          }
+        })
+        .filter((w): w is Exclude<typeof w, undefined> => w !== undefined)
+
       await client.updateApplication({
         id: app()?.id,
         websites: {
@@ -75,6 +67,13 @@ export default () => {
       toast.success('ウェブサイト設定を保存しました')
       refetchApp()
     } catch (e) {
+      // `readyToChange` を `noChange` に戻す
+      websiteForms()?.forEach((form) => {
+        const values = getValues(form)
+        if (values.state === 'readyToChange') {
+          setValue(form, 'state', 'noChange')
+        }
+      })
       handleAPIError(e, 'Failed to save website settings')
     }
   }
@@ -82,14 +81,16 @@ export default () => {
   return (
     <DataTable.Container>
       <DataTable.Title>Domains</DataTable.Title>
-      <Show when={app()}>
-        <WebsiteSettings
-          isRuntimeApp={app().deployType === DeployType.RUNTIME}
-          websiteConfigs={websites}
-          setWebsiteConfigs={setWebsites}
-          applyChanges={handleApplyChanges}
-          refetchApp={refetchApp}
-        />
+      <Show when={websiteForms()}>
+        {(nonNullForms) => (
+          <WebsiteSettings
+            isRuntimeApp={app()?.deployType === DeployType.RUNTIME}
+            formStores={nonNullForms()}
+            addWebsite={addWebsiteForm}
+            applyChanges={handleApplyChanges}
+            refetchApp={refetchApp}
+          />
+        )}
       </Show>
     </DataTable.Container>
   )
