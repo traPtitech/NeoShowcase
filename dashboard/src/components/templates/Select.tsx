@@ -309,7 +309,7 @@ export const ComboBox = <T,>(props: ComboBoxProps<T>): JSX.Element => {
     <div use:clickInside={() => setShowOptions(true)} use:clickOutside={() => setShowOptions(false)}>
       <Container>
         <TextInput
-          rightIcon={<MaterialSymbols>expand_more</MaterialSymbols>}
+          rightIcon={<MaterialSymbols color={colorVars.semantic.text.black}>expand_more</MaterialSymbols>}
           onFocus={(e) => {
             if (addedProps.onFocus) {
               if (typeof addedProps.onFocus === 'function') {
