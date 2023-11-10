@@ -85,7 +85,7 @@ export const RepositoryRow: Component<Props> = (props) => {
       <Show when={canEdit() && showNewAppButton()}>
         <AddNewAppButtonContainer>
           <Button
-            color="border"
+            variants="border"
             size="medium"
             onClick={() => {
               navigator(`/apps/new?repositoryID=${props.repository.id}`)

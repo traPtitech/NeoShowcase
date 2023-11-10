@@ -129,7 +129,7 @@ const AddOwners: Component<{
             <UserRowContainer>
               <UserAvatar user={user} size={32} />
               <UserName>{user.name}</UserName>
-              <Button color="ghost" size="small" onClick={() => props.addOwner(user)}>
+              <Button variants="ghost" size="small" onClick={() => props.addOwner(user)}>
                 Add
               </Button>
             </UserRowContainer>
@@ -151,7 +151,7 @@ const OwnerRow: Component<{ user: User; deleteOwner: (user: User) => void }> = (
       <UserRowContainer>
         <UserAvatar user={props.user} size={32} />
         <UserName>{props.user.name}</UserName>
-        <Button color="textError" size="small" onClick={openDeleteUserModal}>
+        <Button variants="textError" size="small" onClick={openDeleteUserModal}>
           Delete
         </Button>
       </UserRowContainer>
@@ -164,11 +164,11 @@ const OwnerRow: Component<{ user: User; deleteOwner: (user: User) => void }> = (
           </DeleteConfirm>
         </DeleteUserModal.Body>
         <DeleteUserModal.Footer>
-          <Button color="text" size="medium" onClick={closeDeleteUserModal} type="button">
+          <Button variants="text" size="medium" onClick={closeDeleteUserModal} type="button">
             No, Cancel
           </Button>
           <Button
-            color="primaryError"
+            variants="primaryError"
             size="medium"
             onClick={() => {
               props.deleteOwner(props.user)
@@ -248,7 +248,7 @@ const OwnerConfig: Component<{
           onInput={(e) => setSearchUserQuery(e.target.value)}
         />
         <Button
-          color="primary"
+          variants="primary"
           size="medium"
           leftIcon={<MaterialSymbols>add</MaterialSymbols>}
           onClick={openAddUserModal}

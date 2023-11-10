@@ -70,10 +70,10 @@ export default () => {
             <PortPublicationSettings ports={ports} setPorts={setPorts} />
           </FormBox.Forms>
           <FormBox.Actions>
-            <Button color="borderError" size="small" onClick={discardChanges} type="button">
+            <Button variants="borderError" size="small" onClick={discardChanges} type="button">
               Discard Changes
             </Button>
-            <Button color="primary" size="small" onClick={saveChanges} type="button">
+            <Button variants="primary" size="small" onClick={saveChanges} type="button">
               Save
             </Button>
           </FormBox.Actions>

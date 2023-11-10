@@ -169,7 +169,7 @@ export const SingleSelect = <T,>(props: SingleSelectProps<T>): JSX.Element => {
         >
           <For each={props.items}>
             {(item) => (
-              <Button color="text" size="medium" full onClick={() => handleSelect(item)} type="button">
+              <Button variants="text" size="medium" full onClick={() => handleSelect(item)} type="button">
                 {item.title}
               </Button>
             )}
@@ -257,7 +257,7 @@ export const MultiSelect = <T,>(props: MultiSelectProps<T>): JSX.Element => {
               const checked = () => props.selected?.includes(item.value) ?? false
               return (
                 <Button
-                  color="text"
+                  variants="text"
                   size="medium"
                   hasCheckbox
                   full
@@ -328,7 +328,7 @@ export const ComboBox = <T,>(props: ComboBoxProps<T>): JSX.Element => {
           <div class={optionsContainerClass}>
             <For each={addedProps.items}>
               {(item) => (
-                <Button color="text" size="medium" full onClick={() => handleSelect(item)}>
+                <Button variants="text" size="medium" full onClick={() => handleSelect(item)}>
                   {item.title}
                 </Button>
               )}

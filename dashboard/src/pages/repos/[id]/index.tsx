@@ -41,7 +41,7 @@ export default () => {
 
   const AddNewAppButton = () => (
     <Button
-      color="primary"
+      variants="primary"
       size="medium"
       leftIcon={<MaterialSymbols>add</MaterialSymbols>}
       onClick={() => {

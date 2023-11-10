@@ -204,7 +204,7 @@ export const RepositoryAuthSettings = (props: Props) => {
                   <Show when={!useTmpKey()}>
                     <RefreshButtonContainer>
                       <Button
-                        color="textError"
+                        variants="textError"
                         size="small"
                         onClick={() => {
                           setUseTmpKey(true)

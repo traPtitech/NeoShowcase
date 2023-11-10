@@ -155,7 +155,7 @@ export default () => {
                 </BuildStatusLabel>
                 <Show when={!build()?.retriable}>
                   <Button
-                    color="borderError"
+                    variants="borderError"
                     size="small"
                     onClick={rebuild}
                     disabled={disableRefresh()}
@@ -169,7 +169,7 @@ export default () => {
                   </Button>
                 </Show>
                 <Show when={build()?.status === BuildStatus.BUILDING}>
-                  <Button color="borderError" size="small" onClick={cancelBuild} disabled={disableRefresh()}>
+                  <Button variants="borderError" size="small" onClick={cancelBuild} disabled={disableRefresh()}>
                     Cancel Build
                   </Button>
                 </Show>
@@ -183,7 +183,7 @@ export default () => {
                 </List.RowContent>
                 <JumpButton href={`/apps/${app()?.id}/settings`} />
                 <Button
-                  color="ghost"
+                  variants="ghost"
                   size="medium"
                   onClick={refreshRepo}
                   disabled={disableRefresh()}

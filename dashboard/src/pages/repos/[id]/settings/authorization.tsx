@@ -75,12 +75,12 @@ const AuthConfig: Component<{
         </FormBox.Forms>
         <FormBox.Actions>
           <Show when={authForm.dirty && !authForm.submitting}>
-            <Button color="borderError" size="small" onClick={discardChanges} type="button">
+            <Button variants="borderError" size="small" onClick={discardChanges} type="button">
               Discard Changes
             </Button>
           </Show>
           <Button
-            color="primary"
+            variants="primary"
             size="small"
             type="submit"
             disabled={authForm.invalid || !authForm.dirty || authForm.submitting}

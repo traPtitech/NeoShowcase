@@ -35,7 +35,7 @@ export default () => {
           <SideView.Side>
             <SideMenu>
               <Button
-                color="text"
+                variants="text"
                 size="medium"
                 full
                 active={!!matchGeneralPage()}
@@ -47,7 +47,7 @@ export default () => {
                 General
               </Button>
               <Button
-                color="text"
+                variants="text"
                 size="medium"
                 full
                 active={!!matchBuildPage()}
@@ -59,7 +59,7 @@ export default () => {
                 Build
               </Button>
               <Button
-                color="text"
+                variants="text"
                 size="medium"
                 full
                 active={!!matchDomainsPage()}
@@ -71,7 +71,7 @@ export default () => {
                 Domain
               </Button>
               <Button
-                color="text"
+                variants="text"
                 size="medium"
                 full
                 active={!!matchPortPage()}
@@ -83,7 +83,7 @@ export default () => {
                 Port Forwarding
               </Button>
               <Button
-                color="text"
+                variants="text"
                 size="medium"
                 full
                 active={!!matchEnvVarsPage()}
@@ -95,7 +95,7 @@ export default () => {
                 Environment Variables
               </Button>
               <Button
-                color="text"
+                variants="text"
                 size="medium"
                 full
                 active={!!matchOwnerPage()}

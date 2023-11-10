@@ -32,7 +32,7 @@ export default () => {
           <SideView.Side>
             <SideMenu>
               <Button
-                color="text"
+                variants="text"
                 size="medium"
                 full
                 active={!!matchGeneralPage()}
@@ -44,7 +44,7 @@ export default () => {
                 General
               </Button>
               <Button
-                color="text"
+                variants="text"
                 size="medium"
                 full
                 active={!!matchAuthPage()}
@@ -56,7 +56,7 @@ export default () => {
                 Authorization
               </Button>
               <Button
-                color="text"
+                variants="text"
                 size="medium"
                 full
                 active={!!matchOwnerPage()}

@@ -193,12 +193,12 @@ const EnvVarConfig: Component<{
         </FormBox.Forms>
         <FormBox.Actions>
           <Show when={envVarForm.dirty && !envVarForm.submitting}>
-            <Button color="borderError" size="small" type="button" onClick={discardChanges}>
+            <Button variants="borderError" size="small" type="button" onClick={discardChanges}>
               Discard Changes
             </Button>
           </Show>
           <Button
-            color="primary"
+            variants="primary"
             size="small"
             type="submit"
             disabled={envVarForm.invalid || !envVarForm.dirty || envVarForm.submitting}

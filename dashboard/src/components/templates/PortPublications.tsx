@@ -124,7 +124,7 @@ const PortSetting = (props: PortPublicationProps) => {
           <span>/{protoToName[props.port.protocol]}</span>
         </PortVisualContainer>
       </PortVisualContainer>
-      <Button onclick={props.deletePort} color="textError" size="medium" type="button">
+      <Button onclick={props.deletePort} variants="textError" size="medium" type="button">
         Delete
       </Button>
     </PortRow>
@@ -165,7 +165,7 @@ export const PortPublicationSettings = (props: PortPublicationSettingsProps) => 
       </For>
       <Button
         onclick={() => props.setPorts([...props.ports, newPort()])}
-        color="border"
+        variants="border"
         size="small"
         type="button"
         leftIcon={<MaterialSymbols opticalSize={20}>add</MaterialSymbols>}

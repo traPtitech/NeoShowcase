@@ -64,12 +64,12 @@ const NameConfig: Component<{
         </FormBox.Forms>
         <FormBox.Actions>
           <Show when={generalForm.dirty && !generalForm.submitting}>
-            <Button color="borderError" size="small" onClick={discardChanges} type="button">
+            <Button variants="borderError" size="small" onClick={discardChanges} type="button">
               Discard Changes
             </Button>
           </Show>
           <Button
-            color="primary"
+            variants="primary"
             size="small"
             type="submit"
             disabled={generalForm.invalid || !generalForm.dirty || generalForm.submitting}
@@ -134,7 +134,7 @@ const DeleteProject: Component<{
         </FormBox.Forms>
         <FormBox.Actions>
           <Button
-            color="primaryError"
+            variants="primaryError"
             size="small"
             onClick={open}
             type="button"
@@ -158,10 +158,10 @@ const DeleteProject: Component<{
           </DeleteConfirm>
         </Modal.Body>
         <Modal.Footer>
-          <Button color="text" size="medium" onClick={close} type="button">
+          <Button variants="text" size="medium" onClick={close} type="button">
             No, Cancel
           </Button>
-          <Button color="primaryError" size="medium" onClick={deleteRepository} type="button">
+          <Button variants="primaryError" size="medium" onClick={deleteRepository} type="button">
             Yes, Delete
           </Button>
         </Modal.Footer>

@@ -111,7 +111,7 @@ export default () => {
                 <AuthSetting.AuthConfig />
               </InputsContainer>
               <Button
-                color="primary"
+                variants="primary"
                 size="medium"
                 rightIcon={<MaterialSymbols>arrow_forward</MaterialSymbols>}
                 type="submit"

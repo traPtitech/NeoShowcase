@@ -121,7 +121,7 @@ const GeneralStep: Component<{
         </FormContainer>
         <Button
           size="medium"
-          color="primary"
+          variants="primary"
           type="submit"
           rightIcon={<MaterialSymbols>arrow_forward</MaterialSymbols>}
         >
@@ -221,7 +221,7 @@ const WebsiteStep: Component<{
                 <MaterialSymbols displaySize={80}>link_off</MaterialSymbols>
                 No Websites Configured
                 <Button
-                  color="primary"
+                  variants="primary"
                   size="medium"
                   rightIcon={<MaterialSymbols>add</MaterialSymbols>}
                   onClick={addWebsiteForm}
@@ -244,7 +244,7 @@ const WebsiteStep: Component<{
             <AddMoreButtonContainer>
               <Button
                 onclick={addWebsiteForm}
-                color="border"
+                variants="border"
                 size="small"
                 leftIcon={<MaterialSymbols opticalSize={20}>add</MaterialSymbols>}
                 type="button"
@@ -257,13 +257,13 @@ const WebsiteStep: Component<{
         <ButtonsContainer>
           <Button
             size="medium"
-            color="ghost"
+            variants="ghost"
             rightIcon={<MaterialSymbols>skip_next</MaterialSymbols>}
             onClick={skipWebsiteConfig}
           >
             Skip
           </Button>
-          <Button size="medium" color="primary" onClick={saveWebsiteConfig}>
+          <Button size="medium" variants="primary" onClick={saveWebsiteConfig}>
             Save Website Config
           </Button>
         </ButtonsContainer>

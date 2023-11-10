@@ -109,7 +109,7 @@ export const ArtifactRow: Component<Props> = (props) => {
           <ArtifactSize>{formatBytes(+props.artifact.size.toString())}</ArtifactSize>
         </MetaContainer>
       </ContentsContainer>
-      <Button color="ghost" size="medium" onClick={() => downloadArtifact(props.artifact.id)}>
+      <Button variants="ghost" size="medium" onClick={() => downloadArtifact(props.artifact.id)}>
         Download
       </Button>
     </Container>

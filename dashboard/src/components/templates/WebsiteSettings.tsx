@@ -382,18 +382,18 @@ export const WebsiteSetting = (props: WebsiteSettingProps) => {
         </FormBox.Forms>
         <FormBox.Actions>
           <DeleteButtonContainer>
-            <Button onclick={open} color="textError" size="small" type="button">
+            <Button onclick={open} variants="textError" size="small" type="button">
               Delete
             </Button>
           </DeleteButtonContainer>
           <Show when={state() !== 'added' && props.formStore.dirty}>
-            <Button onclick={discardChanges} color="borderError" size="small" type="button">
+            <Button onclick={discardChanges} variants="borderError" size="small" type="button">
               Discard Changes
             </Button>
           </Show>
           <Show when={props.saveWebsite !== undefined}>
             <Button
-              color="primary"
+              variants="primary"
               size="small"
               type="submit"
               disabled={props.formStore.invalid || !props.formStore.dirty || props.formStore.submitting}
@@ -409,10 +409,10 @@ export const WebsiteSetting = (props: WebsiteSettingProps) => {
           <DeleteConfirm>{websiteUrl()}</DeleteConfirm>
         </Modal.Body>
         <Modal.Footer>
-          <Button onclick={close} color="text" size="medium" type="button">
+          <Button onclick={close} variants="text" size="medium" type="button">
             No, Cancel
           </Button>
-          <Button onclick={props.deleteWebsite} color="primaryError" size="medium" type="button">
+          <Button onclick={props.deleteWebsite} variants="primaryError" size="medium" type="button">
             Yes, Delete
           </Button>
         </Modal.Footer>
@@ -492,7 +492,7 @@ export const WebsiteSettings = (props: WebsiteSettingsProps) => {
               <MaterialSymbols displaySize={80}>link_off</MaterialSymbols>
               No Websites Configured
               <Button
-                color="primary"
+                variants="primary"
                 size="medium"
                 rightIcon={<MaterialSymbols>add</MaterialSymbols>}
                 onClick={props.addWebsite}
@@ -531,7 +531,7 @@ export const WebsiteSettings = (props: WebsiteSettingsProps) => {
         <AddMoreButtonContainer>
           <Button
             onclick={props.addWebsite}
-            color="border"
+            variants="border"
             size="small"
             leftIcon={<MaterialSymbols opticalSize={20}>add</MaterialSymbols>}
             type="button"

@@ -40,7 +40,7 @@ const Container = styled('button', {
         width: '100%',
       },
     },
-    color: {
+    variants: {
       primary: {
         background: colorVars.semantic.primary.main,
         color: colorVars.semantic.text.white,
@@ -165,7 +165,7 @@ const IconContainer = styled('div', {
 })
 
 export interface Props extends JSX.ButtonHTMLAttributes<HTMLButtonElement> {
-  color: 'primary' | 'ghost' | 'border' | 'text' | 'primaryError' | 'borderError' | 'textError'
+  variants: 'primary' | 'ghost' | 'border' | 'text' | 'primaryError' | 'borderError' | 'textError'
   size: 'medium' | 'small'
   active?: boolean
   hasCheckbox?: boolean
@@ -177,7 +177,7 @@ export interface Props extends JSX.ButtonHTMLAttributes<HTMLButtonElement> {
 
 export const Button: ParentComponent<Props> = (props) => {
   const [addedProps, originalButtonProps] = splitProps(props, [
-    'color',
+    'variants',
     'size',
     'active',
     'hasCheckbox',
@@ -196,7 +196,7 @@ export const Button: ParentComponent<Props> = (props) => {
         }}
       >
         <Container
-          color={addedProps.color}
+          variants={addedProps.variants}
           size={addedProps.size}
           data-active={addedProps.active}
           hasCheckbox={addedProps.hasCheckbox}
@@ -206,9 +206,7 @@ export const Button: ParentComponent<Props> = (props) => {
           <Show when={addedProps.leftIcon}>
             <IconContainer size={addedProps.size}>{addedProps.leftIcon}</IconContainer>
           </Show>
-          <Text color={addedProps.color} size={addedProps.size}>
-            {addedProps.children}
-          </Text>
+          <Text size={addedProps.size}>{addedProps.children}</Text>
           <Show when={addedProps.rightIcon}>
             <IconContainer size={addedProps.size}>{addedProps.rightIcon}</IconContainer>
           </Show>

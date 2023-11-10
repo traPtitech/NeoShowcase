@@ -60,7 +60,7 @@ export const Nav: Component<Props> = (props) => {
     <Container>
       <Show when={props.backToTitle} fallback={<div />}>
         <Button
-          color="text"
+          variants="text"
           size="medium"
           onClick={() => {
             window.history.back()

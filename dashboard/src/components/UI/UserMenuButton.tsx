@@ -84,12 +84,12 @@ export const UserMenuButton: Component<{
           class={optionsContainerClass}
         >
           <A href="/settings">
-            <Button color="text" size="medium" leftIcon={<MaterialSymbols>settings</MaterialSymbols>} full>
+            <Button variants="text" size="medium" leftIcon={<MaterialSymbols>settings</MaterialSymbols>} full>
               Settings
             </Button>
           </A>
           <a href="https://wiki.trap.jp/services/NeoShowcase" target="_blank" rel="noopener noreferrer">
-            <Button color="text" size="medium" leftIcon={<MaterialSymbols>help</MaterialSymbols>} full>
+            <Button variants="text" size="medium" leftIcon={<MaterialSymbols>help</MaterialSymbols>} full>
               Help
             </Button>
           </a>

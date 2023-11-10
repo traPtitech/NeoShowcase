@@ -63,7 +63,7 @@ const DeleteApp: Component<{
           </FormItem>
         </FormBox.Forms>
         <FormBox.Actions>
-          <Button color="primaryError" size="small" onClick={open} type="button">
+          <Button variants="primaryError" size="small" onClick={open} type="button">
             Delete Application
           </Button>
         </FormBox.Actions>
@@ -77,10 +77,10 @@ const DeleteApp: Component<{
           </DeleteConfirm>
         </Modal.Body>
         <Modal.Footer>
-          <Button color="text" size="medium" onClick={close} type="button">
+          <Button variants="text" size="medium" onClick={close} type="button">
             No, Cancel
           </Button>
-          <Button color="primaryError" size="medium" onClick={deleteApplication} type="button">
+          <Button variants="primaryError" size="medium" onClick={deleteApplication} type="button">
             Yes, Delete
           </Button>
         </Modal.Footer>
@@ -140,12 +140,12 @@ export default () => {
             </FormBox.Forms>
             <FormBox.Actions>
               <Show when={generalForm.dirty && !generalForm.submitting}>
-                <Button color="borderError" size="small" onClick={discardChanges} type="button">
+                <Button variants="borderError" size="small" onClick={discardChanges} type="button">
                   Discard Changes
                 </Button>
               </Show>
               <Button
-                color="primary"
+                variants="primary"
                 size="small"
                 type="submit"
                 disabled={generalForm.invalid || !generalForm.dirty || generalForm.submitting}

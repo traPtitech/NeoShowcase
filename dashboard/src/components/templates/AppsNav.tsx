@@ -8,7 +8,7 @@ export const AppsNav: Component = () => {
     <Nav
       title="Apps"
       action={
-        <Button color="primary" size="medium" leftIcon={<MaterialSymbols>add</MaterialSymbols>}>
+        <Button variants="primary" size="medium" leftIcon={<MaterialSymbols>add</MaterialSymbols>}>
           Add New App
         </Button>
       }

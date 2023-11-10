@@ -294,11 +294,11 @@ const DeploymentInfo: Component<{
         </AppState>
         <Show when={showActions()}>
           <ActionButtons>
-            <Button color="borderError" size="small" onClick={restartApp} disabled={props.disableRefresh()}>
+            <Button variants="borderError" size="small" onClick={restartApp} disabled={props.disableRefresh()}>
               {props.app.running ? 'Restart App' : 'Start App'}
             </Button>
             <Button
-              color="borderError"
+              variants="borderError"
               size="small"
               onClick={stopApp}
               disabled={props.disableRefresh() || applicationState(props.app) === ApplicationState.Idle}
@@ -347,7 +347,7 @@ const DeploymentInfo: Component<{
           <List.RowData>{shortSha(props.app.commit)}</List.RowData>
         </List.RowContent>
         <Button
-          color="ghost"
+          variants="ghost"
           size="medium"
           onClick={props.refreshRepo}
           disabled={props.disableRefresh()}
@@ -446,7 +446,7 @@ const BuildStatusTable: Component<{
         </BuildStatusLabel>
         <Show when={!props.latestBuild.retriable}>
           <Button
-            color="borderError"
+            variants="borderError"
             size="small"
             onClick={rebuild}
             disabled={props.disableRefresh()}
@@ -460,7 +460,7 @@ const BuildStatusTable: Component<{
           </Button>
         </Show>
         <Show when={props.latestBuild.status === BuildStatus.BUILDING}>
-          <Button color="borderError" size="small" onClick={cancelBuild} disabled={props.disableRefresh()}>
+          <Button variants="borderError" size="small" onClick={cancelBuild} disabled={props.disableRefresh()}>
             Cancel Build
           </Button>
         </Show>
@@ -482,7 +482,7 @@ const BuildStatusTable: Component<{
         </List.RowContent>
         <JumpButton href={`/apps/${props.app.id}/settings`} />
         <Button
-          color="ghost"
+          variants="ghost"
           size="medium"
           onClick={props.refreshRepo}
           disabled={props.disableRefresh()}
@@ -734,7 +734,7 @@ const Information: Component<{ app: Application }> = (props) => {
       </List.Container>
       <Show when={!showDetails()}>
         <ShowMoreButtonContainer>
-          <Button color="ghost" size="small" onClick={() => setShowDetails(true)}>
+          <Button variants="ghost" size="small" onClick={() => setShowDetails(true)}>
             Show More
           </Button>
         </ShowMoreButtonContainer>
@@ -808,7 +808,7 @@ const Metrics: Component<{ app: Application }> = (props) => {
         <For each={metricsNames}>
           {(metrics) => (
             <Button
-              color="text"
+              variants="text"
               size="medium"
               onClick={() => setCurrentView(metrics)}
               active={currentView() === metrics}

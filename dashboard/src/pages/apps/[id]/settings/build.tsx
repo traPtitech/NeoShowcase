@@ -52,12 +52,12 @@ export default () => {
             </FormBox.Forms>
             <FormBox.Actions>
               <Show when={buildConfig.dirty && !buildConfig.submitting}>
-                <Button color="borderError" size="small" onClick={discardChanges} type="button">
+                <Button variants="borderError" size="small" onClick={discardChanges} type="button">
                   Discard Changes
                 </Button>
               </Show>
               <Button
-                color="primary"
+                variants="primary"
                 size="small"
                 type="submit"
                 disabled={buildConfig.invalid || !buildConfig.dirty || buildConfig.submitting}

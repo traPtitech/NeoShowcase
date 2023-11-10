@@ -113,7 +113,7 @@ const SshKeyRow: Component<{ key: UserKey; refetchKeys: () => void }> = (props) 
         <SshKeyRowContent>
           <SshKeyRowValue>{props.key.publicKey}</SshKeyRowValue>
         </SshKeyRowContent>
-        <Button color="textError" size="medium" onClick={open}>
+        <Button variants="textError" size="medium" onClick={open}>
           Delete
         </Button>
       </SshKeyRowContainer>
@@ -123,10 +123,10 @@ const SshKeyRow: Component<{ key: UserKey; refetchKeys: () => void }> = (props) 
           <DeleteConfirm>{props.key.publicKey}</DeleteConfirm>
         </Modal.Body>
         <Modal.Footer>
-          <Button color="text" size="medium" onClick={close}>
+          <Button variants="text" size="medium" onClick={close}>
             No, Cancel
           </Button>
-          <Button color="primaryError" size="medium" onClick={() => handleDeleteKey(props.key.id)}>
+          <Button variants="primaryError" size="medium" onClick={() => handleDeleteKey(props.key.id)}>
             Yes, Delete
           </Button>
         </Modal.Footer>
@@ -170,7 +170,7 @@ export default () => {
   }
 
   const AddNewSSHKeyButton = () => (
-    <Button color="primary" size="medium" leftIcon={<MaterialSymbols>add</MaterialSymbols>} onClick={newKeyOpen}>
+    <Button variants="primary" size="medium" leftIcon={<MaterialSymbols>add</MaterialSymbols>} onClick={newKeyOpen}>
       Add New SSH Key
     </Button>
   )
@@ -232,10 +232,10 @@ export default () => {
             </FormContainer>
           </AddNewKeyModal.Body>
           <AddNewKeyModal.Footer>
-            <Button color="text" size="medium" type="button" onClick={newKeyClose}>
+            <Button variants="text" size="medium" type="button" onClick={newKeyClose}>
               Cancel
             </Button>
-            <Button color="primary" size="medium" type="submit" disabled={key.invalid || key.submitting}>
+            <Button variants="primary" size="medium" type="submit" disabled={key.invalid || key.submitting}>
               Add
             </Button>
           </AddNewKeyModal.Footer>
