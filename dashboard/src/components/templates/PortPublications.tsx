@@ -1,10 +1,9 @@
 import { PortPublication, PortPublicationProtocol } from '/@/api/neoshowcase/protobuf/gateway_pb'
 import { pickRandom, randIntN } from '/@/libs/random'
-import useModal from '/@/libs/useModal'
 import { PlainMessage } from '@bufbuild/protobuf'
 import { styled } from '@macaron-css/solid'
+import { Field, FieldArray, FormStore, custom, getValue, insert, remove, setValue } from '@modular-forms/solid'
 import { For } from 'solid-js'
-import { SetStoreFunction } from 'solid-js/store'
 import { systemInfo } from '../../libs/api'
 import { Button } from '../UI/Button'
 import { MaterialSymbols } from '../UI/MaterialSymbols'
@@ -30,7 +29,7 @@ const PortRow = styled('div', {
 })
 const PortVisualContainer = styled('div', {
   base: {
-    alignItems: 'center',
+    alignItems: 'flex-start',
     gap: '8px',
   },
   variants: {
@@ -53,9 +52,15 @@ const PortVisualContainer = styled('div', {
         width: '100%',
         display: 'flex',
         flexWrap: 'wrap',
-        gridTemplateColumns: 'auto auto',
       },
     },
+  },
+})
+const PortItem = styled('div', {
+  base: {
+    height: '48px',
+    display: 'flex',
+    alignItems: 'center',
   },
 })
 
@@ -70,58 +75,79 @@ const protoToName: Record<PortPublicationProtocol, string> = {
 }
 
 interface PortPublicationProps {
-  port: PlainMessage<PortPublication>
-  setPort: <T extends keyof PlainMessage<PortPublication>>(
-    valueName: T,
-    value: PlainMessage<PortPublication>[T],
-  ) => void
+  formStore: FormStore<PortSettingsStore, undefined>
+  name: `ports.${number}`
   deletePort: () => void
 }
 
-const PortSetting = (props: PortPublicationProps) => {
-  const { Modal } = useModal()
+const isValidPort = (port?: number, proto?: PortPublicationProtocol): boolean => {
+  if (port === undefined) return false
+  const available = systemInfo()?.ports.filter((a) => a.protocol === proto) || []
+  if (available.length === 0) return false
+  return available.some((range) => port >= range.startPort && port <= range.endPort)
+}
 
+const PortSetting = (props: PortPublicationProps) => {
   return (
     <PortRow>
       <PortVisualContainer variant="wrapper">
         <PortVisualContainer variant="from">
-          <TextInput
-            required
-            placeholder="39000"
+          <Field
+            of={props.formStore}
+            name={`${props.name}.internetPort`}
             type="number"
-            value={props.port.internetPort || ''}
-            onChange={(e) => props.setPort('internetPort', +e.target.value)}
-            tooltip={{
-              props: {
-                content: 'インターネット側ポート',
-              },
-            }}
-          />
-          <span>/</span>
-          <SingleSelect
-            items={protocolItems}
-            selected={props.port.protocol}
-            setSelected={(proto) => {
-              console.log(`setting ${proto}, type: ${typeof proto}`)
-              props.setPort('protocol', proto)
-            }}
-          />
+            validate={custom(
+              (port) => isValidPort(port, getValue(props.formStore, `${props.name}.protocol`)),
+              'Please enter the available port',
+            )}
+          >
+            {(field, fieldProps) => (
+              <TextInput
+                type="number"
+                placeholder="39000"
+                value={field.value}
+                tooltip={{
+                  props: {
+                    content: 'インターネット側ポート',
+                  },
+                }}
+                error={field.error}
+                {...fieldProps}
+              />
+            )}
+          </Field>
+          <PortItem>/</PortItem>
+          <Field of={props.formStore} name={`${props.name}.protocol`} type="number">
+            {(field, fieldProps) => (
+              <SingleSelect
+                items={protocolItems}
+                selected={field.value}
+                setSelected={(protocol) => {
+                  setValue(props.formStore, `${props.name}.protocol`, protocol)
+                }}
+                {...fieldProps}
+              />
+            )}
+          </Field>
         </PortVisualContainer>
         <PortVisualContainer variant="to">
-          <span> → </span>
-          <TextInput
-            required
-            placeholder="8080"
-            type="number"
-            value={props.port.applicationPort || ''}
-            onChange={(e) => props.setPort('applicationPort', +e.target.value)}
-            tooltip={{
-              props: {
-                content: 'アプリ側ポート',
-              },
-            }}
-          />
-          <span>/{protoToName[props.port.protocol]}</span>
+          <PortItem> → </PortItem>
+          <Field of={props.formStore} name={`${props.name}.applicationPort`} type="number">
+            {(field, fieldProps) => (
+              <TextInput
+                type="number"
+                placeholder="8080"
+                value={field.value}
+                tooltip={{
+                  props: {
+                    content: 'アプリ側ポート',
+                  },
+                }}
+                {...fieldProps}
+              />
+            )}
+          </Field>
+          <PortItem>/{protoToName[getValue(props.formStore, `${props.name}.protocol`)]}</PortItem>
         </PortVisualContainer>
       </PortVisualContainer>
       <Button onclick={props.deletePort} variants="textError" size="medium" type="button">
@@ -146,25 +172,35 @@ const newPort = (): PlainMessage<PortPublication> => {
   }
 }
 
-interface PortPublicationSettingsProps {
+export type PortSettingsStore = {
   ports: PlainMessage<PortPublication>[]
-  setPorts: SetStoreFunction<PlainMessage<PortPublication>[]>
+}
+interface PortPublicationSettingsProps {
+  formStore: FormStore<PortSettingsStore, undefined>
 }
 
 export const PortPublicationSettings = (props: PortPublicationSettingsProps) => {
   return (
     <PortsContainer>
-      <For each={props.ports}>
-        {(port, i) => (
-          <PortSetting
-            port={port}
-            setPort={(valueName, value) => props.setPorts(i(), valueName, value)}
-            deletePort={() => props.setPorts((current) => [...current.slice(0, i()), ...current.slice(i() + 1)])}
-          />
+      <FieldArray of={props.formStore} name="ports">
+        {(fieldArray) => (
+          <For each={fieldArray.items}>
+            {(_, index) => (
+              <PortSetting
+                formStore={props.formStore}
+                name={`${fieldArray.name}.${index()}`}
+                deletePort={() => remove(props.formStore, 'ports', { at: index() })}
+              />
+            )}
+          </For>
         )}
-      </For>
+      </FieldArray>
       <Button
-        onclick={() => props.setPorts([...props.ports, newPort()])}
+        onclick={() =>
+          insert(props.formStore, 'ports', {
+            value: newPort(),
+          })
+        }
         variants="border"
         size="small"
         type="button"

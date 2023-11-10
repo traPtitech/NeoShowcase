@@ -1,14 +1,13 @@
-import { PortPublication } from '/@/api/neoshowcase/protobuf/gateway_pb'
 import { Button } from '/@/components/UI/Button'
 import { DataTable } from '/@/components/layouts/DataTable'
 import FormBox from '/@/components/layouts/FormBox'
-import { PortPublicationSettings } from '/@/components/templates/PortPublications'
+import { PortPublicationSettings, PortSettingsStore } from '/@/components/templates/PortPublications'
 import { client, handleAPIError, systemInfo } from '/@/libs/api'
 import { portPublicationProtocolMap } from '/@/libs/application'
 import { useApplicationData } from '/@/routes'
 import { styled } from '@macaron-css/solid'
-import { For, Show, createEffect } from 'solid-js'
-import { createStore } from 'solid-js/store'
+import { Form, SubmitHandler, createFormStore, reset } from '@modular-forms/solid'
+import { For, Show } from 'solid-js'
 import toast from 'solid-toast'
 
 const Li = styled('li', {
@@ -20,26 +19,21 @@ const Li = styled('li', {
 export default () => {
   const { app, refetchApp } = useApplicationData()
   const loaded = () => !!(app() && systemInfo())
-  const [ports, setPorts] = createStore<PortPublication[]>([])
-  let formRef: HTMLFormElement
-
-  createEffect(() => {
-    setPorts(structuredClone(app().portPublications))
+  const form = createFormStore<PortSettingsStore>({
+    initialValues: {
+      ports: structuredClone(app()?.portPublications),
+    },
   })
 
   const discardChanges = () => {
-    setPorts(structuredClone(app().portPublications))
+    reset(form)
   }
-  const saveChanges = async () => {
-    if (!formRef.reportValidity()) {
-      return
-    }
-
+  const handleSubmit: SubmitHandler<PortSettingsStore> = async (value) => {
     try {
       await client.updateApplication({
-        id: app().id,
+        id: app()?.id,
         portPublications: {
-          portPublications: ports,
+          portPublications: value.ports,
         },
       })
       toast.success('ポート公開設定を更新しました')
@@ -65,19 +59,28 @@ export default () => {
             )}
           </For>
         </DataTable.SubTitle>
-        <FormBox.Container ref={formRef}>
-          <FormBox.Forms>
-            <PortPublicationSettings ports={ports} setPorts={setPorts} />
-          </FormBox.Forms>
-          <FormBox.Actions>
-            <Button variants="borderError" size="small" onClick={discardChanges} type="button">
-              Discard Changes
-            </Button>
-            <Button variants="primary" size="small" onClick={saveChanges} type="button">
-              Save
-            </Button>
-          </FormBox.Actions>
-        </FormBox.Container>
+        <Form of={form} onSubmit={handleSubmit}>
+          <FormBox.Container>
+            <FormBox.Forms>
+              <PortPublicationSettings formStore={form} />
+            </FormBox.Forms>
+            <FormBox.Actions>
+              <Show when={form.dirty && !form.submitting}>
+                <Button variants="borderError" size="small" onClick={discardChanges} type="button">
+                  Discard Changes
+                </Button>
+              </Show>
+              <Button
+                variants="primary"
+                size="small"
+                type="submit"
+                disabled={form.invalid || !form.dirty || form.submitting}
+              >
+                Save
+              </Button>
+            </FormBox.Actions>
+          </FormBox.Container>
+        </Form>
       </Show>
     </DataTable.Container>
   )
