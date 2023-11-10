@@ -9,8 +9,8 @@ import useModal from '/@/libs/useModal'
 import { colorVars, textVars } from '/@/theme'
 import { PlainMessage } from '@bufbuild/protobuf'
 import { styled } from '@macaron-css/solid'
-import { Field, Form, FormStore, getValue, reset, setValue, toCustom } from '@modular-forms/solid'
-import { For, Show, createEffect, createMemo, createSignal } from 'solid-js'
+import { Field, Form, FormStore, getValue, required, reset, setValue, toCustom } from '@modular-forms/solid'
+import { For, Show, createEffect, createMemo } from 'solid-js'
 import { on } from 'solid-js'
 import { systemInfo } from '../../libs/api'
 import { MaterialSymbols } from '../UI/MaterialSymbols'
@@ -27,8 +27,15 @@ const URLContainer = styled('div', {
   base: {
     display: 'flex',
     flexDirection: 'row',
-    alignItems: 'center',
+    alignItems: 'flex-top',
     gap: '8px',
+  },
+})
+const URLItem = styled('div', {
+  base: {
+    height: '48px',
+    display: 'flex',
+    alignItems: 'center',
   },
 })
 const HttpSelectContainer = styled('div', {
@@ -83,9 +90,6 @@ const authenticationTypeItems: SelectItem<AuthenticationType>[] = [
 ]
 
 export const WebsiteSetting = (props: WebsiteSettingProps) => {
-  const [host, setHost] = createSignal('')
-  const [domain, setDomain] = createSignal<PlainMessage<AvailableDomain>>()
-
   const state = () => getValue(props.formStore, 'state')
   const discardChanges = () => reset(props.formStore)
 
@@ -106,6 +110,7 @@ export const WebsiteSetting = (props: WebsiteSettingProps) => {
     host: string
     domain: PlainMessage<AvailableDomain>
   } => {
+    console.log(fqdn)
     const matchNonWildcardDomain = nonWildcardDomains().find((d) => fqdn === d.domain)
     if (matchNonWildcardDomain !== undefined) {
       return {
@@ -129,29 +134,34 @@ export const WebsiteSetting = (props: WebsiteSettingProps) => {
     }
   }
 
-  createEffect(() => {
-    // set host and domain from fqdn on fqdn change
-    const fqdn = getValue(props.formStore, 'website.fqdn')
-    if (fqdn === undefined) return
-    const { host, domain } = extractHost(fqdn)
-    setHost(host)
-    setDomain(domain)
-  })
-
   createEffect(
-    on([host, domain], ([host, domain]) => {
-      // set fqdn from host and domain on host or domain change
-      if (host === undefined || domain === undefined) return
-      const fqdn = `${host}${domain?.domain.replace(/\*/g, '')}`
-      setValue(props.formStore, 'website.fqdn', fqdn)
-    }),
+    on(
+      () => getValue(props.formStore, 'website.fqdn'),
+      (fqdn) => {
+        if (fqdn === undefined) return
+        const { host, domain } = extractHost(fqdn)
+        console.log(host, domain)
+        setValue(props.formStore, 'website.host', host)
+        setValue(props.formStore, 'website.domain', domain.domain)
+        setValue(props.formStore, 'website.authAvailable', domain.authAvailable)
+        if (domain.authAvailable === false) {
+          setValue(props.formStore, 'website.authentication', AuthenticationType.OFF)
+        }
+      },
+    ),
   )
 
-  createEffect(() => {
-    if (domain()?.authAvailable === false) {
-      setValue(props.formStore, 'website.authentication', AuthenticationType.OFF)
-    }
-  })
+  createEffect(
+    on(
+      [() => getValue(props.formStore, 'website.host'), () => getValue(props.formStore, 'website.domain')],
+      ([host, domain]) => {
+        // set fqdn from host and domain on host or domain change
+        if (host === undefined || domain === undefined) return
+        const fqdn = `${host}${domain?.replace(/\*/g, '')}`
+        setValue(props.formStore, 'website.fqdn', fqdn)
+      },
+    ),
+  )
 
   return (
     <Form
@@ -159,6 +169,7 @@ export const WebsiteSetting = (props: WebsiteSettingProps) => {
       onSubmit={() => {
         if (props.saveWebsite) props.saveWebsite()
       }}
+      style={{ width: '100%' }}
     >
       {/* 
           To make a field active, it must be included in the DOM
@@ -168,6 +179,9 @@ export const WebsiteSetting = (props: WebsiteSettingProps) => {
         {() => <></>}
       </Field>
       <Field of={props.formStore} name={'website.id'}>
+        {() => <></>}
+      </Field>
+      <Field of={props.formStore} name={'website.fqdn'}>
         {() => <></>}
       </Field>
       <FormBox.Container>
@@ -201,49 +215,55 @@ export const WebsiteSetting = (props: WebsiteSettingProps) => {
                   )}
                 </Field>
               </HttpSelectContainer>
-              <span>://</span>
-              <Field of={props.formStore} name={'website.fqdn'}>
-                {() => (
-                  <>
-                    <Show when={domain()?.domain.startsWith('*')}>
-                      <TextInput
-                        placeholder="example.trap.show"
-                        value={host()}
-                        onInput={(e) => setHost(e.target.value)}
-                        tooltip={{
-                          props: {
-                            content: 'ホスト名',
-                          },
-                        }}
-                      />
-                    </Show>
-                    <ToolTip
-                      props={{
-                        content: 'ドメイン',
+              <URLItem>://</URLItem>
+              <Show when={getValue(props.formStore, 'website.domain')?.startsWith('*')}>
+                <Field of={props.formStore} name={'website.host'} validate={required('Please Enter Hostname')}>
+                  {(field, fieldProps) => (
+                    <TextInput
+                      placeholder="example.trap.show"
+                      value={field.value}
+                      error={field.error}
+                      tooltip={{
+                        props: {
+                          content: 'ホスト名',
+                        },
                       }}
-                    >
-                      <SingleSelect
-                        selected={domain()}
-                        setSelected={(selected) => {
-                          setDomain(selected)
-                        }}
-                        items={
-                          systemInfo()?.domains.map((domain) => {
-                            const domainName = domain.domain.replace(/\*/g, '')
-                            return {
-                              value: domain,
-                              title: domainName,
-                            }
-                          }) ?? []
+                      {...fieldProps}
+                    />
+                  )}
+                </Field>
+              </Show>
+              <Field of={props.formStore} name={'website.domain'}>
+                {(field, fieldProps) => (
+                  <ToolTip
+                    props={{
+                      content: 'ドメイン',
+                    }}
+                  >
+                    <SingleSelect
+                      items={
+                        systemInfo()?.domains.map((domain) => {
+                          const domainName = domain.domain.replace(/\*/g, '')
+                          return {
+                            value: domain,
+                            title: domainName,
+                          }
+                        }) ?? []
+                      }
+                      selected={systemInfo()?.domains.find((d) => d.domain === field.value)}
+                      setSelected={(selected) => {
+                        if (selected !== undefined) {
+                          setValue(props.formStore, 'website.domain', selected.domain)
                         }
-                      />
-                    </ToolTip>
-                  </>
+                      }}
+                      {...fieldProps}
+                    />
+                  </ToolTip>
                 )}
               </Field>
             </URLContainer>
             <URLContainer>
-              <span>/</span>
+              <URLItem>/</URLItem>
               <Field
                 of={props.formStore}
                 name={'website.pathPrefix'}
@@ -264,7 +284,7 @@ export const WebsiteSetting = (props: WebsiteSettingProps) => {
                 )}
               </Field>
               <Show when={props.isRuntimeApp}>
-                <span> → </span>
+                <URLItem> → </URLItem>
                 <HttpSelectContainer>
                   <Field of={props.formStore} name={'website.httpPort'} type="number">
                     {(field, fieldProps) => (
@@ -283,7 +303,7 @@ export const WebsiteSetting = (props: WebsiteSettingProps) => {
                     )}
                   </Field>
                 </HttpSelectContainer>
-                <span>/TCP</span>
+                <URLItem>/TCP</URLItem>
               </Show>
             </URLContainer>
           </FormItem>
@@ -306,9 +326,9 @@ export const WebsiteSetting = (props: WebsiteSettingProps) => {
               >
                 <ToolTip
                   props={{
-                    content: `${domain()?.domain}では部員認証が使用できません`,
+                    content: `${getValue(props.formStore, 'website.domain')}では部員認証が使用できません`,
                   }}
-                  disabled={domain()?.authAvailable}
+                  disabled={getValue(props.formStore, 'website.authAvailable')}
                 >
                   <RadioButtons
                     items={authenticationTypeItems}
@@ -318,7 +338,7 @@ export const WebsiteSetting = (props: WebsiteSettingProps) => {
                         setValue(props.formStore, 'website.authentication', selected)
                       }
                     }}
-                    disabled={domain()?.authAvailable === false}
+                    disabled={getValue(props.formStore, 'website.authAvailable') === false}
                     {...fieldProps}
                   />
                 </ToolTip>
@@ -401,6 +421,12 @@ export const WebsiteSetting = (props: WebsiteSettingProps) => {
   )
 }
 
+type FQDN = {
+  host: string
+  domain: PlainMessage<AvailableDomain>['domain']
+  authAvailable: PlainMessage<AvailableDomain>['authAvailable']
+}
+
 export type WebsiteSetting =
   | {
       /**
@@ -409,14 +435,14 @@ export type WebsiteSetting =
        *  - `readyToDelete`: 次の保存時に削除する
        */
       state: 'noChange' | 'readyToChange' | 'readyToDelete'
-      website: PlainMessage<Website>
+      website: PlainMessage<Website> & FQDN
     }
   | {
       /**
        *  - `added`: 新規に設定を追加した
        */
       state: 'added'
-      website: PlainMessage<CreateWebsiteRequest>
+      website: PlainMessage<CreateWebsiteRequest> & FQDN
     }
 
 export type WebsiteSettingForm = {
@@ -453,7 +479,6 @@ interface WebsiteSettingsProps {
   formStores: FormStore<WebsiteSetting, undefined>[]
   addWebsite: () => void
   applyChanges: () => void
-  refetchApp: () => void
 }
 
 export const WebsiteSettings = (props: WebsiteSettingsProps) => {
@@ -471,6 +496,7 @@ export const WebsiteSettings = (props: WebsiteSettingsProps) => {
                 size="medium"
                 rightIcon={<MaterialSymbols>add</MaterialSymbols>}
                 onClick={props.addWebsite}
+                type="button"
               >
                 Add Website
               </Button>
@@ -508,6 +534,7 @@ export const WebsiteSettings = (props: WebsiteSettingsProps) => {
             color="border"
             size="small"
             leftIcon={<MaterialSymbols opticalSize={20}>add</MaterialSymbols>}
+            type="button"
           >
             Add More
           </Button>

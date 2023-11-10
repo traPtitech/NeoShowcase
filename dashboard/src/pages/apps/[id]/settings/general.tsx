@@ -136,7 +136,7 @@ export default () => {
         <General.Form onSubmit={handleSubmit}>
           <FormBox.Container>
             <FormBox.Forms>
-              <GeneralConfig repo={repo()} formStore={generalForm} Form={General} editBranchId />
+              <GeneralConfig repo={repo()} formStore={generalForm} editBranchId />
             </FormBox.Forms>
             <FormBox.Actions>
               <Show when={generalForm.dirty && !generalForm.submitting}>

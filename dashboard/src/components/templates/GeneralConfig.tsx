@@ -1,7 +1,7 @@
 import { CreateApplicationRequest, Repository, UpdateApplicationRequest } from '/@/api/neoshowcase/protobuf/gateway_pb'
 import { useBranchesSuggestion } from '/@/libs/branchesSuggestion'
 import { PlainMessage } from '@bufbuild/protobuf'
-import { createForm, getValue, required, setValue } from '@modular-forms/solid'
+import { Field, FormStore, getValue, required, setValue } from '@modular-forms/solid'
 import { Component, Show } from 'solid-js'
 import { TextInput } from '../UI/TextInput'
 import { FormItem } from './FormItem'
@@ -14,8 +14,7 @@ export type AppGeneralForm = Pick<
 
 interface GeneralConfigProps {
   repo: Repository
-  formStore: ReturnType<typeof createForm<AppGeneralForm>>[0]
-  Form: ReturnType<typeof createForm<AppGeneralForm>>[1]
+  formStore: FormStore<AppGeneralForm, undefined>
   editBranchId?: boolean
 }
 
@@ -27,16 +26,16 @@ export const GeneralConfig: Component<GeneralConfigProps> = (props) => {
 
   return (
     <>
-      <props.Form.Field name="name" validate={required('Please Enter Application Name')}>
+      <Field of={props.formStore} name="name" validate={required('Please Enter Application Name')}>
         {(field, fieldProps) => (
           <FormItem title="Application Name" required>
             <TextInput value={field.value} error={field.error} {...fieldProps} />
           </FormItem>
         )}
-      </props.Form.Field>
-      <Show when={props.editBranchId}>
-        <props.Form.Field name="repositoryId" validate={required('Please Enter Repository ID')}>
-          {(field, fieldProps) => (
+      </Field>
+      <Field of={props.formStore} name="repositoryId" validate={required('Please Enter Repository ID')}>
+        {(field, fieldProps) => (
+          <Show when={props.editBranchId}>
             <FormItem
               title="Repository ID"
               required
@@ -48,10 +47,10 @@ export const GeneralConfig: Component<GeneralConfigProps> = (props) => {
             >
               <TextInput required value={field.value} error={field.error} {...fieldProps} />
             </FormItem>
-          )}
-        </props.Form.Field>
-      </Show>
-      <props.Form.Field name="refName" validate={required('Please Enter Branch Name')}>
+          </Show>
+        )}
+      </Field>
+      <Field of={props.formStore} name="refName" validate={required('Please Enter Branch Name')}>
         {(field, fieldProps) => (
           <FormItem
             title="Branch"
@@ -68,7 +67,6 @@ export const GeneralConfig: Component<GeneralConfigProps> = (props) => {
             }}
           >
             <ComboBox
-              required
               value={field.value}
               items={branchesSuggestion().map((branch) => ({
                 title: branch,
@@ -82,7 +80,7 @@ export const GeneralConfig: Component<GeneralConfigProps> = (props) => {
             />
           </FormItem>
         )}
-      </props.Form.Field>
+      </Field>
     </>
   )
 }

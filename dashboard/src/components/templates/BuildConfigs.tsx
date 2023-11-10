@@ -475,8 +475,12 @@ export const configToForm = (config: PlainMessage<ApplicationConfig>): BuildConf
           },
         },
       }
+    default:
+      return {
+        case: 'runtimeBuildpack',
+        config: defaultConfigs,
+      }
   }
-  throw new Error('Invalid BuildConfig')
 }
 
 export interface BuildConfigsProps {

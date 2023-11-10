@@ -3,7 +3,7 @@ import { DataTable } from '/@/components/layouts/DataTable'
 import { WebsiteSetting, WebsiteSettings, newWebsite } from '/@/components/templates/WebsiteSettings'
 import { client, handleAPIError } from '/@/libs/api'
 import { useApplicationData } from '/@/routes'
-import { createForm, getValues, setValue } from '@modular-forms/solid'
+import { createFormStore, getValues, setValue } from '@modular-forms/solid'
 import { Show, createResource } from 'solid-js'
 import toast from 'solid-toast'
 
@@ -12,7 +12,7 @@ export default () => {
 
   const [websiteForms, { mutate }] = createResource(app, (app) => {
     return app.websites.map((website) => {
-      const [form] = createForm<WebsiteSetting>({
+      const form = createFormStore<WebsiteSetting>({
         initialValues: {
           state: 'noChange',
           website: structuredClone(website),
@@ -22,7 +22,7 @@ export default () => {
     })
   })
   const addWebsiteForm = () => {
-    const [form] = createForm<WebsiteSetting>({
+    const form = createFormStore<WebsiteSetting>({
       initialValues: {
         state: 'added',
         website: newWebsite(),
@@ -88,7 +88,6 @@ export default () => {
             formStores={nonNullForms()}
             addWebsite={addWebsiteForm}
             applyChanges={handleApplyChanges}
-            refetchApp={refetchApp}
           />
         )}
       </Show>

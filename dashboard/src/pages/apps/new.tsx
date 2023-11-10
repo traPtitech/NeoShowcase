@@ -1,29 +1,31 @@
-import {
-  Application,
-  ApplicationConfig,
-  CreateApplicationRequest,
-  DeployType,
-  Repository,
-  RuntimeConfig,
-} from '/@/api/neoshowcase/protobuf/gateway_pb'
+import { Application, ApplicationConfig, DeployType, Repository } from '/@/api/neoshowcase/protobuf/gateway_pb'
 import { Button } from '/@/components/UI/Button'
 import { MaterialSymbols } from '/@/components/UI/MaterialSymbols'
 import { Progress } from '/@/components/UI/StepProgress'
 import { MainViewContainer } from '/@/components/layouts/MainView'
 import { WithNav } from '/@/components/layouts/WithNav'
-import { BuildConfigs } from '/@/components/templates/BuildConfigs'
+import { BuildConfigForm, BuildConfigs, configToForm, formToConfig } from '/@/components/templates/BuildConfigs'
 import { CheckBox } from '/@/components/templates/CheckBox'
 import { FormItem } from '/@/components/templates/FormItem'
-import { GeneralConfig } from '/@/components/templates/GeneralConfig'
-import { List } from '/@/components/templates/List'
+import { AppGeneralForm, GeneralConfig } from '/@/components/templates/GeneralConfig'
 import { Nav } from '/@/components/templates/Nav'
 import { WebsiteSetting, newWebsite } from '/@/components/templates/WebsiteSettings'
 import { client, handleAPIError, systemInfo } from '/@/libs/api'
 import { colorVars, textVars } from '/@/theme'
-import { PlainMessage } from '@bufbuild/protobuf'
 import { styled } from '@macaron-css/solid'
+import {
+  Field,
+  Form,
+  FormStore,
+  SubmitHandler,
+  createFormStore,
+  getValues,
+  setValue,
+  validate,
+} from '@modular-forms/solid'
 import { useNavigate, useSearchParams } from '@solidjs/router'
-import { Component, For, JSX, Match, Show, Switch, createResource, createSignal } from 'solid-js'
+import { For } from 'solid-js'
+import { Component, Match, Show, Switch, createEffect, createResource, createSignal } from 'solid-js'
 import { createStore } from 'solid-js/store'
 import toast from 'solid-toast'
 
@@ -36,7 +38,7 @@ const Container = styled('div', {
     gap: '40px',
   },
 })
-const FormContainer = styled('form', {
+const FormContainer = styled('div', {
   base: {
     width: '100%',
     padding: '24px',
@@ -49,40 +51,36 @@ const FormContainer = styled('form', {
   },
 })
 
+type GeneralForm = AppGeneralForm & BuildConfigForm & { startOnCreate: boolean }
+
 const GeneralStep: Component<{
   repo: Repository
   gotoNextStep: (appId: string) => void
 }> = (props) => {
-  let formContainer: HTMLFormElement
-
-  const [buildConfig, setBuildConfig] = createStore<PlainMessage<ApplicationConfig>['buildConfig']>({
-    case: 'runtimeBuildpack',
-    value: {
-      context: '',
-      runtimeConfig: structuredClone(new RuntimeConfig()),
+  const form = createFormStore<GeneralForm>({
+    initialValues: {
+      name: '',
+      refName: '',
+      repositoryId: props.repo.id,
+      startOnCreate: false,
+      ...configToForm(new ApplicationConfig()),
     },
   })
-  const [request, setRequest] = createStore<PlainMessage<CreateApplicationRequest>>({
-    name: '',
-    refName: '',
-    repositoryId: props.repo.id,
-    config: { buildConfig },
-    websites: [],
-    portPublications: [],
-    startOnCreate: false,
-  })
 
-  const createApplication: JSX.EventHandler<HTMLButtonElement, MouseEvent> = async (e) => {
-    // prevent default form submit (reload page)
-    e.preventDefault()
-
-    // validate form
-    if (!formContainer.reportValidity()) {
-      return
-    }
-
+  const handleSubmit: SubmitHandler<GeneralForm> = async (values) => {
     try {
-      const createdApp = await client.createApplication(request)
+      const createdApp = await client.createApplication({
+        name: values.name,
+        refName: values.refName,
+        repositoryId: values.repositoryId,
+        config: {
+          buildConfig: formToConfig({
+            case: values.case,
+            config: values.config,
+          }),
+        },
+        startOnCreate: values.startOnCreate,
+      })
       toast.success('アプリケーションを登録しました')
       props.gotoNextStep(createdApp.id)
     } catch (e) {
@@ -91,55 +89,56 @@ const GeneralStep: Component<{
   }
 
   return (
-    <Container>
-      <FormContainer ref={formContainer}>
-        <GeneralConfig repo={props.repo} config={request} setConfig={setRequest} />
-        <BuildConfigs buildConfig={buildConfig} setBuildConfig={setBuildConfig} disableEditDB={false} />
-        <FormItem
-          title="Start Immediately"
-          tooltip={{
-            props: {
-              content: (
-                <>
-                  <div>この設定で今すぐ起動するかどうか</div>
-                  <div>(環境変数はアプリ作成後設定可能になります)</div>
-                </>
-              ),
-            },
-          }}
+    <Form of={form} onSubmit={handleSubmit} style={{ width: '100%' }}>
+      <Container>
+        <FormContainer>
+          <GeneralConfig repo={props.repo} formStore={form} editBranchId={false} />
+          <BuildConfigs formStore={form} disableEditDB={false} />
+          <Field of={form} name="startOnCreate" type="boolean">
+            {(field, fieldProps) => (
+              <FormItem
+                title="Start Immediately"
+                tooltip={{
+                  props: {
+                    content: (
+                      <>
+                        <div>この設定で今すぐ起動するかどうか</div>
+                        <div>(環境変数はアプリ作成後設定可能になります)</div>
+                      </>
+                    ),
+                  },
+                }}
+              >
+                <CheckBox.Option
+                  title="今すぐ起動する"
+                  checked={field.value ?? false}
+                  setChecked={(checked) => setValue(form, 'startOnCreate', checked)}
+                  {...fieldProps}
+                />
+              </FormItem>
+            )}
+          </Field>
+        </FormContainer>
+        <Button
+          size="medium"
+          color="primary"
+          type="submit"
+          rightIcon={<MaterialSymbols>arrow_forward</MaterialSymbols>}
         >
-          <CheckBox.Option
-            checked={request.startOnCreate}
-            setChecked={(checked) => setRequest('startOnCreate', checked)}
-            title="今すぐ起動する"
-          />
-        </FormItem>
-      </FormContainer>
-      <Button
-        size="medium"
-        color="primary"
-        rightIcon={<MaterialSymbols>arrow_forward</MaterialSymbols>}
-        onClick={createApplication}
-      >
-        Next
-      </Button>
-    </Container>
+          Next
+        </Button>
+      </Container>
+    </Form>
   )
 }
 
-const DomainsContainer = styled('form', {
+const DomainsContainer = styled('div', {
   base: {
     width: '100%',
     display: 'flex',
     flexDirection: 'column',
     alignItems: 'center',
     gap: '24px',
-  },
-})
-const ButtonsContainer = styled('div', {
-  base: {
-    display: 'flex',
-    gap: '20px',
   },
 })
 const PlaceHolder = styled('div', {
@@ -152,33 +151,52 @@ const PlaceHolder = styled('div', {
     alignItems: 'center',
     justifyContent: 'center',
 
+    background: colorVars.semantic.ui.primary,
+    borderRadius: '8px',
     color: colorVars.semantic.text.black,
     ...textVars.h4.medium,
+  },
+})
+const AddMoreButtonContainer = styled('div', {
+  base: {
+    display: 'flex',
+    justifyContent: 'center',
+  },
+})
+const ButtonsContainer = styled('div', {
+  base: {
+    display: 'flex',
+    gap: '20px',
   },
 })
 
 const WebsiteStep: Component<{
   app: Application
 }> = (props) => {
-  const [websiteConfigs, setWebsiteConfigs] = createStore<WebsiteSetting[]>([])
+  const [websiteForms, setWebsiteForms] = createSignal<FormStore<WebsiteSetting, undefined>[]>([])
 
   const navigate = useNavigate()
   const skipWebsiteConfig = () => {
     navigate(`/apps/${props.app.id}`)
   }
 
-  const addWebsite = () =>
-    setWebsiteConfigs([
-      ...websiteConfigs,
-      {
+  const addWebsiteForm = () => {
+    const form = createFormStore<WebsiteSetting>({
+      initialValues: {
         state: 'added',
         website: newWebsite(),
       },
-    ])
+    })
+    setWebsiteForms((prev) => prev.concat([form]))
+  }
 
   const saveWebsiteConfig = async () => {
     try {
-      const websitesToSave = websiteConfigs.map((website) => website.website)
+      const isValid = (await Promise.all(websiteForms().map((form) => validate(form)))).every((v) => v)
+      if (!isValid) return
+      const websitesToSave = websiteForms()
+        .map((form) => getValues(form).website)
+        .filter((w): w is Exclude<typeof w, undefined> => w !== undefined)
       await client.updateApplication({
         id: props.app.id,
         websites: {
@@ -197,48 +215,43 @@ const WebsiteStep: Component<{
       <Container>
         <DomainsContainer>
           <For
-            each={websiteConfigs}
+            each={websiteForms()}
             fallback={
-              <List.Container>
-                <PlaceHolder>
-                  <MaterialSymbols displaySize={80}>link_off</MaterialSymbols>
-                  No Websites Configured
-                  <Button
-                    color="primary"
-                    size="medium"
-                    rightIcon={<MaterialSymbols>add</MaterialSymbols>}
-                    onClick={addWebsite}
-                  >
-                    Add Website
-                  </Button>
-                </PlaceHolder>
-              </List.Container>
+              <PlaceHolder>
+                <MaterialSymbols displaySize={80}>link_off</MaterialSymbols>
+                No Websites Configured
+                <Button
+                  color="primary"
+                  size="medium"
+                  rightIcon={<MaterialSymbols>add</MaterialSymbols>}
+                  onClick={addWebsiteForm}
+                  type="button"
+                >
+                  Add Website
+                </Button>
+              </PlaceHolder>
             }
           >
-            {(config, i) => (
+            {(form, i) => (
               <WebsiteSetting
                 isRuntimeApp={props.app.deployType === DeployType.RUNTIME}
-                state={config.state}
-                website={config.website}
-                setWebsite={(valueName, value) => {
-                  setWebsiteConfigs(i(), 'website', valueName, value)
-                }}
-                deleteWebsite={() =>
-                  setWebsiteConfigs((current) => [...current.slice(0, i()), ...current.slice(i() + 1)])
-                }
+                formStore={form}
+                deleteWebsite={() => setWebsiteForms((prev) => [...prev.slice(0, i()), ...prev.slice(i() + 1)])}
               />
             )}
           </For>
-          <Show when={websiteConfigs.length > 0}>
-            <Button
-              onclick={addWebsite}
-              color="border"
-              size="small"
-              type="button"
-              leftIcon={<MaterialSymbols opticalSize={20}>add</MaterialSymbols>}
-            >
-              Add More
-            </Button>
+          <Show when={websiteForms().length > 0}>
+            <AddMoreButtonContainer>
+              <Button
+                onclick={addWebsiteForm}
+                color="border"
+                size="small"
+                leftIcon={<MaterialSymbols opticalSize={20}>add</MaterialSymbols>}
+                type="button"
+              >
+                Add More
+              </Button>
+            </AddMoreButtonContainer>
           </Show>
         </DomainsContainer>
         <ButtonsContainer>
