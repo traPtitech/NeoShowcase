@@ -10,7 +10,7 @@ import { colorVars, textVars } from '/@/theme'
 import { PlainMessage } from '@bufbuild/protobuf'
 import { styled } from '@macaron-css/solid'
 import { Field, Form, FormStore, getValue, required, reset, setValue, toCustom } from '@modular-forms/solid'
-import { For, Show, createEffect, createMemo } from 'solid-js'
+import { For, Show, createEffect, createMemo, createReaction, onMount } from 'solid-js'
 import { on } from 'solid-js'
 import { systemInfo } from '../../libs/api'
 import { MaterialSymbols } from '../UI/MaterialSymbols'
@@ -132,6 +132,27 @@ export const WebsiteSetting = (props: WebsiteSettingProps) => {
       domain: matchDomain,
     }
   }
+
+  const resetHostAndDomain = createReaction(() => {
+    const fqdn = getValue(props.formStore, 'website.fqdn')
+    if (fqdn === undefined) return
+    const { host, domain } = extractHost(fqdn)
+    reset(props.formStore, 'website.host', {
+      initialValue: host,
+    })
+    reset(props.formStore, 'website.domain', {
+      initialValue: domain.domain,
+    })
+  })
+
+  onMount(() => {
+    // Reset when both host and domain are no longer undefined
+    resetHostAndDomain(
+      () =>
+        getValue(props.formStore, 'website.host') !== undefined &&
+        getValue(props.formStore, 'website.domain') !== undefined,
+    )
+  })
 
   createEffect(
     on(

@@ -10,17 +10,20 @@ import toast from 'solid-toast'
 export default () => {
   const { app, refetchApp } = useApplicationData()
 
-  const [websiteForms, { mutate }] = createResource(app, (app) => {
-    return app.websites.map((website) => {
-      const form = createFormStore<WebsiteSetting>({
-        initialValues: {
-          state: 'noChange',
-          website: structuredClone(website),
-        },
+  const [websiteForms, { mutate }] = createResource(
+    () => app()?.websites,
+    (websites) => {
+      return websites.map((website) => {
+        const form = createFormStore<WebsiteSetting>({
+          initialValues: {
+            state: 'noChange',
+            website: structuredClone(website),
+          },
+        })
+        return form
       })
-      return form
-    })
-  })
+    },
+  )
   const addWebsiteForm = () => {
     const form = createFormStore<WebsiteSetting>({
       initialValues: {
