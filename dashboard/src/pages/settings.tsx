@@ -158,7 +158,6 @@ export default () => {
   })
 
   const handleSubmit: SubmitHandler<AddNewKeyForm> = async (values) => {
-    console.log(values)
     try {
       await client.createUserKey({ publicKey: values.value })
       toast.success('公開鍵を追加しました')

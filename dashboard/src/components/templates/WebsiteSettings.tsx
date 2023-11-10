@@ -110,7 +110,6 @@ export const WebsiteSetting = (props: WebsiteSettingProps) => {
     host: string
     domain: PlainMessage<AvailableDomain>
   } => {
-    console.log(fqdn)
     const matchNonWildcardDomain = nonWildcardDomains().find((d) => fqdn === d.domain)
     if (matchNonWildcardDomain !== undefined) {
       return {
@@ -140,7 +139,6 @@ export const WebsiteSetting = (props: WebsiteSettingProps) => {
       (fqdn) => {
         if (fqdn === undefined) return
         const { host, domain } = extractHost(fqdn)
-        console.log(host, domain)
         setValue(props.formStore, 'website.host', host)
         setValue(props.formStore, 'website.domain', domain.domain)
         setValue(props.formStore, 'website.authAvailable', domain.authAvailable)

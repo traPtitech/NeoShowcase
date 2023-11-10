@@ -74,7 +74,6 @@ const PortSetting = (props: PortPublicationProps) => {
           items={protocolItems}
           selected={props.port.protocol}
           onSelect={(proto) => {
-            console.log(`setting ${proto}, type: ${typeof proto}`)
             props.setPort('protocol', proto)
           }}
         />
