@@ -7,7 +7,7 @@ import { portPublicationProtocolMap } from '/@/libs/application'
 import { useApplicationData } from '/@/routes'
 import { styled } from '@macaron-css/solid'
 import { Form, SubmitHandler, createFormStore, reset } from '@modular-forms/solid'
-import { For, Show } from 'solid-js'
+import { For, Show, createEffect } from 'solid-js'
 import toast from 'solid-toast'
 
 const Li = styled('li', {
@@ -23,6 +23,15 @@ export default () => {
     initialValues: {
       ports: structuredClone(app()?.portPublications),
     },
+  })
+
+  // reset form when app updated
+  createEffect(() => {
+    reset(form, {
+      initialValues: {
+        ports: structuredClone(app()?.portPublications),
+      },
+    })
   })
 
   const discardChanges = () => {
