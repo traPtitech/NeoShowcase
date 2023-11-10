@@ -2,7 +2,7 @@ import { clickInside as clickInsideDir, clickOutside as clickOutsideDir } from '
 import { colorVars, textVars } from '/@/theme'
 import { style } from '@macaron-css/core'
 import { styled } from '@macaron-css/solid'
-import { For, JSX, Show, createSignal, splitProps } from 'solid-js'
+import { For, JSX, Show, createSignal, onCleanup, onMount, splitProps } from 'solid-js'
 import { Button } from '../UI/Button'
 import { CheckBoxIcon } from '../UI/CheckBoxIcon'
 import { MaterialSymbols } from '../UI/MaterialSymbols'
@@ -124,6 +124,19 @@ export const SingleSelect = <T,>(props: SingleSelectProps<T>): JSX.Element => {
   const showPlaceHolder = () => props.selected === undefined
   const selectedTitle = () => props.items.find((i) => i.value === props.selected)?.title ?? props.placeHolder
 
+  // ESCキーで閉じる
+  const closeOnEsc = (e: KeyboardEvent) => {
+    if (e.key === 'Escape') {
+      setShowOptions(false)
+    }
+  }
+  onMount(() => {
+    document.addEventListener('keydown', closeOnEsc)
+  })
+  onCleanup(() => {
+    document.removeEventListener('keydown', closeOnEsc)
+  })
+
   const handleSelect = (item: SelectItem<T>) => {
     props.setSelected(item.value)
     setShowOptions(false)
@@ -138,6 +151,9 @@ export const SingleSelect = <T,>(props: SingleSelectProps<T>): JSX.Element => {
         opened={showOptions()}
         disabled={props.disabled}
         type="button"
+        onFocus={() => {
+          setShowOptions(true)
+        }}
       >
         <Title placeholder={showPlaceHolder()}>{selectedTitle()}</Title>
         <DropDownIconContainer>
@@ -183,6 +199,19 @@ export const MultiSelect = <T,>(props: MultiSelectProps<T>): JSX.Element => {
   const [showOptions, setShowOptions] = createSignal(false)
   const showPlaceHolder = () => props.selected === undefined || props.selected?.length === 0
 
+  // ESCキーで閉じる
+  const closeOnEsc = (e: KeyboardEvent) => {
+    if (e.key === 'Escape') {
+      setShowOptions(false)
+    }
+  }
+  onMount(() => {
+    document.addEventListener('keydown', closeOnEsc)
+  })
+  onCleanup(() => {
+    document.removeEventListener('keydown', closeOnEsc)
+  })
+
   const selectedTitle = () => {
     if (showPlaceHolder()) {
       return props.placeHolder
@@ -207,6 +236,9 @@ export const MultiSelect = <T,>(props: MultiSelectProps<T>): JSX.Element => {
         }}
         opened={showOptions()}
         disabled={props.disabled}
+        onFocus={() => {
+          setShowOptions(true)
+        }}
       >
         <Title placeholder={showPlaceHolder()}>{selectedTitle()}</Title>
         <DropDownIconContainer>
@@ -251,16 +283,22 @@ export type ComboBoxProps<T> = Partial<JSX.InputHTMLAttributes<HTMLInputElement>
 }
 
 export const ComboBox = <T,>(props: ComboBoxProps<T>): JSX.Element => {
-  const [addedProps, originalProps] = splitProps(props, [
-    'items',
-    'setSelected',
-    'disabled',
-    'error',
-    'onFocus',
-    'onBlur',
-  ])
+  const [addedProps, originalProps] = splitProps(props, ['items', 'setSelected', 'disabled', 'error', 'onFocus'])
 
   const [showOptions, setShowOptions] = createSignal(false)
+
+  // ESCキーで閉じる
+  const closeOnEsc = (e: KeyboardEvent) => {
+    if (e.key === 'Escape') {
+      setShowOptions(false)
+    }
+  }
+  onMount(() => {
+    document.addEventListener('keydown', closeOnEsc)
+  })
+  onCleanup(() => {
+    document.removeEventListener('keydown', closeOnEsc)
+  })
 
   const handleSelect = (item: SelectItem<T>) => {
     addedProps.setSelected(item.value)
@@ -281,16 +319,6 @@ export const ComboBox = <T,>(props: ComboBoxProps<T>): JSX.Element => {
               }
             }
             setShowOptions(true)
-          }}
-          onBlur={(e) => {
-            if (addedProps.onBlur) {
-              if (typeof addedProps.onBlur === 'function') {
-                addedProps.onBlur(e)
-              } else {
-                addedProps.onBlur[0](addedProps.onBlur[1], e)
-              }
-            }
-            setShowOptions(false)
           }}
           error={addedProps.error}
           {...originalProps}
