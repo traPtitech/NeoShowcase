@@ -1,7 +1,8 @@
 import { Button } from '/@/components/UI/Button'
 import { textVars } from '/@/theme'
 import { styled } from '@macaron-css/solid'
-import { Component, JSX, Show } from 'solid-js'
+import { A, BeforeLeaveEventArgs, useBeforeLeave } from '@solidjs/router'
+import { Component, JSX, Show, createSignal, onMount } from 'solid-js'
 import { MaterialSymbols } from '../UI/MaterialSymbols'
 
 const Container = styled('div', {
@@ -51,24 +52,46 @@ const Title = styled('h1', {
 export interface Props {
   title: string
   icon?: JSX.Element
-  backToTitle?: string
   action?: JSX.Element
 }
 
+const [prevPath, setPrevPath] = createSignal<string | undefined>(undefined)
+
 export const Nav: Component<Props> = (props) => {
+  const [backTo, setBackTo] = createSignal<string | undefined>(undefined)
+
+  useBeforeLeave((e: BeforeLeaveEventArgs) => {
+    setPrevPath(e.from.pathname)
+  })
+  onMount(() => {
+    setBackTo(prevPath())
+  })
+
+  const backToTitle = () => {
+    const reg = new RegExp(/\/\w+\/?/)
+    const startsWith = backTo()?.match(reg)?.[0]
+    switch (startsWith) {
+      case '/apps':
+        return 'Apps'
+      case '/apps/':
+        return 'App'
+      case '/repos/':
+        return 'Repository'
+      default:
+        return undefined
+    }
+  }
+
   return (
     <Container>
-      <Show when={props.backToTitle} fallback={<div />}>
-        <Button
-          variants="text"
-          size="medium"
-          onClick={() => {
-            window.history.back()
-          }}
-          leftIcon={<MaterialSymbols>arrow_back</MaterialSymbols>}
-        >
-          {props.backToTitle}
-        </Button>
+      <Show when={backTo()} fallback={<div />}>
+        {(nonNullBackTo) => (
+          <A href={nonNullBackTo()}>
+            <Button variants="text" size="medium" leftIcon={<MaterialSymbols>arrow_back</MaterialSymbols>}>
+              {backToTitle()}
+            </Button>
+          </A>
+        )}
       </Show>
       <TitleStickyContainer>
         <TitleContainer>

@@ -295,7 +295,7 @@ export default () => {
   return (
     <WithNav.Container>
       <WithNav.Navs>
-        <Nav title="Create Application" backToTitle="Back" />
+        <Nav title="Create Application" />
       </WithNav.Navs>
       <WithNav.Body>
         <MainViewContainer background="grey">

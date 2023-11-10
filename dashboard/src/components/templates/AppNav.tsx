@@ -10,7 +10,6 @@ export const AppNav: Component<{
   return (
     <Nav
       title={`${props.repository.name}/${props.app.name}`}
-      backToTitle="Repository"
       icon={providerToIcon(repositoryURLToProvider(props.repository.url), 40)}
     />
   )
