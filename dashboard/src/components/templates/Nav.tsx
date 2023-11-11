@@ -51,44 +51,20 @@ const Title = styled('h1', {
 })
 export interface Props {
   title: string
+  backTo?: string
+  backToTitle?: string
   icon?: JSX.Element
   action?: JSX.Element
 }
 
-const [prevPath, setPrevPath] = createSignal<string | undefined>(undefined)
-
 export const Nav: Component<Props> = (props) => {
-  const [backTo, setBackTo] = createSignal<string | undefined>(undefined)
-
-  useBeforeLeave((e: BeforeLeaveEventArgs) => {
-    setPrevPath(e.from.pathname)
-  })
-  onMount(() => {
-    setBackTo(prevPath())
-  })
-
-  const backToTitle = () => {
-    const reg = new RegExp(/\/\w+\/?/)
-    const startsWith = backTo()?.match(reg)?.[0]
-    switch (startsWith) {
-      case '/apps':
-        return 'Apps'
-      case '/apps/':
-        return 'App'
-      case '/repos/':
-        return 'Repository'
-      default:
-        return undefined
-    }
-  }
-
   return (
     <Container>
-      <Show when={backTo()} fallback={<div />}>
+      <Show when={props.backTo} fallback={<div />}>
         {(nonNullBackTo) => (
           <A href={nonNullBackTo()}>
             <Button variants="text" size="medium" leftIcon={<MaterialSymbols>arrow_back</MaterialSymbols>}>
-              {backToTitle()}
+              {props.backToTitle}
             </Button>
           </A>
         )}

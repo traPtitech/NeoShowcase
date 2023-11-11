@@ -295,7 +295,7 @@ export default () => {
   return (
     <WithNav.Container>
       <WithNav.Navs>
-        <Nav title="Create Application" />
+        <Nav title="Create Application" backTo={`/repos/${searchParams.repositoryID}`} backToTitle="Repository" />
       </WithNav.Navs>
       <WithNav.Body>
         <MainViewContainer background="grey">

@@ -92,7 +92,7 @@ export default () => {
   return (
     <WithNav.Container>
       <WithNav.Navs>
-        <Nav title="Register Repository" />
+        <Nav title="Register Repository" backTo="/apps" backToTitle="Apps" />
       </WithNav.Navs>
       <WithNav.Body>
         <MainViewContainer background="grey">
