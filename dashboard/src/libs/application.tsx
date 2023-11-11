@@ -7,13 +7,12 @@ import {
   PortPublicationProtocol,
   Website,
 } from '/@/api/neoshowcase/protobuf/gateway_pb'
-import { Provider } from '/@/components/RepositoryRow'
-import { colorVars, vars } from '/@/theme'
+import { colorVars } from '/@/theme'
 import { PlainMessage } from '@bufbuild/protobuf'
 import { AiFillGithub, AiFillGitlab } from 'solid-icons/ai'
 import { SiGitea } from 'solid-icons/si'
 import { JSXElement } from 'solid-js'
-import { BuildConfigMethod } from '../components/BuildConfigs'
+import { BuildConfigMethod } from '../components/templates/BuildConfigs'
 
 export const buildTypeStr: Record<BuildConfigMethod, string> = {
   runtimeBuildpack: 'Runtime (Buildpack)',
@@ -84,6 +83,8 @@ export const applicationState = (app: Application): ApplicationState => {
       return useDeployState(app)
   }
 }
+
+export type Provider = 'GitHub' | 'GitLab' | 'Gitea'
 
 export const repositoryURLToProvider = (url: string): Provider => {
   const normalizedURL = url.toLowerCase()

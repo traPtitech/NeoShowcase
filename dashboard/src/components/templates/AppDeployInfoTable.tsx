@@ -12,7 +12,7 @@ import toast from 'solid-toast'
 import { AppStatusIcon } from '../UI/AppStatusIcon'
 import { Button } from '../UI/Button'
 import JumpButton from '../UI/JumpButton'
-import { URLText } from '../URLText'
+import { URLText } from '../UI/URLText'
 import { List } from './List'
 
 const DeploymentContainer = styled('div', {
