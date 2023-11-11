@@ -8,17 +8,7 @@ import { useApplicationData } from '/@/routes'
 import { colorVars, textVars } from '/@/theme'
 import { PlainMessage } from '@bufbuild/protobuf'
 import { styled } from '@macaron-css/solid'
-import {
-  SubmitHandler,
-  createForm,
-  custom,
-  getValue,
-  getValues,
-  insert,
-  remove,
-  required,
-  reset,
-} from '@modular-forms/solid'
+import { SubmitHandler, createForm, custom, getValue, getValues, insert, remove, reset } from '@modular-forms/solid'
 import { Component, For, Show, createEffect, createReaction, createResource, on } from 'solid-js'
 import toast from 'solid-toast'
 
@@ -79,9 +69,8 @@ const EnvVarConfig: Component<{
     insert(envVarForm, 'variables', {
       value: { key: '', value: '', system: false },
     })
-    track(() => {
-      getValues(envVarForm, 'variables')
-    })
+    // 次にvariablesが変更された時に1度だけ再度stripする
+    track(() => getValues(envVarForm, 'variables'))
   }
   const track = createReaction(() => {
     stripEnvVars()
@@ -95,6 +84,7 @@ const EnvVarConfig: Component<{
   }
 
   const handleSubmit: SubmitHandler<PlainMessage<ApplicationEnvVars>> = async (values) => {
+    console.log(values)
     const oldVars = new Map(
       props.envVars.variables.filter((envVar) => !envVar.system).map((envVar) => [envVar.key, envVar.value]),
     )
@@ -144,12 +134,18 @@ const EnvVarConfig: Component<{
                 <For each={fieldArray.items}>
                   {(_, index) => (
                     <>
+                      <EnvVar.Field name={`variables.${index()}.system`} type="boolean">
+                        {/*
+                            To make a field active, it must be included in the DOM
+                            see: https://modularforms.dev/solid/guides/add-fields-to-form#active-state
+                          */}
+                        {() => <></>}
+                      </EnvVar.Field>
                       <EnvVar.Field
                         name={`variables.${index()}.key`}
                         validate={[
-                          // required if not the last item
-                          !(index() === fieldArray.items.length - 1) ? required('キーを入力してください') : () => '',
                           custom(isUniqueKey, '同じキーの環境変数が存在します'),
+                          (val) => (val === '' && index() !== fieldArray.items.length - 1 ? 'Please enter a key' : ''),
                         ]}
                       >
                         {(field, fieldProps) => (
