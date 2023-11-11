@@ -11,6 +11,7 @@ const Container = styled('button', {
     display: 'flex',
     alignItems: 'center',
     gap: '4px',
+    border: 'none',
     borderRadius: '9999px',
     ...textVars.h4.medium,
     whiteSpace: 'nowrap',
@@ -21,12 +22,12 @@ const Container = styled('button', {
       active: {
         background: colorVars.semantic.transparent.primaryHover,
         color: `${colorVars.semantic.primary.main} !important`,
-        border: `solid 2px ${colorVars.semantic.primary.main} !important`,
+        boxShadow: `inset 0 0 0 2px ${colorVars.semantic.primary.main} !important`,
       },
       default: {
         background: 'none',
         color: colorVars.semantic.text.grey,
-        border: `solid 1px ${colorVars.semantic.ui.border}`,
+        boxShadow: `inset 0 0 0 1px ${colorVars.semantic.ui.border}`,
       },
     },
     variant: {
@@ -35,12 +36,11 @@ const Container = styled('button', {
           '&:hover': {
             background: colorVars.semantic.transparent.primaryHover,
             color: colorVars.semantic.text.grey,
-            border: `solid 1px ${colorVars.semantic.ui.border}`,
+            boxShadow: `inset 0 0 0 1px ${colorVars.semantic.ui.border}`,
           },
         },
       },
       ghost: {
-        border: 'none',
         background: colorVars.primitive.blackAlpha[50],
         color: colorVars.semantic.text.black,
         selectors: {
