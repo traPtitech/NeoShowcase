@@ -1,4 +1,4 @@
-import { colorVars, textVars, vars } from '/@/theme'
+import { colorVars, textVars } from '/@/theme'
 import { styled } from '@macaron-css/solid'
 import { ParentComponent, Show, createSignal, onCleanup, onMount } from 'solid-js'
 import { Portal } from 'solid-js/web'
