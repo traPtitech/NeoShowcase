@@ -134,7 +134,7 @@ func (i *Integration) _sync(ctx context.Context) error {
 	return nil
 }
 
-func (i *Integration) syncRepository(ctx context.Context, username string, ownerIDs []string, giteaRepo *gitea.Repository) error {
+func (i *Integration) syncRepository(ctx context.Context, username string, giteaOwnerIDs []string, giteaRepo *gitea.Repository) error {
 	// NOTE: no transaction, creating repository is assumed rare
 	repos, err := i.gitRepo.GetRepositories(ctx, domain.GetRepositoryCondition{URLs: optional.From([]string{giteaRepo.SSHURL})})
 	if err != nil {
@@ -142,30 +142,57 @@ func (i *Integration) syncRepository(ctx context.Context, username string, owner
 	}
 
 	if len(repos) == 0 {
+		// Does not exist, sync repository metadata
 		repo := domain.NewRepository(
 			fmt.Sprintf("%v/%v", username, giteaRepo.Name),
 			giteaRepo.SSHURL,
 			optional.From(domain.RepositoryAuth{Method: domain.RepositoryAuthMethodSSH}),
-			ownerIDs,
+			giteaOwnerIDs,
 		)
 		log.Infof("Syncing repository %v -> id: %v", repo.Name, repo.ID)
-		err = i.gitRepo.CreateRepository(ctx, repo)
+		return i.gitRepo.CreateRepository(ctx, repo)
+	}
+
+	// Already exists
+	repo := repos[0]
+
+	// Sync owners
+	// Are all repository owners on Gitea also an owner of the repository on NeoShowcase?
+	allOwnersAdded := lo.EveryBy(giteaOwnerIDs, func(ownerID string) bool { return slices.Contains(repo.OwnerIDs, ownerID) })
+	if !allOwnersAdded {
+		newOwners := ds.UniqMergeSlice(repo.OwnerIDs, giteaOwnerIDs)
+		log.Infof("Syncing repository %v (id: %v) owners, %v users -> %v users", repo.Name, repo.ID, len(repo.OwnerIDs), len(newOwners))
+		err = i.gitRepo.UpdateRepository(ctx, repo.ID, &domain.UpdateRepositoryArgs{OwnerIDs: optional.From(newOwners)})
 		if err != nil {
 			return err
 		}
-	} else {
-		// Already exists, sync owners
-		repo := repos[0]
-		slices.Sort(repo.OwnerIDs)
-		slices.Sort(ownerIDs)
-		if !ds.Equals(repo.OwnerIDs, ownerIDs) {
-			log.Infof("Syncing repository %v (id: %v) owners, %v users -> %v users", repo.Name, repo.ID, len(repo.OwnerIDs), len(ownerIDs))
-			err = i.gitRepo.UpdateRepository(ctx, repo.ID, &domain.UpdateRepositoryArgs{OwnerIDs: optional.From(ownerIDs)})
-			if err != nil {
-				return err
-			}
+	}
+
+	// Sync owners of generated applications
+	apps, err := i.appRepo.GetApplications(ctx, domain.GetApplicationCondition{RepositoryID: optional.From(repo.ID)})
+	if err != nil {
+		return err
+	}
+	for _, app := range apps {
+		err = i.syncApplication(ctx, app, giteaOwnerIDs)
+		if err != nil {
+			return err
 		}
 	}
 
+	return nil
+}
+
+func (i *Integration) syncApplication(ctx context.Context, app *domain.Application, giteaOwnerIDs []string) error {
+	// Are all repository owners on Gitea also an owner of generated application on NeoShowcase?
+	allOwnersAdded := lo.EveryBy(giteaOwnerIDs, func(ownerID string) bool { return slices.Contains(app.OwnerIDs, ownerID) })
+	if !allOwnersAdded {
+		newOwners := ds.UniqMergeSlice(app.OwnerIDs, giteaOwnerIDs)
+		log.Infof("Syncing application %v (id: %v) owners, %v users -> %v users", app.Name, app.ID, len(app.OwnerIDs), len(newOwners))
+		err := i.appRepo.UpdateApplication(ctx, app.ID, &domain.UpdateApplicationArgs{OwnerIDs: optional.From(newOwners)})
+		if err != nil {
+			return err
+		}
+	}
 	return nil
 }

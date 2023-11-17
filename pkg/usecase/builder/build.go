@@ -140,11 +140,11 @@ func (s *builderService) buildSteps(ctx context.Context, st *state) ([]buildStep
 		}})
 		steps = append(steps, buildStep{"Extract from Temporary Image", func() error {
 			return withBuildkitProgress(ctx, st.logWriter, func(ctx context.Context, ch chan *buildkit.SolveStatus) error {
-				return s.buildStaticBuildpackExtract(ctx, st, ch, bc)
+				return s.buildStaticExtract(ctx, st, ch)
 			})
 		}})
 		steps = append(steps, buildStep{"Cleanup Temporary Image", func() error {
-			return s.buildStaticBuildpackCleanup(ctx, st)
+			return s.buildStaticCleanup(ctx, st)
 		}})
 		steps = append(steps, buildStep{"Save Artifact", func() error {
 			return s.saveArtifact(ctx, st)
@@ -155,6 +155,14 @@ func (s *builderService) buildSteps(ctx context.Context, st *state) ([]buildStep
 				return s.buildStaticCmd(ctx, st, ch, bc)
 			})
 		}})
+		steps = append(steps, buildStep{"Extract from Temporary Image", func() error {
+			return withBuildkitProgress(ctx, st.logWriter, func(ctx context.Context, ch chan *buildkit.SolveStatus) error {
+				return s.buildStaticExtract(ctx, st, ch)
+			})
+		}})
+		steps = append(steps, buildStep{"Cleanup Temporary Image", func() error {
+			return s.buildStaticCleanup(ctx, st)
+		}})
 		steps = append(steps, buildStep{"Save Artifact", func() error {
 			return s.saveArtifact(ctx, st)
 		}})
@@ -163,6 +171,14 @@ func (s *builderService) buildSteps(ctx context.Context, st *state) ([]buildStep
 			return withBuildkitProgress(ctx, st.logWriter, func(ctx context.Context, ch chan *buildkit.SolveStatus) error {
 				return s.buildStaticDockerfile(ctx, st, ch, bc)
 			})
+		}})
+		steps = append(steps, buildStep{"Extract from Temporary Image", func() error {
+			return withBuildkitProgress(ctx, st.logWriter, func(ctx context.Context, ch chan *buildkit.SolveStatus) error {
+				return s.buildStaticExtract(ctx, st, ch)
+			})
+		}})
+		steps = append(steps, buildStep{"Cleanup Temporary Image", func() error {
+			return s.buildStaticCleanup(ctx, st)
 		}})
 		steps = append(steps, buildStep{"Save Artifact", func() error {
 			return s.saveArtifact(ctx, st)
@@ -197,10 +213,8 @@ func (s *builderService) process(ctx context.Context, st *state) domain.BuildSta
 			return domain.BuildStatusCanceled
 		}
 		if err != nil {
-			msg := fmt.Sprintf("%+v", err)
-			log.Error(msg)
-			st.WriteLog("[ns-builder] Build failed:")
-			st.WriteLog(msg)
+			log.Errorf("Build failed for %v: %+v", st.build.ID, err)
+			st.WriteLog(fmt.Sprintf("[ns-builder] Build failed: %v", err))
 			return domain.BuildStatusFailed
 		}
 		st.WriteLog(fmt.Sprintf("[ns-builder] ==> (%d/%d) Done (%v).", i+1, len(steps), time.Since(start)))

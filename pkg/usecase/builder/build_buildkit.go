@@ -1,25 +1,22 @@
 package builder
 
 import (
-	"bytes"
 	"context"
-	"encoding/json"
 	"fmt"
 	"io"
 	"os"
 	"path/filepath"
+	"strings"
 
 	"github.com/docker/cli/cli/config/configfile"
 	"github.com/docker/cli/cli/config/types"
 	"github.com/friendsofgo/errors"
 	buildkit "github.com/moby/buildkit/client"
-	"github.com/moby/buildkit/client/llb"
-	"github.com/moby/buildkit/exporter/containerimage/exptypes"
-	"github.com/moby/buildkit/frontend/dockerfile/dockerfile2llb"
 	"github.com/moby/buildkit/session"
 	"github.com/moby/buildkit/session/auth/authprovider"
 	"github.com/moby/buildkit/util/progress/progressui"
 	"github.com/samber/lo"
+	log "github.com/sirupsen/logrus"
 	"golang.org/x/sync/errgroup"
 
 	"github.com/traPtitech/neoshowcase/pkg/domain"
@@ -38,10 +35,32 @@ func withBuildkitProgress(ctx context.Context, logger io.Writer, buildFn func(ct
 	})
 	eg.Go(func() error {
 		// TODO: VertexWarningを使う (LLBのどのvertexに問題があったか)
-		_, err := progressui.DisplaySolveStatus(ctx, "", nil, logger, ch)
+		// NOTE: https://github.com/moby/buildkit/pull/1721#issuecomment-703937866
+		// DisplaySolveStatus's context should not be cancelled, in order to receive 'cancelled' events from buildkit API call.
+		_, err := progressui.DisplaySolveStatus(context.WithoutCancel(ctx), nil, logger, ch)
 		return err
 	})
 	return eg.Wait()
+}
+
+func createTempFile(pattern string, content string) (name string, cleanup func(), err error) {
+	f, err := os.CreateTemp("", pattern)
+	if err != nil {
+		return "", nil, errors.Wrap(err, "creating temp "+pattern+" file")
+	}
+	defer f.Close()
+	cleanup = func() {
+		err := os.Remove(f.Name())
+		if err != nil {
+			log.Errorf("removing temp file "+f.Name()+": %+v", err)
+		}
+	}
+	_, err = f.WriteString(content)
+	if err != nil {
+		cleanup()
+		return "", nil, errors.Wrap(err, "writing to temp file "+f.Name())
+	}
+	return f.Name(), cleanup, nil
 }
 
 func createFile(filename string, content string) error {
@@ -75,10 +94,37 @@ func (s *builderService) authSessions() []session.Attachable {
 	})}
 }
 
-func appEnvAttributes(env map[string]string) map[string]string {
-	return lo.MapEntries(env, func(k string, v string) (string, string) {
-		return "build-arg:" + k, v
-	})
+func (s *builderService) solveDockerfile(
+	ctx context.Context,
+	dest string,
+	contextDir string,
+	dockerfileDir, dockerfileName string,
+	env map[string]string,
+	ch chan *buildkit.SolveStatus,
+) error {
+	opts := buildkit.SolveOpt{
+		Exports: []buildkit.ExportEntry{{
+			Type: buildkit.ExporterImage,
+			Attrs: map[string]string{
+				"name": dest,
+				"push": "true",
+			},
+		}},
+		LocalDirs: map[string]string{
+			"context":    contextDir,
+			"dockerfile": dockerfileDir,
+		},
+		Frontend: "dockerfile.v0",
+		FrontendAttrs: ds.MergeMap(
+			map[string]string{"filename": dockerfileName},
+			lo.MapEntries(env, func(k string, v string) (string, string) {
+				return "build-arg:" + k, v
+			}),
+		),
+		Session: s.authSessions(),
+	}
+	_, err := s.buildkit.Solve(ctx, nil, opts, ch)
+	return err
 }
 
 func (s *builderService) buildRuntimeCmd(
@@ -87,7 +133,7 @@ func (s *builderService) buildRuntimeCmd(
 	ch chan *buildkit.SolveStatus,
 	bc *domain.BuildConfigRuntimeCmd,
 ) error {
-	var dockerfile bytes.Buffer
+	var dockerfile strings.Builder
 	if bc.BaseImage == "" {
 		dockerfile.WriteString("FROM scratch\n")
 	} else {
@@ -115,36 +161,21 @@ func (s *builderService) buildRuntimeCmd(
 		dockerfile.WriteString(fmt.Sprintf("RUN rm ./%v\n", buildScriptName))
 	}
 
-	b, img, _, err := dockerfile2llb.Dockerfile2LLB(ctx, dockerfile.Bytes(), dockerfile2llb.ConvertOpt{
-		BuildArgs: env,
-	})
+	tmpName, cleanup, err := createTempFile("dockerfile-*", dockerfile.String())
 	if err != nil {
 		return err
 	}
-	config, err := json.Marshal(img)
-	if err != nil {
-		return errors.Wrap(err, "marshaling image config")
-	}
-	def, err := b.Marshal(ctx)
-	if err != nil {
-		return err
-	}
+	defer cleanup()
 
-	_, err = s.buildkit.Solve(ctx, def, buildkit.SolveOpt{
-		Exports: []buildkit.ExportEntry{{
-			Type: buildkit.ExporterImage,
-			Attrs: map[string]string{
-				"name":                          s.destImage(st.app, st.build),
-				"push":                          "true",
-				exptypes.ExporterImageConfigKey: string(config),
-			},
-		}},
-		LocalDirs: map[string]string{
-			"context": st.repositoryTempDir,
-		},
-		Session: s.authSessions(),
-	}, ch)
-	return err
+	return s.solveDockerfile(
+		ctx,
+		s.destImage(st.app, st.build),
+		st.repositoryTempDir,
+		filepath.Dir(tmpName),
+		filepath.Base(tmpName),
+		env,
+		ch,
+	)
 }
 
 func (s *builderService) buildRuntimeDockerfile(
@@ -157,28 +188,16 @@ func (s *builderService) buildRuntimeDockerfile(
 	if err != nil {
 		return err
 	}
-
 	contextDir := lo.Ternary(bc.Context != "", bc.Context, ".")
-	_, err = s.buildkit.Solve(ctx, nil, buildkit.SolveOpt{
-		Exports: []buildkit.ExportEntry{{
-			Type: buildkit.ExporterImage,
-			Attrs: map[string]string{
-				"name": s.destImage(st.app, st.build),
-				"push": "true",
-			},
-		}},
-		LocalDirs: map[string]string{
-			"context":    filepath.Join(st.repositoryTempDir, contextDir),
-			"dockerfile": filepath.Join(st.repositoryTempDir, contextDir),
-		},
-		Frontend: "dockerfile.v0",
-		FrontendAttrs: ds.MergeMap(
-			map[string]string{"filename": bc.DockerfileName},
-			appEnvAttributes(env),
-		),
-		Session: s.authSessions(),
-	}, ch)
-	return err
+	return s.solveDockerfile(
+		ctx,
+		s.destImage(st.app, st.build),
+		filepath.Join(st.repositoryTempDir, contextDir),
+		filepath.Join(st.repositoryTempDir, contextDir),
+		bc.DockerfileName,
+		env,
+		ch,
+	)
 }
 
 func (s *builderService) buildStaticCmd(
@@ -187,62 +206,50 @@ func (s *builderService) buildStaticCmd(
 	ch chan *buildkit.SolveStatus,
 	bc *domain.BuildConfigStaticCmd,
 ) error {
-	var ls llb.State
-	if bc.BaseImage == "" {
-		ls = llb.Scratch()
-	} else {
-		ls = llb.Image(bc.BaseImage)
-	}
+	var dockerfile strings.Builder
+
+	dockerfile.WriteString(fmt.Sprintf(
+		"FROM %s\n",
+		lo.Ternary(bc.BaseImage == "", "scratch", bc.BaseImage),
+	))
 
 	env, err := s.appEnv(ctx, st.app)
 	if err != nil {
 		return err
 	}
-	for key, value := range env {
-		ls = ls.AddEnv(key, value)
+	for key := range env {
+		dockerfile.WriteString(fmt.Sprintf("ARG %v\n", key))
+		dockerfile.WriteString(fmt.Sprintf("ENV %v=$%v\n", key, key))
 	}
 
-	ls = ls.
-		Dir("/srv").
-		File(llb.Copy(llb.Local("local-src"), ".", ".", &llb.CopyInfo{
-			CopyDirContentsOnly: true,
-			AllowWildcard:       true,
-			CreateDestPath:      true,
-		}))
+	dockerfile.WriteString("WORKDIR /srv\n")
+	dockerfile.WriteString("COPY . .\n")
 
 	if bc.BuildCmd != "" {
 		err := createScriptFile(filepath.Join(st.repositoryTempDir, buildScriptName), bc.BuildCmd)
 		if err != nil {
 			return err
 		}
-		ls = ls.Run(llb.Args([]string{"./" + buildScriptName})).Root()
-		ls = ls.Run(llb.Args([]string{"rm", "./" + buildScriptName})).Root()
+		dockerfile.WriteString("RUN ./" + buildScriptName + "\n")
+		dockerfile.WriteString("RUN rm ./" + buildScriptName + "\n")
 	}
 
-	// ビルドで生成された静的ファイルのみを含むScratchイメージを構成
-	def, err := llb.
-		Scratch().
-		File(llb.Copy(ls, filepath.Join("/srv", bc.ArtifactPath), "/", &llb.CopyInfo{
-			CopyDirContentsOnly: true,
-			CreateDestPath:      true,
-			AllowWildcard:       true,
-		})).
-		Marshal(ctx)
+	tmpName, cleanup, err := createTempFile("dockerfile-*", dockerfile.String())
 	if err != nil {
-		return errors.Wrap(err, "failed to marshal llb")
+		return err
 	}
+	defer cleanup()
 
-	_, err = s.buildkit.Solve(ctx, def, buildkit.SolveOpt{
-		Exports: []buildkit.ExportEntry{{
-			Type:   buildkit.ExporterTar,
-			Output: func(_ map[string]string) (io.WriteCloser, error) { return st.artifactTempFile, nil },
-		}},
-		LocalDirs: map[string]string{
-			"local-src": st.repositoryTempDir,
-		},
-		Session: s.authSessions(),
-	}, ch)
-	return err
+	st.staticDest = filepath.Join("/srv", bc.ArtifactPath)
+	return s.solveDockerfile(
+		ctx,
+		s.tmpDestImage(st.app, st.build),
+		st.repositoryTempDir,
+		filepath.Dir(tmpName),
+		filepath.Base(tmpName),
+		env,
+		ch,
+	)
 }
 
 func (s *builderService) buildStaticDockerfile(
@@ -251,45 +258,19 @@ func (s *builderService) buildStaticDockerfile(
 	ch chan *buildkit.SolveStatus,
 	bc *domain.BuildConfigStaticDockerfile,
 ) error {
-	contextDir := lo.Ternary(bc.Context != "", bc.Context, ".")
-	dockerfile, err := os.ReadFile(filepath.Join(st.repositoryTempDir, contextDir, bc.DockerfileName))
-	if err != nil {
-		return err
-	}
-
 	env, err := s.appEnv(ctx, st.app)
 	if err != nil {
 		return err
 	}
-
-	b, _, _, err := dockerfile2llb.Dockerfile2LLB(ctx, dockerfile, dockerfile2llb.ConvertOpt{
-		BuildArgs: env,
-	})
-	if err != nil {
-		return err
-	}
-
-	def, err := llb.
-		Scratch().
-		File(llb.Copy(*b, bc.ArtifactPath, "/", &llb.CopyInfo{
-			CopyDirContentsOnly: true,
-			CreateDestPath:      true,
-			AllowWildcard:       true,
-		})).
-		Marshal(ctx)
-	if err != nil {
-		return err
-	}
-
-	_, err = s.buildkit.Solve(ctx, def, buildkit.SolveOpt{
-		Exports: []buildkit.ExportEntry{{
-			Type:   buildkit.ExporterTar,
-			Output: func(_ map[string]string) (io.WriteCloser, error) { return st.artifactTempFile, nil },
-		}},
-		LocalDirs: map[string]string{
-			"context": filepath.Join(st.repositoryTempDir, contextDir),
-		},
-		Session: s.authSessions(),
-	}, ch)
-	return err
+	contextDir := lo.Ternary(bc.Context != "", bc.Context, ".")
+	st.staticDest = bc.ArtifactPath
+	return s.solveDockerfile(
+		ctx,
+		s.tmpDestImage(st.app, st.build),
+		filepath.Join(st.repositoryTempDir, contextDir),
+		filepath.Join(st.repositoryTempDir, contextDir),
+		bc.DockerfileName,
+		env,
+		ch,
+	)
 }

@@ -7,6 +7,7 @@ import (
 	"github.com/go-git/go-git/v5/plumbing/transport/ssh"
 
 	"github.com/traPtitech/neoshowcase/pkg/domain"
+	"github.com/traPtitech/neoshowcase/pkg/domain/builder"
 	"github.com/traPtitech/neoshowcase/pkg/domain/web"
 	"github.com/traPtitech/neoshowcase/pkg/infrastructure/repository"
 	"github.com/traPtitech/neoshowcase/pkg/util/scutil"
@@ -35,6 +36,7 @@ type Service struct {
 	containerLogger domain.ContainerLogger
 	controller      domain.ControllerServiceClient
 	fallbackKey     *ssh.PublicKeys
+	image           builder.ImageConfig
 
 	systemInfo func(ctx context.Context) (*domain.SystemInfo, error)
 	tmpKeys    *tmpKeyPairService
@@ -53,6 +55,7 @@ func NewService(
 	metricsService domain.MetricsService,
 	containerLogger domain.ContainerLogger,
 	controller domain.ControllerServiceClient,
+	image builder.ImageConfig,
 	fallbackKey *ssh.PublicKeys,
 ) (*Service, error) {
 	return &Service{
@@ -69,6 +72,7 @@ func NewService(
 		containerLogger: containerLogger,
 		controller:      controller,
 		fallbackKey:     fallbackKey,
+		image:           image,
 
 		systemInfo: scutil.Once(controller.GetSystemInfo),
 		tmpKeys:    newTmpKeyPairService(),

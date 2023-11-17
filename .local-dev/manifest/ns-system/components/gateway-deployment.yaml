@@ -20,7 +20,7 @@ spec:
           imagePullPolicy: Never
           args:
             - --loglevel=debug
-            - --config=/opt/config/ns-gateway.yaml
+            - --config=/opt/config/ns.yaml
           ports:
             - containerPort: 8080
               name: http

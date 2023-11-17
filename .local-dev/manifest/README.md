@@ -1,6 +1,6 @@
 # manifest
 
-Manifest files required to deploy NeoShowcase locally
+Manifest files required to deploy NeoShowcase locally using k8s backend
 
 ## bootstrap
 

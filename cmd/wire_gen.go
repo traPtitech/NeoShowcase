@@ -282,11 +282,12 @@ func NewGateway(c Config) (component, error) {
 	}
 	controllerServiceClientConfig := gatewayConfig.Controller
 	controllerServiceClient := grpc.NewControllerServiceClient(controllerServiceClientConfig)
+	imageConfig := c.Image
 	publicKeys, err := provideRepositoryPublicKey(c)
 	if err != nil {
 		return nil, err
 	}
-	service, err := apiserver.NewService(artifactRepository, applicationRepository, buildRepository, environmentRepository, gitRepositoryRepository, userRepository, storage, mariaDBManager, mongoDBManager, metricsService, containerLogger, controllerServiceClient, publicKeys)
+	service, err := apiserver.NewService(artifactRepository, applicationRepository, buildRepository, environmentRepository, gitRepositoryRepository, userRepository, storage, mariaDBManager, mongoDBManager, metricsService, containerLogger, controllerServiceClient, imageConfig, publicKeys)
 	if err != nil {
 		return nil, err
 	}
@@ -310,8 +311,9 @@ func NewGiteaIntegration(c Config) (component, error) {
 		return nil, err
 	}
 	gitRepositoryRepository := repository.NewGitRepositoryRepository(db)
+	applicationRepository := repository.NewApplicationRepository(db)
 	userRepository := repository.NewUserRepository(db)
-	integration, err := giteaintegration.NewIntegration(giteaintegrationConfig, gitRepositoryRepository, userRepository)
+	integration, err := giteaintegration.NewIntegration(giteaintegrationConfig, gitRepositoryRepository, applicationRepository, userRepository)
 	if err != nil {
 		return nil, err
 	}

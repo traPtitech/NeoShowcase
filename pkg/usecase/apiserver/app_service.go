@@ -3,6 +3,8 @@ package apiserver
 import (
 	"context"
 	"fmt"
+	"github.com/regclient/regclient/types/ref"
+	"github.com/traPtitech/neoshowcase/pkg/util/regutil"
 	"strconv"
 
 	"github.com/friendsofgo/errors"
@@ -53,8 +55,18 @@ func (s *Service) validateApp(ctx context.Context, app *domain.Application) erro
 }
 
 func (s *Service) CreateApplication(ctx context.Context, app *domain.Application) (*domain.Application, error) {
+	// Fill owners field
+	repo, err := s.gitRepo.GetRepository(ctx, app.RepositoryID)
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to get repository metadata")
+	}
+	app.OwnerIDs = repo.OwnerIDs
+
+	for _, website := range app.Websites {
+		website.Normalize()
+	}
 	// Validate
-	err := s.validateApp(ctx, app)
+	err = s.validateApp(ctx, app)
 	if err != nil {
 		return nil, err
 	}
@@ -138,32 +150,6 @@ func (s *Service) createApplicationDatabase(ctx context.Context, app *domain.App
 	return nil
 }
 
-func (s *Service) deleteApplicationDatabase(ctx context.Context, app *domain.Application, envs []*domain.Environment) error {
-	if app.Config.BuildConfig.MariaDB() {
-		dbKey, ok := lo.Find(envs, func(e *domain.Environment) bool { return e.Key == domain.EnvMariaDBDatabaseKey })
-		if !ok {
-			return errors.New("failed to find mariadb name from env key")
-		}
-		err := s.mariaDBManager.Delete(ctx, domain.DeleteArgs{Database: dbKey.Value})
-		if err != nil {
-			return err
-		}
-	}
-
-	if app.Config.BuildConfig.MongoDB() {
-		dbKey, ok := lo.Find(envs, func(e *domain.Environment) bool { return e.Key == domain.EnvMongoDBDatabaseKey })
-		if !ok {
-			return errors.New("failed to find mongodb name from env key")
-		}
-		err := s.mongoDBManager.Delete(ctx, domain.DeleteArgs{Database: dbKey.Value})
-		if err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
 type TopAppInfo struct {
 	App         *domain.Application
 	LatestBuild *domain.Build
@@ -230,6 +216,9 @@ func (s *Service) UpdateApplication(ctx context.Context, id string, args *domain
 	}
 	app.Apply(args)
 
+	for _, website := range app.Websites {
+		website.Normalize()
+	}
 	// Validate
 	if err = s.validateApp(ctx, app); err != nil {
 		return err
@@ -267,7 +256,58 @@ func (s *Service) UpdateApplication(ctx context.Context, id string, args *domain
 	return nil
 }
 
+func (s *Service) deleteApplicationDatabase(ctx context.Context, app *domain.Application, envs []*domain.Environment) error {
+	if app.Config.BuildConfig.MariaDB() {
+		dbKey, ok := lo.Find(envs, func(e *domain.Environment) bool { return e.Key == domain.EnvMariaDBDatabaseKey })
+		if !ok {
+			return errors.New("failed to find mariadb name from env key")
+		}
+		err := s.mariaDBManager.Delete(ctx, domain.DeleteArgs{Database: dbKey.Value})
+		if err != nil {
+			return err
+		}
+	}
+
+	if app.Config.BuildConfig.MongoDB() {
+		dbKey, ok := lo.Find(envs, func(e *domain.Environment) bool { return e.Key == domain.EnvMongoDBDatabaseKey })
+		if !ok {
+			return errors.New("failed to find mongodb name from env key")
+		}
+		err := s.mongoDBManager.Delete(ctx, domain.DeleteArgs{Database: dbKey.Value})
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (s *Service) deleteApplicationImages(ctx context.Context, app *domain.Application) error {
+	if app.DeployType != domain.DeployTypeRuntime {
+		return nil
+	}
+
+	r := s.image.NewRegistry()
+	imageName := s.image.ImageName(app.ID)
+	tags, err := regutil.TagList(ctx, r, imageName)
+	if err != nil {
+		return err
+	}
+	for _, tag := range tags {
+		tagRef, err := ref.New(imageName + ":" + tag)
+		if err != nil {
+			return err
+		}
+		err = r.TagDelete(ctx, tagRef)
+		if err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
 func (s *Service) DeleteApplication(ctx context.Context, id string) error {
+	// Validate
 	err := s.isApplicationOwner(ctx, id)
 	if err != nil {
 		return err
@@ -281,6 +321,7 @@ func (s *Service) DeleteApplication(ctx context.Context, id string) error {
 		return newError(ErrorTypeBadRequest, "stop the application first before deleting", nil)
 	}
 
+	// Delete app database
 	env, err := s.envRepo.GetEnv(ctx, domain.GetEnvCondition{ApplicationID: optional.From(id)})
 	if err != nil {
 		return err
@@ -289,6 +330,13 @@ func (s *Service) DeleteApplication(ctx context.Context, id string) error {
 	if err != nil {
 		return err
 	}
+	// Delete runtime app image in background
+	go func() {
+		err := s.deleteApplicationImages(context.WithoutCancel(ctx), app)
+		if err != nil {
+			log.Errorf("Deleting application %v (id: %v) image: %+v", app.Name, app.ID, err)
+		}
+	}()
 
 	// delete artifacts
 	artifacts, err := s.artifactRepo.GetArtifacts(ctx, domain.GetArtifactCondition{ApplicationID: optional.From(app.ID)})

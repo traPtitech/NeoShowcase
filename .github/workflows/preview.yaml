@@ -1,7 +1,8 @@
 name: preview
 
 on:
-  pull_request:
+  # pull_request_target を使うにあたって https://securitylab.github.com/research/github-actions-preventing-pwn-requests/ の一読を推奨
+  pull_request_target:
 
 permissions:
   packages: write
@@ -12,9 +13,12 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Set PR_NUMBER env
-        run: echo "PR_NUMBER=$(echo $GITHUB_REF | sed -e 's/[^0-9]//g')" >> $GITHUB_ENV
+        run: echo "PR_NUMBER=${{ github.event.number }}" >> $GITHUB_ENV
 
       - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          persist-credentials: false
 
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v3

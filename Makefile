@@ -1,6 +1,5 @@
-PROTOC_VERSION := 24.2
-TBLS_VERSION := 1.65.3
-SPECTRAL_VERSION := 6.4.0
+PROTOC_VERSION := 24.4
+TBLS_VERSION := 1.70.2
 
 GO_REPO_ROOT_PACKAGE := "github.com/traPtitech/neoshowcase"
 PROTOC_OPTS := -I ./api/proto --go_out=. --go_opt=module=$(GO_REPO_ROOT_PACKAGE) --connect-go_out=. --connect-go_opt=module=$(GO_REPO_ROOT_PACKAGE)
@@ -26,7 +25,7 @@ init-protoc:
 init-protoc-tools: ## Install other protoc tools
 	go install google.golang.org/protobuf/cmd/protoc-gen-go@latest
 	go install connectrpc.com/connect/cmd/protoc-gen-connect-go@latest
-	yarn global add @bufbuild/protoc-gen-connect-es @bufbuild/protoc-gen-es
+	yarn global add @connectrpc/protoc-gen-connect-es @bufbuild/protoc-gen-es
 
 .PHONY: init
 init: init-protoc init-protoc-tools ## Install commands

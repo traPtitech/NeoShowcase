@@ -13,6 +13,10 @@ import (
 )
 
 func ValidateDomain(domain string) error {
+	// ドメインが大文字を含むときはエラー
+	if domain != strings.ToLower(domain) {
+		return errors.Errorf("domain %v must be lower case", domain)
+	}
 	// 面倒なのでtrailing dotは無しで統一
 	if strings.HasSuffix(domain, ".") {
 		return errors.Errorf("trailing dot not allowed in domain %v", domain)
@@ -149,6 +153,10 @@ func (w *Website) Validate() error {
 		return errors.Wrap(err, "invalid http port")
 	}
 	return nil
+}
+
+func (w *Website) Normalize() {
+	w.FQDN = strings.ToLower(w.FQDN)
 }
 
 func (w *Website) pathComponents() []string {

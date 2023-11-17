@@ -16,10 +16,15 @@ type ImageConfig struct {
 	TmpNamePrefix string `mapstructure:"tmpNamePrefix" yaml:"tmpNamePrefix"`
 }
 
+// NewRegistry generates a new regclient instance.
 func (c *ImageConfig) NewRegistry() *regclient.RegClient {
 	var opts []regclient.Opt
 
 	host := config.HostNewName(c.Registry.Scheme + "://" + c.Registry.Addr)
+	// RepoAuth should be set to true, because by default regclient internally merges scopes for all repositories
+	// it accesses, resulting in a bloating "Authorization" header when accessing large number of repositories at once.
+	// also see: https://distribution.github.io/distribution/spec/auth/jwt/
+	host.RepoAuth = true
 	if c.Registry.Username != "" {
 		host.User = c.Registry.Username
 	}

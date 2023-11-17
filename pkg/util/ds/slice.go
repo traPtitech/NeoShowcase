@@ -1,6 +1,7 @@
 package ds
 
 import (
+	"github.com/samber/lo"
 	"golang.org/x/exp/constraints"
 )
 
@@ -63,4 +64,16 @@ func FirstN[T any](s []T, n int) []T {
 		return s
 	}
 	return s[:n]
+}
+
+func UniqMergeSlice[T comparable](s1, s2 []T) []T {
+	s := make([]T, 0, len(s1)+len(s2))
+	for _, elt := range s1 {
+		s = append(s, elt)
+	}
+	for _, elt := range s2 {
+		s = append(s, elt)
+	}
+	lo.Uniq(s)
+	return s
 }

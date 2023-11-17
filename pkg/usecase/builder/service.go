@@ -7,7 +7,6 @@ import (
 
 	"github.com/go-git/go-git/v5/plumbing/transport/ssh"
 	buildkit "github.com/moby/buildkit/client"
-	"github.com/regclient/regclient"
 	"github.com/samber/lo"
 	log "github.com/sirupsen/logrus"
 
@@ -31,7 +30,6 @@ type builderService struct {
 	storage   domain.Storage
 	pubKey    *ssh.PublicKeys
 	config    builder.ImageConfig
-	registry  *regclient.RegClient
 
 	appRepo      domain.ApplicationRepository
 	artifactRepo domain.ArtifactRepository
@@ -59,7 +57,6 @@ func NewService(
 	envRepo domain.EnvironmentRepository,
 	gitRepo domain.GitRepositoryRepository,
 ) (Service, error) {
-	r := config.NewRegistry()
 	return &builderService{
 		client:       client,
 		buildkit:     buildkit,
@@ -72,7 +69,6 @@ func NewService(
 		buildRepo:    buildRepo,
 		envRepo:      envRepo,
 		gitRepo:      gitRepo,
-		registry:     r,
 	}, nil
 }
 
@@ -101,7 +97,7 @@ func (s *builderService) Start(_ context.Context) error {
 
 	go retry.Do(ctx, func(ctx context.Context) error {
 		return s.client.ConnectBuilder(ctx, s.onRequest, response)
-	})
+	}, "connect to controller")
 	go loop.Loop(ctx, s.prune, 1*time.Hour, false)
 
 	return nil

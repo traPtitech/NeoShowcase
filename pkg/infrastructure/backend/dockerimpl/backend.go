@@ -8,11 +8,13 @@ import (
 	"sync"
 	"time"
 
+	"github.com/traPtitech/neoshowcase/pkg/util/retry"
+
+	clitypes "github.com/docker/cli/cli/config/types"
 	"github.com/docker/docker/api/types"
 	"github.com/docker/docker/api/types/filters"
 	"github.com/docker/docker/client"
 	"github.com/friendsofgo/errors"
-	log "github.com/sirupsen/logrus"
 
 	"github.com/traPtitech/neoshowcase/pkg/domain"
 	"github.com/traPtitech/neoshowcase/pkg/domain/builder"
@@ -39,13 +41,18 @@ type Backend struct {
 	image  builder.ImageConfig
 
 	eventSubs   domain.PubSub[*domain.ContainerEvent]
-	eventCancel func()
+	stopWatcher func()
 
 	reloadLock sync.Mutex
 }
 
 func NewClientFromEnv() (*client.Client, error) {
-	return client.NewClientWithOpts(client.FromEnv)
+	return client.NewClientWithOpts(
+		client.FromEnv,
+		// Using github.com/moby/moby of v25 master@032797ea4bcb (2023-09-05), required by github.com/moby/buildkit@v0.12.3,
+		// defaults to API version 1.44, which currently available docker installation does not support.
+		client.WithVersion("1.43"),
+	)
 }
 
 func NewDockerBackend(
@@ -72,25 +79,10 @@ func (b *Backend) Start(ctx context.Context) error {
 	}
 
 	eventCtx, eventCancel := context.WithCancel(context.Background())
-	b.eventCancel = eventCancel
-	go b.eventListenerLoop(eventCtx)
+	b.stopWatcher = eventCancel
+	go retry.Do(eventCtx, b.eventListener, "container watcher")
 
 	return nil
-}
-
-func (b *Backend) eventListenerLoop(ctx context.Context) {
-	for {
-		err := b.eventListener(ctx)
-		if err == nil {
-			return
-		}
-		log.Errorf("docker event listner errored, retrying in 1s: %+v", err)
-		select {
-		case <-time.After(time.Second):
-		case <-ctx.Done():
-			return
-		}
-	}
 }
 
 func (b *Backend) eventListener(ctx context.Context) error {
@@ -120,7 +112,7 @@ func (b *Backend) eventListener(ctx context.Context) error {
 }
 
 func (b *Backend) Dispose(_ context.Context) error {
-	b.eventCancel()
+	b.stopWatcher()
 	return nil
 }
 
@@ -164,7 +156,7 @@ func (b *Backend) authConfig() (string, error) {
 	if b.image.Registry.Username == "" && b.image.Registry.Password == "" {
 		return "", nil
 	}
-	c := types.AuthConfig{
+	c := clitypes.AuthConfig{
 		Username: b.image.Registry.Username,
 		Password: b.image.Registry.Password,
 	}

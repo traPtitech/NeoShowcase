@@ -10,15 +10,14 @@ This application is a successor to [kaz/showcase](https://github.com/kaz/showcas
 
 ## Development
 
-- `make`: Display Makefile help
-- `make up`: Spin up development environment
-- `make down`: Tear down development environment
+See [development.md](./docs/development.md).
 
-### Workaround
+## Architecture
 
-Add following to your `/etc/hosts` before executing `make up`
-(workaround to issue #493)
+See:
+- [architecture.md](./docs/architecture.md) for big picture of the architecture
+- [components.md](./docs/components.md) for detailed explanation of components and libraries
 
-```
-127.0.0.1 registry.local
-```
+## Production Deployment
+
+See [deployment.md](./docs/deployment.md).

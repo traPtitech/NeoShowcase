@@ -13,7 +13,7 @@ const (
 	successThreshold = 60 * time.Second
 )
 
-func Do(ctx context.Context, fn func(ctx context.Context) error) {
+func Do(ctx context.Context, fn func(ctx context.Context) error, msg string) {
 	backoff := initialBackoff
 	for {
 		start := time.Now()
@@ -26,7 +26,11 @@ func Do(ctx context.Context, fn func(ctx context.Context) error) {
 		if time.Since(start) >= successThreshold || err == nil {
 			backoff = initialBackoff
 		}
-		log.Infof("Lost connection, retrying in %v", backoff)
+		if err == nil {
+			log.Infof("Retrier: retrying in %v: %v", backoff, msg)
+		} else {
+			log.Errorf("Retrier: retrying in %v: %v: %v", backoff, msg, err)
+		}
 		select {
 		case <-time.After(backoff):
 		case <-ctx.Done():
