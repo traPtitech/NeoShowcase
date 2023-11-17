@@ -25,8 +25,7 @@ import {
 } from '@modular-forms/solid'
 import { useNavigate, useSearchParams } from '@solidjs/router'
 import { For } from 'solid-js'
-import { Component, Match, Show, Switch, createEffect, createResource, createSignal } from 'solid-js'
-import { createStore } from 'solid-js/store'
+import { Component, Match, Show, Switch, createResource, createSignal } from 'solid-js'
 import toast from 'solid-toast'
 
 const Container = styled('div', {
@@ -92,7 +91,13 @@ const GeneralStep: Component<{
     <Form of={form} onSubmit={handleSubmit} style={{ width: '100%' }}>
       <Container>
         <FormContainer>
+          {/* 
+            modular formsでは `FormStore<T extends AppGeneralForm, undefined>`のような
+            genericsが使用できないためignoreしている
+            */}
+          {/* @ts-ignore */}
           <GeneralConfig repo={props.repo} formStore={form} editBranchId={false} />
+          {/* @ts-ignore */}
           <BuildConfigs formStore={form} disableEditDB={false} />
           <Field of={form} name="startOnCreate" type="boolean">
             {(field, fieldProps) => (
