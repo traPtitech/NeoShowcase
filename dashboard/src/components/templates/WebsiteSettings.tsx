@@ -160,7 +160,9 @@ export const WebsiteSetting = (props: WebsiteSettingProps) => {
     reset(props.formStore, 'website.domain', {
       initialValue: domain.domain,
     })
-    reset(props.formStore)
+    reset(props.formStore, 'website.authAvailable', {
+      initialValue: domain.authAvailable,
+    })
   })
 
   onMount(() => {
@@ -199,6 +201,9 @@ export const WebsiteSetting = (props: WebsiteSettingProps) => {
         {() => <></>}
       </Field>
       <Field of={props.formStore} name={'website.fqdn'}>
+        {() => <></>}
+      </Field>
+      <Field of={props.formStore} name={'website.authAvailable'} type="boolean">
         {() => <></>}
       </Field>
       <FormBox.Container>
@@ -355,7 +360,7 @@ export const WebsiteSetting = (props: WebsiteSettingProps) => {
                         setValue(props.formStore, 'website.authentication', selected)
                       }
                     }}
-                    disabled={getValue(props.formStore, 'website.authAvailable') === false}
+                    disabled={!getValue(props.formStore, 'website.authAvailable')}
                     {...fieldProps}
                   />
                 </ToolTip>
