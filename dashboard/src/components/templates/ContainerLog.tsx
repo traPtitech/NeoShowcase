@@ -3,11 +3,11 @@ import { client, handleAPIError } from '/@/libs/api'
 import { toWithAnsi } from '/@/libs/buffers'
 import { isScrolledToBottom } from '/@/libs/scroll'
 import { addTimestamp, lessTimestamp, minTimestamp } from '/@/libs/timestamp'
-import { colorVars, vars } from '/@/theme'
-import { Code, ConnectError } from '@connectrpc/connect'
 import { Timestamp } from '@bufbuild/protobuf'
+import { Code, ConnectError } from '@connectrpc/connect'
 import { styled } from '@macaron-css/solid'
 import { Component, For, Ref, Show, createEffect, createMemo, createResource, createSignal, onCleanup } from 'solid-js'
+import { Button } from '../UI/Button'
 import { LogContainer } from '../UI/LogContainer'
 
 const LoadMoreContainer = styled('div', {
@@ -18,20 +18,6 @@ const LoadMoreContainer = styled('div', {
     gap: '8px',
     marginBottom: '6px',
     fontSize: '16px',
-  },
-})
-const LoadMoreButton = styled('div', {
-  base: {
-    background: vars.bg.black1,
-    border: `1px solid ${vars.bg.white2}`,
-    borderRadius: '2px',
-    padding: '2px',
-    color: vars.text.white1,
-    selectors: {
-      '&:hover': {
-        background: vars.text.black3,
-      },
-    },
   },
 })
 
@@ -141,9 +127,9 @@ export const ContainerLog: Component<ContainerLogProps> = (props) => {
         <LoadMoreContainer>
           Loaded until {loadedUntil().toDate().toLocaleString()}
           <Show when={!loadDisabled()} fallback={<span>(reached load limit)</span>}>
-            <Show when={!loading()} fallback={<span>Loading...</span>}>
-              <LoadMoreButton onClick={load}>Load more</LoadMoreButton>
-            </Show>
+            <Button variants="ghost" size="small" onClick={load} disabled={loading()}>
+              {loading() ? 'Loading...' : 'Load more'}
+            </Button>
           </Show>
         </LoadMoreContainer>
       </Show>
