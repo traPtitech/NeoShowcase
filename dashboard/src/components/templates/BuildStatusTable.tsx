@@ -144,6 +144,13 @@ const BuildStatusTable: Component<{
           </BuildStatusRow>
           <List.Row>
             <List.RowContent>
+              <List.RowTitle>Latest Build ID</List.RowTitle>
+              <List.RowData>{nonNullLatestBuild().id}</List.RowData>
+            </List.RowContent>
+            <JumpButton href={`/apps/${props.app.id}/builds/${nonNullLatestBuild().id}`} />
+          </List.Row>
+          <List.Row>
+            <List.RowContent>
               <List.RowTitle>Repository</List.RowTitle>
               <List.RowData>
                 <A href={`/repos/${props.repo.id}`}>{props.repo.name}</A>

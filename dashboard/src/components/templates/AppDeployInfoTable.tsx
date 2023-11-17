@@ -239,6 +239,7 @@ const AppDeployInfoTable: Component<{
             </Show>
           </List.RowData>
         </List.RowContent>
+        <JumpButton href={`/apps/${props.app.id}/builds/${props.app.currentBuild}`} />
       </DeployInfoContainer>
       <DeployInfoContainer>
         <List.RowContent>
