@@ -84,7 +84,6 @@ const EnvVarConfig: Component<{
   }
 
   const handleSubmit: SubmitHandler<PlainMessage<ApplicationEnvVars>> = async (values) => {
-    console.log(values)
     const oldVars = new Map(
       props.envVars.variables.filter((envVar) => !envVar.system).map((envVar) => [envVar.key, envVar.value]),
     )
