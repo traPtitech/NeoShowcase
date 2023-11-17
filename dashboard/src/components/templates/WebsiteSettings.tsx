@@ -133,27 +133,7 @@ export const WebsiteSetting = (props: WebsiteSettingProps) => {
     }
   }
 
-  const resetHostAndDomain = createReaction(() => {
-    const fqdn = getValue(props.formStore, 'website.fqdn')
-    if (fqdn === undefined) return
-    const { host, domain } = extractHost(fqdn)
-    reset(props.formStore, 'website.host', {
-      initialValue: host,
-    })
-    reset(props.formStore, 'website.domain', {
-      initialValue: domain.domain,
-    })
-  })
-
-  onMount(() => {
-    // Reset when both host and domain are no longer undefined
-    resetHostAndDomain(
-      () =>
-        getValue(props.formStore, 'website.host') !== undefined &&
-        getValue(props.formStore, 'website.domain') !== undefined,
-    )
-  })
-
+  // set host and domain from fqdn on fqdn change
   createEffect(
     on(
       () => getValue(props.formStore, 'website.fqdn'),
@@ -170,11 +150,29 @@ export const WebsiteSetting = (props: WebsiteSettingProps) => {
     ),
   )
 
+  const resetHostAndDomain = createReaction(() => {
+    const fqdn = getValue(props.formStore, 'website.fqdn')
+    if (fqdn === undefined) return
+    const { host, domain } = extractHost(fqdn)
+    reset(props.formStore, 'website.host', {
+      initialValue: host,
+    })
+    reset(props.formStore, 'website.domain', {
+      initialValue: domain.domain,
+    })
+    reset(props.formStore)
+  })
+
+  onMount(() => {
+    // Reset host and domain on first fqdn change
+    resetHostAndDomain(() => getValue(props.formStore, 'website.fqdn'))
+  })
+
+  // set fqdn from host and domain on host or domain change
   createEffect(
     on(
       [() => getValue(props.formStore, 'website.host'), () => getValue(props.formStore, 'website.domain')],
       ([host, domain]) => {
-        // set fqdn from host and domain on host or domain change
         if (host === undefined || domain === undefined) return
         const fqdn = `${host}${domain?.replace(/\*/g, '')}`
         setValue(props.formStore, 'website.fqdn', fqdn)
@@ -235,9 +233,9 @@ export const WebsiteSetting = (props: WebsiteSettingProps) => {
                 </Field>
               </HttpSelectContainer>
               <URLItem>://</URLItem>
-              <Show when={getValue(props.formStore, 'website.domain')?.startsWith('*')}>
-                <Field of={props.formStore} name={'website.host'} validate={required('Please Enter Hostname')}>
-                  {(field, fieldProps) => (
+              <Field of={props.formStore} name={'website.host'} validate={required('Please Enter Hostname')}>
+                {(field, fieldProps) => (
+                  <Show when={getValue(props.formStore, 'website.domain')?.startsWith('*')}>
                     <TextInput
                       placeholder="example.trap.show"
                       value={field.value}
@@ -249,9 +247,9 @@ export const WebsiteSetting = (props: WebsiteSettingProps) => {
                       }}
                       {...fieldProps}
                     />
-                  )}
-                </Field>
-              </Show>
+                  </Show>
+                )}
+              </Field>
               <Field of={props.formStore} name={'website.domain'}>
                 {(field, fieldProps) => (
                   <ToolTip
