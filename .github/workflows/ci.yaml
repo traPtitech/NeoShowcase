@@ -82,7 +82,7 @@ jobs:
           go-version-file: ./go.mod
       - name: Run migration
         run: |
-          go install github.com/k0kubun/sqldef/cmd/mysqldef@latest
+          go install github.com/sqldef/sqldef/cmd/mysqldef@latest
           DB_PORT=5004 ./migrations/entrypoint.sh ./migrations/schema.sql
       - name: Run tests
         run: go test ./... -v ${{ matrix.race }} -coverprofile=coverage.out -covermode=atomic -vet=off
@@ -153,7 +153,7 @@ jobs:
           go-version-file: ./go.mod
       - name: Run migration
         run: |
-          go install github.com/k0kubun/sqldef/cmd/mysqldef@latest
+          go install github.com/sqldef/sqldef/cmd/mysqldef@latest
           DB_PORT=5004 ./migrations/entrypoint.sh ./migrations/schema.sql
       - uses: k1low/setup-tbls@v1
         with:

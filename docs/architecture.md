@@ -87,7 +87,7 @@ It can be extended to configure settings for static delivery processes like Apac
 ### Migrator (ns-migrate)
 
 Performs database migrations.
-Migrator consists of a single shell script that executes [sqldef](https://github.com/k0kubun/sqldef).
+Migrator consists of a single shell script that executes [sqldef](https://github.com/sqldef/sqldef).
 
 If possible, you should first define a schema that is compatible with both the old and new versions.
 Then, run this migrator to make schema changes.

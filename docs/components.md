@@ -72,7 +72,7 @@ gRPC用クライアント
 gRPCは当然Postmanとかcurlとかでアクセス出来ないので、デバッグするときとかには専用クライアントが必要。
 これは対話的に呼び出せたりして補完とかも効くので便利。
 
-### [sqldef](https://github.com/k0kubun/sqldef)
+### [sqldef](https://github.com/sqldef/sqldef)
 
 > The easiest idempotent MySQL/PostgreSQL/SQLite3/SQL Server schema management by SQL.
 
