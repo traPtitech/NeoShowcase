@@ -30,7 +30,7 @@ init-protoc-tools: ## Install other protoc tools
 .PHONY: init
 init: init-protoc init-protoc-tools ## Install commands
 	go mod download
-	go install github.com/k0kubun/sqldef/cmd/mysqldef@latest
+	go install github.com/sqldef/sqldef/cmd/mysqldef@latest
 	go install github.com/ktr0731/evans@latest
 
 .PHONY: gogen
