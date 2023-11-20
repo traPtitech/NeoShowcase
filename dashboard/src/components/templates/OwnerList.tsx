@@ -33,7 +33,6 @@ const UsersContainer = styled('div', {
     height: '100%',
     maxHeight: '100%',
     overflowY: 'auto',
-    scrollbarGutter: 'stable',
     display: 'flex',
     flexDirection: 'column',
 
