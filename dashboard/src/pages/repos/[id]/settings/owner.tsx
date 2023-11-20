@@ -208,7 +208,7 @@ const OwnerConfig: Component<{
   const handleDeleteOwner = async (user: User) => {
     const newOwnerIds = props.repo.ownerIds.filter((id) => id !== user.id)
     try {
-      await client.updateApplication({
+      await client.updateRepository({
         id: props.repo.id,
         ownerIds: { ownerIds: newOwnerIds },
       })
@@ -226,7 +226,7 @@ const OwnerConfig: Component<{
   const handleAddOwner = async (user: User) => {
     const newOwnerIds = props.repo.ownerIds.concat(user.id)
     try {
-      await client.updateApplication({
+      await client.updateRepository({
         id: props.repo.id,
         ownerIds: { ownerIds: newOwnerIds },
       })
