@@ -106,7 +106,7 @@ export const RepositoryList: Component<{
   repository: Repository
   apps: Application[]
 }> = (props) => {
-  const [showApps, setShowApps] = createSignal(false)
+  const [showApps, setShowApps] = createSignal(true)
 
   return (
     <Container>
