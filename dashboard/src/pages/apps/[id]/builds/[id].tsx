@@ -197,12 +197,14 @@ export default () => {
               </List.Container>
             </DataTable.Container>
           </Show>
-          <DataTable.Container>
-            <DataTable.Title>Build Log</DataTable.Title>
-            <LogContainer>
-              <BuildLog buildID={build()?.id} finished={buildFinished()} refetchBuild={refetchBuild} />
-            </LogContainer>
-          </DataTable.Container>
+          <Show when={hasPermission()}>
+            <DataTable.Container>
+              <DataTable.Title>Build Log</DataTable.Title>
+              <LogContainer>
+                <BuildLog buildID={build()?.id} finished={buildFinished()} refetchBuild={refetchBuild} />
+              </LogContainer>
+            </DataTable.Container>
+          </Show>
         </MainView>
       </Show>
     </MainViewContainer>
