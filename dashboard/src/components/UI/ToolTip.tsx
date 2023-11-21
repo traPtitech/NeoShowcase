@@ -2,6 +2,8 @@ import { styled } from '@macaron-css/solid'
 import { FlowComponent, JSX, children, mergeProps, onMount, splitProps } from 'solid-js'
 import { TippyOptions, tippy } from 'solid-tippy'
 import { Props } from 'tippy.js'
+import 'tippy.js/animations/shift-away-subtle.css'
+import 'tippy.js/dist/tippy.css'
 
 const TooltipContainer = styled('div', {
   base: {

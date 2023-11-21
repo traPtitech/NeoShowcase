@@ -1,16 +1,5 @@
 import { colorVars } from '/@/theme'
 import { globalStyle } from '@macaron-css/core'
-import { TippyOptions } from 'solid-tippy'
-import 'tippy.js/animations/shift-away-subtle.css'
-import 'tippy.js/dist/tippy.css'
-
-declare module 'solid-js' {
-  namespace JSX {
-    interface Directives {
-      tippy: TippyOptions
-    }
-  }
-}
 
 globalStyle('*, ::before, ::after', {
   boxSizing: 'border-box',

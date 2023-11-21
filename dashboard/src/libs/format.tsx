@@ -53,24 +53,3 @@ export const diffHuman = (target: Date) => {
     localeString,
   }
 }
-
-export interface DiffHumanProps {
-  target: Date
-}
-
-export const DiffHuman = (props: DiffHumanProps) => {
-  const diff = createMemo(() => new Date().getTime() - props.target.getTime())
-  const suffix = () => (diff() > 0 ? 'ago' : 'from now')
-  const human = () => durationHuman(Math.abs(diff()))
-  const tooltip = () => props.target.toLocaleString()
-  return (
-    <div
-      use:tippy={{
-        props: { content: tooltip(), maxWidth: 1000 },
-        hidden: true,
-      }}
-    >
-      {human()} {suffix()}
-    </div>
-  )
-}
