@@ -15,27 +15,32 @@ export default () => {
 
   return (
     <Show when={repo()}>
-      <WithNav.Container>
-        <WithNav.Navs>
-          <RepositoryNav repository={repo()} />
-          <WithNav.Tabs>
-            <TabRound onClick={() => navigate(`/repos/${repo()?.id}`)} state={matchIndexPage() ? 'active' : 'default'}>
-              <MaterialSymbols>insert_chart</MaterialSymbols>
-              Project
-            </TabRound>
-            <TabRound
-              onClick={() => navigate(`/repos/${repo()?.id}/settings`)}
-              state={matchSettingsPage() ? 'active' : 'default'}
-            >
-              <MaterialSymbols>settings</MaterialSymbols>
-              Settings
-            </TabRound>
-          </WithNav.Tabs>
-        </WithNav.Navs>
-        <WithNav.Body>
-          <Outlet />
-        </WithNav.Body>
-      </WithNav.Container>
+      {(nonNullRepo) => (
+        <WithNav.Container>
+          <WithNav.Navs>
+            <RepositoryNav repository={nonNullRepo()} />
+            <WithNav.Tabs>
+              <TabRound
+                onClick={() => navigate(`/repos/${nonNullRepo().id}`)}
+                state={matchIndexPage() ? 'active' : 'default'}
+              >
+                <MaterialSymbols>insert_chart</MaterialSymbols>
+                Info
+              </TabRound>
+              <TabRound
+                onClick={() => navigate(`/repos/${nonNullRepo().id}/settings`)}
+                state={matchSettingsPage() ? 'active' : 'default'}
+              >
+                <MaterialSymbols>settings</MaterialSymbols>
+                Settings
+              </TabRound>
+            </WithNav.Tabs>
+          </WithNav.Navs>
+          <WithNav.Body>
+            <Outlet />
+          </WithNav.Body>
+        </WithNav.Container>
+      )}
     </Show>
   )
 }

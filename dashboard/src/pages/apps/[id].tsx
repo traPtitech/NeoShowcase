@@ -23,14 +23,14 @@ export default () => {
           <WithNav.Tabs>
             <TabRound onClick={() => navigate(`/apps/${app()?.id}`)} state={matchIndexPage() ? 'active' : 'default'}>
               <MaterialSymbols>insert_chart</MaterialSymbols>
-              App
+              Info
             </TabRound>
             <TabRound
               onClick={() => navigate(`/apps/${app()?.id}/builds`)}
               state={matchBuildsPage() ? 'active' : 'default'}
             >
               <MaterialSymbols>deployed_code</MaterialSymbols>
-              Builds
+              Build History
             </TabRound>
             <TabRound
               onClick={() => navigate(`/apps/${app()?.id}/settings`)}
