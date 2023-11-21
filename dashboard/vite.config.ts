@@ -2,7 +2,7 @@ import path from 'path'
 import { defineConfig } from 'vite'
 import solidPlugin from 'vite-plugin-solid'
 import solidSvg from 'vite-plugin-solid-svg'
-import VitePluginFonts from 'vite-plugin-fonts'
+import Unfonts from 'unplugin-fonts/vite'
 import { macaronVitePlugin } from '@macaron-css/vite'
 import viteCompression from 'vite-plugin-compression'
 
@@ -11,11 +11,15 @@ export default defineConfig({
     macaronVitePlugin(), // comes first
     solidPlugin(),
     solidSvg({ defaultAsComponent: true }),
-    VitePluginFonts({
+    Unfonts({
       google: {
         families: [
           'Mulish',
           'Lato',
+          {
+            name: "Material+Symbols+Rounded",
+            styles: "opsz,wght,FILL,GRAD@20..24,300,0..1,0",
+          }
         ],
       }
     }),

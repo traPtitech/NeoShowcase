@@ -22,9 +22,9 @@
     "@macaron-css/vite": "1.4.3",
     "@types/node": "20.8.0",
     "typescript": "5.2.2",
+    "unplugin-fonts": "^1.0.3",
     "vite": "4.4.9",
     "vite-plugin-compression": "0.5.1",
-    "vite-plugin-fonts": "0.7.0",
     "vite-plugin-solid": "2.7.0",
     "vite-plugin-solid-svg": "0.6.1"
   },

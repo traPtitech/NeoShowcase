@@ -1,7 +1,23 @@
+import { style } from '@macaron-css/core'
 import { JSX, ParentComponent, mergeProps, splitProps } from 'solid-js'
 
+// see https://developers.google.com/fonts/docs/material_symbols?hl=ja#self-hosting_the_font
+const baseStyle = style({
+  fontFamily: 'Material Symbols Rounded',
+  fontWeight: 'normal',
+  fontStyle: 'normal',
+  display: 'inline-block',
+  lineHeight: 1,
+  textTransform: 'none',
+  letterSpacing: 'normal',
+  wordWrap: 'normal',
+  whiteSpace: 'nowrap',
+  direction: 'ltr',
+  flexShrink: 0,
+  overflow: 'hidden',
+})
+
 export interface Props extends JSX.HTMLAttributes<HTMLSpanElement> {
-  type?: 'rounded'
   fill?: boolean
   weight?: 300
   grade?: 0
@@ -13,7 +29,6 @@ export interface Props extends JSX.HTMLAttributes<HTMLSpanElement> {
 export const MaterialSymbols: ParentComponent<Props> = (props) => {
   const [addedProps, originalProps] = splitProps(props, [
     'children',
-    'type',
     'fill',
     'weight',
     'grade',
@@ -37,8 +52,6 @@ export const MaterialSymbols: ParentComponent<Props> = (props) => {
   return (
     <span
       style={{
-        display: 'inline-block',
-        'flex-shrink': 0,
         'font-variation-settings': `'FILL' ${mergedProps.fill ? 1 : 0},
           'wght' ${mergedProps.weight},
           'GRAD' ${mergedProps.grade},
@@ -47,11 +60,10 @@ export const MaterialSymbols: ParentComponent<Props> = (props) => {
         height: size(),
         'font-size': size(),
         'line-height': size(),
-        overflow: 'hidden',
         color: mergedProps.color,
       }}
       {...originalProps}
-      class={`material-symbols-${mergedProps.type}`}
+      class={baseStyle}
     >
       {mergedProps.children}
     </span>
