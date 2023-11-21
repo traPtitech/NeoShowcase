@@ -203,7 +203,7 @@ export const RepositoryAuthSettings = (props: Props) => {
                 <SshKeyContainer>
                   以下のSSH公開鍵{!useTmpKey() && '(システムデフォルト)'}
                   をリポジトリに登録してください
-                  <CopyableInput value={publicKey()} />
+                  <TextInput value={publicKey()} copyValue={() => publicKey() ?? ''} readonly />
                   <Show when={!useTmpKey()}>
                     <RefreshButtonContainer>
                       <Button

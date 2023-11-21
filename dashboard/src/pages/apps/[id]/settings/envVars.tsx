@@ -3,6 +3,7 @@ import { Button } from '/@/components/UI/Button'
 import { TextInput } from '/@/components/UI/TextInput'
 import { DataTable } from '/@/components/layouts/DataTable'
 import FormBox from '/@/components/layouts/FormBox'
+import { CopyableInput } from '/@/components/templates/CopyableInput'
 import { client, handleAPIError } from '/@/libs/api'
 import { useApplicationData } from '/@/routes'
 import { colorVars, textVars } from '/@/theme'
@@ -169,6 +170,7 @@ const EnvVarConfig: Component<{
                             value={field.value}
                             {...fieldProps}
                             readOnly={getValue(envVarForm, `variables.${index()}.system`)}
+                            copyValue={() => field.value ?? ''}
                             disabled={getValue(envVarForm, `variables.${index()}.system`)}
                             tooltip={{
                               props: {
