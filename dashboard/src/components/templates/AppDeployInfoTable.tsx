@@ -6,7 +6,6 @@ import { colorOverlay } from '/@/libs/colorOverlay'
 import { shortSha } from '/@/libs/format'
 import { colorVars, textVars } from '/@/theme'
 import { styled } from '@macaron-css/solid'
-import { A } from '@solidjs/router'
 import { Component, For, Show, createSignal } from 'solid-js'
 import toast from 'solid-toast'
 import { AppStatusIcon } from '../UI/AppStatusIcon'
@@ -217,10 +216,9 @@ const AppDeployInfoTable: Component<{
       <DeployInfoContainer>
         <List.RowContent>
           <List.RowTitle>Repository</List.RowTitle>
-          <List.RowData>
-            <A href={`/repos/${props.repo.id}`}>{props.repo.name}</A>
-          </List.RowData>
+          <List.RowData>{props.repo.name}</List.RowData>
         </List.RowContent>
+        <JumpButton href={`/repos/${props.repo.id}`} />
       </DeployInfoContainer>
       <DeployInfoContainer>
         <List.RowContent>

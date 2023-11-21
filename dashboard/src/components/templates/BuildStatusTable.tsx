@@ -152,10 +152,9 @@ const BuildStatusTable: Component<{
           <List.Row>
             <List.RowContent>
               <List.RowTitle>Repository</List.RowTitle>
-              <List.RowData>
-                <A href={`/repos/${props.repo.id}`}>{props.repo.name}</A>
-              </List.RowData>
+              <List.RowData>{props.repo.name}</List.RowData>
             </List.RowContent>
+            <JumpButton href={`/repos/${props.repo.id}`} />
           </List.Row>
           <List.Row>
             <List.RowContent>
