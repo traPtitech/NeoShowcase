@@ -6,8 +6,8 @@ import { styled } from '@macaron-css/solid'
 import { A } from '@solidjs/router'
 import { Component, Show } from 'solid-js'
 import { AppStatusIcon } from '../UI/AppStatusIcon'
-import { ToolTip } from '../UI/ToolTip'
 import Badge from '../UI/Badge'
+import { ToolTip } from '../UI/ToolTip'
 
 const Container = styled('div', {
   base: {

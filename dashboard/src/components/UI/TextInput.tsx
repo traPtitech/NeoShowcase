@@ -1,9 +1,9 @@
+import { writeToClipboard } from '/@/libs/clipboard'
 import { colorVars, textVars } from '/@/theme'
 import { styled } from '@macaron-css/solid'
 import { Component, JSX, Show, splitProps } from 'solid-js'
-import { ToolTip, TooltipProps } from './ToolTip'
 import { MaterialSymbols } from './MaterialSymbols'
-import { writeToClipboard } from '/@/libs/clipboard'
+import { ToolTip, TooltipProps } from './ToolTip'
 
 const Container = styled('div', {
   base: {

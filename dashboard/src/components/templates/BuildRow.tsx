@@ -4,9 +4,9 @@ import { colorVars, textVars } from '/@/theme'
 import { styled } from '@macaron-css/solid'
 import { A } from '@solidjs/router'
 import { Component, Show } from 'solid-js'
+import Badge from '../UI/Badge'
 import { BuildStatusIcon } from '../UI/BuildStatusIcon'
 import { ToolTip } from '../UI/ToolTip'
-import Badge from '../UI/Badge'
 
 const Container = styled('div', {
   base: {

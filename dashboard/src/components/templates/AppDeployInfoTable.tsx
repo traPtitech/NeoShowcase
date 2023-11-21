@@ -9,11 +9,11 @@ import { styled } from '@macaron-css/solid'
 import { Component, For, Show, createSignal } from 'solid-js'
 import toast from 'solid-toast'
 import { AppStatusIcon } from '../UI/AppStatusIcon'
+import Badge from '../UI/Badge'
 import { Button } from '../UI/Button'
 import JumpButton from '../UI/JumpButton'
 import { URLText } from '../UI/URLText'
 import { List } from './List'
-import Badge from '../UI/Badge'
 
 const DeploymentContainer = styled('div', {
   base: {

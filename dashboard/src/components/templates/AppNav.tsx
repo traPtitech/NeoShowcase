@@ -1,11 +1,11 @@
 import { Application, Repository } from '/@/api/neoshowcase/protobuf/gateway_pb'
 import { providerToIcon, repositoryURLToProvider } from '/@/libs/application'
-import { Component } from 'solid-js'
-import { Nav } from './Nav'
-import { MaterialSymbols } from '../UI/MaterialSymbols'
+import { colorVars, textVars } from '/@/theme'
 import { styled } from '@macaron-css/solid'
 import { A } from '@solidjs/router'
-import { colorVars, textVars } from '/@/theme'
+import { Component } from 'solid-js'
+import { MaterialSymbols } from '../UI/MaterialSymbols'
+import { Nav } from './Nav'
 
 const RepositoryInfoContainer = styled('div', {
   base: {

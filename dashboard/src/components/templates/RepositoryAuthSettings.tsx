@@ -13,7 +13,6 @@ import { createResource } from 'solid-js'
 import { Button } from '../UI/Button'
 import { MaterialSymbols } from '../UI/MaterialSymbols'
 import { TextInput } from '../UI/TextInput'
-import { CopyableInput } from './CopyableInput'
 import { FormItem } from './FormItem'
 import { RadioButtons, RadioItem } from './RadioButtons'
 
