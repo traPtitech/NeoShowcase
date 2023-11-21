@@ -27,6 +27,7 @@ globalStyle('pre, code', {
 })
 
 globalStyle('a', {
+  color: colorVars.semantic.text.link,
   textDecoration: 'none',
   overflowWrap: 'anywhere',
 })
