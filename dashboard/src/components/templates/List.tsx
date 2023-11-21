@@ -142,13 +142,18 @@ export const AppsList: Component<{ apps: Application[] }> = (props) => {
   )
 }
 
-export const BuildList: Component<{ builds: Build[]; showAppID: boolean }> = (props) => {
+export const BuildList: Component<{ builds: Build[]; showAppID: boolean; deployedBuild?: Build['id'] }> = (props) => {
   return (
     <Container>
       <For each={props.builds}>
         {(b) => (
           <Bordered>
-            <BuildRow appId={b.applicationId} build={b} showAppId={props.showAppID} />
+            <BuildRow
+              appId={b.applicationId}
+              build={b}
+              showAppId={props.showAppID}
+              isDeployed={props.deployedBuild === b.id}
+            />
           </Bordered>
         )}
       </For>

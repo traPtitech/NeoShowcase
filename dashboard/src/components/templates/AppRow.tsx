@@ -7,6 +7,7 @@ import { A } from '@solidjs/router'
 import { Component, Show } from 'solid-js'
 import { AppStatusIcon } from '../UI/AppStatusIcon'
 import { ToolTip } from '../UI/ToolTip'
+import Badge from '../UI/Badge'
 
 const Container = styled('div', {
   base: {
@@ -76,18 +77,6 @@ const UrlContainer = styled('div', {
     whiteSpace: 'nowrap',
   },
 })
-const UrlCount = styled('div', {
-  base: {
-    height: '20px',
-    padding: '0 8px',
-    borderRadius: '9999px',
-
-    whiteSpace: 'nowrap',
-    background: colorVars.primitive.blackAlpha[200],
-    color: colorVars.semantic.text.black,
-    ...textVars.caption.regular,
-  },
-})
 
 export interface Props {
   app: Application
@@ -116,7 +105,7 @@ export const AppRow: Component<Props> = (props) => {
           <Show when={props.app.websites.length > 0}>
             <UrlContainer>{getWebsiteURL(props.app.websites[0])}</UrlContainer>
             <Show when={props.app.websites.length > 1}>
-              <UrlCount>{`+${props.app.websites.length - 1}`}</UrlCount>
+              <Badge variant="text">{`+${props.app.websites.length - 1}`}</Badge>
             </Show>
           </Show>
         </MetaContainer>

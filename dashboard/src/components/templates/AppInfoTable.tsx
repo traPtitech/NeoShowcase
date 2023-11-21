@@ -27,12 +27,6 @@ const AppInfoTable: Component<{ app: Application }> = (props) => {
       <List.Container>
         <List.Row>
           <List.RowContent>
-            <List.RowTitle>ID</List.RowTitle>
-            <List.RowData>{props.app.id}</List.RowData>
-          </List.RowContent>
-        </List.Row>
-        <List.Row>
-          <List.RowContent>
             <List.RowTitle>Name</List.RowTitle>
             <List.RowData>{props.app.name}</List.RowData>
           </List.RowContent>

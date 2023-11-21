@@ -66,6 +66,7 @@ const BuildData: RouteDataFunc<
     refetchApp: () => void
     build: Resource<Build>
     refetchBuild: () => void
+    hasPermission: () => boolean
   }
 > = ({ params }) => {
   const [app, { refetch: refetchApp }] = createResource(
@@ -76,12 +77,13 @@ const BuildData: RouteDataFunc<
     () => params.buildID,
     (buildId) => client.getBuild({ buildId }),
   )
-
+  const hasPermission = createMemo(() => (user()?.admin || app()?.ownerIds.includes(user()?.id)) ?? false)
   return {
     app,
     refetchApp,
     build,
     refetchBuild,
+    hasPermission,
   }
 }
 export const useBuildData = () => useRouteData<ReturnType<typeof BuildData>>()

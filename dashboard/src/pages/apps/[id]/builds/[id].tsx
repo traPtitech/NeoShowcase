@@ -1,22 +1,19 @@
-import { BuildStatus } from '/@/api/neoshowcase/protobuf/gateway_pb'
-import { BuildStatusIcon } from '/@/components/UI/BuildStatusIcon'
-import { Button } from '/@/components/UI/Button'
 import { MaterialSymbols } from '/@/components/UI/MaterialSymbols'
 import { ToolTip } from '/@/components/UI/ToolTip'
 import { DataTable } from '/@/components/layouts/DataTable'
 import { MainViewContainer } from '/@/components/layouts/MainView'
 import { ArtifactRow } from '/@/components/templates/ArtifactRow'
 import { BuildLog } from '/@/components/templates/BuildLog'
+import BuildStatusTable from '/@/components/templates/BuildStatusTable'
 import { Bordered, List } from '/@/components/templates/List'
-import { client, handleAPIError } from '/@/libs/api'
-import { buildStatusStr, buildTypeStr } from '/@/libs/application'
-import { diffHuman, durationHuman, shortSha } from '/@/libs/format'
+import { client } from '/@/libs/api'
+import { diffHuman, durationHuman } from '/@/libs/format'
 import { useBuildData } from '/@/routes'
 import { colorVars, textVars } from '/@/theme'
 import { Timestamp } from '@bufbuild/protobuf'
 import { styled } from '@macaron-css/solid'
-import { A, useNavigate } from '@solidjs/router'
-import { For, Show, VoidComponent, createResource, createSignal } from 'solid-js'
+import { A } from '@solidjs/router'
+import { For, Show, VoidComponent, createResource } from 'solid-js'
 
 const MainView = styled('div', {
   base: {
@@ -100,46 +97,14 @@ const LogContainer = styled('div', {
 })
 
 export default () => {
-  const navigate = useNavigate()
-  const { app, refetchApp, build, refetchBuild } = useBuildData()
+  const { app, build, refetchBuild, hasPermission } = useBuildData()
   const [repo] = createResource(
     () => app()?.repositoryId,
     (id) => client.getRepository({ repositoryId: id }),
   )
-  const [disableRefresh, setDisableRefresh] = createSignal(false)
-  const refreshRepo = async () => {
-    setDisableRefresh(true)
-    setTimeout(() => setDisableRefresh(false), 3000)
-    await client.refreshRepository({ repositoryId: repo()?.id })
-    await refetchApp()
-  }
-
-  const loaded = () => !!(app() && build())
+  const loaded = () => !!(app() && repo() && build())
 
   const buildFinished = () => build()?.finishedAt?.valid
-
-  const rebuild = async () => {
-    try {
-      await client.retryCommitBuild({
-        applicationId: app()?.id,
-        commit: build()?.commit,
-      })
-      navigate(`/apps/${app()?.id}/builds`)
-    } catch (e) {
-      handleAPIError(e, '再ビルドに失敗しました')
-    }
-  }
-
-  const cancelBuild = async () => {
-    try {
-      await client.cancelBuild({
-        buildId: build()?.id,
-      })
-      await refetchBuild()
-    } catch (e) {
-      handleAPIError(e, 'ビルドのキャンセルに失敗しました')
-    }
-  }
 
   return (
     <MainViewContainer>
@@ -147,73 +112,17 @@ export default () => {
         <MainView>
           <DataTable.Container>
             <DataTable.Title>Build Status</DataTable.Title>
-            <List.Container>
-              <BuildStatusRow>
-                <BuildStatusLabel>
-                  <BuildStatusIcon state={build()?.status} size={24} />
-                  {buildStatusStr[build()?.status]}
-                </BuildStatusLabel>
-                <Show when={!build()?.retriable}>
-                  <Button
-                    variants="borderError"
-                    size="small"
-                    onClick={rebuild}
-                    disabled={disableRefresh()}
-                    tooltip={{
-                      props: {
-                        content: '同じコミットで再ビルド',
-                      },
-                    }}
-                  >
-                    Rebuild
-                  </Button>
-                </Show>
-                <Show when={build()?.status === BuildStatus.BUILDING}>
-                  <Button variants="borderError" size="small" onClick={cancelBuild} disabled={disableRefresh()}>
-                    Cancel Build
-                  </Button>
-                </Show>
-              </BuildStatusRow>
-              <List.Row>
-                <List.RowContent>
-                  <List.RowTitle>Source Branch (Commit)</List.RowTitle>
-                  <List.RowData>
-                    {app()?.refName} ({shortSha(app()?.commit)})
-                  </List.RowData>
-                </List.RowContent>
-                <JumpButton href={`/apps/${app()?.id}/settings`} />
-                <Button
-                  variants="ghost"
-                  size="medium"
-                  onClick={refreshRepo}
-                  disabled={disableRefresh()}
-                  tooltip={{
-                    props: {
-                      content: 'リポジトリの最新コミットを取得',
-                    },
-                  }}
-                >
-                  Refresh Commit
-                </Button>
-              </List.Row>
-              <List.Row>
-                <List.RowContent>
-                  <List.RowTitle>Build Type</List.RowTitle>
-                  <List.RowData>{buildTypeStr[app()?.config?.buildConfig?.case]}</List.RowData>
-                </List.RowContent>
-                <JumpButton href={`/apps/${app()?.id}/settings/build`} />
-              </List.Row>
-            </List.Container>
+            <BuildStatusTable
+              app={app()}
+              repo={repo()}
+              build={build()}
+              refetchBuild={refetchBuild}
+              hasPermission={hasPermission()}
+            />
           </DataTable.Container>
           <DataTable.Container>
             <DataTable.Title>Information</DataTable.Title>
             <List.Container>
-              <List.Row>
-                <List.RowContent>
-                  <List.RowTitle>ID</List.RowTitle>
-                  <List.RowData>{build()?.id}</List.RowData>
-                </List.RowContent>
-              </List.Row>
               <Show when={build()?.queuedAt}>
                 {(nonNullQueuedAt) => {
                   const { diff, localeString } = diffHuman(nonNullQueuedAt().toDate())

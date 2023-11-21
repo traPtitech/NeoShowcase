@@ -14,7 +14,7 @@ import { SiGitea } from 'solid-icons/si'
 import { JSXElement } from 'solid-js'
 import { BuildConfigMethod } from '../components/templates/BuildConfigs'
 
-export const buildTypeStr: Record<BuildConfigMethod, string> = {
+export const buildTypeStr: Record<Exclude<BuildConfigMethod, undefined>, string> = {
   runtimeBuildpack: 'Runtime (Buildpack)',
   runtimeCmd: 'Runtime (command)',
   runtimeDockerfile: 'Runtime (Dockerfile)',

@@ -25,12 +25,12 @@ const PlaceHolder = styled('div', {
 })
 
 export default () => {
-  const { app, repo } = useApplicationData()
+  const { app } = useApplicationData()
   const [builds] = createResource(
     () => app()?.id,
     (id) => client.getBuilds({ id }),
   )
-  const loaded = () => !!(app() && repo() && builds())
+  const loaded = () => !!(app() && builds())
 
   const sortedBuilds = createMemo(
     () =>
@@ -46,7 +46,10 @@ export default () => {
       <Show when={loaded()}>
         <DataTable.Container>
           <DataTable.Title>Builds</DataTable.Title>
-          <Show when={showPlaceHolder()} fallback={<BuildList builds={sortedBuilds()} showAppID={false} />}>
+          <Show
+            when={showPlaceHolder()}
+            fallback={<BuildList builds={sortedBuilds()} showAppID={false} deployedBuild={app()?.currentBuild} />}
+          >
             <List.Container>
               <PlaceHolder>
                 <MaterialSymbols displaySize={80}>deployed_code</MaterialSymbols>

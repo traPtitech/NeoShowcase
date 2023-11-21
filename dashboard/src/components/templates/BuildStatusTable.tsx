@@ -13,20 +13,6 @@ import JumpButton from '../UI/JumpButton'
 import { MaterialSymbols } from '../UI/MaterialSymbols'
 import { List } from './List'
 
-const PlaceHolder = styled('div', {
-  base: {
-    width: '100%',
-    height: '400px',
-    display: 'flex',
-    flexDirection: 'column',
-    gap: '24px',
-    alignItems: 'center',
-    justifyContent: 'center',
-
-    color: colorVars.semantic.text.black,
-    ...textVars.h4.medium,
-  },
-})
 const BuildStatusRow = styled('div', {
   base: {
     width: '100%',
@@ -55,30 +41,22 @@ const BuildStatusLabel = styled('div', {
 
 const BuildStatusTable: Component<{
   app: Application
-  refetchApp: () => void
   repo: Repository
-  refreshRepo: () => void
-  disableRefresh: () => boolean
-  latestBuild?: Build
-  refetchLatestBuild: () => void
+  refreshRepo?: () => void
+  disableRefresh?: () => boolean
+  build: Build
+  refetchBuild: () => void
   hasPermission: boolean
+  showJumpButton?: boolean
 }> = (props) => {
-  const startApp = async () => {
-    try {
-      await client.startApplication({ id: props.app.id })
-      await props.refetchApp()
-      toast.success('アプリケーションを起動しました')
-    } catch (e) {
-      handleAPIError(e, 'アプリケーションの再起動に失敗しました')
-    }
-  }
   const rebuild = async () => {
     try {
       await client.retryCommitBuild({
         applicationId: props.app.id,
-        commit: props.app.commit,
+        commit: props.build.commit,
       })
-      await props.refetchLatestBuild()
+      await props.refetchBuild()
+      toast.success('再ビルドを開始しました')
     } catch (e) {
       handleAPIError(e, '再ビルドに失敗しました')
     }
@@ -86,113 +64,93 @@ const BuildStatusTable: Component<{
   const cancelBuild = async () => {
     try {
       await client.cancelBuild({
-        buildId: props.latestBuild?.id,
+        buildId: props.build?.id,
       })
-      await props.refetchLatestBuild()
+      await props.refetchBuild()
+      toast.success('ビルドをキャンセルしました')
     } catch (e) {
       handleAPIError(e, 'ビルドのキャンセルに失敗しました')
     }
   }
 
   return (
-    <Show
-      when={props.latestBuild}
-      fallback={
-        <List.Container>
-          <PlaceHolder>
-            <MaterialSymbols displaySize={80}>deployed_code</MaterialSymbols>
-            No Builds
-            <Show when={props.hasPermission}>
-              <Button
-                variants="primary"
-                size="medium"
-                onClick={startApp}
-                disabled={props.disableRefresh()}
-                leftIcon={<MaterialSymbols>add</MaterialSymbols>}
-              >
-                Build and Start App
-              </Button>
-            </Show>
-          </PlaceHolder>
-        </List.Container>
-      }
-    >
-      {(nonNullLatestBuild) => (
-        <List.Container>
-          <BuildStatusRow>
-            <BuildStatusLabel>
-              <BuildStatusIcon state={nonNullLatestBuild().status} size={24} />
-              {buildStatusStr[nonNullLatestBuild().status]}
-            </BuildStatusLabel>
-            <Show when={!nonNullLatestBuild().retriable && props.hasPermission}>
-              <Button
-                variants="borderError"
-                size="small"
-                onClick={rebuild}
-                disabled={props.disableRefresh()}
-                tooltip={{
-                  props: {
-                    content: '同じコミットで再ビルド',
-                  },
-                }}
-              >
-                Rebuild
-              </Button>
-            </Show>
-            <Show when={nonNullLatestBuild().status === BuildStatus.BUILDING && props.hasPermission}>
-              <Button variants="borderError" size="small" onClick={cancelBuild} disabled={props.disableRefresh()}>
-                Cancel Build
-              </Button>
-            </Show>
-          </BuildStatusRow>
-          <List.Row>
-            <List.RowContent>
-              <List.RowTitle>Latest Build ID</List.RowTitle>
-              <List.RowData>{nonNullLatestBuild().id}</List.RowData>
-            </List.RowContent>
-            <JumpButton href={`/apps/${props.app.id}/builds/${nonNullLatestBuild().id}`} />
-          </List.Row>
-          <List.Row>
-            <List.RowContent>
-              <List.RowTitle>Repository</List.RowTitle>
-              <List.RowData>{props.repo.name}</List.RowData>
-            </List.RowContent>
-            <JumpButton href={`/repos/${props.repo.id}`} />
-          </List.Row>
-          <List.Row>
-            <List.RowContent>
-              <List.RowTitle>Source Branch (Commit)</List.RowTitle>
-              <List.RowData>
-                {props.app.refName} ({shortSha(props.app.commit)})
-              </List.RowData>
-            </List.RowContent>
-            <JumpButton href={`/apps/${props.app.id}/settings`} />
-            <Show when={props.hasPermission}>
-              <Button
-                variants="ghost"
-                size="medium"
-                onClick={props.refreshRepo}
-                disabled={props.disableRefresh()}
-                tooltip={{
-                  props: {
-                    content: 'リポジトリの最新コミットを取得',
-                  },
-                }}
-              >
-                Refresh Commit
-              </Button>
-            </Show>
-          </List.Row>
-          <List.Row>
-            <List.RowContent>
-              <List.RowTitle>Build Type</List.RowTitle>
-              <List.RowData>{buildTypeStr[props.app.config.buildConfig.case]}</List.RowData>
-            </List.RowContent>
-            <JumpButton href={`/apps/${props.app.id}/settings/build`} />
-          </List.Row>
-        </List.Container>
-      )}
-    </Show>
+    <List.Container>
+      <BuildStatusRow>
+        <BuildStatusLabel>
+          <BuildStatusIcon state={props.build.status} size={24} />
+          {buildStatusStr[props.build.status]}
+        </BuildStatusLabel>
+        <Show when={props.showJumpButton}>
+          <A href={`/apps/${props.app.id}/builds/${props.build.id}`}>
+            <Button
+              size="small"
+              variants="border"
+              rightIcon={<MaterialSymbols opticalSize={20}>arrow_outward</MaterialSymbols>}
+            >
+              View Details
+            </Button>
+          </A>
+        </Show>
+        <Show when={!props.build.retriable && props.hasPermission}>
+          <Button
+            variants="borderError"
+            size="small"
+            onClick={rebuild}
+            disabled={props.disableRefresh?.()}
+            tooltip={{
+              props: {
+                content: '同じコミットで再ビルド',
+              },
+            }}
+          >
+            Rebuild
+          </Button>
+        </Show>
+        <Show when={props.build.status === BuildStatus.BUILDING && props.hasPermission}>
+          <Button variants="borderError" size="small" onClick={cancelBuild} disabled={props.disableRefresh?.()}>
+            Cancel Build
+          </Button>
+        </Show>
+      </BuildStatusRow>
+      <List.Row>
+        <List.RowContent>
+          <List.RowTitle>Repository</List.RowTitle>
+          <List.RowData>{props.repo.name}</List.RowData>
+        </List.RowContent>
+        <JumpButton href={`/repos/${props.repo.id}`} />
+      </List.Row>
+      <List.Row>
+        <List.RowContent>
+          <List.RowTitle>Source Branch (Commit)</List.RowTitle>
+          <List.RowData>
+            {props.app.refName} ({shortSha(props.app.commit)})
+          </List.RowData>
+        </List.RowContent>
+        <JumpButton href={`/apps/${props.app.id}/settings`} />
+        <Show when={props.refreshRepo && props.hasPermission}>
+          <Button
+            variants="ghost"
+            size="medium"
+            onClick={props.refreshRepo}
+            disabled={props.disableRefresh?.()}
+            tooltip={{
+              props: {
+                content: 'リポジトリの最新コミットを取得',
+              },
+            }}
+          >
+            Refresh Commit
+          </Button>
+        </Show>
+      </List.Row>
+      <List.Row>
+        <List.RowContent>
+          <List.RowTitle>Build Type</List.RowTitle>
+          <List.RowData>{buildTypeStr[props.app.config.buildConfig.case]}</List.RowData>
+        </List.RowContent>
+        <JumpButton href={`/apps/${props.app.id}/settings/build`} />
+      </List.Row>
+    </List.Container>
   )
 }
 

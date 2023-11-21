@@ -92,12 +92,6 @@ export default () => {
             <List.Container>
               <List.Row>
                 <List.RowContent>
-                  <List.RowTitle>ID</List.RowTitle>
-                  <List.RowData>{repo()?.id}</List.RowData>
-                </List.RowContent>
-              </List.Row>
-              <List.Row>
-                <List.RowContent>
                   <List.RowTitle>Name</List.RowTitle>
                   <List.RowData>{repo()?.name}</List.RowData>
                 </List.RowContent>

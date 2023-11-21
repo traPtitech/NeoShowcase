@@ -6,6 +6,7 @@ import { A } from '@solidjs/router'
 import { Component, Show } from 'solid-js'
 import { BuildStatusIcon } from '../UI/BuildStatusIcon'
 import { ToolTip } from '../UI/ToolTip'
+import Badge from '../UI/Badge'
 
 const Container = styled('div', {
   base: {
@@ -30,12 +31,17 @@ const TitleContainer = styled('div', {
 })
 const BuildName = styled('div', {
   base: {
-    width: '100%',
+    width: 'auto',
     overflow: 'hidden',
     textOverflow: 'ellipsis',
     whiteSpace: 'nowrap',
     color: colorVars.semantic.text.black,
     ...textVars.h4.regular,
+  },
+})
+const Spacer = styled('div', {
+  base: {
+    flexGrow: 1,
   },
 })
 const UpdatedAt = styled('div', {
@@ -70,6 +76,7 @@ export interface Props {
   appId: string
   build: Build
   showAppId?: boolean
+  isDeployed?: boolean
 }
 
 export const BuildRow: Component<Props> = (props) => {
@@ -82,6 +89,10 @@ export const BuildRow: Component<Props> = (props) => {
             Build {props.build.id}
             {props.showAppId && ` (App ${props.appId})`}
           </BuildName>
+          <Show when={props.isDeployed}>
+            <Badge variant="success">Deployed</Badge>
+          </Show>
+          <Spacer />
           <Show when={props.build.queuedAt}>
             {(nonNullQueuedAt) => {
               const { diff, localeString } = diffHuman(nonNullQueuedAt().toDate())

@@ -13,6 +13,7 @@ import { Button } from '../UI/Button'
 import JumpButton from '../UI/JumpButton'
 import { URLText } from '../UI/URLText'
 import { List } from './List'
+import Badge from '../UI/Badge'
 
 const DeploymentContainer = styled('div', {
   base: {
@@ -134,28 +135,6 @@ const DeployInfoContainer = styled('div', {
     },
   },
 })
-const LatestBadge = styled('div', {
-  base: {
-    height: '1.43em', // 20px
-    padding: '0 8px',
-    borderRadius: '9999px',
-
-    background: colorVars.semantic.transparent.successHover,
-    color: colorVars.semantic.accent.success,
-    ...textVars.caption.regular,
-  },
-})
-const UrlCount = styled('div', {
-  base: {
-    height: '1.43em', // 20px
-    padding: '0 8px',
-    borderRadius: '9999px',
-
-    background: colorVars.primitive.blackAlpha[200],
-    color: colorVars.semantic.text.black,
-    ...textVars.caption.regular,
-  },
-})
 const AppDeployInfoTable: Component<{
   app: Application
   refetchApp: () => void
@@ -235,7 +214,7 @@ const AppDeployInfoTable: Component<{
           <List.RowData>
             {props.app.currentBuild ? shortSha(props.app.currentBuild) : 'No, Deployed'}
             <Show when={props.app.currentBuild === props.latestBuildId}>
-              <LatestBadge>Latest</LatestBadge>
+              <Badge variant="success">Latest</Badge>
             </Show>
           </List.RowData>
         </List.RowContent>
@@ -273,7 +252,7 @@ const AppDeployInfoTable: Component<{
         <List.RowContent>
           <List.RowTitle>
             Domains
-            <UrlCount>{props.app.websites.length}</UrlCount>
+            <Badge variant="text">{props.app.websites.length}</Badge>
           </List.RowTitle>
           <For each={props.app.websites.map(getWebsiteURL)}>
             {(url) => (
