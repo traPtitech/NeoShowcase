@@ -207,7 +207,7 @@ const EnvVarConfig: Component<{
 }
 
 export default () => {
-  const { app } = useApplicationData()
+  const { app, hasPermission } = useApplicationData()
   const [envVars, { refetch: refetchEnvVars }] = createResource(
     () => app()?.id,
     (id) => client.getEnvVars({ id }),
@@ -218,7 +218,14 @@ export default () => {
     <DataTable.Container>
       <DataTable.Title>Environment Variables</DataTable.Title>
       <Show when={loaded()}>
-        <EnvVarConfig appId={app()?.id} envVars={structuredClone(envVars())} refetchEnvVars={refetchEnvVars} />
+        <Show
+          when={hasPermission()}
+          fallback={
+            <DataTable.SubTitle>環境変数の閲覧・設定はアプリケーションのオーナーのみが行えます</DataTable.SubTitle>
+          }
+        >
+          <EnvVarConfig appId={app()?.id} envVars={structuredClone(envVars())} refetchEnvVars={refetchEnvVars} />
+        </Show>
       </Show>
     </DataTable.Container>
   )

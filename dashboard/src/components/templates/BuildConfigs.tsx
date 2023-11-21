@@ -23,6 +23,7 @@ const buildConfigItems: SelectItem<BuildConfigMethod>[] = [
 interface RuntimeConfigProps {
   formStore: FormStore<BuildConfigForm, undefined>
   disableEditDB: boolean
+  hasPermission: boolean
 }
 
 const RuntimeConfigs: Component<RuntimeConfigProps> = (props) => {
@@ -109,7 +110,7 @@ const RuntimeConfigs: Component<RuntimeConfigProps> = (props) => {
               },
             }}
           >
-            <TextInput value={field.value} error={field.error} {...fieldProps} />
+            <TextInput value={field.value} error={field.error} readonly={!props.hasPermission} {...fieldProps} />
           </FormItem>
         )}
       </Field>
@@ -123,7 +124,7 @@ const RuntimeConfigs: Component<RuntimeConfigProps> = (props) => {
               },
             }}
           >
-            <TextInput value={field.value} error={field.error} {...fieldProps} />
+            <TextInput value={field.value} error={field.error} readonly={!props.hasPermission} {...fieldProps} />
           </FormItem>
         )}
       </Field>
@@ -133,6 +134,7 @@ const RuntimeConfigs: Component<RuntimeConfigProps> = (props) => {
 
 interface StaticConfigProps {
   formStore: FormStore<BuildConfigForm, undefined>
+  hasPermission: boolean
 }
 
 const StaticConfigs = (props: StaticConfigProps) => {
@@ -154,7 +156,7 @@ const StaticConfigs = (props: StaticConfigProps) => {
               },
             }}
           >
-            <TextInput value={field.value} error={field.error} {...fieldProps} />
+            <TextInput value={field.value} error={field.error} readonly={!props.hasPermission} {...fieldProps} />
           </FormItem>
         )}
       </Field>
@@ -180,6 +182,7 @@ const StaticConfigs = (props: StaticConfigProps) => {
               ]}
               selected={field.value}
               setSelected={(v) => setValue(props.formStore, field.name, v ?? false)}
+              readonly={!props.hasPermission}
               {...fieldProps}
             />
           </FormItem>
@@ -190,6 +193,7 @@ const StaticConfigs = (props: StaticConfigProps) => {
 }
 interface BuildPackConfigProps {
   formStore: FormStore<BuildConfigForm, undefined>
+  hasPermission: boolean
 }
 
 const BuildPackConfigs = (props: BuildPackConfigProps) => {
@@ -209,7 +213,7 @@ const BuildPackConfigs = (props: BuildPackConfigProps) => {
             },
           }}
         >
-          <TextInput value={field.value} error={field.error} {...fieldProps} />
+          <TextInput value={field.value} error={field.error} readonly={!props.hasPermission} {...fieldProps} />
         </FormItem>
       )}
     </Field>
@@ -217,6 +221,7 @@ const BuildPackConfigs = (props: BuildPackConfigProps) => {
 }
 interface CmdConfigProps {
   formStore: FormStore<BuildConfigForm, undefined>
+  hasPermission: boolean
 }
 
 const CmdConfigs = (props: CmdConfigProps) => {
@@ -237,7 +242,7 @@ const CmdConfigs = (props: CmdConfigProps) => {
               },
             }}
           >
-            <TextInput value={field.value} error={field.error} {...fieldProps} />
+            <TextInput value={field.value} error={field.error} readonly={!props.hasPermission} {...fieldProps} />
           </FormItem>
         )}
       </Field>
@@ -256,7 +261,7 @@ const CmdConfigs = (props: CmdConfigProps) => {
               },
             }}
           >
-            <Textarea value={field.value} {...fieldProps} />
+            <Textarea value={field.value} readonly={!props.hasPermission} {...fieldProps} />
           </FormItem>
         )}
       </Field>
@@ -265,6 +270,7 @@ const CmdConfigs = (props: CmdConfigProps) => {
 }
 interface DockerConfigProps {
   formStore: FormStore<BuildConfigForm, undefined>
+  hasPermission: boolean
 }
 
 const DockerConfigs = (props: DockerConfigProps) => {
@@ -290,7 +296,7 @@ const DockerConfigs = (props: DockerConfigProps) => {
               },
             }}
           >
-            <TextInput value={field.value} error={field.error} {...fieldProps} />
+            <TextInput value={field.value} error={field.error} readonly={!props.hasPermission} {...fieldProps} />
           </FormItem>
         )}
       </Field>
@@ -309,7 +315,7 @@ const DockerConfigs = (props: DockerConfigProps) => {
               },
             }}
           >
-            <TextInput value={field.value} error={field.error} {...fieldProps} />
+            <TextInput value={field.value} error={field.error} readonly={!props.hasPermission} {...fieldProps} />
           </FormItem>
         )}
       </Field>
@@ -486,6 +492,7 @@ export const configToForm = (config: PlainMessage<ApplicationConfig>): BuildConf
 export interface BuildConfigsProps {
   formStore: FormStore<BuildConfigForm, undefined>
   disableEditDB: boolean
+  hasPermission: boolean
 }
 
 export const BuildConfigs: Component<BuildConfigsProps> = (props) => {
@@ -518,6 +525,7 @@ export const BuildConfigs: Component<BuildConfigsProps> = (props) => {
                 setValue(props.formStore, 'case', v)
                 validate(props.formStore)
               }}
+              readonly={!props.hasPermission}
               {...fieldProps}
             />
           </FormItem>
@@ -526,33 +534,45 @@ export const BuildConfigs: Component<BuildConfigsProps> = (props) => {
 
       <Switch>
         <Match when={buildType() === 'runtimeBuildpack'}>
-          <BuildPackConfigs formStore={props.formStore} />
-          <RuntimeConfigs formStore={props.formStore} disableEditDB={props.disableEditDB} />
+          <BuildPackConfigs formStore={props.formStore} hasPermission={props.hasPermission} />
+          <RuntimeConfigs
+            formStore={props.formStore}
+            disableEditDB={props.disableEditDB}
+            hasPermission={props.hasPermission}
+          />
         </Match>
 
         <Match when={buildType() === 'runtimeCmd'}>
-          <CmdConfigs formStore={props.formStore} />
-          <RuntimeConfigs formStore={props.formStore} disableEditDB={props.disableEditDB} />
+          <CmdConfigs formStore={props.formStore} hasPermission={props.hasPermission} />
+          <RuntimeConfigs
+            formStore={props.formStore}
+            disableEditDB={props.disableEditDB}
+            hasPermission={props.hasPermission}
+          />
         </Match>
 
         <Match when={buildType() === 'runtimeDockerfile'}>
-          <DockerConfigs formStore={props.formStore} />
-          <RuntimeConfigs formStore={props.formStore} disableEditDB={props.disableEditDB} />
+          <DockerConfigs formStore={props.formStore} hasPermission={props.hasPermission} />
+          <RuntimeConfigs
+            formStore={props.formStore}
+            disableEditDB={props.disableEditDB}
+            hasPermission={props.hasPermission}
+          />
         </Match>
 
         <Match when={buildType() === 'staticBuildpack'}>
-          <BuildPackConfigs formStore={props.formStore} />
-          <StaticConfigs formStore={props.formStore} />
+          <BuildPackConfigs formStore={props.formStore} hasPermission={props.hasPermission} />
+          <StaticConfigs formStore={props.formStore} hasPermission={props.hasPermission} />
         </Match>
 
         <Match when={buildType() === 'staticCmd'}>
-          <CmdConfigs formStore={props.formStore} />
-          <StaticConfigs formStore={props.formStore} />
+          <CmdConfigs formStore={props.formStore} hasPermission={props.hasPermission} />
+          <StaticConfigs formStore={props.formStore} hasPermission={props.hasPermission} />
         </Match>
 
         <Match when={buildType() === 'staticDockerfile'}>
-          <DockerConfigs formStore={props.formStore} />
-          <StaticConfigs formStore={props.formStore} />
+          <DockerConfigs formStore={props.formStore} hasPermission={props.hasPermission} />
+          <StaticConfigs formStore={props.formStore} hasPermission={props.hasPermission} />
         </Match>
       </Switch>
     </>

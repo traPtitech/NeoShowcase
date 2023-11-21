@@ -16,6 +16,7 @@ interface GeneralConfigProps {
   repo: Repository
   formStore: FormStore<AppGeneralForm, undefined>
   editBranchId?: boolean
+  hasPermission: boolean
 }
 
 export const GeneralConfig: Component<GeneralConfigProps> = (props) => {
@@ -29,7 +30,7 @@ export const GeneralConfig: Component<GeneralConfigProps> = (props) => {
       <Field of={props.formStore} name="name" validate={required('Please Enter Application Name')}>
         {(field, fieldProps) => (
           <FormItem title="Application Name" required>
-            <TextInput value={field.value} error={field.error} {...fieldProps} />
+            <TextInput value={field.value} error={field.error} {...fieldProps} readonly={!props.hasPermission} />
           </FormItem>
         )}
       </Field>
@@ -45,7 +46,13 @@ export const GeneralConfig: Component<GeneralConfigProps> = (props) => {
                 },
               }}
             >
-              <TextInput required value={field.value} error={field.error} {...fieldProps} />
+              <TextInput
+                required
+                value={field.value}
+                error={field.error}
+                readonly={!props.hasPermission}
+                {...fieldProps}
+              />
             </FormItem>
           </Show>
         )}
@@ -76,6 +83,7 @@ export const GeneralConfig: Component<GeneralConfigProps> = (props) => {
                 setValue(props.formStore, 'refName', v)
               }}
               error={field.error}
+              readonly={!props.hasPermission}
               {...fieldProps}
             />
           </FormItem>

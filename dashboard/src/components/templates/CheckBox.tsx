@@ -58,6 +58,7 @@ export interface Props {
   setChecked: (checked: boolean) => void
   disabled?: boolean
   tooltip?: TooltipProps
+  readonly?: boolean
 }
 
 const Option: Component<Props> = (props) => {
@@ -73,7 +74,7 @@ const Option: Component<Props> = (props) => {
         <Button
           selected={props.checked}
           disabled={props.disabled}
-          onClick={() => props.setChecked(!props.checked)}
+          onClick={props.readonly ? undefined : () => props.setChecked(!props.checked)}
           type="button"
         >
           {props.title}

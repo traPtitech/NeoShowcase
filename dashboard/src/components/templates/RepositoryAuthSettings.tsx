@@ -111,6 +111,7 @@ export const formToAuth = <T extends AuthForm>(form: T): PlainMessage<CreateRepo
 
 interface Props {
   formStore: FormStore<AuthForm, undefined>
+  hasPermission: boolean
 }
 
 export const RepositoryAuthSettings = (props: Props) => {
@@ -137,6 +138,7 @@ export const RepositoryAuthSettings = (props: Props) => {
               setValue(props.formStore, 'case', v)
             }}
             {...fieldProps}
+            readonly={!props.hasPermission}
           />
         </FormItem>
       )}
@@ -154,7 +156,7 @@ export const RepositoryAuthSettings = (props: Props) => {
       <Field of={props.formStore} name="url" validate={[required('Enter Repository URL'), validateUrl]}>
         {(field, fieldProps) => (
           <FormItem title="Repository URL" required>
-            <TextInput value={field.value} error={field.error} {...fieldProps} />
+            <TextInput value={field.value} error={field.error} readonly={!props.hasPermission} {...fieldProps} />
           </FormItem>
         )}
       </Field>
@@ -169,7 +171,7 @@ export const RepositoryAuthSettings = (props: Props) => {
           <Field of={props.formStore} name="auth.basic.username" validate={required('Enter UserName')}>
             {(field, fieldProps) => (
               <FormItem title="UserName" required>
-                <TextInput value={field.value} error={field.error} {...fieldProps} />
+                <TextInput value={field.value} error={field.error} readonly={!props.hasPermission} {...fieldProps} />
               </FormItem>
             )}
           </Field>
@@ -180,6 +182,7 @@ export const RepositoryAuthSettings = (props: Props) => {
                   value={field.value}
                   type={showPassword() ? 'text' : 'password'}
                   error={field.error}
+                  readonly={!props.hasPermission}
                   {...fieldProps}
                   rightIcon={
                     <VisibilityButton onClick={() => setShowPassword((s) => !s)} type="button">

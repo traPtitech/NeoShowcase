@@ -61,6 +61,7 @@ const BuildStatusTable: Component<{
   disableRefresh: () => boolean
   latestBuild?: Build
   refetchLatestBuild: () => void
+  hasPermission: boolean
 }> = (props) => {
   const startApp = async () => {
     try {
@@ -101,15 +102,17 @@ const BuildStatusTable: Component<{
           <PlaceHolder>
             <MaterialSymbols displaySize={80}>deployed_code</MaterialSymbols>
             No Builds
-            <Button
-              variants="primary"
-              size="medium"
-              onClick={startApp}
-              disabled={props.disableRefresh()}
-              leftIcon={<MaterialSymbols>add</MaterialSymbols>}
-            >
-              Build and Start App
-            </Button>
+            <Show when={props.hasPermission}>
+              <Button
+                variants="primary"
+                size="medium"
+                onClick={startApp}
+                disabled={props.disableRefresh()}
+                leftIcon={<MaterialSymbols>add</MaterialSymbols>}
+              >
+                Build and Start App
+              </Button>
+            </Show>
           </PlaceHolder>
         </List.Container>
       }
@@ -121,7 +124,7 @@ const BuildStatusTable: Component<{
               <BuildStatusIcon state={nonNullLatestBuild().status} size={24} />
               {buildStatusStr[nonNullLatestBuild().status]}
             </BuildStatusLabel>
-            <Show when={!nonNullLatestBuild().retriable}>
+            <Show when={!nonNullLatestBuild().retriable && props.hasPermission}>
               <Button
                 variants="borderError"
                 size="small"
@@ -136,7 +139,7 @@ const BuildStatusTable: Component<{
                 Rebuild
               </Button>
             </Show>
-            <Show when={nonNullLatestBuild().status === BuildStatus.BUILDING}>
+            <Show when={nonNullLatestBuild().status === BuildStatus.BUILDING && props.hasPermission}>
               <Button variants="borderError" size="small" onClick={cancelBuild} disabled={props.disableRefresh()}>
                 Cancel Build
               </Button>
@@ -164,19 +167,21 @@ const BuildStatusTable: Component<{
               </List.RowData>
             </List.RowContent>
             <JumpButton href={`/apps/${props.app.id}/settings`} />
-            <Button
-              variants="ghost"
-              size="medium"
-              onClick={props.refreshRepo}
-              disabled={props.disableRefresh()}
-              tooltip={{
-                props: {
-                  content: 'リポジトリの最新コミットを取得',
-                },
-              }}
-            >
-              Refresh Commit
-            </Button>
+            <Show when={props.hasPermission}>
+              <Button
+                variants="ghost"
+                size="medium"
+                onClick={props.refreshRepo}
+                disabled={props.disableRefresh()}
+                tooltip={{
+                  props: {
+                    content: 'リポジトリの最新コミットを取得',
+                  },
+                }}
+              >
+                Refresh Commit
+              </Button>
+            </Show>
           </List.Row>
           <List.Row>
             <List.RowContent>

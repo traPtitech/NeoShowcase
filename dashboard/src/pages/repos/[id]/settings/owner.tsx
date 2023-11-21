@@ -8,7 +8,7 @@ import { Show } from 'solid-js'
 import toast from 'solid-toast'
 
 export default () => {
-  const { repo, refetchRepo } = useRepositoryData()
+  const { repo, refetchRepo, hasPermission } = useRepositoryData()
   const loaded = () => !!(repo() && users())
 
   const handleAddOwner = async (user: User) => {
@@ -49,6 +49,7 @@ export default () => {
           users={users()}
           handleAddOwner={handleAddOwner}
           handleDeleteOwner={handleDeleteOwner}
+          hasPermission={hasPermission()}
         />
       </Show>
     </DataTable.Container>

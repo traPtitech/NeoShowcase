@@ -1,7 +1,7 @@
 import { Navigate, RouteDataFunc, useRouteData, useRoutes } from '@solidjs/router'
-import { Resource, createResource, lazy } from 'solid-js'
+import { Resource, createMemo, createResource, lazy } from 'solid-js'
 import { Application, Build, GetApplicationsRequest_Scope, Repository } from './api/neoshowcase/protobuf/gateway_pb'
-import { client } from './libs/api'
+import { client, user } from './libs/api'
 
 const RepositoryData: RouteDataFunc<
   unknown,
@@ -9,6 +9,7 @@ const RepositoryData: RouteDataFunc<
     repo: Resource<Repository>
     refetchRepo: () => void
     apps: Resource<Application[]>
+    hasPermission: () => boolean
   }
 > = ({ params }) => {
   const [repo, { refetch: refetchRepo }] = createResource(
@@ -21,10 +22,12 @@ const RepositoryData: RouteDataFunc<
     })
     return allAppsRes.applications.filter((app) => app.repositoryId === repo.id)
   })
+  const hasPermission = createMemo(() => (user()?.admin || repo()?.ownerIds.includes(user()?.id)) ?? false)
   return {
     repo,
     refetchRepo,
     apps,
+    hasPermission,
   }
 }
 export const useRepositoryData = () => useRouteData<ReturnType<typeof RepositoryData>>()
@@ -35,6 +38,7 @@ const ApplicationData: RouteDataFunc<
     app: Resource<Application>
     refetchApp: () => void
     repo: Resource<Repository>
+    hasPermission: () => boolean
   }
 > = ({ params }) => {
   const [app, { refetch: refetchApp }] = createResource(
@@ -45,10 +49,12 @@ const ApplicationData: RouteDataFunc<
     () => app()?.repositoryId,
     (id) => client.getRepository({ repositoryId: id }),
   )
+  const hasPermission = createMemo(() => (user()?.admin || app()?.ownerIds.includes(user()?.id)) ?? false)
   return {
     app,
     refetchApp,
     repo,
+    hasPermission,
   }
 }
 export const useApplicationData = () => useRouteData<ReturnType<typeof ApplicationData>>()

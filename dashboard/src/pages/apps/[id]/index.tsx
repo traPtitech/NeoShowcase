@@ -139,7 +139,7 @@ const getLatestBuild = (appId: Application['id']): Promise<Build | undefined> =>
     .then((res) => res.builds.sort((b1, b2) => b2.queuedAt.toDate().getTime() - b1.queuedAt.toDate().getTime())[0])
 
 export default () => {
-  const { app, refetchApp, repo } = useApplicationData()
+  const { app, refetchApp, repo, hasPermission } = useApplicationData()
 
   const [latestBuild, { refetch: refetchLatestBuild }] = createResource(
     () => app().id,
@@ -176,6 +176,7 @@ export default () => {
                 refreshRepo={refreshRepo}
                 disableRefresh={disableRefresh}
                 latestBuildId={latestBuild()?.id}
+                hasPermission={hasPermission()}
               />
             </DataTable.Container>
           </MainView>
@@ -198,13 +199,13 @@ export default () => {
               <DataTable.Title>Information</DataTable.Title>
               <AppInfoTable app={app()} />
             </DataTable.Container>
-            <Show when={app().deployType === DeployType.RUNTIME}>
+            <Show when={app().deployType === DeployType.RUNTIME && hasPermission()}>
               <DataTable.Container>
                 <DataTable.Title>Usage</DataTable.Title>
                 <Metrics app={app()} />
               </DataTable.Container>
             </Show>
-            <Show when={app().deployType === DeployType.RUNTIME}>
+            <Show when={app().deployType === DeployType.RUNTIME && hasPermission()}>
               <DataTable.Container>
                 <DataTable.Title>Container Log</DataTable.Title>
                 <Logs app={app()} />

@@ -34,7 +34,7 @@ const PlaceHolder = styled('div', {
 })
 
 export default () => {
-  const { repo, apps } = useRepositoryData()
+  const { repo, apps, hasPermission } = useRepositoryData()
   const loaded = () => !!(repo() && apps())
   const navigator = useNavigate()
   const showPlaceHolder = createMemo(() => apps()?.length === 0)
@@ -49,9 +49,18 @@ export default () => {
       }}
       tooltip={{
         props: {
-          content: 'このリポジトリからアプリケーションを作成します',
+          content: hasPermission() ? (
+            'このリポジトリからアプリケーションを作成します'
+          ) : (
+            <>
+              <div>アプリケーションを作成するには</div>
+              <div>リポジトリのオーナーになる必要があります</div>
+            </>
+          ),
         },
+        style: 'center',
       }}
+      disabled={!hasPermission()}
     >
       Add New App
     </Button>

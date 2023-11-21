@@ -60,6 +60,7 @@ export interface Props<T> {
   selected: T
   setSelected: (s: T) => void
   disabled?: boolean
+  readonly?: boolean
 }
 
 export const RadioButtons = <T,>(props: Props<T>): JSX.Element => {
@@ -70,7 +71,13 @@ export const RadioButtons = <T,>(props: Props<T>): JSX.Element => {
           <Button
             selected={props.selected === item.value}
             disabled={props.disabled}
-            onClick={() => props.setSelected(item.value)}
+            onClick={
+              props.readonly
+                ? undefined
+                : () => {
+                    props.setSelected(item.value)
+                  }
+            }
             type="button"
             role="radio"
             aria-checked={props.selected === item.value}

@@ -17,7 +17,7 @@ const Li = styled('li', {
 })
 
 export default () => {
-  const { app, refetchApp } = useApplicationData()
+  const { app, refetchApp, hasPermission } = useApplicationData()
   const loaded = () => !!(app() && systemInfo())
   const form = createFormStore<PortSettingsStore>({
     initialValues: {
@@ -71,7 +71,7 @@ export default () => {
         <Form of={form} onSubmit={handleSubmit}>
           <FormBox.Container>
             <FormBox.Forms>
-              <PortPublicationSettings formStore={form} />
+              <PortPublicationSettings formStore={form} hasPermission={hasPermission()} />
             </FormBox.Forms>
             <FormBox.Actions>
               <Show when={form.dirty && !form.submitting}>
@@ -83,7 +83,14 @@ export default () => {
                 variants="primary"
                 size="small"
                 type="submit"
-                disabled={form.invalid || !form.dirty || form.submitting}
+                disabled={form.invalid || !form.dirty || form.submitting || !hasPermission()}
+                tooltip={{
+                  props: {
+                    content: !hasPermission()
+                      ? '設定を変更するにはアプリケーションのオーナーになる必要があります'
+                      : undefined,
+                  },
+                }}
               >
                 Save
               </Button>

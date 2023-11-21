@@ -21,6 +21,7 @@ type GeneralForm = Required<Pick<PlainMessage<UpdateRepositoryRequest>, 'name'>>
 const NameConfig: Component<{
   repo: Repository
   refetchRepo: () => void
+  hasPermission: boolean
 }> = (props) => {
   const [generalForm, General] = createForm<GeneralForm>({
     initialValues: {
@@ -55,9 +56,9 @@ const NameConfig: Component<{
       <FormBox.Container>
         <FormBox.Forms>
           <General.Field name="name" validate={[required('Enter Project Name')]}>
-            {(field, props) => (
+            {(field, fieldProps) => (
               <FormItem title="Project Name" required>
-                <TextInput value={field.value} error={field.error} {...props} />
+                <TextInput value={field.value} error={field.error} {...fieldProps} readonly={!props.hasPermission} />
               </FormItem>
             )}
           </General.Field>
@@ -72,7 +73,14 @@ const NameConfig: Component<{
             variants="primary"
             size="small"
             type="submit"
-            disabled={generalForm.invalid || !generalForm.dirty || generalForm.submitting}
+            disabled={generalForm.invalid || !generalForm.dirty || generalForm.submitting || !props.hasPermission}
+            tooltip={{
+              props: {
+                content: !props.hasPermission
+                  ? '設定を変更するにはリポジトリのオーナーになる必要があります'
+                  : undefined,
+              },
+            }}
           >
             Save
           </Button>
@@ -106,6 +114,7 @@ const DeleteConfirm = styled('div', {
 const DeleteProject: Component<{
   repo: Repository
   apps: Application[]
+  hasPermission: boolean
 }> = (props) => {
   const { Modal, open, close } = useModal()
   const navigate = useNavigate()
@@ -138,10 +147,14 @@ const DeleteProject: Component<{
             size="small"
             onClick={open}
             type="button"
-            disabled={!canDeleteRepository()}
+            disabled={!canDeleteRepository() || !props.hasPermission}
             tooltip={{
               props: {
-                content: !canDeleteRepository() ? 'Project内にAppが存在するため削除できません' : undefined,
+                content: !props.hasPermission
+                  ? 'Projectを削除するにはリポジトリのオーナーになる必要があります'
+                  : !canDeleteRepository()
+                  ? 'Project内にAppが存在するため削除できません'
+                  : undefined,
               },
             }}
           >
@@ -171,15 +184,15 @@ const DeleteProject: Component<{
 }
 
 export default () => {
-  const { repo, refetchRepo, apps } = useRepositoryData()
+  const { repo, refetchRepo, apps, hasPermission } = useRepositoryData()
   const loaded = () => !!(repo() && apps())
 
   return (
     <DataTable.Container>
       <DataTable.Title>General</DataTable.Title>
       <Show when={loaded()}>
-        <NameConfig repo={repo()} refetchRepo={refetchRepo} />
-        <DeleteProject repo={repo()} apps={apps()} />
+        <NameConfig repo={repo()} refetchRepo={refetchRepo} hasPermission={hasPermission()} />
+        <DeleteProject repo={repo()} apps={apps()} hasPermission={hasPermission()} />
       </Show>
     </DataTable.Container>
   )

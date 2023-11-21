@@ -24,6 +24,7 @@ const mapAuthMethod = (authMethod: Repository_AuthMethod): PlainMessage<CreateRe
 const AuthConfig: Component<{
   repo: Repository
   refetchRepo: () => void
+  hasPermission: boolean
 }> = (props) => {
   const [authForm, Auth] = createForm<AuthForm>({
     initialValues: {
@@ -63,6 +64,7 @@ const AuthConfig: Component<{
 
   const AuthSetting = RepositoryAuthSettings({
     formStore: authForm,
+    hasPermission: props.hasPermission,
   })
 
   return (
@@ -83,7 +85,14 @@ const AuthConfig: Component<{
             variants="primary"
             size="small"
             type="submit"
-            disabled={authForm.invalid || !authForm.dirty || authForm.submitting}
+            disabled={authForm.invalid || !authForm.dirty || authForm.submitting || !props.hasPermission}
+            tooltip={{
+              props: {
+                content: !props.hasPermission
+                  ? '設定を変更するにはリポジトリのオーナーになる必要があります'
+                  : undefined,
+              },
+            }}
           >
             Save
           </Button>
@@ -94,14 +103,14 @@ const AuthConfig: Component<{
 }
 
 export default () => {
-  const { repo, refetchRepo } = useRepositoryData()
+  const { repo, refetchRepo, hasPermission } = useRepositoryData()
   const loaded = () => !!repo()
 
   return (
     <DataTable.Container>
       <DataTable.Title>Authorization</DataTable.Title>
       <Show when={loaded()}>
-        <AuthConfig repo={repo()} refetchRepo={refetchRepo} />
+        <AuthConfig repo={repo()} refetchRepo={refetchRepo} hasPermission={hasPermission()} />
       </Show>
     </DataTable.Container>
   )

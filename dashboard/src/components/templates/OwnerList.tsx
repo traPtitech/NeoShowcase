@@ -136,7 +136,10 @@ const AddOwners: Component<{
   )
 }
 
-const OwnerRow: Component<{ user: User; deleteOwner: (user: User) => void }> = (props) => {
+const OwnerRow: Component<{
+  user: User
+  deleteOwner?: (user: User) => void
+}> = (props) => {
   const { Modal: DeleteUserModal, open: openDeleteUserModal, close: closeDeleteUserModal } = useModal()
 
   return (
@@ -144,9 +147,11 @@ const OwnerRow: Component<{ user: User; deleteOwner: (user: User) => void }> = (
       <UserRowContainer>
         <UserAvatar user={props.user} size={32} />
         <UserName>{props.user.name}</UserName>
-        <Button variants="textError" size="small" onClick={openDeleteUserModal}>
-          Delete
-        </Button>
+        <Show when={props.deleteOwner !== undefined}>
+          <Button variants="textError" size="small" onClick={openDeleteUserModal}>
+            Delete
+          </Button>
+        </Show>
       </UserRowContainer>
       <DeleteUserModal.Container>
         <DeleteUserModal.Header>Delete Owner</DeleteUserModal.Header>
@@ -164,7 +169,7 @@ const OwnerRow: Component<{ user: User; deleteOwner: (user: User) => void }> = (
             variants="primaryError"
             size="medium"
             onClick={() => {
-              props.deleteOwner(props.user)
+              props.deleteOwner?.(props.user)
               closeDeleteUserModal()
             }}
             type="button"
@@ -182,6 +187,7 @@ const OwnerList: Component<{
   users: User[]
   handleAddOwner: (user: User) => Promise<void>
   handleDeleteOwner: (user: User) => Promise<void>
+  hasPermission: boolean
 }> = (props) => {
   const [searchUserQuery, setSearchUserQuery] = createSignal('')
   const fuse = createMemo(
@@ -219,6 +225,12 @@ const OwnerList: Component<{
           size="medium"
           leftIcon={<MaterialSymbols>add</MaterialSymbols>}
           onClick={openAddUserModal}
+          disabled={!props.hasPermission}
+          tooltip={{
+            props: {
+              content: !props.hasPermission ? '設定を変更するにはオーナーになる必要があります' : undefined,
+            },
+          }}
         >
           Add Owners
         </Button>
@@ -230,7 +242,9 @@ const OwnerList: Component<{
         </AddUserModal.Container>
       </SearchUserRow>
       <UsersContainer>
-        <For each={filteredOwners()}>{(owner) => <OwnerRow user={owner} deleteOwner={props.handleDeleteOwner} />}</For>
+        <For each={filteredOwners()}>
+          {(owner) => <OwnerRow user={owner} deleteOwner={props.hasPermission ? props.handleDeleteOwner : undefined} />}
+        </For>
         <Show when={filteredOwners().length === 0}>
           <UserPlaceholder>No Owners Found</UserPlaceholder>
         </Show>

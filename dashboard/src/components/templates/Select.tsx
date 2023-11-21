@@ -107,6 +107,7 @@ export type SingleSelectProps<T> = {
   items: SelectItem<T>[]
   setSelected: (s: T) => void
   disabled?: boolean
+  readonly?: boolean
 } & (
   | {
       selected: T
@@ -145,15 +146,23 @@ export const SingleSelect = <T,>(props: SingleSelectProps<T>): JSX.Element => {
   return (
     <Container>
       <SelectButton
-        onClick={() => {
-          setShowOptions((s) => !s)
-        }}
+        onClick={
+          props.readonly
+            ? undefined
+            : () => {
+                setShowOptions((s) => !s)
+              }
+        }
         opened={showOptions()}
         disabled={props.disabled}
         type="button"
-        onFocus={() => {
-          setShowOptions(true)
-        }}
+        onFocus={
+          props.readonly
+            ? undefined
+            : () => {
+                setShowOptions(true)
+              }
+        }
       >
         <Title placeholder={showPlaceHolder()}>{selectedTitle()}</Title>
         <DropDownIconContainer>
@@ -306,7 +315,12 @@ export const ComboBox = <T,>(props: ComboBoxProps<T>): JSX.Element => {
   }
 
   return (
-    <div use:clickInside={() => setShowOptions(true)} use:clickOutside={() => setShowOptions(false)}>
+    <div
+      use:clickInside={() => {
+        if (!props.readonly) setShowOptions(true)
+      }}
+      use:clickOutside={() => setShowOptions(false)}
+    >
       <Container>
         <TextInput
           rightIcon={<MaterialSymbols color={colorVars.semantic.text.black}>expand_more</MaterialSymbols>}
@@ -318,7 +332,9 @@ export const ComboBox = <T,>(props: ComboBoxProps<T>): JSX.Element => {
                 addedProps.onFocus[0](addedProps.onFocus[1], e)
               }
             }
-            setShowOptions(true)
+            if (!props.readonly) {
+              setShowOptions(true)
+            }
           }}
           error={addedProps.error}
           {...originalProps}

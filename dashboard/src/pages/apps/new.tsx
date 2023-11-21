@@ -96,9 +96,9 @@ const GeneralStep: Component<{
             genericsが使用できないためignoreしている
             */}
           {/* @ts-ignore */}
-          <GeneralConfig repo={props.repo} formStore={form} editBranchId={false} />
+          <GeneralConfig repo={props.repo} formStore={form} editBranchId={false} hasPermission />
           {/* @ts-ignore */}
-          <BuildConfigs formStore={form} disableEditDB={false} />
+          <BuildConfigs formStore={form} disableEditDB={false} hasPermission />
           <Field of={form} name="startOnCreate" type="boolean">
             {(field, fieldProps) => (
               <FormItem
@@ -242,6 +242,7 @@ const WebsiteStep: Component<{
                 isRuntimeApp={props.app.deployType === DeployType.RUNTIME}
                 formStore={form}
                 deleteWebsite={() => setWebsiteForms((prev) => [...prev.slice(0, i()), ...prev.slice(i() + 1)])}
+                hasPermission
               />
             )}
           </For>

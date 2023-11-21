@@ -3,7 +3,7 @@ import { pickRandom, randIntN } from '/@/libs/random'
 import { PlainMessage } from '@bufbuild/protobuf'
 import { styled } from '@macaron-css/solid'
 import { Field, FieldArray, FormStore, custom, getValue, insert, remove, setValue } from '@modular-forms/solid'
-import { For } from 'solid-js'
+import { For, Show } from 'solid-js'
 import { systemInfo } from '../../libs/api'
 import { Button } from '../UI/Button'
 import { MaterialSymbols } from '../UI/MaterialSymbols'
@@ -78,6 +78,7 @@ interface PortPublicationProps {
   formStore: FormStore<PortSettingsStore, undefined>
   name: `ports.${number}`
   deletePort: () => void
+  hasPermission: boolean
 }
 
 const isValidPort = (port?: number, proto?: PortPublicationProtocol): boolean => {
@@ -112,6 +113,7 @@ const PortSetting = (props: PortPublicationProps) => {
                   },
                 }}
                 error={field.error}
+                readonly={!props.hasPermission}
                 {...fieldProps}
               />
             )}
@@ -125,6 +127,7 @@ const PortSetting = (props: PortPublicationProps) => {
                 setSelected={(protocol) => {
                   setValue(props.formStore, `${props.name}.protocol`, protocol)
                 }}
+                readonly={!props.hasPermission}
                 {...fieldProps}
               />
             )}
@@ -143,6 +146,7 @@ const PortSetting = (props: PortPublicationProps) => {
                     content: 'アプリ側ポート',
                   },
                 }}
+                readonly={!props.hasPermission}
                 {...fieldProps}
               />
             )}
@@ -150,9 +154,11 @@ const PortSetting = (props: PortPublicationProps) => {
           <PortItem>/{protoToName[getValue(props.formStore, `${props.name}.protocol`)]}</PortItem>
         </PortVisualContainer>
       </PortVisualContainer>
-      <Button onclick={props.deletePort} variants="textError" size="medium" type="button">
-        Delete
-      </Button>
+      <Show when={props.hasPermission}>
+        <Button onclick={props.deletePort} variants="textError" size="medium" type="button">
+          Delete
+        </Button>
+      </Show>
     </PortRow>
   )
 }
@@ -177,6 +183,7 @@ export type PortSettingsStore = {
 }
 interface PortPublicationSettingsProps {
   formStore: FormStore<PortSettingsStore, undefined>
+  hasPermission: boolean
 }
 
 export const PortPublicationSettings = (props: PortPublicationSettingsProps) => {
@@ -190,24 +197,27 @@ export const PortPublicationSettings = (props: PortPublicationSettingsProps) => 
                 formStore={props.formStore}
                 name={`${fieldArray.name}.${index()}`}
                 deletePort={() => remove(props.formStore, 'ports', { at: index() })}
+                hasPermission={props.hasPermission}
               />
             )}
           </For>
         )}
       </FieldArray>
-      <Button
-        onclick={() =>
-          insert(props.formStore, 'ports', {
-            value: newPort(),
-          })
-        }
-        variants="border"
-        size="small"
-        type="button"
-        leftIcon={<MaterialSymbols opticalSize={20}>add</MaterialSymbols>}
-      >
-        Add More
-      </Button>
+      <Show when={props.hasPermission}>
+        <Button
+          onclick={() =>
+            insert(props.formStore, 'ports', {
+              value: newPort(),
+            })
+          }
+          variants="border"
+          size="small"
+          type="button"
+          leftIcon={<MaterialSymbols opticalSize={20}>add</MaterialSymbols>}
+        >
+          Add More
+        </Button>
+      </Show>
     </PortsContainer>
   )
 }

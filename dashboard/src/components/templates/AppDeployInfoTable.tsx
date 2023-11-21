@@ -163,8 +163,10 @@ const AppDeployInfoTable: Component<{
   refreshRepo: () => void
   disableRefresh: () => boolean
   latestBuildId: string | undefined
+  hasPermission: boolean
 }> = (props) => {
-  const [showActions, setShowActions] = createSignal(false)
+  const [mouseEnter, setMouseEnter] = createSignal(false)
+  const showActions = () => props.hasPermission && mouseEnter()
 
   const restartApp = async () => {
     try {
@@ -188,8 +190,8 @@ const AppDeployInfoTable: Component<{
   return (
     <DeploymentContainer>
       <AppStateContainer
-        onMouseEnter={() => setShowActions(true)}
-        onMouseLeave={() => setShowActions(false)}
+        onMouseEnter={() => setMouseEnter(true)}
+        onMouseLeave={() => setMouseEnter(false)}
         variant={applicationState(props.app)}
       >
         <div />
@@ -251,19 +253,21 @@ const AppDeployInfoTable: Component<{
           <List.RowTitle>Source Commit</List.RowTitle>
           <List.RowData>{shortSha(props.app.commit)}</List.RowData>
         </List.RowContent>
-        <Button
-          variants="ghost"
-          size="medium"
-          onClick={props.refreshRepo}
-          disabled={props.disableRefresh()}
-          tooltip={{
-            props: {
-              content: 'リポジトリの最新コミットを取得',
-            },
-          }}
-        >
-          Refresh Commit
-        </Button>
+        <Show when={props.hasPermission}>
+          <Button
+            variants="ghost"
+            size="medium"
+            onClick={props.refreshRepo}
+            disabled={props.disableRefresh()}
+            tooltip={{
+              props: {
+                content: 'リポジトリの最新コミットを取得',
+              },
+            }}
+          >
+            Refresh Commit
+          </Button>
+        </Show>
       </DeployInfoContainer>
       <DeployInfoContainer long>
         <List.RowContent>

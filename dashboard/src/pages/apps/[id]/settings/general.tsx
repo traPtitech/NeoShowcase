@@ -39,6 +39,7 @@ const DeleteConfirm = styled('div', {
 const DeleteApp: Component<{
   app: Application
   repo: Repository
+  hasPermission: boolean
 }> = (props) => {
   const { Modal, open, close } = useModal()
   const navigate = useNavigate()
@@ -63,7 +64,20 @@ const DeleteApp: Component<{
           </FormItem>
         </FormBox.Forms>
         <FormBox.Actions>
-          <Button variants="primaryError" size="small" onClick={open} type="button">
+          <Button
+            variants="primaryError"
+            size="small"
+            onClick={open}
+            type="button"
+            disabled={!props.hasPermission}
+            tooltip={{
+              props: {
+                content: !props.hasPermission
+                  ? 'アプリケーションを削除するにはオーナーになる必要があります'
+                  : undefined,
+              },
+            }}
+          >
             Delete Application
           </Button>
         </FormBox.Actions>
@@ -90,7 +104,7 @@ const DeleteApp: Component<{
 }
 
 export default () => {
-  const { app, refetchApp, repo } = useApplicationData()
+  const { app, refetchApp, repo, hasPermission } = useApplicationData()
   const loaded = () => !!(app() && repo())
 
   const [generalForm, General] = createForm<AppGeneralForm>({
@@ -136,7 +150,7 @@ export default () => {
         <General.Form onSubmit={handleSubmit}>
           <FormBox.Container>
             <FormBox.Forms>
-              <GeneralConfig repo={repo()} formStore={generalForm} editBranchId />
+              <GeneralConfig repo={repo()} formStore={generalForm} editBranchId hasPermission={hasPermission()} />
             </FormBox.Forms>
             <FormBox.Actions>
               <Show when={generalForm.dirty && !generalForm.submitting}>
@@ -148,14 +162,21 @@ export default () => {
                 variants="primary"
                 size="small"
                 type="submit"
-                disabled={generalForm.invalid || !generalForm.dirty || generalForm.submitting}
+                disabled={generalForm.invalid || !generalForm.dirty || generalForm.submitting || !hasPermission()}
+                tooltip={{
+                  props: {
+                    content: !hasPermission()
+                      ? '設定を変更するにはアプリケーションのオーナーになる必要があります'
+                      : undefined,
+                  },
+                }}
               >
                 Save
               </Button>
             </FormBox.Actions>
           </FormBox.Container>
         </General.Form>
-        <DeleteApp app={app()} repo={repo()} />
+        <DeleteApp app={app()} repo={repo()} hasPermission={hasPermission()} />
       </Show>
     </DataTable.Container>
   )

@@ -76,6 +76,7 @@ interface WebsiteSettingProps {
   formStore: FormStore<WebsiteSetting, undefined>
   saveWebsite?: () => void
   deleteWebsite: () => void
+  hasPermission: boolean
 }
 
 const schemeOptions: SelectItem<boolean>[] = [
@@ -231,6 +232,7 @@ export const WebsiteSetting = (props: WebsiteSettingProps) => {
                             setValue(props.formStore, 'website.https', selected)
                           }
                         }}
+                        readonly={props.hasPermission}
                         {...fieldProps}
                       />
                     </ToolTip>
@@ -250,6 +252,7 @@ export const WebsiteSetting = (props: WebsiteSettingProps) => {
                           content: 'ホスト名',
                         },
                       }}
+                      readonly={!props.hasPermission}
                       {...fieldProps}
                     />
                   </Show>
@@ -278,6 +281,7 @@ export const WebsiteSetting = (props: WebsiteSettingProps) => {
                           setValue(props.formStore, 'website.domain', selected.domain)
                         }
                       }}
+                      readonly={!props.hasPermission}
                       {...fieldProps}
                     />
                   </ToolTip>
@@ -301,6 +305,7 @@ export const WebsiteSetting = (props: WebsiteSettingProps) => {
                         content: '(Advanced) 指定Prefixが付いていたときのみアプリへルーティング',
                       },
                     }}
+                    readonly={!props.hasPermission}
                     {...fieldProps}
                   />
                 )}
@@ -320,6 +325,7 @@ export const WebsiteSetting = (props: WebsiteSettingProps) => {
                             content: 'アプリのHTTP Port番号',
                           },
                         }}
+                        readonly={!props.hasPermission}
                         {...fieldProps}
                       />
                     )}
@@ -350,7 +356,7 @@ export const WebsiteSetting = (props: WebsiteSettingProps) => {
                   props={{
                     content: `${getValue(props.formStore, 'website.domain')}では部員認証が使用できません`,
                   }}
-                  disabled={getValue(props.formStore, 'website.authAvailable')}
+                  disabled={getValue(props.formStore, 'website.authAvailable') && props.hasPermission}
                 >
                   <RadioButtons
                     items={authenticationTypeItems}
@@ -361,6 +367,7 @@ export const WebsiteSetting = (props: WebsiteSettingProps) => {
                       }
                     }}
                     disabled={!getValue(props.formStore, 'website.authAvailable')}
+                    readonly={!props.hasPermission}
                     {...fieldProps}
                   />
                 </ToolTip>
@@ -374,11 +381,7 @@ export const WebsiteSetting = (props: WebsiteSettingProps) => {
                   title="Strip Path Prefix"
                   checked={field.value ?? false}
                   setChecked={(selected) => setValue(props.formStore, 'website.stripPrefix', selected)}
-                  tooltip={{
-                    props: {
-                      content: '(Advanced) 指定Prefixをアプリへのリクエスト時に削除',
-                    },
-                  }}
+                  readonly={!props.hasPermission}
                   {...fieldProps}
                 />
               )}
@@ -390,11 +393,7 @@ export const WebsiteSetting = (props: WebsiteSettingProps) => {
                     title="Use h2c"
                     checked={field.value ?? false}
                     setChecked={(selected) => setValue(props.formStore, 'website.h2c', selected)}
-                    tooltip={{
-                      props: {
-                        content: '(Advanced) アプリ通信に強制的にh2cを用いる',
-                      },
-                    }}
+                    readonly={!props.hasPermission}
                     {...fieldProps}
                   />
                 )}
@@ -404,7 +403,20 @@ export const WebsiteSetting = (props: WebsiteSettingProps) => {
         </FormBox.Forms>
         <FormBox.Actions>
           <DeleteButtonContainer>
-            <Button onclick={open} variants="textError" size="small" type="button">
+            <Button
+              onclick={open}
+              variants="textError"
+              size="small"
+              type="button"
+              disabled={!props.hasPermission}
+              tooltip={{
+                props: {
+                  content: !props.hasPermission
+                    ? '設定を削除するにはアプリケーションのオーナーになる必要があります'
+                    : undefined,
+                },
+              }}
+            >
               Delete
             </Button>
           </DeleteButtonContainer>
@@ -418,7 +430,16 @@ export const WebsiteSetting = (props: WebsiteSettingProps) => {
               variants="primary"
               size="small"
               type="submit"
-              disabled={props.formStore.invalid || !props.formStore.dirty || props.formStore.submitting}
+              disabled={
+                props.formStore.invalid || !props.formStore.dirty || props.formStore.submitting || !props.hasPermission
+              }
+              tooltip={{
+                props: {
+                  content: !props.hasPermission
+                    ? '設定を変更するにはアプリケーションのオーナーになる必要があります'
+                    : undefined,
+                },
+              }}
             >
               {state() === 'added' ? 'Add' : 'Save'}
             </Button>
@@ -501,6 +522,7 @@ interface WebsiteSettingsProps {
   formStores: FormStore<WebsiteSetting, undefined>[]
   addWebsite: () => void
   applyChanges: () => void
+  hasPermission: boolean
 }
 
 export const WebsiteSettings = (props: WebsiteSettingsProps) => {
@@ -513,15 +535,17 @@ export const WebsiteSettings = (props: WebsiteSettingsProps) => {
             <PlaceHolder>
               <MaterialSymbols displaySize={80}>link_off</MaterialSymbols>
               No Websites Configured
-              <Button
-                variants="primary"
-                size="medium"
-                rightIcon={<MaterialSymbols>add</MaterialSymbols>}
-                onClick={props.addWebsite}
-                type="button"
-              >
-                Add Website
-              </Button>
+              <Show when={props.hasPermission}>
+                <Button
+                  variants="primary"
+                  size="medium"
+                  rightIcon={<MaterialSymbols>add</MaterialSymbols>}
+                  onClick={props.addWebsite}
+                  type="button"
+                >
+                  Add Website
+                </Button>
+              </Show>
             </PlaceHolder>
           </List.Container>
         }
@@ -546,10 +570,11 @@ export const WebsiteSettings = (props: WebsiteSettingsProps) => {
                 props.applyChanges()
               }
             }}
+            hasPermission={props.hasPermission}
           />
         )}
       </For>
-      <Show when={props.formStores.length > 0}>
+      <Show when={props.formStores.length > 0 && props.hasPermission}>
         <AddMoreButtonContainer>
           <Button
             onclick={props.addWebsite}

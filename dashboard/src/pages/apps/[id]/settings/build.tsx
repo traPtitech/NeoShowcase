@@ -9,7 +9,7 @@ import { Show, createEffect } from 'solid-js'
 import toast from 'solid-toast'
 
 export default () => {
-  const { app, refetchApp } = useApplicationData()
+  const { app, refetchApp, hasPermission } = useApplicationData()
   const loaded = () => !!app()
 
   const [buildConfig, BuildConfig] = createForm<BuildConfigForm>({
@@ -48,7 +48,7 @@ export default () => {
         <BuildConfig.Form onSubmit={handleSubmit}>
           <FormBox.Container>
             <FormBox.Forms>
-              <BuildConfigs formStore={buildConfig} disableEditDB />
+              <BuildConfigs formStore={buildConfig} disableEditDB hasPermission={hasPermission()} />
             </FormBox.Forms>
             <FormBox.Actions>
               <Show when={buildConfig.dirty && !buildConfig.submitting}>
@@ -60,7 +60,14 @@ export default () => {
                 variants="primary"
                 size="small"
                 type="submit"
-                disabled={buildConfig.invalid || !buildConfig.dirty || buildConfig.submitting}
+                disabled={buildConfig.invalid || !buildConfig.dirty || buildConfig.submitting || !hasPermission()}
+                tooltip={{
+                  props: {
+                    content: !hasPermission()
+                      ? '設定を変更するにはアプリケーションのオーナーになる必要があります'
+                      : undefined,
+                  },
+                }}
               >
                 Save
               </Button>

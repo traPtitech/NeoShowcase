@@ -8,7 +8,7 @@ import { Show, createResource } from 'solid-js'
 import toast from 'solid-toast'
 
 export default () => {
-  const { app, refetchApp } = useApplicationData()
+  const { app, refetchApp, hasPermission } = useApplicationData()
 
   const [websiteForms, { mutate }] = createResource(
     () => app()?.websites,
@@ -91,6 +91,7 @@ export default () => {
             formStores={nonNullForms()}
             addWebsite={addWebsiteForm}
             applyChanges={handleApplyChanges}
+            hasPermission={hasPermission()}
           />
         )}
       </Show>

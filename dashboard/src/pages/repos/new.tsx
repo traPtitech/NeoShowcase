@@ -87,6 +87,7 @@ export default () => {
   const AuthSetting = RepositoryAuthSettings({
     // @ts-ignore
     formStore: config,
+    hasPermission: true,
   })
 
   return (
