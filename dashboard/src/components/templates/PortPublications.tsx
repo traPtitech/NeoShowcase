@@ -191,7 +191,7 @@ export const PortPublicationSettings = (props: PortPublicationSettingsProps) => 
     <PortsContainer>
       <FieldArray of={props.formStore} name="ports">
         {(fieldArray) => (
-          <For each={fieldArray.items}>
+          <For each={fieldArray.items} fallback={'No Port Forwarding Configured'}>
             {(_, index) => (
               <PortSetting
                 formStore={props.formStore}
@@ -215,7 +215,7 @@ export const PortPublicationSettings = (props: PortPublicationSettingsProps) => 
           type="button"
           leftIcon={<MaterialSymbols opticalSize={20}>add</MaterialSymbols>}
         >
-          Add More
+          Add Port Forwarding
         </Button>
       </Show>
     </PortsContainer>
