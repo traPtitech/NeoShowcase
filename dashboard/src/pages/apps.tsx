@@ -18,6 +18,7 @@ import { MainViewContainer } from '../components/layouts/MainView'
 import { WithNav } from '../components/layouts/WithNav'
 import { AppsNav } from '../components/templates/AppsNav'
 import { RepositoryList } from '../components/templates/List'
+import { media } from '../theme'
 
 const MainView = styled('div', {
   base: {
@@ -35,7 +36,7 @@ const SortContainer = styled('div', {
     gap: '16px',
 
     '@media': {
-      'screen and (max-width: 768px)': {
+      [media.mobile]: {
         flexDirection: 'column',
         gap: '8px',
       },

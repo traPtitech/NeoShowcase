@@ -1,6 +1,6 @@
 import { User } from '/@/api/neoshowcase/protobuf/gateway_pb'
 import { clickInside as clickInsideDir, clickOutside as clickOutsideDir } from '/@/libs/useClickInout'
-import { colorVars, textVars } from '/@/theme'
+import { colorVars, media, textVars } from '/@/theme'
 import { style } from '@macaron-css/core'
 import { styled } from '@macaron-css/solid'
 import { A } from '@solidjs/router'
@@ -44,7 +44,7 @@ const UserName = styled('span', {
     ...textVars.text.bold,
 
     '@media': {
-      'screen and (max-width: 768px)': {
+      [media.mobile]: {
         display: 'none',
       },
     },

@@ -7,7 +7,7 @@ import { AppMetrics } from '/@/components/templates/AppMetrics'
 import { ContainerLog } from '/@/components/templates/ContainerLog'
 import { availableMetrics, client, handleAPIError, systemInfo } from '/@/libs/api'
 import { useApplicationData } from '/@/routes'
-import { colorVars, textVars } from '/@/theme'
+import { colorVars, media, textVars } from '/@/theme'
 import { styled } from '@macaron-css/solid'
 import { Component, For, Show, createResource, createSignal, onCleanup } from 'solid-js'
 import toast from 'solid-toast'
@@ -29,7 +29,7 @@ const MainViewContainer = styled('div', {
     padding: '40px 32px 72px',
 
     '@media': {
-      'screen and (max-width: 768px)': {
+      [media.mobile]: {
         padding: '40px 16px 72px',
       },
     },

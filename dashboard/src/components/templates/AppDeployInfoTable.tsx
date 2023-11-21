@@ -4,7 +4,7 @@ import { ApplicationState, applicationState, getWebsiteURL } from '/@/libs/appli
 import { titleCase } from '/@/libs/casing'
 import { colorOverlay } from '/@/libs/colorOverlay'
 import { shortSha } from '/@/libs/format'
-import { colorVars, textVars } from '/@/theme'
+import { colorVars, media, textVars } from '/@/theme'
 import { styled } from '@macaron-css/solid'
 import { Component, For, Show, createSignal } from 'solid-js'
 import toast from 'solid-toast'
@@ -29,7 +29,7 @@ const DeploymentContainer = styled('div', {
     overflow: 'hidden',
 
     '@media': {
-      'screen and (max-width: 768px)': {
+      [media.mobile]: {
         gridTemplateColumns: '1fr 1fr',
       },
     },
@@ -49,7 +49,7 @@ const AppStateContainer = styled('div', {
     ...textVars.h3.medium,
 
     '@media': {
-      'screen and (max-width: 768px)': {
+      [media.mobile]: {
         gridArea: '1 / 1 / 2 / 3',
       },
     },

@@ -1,8 +1,8 @@
 import { Button } from '/@/components/UI/Button'
-import { textVars } from '/@/theme'
+import { media, textVars } from '/@/theme'
 import { styled } from '@macaron-css/solid'
-import { A, BeforeLeaveEventArgs, useBeforeLeave } from '@solidjs/router'
-import { Component, JSX, Show, createSignal, onMount } from 'solid-js'
+import { A } from '@solidjs/router'
+import { JSX, ParentComponent, Show } from 'solid-js'
 import { MaterialSymbols } from '../UI/MaterialSymbols'
 
 const Container = styled('div', {
@@ -15,8 +15,17 @@ const Container = styled('div', {
     gap: '8px',
 
     '@media': {
-      'screen and (max-width: 768px)': {
+      [media.mobile]: {
         padding: '32px 16px',
+      },
+    },
+  },
+})
+const BackToTitle = styled('div', {
+  base: {
+    '@media': {
+      [media.mobile]: {
+        display: 'none',
       },
     },
   },
@@ -32,8 +41,13 @@ const TitleContainer = styled('div', {
     position: 'sticky',
     width: '100%',
     maxWidth: '1000px',
-    height: '44px',
+    height: 'auto',
     left: 'calc(75% - 250px)',
+    overflowX: 'hidden',
+  },
+})
+const Titles = styled('div', {
+  base: {
     display: 'flex',
     alignItems: 'center',
     gap: '8px',
@@ -57,23 +71,26 @@ export interface Props {
   action?: JSX.Element
 }
 
-export const Nav: Component<Props> = (props) => {
+export const Nav: ParentComponent<Props> = (props) => {
   return (
     <Container>
       <Show when={props.backTo} fallback={<div />}>
         {(nonNullBackTo) => (
           <A href={nonNullBackTo()}>
             <Button variants="text" size="medium" leftIcon={<MaterialSymbols>arrow_back</MaterialSymbols>}>
-              {props.backToTitle}
+              <BackToTitle>{props.backToTitle}</BackToTitle>
             </Button>
           </A>
         )}
       </Show>
       <TitleStickyContainer>
         <TitleContainer>
-          <Show when={props.icon}>{props.icon}</Show>
-          <Title>{props.title}</Title>
-          <Show when={props.action}>{props.action}</Show>
+          <Titles>
+            <Show when={props.icon}>{props.icon}</Show>
+            <Title>{props.title}</Title>
+            <Show when={props.action}>{props.action}</Show>
+          </Titles>
+          {props.children}
         </TitleContainer>
       </TitleStickyContainer>
     </Container>

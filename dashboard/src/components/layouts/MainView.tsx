@@ -1,4 +1,4 @@
-import { colorVars } from '/@/theme'
+import { colorVars, media } from '/@/theme'
 import { styled } from '@macaron-css/solid'
 
 export const MainViewContainer = styled('div', {
@@ -8,7 +8,7 @@ export const MainViewContainer = styled('div', {
     padding: '40px max(calc(50% - 500px), 32px) 72px',
 
     '@media': {
-      'screen and (max-width: 768px)': {
+      [media.mobile]: {
         padding: '40px 16px 72px',
       },
     },

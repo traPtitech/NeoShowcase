@@ -157,3 +157,7 @@ export const textVars = createGlobalTheme(':root', {
     },
   },
 })
+
+export const media = {
+  mobile: 'screen and (max-width: 768px)',
+}

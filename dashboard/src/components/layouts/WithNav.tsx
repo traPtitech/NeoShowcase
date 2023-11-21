@@ -1,4 +1,4 @@
-import { colorVars } from '/@/theme'
+import { colorVars, media } from '/@/theme'
 import { styled } from '@macaron-css/solid'
 
 const Container = styled('div', {
@@ -36,7 +36,7 @@ const TabContainer = styled('div', {
     overflowX: 'auto',
 
     '@media': {
-      'screen and (max-width: 768px)': {
+      [media.mobile]: {
         maxWidth: 'min(1000px, calc(100% - 32px))',
       },
     },
