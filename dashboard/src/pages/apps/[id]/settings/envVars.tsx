@@ -217,13 +217,13 @@ export default () => {
   return (
     <DataTable.Container>
       <DataTable.Title>Environment Variables</DataTable.Title>
-      <Show when={loaded()}>
-        <Show
-          when={hasPermission()}
-          fallback={
-            <DataTable.SubTitle>環境変数の閲覧・設定はアプリケーションのオーナーのみが行えます</DataTable.SubTitle>
-          }
-        >
+      <Show
+        when={hasPermission()}
+        fallback={
+          <DataTable.SubTitle>環境変数の閲覧・設定はアプリケーションのオーナーのみが行えます</DataTable.SubTitle>
+        }
+      >
+        <Show when={loaded()}>
           <EnvVarConfig appId={app()?.id} envVars={structuredClone(envVars())} refetchEnvVars={refetchEnvVars} />
         </Show>
       </Show>
