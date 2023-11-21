@@ -45,6 +45,7 @@ const CopyButton = styled('button', {
     cursor: 'pointer',
     color: colorVars.semantic.text.black,
     background: colorVars.primitive.blackAlpha[100],
+    lineHeight: 1,
 
     selectors: {
       '&:hover': {

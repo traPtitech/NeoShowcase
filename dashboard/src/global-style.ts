@@ -1,18 +1,23 @@
 import { colorVars } from '/@/theme'
 import { globalStyle } from '@macaron-css/core'
+import './reset.css'
 
 globalStyle('*, ::before, ::after', {
-  boxSizing: 'border-box',
   margin: 0,
   padding: 0,
 })
 
-globalStyle('*', {
-  fontFamily: 'Lato',
+globalStyle('body', {
+  fontFamily: 'Lato, sans-serif',
+  backgroundColor: colorVars.semantic.ui.primary,
+})
+
+globalStyle('#root', {
+  height: '100vh',
 })
 
 globalStyle('pre, code', {
-  fontFamily: 'Menlo, Monaco, Consolas, Courier New, monospace !important',
+  fontFamily: 'Menlo, Monaco, Consolas, Courier New, monospace',
 })
 
 globalStyle('a', {
@@ -21,23 +26,11 @@ globalStyle('a', {
   overflowWrap: 'anywhere',
 })
 
-globalStyle('pre', {
-  margin: 0,
-})
-
 globalStyle('svg', {
   fill: 'currentcolor',
 })
 
-globalStyle('body', {
-  height: '100dvh',
-  backgroundColor: colorVars.semantic.ui.primary,
-})
-
-globalStyle('#root', {
-  height: '100%',
-})
-
+// Scrollbar
 globalStyle('*', {
   scrollbarColor: `${colorVars.semantic.ui.tertiary} ${colorVars.semantic.ui.secondary}`,
   scrollbarWidth: 'thin',

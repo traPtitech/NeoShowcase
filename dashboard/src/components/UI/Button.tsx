@@ -149,7 +149,9 @@ const Text = styled('div', {
   },
 })
 const IconContainer = styled('div', {
-  base: {},
+  base: {
+    lineHeight: 1,
+  },
   variants: {
     size: {
       medium: {
