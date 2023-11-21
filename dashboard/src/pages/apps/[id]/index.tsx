@@ -193,6 +193,7 @@ export default () => {
                 disableRefresh={disableRefresh}
                 latestBuild={latestBuild()}
                 refetchLatestBuild={refetchLatestBuild}
+                hasPermission={hasPermission()}
               />
             </DataTable.Container>
             <DataTable.Container>
