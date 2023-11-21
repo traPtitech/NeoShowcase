@@ -14,7 +14,6 @@ export default defineConfig({
     Unfonts({
       google: {
         families: [
-          'Mulish',
           'Lato',
           {
             name: "Material+Symbols+Rounded",
