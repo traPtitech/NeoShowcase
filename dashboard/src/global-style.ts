@@ -13,7 +13,8 @@ globalStyle('body', {
 })
 
 globalStyle('#root', {
-  height: '100vh',
+  position: 'fixed',
+  inset: 0,
 })
 
 globalStyle('pre, code', {
