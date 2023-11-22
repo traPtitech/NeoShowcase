@@ -4,7 +4,7 @@ import {
   GetRepositoriesRequest_Scope,
   Repository,
 } from '/@/api/neoshowcase/protobuf/gateway_pb'
-import { MultiSelect, SelectItem, SingleSelect } from '/@/components/templates/Select'
+import { MultiSelect, SelectOption, SingleSelect } from '/@/components/templates/Select'
 import { client, systemInfo, user } from '/@/libs/api'
 import { ApplicationState, Provider, applicationState, repositoryURLToProvider } from '/@/libs/application'
 import { createLocalSignal } from '/@/libs/localStore'
@@ -60,20 +60,20 @@ const Repositories = styled('div', {
   },
 })
 
-const sortItems: { [k in 'desc' | 'asc']: SelectItem<k> } = {
-  desc: { value: 'desc', title: 'Newest' },
-  asc: { value: 'asc', title: 'Oldest' },
+const sortItems: { [k in 'desc' | 'asc']: SelectOption<k> } = {
+  desc: { value: 'desc', label: 'Newest' },
+  asc: { value: 'asc', label: 'Oldest' },
 }
 
 const scopeItems = (admin: boolean) => {
-  const items: SelectItem<GetRepositoriesRequest_Scope>[] = [
-    { value: GetRepositoriesRequest_Scope.MINE, title: 'My Apps' },
-    { value: GetRepositoriesRequest_Scope.PUBLIC, title: 'All Apps' },
+  const items: SelectOption<GetRepositoriesRequest_Scope>[] = [
+    { value: GetRepositoriesRequest_Scope.MINE, label: 'My Apps' },
+    { value: GetRepositoriesRequest_Scope.PUBLIC, label: 'All Apps' },
   ]
   if (admin) {
     items.push({
       value: GetRepositoriesRequest_Scope.ALL,
-      title: 'All Apps (admin)',
+      label: 'All Apps (admin)',
     })
   }
   return items
@@ -102,17 +102,17 @@ const compareRepoWithApp = (sort: 'asc' | 'desc') => (a: RepoWithApp, b: RepoWit
   return a.repo.id.localeCompare(b.repo.id)
 }
 
-const allStatuses: SelectItem<ApplicationState>[] = [
-  { title: 'Idle', value: ApplicationState.Idle },
-  { title: 'Deploying', value: ApplicationState.Deploying },
-  { title: 'Running', value: ApplicationState.Running },
-  { title: 'Static', value: ApplicationState.Static },
-  { title: 'Error', value: ApplicationState.Error },
+const allStatuses: SelectOption<ApplicationState>[] = [
+  { label: 'Idle', value: ApplicationState.Idle },
+  { label: 'Deploying', value: ApplicationState.Deploying },
+  { label: 'Running', value: ApplicationState.Running },
+  { label: 'Static', value: ApplicationState.Static },
+  { label: 'Error', value: ApplicationState.Error },
 ]
-const allProviders: SelectItem<Provider>[] = [
-  { title: 'GitHub', value: 'GitHub' },
-  { title: 'GitLab', value: 'GitLab' },
-  { title: 'Gitea', value: 'Gitea' },
+const allProviders: SelectOption<Provider>[] = [
+  { label: 'GitHub', value: 'GitHub' },
+  { label: 'GitLab', value: 'GitLab' },
+  { label: 'Gitea', value: 'Gitea' },
 ]
 
 export default () => {
@@ -185,7 +185,7 @@ export default () => {
               {(s) => (
                 <TabRound state={s.value === scope() ? 'active' : 'default'} onClick={() => setScope(s.value)}>
                   <MaterialSymbols>deployed_code</MaterialSymbols>
-                  {s.title}
+                  {s.label}
                 </TabRound>
               )}
             </For>
@@ -217,23 +217,18 @@ export default () => {
                   leftIcon={<MaterialSymbols>search</MaterialSymbols>}
                 />
                 <SortSelects>
+                  <MultiSelect options={allStatuses} placeholder="Status" value={statuses()} setValue={setStatuses} />
                   <MultiSelect
-                    placeHolder="Status"
-                    items={allStatuses}
-                    selected={statuses()}
-                    setSelected={setStatuses}
-                  />
-                  <MultiSelect
-                    placeHolder="Provider"
-                    items={allProviders}
-                    selected={provider()}
-                    setSelected={setProvider}
+                    options={allProviders}
+                    placeholder="Provider"
+                    value={provider()}
+                    setValue={setProvider}
                   />
                   <SingleSelect
-                    placeHolder="Sort"
-                    items={Object.values(sortItems)}
-                    selected={sort()}
-                    setSelected={setSort}
+                    options={Object.values(sortItems)}
+                    placeholder="Sort"
+                    value={sort()}
+                    setValue={setSort}
                   />
                 </SortSelects>
               </SortContainer>

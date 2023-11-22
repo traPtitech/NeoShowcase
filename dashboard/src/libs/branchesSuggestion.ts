@@ -11,10 +11,10 @@ export const useBranchesSuggestion = (repoID: () => string, current: () => strin
   const branches = createMemo(() => {
     if (!refs()) return
     const branches = refs()
-      .refs.map((r) => r.refName)
+      ?.refs.map((r) => r.refName)
       .filter((b) => !b.startsWith('refs/'))
-    const normal = branches.filter((b) => !b.includes('/'))
-    const long = branches.filter((b) => b.includes('/'))
+    const normal = branches?.filter((b) => !b.includes('/'))
+    const long = branches?.filter((b) => b.includes('/'))
     return [normal, long]
   })
   const branchesFuse = createMemo(() => {
@@ -37,5 +37,20 @@ export const useBranchesSuggestion = (repoID: () => string, current: () => strin
       .search(query)
       .map((r) => r.item)
     return p0.concat(p1)
+  })
+}
+
+export const useBranches = (repoID: () => string): (() => string[]) => {
+  const [refs] = createResource(
+    () => repoID(),
+    (id) => client.getRepositoryRefs({ repositoryId: id }),
+  )
+
+  return createMemo(() => {
+    return (
+      refs()
+        ?.refs.map((r) => r.refName)
+        .filter((b) => !b.startsWith('refs/')) ?? []
+    )
   })
 }

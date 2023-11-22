@@ -1,10 +1,9 @@
 import { CreateApplicationRequest, Repository, UpdateApplicationRequest } from '/@/api/neoshowcase/protobuf/gateway_pb'
-import { useBranchesSuggestion } from '/@/libs/branchesSuggestion'
+import { useBranches } from '/@/libs/branchesSuggestion'
 import { PlainMessage } from '@bufbuild/protobuf'
-import { Field, FormStore, getValue, required, setValue } from '@modular-forms/solid'
+import { Field, FormStore, required, setValue } from '@modular-forms/solid'
 import { Component, Show } from 'solid-js'
 import { TextField } from '../UI/TextField'
-import { FormItem } from './FormItem'
 import { ComboBox } from './Select'
 
 export type AppGeneralForm = Pick<
@@ -20,10 +19,7 @@ interface GeneralConfigProps {
 }
 
 export const GeneralConfig: Component<GeneralConfigProps> = (props) => {
-  const branchesSuggestion = useBranchesSuggestion(
-    () => props.repo.id,
-    () => getValue(props.formStore, 'refName') ?? '',
-  )
+  const branches = useBranches(() => props.repo.id)
 
   return (
     <>
@@ -60,10 +56,10 @@ export const GeneralConfig: Component<GeneralConfigProps> = (props) => {
       </Field>
       <Field of={props.formStore} name="refName" validate={required('Please Enter Branch Name')}>
         {(field, fieldProps) => (
-          <FormItem
-            title="Branch"
+          <ComboBox
+            label="Branch"
             required
-            tooltip={{
+            info={{
               props: {
                 content: (
                   <>
@@ -73,21 +69,18 @@ export const GeneralConfig: Component<GeneralConfigProps> = (props) => {
                 ),
               },
             }}
-          >
-            <ComboBox
-              value={field.value}
-              items={branchesSuggestion().map((branch) => ({
-                title: branch,
-                value: branch,
-              }))}
-              setSelected={(v) => {
-                setValue(props.formStore, 'refName', v)
-              }}
-              error={field.error}
-              readonly={!props.hasPermission}
-              {...fieldProps}
-            />
-          </FormItem>
+            {...fieldProps}
+            options={branches().map((branch) => ({
+              label: branch,
+              value: branch,
+            }))}
+            value={field.value}
+            error={field.error}
+            setValue={(v) => {
+              setValue(props.formStore, 'refName', v)
+            }}
+            readOnly={!props.hasPermission}
+          />
         )}
       </Field>
     </>

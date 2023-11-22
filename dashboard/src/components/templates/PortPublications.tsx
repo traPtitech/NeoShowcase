@@ -8,7 +8,7 @@ import { systemInfo } from '../../libs/api'
 import { Button } from '../UI/Button'
 import { MaterialSymbols } from '../UI/MaterialSymbols'
 import { TextField } from '../UI/TextField'
-import { SelectItem, SingleSelect } from './Select'
+import { SelectOption, SingleSelect } from './Select'
 
 const PortsContainer = styled('div', {
   base: {
@@ -64,9 +64,9 @@ const PortItem = styled('div', {
   },
 })
 
-const protocolItems: SelectItem<PortPublicationProtocol>[] = [
-  { value: PortPublicationProtocol.TCP, title: 'TCP' },
-  { value: PortPublicationProtocol.UDP, title: 'UDP' },
+const protocolItems: SelectOption<PortPublicationProtocol>[] = [
+  { value: PortPublicationProtocol.TCP, label: 'TCP' },
+  { value: PortPublicationProtocol.UDP, label: 'UDP' },
 ]
 
 const protoToName: Record<PortPublicationProtocol, string> = {
@@ -122,13 +122,13 @@ const PortSetting = (props: PortPublicationProps) => {
           <Field of={props.formStore} name={`${props.name}.protocol`} type="number">
             {(field, fieldProps) => (
               <SingleSelect
-                items={protocolItems}
-                selected={field.value}
-                setSelected={(protocol) => {
-                  setValue(props.formStore, `${props.name}.protocol`, protocol)
-                }}
-                readonly={!props.hasPermission}
                 {...fieldProps}
+                options={protocolItems}
+                value={field.value}
+                setValue={(value) => {
+                  setValue(props.formStore, `${props.name}.protocol`, value)
+                }}
+                readOnly={!props.hasPermission}
               />
             )}
           </Field>

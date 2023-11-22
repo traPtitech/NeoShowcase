@@ -1,357 +1,373 @@
-import { clickInside as clickInsideDir, clickOutside as clickOutsideDir } from '/@/libs/useClickInout'
 import { colorVars, textVars } from '/@/theme'
-import { style } from '@macaron-css/core'
-import { styled } from '@macaron-css/solid'
-import { For, JSX, Show, createSignal, onCleanup, onMount, splitProps } from 'solid-js'
-import { Button } from '../UI/Button'
+import { Combobox as KComboBox, Select as KSelect } from '@kobalte/core'
+import { keyframes, style } from '@macaron-css/core'
+import { JSX, Show, splitProps } from 'solid-js'
 import { CheckBoxIcon } from '../UI/CheckBoxIcon'
 import { MaterialSymbols } from '../UI/MaterialSymbols'
-import { TextInput } from '../UI/TextInput'
+import { ActionsContainer, hasRightIconStyle, inputStyle } from '../UI/TextField'
+import { ToolTip, TooltipProps } from '../UI/ToolTip'
+import { TooltipInfoIcon } from '../UI/TooltipInfoIcon'
+import { RequiredMark, TitleContainer, containerStyle, errorTextStyle, titleStyle } from './FormItem'
 
-// https://github.com/solidjs/solid/discussions/845
-const clickInside = clickInsideDir
-const clickOutside = clickOutsideDir
-
-const Container = styled('div', {
-  base: {
-    position: 'relative',
-    width: '100%',
-    display: 'flex',
-    flexDirection: 'column',
-    gap: '4px',
-  },
-})
-const SelectButton = styled('button', {
-  base: {
-    width: '100%',
-    height: '48px',
-    overflowX: 'auto',
-    padding: '10px 16px',
-    display: 'grid',
-    gridTemplateColumns: '1fr 24px',
-    alignItems: 'center',
-    gap: '4px',
-
-    background: colorVars.semantic.ui.primary,
-    borderRadius: '8px',
-    border: 'none',
-    outline: `1px solid ${colorVars.semantic.ui.border}`,
-    color: colorVars.semantic.text.black,
-    cursor: 'pointer',
-
-    selectors: {
-      '&:focus': {
-        outline: `2px solid ${colorVars.semantic.primary.main}`,
-      },
-      '&:disabled': {
-        cursor: 'not-allowed',
-        color: colorVars.semantic.text.disabled,
-        background: colorVars.semantic.ui.tertiary,
-      },
-    },
-  },
-  variants: {
-    opened: {
-      true: {
-        outline: `2px solid ${colorVars.semantic.primary.main}`,
-      },
-    },
-  },
-})
-const Title = styled('div', {
-  base: {
-    width: '100%',
-    ...textVars.text.regular,
-    whiteSpace: 'nowrap',
-    overflow: 'hidden',
-    textOverflow: 'ellipsis',
-    textAlign: 'left',
-  },
-  variants: {
-    placeholder: {
-      true: {
-        color: colorVars.semantic.text.disabled,
-      },
-    },
-  },
-})
-const DropDownIconContainer = styled('div', {
-  base: {
-    width: '24px',
-    height: '24px',
-    flexShrink: 0,
-  },
-})
-const optionsContainerClass = style({
-  position: 'absolute',
-  width: 'fit-content',
-  minWidth: '100%',
-  top: '56px',
-  padding: '6px',
-
+const itemStyleBase = style({
+  width: '100%',
+  height: '44px',
   display: 'flex',
-  flexDirection: 'column',
+  alignItems: 'center',
+  gap: '8px',
 
+  background: 'none',
+  border: 'none',
+  borderRadius: '8px',
+  cursor: 'pointer',
+  color: colorVars.semantic.text.black,
+  whiteSpace: 'nowrap',
+  ...textVars.text.bold,
+
+  selectors: {
+    '&:hover, &[data-highlighted]': {
+      background: colorVars.semantic.transparent.primaryHover,
+    },
+    '&[data-disabled]': {
+      cursor: 'not-allowed',
+      color: `${colorVars.semantic.text.black} !important`,
+      background: `${colorVars.semantic.text.disabled} !important`,
+    },
+  },
+})
+const singleItemStyle = style([
+  itemStyleBase,
+  {
+    padding: '8px 16px',
+    selectors: {
+      '&[data-selected]': {
+        color: colorVars.semantic.primary.main,
+        background: colorVars.semantic.transparent.primarySelected,
+      },
+    },
+  },
+])
+const multiItemStyle = style([
+  itemStyleBase,
+  {
+    padding: '8px',
+  },
+])
+const triggerStyle = style({
+  width: '100%',
+  height: '48px',
+  padding: '10px 16px',
+  display: 'grid',
+  gridTemplateColumns: '1fr 24px',
+  alignContent: 'center',
+  alignItems: 'center',
+  gap: '4px',
+
+  background: colorVars.semantic.ui.primary,
+  borderRadius: '8px',
+  border: 'none',
+  outline: `1px solid ${colorVars.semantic.ui.border}`,
+  color: colorVars.semantic.text.black,
+  cursor: 'pointer',
+
+  selectors: {
+    '&:focus-visible': {
+      outline: `2px solid ${colorVars.semantic.primary.main}`,
+    },
+    '&[data-expanded]': {
+      outline: `2px solid ${colorVars.semantic.primary.main}`,
+    },
+    '&[data-disabled]': {
+      cursor: 'not-allowed',
+      color: colorVars.semantic.text.disabled,
+      background: colorVars.semantic.ui.tertiary,
+    },
+  },
+})
+const valueStyle = style({
+  width: '100%',
+  ...textVars.text.regular,
+  whiteSpace: 'nowrap',
+  overflow: 'hidden',
+  textOverflow: 'ellipsis',
+  textAlign: 'left',
+  selectors: {
+    '&[data-placeholder-shown]': {
+      color: colorVars.semantic.text.disabled,
+    },
+  },
+})
+const iconStyle = style({
+  width: '24px',
+  height: '24px',
+  flexShrink: 0,
+})
+const contentShowKeyframes = keyframes({
+  from: { opacity: 0, transform: 'translateY(-8px)' },
+  to: { opacity: 1, transform: 'translateY(0)' },
+})
+const contentHideKeyframes = keyframes({
+  from: { opacity: 1, transform: 'translateY(0)' },
+  to: { opacity: 0, transform: 'translateY(-8px)' },
+})
+const contentStyleBase = style({
   background: colorVars.semantic.ui.primary,
   borderRadius: '6px',
   boxShadow: '0px 0px 20px 0px rgba(0, 0, 0, 0.10)',
-  zIndex: 1,
+  animation: `${contentHideKeyframes} 0.2s ease-out`,
+  selectors: {
+    '&[data-expanded]': {
+      animation: `${contentShowKeyframes} 0.2s ease-out`,
+    },
+  },
+})
+const selectContentStyle = style([
+  contentStyleBase,
+  {
+    transformOrigin: 'var(--kb-select-content-transform-origin)',
+  },
+])
+const comboBoxContentStyle = style([
+  contentStyleBase,
+  {
+    transformOrigin: 'var(--kb-combobox-content-transform-origin)',
+  },
+])
+const listBoxStyle = style({
+  padding: '6px',
+  maxHeight: '400px',
+  overflowY: 'auto',
 })
 
-export interface SelectItem<T> {
+export type SelectOption<T extends string | number> = {
+  label: string
   value: T
-  title: string
 }
 
-export type SingleSelectProps<T> = {
-  items: SelectItem<T>[]
-  setSelected: (s: T) => void
-  disabled?: boolean
-  readonly?: boolean
-} & (
-  | {
-      selected: T
-      placeHolder?: string
-    }
-  | {
-      selected: undefined
-      placeHolder: string
-    }
-)
-
-export const SingleSelect = <T,>(props: SingleSelectProps<T>): JSX.Element => {
-  const [showOptions, setShowOptions] = createSignal(false)
-
-  const showPlaceHolder = () => props.selected === undefined
-  const selectedTitle = () => props.items.find((i) => i.value === props.selected)?.title ?? props.placeHolder
-
-  // ESCキーで閉じる
-  const closeOnEsc = (e: KeyboardEvent) => {
-    if (e.key === 'Escape') {
-      setShowOptions(false)
-    }
-  }
-  onMount(() => {
-    document.addEventListener('keydown', closeOnEsc)
-  })
-  onCleanup(() => {
-    document.removeEventListener('keydown', closeOnEsc)
-  })
-
-  const handleSelect = (item: SelectItem<T>) => {
-    props.setSelected(item.value)
-    setShowOptions(false)
-  }
-
-  return (
-    <Container>
-      <SelectButton
-        onClick={
-          props.readonly
-            ? undefined
-            : () => {
-                setShowOptions((s) => !s)
-              }
-        }
-        opened={showOptions()}
-        disabled={props.disabled}
-        type="button"
-        onFocus={
-          props.readonly
-            ? undefined
-            : () => {
-                setShowOptions(true)
-              }
-        }
-      >
-        <Title placeholder={showPlaceHolder()}>{selectedTitle()}</Title>
-        <DropDownIconContainer>
-          <MaterialSymbols>expand_more</MaterialSymbols>
-        </DropDownIconContainer>
-      </SelectButton>
-      {/* TODO: help text */}
-      <Show when={showOptions()}>
-        <div
-          use:clickInside={() => setShowOptions(true)}
-          use:clickOutside={() => setShowOptions(false)}
-          class={optionsContainerClass}
-        >
-          <For each={props.items}>
-            {(item) => (
-              <Button variants="text" size="medium" full onClick={() => handleSelect(item)} type="button">
-                {item.title}
-              </Button>
-            )}
-          </For>
-        </div>
-      </Show>
-    </Container>
-  )
-}
-
-export type MultiSelectProps<T> = {
-  items: SelectItem<T>[]
-  setSelected: (s: T[]) => void
-  disabled?: boolean
-} & (
-  | {
-      selected: T[]
-      placeHolder?: string
-    }
-  | {
-      selected: undefined
-      placeHolder: string
-    }
-)
-
-export const MultiSelect = <T,>(props: MultiSelectProps<T>): JSX.Element => {
-  const [showOptions, setShowOptions] = createSignal(false)
-  const showPlaceHolder = () => props.selected === undefined || props.selected?.length === 0
-
-  // ESCキーで閉じる
-  const closeOnEsc = (e: KeyboardEvent) => {
-    if (e.key === 'Escape') {
-      setShowOptions(false)
-    }
-  }
-  onMount(() => {
-    document.addEventListener('keydown', closeOnEsc)
-  })
-  onCleanup(() => {
-    document.removeEventListener('keydown', closeOnEsc)
-  })
-
-  const selectedTitle = () => {
-    if (showPlaceHolder()) {
-      return props.placeHolder
-    } else {
-      return props.selected?.map((s) => props.items.find((i) => i.value === s)?.title).join(', ')
-    }
-  }
-
-  const handleSelect = (item: SelectItem<T>) => {
-    if (props.selected?.includes(item.value)) {
-      props.setSelected(props.selected.filter((s) => s !== item.value))
-    } else {
-      props.setSelected([...(props.selected ?? []), item.value])
-    }
-  }
-
-  return (
-    <Container>
-      <SelectButton
-        onClick={() => {
-          setShowOptions((s) => !s)
-        }}
-        opened={showOptions()}
-        disabled={props.disabled}
-        onFocus={() => {
-          setShowOptions(true)
-        }}
-      >
-        <Title placeholder={showPlaceHolder()}>{selectedTitle()}</Title>
-        <DropDownIconContainer>
-          <MaterialSymbols>expand_more</MaterialSymbols>
-        </DropDownIconContainer>
-      </SelectButton>
-      {/* TODO: help text */}
-      <Show when={showOptions()}>
-        <div
-          use:clickInside={() => setShowOptions(true)}
-          use:clickOutside={() => setShowOptions(false)}
-          class={optionsContainerClass}
-        >
-          <For each={props.items}>
-            {(item) => {
-              const checked = () => props.selected?.includes(item.value) ?? false
-              return (
-                <Button
-                  variants="text"
-                  size="medium"
-                  hasCheckbox
-                  full
-                  onClick={() => handleSelect(item)}
-                  leftIcon={<CheckBoxIcon checked={checked()} />}
-                >
-                  {item.title}
-                </Button>
-              )
-            }}
-          </For>
-        </div>
-      </Show>
-    </Container>
-  )
-}
-
-export type ComboBoxProps<T> = Partial<JSX.InputHTMLAttributes<HTMLInputElement>> & {
-  items: SelectItem<T>[]
+type SelectProps<T extends string | number> = {
+  name?: string
   error?: string
-  setSelected: (s: T) => void
+  label?: string
+  placeholder?: string
+  options: SelectOption<T>[]
+  required?: boolean
   disabled?: boolean
+  readOnly?: boolean
+  info?: TooltipProps
+  tooltip?: TooltipProps
+  ref?: (element: HTMLSelectElement) => void
+  onInput?: JSX.EventHandler<HTMLSelectElement, InputEvent>
+  onChange?: JSX.EventHandler<HTMLSelectElement, Event>
+  onBlur?: JSX.EventHandler<HTMLSelectElement, FocusEvent>
 }
 
-export const ComboBox = <T,>(props: ComboBoxProps<T>): JSX.Element => {
-  const [addedProps, originalProps] = splitProps(props, ['items', 'setSelected', 'disabled', 'error', 'onFocus'])
+export type SingleSelectProps<T extends string | number> = SelectProps<T> & {
+  value: T | undefined
+  setValue?: (v: T) => void
+}
 
-  const [showOptions, setShowOptions] = createSignal(false)
+export const SingleSelect = <T extends string | number,>(props: SingleSelectProps<T>): JSX.Element => {
+  const [rootProps, selectProps] = splitProps(
+    props,
+    ['name', 'placeholder', 'options', 'required', 'disabled', 'readOnly'],
+    ['placeholder', 'ref', 'onInput', 'onChange', 'onBlur'],
+  )
 
-  // ESCキーで閉じる
-  const closeOnEsc = (e: KeyboardEvent) => {
-    if (e.key === 'Escape') {
-      setShowOptions(false)
-    }
-  }
-  onMount(() => {
-    document.addEventListener('keydown', closeOnEsc)
-  })
-  onCleanup(() => {
-    document.removeEventListener('keydown', closeOnEsc)
-  })
-
-  const handleSelect = (item: SelectItem<T>) => {
-    addedProps.setSelected(item.value)
-    setShowOptions(false)
-  }
+  const selectedOption = () => props.options.find((o) => o.value === props.value)
 
   return (
-    <div
-      use:clickInside={() => {
-        if (!props.readonly) setShowOptions(true)
-      }}
-      use:clickOutside={() => setShowOptions(false)}
+    <KSelect.Root<SelectOption<T>>
+      class={containerStyle}
+      {...rootProps}
+      multiple={false}
+      disallowEmptySelection
+      value={selectedOption()}
+      onChange={(v) => props.setValue?.(v.value)}
+      optionValue="value"
+      optionTextValue="label"
+      validationState={props.error ? 'invalid' : 'valid'}
+      itemComponent={(props) => (
+        <KSelect.Item item={props.item} class={singleItemStyle}>
+          <KSelect.ItemLabel>{props.item.textValue}</KSelect.ItemLabel>
+        </KSelect.Item>
+      )}
     >
-      <Container>
-        <TextInput
-          rightIcon={<MaterialSymbols color={colorVars.semantic.text.black}>expand_more</MaterialSymbols>}
-          onFocus={(e) => {
-            if (addedProps.onFocus) {
-              if (typeof addedProps.onFocus === 'function') {
-                addedProps.onFocus(e)
-              } else {
-                addedProps.onFocus[0](addedProps.onFocus[1], e)
-              }
-            }
-            if (!props.readonly) {
-              setShowOptions(true)
-            }
-          }}
-          error={addedProps.error}
-          {...originalProps}
-        />
-        {/* TODO: help text */}
-        <Show when={showOptions()}>
-          <div class={optionsContainerClass}>
-            <For each={addedProps.items}>
-              {(item) => (
-                <Button variants="text" size="medium" full onClick={() => handleSelect(item)}>
-                  {item.title}
-                </Button>
-              )}
-            </For>
-          </div>
-        </Show>
-      </Container>
-    </div>
+      <Show when={props.label}>
+        <TitleContainer>
+          <KSelect.Label class={titleStyle}>{props.label}</KSelect.Label>
+          <Show when={props.required}>
+            <RequiredMark>*</RequiredMark>
+          </Show>
+          <Show when={props.info}>
+            <TooltipInfoIcon {...props.info} />
+          </Show>
+        </TitleContainer>
+      </Show>
+      <KSelect.HiddenSelect {...selectProps} />
+      <ToolTip {...props.tooltip}>
+        <KSelect.Trigger class={triggerStyle}>
+          <KSelect.Value<SelectOption<T>> class={valueStyle}>{(state) => state.selectedOption().label}</KSelect.Value>
+          <KSelect.Icon class={iconStyle}>
+            <MaterialSymbols color={colorVars.semantic.text.black}>expand_more</MaterialSymbols>
+          </KSelect.Icon>
+        </KSelect.Trigger>
+      </ToolTip>
+      <KSelect.Portal>
+        <KSelect.Content class={selectContentStyle}>
+          <KSelect.Listbox class={listBoxStyle} />
+        </KSelect.Content>
+      </KSelect.Portal>
+      <KSelect.ErrorMessage class={errorTextStyle}>{props.error}</KSelect.ErrorMessage>
+    </KSelect.Root>
+  )
+}
+
+export type MultiSelectProps<T extends string | number> = SelectProps<T> & {
+  value: T[] | undefined
+  setValue?: (v: T[]) => void
+}
+
+export const MultiSelect = <T extends string | number,>(props: MultiSelectProps<T>): JSX.Element => {
+  const [rootProps, selectProps] = splitProps(
+    props,
+    ['name', 'placeholder', 'options', 'required', 'disabled', 'readOnly'],
+    ['placeholder', 'ref', 'onInput', 'onChange', 'onBlur'],
+  )
+
+  const selectedOptions = () => props.options.filter((o) => props.value?.some((v) => v === o.value))
+
+  return (
+    <KSelect.Root<SelectOption<T>>
+      class={containerStyle}
+      {...rootProps}
+      multiple={true}
+      value={selectedOptions()}
+      onChange={(newValues) => props.setValue?.(newValues.map((v) => v.value))}
+      optionValue="value"
+      optionTextValue="label"
+      validationState={props.error ? 'invalid' : 'valid'}
+      itemComponent={(itemProps) => (
+        <KSelect.Item item={itemProps.item} class={multiItemStyle}>
+          <KSelect.ItemIndicator forceMount class={iconStyle}>
+            <CheckBoxIcon checked={props.value?.some((v) => v === itemProps.item.textValue) ?? false} />
+          </KSelect.ItemIndicator>
+          <KSelect.ItemLabel>{itemProps.item.textValue}</KSelect.ItemLabel>
+        </KSelect.Item>
+      )}
+    >
+      <Show when={props.label}>
+        <TitleContainer>
+          <KSelect.Label class={titleStyle}>{props.label}</KSelect.Label>
+          <Show when={props.required}>
+            <RequiredMark>*</RequiredMark>
+          </Show>
+          <Show when={props.info}>
+            <TooltipInfoIcon {...props.info} />
+          </Show>
+        </TitleContainer>
+      </Show>
+      <KSelect.HiddenSelect {...selectProps} />
+      <KSelect.Trigger class={triggerStyle}>
+        <KSelect.Value<SelectOption<T>> class={valueStyle}>
+          {(state) =>
+            state
+              .selectedOptions()
+              .map((v) => v.label)
+              .join(', ')
+          }
+        </KSelect.Value>
+        <KSelect.Icon class={iconStyle}>
+          <MaterialSymbols color={colorVars.semantic.text.black}>expand_more</MaterialSymbols>
+        </KSelect.Icon>
+      </KSelect.Trigger>
+      <KSelect.Portal>
+        <KSelect.Content class={selectContentStyle}>
+          <KSelect.Listbox class={listBoxStyle} />
+        </KSelect.Content>
+      </KSelect.Portal>
+      <KSelect.ErrorMessage class={errorTextStyle}>{props.error}</KSelect.ErrorMessage>
+    </KSelect.Root>
+  )
+}
+
+const comboBoxTriggerStyle = style({
+  color: colorVars.semantic.text.disabled,
+  position: 'absolute',
+  width: '44px',
+  height: '100%',
+  right: '0',
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'flex-start',
+  paddingLeft: '4px',
+  border: 'none',
+  background: 'none',
+  cursor: 'pointer',
+})
+
+export type ComboBoxProps<T extends string | number> = SelectProps<T> & {
+  value: T | undefined
+  setValue?: (v: T) => void
+}
+
+export const ComboBox = <T extends string | number,>(props: SingleSelectProps<T>): JSX.Element => {
+  const [rootProps, selectProps] = splitProps(
+    props,
+    ['name', 'placeholder', 'options', 'required', 'disabled', 'readOnly'],
+    ['placeholder', 'ref', 'onInput', 'onChange', 'onBlur'],
+  )
+
+  const selectedOption = () => props.options.find((o) => o.value === props.value)
+
+  return (
+    <KComboBox.Root<SelectOption<T>>
+      class={containerStyle}
+      {...rootProps}
+      multiple={false}
+      disallowEmptySelection
+      value={selectedOption()}
+      onChange={(v) => props.setValue?.(v.value)}
+      optionValue="value"
+      optionTextValue="label"
+      optionLabel="label"
+      triggerMode="input"
+      validationState={props.error ? 'invalid' : 'valid'}
+      itemComponent={(props) => (
+        <KComboBox.Item item={props.item} class={singleItemStyle}>
+          <KComboBox.ItemLabel>{props.item.textValue}</KComboBox.ItemLabel>
+        </KComboBox.Item>
+      )}
+    >
+      <Show when={props.label}>
+        <TitleContainer>
+          <KComboBox.Label class={titleStyle}>{props.label}</KComboBox.Label>
+          <Show when={props.required}>
+            <RequiredMark>*</RequiredMark>
+          </Show>
+          <Show when={props.info}>
+            <TooltipInfoIcon {...props.info} />
+          </Show>
+        </TitleContainer>
+      </Show>
+      <KComboBox.HiddenSelect {...selectProps} />
+      <ToolTip {...props.tooltip}>
+        <KComboBox.Control>
+          <ActionsContainer>
+            <KComboBox.Input class={[inputStyle, hasRightIconStyle].join(' ')} placeholder={props.placeholder} />
+            <KComboBox.Trigger class={comboBoxTriggerStyle}>
+              <KComboBox.Icon class={iconStyle}>
+                <MaterialSymbols color={colorVars.semantic.text.black}>expand_more</MaterialSymbols>
+              </KComboBox.Icon>
+            </KComboBox.Trigger>
+          </ActionsContainer>
+        </KComboBox.Control>
+      </ToolTip>
+      <KComboBox.Portal>
+        <KComboBox.Content class={comboBoxContentStyle}>
+          <KComboBox.Listbox class={listBoxStyle} />
+        </KComboBox.Content>
+      </KComboBox.Portal>
+      <KComboBox.ErrorMessage class={errorTextStyle}>{props.error}</KComboBox.ErrorMessage>
+    </KComboBox.Root>
   )
 }

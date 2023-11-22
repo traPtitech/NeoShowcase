@@ -7,16 +7,16 @@ import { ToolTip } from '../UI/ToolTip'
 import { CheckBox } from './CheckBox'
 import { FormItem } from './FormItem'
 import { RadioButtons } from './RadioButtons'
-import { SelectItem, SingleSelect } from './Select'
+import { SelectOption, SingleSelect } from './Select'
 
-export type BuildConfigMethod = ApplicationConfig['buildConfig']['case']
-const buildConfigItems: SelectItem<BuildConfigMethod>[] = [
-  { value: 'runtimeBuildpack', title: 'Runtime Buildpack' },
-  { value: 'runtimeCmd', title: 'Runtime Command' },
-  { value: 'runtimeDockerfile', title: 'Runtime Dockerfile' },
-  { value: 'staticBuildpack', title: 'Static Buildpack' },
-  { value: 'staticCmd', title: 'Static Command' },
-  { value: 'staticDockerfile', title: 'Static Dockerfile' },
+export type BuildConfigMethod = Exclude<ApplicationConfig['buildConfig']['case'], undefined>
+const buildConfigItems: SelectOption<BuildConfigMethod>[] = [
+  { value: 'runtimeBuildpack', label: 'Runtime Buildpack' },
+  { value: 'runtimeCmd', label: 'Runtime Command' },
+  { value: 'runtimeDockerfile', label: 'Runtime Dockerfile' },
+  { value: 'staticBuildpack', label: 'Static Buildpack' },
+  { value: 'staticCmd', label: 'Static Command' },
+  { value: 'staticDockerfile', label: 'Static Dockerfile' },
 ]
 
 interface RuntimeConfigProps {
@@ -518,10 +518,10 @@ export const BuildConfigs: Component<BuildConfigsProps> = (props) => {
     <>
       <Field of={props.formStore} name="case" type="string">
         {(field, fieldProps) => (
-          <FormItem
-            title="Type"
+          <SingleSelect
+            label="Build Type"
             required
-            tooltip={{
+            info={{
               style: 'left',
               props: {
                 content: (
@@ -533,18 +533,13 @@ export const BuildConfigs: Component<BuildConfigsProps> = (props) => {
                 ),
               },
             }}
-          >
-            <SingleSelect
-              items={buildConfigItems}
-              selected={field.value}
-              setSelected={(v) => {
-                setValue(props.formStore, 'case', v)
-                validate(props.formStore)
-              }}
-              readonly={!props.hasPermission}
-              {...fieldProps}
-            />
-          </FormItem>
+            {...fieldProps}
+            options={buildConfigItems}
+            value={field.value}
+            error={field.error}
+            setValue={(v) => setValue(props.formStore, 'case', v)}
+            readOnly={!props.hasPermission}
+          />
         )}
       </Field>
 

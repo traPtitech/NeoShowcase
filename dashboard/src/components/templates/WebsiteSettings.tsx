@@ -21,7 +21,7 @@ import { CheckBox } from './CheckBox'
 import { FormItem } from './FormItem'
 import { List } from './List'
 import { RadioButtons } from './RadioButtons'
-import { SelectItem, SingleSelect } from './Select'
+import { SelectOption, SingleSelect } from './Select'
 
 const URLContainer = styled('div', {
   base: {
@@ -79,15 +79,15 @@ interface WebsiteSettingProps {
   hasPermission: boolean
 }
 
-const schemeOptions: SelectItem<boolean>[] = [
-  { value: false, title: 'http' },
-  { value: true, title: 'https' },
+const schemeOptions: SelectOption<`${boolean}`>[] = [
+  { value: 'false', label: 'http' },
+  { value: 'true', label: 'https' },
 ]
 
-const authenticationTypeItems: SelectItem<AuthenticationType>[] = [
-  { value: AuthenticationType.OFF, title: 'OFF' },
-  { value: AuthenticationType.SOFT, title: 'SOFT' },
-  { value: AuthenticationType.HARD, title: 'HARD' },
+const authenticationTypeItems: SelectOption<AuthenticationType>[] = [
+  { value: AuthenticationType.OFF, label: 'OFF' },
+  { value: AuthenticationType.SOFT, label: 'SOFT' },
+  { value: AuthenticationType.HARD, label: 'HARD' },
 ]
 
 export const WebsiteSetting = (props: WebsiteSettingProps) => {
@@ -214,28 +214,25 @@ export const WebsiteSetting = (props: WebsiteSettingProps) => {
               <HttpSelectContainer>
                 <Field of={props.formStore} name={'website.https'} type="boolean">
                   {(field, fieldProps) => (
-                    <ToolTip
-                      props={{
-                        content: (
-                          <>
-                            <div>スキーム</div>
-                            <div>通常はhttpsが推奨です</div>
-                          </>
-                        ),
+                    <SingleSelect
+                      tooltip={{
+                        props: {
+                          content: (
+                            <>
+                              <div>スキーム</div>
+                              <div>通常はhttpsが推奨です</div>
+                            </>
+                          ),
+                        },
                       }}
-                    >
-                      <SingleSelect
-                        items={schemeOptions}
-                        selected={field.value}
-                        setSelected={(selected) => {
-                          if (selected !== undefined) {
-                            setValue(props.formStore, 'website.https', selected)
-                          }
-                        }}
-                        readonly={props.hasPermission}
-                        {...fieldProps}
-                      />
-                    </ToolTip>
+                      {...fieldProps}
+                      options={schemeOptions}
+                      value={field.value ? 'true' : 'false'}
+                      setValue={(selected) => {
+                        setValue(props.formStore, 'website.https', selected === 'true')
+                      }}
+                      readOnly={props.hasPermission}
+                    />
                   )}
                 </Field>
               </HttpSelectContainer>
@@ -260,31 +257,28 @@ export const WebsiteSetting = (props: WebsiteSettingProps) => {
               </Field>
               <Field of={props.formStore} name={'website.domain'}>
                 {(field, fieldProps) => (
-                  <ToolTip
-                    props={{
-                      content: 'ドメイン',
+                  <SingleSelect
+                    tooltip={{
+                      props: {
+                        content: 'ドメイン',
+                      },
                     }}
-                  >
-                    <SingleSelect
-                      items={
-                        systemInfo()?.domains.map((domain) => {
-                          const domainName = domain.domain.replace(/\*/g, '')
-                          return {
-                            value: domain,
-                            title: domainName,
-                          }
-                        }) ?? []
-                      }
-                      selected={systemInfo()?.domains.find((d) => d.domain === field.value)}
-                      setSelected={(selected) => {
-                        if (selected !== undefined) {
-                          setValue(props.formStore, 'website.domain', selected.domain)
+                    {...fieldProps}
+                    options={
+                      systemInfo()?.domains.map((domain) => {
+                        const domainName = domain.domain.replace(/\*/g, '')
+                        return {
+                          value: domain.domain,
+                          label: domainName,
                         }
-                      }}
-                      readonly={!props.hasPermission}
-                      {...fieldProps}
-                    />
-                  </ToolTip>
+                      }) ?? []
+                    }
+                    value={field.value}
+                    setValue={(domain) => {
+                      setValue(props.formStore, 'website.domain', domain)
+                    }}
+                    readOnly={!props.hasPermission}
+                  />
                 )}
               </Field>
             </URLContainer>
