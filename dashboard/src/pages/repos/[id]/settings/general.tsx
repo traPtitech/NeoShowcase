@@ -1,6 +1,5 @@
 import { Application, Repository, UpdateRepositoryRequest } from '/@/api/neoshowcase/protobuf/gateway_pb'
 import { Button } from '/@/components/UI/Button'
-import { TextInput } from '/@/components/UI/TextInput'
 import { DataTable } from '/@/components/layouts/DataTable'
 import FormBox from '/@/components/layouts/FormBox'
 import { FormItem } from '/@/components/templates/FormItem'
@@ -15,6 +14,7 @@ import { SubmitHandler, createForm, required, reset } from '@modular-forms/solid
 import { useNavigate } from '@solidjs/router'
 import { Component, Show, createEffect, on } from 'solid-js'
 import toast from 'solid-toast'
+import { TextField } from '../../../../components/UI/TextField'
 
 type GeneralForm = Required<Pick<PlainMessage<UpdateRepositoryRequest>, 'name'>>
 
@@ -57,9 +57,14 @@ const NameConfig: Component<{
         <FormBox.Forms>
           <General.Field name="name" validate={[required('Enter Project Name')]}>
             {(field, fieldProps) => (
-              <FormItem title="Project Name" required>
-                <TextInput value={field.value} error={field.error} {...fieldProps} readonly={!props.hasPermission} />
-              </FormItem>
+              <TextField
+                label="Project Name"
+                required
+                {...fieldProps}
+                value={field.value ?? ''}
+                error={field.error}
+                readOnly={!props.hasPermission}
+              />
             )}
           </General.Field>
         </FormBox.Forms>

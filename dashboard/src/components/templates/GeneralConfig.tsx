@@ -3,7 +3,7 @@ import { useBranchesSuggestion } from '/@/libs/branchesSuggestion'
 import { PlainMessage } from '@bufbuild/protobuf'
 import { Field, FormStore, getValue, required, setValue } from '@modular-forms/solid'
 import { Component, Show } from 'solid-js'
-import { TextInput } from '../UI/TextInput'
+import { TextField } from '../UI/TextField'
 import { FormItem } from './FormItem'
 import { ComboBox } from './Select'
 
@@ -29,31 +29,32 @@ export const GeneralConfig: Component<GeneralConfigProps> = (props) => {
     <>
       <Field of={props.formStore} name="name" validate={required('Please Enter Application Name')}>
         {(field, fieldProps) => (
-          <FormItem title="Application Name" required>
-            <TextInput value={field.value} error={field.error} {...fieldProps} readonly={!props.hasPermission} />
-          </FormItem>
+          <TextField
+            label="Application Name"
+            required
+            {...fieldProps}
+            value={field.value ?? ''}
+            error={field.error}
+            readOnly={!props.hasPermission}
+          />
         )}
       </Field>
       <Field of={props.formStore} name="repositoryId" validate={required('Please Enter Repository ID')}>
         {(field, fieldProps) => (
           <Show when={props.editBranchId}>
-            <FormItem
-              title="Repository ID"
+            <TextField
+              label="Repository ID"
               required
-              tooltip={{
+              info={{
                 props: {
                   content: 'リポジトリを移管する場合はIDを変更',
                 },
               }}
-            >
-              <TextInput
-                required
-                value={field.value}
-                error={field.error}
-                readonly={!props.hasPermission}
-                {...fieldProps}
-              />
-            </FormItem>
+              {...fieldProps}
+              value={field.value ?? ''}
+              error={field.error}
+              readOnly={!props.hasPermission}
+            />
           </Show>
         )}
       </Field>

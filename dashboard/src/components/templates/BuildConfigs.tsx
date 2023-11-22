@@ -2,8 +2,7 @@ import { ApplicationConfig, RuntimeConfig, StaticConfig } from '/@/api/neoshowca
 import { PlainMessage } from '@bufbuild/protobuf'
 import { Field, FormStore, getValue, required, setValue, validate } from '@modular-forms/solid'
 import { Component, Match, Show, Switch, createSignal } from 'solid-js'
-import { TextInput } from '../UI/TextInput'
-import { Textarea } from '../UI/Textarea'
+import { TextField } from '../UI/TextField'
 import { ToolTip } from '../UI/ToolTip'
 import { CheckBox } from './CheckBox'
 import { FormItem } from './FormItem'
@@ -102,30 +101,34 @@ const RuntimeConfigs: Component<RuntimeConfigProps> = (props) => {
       </Show>
       <Field of={props.formStore} name="config.runtimeConfig.entrypoint">
         {(field, fieldProps) => (
-          <FormItem
-            title="Entrypoint"
-            tooltip={{
+          <TextField
+            label="Entrypoint"
+            info={{
               props: {
                 content: '(Advanced) コンテナのEntrypoint',
               },
             }}
-          >
-            <TextInput value={field.value} error={field.error} readonly={!props.hasPermission} {...fieldProps} />
-          </FormItem>
+            {...fieldProps}
+            value={field.value ?? ''}
+            error={field.error}
+            readOnly={!props.hasPermission}
+          />
         )}
       </Field>
       <Field of={props.formStore} name="config.runtimeConfig.command">
         {(field, fieldProps) => (
-          <FormItem
-            title="Command"
-            tooltip={{
+          <TextField
+            label="Command"
+            info={{
               props: {
                 content: '(Advanced) コンテナのCommand',
               },
             }}
-          >
-            <TextInput value={field.value} error={field.error} readonly={!props.hasPermission} {...fieldProps} />
-          </FormItem>
+            {...fieldProps}
+            value={field.value ?? ''}
+            error={field.error}
+            readOnly={!props.hasPermission}
+          />
         )}
       </Field>
     </>
@@ -142,10 +145,10 @@ const StaticConfigs = (props: StaticConfigProps) => {
     <>
       <Field of={props.formStore} name="config.staticConfig.artifactPath" validate={[required('Enter Artifact Path')]}>
         {(field, fieldProps) => (
-          <FormItem
-            title="Artifact Path"
+          <TextField
+            label="Artifact Path"
             required
-            tooltip={{
+            info={{
               props: {
                 content: (
                   <>
@@ -155,9 +158,11 @@ const StaticConfigs = (props: StaticConfigProps) => {
                 ),
               },
             }}
-          >
-            <TextInput value={field.value} error={field.error} readonly={!props.hasPermission} {...fieldProps} />
-          </FormItem>
+            {...fieldProps}
+            value={field.value ?? ''}
+            error={field.error}
+            readOnly={!props.hasPermission}
+          />
         )}
       </Field>
       <Field of={props.formStore} name="config.staticConfig.spa" type="boolean">
@@ -200,9 +205,9 @@ const BuildPackConfigs = (props: BuildPackConfigProps) => {
   return (
     <Field of={props.formStore} name="config.buildPackConfig.context">
       {(field, fieldProps) => (
-        <FormItem
-          title="Context"
-          tooltip={{
+        <TextField
+          label="Context"
+          info={{
             props: {
               content: (
                 <>
@@ -212,9 +217,11 @@ const BuildPackConfigs = (props: BuildPackConfigProps) => {
               ),
             },
           }}
-        >
-          <TextInput value={field.value} error={field.error} readonly={!props.hasPermission} {...fieldProps} />
-        </FormItem>
+          {...fieldProps}
+          value={field.value ?? ''}
+          error={field.error}
+          readOnly={!props.hasPermission}
+        />
       )}
     </Field>
   )
@@ -229,9 +236,9 @@ const CmdConfigs = (props: CmdConfigProps) => {
     <>
       <Field of={props.formStore} name="config.cmdConfig.baseImage">
         {(field, fieldProps) => (
-          <FormItem
-            title="Base Image"
-            tooltip={{
+          <TextField
+            label="Base Image"
+            info={{
               props: {
                 content: (
                   <>
@@ -241,16 +248,18 @@ const CmdConfigs = (props: CmdConfigProps) => {
                 ),
               },
             }}
-          >
-            <TextInput value={field.value} error={field.error} readonly={!props.hasPermission} {...fieldProps} />
-          </FormItem>
+            {...fieldProps}
+            value={field.value ?? ''}
+            error={field.error}
+            readOnly={!props.hasPermission}
+          />
         )}
       </Field>
       <Field of={props.formStore} name="config.cmdConfig.buildCmd">
         {(field, fieldProps) => (
-          <FormItem
-            title="Build Command"
-            tooltip={{
+          <TextField
+            label="Build Command"
+            info={{
               props: {
                 content: (
                   <>
@@ -260,9 +269,12 @@ const CmdConfigs = (props: CmdConfigProps) => {
                 ),
               },
             }}
-          >
-            <Textarea value={field.value} readonly={!props.hasPermission} {...fieldProps} />
-          </FormItem>
+            {...fieldProps}
+            multiline
+            value={field.value ?? ''}
+            error={field.error}
+            readOnly={!props.hasPermission}
+          />
         )}
       </Field>
     </>
@@ -282,10 +294,10 @@ const DockerConfigs = (props: DockerConfigProps) => {
         validate={[required('Enter Dockerfile Name')]}
       >
         {(field, fieldProps) => (
-          <FormItem
-            title="Dockerfile Name"
+          <TextField
+            label="Dockerfile Name"
             required
-            tooltip={{
+            info={{
               props: {
                 content: (
                   <>
@@ -295,16 +307,18 @@ const DockerConfigs = (props: DockerConfigProps) => {
                 ),
               },
             }}
-          >
-            <TextInput value={field.value} error={field.error} readonly={!props.hasPermission} {...fieldProps} />
-          </FormItem>
+            value={field.value ?? ''}
+            error={field.error}
+            readOnly={!props.hasPermission}
+            {...fieldProps}
+          />
         )}
       </Field>
       <Field of={props.formStore} name="config.dockerfileConfig.context">
         {(field, fieldProps) => (
-          <FormItem
-            title="Context"
-            tooltip={{
+          <TextField
+            label="Context"
+            info={{
               props: {
                 content: (
                   <>
@@ -314,9 +328,11 @@ const DockerConfigs = (props: DockerConfigProps) => {
                 ),
               },
             }}
-          >
-            <TextInput value={field.value} error={field.error} readonly={!props.hasPermission} {...fieldProps} />
-          </FormItem>
+            value={field.value ?? ''}
+            error={field.error}
+            readOnly={!props.hasPermission}
+            {...fieldProps}
+          />
         )}
       </Field>
     </>

@@ -12,7 +12,7 @@ import { Match, Show, Switch, createEffect, createSignal } from 'solid-js'
 import { createResource } from 'solid-js'
 import { Button } from '../UI/Button'
 import { MaterialSymbols } from '../UI/MaterialSymbols'
-import { TextInput } from '../UI/TextInput'
+import { TextField } from '../UI/TextField'
 import { FormItem } from './FormItem'
 import { RadioButtons, RadioItem } from './RadioButtons'
 
@@ -154,9 +154,14 @@ export const RepositoryAuthSettings = (props: Props) => {
     return (
       <Field of={props.formStore} name="url" validate={[required('Enter Repository URL'), validateUrl]}>
         {(field, fieldProps) => (
-          <FormItem title="Repository URL" required>
-            <TextInput value={field.value} error={field.error} readonly={!props.hasPermission} {...fieldProps} />
-          </FormItem>
+          <TextField
+            label="Repository URL"
+            required
+            {...fieldProps}
+            value={field.value ?? ''}
+            error={field.error}
+            readOnly={!props.hasPermission}
+          />
         )}
       </Field>
     )
@@ -169,29 +174,34 @@ export const RepositoryAuthSettings = (props: Props) => {
         <Match when={authMethod() === 'basic'}>
           <Field of={props.formStore} name="auth.basic.username" validate={required('Enter UserName')}>
             {(field, fieldProps) => (
-              <FormItem title="UserName" required>
-                <TextInput value={field.value} error={field.error} readonly={!props.hasPermission} {...fieldProps} />
-              </FormItem>
+              <TextField
+                label="UserName"
+                required
+                {...fieldProps}
+                value={field.value ?? ''}
+                error={field.error}
+                readOnly={!props.hasPermission}
+              />
             )}
           </Field>
           <Field of={props.formStore} name="auth.basic.password" validate={required('Enter Password')}>
             {(field, fieldProps) => (
-              <FormItem title="Password" required>
-                <TextInput
-                  value={field.value}
-                  type={showPassword() ? 'text' : 'password'}
-                  error={field.error}
-                  readonly={!props.hasPermission}
-                  {...fieldProps}
-                  rightIcon={
-                    <VisibilityButton onClick={() => setShowPassword((s) => !s)} type="button">
-                      <Show when={showPassword()} fallback={<MaterialSymbols>visibility_off</MaterialSymbols>}>
-                        <MaterialSymbols>visibility</MaterialSymbols>
-                      </Show>
-                    </VisibilityButton>
-                  }
-                />
-              </FormItem>
+              <TextField
+                label="Password"
+                required
+                type={showPassword() ? 'text' : 'password'}
+                {...fieldProps}
+                value={field.value ?? ''}
+                error={field.error}
+                readOnly={!props.hasPermission}
+                rightIcon={
+                  <VisibilityButton onClick={() => setShowPassword((s) => !s)} type="button">
+                    <Show when={showPassword()} fallback={<MaterialSymbols>visibility_off</MaterialSymbols>}>
+                      <MaterialSymbols>visibility</MaterialSymbols>
+                    </Show>
+                  </VisibilityButton>
+                }
+              />
             )}
           </Field>
         </Match>
@@ -202,7 +212,7 @@ export const RepositoryAuthSettings = (props: Props) => {
                 <SshKeyContainer>
                   以下のSSH公開鍵{!useTmpKey() && '(システムデフォルト)'}
                   をリポジトリに登録してください
-                  <TextInput value={publicKey()} copyValue={() => publicKey() ?? ''} readonly />
+                  <TextField value={publicKey()} copyable={true} readonly />
                   <Show when={!useTmpKey()}>
                     <RefreshButtonContainer>
                       <Button

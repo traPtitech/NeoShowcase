@@ -13,7 +13,7 @@ import Fuse from 'fuse.js'
 import { For, Show, createMemo, createResource } from 'solid-js'
 import { MaterialSymbols } from '../components/UI/MaterialSymbols'
 import { TabRound } from '../components/UI/TabRound'
-import { TextInput } from '../components/UI/TextInput'
+import { TextField } from '../components/UI/TextField'
 import { MainViewContainer } from '../components/layouts/MainView'
 import { WithNav } from '../components/layouts/WithNav'
 import { AppsNav } from '../components/templates/AppsNav'
@@ -210,10 +210,10 @@ export default () => {
           <MainViewContainer background="grey">
             <MainView>
               <SortContainer>
-                <TextInput
+                <TextField
                   placeholder="Search"
                   value={query()}
-                  onInput={(e) => setQuery(e.target.value)}
+                  onInput={(e) => setQuery(e.currentTarget.value)}
                   leftIcon={<MaterialSymbols>search</MaterialSymbols>}
                 />
                 <SortSelects>

@@ -1,13 +1,13 @@
 import { User } from '/@/api/neoshowcase/protobuf/gateway_pb'
 import { Button } from '/@/components/UI/Button'
 import { MaterialSymbols } from '/@/components/UI/MaterialSymbols'
-import { TextInput } from '/@/components/UI/TextInput'
 import UserAvatar from '/@/components/UI/UserAvater'
 import useModal from '/@/libs/useModal'
 import { colorVars, textVars } from '/@/theme'
 import { styled } from '@macaron-css/solid'
 import Fuse from 'fuse.js'
 import { Component, For, Show, createMemo, createSignal } from 'solid-js'
+import { TextField } from '../UI/TextField'
 
 const SearchUserRow = styled('div', {
   base: {
@@ -110,11 +110,11 @@ const AddOwners: Component<{
 
   return (
     <AddOwnersContainer>
-      <TextInput
+      <TextField
         placeholder="Search UserID"
         leftIcon={<MaterialSymbols>search</MaterialSymbols>}
         value={searchUserQuery()}
-        onInput={(e) => setSearchUserQuery(e.target.value)}
+        onInput={(e) => setSearchUserQuery(e.currentTarget.value)}
       />
       <UsersContainer>
         <For each={filteredUsers()}>
@@ -214,11 +214,11 @@ const OwnerList: Component<{
   return (
     <>
       <SearchUserRow>
-        <TextInput
+        <TextField
           placeholder="Search UserID"
           leftIcon={<MaterialSymbols>search</MaterialSymbols>}
           value={searchUserQuery()}
-          onInput={(e) => setSearchUserQuery(e.target.value)}
+          onInput={(e) => setSearchUserQuery(e.currentTarget.value)}
         />
         <Button
           variants="primary"

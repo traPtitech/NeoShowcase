@@ -14,7 +14,7 @@ import { For, Show, createEffect, createMemo, createReaction, onMount } from 'so
 import { on } from 'solid-js'
 import { systemInfo } from '../../libs/api'
 import { MaterialSymbols } from '../UI/MaterialSymbols'
-import { TextInput } from '../UI/TextInput'
+import { TextField } from '../UI/TextField'
 import { ToolTip } from '../UI/ToolTip'
 import FormBox from '../layouts/FormBox'
 import { CheckBox } from './CheckBox'
@@ -243,17 +243,17 @@ export const WebsiteSetting = (props: WebsiteSettingProps) => {
               <Field of={props.formStore} name={'website.host'} validate={required('Please Enter Hostname')}>
                 {(field, fieldProps) => (
                   <Show when={getValue(props.formStore, 'website.domain')?.startsWith('*')}>
-                    <TextInput
+                    <TextField
                       placeholder="example.trap.show"
-                      value={field.value}
-                      error={field.error}
                       tooltip={{
                         props: {
                           content: 'ホスト名',
                         },
                       }}
-                      readonly={!props.hasPermission}
                       {...fieldProps}
+                      value={field.value ?? ''}
+                      error={field.error}
+                      readOnly={!props.hasPermission}
                     />
                   </Show>
                 )}
@@ -298,15 +298,16 @@ export const WebsiteSetting = (props: WebsiteSettingProps) => {
                 })}
               >
                 {(field, fieldProps) => (
-                  <TextInput
-                    value={field.value?.slice(1)}
+                  <TextField
                     tooltip={{
                       props: {
                         content: '(Advanced) 指定Prefixが付いていたときのみアプリへルーティング',
                       },
                     }}
-                    readonly={!props.hasPermission}
                     {...fieldProps}
+                    value={field.value?.slice(1) ?? ''}
+                    error={field.error}
+                    readOnly={!props.hasPermission}
                   />
                 )}
               </Field>
@@ -315,18 +316,19 @@ export const WebsiteSetting = (props: WebsiteSettingProps) => {
                 <HttpSelectContainer>
                   <Field of={props.formStore} name={'website.httpPort'} type="number">
                     {(field, fieldProps) => (
-                      <TextInput
+                      <TextField
                         placeholder="80"
                         type="number"
                         min="0"
-                        value={field.value}
                         tooltip={{
                           props: {
                             content: 'アプリのHTTP Port番号',
                           },
                         }}
-                        readonly={!props.hasPermission}
                         {...fieldProps}
+                        value={field.value?.toString() ?? ''}
+                        error={field.error}
+                        readOnly={!props.hasPermission}
                       />
                     )}
                   </Field>

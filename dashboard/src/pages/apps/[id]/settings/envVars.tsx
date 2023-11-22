@@ -1,6 +1,5 @@
 import { ApplicationEnvVars } from '/@/api/neoshowcase/protobuf/gateway_pb'
 import { Button } from '/@/components/UI/Button'
-import { TextInput } from '/@/components/UI/TextInput'
 import { DataTable } from '/@/components/layouts/DataTable'
 import FormBox from '/@/components/layouts/FormBox'
 import { client, handleAPIError } from '/@/libs/api'
@@ -11,6 +10,7 @@ import { styled } from '@macaron-css/solid'
 import { SubmitHandler, createForm, custom, getValue, getValues, insert, remove, reset } from '@modular-forms/solid'
 import { Component, For, Show, createEffect, createReaction, createResource, on } from 'solid-js'
 import toast from 'solid-toast'
+import { TextField } from '../../../../components/UI/TextField'
 
 const EnvVarsContainer = styled('div', {
   base: {
@@ -122,7 +122,7 @@ const EnvVarConfig: Component<{
   }
 
   return (
-    <EnvVar.Form onSubmit={handleSubmit}>
+    <EnvVar.Form onSubmit={handleSubmit} shouldActive={false}>
       <FormBox.Container>
         <FormBox.Forms>
           <EnvVarsContainer>
@@ -133,13 +133,6 @@ const EnvVarConfig: Component<{
                 <For each={fieldArray.items}>
                   {(_, index) => (
                     <>
-                      <EnvVar.Field name={`variables.${index()}.system`} type="boolean">
-                        {/*
-                            To make a field active, it must be included in the DOM
-                            see: https://modularforms.dev/solid/guides/add-fields-to-form#active-state
-                          */}
-                        {() => <></>}
-                      </EnvVar.Field>
                       <EnvVar.Field
                         name={`variables.${index()}.key`}
                         validate={[
@@ -148,35 +141,33 @@ const EnvVarConfig: Component<{
                         ]}
                       >
                         {(field, fieldProps) => (
-                          <TextInput
-                            value={field.value}
-                            error={field.error}
-                            {...fieldProps}
-                            readOnly={getValue(envVarForm, `variables.${index()}.system`)}
-                            disabled={getValue(envVarForm, `variables.${index()}.system`)}
+                          <TextField
                             tooltip={{
                               props: {
                                 content: 'システム環境変数は変更できません',
                               },
                               disabled: !getValue(envVarForm, `variables.${index()}.system`),
                             }}
+                            {...fieldProps}
+                            value={field.value ?? ''}
+                            error={field.error}
+                            disabled={getValue(envVarForm, `variables.${index()}.system`)}
                           />
                         )}
                       </EnvVar.Field>
                       <EnvVar.Field name={`variables.${index()}.value`}>
                         {(field, fieldProps) => (
-                          <TextInput
-                            value={field.value}
-                            {...fieldProps}
-                            readOnly={getValue(envVarForm, `variables.${index()}.system`)}
-                            copyValue={() => field.value ?? ''}
-                            disabled={getValue(envVarForm, `variables.${index()}.system`)}
+                          <TextField
                             tooltip={{
                               props: {
                                 content: 'システム環境変数は変更できません',
                               },
                               disabled: !getValue(envVarForm, `variables.${index()}.system`),
                             }}
+                            {...fieldProps}
+                            value={field.value ?? ''}
+                            disabled={getValue(envVarForm, `variables.${index()}.system`)}
+                            copyable
                           />
                         )}
                       </EnvVar.Field>

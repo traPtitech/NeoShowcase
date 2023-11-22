@@ -7,7 +7,7 @@ import { For, Show } from 'solid-js'
 import { systemInfo } from '../../libs/api'
 import { Button } from '../UI/Button'
 import { MaterialSymbols } from '../UI/MaterialSymbols'
-import { TextInput } from '../UI/TextInput'
+import { TextField } from '../UI/TextField'
 import { SelectItem, SingleSelect } from './Select'
 
 const PortsContainer = styled('div', {
@@ -103,18 +103,18 @@ const PortSetting = (props: PortPublicationProps) => {
             )}
           >
             {(field, fieldProps) => (
-              <TextInput
+              <TextField
                 type="number"
                 placeholder="39000"
-                value={field.value}
                 tooltip={{
                   props: {
                     content: 'インターネット側ポート',
                   },
                 }}
-                error={field.error}
-                readonly={!props.hasPermission}
                 {...fieldProps}
+                value={field.value?.toString() ?? ''}
+                error={field.error}
+                readOnly={!props.hasPermission}
               />
             )}
           </Field>
@@ -137,17 +137,18 @@ const PortSetting = (props: PortPublicationProps) => {
           <PortItem> → </PortItem>
           <Field of={props.formStore} name={`${props.name}.applicationPort`} type="number">
             {(field, fieldProps) => (
-              <TextInput
+              <TextField
                 type="number"
                 placeholder="8080"
-                value={field.value}
                 tooltip={{
                   props: {
                     content: 'アプリ側ポート',
                   },
                 }}
-                readonly={!props.hasPermission}
                 {...fieldProps}
+                value={field.value?.toString() ?? ''}
+                error={field.error}
+                readOnly={!props.hasPermission}
               />
             )}
           </Field>

@@ -1,6 +1,5 @@
 import { Button } from '/@/components/UI/Button'
 import { MaterialSymbols } from '/@/components/UI/MaterialSymbols'
-import { TextInput } from '/@/components/UI/TextInput'
 import { MainViewContainer } from '/@/components/layouts/MainView'
 import { WithNav } from '/@/components/layouts/WithNav'
 import { FormItem } from '/@/components/templates/FormItem'
@@ -14,6 +13,7 @@ import { SubmitHandler, createForm, getValue, required, setValue } from '@modula
 import { useNavigate } from '@solidjs/router'
 import { createEffect } from 'solid-js'
 import toast from 'solid-toast'
+import { TextField } from '../../components/UI/TextField'
 
 const Container = styled('div', {
   base: {
@@ -103,9 +103,13 @@ export default () => {
                 <AuthSetting.Url />
                 <Form.Field name="name" validate={required('Enter Repository Name')}>
                   {(field, fieldProps) => (
-                    <FormItem title="Repository Name" required>
-                      <TextInput value={field.value} error={field.error} {...fieldProps} />
-                    </FormItem>
+                    <TextField
+                      label="Repository Name"
+                      required
+                      {...fieldProps}
+                      value={field.value ?? ''}
+                      error={field.error}
+                    />
                   )}
                 </Form.Field>
                 <AuthSetting.AuthMethod />
