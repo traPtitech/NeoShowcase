@@ -4,35 +4,11 @@ import { TextField as KTextField } from '@kobalte/core'
 import { style } from '@macaron-css/core'
 import { styled } from '@macaron-css/solid'
 import { Component, JSX, Show, splitProps } from 'solid-js'
+import { RequiredMark, TitleContainer, containerStyle, errorTextStyle, titleStyle } from '../templates/FormItem'
 import { MaterialSymbols } from './MaterialSymbols'
 import { ToolTip, TooltipProps } from './ToolTip'
 import { TooltipInfoIcon } from './TooltipInfoIcon'
 
-const containerStyle = style({
-  width: '100%',
-  display: 'flex',
-  flexDirection: 'column',
-  gap: '8px',
-})
-const TitleContainer = styled('div', {
-  base: {
-    width: '100%',
-    display: 'flex',
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: '2px',
-  },
-})
-const titleStyle = style({
-  color: colorVars.semantic.text.black,
-  ...textVars.text.bold,
-})
-const RequiredMark = styled('div', {
-  base: {
-    color: colorVars.semantic.accent.error,
-    ...textVars.text.bold,
-  },
-})
 const InputContainer = styled('div', {
   base: {
     width: '100%',
@@ -41,7 +17,7 @@ const InputContainer = styled('div', {
     gap: '4px',
   },
 })
-const ActionsContainer = styled('div', {
+export const ActionsContainer = styled('div', {
   base: {
     position: 'relative',
     width: '100%',
@@ -49,7 +25,7 @@ const ActionsContainer = styled('div', {
     gap: '1px',
   },
 })
-const inputStyle = style({
+export const inputStyle = style({
   width: '100%',
   height: '48px',
   padding: '10px 16px',
@@ -80,7 +56,7 @@ const inputStyle = style({
 const hasLeftIconStyle = style({
   paddingLeft: '44px',
 })
-const hasRightIconStyle = style({
+export const hasRightIconStyle = style({
   paddingRight: '44px',
 })
 const copyableInputStyle = style({
@@ -97,7 +73,6 @@ const LeftIcon = styled('div', {
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
-    pointerEvents: 'none',
   },
 })
 const RightIcon = styled('div', {
@@ -111,7 +86,6 @@ const RightIcon = styled('div', {
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
-    pointerEvents: 'none',
   },
 })
 const CopyButton = styled('button', {
@@ -166,11 +140,6 @@ const textareaStyle = style({
       outline: `2px solid ${colorVars.semantic.accent.error}`,
     },
   },
-})
-const errorTextStyle = style({
-  width: '100%',
-  color: colorVars.semantic.accent.error,
-  ...textVars.text.regular,
 })
 
 export interface Props extends JSX.InputHTMLAttributes<HTMLInputElement | HTMLTextAreaElement> {
