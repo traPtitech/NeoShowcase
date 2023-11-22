@@ -1,40 +1,34 @@
 import { User } from '/@/api/neoshowcase/protobuf/gateway_pb'
-import { clickInside as clickInsideDir, clickOutside as clickOutsideDir } from '/@/libs/useClickInout'
 import { colorVars, media, textVars } from '/@/theme'
-import { style } from '@macaron-css/core'
+import { DropdownMenu } from '@kobalte/core'
+import { keyframes, style } from '@macaron-css/core'
 import { styled } from '@macaron-css/solid'
 import { A } from '@solidjs/router'
-import { Component, Show, createSignal } from 'solid-js'
+import { Component } from 'solid-js'
 import { Button } from './Button'
 import { MaterialSymbols } from './MaterialSymbols'
 import UserAvatar from './UserAvater'
 
-// https://github.com/solidjs/solid/discussions/845
-const clickInside = clickInsideDir
-const clickOutside = clickOutsideDir
+const triggerStyle = style({
+  position: 'relative',
+  width: 'fit-content',
+  height: '44px',
+  padding: '0 8px',
+  display: 'flex',
+  alignItems: 'center',
+  gap: '8px',
+  cursor: 'pointer',
 
-const Container = styled('button', {
-  base: {
-    position: 'relative',
-    width: 'fit-content',
-    height: '44px',
-    padding: '0 8px',
-    display: 'flex',
-    alignItems: 'center',
-    gap: '8px',
-    cursor: 'pointer',
+  border: 'none',
+  borderRadius: '8px',
+  background: 'none',
 
-    border: 'none',
-    borderRadius: '8px',
-    background: 'none',
-
-    selectors: {
-      '&:hover': {
-        background: colorVars.semantic.transparent.primaryHover,
-      },
-      '&:active': {
-        background: colorVars.semantic.transparent.primarySelected,
-      },
+  selectors: {
+    '&:hover': {
+      background: colorVars.semantic.transparent.primaryHover,
+    },
+    '&:active': {
+      background: colorVars.semantic.transparent.primarySelected,
     },
   },
 })
@@ -50,14 +44,26 @@ const UserName = styled('span', {
     },
   },
 })
-const optionsContainerClass = style({
-  position: 'absolute',
-  width: 'fit-content',
-  minWidth: 'min(178px, 100%)',
-  top: '56px',
-  right: '0',
+const iconStyle = style({
+  width: '24px',
+  height: '24px',
+  transition: 'transform 0.2s',
+  selectors: {
+    '&[data-expanded]': {
+      transform: 'rotate(180deg)',
+    },
+  },
+})
+const contentShowKeyframes = keyframes({
+  from: { opacity: 0, transform: 'translateY(-8px)' },
+  to: { opacity: 1, transform: 'translateY(0)' },
+})
+const contentHideKeyframes = keyframes({
+  from: { opacity: 1, transform: 'translateY(0)' },
+  to: { opacity: 0, transform: 'translateY(-8px)' },
+})
+const contentStyle = style({
   padding: '6px',
-
   display: 'flex',
   flexDirection: 'column',
 
@@ -65,36 +71,69 @@ const optionsContainerClass = style({
   borderRadius: '6px',
   boxShadow: '0px 0px 20px 0px rgba(0, 0, 0, 0.10)',
   zIndex: 1,
+
+  transformOrigin: 'var(--kb-menu-content-transform-origin)',
+  animation: `${contentHideKeyframes} 0.2s ease-in-out`,
+  selectors: {
+    '&[data-expanded]': {
+      animation: `${contentShowKeyframes} 0.2s ease-in-out`,
+    },
+  },
 })
 
 export const UserMenuButton: Component<{
   user: User
 }> = (props) => {
-  const [showOptions, setShowOptions] = createSignal(false)
-
   return (
-    <Container onClick={() => setShowOptions((s) => !s)}>
-      <UserAvatar user={props.user} size={32} />
-      <UserName>{props.user.name}</UserName>
-      <MaterialSymbols>arrow_drop_down</MaterialSymbols>
-      <Show when={showOptions()}>
-        <div
-          use:clickInside={() => setShowOptions(true)}
-          use:clickOutside={() => setShowOptions(false)}
-          class={optionsContainerClass}
-        >
-          <A href="/settings">
-            <Button variants="text" size="medium" leftIcon={<MaterialSymbols>settings</MaterialSymbols>} full>
-              Settings
-            </Button>
-          </A>
-          <a href="https://wiki.trap.jp/services/NeoShowcase" target="_blank" rel="noopener noreferrer">
-            <Button variants="text" size="medium" leftIcon={<MaterialSymbols>help</MaterialSymbols>} full>
-              Help
-            </Button>
-          </a>
-        </div>
-      </Show>
-    </Container>
+    <DropdownMenu.Root placement="top-end">
+      <DropdownMenu.Trigger class={triggerStyle}>
+        <UserAvatar user={props.user} size={32} />
+        <UserName>{props.user.name}</UserName>
+        <DropdownMenu.Icon class={iconStyle}>
+          <MaterialSymbols>arrow_drop_down</MaterialSymbols>
+        </DropdownMenu.Icon>
+      </DropdownMenu.Trigger>
+      <DropdownMenu.Portal>
+        <DropdownMenu.Content class={contentStyle}>
+          <DropdownMenu.Item>
+            <A href="/settings">
+              <Button variants="text" size="medium" leftIcon={<MaterialSymbols>settings</MaterialSymbols>} full>
+                Settings
+              </Button>
+            </A>
+          </DropdownMenu.Item>
+          <DropdownMenu.Item>
+            <a href="https://wiki.trap.jp/services/NeoShowcase" target="_blank" rel="noopener noreferrer">
+              <Button variants="text" size="medium" leftIcon={<MaterialSymbols>help</MaterialSymbols>} full>
+                Help
+              </Button>
+            </a>
+          </DropdownMenu.Item>
+        </DropdownMenu.Content>
+      </DropdownMenu.Portal>
+    </DropdownMenu.Root>
   )
+  // <Trigger onClick={() => setShowOptions((s) => !s)}>
+  //   <UserAvatar user={props.user} size={32} />
+  //   <UserName>{props.user.name}</UserName>
+  //   <MaterialSymbols>arrow_drop_down</MaterialSymbols>
+  //   <Show when={showOptions()}>
+  //     <div
+  //       use:clickInside={() => setShowOptions(true)}
+  //       use:clickOutside={() => setShowOptions(false)}
+  //       class={optionsContainerClass}
+  //     >
+  //       <A href="/settings">
+  //         <Button variants="text" size="medium" leftIcon={<MaterialSymbols>settings</MaterialSymbols>} full>
+  //           Settings
+  //         </Button>
+  //       </A>
+  //       <a href="https://wiki.trap.jp/services/NeoShowcase" target="_blank" rel="noopener noreferrer">
+  //         <Button variants="text" size="medium" leftIcon={<MaterialSymbols>help</MaterialSymbols>} full>
+  //           Help
+  //         </Button>
+  //       </a>
+  //     </div>
+  //   </Show>
+  // </Trigger>
 }
