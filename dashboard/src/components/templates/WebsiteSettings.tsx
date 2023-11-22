@@ -15,12 +15,11 @@ import { on } from 'solid-js'
 import { systemInfo } from '../../libs/api'
 import { MaterialSymbols } from '../UI/MaterialSymbols'
 import { TextField } from '../UI/TextField'
-import { ToolTip } from '../UI/ToolTip'
 import FormBox from '../layouts/FormBox'
 import { CheckBox } from './CheckBox'
 import { FormItem } from './FormItem'
 import { List } from './List'
-import { RadioButtons } from './RadioButtons'
+import { RadioGroup, RadioOption } from './RadioGroups'
 import { SelectOption, SingleSelect } from './Select'
 
 const URLContainer = styled('div', {
@@ -84,10 +83,16 @@ const schemeOptions: SelectOption<`${boolean}`>[] = [
   { value: 'true', label: 'https' },
 ]
 
-const authenticationTypeItems: SelectOption<AuthenticationType>[] = [
-  { value: AuthenticationType.OFF, label: 'OFF' },
-  { value: AuthenticationType.SOFT, label: 'SOFT' },
-  { value: AuthenticationType.HARD, label: 'HARD' },
+const authenticationTypeOptionsMap = {
+  [`${AuthenticationType.OFF}`]: AuthenticationType.OFF,
+  [`${AuthenticationType.SOFT}`]: AuthenticationType.SOFT,
+  [`${AuthenticationType.HARD}`]: AuthenticationType.HARD,
+}
+
+const authenticationTypeOptions: RadioOption<`${AuthenticationType}`>[] = [
+  { value: `${AuthenticationType.OFF}`, label: 'OFF' },
+  { value: `${AuthenticationType.SOFT}`, label: 'SOFT' },
+  { value: `${AuthenticationType.HARD}`, label: 'HARD' },
 ]
 
 export const WebsiteSetting = (props: WebsiteSettingProps) => {
@@ -333,9 +338,9 @@ export const WebsiteSetting = (props: WebsiteSettingProps) => {
           </FormItem>
           <Field of={props.formStore} name={'website.authentication'} type="number">
             {(field, fieldProps) => (
-              <FormItem
-                title="部員認証"
-                tooltip={{
+              <RadioGroup<`${AuthenticationType}`>
+                label="部員認証"
+                info={{
                   style: 'left',
                   props: {
                     content: (
@@ -347,27 +352,21 @@ export const WebsiteSetting = (props: WebsiteSettingProps) => {
                     ),
                   },
                 }}
-              >
-                <ToolTip
-                  props={{
+                tooltip={{
+                  props: {
                     content: `${getValue(props.formStore, 'website.domain')}では部員認証が使用できません`,
-                  }}
-                  disabled={getValue(props.formStore, 'website.authAvailable') && props.hasPermission}
-                >
-                  <RadioButtons
-                    items={authenticationTypeItems}
-                    selected={field.value}
-                    setSelected={(selected) => {
-                      if (selected !== undefined) {
-                        setValue(props.formStore, 'website.authentication', selected)
-                      }
-                    }}
-                    disabled={!getValue(props.formStore, 'website.authAvailable')}
-                    readonly={!props.hasPermission}
-                    {...fieldProps}
-                  />
-                </ToolTip>
-              </FormItem>
+                  },
+                  disabled: getValue(props.formStore, 'website.authAvailable') && props.hasPermission,
+                }}
+                {...fieldProps}
+                options={authenticationTypeOptions}
+                value={`${field.value ?? AuthenticationType.OFF}`}
+                setValue={(value) => {
+                  setValue(props.formStore, 'website.authentication', authenticationTypeOptionsMap[value])
+                }}
+                disabled={!getValue(props.formStore, 'website.authAvailable')}
+                readOnly={!props.hasPermission}
+              />
             )}
           </Field>
           <FormItem title="高度な設定">

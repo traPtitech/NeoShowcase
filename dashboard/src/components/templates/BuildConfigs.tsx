@@ -6,7 +6,7 @@ import { TextField } from '../UI/TextField'
 import { ToolTip } from '../UI/ToolTip'
 import { CheckBox } from './CheckBox'
 import { FormItem } from './FormItem'
-import { RadioButtons } from './RadioButtons'
+import { RadioGroup } from './RadioGroups'
 import { SelectOption, SingleSelect } from './Select'
 
 export type BuildConfigMethod = Exclude<ApplicationConfig['buildConfig']['case'], undefined>
@@ -34,36 +34,34 @@ const RuntimeConfigs: Component<RuntimeConfigProps> = (props) => {
 
   return (
     <>
-      <FormItem
-        title="Use Database"
-        tooltip={{
-          props: {
-            content: (
-              <>
-                <div>データーベースを使用する場合はチェック</div>
-                <div>後から変更は不可能です</div>
-              </>
-            ),
-          },
-        }}
-      >
-        <ToolTip
-          disabled={!props.disableEditDB}
-          props={{
-            content: <>アプリ作成後は変更できません</>,
+      <ToolTip>
+        <RadioGroup
+          label="Use Database"
+          tooltip={{
+            props: {
+              content: <>アプリ作成後は変更できません</>,
+            },
+            disabled: !props.disableEditDB,
           }}
-        >
-          <RadioButtons
-            items={[
-              { value: true, title: 'Yes' },
-              { value: false, title: 'No' },
-            ]}
-            selected={useDB()}
-            setSelected={setUseDB}
-            disabled={props.disableEditDB}
-          />
-        </ToolTip>
-      </FormItem>
+          info={{
+            props: {
+              content: (
+                <>
+                  <div>データーベースを使用する場合はチェック</div>
+                  <div>後から変更は不可能です</div>
+                </>
+              ),
+            },
+          }}
+          options={[
+            { value: 'true', label: 'Yes' },
+            { value: 'false', label: 'No' },
+          ]}
+          value={useDB() ? 'true' : 'false'}
+          setValue={(v) => setUseDB(v === 'true')}
+          disabled={props.disableEditDB}
+        />
+      </ToolTip>
       <Show when={useDB()}>
         <FormItem title="Database">
           <ToolTip
@@ -165,9 +163,9 @@ const StaticConfigs = (props: StaticConfigProps) => {
       </Field>
       <Field of={props.formStore} name="config.staticConfig.spa" type="boolean">
         {(field, fieldProps) => (
-          <FormItem
-            title="is SPA (Single Page Application)"
-            tooltip={{
+          <RadioGroup
+            label="is SPA (Single Page Application)"
+            info={{
               props: {
                 content: (
                   <>
@@ -177,18 +175,15 @@ const StaticConfigs = (props: StaticConfigProps) => {
                 ),
               },
             }}
-          >
-            <RadioButtons
-              items={[
-                { value: true, title: 'Yes' },
-                { value: false, title: 'No' },
-              ]}
-              selected={field.value}
-              setSelected={(v) => setValue(props.formStore, field.name, v ?? false)}
-              readonly={!props.hasPermission}
-              {...fieldProps}
-            />
-          </FormItem>
+            {...fieldProps}
+            options={[
+              { value: 'true', label: 'Yes' },
+              { value: 'false', label: 'No' },
+            ]}
+            value={field.value ? 'true' : 'false'}
+            setValue={(v) => setValue(props.formStore, field.name, v === 'true')}
+            readOnly={!props.hasPermission}
+          />
         )}
       </Field>
     </>

@@ -1,4 +1,4 @@
-import { colorOverlay } from '/@/libs/colorOverlay'
+// import { colorOverlay } from '/@/libs/colorOverlay'
 import { colorVars } from '/@/theme'
 import { styled } from '@macaron-css/solid'
 import { Component, Show } from 'solid-js'
@@ -16,14 +16,14 @@ const Container = styled('div', {
       false: {
         background: colorVars.semantic.ui.background,
         border: `2px solid ${colorVars.semantic.ui.tertiary}`,
-        selectors: {
-          '&:hover': {
-            background: colorOverlay(colorVars.semantic.ui.tertiary, colorVars.primitive.blackAlpha[200]),
-          },
-          '&:active': {
-            background: colorOverlay(colorVars.semantic.ui.tertiary, colorVars.primitive.blackAlpha[300]),
-          },
-        },
+        // selectors: {
+        //   '&:hover': {
+        //     background: colorOverlay(colorVars.semantic.ui.tertiary, colorVars.primitive.blackAlpha[200]),
+        //   },
+        //   '&:active': {
+        //     background: colorOverlay(colorVars.semantic.ui.tertiary, colorVars.primitive.blackAlpha[300]),
+        //   },
+        // },
       },
       true: {
         background: colorVars.semantic.primary.main,
@@ -36,12 +36,12 @@ const Container = styled('div', {
             borderRadius: '9999px',
             background: colorVars.semantic.ui.primary,
           },
-          '&:hover': {
-            background: colorOverlay(colorVars.semantic.primary.main, colorVars.primitive.blackAlpha[200]),
-          },
-          '&:active': {
-            background: colorOverlay(colorVars.semantic.primary.main, colorVars.primitive.blackAlpha[300]),
-          },
+          // '&:hover': {
+          //   background: colorOverlay(colorVars.semantic.primary.main, colorVars.primitive.blackAlpha[200]),
+          // },
+          // '&:active': {
+          //   background: colorOverlay(colorVars.semantic.primary.main, colorVars.primitive.blackAlpha[300]),
+          // },
         },
       },
     },

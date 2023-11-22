@@ -14,7 +14,7 @@ import { Button } from '../UI/Button'
 import { MaterialSymbols } from '../UI/MaterialSymbols'
 import { TextField } from '../UI/TextField'
 import { FormItem } from './FormItem'
-import { RadioButtons, RadioItem } from './RadioButtons'
+import { RadioGroup, RadioOption } from './RadioGroups'
 
 const SshKeyContainer = styled('div', {
   base: {
@@ -62,10 +62,10 @@ const VisibilityButton = styled('button', {
   },
 })
 
-const AuthMethods: RadioItem<CreateRepositoryAuth['auth']['case']>[] = [
-  { title: 'SSH', value: 'ssh' },
-  { title: 'HTTPS', value: 'basic' },
-  { title: '認証を使用しない', value: 'none' },
+const AuthMethods: RadioOption<Exclude<CreateRepositoryAuth['auth']['case'], undefined>>[] = [
+  { label: 'SSH', value: 'ssh' },
+  { label: 'HTTPS', value: 'basic' },
+  { label: '認証を使用しない', value: 'none' },
 ]
 
 type AuthMethods = {
@@ -129,17 +129,14 @@ export const RepositoryAuthSettings = (props: Props) => {
   const AuthMethod = () => (
     <Field of={props.formStore} name="case">
       {(field, fieldProps) => (
-        <FormItem title="認証方法" error={field.error}>
-          <RadioButtons
-            items={AuthMethods}
-            selected={field.value}
-            setSelected={(v) => {
-              setValue(props.formStore, 'case', v)
-            }}
-            {...fieldProps}
-            readonly={!props.hasPermission}
-          />
-        </FormItem>
+        <RadioGroup
+          label="認証方法"
+          {...fieldProps}
+          options={AuthMethods}
+          value={field.value}
+          error={field.error}
+          readOnly={!props.hasPermission}
+        />
       )}
     </Field>
   )
