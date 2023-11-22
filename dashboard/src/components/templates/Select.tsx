@@ -1,7 +1,7 @@
 import { colorVars, textVars } from '/@/theme'
 import { Combobox as KComboBox, Select as KSelect } from '@kobalte/core'
 import { keyframes, style } from '@macaron-css/core'
-import { JSX, Show, splitProps } from 'solid-js'
+import { JSX, Show, createEffect, createMemo, createSignal, onMount, splitProps } from 'solid-js'
 import { CheckBoxIcon } from '../UI/CheckBoxIcon'
 import { MaterialSymbols } from '../UI/MaterialSymbols'
 import { ActionsContainer, hasRightIconStyle, inputStyle } from '../UI/TextField'
@@ -317,7 +317,19 @@ export const ComboBox = <T extends string | number,>(props: SingleSelectProps<T>
     ['placeholder', 'ref', 'onInput', 'onChange', 'onBlur'],
   )
 
-  const selectedOption = () => props.options.find((o) => o.value === props.value)
+  const selectedOption = createMemo<SelectOption<T>>(
+    (prev) => {
+      const find = props.options.find((o) => o.value === props.value)
+      if (find) {
+        props.setValue?.(find.value)
+        return find
+      } else {
+        props.setValue?.(prev.value)
+        return prev
+      }
+    },
+    { label: '', value: props.value ?? ('' as T) },
+  )
 
   return (
     <KComboBox.Root<SelectOption<T>>
@@ -326,7 +338,9 @@ export const ComboBox = <T extends string | number,>(props: SingleSelectProps<T>
       multiple={false}
       disallowEmptySelection
       value={selectedOption()}
-      onChange={(v) => props.setValue?.(v.value)}
+      onChange={(v) => {
+        props.setValue?.(v.value)
+      }}
       optionValue="value"
       optionTextValue="label"
       optionLabel="label"
@@ -353,7 +367,11 @@ export const ComboBox = <T extends string | number,>(props: SingleSelectProps<T>
       <ToolTip {...props.tooltip}>
         <KComboBox.Control>
           <ActionsContainer>
-            <KComboBox.Input class={[inputStyle, hasRightIconStyle].join(' ')} placeholder={props.placeholder} />
+            <KComboBox.Input
+              class={[inputStyle, hasRightIconStyle].join(' ')}
+              placeholder={props.placeholder}
+              value={selectedOption().value}
+            />
             <KComboBox.Trigger class={comboBoxTriggerStyle}>
               <KComboBox.Icon class={iconStyle}>
                 <MaterialSymbols color={colorVars.semantic.text.black}>expand_more</MaterialSymbols>
