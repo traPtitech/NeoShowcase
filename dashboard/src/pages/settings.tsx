@@ -7,11 +7,10 @@ import { Component, For, Show, createMemo, createResource } from 'solid-js'
 import toast from 'solid-toast'
 import { DeleteUserKeyRequest, UserKey } from '../api/neoshowcase/protobuf/gateway_pb'
 import { MaterialSymbols } from '../components/UI/MaterialSymbols'
-import { Textarea } from '../components/UI/Textarea'
+import { TextField } from '../components/UI/TextField'
 import { DataTable } from '../components/layouts/DataTable'
 import { MainViewContainer } from '../components/layouts/MainView'
 import { WithNav } from '../components/layouts/WithNav'
-import { FormItem } from '../components/templates/FormItem'
 import { List } from '../components/templates/List'
 import { Nav } from '../components/templates/Nav'
 import useModal from '../libs/useModal'
@@ -218,14 +217,15 @@ export default () => {
             <FormContainer>
               <Key.Field name="value" validate={[required('Enter SSH Public Key')]}>
                 {(field, fieldProps) => (
-                  <FormItem title="Key" required>
-                    <Textarea
-                      placeholder="ssh-ed25519 AAA..."
-                      value={field.value}
-                      error={field.error}
-                      {...fieldProps}
-                    />
-                  </FormItem>
+                  <TextField
+                    label="Key"
+                    required
+                    multiline
+                    placeholder="ssh-ed25519 AAA..."
+                    {...fieldProps}
+                    value={field.value}
+                    error={field.error}
+                  />
                 )}
               </Key.Field>
             </FormContainer>
