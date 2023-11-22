@@ -76,22 +76,20 @@ const RuntimeConfigs: Component<RuntimeConfigProps> = (props) => {
               <Field of={props.formStore} name="config.runtimeConfig.useMariadb" type="boolean">
                 {(field, fieldProps) => (
                   <CheckBox.Option
-                    title="MariaDB"
-                    checked={field.value ?? false}
-                    setChecked={(v) => setValue(props.formStore, 'config.runtimeConfig.useMariadb', v)}
-                    disabled={props.disableEditDB}
                     {...fieldProps}
+                    label="MariaDB"
+                    checked={field.value ?? false}
+                    disabled={props.disableEditDB}
                   />
                 )}
               </Field>
               <Field of={props.formStore} name="config.runtimeConfig.useMongodb" type="boolean">
                 {(field, fieldProps) => (
                   <CheckBox.Option
-                    title="MongoDB"
-                    checked={field.value ?? false}
-                    setChecked={(v) => setValue(props.formStore, 'config.runtimeConfig.useMongodb', v)}
-                    disabled={props.disableEditDB}
                     {...fieldProps}
+                    label="MongoDB"
+                    checked={field.value ?? false}
+                    disabled={props.disableEditDB}
                   />
                 )}
               </Field>

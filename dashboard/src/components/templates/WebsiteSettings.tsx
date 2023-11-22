@@ -374,11 +374,10 @@ export const WebsiteSetting = (props: WebsiteSettingProps) => {
             <Field of={props.formStore} name={'website.stripPrefix'} type="boolean">
               {(field, fieldProps) => (
                 <CheckBox.Option
-                  title="Strip Path Prefix"
-                  checked={field.value ?? false}
-                  setChecked={(selected) => setValue(props.formStore, 'website.stripPrefix', selected)}
-                  readonly={!props.hasPermission}
                   {...fieldProps}
+                  label="Strip Path Prefix"
+                  checked={field.value ?? false}
+                  readOnly={!props.hasPermission}
                 />
               )}
             </Field>
@@ -386,11 +385,10 @@ export const WebsiteSetting = (props: WebsiteSettingProps) => {
               <Field of={props.formStore} name={'website.h2c'} type="boolean">
                 {(field, fieldProps) => (
                   <CheckBox.Option
-                    title="Use h2c"
-                    checked={field.value ?? false}
-                    setChecked={(selected) => setValue(props.formStore, 'website.h2c', selected)}
-                    readonly={!props.hasPermission}
                     {...fieldProps}
+                    label="Use h2c"
+                    checked={field.value ?? false}
+                    readOnly={!props.hasPermission}
                   />
                 )}
               </Field>

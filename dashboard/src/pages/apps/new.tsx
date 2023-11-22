@@ -115,10 +115,10 @@ const GeneralStep: Component<{
                 }}
               >
                 <CheckBox.Option
-                  title="今すぐ起動する"
-                  checked={field.value ?? false}
-                  setChecked={(checked) => setValue(form, 'startOnCreate', checked)}
                   {...fieldProps}
+                  label="今すぐ起動する"
+                  checked={field.value ?? false}
+                  error={field.error}
                 />
               </FormItem>
             )}
