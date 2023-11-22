@@ -21,6 +21,7 @@ export const TitleContainer = styled('div', {
   },
 })
 export const titleStyle = style({
+  whiteSpace: 'nowrap',
   color: colorVars.semantic.text.black,
   ...textVars.text.bold,
 })
