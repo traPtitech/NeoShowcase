@@ -65,11 +65,10 @@ export interface Props {
 
 export const RepositoryRow: Component<Props> = (props) => {
   const navigator = useNavigate()
-  const [showNewAppButton, setShowNewAppButton] = createSignal(false)
   const canEdit = () => user()?.admin || props.repository.ownerIds.includes(user()?.id)
 
   return (
-    <Container onMouseEnter={() => setShowNewAppButton(true)} onMouseLeave={() => setShowNewAppButton(false)}>
+    <Container>
       <TitleContainer>
         {providerToIcon(repositoryURLToProvider(props.repository.url), 24)}
         <A
@@ -82,7 +81,7 @@ export const RepositoryRow: Component<Props> = (props) => {
         </A>
         <AppCount>{`${props.appCount} apps`}</AppCount>
       </TitleContainer>
-      <Show when={canEdit() && showNewAppButton()}>
+      <Show when={canEdit()}>
         <AddNewAppButtonContainer>
           <Button
             variants="border"
