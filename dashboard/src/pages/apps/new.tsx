@@ -1,34 +1,200 @@
-import { Application, ApplicationConfig, DeployType, Repository } from '/@/api/neoshowcase/protobuf/gateway_pb'
+import {
+  Application,
+  ApplicationConfig,
+  DeployType,
+  GetRepositoriesRequest_Scope,
+  Repository,
+} from '/@/api/neoshowcase/protobuf/gateway_pb'
 import { Button } from '/@/components/UI/Button'
 import { MaterialSymbols } from '/@/components/UI/MaterialSymbols'
 import { Progress } from '/@/components/UI/StepProgress'
+import { TextField } from '/@/components/UI/TextField'
 import { MainViewContainer } from '/@/components/layouts/MainView'
 import { WithNav } from '/@/components/layouts/WithNav'
 import { BuildConfigForm, BuildConfigs, configToForm, formToConfig } from '/@/components/templates/BuildConfigs'
 import { CheckBox } from '/@/components/templates/CheckBox'
 import { FormItem } from '/@/components/templates/FormItem'
 import { AppGeneralForm, GeneralConfig } from '/@/components/templates/GeneralConfig'
+import { List } from '/@/components/templates/List'
 import { Nav } from '/@/components/templates/Nav'
+import { MultiSelect } from '/@/components/templates/Select'
 import { WebsiteSetting, newWebsite } from '/@/components/templates/WebsiteSettings'
 import { client, handleAPIError, systemInfo } from '/@/libs/api'
+import { Provider, providerToIcon, repositoryURLToProvider } from '/@/libs/application'
 import { colorVars, textVars } from '/@/theme'
 import { styled } from '@macaron-css/solid'
+import { Field, Form, FormStore, SubmitHandler, createFormStore, getValues, validate } from '@modular-forms/solid'
+import { A, useNavigate, useSearchParams } from '@solidjs/router'
+import Fuse from 'fuse.js'
 import {
-  Field,
-  Form,
-  FormStore,
-  SubmitHandler,
-  createFormStore,
-  getValues,
-  setValue,
-  validate,
-} from '@modular-forms/solid'
-import { useNavigate, useSearchParams } from '@solidjs/router'
-import { For } from 'solid-js'
-import { Component, Match, Show, Switch, createResource, createSignal } from 'solid-js'
+  Component,
+  For,
+  Match,
+  Show,
+  Switch,
+  createEffect,
+  createMemo,
+  createResource,
+  createSignal,
+  onMount,
+} from 'solid-js'
 import toast from 'solid-toast'
 
-const Container = styled('div', {
+const RepositoryStepContainer = styled('div', {
+  base: {
+    width: '100%',
+    height: '100%',
+    overflowY: 'hidden',
+    padding: '24px',
+    display: 'flex',
+    flexDirection: 'column',
+    gap: '24px',
+
+    background: colorVars.semantic.ui.primary,
+    borderRadius: '8px',
+  },
+})
+const RepositoryListContainer = styled('div', {
+  base: {
+    width: '100%',
+    height: '100%',
+    overflowY: 'auto',
+    display: 'flex',
+    flexDirection: 'column',
+
+    borderBottom: `1px solid ${colorVars.semantic.ui.border}`,
+  },
+})
+const RegisterRepositoryButton = styled('div', {
+  base: {
+    width: '100%',
+    height: 'auto',
+    selectors: {
+      '&:hover': {
+        background: colorVars.semantic.transparent.primaryHover,
+      },
+    },
+  },
+})
+const SortContainer = styled('div', {
+  base: {
+    width: '100%',
+    display: 'grid',
+    gridTemplateColumns: '2fr 1fr',
+    gap: '16px',
+  },
+})
+
+const RepositoryStep: Component<{
+  setRepo: (repo: Repository) => void
+}> = (props) => {
+  const [repos] = createResource(() =>
+    client.getRepositories({
+      scope: GetRepositoriesRequest_Scope.MINE,
+    }),
+  )
+  const [query, setQuery] = createSignal('')
+  const [provider, setProvider] = createSignal<Provider[]>(['GitHub', 'GitLab', 'Gitea'])
+
+  const filteredReposByProvider = createMemo(() => {
+    const p = provider()
+    return repos()?.repositories.filter((r) => p.includes(repositoryURLToProvider(r.url)))
+  })
+  const fuse = createMemo(
+    () =>
+      new Fuse(filteredReposByProvider() ?? [], {
+        keys: ['name'],
+      }),
+  )
+  const filteredRepos = createMemo(() => {
+    if (query() === '') return filteredReposByProvider()
+    return fuse()
+      .search(query())
+      .map((r) => r.item)
+  })
+
+  return (
+    <RepositoryStepContainer>
+      <SortContainer>
+        <TextField
+          placeholder="Search"
+          value={query()}
+          onInput={(e) => setQuery(e.currentTarget.value)}
+          leftIcon={<MaterialSymbols>search</MaterialSymbols>}
+        />
+        <MultiSelect
+          options={[
+            {
+              label: 'GitHub',
+              value: 'GitHub',
+            },
+            {
+              label: 'GitLab',
+              value: 'GitLab',
+            },
+            {
+              label: 'Gitea',
+              value: 'Gitea',
+            },
+          ]}
+          placeholder="Provider"
+          value={provider()}
+          setValue={setProvider}
+        />
+      </SortContainer>
+      <List.Container>
+        <RepositoryListContainer>
+          <For
+            each={filteredRepos()}
+            fallback={
+              <List.Row>
+                <List.RowContent>
+                  <List.RowData>Repository Not Found</List.RowData>
+                </List.RowContent>
+              </List.Row>
+            }
+          >
+            {(repo) => (
+              <List.Row>
+                <List.RowContent>
+                  <List.RowData>
+                    {providerToIcon(repositoryURLToProvider(repo.url), 24)}
+                    {repo.name}
+                  </List.RowData>
+                </List.RowContent>
+                <Button
+                  variants="border"
+                  size="medium"
+                  rightIcon={<MaterialSymbols>arrow_forward</MaterialSymbols>}
+                  onClick={() => {
+                    props.setRepo(repo)
+                  }}
+                >
+                  Create App
+                </Button>
+              </List.Row>
+            )}
+          </For>
+        </RepositoryListContainer>
+
+        <A href="/repos/new?newApp=true">
+          <RegisterRepositoryButton>
+            <List.Row>
+              <List.RowContent>
+                <List.RowData>
+                  <MaterialSymbols>add</MaterialSymbols>
+                  Register Repository
+                </List.RowData>
+              </List.RowContent>
+            </List.Row>
+          </RegisterRepositoryButton>
+        </A>
+      </List.Container>
+    </RepositoryStepContainer>
+  )
+}
+
+const FormsContainer = styled('div', {
   base: {
     width: '100%',
     display: 'flex',
@@ -49,12 +215,29 @@ const FormContainer = styled('div', {
     borderRadius: '8px',
   },
 })
+const FormTitle = styled('h2', {
+  base: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: '4px',
+    overflowWrap: 'anywhere',
+    color: colorVars.semantic.text.black,
+    ...textVars.h2.medium,
+  },
+})
+const ButtonsContainer = styled('div', {
+  base: {
+    display: 'flex',
+    gap: '20px',
+  },
+})
 
 type GeneralForm = AppGeneralForm & BuildConfigForm & { startOnCreate: boolean }
 
 const GeneralStep: Component<{
   repo: Repository
-  gotoNextStep: (appId: string) => void
+  backToRepoStep: () => void
+  setAppId: (appId: string) => void
 }> = (props) => {
   const form = createFormStore<GeneralForm>({
     initialValues: {
@@ -81,7 +264,7 @@ const GeneralStep: Component<{
         startOnCreate: values.startOnCreate,
       })
       toast.success('アプリケーションを登録しました')
-      props.gotoNextStep(createdApp.id)
+      props.setAppId(createdApp.id)
     } catch (e) {
       return handleAPIError(e, 'アプリケーションの登録に失敗しました')
     }
@@ -89,8 +272,13 @@ const GeneralStep: Component<{
 
   return (
     <Form of={form} onSubmit={handleSubmit} style={{ width: '100%' }}>
-      <Container>
+      <FormsContainer>
         <FormContainer>
+          <FormTitle>
+            create application from
+            {providerToIcon(repositoryURLToProvider(props.repo.url), 24)}
+            {props.repo.name}
+          </FormTitle>
           {/* 
             modular formsでは `FormStore<T extends AppGeneralForm, undefined>`のような
             genericsが使用できないためignoreしている
@@ -124,15 +312,26 @@ const GeneralStep: Component<{
             )}
           </Field>
         </FormContainer>
-        <Button
-          size="medium"
-          variants="primary"
-          type="submit"
-          rightIcon={<MaterialSymbols>arrow_forward</MaterialSymbols>}
-        >
-          Next
-        </Button>
-      </Container>
+        <ButtonsContainer>
+          <Button
+            size="medium"
+            variants="border"
+            onClick={props.backToRepoStep}
+            leftIcon={<MaterialSymbols>arrow_back</MaterialSymbols>}
+          >
+            Back
+          </Button>
+          <Button
+            size="medium"
+            variants="primary"
+            type="submit"
+            rightIcon={<MaterialSymbols>arrow_forward</MaterialSymbols>}
+            disabled={form.invalid || form.submitting}
+          >
+            Next
+          </Button>
+        </ButtonsContainer>
+      </FormsContainer>
     </Form>
   )
 }
@@ -166,12 +365,6 @@ const AddMoreButtonContainer = styled('div', {
   base: {
     display: 'flex',
     justifyContent: 'center',
-  },
-})
-const ButtonsContainer = styled('div', {
-  base: {
-    display: 'flex',
-    gap: '20px',
   },
 })
 
@@ -217,7 +410,7 @@ const WebsiteStep: Component<{
 
   return (
     <Show when={systemInfo()}>
-      <Container>
+      <FormsContainer>
         <DomainsContainer>
           <For
             each={websiteForms()}
@@ -273,23 +466,41 @@ const WebsiteStep: Component<{
             Save Website Config
           </Button>
         </ButtonsContainer>
-      </Container>
+      </FormsContainer>
     </Show>
   )
 }
 
+const StepsContainer = styled('div', {
+  base: {
+    width: '100%',
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'center',
+    gap: '40px',
+  },
+  variants: {
+    fit: {
+      true: {
+        maxHeight: '100%',
+      },
+    },
+  },
+})
+
 const formStep = {
-  general: 0,
-  website: 1,
+  repository: 0,
+  general: 1,
+  website: 2,
 } as const
 type FormStep = typeof formStep[keyof typeof formStep]
 
 export default () => {
-  const [searchParams] = useSearchParams()
-  const [currentStep, setCurrentStep] = createSignal<FormStep>(formStep.general)
+  const [searchParams, setParam] = useSearchParams()
+  const [currentStep, setCurrentStep] = createSignal<FormStep>(formStep.repository)
   const [appId, setAppId] = createSignal<string | undefined>(undefined)
 
-  const [repo] = createResource(
+  const [repo, { mutate: mutateRepo }] = createResource(
     () => searchParams.repositoryID,
     (id) => client.getRepository({ repositoryId: id }),
   )
@@ -298,47 +509,85 @@ export default () => {
     (id) => client.getApplication({ id }),
   )
 
+  // repositoryIDが指定されている場合はビルド設定に進む
+  onMount(() => {
+    if (searchParams.repositoryID !== undefined) {
+      setCurrentStep(formStep.general)
+    }
+  })
+
+  // repositoryが指定されたらビルド設定に進む
+  createEffect(() => {
+    if (repo() !== undefined) {
+      setParam({ repositoryID: repo()?.id })
+      setCurrentStep(formStep.general)
+    }
+  })
+
+  const backToRepoStep = () => {
+    setCurrentStep(formStep.repository)
+    setParam({ repositoryID: undefined })
+    mutateRepo(undefined)
+  }
+
+  createEffect(() => {
+    if (app() !== undefined) {
+      setCurrentStep(formStep.website)
+      setParam({ appID: app()?.id })
+    }
+  })
+
   return (
     <WithNav.Container>
       <WithNav.Navs>
-        <Nav title="Create Application" backTo={`/repos/${searchParams.repositoryID}`} backToTitle="Repository" />
+        <Nav title="Create Application" />
       </WithNav.Navs>
       <WithNav.Body>
         <MainViewContainer background="grey">
-          <Container>
+          <StepsContainer fit={currentStep() === formStep.repository}>
             <Progress.Container>
-              <Progress.Step
-                title="Build Settings"
-                description="ビルド設定"
-                state={
-                  currentStep() === formStep.general
-                    ? 'current'
-                    : currentStep() > formStep.general
-                    ? 'complete'
-                    : 'incomplete'
-                }
-              />
-              <Progress.Step
-                title="Domains"
-                description="アクセスURLの設定"
-                state={
-                  currentStep() === formStep.website
-                    ? 'current'
-                    : currentStep() > formStep.website
-                    ? 'complete'
-                    : 'incomplete'
-                }
-              />
+              <For
+                each={[
+                  {
+                    title: 'Repository',
+                    description: 'リポジトリの選択',
+                    step: formStep.repository,
+                  },
+                  {
+                    title: 'Build Settings',
+                    description: 'ビルド設定',
+                    step: formStep.general,
+                  },
+                  {
+                    title: 'Domains',
+                    description: 'アクセスURLの設定',
+                    step: formStep.website,
+                  },
+                ]}
+              >
+                {(step) => (
+                  <Progress.Step
+                    title={step.title}
+                    description={step.description}
+                    state={
+                      currentStep() === step.step ? 'current' : currentStep() > step.step ? 'complete' : 'incomplete'
+                    }
+                  />
+                )}
+              </For>
             </Progress.Container>
             <Switch>
+              <Match when={currentStep() === formStep.repository}>
+                <RepositoryStep setRepo={(repo) => mutateRepo(repo)} />
+              </Match>
               <Match when={currentStep() === formStep.general}>
                 <Show when={repo()}>
                   {(nonNullRepo) => (
                     <GeneralStep
                       repo={nonNullRepo()}
-                      gotoNextStep={(appId) => {
+                      backToRepoStep={backToRepoStep}
+                      setAppId={(appId) => {
                         setAppId(appId)
-                        setCurrentStep(formStep.website)
                       }}
                     />
                   )}
@@ -348,7 +597,7 @@ export default () => {
                 <Show when={app()}>{(nonNullApp) => <WebsiteStep app={nonNullApp()} />}</Show>
               </Match>
             </Switch>
-          </Container>
+          </StepsContainer>
         </MainViewContainer>
       </WithNav.Body>
     </WithNav.Container>

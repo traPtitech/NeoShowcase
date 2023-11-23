@@ -1,3 +1,4 @@
+import { A } from '@solidjs/router'
 import { Component } from 'solid-js'
 import { Button } from '../UI/Button'
 import { MaterialSymbols } from '../UI/MaterialSymbols'
@@ -8,9 +9,11 @@ export const AppsNav: Component = () => {
     <Nav
       title="Apps"
       action={
-        <Button variants="primary" size="medium" leftIcon={<MaterialSymbols>add</MaterialSymbols>}>
-          Add New App
-        </Button>
+        <A href="/apps/new">
+          <Button variants="primary" size="medium" leftIcon={<MaterialSymbols>add</MaterialSymbols>}>
+            Add New App
+          </Button>
+        </A>
       }
     />
   )

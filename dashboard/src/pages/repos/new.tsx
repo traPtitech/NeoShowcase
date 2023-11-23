@@ -2,7 +2,6 @@ import { Button } from '/@/components/UI/Button'
 import { MaterialSymbols } from '/@/components/UI/MaterialSymbols'
 import { MainViewContainer } from '/@/components/layouts/MainView'
 import { WithNav } from '/@/components/layouts/WithNav'
-import { FormItem } from '/@/components/templates/FormItem'
 import { Nav } from '/@/components/templates/Nav'
 import { AuthForm, RepositoryAuthSettings, formToAuth } from '/@/components/templates/RepositoryAuthSettings'
 import { client, handleAPIError } from '/@/libs/api'
@@ -10,7 +9,7 @@ import { extractRepositoryNameFromURL } from '/@/libs/application'
 import { colorVars } from '/@/theme'
 import { styled } from '@macaron-css/solid'
 import { SubmitHandler, createForm, getValue, required, setValue } from '@modular-forms/solid'
-import { useNavigate } from '@solidjs/router'
+import { useNavigate, useSearchParams } from '@solidjs/router'
 import { createEffect } from 'solid-js'
 import toast from 'solid-toast'
 import { TextField } from '../../components/UI/TextField'
@@ -44,6 +43,8 @@ type Config = AuthForm & {
 
 export default () => {
   const navigate = useNavigate()
+  const [params] = useSearchParams()
+
   const [config, Form] = createForm<Config>({
     initialValues: {
       url: '',
@@ -60,7 +61,6 @@ export default () => {
       },
     },
   })
-
   const handleSubmit: SubmitHandler<Config> = async (values) => {
     try {
       const res = await client.createRepository({
@@ -71,8 +71,14 @@ export default () => {
         },
       })
       toast.success('リポジトリを登録しました')
-      // リポジトリページに遷移
-      navigate(`/repos/${res.id}`)
+
+      if (params.newApp === 'true') {
+        // アプリ作成ページのリポジトリ登録ボタンから来た場合は新規アプリ作成ページに遷移
+        navigate(`/apps/new?repositoryID=${res.id}`)
+      } else {
+        // リポジトリページに遷移
+        navigate(`/repos/${res.id}`)
+      }
     } catch (e) {
       return handleAPIError(e, 'リポジトリの登録に失敗しました')
     }

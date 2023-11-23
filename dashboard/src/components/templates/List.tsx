@@ -12,6 +12,8 @@ const Container = styled('div', {
     overflow: 'hidden',
     border: `1px solid ${colorVars.semantic.ui.border}`,
     borderRadius: '8px',
+    display: 'flex',
+    flexDirection: 'column',
   },
 })
 const Row = styled('div', {
