@@ -1,3 +1,6 @@
+import { styled } from '@macaron-css/solid'
+import Fuse from 'fuse.js'
+import { For, Show, createMemo, createResource } from 'solid-js'
 import {
   Application,
   GetApplicationsRequest_Scope,
@@ -8,9 +11,6 @@ import { MultiSelect, SelectOption, SingleSelect } from '/@/components/templates
 import { client, systemInfo, user } from '/@/libs/api'
 import { ApplicationState, Provider, applicationState, repositoryURLToProvider } from '/@/libs/application'
 import { createLocalSignal } from '/@/libs/localStore'
-import { styled } from '@macaron-css/solid'
-import Fuse from 'fuse.js'
-import { For, Show, createMemo, createResource } from 'solid-js'
 import { MaterialSymbols } from '../components/UI/MaterialSymbols'
 import { TabRound } from '../components/UI/TabRound'
 import { TextField } from '../components/UI/TextField'
@@ -85,22 +85,24 @@ interface RepoWithApp {
 
 const newestAppDate = (apps: Application[]): number =>
   Math.max(0, ...apps.map((a) => a.updatedAt?.toDate().getTime() ?? 0))
-const compareRepoWithApp = (sort: 'asc' | 'desc') => (a: RepoWithApp, b: RepoWithApp): number => {
-  // Sort by apps updated at
-  if (a.apps.length > 0 && b.apps.length > 0) {
-    if (sort === 'asc') {
-      return newestAppDate(a.apps) - newestAppDate(b.apps)
-    } else {
-      return newestAppDate(b.apps) - newestAppDate(a.apps)
+const compareRepoWithApp =
+  (sort: 'asc' | 'desc') =>
+  (a: RepoWithApp, b: RepoWithApp): number => {
+    // Sort by apps updated at
+    if (a.apps.length > 0 && b.apps.length > 0) {
+      if (sort === 'asc') {
+        return newestAppDate(a.apps) - newestAppDate(b.apps)
+      } else {
+        return newestAppDate(b.apps) - newestAppDate(a.apps)
+      }
     }
+    // Bring up repositories with 1 or more apps at top
+    if ((a.apps.length > 0 && b.apps.length === 0) || (a.apps.length === 0 && b.apps.length > 0)) {
+      return b.apps.length - a.apps.length
+    }
+    // Fallback to sort by repository id
+    return a.repo.id.localeCompare(b.repo.id)
   }
-  // Bring up repositories with 1 or more apps at top
-  if ((a.apps.length > 0 && b.apps.length === 0) || (a.apps.length === 0 && b.apps.length > 0)) {
-    return b.apps.length - a.apps.length
-  }
-  // Fallback to sort by repository id
-  return a.repo.id.localeCompare(b.repo.id)
-}
 
 const allStatuses: SelectOption<ApplicationState>[] = [
   { label: 'Idle', value: ApplicationState.Idle },

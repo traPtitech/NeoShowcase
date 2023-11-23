@@ -1,9 +1,9 @@
-import { colorOverlay } from '/@/libs/colorOverlay'
-import { colorVars, textVars } from '/@/theme'
 import { Checkbox as KCheckbox } from '@kobalte/core'
 import { style } from '@macaron-css/core'
 import { styled } from '@macaron-css/solid'
 import { Component, JSX, splitProps } from 'solid-js'
+import { colorOverlay } from '/@/libs/colorOverlay'
+import { colorVars, textVars } from '/@/theme'
 import { CheckBoxIcon } from '../UI/CheckBoxIcon'
 import { ToolTip, TooltipProps } from '../UI/ToolTip'
 

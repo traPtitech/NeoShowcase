@@ -1,11 +1,11 @@
+import { Show } from 'solid-js'
+import toast from 'solid-toast'
 import { User } from '/@/api/neoshowcase/protobuf/gateway_pb'
 import { DataTable } from '/@/components/layouts/DataTable'
 import OwnerList from '/@/components/templates/OwnerList'
 import { client, handleAPIError } from '/@/libs/api'
 import { userFromId, users } from '/@/libs/useAllUsers'
 import { useApplicationData } from '/@/routes'
-import { Show } from 'solid-js'
-import toast from 'solid-toast'
 
 export default () => {
   const { app, refetchApp, hasPermission } = useApplicationData()

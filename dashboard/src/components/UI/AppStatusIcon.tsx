@@ -1,7 +1,7 @@
-import { ApplicationState } from '/@/libs/application'
-import { colorVars } from '/@/theme'
 import { JSXElement } from 'solid-js'
 import { Dynamic } from 'solid-js/web'
+import { ApplicationState } from '/@/libs/application'
+import { colorVars } from '/@/theme'
 import { MaterialSymbols } from './MaterialSymbols'
 import { ToolTip } from './ToolTip'
 

@@ -1,5 +1,5 @@
-import { colorVars } from '/@/theme'
 import { styled } from '@macaron-css/solid'
+import { colorVars } from '/@/theme'
 
 const Container = styled('div', {
   base: {

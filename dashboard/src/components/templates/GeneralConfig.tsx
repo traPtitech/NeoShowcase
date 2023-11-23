@@ -1,8 +1,8 @@
-import { CreateApplicationRequest, Repository, UpdateApplicationRequest } from '/@/api/neoshowcase/protobuf/gateway_pb'
-import { useBranches } from '/@/libs/branchesSuggestion'
 import { PlainMessage } from '@bufbuild/protobuf'
 import { Field, FormStore, required, setValue } from '@modular-forms/solid'
 import { Component, Show } from 'solid-js'
+import { CreateApplicationRequest, Repository, UpdateApplicationRequest } from '/@/api/neoshowcase/protobuf/gateway_pb'
+import { useBranches } from '/@/libs/branchesSuggestion'
 import { TextField } from '../UI/TextField'
 import { ComboBox } from './Select'
 

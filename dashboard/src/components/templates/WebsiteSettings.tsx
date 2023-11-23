@@ -1,3 +1,8 @@
+import { PlainMessage } from '@bufbuild/protobuf'
+import { styled } from '@macaron-css/solid'
+import { Field, Form, FormStore, getValue, required, reset, setValue, toCustom } from '@modular-forms/solid'
+import { For, Show, createEffect, createMemo, createReaction, onMount } from 'solid-js'
+import { on } from 'solid-js'
 import {
   AuthenticationType,
   AvailableDomain,
@@ -7,11 +12,6 @@ import {
 import { Button } from '/@/components/UI/Button'
 import useModal from '/@/libs/useModal'
 import { colorVars, textVars } from '/@/theme'
-import { PlainMessage } from '@bufbuild/protobuf'
-import { styled } from '@macaron-css/solid'
-import { Field, Form, FormStore, getValue, required, reset, setValue, toCustom } from '@modular-forms/solid'
-import { For, Show, createEffect, createMemo, createReaction, onMount } from 'solid-js'
-import { on } from 'solid-js'
 import { systemInfo } from '../../libs/api'
 import { MaterialSymbols } from '../UI/MaterialSymbols'
 import ModalDeleteConfirm from '../UI/ModalDeleteConfirm'

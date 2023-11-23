@@ -1,3 +1,8 @@
+import { styled } from '@macaron-css/solid'
+import { SubmitHandler, createForm, getValue, required, setValue } from '@modular-forms/solid'
+import { useNavigate, useSearchParams } from '@solidjs/router'
+import { createEffect } from 'solid-js'
+import toast from 'solid-toast'
 import { Button } from '/@/components/UI/Button'
 import { MaterialSymbols } from '/@/components/UI/MaterialSymbols'
 import { MainViewContainer } from '/@/components/layouts/MainView'
@@ -7,11 +12,6 @@ import { AuthForm, RepositoryAuthSettings, formToAuth } from '/@/components/temp
 import { client, handleAPIError } from '/@/libs/api'
 import { extractRepositoryNameFromURL } from '/@/libs/application'
 import { colorVars } from '/@/theme'
-import { styled } from '@macaron-css/solid'
-import { SubmitHandler, createForm, getValue, required, setValue } from '@modular-forms/solid'
-import { useNavigate, useSearchParams } from '@solidjs/router'
-import { createEffect } from 'solid-js'
-import toast from 'solid-toast'
 import { TextField } from '../../components/UI/TextField'
 
 const Container = styled('div', {

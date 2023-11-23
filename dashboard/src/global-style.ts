@@ -1,5 +1,5 @@
-import { colorVars } from '/@/theme'
 import { globalStyle } from '@macaron-css/core'
+import { colorVars } from '/@/theme'
 import './reset.css'
 
 globalStyle('*, ::before, ::after', {

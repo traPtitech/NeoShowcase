@@ -1,3 +1,7 @@
+import { PlainMessage } from '@bufbuild/protobuf'
+import { AiFillGithub, AiFillGitlab } from 'solid-icons/ai'
+import { SiGitea } from 'solid-icons/si'
+import { JSXElement } from 'solid-js'
 import {
   Application,
   Application_ContainerState,
@@ -8,10 +12,6 @@ import {
   Website,
 } from '/@/api/neoshowcase/protobuf/gateway_pb'
 import { colorVars } from '/@/theme'
-import { PlainMessage } from '@bufbuild/protobuf'
-import { AiFillGithub, AiFillGitlab } from 'solid-icons/ai'
-import { SiGitea } from 'solid-icons/si'
-import { JSXElement } from 'solid-js'
 import { BuildConfigMethod } from '../components/templates/BuildConfigs'
 
 export const buildTypeStr: Record<Exclude<BuildConfigMethod, undefined>, string> = {

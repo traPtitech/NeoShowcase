@@ -1,3 +1,7 @@
+import { Timestamp } from '@bufbuild/protobuf'
+import { styled } from '@macaron-css/solid'
+import { A } from '@solidjs/router'
+import { For, Show, VoidComponent, createResource } from 'solid-js'
 import { MaterialSymbols } from '/@/components/UI/MaterialSymbols'
 import { ToolTip } from '/@/components/UI/ToolTip'
 import { DataTable } from '/@/components/layouts/DataTable'
@@ -10,10 +14,6 @@ import { client } from '/@/libs/api'
 import { diffHuman, durationHuman } from '/@/libs/format'
 import { useBuildData } from '/@/routes'
 import { colorVars, textVars } from '/@/theme'
-import { Timestamp } from '@bufbuild/protobuf'
-import { styled } from '@macaron-css/solid'
-import { A } from '@solidjs/router'
-import { For, Show, VoidComponent, createResource } from 'solid-js'
 
 const MainView = styled('div', {
   base: {

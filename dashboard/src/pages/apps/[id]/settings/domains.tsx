@@ -1,11 +1,11 @@
+import { createFormStore, getValues, setValue } from '@modular-forms/solid'
+import { Show, createResource } from 'solid-js'
+import toast from 'solid-toast'
 import { DeployType } from '/@/api/neoshowcase/protobuf/gateway_pb'
 import { DataTable } from '/@/components/layouts/DataTable'
 import { WebsiteSetting, WebsiteSettings, newWebsite } from '/@/components/templates/WebsiteSettings'
 import { client, handleAPIError } from '/@/libs/api'
 import { useApplicationData } from '/@/routes'
-import { createFormStore, getValues, setValue } from '@modular-forms/solid'
-import { Show, createResource } from 'solid-js'
-import toast from 'solid-toast'
 
 export default () => {
   const { app, refetchApp, hasPermission } = useApplicationData()
@@ -71,12 +71,12 @@ export default () => {
       refetchApp()
     } catch (e) {
       // `readyToChange` を `noChange` に戻す
-      websiteForms()?.forEach((form) => {
+      for (const form of websiteForms() ?? []) {
         const values = getValues(form)
         if (values.state === 'readyToChange') {
           setValue(form, 'state', 'noChange')
         }
-      })
+      }
       handleAPIError(e, 'Failed to save website settings')
     }
   }

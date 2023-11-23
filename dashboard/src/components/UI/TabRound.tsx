@@ -1,7 +1,7 @@
-import { colorVars, textVars } from '/@/theme'
 import { styled } from '@macaron-css/solid'
 import { JSX, splitProps } from 'solid-js'
 import { ParentComponent } from 'solid-js'
+import { colorVars, textVars } from '/@/theme'
 
 const Container = styled('button', {
   base: {

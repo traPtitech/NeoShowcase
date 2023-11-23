@@ -1,7 +1,7 @@
-import Routes from '/@/routes'
 import { Router } from '@solidjs/router'
 import type { Component } from 'solid-js'
 import { Toaster } from 'solid-toast'
+import Routes from '/@/routes'
 import { WithHeader } from './components/layouts/WithHeader'
 
 const App: Component = () => {

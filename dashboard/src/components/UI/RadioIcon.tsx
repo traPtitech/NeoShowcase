@@ -1,7 +1,7 @@
-// import { colorOverlay } from '/@/libs/colorOverlay'
-import { colorVars } from '/@/theme'
 import { styled } from '@macaron-css/solid'
 import { Component, Show } from 'solid-js'
+// import { colorOverlay } from '/@/libs/colorOverlay'
+import { colorVars } from '/@/theme'
 
 const Container = styled('div', {
   base: {

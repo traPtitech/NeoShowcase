@@ -1,5 +1,5 @@
-import { ApplicationConfig, RuntimeConfig, StaticConfig } from '/@/api/neoshowcase/protobuf/gateway_pb'
 import { Component, Match, Show, Switch } from 'solid-js'
+import { ApplicationConfig, RuntimeConfig, StaticConfig } from '/@/api/neoshowcase/protobuf/gateway_pb'
 import { List } from './List'
 
 const RuntimeConfigInfo: Component<{ config: RuntimeConfig }> = (props) => {

@@ -1,3 +1,20 @@
+import { styled } from '@macaron-css/solid'
+import { Field, Form, FormStore, SubmitHandler, createFormStore, getValues, validate } from '@modular-forms/solid'
+import { A, useNavigate, useSearchParams } from '@solidjs/router'
+import Fuse from 'fuse.js'
+import {
+  Component,
+  For,
+  Match,
+  Show,
+  Switch,
+  createEffect,
+  createMemo,
+  createResource,
+  createSignal,
+  onMount,
+} from 'solid-js'
+import toast from 'solid-toast'
 import {
   Application,
   ApplicationConfig,
@@ -22,23 +39,6 @@ import { WebsiteSetting, newWebsite } from '/@/components/templates/WebsiteSetti
 import { client, handleAPIError, systemInfo } from '/@/libs/api'
 import { Provider, providerToIcon, repositoryURLToProvider } from '/@/libs/application'
 import { colorVars, textVars } from '/@/theme'
-import { styled } from '@macaron-css/solid'
-import { Field, Form, FormStore, SubmitHandler, createFormStore, getValues, validate } from '@modular-forms/solid'
-import { A, useNavigate, useSearchParams } from '@solidjs/router'
-import Fuse from 'fuse.js'
-import {
-  Component,
-  For,
-  Match,
-  Show,
-  Switch,
-  createEffect,
-  createMemo,
-  createResource,
-  createSignal,
-  onMount,
-} from 'solid-js'
-import toast from 'solid-toast'
 
 const RepositoryStepContainer = styled('div', {
   base: {

@@ -1,7 +1,7 @@
-import { colorVars, textVars } from '/@/theme'
 import { Combobox as KComboBox, Select as KSelect } from '@kobalte/core'
 import { keyframes, style } from '@macaron-css/core'
 import { JSX, Show, createEffect, createMemo, createSignal, onMount, splitProps } from 'solid-js'
+import { colorVars, textVars } from '/@/theme'
 import { CheckBoxIcon } from '../UI/CheckBoxIcon'
 import { MaterialSymbols } from '../UI/MaterialSymbols'
 import { ActionsContainer, hasRightIconStyle, inputStyle } from '../UI/TextField'

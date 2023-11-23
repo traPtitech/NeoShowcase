@@ -1,5 +1,5 @@
-import { colorVars } from '/@/theme'
 import { Component } from 'solid-js'
+import { colorVars } from '/@/theme'
 import { MaterialSymbols } from './MaterialSymbols'
 import { ToolTip, TooltipProps } from './ToolTip'
 

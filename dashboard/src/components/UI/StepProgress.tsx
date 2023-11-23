@@ -1,6 +1,6 @@
-import { colorVars, textVars } from '/@/theme'
 import { styled } from '@macaron-css/solid'
 import { Component } from 'solid-js'
+import { colorVars, textVars } from '/@/theme'
 import { MaterialSymbols } from './MaterialSymbols'
 
 const Steps = styled('div', {

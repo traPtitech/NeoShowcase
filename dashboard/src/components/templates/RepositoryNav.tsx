@@ -1,6 +1,6 @@
+import { Component } from 'solid-js'
 import { Repository } from '/@/api/neoshowcase/protobuf/gateway_pb'
 import { providerToIcon, repositoryURLToProvider } from '/@/libs/application'
-import { Component } from 'solid-js'
 import { Nav } from './Nav'
 
 export interface Props {

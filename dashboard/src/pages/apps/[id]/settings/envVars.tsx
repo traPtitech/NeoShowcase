@@ -1,3 +1,9 @@
+import { PlainMessage } from '@bufbuild/protobuf'
+import { styled } from '@macaron-css/solid'
+import { SubmitHandler, createForm, custom, getValue, getValues, insert, remove, reset } from '@modular-forms/solid'
+import { each } from 'chart.js/dist/helpers/helpers.core'
+import { Component, For, Show, createEffect, createReaction, createResource, on } from 'solid-js'
+import toast from 'solid-toast'
 import { ApplicationEnvVars } from '/@/api/neoshowcase/protobuf/gateway_pb'
 import { Button } from '/@/components/UI/Button'
 import { DataTable } from '/@/components/layouts/DataTable'
@@ -5,11 +11,6 @@ import FormBox from '/@/components/layouts/FormBox'
 import { client, handleAPIError } from '/@/libs/api'
 import { useApplicationData } from '/@/routes'
 import { colorVars, textVars } from '/@/theme'
-import { PlainMessage } from '@bufbuild/protobuf'
-import { styled } from '@macaron-css/solid'
-import { SubmitHandler, createForm, custom, getValue, getValues, insert, remove, reset } from '@modular-forms/solid'
-import { Component, For, Show, createEffect, createReaction, createResource, on } from 'solid-js'
-import toast from 'solid-toast'
 import { TextField } from '../../../../components/UI/TextField'
 
 const EnvVarsContainer = styled('div', {
@@ -58,13 +59,13 @@ const EnvVarConfig: Component<{
   const stripEnvVars = () => {
     const forms = getValues(envVarForm, 'variables') as PlainMessage<ApplicationEnvVars>['variables']
     // remove all empty env vars
-    forms
-      .map((envVar, index) => (envVar.key === '' && envVar.value === '' ? index : null))
-      .filter((index): index is number => index !== null)
-      .reverse()
-      .forEach((index) => {
-        remove(envVarForm, 'variables', { at: index })
-      })
+    // 後ろから見ていって、空のものを削除する
+    for (let i = forms.length - 1; i >= 0; i--) {
+      if (forms[i].key === '' && forms[i].value === '') {
+        remove(envVarForm, 'variables', { at: i })
+      }
+    }
+
     // add empty env var
     insert(envVarForm, 'variables', {
       value: { key: '', value: '', system: false },

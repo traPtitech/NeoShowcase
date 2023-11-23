@@ -1,6 +1,6 @@
-import { colorVars, textVars } from '/@/theme'
 import { styled } from '@macaron-css/solid'
 import { ParentComponent } from 'solid-js'
+import { colorVars, textVars } from '/@/theme'
 
 const DeleteConfirm = styled('div', {
   base: {

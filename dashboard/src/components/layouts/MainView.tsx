@@ -1,5 +1,5 @@
-import { colorVars, media } from '/@/theme'
 import { styled } from '@macaron-css/solid'
+import { colorVars, media } from '/@/theme'
 
 export const MainViewContainer = styled('div', {
   base: {

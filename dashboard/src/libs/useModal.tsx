@@ -1,8 +1,8 @@
-import { colorVars, textVars } from '/@/theme'
 import { Dialog } from '@kobalte/core'
 import { keyframes, style } from '@macaron-css/core'
 import { styled } from '@macaron-css/solid'
 import { ParentComponent, Show, createSignal, mergeProps } from 'solid-js'
+import { colorVars, textVars } from '/@/theme'
 import { MaterialSymbols } from '../components/UI/MaterialSymbols'
 
 const overlayShow = keyframes({

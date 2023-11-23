@@ -1,7 +1,7 @@
-import { ApplicationConfig, RuntimeConfig, StaticConfig } from '/@/api/neoshowcase/protobuf/gateway_pb'
 import { PlainMessage } from '@bufbuild/protobuf'
 import { Field, FormStore, getValue, required, setValue, validate } from '@modular-forms/solid'
 import { Component, Match, Show, Switch, createSignal } from 'solid-js'
+import { ApplicationConfig, RuntimeConfig, StaticConfig } from '/@/api/neoshowcase/protobuf/gateway_pb'
 import { TextField } from '../UI/TextField'
 import { ToolTip } from '../UI/ToolTip'
 import { CheckBox } from './CheckBox'

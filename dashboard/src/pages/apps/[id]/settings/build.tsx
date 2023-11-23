@@ -1,12 +1,12 @@
+import { SubmitHandler, createForm, reset } from '@modular-forms/solid'
+import { Show, createEffect } from 'solid-js'
+import toast from 'solid-toast'
 import { Button } from '/@/components/UI/Button'
 import { DataTable } from '/@/components/layouts/DataTable'
 import FormBox from '/@/components/layouts/FormBox'
 import { BuildConfigForm, BuildConfigs, configToForm, formToConfig } from '/@/components/templates/BuildConfigs'
 import { client, handleAPIError } from '/@/libs/api'
 import { useApplicationData } from '/@/routes'
-import { SubmitHandler, createForm, reset } from '@modular-forms/solid'
-import { Show, createEffect } from 'solid-js'
-import toast from 'solid-toast'
 
 export default () => {
   const { app, refetchApp, hasPermission } = useApplicationData()
