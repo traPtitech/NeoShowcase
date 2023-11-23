@@ -13,7 +13,7 @@ import FormBox from '/@/components/layouts/FormBox'
 import { FormItem } from '/@/components/templates/FormItem'
 import { AppGeneralForm, GeneralConfig } from '/@/components/templates/GeneralConfig'
 import { client, handleAPIError } from '/@/libs/api'
-import { providerToIcon, repositoryURLToProvider } from '/@/libs/application'
+
 import useModal from '/@/libs/useModal'
 import { useApplicationData } from '/@/routes'
 import { colorVars, textVars } from '/@/theme'

@@ -1,7 +1,7 @@
 import { PlainMessage } from '@bufbuild/protobuf'
 import { styled } from '@macaron-css/solid'
 import { SubmitHandler, createForm, custom, getValue, getValues, insert, remove, reset } from '@modular-forms/solid'
-import { each } from 'chart.js/dist/helpers/helpers.core'
+
 import { Component, For, Show, createEffect, createReaction, createResource, on } from 'solid-js'
 import toast from 'solid-toast'
 import { ApplicationEnvVars } from '/@/api/neoshowcase/protobuf/gateway_pb'

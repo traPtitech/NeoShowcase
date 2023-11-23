@@ -1,4 +1,3 @@
-import { createMemo } from 'solid-js'
 import { tippy as tippyDir } from 'solid-tippy'
 
 // https://github.com/solidjs/solid/discussions/845

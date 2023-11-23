@@ -1,6 +1,6 @@
 import { styled } from '@macaron-css/solid'
 import { A, useNavigate } from '@solidjs/router'
-import { Component, Show, createSignal } from 'solid-js'
+import { Component, Show } from 'solid-js'
 import { Repository } from '/@/api/neoshowcase/protobuf/gateway_pb'
 import { user } from '/@/libs/api'
 import { providerToIcon, repositoryURLToProvider } from '/@/libs/application'
