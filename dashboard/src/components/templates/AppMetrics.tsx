@@ -69,6 +69,7 @@ export const AppMetrics: Component<AppMetricsProps> = (props) => {
     console.log(`max data val: ${maxDataVal()}`)
   })
   const chartOptions = (): ChartOptions => ({
+    animation: false,
     responsive: true,
     maintainAspectRatio: false,
     elements: {
