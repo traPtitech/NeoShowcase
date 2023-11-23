@@ -1,5 +1,6 @@
 import { Application, Repository, UpdateRepositoryRequest } from '/@/api/neoshowcase/protobuf/gateway_pb'
 import { Button } from '/@/components/UI/Button'
+import ModalDeleteConfirm from '/@/components/UI/ModalDeleteConfirm'
 import { DataTable } from '/@/components/layouts/DataTable'
 import FormBox from '/@/components/layouts/FormBox'
 import { FormItem } from '/@/components/templates/FormItem'
@@ -101,20 +102,6 @@ const DeleteProjectNotice = styled('div', {
     ...textVars.caption.regular,
   },
 })
-const DeleteConfirm = styled('div', {
-  base: {
-    width: '100%',
-    padding: '16px 20px',
-    display: 'flex',
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: '8px',
-    borderRadius: '8px',
-    background: colorVars.semantic.ui.secondary,
-    color: colorVars.semantic.text.black,
-    ...textVars.h3.regular,
-  },
-})
 
 const DeleteProject: Component<{
   repo: Repository
@@ -170,10 +157,10 @@ const DeleteProject: Component<{
       <Modal.Container>
         <Modal.Header>Delete Repository</Modal.Header>
         <Modal.Body>
-          <DeleteConfirm>
+          <ModalDeleteConfirm>
             {providerToIcon(repositoryURLToProvider(props.repo.url), 24)}
             {props.repo.name}
-          </DeleteConfirm>
+          </ModalDeleteConfirm>
         </Modal.Body>
         <Modal.Footer>
           <Button variants="text" size="medium" onClick={close} type="button">

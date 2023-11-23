@@ -14,6 +14,7 @@ import { For, Show, createEffect, createMemo, createReaction, onMount } from 'so
 import { on } from 'solid-js'
 import { systemInfo } from '../../libs/api'
 import { MaterialSymbols } from '../UI/MaterialSymbols'
+import ModalDeleteConfirm from '../UI/ModalDeleteConfirm'
 import { TextField } from '../UI/TextField'
 import FormBox from '../layouts/FormBox'
 import { CheckBox } from './CheckBox'
@@ -47,20 +48,6 @@ const DeleteButtonContainer = styled('div', {
   base: {
     width: 'fit-content',
     marginRight: 'auto',
-  },
-})
-const DeleteConfirm = styled('div', {
-  base: {
-    width: '100%',
-    padding: '16px 20px',
-    display: 'flex',
-    flexDirection: 'row',
-    alignItems: 'center',
-    overflowY: 'auto',
-    borderRadius: '8px',
-    background: colorVars.semantic.ui.secondary,
-    color: colorVars.semantic.text.black,
-    ...textVars.h3.regular,
   },
 })
 const AddMoreButtonContainer = styled('div', {
@@ -442,7 +429,10 @@ export const WebsiteSetting = (props: WebsiteSettingProps) => {
       <Modal.Container>
         <Modal.Header>Delete Website</Modal.Header>
         <Modal.Body>
-          <DeleteConfirm>{websiteUrl()}</DeleteConfirm>
+          <ModalDeleteConfirm>
+            <MaterialSymbols>language</MaterialSymbols>
+            {websiteUrl()}
+          </ModalDeleteConfirm>
         </Modal.Body>
         <Modal.Footer>
           <Button onclick={close} variants="text" size="medium" type="button">

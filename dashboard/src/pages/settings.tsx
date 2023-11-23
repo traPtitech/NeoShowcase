@@ -7,6 +7,7 @@ import { Component, For, Show, createMemo, createResource } from 'solid-js'
 import toast from 'solid-toast'
 import { DeleteUserKeyRequest, UserKey } from '../api/neoshowcase/protobuf/gateway_pb'
 import { MaterialSymbols } from '../components/UI/MaterialSymbols'
+import ModalDeleteConfirm from '../components/UI/ModalDeleteConfirm'
 import { TextField } from '../components/UI/TextField'
 import { DataTable } from '../components/layouts/DataTable'
 import { MainViewContainer } from '../components/layouts/MainView'
@@ -73,18 +74,6 @@ const SshKeyRowValue = styled('h3', {
     ...textVars.text.medium,
   },
 })
-const DeleteConfirm = styled('div', {
-  base: {
-    width: '100%',
-    padding: '16px 20px',
-    display: 'flex',
-    flexDirection: 'column',
-
-    overflowWrap: 'break-word',
-    borderRadius: '8px',
-    background: colorVars.semantic.ui.secondary,
-  },
-})
 const FormContainer = styled('div', {
   base: {
     width: '100%',
@@ -119,7 +108,7 @@ const SshKeyRow: Component<{ key: UserKey; refetchKeys: () => void }> = (props) 
       <Modal.Container>
         <Modal.Header>Delete SSH Key</Modal.Header>
         <Modal.Body>
-          <DeleteConfirm>{props.key.publicKey}</DeleteConfirm>
+          <ModalDeleteConfirm>{props.key.publicKey}</ModalDeleteConfirm>
         </Modal.Body>
         <Modal.Footer>
           <Button variants="text" size="medium" onClick={close}>

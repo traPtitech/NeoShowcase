@@ -1,5 +1,7 @@
 import { Application, Repository } from '/@/api/neoshowcase/protobuf/gateway_pb'
 import { Button } from '/@/components/UI/Button'
+import { MaterialSymbols } from '/@/components/UI/MaterialSymbols'
+import ModalDeleteConfirm from '/@/components/UI/ModalDeleteConfirm'
 import { DataTable } from '/@/components/layouts/DataTable'
 import FormBox from '/@/components/layouts/FormBox'
 import { FormItem } from '/@/components/templates/FormItem'
@@ -20,20 +22,6 @@ const DeleteAppNotice = styled('div', {
   base: {
     color: colorVars.semantic.text.grey,
     ...textVars.caption.regular,
-  },
-})
-const DeleteConfirm = styled('div', {
-  base: {
-    width: '100%',
-    padding: '16px 20px',
-    display: 'flex',
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: '8px',
-    borderRadius: '8px',
-    background: colorVars.semantic.ui.secondary,
-    color: colorVars.semantic.text.black,
-    ...textVars.h3.regular,
   },
 })
 const DeleteApp: Component<{
@@ -85,10 +73,10 @@ const DeleteApp: Component<{
       <Modal.Container>
         <Modal.Header>Delete Application</Modal.Header>
         <Modal.Body>
-          <DeleteConfirm>
-            {providerToIcon(repositoryURLToProvider(props.repo.url), 24)}
-            {`${props.repo.name}/${props.app.name}`}
-          </DeleteConfirm>
+          <ModalDeleteConfirm>
+            <MaterialSymbols>deployed_code</MaterialSymbols>
+            {props.app.name}
+          </ModalDeleteConfirm>
         </Modal.Body>
         <Modal.Footer>
           <Button variants="text" size="medium" onClick={close} type="button">

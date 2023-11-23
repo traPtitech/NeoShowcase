@@ -7,6 +7,7 @@ import { colorVars, textVars } from '/@/theme'
 import { styled } from '@macaron-css/solid'
 import Fuse from 'fuse.js'
 import { Component, For, Show, createMemo, createSignal } from 'solid-js'
+import ModalDeleteConfirm from '../UI/ModalDeleteConfirm'
 import { TextField } from '../UI/TextField'
 
 const SearchUserRow = styled('div', {
@@ -72,18 +73,6 @@ const UserPlaceholder = styled('div', {
     justifyContent: 'center',
     color: colorVars.semantic.text.grey,
     ...textVars.text.medium,
-  },
-})
-const DeleteConfirm = styled('div', {
-  base: {
-    width: '100%',
-    padding: '16px 20px',
-    display: 'flex',
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: '8px',
-    borderRadius: '8px',
-    background: colorVars.semantic.ui.secondary,
   },
 })
 
@@ -156,10 +145,10 @@ const OwnerRow: Component<{
       <DeleteUserModal.Container>
         <DeleteUserModal.Header>Delete Owner</DeleteUserModal.Header>
         <DeleteUserModal.Body>
-          <DeleteConfirm>
+          <ModalDeleteConfirm>
             <UserAvatar user={props.user} size={32} />
             <UserName>{props.user.name}</UserName>
-          </DeleteConfirm>
+          </ModalDeleteConfirm>
         </DeleteUserModal.Body>
         <DeleteUserModal.Footer>
           <Button variants="text" size="medium" onClick={closeDeleteUserModal} type="button">
