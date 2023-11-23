@@ -189,6 +189,7 @@ const EnvVarConfig: Component<{
             size="small"
             type="submit"
             disabled={envVarForm.invalid || !envVarForm.dirty || envVarForm.submitting}
+            loading={envVarForm.submitting}
           >
             Save
           </Button>

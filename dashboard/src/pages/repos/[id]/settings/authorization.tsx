@@ -86,6 +86,7 @@ const AuthConfig: Component<{
             size="small"
             type="submit"
             disabled={authForm.invalid || !authForm.dirty || authForm.submitting || !props.hasPermission}
+            loading={authForm.submitting}
             tooltip={{
               props: {
                 content: !props.hasPermission

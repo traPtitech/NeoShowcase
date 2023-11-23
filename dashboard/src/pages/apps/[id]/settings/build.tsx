@@ -61,6 +61,7 @@ export default () => {
                 size="small"
                 type="submit"
                 disabled={buildConfig.invalid || !buildConfig.dirty || buildConfig.submitting || !hasPermission()}
+                loading={buildConfig.submitting}
                 tooltip={{
                   props: {
                     content: !hasPermission()

@@ -327,6 +327,7 @@ const GeneralStep: Component<{
             type="submit"
             rightIcon={<MaterialSymbols>arrow_forward</MaterialSymbols>}
             disabled={form.invalid || form.submitting}
+            loading={form.submitting}
           >
             Next
           </Button>

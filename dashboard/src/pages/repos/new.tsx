@@ -127,6 +127,7 @@ export default () => {
                 rightIcon={<MaterialSymbols>arrow_forward</MaterialSymbols>}
                 type="submit"
                 disabled={config.invalid || config.submitting}
+                loading={config.submitting}
               >
                 Register
               </Button>

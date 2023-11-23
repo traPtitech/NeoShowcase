@@ -151,6 +151,7 @@ export default () => {
                 size="small"
                 type="submit"
                 disabled={generalForm.invalid || !generalForm.dirty || generalForm.submitting || !hasPermission()}
+                loading={generalForm.submitting}
                 tooltip={{
                   props: {
                     content: !hasPermission()

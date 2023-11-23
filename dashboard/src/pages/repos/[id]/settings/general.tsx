@@ -80,6 +80,7 @@ const NameConfig: Component<{
             size="small"
             type="submit"
             disabled={generalForm.invalid || !generalForm.dirty || generalForm.submitting || !props.hasPermission}
+            loading={generalForm.submitting}
             tooltip={{
               props: {
                 content: !props.hasPermission

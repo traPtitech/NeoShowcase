@@ -22,6 +22,12 @@ const Container = styled('button', {
         color: `${colorVars.semantic.text.black} !important`,
         background: `${colorVars.semantic.text.disabled} !important`,
       },
+      '&[data-loading="true"]': {
+        cursor: 'wait',
+        border: 'none !important',
+        color: `${colorVars.semantic.text.black} !important`,
+        background: `${colorVars.semantic.text.disabled} !important`,
+      },
     },
   },
   variants: {
@@ -169,6 +175,7 @@ const IconContainer = styled('div', {
 export interface Props extends JSX.ButtonHTMLAttributes<HTMLButtonElement> {
   variants: 'primary' | 'ghost' | 'border' | 'text' | 'primaryError' | 'borderError' | 'textError'
   size: 'medium' | 'small'
+  loading?: boolean
   active?: boolean
   hasCheckbox?: boolean
   full?: boolean
@@ -181,6 +188,7 @@ export const Button: ParentComponent<Props> = (props) => {
   const [addedProps, originalButtonProps] = splitProps(props, [
     'variants',
     'size',
+    'loading',
     'active',
     'hasCheckbox',
     'full',
@@ -203,6 +211,7 @@ export const Button: ParentComponent<Props> = (props) => {
           data-active={addedProps.active}
           hasCheckbox={addedProps.hasCheckbox}
           full={addedProps.full}
+          data-loading={addedProps.loading}
           {...originalButtonProps}
         >
           <Show when={addedProps.leftIcon}>

@@ -413,6 +413,7 @@ export const WebsiteSetting = (props: WebsiteSettingProps) => {
               disabled={
                 props.formStore.invalid || !props.formStore.dirty || props.formStore.submitting || !props.hasPermission
               }
+              loading={props.formStore.submitting}
               tooltip={{
                 props: {
                   content: !props.hasPermission
