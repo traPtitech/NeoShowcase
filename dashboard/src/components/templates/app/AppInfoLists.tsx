@@ -4,11 +4,11 @@ import { Application, DeployType } from '/@/api/neoshowcase/protobuf/gateway_pb'
 import { systemInfo } from '/@/libs/api'
 import { buildTypeStr } from '/@/libs/application'
 import { diffHuman } from '/@/libs/format'
-import { Button } from '../UI/Button'
-import JumpButton from '../UI/JumpButton'
-import { ToolTip } from '../UI/ToolTip'
+import { Button } from '../../UI/Button'
+import JumpButton from '../../UI/JumpButton'
+import { ToolTip } from '../../UI/ToolTip'
+import { List } from '../List'
 import AppConfigInfo from './AppConfigInfo'
-import { List } from './List'
 
 const ShowMoreButtonContainer = styled('div', {
   base: {
@@ -18,7 +18,7 @@ const ShowMoreButtonContainer = styled('div', {
   },
 })
 
-const AppInfoTable: Component<{ app: Application }> = (props) => {
+const AppInfoLists: Component<{ app: Application }> = (props) => {
   const [showDetails, setShowDetails] = createSignal(false)
   const sshAccessCommand = () => `ssh -p ${systemInfo().ssh.port} ${props.app.id}@${systemInfo().ssh.host}`
 
@@ -100,4 +100,4 @@ const AppInfoTable: Component<{ app: Application }> = (props) => {
     </>
   )
 }
-export default AppInfoTable
+export default AppInfoLists

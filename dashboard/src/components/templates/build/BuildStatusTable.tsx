@@ -7,11 +7,11 @@ import { client, handleAPIError } from '/@/libs/api'
 import { buildStatusStr, buildTypeStr } from '/@/libs/application'
 import { shortSha } from '/@/libs/format'
 import { colorVars, textVars } from '/@/theme'
-import { BuildStatusIcon } from '../UI/BuildStatusIcon'
-import { Button } from '../UI/Button'
-import JumpButton from '../UI/JumpButton'
-import { MaterialSymbols } from '../UI/MaterialSymbols'
-import { List } from './List'
+import { Button } from '../../UI/Button'
+import JumpButton from '../../UI/JumpButton'
+import { MaterialSymbols } from '../../UI/MaterialSymbols'
+import { List } from '../List'
+import { BuildStatusIcon } from './BuildStatusIcon'
 
 const BuildStatusRow = styled('div', {
   base: {

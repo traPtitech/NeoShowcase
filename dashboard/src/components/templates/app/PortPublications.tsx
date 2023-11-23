@@ -4,11 +4,11 @@ import { Field, FieldArray, FormStore, custom, getValue, insert, remove, setValu
 import { For, Show } from 'solid-js'
 import { PortPublication, PortPublicationProtocol } from '/@/api/neoshowcase/protobuf/gateway_pb'
 import { pickRandom, randIntN } from '/@/libs/random'
-import { systemInfo } from '../../libs/api'
-import { Button } from '../UI/Button'
-import { MaterialSymbols } from '../UI/MaterialSymbols'
-import { TextField } from '../UI/TextField'
-import { SelectOption, SingleSelect } from './Select'
+import { systemInfo } from '../../../libs/api'
+import { Button } from '../../UI/Button'
+import { MaterialSymbols } from '../../UI/MaterialSymbols'
+import { TextField } from '../../UI/TextField'
+import { SelectOption, SingleSelect } from '../Select'
 
 const PortsContainer = styled('div', {
   base: {

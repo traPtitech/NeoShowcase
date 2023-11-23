@@ -4,8 +4,8 @@ import { Component } from 'solid-js'
 import { Application, Repository } from '/@/api/neoshowcase/protobuf/gateway_pb'
 import { providerToIcon, repositoryURLToProvider } from '/@/libs/application'
 import { colorVars, textVars } from '/@/theme'
-import { MaterialSymbols } from '../UI/MaterialSymbols'
-import { Nav } from './Nav'
+import { MaterialSymbols } from '../../UI/MaterialSymbols'
+import { Nav } from '../Nav'
 
 const RepositoryInfoContainer = styled('div', {
   base: {

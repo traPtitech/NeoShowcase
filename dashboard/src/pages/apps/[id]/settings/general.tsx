@@ -11,8 +11,8 @@ import ModalDeleteConfirm from '/@/components/UI/ModalDeleteConfirm'
 import { DataTable } from '/@/components/layouts/DataTable'
 import FormBox from '/@/components/layouts/FormBox'
 import { FormItem } from '/@/components/templates/FormItem'
-import { AppGeneralForm, GeneralConfig } from '/@/components/templates/GeneralConfig'
 import { client, handleAPIError } from '/@/libs/api'
+import { AppGeneralConfig, AppGeneralForm } from '../../../../components/templates/app/AppGeneralConfig'
 
 import useModal from '/@/libs/useModal'
 import { useApplicationData } from '/@/routes'
@@ -138,7 +138,7 @@ export default () => {
         <General.Form onSubmit={handleSubmit}>
           <FormBox.Container>
             <FormBox.Forms>
-              <GeneralConfig repo={repo()} formStore={generalForm} editBranchId hasPermission={hasPermission()} />
+              <AppGeneralConfig repo={repo()} formStore={generalForm} editBranchId hasPermission={hasPermission()} />
             </FormBox.Forms>
             <FormBox.Actions>
               <Show when={generalForm.dirty && !generalForm.submitting}>

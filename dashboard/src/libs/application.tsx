@@ -12,7 +12,7 @@ import {
   Website,
 } from '/@/api/neoshowcase/protobuf/gateway_pb'
 import { colorVars } from '/@/theme'
-import { BuildConfigMethod } from '../components/templates/BuildConfigs'
+import { BuildConfigMethod } from '../components/templates/app/BuildConfigs'
 
 export const buildTypeStr: Record<Exclude<BuildConfigMethod, undefined>, string> = {
   runtimeBuildpack: 'Runtime (Buildpack)',

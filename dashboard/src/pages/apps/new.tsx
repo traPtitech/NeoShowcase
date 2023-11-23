@@ -28,17 +28,17 @@ import { Progress } from '/@/components/UI/StepProgress'
 import { TextField } from '/@/components/UI/TextField'
 import { MainViewContainer } from '/@/components/layouts/MainView'
 import { WithNav } from '/@/components/layouts/WithNav'
-import { BuildConfigForm, BuildConfigs, configToForm, formToConfig } from '/@/components/templates/BuildConfigs'
 import { CheckBox } from '/@/components/templates/CheckBox'
 import { FormItem } from '/@/components/templates/FormItem'
-import { AppGeneralForm, GeneralConfig } from '/@/components/templates/GeneralConfig'
 import { List } from '/@/components/templates/List'
 import { Nav } from '/@/components/templates/Nav'
 import { MultiSelect } from '/@/components/templates/Select'
-import { WebsiteSetting, newWebsite } from '/@/components/templates/WebsiteSettings'
 import { client, handleAPIError, systemInfo } from '/@/libs/api'
 import { Provider, providerToIcon, repositoryURLToProvider } from '/@/libs/application'
 import { colorVars, textVars } from '/@/theme'
+import { AppGeneralConfig, AppGeneralForm } from '../../components/templates/app/AppGeneralConfig'
+import { BuildConfigForm, BuildConfigs, configToForm, formToConfig } from '../../components/templates/app/BuildConfigs'
+import { WebsiteSetting, newWebsite } from '../../components/templates/app/WebsiteSettings'
 
 const RepositoryStepContainer = styled('div', {
   base: {
@@ -284,7 +284,7 @@ const GeneralStep: Component<{
             genericsが使用できないためignoreしている
             */}
           {/* @ts-ignore */}
-          <GeneralConfig repo={props.repo} formStore={form} editBranchId={false} hasPermission />
+          <AppGeneralConfig repo={props.repo} formStore={form} editBranchId={false} hasPermission />
           {/* @ts-ignore */}
           <BuildConfigs formStore={form} disableEditDB={false} hasPermission />
           <Field of={form} name="startOnCreate" type="boolean">

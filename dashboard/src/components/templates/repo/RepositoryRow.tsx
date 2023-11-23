@@ -6,7 +6,7 @@ import { user } from '/@/libs/api'
 import { providerToIcon, repositoryURLToProvider } from '/@/libs/application'
 import { colorOverlay } from '/@/libs/colorOverlay'
 import { colorVars, textVars } from '/@/theme'
-import { Button } from '../UI/Button'
+import { Button } from '../../UI/Button'
 
 const Container = styled('div', {
   base: {

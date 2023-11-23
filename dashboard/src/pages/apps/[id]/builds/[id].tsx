@@ -6,14 +6,14 @@ import { MaterialSymbols } from '/@/components/UI/MaterialSymbols'
 import { ToolTip } from '/@/components/UI/ToolTip'
 import { DataTable } from '/@/components/layouts/DataTable'
 import { MainViewContainer } from '/@/components/layouts/MainView'
-import { ArtifactRow } from '/@/components/templates/ArtifactRow'
-import { BuildLog } from '/@/components/templates/BuildLog'
-import BuildStatusTable from '/@/components/templates/BuildStatusTable'
 import { Bordered, List } from '/@/components/templates/List'
 import { client } from '/@/libs/api'
 import { diffHuman, durationHuman } from '/@/libs/format'
 import { useBuildData } from '/@/routes'
 import { colorVars, textVars } from '/@/theme'
+import { ArtifactRow } from '../../../../components/templates/build/ArtifactRow'
+import { BuildLog } from '../../../../components/templates/build/BuildLog'
+import BuildStatusTable from '../../../../components/templates/build/BuildStatusTable'
 
 const MainView = styled('div', {
   base: {

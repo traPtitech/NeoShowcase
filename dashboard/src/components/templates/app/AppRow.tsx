@@ -5,9 +5,9 @@ import { Application } from '/@/api/neoshowcase/protobuf/gateway_pb'
 import { applicationState, getWebsiteURL } from '/@/libs/application'
 import { diffHuman, shortSha } from '/@/libs/format'
 import { colorVars, textVars } from '/@/theme'
-import { AppStatusIcon } from '../UI/AppStatusIcon'
-import Badge from '../UI/Badge'
-import { ToolTip } from '../UI/ToolTip'
+import Badge from '../../UI/Badge'
+import { ToolTip } from '../../UI/ToolTip'
+import { AppStatusIcon } from './AppStatusIcon'
 
 const Container = styled('div', {
   base: {

@@ -3,8 +3,8 @@ import { Show } from 'solid-js'
 import { MaterialSymbols } from '/@/components/UI/MaterialSymbols'
 import { TabRound } from '/@/components/UI/TabRound'
 import { WithNav } from '/@/components/layouts/WithNav'
-import { RepositoryNav } from '/@/components/templates/RepositoryNav'
 import { useRepositoryData } from '/@/routes'
+import { RepositoryNav } from '../../components/templates/repo/RepositoryNav'
 
 export default () => {
   const navigate = useNavigate()

@@ -3,8 +3,8 @@ import { Dynamic } from 'solid-js/web'
 import { BuildStatus } from '/@/api/neoshowcase/protobuf/gateway_pb'
 import { buildStatusStr } from '/@/libs/application'
 import { colorVars } from '/@/theme'
-import { MaterialSymbols } from './MaterialSymbols'
-import { ToolTip } from './ToolTip'
+import { MaterialSymbols } from '../../UI/MaterialSymbols'
+import { ToolTip } from '../../UI/ToolTip'
 
 interface IconProps {
   size: number

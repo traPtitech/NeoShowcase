@@ -5,15 +5,15 @@ import { Application, Build, DeployType, Repository } from '/@/api/neoshowcase/p
 import { Button } from '/@/components/UI/Button'
 import { MaterialSymbols } from '/@/components/UI/MaterialSymbols'
 import { DataTable } from '/@/components/layouts/DataTable'
-import AppDeployInfoTable from '/@/components/templates/AppDeployInfoTable'
-import AppInfoTable from '/@/components/templates/AppInfoTable'
-import { AppMetrics } from '/@/components/templates/AppMetrics'
-import BuildStatusTable from '/@/components/templates/BuildStatusTable'
-import { ContainerLog } from '/@/components/templates/ContainerLog'
 import { List } from '/@/components/templates/List'
 import { availableMetrics, client, handleAPIError, systemInfo } from '/@/libs/api'
 import { useApplicationData } from '/@/routes'
 import { colorVars, media, textVars } from '/@/theme'
+import AppDeployInfo from '../../../components/templates/app/AppDeployInfo'
+import AppInfoLists from '../../../components/templates/app/AppInfoLists'
+import { AppMetrics } from '../../../components/templates/app/AppMetrics'
+import { ContainerLog } from '../../../components/templates/app/ContainerLog'
+import BuildStatusTable from '../../../components/templates/build/BuildStatusTable'
 
 const Container = styled('div', {
   base: {
@@ -245,7 +245,7 @@ export default () => {
           <MainView>
             <DataTable.Container>
               <DataTable.Title>Deployment</DataTable.Title>
-              <AppDeployInfoTable
+              <AppDeployInfo
                 app={app()}
                 refetchApp={refetchApp}
                 repo={repo()}
@@ -274,7 +274,7 @@ export default () => {
             </DataTable.Container>
             <DataTable.Container>
               <DataTable.Title>Information</DataTable.Title>
-              <AppInfoTable app={app()} />
+              <AppInfoLists app={app()} />
             </DataTable.Container>
             <Show when={app()?.deployType === DeployType.RUNTIME && hasPermission()}>
               <DataTable.Container>

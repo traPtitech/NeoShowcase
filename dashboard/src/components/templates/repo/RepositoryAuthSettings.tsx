@@ -10,11 +10,11 @@ import {
 } from '/@/api/neoshowcase/protobuf/gateway_pb'
 import { client, systemInfo } from '/@/libs/api'
 import { colorVars, textVars } from '/@/theme'
-import { Button } from '../UI/Button'
-import { MaterialSymbols } from '../UI/MaterialSymbols'
-import { TextField } from '../UI/TextField'
-import { FormItem } from './FormItem'
-import { RadioGroup, RadioOption } from './RadioGroups'
+import { Button } from '../../UI/Button'
+import { MaterialSymbols } from '../../UI/MaterialSymbols'
+import { TextField } from '../../UI/TextField'
+import { FormItem } from '../FormItem'
+import { RadioGroup, RadioOption } from '../RadioGroups'
 
 const SshKeyContainer = styled('div', {
   base: {

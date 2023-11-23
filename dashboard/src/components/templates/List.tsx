@@ -2,9 +2,9 @@ import { styled } from '@macaron-css/solid'
 import { Component, For, Show, createSignal } from 'solid-js'
 import { Application, Build, Repository } from '/@/api/neoshowcase/protobuf/gateway_pb'
 import { colorVars, textVars } from '/@/theme'
-import { AppRow } from './AppRow'
-import { BuildRow } from './BuildRow'
-import { RepositoryRow } from './RepositoryRow'
+import { AppRow } from './app/AppRow'
+import { BuildRow } from './build/BuildRow'
+import { RepositoryRow } from './repo/RepositoryRow'
 
 const Container = styled('div', {
   base: {

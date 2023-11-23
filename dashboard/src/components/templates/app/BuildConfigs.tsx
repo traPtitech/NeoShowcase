@@ -2,12 +2,12 @@ import { PlainMessage } from '@bufbuild/protobuf'
 import { Field, FormStore, getValue, required, setValue } from '@modular-forms/solid'
 import { Component, Match, Show, Switch, createSignal } from 'solid-js'
 import { ApplicationConfig, RuntimeConfig, StaticConfig } from '/@/api/neoshowcase/protobuf/gateway_pb'
-import { TextField } from '../UI/TextField'
-import { ToolTip } from '../UI/ToolTip'
-import { CheckBox } from './CheckBox'
-import { FormItem } from './FormItem'
-import { RadioGroup } from './RadioGroups'
-import { SelectOption, SingleSelect } from './Select'
+import { TextField } from '../../UI/TextField'
+import { ToolTip } from '../../UI/ToolTip'
+import { CheckBox } from '../CheckBox'
+import { FormItem } from '../FormItem'
+import { RadioGroup } from '../RadioGroups'
+import { SelectOption, SingleSelect } from '../Select'
 
 export type BuildConfigMethod = Exclude<ApplicationConfig['buildConfig']['case'], undefined>
 const buildConfigItems: SelectOption<BuildConfigMethod>[] = [

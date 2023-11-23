@@ -4,9 +4,9 @@ import { Component, Show } from 'solid-js'
 import { Build } from '/@/api/neoshowcase/protobuf/gateway_pb'
 import { diffHuman, shortSha } from '/@/libs/format'
 import { colorVars, textVars } from '/@/theme'
-import Badge from '../UI/Badge'
-import { BuildStatusIcon } from '../UI/BuildStatusIcon'
-import { ToolTip } from '../UI/ToolTip'
+import Badge from '../../UI/Badge'
+import { ToolTip } from '../../UI/ToolTip'
+import { BuildStatusIcon } from './BuildStatusIcon'
 
 const Container = styled('div', {
   base: {

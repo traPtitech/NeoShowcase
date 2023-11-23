@@ -3,8 +3,8 @@ import { Field, FormStore, required, setValue } from '@modular-forms/solid'
 import { Component, Show } from 'solid-js'
 import { CreateApplicationRequest, Repository, UpdateApplicationRequest } from '/@/api/neoshowcase/protobuf/gateway_pb'
 import { useBranches } from '/@/libs/branchesSuggestion'
-import { TextField } from '../UI/TextField'
-import { ComboBox } from './Select'
+import { TextField } from '../../UI/TextField'
+import { ComboBox } from '../Select'
 
 export type AppGeneralForm = Pick<
   PlainMessage<CreateApplicationRequest> | PlainMessage<UpdateApplicationRequest>,
@@ -18,7 +18,7 @@ interface GeneralConfigProps {
   hasPermission: boolean
 }
 
-export const GeneralConfig: Component<GeneralConfigProps> = (props) => {
+export const AppGeneralConfig: Component<GeneralConfigProps> = (props) => {
   const branches = useBranches(() => props.repo.id)
 
   return (

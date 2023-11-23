@@ -8,12 +8,12 @@ import { titleCase } from '/@/libs/casing'
 import { colorOverlay } from '/@/libs/colorOverlay'
 import { shortSha } from '/@/libs/format'
 import { colorVars, media, textVars } from '/@/theme'
-import { AppStatusIcon } from '../UI/AppStatusIcon'
-import Badge from '../UI/Badge'
-import { Button } from '../UI/Button'
-import JumpButton from '../UI/JumpButton'
-import { URLText } from '../UI/URLText'
-import { List } from './List'
+import Badge from '../../UI/Badge'
+import { Button } from '../../UI/Button'
+import JumpButton from '../../UI/JumpButton'
+import { URLText } from '../../UI/URLText'
+import { List } from '../List'
+import { AppStatusIcon } from './AppStatusIcon'
 
 const DeploymentContainer = styled('div', {
   base: {
@@ -135,7 +135,7 @@ const DeployInfoContainer = styled('div', {
     },
   },
 })
-const AppDeployInfoTable: Component<{
+const AppDeployInfo: Component<{
   app: Application
   refetchApp: () => void
   repo: Repository
@@ -268,4 +268,4 @@ const AppDeployInfoTable: Component<{
   )
 }
 
-export default AppDeployInfoTable
+export default AppDeployInfo
