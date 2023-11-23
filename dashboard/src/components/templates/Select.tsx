@@ -328,7 +328,7 @@ export const ComboBox = <T extends string | number,>(props: SingleSelectProps<T>
         return prev
       }
     },
-    { label: '', value: props.value ?? ('' as T) },
+    { label: props.value?.toString() ?? '', value: props.value ?? ('' as T) },
   )
 
   return (
@@ -367,11 +367,7 @@ export const ComboBox = <T extends string | number,>(props: SingleSelectProps<T>
       <ToolTip {...props.tooltip}>
         <KComboBox.Control>
           <ActionsContainer>
-            <KComboBox.Input
-              class={[inputStyle, hasRightIconStyle].join(' ')}
-              placeholder={props.placeholder}
-              value={selectedOption().value}
-            />
+            <KComboBox.Input class={[inputStyle, hasRightIconStyle].join(' ')} placeholder={props.placeholder} />
             <KComboBox.Trigger class={comboBoxTriggerStyle}>
               <KComboBox.Icon class={iconStyle}>
                 <MaterialSymbols color={colorVars.semantic.text.black}>expand_more</MaterialSymbols>
