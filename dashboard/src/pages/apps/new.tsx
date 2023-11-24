@@ -614,7 +614,6 @@ export default () => {
   createEffect(() => {
     if (repo() !== undefined) {
       setParam({ repositoryID: repo()?.id })
-      console.log(repo())
       GoToGeneralStep()
     }
   })
