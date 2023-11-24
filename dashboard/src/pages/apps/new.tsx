@@ -19,6 +19,7 @@ import {
   Application,
   ApplicationConfig,
   DeployType,
+  GetApplicationsRequest_Scope,
   GetRepositoriesRequest_Scope,
   Repository,
 } from '/@/api/neoshowcase/protobuf/gateway_pb'
@@ -65,6 +66,72 @@ const RepositoryListContainer = styled('div', {
     borderBottom: `1px solid ${colorVars.semantic.ui.border}`,
   },
 })
+const RepositoryRow = styled('div', {
+  base: {
+    width: '100%',
+    padding: '16px',
+    display: 'grid',
+    gridTemplateColumns: '24px auto 1fr auto',
+    gridTemplateRows: 'auto auto',
+    gridTemplateAreas: `
+      "icon name count button"
+      ". url url button"`,
+    gap: '8px',
+
+    selectors: {
+      '&:not(:last-child)': {
+        borderBottom: `1px solid ${colorVars.semantic.ui.border}`,
+      },
+    },
+  },
+})
+const RepositoryIcon = styled('div', {
+  base: {
+    gridArea: 'icon',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    flexShrink: 0,
+  },
+})
+const RepositoryName = styled('div', {
+  base: {
+    width: '100%',
+    gridArea: 'name',
+    overflow: 'hidden',
+    textOverflow: 'ellipsis',
+    whiteSpace: 'nowrap',
+    color: colorVars.semantic.text.black,
+    ...textVars.h4.bold,
+  },
+})
+const AppCount = styled('div', {
+  base: {
+    display: 'flex',
+    alignItems: 'center',
+    whiteSpace: 'nowrap',
+    color: colorVars.semantic.text.grey,
+    ...textVars.caption.regular,
+  },
+})
+const RepositoryUrl = styled('div', {
+  base: {
+    gridArea: 'url',
+    overflow: 'hidden',
+    textOverflow: 'ellipsis',
+    whiteSpace: 'nowrap',
+    color: colorVars.semantic.text.grey,
+    ...textVars.caption.regular,
+  },
+})
+const CreateButtonContainer = styled('div', {
+  base: {
+    gridArea: 'button',
+    display: 'flex',
+    justifyContent: 'flex-end',
+    alignItems: 'center',
+  },
+})
 const RegisterRepositoryButton = styled('div', {
   base: {
     width: '100%',
@@ -93,6 +160,8 @@ const RepositoryStep: Component<{
       scope: GetRepositoriesRequest_Scope.MINE,
     }),
   )
+  const [apps] = createResource(() => client.getApplications({ scope: GetApplicationsRequest_Scope.ALL }))
+
   const [query, setQuery] = createSignal('')
   const [provider, setProvider] = createSignal<Provider[]>(['GitHub', 'GitLab', 'Gitea'])
 
@@ -100,14 +169,33 @@ const RepositoryStep: Component<{
     const p = provider()
     return repos()?.repositories.filter((r) => p.includes(repositoryURLToProvider(r.url)))
   })
+  const repoWithApps = createMemo(() => {
+    const appsMap = apps()?.applications.reduce((acc, app) => {
+      if (!acc[app.repositoryId]) acc[app.repositoryId] = 0
+      acc[app.repositoryId]++
+      return acc
+    }, {} as { [id: Repository['id']]: number })
+
+    return (
+      filteredReposByProvider()?.map(
+        (
+          repo,
+        ): {
+          repo: Repository
+          appCount: number
+        } => ({ repo, appCount: appsMap?.[repo.id] ?? 0 }),
+      ) ?? []
+    )
+  })
+
   const fuse = createMemo(
     () =>
-      new Fuse(filteredReposByProvider() ?? [], {
-        keys: ['name'],
+      new Fuse(repoWithApps(), {
+        keys: ['repo.name', 'repo.htmlUrl'],
       }),
   )
   const filteredRepos = createMemo(() => {
-    if (query() === '') return filteredReposByProvider()
+    if (query() === '') return repoWithApps()
     return fuse()
       .search(query())
       .map((r) => r.item)
@@ -155,28 +243,27 @@ const RepositoryStep: Component<{
             }
           >
             {(repo) => (
-              <List.Row>
-                <List.RowContent>
-                  <List.RowData>
-                    {providerToIcon(repositoryURLToProvider(repo.url), 24)}
-                    {repo.name}
-                  </List.RowData>
-                </List.RowContent>
-                <Button
-                  variants="border"
-                  size="medium"
-                  rightIcon={<MaterialSymbols>arrow_forward</MaterialSymbols>}
-                  onClick={() => {
-                    props.setRepo(repo)
-                  }}
-                >
-                  Create App
-                </Button>
-              </List.Row>
+              <RepositoryRow>
+                <RepositoryIcon>{providerToIcon(repositoryURLToProvider(repo.repo.url), 24)}</RepositoryIcon>
+                <RepositoryName>{repo.repo.name}</RepositoryName>
+                <AppCount>{repo.appCount > 0 && `${repo.appCount} apps`}</AppCount>
+                <RepositoryUrl>{repo.repo.htmlUrl}</RepositoryUrl>
+                <CreateButtonContainer>
+                  <Button
+                    variants="border"
+                    size="medium"
+                    rightIcon={<MaterialSymbols>arrow_forward</MaterialSymbols>}
+                    onClick={() => {
+                      props.setRepo(repo.repo)
+                    }}
+                  >
+                    Create App
+                  </Button>
+                </CreateButtonContainer>
+              </RepositoryRow>
             )}
           </For>
         </RepositoryListContainer>
-
         <A href="/repos/new?newApp=true">
           <RegisterRepositoryButton>
             <List.Row>
