@@ -1,11 +1,12 @@
 import { styled } from '@macaron-css/solid'
-import { Field, Form, FormStore, SubmitHandler, createFormStore, getValues, validate } from '@modular-forms/solid'
+import { Field, Form, FormStore, createFormStore, getValue, getValues, setValue, validate } from '@modular-forms/solid'
 import { A, useNavigate, useSearchParams } from '@solidjs/router'
 import Fuse from 'fuse.js'
 import {
   Component,
   For,
   Match,
+  Setter,
   Show,
   Switch,
   createEffect,
@@ -14,11 +15,12 @@ import {
   createSignal,
   onMount,
 } from 'solid-js'
+
+import { Accessor } from 'solid-js'
 import toast from 'solid-toast'
 import {
   Application,
   ApplicationConfig,
-  DeployType,
   GetApplicationsRequest_Scope,
   GetRepositoriesRequest_Scope,
   Repository,
@@ -339,42 +341,12 @@ type GeneralForm = AppGeneralForm & BuildConfigForm & { startOnCreate: boolean }
 
 const GeneralStep: Component<{
   repo: Repository
+  createAppForm: FormStore<GeneralForm, undefined>
   backToRepoStep: () => void
-  setAppId: (appId: string) => void
+  proceedToWebsiteStep: () => void
 }> = (props) => {
-  const form = createFormStore<GeneralForm>({
-    initialValues: {
-      name: '',
-      refName: '',
-      repositoryId: props.repo.id,
-      startOnCreate: false,
-      ...configToForm(new ApplicationConfig()),
-    },
-  })
-
-  const handleSubmit: SubmitHandler<GeneralForm> = async (values) => {
-    try {
-      const createdApp = await client.createApplication({
-        name: values.name,
-        refName: values.refName,
-        repositoryId: values.repositoryId,
-        config: {
-          buildConfig: formToConfig({
-            case: values.case,
-            config: values.config,
-          }),
-        },
-        startOnCreate: values.startOnCreate,
-      })
-      toast.success('アプリケーションを登録しました')
-      props.setAppId(createdApp.id)
-    } catch (e) {
-      return handleAPIError(e, 'アプリケーションの登録に失敗しました')
-    }
-  }
-
   return (
-    <Form of={form} onSubmit={handleSubmit} style={{ width: '100%' }}>
+    <Form of={props.createAppForm} onSubmit={props.proceedToWebsiteStep} style={{ width: '100%' }}>
       <FormsContainer>
         <FormContainer>
           <FormTitle>
@@ -387,10 +359,10 @@ const GeneralStep: Component<{
             genericsが使用できないためignoreしている
             */}
           {/* @ts-ignore */}
-          <AppGeneralConfig repo={props.repo} formStore={form} editBranchId={false} hasPermission />
+          <AppGeneralConfig repo={props.repo} formStore={props.createAppForm} editBranchId={false} hasPermission />
           {/* @ts-ignore */}
-          <BuildConfigs formStore={form} disableEditDB={false} hasPermission />
-          <Field of={form} name="startOnCreate" type="boolean">
+          <BuildConfigs formStore={props.createAppForm} disableEditDB={false} hasPermission />
+          <Field of={props.createAppForm} name="startOnCreate" type="boolean">
             {(field, fieldProps) => (
               <FormItem
                 title="Start Immediately"
@@ -429,8 +401,8 @@ const GeneralStep: Component<{
             variants="primary"
             type="submit"
             rightIcon={<MaterialSymbols>arrow_forward</MaterialSymbols>}
-            disabled={form.invalid || form.submitting}
-            loading={form.submitting}
+            disabled={props.createAppForm.invalid || props.createAppForm.submitting}
+            loading={props.createAppForm.submitting}
           >
             Next
           </Button>
@@ -473,15 +445,13 @@ const AddMoreButtonContainer = styled('div', {
 })
 
 const WebsiteStep: Component<{
-  app: Application
+  isRuntimeApp: boolean
+  websiteForms: Accessor<FormStore<WebsiteSetting, undefined>[]>
+  setWebsiteForms: Setter<FormStore<WebsiteSetting, undefined>[]>
+  backToGeneralStep: () => void
+  submit: () => Promise<void>
+  skipWebsiteConfig: () => Promise<void>
 }> = (props) => {
-  const [websiteForms, setWebsiteForms] = createSignal<FormStore<WebsiteSetting, undefined>[]>([])
-
-  const navigate = useNavigate()
-  const skipWebsiteConfig = () => {
-    navigate(`/apps/${props.app.id}`)
-  }
-
   const addWebsiteForm = () => {
     const form = createFormStore<WebsiteSetting>({
       initialValues: {
@@ -489,27 +459,13 @@ const WebsiteStep: Component<{
         website: newWebsite(),
       },
     })
-    setWebsiteForms((prev) => prev.concat([form]))
+    props.setWebsiteForms((prev) => prev.concat([form]))
   }
 
-  const saveWebsiteConfig = async () => {
-    try {
-      const isValid = (await Promise.all(websiteForms().map((form) => validate(form)))).every((v) => v)
-      if (!isValid) return
-      const websitesToSave = websiteForms()
-        .map((form) => getValues(form).website)
-        .filter((w): w is Exclude<typeof w, undefined> => w !== undefined)
-      await client.updateApplication({
-        id: props.app.id,
-        websites: {
-          websites: websitesToSave,
-        },
-      })
-      toast.success('ウェブサイト設定を保存しました')
-      navigate(`/apps/${props.app.id}`)
-    } catch (e) {
-      handleAPIError(e, 'Failed to save website settings')
-    }
+  const handleSubmit = async () => {
+    const isValid = (await Promise.all(props.websiteForms().map((form) => validate(form)))).every((v) => v)
+    if (!isValid) return
+    await props.submit()
   }
 
   return (
@@ -517,7 +473,7 @@ const WebsiteStep: Component<{
       <FormsContainer>
         <DomainsContainer>
           <For
-            each={websiteForms()}
+            each={props.websiteForms()}
             fallback={
               <PlaceHolder>
                 <MaterialSymbols displaySize={80}>link_off</MaterialSymbols>
@@ -536,14 +492,14 @@ const WebsiteStep: Component<{
           >
             {(form, i) => (
               <WebsiteSetting
-                isRuntimeApp={props.app.deployType === DeployType.RUNTIME}
+                isRuntimeApp={props.isRuntimeApp}
                 formStore={form}
-                deleteWebsite={() => setWebsiteForms((prev) => [...prev.slice(0, i()), ...prev.slice(i() + 1)])}
+                deleteWebsite={() => props.setWebsiteForms((prev) => [...prev.slice(0, i()), ...prev.slice(i() + 1)])}
                 hasPermission
               />
             )}
           </For>
-          <Show when={websiteForms().length > 0}>
+          <Show when={props.websiteForms().length > 0}>
             <AddMoreButtonContainer>
               <Button
                 onclick={addWebsiteForm}
@@ -561,12 +517,25 @@ const WebsiteStep: Component<{
           <Button
             size="medium"
             variants="ghost"
+            leftIcon={<MaterialSymbols>arrow_back</MaterialSymbols>}
+            onClick={props.backToGeneralStep}
+          >
+            Back
+          </Button>
+          <Button
+            size="medium"
+            variants="ghost"
             rightIcon={<MaterialSymbols>skip_next</MaterialSymbols>}
-            onClick={skipWebsiteConfig}
+            onClick={props.skipWebsiteConfig}
           >
             Skip
           </Button>
-          <Button size="medium" variants="primary" onClick={saveWebsiteConfig}>
+          <Button
+            size="medium"
+            variants="primary"
+            onClick={handleSubmit}
+            disabled={props.websiteForms().some((form) => form.invalid)}
+          >
             Save Website Config
           </Button>
         </ButtonsContainer>
@@ -602,44 +571,118 @@ type FormStep = typeof formStep[keyof typeof formStep]
 export default () => {
   const [searchParams, setParam] = useSearchParams()
   const [currentStep, setCurrentStep] = createSignal<FormStep>(formStep.repository)
-  const [appId, setAppId] = createSignal<string | undefined>(undefined)
 
   const [repo, { mutate: mutateRepo }] = createResource(
     () => searchParams.repositoryID,
     (id) => client.getRepository({ repositoryId: id }),
   )
-  const [app] = createResource(
-    () => appId(),
-    (id) => client.getApplication({ id }),
-  )
 
-  // repositoryIDが指定されている場合はビルド設定に進む
+  // このページに遷移した時にURLパラメータにrepositoryIDがあれば
+  // generalStepに遷移する
   onMount(() => {
     if (searchParams.repositoryID !== undefined) {
       setCurrentStep(formStep.general)
     }
   })
 
+  const createAppForm = createFormStore<GeneralForm>({
+    initialValues: {
+      name: '',
+      refName: '',
+      repositoryId: repo()?.id,
+      startOnCreate: false,
+      ...configToForm(new ApplicationConfig()),
+    },
+  })
+  const isRuntimeApp = () => {
+    return (
+      getValue(createAppForm, 'case') === 'runtimeBuildpack' ||
+      getValue(createAppForm, 'case') === 'runtimeCmd' ||
+      getValue(createAppForm, 'case') === 'runtimeDockerfile'
+    )
+  }
+  // repo更新時にcreateAppFormのrepositoryIdを更新する
+  createEffect(() => {
+    setValue(createAppForm, 'repositoryId', repo()?.id)
+  })
+
+  const [websiteForms, setWebsiteForms] = createSignal<FormStore<WebsiteSetting, undefined>[]>([])
+
+  // TODO: ブラウザバック時のrepositoryIDの設定
+
   // repositoryが指定されたらビルド設定に進む
   createEffect(() => {
     if (repo() !== undefined) {
       setParam({ repositoryID: repo()?.id })
-      setCurrentStep(formStep.general)
+      console.log(repo())
+      GoToGeneralStep()
     }
   })
 
   const backToRepoStep = () => {
     setCurrentStep(formStep.repository)
+    // 選択していたリポジトリをリセットする
     setParam({ repositoryID: undefined })
     mutateRepo(undefined)
   }
+  const GoToGeneralStep = () => {
+    setCurrentStep(formStep.general)
+  }
+  const GoToWebsiteStep = () => {
+    setCurrentStep(formStep.website)
+  }
 
-  createEffect(() => {
-    if (app() !== undefined) {
-      setCurrentStep(formStep.website)
-      setParam({ appID: app()?.id })
+  const createApp = async (): Promise<Application> => {
+    const values = getValues(createAppForm, { shouldActive: false })
+    const createdApp = await client.createApplication({
+      name: values.name,
+      refName: values.refName,
+      repositoryId: values.repositoryId,
+      config: {
+        buildConfig: formToConfig({
+          case: values.case,
+          config: values.config,
+        }),
+      },
+      startOnCreate: values.startOnCreate,
+    })
+    return createdApp
+  }
+
+  const saveWebsiteConfig = async (app: Application) => {
+    const websitesToSave = websiteForms()
+      .map((form) => getValues(form).website)
+      .filter((w): w is Exclude<typeof w, undefined> => w !== undefined)
+    await client.updateApplication({
+      id: app.id,
+      websites: {
+        websites: websitesToSave,
+      },
+    })
+    return
+  }
+
+  const navigate = useNavigate()
+  const skipWebsiteConfig = async () => {
+    try {
+      const createdApp = await createApp()
+      toast.success('アプリケーションを登録しました')
+      navigate(`/apps/${createdApp.id}`)
+    } catch (e) {
+      handleAPIError(e, 'アプリケーションの登録に失敗しました')
     }
-  })
+  }
+  const submit = async () => {
+    try {
+      const createdApp = await createApp()
+      toast.success('アプリケーションを登録しました')
+      await saveWebsiteConfig(createdApp)
+      toast.success('ウェブサイトの設定を保存しました')
+      navigate(`/apps/${createdApp.id}`)
+    } catch (e) {
+      handleAPIError(e, 'アプリケーションの登録に失敗しました')
+    }
+  }
 
   return (
     <WithNav.Container>
@@ -690,15 +733,21 @@ export default () => {
                     <GeneralStep
                       repo={nonNullRepo()}
                       backToRepoStep={backToRepoStep}
-                      setAppId={(appId) => {
-                        setAppId(appId)
-                      }}
+                      createAppForm={createAppForm}
+                      proceedToWebsiteStep={GoToWebsiteStep}
                     />
                   )}
                 </Show>
               </Match>
               <Match when={currentStep() === formStep.website}>
-                <Show when={app()}>{(nonNullApp) => <WebsiteStep app={nonNullApp()} />}</Show>
+                <WebsiteStep
+                  isRuntimeApp={isRuntimeApp()}
+                  backToGeneralStep={GoToGeneralStep}
+                  skipWebsiteConfig={skipWebsiteConfig}
+                  websiteForms={websiteForms}
+                  setWebsiteForms={setWebsiteForms}
+                  submit={submit}
+                />
               </Match>
             </Switch>
           </StepsContainer>
