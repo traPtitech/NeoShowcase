@@ -66,6 +66,23 @@ const RepositoryListContainer = styled('div', {
     borderBottom: `1px solid ${colorVars.semantic.ui.border}`,
   },
 })
+const RepositoryButton = styled('button', {
+  base: {
+    width: '100%',
+    background: colorVars.semantic.ui.primary,
+    border: 'none',
+    cursor: 'pointer',
+
+    selectors: {
+      '&:hover': {
+        background: colorVars.semantic.transparent.primaryHover,
+      },
+      '&:not(:last-child)': {
+        borderBottom: `1px solid ${colorVars.semantic.ui.border}`,
+      },
+    },
+  },
+})
 const RepositoryRow = styled('div', {
   base: {
     width: '100%',
@@ -77,12 +94,7 @@ const RepositoryRow = styled('div', {
       "icon name count button"
       ". url url button"`,
     gap: '8px',
-
-    selectors: {
-      '&:not(:last-child)': {
-        borderBottom: `1px solid ${colorVars.semantic.ui.border}`,
-      },
-    },
+    textAlign: 'left',
   },
 })
 const RepositoryIcon = styled('div', {
@@ -124,18 +136,29 @@ const RepositoryUrl = styled('div', {
     ...textVars.caption.regular,
   },
 })
-const CreateButtonContainer = styled('div', {
+const CreateAppText = styled('div', {
   base: {
     gridArea: 'button',
     display: 'flex',
     justifyContent: 'flex-end',
     alignItems: 'center',
+    gap: '4px',
+    color: colorVars.semantic.text.black,
+    ...textVars.text.bold,
   },
 })
 const RegisterRepositoryButton = styled('div', {
   base: {
     width: '100%',
     height: 'auto',
+    padding: '20px',
+    display: 'flex',
+    alignItems: 'center',
+    gap: '8px',
+    cursor: 'pointer',
+    color: colorVars.semantic.text.black,
+    ...textVars.text.bold,
+
     selectors: {
       '&:hover': {
         background: colorVars.semantic.transparent.primaryHover,
@@ -243,37 +266,30 @@ const RepositoryStep: Component<{
             }
           >
             {(repo) => (
-              <RepositoryRow>
-                <RepositoryIcon>{providerToIcon(repositoryURLToProvider(repo.repo.url), 24)}</RepositoryIcon>
-                <RepositoryName>{repo.repo.name}</RepositoryName>
-                <AppCount>{repo.appCount > 0 && `${repo.appCount} apps`}</AppCount>
-                <RepositoryUrl>{repo.repo.htmlUrl}</RepositoryUrl>
-                <CreateButtonContainer>
-                  <Button
-                    variants="border"
-                    size="medium"
-                    rightIcon={<MaterialSymbols>arrow_forward</MaterialSymbols>}
-                    onClick={() => {
-                      props.setRepo(repo.repo)
-                    }}
-                  >
+              <RepositoryButton
+                onClick={() => {
+                  props.setRepo(repo.repo)
+                }}
+                type="button"
+              >
+                <RepositoryRow>
+                  <RepositoryIcon>{providerToIcon(repositoryURLToProvider(repo.repo.url), 24)}</RepositoryIcon>
+                  <RepositoryName>{repo.repo.name}</RepositoryName>
+                  <AppCount>{repo.appCount > 0 && `${repo.appCount} apps`}</AppCount>
+                  <RepositoryUrl>{repo.repo.htmlUrl}</RepositoryUrl>
+                  <CreateAppText>
                     Create App
-                  </Button>
-                </CreateButtonContainer>
-              </RepositoryRow>
+                    <MaterialSymbols>arrow_forward</MaterialSymbols>
+                  </CreateAppText>
+                </RepositoryRow>
+              </RepositoryButton>
             )}
           </For>
         </RepositoryListContainer>
         <A href="/repos/new?newApp=true">
           <RegisterRepositoryButton>
-            <List.Row>
-              <List.RowContent>
-                <List.RowData>
-                  <MaterialSymbols>add</MaterialSymbols>
-                  Register Repository
-                </List.RowData>
-              </List.RowContent>
-            </List.Row>
+            <MaterialSymbols>add</MaterialSymbols>
+            Register Repository
           </RegisterRepositoryButton>
         </A>
       </List.Container>
