@@ -644,7 +644,7 @@ export default () => {
       config: {
         buildConfig: formToConfig({
           case: values.case,
-          config: values.config,
+          config: values.config as BuildConfigs,
         }),
       },
       websites: skipWebsite ? undefined : websitesToSave,

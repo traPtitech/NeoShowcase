@@ -332,7 +332,7 @@ const DockerConfigs = (props: DockerConfigProps) => {
   )
 }
 
-type BuildConfigs = {
+export type BuildConfigs = {
   runtimeConfig: PlainMessage<RuntimeConfig>
   staticConfig: PlainMessage<StaticConfig>
   buildPackConfig: {
