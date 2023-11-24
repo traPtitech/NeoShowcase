@@ -1,6 +1,6 @@
 import { styled } from '@macaron-css/solid'
 import { SubmitHandler, createForm, getValue, required, setValue } from '@modular-forms/solid'
-import { useNavigate, useSearchParams } from '@solidjs/router'
+import { useNavigate } from '@solidjs/router'
 import { createEffect } from 'solid-js'
 import toast from 'solid-toast'
 import { Button } from '/@/components/UI/Button'
@@ -43,7 +43,6 @@ type Config = AuthForm & {
 
 export default () => {
   const navigate = useNavigate()
-  const [params] = useSearchParams()
 
   const [config, Form] = createForm<Config>({
     initialValues: {
@@ -71,23 +70,21 @@ export default () => {
         },
       })
       toast.success('リポジトリを登録しました')
-
-      if (params.newApp === 'true') {
-        // アプリ作成ページのリポジトリ登録ボタンから来た場合は新規アプリ作成ページに遷移
-        navigate(`/apps/new?repositoryID=${res.id}`)
-      } else {
-        // リポジトリページに遷移
-        navigate(`/repos/${res.id}`)
-      }
+      // 新規アプリ作成ページに遷移
+      navigate(`/apps/new?repositoryID=${res.id}`)
     } catch (e) {
       return handleAPIError(e, 'リポジトリの登録に失敗しました')
     }
   }
 
-  // URLからリポジトリ名を自動入力
+  // URLからリポジトリ名, 認証方法を自動入力
   createEffect(() => {
-    const repositoryName = extractRepositoryNameFromURL(getValue(config, 'url') ?? '')
+    const url = getValue(config, 'url')
+    if (url === undefined) return
+    const repositoryName = extractRepositoryNameFromURL(url)
     setValue(config, 'name', repositoryName)
+
+    !url.startsWith('http') ? setValue(config, 'case', 'ssh') : setValue(config, 'case', 'none')
   })
 
   const AuthSetting = RepositoryAuthSettings({

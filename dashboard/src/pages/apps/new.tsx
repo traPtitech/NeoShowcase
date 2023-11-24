@@ -288,7 +288,7 @@ const RepositoryStep: Component<{
             )}
           </For>
         </RepositoryListContainer>
-        <A href="/repos/new?newApp=true">
+        <A href="/repos/new">
           <RegisterRepositoryButton>
             <MaterialSymbols>add</MaterialSymbols>
             Register Repository
