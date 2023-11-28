@@ -5,9 +5,11 @@ import { ApplicationConfig, RuntimeConfig, StaticConfig } from '/@/api/neoshowca
 import { TextField } from '../../UI/TextField'
 import { ToolTip } from '../../UI/ToolTip'
 import { CheckBox } from '../CheckBox'
+
 import { FormItem } from '../FormItem'
 import { RadioGroup } from '../RadioGroups'
-import { SelectOption, SingleSelect } from '../Select'
+import { SelectOption } from '../Select'
+import SelectBuildType from './SelectBuildType'
 
 export type BuildConfigMethod = Exclude<ApplicationConfig['buildConfig']['case'], undefined>
 const buildConfigItems: SelectOption<BuildConfigMethod>[] = [
@@ -492,7 +494,7 @@ export const configToForm = (config: PlainMessage<ApplicationConfig>): BuildConf
       }
     default:
       return {
-        case: 'runtimeBuildpack',
+        case: undefined,
         config: defaultConfigs,
       }
   }
@@ -509,25 +511,32 @@ export const BuildConfigs: Component<BuildConfigsProps> = (props) => {
 
   return (
     <>
-      <Field of={props.formStore} name="case" type="string">
+      <Field of={props.formStore} name="case" type="string" validate={[required('Select Build Type')]}>
         {(field, fieldProps) => (
-          <SingleSelect
-            label="Build Type"
-            required
-            info={{
-              style: 'left',
-              props: {
-                content: (
-                  <>
-                    <div>Buildpack: ビルド設定自動検出 (オススメ)</div>
-                    <div>Command: ビルド設定を直接設定</div>
-                    <div>Dockerfile: Dockerfileを用いる</div>
-                  </>
-                ),
-              },
-            }}
+          // <SingleSelect
+          //   label="Build Type"
+          //   required
+          //   info={{
+          //     style: 'left',
+          //     props: {
+          //       content: (
+          //         <>
+          //           <div>Buildpack: ビルド設定自動検出 (オススメ)</div>
+          //           <div>Command: ビルド設定を直接設定</div>
+          //           <div>Dockerfile: Dockerfileを用いる</div>
+          //         </>
+          //       ),
+          //     },
+          //   }}
+          //   {...fieldProps}
+          //   options={buildConfigItems}
+          //   value={field.value}
+          //   error={field.error}
+          //   setValue={(v) => setValue(props.formStore, 'case', v)}
+          //   readOnly={!props.hasPermission}
+          // />
+          <SelectBuildType
             {...fieldProps}
-            options={buildConfigItems}
             value={field.value}
             error={field.error}
             setValue={(v) => setValue(props.formStore, 'case', v)}
@@ -535,7 +544,6 @@ export const BuildConfigs: Component<BuildConfigsProps> = (props) => {
           />
         )}
       </Field>
-
       <Switch>
         <Match when={buildType() === 'runtimeBuildpack'}>
           <BuildPackConfigs formStore={props.formStore} hasPermission={props.hasPermission} />
