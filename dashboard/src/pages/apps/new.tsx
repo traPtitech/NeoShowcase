@@ -38,7 +38,7 @@ import { Nav } from '/@/components/templates/Nav'
 import { MultiSelect } from '/@/components/templates/Select'
 import { client, handleAPIError, systemInfo } from '/@/libs/api'
 import { Provider, providerToIcon, repositoryURLToProvider } from '/@/libs/application'
-import { colorVars, textVars } from '/@/theme'
+import { colorVars, media, textVars } from '/@/theme'
 import { AppGeneralConfig, AppGeneralForm } from '../../components/templates/app/AppGeneralConfig'
 import { BuildConfigForm, BuildConfigs, configToForm, formToConfig } from '../../components/templates/app/BuildConfigs'
 import { WebsiteSetting, newWebsite } from '../../components/templates/app/WebsiteSettings'
@@ -172,8 +172,14 @@ const SortContainer = styled('div', {
   base: {
     width: '100%',
     display: 'grid',
-    gridTemplateColumns: '2fr 1fr',
+    gridTemplateColumns: '1fr 288px',
     gap: '16px',
+
+    '@media': {
+      [media.mobile]: {
+        gridTemplateColumns: '1fr',
+      },
+    },
   },
 })
 

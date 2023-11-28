@@ -1,10 +1,11 @@
 import { Combobox as KComboBox, Select as KSelect } from '@kobalte/core'
 import { keyframes, style } from '@macaron-css/core'
+import { styled } from '@macaron-css/solid'
 import { JSX, Show, createMemo, splitProps } from 'solid-js'
 import { colorVars, textVars } from '/@/theme'
 import { CheckBoxIcon } from '../UI/CheckBoxIcon'
 import { MaterialSymbols } from '../UI/MaterialSymbols'
-import { ActionsContainer, hasRightIconStyle, inputStyle } from '../UI/TextField'
+import { hasRightIconStyle, inputStyle } from '../UI/TextField'
 import { ToolTip, TooltipProps } from '../UI/ToolTip'
 import { TooltipInfoIcon } from '../UI/TooltipInfoIcon'
 import { RequiredMark, TitleContainer, containerStyle, errorTextStyle, titleStyle } from './FormItem'
@@ -55,6 +56,7 @@ const multiItemStyle = style([
 ])
 const triggerStyle = style({
   width: '100%',
+  maxWidth: '288px',
   height: '48px',
   padding: '10px 16px',
   display: 'grid',
@@ -290,6 +292,15 @@ export const MultiSelect = <T extends string | number,>(props: MultiSelectProps<
   )
 }
 
+const ActionsContainer = styled('div', {
+  base: {
+    position: 'relative',
+    width: '100%',
+    maxWidth: '288px',
+    display: 'flex',
+    gap: '1px',
+  },
+})
 const comboBoxTriggerStyle = style({
   color: colorVars.semantic.text.disabled,
   position: 'absolute',
