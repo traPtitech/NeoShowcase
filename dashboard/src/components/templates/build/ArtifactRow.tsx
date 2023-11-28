@@ -15,6 +15,7 @@ const Container = styled('div', {
     flexDirection: 'row',
     alignItems: 'center',
     gap: '8px',
+    background: colorVars.semantic.ui.primary,
   },
 })
 const ContentsContainer = styled('div', {

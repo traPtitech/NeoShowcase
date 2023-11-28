@@ -6,7 +6,7 @@ import { MaterialSymbols } from '/@/components/UI/MaterialSymbols'
 import { ToolTip } from '/@/components/UI/ToolTip'
 import { DataTable } from '/@/components/layouts/DataTable'
 import { MainViewContainer } from '/@/components/layouts/MainView'
-import { Bordered, List } from '/@/components/templates/List'
+import { List } from '/@/components/templates/List'
 import { client } from '/@/libs/api'
 import { diffHuman, durationHuman } from '/@/libs/format'
 import { useBuildData } from '/@/routes'
@@ -187,13 +187,7 @@ export default () => {
             <DataTable.Container>
               <DataTable.Title>Artifacts</DataTable.Title>
               <List.Container>
-                <For each={build()?.artifacts}>
-                  {(artifact) => (
-                    <Bordered>
-                      <ArtifactRow artifact={artifact} />
-                    </Bordered>
-                  )}
-                </For>
+                <For each={build()?.artifacts}>{(artifact) => <ArtifactRow artifact={artifact} />}</For>
               </List.Container>
             </DataTable.Container>
           </Show>

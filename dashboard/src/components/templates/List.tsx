@@ -1,5 +1,5 @@
 import { styled } from '@macaron-css/solid'
-import { Component, For, Show, createSignal } from 'solid-js'
+import { Component, For } from 'solid-js'
 import { Application, Build, Repository } from '/@/api/neoshowcase/protobuf/gateway_pb'
 import { colorVars, textVars } from '/@/theme'
 import { AppRow } from './app/AppRow'
@@ -14,6 +14,8 @@ const Container = styled('div', {
     borderRadius: '8px',
     display: 'flex',
     flexDirection: 'column',
+    gap: '1px',
+    background: colorVars.semantic.ui.border,
   },
 })
 const Row = styled('div', {
@@ -24,13 +26,15 @@ const Row = styled('div', {
     flexDirection: 'row',
     alignItems: 'center',
     gap: '8px',
-
-    borderBottom: `1px solid ${colorVars.semantic.ui.border}`,
-    selectors: {
-      '&:last-child': {
-        borderBottom: 'none',
-      },
-    },
+    background: colorVars.semantic.ui.primary,
+  },
+})
+const Columns = styled('div', {
+  base: {
+    width: '100%',
+    display: 'flex',
+    flexDirection: 'row',
+    gap: '1px',
   },
 })
 const RowContent = styled('div', {
@@ -77,55 +81,40 @@ const RowData = styled('div', {
     },
   },
 })
+const PlaceHolder = styled('div', {
+  base: {
+    width: '100%',
+    height: '400px',
+    display: 'flex',
+    flexDirection: 'column',
+    gap: '24px',
+    alignItems: 'center',
+    justifyContent: 'center',
+
+    background: colorVars.semantic.ui.primary,
+    color: colorVars.semantic.text.black,
+    ...textVars.h4.medium,
+  },
+})
 
 export const List = {
   Container,
   Row,
+  Columns,
   RowContent,
   RowTitle,
   RowData,
+  PlaceHolder,
 }
-
-const AppsContainer = styled('div', {
-  base: {
-    width: '100%',
-    background: colorVars.semantic.ui.secondary,
-  },
-})
-export const Bordered = styled('div', {
-  base: {
-    width: '100%',
-    borderBottom: `1px solid ${colorVars.semantic.ui.border}`,
-    selectors: {
-      '&:last-child': {
-        borderBottom: 'none',
-      },
-    },
-  },
-})
 
 export const RepositoryList: Component<{
   repository: Repository
   apps: Application[]
 }> = (props) => {
-  const [showApps, setShowApps] = createSignal(true)
-
   return (
     <Container>
-      <Bordered onClick={() => setShowApps((s) => !s)}>
-        <RepositoryRow repository={props.repository} appCount={props.apps.length} />
-      </Bordered>
-      <Show when={showApps()}>
-        <For each={props.apps}>
-          {(app) => (
-            <Bordered>
-              <AppsContainer>
-                <AppRow app={app} />
-              </AppsContainer>
-            </Bordered>
-          )}
-        </For>
-      </Show>
+      <RepositoryRow repository={props.repository} appCount={props.apps.length} />
+      <For each={props.apps}>{(app) => <AppRow app={app} dark />}</For>
     </Container>
   )
 }
@@ -133,13 +122,7 @@ export const RepositoryList: Component<{
 export const AppsList: Component<{ apps: Application[] }> = (props) => {
   return (
     <Container>
-      <For each={props.apps}>
-        {(app) => (
-          <Bordered>
-            <AppRow app={app} />
-          </Bordered>
-        )}
-      </For>
+      <For each={props.apps}>{(app) => <AppRow app={app} />}</For>
     </Container>
   )
 }
@@ -149,14 +132,12 @@ export const BuildList: Component<{ builds: Build[]; showAppID: boolean; deploye
     <Container>
       <For each={props.builds}>
         {(b) => (
-          <Bordered>
-            <BuildRow
-              appId={b.applicationId}
-              build={b}
-              showAppId={props.showAppID}
-              isDeployed={props.deployedBuild === b.id}
-            />
-          </Bordered>
+          <BuildRow
+            appId={b.applicationId}
+            build={b}
+            showAppId={props.showAppID}
+            isDeployed={props.deployedBuild === b.id}
+          />
         )}
       </For>
     </Container>

@@ -8,7 +8,7 @@ import { DataTable } from '/@/components/layouts/DataTable'
 import { List } from '/@/components/templates/List'
 import { availableMetrics, client, handleAPIError, systemInfo } from '/@/libs/api'
 import { useApplicationData } from '/@/routes'
-import { colorVars, media, textVars } from '/@/theme'
+import { colorVars, media } from '/@/theme'
 import AppDeployInfo from '../../../components/templates/app/AppDeployInfo'
 import AppInfoLists from '../../../components/templates/app/AppInfoLists'
 import { AppMetrics } from '../../../components/templates/app/AppMetrics'
@@ -56,20 +56,6 @@ const MainView = styled('div', {
   },
 })
 
-const PlaceHolder = styled('div', {
-  base: {
-    width: '100%',
-    height: '400px',
-    display: 'flex',
-    flexDirection: 'column',
-    gap: '24px',
-    alignItems: 'center',
-    justifyContent: 'center',
-
-    color: colorVars.semantic.text.black,
-    ...textVars.h4.medium,
-  },
-})
 const BuildStatus: Component<{
   app: Application
   refetchApp: () => void
@@ -95,7 +81,7 @@ const BuildStatus: Component<{
       when={props.latestBuild}
       fallback={
         <List.Container>
-          <PlaceHolder>
+          <List.PlaceHolder>
             <MaterialSymbols displaySize={80}>deployed_code</MaterialSymbols>
             No Builds
             <Show when={props.hasPermission}>
@@ -109,7 +95,7 @@ const BuildStatus: Component<{
                 Build and Start App
               </Button>
             </Show>
-          </PlaceHolder>
+          </List.PlaceHolder>
         </List.Container>
       }
     >

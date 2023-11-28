@@ -1,4 +1,3 @@
-import { styled } from '@macaron-css/solid'
 import { createMemo, createResource } from 'solid-js'
 import { Show } from 'solid-js'
 import { MaterialSymbols } from '/@/components/UI/MaterialSymbols'
@@ -7,22 +6,6 @@ import { MainViewContainer } from '/@/components/layouts/MainView'
 import { BuildList, List } from '/@/components/templates/List'
 import { client } from '/@/libs/api'
 import { useApplicationData } from '/@/routes'
-import { colorVars, textVars } from '/@/theme'
-
-const PlaceHolder = styled('div', {
-  base: {
-    width: '100%',
-    height: '400px',
-    display: 'flex',
-    flexDirection: 'column',
-    gap: '24px',
-    alignItems: 'center',
-    justifyContent: 'center',
-
-    color: colorVars.semantic.text.black,
-    ...textVars.h4.medium,
-  },
-})
 
 export default () => {
   const { app } = useApplicationData()
@@ -51,10 +34,10 @@ export default () => {
             fallback={<BuildList builds={sortedBuilds()} showAppID={false} deployedBuild={app()?.currentBuild} />}
           >
             <List.Container>
-              <PlaceHolder>
+              <List.PlaceHolder>
                 <MaterialSymbols displaySize={80}>deployed_code</MaterialSymbols>
                 No Builds
-              </PlaceHolder>
+              </List.PlaceHolder>
             </List.Container>
           </Show>
         </DataTable.Container>

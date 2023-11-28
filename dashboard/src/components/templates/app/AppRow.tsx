@@ -3,6 +3,7 @@ import { A } from '@solidjs/router'
 import { Component, Show } from 'solid-js'
 import { Application } from '/@/api/neoshowcase/protobuf/gateway_pb'
 import { applicationState, getWebsiteURL } from '/@/libs/application'
+import { colorOverlay } from '/@/libs/colorOverlay'
 import { diffHuman, shortSha } from '/@/libs/format'
 import { colorVars, textVars } from '/@/theme'
 import Badge from '../../UI/Badge'
@@ -14,10 +15,23 @@ const Container = styled('div', {
     width: '100%',
     padding: '16px 16px 16px 20px',
     cursor: 'pointer',
+    background: colorVars.semantic.ui.primary,
 
     selectors: {
       '&:hover': {
-        background: colorVars.primitive.blackAlpha[50],
+        background: colorOverlay(colorVars.semantic.ui.primary, colorVars.primitive.blackAlpha[50]),
+      },
+    },
+  },
+  variants: {
+    dark: {
+      true: {
+        background: colorVars.semantic.ui.secondary,
+        selectors: {
+          '&:hover': {
+            background: colorOverlay(colorVars.semantic.ui.secondary, colorVars.primitive.blackAlpha[50]),
+          },
+        },
       },
     },
   },
@@ -80,12 +94,13 @@ const UrlContainer = styled('div', {
 
 export interface Props {
   app: Application
+  dark?: boolean
 }
 
 export const AppRow: Component<Props> = (props) => {
   return (
     <A href={`/apps/${props.app.id}`}>
-      <Container>
+      <Container dark={props.dark}>
         <TitleContainer>
           <AppStatusIcon state={applicationState(props.app)} />
           <AppName>{props.app.name}</AppName>

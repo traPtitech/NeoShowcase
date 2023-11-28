@@ -427,22 +427,6 @@ const DomainsContainer = styled('div', {
     gap: '24px',
   },
 })
-const PlaceHolder = styled('div', {
-  base: {
-    width: '100%',
-    height: '400px',
-    display: 'flex',
-    flexDirection: 'column',
-    gap: '24px',
-    alignItems: 'center',
-    justifyContent: 'center',
-
-    background: colorVars.semantic.ui.primary,
-    borderRadius: '8px',
-    color: colorVars.semantic.text.black,
-    ...textVars.h4.medium,
-  },
-})
 const AddMoreButtonContainer = styled('div', {
   base: {
     display: 'flex',
@@ -480,7 +464,7 @@ const WebsiteStep: Component<{
           <For
             each={props.websiteForms()}
             fallback={
-              <PlaceHolder>
+              <List.PlaceHolder>
                 <MaterialSymbols displaySize={80}>link_off</MaterialSymbols>
                 No Websites Configured
                 <Button
@@ -492,7 +476,7 @@ const WebsiteStep: Component<{
                 >
                   Add Website
                 </Button>
-              </PlaceHolder>
+              </List.PlaceHolder>
             }
           >
             {(form, i) => (

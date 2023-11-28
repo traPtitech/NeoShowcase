@@ -11,7 +11,6 @@ import {
 } from '/@/api/neoshowcase/protobuf/gateway_pb'
 import { Button } from '/@/components/UI/Button'
 import useModal from '/@/libs/useModal'
-import { colorVars, textVars } from '/@/theme'
 import { systemInfo } from '../../../libs/api'
 import { MaterialSymbols } from '../../UI/MaterialSymbols'
 import ModalDeleteConfirm from '../../UI/ModalDeleteConfirm'
@@ -486,21 +485,6 @@ export const newWebsite = (): PlainMessage<CreateWebsiteRequest> => ({
   authentication: AuthenticationType.OFF,
 })
 
-const PlaceHolder = styled('div', {
-  base: {
-    width: '100%',
-    height: '400px',
-    display: 'flex',
-    flexDirection: 'column',
-    gap: '24px',
-    alignItems: 'center',
-    justifyContent: 'center',
-
-    color: colorVars.semantic.text.black,
-    ...textVars.h4.medium,
-  },
-})
-
 interface WebsiteSettingsProps {
   isRuntimeApp: boolean
   formStores: FormStore<WebsiteSetting, undefined>[]
@@ -516,7 +500,7 @@ export const WebsiteSettings = (props: WebsiteSettingsProps) => {
         each={props.formStores}
         fallback={
           <List.Container>
-            <PlaceHolder>
+            <List.PlaceHolder>
               <MaterialSymbols displaySize={80}>link_off</MaterialSymbols>
               No Websites Configured
               <Show when={props.hasPermission}>
@@ -530,7 +514,7 @@ export const WebsiteSettings = (props: WebsiteSettingsProps) => {
                   Add Website
                 </Button>
               </Show>
-            </PlaceHolder>
+            </List.PlaceHolder>
           </List.Container>
         }
       >

@@ -2,6 +2,7 @@ import { styled } from '@macaron-css/solid'
 import { A } from '@solidjs/router'
 import { Component, Show } from 'solid-js'
 import { Build } from '/@/api/neoshowcase/protobuf/gateway_pb'
+import { colorOverlay } from '/@/libs/colorOverlay'
 import { diffHuman, shortSha } from '/@/libs/format'
 import { colorVars, textVars } from '/@/theme'
 import Badge from '../../UI/Badge'
@@ -13,10 +14,11 @@ const Container = styled('div', {
     width: '100%',
     padding: '16px 16px 16px 20px',
     cursor: 'pointer',
+    background: colorVars.semantic.ui.primary,
 
     selectors: {
       '&:hover': {
-        background: colorVars.primitive.blackAlpha[50],
+        background: colorOverlay(colorVars.semantic.ui.primary, colorVars.primitive.blackAlpha[50]),
       },
     },
   },

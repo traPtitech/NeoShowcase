@@ -1,10 +1,10 @@
 import { styled } from '@macaron-css/solid'
-import { A, useNavigate } from '@solidjs/router'
+import { A } from '@solidjs/router'
 import { Component, Show } from 'solid-js'
 import { Repository } from '/@/api/neoshowcase/protobuf/gateway_pb'
 import { user } from '/@/libs/api'
 import { providerToIcon, repositoryURLToProvider } from '/@/libs/application'
-import { colorOverlay } from '/@/libs/colorOverlay'
+
 import { colorVars, textVars } from '/@/theme'
 import { Button } from '../../UI/Button'
 
@@ -18,13 +18,6 @@ const Container = styled('div', {
     gap: '32px',
 
     background: colorVars.semantic.ui.primary,
-    cursor: 'pointer',
-
-    selectors: {
-      '&:hover': {
-        background: colorOverlay(colorVars.semantic.ui.primary, colorVars.primitive.blackAlpha[50]),
-      },
-    },
   },
 })
 const TitleContainer = styled('div', {
@@ -64,7 +57,6 @@ export interface Props {
 }
 
 export const RepositoryRow: Component<Props> = (props) => {
-  const navigator = useNavigate()
   const canEdit = () => user()?.admin || props.repository.ownerIds.includes(user()?.id)
 
   return (
@@ -83,20 +75,19 @@ export const RepositoryRow: Component<Props> = (props) => {
       </TitleContainer>
       <Show when={canEdit()}>
         <AddNewAppButtonContainer>
-          <Button
-            variants="border"
-            size="medium"
-            onClick={() => {
-              navigator(`/apps/new?repositoryID=${props.repository.id}`)
-            }}
-            tooltip={{
-              props: {
-                content: 'このリポジトリからアプリケーションを作成します',
-              },
-            }}
-          >
-            Add New App
-          </Button>
+          <A href={`/apps/new?repositoryID=${props.repository.id}`}>
+            <Button
+              variants="border"
+              size="medium"
+              tooltip={{
+                props: {
+                  content: 'このリポジトリからアプリケーションを作成します',
+                },
+              }}
+            >
+              Add New App
+            </Button>
+          </A>
         </AddNewAppButtonContainer>
       </Show>
     </Container>

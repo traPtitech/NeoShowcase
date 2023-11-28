@@ -16,20 +16,6 @@ import { List } from '../components/templates/List'
 import { Nav } from '../components/templates/Nav'
 import useModal from '../libs/useModal'
 
-const PlaceHolder = styled('div', {
-  base: {
-    width: '100%',
-    height: '400px',
-    display: 'flex',
-    flexDirection: 'column',
-    gap: '24px',
-    alignItems: 'center',
-    justifyContent: 'center',
-
-    color: colorVars.semantic.text.black,
-    ...textVars.h4.medium,
-  },
-})
 const TitleContainer = styled('div', {
   base: {
     width: '100%',
@@ -187,11 +173,11 @@ export default () => {
                 </TitleContainer>
                 <Show when={showPlaceHolder()} fallback={<SshKeys keys={userKeys()?.keys} refetchKeys={refetchKeys} />}>
                   <List.Container>
-                    <PlaceHolder>
+                    <List.PlaceHolder>
                       <MaterialSymbols displaySize={80}>key_off</MaterialSymbols>
                       No Keys Registered
                       <AddNewSSHKeyButton />
-                    </PlaceHolder>
+                    </List.PlaceHolder>
                   </List.Container>
                 </Show>
               </DataTable.Container>

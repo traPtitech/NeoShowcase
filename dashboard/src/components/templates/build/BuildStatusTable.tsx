@@ -22,7 +22,6 @@ const BuildStatusRow = styled('div', {
     alignItems: 'center',
     gap: '8px',
 
-    borderBottom: `1px solid ${colorVars.semantic.ui.border}`,
     background: colorVars.semantic.ui.secondary,
   },
 })

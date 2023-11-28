@@ -8,7 +8,6 @@ import { DataTable } from '/@/components/layouts/DataTable'
 import { MainViewContainer } from '/@/components/layouts/MainView'
 import { AppsList, List } from '/@/components/templates/List'
 import { useRepositoryData } from '/@/routes'
-import { colorVars, textVars } from '/@/theme'
 
 const MainView = styled('div', {
   base: {
@@ -16,20 +15,6 @@ const MainView = styled('div', {
     display: 'flex',
     flexDirection: 'column',
     gap: '32px',
-  },
-})
-const PlaceHolder = styled('div', {
-  base: {
-    width: '100%',
-    height: '400px',
-    display: 'flex',
-    flexDirection: 'column',
-    gap: '24px',
-    alignItems: 'center',
-    justifyContent: 'center',
-
-    color: colorVars.semantic.text.black,
-    ...textVars.h4.medium,
   },
 })
 
@@ -79,11 +64,11 @@ export default () => {
             </DataTable.Title>
             <Show when={showPlaceHolder()} fallback={<AppsList apps={apps()} />}>
               <List.Container>
-                <PlaceHolder>
+                <List.PlaceHolder>
                   <MaterialSymbols displaySize={80}>deployed_code</MaterialSymbols>
                   No Apps
                   <AddNewAppButton />
-                </PlaceHolder>
+                </List.PlaceHolder>
               </List.Container>
             </Show>
           </DataTable.Container>
