@@ -1,22 +1,87 @@
 import { Component, Match, Show, Switch } from 'solid-js'
-import { ApplicationConfig, RuntimeConfig, StaticConfig } from '/@/api/neoshowcase/protobuf/gateway_pb'
+import {
+  ApplicationConfig,
+  BuildConfigRuntimeBuildpack,
+  BuildConfigRuntimeCmd,
+  BuildConfigRuntimeDockerfile,
+  BuildConfigStaticBuildpack,
+  BuildConfigStaticCmd,
+  BuildConfigStaticDockerfile,
+  RuntimeConfig,
+  StaticConfig,
+} from '/@/api/neoshowcase/protobuf/gateway_pb'
 import { List } from '../List'
 
-const RuntimeConfigInfo: Component<{ config: RuntimeConfig }> = (props) => {
+const BuildpackConfigInfo: Component<{ config: BuildConfigRuntimeBuildpack | BuildConfigStaticBuildpack }> = (
+  props,
+) => {
+  return (
+    <List.Row>
+      <List.RowContent>
+        <List.RowTitle>Context</List.RowTitle>
+        <List.RowData code>{props.config.context}</List.RowData>
+      </List.RowContent>
+    </List.Row>
+  )
+}
+const CmdConfigInfo: Component<{ config: BuildConfigRuntimeCmd | BuildConfigStaticCmd }> = (props) => {
   return (
     <>
       <List.Row>
         <List.RowContent>
-          <List.RowTitle>Use MariaDB</List.RowTitle>
-          <List.RowData>{`${props.config.useMariadb}`}</List.RowData>
+          <List.RowTitle>Base Image</List.RowTitle>
+          <List.RowData>{props.config.baseImage}</List.RowData>
+        </List.RowContent>
+      </List.Row>
+      <Show when={props.config.buildCmd !== ''}>
+        <List.Row>
+          <List.RowContent>
+            <List.RowTitle>Build Command</List.RowTitle>
+            <List.RowData code>{props.config.buildCmd}</List.RowData>
+          </List.RowContent>
+        </List.Row>
+      </Show>
+    </>
+  )
+}
+const DockerfileConfigInfo: Component<{ config: BuildConfigRuntimeDockerfile | BuildConfigStaticDockerfile }> = (
+  props,
+) => {
+  return (
+    <>
+      <List.Row>
+        <List.RowContent>
+          <List.RowTitle>Dockerfile</List.RowTitle>
+          <List.RowData>{props.config.dockerfileName}</List.RowData>
         </List.RowContent>
       </List.Row>
       <List.Row>
         <List.RowContent>
-          <List.RowTitle>Use MongoDB</List.RowTitle>
-          <List.RowData>{`${props.config.useMongodb}`}</List.RowData>
+          <List.RowTitle>Context</List.RowTitle>
+          <List.RowData code>{props.config.context}</List.RowData>
         </List.RowContent>
       </List.Row>
+    </>
+  )
+}
+
+const RuntimeConfigInfo: Component<{ config: RuntimeConfig }> = (props) => {
+  return (
+    <>
+      <List.Columns>
+        <List.Row>
+          <List.RowContent>
+            <List.RowTitle>Use MariaDB</List.RowTitle>
+            <List.RowData>{`${props.config.useMariadb}`}</List.RowData>
+          </List.RowContent>
+        </List.Row>
+        <List.Row>
+          <List.RowContent>
+            <List.RowTitle>Use MongoDB</List.RowTitle>
+            <List.RowData>{`${props.config.useMongodb}`}</List.RowData>
+          </List.RowContent>
+        </List.Row>
+      </List.Columns>
       <Show when={props.config.entrypoint !== ''}>
         <List.Row>
           <List.RowContent>
@@ -42,7 +107,7 @@ const StaticConfigInfo: Component<{ config: StaticConfig }> = (props) => {
       <List.Row>
         <List.RowContent>
           <List.RowTitle>Artifact Path</List.RowTitle>
-          <List.RowData>{props.config.artifactPath}</List.RowData>
+          <List.RowData code>{props.config.artifactPath}</List.RowData>
         </List.RowContent>
       </List.Row>
       <List.Row>
@@ -62,12 +127,7 @@ const AppConfigInfo: Component<{ config: ApplicationConfig }> = (props) => {
       <Match when={c.case === 'runtimeBuildpack' && c}>
         {(c) => (
           <>
-            <List.Row>
-              <List.RowContent>
-                <List.RowTitle>Context</List.RowTitle>
-                <List.RowData>{c().value.context}</List.RowData>
-              </List.RowContent>
-            </List.Row>
+            <BuildpackConfigInfo config={c().value} />
             <RuntimeConfigInfo config={c().value.runtimeConfig} />
           </>
         )}
@@ -75,20 +135,7 @@ const AppConfigInfo: Component<{ config: ApplicationConfig }> = (props) => {
       <Match when={c.case === 'runtimeCmd' && c}>
         {(c) => (
           <>
-            <List.Row>
-              <List.RowContent>
-                <List.RowTitle>Base Image</List.RowTitle>
-                <List.RowData>{c().value.baseImage}</List.RowData>
-              </List.RowContent>
-            </List.Row>
-            <Show when={c().value.buildCmd !== ''}>
-              <List.Row>
-                <List.RowContent>
-                  <List.RowTitle>Build Command</List.RowTitle>
-                  <List.RowData code>{c().value.buildCmd}</List.RowData>
-                </List.RowContent>
-              </List.Row>
-            </Show>
+            <CmdConfigInfo config={c().value} />
             <RuntimeConfigInfo config={c().value.runtimeConfig} />
           </>
         )}
@@ -96,18 +143,7 @@ const AppConfigInfo: Component<{ config: ApplicationConfig }> = (props) => {
       <Match when={c.case === 'runtimeDockerfile' && c}>
         {(c) => (
           <>
-            <List.Row>
-              <List.RowContent>
-                <List.RowTitle>Dockerfile</List.RowTitle>
-                <List.RowData>{c().value.dockerfileName}</List.RowData>
-              </List.RowContent>
-            </List.Row>
-            <List.Row>
-              <List.RowContent>
-                <List.RowTitle>Context</List.RowTitle>
-                <List.RowData>{c().value.context}</List.RowData>
-              </List.RowContent>
-            </List.Row>
+            <DockerfileConfigInfo config={c().value} />
             <RuntimeConfigInfo config={c().value.runtimeConfig} />
           </>
         )}
@@ -115,12 +151,7 @@ const AppConfigInfo: Component<{ config: ApplicationConfig }> = (props) => {
       <Match when={c.case === 'staticBuildpack' && c}>
         {(c) => (
           <>
-            <List.Row>
-              <List.RowContent>
-                <List.RowTitle>Context</List.RowTitle>
-                <List.RowData>{c().value.context}</List.RowData>
-              </List.RowContent>
-            </List.Row>
+            <BuildpackConfigInfo config={c().value} />
             <StaticConfigInfo config={c().value.staticConfig} />
           </>
         )}
@@ -128,12 +159,7 @@ const AppConfigInfo: Component<{ config: ApplicationConfig }> = (props) => {
       <Match when={c.case === 'staticCmd' && c}>
         {(c) => (
           <>
-            <List.Row>
-              <List.RowContent>
-                <List.RowTitle>Base Image</List.RowTitle>
-                <List.RowData>{c().value.baseImage}</List.RowData>
-              </List.RowContent>
-            </List.Row>
+            <CmdConfigInfo config={c().value} />
             <Show when={c().value.buildCmd !== ''}>
               <List.Row>
                 <List.RowContent>
@@ -149,18 +175,7 @@ const AppConfigInfo: Component<{ config: ApplicationConfig }> = (props) => {
       <Match when={c.case === 'staticDockerfile' && c}>
         {(c) => (
           <>
-            <List.Row>
-              <List.RowContent>
-                <List.RowTitle>Dockerfile</List.RowTitle>
-                <List.RowData>{c().value.dockerfileName}</List.RowData>
-              </List.RowContent>
-            </List.Row>
-            <List.Row>
-              <List.RowContent>
-                <List.RowTitle>Context</List.RowTitle>
-                <List.RowData>{c().value.context}</List.RowData>
-              </List.RowContent>
-            </List.Row>
+            <DockerfileConfigInfo config={c().value} />
             <StaticConfigInfo config={c().value.staticConfig} />
           </>
         )}

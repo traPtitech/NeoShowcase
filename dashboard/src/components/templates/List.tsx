@@ -68,6 +68,7 @@ const RowData = styled('div', {
     code: {
       true: {
         width: '100%',
+        minHeight: 'calc(1lh + 8px)',
         marginTop: '4px',
         whiteSpace: 'pre-wrap',
         overflowX: 'auto',
