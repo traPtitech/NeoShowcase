@@ -177,7 +177,7 @@ const SelectBuildType: Component<{
 
   return (
     <>
-      <FormItem title="Application Type" required>
+      <FormItem title="Deploy Type" required>
         <RadioGroup.Root
           value={runType()}
           onChange={setRunType}
@@ -213,7 +213,7 @@ const SelectBuildType: Component<{
                   </RadioGroup.ItemControl>
                 </ItemTitle>
                 <Description>
-                  ビルドが必要な場合はビルドを行い、静的ファイルを配信します。ファイルを用意するだけで静的配信が行なえます。ビルドが必要無い場合も、こちらを選びます。
+                  ビルドが必要な場合はビルドを行い、静的ファイルを配信します。ファイルを用意するだけで静的配信ができます。ビルドが必要無い場合も、こちらを選びます。
                 </Description>
               </RadioGroup.ItemLabel>
             </RadioGroup.Item>
