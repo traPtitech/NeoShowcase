@@ -30,7 +30,7 @@ const Message = styled('p', {
 })
 
 const ErrorView: Component<{
-  error: any
+  error: unknown
 }> = (props) => {
   return (
     <Container>
