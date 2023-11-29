@@ -10,6 +10,7 @@ import {
   RuntimeConfig,
   StaticConfig,
 } from '/@/api/neoshowcase/protobuf/gateway_pb'
+import Code from '../../UI/Code'
 import { List } from '../List'
 
 const BuildpackConfigInfo: Component<{ config: BuildConfigRuntimeBuildpack | BuildConfigStaticBuildpack }> = (
@@ -19,7 +20,9 @@ const BuildpackConfigInfo: Component<{ config: BuildConfigRuntimeBuildpack | Bui
     <List.Row>
       <List.RowContent>
         <List.RowTitle>Context</List.RowTitle>
-        <List.RowData code>{props.config.context}</List.RowData>
+        <List.RowData>
+          <Code value={props.config.context} />
+        </List.RowData>
       </List.RowContent>
     </List.Row>
   )
@@ -37,7 +40,9 @@ const CmdConfigInfo: Component<{ config: BuildConfigRuntimeCmd | BuildConfigStat
         <List.Row>
           <List.RowContent>
             <List.RowTitle>Build Command</List.RowTitle>
-            <List.RowData code>{props.config.buildCmd}</List.RowData>
+            <List.RowData>
+              <Code value={props.config.buildCmd} />
+            </List.RowData>
           </List.RowContent>
         </List.Row>
       </Show>
@@ -58,7 +63,9 @@ const DockerfileConfigInfo: Component<{ config: BuildConfigRuntimeDockerfile | B
       <List.Row>
         <List.RowContent>
           <List.RowTitle>Context</List.RowTitle>
-          <List.RowData code>{props.config.context}</List.RowData>
+          <List.RowData>
+            <Code value={props.config.context} />
+          </List.RowData>
         </List.RowContent>
       </List.Row>
     </>
@@ -86,7 +93,9 @@ const RuntimeConfigInfo: Component<{ config: RuntimeConfig }> = (props) => {
         <List.Row>
           <List.RowContent>
             <List.RowTitle>Entrypoint</List.RowTitle>
-            <List.RowData code>{props.config.entrypoint}</List.RowData>
+            <List.RowData>
+              <Code value={props.config.entrypoint} />
+            </List.RowData>
           </List.RowContent>
         </List.Row>
       </Show>
@@ -94,7 +103,9 @@ const RuntimeConfigInfo: Component<{ config: RuntimeConfig }> = (props) => {
         <List.Row>
           <List.RowContent>
             <List.RowTitle>Command</List.RowTitle>
-            <List.RowData code>{props.config.command}</List.RowData>
+            <List.RowData>
+              <Code value={props.config.command} />
+            </List.RowData>
           </List.RowContent>
         </List.Row>
       </Show>
@@ -107,7 +118,9 @@ const StaticConfigInfo: Component<{ config: StaticConfig }> = (props) => {
       <List.Row>
         <List.RowContent>
           <List.RowTitle>Artifact Path</List.RowTitle>
-          <List.RowData code>{props.config.artifactPath}</List.RowData>
+          <List.RowData>
+            <Code value={props.config.artifactPath} />
+          </List.RowData>
         </List.RowContent>
       </List.Row>
       <List.Row>
@@ -160,14 +173,6 @@ const AppConfigInfo: Component<{ config: ApplicationConfig }> = (props) => {
         {(c) => (
           <>
             <CmdConfigInfo config={c().value} />
-            <Show when={c().value.buildCmd !== ''}>
-              <List.Row>
-                <List.RowContent>
-                  <List.RowTitle>Build Command</List.RowTitle>
-                  <List.RowData code>{c().value.buildCmd}</List.RowData>
-                </List.RowContent>
-              </List.Row>
-            </Show>
             <StaticConfigInfo config={c().value.staticConfig} />
           </>
         )}

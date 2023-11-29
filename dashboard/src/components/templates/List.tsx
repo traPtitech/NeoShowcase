@@ -56,6 +56,7 @@ const RowTitle = styled('h3', {
 })
 const RowData = styled('div', {
   base: {
+    width: '100%',
     display: 'flex',
     flexDirection: 'row',
     alignItems: 'center',
@@ -63,23 +64,6 @@ const RowData = styled('div', {
     overflowWrap: 'anywhere',
     color: colorVars.semantic.text.black,
     ...textVars.text.regular,
-  },
-  variants: {
-    code: {
-      true: {
-        width: '100%',
-        minHeight: 'calc(1lh + 8px)',
-        marginTop: '4px',
-        whiteSpace: 'pre-wrap',
-        overflowX: 'auto',
-        padding: '4px 8px',
-        fontSize: '16px',
-        lineHeight: '1.5',
-        fontFamily: 'Menlo, Monaco, Consolas, Courier New, monospace !important',
-        background: colorVars.semantic.ui.secondary,
-        borderRadius: '4px',
-      },
-    },
   },
 })
 const PlaceHolder = styled('div', {

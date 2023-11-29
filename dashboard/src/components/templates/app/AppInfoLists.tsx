@@ -3,6 +3,7 @@ import { Application, DeployType } from '/@/api/neoshowcase/protobuf/gateway_pb'
 import { systemInfo } from '/@/libs/api'
 import { buildTypeStr } from '/@/libs/application'
 import { diffHuman } from '/@/libs/format'
+import Code from '../../UI/Code'
 import { ToolTip } from '../../UI/ToolTip'
 import { List } from '../List'
 import AppConfigInfo from './AppConfigInfo'
@@ -61,7 +62,9 @@ const AppInfoLists: Component<{ app: Application }> = (props) => {
                 when={props.app.running}
                 fallback={<List.RowData>アプリケーションが起動している間のみSSHでアクセス可能です</List.RowData>}
               >
-                <List.RowData code>{sshAccessCommand()}</List.RowData>
+                <List.RowData>
+                  <Code value={sshAccessCommand()} copyable />
+                </List.RowData>
               </Show>
             </List.RowContent>
           </List.Row>
