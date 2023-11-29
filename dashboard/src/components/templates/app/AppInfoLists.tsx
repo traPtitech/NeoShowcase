@@ -1,12 +1,10 @@
 import { Component, Show } from 'solid-js'
 import { Application, DeployType } from '/@/api/neoshowcase/protobuf/gateway_pb'
 import { systemInfo } from '/@/libs/api'
-import { buildTypeStr } from '/@/libs/application'
 import { diffHuman } from '/@/libs/format'
 import Code from '../../UI/Code'
 import { ToolTip } from '../../UI/ToolTip'
 import { List } from '../List'
-import AppConfigInfo from './AppConfigInfo'
 
 const AppInfoLists: Component<{ app: Application }> = (props) => {
   const sshAccessCommand = () => `ssh -p ${systemInfo().ssh.port} ${props.app.id}@${systemInfo().ssh.host}`
@@ -47,13 +45,6 @@ const AppInfoLists: Component<{ app: Application }> = (props) => {
             }}
           </Show>
         </List.Columns>
-        <List.Row>
-          <List.RowContent>
-            <List.RowTitle>Build Type</List.RowTitle>
-            <List.RowData>{buildTypeStr[props.app.config.buildConfig.case]}</List.RowData>
-          </List.RowContent>
-        </List.Row>
-        <AppConfigInfo config={props.app.config} />
         <Show when={props.app.deployType === DeployType.RUNTIME}>
           <List.Row>
             <List.RowContent>
