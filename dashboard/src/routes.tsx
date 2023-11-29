@@ -1,6 +1,7 @@
 import { Navigate, RouteDataFunc, useRouteData, useRoutes } from '@solidjs/router'
 import { Resource, createMemo, createResource, lazy } from 'solid-js'
 import { Application, Build, GetApplicationsRequest_Scope, Repository } from './api/neoshowcase/protobuf/gateway_pb'
+import ErrorView from './components/layouts/ErrorView'
 import { client, user } from './libs/api'
 
 const RepositoryData: RouteDataFunc<
@@ -187,5 +188,9 @@ export default useRoutes([
   {
     path: '/settings',
     component: lazy(() => import('/@/pages/settings')),
+  },
+  {
+    path: '/*',
+    component: () => <ErrorView error={new Error('Not Found')} />,
   },
 ])

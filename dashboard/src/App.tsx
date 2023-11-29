@@ -1,7 +1,8 @@
 import { Router } from '@solidjs/router'
-import type { Component } from 'solid-js'
+import { type Component, ErrorBoundary } from 'solid-js'
 import { Toaster } from 'solid-toast'
 import Routes from '/@/routes'
+import ErrorView from './components/layouts/ErrorView'
 import { WithHeader } from './components/layouts/WithHeader'
 
 const App: Component = () => {
@@ -15,7 +16,9 @@ const App: Component = () => {
       />
       <Router>
         <WithHeader>
-          <Routes />
+          <ErrorBoundary fallback={(props) => <ErrorView {...props} />}>
+            <Routes />
+          </ErrorBoundary>
         </WithHeader>
       </Router>
     </>
