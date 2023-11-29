@@ -132,6 +132,7 @@ const selectContentStyle = style([
 const comboBoxContentStyle = style([
   contentStyleBase,
   {
+    maxWidth: '288px',
     transformOrigin: 'var(--kb-combobox-content-transform-origin)',
   },
 ])
