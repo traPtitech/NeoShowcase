@@ -1,6 +1,6 @@
 import { styled } from '@macaron-css/solid'
 import Fuse from 'fuse.js'
-import { For, Show, createMemo, createResource } from 'solid-js'
+import { Component, For, Show, Suspense, createMemo, createResource, useTransition } from 'solid-js'
 import {
   Application,
   GetApplicationsRequest_Scope,
@@ -57,6 +57,16 @@ const Repositories = styled('div', {
     display: 'flex',
     flexDirection: 'column',
     gap: '16px',
+
+    opacity: 1,
+    transition: 'opacity 0.2s ease-in-out',
+  },
+  variants: {
+    isPending: {
+      true: {
+        opacity: 0.5,
+      },
+    },
   },
 })
 
@@ -65,7 +75,7 @@ const sortItems: { [k in 'desc' | 'asc']: SelectOption<k> } = {
   asc: { value: 'asc', label: 'Oldest' },
 }
 
-const scopeItems = (admin: boolean) => {
+const scopeItems = (admin: boolean | undefined) => {
   const items: SelectOption<GetRepositoriesRequest_Scope>[] = [
     { value: GetRepositoriesRequest_Scope.MINE, label: 'My Apps' },
     { value: GetRepositoriesRequest_Scope.PUBLIC, label: 'All Apps' },
@@ -117,130 +127,142 @@ const allProviders: SelectOption<Provider>[] = [
   { label: 'Gitea', value: 'Gitea' },
 ]
 
-export default () => {
-  const [statuses, setStatuses] = createLocalSignal(
-    'apps-statuses',
-    allStatuses.map((s) => s.value),
-  )
-  const [scope, setScope] = createLocalSignal('apps-scope', GetRepositoriesRequest_Scope.MINE)
-  const [provider, setProvider] = createLocalSignal<Provider[]>('apps-provider', ['GitHub', 'GitLab', 'Gitea'])
+const AppsList: Component<{
+  scope: GetRepositoriesRequest_Scope
+  statuses: ApplicationState[]
+  provider: Provider[]
+  query: string
+  sort: keyof typeof sortItems
+  isPending?: boolean
+}> = (props) => {
   const appScope = () => {
-    const mine = scope() === GetRepositoriesRequest_Scope.MINE
+    const mine = props.scope === GetRepositoriesRequest_Scope.MINE
     return mine ? GetApplicationsRequest_Scope.MINE : GetApplicationsRequest_Scope.ALL
   }
-  const [query, setQuery] = createLocalSignal('apps-query', '')
-  const [sort, setSort] = createLocalSignal<keyof typeof sortItems>('apps-sort', sortItems.asc.value)
-
   const [repos] = createResource(
-    () => scope(),
+    () => props.scope,
     (scope) => client.getRepositories({ scope }),
   )
   const [apps] = createResource(
     () => appScope(),
     (scope) => client.getApplications({ scope }),
   )
-  const loaded = () => !!(user() && repos() && apps())
 
   const filteredReposByProvider = createMemo(() => {
-    if (!repos()) return
-    const p = provider()
-    return repos()?.repositories.filter((r) => p.includes(repositoryURLToProvider(r.url)))
+    const p = props.provider
+    return repos()?.repositories.filter((r) => p.includes(repositoryURLToProvider(r.url))) ?? []
   })
   const filteredApps = createMemo(() => {
-    if (!apps()) return
-    const s = statuses()
-    return apps()?.applications.filter((a) => s.includes(applicationState(a)))
+    const s = props.statuses
+    return apps()?.applications.filter((a) => s.includes(applicationState(a))) ?? []
   })
   const repoWithApps = createMemo(() => {
-    if (!filteredReposByProvider() || !filteredApps()) return
     const appsMap = {} as Record<string, Application[]>
     for (const app of filteredApps()) {
       if (!appsMap[app.repositoryId]) appsMap[app.repositoryId] = []
       appsMap[app.repositoryId].push(app)
     }
     const res = filteredReposByProvider().map((repo): RepoWithApp => ({ repo, apps: appsMap[repo.id] || [] }))
-    res.sort(compareRepoWithApp(sort()))
+    res.sort(compareRepoWithApp(props.sort))
     return res
   })
 
   const fuse = createMemo(() => {
-    if (!repoWithApps()) return
     return new Fuse(repoWithApps(), {
       keys: ['repo.name', 'apps.name'],
     })
   })
   const filteredRepos = createMemo(() => {
-    if (!repoWithApps()) return
-    if (query() === '') return repoWithApps()
+    if (props.query === '') return repoWithApps()
     return fuse()
-      .search(query())
+      .search(props.query)
       .map((r) => r.item)
   })
 
   return (
-    <Show when={loaded()}>
-      <WithNav.Container>
-        <WithNav.Navs>
-          <AppsNav />
-          <WithNav.Tabs>
-            <For each={scopeItems(user()?.admin)}>
-              {(s) => (
-                <TabRound state={s.value === scope() ? 'active' : 'default'} onClick={() => setScope(s.value)}>
-                  <MaterialSymbols>deployed_code</MaterialSymbols>
-                  {s.label}
-                </TabRound>
-              )}
-            </For>
-            <Show when={systemInfo()?.adminerUrl}>
-              <a
-                href={systemInfo()?.adminerUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                style={{
-                  'margin-left': 'auto',
-                }}
-              >
-                <TabRound variant="ghost">
-                  Adminer
-                  <MaterialSymbols>open_in_new</MaterialSymbols>
-                </TabRound>
-              </a>
-            </Show>
-          </WithNav.Tabs>
-        </WithNav.Navs>
-        <WithNav.Body>
-          <MainViewContainer background="grey">
-            <MainView>
-              <SortContainer>
-                <TextField
-                  placeholder="Search"
-                  value={query()}
-                  onInput={(e) => setQuery(e.currentTarget.value)}
-                  leftIcon={<MaterialSymbols>search</MaterialSymbols>}
-                />
-                <SortSelects>
-                  <MultiSelect options={allStatuses} placeholder="Status" value={statuses()} setValue={setStatuses} />
-                  <MultiSelect
-                    options={allProviders}
-                    placeholder="Provider"
-                    value={provider()}
-                    setValue={setProvider}
-                  />
-                  <SingleSelect
-                    options={Object.values(sortItems)}
-                    placeholder="Sort"
-                    value={sort()}
-                    setValue={setSort}
-                  />
-                </SortSelects>
-              </SortContainer>
-              <Repositories>
-                <For each={filteredRepos()}>{(r) => <RepositoryList repository={r.repo} apps={r.apps} />}</For>
-              </Repositories>
-            </MainView>
-          </MainViewContainer>
-        </WithNav.Body>
-      </WithNav.Container>
-    </Show>
+    <Repositories isPending={props.isPending}>
+      <For each={filteredRepos()}>{(r) => <RepositoryList repository={r.repo} apps={r.apps} />}</For>
+    </Repositories>
+  )
+}
+
+export default () => {
+  const [scope, _setScope] = createLocalSignal('apps-scope', GetRepositoriesRequest_Scope.MINE)
+  const [isPending, start] = useTransition()
+
+  const setScope = (scope: GetRepositoriesRequest_Scope) => {
+    start(() => {
+      _setScope(scope)
+    })
+  }
+
+  const [statuses, setStatuses] = createLocalSignal(
+    'apps-statuses',
+    allStatuses.map((s) => s.value),
+  )
+  const [provider, setProvider] = createLocalSignal<Provider[]>('apps-provider', ['GitHub', 'GitLab', 'Gitea'])
+  const [query, setQuery] = createLocalSignal('apps-query', '')
+  const [sort, setSort] = createLocalSignal<keyof typeof sortItems>('apps-sort', sortItems.asc.value)
+
+  return (
+    <WithNav.Container>
+      <WithNav.Navs>
+        <AppsNav />
+        <WithNav.Tabs>
+          <For each={scopeItems(user()?.admin)}>
+            {(s) => (
+              <TabRound state={s.value === scope() ? 'active' : 'default'} onClick={() => setScope(s.value)}>
+                <MaterialSymbols>deployed_code</MaterialSymbols>
+                {s.label}
+              </TabRound>
+            )}
+          </For>
+          <Show when={systemInfo()?.adminerUrl}>
+            <a
+              href={systemInfo()?.adminerUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              style={{
+                'margin-left': 'auto',
+              }}
+            >
+              <TabRound variant="ghost">
+                Adminer
+                <MaterialSymbols>open_in_new</MaterialSymbols>
+              </TabRound>
+            </a>
+          </Show>
+        </WithNav.Tabs>
+      </WithNav.Navs>
+      <WithNav.Body>
+        <MainViewContainer background="grey">
+          <MainView>
+            <SortContainer>
+              <TextField
+                placeholder="Search"
+                value={query()}
+                onInput={(e) => setQuery(e.currentTarget.value)}
+                leftIcon={<MaterialSymbols>search</MaterialSymbols>}
+              />
+              <SortSelects>
+                <MultiSelect options={allStatuses} placeholder="Status" value={statuses()} setValue={setStatuses} />
+                <MultiSelect options={allProviders} placeholder="Provider" value={provider()} setValue={setProvider} />
+                <SingleSelect options={Object.values(sortItems)} placeholder="Sort" value={sort()} setValue={setSort} />
+              </SortSelects>
+            </SortContainer>
+            <Suspense fallback={<div>Loading...</div>}>
+              <AppsList
+                scope={scope()}
+                statuses={statuses()}
+                provider={provider()}
+                query={query()}
+                sort={sort()}
+                isPending={isPending()}
+              />
+            </Suspense>
+          </MainView>
+        </MainViewContainer>
+      </WithNav.Body>
+    </WithNav.Container>
   )
 }
