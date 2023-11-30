@@ -102,7 +102,7 @@ export default () => {
     () => app()?.repositoryId,
     (id) => client.getRepository({ repositoryId: id }),
   )
-  const loaded = () => app.state === 'ready' && repo.state === 'ready' && build.state === 'ready'
+  const loaded = () => !!(app() && repo() && build())
 
   const buildFinished = () => build()?.finishedAt?.valid ?? false
 

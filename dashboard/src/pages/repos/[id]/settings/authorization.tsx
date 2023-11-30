@@ -113,7 +113,7 @@ export default () => {
   return (
     <DataTable.Container>
       <DataTable.Title>Authorization</DataTable.Title>
-      <Show when={repo.state === 'ready'}>
+      <Show when={!!repo()}>
         <AuthConfig repo={repo()!} refetchRepo={refetchRepo} hasPermission={hasPermission()} />
       </Show>
     </DataTable.Container>

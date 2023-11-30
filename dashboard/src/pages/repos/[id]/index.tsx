@@ -20,7 +20,7 @@ const MainView = styled('div', {
 
 export default () => {
   const { repo, apps, hasPermission } = useRepositoryData()
-  const loaded = () => repo.state === 'ready' && apps.state === 'ready'
+  const loaded = () => !!(repo() && apps())
   const navigator = useNavigate()
   const showPlaceHolder = createMemo(() => apps()?.length === 0)
 

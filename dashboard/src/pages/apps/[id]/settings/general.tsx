@@ -92,7 +92,7 @@ const DeleteApp: Component<{
 
 export default () => {
   const { app, refetchApp, repo, hasPermission } = useApplicationData()
-  const loaded = () => app.state === 'ready' && repo.state === 'ready'
+  const loaded = () => !!(app() && repo())
 
   const [generalForm, General] = createForm<AppGeneralForm>({
     initialValues: {

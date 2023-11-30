@@ -207,7 +207,8 @@ export default () => {
     (id) => client.getEnvVars({ id }),
   )
 
-  const loaded = () => envVars.state === 'ready'
+  const loaded = () => !!envVars()
+
   return (
     <DataTable.Container>
       <DataTable.Title>Environment Variables</DataTable.Title>

@@ -9,7 +9,7 @@ import { AppNav } from '../../components/templates/app/AppNav'
 export default () => {
   const navigate = useNavigate()
   const { app, repo } = useApplicationData()
-  const loaded = () => app.state === 'ready' && repo.state === 'ready'
+  const loaded = () => !!(app() && repo())
 
   const matchIndexPage = useMatch(() => `/apps/${app()?.id}/`)
   const matchBuildsPage = useMatch(() => `/apps/${app()?.id}/builds/*`)

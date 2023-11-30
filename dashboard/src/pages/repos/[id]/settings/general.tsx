@@ -178,7 +178,7 @@ const DeleteProject: Component<{
 
 export default () => {
   const { repo, refetchRepo, apps, hasPermission } = useRepositoryData()
-  const loaded = () => repo.state === 'ready' && apps.state === 'ready'
+  const loaded = () => !!(repo() && apps())
 
   return (
     <DataTable.Container>

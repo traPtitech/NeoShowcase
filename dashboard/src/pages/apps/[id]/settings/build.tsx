@@ -15,7 +15,7 @@ import {
 
 export default () => {
   const { app, refetchApp, hasPermission } = useApplicationData()
-  const loaded = () => app.state === 'ready'
+  const loaded = () => !!app()
 
   const [buildConfig, BuildConfig] = createForm<BuildConfigForm>({
     initialValues: configToForm(structuredClone(app()?.config)),

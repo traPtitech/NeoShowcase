@@ -9,7 +9,7 @@ import { useRepositoryData } from '/@/routes'
 
 export default () => {
   const { repo, refetchRepo, hasPermission } = useRepositoryData()
-  const loaded = () => repo.state === 'ready' && users.state === 'ready'
+  const loaded = () => !!(repo() && users())
 
   const handleAddOwner = async (user: User) => {
     const newOwnerIds = repo()?.ownerIds.concat(user.id)

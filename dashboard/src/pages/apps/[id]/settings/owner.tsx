@@ -9,7 +9,7 @@ import { useApplicationData } from '/@/routes'
 
 export default () => {
   const { app, refetchApp, hasPermission } = useApplicationData()
-  const loaded = () => app.state === 'ready' && users.state === 'ready'
+  const loaded = () => !!(app() && users())
 
   const handleAddOwner = async (user: User) => {
     const newOwnerIds = app()?.ownerIds.concat(user.id)

@@ -50,9 +50,9 @@ export const AppMetrics: Component<AppMetricsProps> = (props) => {
   const refetchTimer = setInterval(refetchData, 60000)
   onCleanup(() => clearInterval(refetchTimer))
 
-  const maxDataVal = createMemo(() => (data.state === 'ready' ? Math.max(...data().metrics.map((m) => m.value)) : 0))
+  const maxDataVal = createMemo(() => (data.latest !== undefined ? Math.max(...data().metrics.map((m) => m.value)) : 0))
   const chartData = (): ChartData => {
-    if (data.state === 'ready') {
+    if (data.latest !== undefined) {
       const labels = data().metrics.map((m) => m.time?.toDate().toLocaleTimeString())
       const values = data().metrics.map((m) => m.value)
       return {

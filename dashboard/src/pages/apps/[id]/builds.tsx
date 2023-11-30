@@ -13,10 +13,10 @@ export default () => {
     () => app()?.id,
     (id) => client.getBuilds({ id }),
   )
-  const loaded = () => !!(app.state === 'ready' && builds.state === 'ready')
+  const loaded = () => !!(app() && builds())
 
   const sortedBuilds = createMemo(() =>
-    builds.state === 'ready'
+    builds.latest !== undefined
       ? [...builds().builds].sort((b1, b2) => {
           return (b2.queuedAt?.toDate().getTime() ?? 0) - (b1.queuedAt?.toDate().getTime() ?? 0)
         })

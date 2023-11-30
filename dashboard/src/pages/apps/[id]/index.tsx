@@ -211,7 +211,7 @@ export default () => {
     (appId) => getLatestBuild(appId),
   )
 
-  const loaded = () => app.state === 'ready' && repo.state === 'ready'
+  const loaded = () => !!(app() && repo())
 
   const [disableRefresh, setDisableRefresh] = createSignal(false)
   const refreshRepo = async () => {
