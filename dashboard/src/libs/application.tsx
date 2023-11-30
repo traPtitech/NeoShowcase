@@ -81,6 +81,8 @@ export const applicationState = (app: Application): ApplicationState => {
       return useDeployState(app)
     case BuildStatus.SKIPPED:
       return useDeployState(app)
+    case undefined:
+      return ApplicationState.Error
   }
 }
 

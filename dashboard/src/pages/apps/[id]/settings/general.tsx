@@ -12,11 +12,10 @@ import { DataTable } from '/@/components/layouts/DataTable'
 import FormBox from '/@/components/layouts/FormBox'
 import { FormItem } from '/@/components/templates/FormItem'
 import { client, handleAPIError } from '/@/libs/api'
-import { AppGeneralConfig, AppGeneralForm } from '../../../../components/templates/app/AppGeneralConfig'
-
 import useModal from '/@/libs/useModal'
 import { useApplicationData } from '/@/routes'
 import { colorVars, textVars } from '/@/theme'
+import { AppGeneralConfig, AppGeneralForm } from '../../../../components/templates/app/AppGeneralConfig'
 
 const DeleteAppNotice = styled('div', {
   base: {
@@ -93,7 +92,7 @@ const DeleteApp: Component<{
 
 export default () => {
   const { app, refetchApp, repo, hasPermission } = useApplicationData()
-  const loaded = () => !!(app() && repo())
+  const loaded = () => app.state === 'ready' && repo.state === 'ready'
 
   const [generalForm, General] = createForm<AppGeneralForm>({
     initialValues: {
@@ -138,7 +137,7 @@ export default () => {
         <General.Form onSubmit={handleSubmit}>
           <FormBox.Container>
             <FormBox.Forms>
-              <AppGeneralConfig repo={repo()} formStore={generalForm} editBranchId hasPermission={hasPermission()} />
+              <AppGeneralConfig repo={repo()!} formStore={generalForm} editBranchId hasPermission={hasPermission()} />
             </FormBox.Forms>
             <FormBox.Actions>
               <Show when={generalForm.dirty && !generalForm.submitting}>
@@ -165,7 +164,7 @@ export default () => {
             </FormBox.Actions>
           </FormBox.Container>
         </General.Form>
-        <DeleteApp app={app()} repo={repo()} hasPermission={hasPermission()} />
+        <DeleteApp app={app()!} repo={repo()!} hasPermission={hasPermission()} />
       </Show>
     </DataTable.Container>
   )

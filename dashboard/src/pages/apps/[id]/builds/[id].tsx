@@ -102,9 +102,9 @@ export default () => {
     () => app()?.repositoryId,
     (id) => client.getRepository({ repositoryId: id }),
   )
-  const loaded = () => !!(app() && repo() && build())
+  const loaded = () => app.state === 'ready' && repo.state === 'ready' && build.state === 'ready'
 
-  const buildFinished = () => build()?.finishedAt?.valid
+  const buildFinished = () => build()?.finishedAt?.valid ?? false
 
   return (
     <MainViewContainer>
@@ -113,9 +113,9 @@ export default () => {
           <DataTable.Container>
             <DataTable.Title>Build Status</DataTable.Title>
             <BuildStatusTable
-              app={app()}
-              repo={repo()}
-              build={build()}
+              app={app()!}
+              repo={repo()!}
+              build={build()!}
               refetchBuild={refetchBuild}
               hasPermission={hasPermission()}
             />
@@ -174,8 +174,8 @@ export default () => {
                   <Show when={build()?.finishedAt?.valid && build()?.startedAt?.valid} fallback={'-'}>
                     <List.RowData>
                       {durationHuman(
-                        build()?.finishedAt?.timestamp?.toDate().getTime() -
-                          build()?.startedAt?.timestamp?.toDate().getTime(),
+                        build()!.finishedAt!.timestamp!.toDate().getTime() -
+                          build()!.startedAt!.timestamp!.toDate().getTime(),
                       )}
                     </List.RowData>
                   </Show>
@@ -183,7 +183,7 @@ export default () => {
               </List.Row>
             </List.Container>
           </DataTable.Container>
-          <Show when={build()?.artifacts?.length > 0}>
+          <Show when={build()!.artifacts.length > 0}>
             <DataTable.Container>
               <DataTable.Title>Artifacts</DataTable.Title>
               <List.Container>
@@ -195,7 +195,7 @@ export default () => {
             <DataTable.Container>
               <DataTable.Title>Build Log</DataTable.Title>
               <LogContainer>
-                <BuildLog buildID={build()?.id} finished={buildFinished()} refetchBuild={refetchBuild} />
+                <BuildLog buildID={build()!.id} finished={buildFinished()} refetchBuild={refetchBuild} />
               </LogContainer>
             </DataTable.Container>
           </Show>

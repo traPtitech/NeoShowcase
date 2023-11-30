@@ -9,7 +9,7 @@ import { useRepositoryData } from '/@/routes'
 
 export default () => {
   const { repo, refetchRepo, hasPermission } = useRepositoryData()
-  const loaded = () => !!(repo() && users())
+  const loaded = () => repo.state === 'ready' && users.state === 'ready'
 
   const handleAddOwner = async (user: User) => {
     const newOwnerIds = repo()?.ownerIds.concat(user.id)
@@ -45,8 +45,8 @@ export default () => {
       <DataTable.SubTitle>オーナーはリポジトリ設定の変更が可能になります</DataTable.SubTitle>
       <Show when={loaded()}>
         <OwnerList
-          owners={repo()?.ownerIds.map(userFromId)}
-          users={users()}
+          owners={repo()!.ownerIds.map(userFromId)}
+          users={users()!}
           handleAddOwner={handleAddOwner}
           handleDeleteOwner={handleDeleteOwner}
           hasPermission={hasPermission()}

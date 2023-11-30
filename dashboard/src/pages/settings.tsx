@@ -1,6 +1,6 @@
 import { styled } from '@macaron-css/solid'
 import { SubmitHandler, createForm, required } from '@modular-forms/solid'
-import { Component, For, Show, createMemo, createResource } from 'solid-js'
+import { Component, For, Show, createResource } from 'solid-js'
 import toast from 'solid-toast'
 import { Button } from '/@/components/UI/Button'
 import { client, handleAPIError } from '/@/libs/api'
@@ -148,8 +148,6 @@ export default () => {
     </Button>
   )
 
-  const showPlaceHolder = createMemo(() => userKeys()?.keys.length === 0)
-
   return (
     <>
       <WithNav.Container>
@@ -167,18 +165,23 @@ export default () => {
                       SSH鍵はruntimeアプリケーションのコンテナにssh接続するときに使います
                     </DataTable.SubTitle>
                   </DataTable.Titles>
-                  <Show when={!showPlaceHolder()}>
+                  <Show when={userKeys()?.keys.length !== 0}>
                     <AddNewSSHKeyButton />
                   </Show>
                 </TitleContainer>
-                <Show when={showPlaceHolder()} fallback={<SshKeys keys={userKeys()?.keys} refetchKeys={refetchKeys} />}>
-                  <List.Container>
-                    <List.PlaceHolder>
-                      <MaterialSymbols displaySize={80}>key_off</MaterialSymbols>
-                      No Keys Registered
-                      <AddNewSSHKeyButton />
-                    </List.PlaceHolder>
-                  </List.Container>
+                <Show
+                  when={userKeys()?.keys}
+                  fallback={
+                    <List.Container>
+                      <List.PlaceHolder>
+                        <MaterialSymbols displaySize={80}>key_off</MaterialSymbols>
+                        No Keys Registered
+                        <AddNewSSHKeyButton />
+                      </List.PlaceHolder>
+                    </List.Container>
+                  }
+                >
+                  <SshKeys keys={userKeys()?.keys!} refetchKeys={refetchKeys} />
                 </Show>
               </DataTable.Container>
             </MainViewContainer>

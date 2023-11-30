@@ -1,7 +1,7 @@
 import { Timestamp } from '@bufbuild/protobuf'
 import { Code, ConnectError } from '@connectrpc/connect'
 import { styled } from '@macaron-css/solid'
-import { Component, For, Ref, Show, createEffect, createMemo, createResource, createSignal, onCleanup } from 'solid-js'
+import { Component, For, Show, createEffect, createMemo, createResource, createSignal, onCleanup } from 'solid-js'
 import { ApplicationOutput } from '/@/api/neoshowcase/protobuf/gateway_pb'
 import { client, handleAPIError } from '/@/libs/api'
 import { toWithAnsi } from '/@/libs/buffers'
@@ -30,8 +30,9 @@ const loadLogChunk = async (appID: string, before: Timestamp): Promise<Applicati
 }
 
 const oldestTimestamp = (ts: ApplicationOutput[]): Timestamp =>
-  ts.reduce((acc, t) => minTimestamp(acc, t.time), Timestamp.now())
-const sortByTimestamp = (ts: ApplicationOutput[]) => ts.sort((a, b) => (lessTimestamp(a.time, b.time) ? -1 : 1))
+  ts.reduce((acc, t) => (t.time ? minTimestamp(acc, t.time) : acc), Timestamp.now())
+const sortByTimestamp = (ts: ApplicationOutput[]) =>
+  ts.sort((a, b) => (a.time && b.time ? (lessTimestamp(a.time, b.time) ? -1 : 1) : 0))
 
 export interface ContainerLogProps {
   appID: string
@@ -98,19 +99,20 @@ export const ContainerLog: Component<ContainerLogProps> = (props) => {
   const streamedLogOldest = createMemo(() => {
     const logs = streamedLog()
     if (logs.length === 0) return
-    return logs.reduce((acc, log) => minTimestamp(acc, log.time), Timestamp.now())
+    return logs.reduce((acc, log) => (log.time ? minTimestamp(acc, log.time) : acc), Timestamp.now())
   })
   createEffect(() => {
-    if (!streamedLogOldest()) return
-    if (lessTimestamp(streamedLogOldest(), loadedUntil())) {
-      setLoadedUntil(streamedLogOldest())
+    const oldest = streamedLogOldest()
+    if (!oldest) return
+    if (lessTimestamp(oldest, loadedUntil())) {
+      setLoadedUntil(oldest)
     }
   })
 
-  let logRef: Ref<HTMLDivElement>
+  let logRef: HTMLDivElement
   createEffect(() => {
     streamedLog()
-    const ref = logRef as HTMLDivElement
+    const ref = logRef
     if (!ref) return
     if (atBottom()) {
       ref.scrollTop = ref.scrollHeight
@@ -121,7 +123,7 @@ export const ContainerLog: Component<ContainerLogProps> = (props) => {
   const onScroll = (e: { target: Element }) => setAtBottom(isScrolledToBottom(e.target))
 
   return (
-    <LogContainer ref={logRef} overflowX="scroll" onScroll={onScroll}>
+    <LogContainer ref={logRef!} overflowX="scroll" onScroll={onScroll}>
       {/* cannot distinguish zero log and loading (but should be enough for most use-cases) */}
       <Show when={streamedLog().length > 0}>
         <LoadMoreContainer>
@@ -140,5 +142,5 @@ export const ContainerLog: Component<ContainerLogProps> = (props) => {
 }
 
 const formatLogLine = (log: ApplicationOutput, withTimestamp: boolean): string => {
-  return (withTimestamp ? `${log.time.toDate().toLocaleString()} ` : '') + toWithAnsi(log.log)
+  return (withTimestamp ? `${log.time?.toDate().toLocaleString()} ` : '') + toWithAnsi(log.log)
 }

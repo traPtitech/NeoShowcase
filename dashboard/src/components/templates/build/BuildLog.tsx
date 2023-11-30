@@ -1,5 +1,5 @@
 import { Code, ConnectError } from '@connectrpc/connect'
-import { Component, Ref, Show, createEffect, createResource, createSignal, onCleanup } from 'solid-js'
+import { Component, Show, createEffect, createResource, createSignal, onCleanup } from 'solid-js'
 import { client } from '/@/libs/api'
 import { concatBuffers, toUTF8WithAnsi } from '/@/libs/buffers'
 import { isScrolledToBottom } from '/@/libs/scroll'
@@ -49,8 +49,8 @@ export const BuildLog: Component<BuildLogProps> = (props) => {
     logStreamAbort.abort()
   })
 
-  let logRef: Ref<HTMLDivElement>
-  let streamLogRef: Ref<HTMLDivElement>
+  let logRef: HTMLDivElement
+  let streamLogRef: HTMLDivElement
   createEffect(() => {
     if (!buildLog()) return
     const ref = logRef as HTMLDivElement
@@ -74,10 +74,10 @@ export const BuildLog: Component<BuildLogProps> = (props) => {
   return (
     <>
       <Show when={buildLog()}>
-        <LogContainer innerHTML={toUTF8WithAnsi(buildLog().log)} ref={logRef} />
+        <LogContainer innerHTML={toUTF8WithAnsi(buildLog()!.log)} ref={logRef!} />
       </Show>
       <Show when={!buildLog() && buildLogStream()}>
-        <LogContainer innerHTML={toUTF8WithAnsi(streamedLog())} ref={streamLogRef} onScroll={onScroll} />
+        <LogContainer innerHTML={toUTF8WithAnsi(streamedLog())} ref={streamLogRef!} onScroll={onScroll} />
       </Show>
     </>
   )

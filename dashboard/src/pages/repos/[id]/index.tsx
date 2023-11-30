@@ -20,7 +20,7 @@ const MainView = styled('div', {
 
 export default () => {
   const { repo, apps, hasPermission } = useRepositoryData()
-  const loaded = () => !!(repo() && apps())
+  const loaded = () => repo.state === 'ready' && apps.state === 'ready'
   const navigator = useNavigate()
   const showPlaceHolder = createMemo(() => apps()?.length === 0)
 
@@ -62,7 +62,7 @@ export default () => {
                 <AddNewAppButton />
               </Show>
             </DataTable.Title>
-            <Show when={showPlaceHolder()} fallback={<AppsList apps={apps()} />}>
+            <Show when={showPlaceHolder()} fallback={<AppsList apps={apps()!} />}>
               <List.Container>
                 <List.PlaceHolder>
                   <MaterialSymbols displaySize={80}>deployed_code</MaterialSymbols>
@@ -85,7 +85,7 @@ export default () => {
                 <List.RowContent>
                   <List.RowTitle>URL</List.RowTitle>
                   <List.RowData>
-                    <URLText text={repo()?.url} href={repo()?.htmlUrl} />
+                    <URLText text={repo()!.url} href={repo()!.htmlUrl} />
                   </List.RowData>
                 </List.RowContent>
               </List.Row>

@@ -207,7 +207,7 @@ export default () => {
     (id) => client.getEnvVars({ id }),
   )
 
-  const loaded = () => !!envVars()
+  const loaded = () => envVars.state === 'ready'
   return (
     <DataTable.Container>
       <DataTable.Title>Environment Variables</DataTable.Title>
@@ -218,7 +218,7 @@ export default () => {
         }
       >
         <Show when={loaded()}>
-          <EnvVarConfig appId={app()?.id} envVars={structuredClone(envVars())} refetchEnvVars={refetchEnvVars} />
+          <EnvVarConfig appId={app()!.id} envVars={structuredClone(envVars()!)} refetchEnvVars={refetchEnvVars} />
         </Show>
       </Show>
     </DataTable.Container>

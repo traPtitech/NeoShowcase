@@ -1,5 +1,5 @@
 import { Timestamp } from '@bufbuild/protobuf'
-import { Chart, ChartData, ChartOptions, Colors, Filler, Legend, Title, Tooltip } from 'chart.js'
+import { CartesianTickOptions, Chart, ChartData, ChartOptions, Colors, Filler, Legend, Title, Tooltip } from 'chart.js'
 import { Line } from 'solid-chartjs'
 import { Component, Show, createEffect, createMemo, mergeProps, onCleanup, splitProps } from 'solid-js'
 import { createResource } from 'solid-js'
@@ -50,19 +50,23 @@ export const AppMetrics: Component<AppMetricsProps> = (props) => {
   const refetchTimer = setInterval(refetchData, 60000)
   onCleanup(() => clearInterval(refetchTimer))
 
-  const maxDataVal = createMemo(() => data() && Math.max(...data().metrics.map((m) => m.value)))
+  const maxDataVal = createMemo(() => (data.state === 'ready' ? Math.max(...data().metrics.map((m) => m.value)) : 0))
   const chartData = (): ChartData => {
-    if (!data()) return
-    const labels = data().metrics.map((m) => m.time.toDate().toLocaleTimeString())
-    const values = data().metrics.map((m) => m.value)
+    if (data.state === 'ready') {
+      const labels = data().metrics.map((m) => m.time?.toDate().toLocaleTimeString())
+      const values = data().metrics.map((m) => m.value)
+      return {
+        labels,
+        datasets: [
+          {
+            label: basicProps.metricsName,
+            data: values,
+          },
+        ],
+      }
+    }
     return {
-      labels,
-      datasets: [
-        {
-          label: basicProps.metricsName,
-          data: values,
-        },
-      ],
+      datasets: [],
     }
   }
   createEffect(() => {
@@ -82,7 +86,7 @@ export const AppMetrics: Component<AppMetricsProps> = (props) => {
         min: options.min,
         max: options.max ? Math.min(maxDataVal() * 1.2 || options.max, options.max) : maxDataVal() * 1.2,
         ticks: {
-          callback: options.yLabel,
+          callback: options.yLabel as CartesianTickOptions['callback'],
         },
       },
     },

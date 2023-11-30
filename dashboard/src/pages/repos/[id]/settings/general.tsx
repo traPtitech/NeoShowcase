@@ -178,14 +178,14 @@ const DeleteProject: Component<{
 
 export default () => {
   const { repo, refetchRepo, apps, hasPermission } = useRepositoryData()
-  const loaded = () => !!(repo() && apps())
+  const loaded = () => repo.state === 'ready' && apps.state === 'ready'
 
   return (
     <DataTable.Container>
       <DataTable.Title>General</DataTable.Title>
       <Show when={loaded()}>
-        <NameConfig repo={repo()} refetchRepo={refetchRepo} hasPermission={hasPermission()} />
-        <DeleteProject repo={repo()} apps={apps()} hasPermission={hasPermission()} />
+        <NameConfig repo={repo()!} refetchRepo={refetchRepo} hasPermission={hasPermission()} />
+        <DeleteProject repo={repo()!} apps={apps()!} hasPermission={hasPermission()} />
       </Show>
     </DataTable.Container>
   )

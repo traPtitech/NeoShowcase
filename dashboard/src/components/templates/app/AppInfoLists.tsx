@@ -7,7 +7,7 @@ import { ToolTip } from '../../UI/ToolTip'
 import { List } from '../List'
 
 const AppInfoLists: Component<{ app: Application }> = (props) => {
-  const sshAccessCommand = () => `ssh -p ${systemInfo().ssh.port} ${props.app.id}@${systemInfo().ssh.host}`
+  const sshAccessCommand = () => `ssh -p ${systemInfo()?.ssh?.port} ${props.app.id}@${systemInfo()?.ssh?.host}`
 
   return (
     <>

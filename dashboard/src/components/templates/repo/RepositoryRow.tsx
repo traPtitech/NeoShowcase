@@ -69,7 +69,7 @@ export interface Props {
 }
 
 export const RepositoryRow: Component<Props> = (props) => {
-  const canEdit = () => user()?.admin || props.repository?.ownerIds.includes(user()?.id)
+  const canEdit = () => user()?.admin || (user.state === 'ready' && props.repository?.ownerIds.includes(user()?.id))
 
   return (
     <Show when={props.repository} fallback={<RepositoryRowSkeleton />}>

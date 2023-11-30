@@ -143,7 +143,7 @@ const textareaStyle = style({
 })
 
 export interface Props extends JSX.InputHTMLAttributes<HTMLInputElement | HTMLTextAreaElement> {
-  value: string
+  value?: string
   error?: string
   label?: string
   leftIcon?: JSX.Element
@@ -166,7 +166,9 @@ export const TextField: Component<Props> = (props) => {
   )
 
   const handleCopy = () => {
-    writeToClipboard(rootProps.value?.toString())
+    if (rootProps.value) {
+      writeToClipboard(rootProps.value.toString())
+    }
   }
 
   return (

@@ -9,7 +9,7 @@ import { useApplicationData } from '/@/routes'
 
 export default () => {
   const { app, refetchApp, hasPermission } = useApplicationData()
-  const loaded = () => !!(app() && users())
+  const loaded = () => app.state === 'ready' && users.state === 'ready'
 
   const handleAddOwner = async (user: User) => {
     const newOwnerIds = app()?.ownerIds.concat(user.id)
@@ -47,8 +47,8 @@ export default () => {
       </DataTable.SubTitle>
       <Show when={loaded()}>
         <OwnerList
-          owners={app()?.ownerIds.map(userFromId)}
-          users={users()}
+          owners={app()!.ownerIds.map(userFromId)}
+          users={users()!}
           handleAddOwner={handleAddOwner}
           handleDeleteOwner={handleDeleteOwner}
           hasPermission={hasPermission()}

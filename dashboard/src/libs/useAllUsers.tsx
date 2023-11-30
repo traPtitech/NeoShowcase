@@ -14,9 +14,13 @@ export { users, mutateUsers, refetchUsers }
 // see: https://www.solidjs.com/docs/latest#createroot
 const usersMap = createRoot(() =>
   createMemo(() => {
-    if (!users()) return new Map<string, User>()
-    return new Map(users().map((user) => [user.id, user]))
+    if (users.state === 'ready') return new Map(users().map((user) => [user.id, user]))
+    return new Map<string, User>()
   }),
 )
 
-export const userFromId = (id: string) => usersMap().get(id)
+export const userFromId = (id: string) => {
+  const user = usersMap().get(id)
+  if (user) return user
+  throw new Error(`userFromId: user not found: ${id}`)
+}

@@ -72,64 +72,64 @@ const DockerfileConfigInfo: Component<{ config: BuildConfigRuntimeDockerfile | B
   )
 }
 
-const RuntimeConfigInfo: Component<{ config: RuntimeConfig }> = (props) => {
+const RuntimeConfigInfo: Component<{ config?: RuntimeConfig }> = (props) => {
   return (
-    <>
+    <Show when={props.config}>
       <List.Columns>
         <List.Row>
           <List.RowContent>
             <List.RowTitle>Use MariaDB</List.RowTitle>
-            <List.RowData>{`${props.config.useMariadb}`}</List.RowData>
+            <List.RowData>{`${props.config!.useMariadb}`}</List.RowData>
           </List.RowContent>
         </List.Row>
         <List.Row>
           <List.RowContent>
             <List.RowTitle>Use MongoDB</List.RowTitle>
-            <List.RowData>{`${props.config.useMongodb}`}</List.RowData>
+            <List.RowData>{`${props.config!.useMongodb}`}</List.RowData>
           </List.RowContent>
         </List.Row>
       </List.Columns>
-      <Show when={props.config.entrypoint !== ''}>
+      <Show when={props.config!.entrypoint !== ''}>
         <List.Row>
           <List.RowContent>
             <List.RowTitle>Entrypoint</List.RowTitle>
             <List.RowData>
-              <Code value={props.config.entrypoint} />
+              <Code value={props.config!.entrypoint} />
             </List.RowData>
           </List.RowContent>
         </List.Row>
       </Show>
-      <Show when={props.config.command !== ''}>
+      <Show when={props.config!.command !== ''}>
         <List.Row>
           <List.RowContent>
             <List.RowTitle>Command</List.RowTitle>
             <List.RowData>
-              <Code value={props.config.command} />
+              <Code value={props.config!.command} />
             </List.RowData>
           </List.RowContent>
         </List.Row>
       </Show>
-    </>
+    </Show>
   )
 }
-const StaticConfigInfo: Component<{ config: StaticConfig }> = (props) => {
+const StaticConfigInfo: Component<{ config?: StaticConfig }> = (props) => {
   return (
-    <>
+    <Show when={props.config}>
       <List.Row>
         <List.RowContent>
           <List.RowTitle>Artifact Path</List.RowTitle>
           <List.RowData>
-            <Code value={props.config.artifactPath} />
+            <Code value={props.config!.artifactPath} />
           </List.RowData>
         </List.RowContent>
       </List.Row>
       <List.Row>
         <List.RowContent>
           <List.RowTitle>Single Page Application</List.RowTitle>
-          <List.RowData>{`${props.config.spa}`}</List.RowData>
+          <List.RowData>{`${props.config!.spa}`}</List.RowData>
         </List.RowContent>
       </List.Row>
-    </>
+    </Show>
   )
 }
 

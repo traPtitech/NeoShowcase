@@ -9,17 +9,17 @@ import { AppNav } from '../../components/templates/app/AppNav'
 export default () => {
   const navigate = useNavigate()
   const { app, repo } = useApplicationData()
-  const loaded = () => !!(app() && repo())
+  const loaded = () => app.state === 'ready' && repo.state === 'ready'
 
   const matchIndexPage = useMatch(() => `/apps/${app()?.id}/`)
   const matchBuildsPage = useMatch(() => `/apps/${app()?.id}/builds/*`)
   const matchSettingsPage = useMatch(() => `/apps/${app()?.id}/settings/*`)
 
   return (
-    <Show when={loaded()}>
-      <WithNav.Container>
+    <WithNav.Container>
+      <Show when={loaded()}>
         <WithNav.Navs>
-          <AppNav app={app()} repository={repo()} />
+          <AppNav app={app()!} repository={repo()!} />
           <WithNav.Tabs>
             <TabRound onClick={() => navigate(`/apps/${app()?.id}`)} state={matchIndexPage() ? 'active' : 'default'}>
               <MaterialSymbols>insert_chart</MaterialSymbols>
@@ -41,10 +41,10 @@ export default () => {
             </TabRound>
           </WithNav.Tabs>
         </WithNav.Navs>
-        <WithNav.Body>
-          <Outlet />
-        </WithNav.Body>
-      </WithNav.Container>
-    </Show>
+      </Show>
+      <WithNav.Body>
+        <Outlet />
+      </WithNav.Body>
+    </WithNav.Container>
   )
 }

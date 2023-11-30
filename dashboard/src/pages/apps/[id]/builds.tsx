@@ -13,14 +13,14 @@ export default () => {
     () => app()?.id,
     (id) => client.getBuilds({ id }),
   )
-  const loaded = () => !!(app() && builds())
+  const loaded = () => !!(app.state === 'ready' && builds.state === 'ready')
 
-  const sortedBuilds = createMemo(
-    () =>
-      builds() &&
-      [...builds().builds].sort((b1, b2) => {
-        return b2.queuedAt.toDate().getTime() - b1.queuedAt.toDate().getTime()
-      }),
+  const sortedBuilds = createMemo(() =>
+    builds.state === 'ready'
+      ? [...builds().builds].sort((b1, b2) => {
+          return (b2.queuedAt?.toDate().getTime() ?? 0) - (b1.queuedAt?.toDate().getTime() ?? 0)
+        })
+      : [],
   )
   const showPlaceHolder = () => builds()?.builds.length === 0
 

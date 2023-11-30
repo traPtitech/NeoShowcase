@@ -23,7 +23,9 @@ const RepositoryData: RouteDataFunc<
     })
     return allAppsRes.applications.filter((app) => app.repositoryId === repo.id)
   })
-  const hasPermission = createMemo(() => (user()?.admin || repo()?.ownerIds.includes(user()?.id)) ?? false)
+  const hasPermission = createMemo(
+    () => (user()?.admin || (user.state === 'ready' && repo()?.ownerIds.includes(user()?.id))) ?? false,
+  )
   return {
     repo,
     refetchRepo,
@@ -50,7 +52,9 @@ const ApplicationData: RouteDataFunc<
     () => app()?.repositoryId,
     (id) => client.getRepository({ repositoryId: id }),
   )
-  const hasPermission = createMemo(() => (user()?.admin || app()?.ownerIds.includes(user()?.id)) ?? false)
+  const hasPermission = createMemo(
+    () => (user()?.admin || (user.state === 'ready' && app()?.ownerIds.includes(user()?.id))) ?? false,
+  )
   return {
     app,
     refetchApp,
@@ -78,7 +82,9 @@ const BuildData: RouteDataFunc<
     () => params.buildID,
     (buildId) => client.getBuild({ buildId }),
   )
-  const hasPermission = createMemo(() => (user()?.admin || app()?.ownerIds.includes(user()?.id)) ?? false)
+  const hasPermission = createMemo(
+    () => (user()?.admin || (user.state === 'ready' && app()?.ownerIds.includes(user()?.id))) ?? false,
+  )
   return {
     app,
     refetchApp,

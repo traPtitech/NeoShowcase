@@ -109,13 +109,12 @@ const AuthConfig: Component<{
 
 export default () => {
   const { repo, refetchRepo, hasPermission } = useRepositoryData()
-  const loaded = () => !!repo()
 
   return (
     <DataTable.Container>
       <DataTable.Title>Authorization</DataTable.Title>
-      <Show when={loaded()}>
-        <AuthConfig repo={repo()} refetchRepo={refetchRepo} hasPermission={hasPermission()} />
+      <Show when={repo.state === 'ready'}>
+        <AuthConfig repo={repo()!} refetchRepo={refetchRepo} hasPermission={hasPermission()} />
       </Show>
     </DataTable.Container>
   )

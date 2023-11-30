@@ -152,7 +152,9 @@ const PortSetting = (props: PortPublicationProps) => {
               />
             )}
           </Field>
-          <PortItem>/{protoToName[getValue(props.formStore, `${props.name}.protocol`)]}</PortItem>
+          <Show when={getValue(props.formStore, `${props.name}.protocol`)}>
+            {(protocol) => <PortItem>/{protoToName[protocol()]}</PortItem>}
+          </Show>
         </PortVisualContainer>
       </PortVisualContainer>
       <Show when={props.hasPermission}>

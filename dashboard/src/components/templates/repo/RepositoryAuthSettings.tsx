@@ -121,8 +121,9 @@ export const RepositoryAuthSettings = (props: Props) => {
     () => client.generateKeyPair({}),
   )
   createEffect(() => {
-    if (!tmpKey()) return
-    setValue(props.formStore, 'auth.ssh.keyId', tmpKey()?.keyId)
+    if (tmpKey.state === 'ready') {
+      setValue(props.formStore, 'auth.ssh.keyId', tmpKey().keyId)
+    }
   })
   const publicKey = () => (useTmpKey() ? tmpKey()?.publicKey : systemInfo()?.publicKey ?? '')
 

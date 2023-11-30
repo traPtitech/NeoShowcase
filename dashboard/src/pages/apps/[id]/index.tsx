@@ -6,7 +6,7 @@ import { Button } from '/@/components/UI/Button'
 import { MaterialSymbols } from '/@/components/UI/MaterialSymbols'
 import { DataTable } from '/@/components/layouts/DataTable'
 import { List } from '/@/components/templates/List'
-import { availableMetrics, client, handleAPIError, systemInfo } from '/@/libs/api'
+import { availableMetrics, client, handleAPIError } from '/@/libs/api'
 import { useApplicationData } from '/@/routes'
 import { colorVars, media } from '/@/theme'
 import AppDeployInfo from '../../../components/templates/app/AppDeployInfo'
@@ -145,13 +145,13 @@ const ChartContainer = styled('div', {
 })
 
 const Metrics: Component<{ app: Application }> = (props) => {
-  const { metricsNames } = availableMetrics()
-  const [currentView, setCurrentView] = createSignal(metricsNames[0])
+  const metricsNames = () => availableMetrics()?.metricsNames ?? []
+  const [currentView, setCurrentView] = createSignal(metricsNames()[0])
 
   return (
     <MetricsContainer>
       <MetricsTypeButtons>
-        <For each={metricsNames}>
+        <For each={metricsNames()}>
           {(metrics) => (
             <Button
               variants="text"
@@ -165,7 +165,7 @@ const Metrics: Component<{ app: Application }> = (props) => {
         </For>
       </MetricsTypeButtons>
       <ChartContainer>
-        <For each={metricsNames}>
+        <For each={metricsNames()}>
           {(metrics) => (
             <Show when={currentView() === metrics}>
               <AppMetrics appID={props.app.id} metricsName={metrics} />
@@ -198,23 +198,26 @@ const Logs: Component<{ app: Application }> = (props) => {
 const getLatestBuild = (appId: Application['id']): Promise<Build | undefined> =>
   client
     .getBuilds({ id: appId })
-    .then((res) => res.builds.sort((b1, b2) => b2.queuedAt.toDate().getTime() - b1.queuedAt.toDate().getTime())[0])
+    .then(
+      (res) =>
+        res.builds.sort((b1, b2) => (b2.queuedAt?.toDate().getTime() ?? 0) - (b1.queuedAt?.toDate().getTime() ?? 0))[0],
+    )
 
 export default () => {
   const { app, refetchApp, repo, hasPermission } = useApplicationData()
 
   const [latestBuild, { refetch: refetchLatestBuild }] = createResource(
-    () => app().id,
+    () => app()?.id,
     (appId) => getLatestBuild(appId),
   )
 
-  const loaded = () => !!(systemInfo() && app() && repo())
+  const loaded = () => app.state === 'ready' && repo.state === 'ready'
 
   const [disableRefresh, setDisableRefresh] = createSignal(false)
   const refreshRepo = async () => {
     setDisableRefresh(true)
     setTimeout(() => setDisableRefresh(false), 3000)
-    await client.refreshRepository({ repositoryId: repo().id })
+    await client.refreshRepository({ repositoryId: repo()?.id })
     await refetchApp()
   }
 
@@ -232,9 +235,9 @@ export default () => {
             <DataTable.Container>
               <DataTable.Title>Deployment</DataTable.Title>
               <AppDeployInfo
-                app={app()}
+                app={app()!}
                 refetchApp={refetchApp}
-                repo={repo()}
+                repo={repo()!}
                 refreshRepo={refreshRepo}
                 disableRefresh={disableRefresh}
                 latestBuildId={latestBuild()?.id}
@@ -248,9 +251,9 @@ export default () => {
             <DataTable.Container>
               <DataTable.Title>Build Status</DataTable.Title>
               <BuildStatus
-                app={app()}
+                app={app()!}
                 refetchApp={refetchApp}
-                repo={repo()}
+                repo={repo()!}
                 refreshRepo={refreshRepo}
                 disableRefresh={disableRefresh}
                 latestBuild={latestBuild()}
@@ -260,18 +263,18 @@ export default () => {
             </DataTable.Container>
             <DataTable.Container>
               <DataTable.Title>Information</DataTable.Title>
-              <AppInfoLists app={app()} />
+              <AppInfoLists app={app()!} />
             </DataTable.Container>
             <Show when={app()?.deployType === DeployType.RUNTIME && hasPermission()}>
               <DataTable.Container>
                 <DataTable.Title>Usage</DataTable.Title>
-                <Metrics app={app()} />
+                <Metrics app={app()!} />
               </DataTable.Container>
             </Show>
             <Show when={app()?.deployType === DeployType.RUNTIME && hasPermission()}>
               <DataTable.Container>
                 <DataTable.Title>Container Log</DataTable.Title>
-                <Logs app={app()} />
+                <Logs app={app()!} />
               </DataTable.Container>
             </Show>
           </MainView>

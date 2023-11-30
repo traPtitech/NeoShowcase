@@ -145,7 +145,9 @@ const BuildStatusTable: Component<{
       <List.Row>
         <List.RowContent>
           <List.RowTitle>Build Type</List.RowTitle>
-          <List.RowData>{buildTypeStr[props.app.config.buildConfig.case]}</List.RowData>
+          <List.RowData>
+            {props.app.config?.buildConfig.case ? buildTypeStr[props.app.config?.buildConfig.case] : "Couldn't detect"}
+          </List.RowData>
         </List.RowContent>
         <JumpButton href={`/apps/${props.app.id}/settings/build`} />
       </List.Row>
