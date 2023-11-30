@@ -19,6 +19,9 @@
       "recommended": true,
       "nursery": {
         "noUnusedImports": "error"
+      },
+      "style": {
+         "noNonNullAssertion": "warn"
       }
     }
   },
