@@ -1,4 +1,5 @@
 import { styled } from '@macaron-css/solid'
+import { createVirtualizer } from '@tanstack/solid-virtual'
 import Fuse from 'fuse.js'
 import { Component, For, Show, Suspense, createMemo, createResource, useTransition } from 'solid-js'
 import {
@@ -24,7 +25,9 @@ import { media } from '../theme'
 const MainView = styled('div', {
   base: {
     width: '100%',
-    display: 'flex',
+    height: '100%',
+    display: 'grid',
+    gridTemplateRows: 'auto 1fr',
     flexDirection: 'column',
     gap: '32px',
   },
@@ -169,11 +172,65 @@ const AppsList: Component<{
       .map((r) => r.item)
   })
 
-  return (
-    <Repositories>
-      <For each={filteredRepos()}>{(r) => <RepositoryList repository={r.repo} apps={r.apps} />}</For>
-    </Repositories>
+  let scrollParentRef: HTMLDivElement | undefined
+  const virtualizer = createMemo(() =>
+    createVirtualizer({
+      count: filteredRepos().length,
+      getScrollElement: () => scrollParentRef,
+      estimateSize: (i) => 76 + 16 + filteredRepos()[i].apps.length * 80,
+    }),
   )
+
+  const items = () => virtualizer().getVirtualItems()
+
+  return (
+    <div
+      ref={scrollParentRef}
+      class="List"
+      style={{
+        width: `100%`,
+        height: `100%`,
+        'padding-bottom': '16px',
+        overflow: 'auto',
+      }}
+    >
+      <div
+        style={{
+          height: `${virtualizer().getTotalSize()}px`,
+          width: '100%',
+          position: 'relative',
+        }}
+      >
+        <div
+          style={{
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            width: '100%',
+            transform: `translateY(${items()?.[0]?.start ?? 0}px)`,
+          }}
+        >
+          <For each={items() ?? []}>
+            {(vRow) => (
+              <div ref={vRow?.measureElement}>
+                <div style={{ 'padding-bottom': '16px' }}>
+                  <RepositoryList
+                    repository={filteredRepos()[vRow.index].repo}
+                    apps={filteredRepos()[vRow.index].apps}
+                  />
+                </div>
+              </div>
+            )}
+          </For>
+        </div>
+      </div>
+    </div>
+  )
+  // return (
+  //   <Repositories>
+  //     <For each={filteredRepos()}>{(r) => <RepositoryList repository={r.repo} apps={r.apps} />}</For>
+  //   </Repositories>
+  // )
 }
 
 export default () => {
@@ -225,7 +282,7 @@ export default () => {
         </WithNav.Tabs>
       </WithNav.Navs>
       <WithNav.Body>
-        <MainViewContainer background="grey">
+        <MainViewContainer background="grey" scrollable={false}>
           <MainView>
             <SortContainer>
               <TextField
@@ -240,20 +297,22 @@ export default () => {
                 <SingleSelect options={Object.values(sortItems)} placeholder="Sort" value={sort()} setValue={setSort} />
               </SortSelects>
             </SortContainer>
-            <Suspense
-              fallback={
-                <Repositories>
-                  <RepositoryList apps={[undefined]} />
-                  <RepositoryList apps={[undefined]} />
-                  <RepositoryList apps={[undefined]} />
-                  <RepositoryList apps={[undefined]} />
-                </Repositories>
-              }
-            >
-              <SuspenseContainer isPending={isPending()}>
-                <AppsList scope={scope()} statuses={statuses()} provider={provider()} query={query()} sort={sort()} />
-              </SuspenseContainer>
-            </Suspense>
+            <div style={{ height: '100%', 'overflow-y': 'hidden' }}>
+              <Suspense
+                fallback={
+                  <Repositories>
+                    <RepositoryList apps={[undefined]} />
+                    <RepositoryList apps={[undefined]} />
+                    <RepositoryList apps={[undefined]} />
+                    <RepositoryList apps={[undefined]} />
+                  </Repositories>
+                }
+              >
+                <SuspenseContainer isPending={isPending()}>
+                  <AppsList scope={scope()} statuses={statuses()} provider={provider()} query={query()} sort={sort()} />
+                </SuspenseContainer>
+              </Suspense>
+            </div>
           </MainView>
         </MainViewContainer>
       </WithNav.Body>

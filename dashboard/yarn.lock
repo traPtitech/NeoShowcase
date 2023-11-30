@@ -925,6 +925,11 @@
   resolved "https://registry.yarnpkg.com/@popperjs/core/-/core-2.11.8.tgz#6b79032e760a0899cd4204710beede972a3a185f"
   integrity sha512-P1st0aksCrn9sGZhp8GMYwBnQsbvAWsZAX44oXNNvLHGqAOcoVxmjZiohstwQ7SqKnbR47akdNi+uleWD8+g6A==
 
+"@reach/observe-rect@^1.1.0":
+  version "1.2.0"
+  resolved "https://registry.yarnpkg.com/@reach/observe-rect/-/observe-rect-1.2.0.tgz#d7a6013b8aafcc64c778a0ccb83355a11204d3b2"
+  integrity sha512-Ba7HmkFgfQxZqqaeIWWkNK0rEhpxVQHIoVyW1YDSkGsGIXzcaW4deC8B0pZrNSSyLTdIk7y+5olKt5+g0GmFIQ==
+
 "@rollup/rollup-android-arm-eabi@4.5.1":
   version "4.5.1"
   resolved "https://registry.yarnpkg.com/@rollup/rollup-android-arm-eabi/-/rollup-android-arm-eabi-4.5.1.tgz#11bea66c013e5a88a0f53f315b2d49cfd663584e"
@@ -1065,6 +1070,20 @@
   integrity sha512-FaruWX6KdudYloq1AHD/4nU+UsMTdNE8CKyrseXWEcgjDAbvkwJg2QGPAnfIJLIWsjZOSPLOAykK6fuYp4vp4A==
   dependencies:
     tslib "^2.4.0"
+
+"@tanstack/solid-virtual@^3.0.0-beta.6":
+  version "3.0.0-beta.6"
+  resolved "https://registry.yarnpkg.com/@tanstack/solid-virtual/-/solid-virtual-3.0.0-beta.6.tgz#4ea445499378d5b93b5c73f02465be45f1753936"
+  integrity sha512-/HjeHZb4UZxxFSAkICUEWOozGwHQpKlvtnUoS5uSMSuLOz0XM5vFq6zR6ENwAczKWDtkh8ntddk+zXAhyXOlEw==
+  dependencies:
+    "@reach/observe-rect" "^1.1.0"
+
+"@tanstack/virtual-core@^3.0.0-alpha.1":
+  version "3.0.0-alpha.1"
+  resolved "https://registry.yarnpkg.com/@tanstack/virtual-core/-/virtual-core-3.0.0-alpha.1.tgz#caf8c6df02ccce3f9c781b179276f76ea8b02223"
+  integrity sha512-Fa82aHSjxMVpqIg+yuxEj+mlSVadOjcqaMeD7uJ39JE8FHpGoO+53kyedIf+ypWD7zYlSWXB4ah/3W9NNHaI6g==
+  dependencies:
+    "@reach/observe-rect" "^1.1.0"
 
 "@trysound/sax@0.2.0":
   version "0.2.0"
