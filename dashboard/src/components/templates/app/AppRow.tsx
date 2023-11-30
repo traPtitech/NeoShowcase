@@ -7,6 +7,7 @@ import { colorOverlay } from '/@/libs/colorOverlay'
 import { diffHuman, shortSha } from '/@/libs/format'
 import { colorVars, textVars } from '/@/theme'
 import Badge from '../../UI/Badge'
+import Skeleton from '../../UI/Skeleton'
 import { ToolTip } from '../../UI/ToolTip'
 import { AppStatusIcon } from './AppStatusIcon'
 
@@ -92,39 +93,65 @@ const UrlContainer = styled('div', {
   },
 })
 
+const AppRowSkeleton: Component<{
+  dark?: boolean
+}> = (props) => {
+  return (
+    <Container dark={props.dark} style={{ 'pointer-events': 'none' }}>
+      <TitleContainer>
+        <Skeleton height={24} circle />
+        <AppName>
+          <Skeleton>App Name Placeholder</Skeleton>
+        </AppName>
+        <UpdatedAt>
+          <Skeleton>1 day ago</Skeleton>
+        </UpdatedAt>
+      </TitleContainer>
+      <MetaContainer>
+        <Skeleton>0000000</Skeleton>
+        <UrlContainer>
+          <Skeleton>https://example.com</Skeleton>
+        </UrlContainer>
+      </MetaContainer>
+    </Container>
+  )
+}
+
 export interface Props {
-  app: Application
+  app?: Application
   dark?: boolean
 }
 
 export const AppRow: Component<Props> = (props) => {
   return (
-    <A href={`/apps/${props.app.id}`}>
-      <Container dark={props.dark}>
-        <TitleContainer>
-          <AppStatusIcon state={applicationState(props.app)} />
-          <AppName>{props.app.name}</AppName>
-          <Show when={props.app.updatedAt}>
-            {(nonNullUpdatedAt) => {
-              const { diff, localeString } = diffHuman(nonNullUpdatedAt().toDate())
-              return (
-                <ToolTip props={{ content: localeString }}>
-                  <UpdatedAt>{diff}</UpdatedAt>
-                </ToolTip>
-              )
-            }}
-          </Show>
-        </TitleContainer>
-        <MetaContainer>
-          <LastCommitName>{shortSha(props.app.commit)}</LastCommitName>
-          <Show when={props.app.websites.length > 0}>
-            <UrlContainer>{getWebsiteURL(props.app.websites[0])}</UrlContainer>
-            <Show when={props.app.websites.length > 1}>
-              <Badge variant="text">{`+${props.app.websites.length - 1}`}</Badge>
+    <Show when={props.app} fallback={<AppRowSkeleton dark={props.dark} />}>
+      <A href={`/apps/${props.app!.id}`}>
+        <Container dark={props.dark}>
+          <TitleContainer>
+            <AppStatusIcon state={applicationState(props.app!)} />
+            <AppName>{props.app!.name}</AppName>
+            <Show when={props.app!.updatedAt}>
+              {(nonNullUpdatedAt) => {
+                const { diff, localeString } = diffHuman(nonNullUpdatedAt().toDate())
+                return (
+                  <ToolTip props={{ content: localeString }}>
+                    <UpdatedAt>{diff}</UpdatedAt>
+                  </ToolTip>
+                )
+              }}
             </Show>
-          </Show>
-        </MetaContainer>
-      </Container>
-    </A>
+          </TitleContainer>
+          <MetaContainer>
+            <LastCommitName>{shortSha(props.app!.commit)}</LastCommitName>
+            <Show when={props.app!.websites.length > 0}>
+              <UrlContainer>{getWebsiteURL(props.app!.websites[0])}</UrlContainer>
+              <Show when={props.app!.websites.length > 1}>
+                <Badge variant="text">{`+${props.app!.websites.length - 1}`}</Badge>
+              </Show>
+            </Show>
+          </MetaContainer>
+        </Container>
+      </A>
+    </Show>
   )
 }

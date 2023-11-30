@@ -250,7 +250,16 @@ export default () => {
                 <SingleSelect options={Object.values(sortItems)} placeholder="Sort" value={sort()} setValue={setSort} />
               </SortSelects>
             </SortContainer>
-            <Suspense fallback={<div>Loading...</div>}>
+            <Suspense
+              fallback={
+                <Repositories>
+                  <RepositoryList apps={[undefined]} />
+                  <RepositoryList apps={[undefined]} />
+                  <RepositoryList apps={[undefined]} />
+                  <RepositoryList apps={[undefined]} />
+                </Repositories>
+              }
+            >
               <AppsList
                 scope={scope()}
                 statuses={statuses()}

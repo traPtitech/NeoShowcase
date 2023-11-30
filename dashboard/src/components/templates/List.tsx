@@ -93,8 +93,8 @@ export const List = {
 }
 
 export const RepositoryList: Component<{
-  repository: Repository
-  apps: Application[]
+  repository?: Repository
+  apps: (Application | undefined)[]
 }> = (props) => {
   return (
     <Container>
@@ -104,7 +104,7 @@ export const RepositoryList: Component<{
   )
 }
 
-export const AppsList: Component<{ apps: Application[] }> = (props) => {
+export const AppsList: Component<{ apps: (Application | undefined)[] }> = (props) => {
   return (
     <Container>
       <For each={props.apps}>{(app) => <AppRow app={app} />}</For>
