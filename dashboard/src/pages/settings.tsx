@@ -34,8 +34,8 @@ const SshKeyRowContainer = styled('div', {
     alignItems: 'center',
     gap: '8px',
     overflowX: 'hidden',
+    background: colorVars.semantic.ui.primary,
 
-    borderBottom: `1px solid ${colorVars.semantic.ui.border}`,
     selectors: {
       '&:last-child': {
         borderBottom: 'none',
@@ -155,7 +155,7 @@ export default () => {
           <Nav title="Settings" />
         </WithNav.Navs>
         <WithNav.Body>
-          <Show when={userKeys()}>
+          <Show when={userKeys.state === 'ready'}>
             <MainViewContainer>
               <DataTable.Container>
                 <TitleContainer>
@@ -165,12 +165,12 @@ export default () => {
                       SSH鍵はruntimeアプリケーションのコンテナにssh接続するときに使います
                     </DataTable.SubTitle>
                   </DataTable.Titles>
-                  <Show when={userKeys()?.keys.length !== 0}>
+                  <Show when={userKeys()!.keys.length !== 0}>
                     <AddNewSSHKeyButton />
                   </Show>
                 </TitleContainer>
                 <Show
-                  when={userKeys()?.keys}
+                  when={userKeys()!.keys.length > 0}
                   fallback={
                     <List.Container>
                       <List.PlaceHolder>
@@ -181,7 +181,7 @@ export default () => {
                     </List.Container>
                   }
                 >
-                  <SshKeys keys={userKeys()?.keys!} refetchKeys={refetchKeys} />
+                  <SshKeys keys={userKeys()!.keys!} refetchKeys={refetchKeys} />
                 </Show>
               </DataTable.Container>
             </MainViewContainer>
