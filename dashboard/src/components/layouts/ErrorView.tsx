@@ -28,10 +28,21 @@ const Message = styled('p', {
     ...textVars.caption.medium,
   },
 })
+const ButtonsContainer = styled('div', {
+  base: {
+    display: 'flex',
+    flexDirection: 'row',
+    gap: '8px',
+  },
+})
 
 const ErrorView: Component<{
   error: unknown
 }> = (props) => {
+  const handleReload = () => {
+    window.location.reload()
+  }
+
   return (
     <Container>
       <MaterialSymbols fill displaySize={64} color={colorVars.semantic.accent.error}>
@@ -41,11 +52,21 @@ const ErrorView: Component<{
       <Show when={props.error instanceof Error}>
         <Message>{(props.error as Error).message}</Message>
       </Show>
-      <A href="/">
-        <Button size="medium" variants="border" leftIcon={<MaterialSymbols>arrow_back</MaterialSymbols>}>
-          Back to Home
+      <ButtonsContainer>
+        <A href="/">
+          <Button size="medium" variants="border" leftIcon={<MaterialSymbols>arrow_back</MaterialSymbols>}>
+            Back to Home
+          </Button>
+        </A>
+        <Button
+          onClick={handleReload}
+          size="medium"
+          variants="border"
+          leftIcon={<MaterialSymbols>refresh</MaterialSymbols>}
+        >
+          Reload Page
         </Button>
-      </A>
+      </ButtonsContainer>
     </Container>
   )
 }
