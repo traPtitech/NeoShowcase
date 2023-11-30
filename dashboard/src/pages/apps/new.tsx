@@ -38,6 +38,7 @@ import { Nav } from '/@/components/templates/Nav'
 import { MultiSelect } from '/@/components/templates/Select'
 import { client, handleAPIError, systemInfo } from '/@/libs/api'
 import { Provider, providerToIcon, repositoryURLToProvider } from '/@/libs/application'
+import { colorOverlay } from '/@/libs/colorOverlay'
 import { colorVars, media, textVars } from '/@/theme'
 import { AppGeneralConfig, AppGeneralForm } from '../../components/templates/app/AppGeneralConfig'
 import { BuildConfigForm, BuildConfigs, configToForm, formToConfig } from '../../components/templates/app/BuildConfigs'
@@ -64,8 +65,6 @@ const RepositoryListContainer = styled('div', {
     overflowY: 'auto',
     display: 'flex',
     flexDirection: 'column',
-
-    borderBottom: `1px solid ${colorVars.semantic.ui.border}`,
   },
 })
 const RepositoryButton = styled('button', {
@@ -158,12 +157,13 @@ const RegisterRepositoryButton = styled('div', {
     alignItems: 'center',
     gap: '8px',
     cursor: 'pointer',
+    background: colorVars.semantic.ui.primary,
     color: colorVars.semantic.text.black,
     ...textVars.text.bold,
 
     selectors: {
       '&:hover': {
-        background: colorVars.semantic.transparent.primaryHover,
+        background: colorOverlay(colorVars.semantic.ui.primary, colorVars.semantic.transparent.primaryHover),
       },
     },
   },
