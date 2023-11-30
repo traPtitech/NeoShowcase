@@ -15,6 +15,7 @@ import { MaterialSymbols } from '../components/UI/MaterialSymbols'
 import { TabRound } from '../components/UI/TabRound'
 import { TextField } from '../components/UI/TextField'
 import { MainViewContainer } from '../components/layouts/MainView'
+import SuspenseContainer from '../components/layouts/SuspenseContainer'
 import { WithNav } from '../components/layouts/WithNav'
 import { AppsNav } from '../components/templates/AppsNav'
 import { RepositoryList } from '../components/templates/List'
@@ -57,16 +58,6 @@ const Repositories = styled('div', {
     display: 'flex',
     flexDirection: 'column',
     gap: '16px',
-
-    opacity: 1,
-    transition: 'opacity 0.2s ease-in-out',
-  },
-  variants: {
-    isPending: {
-      true: {
-        opacity: 0.5,
-      },
-    },
   },
 })
 
@@ -133,7 +124,6 @@ const AppsList: Component<{
   provider: Provider[]
   query: string
   sort: keyof typeof sortItems
-  isPending?: boolean
 }> = (props) => {
   const appScope = () => {
     const mine = props.scope === GetRepositoriesRequest_Scope.MINE
@@ -180,7 +170,7 @@ const AppsList: Component<{
   })
 
   return (
-    <Repositories isPending={props.isPending}>
+    <Repositories>
       <For each={filteredRepos()}>{(r) => <RepositoryList repository={r.repo} apps={r.apps} />}</For>
     </Repositories>
   )
@@ -260,14 +250,9 @@ export default () => {
                 </Repositories>
               }
             >
-              <AppsList
-                scope={scope()}
-                statuses={statuses()}
-                provider={provider()}
-                query={query()}
-                sort={sort()}
-                isPending={isPending()}
-              />
+              <SuspenseContainer isPending={isPending()}>
+                <AppsList scope={scope()} statuses={statuses()} provider={provider()} query={query()} sort={sort()} />
+              </SuspenseContainer>
             </Suspense>
           </MainView>
         </MainViewContainer>

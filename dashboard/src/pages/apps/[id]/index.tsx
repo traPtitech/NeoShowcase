@@ -1,10 +1,11 @@
 import { styled } from '@macaron-css/solid'
-import { Component, For, Show, createResource, createSignal, onCleanup } from 'solid-js'
+import { Component, For, Show, createResource, createSignal, onCleanup, useTransition } from 'solid-js'
 import toast from 'solid-toast'
 import { Application, Build, DeployType, Repository } from '/@/api/neoshowcase/protobuf/gateway_pb'
 import { Button } from '/@/components/UI/Button'
 import { MaterialSymbols } from '/@/components/UI/MaterialSymbols'
 import { DataTable } from '/@/components/layouts/DataTable'
+import SuspenseContainer from '/@/components/layouts/SuspenseContainer'
 import { List } from '/@/components/templates/List'
 import { availableMetrics, client, handleAPIError } from '/@/libs/api'
 import { useApplicationData } from '/@/routes'
@@ -227,59 +228,63 @@ export default () => {
   const refetchLatestBuildTimer = setInterval(refetchLatestBuild, 10000)
   onCleanup(() => clearInterval(refetchLatestBuildTimer))
 
+  const [isPending] = useTransition()
+
   return (
-    <Container>
-      <Show when={loaded()}>
-        <MainViewContainer gray>
-          <MainView>
-            <DataTable.Container>
-              <DataTable.Title>Deployment</DataTable.Title>
-              <AppDeployInfo
-                app={app()!}
-                refetchApp={refetchApp}
-                repo={repo()!}
-                refreshRepo={refreshRepo}
-                disableRefresh={disableRefresh}
-                latestBuildId={latestBuild()?.id}
-                hasPermission={hasPermission()}
-              />
-            </DataTable.Container>
-          </MainView>
-        </MainViewContainer>
-        <MainViewContainer>
-          <MainView>
-            <DataTable.Container>
-              <DataTable.Title>Build Status</DataTable.Title>
-              <BuildStatus
-                app={app()!}
-                refetchApp={refetchApp}
-                repo={repo()!}
-                refreshRepo={refreshRepo}
-                disableRefresh={disableRefresh}
-                latestBuild={latestBuild()}
-                refetchLatestBuild={refetchLatestBuild}
-                hasPermission={hasPermission()}
-              />
-            </DataTable.Container>
-            <DataTable.Container>
-              <DataTable.Title>Information</DataTable.Title>
-              <AppInfoLists app={app()!} />
-            </DataTable.Container>
-            <Show when={app()?.deployType === DeployType.RUNTIME && hasPermission()}>
+    <SuspenseContainer isPending={isPending()}>
+      <Container>
+        <Show when={loaded()}>
+          <MainViewContainer gray>
+            <MainView>
               <DataTable.Container>
-                <DataTable.Title>Usage</DataTable.Title>
-                <Metrics app={app()!} />
+                <DataTable.Title>Deployment</DataTable.Title>
+                <AppDeployInfo
+                  app={app()!}
+                  refetchApp={refetchApp}
+                  repo={repo()!}
+                  refreshRepo={refreshRepo}
+                  disableRefresh={disableRefresh}
+                  latestBuildId={latestBuild()?.id}
+                  hasPermission={hasPermission()}
+                />
               </DataTable.Container>
-            </Show>
-            <Show when={app()?.deployType === DeployType.RUNTIME && hasPermission()}>
+            </MainView>
+          </MainViewContainer>
+          <MainViewContainer>
+            <MainView>
               <DataTable.Container>
-                <DataTable.Title>Container Log</DataTable.Title>
-                <Logs app={app()!} />
+                <DataTable.Title>Build Status</DataTable.Title>
+                <BuildStatus
+                  app={app()!}
+                  refetchApp={refetchApp}
+                  repo={repo()!}
+                  refreshRepo={refreshRepo}
+                  disableRefresh={disableRefresh}
+                  latestBuild={latestBuild()}
+                  refetchLatestBuild={refetchLatestBuild}
+                  hasPermission={hasPermission()}
+                />
               </DataTable.Container>
-            </Show>
-          </MainView>
-        </MainViewContainer>
-      </Show>
-    </Container>
+              <DataTable.Container>
+                <DataTable.Title>Information</DataTable.Title>
+                <AppInfoLists app={app()!} />
+              </DataTable.Container>
+              <Show when={app()?.deployType === DeployType.RUNTIME && hasPermission()}>
+                <DataTable.Container>
+                  <DataTable.Title>Usage</DataTable.Title>
+                  <Metrics app={app()!} />
+                </DataTable.Container>
+              </Show>
+              <Show when={app()?.deployType === DeployType.RUNTIME && hasPermission()}>
+                <DataTable.Container>
+                  <DataTable.Title>Container Log</DataTable.Title>
+                  <Logs app={app()!} />
+                </DataTable.Container>
+              </Show>
+            </MainView>
+          </MainViewContainer>
+        </Show>
+      </Container>
+    </SuspenseContainer>
   )
 }

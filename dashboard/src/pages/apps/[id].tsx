@@ -1,19 +1,22 @@
 import { Outlet, useMatch, useNavigate } from '@solidjs/router'
-import { Show } from 'solid-js'
+import { ErrorBoundary, Show, Suspense, startTransition } from 'solid-js'
 import { MaterialSymbols } from '/@/components/UI/MaterialSymbols'
 import { TabRound } from '/@/components/UI/TabRound'
+import ErrorView from '/@/components/layouts/ErrorView'
 import { WithNav } from '/@/components/layouts/WithNav'
 import { useApplicationData } from '/@/routes'
 import { AppNav } from '../../components/templates/app/AppNav'
 
 export default () => {
-  const navigate = useNavigate()
   const { app, repo } = useApplicationData()
   const loaded = () => !!(app() && repo())
 
   const matchIndexPage = useMatch(() => `/apps/${app()?.id}/`)
   const matchBuildsPage = useMatch(() => `/apps/${app()?.id}/builds/*`)
   const matchSettingsPage = useMatch(() => `/apps/${app()?.id}/settings/*`)
+
+  const navigator = useNavigate()
+  const navigate = (path: string) => startTransition(() => navigator(path))
 
   return (
     <WithNav.Container>
@@ -43,7 +46,11 @@ export default () => {
         </WithNav.Navs>
       </Show>
       <WithNav.Body>
-        <Outlet />
+        <ErrorBoundary fallback={(props) => <ErrorView {...props} />}>
+          <Suspense>
+            <Outlet />
+          </Suspense>
+        </ErrorBoundary>
       </WithNav.Body>
     </WithNav.Container>
   )

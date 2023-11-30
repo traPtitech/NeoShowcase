@@ -1,11 +1,12 @@
 import { styled } from '@macaron-css/solid'
 import { useNavigate } from '@solidjs/router'
-import { Show, createMemo } from 'solid-js'
+import { Show, createMemo, useTransition } from 'solid-js'
 import { Button } from '/@/components/UI/Button'
 import { MaterialSymbols } from '/@/components/UI/MaterialSymbols'
 import { URLText } from '/@/components/UI/URLText'
 import { DataTable } from '/@/components/layouts/DataTable'
 import { MainViewContainer } from '/@/components/layouts/MainView'
+import SuspenseContainer from '/@/components/layouts/SuspenseContainer'
 import { AppsList, List } from '/@/components/templates/List'
 import { useRepositoryData } from '/@/routes'
 
@@ -51,48 +52,52 @@ export default () => {
     </Button>
   )
 
+  const [isPending] = useTransition()
+
   return (
-    <MainViewContainer>
-      <MainView>
-        <Show when={loaded()}>
-          <DataTable.Container>
-            <DataTable.Title>
-              Apps
-              <Show when={!showPlaceHolder()}>
-                <AddNewAppButton />
-              </Show>
-            </DataTable.Title>
-            <Show when={showPlaceHolder()} fallback={<AppsList apps={apps()!} />}>
-              <List.Container>
-                <List.PlaceHolder>
-                  <MaterialSymbols displaySize={80}>deployed_code</MaterialSymbols>
-                  No Apps
+    <SuspenseContainer isPending={isPending()}>
+      <MainViewContainer>
+        <MainView>
+          <Show when={loaded()}>
+            <DataTable.Container>
+              <DataTable.Title>
+                Apps
+                <Show when={!showPlaceHolder()}>
                   <AddNewAppButton />
-                </List.PlaceHolder>
+                </Show>
+              </DataTable.Title>
+              <Show when={showPlaceHolder()} fallback={<AppsList apps={apps()!} />}>
+                <List.Container>
+                  <List.PlaceHolder>
+                    <MaterialSymbols displaySize={80}>deployed_code</MaterialSymbols>
+                    No Apps
+                    <AddNewAppButton />
+                  </List.PlaceHolder>
+                </List.Container>
+              </Show>
+            </DataTable.Container>
+            <DataTable.Container>
+              <DataTable.Title>Information</DataTable.Title>
+              <List.Container>
+                <List.Row>
+                  <List.RowContent>
+                    <List.RowTitle>Name</List.RowTitle>
+                    <List.RowData>{repo()?.name}</List.RowData>
+                  </List.RowContent>
+                </List.Row>
+                <List.Row>
+                  <List.RowContent>
+                    <List.RowTitle>URL</List.RowTitle>
+                    <List.RowData>
+                      <URLText text={repo()!.url} href={repo()!.htmlUrl} />
+                    </List.RowData>
+                  </List.RowContent>
+                </List.Row>
               </List.Container>
-            </Show>
-          </DataTable.Container>
-          <DataTable.Container>
-            <DataTable.Title>Information</DataTable.Title>
-            <List.Container>
-              <List.Row>
-                <List.RowContent>
-                  <List.RowTitle>Name</List.RowTitle>
-                  <List.RowData>{repo()?.name}</List.RowData>
-                </List.RowContent>
-              </List.Row>
-              <List.Row>
-                <List.RowContent>
-                  <List.RowTitle>URL</List.RowTitle>
-                  <List.RowData>
-                    <URLText text={repo()!.url} href={repo()!.htmlUrl} />
-                  </List.RowData>
-                </List.RowContent>
-              </List.Row>
-            </List.Container>
-          </DataTable.Container>
-        </Show>
-      </MainView>
-    </MainViewContainer>
+            </DataTable.Container>
+          </Show>
+        </MainView>
+      </MainViewContainer>
+    </SuspenseContainer>
   )
 }

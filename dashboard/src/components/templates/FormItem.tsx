@@ -1,6 +1,6 @@
 import { style } from '@macaron-css/core'
 import { styled } from '@macaron-css/solid'
-import { ParentComponent, Show } from 'solid-js'
+import { JSX, ParentComponent, Show } from 'solid-js'
 import { colorVars, textVars } from '/@/theme'
 import { TooltipProps } from '../UI/ToolTip'
 import { TooltipInfoIcon } from '../UI/TooltipInfoIcon'
@@ -38,7 +38,7 @@ export const errorTextStyle = style({
 })
 
 interface Props {
-  title: string
+  title: string | JSX.Element
   required?: boolean
   error?: string
   tooltip?: TooltipProps
