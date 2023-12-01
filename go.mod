@@ -42,7 +42,7 @@ require (
 	github.com/volatiletech/strmangle v0.0.5
 	github.com/whilp/git-urls v1.0.0
 	github.com/zeebo/xxh3 v1.0.2
-	go.mongodb.org/mongo-driver v1.12.1
+	go.mongodb.org/mongo-driver v1.13.0
 	golang.org/x/crypto v0.16.0
 	golang.org/x/exp v0.0.0-20231006140011-7918f672742d
 	golang.org/x/net v0.18.0
