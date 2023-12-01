@@ -16,16 +16,16 @@
   },
   "license": "MIT",
   "devDependencies": {
-    "@biomejs/biome": "1.2.2",
+    "@biomejs/biome": "1.4.1",
     "@macaron-css/core": "1.2.0",
     "@macaron-css/solid": "1.4.1",
     "@macaron-css/vite": "1.4.3",
-    "@types/node": "20.8.0",
-    "typescript": "5.2.2",
-    "vite": "4.4.9",
+    "@types/node": "20.10.1",
+    "typescript": "5.3.2",
+    "vite": "5.0.4",
     "vite-plugin-compression": "0.5.1",
     "vite-plugin-fonts": "0.7.0",
-    "vite-plugin-solid": "2.7.0",
+    "vite-plugin-solid": "2.7.2",
     "vite-plugin-solid-svg": "0.6.1"
   },
   "dependencies": {
