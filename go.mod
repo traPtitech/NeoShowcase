@@ -23,7 +23,7 @@ require (
 	github.com/labstack/echo/v4 v4.11.2
 	github.com/lukesampson/figlet v0.0.0-20190211215653-8a3ef4a6ac42
 	github.com/moby/buildkit v0.12.3
-	github.com/motoki317/sc v1.6.0
+	github.com/motoki317/sc v1.7.1
 	github.com/ncw/swift v1.0.53
 	github.com/prometheus/client_golang v1.17.0
 	github.com/prometheus/common v0.45.0
