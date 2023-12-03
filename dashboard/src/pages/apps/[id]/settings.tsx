@@ -1,5 +1,4 @@
 import { styled } from '@macaron-css/solid'
-import { Title } from '@solidjs/meta'
 import { Outlet, useMatch, useNavigate } from '@solidjs/router'
 import { ErrorBoundary, Show, Suspense, useTransition } from 'solid-js'
 import { Button } from '/@/components/UI/Button'
@@ -37,7 +36,6 @@ export default () => {
 
   return (
     <Suspense>
-      <Title>{`${app()?.name} - Settings - NeoShowcase`}</Title>
       <MainViewContainer>
         <Show when={loaded()}>
           <SideView.Container>

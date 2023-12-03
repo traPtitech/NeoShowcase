@@ -1,3 +1,4 @@
+import { Title } from '@solidjs/meta'
 import { Outlet, useMatch, useNavigate } from '@solidjs/router'
 import { ErrorBoundary, Show, Suspense, startTransition } from 'solid-js'
 import { MaterialSymbols } from '/@/components/UI/MaterialSymbols'
@@ -21,6 +22,7 @@ export default () => {
   return (
     <WithNav.Container>
       <Show when={loaded()}>
+        <Title>{`${app()?.name} - Application - NeoShowcase`}</Title>
         <WithNav.Navs>
           <AppNav app={app()!} repository={repo()!} />
           <WithNav.Tabs>

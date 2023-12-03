@@ -1,5 +1,4 @@
 import { styled } from '@macaron-css/solid'
-import { Title } from '@solidjs/meta'
 import { useNavigate } from '@solidjs/router'
 import { Show, createMemo, useTransition } from 'solid-js'
 import { Button } from '/@/components/UI/Button'
@@ -57,7 +56,6 @@ export default () => {
 
   return (
     <SuspenseContainer isPending={isPending()}>
-      <Title>{`${repo()?.name} - Overview - NeoShowcase`}</Title>
       <MainViewContainer>
         <MainView>
           <Show when={loaded()}>
