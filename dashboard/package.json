@@ -12,7 +12,8 @@
     "lint:force": "biome check src --apply-unsafe",
     "fix": "yarn fmt:apply && yarn lint:force",
     "typecheck": "tsc --noEmit",
-    "ci": "biome ci src"
+    "ci": "biome ci src",
+    "analyze": "vite build --mode analyze"
   },
   "license": "MIT",
   "devDependencies": {
@@ -22,6 +23,7 @@
     "@macaron-css/vite": "1.4.3",
     "@tanstack/virtual-core": "^3.0.0-alpha.1",
     "@types/node": "20.9.4",
+    "rollup-plugin-visualizer": "^5.9.3",
     "typescript": "5.3.2",
     "unplugin-fonts": "^1.0.3",
     "vite": "5.0.2",

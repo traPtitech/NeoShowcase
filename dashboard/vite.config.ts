@@ -5,8 +5,9 @@ import solidSvg from 'vite-plugin-solid-svg'
 import Unfonts from 'unplugin-fonts/vite'
 import { macaronVitePlugin } from '@macaron-css/vite'
 import viteCompression from 'vite-plugin-compression'
+import { visualizer } from 'rollup-plugin-visualizer'
 
-export default defineConfig({
+export default defineConfig(({mode}) => ({
   plugins: [
     macaronVitePlugin(), // comes first
     solidPlugin(),
@@ -40,5 +41,15 @@ export default defineConfig({
   },
   build: {
     target: 'esnext',
-  },
-})
+    rollupOptions: {
+      plugins: [ mode === "analyze" &&
+        visualizer({
+          open: true,
+          filename: 'dist/stats.html',
+          gzipSize: true,
+          brotliSize: true,
+        }),
+      ],
+    },
+  }
+}))
