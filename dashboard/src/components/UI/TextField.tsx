@@ -9,7 +9,7 @@ import { MaterialSymbols } from './MaterialSymbols'
 import { ToolTip, TooltipProps } from './ToolTip'
 import { TooltipInfoIcon } from './TooltipInfoIcon'
 
-const InputContainer = styled('div', {
+const Container = styled('div', {
   base: {
     width: '100%',
     display: 'flex',
@@ -25,64 +25,60 @@ export const ActionsContainer = styled('div', {
     gap: '1px',
   },
 })
-export const inputStyle = style({
+const inputStyle = style({
   width: '100%',
-  height: '48px',
-  padding: '10px 16px',
-
-  background: colorVars.semantic.ui.primary,
-  borderRadius: '8px',
+  height: '100%',
+  padding: '0',
   border: 'none',
-  outline: `1px solid ${colorVars.semantic.ui.border}`,
-  color: colorVars.semantic.text.black,
-  ...textVars.text.regular,
 
   selectors: {
     '&::placeholder': {
       color: colorVars.semantic.text.disabled,
     },
     '&:focus-visible': {
-      outline: `2px solid ${colorVars.semantic.primary.main}`,
-    },
-    '&[data-disabled]': {
-      cursor: 'not-allowed',
-      background: colorVars.semantic.ui.tertiary,
-    },
-    '&[data-invalid]': {
-      outline: `2px solid ${colorVars.semantic.accent.error}`,
+      outline: 'none',
     },
   },
 })
-const hasLeftIconStyle = style({
-  paddingLeft: '44px',
-})
-export const hasRightIconStyle = style({
-  paddingRight: '44px',
-})
-const copyableInputStyle = style({
-  borderRadius: '8px 0 0 8px',
-})
-const LeftIcon = styled('div', {
+const InputContainer = styled('div', {
   base: {
-    color: colorVars.semantic.text.disabled,
-    position: 'absolute',
-    width: '24px',
-    height: '24px',
-    left: '16px',
-    top: '12px',
+    width: '100%',
+    height: '48px',
+    padding: '0 16px',
     display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
+    gap: '4px',
+
+    background: colorVars.semantic.ui.primary,
+    borderRadius: '8px',
+    border: 'none',
+    outline: `1px solid ${colorVars.semantic.ui.border}`,
+    color: colorVars.semantic.text.black,
+    ...textVars.text.regular,
+
+    selectors: {
+      '&:focus-within': {
+        outline: `2px solid ${colorVars.semantic.primary.main}`,
+      },
+      [`&:has(${inputStyle}[data-disabled])`]: {
+        cursor: 'not-allowed',
+        background: colorVars.semantic.ui.tertiary,
+      },
+      [`&:has(${inputStyle}[data-invalid])`]: {
+        outline: `2px solid ${colorVars.semantic.accent.error}`,
+      },
+    },
+  },
+  variants: {
+    copyable: {
+      true: {
+        borderRadius: '8px 0 0 8px',
+      },
+    },
   },
 })
-const RightIcon = styled('div', {
+const Icon = styled('div', {
   base: {
     color: colorVars.semantic.text.disabled,
-    position: 'absolute',
-    width: '24px',
-    height: '24px',
-    right: '16px',
-    top: '12px',
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
@@ -187,25 +183,18 @@ export const TextField: Component<Props> = (props) => {
       <Show
         when={props.multiline}
         fallback={
-          <InputContainer>
+          <Container>
             <ToolTip {...props.tooltip}>
               <ActionsContainer>
-                <KTextField.Input
-                  class={inputStyle}
-                  classList={{
-                    [hasLeftIconStyle]: props.leftIcon !== undefined,
-                    [hasRightIconStyle]: props.rightIcon !== undefined,
-                    [copyableInputStyle]: props.copyable,
-                  }}
-                  {...inputProps}
-                  type={props.type}
-                />
-                <Show when={props.leftIcon}>
-                  <LeftIcon>{props.leftIcon}</LeftIcon>
-                </Show>
-                <Show when={props.rightIcon}>
-                  <RightIcon>{props.rightIcon}</RightIcon>
-                </Show>
+                <InputContainer copyable={props.copyable}>
+                  <Show when={props.leftIcon}>
+                    <Icon>{props.leftIcon}</Icon>
+                  </Show>
+                  <KTextField.Input class={inputStyle} {...inputProps} type={props.type} />
+                  <Show when={props.rightIcon}>
+                    <Icon>{props.rightIcon}</Icon>
+                  </Show>
+                </InputContainer>
                 <Show when={props.copyable}>
                   <CopyButton onClick={handleCopy} type="button">
                     <MaterialSymbols>content_copy</MaterialSymbols>
@@ -213,7 +202,7 @@ export const TextField: Component<Props> = (props) => {
                 </Show>
               </ActionsContainer>
             </ToolTip>
-          </InputContainer>
+          </Container>
         }
       >
         <KTextField.TextArea class={textareaStyle} {...inputProps} autoResize />

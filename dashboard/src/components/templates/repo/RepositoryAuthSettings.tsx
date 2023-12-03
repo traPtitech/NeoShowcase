@@ -41,9 +41,9 @@ const RefreshButtonContainer = styled('div', {
 })
 const VisibilityButton = styled('button', {
   base: {
-    width: '24px',
-    height: '24px',
-    padding: '0',
+    width: '40px',
+    height: '40px',
+    padding: '8px',
     background: 'none',
     border: 'none',
     borderRadius: '4px',

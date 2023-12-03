@@ -1,11 +1,9 @@
 import { Combobox as KComboBox, Select as KSelect } from '@kobalte/core'
 import { keyframes, style } from '@macaron-css/core'
-import { styled } from '@macaron-css/solid'
 import { JSX, Show, createMemo, splitProps } from 'solid-js'
 import { colorVars, textVars } from '/@/theme'
 import { CheckBoxIcon } from '../UI/CheckBoxIcon'
 import { MaterialSymbols } from '../UI/MaterialSymbols'
-import { hasRightIconStyle, inputStyle } from '../UI/TextField'
 import { ToolTip, TooltipProps } from '../UI/ToolTip'
 import { TooltipInfoIcon } from '../UI/TooltipInfoIcon'
 import { RequiredMark, TitleContainer, containerStyle, errorTextStyle, titleStyle } from './FormItem'
@@ -293,14 +291,12 @@ export const MultiSelect = <T extends string | number,>(props: MultiSelectProps<
   )
 }
 
-const ActionsContainer = styled('div', {
-  base: {
-    position: 'relative',
-    width: '100%',
-    maxWidth: '288px',
-    display: 'flex',
-    gap: '1px',
-  },
+const controlStyle = style({
+  position: 'relative',
+  width: '100%',
+  maxWidth: '288px',
+  display: 'flex',
+  gap: '1px',
 })
 const comboBoxTriggerStyle = style({
   color: colorVars.semantic.text.disabled,
@@ -315,6 +311,37 @@ const comboBoxTriggerStyle = style({
   border: 'none',
   background: 'none',
   cursor: 'pointer',
+})
+const comboBoxInputStyle = style({
+  width: '100%',
+  height: '48px',
+  padding: '0 16px',
+  display: 'flex',
+  gap: '4px',
+  paddingRight: '44px',
+
+  background: colorVars.semantic.ui.primary,
+  borderRadius: '8px',
+  border: 'none',
+  outline: `1px solid ${colorVars.semantic.ui.border}`,
+  color: colorVars.semantic.text.black,
+  ...textVars.text.regular,
+
+  selectors: {
+    '&::placeholder': {
+      color: colorVars.semantic.text.disabled,
+    },
+    '&:focus-visible': {
+      outline: `2px solid ${colorVars.semantic.primary.main}`,
+    },
+    '&[data-disabled]': {
+      cursor: 'not-allowed',
+      background: colorVars.semantic.ui.tertiary,
+    },
+    '&[data-invalid]': {
+      outline: `2px solid ${colorVars.semantic.accent.error}`,
+    },
+  },
 })
 
 export type ComboBoxProps<T extends string | number> = SelectProps<T> & {
@@ -377,15 +404,13 @@ export const ComboBox = <T extends string | number,>(props: SingleSelectProps<T>
       </Show>
       <KComboBox.HiddenSelect {...selectProps} />
       <ToolTip {...props.tooltip}>
-        <KComboBox.Control>
-          <ActionsContainer>
-            <KComboBox.Input class={[inputStyle, hasRightIconStyle].join(' ')} placeholder={props.placeholder} />
-            <KComboBox.Trigger class={comboBoxTriggerStyle}>
-              <KComboBox.Icon class={iconStyle}>
-                <MaterialSymbols color={colorVars.semantic.text.black}>expand_more</MaterialSymbols>
-              </KComboBox.Icon>
-            </KComboBox.Trigger>
-          </ActionsContainer>
+        <KComboBox.Control class={controlStyle}>
+          <KComboBox.Input class={comboBoxInputStyle} placeholder={props.placeholder} />
+          <KComboBox.Trigger class={comboBoxTriggerStyle}>
+            <KComboBox.Icon class={iconStyle}>
+              <MaterialSymbols color={colorVars.semantic.text.black}>expand_more</MaterialSymbols>
+            </KComboBox.Icon>
+          </KComboBox.Trigger>
         </KComboBox.Control>
       </ToolTip>
       <KComboBox.Portal>
