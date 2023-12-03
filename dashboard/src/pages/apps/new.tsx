@@ -95,7 +95,8 @@ const RepositoryRow = styled('div', {
     gridTemplateAreas: `
       "icon name count button"
       ". url url button"`,
-    gap: '8px',
+    rowGap: '2px',
+    columnGap: '8px',
     textAlign: 'left',
   },
 })
