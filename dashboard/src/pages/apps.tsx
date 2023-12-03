@@ -9,7 +9,7 @@ import {
   GetRepositoriesRequest_Scope,
   Repository,
 } from '/@/api/neoshowcase/protobuf/gateway_pb'
-import { MultiSelect, SelectOption, SingleSelect } from '/@/components/templates/Select'
+import { SelectOption } from '/@/components/templates/Select'
 import { client, systemInfo, user } from '/@/libs/api'
 import { ApplicationState, Provider, applicationState, repositoryURLToProvider } from '/@/libs/application'
 import { createLocalSignal } from '/@/libs/localStore'
@@ -20,6 +20,7 @@ import SuspenseContainer from '../components/layouts/SuspenseContainer'
 import { WithNav } from '../components/layouts/WithNav'
 import { AppsNav } from '../components/templates/AppsNav'
 import { RepositoryList } from '../components/templates/List'
+import AppsFilter from '../components/templates/app/AppsFilter'
 import { colorVars, media } from '../theme'
 
 const MainView = styled('div', {
@@ -61,14 +62,6 @@ const Filter = styled('div', {
     },
   },
 })
-const SortSelects = styled('div', {
-  base: {
-    width: '100%',
-    display: 'flex',
-    alignItems: 'center',
-    gap: '8px',
-  },
-})
 const Repositories = styled('div', {
   base: {
     width: '100%',
@@ -78,7 +71,7 @@ const Repositories = styled('div', {
   },
 })
 
-const sortItems: { [k in 'desc' | 'asc']: SelectOption<k> } = {
+export const sortItems: { [k in 'desc' | 'asc']: SelectOption<k> } = {
   desc: { value: 'desc', label: 'Newest' },
   asc: { value: 'asc', label: 'Oldest' },
 }
@@ -122,14 +115,14 @@ const compareRepoWithApp =
     return a.repo.id.localeCompare(b.repo.id)
   }
 
-const allStatuses: SelectOption<ApplicationState>[] = [
+export const allStatuses: SelectOption<ApplicationState>[] = [
   { label: 'Idle', value: ApplicationState.Idle },
   { label: 'Deploying', value: ApplicationState.Deploying },
   { label: 'Running', value: ApplicationState.Running },
   { label: 'Static', value: ApplicationState.Static },
   { label: 'Error', value: ApplicationState.Error },
 ]
-const allProviders: SelectOption<Provider>[] = [
+export const allProviders: SelectOption<Provider>[] = [
   { label: 'GitHub', value: 'GitHub' },
   { label: 'GitLab', value: 'GitLab' },
   { label: 'Gitea', value: 'Gitea' },
@@ -289,12 +282,17 @@ export default () => {
                 value={query()}
                 onInput={(e) => setQuery(e.currentTarget.value)}
                 leftIcon={<MaterialSymbols>search</MaterialSymbols>}
+                rightIcon={
+                  <AppsFilter
+                    statuses={statuses()}
+                    setStatues={setStatuses}
+                    provider={provider()}
+                    setProvider={setProvider}
+                    sort={sort()}
+                    setSort={setSort}
+                  />
+                }
               />
-              <SortSelects>
-                <MultiSelect options={allStatuses} placeholder="Status" value={statuses()} setValue={setStatuses} />
-                <MultiSelect options={allProviders} placeholder="Provider" value={provider()} setValue={setProvider} />
-                <SingleSelect options={Object.values(sortItems)} placeholder="Sort" value={sort()} setValue={setSort} />
-              </SortSelects>
             </Filter>
           </FilterContainer>
           <Suspense
