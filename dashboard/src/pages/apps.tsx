@@ -2,7 +2,7 @@ import { styled } from '@macaron-css/solid'
 import { Title } from '@solidjs/meta'
 import { createVirtualizer } from '@tanstack/solid-virtual'
 import Fuse from 'fuse.js'
-import { Component, For, Show, Suspense, createMemo, createResource, useTransition } from 'solid-js'
+import { Component, For, Show, Suspense, createMemo, createResource, createSignal, useTransition } from 'solid-js'
 import {
   Application,
   GetApplicationsRequest_Scope,
@@ -16,24 +16,37 @@ import { createLocalSignal } from '/@/libs/localStore'
 import { MaterialSymbols } from '../components/UI/MaterialSymbols'
 import { TabRound } from '../components/UI/TabRound'
 import { TextField } from '../components/UI/TextField'
-import { MainViewContainer } from '../components/layouts/MainView'
 import SuspenseContainer from '../components/layouts/SuspenseContainer'
 import { WithNav } from '../components/layouts/WithNav'
 import { AppsNav } from '../components/templates/AppsNav'
 import { RepositoryList } from '../components/templates/List'
-import { media } from '../theme'
+import { colorVars, media } from '../theme'
 
 const MainView = styled('div', {
   base: {
+    position: 'relative',
     width: '100%',
     height: '100%',
-    display: 'grid',
-    gridTemplateRows: 'auto 1fr',
-    flexDirection: 'column',
-    gap: '32px',
+    overflowY: 'auto',
+    padding: '0 max(calc(50% - 500px), 32px)',
+    background: colorVars.semantic.ui.background,
   },
 })
-const SortContainer = styled('div', {
+const FilterContainer = styled('div', {
+  base: {
+    position: 'sticky',
+    width: '100%',
+    top: '0',
+    left: '0',
+    padding: '40px 0 32px',
+    zIndex: 1,
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    background: `linear-gradient(180deg, ${colorVars.semantic.ui.background} 100px, rgba(255,255,255,0) 100%)`,
+  },
+})
+const Filter = styled('div', {
   base: {
     width: '100%',
     display: 'flex',
@@ -128,6 +141,7 @@ const AppsList: Component<{
   provider: Provider[]
   query: string
   sort: keyof typeof sortItems
+  parentRef: HTMLDivElement
 }> = (props) => {
   const appScope = () => {
     const mine = props.scope === GetRepositoriesRequest_Scope.MINE
@@ -173,12 +187,12 @@ const AppsList: Component<{
       .map((r) => r.item)
   })
 
-  let scrollParentRef: HTMLDivElement | undefined
   const virtualizer = createMemo(() =>
     createVirtualizer({
       count: filteredRepos().length,
-      getScrollElement: () => scrollParentRef,
+      getScrollElement: () => props.parentRef,
       estimateSize: (i) => 76 + 16 + filteredRepos()[i].apps.length * 80,
+      paddingEnd: 72,
     }),
   )
 
@@ -186,52 +200,33 @@ const AppsList: Component<{
 
   return (
     <div
-      ref={scrollParentRef}
-      class="List"
       style={{
-        width: `100%`,
-        height: `100%`,
-        'padding-bottom': '16px',
-        overflow: 'auto',
+        width: '100%',
+        height: `${virtualizer().getTotalSize()}px`,
+        position: 'relative',
       }}
     >
       <div
         style={{
-          height: `${virtualizer().getTotalSize()}px`,
+          position: 'absolute',
+          top: 0,
+          left: 0,
           width: '100%',
-          position: 'relative',
+          transform: `translateY(${items()?.[0]?.start ?? 0}px)`,
         }}
       >
-        <div
-          style={{
-            position: 'absolute',
-            top: 0,
-            left: 0,
-            width: '100%',
-            transform: `translateY(${items()?.[0]?.start ?? 0}px)`,
-          }}
-        >
-          <For each={items() ?? []}>
-            {(vRow) => (
-              <div ref={vRow?.measureElement}>
-                <div style={{ 'padding-bottom': '16px' }}>
-                  <RepositoryList
-                    repository={filteredRepos()[vRow.index].repo}
-                    apps={filteredRepos()[vRow.index].apps}
-                  />
-                </div>
+        <For each={items() ?? []}>
+          {(vRow) => (
+            <div ref={vRow?.measureElement}>
+              <div style={{ 'padding-bottom': '16px' }}>
+                <RepositoryList repository={filteredRepos()[vRow.index].repo} apps={filteredRepos()[vRow.index].apps} />
               </div>
-            )}
-          </For>
-        </div>
+            </div>
+          )}
+        </For>
       </div>
     </div>
   )
-  // return (
-  //   <Repositories>
-  //     <For each={filteredRepos()}>{(r) => <RepositoryList repository={r.repo} apps={r.apps} />}</For>
-  //   </Repositories>
-  // )
 }
 
 export default () => {
@@ -251,6 +246,8 @@ export default () => {
   const [provider, setProvider] = createLocalSignal<Provider[]>('apps-provider', ['GitHub', 'GitLab', 'Gitea'])
   const [query, setQuery] = createLocalSignal('apps-query', '')
   const [sort, setSort] = createLocalSignal<keyof typeof sortItems>('apps-sort', sortItems.asc.value)
+
+  const [scrollParentRef, setScrollParentRef] = createSignal<HTMLDivElement>()
 
   return (
     <WithNav.Container>
@@ -284,9 +281,9 @@ export default () => {
         </WithNav.Tabs>
       </WithNav.Navs>
       <WithNav.Body>
-        <MainViewContainer background="grey" scrollable={false}>
-          <MainView>
-            <SortContainer>
+        <MainView ref={setScrollParentRef}>
+          <FilterContainer>
+            <Filter>
               <TextField
                 placeholder="Search"
                 value={query()}
@@ -298,25 +295,30 @@ export default () => {
                 <MultiSelect options={allProviders} placeholder="Provider" value={provider()} setValue={setProvider} />
                 <SingleSelect options={Object.values(sortItems)} placeholder="Sort" value={sort()} setValue={setSort} />
               </SortSelects>
-            </SortContainer>
-            <div style={{ height: '100%', 'overflow-y': 'hidden' }}>
-              <Suspense
-                fallback={
-                  <Repositories>
-                    <RepositoryList apps={[undefined]} />
-                    <RepositoryList apps={[undefined]} />
-                    <RepositoryList apps={[undefined]} />
-                    <RepositoryList apps={[undefined]} />
-                  </Repositories>
-                }
-              >
-                <SuspenseContainer isPending={isPending()}>
-                  <AppsList scope={scope()} statuses={statuses()} provider={provider()} query={query()} sort={sort()} />
-                </SuspenseContainer>
-              </Suspense>
-            </div>
-          </MainView>
-        </MainViewContainer>
+            </Filter>
+          </FilterContainer>
+          <Suspense
+            fallback={
+              <Repositories>
+                <RepositoryList apps={[undefined]} />
+                <RepositoryList apps={[undefined]} />
+                <RepositoryList apps={[undefined]} />
+                <RepositoryList apps={[undefined]} />
+              </Repositories>
+            }
+          >
+            <SuspenseContainer isPending={isPending()}>
+              <AppsList
+                scope={scope()}
+                statuses={statuses()}
+                provider={provider()}
+                query={query()}
+                sort={sort()}
+                parentRef={scrollParentRef()!}
+              />
+            </SuspenseContainer>
+          </Suspense>
+        </MainView>
       </WithNav.Body>
     </WithNav.Container>
   )
