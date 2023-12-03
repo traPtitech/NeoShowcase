@@ -45,12 +45,7 @@ export const AppNav: Component<{
   repository: Repository
 }> = (props) => {
   return (
-    <Nav
-      title={props.app.name}
-      backTo={`/repos/${props.repository.id}`}
-      backToTitle="Repository"
-      icon={<MaterialSymbols displaySize={40}>deployed_code</MaterialSymbols>}
-    >
+    <Nav title={props.app.name} icon={<MaterialSymbols displaySize={40}>deployed_code</MaterialSymbols>}>
       <RepositoryInfoContainer>
         created from
         <A
