@@ -164,7 +164,7 @@ const AppsFilter: Component<{
                       <Checkbox.Indicator forceMount class={indicatorStyle}>
                         <CheckBoxIcon checked={props.statuses.includes(s.value)} />
                       </Checkbox.Indicator>
-                      <AppStatusIcon state={s.value} />
+                      <AppStatusIcon state={s.value} hideTooltip />
                       {s.label}
                     </Checkbox.Label>
                   </Checkbox.Root>

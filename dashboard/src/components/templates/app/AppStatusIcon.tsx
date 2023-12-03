@@ -39,6 +39,7 @@ const components: Record<ApplicationState, (size: IconProps) => JSXElement> = {
 interface Props {
   state: ApplicationState
   size?: number
+  hideTooltip?: boolean
 }
 
 export const AppStatusIcon = (props: Props): JSXElement => {
@@ -47,6 +48,7 @@ export const AppStatusIcon = (props: Props): JSXElement => {
       props={{
         content: props.state,
       }}
+      disabled={props.hideTooltip}
     >
       <Dynamic component={components[props.state]} size={props.size ?? 24} />
     </ToolTip>
