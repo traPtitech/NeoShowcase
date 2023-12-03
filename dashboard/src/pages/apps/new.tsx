@@ -16,6 +16,7 @@ import {
   onMount,
 } from 'solid-js'
 
+import { Title } from '@solidjs/meta'
 import { Accessor } from 'solid-js'
 import toast from 'solid-toast'
 import {
@@ -656,6 +657,7 @@ export default () => {
 
   return (
     <WithNav.Container>
+      <Title>Create Application - NeoShowcase</Title>
       <WithNav.Navs>
         <Nav title="Create Application" />
       </WithNav.Navs>

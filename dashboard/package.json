@@ -36,6 +36,7 @@
     "@kobalte/core": "^0.11.2",
     "@modular-forms/solid": "^0.20.0",
     "@solid-primitives/refs": "1.0.5",
+    "@solidjs/meta": "^0.29.1",
     "@solidjs/router": "0.9.1",
     "@tanstack/solid-virtual": "^3.0.0-beta.6",
     "ansi-to-html": "0.7.2",

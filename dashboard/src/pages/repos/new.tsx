@@ -1,5 +1,6 @@
 import { styled } from '@macaron-css/solid'
 import { SubmitHandler, createForm, getValue, required, setValue } from '@modular-forms/solid'
+import { Title } from '@solidjs/meta'
 import { useNavigate } from '@solidjs/router'
 import { createEffect } from 'solid-js'
 import toast from 'solid-toast'
@@ -95,6 +96,7 @@ export default () => {
 
   return (
     <WithNav.Container>
+      <Title>Register Repository - NeoShowcase</Title>
       <WithNav.Navs>
         <Nav title="Register Repository" backTo="/apps" backToTitle="Apps" />
       </WithNav.Navs>

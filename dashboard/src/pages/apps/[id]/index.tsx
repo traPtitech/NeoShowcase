@@ -1,4 +1,5 @@
 import { styled } from '@macaron-css/solid'
+import { Title } from '@solidjs/meta'
 import { Component, For, Show, createResource, createSignal, onCleanup, useTransition } from 'solid-js'
 import toast from 'solid-toast'
 import { Application, Build, DeployType, Repository } from '/@/api/neoshowcase/protobuf/gateway_pb'
@@ -232,6 +233,7 @@ export default () => {
 
   return (
     <SuspenseContainer isPending={isPending()}>
+      <Title>{`${app()?.name} - Overview - NeoShowcase`}</Title>
       <Container>
         <Show when={loaded()}>
           <MainViewContainer gray>

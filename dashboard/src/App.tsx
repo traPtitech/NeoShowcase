@@ -1,3 +1,4 @@
+import { MetaProvider, Title } from '@solidjs/meta'
 import { Router } from '@solidjs/router'
 import { type Component, ErrorBoundary } from 'solid-js'
 import { Toaster } from 'solid-toast'
@@ -7,7 +8,8 @@ import { WithHeader } from './components/layouts/WithHeader'
 
 const App: Component = () => {
   return (
-    <>
+    <MetaProvider>
+      <Title>NeoShowcase</Title>
       <Toaster
         toastOptions={{
           duration: 10000,
@@ -21,7 +23,7 @@ const App: Component = () => {
           </ErrorBoundary>
         </WithHeader>
       </Router>
-    </>
+    </MetaProvider>
   )
 }
 

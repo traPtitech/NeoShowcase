@@ -1,5 +1,6 @@
 import { Timestamp } from '@bufbuild/protobuf'
 import { styled } from '@macaron-css/solid'
+import { Title } from '@solidjs/meta'
 import { A } from '@solidjs/router'
 import { For, Show, VoidComponent, createResource } from 'solid-js'
 import { MaterialSymbols } from '/@/components/UI/MaterialSymbols'
@@ -109,6 +110,7 @@ export default () => {
   return (
     <MainViewContainer>
       <Show when={loaded()}>
+        <Title>{`${app()?.name} - Build - NeoShowcase`}</Title>
         <MainView>
           <DataTable.Container>
             <DataTable.Title>Build Status</DataTable.Title>

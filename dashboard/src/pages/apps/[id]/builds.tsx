@@ -1,3 +1,4 @@
+import { Title } from '@solidjs/meta'
 import { createMemo, createResource, useTransition } from 'solid-js'
 import { Show } from 'solid-js'
 import { MaterialSymbols } from '/@/components/UI/MaterialSymbols'
@@ -31,6 +32,7 @@ export default () => {
     <SuspenseContainer isPending={isPending()}>
       <MainViewContainer>
         <Show when={loaded()}>
+          <Title>{`${app()?.name} - Build History - NeoShowcase`}</Title>
           <DataTable.Container>
             <DataTable.Title>Builds</DataTable.Title>
             <Show

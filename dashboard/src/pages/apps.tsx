@@ -1,4 +1,5 @@
 import { styled } from '@macaron-css/solid'
+import { Title } from '@solidjs/meta'
 import { createVirtualizer } from '@tanstack/solid-virtual'
 import Fuse from 'fuse.js'
 import { Component, For, Show, Suspense, createMemo, createResource, useTransition } from 'solid-js'
@@ -253,6 +254,7 @@ export default () => {
 
   return (
     <WithNav.Container>
+      <Title>Apps - NeoShowcase</Title>
       <WithNav.Navs>
         <AppsNav />
         <WithNav.Tabs>

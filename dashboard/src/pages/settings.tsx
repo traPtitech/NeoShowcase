@@ -1,5 +1,6 @@
 import { styled } from '@macaron-css/solid'
 import { SubmitHandler, createForm, required } from '@modular-forms/solid'
+import { Title } from '@solidjs/meta'
 import { Component, For, Show, createResource } from 'solid-js'
 import toast from 'solid-toast'
 import { Button } from '/@/components/UI/Button'
@@ -150,6 +151,7 @@ export default () => {
 
   return (
     <>
+      <Title>Settings - NeoShowcase</Title>
       <WithNav.Container>
         <WithNav.Navs>
           <Nav title="Settings" />
