@@ -196,6 +196,10 @@ export default useRoutes([
     component: lazy(() => import('/@/pages/settings')),
   },
   {
+    path: '/builds',
+    component: lazy(() => import('/@/pages/builds')),
+  },
+  {
     path: '/*',
     component: () => <ErrorView error={new Error('Not Found')} />,
   },
