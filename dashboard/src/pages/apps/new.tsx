@@ -77,7 +77,7 @@ const RepositoryButton = styled('button', {
 
     selectors: {
       '&:hover': {
-        background: colorVars.semantic.transparent.primaryHover,
+        background: colorOverlay(colorVars.semantic.ui.primary, colorVars.semantic.transparent.primaryHover),
       },
       '&:not(:last-child)': {
         borderBottom: `1px solid ${colorVars.semantic.ui.border}`,
