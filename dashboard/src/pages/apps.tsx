@@ -43,7 +43,7 @@ const FilterContainer = styled('div', {
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
-    background: `linear-gradient(180deg, ${colorVars.semantic.ui.background} 100px, rgba(255,255,255,0) 100%)`,
+    background: `linear-gradient(0deg, rgba(255,255,255,0), ${colorVars.semantic.ui.background} 20px)`,
   },
 })
 const Filter = styled('div', {
