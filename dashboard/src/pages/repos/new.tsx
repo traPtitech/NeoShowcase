@@ -98,7 +98,7 @@ export default () => {
     <WithNav.Container>
       <Title>Register Repository - NeoShowcase</Title>
       <WithNav.Navs>
-        <Nav title="Register Repository" backTo="/apps" backToTitle="Apps" />
+        <Nav title="Register Repository" backTo="/apps/new" backToTitle="Select Repo" />
       </WithNav.Navs>
       <WithNav.Body>
         <MainViewContainer background="grey">
