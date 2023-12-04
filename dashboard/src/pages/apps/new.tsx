@@ -35,14 +35,15 @@ import { CheckBox } from '/@/components/templates/CheckBox'
 import { FormItem } from '/@/components/templates/FormItem'
 import { List } from '/@/components/templates/List'
 import { Nav } from '/@/components/templates/Nav'
-import { MultiSelect } from '/@/components/templates/Select'
+
 import { AppGeneralConfig, AppGeneralForm } from '/@/components/templates/app/AppGeneralConfig'
 import { BuildConfigForm, BuildConfigs, configToForm, formToConfig } from '/@/components/templates/app/BuildConfigs'
 import { WebsiteSetting, newWebsite } from '/@/components/templates/app/WebsiteSettings'
+import ReposFilter from '/@/components/templates/repo/ReposFilter'
 import { client, handleAPIError, systemInfo } from '/@/libs/api'
 import { Provider, providerToIcon, repositoryURLToProvider } from '/@/libs/application'
 import { colorOverlay } from '/@/libs/colorOverlay'
-import { colorVars, media, textVars } from '/@/theme'
+import { colorVars, textVars } from '/@/theme'
 
 const RepositoryStepContainer = styled('div', {
   base: {
@@ -169,20 +170,6 @@ const RegisterRepositoryButton = styled('div', {
     },
   },
 })
-const SortContainer = styled('div', {
-  base: {
-    width: '100%',
-    display: 'grid',
-    gridTemplateColumns: '1fr 288px',
-    gap: '16px',
-
-    '@media': {
-      [media.mobile]: {
-        gridTemplateColumns: '1fr',
-      },
-    },
-  },
-})
 
 const RepositoryStep: Component<{
   setRepo: (repo: Repository) => void
@@ -235,33 +222,13 @@ const RepositoryStep: Component<{
 
   return (
     <RepositoryStepContainer>
-      <SortContainer>
-        <TextField
-          placeholder="Search"
-          value={query()}
-          onInput={(e) => setQuery(e.currentTarget.value)}
-          leftIcon={<MaterialSymbols>search</MaterialSymbols>}
-        />
-        <MultiSelect
-          options={[
-            {
-              label: 'GitHub',
-              value: 'GitHub',
-            },
-            {
-              label: 'GitLab',
-              value: 'GitLab',
-            },
-            {
-              label: 'Gitea',
-              value: 'Gitea',
-            },
-          ]}
-          placeholder="Provider"
-          value={provider()}
-          setValue={setProvider}
-        />
-      </SortContainer>
+      <TextField
+        placeholder="Search"
+        value={query()}
+        onInput={(e) => setQuery(e.currentTarget.value)}
+        leftIcon={<MaterialSymbols>search</MaterialSymbols>}
+        rightIcon={<ReposFilter provider={provider()} setProvider={setProvider} />}
+      />
       <List.Container>
         <RepositoryListContainer>
           <For
