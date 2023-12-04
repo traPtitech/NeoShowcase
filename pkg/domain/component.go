@@ -36,7 +36,7 @@ type ControllerBuilderService interface {
 	ListenBuilderIdle() (sub <-chan struct{}, unsub func())
 	ListenBuildSettled() (sub <-chan struct{}, unsub func())
 	StartBuilds(buildIDs []string)
-	BroadcastBuilder(req *pb.BuilderRequest)
+	CancelBuild(buildID string)
 }
 
 type ControllerBuilderServiceClient interface {

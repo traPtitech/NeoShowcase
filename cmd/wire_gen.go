@@ -56,10 +56,7 @@ func NewBuilder(c Config) (component, error) {
 	if err != nil {
 		return nil, err
 	}
-	componentsConfig := c.Components
-	builderConfig := componentsConfig.Builder
-	controllerServiceClientConfig := builderConfig.Controller
-	controllerBuilderServiceClient := grpc.NewControllerBuilderServiceClient(controllerServiceClientConfig)
+	controllerBuilderServiceClient := provideControllerBuilderServiceClient(c)
 	buildpackBackend, err := provideBuildpackBackend(c)
 	if err != nil {
 		return nil, err
