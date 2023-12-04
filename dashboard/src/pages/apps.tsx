@@ -31,6 +31,12 @@ const MainView = styled('div', {
     overflowY: 'auto',
     padding: '0 max(calc(50% - 500px), 32px)',
     background: colorVars.semantic.ui.background,
+
+    '@media': {
+      [media.mobile]: {
+        padding: '0 16px',
+      },
+    },
   },
 })
 const FilterContainer = styled('div', {
@@ -45,21 +51,6 @@ const FilterContainer = styled('div', {
     alignItems: 'center',
     justifyContent: 'center',
     background: `linear-gradient(0deg, rgba(255,255,255,0), ${colorVars.semantic.ui.background} 20px)`,
-  },
-})
-const Filter = styled('div', {
-  base: {
-    width: '100%',
-    display: 'flex',
-    alignItems: 'center',
-    gap: '16px',
-
-    '@media': {
-      [media.mobile]: {
-        flexDirection: 'column',
-        gap: '8px',
-      },
-    },
   },
 })
 const Repositories = styled('div', {
@@ -276,24 +267,22 @@ export default () => {
       <WithNav.Body>
         <MainView ref={setScrollParentRef}>
           <FilterContainer>
-            <Filter>
-              <TextField
-                placeholder="Search"
-                value={query()}
-                onInput={(e) => setQuery(e.currentTarget.value)}
-                leftIcon={<MaterialSymbols>search</MaterialSymbols>}
-                rightIcon={
-                  <AppsFilter
-                    statuses={statuses()}
-                    setStatues={setStatuses}
-                    provider={provider()}
-                    setProvider={setProvider}
-                    sort={sort()}
-                    setSort={setSort}
-                  />
-                }
-              />
-            </Filter>
+            <TextField
+              placeholder="Search"
+              value={query()}
+              onInput={(e) => setQuery(e.currentTarget.value)}
+              leftIcon={<MaterialSymbols>search</MaterialSymbols>}
+              rightIcon={
+                <AppsFilter
+                  statuses={statuses()}
+                  setStatues={setStatuses}
+                  provider={provider()}
+                  setProvider={setProvider}
+                  sort={sort()}
+                  setSort={setSort}
+                />
+              }
+            />
           </FilterContainer>
           <Suspense
             fallback={
