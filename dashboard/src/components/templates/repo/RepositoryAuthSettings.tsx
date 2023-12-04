@@ -2,6 +2,7 @@ import { PlainMessage } from '@bufbuild/protobuf'
 import { styled } from '@macaron-css/solid'
 import { Field, FormStore, ValidateField, getValue, required, setValue } from '@modular-forms/solid'
 import { Match, Show, Switch, createEffect, createResource, createSignal } from 'solid-js'
+import { Suspense } from 'solid-js'
 import {
   CreateRepositoryAuth,
   CreateRepositoryRequest,
@@ -12,6 +13,7 @@ import { MaterialSymbols } from '/@/components/UI/MaterialSymbols'
 import { TextField } from '/@/components/UI/TextField'
 import { client, systemInfo } from '/@/libs/api'
 import { colorVars, textVars } from '/@/theme'
+import { TooltipInfoIcon } from '../../UI/TooltipInfoIcon'
 import { FormItem } from '../FormItem'
 import { RadioGroup, RadioOption } from '../RadioGroups'
 
@@ -206,26 +208,41 @@ export const RepositoryAuthSettings = (props: Props) => {
           <Field of={props.formStore} name="auth.ssh.keyId">
             {() => (
               <FormItem title="SSH公開鍵">
-                <SshKeyContainer>
-                  以下のSSH公開鍵{!useTmpKey() && '(システムデフォルト)'}
-                  をリポジトリに登録してください
-                  <TextField value={publicKey()} copyable={true} readonly />
-                  <Show when={!useTmpKey()}>
-                    <RefreshButtonContainer>
-                      <Button
-                        variants="textError"
-                        size="small"
-                        onClick={() => {
-                          setUseTmpKey(true)
-                        }}
-                        leftIcon={<MaterialSymbols opticalSize={20}>replay</MaterialSymbols>}
-                      >
-                        再生成する
-                      </Button>
-                      For Github.com
-                    </RefreshButtonContainer>
-                  </Show>
-                </SshKeyContainer>
+                <Suspense>
+                  <SshKeyContainer>
+                    以下のSSH公開鍵{useTmpKey() ? '(このリポジトリ専用)' : '(NeoShowcase全体共通)'}
+                    を、リポジトリのデプロイキーとして登録してください
+                    <TextField value={publicKey()} copyable={true} readonly />
+                    <Show when={!useTmpKey()}>
+                      <RefreshButtonContainer>
+                        <Button
+                          variants="textError"
+                          size="small"
+                          onClick={() => {
+                            setUseTmpKey(true)
+                          }}
+                          leftIcon={<MaterialSymbols opticalSize={20}>replay</MaterialSymbols>}
+                        >
+                          専用公開鍵を生成する
+                        </Button>
+                        <TooltipInfoIcon
+                          props={{
+                            content: (
+                              <>
+                                <div>このリポジトリ専用のSSH用鍵ペアを生成します。</div>
+                                <div>
+                                  NeoShowcase全体で共通の公開鍵が、リポジトリに登録できない場合に生成してください。
+                                </div>
+                                <div>GitHubプライベートリポジトリの場合は必ず生成が必要です。</div>
+                              </>
+                            ),
+                          }}
+                          style="left"
+                        />
+                      </RefreshButtonContainer>
+                    </Show>
+                  </SshKeyContainer>
+                </Suspense>
               </FormItem>
             )}
           </Field>
