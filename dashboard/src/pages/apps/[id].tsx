@@ -1,6 +1,6 @@
 import { Title } from '@solidjs/meta'
 import { Outlet, useMatch, useNavigate } from '@solidjs/router'
-import { ErrorBoundary, Show, Suspense, startTransition } from 'solid-js'
+import { ErrorBoundary, Show, startTransition } from 'solid-js'
 import { MaterialSymbols } from '/@/components/UI/MaterialSymbols'
 import { TabRound } from '/@/components/UI/TabRound'
 import ErrorView from '/@/components/layouts/ErrorView'
@@ -49,9 +49,7 @@ export default () => {
       </Show>
       <WithNav.Body>
         <ErrorBoundary fallback={(props) => <ErrorView {...props} />}>
-          <Suspense>
-            <Outlet />
-          </Suspense>
+          <Outlet />
         </ErrorBoundary>
       </WithNav.Body>
     </WithNav.Container>
