@@ -1,6 +1,8 @@
 package domain
 
 import (
+	"time"
+
 	"github.com/friendsofgo/errors"
 	"golang.org/x/crypto/ssh"
 )
@@ -29,13 +31,17 @@ type UserKey struct {
 	ID        string
 	UserID    string
 	PublicKey string
+	Name      string
+	CreatedAt time.Time
 }
 
-func NewUserKey(userID string, publicKey string) (*UserKey, error) {
+func NewUserKey(userID string, publicKey string, name string) (*UserKey, error) {
 	key := &UserKey{
 		ID:        NewID(),
 		UserID:    userID,
 		PublicKey: publicKey,
+		Name:      name,
+		CreatedAt: time.Now(),
 	}
 	if err := key.Validate(); err != nil {
 		return nil, err

@@ -55,6 +55,8 @@ message UserKey {
   string id = 1;
   string user_id = 2;
   string public_key = 3;
+  string name = 4;
+  google.protobuf.Timestamp created_at = 5;
 }
 
 // -- Repository
@@ -288,6 +290,7 @@ message GetUserKeysResponse {
 
 message CreateUserKeyRequest {
   string public_key = 1;
+  string name = 2;
 }
 
 message DeleteUserKeyRequest {

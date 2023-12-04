@@ -32,7 +32,7 @@ func (s *APIService) GetUsers(ctx context.Context, _ *connect.Request[emptypb.Em
 }
 
 func (s *APIService) CreateUserKey(ctx context.Context, c *connect.Request[pb.CreateUserKeyRequest]) (*connect.Response[pb.UserKey], error) {
-	key, err := s.svc.CreateUserKey(ctx, c.Msg.PublicKey)
+	key, err := s.svc.CreateUserKey(ctx, c.Msg.PublicKey, c.Msg.Name)
 	if err != nil {
 		return nil, handleUseCaseError(err)
 	}

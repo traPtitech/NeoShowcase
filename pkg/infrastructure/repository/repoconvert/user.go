@@ -26,6 +26,8 @@ func FromDomainUserKey(key *domain.UserKey) *models.UserKey {
 		ID:        key.ID,
 		UserID:    key.UserID,
 		PublicKey: key.PublicKey,
+		Name:      key.Name,
+		CreatedAt: key.CreatedAt,
 	}
 }
 
@@ -34,5 +36,7 @@ func ToDomainUserKey(key *models.UserKey) *domain.UserKey {
 		ID:        key.ID,
 		UserID:    key.UserID,
 		PublicKey: key.PublicKey,
+		Name:      key.Name,
+		CreatedAt: key.CreatedAt,
 	}
 }

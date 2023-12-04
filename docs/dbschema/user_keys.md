@@ -12,6 +12,8 @@ CREATE TABLE `user_keys` (
   `id` char(22) NOT NULL COMMENT 'ID',
   `user_id` char(22) NOT NULL COMMENT 'ユーザーID',
   `public_key` text NOT NULL COMMENT 'SSH Public Key',
+  `name` varchar(255) NOT NULL DEFAULT '' COMMENT 'キー名',
+  `created_at` datetime(6) NOT NULL DEFAULT '1970-01-01 00:00:00.000000' COMMENT '作成日時',
   PRIMARY KEY (`id`),
   KEY `fk_user_keys_user_id` (`user_id`),
   CONSTRAINT `fk_user_keys_user_id` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`)
@@ -27,6 +29,8 @@ CREATE TABLE `user_keys` (
 | id | char(22) |  | false |  |  | ID |
 | user_id | char(22) |  | false |  | [users](users.md) | ユーザーID |
 | public_key | text |  | false |  |  | SSH Public Key |
+| name | varchar(255) | '' | false |  |  | キー名 |
+| created_at | datetime(6) | '1970-01-01 00:00:00.000000' | false |  |  | 作成日時 |
 
 ## Constraints
 
@@ -53,6 +57,8 @@ erDiagram
   char_22_ id PK
   char_22_ user_id FK
   text public_key
+  varchar_255_ name
+  datetime_6_ created_at
 }
 "users" {
   char_22_ id PK

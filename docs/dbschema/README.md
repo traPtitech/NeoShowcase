@@ -15,7 +15,7 @@
 | [repository_auth](repository_auth.md) | 5 | Gitリポジトリ認証情報テーブル | BASE TABLE |
 | [repository_owners](repository_owners.md) | 2 | リポジトリ所有者テーブル | BASE TABLE |
 | [users](users.md) | 3 | ユーザーテーブル | BASE TABLE |
-| [user_keys](user_keys.md) | 3 | ユーザーSSHキーテーブル | BASE TABLE |
+| [user_keys](user_keys.md) | 5 | ユーザーSSHキーテーブル | BASE TABLE |
 | [websites](websites.md) | 9 | Webサイトテーブル | BASE TABLE |
 
 ## Relations
@@ -126,6 +126,8 @@ erDiagram
   char_22_ id PK
   char_22_ user_id FK
   text public_key
+  varchar_255_ name
+  datetime_6_ created_at
 }
 "websites" {
   char_22_ id PK
