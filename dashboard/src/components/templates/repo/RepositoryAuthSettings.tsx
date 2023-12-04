@@ -64,9 +64,9 @@ const VisibilityButton = styled('button', {
 })
 
 const AuthMethods: RadioOption<Exclude<CreateRepositoryAuth['auth']['case'], undefined>>[] = [
-  { label: 'SSH', value: 'ssh' },
-  { label: 'HTTPS', value: 'basic' },
   { label: '認証を使用しない', value: 'none' },
+  { label: 'BASIC認証', value: 'basic' },
+  { label: 'SSH公開鍵認証', value: 'ssh' },
 ]
 
 type AuthMethods = {
