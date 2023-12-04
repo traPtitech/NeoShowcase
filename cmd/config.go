@@ -58,6 +58,7 @@ type BuilderConfig struct {
 		K8s     bk8simpl.Config    `mapstructure:"k8s" yaml:"k8s"`
 	}
 	Controller grpc.ControllerServiceClientConfig `mapstructure:"controller" yaml:"controller"`
+	Priority   int                                `mapstructure:"priority" yaml:"priority"`
 }
 
 type ControllerConfig struct {
@@ -160,6 +161,8 @@ func init() {
 	viper.SetDefault("components.builder.buildpack.k8s.platformAPI", "0.11")
 
 	viper.SetDefault("components.builder.controller.url", "http://ns-controller:10000")
+
+	viper.SetDefault("components.builder.priority", 0)
 
 	viper.SetDefault("components.controller.port", 10000)
 	viper.SetDefault("components.controller.mode", "docker")

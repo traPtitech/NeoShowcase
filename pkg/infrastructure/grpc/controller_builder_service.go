@@ -1,14 +1,14 @@
 package grpc
 
 import (
-	"context"
-	"io"
-	"sync"
-
 	"connectrpc.com/connect"
+	"context"
 	"github.com/friendsofgo/errors"
 	"github.com/samber/lo"
 	log "github.com/sirupsen/logrus"
+	"golang.org/x/exp/slices"
+	"io"
+	"sync"
 
 	"github.com/traPtitech/neoshowcase/pkg/domain"
 	"github.com/traPtitech/neoshowcase/pkg/infrastructure/grpc/pb"
@@ -18,6 +18,27 @@ import (
 
 type builderConnection struct {
 	reqSender chan<- *pb.BuilderRequest
+	priority  int64
+	buildID   string
+}
+
+func (c *builderConnection) Send(req *pb.BuilderRequest) {
+	select {
+	case c.reqSender <- req:
+	default:
+	}
+}
+
+func (c *builderConnection) SetBuildID(id string) {
+	c.buildID = id
+}
+
+func (c *builderConnection) ClearBuildID() {
+	c.buildID = ""
+}
+
+func (c *builderConnection) Busy() bool {
+	return c.buildID != ""
 }
 
 type ControllerBuilderService struct {
@@ -73,11 +94,16 @@ func (s *ControllerBuilderService) ConnectBuilder(ctx context.Context, st *conne
 
 			s.lock.Lock()
 			switch res.Type {
+			case pb.BuilderResponse_CONNECTED:
+				payload := res.Body.(*pb.BuilderResponse_Connected).Connected
+				conn.priority = payload.Priority
 			case pb.BuilderResponse_BUILD_STARTED:
 				payload := res.Body.(*pb.BuilderResponse_Started).Started
+				conn.SetBuildID(payload.BuildId)
 				s.logStream.StartBuildLog(payload.BuildId)
 			case pb.BuilderResponse_BUILD_SETTLED:
 				payload := res.Body.(*pb.BuilderResponse_Settled).Settled
+				conn.ClearBuildID()
 				s.idle.Publish(struct{}{})
 				s.settled.Publish(struct{}{})
 				s.logStream.CloseBuildLog(payload.BuildId)
@@ -113,31 +139,39 @@ func (s *ControllerBuilderService) ListenBuildSettled() (sub <-chan struct{}, un
 	return s.settled.Subscribe()
 }
 
-func (s *ControllerBuilderService) broadcast(req *pb.BuilderRequest) {
-	for _, builder := range s.builderConnections {
-		select {
-		case builder.reqSender <- req:
-		default:
-		}
-	}
-}
-
 func (s *ControllerBuilderService) StartBuilds(buildIDs []string) {
 	s.lock.Lock()
 	defer s.lock.Unlock()
 
-	// Send at most n (= number of builders) build requests
-	n := len(s.builderConnections)
-	for _, buildID := range ds.FirstN(buildIDs, n) {
-		s.broadcast(&pb.BuilderRequest{
+	// Select available builders (and copy the slice)
+	conns := lo.Filter(s.builderConnections, func(c *builderConnection, _ int) bool { return !c.Busy() })
+	// Select from higher priority builders
+	slices.SortFunc(conns, ds.MoreFunc(func(c *builderConnection) int64 { return c.priority }))
+
+	// Send builds to available builders
+	for i, conn := range ds.FirstN(conns, len(buildIDs)) {
+		buildID := buildIDs[i]
+		conn.Send(&pb.BuilderRequest{
 			Type: pb.BuilderRequest_START_BUILD,
-			Body: &pb.BuilderRequest_StartBuild{StartBuild: &pb.StartBuildRequest{BuildId: buildID}},
+			Body: &pb.BuilderRequest_StartBuild{StartBuild: &pb.StartBuildRequest{
+				BuildId: buildID,
+			}},
 		})
 	}
 }
 
-func (s *ControllerBuilderService) BroadcastBuilder(req *pb.BuilderRequest) {
+func (s *ControllerBuilderService) CancelBuild(buildID string) {
 	s.lock.Lock()
 	defer s.lock.Unlock()
-	s.broadcast(req)
+
+	conns := lo.Filter(s.builderConnections, func(c *builderConnection, _ int) bool { return c.buildID == buildID })
+	// assert len(conns) <= 1
+	for _, conn := range conns {
+		conn.Send(&pb.BuilderRequest{
+			Type: pb.BuilderRequest_CANCEL_BUILD,
+			Body: &pb.BuilderRequest_CancelBuild{CancelBuild: &pb.BuildIdRequest{
+				BuildId: buildID,
+			}},
+		})
+	}
 }

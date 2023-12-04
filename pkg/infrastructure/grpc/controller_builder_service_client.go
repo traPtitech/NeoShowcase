@@ -14,14 +14,17 @@ import (
 )
 
 type ControllerBuilderServiceClient struct {
-	client pbconnect.ControllerBuilderServiceClient
+	client   pbconnect.ControllerBuilderServiceClient
+	priority int
 }
 
 func NewControllerBuilderServiceClient(
 	c ControllerServiceClientConfig,
+	priority int,
 ) domain.ControllerBuilderServiceClient {
 	return &ControllerBuilderServiceClient{
-		client: pbconnect.NewControllerBuilderServiceClient(web.NewH2CClient(), c.URL),
+		client:   pbconnect.NewControllerBuilderServiceClient(web.NewH2CClient(), c.URL),
+		priority: priority,
 	}
 }
 
@@ -38,7 +41,12 @@ func (c *ControllerBuilderServiceClient) ConnectBuilder(ctx context.Context, onR
 
 		// Need to send one arbitrary event to actually start the connection
 		// not sure if this is a bug with connect protocol or something
-		err := st.Send(&pb.BuilderResponse{Type: pb.BuilderResponse_CONNECTED})
+		err := st.Send(&pb.BuilderResponse{
+			Type: pb.BuilderResponse_CONNECTED,
+			Body: &pb.BuilderResponse_Connected{Connected: &pb.ConnectedBody{
+				Priority: int64(c.priority),
+			}},
+		})
 		if err != nil {
 			log.Errorf("failed to send connected event: %+v", err)
 			return

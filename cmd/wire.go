@@ -29,7 +29,6 @@ func NewAuthDev(c Config) (component, error) {
 func NewBuilder(c Config) (component, error) {
 	wire.Build(
 		providers,
-		wire.FieldsOf(new(BuilderConfig), "Controller"),
 		wire.Bind(new(component), new(*builder.Server)),
 		wire.Struct(new(builder.Server), "*"),
 	)

@@ -124,10 +124,10 @@ func (s *builderService) cancelBuild(buildID string) {
 	s.statusLock.Lock()
 	defer s.statusLock.Unlock()
 
-	if s.state != nil && s.stateCancel != nil {
-		if s.state.build.ID == buildID {
-			s.stateCancel()
-		}
+	if s.state != nil && s.stateCancel != nil && s.state.build.ID == buildID {
+		s.stateCancel()
+	} else {
+		log.Warnf("Skipping cancel build request for %v - a race condition or builder scheduling malfunction?", buildID)
 	}
 }
 
