@@ -22,10 +22,10 @@ export default () => {
   )
   const [apps] = createResource(
     () => params.id,
-    async () => {
-      const allAppsRes = await client.getApplications({ scope: GetApplicationsRequest_Scope.ALL })
-      return repo() ? allAppsRes.applications.filter((app) => app.repositoryId === repo()?.id) : []
-    },
+    (id) =>
+      client
+        .getApplications({ scope: GetApplicationsRequest_Scope.REPOSITORY, repositoryId: id })
+        .then((r) => r.applications),
   )
 
   const { Modal: DeleteRepoModal, open: openDeleteRepoModal, close: closeDeleteRepoModal } = useModal()
