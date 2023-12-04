@@ -43,6 +43,7 @@ components:
         platformAPI: "0.11"
     controller:
       url: http://ns-controller.ns-system.svc.cluster.local:10000
+    priority: 0
 
   controller:
     port: 10000
