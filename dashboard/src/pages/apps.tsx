@@ -1,8 +1,9 @@
 import { styled } from '@macaron-css/solid'
 import { Title } from '@solidjs/meta'
+import { A } from '@solidjs/router'
 import { createVirtualizer } from '@tanstack/solid-virtual'
 import Fuse from 'fuse.js'
-import { Component, For, Show, Suspense, createMemo, createResource, createSignal, useTransition } from 'solid-js'
+import { Component, For, Suspense, createMemo, createResource, createSignal, useTransition } from 'solid-js'
 import {
   Application,
   GetApplicationsRequest_Scope,
@@ -10,9 +11,10 @@ import {
   Repository,
 } from '/@/api/neoshowcase/protobuf/gateway_pb'
 import { SelectOption } from '/@/components/templates/Select'
-import { client, systemInfo, user } from '/@/libs/api'
+import { client, user } from '/@/libs/api'
 import { ApplicationState, Provider, applicationState, repositoryURLToProvider } from '/@/libs/application'
 import { createLocalSignal } from '/@/libs/localStore'
+import { Button } from '../components/UI/Button'
 import { MaterialSymbols } from '../components/UI/MaterialSymbols'
 import { TabRound } from '../components/UI/TabRound'
 import { TextField } from '../components/UI/TextField'
@@ -247,21 +249,11 @@ export default () => {
               </TabRound>
             )}
           </For>
-          <Show when={systemInfo()?.adminerUrl}>
-            <a
-              href={systemInfo()?.adminerUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              style={{
-                'margin-left': 'auto',
-              }}
-            >
-              <TabRound variant="ghost">
-                Adminer
-                <MaterialSymbols>open_in_new</MaterialSymbols>
-              </TabRound>
-            </a>
-          </Show>
+          <A href="/apps/new" style={{ 'margin-left': 'auto' }}>
+            <Button variants="primary" size="medium" leftIcon={<MaterialSymbols>add</MaterialSymbols>}>
+              Add New App
+            </Button>
+          </A>
         </WithNav.Tabs>
       </WithNav.Navs>
       <WithNav.Body>

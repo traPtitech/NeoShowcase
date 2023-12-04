@@ -3,10 +3,12 @@ import { A } from '@solidjs/router'
 import { Component, Show } from 'solid-js'
 import LogoImage from '/@/assets/logo.svg?url'
 import SmallLogoImage from '/@/assets/logo_small.svg?url'
-import { user } from '/@/libs/api'
-import { colorVars } from '/@/theme'
+import { systemInfo, user } from '/@/libs/api'
+import { colorVars, media } from '/@/theme'
 import { Button } from '../UI/Button'
+import { MaterialSymbols } from '../UI/MaterialSymbols'
 import { UserMenuButton } from '../UI/UserMenuButton'
+import MobileNavigation from './MobileNavigation'
 
 const Container = styled('div', {
   base: {
@@ -17,14 +19,47 @@ const Container = styled('div', {
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'flex-start',
-    gap: '24px',
+    gap: '12px',
     borderBottom: `1px solid ${colorVars.semantic.ui.border}`,
+  },
+})
+const NavigationContainer = styled('div', {
+  base: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: '8px',
+
+    '@media': {
+      [media.mobile]: {
+        display: 'none',
+      },
+    },
+  },
+})
+const MobileNavigationContainer = styled('div', {
+  base: {
+    display: 'none',
+
+    '@media': {
+      [media.mobile]: {
+        display: 'flex',
+        alignItems: 'center',
+      },
+    },
+  },
+})
+const UserMenuButtonContainer = styled('div', {
+  base: {
+    marginLeft: 'auto',
   },
 })
 
 export const Header: Component = () => {
   return (
     <Container>
+      <MobileNavigationContainer>
+        <MobileNavigation />
+      </MobileNavigationContainer>
       <A href="/">
         {/* 画面幅が768px以下の時はSmallLogoImageを表示する */}
         <picture>
@@ -32,17 +67,32 @@ export const Header: Component = () => {
           <img src={LogoImage} alt="NeoShowcase logo" />
         </picture>
       </A>
-      <A href="/apps">
-        <Button size="medium" variants="text">
-          Apps
-        </Button>
-      </A>
-      <A href="/builds" style={{ 'margin-right': 'auto' }}>
-        <Button size="medium" variants="text">
-          Queue
-        </Button>
-      </A>
-      <Show when={user()}>{(user) => <UserMenuButton user={user()} />}</Show>
+      <NavigationContainer>
+        <A href="/apps">
+          <Button size="medium" variants="text">
+            Apps
+          </Button>
+        </A>
+        <A href="/builds">
+          <Button size="medium" variants="text">
+            Queue
+          </Button>
+        </A>
+        <Show when={systemInfo()?.adminerUrl}>
+          <a href={systemInfo()?.adminerUrl} target="_blank" rel="noopener noreferrer">
+            <Button size="medium" variants="text" rightIcon={<MaterialSymbols>open_in_new</MaterialSymbols>}>
+              Adminer
+            </Button>
+          </a>
+        </Show>
+      </NavigationContainer>
+      <Show when={user()}>
+        {(user) => (
+          <UserMenuButtonContainer>
+            <UserMenuButton user={user()} />
+          </UserMenuButtonContainer>
+        )}
+      </Show>
     </Container>
   )
 }
