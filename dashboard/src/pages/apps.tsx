@@ -21,7 +21,7 @@ import { TextField } from '../components/UI/TextField'
 import SuspenseContainer from '../components/layouts/SuspenseContainer'
 import { WithNav } from '../components/layouts/WithNav'
 import { AppsNav } from '../components/templates/AppsNav'
-import { RepositoryList } from '../components/templates/List'
+import { List, RepositoryList } from '../components/templates/List'
 import AppsFilter from '../components/templates/app/AppsFilter'
 import { colorVars, media } from '../theme'
 
@@ -201,7 +201,17 @@ const AppsList: Component<{
           transform: `translateY(${items()?.[0]?.start ?? 0}px)`,
         }}
       >
-        <For each={items() ?? []}>
+        <For
+          each={items() ?? []}
+          fallback={
+            <List.Container>
+              <List.PlaceHolder>
+                <MaterialSymbols displaySize={80}>search</MaterialSymbols>
+                No Apps Found
+              </List.PlaceHolder>
+            </List.Container>
+          }
+        >
           {(vRow) => (
             <div ref={vRow?.measureElement}>
               <div style={{ 'padding-bottom': '16px' }}>
