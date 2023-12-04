@@ -65,7 +65,7 @@ const MetaContainer = styled('div', {
     ...textVars.caption.regular,
   },
 })
-const CommitName = styled('div', {
+const AppName = styled('div', {
   base: {
     width: 'fit-content',
     overflow: 'hidden',
@@ -75,22 +75,18 @@ const CommitName = styled('div', {
 })
 
 export interface Props {
-  appId: string
   build: Build
-  showAppId?: boolean
+  appName?: string
   isDeployed?: boolean
 }
 
 export const BuildRow: Component<Props> = (props) => {
   return (
-    <A href={`/apps/${props.appId}/builds/${props.build.id}`}>
+    <A href={`/apps/${props.build.applicationId}/builds/${props.build.id}`}>
       <Container>
         <TitleContainer>
           <BuildStatusIcon state={props.build.status} />
-          <BuildName>
-            Build {props.build.id}
-            {props.showAppId && ` (App ${props.appId})`}
-          </BuildName>
+          <BuildName>Build at {shortSha(props.build.commit)}</BuildName>
           <Show when={props.isDeployed}>
             <Badge variant="success">Deployed</Badge>
           </Show>
@@ -106,9 +102,11 @@ export const BuildRow: Component<Props> = (props) => {
             }}
           </Show>
         </TitleContainer>
-        <MetaContainer>
-          <CommitName>{shortSha(props.build.commit)}</CommitName>
-        </MetaContainer>
+        <Show when={props.appName}>
+          <MetaContainer>
+            <AppName>{props.appName}</AppName>
+          </MetaContainer>
+        </Show>
       </Container>
     </A>
   )

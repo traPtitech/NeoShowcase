@@ -18,9 +18,11 @@ export default () => {
 
   const sortedBuilds = createMemo(() =>
     builds.latest !== undefined
-      ? [...builds().builds].sort((b1, b2) => {
-          return (b2.queuedAt?.toDate().getTime() ?? 0) - (b1.queuedAt?.toDate().getTime() ?? 0)
-        })
+      ? [...builds().builds]
+          .sort((b1, b2) => {
+            return (b2.queuedAt?.toDate().getTime() ?? 0) - (b1.queuedAt?.toDate().getTime() ?? 0)
+          })
+          .map((b) => ({ build: b }))
       : [],
   )
   const showPlaceHolder = () => builds()?.builds.length === 0
@@ -35,7 +37,7 @@ export default () => {
             <DataTable.Title>Builds</DataTable.Title>
             <Show
               when={showPlaceHolder()}
-              fallback={<BuildList builds={sortedBuilds()} showAppID={false} deployedBuild={app()?.currentBuild} />}
+              fallback={<BuildList builds={sortedBuilds()} deployedBuild={app()?.currentBuild} />}
             >
               <List.Container>
                 <List.PlaceHolder>
