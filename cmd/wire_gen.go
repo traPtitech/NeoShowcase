@@ -129,7 +129,7 @@ func NewControllerDocker(c Config) (component, error) {
 	}
 	sshConfig := controllerConfig.SSH
 	adminerURL := c.AdminerURL
-	controllerServiceHandler := grpc.NewControllerService(backend, repofetcherService, cdserviceService, controllerBuilderService, service, publicKeys, sshConfig, adminerURL)
+	controllerServiceHandler := grpc.NewControllerService(backend, applicationRepository, repofetcherService, cdserviceService, controllerBuilderService, service, publicKeys, sshConfig, adminerURL)
 	apiServer := provideControllerServer(c, controllerServiceHandler, controllerBuilderService, controllerSSGenService)
 	userRepository := repository.NewUserRepository(db)
 	sshServer := sshserver.NewSSHServer(sshConfig, publicKeys, backend, applicationRepository, userRepository)
@@ -211,7 +211,7 @@ func NewControllerK8s(c Config) (component, error) {
 	}
 	sshConfig := controllerConfig.SSH
 	adminerURL := c.AdminerURL
-	controllerServiceHandler := grpc.NewControllerService(backend, repofetcherService, cdserviceService, controllerBuilderService, service, publicKeys, sshConfig, adminerURL)
+	controllerServiceHandler := grpc.NewControllerService(backend, applicationRepository, repofetcherService, cdserviceService, controllerBuilderService, service, publicKeys, sshConfig, adminerURL)
 	apiServer := provideControllerServer(c, controllerServiceHandler, controllerBuilderService, controllerSSGenService)
 	userRepository := repository.NewUserRepository(db)
 	sshServer := sshserver.NewSSHServer(sshConfig, publicKeys, backend, applicationRepository, userRepository)

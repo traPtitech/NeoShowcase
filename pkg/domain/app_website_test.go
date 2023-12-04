@@ -66,6 +66,50 @@ func TestAvailableDomain_Validate(t *testing.T) {
 	}
 }
 
+func TestAvailableDomain_SetAlreadyBound(t *testing.T) {
+	tests := []struct {
+		name     string
+		domain   string
+		existing *Website
+		want     bool
+	}{
+		{
+			name:     "Wildcard cannot be bound to one app",
+			domain:   "*.example.com",
+			existing: &Website{FQDN: "app.example.com", PathPrefix: "/"},
+			want:     false,
+		},
+		{
+			name:     "Bound to an app",
+			domain:   "app.example.com",
+			existing: &Website{FQDN: "app.example.com", PathPrefix: "/"},
+			want:     true,
+		},
+		{
+			name:     "Bound to a different domain",
+			domain:   "app.example.com",
+			existing: &Website{FQDN: "app2.example.com", PathPrefix: "/"},
+			want:     false,
+		},
+		{
+			name:     "Bound to path subset",
+			domain:   "app.example.com",
+			existing: &Website{FQDN: "app.example.com", PathPrefix: "/prefix"},
+			want:     false,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			a := &AvailableDomain{
+				Domain: tt.domain,
+			}
+			a.SetAlreadyBound([]*Application{{Websites: []*Website{tt.existing}}})
+			assert.Equal(t, tt.want, a.AlreadyBound)
+		})
+	}
+}
+
 func TestAvailableDomain_Match(t *testing.T) {
 	simpleTests := []struct {
 		name   string
