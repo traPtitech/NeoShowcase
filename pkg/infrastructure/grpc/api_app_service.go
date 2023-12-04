@@ -47,8 +47,11 @@ func (s *APIService) CreateApplication(ctx context.Context, req *connect.Request
 }
 
 func (s *APIService) GetApplications(ctx context.Context, req *connect.Request[pb.GetApplicationsRequest]) (*connect.Response[pb.GetApplicationsResponse], error) {
-	all := req.Msg.Scope == pb.GetApplicationsRequest_ALL
-	apps, err := s.svc.GetApplications(ctx, all)
+	scope := apiserver.GetAppScope{
+		Scope:        pbconvert.AppScopeMapper.IntoMust(req.Msg.Scope),
+		RepositoryID: optional.FromPtr(req.Msg.RepositoryId),
+	}
+	apps, err := s.svc.GetApplications(ctx, scope)
 	if err != nil {
 		return nil, handleUseCaseError(err)
 	}

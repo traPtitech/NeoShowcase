@@ -4,8 +4,9 @@ import (
 	"context"
 	"fmt"
 	"github.com/regclient/regclient/types/ref"
-	"github.com/traPtitech/neoshowcase/pkg/util/regutil"
 	"strconv"
+
+	"github.com/traPtitech/neoshowcase/pkg/util/regutil"
 
 	"github.com/friendsofgo/errors"
 	"github.com/samber/lo"
@@ -150,17 +151,42 @@ func (s *Service) createApplicationDatabase(ctx context.Context, app *domain.App
 	return nil
 }
 
+type GetAppScopeType int
+
+const (
+	GetAppScopeMine GetAppScopeType = iota
+	GetAppScopeAll
+	GetAppScopeRepository
+)
+
+type GetAppScope struct {
+	Scope        GetAppScopeType
+	RepositoryID optional.Of[string]
+}
+
 type TopAppInfo struct {
 	App         *domain.Application
 	LatestBuild *domain.Build
 }
 
-func (s *Service) GetApplications(ctx context.Context, all bool) ([]*TopAppInfo, error) {
-	// Fetch apps
+func (s *Service) GetApplications(ctx context.Context, scope GetAppScope) ([]*TopAppInfo, error) {
+	// Build fetch app condition
 	var cond domain.GetApplicationCondition
-	if !all {
+	switch scope.Scope {
+	case GetAppScopeMine:
 		cond.UserID = optional.From(web.GetUser(ctx).ID)
+	case GetAppScopeAll:
+		// No scope
+	case GetAppScopeRepository:
+		if !scope.RepositoryID.Valid {
+			return nil, errors.New("repository id not set")
+		}
+		cond.RepositoryID = scope.RepositoryID
+	default:
+		return nil, errors.New("unexpected scope type")
 	}
+
+	// Fetch apps
 	apps, err := s.appRepo.GetApplications(ctx, cond)
 	if err != nil {
 		return nil, err

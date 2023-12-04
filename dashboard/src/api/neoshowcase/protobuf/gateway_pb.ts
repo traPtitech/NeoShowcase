@@ -2630,6 +2630,11 @@ export class GetApplicationsRequest extends Message<GetApplicationsRequest> {
    */
   scope = GetApplicationsRequest_Scope.MINE;
 
+  /**
+   * @generated from field: optional string repository_id = 2;
+   */
+  repositoryId?: string;
+
   constructor(data?: PartialMessage<GetApplicationsRequest>) {
     super();
     proto3.util.initPartial(data, this);
@@ -2639,6 +2644,7 @@ export class GetApplicationsRequest extends Message<GetApplicationsRequest> {
   static readonly typeName = "neoshowcase.protobuf.GetApplicationsRequest";
   static readonly fields: FieldList = proto3.util.newFieldList(() => [
     { no: 1, name: "scope", kind: "enum", T: proto3.getEnumType(GetApplicationsRequest_Scope) },
+    { no: 2, name: "repository_id", kind: "scalar", T: 9 /* ScalarType.STRING */, opt: true },
   ]);
 
   static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): GetApplicationsRequest {
@@ -2671,11 +2677,17 @@ export enum GetApplicationsRequest_Scope {
    * @generated from enum value: ALL = 1;
    */
   ALL = 1,
+
+  /**
+   * @generated from enum value: REPOSITORY = 2;
+   */
+  REPOSITORY = 2,
 }
 // Retrieve enum metadata with: proto3.getEnumType(GetApplicationsRequest_Scope)
 proto3.util.setEnumType(GetApplicationsRequest_Scope, "neoshowcase.protobuf.GetApplicationsRequest.Scope", [
   { no: 0, name: "MINE" },
   { no: 1, name: "ALL" },
+  { no: 2, name: "REPOSITORY" },
 ]);
 
 /**
