@@ -1,14 +1,14 @@
+import { Timestamp } from '@bufbuild/protobuf'
 import { styled } from '@macaron-css/solid'
-import { A } from '@solidjs/router'
 import { Component, Show } from 'solid-js'
 import toast from 'solid-toast'
 import { Application, Build, BuildStatus, Repository } from '/@/api/neoshowcase/protobuf/gateway_pb'
 import { Button } from '/@/components/UI/Button'
 import JumpButton from '/@/components/UI/JumpButton'
-import { MaterialSymbols } from '/@/components/UI/MaterialSymbols'
+import { ToolTip } from '/@/components/UI/ToolTip'
 import { client, handleAPIError } from '/@/libs/api'
-import { buildStatusStr, buildTypeStr } from '/@/libs/application'
-import { shortSha } from '/@/libs/format'
+import { buildStatusStr } from '/@/libs/application'
+import { diffHuman, durationHuman, shortSha } from '/@/libs/format'
 import { colorVars, textVars } from '/@/theme'
 import { List } from '../List'
 import { BuildStatusIcon } from './BuildStatusIcon'
@@ -46,7 +46,6 @@ const BuildStatusTable: Component<{
   build: Build
   refetchBuild: () => void
   hasPermission: boolean
-  showJumpButton?: boolean
 }> = (props) => {
   const rebuild = async () => {
     try {
@@ -79,17 +78,6 @@ const BuildStatusTable: Component<{
           <BuildStatusIcon state={props.build.status} size={24} />
           {buildStatusStr[props.build.status]}
         </BuildStatusLabel>
-        <Show when={props.showJumpButton}>
-          <A href={`/apps/${props.app.id}/builds/${props.build.id}`}>
-            <Button
-              size="small"
-              variants="border"
-              rightIcon={<MaterialSymbols opticalSize={20}>arrow_outward</MaterialSymbols>}
-            >
-              View Details
-            </Button>
-          </A>
-        </Show>
         <Show when={!props.build.retriable && props.hasPermission}>
           <Button
             variants="borderError"
@@ -120,12 +108,9 @@ const BuildStatusTable: Component<{
       </List.Row>
       <List.Row>
         <List.RowContent>
-          <List.RowTitle>Source Branch (Commit)</List.RowTitle>
-          <List.RowData>
-            {props.app.refName} ({shortSha(props.app.commit)})
-          </List.RowData>
+          <List.RowTitle>Source Commit</List.RowTitle>
+          <List.RowData>{shortSha(props.build.commit)}</List.RowData>
         </List.RowContent>
-        <JumpButton href={`/apps/${props.app.id}/settings`} />
         <Show when={props.refreshRepo && props.hasPermission}>
           <Button
             variants="ghost"
@@ -142,15 +127,68 @@ const BuildStatusTable: Component<{
           </Button>
         </Show>
       </List.Row>
-      <List.Row>
-        <List.RowContent>
-          <List.RowTitle>Build Type</List.RowTitle>
-          <List.RowData>
-            {props.app.config?.buildConfig.case ? buildTypeStr[props.app.config?.buildConfig.case] : "Couldn't detect"}
-          </List.RowData>
-        </List.RowContent>
-        <JumpButton href={`/apps/${props.app.id}/settings/build`} />
-      </List.Row>
+      <List.Columns>
+        <Show when={props.build.queuedAt}>
+          {(nonNullQueuedAt) => {
+            const { diff, localeString } = diffHuman(nonNullQueuedAt().toDate())
+            return (
+              <List.Row>
+                <List.RowContent>
+                  <List.RowTitle>キュー登録時刻</List.RowTitle>
+                  <ToolTip props={{ content: localeString }}>
+                    <List.RowData>{diff}</List.RowData>
+                  </ToolTip>
+                </List.RowContent>
+              </List.Row>
+            )
+          }}
+        </Show>
+        <Show when={props.build.startedAt?.valid && props.build.startedAt} fallback={'-'}>
+          {(nonNullStartedAt) => {
+            const { diff, localeString } = diffHuman((nonNullStartedAt().timestamp as Timestamp).toDate())
+            return (
+              <List.Row>
+                <List.RowContent>
+                  <List.RowTitle>ビルド開始時刻</List.RowTitle>
+                  <ToolTip props={{ content: localeString }}>
+                    <List.RowData>{diff}</List.RowData>
+                  </ToolTip>
+                </List.RowContent>
+              </List.Row>
+            )
+          }}
+        </Show>
+      </List.Columns>
+      <List.Columns>
+        <List.Row>
+          <List.RowContent>
+            <List.RowTitle>ビルド終了時刻</List.RowTitle>
+            <Show when={props.build.finishedAt?.valid && props.build.finishedAt} fallback={'-'}>
+              {(nonNullFinishedAt) => {
+                const { diff, localeString } = diffHuman((nonNullFinishedAt().timestamp as Timestamp).toDate())
+                return (
+                  <ToolTip props={{ content: localeString }}>
+                    <List.RowData>{diff}</List.RowData>
+                  </ToolTip>
+                )
+              }}
+            </Show>
+          </List.RowContent>
+        </List.Row>
+        <List.Row>
+          <List.RowContent>
+            <List.RowTitle>ビルド時間</List.RowTitle>
+            <Show when={props.build.finishedAt?.valid && props.build.startedAt?.valid} fallback={'-'}>
+              <List.RowData>
+                {durationHuman(
+                  props.build.finishedAt!.timestamp!.toDate().getTime() -
+                    props.build.startedAt!.timestamp!.toDate().getTime(),
+                )}
+              </List.RowData>
+            </Show>
+          </List.RowContent>
+        </List.Row>
+      </List.Columns>
     </List.Container>
   )
 }

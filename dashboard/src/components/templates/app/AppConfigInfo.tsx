@@ -20,9 +20,7 @@ const BuildpackConfigInfo: Component<{ config: BuildConfigRuntimeBuildpack | Bui
     <List.Row>
       <List.RowContent>
         <List.RowTitle>Context</List.RowTitle>
-        <List.RowData>
-          <Code value={props.config.context} />
-        </List.RowData>
+        <Code value={props.config.context} />
       </List.RowContent>
     </List.Row>
   )
@@ -40,9 +38,7 @@ const CmdConfigInfo: Component<{ config: BuildConfigRuntimeCmd | BuildConfigStat
         <List.Row>
           <List.RowContent>
             <List.RowTitle>Build Command</List.RowTitle>
-            <List.RowData>
-              <Code value={props.config.buildCmd} />
-            </List.RowData>
+            <Code value={props.config.buildCmd} />
           </List.RowContent>
         </List.Row>
       </Show>
@@ -63,9 +59,7 @@ const DockerfileConfigInfo: Component<{ config: BuildConfigRuntimeDockerfile | B
       <List.Row>
         <List.RowContent>
           <List.RowTitle>Context</List.RowTitle>
-          <List.RowData>
-            <Code value={props.config.context} />
-          </List.RowData>
+          <Code value={props.config.context} />
         </List.RowContent>
       </List.Row>
     </>
@@ -93,9 +87,7 @@ const RuntimeConfigInfo: Component<{ config?: RuntimeConfig }> = (props) => {
         <List.Row>
           <List.RowContent>
             <List.RowTitle>Entrypoint</List.RowTitle>
-            <List.RowData>
-              <Code value={props.config!.entrypoint} />
-            </List.RowData>
+            <Code value={props.config!.entrypoint} />
           </List.RowContent>
         </List.Row>
       </Show>
@@ -103,9 +95,7 @@ const RuntimeConfigInfo: Component<{ config?: RuntimeConfig }> = (props) => {
         <List.Row>
           <List.RowContent>
             <List.RowTitle>Command</List.RowTitle>
-            <List.RowData>
-              <Code value={props.config!.command} />
-            </List.RowData>
+            <Code value={props.config!.command} />
           </List.RowContent>
         </List.Row>
       </Show>
@@ -118,9 +108,7 @@ const StaticConfigInfo: Component<{ config?: StaticConfig }> = (props) => {
       <List.Row>
         <List.RowContent>
           <List.RowTitle>Artifact Path</List.RowTitle>
-          <List.RowData>
-            <Code value={props.config!.artifactPath} />
-          </List.RowData>
+          <Code value={props.config!.artifactPath} />
         </List.RowContent>
       </List.Row>
       <List.Row>

@@ -56,7 +56,7 @@ const RowTitle = styled('h3', {
 })
 const RowData = styled('div', {
   base: {
-    width: '100%',
+    width: 'auto',
     display: 'flex',
     flexDirection: 'row',
     alignItems: 'center',

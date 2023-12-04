@@ -1,10 +1,8 @@
-import { Timestamp } from '@bufbuild/protobuf'
 import { styled } from '@macaron-css/solid'
 import { Title } from '@solidjs/meta'
 import { A } from '@solidjs/router'
 import { For, Show, VoidComponent, createResource } from 'solid-js'
 import { MaterialSymbols } from '/@/components/UI/MaterialSymbols'
-import { ToolTip } from '/@/components/UI/ToolTip'
 import { DataTable } from '/@/components/layouts/DataTable'
 import { MainViewContainer } from '/@/components/layouts/MainView'
 import { List } from '/@/components/templates/List'
@@ -12,7 +10,6 @@ import { ArtifactRow } from '/@/components/templates/build/ArtifactRow'
 import { BuildLog } from '/@/components/templates/build/BuildLog'
 import BuildStatusTable from '/@/components/templates/build/BuildStatusTable'
 import { client } from '/@/libs/api'
-import { diffHuman, durationHuman } from '/@/libs/format'
 import { useBuildData } from '/@/routes'
 import { colorVars, textVars } from '/@/theme'
 
@@ -121,69 +118,6 @@ export default () => {
               refetchBuild={refetchBuild}
               hasPermission={hasPermission()}
             />
-          </DataTable.Container>
-          <DataTable.Container>
-            <DataTable.Title>Information</DataTable.Title>
-            <List.Container>
-              <Show when={build()?.queuedAt}>
-                {(nonNullQueuedAt) => {
-                  const { diff, localeString } = diffHuman(nonNullQueuedAt().toDate())
-                  return (
-                    <List.Row>
-                      <List.RowContent>
-                        <List.RowTitle>キュー登録時刻</List.RowTitle>
-                        <ToolTip props={{ content: localeString }}>
-                          <List.RowData>{diff}</List.RowData>
-                        </ToolTip>
-                      </List.RowContent>
-                    </List.Row>
-                  )
-                }}
-              </Show>
-              <List.Row>
-                <List.RowContent>
-                  <List.RowTitle>ビルド開始時刻</List.RowTitle>
-                  <Show when={build()?.startedAt?.valid && build()?.startedAt} fallback={'-'}>
-                    {(nonNullStartedAt) => {
-                      const { diff, localeString } = diffHuman((nonNullStartedAt().timestamp as Timestamp).toDate())
-                      return (
-                        <ToolTip props={{ content: localeString }}>
-                          <List.RowData>{diff}</List.RowData>
-                        </ToolTip>
-                      )
-                    }}
-                  </Show>
-                </List.RowContent>
-              </List.Row>
-              <List.Row>
-                <List.RowContent>
-                  <List.RowTitle>ビルド終了時刻</List.RowTitle>
-                  <Show when={build()?.finishedAt?.valid && build()?.finishedAt} fallback={'-'}>
-                    {(nonNullFinishedAt) => {
-                      const { diff, localeString } = diffHuman((nonNullFinishedAt().timestamp as Timestamp).toDate())
-                      return (
-                        <ToolTip props={{ content: localeString }}>
-                          <List.RowData>{diff}</List.RowData>
-                        </ToolTip>
-                      )
-                    }}
-                  </Show>
-                </List.RowContent>
-              </List.Row>
-              <List.Row>
-                <List.RowContent>
-                  <List.RowTitle>ビルド時間</List.RowTitle>
-                  <Show when={build()?.finishedAt?.valid && build()?.startedAt?.valid} fallback={'-'}>
-                    <List.RowData>
-                      {durationHuman(
-                        build()!.finishedAt!.timestamp!.toDate().getTime() -
-                          build()!.startedAt!.timestamp!.toDate().getTime(),
-                      )}
-                    </List.RowData>
-                  </Show>
-                </List.RowContent>
-              </List.Row>
-            </List.Container>
           </DataTable.Container>
           <Show when={build()!.artifacts.length > 0}>
             <DataTable.Container>

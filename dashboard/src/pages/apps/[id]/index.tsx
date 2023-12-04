@@ -109,7 +109,6 @@ const BuildStatus: Component<{
           build={nonNullLatestBuild()}
           refetchBuild={props.refetchLatestBuild}
           hasPermission={props.hasPermission}
-          showJumpButton
         />
       )}
     </Show>

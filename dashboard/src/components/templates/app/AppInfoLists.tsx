@@ -53,9 +53,7 @@ const AppInfoLists: Component<{ app: Application }> = (props) => {
                 when={props.app.running}
                 fallback={<List.RowData>アプリケーションが起動している間のみSSHでアクセス可能です</List.RowData>}
               >
-                <List.RowData>
-                  <Code value={sshAccessCommand()} copyable />
-                </List.RowData>
+                <Code value={sshAccessCommand()} copyable />
               </Show>
             </List.RowContent>
           </List.Row>
