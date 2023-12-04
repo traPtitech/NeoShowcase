@@ -27,8 +27,10 @@ export const Header: Component = () => {
     <Container>
       <A href="/">
         {/* 画面幅が768px以下の時はSmallLogoImageを表示する */}
-        <source srcset={SmallLogoImage} media="(max-width: 768px)" />
-        <img src={LogoImage} alt="NeoShowcase logo" />
+        <picture>
+          <source srcset={SmallLogoImage} media="(max-width: 768px)" />
+          <img src={LogoImage} alt="NeoShowcase logo" />
+        </picture>
       </A>
       <A href="/apps">
         <Button size="medium" variants="text">
