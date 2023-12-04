@@ -66,6 +66,7 @@ type AvailableDomain struct {
 	Domain         string
 	ExcludeDomains []string
 	AuthAvailable  bool
+	AlreadyBound   bool // Actual availability (whether domain is bound to a specific app or not)
 }
 
 type AvailableDomainSlice []*AvailableDomain
@@ -83,6 +84,19 @@ func (a *AvailableDomain) Validate() error {
 		}
 	}
 	return nil
+}
+
+func (a *AvailableDomain) SetAlreadyBound(existing []*Application) {
+	if strings.HasPrefix(a.Domain, "*.") {
+		// Wildcard domain cannot be bound to one app, it has infinite number of subdomains
+		a.AlreadyBound = false
+	} else {
+		a.AlreadyBound = lo.ContainsBy(existing, func(app *Application) bool {
+			return lo.ContainsBy(app.Websites, func(w *Website) bool {
+				return w.FQDN == a.Domain && w.PathPrefix == "/" // Intentional vague checking of http or https
+			})
+		})
+	}
 }
 
 func (a *AvailableDomain) Match(fqdn string) bool {

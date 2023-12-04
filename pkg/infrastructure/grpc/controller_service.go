@@ -20,6 +20,7 @@ import (
 
 type ControllerService struct {
 	backend    domain.Backend
+	appRepo    domain.ApplicationRepository
 	fetcher    repofetcher.Service
 	cd         cdservice.Service
 	builder    domain.ControllerBuilderService
@@ -31,6 +32,7 @@ type ControllerService struct {
 
 func NewControllerService(
 	backend domain.Backend,
+	appRepo domain.ApplicationRepository,
 	fetcher repofetcher.Service,
 	cd cdservice.Service,
 	builder domain.ControllerBuilderService,
@@ -41,6 +43,7 @@ func NewControllerService(
 ) pbconnect.ControllerServiceHandler {
 	return &ControllerService{
 		backend:    backend,
+		appRepo:    appRepo,
 		fetcher:    fetcher,
 		cd:         cd,
 		builder:    builder,
@@ -53,7 +56,16 @@ func NewControllerService(
 
 func (s *ControllerService) GetSystemInfo(_ context.Context, _ *connect.Request[emptypb.Empty]) (*connect.Response[pb.SystemInfo], error) {
 	domains := s.backend.AvailableDomains()
+	existingApps, err := s.appRepo.GetApplications(context.Background(), domain.GetApplicationCondition{})
+	if err != nil {
+		return nil, err
+	}
+	for _, ad := range domains {
+		ad.SetAlreadyBound(existingApps)
+	}
+
 	ports := s.backend.AvailablePorts()
+
 	res := connect.NewResponse(&pb.SystemInfo{
 		PublicKey: domain.Base64EncodedPublicKey(s.pubKey.Signer.PublicKey()) + " neoshowcase",
 		Ssh: &pb.SSHInfo{
