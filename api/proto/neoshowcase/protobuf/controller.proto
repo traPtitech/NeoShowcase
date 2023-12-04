@@ -21,6 +21,11 @@ message BuilderRequest {
   }
 }
 
+message ConnectedBody {
+  // Larger value means higher priority
+  int64 priority = 1;
+}
+
 message BuildStarted {
   string build_id = 1;
 }
@@ -49,9 +54,10 @@ message BuilderResponse {
   }
   Type type = 1;
   oneof body {
-    BuildStarted started = 2;
-    BuildSettled settled = 3;
-    BuildLogPortion log = 4;
+    ConnectedBody connected = 2;
+    BuildStarted started = 3;
+    BuildSettled settled = 4;
+    BuildLogPortion log = 5;
   }
 }
 

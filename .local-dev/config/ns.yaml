@@ -36,6 +36,7 @@ components:
         platformAPI: "0.11"
     controller:
       url: http://ns-controller:10000
+    priority: 0
 
   controller:
     port: 10000

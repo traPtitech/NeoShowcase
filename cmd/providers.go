@@ -67,7 +67,7 @@ var providers = wire.NewSet(
 	grpc.NewControllerService,
 	grpc.NewControllerServiceClient,
 	grpc.NewControllerBuilderService,
-	grpc.NewControllerBuilderServiceClient,
+	provideControllerBuilderServiceClient,
 	grpc.NewControllerSSGenService,
 	grpc.NewControllerSSGenServiceClient,
 	healthcheck.NewServer,
@@ -129,6 +129,13 @@ func provideStorage(c domain.StorageConfig) (domain.Storage, error) {
 func provideAuthDevServer(c Config) *authdev.Server {
 	cc := c.Components.AuthDev
 	return authdev.NewServer(cc.Header, cc.Port, cc.User)
+}
+
+func provideControllerBuilderServiceClient(c Config) domain.ControllerBuilderServiceClient {
+	return grpc.NewControllerBuilderServiceClient(
+		c.Components.Builder.Controller,
+		c.Components.Builder.Priority,
+	)
 }
 
 func provideBuildpackBackend(c Config) (builder.BuildpackBackend, error) {

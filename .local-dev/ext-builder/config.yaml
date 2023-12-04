@@ -39,3 +39,4 @@ components:
         platformAPI: "0.11"
     controller:
       url: http://host.docker.internal:10000
+    priority: 10
