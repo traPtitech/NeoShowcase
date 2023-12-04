@@ -1,11 +1,11 @@
 import { styled } from '@macaron-css/solid'
 import { Component, Show } from 'solid-js'
 import { Artifact } from '/@/api/neoshowcase/protobuf/gateway_pb'
+import { Button } from '/@/components/UI/Button'
+import { ToolTip } from '/@/components/UI/ToolTip'
 import { client, handleAPIError } from '/@/libs/api'
 import { diffHuman, formatBytes } from '/@/libs/format'
 import { colorVars, textVars } from '/@/theme'
-import { Button } from '../../UI/Button'
-import { ToolTip } from '../../UI/ToolTip'
 
 const Container = styled('div', {
   base: {

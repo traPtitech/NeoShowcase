@@ -1,8 +1,7 @@
 import { styled } from '@macaron-css/solid'
 import { SubmitHandler, createForm, reset } from '@modular-forms/solid'
 import { useNavigate } from '@solidjs/router'
-import { Component, Show, createEffect } from 'solid-js'
-import { on } from 'solid-js'
+import { Component, Show, createEffect, on } from 'solid-js'
 import toast from 'solid-toast'
 import { Application, Repository } from '/@/api/neoshowcase/protobuf/gateway_pb'
 import { Button } from '/@/components/UI/Button'
@@ -11,11 +10,11 @@ import ModalDeleteConfirm from '/@/components/UI/ModalDeleteConfirm'
 import { DataTable } from '/@/components/layouts/DataTable'
 import FormBox from '/@/components/layouts/FormBox'
 import { FormItem } from '/@/components/templates/FormItem'
+import { AppGeneralConfig, AppGeneralForm } from '/@/components/templates/app/AppGeneralConfig'
 import { client, handleAPIError } from '/@/libs/api'
 import useModal from '/@/libs/useModal'
 import { useApplicationData } from '/@/routes'
 import { colorVars, textVars } from '/@/theme'
-import { AppGeneralConfig, AppGeneralForm } from '../../../../components/templates/app/AppGeneralConfig'
 
 const DeleteAppNotice = styled('div', {
   base: {

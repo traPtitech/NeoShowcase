@@ -5,10 +5,10 @@ import toast from 'solid-toast'
 import { Button } from '/@/components/UI/Button'
 import { DataTable } from '/@/components/layouts/DataTable'
 import FormBox from '/@/components/layouts/FormBox'
+import { PortPublicationSettings, PortSettingsStore } from '/@/components/templates/app/PortPublications'
 import { client, handleAPIError, systemInfo } from '/@/libs/api'
 import { portPublicationProtocolMap } from '/@/libs/application'
 import { useApplicationData } from '/@/routes'
-import { PortPublicationSettings, PortSettingsStore } from '../../../../components/templates/app/PortPublications'
 
 const Li = styled('li', {
   base: {

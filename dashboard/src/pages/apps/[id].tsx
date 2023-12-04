@@ -5,8 +5,8 @@ import { MaterialSymbols } from '/@/components/UI/MaterialSymbols'
 import { TabRound } from '/@/components/UI/TabRound'
 import ErrorView from '/@/components/layouts/ErrorView'
 import { WithNav } from '/@/components/layouts/WithNav'
+import { AppNav } from '/@/components/templates/app/AppNav'
 import { useApplicationData } from '/@/routes'
-import { AppNav } from '../../components/templates/app/AppNav'
 
 export default () => {
   const { app, repo } = useApplicationData()

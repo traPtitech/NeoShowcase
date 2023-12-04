@@ -1,10 +1,10 @@
 import { JSXElement } from 'solid-js'
 import { Dynamic } from 'solid-js/web'
 import { BuildStatus } from '/@/api/neoshowcase/protobuf/gateway_pb'
+import { MaterialSymbols } from '/@/components/UI/MaterialSymbols'
+import { ToolTip } from '/@/components/UI/ToolTip'
 import { buildStatusStr } from '/@/libs/application'
 import { colorVars } from '/@/theme'
-import { MaterialSymbols } from '../../UI/MaterialSymbols'
-import { ToolTip } from '../../UI/ToolTip'
 
 interface IconProps {
   size: number

@@ -10,7 +10,7 @@ import {
   RuntimeConfig,
   StaticConfig,
 } from '/@/api/neoshowcase/protobuf/gateway_pb'
-import Code from '../../UI/Code'
+import Code from '/@/components/UI/Code'
 import { List } from '../List'
 
 const BuildpackConfigInfo: Component<{ config: BuildConfigRuntimeBuildpack | BuildConfigStaticBuildpack }> = (

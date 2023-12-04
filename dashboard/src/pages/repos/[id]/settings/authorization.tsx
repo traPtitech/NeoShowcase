@@ -6,13 +6,9 @@ import { CreateRepositoryAuth, Repository, Repository_AuthMethod } from '/@/api/
 import { Button } from '/@/components/UI/Button'
 import { DataTable } from '/@/components/layouts/DataTable'
 import FormBox from '/@/components/layouts/FormBox'
+import { AuthForm, RepositoryAuthSettings, formToAuth } from '/@/components/templates/repo/RepositoryAuthSettings'
 import { client, handleAPIError } from '/@/libs/api'
 import { useRepositoryData } from '/@/routes'
-import {
-  AuthForm,
-  RepositoryAuthSettings,
-  formToAuth,
-} from '../../../../components/templates/repo/RepositoryAuthSettings'
 
 const mapAuthMethod = (authMethod: Repository_AuthMethod): PlainMessage<CreateRepositoryAuth>['auth']['case'] => {
   switch (authMethod) {

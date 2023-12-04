@@ -2,9 +2,9 @@ import { styled } from '@macaron-css/solid'
 import { A } from '@solidjs/router'
 import { Component } from 'solid-js'
 import { Application, Repository } from '/@/api/neoshowcase/protobuf/gateway_pb'
+import { MaterialSymbols } from '/@/components/UI/MaterialSymbols'
 import { providerToIcon, repositoryURLToProvider } from '/@/libs/application'
 import { colorVars, textVars } from '/@/theme'
-import { MaterialSymbols } from '../../UI/MaterialSymbols'
 import { Nav } from '../Nav'
 
 const RepositoryInfoContainer = styled('div', {

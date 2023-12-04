@@ -6,14 +6,14 @@ import { createEffect } from 'solid-js'
 import toast from 'solid-toast'
 import { Button } from '/@/components/UI/Button'
 import { MaterialSymbols } from '/@/components/UI/MaterialSymbols'
+import { TextField } from '/@/components/UI/TextField'
 import { MainViewContainer } from '/@/components/layouts/MainView'
 import { WithNav } from '/@/components/layouts/WithNav'
 import { Nav } from '/@/components/templates/Nav'
+import { AuthForm, RepositoryAuthSettings, formToAuth } from '/@/components/templates/repo/RepositoryAuthSettings'
 import { client, handleAPIError } from '/@/libs/api'
 import { extractRepositoryNameFromURL } from '/@/libs/application'
 import { colorVars } from '/@/theme'
-import { TextField } from '../../components/UI/TextField'
-import { AuthForm, RepositoryAuthSettings, formToAuth } from '../../components/templates/repo/RepositoryAuthSettings'
 
 const Container = styled('div', {
   base: {

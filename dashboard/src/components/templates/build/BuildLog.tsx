@@ -1,10 +1,10 @@
 import { Code, ConnectError } from '@connectrpc/connect'
 import { Component, Show, createEffect, createResource, createSignal, onCleanup } from 'solid-js'
+import { LogContainer } from '/@/components/UI/LogContainer'
 import { client } from '/@/libs/api'
 import { concatBuffers, toUTF8WithAnsi } from '/@/libs/buffers'
 import { isScrolledToBottom } from '/@/libs/scroll'
 import { sleep } from '/@/libs/sleep'
-import { LogContainer } from '../../UI/LogContainer'
 
 export interface BuildLogProps {
   buildID: string

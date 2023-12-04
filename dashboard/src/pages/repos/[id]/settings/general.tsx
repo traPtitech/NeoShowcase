@@ -7,6 +7,7 @@ import toast from 'solid-toast'
 import { Application, Repository, UpdateRepositoryRequest } from '/@/api/neoshowcase/protobuf/gateway_pb'
 import { Button } from '/@/components/UI/Button'
 import ModalDeleteConfirm from '/@/components/UI/ModalDeleteConfirm'
+import { TextField } from '/@/components/UI/TextField'
 import { DataTable } from '/@/components/layouts/DataTable'
 import FormBox from '/@/components/layouts/FormBox'
 import { FormItem } from '/@/components/templates/FormItem'
@@ -15,7 +16,6 @@ import { providerToIcon, repositoryURLToProvider } from '/@/libs/application'
 import useModal from '/@/libs/useModal'
 import { useRepositoryData } from '/@/routes'
 import { colorVars, textVars } from '/@/theme'
-import { TextField } from '../../../../components/UI/TextField'
 
 type GeneralForm = Required<Pick<PlainMessage<UpdateRepositoryRequest>, 'name'>>
 

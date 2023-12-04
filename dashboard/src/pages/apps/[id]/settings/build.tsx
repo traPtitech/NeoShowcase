@@ -4,14 +4,9 @@ import toast from 'solid-toast'
 import { Button } from '/@/components/UI/Button'
 import { DataTable } from '/@/components/layouts/DataTable'
 import FormBox from '/@/components/layouts/FormBox'
+import { BuildConfigForm, BuildConfigs, configToForm, formToConfig } from '/@/components/templates/app/BuildConfigs'
 import { client, handleAPIError } from '/@/libs/api'
 import { useApplicationData } from '/@/routes'
-import {
-  BuildConfigForm,
-  BuildConfigs,
-  configToForm,
-  formToConfig,
-} from '../../../../components/templates/app/BuildConfigs'
 
 export default () => {
   const { app, refetchApp, hasPermission } = useApplicationData()

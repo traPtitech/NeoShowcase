@@ -1,9 +1,9 @@
 import { Component, Show } from 'solid-js'
 import { Application, DeployType } from '/@/api/neoshowcase/protobuf/gateway_pb'
+import Code from '/@/components/UI/Code'
+import { ToolTip } from '/@/components/UI/ToolTip'
 import { systemInfo } from '/@/libs/api'
 import { diffHuman } from '/@/libs/format'
-import Code from '../../UI/Code'
-import { ToolTip } from '../../UI/ToolTip'
 import { List } from '../List'
 
 const AppInfoLists: Component<{ app: Application }> = (props) => {

@@ -2,12 +2,11 @@ import { styled } from '@macaron-css/solid'
 import { A } from '@solidjs/router'
 import { Component, Show } from 'solid-js'
 import { Repository } from '/@/api/neoshowcase/protobuf/gateway_pb'
+import { Button } from '/@/components/UI/Button'
+import Skeleton from '/@/components/UI/Skeleton'
 import { user } from '/@/libs/api'
 import { providerToIcon, repositoryURLToProvider } from '/@/libs/application'
-
 import { colorVars, textVars } from '/@/theme'
-import { Button } from '../../UI/Button'
-import Skeleton from '../../UI/Skeleton'
 
 const Container = styled('div', {
   base: {

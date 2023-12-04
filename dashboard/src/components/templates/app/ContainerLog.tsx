@@ -3,12 +3,12 @@ import { Code, ConnectError } from '@connectrpc/connect'
 import { styled } from '@macaron-css/solid'
 import { Component, For, Show, createEffect, createMemo, createResource, createSignal, onCleanup } from 'solid-js'
 import { ApplicationOutput } from '/@/api/neoshowcase/protobuf/gateway_pb'
+import { Button } from '/@/components/UI/Button'
+import { LogContainer } from '/@/components/UI/LogContainer'
 import { client, handleAPIError } from '/@/libs/api'
 import { toWithAnsi } from '/@/libs/buffers'
 import { isScrolledToBottom } from '/@/libs/scroll'
 import { addTimestamp, lessTimestamp, minTimestamp } from '/@/libs/timestamp'
-import { Button } from '../../UI/Button'
-import { LogContainer } from '../../UI/LogContainer'
 
 const LoadMoreContainer = styled('div', {
   base: {

@@ -2,11 +2,11 @@ import { styled } from '@macaron-css/solid'
 import { A } from '@solidjs/router'
 import { Component, Show } from 'solid-js'
 import { Build } from '/@/api/neoshowcase/protobuf/gateway_pb'
+import Badge from '/@/components/UI/Badge'
+import { ToolTip } from '/@/components/UI/ToolTip'
 import { colorOverlay } from '/@/libs/colorOverlay'
 import { diffHuman, shortSha } from '/@/libs/format'
 import { colorVars, textVars } from '/@/theme'
-import Badge from '../../UI/Badge'
-import { ToolTip } from '../../UI/ToolTip'
 import { BuildStatusIcon } from './BuildStatusIcon'
 
 const Container = styled('div', {

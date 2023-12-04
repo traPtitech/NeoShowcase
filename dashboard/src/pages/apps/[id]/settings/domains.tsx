@@ -3,9 +3,9 @@ import { Show, createResource } from 'solid-js'
 import toast from 'solid-toast'
 import { DeployType } from '/@/api/neoshowcase/protobuf/gateway_pb'
 import { DataTable } from '/@/components/layouts/DataTable'
+import { WebsiteSetting, WebsiteSettings, newWebsite } from '/@/components/templates/app/WebsiteSettings'
 import { client, handleAPIError } from '/@/libs/api'
 import { useApplicationData } from '/@/routes'
-import { WebsiteSetting, WebsiteSettings, newWebsite } from '../../../../components/templates/app/WebsiteSettings'
 
 export default () => {
   const { app, refetchApp, hasPermission } = useApplicationData()

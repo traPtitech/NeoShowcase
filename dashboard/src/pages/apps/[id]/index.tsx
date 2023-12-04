@@ -1,5 +1,4 @@
 import { styled } from '@macaron-css/solid'
-
 import { Component, For, Show, createResource, createSignal, onCleanup, useTransition } from 'solid-js'
 import toast from 'solid-toast'
 import { Application, Build, DeployType, Repository } from '/@/api/neoshowcase/protobuf/gateway_pb'
@@ -8,14 +7,14 @@ import { MaterialSymbols } from '/@/components/UI/MaterialSymbols'
 import { DataTable } from '/@/components/layouts/DataTable'
 import SuspenseContainer from '/@/components/layouts/SuspenseContainer'
 import { List } from '/@/components/templates/List'
+import AppDeployInfo from '/@/components/templates/app/AppDeployInfo'
+import AppInfoLists from '/@/components/templates/app/AppInfoLists'
+import { AppMetrics } from '/@/components/templates/app/AppMetrics'
+import { ContainerLog } from '/@/components/templates/app/ContainerLog'
+import BuildStatusTable from '/@/components/templates/build/BuildStatusTable'
 import { availableMetrics, client, handleAPIError } from '/@/libs/api'
 import { useApplicationData } from '/@/routes'
 import { colorVars, media } from '/@/theme'
-import AppDeployInfo from '../../../components/templates/app/AppDeployInfo'
-import AppInfoLists from '../../../components/templates/app/AppInfoLists'
-import { AppMetrics } from '../../../components/templates/app/AppMetrics'
-import { ContainerLog } from '../../../components/templates/app/ContainerLog'
-import BuildStatusTable from '../../../components/templates/build/BuildStatusTable'
 
 const Container = styled('div', {
   base: {

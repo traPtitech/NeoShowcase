@@ -5,8 +5,8 @@ import { MaterialSymbols } from '/@/components/UI/MaterialSymbols'
 import { TabRound } from '/@/components/UI/TabRound'
 import ErrorView from '/@/components/layouts/ErrorView'
 import { WithNav } from '/@/components/layouts/WithNav'
+import { RepositoryNav } from '/@/components/templates/repo/RepositoryNav'
 import { useRepositoryData } from '/@/routes'
-import { RepositoryNav } from '../../components/templates/repo/RepositoryNav'
 
 export default () => {
   const { repo } = useRepositoryData()
