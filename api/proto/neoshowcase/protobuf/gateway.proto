@@ -19,6 +19,8 @@ message AvailableDomain {
   string domain = 1;
   repeated string exclude_domains = 2;
   bool auth_available = 3;
+  // already_bound ドメインが他のアプリケーションによって専有されているか
+  bool already_bound = 4;
 }
 
 message AvailablePort {

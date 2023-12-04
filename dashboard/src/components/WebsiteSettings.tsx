@@ -177,7 +177,7 @@ export const WebsiteSettings = (props: WebsiteSettingsProps) => {
       <AvailableDomainContainer>
         使用可能なホスト
         <AvailableDomainUl>
-          <For each={systemInfo()?.domains || []}>
+          <For each={systemInfo()?.domains.filter((ad) => !ad.alreadyBound) || []}>
             {(domain) => (
               <li>
                 {domain.domain}

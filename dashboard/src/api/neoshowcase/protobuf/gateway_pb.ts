@@ -179,6 +179,13 @@ export class AvailableDomain extends Message<AvailableDomain> {
    */
   authAvailable = false;
 
+  /**
+   * already_bound ドメインが他のアプリケーションによって専有されているか
+   *
+   * @generated from field: bool already_bound = 4;
+   */
+  alreadyBound = false;
+
   constructor(data?: PartialMessage<AvailableDomain>) {
     super();
     proto3.util.initPartial(data, this);
@@ -190,6 +197,7 @@ export class AvailableDomain extends Message<AvailableDomain> {
     { no: 1, name: "domain", kind: "scalar", T: 9 /* ScalarType.STRING */ },
     { no: 2, name: "exclude_domains", kind: "scalar", T: 9 /* ScalarType.STRING */, repeated: true },
     { no: 3, name: "auth_available", kind: "scalar", T: 8 /* ScalarType.BOOL */ },
+    { no: 4, name: "already_bound", kind: "scalar", T: 8 /* ScalarType.BOOL */ },
   ]);
 
   static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): AvailableDomain {
