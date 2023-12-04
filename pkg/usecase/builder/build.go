@@ -20,7 +20,7 @@ func (s *builderService) tryStartBuild(buildID string) error {
 	defer s.statusLock.Unlock()
 
 	if s.state != nil {
-		log.Infof("skipping build request for %v, builder busy", buildID)
+		log.Warnf("Skipping build request for %v, builder busy - builder scheduling may be malfunctioning?", buildID)
 		return nil // Builder busy - skip
 	}
 
@@ -37,6 +37,7 @@ func (s *builderService) tryStartBuild(buildID string) error {
 		return err
 	}
 	if n == 0 {
+		log.Warnf("Failed to acquire build lock for %v - builder scheduling may be malfunctioning?", buildID)
 		return nil // other builder has acquired the build lock - skip
 	}
 
