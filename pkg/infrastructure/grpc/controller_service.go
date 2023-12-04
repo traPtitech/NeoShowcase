@@ -113,10 +113,7 @@ loop:
 
 func (s *ControllerService) CancelBuild(_ context.Context, c *connect.Request[pb.BuildIdRequest]) (*connect.Response[emptypb.Empty], error) {
 	buildID := c.Msg.BuildId
-	s.builder.BroadcastBuilder(&pb.BuilderRequest{
-		Type: pb.BuilderRequest_CANCEL_BUILD,
-		Body: &pb.BuilderRequest_CancelBuild{CancelBuild: &pb.BuildIdRequest{BuildId: buildID}},
-	})
+	s.builder.CancelBuild(buildID)
 	res := connect.NewResponse(&emptypb.Empty{})
 	return res, nil
 }
