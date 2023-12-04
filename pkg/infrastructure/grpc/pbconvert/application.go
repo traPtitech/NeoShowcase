@@ -5,9 +5,16 @@ import (
 
 	"github.com/traPtitech/neoshowcase/pkg/domain"
 	"github.com/traPtitech/neoshowcase/pkg/infrastructure/grpc/pb"
+	"github.com/traPtitech/neoshowcase/pkg/usecase/apiserver"
 	"github.com/traPtitech/neoshowcase/pkg/util/ds"
 	"github.com/traPtitech/neoshowcase/pkg/util/mapper"
 )
+
+var AppScopeMapper = mapper.MustNewValueMapper(map[pb.GetApplicationsRequest_Scope]apiserver.GetAppScopeType{
+	pb.GetApplicationsRequest_MINE:       apiserver.GetAppScopeMine,
+	pb.GetApplicationsRequest_ALL:        apiserver.GetAppScopeAll,
+	pb.GetApplicationsRequest_REPOSITORY: apiserver.GetAppScopeRepository,
+})
 
 var DeployTypeMapper = mapper.MustNewValueMapper(map[domain.DeployType]pb.DeployType{
 	domain.DeployTypeRuntime: pb.DeployType_RUNTIME,

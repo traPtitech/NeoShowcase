@@ -370,8 +370,10 @@ message GetApplicationsRequest {
   enum Scope {
     MINE = 0;
     ALL = 1;
+    REPOSITORY = 2;
   }
   Scope scope = 1;
+  optional string repository_id = 2;
 }
 
 message UpdateApplicationRequest {
