@@ -12,39 +12,21 @@ const AppInfoLists: Component<{ app: Application }> = (props) => {
   return (
     <>
       <List.Container>
-        <List.Columns>
-          <Show when={props.app.updatedAt}>
-            {(nonNullUpdatedAt) => {
-              const { diff, localeString } = diffHuman(nonNullUpdatedAt().toDate())
-
-              return (
-                <List.Row>
-                  <List.RowContent>
-                    <List.RowTitle>起動時刻</List.RowTitle>
-                    <ToolTip props={{ content: localeString }}>
-                      <List.RowData>{diff}</List.RowData>
-                    </ToolTip>
-                  </List.RowContent>
-                </List.Row>
-              )
-            }}
-          </Show>
-          <Show when={props.app.createdAt}>
-            {(nonNullCreatedAt) => {
-              const { diff, localeString } = diffHuman(nonNullCreatedAt().toDate())
-              return (
-                <List.Row>
-                  <List.RowContent>
-                    <List.RowTitle>作成日</List.RowTitle>
-                    <ToolTip props={{ content: localeString }}>
-                      <List.RowData>{diff}</List.RowData>
-                    </ToolTip>
-                  </List.RowContent>
-                </List.Row>
-              )
-            }}
-          </Show>
-        </List.Columns>
+        <Show when={props.app.createdAt}>
+          {(nonNullCreatedAt) => {
+            const { diff, localeString } = diffHuman(nonNullCreatedAt().toDate())
+            return (
+              <List.Row>
+                <List.RowContent>
+                  <List.RowTitle>作成日</List.RowTitle>
+                  <ToolTip props={{ content: localeString }}>
+                    <List.RowData>{diff}</List.RowData>
+                  </ToolTip>
+                </List.RowContent>
+              </List.Row>
+            )
+          }}
+        </Show>
         <Show when={props.app.deployType === DeployType.RUNTIME}>
           <List.Row>
             <List.RowContent>

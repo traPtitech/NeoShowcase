@@ -76,8 +76,9 @@ const AppLatestBuilds: Component<{
           const isCurrentBuild = build.id === props.app.currentBuild
           const isDeploying = isCurrentBuild && applicationState(props.app) === ApplicationState.Deploying
           const isDeployed =
-            (isCurrentBuild && applicationState(props.app) === ApplicationState.Running) ||
-            applicationState(props.app) === ApplicationState.Static
+            isCurrentBuild &&
+            (applicationState(props.app) === ApplicationState.Running ||
+              applicationState(props.app) === ApplicationState.Static)
 
           return (
             <BuildRow
