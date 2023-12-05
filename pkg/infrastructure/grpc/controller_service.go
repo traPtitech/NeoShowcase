@@ -61,7 +61,7 @@ func (s *ControllerService) GetSystemInfo(_ context.Context, _ *connect.Request[
 		return nil, err
 	}
 	for _, ad := range domains {
-		ad.SetAlreadyBound(existingApps)
+		ad.AlreadyBound = ad.IsAlreadyBound(existingApps)
 	}
 
 	ports := s.backend.AvailablePorts()
