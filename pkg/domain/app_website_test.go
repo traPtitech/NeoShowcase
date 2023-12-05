@@ -66,7 +66,7 @@ func TestAvailableDomain_Validate(t *testing.T) {
 	}
 }
 
-func TestAvailableDomain_SetAlreadyBound(t *testing.T) {
+func TestAvailableDomain_IsAlreadyBound(t *testing.T) {
 	tests := []struct {
 		name     string
 		domain   string
@@ -104,8 +104,8 @@ func TestAvailableDomain_SetAlreadyBound(t *testing.T) {
 			a := &AvailableDomain{
 				Domain: tt.domain,
 			}
-			a.SetAlreadyBound([]*Application{{Websites: []*Website{tt.existing}}})
-			assert.Equal(t, tt.want, a.AlreadyBound)
+			got := a.IsAlreadyBound([]*Application{{Websites: []*Website{tt.existing}}})
+			assert.Equal(t, tt.want, got)
 		})
 	}
 }

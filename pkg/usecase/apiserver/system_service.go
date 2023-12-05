@@ -13,7 +13,7 @@ import (
 )
 
 func (s *Service) GetSystemInfo(ctx context.Context) (*domain.SystemInfo, error) {
-	return s.systemInfo(ctx)
+	return s.systemInfo.Get(ctx, struct{}{})
 }
 
 type tmpKeyPairService struct {
