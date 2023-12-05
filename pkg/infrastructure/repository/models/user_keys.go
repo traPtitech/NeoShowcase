@@ -28,6 +28,10 @@ type UserKey struct { // ID
 	UserID string `boil:"user_id" json:"user_id" toml:"user_id" yaml:"user_id"`
 	// SSH Public Key
 	PublicKey string `boil:"public_key" json:"public_key" toml:"public_key" yaml:"public_key"`
+	// キー名
+	Name string `boil:"name" json:"name" toml:"name" yaml:"name"`
+	// 作成日時
+	CreatedAt time.Time `boil:"created_at" json:"created_at" toml:"created_at" yaml:"created_at"`
 
 	R *userKeyR `boil:"-" json:"-" toml:"-" yaml:"-"`
 	L userKeyL  `boil:"-" json:"-" toml:"-" yaml:"-"`
@@ -37,20 +41,28 @@ var UserKeyColumns = struct {
 	ID        string
 	UserID    string
 	PublicKey string
+	Name      string
+	CreatedAt string
 }{
 	ID:        "id",
 	UserID:    "user_id",
 	PublicKey: "public_key",
+	Name:      "name",
+	CreatedAt: "created_at",
 }
 
 var UserKeyTableColumns = struct {
 	ID        string
 	UserID    string
 	PublicKey string
+	Name      string
+	CreatedAt string
 }{
 	ID:        "user_keys.id",
 	UserID:    "user_keys.user_id",
 	PublicKey: "user_keys.public_key",
+	Name:      "user_keys.name",
+	CreatedAt: "user_keys.created_at",
 }
 
 // Generated where
@@ -59,10 +71,14 @@ var UserKeyWhere = struct {
 	ID        whereHelperstring
 	UserID    whereHelperstring
 	PublicKey whereHelperstring
+	Name      whereHelperstring
+	CreatedAt whereHelpertime_Time
 }{
 	ID:        whereHelperstring{field: "`user_keys`.`id`"},
 	UserID:    whereHelperstring{field: "`user_keys`.`user_id`"},
 	PublicKey: whereHelperstring{field: "`user_keys`.`public_key`"},
+	Name:      whereHelperstring{field: "`user_keys`.`name`"},
+	CreatedAt: whereHelpertime_Time{field: "`user_keys`.`created_at`"},
 }
 
 // UserKeyRels is where relationship names are stored.
@@ -93,9 +109,9 @@ func (r *userKeyR) GetUser() *User {
 type userKeyL struct{}
 
 var (
-	userKeyAllColumns            = []string{"id", "user_id", "public_key"}
-	userKeyColumnsWithoutDefault = []string{"id", "user_id", "public_key"}
-	userKeyColumnsWithDefault    = []string{}
+	userKeyAllColumns            = []string{"id", "user_id", "public_key", "name", "created_at"}
+	userKeyColumnsWithoutDefault = []string{"id", "user_id", "public_key", "name"}
+	userKeyColumnsWithDefault    = []string{"created_at"}
 	userKeyPrimaryKeyColumns     = []string{"id"}
 	userKeyGeneratedColumns      = []string{}
 )
@@ -605,6 +621,13 @@ func (o *UserKey) Insert(ctx context.Context, exec boil.ContextExecutor, columns
 	}
 
 	var err error
+	if !boil.TimestampsAreSkipped(ctx) {
+		currTime := time.Now().In(boil.GetLocation())
+
+		if o.CreatedAt.IsZero() {
+			o.CreatedAt = currTime
+		}
+	}
 
 	if err := o.doBeforeInsertHooks(ctx, exec); err != nil {
 		return err
@@ -829,6 +852,13 @@ var mySQLUserKeyUniqueColumns = []string{
 func (o *UserKey) Upsert(ctx context.Context, exec boil.ContextExecutor, updateColumns, insertColumns boil.Columns) error {
 	if o == nil {
 		return errors.New("models: no user_keys provided for upsert")
+	}
+	if !boil.TimestampsAreSkipped(ctx) {
+		currTime := time.Now().In(boil.GetLocation())
+
+		if o.CreatedAt.IsZero() {
+			o.CreatedAt = currTime
+		}
 	}
 
 	if err := o.doBeforeUpsertHooks(ctx, exec); err != nil {

@@ -18,9 +18,9 @@ func (s *Service) GetUsers(ctx context.Context) ([]*domain.User, error) {
 	return s.userRepo.GetUsers(ctx, domain.GetUserCondition{})
 }
 
-func (s *Service) CreateUserKey(ctx context.Context, publicKey string) (*domain.UserKey, error) {
+func (s *Service) CreateUserKey(ctx context.Context, publicKey string, name string) (*domain.UserKey, error) {
 	user := web.GetUser(ctx)
-	key, err := domain.NewUserKey(user.ID, publicKey)
+	key, err := domain.NewUserKey(user.ID, publicKey, name)
 	if err != nil {
 		return nil, newError(ErrorTypeBadRequest, "invalid public key", err)
 	}
