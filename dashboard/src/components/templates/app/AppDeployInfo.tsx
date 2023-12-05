@@ -5,12 +5,13 @@ import { Application, DeployType, Repository } from '/@/api/neoshowcase/protobuf
 import Badge from '/@/components/UI/Badge'
 import { Button } from '/@/components/UI/Button'
 import JumpButton from '/@/components/UI/JumpButton'
+import { ToolTip } from '/@/components/UI/ToolTip'
 import { URLText } from '/@/components/UI/URLText'
 import { client, handleAPIError } from '/@/libs/api'
 import { ApplicationState, applicationState, getWebsiteURL } from '/@/libs/application'
 import { titleCase } from '/@/libs/casing'
 import { colorOverlay } from '/@/libs/colorOverlay'
-import { shortSha } from '/@/libs/format'
+import { diffHuman, shortSha } from '/@/libs/format'
 import { colorVars, media, textVars } from '/@/theme'
 import { List } from '../List'
 import { AppStatusIcon } from './AppStatusIcon'
@@ -19,7 +20,7 @@ const DeploymentContainer = styled('div', {
   base: {
     width: '100%',
     display: 'grid',
-    gridTemplateColumns: '32% 1fr 1fr',
+    gridTemplateColumns: 'repeat(3, 1fr)',
     gridTemplateRows: 'auto',
     gap: '1px',
 
@@ -30,7 +31,7 @@ const DeploymentContainer = styled('div', {
 
     '@media': {
       [media.mobile]: {
-        gridTemplateColumns: '1fr 1fr',
+        gridTemplateColumns: 'repeat(2, 1fr)',
       },
     },
   },
@@ -38,7 +39,7 @@ const DeploymentContainer = styled('div', {
 const AppStateContainer = styled('div', {
   base: {
     position: 'relative',
-    gridArea: '1 / 1 / 5 / 2',
+    gridArea: '1 / 1 / 4 / 2',
     width: '100%',
     display: 'grid',
     gridTemplateRows: '1fr 2fr 1fr',
@@ -196,29 +197,19 @@ const AppDeployInfo: Component<{
       </AppStateContainer>
       <DeployInfoContainer>
         <List.RowContent>
-          <List.RowTitle>Repository</List.RowTitle>
-          <List.RowData>{props.repo.name}</List.RowData>
+          <List.RowTitle>起動時刻</List.RowTitle>
+          <Show when={props.app.updatedAt}>
+            {(nonNullUpdatedAt) => {
+              const { diff, localeString } = diffHuman(nonNullUpdatedAt().toDate())
+
+              return (
+                <ToolTip props={{ content: localeString }}>
+                  <List.RowData>{diff}</List.RowData>
+                </ToolTip>
+              )
+            }}
+          </Show>
         </List.RowContent>
-        <JumpButton href={`/repos/${props.repo.id}`} />
-      </DeployInfoContainer>
-      <DeployInfoContainer>
-        <List.RowContent>
-          <List.RowTitle>Source Branch</List.RowTitle>
-          <List.RowData>{props.app.refName}</List.RowData>
-        </List.RowContent>
-        <JumpButton href={`/apps/${props.app.id}/settings`} />
-      </DeployInfoContainer>
-      <DeployInfoContainer>
-        <List.RowContent>
-          <List.RowTitle>Deployed Build</List.RowTitle>
-          <List.RowData>
-            {props.app.currentBuild ? shortSha(props.app.currentBuild) : 'No, Deployed'}
-            <Show when={props.isLatestBuild}>
-              <Badge variant="success">Latest</Badge>
-            </Show>
-          </List.RowData>
-        </List.RowContent>
-        <JumpButton href={`/apps/${props.app.id}/builds/${props.app.currentBuild}`} />
       </DeployInfoContainer>
       <DeployInfoContainer>
         <List.RowContent>
@@ -229,8 +220,15 @@ const AppDeployInfo: Component<{
       </DeployInfoContainer>
       <DeployInfoContainer long>
         <List.RowContent>
-          <List.RowTitle>Source Commit</List.RowTitle>
-          <List.RowData>{shortSha(props.app.commit)}</List.RowData>
+          <List.RowTitle>Source Branch (Commit)</List.RowTitle>
+          <List.RowData>
+            {`${props.app.refName} (${shortSha(props.app.commit)})`}
+            <Show when={props.isLatestBuild}>
+              <ToolTip props={{ content: '最新のビルドがデプロイされています' }}>
+                <Badge variant="success">Latest</Badge>
+              </ToolTip>
+            </Show>
+          </List.RowData>
         </List.RowContent>
         <Show when={props.hasPermission}>
           <Button
