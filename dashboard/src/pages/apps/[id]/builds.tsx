@@ -6,6 +6,7 @@ import { MainViewContainer } from '/@/components/layouts/MainView'
 import SuspenseContainer from '/@/components/layouts/SuspenseContainer'
 import { BuildList, List } from '/@/components/templates/List'
 import { client } from '/@/libs/api'
+import { ApplicationState, applicationState } from '/@/libs/application'
 import { useApplicationData } from '/@/routes'
 
 export default () => {
@@ -37,7 +38,20 @@ export default () => {
             <DataTable.Title>Builds</DataTable.Title>
             <Show
               when={showPlaceHolder()}
-              fallback={<BuildList builds={sortedBuilds()} deployedBuild={app()?.currentBuild} />}
+              fallback={
+                <BuildList
+                  builds={sortedBuilds()}
+                  deployedBuild={
+                    applicationState(app()!) === ApplicationState.Running ||
+                    applicationState(app()!) === ApplicationState.Static
+                      ? app()?.currentBuild
+                      : undefined
+                  }
+                  deployingBuild={
+                    applicationState(app()!) === ApplicationState.Deploying ? app()?.currentBuild : undefined
+                  }
+                />
+              }
             >
               <List.Container>
                 <List.PlaceHolder>

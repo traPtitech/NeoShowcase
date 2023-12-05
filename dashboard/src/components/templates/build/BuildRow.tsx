@@ -1,6 +1,6 @@
 import { styled } from '@macaron-css/solid'
 import { A } from '@solidjs/router'
-import { Component, Show } from 'solid-js'
+import { Component, Match, Show, Switch } from 'solid-js'
 import { Build } from '/@/api/neoshowcase/protobuf/gateway_pb'
 import Badge from '/@/components/UI/Badge'
 import { ToolTip } from '/@/components/UI/ToolTip'
@@ -77,7 +77,8 @@ const AppName = styled('div', {
 export interface Props {
   build: Build
   appName?: string
-  isDeployed?: boolean
+  isDeployed?: 'deployed' | 'deploying'
+  isLatest?: boolean
 }
 
 export const BuildRow: Component<Props> = (props) => {
@@ -87,8 +88,16 @@ export const BuildRow: Component<Props> = (props) => {
         <TitleContainer>
           <BuildStatusIcon state={props.build.status} />
           <BuildName>Build at {shortSha(props.build.commit)}</BuildName>
-          <Show when={props.isDeployed}>
-            <Badge variant="success">Deployed</Badge>
+          <Switch>
+            <Match when={props.isDeployed === 'deployed'}>
+              <Badge variant="success">Deployed</Badge>
+            </Match>
+            <Match when={props.isDeployed === 'deploying'}>
+              <Badge variant="warn">Deploying</Badge>
+            </Match>
+          </Switch>
+          <Show when={props.isLatest}>
+            <Badge variant="success">Latest</Badge>
           </Show>
           <Spacer />
           <Show when={props.build.queuedAt}>

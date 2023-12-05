@@ -141,7 +141,7 @@ const AppDeployInfo: Component<{
   repo: Repository
   refreshRepo: () => void
   disableRefresh: () => boolean
-  latestBuildId: string | undefined
+  isLatestBuild: boolean
   hasPermission: boolean
 }> = (props) => {
   const [mouseEnter, setMouseEnter] = createSignal(false)
@@ -213,7 +213,7 @@ const AppDeployInfo: Component<{
           <List.RowTitle>Deployed Build</List.RowTitle>
           <List.RowData>
             {props.app.currentBuild ? shortSha(props.app.currentBuild) : 'No, Deployed'}
-            <Show when={props.app.currentBuild === props.latestBuildId}>
+            <Show when={props.isLatestBuild}>
               <Badge variant="success">Latest</Badge>
             </Show>
           </List.RowData>

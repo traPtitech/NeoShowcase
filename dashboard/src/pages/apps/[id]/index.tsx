@@ -9,6 +9,7 @@ import SuspenseContainer from '/@/components/layouts/SuspenseContainer'
 import { List } from '/@/components/templates/List'
 import AppDeployInfo from '/@/components/templates/app/AppDeployInfo'
 import AppInfoLists from '/@/components/templates/app/AppInfoLists'
+import AppLatestBuilds from '/@/components/templates/app/AppLatestBuilds'
 import { AppMetrics } from '/@/components/templates/app/AppMetrics'
 import { ContainerLog } from '/@/components/templates/app/ContainerLog'
 import BuildStatusTable from '/@/components/templates/build/BuildStatusTable'
@@ -195,21 +196,18 @@ const Logs: Component<{ app: Application }> = (props) => {
   )
 }
 
-const getLatestBuild = (appId: Application['id']): Promise<Build | undefined> =>
-  client
-    .getBuilds({ id: appId })
-    .then(
-      (res) =>
-        res.builds.sort((b1, b2) => (b2.queuedAt?.toDate().getTime() ?? 0) - (b1.queuedAt?.toDate().getTime() ?? 0))[0],
-    )
-
 export default () => {
   const { app, refetchApp, repo, hasPermission } = useApplicationData()
 
-  const [latestBuild, { refetch: refetchLatestBuild }] = createResource(
+  const [builds, { refetch: refetchBuilds }] = createResource(
     () => app()?.id,
-    (appId) => getLatestBuild(appId),
+    (id) => client.getBuilds({ id }),
   )
+  const sortedBuilds = () =>
+    builds()?.builds.sort((b1, b2) => {
+      return (b2.queuedAt?.toDate().getTime() ?? 0) - (b1.queuedAt?.toDate().getTime() ?? 0)
+    })
+  const latestBuild = () => sortedBuilds()?.[0]
 
   const loaded = () => !!(app() && repo())
 
@@ -224,8 +222,8 @@ export default () => {
   const refetchAppTimer = setInterval(refetchApp, 10000)
   onCleanup(() => clearInterval(refetchAppTimer))
 
-  const refetchLatestBuildTimer = setInterval(refetchLatestBuild, 10000)
-  onCleanup(() => clearInterval(refetchLatestBuildTimer))
+  const refetchBuildsTimer = setInterval(refetchBuilds, 10000)
+  onCleanup(() => clearInterval(refetchBuildsTimer))
 
   const [isPending] = useTransition()
 
@@ -243,7 +241,7 @@ export default () => {
                   repo={repo()!}
                   refreshRepo={refreshRepo}
                   disableRefresh={disableRefresh}
-                  latestBuildId={latestBuild()?.id}
+                  isLatestBuild={latestBuild()?.id === app()?.currentBuild}
                   hasPermission={hasPermission()}
                 />
               </DataTable.Container>
@@ -252,17 +250,17 @@ export default () => {
           <MainViewContainer>
             <MainView>
               <DataTable.Container>
-                <DataTable.Title>Build Status</DataTable.Title>
-                <BuildStatus
-                  app={app()!}
-                  refetchApp={refetchApp}
-                  repo={repo()!}
-                  refreshRepo={refreshRepo}
-                  disableRefresh={disableRefresh}
-                  latestBuild={latestBuild()}
-                  refetchLatestBuild={refetchLatestBuild}
-                  hasPermission={hasPermission()}
-                />
+                <Show when={builds()}>
+                  <DataTable.Title>Latest Builds</DataTable.Title>
+                  <AppLatestBuilds
+                    app={app()!}
+                    refetchApp={refetchApp}
+                    repo={repo()!}
+                    hasPermission={hasPermission()}
+                    sortedBuilds={sortedBuilds()!}
+                    refetchBuilds={refetchBuilds}
+                  />
+                </Show>
               </DataTable.Container>
               <DataTable.Container>
                 <DataTable.Title>Information</DataTable.Title>

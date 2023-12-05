@@ -112,13 +112,28 @@ export const AppsList: Component<{ apps: (Application | undefined)[] }> = (props
   )
 }
 
-export const BuildList: Component<{ builds: { build: Build; appName?: string }[]; deployedBuild?: Build['id'] }> = (
-  props,
-) => {
+export const BuildList: Component<{
+  builds: { build: Build; appName?: string }[]
+  deployedBuild?: Build['id']
+  deployingBuild?: Build['id']
+}> = (props) => {
   return (
     <Container>
       <For each={props.builds}>
-        {(b) => <BuildRow build={b.build} appName={b.appName} isDeployed={props.deployedBuild === b.build.id} />}
+        {(b, i) => (
+          <BuildRow
+            build={b.build}
+            appName={b.appName}
+            isDeployed={
+              props.deployedBuild === b.build.id
+                ? 'deployed'
+                : props.deployingBuild === b.build.id
+                ? 'deploying'
+                : undefined
+            }
+            isLatest={i() === 0}
+          />
+        )}
       </For>
     </Container>
   )
