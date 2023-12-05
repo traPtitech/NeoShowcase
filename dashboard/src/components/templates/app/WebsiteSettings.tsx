@@ -255,13 +255,16 @@ export const WebsiteSetting = (props: WebsiteSettingProps) => {
                     }}
                     {...fieldProps}
                     options={
-                      systemInfo()?.domains.map((domain) => {
-                        const domainName = domain.domain.replace(/\*/g, '')
-                        return {
-                          value: domain.domain,
-                          label: domainName,
-                        }
-                      }) ?? []
+                      // 占有されているドメインはoptionに表示しない
+                      systemInfo()
+                        ?.domains.filter((domain) => !domain.alreadyBound)
+                        .map((domain) => {
+                          const domainName = domain.domain.replace(/\*/g, '')
+                          return {
+                            value: domain.domain,
+                            label: domainName,
+                          }
+                        }) ?? []
                     }
                     value={field.value}
                     setValue={(domain) => {
