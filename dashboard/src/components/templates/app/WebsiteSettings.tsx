@@ -1,6 +1,6 @@
 import { PlainMessage } from '@bufbuild/protobuf'
 import { styled } from '@macaron-css/solid'
-import { Field, Form, FormStore, getValue, required, reset, setValue, toCustom } from '@modular-forms/solid'
+import { Field, Form, FormStore, getValue, reset, setValue, toCustom } from '@modular-forms/solid'
 import { For, Show, createEffect, createMemo, createReaction, on, onMount } from 'solid-js'
 import {
   AuthenticationType,
@@ -233,7 +233,16 @@ export const WebsiteSetting = (props: WebsiteSettingProps) => {
                 </Field>
               </HttpSelectContainer>
               <URLItem>://</URLItem>
-              <Field of={props.formStore} name={'website.host'} validate={required('Please Enter Hostname')}>
+              <Field
+                of={props.formStore}
+                name={'website.host'}
+                validate={(host) => {
+                  if (getValue(props.formStore, 'website.domain')?.startsWith('*') && host === '') {
+                    return 'Please Enter Hostname'
+                  }
+                  return ''
+                }}
+              >
                 {(field, fieldProps) => (
                   <Show when={getValue(props.formStore, 'website.domain')?.startsWith('*')}>
                     <TextField
