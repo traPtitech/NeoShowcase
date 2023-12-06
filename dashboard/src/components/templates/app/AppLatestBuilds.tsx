@@ -1,21 +1,12 @@
-import { styled } from '@macaron-css/solid'
 import { Component, For, createSignal } from 'solid-js'
-import { Show } from 'solid-js'
 import toast from 'solid-toast'
 import { Application, Build, Repository } from '/@/api/neoshowcase/protobuf/gateway_pb'
 import { Button } from '/@/components/UI/Button'
 import { MaterialSymbols } from '/@/components/UI/MaterialSymbols'
 import { client, handleAPIError } from '/@/libs/api'
-import { ApplicationState, applicationState } from '/@/libs/application'
-import { colorVars } from '/@/theme'
+import { ApplicationState, deploymentState } from '/@/libs/application'
 import { List } from '../List'
 import { BuildRow } from '../build/BuildRow'
-
-const Bordered = styled('div', {
-  base: {
-    borderBottom: `2px solid ${colorVars.semantic.ui.border}`,
-  },
-})
 
 const AppLatestBuilds: Component<{
   app: Application
@@ -39,21 +30,11 @@ const AppLatestBuilds: Component<{
     }
   }
 
-  // 最新4件のビルド
+  // 最新5件のビルド
   const latestBuilds = () => props.sortedBuilds.slice(0, 4)
-
-  // 最新4件のビルドにデプロイ済みビルドが含まれるか
-  const hasDeployedBuild = () => latestBuilds()?.some((build) => build.id === props.app.currentBuild)
 
   return (
     <List.Container>
-      <Show when={!hasDeployedBuild() && props.sortedBuilds.find((b) => b.id === props.app.currentBuild)}>
-        {(deployedBuild) => (
-          <Bordered>
-            <BuildRow build={deployedBuild()} isDeployed="deployed" />
-          </Bordered>
-        )}
-      </Show>
       <For
         each={latestBuilds()}
         fallback={
@@ -72,21 +53,14 @@ const AppLatestBuilds: Component<{
           </List.PlaceHolder>
         }
       >
-        {(build, i) => {
+        {(build) => {
+          const deployState = deploymentState(props.app)
           const isCurrentBuild = build.id === props.app.currentBuild
-          const isDeploying = isCurrentBuild && applicationState(props.app) === ApplicationState.Deploying
+          const isDeploying = isCurrentBuild && deployState === ApplicationState.Deploying
           const isDeployed =
-            isCurrentBuild &&
-            (applicationState(props.app) === ApplicationState.Running ||
-              applicationState(props.app) === ApplicationState.Static)
+            isCurrentBuild && (deployState === ApplicationState.Running || deployState === ApplicationState.Static)
 
-          return (
-            <BuildRow
-              build={build}
-              isDeployed={isDeployed ? 'deployed' : isDeploying ? 'deploying' : undefined}
-              isLatest={i() === 0}
-            />
-          )
+          return <BuildRow build={build} isDeployed={isDeployed ? 'deployed' : isDeploying ? 'deploying' : undefined} />
         }}
       </For>
     </List.Container>

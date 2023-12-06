@@ -40,7 +40,10 @@ export enum ApplicationState {
   Error = 'Error',
 }
 
-const useDeployState = (app: Application): ApplicationState => {
+export const deploymentState = (app: Application): ApplicationState => {
+  if (!app.running) {
+    return ApplicationState.Idle
+  }
   if (app.deployType === DeployType.RUNTIME) {
     switch (app.container) {
       case Application_ContainerState.MISSING:
@@ -74,13 +77,13 @@ export const applicationState = (app: Application): ApplicationState => {
     case BuildStatus.BUILDING:
       return ApplicationState.Deploying
     case BuildStatus.SUCCEEDED:
-      return useDeployState(app)
+      return deploymentState(app)
     case BuildStatus.FAILED:
       return ApplicationState.Error
     case BuildStatus.CANCELLED:
-      return useDeployState(app)
+      return deploymentState(app)
     case BuildStatus.SKIPPED:
-      return useDeployState(app)
+      return deploymentState(app)
     case undefined:
       return ApplicationState.Error
   }

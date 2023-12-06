@@ -6,7 +6,7 @@ import { MainViewContainer } from '/@/components/layouts/MainView'
 import SuspenseContainer from '/@/components/layouts/SuspenseContainer'
 import { BuildList, List } from '/@/components/templates/List'
 import { client } from '/@/libs/api'
-import { ApplicationState, applicationState } from '/@/libs/application'
+import { ApplicationState, deploymentState } from '/@/libs/application'
 import { useApplicationData } from '/@/routes'
 
 export default () => {
@@ -30,6 +30,8 @@ export default () => {
 
   const [isPending] = useTransition()
 
+  const deployState = () => deploymentState(app()!)
+
   return (
     <SuspenseContainer isPending={isPending()}>
       <MainViewContainer>
@@ -42,14 +44,11 @@ export default () => {
                 <BuildList
                   builds={sortedBuilds()}
                   deployedBuild={
-                    applicationState(app()!) === ApplicationState.Running ||
-                    applicationState(app()!) === ApplicationState.Static
+                    deployState() === ApplicationState.Running || deployState() === ApplicationState.Static
                       ? app()?.currentBuild
                       : undefined
                   }
-                  deployingBuild={
-                    applicationState(app()!) === ApplicationState.Deploying ? app()?.currentBuild : undefined
-                  }
+                  deployingBuild={deployState() === ApplicationState.Deploying ? app()?.currentBuild : undefined}
                 />
               }
             >

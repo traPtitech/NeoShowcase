@@ -78,7 +78,6 @@ export interface Props {
   build: Build
   appName?: string
   isDeployed?: 'deployed' | 'deploying'
-  isLatest?: boolean
 }
 
 export const BuildRow: Component<Props> = (props) => {
@@ -96,9 +95,6 @@ export const BuildRow: Component<Props> = (props) => {
               <Badge variant="warn">Deploying</Badge>
             </Match>
           </Switch>
-          <Show when={props.isLatest}>
-            <Badge variant="success">Latest</Badge>
-          </Show>
           <Spacer />
         </TitleContainer>
         <MetaContainer>

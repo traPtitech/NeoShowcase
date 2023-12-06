@@ -8,7 +8,7 @@ import JumpButton from '/@/components/UI/JumpButton'
 import { ToolTip } from '/@/components/UI/ToolTip'
 import { URLText } from '/@/components/UI/URLText'
 import { client, handleAPIError } from '/@/libs/api'
-import { ApplicationState, applicationState, getWebsiteURL } from '/@/libs/application'
+import { ApplicationState, deploymentState, getWebsiteURL } from '/@/libs/application'
 import { titleCase } from '/@/libs/casing'
 import { colorOverlay } from '/@/libs/colorOverlay'
 import { diffHuman, shortSha } from '/@/libs/format'
@@ -172,12 +172,12 @@ const AppDeployInfo: Component<{
       <AppStateContainer
         onMouseEnter={() => setMouseEnter(true)}
         onMouseLeave={() => setMouseEnter(false)}
-        variant={applicationState(props.app)}
+        variant={deploymentState(props.app)}
       >
         <div />
         <AppState>
-          <AppStatusIcon state={applicationState(props.app)} size={80} />
-          {applicationState(props.app)}
+          <AppStatusIcon state={deploymentState(props.app)} size={80} />
+          {deploymentState(props.app)}
         </AppState>
         <Show when={showActions()}>
           <ActionButtons>
@@ -188,7 +188,7 @@ const AppDeployInfo: Component<{
               variants="borderError"
               size="small"
               onClick={stopApp}
-              disabled={props.disableRefresh() || applicationState(props.app) === ApplicationState.Idle}
+              disabled={props.disableRefresh() || deploymentState(props.app) === ApplicationState.Idle}
             >
               Stop App
             </Button>

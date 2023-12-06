@@ -120,7 +120,7 @@ export const BuildList: Component<{
   return (
     <Container>
       <For each={props.builds}>
-        {(b, i) => (
+        {(b) => (
           <BuildRow
             build={b.build}
             appName={b.appName}
@@ -131,7 +131,6 @@ export const BuildList: Component<{
                 ? 'deploying'
                 : undefined
             }
-            isLatest={i() === 0}
           />
         )}
       </For>
