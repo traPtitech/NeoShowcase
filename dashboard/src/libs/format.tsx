@@ -1,3 +1,4 @@
+import { Timestamp } from '@bufbuild/protobuf'
 import { tippy as tippyDir } from 'solid-tippy'
 
 // https://github.com/solidjs/solid/discussions/845
@@ -24,6 +25,19 @@ const second = 1000
 const minute = 60 * second
 const hour = 60 * minute
 const day = 24 * hour
+
+export const dateHuman = (timestamp: Timestamp): string => {
+  const date = new Date(Number(timestamp.seconds) * 1000)
+  // yyyy/MM/dd HH:mm
+  return date.toLocaleString('ja-JP', {
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+    hour12: false,
+    hour: '2-digit',
+    minute: '2-digit',
+  })
+}
 
 export const durationHuman = (millis: number): string => {
   let remainMillis = millis

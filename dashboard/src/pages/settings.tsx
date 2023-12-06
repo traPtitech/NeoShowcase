@@ -1,12 +1,13 @@
+import { PlainMessage } from '@bufbuild/protobuf'
 import { styled } from '@macaron-css/solid'
-import { SubmitHandler, createForm, required } from '@modular-forms/solid'
+import { Field, Form, SubmitHandler, createFormStore, required, reset } from '@modular-forms/solid'
 import { Title } from '@solidjs/meta'
 import { Component, For, Show, createResource } from 'solid-js'
 import toast from 'solid-toast'
 import { Button } from '/@/components/UI/Button'
 import { client, handleAPIError } from '/@/libs/api'
 import { colorVars, textVars } from '/@/theme'
-import { DeleteUserKeyRequest, UserKey } from '../api/neoshowcase/protobuf/gateway_pb'
+import { CreateUserKeyRequest, DeleteUserKeyRequest, UserKey } from '../api/neoshowcase/protobuf/gateway_pb'
 import { MaterialSymbols } from '../components/UI/MaterialSymbols'
 import ModalDeleteConfirm from '../components/UI/ModalDeleteConfirm'
 import { TextField } from '../components/UI/TextField'
@@ -15,6 +16,7 @@ import { MainViewContainer } from '../components/layouts/MainView'
 import { WithNav } from '../components/layouts/WithNav'
 import { List } from '../components/templates/List'
 import { Nav } from '../components/templates/Nav'
+import { dateHuman } from '../libs/format'
 import useModal from '../libs/useModal'
 
 const TitleContainer = styled('div', {
@@ -52,7 +54,16 @@ const SshKeyRowContent = styled('div', {
     overflowX: 'hidden',
   },
 })
-const SshKeyRowValue = styled('h3', {
+const SshKeyName = styled('div', {
+  base: {
+    whiteSpace: 'nowrap',
+    overflow: 'hidden',
+    textOverflow: 'ellipsis',
+    color: colorVars.semantic.text.black,
+    ...textVars.h4.bold,
+  },
+})
+const SshKeyRowValue = styled('div', {
   base: {
     whiteSpace: 'nowrap',
     overflow: 'hidden',
@@ -61,12 +72,28 @@ const SshKeyRowValue = styled('h3', {
     ...textVars.text.medium,
   },
 })
+const SshKeyAddedAt = styled('div', {
+  base: {
+    whiteSpace: 'nowrap',
+    overflow: 'hidden',
+    textOverflow: 'ellipsis',
+    color: colorVars.semantic.text.grey,
+    ...textVars.text.regular,
+  },
+})
 const FormContainer = styled('div', {
   base: {
     width: '100%',
     display: 'flex',
     flexDirection: 'column',
     gap: '8px',
+  },
+})
+const SshDeleteConfirm = styled('div', {
+  base: {
+    width: '100%',
+    display: 'flex',
+    flexDirection: 'column',
   },
 })
 
@@ -86,7 +113,11 @@ const SshKeyRow: Component<{ key: UserKey; refetchKeys: () => void }> = (props) 
     <>
       <SshKeyRowContainer>
         <SshKeyRowContent>
+          <SshKeyName>{props.key.name === '' ? '(Name not set)' : props.key.name}</SshKeyName>
           <SshKeyRowValue>{props.key.publicKey}</SshKeyRowValue>
+          <Show when={props.key.createdAt}>
+            <SshKeyAddedAt>Added on {dateHuman(props.key.createdAt!)}</SshKeyAddedAt>
+          </Show>
         </SshKeyRowContent>
         <Button variants="textError" size="medium" onClick={open}>
           Delete
@@ -95,7 +126,15 @@ const SshKeyRow: Component<{ key: UserKey; refetchKeys: () => void }> = (props) 
       <Modal.Container>
         <Modal.Header>Delete SSH Key</Modal.Header>
         <Modal.Body>
-          <ModalDeleteConfirm>{props.key.publicKey}</ModalDeleteConfirm>
+          <ModalDeleteConfirm>
+            <SshDeleteConfirm>
+              <SshKeyName>{props.key.name === '' ? '(Name not set)' : props.key.name}</SshKeyName>
+              {props.key.publicKey}
+              <Show when={props.key.createdAt}>
+                <SshKeyAddedAt>Added on {dateHuman(props.key.createdAt!)}</SshKeyAddedAt>
+              </Show>
+            </SshDeleteConfirm>
+          </ModalDeleteConfirm>
         </Modal.Body>
         <Modal.Footer>
           <Button variants="text" size="medium" onClick={close}>
@@ -118,25 +157,23 @@ const SshKeys: Component<{ keys: UserKey[]; refetchKeys: () => void }> = (props)
   )
 }
 
-type AddNewKeyForm = {
-  value: string
-}
-
 export default () => {
   const [userKeys, { refetch: refetchKeys }] = createResource(() => client.getUserKeys({}))
   const { Modal: AddNewKeyModal, open: newKeyOpen, close: newKeyClose } = useModal()
 
-  const [key, Key] = createForm<AddNewKeyForm>({
+  const formStore = createFormStore<PlainMessage<CreateUserKeyRequest>>({
     initialValues: {
-      value: '',
+      name: '',
+      publicKey: '',
     },
   })
 
-  const handleSubmit: SubmitHandler<AddNewKeyForm> = async (values) => {
+  const handleSubmit: SubmitHandler<PlainMessage<CreateUserKeyRequest>> = async (values) => {
     try {
-      await client.createUserKey({ publicKey: values.value })
+      await client.createUserKey(values)
       toast.success('公開鍵を追加しました')
       newKeyClose()
+      reset(formStore)
       refetchKeys()
     } catch (e) {
       handleAPIError(e, '公開鍵の追加に失敗しました')
@@ -191,11 +228,16 @@ export default () => {
         </WithNav.Body>
       </WithNav.Container>
       <AddNewKeyModal.Container>
-        <Key.Form onSubmit={handleSubmit}>
+        <Form of={formStore} onSubmit={handleSubmit}>
           <AddNewKeyModal.Header>Add New SSH Key</AddNewKeyModal.Header>
           <AddNewKeyModal.Body>
             <FormContainer>
-              <Key.Field name="value" validate={[required('Enter SSH Public Key')]}>
+              <Field of={formStore} name="name" validate={[required('Enter Name')]}>
+                {(field, fieldProps) => (
+                  <TextField label="Name" required {...fieldProps} value={field.value} error={field.error} />
+                )}
+              </Field>
+              <Field of={formStore} name="publicKey" validate={[required('Enter SSH Public Key')]}>
                 {(field, fieldProps) => (
                   <TextField
                     label="Key"
@@ -207,18 +249,24 @@ export default () => {
                     error={field.error}
                   />
                 )}
-              </Key.Field>
+              </Field>
             </FormContainer>
           </AddNewKeyModal.Body>
           <AddNewKeyModal.Footer>
             <Button variants="text" size="medium" type="button" onClick={newKeyClose}>
               Cancel
             </Button>
-            <Button variants="primary" size="medium" type="submit" disabled={key.invalid || key.submitting}>
+            <Button
+              variants="primary"
+              size="medium"
+              type="submit"
+              disabled={formStore.invalid || formStore.submitting}
+              loading={formStore.submitting}
+            >
               Add
             </Button>
           </AddNewKeyModal.Footer>
-        </Key.Form>
+        </Form>
       </AddNewKeyModal.Container>
     </>
   )
