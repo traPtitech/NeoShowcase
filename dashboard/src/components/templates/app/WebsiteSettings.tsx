@@ -271,8 +271,12 @@ export const WebsiteSetting = (props: WebsiteSettingProps) => {
                     {...fieldProps}
                     options={
                       // 占有されているドメインはoptionに表示しない
+                      // すでに設定されているドメインはoptionに表示する
                       systemInfo()
-                        ?.domains.filter((domain) => !domain.alreadyBound)
+                        ?.domains.filter(
+                          (domain) =>
+                            !domain.alreadyBound || getValue(props.formStore, 'website.domain') === domain.domain,
+                        )
                         .map((domain) => {
                           const domainName = domain.domain.replace(/\*/g, '')
                           return {
