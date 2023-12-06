@@ -221,7 +221,7 @@ func provideGiteaIntegrationConfig(c Config) giteaintegration.Config {
 		URL:             cc.URL,
 		Token:           cc.Token,
 		IntervalSeconds: cc.IntervalSeconds,
-		ListIntervalMs:  cc.ListIntervalMs,
+		Concurrency:     cc.Concurrency,
 	}
 }
 

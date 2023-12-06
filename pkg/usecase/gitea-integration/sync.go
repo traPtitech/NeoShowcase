@@ -3,6 +3,7 @@ package giteaintegration
 import (
 	"context"
 	"fmt"
+	"golang.org/x/sync/errgroup"
 	"time"
 
 	"code.gitea.io/sdk/gitea"
@@ -16,7 +17,7 @@ import (
 	"github.com/traPtitech/neoshowcase/pkg/util/optional"
 )
 
-func listAllPages[T any](fn func(page, perPage int) ([]T, error), listInterval time.Duration) ([]T, error) {
+func listAllPages[T any](fn func(page, perPage int) ([]T, error)) ([]T, error) {
 	items := make([]T, 0)
 	for page := 1; ; page++ {
 		const perPage = 50 // max per page
@@ -28,110 +29,86 @@ func listAllPages[T any](fn func(page, perPage int) ([]T, error), listInterval t
 		if len(pageItems) < perPage {
 			break
 		}
-		time.Sleep(listInterval)
 	}
 	return items, nil
 }
 
 func (i *Integration) sync(ctx context.Context) {
 	start := time.Now()
+	log.Infof("Starting sync with Gitea ...")
 	err := i._sync(ctx)
 	if err != nil {
-		log.Errorf("failed to sync with gitea: %+v", err)
+		log.Errorf("Failed to sync with gitea: %+v", err)
 		return
 	}
-	log.Infof("Synced with gitea in %v", time.Since(start))
+	log.Infof("Synced with gitea in %v.", time.Since(start))
 }
 
 func (i *Integration) _sync(ctx context.Context) error {
 	// Sync users
+	log.Infof("Retrieving users from Gitea ...")
 	giteaUsers, err := listAllPages(func(page, perPage int) ([]*gitea.User, error) {
 		users, _, err := i.c.AdminListUsers(gitea.AdminListUsersOptions{
 			ListOptions: gitea.ListOptions{Page: page, PageSize: perPage},
 		})
 		return users, err
-	}, i.listInterval)
+	})
 	if err != nil {
 		return errors.Wrap(err, "listing users")
 	}
 	userNames := ds.Map(giteaUsers, func(user *gitea.User) string { return user.UserName })
-	log.Infof("Syncing %v users", len(userNames))
+
+	log.Infof("Syncing %v users ...", len(userNames))
 	users, err := i.userRepo.EnsureUsers(ctx, userNames)
 	if err != nil {
 		return err
 	}
 	usersMap := lo.SliceToMap(users, func(user *domain.User) (string, *domain.User) { return user.Name, user })
+	log.Infof("Synced %v users.", len(userNames))
 
-	// Sync repositories for each user
-	for _, user := range users {
-		giteaRepos, err := listAllPages(func(page, perPage int) ([]*gitea.Repository, error) {
-			repos, _, err := i.c.ListUserRepos(user.Name, gitea.ListReposOptions{
-				ListOptions: gitea.ListOptions{Page: page, PageSize: perPage},
-			})
-			return repos, err
-		}, i.listInterval)
-		if err != nil {
-			return errors.Wrap(err, "listing user repositories")
-		}
-
-		for _, giteaRepo := range giteaRepos {
-			err = i.syncRepository(ctx, user.Name, []string{user.ID}, giteaRepo)
-			if err != nil {
-				return errors.Wrap(err, "syncing user repository")
-			}
-		}
-
-		time.Sleep(i.listInterval)
-	}
-
-	// Sync repositories for each org
-	giteaOrgs, err := listAllPages(func(page, perPage int) ([]*gitea.Organization, error) {
-		orgs, _, err := i.c.AdminListOrgs(gitea.AdminListOrgsOptions{
-			ListOptions: gitea.ListOptions{Page: page, PageSize: perPage},
+	// Get repositories
+	log.Infof("Retrieving repositories from Gitea ...")
+	repos, err := listAllPages(func(page, perPage int) ([]*gitea.Repository, error) {
+		repos, _, err := i.c.SearchRepos(gitea.SearchRepoOptions{
+			ListOptions: gitea.ListOptions{
+				Page:     page,
+				PageSize: perPage,
+			},
+			Sort:  "created",
+			Order: "desc",
 		})
-		return orgs, err
-	}, i.listInterval)
+		return repos, err
+	})
 	if err != nil {
-		return errors.Wrap(err, "listing organizations")
+		return errors.Wrap(err, "listing repositories")
 	}
-	for _, giteaOrg := range giteaOrgs {
-		giteaRepos, err := listAllPages(func(page, perPage int) ([]*gitea.Repository, error) {
-			repos, _, err := i.c.ListOrgRepos(giteaOrg.UserName, gitea.ListOrgReposOptions{
-				ListOptions: gitea.ListOptions{Page: page, PageSize: perPage},
-			})
-			return repos, err
-		}, i.listInterval)
-		if err != nil {
-			return errors.Wrap(err, "listing org repositories")
-		}
 
-		giteaOrgMembers, err := listAllPages(func(page, perPage int) ([]*gitea.User, error) {
-			members, _, err := i.c.ListOrgMembership(giteaOrg.UserName, gitea.ListOrgMembershipOption{
-				ListOptions: gitea.ListOptions{Page: page, PageSize: perPage},
-			})
-			return members, err
-		}, i.listInterval)
-		if err != nil {
-			return errors.Wrap(err, "listing org members")
-		}
-		memberIDs := lo.Flatten(ds.Map(giteaOrgMembers, func(member *gitea.User) []string {
-			user, ok := usersMap[member.UserName]
-			if ok {
-				return []string{user.ID}
-			} else {
-				log.Warnf("failed to find user %v", member.UserName)
-				return nil
+	// Sync repositories
+	log.Infof("Syncing %v repositories ...", len(repos))
+	var eg errgroup.Group
+	eg.SetLimit(i.concurrency)
+	for _, repo := range repos {
+		repo := repo
+		eg.Go(func() error {
+			// Get users with write access
+			members, _, err := i.c.GetAssignees(repo.Owner.UserName, repo.Name)
+			if err != nil {
+				return errors.Wrap(err, fmt.Sprintf("syncing repository %v/%v: getting users", repo.Owner.UserName, repo.Name))
 			}
-		}))
-
-		for _, giteaRepo := range giteaRepos {
-			err = i.syncRepository(ctx, giteaOrg.UserName, memberIDs, giteaRepo)
-		}
-
-		time.Sleep(i.listInterval)
+			memberIDs := lo.Flatten(ds.Map(members, func(member *gitea.User) []string {
+				user, ok := usersMap[member.UserName]
+				if ok {
+					return []string{user.ID}
+				} else {
+					log.Warnf("failed to find user %v", member.UserName)
+					return nil
+				}
+			}))
+			// Sync repository and apps
+			return i.syncRepository(ctx, repo.Owner.UserName, memberIDs, repo)
+		})
 	}
-
-	return nil
+	return eg.Wait()
 }
 
 func (i *Integration) syncRepository(ctx context.Context, username string, giteaOwnerIDs []string, giteaRepo *gitea.Repository) error {
@@ -149,7 +126,7 @@ func (i *Integration) syncRepository(ctx context.Context, username string, gitea
 			optional.From(domain.RepositoryAuth{Method: domain.RepositoryAuthMethodSSH}),
 			giteaOwnerIDs,
 		)
-		log.Infof("Syncing repository %v -> id: %v", repo.Name, repo.ID)
+		log.Infof("New repository %v (id: %v)", repo.Name, repo.ID)
 		return i.gitRepo.CreateRepository(ctx, repo)
 	}
 

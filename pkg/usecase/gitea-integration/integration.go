@@ -2,7 +2,7 @@ package giteaintegration
 
 import (
 	"context"
-	"errors"
+	"fmt"
 	"time"
 
 	"code.gitea.io/sdk/gitea"
@@ -15,27 +15,27 @@ type Config struct {
 	URL             string
 	Token           string
 	IntervalSeconds int
-	ListIntervalMs  int
+	Concurrency     int
 }
 
 func (c *Config) Validate() error {
 	if c.Token == "" {
-		return errors.New("provide admin gitea token")
+		return fmt.Errorf("provide admin gitea token (got empty string)")
 	}
 	if c.IntervalSeconds <= 0 {
-		return errors.New("provide positive interval seconds")
+		return fmt.Errorf("provide positive interval seconds (got %v)", c.IntervalSeconds)
 	}
-	if c.ListIntervalMs <= 0 {
-		return errors.New("provide positive list interval ms")
+	if c.Concurrency <= 0 {
+		return fmt.Errorf("provide positive concurrency (got %v)", c.Concurrency)
 	}
 	return nil
 }
 
 type Integration struct {
-	c            *gitea.Client
-	interval     time.Duration
-	listInterval time.Duration
-	cancel       func()
+	c           *gitea.Client
+	interval    time.Duration
+	concurrency int
+	cancel      func()
 
 	gitRepo  domain.GitRepositoryRepository
 	appRepo  domain.ApplicationRepository
@@ -62,9 +62,9 @@ func NewIntegration(
 		return nil, err
 	}
 	return &Integration{
-		c:            client,
-		interval:     time.Duration(c.IntervalSeconds) * time.Second,
-		listInterval: time.Duration(c.ListIntervalMs) * time.Millisecond,
+		c:           client,
+		interval:    time.Duration(c.IntervalSeconds) * time.Second,
+		concurrency: c.Concurrency,
 
 		gitRepo:  gitRepo,
 		appRepo:  appRepo,

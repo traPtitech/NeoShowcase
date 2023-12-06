@@ -91,7 +91,7 @@ type GiteaIntegrationConfig struct {
 	URL             string `mapstructure:"url" yaml:"url"`
 	Token           string `mapstructure:"token" yaml:"token"`
 	IntervalSeconds int    `mapstructure:"intervalSeconds" yaml:"intervalSeconds"`
-	ListIntervalMs  int    `mapstructure:"listIntervalMs" yaml:"listIntervalMs"`
+	Concurrency     int    `mapstructure:"concurrency" yaml:"concurrency"`
 }
 
 type SSGenConfig struct {
@@ -237,8 +237,8 @@ func init() {
 
 	viper.SetDefault("components.giteaIntegration.url", "https://git.trap.jp")
 	viper.SetDefault("components.giteaIntegration.token", "")
-	viper.SetDefault("components.giteaIntegration.intervalSeconds", 600)
-	viper.SetDefault("components.giteaIntegration.listIntervalMs", 250)
+	viper.SetDefault("components.giteaIntegration.intervalSeconds", 86400)
+	viper.SetDefault("components.giteaIntegration.concurrency", 10)
 
 	viper.SetDefault("components.ssgen.artifactsRoot", "/srv/artifacts")
 	viper.SetDefault("components.ssgen.healthPort", 8081)
