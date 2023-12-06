@@ -100,6 +100,11 @@ export const BuildRow: Component<Props> = (props) => {
             <Badge variant="success">Latest</Badge>
           </Show>
           <Spacer />
+        </TitleContainer>
+        <MetaContainer>
+          <Show when={props.appName}>
+            <AppName>{props.appName}・</AppName>
+          </Show>
           <Show when={props.build.queuedAt}>
             {(nonNullQueuedAt) => {
               const { diff, localeString } = diffHuman(nonNullQueuedAt().toDate())
@@ -110,12 +115,7 @@ export const BuildRow: Component<Props> = (props) => {
               )
             }}
           </Show>
-        </TitleContainer>
-        <Show when={props.appName}>
-          <MetaContainer>
-            <AppName>{props.appName}</AppName>
-          </MetaContainer>
-        </Show>
+        </MetaContainer>
       </Container>
     </A>
   )
