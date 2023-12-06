@@ -68,6 +68,13 @@ message SSGenRequest {
   Type type = 1;
 }
 
+message GiteaIntegrationRequest {
+  enum Type {
+    RESYNC = 0;
+  }
+  Type type = 1;
+}
+
 service ControllerService {
   rpc GetSystemInfo(google.protobuf.Empty) returns (SystemInfo);
 
@@ -84,4 +91,8 @@ service ControllerBuilderService {
 
 service ControllerSSGenService {
   rpc ConnectSSGen(google.protobuf.Empty) returns (stream SSGenRequest);
+}
+
+service ControllerGiteaIntegrationService {
+  rpc Connect(google.protobuf.Empty) returns (stream GiteaIntegrationRequest);
 }

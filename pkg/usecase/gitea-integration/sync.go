@@ -33,18 +33,13 @@ func listAllPages[T any](fn func(page, perPage int) ([]T, error)) ([]T, error) {
 	return items, nil
 }
 
-func (i *Integration) sync(ctx context.Context) {
+func (i *Integration) sync(ctx context.Context) error {
 	start := time.Now()
-	log.Infof("Starting sync with Gitea ...")
-	err := i._sync(ctx)
-	if err != nil {
-		log.Errorf("Failed to sync with gitea: %+v", err)
-		return
-	}
-	log.Infof("Synced with gitea in %v.", time.Since(start))
-}
+	log.Infof("Starting sync ...")
+	defer func() {
+		log.Infof("Sync finished in %v.", time.Since(start))
+	}()
 
-func (i *Integration) _sync(ctx context.Context) error {
 	// Sync users
 	log.Infof("Retrieving users from Gitea ...")
 	giteaUsers, err := listAllPages(func(page, perPage int) ([]*gitea.User, error) {

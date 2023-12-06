@@ -52,7 +52,7 @@ func NewBuilder(c Config) (component, error) {
 	if err != nil {
 		return nil, err
 	}
-	client, err := provdeBuildkitClient(c)
+	client, err := provideBuildkitClient(c)
 	if err != nil {
 		return nil, err
 	}
@@ -130,11 +130,12 @@ func NewControllerDocker(c Config) (component, error) {
 	sshConfig := controllerConfig.SSH
 	adminerURL := c.AdminerURL
 	controllerServiceHandler := grpc.NewControllerService(backend, applicationRepository, repofetcherService, cdserviceService, controllerBuilderService, service, publicKeys, sshConfig, adminerURL)
-	apiServer := provideControllerServer(c, controllerServiceHandler, controllerBuilderService, controllerSSGenService)
+	controllerGiteaIntegrationService := grpc.NewControllerGiteaIntegrationService()
+	apiServer := provideControllerServer(c, controllerServiceHandler, controllerBuilderService, controllerSSGenService, controllerGiteaIntegrationService)
 	userRepository := repository.NewUserRepository(db)
 	sshServer := sshserver.NewSSHServer(sshConfig, publicKeys, backend, applicationRepository, userRepository)
 	receiverConfig := controllerConfig.Webhook
-	receiver := webhook.NewReceiver(receiverConfig, gitRepositoryRepository, repofetcherService)
+	receiver := webhook.NewReceiver(receiverConfig, gitRepositoryRepository, repofetcherService, controllerGiteaIntegrationService)
 	artifactRepository := repository.NewArtifactRepository(db)
 	storageConfig := c.Storage
 	storage, err := provideStorage(storageConfig)
@@ -212,11 +213,12 @@ func NewControllerK8s(c Config) (component, error) {
 	sshConfig := controllerConfig.SSH
 	adminerURL := c.AdminerURL
 	controllerServiceHandler := grpc.NewControllerService(backend, applicationRepository, repofetcherService, cdserviceService, controllerBuilderService, service, publicKeys, sshConfig, adminerURL)
-	apiServer := provideControllerServer(c, controllerServiceHandler, controllerBuilderService, controllerSSGenService)
+	controllerGiteaIntegrationService := grpc.NewControllerGiteaIntegrationService()
+	apiServer := provideControllerServer(c, controllerServiceHandler, controllerBuilderService, controllerSSGenService, controllerGiteaIntegrationService)
 	userRepository := repository.NewUserRepository(db)
 	sshServer := sshserver.NewSSHServer(sshConfig, publicKeys, backend, applicationRepository, userRepository)
 	receiverConfig := controllerConfig.Webhook
-	receiver := webhook.NewReceiver(receiverConfig, gitRepositoryRepository, repofetcherService)
+	receiver := webhook.NewReceiver(receiverConfig, gitRepositoryRepository, repofetcherService, controllerGiteaIntegrationService)
 	artifactRepository := repository.NewArtifactRepository(db)
 	storageConfig := c.Storage
 	storage, err := provideStorage(storageConfig)
@@ -302,6 +304,10 @@ func NewGateway(c Config) (component, error) {
 
 func NewGiteaIntegration(c Config) (component, error) {
 	giteaintegrationConfig := provideGiteaIntegrationConfig(c)
+	componentsConfig := c.Components
+	giteaIntegrationConfig := componentsConfig.GiteaIntegration
+	controllerServiceClientConfig := giteaIntegrationConfig.Controller
+	controllerGiteaIntegrationServiceClient := grpc.NewControllerGiteaIntegrationServiceClient(controllerServiceClientConfig)
 	repositoryConfig := c.DB
 	db, err := repository.New(repositoryConfig)
 	if err != nil {
@@ -310,7 +316,7 @@ func NewGiteaIntegration(c Config) (component, error) {
 	gitRepositoryRepository := repository.NewGitRepositoryRepository(db)
 	applicationRepository := repository.NewApplicationRepository(db)
 	userRepository := repository.NewUserRepository(db)
-	integration, err := giteaintegration.NewIntegration(giteaintegrationConfig, gitRepositoryRepository, applicationRepository, userRepository)
+	integration, err := giteaintegration.NewIntegration(giteaintegrationConfig, controllerGiteaIntegrationServiceClient, gitRepositoryRepository, applicationRepository, userRepository)
 	if err != nil {
 		return nil, err
 	}

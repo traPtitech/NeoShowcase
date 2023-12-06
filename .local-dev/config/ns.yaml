@@ -124,6 +124,8 @@ components:
   giteaIntegration:
     url: https://git.trap.jp
     token: ""
+    controller:
+      url: http://ns-controller:10000
 
   ssgen:
     artifactsRoot: /artifacts
