@@ -64,6 +64,8 @@ erDiagram
   char_22_ id PK
   char_22_ user_id FK
   text public_key
+  varchar_255_ name
+  datetime_6_ created_at
 }
 ```
 

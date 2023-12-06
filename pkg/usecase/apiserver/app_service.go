@@ -25,7 +25,7 @@ func (s *Service) validateApp(ctx context.Context, app *domain.Application) erro
 	if err != nil {
 		return errors.Wrap(err, "getting existing applications")
 	}
-	si, err := s.systemInfo(ctx)
+	si, err := s.systemInfo.Get(ctx, struct{}{})
 	if err != nil {
 		return errors.Wrap(err, "getting system info")
 	}
@@ -83,6 +83,8 @@ func (s *Service) CreateApplication(ctx context.Context, app *domain.Application
 		return nil, err
 	}
 
+	// Sync
+	s.systemInfo.Purge()
 	err = s.controller.FetchRepository(ctx, app.RepositoryID)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to request to fetch repository")
@@ -270,6 +272,7 @@ func (s *Service) UpdateApplication(ctx context.Context, id string, args *domain
 	}
 
 	// Sync
+	s.systemInfo.Purge()
 	err = s.controller.FetchRepository(ctx, app.RepositoryID)
 	if err != nil {
 		return errors.Wrap(err, "requesting fetch repository")
@@ -407,6 +410,9 @@ func (s *Service) DeleteApplication(ctx context.Context, id string) error {
 	if err != nil {
 		return err
 	}
+
+	// Sync
+	s.systemInfo.Purge()
 
 	return nil
 }

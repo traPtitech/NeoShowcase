@@ -86,12 +86,12 @@ func (a *AvailableDomain) Validate() error {
 	return nil
 }
 
-func (a *AvailableDomain) SetAlreadyBound(existing []*Application) {
+func (a *AvailableDomain) IsAlreadyBound(existing []*Application) bool {
 	if strings.HasPrefix(a.Domain, "*.") {
 		// Wildcard domain cannot be bound to one app, it has infinite number of subdomains
-		a.AlreadyBound = false
+		return false
 	} else {
-		a.AlreadyBound = lo.ContainsBy(existing, func(app *Application) bool {
+		return lo.ContainsBy(existing, func(app *Application) bool {
 			return lo.ContainsBy(app.Websites, func(w *Website) bool {
 				return w.FQDN == a.Domain && w.PathPrefix == "/" // Intentional vague checking of http or https
 			})

@@ -2,6 +2,8 @@ package apiserver
 
 import (
 	"context"
+	"github.com/motoki317/sc"
+	"time"
 
 	"github.com/friendsofgo/errors"
 	"github.com/go-git/go-git/v5/plumbing/transport/ssh"
@@ -38,7 +40,7 @@ type Service struct {
 	fallbackKey     *ssh.PublicKeys
 	image           builder.ImageConfig
 
-	systemInfo func(ctx context.Context) (*domain.SystemInfo, error)
+	systemInfo *sc.Cache[struct{}, *domain.SystemInfo]
 	tmpKeys    *tmpKeyPairService
 }
 
@@ -74,7 +76,7 @@ func NewService(
 		fallbackKey:     fallbackKey,
 		image:           image,
 
-		systemInfo: scutil.Once(controller.GetSystemInfo),
+		systemInfo: sc.NewMust(scutil.WrapFunc(controller.GetSystemInfo), 5*time.Minute, 10*time.Minute),
 		tmpKeys:    newTmpKeyPairService(),
 	}, nil
 }

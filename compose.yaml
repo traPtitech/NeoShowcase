@@ -84,7 +84,7 @@ services:
 #      context: .
 #      target: ns-gitea-integration
 #    image: ghcr.io/traptitech/ns-gitea-integration:main
-#    command: --debug --loglevel=trace --config=/config.yaml
+#    command: --config=/config.yaml
 #    restart: always
 #    volumes:
 #      - ./.local-dev/config/ns.yaml:/config.yaml
