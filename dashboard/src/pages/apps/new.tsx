@@ -420,8 +420,10 @@ const WebsiteStep: Component<{
   }
 
   const handleSubmit = async (skipWebsite: boolean) => {
-    const isValid = (await Promise.all(props.websiteForms().map((form) => validate(form)))).every((v) => v)
-    if (!isValid) return
+    if (!skipWebsite) {
+      const isValid = (await Promise.all(props.websiteForms().map((form) => validate(form)))).every((v) => v)
+      if (!isValid) return
+    }
     await props.submit(skipWebsite)
   }
 
