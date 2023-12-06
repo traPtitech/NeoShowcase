@@ -491,6 +491,7 @@ interface WebsiteSettingsProps {
   isRuntimeApp: boolean
   formStores: FormStore<WebsiteSetting, undefined>[]
   addWebsite: () => void
+  deleteWebsiteForm: (index: number) => void
   applyChanges: () => void
   hasPermission: boolean
 }
@@ -531,14 +532,7 @@ export const WebsiteSettings = (props: WebsiteSettingsProps) => {
               props.applyChanges()
             }}
             deleteWebsite={() => {
-              if (getValue(props.formStores[index()], 'state') === 'added') {
-                // 新規追加した設定をformStoresから削除
-                props.formStores.splice(index(), 1)
-              } else {
-                // すでに保存されている設定を削除
-                setValue(props.formStores[index()], 'state', 'readyToDelete')
-                props.applyChanges()
-              }
+              props.deleteWebsiteForm(index())
             }}
             hasPermission={props.hasPermission}
           />

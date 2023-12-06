@@ -1,4 +1,4 @@
-import { createFormStore, getValues, setValue } from '@modular-forms/solid'
+import { createFormStore, getValue, getValues, setValue } from '@modular-forms/solid'
 import { Show, createResource } from 'solid-js'
 import toast from 'solid-toast'
 import { DeployType } from '/@/api/neoshowcase/protobuf/gateway_pb'
@@ -34,6 +34,19 @@ export default () => {
     mutate((forms) => {
       return forms?.concat([form])
     })
+  }
+  const deleteWebsiteForm = (index: number) => {
+    if (!websiteForms.latest) return
+
+    const state = getValue(websiteForms()[index], 'state')
+    if (state === 'added') {
+      mutate((forms) => {
+        return forms?.filter((_, i) => i !== index)
+      })
+    } else {
+      setValue(websiteForms()[index], 'state', 'readyToDelete')
+      handleApplyChanges()
+    }
   }
 
   const handleApplyChanges = async () => {
@@ -90,6 +103,7 @@ export default () => {
             isRuntimeApp={app()?.deployType === DeployType.RUNTIME}
             formStores={nonNullForms()}
             addWebsite={addWebsiteForm}
+            deleteWebsiteForm={deleteWebsiteForm}
             applyChanges={handleApplyChanges}
             hasPermission={hasPermission()}
           />
