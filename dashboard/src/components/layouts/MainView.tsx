@@ -3,6 +3,7 @@ import { colorVars, media } from '/@/theme'
 
 export const MainViewContainer = styled('div', {
   base: {
+    position: 'relative',
     width: '100%',
     height: '100%',
     padding: '40px max(calc(50% - 500px), 32px) 72px',
