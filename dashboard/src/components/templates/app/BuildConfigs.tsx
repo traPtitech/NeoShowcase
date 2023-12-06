@@ -7,18 +7,10 @@ import { ToolTip } from '/@/components/UI/ToolTip'
 import { CheckBox } from '../CheckBox'
 import { FormItem } from '../FormItem'
 import { RadioGroup } from '../RadioGroups'
-import { SelectOption } from '../Select'
+
 import SelectBuildType from './SelectBuildType'
 
 export type BuildConfigMethod = Exclude<ApplicationConfig['buildConfig']['case'], undefined>
-const buildConfigItems: SelectOption<BuildConfigMethod>[] = [
-  { value: 'runtimeBuildpack', label: 'Runtime Buildpack' },
-  { value: 'runtimeCmd', label: 'Runtime Command' },
-  { value: 'runtimeDockerfile', label: 'Runtime Dockerfile' },
-  { value: 'staticBuildpack', label: 'Static Buildpack' },
-  { value: 'staticCmd', label: 'Static Command' },
-  { value: 'staticDockerfile', label: 'Static Dockerfile' },
-]
 
 interface RuntimeConfigProps {
   formStore: FormStore<BuildConfigForm, undefined>
@@ -512,28 +504,6 @@ export const BuildConfigs: Component<BuildConfigsProps> = (props) => {
     <>
       <Field of={props.formStore} name="case" type="string" validate={[required('Select Build Type')]}>
         {(field, fieldProps) => (
-          // <SingleSelect
-          //   label="Build Type"
-          //   required
-          //   info={{
-          //     style: 'left',
-          //     props: {
-          //       content: (
-          //         <>
-          //           <div>Buildpack: ビルド設定自動検出 (オススメ)</div>
-          //           <div>Command: ビルド設定を直接設定</div>
-          //           <div>Dockerfile: Dockerfileを用いる</div>
-          //         </>
-          //       ),
-          //     },
-          //   }}
-          //   {...fieldProps}
-          //   options={buildConfigItems}
-          //   value={field.value}
-          //   error={field.error}
-          //   setValue={(v) => setValue(props.formStore, 'case', v)}
-          //   readOnly={!props.hasPermission}
-          // />
           <SelectBuildType
             {...fieldProps}
             value={field.value}

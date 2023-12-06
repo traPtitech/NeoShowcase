@@ -1,8 +1,6 @@
 import { styled } from '@macaron-css/solid'
 import { Title } from '@solidjs/meta'
-import { A } from '@solidjs/router'
-import { For, Show, VoidComponent, createResource } from 'solid-js'
-import { MaterialSymbols } from '/@/components/UI/MaterialSymbols'
+import { For, Show, createResource } from 'solid-js'
 import { DataTable } from '/@/components/layouts/DataTable'
 import { MainViewContainer } from '/@/components/layouts/MainView'
 import { List } from '/@/components/templates/List'
@@ -11,7 +9,7 @@ import { BuildLog } from '/@/components/templates/build/BuildLog'
 import BuildStatusTable from '/@/components/templates/build/BuildStatusTable'
 import { client } from '/@/libs/api'
 import { useBuildData } from '/@/routes'
-import { colorVars, textVars } from '/@/theme'
+import { colorVars } from '/@/theme'
 
 const MainView = styled('div', {
   base: {
@@ -21,69 +19,6 @@ const MainView = styled('div', {
     gap: '32px',
   },
 })
-const BuildStatusRow = styled('div', {
-  base: {
-    width: '100%',
-    padding: '16px 20px',
-    display: 'flex',
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: '8px',
-
-    borderBottom: `1px solid ${colorVars.semantic.ui.border}`,
-    background: colorVars.semantic.ui.secondary,
-  },
-})
-const BuildStatusLabel = styled('div', {
-  base: {
-    width: '100%',
-    display: 'flex',
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: '4px',
-
-    color: colorVars.semantic.text.black,
-    ...textVars.text.medium,
-  },
-})
-const JumpButtonContainer = styled('div', {
-  base: {
-    width: '32px',
-    height: '32px',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-
-    flexShrink: 0,
-    background: 'none',
-    border: 'none',
-    borderRadius: '6px',
-    cursor: 'pointer',
-    color: colorVars.semantic.text.black,
-    selectors: {
-      '&:hover': {
-        background: colorVars.semantic.transparent.primaryHover,
-      },
-      '&:active, &[data-active="true"]': {
-        color: colorVars.semantic.primary.main,
-        background: colorVars.semantic.transparent.primarySelected,
-      },
-      '&:disabled': {
-        cursor: 'not-allowed',
-        border: 'none !important',
-        color: `${colorVars.semantic.text.black} !important`,
-        background: `${colorVars.semantic.text.disabled} !important`,
-      },
-    },
-  },
-})
-const JumpButton: VoidComponent<{ href: string }> = (props) => (
-  <A href={props.href}>
-    <JumpButtonContainer>
-      <MaterialSymbols opticalSize={20}>arrow_outward</MaterialSymbols>
-    </JumpButtonContainer>
-  </A>
-)
 const LogContainer = styled('div', {
   base: {
     width: '100%',

@@ -8,15 +8,6 @@ import { colorVars, media, textVars } from '/@/theme'
 import { FormItem } from '../FormItem'
 import { BuildConfigMethod } from './BuildConfigs'
 
-const Container = styled('div', {
-  base: {
-    width: '100%',
-    height: 'auto',
-    display: 'flex',
-    flexDirection: 'column',
-    gap: '16px',
-  },
-})
 const ItemsContainer = styled('div', {
   base: {
     width: '100%',

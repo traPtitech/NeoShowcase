@@ -1,8 +1,4 @@
 import { Timestamp } from '@bufbuild/protobuf'
-import { tippy as tippyDir } from 'solid-tippy'
-
-// https://github.com/solidjs/solid/discussions/845
-const tippy = tippyDir
 
 export const shortSha = (sha1: string): string => sha1.substring(0, 7)
 
