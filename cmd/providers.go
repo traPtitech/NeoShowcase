@@ -67,6 +67,8 @@ var providers = wire.NewSet(
 	grpc.NewControllerService,
 	grpc.NewControllerServiceClient,
 	grpc.NewControllerBuilderService,
+	grpc.NewControllerGiteaIntegrationService,
+	grpc.NewControllerGiteaIntegrationServiceClient,
 	provideControllerBuilderServiceClient,
 	grpc.NewControllerSSGenService,
 	grpc.NewControllerSSGenServiceClient,
@@ -92,7 +94,7 @@ var providers = wire.NewSet(
 	provideStorage,
 	provideAuthDevServer,
 	provideBuildpackBackend,
-	provdeBuildkitClient,
+	provideBuildkitClient,
 	provideControllerServer,
 	provideContainerLogger,
 	provideMetricsService,
@@ -150,7 +152,7 @@ func provideBuildpackBackend(c Config) (builder.BuildpackBackend, error) {
 	}
 }
 
-func provdeBuildkitClient(c Config) (*buildkit.Client, error) {
+func provideBuildkitClient(c Config) (*buildkit.Client, error) {
 	cc := c.Components.Builder
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
@@ -166,6 +168,7 @@ func provideControllerServer(
 	controllerHandler pbconnect.ControllerServiceHandler,
 	builderHandler domain.ControllerBuilderService,
 	ssgenHandler domain.ControllerSSGenService,
+	giteaIntegrationHandler domain.ControllerGiteaIntegrationService,
 ) *controller.APIServer {
 	wc := web.H2CConfig{
 		Port: c.Components.Controller.Port,
@@ -173,6 +176,7 @@ func provideControllerServer(
 			mux.Handle(pbconnect.NewControllerServiceHandler(controllerHandler))
 			mux.Handle(pbconnect.NewControllerBuilderServiceHandler(builderHandler))
 			mux.Handle(pbconnect.NewControllerSSGenServiceHandler(ssgenHandler))
+			mux.Handle(pbconnect.NewControllerGiteaIntegrationServiceHandler(giteaIntegrationHandler))
 		},
 	}
 	return &controller.APIServer{H2CServer: web.NewH2CServer(wc)}
@@ -221,7 +225,7 @@ func provideGiteaIntegrationConfig(c Config) giteaintegration.Config {
 		URL:             cc.URL,
 		Token:           cc.Token,
 		IntervalSeconds: cc.IntervalSeconds,
-		ListIntervalMs:  cc.ListIntervalMs,
+		Concurrency:     cc.Concurrency,
 	}
 }
 

@@ -51,3 +51,12 @@ type ControllerSSGenService interface {
 type ControllerSSGenServiceClient interface {
 	ConnectSSGen(ctx context.Context, onRequest func(req *pb.SSGenRequest)) error
 }
+
+type ControllerGiteaIntegrationService interface {
+	pbconnect.ControllerGiteaIntegrationServiceHandler
+	Broadcast(req *pb.GiteaIntegrationRequest)
+}
+
+type ControllerGiteaIntegrationServiceClient interface {
+	Connect(ctx context.Context, onRequest func(req *pb.GiteaIntegrationRequest)) error
+}

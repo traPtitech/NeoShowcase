@@ -139,6 +139,12 @@ components:
               container_memory_usage_bytes{namespace="ns-apps", pod="nsapp-{{ .App.ID }}-0", container="app"}
                + container_memory_swap{namespace="ns-apps", pod="nsapp-{{ .App.ID }}-0", container="app"}
 
+  giteaIntegration:
+    url: https://git.trap.jp
+    token: ""
+    controller:
+      url: http://ns-controller:10000
+
   ssgen:
     artifactsRoot: /artifacts
     healthPort: 8081

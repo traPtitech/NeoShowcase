@@ -80,6 +80,7 @@ func NewGateway(c Config) (component, error) {
 func NewGiteaIntegration(c Config) (component, error) {
 	wire.Build(
 		providers,
+		wire.FieldsOf(new(GiteaIntegrationConfig), "Controller"),
 		wire.Bind(new(component), new(*giteaintegration.Server)),
 		wire.Struct(new(giteaintegration.Server), "*"),
 	)

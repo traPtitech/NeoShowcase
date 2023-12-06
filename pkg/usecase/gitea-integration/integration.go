@@ -2,56 +2,66 @@ package giteaintegration
 
 import (
 	"context"
-	"errors"
+	"fmt"
+	log "github.com/sirupsen/logrus"
 	"time"
 
 	"code.gitea.io/sdk/gitea"
 
 	"github.com/traPtitech/neoshowcase/pkg/domain"
+	"github.com/traPtitech/neoshowcase/pkg/infrastructure/grpc/pb"
 	"github.com/traPtitech/neoshowcase/pkg/util/loop"
+	"github.com/traPtitech/neoshowcase/pkg/util/retry"
+	"github.com/traPtitech/neoshowcase/pkg/util/scutil"
 )
 
 type Config struct {
 	URL             string
 	Token           string
 	IntervalSeconds int
-	ListIntervalMs  int
+	Concurrency     int
 }
 
 func (c *Config) Validate() error {
 	if c.Token == "" {
-		return errors.New("provide admin gitea token")
+		return fmt.Errorf("provide admin gitea token (got empty string)")
 	}
 	if c.IntervalSeconds <= 0 {
-		return errors.New("provide positive interval seconds")
+		return fmt.Errorf("provide positive interval seconds (got %v)", c.IntervalSeconds)
 	}
-	if c.ListIntervalMs <= 0 {
-		return errors.New("provide positive list interval ms")
+	if c.Concurrency <= 0 {
+		return fmt.Errorf("provide positive concurrency (got %v)", c.Concurrency)
 	}
 	return nil
 }
 
 type Integration struct {
-	c            *gitea.Client
-	interval     time.Duration
-	listInterval time.Duration
-	cancel       func()
+	c           *gitea.Client
+	interval    time.Duration
+	concurrency int
 
-	gitRepo  domain.GitRepositoryRepository
-	appRepo  domain.ApplicationRepository
-	userRepo domain.UserRepository
+	controller domain.ControllerGiteaIntegrationServiceClient
+	gitRepo    domain.GitRepositoryRepository
+	appRepo    domain.ApplicationRepository
+	userRepo   domain.UserRepository
+
+	cancel func()
+	syncer *scutil.Coalescer
 }
 
 func NewIntegration(
 	c Config,
+	controller domain.ControllerGiteaIntegrationServiceClient,
 	gitRepo domain.GitRepositoryRepository,
 	appRepo domain.ApplicationRepository,
 	userRepo domain.UserRepository,
 ) (*Integration, error) {
+	// Validate config
 	if err := c.Validate(); err != nil {
 		return nil, err
 	}
 
+	// Generate gitea client
 	client, err := gitea.NewClient(
 		c.URL,
 		gitea.SetToken(c.Token),
@@ -61,21 +71,51 @@ func NewIntegration(
 	if err != nil {
 		return nil, err
 	}
-	return &Integration{
-		c:            client,
-		interval:     time.Duration(c.IntervalSeconds) * time.Second,
-		listInterval: time.Duration(c.ListIntervalMs) * time.Millisecond,
 
-		gitRepo:  gitRepo,
-		appRepo:  appRepo,
-		userRepo: userRepo,
-	}, nil
+	i := &Integration{
+		c:           client,
+		interval:    time.Duration(c.IntervalSeconds) * time.Second,
+		concurrency: c.Concurrency,
+
+		controller: controller,
+		gitRepo:    gitRepo,
+		appRepo:    appRepo,
+		userRepo:   userRepo,
+	}
+	i.syncer = scutil.NewCoalescer(i.syncAndLog)
+	return i, nil
 }
 
 func (i *Integration) Start() error {
 	ctx, cancel := context.WithCancel(context.Background())
 	i.cancel = cancel
-	go loop.Loop(ctx, i.sync, i.interval, true)
+
+	go retry.Do(ctx, func(ctx context.Context) error {
+		return i.controller.Connect(ctx, i.onRequest(ctx))
+	}, "connect to controller")
+	go loop.Loop(ctx, func(ctx context.Context) {
+		_ = i.syncer.Do(ctx)
+	}, i.interval, true)
+
+	return nil
+}
+
+func (i *Integration) onRequest(ctx context.Context) func(req *pb.GiteaIntegrationRequest) {
+	return func(req *pb.GiteaIntegrationRequest) {
+		switch req.Type {
+		case pb.GiteaIntegrationRequest_RESYNC:
+			go func() {
+				_ = i.syncer.Do(ctx)
+			}()
+		}
+	}
+}
+
+func (i *Integration) syncAndLog(ctx context.Context) error {
+	err := i.sync(ctx)
+	if err != nil {
+		log.Errorf("failed to sync: %+v", err)
+	}
 	return nil
 }
 

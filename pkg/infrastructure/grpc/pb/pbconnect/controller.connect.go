@@ -28,6 +28,9 @@ const (
 	ControllerBuilderServiceName = "neoshowcase.protobuf.ControllerBuilderService"
 	// ControllerSSGenServiceName is the fully-qualified name of the ControllerSSGenService service.
 	ControllerSSGenServiceName = "neoshowcase.protobuf.ControllerSSGenService"
+	// ControllerGiteaIntegrationServiceName is the fully-qualified name of the
+	// ControllerGiteaIntegrationService service.
+	ControllerGiteaIntegrationServiceName = "neoshowcase.protobuf.ControllerGiteaIntegrationService"
 )
 
 // These constants are the fully-qualified names of the RPCs defined in this package. They're
@@ -62,6 +65,9 @@ const (
 	// ControllerSSGenServiceConnectSSGenProcedure is the fully-qualified name of the
 	// ControllerSSGenService's ConnectSSGen RPC.
 	ControllerSSGenServiceConnectSSGenProcedure = "/neoshowcase.protobuf.ControllerSSGenService/ConnectSSGen"
+	// ControllerGiteaIntegrationServiceConnectProcedure is the fully-qualified name of the
+	// ControllerGiteaIntegrationService's Connect RPC.
+	ControllerGiteaIntegrationServiceConnectProcedure = "/neoshowcase.protobuf.ControllerGiteaIntegrationService/Connect"
 )
 
 // ControllerServiceClient is a client for the neoshowcase.protobuf.ControllerService service.
@@ -387,4 +393,73 @@ type UnimplementedControllerSSGenServiceHandler struct{}
 
 func (UnimplementedControllerSSGenServiceHandler) ConnectSSGen(context.Context, *connect.Request[emptypb.Empty], *connect.ServerStream[pb.SSGenRequest]) error {
 	return connect.NewError(connect.CodeUnimplemented, errors.New("neoshowcase.protobuf.ControllerSSGenService.ConnectSSGen is not implemented"))
+}
+
+// ControllerGiteaIntegrationServiceClient is a client for the
+// neoshowcase.protobuf.ControllerGiteaIntegrationService service.
+type ControllerGiteaIntegrationServiceClient interface {
+	Connect(context.Context, *connect.Request[emptypb.Empty]) (*connect.ServerStreamForClient[pb.GiteaIntegrationRequest], error)
+}
+
+// NewControllerGiteaIntegrationServiceClient constructs a client for the
+// neoshowcase.protobuf.ControllerGiteaIntegrationService service. By default, it uses the Connect
+// protocol with the binary Protobuf Codec, asks for gzipped responses, and sends uncompressed
+// requests. To use the gRPC or gRPC-Web protocols, supply the connect.WithGRPC() or
+// connect.WithGRPCWeb() options.
+//
+// The URL supplied here should be the base URL for the Connect or gRPC server (for example,
+// http://api.acme.com or https://acme.com/grpc).
+func NewControllerGiteaIntegrationServiceClient(httpClient connect.HTTPClient, baseURL string, opts ...connect.ClientOption) ControllerGiteaIntegrationServiceClient {
+	baseURL = strings.TrimRight(baseURL, "/")
+	return &controllerGiteaIntegrationServiceClient{
+		connect: connect.NewClient[emptypb.Empty, pb.GiteaIntegrationRequest](
+			httpClient,
+			baseURL+ControllerGiteaIntegrationServiceConnectProcedure,
+			opts...,
+		),
+	}
+}
+
+// controllerGiteaIntegrationServiceClient implements ControllerGiteaIntegrationServiceClient.
+type controllerGiteaIntegrationServiceClient struct {
+	connect *connect.Client[emptypb.Empty, pb.GiteaIntegrationRequest]
+}
+
+// Connect calls neoshowcase.protobuf.ControllerGiteaIntegrationService.Connect.
+func (c *controllerGiteaIntegrationServiceClient) Connect(ctx context.Context, req *connect.Request[emptypb.Empty]) (*connect.ServerStreamForClient[pb.GiteaIntegrationRequest], error) {
+	return c.connect.CallServerStream(ctx, req)
+}
+
+// ControllerGiteaIntegrationServiceHandler is an implementation of the
+// neoshowcase.protobuf.ControllerGiteaIntegrationService service.
+type ControllerGiteaIntegrationServiceHandler interface {
+	Connect(context.Context, *connect.Request[emptypb.Empty], *connect.ServerStream[pb.GiteaIntegrationRequest]) error
+}
+
+// NewControllerGiteaIntegrationServiceHandler builds an HTTP handler from the service
+// implementation. It returns the path on which to mount the handler and the handler itself.
+//
+// By default, handlers support the Connect, gRPC, and gRPC-Web protocols with the binary Protobuf
+// and JSON codecs. They also support gzip compression.
+func NewControllerGiteaIntegrationServiceHandler(svc ControllerGiteaIntegrationServiceHandler, opts ...connect.HandlerOption) (string, http.Handler) {
+	controllerGiteaIntegrationServiceConnectHandler := connect.NewServerStreamHandler(
+		ControllerGiteaIntegrationServiceConnectProcedure,
+		svc.Connect,
+		opts...,
+	)
+	return "/neoshowcase.protobuf.ControllerGiteaIntegrationService/", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		switch r.URL.Path {
+		case ControllerGiteaIntegrationServiceConnectProcedure:
+			controllerGiteaIntegrationServiceConnectHandler.ServeHTTP(w, r)
+		default:
+			http.NotFound(w, r)
+		}
+	})
+}
+
+// UnimplementedControllerGiteaIntegrationServiceHandler returns CodeUnimplemented from all methods.
+type UnimplementedControllerGiteaIntegrationServiceHandler struct{}
+
+func (UnimplementedControllerGiteaIntegrationServiceHandler) Connect(context.Context, *connect.Request[emptypb.Empty], *connect.ServerStream[pb.GiteaIntegrationRequest]) error {
+	return connect.NewError(connect.CodeUnimplemented, errors.New("neoshowcase.protobuf.ControllerGiteaIntegrationService.Connect is not implemented"))
 }

@@ -19,9 +19,10 @@ type ReceiverConfig struct {
 }
 
 type Receiver struct {
-	config  ReceiverConfig
-	gitRepo domain.GitRepositoryRepository
-	fetcher repofetcher.Service
+	config           ReceiverConfig
+	gitRepo          domain.GitRepositoryRepository
+	fetcher          repofetcher.Service
+	giteaIntegration domain.ControllerGiteaIntegrationService
 
 	echo *echo.Echo
 }
@@ -30,11 +31,13 @@ func NewReceiver(
 	config ReceiverConfig,
 	gitRepo domain.GitRepositoryRepository,
 	fetcher repofetcher.Service,
+	giteaIntegration domain.ControllerGiteaIntegrationService,
 ) *Receiver {
 	r := &Receiver{
-		config:  config,
-		gitRepo: gitRepo,
-		fetcher: fetcher,
+		config:           config,
+		gitRepo:          gitRepo,
+		fetcher:          fetcher,
+		giteaIntegration: giteaIntegration,
 	}
 
 	e := echo.New()
