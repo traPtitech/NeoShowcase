@@ -167,8 +167,14 @@ export const WebsiteSetting = (props: WebsiteSettingProps) => {
       [() => getValue(props.formStore, 'website.host'), () => getValue(props.formStore, 'website.domain')],
       ([host, domain]) => {
         if (host === undefined || domain === undefined) return
-        const fqdn = `${host}${domain?.replace(/\*/g, '')}`
-        setValue(props.formStore, 'website.fqdn', fqdn)
+        if (domain.startsWith('*')) {
+          // wildcard domainならhostとdomainを結合
+          const fqdn = `${host}${domain?.replace(/\*/g, '')}`
+          setValue(props.formStore, 'website.fqdn', fqdn)
+        } else {
+          // non-wildcard domainならdomainをそのまま使う
+          setValue(props.formStore, 'website.fqdn', domain)
+        }
       },
     ),
   )
