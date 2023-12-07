@@ -7,6 +7,7 @@ import { diffHuman, shortSha } from '/@/libs/format'
 import { List } from '../List'
 
 import { Button } from '/@/components/UI/Button'
+import { ApplicationState, deploymentState } from '/@/libs/application'
 
 const AppInfoLists: Component<{
   app: Application
@@ -60,7 +61,9 @@ const AppInfoLists: Component<{
             <List.RowContent>
               <List.RowTitle>SSH Access</List.RowTitle>
               <Code value={sshAccessCommand()} copyable />
-              <List.RowData>アプリケーションが起動している間のみアクセス可能です</List.RowData>
+              <Show when={deploymentState(props.app) !== ApplicationState.Running}>
+                <List.RowData>現在アプリが起動していないためSSHアクセスはできません</List.RowData>
+              </Show>
             </List.RowContent>
           </List.Row>
         </Show>
