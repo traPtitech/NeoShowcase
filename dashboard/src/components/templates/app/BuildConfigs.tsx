@@ -8,6 +8,7 @@ import { CheckBox } from '../CheckBox'
 import { FormItem } from '../FormItem'
 import { RadioGroup } from '../RadioGroups'
 
+import { createEffect } from 'solid-js'
 import SelectBuildType from './SelectBuildType'
 
 export type BuildConfigMethod = Exclude<ApplicationConfig['buildConfig']['case'], undefined>
@@ -19,11 +20,16 @@ interface RuntimeConfigProps {
 }
 
 const RuntimeConfigs: Component<RuntimeConfigProps> = (props) => {
-  const [useDB, setUseDB] = createSignal(
-    (getValue(props.formStore, 'config.runtimeConfig.useMariadb') ||
-      getValue(props.formStore, 'config.runtimeConfig.useMariadb')) ??
-      false,
-  )
+  const [useDB, setUseDB] = createSignal(false)
+
+  createEffect(() => {
+    if (
+      getValue(props.formStore, 'config.runtimeConfig.useMariadb', { shouldActive: false }) ||
+      getValue(props.formStore, 'config.runtimeConfig.useMongodb', { shouldActive: false })
+    ) {
+      setUseDB(true)
+    }
+  })
 
   return (
     <>
