@@ -36,11 +36,17 @@ export const errorTextStyle = style({
   color: colorVars.semantic.accent.error,
   ...textVars.text.regular,
 })
+const HelpText = styled('div', {
+  base: {
+    color: colorVars.semantic.text.grey,
+    ...textVars.caption.regular,
+  },
+})
 
 interface Props {
   title: string | JSX.Element
   required?: boolean
-  error?: string
+  helpText?: string
   tooltip?: TooltipProps
 }
 
@@ -55,8 +61,8 @@ export const FormItem: ParentComponent<Props> = (props) => {
         <Show when={props.tooltip}>
           <TooltipInfoIcon {...props.tooltip} />
         </Show>
-        <Show when={props.error !== ''}>
-          <div class={errorTextStyle}>{props.error}</div>
+        <Show when={props.helpText !== ''}>
+          <HelpText>{props.helpText}</HelpText>
         </Show>
       </TitleContainer>
       {props.children}

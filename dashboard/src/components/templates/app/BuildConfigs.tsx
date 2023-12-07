@@ -34,32 +34,35 @@ const RuntimeConfigs: Component<RuntimeConfigProps> = (props) => {
   return (
     <>
       <ToolTip>
-        <RadioGroup
-          label="Use Database"
+        <FormItem
+          title="Use Database"
+          helpText="アプリ作成後は変更できません"
           tooltip={{
-            props: {
-              content: <>アプリ作成後は変更できません</>,
-            },
-            disabled: !props.disableEditDB,
-          }}
-          info={{
             props: {
               content: (
                 <>
                   <div>データーベースを使用する場合はチェック</div>
-                  <div>後から変更は不可能です</div>
                 </>
               ),
             },
           }}
-          options={[
-            { value: 'true', label: 'Yes' },
-            { value: 'false', label: 'No' },
-          ]}
-          value={useDB() ? 'true' : 'false'}
-          setValue={(v) => setUseDB(v === 'true')}
-          disabled={props.disableEditDB}
-        />
+        >
+          <RadioGroup
+            tooltip={{
+              props: {
+                content: <>アプリ作成後は変更できません</>,
+              },
+              disabled: !props.disableEditDB,
+            }}
+            options={[
+              { value: 'true', label: 'Yes' },
+              { value: 'false', label: 'No' },
+            ]}
+            value={useDB() ? 'true' : 'false'}
+            setValue={(v) => setUseDB(v === 'true')}
+            disabled={props.disableEditDB}
+          />
+        </FormItem>
       </ToolTip>
       <Show when={useDB()}>
         <FormItem title="Database">
