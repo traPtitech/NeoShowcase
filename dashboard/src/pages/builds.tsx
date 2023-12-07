@@ -36,7 +36,7 @@ const builds: Component = () => {
         <Nav title="Build Queue" />
       </WithNav.Navs>
       <WithNav.Body>
-        <MainViewContainer>
+        <MainViewContainer background="grey">
           <Show when={showPlaceHolder()} fallback={<BuildList builds={sortedBuilds()} />}>
             <List.Container>
               <List.PlaceHolder>
