@@ -44,6 +44,9 @@ export const deploymentState = (app: Application): ApplicationState => {
   if (!app.running) {
     return ApplicationState.Idle
   }
+  if (app.currentBuild === '') { // First build may still be running
+    return ApplicationState.Idle
+  }
   if (app.deployType === DeployType.RUNTIME) {
     switch (app.container) {
       case Application_ContainerState.MISSING:
