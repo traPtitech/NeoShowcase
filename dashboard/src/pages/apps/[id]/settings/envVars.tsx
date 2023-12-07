@@ -131,48 +131,53 @@ const EnvVarConfig: Component<{
             <EnvVar.FieldArray name="variables">
               {(fieldArray) => (
                 <For each={fieldArray.items}>
-                  {(_, index) => (
-                    <>
-                      <EnvVar.Field
-                        name={`variables.${index()}.key`}
-                        validate={[
-                          custom(isUniqueKey, '同じキーの環境変数が存在します'),
-                          (val) => (val === '' && index() !== fieldArray.items.length - 1 ? 'Please enter a key' : ''),
-                        ]}
-                      >
-                        {(field, fieldProps) => (
-                          <TextField
-                            tooltip={{
-                              props: {
-                                content: 'システム環境変数は変更できません',
-                              },
-                              disabled: !getValue(envVarForm, `variables.${index()}.system`),
-                            }}
-                            {...fieldProps}
-                            value={field.value ?? ''}
-                            error={field.error}
-                            disabled={getValue(envVarForm, `variables.${index()}.system`)}
-                          />
-                        )}
-                      </EnvVar.Field>
-                      <EnvVar.Field name={`variables.${index()}.value`}>
-                        {(field, fieldProps) => (
-                          <TextField
-                            tooltip={{
-                              props: {
-                                content: 'システム環境変数は変更できません',
-                              },
-                              disabled: !getValue(envVarForm, `variables.${index()}.system`),
-                            }}
-                            {...fieldProps}
-                            value={field.value ?? ''}
-                            disabled={getValue(envVarForm, `variables.${index()}.system`)}
-                            copyable
-                          />
-                        )}
-                      </EnvVar.Field>
-                    </>
-                  )}
+                  {(_, index) => {
+                    const isSystem = () => getValue(envVarForm, `variables.${index()}.system`, { shouldActive: false })
+
+                    return (
+                      <>
+                        <EnvVar.Field
+                          name={`variables.${index()}.key`}
+                          validate={[
+                            custom(isUniqueKey, '同じキーの環境変数が存在します'),
+                            (val) =>
+                              val === '' && index() !== fieldArray.items.length - 1 ? 'Please enter a key' : '',
+                          ]}
+                        >
+                          {(field, fieldProps) => (
+                            <TextField
+                              tooltip={{
+                                props: {
+                                  content: 'システム環境変数は変更できません',
+                                },
+                                disabled: !isSystem(),
+                              }}
+                              {...fieldProps}
+                              value={field.value ?? ''}
+                              error={field.error}
+                              disabled={isSystem()}
+                            />
+                          )}
+                        </EnvVar.Field>
+                        <EnvVar.Field name={`variables.${index()}.value`}>
+                          {(field, fieldProps) => (
+                            <TextField
+                              tooltip={{
+                                props: {
+                                  content: 'システム環境変数は変更できません',
+                                },
+                                disabled: !isSystem(),
+                              }}
+                              {...fieldProps}
+                              value={field.value ?? ''}
+                              disabled={isSystem()}
+                              copyable
+                            />
+                          )}
+                        </EnvVar.Field>
+                      </>
+                    )
+                  }}
                 </For>
               )}
             </EnvVar.FieldArray>
