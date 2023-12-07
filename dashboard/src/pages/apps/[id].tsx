@@ -34,7 +34,7 @@ export default () => {
               onClick={() => navigate(`/apps/${app()?.id}/builds`)}
               state={matchBuildsPage() ? 'active' : 'default'}
             >
-              <MaterialSymbols>deployed_code</MaterialSymbols>
+              <MaterialSymbols>history</MaterialSymbols>
               Build History
             </TabRound>
             <TabRound
