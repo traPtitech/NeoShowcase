@@ -241,7 +241,7 @@ export default () => {
   )
   const [provider, setProvider] = createLocalSignal<Provider[]>('apps-provider', ['GitHub', 'GitLab', 'Gitea'])
   const [query, setQuery] = createLocalSignal('apps-query', '')
-  const [sort, setSort] = createLocalSignal<keyof typeof sortItems>('apps-sort', sortItems.asc.value)
+  const [sort, setSort] = createLocalSignal<keyof typeof sortItems>('apps-sort', sortItems.desc.value)
 
   const [scrollParentRef, setScrollParentRef] = createSignal<HTMLDivElement>()
 
