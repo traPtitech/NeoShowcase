@@ -407,7 +407,7 @@ const WebsiteStep: Component<{
   websiteForms: Accessor<FormStore<WebsiteSetting, undefined>[]>
   setWebsiteForms: Setter<FormStore<WebsiteSetting, undefined>[]>
   backToGeneralStep: () => void
-  submit: (skipWebsite: boolean) => Promise<void>
+  submit: () => Promise<void>
 }> = (props) => {
   const addWebsiteForm = () => {
     const form = createFormStore<WebsiteSetting>({
@@ -419,12 +419,10 @@ const WebsiteStep: Component<{
     props.setWebsiteForms((prev) => prev.concat([form]))
   }
 
-  const handleSubmit = async (skipWebsite: boolean) => {
-    if (!skipWebsite) {
-      const isValid = (await Promise.all(props.websiteForms().map((form) => validate(form)))).every((v) => v)
-      if (!isValid) return
-    }
-    await props.submit(skipWebsite)
+  const handleSubmit = async () => {
+    const isValid = (await Promise.all(props.websiteForms().map((form) => validate(form)))).every((v) => v)
+    if (!isValid) return
+    await props.submit()
   }
 
   return (
@@ -483,20 +481,12 @@ const WebsiteStep: Component<{
           </Button>
           <Button
             size="medium"
-            variants="ghost"
-            rightIcon={<MaterialSymbols>skip_next</MaterialSymbols>}
-            onClick={() => handleSubmit(true)}
-          >
-            Skip
-          </Button>
-          <Button
-            size="medium"
             variants="primary"
-            onClick={() => handleSubmit(false)}
+            onClick={handleSubmit}
             // TODO: hostが空の状態でsubmitして一度requiredエラーが出たあとhostを入力してもエラーが消えない
             // disabled={props.websiteForms().some((form) => form.invalid)}
           >
-            Save Website Config
+            Create Application
           </Button>
         </ButtonsContainer>
       </FormsContainer>
@@ -591,7 +581,7 @@ export default () => {
     setCurrentStep(formStep.website)
   }
 
-  const createApp = async (skipWebsite: boolean): Promise<Application> => {
+  const createApp = async (): Promise<Application> => {
     const values = getValues(createAppForm, { shouldActive: false })
     const websitesToSave = websiteForms()
       .map((form) => getValues(form).website)
@@ -607,16 +597,16 @@ export default () => {
           config: values.config as BuildConfigs,
         }),
       },
-      websites: skipWebsite ? undefined : websitesToSave,
+      websites: websitesToSave,
       startOnCreate: values.startOnCreate,
     })
     return createdApp
   }
 
   const navigate = useNavigate()
-  const submit = async (skipWebsite: boolean) => {
+  const submit = async () => {
     try {
-      const createdApp = await createApp(skipWebsite)
+      const createdApp = await createApp()
       toast.success('アプリケーションを登録しました')
       navigate(`/apps/${createdApp.id}`)
     } catch (e) {
