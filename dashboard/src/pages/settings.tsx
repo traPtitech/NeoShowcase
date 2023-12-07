@@ -204,12 +204,12 @@ export default () => {
                       SSH鍵はruntimeアプリケーションのコンテナにssh接続するときに使います
                     </DataTable.SubTitle>
                   </DataTable.Titles>
-                  <Show when={userKeys()!.keys.length !== 0}>
+                  <Show when={userKeys()?.keys.length !== 0}>
                     <AddNewSSHKeyButton />
                   </Show>
                 </TitleContainer>
                 <Show
-                  when={userKeys()!.keys.length > 0}
+                  when={userKeys()?.keys.length > 0}
                   fallback={
                     <List.Container>
                       <List.PlaceHolder>
@@ -220,7 +220,7 @@ export default () => {
                     </List.Container>
                   }
                 >
-                  <SshKeys keys={userKeys()!.keys!} refetchKeys={refetchKeys} />
+                  <SshKeys keys={userKeys()?.keys!} refetchKeys={refetchKeys} />
                 </Show>
               </DataTable.Container>
             </MainViewContainer>

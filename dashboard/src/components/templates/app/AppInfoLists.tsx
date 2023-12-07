@@ -3,10 +3,17 @@ import { Application, DeployType } from '/@/api/neoshowcase/protobuf/gateway_pb'
 import Code from '/@/components/UI/Code'
 import { ToolTip } from '/@/components/UI/ToolTip'
 import { systemInfo } from '/@/libs/api'
-import { diffHuman } from '/@/libs/format'
+import { diffHuman, shortSha } from '/@/libs/format'
 import { List } from '../List'
 
-const AppInfoLists: Component<{ app: Application }> = (props) => {
+import { Button } from '/@/components/UI/Button'
+
+const AppInfoLists: Component<{
+  app: Application
+  refreshCommit: () => void
+  disableRefreshCommit: boolean
+  hasPermission: boolean
+}> = (props) => {
   const sshAccessCommand = () => `ssh -p ${systemInfo()?.ssh?.port} ${props.app.id}@${systemInfo()?.ssh?.host}`
 
   return (
@@ -27,16 +34,33 @@ const AppInfoLists: Component<{ app: Application }> = (props) => {
             )
           }}
         </Show>
+        <List.Row>
+          <List.RowContent>
+            <List.RowTitle>Branch (Commit)</List.RowTitle>
+            <List.RowData>{`${props.app.refName} (${shortSha(props.app.commit)})`}</List.RowData>
+          </List.RowContent>
+          <Show when={props.hasPermission}>
+            <Button
+              variants="ghost"
+              size="medium"
+              onClick={props.refreshCommit}
+              disabled={props.disableRefreshCommit}
+              tooltip={{
+                props: {
+                  content: 'リポジトリの最新コミットを取得',
+                },
+              }}
+            >
+              Refresh Commit
+            </Button>
+          </Show>
+        </List.Row>
         <Show when={props.app.deployType === DeployType.RUNTIME}>
           <List.Row>
             <List.RowContent>
               <List.RowTitle>SSH Access</List.RowTitle>
-              <Show
-                when={props.app.running}
-                fallback={<List.RowData>アプリケーションが起動している間のみSSHでアクセス可能です</List.RowData>}
-              >
-                <Code value={sshAccessCommand()} copyable />
-              </Show>
+              <Code value={sshAccessCommand()} copyable />
+              <List.RowData>アプリケーションが起動している間のみアクセス可能です</List.RowData>
             </List.RowContent>
           </List.Row>
         </Show>

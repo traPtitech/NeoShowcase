@@ -10,9 +10,11 @@ import AppInfoLists from '/@/components/templates/app/AppInfoLists'
 import AppLatestBuilds from '/@/components/templates/app/AppLatestBuilds'
 import { AppMetrics } from '/@/components/templates/app/AppMetrics'
 import { ContainerLog } from '/@/components/templates/app/ContainerLog'
-import { availableMetrics, client } from '/@/libs/api'
+import { availableMetrics, client, handleAPIError } from '/@/libs/api'
 import { useApplicationData } from '/@/routes'
 import { colorVars, media } from '/@/theme'
+
+import toast from 'solid-toast'
 
 const Container = styled('div', {
   base: {
@@ -150,20 +152,36 @@ export default () => {
   const latestBuild = () => sortedBuilds()?.[0]
 
   const loaded = () => !!(app() && repo())
-
-  const [disableRefresh, setDisableRefresh] = createSignal(false)
-  const refreshRepo = async () => {
-    setDisableRefresh(true)
-    setTimeout(() => setDisableRefresh(false), 3000)
-    await client.refreshRepository({ repositoryId: repo()?.id })
-    await refetchApp()
+  const refetch = async () => {
+    await Promise.all([refetchApp(), refetchBuilds()])
   }
 
-  const refetchAppTimer = setInterval(refetchApp, 10000)
-  onCleanup(() => clearInterval(refetchAppTimer))
+  const startApp = async () => {
+    const wasRunning = app()?.running
+    try {
+      await client.startApplication({ id: app()?.id })
+      await refetch()
+      // 非同期でビルドが開始されるので1秒程度待ってから再度リロード
+      setTimeout(refetch, 1000)
+      toast.success(`アプリケーションを${wasRunning ? '再' : ''}起動しました`)
+    } catch (e) {
+      handleAPIError(e, `アプリケーションの${wasRunning ? '再' : ''}起動に失敗しました`)
+    }
+  }
 
-  const refetchBuildsTimer = setInterval(refetchBuilds, 10000)
-  onCleanup(() => clearInterval(refetchBuildsTimer))
+  const [disableRefreshCommit, setDisableRefreshCommit] = createSignal(false)
+  const refreshCommit = async () => {
+    setDisableRefreshCommit(true)
+    await client.refreshRepository({ repositoryId: repo()?.id })
+    setTimeout(() => {
+      // バックエンド側で非同期で取得されるので1秒程度待ってからリロード
+      setDisableRefreshCommit(false)
+      void refetch()
+    }, 1000)
+  }
+
+  const refetchTimer = setInterval(refetch, 10000)
+  onCleanup(() => clearInterval(refetchTimer))
 
   const [isPending] = useTransition()
 
@@ -177,10 +195,9 @@ export default () => {
                 <DataTable.Title>Deployment</DataTable.Title>
                 <AppDeployInfo
                   app={app()!}
-                  refetchApp={refetchApp}
+                  refetch={refetch}
                   repo={repo()!}
-                  refreshRepo={refreshRepo}
-                  disableRefresh={disableRefresh}
+                  startApp={startApp}
                   deployedBuild={deployedBuild()}
                   latestBuildId={latestBuild()?.id}
                   hasPermission={hasPermission()}
@@ -195,17 +212,22 @@ export default () => {
                   <DataTable.Title>Latest Builds</DataTable.Title>
                   <AppLatestBuilds
                     app={app()!}
-                    refetchApp={refetchApp}
+                    refetch={refetch}
                     repo={repo()!}
+                    startApp={startApp}
                     hasPermission={hasPermission()}
                     sortedBuilds={sortedBuilds()!}
-                    refetchBuilds={refetchBuilds}
                   />
                 </Show>
               </DataTable.Container>
               <DataTable.Container>
                 <DataTable.Title>Information</DataTable.Title>
-                <AppInfoLists app={app()!} />
+                <AppInfoLists
+                  app={app()!}
+                  refreshCommit={refreshCommit}
+                  disableRefreshCommit={disableRefreshCommit()}
+                  hasPermission={hasPermission()}
+                />
               </DataTable.Container>
               <Show when={app()?.deployType === DeployType.RUNTIME && hasPermission()}>
                 <DataTable.Container>

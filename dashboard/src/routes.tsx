@@ -39,7 +39,7 @@ const ApplicationData: RouteDataFunc<
   unknown,
   {
     app: Resource<Application>
-    refetchApp: () => void
+    refetchApp: () => Application | Promise<Application | undefined> | null | undefined
     repo: Resource<Repository>
     hasPermission: () => boolean
   }

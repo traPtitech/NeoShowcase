@@ -20,16 +20,16 @@ export default () => {
   return (
     <Show when={repo()}>
       <WithNav.Container>
-        <Title>{`${repo()!.name} - Repository - NeoShowcase`}</Title>
+        <Title>{`${repo()?.name} - Repository - NeoShowcase`}</Title>
         <WithNav.Navs>
           <RepositoryNav repository={repo()!} />
           <WithNav.Tabs>
-            <TabRound onClick={() => navigate(`/repos/${repo()!.id}`)} state={matchIndexPage() ? 'active' : 'default'}>
+            <TabRound onClick={() => navigate(`/repos/${repo()?.id}`)} state={matchIndexPage() ? 'active' : 'default'}>
               <MaterialSymbols>insert_chart</MaterialSymbols>
               Info
             </TabRound>
             <TabRound
-              onClick={() => navigate(`/repos/${repo()!.id}/settings`)}
+              onClick={() => navigate(`/repos/${repo()?.id}/settings`)}
               state={matchSettingsPage() ? 'active' : 'default'}
             >
               <MaterialSymbols>settings</MaterialSymbols>

@@ -74,7 +74,7 @@ export const BuildLog: Component<BuildLogProps> = (props) => {
   return (
     <>
       <Show when={buildLog()}>
-        <LogContainer innerHTML={toUTF8WithAnsi(buildLog()!.log)} ref={logRef!} />
+        <LogContainer innerHTML={toUTF8WithAnsi(buildLog()?.log)} ref={logRef!} />
       </Show>
       <Show when={!buildLog() && buildLogStream()}>
         <LogContainer innerHTML={toUTF8WithAnsi(streamedLog())} ref={streamLogRef!} onScroll={onScroll} />

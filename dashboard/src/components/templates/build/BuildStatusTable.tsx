@@ -181,8 +181,8 @@ const BuildStatusTable: Component<{
             <Show when={props.build.finishedAt?.valid && props.build.startedAt?.valid} fallback={'-'}>
               <List.RowData>
                 {durationHuman(
-                  props.build.finishedAt!.timestamp!.toDate().getTime() -
-                    props.build.startedAt!.timestamp!.toDate().getTime(),
+                  props.build.finishedAt?.timestamp?.toDate().getTime() -
+                    props.build.startedAt?.timestamp?.toDate().getTime(),
                 )}
               </List.RowData>
             </Show>

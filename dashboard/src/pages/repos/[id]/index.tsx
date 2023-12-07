@@ -89,7 +89,7 @@ export default () => {
                   <List.RowContent>
                     <List.RowTitle>URL</List.RowTitle>
                     <List.RowData>
-                      <URLText text={repo()!.url} href={repo()!.htmlUrl} />
+                      <URLText text={repo()?.url} href={repo()?.htmlUrl} />
                     </List.RowData>
                   </List.RowContent>
                 </List.Row>

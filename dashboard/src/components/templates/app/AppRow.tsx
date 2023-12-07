@@ -125,12 +125,12 @@ export interface Props {
 export const AppRow: Component<Props> = (props) => {
   return (
     <Show when={props.app} fallback={<AppRowSkeleton dark={props.dark} />}>
-      <A href={`/apps/${props.app!.id}`}>
+      <A href={`/apps/${props.app?.id}`}>
         <Container dark={props.dark}>
           <TitleContainer>
             <AppStatusIcon state={applicationState(props.app!)} />
-            <AppName>{props.app!.name}</AppName>
-            <Show when={props.app!.updatedAt}>
+            <AppName>{props.app?.name}</AppName>
+            <Show when={props.app?.updatedAt}>
               {(nonNullUpdatedAt) => {
                 const { diff, localeString } = diffHuman(nonNullUpdatedAt().toDate())
                 return (
@@ -142,11 +142,11 @@ export const AppRow: Component<Props> = (props) => {
             </Show>
           </TitleContainer>
           <MetaContainer>
-            <LastCommitName>{shortSha(props.app!.commit)}</LastCommitName>
-            <Show when={props.app!.websites.length > 0}>
-              <UrlContainer>{getWebsiteURL(props.app!.websites[0])}</UrlContainer>
-              <Show when={props.app!.websites.length > 1}>
-                <Badge variant="text">{`+${props.app!.websites.length - 1}`}</Badge>
+            <LastCommitName>{shortSha(props.app?.commit)}</LastCommitName>
+            <Show when={props.app?.websites.length > 0}>
+              <UrlContainer>{getWebsiteURL(props.app?.websites[0])}</UrlContainer>
+              <Show when={props.app?.websites.length > 1}>
+                <Badge variant="text">{`+${props.app?.websites.length - 1}`}</Badge>
               </Show>
             </Show>
           </MetaContainer>

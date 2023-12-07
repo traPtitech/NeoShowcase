@@ -54,7 +54,7 @@ export default () => {
               hasPermission={hasPermission()}
             />
           </DataTable.Container>
-          <Show when={build()!.artifacts.length > 0}>
+          <Show when={build()?.artifacts.length > 0}>
             <DataTable.Container>
               <DataTable.Title>Artifacts</DataTable.Title>
               <List.Container>
@@ -66,7 +66,7 @@ export default () => {
             <DataTable.Container>
               <DataTable.Title>Build Log</DataTable.Title>
               <LogContainer>
-                <BuildLog buildID={build()!.id} finished={buildFinished()} refetchBuild={refetchBuild} />
+                <BuildLog buildID={build()?.id} finished={buildFinished()} refetchBuild={refetchBuild} />
               </LogContainer>
             </DataTable.Container>
           </Show>

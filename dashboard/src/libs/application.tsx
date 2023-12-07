@@ -14,15 +14,6 @@ import {
 import { colorVars } from '/@/theme'
 import { BuildConfigMethod } from '../components/templates/app/BuildConfigs'
 
-export const buildTypeStr: Record<Exclude<BuildConfigMethod, undefined>, string> = {
-  runtimeBuildpack: 'Runtime (Buildpack)',
-  runtimeCmd: 'Runtime (command)',
-  runtimeDockerfile: 'Runtime (Dockerfile)',
-  staticBuildpack: 'Static (Buildpack)',
-  staticCmd: 'Static (command)',
-  staticDockerfile: 'Static (Dockerfile)',
-}
-
 export const buildStatusStr: Record<BuildStatus, string> = {
   [BuildStatus.QUEUED]: 'Queued',
   [BuildStatus.BUILDING]: 'Building',
@@ -44,7 +35,8 @@ export const deploymentState = (app: Application): ApplicationState => {
   if (!app.running) {
     return ApplicationState.Idle
   }
-  if (app.currentBuild === '') { // First build may still be running
+  if (app.currentBuild === '') {
+    // First build may still be running
     return ApplicationState.Idle
   }
   if (app.deployType === DeployType.RUNTIME) {

@@ -45,7 +45,7 @@ export default () => {
       <DataTable.SubTitle>オーナーはリポジトリ設定の変更が可能になります</DataTable.SubTitle>
       <Show when={loaded()}>
         <OwnerList
-          owners={repo()!.ownerIds.map(userFromId)}
+          owners={repo()?.ownerIds.map(userFromId)}
           users={users()!}
           handleAddOwner={handleAddOwner}
           handleDeleteOwner={handleDeleteOwner}

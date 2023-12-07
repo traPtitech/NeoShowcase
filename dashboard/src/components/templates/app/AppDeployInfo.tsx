@@ -8,7 +8,7 @@ import JumpButton from '/@/components/UI/JumpButton'
 import { ToolTip } from '/@/components/UI/ToolTip'
 import { URLText } from '/@/components/UI/URLText'
 import { client, handleAPIError } from '/@/libs/api'
-import { ApplicationState, deploymentState, getWebsiteURL } from '/@/libs/application'
+import { deploymentState, getWebsiteURL } from '/@/libs/application'
 import { titleCase } from '/@/libs/casing'
 import { colorOverlay } from '/@/libs/colorOverlay'
 import { diffHuman, shortSha } from '/@/libs/format'
@@ -138,10 +138,9 @@ const DeployInfoContainer = styled('div', {
 })
 const AppDeployInfo: Component<{
   app: Application
-  refetchApp: () => void
+  refetch: () => Promise<void>
   repo: Repository
-  refreshRepo: () => void
-  disableRefresh: () => boolean
+  startApp: () => Promise<void>
   deployedBuild: Build | undefined
   latestBuildId: string | undefined
   hasPermission: boolean
@@ -149,19 +148,10 @@ const AppDeployInfo: Component<{
   const [mouseEnter, setMouseEnter] = createSignal(false)
   const showActions = () => props.hasPermission && mouseEnter()
 
-  const restartApp = async () => {
-    try {
-      await client.startApplication({ id: props.app.id })
-      await props.refetchApp()
-      toast.success('アプリケーションを再起動しました')
-    } catch (e) {
-      handleAPIError(e, 'アプリケーションの再起動に失敗しました')
-    }
-  }
   const stopApp = async () => {
     try {
       await client.stopApplication({ id: props.app.id })
-      await props.refetchApp()
+      await props.refetch()
       toast.success('アプリケーションを停止しました')
     } catch (e) {
       handleAPIError(e, 'アプリケーションの停止に失敗しました')
@@ -182,15 +172,10 @@ const AppDeployInfo: Component<{
         </AppState>
         <Show when={showActions()}>
           <ActionButtons>
-            <Button variants="borderError" size="small" onClick={restartApp} disabled={props.disableRefresh()}>
+            <Button variants="borderError" size="small" onClick={props.startApp}>
               {props.app.running ? 'Restart App' : 'Start App'}
             </Button>
-            <Button
-              variants="borderError"
-              size="small"
-              onClick={stopApp}
-              disabled={props.disableRefresh() || deploymentState(props.app) === ApplicationState.Idle}
-            >
+            <Button variants="borderError" size="small" onClick={stopApp} disabled={!props.app.running}>
               Stop App
             </Button>
           </ActionButtons>
@@ -224,27 +209,15 @@ const AppDeployInfo: Component<{
           <List.RowTitle>Source Commit</List.RowTitle>
           <List.RowData>
             {`${props.deployedBuild?.commit ? shortSha(props.deployedBuild?.commit) : '0000000'}`}
-            <Show when={props.deployedBuild?.id === props.latestBuildId}>
+            <Show when={props.deployedBuild && props.deployedBuild?.id === props.latestBuildId}>
               <ToolTip props={{ content: '最新のビルドがデプロイされています' }}>
                 <Badge variant="success">Latest</Badge>
               </ToolTip>
             </Show>
           </List.RowData>
         </List.RowContent>
-        <Show when={props.hasPermission}>
-          <Button
-            variants="ghost"
-            size="medium"
-            onClick={props.refreshRepo}
-            disabled={props.disableRefresh()}
-            tooltip={{
-              props: {
-                content: 'リポジトリの最新コミットを取得',
-              },
-            }}
-          >
-            Refresh Commit
-          </Button>
+        <Show when={props.deployedBuild}>
+          <JumpButton href={`/apps/${props.app.id}/builds/${props.deployedBuild?.id}`} />
         </Show>
       </DeployInfoContainer>
       <DeployInfoContainer long>
