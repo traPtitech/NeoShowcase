@@ -12,6 +12,7 @@ import { diffHuman, durationHuman, shortSha } from '/@/libs/format'
 import { colorVars, textVars } from '/@/theme'
 import { List } from '../List'
 import { BuildStatusIcon } from './BuildStatusIcon'
+import { useNavigate } from '@solidjs/router'
 
 const BuildStatusRow = styled('div', {
   base: {
@@ -41,12 +42,12 @@ const BuildStatusLabel = styled('div', {
 const BuildStatusTable: Component<{
   app: Application
   repo: Repository
-  refreshRepo?: () => void
-  disableRefresh?: () => boolean
   build: Build
-  refetchBuild: () => void
+  refetchBuild: () => Promise<void>
   hasPermission: boolean
 }> = (props) => {
+  const navigate = useNavigate()
+
   const rebuild = async () => {
     try {
       await client.retryCommitBuild({
@@ -55,6 +56,8 @@ const BuildStatusTable: Component<{
       })
       await props.refetchBuild()
       toast.success('再ビルドを開始しました')
+      // 非同期でビルドが開始されるので1秒程度待ってから遷移
+      setTimeout(() => navigate(`/apps/${props.app.id}`), 1000)
     } catch (e) {
       handleAPIError(e, '再ビルドに失敗しました')
     }
@@ -83,7 +86,6 @@ const BuildStatusTable: Component<{
             variants="borderError"
             size="small"
             onClick={rebuild}
-            disabled={props.disableRefresh?.()}
             tooltip={{
               props: {
                 content: '同じコミットで再ビルド',
@@ -94,7 +96,7 @@ const BuildStatusTable: Component<{
           </Button>
         </Show>
         <Show when={props.build.status === BuildStatus.BUILDING && props.hasPermission}>
-          <Button variants="borderError" size="small" onClick={cancelBuild} disabled={props.disableRefresh?.()}>
+          <Button variants="borderError" size="small" onClick={cancelBuild}>
             Cancel Build
           </Button>
         </Show>
@@ -111,21 +113,6 @@ const BuildStatusTable: Component<{
           <List.RowTitle>Source Commit</List.RowTitle>
           <List.RowData>{shortSha(props.build.commit)}</List.RowData>
         </List.RowContent>
-        <Show when={props.refreshRepo && props.hasPermission}>
-          <Button
-            variants="ghost"
-            size="medium"
-            onClick={props.refreshRepo}
-            disabled={props.disableRefresh?.()}
-            tooltip={{
-              props: {
-                content: 'リポジトリの最新コミットを取得',
-              },
-            }}
-          >
-            Refresh Commit
-          </Button>
-        </Show>
       </List.Row>
       <List.Columns>
         <Show when={props.build.queuedAt}>

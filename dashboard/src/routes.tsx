@@ -39,7 +39,7 @@ const ApplicationData: RouteDataFunc<
   unknown,
   {
     app: Resource<Application>
-    refetchApp: () => Application | Promise<Application | undefined> | null | undefined
+    refetchApp: () => Promise<void>
     repo: Resource<Repository>
     hasPermission: () => boolean
   }
@@ -57,7 +57,7 @@ const ApplicationData: RouteDataFunc<
   )
   return {
     app,
-    refetchApp,
+    refetchApp: async () => { await refetchApp() },
     repo,
     hasPermission,
   }
@@ -68,9 +68,9 @@ const BuildData: RouteDataFunc<
   unknown,
   {
     app: Resource<Application>
-    refetchApp: () => void
+    refetchApp: () => Promise<void>
     build: Resource<Build>
-    refetchBuild: () => void
+    refetchBuild: () => Promise<void>
     hasPermission: () => boolean
   }
 > = ({ params }) => {
@@ -87,9 +87,9 @@ const BuildData: RouteDataFunc<
   )
   return {
     app,
-    refetchApp,
+    refetchApp: async () => { await refetchApp() },
     build,
-    refetchBuild,
+    refetchBuild: async () => { await refetchBuild() },
     hasPermission,
   }
 }
