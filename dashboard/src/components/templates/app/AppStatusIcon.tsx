@@ -29,7 +29,7 @@ const components: Record<ApplicationState, (size: IconProps) => JSXElement> = {
       check_circle
     </MaterialSymbols>
   ),
-  [ApplicationState.Static]: (props) => (
+  [ApplicationState.Serving]: (props) => (
     <MaterialSymbols fill displaySize={props.size} color={colorVars.primitive.blue[500]}>
       check_circle
     </MaterialSymbols>

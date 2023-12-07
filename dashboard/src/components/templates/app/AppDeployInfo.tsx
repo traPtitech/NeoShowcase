@@ -65,7 +65,7 @@ const AppStateContainer = styled('div', {
           },
         },
       },
-      Static: {
+      Serving: {
         background: colorOverlay(colorVars.semantic.ui.primary, colorVars.semantic.transparent.primarySelected),
         selectors: {
           '&:hover': {

@@ -57,7 +57,9 @@ const ApplicationData: RouteDataFunc<
   )
   return {
     app,
-    refetchApp: async () => { await refetchApp() },
+    refetchApp: async () => {
+      await refetchApp()
+    },
     repo,
     hasPermission,
   }
@@ -87,9 +89,13 @@ const BuildData: RouteDataFunc<
   )
   return {
     app,
-    refetchApp: async () => { await refetchApp() },
+    refetchApp: async () => {
+      await refetchApp()
+    },
     build,
-    refetchBuild: async () => { await refetchBuild() },
+    refetchBuild: async () => {
+      await refetchBuild()
+    },
     hasPermission,
   }
 }

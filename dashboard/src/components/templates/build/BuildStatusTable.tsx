@@ -1,5 +1,6 @@
 import { Timestamp } from '@bufbuild/protobuf'
 import { styled } from '@macaron-css/solid'
+import { useNavigate } from '@solidjs/router'
 import { Component, Show } from 'solid-js'
 import toast from 'solid-toast'
 import { Application, Build, BuildStatus, Repository } from '/@/api/neoshowcase/protobuf/gateway_pb'
@@ -12,7 +13,6 @@ import { diffHuman, durationHuman, shortSha } from '/@/libs/format'
 import { colorVars, textVars } from '/@/theme'
 import { List } from '../List'
 import { BuildStatusIcon } from './BuildStatusIcon'
-import { useNavigate } from '@solidjs/router'
 
 const BuildStatusRow = styled('div', {
   base: {

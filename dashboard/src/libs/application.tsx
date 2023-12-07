@@ -12,7 +12,6 @@ import {
   Website,
 } from '/@/api/neoshowcase/protobuf/gateway_pb'
 import { colorVars } from '/@/theme'
-import { BuildConfigMethod } from '../components/templates/app/BuildConfigs'
 
 export const buildStatusStr: Record<BuildStatus, string> = {
   [BuildStatus.QUEUED]: 'Queued',
@@ -27,7 +26,7 @@ export enum ApplicationState {
   Idle = 'Idle',
   Deploying = 'Deploying',
   Running = 'Running',
-  Static = 'Static',
+  Serving = 'Serving',
   Error = 'Error',
 }
 
@@ -53,7 +52,7 @@ export const deploymentState = (app: Application): ApplicationState => {
         return ApplicationState.Error
     }
   } else {
-    return ApplicationState.Static
+    return ApplicationState.Serving
   }
 }
 
