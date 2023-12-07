@@ -112,7 +112,7 @@ export const allStatuses: SelectOption<ApplicationState>[] = [
   { label: 'Idle', value: ApplicationState.Idle },
   { label: 'Deploying', value: ApplicationState.Deploying },
   { label: 'Running', value: ApplicationState.Running },
-  { label: 'Static', value: ApplicationState.Serving },
+  { label: 'Serving', value: ApplicationState.Serving },
   { label: 'Error', value: ApplicationState.Error },
 ]
 export const allProviders: SelectOption<Provider>[] = [

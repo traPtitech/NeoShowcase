@@ -1,7 +1,7 @@
 import { Checkbox, DropdownMenu } from '@kobalte/core'
 import { keyframes, style } from '@macaron-css/core'
 import { styled } from '@macaron-css/solid'
-import { Component, For, Setter } from 'solid-js'
+import { Component, For, Setter, Show } from 'solid-js'
 import { CheckBoxIcon } from '/@/components/UI/CheckBoxIcon'
 import { MaterialSymbols } from '/@/components/UI/MaterialSymbols'
 import { Provider, providerToIcon } from '/@/libs/application'
@@ -102,6 +102,13 @@ const FilterButton = style({
     },
   },
 })
+const IconContainer = styled('div', {
+  base: {
+    position: 'relative',
+    width: '24px',
+    height: '24px',
+  },
+})
 const iconStyle = style({
   width: '24px',
   height: '24px',
@@ -112,15 +119,34 @@ const iconStyle = style({
     },
   },
 })
+const FilterIndicator = styled('div', {
+  base: {
+    position: 'absolute',
+    width: '8px',
+    height: '8px',
+    right: '-2px',
+    top: '-2px',
+    borderRadius: '4px',
+    background: colorVars.semantic.primary.main,
+    outline: `1px solid ${colorVars.semantic.ui.background}`,
+  },
+})
 
 const ReposFilter: Component<{
   provider: Provider[]
   setProvider: Setter<Provider[]>
 }> = (props) => {
+  const filtered = () => props.provider.length !== allProviders.length
+
   return (
     <DropdownMenu.Root>
       <DropdownMenu.Trigger class={FilterButton}>
-        <MaterialSymbols>tune</MaterialSymbols>
+        <IconContainer>
+          <MaterialSymbols>tune</MaterialSymbols>
+          <Show when={filtered()}>
+            <FilterIndicator />
+          </Show>
+        </IconContainer>
         <DropdownMenu.Icon class={iconStyle}>
           <MaterialSymbols>expand_more</MaterialSymbols>
         </DropdownMenu.Icon>
