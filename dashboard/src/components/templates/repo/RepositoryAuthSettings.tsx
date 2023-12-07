@@ -207,7 +207,7 @@ export const RepositoryAuthSettings = (props: Props) => {
         <Match when={authMethod() === 'ssh'}>
           <Field of={props.formStore} name="auth.ssh.keyId">
             {() => (
-              <FormItem title="SSH公開鍵">
+              <FormItem title="デプロイキーの登録">
                 <Suspense>
                   <SshKeyContainer>
                     以下のSSH公開鍵{useTmpKey() ? '(このリポジトリ専用)' : '(NeoShowcase全体共通)'}

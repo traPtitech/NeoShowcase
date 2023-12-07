@@ -324,7 +324,7 @@ const GeneralStep: Component<{
       <FormsContainer>
         <FormContainer>
           <FormTitle>
-            create application from
+            Create Application from
             {providerToIcon(repositoryURLToProvider(props.repo.url), 24)}
             {props.repo.name}
           </FormTitle>
