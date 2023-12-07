@@ -230,6 +230,7 @@ const CmdConfigs = (props: CmdConfigProps) => {
                   <>
                     <div>ベースとなるDocker Image</div>
                     <div>「イメージ名:タグ名」の形式</div>
+                    <div>ビルドが必要無い場合は空</div>
                   </>
                 ),
               },
