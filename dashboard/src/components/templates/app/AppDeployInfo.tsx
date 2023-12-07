@@ -1,7 +1,7 @@
 import { styled } from '@macaron-css/solid'
 import { Component, For, Show, createSignal } from 'solid-js'
 import toast from 'solid-toast'
-import { Application, DeployType, Repository } from '/@/api/neoshowcase/protobuf/gateway_pb'
+import { Application, Build, DeployType, Repository } from '/@/api/neoshowcase/protobuf/gateway_pb'
 import Badge from '/@/components/UI/Badge'
 import { Button } from '/@/components/UI/Button'
 import JumpButton from '/@/components/UI/JumpButton'
@@ -142,7 +142,8 @@ const AppDeployInfo: Component<{
   repo: Repository
   refreshRepo: () => void
   disableRefresh: () => boolean
-  isLatestBuild: boolean
+  deployedBuild: Build | undefined
+  latestBuildId: string | undefined
   hasPermission: boolean
 }> = (props) => {
   const [mouseEnter, setMouseEnter] = createSignal(false)
@@ -220,10 +221,10 @@ const AppDeployInfo: Component<{
       </DeployInfoContainer>
       <DeployInfoContainer long>
         <List.RowContent>
-          <List.RowTitle>Source Branch (Commit)</List.RowTitle>
+          <List.RowTitle>Source Commit</List.RowTitle>
           <List.RowData>
-            {`${props.app.refName} (${shortSha(props.app.commit)})`}
-            <Show when={props.isLatestBuild}>
+            {`${props.deployedBuild?.commit ? shortSha(props.deployedBuild?.commit) : '0000000'}`}
+            <Show when={props.deployedBuild?.id === props.latestBuildId}>
               <ToolTip props={{ content: '最新のビルドがデプロイされています' }}>
                 <Badge variant="success">Latest</Badge>
               </ToolTip>

@@ -146,6 +146,7 @@ export default () => {
     builds()?.builds.sort((b1, b2) => {
       return (b2.queuedAt?.toDate().getTime() ?? 0) - (b1.queuedAt?.toDate().getTime() ?? 0)
     })
+  const deployedBuild = () => sortedBuilds()?.find((b) => b.id === app()?.currentBuild)
   const latestBuild = () => sortedBuilds()?.[0]
 
   const loaded = () => !!(app() && repo())
@@ -180,7 +181,8 @@ export default () => {
                   repo={repo()!}
                   refreshRepo={refreshRepo}
                   disableRefresh={disableRefresh}
-                  isLatestBuild={latestBuild()?.id === app()?.currentBuild}
+                  deployedBuild={deployedBuild()}
+                  latestBuildId={latestBuild()?.id}
                   hasPermission={hasPermission()}
                 />
               </DataTable.Container>
