@@ -218,7 +218,7 @@ export default () => {
         }
       >
         <Show when={loaded()}>
-          <EnvVarConfig appId={app()?.id} envVars={structuredClone(envVars()!)} refetchEnvVars={refetchEnvVars} />
+          <EnvVarConfig appId={app()!.id} envVars={structuredClone(envVars()!)} refetchEnvVars={refetchEnvVars} />
         </Show>
       </Show>
     </DataTable.Container>

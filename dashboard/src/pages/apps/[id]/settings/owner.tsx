@@ -47,7 +47,7 @@ export default () => {
       </DataTable.SubTitle>
       <Show when={loaded()}>
         <OwnerList
-          owners={app()?.ownerIds.map(userFromId)}
+          owners={app()!.ownerIds.map(userFromId)}
           users={users()!}
           handleAddOwner={handleAddOwner}
           handleDeleteOwner={handleDeleteOwner}

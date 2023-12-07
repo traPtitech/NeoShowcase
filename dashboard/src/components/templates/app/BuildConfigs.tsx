@@ -142,7 +142,7 @@ const StaticConfigs = (props: StaticConfigProps) => {
                 content: (
                   <>
                     <div>静的ファイルが生成されるディレクトリ</div>
-                    <div>(リポジトリルートからの相対パス)</div>
+                    <div>(Contextからの相対パス)</div>
                   </>
                 ),
               },

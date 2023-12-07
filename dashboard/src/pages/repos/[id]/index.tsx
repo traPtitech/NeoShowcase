@@ -82,14 +82,14 @@ export default () => {
                 <List.Row>
                   <List.RowContent>
                     <List.RowTitle>Name</List.RowTitle>
-                    <List.RowData>{repo()?.name}</List.RowData>
+                    <List.RowData>{repo()!.name}</List.RowData>
                   </List.RowContent>
                 </List.Row>
                 <List.Row>
                   <List.RowContent>
                     <List.RowTitle>URL</List.RowTitle>
                     <List.RowData>
-                      <URLText text={repo()?.url} href={repo()?.htmlUrl} />
+                      <URLText text={repo()!.url} href={repo()!.htmlUrl} />
                     </List.RowData>
                   </List.RowContent>
                 </List.Row>

@@ -209,7 +209,7 @@ export default () => {
                   </Show>
                 </TitleContainer>
                 <Show
-                  when={userKeys()?.keys.length > 0}
+                  when={userKeys()!.keys.length > 0}
                   fallback={
                     <List.Container>
                       <List.PlaceHolder>

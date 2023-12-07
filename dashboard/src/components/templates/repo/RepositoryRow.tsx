@@ -74,20 +74,20 @@ export const RepositoryRow: Component<Props> = (props) => {
     <Show when={props.repository} fallback={<RepositoryRowSkeleton />}>
       <Container>
         <TitleContainer>
-          {providerToIcon(repositoryURLToProvider(props.repository?.url), 24)}
+          {providerToIcon(repositoryURLToProvider(props.repository!.url), 24)}
           <A
             href={`/repos/${props.repository?.id}`}
             style={{
               overflow: 'hidden',
             }}
           >
-            <RepositoryName>{props.repository?.name}</RepositoryName>
+            <RepositoryName>{props.repository!.name}</RepositoryName>
           </A>
           <AppCount>{`${props.appCount} apps`}</AppCount>
         </TitleContainer>
         <Show when={canEdit()}>
           <AddNewAppButtonContainer>
-            <A href={`/apps/new?repositoryID=${props.repository?.id}`}>
+            <A href={`/apps/new?repositoryID=${props.repository!.id}`}>
               <Button
                 variants="border"
                 size="medium"
