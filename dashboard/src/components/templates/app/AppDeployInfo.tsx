@@ -20,7 +20,7 @@ const DeploymentContainer = styled('div', {
   base: {
     width: '100%',
     display: 'grid',
-    gridTemplateColumns: 'repeat(3, 1fr)',
+    gridTemplateColumns: '1fr 2fr',
     gridTemplateRows: 'auto',
     gap: '1px',
 
@@ -31,7 +31,7 @@ const DeploymentContainer = styled('div', {
 
     '@media': {
       [media.mobile]: {
-        gridTemplateColumns: 'repeat(2, 1fr)',
+        gridTemplateColumns: '1fr',
       },
     },
   },
@@ -39,7 +39,6 @@ const DeploymentContainer = styled('div', {
 const AppStateContainer = styled('div', {
   base: {
     position: 'relative',
-    gridArea: '1 / 1 / 4 / 2',
     width: '100%',
     display: 'grid',
     gridTemplateRows: '1fr 2fr 1fr',
@@ -48,12 +47,6 @@ const AppStateContainer = styled('div', {
     cursor: 'pointer',
     color: colorVars.semantic.text.black,
     ...textVars.h3.medium,
-
-    '@media': {
-      [media.mobile]: {
-        gridArea: '1 / 1 / 2 / 3',
-      },
-    },
   },
   variants: {
     variant: {
@@ -109,6 +102,16 @@ const AppState = styled('div', {
     gap: '8px',
   },
 })
+const InfoContainer = styled('div', {
+  base: {
+    width: '100%',
+    height: '100%',
+    display: 'grid',
+    gridTemplateColumns: 'repeat(2, 1fr)',
+    gridTemplateRows: 'auto',
+    gap: '1px',
+  },
+})
 const ActionButtons = styled('div', {
   base: {
     display: 'flex',
@@ -117,7 +120,7 @@ const ActionButtons = styled('div', {
     gap: '8px',
   },
 })
-const DeployInfoContainer = styled('div', {
+const DeployInfo = styled('div', {
   base: {
     width: '100%',
     padding: '16px 20px',
@@ -181,61 +184,71 @@ const AppDeployInfo: Component<{
           </ActionButtons>
         </Show>
       </AppStateContainer>
-      <DeployInfoContainer>
-        <List.RowContent>
-          <List.RowTitle>起動時刻</List.RowTitle>
-          <Show when={props.app.updatedAt}>
-            {(nonNullUpdatedAt) => {
-              const { diff, localeString } = diffHuman(nonNullUpdatedAt().toDate())
+      <InfoContainer>
+        <DeployInfo>
+          <List.RowContent>
+            <List.RowTitle>起動時刻</List.RowTitle>
+            <Show when={props.app.updatedAt}>
+              {(nonNullUpdatedAt) => {
+                const { diff, localeString } = diffHuman(nonNullUpdatedAt().toDate())
 
-              return (
-                <ToolTip props={{ content: localeString }}>
-                  <List.RowData>{diff}</List.RowData>
-                </ToolTip>
-              )
-            }}
-          </Show>
-        </List.RowContent>
-      </DeployInfoContainer>
-      <DeployInfoContainer>
-        <List.RowContent>
-          <List.RowTitle>Deploy Type</List.RowTitle>
-          <List.RowData>{titleCase(DeployType[props.app.deployType])}</List.RowData>
-        </List.RowContent>
-        <JumpButton href={`/apps/${props.app.id}/settings/build`} />
-      </DeployInfoContainer>
-      <DeployInfoContainer long>
-        <List.RowContent>
-          <List.RowTitle>Source Commit</List.RowTitle>
-          <List.RowData>
-            {`${props.deployedBuild?.commit ? shortSha(props.deployedBuild?.commit) : '0000000'}`}
-            <Show when={props.deployedBuild && props.deployedBuild?.id === props.latestBuildId}>
-              <ToolTip props={{ content: '最新のビルドがデプロイされています' }}>
-                <Badge variant="success">Latest</Badge>
-              </ToolTip>
+                return (
+                  <ToolTip props={{ content: localeString }}>
+                    <List.RowData>{diff}</List.RowData>
+                  </ToolTip>
+                )
+              }}
             </Show>
-          </List.RowData>
-        </List.RowContent>
-        <Show when={props.deployedBuild}>
-          <JumpButton href={`/apps/${props.app.id}/builds/${props.deployedBuild?.id}`} />
+          </List.RowContent>
+        </DeployInfo>
+        <DeployInfo>
+          <List.RowContent>
+            <List.RowTitle>Deploy Type</List.RowTitle>
+            <List.RowData>{titleCase(DeployType[props.app.deployType])}</List.RowData>
+          </List.RowContent>
+          <JumpButton href={`/apps/${props.app.id}/settings/build`} />
+        </DeployInfo>
+        <DeployInfo long>
+          <List.RowContent>
+            <List.RowTitle>Source Commit</List.RowTitle>
+            <List.RowData>
+              {`${props.deployedBuild?.commit ? shortSha(props.deployedBuild?.commit) : '0000000'}`}
+              <Show when={props.deployedBuild && props.deployedBuild?.id === props.latestBuildId}>
+                <ToolTip props={{ content: '最新のビルドがデプロイされています' }}>
+                  <Badge variant="success">Latest</Badge>
+                </ToolTip>
+              </Show>
+            </List.RowData>
+          </List.RowContent>
+          <Show when={props.deployedBuild}>
+            <JumpButton href={`/apps/${props.app.id}/builds/${props.deployedBuild?.id}`} />
+          </Show>
+        </DeployInfo>
+        <DeployInfo long>
+          <List.RowContent>
+            <List.RowTitle>
+              Domains
+              <Badge variant="text">{props.app.websites.length}</Badge>
+            </List.RowTitle>
+            <For each={props.app.websites.map(getWebsiteURL)}>
+              {(url) => (
+                <List.RowData>
+                  <URLText text={url} href={url} />
+                </List.RowData>
+              )}
+            </For>
+          </List.RowContent>
+          <JumpButton href={`/apps/${props.app.id}/settings/domains`} />
+        </DeployInfo>
+        <Show when={props.app.containerMessage !== ''}>
+          <DeployInfo long>
+            <List.RowContent>
+              <List.RowTitle>Container Status</List.RowTitle>
+              <List.RowData>{props.app.containerMessage}</List.RowData>
+            </List.RowContent>
+          </DeployInfo>
         </Show>
-      </DeployInfoContainer>
-      <DeployInfoContainer long>
-        <List.RowContent>
-          <List.RowTitle>
-            Domains
-            <Badge variant="text">{props.app.websites.length}</Badge>
-          </List.RowTitle>
-          <For each={props.app.websites.map(getWebsiteURL)}>
-            {(url) => (
-              <List.RowData>
-                <URLText text={url} href={url} />
-              </List.RowData>
-            )}
-          </For>
-        </List.RowContent>
-        <JumpButton href={`/apps/${props.app.id}/settings/domains`} />
-      </DeployInfoContainer>
+      </InfoContainer>
     </DeploymentContainer>
   )
 }
