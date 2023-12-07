@@ -127,6 +127,7 @@ const AppsList: Component<{
   provider: Provider[]
   query: string
   sort: keyof typeof sortItems
+  includeNoApp: boolean
   parentRef: HTMLDivElement
 }> = (props) => {
   const appScope = () => {
@@ -156,7 +157,11 @@ const AppsList: Component<{
       if (!appsMap[app.repositoryId]) appsMap[app.repositoryId] = []
       appsMap[app.repositoryId].push(app)
     }
-    const res = filteredReposByProvider().map((repo): RepoWithApp => ({ repo, apps: appsMap[repo.id] || [] }))
+    const res = filteredReposByProvider().reduce<RepoWithApp[]>((acc, repo) => {
+      if (!props.includeNoApp && !appsMap[repo.id]) return acc
+      acc.push({ repo, apps: appsMap[repo.id] || [] })
+      return acc
+    }, [])
     res.sort(compareRepoWithApp(props.sort))
     return res
   })
@@ -242,6 +247,7 @@ export default () => {
   const [provider, setProvider] = createLocalSignal<Provider[]>('apps-provider', ['GitHub', 'GitLab', 'Gitea'])
   const [query, setQuery] = createLocalSignal('apps-query', '')
   const [sort, setSort] = createLocalSignal<keyof typeof sortItems>('apps-sort', sortItems.desc.value)
+  const [includeNoApp, setIncludeNoApp] = createLocalSignal('apps-include-no-app', true)
 
   const [scrollParentRef, setScrollParentRef] = createSignal<HTMLDivElement>()
 
@@ -282,6 +288,8 @@ export default () => {
                   setProvider={setProvider}
                   sort={sort()}
                   setSort={setSort}
+                  includeNoApp={includeNoApp()}
+                  setIncludeNoApp={setIncludeNoApp}
                 />
               }
             />
@@ -303,6 +311,7 @@ export default () => {
                 provider={provider()}
                 query={query()}
                 sort={sort()}
+                includeNoApp={includeNoApp()}
                 parentRef={scrollParentRef()!}
               />
             </SuspenseContainer>

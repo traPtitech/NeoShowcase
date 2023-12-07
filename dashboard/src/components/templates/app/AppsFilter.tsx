@@ -20,7 +20,13 @@ const contentHideKeyframes = keyframes({
 })
 const contentStyle = style({
   padding: '16px',
-  display: 'flex',
+  display: 'grid',
+  gridTemplateColumns: 'repeat(3, 1fr)',
+  gridTemplateRows: '1fr auto',
+  gridTemplateAreas: `
+    "status provider sort"
+    "status noapp noapp"
+  `,
   gap: '8px',
 
   background: colorVars.semantic.ui.primary,
@@ -152,8 +158,11 @@ const AppsFilter: Component<{
   setProvider: Setter<Provider[]>
   sort: keyof typeof sortItems
   setSort: Setter<keyof typeof sortItems>
+  includeNoApp: boolean
+  setIncludeNoApp: Setter<boolean>
 }> = (props) => {
-  const filtered = () => props.statuses.length !== allStatuses.length || props.provider.length !== allProviders.length
+  const filtered = () =>
+    props.statuses.length !== allStatuses.length || props.provider.length !== allProviders.length || !props.includeNoApp
 
   return (
     <DropdownMenu.Root>
@@ -170,7 +179,11 @@ const AppsFilter: Component<{
       </DropdownMenu.Trigger>
       <DropdownMenu.Portal>
         <DropdownMenu.Content class={contentStyle}>
-          <FilterItemContainer>
+          <FilterItemContainer
+            style={{
+              'grid-area': 'status',
+            }}
+          >
             Status
             <ItemsContainer>
               <For each={allStatuses}>
@@ -198,7 +211,11 @@ const AppsFilter: Component<{
               </For>
             </ItemsContainer>
           </FilterItemContainer>
-          <FilterItemContainer>
+          <FilterItemContainer
+            style={{
+              'grid-area': 'provider',
+            }}
+          >
             Provider
             <ItemsContainer>
               <For each={allProviders}>
@@ -227,7 +244,12 @@ const AppsFilter: Component<{
             </ItemsContainer>
           </FilterItemContainer>
           <RadioGroup.Root onChange={props.setSort} asChild>
-            <As component={FilterItemContainer}>
+            <As
+              component={FilterItemContainer}
+              style={{
+                'grid-area': 'sort',
+              }}
+            >
               <RadioGroup.Label>Sort</RadioGroup.Label>
               <ItemsContainer>
                 <For each={Object.values(sortItems)}>
@@ -247,6 +269,21 @@ const AppsFilter: Component<{
               </ItemsContainer>
             </As>
           </RadioGroup.Root>
+          <FilterItemContainer
+            style={{
+              'grid-area': 'noapp',
+            }}
+          >
+            <Checkbox.Root checked={props.includeNoApp} onChange={props.setIncludeNoApp}>
+              <Checkbox.Input />
+              <Checkbox.Label class={SelectItemStyle}>
+                <Checkbox.Indicator forceMount class={indicatorStyle}>
+                  <CheckBoxIcon checked={props.includeNoApp} />
+                </Checkbox.Indicator>
+                アプリを持たないリポジトリを表示
+              </Checkbox.Label>
+            </Checkbox.Root>
+          </FilterItemContainer>
         </DropdownMenu.Content>
       </DropdownMenu.Portal>
     </DropdownMenu.Root>
