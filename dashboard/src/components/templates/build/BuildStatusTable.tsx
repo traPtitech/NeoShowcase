@@ -5,7 +5,6 @@ import { Component, Show } from 'solid-js'
 import toast from 'solid-toast'
 import { Application, Build, BuildStatus, Repository } from '/@/api/neoshowcase/protobuf/gateway_pb'
 import { Button } from '/@/components/UI/Button'
-import JumpButton from '/@/components/UI/JumpButton'
 import { ToolTip } from '/@/components/UI/ToolTip'
 import { client, handleAPIError } from '/@/libs/api'
 import { buildStatusStr } from '/@/libs/application'
@@ -101,13 +100,6 @@ const BuildStatusTable: Component<{
           </Button>
         </Show>
       </BuildStatusRow>
-      <List.Row>
-        <List.RowContent>
-          <List.RowTitle>Repository</List.RowTitle>
-          <List.RowData>{props.repo.name}</List.RowData>
-        </List.RowContent>
-        <JumpButton href={`/repos/${props.repo.id}`} />
-      </List.Row>
       <List.Row>
         <List.RowContent>
           <List.RowTitle>Source Commit</List.RowTitle>
