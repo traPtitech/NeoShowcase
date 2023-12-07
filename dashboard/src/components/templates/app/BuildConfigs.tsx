@@ -157,7 +157,7 @@ const StaticConfigs = (props: StaticConfigProps) => {
       <Field of={props.formStore} name="config.staticConfig.spa" type="boolean">
         {(field, fieldProps) => (
           <RadioGroup
-            label="is SPA (Single Page Application)"
+            label="Is SPA (Single Page Application)"
             info={{
               props: {
                 content: (

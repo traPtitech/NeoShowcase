@@ -203,9 +203,7 @@ const SelectBuildType: Component<{
                     </RadioGroup.ItemIndicator>
                   </RadioGroup.ItemControl>
                 </ItemTitle>
-                <Description>
-                  ビルドが必要な場合はビルドを行い、静的ファイルを配信します。ビルドが必要無い場合も、こちらを選びます。
-                </Description>
+                <Description>静的ファイルを配信します。ビルドが必要な場合もこちらを選びます。</Description>
               </RadioGroup.ItemLabel>
             </RadioGroup.Item>
           </ItemsContainer>
