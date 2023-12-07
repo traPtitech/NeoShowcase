@@ -275,6 +275,27 @@ interface DockerConfigProps {
 const DockerConfigs = (props: DockerConfigProps) => {
   return (
     <>
+      <Field of={props.formStore} name="config.dockerfileConfig.context">
+        {(field, fieldProps) => (
+          <TextField
+            label="Context"
+            info={{
+              props: {
+                content: (
+                  <>
+                    <div>ビルドContext</div>
+                    <div>(リポジトリルートからの相対パス)</div>
+                  </>
+                ),
+              },
+            }}
+            value={field.value ?? ''}
+            error={field.error}
+            readOnly={!props.hasPermission}
+            {...fieldProps}
+          />
+        )}
+      </Field>
       <Field
         of={props.formStore}
         name="config.dockerfileConfig.dockerfileName"
@@ -290,27 +311,6 @@ const DockerConfigs = (props: DockerConfigProps) => {
                   <>
                     <div>Dockerfileへのパス</div>
                     <div>(Contextからの相対パス)</div>
-                  </>
-                ),
-              },
-            }}
-            value={field.value ?? ''}
-            error={field.error}
-            readOnly={!props.hasPermission}
-            {...fieldProps}
-          />
-        )}
-      </Field>
-      <Field of={props.formStore} name="config.dockerfileConfig.context">
-        {(field, fieldProps) => (
-          <TextField
-            label="Context"
-            info={{
-              props: {
-                content: (
-                  <>
-                    <div>ビルドContext</div>
-                    <div>(リポジトリルートからの相対パス)</div>
                   </>
                 ),
               },
