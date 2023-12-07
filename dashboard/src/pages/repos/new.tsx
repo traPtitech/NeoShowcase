@@ -81,11 +81,18 @@ export default () => {
   // URLからリポジトリ名, 認証方法を自動入力
   createEffect(() => {
     const url = getValue(config, 'url')
-    if (url === undefined) return
+    if (url === undefined || url === '') return
+
+    // リポジトリ名を自動入力
     const repositoryName = extractRepositoryNameFromURL(url)
     setValue(config, 'name', repositoryName)
 
-    !url.startsWith('http') ? setValue(config, 'case', 'ssh') : setValue(config, 'case', 'none')
+    // 認証方法を自動入力
+    const isHTTPFormat = url.startsWith('http://') || url.startsWith('https://')
+    if (!isHTTPFormat) {
+      // Assume SSH or Git Protocol format
+      setValue(config, 'case', 'ssh')
+    }
   })
 
   const AuthSetting = RepositoryAuthSettings({
