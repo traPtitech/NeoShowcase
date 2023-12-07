@@ -211,7 +211,9 @@ export const RepositoryAuthSettings = (props: Props) => {
                 <Suspense>
                   <SshKeyContainer>
                     以下のSSH公開鍵{useTmpKey() ? '(このリポジトリ専用)' : '(NeoShowcase全体共通)'}
-                    を、リポジトリのデプロイキーとして登録してください
+                    を、リポジトリのデプロイキーとして登録してください。
+                    <br />
+                    公開リポジトリの場合は、この操作は不要です。
                     <TextField value={publicKey()} copyable={true} readonly />
                     <Show when={!useTmpKey()}>
                       <RefreshButtonContainer>
