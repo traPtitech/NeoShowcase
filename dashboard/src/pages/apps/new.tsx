@@ -35,7 +35,6 @@ import { CheckBox } from '/@/components/templates/CheckBox'
 import { FormItem } from '/@/components/templates/FormItem'
 import { List } from '/@/components/templates/List'
 import { Nav } from '/@/components/templates/Nav'
-
 import { AppGeneralConfig, AppGeneralForm } from '/@/components/templates/app/AppGeneralConfig'
 import { BuildConfigForm, BuildConfigs, configToForm, formToConfig } from '/@/components/templates/app/BuildConfigs'
 import { WebsiteSetting, newWebsite } from '/@/components/templates/app/WebsiteSettings'
@@ -627,17 +626,17 @@ export default () => {
               <For
                 each={[
                   {
-                    title: 'Repository',
+                    title: '1. Repository',
                     description: 'リポジトリの選択',
                     step: formStep.repository,
                   },
                   {
-                    title: 'Build Settings',
+                    title: '2. Build Settings',
                     description: 'ビルド設定',
                     step: formStep.general,
                   },
                   {
-                    title: 'Domains',
+                    title: '3. Domains',
                     description: 'アクセスURLの設定',
                     step: formStep.website,
                   },

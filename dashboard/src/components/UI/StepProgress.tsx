@@ -1,7 +1,6 @@
 import { styled } from '@macaron-css/solid'
 import { Component } from 'solid-js'
 import { colorVars, textVars } from '/@/theme'
-import { MaterialSymbols } from './MaterialSymbols'
 
 const Steps = styled('div', {
   base: {
@@ -86,12 +85,7 @@ const StepProgress: Component<{
     <Container>
       <Bar state={props.state} />
       <Content state={props.state}>
-        <Title>
-          {props.title}
-          <MaterialSymbols>
-            {props.state === 'complete' ? 'check_circle' : props.state === 'current' ? 'adjust' : 'circle'}
-          </MaterialSymbols>
-        </Title>
+        <Title>{props.title}</Title>
         <Description>{props.description}</Description>
       </Content>
     </Container>
