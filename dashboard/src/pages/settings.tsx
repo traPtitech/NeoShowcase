@@ -115,7 +115,10 @@ const SshKeyRow: Component<{ key: UserKey; refetchKeys: () => void }> = (props) 
         <SshKeyRowContent>
           <SshKeyName>{props.key.name === '' ? '(Name not set)' : props.key.name}</SshKeyName>
           <SshKeyRowValue>{props.key.publicKey}</SshKeyRowValue>
-          <Show when={props.key.createdAt}>
+          <Show
+            when={props.key.createdAt && props.key.createdAt?.seconds !== 0n}
+            fallback={<SshKeyAddedAt>Added on ----</SshKeyAddedAt>}
+          >
             <SshKeyAddedAt>Added on {dateHuman(props.key.createdAt!)}</SshKeyAddedAt>
           </Show>
         </SshKeyRowContent>
@@ -130,7 +133,10 @@ const SshKeyRow: Component<{ key: UserKey; refetchKeys: () => void }> = (props) 
             <SshDeleteConfirm>
               <SshKeyName>{props.key.name === '' ? '(Name not set)' : props.key.name}</SshKeyName>
               {props.key.publicKey}
-              <Show when={props.key.createdAt}>
+              <Show
+                when={props.key.createdAt && props.key.createdAt?.seconds !== 0n}
+                fallback={<SshKeyAddedAt>Added on ----</SshKeyAddedAt>}
+              >
                 <SshKeyAddedAt>Added on {dateHuman(props.key.createdAt!)}</SshKeyAddedAt>
               </Show>
             </SshDeleteConfirm>
