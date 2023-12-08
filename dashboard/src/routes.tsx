@@ -17,12 +17,16 @@ const RepositoryData: RouteDataFunc<
     () => params.id,
     (id) => client.getRepository({ repositoryId: id }),
   )
-  const [apps] = createResource(repo, async (repo) => {
-    const allAppsRes = await client.getApplications({
-      scope: GetApplicationsRequest_Scope.ALL,
-    })
-    return allAppsRes.applications.filter((app) => app.repositoryId === repo.id)
-  })
+  const [apps] = createResource(
+    () => params.id,
+    (id) =>
+      client
+        .getApplications({
+          scope: GetApplicationsRequest_Scope.REPOSITORY,
+          repositoryId: id,
+        })
+        .then((r) => r.applications),
+  )
   const hasPermission = createMemo(
     () => (user()?.admin || (user.latest !== undefined && repo()?.ownerIds.includes(user().id))) ?? false,
   )
