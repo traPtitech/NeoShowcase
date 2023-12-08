@@ -218,7 +218,7 @@ const AppsList: Component<{
           }
         >
           {(vRow) => (
-            <div ref={vRow?.measureElement}>
+            <div ref={virtualizer().measureElement}>
               <div style={{ 'padding-bottom': '16px' }}>
                 <RepositoryList repository={filteredRepos()[vRow.index].repo} apps={filteredRepos()[vRow.index].apps} />
               </div>
