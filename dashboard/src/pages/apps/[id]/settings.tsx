@@ -1,5 +1,5 @@
 import { styled } from '@macaron-css/solid'
-import { Outlet, useMatch, useNavigate } from '@solidjs/router'
+import { RouteSectionProps, useMatch, useNavigate } from '@solidjs/router'
 import { ErrorBoundary, Show, Suspense, useTransition } from 'solid-js'
 import { Button } from '/@/components/UI/Button'
 import { MaterialSymbols } from '/@/components/UI/MaterialSymbols'
@@ -20,7 +20,7 @@ const SideMenu = styled('div', {
   },
 })
 
-export default () => {
+export default (props: RouteSectionProps) => {
   const { app } = useApplicationData()
   const loaded = () => !!app()
   const matchGeneralPage = useMatch(() => `/apps/${app()?.id}/settings/`)
@@ -118,9 +118,7 @@ export default () => {
             <SideView.Main>
               <ErrorBoundary fallback={(props) => <ErrorView {...props} />}>
                 <Suspense fallback={<SettingSkeleton />}>
-                  <SuspenseContainer isPending={isPending()}>
-                    <Outlet />
-                  </SuspenseContainer>
+                  <SuspenseContainer isPending={isPending()}>{props.children}</SuspenseContainer>
                 </Suspense>
               </ErrorBoundary>
             </SideView.Main>

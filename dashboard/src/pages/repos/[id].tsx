@@ -1,5 +1,5 @@
 import { Title } from '@solidjs/meta'
-import { Outlet, useMatch, useNavigate } from '@solidjs/router'
+import { RouteSectionProps, useMatch, useNavigate } from '@solidjs/router'
 import { ErrorBoundary, Show, Suspense, startTransition } from 'solid-js'
 import { MaterialSymbols } from '/@/components/UI/MaterialSymbols'
 import { TabRound } from '/@/components/UI/TabRound'
@@ -8,7 +8,7 @@ import { WithNav } from '/@/components/layouts/WithNav'
 import { RepositoryNav } from '/@/components/templates/repo/RepositoryNav'
 import { useRepositoryData } from '/@/routes'
 
-export default () => {
+export default (props: RouteSectionProps) => {
   const { repo } = useRepositoryData()
 
   const matchIndexPage = useMatch(() => `/repos/${repo()?.id}/`)
@@ -39,9 +39,7 @@ export default () => {
         </WithNav.Navs>
         <WithNav.Body>
           <ErrorBoundary fallback={(props) => <ErrorView {...props} />}>
-            <Suspense>
-              <Outlet />
-            </Suspense>
+            <Suspense>{props.children}</Suspense>
           </ErrorBoundary>
         </WithNav.Body>
       </WithNav.Container>

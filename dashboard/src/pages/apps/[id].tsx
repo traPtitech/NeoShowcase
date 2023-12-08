@@ -1,5 +1,5 @@
 import { Title } from '@solidjs/meta'
-import { Outlet, useMatch, useNavigate } from '@solidjs/router'
+import { RouteSectionProps, useMatch, useNavigate } from '@solidjs/router'
 import { ErrorBoundary, Show, startTransition } from 'solid-js'
 import { MaterialSymbols } from '/@/components/UI/MaterialSymbols'
 import { TabRound } from '/@/components/UI/TabRound'
@@ -8,7 +8,7 @@ import { WithNav } from '/@/components/layouts/WithNav'
 import { AppNav } from '/@/components/templates/app/AppNav'
 import { useApplicationData } from '/@/routes'
 
-export default () => {
+export default (props: RouteSectionProps) => {
   const { app, repo } = useApplicationData()
   const loaded = () => !!(app() && repo())
 
@@ -48,9 +48,7 @@ export default () => {
         </WithNav.Navs>
       </Show>
       <WithNav.Body>
-        <ErrorBoundary fallback={(props) => <ErrorView {...props} />}>
-          <Outlet />
-        </ErrorBoundary>
+        <ErrorBoundary fallback={(props) => <ErrorView {...props} />}>{props.children}</ErrorBoundary>
       </WithNav.Body>
     </WithNav.Container>
   )

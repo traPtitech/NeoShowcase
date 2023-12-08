@@ -1,12 +1,12 @@
 import { MetaProvider, Title } from '@solidjs/meta'
-import { Router } from '@solidjs/router'
+import { RouteSectionProps } from '@solidjs/router'
 import { type Component, ErrorBoundary } from 'solid-js'
 import { Toaster } from 'solid-toast'
-import Routes from '/@/routes'
+import { Routes } from '/@/routes'
 import ErrorView from './components/layouts/ErrorView'
 import { WithHeader } from './components/layouts/WithHeader'
 
-const App: Component = () => {
+const Root: Component<RouteSectionProps> = (props) => {
   return (
     <MetaProvider>
       <Title>NeoShowcase</Title>
@@ -16,15 +16,13 @@ const App: Component = () => {
           position: 'bottom-left',
         }}
       />
-      <Router>
-        <WithHeader>
-          <ErrorBoundary fallback={(props) => <ErrorView {...props} />}>
-            <Routes />
-          </ErrorBoundary>
-        </WithHeader>
-      </Router>
+      <WithHeader>
+        <ErrorBoundary fallback={(props) => <ErrorView {...props} />}>{props.children}</ErrorBoundary>
+      </WithHeader>
     </MetaProvider>
   )
 }
+
+const App = () => <Routes root={Root} />
 
 export default App
