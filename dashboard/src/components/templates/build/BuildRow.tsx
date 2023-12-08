@@ -88,7 +88,9 @@ export const BuildRow: Component<Props> = (props) => {
           <BuildStatusIcon state={props.build.status} />
           <BuildName>Build at {shortSha(props.build.commit)}</BuildName>
           <Show when={props.isCurrent}>
-            <Badge variant="success">Current</Badge>
+            <ToolTip props={{ content: 'このビルドがデプロイされています' }}>
+              <Badge variant="success">Current</Badge>
+            </ToolTip>
           </Show>
           <Spacer />
         </TitleContainer>
