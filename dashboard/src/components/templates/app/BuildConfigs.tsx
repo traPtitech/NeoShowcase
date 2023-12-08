@@ -21,6 +21,7 @@ interface RuntimeConfigProps {
 
 const RuntimeConfigs: Component<RuntimeConfigProps> = (props) => {
   const [useDB, setUseDB] = createSignal(false)
+  const buildType = () => getValue(props.formStore, 'case')
 
   createEffect(() => {
     if (
@@ -30,6 +31,43 @@ const RuntimeConfigs: Component<RuntimeConfigProps> = (props) => {
       setUseDB(true)
     }
   })
+
+  const containerOverrideConfig = (
+    <>
+      <Field of={props.formStore} name="config.runtimeConfig.entrypoint">
+        {(field, fieldProps) => (
+          <TextField
+            label="Entrypoint"
+            info={{
+              props: {
+                content: 'コンテナのEntrypoint',
+              },
+            }}
+            {...fieldProps}
+            value={field.value ?? ''}
+            error={field.error}
+            readOnly={!props.hasPermission}
+          />
+        )}
+      </Field>
+      <Field of={props.formStore} name="config.runtimeConfig.command">
+        {(field, fieldProps) => (
+          <TextField
+            label="Command"
+            info={{
+              props: {
+                content: 'コンテナのCommand',
+              },
+            }}
+            {...fieldProps}
+            value={field.value ?? ''}
+            error={field.error}
+            readOnly={!props.hasPermission}
+          />
+        )}
+      </Field>
+    </>
+  )
 
   return (
     <>
@@ -97,39 +135,9 @@ const RuntimeConfigs: Component<RuntimeConfigProps> = (props) => {
           </ToolTip>
         </FormItem>
       </Show>
+      <Show when={buildType() === 'runtimeCmd'}>{containerOverrideConfig}</Show>
       <FormItem title="高度な設定">
-        <Field of={props.formStore} name="config.runtimeConfig.entrypoint">
-          {(field, fieldProps) => (
-            <TextField
-              label="Entrypoint"
-              info={{
-                props: {
-                  content: '(Advanced) コンテナのEntrypoint',
-                },
-              }}
-              {...fieldProps}
-              value={field.value ?? ''}
-              error={field.error}
-              readOnly={!props.hasPermission}
-            />
-          )}
-        </Field>
-        <Field of={props.formStore} name="config.runtimeConfig.command">
-          {(field, fieldProps) => (
-            <TextField
-              label="Command"
-              info={{
-                props: {
-                  content: '(Advanced) コンテナのCommand',
-                },
-              }}
-              {...fieldProps}
-              value={field.value ?? ''}
-              error={field.error}
-              readOnly={!props.hasPermission}
-            />
-          )}
-        </Field>
+        <Show when={buildType() !== 'runtimeCmd'}>{containerOverrideConfig}</Show>
       </FormItem>
     </>
   )

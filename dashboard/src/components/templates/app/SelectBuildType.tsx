@@ -203,7 +203,7 @@ const SelectBuildType: Component<{
                     </RadioGroup.ItemIndicator>
                   </RadioGroup.ItemControl>
                 </ItemTitle>
-                <Description>静的ファイルを配信します。ビルドが必要な場合もこちらを選びます。</Description>
+                <Description>静的ファイルを配信します。ビルド（任意）を実行できます。</Description>
               </RadioGroup.ItemLabel>
             </RadioGroup.Item>
           </ItemsContainer>
@@ -246,11 +246,7 @@ const SelectBuildType: Component<{
                       </RadioGroup.ItemIndicator>
                     </RadioGroup.ItemControl>
                   </ItemTitle>
-                  <Description>
-                    {runType() === 'runtime'
-                      ? 'ベースDockerイメージと、ビルドコマンドを手動で設定します。'
-                      : 'ビルド時のベースDockerイメージと、ビルドコマンドを手動で設定します。ビルドが必要無い場合は、こちらを選びます。'}
-                  </Description>
+                  <Description>ベースイメージとビルドコマンド（任意）を設定します。</Description>
                 </RadioGroup.ItemLabel>
               </RadioGroup.Item>
               <RadioGroup.Item class={itemStyle} value="dockerfile">
