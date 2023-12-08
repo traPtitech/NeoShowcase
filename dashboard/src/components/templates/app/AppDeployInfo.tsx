@@ -238,7 +238,7 @@ const AppDeployInfo: Component<{
               )}
             </For>
           </List.RowContent>
-          <JumpButton href={`/apps/${props.app.id}/settings/domains`} />
+          <JumpButton href={`/apps/${props.app.id}/settings/urls`} />
         </DeployInfo>
         <Show when={props.app.containerMessage !== ''}>
           <DeployInfo long>
