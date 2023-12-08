@@ -241,7 +241,7 @@ export default () => {
   }
 
   const [statuses, setStatuses] = createLocalSignal(
-    'apps-statuses',
+    'apps-statuses-v1',
     allStatuses.map((s) => s.value),
   )
   const [provider, setProvider] = createLocalSignal<Provider[]>('apps-provider', ['GitHub', 'GitLab', 'Gitea'])
