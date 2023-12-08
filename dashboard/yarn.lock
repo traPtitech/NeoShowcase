@@ -819,7 +819,7 @@
     "@jridgewell/resolve-uri" "^3.1.0"
     "@jridgewell/sourcemap-codec" "^1.4.14"
 
-"@kobalte/core@^0.11.2":
+"@kobalte/core@0.11.2":
   version "0.11.2"
   resolved "https://registry.yarnpkg.com/@kobalte/core/-/core-0.11.2.tgz#679644e69def6ebad247017fdeed18d6d60c3a71"
   integrity sha512-B19TvpmR0E8n7LJqopF0lbMayBErnWJ5MlTTnrgVAFU1up/2Bo1O6ldTK1c5NikmpppzIK2A8ovUwIhRqw/3Uw==
@@ -894,7 +894,7 @@
     "@vanilla-extract/integration" "^6.0.0"
     "@vanilla-extract/vite-plugin" "^3.1.6"
 
-"@modular-forms/solid@^0.20.0":
+"@modular-forms/solid@0.20.0":
   version "0.20.0"
   resolved "https://registry.yarnpkg.com/@modular-forms/solid/-/solid-0.20.0.tgz#7fce5fd983f25be89f4d33906487612adaa6b43c"
   integrity sha512-CyXoeo2cwNel2N753c+iDzA+4DgtBrLNAS87DY/aODFZG7QoY0A9YSxdUxRf0N5NDwkzmn1O0XqwMP+EAiOHbA==
@@ -1054,7 +1054,7 @@
   resolved "https://registry.yarnpkg.com/@solid-primitives/utils/-/utils-6.2.1.tgz#320fb2180743031622b40fc43b0e63bf55686cfb"
   integrity sha512-TsecNzxiO5bLfzqb4OOuzfUmdOROcssuGqgh5rXMMaasoFZ3GoveUgdY1wcf17frMJM7kCNGNuK34EjErneZkg==
 
-"@solidjs/meta@^0.29.1":
+"@solidjs/meta@0.29.1":
   version "0.29.1"
   resolved "https://registry.yarnpkg.com/@solidjs/meta/-/meta-0.29.1.tgz#5218d9f5230cf6dc9422d3c23d3206196a8d9279"
   integrity sha512-qtrBYCnRRuzyvBg/u/SRO/2fM5r6DT1YKf+2W1RZhveMoeXHbZpWIrXjgpLFRHJLn6cqAGqrIzu42qS2o+1hKQ==
@@ -1071,7 +1071,7 @@
   dependencies:
     tslib "^2.4.0"
 
-"@tanstack/solid-virtual@^3.0.1":
+"@tanstack/solid-virtual@3.0.1":
   version "3.0.1"
   resolved "https://registry.yarnpkg.com/@tanstack/solid-virtual/-/solid-virtual-3.0.1.tgz#eb2b4ddb4c171cf9672e5dc9a695e21cc0747da9"
   integrity sha512-DxP3GUBEDUNdCH50Q2RgRkaol3bAGpkMcJAdUIPWywEL37TkH/MC748nees0EXRylrC7RMP0zVNN3Z94WFBULA==
@@ -1083,7 +1083,7 @@
   resolved "https://registry.yarnpkg.com/@tanstack/virtual-core/-/virtual-core-3.0.0.tgz#637bee36f0cabf96a1d436887c90f138a7e9378b"
   integrity sha512-SYXOBTjJb05rXa2vl55TTwO40A6wKu0R5i1qQwhJYNDIqaIGF7D0HsLw+pJAyi2OvntlEIVusx3xtbbgSUi6zg==
 
-"@tanstack/virtual-core@^3.0.1":
+"@tanstack/virtual-core@3.0.1":
   version "3.0.1"
   resolved "https://registry.yarnpkg.com/@tanstack/virtual-core/-/virtual-core-3.0.1.tgz#85762609b0b2a5e5600b74558b68f05d36b0633c"
   integrity sha512-By6TTR3u6rmAWRD7STXqI8WP9q1jYrqVCz88lNTgOf/cUm5cNF6Uj7dej/1+LUj42KMwFusyxGS908HlGBhE2Q==
@@ -2141,7 +2141,7 @@ reusify@^1.0.4:
   resolved "https://registry.yarnpkg.com/reusify/-/reusify-1.0.4.tgz#90da382b1e126efc02146e90845a88db12925d76"
   integrity sha512-U9nH88a3fc/ekCF1l0/UP1IosiuIjyTh7hBvXVMHYgVcfGvt897Xguj2UOLDeI5BG2m7/uwyaLVT6fbtCwTyzw==
 
-rollup-plugin-visualizer@^5.9.3:
+rollup-plugin-visualizer@5.9.3:
   version "5.9.3"
   resolved "https://registry.yarnpkg.com/rollup-plugin-visualizer/-/rollup-plugin-visualizer-5.9.3.tgz#167c55f44c3026607951e62d4231847acb5f00c1"
   integrity sha512-ieGM5UAbMVqThX67GCuFHu/GkaSXIUZwFKJsSzE+7+k9fibU/6gbUz7SL+9BBzNtv5bIFHj7kEu0TWcqEnT/sQ==
@@ -2343,7 +2343,7 @@ universalify@^2.0.0:
   resolved "https://registry.yarnpkg.com/universalify/-/universalify-2.0.1.tgz#168efc2180964e6386d061e094df61afe239b18d"
   integrity sha512-gptHNQghINnc/vTGIk0SOFGFNXw7JVrlRUtConJRlvaw6DuX0wO5Jeko9sWrMBhh+PsYAZ7oXAiOnf/UKogyiw==
 
-unplugin-fonts@^1.0.3:
+unplugin-fonts@1.1.1:
   version "1.1.1"
   resolved "https://registry.yarnpkg.com/unplugin-fonts/-/unplugin-fonts-1.1.1.tgz#cd6600d2a048d8237a010b53c9c4dfb1ea73d80f"
   integrity sha512-/Aw/rL9D2aslGGM0vi+2R2aG508RSwawLnnBuo+JDSqYc4cHJO1R1phllhN6GysEhBp/6a4B6+vSFPVapWyAAw==
