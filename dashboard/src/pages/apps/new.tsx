@@ -433,7 +433,7 @@ const WebsiteStep: Component<{
             fallback={
               <List.PlaceHolder>
                 <MaterialSymbols displaySize={80}>link_off</MaterialSymbols>
-                No Websites Configured
+                URLが設定されていません
                 <Button
                   variants="primary"
                   size="medium"
@@ -441,7 +441,7 @@ const WebsiteStep: Component<{
                   onClick={addWebsiteForm}
                   type="button"
                 >
-                  Add Website
+                  Add URL
                 </Button>
               </List.PlaceHolder>
             }
@@ -636,7 +636,7 @@ export default () => {
                     step: formStep.general,
                   },
                   {
-                    title: '3. Domains',
+                    title: '3. URLs',
                     description: 'アクセスURLの設定',
                     step: formStep.website,
                   },

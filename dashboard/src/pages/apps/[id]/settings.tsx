@@ -25,7 +25,7 @@ export default () => {
   const loaded = () => !!app()
   const matchGeneralPage = useMatch(() => `/apps/${app()?.id}/settings/`)
   const matchBuildPage = useMatch(() => `/apps/${app()?.id}/settings/build`)
-  const matchDomainsPage = useMatch(() => `/apps/${app()?.id}/settings/domains`)
+  const matchURLsPage = useMatch(() => `/apps/${app()?.id}/settings/urls`)
   const matchPortPage = useMatch(() => `/apps/${app()?.id}/settings/portForwarding`)
   const matchEnvVarsPage = useMatch(() => `/apps/${app()?.id}/settings/envVars`)
   const matchOwnerPage = useMatch(() => `/apps/${app()?.id}/settings/owner`)
@@ -69,13 +69,13 @@ export default () => {
                   variants="text"
                   size="medium"
                   full
-                  active={!!matchDomainsPage()}
+                  active={!!matchURLsPage()}
                   onclick={() => {
-                    navigate(`/apps/${app()?.id}/settings/domains`)
+                    navigate(`/apps/${app()?.id}/settings/urls`)
                   }}
                   leftIcon={<MaterialSymbols>language</MaterialSymbols>}
                 >
-                  Domain
+                  URLs
                 </Button>
                 <Button
                   variants="text"

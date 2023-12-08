@@ -96,7 +96,7 @@ export default () => {
 
   return (
     <DataTable.Container>
-      <DataTable.Title>Domains</DataTable.Title>
+      <DataTable.Title>URLs</DataTable.Title>
       <Show when={websiteForms()}>
         {(nonNullForms) => (
           <WebsiteSettings

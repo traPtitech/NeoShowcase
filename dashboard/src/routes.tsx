@@ -141,8 +141,8 @@ export default useRoutes([
             component: lazy(() => import('/@/pages/apps/[id]/settings/build')),
           },
           {
-            path: '/domains',
-            component: lazy(() => import('/@/pages/apps/[id]/settings/domains')),
+            path: '/urls',
+            component: lazy(() => import('/@/pages/apps/[id]/settings/urls')),
           },
           {
             path: '/portForwarding',

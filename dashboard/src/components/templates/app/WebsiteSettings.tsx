@@ -524,7 +524,7 @@ export const WebsiteSettings = (props: WebsiteSettingsProps) => {
           <List.Container>
             <List.PlaceHolder>
               <MaterialSymbols displaySize={80}>link_off</MaterialSymbols>
-              No Websites Configured
+              URLが設定されていません
               <Show when={props.hasPermission}>
                 <Button
                   variants="primary"
@@ -533,7 +533,7 @@ export const WebsiteSettings = (props: WebsiteSettingsProps) => {
                   onClick={props.addWebsite}
                   type="button"
                 >
-                  Add Website
+                  Add URL
                 </Button>
               </Show>
             </List.PlaceHolder>
