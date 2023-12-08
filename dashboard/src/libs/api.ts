@@ -1,8 +1,8 @@
-import { APIService } from '/@/api/neoshowcase/protobuf/gateway_connect'
 import { createPromiseClient } from '@connectrpc/connect'
 import { createConnectTransport } from '@connectrpc/connect-web'
 import { createResource } from 'solid-js'
 import toast from 'solid-toast'
+import { APIService } from '/@/api/neoshowcase/protobuf/gateway_connect'
 
 const transport = createConnectTransport({
   baseUrl: '',
@@ -13,8 +13,8 @@ export const [user] = createResource(() => client.getMe({}))
 export const [systemInfo] = createResource(() => client.getSystemInfo({}))
 export const [availableMetrics] = createResource(() => client.getAvailableMetrics({}))
 
-export const handleAPIError = (e, message: string) => {
-  if (e.message) {
+export const handleAPIError = (e: unknown, message: string) => {
+  if (e instanceof Error) {
     //' e instanceof ConnectError' does not work for some reason
     toast.error(`${message}\n${e.message}`)
   } else {

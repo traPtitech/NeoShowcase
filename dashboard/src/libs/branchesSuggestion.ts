@@ -1,6 +1,6 @@
-import { client } from '/@/libs/api'
 import Fuse from 'fuse.js'
 import { createMemo, createResource } from 'solid-js'
+import { client } from '/@/libs/api'
 
 export const useBranchesSuggestion = (repoID: () => string, current: () => string): (() => string[]) => {
   const [refs] = createResource(
@@ -9,25 +9,24 @@ export const useBranchesSuggestion = (repoID: () => string, current: () => strin
   )
 
   const branches = createMemo(() => {
-    if (!refs()) return
-    const branches = refs()
-      .refs.map((r) => r.refName)
-      .filter((b) => !b.startsWith('refs/'))
-    const normal = branches.filter((b) => !b.includes('/'))
-    const long = branches.filter((b) => b.includes('/'))
-    return [normal, long]
+    if (refs.state === 'ready') {
+      const branches = refs()
+        .refs.map((r) => r.refName)
+        .filter((b) => !b.startsWith('refs/'))
+      const normal = branches?.filter((b) => !b.includes('/'))
+      const long = branches?.filter((b) => b.includes('/'))
+      return [normal, long]
+    } else {
+      return [[], []]
+    }
   })
   const branchesFuse = createMemo(() => {
-    if (!branches()) return
     const [normal, long] = branches()
     return [new Fuse(normal), new Fuse(long)]
   })
 
   return createMemo(() => {
     const query = current()
-
-    if (!branchesFuse()) return
-
     if (!query) return branches()[0].concat(branches()[1])
 
     const p0 = branchesFuse()[0]
@@ -37,5 +36,20 @@ export const useBranchesSuggestion = (repoID: () => string, current: () => strin
       .search(query)
       .map((r) => r.item)
     return p0.concat(p1)
+  })
+}
+
+export const useBranches = (repoID: () => string): (() => string[]) => {
+  const [refs] = createResource(
+    () => repoID(),
+    (id) => client.getRepositoryRefs({ repositoryId: id }),
+  )
+
+  return createMemo(() => {
+    return (
+      refs()
+        ?.refs.map((r) => r.refName)
+        .filter((b) => !b.startsWith('refs/')) ?? []
+    )
   })
 }

@@ -1,5 +1,109 @@
-import { Navigate, useRoutes } from '@solidjs/router'
-import { lazy } from 'solid-js'
+import { Navigate, RouteDataFunc, useRouteData, useRoutes } from '@solidjs/router'
+import { Resource, createMemo, createResource, lazy } from 'solid-js'
+import { Application, Build, GetApplicationsRequest_Scope, Repository } from './api/neoshowcase/protobuf/gateway_pb'
+import ErrorView from './components/layouts/ErrorView'
+import { client, user } from './libs/api'
+
+const RepositoryData: RouteDataFunc<
+  unknown,
+  {
+    repo: Resource<Repository>
+    refetchRepo: () => void
+    apps: Resource<Application[]>
+    hasPermission: () => boolean
+  }
+> = ({ params }) => {
+  const [repo, { refetch: refetchRepo }] = createResource(
+    () => params.id,
+    (id) => client.getRepository({ repositoryId: id }),
+  )
+  const [apps] = createResource(
+    () => params.id,
+    (id) =>
+      client
+        .getApplications({
+          scope: GetApplicationsRequest_Scope.REPOSITORY,
+          repositoryId: id,
+        })
+        .then((r) => r.applications),
+  )
+  const hasPermission = createMemo(
+    () => (user()?.admin || (user.latest !== undefined && repo()?.ownerIds.includes(user().id))) ?? false,
+  )
+  return {
+    repo,
+    refetchRepo,
+    apps,
+    hasPermission,
+  }
+}
+export const useRepositoryData = () => useRouteData<ReturnType<typeof RepositoryData>>()
+
+const ApplicationData: RouteDataFunc<
+  unknown,
+  {
+    app: Resource<Application>
+    refetchApp: () => Promise<void>
+    repo: Resource<Repository>
+    hasPermission: () => boolean
+  }
+> = ({ params }) => {
+  const [app, { refetch: refetchApp }] = createResource(
+    () => params.id,
+    (id) => client.getApplication({ id }),
+  )
+  const [repo] = createResource(
+    () => app()?.repositoryId,
+    (id) => client.getRepository({ repositoryId: id }),
+  )
+  const hasPermission = createMemo(
+    () => (user()?.admin || (user.latest !== undefined && app()?.ownerIds.includes(user().id))) ?? false,
+  )
+  return {
+    app,
+    refetchApp: async () => {
+      await refetchApp()
+    },
+    repo,
+    hasPermission,
+  }
+}
+export const useApplicationData = () => useRouteData<ReturnType<typeof ApplicationData>>()
+
+const BuildData: RouteDataFunc<
+  unknown,
+  {
+    app: Resource<Application>
+    refetchApp: () => Promise<void>
+    build: Resource<Build>
+    refetchBuild: () => Promise<void>
+    hasPermission: () => boolean
+  }
+> = ({ params }) => {
+  const [app, { refetch: refetchApp }] = createResource(
+    () => params.id,
+    (id) => client.getApplication({ id }),
+  )
+  const [build, { refetch: refetchBuild }] = createResource(
+    () => params.buildID,
+    (buildId) => client.getBuild({ buildId }),
+  )
+  const hasPermission = createMemo(
+    () => (user()?.admin || (user.latest !== undefined && app()?.ownerIds.includes(user().id))) ?? false,
+  )
+  return {
+    app,
+    refetchApp: async () => {
+      await refetchApp()
+    },
+    build,
+    refetchBuild: async () => {
+      await refetchBuild()
+    },
+    hasPermission,
+  }
+}
+export const useBuildData = () => useRouteData<ReturnType<typeof BuildData>>()
 
 export default useRoutes([
   {
@@ -13,34 +117,85 @@ export default useRoutes([
   {
     path: '/apps/:id',
     component: lazy(() => import('/@/pages/apps/[id]')),
-  },
-  {
-    path: '/apps/:id/builds',
-    component: lazy(() => import('/@/pages/apps/[id]/builds')),
-  },
-  {
-    path: '/apps/:id/builds/:buildID',
-    component: lazy(() => import('/@/pages/apps/[id]/builds/[id]')),
-  },
-  {
-    path: '/apps/:id/settings',
-    component: lazy(() => import('/@/pages/apps/[id]/settings')),
+    data: ApplicationData,
+    children: [
+      {
+        path: '/',
+        component: lazy(() => import('/@/pages/apps/[id]/index')),
+      },
+      {
+        path: '/builds',
+        component: lazy(() => import('/@/pages/apps/[id]/builds')),
+      },
+      {
+        path: '/builds/:buildID',
+        component: lazy(() => import('/@/pages/apps/[id]/builds/[id]')),
+        data: BuildData,
+      },
+      {
+        path: '/settings',
+        component: lazy(() => import('/@/pages/apps/[id]/settings')),
+        children: [
+          {
+            path: '/',
+            component: lazy(() => import('/@/pages/apps/[id]/settings/general')),
+          },
+          {
+            path: '/build',
+            component: lazy(() => import('/@/pages/apps/[id]/settings/build')),
+          },
+          {
+            path: '/urls',
+            component: lazy(() => import('/@/pages/apps/[id]/settings/urls')),
+          },
+          {
+            path: '/portForwarding',
+            component: lazy(() => import('/@/pages/apps/[id]/settings/portForwarding')),
+          },
+          {
+            path: '/envVars',
+            component: lazy(() => import('/@/pages/apps/[id]/settings/envVars')),
+          },
+          {
+            path: '/owners',
+            component: lazy(() => import('/@/pages/apps/[id]/settings/owners')),
+          },
+        ],
+      },
+    ],
   },
   {
     path: '/apps/new',
     component: lazy(() => import('/@/pages/apps/new')),
   },
   {
-    path: '/builds',
-    component: lazy(() => import('/@/pages/builds')),
-  },
-  {
     path: '/repos/:id',
     component: lazy(() => import('/@/pages/repos/[id]')),
-  },
-  {
-    path: '/repos/:id/settings',
-    component: lazy(() => import('/@/pages/repos/[id]/settings')),
+    data: RepositoryData,
+    children: [
+      {
+        path: '/',
+        component: lazy(() => import('/@/pages/repos/[id]/index')),
+      },
+      {
+        path: '/settings',
+        component: lazy(() => import('/@/pages/repos/[id]/settings')),
+        children: [
+          {
+            path: '/',
+            component: lazy(() => import('/@/pages/repos/[id]/settings/general')),
+          },
+          {
+            path: '/authorization',
+            component: lazy(() => import('/@/pages/repos/[id]/settings/authorization')),
+          },
+          {
+            path: '/owners',
+            component: lazy(() => import('/@/pages/repos/[id]/settings/owners')),
+          },
+        ],
+      },
+    ],
   },
   {
     path: '/repos/new',
@@ -49,5 +204,13 @@ export default useRoutes([
   {
     path: '/settings',
     component: lazy(() => import('/@/pages/settings')),
+  },
+  {
+    path: '/builds',
+    component: lazy(() => import('/@/pages/builds')),
+  },
+  {
+    path: '/*',
+    component: () => <ErrorView error={new Error('Not Found')} />,
   },
 ])

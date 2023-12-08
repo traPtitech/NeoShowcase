@@ -1,222 +1,279 @@
-import { Button } from '/@/components/Button'
-import { Header } from '/@/components/Header'
-import { InfoTooltip } from '/@/components/InfoTooltip'
-import { InputBar, InputLabel } from '/@/components/Input'
-import { client, handleAPIError } from '/@/libs/api'
-import { Container, PageTitle } from '/@/libs/layout'
-import { vars } from '/@/theme'
-import { style } from '@macaron-css/core'
+import { PlainMessage } from '@bufbuild/protobuf'
 import { styled } from '@macaron-css/solid'
-import { Component, For, JSX, Show, createResource, createSignal } from 'solid-js'
+import { Field, Form, SubmitHandler, createFormStore, required, reset } from '@modular-forms/solid'
+import { Title } from '@solidjs/meta'
+import { Component, For, Show, createResource } from 'solid-js'
 import toast from 'solid-toast'
+import { Button } from '/@/components/UI/Button'
+import { client, handleAPIError } from '/@/libs/api'
+import { colorVars, textVars } from '/@/theme'
+import { CreateUserKeyRequest, DeleteUserKeyRequest, UserKey } from '../api/neoshowcase/protobuf/gateway_pb'
+import { MaterialSymbols } from '../components/UI/MaterialSymbols'
+import ModalDeleteConfirm from '../components/UI/ModalDeleteConfirm'
+import { TextField } from '../components/UI/TextField'
+import { DataTable } from '../components/layouts/DataTable'
+import { MainViewContainer } from '../components/layouts/MainView'
+import { WithNav } from '../components/layouts/WithNav'
+import { List } from '../components/templates/List'
+import { Nav } from '../components/templates/Nav'
+import { dateHuman } from '../libs/format'
+import useModal from '../libs/useModal'
 
-// copy from /pages/apps
-// and delete unnecessary styles
-const ContentContainer = styled('div', {
+const TitleContainer = styled('div', {
   base: {
-    marginTop: '24px',
+    width: '100%',
+    display: 'flex',
+    flexDirection: 'row',
+    alignItems: 'flex-end',
+    justifyContent: 'space-between',
   },
 })
-
-const SidebarTitle = styled('div', {
+const SshKeyRowContainer = styled('div', {
   base: {
+    width: '100%',
+    padding: '16px 20px',
     display: 'flex',
     flexDirection: 'row',
     alignItems: 'center',
     gap: '8px',
+    overflowX: 'hidden',
+    background: colorVars.semantic.ui.primary,
 
-    fontSize: '24px',
-    fontWeight: 500,
-    color: vars.text.black1,
+    selectors: {
+      '&:last-child': {
+        borderBottom: 'none',
+      },
+    },
   },
 })
-
-const MainContentContainer = styled('div', {
+const SshKeyRowContent = styled('div', {
   base: {
+    width: '100%',
     display: 'flex',
     flexDirection: 'column',
-    gap: '20px',
+    overflowX: 'hidden',
   },
 })
-
-const UserKeysContainer = styled('div', {
+const SshKeyName = styled('div', {
   base: {
+    whiteSpace: 'nowrap',
+    overflow: 'hidden',
+    textOverflow: 'ellipsis',
+    color: colorVars.semantic.text.black,
+    ...textVars.h4.bold,
+  },
+})
+const SshKeyRowValue = styled('div', {
+  base: {
+    whiteSpace: 'nowrap',
+    overflow: 'hidden',
+    textOverflow: 'ellipsis',
+    color: colorVars.semantic.text.black,
+    ...textVars.text.medium,
+  },
+})
+const SshKeyAddedAt = styled('div', {
+  base: {
+    whiteSpace: 'nowrap',
+    overflow: 'hidden',
+    textOverflow: 'ellipsis',
+    color: colorVars.semantic.text.grey,
+    ...textVars.text.regular,
+  },
+})
+const FormContainer = styled('div', {
+  base: {
+    width: '100%',
     display: 'flex',
     flexDirection: 'column',
-    gap: '16px',
-
-    background: vars.bg.white3,
-    border: `1px solid ${vars.bg.white4}`,
-    borderRadius: '4px',
-    padding: '8px 12px',
+    gap: '8px',
   },
 })
-
-const PublicKey = styled('div', {
+const SshDeleteConfirm = styled('div', {
   base: {
-    background: vars.bg.white1,
-    border: `1px solid ${vars.bg.white5}`,
-    borderRadius: '4px',
-    padding: '8px 12px',
-  },
-})
-
-const PublicKeyContainer = styled('div', {
-  base: {
+    width: '100%',
     display: 'flex',
     flexDirection: 'column',
-    gap: '6px',
-
-    background: vars.bg.white2,
-    border: `1px solid ${vars.bg.white5}`,
-    borderRadius: '4px',
-    padding: '8px 12px',
   },
 })
 
-const CreateKeyContainer = styled('div', {
-  base: {
-    background: vars.bg.white3,
-    border: `1px solid ${vars.bg.white4}`,
-    borderRadius: '4px',
-    padding: '8px 12px',
-  },
-})
-
-const CreatingKeyContainerClass = style({
-  display: 'flex',
-  flexDirection: 'column',
-  gap: '16px',
-
-  background: vars.bg.white2,
-  border: `1px solid ${vars.bg.white5}`,
-  borderRadius: '4px',
-  padding: '8px 12px',
-})
-styled('form', {
-  base: {
-    display: 'flex',
-    flexDirection: 'column',
-    gap: '16px',
-
-    background: vars.bg.white2,
-    border: `1px solid ${vars.bg.white5}`,
-    borderRadius: '4px',
-    padding: '8px 12px',
-  },
-})
-export const FormButton = styled('div', {
-  base: {
-    marginLeft: '4px',
-  },
-})
-
-export default () => {
-  const [userKeys, { refetch: refetchKeys }] = createResource(() => client.getUserKeys({}))
-
-  const [createKeyToggle, setCreateKeyToggle] = createSignal(false)
-
-  const deleteKeyRequest = async (keyID: string) => {
+const SshKeyRow: Component<{ key: UserKey; refetchKeys: () => void }> = (props) => {
+  const { Modal, open, close } = useModal()
+  const handleDeleteKey = async (keyID: DeleteUserKeyRequest['keyId']) => {
     try {
       await client.deleteUserKey({ keyId: keyID })
       toast.success('公開鍵を削除しました')
-      refetchKeys()
+      props.refetchKeys()
     } catch (e) {
-      return handleAPIError(e, '公開鍵の削除に失敗しました')
+      handleAPIError(e, '公開鍵の削除に失敗しました')
     }
-  }
-
-  const CreatingKeyContainer: Component = () => {
-    let formRef: HTMLFormElement
-    const [input, setInput] = createSignal('')
-
-    const createKeyRequest: JSX.EventHandler<HTMLButtonElement, MouseEvent> = async (e) => {
-      // prevent default form submit (reload page)
-      e.preventDefault()
-
-      // validate form
-      if (!formRef.reportValidity()) {
-        return
-      }
-
-      try {
-        await client.createUserKey({ publicKey: input() })
-        toast.success('公開鍵を登録しました')
-        setInput('')
-        refetchKeys()
-      } catch (e) {
-        return handleAPIError(e, '公開鍵の登録に失敗しました')
-      }
-    }
-
-    return (
-      <form class={CreatingKeyContainerClass} ref={formRef}>
-        <InputLabel>SSH公開鍵の追加</InputLabel>
-        <InputBar
-          placeholder="ssh-ed25519 AAA..."
-          type="text"
-          value={input()}
-          onInput={(e) => setInput(e.target.value)}
-          required
-        />
-        <Button color="black1" size="large" width="auto" onclick={createKeyRequest} type="submit">
-          + SSH公開鍵の追加
-        </Button>
-      </form>
-    )
   }
 
   return (
-    <Container>
-      <Header />
-      <PageTitle>User Settings</PageTitle>
-      <ContentContainer>
-        <MainContentContainer>
-          <UserKeysContainer>
-            <SidebarTitle>
-              登録済みSSH公開鍵
-              <InfoTooltip tooltip="アプリへSSH接続時に使用します" />
-            </SidebarTitle>
-            <Show when={userKeys()} fallback={<SidebarTitle>登録済みSSH公開鍵を読み込み中...</SidebarTitle>}>
-              <For each={userKeys()?.keys}>
-                {(key) => (
-                  <PublicKeyContainer>
-                    <div>
-                      <PublicKey>{key.publicKey}</PublicKey>
-                    </div>
-                    <FormButton>
-                      <Button
-                        color="black1"
-                        size="large"
-                        width="auto"
-                        onclick={() => {
-                          deleteKeyRequest(key.id)
-                        }}
-                        type="submit"
-                      >
-                        削除
-                      </Button>
-                    </FormButton>
-                  </PublicKeyContainer>
-                )}
-              </For>
-            </Show>
-          </UserKeysContainer>
+    <>
+      <SshKeyRowContainer>
+        <SshKeyRowContent>
+          <SshKeyName>{props.key.name === '' ? '(Name not set)' : props.key.name}</SshKeyName>
+          <SshKeyRowValue>{props.key.publicKey}</SshKeyRowValue>
+          <Show
+            when={props.key.createdAt && props.key.createdAt?.seconds !== 0n}
+            fallback={<SshKeyAddedAt>Added on ----</SshKeyAddedAt>}
+          >
+            <SshKeyAddedAt>Added on {dateHuman(props.key.createdAt!)}</SshKeyAddedAt>
+          </Show>
+        </SshKeyRowContent>
+        <Button variants="textError" size="medium" onClick={open}>
+          Delete
+        </Button>
+      </SshKeyRowContainer>
+      <Modal.Container>
+        <Modal.Header>Delete SSH Key</Modal.Header>
+        <Modal.Body>
+          <ModalDeleteConfirm>
+            <SshDeleteConfirm>
+              <SshKeyName>{props.key.name === '' ? '(Name not set)' : props.key.name}</SshKeyName>
+              {props.key.publicKey}
+              <Show
+                when={props.key.createdAt && props.key.createdAt?.seconds !== 0n}
+                fallback={<SshKeyAddedAt>Added on ----</SshKeyAddedAt>}
+              >
+                <SshKeyAddedAt>Added on {dateHuman(props.key.createdAt!)}</SshKeyAddedAt>
+              </Show>
+            </SshDeleteConfirm>
+          </ModalDeleteConfirm>
+        </Modal.Body>
+        <Modal.Footer>
+          <Button variants="text" size="medium" onClick={close}>
+            No, Cancel
+          </Button>
+          <Button variants="primaryError" size="medium" onClick={() => handleDeleteKey(props.key.id)}>
+            Yes, Delete
+          </Button>
+        </Modal.Footer>
+      </Modal.Container>
+    </>
+  )
+}
 
-          <CreateKeyContainer>
-            <Show
-              when={createKeyToggle()}
-              fallback={
-                <Button color="black1" size="large" width="auto" onClick={() => setCreateKeyToggle(true)}>
-                  SSH公開鍵の追加
-                </Button>
-              }
+const SshKeys: Component<{ keys: UserKey[]; refetchKeys: () => void }> = (props) => {
+  return (
+    <List.Container>
+      <For each={props.keys}>{(key) => <SshKeyRow key={key} refetchKeys={props.refetchKeys} />}</For>
+    </List.Container>
+  )
+}
+
+export default () => {
+  const [userKeys, { refetch: refetchKeys }] = createResource(() => client.getUserKeys({}))
+  const { Modal: AddNewKeyModal, open: newKeyOpen, close: newKeyClose } = useModal()
+
+  const formStore = createFormStore<PlainMessage<CreateUserKeyRequest>>({
+    initialValues: {
+      name: '',
+      publicKey: '',
+    },
+  })
+
+  const handleSubmit: SubmitHandler<PlainMessage<CreateUserKeyRequest>> = async (values) => {
+    try {
+      await client.createUserKey(values)
+      toast.success('公開鍵を追加しました')
+      newKeyClose()
+      reset(formStore)
+      refetchKeys()
+    } catch (e) {
+      handleAPIError(e, '公開鍵の追加に失敗しました')
+    }
+  }
+
+  const AddNewSSHKeyButton = () => (
+    <Button variants="primary" size="medium" leftIcon={<MaterialSymbols>add</MaterialSymbols>} onClick={newKeyOpen}>
+      Add New SSH Key
+    </Button>
+  )
+
+  return (
+    <>
+      <Title>Settings - NeoShowcase</Title>
+      <WithNav.Container>
+        <WithNav.Navs>
+          <Nav title="Settings" />
+        </WithNav.Navs>
+        <WithNav.Body>
+          <Show when={userKeys.state === 'ready'}>
+            <MainViewContainer>
+              <DataTable.Container>
+                <TitleContainer>
+                  <DataTable.Titles>
+                    <DataTable.Title>SSH Public Keys</DataTable.Title>
+                    <DataTable.SubTitle>
+                      SSH鍵はruntimeアプリケーションのコンテナにssh接続するときに使います
+                    </DataTable.SubTitle>
+                  </DataTable.Titles>
+                  <Show when={userKeys()?.keys.length !== 0}>
+                    <AddNewSSHKeyButton />
+                  </Show>
+                </TitleContainer>
+                <Show
+                  when={userKeys()!.keys.length > 0}
+                  fallback={
+                    <List.Container>
+                      <List.PlaceHolder>
+                        <MaterialSymbols displaySize={80}>key_off</MaterialSymbols>
+                        No Keys Registered
+                        <AddNewSSHKeyButton />
+                      </List.PlaceHolder>
+                    </List.Container>
+                  }
+                >
+                  <SshKeys keys={userKeys()?.keys!} refetchKeys={refetchKeys} />
+                </Show>
+              </DataTable.Container>
+            </MainViewContainer>
+          </Show>
+        </WithNav.Body>
+      </WithNav.Container>
+      <AddNewKeyModal.Container>
+        <Form of={formStore} onSubmit={handleSubmit}>
+          <AddNewKeyModal.Header>Add New SSH Key</AddNewKeyModal.Header>
+          <AddNewKeyModal.Body>
+            <FormContainer>
+              <Field of={formStore} name="name" validate={[required('Enter Name')]}>
+                {(field, fieldProps) => (
+                  <TextField label="Name" required {...fieldProps} value={field.value} error={field.error} />
+                )}
+              </Field>
+              <Field of={formStore} name="publicKey" validate={[required('Enter SSH Public Key')]}>
+                {(field, fieldProps) => (
+                  <TextField
+                    label="Key"
+                    required
+                    multiline
+                    placeholder="ssh-ed25519 AAA..."
+                    {...fieldProps}
+                    value={field.value}
+                    error={field.error}
+                  />
+                )}
+              </Field>
+            </FormContainer>
+          </AddNewKeyModal.Body>
+          <AddNewKeyModal.Footer>
+            <Button variants="text" size="medium" type="button" onClick={newKeyClose}>
+              Cancel
+            </Button>
+            <Button
+              variants="primary"
+              size="medium"
+              type="submit"
+              disabled={formStore.invalid || formStore.submitting}
+              loading={formStore.submitting}
             >
-              <CreatingKeyContainer />
-            </Show>
-          </CreateKeyContainer>
-        </MainContentContainer>
-      </ContentContainer>
-    </Container>
+              Add
+            </Button>
+          </AddNewKeyModal.Footer>
+        </Form>
+      </AddNewKeyModal.Container>
+    </>
   )
 }

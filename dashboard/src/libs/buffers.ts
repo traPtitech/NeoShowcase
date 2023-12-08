@@ -11,7 +11,7 @@ const utf8Decoder = new TextDecoder('utf-8')
 const ansiDecoder = new Convert()
 
 const escapeHTML = (s: string): string =>
-  s.replace(/[&'`"<>]/g, function (match) {
+  s.replace(/[&'`"<>]/g, (match) => {
     return {
       '&': '&amp;',
       "'": '&#x27;',
@@ -19,7 +19,7 @@ const escapeHTML = (s: string): string =>
       '"': '&quot;',
       '<': '&lt;',
       '>': '&gt;',
-    }[match]
+    }[match] as string
   })
 
 export const toWithAnsi = (str: string): string => ansiDecoder.toHtml(escapeHTML(str))

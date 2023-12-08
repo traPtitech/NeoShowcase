@@ -1,166 +1,77 @@
-import { BuildStatus } from '/@/api/neoshowcase/protobuf/gateway_pb'
-import { AppNav } from '/@/components/AppNav'
-import { ArtifactRow } from '/@/components/ArtifactRow'
-import { BuildLog } from '/@/components/BuildLog'
-import { BuildStatusIcon } from '/@/components/BuildStatusIcon'
-import { Button } from '/@/components/Button'
-import {
-  Card,
-  CardItem,
-  CardItemContent,
-  CardItemTitle,
-  CardItems,
-  CardRowsContainer,
-  CardTitle,
-  CardsRow,
-} from '/@/components/Card'
-import { Header } from '/@/components/Header'
-import { client } from '/@/libs/api'
-import { buildStatusStr } from '/@/libs/application'
-import { DiffHuman, durationHuman, shortSha } from '/@/libs/format'
-import { Container } from '/@/libs/layout'
 import { styled } from '@macaron-css/solid'
-import { useNavigate, useParams } from '@solidjs/router'
-import { For, Ref, createEffect, createResource, createSignal, onCleanup } from 'solid-js'
-import { Show } from 'solid-js'
+import { Title } from '@solidjs/meta'
+import { For, Show, createResource } from 'solid-js'
+import { DataTable } from '/@/components/layouts/DataTable'
+import { MainViewContainer } from '/@/components/layouts/MainView'
+import { List } from '/@/components/templates/List'
+import { ArtifactRow } from '/@/components/templates/build/ArtifactRow'
+import { BuildLog } from '/@/components/templates/build/BuildLog'
+import BuildStatusTable from '/@/components/templates/build/BuildStatusTable'
+import { client } from '/@/libs/api'
+import { useBuildData } from '/@/routes'
+import { colorVars } from '/@/theme'
 
-const ArtifactsContainer = styled('div', {
+const MainView = styled('div', {
   base: {
+    width: '100%',
     display: 'flex',
     flexDirection: 'column',
+    gap: '32px',
+  },
+})
+const LogContainer = styled('div', {
+  base: {
+    width: '100%',
+    padding: '16px 20px',
+
+    border: `1px solid ${colorVars.semantic.ui.border}`,
+    borderRadius: '8px',
   },
 })
 
 export default () => {
-  const navigate = useNavigate()
-  const params = useParams()
-  const [app] = createResource(
-    () => params.id,
-    (id) => client.getApplication({ id }),
-  )
+  const { app, build, refetchBuild, hasPermission } = useBuildData()
   const [repo] = createResource(
     () => app()?.repositoryId,
     (id) => client.getRepository({ repositoryId: id }),
   )
-  const [build, { refetch: refetchBuild }] = createResource(
-    () => params.buildID,
-    (id) => client.getBuild({ buildId: id }),
-  )
   const loaded = () => !!(app() && repo() && build())
 
-  const buildFinished = () => build()?.finishedAt.valid
-
-  const retryBuild = async () => {
-    await client.retryCommitBuild({ applicationId: params.id, commit: build().commit })
-    navigate(`/apps/${app().id}/builds`)
-  }
-
-  const cancelBuild = async () => {
-    await client.cancelBuild({ buildId: build().id })
-    await refetchBuild()
-  }
+  const buildFinished = () => build()?.finishedAt?.valid ?? false
 
   return (
-    <Container>
-      <Header />
+    <MainViewContainer>
       <Show when={loaded()}>
-        <AppNav repo={repo()} app={app()} />
-        <CardRowsContainer>
-          <CardsRow>
-            <Card>
-              <CardTitle>Actions</CardTitle>
-              <Button
-                color="black1"
-                size="large"
-                width="full"
-                onclick={retryBuild}
-                disabled={build().retriable}
-                tooltip={build().retriable ? '既に再ビルドが行われています' : '同じコミットで再ビルドします'}
-              >
-                Retry build
-              </Button>
-              <Show when={build().status === BuildStatus.BUILDING}>
-                <Button color="black1" size="large" width="full" onclick={cancelBuild}>
-                  Cancel build
-                </Button>
-              </Show>
-            </Card>
-            <Card>
-              <CardTitle>Info</CardTitle>
-              <CardItems>
-                <CardItem>
-                  <CardItemTitle>ID</CardItemTitle>
-                  <CardItemContent>{build().id}</CardItemContent>
-                </CardItem>
-                <CardItem>
-                  <CardItemTitle>Commit</CardItemTitle>
-                  <CardItemContent>{shortSha(build().commit)}</CardItemContent>
-                </CardItem>
-                <CardItem>
-                  <CardItemTitle>Status</CardItemTitle>
-                  <CardItemContent>
-                    <BuildStatusIcon state={build().status} size={24} />
-                    {buildStatusStr[build().status]}
-                  </CardItemContent>
-                </CardItem>
-                <CardItem>
-                  <CardItemTitle>Queued at</CardItemTitle>
-                  <CardItemContent>
-                    <DiffHuman target={build().queuedAt.toDate()} />
-                  </CardItemContent>
-                </CardItem>
-                <CardItem>
-                  <CardItemTitle>Started at</CardItemTitle>
-                  <CardItemContent>
-                    <Show when={build().startedAt.valid} fallback={'-'}>
-                      <DiffHuman target={build().startedAt.timestamp.toDate()} />
-                    </Show>
-                  </CardItemContent>
-                </CardItem>
-                <CardItem>
-                  <CardItemTitle>Finished at</CardItemTitle>
-                  <CardItemContent>
-                    <Show when={build().finishedAt.valid} fallback={'-'}>
-                      <DiffHuman target={build().finishedAt.timestamp.toDate()} />
-                    </Show>
-                  </CardItemContent>
-                </CardItem>
-                <CardItem>
-                  <CardItemTitle>Duration</CardItemTitle>
-                  <CardItemContent>
-                    <Show when={build().startedAt.valid && build().finishedAt.valid} fallback={'-'}>
-                      {durationHuman(
-                        build().finishedAt.timestamp.toDate().getTime() -
-                          build().startedAt.timestamp.toDate().getTime(),
-                      )}
-                    </Show>
-                  </CardItemContent>
-                </CardItem>
-                <CardItem>
-                  <CardItemTitle>Retried</CardItemTitle>
-                  <CardItemContent>{build().retriable ? 'Yes' : 'No'}</CardItemContent>
-                </CardItem>
-              </CardItems>
-            </Card>
-          </CardsRow>
-          <Show when={build().artifacts.length > 0}>
-            <CardsRow>
-              <Card>
-                <CardTitle>Artifacts</CardTitle>
-                <ArtifactsContainer>
-                  <For each={build().artifacts || []}>{(artifact) => <ArtifactRow artifact={artifact} />}</For>
-                </ArtifactsContainer>
-              </Card>
-            </CardsRow>
+        <Title>{`${app()!.name} - Build - NeoShowcase`}</Title>
+        <MainView>
+          <DataTable.Container>
+            <DataTable.Title>Build Status</DataTable.Title>
+            <BuildStatusTable
+              app={app()!}
+              repo={repo()!}
+              build={build()!}
+              refetchBuild={refetchBuild}
+              hasPermission={hasPermission()}
+            />
+          </DataTable.Container>
+          <Show when={build()!.artifacts.length > 0}>
+            <DataTable.Container>
+              <DataTable.Title>Artifacts</DataTable.Title>
+              <List.Container>
+                <For each={build()!.artifacts}>{(artifact) => <ArtifactRow artifact={artifact} />}</For>
+              </List.Container>
+            </DataTable.Container>
           </Show>
-          <CardsRow>
-            <Card>
-              <CardTitle>Build Log</CardTitle>
-              <BuildLog buildID={build().id} finished={buildFinished()} refetchBuild={refetchBuild} />
-            </Card>
-          </CardsRow>
-        </CardRowsContainer>
+          <Show when={hasPermission()}>
+            <DataTable.Container>
+              <DataTable.Title>Build Log</DataTable.Title>
+              <LogContainer>
+                <BuildLog buildID={build()!.id} finished={buildFinished()} refetchBuild={refetchBuild} />
+              </LogContainer>
+            </DataTable.Container>
+          </Show>
+        </MainView>
       </Show>
-    </Container>
+    </MainViewContainer>
   )
 }

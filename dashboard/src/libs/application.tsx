@@ -1,26 +1,17 @@
+import { PlainMessage } from '@bufbuild/protobuf'
+import { AiFillGithub, AiFillGitlab } from 'solid-icons/ai'
+import { SiGitea } from 'solid-icons/si'
+import { JSXElement } from 'solid-js'
 import {
   Application,
   Application_ContainerState,
   BuildStatus,
+  CreateWebsiteRequest,
   DeployType,
   PortPublicationProtocol,
   Website,
 } from '/@/api/neoshowcase/protobuf/gateway_pb'
-import { Provider } from '/@/components/RepositoryRow'
-import { vars } from '/@/theme'
-import { AiFillGithub, AiFillGitlab } from 'solid-icons/ai'
-import { SiGitea } from 'solid-icons/si'
-import { JSXElement } from 'solid-js'
-import { BuildConfigMethod } from '../components/BuildConfigs'
-
-export const buildTypeStr: Record<BuildConfigMethod, string> = {
-  runtimeBuildpack: 'Runtime (Buildpack)',
-  runtimeCmd: 'Runtime (command)',
-  runtimeDockerfile: 'Runtime (Dockerfile)',
-  staticBuildpack: 'Static (Buildpack)',
-  staticCmd: 'Static (command)',
-  staticDockerfile: 'Static (Dockerfile)',
-}
+import { colorVars } from '/@/theme'
 
 export const buildStatusStr: Record<BuildStatus, string> = {
   [BuildStatus.QUEUED]: 'Queued',
@@ -35,11 +26,18 @@ export enum ApplicationState {
   Idle = 'Idle',
   Deploying = 'Deploying',
   Running = 'Running',
-  Static = 'Static',
+  Serving = 'Serving',
   Error = 'Error',
 }
 
-const useDeployState = (app: Application): ApplicationState => {
+export const deploymentState = (app: Application): ApplicationState => {
+  if (!app.running) {
+    return ApplicationState.Idle
+  }
+  if (app.currentBuild === '') {
+    // First build may still be running
+    return ApplicationState.Idle
+  }
   if (app.deployType === DeployType.RUNTIME) {
     switch (app.container) {
       case Application_ContainerState.MISSING:
@@ -54,7 +52,7 @@ const useDeployState = (app: Application): ApplicationState => {
         return ApplicationState.Error
     }
   } else {
-    return ApplicationState.Static
+    return ApplicationState.Serving
   }
 }
 
@@ -73,15 +71,19 @@ export const applicationState = (app: Application): ApplicationState => {
     case BuildStatus.BUILDING:
       return ApplicationState.Deploying
     case BuildStatus.SUCCEEDED:
-      return useDeployState(app)
+      return deploymentState(app)
     case BuildStatus.FAILED:
       return ApplicationState.Error
     case BuildStatus.CANCELLED:
-      return useDeployState(app)
+      return deploymentState(app)
     case BuildStatus.SKIPPED:
-      return useDeployState(app)
+      return deploymentState(app)
+    case undefined:
+      return ApplicationState.Error
   }
 }
+
+export type Provider = 'GitHub' | 'GitLab' | 'Gitea'
 
 export const repositoryURLToProvider = (url: string): Provider => {
   const normalizedURL = url.toLowerCase()
@@ -95,15 +97,15 @@ export const repositoryURLToProvider = (url: string): Provider => {
 export const providerToIcon = (provider: Provider, size = 20): JSXElement => {
   switch (provider) {
     case 'GitHub':
-      return <AiFillGithub size={size} color={vars.text.black1} />
+      return <AiFillGithub size={size} color={colorVars.semantic.text.black} />
     case 'GitLab':
       return <AiFillGitlab size={size} color="#FC6D26" />
     case 'Gitea':
-      return <SiGitea size={size} color={vars.text.black1} />
+      return <SiGitea size={size} color={colorVars.semantic.text.black} />
   }
 }
 
-export const getWebsiteURL = (website: Website): string => {
+export const getWebsiteURL = (website: PlainMessage<Website | CreateWebsiteRequest>): string => {
   const scheme = website.https ? 'https' : 'http'
   return `${scheme}://${website.fqdn}${website.pathPrefix}`
 }

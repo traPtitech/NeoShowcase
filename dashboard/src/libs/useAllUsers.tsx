@@ -1,6 +1,6 @@
+import { createMemo, createResource, createRoot } from 'solid-js'
 import { User } from '/@/api/neoshowcase/protobuf/gateway_pb'
 import { client } from '/@/libs/api'
-import { createMemo, createResource, createRoot } from 'solid-js'
 
 const [users, { mutate: mutateUsers, refetch: refetchUsers }] = createResource(async () => {
   const getUsersRes = await client.getUsers({})
@@ -14,9 +14,13 @@ export { users, mutateUsers, refetchUsers }
 // see: https://www.solidjs.com/docs/latest#createroot
 const usersMap = createRoot(() =>
   createMemo(() => {
-    if (!users()) return new Map<string, User>()
-    return new Map(users().map((user) => [user.id, user]))
+    if (users.latest !== undefined) return new Map(users().map((user) => [user.id, user]))
+    return new Map<string, User>()
   }),
 )
 
-export const userFromId = (id: string) => usersMap().get(id)
+export const userFromId = (id: string) => {
+  const user = usersMap().get(id)
+  if (user) return user
+  throw new Error(`userFromId: user not found: ${id}`)
+}

@@ -1,42 +1,59 @@
-import { vars } from '/@/theme'
 import { globalStyle } from '@macaron-css/core'
-import { TippyOptions } from 'solid-tippy'
-import 'tippy.js/animations/shift-away-subtle.css'
-import 'tippy.js/dist/tippy.css'
+import { colorVars } from '/@/theme'
+import './reset.css'
 
-declare module 'solid-js' {
-  namespace JSX {
-    interface Directives {
-      tippy: TippyOptions
-    }
-  }
-}
-
-globalStyle('*', {
-  boxSizing: 'border-box',
+globalStyle('*, ::before, ::after', {
+  margin: 0,
+  padding: 0,
 })
 
-globalStyle('div, h1, h2, h3, h4, h5, h6, a, p, input, select, textarea', {
-  fontFamily: 'Noto Sans JP',
+globalStyle('body', {
+  fontFamily: 'Lato, sans-serif',
+  backgroundColor: colorVars.semantic.ui.primary,
+})
+
+globalStyle('#root', {
+  position: 'fixed',
+  inset: 0,
 })
 
 globalStyle('pre, code', {
-  fontFamily: 'Menlo, Monaco, Consolas, Courier New, monospace !important',
+  fontFamily: 'Menlo, Monaco, Consolas, Courier New, monospace',
 })
 
 globalStyle('a', {
+  color: colorVars.semantic.text.link,
   textDecoration: 'none',
-})
-
-globalStyle('pre', {
-  margin: 0,
+  overflowWrap: 'anywhere',
 })
 
 globalStyle('svg', {
   fill: 'currentcolor',
 })
 
-globalStyle('body', {
-  margin: '0',
-  backgroundColor: vars.bg.white2,
+// Scrollbar
+globalStyle('*', {
+  scrollbarColor: `${colorVars.semantic.ui.tertiary} ${colorVars.semantic.ui.secondary}`,
+  scrollbarWidth: 'thin',
+  transition: 'scrollbar-color 0.3s',
+})
+globalStyle('*:hover, *:active', {
+  scrollbarColor: `${colorVars.semantic.ui.border} ${colorVars.semantic.ui.secondary}`,
+})
+globalStyle('*::-webkit-scrollbar', {
+  width: '6px',
+  height: '6px',
+})
+globalStyle('*::-webkit-scrollbar-corner', {
+  visibility: 'hidden',
+  display: 'none',
+})
+globalStyle('*::-webkit-scrollbar-thumb', {
+  background: colorVars.semantic.ui.tertiary,
+})
+globalStyle('*::-webkit-scrollbar-thumb:hover', {
+  background: colorVars.semantic.ui.border,
+})
+globalStyle('*::-webkit-scrollbar-track', {
+  background: colorVars.semantic.ui.secondary,
 })

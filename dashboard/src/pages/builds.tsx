@@ -1,29 +1,54 @@
-import { BuildList } from '/@/components/BuildList'
-import { Header } from '/@/components/Header'
-import { client } from '/@/libs/api'
-import { Container, PageTitle } from '/@/libs/layout'
-import { styled } from '@macaron-css/solid'
-import { createResource } from 'solid-js'
-import { Show } from 'solid-js'
+import { Title } from '@solidjs/meta'
+import { Component, Show, createMemo, createResource } from 'solid-js'
+import { GetApplicationsRequest_Scope } from '../api/neoshowcase/protobuf/gateway_pb'
+import { MaterialSymbols } from '../components/UI/MaterialSymbols'
+import { MainViewContainer } from '../components/layouts/MainView'
+import { WithNav } from '../components/layouts/WithNav'
+import { BuildList, List } from '../components/templates/List'
+import { Nav } from '../components/templates/Nav'
+import { client } from '../libs/api'
 
-const PageContainer = styled('div', {
-  base: {
-    paddingTop: '24px',
-  },
-})
+const builds: Component = () => {
+  const [apps] = createResource(() => client.getApplications({ scope: GetApplicationsRequest_Scope.ALL }))
+  const appNameMap = createMemo(() => new Map(apps()?.applications.map((app) => [app.id, app.name])))
 
-export default () => {
-  const [builds] = createResource(() => client.getAllBuilds({ page: 0, limit: 100 }))
+  const [builds] = createResource(() =>
+    client.getAllBuilds({
+      limit: 100,
+    }),
+  )
+
+  const sortedBuilds = createMemo(() =>
+    builds.latest !== undefined
+      ? [...builds().builds]
+          .sort((b1, b2) => {
+            return (b2.queuedAt?.toDate().getTime() ?? 0) - (b1.queuedAt?.toDate().getTime() ?? 0)
+          })
+          .map((b) => ({ build: b, appName: appNameMap().get(b.applicationId) }))
+      : [],
+  )
+  const showPlaceHolder = () => builds()?.builds.length === 0
 
   return (
-    <Container>
-      <Header />
-      <PageTitle>Build Queue</PageTitle>
-      <Show when={builds()}>
-        <PageContainer>
-          <BuildList builds={builds().builds} showAppID={false} />
-        </PageContainer>
-      </Show>
-    </Container>
+    <WithNav.Container>
+      <Title>Build Queue - NeoShowcase</Title>
+      <WithNav.Navs>
+        <Nav title="Build Queue" />
+      </WithNav.Navs>
+      <WithNav.Body>
+        <MainViewContainer background="grey">
+          <Show when={showPlaceHolder()} fallback={<BuildList builds={sortedBuilds()} />}>
+            <List.Container>
+              <List.PlaceHolder>
+                <MaterialSymbols displaySize={80}>deployed_code</MaterialSymbols>
+                No Builds
+              </List.PlaceHolder>
+            </List.Container>
+          </Show>
+        </MainViewContainer>
+      </WithNav.Body>
+    </WithNav.Container>
   )
 }
+
+export default builds

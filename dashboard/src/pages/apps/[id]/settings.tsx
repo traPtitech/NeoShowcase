@@ -1,591 +1,132 @@
-import { ApplicationEnvVar, DeployType, UpdateApplicationRequest, User } from '/@/api/neoshowcase/protobuf/gateway_pb'
-import { AppNav } from '/@/components/AppNav'
-import { FormTextBig } from '/@/components/AppsNew'
-import { BuildConfigs } from '/@/components/BuildConfigs'
-import { Button } from '/@/components/Button'
-import { Header } from '/@/components/Header'
-import { IconButton } from '/@/components/IconButton'
-import { InfoTooltip } from '/@/components/InfoTooltip'
-import { InputBar, InputLabel } from '/@/components/Input'
-import { InputSuggestion } from '/@/components/InputSuggestion'
-import { ModalButtonsContainer, ModalContainer, ModalText } from '/@/components/Modal'
-import { PortPublicationSettings } from '/@/components/PortPublications'
-import { UserSearch } from '/@/components/UserSearch'
-import { WebsiteSettings } from '/@/components/WebsiteSettings'
-import { client, handleAPIError } from '/@/libs/api'
-import { useBranchesSuggestion } from '/@/libs/branchesSuggestion'
-import { writeToClipboard } from '/@/libs/clipboard'
-import { Container } from '/@/libs/layout'
-import { userFromId, users } from '/@/libs/useAllUsers'
-import useModal from '/@/libs/useModal'
-import { vars } from '/@/theme'
-import { PlainMessage } from '@bufbuild/protobuf'
-import { style } from '@macaron-css/core'
 import { styled } from '@macaron-css/solid'
-import { useParams } from '@solidjs/router'
-import { OcCopy2 } from 'solid-icons/oc'
-import { Component, For, JSX, Show, createEffect, createMemo, createResource, createSignal } from 'solid-js'
-import { createStore } from 'solid-js/store'
-import toast from 'solid-toast'
+import { Outlet, useMatch, useNavigate } from '@solidjs/router'
+import { ErrorBoundary, Show, Suspense, useTransition } from 'solid-js'
+import { Button } from '/@/components/UI/Button'
+import { MaterialSymbols } from '/@/components/UI/MaterialSymbols'
+import ErrorView from '/@/components/layouts/ErrorView'
+import { MainViewContainer } from '/@/components/layouts/MainView'
+import { SideView } from '/@/components/layouts/SideView'
+import SuspenseContainer from '/@/components/layouts/SuspenseContainer'
+import SettingSkeleton from '/@/components/templates/SettingSkeleton'
+import { useApplicationData } from '/@/routes'
 
-const ContentContainer = styled('div', {
-  base: {
-    display: 'grid',
-    gridTemplateColumns: '380px 1fr',
-    gap: '40px',
-    position: 'relative',
-  },
-})
-const SidebarContainer = styled('div', {
+const SideMenu = styled('div', {
   base: {
     position: 'sticky',
-    top: '64px',
-    padding: '24px 40px',
-    backgroundColor: vars.bg.white1,
-    borderRadius: '4px',
-    border: `1px solid ${vars.bg.white4}`,
-  },
-})
-const SidebarOptions = styled('div', {
-  base: {
-    display: 'flex',
-    flexDirection: 'column',
-    gap: '12px',
-
-    fontSize: '20px',
-    color: vars.text.black1,
-  },
-})
-const SidebarNavAnchor = styled('a', {
-  base: {
-    color: vars.text.black2,
-    textDecoration: 'none',
-    selectors: {
-      '&:hover': {
-        color: vars.text.black1,
-      },
-    },
-  },
-})
-const ConfigsContainer = styled('div', {
-  base: {
-    display: 'flex',
-    flexDirection: 'column',
-    gap: '24px',
-  },
-})
-const SettingFieldSet = styled('div', {
-  base: {
-    display: 'flex',
-    flexDirection: 'column',
-    gap: '16px',
-    padding: '24px',
-    border: `1px solid ${vars.bg.white4}`,
-    borderRadius: '4px',
-    background: vars.bg.white1,
-  },
-})
-const EnvVarContainerClass = style({
-  display: 'grid',
-  gridTemplateColumns: '1fr 1fr 1fr',
-  gap: '16px',
-})
-const EnvVarsContainer = styled('div', {
-  base: {
-    display: 'flex',
-    flexDirection: 'column',
-    gap: '8px',
-  },
-})
-const EnvVarKeyCode = styled('code', {
-  base: {
-    padding: '8px 12px',
-    borderRadius: '4px',
-    fontSize: '14px',
-
     width: '100%',
+    top: '0',
     display: 'flex',
-    alignItems: 'center',
-  },
-})
-const EnvVarInputContainer = styled('div', {
-  base: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: '4px',
-  },
-})
-const EnvVarButtonContainer = styled('div', {
-  base: {
-    display: 'flex',
-    justifyContent: 'space-between',
-    gap: '16px',
+    flexDirection: 'column',
   },
 })
 
 export default () => {
-  const params = useParams()
-  const [app, { refetch: refetchApp }] = createResource(
-    () => params.id,
-    (id) => client.getApplication({ id }),
-  )
-  const [repo] = createResource(
-    () => app()?.repositoryId,
-    (id) => client.getRepository({ repositoryId: id }),
-  )
-  const loaded = () => !!(users() && app() && repo())
+  const { app } = useApplicationData()
+  const loaded = () => !!app()
+  const matchGeneralPage = useMatch(() => `/apps/${app()?.id}/settings/`)
+  const matchBuildPage = useMatch(() => `/apps/${app()?.id}/settings/build`)
+  const matchURLsPage = useMatch(() => `/apps/${app()?.id}/settings/urls`)
+  const matchPortPage = useMatch(() => `/apps/${app()?.id}/settings/portForwarding`)
+  const matchEnvVarsPage = useMatch(() => `/apps/${app()?.id}/settings/envVars`)
+  const matchOwnersPage = useMatch(() => `/apps/${app()?.id}/settings/owners`)
 
-  const update = async (req: PlainMessage<UpdateApplicationRequest>) => {
-    try {
-      await client.updateApplication(req)
-      toast.success('アプリ設定を更新しました')
-      refetchApp()
-    } catch (e) {
-      handleAPIError(e, 'アプリ設定の更新に失敗しました')
-    }
-  }
-
-  const GeneralConfigsContainer: Component = () => {
-    // 現在の設定で初期化
-    const [generalConfig, setGeneralConfig] = createStore({
-      name: app().name,
-      repositoryId: app().repositoryId,
-      refName: app().refName,
-    })
-    const branchesSuggestion = useBranchesSuggestion(
-      () => app()?.repositoryId,
-      () => generalConfig.refName,
-    )
-    let formContainer: HTMLFormElement
-
-    const updateGeneralSettings: JSX.EventHandler<HTMLButtonElement, MouseEvent> = async (e) => {
-      e.preventDefault()
-      if (!formContainer.reportValidity()) {
-        return
-      }
-      return update({
-        id: app().id,
-        name: generalConfig.name,
-        repositoryId: generalConfig.repositoryId,
-        refName: generalConfig.refName,
-      })
-    }
-
-    return (
-      <form ref={formContainer}>
-        <SettingFieldSet>
-          <FormTextBig id="general-settings">General Settings</FormTextBig>
-          <div>
-            <InputLabel>Application Name</InputLabel>
-            <InputBar
-              placeholder="my-app"
-              value={generalConfig.name}
-              onChange={(e) => setGeneralConfig('name', e.currentTarget.value)}
-              required
-            />
-          </div>
-          <div>
-            <InputLabel>
-              Repository ID
-              <InfoTooltip tooltip={['リポジトリを移管する場合IDを変更']} />
-            </InputLabel>
-            <InputBar
-              placeholder="my-app"
-              value={generalConfig.repositoryId}
-              onChange={(e) => setGeneralConfig('repositoryId', e.currentTarget.value)}
-              required
-            />
-          </div>
-          <div>
-            <InputLabel>
-              Branch Name
-              <InfoTooltip tooltip={['Gitブランチ名またはRef', '入力欄をクリックして候補を表示']} />
-            </InputLabel>
-            <InputSuggestion suggestions={branchesSuggestion()} onSetSuggestion={(b) => setGeneralConfig('refName', b)}>
-              {(onFocus) => (
-                <InputBar
-                  placeholder="main"
-                  value={generalConfig.refName}
-                  onInput={(e) => setGeneralConfig('refName', e.target.value)}
-                  onFocus={onFocus}
-                  required
-                />
-              )}
-            </InputSuggestion>
-          </div>
-          <Button color="black1" size="large" width="auto" onclick={updateGeneralSettings} type="submit">
-            Save
-          </Button>
-        </SettingFieldSet>
-      </form>
-    )
-  }
-
-  const BuildConfigsContainer: Component = () => {
-    const [config, setConfig] = createStore(structuredClone(app().config.buildConfig))
-
-    const updateBuildSettings: JSX.EventHandler<HTMLButtonElement, MouseEvent> = async (e) => {
-      // prevent default form submit (reload page)
-      e.preventDefault()
-
-      try {
-        await client.updateApplication({
-          id: app().id,
-          config: { buildConfig: config },
-        })
-        toast.success('ビルド設定を更新しました')
-        refetchApp()
-      } catch (e) {
-        handleAPIError(e, 'ビルド設定の更新に失敗しました')
-      }
-    }
-
-    return (
-      <SettingFieldSet>
-        <FormTextBig id="build-settings">Build Settings</FormTextBig>
-        <BuildConfigs buildConfig={config} setBuildConfig={setConfig} />
-        <Button color="black1" size="large" width="auto" onclick={updateBuildSettings} type="submit">
-          Save
-        </Button>
-      </SettingFieldSet>
-    )
-  }
-
-  const WebsitesConfigContainer: Component = () => {
-    const [websites, setWebsites] = createStore(structuredClone(app().websites))
-
-    // refetch時反映
-    createEffect(() => setWebsites(structuredClone(app().websites)))
-
-    const updateWebsites = () =>
-      update({
-        id: app().id,
-        websites: { websites },
-      })
-
-    return (
-      <SettingFieldSet>
-        <FormTextBig id="website-settings">
-          Website Settings
-          <InfoTooltip tooltip={['アプリへアクセスするURLの設定', '(複数設定可能)']} />
-        </FormTextBig>
-        <WebsiteSettings
-          runtime={app().deployType === DeployType.RUNTIME}
-          websiteConfigs={websites}
-          setWebsiteConfigs={setWebsites}
-        />
-        <Button color="black1" size="large" width="auto" onclick={updateWebsites} type="submit">
-          Save
-        </Button>
-      </SettingFieldSet>
-    )
-  }
-
-  const PortPublicationConfigContainer: Component = () => {
-    const [ports, setPorts] = createStore(structuredClone(app().portPublications))
-
-    // refetch時反映
-    createEffect(() => setPorts(structuredClone(app().portPublications)))
-
-    const updatePortPublications = () =>
-      update({
-        id: app().id,
-        portPublications: { portPublications: ports },
-      })
-
-    return (
-      <SettingFieldSet>
-        <FormTextBig id="port-settings">
-          Port Forwarding
-          <InfoTooltip tooltip={['(Advanced) TCP/UDPポート公開設定', '(複数設定可能)']} />
-        </FormTextBig>
-        <PortPublicationSettings ports={ports} setPorts={setPorts} />
-        <Button color="black1" size="large" width="auto" onclick={updatePortPublications} type="submit">
-          Save
-        </Button>
-      </SettingFieldSet>
-    )
-  }
-
-  const OwnerConfigContainer: Component = () => {
-    const { Modal, open } = useModal()
-
-    const nonOwnerUsers = createMemo(() => {
-      return users().filter((user) => !app().ownerIds.includes(user.id)) ?? []
-    })
-
-    const handleAddOwner = (user: User) =>
-      update({
-        id: app().id,
-        ownerIds: { ownerIds: app().ownerIds.concat(user.id) },
-      })
-    const handleDeleteOwner = (owner: User) =>
-      update({
-        id: app().id,
-        ownerIds: { ownerIds: app().ownerIds.filter((id) => id !== owner.id) },
-      })
-
-    return (
-      <>
-        <SettingFieldSet>
-          <FormTextBig id="owner-settings">
-            Owners
-            <InfoTooltip
-              tooltip={[
-                'オーナーは以下が可能になります',
-                'アプリの設定を変更',
-                'アプリのログ/メトリクスを閲覧',
-                '環境変数を閲覧',
-                'ビルドログを閲覧',
-              ]}
-              style="bullets-with-title"
-            />
-          </FormTextBig>
-          <Button color="black1" size="large" width="auto" onclick={open}>
-            アプリオーナーを追加する
-          </Button>
-          <UserSearch users={app().ownerIds.map((userId) => userFromId(userId))}>
-            {(user) => (
-              <Button color="black1" size="large" width="auto" onclick={() => handleDeleteOwner(user)}>
-                削除
-              </Button>
-            )}
-          </UserSearch>
-        </SettingFieldSet>
-        <Modal>
-          <UserSearch users={nonOwnerUsers()}>
-            {(user) => (
-              <Button color="black1" size="large" width="auto" onclick={() => handleAddOwner(user)}>
-                追加
-              </Button>
-            )}
-          </UserSearch>
-        </Modal>
-      </>
-    )
-  }
-
-  const EnvVarConfigContainer: Component = () => {
-    const [envVars, { refetch: refetchEnvVar }] = createResource(
-      () => app().id,
-      (id) => client.getEnvVars({ id }),
-    )
-
-    const EditEnvVarContainer: Component<{
-      envVar: ApplicationEnvVar
-    }> = (props) => {
-      const [isEditing, setIsEditing] = createSignal(false)
-      let formRef: HTMLFormElement
-      let valueInputRef: HTMLInputElement
-      const { Modal: DeleteEnvVarModal, open: openDeleteEnvVarModal, close: closeDeleteEnvVarModal } = useModal()
-
-      const handleCopyEnvVarValue = () => writeToClipboard(props.envVar.value)
-
-      const handleUpdateEnvVar: JSX.EventHandler<HTMLButtonElement, MouseEvent> = async (e) => {
-        // prevent default form submit (reload page)
-        e.preventDefault()
-
-        // validate form
-        if (!formRef.reportValidity()) {
-          return
-        }
-
-        try {
-          await client.setEnvVar({
-            applicationId: app().id,
-            key: props.envVar.key,
-            value: valueInputRef.value,
-          })
-          toast.success('環境変数を更新しました')
-          refetchEnvVar()
-          setIsEditing(false)
-        } catch (e) {
-          handleAPIError(e, '環境変数の更新に失敗しました')
-        }
-      }
-
-      const handleDeleteEnvVar: JSX.EventHandler<HTMLButtonElement, MouseEvent> = async (e) => {
-        // prevent default form submit (reload page)
-        e.preventDefault()
-
-        try {
-          await client.deleteEnvVar({
-            applicationId: app().id,
-            key: props.envVar.key,
-          })
-          toast.success('環境変数を削除しました')
-          refetchEnvVar()
-          setIsEditing(false)
-        } catch (e) {
-          handleAPIError(e, '環境変数の削除に失敗しました')
-        }
-      }
-
-      return (
-        <form class={EnvVarContainerClass} ref={formRef}>
-          <EnvVarKeyCode>{props.envVar.key}</EnvVarKeyCode>
-          <EnvVarInputContainer>
-            <InputBar
-              type="text"
-              disabled={!isEditing()}
-              required
-              placeholder="VALUE"
-              ref={valueInputRef}
-              value={props.envVar.value}
-              width="full"
-            />
-            <Show when={!isEditing()}>
-              <IconButton onClick={handleCopyEnvVarValue} tooltip="クリップボードにコピー">
-                <OcCopy2 size={18} color={vars.text.black2} />
-              </IconButton>
-            </Show>
-          </EnvVarInputContainer>
-          <EnvVarButtonContainer>
-            <Show
-              when={!isEditing()}
-              fallback={
-                <Button color="black1" size="large" width="full" type="submit" onclick={handleUpdateEnvVar}>
-                  Save
-                </Button>
-              }
-            >
-              <Button
-                color="black1"
-                size="large"
-                width="full"
-                type="button"
-                onclick={() => setIsEditing(true)}
-                disabled={props.envVar.system}
-                tooltip={props.envVar.system && 'システム環境変数は編集できません'}
-              >
-                Edit
-              </Button>
-              <Button
-                color="black1"
-                size="large"
-                width="full"
-                type="button"
-                onclick={openDeleteEnvVarModal}
-                disabled={props.envVar.system}
-                tooltip={props.envVar.system && 'システム環境変数は削除できません'}
-              >
-                Delete
-              </Button>
-              <DeleteEnvVarModal>
-                <ModalContainer>
-                  <ModalText>本当に削除しますか?</ModalText>
-                  <ModalButtonsContainer>
-                    <Button onclick={closeDeleteEnvVarModal} color="black1" size="large" width="full">
-                      キャンセル
-                    </Button>
-                    <Button onclick={handleDeleteEnvVar} color="black1" size="large" width="full">
-                      削除
-                    </Button>
-                  </ModalButtonsContainer>
-                </ModalContainer>
-              </DeleteEnvVarModal>
-            </Show>
-          </EnvVarButtonContainer>
-        </form>
-      )
-    }
-
-    const AddEnvVarContainer: Component = () => {
-      let formRef: HTMLFormElement
-      let keyInputRef: HTMLInputElement
-      let valueInputRef: HTMLInputElement
-
-      const handleAddEnvVar: JSX.EventHandler<HTMLButtonElement, MouseEvent> = async (e) => {
-        // prevent default form submit (reload page)
-        e.preventDefault()
-
-        // validate form
-        if (!formRef.reportValidity()) {
-          return
-        }
-
-        try {
-          await client.setEnvVar({
-            applicationId: app().id,
-            key: keyInputRef.value,
-            value: valueInputRef.value,
-          })
-          toast.success('環境変数を追加しました')
-          keyInputRef.value = ''
-          valueInputRef.value = ''
-          refetchEnvVar()
-        } catch (e) {
-          handleAPIError(e, '環境変数の追加に失敗しました')
-        }
-      }
-
-      return (
-        <form class={EnvVarContainerClass} ref={formRef}>
-          <InputBar type="text" required placeholder="KEY" width="full" ref={keyInputRef} />
-          <InputBar type="text" required placeholder="VALUE" width="full" ref={valueInputRef} />
-          <Button color="black1" size="large" width="full" type="submit" onclick={handleAddEnvVar}>
-            Add
-          </Button>
-        </form>
-      )
-    }
-
-    return (
-      <SettingFieldSet>
-        <FormTextBig id="env-var-settings">
-          Environment Variables
-          <InfoTooltip tooltip={['ビルド時と実行時の両方に渡されます']} />
-        </FormTextBig>
-        <div>
-          <EnvVarsContainer>
-            <div class={EnvVarContainerClass}>
-              <div>key</div>
-              <div>value</div>
-            </div>
-            <For each={envVars()?.variables}>
-              {(envVar) => {
-                return <EditEnvVarContainer envVar={envVar} />
-              }}
-            </For>
-            <AddEnvVarContainer />
-          </EnvVarsContainer>
-        </div>
-      </SettingFieldSet>
-    )
-  }
+  const [isPending, start] = useTransition()
+  const navigator = useNavigate()
+  const navigate = (path: string) => start(() => navigator(path))
 
   return (
-    <Container>
-      <Header />
-      <Show when={loaded()}>
-        <AppNav repo={repo()} app={app()} />
-        <ContentContainer>
-          <div>
-            <SidebarContainer>
-              <SidebarOptions>
-                <SidebarNavAnchor href="#general-settings">General</SidebarNavAnchor>
-                <SidebarNavAnchor href="#build-settings">Build</SidebarNavAnchor>
-                <SidebarNavAnchor href="#website-settings">Website</SidebarNavAnchor>
-                <Show when={app().deployType === DeployType.RUNTIME}>
-                  <SidebarNavAnchor href="#port-settings">Port Forwarding</SidebarNavAnchor>
-                </Show>
-                <SidebarNavAnchor href="#owner-settings">Owner</SidebarNavAnchor>
-                <SidebarNavAnchor href="#env-var-settings">Environment Variable</SidebarNavAnchor>
-              </SidebarOptions>
-            </SidebarContainer>
-          </div>
-          <ConfigsContainer>
-            <GeneralConfigsContainer />
-            <BuildConfigsContainer />
-            <WebsitesConfigContainer />
-            <Show when={app().deployType === DeployType.RUNTIME}>
-              <PortPublicationConfigContainer />
-            </Show>
-            <OwnerConfigContainer />
-            <EnvVarConfigContainer />
-          </ConfigsContainer>
-        </ContentContainer>
-      </Show>
-    </Container>
+    <Suspense>
+      <MainViewContainer>
+        <Show when={loaded()}>
+          <SideView.Container>
+            <SideView.Side>
+              <SideMenu>
+                <Button
+                  variants="text"
+                  size="medium"
+                  full
+                  active={!!matchGeneralPage()}
+                  onclick={() => {
+                    navigate(`/apps/${app()?.id}/settings/`)
+                  }}
+                  leftIcon={<MaterialSymbols>browse_activity</MaterialSymbols>}
+                >
+                  General
+                </Button>
+                <Button
+                  variants="text"
+                  size="medium"
+                  full
+                  active={!!matchBuildPage()}
+                  onclick={() => {
+                    navigate(`/apps/${app()?.id}/settings/build`)
+                  }}
+                  leftIcon={<MaterialSymbols>deployed_code</MaterialSymbols>}
+                >
+                  Build
+                </Button>
+                <Button
+                  variants="text"
+                  size="medium"
+                  full
+                  active={!!matchURLsPage()}
+                  onclick={() => {
+                    navigate(`/apps/${app()?.id}/settings/urls`)
+                  }}
+                  leftIcon={<MaterialSymbols>language</MaterialSymbols>}
+                >
+                  URLs
+                </Button>
+                <Button
+                  variants="text"
+                  size="medium"
+                  full
+                  active={!!matchPortPage()}
+                  onclick={() => {
+                    navigate(`/apps/${app()?.id}/settings/portForwarding`)
+                  }}
+                  leftIcon={<MaterialSymbols>lan</MaterialSymbols>}
+                >
+                  Port Forwarding
+                </Button>
+                <Button
+                  variants="text"
+                  size="medium"
+                  full
+                  active={!!matchEnvVarsPage()}
+                  onclick={() => {
+                    navigate(`/apps/${app()?.id}/settings/envVars`)
+                  }}
+                  leftIcon={<MaterialSymbols>password</MaterialSymbols>}
+                >
+                  Environment Variables
+                </Button>
+                <Button
+                  variants="text"
+                  size="medium"
+                  full
+                  active={!!matchOwnersPage()}
+                  onclick={() => {
+                    navigate(`/apps/${app()?.id}/settings/owners`)
+                  }}
+                  leftIcon={<MaterialSymbols>person</MaterialSymbols>}
+                >
+                  Owners
+                </Button>
+              </SideMenu>
+            </SideView.Side>
+            <SideView.Main>
+              <ErrorBoundary fallback={(props) => <ErrorView {...props} />}>
+                <Suspense fallback={<SettingSkeleton />}>
+                  <SuspenseContainer isPending={isPending()}>
+                    <Outlet />
+                  </SuspenseContainer>
+                </Suspense>
+              </ErrorBoundary>
+            </SideView.Main>
+          </SideView.Container>
+        </Show>
+      </MainViewContainer>
+    </Suspense>
   )
 }
