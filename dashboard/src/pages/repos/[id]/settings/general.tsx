@@ -42,10 +42,10 @@ const NameConfig: Component<{
         id: props.repo.id,
         name: values.name,
       })
-      toast.success('Project名を更新しました')
+      toast.success('リポジトリ名を更新しました')
       props.refetchRepo()
     } catch (e) {
-      handleAPIError(e, 'Project名の更新に失敗しました')
+      handleAPIError(e, 'リポジトリ名の更新に失敗しました')
     }
   }
   const discardChanges = () => {
@@ -56,10 +56,10 @@ const NameConfig: Component<{
     <General.Form onSubmit={handleSubmit}>
       <FormBox.Container>
         <FormBox.Forms>
-          <General.Field name="name" validate={[required('Enter Project Name')]}>
+          <General.Field name="name" validate={[required('リポジトリ名を入力してください')]}>
             {(field, fieldProps) => (
               <TextField
-                label="Project Name"
+                label="Repository Name"
                 required
                 {...fieldProps}
                 value={field.value ?? ''}
@@ -97,14 +97,14 @@ const NameConfig: Component<{
   )
 }
 
-const DeleteProjectNotice = styled('div', {
+const DeleteRepositoryNotice = styled('div', {
   base: {
     color: colorVars.semantic.text.grey,
     ...textVars.caption.regular,
   },
 })
 
-const DeleteProject: Component<{
+const DeleteRepository: Component<{
   repo: Repository
   apps: Application[]
   hasPermission: boolean
@@ -115,11 +115,11 @@ const DeleteProject: Component<{
   const deleteRepository = async () => {
     try {
       await client.deleteRepository({ repositoryId: props.repo.id })
-      toast.success('Projectを削除しました')
+      toast.success('リポジトリを削除しました')
       close()
       navigate('/apps')
     } catch (e) {
-      handleAPIError(e, 'Projectの削除に失敗しました')
+      handleAPIError(e, 'リポジトリの削除に失敗しました')
     }
   }
   const canDeleteRepository = () => props.apps.length === 0
@@ -128,10 +128,10 @@ const DeleteProject: Component<{
     <>
       <FormBox.Container>
         <FormBox.Forms>
-          <FormItem title="Delete Project">
-            <DeleteProjectNotice>
-              Projectを削除するには、このプロジェクト内のすべてのAppを削除する必要があります。
-            </DeleteProjectNotice>
+          <FormItem title="Delete Repository">
+            <DeleteRepositoryNotice>
+              リポジトリを削除するには、このリポジトリ内のすべてのアプリケーションを削除する必要があります。
+            </DeleteRepositoryNotice>
           </FormItem>
         </FormBox.Forms>
         <FormBox.Actions>
@@ -144,14 +144,14 @@ const DeleteProject: Component<{
             tooltip={{
               props: {
                 content: !props.hasPermission
-                  ? 'Projectを削除するにはリポジトリのオーナーになる必要があります'
+                  ? 'リポジトリを削除するにはオーナーになる必要があります'
                   : !canDeleteRepository()
-                  ? 'Project内にAppが存在するため削除できません'
+                  ? 'リポジトリ内にアプリケーションが存在するため削除できません'
                   : undefined,
               },
             }}
           >
-            Delete Project
+            Delete Repository
           </Button>
         </FormBox.Actions>
       </FormBox.Container>
@@ -185,7 +185,7 @@ export default () => {
       <DataTable.Title>General</DataTable.Title>
       <Show when={loaded()}>
         <NameConfig repo={repo()!} refetchRepo={refetchRepo} hasPermission={hasPermission()} />
-        <DeleteProject repo={repo()!} apps={apps()!} hasPermission={hasPermission()} />
+        <DeleteRepository repo={repo()!} apps={apps()!} hasPermission={hasPermission()} />
       </Show>
     </DataTable.Container>
   )
