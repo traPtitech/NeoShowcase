@@ -51,9 +51,8 @@ export const deploymentState = (app: Application): ApplicationState => {
       case Application_ContainerState.UNKNOWN:
         return ApplicationState.Error
     }
-  } else {
-    return ApplicationState.Serving
   }
+  return ApplicationState.Serving
 }
 
 const errorCommit = '0'.repeat(40)

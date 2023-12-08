@@ -167,7 +167,7 @@ export type SingleSelectProps<T extends string | number> = SelectProps<T> & {
   setValue?: (v: T) => void
 }
 
-export const SingleSelect = <T extends string | number,>(props: SingleSelectProps<T>): JSX.Element => {
+export const SingleSelect = <T extends string | number>(props: SingleSelectProps<T>): JSX.Element => {
   const [rootProps, selectProps] = splitProps(
     props,
     ['name', 'placeholder', 'options', 'required', 'disabled', 'readOnly'],
@@ -228,7 +228,7 @@ export type MultiSelectProps<T extends string | number> = SelectProps<T> & {
   setValue?: (v: T[]) => void
 }
 
-export const MultiSelect = <T extends string | number,>(props: MultiSelectProps<T>): JSX.Element => {
+export const MultiSelect = <T extends string | number>(props: MultiSelectProps<T>): JSX.Element => {
   const [rootProps, selectProps] = splitProps(
     props,
     ['name', 'placeholder', 'options', 'required', 'disabled', 'readOnly'],
@@ -349,7 +349,7 @@ export type ComboBoxProps<T extends string | number> = SelectProps<T> & {
   setValue?: (v: T) => void
 }
 
-export const ComboBox = <T extends string | number,>(props: SingleSelectProps<T>): JSX.Element => {
+export const ComboBox = <T extends string | number>(props: SingleSelectProps<T>): JSX.Element => {
   const [rootProps, selectProps] = splitProps(
     props,
     ['name', 'placeholder', 'options', 'required', 'disabled', 'readOnly'],
@@ -362,10 +362,9 @@ export const ComboBox = <T extends string | number,>(props: SingleSelectProps<T>
       if (find) {
         props.setValue?.(find.value)
         return find
-      } else {
-        props.setValue?.(prev.value)
-        return prev
       }
+      props.setValue?.(prev.value)
+      return prev
     },
     { label: props.value?.toString() ?? '', value: props.value ?? ('' as T) },
   )
