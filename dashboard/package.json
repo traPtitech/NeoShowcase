@@ -39,7 +39,7 @@
     "@modular-forms/solid": "0.20.0",
     "@solid-primitives/refs": "1.0.5",
     "@solidjs/meta": "0.29.1",
-    "@solidjs/router": "0.9.1",
+    "@solidjs/router": "0.10.1",
     "@tanstack/solid-virtual": "3.0.1",
     "ansi-to-html": "0.7.2",
     "chart.js": "4.4.1",
