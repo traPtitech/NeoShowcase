@@ -218,7 +218,7 @@ const AppsList: Component<{
           }
         >
           {(vRow) => (
-            <div ref={virtualizer().measureElement}>
+            <div data-index={vRow.index} ref={(el) => queueMicrotask(() => virtualizer().measureElement(el))}>
               <div style={{ 'padding-bottom': '16px' }}>
                 <RepositoryList repository={filteredRepos()[vRow.index].repo} apps={filteredRepos()[vRow.index].apps} />
               </div>
