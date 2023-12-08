@@ -227,7 +227,7 @@ const AppDeployInfo: Component<{
         <DeployInfo long>
           <List.RowContent>
             <List.RowTitle>
-              Domains
+              URLs
               <Badge variant="text">{props.app.websites.length}</Badge>
             </List.RowTitle>
             <For each={props.app.websites.map(getWebsiteURL)}>
