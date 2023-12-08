@@ -32,41 +32,41 @@ const RuntimeConfigs: Component<RuntimeConfigProps> = (props) => {
     }
   })
 
-  const containerOverrideConfig = (
-    <>
-      <Field of={props.formStore} name="config.runtimeConfig.entrypoint">
-        {(field, fieldProps) => (
-          <TextField
-            label="Entrypoint"
-            info={{
-              props: {
-                content: 'コンテナのEntrypoint',
-              },
-            }}
-            {...fieldProps}
-            value={field.value ?? ''}
-            error={field.error}
-            readOnly={!props.hasPermission}
-          />
-        )}
-      </Field>
-      <Field of={props.formStore} name="config.runtimeConfig.command">
-        {(field, fieldProps) => (
-          <TextField
-            label="Command"
-            info={{
-              props: {
-                content: 'コンテナのCommand',
-              },
-            }}
-            {...fieldProps}
-            value={field.value ?? ''}
-            error={field.error}
-            readOnly={!props.hasPermission}
-          />
-        )}
-      </Field>
-    </>
+  const entrypointConfig = (
+    <Field of={props.formStore} name="config.runtimeConfig.entrypoint">
+      {(field, fieldProps) => (
+        <TextField
+          label="Entrypoint"
+          info={{
+            props: {
+              content: buildType() === 'runtimeCmd' ? 'アプリ起動コマンド' : 'コンテナのEntrypoint上書き',
+            },
+          }}
+          {...fieldProps}
+          value={field.value ?? ''}
+          error={field.error}
+          readOnly={!props.hasPermission}
+        />
+      )}
+    </Field>
+  )
+  const commandOverrideConfig = (
+    <Field of={props.formStore} name="config.runtimeConfig.command">
+      {(field, fieldProps) => (
+        <TextField
+          label="Command"
+          info={{
+            props: {
+              content: 'コンテナのCommand上書き',
+            },
+          }}
+          {...fieldProps}
+          value={field.value ?? ''}
+          error={field.error}
+          readOnly={!props.hasPermission}
+        />
+      )}
+    </Field>
   )
 
   return (
@@ -135,9 +135,10 @@ const RuntimeConfigs: Component<RuntimeConfigProps> = (props) => {
           </ToolTip>
         </FormItem>
       </Show>
-      <Show when={buildType() === 'runtimeCmd'}>{containerOverrideConfig}</Show>
+      <Show when={buildType() === 'runtimeCmd'}>{entrypointConfig}</Show>
       <FormItem title="高度な設定">
-        <Show when={buildType() !== 'runtimeCmd'}>{containerOverrideConfig}</Show>
+        <Show when={buildType() !== 'runtimeCmd'}>{entrypointConfig}</Show>
+        {commandOverrideConfig}
       </FormItem>
     </>
   )
