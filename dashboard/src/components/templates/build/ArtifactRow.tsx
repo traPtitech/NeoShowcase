@@ -1,10 +1,9 @@
 import { styled } from '@macaron-css/solid'
-import { Component, Show } from 'solid-js'
+import { Component } from 'solid-js'
 import { Artifact } from '/@/api/neoshowcase/protobuf/gateway_pb'
 import { Button } from '/@/components/UI/Button'
-import { ToolTip } from '/@/components/UI/ToolTip'
 import { client, handleAPIError } from '/@/libs/api'
-import { diffHuman, formatBytes } from '/@/libs/format'
+import { formatBytes } from '/@/libs/format'
 import { colorVars, textVars } from '/@/theme'
 
 const Container = styled('div', {
@@ -42,13 +41,6 @@ const ArtifactName = styled('div', {
     whiteSpace: 'nowrap',
     color: colorVars.semantic.text.black,
     ...textVars.h4.regular,
-  },
-})
-const CreatedAt = styled('div', {
-  base: {
-    flexShrink: 0,
-    color: colorVars.semantic.text.grey,
-    ...textVars.caption.regular,
   },
 })
 const MetaContainer = styled('div', {
@@ -95,16 +87,6 @@ export const ArtifactRow: Component<Props> = (props) => {
       <ContentsContainer>
         <TitleContainer>
           <ArtifactName>{props.artifact.name}</ArtifactName>
-          <Show when={props.artifact.createdAt}>
-            {(nonNullCreatedAt) => {
-              const { diff, localeString } = diffHuman(nonNullCreatedAt().toDate())
-              return (
-                <ToolTip props={{ content: localeString }}>
-                  <CreatedAt>{diff}</CreatedAt>
-                </ToolTip>
-              )
-            }}
-          </Show>
         </TitleContainer>
         <MetaContainer>
           <ArtifactSize>{formatBytes(+props.artifact.size.toString())}</ArtifactSize>
