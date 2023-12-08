@@ -96,9 +96,8 @@ const compareRepoWithApp =
     if (a.apps.length > 0 && b.apps.length > 0) {
       if (sort === 'asc') {
         return newestAppDate(a.apps) - newestAppDate(b.apps)
-      } else {
-        return newestAppDate(b.apps) - newestAppDate(a.apps)
       }
+      return newestAppDate(b.apps) - newestAppDate(a.apps)
     }
     // Bring up repositories with 1 or more apps at top
     if ((a.apps.length > 0 && b.apps.length === 0) || (a.apps.length === 0 && b.apps.length > 0)) {

@@ -146,8 +146,8 @@ const DeleteRepository: Component<{
                 content: !props.hasPermission
                   ? 'リポジトリを削除するにはオーナーになる必要があります'
                   : !canDeleteRepository()
-                  ? 'リポジトリ内にアプリケーションが存在するため削除できません'
-                  : undefined,
+                    ? 'リポジトリ内にアプリケーションが存在するため削除できません'
+                    : undefined,
               },
             }}
           >

@@ -61,16 +61,10 @@ export interface Props {
 
 export const RadioIcon: Component<Props> = (props) => {
   return (
-    <Container checked={props.selected} disabled={props.disabled}>
+    <Container checked={props.selected} disabled={props.disabled} role="img">
       <Show when={props.selected}>
-        <svg
-          width="20"
-          height="20"
-          viewBox="0 0 20 20"
-          fill="none"
-          xmlns="http://www.w3.org/2000/svg"
-          role="presentation"
-        >
+        <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <title>Radio Icon</title>
           <circle cx="10" cy="10" r="4" fill="currentColor" />
         </svg>
       </Show>

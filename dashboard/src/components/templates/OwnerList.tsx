@@ -90,11 +90,10 @@ const AddOwners: Component<{
   const filteredUsers = createMemo(() => {
     if (searchUserQuery() === '') {
       return props.nonOwners
-    } else {
-      return fuse()
-        .search(searchUserQuery())
-        .map((result) => result.item)
     }
+    return fuse()
+      .search(searchUserQuery())
+      .map((result) => result.item)
   })
 
   return (
@@ -188,11 +187,10 @@ const OwnerList: Component<{
   const filteredOwners = createMemo(() => {
     if (searchUserQuery() === '') {
       return props.owners
-    } else {
-      return fuse()
-        .search(searchUserQuery())
-        .map((result) => result.item)
     }
+    return fuse()
+      .search(searchUserQuery())
+      .map((result) => result.item)
   })
 
   const nonOwners = createMemo(() => props.users.filter((u) => !props.owners.some((o) => o.id === u.id)))

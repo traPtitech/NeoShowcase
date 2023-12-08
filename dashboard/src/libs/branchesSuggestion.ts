@@ -16,9 +16,8 @@ export const useBranchesSuggestion = (repoID: () => string, current: () => strin
       const normal = branches?.filter((b) => !b.includes('/'))
       const long = branches?.filter((b) => b.includes('/'))
       return [normal, long]
-    } else {
-      return [[], []]
     }
+    return [[], []]
   })
   const branchesFuse = createMemo(() => {
     const [normal, long] = branches()

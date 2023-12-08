@@ -515,7 +515,7 @@ const formStep = {
   general: 1,
   website: 2,
 } as const
-type FormStep = typeof formStep[keyof typeof formStep]
+type FormStep = (typeof formStep)[keyof typeof formStep]
 
 export default () => {
   const [searchParams, setParam] = useSearchParams()
