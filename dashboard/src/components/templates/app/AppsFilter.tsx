@@ -162,7 +162,7 @@ const AppsFilter: Component<{
   setIncludeNoApp: Setter<boolean>
 }> = (props) => {
   const filtered = () =>
-    props.statuses.length !== allStatuses.length || props.provider.length !== allProviders.length || !props.includeNoApp
+    props.statuses.length !== allStatuses.length || props.provider.length !== allProviders.length || props.includeNoApp
 
   return (
     <DropdownMenu.Root>
