@@ -41,7 +41,7 @@ export default () => {
 
   return (
     <DataTable.Container>
-      <DataTable.Title>Owner</DataTable.Title>
+      <DataTable.Title>Owners</DataTable.Title>
       <DataTable.SubTitle>オーナーはリポジトリ設定の変更が可能になります</DataTable.SubTitle>
       <Show when={loaded()}>
         <OwnerList

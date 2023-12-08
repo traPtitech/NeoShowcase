@@ -28,7 +28,7 @@ export default () => {
   const matchURLsPage = useMatch(() => `/apps/${app()?.id}/settings/urls`)
   const matchPortPage = useMatch(() => `/apps/${app()?.id}/settings/portForwarding`)
   const matchEnvVarsPage = useMatch(() => `/apps/${app()?.id}/settings/envVars`)
-  const matchOwnerPage = useMatch(() => `/apps/${app()?.id}/settings/owner`)
+  const matchOwnersPage = useMatch(() => `/apps/${app()?.id}/settings/owners`)
 
   const [isPending, start] = useTransition()
   const navigator = useNavigate()
@@ -105,13 +105,13 @@ export default () => {
                   variants="text"
                   size="medium"
                   full
-                  active={!!matchOwnerPage()}
+                  active={!!matchOwnersPage()}
                   onclick={() => {
-                    navigate(`/apps/${app()?.id}/settings/owner`)
+                    navigate(`/apps/${app()?.id}/settings/owners`)
                   }}
                   leftIcon={<MaterialSymbols>person</MaterialSymbols>}
                 >
-                  Owner
+                  Owners
                 </Button>
               </SideMenu>
             </SideView.Side>

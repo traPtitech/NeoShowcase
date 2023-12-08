@@ -25,7 +25,7 @@ export default () => {
   const loaded = () => !!repo()
   const matchGeneralPage = useMatch(() => `/repos/${repo()?.id}/settings/`)
   const matchAuthPage = useMatch(() => `/repos/${repo()?.id}/settings/authorization`)
-  const matchOwnerPage = useMatch(() => `/repos/${repo()?.id}/settings/owner`)
+  const matchOwnersPage = useMatch(() => `/repos/${repo()?.id}/settings/owners`)
 
   const [isPending, start] = useTransition()
   const navigator = useNavigate()
@@ -65,13 +65,13 @@ export default () => {
                 variants="text"
                 size="medium"
                 full
-                active={!!matchOwnerPage()}
+                active={!!matchOwnersPage()}
                 onclick={() => {
-                  navigate(`/repos/${repo()?.id}/settings/owner`)
+                  navigate(`/repos/${repo()?.id}/settings/owners`)
                 }}
                 leftIcon={<MaterialSymbols>person</MaterialSymbols>}
               >
-                Owner
+                Owners
               </Button>
             </SideMenu>
           </SideView.Side>

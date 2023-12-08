@@ -157,8 +157,8 @@ export default useRoutes([
             component: lazy(() => import('/@/pages/apps/[id]/settings/envVars')),
           },
           {
-            path: '/owner',
-            component: lazy(() => import('/@/pages/apps/[id]/settings/owner')),
+            path: '/owners',
+            component: lazy(() => import('/@/pages/apps/[id]/settings/owners')),
           },
         ],
       },
@@ -190,8 +190,8 @@ export default useRoutes([
             component: lazy(() => import('/@/pages/repos/[id]/settings/authorization')),
           },
           {
-            path: '/owner',
-            component: lazy(() => import('/@/pages/repos/[id]/settings/owner')),
+            path: '/owners',
+            component: lazy(() => import('/@/pages/repos/[id]/settings/owners')),
           },
         ],
       },
