@@ -32,7 +32,7 @@
     "vite-plugin-solid-svg": "0.7.0"
   },
   "dependencies": {
-    "@bufbuild/protobuf": "1.4.2",
+    "@bufbuild/protobuf": "1.5.1",
     "@connectrpc/connect": "1.1.4",
     "@connectrpc/connect-web": "1.1.4",
     "@kobalte/core": "0.11.2",
