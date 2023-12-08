@@ -6,9 +6,9 @@ export const LogContainer = styled('code', {
     display: 'flex',
     flexDirection: 'column',
     fontSize: '15px',
-    lineHeight: '20px',
+    lineHeight: '150%',
 
-    backgroundColor: colorVars.primitive.gray[900],
+    backgroundColor: colorVars.primitive.gray[800],
     padding: '4px 8px',
     color: colorVars.semantic.text.white,
     borderRadius: '4px',
