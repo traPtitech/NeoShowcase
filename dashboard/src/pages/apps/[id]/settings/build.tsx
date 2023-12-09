@@ -1,5 +1,5 @@
-import { SubmitHandler, createForm, reset } from '@modular-forms/solid'
-import { Show, createEffect } from 'solid-js'
+import { SubmitHandler, createForm, reset, setValues } from '@modular-forms/solid'
+import { Show, createEffect, onMount } from 'solid-js'
 import toast from 'solid-toast'
 import { Button } from '/@/components/UI/Button'
 import { DataTable } from '/@/components/layouts/DataTable'
@@ -16,16 +16,21 @@ export default () => {
     initialValues: configToForm(structuredClone(app()?.config)),
   })
 
-  // reset form when app updated
-  createEffect(() => {
-    reset(buildConfig, {
-      initialValues: configToForm(structuredClone(app()?.config)),
-    })
+  // `reset` doesn't work on first render
+  // see: https://github.com/fabian-hiller/modular-forms/issues/157#issuecomment-1848567069
+  onMount(() => {
+    setValues(buildConfig, configToForm(structuredClone(app()?.config)))
   })
 
   const discardChanges = () => {
-    reset(buildConfig)
+    reset(buildConfig, {
+      initialValues: configToForm(structuredClone(app()?.config)),
+    })
   }
+
+  // reset form when app updated
+  createEffect(discardChanges)
+
   const handleSubmit: SubmitHandler<BuildConfigForm> = async (values) => {
     try {
       await client.updateApplication({
