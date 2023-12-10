@@ -64,6 +64,7 @@ var providers = wire.NewSet(
 	giteaintegration.NewIntegration,
 	grpc.NewAPIServiceServer,
 	grpc.NewAuthInterceptor,
+	grpc.NewCacheInterceptor,
 	grpc.NewControllerService,
 	grpc.NewControllerServiceClient,
 	grpc.NewControllerBuilderService,
@@ -206,13 +207,17 @@ func provideGatewayServer(
 	c Config,
 	appService pbconnect.APIServiceHandler,
 	authInterceptor *grpc.AuthInterceptor,
+	cacheInterceptor *grpc.CacheInterceptor,
 ) *gateway.APIServer {
 	wc := web.H2CConfig{
 		Port: c.Components.Gateway.Port,
 		SetupRoute: func(mux *http.ServeMux) {
 			mux.Handle(pbconnect.NewAPIServiceHandler(
 				appService,
-				connect.WithInterceptors(authInterceptor),
+				connect.WithInterceptors(
+					authInterceptor, // Make sure auth is the outermost interceptor
+					cacheInterceptor,
+				),
 			))
 		},
 	}
