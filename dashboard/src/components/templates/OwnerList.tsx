@@ -23,15 +23,15 @@ const AddOwnersContainer = styled('div', {
     width: '100%',
     height: '100%',
     maxHeight: '100%',
-    display: 'grid',
-    gridTemplateRows: 'auto 1fr',
+    display: 'flex',
+    flexDirection: 'column',
     gap: '16px',
   },
 })
 const UsersContainer = styled('div', {
   base: {
     width: '100%',
-    height: '100%',
+    height: 'auto',
     maxHeight: '100%',
     overflowY: 'auto',
     display: 'flex',
@@ -221,9 +221,9 @@ const OwnerList: Component<{
         >
           Add Owners
         </Button>
-        <AddUserModal.Container>
+        <AddUserModal.Container fit={false}>
           <AddUserModal.Header>Add Owner</AddUserModal.Header>
-          <AddUserModal.Body>
+          <AddUserModal.Body fit={false}>
             <AddOwners addOwner={props.handleAddOwner} nonOwners={nonOwners()} />
           </AddUserModal.Body>
         </AddUserModal.Container>
