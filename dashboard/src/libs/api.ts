@@ -8,6 +8,7 @@ import { Application, GetApplicationsRequest_Scope, Repository } from '/@/api/ne
 
 const transport = createConnectTransport({
   baseUrl: '',
+  useHttpGet: true,
 })
 export const client = createPromiseClient(APIService, transport)
 

@@ -19,7 +19,7 @@ import (
 // generated with a version of connect newer than the one compiled into your binary. You can fix the
 // problem by either regenerating this code with an older version of connect or updating the connect
 // version compiled into your binary.
-const _ = connect.IsAtLeastVersion0_1_0
+const _ = connect.IsAtLeastVersion1_7_0
 
 const (
 	// APIServiceName is the fully-qualified name of the APIService service.
@@ -221,7 +221,8 @@ func NewAPIServiceClient(httpClient connect.HTTPClient, baseURL string, opts ...
 		getSystemInfo: connect.NewClient[emptypb.Empty, pb.SystemInfo](
 			httpClient,
 			baseURL+APIServiceGetSystemInfoProcedure,
-			opts...,
+			connect.WithIdempotency(connect.IdempotencyNoSideEffects),
+			connect.WithClientOptions(opts...),
 		),
 		generateKeyPair: connect.NewClient[emptypb.Empty, pb.GenerateKeyPairResponse](
 			httpClient,
@@ -231,12 +232,14 @@ func NewAPIServiceClient(httpClient connect.HTTPClient, baseURL string, opts ...
 		getMe: connect.NewClient[emptypb.Empty, pb.User](
 			httpClient,
 			baseURL+APIServiceGetMeProcedure,
-			opts...,
+			connect.WithIdempotency(connect.IdempotencyNoSideEffects),
+			connect.WithClientOptions(opts...),
 		),
 		getUsers: connect.NewClient[emptypb.Empty, pb.GetUsersResponse](
 			httpClient,
 			baseURL+APIServiceGetUsersProcedure,
-			opts...,
+			connect.WithIdempotency(connect.IdempotencyNoSideEffects),
+			connect.WithClientOptions(opts...),
 		),
 		createUserKey: connect.NewClient[pb.CreateUserKeyRequest, pb.UserKey](
 			httpClient,
@@ -246,7 +249,8 @@ func NewAPIServiceClient(httpClient connect.HTTPClient, baseURL string, opts ...
 		getUserKeys: connect.NewClient[emptypb.Empty, pb.GetUserKeysResponse](
 			httpClient,
 			baseURL+APIServiceGetUserKeysProcedure,
-			opts...,
+			connect.WithIdempotency(connect.IdempotencyNoSideEffects),
+			connect.WithClientOptions(opts...),
 		),
 		deleteUserKey: connect.NewClient[pb.DeleteUserKeyRequest, emptypb.Empty](
 			httpClient,
@@ -261,17 +265,20 @@ func NewAPIServiceClient(httpClient connect.HTTPClient, baseURL string, opts ...
 		getRepositories: connect.NewClient[pb.GetRepositoriesRequest, pb.GetRepositoriesResponse](
 			httpClient,
 			baseURL+APIServiceGetRepositoriesProcedure,
-			opts...,
+			connect.WithIdempotency(connect.IdempotencyNoSideEffects),
+			connect.WithClientOptions(opts...),
 		),
 		getRepository: connect.NewClient[pb.RepositoryIdRequest, pb.Repository](
 			httpClient,
 			baseURL+APIServiceGetRepositoryProcedure,
-			opts...,
+			connect.WithIdempotency(connect.IdempotencyNoSideEffects),
+			connect.WithClientOptions(opts...),
 		),
 		getRepositoryRefs: connect.NewClient[pb.RepositoryIdRequest, pb.GetRepositoryRefsResponse](
 			httpClient,
 			baseURL+APIServiceGetRepositoryRefsProcedure,
-			opts...,
+			connect.WithIdempotency(connect.IdempotencyNoSideEffects),
+			connect.WithClientOptions(opts...),
 		),
 		updateRepository: connect.NewClient[pb.UpdateRepositoryRequest, emptypb.Empty](
 			httpClient,
@@ -296,12 +303,14 @@ func NewAPIServiceClient(httpClient connect.HTTPClient, baseURL string, opts ...
 		getApplications: connect.NewClient[pb.GetApplicationsRequest, pb.GetApplicationsResponse](
 			httpClient,
 			baseURL+APIServiceGetApplicationsProcedure,
-			opts...,
+			connect.WithIdempotency(connect.IdempotencyNoSideEffects),
+			connect.WithClientOptions(opts...),
 		),
 		getApplication: connect.NewClient[pb.ApplicationIdRequest, pb.Application](
 			httpClient,
 			baseURL+APIServiceGetApplicationProcedure,
-			opts...,
+			connect.WithIdempotency(connect.IdempotencyNoSideEffects),
+			connect.WithClientOptions(opts...),
 		),
 		updateApplication: connect.NewClient[pb.UpdateApplicationRequest, emptypb.Empty](
 			httpClient,
@@ -316,17 +325,20 @@ func NewAPIServiceClient(httpClient connect.HTTPClient, baseURL string, opts ...
 		getAvailableMetrics: connect.NewClient[emptypb.Empty, pb.AvailableMetrics](
 			httpClient,
 			baseURL+APIServiceGetAvailableMetricsProcedure,
-			opts...,
+			connect.WithIdempotency(connect.IdempotencyNoSideEffects),
+			connect.WithClientOptions(opts...),
 		),
 		getApplicationMetrics: connect.NewClient[pb.GetApplicationMetricsRequest, pb.ApplicationMetrics](
 			httpClient,
 			baseURL+APIServiceGetApplicationMetricsProcedure,
-			opts...,
+			connect.WithIdempotency(connect.IdempotencyNoSideEffects),
+			connect.WithClientOptions(opts...),
 		),
 		getOutput: connect.NewClient[pb.GetOutputRequest, pb.ApplicationOutputs](
 			httpClient,
 			baseURL+APIServiceGetOutputProcedure,
-			opts...,
+			connect.WithIdempotency(connect.IdempotencyNoSideEffects),
+			connect.WithClientOptions(opts...),
 		),
 		getOutputStream: connect.NewClient[pb.ApplicationIdRequest, pb.ApplicationOutput](
 			httpClient,
@@ -336,7 +348,8 @@ func NewAPIServiceClient(httpClient connect.HTTPClient, baseURL string, opts ...
 		getEnvVars: connect.NewClient[pb.ApplicationIdRequest, pb.ApplicationEnvVars](
 			httpClient,
 			baseURL+APIServiceGetEnvVarsProcedure,
-			opts...,
+			connect.WithIdempotency(connect.IdempotencyNoSideEffects),
+			connect.WithClientOptions(opts...),
 		),
 		setEnvVar: connect.NewClient[pb.SetApplicationEnvVarRequest, emptypb.Empty](
 			httpClient,
@@ -361,17 +374,20 @@ func NewAPIServiceClient(httpClient connect.HTTPClient, baseURL string, opts ...
 		getAllBuilds: connect.NewClient[pb.GetAllBuildsRequest, pb.GetBuildsResponse](
 			httpClient,
 			baseURL+APIServiceGetAllBuildsProcedure,
-			opts...,
+			connect.WithIdempotency(connect.IdempotencyNoSideEffects),
+			connect.WithClientOptions(opts...),
 		),
 		getBuilds: connect.NewClient[pb.ApplicationIdRequest, pb.GetBuildsResponse](
 			httpClient,
 			baseURL+APIServiceGetBuildsProcedure,
-			opts...,
+			connect.WithIdempotency(connect.IdempotencyNoSideEffects),
+			connect.WithClientOptions(opts...),
 		),
 		getBuild: connect.NewClient[pb.BuildIdRequest, pb.Build](
 			httpClient,
 			baseURL+APIServiceGetBuildProcedure,
-			opts...,
+			connect.WithIdempotency(connect.IdempotencyNoSideEffects),
+			connect.WithClientOptions(opts...),
 		),
 		retryCommitBuild: connect.NewClient[pb.RetryCommitBuildRequest, emptypb.Empty](
 			httpClient,
@@ -386,7 +402,8 @@ func NewAPIServiceClient(httpClient connect.HTTPClient, baseURL string, opts ...
 		getBuildLog: connect.NewClient[pb.BuildIdRequest, pb.BuildLog](
 			httpClient,
 			baseURL+APIServiceGetBuildLogProcedure,
-			opts...,
+			connect.WithIdempotency(connect.IdempotencyNoSideEffects),
+			connect.WithClientOptions(opts...),
 		),
 		getBuildLogStream: connect.NewClient[pb.BuildIdRequest, pb.BuildLog](
 			httpClient,
@@ -396,7 +413,8 @@ func NewAPIServiceClient(httpClient connect.HTTPClient, baseURL string, opts ...
 		getBuildArtifact: connect.NewClient[pb.ArtifactIdRequest, pb.ArtifactContent](
 			httpClient,
 			baseURL+APIServiceGetBuildArtifactProcedure,
-			opts...,
+			connect.WithIdempotency(connect.IdempotencyNoSideEffects),
+			connect.WithClientOptions(opts...),
 		),
 	}
 }
@@ -706,7 +724,8 @@ func NewAPIServiceHandler(svc APIServiceHandler, opts ...connect.HandlerOption) 
 	aPIServiceGetSystemInfoHandler := connect.NewUnaryHandler(
 		APIServiceGetSystemInfoProcedure,
 		svc.GetSystemInfo,
-		opts...,
+		connect.WithIdempotency(connect.IdempotencyNoSideEffects),
+		connect.WithHandlerOptions(opts...),
 	)
 	aPIServiceGenerateKeyPairHandler := connect.NewUnaryHandler(
 		APIServiceGenerateKeyPairProcedure,
@@ -716,12 +735,14 @@ func NewAPIServiceHandler(svc APIServiceHandler, opts ...connect.HandlerOption) 
 	aPIServiceGetMeHandler := connect.NewUnaryHandler(
 		APIServiceGetMeProcedure,
 		svc.GetMe,
-		opts...,
+		connect.WithIdempotency(connect.IdempotencyNoSideEffects),
+		connect.WithHandlerOptions(opts...),
 	)
 	aPIServiceGetUsersHandler := connect.NewUnaryHandler(
 		APIServiceGetUsersProcedure,
 		svc.GetUsers,
-		opts...,
+		connect.WithIdempotency(connect.IdempotencyNoSideEffects),
+		connect.WithHandlerOptions(opts...),
 	)
 	aPIServiceCreateUserKeyHandler := connect.NewUnaryHandler(
 		APIServiceCreateUserKeyProcedure,
@@ -731,7 +752,8 @@ func NewAPIServiceHandler(svc APIServiceHandler, opts ...connect.HandlerOption) 
 	aPIServiceGetUserKeysHandler := connect.NewUnaryHandler(
 		APIServiceGetUserKeysProcedure,
 		svc.GetUserKeys,
-		opts...,
+		connect.WithIdempotency(connect.IdempotencyNoSideEffects),
+		connect.WithHandlerOptions(opts...),
 	)
 	aPIServiceDeleteUserKeyHandler := connect.NewUnaryHandler(
 		APIServiceDeleteUserKeyProcedure,
@@ -746,17 +768,20 @@ func NewAPIServiceHandler(svc APIServiceHandler, opts ...connect.HandlerOption) 
 	aPIServiceGetRepositoriesHandler := connect.NewUnaryHandler(
 		APIServiceGetRepositoriesProcedure,
 		svc.GetRepositories,
-		opts...,
+		connect.WithIdempotency(connect.IdempotencyNoSideEffects),
+		connect.WithHandlerOptions(opts...),
 	)
 	aPIServiceGetRepositoryHandler := connect.NewUnaryHandler(
 		APIServiceGetRepositoryProcedure,
 		svc.GetRepository,
-		opts...,
+		connect.WithIdempotency(connect.IdempotencyNoSideEffects),
+		connect.WithHandlerOptions(opts...),
 	)
 	aPIServiceGetRepositoryRefsHandler := connect.NewUnaryHandler(
 		APIServiceGetRepositoryRefsProcedure,
 		svc.GetRepositoryRefs,
-		opts...,
+		connect.WithIdempotency(connect.IdempotencyNoSideEffects),
+		connect.WithHandlerOptions(opts...),
 	)
 	aPIServiceUpdateRepositoryHandler := connect.NewUnaryHandler(
 		APIServiceUpdateRepositoryProcedure,
@@ -781,12 +806,14 @@ func NewAPIServiceHandler(svc APIServiceHandler, opts ...connect.HandlerOption) 
 	aPIServiceGetApplicationsHandler := connect.NewUnaryHandler(
 		APIServiceGetApplicationsProcedure,
 		svc.GetApplications,
-		opts...,
+		connect.WithIdempotency(connect.IdempotencyNoSideEffects),
+		connect.WithHandlerOptions(opts...),
 	)
 	aPIServiceGetApplicationHandler := connect.NewUnaryHandler(
 		APIServiceGetApplicationProcedure,
 		svc.GetApplication,
-		opts...,
+		connect.WithIdempotency(connect.IdempotencyNoSideEffects),
+		connect.WithHandlerOptions(opts...),
 	)
 	aPIServiceUpdateApplicationHandler := connect.NewUnaryHandler(
 		APIServiceUpdateApplicationProcedure,
@@ -801,17 +828,20 @@ func NewAPIServiceHandler(svc APIServiceHandler, opts ...connect.HandlerOption) 
 	aPIServiceGetAvailableMetricsHandler := connect.NewUnaryHandler(
 		APIServiceGetAvailableMetricsProcedure,
 		svc.GetAvailableMetrics,
-		opts...,
+		connect.WithIdempotency(connect.IdempotencyNoSideEffects),
+		connect.WithHandlerOptions(opts...),
 	)
 	aPIServiceGetApplicationMetricsHandler := connect.NewUnaryHandler(
 		APIServiceGetApplicationMetricsProcedure,
 		svc.GetApplicationMetrics,
-		opts...,
+		connect.WithIdempotency(connect.IdempotencyNoSideEffects),
+		connect.WithHandlerOptions(opts...),
 	)
 	aPIServiceGetOutputHandler := connect.NewUnaryHandler(
 		APIServiceGetOutputProcedure,
 		svc.GetOutput,
-		opts...,
+		connect.WithIdempotency(connect.IdempotencyNoSideEffects),
+		connect.WithHandlerOptions(opts...),
 	)
 	aPIServiceGetOutputStreamHandler := connect.NewServerStreamHandler(
 		APIServiceGetOutputStreamProcedure,
@@ -821,7 +851,8 @@ func NewAPIServiceHandler(svc APIServiceHandler, opts ...connect.HandlerOption) 
 	aPIServiceGetEnvVarsHandler := connect.NewUnaryHandler(
 		APIServiceGetEnvVarsProcedure,
 		svc.GetEnvVars,
-		opts...,
+		connect.WithIdempotency(connect.IdempotencyNoSideEffects),
+		connect.WithHandlerOptions(opts...),
 	)
 	aPIServiceSetEnvVarHandler := connect.NewUnaryHandler(
 		APIServiceSetEnvVarProcedure,
@@ -846,17 +877,20 @@ func NewAPIServiceHandler(svc APIServiceHandler, opts ...connect.HandlerOption) 
 	aPIServiceGetAllBuildsHandler := connect.NewUnaryHandler(
 		APIServiceGetAllBuildsProcedure,
 		svc.GetAllBuilds,
-		opts...,
+		connect.WithIdempotency(connect.IdempotencyNoSideEffects),
+		connect.WithHandlerOptions(opts...),
 	)
 	aPIServiceGetBuildsHandler := connect.NewUnaryHandler(
 		APIServiceGetBuildsProcedure,
 		svc.GetBuilds,
-		opts...,
+		connect.WithIdempotency(connect.IdempotencyNoSideEffects),
+		connect.WithHandlerOptions(opts...),
 	)
 	aPIServiceGetBuildHandler := connect.NewUnaryHandler(
 		APIServiceGetBuildProcedure,
 		svc.GetBuild,
-		opts...,
+		connect.WithIdempotency(connect.IdempotencyNoSideEffects),
+		connect.WithHandlerOptions(opts...),
 	)
 	aPIServiceRetryCommitBuildHandler := connect.NewUnaryHandler(
 		APIServiceRetryCommitBuildProcedure,
@@ -871,7 +905,8 @@ func NewAPIServiceHandler(svc APIServiceHandler, opts ...connect.HandlerOption) 
 	aPIServiceGetBuildLogHandler := connect.NewUnaryHandler(
 		APIServiceGetBuildLogProcedure,
 		svc.GetBuildLog,
-		opts...,
+		connect.WithIdempotency(connect.IdempotencyNoSideEffects),
+		connect.WithHandlerOptions(opts...),
 	)
 	aPIServiceGetBuildLogStreamHandler := connect.NewServerStreamHandler(
 		APIServiceGetBuildLogStreamProcedure,
@@ -881,7 +916,8 @@ func NewAPIServiceHandler(svc APIServiceHandler, opts ...connect.HandlerOption) 
 	aPIServiceGetBuildArtifactHandler := connect.NewUnaryHandler(
 		APIServiceGetBuildArtifactProcedure,
 		svc.GetBuildArtifact,
-		opts...,
+		connect.WithIdempotency(connect.IdempotencyNoSideEffects),
+		connect.WithHandlerOptions(opts...),
 	)
 	return "/neoshowcase.protobuf.APIService/", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		switch r.URL.Path {
