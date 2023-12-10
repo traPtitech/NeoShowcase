@@ -19,7 +19,7 @@ import (
 // generated with a version of connect newer than the one compiled into your binary. You can fix the
 // problem by either regenerating this code with an older version of connect or updating the connect
 // version compiled into your binary.
-const _ = connect.IsAtLeastVersion1_7_0
+const _ = connect.IsAtLeastVersion1_13_0
 
 const (
 	// APIServiceName is the fully-qualified name of the APIService service.
@@ -132,6 +132,47 @@ const (
 	APIServiceGetBuildArtifactProcedure = "/neoshowcase.protobuf.APIService/GetBuildArtifact"
 )
 
+// These variables are the protoreflect.Descriptor objects for the RPCs defined in this package.
+var (
+	aPIServiceServiceDescriptor                     = pb.File_neoshowcase_protobuf_gateway_proto.Services().ByName("APIService")
+	aPIServiceGetSystemInfoMethodDescriptor         = aPIServiceServiceDescriptor.Methods().ByName("GetSystemInfo")
+	aPIServiceGenerateKeyPairMethodDescriptor       = aPIServiceServiceDescriptor.Methods().ByName("GenerateKeyPair")
+	aPIServiceGetMeMethodDescriptor                 = aPIServiceServiceDescriptor.Methods().ByName("GetMe")
+	aPIServiceGetUsersMethodDescriptor              = aPIServiceServiceDescriptor.Methods().ByName("GetUsers")
+	aPIServiceCreateUserKeyMethodDescriptor         = aPIServiceServiceDescriptor.Methods().ByName("CreateUserKey")
+	aPIServiceGetUserKeysMethodDescriptor           = aPIServiceServiceDescriptor.Methods().ByName("GetUserKeys")
+	aPIServiceDeleteUserKeyMethodDescriptor         = aPIServiceServiceDescriptor.Methods().ByName("DeleteUserKey")
+	aPIServiceCreateRepositoryMethodDescriptor      = aPIServiceServiceDescriptor.Methods().ByName("CreateRepository")
+	aPIServiceGetRepositoriesMethodDescriptor       = aPIServiceServiceDescriptor.Methods().ByName("GetRepositories")
+	aPIServiceGetRepositoryMethodDescriptor         = aPIServiceServiceDescriptor.Methods().ByName("GetRepository")
+	aPIServiceGetRepositoryRefsMethodDescriptor     = aPIServiceServiceDescriptor.Methods().ByName("GetRepositoryRefs")
+	aPIServiceUpdateRepositoryMethodDescriptor      = aPIServiceServiceDescriptor.Methods().ByName("UpdateRepository")
+	aPIServiceRefreshRepositoryMethodDescriptor     = aPIServiceServiceDescriptor.Methods().ByName("RefreshRepository")
+	aPIServiceDeleteRepositoryMethodDescriptor      = aPIServiceServiceDescriptor.Methods().ByName("DeleteRepository")
+	aPIServiceCreateApplicationMethodDescriptor     = aPIServiceServiceDescriptor.Methods().ByName("CreateApplication")
+	aPIServiceGetApplicationsMethodDescriptor       = aPIServiceServiceDescriptor.Methods().ByName("GetApplications")
+	aPIServiceGetApplicationMethodDescriptor        = aPIServiceServiceDescriptor.Methods().ByName("GetApplication")
+	aPIServiceUpdateApplicationMethodDescriptor     = aPIServiceServiceDescriptor.Methods().ByName("UpdateApplication")
+	aPIServiceDeleteApplicationMethodDescriptor     = aPIServiceServiceDescriptor.Methods().ByName("DeleteApplication")
+	aPIServiceGetAvailableMetricsMethodDescriptor   = aPIServiceServiceDescriptor.Methods().ByName("GetAvailableMetrics")
+	aPIServiceGetApplicationMetricsMethodDescriptor = aPIServiceServiceDescriptor.Methods().ByName("GetApplicationMetrics")
+	aPIServiceGetOutputMethodDescriptor             = aPIServiceServiceDescriptor.Methods().ByName("GetOutput")
+	aPIServiceGetOutputStreamMethodDescriptor       = aPIServiceServiceDescriptor.Methods().ByName("GetOutputStream")
+	aPIServiceGetEnvVarsMethodDescriptor            = aPIServiceServiceDescriptor.Methods().ByName("GetEnvVars")
+	aPIServiceSetEnvVarMethodDescriptor             = aPIServiceServiceDescriptor.Methods().ByName("SetEnvVar")
+	aPIServiceDeleteEnvVarMethodDescriptor          = aPIServiceServiceDescriptor.Methods().ByName("DeleteEnvVar")
+	aPIServiceStartApplicationMethodDescriptor      = aPIServiceServiceDescriptor.Methods().ByName("StartApplication")
+	aPIServiceStopApplicationMethodDescriptor       = aPIServiceServiceDescriptor.Methods().ByName("StopApplication")
+	aPIServiceGetAllBuildsMethodDescriptor          = aPIServiceServiceDescriptor.Methods().ByName("GetAllBuilds")
+	aPIServiceGetBuildsMethodDescriptor             = aPIServiceServiceDescriptor.Methods().ByName("GetBuilds")
+	aPIServiceGetBuildMethodDescriptor              = aPIServiceServiceDescriptor.Methods().ByName("GetBuild")
+	aPIServiceRetryCommitBuildMethodDescriptor      = aPIServiceServiceDescriptor.Methods().ByName("RetryCommitBuild")
+	aPIServiceCancelBuildMethodDescriptor           = aPIServiceServiceDescriptor.Methods().ByName("CancelBuild")
+	aPIServiceGetBuildLogMethodDescriptor           = aPIServiceServiceDescriptor.Methods().ByName("GetBuildLog")
+	aPIServiceGetBuildLogStreamMethodDescriptor     = aPIServiceServiceDescriptor.Methods().ByName("GetBuildLogStream")
+	aPIServiceGetBuildArtifactMethodDescriptor      = aPIServiceServiceDescriptor.Methods().ByName("GetBuildArtifact")
+)
+
 // APIServiceClient is a client for the neoshowcase.protobuf.APIService service.
 type APIServiceClient interface {
 	// GetSystemInfo システム固有情報を取得します
@@ -221,198 +262,234 @@ func NewAPIServiceClient(httpClient connect.HTTPClient, baseURL string, opts ...
 		getSystemInfo: connect.NewClient[emptypb.Empty, pb.SystemInfo](
 			httpClient,
 			baseURL+APIServiceGetSystemInfoProcedure,
+			connect.WithSchema(aPIServiceGetSystemInfoMethodDescriptor),
 			connect.WithIdempotency(connect.IdempotencyNoSideEffects),
 			connect.WithClientOptions(opts...),
 		),
 		generateKeyPair: connect.NewClient[emptypb.Empty, pb.GenerateKeyPairResponse](
 			httpClient,
 			baseURL+APIServiceGenerateKeyPairProcedure,
-			opts...,
+			connect.WithSchema(aPIServiceGenerateKeyPairMethodDescriptor),
+			connect.WithClientOptions(opts...),
 		),
 		getMe: connect.NewClient[emptypb.Empty, pb.User](
 			httpClient,
 			baseURL+APIServiceGetMeProcedure,
+			connect.WithSchema(aPIServiceGetMeMethodDescriptor),
 			connect.WithIdempotency(connect.IdempotencyNoSideEffects),
 			connect.WithClientOptions(opts...),
 		),
 		getUsers: connect.NewClient[emptypb.Empty, pb.GetUsersResponse](
 			httpClient,
 			baseURL+APIServiceGetUsersProcedure,
+			connect.WithSchema(aPIServiceGetUsersMethodDescriptor),
 			connect.WithIdempotency(connect.IdempotencyNoSideEffects),
 			connect.WithClientOptions(opts...),
 		),
 		createUserKey: connect.NewClient[pb.CreateUserKeyRequest, pb.UserKey](
 			httpClient,
 			baseURL+APIServiceCreateUserKeyProcedure,
-			opts...,
+			connect.WithSchema(aPIServiceCreateUserKeyMethodDescriptor),
+			connect.WithClientOptions(opts...),
 		),
 		getUserKeys: connect.NewClient[emptypb.Empty, pb.GetUserKeysResponse](
 			httpClient,
 			baseURL+APIServiceGetUserKeysProcedure,
+			connect.WithSchema(aPIServiceGetUserKeysMethodDescriptor),
 			connect.WithIdempotency(connect.IdempotencyNoSideEffects),
 			connect.WithClientOptions(opts...),
 		),
 		deleteUserKey: connect.NewClient[pb.DeleteUserKeyRequest, emptypb.Empty](
 			httpClient,
 			baseURL+APIServiceDeleteUserKeyProcedure,
-			opts...,
+			connect.WithSchema(aPIServiceDeleteUserKeyMethodDescriptor),
+			connect.WithClientOptions(opts...),
 		),
 		createRepository: connect.NewClient[pb.CreateRepositoryRequest, pb.Repository](
 			httpClient,
 			baseURL+APIServiceCreateRepositoryProcedure,
-			opts...,
+			connect.WithSchema(aPIServiceCreateRepositoryMethodDescriptor),
+			connect.WithClientOptions(opts...),
 		),
 		getRepositories: connect.NewClient[pb.GetRepositoriesRequest, pb.GetRepositoriesResponse](
 			httpClient,
 			baseURL+APIServiceGetRepositoriesProcedure,
+			connect.WithSchema(aPIServiceGetRepositoriesMethodDescriptor),
 			connect.WithIdempotency(connect.IdempotencyNoSideEffects),
 			connect.WithClientOptions(opts...),
 		),
 		getRepository: connect.NewClient[pb.RepositoryIdRequest, pb.Repository](
 			httpClient,
 			baseURL+APIServiceGetRepositoryProcedure,
+			connect.WithSchema(aPIServiceGetRepositoryMethodDescriptor),
 			connect.WithIdempotency(connect.IdempotencyNoSideEffects),
 			connect.WithClientOptions(opts...),
 		),
 		getRepositoryRefs: connect.NewClient[pb.RepositoryIdRequest, pb.GetRepositoryRefsResponse](
 			httpClient,
 			baseURL+APIServiceGetRepositoryRefsProcedure,
+			connect.WithSchema(aPIServiceGetRepositoryRefsMethodDescriptor),
 			connect.WithIdempotency(connect.IdempotencyNoSideEffects),
 			connect.WithClientOptions(opts...),
 		),
 		updateRepository: connect.NewClient[pb.UpdateRepositoryRequest, emptypb.Empty](
 			httpClient,
 			baseURL+APIServiceUpdateRepositoryProcedure,
-			opts...,
+			connect.WithSchema(aPIServiceUpdateRepositoryMethodDescriptor),
+			connect.WithClientOptions(opts...),
 		),
 		refreshRepository: connect.NewClient[pb.RepositoryIdRequest, emptypb.Empty](
 			httpClient,
 			baseURL+APIServiceRefreshRepositoryProcedure,
-			opts...,
+			connect.WithSchema(aPIServiceRefreshRepositoryMethodDescriptor),
+			connect.WithClientOptions(opts...),
 		),
 		deleteRepository: connect.NewClient[pb.RepositoryIdRequest, emptypb.Empty](
 			httpClient,
 			baseURL+APIServiceDeleteRepositoryProcedure,
-			opts...,
+			connect.WithSchema(aPIServiceDeleteRepositoryMethodDescriptor),
+			connect.WithClientOptions(opts...),
 		),
 		createApplication: connect.NewClient[pb.CreateApplicationRequest, pb.Application](
 			httpClient,
 			baseURL+APIServiceCreateApplicationProcedure,
-			opts...,
+			connect.WithSchema(aPIServiceCreateApplicationMethodDescriptor),
+			connect.WithClientOptions(opts...),
 		),
 		getApplications: connect.NewClient[pb.GetApplicationsRequest, pb.GetApplicationsResponse](
 			httpClient,
 			baseURL+APIServiceGetApplicationsProcedure,
+			connect.WithSchema(aPIServiceGetApplicationsMethodDescriptor),
 			connect.WithIdempotency(connect.IdempotencyNoSideEffects),
 			connect.WithClientOptions(opts...),
 		),
 		getApplication: connect.NewClient[pb.ApplicationIdRequest, pb.Application](
 			httpClient,
 			baseURL+APIServiceGetApplicationProcedure,
+			connect.WithSchema(aPIServiceGetApplicationMethodDescriptor),
 			connect.WithIdempotency(connect.IdempotencyNoSideEffects),
 			connect.WithClientOptions(opts...),
 		),
 		updateApplication: connect.NewClient[pb.UpdateApplicationRequest, emptypb.Empty](
 			httpClient,
 			baseURL+APIServiceUpdateApplicationProcedure,
-			opts...,
+			connect.WithSchema(aPIServiceUpdateApplicationMethodDescriptor),
+			connect.WithClientOptions(opts...),
 		),
 		deleteApplication: connect.NewClient[pb.ApplicationIdRequest, emptypb.Empty](
 			httpClient,
 			baseURL+APIServiceDeleteApplicationProcedure,
-			opts...,
+			connect.WithSchema(aPIServiceDeleteApplicationMethodDescriptor),
+			connect.WithClientOptions(opts...),
 		),
 		getAvailableMetrics: connect.NewClient[emptypb.Empty, pb.AvailableMetrics](
 			httpClient,
 			baseURL+APIServiceGetAvailableMetricsProcedure,
+			connect.WithSchema(aPIServiceGetAvailableMetricsMethodDescriptor),
 			connect.WithIdempotency(connect.IdempotencyNoSideEffects),
 			connect.WithClientOptions(opts...),
 		),
 		getApplicationMetrics: connect.NewClient[pb.GetApplicationMetricsRequest, pb.ApplicationMetrics](
 			httpClient,
 			baseURL+APIServiceGetApplicationMetricsProcedure,
+			connect.WithSchema(aPIServiceGetApplicationMetricsMethodDescriptor),
 			connect.WithIdempotency(connect.IdempotencyNoSideEffects),
 			connect.WithClientOptions(opts...),
 		),
 		getOutput: connect.NewClient[pb.GetOutputRequest, pb.ApplicationOutputs](
 			httpClient,
 			baseURL+APIServiceGetOutputProcedure,
+			connect.WithSchema(aPIServiceGetOutputMethodDescriptor),
 			connect.WithIdempotency(connect.IdempotencyNoSideEffects),
 			connect.WithClientOptions(opts...),
 		),
 		getOutputStream: connect.NewClient[pb.ApplicationIdRequest, pb.ApplicationOutput](
 			httpClient,
 			baseURL+APIServiceGetOutputStreamProcedure,
-			opts...,
+			connect.WithSchema(aPIServiceGetOutputStreamMethodDescriptor),
+			connect.WithClientOptions(opts...),
 		),
 		getEnvVars: connect.NewClient[pb.ApplicationIdRequest, pb.ApplicationEnvVars](
 			httpClient,
 			baseURL+APIServiceGetEnvVarsProcedure,
+			connect.WithSchema(aPIServiceGetEnvVarsMethodDescriptor),
 			connect.WithIdempotency(connect.IdempotencyNoSideEffects),
 			connect.WithClientOptions(opts...),
 		),
 		setEnvVar: connect.NewClient[pb.SetApplicationEnvVarRequest, emptypb.Empty](
 			httpClient,
 			baseURL+APIServiceSetEnvVarProcedure,
-			opts...,
+			connect.WithSchema(aPIServiceSetEnvVarMethodDescriptor),
+			connect.WithClientOptions(opts...),
 		),
 		deleteEnvVar: connect.NewClient[pb.DeleteApplicationEnvVarRequest, emptypb.Empty](
 			httpClient,
 			baseURL+APIServiceDeleteEnvVarProcedure,
-			opts...,
+			connect.WithSchema(aPIServiceDeleteEnvVarMethodDescriptor),
+			connect.WithClientOptions(opts...),
 		),
 		startApplication: connect.NewClient[pb.ApplicationIdRequest, emptypb.Empty](
 			httpClient,
 			baseURL+APIServiceStartApplicationProcedure,
-			opts...,
+			connect.WithSchema(aPIServiceStartApplicationMethodDescriptor),
+			connect.WithClientOptions(opts...),
 		),
 		stopApplication: connect.NewClient[pb.ApplicationIdRequest, emptypb.Empty](
 			httpClient,
 			baseURL+APIServiceStopApplicationProcedure,
-			opts...,
+			connect.WithSchema(aPIServiceStopApplicationMethodDescriptor),
+			connect.WithClientOptions(opts...),
 		),
 		getAllBuilds: connect.NewClient[pb.GetAllBuildsRequest, pb.GetBuildsResponse](
 			httpClient,
 			baseURL+APIServiceGetAllBuildsProcedure,
+			connect.WithSchema(aPIServiceGetAllBuildsMethodDescriptor),
 			connect.WithIdempotency(connect.IdempotencyNoSideEffects),
 			connect.WithClientOptions(opts...),
 		),
 		getBuilds: connect.NewClient[pb.ApplicationIdRequest, pb.GetBuildsResponse](
 			httpClient,
 			baseURL+APIServiceGetBuildsProcedure,
+			connect.WithSchema(aPIServiceGetBuildsMethodDescriptor),
 			connect.WithIdempotency(connect.IdempotencyNoSideEffects),
 			connect.WithClientOptions(opts...),
 		),
 		getBuild: connect.NewClient[pb.BuildIdRequest, pb.Build](
 			httpClient,
 			baseURL+APIServiceGetBuildProcedure,
+			connect.WithSchema(aPIServiceGetBuildMethodDescriptor),
 			connect.WithIdempotency(connect.IdempotencyNoSideEffects),
 			connect.WithClientOptions(opts...),
 		),
 		retryCommitBuild: connect.NewClient[pb.RetryCommitBuildRequest, emptypb.Empty](
 			httpClient,
 			baseURL+APIServiceRetryCommitBuildProcedure,
-			opts...,
+			connect.WithSchema(aPIServiceRetryCommitBuildMethodDescriptor),
+			connect.WithClientOptions(opts...),
 		),
 		cancelBuild: connect.NewClient[pb.BuildIdRequest, emptypb.Empty](
 			httpClient,
 			baseURL+APIServiceCancelBuildProcedure,
-			opts...,
+			connect.WithSchema(aPIServiceCancelBuildMethodDescriptor),
+			connect.WithClientOptions(opts...),
 		),
 		getBuildLog: connect.NewClient[pb.BuildIdRequest, pb.BuildLog](
 			httpClient,
 			baseURL+APIServiceGetBuildLogProcedure,
+			connect.WithSchema(aPIServiceGetBuildLogMethodDescriptor),
 			connect.WithIdempotency(connect.IdempotencyNoSideEffects),
 			connect.WithClientOptions(opts...),
 		),
 		getBuildLogStream: connect.NewClient[pb.BuildIdRequest, pb.BuildLog](
 			httpClient,
 			baseURL+APIServiceGetBuildLogStreamProcedure,
-			opts...,
+			connect.WithSchema(aPIServiceGetBuildLogStreamMethodDescriptor),
+			connect.WithClientOptions(opts...),
 		),
 		getBuildArtifact: connect.NewClient[pb.ArtifactIdRequest, pb.ArtifactContent](
 			httpClient,
 			baseURL+APIServiceGetBuildArtifactProcedure,
+			connect.WithSchema(aPIServiceGetBuildArtifactMethodDescriptor),
 			connect.WithIdempotency(connect.IdempotencyNoSideEffects),
 			connect.WithClientOptions(opts...),
 		),
@@ -724,198 +801,234 @@ func NewAPIServiceHandler(svc APIServiceHandler, opts ...connect.HandlerOption) 
 	aPIServiceGetSystemInfoHandler := connect.NewUnaryHandler(
 		APIServiceGetSystemInfoProcedure,
 		svc.GetSystemInfo,
+		connect.WithSchema(aPIServiceGetSystemInfoMethodDescriptor),
 		connect.WithIdempotency(connect.IdempotencyNoSideEffects),
 		connect.WithHandlerOptions(opts...),
 	)
 	aPIServiceGenerateKeyPairHandler := connect.NewUnaryHandler(
 		APIServiceGenerateKeyPairProcedure,
 		svc.GenerateKeyPair,
-		opts...,
+		connect.WithSchema(aPIServiceGenerateKeyPairMethodDescriptor),
+		connect.WithHandlerOptions(opts...),
 	)
 	aPIServiceGetMeHandler := connect.NewUnaryHandler(
 		APIServiceGetMeProcedure,
 		svc.GetMe,
+		connect.WithSchema(aPIServiceGetMeMethodDescriptor),
 		connect.WithIdempotency(connect.IdempotencyNoSideEffects),
 		connect.WithHandlerOptions(opts...),
 	)
 	aPIServiceGetUsersHandler := connect.NewUnaryHandler(
 		APIServiceGetUsersProcedure,
 		svc.GetUsers,
+		connect.WithSchema(aPIServiceGetUsersMethodDescriptor),
 		connect.WithIdempotency(connect.IdempotencyNoSideEffects),
 		connect.WithHandlerOptions(opts...),
 	)
 	aPIServiceCreateUserKeyHandler := connect.NewUnaryHandler(
 		APIServiceCreateUserKeyProcedure,
 		svc.CreateUserKey,
-		opts...,
+		connect.WithSchema(aPIServiceCreateUserKeyMethodDescriptor),
+		connect.WithHandlerOptions(opts...),
 	)
 	aPIServiceGetUserKeysHandler := connect.NewUnaryHandler(
 		APIServiceGetUserKeysProcedure,
 		svc.GetUserKeys,
+		connect.WithSchema(aPIServiceGetUserKeysMethodDescriptor),
 		connect.WithIdempotency(connect.IdempotencyNoSideEffects),
 		connect.WithHandlerOptions(opts...),
 	)
 	aPIServiceDeleteUserKeyHandler := connect.NewUnaryHandler(
 		APIServiceDeleteUserKeyProcedure,
 		svc.DeleteUserKey,
-		opts...,
+		connect.WithSchema(aPIServiceDeleteUserKeyMethodDescriptor),
+		connect.WithHandlerOptions(opts...),
 	)
 	aPIServiceCreateRepositoryHandler := connect.NewUnaryHandler(
 		APIServiceCreateRepositoryProcedure,
 		svc.CreateRepository,
-		opts...,
+		connect.WithSchema(aPIServiceCreateRepositoryMethodDescriptor),
+		connect.WithHandlerOptions(opts...),
 	)
 	aPIServiceGetRepositoriesHandler := connect.NewUnaryHandler(
 		APIServiceGetRepositoriesProcedure,
 		svc.GetRepositories,
+		connect.WithSchema(aPIServiceGetRepositoriesMethodDescriptor),
 		connect.WithIdempotency(connect.IdempotencyNoSideEffects),
 		connect.WithHandlerOptions(opts...),
 	)
 	aPIServiceGetRepositoryHandler := connect.NewUnaryHandler(
 		APIServiceGetRepositoryProcedure,
 		svc.GetRepository,
+		connect.WithSchema(aPIServiceGetRepositoryMethodDescriptor),
 		connect.WithIdempotency(connect.IdempotencyNoSideEffects),
 		connect.WithHandlerOptions(opts...),
 	)
 	aPIServiceGetRepositoryRefsHandler := connect.NewUnaryHandler(
 		APIServiceGetRepositoryRefsProcedure,
 		svc.GetRepositoryRefs,
+		connect.WithSchema(aPIServiceGetRepositoryRefsMethodDescriptor),
 		connect.WithIdempotency(connect.IdempotencyNoSideEffects),
 		connect.WithHandlerOptions(opts...),
 	)
 	aPIServiceUpdateRepositoryHandler := connect.NewUnaryHandler(
 		APIServiceUpdateRepositoryProcedure,
 		svc.UpdateRepository,
-		opts...,
+		connect.WithSchema(aPIServiceUpdateRepositoryMethodDescriptor),
+		connect.WithHandlerOptions(opts...),
 	)
 	aPIServiceRefreshRepositoryHandler := connect.NewUnaryHandler(
 		APIServiceRefreshRepositoryProcedure,
 		svc.RefreshRepository,
-		opts...,
+		connect.WithSchema(aPIServiceRefreshRepositoryMethodDescriptor),
+		connect.WithHandlerOptions(opts...),
 	)
 	aPIServiceDeleteRepositoryHandler := connect.NewUnaryHandler(
 		APIServiceDeleteRepositoryProcedure,
 		svc.DeleteRepository,
-		opts...,
+		connect.WithSchema(aPIServiceDeleteRepositoryMethodDescriptor),
+		connect.WithHandlerOptions(opts...),
 	)
 	aPIServiceCreateApplicationHandler := connect.NewUnaryHandler(
 		APIServiceCreateApplicationProcedure,
 		svc.CreateApplication,
-		opts...,
+		connect.WithSchema(aPIServiceCreateApplicationMethodDescriptor),
+		connect.WithHandlerOptions(opts...),
 	)
 	aPIServiceGetApplicationsHandler := connect.NewUnaryHandler(
 		APIServiceGetApplicationsProcedure,
 		svc.GetApplications,
+		connect.WithSchema(aPIServiceGetApplicationsMethodDescriptor),
 		connect.WithIdempotency(connect.IdempotencyNoSideEffects),
 		connect.WithHandlerOptions(opts...),
 	)
 	aPIServiceGetApplicationHandler := connect.NewUnaryHandler(
 		APIServiceGetApplicationProcedure,
 		svc.GetApplication,
+		connect.WithSchema(aPIServiceGetApplicationMethodDescriptor),
 		connect.WithIdempotency(connect.IdempotencyNoSideEffects),
 		connect.WithHandlerOptions(opts...),
 	)
 	aPIServiceUpdateApplicationHandler := connect.NewUnaryHandler(
 		APIServiceUpdateApplicationProcedure,
 		svc.UpdateApplication,
-		opts...,
+		connect.WithSchema(aPIServiceUpdateApplicationMethodDescriptor),
+		connect.WithHandlerOptions(opts...),
 	)
 	aPIServiceDeleteApplicationHandler := connect.NewUnaryHandler(
 		APIServiceDeleteApplicationProcedure,
 		svc.DeleteApplication,
-		opts...,
+		connect.WithSchema(aPIServiceDeleteApplicationMethodDescriptor),
+		connect.WithHandlerOptions(opts...),
 	)
 	aPIServiceGetAvailableMetricsHandler := connect.NewUnaryHandler(
 		APIServiceGetAvailableMetricsProcedure,
 		svc.GetAvailableMetrics,
+		connect.WithSchema(aPIServiceGetAvailableMetricsMethodDescriptor),
 		connect.WithIdempotency(connect.IdempotencyNoSideEffects),
 		connect.WithHandlerOptions(opts...),
 	)
 	aPIServiceGetApplicationMetricsHandler := connect.NewUnaryHandler(
 		APIServiceGetApplicationMetricsProcedure,
 		svc.GetApplicationMetrics,
+		connect.WithSchema(aPIServiceGetApplicationMetricsMethodDescriptor),
 		connect.WithIdempotency(connect.IdempotencyNoSideEffects),
 		connect.WithHandlerOptions(opts...),
 	)
 	aPIServiceGetOutputHandler := connect.NewUnaryHandler(
 		APIServiceGetOutputProcedure,
 		svc.GetOutput,
+		connect.WithSchema(aPIServiceGetOutputMethodDescriptor),
 		connect.WithIdempotency(connect.IdempotencyNoSideEffects),
 		connect.WithHandlerOptions(opts...),
 	)
 	aPIServiceGetOutputStreamHandler := connect.NewServerStreamHandler(
 		APIServiceGetOutputStreamProcedure,
 		svc.GetOutputStream,
-		opts...,
+		connect.WithSchema(aPIServiceGetOutputStreamMethodDescriptor),
+		connect.WithHandlerOptions(opts...),
 	)
 	aPIServiceGetEnvVarsHandler := connect.NewUnaryHandler(
 		APIServiceGetEnvVarsProcedure,
 		svc.GetEnvVars,
+		connect.WithSchema(aPIServiceGetEnvVarsMethodDescriptor),
 		connect.WithIdempotency(connect.IdempotencyNoSideEffects),
 		connect.WithHandlerOptions(opts...),
 	)
 	aPIServiceSetEnvVarHandler := connect.NewUnaryHandler(
 		APIServiceSetEnvVarProcedure,
 		svc.SetEnvVar,
-		opts...,
+		connect.WithSchema(aPIServiceSetEnvVarMethodDescriptor),
+		connect.WithHandlerOptions(opts...),
 	)
 	aPIServiceDeleteEnvVarHandler := connect.NewUnaryHandler(
 		APIServiceDeleteEnvVarProcedure,
 		svc.DeleteEnvVar,
-		opts...,
+		connect.WithSchema(aPIServiceDeleteEnvVarMethodDescriptor),
+		connect.WithHandlerOptions(opts...),
 	)
 	aPIServiceStartApplicationHandler := connect.NewUnaryHandler(
 		APIServiceStartApplicationProcedure,
 		svc.StartApplication,
-		opts...,
+		connect.WithSchema(aPIServiceStartApplicationMethodDescriptor),
+		connect.WithHandlerOptions(opts...),
 	)
 	aPIServiceStopApplicationHandler := connect.NewUnaryHandler(
 		APIServiceStopApplicationProcedure,
 		svc.StopApplication,
-		opts...,
+		connect.WithSchema(aPIServiceStopApplicationMethodDescriptor),
+		connect.WithHandlerOptions(opts...),
 	)
 	aPIServiceGetAllBuildsHandler := connect.NewUnaryHandler(
 		APIServiceGetAllBuildsProcedure,
 		svc.GetAllBuilds,
+		connect.WithSchema(aPIServiceGetAllBuildsMethodDescriptor),
 		connect.WithIdempotency(connect.IdempotencyNoSideEffects),
 		connect.WithHandlerOptions(opts...),
 	)
 	aPIServiceGetBuildsHandler := connect.NewUnaryHandler(
 		APIServiceGetBuildsProcedure,
 		svc.GetBuilds,
+		connect.WithSchema(aPIServiceGetBuildsMethodDescriptor),
 		connect.WithIdempotency(connect.IdempotencyNoSideEffects),
 		connect.WithHandlerOptions(opts...),
 	)
 	aPIServiceGetBuildHandler := connect.NewUnaryHandler(
 		APIServiceGetBuildProcedure,
 		svc.GetBuild,
+		connect.WithSchema(aPIServiceGetBuildMethodDescriptor),
 		connect.WithIdempotency(connect.IdempotencyNoSideEffects),
 		connect.WithHandlerOptions(opts...),
 	)
 	aPIServiceRetryCommitBuildHandler := connect.NewUnaryHandler(
 		APIServiceRetryCommitBuildProcedure,
 		svc.RetryCommitBuild,
-		opts...,
+		connect.WithSchema(aPIServiceRetryCommitBuildMethodDescriptor),
+		connect.WithHandlerOptions(opts...),
 	)
 	aPIServiceCancelBuildHandler := connect.NewUnaryHandler(
 		APIServiceCancelBuildProcedure,
 		svc.CancelBuild,
-		opts...,
+		connect.WithSchema(aPIServiceCancelBuildMethodDescriptor),
+		connect.WithHandlerOptions(opts...),
 	)
 	aPIServiceGetBuildLogHandler := connect.NewUnaryHandler(
 		APIServiceGetBuildLogProcedure,
 		svc.GetBuildLog,
+		connect.WithSchema(aPIServiceGetBuildLogMethodDescriptor),
 		connect.WithIdempotency(connect.IdempotencyNoSideEffects),
 		connect.WithHandlerOptions(opts...),
 	)
 	aPIServiceGetBuildLogStreamHandler := connect.NewServerStreamHandler(
 		APIServiceGetBuildLogStreamProcedure,
 		svc.GetBuildLogStream,
-		opts...,
+		connect.WithSchema(aPIServiceGetBuildLogStreamMethodDescriptor),
+		connect.WithHandlerOptions(opts...),
 	)
 	aPIServiceGetBuildArtifactHandler := connect.NewUnaryHandler(
 		APIServiceGetBuildArtifactProcedure,
 		svc.GetBuildArtifact,
+		connect.WithSchema(aPIServiceGetBuildArtifactMethodDescriptor),
 		connect.WithIdempotency(connect.IdempotencyNoSideEffects),
 		connect.WithHandlerOptions(opts...),
 	)
