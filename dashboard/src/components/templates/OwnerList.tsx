@@ -178,15 +178,17 @@ const OwnerRow: Component<{
 
   return (
     <>
-      <UserRowContainer>
-        <UserAvatar user={props.user} size={32} />
-        <UserName>{props.user.name}</UserName>
-        <Show when={props.deleteOwner !== undefined}>
-          <Button variants="textError" size="small" onClick={openDeleteUserModal}>
-            Delete
-          </Button>
-        </Show>
-      </UserRowContainer>
+      <div class={bordered}>
+        <UserRowContainer>
+          <UserAvatar user={props.user} size={32} />
+          <UserName>{props.user.name}</UserName>
+          <Show when={props.deleteOwner !== undefined}>
+            <Button variants="textError" size="small" onClick={openDeleteUserModal}>
+              Delete
+            </Button>
+          </Show>
+        </UserRowContainer>
+      </div>
       <DeleteUserModal.Container>
         <DeleteUserModal.Header>Delete Owner</DeleteUserModal.Header>
         <DeleteUserModal.Body>
