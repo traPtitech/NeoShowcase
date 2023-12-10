@@ -105,12 +105,6 @@ const DialogHeader = styled('div', {
     display: 'flex',
     flexDirection: 'row',
     alignItems: 'center',
-
-    selectors: {
-      '&:not(:last-child)': {
-        borderBottom: `2px solid ${colorVars.semantic.ui.border}`,
-      },
-    },
   },
 })
 const titleStyle = style({
@@ -126,8 +120,8 @@ const Description = styled('div', {
     overflowY: 'hidden',
     padding: '24px 32px',
     selectors: {
-      '&:not(:last-child)': {
-        borderBottom: `2px solid ${colorVars.semantic.ui.border}`,
+      [`${DialogHeader.selector({})}~&`]: {
+        borderTop: `2px solid ${colorVars.semantic.ui.border}`,
       },
     },
   },
@@ -156,6 +150,11 @@ const ModalFooter = styled('div', {
     justifyContent: 'flex-end',
     alignItems: 'center',
     gap: '8px',
+    selectors: {
+      [`${Description.selector({})}~&`]: {
+        borderTop: `2px solid ${colorVars.semantic.ui.border}`,
+      },
+    },
   },
 })
 const closeButtonStyle = style({
