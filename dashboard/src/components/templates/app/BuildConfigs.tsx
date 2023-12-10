@@ -433,15 +433,16 @@ const defaultConfigs: BuildConfigs = {
   staticConfig: structuredClone(new StaticConfig()),
 }
 export const configToForm = (config: PlainMessage<ApplicationConfig> | undefined): BuildConfigForm => {
-  switch (config?.buildConfig.case) {
+  const buildConfig = config?.buildConfig
+  switch (buildConfig?.case) {
     case 'runtimeBuildpack':
       return {
         case: 'runtimeBuildpack',
         config: {
           ...defaultConfigs,
-          runtimeConfig: config.buildConfig.value.runtimeConfig ?? defaultConfigs.runtimeConfig,
+          runtimeConfig: buildConfig.value.runtimeConfig ?? defaultConfigs.runtimeConfig,
           buildPackConfig: {
-            context: config.buildConfig.value.context,
+            context: buildConfig.value.context,
           },
         },
       }
@@ -450,10 +451,10 @@ export const configToForm = (config: PlainMessage<ApplicationConfig> | undefined
         case: 'runtimeCmd',
         config: {
           ...defaultConfigs,
-          runtimeConfig: config.buildConfig.value.runtimeConfig ?? defaultConfigs.runtimeConfig,
+          runtimeConfig: buildConfig.value.runtimeConfig ?? defaultConfigs.runtimeConfig,
           cmdConfig: {
-            baseImage: config.buildConfig.value.baseImage,
-            buildCmd: config.buildConfig.value.buildCmd,
+            baseImage: buildConfig.value.baseImage,
+            buildCmd: buildConfig.value.buildCmd,
           },
         },
       }
@@ -462,10 +463,10 @@ export const configToForm = (config: PlainMessage<ApplicationConfig> | undefined
         case: 'runtimeDockerfile',
         config: {
           ...defaultConfigs,
-          runtimeConfig: config.buildConfig.value.runtimeConfig ?? defaultConfigs.runtimeConfig,
+          runtimeConfig: buildConfig.value.runtimeConfig ?? defaultConfigs.runtimeConfig,
           dockerfileConfig: {
-            context: config.buildConfig.value.context,
-            dockerfileName: config.buildConfig.value.dockerfileName,
+            context: buildConfig.value.context,
+            dockerfileName: buildConfig.value.dockerfileName,
           },
         },
       }
@@ -474,9 +475,9 @@ export const configToForm = (config: PlainMessage<ApplicationConfig> | undefined
         case: 'staticBuildpack',
         config: {
           ...defaultConfigs,
-          staticConfig: config.buildConfig.value.staticConfig ?? defaultConfigs.staticConfig,
+          staticConfig: buildConfig.value.staticConfig ?? defaultConfigs.staticConfig,
           buildPackConfig: {
-            context: config.buildConfig.value.context,
+            context: buildConfig.value.context,
           },
         },
       }
@@ -485,10 +486,10 @@ export const configToForm = (config: PlainMessage<ApplicationConfig> | undefined
         case: 'staticCmd',
         config: {
           ...defaultConfigs,
-          staticConfig: config.buildConfig.value.staticConfig ?? defaultConfigs.staticConfig,
+          staticConfig: buildConfig.value.staticConfig ?? defaultConfigs.staticConfig,
           cmdConfig: {
-            baseImage: config.buildConfig.value.baseImage,
-            buildCmd: config.buildConfig.value.buildCmd,
+            baseImage: buildConfig.value.baseImage,
+            buildCmd: buildConfig.value.buildCmd,
           },
         },
       }
@@ -497,10 +498,10 @@ export const configToForm = (config: PlainMessage<ApplicationConfig> | undefined
         case: 'staticDockerfile',
         config: {
           ...defaultConfigs,
-          staticConfig: config.buildConfig.value.staticConfig ?? defaultConfigs.staticConfig,
+          staticConfig: buildConfig.value.staticConfig ?? defaultConfigs.staticConfig,
           dockerfileConfig: {
-            context: config.buildConfig.value.context,
-            dockerfileName: config.buildConfig.value.dockerfileName,
+            context: buildConfig.value.context,
+            dockerfileName: buildConfig.value.dockerfileName,
           },
         },
       }

@@ -1,6 +1,7 @@
 import { styled } from '@macaron-css/solid'
-import { Form, SubmitHandler, createFormStore, reset } from '@modular-forms/solid'
+import { Form, SubmitHandler, createFormStore, reset, setValues } from '@modular-forms/solid'
 import { For, Show, createEffect } from 'solid-js'
+import { onMount } from 'solid-js'
 import toast from 'solid-toast'
 import { Button } from '/@/components/UI/Button'
 import { DataTable } from '/@/components/layouts/DataTable'
@@ -25,18 +26,22 @@ export default () => {
     },
   })
 
-  // reset form when app updated
-  createEffect(() => {
+  onMount(() => {
+    setValues(form, {
+      ports: structuredClone(app()?.portPublications),
+    })
+  })
+
+  const discardChanges = () => {
     reset(form, {
       initialValues: {
         ports: structuredClone(app()?.portPublications),
       },
     })
-  })
-
-  const discardChanges = () => {
-    reset(form)
   }
+  // reset form when app updated
+  createEffect(discardChanges)
+
   const handleSubmit: SubmitHandler<PortSettingsStore> = async (value) => {
     try {
       await client.updateApplication({

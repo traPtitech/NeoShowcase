@@ -1,6 +1,6 @@
 import { styled } from '@macaron-css/solid'
 import { Component, For, Show, createResource, createSignal, onCleanup, useTransition } from 'solid-js'
-
+import toast from 'solid-toast'
 import { Application, DeployType } from '/@/api/neoshowcase/protobuf/gateway_pb'
 import { Button } from '/@/components/UI/Button'
 import { DataTable } from '/@/components/layouts/DataTable'
@@ -13,8 +13,6 @@ import { ContainerLog } from '/@/components/templates/app/ContainerLog'
 import { availableMetrics, client, handleAPIError } from '/@/libs/api'
 import { useApplicationData } from '/@/routes'
 import { colorVars, media } from '/@/theme'
-
-import toast from 'solid-toast'
 
 const Container = styled('div', {
   base: {
