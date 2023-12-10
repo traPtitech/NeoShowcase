@@ -3,7 +3,7 @@
 /* eslint-disable */
 // @ts-nocheck
 
-import { Empty, MethodKind } from "@bufbuild/protobuf";
+import { Empty, MethodIdempotency, MethodKind } from "@bufbuild/protobuf";
 import { Application, ApplicationEnvVars, ApplicationIdRequest, ApplicationMetrics, ApplicationOutput, ApplicationOutputs, ArtifactContent, ArtifactIdRequest, AvailableMetrics, Build, BuildIdRequest, BuildLog, CreateApplicationRequest, CreateRepositoryRequest, CreateUserKeyRequest, DeleteApplicationEnvVarRequest, DeleteUserKeyRequest, GenerateKeyPairResponse, GetAllBuildsRequest, GetApplicationMetricsRequest, GetApplicationsRequest, GetApplicationsResponse, GetBuildsResponse, GetOutputRequest, GetRepositoriesRequest, GetRepositoriesResponse, GetRepositoryRefsResponse, GetUserKeysResponse, GetUsersResponse, Repository, RepositoryIdRequest, RetryCommitBuildRequest, SetApplicationEnvVarRequest, SystemInfo, UpdateApplicationRequest, UpdateRepositoryRequest, User, UserKey } from "./gateway_pb.js";
 
 /**
@@ -24,6 +24,7 @@ export const APIService = {
       I: Empty,
       O: SystemInfo,
       kind: MethodKind.Unary,
+      idempotency: MethodIdempotency.NoSideEffects,
     },
     /**
      * GenerateKeyPair リポジトリ登録で使用する鍵ペアを一時的に生成します
@@ -46,6 +47,7 @@ export const APIService = {
       I: Empty,
       O: User,
       kind: MethodKind.Unary,
+      idempotency: MethodIdempotency.NoSideEffects,
     },
     /**
      * GetUsers 全てのユーザーの情報を取得します
@@ -57,6 +59,7 @@ export const APIService = {
       I: Empty,
       O: GetUsersResponse,
       kind: MethodKind.Unary,
+      idempotency: MethodIdempotency.NoSideEffects,
     },
     /**
      * CreateUserKey アプリコンテナSSH用の公開鍵を登録します
@@ -79,6 +82,7 @@ export const APIService = {
       I: Empty,
       O: GetUserKeysResponse,
       kind: MethodKind.Unary,
+      idempotency: MethodIdempotency.NoSideEffects,
     },
     /**
      * DeleteUserKey 登録した公開鍵を削除します
@@ -112,6 +116,7 @@ export const APIService = {
       I: GetRepositoriesRequest,
       O: GetRepositoriesResponse,
       kind: MethodKind.Unary,
+      idempotency: MethodIdempotency.NoSideEffects,
     },
     /**
      * GetRepository リポジトリを取得します
@@ -123,6 +128,7 @@ export const APIService = {
       I: RepositoryIdRequest,
       O: Repository,
       kind: MethodKind.Unary,
+      idempotency: MethodIdempotency.NoSideEffects,
     },
     /**
      * GetRepositoryRefs リポジトリの現在の有効なref一覧を取得します
@@ -134,6 +140,7 @@ export const APIService = {
       I: RepositoryIdRequest,
       O: GetRepositoryRefsResponse,
       kind: MethodKind.Unary,
+      idempotency: MethodIdempotency.NoSideEffects,
     },
     /**
      * UpdateRepository リポジトリ情報を更新します
@@ -189,6 +196,7 @@ export const APIService = {
       I: GetApplicationsRequest,
       O: GetApplicationsResponse,
       kind: MethodKind.Unary,
+      idempotency: MethodIdempotency.NoSideEffects,
     },
     /**
      * GetApplication アプリを取得します
@@ -200,6 +208,7 @@ export const APIService = {
       I: ApplicationIdRequest,
       O: Application,
       kind: MethodKind.Unary,
+      idempotency: MethodIdempotency.NoSideEffects,
     },
     /**
      * UpdateApplication アプリ情報を更新します
@@ -233,6 +242,7 @@ export const APIService = {
       I: Empty,
       O: AvailableMetrics,
       kind: MethodKind.Unary,
+      idempotency: MethodIdempotency.NoSideEffects,
     },
     /**
      * GetApplicationMetrics アプリのメトリクスを取得します
@@ -244,6 +254,7 @@ export const APIService = {
       I: GetApplicationMetricsRequest,
       O: ApplicationMetrics,
       kind: MethodKind.Unary,
+      idempotency: MethodIdempotency.NoSideEffects,
     },
     /**
      * GetOutput アプリの出力を取得します
@@ -255,6 +266,7 @@ export const APIService = {
       I: GetOutputRequest,
       O: ApplicationOutputs,
       kind: MethodKind.Unary,
+      idempotency: MethodIdempotency.NoSideEffects,
     },
     /**
      * GetOutputStream アプリの出力をストリーム形式で取得します
@@ -277,6 +289,7 @@ export const APIService = {
       I: ApplicationIdRequest,
       O: ApplicationEnvVars,
       kind: MethodKind.Unary,
+      idempotency: MethodIdempotency.NoSideEffects,
     },
     /**
      * SetEnvVar アプリの環境変数をセットします システムによって設定された環境変数は上書きできません
@@ -332,6 +345,7 @@ export const APIService = {
       I: GetAllBuildsRequest,
       O: GetBuildsResponse,
       kind: MethodKind.Unary,
+      idempotency: MethodIdempotency.NoSideEffects,
     },
     /**
      * GetBuilds アプリのビルド一覧を取得します
@@ -343,6 +357,7 @@ export const APIService = {
       I: ApplicationIdRequest,
       O: GetBuildsResponse,
       kind: MethodKind.Unary,
+      idempotency: MethodIdempotency.NoSideEffects,
     },
     /**
      * GetBuild アプリのビルド情報を取得します
@@ -354,6 +369,7 @@ export const APIService = {
       I: BuildIdRequest,
       O: Build,
       kind: MethodKind.Unary,
+      idempotency: MethodIdempotency.NoSideEffects,
     },
     /**
      * RetryCommitBuild アプリの該当コミットのビルドをやり直します
@@ -387,6 +403,7 @@ export const APIService = {
       I: BuildIdRequest,
       O: BuildLog,
       kind: MethodKind.Unary,
+      idempotency: MethodIdempotency.NoSideEffects,
     },
     /**
      * GetBuildLogStream ビルド中のログをストリーム形式で取得します
@@ -409,6 +426,7 @@ export const APIService = {
       I: ArtifactIdRequest,
       O: ArtifactContent,
       kind: MethodKind.Unary,
+      idempotency: MethodIdempotency.NoSideEffects,
     },
   }
 } as const;

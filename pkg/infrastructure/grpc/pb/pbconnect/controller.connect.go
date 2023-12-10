@@ -19,7 +19,7 @@ import (
 // generated with a version of connect newer than the one compiled into your binary. You can fix the
 // problem by either regenerating this code with an older version of connect or updating the connect
 // version compiled into your binary.
-const _ = connect.IsAtLeastVersion0_1_0
+const _ = connect.IsAtLeastVersion1_13_0
 
 const (
 	// ControllerServiceName is the fully-qualified name of the ControllerService service.
@@ -70,6 +70,23 @@ const (
 	ControllerGiteaIntegrationServiceConnectProcedure = "/neoshowcase.protobuf.ControllerGiteaIntegrationService/Connect"
 )
 
+// These variables are the protoreflect.Descriptor objects for the RPCs defined in this package.
+var (
+	controllerServiceServiceDescriptor                       = pb.File_neoshowcase_protobuf_controller_proto.Services().ByName("ControllerService")
+	controllerServiceGetSystemInfoMethodDescriptor           = controllerServiceServiceDescriptor.Methods().ByName("GetSystemInfo")
+	controllerServiceFetchRepositoryMethodDescriptor         = controllerServiceServiceDescriptor.Methods().ByName("FetchRepository")
+	controllerServiceRegisterBuildMethodDescriptor           = controllerServiceServiceDescriptor.Methods().ByName("RegisterBuild")
+	controllerServiceSyncDeploymentsMethodDescriptor         = controllerServiceServiceDescriptor.Methods().ByName("SyncDeployments")
+	controllerServiceStreamBuildLogMethodDescriptor          = controllerServiceServiceDescriptor.Methods().ByName("StreamBuildLog")
+	controllerServiceCancelBuildMethodDescriptor             = controllerServiceServiceDescriptor.Methods().ByName("CancelBuild")
+	controllerBuilderServiceServiceDescriptor                = pb.File_neoshowcase_protobuf_controller_proto.Services().ByName("ControllerBuilderService")
+	controllerBuilderServiceConnectBuilderMethodDescriptor   = controllerBuilderServiceServiceDescriptor.Methods().ByName("ConnectBuilder")
+	controllerSSGenServiceServiceDescriptor                  = pb.File_neoshowcase_protobuf_controller_proto.Services().ByName("ControllerSSGenService")
+	controllerSSGenServiceConnectSSGenMethodDescriptor       = controllerSSGenServiceServiceDescriptor.Methods().ByName("ConnectSSGen")
+	controllerGiteaIntegrationServiceServiceDescriptor       = pb.File_neoshowcase_protobuf_controller_proto.Services().ByName("ControllerGiteaIntegrationService")
+	controllerGiteaIntegrationServiceConnectMethodDescriptor = controllerGiteaIntegrationServiceServiceDescriptor.Methods().ByName("Connect")
+)
+
 // ControllerServiceClient is a client for the neoshowcase.protobuf.ControllerService service.
 type ControllerServiceClient interface {
 	GetSystemInfo(context.Context, *connect.Request[emptypb.Empty]) (*connect.Response[pb.SystemInfo], error)
@@ -93,32 +110,38 @@ func NewControllerServiceClient(httpClient connect.HTTPClient, baseURL string, o
 		getSystemInfo: connect.NewClient[emptypb.Empty, pb.SystemInfo](
 			httpClient,
 			baseURL+ControllerServiceGetSystemInfoProcedure,
-			opts...,
+			connect.WithSchema(controllerServiceGetSystemInfoMethodDescriptor),
+			connect.WithClientOptions(opts...),
 		),
 		fetchRepository: connect.NewClient[pb.RepositoryIdRequest, emptypb.Empty](
 			httpClient,
 			baseURL+ControllerServiceFetchRepositoryProcedure,
-			opts...,
+			connect.WithSchema(controllerServiceFetchRepositoryMethodDescriptor),
+			connect.WithClientOptions(opts...),
 		),
 		registerBuild: connect.NewClient[pb.ApplicationIdRequest, emptypb.Empty](
 			httpClient,
 			baseURL+ControllerServiceRegisterBuildProcedure,
-			opts...,
+			connect.WithSchema(controllerServiceRegisterBuildMethodDescriptor),
+			connect.WithClientOptions(opts...),
 		),
 		syncDeployments: connect.NewClient[emptypb.Empty, emptypb.Empty](
 			httpClient,
 			baseURL+ControllerServiceSyncDeploymentsProcedure,
-			opts...,
+			connect.WithSchema(controllerServiceSyncDeploymentsMethodDescriptor),
+			connect.WithClientOptions(opts...),
 		),
 		streamBuildLog: connect.NewClient[pb.BuildIdRequest, pb.BuildLog](
 			httpClient,
 			baseURL+ControllerServiceStreamBuildLogProcedure,
-			opts...,
+			connect.WithSchema(controllerServiceStreamBuildLogMethodDescriptor),
+			connect.WithClientOptions(opts...),
 		),
 		cancelBuild: connect.NewClient[pb.BuildIdRequest, emptypb.Empty](
 			httpClient,
 			baseURL+ControllerServiceCancelBuildProcedure,
-			opts...,
+			connect.WithSchema(controllerServiceCancelBuildMethodDescriptor),
+			connect.WithClientOptions(opts...),
 		),
 	}
 }
@@ -183,32 +206,38 @@ func NewControllerServiceHandler(svc ControllerServiceHandler, opts ...connect.H
 	controllerServiceGetSystemInfoHandler := connect.NewUnaryHandler(
 		ControllerServiceGetSystemInfoProcedure,
 		svc.GetSystemInfo,
-		opts...,
+		connect.WithSchema(controllerServiceGetSystemInfoMethodDescriptor),
+		connect.WithHandlerOptions(opts...),
 	)
 	controllerServiceFetchRepositoryHandler := connect.NewUnaryHandler(
 		ControllerServiceFetchRepositoryProcedure,
 		svc.FetchRepository,
-		opts...,
+		connect.WithSchema(controllerServiceFetchRepositoryMethodDescriptor),
+		connect.WithHandlerOptions(opts...),
 	)
 	controllerServiceRegisterBuildHandler := connect.NewUnaryHandler(
 		ControllerServiceRegisterBuildProcedure,
 		svc.RegisterBuild,
-		opts...,
+		connect.WithSchema(controllerServiceRegisterBuildMethodDescriptor),
+		connect.WithHandlerOptions(opts...),
 	)
 	controllerServiceSyncDeploymentsHandler := connect.NewUnaryHandler(
 		ControllerServiceSyncDeploymentsProcedure,
 		svc.SyncDeployments,
-		opts...,
+		connect.WithSchema(controllerServiceSyncDeploymentsMethodDescriptor),
+		connect.WithHandlerOptions(opts...),
 	)
 	controllerServiceStreamBuildLogHandler := connect.NewServerStreamHandler(
 		ControllerServiceStreamBuildLogProcedure,
 		svc.StreamBuildLog,
-		opts...,
+		connect.WithSchema(controllerServiceStreamBuildLogMethodDescriptor),
+		connect.WithHandlerOptions(opts...),
 	)
 	controllerServiceCancelBuildHandler := connect.NewUnaryHandler(
 		ControllerServiceCancelBuildProcedure,
 		svc.CancelBuild,
-		opts...,
+		connect.WithSchema(controllerServiceCancelBuildMethodDescriptor),
+		connect.WithHandlerOptions(opts...),
 	)
 	return "/neoshowcase.protobuf.ControllerService/", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		switch r.URL.Path {
@@ -277,7 +306,8 @@ func NewControllerBuilderServiceClient(httpClient connect.HTTPClient, baseURL st
 		connectBuilder: connect.NewClient[pb.BuilderResponse, pb.BuilderRequest](
 			httpClient,
 			baseURL+ControllerBuilderServiceConnectBuilderProcedure,
-			opts...,
+			connect.WithSchema(controllerBuilderServiceConnectBuilderMethodDescriptor),
+			connect.WithClientOptions(opts...),
 		),
 	}
 }
@@ -307,7 +337,8 @@ func NewControllerBuilderServiceHandler(svc ControllerBuilderServiceHandler, opt
 	controllerBuilderServiceConnectBuilderHandler := connect.NewBidiStreamHandler(
 		ControllerBuilderServiceConnectBuilderProcedure,
 		svc.ConnectBuilder,
-		opts...,
+		connect.WithSchema(controllerBuilderServiceConnectBuilderMethodDescriptor),
+		connect.WithHandlerOptions(opts...),
 	)
 	return "/neoshowcase.protobuf.ControllerBuilderService/", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		switch r.URL.Path {
@@ -346,7 +377,8 @@ func NewControllerSSGenServiceClient(httpClient connect.HTTPClient, baseURL stri
 		connectSSGen: connect.NewClient[emptypb.Empty, pb.SSGenRequest](
 			httpClient,
 			baseURL+ControllerSSGenServiceConnectSSGenProcedure,
-			opts...,
+			connect.WithSchema(controllerSSGenServiceConnectSSGenMethodDescriptor),
+			connect.WithClientOptions(opts...),
 		),
 	}
 }
@@ -376,7 +408,8 @@ func NewControllerSSGenServiceHandler(svc ControllerSSGenServiceHandler, opts ..
 	controllerSSGenServiceConnectSSGenHandler := connect.NewServerStreamHandler(
 		ControllerSSGenServiceConnectSSGenProcedure,
 		svc.ConnectSSGen,
-		opts...,
+		connect.WithSchema(controllerSSGenServiceConnectSSGenMethodDescriptor),
+		connect.WithHandlerOptions(opts...),
 	)
 	return "/neoshowcase.protobuf.ControllerSSGenService/", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		switch r.URL.Path {
@@ -415,7 +448,8 @@ func NewControllerGiteaIntegrationServiceClient(httpClient connect.HTTPClient, b
 		connect: connect.NewClient[emptypb.Empty, pb.GiteaIntegrationRequest](
 			httpClient,
 			baseURL+ControllerGiteaIntegrationServiceConnectProcedure,
-			opts...,
+			connect.WithSchema(controllerGiteaIntegrationServiceConnectMethodDescriptor),
+			connect.WithClientOptions(opts...),
 		),
 	}
 }
@@ -445,7 +479,8 @@ func NewControllerGiteaIntegrationServiceHandler(svc ControllerGiteaIntegrationS
 	controllerGiteaIntegrationServiceConnectHandler := connect.NewServerStreamHandler(
 		ControllerGiteaIntegrationServiceConnectProcedure,
 		svc.Connect,
-		opts...,
+		connect.WithSchema(controllerGiteaIntegrationServiceConnectMethodDescriptor),
+		connect.WithHandlerOptions(opts...),
 	)
 	return "/neoshowcase.protobuf.ControllerGiteaIntegrationService/", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		switch r.URL.Path {

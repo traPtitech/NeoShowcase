@@ -294,7 +294,8 @@ func NewGateway(c Config) (component, error) {
 	apiServiceHandler := grpc.NewAPIServiceServer(service, avatarBaseURL)
 	authHeader := gatewayConfig.AuthHeader
 	authInterceptor := grpc.NewAuthInterceptor(userRepository, authHeader)
-	apiServer := provideGatewayServer(c, apiServiceHandler, authInterceptor)
+	cacheInterceptor := grpc.NewCacheInterceptor()
+	apiServer := provideGatewayServer(c, apiServiceHandler, authInterceptor, cacheInterceptor)
 	server := &gateway.Server{
 		APIServer: apiServer,
 		DB:        db,
