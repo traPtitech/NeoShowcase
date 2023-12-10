@@ -6,7 +6,7 @@ toolchain go1.21.0
 
 require (
 	code.gitea.io/sdk/gitea v0.16.0
-	connectrpc.com/connect v1.12.0
+	connectrpc.com/connect v1.13.0
 	github.com/aws/aws-sdk-go v1.48.10
 	github.com/cert-manager/cert-manager v1.13.2
 	github.com/docker/cli v24.0.7+incompatible
