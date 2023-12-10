@@ -23,6 +23,7 @@ const UserAvatar: Component<UserAvatarProps> = (props) => {
       style={{
         width: addedProps.size ? `${addedProps.size}px` : '100%',
       }}
+      loading="lazy"
       alt={addedProps.user.name}
       {...originalImgProps}
     />
