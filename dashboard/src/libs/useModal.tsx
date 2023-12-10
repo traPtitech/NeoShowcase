@@ -117,19 +117,6 @@ const titleStyle = style({
   color: colorVars.semantic.text.black,
   ...textVars.h2.medium,
 })
-const descriptionStyle = style({
-  width: '100%',
-  height: 'auto',
-  maxHeight: '100%',
-  display: 'flex',
-  overflowY: 'hidden',
-  padding: '24px 32px',
-  selectors: {
-    '&:not(:last-child)': {
-      borderBottom: `2px solid ${colorVars.semantic.ui.border}`,
-    },
-  },
-})
 const Description = styled('div', {
   base: {
     width: '100%',
