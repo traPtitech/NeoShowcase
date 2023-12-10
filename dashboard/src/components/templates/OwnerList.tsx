@@ -46,7 +46,7 @@ const bordered = style({
     '&:not(:last-child)': {
       borderBottom: `1px solid ${colorVars.semantic.ui.border}`,
     },
-  }
+  },
 })
 const UserRowContainer = styled('div', {
   base: {
