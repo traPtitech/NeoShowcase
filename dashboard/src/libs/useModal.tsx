@@ -1,4 +1,4 @@
-import { Dialog } from '@kobalte/core'
+import { As, Dialog } from '@kobalte/core'
 import { keyframes, style } from '@macaron-css/core'
 import { styled } from '@macaron-css/solid'
 import { ParentComponent, Show, createSignal, mergeProps } from 'solid-js'
@@ -61,24 +61,38 @@ const contentHide = keyframes({
     transform: 'scale(0.95)',
   },
 })
-const contentStyle = style({
-  position: 'relative',
-  width: '100%',
-  maxWidth: '568px',
-  height: 'auto',
-  maxHeight: '100%',
-  display: 'flex',
-  flexDirection: 'column',
-  background: colorVars.semantic.ui.primary,
-  borderRadius: '12px',
-  opacity: 1,
-  overflow: 'hidden',
+const Content = styled('div', {
+  base: {
+    position: 'relative',
+    width: '100%',
+    maxWidth: '568px',
+    maxHeight: '100%',
+    display: 'flex',
+    flexDirection: 'column',
+    background: colorVars.semantic.ui.primary,
+    borderRadius: '12px',
+    opacity: 1,
+    overflow: 'hidden',
 
-  animation: `${contentHide} 0.3s`,
-  selectors: {
-    '&[data-expanded]': {
-      animation: `${contentShow} 0.3s`,
+    animation: `${contentHide} 0.3s`,
+    selectors: {
+      '&[data-expanded]': {
+        animation: `${contentShow} 0.3s`,
+      },
     },
+  },
+  variants: {
+    fit: {
+      true: {
+        height: 'auto',
+      },
+      false: {
+        height: '100%',
+      },
+    },
+  },
+  defaultVariants: {
+    fit: true,
   },
 })
 const DialogHeader = styled('div', {
@@ -91,29 +105,38 @@ const DialogHeader = styled('div', {
     display: 'flex',
     flexDirection: 'row',
     alignItems: 'center',
-
-    selectors: {
-      '&:not(:last-child)': {
-        borderBottom: `2px solid ${colorVars.semantic.ui.border}`,
-      },
-    },
   },
 })
 const titleStyle = style({
   color: colorVars.semantic.text.black,
   ...textVars.h2.medium,
 })
-const descriptionStyle = style({
-  width: '100%',
-  height: 'auto',
-  maxHeight: '100%',
-  display: 'flex',
-  overflowY: 'hidden',
-  padding: '24px 32px',
-  selectors: {
-    '&:not(:last-child)': {
-      borderBottom: `2px solid ${colorVars.semantic.ui.border}`,
+const Description = styled('div', {
+  base: {
+    width: '100%',
+    height: 'auto',
+    maxHeight: '100%',
+    display: 'flex',
+    overflowY: 'hidden',
+    padding: '24px 32px',
+    selectors: {
+      [`${DialogHeader.selector({})}~&`]: {
+        borderTop: `2px solid ${colorVars.semantic.ui.border}`,
+      },
     },
+  },
+  variants: {
+    fit: {
+      true: {
+        height: 'auto',
+      },
+      false: {
+        height: '100%',
+      },
+    },
+  },
+  defaultVariants: {
+    fit: true,
   },
 })
 const ModalFooter = styled('div', {
@@ -127,6 +150,11 @@ const ModalFooter = styled('div', {
     justifyContent: 'flex-end',
     alignItems: 'center',
     gap: '8px',
+    selectors: {
+      [`${Description.selector({})}~&`]: {
+        borderTop: `2px solid ${colorVars.semantic.ui.border}`,
+      },
+    },
   },
 })
 const closeButtonStyle = style({
@@ -168,18 +196,22 @@ const useModal = (options?: {
   // モーダルを閉じるときはclose()を呼ぶ
   const close = () => setIsOpen(false)
 
-  const Container: ParentComponent = (props) => {
+  const Container: ParentComponent<{
+    fit?: boolean
+  }> = (props) => {
     return (
       <Dialog.Root open={isOpen()}>
         <Dialog.Portal>
           <Dialog.Overlay class={overlayStyle} />
           <DialogPositioner>
             <Dialog.Content
-              class={contentStyle}
               onEscapeKeyDown={close}
               onPointerDownOutside={mergedProps.closeOnClickOutside ? close : undefined}
+              asChild
             >
-              {props.children}
+              <As component={Content} fit={props.fit}>
+                {props.children}
+              </As>
             </Dialog.Content>
           </DialogPositioner>
         </Dialog.Portal>
@@ -200,10 +232,14 @@ const useModal = (options?: {
     )
   }
 
-  const Body: ParentComponent = (props) => {
+  const Body: ParentComponent<{
+    fit?: boolean
+  }> = (props) => {
     return (
-      <Dialog.Description as="div" class={descriptionStyle}>
-        {props.children}
+      <Dialog.Description asChild>
+        <As component={Description} fit={props.fit}>
+          {props.children}
+        </As>
       </Dialog.Description>
     )
   }

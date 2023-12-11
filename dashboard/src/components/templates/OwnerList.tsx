@@ -1,4 +1,6 @@
+import { style } from '@macaron-css/core'
 import { styled } from '@macaron-css/solid'
+import { createVirtualizer } from '@tanstack/solid-virtual'
 import Fuse from 'fuse.js'
 import { Component, For, Show, createMemo, createSignal } from 'solid-js'
 import { User } from '/@/api/neoshowcase/protobuf/gateway_pb'
@@ -23,22 +25,27 @@ const AddOwnersContainer = styled('div', {
     width: '100%',
     height: '100%',
     maxHeight: '100%',
-    display: 'grid',
-    gridTemplateRows: 'auto 1fr',
+    display: 'flex',
+    flexDirection: 'column',
     gap: '16px',
   },
 })
 const UsersContainer = styled('div', {
   base: {
     width: '100%',
-    height: '100%',
+    height: 'auto',
     maxHeight: '100%',
     overflowY: 'auto',
-    display: 'flex',
-    flexDirection: 'column',
 
     border: `1px solid ${colorVars.semantic.ui.border}`,
     borderRadius: '8px',
+  },
+})
+const bordered = style({
+  selectors: {
+    '&:not(:last-child)': {
+      borderBottom: `1px solid ${colorVars.semantic.ui.border}`,
+    },
   },
 })
 const UserRowContainer = styled('div', {
@@ -49,12 +56,6 @@ const UserRowContainer = styled('div', {
     flexDirection: 'row',
     alignItems: 'center',
     gap: '8px',
-
-    selectors: {
-      '&:not(:last-child)': {
-        borderBottom: `1px solid ${colorVars.semantic.ui.border}`,
-      },
-    },
   },
 })
 const UserName = styled('div', {
@@ -67,12 +68,19 @@ const UserName = styled('div', {
 const UserPlaceholder = styled('div', {
   base: {
     width: '100%',
+    height: '100%',
     padding: '16px 20px',
     display: 'flex',
+    flexDirection: 'column',
+    gap: '24px',
     alignItems: 'center',
     justifyContent: 'center',
-    color: colorVars.semantic.text.grey,
-    ...textVars.text.medium,
+
+    border: `1px solid ${colorVars.semantic.ui.border}`,
+    borderRadius: '8px',
+    background: colorVars.semantic.ui.primary,
+    color: colorVars.semantic.text.black,
+    ...textVars.h4.medium,
   },
 })
 
@@ -96,6 +104,16 @@ const AddOwners: Component<{
       .map((result) => result.item)
   })
 
+  const [containerRef, setContainerRef] = createSignal<HTMLDivElement | null>(null)
+  const virtualizer = createMemo(() =>
+    createVirtualizer({
+      count: filteredUsers().length,
+      getScrollElement: containerRef,
+      estimateSize: () => 64,
+    }),
+  )
+  const items = () => virtualizer().getVirtualItems()
+
   return (
     <AddOwnersContainer>
       <TextField
@@ -104,22 +122,50 @@ const AddOwners: Component<{
         value={searchUserQuery()}
         onInput={(e) => setSearchUserQuery(e.currentTarget.value)}
       />
-      <UsersContainer>
-        <For each={filteredUsers()}>
-          {(user) => (
-            <UserRowContainer>
-              <UserAvatar user={user} size={32} />
-              <UserName>{user.name}</UserName>
-              <Button variants="ghost" size="small" onClick={() => props.addOwner(user)}>
-                Add
-              </Button>
-            </UserRowContainer>
-          )}
-        </For>
-        <Show when={filteredUsers().length === 0}>
-          <UserPlaceholder>No Users Found</UserPlaceholder>
-        </Show>
-      </UsersContainer>
+      <Show
+        when={filteredUsers().length !== 0}
+        fallback={
+          <UserPlaceholder>
+            <MaterialSymbols displaySize={80}>search</MaterialSymbols>
+            No Users Found
+          </UserPlaceholder>
+        }
+      >
+        <UsersContainer ref={setContainerRef}>
+          <div
+            style={{
+              width: '100%',
+              height: `${virtualizer().getTotalSize()}px`,
+              position: 'relative',
+            }}
+          >
+            <For each={items() ?? []}>
+              {(vRow) => (
+                <div
+                  data-index={vRow.index}
+                  style={{
+                    position: 'absolute',
+                    top: 0,
+                    left: 0,
+                    width: '100%',
+                    height: `${vRow.size}px`,
+                    transform: `translateY(${vRow.start}px)`,
+                  }}
+                  class={bordered}
+                >
+                  <UserRowContainer>
+                    <UserAvatar user={filteredUsers()[vRow.index]} size={32} />
+                    <UserName>{filteredUsers()[vRow.index].name}</UserName>
+                    <Button variants="ghost" size="small" onClick={() => props.addOwner(filteredUsers()[vRow.index])}>
+                      Add
+                    </Button>
+                  </UserRowContainer>
+                </div>
+              )}
+            </For>
+          </div>
+        </UsersContainer>
+      </Show>
     </AddOwnersContainer>
   )
 }
@@ -132,15 +178,17 @@ const OwnerRow: Component<{
 
   return (
     <>
-      <UserRowContainer>
-        <UserAvatar user={props.user} size={32} />
-        <UserName>{props.user.name}</UserName>
-        <Show when={props.deleteOwner !== undefined}>
-          <Button variants="textError" size="small" onClick={openDeleteUserModal}>
-            Delete
-          </Button>
-        </Show>
-      </UserRowContainer>
+      <div class={bordered}>
+        <UserRowContainer>
+          <UserAvatar user={props.user} size={32} />
+          <UserName>{props.user.name}</UserName>
+          <Show when={props.deleteOwner !== undefined}>
+            <Button variants="textError" size="small" onClick={openDeleteUserModal}>
+              Delete
+            </Button>
+          </Show>
+        </UserRowContainer>
+      </div>
       <DeleteUserModal.Container>
         <DeleteUserModal.Header>Delete Owner</DeleteUserModal.Header>
         <DeleteUserModal.Body>
@@ -221,9 +269,9 @@ const OwnerList: Component<{
         >
           Add Owners
         </Button>
-        <AddUserModal.Container>
+        <AddUserModal.Container fit={false}>
           <AddUserModal.Header>Add Owner</AddUserModal.Header>
-          <AddUserModal.Body>
+          <AddUserModal.Body fit={false}>
             <AddOwners addOwner={props.handleAddOwner} nonOwners={nonOwners()} />
           </AddUserModal.Body>
         </AddUserModal.Container>
