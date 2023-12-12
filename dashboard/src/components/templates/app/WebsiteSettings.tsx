@@ -14,7 +14,9 @@ import ModalDeleteConfirm from '/@/components/UI/ModalDeleteConfirm'
 import { TextField } from '/@/components/UI/TextField'
 import FormBox from '/@/components/layouts/FormBox'
 import { systemInfo } from '/@/libs/api'
+import { websiteWarnings } from '/@/libs/application'
 import useModal from '/@/libs/useModal'
+import { colorVars } from '/@/theme'
 import { CheckBox } from '../CheckBox'
 import { FormItem } from '../FormItem'
 import { List } from '../List'
@@ -42,6 +44,18 @@ const HttpSelectContainer = styled('div', {
     width: 'calc(6ch + 60px)',
   },
 })
+const WarningsContainer = styled('div', {
+  base: {
+    display: 'flex',
+    flexDirection: 'column',
+    gap: '4px',
+  },
+})
+const WarningItem = styled('div', {
+  base: {
+    color: colorVars.semantic.accent.error,
+  },
+})
 const DeleteButtonContainer = styled('div', {
   base: {
     width: 'fit-content',
@@ -57,7 +71,7 @@ const AddMoreButtonContainer = styled('div', {
 
 interface WebsiteSettingProps {
   isRuntimeApp: boolean
-  formStore: FormStore<WebsiteSetting, undefined>
+  formStore: FormStore<WebsiteFormStatus, undefined>
   saveWebsite?: () => void
   deleteWebsite: () => void
   hasPermission: boolean
@@ -178,6 +192,8 @@ export const WebsiteSetting = (props: WebsiteSettingProps) => {
       },
     ),
   )
+
+  const warnings = () => websiteWarnings(getValue(props.formStore, 'website.host'))
 
   return (
     <Form
@@ -342,6 +358,11 @@ export const WebsiteSetting = (props: WebsiteSettingProps) => {
                 <URLItem>/TCP</URLItem>
               </Show>
             </URLContainer>
+            <Show when={warnings().length > 0}>
+              <WarningsContainer>
+                <For each={warnings()}>{(item) => <WarningItem>{item}</WarningItem>}</For>
+              </WarningsContainer>
+            </Show>
           </FormItem>
           <Field of={props.formStore} name={'website.authentication'} type="number">
             {(field, fieldProps) => (
@@ -474,7 +495,7 @@ type FQDN = {
   authAvailable: PlainMessage<AvailableDomain>['authAvailable']
 }
 
-export type WebsiteSetting =
+export type WebsiteFormStatus =
   | {
       /**
        *  - `noChange`: 既存の設定を変更していない
@@ -493,7 +514,7 @@ export type WebsiteSetting =
     }
 
 export type WebsiteSettingForm = {
-  websites: WebsiteSetting[]
+  websites: WebsiteFormStatus[]
 }
 
 export const newWebsite = (): PlainMessage<CreateWebsiteRequest> => ({
@@ -508,7 +529,7 @@ export const newWebsite = (): PlainMessage<CreateWebsiteRequest> => ({
 
 interface WebsiteSettingsProps {
   isRuntimeApp: boolean
-  formStores: FormStore<WebsiteSetting, undefined>[]
+  formStores: FormStore<WebsiteFormStatus, undefined>[]
   addWebsite: () => void
   deleteWebsiteForm: (index: number) => void
   applyChanges: () => void

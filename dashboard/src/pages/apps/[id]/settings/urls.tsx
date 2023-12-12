@@ -3,7 +3,7 @@ import { Show, createResource } from 'solid-js'
 import toast from 'solid-toast'
 import { DeployType } from '/@/api/neoshowcase/protobuf/gateway_pb'
 import { DataTable } from '/@/components/layouts/DataTable'
-import { WebsiteSetting, WebsiteSettings, newWebsite } from '/@/components/templates/app/WebsiteSettings'
+import { WebsiteFormStatus, WebsiteSettings, newWebsite } from '/@/components/templates/app/WebsiteSettings'
 import { client, handleAPIError } from '/@/libs/api'
 import { useApplicationData } from '/@/routes'
 
@@ -14,7 +14,7 @@ export default () => {
     () => app()?.websites,
     (websites) => {
       return websites.map((website) => {
-        const form = createFormStore<WebsiteSetting>({
+        const form = createFormStore<WebsiteFormStatus>({
           initialValues: {
             state: 'noChange',
             website: structuredClone(website),
@@ -25,7 +25,7 @@ export default () => {
     },
   )
   const addWebsiteForm = () => {
-    const form = createFormStore<WebsiteSetting>({
+    const form = createFormStore<WebsiteFormStatus>({
       initialValues: {
         state: 'added',
         website: newWebsite(),
