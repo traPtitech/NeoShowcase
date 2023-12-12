@@ -246,7 +246,7 @@ export const WebsiteSetting = (props: WebsiteSettingProps) => {
                 {(field, fieldProps) => (
                   <Show when={getValue(props.formStore, 'website.domain')?.startsWith('*')}>
                     <TextField
-                      placeholder="example.trap.show"
+                      placeholder="subdomain"
                       tooltip={{
                         props: {
                           content: 'ホスト名',
