@@ -1,5 +1,5 @@
 import { styled } from '@macaron-css/solid'
-import { Component, For, Show, createSignal } from 'solid-js'
+import { Component, For, Show } from 'solid-js'
 import toast from 'solid-toast'
 import { Application, Build, DeployType, Repository } from '/@/api/neoshowcase/protobuf/gateway_pb'
 import Badge from '/@/components/UI/Badge'
@@ -148,9 +148,6 @@ const AppDeployInfo: Component<{
   latestBuildId: string | undefined
   hasPermission: boolean
 }> = (props) => {
-  const [mouseEnter, setMouseEnter] = createSignal(false)
-  const showActions = () => props.hasPermission && mouseEnter()
-
   const stopApp = async () => {
     try {
       await client.stopApplication({ id: props.app.id })
@@ -163,22 +160,18 @@ const AppDeployInfo: Component<{
 
   return (
     <DeploymentContainer>
-      <AppStateContainer
-        onMouseEnter={() => setMouseEnter(true)}
-        onMouseLeave={() => setMouseEnter(false)}
-        variant={deploymentState(props.app)}
-      >
+      <AppStateContainer variant={deploymentState(props.app)}>
         <div />
         <AppState>
           <AppStatusIcon state={deploymentState(props.app)} size={80} />
           {deploymentState(props.app)}
         </AppState>
-        <Show when={showActions()}>
+        <Show when={props.hasPermission}>
           <ActionButtons>
-            <Button variants="borderError" size="small" onClick={props.startApp}>
+            <Button variants="primary" size="small" onClick={props.startApp}>
               {props.app.running ? 'Restart App' : 'Start App'}
             </Button>
-            <Button variants="borderError" size="small" onClick={stopApp} disabled={!props.app.running}>
+            <Button variants="primary" size="small" onClick={stopApp} disabled={!props.app.running}>
               Stop App
             </Button>
           </ActionButtons>
