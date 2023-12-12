@@ -193,7 +193,8 @@ export const WebsiteSetting = (props: WebsiteSettingProps) => {
     ),
   )
 
-  const warnings = () => websiteWarnings(getValue(props.formStore, 'website.subdomain'))
+  const warnings = () =>
+    websiteWarnings(getValue(props.formStore, 'website.subdomain'), getValue(props.formStore, 'website.https'))
 
   return (
     <Form
