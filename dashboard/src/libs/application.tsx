@@ -109,6 +109,18 @@ export const getWebsiteURL = (website: PlainMessage<Website | CreateWebsiteReque
   return `${scheme}://${website.fqdn}${website.pathPrefix}`
 }
 
+export const websiteWarnings = (subdomain: string | undefined, isHTTPS: boolean | undefined): string[] => {
+  const warnings = []
+  if (subdomain?.includes('_')) {
+    warnings.push('アンダースコア「_」を含むホスト名は非推奨です。将来非対応になる可能性があります。')
+  }
+  const labels = subdomain?.split('.')
+  if (isHTTPS && labels && labels.length >= 2) {
+    warnings.push('このホスト名では専用の証明書が取得されます。可能な限りホストのラベル数は少なくしてください。')
+  }
+  return warnings
+}
+
 export const extractRepositoryNameFromURL = (url: string): string => {
   const segments = url.split('/')
   const lastSegment = segments.pop() || segments.pop() // 末尾のスラッシュを除去

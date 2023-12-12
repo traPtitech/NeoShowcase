@@ -14,7 +14,9 @@ import ModalDeleteConfirm from '/@/components/UI/ModalDeleteConfirm'
 import { TextField } from '/@/components/UI/TextField'
 import FormBox from '/@/components/layouts/FormBox'
 import { systemInfo } from '/@/libs/api'
+import { websiteWarnings } from '/@/libs/application'
 import useModal from '/@/libs/useModal'
+import { colorVars } from '/@/theme'
 import { CheckBox } from '../CheckBox'
 import { FormItem } from '../FormItem'
 import { List } from '../List'
@@ -42,6 +44,18 @@ const HttpSelectContainer = styled('div', {
     width: 'calc(6ch + 60px)',
   },
 })
+const WarningsContainer = styled('div', {
+  base: {
+    display: 'flex',
+    flexDirection: 'column',
+    gap: '4px',
+  },
+})
+const WarningItem = styled('div', {
+  base: {
+    color: colorVars.semantic.accent.error,
+  },
+})
 const DeleteButtonContainer = styled('div', {
   base: {
     width: 'fit-content',
@@ -57,7 +71,7 @@ const AddMoreButtonContainer = styled('div', {
 
 interface WebsiteSettingProps {
   isRuntimeApp: boolean
-  formStore: FormStore<WebsiteSetting, undefined>
+  formStore: FormStore<WebsiteFormStatus, undefined>
   saveWebsite?: () => void
   deleteWebsite: () => void
   hasPermission: boolean
@@ -95,16 +109,16 @@ export const WebsiteSetting = (props: WebsiteSettingProps) => {
     return `${scheme}://${fqdn}${pathPrefix}`
   }
 
-  const extractHost = (
+  const extractSubdomain = (
     fqdn: string,
   ): {
-    host: string
+    subdomain: string
     domain: PlainMessage<AvailableDomain>
   } => {
     const matchNonWildcardDomain = nonWildcardDomains().find((d) => fqdn === d.domain)
     if (matchNonWildcardDomain !== undefined) {
       return {
-        host: '',
+        subdomain: '',
         domain: matchNonWildcardDomain,
       }
     }
@@ -114,24 +128,24 @@ export const WebsiteSetting = (props: WebsiteSettingProps) => {
       const fallbackDomain = systemInfo()?.domains[0]
       if (fallbackDomain === undefined) throw new Error('No domain available')
       return {
-        host: '',
+        subdomain: '',
         domain: fallbackDomain,
       }
     }
     return {
-      host: fqdn.slice(0, -matchDomain.domain.length + 1),
+      subdomain: fqdn.slice(0, -matchDomain.domain.length + 1),
       domain: matchDomain,
     }
   }
 
-  // set host and domain from fqdn on fqdn change
+  // set subdomain and domain from fqdn on fqdn change
   createEffect(
     on(
       () => getValue(props.formStore, 'website.fqdn'),
       (fqdn) => {
         if (fqdn === undefined) return
-        const { host, domain } = extractHost(fqdn)
-        setValue(props.formStore, 'website.host', host)
+        const { subdomain, domain } = extractSubdomain(fqdn)
+        setValue(props.formStore, 'website.subdomain', subdomain)
         setValue(props.formStore, 'website.domain', domain.domain)
         setValue(props.formStore, 'website.authAvailable', domain.authAvailable)
         if (domain.authAvailable === false) {
@@ -141,12 +155,12 @@ export const WebsiteSetting = (props: WebsiteSettingProps) => {
     ),
   )
 
-  const resetHostAndDomain = createReaction(() => {
+  const resetSubdomainAndDomain = createReaction(() => {
     const fqdn = getValue(props.formStore, 'website.fqdn')
     if (fqdn === undefined) return
-    const { host, domain } = extractHost(fqdn)
-    reset(props.formStore, 'website.host', {
-      initialValue: host,
+    const { subdomain, domain } = extractSubdomain(fqdn)
+    reset(props.formStore, 'website.subdomain', {
+      initialValue: subdomain,
     })
     reset(props.formStore, 'website.domain', {
       initialValue: domain.domain,
@@ -157,19 +171,19 @@ export const WebsiteSetting = (props: WebsiteSettingProps) => {
   })
 
   onMount(() => {
-    // Reset host and domain on first fqdn change
-    resetHostAndDomain(() => getValue(props.formStore, 'website.fqdn'))
+    // Reset subdomain and domain on first fqdn change
+    resetSubdomainAndDomain(() => getValue(props.formStore, 'website.fqdn'))
   })
 
-  // set fqdn from host and domain on host or domain change
+  // set fqdn from subdomain and domain on subdomain or domain change
   createEffect(
     on(
-      [() => getValue(props.formStore, 'website.host'), () => getValue(props.formStore, 'website.domain')],
-      ([host, domain]) => {
-        if (host === undefined || domain === undefined) return
+      [() => getValue(props.formStore, 'website.subdomain'), () => getValue(props.formStore, 'website.domain')],
+      ([subdomain, domain]) => {
+        if (subdomain === undefined || domain === undefined) return
         if (domain.startsWith('*')) {
-          // wildcard domainならhostとdomainを結合
-          const fqdn = `${host}${domain?.replace(/\*/g, '')}`
+          // wildcard domainならsubdomainとdomainを結合
+          const fqdn = `${subdomain}${domain?.replace(/\*/g, '')}`
           setValue(props.formStore, 'website.fqdn', fqdn)
         } else {
           // non-wildcard domainならdomainをそのまま使う
@@ -178,6 +192,9 @@ export const WebsiteSetting = (props: WebsiteSettingProps) => {
       },
     ),
   )
+
+  const warnings = () =>
+    websiteWarnings(getValue(props.formStore, 'website.subdomain'), getValue(props.formStore, 'website.https'))
 
   return (
     <Form
@@ -235,10 +252,10 @@ export const WebsiteSetting = (props: WebsiteSettingProps) => {
               <URLItem>://</URLItem>
               <Field
                 of={props.formStore}
-                name={'website.host'}
-                validate={(host) => {
-                  if (getValue(props.formStore, 'website.domain')?.startsWith('*') && host === '') {
-                    return 'Please Enter Hostname'
+                name={'website.subdomain'}
+                validate={(subdomain) => {
+                  if (getValue(props.formStore, 'website.domain')?.startsWith('*') && subdomain === '') {
+                    return 'Please Enter Subdomain Name'
                   }
                   return ''
                 }}
@@ -246,10 +263,10 @@ export const WebsiteSetting = (props: WebsiteSettingProps) => {
                 {(field, fieldProps) => (
                   <Show when={getValue(props.formStore, 'website.domain')?.startsWith('*')}>
                     <TextField
-                      placeholder="example.trap.show"
+                      placeholder="subdomain"
                       tooltip={{
                         props: {
-                          content: 'ホスト名',
+                          content: 'サブドメイン名',
                         },
                       }}
                       {...fieldProps}
@@ -265,7 +282,7 @@ export const WebsiteSetting = (props: WebsiteSettingProps) => {
                   <SingleSelect
                     tooltip={{
                       props: {
-                        content: 'ドメイン',
+                        content: 'ドメイン名',
                       },
                     }}
                     {...fieldProps}
@@ -342,6 +359,11 @@ export const WebsiteSetting = (props: WebsiteSettingProps) => {
                 <URLItem>/TCP</URLItem>
               </Show>
             </URLContainer>
+            <Show when={warnings().length > 0}>
+              <WarningsContainer>
+                <For each={warnings()}>{(item) => <WarningItem>{item}</WarningItem>}</For>
+              </WarningsContainer>
+            </Show>
           </FormItem>
           <Field of={props.formStore} name={'website.authentication'} type="number">
             {(field, fieldProps) => (
@@ -469,12 +491,12 @@ export const WebsiteSetting = (props: WebsiteSettingProps) => {
 }
 
 type FQDN = {
-  host: string
+  subdomain: string
   domain: PlainMessage<AvailableDomain>['domain']
   authAvailable: PlainMessage<AvailableDomain>['authAvailable']
 }
 
-export type WebsiteSetting =
+export type WebsiteFormStatus =
   | {
       /**
        *  - `noChange`: 既存の設定を変更していない
@@ -493,7 +515,7 @@ export type WebsiteSetting =
     }
 
 export type WebsiteSettingForm = {
-  websites: WebsiteSetting[]
+  websites: WebsiteFormStatus[]
 }
 
 export const newWebsite = (): PlainMessage<CreateWebsiteRequest> => ({
@@ -508,7 +530,7 @@ export const newWebsite = (): PlainMessage<CreateWebsiteRequest> => ({
 
 interface WebsiteSettingsProps {
   isRuntimeApp: boolean
-  formStores: FormStore<WebsiteSetting, undefined>[]
+  formStores: FormStore<WebsiteFormStatus, undefined>[]
   addWebsite: () => void
   deleteWebsiteForm: (index: number) => void
   applyChanges: () => void

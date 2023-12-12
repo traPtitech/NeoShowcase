@@ -150,6 +150,8 @@ interface StaticConfigProps {
 }
 
 const StaticConfigs = (props: StaticConfigProps) => {
+  const buildType = () => getValue(props.formStore, 'case')
+
   return (
     <>
       <Field of={props.formStore} name="config.staticConfig.artifactPath" validate={[required('Enter Artifact Path')]}>
@@ -162,7 +164,7 @@ const StaticConfigs = (props: StaticConfigProps) => {
                 content: (
                   <>
                     <div>静的ファイルが生成されるディレクトリ</div>
-                    <div>(Contextからの相対パス)</div>
+                    <div>({buildType() === 'staticCmd' ? 'リポジトリルート' : 'Context'}からの相対パス)</div>
                   </>
                 ),
               },

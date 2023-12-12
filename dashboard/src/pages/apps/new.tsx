@@ -37,7 +37,7 @@ import { List } from '/@/components/templates/List'
 import { Nav } from '/@/components/templates/Nav'
 import { AppGeneralConfig, AppGeneralForm } from '/@/components/templates/app/AppGeneralConfig'
 import { BuildConfigForm, BuildConfigs, configToForm, formToConfig } from '/@/components/templates/app/BuildConfigs'
-import { WebsiteSetting, newWebsite } from '/@/components/templates/app/WebsiteSettings'
+import { WebsiteFormStatus, WebsiteSetting, newWebsite } from '/@/components/templates/app/WebsiteSettings'
 import ReposFilter from '/@/components/templates/repo/ReposFilter'
 import { client, handleAPIError, systemInfo } from '/@/libs/api'
 import { Provider, providerToIcon, repositoryURLToProvider } from '/@/libs/application'
@@ -403,13 +403,13 @@ const AddMoreButtonContainer = styled('div', {
 
 const WebsiteStep: Component<{
   isRuntimeApp: boolean
-  websiteForms: Accessor<FormStore<WebsiteSetting, undefined>[]>
-  setWebsiteForms: Setter<FormStore<WebsiteSetting, undefined>[]>
+  websiteForms: Accessor<FormStore<WebsiteFormStatus, undefined>[]>
+  setWebsiteForms: Setter<FormStore<WebsiteFormStatus, undefined>[]>
   backToGeneralStep: () => void
   submit: () => Promise<void>
 }> = (props) => {
   const addWebsiteForm = () => {
-    const form = createFormStore<WebsiteSetting>({
+    const form = createFormStore<WebsiteFormStatus>({
       initialValues: {
         state: 'added',
         website: newWebsite(),
@@ -555,7 +555,7 @@ export default () => {
     setValue(createAppForm, 'repositoryId', repo()?.id)
   })
 
-  const [websiteForms, setWebsiteForms] = createSignal<FormStore<WebsiteSetting, undefined>[]>([])
+  const [websiteForms, setWebsiteForms] = createSignal<FormStore<WebsiteFormStatus, undefined>[]>([])
 
   // TODO: ブラウザバック時のrepositoryIDの設定
 
