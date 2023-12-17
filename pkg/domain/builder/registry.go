@@ -5,15 +5,17 @@ import (
 	"github.com/regclient/regclient/config"
 )
 
+type RegistryConfig struct {
+	Scheme   string `mapstructure:"scheme" yaml:"scheme"`
+	Addr     string `mapstructure:"addr" yaml:"addr"`
+	Username string `mapstructure:"username" yaml:"username"`
+	Password string `mapstructure:"password" yaml:"password"`
+}
+
 type ImageConfig struct {
-	Registry struct {
-		Scheme   string `mapstructure:"scheme" yaml:"scheme"`
-		Addr     string `mapstructure:"addr" yaml:"addr"`
-		Username string `mapstructure:"username" yaml:"username"`
-		Password string `mapstructure:"password" yaml:"password"`
-	} `mapstructure:"registry" yaml:"registry"`
-	NamePrefix    string `mapstructure:"namePrefix" yaml:"namePrefix"`
-	TmpNamePrefix string `mapstructure:"tmpNamePrefix" yaml:"tmpNamePrefix"`
+	Registry      RegistryConfig `mapstructure:"registry" yaml:"registry"`
+	NamePrefix    string         `mapstructure:"namePrefix" yaml:"namePrefix"`
+	TmpNamePrefix string         `mapstructure:"tmpNamePrefix" yaml:"tmpNamePrefix"`
 }
 
 // NewRegistry generates a new regclient instance.

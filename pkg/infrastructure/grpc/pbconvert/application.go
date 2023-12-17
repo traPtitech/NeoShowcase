@@ -57,6 +57,27 @@ func ToPBApplication(app *domain.Application, latestBuild *domain.Build) *pb.App
 	return pbApp
 }
 
+func FromPBApplication(app *pb.Application) *domain.Application {
+	return &domain.Application{
+		ID:               app.Id,
+		Name:             app.Name,
+		RepositoryID:     app.RepositoryId,
+		RefName:          app.RefName,
+		Commit:           app.Commit,
+		DeployType:       DeployTypeMapper.FromMust(app.DeployType),
+		Running:          app.Running,
+		Container:        ContainerStateMapper.FromMust(app.Container),
+		ContainerMessage: app.ContainerMessage,
+		CurrentBuild:     app.CurrentBuild,
+		CreatedAt:        app.CreatedAt.AsTime(),
+		UpdatedAt:        app.UpdatedAt.AsTime(),
+		Config:           FromPBApplicationConfig(app.Config),
+		Websites:         ds.Map(app.Websites, FromPBWebsite),
+		PortPublications: ds.Map(app.PortPublications, FromPBPortPublication),
+		OwnerIDs:         app.OwnerIds,
+	}
+}
+
 func FromPBUpdateOwners(req *pb.UpdateApplicationRequest_UpdateOwners) []string {
 	return req.OwnerIds
 }

@@ -12,52 +12,21 @@ import (
 
 	"github.com/traPtitech/neoshowcase/pkg/domain"
 	"github.com/traPtitech/neoshowcase/pkg/infrastructure/grpc/pb"
-	"github.com/traPtitech/neoshowcase/pkg/util/optional"
+	"github.com/traPtitech/neoshowcase/pkg/infrastructure/grpc/pbconvert"
 )
 
-func (s *builderService) tryStartBuild(buildID string) error {
+func (s *builderService) startBuild(req *domain.StartBuildRequest) error {
 	s.statusLock.Lock()
 	defer s.statusLock.Unlock()
 
 	if s.state != nil {
-		log.Warnf("Skipping build request for %v, builder busy - builder scheduling may be malfunctioning?", buildID)
+		log.Warnf("Skipping build request for %v, builder busy - builder scheduling may be malfunctioning?", req.Build.ID)
 		return nil // Builder busy - skip
 	}
 
-	now := time.Now()
-	n, err := s.buildRepo.UpdateBuild(context.Background(), domain.GetBuildCondition{
-		ID:     optional.From(buildID),
-		Status: optional.From(domain.BuildStatusQueued),
-	}, domain.UpdateBuildArgs{
-		Status:    optional.From(domain.BuildStatusBuilding),
-		StartedAt: optional.From(now),
-		UpdatedAt: optional.From(now),
-	})
-	if err != nil {
-		return err
-	}
-	if n == 0 {
-		log.Warnf("Failed to acquire build lock for %v - builder scheduling may be malfunctioning?", buildID)
-		return nil // other builder has acquired the build lock - skip
-	}
+	log.Infof("Starting build for %v", req.Build.ID)
 
-	// Acquired build lock
-	log.Infof("Starting build for %v", buildID)
-
-	build, err := s.buildRepo.GetBuild(context.Background(), buildID)
-	if err != nil {
-		return err
-	}
-	app, err := s.appRepo.GetApplication(context.Background(), build.ApplicationID)
-	if err != nil {
-		return err
-	}
-	repo, err := s.gitRepo.GetRepository(context.Background(), app.RepositoryID)
-	if err != nil {
-		return err
-	}
-
-	st, err := newState(app, build, repo, s.response)
+	st, err := newState(req.App, req.Envs, req.Build, req.Repo, s.client)
 	if err != nil {
 		return err
 	}
@@ -69,12 +38,8 @@ func (s *builderService) tryStartBuild(buildID string) error {
 	}
 
 	go func() {
-		s.response <- &pb.BuilderResponse{Type: pb.BuilderResponse_BUILD_STARTED, Body: &pb.BuilderResponse_Started{Started: &pb.BuildStarted{
-			BuildId: buildID,
-		}}}
-
 		status := s.process(ctx, st)
-		s.finalize(context.Background(), st, status) // don't want finalization tasks to be cancelled
+		s.finalize(context.Background(), st) // don't want finalization tasks to be cancelled
 		st.Done()
 
 		cancel()
@@ -82,28 +47,15 @@ func (s *builderService) tryStartBuild(buildID string) error {
 		s.state = nil
 		s.stateCancel = nil
 		s.statusLock.Unlock()
-		log.Infof("Build settled for %v", buildID)
+		log.Infof("Build settled for %v", st.build.ID)
 		// Send settled response *after* unlocking internal state for next build
 		s.response <- &pb.BuilderResponse{Type: pb.BuilderResponse_BUILD_SETTLED, Body: &pb.BuilderResponse_Settled{Settled: &pb.BuildSettled{
-			BuildId: buildID,
-			Reason:  toPBSettleReason(status),
+			BuildId: st.build.ID,
+			Status:  pbconvert.BuildStatusMapper.IntoMust(status),
 		}}}
 	}()
 
 	return nil
-}
-
-func toPBSettleReason(status domain.BuildStatus) pb.BuildSettled_Reason {
-	switch status {
-	case domain.BuildStatusSucceeded:
-		return pb.BuildSettled_SUCCESS
-	case domain.BuildStatusFailed:
-		return pb.BuildSettled_FAILED
-	case domain.BuildStatusCanceled:
-		return pb.BuildSettled_CANCELLED
-	default:
-		panic(fmt.Sprintf("unexpected settled status: %v", status))
-	}
 }
 
 type buildStep struct {
@@ -194,7 +146,7 @@ func (s *builderService) buildSteps(ctx context.Context, st *state) ([]buildStep
 func (s *builderService) process(ctx context.Context, st *state) domain.BuildStatus {
 	ctx, cancel := context.WithCancel(ctx)
 	defer cancel()
-	go s.updateStatusLoop(ctx, st.build.ID)
+	go s.buildPingLoop(ctx, st.build.ID)
 
 	steps, err := s.buildSteps(ctx, st)
 	if err != nil {
@@ -224,17 +176,15 @@ func (s *builderService) process(ctx context.Context, st *state) domain.BuildSta
 	return domain.BuildStatusSucceeded
 }
 
-func (s *builderService) updateStatusLoop(ctx context.Context, buildID string) {
+func (s *builderService) buildPingLoop(ctx context.Context, buildID string) {
 	ticker := time.NewTicker(3 * time.Second)
 	defer ticker.Stop()
 	for {
 		select {
 		case <-ticker.C:
-			_, err := s.buildRepo.UpdateBuild(ctx,
-				domain.GetBuildCondition{ID: optional.From(buildID)},
-				domain.UpdateBuildArgs{UpdatedAt: optional.From(time.Now())})
+			err := s.client.PingBuild(ctx, buildID)
 			if err != nil {
-				log.Errorf("failed to update build time: %+v", err)
+				log.Errorf("pinging build: %+v", err)
 			}
 		case <-ctx.Done():
 			return
@@ -242,20 +192,9 @@ func (s *builderService) updateStatusLoop(ctx context.Context, buildID string) {
 	}
 }
 
-func (s *builderService) finalize(ctx context.Context, st *state, status domain.BuildStatus) {
-	err := domain.SaveBuildLog(s.storage, st.build.ID, st.logWriter.LogReader())
+func (s *builderService) finalize(ctx context.Context, st *state) {
+	err := s.client.SaveBuildLog(ctx, st.build.ID, st.logWriter.buf.Bytes())
 	if err != nil {
 		log.Errorf("failed to save build log: %+v", err)
-	}
-
-	now := time.Now()
-	updateCond := domain.GetBuildCondition{ID: optional.From(st.build.ID)}
-	updateArgs := domain.UpdateBuildArgs{
-		Status:     optional.From(status),
-		UpdatedAt:  optional.From(now),
-		FinishedAt: optional.From(now),
-	}
-	if _, err = s.buildRepo.UpdateBuild(ctx, updateCond, updateArgs); err != nil {
-		log.Errorf("failed to update build: %+v", err)
 	}
 }

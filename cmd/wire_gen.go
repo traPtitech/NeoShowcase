@@ -14,6 +14,7 @@ import (
 	"github.com/traPtitech/neoshowcase/cmd/gateway"
 	giteaintegration2 "github.com/traPtitech/neoshowcase/cmd/gitea-integration"
 	ssgen2 "github.com/traPtitech/neoshowcase/cmd/ssgen"
+	"github.com/traPtitech/neoshowcase/pkg/domain"
 	"github.com/traPtitech/neoshowcase/pkg/infrastructure/backend/dockerimpl"
 	"github.com/traPtitech/neoshowcase/pkg/infrastructure/backend/k8simpl"
 	"github.com/traPtitech/neoshowcase/pkg/infrastructure/dbmanager"
@@ -47,41 +48,24 @@ func NewAuthDev(c Config) (component, error) {
 }
 
 func NewBuilder(c Config) (component, error) {
-	repositoryConfig := c.DB
-	db, err := repository.New(repositoryConfig)
-	if err != nil {
-		return nil, err
-	}
 	client, err := provideBuildkitClient(c)
 	if err != nil {
 		return nil, err
 	}
-	controllerBuilderServiceClient := provideControllerBuilderServiceClient(c)
+	tokenAuthInterceptor, err := provideTokenAuthInterceptor(c)
+	if err != nil {
+		return nil, err
+	}
+	controllerBuilderServiceClient := provideControllerBuilderServiceClient(c, tokenAuthInterceptor)
 	buildpackBackend, err := provideBuildpackBackend(c)
 	if err != nil {
 		return nil, err
 	}
-	storageConfig := c.Storage
-	storage, err := provideStorage(storageConfig)
-	if err != nil {
-		return nil, err
-	}
-	publicKeys, err := provideRepositoryPublicKey(c)
-	if err != nil {
-		return nil, err
-	}
-	imageConfig := c.Image
-	applicationRepository := repository.NewApplicationRepository(db)
-	artifactRepository := repository.NewArtifactRepository(db)
-	buildRepository := repository.NewBuildRepository(db)
-	environmentRepository := repository.NewEnvironmentRepository(db)
-	gitRepositoryRepository := repository.NewGitRepositoryRepository(db)
-	service, err := builder.NewService(controllerBuilderServiceClient, client, buildpackBackend, storage, publicKeys, imageConfig, applicationRepository, artifactRepository, buildRepository, environmentRepository, gitRepositoryRepository)
+	service, err := builder.NewService(controllerBuilderServiceClient, client, buildpackBackend)
 	if err != nil {
 		return nil, err
 	}
 	server := &builder2.Server{
-		DB:       db,
 		Buildkit: client,
 		Builder:  service,
 	}
@@ -108,14 +92,24 @@ func NewControllerDocker(c Config) (component, error) {
 	}
 	applicationRepository := repository.NewApplicationRepository(db)
 	gitRepositoryRepository := repository.NewGitRepositoryRepository(db)
-	publicKeys, err := provideRepositoryPublicKey(c)
+	privateKey, err := provideRepositoryPrivateKey(c)
+	if err != nil {
+		return nil, err
+	}
+	publicKeys, err := domain.IntoPublicKey(privateKey)
 	if err != nil {
 		return nil, err
 	}
 	buildRepository := repository.NewBuildRepository(db)
 	environmentRepository := repository.NewEnvironmentRepository(db)
 	service := logstream.NewService()
-	controllerBuilderService := grpc.NewControllerBuilderService(service)
+	storageConfig := c.Storage
+	storage, err := provideStorage(storageConfig)
+	if err != nil {
+		return nil, err
+	}
+	artifactRepository := repository.NewArtifactRepository(db)
+	controllerBuilderService := grpc.NewControllerBuilderService(service, privateKey, imageConfig, storage, applicationRepository, artifactRepository, buildRepository, environmentRepository, gitRepositoryRepository)
 	controllerSSGenService := grpc.NewControllerSSGenService()
 	appDeployHelper := cdservice.NewAppDeployHelper(backend, applicationRepository, buildRepository, environmentRepository, controllerSSGenService, imageConfig)
 	containerStateMutator := cdservice.NewContainerStateMutator(applicationRepository, backend)
@@ -131,17 +125,15 @@ func NewControllerDocker(c Config) (component, error) {
 	adminerURL := c.AdminerURL
 	controllerServiceHandler := grpc.NewControllerService(backend, applicationRepository, repofetcherService, cdserviceService, controllerBuilderService, service, publicKeys, sshConfig, adminerURL)
 	controllerGiteaIntegrationService := grpc.NewControllerGiteaIntegrationService()
-	apiServer := provideControllerServer(c, controllerServiceHandler, controllerBuilderService, controllerSSGenService, controllerGiteaIntegrationService)
+	tokenAuthInterceptor, err := provideTokenAuthInterceptor(c)
+	if err != nil {
+		return nil, err
+	}
+	apiServer := provideControllerServer(c, controllerServiceHandler, controllerBuilderService, controllerSSGenService, controllerGiteaIntegrationService, tokenAuthInterceptor)
 	userRepository := repository.NewUserRepository(db)
 	sshServer := sshserver.NewSSHServer(sshConfig, publicKeys, backend, applicationRepository, userRepository)
 	receiverConfig := controllerConfig.Webhook
 	receiver := webhook.NewReceiver(receiverConfig, gitRepositoryRepository, repofetcherService, controllerGiteaIntegrationService)
-	artifactRepository := repository.NewArtifactRepository(db)
-	storageConfig := c.Storage
-	storage, err := provideStorage(storageConfig)
-	if err != nil {
-		return nil, err
-	}
 	cleanerService, err := cleaner.NewService(artifactRepository, applicationRepository, buildRepository, imageConfig, storage)
 	if err != nil {
 		return nil, err
@@ -190,16 +182,26 @@ func NewControllerK8s(c Config) (component, error) {
 	}
 	applicationRepository := repository.NewApplicationRepository(db)
 	gitRepositoryRepository := repository.NewGitRepositoryRepository(db)
-	publicKeys, err := provideRepositoryPublicKey(c)
+	privateKey, err := provideRepositoryPrivateKey(c)
+	if err != nil {
+		return nil, err
+	}
+	publicKeys, err := domain.IntoPublicKey(privateKey)
 	if err != nil {
 		return nil, err
 	}
 	buildRepository := repository.NewBuildRepository(db)
 	environmentRepository := repository.NewEnvironmentRepository(db)
 	service := logstream.NewService()
-	controllerBuilderService := grpc.NewControllerBuilderService(service)
-	controllerSSGenService := grpc.NewControllerSSGenService()
 	imageConfig := c.Image
+	storageConfig := c.Storage
+	storage, err := provideStorage(storageConfig)
+	if err != nil {
+		return nil, err
+	}
+	artifactRepository := repository.NewArtifactRepository(db)
+	controllerBuilderService := grpc.NewControllerBuilderService(service, privateKey, imageConfig, storage, applicationRepository, artifactRepository, buildRepository, environmentRepository, gitRepositoryRepository)
+	controllerSSGenService := grpc.NewControllerSSGenService()
 	appDeployHelper := cdservice.NewAppDeployHelper(backend, applicationRepository, buildRepository, environmentRepository, controllerSSGenService, imageConfig)
 	containerStateMutator := cdservice.NewContainerStateMutator(applicationRepository, backend)
 	cdserviceService, err := cdservice.NewService(applicationRepository, buildRepository, environmentRepository, backend, controllerBuilderService, appDeployHelper, containerStateMutator)
@@ -214,17 +216,15 @@ func NewControllerK8s(c Config) (component, error) {
 	adminerURL := c.AdminerURL
 	controllerServiceHandler := grpc.NewControllerService(backend, applicationRepository, repofetcherService, cdserviceService, controllerBuilderService, service, publicKeys, sshConfig, adminerURL)
 	controllerGiteaIntegrationService := grpc.NewControllerGiteaIntegrationService()
-	apiServer := provideControllerServer(c, controllerServiceHandler, controllerBuilderService, controllerSSGenService, controllerGiteaIntegrationService)
+	tokenAuthInterceptor, err := provideTokenAuthInterceptor(c)
+	if err != nil {
+		return nil, err
+	}
+	apiServer := provideControllerServer(c, controllerServiceHandler, controllerBuilderService, controllerSSGenService, controllerGiteaIntegrationService, tokenAuthInterceptor)
 	userRepository := repository.NewUserRepository(db)
 	sshServer := sshserver.NewSSHServer(sshConfig, publicKeys, backend, applicationRepository, userRepository)
 	receiverConfig := controllerConfig.Webhook
 	receiver := webhook.NewReceiver(receiverConfig, gitRepositoryRepository, repofetcherService, controllerGiteaIntegrationService)
-	artifactRepository := repository.NewArtifactRepository(db)
-	storageConfig := c.Storage
-	storage, err := provideStorage(storageConfig)
-	if err != nil {
-		return nil, err
-	}
 	cleanerService, err := cleaner.NewService(artifactRepository, applicationRepository, buildRepository, imageConfig, storage)
 	if err != nil {
 		return nil, err
@@ -282,7 +282,11 @@ func NewGateway(c Config) (component, error) {
 	controllerServiceClientConfig := gatewayConfig.Controller
 	controllerServiceClient := grpc.NewControllerServiceClient(controllerServiceClientConfig)
 	imageConfig := c.Image
-	publicKeys, err := provideRepositoryPublicKey(c)
+	privateKey, err := provideRepositoryPrivateKey(c)
+	if err != nil {
+		return nil, err
+	}
+	publicKeys, err := domain.IntoPublicKey(privateKey)
 	if err != nil {
 		return nil, err
 	}

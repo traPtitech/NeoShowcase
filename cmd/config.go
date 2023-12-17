@@ -62,12 +62,14 @@ type BuilderConfig struct {
 }
 
 type ControllerConfig struct {
-	Port    int                    `mapstructure:"port" yaml:"port"`
-	Mode    string                 `mapstructure:"mode" yaml:"mode"`
-	Docker  dockerimpl.Config      `mapstructure:"docker" yaml:"docker"`
-	K8s     k8simpl.Config         `mapstructure:"k8s" yaml:"k8s"`
-	SSH     domain.SSHConfig       `mapstructure:"ssh" yaml:"ssh"`
-	Webhook webhook.ReceiverConfig `mapstructure:"webhook" yaml:"webhook"`
+	Port        int                    `mapstructure:"port" yaml:"port"`
+	TokenHeader string                 `mapstructure:"token" yaml:"port"`
+	Token       string                 `mapstructure:"token" yaml:"port"`
+	Mode        string                 `mapstructure:"mode" yaml:"mode"`
+	Docker      dockerimpl.Config      `mapstructure:"docker" yaml:"docker"`
+	K8s         k8simpl.Config         `mapstructure:"k8s" yaml:"k8s"`
+	SSH         domain.SSHConfig       `mapstructure:"ssh" yaml:"ssh"`
+	Webhook     webhook.ReceiverConfig `mapstructure:"webhook" yaml:"webhook"`
 }
 
 type GatewayConfig struct {
@@ -166,6 +168,8 @@ func init() {
 	viper.SetDefault("components.builder.priority", 0)
 
 	viper.SetDefault("components.controller.port", 10000)
+	viper.SetDefault("components.controller.tokenHeader", "X-NS-Controller-Token")
+	viper.SetDefault("components.controller.token", "")
 	viper.SetDefault("components.controller.mode", "docker")
 
 	viper.SetDefault("components.controller.docker.confDir", "/opt/traefik/conf")

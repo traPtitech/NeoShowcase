@@ -1,6 +1,7 @@
 package builder
 
 import (
+	"bytes"
 	"compress/gzip"
 	"context"
 	"io"
@@ -12,44 +13,36 @@ import (
 )
 
 func (s *builderService) saveArtifact(ctx context.Context, st *state) error {
+	// Open artifact
 	filename := st.artifactTempFile.Name()
-
 	stat, err := os.Stat(filename)
 	if err != nil {
 		return errors.Wrap(err, "opening artifact")
 	}
 
+	// Create artifact meta
 	artifact := domain.NewArtifact(st.build.ID, domain.BuilderStaticArtifactName, stat.Size())
-	err = s.artifactRepo.CreateArtifact(ctx, artifact)
-	if err != nil {
-		return errors.Wrap(err, "creating artifact record")
-	}
 
+	// Create artifact .tar.gz
 	file, err := os.Open(filename)
 	if err != nil {
 		return errors.Wrap(err, "opening artifact")
 	}
 	defer file.Close()
 
-	pr, pw := io.Pipe()
-	gzipWriter := gzip.NewWriter(pw)
+	var artifactBytes bytes.Buffer
+	gzipWriter := gzip.NewWriter(&artifactBytes)
+	_, err = io.Copy(gzipWriter, file)
 	if err != nil {
-		return errors.Wrap(err, "creating gzip stream")
+		return errors.Wrap(err, "copying file to gzip write")
 	}
-	go func() {
-		defer pw.Close()
-		_, err := io.Copy(gzipWriter, file)
-		if err != nil {
-			_ = pw.CloseWithError(errors.Wrap(err, "copying file to pipe writer"))
-			return
-		}
-		err = gzipWriter.Close()
-		if err != nil {
-			_ = pw.CloseWithError(errors.Wrap(err, "flushing gzip writer"))
-			return
-		}
-	}()
-	err = domain.SaveArtifact(s.storage, artifact.ID, pr)
+	err = gzipWriter.Close()
+	if err != nil {
+		return errors.Wrap(err, "flushing gzip write")
+	}
+
+	// Save artifact by requesting to controller
+	err = s.client.SaveArtifact(ctx, artifact, artifactBytes.Bytes())
 	if err != nil {
 		return errors.Wrap(err, "saving artifact")
 	}

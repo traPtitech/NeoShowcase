@@ -11,7 +11,6 @@ import (
 	"connectrpc.com/connect"
 	certmanagerv1 "github.com/cert-manager/cert-manager/pkg/client/clientset/versioned"
 	"github.com/friendsofgo/errors"
-	"github.com/go-git/go-git/v5/plumbing/transport/ssh"
 	"github.com/google/wire"
 	buildkit "github.com/moby/buildkit/client"
 	traefikv1alpha1 "github.com/traefik/traefik/v2/pkg/provider/kubernetes/crd/generated/clientset/versioned/typed/traefikio/v1alpha1"
@@ -70,6 +69,7 @@ var providers = wire.NewSet(
 	grpc.NewControllerBuilderService,
 	grpc.NewControllerGiteaIntegrationService,
 	grpc.NewControllerGiteaIntegrationServiceClient,
+	provideTokenAuthInterceptor,
 	provideControllerBuilderServiceClient,
 	grpc.NewControllerSSGenService,
 	grpc.NewControllerSSGenServiceClient,
@@ -91,7 +91,8 @@ var providers = wire.NewSet(
 	sshserver.NewSSHServer,
 	ubuilder.NewService,
 	webhook.NewReceiver,
-	provideRepositoryPublicKey,
+	provideRepositoryPrivateKey,
+	domain.IntoPublicKey,
 	provideStorage,
 	provideAuthDevServer,
 	provideBuildpackBackend,
@@ -108,12 +109,12 @@ var providers = wire.NewSet(
 	wire.FieldsOf(new(ComponentsConfig), "Builder", "Controller", "Gateway", "GiteaIntegration", "SSGen"),
 )
 
-func provideRepositoryPublicKey(c Config) (*ssh.PublicKeys, error) {
+func provideRepositoryPrivateKey(c Config) (domain.PrivateKey, error) {
 	bytes, err := os.ReadFile(c.PrivateKeyFile)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to open private key file")
 	}
-	return domain.NewPublicKey(bytes)
+	return bytes, nil
 }
 
 func provideStorage(c domain.StorageConfig) (domain.Storage, error) {
@@ -134,10 +135,18 @@ func provideAuthDevServer(c Config) *authdev.Server {
 	return authdev.NewServer(cc.Header, cc.Port, cc.User)
 }
 
-func provideControllerBuilderServiceClient(c Config) domain.ControllerBuilderServiceClient {
+func provideTokenAuthInterceptor(c Config) (*grpc.TokenAuthInterceptor, error) {
+	return grpc.NewTokenAuthInterceptor(
+		c.Components.Controller.TokenHeader,
+		c.Components.Controller.Token,
+	)
+}
+
+func provideControllerBuilderServiceClient(c Config, auth *grpc.TokenAuthInterceptor) domain.ControllerBuilderServiceClient {
 	return grpc.NewControllerBuilderServiceClient(
 		c.Components.Builder.Controller,
 		c.Components.Builder.Priority,
+		auth,
 	)
 }
 
@@ -170,12 +179,13 @@ func provideControllerServer(
 	builderHandler domain.ControllerBuilderService,
 	ssgenHandler domain.ControllerSSGenService,
 	giteaIntegrationHandler domain.ControllerGiteaIntegrationService,
+	tokenAuth *grpc.TokenAuthInterceptor,
 ) *controller.APIServer {
 	wc := web.H2CConfig{
 		Port: c.Components.Controller.Port,
 		SetupRoute: func(mux *http.ServeMux) {
 			mux.Handle(pbconnect.NewControllerServiceHandler(controllerHandler))
-			mux.Handle(pbconnect.NewControllerBuilderServiceHandler(builderHandler))
+			mux.Handle(pbconnect.NewControllerBuilderServiceHandler(builderHandler, connect.WithInterceptors(tokenAuth)))
 			mux.Handle(pbconnect.NewControllerSSGenServiceHandler(ssgenHandler))
 			mux.Handle(pbconnect.NewControllerGiteaIntegrationServiceHandler(giteaIntegrationHandler))
 		},

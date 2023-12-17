@@ -81,14 +81,14 @@ func createScriptFile(filename string, script string) error {
 }
 
 func (s *builderService) authSessions() []session.Attachable {
-	if s.config.Registry.Username == "" && s.config.Registry.Password == "" {
+	if s.imageConfig.Registry.Username == "" && s.imageConfig.Registry.Password == "" {
 		return nil
 	}
 	return []session.Attachable{authprovider.NewDockerAuthProvider(&configfile.ConfigFile{
 		AuthConfigs: map[string]types.AuthConfig{
-			s.config.Registry.Addr: {
-				Username: s.config.Registry.Username,
-				Password: s.config.Registry.Password,
+			s.imageConfig.Registry.Addr: {
+				Username: s.imageConfig.Registry.Username,
+				Password: s.imageConfig.Registry.Password,
 			},
 		},
 	})}
@@ -140,11 +140,7 @@ func (s *builderService) buildRuntimeCmd(
 		dockerfile.WriteString(fmt.Sprintf("FROM %v\n", bc.BaseImage))
 	}
 
-	env, err := s.appEnv(ctx, st.app)
-	if err != nil {
-		return err
-	}
-	for key := range env {
+	for key := range st.appEnv() {
 		dockerfile.WriteString(fmt.Sprintf("ARG %v\n", key))
 		dockerfile.WriteString(fmt.Sprintf("ENV %v=$%v\n", key, key))
 	}
@@ -173,7 +169,7 @@ func (s *builderService) buildRuntimeCmd(
 		st.repositoryTempDir,
 		filepath.Dir(tmpName),
 		filepath.Base(tmpName),
-		env,
+		st.appEnv(),
 		ch,
 	)
 }
@@ -184,10 +180,6 @@ func (s *builderService) buildRuntimeDockerfile(
 	ch chan *buildkit.SolveStatus,
 	bc *domain.BuildConfigRuntimeDockerfile,
 ) error {
-	env, err := s.appEnv(ctx, st.app)
-	if err != nil {
-		return err
-	}
 	contextDir := lo.Ternary(bc.Context != "", bc.Context, ".")
 	return s.solveDockerfile(
 		ctx,
@@ -195,7 +187,7 @@ func (s *builderService) buildRuntimeDockerfile(
 		filepath.Join(st.repositoryTempDir, contextDir),
 		filepath.Join(st.repositoryTempDir, contextDir),
 		bc.DockerfileName,
-		env,
+		st.appEnv(),
 		ch,
 	)
 }
@@ -213,11 +205,7 @@ func (s *builderService) buildStaticCmd(
 		lo.Ternary(bc.BaseImage == "", "scratch", bc.BaseImage),
 	))
 
-	env, err := s.appEnv(ctx, st.app)
-	if err != nil {
-		return err
-	}
-	for key := range env {
+	for key := range st.appEnv() {
 		dockerfile.WriteString(fmt.Sprintf("ARG %v\n", key))
 		dockerfile.WriteString(fmt.Sprintf("ENV %v=$%v\n", key, key))
 	}
@@ -247,7 +235,7 @@ func (s *builderService) buildStaticCmd(
 		st.repositoryTempDir,
 		filepath.Dir(tmpName),
 		filepath.Base(tmpName),
-		env,
+		st.appEnv(),
 		ch,
 	)
 }
@@ -258,10 +246,6 @@ func (s *builderService) buildStaticDockerfile(
 	ch chan *buildkit.SolveStatus,
 	bc *domain.BuildConfigStaticDockerfile,
 ) error {
-	env, err := s.appEnv(ctx, st.app)
-	if err != nil {
-		return err
-	}
 	contextDir := lo.Ternary(bc.Context != "", bc.Context, ".")
 	st.staticDest = bc.ArtifactPath
 	return s.solveDockerfile(
@@ -270,7 +254,7 @@ func (s *builderService) buildStaticDockerfile(
 		filepath.Join(st.repositoryTempDir, contextDir),
 		filepath.Join(st.repositoryTempDir, contextDir),
 		bc.DockerfileName,
-		env,
+		st.appEnv(),
 		ch,
 	)
 }

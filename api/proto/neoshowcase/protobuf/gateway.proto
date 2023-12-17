@@ -198,9 +198,10 @@ message Application {
 }
 
 message ApplicationEnvVar {
-  string key = 1;
-  string value = 2;
-  bool system = 3;
+  string application_id = 1;
+  string key = 2;
+  string value = 3;
+  bool system = 4;
 }
 
 message ApplicationEnvVars {
@@ -210,9 +211,10 @@ message ApplicationEnvVars {
 message Artifact {
   string id = 1;
   string name = 2;
-  int64 size = 3;
-  google.protobuf.Timestamp created_at = 4;
-  neoshowcase.protobuf.NullTimestamp deleted_at = 5;
+  string build_id = 3;
+  int64 size = 4;
+  google.protobuf.Timestamp created_at = 5;
+  neoshowcase.protobuf.NullTimestamp deleted_at = 6;
 }
 
 message ArtifactContent {

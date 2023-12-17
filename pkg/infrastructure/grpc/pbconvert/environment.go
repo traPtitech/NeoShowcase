@@ -7,8 +7,18 @@ import (
 
 func ToPBEnvironment(env *domain.Environment) *pb.ApplicationEnvVar {
 	return &pb.ApplicationEnvVar{
-		Key:    env.Key,
-		Value:  env.Value,
-		System: env.System,
+		ApplicationId: env.ApplicationID,
+		Key:           env.Key,
+		Value:         env.Value,
+		System:        env.System,
+	}
+}
+
+func FromPBEnvironment(env *pb.ApplicationEnvVar) *domain.Environment {
+	return &domain.Environment{
+		ApplicationID: env.ApplicationId,
+		Key:           env.Key,
+		Value:         env.Value,
+		System:        env.System,
 	}
 }

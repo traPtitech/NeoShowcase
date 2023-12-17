@@ -5,8 +5,50 @@ option go_package = "github.com/traPtitech/neoshowcase/pkg/infrastructure/grpc/p
 import "google/protobuf/empty.proto";
 import "neoshowcase/protobuf/gateway.proto";
 
-message StartBuildRequest {
+message ImageConfig {
+  message RegistryConfig {
+    string scheme = 1;
+    string addr = 2;
+    string username = 3;
+    string password = 4;
+  }
+  RegistryConfig registry = 1;
+  string name_prefix = 2;
+  string tmp_name_prefix = 3;
+}
+
+message BuilderSystemInfo {
+  bytes private_key = 1;
+  ImageConfig image_config = 2;
+}
+
+message BuildLogPortion {
   string build_id = 1;
+  bytes log = 2;
+}
+
+message SaveArtifactRequest {
+  Artifact artifact = 1;
+  bytes body = 2;
+}
+
+message SaveBuildLogRequest {
+  string build_id = 1;
+  bytes log = 2;
+}
+
+message RepositoryPrivate {
+  Repository repo = 1;
+  string username = 2;
+  string password = 3;
+  string ssh_key = 4;
+}
+
+message StartBuildRequest {
+  RepositoryPrivate repo = 1;
+  Application app = 2;
+  ApplicationEnvVars app_envs = 3;
+  Build build = 4;
 }
 
 message BuilderRequest {
@@ -26,38 +68,20 @@ message ConnectedBody {
   int64 priority = 1;
 }
 
-message BuildStarted {
-  string build_id = 1;
-}
-
 message BuildSettled {
-  enum Reason {
-    SUCCESS = 0;
-    FAILED = 1;
-    CANCELLED = 2;
-  }
   string build_id = 1;
-  Reason reason = 2;
-}
-
-message BuildLogPortion {
-  string build_id = 1;
-  bytes log = 2;
+  BuildStatus status = 2;
 }
 
 message BuilderResponse {
   enum Type {
     CONNECTED = 0;
-    BUILD_STARTED = 1;
-    BUILD_SETTLED = 2;
-    BUILD_LOG = 3;
+    BUILD_SETTLED = 1;
   }
   Type type = 1;
   oneof body {
     ConnectedBody connected = 2;
-    BuildStarted started = 3;
-    BuildSettled settled = 4;
-    BuildLogPortion log = 5;
+    BuildSettled settled = 3;
   }
 }
 
@@ -86,6 +110,11 @@ service ControllerService {
 }
 
 service ControllerBuilderService {
+  rpc GetBuilderSystemInfo(google.protobuf.Empty) returns (BuilderSystemInfo);
+  rpc PingBuild(BuildIdRequest) returns (google.protobuf.Empty);
+  rpc StreamBuildLog(stream BuildLogPortion) returns (google.protobuf.Empty);
+  rpc SaveArtifact(SaveArtifactRequest) returns (google.protobuf.Empty);
+  rpc SaveBuildLog(SaveBuildLogRequest) returns (google.protobuf.Empty);
   rpc ConnectBuilder(stream BuilderResponse) returns (stream BuilderRequest);
 }
 
