@@ -1,5 +1,6 @@
 import Fuse from 'fuse.js'
 import { createMemo, createResource } from 'solid-js'
+import toast from 'solid-toast'
 import { client } from '/@/libs/api'
 
 export const useBranchesSuggestion = (repoID: () => string, current: () => string): (() => string[]) => {
@@ -41,7 +42,12 @@ export const useBranchesSuggestion = (repoID: () => string, current: () => strin
 export const useBranches = (repoID: () => string): (() => string[]) => {
   const [refs] = createResource(
     () => repoID(),
-    (id) => client.getRepositoryRefs({ repositoryId: id }),
+    (id) =>
+      client.getRepositoryRefs({ repositoryId: id }).catch(() => {
+        // ブランチ取得の失敗時は502エラーが返ってくるのでcatchで処理する
+        toast.error('ブランチの取得に失敗しました。リポジトリが削除されたか認証方法に問題があります')
+        return { refs: [] }
+      }),
   )
 
   return createMemo(() => {

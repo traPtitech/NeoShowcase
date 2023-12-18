@@ -1,6 +1,6 @@
 import { PlainMessage } from '@bufbuild/protobuf'
 import { Field, FormStore, required, setValue } from '@modular-forms/solid'
-import { Component, Show } from 'solid-js'
+import { Component, Show, Suspense } from 'solid-js'
 import { CreateApplicationRequest, Repository, UpdateApplicationRequest } from '/@/api/neoshowcase/protobuf/gateway_pb'
 import { TextField } from '/@/components/UI/TextField'
 import { useBranches } from '/@/libs/branchesSuggestion'
@@ -18,9 +18,43 @@ interface GeneralConfigProps {
   hasPermission: boolean
 }
 
-export const AppGeneralConfig: Component<GeneralConfigProps> = (props) => {
+const BranchField: Component<GeneralConfigProps> = (props) => {
   const branches = useBranches(() => props.repo.id)
 
+  return (
+    <Field of={props.formStore} name="refName" validate={required('Please Enter Branch Name')}>
+      {(field, fieldProps) => (
+        <ComboBox
+          label="Branch"
+          required
+          info={{
+            props: {
+              content: (
+                <>
+                  <div>Gitブランチ名またはRef</div>
+                  <div>入力欄をクリックして候補を表示</div>
+                </>
+              ),
+            },
+          }}
+          {...fieldProps}
+          options={branches().map((branch) => ({
+            label: branch,
+            value: branch,
+          }))}
+          value={field.value}
+          error={field.error}
+          setValue={(v) => {
+            setValue(props.formStore, 'refName', v)
+          }}
+          readOnly={!props.hasPermission}
+        />
+      )}
+    </Field>
+  )
+}
+
+export const AppGeneralConfig: Component<GeneralConfigProps> = (props) => {
   return (
     <>
       <Field of={props.formStore} name="name" validate={required('Please Enter Application Name')}>
@@ -54,8 +88,8 @@ export const AppGeneralConfig: Component<GeneralConfigProps> = (props) => {
           </Show>
         )}
       </Field>
-      <Field of={props.formStore} name="refName" validate={required('Please Enter Branch Name')}>
-        {(field, fieldProps) => (
+      <Suspense
+        fallback={
           <ComboBox
             label="Branch"
             required
@@ -69,20 +103,15 @@ export const AppGeneralConfig: Component<GeneralConfigProps> = (props) => {
                 ),
               },
             }}
-            {...fieldProps}
-            options={branches().map((branch) => ({
-              label: branch,
-              value: branch,
-            }))}
-            value={field.value}
-            error={field.error}
-            setValue={(v) => {
-              setValue(props.formStore, 'refName', v)
-            }}
+            value={''}
+            options={[]}
+            disabled
             readOnly={!props.hasPermission}
           />
-        )}
-      </Field>
+        }
+      >
+        <BranchField {...props} />
+      </Suspense>
     </>
   )
 }
