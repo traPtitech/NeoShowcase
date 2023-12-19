@@ -30,6 +30,9 @@ func (c *CacheInterceptor) hash(resp connect.AnyResponse) (string, bool) {
 func (c *CacheInterceptor) WrapUnary(unaryFunc connect.UnaryFunc) connect.UnaryFunc {
 	return func(ctx context.Context, request connect.AnyRequest) (connect.AnyResponse, error) {
 		resp, err := unaryFunc(ctx, request)
+		if err != nil {
+			return resp, err
+		}
 		if request.HTTPMethod() == http.MethodGet {
 			// Calculate hash and set etag
 			respHash, ok := c.hash(resp)
