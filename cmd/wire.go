@@ -9,6 +9,7 @@ import (
 
 	authdev "github.com/traPtitech/neoshowcase/cmd/auth-dev"
 	"github.com/traPtitech/neoshowcase/cmd/builder"
+	buildpackhelper "github.com/traPtitech/neoshowcase/cmd/buildpack-helper"
 	"github.com/traPtitech/neoshowcase/cmd/controller"
 	"github.com/traPtitech/neoshowcase/cmd/gateway"
 	giteaintegration "github.com/traPtitech/neoshowcase/cmd/gitea-integration"
@@ -29,8 +30,18 @@ func NewAuthDev(c Config) (component, error) {
 func NewBuilder(c Config) (component, error) {
 	wire.Build(
 		providers,
+		wire.FieldsOf(new(BuilderConfig), "Buildpack"),
 		wire.Bind(new(component), new(*builder.Server)),
 		wire.Struct(new(builder.Server), "*"),
+	)
+	return nil, nil
+}
+
+func NewBuildpackHelper(c Config) (component, error) {
+	wire.Build(
+		providers,
+		wire.Bind(new(component), new(*buildpackhelper.Server)),
+		wire.Struct(new(buildpackhelper.Server), "*"),
 	)
 	return nil, nil
 }

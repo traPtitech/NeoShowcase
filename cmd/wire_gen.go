@@ -10,6 +10,7 @@ import (
 	"github.com/cert-manager/cert-manager/pkg/client/clientset/versioned"
 	"github.com/friendsofgo/errors"
 	builder2 "github.com/traPtitech/neoshowcase/cmd/builder"
+	"github.com/traPtitech/neoshowcase/cmd/buildpack-helper"
 	"github.com/traPtitech/neoshowcase/cmd/controller"
 	"github.com/traPtitech/neoshowcase/cmd/gateway"
 	giteaintegration2 "github.com/traPtitech/neoshowcase/cmd/gitea-integration"
@@ -17,6 +18,7 @@ import (
 	"github.com/traPtitech/neoshowcase/pkg/domain"
 	"github.com/traPtitech/neoshowcase/pkg/infrastructure/backend/dockerimpl"
 	"github.com/traPtitech/neoshowcase/pkg/infrastructure/backend/k8simpl"
+	"github.com/traPtitech/neoshowcase/pkg/infrastructure/buildpack"
 	"github.com/traPtitech/neoshowcase/pkg/infrastructure/dbmanager"
 	"github.com/traPtitech/neoshowcase/pkg/infrastructure/grpc"
 	"github.com/traPtitech/neoshowcase/pkg/infrastructure/repository"
@@ -57,10 +59,11 @@ func NewBuilder(c Config) (component, error) {
 		return nil, err
 	}
 	controllerBuilderServiceClient := provideControllerBuilderServiceClient(c, tokenAuthInterceptor)
-	buildpackBackend, err := provideBuildpackBackend(c)
-	if err != nil {
-		return nil, err
-	}
+	componentsConfig := c.Components
+	builderConfig := componentsConfig.Builder
+	buildpackConfig := builderConfig.Buildpack
+	buildpackHelperServiceClient := provideBuildpackHelperClient(c)
+	buildpackBackend := buildpack.NewBuildpackBackend(buildpackConfig, buildpackHelperServiceClient)
 	service, err := builder.NewService(controllerBuilderServiceClient, client, buildpackBackend)
 	if err != nil {
 		return nil, err
@@ -68,6 +71,15 @@ func NewBuilder(c Config) (component, error) {
 	server := &builder2.Server{
 		Buildkit: client,
 		Builder:  service,
+	}
+	return server, nil
+}
+
+func NewBuildpackHelper(c Config) (component, error) {
+	buildpackHelperServiceHandler := grpc.NewBuildpackHelperService()
+	apiServer := provideBuildpackHelperServer(c, buildpackHelperServiceHandler)
+	server := &buildpackhelper.Server{
+		Helper: apiServer,
 	}
 	return server, nil
 }

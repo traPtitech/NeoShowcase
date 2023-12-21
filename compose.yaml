@@ -132,7 +132,6 @@ services:
     command: --debug --loglevel=trace --config=/config.yaml
     restart: always
     volumes:
-      - /var/run/docker.sock:/var/run/docker.sock
       - ./.local-dev/config/ns.yaml:/config.yaml
       - ./.local-dev/keys:/keys
       - ./.local-dev/local-storage:/data
@@ -144,6 +143,44 @@ services:
         condition: service_completed_successfully
       buildkitd:
         condition: service_started
+    networks:
+      - default
+
+  buildpack-install:
+    build:
+      context: .
+      target: ns
+    image: ghcr.io/traptitech/ns:main
+    restart: "no"
+    entrypoint: cp /app/ns /ns-bin
+    volumes:
+      - binary:/ns-bin
+
+  buildpack:
+    image: paketobuildpacks/builder-jammy-full:latest
+    restart: always
+    entrypoint:
+      - /ns-bin/ns
+      - buildpack-helper
+    command: --debug --loglevel=trace --config=/config.yaml
+    expose:
+      - 1235
+    volumes:
+      - binary:/ns-bin
+      - ./.local-dev/config/ns.yaml:/config.yaml
+    depends_on:
+      buildpack-install:
+        condition: service_completed_successfully
+    networks:
+      - default
+
+  buildkitd:
+    image: moby/buildkit:latest
+    restart: always
+    privileged: true
+    command: --addr tcp://0.0.0.0:1234
+    volumes:
+      - ./.local-dev/buildkitd/buildkitd.toml:/etc/buildkit/buildkitd.toml
     networks:
       - default
 
@@ -229,25 +266,6 @@ services:
       - "traefik.enable=true"
       - "traefik.http.routers.registry_frontend.rule=Host(`registry-frontend.local.trapti.tech`)"
       - "traefik.http.services.registry_frontend.loadbalancer.server.port=80"
-    networks:
-      - default
-
-  buildpack:
-    image: paketobuildpacks/builder-jammy-full:latest
-    restart: always
-    entrypoint:
-      - sleep
-      - infinity
-    networks:
-      - default
-
-  buildkitd:
-    image: moby/buildkit:latest
-    restart: always
-    privileged: true
-    command: --addr tcp://0.0.0.0:1234
-    volumes:
-      - ./.local-dev/buildkitd/buildkitd.toml:/etc/buildkit/buildkitd.toml
     networks:
       - default
 
@@ -411,3 +429,6 @@ networks:
   apps:
     name: neoshowcase_apps
     external: true
+
+volumes:
+  binary:

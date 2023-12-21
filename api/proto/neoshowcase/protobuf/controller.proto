@@ -29,7 +29,7 @@ message BuildLogPortion {
 
 message SaveArtifactRequest {
   Artifact artifact = 1;
-  bytes body = 2;
+  bytes body = 2; // TODO: stream contents?
 }
 
 message SaveBuildLogRequest {
@@ -85,6 +85,34 @@ message BuilderResponse {
   }
 }
 
+message CopyFileTreeRequest {
+  string destination = 1;
+  bytes tar_content = 2; // TODO: stream contents?
+}
+
+message HelperExecEnv {
+  string key = 1;
+  string value = 2;
+}
+
+message HelperExecRequest {
+  string work_dir = 1;
+  repeated string cmd = 2;
+  repeated HelperExecEnv envs = 3;
+}
+
+message HelperExecResponse {
+  enum Type {
+    LOG = 0;
+    EXIT_CODE = 1;
+  }
+  Type type = 1;
+  oneof body {
+    bytes log = 2;
+    int32 exit_code = 3;
+  }
+}
+
 message SSGenRequest {
   enum Type {
     RELOAD = 0;
@@ -116,6 +144,11 @@ service ControllerBuilderService {
   rpc SaveArtifact(SaveArtifactRequest) returns (google.protobuf.Empty);
   rpc SaveBuildLog(SaveBuildLogRequest) returns (google.protobuf.Empty);
   rpc ConnectBuilder(stream BuilderResponse) returns (stream BuilderRequest);
+}
+
+service BuildpackHelperService {
+  rpc CopyFileTree(CopyFileTreeRequest) returns (google.protobuf.Empty);
+  rpc Exec(HelperExecRequest) returns (stream HelperExecResponse);
 }
 
 service ControllerSSGenService {

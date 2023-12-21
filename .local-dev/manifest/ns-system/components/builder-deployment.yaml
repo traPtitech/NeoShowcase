@@ -15,16 +15,34 @@ spec:
         app: ns-builder
     spec:
       serviceAccountName: ns-builder
+      initContainers:
+        - name: buildpack-install
+          image: ghcr.io/traptitech/ns-builder:latest
+          imagePullPolicy: Never
+          command:
+            - cp
+            - /app/ns
+            - /ns-bin
+          volumeMounts:
+            - mountPath: /ns-bin
+              name: ns-bin
+
       containers:
         - name: buildpack
           image: paketobuildpacks/builder-jammy-full:latest
           imagePullPolicy: Always
           command:
-            - sleep
-            - infinity
+            - /ns-bin
+            - buildpack-helper
+          args:
+            - --loglevel=debug
+            - --config=/opt/config/ns.yaml
           volumeMounts:
-            - mountPath: /workspace
-              name: buildpack
+            - mountPath: /ns-bin
+              name: ns-bin
+            - mountPath: /opt/config/ns.yaml
+              name: config
+              subPath: ns.yaml
 
         - name: buildkitd
           image: moby/buildkit:latest
@@ -63,11 +81,6 @@ spec:
           args:
             - --loglevel=debug
             - --config=/opt/config/ns.yaml
-          env:
-            - name: NS_COMPONENTS_BUILDER_BUILDPACK_K8S_PODNAME
-              valueFrom:
-                fieldRef:
-                  fieldPath: metadata.name
           volumeMounts:
             - mountPath: /neoshowcase/buildpack
               name: buildpack
@@ -81,7 +94,7 @@ spec:
             # - mountPath: /.docker
             #   name: secret
       volumes:
-        - name: buildpack
+        - name: ns-bin
           emptyDir: {}
         - name: socket
           emptyDir: {}

@@ -27,13 +27,11 @@ components:
     buildkit:
       address: tcp://buildkitd:1234
     buildpack:
-      backend: docker
-      docker:
-        containerName: neoshowcase-buildpack-1
-        remoteDir: /workspace
-        user: cnb
-        group: cnb
-        platformAPI: "0.11"
+      helper:
+        address: http://buildpack:1235
+        listenPort: 1235
+      remoteDir: /workspace
+      platformAPI: "0.11"
     controller:
       url: http://ns-controller:10000
     priority: 0

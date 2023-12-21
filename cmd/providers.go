@@ -18,15 +18,14 @@ import (
 	"k8s.io/client-go/rest"
 
 	authdev "github.com/traPtitech/neoshowcase/cmd/auth-dev"
+	buildpackhelper "github.com/traPtitech/neoshowcase/cmd/buildpack-helper"
 	"github.com/traPtitech/neoshowcase/cmd/controller"
 	"github.com/traPtitech/neoshowcase/cmd/gateway"
 	"github.com/traPtitech/neoshowcase/pkg/domain"
-	"github.com/traPtitech/neoshowcase/pkg/domain/builder"
 	"github.com/traPtitech/neoshowcase/pkg/domain/web"
 	"github.com/traPtitech/neoshowcase/pkg/infrastructure/backend/dockerimpl"
 	"github.com/traPtitech/neoshowcase/pkg/infrastructure/backend/k8simpl"
-	bdockerimpl "github.com/traPtitech/neoshowcase/pkg/infrastructure/buildpack/dockerimpl"
-	bk8simpl "github.com/traPtitech/neoshowcase/pkg/infrastructure/buildpack/k8simpl"
+	"github.com/traPtitech/neoshowcase/pkg/infrastructure/buildpack"
 	"github.com/traPtitech/neoshowcase/pkg/infrastructure/dbmanager"
 	"github.com/traPtitech/neoshowcase/pkg/infrastructure/grpc"
 	"github.com/traPtitech/neoshowcase/pkg/infrastructure/grpc/pb/pbconnect"
@@ -63,6 +62,8 @@ var providers = wire.NewSet(
 	giteaintegration.NewIntegration,
 	grpc.NewAPIServiceServer,
 	grpc.NewAuthInterceptor,
+	grpc.NewBuildpackHelperService,
+	provideBuildpackHelperClient,
 	grpc.NewCacheInterceptor,
 	grpc.NewControllerService,
 	grpc.NewControllerServiceClient,
@@ -95,7 +96,8 @@ var providers = wire.NewSet(
 	domain.IntoPublicKey,
 	provideStorage,
 	provideAuthDevServer,
-	provideBuildpackBackend,
+	provideBuildpackHelperServer,
+	buildpack.NewBuildpackBackend,
 	provideBuildkitClient,
 	provideControllerServer,
 	provideContainerLogger,
@@ -150,16 +152,21 @@ func provideControllerBuilderServiceClient(c Config, auth *grpc.TokenAuthInterce
 	)
 }
 
-func provideBuildpackBackend(c Config) (builder.BuildpackBackend, error) {
-	cc := c.Components.Builder
-	switch cc.Buildpack.Backend {
-	case "docker":
-		return bdockerimpl.NewBuildpackBackend(cc.Buildpack.Docker)
-	case "k8s":
-		return bk8simpl.NewBuildpackBackend(cc.Buildpack.K8s)
-	default:
-		return nil, errors.Errorf("invalid buildpack backend: %v", cc.Buildpack.Backend)
+func provideBuildpackHelperClient(c Config) domain.BuildpackHelperServiceClient {
+	return grpc.NewBuildpackHelperServiceClient(c.Components.Builder.Buildpack.Helper.Address)
+}
+
+func provideBuildpackHelperServer(
+	c Config,
+	helperServiceHandler pbconnect.BuildpackHelperServiceHandler,
+) *buildpackhelper.APIServer {
+	wc := web.H2CConfig{
+		Port: c.Components.Builder.Buildpack.Helper.ListenPort,
+		SetupRoute: func(mux *http.ServeMux) {
+			mux.Handle(pbconnect.NewBuildpackHelperServiceHandler(helperServiceHandler))
+		},
 	}
+	return &buildpackhelper.APIServer{H2CServer: web.NewH2CServer(wc)}
 }
 
 func provideBuildkitClient(c Config) (*buildkit.Client, error) {
