@@ -45,7 +45,7 @@ export const useBranches = (repoID: () => string): (() => string[]) => {
     (id) =>
       client.getRepositoryRefs({ repositoryId: id }).catch(() => {
         // ブランチ取得の失敗時は502エラーが返ってくるのでcatchで処理する
-        toast.error('ブランチの取得に失敗しました。リポジトリが削除されたか認証方法に問題があります')
+        toast.error('ブランチの取得に失敗しました。リポジトリへのアクセス権を確認してください。')
         return { refs: [] }
       }),
   )
