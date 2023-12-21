@@ -154,9 +154,9 @@ func provideBuildpackBackend(c Config) (builder.BuildpackBackend, error) {
 	cc := c.Components.Builder
 	switch cc.Buildpack.Backend {
 	case "docker":
-		return bdockerimpl.NewBuildpackBackend(cc.Buildpack.Docker, c.Image)
+		return bdockerimpl.NewBuildpackBackend(cc.Buildpack.Docker)
 	case "k8s":
-		return bk8simpl.NewBuildpackBackend(cc.Buildpack.K8s, c.Image)
+		return bk8simpl.NewBuildpackBackend(cc.Buildpack.K8s)
 	default:
 		return nil, errors.Errorf("invalid buildpack backend: %v", cc.Buildpack.Backend)
 	}

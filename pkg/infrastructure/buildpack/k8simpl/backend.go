@@ -28,12 +28,10 @@ type k8sBackend struct {
 	c          *kubernetes.Clientset
 	restConfig *rest.Config
 	config     Config
-	image      builder.ImageConfig
 }
 
 func NewBuildpackBackend(
 	config Config,
-	image builder.ImageConfig,
 ) (builder.BuildpackBackend, error) {
 	restConfig, err := rest.InClusterConfig()
 	if err != nil {
@@ -47,24 +45,19 @@ func NewBuildpackBackend(
 		c:          c,
 		restConfig: restConfig,
 		config:     config,
-		image:      image,
-	}
-	err = b.prepareAuth()
-	if err != nil {
-		return nil, err
 	}
 	return b, nil
 }
 
-func (k *k8sBackend) dockerAuth() (s string, ok bool) {
-	if k.image.Registry.Username == "" && k.image.Registry.Password == "" {
+func (k *k8sBackend) dockerAuth(imageConfig builder.ImageConfig) (s string, ok bool) {
+	if imageConfig.Registry.Username == "" && imageConfig.Registry.Password == "" {
 		return "", false
 	}
 	c := configfile.ConfigFile{
 		AuthConfigs: map[string]types2.AuthConfig{
-			k.image.Registry.Addr: {
-				Username: k.image.Registry.Username,
-				Password: k.image.Registry.Password,
+			imageConfig.Registry.Addr: {
+				Username: imageConfig.Registry.Username,
+				Password: imageConfig.Registry.Password,
 			},
 		},
 	}
@@ -76,8 +69,8 @@ func escapeSingleQuote(s string) string {
 	return strings.ReplaceAll(s, "'", "\\'")
 }
 
-func (k *k8sBackend) prepareAuth() error {
-	auth, ok := k.dockerAuth()
+func (k *k8sBackend) prepareAuth(imageConfig builder.ImageConfig) error {
+	auth, ok := k.dockerAuth(imageConfig)
 	if ok {
 		err := k.exec(context.Background(), "/", "mkdir -p ~/.docker", nil, io.Discard, io.Discard)
 		if err != nil {
@@ -155,9 +148,15 @@ func (k *k8sBackend) Pack(
 	ctx context.Context,
 	repoDir string,
 	imageDest string,
+	imageConfig builder.ImageConfig,
 	env map[string]string,
 	logWriter io.Writer,
 ) (path string, err error) {
+	err = k.prepareAuth(imageConfig)
+	if err != nil {
+		return "", err
+	}
+
 	// NOTE: safe to use the same remote name between builds, under the assumption that buildpack pod is not shared
 	remoteRepoPath, cleanupRepoDir, err := k.prepareDir(ctx, repoDir, "ns-repo")
 	if err != nil {

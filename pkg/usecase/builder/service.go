@@ -2,6 +2,7 @@ package builder
 
 import (
 	"context"
+	"github.com/friendsofgo/errors"
 	"github.com/go-git/go-git/v5/plumbing/transport/ssh"
 	"sync"
 	"time"
@@ -44,11 +45,11 @@ func NewService(
 ) (Service, error) {
 	systemInfo, err := client.GetBuilderSystemInfo(context.Background())
 	if err != nil {
-		return nil, err
+		return nil, errors.Wrap(err, "failed to get builder system info")
 	}
 	pubKey, err := domain.IntoPublicKey(systemInfo.SSHKey)
 	if err != nil {
-		return nil, err
+		return nil, errors.Wrap(err, "failed to convert into public key")
 	}
 	return &builderService{
 		client:    client,

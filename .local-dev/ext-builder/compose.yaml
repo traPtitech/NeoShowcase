@@ -30,5 +30,7 @@ services:
     restart: always
     privileged: true
     command: --addr tcp://0.0.0.0:1234
+    volumes:
+      - ../buildkitd/buildkitd.toml:/etc/buildkit/buildkitd.toml
     extra_hosts:
       - registry.local:host-gateway
