@@ -67,7 +67,7 @@ const EnvVarConfig: Component<{
 
     // add empty env var
     insert(envVarForm, 'variables', {
-      value: { key: '', value: '', system: false },
+      value: { applicationId: props.appId, key: '', value: '', system: false },
     })
     // 次にvariablesが変更された時に1度だけ再度stripする
     track(() => getValues(envVarForm, 'variables'))
