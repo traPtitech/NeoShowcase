@@ -10,6 +10,7 @@ services:
       - ./.local-dev/config/ns.yaml:/config.yaml
       - ./.local-dev/local-storage:/data
       - ./.local-dev/keys:/keys
+      - ~/.ssh/known_hosts:/root/.ssh/known_hosts
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.ns-gateway.rule=Host(`ns.local.trapti.tech`) && PathPrefix(`/neoshowcase.protobuf.APIService`)"
