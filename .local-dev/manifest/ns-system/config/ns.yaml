@@ -47,6 +47,7 @@ components:
 
   controller:
     port: 10000
+    token: "my-super-secret-token"
     mode: k8s
     k8s:
       domains:

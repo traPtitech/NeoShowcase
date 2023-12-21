@@ -1,19 +1,26 @@
 package grpc
 
 import (
+	"bytes"
 	"connectrpc.com/connect"
 	"context"
+	"fmt"
 	"github.com/friendsofgo/errors"
 	"github.com/samber/lo"
 	log "github.com/sirupsen/logrus"
 	"golang.org/x/exp/slices"
+	"google.golang.org/protobuf/types/known/emptypb"
 	"io"
 	"sync"
+	"time"
 
 	"github.com/traPtitech/neoshowcase/pkg/domain"
+	"github.com/traPtitech/neoshowcase/pkg/domain/builder"
 	"github.com/traPtitech/neoshowcase/pkg/infrastructure/grpc/pb"
+	"github.com/traPtitech/neoshowcase/pkg/infrastructure/grpc/pbconvert"
 	"github.com/traPtitech/neoshowcase/pkg/usecase/logstream"
 	"github.com/traPtitech/neoshowcase/pkg/util/ds"
+	"github.com/traPtitech/neoshowcase/pkg/util/optional"
 )
 
 type builderConnection struct {
@@ -42,7 +49,15 @@ func (c *builderConnection) Busy() bool {
 }
 
 type ControllerBuilderService struct {
-	logStream *logstream.Service
+	logStream  *logstream.Service
+	systemInfo *domain.BuilderSystemInfo
+
+	storage      domain.Storage
+	appRepo      domain.ApplicationRepository
+	artifactRepo domain.ArtifactRepository
+	buildRepo    domain.BuildRepository
+	envRepo      domain.EnvironmentRepository
+	gitRepo      domain.GitRepositoryRepository
 
 	idle    domain.PubSub[struct{}]
 	settled domain.PubSub[struct{}]
@@ -53,10 +68,85 @@ type ControllerBuilderService struct {
 
 func NewControllerBuilderService(
 	logStream *logstream.Service,
+	privateKey domain.PrivateKey,
+	imageConfig builder.ImageConfig,
+	storage domain.Storage,
+	appRepo domain.ApplicationRepository,
+	artifactRepo domain.ArtifactRepository,
+	buildRepo domain.BuildRepository,
+	envRepo domain.EnvironmentRepository,
+	gitRepo domain.GitRepositoryRepository,
 ) domain.ControllerBuilderService {
 	return &ControllerBuilderService{
 		logStream: logStream,
+		systemInfo: &domain.BuilderSystemInfo{
+			SSHKey:      privateKey,
+			ImageConfig: imageConfig,
+		},
+		storage:      storage,
+		appRepo:      appRepo,
+		artifactRepo: artifactRepo,
+		buildRepo:    buildRepo,
+		envRepo:      envRepo,
+		gitRepo:      gitRepo,
 	}
+}
+
+func (s *ControllerBuilderService) GetBuilderSystemInfo(_ context.Context, _ *connect.Request[emptypb.Empty]) (*connect.Response[pb.BuilderSystemInfo], error) {
+	si := pbconvert.ToPBBuilderSystemInfo(s.systemInfo)
+	res := connect.NewResponse(si)
+	return res, nil
+}
+
+func (s *ControllerBuilderService) PingBuild(ctx context.Context, req *connect.Request[pb.BuildIdRequest]) (*connect.Response[emptypb.Empty], error) {
+	now := time.Now()
+	updateCond := domain.GetBuildCondition{ID: optional.From(req.Msg.BuildId)}
+	updateArgs := domain.UpdateBuildArgs{UpdatedAt: optional.From(now)}
+	_, err := s.buildRepo.UpdateBuild(ctx, updateCond, updateArgs)
+	if err != nil {
+		return nil, err
+	}
+
+	res := connect.NewResponse(&emptypb.Empty{})
+	return res, nil
+}
+
+func (s *ControllerBuilderService) StreamBuildLog(_ context.Context, st *connect.ClientStream[pb.BuildLogPortion]) (*connect.Response[emptypb.Empty], error) {
+	for st.Receive() {
+		msg := st.Msg()
+		s.logStream.AppendBuildLog(msg.BuildId, msg.Log)
+	}
+	if err := st.Err(); err != nil {
+		log.Errorf("receiving build log: %+v", err)
+		return nil, errors.Wrap(err, "receiving build log")
+	}
+	res := connect.NewResponse(&emptypb.Empty{})
+	return res, nil
+}
+
+func (s *ControllerBuilderService) SaveArtifact(ctx context.Context, req *connect.Request[pb.SaveArtifactRequest]) (*connect.Response[emptypb.Empty], error) {
+	artifact := pbconvert.FromPBArtifact(req.Msg.Artifact)
+
+	err := s.artifactRepo.CreateArtifact(ctx, artifact)
+	if err != nil {
+		return nil, err
+	}
+	err = domain.SaveArtifact(s.storage, artifact.ID, bytes.NewReader(req.Msg.Body))
+	if err != nil {
+		return nil, err
+	}
+
+	res := connect.NewResponse(&emptypb.Empty{})
+	return res, nil
+}
+
+func (s *ControllerBuilderService) SaveBuildLog(_ context.Context, req *connect.Request[pb.SaveBuildLogRequest]) (*connect.Response[emptypb.Empty], error) {
+	err := domain.SaveBuildLog(s.storage, req.Msg.BuildId, bytes.NewReader(req.Msg.Log))
+	if err != nil {
+		return nil, err
+	}
+	res := connect.NewResponse(&emptypb.Empty{})
+	return res, nil
 }
 
 func (s *ControllerBuilderService) ConnectBuilder(ctx context.Context, st *connect.BidiStream[pb.BuilderResponse, pb.BuilderRequest]) error {
@@ -97,19 +187,18 @@ func (s *ControllerBuilderService) ConnectBuilder(ctx context.Context, st *conne
 			case pb.BuilderResponse_CONNECTED:
 				payload := res.Body.(*pb.BuilderResponse_Connected).Connected
 				conn.priority = payload.Priority
-			case pb.BuilderResponse_BUILD_STARTED:
-				payload := res.Body.(*pb.BuilderResponse_Started).Started
-				conn.SetBuildID(payload.BuildId)
-				s.logStream.StartBuildLog(payload.BuildId)
+
 			case pb.BuilderResponse_BUILD_SETTLED:
 				payload := res.Body.(*pb.BuilderResponse_Settled).Settled
+				status := pbconvert.BuildStatusMapper.FromMust(payload.Status)
+				err := s.finishBuild(ctx, payload.BuildId, status)
+				if err != nil {
+					log.Errorf("error finishing build: %+v", err)
+				}
 				conn.ClearBuildID()
 				s.idle.Publish(struct{}{})
 				s.settled.Publish(struct{}{})
 				s.logStream.CloseBuildLog(payload.BuildId)
-			case pb.BuilderResponse_BUILD_LOG:
-				payload := res.Body.(*pb.BuilderResponse_Log).Log
-				s.logStream.AppendBuildLog(payload.BuildId, payload.Log)
 			}
 			s.lock.Unlock()
 		}
@@ -139,7 +228,92 @@ func (s *ControllerBuilderService) ListenBuildSettled() (sub <-chan struct{}, un
 	return s.settled.Subscribe()
 }
 
-func (s *ControllerBuilderService) StartBuilds(buildIDs []string) {
+func (s *ControllerBuilderService) startBuildPayload(ctx context.Context, buildID string) (*domain.StartBuildRequest, error) {
+	build, err := s.buildRepo.GetBuild(ctx, buildID)
+	if err != nil {
+		return nil, err
+	}
+	app, err := s.appRepo.GetApplication(ctx, build.ApplicationID)
+	if err != nil {
+		return nil, err
+	}
+	envs, err := s.envRepo.GetEnv(ctx, domain.GetEnvCondition{ApplicationID: optional.From(app.ID)})
+	if err != nil {
+		return nil, err
+	}
+	repo, err := s.gitRepo.GetRepository(ctx, app.RepositoryID)
+	if err != nil {
+		return nil, err
+	}
+	return &domain.StartBuildRequest{
+		Repo:  repo,
+		App:   app,
+		Envs:  envs,
+		Build: build,
+	}, nil
+}
+
+func (s *ControllerBuilderService) startBuild(ctx context.Context, conn *builderConnection, buildID string) error {
+	// Change build status in order to acquire lock
+	now := time.Now()
+	updateCond := domain.GetBuildCondition{
+		ID:     optional.From(buildID),
+		Status: optional.From(domain.BuildStatusQueued),
+	}
+	updateArgs := domain.UpdateBuildArgs{
+		Status:    optional.From(domain.BuildStatusBuilding),
+		StartedAt: optional.From(now),
+		UpdatedAt: optional.From(now),
+	}
+	n, err := s.buildRepo.UpdateBuild(ctx, updateCond, updateArgs)
+	if err != nil {
+		return err
+	}
+	if n == 0 {
+		return fmt.Errorf("failed to save started build status for %v - builder scheduling may be malfunctioning", buildID)
+	}
+
+	// Construct payload to send to builder
+	req, err := s.startBuildPayload(ctx, buildID)
+	if err != nil {
+		return errors.Wrap(err, fmt.Sprintf("failed to construct start build payload for %v", buildID))
+	}
+	// Send payload to builder
+	conn.Send(&pb.BuilderRequest{
+		Type: pb.BuilderRequest_START_BUILD,
+		Body: &pb.BuilderRequest_StartBuild{StartBuild: pbconvert.ToPBStartBuildRequest(req)},
+	})
+	// Mark connection as busy
+	conn.SetBuildID(buildID)
+
+	// Start log stream service
+	s.logStream.StartBuildLog(buildID)
+
+	return nil
+}
+
+func (s *ControllerBuilderService) finishBuild(ctx context.Context, buildID string, status domain.BuildStatus) error {
+	now := time.Now()
+	updateCond := domain.GetBuildCondition{
+		ID:     optional.From(buildID),
+		Status: optional.From(domain.BuildStatusBuilding),
+	}
+	updateArgs := domain.UpdateBuildArgs{
+		Status:     optional.From(status),
+		UpdatedAt:  optional.From(now),
+		FinishedAt: optional.From(now),
+	}
+	n, err := s.buildRepo.UpdateBuild(ctx, updateCond, updateArgs)
+	if err != nil {
+		return err
+	}
+	if n == 0 {
+		return fmt.Errorf("failed to change build status from builing to finished for %v - builder scheduling may be malfunctioning", buildID)
+	}
+	return err
+}
+
+func (s *ControllerBuilderService) StartBuilds(ctx context.Context, buildIDs []string) {
 	s.lock.Lock()
 	defer s.lock.Unlock()
 
@@ -151,12 +325,10 @@ func (s *ControllerBuilderService) StartBuilds(buildIDs []string) {
 	// Send builds to available builders
 	for i, conn := range ds.FirstN(conns, len(buildIDs)) {
 		buildID := buildIDs[i]
-		conn.Send(&pb.BuilderRequest{
-			Type: pb.BuilderRequest_START_BUILD,
-			Body: &pb.BuilderRequest_StartBuild{StartBuild: &pb.StartBuildRequest{
-				BuildId: buildID,
-			}},
-		})
+		err := s.startBuild(ctx, conn, buildID)
+		if err != nil {
+			log.Errorf("error starting build: %+v", err)
+		}
 	}
 }
 

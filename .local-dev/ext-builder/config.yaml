@@ -1,30 +1,3 @@
-privateKeyFile: /keys/id_ed25519
-adminerURL: https://adminer.ns.trap.jp/
-
-db:
-  host: host.docker.internal
-  port: 3306
-  username: service_neoshowcase
-  # password: <env secret>
-  database: service_neoshowcase
-
-storage:
-  type: s3
-  s3:
-    bucket: neoshowcase
-    # accessKey: <env secret>
-    # accessSecret: <env secret>
-    region: ap-northeast-1
-    endpoint: https://s3.ap-northeast-1.wasabisys.com
-
-image:
-  registry:
-    scheme: https
-    addr: registry.ns.trap.jp
-    username: "robot$neoshowcase"
-    # password: <env secret>
-  namePrefix: ns-apps/
-
 components:
   builder:
     buildkit:

@@ -58,3 +58,18 @@ func ToPBRepository(repo *domain.Repository) *pb.Repository {
 	}
 	return ret
 }
+
+func FromPBRepository(repo *pb.Repository) *domain.Repository {
+	ret := &domain.Repository{
+		ID:       repo.Id,
+		Name:     repo.Name,
+		URL:      repo.Url,
+		OwnerIDs: repo.OwnerIds,
+	}
+	if repo.AuthMethod != pb.Repository_NONE {
+		ret.Auth = optional.From(domain.RepositoryAuth{
+			Method: RepoAuthMethodMapper.FromMust(repo.AuthMethod),
+		})
+	}
+	return ret
+}

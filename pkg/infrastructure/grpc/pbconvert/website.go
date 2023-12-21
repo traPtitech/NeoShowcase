@@ -42,3 +42,16 @@ func ToPBWebsite(website *domain.Website) *pb.Website {
 		Authentication: AuthTypeMapper.IntoMust(website.Authentication),
 	}
 }
+
+func FromPBWebsite(website *pb.Website) *domain.Website {
+	return &domain.Website{
+		ID:             website.Id,
+		FQDN:           website.Fqdn,
+		PathPrefix:     website.PathPrefix,
+		StripPrefix:    website.StripPrefix,
+		HTTPS:          website.Https,
+		H2C:            website.H2C,
+		HTTPPort:       int(website.HttpPort),
+		Authentication: AuthTypeMapper.FromMust(website.Authentication),
+	}
+}

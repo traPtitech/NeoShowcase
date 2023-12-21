@@ -15,8 +15,10 @@ import (
 	"github.com/go-git/go-git/v5/plumbing/transport/ssh"
 )
 
-func NewPublicKey(pemBytes []byte) (*ssh.PublicKeys, error) {
-	return ssh.NewPublicKeys("git", pemBytes, "")
+type PrivateKey []byte
+
+func IntoPublicKey(pk PrivateKey) (*ssh.PublicKeys, error) {
+	return ssh.NewPublicKeys("git", pk, "")
 }
 
 func Base64EncodedPublicKey(pubKey ssh2.PublicKey) string {
@@ -48,7 +50,7 @@ func GitAuthMethod(repo *Repository, fallbackKey *ssh.PublicKeys) (transport.Aut
 			}
 		case RepositoryAuthMethodSSH:
 			if repo.Auth.V.SSHKey != "" {
-				keys, err := NewPublicKey([]byte(repo.Auth.V.SSHKey))
+				keys, err := IntoPublicKey(PrivateKey(repo.Auth.V.SSHKey))
 				if err != nil {
 					return nil, err
 				}

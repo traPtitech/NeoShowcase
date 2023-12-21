@@ -2,30 +2,37 @@ package builder
 
 import (
 	"bytes"
+	"context"
 	"fmt"
+	"github.com/samber/lo"
+	log "github.com/sirupsen/logrus"
 	"io"
 	"os"
 
 	"github.com/friendsofgo/errors"
 
 	"github.com/traPtitech/neoshowcase/pkg/domain"
-	"github.com/traPtitech/neoshowcase/pkg/infrastructure/grpc/pb"
 )
 
 type logWriter struct {
-	buildID  string
-	response chan<- *pb.BuilderResponse
-	buf      bytes.Buffer
+	buildID string
+	send    chan<- []byte
+	buf     bytes.Buffer
 }
 
-func (l *logWriter) toBuilderResponse(p []byte) *pb.BuilderResponse {
-	return &pb.BuilderResponse{Type: pb.BuilderResponse_BUILD_LOG, Body: &pb.BuilderResponse_Log{
-		Log: &pb.BuildLogPortion{BuildId: l.buildID, Log: p},
-	}}
-}
-
-func (l *logWriter) LogReader() io.Reader {
-	return &l.buf
+func newLogWriter(buildID string, client domain.ControllerBuilderServiceClient) *logWriter {
+	send := make(chan []byte, 50)
+	go func() {
+		err := client.StreamBuildLog(context.Background(), buildID, send)
+		if err != nil {
+			log.Errorf("sending build log: %+v", err)
+		}
+	}()
+	return &logWriter{
+		buildID: buildID,
+		send:    send,
+		buf:     bytes.Buffer{},
+	}
 }
 
 func (l *logWriter) Write(p []byte) (n int, err error) {
@@ -37,8 +44,9 @@ func (l *logWriter) Write(p []byte) (n int, err error) {
 	// From io.Writer's document: Implementations must not retain p.
 	toSend := make([]byte, len(p))
 	copy(toSend, p)
+	// Non-blocking send may drop logs - complete log is to be sent on finishing build
 	select {
-	case l.response <- l.toBuilderResponse(toSend):
+	case l.send <- toSend:
 	default:
 	}
 	return
@@ -46,6 +54,7 @@ func (l *logWriter) Write(p []byte) (n int, err error) {
 
 type state struct {
 	app       *domain.Application
+	envs      []*domain.Environment
 	build     *domain.Build
 	repo      *domain.Repository
 	logWriter *logWriter
@@ -57,16 +66,14 @@ type state struct {
 	staticDest string
 }
 
-func newState(app *domain.Application, build *domain.Build, repo *domain.Repository, response chan<- *pb.BuilderResponse) (*state, error) {
+func newState(app *domain.Application, envs []*domain.Environment, build *domain.Build, repo *domain.Repository, client domain.ControllerBuilderServiceClient) (*state, error) {
 	st := &state{
-		app:   app,
-		build: build,
-		repo:  repo,
-		logWriter: &logWriter{
-			buildID:  build.ID,
-			response: response,
-		},
-		done: make(chan struct{}),
+		app:       app,
+		envs:      envs,
+		build:     build,
+		repo:      repo,
+		logWriter: newLogWriter(build.ID, client),
+		done:      make(chan struct{}),
 	}
 	var err error
 	st.repositoryTempDir, err = os.MkdirTemp("", "repository-")
@@ -78,6 +85,10 @@ func newState(app *domain.Application, build *domain.Build, repo *domain.Reposit
 		return nil, errors.Wrap(err, "failed to create tmp artifact file")
 	}
 	return st, nil
+}
+
+func (s *state) appEnv() map[string]string {
+	return lo.SliceToMap(s.envs, (*domain.Environment).GetKV)
 }
 
 func (s *state) Done() {

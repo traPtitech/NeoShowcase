@@ -16,11 +16,7 @@ func (s *builderService) buildRuntimeBuildpack(
 ) error {
 	contextDir := lo.Ternary(bc.Context != "", bc.Context, ".")
 	buildDir := filepath.Join(st.repositoryTempDir, contextDir)
-	env, err := s.appEnv(ctx, st.app)
-	if err != nil {
-		return err
-	}
-	_, err = s.buildpack.Pack(ctx, buildDir, s.destImage(st.app, st.build), env, st.Logger())
+	_, err := s.buildpack.Pack(ctx, buildDir, s.destImage(st.app, st.build), s.imageConfig, st.appEnv(), st.Logger())
 	return err
 }
 
@@ -31,11 +27,7 @@ func (s *builderService) buildStaticBuildpackPack(
 ) error {
 	contextDir := lo.Ternary(bc.Context != "", bc.Context, ".")
 	buildDir := filepath.Join(st.repositoryTempDir, contextDir)
-	env, err := s.appEnv(ctx, st.app)
-	if err != nil {
-		return err
-	}
-	path, err := s.buildpack.Pack(ctx, buildDir, s.tmpDestImage(st.app, st.build), env, st.Logger())
+	path, err := s.buildpack.Pack(ctx, buildDir, s.tmpDestImage(st.app, st.build), s.imageConfig, st.appEnv(), st.Logger())
 	if err != nil {
 		return err
 	}

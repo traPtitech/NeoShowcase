@@ -201,7 +201,7 @@ func (cd *service) startBuilds(ctx context.Context) error {
 	}
 	slices.SortFunc(builds, ds.LessFunc(func(a *domain.Build) int64 { return a.QueuedAt.UnixNano() }))
 	buildIDs := ds.Map(builds, func(build *domain.Build) string { return build.ID })
-	cd.builder.StartBuilds(buildIDs)
+	cd.builder.StartBuilds(ctx, buildIDs)
 	return nil
 }
 

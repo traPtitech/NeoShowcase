@@ -2,19 +2,19 @@ package builder
 
 import (
 	"context"
+	"github.com/friendsofgo/errors"
+	"github.com/go-git/go-git/v5/plumbing/transport/ssh"
 	"sync"
 	"time"
 
-	"github.com/go-git/go-git/v5/plumbing/transport/ssh"
 	buildkit "github.com/moby/buildkit/client"
-	"github.com/samber/lo"
 	log "github.com/sirupsen/logrus"
 
 	"github.com/traPtitech/neoshowcase/pkg/domain"
 	"github.com/traPtitech/neoshowcase/pkg/domain/builder"
 	"github.com/traPtitech/neoshowcase/pkg/infrastructure/grpc/pb"
+	"github.com/traPtitech/neoshowcase/pkg/infrastructure/grpc/pbconvert"
 	"github.com/traPtitech/neoshowcase/pkg/util/loop"
-	"github.com/traPtitech/neoshowcase/pkg/util/optional"
 	"github.com/traPtitech/neoshowcase/pkg/util/retry"
 )
 
@@ -27,15 +27,9 @@ type builderService struct {
 	client    domain.ControllerBuilderServiceClient
 	buildkit  *buildkit.Client
 	buildpack builder.BuildpackBackend
-	storage   domain.Storage
-	pubKey    *ssh.PublicKeys
-	config    builder.ImageConfig
 
-	appRepo      domain.ApplicationRepository
-	artifactRepo domain.ArtifactRepository
-	buildRepo    domain.BuildRepository
-	envRepo      domain.EnvironmentRepository
-	gitRepo      domain.GitRepositoryRepository
+	pubKey      *ssh.PublicKeys
+	imageConfig builder.ImageConfig
 
 	state       *state
 	stateCancel func()
@@ -48,44 +42,31 @@ func NewService(
 	client domain.ControllerBuilderServiceClient,
 	buildkit *buildkit.Client,
 	buildpack builder.BuildpackBackend,
-	storage domain.Storage,
-	pubKey *ssh.PublicKeys,
-	config builder.ImageConfig,
-	appRepo domain.ApplicationRepository,
-	artifactRepo domain.ArtifactRepository,
-	buildRepo domain.BuildRepository,
-	envRepo domain.EnvironmentRepository,
-	gitRepo domain.GitRepositoryRepository,
 ) (Service, error) {
+	systemInfo, err := client.GetBuilderSystemInfo(context.Background())
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to get builder system info")
+	}
+	pubKey, err := domain.IntoPublicKey(systemInfo.SSHKey)
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to convert into public key")
+	}
 	return &builderService{
-		client:       client,
-		buildkit:     buildkit,
-		buildpack:    buildpack,
-		storage:      storage,
-		pubKey:       pubKey,
-		config:       config,
-		appRepo:      appRepo,
-		artifactRepo: artifactRepo,
-		buildRepo:    buildRepo,
-		envRepo:      envRepo,
-		gitRepo:      gitRepo,
+		client:    client,
+		buildkit:  buildkit,
+		buildpack: buildpack,
+
+		pubKey:      pubKey,
+		imageConfig: systemInfo.ImageConfig,
 	}, nil
 }
 
 func (s *builderService) destImage(app *domain.Application, build *domain.Build) string {
-	return s.config.ImageName(app.ID) + ":" + build.ID
+	return s.imageConfig.ImageName(app.ID) + ":" + build.ID
 }
 
 func (s *builderService) tmpDestImage(app *domain.Application, build *domain.Build) string {
-	return s.config.TmpImageName(app.ID) + ":" + build.ID
-}
-
-func (s *builderService) appEnv(ctx context.Context, app *domain.Application) (map[string]string, error) {
-	env, err := s.envRepo.GetEnv(ctx, domain.GetEnvCondition{ApplicationID: optional.From(app.ID)})
-	if err != nil {
-		return nil, err
-	}
-	return lo.SliceToMap(env, (*domain.Environment).GetKV), nil
+	return s.imageConfig.TmpImageName(app.ID) + ":" + build.ID
 }
 
 func (s *builderService) Start(_ context.Context) error {
@@ -135,7 +116,7 @@ func (s *builderService) onRequest(req *pb.BuilderRequest) {
 	switch req.Type {
 	case pb.BuilderRequest_START_BUILD:
 		b := req.Body.(*pb.BuilderRequest_StartBuild).StartBuild
-		err := s.tryStartBuild(b.BuildId)
+		err := s.startBuild(pbconvert.FromPBStartBuildRequest(b))
 		if err != nil {
 			log.Errorf("failed to start build: %+v", err)
 		}

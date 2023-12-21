@@ -35,11 +35,16 @@ type ControllerBuilderService interface {
 	pbconnect.ControllerBuilderServiceHandler
 	ListenBuilderIdle() (sub <-chan struct{}, unsub func())
 	ListenBuildSettled() (sub <-chan struct{}, unsub func())
-	StartBuilds(buildIDs []string)
+	StartBuilds(ctx context.Context, buildIDs []string)
 	CancelBuild(buildID string)
 }
 
 type ControllerBuilderServiceClient interface {
+	GetBuilderSystemInfo(ctx context.Context) (*BuilderSystemInfo, error)
+	PingBuild(ctx context.Context, buildID string) error
+	StreamBuildLog(ctx context.Context, buildID string, send <-chan []byte) error
+	SaveArtifact(ctx context.Context, artifact *Artifact, body []byte) error
+	SaveBuildLog(ctx context.Context, buildID string, body []byte) error
 	ConnectBuilder(ctx context.Context, onRequest func(req *pb.BuilderRequest), response <-chan *pb.BuilderResponse) error
 }
 

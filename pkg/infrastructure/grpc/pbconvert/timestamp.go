@@ -12,3 +12,10 @@ import (
 func ToPBNullTimestamp(t optional.Of[time.Time]) *pb.NullTimestamp {
 	return &pb.NullTimestamp{Timestamp: timestamppb.New(t.V), Valid: t.Valid}
 }
+
+func FromPBNullTimestamp(t *pb.NullTimestamp) optional.Of[time.Time] {
+	if t.Valid {
+		return optional.From(t.Timestamp.AsTime())
+	}
+	return optional.None[time.Time]()
+}

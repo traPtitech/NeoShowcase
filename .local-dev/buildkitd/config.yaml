@@ -1,9 +1,0 @@
-{
-  "//": "sample",
-  "auths": {
-    "http://registry.local/v1/": {
-      "username": "ns",
-      "password": "password"
-    }
-  }
-}

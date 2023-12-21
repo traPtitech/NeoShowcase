@@ -2,7 +2,6 @@ package builder
 
 import (
 	"context"
-	"database/sql"
 
 	buildkit "github.com/moby/buildkit/client"
 	"golang.org/x/sync/errgroup"
@@ -11,7 +10,6 @@ import (
 )
 
 type Server struct {
-	DB       *sql.DB
 	Buildkit *buildkit.Client
 	Builder  builder.Service
 }
@@ -23,9 +21,6 @@ func (s *Server) Start(ctx context.Context) error {
 func (s *Server) Shutdown(ctx context.Context) error {
 	eg, ctx := errgroup.WithContext(ctx)
 
-	eg.Go(func() error {
-		return s.DB.Close()
-	})
 	eg.Go(func() error {
 		return s.Buildkit.Close()
 	})

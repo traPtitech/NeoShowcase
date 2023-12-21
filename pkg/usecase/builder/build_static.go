@@ -49,6 +49,6 @@ func (s *builderService) buildStaticCleanup(
 	if err != nil {
 		return err
 	}
-	r := s.config.NewRegistry()
+	r := s.imageConfig.NewRegistry()
 	return r.TagDelete(ctx, tagRef)
 }

@@ -59,6 +59,21 @@ const (
 	// ControllerServiceCancelBuildProcedure is the fully-qualified name of the ControllerService's
 	// CancelBuild RPC.
 	ControllerServiceCancelBuildProcedure = "/neoshowcase.protobuf.ControllerService/CancelBuild"
+	// ControllerBuilderServiceGetBuilderSystemInfoProcedure is the fully-qualified name of the
+	// ControllerBuilderService's GetBuilderSystemInfo RPC.
+	ControllerBuilderServiceGetBuilderSystemInfoProcedure = "/neoshowcase.protobuf.ControllerBuilderService/GetBuilderSystemInfo"
+	// ControllerBuilderServicePingBuildProcedure is the fully-qualified name of the
+	// ControllerBuilderService's PingBuild RPC.
+	ControllerBuilderServicePingBuildProcedure = "/neoshowcase.protobuf.ControllerBuilderService/PingBuild"
+	// ControllerBuilderServiceStreamBuildLogProcedure is the fully-qualified name of the
+	// ControllerBuilderService's StreamBuildLog RPC.
+	ControllerBuilderServiceStreamBuildLogProcedure = "/neoshowcase.protobuf.ControllerBuilderService/StreamBuildLog"
+	// ControllerBuilderServiceSaveArtifactProcedure is the fully-qualified name of the
+	// ControllerBuilderService's SaveArtifact RPC.
+	ControllerBuilderServiceSaveArtifactProcedure = "/neoshowcase.protobuf.ControllerBuilderService/SaveArtifact"
+	// ControllerBuilderServiceSaveBuildLogProcedure is the fully-qualified name of the
+	// ControllerBuilderService's SaveBuildLog RPC.
+	ControllerBuilderServiceSaveBuildLogProcedure = "/neoshowcase.protobuf.ControllerBuilderService/SaveBuildLog"
 	// ControllerBuilderServiceConnectBuilderProcedure is the fully-qualified name of the
 	// ControllerBuilderService's ConnectBuilder RPC.
 	ControllerBuilderServiceConnectBuilderProcedure = "/neoshowcase.protobuf.ControllerBuilderService/ConnectBuilder"
@@ -72,19 +87,24 @@ const (
 
 // These variables are the protoreflect.Descriptor objects for the RPCs defined in this package.
 var (
-	controllerServiceServiceDescriptor                       = pb.File_neoshowcase_protobuf_controller_proto.Services().ByName("ControllerService")
-	controllerServiceGetSystemInfoMethodDescriptor           = controllerServiceServiceDescriptor.Methods().ByName("GetSystemInfo")
-	controllerServiceFetchRepositoryMethodDescriptor         = controllerServiceServiceDescriptor.Methods().ByName("FetchRepository")
-	controllerServiceRegisterBuildMethodDescriptor           = controllerServiceServiceDescriptor.Methods().ByName("RegisterBuild")
-	controllerServiceSyncDeploymentsMethodDescriptor         = controllerServiceServiceDescriptor.Methods().ByName("SyncDeployments")
-	controllerServiceStreamBuildLogMethodDescriptor          = controllerServiceServiceDescriptor.Methods().ByName("StreamBuildLog")
-	controllerServiceCancelBuildMethodDescriptor             = controllerServiceServiceDescriptor.Methods().ByName("CancelBuild")
-	controllerBuilderServiceServiceDescriptor                = pb.File_neoshowcase_protobuf_controller_proto.Services().ByName("ControllerBuilderService")
-	controllerBuilderServiceConnectBuilderMethodDescriptor   = controllerBuilderServiceServiceDescriptor.Methods().ByName("ConnectBuilder")
-	controllerSSGenServiceServiceDescriptor                  = pb.File_neoshowcase_protobuf_controller_proto.Services().ByName("ControllerSSGenService")
-	controllerSSGenServiceConnectSSGenMethodDescriptor       = controllerSSGenServiceServiceDescriptor.Methods().ByName("ConnectSSGen")
-	controllerGiteaIntegrationServiceServiceDescriptor       = pb.File_neoshowcase_protobuf_controller_proto.Services().ByName("ControllerGiteaIntegrationService")
-	controllerGiteaIntegrationServiceConnectMethodDescriptor = controllerGiteaIntegrationServiceServiceDescriptor.Methods().ByName("Connect")
+	controllerServiceServiceDescriptor                           = pb.File_neoshowcase_protobuf_controller_proto.Services().ByName("ControllerService")
+	controllerServiceGetSystemInfoMethodDescriptor               = controllerServiceServiceDescriptor.Methods().ByName("GetSystemInfo")
+	controllerServiceFetchRepositoryMethodDescriptor             = controllerServiceServiceDescriptor.Methods().ByName("FetchRepository")
+	controllerServiceRegisterBuildMethodDescriptor               = controllerServiceServiceDescriptor.Methods().ByName("RegisterBuild")
+	controllerServiceSyncDeploymentsMethodDescriptor             = controllerServiceServiceDescriptor.Methods().ByName("SyncDeployments")
+	controllerServiceStreamBuildLogMethodDescriptor              = controllerServiceServiceDescriptor.Methods().ByName("StreamBuildLog")
+	controllerServiceCancelBuildMethodDescriptor                 = controllerServiceServiceDescriptor.Methods().ByName("CancelBuild")
+	controllerBuilderServiceServiceDescriptor                    = pb.File_neoshowcase_protobuf_controller_proto.Services().ByName("ControllerBuilderService")
+	controllerBuilderServiceGetBuilderSystemInfoMethodDescriptor = controllerBuilderServiceServiceDescriptor.Methods().ByName("GetBuilderSystemInfo")
+	controllerBuilderServicePingBuildMethodDescriptor            = controllerBuilderServiceServiceDescriptor.Methods().ByName("PingBuild")
+	controllerBuilderServiceStreamBuildLogMethodDescriptor       = controllerBuilderServiceServiceDescriptor.Methods().ByName("StreamBuildLog")
+	controllerBuilderServiceSaveArtifactMethodDescriptor         = controllerBuilderServiceServiceDescriptor.Methods().ByName("SaveArtifact")
+	controllerBuilderServiceSaveBuildLogMethodDescriptor         = controllerBuilderServiceServiceDescriptor.Methods().ByName("SaveBuildLog")
+	controllerBuilderServiceConnectBuilderMethodDescriptor       = controllerBuilderServiceServiceDescriptor.Methods().ByName("ConnectBuilder")
+	controllerSSGenServiceServiceDescriptor                      = pb.File_neoshowcase_protobuf_controller_proto.Services().ByName("ControllerSSGenService")
+	controllerSSGenServiceConnectSSGenMethodDescriptor           = controllerSSGenServiceServiceDescriptor.Methods().ByName("ConnectSSGen")
+	controllerGiteaIntegrationServiceServiceDescriptor           = pb.File_neoshowcase_protobuf_controller_proto.Services().ByName("ControllerGiteaIntegrationService")
+	controllerGiteaIntegrationServiceConnectMethodDescriptor     = controllerGiteaIntegrationServiceServiceDescriptor.Methods().ByName("Connect")
 )
 
 // ControllerServiceClient is a client for the neoshowcase.protobuf.ControllerService service.
@@ -289,6 +309,11 @@ func (UnimplementedControllerServiceHandler) CancelBuild(context.Context, *conne
 // ControllerBuilderServiceClient is a client for the neoshowcase.protobuf.ControllerBuilderService
 // service.
 type ControllerBuilderServiceClient interface {
+	GetBuilderSystemInfo(context.Context, *connect.Request[emptypb.Empty]) (*connect.Response[pb.BuilderSystemInfo], error)
+	PingBuild(context.Context, *connect.Request[pb.BuildIdRequest]) (*connect.Response[emptypb.Empty], error)
+	StreamBuildLog(context.Context) *connect.ClientStreamForClient[pb.BuildLogPortion, emptypb.Empty]
+	SaveArtifact(context.Context, *connect.Request[pb.SaveArtifactRequest]) (*connect.Response[emptypb.Empty], error)
+	SaveBuildLog(context.Context, *connect.Request[pb.SaveBuildLogRequest]) (*connect.Response[emptypb.Empty], error)
 	ConnectBuilder(context.Context) *connect.BidiStreamForClient[pb.BuilderResponse, pb.BuilderRequest]
 }
 
@@ -303,6 +328,36 @@ type ControllerBuilderServiceClient interface {
 func NewControllerBuilderServiceClient(httpClient connect.HTTPClient, baseURL string, opts ...connect.ClientOption) ControllerBuilderServiceClient {
 	baseURL = strings.TrimRight(baseURL, "/")
 	return &controllerBuilderServiceClient{
+		getBuilderSystemInfo: connect.NewClient[emptypb.Empty, pb.BuilderSystemInfo](
+			httpClient,
+			baseURL+ControllerBuilderServiceGetBuilderSystemInfoProcedure,
+			connect.WithSchema(controllerBuilderServiceGetBuilderSystemInfoMethodDescriptor),
+			connect.WithClientOptions(opts...),
+		),
+		pingBuild: connect.NewClient[pb.BuildIdRequest, emptypb.Empty](
+			httpClient,
+			baseURL+ControllerBuilderServicePingBuildProcedure,
+			connect.WithSchema(controllerBuilderServicePingBuildMethodDescriptor),
+			connect.WithClientOptions(opts...),
+		),
+		streamBuildLog: connect.NewClient[pb.BuildLogPortion, emptypb.Empty](
+			httpClient,
+			baseURL+ControllerBuilderServiceStreamBuildLogProcedure,
+			connect.WithSchema(controllerBuilderServiceStreamBuildLogMethodDescriptor),
+			connect.WithClientOptions(opts...),
+		),
+		saveArtifact: connect.NewClient[pb.SaveArtifactRequest, emptypb.Empty](
+			httpClient,
+			baseURL+ControllerBuilderServiceSaveArtifactProcedure,
+			connect.WithSchema(controllerBuilderServiceSaveArtifactMethodDescriptor),
+			connect.WithClientOptions(opts...),
+		),
+		saveBuildLog: connect.NewClient[pb.SaveBuildLogRequest, emptypb.Empty](
+			httpClient,
+			baseURL+ControllerBuilderServiceSaveBuildLogProcedure,
+			connect.WithSchema(controllerBuilderServiceSaveBuildLogMethodDescriptor),
+			connect.WithClientOptions(opts...),
+		),
 		connectBuilder: connect.NewClient[pb.BuilderResponse, pb.BuilderRequest](
 			httpClient,
 			baseURL+ControllerBuilderServiceConnectBuilderProcedure,
@@ -314,7 +369,37 @@ func NewControllerBuilderServiceClient(httpClient connect.HTTPClient, baseURL st
 
 // controllerBuilderServiceClient implements ControllerBuilderServiceClient.
 type controllerBuilderServiceClient struct {
-	connectBuilder *connect.Client[pb.BuilderResponse, pb.BuilderRequest]
+	getBuilderSystemInfo *connect.Client[emptypb.Empty, pb.BuilderSystemInfo]
+	pingBuild            *connect.Client[pb.BuildIdRequest, emptypb.Empty]
+	streamBuildLog       *connect.Client[pb.BuildLogPortion, emptypb.Empty]
+	saveArtifact         *connect.Client[pb.SaveArtifactRequest, emptypb.Empty]
+	saveBuildLog         *connect.Client[pb.SaveBuildLogRequest, emptypb.Empty]
+	connectBuilder       *connect.Client[pb.BuilderResponse, pb.BuilderRequest]
+}
+
+// GetBuilderSystemInfo calls neoshowcase.protobuf.ControllerBuilderService.GetBuilderSystemInfo.
+func (c *controllerBuilderServiceClient) GetBuilderSystemInfo(ctx context.Context, req *connect.Request[emptypb.Empty]) (*connect.Response[pb.BuilderSystemInfo], error) {
+	return c.getBuilderSystemInfo.CallUnary(ctx, req)
+}
+
+// PingBuild calls neoshowcase.protobuf.ControllerBuilderService.PingBuild.
+func (c *controllerBuilderServiceClient) PingBuild(ctx context.Context, req *connect.Request[pb.BuildIdRequest]) (*connect.Response[emptypb.Empty], error) {
+	return c.pingBuild.CallUnary(ctx, req)
+}
+
+// StreamBuildLog calls neoshowcase.protobuf.ControllerBuilderService.StreamBuildLog.
+func (c *controllerBuilderServiceClient) StreamBuildLog(ctx context.Context) *connect.ClientStreamForClient[pb.BuildLogPortion, emptypb.Empty] {
+	return c.streamBuildLog.CallClientStream(ctx)
+}
+
+// SaveArtifact calls neoshowcase.protobuf.ControllerBuilderService.SaveArtifact.
+func (c *controllerBuilderServiceClient) SaveArtifact(ctx context.Context, req *connect.Request[pb.SaveArtifactRequest]) (*connect.Response[emptypb.Empty], error) {
+	return c.saveArtifact.CallUnary(ctx, req)
+}
+
+// SaveBuildLog calls neoshowcase.protobuf.ControllerBuilderService.SaveBuildLog.
+func (c *controllerBuilderServiceClient) SaveBuildLog(ctx context.Context, req *connect.Request[pb.SaveBuildLogRequest]) (*connect.Response[emptypb.Empty], error) {
+	return c.saveBuildLog.CallUnary(ctx, req)
 }
 
 // ConnectBuilder calls neoshowcase.protobuf.ControllerBuilderService.ConnectBuilder.
@@ -325,6 +410,11 @@ func (c *controllerBuilderServiceClient) ConnectBuilder(ctx context.Context) *co
 // ControllerBuilderServiceHandler is an implementation of the
 // neoshowcase.protobuf.ControllerBuilderService service.
 type ControllerBuilderServiceHandler interface {
+	GetBuilderSystemInfo(context.Context, *connect.Request[emptypb.Empty]) (*connect.Response[pb.BuilderSystemInfo], error)
+	PingBuild(context.Context, *connect.Request[pb.BuildIdRequest]) (*connect.Response[emptypb.Empty], error)
+	StreamBuildLog(context.Context, *connect.ClientStream[pb.BuildLogPortion]) (*connect.Response[emptypb.Empty], error)
+	SaveArtifact(context.Context, *connect.Request[pb.SaveArtifactRequest]) (*connect.Response[emptypb.Empty], error)
+	SaveBuildLog(context.Context, *connect.Request[pb.SaveBuildLogRequest]) (*connect.Response[emptypb.Empty], error)
 	ConnectBuilder(context.Context, *connect.BidiStream[pb.BuilderResponse, pb.BuilderRequest]) error
 }
 
@@ -334,6 +424,36 @@ type ControllerBuilderServiceHandler interface {
 // By default, handlers support the Connect, gRPC, and gRPC-Web protocols with the binary Protobuf
 // and JSON codecs. They also support gzip compression.
 func NewControllerBuilderServiceHandler(svc ControllerBuilderServiceHandler, opts ...connect.HandlerOption) (string, http.Handler) {
+	controllerBuilderServiceGetBuilderSystemInfoHandler := connect.NewUnaryHandler(
+		ControllerBuilderServiceGetBuilderSystemInfoProcedure,
+		svc.GetBuilderSystemInfo,
+		connect.WithSchema(controllerBuilderServiceGetBuilderSystemInfoMethodDescriptor),
+		connect.WithHandlerOptions(opts...),
+	)
+	controllerBuilderServicePingBuildHandler := connect.NewUnaryHandler(
+		ControllerBuilderServicePingBuildProcedure,
+		svc.PingBuild,
+		connect.WithSchema(controllerBuilderServicePingBuildMethodDescriptor),
+		connect.WithHandlerOptions(opts...),
+	)
+	controllerBuilderServiceStreamBuildLogHandler := connect.NewClientStreamHandler(
+		ControllerBuilderServiceStreamBuildLogProcedure,
+		svc.StreamBuildLog,
+		connect.WithSchema(controllerBuilderServiceStreamBuildLogMethodDescriptor),
+		connect.WithHandlerOptions(opts...),
+	)
+	controllerBuilderServiceSaveArtifactHandler := connect.NewUnaryHandler(
+		ControllerBuilderServiceSaveArtifactProcedure,
+		svc.SaveArtifact,
+		connect.WithSchema(controllerBuilderServiceSaveArtifactMethodDescriptor),
+		connect.WithHandlerOptions(opts...),
+	)
+	controllerBuilderServiceSaveBuildLogHandler := connect.NewUnaryHandler(
+		ControllerBuilderServiceSaveBuildLogProcedure,
+		svc.SaveBuildLog,
+		connect.WithSchema(controllerBuilderServiceSaveBuildLogMethodDescriptor),
+		connect.WithHandlerOptions(opts...),
+	)
 	controllerBuilderServiceConnectBuilderHandler := connect.NewBidiStreamHandler(
 		ControllerBuilderServiceConnectBuilderProcedure,
 		svc.ConnectBuilder,
@@ -342,6 +462,16 @@ func NewControllerBuilderServiceHandler(svc ControllerBuilderServiceHandler, opt
 	)
 	return "/neoshowcase.protobuf.ControllerBuilderService/", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		switch r.URL.Path {
+		case ControllerBuilderServiceGetBuilderSystemInfoProcedure:
+			controllerBuilderServiceGetBuilderSystemInfoHandler.ServeHTTP(w, r)
+		case ControllerBuilderServicePingBuildProcedure:
+			controllerBuilderServicePingBuildHandler.ServeHTTP(w, r)
+		case ControllerBuilderServiceStreamBuildLogProcedure:
+			controllerBuilderServiceStreamBuildLogHandler.ServeHTTP(w, r)
+		case ControllerBuilderServiceSaveArtifactProcedure:
+			controllerBuilderServiceSaveArtifactHandler.ServeHTTP(w, r)
+		case ControllerBuilderServiceSaveBuildLogProcedure:
+			controllerBuilderServiceSaveBuildLogHandler.ServeHTTP(w, r)
 		case ControllerBuilderServiceConnectBuilderProcedure:
 			controllerBuilderServiceConnectBuilderHandler.ServeHTTP(w, r)
 		default:
@@ -352,6 +482,26 @@ func NewControllerBuilderServiceHandler(svc ControllerBuilderServiceHandler, opt
 
 // UnimplementedControllerBuilderServiceHandler returns CodeUnimplemented from all methods.
 type UnimplementedControllerBuilderServiceHandler struct{}
+
+func (UnimplementedControllerBuilderServiceHandler) GetBuilderSystemInfo(context.Context, *connect.Request[emptypb.Empty]) (*connect.Response[pb.BuilderSystemInfo], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("neoshowcase.protobuf.ControllerBuilderService.GetBuilderSystemInfo is not implemented"))
+}
+
+func (UnimplementedControllerBuilderServiceHandler) PingBuild(context.Context, *connect.Request[pb.BuildIdRequest]) (*connect.Response[emptypb.Empty], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("neoshowcase.protobuf.ControllerBuilderService.PingBuild is not implemented"))
+}
+
+func (UnimplementedControllerBuilderServiceHandler) StreamBuildLog(context.Context, *connect.ClientStream[pb.BuildLogPortion]) (*connect.Response[emptypb.Empty], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("neoshowcase.protobuf.ControllerBuilderService.StreamBuildLog is not implemented"))
+}
+
+func (UnimplementedControllerBuilderServiceHandler) SaveArtifact(context.Context, *connect.Request[pb.SaveArtifactRequest]) (*connect.Response[emptypb.Empty], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("neoshowcase.protobuf.ControllerBuilderService.SaveArtifact is not implemented"))
+}
+
+func (UnimplementedControllerBuilderServiceHandler) SaveBuildLog(context.Context, *connect.Request[pb.SaveBuildLogRequest]) (*connect.Response[emptypb.Empty], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("neoshowcase.protobuf.ControllerBuilderService.SaveBuildLog is not implemented"))
+}
 
 func (UnimplementedControllerBuilderServiceHandler) ConnectBuilder(context.Context, *connect.BidiStream[pb.BuilderResponse, pb.BuilderRequest]) error {
 	return connect.NewError(connect.CodeUnimplemented, errors.New("neoshowcase.protobuf.ControllerBuilderService.ConnectBuilder is not implemented"))

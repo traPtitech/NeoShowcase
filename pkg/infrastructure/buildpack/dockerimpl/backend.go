@@ -26,12 +26,10 @@ import (
 type dockerBackend struct {
 	c      *client.Client
 	config Config
-	image  builder.ImageConfig
 }
 
 func NewBuildpackBackend(
 	config Config,
-	image builder.ImageConfig,
 ) (builder.BuildpackBackend, error) {
 	c, err := client.NewClientWithOpts(
 		client.FromEnv,
@@ -45,24 +43,19 @@ func NewBuildpackBackend(
 	b := &dockerBackend{
 		c:      c,
 		config: config,
-		image:  image,
-	}
-	err = b.prepareAuth()
-	if err != nil {
-		return nil, err
 	}
 	return b, nil
 }
 
-func (d *dockerBackend) dockerAuth() (s string, ok bool) {
-	if d.image.Registry.Username == "" && d.image.Registry.Password == "" {
+func (d *dockerBackend) dockerAuth(imageConfig builder.ImageConfig) (s string, ok bool) {
+	if imageConfig.Registry.Username == "" && imageConfig.Registry.Password == "" {
 		return "", false
 	}
 	c := configfile.ConfigFile{
 		AuthConfigs: map[string]types2.AuthConfig{
-			d.image.Registry.Addr: {
-				Username: d.image.Registry.Username,
-				Password: d.image.Registry.Password,
+			imageConfig.Registry.Addr: {
+				Username: imageConfig.Registry.Username,
+				Password: imageConfig.Registry.Password,
 			},
 		},
 	}
@@ -74,8 +67,8 @@ func escapeSingleQuote(s string) string {
 	return strings.ReplaceAll(s, "'", "\\'")
 }
 
-func (d *dockerBackend) prepareAuth() error {
-	auth, ok := d.dockerAuth()
+func (d *dockerBackend) prepareAuth(imageConfig builder.ImageConfig) error {
+	auth, ok := d.dockerAuth(imageConfig)
 	if ok {
 		err := d.exec(context.Background(), "/", []string{"sh", "-c", "mkdir -p ~/.docker"}, nil, io.Discard, io.Discard)
 		if err != nil {
@@ -167,9 +160,15 @@ func (d *dockerBackend) Pack(
 	ctx context.Context,
 	repoDir string,
 	imageDest string,
+	imageConfig builder.ImageConfig,
 	env map[string]string,
 	logWriter io.Writer,
 ) (path string, err error) {
+	err = d.prepareAuth(imageConfig)
+	if err != nil {
+		return "", err
+	}
+
 	remoteRepoPath, cleanupRepoDir, err := d.prepareDir(ctx, repoDir, "ns-repo")
 	if err != nil {
 		return "", err

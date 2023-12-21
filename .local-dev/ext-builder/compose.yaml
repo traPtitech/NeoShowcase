@@ -4,13 +4,9 @@ services:
     command: --debug --loglevel=trace --config=/config.yaml
     restart: always
     environment:
-      NS_DB_PASSWORD:
-      NS_STORAGE_S3_ACCESSKEY:
-      NS_STORAGE_S3_ACCESSSECRET:
-      NS_IMAGE_REGISTRY_PASSWORD:
+      NS_COMPONENTS_CONTROLLER_TOKEN:
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock # for buildpack docker backend
-      - ./id_ed25519:/keys/id_ed25519
       - ./config.yaml:/config.yaml
       - ~/.ssh/known_hosts:/root/.ssh/known_hosts
     depends_on:
@@ -18,6 +14,7 @@ services:
         condition: service_started
     extra_hosts:
       - host.docker.internal:host-gateway
+      - registry.local:host-gateway
 
   buildpack:
     image: paketobuildpacks/builder-jammy-full:latest
@@ -25,9 +22,15 @@ services:
     entrypoint:
       - sleep
       - infinity
+    extra_hosts:
+      - registry.local:host-gateway
 
   buildkitd:
     image: moby/buildkit:latest
     restart: always
     privileged: true
     command: --addr tcp://0.0.0.0:1234
+    volumes:
+      - ../buildkitd/buildkitd.toml:/etc/buildkit/buildkitd.toml
+    extra_hosts:
+      - registry.local:host-gateway
