@@ -43,8 +43,9 @@ export const useBranches = (repoID: () => string): (() => string[]) => {
   const [refs] = createResource(
     () => repoID(),
     (id) =>
-      client.getRepositoryRefs({ repositoryId: id }).catch(() => {
+      client.getRepositoryRefs({ repositoryId: id }).catch((err) => {
         // ブランチ取得の失敗時は502エラーが返ってくるのでcatchで処理する
+        console.trace(err)
         toast.error('ブランチの取得に失敗しました。リポジトリへのアクセス権を確認してください。')
         return { refs: [] }
       }),
