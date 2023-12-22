@@ -62,7 +62,8 @@ func (c *ControllerBuilderServiceClient) StreamBuildLog(ctx context.Context, bui
 			return err
 		}
 	}
-	return nil
+	_, err := st.CloseAndReceive()
+	return err
 }
 
 func (c *ControllerBuilderServiceClient) SaveArtifact(ctx context.Context, artifact *domain.Artifact, body []byte) error {

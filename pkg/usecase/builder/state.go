@@ -52,6 +52,11 @@ func (l *logWriter) Write(p []byte) (n int, err error) {
 	return
 }
 
+func (l *logWriter) Close() error {
+	close(l.send)
+	return nil
+}
+
 type state struct {
 	app       *domain.Application
 	envs      []*domain.Environment
@@ -92,6 +97,7 @@ func (s *state) appEnv() map[string]string {
 }
 
 func (s *state) Done() {
+	_ = s.logWriter.Close()
 	_ = os.RemoveAll(s.repositoryTempDir)
 	_ = os.Remove(s.artifactTempFile.Name())
 	close(s.done)
