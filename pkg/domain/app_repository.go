@@ -3,8 +3,6 @@ package domain
 import (
 	"context"
 	"fmt"
-	"strings"
-
 	"github.com/friendsofgo/errors"
 	"github.com/go-git/go-git/v5"
 	"github.com/go-git/go-git/v5/config"
@@ -12,7 +10,6 @@ import (
 	"github.com/go-git/go-git/v5/plumbing/transport"
 	"github.com/go-git/go-git/v5/plumbing/transport/ssh"
 	"github.com/samber/lo"
-	giturls "github.com/whilp/git-urls"
 
 	"github.com/traPtitech/neoshowcase/pkg/util/optional"
 )
@@ -86,15 +83,14 @@ func (r *Repository) HTMLURL() string {
 	case RepositoryAuthMethodBasic:
 		return r.URL // Expect a human-readable page
 	case RepositoryAuthMethodSSH:
-		u, err := giturls.Parse(r.URL)
+		ep, err := transport.NewEndpoint(r.URL)
 		if err != nil {
-			return r.URL // Fallback
+			return r.URL // Fallback, should not be reachable
 		}
-		path := u.Path
-		if !strings.HasPrefix(path, "/") {
-			path = "/" + path
-		}
-		return "https://" + u.Hostname() + path + u.RawQuery
+		ep.Protocol = "https"
+		ep.User = ""
+		ep.Port = 443
+		return ep.String()
 	default:
 		return r.URL
 	}
