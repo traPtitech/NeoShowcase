@@ -6,8 +6,7 @@ import (
 
 	"github.com/traPtitech/neoshowcase/pkg/infrastructure/backend/dockerimpl"
 	"github.com/traPtitech/neoshowcase/pkg/infrastructure/backend/k8simpl"
-	bdockerimpl "github.com/traPtitech/neoshowcase/pkg/infrastructure/buildpack/dockerimpl"
-	bk8simpl "github.com/traPtitech/neoshowcase/pkg/infrastructure/buildpack/k8simpl"
+	"github.com/traPtitech/neoshowcase/pkg/infrastructure/buildpack"
 	"github.com/traPtitech/neoshowcase/pkg/infrastructure/dbmanager"
 	"github.com/traPtitech/neoshowcase/pkg/infrastructure/grpc"
 	"github.com/traPtitech/neoshowcase/pkg/infrastructure/log/loki"
@@ -52,11 +51,7 @@ type BuilderConfig struct {
 	Buildkit struct {
 		Address string `mapstructure:"address" yaml:"address"`
 	} `mapstructure:"buildkit" yaml:"buildkit"`
-	Buildpack struct {
-		Backend string             `mapstructure:"backend" yaml:"backend"`
-		Docker  bdockerimpl.Config `mapstructure:"docker" yaml:"docker"`
-		K8s     bk8simpl.Config    `mapstructure:"k8s" yaml:"k8s"`
-	}
+	Buildpack  buildpack.Config                   `mapstructure:"buildpack" yaml:"buildpack"`
 	Controller grpc.ControllerServiceClientConfig `mapstructure:"controller" yaml:"controller"`
 	Priority   int                                `mapstructure:"priority" yaml:"priority"`
 }
@@ -148,20 +143,10 @@ func init() {
 
 	viper.SetDefault("components.builder.buildkit.address", appdefaults.Address)
 
-	viper.SetDefault("components.builder.buildpack.backend", "docker")
-	viper.SetDefault("components.builder.buildpack.docker.containerName", "buildpack")
-	viper.SetDefault("components.builder.buildpack.docker.remoteDir", "/workspace")
-	viper.SetDefault("components.builder.buildpack.docker.user", "cnb")
-	viper.SetDefault("components.builder.buildpack.docker.group", "cnb")
-	viper.SetDefault("components.builder.buildpack.docker.platformAPI", "0.11")
-	viper.SetDefault("components.builder.buildpack.k8s.namespace", "ns-system")
-	viper.SetDefault("components.builder.buildpack.k8s.podName", "ns-builder")
-	viper.SetDefault("components.builder.buildpack.k8s.containerName", "buildpack")
-	viper.SetDefault("components.builder.buildpack.k8s.localDir", "/neoshowcase/buildpack")
-	viper.SetDefault("components.builder.buildpack.k8s.remoteDir", "/workspace")
-	viper.SetDefault("components.builder.buildpack.k8s.user", 1001)
-	viper.SetDefault("components.builder.buildpack.k8s.group", 1000)
-	viper.SetDefault("components.builder.buildpack.k8s.platformAPI", "0.11")
+	viper.SetDefault("components.builder.buildpack.helper.address", "http://localhost:1235")
+	viper.SetDefault("components.builder.buildpack.helper.listenPort", 1235)
+	viper.SetDefault("components.builder.buildpack.remoteDir", "/workspace")
+	viper.SetDefault("components.builder.buildpack.platformAPI", "0.11")
 
 	viper.SetDefault("components.builder.controller.url", "http://ns-controller:10000")
 

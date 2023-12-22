@@ -26,6 +26,8 @@ const (
 	ControllerServiceName = "neoshowcase.protobuf.ControllerService"
 	// ControllerBuilderServiceName is the fully-qualified name of the ControllerBuilderService service.
 	ControllerBuilderServiceName = "neoshowcase.protobuf.ControllerBuilderService"
+	// BuildpackHelperServiceName is the fully-qualified name of the BuildpackHelperService service.
+	BuildpackHelperServiceName = "neoshowcase.protobuf.BuildpackHelperService"
 	// ControllerSSGenServiceName is the fully-qualified name of the ControllerSSGenService service.
 	ControllerSSGenServiceName = "neoshowcase.protobuf.ControllerSSGenService"
 	// ControllerGiteaIntegrationServiceName is the fully-qualified name of the
@@ -77,6 +79,12 @@ const (
 	// ControllerBuilderServiceConnectBuilderProcedure is the fully-qualified name of the
 	// ControllerBuilderService's ConnectBuilder RPC.
 	ControllerBuilderServiceConnectBuilderProcedure = "/neoshowcase.protobuf.ControllerBuilderService/ConnectBuilder"
+	// BuildpackHelperServiceCopyFileTreeProcedure is the fully-qualified name of the
+	// BuildpackHelperService's CopyFileTree RPC.
+	BuildpackHelperServiceCopyFileTreeProcedure = "/neoshowcase.protobuf.BuildpackHelperService/CopyFileTree"
+	// BuildpackHelperServiceExecProcedure is the fully-qualified name of the BuildpackHelperService's
+	// Exec RPC.
+	BuildpackHelperServiceExecProcedure = "/neoshowcase.protobuf.BuildpackHelperService/Exec"
 	// ControllerSSGenServiceConnectSSGenProcedure is the fully-qualified name of the
 	// ControllerSSGenService's ConnectSSGen RPC.
 	ControllerSSGenServiceConnectSSGenProcedure = "/neoshowcase.protobuf.ControllerSSGenService/ConnectSSGen"
@@ -101,6 +109,9 @@ var (
 	controllerBuilderServiceSaveArtifactMethodDescriptor         = controllerBuilderServiceServiceDescriptor.Methods().ByName("SaveArtifact")
 	controllerBuilderServiceSaveBuildLogMethodDescriptor         = controllerBuilderServiceServiceDescriptor.Methods().ByName("SaveBuildLog")
 	controllerBuilderServiceConnectBuilderMethodDescriptor       = controllerBuilderServiceServiceDescriptor.Methods().ByName("ConnectBuilder")
+	buildpackHelperServiceServiceDescriptor                      = pb.File_neoshowcase_protobuf_controller_proto.Services().ByName("BuildpackHelperService")
+	buildpackHelperServiceCopyFileTreeMethodDescriptor           = buildpackHelperServiceServiceDescriptor.Methods().ByName("CopyFileTree")
+	buildpackHelperServiceExecMethodDescriptor                   = buildpackHelperServiceServiceDescriptor.Methods().ByName("Exec")
 	controllerSSGenServiceServiceDescriptor                      = pb.File_neoshowcase_protobuf_controller_proto.Services().ByName("ControllerSSGenService")
 	controllerSSGenServiceConnectSSGenMethodDescriptor           = controllerSSGenServiceServiceDescriptor.Methods().ByName("ConnectSSGen")
 	controllerGiteaIntegrationServiceServiceDescriptor           = pb.File_neoshowcase_protobuf_controller_proto.Services().ByName("ControllerGiteaIntegrationService")
@@ -505,6 +516,103 @@ func (UnimplementedControllerBuilderServiceHandler) SaveBuildLog(context.Context
 
 func (UnimplementedControllerBuilderServiceHandler) ConnectBuilder(context.Context, *connect.BidiStream[pb.BuilderResponse, pb.BuilderRequest]) error {
 	return connect.NewError(connect.CodeUnimplemented, errors.New("neoshowcase.protobuf.ControllerBuilderService.ConnectBuilder is not implemented"))
+}
+
+// BuildpackHelperServiceClient is a client for the neoshowcase.protobuf.BuildpackHelperService
+// service.
+type BuildpackHelperServiceClient interface {
+	CopyFileTree(context.Context, *connect.Request[pb.CopyFileTreeRequest]) (*connect.Response[emptypb.Empty], error)
+	Exec(context.Context, *connect.Request[pb.HelperExecRequest]) (*connect.ServerStreamForClient[pb.HelperExecResponse], error)
+}
+
+// NewBuildpackHelperServiceClient constructs a client for the
+// neoshowcase.protobuf.BuildpackHelperService service. By default, it uses the Connect protocol
+// with the binary Protobuf Codec, asks for gzipped responses, and sends uncompressed requests. To
+// use the gRPC or gRPC-Web protocols, supply the connect.WithGRPC() or connect.WithGRPCWeb()
+// options.
+//
+// The URL supplied here should be the base URL for the Connect or gRPC server (for example,
+// http://api.acme.com or https://acme.com/grpc).
+func NewBuildpackHelperServiceClient(httpClient connect.HTTPClient, baseURL string, opts ...connect.ClientOption) BuildpackHelperServiceClient {
+	baseURL = strings.TrimRight(baseURL, "/")
+	return &buildpackHelperServiceClient{
+		copyFileTree: connect.NewClient[pb.CopyFileTreeRequest, emptypb.Empty](
+			httpClient,
+			baseURL+BuildpackHelperServiceCopyFileTreeProcedure,
+			connect.WithSchema(buildpackHelperServiceCopyFileTreeMethodDescriptor),
+			connect.WithClientOptions(opts...),
+		),
+		exec: connect.NewClient[pb.HelperExecRequest, pb.HelperExecResponse](
+			httpClient,
+			baseURL+BuildpackHelperServiceExecProcedure,
+			connect.WithSchema(buildpackHelperServiceExecMethodDescriptor),
+			connect.WithClientOptions(opts...),
+		),
+	}
+}
+
+// buildpackHelperServiceClient implements BuildpackHelperServiceClient.
+type buildpackHelperServiceClient struct {
+	copyFileTree *connect.Client[pb.CopyFileTreeRequest, emptypb.Empty]
+	exec         *connect.Client[pb.HelperExecRequest, pb.HelperExecResponse]
+}
+
+// CopyFileTree calls neoshowcase.protobuf.BuildpackHelperService.CopyFileTree.
+func (c *buildpackHelperServiceClient) CopyFileTree(ctx context.Context, req *connect.Request[pb.CopyFileTreeRequest]) (*connect.Response[emptypb.Empty], error) {
+	return c.copyFileTree.CallUnary(ctx, req)
+}
+
+// Exec calls neoshowcase.protobuf.BuildpackHelperService.Exec.
+func (c *buildpackHelperServiceClient) Exec(ctx context.Context, req *connect.Request[pb.HelperExecRequest]) (*connect.ServerStreamForClient[pb.HelperExecResponse], error) {
+	return c.exec.CallServerStream(ctx, req)
+}
+
+// BuildpackHelperServiceHandler is an implementation of the
+// neoshowcase.protobuf.BuildpackHelperService service.
+type BuildpackHelperServiceHandler interface {
+	CopyFileTree(context.Context, *connect.Request[pb.CopyFileTreeRequest]) (*connect.Response[emptypb.Empty], error)
+	Exec(context.Context, *connect.Request[pb.HelperExecRequest], *connect.ServerStream[pb.HelperExecResponse]) error
+}
+
+// NewBuildpackHelperServiceHandler builds an HTTP handler from the service implementation. It
+// returns the path on which to mount the handler and the handler itself.
+//
+// By default, handlers support the Connect, gRPC, and gRPC-Web protocols with the binary Protobuf
+// and JSON codecs. They also support gzip compression.
+func NewBuildpackHelperServiceHandler(svc BuildpackHelperServiceHandler, opts ...connect.HandlerOption) (string, http.Handler) {
+	buildpackHelperServiceCopyFileTreeHandler := connect.NewUnaryHandler(
+		BuildpackHelperServiceCopyFileTreeProcedure,
+		svc.CopyFileTree,
+		connect.WithSchema(buildpackHelperServiceCopyFileTreeMethodDescriptor),
+		connect.WithHandlerOptions(opts...),
+	)
+	buildpackHelperServiceExecHandler := connect.NewServerStreamHandler(
+		BuildpackHelperServiceExecProcedure,
+		svc.Exec,
+		connect.WithSchema(buildpackHelperServiceExecMethodDescriptor),
+		connect.WithHandlerOptions(opts...),
+	)
+	return "/neoshowcase.protobuf.BuildpackHelperService/", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		switch r.URL.Path {
+		case BuildpackHelperServiceCopyFileTreeProcedure:
+			buildpackHelperServiceCopyFileTreeHandler.ServeHTTP(w, r)
+		case BuildpackHelperServiceExecProcedure:
+			buildpackHelperServiceExecHandler.ServeHTTP(w, r)
+		default:
+			http.NotFound(w, r)
+		}
+	})
+}
+
+// UnimplementedBuildpackHelperServiceHandler returns CodeUnimplemented from all methods.
+type UnimplementedBuildpackHelperServiceHandler struct{}
+
+func (UnimplementedBuildpackHelperServiceHandler) CopyFileTree(context.Context, *connect.Request[pb.CopyFileTreeRequest]) (*connect.Response[emptypb.Empty], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("neoshowcase.protobuf.BuildpackHelperService.CopyFileTree is not implemented"))
+}
+
+func (UnimplementedBuildpackHelperServiceHandler) Exec(context.Context, *connect.Request[pb.HelperExecRequest], *connect.ServerStream[pb.HelperExecResponse]) error {
+	return connect.NewError(connect.CodeUnimplemented, errors.New("neoshowcase.protobuf.BuildpackHelperService.Exec is not implemented"))
 }
 
 // ControllerSSGenServiceClient is a client for the neoshowcase.protobuf.ControllerSSGenService

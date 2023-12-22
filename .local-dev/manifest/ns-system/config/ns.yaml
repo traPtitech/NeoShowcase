@@ -31,16 +31,11 @@ components:
     buildkit:
       address: unix:///run/buildkit/buildkitd.sock
     buildpack:
-      backend: k8s
-      k8s:
-        namespace: ns-system
-        # podName: ns-builder # specified from env
-        containerName: buildpack
-        localDir: /neoshowcase/buildpack
-        remoteDir: /workspace
-        user: 1001
-        group: 1000
-        platformAPI: "0.11"
+      helper:
+        address: http://localhost:1235
+        listenPort: 1235
+      remoteDir: /workspace
+      platformAPI: "0.11"
     controller:
       url: http://ns-controller.ns-system.svc.cluster.local:10000
     priority: 0

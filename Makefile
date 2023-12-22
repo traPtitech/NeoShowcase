@@ -1,4 +1,4 @@
-PROTOC_VERSION := 24.4
+PROTOC_VERSION := 25.1
 TBLS_VERSION := 1.70.2
 
 GO_REPO_ROOT_PACKAGE := "github.com/traPtitech/neoshowcase"
@@ -15,20 +15,24 @@ EVANS_CMD := evans
 
 .PHONY: help
 help: ## Display this help screen
-	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-20s\033[0m %s\n", $$1, $$2}'
+	@grep -E '^[a-zA-Z0-9_-]+:.*?## .*$$' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-20s\033[0m %s\n", $$1, $$2}'
 
-.PHONY: init-protoc ## Install protoc
+.PHONY: init-k3d
+init-k3d:
+	curl -s https://raw.githubusercontent.com/k3d-io/k3d/main/install.sh | bash
+
+.PHONY: init-protoc
 init-protoc:
 	@PROTOC_VERSION=$(PROTOC_VERSION) ./.local-dev/install-protoc.sh
 
 .PHONY: init-protoc-tools
-init-protoc-tools: ## Install other protoc tools
+init-protoc-tools:
 	go install google.golang.org/protobuf/cmd/protoc-gen-go@latest
 	go install connectrpc.com/connect/cmd/protoc-gen-connect-go@latest
 	yarn global add @connectrpc/protoc-gen-connect-es @bufbuild/protoc-gen-es
 
 .PHONY: init
-init: init-protoc init-protoc-tools ## Install commands
+init: init-k3d init-protoc init-protoc-tools ## Install commands
 	go mod download
 	go install github.com/sqldef/sqldef/cmd/mysqldef@latest
 	go install github.com/ktr0731/evans@latest

@@ -22,6 +22,9 @@ spec:
         - name: config
           configMap:
             name: ns-config
+        - name: known-hosts
+          configMap:
+            name: known-hosts
 
       initContainers:
         - name: buildpack-install
@@ -89,9 +92,17 @@ spec:
           args:
             - --loglevel=debug
             - --config=/opt/config/ns.yaml
+          envFrom:
+            - configMapRef:
+                name: custom-config
+            - secretRef:
+                name: token
           volumeMounts:
             - mountPath: /run/buildkit
               name: socket
             - mountPath: /opt/config/ns.yaml
               name: config
               subPath: ns.yaml
+            - mountPath: /root/.ssh/known_hosts
+              name: known-hosts
+              subPath: known_hosts
