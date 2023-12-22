@@ -14,9 +14,21 @@ spec:
       labels:
         app: ns-builder
     spec:
+      volumes:
+        - name: ns-bin
+          emptyDir: {}
+        - name: socket
+          emptyDir: {}
+        - name: config
+          configMap:
+            name: ns-config
+        - name: known-hosts
+          configMap:
+            name: known-hosts
+
       initContainers:
         - name: buildpack-install
-          image: ghcr.io/traptitech/ns-builder:latest
+          image: ghcr.io/traptitech/ns-builder:main
           imagePullPolicy: Never
           command:
             - cp
@@ -31,7 +43,7 @@ spec:
           image: paketobuildpacks/builder-jammy-full:latest
           imagePullPolicy: Always
           command:
-            - /ns-bin
+            - /ns-bin/ns
             - buildpack-helper
           args:
             - --loglevel=debug
@@ -80,31 +92,17 @@ spec:
           args:
             - --loglevel=debug
             - --config=/opt/config/ns.yaml
+          envFrom:
+            - configMapRef:
+                name: custom-config
+            - secretRef:
+                name: token
           volumeMounts:
-            - mountPath: /neoshowcase/buildpack
-              name: buildpack
             - mountPath: /run/buildkit
               name: socket
             - mountPath: /opt/config/ns.yaml
               name: config
               subPath: ns.yaml
-            - mountPath: /keys
-              name: keys
-            # - mountPath: /.docker
-            #   name: secret
-      volumes:
-        - name: ns-bin
-          emptyDir: {}
-        - name: socket
-          emptyDir: {}
-        - name: config
-          configMap:
-            name: ns-config
-        - name: keys
-          secret:
-            secretName: ns-keys
-        # - name: secret
-        #   secret:
-        #     secretName: registry-secret
-      # nodeSelector:
-      #   neoshowcase.trap.jp/builder-node: "true"
+            - mountPath: /root/.ssh/known_hosts
+              name: known-hosts
+              subPath: known_hosts

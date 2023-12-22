@@ -1,9 +1,6 @@
 resources:
   # ls components/*.yaml | sed -e 's/^/ - /g'
   - components/builder-deployment.yaml
-  - components/builder-role-binding.yaml
-  - components/builder-role.yaml
-  - components/builder-service-account.yaml
   - components/controller-role-binding.yaml
   - components/controller-role.yaml
   - components/controller-service-account.yaml

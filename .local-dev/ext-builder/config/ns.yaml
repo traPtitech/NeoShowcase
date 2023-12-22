@@ -1,0 +1,16 @@
+components:
+  builder:
+    buildkit:
+      address: unix:///run/buildkit/buildkitd.sock
+    buildpack:
+      helper:
+        address: http://localhost:1235
+        listenPort: 1235
+      remoteDir: /workspace
+      platformAPI: "0.11"
+    # controller:
+      # url: <from env> # e.g. http://host.k3d.internal:10000
+    priority: 10
+
+  # controller:
+    # token: <from env>
