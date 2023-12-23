@@ -200,7 +200,7 @@ func (w *Website) Equals(target *Website) bool {
 	return w.PathPrefix == target.PathPrefix
 }
 
-func (w *Website) conflictsWith(target *Website) bool {
+func (w *Website) overlapsWith(target *Website) bool {
 	if w.FQDN != target.FQDN {
 		return false
 	}
@@ -212,25 +212,18 @@ func (w *Website) conflictsWith(target *Website) bool {
 
 func (a *Application) WebsiteConflicts(existing []*Application, actor *User) bool {
 	for _, w := range a.Websites {
-		// check with existing websites
-		for _, ex := range existing {
-			for _, w2 := range ex.Websites {
+		// check with all other websites
+		for _, other := range append(existing, a) {
+			for _, w2 := range other.Websites {
+				if a.ID == other.ID && w.ID == w2.ID {
+					continue
+				}
 				if w.Equals(w2) {
 					return true
 				}
-				if w.conflictsWith(w2) && !ex.IsOwner(actor) {
+				if w.overlapsWith(w2) && !other.IsOwner(actor) {
 					return true
 				}
-			}
-		}
-
-		// check with self
-		for _, w2 := range a.Websites {
-			if w.ID == w2.ID {
-				continue
-			}
-			if w.Equals(w2) {
-				return true
 			}
 		}
 	}

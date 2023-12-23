@@ -252,7 +252,7 @@ func TestWebsite_pathComponents(t *testing.T) {
 	}
 }
 
-func TestWebsite_conflictsWith(t *testing.T) {
+func TestWebsite_ovrlapssWith(t *testing.T) {
 	pathTests := []struct {
 		name     string
 		target   string
@@ -275,8 +275,8 @@ func TestWebsite_conflictsWith(t *testing.T) {
 		t.Run("path "+tt.name, func(t *testing.T) {
 			w := &Website{PathPrefix: tt.target}
 			target := &Website{PathPrefix: tt.existing}
-			if got := w.conflictsWith(target); got != tt.want {
-				t.Errorf("conflictsWith() = %v, want %v", got, tt.want)
+			if got := w.overlapsWith(target); got != tt.want {
+				t.Errorf("overlapsWith() = %v, want %v", got, tt.want)
 			}
 		})
 	}
@@ -308,8 +308,8 @@ func TestWebsite_conflictsWith(t *testing.T) {
 	}
 	for _, tt := range fullTests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := tt.target.conflictsWith(tt.existing); got != tt.want {
-				t.Errorf("conflictsWith() = %v, want %v", got, tt.want)
+			if got := tt.target.overlapsWith(tt.existing); got != tt.want {
+				t.Errorf("overlapsWith() = %v, want %v", got, tt.want)
 			}
 		})
 	}
@@ -321,7 +321,9 @@ func TestApplication_WebsiteConflicts(t *testing.T) {
 	u3 := &User{ID: "user3"}
 	admin := &User{ID: "user4", Admin: true}
 	existing := &Application{
+		ID: NewID(),
 		Websites: []*Website{{
+			ID:         NewID(),
 			FQDN:       "bar.trap.games",
 			PathPrefix: "/",
 		}},
@@ -337,7 +339,9 @@ func TestApplication_WebsiteConflicts(t *testing.T) {
 		{
 			name: "ok (different fqdn, no conflict)",
 			target: &Application{
+				ID: NewID(),
 				Websites: []*Website{{
+					ID:         NewID(),
 					FQDN:       "foo.trap.games",
 					PathPrefix: "/api",
 				}},
@@ -350,7 +354,9 @@ func TestApplication_WebsiteConflicts(t *testing.T) {
 		{
 			name: "ng (conflict, no ownership of the other)",
 			target: &Application{
+				ID: NewID(),
 				Websites: []*Website{{
+					ID:         NewID(),
 					FQDN:       "bar.trap.games",
 					PathPrefix: "/api",
 				}},
@@ -363,7 +369,9 @@ func TestApplication_WebsiteConflicts(t *testing.T) {
 		{
 			name: "ng (conflict, owner of the other, but same website)",
 			target: &Application{
+				ID: NewID(),
 				Websites: []*Website{{
+					ID:         NewID(),
 					FQDN:       "bar.trap.games",
 					PathPrefix: "/",
 				}},
@@ -376,7 +384,9 @@ func TestApplication_WebsiteConflicts(t *testing.T) {
 		{
 			name: "ng (conflict, actor is admin, but same website)",
 			target: &Application{
+				ID: NewID(),
 				Websites: []*Website{{
+					ID:         NewID(),
 					FQDN:       "bar.trap.games",
 					PathPrefix: "/",
 				}},
@@ -389,7 +399,9 @@ func TestApplication_WebsiteConflicts(t *testing.T) {
 		{
 			name: "ok (conflict, but owner of the other)",
 			target: &Application{
+				ID: NewID(),
 				Websites: []*Website{{
+					ID:         NewID(),
 					FQDN:       "bar.trap.games",
 					PathPrefix: "/api",
 				}},
@@ -402,7 +414,9 @@ func TestApplication_WebsiteConflicts(t *testing.T) {
 		{
 			name: "ok (conflict, but actor is admin)",
 			target: &Application{
+				ID: NewID(),
 				Websites: []*Website{{
+					ID:         NewID(),
 					FQDN:       "bar.trap.games",
 					PathPrefix: "/api",
 				}},
@@ -415,14 +429,15 @@ func TestApplication_WebsiteConflicts(t *testing.T) {
 		{
 			name: "ng (self conflict)",
 			target: &Application{
+				ID: NewID(),
 				Websites: []*Website{
 					{
-						ID:         "w1",
+						ID:         NewID(),
 						FQDN:       "foo.trap.games",
 						PathPrefix: "/api",
 					},
 					{
-						ID:         "w2",
+						ID:         NewID(),
 						FQDN:       "foo.trap.games",
 						PathPrefix: "/api",
 					},
