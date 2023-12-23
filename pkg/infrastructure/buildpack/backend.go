@@ -60,7 +60,7 @@ func (b *backend) exec(ctx context.Context, workDir string, cmd []string, env ma
 		return err
 	}
 	if code != 0 {
-		return errors.Wrap(err, fmt.Sprintf("command exited with code %d", code))
+		return fmt.Errorf("command exited with code %d", code)
 	}
 	return nil
 }
