@@ -12,7 +12,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-go@v4
+      - uses: actions/setup-go@v5
         with:
           go-version-file: ./go.mod
       - run: go mod download
@@ -23,7 +23,7 @@ jobs:
     needs: [mod]
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-go@v4
+      - uses: actions/setup-go@v5
         with:
           go-version-file: ./go.mod
       - run: go build -o ns ./cmd
@@ -34,7 +34,7 @@ jobs:
     needs: [mod]
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-go@v4
+      - uses: actions/setup-go@v5
         with:
           go-version-file: ./go.mod
       - name: Install reviewdog
@@ -77,7 +77,7 @@ jobs:
           - 5010:27017
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-go@v4
+      - uses: actions/setup-go@v5
         with:
           go-version-file: ./go.mod
       - name: Run migration
@@ -103,7 +103,7 @@ jobs:
       ENABLE_K8S_TESTS: "true"
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-go@v4
+      - uses: actions/setup-go@v5
         with:
           go-version-file: ./go.mod
       - name: Create single cluster
@@ -148,7 +148,7 @@ jobs:
           - 5004:3306
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-go@v4
+      - uses: actions/setup-go@v5
         with:
           go-version-file: ./go.mod
       - name: Run migration
