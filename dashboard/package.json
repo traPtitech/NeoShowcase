@@ -29,7 +29,7 @@
     "vite": "5.0.6",
     "vite-plugin-compression": "0.5.1",
     "vite-plugin-solid": "2.8.0",
-    "vite-plugin-solid-svg": "0.7.0"
+    "vite-plugin-solid-svg": "0.8.0"
   },
   "dependencies": {
     "@bufbuild/protobuf": "1.5.1",

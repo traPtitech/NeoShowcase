@@ -2318,10 +2318,10 @@ supports-color@^7.1.0:
   dependencies:
     has-flag "^4.0.0"
 
-svgo@^3.0.2:
-  version "3.0.4"
-  resolved "https://registry.yarnpkg.com/svgo/-/svgo-3.0.4.tgz#67b40a710743e358e8d19ec288de8f1e388afbb4"
-  integrity sha512-T+Xul3JwuJ6VGXKo/p2ndqx1ibxNKnLTvRc1ZTWKCfyKS/GgNjRZcYsK84fxTsy/izr91g/Rwx6fGnVgaFSI5g==
+svgo@^3.1.0:
+  version "3.1.0"
+  resolved "https://registry.yarnpkg.com/svgo/-/svgo-3.1.0.tgz#7e63855c8da73297d5d5765e968f9679a0f8d24a"
+  integrity sha512-R5SnNA89w1dYgNv570591F66v34b3eQShpIBcQtZtM5trJwm1VvxbIoMpRYY3ybTAutcKTLEmTsdnaknOHbiQA==
   dependencies:
     "@trysound/sax" "0.2.0"
     commander "^7.2.0"
@@ -2434,12 +2434,12 @@ vite-plugin-compression@0.5.1:
     debug "^4.3.3"
     fs-extra "^10.0.0"
 
-vite-plugin-solid-svg@0.7.0:
-  version "0.7.0"
-  resolved "https://registry.yarnpkg.com/vite-plugin-solid-svg/-/vite-plugin-solid-svg-0.7.0.tgz#296f555886cf14e0b605dffd1dbb11ad7fbe3eef"
-  integrity sha512-skErWSlCdI/NbrnyFQJWQk8RWjtRQGfknm1FjIgW190osiyVIZLWnQyT2ErV92ru9p5FjFgA4L482Y7ZBPcRzA==
+vite-plugin-solid-svg@0.8.0:
+  version "0.8.0"
+  resolved "https://registry.yarnpkg.com/vite-plugin-solid-svg/-/vite-plugin-solid-svg-0.8.0.tgz#37edb1e058182a9c9ce3efff87ea305d80dd5272"
+  integrity sha512-m4HQ6nnwjPqiJONnRRZjLkOC86ZbgfBMpE6UnqGI62R2a7SZB2To/v6oeiZ+17LFtYYCNbZ2DPQT66a/YmqM3A==
   dependencies:
-    svgo "^3.0.2"
+    svgo "^3.1.0"
 
 vite-plugin-solid@2.8.0:
   version "2.8.0"
