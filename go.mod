@@ -25,7 +25,7 @@ require (
 	github.com/moby/buildkit v0.12.4
 	github.com/motoki317/sc v1.7.1
 	github.com/ncw/swift v1.0.53
-	github.com/prometheus/client_golang v1.17.0
+	github.com/prometheus/client_golang v1.18.0
 	github.com/prometheus/common v0.45.0
 	github.com/regclient/regclient v0.5.5
 	github.com/samber/lo v1.38.1
