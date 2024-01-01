@@ -1086,15 +1086,15 @@
   resolved "https://registry.yarnpkg.com/@solid-primitives/utils/-/utils-6.2.1.tgz#320fb2180743031622b40fc43b0e63bf55686cfb"
   integrity sha512-TsecNzxiO5bLfzqb4OOuzfUmdOROcssuGqgh5rXMMaasoFZ3GoveUgdY1wcf17frMJM7kCNGNuK34EjErneZkg==
 
-"@solidjs/meta@0.29.1":
-  version "0.29.1"
-  resolved "https://registry.yarnpkg.com/@solidjs/meta/-/meta-0.29.1.tgz#5218d9f5230cf6dc9422d3c23d3206196a8d9279"
-  integrity sha512-qtrBYCnRRuzyvBg/u/SRO/2fM5r6DT1YKf+2W1RZhveMoeXHbZpWIrXjgpLFRHJLn6cqAGqrIzu42qS2o+1hKQ==
+"@solidjs/meta@0.29.3":
+  version "0.29.3"
+  resolved "https://registry.yarnpkg.com/@solidjs/meta/-/meta-0.29.3.tgz#374516ecbac71cc1bac628f796ebeef46b9e3579"
+  integrity sha512-R2uirgjgyh3FPFh+rb840plF701N6GvM5w81/QeI61QwjXb4QzLkyI/uzXfC5UW8favpUn9KK9ILQeoTl6pX0A==
 
-"@solidjs/router@0.10.1":
-  version "0.10.1"
-  resolved "https://registry.yarnpkg.com/@solidjs/router/-/router-0.10.1.tgz#131d05a050589571f9897afc30fdaff9768026b5"
-  integrity sha512-5CpC5vX3+Sehi9D8IAyuBXYlk96sF9k2KerK++DI/XbyLGuK9EXvMvWVhxSN9o+rieLgpgcIcpZzyoKxnAmgCw==
+"@solidjs/router@0.10.5":
+  version "0.10.5"
+  resolved "https://registry.yarnpkg.com/@solidjs/router/-/router-0.10.5.tgz#e459e2b4ae3acde6fbb3766f277b818af57c40ef"
+  integrity sha512-gxDeiyc97j8/UqzuuasZsQYA7jpmlwjkfpcay11Q2xfzoKR50eBM1AaxAPtf0MlBAdPsdPV3h/k8t5/XQCuebA==
 
 "@swc/helpers@^0.5.0":
   version "0.5.3"
@@ -1164,11 +1164,6 @@
   integrity sha512-D08YG6rr8X90YB56tSIuBaddy/UXAA9RKJoFvrsnogAum/0pmjkgi4+2nx96A330FmioegBWmEYQ+syqCFaveg==
   dependencies:
     undici-types "~5.26.4"
-
-"@types/uuid@^8.3.4":
-  version "8.3.4"
-  resolved "https://registry.yarnpkg.com/@types/uuid/-/uuid-8.3.4.tgz#bd86a43617df0594787d38b735f55c805becf1bc"
-  integrity sha512-c/I8ZRb51j+pYGAu5CrFMRxqZ2ke4y2grEBO5AUjgSkSk+qT2Ea+OdWElz/OiMf5MNpn2b17kuVBwZLQJXzihw==
 
 "@vanilla-extract/babel-plugin-debug-ids@^1.0.2":
   version "1.0.3"
@@ -2016,15 +2011,6 @@ micromatch@^4.0.4:
     braces "^3.0.2"
     picomatch "^2.3.1"
 
-minifaker@^1.34.1:
-  version "1.34.1"
-  resolved "https://registry.yarnpkg.com/minifaker/-/minifaker-1.34.1.tgz#38d96a1aeebd99b950a9c420eb34d2638147ebf2"
-  integrity sha512-O9+c6GaUETgtKe65bJkpDTJxGcAALiUPqJtDv97dT3o0uP2HmyUVEguEGm6PLKuoSzZUmHqSTZ4cS7m8xKFEAg==
-  dependencies:
-    "@types/uuid" "^8.3.4"
-    nanoid "^3.2.0"
-    uuid "^8.3.2"
-
 mlly@^1.1.0, mlly@^1.2.0:
   version "1.4.2"
   resolved "https://registry.yarnpkg.com/mlly/-/mlly-1.4.2.tgz#7cf406aa319ff6563d25da6b36610a93f2a8007e"
@@ -2045,7 +2031,7 @@ ms@2.1.2:
   resolved "https://registry.yarnpkg.com/ms/-/ms-2.1.2.tgz#d09d1f357b443f493382a8eb3ccd183872ae6009"
   integrity sha512-sGkPx+VjMtmA6MX27oA4FBFELFCZZ4S4XqeGOXCv68tT+jb3vk/RyaKWP0PTKyWtmLSM0b+adUTEvbs1PEaH2w==
 
-nanoid@^3.2.0, nanoid@^3.3.7:
+nanoid@^3.3.7:
   version "3.3.7"
   resolved "https://registry.yarnpkg.com/nanoid/-/nanoid-3.3.7.tgz#d0c301a691bc8d54efa0a2226ccf3fe2fd656bd8"
   integrity sha512-eSRppjcPIatRIMC1U6UngP8XFcz8MQWGQdt1MTBQ7NaAmvXDfvNxbvWV3x2y6CdEUciCSsDHDQZbhYaB8QEo2g==
@@ -2226,12 +2212,10 @@ seroval@^0.15.1:
   resolved "https://registry.yarnpkg.com/seroval/-/seroval-0.15.1.tgz#598654725a3a680fd0d685e235ab7299a6096aff"
   integrity sha512-OPVtf0qmeC7RW+ScVX+7aOS+xoIM7pWcZ0jOWg2aTZigCydgRB04adfteBRbecZnnrO1WuGQ+C3tLeBBzX2zSQ==
 
-solid-chartjs@1.3.8:
-  version "1.3.8"
-  resolved "https://registry.yarnpkg.com/solid-chartjs/-/solid-chartjs-1.3.8.tgz#d851fb1fa29fc1fc850c10aec59f808767bc0b96"
-  integrity sha512-cq85ZOTBAyXTbo1IQzViPzDM0go7Da/6SP6PEFno29Pdg8ubFQB5ctYbByZFLNfITlQO1TcP23Z40myKZehI6g==
-  dependencies:
-    minifaker "^1.34.1"
+solid-chartjs@1.3.9:
+  version "1.3.9"
+  resolved "https://registry.yarnpkg.com/solid-chartjs/-/solid-chartjs-1.3.9.tgz#487aa05c40b179fa84158ba2d45679caf4af80ae"
+  integrity sha512-Sd1nEyyutuKTdJqx6Nbz/4ewj9IFSBbXxW8qgsN2JJ380ksOkh3Sa28oMPYwDiUeQRYCmk7MFAULFFwNffihMg==
 
 solid-icons@1.1.0:
   version "1.1.0"
@@ -2400,11 +2384,6 @@ update-browserslist-db@^1.0.13:
   dependencies:
     escalade "^3.1.1"
     picocolors "^1.0.0"
-
-uuid@^8.3.2:
-  version "8.3.2"
-  resolved "https://registry.yarnpkg.com/uuid/-/uuid-8.3.2.tgz#80d5b5ced271bb9af6c445f21a1a04c606cefbe2"
-  integrity sha512-+NYs2QeMWy+GWFOEm9xnn6HCDp0l7QBD7ml8zLUmJ+93Q5NF0NocErnwkTkXVFNiX3/fpC6afS8Dhb/gz7R7eg==
 
 validate-html-nesting@^1.2.1:
   version "1.2.2"
