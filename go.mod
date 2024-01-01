@@ -6,7 +6,7 @@ toolchain go1.21.0
 
 require (
 	code.gitea.io/sdk/gitea v0.16.0
-	connectrpc.com/connect v1.13.0
+	connectrpc.com/connect v1.14.0
 	github.com/aws/aws-sdk-go v1.48.10
 	github.com/cert-manager/cert-manager v1.13.2
 	github.com/docker/cli v24.0.7+incompatible
@@ -47,7 +47,7 @@ require (
 	golang.org/x/net v0.19.0
 	golang.org/x/sync v0.5.0
 	google.golang.org/grpc v1.59.0
-	google.golang.org/protobuf v1.31.0
+	google.golang.org/protobuf v1.32.0
 	gopkg.in/yaml.v2 v2.4.0
 	k8s.io/api v0.28.4
 	k8s.io/apimachinery v0.28.4
