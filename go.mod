@@ -5,7 +5,7 @@ go 1.21
 toolchain go1.21.0
 
 require (
-	code.gitea.io/sdk/gitea v0.16.0
+	code.gitea.io/sdk/gitea v0.17.1
 	connectrpc.com/connect v1.13.0
 	github.com/aws/aws-sdk-go v1.48.10
 	github.com/cert-manager/cert-manager v1.13.2
@@ -42,7 +42,7 @@ require (
 	github.com/volatiletech/strmangle v0.0.5
 	github.com/zeebo/xxh3 v1.0.2
 	go.mongodb.org/mongo-driver v1.13.1
-	golang.org/x/crypto v0.16.0
+	golang.org/x/crypto v0.17.0
 	golang.org/x/exp v0.0.0-20231006140011-7918f672742d
 	golang.org/x/net v0.19.0
 	golang.org/x/sync v0.5.0
