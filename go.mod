@@ -28,7 +28,7 @@ require (
 	github.com/prometheus/client_golang v1.17.0
 	github.com/prometheus/common v0.45.0
 	github.com/regclient/regclient v0.5.5
-	github.com/samber/lo v1.38.1
+	github.com/samber/lo v1.39.0
 	github.com/shiguredo/websocket v1.6.1
 	github.com/sirupsen/logrus v1.9.3
 	github.com/sourcegraph/conc v0.3.0
