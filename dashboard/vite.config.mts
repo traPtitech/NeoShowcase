@@ -1,5 +1,5 @@
 import path from 'path'
-import { defineConfig } from 'vite'
+import { defineConfig, PluginOption } from 'vite'
 import solidPlugin from 'vite-plugin-solid'
 import solidSvg from 'vite-plugin-solid-svg'
 import Unfonts from 'unplugin-fonts/vite'
@@ -48,7 +48,7 @@ export default defineConfig(({mode}) => ({
           filename: 'dist/stats.html',
           gzipSize: true,
           brotliSize: true,
-        }),
+        }) as PluginOption,
       ],
     },
   }

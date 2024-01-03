@@ -1,6 +1,7 @@
 {
   "name": "neoshowcase",
   "version": "0.0.0",
+  "type": "module",
   "scripts": {
     "dev": "vite",
     "build": "vite build",
@@ -18,8 +19,8 @@
   "license": "MIT",
   "devDependencies": {
     "@biomejs/biome": "1.4.1",
-    "@macaron-css/core": "1.2.0",
-    "@macaron-css/solid": "1.4.1",
+    "@macaron-css/core": "patch:@macaron-css/core@npm%3A1.2.0#~/.yarn/patches/@macaron-css-core-npm-1.2.0-19f0989ae4.patch",
+    "@macaron-css/solid": "patch:@macaron-css/solid@npm%3A1.4.1#~/.yarn/patches/@macaron-css-solid-npm-1.4.1-4c485ac21e.patch",
     "@macaron-css/vite": "1.4.3",
     "@tanstack/virtual-core": "3.0.1",
     "@types/node": "20.10.6",

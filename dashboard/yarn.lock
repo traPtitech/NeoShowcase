@@ -1253,6 +1253,17 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@macaron-css/core@patch:@macaron-css/core@npm%3A1.2.0#~/.yarn/patches/@macaron-css-core-npm-1.2.0-19f0989ae4.patch":
+  version: 1.2.0
+  resolution: "@macaron-css/core@patch:@macaron-css/core@npm%3A1.2.0#~/.yarn/patches/@macaron-css-core-npm-1.2.0-19f0989ae4.patch::version=1.2.0&hash=bb6e13"
+  dependencies:
+    "@vanilla-extract/css": "npm:^1.7.1"
+    "@vanilla-extract/dynamic": "npm:^2.0.3"
+    "@vanilla-extract/recipes": "npm:^0.2.5"
+  checksum: a7ff21e4cb17f76fc4aed0ee4a9136ab79ba267eb64eb3f8663231530d052516ad676d526f9824ad7fbb72ca70089cd1284d0e64b13bec165bcf7c50eecd11d0
+  languageName: node
+  linkType: hard
+
 "@macaron-css/integration@npm:1.3.0":
   version: 1.3.0
   resolution: "@macaron-css/integration@npm:1.3.0"
@@ -1273,6 +1284,16 @@ __metadata:
     "@vanilla-extract/recipes": ^0.2.5
     solid-js: ^1.4.3
   checksum: b88746206dc320384989ddb4e054827f9e3a50cf30ea55f8001cbcb38ef747f34979fee3de194e2514ddb2ee0776c6ea6ad0ff967afb5c800e57f1d506fd7f7f
+  languageName: node
+  linkType: hard
+
+"@macaron-css/solid@patch:@macaron-css/solid@npm%3A1.4.1#~/.yarn/patches/@macaron-css-solid-npm-1.4.1-4c485ac21e.patch":
+  version: 1.4.1
+  resolution: "@macaron-css/solid@patch:@macaron-css/solid@npm%3A1.4.1#~/.yarn/patches/@macaron-css-solid-npm-1.4.1-4c485ac21e.patch::version=1.4.1&hash=39fc37"
+  peerDependencies:
+    "@vanilla-extract/recipes": ^0.2.5
+    solid-js: ^1.4.3
+  checksum: 9a88b0c24247bf2495982333b327c4a2cc6dccfd53138302258754129683799e8a83b26618afff82bff3e4a6ae91e340a1cc55d2c33344bc6912e9ca5d2c29c1
   languageName: node
   linkType: hard
 
@@ -3439,8 +3460,8 @@ __metadata:
     "@connectrpc/connect": "npm:1.2.0"
     "@connectrpc/connect-web": "npm:1.2.0"
     "@kobalte/core": "npm:0.11.2"
-    "@macaron-css/core": "npm:1.2.0"
-    "@macaron-css/solid": "npm:1.4.1"
+    "@macaron-css/core": "patch:@macaron-css/core@npm%3A1.2.0#~/.yarn/patches/@macaron-css-core-npm-1.2.0-19f0989ae4.patch"
+    "@macaron-css/solid": "patch:@macaron-css/solid@npm%3A1.4.1#~/.yarn/patches/@macaron-css-solid-npm-1.4.1-4c485ac21e.patch"
     "@macaron-css/vite": "npm:1.4.3"
     "@modular-forms/solid": "npm:0.20.0"
     "@solid-primitives/refs": "npm:1.0.5"
