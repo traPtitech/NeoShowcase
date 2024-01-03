@@ -5,7 +5,8 @@ WORKDIR /work
 RUN corepack enable
 
 COPY package.json yarn.lock .yarnrc.yml ./
-RUN yarn --frozen-lockfile
+COPY .yarn .yarn
+RUN yarn --immutable
 
 FROM --platform=$BUILDPLATFORM base AS dev
 
