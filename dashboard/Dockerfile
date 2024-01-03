@@ -2,8 +2,11 @@ FROM --platform=$BUILDPLATFORM node:20 AS base
 
 WORKDIR /work
 
-COPY package.json yarn.lock ./
-RUN yarn --frozen-lockfile
+RUN corepack enable
+
+COPY package.json yarn.lock .yarnrc.yml ./
+COPY .yarn .yarn
+RUN yarn --immutable
 
 FROM --platform=$BUILDPLATFORM base AS dev
 

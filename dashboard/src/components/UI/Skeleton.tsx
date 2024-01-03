@@ -1,5 +1,4 @@
 import { Skeleton as KSkeleton } from '@kobalte/core'
-import { SkeletonProps } from '@kobalte/core/dist/types/skeleton/skeleton'
 import { keyframes, style } from '@macaron-css/core'
 import { Component, mergeProps } from 'solid-js'
 
@@ -40,6 +39,8 @@ const skeletonClass = style({
     },
   },
 })
+
+type SkeletonProps = Parameters<typeof KSkeleton.Root>[0]
 
 const defaultProps: SkeletonProps = {
   radius: 999,
