@@ -23,8 +23,6 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 20
-          cache: yarn
-          cache-dependency-path: dashboard/yarn.lock
       - run: corepack enable
       - run: yarn install --immutable
   rome:
@@ -36,8 +34,6 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 20
-          cache: yarn
-          cache-dependency-path: dashboard/yarn.lock
       - run: corepack enable
       - run: yarn install --immutable
       - run: yarn ci
@@ -50,8 +46,6 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 20
-          cache: yarn
-          cache-dependency-path: dashboard/yarn.lock
       - run: corepack enable
       - run: yarn install --immutable
       - run: yarn typecheck
@@ -64,8 +58,6 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 20
-          cache: yarn
-          cache-dependency-path: dashboard/yarn.lock
       - run: corepack enable
       - run: yarn install --immutable
       - run: yarn build
