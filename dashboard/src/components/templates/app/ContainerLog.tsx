@@ -5,10 +5,19 @@ import { Component, For, Show, createEffect, createSignal, onCleanup } from 'sol
 import { ApplicationOutput } from '/@/api/neoshowcase/protobuf/gateway_pb'
 import { Button } from '/@/components/UI/Button'
 import { LogContainer } from '/@/components/UI/LogContainer'
+import { ContainerLogExport } from '/@/components/templates/app/ContainerLogExport'
 import { client, handleAPIError } from '/@/libs/api'
 import { toWithAnsi } from '/@/libs/buffers'
 import { isScrolledToBottom } from '/@/libs/scroll'
 import { addTimestamp, lessTimestamp, minTimestamp } from '/@/libs/timestamp'
+
+const OuterContainer = styled('div', {
+  base: {
+    display: 'flex',
+    flexDirection: 'column',
+    gap: '10px',
+  },
+})
 
 const LoadMoreContainer = styled('div', {
   base: {
@@ -117,17 +126,20 @@ export const ContainerLog: Component<ContainerLogProps> = (props) => {
   const onScroll = (e: { target: Element }) => setAtBottom(isScrolledToBottom(e.target))
 
   return (
-    <LogContainer ref={logRef!} overflowX="scroll" onScroll={onScroll}>
-      <LoadMoreContainer>
-        Loaded until {loadedUntil().toDate().toLocaleString()}
-        <Show when={!loadDisabled()} fallback={<span>(reached load limit)</span>}>
-          <Button variants="ghost" size="small" onClick={load} disabled={loading()}>
-            {loading() ? 'Loading...' : 'Load more'}
-          </Button>
-        </Show>
-      </LoadMoreContainer>
-      <For each={logs()}>{(log) => <code innerHTML={formatLogLine(log, props.showTimestamp)} />}</For>
-    </LogContainer>
+    <OuterContainer>
+      <ContainerLogExport currentLogs={logs()} />
+      <LogContainer ref={logRef!} overflowX="scroll" onScroll={onScroll}>
+        <LoadMoreContainer>
+          Loaded until {loadedUntil().toDate().toLocaleString()}
+          <Show when={!loadDisabled()} fallback={<span>(reached load limit)</span>}>
+            <Button variants="ghost" size="small" onClick={load} disabled={loading()}>
+              {loading() ? 'Loading...' : 'Load more'}
+            </Button>
+          </Show>
+        </LoadMoreContainer>
+        <For each={logs()}>{(log) => <code innerHTML={formatLogLine(log, props.showTimestamp)} />}</For>
+      </LogContainer>
+    </OuterContainer>
   )
 }
 
