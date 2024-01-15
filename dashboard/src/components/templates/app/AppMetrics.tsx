@@ -69,9 +69,6 @@ export const AppMetrics: Component<AppMetricsProps> = (props) => {
       datasets: [],
     }
   }
-  createEffect(() => {
-    console.log(`max data val: ${maxDataVal()}`)
-  })
   const chartOptions = (): ChartOptions => ({
     animation: false,
     responsive: true,
