@@ -48,7 +48,7 @@ func (s *APIService) GetOutput(ctx context.Context, req *connect.Request[pb.GetO
 		return nil, connect.NewError(connect.CodeInvalidArgument, errors.New("before cannot be null"))
 	}
 	before := msg.Before.AsTime()
-	logs, err := s.svc.GetOutput(ctx, msg.ApplicationId, before)
+	logs, err := s.svc.GetOutput(ctx, msg.ApplicationId, before, int(msg.Limit))
 	if err != nil {
 		return nil, handleUseCaseError(err)
 	}

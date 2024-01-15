@@ -452,6 +452,7 @@ message GetApplicationMetricsRequest {
 message GetOutputRequest {
   string application_id = 1;
   google.protobuf.Timestamp before = 2;
+  int32 limit = 3;
 }
 
 message RetryCommitBuildRequest {

@@ -24,8 +24,8 @@ const LoadMoreContainer = styled('div', {
 const loadLimitSeconds = 7 * 86400
 const loadDuration = 86400n
 
-const loadLogChunk = async (appID: string, before: Timestamp): Promise<ApplicationOutput[]> => {
-  const res = await client.getOutput({ applicationId: appID, before: before })
+const loadLogChunk = async (appID: string, before: Timestamp, limit: number): Promise<ApplicationOutput[]> => {
+  const res = await client.getOutput({ applicationId: appID, before: before, limit: limit })
   return res.outputs
 }
 
@@ -48,7 +48,7 @@ export const ContainerLog: Component<ContainerLogProps> = (props) => {
   const load = async () => {
     setLoading(true)
     try {
-      const loadedOlderLogs = await loadLogChunk(props.appID, loadedUntil())
+      const loadedOlderLogs = await loadLogChunk(props.appID, loadedUntil(), 100)
       if (loadedOlderLogs.length === 0) {
         setLoadedUntil(addTimestamp(loadedUntil(), -loadDuration))
       } else {

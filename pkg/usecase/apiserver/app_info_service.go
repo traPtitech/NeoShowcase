@@ -25,16 +25,22 @@ func (s *Service) GetApplicationMetrics(ctx context.Context, name string, id str
 	return s.metricsService.Get(ctx, name, app, before, limit)
 }
 
-func (s *Service) GetOutput(ctx context.Context, id string, before time.Time) ([]*domain.ContainerLog, error) {
+func (s *Service) GetOutput(ctx context.Context, id string, before time.Time, limit int) ([]*domain.ContainerLog, error) {
+	// Validate
 	err := s.isApplicationOwner(ctx, id)
 	if err != nil {
 		return nil, err
 	}
+	if limit > s.containerLogger.LogLimit() {
+		return nil, newError(ErrorTypeBadRequest, "limit too large", nil)
+	}
+
+	// Get logs
 	app, err := s.appRepo.GetApplication(ctx, id)
 	if err != nil {
 		return nil, err
 	}
-	return s.containerLogger.Get(ctx, app, before)
+	return s.containerLogger.Get(ctx, app, before, limit)
 }
 
 func (s *Service) GetOutputStream(ctx context.Context, id string, send func(l *domain.ContainerLog) error) error {
