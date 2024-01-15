@@ -1,7 +1,7 @@
 import { Timestamp } from '@bufbuild/protobuf'
 import { Code, ConnectError } from '@connectrpc/connect'
 import { styled } from '@macaron-css/solid'
-import { Component, For, Show, createEffect, createMemo, createResource, createSignal, onCleanup } from 'solid-js'
+import { Component, For, Show, createEffect, createSignal, onCleanup } from 'solid-js'
 import { ApplicationOutput } from '/@/api/neoshowcase/protobuf/gateway_pb'
 import { Button } from '/@/components/UI/Button'
 import { LogContainer } from '/@/components/UI/LogContainer'
@@ -21,8 +21,16 @@ const LoadMoreContainer = styled('div', {
   },
 })
 
+const logLinesLimit = 1000
 const loadLimitSeconds = 7 * 86400
 const loadDuration = 86400n
+
+const stripLogLines = (logs: ApplicationOutput[]): ApplicationOutput[] => {
+  if (logs.length >= logLinesLimit) {
+    return logs.slice(logs.length - logLinesLimit, logs.length)
+  }
+  return logs
+}
 
 const loadLogChunk = async (appID: string, before: Timestamp, limit: number): Promise<ApplicationOutput[]> => {
   const res = await client.getOutput({ applicationId: appID, before: before, limit: limit })
@@ -42,9 +50,10 @@ export interface ContainerLogProps {
 export const ContainerLog: Component<ContainerLogProps> = (props) => {
   const componentLoadTime = Timestamp.now()
   const [loadedUntil, setLoadedUntil] = createSignal(componentLoadTime)
-  const [olderLogs, setOlderLogs] = createSignal<ApplicationOutput[]>([])
+  const [logs, setLogs] = createSignal<ApplicationOutput[]>([])
 
-  const loadDisabled = () => Timestamp.now().seconds - loadedUntil().seconds >= loadLimitSeconds
+  const loadDisabled = () =>
+    Timestamp.now().seconds - loadedUntil().seconds >= loadLimitSeconds || logs().length >= logLinesLimit
   const [loading, setLoading] = createSignal(false)
   const load = async () => {
     setLoading(true)
@@ -56,7 +65,7 @@ export const ContainerLog: Component<ContainerLogProps> = (props) => {
         setLoadedUntil(oldestTimestamp(loadedOlderLogs))
       }
       sortByTimestamp(loadedOlderLogs)
-      setOlderLogs((prev) => loadedOlderLogs.concat(prev))
+      setLogs((prev) => stripLogLines(loadedOlderLogs.concat(prev)))
     } catch (e) {
       handleAPIError(e, 'ログの読み込み中にエラーが発生しました')
     }
@@ -67,21 +76,17 @@ export const ContainerLog: Component<ContainerLogProps> = (props) => {
 
   // Stream logs beginning from component load time
   const logStreamAbort = new AbortController()
-  const [logStream] = createResource(
-    () => props.appID,
-    (id) => client.getOutputStream({ applicationId: id, begin: componentLoadTime }, { signal: logStreamAbort.signal }),
+  const logStream = client.getOutputStream(
+    {
+      applicationId: props.appID,
+      begin: componentLoadTime,
+    },
+    { signal: logStreamAbort.signal },
   )
-  const [streamedLog, setStreamedLog] = createSignal<ApplicationOutput[]>([])
-
-  const stream = logStream()
-  if (!stream) {
-    setStreamedLog([])
-    return
-  }
   const iterate = async () => {
     try {
-      for await (const log of stream) {
-        setStreamedLog((prev) => prev.concat(log))
+      for await (const log of logStream) {
+        setLogs((prev) => stripLogLines(prev.concat(log)))
       }
     } catch (err) {
       // ignore abort error
@@ -100,7 +105,7 @@ export const ContainerLog: Component<ContainerLogProps> = (props) => {
 
   let logRef: HTMLDivElement
   createEffect(() => {
-    streamedLog()
+    logs() // on change to (streamed) logs
     const ref = logRef
     if (!ref) return
     if (atBottom()) {
@@ -121,8 +126,7 @@ export const ContainerLog: Component<ContainerLogProps> = (props) => {
           </Button>
         </Show>
       </LoadMoreContainer>
-      <For each={olderLogs()}>{(log) => <code innerHTML={formatLogLine(log, props.showTimestamp)} />}</For>
-      <For each={streamedLog()}>{(log) => <code innerHTML={formatLogLine(log, props.showTimestamp)} />}</For>
+      <For each={logs()}>{(log) => <code innerHTML={formatLogLine(log, props.showTimestamp)} />}</For>
     </LogContainer>
   )
 }
