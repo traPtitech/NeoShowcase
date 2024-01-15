@@ -220,7 +220,7 @@ type APIServiceClient interface {
 	// GetOutput アプリの出力を取得します
 	GetOutput(context.Context, *connect.Request[pb.GetOutputRequest]) (*connect.Response[pb.ApplicationOutputs], error)
 	// GetOutputStream アプリの出力をストリーム形式で取得します
-	GetOutputStream(context.Context, *connect.Request[pb.ApplicationIdRequest]) (*connect.ServerStreamForClient[pb.ApplicationOutput], error)
+	GetOutputStream(context.Context, *connect.Request[pb.GetOutputStreamRequest]) (*connect.ServerStreamForClient[pb.ApplicationOutput], error)
 	// GetEnvVars アプリの環境変数を取得します
 	GetEnvVars(context.Context, *connect.Request[pb.ApplicationIdRequest]) (*connect.Response[pb.ApplicationEnvVars], error)
 	// SetEnvVar アプリの環境変数をセットします システムによって設定された環境変数は上書きできません
@@ -403,7 +403,7 @@ func NewAPIServiceClient(httpClient connect.HTTPClient, baseURL string, opts ...
 			connect.WithIdempotency(connect.IdempotencyNoSideEffects),
 			connect.WithClientOptions(opts...),
 		),
-		getOutputStream: connect.NewClient[pb.ApplicationIdRequest, pb.ApplicationOutput](
+		getOutputStream: connect.NewClient[pb.GetOutputStreamRequest, pb.ApplicationOutput](
 			httpClient,
 			baseURL+APIServiceGetOutputStreamProcedure,
 			connect.WithSchema(aPIServiceGetOutputStreamMethodDescriptor),
@@ -520,7 +520,7 @@ type aPIServiceClient struct {
 	getAvailableMetrics   *connect.Client[emptypb.Empty, pb.AvailableMetrics]
 	getApplicationMetrics *connect.Client[pb.GetApplicationMetricsRequest, pb.ApplicationMetrics]
 	getOutput             *connect.Client[pb.GetOutputRequest, pb.ApplicationOutputs]
-	getOutputStream       *connect.Client[pb.ApplicationIdRequest, pb.ApplicationOutput]
+	getOutputStream       *connect.Client[pb.GetOutputStreamRequest, pb.ApplicationOutput]
 	getEnvVars            *connect.Client[pb.ApplicationIdRequest, pb.ApplicationEnvVars]
 	setEnvVar             *connect.Client[pb.SetApplicationEnvVarRequest, emptypb.Empty]
 	deleteEnvVar          *connect.Client[pb.DeleteApplicationEnvVarRequest, emptypb.Empty]
@@ -647,7 +647,7 @@ func (c *aPIServiceClient) GetOutput(ctx context.Context, req *connect.Request[p
 }
 
 // GetOutputStream calls neoshowcase.protobuf.APIService.GetOutputStream.
-func (c *aPIServiceClient) GetOutputStream(ctx context.Context, req *connect.Request[pb.ApplicationIdRequest]) (*connect.ServerStreamForClient[pb.ApplicationOutput], error) {
+func (c *aPIServiceClient) GetOutputStream(ctx context.Context, req *connect.Request[pb.GetOutputStreamRequest]) (*connect.ServerStreamForClient[pb.ApplicationOutput], error) {
 	return c.getOutputStream.CallServerStream(ctx, req)
 }
 
@@ -763,7 +763,7 @@ type APIServiceHandler interface {
 	// GetOutput アプリの出力を取得します
 	GetOutput(context.Context, *connect.Request[pb.GetOutputRequest]) (*connect.Response[pb.ApplicationOutputs], error)
 	// GetOutputStream アプリの出力をストリーム形式で取得します
-	GetOutputStream(context.Context, *connect.Request[pb.ApplicationIdRequest], *connect.ServerStream[pb.ApplicationOutput]) error
+	GetOutputStream(context.Context, *connect.Request[pb.GetOutputStreamRequest], *connect.ServerStream[pb.ApplicationOutput]) error
 	// GetEnvVars アプリの環境変数を取得します
 	GetEnvVars(context.Context, *connect.Request[pb.ApplicationIdRequest]) (*connect.Response[pb.ApplicationEnvVars], error)
 	// SetEnvVar アプリの環境変数をセットします システムによって設定された環境変数は上書きできません
@@ -1203,7 +1203,7 @@ func (UnimplementedAPIServiceHandler) GetOutput(context.Context, *connect.Reques
 	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("neoshowcase.protobuf.APIService.GetOutput is not implemented"))
 }
 
-func (UnimplementedAPIServiceHandler) GetOutputStream(context.Context, *connect.Request[pb.ApplicationIdRequest], *connect.ServerStream[pb.ApplicationOutput]) error {
+func (UnimplementedAPIServiceHandler) GetOutputStream(context.Context, *connect.Request[pb.GetOutputStreamRequest], *connect.ServerStream[pb.ApplicationOutput]) error {
 	return connect.NewError(connect.CodeUnimplemented, errors.New("neoshowcase.protobuf.APIService.GetOutputStream is not implemented"))
 }
 

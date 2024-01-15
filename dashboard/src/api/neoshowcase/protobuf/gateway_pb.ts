@@ -3338,6 +3338,11 @@ export class GetOutputRequest extends Message<GetOutputRequest> {
    */
   before?: Timestamp;
 
+  /**
+   * @generated from field: int32 limit = 3;
+   */
+  limit = 0;
+
   constructor(data?: PartialMessage<GetOutputRequest>) {
     super();
     proto3.util.initPartial(data, this);
@@ -3348,6 +3353,7 @@ export class GetOutputRequest extends Message<GetOutputRequest> {
   static readonly fields: FieldList = proto3.util.newFieldList(() => [
     { no: 1, name: "application_id", kind: "scalar", T: 9 /* ScalarType.STRING */ },
     { no: 2, name: "before", kind: "message", T: Timestamp },
+    { no: 3, name: "limit", kind: "scalar", T: 5 /* ScalarType.INT32 */ },
   ]);
 
   static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): GetOutputRequest {
@@ -3364,6 +3370,49 @@ export class GetOutputRequest extends Message<GetOutputRequest> {
 
   static equals(a: GetOutputRequest | PlainMessage<GetOutputRequest> | undefined, b: GetOutputRequest | PlainMessage<GetOutputRequest> | undefined): boolean {
     return proto3.util.equals(GetOutputRequest, a, b);
+  }
+}
+
+/**
+ * @generated from message neoshowcase.protobuf.GetOutputStreamRequest
+ */
+export class GetOutputStreamRequest extends Message<GetOutputStreamRequest> {
+  /**
+   * @generated from field: string application_id = 1;
+   */
+  applicationId = "";
+
+  /**
+   * @generated from field: google.protobuf.Timestamp begin = 2;
+   */
+  begin?: Timestamp;
+
+  constructor(data?: PartialMessage<GetOutputStreamRequest>) {
+    super();
+    proto3.util.initPartial(data, this);
+  }
+
+  static readonly runtime: typeof proto3 = proto3;
+  static readonly typeName = "neoshowcase.protobuf.GetOutputStreamRequest";
+  static readonly fields: FieldList = proto3.util.newFieldList(() => [
+    { no: 1, name: "application_id", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+    { no: 2, name: "begin", kind: "message", T: Timestamp },
+  ]);
+
+  static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): GetOutputStreamRequest {
+    return new GetOutputStreamRequest().fromBinary(bytes, options);
+  }
+
+  static fromJson(jsonValue: JsonValue, options?: Partial<JsonReadOptions>): GetOutputStreamRequest {
+    return new GetOutputStreamRequest().fromJson(jsonValue, options);
+  }
+
+  static fromJsonString(jsonString: string, options?: Partial<JsonReadOptions>): GetOutputStreamRequest {
+    return new GetOutputStreamRequest().fromJsonString(jsonString, options);
+  }
+
+  static equals(a: GetOutputStreamRequest | PlainMessage<GetOutputStreamRequest> | undefined, b: GetOutputStreamRequest | PlainMessage<GetOutputStreamRequest> | undefined): boolean {
+    return proto3.util.equals(GetOutputStreamRequest, a, b);
   }
 }
 

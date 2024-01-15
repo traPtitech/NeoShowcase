@@ -29,7 +29,7 @@ init-protoc:
 init-protoc-tools:
 	go install google.golang.org/protobuf/cmd/protoc-gen-go@latest
 	go install connectrpc.com/connect/cmd/protoc-gen-connect-go@latest
-	yarn global add @connectrpc/protoc-gen-connect-es @bufbuild/protoc-gen-es
+	npm i -g @connectrpc/protoc-gen-connect-es @bufbuild/protoc-gen-es
 
 .PHONY: init
 init: init-k3d init-protoc init-protoc-tools ## Install commands

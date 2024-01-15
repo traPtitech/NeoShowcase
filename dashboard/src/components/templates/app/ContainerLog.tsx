@@ -1,14 +1,23 @@
 import { Timestamp } from '@bufbuild/protobuf'
 import { Code, ConnectError } from '@connectrpc/connect'
 import { styled } from '@macaron-css/solid'
-import { Component, For, Show, createEffect, createMemo, createResource, createSignal, onCleanup } from 'solid-js'
+import { Component, For, Show, createEffect, createSignal, onCleanup } from 'solid-js'
 import { ApplicationOutput } from '/@/api/neoshowcase/protobuf/gateway_pb'
 import { Button } from '/@/components/UI/Button'
 import { LogContainer } from '/@/components/UI/LogContainer'
+import { ContainerLogExport } from '/@/components/templates/app/ContainerLogExport'
 import { client, handleAPIError } from '/@/libs/api'
 import { toWithAnsi } from '/@/libs/buffers'
 import { isScrolledToBottom } from '/@/libs/scroll'
 import { addTimestamp, lessTimestamp, minTimestamp } from '/@/libs/timestamp'
+
+const OuterContainer = styled('div', {
+  base: {
+    display: 'flex',
+    flexDirection: 'column',
+    gap: '10px',
+  },
+})
 
 const LoadMoreContainer = styled('div', {
   base: {
@@ -21,11 +30,19 @@ const LoadMoreContainer = styled('div', {
   },
 })
 
+const logLinesLimit = 1000
 const loadLimitSeconds = 7 * 86400
 const loadDuration = 86400n
 
-const loadLogChunk = async (appID: string, before: Timestamp): Promise<ApplicationOutput[]> => {
-  const res = await client.getOutput({ applicationId: appID, before: before })
+const stripLogLines = (logs: ApplicationOutput[]): ApplicationOutput[] => {
+  if (logs.length >= logLinesLimit) {
+    return logs.slice(logs.length - logLinesLimit, logs.length)
+  }
+  return logs
+}
+
+const loadLogChunk = async (appID: string, before: Timestamp, limit: number): Promise<ApplicationOutput[]> => {
+  const res = await client.getOutput({ applicationId: appID, before: before, limit: limit })
   return res.outputs
 }
 
@@ -36,82 +53,70 @@ const sortByTimestamp = (ts: ApplicationOutput[]) =>
 
 export interface ContainerLogProps {
   appID: string
-  showTimestamp: boolean
 }
 
 export const ContainerLog: Component<ContainerLogProps> = (props) => {
-  const [loadedUntil, setLoadedUntil] = createSignal(Timestamp.now())
-  const [olderLogs, setOlderLogs] = createSignal<ApplicationOutput[]>([])
+  // TODO: show timestamps toggle button?
+  const [showTimestamps] = createSignal(true)
 
-  const loadDisabled = () => Timestamp.now().seconds - loadedUntil().seconds >= loadLimitSeconds
+  const componentLoadTime = Timestamp.now()
+  const [loadedUntil, setLoadedUntil] = createSignal(componentLoadTime)
+  const [logs, setLogs] = createSignal<ApplicationOutput[]>([])
+
+  const loadDisabled = () =>
+    Timestamp.now().seconds - loadedUntil().seconds >= loadLimitSeconds || logs().length >= logLinesLimit
   const [loading, setLoading] = createSignal(false)
   const load = async () => {
     setLoading(true)
     try {
-      const loadedOlderLogs = await loadLogChunk(props.appID, loadedUntil())
+      const loadedOlderLogs = await loadLogChunk(props.appID, loadedUntil(), 100)
       if (loadedOlderLogs.length === 0) {
         setLoadedUntil(addTimestamp(loadedUntil(), -loadDuration))
       } else {
         setLoadedUntil(oldestTimestamp(loadedOlderLogs))
       }
       sortByTimestamp(loadedOlderLogs)
-      setOlderLogs((prev) => loadedOlderLogs.concat(prev))
+      setLogs((prev) => stripLogLines(loadedOlderLogs.concat(prev)))
     } catch (e) {
       handleAPIError(e, 'ログの読み込み中にエラーが発生しました')
     }
     setLoading(false)
   }
+  // Load logs before component load time
+  void load()
 
+  // Stream logs beginning from component load time
   const logStreamAbort = new AbortController()
-  const [logStream] = createResource(
-    () => props.appID,
-    (id) => client.getOutputStream({ id }, { signal: logStreamAbort.signal }),
+  const logStream = client.getOutputStream(
+    {
+      applicationId: props.appID,
+      begin: componentLoadTime,
+    },
+    { signal: logStreamAbort.signal },
   )
-  const [streamedLog, setStreamedLog] = createSignal<ApplicationOutput[]>([])
-  createEffect(() => {
-    const stream = logStream()
-    if (!stream) {
-      setStreamedLog([])
-      return
-    }
-
-    const iterate = async () => {
-      try {
-        for await (const log of stream) {
-          setStreamedLog((prev) => prev.concat(log))
-        }
-      } catch (err) {
-        // ignore abort error
-        const isAbortErr = err instanceof ConnectError && err.code === Code.Canceled
-        if (!isAbortErr) {
-          console.trace(err)
-          return
-        }
+  const iterate = async () => {
+    try {
+      for await (const log of logStream) {
+        setLogs((prev) => stripLogLines(prev.concat(log)))
+      }
+    } catch (err) {
+      // ignore abort error
+      const isAbortErr = err instanceof ConnectError && err.code === Code.Canceled
+      if (!isAbortErr) {
+        console.trace(err)
+        return
       }
     }
+  }
+  void iterate()
 
-    void iterate()
-  })
   onCleanup(() => {
     logStreamAbort.abort()
   })
 
-  const streamedLogOldest = createMemo(() => {
-    const logs = streamedLog()
-    if (logs.length === 0) return
-    return logs.reduce((acc, log) => (log.time ? minTimestamp(acc, log.time) : acc), Timestamp.now())
-  })
-  createEffect(() => {
-    const oldest = streamedLogOldest()
-    if (!oldest) return
-    if (lessTimestamp(oldest, loadedUntil())) {
-      setLoadedUntil(oldest)
-    }
-  })
-
   let logRef: HTMLDivElement
   createEffect(() => {
-    streamedLog()
+    logs() // on change to (streamed) logs
     const ref = logRef
     if (!ref) return
     if (atBottom()) {
@@ -123,9 +128,9 @@ export const ContainerLog: Component<ContainerLogProps> = (props) => {
   const onScroll = (e: { target: Element }) => setAtBottom(isScrolledToBottom(e.target))
 
   return (
-    <LogContainer ref={logRef!} overflowX="scroll" onScroll={onScroll}>
-      {/* cannot distinguish zero log and loading (but should be enough for most use-cases) */}
-      <Show when={streamedLog().length > 0}>
+    <OuterContainer>
+      <ContainerLogExport currentLogs={logs()} />
+      <LogContainer ref={logRef!} overflowX="scroll" onScroll={onScroll}>
         <LoadMoreContainer>
           Loaded until {loadedUntil().toDate().toLocaleString()}
           <Show when={!loadDisabled()} fallback={<span>(reached load limit)</span>}>
@@ -134,10 +139,9 @@ export const ContainerLog: Component<ContainerLogProps> = (props) => {
             </Button>
           </Show>
         </LoadMoreContainer>
-      </Show>
-      <For each={olderLogs()}>{(log) => <code innerHTML={formatLogLine(log, props.showTimestamp)} />}</For>
-      <For each={streamedLog()}>{(log) => <code innerHTML={formatLogLine(log, props.showTimestamp)} />}</For>
-    </LogContainer>
+        <For each={logs()}>{(log) => <code innerHTML={formatLogLine(log, showTimestamps())} />}</For>
+      </LogContainer>
+    </OuterContainer>
   )
 }
 

@@ -76,7 +76,11 @@ func (l *lokiStreamer) logQL(app *domain.Application) (string, error) {
 	return templateStr(l.tmpl, m{"App": app})
 }
 
-func (l *lokiStreamer) Get(ctx context.Context, app *domain.Application, before time.Time) ([]*domain.ContainerLog, error) {
+func (l *lokiStreamer) LogLimit() int {
+	return 5000
+}
+
+func (l *lokiStreamer) Get(ctx context.Context, app *domain.Application, before time.Time, limit int) ([]*domain.ContainerLog, error) {
 	req, err := http.NewRequestWithContext(ctx, "GET", l.queryRangeEndpoint(), nil)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to create http request")
@@ -87,7 +91,7 @@ func (l *lokiStreamer) Get(ctx context.Context, app *domain.Application, before 
 	}
 	q := req.URL.Query()
 	q.Set("query", logQL)
-	q.Set("limit", "100")
+	q.Set("limit", fmt.Sprintf("%d", limit))
 	q.Set("end", fmt.Sprintf("%d", before.UnixNano()))
 	q.Set("since", "1d")
 	q.Set("direction", "backward")
@@ -109,10 +113,10 @@ func (l *lokiStreamer) Get(ctx context.Context, app *domain.Application, before 
 	if res.Data.ResultType != "streams" {
 		return nil, errors.Errorf("expected result type to be streams, got %s", res.Data.ResultType)
 	}
-	return res.Data.Result.toSortedResponse(false)
+	return res.Data.Result.toSortedResponse(true)
 }
 
-func (l *lokiStreamer) Stream(ctx context.Context, app *domain.Application) (<-chan *domain.ContainerLog, error) {
+func (l *lokiStreamer) Stream(ctx context.Context, app *domain.Application, begin time.Time) (<-chan *domain.ContainerLog, error) {
 	logQL, err := l.logQL(app)
 	if err != nil {
 		return nil, errors.Wrap(err, "templating logQL")
@@ -120,7 +124,7 @@ func (l *lokiStreamer) Stream(ctx context.Context, app *domain.Application) (<-c
 	q := make(url.Values)
 	q.Set("query", logQL)
 	q.Set("limit", "100")
-	q.Set("start", fmt.Sprintf("%d", time.Now().Add(-startLimit).UnixNano()))
+	q.Set("start", fmt.Sprintf("%d", begin.UnixNano()))
 
 	conn, _, err := websocket.DefaultDialer.DialContext(ctx, l.streamEndpoint()+"?"+q.Encode(), nil)
 	if err != nil {

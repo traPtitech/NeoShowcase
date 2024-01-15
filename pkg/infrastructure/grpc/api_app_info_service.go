@@ -48,7 +48,7 @@ func (s *APIService) GetOutput(ctx context.Context, req *connect.Request[pb.GetO
 		return nil, connect.NewError(connect.CodeInvalidArgument, errors.New("before cannot be null"))
 	}
 	before := msg.Before.AsTime()
-	logs, err := s.svc.GetOutput(ctx, msg.ApplicationId, before)
+	logs, err := s.svc.GetOutput(ctx, msg.ApplicationId, before, int(msg.Limit))
 	if err != nil {
 		return nil, handleUseCaseError(err)
 	}
@@ -58,8 +58,12 @@ func (s *APIService) GetOutput(ctx context.Context, req *connect.Request[pb.GetO
 	return res, nil
 }
 
-func (s *APIService) GetOutputStream(ctx context.Context, req *connect.Request[pb.ApplicationIdRequest], st *connect.ServerStream[pb.ApplicationOutput]) error {
-	err := s.svc.GetOutputStream(ctx, req.Msg.Id, func(l *domain.ContainerLog) error {
+func (s *APIService) GetOutputStream(ctx context.Context, req *connect.Request[pb.GetOutputStreamRequest], st *connect.ServerStream[pb.ApplicationOutput]) error {
+	if req.Msg.Begin == nil {
+		return connect.NewError(connect.CodeInvalidArgument, errors.New("begin cannot be null"))
+	}
+	begin := req.Msg.Begin.AsTime()
+	err := s.svc.GetOutputStream(ctx, req.Msg.ApplicationId, begin, func(l *domain.ContainerLog) error {
 		return st.Send(pbconvert.ToPBApplicationOutput(l))
 	})
 	if err != nil {

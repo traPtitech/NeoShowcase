@@ -3,6 +3,7 @@ import { Component } from 'solid-js'
 import { Artifact } from '/@/api/neoshowcase/protobuf/gateway_pb'
 import { Button } from '/@/components/UI/Button'
 import { client, handleAPIError } from '/@/libs/api'
+import { saveToFile } from '/@/libs/download'
 import { formatBytes } from '/@/libs/format'
 import { colorVars, textVars } from '/@/theme'
 
@@ -69,13 +70,7 @@ export interface Props {
 const downloadArtifact = async (id: string) => {
   try {
     const data = await client.getBuildArtifact({ artifactId: id })
-    const dataBlob = new Blob([data.content], { type: 'application/gzip' })
-    const blobUrl = URL.createObjectURL(dataBlob)
-    const anchor = document.createElement('a')
-    anchor.href = blobUrl
-    anchor.download = data.filename
-    anchor.click()
-    URL.revokeObjectURL(blobUrl)
+    saveToFile(data.content, 'application/gzip', data.filename)
   } catch (e) {
     handleAPIError(e, '成果物のダウンロードに失敗しました')
   }
