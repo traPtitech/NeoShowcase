@@ -59,12 +59,12 @@ const DownloadButtonsContainer = styled('div', {
 const maxBatchFetchLines = 5000
 const maxExportLines = maxBatchFetchLines * 20
 
-const getLogsBefore = async (appID: string, before: Date, lines: number): Promise<ApplicationOutput[]> => {
+const getLogsBefore = async (appID: string, before: string, lines: number): Promise<ApplicationOutput[]> => {
   let remainingLines = lines
-  let nextBefore = Timestamp.fromDate(before)
+  let nextBefore = Timestamp.fromJson(before)
   let logLines: ApplicationOutput[] = []
   while (remainingLines > 0) {
-    console.log(`Retrieving logs before ${nextBefore.toJsonString()}, remaining ${remainingLines} lines ...`)
+    console.log(`Retrieving logs before ${nextBefore.toJson()}, remaining ${remainingLines} lines ...`)
     const res = await client.getOutput({
       applicationId: appID,
       before: nextBefore,
@@ -85,11 +85,11 @@ type exportType = 'txt' | 'json'
 const formatLogLines = (logLines: ApplicationOutput[], type: exportType): string => {
   switch (type) {
     case 'txt':
-      return logLines.map((line) => `${line.time?.toJsonString()} ${line.log}`).join('\n')
+      return logLines.map((line) => `${line.time?.toJson()} ${line.log}`).join('\n')
     case 'json':
       return JSON.stringify(
         logLines.map((line) => ({
-          time: line.time?.toJsonString(),
+          time: line.time?.toJson(),
           log: line.log,
         })),
       )
@@ -125,13 +125,14 @@ const exportBefore = async (app: Application, beforeStr: string, lines: number, 
     toast.error(`${maxExportLines} 行以下を指定してください`)
     return
   }
-  const beforeTimestamp = Date.parse(beforeStr)
-  if (Number.isNaN(beforeTimestamp)) {
+  try {
+    Timestamp.fromJson(beforeStr)
+  } catch (e) {
     toast.error('日付フォーマットが正しくありません')
     return
   }
 
-  const logLines = await getLogsBefore(app.id, new Date(beforeTimestamp), lines)
+  const logLines = await getLogsBefore(app.id, beforeStr, lines)
   exportLines(app, logLines, type)
 }
 const exportLines = (app: Application, logLines: ApplicationOutput[], type: exportType) => {
@@ -148,7 +149,8 @@ export const ContainerLogExport: Component<Props> = (props) => {
 
   const { app } = useApplicationData()
   const [exporting, setExporting] = createSignal(false)
-  const [before, setBefore] = createSignal(new Date().toISOString())
+  const [beforePlaceholder, setBeforePlaceholder] = createSignal('')
+  const [before, setBefore] = createSignal('')
   const [count, setCount] = createSignal(5000)
 
   const doExport = async (run: () => Promise<void>) => {
@@ -163,7 +165,12 @@ export const ContainerLogExport: Component<Props> = (props) => {
 
   return (
     <div>
-      <Button variants="primary" size="small" onClick={() => openModal()}>
+      <Button variants="primary" size="small" onClick={() => {
+        const now = new Date().toISOString()
+        setBefore(now)
+        setBeforePlaceholder(now)
+        openModal()
+      }}>
         Export Logs
       </Button>
       <Modal.Container>
@@ -197,7 +204,7 @@ export const ContainerLogExport: Component<Props> = (props) => {
                 <BeforeSpec>
                   <TextField
                     disabled={exporting()}
-                    placeholder={new Date().toISOString()}
+                    placeholder={beforePlaceholder()}
                     value={before()}
                     onInput={(e) => setBefore(e.currentTarget.value || '')}
                   />
