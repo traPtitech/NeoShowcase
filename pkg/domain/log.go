@@ -13,5 +13,5 @@ type ContainerLog struct {
 type ContainerLogger interface {
 	LogLimit() int
 	Get(ctx context.Context, app *Application, before time.Time, limit int) ([]*ContainerLog, error)
-	Stream(ctx context.Context, app *Application) (<-chan *ContainerLog, error)
+	Stream(ctx context.Context, app *Application, begin time.Time) (<-chan *ContainerLog, error)
 }

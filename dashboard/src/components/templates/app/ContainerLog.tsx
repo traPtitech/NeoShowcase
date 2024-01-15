@@ -40,7 +40,8 @@ export interface ContainerLogProps {
 }
 
 export const ContainerLog: Component<ContainerLogProps> = (props) => {
-  const [loadedUntil, setLoadedUntil] = createSignal(Timestamp.now())
+  const componentLoadTime = Timestamp.now()
+  const [loadedUntil, setLoadedUntil] = createSignal(componentLoadTime)
   const [olderLogs, setOlderLogs] = createSignal<ApplicationOutput[]>([])
 
   const loadDisabled = () => Timestamp.now().seconds - loadedUntil().seconds >= loadLimitSeconds
@@ -61,52 +62,40 @@ export const ContainerLog: Component<ContainerLogProps> = (props) => {
     }
     setLoading(false)
   }
+  // Load logs before component load time
+  void load()
 
+  // Stream logs beginning from component load time
   const logStreamAbort = new AbortController()
   const [logStream] = createResource(
     () => props.appID,
-    (id) => client.getOutputStream({ id }, { signal: logStreamAbort.signal }),
+    (id) => client.getOutputStream({ applicationId: id, begin: componentLoadTime }, { signal: logStreamAbort.signal }),
   )
   const [streamedLog, setStreamedLog] = createSignal<ApplicationOutput[]>([])
-  createEffect(() => {
-    const stream = logStream()
-    if (!stream) {
-      setStreamedLog([])
-      return
-    }
 
-    const iterate = async () => {
-      try {
-        for await (const log of stream) {
-          setStreamedLog((prev) => prev.concat(log))
-        }
-      } catch (err) {
-        // ignore abort error
-        const isAbortErr = err instanceof ConnectError && err.code === Code.Canceled
-        if (!isAbortErr) {
-          console.trace(err)
-          return
-        }
+  const stream = logStream()
+  if (!stream) {
+    setStreamedLog([])
+    return
+  }
+  const iterate = async () => {
+    try {
+      for await (const log of stream) {
+        setStreamedLog((prev) => prev.concat(log))
+      }
+    } catch (err) {
+      // ignore abort error
+      const isAbortErr = err instanceof ConnectError && err.code === Code.Canceled
+      if (!isAbortErr) {
+        console.trace(err)
+        return
       }
     }
+  }
+  void iterate()
 
-    void iterate()
-  })
   onCleanup(() => {
     logStreamAbort.abort()
-  })
-
-  const streamedLogOldest = createMemo(() => {
-    const logs = streamedLog()
-    if (logs.length === 0) return
-    return logs.reduce((acc, log) => (log.time ? minTimestamp(acc, log.time) : acc), Timestamp.now())
-  })
-  createEffect(() => {
-    const oldest = streamedLogOldest()
-    if (!oldest) return
-    if (lessTimestamp(oldest, loadedUntil())) {
-      setLoadedUntil(oldest)
-    }
   })
 
   let logRef: HTMLDivElement
@@ -124,17 +113,14 @@ export const ContainerLog: Component<ContainerLogProps> = (props) => {
 
   return (
     <LogContainer ref={logRef!} overflowX="scroll" onScroll={onScroll}>
-      {/* cannot distinguish zero log and loading (but should be enough for most use-cases) */}
-      <Show when={streamedLog().length > 0}>
-        <LoadMoreContainer>
-          Loaded until {loadedUntil().toDate().toLocaleString()}
-          <Show when={!loadDisabled()} fallback={<span>(reached load limit)</span>}>
-            <Button variants="ghost" size="small" onClick={load} disabled={loading()}>
-              {loading() ? 'Loading...' : 'Load more'}
-            </Button>
-          </Show>
-        </LoadMoreContainer>
-      </Show>
+      <LoadMoreContainer>
+        Loaded until {loadedUntil().toDate().toLocaleString()}
+        <Show when={!loadDisabled()} fallback={<span>(reached load limit)</span>}>
+          <Button variants="ghost" size="small" onClick={load} disabled={loading()}>
+            {loading() ? 'Loading...' : 'Load more'}
+          </Button>
+        </Show>
+      </LoadMoreContainer>
       <For each={olderLogs()}>{(log) => <code innerHTML={formatLogLine(log, props.showTimestamp)} />}</For>
       <For each={streamedLog()}>{(log) => <code innerHTML={formatLogLine(log, props.showTimestamp)} />}</For>
     </LogContainer>

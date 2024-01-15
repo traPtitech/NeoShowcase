@@ -15,7 +15,6 @@ import (
 const (
 	queryRangePath = "/loki/api/v1/query_range"
 	streamPath     = "/loki/api/v1/tail"
-	startLimit     = 30 * 24 * time.Hour
 )
 
 func (l *lokiStreamer) queryRangeEndpoint() string {

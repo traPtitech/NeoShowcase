@@ -116,7 +116,7 @@ func (l *lokiStreamer) Get(ctx context.Context, app *domain.Application, before 
 	return res.Data.Result.toSortedResponse(true)
 }
 
-func (l *lokiStreamer) Stream(ctx context.Context, app *domain.Application) (<-chan *domain.ContainerLog, error) {
+func (l *lokiStreamer) Stream(ctx context.Context, app *domain.Application, begin time.Time) (<-chan *domain.ContainerLog, error) {
 	logQL, err := l.logQL(app)
 	if err != nil {
 		return nil, errors.Wrap(err, "templating logQL")
@@ -124,7 +124,7 @@ func (l *lokiStreamer) Stream(ctx context.Context, app *domain.Application) (<-c
 	q := make(url.Values)
 	q.Set("query", logQL)
 	q.Set("limit", "100")
-	q.Set("start", fmt.Sprintf("%d", time.Now().Add(-startLimit).UnixNano()))
+	q.Set("start", fmt.Sprintf("%d", begin.UnixNano()))
 
 	conn, _, err := websocket.DefaultDialer.DialContext(ctx, l.streamEndpoint()+"?"+q.Encode(), nil)
 	if err != nil {

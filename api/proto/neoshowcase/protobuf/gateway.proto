@@ -455,6 +455,11 @@ message GetOutputRequest {
   int32 limit = 3;
 }
 
+message GetOutputStreamRequest {
+  string application_id = 1;
+  google.protobuf.Timestamp begin = 2;
+}
+
 message RetryCommitBuildRequest {
   string application_id = 1;
   string commit = 2;
@@ -548,7 +553,7 @@ service APIService {
     option idempotency_level = NO_SIDE_EFFECTS;
   };
   // GetOutputStream アプリの出力をストリーム形式で取得します
-  rpc GetOutputStream(ApplicationIdRequest) returns (stream ApplicationOutput);
+  rpc GetOutputStream(GetOutputStreamRequest) returns (stream ApplicationOutput);
 
   // Application config
 
