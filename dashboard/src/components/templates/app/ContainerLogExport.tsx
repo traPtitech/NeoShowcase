@@ -165,12 +165,16 @@ export const ContainerLogExport: Component<Props> = (props) => {
 
   return (
     <div>
-      <Button variants="primary" size="small" onClick={() => {
-        const now = new Date().toISOString()
-        setBefore(now)
-        setBeforePlaceholder(now)
-        openModal()
-      }}>
+      <Button
+        variants="primary"
+        size="small"
+        onClick={() => {
+          const now = new Date().toISOString()
+          setBefore(now)
+          setBeforePlaceholder(now)
+          openModal()
+        }}
+      >
         Export Logs
       </Button>
       <Modal.Container>

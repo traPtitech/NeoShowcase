@@ -1,7 +1,7 @@
 import { Timestamp } from '@bufbuild/protobuf'
 import { CartesianTickOptions, Chart, ChartData, ChartOptions, Colors, Filler, Legend, Title, Tooltip } from 'chart.js'
 import { Line } from 'solid-chartjs'
-import { Component, Show, createEffect, createMemo, mergeProps, onCleanup, splitProps } from 'solid-js'
+import { Component, Show, createMemo, mergeProps, onCleanup, splitProps } from 'solid-js'
 import { createResource } from 'solid-js'
 import { client } from '/@/libs/api'
 import { formatBytes, formatPercent } from '/@/libs/format'

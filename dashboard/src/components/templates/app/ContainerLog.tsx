@@ -53,10 +53,12 @@ const sortByTimestamp = (ts: ApplicationOutput[]) =>
 
 export interface ContainerLogProps {
   appID: string
-  showTimestamp: boolean
 }
 
 export const ContainerLog: Component<ContainerLogProps> = (props) => {
+  // TODO: show timestamps toggle button?
+  const [showTimestamps] = createSignal(true)
+
   const componentLoadTime = Timestamp.now()
   const [loadedUntil, setLoadedUntil] = createSignal(componentLoadTime)
   const [logs, setLogs] = createSignal<ApplicationOutput[]>([])
@@ -137,7 +139,7 @@ export const ContainerLog: Component<ContainerLogProps> = (props) => {
             </Button>
           </Show>
         </LoadMoreContainer>
-        <For each={logs()}>{(log) => <code innerHTML={formatLogLine(log, props.showTimestamp)} />}</For>
+        <For each={logs()}>{(log) => <code innerHTML={formatLogLine(log, showTimestamps())} />}</For>
       </LogContainer>
     </OuterContainer>
   )

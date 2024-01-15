@@ -130,7 +130,7 @@ const LogContainer = styled('div', {
 const Logs: Component<{ app: Application }> = (props) => {
   return (
     <LogContainer>
-      <ContainerLog appID={props.app.id} showTimestamp={true} />
+      <ContainerLog appID={props.app.id} />
     </LogContainer>
   )
 }
