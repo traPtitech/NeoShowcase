@@ -7,6 +7,7 @@ import { Button } from '/@/components/UI/Button'
 import { TextField } from '/@/components/UI/TextField'
 import { client, handleAPIError } from '/@/libs/api'
 import { saveToFile } from '/@/libs/download'
+import { sleep } from '/@/libs/sleep'
 import { addTimestamp } from '/@/libs/timestamp'
 import useModal from '/@/libs/useModal'
 import { useApplicationData } from '/@/routes'
@@ -93,6 +94,7 @@ const getLogsBefore = async (
       if (!res.outputs[0].time) throw new Error('time field not found')
       nextBefore = res.outputs[0].time
     }
+    await sleep(500)
   }
   return logLines
 }
