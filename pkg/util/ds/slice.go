@@ -59,6 +59,13 @@ func Equals[T comparable](s, t []T) bool {
 	return true
 }
 
+func HasPrefix[T comparable](s, prefix []T) bool {
+	if len(s) < len(prefix) {
+		return false
+	}
+	return Equals(s[:len(prefix)], prefix)
+}
+
 func FirstN[T any](s []T, n int) []T {
 	if len(s) < n {
 		return s
