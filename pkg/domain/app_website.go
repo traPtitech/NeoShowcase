@@ -184,10 +184,7 @@ func (w *Website) pathComponents() []string {
 func (w *Website) pathContainedBy(target *Website) bool {
 	this := w.pathComponents()
 	other := target.pathComponents()
-	if len(this) < len(other) {
-		return false
-	}
-	return ds.Equals(this[:len(other)], other)
+	return ds.HasPrefix(this, other)
 }
 
 func (w *Website) Equals(target *Website) bool {

@@ -2,20 +2,24 @@ package tarfs
 
 import (
 	"archive/tar"
+	"github.com/friendsofgo/errors"
+	log "github.com/sirupsen/logrus"
 	"io"
 	"os"
 	"path/filepath"
 	"strings"
-
-	"github.com/friendsofgo/errors"
-	log "github.com/sirupsen/logrus"
 )
 
-func validRelPath(p string) bool {
-	if p == "" || strings.Contains(p, `\`) || strings.HasPrefix(p, "/") || strings.Contains(p, "..") {
+func isValidRelPath(relPath string) bool {
+	const root = string(filepath.Separator)
+	cleaned := filepath.Clean(relPath)
+	// filepath.Join cleans traversal path
+	// https://dzx.cz/2021-04-02/go_path_traversal/
+	traversalCleaned, err := filepath.Rel(root, filepath.Join(root, strings.TrimPrefix(cleaned, root)))
+	if err != nil {
 		return false
 	}
-	return true
+	return traversalCleaned == cleaned
 }
 
 func Extract(tarStream io.Reader, destPath string) error {
@@ -29,7 +33,7 @@ func Extract(tarStream io.Reader, destPath string) error {
 			return errors.Wrap(err, "bad tar file")
 		}
 
-		if !validRelPath(header.Name) {
+		if !isValidRelPath(header.Name) {
 			return errors.Errorf("invalid path %v", header.Name)
 		}
 
