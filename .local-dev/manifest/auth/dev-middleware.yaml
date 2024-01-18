@@ -1,0 +1,10 @@
+apiVersion: traefik.io/v1alpha1
+kind: Middleware
+metadata:
+  name: ns-auth-dev
+
+spec:
+  forwardAuth:
+    address: http://ns-auth-dev.auth.svc.cluster.local/
+    authResponseHeaders:
+      - X-Showcase-User

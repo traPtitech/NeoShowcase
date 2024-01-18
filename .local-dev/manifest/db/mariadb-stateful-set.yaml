@@ -1,0 +1,46 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: mariadb
+
+spec:
+  replicas: 1
+  serviceName: mariadb
+  podManagementPolicy: Parallel
+  selector:
+    matchLabels:
+      app: mariadb
+
+  template:
+    metadata:
+      labels:
+        app: mariadb
+    spec:
+      enableServiceLinks: false
+      automountServiceAccountToken: false
+
+      volumes:
+        - name: project
+          hostPath:
+            path: /work
+
+      containers:
+        - name: mariadb
+          image: mariadb:10
+          imagePullPolicy: Always
+          args:
+            - mysqld
+            - --character-set-server=utf8mb4
+            - --collation-server=utf8mb4_unicode_ci
+          env:
+            - name: MYSQL_ROOT_PASSWORD
+              value: password
+            - name: MYSQL_DATABASE
+              value: neoshowcase
+          ports:
+            - name: mariadb
+              containerPort: 3306
+          volumeMounts:
+            - name: project
+              subPath: .local-dev/mysql
+              mountPath: /var/lib/mysql

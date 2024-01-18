@@ -1,0 +1,9 @@
+namespace: registry
+
+resources:
+  - deployment.yaml
+  - frontend-deployment.yaml
+  - frontend-ingress-route.yaml
+  - frontend-service.yaml
+  - ingress-route.yaml
+  - service.yaml

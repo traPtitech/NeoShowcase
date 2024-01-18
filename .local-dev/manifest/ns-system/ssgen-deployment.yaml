@@ -1,0 +1,66 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ns-ssgen
+
+spec:
+  replicas: 1
+  revisionHistoryLimit: 0
+  selector:
+    matchLabels:
+      app: ns-ssgen
+
+  template:
+    metadata:
+      labels:
+        app: ns-ssgen
+    spec:
+      enableServiceLinks: false
+      automountServiceAccountToken: false
+
+      volumes:
+        - name: project
+          hostPath:
+            path: /work
+
+      containers:
+        - name: ns-ssgen
+          image: ghcr.io/traptitech/ns-ssgen:main
+          imagePullPolicy: Never
+          args:
+            - --debug
+            - --loglevel=trace
+            - --config=/config.yaml
+          ports:
+            - containerPort: 80
+              name: http
+            - containerPort: 8081
+              name: probe
+          volumeMounts:
+            - name: project
+              subPath: .local-dev/config/ns.yaml
+              mountPath: /config.yaml
+            - name: project
+              subPath: .local-dev/staticsite/artifacts
+              mountPath: /artifacts
+            - name: project
+              subPath: .local-dev/local-storage
+              mountPath: /data
+          startupProbe:
+            httpGet:
+              port: probe
+              path: /healthz
+            periodSeconds: 1
+            failureThreshold: 300
+          readinessProbe:
+            httpGet:
+              port: probe
+              path: /healthz
+            periodSeconds: 1
+            failureThreshold: 60
+          livenessProbe:
+            httpGet:
+              port: probe
+              path: /healthz
+            periodSeconds: 10
+            failureThreshold: 3

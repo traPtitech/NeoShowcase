@@ -1,0 +1,10 @@
+namespace: db
+
+resources:
+  - adminer-deployment.yaml
+  - adminer-ingress-route.yaml
+  - adminer-service.yaml
+  - mariadb-service.yaml
+  - mariadb-stateful-set.yaml
+  - mongo-service.yaml
+  - mongo-stateful-set.yaml

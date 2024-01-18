@@ -1,0 +1,51 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: registry
+
+spec:
+  replicas: 1
+  revisionHistoryLimit: 0
+  selector:
+    matchLabels:
+      app: registry
+
+  template:
+    metadata:
+      labels:
+        app: registry
+    spec:
+      enableServiceLinks: false
+      automountServiceAccountToken: false
+
+      volumes:
+        - name: project
+          hostPath:
+            path: /work
+
+      containers:
+        - name: registry
+          image: registry:2
+          imagePullPolicy: Always
+          env:
+            - name: REGISTRY_STORAGE_DELETE_ENABLED
+              value: "true"
+            - name: REGISTRY_HTTP_ADDR
+              value: ":80"
+            - name: REGISTRY_STORAGE_FILESYSTEM_ROOTDIRECTORY
+              value: /var/lib/registry
+            - name: GC_SCRIPT
+              value: /gc.sh
+          ports:
+            - containerPort: 80
+              name: http
+          volumeMounts:
+            - name: project
+              subPath: .local-dev/registry/entrypoint.sh
+              mountPath: /entrypoint.sh
+            - name: project
+              subPath: .local-dev/registry/gc.sh
+              mountPath: /gc.sh
+            - name: project
+              subPath: .local-dev/registry-data
+              mountPath: /var/lib/registry

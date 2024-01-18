@@ -2,17 +2,15 @@ kind: StatefulSet
 apiVersion: apps/v1
 metadata:
   name: traefik
-  labels:
-    app: traefik
 
 spec:
+  replicas: 1
+  serviceName: traefik
+  podManagementPolicy: Parallel
   selector:
     matchLabels:
       app: traefik
-  serviceName: traefik
-  replicas: 1
-  podManagementPolicy: Parallel
-  revisionHistoryLimit: 0
+
   template:
     metadata:
       labels:
@@ -21,6 +19,7 @@ spec:
       hostNetwork: true
       dnsPolicy: ClusterFirstWithHostNet
       serviceAccountName: traefik
+
       containers:
         - name: traefik
           image: traefik:2.10
@@ -28,13 +27,9 @@ spec:
             - --api.insecure
             - --providers.kubernetescrd
             - --providers.kubernetesingress
-            - --providers.file
-            - --providers.file.directory=/opt/neoshowcase/conf
-            - --providers.file.watch=true
             - --entrypoints.web.address=:80/tcp
             - --entrypoints.websecure.address=:443/tcp
             - --entrypoints.websecure.http.tls=true
-            - --entrypoints.ns-ssh.address=:2201/tcp
             - --entrypoints.traefik.address=:8080/tcp
             - --entrypoints.metrics.address=:9100/tcp
             - --api.dashboard=true
@@ -46,21 +41,7 @@ spec:
               containerPort: 80
             - name: web-secure
               containerPort: 443
-            - name: ns-ssh
-              containerPort: 2201
             - name: dashboard
               containerPort: 8080
             - name: metrics
               containerPort: 9100
-          volumeMounts:
-            - mountPath: /opt/neoshowcase/conf
-              name: traefik-config
-            - mountPath: /certs
-              name: certs
-      volumes:
-        - name: traefik-config
-          configMap:
-            name: traefik-config
-        - name: certs
-          hostPath:
-            path: /srv/traefik/certs

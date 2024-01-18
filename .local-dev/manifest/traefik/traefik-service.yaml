@@ -5,6 +5,8 @@ metadata:
 
 spec:
   type: ClusterIP
+  selector:
+    app: traefik
   ports:
     - targetPort: web
       name: web
@@ -12,5 +14,3 @@ spec:
     - targetPort: web-secure
       name: web-secure
       port: 443
-  selector:
-    app: traefik

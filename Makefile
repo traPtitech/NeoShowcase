@@ -114,18 +114,6 @@ docker-test: ## Run docker tests
 	@docker container inspect ns-test-dind > /dev/null || make dind-up
 	ENABLE_DOCKER_TESTS=true DOCKER_HOST=tcp://localhost:5555 DOCKER_CERT_PATH=$$PWD/.local-dev/dind/client DOCKER_TLS_VERIFY=true go test -v ./pkg/infrastructure/backend/dockerimpl
 
-.PHONY: k3s-import
-k3s-import: ## Import images to k3s environment
-	docker save ghcr.io/traptitech/ns-dashboard:main | sudo k3s ctr images import -
-	docker save ghcr.io/traptitech/ns-auth-dev:main | sudo k3s ctr images import -
-	docker save ghcr.io/traptitech/ns-builder:main | sudo k3s ctr images import -
-	docker save ghcr.io/traptitech/ns-controller:main | sudo k3s ctr images import -
-	docker save ghcr.io/traptitech/ns-gateway:main | sudo k3s ctr images import -
-	# Uncomment if testing gitea-integration
-	# docker save ghcr.io/traptitech/ns-gitea-integration:main | sudo k3s ctr images import -
-	docker save ghcr.io/traptitech/ns-migrate:main | sudo k3s ctr images import -
-	docker save ghcr.io/traptitech/ns-ssgen:main | sudo k3s ctr images import -
-
 .PHONY: k3d-up
 k3d-up: ## Setup k3s environment
 	k3d cluster create ns-test --no-lb --k3s-arg "--disable=traefik,servicelb,metrics-server"

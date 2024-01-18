@@ -1,0 +1,46 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: mongo
+
+spec:
+  replicas: 1
+  serviceName: mongo
+  podManagementPolicy: Parallel
+  selector:
+    matchLabels:
+      app: mongo
+
+  template:
+    metadata:
+      labels:
+        app: mongo
+    spec:
+      enableServiceLinks: false
+      automountServiceAccountToken: false
+
+      volumes:
+        - name: project
+          hostPath:
+            path: /work
+
+      containers:
+        - name: mongo
+          image: mongo:6
+          imagePullPolicy: Always
+          env:
+            - name: MONGO_INITDB_ROOT_USERNAME
+              value: root
+            - name: MONGO_INITDB_ROOT_PASSWORD
+              value: password
+          args:
+            - "mongod"
+            - "--auth"
+            - "--bind_ip_all"
+          ports:
+            - name: mongo
+              containerPort: 27017
+          volumeMounts:
+            - name: project
+              subPath: .local-dev/mongo
+              mountPath: /data/db

@@ -1,9 +1,0 @@
-grafana:
-  ini: |
-    [server]
-    domain = libra.local.trapti.tech
-    root_url = http://libra.local.trapti.tech
-    enable_gzip = true
-
-persistence:
-  enabled: true

@@ -1,0 +1,13 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: victoria-metrics
+
+spec:
+  type: ClusterIP
+  selector:
+    app: victoria-metrics
+  ports:
+    - name: http
+      port: 8428
+      targetPort: http

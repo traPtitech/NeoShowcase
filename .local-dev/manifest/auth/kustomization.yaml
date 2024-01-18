@@ -1,0 +1,9 @@
+namespace: auth
+
+resources:
+  - deployment.yaml
+  - dev-deployment.yaml
+  - dev-middleware.yaml
+  - dev-service.yaml
+  - middleware.yaml
+  - service.yaml

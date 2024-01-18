@@ -1,0 +1,8 @@
+resources:
+  - auth
+  - db
+  - monitor
+  - ns-apps
+  - ns-system
+  - registry
+  - traefik

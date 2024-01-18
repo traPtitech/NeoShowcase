@@ -1,0 +1,41 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ns-migrate
+
+spec:
+  replicas: 1
+  revisionHistoryLimit: 0
+  selector:
+    matchLabels:
+      app: ns-migrate
+
+  template:
+    metadata:
+      labels:
+        app: ns-migrate
+    spec:
+      enableServiceLinks: false
+      automountServiceAccountToken: false
+      restartPolicy: Never
+
+      volumes:
+        - name: project
+          hostPath:
+            path: /work
+
+      containers:
+        - name: ns-migrate
+          image: ghcr.io/traptitech/ns-migrate:main
+          imagePullPolicy: Never
+          env:
+            - name: DB_HOST
+              value: mariadb.db.svc.cluster.local
+            - name: DB_PORT
+              value: "3306"
+            - name: DB_USER
+              value: root
+            - name: DB_PASS
+              value: password
+            - name: DB_NAME
+              value: neoshowcase
