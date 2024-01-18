@@ -23,24 +23,16 @@ To import ns images to the k3d cluster, `make import`
 
 ### Spin up
 
-1. `make k3d-up`
-2. `make apply`
-
-### Workaround for local registry
-
-ref: https://zenn.dev/toshikish/articles/7f555dbf1b4b7d
-
-Edit and add `rewrite name registry.local host.k3d.internal` inside the `.:53 {}` section:
-`kubectl edit cm -n kube-system coredns`
-
-Restart CoreDNS afterwards:
-`kubectl restart deployment/coredns -n kube-system`
+1. `make k3d-up` to spin up the k3d cluster
+2. `make import` to build and import the builder image
+3. `make apply` to spin up the builder
 
 ### Managing
 
 - To scale the number of builder instances, `make scale REPLICAS=3`
-- To tail builder logs, `make logs`
+- To tail cluster events (pulling image, creating container etc.), `make events`
+- To tail builder pod / container logs, `make logs`
 
 ### Spin down
 
-1. `make k3d-down`
+1. `make k3d-down` to take down the k3d cluster completely

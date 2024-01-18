@@ -20,7 +20,8 @@ import: ensure-context ## Import ns-builder image into the cluster
 
 .PHONY: apply
 apply: ensure-context ## Apply manifests to k3d cluster
-	kustomize build . | kubectl apply -f -
+	kustomize build ./manifest | kubectl apply -f -
+	kubectl rollout restart deployment/coredns -n kube-system # For CoreDNS ConfigMap patch
 
 REPLICAS?=1
 .PHONY: scale
