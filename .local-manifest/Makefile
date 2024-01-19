@@ -10,16 +10,9 @@ help: ## Display this help screen
 
 .PHONY: k3d-up
 k3d-up: ## Spin up k3d cluster
-	k3d cluster create $(CLUSTER_NAME) --image rancher/k3s:latest --k3s-arg '--disable=traefik@server:*' \
-	  	--registry-config ./registries.yaml \
-		--host-alias 10.43.11.193:registry.local \
- 		-v $(PROJECT_ROOT):/work@all \
- 		-v $(PROJECT_ROOT)/.local-dev/k3d-local-storage:/var/lib/rancher/k3s/storage@all \
- 		-v ~/.ssh/known_hosts:/known_hosts@all \
- 		-p 80:80@loadbalancer \
- 		-p 443:443@loadbalancer \
- 		-p 2201:2201@loadbalancer \
- 		-p 8080:8080@loadbalancer
+	$(eval TMP_FILE := $(shell mktemp))
+	PROJECT_ROOT=$(PROJECT_ROOT) envsubst < k3d.yaml > $(TMP_FILE)
+	k3d cluster create $(CLUSTER_NAME) -c $(TMP_FILE)
 
 .PHONY: k3d-down
 k3d-down: ## Spin down k3d cluster
@@ -44,20 +37,15 @@ import: ensure-context ## Import ns images into the cluster
 	k3d image import --cluster $(CLUSTER_NAME) ghcr.io/traptitech/ns-migrate:main
 	k3d image import --cluster $(CLUSTER_NAME) ghcr.io/traptitech/ns-ssgen:main
 
-.PHONY: apply-namespaces
-apply-namespaces:
-	ls -d */ | tr -d '/' | grep -v 'coredns-patch' | xargs -I{} sh -c 'kubectl create namespace {} --dry-run=client -o yaml | kubectl apply -f -'
-
-.PHONY: apply-crd
-apply-crd:
-	kustomize build ./crd | kubectl apply -f -
-
 .PHONY: apply
-apply: ensure-context apply-namespaces apply-crd ## Apply manifests to k3d cluster
+apply: ensure-context ## Apply manifests to k3d cluster
+	# Apply namespaces and CRDs first
+	ls -d */ | tr -d '/' | grep -v 'coredns-patch|crd' | xargs -I{} sh -c 'kubectl create namespace {} --dry-run=client -o yaml | kubectl apply -f -'
+	kustomize build ./crd | kubectl apply -f -
 	kustomize build . | kubectl apply -f -
 	kubectl rollout restart deployment/coredns -n kube-system # For CoreDNS ConfigMap patch
 
-# ---- Dev commands ----
+# ---- Management commands ----
 
 .PHONY: events
 events: ensure-context ## Tail cluster events

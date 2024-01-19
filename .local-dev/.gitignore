@@ -1,6 +1,7 @@
 /dind
 # needs uid 472 gid 472
 /grafana
+/k3d-cache-registry
 /k3d-local-storage
 /local-storage
 # needs uid 10001 gid 10001

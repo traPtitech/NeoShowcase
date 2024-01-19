@@ -1,0 +1,61 @@
+# https://k3d.io/v5.6.0/usage/configfile/
+apiVersion: k3d.io/v1alpha5
+kind: Simple
+metadata:
+  name: ns-dev
+
+image: rancher/k3s:latest
+
+volumes:
+  - volume: $PROJECT_ROOT:/work
+    nodeFilters:
+      - all
+  - volume: $PROJECT_ROOT/.local-dev/k3d-local-storage:/var/lib/rancher/k3s/storage
+    nodeFilters:
+      - all
+  - volume: $HOME/.ssh/known_hosts:/known_hosts
+    nodeFilters:
+      - all
+
+ports:
+  - port: 80:80
+    nodeFilters:
+      - loadbalancer
+  - port: 443:443
+    nodeFilters:
+      - loadbalancer
+  - port: 2201:2201
+    nodeFilters:
+      - loadbalancer
+  - port: 8080:8080
+    nodeFilters:
+      - loadbalancer
+
+registries:
+  create:
+    name: docker-io
+    proxy:
+      remoteURL: https://registry-1.docker.io
+    volumes:
+      - $PROJECT_ROOT/.local-dev/k3d-cache-registry:/var/lib/registry
+  config: |
+    mirrors:
+      "docker.io":
+        endpoint:
+          - http://docker-io:5000
+      # Force insecure (http) access
+      "registry.local":
+        endpoint:
+          - "http://registry.local"
+
+hostAliases:
+  - ip: 10.43.11.193
+    hostnames:
+      - registry.local
+
+options:
+  k3s:
+    extraArgs:
+      - arg: --disable=traefik
+        nodeFilters:
+          - server:*
