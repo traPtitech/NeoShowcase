@@ -23,6 +23,7 @@ configMapGenerator:
     literals:
       - NS_DB_HOST=mariadb.db.svc.cluster.local
       - NS_COMPONENTS_BUILDER_BUILDKIT_ADDRESS=unix:///run/buildkit/buildkitd.sock
+      - NS_COMPONENTS_BUILDER_BUILDPACK_HELPER_ADDRESS=http://localhost:1235
       - NS_COMPONENTS_CONTROLLER_MODE=k8s
       - NS_COMPONENTS_GATEWAY_MARIADB_HOST=mariadb.db.svc.cluster.local
       - NS_COMPONENTS_GATEWAY_MONGODB_HOST=mongo.db.svc.cluster.local
