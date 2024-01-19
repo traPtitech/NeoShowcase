@@ -16,7 +16,7 @@ spec:
         app: victoria-metrics
     spec:
       enableServiceLinks: false
-      automountServiceAccountToken: false
+      serviceAccountName: victoria-metrics
 
       volumes:
         - name: config

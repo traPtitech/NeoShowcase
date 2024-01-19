@@ -2,10 +2,11 @@ namespace: ns-system
 
 resources:
   - builder-deployment.yaml
-  - controller-role-binding.yaml
   - controller-role.yaml
-  - controller-service-account.yaml
+  - controller-role-binding.yaml
   - controller-service.yaml
+  - controller-service-account.yaml
+  - controller-ssh-service.yaml
   - controller-stateful-set.yaml
   - dashboard-deployment.yaml
   - dashboard-service.yaml
@@ -13,6 +14,18 @@ resources:
   - gateway-service.yaml
   - ingress-route.yaml
   - migrate-deployment.yaml
-  - ssgen-deployment.yaml
   - ssgen-service.yaml
-  - ssh-ingress-route.yaml
+  - ssgen-stateful-set.yaml
+
+configMapGenerator:
+  # Override parameters from base docker configuration
+  - name: config-override
+    literals:
+      - NS_DB_HOST=mariadb.db.svc.cluster.local
+      - NS_COMPONENTS_BUILDER_BUILDKIT_ADDRESS=unix:///run/buildkit/buildkitd.sock
+      - NS_COMPONENTS_CONTROLLER_MODE=k8s
+      - NS_COMPONENTS_GATEWAY_MARIADB_HOST=mariadb.db.svc.cluster.local
+      - NS_COMPONENTS_GATEWAY_MONGODB_HOST=mongo.db.svc.cluster.local
+      - NS_COMPONENTS_GATEWAY_LOG_LOKI_ENDPOINT=http://loki.monitor.svc.cluster.local:3100
+      - NS_COMPONENTS_GATEWAY_METRICS_PROMETHEUS_ENDPOINT=http://victoria-metrics.monitor.svc.cluster.local:8428
+      - NS_COMPONENTS_SSGEN_SERVER_CADDY_ADMINAPI=http://localhost:2019

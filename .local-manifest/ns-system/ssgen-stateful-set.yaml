@@ -1,14 +1,26 @@
 apiVersion: apps/v1
-kind: Deployment
+kind: StatefulSet
 metadata:
   name: ns-ssgen
 
 spec:
-  replicas: 1
+  serviceName: ns-ssgen
+  podManagementPolicy: Parallel
+  replicas: 2
   revisionHistoryLimit: 0
   selector:
     matchLabels:
       app: ns-ssgen
+
+  volumeClaimTemplates:
+    - metadata:
+        name: artifacts
+      spec:
+        accessModes:
+          - ReadWriteOnce
+        resources:
+          requests:
+            storage: 1Gi
 
   template:
     metadata:
@@ -16,12 +28,13 @@ spec:
         app: ns-ssgen
     spec:
       enableServiceLinks: false
-      automountServiceAccountToken: false
 
       volumes:
         - name: project
           hostPath:
             path: /work
+        - name: artifacts
+          emptyDir: {}
 
       containers:
         - name: ns-ssgen
@@ -31,9 +44,10 @@ spec:
             - --debug
             - --loglevel=trace
             - --config=/config.yaml
+          envFrom:
+            - configMapRef:
+                name: config-override
           ports:
-            - containerPort: 80
-              name: http
             - containerPort: 8081
               name: probe
           volumeMounts:
@@ -41,17 +55,16 @@ spec:
               subPath: .local-dev/config/ns.yaml
               mountPath: /config.yaml
             - name: project
-              subPath: .local-dev/staticsite/artifacts
-              mountPath: /artifacts
-            - name: project
               subPath: .local-dev/local-storage
               mountPath: /data
+            - name: artifacts
+              mountPath: /artifacts
           startupProbe:
             httpGet:
               port: probe
               path: /healthz
-            periodSeconds: 1
-            failureThreshold: 300
+            periodSeconds: 10
+            failureThreshold: 360
           readinessProbe:
             httpGet:
               port: probe
@@ -62,5 +75,13 @@ spec:
             httpGet:
               port: probe
               path: /healthz
-            periodSeconds: 10
-            failureThreshold: 3
+
+        - name: caddy
+          image: caddy:2-alpine
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 80
+              name: http
+          volumeMounts:
+            - name: artifacts
+              mountPath: /artifacts

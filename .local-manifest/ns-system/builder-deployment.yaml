@@ -22,6 +22,9 @@ spec:
         - name: project
           hostPath:
             path: /work
+        - name: known-hosts
+          hostPath:
+            path: /known_hosts
         - name: ns-bin
           emptyDir: {}
         - name: socket
@@ -50,6 +53,9 @@ spec:
             - --debug
             - --loglevel=trace
             - --config=/config.yaml
+          envFrom:
+            - configMapRef:
+                name: config-override
           volumeMounts:
             - name: ns-bin
               mountPath: /ns-bin
@@ -94,7 +100,10 @@ spec:
           args:
             - --debug
             - --loglevel=debug
-            - --config=/opt/config/ns.yaml
+            - --config=/config.yaml
+          envFrom:
+            - configMapRef:
+                name: config-override
           volumeMounts:
             - name: socket
               mountPath: /run/buildkit
@@ -104,3 +113,5 @@ spec:
             - name: project
               subPath: .local-dev/keys
               mountPath: /keys
+            - name: known-hosts
+              mountPath: /root/.ssh/known_hosts

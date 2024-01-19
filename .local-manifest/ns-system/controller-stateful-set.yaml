@@ -23,6 +23,9 @@ spec:
         - name: project
           hostPath:
             path: /work
+        - name: known-hosts
+          hostPath:
+            path: /known_hosts
 
       containers:
         - name: ns-controller
@@ -32,6 +35,9 @@ spec:
             - --debug
             - --loglevel=debug
             - --config=/config.yaml
+          envFrom:
+            - configMapRef:
+                name: config-override
           ports:
             - name: ssh
               containerPort: 2201
@@ -49,3 +55,5 @@ spec:
             - name: project
               subPath: .local-dev/keys
               mountPath: /keys
+            - name: known-hosts
+              mountPath: /root/.ssh/known_hosts

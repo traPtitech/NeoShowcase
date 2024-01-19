@@ -17,10 +17,6 @@ Do "First time setup", and run `make up` / `make down`
 2. Prepare local forward if controller port is unreachable from the internet
    - e.g. `ssh -L 0.0.0.0:10000:10.43.193.98:10000 c1-203`
 
-### Importing images
-
-To import ns images to the k3d cluster, `make import`
-
 ### Spin up
 
 1. `make k3d-up` to spin up the k3d cluster

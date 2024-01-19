@@ -11,7 +11,7 @@ spec:
     - kind: Rule
       match: Host(`grafana.local.trapti.tech`)
       services:
-        - namespace: grafana
+        - namespace: monitor
           kind: Service
           name: grafana
           port: http

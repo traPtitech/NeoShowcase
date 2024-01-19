@@ -16,8 +16,7 @@ spec:
       labels:
         app: traefik
     spec:
-      hostNetwork: true
-      dnsPolicy: ClusterFirstWithHostNet
+      enableServiceLinks: false
       serviceAccountName: traefik
 
       containers:
@@ -26,6 +25,7 @@ spec:
           args:
             - --api.insecure
             - --providers.kubernetescrd
+            - --providers.kubernetescrd.allowCrossNamespace
             - --providers.kubernetesingress
             - --entrypoints.web.address=:80/tcp
             - --entrypoints.websecure.address=:443/tcp

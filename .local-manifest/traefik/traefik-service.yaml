@@ -4,13 +4,16 @@ metadata:
   name: traefik
 
 spec:
-  type: ClusterIP
+  type: LoadBalancer
   selector:
     app: traefik
   ports:
-    - targetPort: web
-      name: web
+    - name: web
       port: 80
-    - targetPort: web-secure
-      name: web-secure
+      targetPort: web
+    - name: web-secure
       port: 443
+      targetPort: web-secure
+    - name: dashboard
+      port: 8080
+      targetPort: dashboard

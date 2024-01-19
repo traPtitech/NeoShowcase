@@ -5,6 +5,7 @@ metadata:
 
 spec:
   type: ClusterIP
+  clusterIP: 10.43.11.193
   selector:
     app: registry
   ports:

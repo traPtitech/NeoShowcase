@@ -11,7 +11,7 @@ spec:
     - kind: Rule
       match: Host(`loki.local.trapti.tech`)
       services:
-        - namespace: loki
+        - namespace: monitor
           kind: Service
           name: loki
           port: http

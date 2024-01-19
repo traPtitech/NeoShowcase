@@ -12,7 +12,7 @@ spec:
       match: Host(`ns.local.trapti.tech`)
       middlewares:
         - name: ns-auth-dev
-          namespace: db
+          namespace: auth
       services:
         - namespace: ns-system
           kind: Service
@@ -35,7 +35,7 @@ spec:
       match: Host(`ns.local.trapti.tech`) && PathPrefix(`/neoshowcase.protobuf.APIService`)
       middlewares:
         - name: ns-auth-dev
-          namespace: db
+          namespace: auth
       services:
         - namespace: ns-system
           kind: Service
