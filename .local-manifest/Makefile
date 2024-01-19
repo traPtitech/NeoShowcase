@@ -11,6 +11,7 @@ help: ## Display this help screen
 .PHONY: k3d-up
 k3d-up: ## Spin up k3d cluster
 	k3d cluster create $(CLUSTER_NAME) --image rancher/k3s:latest --k3s-arg '--disable=traefik@server:*' \
+	  	--registry-config ./registries.yaml \
 		--host-alias 10.43.11.193:registry.local \
  		-v $(PROJECT_ROOT):/work@all \
  		-v $(PROJECT_ROOT)/.local-dev/k3d-local-storage:/var/lib/rancher/k3s/storage@all \
