@@ -10,8 +10,8 @@ Run `make up` / `make down`
 ### Spin up
 
 1. `make k3d-up` to spin up the k3d cluster
-2. `make import` to build and import the builder image
-3. `make apply` to spin up the builder
+2. `make import` to build and import NeoShowcase images
+3. `make apply` to apply the manifest files
 
 ### Managing
 
