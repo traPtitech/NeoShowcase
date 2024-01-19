@@ -78,6 +78,55 @@ components:
         memory: 1000000000 # 1GB
         memorySwap: -1
         memoryReservation: 256000000 # 256MB
+    k8s:
+      domains:
+        - domain: "*.local.trapti.tech"
+          excludes: []
+          auth:
+            available: true
+            soft:
+              - name: nsapp-auth-soft
+                namespace: ns-apps
+              - name: nsapp-auth
+                namespace: ns-apps
+            hard:
+              - name: nsapp-auth-hard
+                namespace: ns-apps
+              - name: nsapp-auth
+                namespace: ns-apps
+      ports:
+        - startPort: 39000
+          endPort: 39999
+          protocol: tcp
+        - startPort: 39000
+          endPort: 39999
+          protocol: udp
+      ss:
+        namespace: ns-system
+        kind: Service
+        name: ns-ssgen
+        port: 80
+        scheme: http
+      namespace: ns-apps
+      # extra labels
+      labels:
+        - key: app.kubernetes.io/instance
+          value: ns-apps
+      tls:
+        type: traefik
+        traefik:
+          certResolver: resolver
+          wildcard:
+            domains: []
+      # required if registry is private
+      imagePullSecret: ""
+      resources:
+        requests:
+          cpu: 10m
+          memory: 50M
+        limits:
+          cpu: 1600m
+          memory: 1G
     ssh:
       host: localhost
       port: 2201

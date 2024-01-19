@@ -1,0 +1,47 @@
+kind: StatefulSet
+apiVersion: apps/v1
+metadata:
+  name: traefik
+
+spec:
+  replicas: 1
+  serviceName: traefik
+  podManagementPolicy: Parallel
+  selector:
+    matchLabels:
+      app: traefik
+
+  template:
+    metadata:
+      labels:
+        app: traefik
+    spec:
+      enableServiceLinks: false
+      serviceAccountName: traefik
+
+      containers:
+        - name: traefik
+          image: traefik:2.10
+          args:
+            - --api.insecure
+            - --providers.kubernetescrd
+            - --providers.kubernetescrd.allowCrossNamespace
+            - --providers.kubernetesingress
+            - --entrypoints.web.address=:80/tcp
+            - --entrypoints.websecure.address=:443/tcp
+            - --entrypoints.websecure.http.tls=true
+            - --entrypoints.traefik.address=:8080/tcp
+            - --entrypoints.metrics.address=:9100/tcp
+            - --api.dashboard=true
+            - --ping=true
+            - --metrics.prometheus=true
+            - --metrics.prometheus.entrypoint=metrics
+          ports:
+            - name: web
+              containerPort: 80
+            - name: web-secure
+              containerPort: 443
+            - name: dashboard
+              containerPort: 8080
+            - name: metrics
+              containerPort: 9100

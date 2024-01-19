@@ -1,9 +1,0 @@
-# in root directory: find loki/templates -type f | sed -e 's/^loki\// - /g'
-resources:
-  - templates/runtime-configmap.yaml
-  - templates/serviceaccount.yaml
-  - templates/single-binary/service-headless.yaml
-  - templates/single-binary/service.yaml
-  - templates/single-binary/statefulset.yaml
-  - templates/service-memberlist.yaml
-  - templates/configmap.yaml

@@ -1,0 +1,16 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: ns-controller
+
+spec:
+  type: ClusterIP
+  selector:
+    app: ns-controller
+  ports:
+    - name: webhook
+      port: 8080
+      targetPort: webhook
+    - name: grpc
+      port: 10000
+      targetPort: grpc

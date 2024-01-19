@@ -1,0 +1,5 @@
+mirrors:
+  # Force insecure (http) access
+  "registry.local":
+    endpoint:
+      - "http://registry.local"

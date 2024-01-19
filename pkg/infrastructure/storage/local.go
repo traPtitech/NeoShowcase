@@ -1,11 +1,10 @@
 package storage
 
 import (
+	"fmt"
 	"io"
 	"os"
 	"path/filepath"
-
-	"github.com/friendsofgo/errors"
 
 	"github.com/traPtitech/neoshowcase/pkg/domain"
 )
@@ -19,10 +18,10 @@ type LocalStorage struct {
 func NewLocalStorage(dir string) (*LocalStorage, error) {
 	fi, err := os.Stat(dir)
 	if err != nil {
-		return &LocalStorage{}, errors.New("dir doesn't exist")
+		return &LocalStorage{}, fmt.Errorf("dir %s doesn't exist", dir)
 	}
 	if !fi.IsDir() {
-		return &LocalStorage{}, errors.New("dir is not a directory")
+		return &LocalStorage{}, fmt.Errorf("dir %s is not a directory", dir)
 	}
 
 	return &LocalStorage{localDir: dir}, nil

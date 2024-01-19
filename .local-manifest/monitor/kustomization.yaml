@@ -1,0 +1,7 @@
+namespace: monitor
+
+resources:
+  - grafana
+  - loki
+  - promtail
+  - victoria-metrics

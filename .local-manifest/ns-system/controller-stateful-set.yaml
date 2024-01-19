@@ -1,0 +1,59 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: ns-controller
+
+spec:
+  replicas: 1
+  serviceName: ns-controller
+  podManagementPolicy: Parallel
+  selector:
+    matchLabels:
+      app: ns-controller
+
+  template:
+    metadata:
+      labels:
+        app: ns-controller
+    spec:
+      enableServiceLinks: false
+      serviceAccountName: ns-controller
+
+      volumes:
+        - name: project
+          hostPath:
+            path: /work
+        - name: known-hosts
+          hostPath:
+            path: /known_hosts
+
+      containers:
+        - name: ns-controller
+          image: ghcr.io/traptitech/ns-controller:main
+          imagePullPolicy: Never
+          args:
+            - --debug
+            - --loglevel=debug
+            - --config=/config.yaml
+          envFrom:
+            - configMapRef:
+                name: config-override
+          ports:
+            - name: ssh
+              containerPort: 2201
+            - name: webhook
+              containerPort: 8080
+            - name: grpc
+              containerPort: 10000
+          volumeMounts:
+            - name: project
+              subPath: .local-dev/config/ns.yaml
+              mountPath: /config.yaml
+            - name: project
+              subPath: .local-dev/local-storage
+              mountPath: /data
+            - name: project
+              subPath: .local-dev/keys
+              mountPath: /keys
+            - name: known-hosts
+              mountPath: /root/.ssh/known_hosts

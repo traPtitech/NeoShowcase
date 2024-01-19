@@ -1,5 +1,0 @@
-resources:
-  - auth-hard-middleware.yaml
-  - auth-middleware.yaml
-  - auth-soft-middleware.yaml
-  - network-policy.yaml

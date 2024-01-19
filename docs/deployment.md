@@ -44,7 +44,7 @@ NeoShowcase is NOT built against some specific cloud vendor, it is a cloud-agnos
 Use of [k3s](https://k3s.io/) is recommended whenever possible as it is well tested against.
 Using other distributions "may" very well work, but it is not tested.
 
-See [../.local-dev/manifest](../.local-dev/manifest) for a complete list of require components to deploy NeoShowcase.
+See [../.local-manifest](../.local-manifest) for a complete list of require components to deploy NeoShowcase.
 Required components are (almost) the same with docker-backed deployment.
 
 Our production manifest is also available at [traPtitech/manifest](https://github.com/traPtitech/manifest).

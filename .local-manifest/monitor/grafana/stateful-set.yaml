@@ -1,0 +1,40 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: grafana
+
+spec:
+  replicas: 1
+  serviceName: grafana
+  selector:
+    matchLabels:
+      app: grafana
+
+  template:
+    metadata:
+      labels:
+        app: grafana
+    spec:
+      automountServiceAccountToken: false
+      enableServiceLinks: false
+
+      volumes:
+        - name: project
+          hostPath:
+            path: /work
+
+      containers:
+        - name: grafana
+          image: grafana/grafana:10.0.1
+          imagePullPolicy: IfNotPresent
+          ports:
+            - name: http
+              containerPort: 3000
+          volumeMounts:
+            - name: project
+              subPath: .local-dev/grafana
+              mountPath: /var/lib/grafana
+            - name: project
+              subPath: .local-dev/config/grafana.ini
+              mountPath: /etc/grafana/grafana.ini
+              readOnly: true

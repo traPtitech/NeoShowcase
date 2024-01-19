@@ -1,0 +1,37 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ns-auth
+
+spec:
+  replicas: 1
+  revisionHistoryLimit: 0
+  selector:
+    matchLabels:
+      app: ns-auth
+
+  template:
+    metadata:
+      labels:
+        app: ns-auth
+    spec:
+      enableServiceLinks: false
+      automountServiceAccountToken: false
+
+      volumes:
+        - name: project
+          hostPath:
+            path: /work
+
+      containers:
+        - name: ns-auth
+          image: ghcr.io/traptitech/traefik-forward-auth:2.8.0
+          args:
+            - --config=/config.ini
+          ports:
+            - containerPort: 4181
+              name: http
+          volumeMounts:
+            - name: project
+              subPath: .local-dev/config/ns-auth.ini
+              mountPath: /config.ini

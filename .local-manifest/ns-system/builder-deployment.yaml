@@ -1,0 +1,117 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ns-builder
+
+spec:
+  replicas: 1
+  revisionHistoryLimit: 0
+  selector:
+    matchLabels:
+      app: ns-builder
+
+  template:
+    metadata:
+      labels:
+        app: ns-builder
+    spec:
+      enableServiceLinks: false
+      automountServiceAccountToken: false
+
+      volumes:
+        - name: project
+          hostPath:
+            path: /work
+        - name: known-hosts
+          hostPath:
+            path: /known_hosts
+        - name: ns-bin
+          emptyDir: {}
+        - name: socket
+          emptyDir: {}
+
+      initContainers:
+        - name: buildpack-install
+          image: ghcr.io/traptitech/ns-builder:main
+          imagePullPolicy: Never
+          command:
+            - cp
+            - /app/ns
+            - /ns-bin
+          volumeMounts:
+            - mountPath: /ns-bin
+              name: ns-bin
+
+      containers:
+        - name: buildpack
+          image: paketobuildpacks/builder-jammy-full:latest
+          imagePullPolicy: Always
+          command:
+            - /ns-bin/ns
+            - buildpack-helper
+          args:
+            - --debug
+            - --loglevel=trace
+            - --config=/config.yaml
+          envFrom:
+            - configMapRef:
+                name: config-override
+          volumeMounts:
+            - name: ns-bin
+              mountPath: /ns-bin
+            - name: project
+              subPath: .local-dev/config/ns.yaml
+              mountPath: /config.yaml
+
+        - name: buildkitd
+          image: moby/buildkit:latest
+          imagePullPolicy: Always
+          args:
+            - --addr
+            - unix:///run/buildkit/buildkitd.sock
+          readinessProbe:
+            exec:
+              command:
+                - buildctl
+                - debug
+                - workers
+            initialDelaySeconds: 5
+            periodSeconds: 30
+          livenessProbe:
+            exec:
+              command:
+                - buildctl
+                - debug
+                - workers
+            initialDelaySeconds: 5
+            periodSeconds: 30
+          securityContext:
+            privileged: true
+          volumeMounts:
+            - name: socket
+              mountPath: /run/buildkit
+            - name: project
+              subPath: .local-dev/buildkitd/buildkitd.toml
+              mountPath: /etc/buildkit/buildkitd.toml
+
+        - name: builder
+          image: ghcr.io/traptitech/ns-builder:main
+          imagePullPolicy: Never
+          args:
+            - --debug
+            - --loglevel=debug
+            - --config=/config.yaml
+          envFrom:
+            - configMapRef:
+                name: config-override
+          volumeMounts:
+            - name: socket
+              mountPath: /run/buildkit
+            - name: project
+              subPath: .local-dev/config/ns.yaml
+              mountPath: /config.yaml
+            - name: project
+              subPath: .local-dev/keys
+              mountPath: /keys
+            - name: known-hosts
+              mountPath: /root/.ssh/known_hosts

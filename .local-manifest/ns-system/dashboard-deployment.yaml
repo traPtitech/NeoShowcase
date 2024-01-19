@@ -1,0 +1,30 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ns-dashboard
+
+spec:
+  replicas: 1
+  revisionHistoryLimit: 0
+  selector:
+    matchLabels:
+      app: ns-dashboard
+
+  template:
+    metadata:
+      labels:
+        app: ns-dashboard
+    spec:
+      enableServiceLinks: false
+      automountServiceAccountToken: false
+
+      containers:
+        - name: ns-dashboard
+          image: ghcr.io/traptitech/ns-dashboard:main
+          imagePullPolicy: Never
+          envFrom:
+            - configMapRef:
+                name: config-override
+          ports:
+            - name: http
+              containerPort: 80

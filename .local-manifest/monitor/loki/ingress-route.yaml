@@ -1,0 +1,20 @@
+apiVersion: traefik.io/v1alpha1
+kind: IngressRoute
+metadata:
+  name: loki
+
+spec:
+  entryPoints:
+    - web
+    - websecure
+  routes:
+    - kind: Rule
+      match: Host(`loki.local.trapti.tech`)
+      services:
+        - namespace: monitor
+          kind: Service
+          name: loki
+          port: http
+          scheme: http
+          strategy: RoundRobin
+          weight: 1

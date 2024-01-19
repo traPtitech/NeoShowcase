@@ -1,0 +1,87 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: ns-ssgen
+
+spec:
+  serviceName: ns-ssgen
+  podManagementPolicy: Parallel
+  replicas: 2
+  revisionHistoryLimit: 0
+  selector:
+    matchLabels:
+      app: ns-ssgen
+
+  volumeClaimTemplates:
+    - metadata:
+        name: artifacts
+      spec:
+        accessModes:
+          - ReadWriteOnce
+        resources:
+          requests:
+            storage: 1Gi
+
+  template:
+    metadata:
+      labels:
+        app: ns-ssgen
+    spec:
+      enableServiceLinks: false
+
+      volumes:
+        - name: project
+          hostPath:
+            path: /work
+        - name: artifacts
+          emptyDir: {}
+
+      containers:
+        - name: ns-ssgen
+          image: ghcr.io/traptitech/ns-ssgen:main
+          imagePullPolicy: Never
+          args:
+            - --debug
+            - --loglevel=trace
+            - --config=/config.yaml
+          envFrom:
+            - configMapRef:
+                name: config-override
+          ports:
+            - containerPort: 8081
+              name: probe
+          volumeMounts:
+            - name: project
+              subPath: .local-dev/config/ns.yaml
+              mountPath: /config.yaml
+            - name: project
+              subPath: .local-dev/local-storage
+              mountPath: /data
+            - name: artifacts
+              mountPath: /artifacts
+          startupProbe:
+            httpGet:
+              port: probe
+              path: /healthz
+            periodSeconds: 10
+            failureThreshold: 360
+          readinessProbe:
+            httpGet:
+              port: probe
+              path: /healthz
+            periodSeconds: 1
+            failureThreshold: 60
+          livenessProbe:
+            httpGet:
+              port: probe
+              path: /healthz
+
+        - name: caddy
+          image: caddy:2-alpine
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 80
+              name: http
+          volumeMounts:
+            - name: artifacts
+              mountPath: /artifacts

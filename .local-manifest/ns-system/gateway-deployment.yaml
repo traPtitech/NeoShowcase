@@ -1,0 +1,54 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ns-gateway
+
+spec:
+  replicas: 1
+  revisionHistoryLimit: 0
+  selector:
+    matchLabels:
+      app: ns-gateway
+
+  template:
+    metadata:
+      labels:
+        app: ns-gateway
+    spec:
+      enableServiceLinks: false
+      automountServiceAccountToken: false
+
+      volumes:
+        - name: project
+          hostPath:
+            path: /work
+        - name: known-hosts
+          hostPath:
+            path: /known_hosts
+
+      containers:
+        - name: ns-gateway
+          image: ghcr.io/traptitech/ns-gateway:main
+          imagePullPolicy: Never
+          args:
+            - --debug
+            - --loglevel=trace
+            - --config=/config.yaml
+          envFrom:
+            - configMapRef:
+                name: config-override
+          ports:
+            - name: http
+              containerPort: 8080
+          volumeMounts:
+            - name: project
+              subPath: .local-dev/config/ns.yaml
+              mountPath: /config.yaml
+            - name: project
+              subPath: .local-dev/local-storage
+              mountPath: /data
+            - name: project
+              subPath: .local-dev/keys
+              mountPath: /keys
+            - name: known-hosts
+              mountPath: /root/.ssh/known_hosts

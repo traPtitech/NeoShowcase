@@ -1,0 +1,38 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: registry-frontend
+
+spec:
+  replicas: 1
+  revisionHistoryLimit: 0
+  selector:
+    matchLabels:
+      app: registry-frontend
+
+  template:
+    metadata:
+      labels:
+        app: registry-frontend
+    spec:
+      enableServiceLinks: false
+      automountServiceAccountToken: false
+
+      containers:
+        - name: registry-frontend
+          image: joxit/docker-registry-ui:2
+          imagePullPolicy: Always
+          env:
+            - name: SINGLE_REGISTRY
+              value: "true"
+            - name: REGISTRY_TITLE
+              value: registry.local
+            - name: NGINX_PROXY_PASS_URL
+              value: http://registry
+            - name: SHOW_CONTENT_DIGEST
+              value: "true"
+            - name: DELETE_IMAGES
+              value: "true"
+          ports:
+            - containerPort: 80
+              name: http

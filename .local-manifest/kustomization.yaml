@@ -1,0 +1,9 @@
+resources:
+  - auth
+  - coredns-patch
+  - db
+  - monitor
+  - ns-apps
+  - ns-system
+  - registry
+  - traefik

@@ -1,0 +1,42 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: loki
+
+spec:
+  replicas: 1
+  serviceName: loki
+  selector:
+    matchLabels:
+      app: loki
+
+  template:
+    metadata:
+      labels:
+        app: loki
+    spec:
+      automountServiceAccountToken: true
+      enableServiceLinks: true
+
+      volumes:
+        - name: project
+          hostPath:
+            path: /work
+
+      containers:
+        - name: loki
+          image: grafana/loki:2.8.0
+          imagePullPolicy: IfNotPresent
+          args:
+            - -config.file=/etc/loki/loki.yaml
+          ports:
+            - name: http
+              containerPort: 3100
+          volumeMounts:
+            - name: project
+              subPath: .local-dev/loki
+              mountPath: /var/lib/loki
+            - name: project
+              subPath: .local-dev/config/loki.yaml
+              mountPath: /etc/loki/loki.yaml
+              readOnly: true
