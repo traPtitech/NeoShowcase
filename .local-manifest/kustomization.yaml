@@ -1,5 +1,6 @@
 resources:
   - auth
+  - coredns-patch
   - db
   - monitor
   - ns-apps

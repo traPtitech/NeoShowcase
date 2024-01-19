@@ -1,6 +1,6 @@
 .DEFAULT_GOAL := help
 CLUSTER_NAME = ns-dev
-PROJECT_ROOT = $(shell dirname $(shell dirname $(shell pwd)))
+PROJECT_ROOT = $(shell dirname $(shell pwd))
 
 test:
 	echo $(PROJECT_ROOT)

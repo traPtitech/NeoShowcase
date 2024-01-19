@@ -37,7 +37,7 @@ Everything should automatically start after running `make up`.
 
 ### k3s
 
-Manifest files and instructions for debugging k8s backend implementation using k3s are available at [.local-dev/manifest](../.local-dev/manifest).
+Manifest files and instructions for debugging k8s backend implementation using k3s are available at [.local-manifest](../.local-manifest).
 
 ## Testing
 

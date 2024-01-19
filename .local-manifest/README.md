@@ -25,7 +25,7 @@ kubelet-arg:
    - Get admin password from ` kubectl get secret -n argocd argocd-initial-admin-secret -o jsonpath="{.data.password}" | base64 --decode && echo`
 4. Add initial `applications` application
    - Add known hosts and connect repository
-   - Add application (path: `.local-dev/manifest/applications`)
+   - Add application (path: `.local-manifest/applications`)
 5. Build and import images with `make build && make k3s-import` at root of the repository
 6. Sync other applications (and optionally, change their target revision)
    - `traefik`, `argocd`, then other applications
