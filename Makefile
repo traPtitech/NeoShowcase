@@ -17,6 +17,8 @@ EVANS_CMD := evans
 help: ## Display this help screen
 	@grep -E '^[a-zA-Z0-9_-]+:.*?## .*$$' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-20s\033[0m %s\n", $$1, $$2}'
 
+# ---- Init commands ----
+
 .PHONY: init-k3d
 init-k3d:
 	curl -s https://raw.githubusercontent.com/k3d-io/k3d/main/install.sh | bash
@@ -32,97 +34,119 @@ init-protoc-tools:
 	npm i -g @connectrpc/protoc-gen-connect-es @bufbuild/protoc-gen-es
 
 .PHONY: init
-init: init-k3d init-protoc init-protoc-tools ## Install commands
+init: init-k3d init-protoc init-protoc-tools ## Install / update required tools
 	go mod download
 	go install github.com/sqldef/sqldef/cmd/mysqldef@latest
 	go install github.com/ktr0731/evans@latest
 
-.PHONY: gogen
-gogen: ## Generate go sources
-	go generate ./...
-
-.PHONY: protoc
-protoc: ## Generate proto sources
-	protoc $(PROTOC_OPTS) $(PROTOC_SOURCES)
-	protoc $(PROTOC_OPTS_CLIENT) $(PROTOC_SOURCES_CLIENT)
-
-.PHONY: db-gen-docs
-db-gen-docs: ## Generate db schema docs
-	@$(TBLS_CMD) doc --rm-dist
-
-.PHONY: db-diff-docs
-db-diff-docs: ## Calculate diff with current db schema docs
-	@$(TBLS_CMD) diff
-
-.PHONY: db-lint
-db-lint: ## Lint current db schema docs
-	@$(TBLS_CMD) lint
-
-.PHONY: golangci-lint
-golangci-lint: ## Lint go sources
-	@golangci-lint run
-
-.PHONY: build
-build: ## Build containers
-	@docker build -t ghcr.io/traptitech/ns-dashboard:main dashboard
-	@docker compose build
+# ---- Ensure helpers ----
 
 .PHONY: ensure-network
-ensure-network: ## Ensure apps network
+ensure-network:
 	@docker network create neoshowcase_apps || return 0
 
 .PHONY: ensure-mounts
-ensure-mounts: ## Ensure local dev mounts
+ensure-mounts:
 	@mkdir -p .local-dev/grafana
 	@sudo chown -R 472:472 .local-dev/grafana
 	@mkdir -p .local-dev/loki
 	@sudo chown -R 10001:10001 .local-dev/loki
 
+.PHONY: ensure-db
+ensure-db: ensure-network
+	docker compose up -d --wait mysql mongo
+
+# ---- Code gen commands ----
+
+.PHONY: migrate
+migrate: ensure-db
+	@$(SQLDEF_CMD) < ./migrations/schema.sql
+
+.PHONY: gen-go
+gen-go: ensure-db
+	go generate ./...
+
+.PHONY: gen-proto
+gen-proto:
+	protoc $(PROTOC_OPTS) $(PROTOC_SOURCES)
+	protoc $(PROTOC_OPTS_CLIENT) $(PROTOC_SOURCES_CLIENT)
+
+.PHONY: gen-db-docs
+gen-db-docs: ensure-db
+	@$(TBLS_CMD) doc --rm-dist
+
+.PHONY: gen
+gen: migrate gen-go gen-proto gen-db-docs ## Regenerate wire, sqlboiler, protobuf, and db docs
+
+# ---- Test commands ----
+
+.PHONY: test-up-docker
+test-up-docker:
+	@docker container inspect ns-test-dind > /dev/null \
+	|| docker run -it -d --privileged --name ns-test-dind -p 5555:2376 -e DOCKER_TLS_CERTDIR=/certs -v $$PWD/.local-dev/dind:/certs docker:dind
+
+.PHONY: test-down-docker
+test-down-docker:
+	docker rm -vf ns-test-dind
+
+.PHONY: test-up-k8s
+test-up-k8s:
+	@k3d cluster list ns-test > /dev/null \
+	|| k3d cluster create ns-test --no-lb --k3s-arg "--disable=traefik,servicelb,metrics-server" \
+	&& kubectl apply -f https://raw.githubusercontent.com/traefik/traefik/v2.10/docs/content/reference/dynamic-configuration/kubernetes-crd-definition-v1.yml
+
+.PHONY: test-down-k8s
+test-down-k8s:
+	k3d cluster delete ns-test
+
+.PHONY: test-run-docker
+test-run-docker:
+	ENABLE_DOCKER_TESTS=true DOCKER_HOST=tcp://localhost:5555 DOCKER_CERT_PATH=$$PWD/.local-dev/dind/client DOCKER_TLS_VERIFY=true go test -v ./pkg/infrastructure/backend/dockerimpl
+
+.PHONY: test-run-k8s
+test-run-k8s:
+	ENABLE_K8S_TESTS=true K8S_TESTS_CLUSTER_CONTEXT=k3d-ns-test go test -v ./pkg/infrastructure/backend/k8simpl
+
+.PHONY: test-run
+test-run:
+	ENABLE_DOCKER_TESTS=true \
+	DOCKER_HOST=tcp://localhost:5555 \
+	DOCKER_CERT_PATH=$$PWD/.local-dev/dind/client \
+	DOCKER_TLS_VERIFY=true \
+	ENABLE_K8S_TESTS=true \
+	K8S_TESTS_CLUSTER_CONTEXT=k3d-ns-test \
+	go test -shuffle=on -v ./...
+
+.PHONY: test-docker
+test-docker: ensure-db test-up-docker test-run-docker test-down-docker
+
+.PHONY: test-k8s
+test-k8s: ensure-db test-up-k8s test-run-k8s test-down-k8s
+
+.PHONY: test
+test: ensure-db test-up-docker test-up-k8s test-run test-k8s test-down-docker ## Run all tests
+
+# ---- Debug commands ----
+
+.PHONY: debug-gateway
+debug-gateway: ## Connect to gateway service
+	@$(EVANS_CMD) --path ./api/proto --proto neoshowcase/protobuf/gateway.proto --host ns.local.trapti.tech -p 80 repl
+
+.PHONY: debug-controller
+debug-controller: ## Connect to controller service
+	@$(EVANS_CMD) --path ./api/proto --proto neoshowcase/protobuf/controller.proto --host localhost -p 10000 repl
+
+# ---- All in one commands ----
+
+.PHONY: build
+build:
+	@docker build -t ghcr.io/traptitech/ns-dashboard:main dashboard
+	@docker compose build
+
 .PHONY: up
-up: ensure-network ensure-mounts ## Setup development environment
+up: ensure-network ensure-mounts ## Start development environment
 	@docker compose up -d --build
 
 .PHONY: down
 down: ## Tear down development environment
 	@docker compose down -v
-
-.PHONY: migrate
-migrate: ## Apply migration to development environment
-	@$(SQLDEF_CMD) < ./migrations/schema.sql
-
-.PHONY: ns-evans
-ns-evans: ## Connect to ns api server service
-	@$(EVANS_CMD) --path ./api/proto --proto neoshowcase/protobuf/gateway.proto --host ns.local.trapti.tech -p 80 repl
-
-.PHONY: ns-controller-evans
-ns-controller-evans: ## Connect to ns controller service
-	@$(EVANS_CMD) --path ./api/proto --proto neoshowcase/protobuf/controller.proto --host localhost -p 10000 repl
-
-.PHONY: db-update
-db-update: migrate gogen db-gen-docs ## Apply migration, generate sqlboiler sources, and generate db schema docs
-
-.PHONY: dind-up
-dind-up: ## Setup docker-in-docker container
-	docker run -it -d --privileged --name ns-test-dind -p 5555:2376 -e DOCKER_TLS_CERTDIR=/certs -v $$PWD/.local-dev/dind:/certs docker:dind
-
-.PHONY: dind-down
-dind-down: ## Tear down docker-in-docker container
-	docker rm -vf ns-test-dind
-
-.PHONY: docker-test
-docker-test: ## Run docker tests
-	@docker container inspect ns-test-dind > /dev/null || make dind-up
-	ENABLE_DOCKER_TESTS=true DOCKER_HOST=tcp://localhost:5555 DOCKER_CERT_PATH=$$PWD/.local-dev/dind/client DOCKER_TLS_VERIFY=true go test -v ./pkg/infrastructure/backend/dockerimpl
-
-.PHONY: k3d-up
-k3d-up: ## Setup k3s environment
-	k3d cluster create ns-test --no-lb --k3s-arg "--disable=traefik,servicelb,metrics-server"
-	kubectl apply -f https://raw.githubusercontent.com/traefik/traefik/v2.10/docs/content/reference/dynamic-configuration/kubernetes-crd-definition-v1.yml
-
-.PHONY: k3d-down
-k3d-down: ## Tear down k3s environment
-	k3d cluster delete ns-test
-
-.PHONY: k8s-test
-k8s-test: ## Run k8s tests
-	ENABLE_K8S_TESTS=true K8S_TESTS_CLUSTER_CONTEXT=k3d-ns-test go test -v ./pkg/infrastructure/backend/k8simpl

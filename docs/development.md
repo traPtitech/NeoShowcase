@@ -24,20 +24,34 @@ Accessing wildcard domains when running under WSL environment may require config
 
 ## Environments
 
-### docker (main dev environment)
+Recommended dev environment is docker compose.
+k3d environment is mainly for testing k8s features.
 
-- `make`: Display Makefile help
-- `make up`: Spin up local docker development environment
-- `make down`: Tear down local docker development environment
+### docker backend (docker compose)
+
+You will need `/Makefile` and `/compose.yaml` at the project root.
+
+1. `make init`: Install / update development tools
+2. `make up`: Spin up development environment
+3. `make down`: Tear down development environment
 
 Everything should automatically start after running `make up`.
 
 - Dashboard: http://ns.local.trapti.tech/
-- Gateway debug: `make ns-evans`
+- For more, type `make` to display all commands help
 
-### k3s
+### k8s-backend (k3d)
 
-Manifest files and instructions for debugging k8s backend implementation using k3s are available at [.local-manifest](../.local-manifest).
+You will need manifest files in `/.local-manifest` directory.
+
+1. `make init` (at project root): Install / update development tools
+2. `make up` (at `/.local-manifest`): Spin up development environment
+3. `make down` (at `/.local-manifest`): Tear down development environment
+   - The use of k3d (k3s in docker) allows ease cleanup.
+
+Everything should automatically start after running `make up`.
+
+For more, see [.local-manifest/README.md](../.local-manifest/README.md).
 
 ## Testing
 

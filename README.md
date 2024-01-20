@@ -10,7 +10,9 @@ This application is a successor to [kaz/showcase](https://github.com/kaz/showcas
 
 ## Development
 
-See [development.md](./docs/development.md).
+Quick start: run `make init && make up`.
+
+See [development.md](./docs/development.md) for more.
 
 ## Architecture
 

@@ -2,32 +2,50 @@
 
 ## Overview
 
-NeoShowcase is a PaaS (Platform as a Service) that traP members (users) can use.
+NeoShowcase is a PaaS (**Platform as a Service**) that traP members (users) can use.
+
 Here, PaaS refers to a service that runs applications on behalf of users just with the source code of the application and a minimal configuration.
 Users manage the source code of their applications on Git and push it to services like GitHub or Gitea.
 NeoShowcase automatically detects updates and builds applications according to user settings.
 
-One of the major design principles of NeoShowcase is the "reconciliation loop" (also known as the reconciliation pattern, synchronization, eventual consistency, etc.).
-This is heavily influenced by the processing method of Kubernetes controllers (in fact, NeoShowcase can also be considered a Kubernetes controller).
-In contrast, there is an "event-driven" design, where internal processes are triggered by user actions or external events, and perform some processing which may fire more events.
-However, event-driven designs can become complex when events are lost during communication or when processes triggered by events fail or crash.
-In contrast, the "reconciliation loop" periodically monitors the system's state and performs "reconciliation" only when it is not in the desired state.
+## The Reconciliation Design
 
-While the event-driven approach tends to have slightly higher computational overhead, it eliminates the need for complex retry logic.
-Each process only needs to bring its responsible state to the desired state, making the logic simpler.
+One major design principle of NeoShowcase is **reconciliation loop** (also known as reconciliation pattern, synchronization, eventual consistency, etc.).
+This is heavily influenced by the processing method of Kubernetes controllers (in fact, "ns-controller" component is a kind of Kubernetes controller).
 
-Each component has its own "reconciliation loop."
+Let's compare this to event(-only)-driven design, where internal processes are *only* triggered by user actions or external events, and perform some processing which may fire more events.
+When events are lost during communication or when processing fails, we need rigorous error handling and retry logic.
 
-- controller/repository_fetcher: Every 3 minutes or when an event occurs, it retrieves a list of repositories and applications from the database, fetches the latest commit hash corresponding to the git ref specified by each application, and stores that value in the database.
-   - This is influenced by the way ArgoCD updates. Argo CD polls Git repositories every three minutes to detect changes to the manifests. https://argo-cd.readthedocs.io/en/stable/operator-manual/webhook/
-- controller/continuous_deployment/build_registerer: Every 3 minutes or when an event occurs, it lists applications that have not been built yet (no build information queued in the database) and saves the necessary build information in the database as "queued."
-- controller/continuous_deployment/build_starter: Every 3 minutes or when an event occurs, it instructs connected builders to process the next queued build.
-- controller/continuous_deployment/build_crash_detector: Every 1 minute, it detects whether the builder crashed or became unresponsive and records the corresponding build as a failure.
-- controller/continuous_deployment/deployments_synchronizer: Every 3 minutes or when an event occurs, it checks whether the latest build has completed for each application whose desired state is "running" and, if so, requests synchronization with backend and ssgen.
-- controller/backend: It connects to Docker or Kubernetes and manages the actual containers and network. It receives a list of applications whose desired state is "running" and ensures that the actual system state matches it by starting/terminating containers and configuring routing. It also handles routing to the static file server configured by ss-gen.
-- ss-gen: Every 3 minutes or when an event occurs, it downloads static site files from storage and arranges them for delivery.
+Whereas the reconciliation loop design periodically monitors the system's state and performs **reconciliation** which tries to bring the current state to the desired state.
 
-In this way, each component monitors only the state it is responsible for and focuses on bringing it to the desired state, resulting in a system that is robust against failures.
+While the reconciliation loop design tends to have slightly higher computational overhead, it doesn't need complex retry logic.
+
+### Examples
+
+Each component has its own reconciliation loop.
+Each component starts processing on a timer or when receiving an event from another component.
+
+- controller/repository_fetcher
+  - Updates applications' build target commit hashes.
+    - Retrieves a list of repositories and applications from the database, fetches the latest commit hash corresponding to the git ref specified by each application, and stores that value in the database.
+    - This is influenced by the way ArgoCD updates. Argo CD polls Git repositories every three minutes to detect changes to the manifests. https://argo-cd.readthedocs.io/en/stable/operator-manual/webhook/
+- controller/continuous_deployment/build_registerer
+  - Registers builds as "queued."
+    - Lists applications that have not been built yet (no build information queued in the database) and saves necessary build information.
+- controller/continuous_deployment/build_starter
+  - Schedules builds to connected idle builders.
+- controller/continuous_deployment/build_crash_detector
+  - Detects builder crash and marks corresponding build as failed.
+- controller/continuous_deployment/deployments_synchronizer
+  - Updates "current_build" field in application to the latest success build.
+- controller/backend
+  - Watches "current_build" field in application, and configures actual deployments and routing.
+    - Connects to Docker or Kubernetes and configures the actual containers and network. It retrieves a list of applications whose desired state is "running" and ensures that the actual system state matches it by starting/terminating containers and configuring routing. It also handles routing to the static file server configured by ss-gen.
+- ss-gen (static site generator)
+  - Watches "current_build" field in application, and downloads built files in order to serve them.
+
+Each component monitors only the state it is responsible for and focuses on bringing it to the desired state.
+This results in a system that is robust against failures.
 
 ## Components
 
@@ -35,7 +53,7 @@ In this way, each component monitors only the state it is responsible for and fo
 
 https://github.com/traPtitech/traefik-forward-auth
 
-This component performs user authentication using the forward auth middleware of the traefik proxy.
+Performs user authentication using the forward auth middleware of the traefik proxy.
 
 It is a simple HTTP server that performs the following:
 
@@ -48,20 +66,22 @@ For detailed behavior, please refer to the README.
 
 ### Gateway (ns-gateway)
 
-This is the part where users operate directly from the front-end (dashboard).
-It uses [Connect](https://connect.build/) to perform typed communication while using existing proxy authentication on HTTP/1.1.
+Handles HTTP requests from dashboard.
 
-Normally, "API Gateways" often refer to components that aggregate multiple microservices, NeoShowcase's Gateway handles all API operations by itself since NeoShowcase's API is not that complex.
-It reads and writes various necessary information from the Controller, DB, and storage.
-It also triggers events to the Controller, and even if these events were to be missed, the system would automatically recover to its desired state through the Controller's internal reconciliation loop.
+- Gateway uses [Connect](https://connect.build/) to perform typed communication on HTTP/1.1.
+  - This allows utilization of wide variety of existing proxy authentication.
+- Reads and writes various necessary information from the Controller, DB, and storage.
+- Also triggers events to the Controller, and even if these events were to be missed, the system would automatically recover to its desired state through the Controller's internal reconciliation loop.
+
+While "API Gateways" normally refer to components that aggregate multiple microservices, NeoShowcase's "Gateway" handles all API operations by itself since NeoShowcase's API is not that complex.
 
 ### Controller (ns-controller)
 
-Core of NeoShowcase
+Core of NeoShowcase: update build states, configures deployments and routing.
 
 It monitors the state in the database, and each subcomponent brings it to the desired state and eventually deploys the application.
 
-For the functionality of important subcomponents, please refer to the description above.
+For functionality of important subcomponents, please refer to "The Reconciliation Design" part above.
 
 ### Builder (ns-builder)
 
@@ -80,7 +100,7 @@ It performs builds according to each build method and pushes the generated image
 
 ### Static-Site Generator (ns-ssgen)
 
-It places the build artifacts of static sites and configures them for delivery.
+Places build artifacts and serves static sites.
 
 It can be extended to configure settings for static delivery processes like Apache HTTPD, Nginx, Caddy, etc.
 
@@ -97,7 +117,8 @@ However, since NeoShowcase's gateway works fine with a short controller downtime
 
 ## Compatibility with Various Backends
 
-NeoShowcase is designed to be cloud-agnostic, based on traefik. While it's theoretically possible to adapt it to various cloud's Ingress Controllers, implementing it extensively can become challenging.
+NeoShowcase is designed to be cloud-agnostic, based on traefik.
+While it's theoretically possible to adapt it to various cloud's Ingress Controllers, implementing it may very well be challenging.
 
 |           | Docker(traefik)         | K8s(traefik)                          | K8s(Cloud, not implemented)     |
 |-----------|-------------------------|---------------------------------------|----------------|
