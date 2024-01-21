@@ -55,23 +55,6 @@ For more, see [.local-manifest/README.md](../.local-manifest/README.md).
 
 ## Testing
 
-### dind for docker test
+Run tests with `make test`.
 
-dind (Docker in Docker) allows separation of docker environment from the host.
-
-Run docker backend implementation tests as follows:
-
-1. `make dind-up`
-2. `make docker-test`
-3. `make dind-down`
-
-### k3d for k8s test
-
-k3d (k3s in docker) allows separation of k3s environment from the host.
-k3s nodes will be available as docker containers.
-
-Run k8s backend implementation tests as follows:
-
-1. `make k3d-up`
-2. `make k8s-test`
-3. `make k3d-down`
+See [Makefile](../Makefile) for more.
