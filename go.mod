@@ -9,7 +9,7 @@ require (
 	connectrpc.com/connect v1.14.0
 	github.com/aws/aws-sdk-go v1.49.13
 	github.com/cert-manager/cert-manager v1.13.3
-	github.com/docker/cli v24.0.7+incompatible
+	github.com/docker/cli v25.0.2+incompatible
 	github.com/docker/docker v24.0.0-rc.2.0.20230905130451-032797ea4bcb+incompatible // v25 master@032797ea4bcb (2023-09-05), required by github.com/moby/buildkit@v0.12.3
 	github.com/docker/go-connections v0.4.0
 	github.com/friendsofgo/errors v0.9.2
