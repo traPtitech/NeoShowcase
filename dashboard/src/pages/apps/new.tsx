@@ -188,11 +188,14 @@ const RepositoryStep: Component<{
     return repos()?.repositories.filter((r) => p.includes(repositoryURLToProvider(r.url)))
   })
   const repoWithApps = createMemo(() => {
-    const appsMap = apps()?.applications.reduce((acc, app) => {
-      if (!acc[app.repositoryId]) acc[app.repositoryId] = 0
-      acc[app.repositoryId]++
-      return acc
-    }, {} as { [id: Repository['id']]: number })
+    const appsMap = apps()?.applications.reduce(
+      (acc, app) => {
+        if (!acc[app.repositoryId]) acc[app.repositoryId] = 0
+        acc[app.repositoryId]++
+        return acc
+      },
+      {} as { [id: Repository['id']]: number },
+    )
 
     return (
       filteredReposByProvider()?.map(
