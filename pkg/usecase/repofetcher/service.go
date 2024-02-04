@@ -2,7 +2,6 @@ package repofetcher
 
 import (
 	"context"
-	"math"
 	"sync"
 	"time"
 
@@ -20,19 +19,19 @@ import (
 
 const (
 	fetcherConcurrency = 10
-	fetcherInterval    = 5 * time.Minute
+	fetcherInterval    = 3 * time.Minute
 )
 
 // fetchInterval calculates the interval the repository should be fetched in, given the last activity time.
 func fetchInterval(now time.Time, updatedAt time.Time) int {
-	// note: to reach maximum interval of 1 day, 288 days needs to be elapsed from the last update
-	const maxInterval = int(24 * time.Hour / fetcherInterval)
-	epochsElapsed := float64(now.Sub(updatedAt)) / float64(fetcherInterval)
-	if epochsElapsed < 0 {
-		epochsElapsed = 0
-	}
-	interval := int(math.Ceil(math.Sqrt(epochsElapsed)))
-	return lo.Clamp(interval, 1, maxInterval)
+	const intervalIncreasePeriod = 24 * time.Hour
+	const maxInterval = 24 * time.Hour
+	const maxPeriods = maxInterval / fetcherInterval
+
+	fullPeriodsElapsed := int(now.Sub(updatedAt)) / int(intervalIncreasePeriod)
+	fullPeriodsElapsed = max(fullPeriodsElapsed, 0)
+
+	return min(fullPeriodsElapsed+1, int(maxPeriods))
 }
 
 type Service interface {
