@@ -366,7 +366,7 @@ export const WebsiteSetting = (props: WebsiteSettingProps) => {
             </Show>
           </FormItem>
           <Field of={props.formStore} name={'website.authentication'} type="number">
-            {(field, fieldProps) => (
+            {(field) => (
               <RadioGroup<`${AuthenticationType}`>
                 label="部員認証"
                 info={{
@@ -387,7 +387,6 @@ export const WebsiteSetting = (props: WebsiteSettingProps) => {
                   },
                   disabled: getValue(props.formStore, 'website.authAvailable') && props.hasPermission,
                 }}
-                {...fieldProps}
                 options={authenticationTypeOptions}
                 value={`${field.value ?? AuthenticationType.OFF}`}
                 setValue={(value) => {
