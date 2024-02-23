@@ -13,6 +13,7 @@ import (
 	"github.com/traPtitech/neoshowcase/pkg/domain"
 	"github.com/traPtitech/neoshowcase/pkg/infrastructure/grpc/pb"
 	"github.com/traPtitech/neoshowcase/pkg/infrastructure/grpc/pbconvert"
+	"github.com/traPtitech/neoshowcase/pkg/util/cli"
 )
 
 func (s *builderService) startBuild(req *domain.StartBuildRequest) error {
@@ -147,6 +148,9 @@ func (s *builderService) process(ctx context.Context, st *state) domain.BuildSta
 	ctx, cancel := context.WithCancel(ctx)
 	defer cancel()
 	go s.buildPingLoop(ctx, st.build.ID)
+
+	version, revision := cli.GetVersion()
+	st.WriteLog(fmt.Sprintf("[ns-builder] Version %v (%v)", version, revision))
 
 	steps, err := s.buildSteps(ctx, st)
 	if err != nil {
