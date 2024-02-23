@@ -19,6 +19,10 @@ var (
 	revision = "UNKNOWN"
 )
 
+func init() {
+	cli.SetVersion(version, revision)
+}
+
 var (
 	configFilePath string
 	config         Config

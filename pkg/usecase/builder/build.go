@@ -13,6 +13,7 @@ import (
 	"github.com/traPtitech/neoshowcase/pkg/domain"
 	"github.com/traPtitech/neoshowcase/pkg/infrastructure/grpc/pb"
 	"github.com/traPtitech/neoshowcase/pkg/infrastructure/grpc/pbconvert"
+	"github.com/traPtitech/neoshowcase/pkg/util/cli"
 )
 
 func (s *builderService) startBuild(req *domain.StartBuildRequest) error {
@@ -148,6 +149,9 @@ func (s *builderService) process(ctx context.Context, st *state) domain.BuildSta
 	defer cancel()
 	go s.buildPingLoop(ctx, st.build.ID)
 
+	version, revision := cli.GetVersion()
+	st.WriteLog(fmt.Sprintf("[ns-builder] Version %v (%v)", version, revision))
+
 	steps, err := s.buildSteps(ctx, st)
 	if err != nil {
 		log.Errorf("calculating build steps: %+v", err)
@@ -159,10 +163,14 @@ func (s *builderService) process(ctx context.Context, st *state) domain.BuildSta
 		st.WriteLog(fmt.Sprintf("[ns-builder] ==> (%d/%d) %s", i+1, len(steps), step.desc))
 		start := time.Now()
 		err := step.fn()
+		if cerr := ctx.Err(); cerr != nil {
+			st.WriteLog(fmt.Sprintf("[ns-builder] Build cancelled by user: %v", cerr))
+			return domain.BuildStatusCanceled
+		}
 		if errors.Is(err, context.Canceled) ||
 			errors.Is(err, context.DeadlineExceeded) ||
 			errors.Is(err, gstatus.FromContextError(context.Canceled).Err()) {
-			st.WriteLog("[ns-builder] Build cancelled.")
+			st.WriteLog(fmt.Sprintf("[ns-builder] Build cancelled: %v", err))
 			return domain.BuildStatusCanceled
 		}
 		if err != nil {
