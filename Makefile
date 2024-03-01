@@ -1,5 +1,5 @@
-PROTOC_VERSION := 25.1
-TBLS_VERSION := 1.70.2
+PROTOC_VERSION := 25.3
+TBLS_VERSION := 1.73.2
 
 GO_REPO_ROOT_PACKAGE := "github.com/traPtitech/neoshowcase"
 PROTOC_OPTS := -I ./api/proto --go_out=. --go_opt=module=$(GO_REPO_ROOT_PACKAGE) --connect-go_out=. --connect-go_opt=module=$(GO_REPO_ROOT_PACKAGE)
