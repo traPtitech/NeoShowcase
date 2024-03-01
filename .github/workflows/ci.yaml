@@ -58,6 +58,7 @@ jobs:
     env:
       ENABLE_DB_TESTS: "true"
       ENABLE_DOCKER_TESTS: "true"
+      DOCKER_API_VERSION: "1.43"
     services:
       mysql:
         image: mysql:8
