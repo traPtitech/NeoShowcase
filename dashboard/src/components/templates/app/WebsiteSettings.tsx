@@ -372,6 +372,10 @@ export const WebsiteSetting = (props: WebsiteSettingProps) => {
             name={'website.authentication'}
             // @ts-expect-error
             type="string"
+            transform={(v) => {
+              if (v === undefined) return AuthenticationType.OFF
+              return authenticationTypeOptionsMap[v]
+            }}
           >
             {(field, fieldProps) => (
               <RadioGroup<`${AuthenticationType}`>
@@ -397,9 +401,6 @@ export const WebsiteSetting = (props: WebsiteSettingProps) => {
                 }}
                 options={authenticationTypeOptions}
                 value={`${field.value ?? AuthenticationType.OFF}`}
-                setValue={(value) => {
-                  setValue(props.formStore, 'website.authentication', authenticationTypeOptionsMap[value])
-                }}
                 disabled={!getValue(props.formStore, 'website.authAvailable')}
                 readOnly={!props.hasPermission}
               />
