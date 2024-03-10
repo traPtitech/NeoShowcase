@@ -365,8 +365,15 @@ export const WebsiteSetting = (props: WebsiteSettingProps) => {
               </WarningsContainer>
             </Show>
           </FormItem>
-          <Field of={props.formStore} name={'website.authentication'} type="number">
-            {(field) => (
+          {/* website.authenticationがnumberであるため型としてはtype="number"の指定が正しいが、numberを指定すると入力時のonInput内でinput.valueAsNumberが使用される。すると、RadioGroup内で使用されているinput要素はtype="number"等が指定されていない(kobalteのRadioGroupではもともと文字列のみが扱える)ため、valueAsNumberでの取得結果がNaNになってしまい正しくsetValueできない。そのためtype="string"を指定してinput.valueが使用されるようにしています */}
+          {/* see: https://github.com/traPtitech/NeoShowcase/pull/878#issuecomment-1953994009 */}
+          <Field
+            of={props.formStore}
+            name={'website.authentication'}
+            // @ts-expect-error
+            type="string"
+          >
+            {(field, fieldProps) => (
               <RadioGroup<`${AuthenticationType}`>
                 label="部員認証"
                 info={{
@@ -381,6 +388,7 @@ export const WebsiteSetting = (props: WebsiteSettingProps) => {
                     ),
                   },
                 }}
+                {...fieldProps}
                 tooltip={{
                   props: {
                     content: `${getValue(props.formStore, 'website.domain')}では部員認証が使用できません`,
