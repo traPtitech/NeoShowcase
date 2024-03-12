@@ -49,6 +49,10 @@ This results in a system that is robust against failures.
 
 ## Components
 
+![](./architecture.png)
+
+(When editing the image above, use `architecture.drawio` file in this directory)
+
 ### traefik-forward-auth
 
 https://github.com/traPtitech/traefik-forward-auth
