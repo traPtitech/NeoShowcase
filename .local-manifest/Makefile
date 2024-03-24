@@ -26,7 +26,7 @@ ensure-context:
 
 .PHONY: import
 import: ensure-context ## Import ns images into the cluster
-	sh -c 'cd ../ && make build'
+	sh -c 'cd ../ && make build-dashboard && make build'
 	k3d image import --cluster $(CLUSTER_NAME) ghcr.io/traptitech/ns-dashboard:main
 	k3d image import --cluster $(CLUSTER_NAME) ghcr.io/traptitech/ns-auth-dev:main
 	k3d image import --cluster $(CLUSTER_NAME) ghcr.io/traptitech/ns-builder:main

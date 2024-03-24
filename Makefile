@@ -11,6 +11,9 @@ TBLS_CMD := docker run --rm --net=host -v $$(pwd):/work --workdir /work -u $$(id
 SQLDEF_CMD := APP_VERSION=local APP_REVISION=makefile mysqldef --port=5004 --user=root --password=password neoshowcase
 EVANS_CMD := evans
 
+APP_VERSION ?= dev
+APP_REVISION ?= local
+
 .DEFAULT_GOAL := help
 
 .PHONY: help
@@ -138,14 +141,17 @@ debug-controller: ## Connect to controller service
 
 # ---- All in one commands ----
 
+.PHONY: build-dashboard
+build-dashboard:
+	@docker build -t ghcr.io/traptitech/ns-dashboard:main dashboard
+
 .PHONY: build
 build:
-	@docker build -t ghcr.io/traptitech/ns-dashboard:main dashboard
-	@docker compose build
+	@docker compose build --build-arg APP_VERSION=$(APP_VERSION) --build-arg APP_REVISION=$(APP_REVISION)
 
 .PHONY: up
-up: ensure-network ensure-mounts ## Start development environment
-	@docker compose up -d --build
+up: ensure-network ensure-mounts build ## Start development environment
+	@docker compose up -d
 
 .PHONY: down
 down: ## Tear down development environment

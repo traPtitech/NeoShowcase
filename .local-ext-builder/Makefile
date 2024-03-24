@@ -15,7 +15,7 @@ ensure-context:
 
 .PHONY: import
 import: ensure-context ## Import ns-builder image into the cluster
-	sh -c 'cd ../ && make build'
+	sh -c 'cd ../ && APP_VERSION=dev APP_REVISION=local-ext-builder make build'
 	k3d image import --cluster $(CLUSTER_NAME) ghcr.io/traptitech/ns-builder:main
 
 .PHONY: apply
@@ -42,8 +42,8 @@ k3d-down: ## Spin down k3d cluster
 
 # --- all in one commands ---
 
-.PHONY: up
+.PHONY: up ## All in one up
 up: k3d-up import apply events
 
-.PHONY: down
+.PHONY: down ## All in one down
 down: k3d-down
