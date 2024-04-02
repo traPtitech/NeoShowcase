@@ -29,6 +29,11 @@ const (
 
 func withBuildkitProgress(ctx context.Context, logger io.Writer, buildFn func(ctx context.Context, ch chan *buildkit.SolveStatus) error) error {
 	ch := make(chan *buildkit.SolveStatus)
+	disp, err := progressui.NewDisplay(logger, progressui.PlainMode)
+	if err != nil {
+		return err
+	}
+
 	eg, ctx := errgroup.WithContext(ctx)
 	eg.Go(func() error {
 		return buildFn(ctx, ch)
@@ -36,10 +41,11 @@ func withBuildkitProgress(ctx context.Context, logger io.Writer, buildFn func(ct
 	eg.Go(func() error {
 		// TODO: VertexWarningを使う (LLBのどのvertexに問題があったか)
 		// NOTE: https://github.com/moby/buildkit/pull/1721#issuecomment-703937866
-		// DisplaySolveStatus's context should not be cancelled, in order to receive 'cancelled' events from buildkit API call.
-		_, err := progressui.DisplaySolveStatus(context.WithoutCancel(ctx), nil, logger, ch)
+		// progress-ui context should not be cancelled, in order to receive 'cancelled' events from buildkit API call.
+		_, err := disp.UpdateFrom(context.WithoutCancel(ctx), ch)
 		return err
 	})
+
 	return eg.Wait()
 }
 
@@ -91,7 +97,7 @@ func (s *builderService) authSessions() []session.Attachable {
 				Password: s.imageConfig.Registry.Password,
 			},
 		},
-	})}
+	}, nil)}
 }
 
 func (s *builderService) solveDockerfile(
