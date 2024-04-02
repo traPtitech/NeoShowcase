@@ -19,8 +19,8 @@
   "license": "MIT",
   "devDependencies": {
     "@biomejs/biome": "1.6.3",
-    "@macaron-css/core": "patch:@macaron-css/core@npm%3A1.2.0#~/.yarn/patches/@macaron-css-core-npm-1.2.0-19f0989ae4.patch",
-    "@macaron-css/solid": "patch:@macaron-css/solid@npm%3A1.4.1#~/.yarn/patches/@macaron-css-solid-npm-1.4.1-4c485ac21e.patch",
+    "@macaron-css/core": "1.5.1",
+    "@macaron-css/solid": "1.5.1",
     "@macaron-css/vite": "1.5.1",
     "@tanstack/virtual-core": "3.2.0",
     "@types/node": "20.12.2",
