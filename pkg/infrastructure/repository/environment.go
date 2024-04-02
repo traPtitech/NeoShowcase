@@ -50,18 +50,26 @@ func (r *environmentRepository) SetEnv(ctx context.Context, env *domain.Environm
 	if err != nil {
 		return errors.Wrap(err, "failed to start transaction")
 	}
+	defer tx.Rollback()
 
-	me, err := models.Environments(
-		models.EnvironmentWhere.ApplicationID.EQ(env.ApplicationID),
-		models.EnvironmentWhere.Key.EQ(env.Key),
+	_, err = models.Applications(
+		qm.Select(models.ApplicationColumns.ID),
+		models.ApplicationWhere.ID.EQ(env.ApplicationID),
 		qm.For("UPDATE"),
 	).One(ctx, tx)
+	if err != nil {
+		return errors.Wrap(err, "failed to get application")
+	}
+
+	exists, err := models.Environments(
+		models.EnvironmentWhere.ApplicationID.EQ(env.ApplicationID),
+		models.EnvironmentWhere.Key.EQ(env.Key),
+	).Exists(ctx, tx)
 	if err != nil && !isNoRowsErr(err) {
 		return errors.Wrap(err, "failed to get environment")
 	}
-	exists := !isNoRowsErr(err)
 
-	me = repoconvert.FromDomainEnvironment(env)
+	me := repoconvert.FromDomainEnvironment(env)
 
 	if exists {
 		_, err = me.Update(ctx, tx, boil.Blacklist())
