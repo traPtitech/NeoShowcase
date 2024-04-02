@@ -12,7 +12,7 @@ SQLDEF_CMD := APP_VERSION=local APP_REVISION=makefile mysqldef --port=5004 --use
 EVANS_CMD := evans
 
 APP_VERSION ?= dev
-APP_REVISION ?= local
+APP_REVISION ?= $(shell git describe --tags --dirty)
 
 .DEFAULT_GOAL := help
 
