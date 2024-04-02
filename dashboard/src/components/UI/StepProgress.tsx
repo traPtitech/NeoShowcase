@@ -1,5 +1,5 @@
 import { styled } from '@macaron-css/solid'
-import { Component } from 'solid-js'
+import type { Component } from 'solid-js'
 import { colorVars, textVars } from '/@/theme'
 
 const Steps = styled('div', {

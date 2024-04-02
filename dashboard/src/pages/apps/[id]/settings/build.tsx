@@ -1,10 +1,15 @@
-import { SubmitHandler, createForm, reset, setValues } from '@modular-forms/solid'
+import { type SubmitHandler, createForm, reset, setValues } from '@modular-forms/solid'
 import { Show, createEffect, onMount } from 'solid-js'
 import toast from 'solid-toast'
 import { Button } from '/@/components/UI/Button'
 import { DataTable } from '/@/components/layouts/DataTable'
 import FormBox from '/@/components/layouts/FormBox'
-import { BuildConfigForm, BuildConfigs, configToForm, formToConfig } from '/@/components/templates/app/BuildConfigs'
+import {
+  type BuildConfigForm,
+  BuildConfigs,
+  configToForm,
+  formToConfig,
+} from '/@/components/templates/app/BuildConfigs'
 import { client, handleAPIError } from '/@/libs/api'
 import { useApplicationData } from '/@/routes'
 

@@ -1,5 +1,5 @@
 import { styled } from '@macaron-css/solid'
-import { ParentComponent } from 'solid-js'
+import type { ParentComponent } from 'solid-js'
 import { Header } from '../templates/Header'
 
 const Container = styled('div', {

@@ -1,7 +1,7 @@
-import { Component } from 'solid-js'
+import type { Component } from 'solid-js'
 import { colorVars } from '/@/theme'
 import { MaterialSymbols } from './MaterialSymbols'
-import { ToolTip, TooltipProps } from './ToolTip'
+import { ToolTip, type TooltipProps } from './ToolTip'
 
 export const TooltipInfoIcon: Component<TooltipProps> = (props) => {
   return (

@@ -1,10 +1,10 @@
 import { Combobox as KComboBox, Select as KSelect } from '@kobalte/core'
 import { keyframes, style } from '@macaron-css/core'
-import { JSX, Show, createMemo, splitProps } from 'solid-js'
+import { type JSX, Show, createMemo, splitProps } from 'solid-js'
 import { colorVars, textVars } from '/@/theme'
 import { CheckBoxIcon } from '../UI/CheckBoxIcon'
 import { MaterialSymbols } from '../UI/MaterialSymbols'
-import { ToolTip, TooltipProps } from '../UI/ToolTip'
+import { ToolTip, type TooltipProps } from '../UI/ToolTip'
 import { TooltipInfoIcon } from '../UI/TooltipInfoIcon'
 import { RequiredMark, TitleContainer, containerStyle, errorTextStyle, titleStyle } from './FormItem'
 

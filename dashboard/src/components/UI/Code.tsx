@@ -1,5 +1,5 @@
 import { styled } from '@macaron-css/solid'
-import { Component, Show } from 'solid-js'
+import { type Component, Show } from 'solid-js'
 import { writeToClipboard } from '/@/libs/clipboard'
 import { colorVars } from '/@/theme'
 import { MaterialSymbols } from './MaterialSymbols'

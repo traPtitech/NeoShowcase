@@ -1,4 +1,4 @@
-import { JSXElement } from 'solid-js'
+import type { JSXElement } from 'solid-js'
 import { Dynamic } from 'solid-js/web'
 import { BuildStatus } from '/@/api/neoshowcase/protobuf/gateway_pb'
 import { MaterialSymbols } from '/@/components/UI/MaterialSymbols'

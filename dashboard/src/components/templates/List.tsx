@@ -1,6 +1,6 @@
 import { styled } from '@macaron-css/solid'
-import { Component, For } from 'solid-js'
-import { Application, Build, Repository } from '/@/api/neoshowcase/protobuf/gateway_pb'
+import { type Component, For } from 'solid-js'
+import type { Application, Build, Repository } from '/@/api/neoshowcase/protobuf/gateway_pb'
 import { colorVars, textVars } from '/@/theme'
 import { AppRow } from './app/AppRow'
 import { BuildRow } from './build/BuildRow'

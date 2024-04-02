@@ -1,4 +1,4 @@
-import { Timestamp } from '@bufbuild/protobuf'
+import type { Timestamp } from '@bufbuild/protobuf'
 
 export const shortSha = (sha1: string): string => sha1.substring(0, 7)
 

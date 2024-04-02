@@ -1,4 +1,4 @@
-import { Component } from 'solid-js'
+import type { Component } from 'solid-js'
 import { Button } from '../UI/Button'
 import Skeleton from '../UI/Skeleton'
 import { DataTable } from '../layouts/DataTable'
@@ -14,10 +14,10 @@ const SettingSkeleton: Component = () => {
       <FormBox.Container>
         <FormBox.Forms>
           <FormItem title={<Skeleton>Form Label</Skeleton>}>
-            <Skeleton width={NaN} height={48} />
+            <Skeleton width={Number.NaN} height={48} />
           </FormItem>
           <FormItem title={<Skeleton>Second Form Label</Skeleton>}>
-            <Skeleton width={NaN} height={48} />
+            <Skeleton width={Number.NaN} height={48} />
           </FormItem>
         </FormBox.Forms>
         <FormBox.Actions>

@@ -4,7 +4,7 @@ import { cache, revalidate } from '@solidjs/router'
 import { createResource } from 'solid-js'
 import toast from 'solid-toast'
 import { APIService } from '/@/api/neoshowcase/protobuf/gateway_connect'
-import { Application, GetApplicationsRequest_Scope, Repository } from '/@/api/neoshowcase/protobuf/gateway_pb'
+import { type Application, GetApplicationsRequest_Scope, type Repository } from '/@/api/neoshowcase/protobuf/gateway_pb'
 
 const transport = createConnectTransport({
   baseUrl: '',

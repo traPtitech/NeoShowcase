@@ -1,4 +1,4 @@
-import { JSXElement } from 'solid-js'
+import type { JSXElement } from 'solid-js'
 import { Dynamic } from 'solid-js/web'
 import { MaterialSymbols } from '/@/components/UI/MaterialSymbols'
 import { ToolTip } from '/@/components/UI/ToolTip'

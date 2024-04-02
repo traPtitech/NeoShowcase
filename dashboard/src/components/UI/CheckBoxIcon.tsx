@@ -1,5 +1,5 @@
 import { styled } from '@macaron-css/solid'
-import { Component, Show } from 'solid-js'
+import { type Component, Show } from 'solid-js'
 import CheckMark from '/@/assets/icons/check.svg'
 // import { colorOverlay } from '/@/libs/colorOverlay'
 import { colorVars } from '/@/theme'

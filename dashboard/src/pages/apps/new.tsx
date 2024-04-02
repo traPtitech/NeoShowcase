@@ -1,14 +1,23 @@
 import { styled } from '@macaron-css/solid'
-import { Field, Form, FormStore, createFormStore, getValue, getValues, setValue, validate } from '@modular-forms/solid'
+import {
+  Field,
+  Form,
+  type FormStore,
+  createFormStore,
+  getValue,
+  getValues,
+  setValue,
+  validate,
+} from '@modular-forms/solid'
 import { Title } from '@solidjs/meta'
 import { A, useNavigate, useSearchParams } from '@solidjs/router'
 import Fuse from 'fuse.js'
 import {
-  Accessor,
-  Component,
+  type Accessor,
+  type Component,
   For,
   Match,
-  Setter,
+  type Setter,
   Show,
   Switch,
   createEffect,
@@ -19,11 +28,11 @@ import {
 } from 'solid-js'
 import toast from 'solid-toast'
 import {
-  Application,
+  type Application,
   ApplicationConfig,
   GetApplicationsRequest_Scope,
   GetRepositoriesRequest_Scope,
-  Repository,
+  type Repository,
 } from '/@/api/neoshowcase/protobuf/gateway_pb'
 import { Button } from '/@/components/UI/Button'
 import { MaterialSymbols } from '/@/components/UI/MaterialSymbols'
@@ -35,12 +44,17 @@ import { CheckBox } from '/@/components/templates/CheckBox'
 import { FormItem } from '/@/components/templates/FormItem'
 import { List } from '/@/components/templates/List'
 import { Nav } from '/@/components/templates/Nav'
-import { AppGeneralConfig, AppGeneralForm } from '/@/components/templates/app/AppGeneralConfig'
-import { BuildConfigForm, BuildConfigs, configToForm, formToConfig } from '/@/components/templates/app/BuildConfigs'
-import { WebsiteFormStatus, WebsiteSetting, newWebsite } from '/@/components/templates/app/WebsiteSettings'
+import { AppGeneralConfig, type AppGeneralForm } from '/@/components/templates/app/AppGeneralConfig'
+import {
+  type BuildConfigForm,
+  BuildConfigs,
+  configToForm,
+  formToConfig,
+} from '/@/components/templates/app/BuildConfigs'
+import { type WebsiteFormStatus, WebsiteSetting, newWebsite } from '/@/components/templates/app/WebsiteSettings'
 import ReposFilter from '/@/components/templates/repo/ReposFilter'
 import { client, handleAPIError, systemInfo } from '/@/libs/api'
-import { Provider, providerToIcon, repositoryURLToProvider } from '/@/libs/application'
+import { type Provider, providerToIcon, repositoryURLToProvider } from '/@/libs/application'
 import { colorOverlay } from '/@/libs/colorOverlay'
 import { colorVars, textVars } from '/@/theme'
 

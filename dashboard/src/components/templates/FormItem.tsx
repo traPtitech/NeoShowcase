@@ -1,8 +1,8 @@
 import { style } from '@macaron-css/core'
 import { styled } from '@macaron-css/solid'
-import { JSX, ParentComponent, Show } from 'solid-js'
+import { type JSX, type ParentComponent, Show } from 'solid-js'
 import { colorVars, textVars } from '/@/theme'
-import { TooltipProps } from '../UI/ToolTip'
+import type { TooltipProps } from '../UI/ToolTip'
 import { TooltipInfoIcon } from '../UI/TooltipInfoIcon'
 
 export const containerStyle = style({

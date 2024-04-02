@@ -1,9 +1,9 @@
-import { PlainMessage } from '@bufbuild/protobuf'
+import type { PlainMessage } from '@bufbuild/protobuf'
 import { styled } from '@macaron-css/solid'
-import { Field, FormStore, ValidateField, getValue, required, setValue } from '@modular-forms/solid'
+import { Field, type FormStore, type ValidateField, getValue, required, setValue } from '@modular-forms/solid'
 import { Match, Show, Switch, createEffect, createResource, createSignal } from 'solid-js'
 import { Suspense } from 'solid-js'
-import {
+import type {
   CreateRepositoryAuth,
   CreateRepositoryRequest,
   UpdateRepositoryRequest,
@@ -15,7 +15,7 @@ import { client, systemInfo } from '/@/libs/api'
 import { colorVars, textVars } from '/@/theme'
 import { TooltipInfoIcon } from '../../UI/TooltipInfoIcon'
 import { FormItem } from '../FormItem'
-import { RadioGroup, RadioOption } from '../RadioGroups'
+import { RadioGroup, type RadioOption } from '../RadioGroups'
 
 const SshKeyContainer = styled('div', {
   base: {

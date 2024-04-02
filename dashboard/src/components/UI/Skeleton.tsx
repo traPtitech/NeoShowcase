@@ -1,6 +1,6 @@
 import { Skeleton as KSkeleton } from '@kobalte/core'
 import { keyframes, style } from '@macaron-css/core'
-import { Component, mergeProps } from 'solid-js'
+import { type Component, mergeProps } from 'solid-js'
 
 const skeletonAnimation = keyframes({
   from: {

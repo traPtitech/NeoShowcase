@@ -1,5 +1,5 @@
 import { Code, ConnectError } from '@connectrpc/connect'
-import { Component, Show, createEffect, createResource, createSignal, onCleanup } from 'solid-js'
+import { type Component, Show, createEffect, createResource, createSignal, onCleanup } from 'solid-js'
 import { LogContainer } from '/@/components/UI/LogContainer'
 import { client } from '/@/libs/api'
 import { concatBuffers, toUTF8WithAnsi } from '/@/libs/buffers'

@@ -1,12 +1,12 @@
 import { RadioGroup } from '@kobalte/core'
 import { style } from '@macaron-css/core'
 import { styled } from '@macaron-css/solid'
-import { Component, JSX, Show, createEffect, createSignal, splitProps } from 'solid-js'
+import { type Component, type JSX, Show, createEffect, createSignal, splitProps } from 'solid-js'
 import { RadioIcon } from '/@/components/UI/RadioIcon'
 import { colorOverlay } from '/@/libs/colorOverlay'
 import { colorVars, media, textVars } from '/@/theme'
 import { FormItem } from '../FormItem'
-import { BuildConfigMethod } from './BuildConfigs'
+import type { BuildConfigMethod } from './BuildConfigs'
 
 const ItemsContainer = styled('div', {
   base: {

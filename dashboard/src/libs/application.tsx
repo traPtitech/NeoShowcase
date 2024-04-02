@@ -1,15 +1,15 @@
-import { PlainMessage } from '@bufbuild/protobuf'
+import type { PlainMessage } from '@bufbuild/protobuf'
 import { AiFillGithub, AiFillGitlab } from 'solid-icons/ai'
 import { SiGitea } from 'solid-icons/si'
-import { JSXElement } from 'solid-js'
+import type { JSXElement } from 'solid-js'
 import {
-  Application,
+  type Application,
   Application_ContainerState,
   BuildStatus,
-  CreateWebsiteRequest,
+  type CreateWebsiteRequest,
   DeployType,
   PortPublicationProtocol,
-  Website,
+  type Website,
 } from '/@/api/neoshowcase/protobuf/gateway_pb'
 import { colorVars } from '/@/theme'
 

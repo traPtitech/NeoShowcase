@@ -1,12 +1,12 @@
 import { TextField as KTextField } from '@kobalte/core'
 import { style } from '@macaron-css/core'
 import { styled } from '@macaron-css/solid'
-import { Component, JSX, Show, splitProps } from 'solid-js'
+import { type Component, type JSX, Show, splitProps } from 'solid-js'
 import { writeToClipboard } from '/@/libs/clipboard'
 import { colorVars, textVars } from '/@/theme'
 import { RequiredMark, TitleContainer, containerStyle, errorTextStyle, titleStyle } from '../templates/FormItem'
 import { MaterialSymbols } from './MaterialSymbols'
-import { ToolTip, TooltipProps } from './ToolTip'
+import { ToolTip, type TooltipProps } from './ToolTip'
 import { TooltipInfoIcon } from './TooltipInfoIcon'
 
 const Container = styled('div', {
