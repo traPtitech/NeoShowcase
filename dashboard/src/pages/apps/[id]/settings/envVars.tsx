@@ -1,9 +1,18 @@
-import { PlainMessage } from '@bufbuild/protobuf'
+import type { PlainMessage } from '@bufbuild/protobuf'
 import { styled } from '@macaron-css/solid'
-import { SubmitHandler, createForm, custom, getValue, getValues, insert, remove, reset } from '@modular-forms/solid'
-import { Component, For, Show, createEffect, createReaction, createResource, on } from 'solid-js'
+import {
+  type SubmitHandler,
+  createForm,
+  custom,
+  getValue,
+  getValues,
+  insert,
+  remove,
+  reset,
+} from '@modular-forms/solid'
+import { type Component, For, Show, createEffect, createReaction, createResource, on } from 'solid-js'
 import toast from 'solid-toast'
-import { ApplicationEnvVars } from '/@/api/neoshowcase/protobuf/gateway_pb'
+import type { ApplicationEnvVars } from '/@/api/neoshowcase/protobuf/gateway_pb'
 import { Button } from '/@/components/UI/Button'
 import { TextField } from '/@/components/UI/TextField'
 import { DataTable } from '/@/components/layouts/DataTable'

@@ -17,9 +17,7 @@
     "enabled": true,
     "rules": {
       "recommended": true,
-      "nursery": {
-        "noUnusedImports": "error"
-      },
+      "nursery": {},
       "style": {
         "noNonNullAssertion": "off"
       }

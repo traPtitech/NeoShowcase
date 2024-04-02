@@ -1,4 +1,12 @@
-import { Navigate, Route, RouteLoadFunc, RouteSectionProps, Router, createAsync, useParams } from '@solidjs/router'
+import {
+  Navigate,
+  Route,
+  type RouteLoadFunc,
+  type RouteSectionProps,
+  Router,
+  createAsync,
+  useParams,
+} from '@solidjs/router'
 import { type Component, createMemo, lazy } from 'solid-js'
 import ErrorView from './components/layouts/ErrorView'
 import {

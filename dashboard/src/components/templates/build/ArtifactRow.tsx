@@ -1,6 +1,6 @@
 import { styled } from '@macaron-css/solid'
-import { Component } from 'solid-js'
-import { Artifact } from '/@/api/neoshowcase/protobuf/gateway_pb'
+import type { Component } from 'solid-js'
+import type { Artifact } from '/@/api/neoshowcase/protobuf/gateway_pb'
 import { Button } from '/@/components/UI/Button'
 import { client, handleAPIError } from '/@/libs/api'
 import { saveToFile } from '/@/libs/download'

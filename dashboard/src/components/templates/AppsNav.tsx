@@ -1,4 +1,4 @@
-import { Component } from 'solid-js'
+import type { Component } from 'solid-js'
 import { Nav } from './Nav'
 
 export const AppsNav: Component = () => {

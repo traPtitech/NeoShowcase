@@ -1,6 +1,6 @@
 import { styled } from '@macaron-css/solid'
 import { A } from '@solidjs/router'
-import { Component, Show } from 'solid-js'
+import { type Component, Show } from 'solid-js'
 import LogoImage from '/@/assets/logo.svg?url'
 import SmallLogoImage from '/@/assets/logo_small.svg?url'
 import { systemInfo, user } from '/@/libs/api'

@@ -1,11 +1,11 @@
 import { RadioGroup as KRadioGroup } from '@kobalte/core'
 import { style } from '@macaron-css/core'
 import { styled } from '@macaron-css/solid'
-import { For, JSX, Show, splitProps } from 'solid-js'
+import { For, type JSX, Show, splitProps } from 'solid-js'
 import { colorOverlay } from '/@/libs/colorOverlay'
 import { colorVars, textVars } from '/@/theme'
 import { RadioIcon } from '../UI/RadioIcon'
-import { ToolTip, TooltipProps } from '../UI/ToolTip'
+import { ToolTip, type TooltipProps } from '../UI/ToolTip'
 import { TooltipInfoIcon } from '../UI/TooltipInfoIcon'
 import { RequiredMark, TitleContainer, containerStyle, titleStyle } from './FormItem'
 

@@ -1,5 +1,5 @@
-import { Component } from 'solid-js'
-import { Repository } from '/@/api/neoshowcase/protobuf/gateway_pb'
+import type { Component } from 'solid-js'
+import type { Repository } from '/@/api/neoshowcase/protobuf/gateway_pb'
 import { providerToIcon, repositoryURLToProvider } from '/@/libs/application'
 import { Nav } from '../Nav'
 

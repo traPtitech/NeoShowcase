@@ -1,6 +1,6 @@
 import { Show } from 'solid-js'
 import toast from 'solid-toast'
-import { User } from '/@/api/neoshowcase/protobuf/gateway_pb'
+import type { User } from '/@/api/neoshowcase/protobuf/gateway_pb'
 import { DataTable } from '/@/components/layouts/DataTable'
 import OwnerList from '/@/components/templates/OwnerList'
 import { client, handleAPIError } from '/@/libs/api'

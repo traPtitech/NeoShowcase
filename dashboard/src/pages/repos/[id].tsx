@@ -1,5 +1,5 @@
 import { Title } from '@solidjs/meta'
-import { RouteSectionProps, useMatch, useNavigate } from '@solidjs/router'
+import { type RouteSectionProps, useMatch, useNavigate } from '@solidjs/router'
 import { ErrorBoundary, Show, Suspense, startTransition } from 'solid-js'
 import { MaterialSymbols } from '/@/components/UI/MaterialSymbols'
 import { TabRound } from '/@/components/UI/TabRound'

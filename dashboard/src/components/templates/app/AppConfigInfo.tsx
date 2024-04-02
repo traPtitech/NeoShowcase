@@ -1,5 +1,5 @@
-import { Component, Match, Show, Switch } from 'solid-js'
-import {
+import { type Component, Match, Show, Switch } from 'solid-js'
+import type {
   ApplicationConfig,
   BuildConfigRuntimeBuildpack,
   BuildConfigRuntimeCmd,

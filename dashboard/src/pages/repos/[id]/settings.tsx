@@ -1,5 +1,5 @@
 import { styled } from '@macaron-css/solid'
-import { RouteSectionProps, useMatch, useNavigate } from '@solidjs/router'
+import { type RouteSectionProps, useMatch, useNavigate } from '@solidjs/router'
 import { ErrorBoundary, Show, Suspense, useTransition } from 'solid-js'
 import { Button } from '/@/components/UI/Button'
 import { MaterialSymbols } from '/@/components/UI/MaterialSymbols'

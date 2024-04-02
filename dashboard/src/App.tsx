@@ -1,5 +1,5 @@
 import { MetaProvider, Title } from '@solidjs/meta'
-import { RouteSectionProps } from '@solidjs/router'
+import type { RouteSectionProps } from '@solidjs/router'
 import { type Component, ErrorBoundary } from 'solid-js'
 import { Toaster } from 'solid-toast'
 import { Routes } from '/@/routes'

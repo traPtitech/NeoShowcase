@@ -1,5 +1,5 @@
 import { style } from '@macaron-css/core'
-import { JSX, ParentComponent, mergeProps, splitProps } from 'solid-js'
+import { type JSX, type ParentComponent, mergeProps, splitProps } from 'solid-js'
 
 // see https://developers.google.com/fonts/docs/material_symbols?hl=ja#self-hosting_the_font
 const baseStyle = style({

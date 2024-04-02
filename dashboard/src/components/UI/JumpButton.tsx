@@ -1,6 +1,6 @@
 import { styled } from '@macaron-css/solid'
 import { A } from '@solidjs/router'
-import { VoidComponent } from 'solid-js'
+import type { VoidComponent } from 'solid-js'
 import { colorVars } from '/@/theme'
 import { MaterialSymbols } from './MaterialSymbols'
 

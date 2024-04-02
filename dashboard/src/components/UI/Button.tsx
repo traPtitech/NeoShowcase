@@ -1,8 +1,8 @@
 import { styled } from '@macaron-css/solid'
-import { JSX, ParentComponent, Show, splitProps } from 'solid-js'
+import { type JSX, type ParentComponent, Show, splitProps } from 'solid-js'
 import { colorOverlay } from '/@/libs/colorOverlay'
 import { colorVars, textVars } from '/@/theme'
-import { ToolTip, TooltipProps } from './ToolTip'
+import { ToolTip, type TooltipProps } from './ToolTip'
 
 const Container = styled('button', {
   base: {

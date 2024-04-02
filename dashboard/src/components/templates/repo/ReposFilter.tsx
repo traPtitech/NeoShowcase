@@ -1,10 +1,10 @@
 import { Checkbox, DropdownMenu } from '@kobalte/core'
 import { keyframes, style } from '@macaron-css/core'
 import { styled } from '@macaron-css/solid'
-import { Component, For, Setter, Show } from 'solid-js'
+import { type Component, For, type Setter, Show } from 'solid-js'
 import { CheckBoxIcon } from '/@/components/UI/CheckBoxIcon'
 import { MaterialSymbols } from '/@/components/UI/MaterialSymbols'
-import { Provider, providerToIcon } from '/@/libs/application'
+import { type Provider, providerToIcon } from '/@/libs/application'
 import { allProviders } from '/@/pages/apps'
 import { colorVars, textVars } from '/@/theme'
 

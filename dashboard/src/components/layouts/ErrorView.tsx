@@ -1,6 +1,6 @@
 import { styled } from '@macaron-css/solid'
 import { A } from '@solidjs/router'
-import { Component, Show } from 'solid-js'
+import { type Component, Show } from 'solid-js'
 import { colorVars, textVars } from '/@/theme'
 import { Button } from '../UI/Button'
 import { MaterialSymbols } from '../UI/MaterialSymbols'

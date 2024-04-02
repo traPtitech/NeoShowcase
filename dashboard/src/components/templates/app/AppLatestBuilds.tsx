@@ -1,6 +1,6 @@
-import { Component, For, createSignal } from 'solid-js'
+import { type Component, For, createSignal } from 'solid-js'
 
-import { Application, Build, Repository } from '/@/api/neoshowcase/protobuf/gateway_pb'
+import type { Application, Build, Repository } from '/@/api/neoshowcase/protobuf/gateway_pb'
 import { Button } from '/@/components/UI/Button'
 import { MaterialSymbols } from '/@/components/UI/MaterialSymbols'
 

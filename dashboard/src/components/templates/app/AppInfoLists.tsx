@@ -1,5 +1,5 @@
-import { Component, Show } from 'solid-js'
-import { Application, DeployType } from '/@/api/neoshowcase/protobuf/gateway_pb'
+import { type Component, Show } from 'solid-js'
+import { type Application, DeployType } from '/@/api/neoshowcase/protobuf/gateway_pb'
 import Code from '/@/components/UI/Code'
 import { ToolTip } from '/@/components/UI/ToolTip'
 import { systemInfo } from '/@/libs/api'
