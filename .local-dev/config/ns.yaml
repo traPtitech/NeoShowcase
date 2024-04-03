@@ -25,7 +25,7 @@ image:
 components:
   builder:
     buildkit:
-      address: tcp://buildkitd:1234
+      address: unix:///run/buildkit/buildkitd.sock
     buildpack:
       helper:
         address: http://buildpack:1235

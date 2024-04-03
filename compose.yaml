@@ -135,6 +135,7 @@ services:
       - ./.local-dev/config/ns.yaml:/config.yaml
       - ./.local-dev/keys:/keys
       - ./.local-dev/local-storage:/data
+      - ./.local-dev/buildkitd-sock:/run/buildkit
       - ~/.ssh/known_hosts:/root/.ssh/known_hosts
     depends_on:
       mysql:
@@ -178,11 +179,16 @@ services:
     image: moby/buildkit:latest
     restart: always
     privileged: true
-    command: --addr tcp://0.0.0.0:1234
+    command: --addr unix:///run/buildkit/buildkitd.sock
     volumes:
+      - ./.local-dev/buildkitd-sock:/run/buildkit
       - ./.local-dev/buildkitd/buildkitd.toml:/etc/buildkit/buildkitd.toml
     networks:
       - default
+    deploy:
+      resources:
+        limits:
+          cpus: "1"
 
   static-server:
     image: caddy:2-alpine

@@ -1,3 +1,4 @@
+/buildkitd-sock
 /dind
 # needs uid 472 gid 472
 /grafana
