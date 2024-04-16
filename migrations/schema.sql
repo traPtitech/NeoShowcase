@@ -57,6 +57,21 @@ CREATE TABLE `repository_owners`
   DEFAULT CHARSET = utf8mb4
   COLLATE = utf8mb4_general_ci COMMENT ='リポジトリ所有者テーブル';
 
+CREATE TABLE `repository_commits`
+(
+    `hash` CHAR(40) PRIMARY KEY COMMENT 'Commit SHA-1 Hash',
+    `author_name` VARCHAR(256) NOT NULL COMMENT 'Author Name',
+    `author_email` VARCHAR(256) NOT NULL COMMENT 'Author Email',
+    `author_date` DATETIME(6) NOT NULL COMMENT 'Author Date',
+    `committer_name` VARCHAR(256) NOT NULL COMMENT 'Committer Name',
+    `committer_email` VARCHAR(256) NOT NULL COMMENT 'Committer Email',
+    `committer_date` DATETIME(6) NOT NULL COMMENT 'Commit Date',
+    `message` TEXT NOT NULL COMMENT 'Commit Message',
+    `error` TINYINT(1) NOT NULL COMMENT 'メタ情報取得に失敗したか'
+) ENGINE = InnoDB
+  DEFAULT CHARSET = utf8mb4
+  COLLATE = utf8mb4_general_ci COMMENT = 'コミットメタ情報テーブル';
+
 CREATE TABLE `applications`
 (
     `id`                CHAR(22)                   NOT NULL COMMENT 'アプリケーションID',
