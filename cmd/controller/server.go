@@ -12,6 +12,7 @@ import (
 	"github.com/traPtitech/neoshowcase/pkg/infrastructure/webhook"
 	"github.com/traPtitech/neoshowcase/pkg/usecase/cdservice"
 	"github.com/traPtitech/neoshowcase/pkg/usecase/cleaner"
+	commitfetcher "github.com/traPtitech/neoshowcase/pkg/usecase/commit-fetcher"
 	"github.com/traPtitech/neoshowcase/pkg/usecase/repofetcher"
 	"github.com/traPtitech/neoshowcase/pkg/usecase/sshserver"
 )
@@ -28,6 +29,7 @@ type Server struct {
 	SSHServer      sshserver.SSHServer
 	Webhook        *webhook.Receiver
 	CDService      cdservice.Service
+	CommitFetcher  commitfetcher.Service
 	FetcherService repofetcher.Service
 	CleanerService cleaner.Service
 }
@@ -46,6 +48,10 @@ func (s *Server) Start(ctx context.Context) error {
 	})
 	eg.Go(func() error {
 		s.CDService.Run()
+		return nil
+	})
+	eg.Go(func() error {
+		s.CommitFetcher.Run()
 		return nil
 	})
 	eg.Go(func() error {
@@ -79,6 +85,9 @@ func (s *Server) Shutdown(ctx context.Context) error {
 	})
 	eg.Go(func() error {
 		return s.CDService.Stop(ctx)
+	})
+	eg.Go(func() error {
+		return s.CommitFetcher.Stop(ctx)
 	})
 	eg.Go(func() error {
 		return s.FetcherService.Stop(ctx)

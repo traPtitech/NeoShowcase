@@ -13,6 +13,7 @@ import (
 
 	"github.com/traPtitech/neoshowcase/pkg/domain"
 	"github.com/traPtitech/neoshowcase/pkg/usecase/cdservice"
+	commitfetcher "github.com/traPtitech/neoshowcase/pkg/usecase/commit-fetcher"
 	"github.com/traPtitech/neoshowcase/pkg/util/ds"
 	"github.com/traPtitech/neoshowcase/pkg/util/optional"
 )
@@ -34,6 +35,7 @@ func fetchInterval(now time.Time, updatedAt time.Time) int {
 	return min(fullPeriodsElapsed+1, int(maxPeriods))
 }
 
+// Service fetches commit metadata sequentially.
 type Service interface {
 	Run()
 	Fetch(repositoryID string)
@@ -41,10 +43,11 @@ type Service interface {
 }
 
 type service struct {
-	appRepo domain.ApplicationRepository
-	gitRepo domain.GitRepositoryRepository
-	pubKey  *ssh.PublicKeys
-	cd      cdservice.Service
+	appRepo       domain.ApplicationRepository
+	gitRepo       domain.GitRepositoryRepository
+	pubKey        *ssh.PublicKeys
+	cd            cdservice.Service
+	commitFetcher commitfetcher.Service
 
 	fetcher   chan<- string
 	run       func()
@@ -58,12 +61,14 @@ func NewService(
 	gitRepo domain.GitRepositoryRepository,
 	pubKey *ssh.PublicKeys,
 	cd cdservice.Service,
+	commitFetcher commitfetcher.Service,
 ) (Service, error) {
 	r := &service{
-		appRepo: appRepo,
-		gitRepo: gitRepo,
-		pubKey:  pubKey,
-		cd:      cd,
+		appRepo:       appRepo,
+		gitRepo:       gitRepo,
+		pubKey:        pubKey,
+		cd:            cd,
+		commitFetcher: commitFetcher,
 	}
 
 	fetcher := make(chan string, 100)
@@ -186,12 +191,15 @@ func (r *service) updateApps(ctx context.Context, repo *domain.Repository, apps 
 		return err
 	}
 
+	var hashes []string
 	for _, app := range apps {
 		commit, ok := refToCommit[app.RefName]
 		if !ok {
 			log.Errorf("failed to get resolve ref %v for app %v", app.RefName, app.ID)
 			commit = domain.EmptyCommit // Mark as empty commit to signal error
 		}
+		hashes = append(hashes, commit)
+
 		err = r.appRepo.UpdateApplication(ctx, app.ID, &domain.UpdateApplicationArgs{Commit: optional.From(commit)})
 		if err != nil {
 			return errors.Wrap(err, "failed to update application")
@@ -199,6 +207,10 @@ func (r *service) updateApps(ctx context.Context, repo *domain.Repository, apps 
 		// Notify builds
 		r.cd.RegisterBuild(app.ID)
 	}
+
+	// Notify to fetch commit metadata, if missing
+	r.commitFetcher.Fetch(repo.ID, hashes)
+
 	return nil
 }
 
