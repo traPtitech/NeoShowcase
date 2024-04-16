@@ -58,3 +58,22 @@ For more, see [.local-manifest/README.md](../.local-manifest/README.md).
 Run tests with `make test`.
 
 See [Makefile](../Makefile) for more.
+
+## Changing Database Schema
+
+To change the database schema, do the following:
+
+1. Change schema in `./migrations/schema.sql`. This definition file is the source of truth for all generated tables / codes.
+2. Run `make migrate` to apply schema changes to local db container in an idempotent manner.
+3. Run `make gen` (or individually, `make gen-go && make gen-db-docs`) to update generated codes and docs via SQLBoiler and tbls.
+4. Write your code.
+   - Don't forget to modify fields in `./pkg/domain` structs, `./pkg/infrastructure/repository/repoconvert` functions, etc.
+
+## Changing API
+
+To change the API schema, do the following:
+
+1. Change schema in `./api/proto/neoshowcase/protobuf/*.proto` files. These files are the source of truth for all generated codes.
+2. Run `make gen` (or individually, `make gen-proto`) to generate both server (Go) and client (TypeScript) codes.
+3. Write your code.
+   - Don't forget to modify fields in `./pkg/infrastructure/grpc/pbconvert` etc.
