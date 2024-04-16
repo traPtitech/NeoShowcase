@@ -77,3 +77,15 @@ To change the API schema, do the following:
 2. Run `make gen` (or individually, `make gen-proto`) to generate both server (Go) and client (TypeScript) codes.
 3. Write your code.
    - Don't forget to modify fields in `./pkg/infrastructure/grpc/pbconvert` etc.
+
+## Adding Internal Component
+
+To add a new internal component, we are using [github.com/google/wire](https://github.com/google/wire).
+
+Example: A new repository in `./pkg/infrastructure/repository`, a new use-case service in `./pkg/usecase` etc.
+
+1. Write a new component.
+2. Add its constructor method (`New...()`) to `./cmd/providers.go`.
+   - Reference the component from needed component. Example: add the component as a member in `Server` struct in `./cmd/controller/server.go`. See `./cmd/wire.go` to see how each component references multiple internal components.
+3. Add config and its default to `./cmd/config.go`, if necessary.
+4. Run `make gen` (or individually, `make gen-go`) to generate DI (dependency injection) codes.
