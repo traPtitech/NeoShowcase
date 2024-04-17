@@ -1,6 +1,7 @@
 import { styled } from '@macaron-css/solid'
 import { type Component, For } from 'solid-js'
 import type { Application, Build, Repository } from '/@/api/neoshowcase/protobuf/gateway_pb'
+import type { CommitsMap } from '/@/libs/api'
 import { colorVars, textVars } from '/@/theme'
 import { AppRow } from './app/AppRow'
 import { BuildRow } from './build/BuildRow'
@@ -56,7 +57,7 @@ const RowTitle = styled('h3', {
 })
 const RowData = styled('div', {
   base: {
-    width: 'auto',
+    width: '100%',
     display: 'flex',
     flexDirection: 'row',
     alignItems: 'center',
@@ -95,31 +96,38 @@ export const List = {
 export const RepositoryList: Component<{
   repository?: Repository
   apps: (Application | undefined)[]
+  commits?: CommitsMap
 }> = (props) => {
   return (
     <Container>
       <RepositoryRow repository={props.repository} appCount={props.apps.length} />
-      <For each={props.apps}>{(app) => <AppRow app={app} dark />}</For>
+      <For each={props.apps}>{(app) => <AppRow app={app} commits={props.commits} dark />}</For>
     </Container>
   )
 }
 
-export const AppsList: Component<{ apps: (Application | undefined)[] }> = (props) => {
+export const AppsList: Component<{
+  apps: (Application | undefined)[]
+  commits?: CommitsMap
+}> = (props) => {
   return (
     <Container>
-      <For each={props.apps}>{(app) => <AppRow app={app} />}</For>
+      <For each={props.apps}>{(app) => <AppRow app={app} commits={props.commits} />}</For>
     </Container>
   )
 }
 
 export const BuildList: Component<{
-  builds: { build: Build; appName?: string }[]
+  builds: { build: Build; app?: Application }[]
   currentBuild?: Build['id']
+  commits?: CommitsMap
 }> = (props) => {
   return (
     <Container>
       <For each={props.builds}>
-        {(b) => <BuildRow build={b.build} appName={b.appName} isCurrent={b.build.id === props.currentBuild} />}
+        {(b) => (
+          <BuildRow build={b.build} commits={props.commits} app={b.app} isCurrent={b.build.id === props.currentBuild} />
+        )}
       </For>
     </Container>
   )

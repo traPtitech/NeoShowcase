@@ -8,7 +8,7 @@ import { client, handleAPIError } from '/@/libs/api'
 import { useApplicationData } from '/@/routes'
 
 export default () => {
-  const { app, refetchApp, hasPermission } = useApplicationData()
+  const { app, refetch, hasPermission } = useApplicationData()
 
   const [websiteForms, { mutate }] = createResource(
     () => app()?.websites,
@@ -81,7 +81,7 @@ export default () => {
         },
       })
       toast.success('ウェブサイト設定を保存しました')
-      refetchApp()
+      void refetch()
     } catch (e) {
       // `readyToChange` を `noChange` に戻す
       for (const form of websiteForms() ?? []) {

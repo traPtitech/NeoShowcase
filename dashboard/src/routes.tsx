@@ -8,22 +8,27 @@ import {
   useParams,
 } from '@solidjs/router'
 import { type Component, createMemo, lazy } from 'solid-js'
+import app from '/@/App'
 import ErrorView from './components/layouts/ErrorView'
 import {
   getApplication,
   getBuild,
+  getBuilds,
   getRepository,
   getRepositoryApps,
+  getRepositoryCommits,
   hasApplicationPermission,
   hasRepositoryPermission,
   revalidateApplication,
   revalidateBuild,
+  revalidateBuilds,
   revalidateRepository,
 } from './libs/api'
 
 const loadApplicationData: RouteLoadFunc = ({ params }) => {
   getApplication(params.id).then((app) => {
     void getRepository(app.repositoryId)
+    void getRepositoryCommits([app.commit])
   })
 }
 
@@ -31,30 +36,55 @@ export const useApplicationData = () => {
   const params = useParams()
   const app = createAsync(() => getApplication(params.id))
   const repo = createAsync(async () => app() && (await getRepository(app()?.repositoryId)))
-  const refetchApp = () => revalidateApplication(params.id)
+  const builds = createAsync(() => getBuilds(params.id))
+  const hashes = () => {
+    const a = app()
+    const b = builds()
+    if (a && b) return [a.commit, ...b.map((b) => b.commit)]
+    return undefined
+  }
+  const commits = createAsync(async () => {
+    const h = hashes()
+    if (!h) return undefined
+    return getRepositoryCommits(h)
+  })
+  const refetch = async () => {
+    await Promise.all([revalidateApplication(params.id), revalidateBuilds(params.id)])
+  }
   const hasPermission = createMemo(() => hasApplicationPermission(app))
   return {
     app,
     repo,
-    refetchApp,
+    builds,
+    commits,
+    refetch,
     hasPermission,
   }
 }
 
 const loadRepositoryData: RouteLoadFunc = ({ params }) => {
   void getRepository(params.id)
-  void getRepositoryApps(params.id)
+  getRepositoryApps(params.id).then((apps) => {
+    const hashes = apps.map((app) => app.commit)
+    void getRepositoryCommits(hashes)
+  })
 }
 
 export const useRepositoryData = () => {
   const params = useParams()
   const repo = createAsync(() => getRepository(params.id))
   const apps = createAsync(() => getRepositoryApps(params.id))
+  const commits = createAsync(async () => {
+    const a = apps()
+    if (!a) return undefined
+    return getRepositoryCommits(a.map((a) => a.commit))
+  })
   const refetchRepo = () => revalidateRepository(params.id)
   const hasPermission = createMemo(() => hasRepositoryPermission(repo))
   return {
     repo,
     apps,
+    commits,
     refetchRepo,
     hasPermission,
   }
@@ -62,19 +92,27 @@ export const useRepositoryData = () => {
 
 const loadBuildData: RouteLoadFunc = ({ params }) => {
   void getApplication(params.id)
-  void getBuild(params.buildID)
+  getBuild(params.buildID).then((build) => {
+    void getRepositoryCommits([build.commit])
+  })
 }
 
 export const useBuildData = () => {
   const params = useParams()
   const app = createAsync(() => getApplication(params.id))
   const build = createAsync(() => getBuild(params.buildID))
+  const commit = createAsync(async () => {
+    const hash = build()?.commit
+    if (!hash) return undefined
+    return getRepositoryCommits([hash]).then((c) => c[hash])
+  })
   const refetchApp = () => revalidateApplication(params.id)
   const refetchBuild = () => revalidateBuild(params.buildID)
   const hasPermission = () => hasApplicationPermission(app)
   return {
     app,
     build,
+    commit,
     refetchApp,
     refetchBuild,
     hasPermission,

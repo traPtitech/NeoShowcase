@@ -90,7 +90,7 @@ const DeleteApp: Component<{
 }
 
 export default () => {
-  const { app, refetchApp, repo, hasPermission } = useApplicationData()
+  const { app, refetch, repo, hasPermission } = useApplicationData()
   const loaded = () => !!(app() && repo())
 
   const [generalForm, General] = createForm<AppGeneralForm>({
@@ -120,7 +120,7 @@ export default () => {
         ...values,
       })
       toast.success('アプリケーション設定を更新しました')
-      refetchApp()
+      void refetch()
     } catch (e) {
       handleAPIError(e, 'アプリケーション設定の更新に失敗しました')
     }

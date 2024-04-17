@@ -13,6 +13,7 @@ var TableNames = struct {
 	PortPublications  string
 	Repositories      string
 	RepositoryAuth    string
+	RepositoryCommits string
 	RepositoryOwners  string
 	UserKeys          string
 	Users             string
@@ -27,6 +28,7 @@ var TableNames = struct {
 	PortPublications:  "port_publications",
 	Repositories:      "repositories",
 	RepositoryAuth:    "repository_auth",
+	RepositoryCommits: "repository_commits",
 	RepositoryOwners:  "repository_owners",
 	UserKeys:          "user_keys",
 	Users:             "users",

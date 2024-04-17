@@ -180,6 +180,11 @@ type GitRepositoryRepository interface {
 	DeleteRepository(ctx context.Context, id string) error
 }
 
+type RepositoryCommitRepository interface {
+	GetCommits(ctx context.Context, hashes []string) ([]*RepositoryCommit, error)
+	RecordCommit(ctx context.Context, commit *RepositoryCommit) error
+}
+
 type CreateUserArgs struct {
 	Name string
 }

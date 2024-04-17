@@ -75,6 +75,13 @@ message Repository {
   repeated string owner_ids = 6;
 }
 
+message SimpleCommit {
+  string hash = 1;
+  string author_name = 2;
+  google.protobuf.Timestamp commit_date = 3;
+  string message = 4;
+}
+
 // -- Application
 
 enum DeployType {
@@ -347,6 +354,14 @@ message RepositoryIdRequest {
   string repository_id = 1;
 }
 
+message GetRepositoryCommitsRequest {
+  repeated string hashes = 1;
+}
+
+message GetRepositoryCommitsResponse {
+  repeated SimpleCommit commits = 1;
+}
+
 message CreateWebsiteRequest {
   string fqdn = 1;
   string path_prefix = 2;
@@ -506,6 +521,10 @@ service APIService {
   rpc GetRepositories(GetRepositoriesRequest) returns (GetRepositoriesResponse)  {
     option idempotency_level = NO_SIDE_EFFECTS;
   };
+  // GetRepositoryCommits コミットのメタ情報を取得します
+  rpc GetRepositoryCommits(GetRepositoryCommitsRequest) returns (GetRepositoryCommitsResponse) {
+    option idempotency_level = NO_SIDE_EFFECTS;
+  }
   // GetRepository リポジトリを取得します
   rpc GetRepository(RepositoryIdRequest) returns (Repository)  {
     option idempotency_level = NO_SIDE_EFFECTS;

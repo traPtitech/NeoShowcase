@@ -547,6 +547,61 @@ proto3.util.setEnumType(Repository_AuthMethod, "neoshowcase.protobuf.Repository.
 ]);
 
 /**
+ * @generated from message neoshowcase.protobuf.SimpleCommit
+ */
+export class SimpleCommit extends Message<SimpleCommit> {
+  /**
+   * @generated from field: string hash = 1;
+   */
+  hash = "";
+
+  /**
+   * @generated from field: string author_name = 2;
+   */
+  authorName = "";
+
+  /**
+   * @generated from field: google.protobuf.Timestamp commit_date = 3;
+   */
+  commitDate?: Timestamp;
+
+  /**
+   * @generated from field: string message = 4;
+   */
+  message = "";
+
+  constructor(data?: PartialMessage<SimpleCommit>) {
+    super();
+    proto3.util.initPartial(data, this);
+  }
+
+  static readonly runtime: typeof proto3 = proto3;
+  static readonly typeName = "neoshowcase.protobuf.SimpleCommit";
+  static readonly fields: FieldList = proto3.util.newFieldList(() => [
+    { no: 1, name: "hash", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+    { no: 2, name: "author_name", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+    { no: 3, name: "commit_date", kind: "message", T: Timestamp },
+    { no: 4, name: "message", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+  ]);
+
+  static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): SimpleCommit {
+    return new SimpleCommit().fromBinary(bytes, options);
+  }
+
+  static fromJson(jsonValue: JsonValue, options?: Partial<JsonReadOptions>): SimpleCommit {
+    return new SimpleCommit().fromJson(jsonValue, options);
+  }
+
+  static fromJsonString(jsonString: string, options?: Partial<JsonReadOptions>): SimpleCommit {
+    return new SimpleCommit().fromJsonString(jsonString, options);
+  }
+
+  static equals(a: SimpleCommit | PlainMessage<SimpleCommit> | undefined, b: SimpleCommit | PlainMessage<SimpleCommit> | undefined): boolean {
+    return proto3.util.equals(SimpleCommit, a, b);
+  }
+}
+
+/**
  * @generated from message neoshowcase.protobuf.RuntimeConfig
  */
 export class RuntimeConfig extends Message<RuntimeConfig> {
@@ -2465,6 +2520,80 @@ export class RepositoryIdRequest extends Message<RepositoryIdRequest> {
 
   static equals(a: RepositoryIdRequest | PlainMessage<RepositoryIdRequest> | undefined, b: RepositoryIdRequest | PlainMessage<RepositoryIdRequest> | undefined): boolean {
     return proto3.util.equals(RepositoryIdRequest, a, b);
+  }
+}
+
+/**
+ * @generated from message neoshowcase.protobuf.GetRepositoryCommitsRequest
+ */
+export class GetRepositoryCommitsRequest extends Message<GetRepositoryCommitsRequest> {
+  /**
+   * @generated from field: repeated string hashes = 1;
+   */
+  hashes: string[] = [];
+
+  constructor(data?: PartialMessage<GetRepositoryCommitsRequest>) {
+    super();
+    proto3.util.initPartial(data, this);
+  }
+
+  static readonly runtime: typeof proto3 = proto3;
+  static readonly typeName = "neoshowcase.protobuf.GetRepositoryCommitsRequest";
+  static readonly fields: FieldList = proto3.util.newFieldList(() => [
+    { no: 1, name: "hashes", kind: "scalar", T: 9 /* ScalarType.STRING */, repeated: true },
+  ]);
+
+  static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): GetRepositoryCommitsRequest {
+    return new GetRepositoryCommitsRequest().fromBinary(bytes, options);
+  }
+
+  static fromJson(jsonValue: JsonValue, options?: Partial<JsonReadOptions>): GetRepositoryCommitsRequest {
+    return new GetRepositoryCommitsRequest().fromJson(jsonValue, options);
+  }
+
+  static fromJsonString(jsonString: string, options?: Partial<JsonReadOptions>): GetRepositoryCommitsRequest {
+    return new GetRepositoryCommitsRequest().fromJsonString(jsonString, options);
+  }
+
+  static equals(a: GetRepositoryCommitsRequest | PlainMessage<GetRepositoryCommitsRequest> | undefined, b: GetRepositoryCommitsRequest | PlainMessage<GetRepositoryCommitsRequest> | undefined): boolean {
+    return proto3.util.equals(GetRepositoryCommitsRequest, a, b);
+  }
+}
+
+/**
+ * @generated from message neoshowcase.protobuf.GetRepositoryCommitsResponse
+ */
+export class GetRepositoryCommitsResponse extends Message<GetRepositoryCommitsResponse> {
+  /**
+   * @generated from field: repeated neoshowcase.protobuf.SimpleCommit commits = 1;
+   */
+  commits: SimpleCommit[] = [];
+
+  constructor(data?: PartialMessage<GetRepositoryCommitsResponse>) {
+    super();
+    proto3.util.initPartial(data, this);
+  }
+
+  static readonly runtime: typeof proto3 = proto3;
+  static readonly typeName = "neoshowcase.protobuf.GetRepositoryCommitsResponse";
+  static readonly fields: FieldList = proto3.util.newFieldList(() => [
+    { no: 1, name: "commits", kind: "message", T: SimpleCommit, repeated: true },
+  ]);
+
+  static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): GetRepositoryCommitsResponse {
+    return new GetRepositoryCommitsResponse().fromBinary(bytes, options);
+  }
+
+  static fromJson(jsonValue: JsonValue, options?: Partial<JsonReadOptions>): GetRepositoryCommitsResponse {
+    return new GetRepositoryCommitsResponse().fromJson(jsonValue, options);
+  }
+
+  static fromJsonString(jsonString: string, options?: Partial<JsonReadOptions>): GetRepositoryCommitsResponse {
+    return new GetRepositoryCommitsResponse().fromJsonString(jsonString, options);
+  }
+
+  static equals(a: GetRepositoryCommitsResponse | PlainMessage<GetRepositoryCommitsResponse> | undefined, b: GetRepositoryCommitsResponse | PlainMessage<GetRepositoryCommitsResponse> | undefined): boolean {
+    return proto3.util.equals(GetRepositoryCommitsResponse, a, b);
   }
 }
 

@@ -40,6 +40,7 @@ import (
 	ubuilder "github.com/traPtitech/neoshowcase/pkg/usecase/builder"
 	"github.com/traPtitech/neoshowcase/pkg/usecase/cdservice"
 	"github.com/traPtitech/neoshowcase/pkg/usecase/cleaner"
+	commitfetcher "github.com/traPtitech/neoshowcase/pkg/usecase/commit-fetcher"
 	giteaintegration "github.com/traPtitech/neoshowcase/pkg/usecase/gitea-integration"
 	"github.com/traPtitech/neoshowcase/pkg/usecase/healthcheck"
 	"github.com/traPtitech/neoshowcase/pkg/usecase/logstream"
@@ -55,6 +56,7 @@ var providers = wire.NewSet(
 	cdservice.NewService,
 	certmanagerv1.NewForConfig,
 	cleaner.NewService,
+	commitfetcher.NewService,
 	dbmanager.NewMariaDBManager,
 	dbmanager.NewMongoDBManager,
 	dockerimpl.NewClientFromEnv,
@@ -85,6 +87,7 @@ var providers = wire.NewSet(
 	repository.NewBuildRepository,
 	repository.NewEnvironmentRepository,
 	repository.NewGitRepositoryRepository,
+	repository.NewRepositoryCommitRepository,
 	repository.NewUserRepository,
 	rest.InClusterConfig,
 	traefikv1alpha1.NewForConfig,

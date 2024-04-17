@@ -4,6 +4,7 @@ import type { Application, Build, Repository } from '/@/api/neoshowcase/protobuf
 import { Button } from '/@/components/UI/Button'
 import { MaterialSymbols } from '/@/components/UI/MaterialSymbols'
 
+import { useApplicationData } from '/@/routes'
 import { List } from '../List'
 import { BuildRow } from '../build/BuildRow'
 
@@ -15,6 +16,8 @@ const AppLatestBuilds: Component<{
   sortedBuilds: Build[]
   hasPermission: boolean
 }> = (props) => {
+  const { commits } = useApplicationData()
+
   const [disabled, setDisabled] = createSignal(false)
 
   const startApp = async () => {
@@ -46,7 +49,7 @@ const AppLatestBuilds: Component<{
           </List.PlaceHolder>
         }
       >
-        {(build) => <BuildRow build={build} isCurrent={build.id === props.app.currentBuild} />}
+        {(build) => <BuildRow build={build} commits={commits()} isCurrent={build.id === props.app.currentBuild} />}
       </For>
     </List.Container>
   )

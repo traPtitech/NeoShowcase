@@ -21,11 +21,11 @@ jobs:
           go-version-file: ./go.mod
       - uses: arduino/setup-protoc@v3
         with:
-          version: "25.1"
+          version: "25.3"
       - name: Install proto tools
         run: make init-protoc-tools
       - name: Generate code
-        run: make protoc
+        run: make gen-proto
         env:
           GO_REPO_ROOT_PACKAGE: github.com/traPtitech/neoshowcase
       - name: Check diff

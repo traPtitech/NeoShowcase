@@ -30,7 +30,7 @@ const LogContainer = styled('div', {
 })
 
 export default () => {
-  const { app, build, refetchBuild, hasPermission } = useBuildData()
+  const { app, build, commit, refetchBuild, hasPermission } = useBuildData()
   const [repo] = createResource(
     () => app()?.repositoryId,
     (id) => client.getRepository({ repositoryId: id }),
@@ -50,6 +50,7 @@ export default () => {
               app={app()!}
               repo={repo()!}
               build={build()!}
+              commit={commit()}
               refetchBuild={refetchBuild}
               hasPermission={hasPermission()}
             />

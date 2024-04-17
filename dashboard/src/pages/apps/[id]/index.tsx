@@ -1,5 +1,5 @@
 import { styled } from '@macaron-css/solid'
-import { type Component, For, Show, createResource, createSignal, onCleanup, useTransition } from 'solid-js'
+import { type Component, For, Show, createSignal, onCleanup, useTransition } from 'solid-js'
 import toast from 'solid-toast'
 import { type Application, DeployType } from '/@/api/neoshowcase/protobuf/gateway_pb'
 import { Button } from '/@/components/UI/Button'
@@ -136,23 +136,16 @@ const Logs: Component<{ app: Application }> = (props) => {
 }
 
 export default () => {
-  const { app, refetchApp, repo, hasPermission } = useApplicationData()
+  const { app, builds, commits, refetch, repo, hasPermission } = useApplicationData()
 
-  const [builds, { refetch: refetchBuilds }] = createResource(
-    () => app()?.id,
-    (id) => client.getBuilds({ id }),
-  )
   const sortedBuilds = () =>
-    builds()?.builds.sort((b1, b2) => {
+    builds()?.sort((b1, b2) => {
       return (b2.queuedAt?.toDate().getTime() ?? 0) - (b1.queuedAt?.toDate().getTime() ?? 0)
     })
   const deployedBuild = () => sortedBuilds()?.find((b) => b.id === app()?.currentBuild)
   const latestBuild = () => sortedBuilds()?.[0]
 
   const loaded = () => !!(app() && repo())
-  const refetch = async () => {
-    await Promise.all([refetchApp(), refetchBuilds()])
-  }
 
   const startApp = async () => {
     const wasRunning = app()?.running
@@ -222,6 +215,7 @@ export default () => {
                 <DataTable.Title>Information</DataTable.Title>
                 <AppInfoLists
                   app={app()!}
+                  commits={commits()}
                   refreshCommit={refreshCommit}
                   disableRefreshCommit={disableRefreshCommit()}
                   hasPermission={hasPermission()}

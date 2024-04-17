@@ -27,6 +27,7 @@ import (
 	"github.com/traPtitech/neoshowcase/pkg/usecase/builder"
 	"github.com/traPtitech/neoshowcase/pkg/usecase/cdservice"
 	"github.com/traPtitech/neoshowcase/pkg/usecase/cleaner"
+	"github.com/traPtitech/neoshowcase/pkg/usecase/commit-fetcher"
 	"github.com/traPtitech/neoshowcase/pkg/usecase/gitea-integration"
 	"github.com/traPtitech/neoshowcase/pkg/usecase/healthcheck"
 	"github.com/traPtitech/neoshowcase/pkg/usecase/logstream"
@@ -129,7 +130,12 @@ func NewControllerDocker(c Config) (component, error) {
 	if err != nil {
 		return nil, err
 	}
-	repofetcherService, err := repofetcher.NewService(applicationRepository, gitRepositoryRepository, publicKeys, cdserviceService)
+	repositoryCommitRepository := repository.NewRepositoryCommitRepository(db)
+	commitfetcherService, err := commitfetcher.NewService(applicationRepository, buildRepository, gitRepositoryRepository, repositoryCommitRepository, publicKeys)
+	if err != nil {
+		return nil, err
+	}
+	repofetcherService, err := repofetcher.NewService(applicationRepository, gitRepositoryRepository, publicKeys, cdserviceService, commitfetcherService)
 	if err != nil {
 		return nil, err
 	}
@@ -157,6 +163,7 @@ func NewControllerDocker(c Config) (component, error) {
 		SSHServer:      sshServer,
 		Webhook:        receiver,
 		CDService:      cdserviceService,
+		CommitFetcher:  commitfetcherService,
 		FetcherService: repofetcherService,
 		CleanerService: cleanerService,
 	}
@@ -220,7 +227,12 @@ func NewControllerK8s(c Config) (component, error) {
 	if err != nil {
 		return nil, err
 	}
-	repofetcherService, err := repofetcher.NewService(applicationRepository, gitRepositoryRepository, publicKeys, cdserviceService)
+	repositoryCommitRepository := repository.NewRepositoryCommitRepository(db)
+	commitfetcherService, err := commitfetcher.NewService(applicationRepository, buildRepository, gitRepositoryRepository, repositoryCommitRepository, publicKeys)
+	if err != nil {
+		return nil, err
+	}
+	repofetcherService, err := repofetcher.NewService(applicationRepository, gitRepositoryRepository, publicKeys, cdserviceService, commitfetcherService)
 	if err != nil {
 		return nil, err
 	}
@@ -248,6 +260,7 @@ func NewControllerK8s(c Config) (component, error) {
 		SSHServer:      sshServer,
 		Webhook:        receiver,
 		CDService:      cdserviceService,
+		CommitFetcher:  commitfetcherService,
 		FetcherService: repofetcherService,
 		CleanerService: cleanerService,
 	}
@@ -265,6 +278,7 @@ func NewGateway(c Config) (component, error) {
 	buildRepository := repository.NewBuildRepository(db)
 	environmentRepository := repository.NewEnvironmentRepository(db)
 	gitRepositoryRepository := repository.NewGitRepositoryRepository(db)
+	repositoryCommitRepository := repository.NewRepositoryCommitRepository(db)
 	userRepository := repository.NewUserRepository(db)
 	storageConfig := c.Storage
 	storage, err := provideStorage(storageConfig)
@@ -302,7 +316,7 @@ func NewGateway(c Config) (component, error) {
 	if err != nil {
 		return nil, err
 	}
-	service, err := apiserver.NewService(artifactRepository, applicationRepository, buildRepository, environmentRepository, gitRepositoryRepository, userRepository, storage, mariaDBManager, mongoDBManager, metricsService, containerLogger, controllerServiceClient, imageConfig, publicKeys)
+	service, err := apiserver.NewService(artifactRepository, applicationRepository, buildRepository, environmentRepository, gitRepositoryRepository, repositoryCommitRepository, userRepository, storage, mariaDBManager, mongoDBManager, metricsService, containerLogger, controllerServiceClient, imageConfig, publicKeys)
 	if err != nil {
 		return nil, err
 	}

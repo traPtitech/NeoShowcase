@@ -1,9 +1,16 @@
 import type { Timestamp } from '@bufbuild/protobuf'
+import { style } from '@macaron-css/core'
 import { styled } from '@macaron-css/solid'
 import { useNavigate } from '@solidjs/router'
-import { type Component, Show } from 'solid-js'
+import { type Component, For, Show } from 'solid-js'
 import toast from 'solid-toast'
-import { type Application, type Build, BuildStatus, type Repository } from '/@/api/neoshowcase/protobuf/gateway_pb'
+import {
+  type Application,
+  type Build,
+  BuildStatus,
+  type Repository,
+  type SimpleCommit,
+} from '/@/api/neoshowcase/protobuf/gateway_pb'
 import { Button } from '/@/components/UI/Button'
 import { ToolTip } from '/@/components/UI/ToolTip'
 import { client, handleAPIError } from '/@/libs/api'
@@ -38,10 +45,24 @@ const BuildStatusLabel = styled('div', {
   },
 })
 
+const DataRows = styled('div', {
+  base: {
+    display: 'flex',
+    flexDirection: 'column',
+    alignContent: 'left',
+  },
+})
+
+const greyText = style({
+  color: colorVars.semantic.text.grey,
+  ...textVars.caption.regular,
+})
+
 const BuildStatusTable: Component<{
   app: Application
   repo: Repository
   build: Build
+  commit?: SimpleCommit
   refetchBuild: () => Promise<void>
   hasPermission: boolean
 }> = (props) => {
@@ -71,6 +92,29 @@ const BuildStatusTable: Component<{
     } catch (e) {
       handleAPIError(e, 'ビルドのキャンセルに失敗しました')
     }
+  }
+
+  const commitDisplay = () => {
+    const c = props.commit
+    if (!c || !c.commitDate) {
+      return shortSha(props.build.commit)
+    }
+
+    const { diff, localeString } = diffHuman(c.commitDate.toDate())
+    return (
+      <DataRows>
+        <For each={c.message.split('\n')}>{(line) => <div>{line}</div>}</For>
+        <div class={greyText}>
+          {c.authorName}
+          <span>, </span>
+          <ToolTip props={{ content: localeString }}>
+            <span>{diff}</span>
+          </ToolTip>
+          <span>, </span>
+          {shortSha(c.hash)}
+        </div>
+      </DataRows>
+    )
   }
 
   return (
@@ -103,7 +147,7 @@ const BuildStatusTable: Component<{
       <List.Row>
         <List.RowContent>
           <List.RowTitle>Source Commit</List.RowTitle>
-          <List.RowData>{shortSha(props.build.commit)}</List.RowData>
+          <List.RowData>{commitDisplay()}</List.RowData>
         </List.RowContent>
       </List.Row>
       <List.Columns>

@@ -13,6 +13,7 @@
 | [port_publications](port_publications.md) | 4 | 公開ポートテーブル | BASE TABLE |
 | [repositories](repositories.md) | 3 | Gitリポジトリテーブル | BASE TABLE |
 | [repository_auth](repository_auth.md) | 5 | Gitリポジトリ認証情報テーブル | BASE TABLE |
+| [repository_commits](repository_commits.md) | 9 | コミットメタ情報テーブル | BASE TABLE |
 | [repository_owners](repository_owners.md) | 2 | リポジトリ所有者テーブル | BASE TABLE |
 | [users](users.md) | 3 | ユーザーテーブル | BASE TABLE |
 | [user_keys](user_keys.md) | 5 | ユーザーSSHキーテーブル | BASE TABLE |
@@ -112,6 +113,17 @@ erDiagram
   varchar_256_ username
   varchar_256_ password
   text ssh_key
+}
+"repository_commits" {
+  char_40_ hash PK
+  varchar_256_ author_name
+  varchar_256_ author_email
+  datetime_6_ author_date
+  varchar_256_ committer_name
+  varchar_256_ committer_email
+  datetime_6_ committer_date
+  text message
+  tinyint_1_ error
 }
 "repository_owners" {
   char_22_ user_id PK

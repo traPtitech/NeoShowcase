@@ -8,7 +8,7 @@ import { userFromId, users } from '/@/libs/useAllUsers'
 import { useApplicationData } from '/@/routes'
 
 export default () => {
-  const { app, refetchApp, hasPermission } = useApplicationData()
+  const { app, refetch, hasPermission } = useApplicationData()
   const loaded = () => !!(app() && users())
 
   const handleAddOwner = async (user: User) => {
@@ -19,7 +19,7 @@ export default () => {
         ownerIds: { ownerIds: newOwnerIds },
       })
       toast.success('アプリケーションオーナーを追加しました')
-      refetchApp()
+      void refetch()
     } catch (e) {
       handleAPIError(e, 'アプリケーションオーナーの追加に失敗しました')
     }
@@ -33,7 +33,7 @@ export default () => {
         ownerIds: { ownerIds: newOwnerIds },
       })
       toast.success('アプリケーションオーナーを削除しました')
-      refetchApp()
+      void refetch()
     } catch (e) {
       handleAPIError(e, 'アプリケーションオーナーの削除に失敗しました')
     }
