@@ -2,7 +2,7 @@ import { createPromiseClient } from '@connectrpc/connect'
 import { createConnectTransport } from '@connectrpc/connect-web'
 import { cache, revalidate } from '@solidjs/router'
 import AsyncLock from 'async-lock'
-import { createResource } from 'solid-js'
+import { createResource, createSignal } from 'solid-js'
 import toast from 'solid-toast'
 import { APIService } from '/@/api/neoshowcase/protobuf/gateway_connect'
 import {
@@ -53,7 +53,7 @@ export const getRepositoryApps = cache(
 export type CommitsMap = Record<string, SimpleCommit | undefined>
 
 export const getRepositoryCommits = (() => {
-  const commits: CommitsMap = {}
+  let commits: CommitsMap = {}
   const lock = new AsyncLock()
 
   return async (hashes: string[]): Promise<CommitsMap> => {
@@ -68,12 +68,16 @@ export const getRepositoryCommits = (() => {
 
       // Fetch values
       const res = await client.getRepositoryCommits({ hashes: missingHashes })
-      for (const c of res.commits) {
-        commits[c.hash] = c
-      }
+      // NOTE: make a new object so Solid's createResource can be notified that the value changed
+      const newCommits: CommitsMap = {}
+      Object.assign(newCommits, commits)
       for (const hash of missingHashes) {
-        if (!Object.hasOwn(commits, hash)) commits[hash] = undefined // Negative cache
+        newCommits[hash] = undefined // Negative cache
       }
+      for (const c of res.commits) {
+        newCommits[c.hash] = c
+      }
+      commits = newCommits
       return commits
     })
   }
