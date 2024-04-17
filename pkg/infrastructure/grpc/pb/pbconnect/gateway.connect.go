@@ -58,6 +58,9 @@ const (
 	// APIServiceGetRepositoriesProcedure is the fully-qualified name of the APIService's
 	// GetRepositories RPC.
 	APIServiceGetRepositoriesProcedure = "/neoshowcase.protobuf.APIService/GetRepositories"
+	// APIServiceGetRepositoryCommitsProcedure is the fully-qualified name of the APIService's
+	// GetRepositoryCommits RPC.
+	APIServiceGetRepositoryCommitsProcedure = "/neoshowcase.protobuf.APIService/GetRepositoryCommits"
 	// APIServiceGetRepositoryProcedure is the fully-qualified name of the APIService's GetRepository
 	// RPC.
 	APIServiceGetRepositoryProcedure = "/neoshowcase.protobuf.APIService/GetRepository"
@@ -144,6 +147,7 @@ var (
 	aPIServiceDeleteUserKeyMethodDescriptor         = aPIServiceServiceDescriptor.Methods().ByName("DeleteUserKey")
 	aPIServiceCreateRepositoryMethodDescriptor      = aPIServiceServiceDescriptor.Methods().ByName("CreateRepository")
 	aPIServiceGetRepositoriesMethodDescriptor       = aPIServiceServiceDescriptor.Methods().ByName("GetRepositories")
+	aPIServiceGetRepositoryCommitsMethodDescriptor  = aPIServiceServiceDescriptor.Methods().ByName("GetRepositoryCommits")
 	aPIServiceGetRepositoryMethodDescriptor         = aPIServiceServiceDescriptor.Methods().ByName("GetRepository")
 	aPIServiceGetRepositoryRefsMethodDescriptor     = aPIServiceServiceDescriptor.Methods().ByName("GetRepositoryRefs")
 	aPIServiceUpdateRepositoryMethodDescriptor      = aPIServiceServiceDescriptor.Methods().ByName("UpdateRepository")
@@ -193,6 +197,8 @@ type APIServiceClient interface {
 	CreateRepository(context.Context, *connect.Request[pb.CreateRepositoryRequest]) (*connect.Response[pb.Repository], error)
 	// GetRepositories リポジトリ一覧を取得します
 	GetRepositories(context.Context, *connect.Request[pb.GetRepositoriesRequest]) (*connect.Response[pb.GetRepositoriesResponse], error)
+	// GetRepositoryCommits コミットのメタ情報を取得します
+	GetRepositoryCommits(context.Context, *connect.Request[pb.GetRepositoryCommitsRequest]) (*connect.Response[pb.GetRepositoryCommitsResponse], error)
 	// GetRepository リポジトリを取得します
 	GetRepository(context.Context, *connect.Request[pb.RepositoryIdRequest]) (*connect.Response[pb.Repository], error)
 	// GetRepositoryRefs リポジトリの現在の有効なref一覧を取得します
@@ -315,6 +321,13 @@ func NewAPIServiceClient(httpClient connect.HTTPClient, baseURL string, opts ...
 			httpClient,
 			baseURL+APIServiceGetRepositoriesProcedure,
 			connect.WithSchema(aPIServiceGetRepositoriesMethodDescriptor),
+			connect.WithIdempotency(connect.IdempotencyNoSideEffects),
+			connect.WithClientOptions(opts...),
+		),
+		getRepositoryCommits: connect.NewClient[pb.GetRepositoryCommitsRequest, pb.GetRepositoryCommitsResponse](
+			httpClient,
+			baseURL+APIServiceGetRepositoryCommitsProcedure,
+			connect.WithSchema(aPIServiceGetRepositoryCommitsMethodDescriptor),
 			connect.WithIdempotency(connect.IdempotencyNoSideEffects),
 			connect.WithClientOptions(opts...),
 		),
@@ -507,6 +520,7 @@ type aPIServiceClient struct {
 	deleteUserKey         *connect.Client[pb.DeleteUserKeyRequest, emptypb.Empty]
 	createRepository      *connect.Client[pb.CreateRepositoryRequest, pb.Repository]
 	getRepositories       *connect.Client[pb.GetRepositoriesRequest, pb.GetRepositoriesResponse]
+	getRepositoryCommits  *connect.Client[pb.GetRepositoryCommitsRequest, pb.GetRepositoryCommitsResponse]
 	getRepository         *connect.Client[pb.RepositoryIdRequest, pb.Repository]
 	getRepositoryRefs     *connect.Client[pb.RepositoryIdRequest, pb.GetRepositoryRefsResponse]
 	updateRepository      *connect.Client[pb.UpdateRepositoryRequest, emptypb.Empty]
@@ -579,6 +593,11 @@ func (c *aPIServiceClient) CreateRepository(ctx context.Context, req *connect.Re
 // GetRepositories calls neoshowcase.protobuf.APIService.GetRepositories.
 func (c *aPIServiceClient) GetRepositories(ctx context.Context, req *connect.Request[pb.GetRepositoriesRequest]) (*connect.Response[pb.GetRepositoriesResponse], error) {
 	return c.getRepositories.CallUnary(ctx, req)
+}
+
+// GetRepositoryCommits calls neoshowcase.protobuf.APIService.GetRepositoryCommits.
+func (c *aPIServiceClient) GetRepositoryCommits(ctx context.Context, req *connect.Request[pb.GetRepositoryCommitsRequest]) (*connect.Response[pb.GetRepositoryCommitsResponse], error) {
+	return c.getRepositoryCommits.CallUnary(ctx, req)
 }
 
 // GetRepository calls neoshowcase.protobuf.APIService.GetRepository.
@@ -736,6 +755,8 @@ type APIServiceHandler interface {
 	CreateRepository(context.Context, *connect.Request[pb.CreateRepositoryRequest]) (*connect.Response[pb.Repository], error)
 	// GetRepositories リポジトリ一覧を取得します
 	GetRepositories(context.Context, *connect.Request[pb.GetRepositoriesRequest]) (*connect.Response[pb.GetRepositoriesResponse], error)
+	// GetRepositoryCommits コミットのメタ情報を取得します
+	GetRepositoryCommits(context.Context, *connect.Request[pb.GetRepositoryCommitsRequest]) (*connect.Response[pb.GetRepositoryCommitsResponse], error)
 	// GetRepository リポジトリを取得します
 	GetRepository(context.Context, *connect.Request[pb.RepositoryIdRequest]) (*connect.Response[pb.Repository], error)
 	// GetRepositoryRefs リポジトリの現在の有効なref一覧を取得します
@@ -854,6 +875,13 @@ func NewAPIServiceHandler(svc APIServiceHandler, opts ...connect.HandlerOption) 
 		APIServiceGetRepositoriesProcedure,
 		svc.GetRepositories,
 		connect.WithSchema(aPIServiceGetRepositoriesMethodDescriptor),
+		connect.WithIdempotency(connect.IdempotencyNoSideEffects),
+		connect.WithHandlerOptions(opts...),
+	)
+	aPIServiceGetRepositoryCommitsHandler := connect.NewUnaryHandler(
+		APIServiceGetRepositoryCommitsProcedure,
+		svc.GetRepositoryCommits,
+		connect.WithSchema(aPIServiceGetRepositoryCommitsMethodDescriptor),
 		connect.WithIdempotency(connect.IdempotencyNoSideEffects),
 		connect.WithHandlerOptions(opts...),
 	)
@@ -1052,6 +1080,8 @@ func NewAPIServiceHandler(svc APIServiceHandler, opts ...connect.HandlerOption) 
 			aPIServiceCreateRepositoryHandler.ServeHTTP(w, r)
 		case APIServiceGetRepositoriesProcedure:
 			aPIServiceGetRepositoriesHandler.ServeHTTP(w, r)
+		case APIServiceGetRepositoryCommitsProcedure:
+			aPIServiceGetRepositoryCommitsHandler.ServeHTTP(w, r)
 		case APIServiceGetRepositoryProcedure:
 			aPIServiceGetRepositoryHandler.ServeHTTP(w, r)
 		case APIServiceGetRepositoryRefsProcedure:
@@ -1149,6 +1179,10 @@ func (UnimplementedAPIServiceHandler) CreateRepository(context.Context, *connect
 
 func (UnimplementedAPIServiceHandler) GetRepositories(context.Context, *connect.Request[pb.GetRepositoriesRequest]) (*connect.Response[pb.GetRepositoriesResponse], error) {
 	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("neoshowcase.protobuf.APIService.GetRepositories is not implemented"))
+}
+
+func (UnimplementedAPIServiceHandler) GetRepositoryCommits(context.Context, *connect.Request[pb.GetRepositoryCommitsRequest]) (*connect.Response[pb.GetRepositoryCommitsResponse], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("neoshowcase.protobuf.APIService.GetRepositoryCommits is not implemented"))
 }
 
 func (UnimplementedAPIServiceHandler) GetRepository(context.Context, *connect.Request[pb.RepositoryIdRequest]) (*connect.Response[pb.Repository], error) {

@@ -278,6 +278,7 @@ func NewGateway(c Config) (component, error) {
 	buildRepository := repository.NewBuildRepository(db)
 	environmentRepository := repository.NewEnvironmentRepository(db)
 	gitRepositoryRepository := repository.NewGitRepositoryRepository(db)
+	repositoryCommitRepository := repository.NewRepositoryCommitRepository(db)
 	userRepository := repository.NewUserRepository(db)
 	storageConfig := c.Storage
 	storage, err := provideStorage(storageConfig)
@@ -315,7 +316,7 @@ func NewGateway(c Config) (component, error) {
 	if err != nil {
 		return nil, err
 	}
-	service, err := apiserver.NewService(artifactRepository, applicationRepository, buildRepository, environmentRepository, gitRepositoryRepository, userRepository, storage, mariaDBManager, mongoDBManager, metricsService, containerLogger, controllerServiceClient, imageConfig, publicKeys)
+	service, err := apiserver.NewService(artifactRepository, applicationRepository, buildRepository, environmentRepository, gitRepositoryRepository, repositoryCommitRepository, userRepository, storage, mariaDBManager, mongoDBManager, metricsService, containerLogger, controllerServiceClient, imageConfig, publicKeys)
 	if err != nil {
 		return nil, err
 	}

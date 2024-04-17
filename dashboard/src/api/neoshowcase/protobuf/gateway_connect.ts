@@ -4,7 +4,7 @@
 // @ts-nocheck
 
 import { Empty, MethodIdempotency, MethodKind } from "@bufbuild/protobuf";
-import { Application, ApplicationEnvVars, ApplicationIdRequest, ApplicationMetrics, ApplicationOutput, ApplicationOutputs, ArtifactContent, ArtifactIdRequest, AvailableMetrics, Build, BuildIdRequest, BuildLog, CreateApplicationRequest, CreateRepositoryRequest, CreateUserKeyRequest, DeleteApplicationEnvVarRequest, DeleteUserKeyRequest, GenerateKeyPairResponse, GetAllBuildsRequest, GetApplicationMetricsRequest, GetApplicationsRequest, GetApplicationsResponse, GetBuildsResponse, GetOutputRequest, GetOutputStreamRequest, GetRepositoriesRequest, GetRepositoriesResponse, GetRepositoryRefsResponse, GetUserKeysResponse, GetUsersResponse, Repository, RepositoryIdRequest, RetryCommitBuildRequest, SetApplicationEnvVarRequest, SystemInfo, UpdateApplicationRequest, UpdateRepositoryRequest, User, UserKey } from "./gateway_pb.js";
+import { Application, ApplicationEnvVars, ApplicationIdRequest, ApplicationMetrics, ApplicationOutput, ApplicationOutputs, ArtifactContent, ArtifactIdRequest, AvailableMetrics, Build, BuildIdRequest, BuildLog, CreateApplicationRequest, CreateRepositoryRequest, CreateUserKeyRequest, DeleteApplicationEnvVarRequest, DeleteUserKeyRequest, GenerateKeyPairResponse, GetAllBuildsRequest, GetApplicationMetricsRequest, GetApplicationsRequest, GetApplicationsResponse, GetBuildsResponse, GetOutputRequest, GetOutputStreamRequest, GetRepositoriesRequest, GetRepositoriesResponse, GetRepositoryCommitsRequest, GetRepositoryCommitsResponse, GetRepositoryRefsResponse, GetUserKeysResponse, GetUsersResponse, Repository, RepositoryIdRequest, RetryCommitBuildRequest, SetApplicationEnvVarRequest, SystemInfo, UpdateApplicationRequest, UpdateRepositoryRequest, User, UserKey } from "./gateway_pb.js";
 
 /**
  * General / System
@@ -115,6 +115,18 @@ export const APIService = {
       name: "GetRepositories",
       I: GetRepositoriesRequest,
       O: GetRepositoriesResponse,
+      kind: MethodKind.Unary,
+      idempotency: MethodIdempotency.NoSideEffects,
+    },
+    /**
+     * GetRepositoryCommits コミットのメタ情報を取得します
+     *
+     * @generated from rpc neoshowcase.protobuf.APIService.GetRepositoryCommits
+     */
+    getRepositoryCommits: {
+      name: "GetRepositoryCommits",
+      I: GetRepositoryCommitsRequest,
+      O: GetRepositoryCommitsResponse,
       kind: MethodKind.Unary,
       idempotency: MethodIdempotency.NoSideEffects,
     },

@@ -92,6 +92,10 @@ func (s *Service) GetRepositories(ctx context.Context, scope GetRepoScope) ([]*d
 	return s.gitRepo.GetRepositories(ctx, cond)
 }
 
+func (s *Service) GetRepositoryCommits(ctx context.Context, hashes []string) ([]*domain.RepositoryCommit, error) {
+	return handleRepoError(s.commitRepo.GetCommits(ctx, hashes))
+}
+
 func (s *Service) GetRepository(ctx context.Context, id string) (*domain.Repository, error) {
 	return handleRepoError(s.gitRepo.GetRepository(ctx, id))
 }

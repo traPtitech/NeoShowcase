@@ -40,6 +40,17 @@ func (s *APIService) GetRepositories(ctx context.Context, req *connect.Request[p
 	return res, nil
 }
 
+func (s *APIService) GetRepositoryCommits(ctx context.Context, c *connect.Request[pb.GetRepositoryCommitsRequest]) (*connect.Response[pb.GetRepositoryCommitsResponse], error) {
+	commits, err := s.svc.GetRepositoryCommits(ctx, c.Msg.Hashes)
+	if err != nil {
+		return nil, handleUseCaseError(err)
+	}
+	res := connect.NewResponse(&pb.GetRepositoryCommitsResponse{
+		Commits: ds.Map(commits, pbconvert.ToPBSimpleCommit),
+	})
+	return res, nil
+}
+
 func (s *APIService) GetRepository(ctx context.Context, req *connect.Request[pb.RepositoryIdRequest]) (*connect.Response[pb.Repository], error) {
 	repository, err := s.svc.GetRepository(ctx, req.Msg.RepositoryId)
 	if err != nil {

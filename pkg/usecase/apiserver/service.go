@@ -16,8 +16,8 @@ import (
 )
 
 func handleRepoError[T any](entity T, err error) (T, error) {
-	switch err {
-	case repository.ErrNotFound:
+	switch {
+	case errors.Is(err, repository.ErrNotFound):
 		return entity, newError(ErrorTypeNotFound, "not found", err)
 	default:
 		return entity, err
@@ -30,6 +30,7 @@ type Service struct {
 	buildRepo       domain.BuildRepository
 	envRepo         domain.EnvironmentRepository
 	gitRepo         domain.GitRepositoryRepository
+	commitRepo      domain.RepositoryCommitRepository
 	userRepo        domain.UserRepository
 	storage         domain.Storage
 	mariaDBManager  domain.MariaDBManager
@@ -50,6 +51,7 @@ func NewService(
 	buildRepo domain.BuildRepository,
 	envRepo domain.EnvironmentRepository,
 	gitRepo domain.GitRepositoryRepository,
+	commitRepo domain.RepositoryCommitRepository,
 	userRepo domain.UserRepository,
 	storage domain.Storage,
 	mariaDBManager domain.MariaDBManager,
@@ -66,6 +68,7 @@ func NewService(
 		buildRepo:       buildRepo,
 		envRepo:         envRepo,
 		gitRepo:         gitRepo,
+		commitRepo:      commitRepo,
 		userRepo:        userRepo,
 		storage:         storage,
 		mariaDBManager:  mariaDBManager,
