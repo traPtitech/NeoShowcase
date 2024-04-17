@@ -1,6 +1,6 @@
 import { styled } from '@macaron-css/solid'
 import { useNavigate } from '@solidjs/router'
-import { Show, createMemo, useTransition } from 'solid-js'
+import { Show, createMemo, useTransition, createResource } from 'solid-js'
 import { Button } from '/@/components/UI/Button'
 import { MaterialSymbols } from '/@/components/UI/MaterialSymbols'
 import { URLText } from '/@/components/UI/URLText'
@@ -9,6 +9,7 @@ import { MainViewContainer } from '/@/components/layouts/MainView'
 import SuspenseContainer from '/@/components/layouts/SuspenseContainer'
 import { AppsList, List } from '/@/components/templates/List'
 import { useRepositoryData } from '/@/routes'
+import { getRepositoryCommits } from '/@/libs/api'
 
 const MainView = styled('div', {
   base: {
@@ -22,6 +23,13 @@ const MainView = styled('div', {
 export default () => {
   const { repo, apps, hasPermission } = useRepositoryData()
   const loaded = () => !!(repo() && apps())
+
+  const hashes = () => apps()?.map((app) => app.commit)
+  const [commits] = createResource(
+    () => hashes(),
+    (hashes) => getRepositoryCommits(hashes)
+  )
+
   const navigator = useNavigate()
   const showPlaceHolder = createMemo(() => apps()?.length === 0)
 
@@ -66,7 +74,7 @@ export default () => {
                   <AddNewAppButton />
                 </Show>
               </DataTable.Title>
-              <Show when={showPlaceHolder()} fallback={<AppsList apps={apps()!} />}>
+              <Show when={showPlaceHolder()} fallback={<AppsList apps={apps()!} commits={commits()} />}>
                 <List.Container>
                   <List.PlaceHolder>
                     <MaterialSymbols displaySize={80}>deployed_code</MaterialSymbols>

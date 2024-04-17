@@ -4,7 +4,13 @@ import { cache, revalidate } from '@solidjs/router'
 import { createResource } from 'solid-js'
 import toast from 'solid-toast'
 import { APIService } from '/@/api/neoshowcase/protobuf/gateway_connect'
-import { type Application, GetApplicationsRequest_Scope, type Repository } from '/@/api/neoshowcase/protobuf/gateway_pb'
+import {
+  type Application,
+  GetApplicationsRequest_Scope,
+  type Repository,
+  SimpleCommit,
+} from '/@/api/neoshowcase/protobuf/gateway_pb'
+import AsyncLock from 'async-lock'
 
 const transport = createConnectTransport({
   baseUrl: '',
@@ -42,6 +48,31 @@ export const getRepositoryApps = cache(
       .then((r) => r.applications),
   'repository-apps',
 )
+
+export type CommitsMap = Record<string, SimpleCommit | undefined>
+
+export const getRepositoryCommits = (() => {
+  const commits: CommitsMap = {}
+  const lock = new AsyncLock()
+
+  return async (hashes: string[]): Promise<CommitsMap> => {
+    return lock.acquire('key', async () => {
+      // Check if we have all the commits - if so, just return
+      const missingHashes = hashes.filter(hash => !commits.hasOwnProperty(hash))
+      if (missingHashes.length === 0) {
+        return commits
+      }
+
+      // Fetch values
+      const res = await client.getRepositoryCommits({ hashes: missingHashes })
+      res.commits.forEach((c) => commits[c.hash] = c)
+      missingHashes.forEach((hash) => {
+        if (!commits.hasOwnProperty(hash)) commits[hash] = undefined // Negative cache
+      })
+      return commits
+    })
+  }
+})()
 
 export const getApplication = cache((id) => client.getApplication({ id }), 'application')
 export const revalidateApplication = (id: string) => revalidate(getApplication.keyFor(id))

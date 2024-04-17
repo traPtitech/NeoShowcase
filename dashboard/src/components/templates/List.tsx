@@ -5,6 +5,7 @@ import { colorVars, textVars } from '/@/theme'
 import { AppRow } from './app/AppRow'
 import { BuildRow } from './build/BuildRow'
 import { RepositoryRow } from './repo/RepositoryRow'
+import { CommitsMap } from '/@/libs/api'
 
 const Container = styled('div', {
   base: {
@@ -95,19 +96,23 @@ export const List = {
 export const RepositoryList: Component<{
   repository?: Repository
   apps: (Application | undefined)[]
+  commits?: CommitsMap
 }> = (props) => {
   return (
     <Container>
       <RepositoryRow repository={props.repository} appCount={props.apps.length} />
-      <For each={props.apps}>{(app) => <AppRow app={app} dark />}</For>
+      <For each={props.apps}>{(app) => <AppRow app={app} commits={props.commits} dark />}</For>
     </Container>
   )
 }
 
-export const AppsList: Component<{ apps: (Application | undefined)[] }> = (props) => {
+export const AppsList: Component<{
+  apps: (Application | undefined)[]
+  commits?: CommitsMap
+}> = (props) => {
   return (
     <Container>
-      <For each={props.apps}>{(app) => <AppRow app={app} />}</For>
+      <For each={props.apps}>{(app) => <AppRow app={app} commits={props.commits} />}</For>
     </Container>
   )
 }

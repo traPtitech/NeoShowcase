@@ -13,7 +13,7 @@ import {
   getApplication,
   getBuild,
   getRepository,
-  getRepositoryApps,
+  getRepositoryApps, getRepositoryCommits,
   hasApplicationPermission,
   hasRepositoryPermission,
   revalidateApplication,
@@ -24,6 +24,7 @@ import {
 const loadApplicationData: RouteLoadFunc = ({ params }) => {
   getApplication(params.id).then((app) => {
     void getRepository(app.repositoryId)
+    void getRepositoryCommits([app.commit])
   })
 }
 
@@ -43,7 +44,10 @@ export const useApplicationData = () => {
 
 const loadRepositoryData: RouteLoadFunc = ({ params }) => {
   void getRepository(params.id)
-  void getRepositoryApps(params.id)
+  getRepositoryApps(params.id).then((apps) => {
+    const hashes = apps.map((app) => app.commit)
+    void getRepositoryCommits(hashes)
+  })
 }
 
 export const useRepositoryData = () => {
@@ -62,7 +66,9 @@ export const useRepositoryData = () => {
 
 const loadBuildData: RouteLoadFunc = ({ params }) => {
   void getApplication(params.id)
-  void getBuild(params.buildID)
+  getBuild(params.buildID).then((build) => {
+    void getRepositoryCommits([build.commit])
+  })
 }
 
 export const useBuildData = () => {

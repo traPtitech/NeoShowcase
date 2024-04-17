@@ -10,6 +10,9 @@ import { colorOverlay } from '/@/libs/colorOverlay'
 import { diffHuman, shortSha } from '/@/libs/format'
 import { colorVars, textVars } from '/@/theme'
 import { AppStatusIcon } from './AppStatusIcon'
+import { CommitsMap } from '/@/libs/api'
+import { AiOutlineBranches } from 'solid-icons/ai'
+import { style } from '@macaron-css/core'
 
 const Container = styled('div', {
   base: {
@@ -74,23 +77,26 @@ const MetaContainer = styled('div', {
     ...textVars.caption.regular,
   },
 })
-const LastCommitName = styled('div', {
-  base: {
-    width: 'fit-content',
-    overflow: 'hidden',
-    textOverflow: 'ellipsis',
-    whiteSpace: 'nowrap',
-  },
+
+const leftFit = style({
+  width: 'fit-content',
+  overflow: 'hidden',
+  textOverflow: 'ellipsis',
+  whiteSpace: 'nowrap',
 })
-const UrlContainer = styled('div', {
-  base: {
-    width: 'fit-content',
-    marginLeft: 'auto',
-    textAlign: 'right',
-    overflow: 'hidden',
-    textOverflow: 'ellipsis',
-    whiteSpace: 'nowrap',
-  },
+
+const rightFit = style({
+  width: 'fit-content',
+  marginLeft: 'auto',
+  textAlign: 'right',
+  overflow: 'hidden',
+  textOverflow: 'ellipsis',
+  whiteSpace: 'nowrap',
+})
+
+const center = style({
+  display: 'flex',
+  alignItems: 'center',
 })
 
 const AppRowSkeleton: Component<{
@@ -109,9 +115,9 @@ const AppRowSkeleton: Component<{
       </TitleContainer>
       <MetaContainer>
         <Skeleton>0000000</Skeleton>
-        <UrlContainer>
+        <div class={rightFit}>
           <Skeleton>https://example.com</Skeleton>
-        </UrlContainer>
+        </div>
       </MetaContainer>
     </Container>
   )
@@ -120,9 +126,32 @@ const AppRowSkeleton: Component<{
 export interface Props {
   app?: Application
   dark?: boolean
+  commits?: CommitsMap
 }
 
 export const AppRow: Component<Props> = (props) => {
+  const commit = () => props.commits?.[props.app?.commit || '']
+  const commitLine = () => commit()?.message.split('\n')[0]
+  const commitDisplay = () => {
+    const base = `${props.app!.refName}`
+    const message = commitLine()
+    if (message) {
+      return base + ' | ' + message
+    }
+    return base
+  }
+  const commitTooltip = () => {
+    const c = commit()
+    if (!c || !c.authorDate) return `${shortSha(props.app!.commit)}`
+    const { diff } = diffHuman(c.authorDate.toDate())
+    return (
+      <>
+        <div>{c.message}</div>
+        <div>{c.authorName}, {diff}, {shortSha(c.hash)}</div>
+      </>
+    )
+  }
+
   return (
     <Show when={props.app} fallback={<AppRowSkeleton dark={props.dark} />}>
       <A href={`/apps/${props.app!.id}`}>
@@ -142,9 +171,12 @@ export const AppRow: Component<Props> = (props) => {
             </Show>
           </TitleContainer>
           <MetaContainer>
-            <LastCommitName>{shortSha(props.app!.commit)}</LastCommitName>
+            <AiOutlineBranches class={`${leftFit} ${center}`} />
+            <ToolTip props={{ content: commitTooltip() }} style='left'>
+              <div class={leftFit}>{commitDisplay()}</div>
+            </ToolTip>
             <Show when={props.app!.websites.length > 0}>
-              <UrlContainer>{getWebsiteURL(props.app!.websites[0])}</UrlContainer>
+              <div class={rightFit}>{getWebsiteURL(props.app!.websites[0])}</div>
               <Show when={props.app!.websites.length > 1}>
                 <Badge variant="text">{`+${props.app!.websites.length - 1}`}</Badge>
               </Show>

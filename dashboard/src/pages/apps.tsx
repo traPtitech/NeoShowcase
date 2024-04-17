@@ -11,7 +11,7 @@ import {
   type Repository,
 } from '/@/api/neoshowcase/protobuf/gateway_pb'
 import type { SelectOption } from '/@/components/templates/Select'
-import { client, user } from '/@/libs/api'
+import { client, getRepositoryCommits, user } from '/@/libs/api'
 import { ApplicationState, type Provider, applicationState, repositoryURLToProvider } from '/@/libs/application'
 import { createLocalSignal } from '/@/libs/localStore'
 import { Button } from '../components/UI/Button'
@@ -141,6 +141,11 @@ const AppsList: Component<{
     () => appScope(),
     (scope) => client.getApplications({ scope }),
   )
+  const hashes = () => apps()?.applications?.map((app) => app.commit)
+  const [commits] = createResource(
+    () => hashes(),
+    (hashes) => getRepositoryCommits(hashes)
+  )
 
   const filteredReposByProvider = createMemo(() => {
     const p = props.provider
@@ -219,7 +224,7 @@ const AppsList: Component<{
           {(vRow) => (
             <div data-index={vRow.index} ref={(el) => queueMicrotask(() => virtualizer().measureElement(el))}>
               <div style={{ 'padding-bottom': '16px' }}>
-                <RepositoryList repository={filteredRepos()[vRow.index].repo} apps={filteredRepos()[vRow.index].apps} />
+                <RepositoryList repository={filteredRepos()[vRow.index].repo} apps={filteredRepos()[vRow.index].apps} commits={commits()} />
               </div>
             </div>
           )}
