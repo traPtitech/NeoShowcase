@@ -12,7 +12,7 @@ import {
 } from '/@/api/neoshowcase/protobuf/gateway_pb'
 import type { SelectOption } from '/@/components/templates/Select'
 import { client, getRepositoryCommits, user } from '/@/libs/api'
-import { ApplicationState, type Provider, applicationState, repositoryURLToProvider } from '/@/libs/application'
+import { ApplicationState, type RepositoryOrigin, applicationState, repositoryURLToOrigin } from '/@/libs/application'
 import { createSessionSignal } from '/@/libs/localStore'
 import { Button } from '../components/UI/Button'
 import { MaterialSymbols } from '../components/UI/MaterialSymbols'
@@ -114,16 +114,16 @@ export const allStatuses: SelectOption<ApplicationState>[] = [
   { label: 'Serving', value: ApplicationState.Serving },
   { label: 'Error', value: ApplicationState.Error },
 ]
-export const allProviders: SelectOption<Provider>[] = [
+export const allOrigins: SelectOption<RepositoryOrigin>[] = [
   { label: 'GitHub', value: 'GitHub' },
-  { label: 'GitLab', value: 'GitLab' },
   { label: 'Gitea', value: 'Gitea' },
+  { label: 'Others', value: 'Others' },
 ]
 
 const AppsList: Component<{
   scope: GetRepositoriesRequest_Scope
   statuses: ApplicationState[]
-  provider: Provider[]
+  origins: RepositoryOrigin[]
   query: string
   sort: keyof typeof sortItems
   includeNoApp: boolean
@@ -147,9 +147,9 @@ const AppsList: Component<{
     (hashes) => getRepositoryCommits(hashes),
   )
 
-  const filteredReposByProvider = createMemo(() => {
-    const p = props.provider
-    return repos()?.repositories.filter((r) => p.includes(repositoryURLToProvider(r.url))) ?? []
+  const filteredReposByOrigin = createMemo(() => {
+    const p = props.origins
+    return repos()?.repositories.filter((r) => p.includes(repositoryURLToOrigin(r.url))) ?? []
   })
   const filteredApps = createMemo(() => {
     const s = props.statuses
@@ -161,7 +161,7 @@ const AppsList: Component<{
       if (!appsMap[app.repositoryId]) appsMap[app.repositoryId] = []
       appsMap[app.repositoryId].push(app)
     }
-    const res = filteredReposByProvider().reduce<RepoWithApp[]>((acc, repo) => {
+    const res = filteredReposByOrigin().reduce<RepoWithApp[]>((acc, repo) => {
       if (!props.includeNoApp && !appsMap[repo.id]) return acc
       acc.push({ repo, apps: appsMap[repo.id] || [] })
       return acc
@@ -252,7 +252,11 @@ export default () => {
     'apps-statuses-v1',
     allStatuses.map((s) => s.value),
   )
-  const [provider, setProvider] = createSessionSignal<Provider[]>('apps-provider', ['GitHub', 'GitLab', 'Gitea'])
+  const [origin, setOrigin] = createSessionSignal<RepositoryOrigin[]>('apps-repository-origin', [
+    'GitHub',
+    'Gitea',
+    'Others',
+  ])
   const [query, setQuery] = createSessionSignal('apps-query', '')
   const [sort, setSort] = createSessionSignal<keyof typeof sortItems>('apps-sort', sortItems.desc.value)
   const [includeNoApp, setIncludeNoApp] = createSessionSignal('apps-include-no-app', false)
@@ -292,8 +296,8 @@ export default () => {
                 <AppsFilter
                   statuses={statuses()}
                   setStatues={setStatuses}
-                  provider={provider()}
-                  setProvider={setProvider}
+                  origin={origin()}
+                  setOrigin={setOrigin}
                   sort={sort()}
                   setSort={setSort}
                   includeNoApp={includeNoApp()}
@@ -316,7 +320,7 @@ export default () => {
               <AppsList
                 scope={scope()}
                 statuses={statuses()}
-                provider={provider()}
+                origins={origin()}
                 query={query()}
                 sort={sort()}
                 includeNoApp={includeNoApp()}

@@ -5,8 +5,8 @@ import { type Component, For, type Setter, Show } from 'solid-js'
 import { CheckBoxIcon } from '/@/components/UI/CheckBoxIcon'
 import { MaterialSymbols } from '/@/components/UI/MaterialSymbols'
 import { RadioIcon } from '/@/components/UI/RadioIcon'
-import { type ApplicationState, type Provider, providerToIcon } from '/@/libs/application'
-import { allProviders, allStatuses, sortItems } from '/@/pages/apps'
+import { type ApplicationState, type RepositoryOrigin, originToIcon } from '/@/libs/application'
+import { allOrigins, allStatuses, sortItems } from '/@/pages/apps'
 import { colorVars, textVars } from '/@/theme'
 import { AppStatusIcon } from './AppStatusIcon'
 
@@ -154,15 +154,15 @@ const FilterIndicator = styled('div', {
 const AppsFilter: Component<{
   statuses: ApplicationState[]
   setStatues: Setter<ApplicationState[]>
-  provider: Provider[]
-  setProvider: Setter<Provider[]>
+  origin: RepositoryOrigin[]
+  setOrigin: Setter<RepositoryOrigin[]>
   sort: keyof typeof sortItems
   setSort: Setter<keyof typeof sortItems>
   includeNoApp: boolean
   setIncludeNoApp: Setter<boolean>
 }> = (props) => {
   const filtered = () =>
-    props.statuses.length !== allStatuses.length || props.provider.length !== allProviders.length || props.includeNoApp
+    props.statuses.length !== allStatuses.length || props.origin.length !== allOrigins.length || props.includeNoApp
 
   return (
     <DropdownMenu.Root>
@@ -216,26 +216,26 @@ const AppsFilter: Component<{
               'grid-area': 'provider',
             }}
           >
-            Provider
+            Origin
             <ItemsContainer>
-              <For each={allProviders}>
+              <For each={allOrigins}>
                 {(s) => (
                   <Checkbox.Root
-                    checked={props.provider.includes(s.value)}
+                    checked={props.origin.includes(s.value)}
                     onChange={(selected) => {
                       if (selected) {
-                        props.setProvider([...props.provider, s.value])
+                        props.setOrigin([...props.origin, s.value])
                       } else {
-                        props.setProvider(props.provider.filter((v) => v !== s.value))
+                        props.setOrigin(props.origin.filter((v) => v !== s.value))
                       }
                     }}
                   >
                     <Checkbox.Input />
                     <Checkbox.Label class={SelectItemStyle}>
                       <Checkbox.Indicator forceMount class={indicatorStyle}>
-                        <CheckBoxIcon checked={props.provider.includes(s.value)} />
+                        <CheckBoxIcon checked={props.origin.includes(s.value)} />
                       </Checkbox.Indicator>
-                      {providerToIcon(s.value)}
+                      {originToIcon(s.value)}
                       {s.label}
                     </Checkbox.Label>
                   </Checkbox.Root>

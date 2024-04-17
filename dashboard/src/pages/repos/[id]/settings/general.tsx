@@ -12,7 +12,7 @@ import { DataTable } from '/@/components/layouts/DataTable'
 import FormBox from '/@/components/layouts/FormBox'
 import { FormItem } from '/@/components/templates/FormItem'
 import { client, handleAPIError } from '/@/libs/api'
-import { providerToIcon, repositoryURLToProvider } from '/@/libs/application'
+import { originToIcon, repositoryURLToOrigin } from '/@/libs/application'
 import useModal from '/@/libs/useModal'
 import { useRepositoryData } from '/@/routes'
 import { colorVars, textVars } from '/@/theme'
@@ -159,7 +159,7 @@ const DeleteRepository: Component<{
         <Modal.Header>Delete Repository</Modal.Header>
         <Modal.Body>
           <ModalDeleteConfirm>
-            {providerToIcon(repositoryURLToProvider(props.repo.url), 24)}
+            {originToIcon(repositoryURLToOrigin(props.repo.url), 24)}
             {props.repo.name}
           </ModalDeleteConfirm>
         </Modal.Body>

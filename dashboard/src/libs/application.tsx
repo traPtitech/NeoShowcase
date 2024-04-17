@@ -1,5 +1,6 @@
 import type { PlainMessage } from '@bufbuild/protobuf'
 import { AiFillGithub, AiFillGitlab } from 'solid-icons/ai'
+import { RiDevelopmentGitRepositoryLine } from 'solid-icons/ri'
 import { SiGitea } from 'solid-icons/si'
 import type { JSXElement } from 'solid-js'
 import {
@@ -82,25 +83,24 @@ export const applicationState = (app: Application): ApplicationState => {
   }
 }
 
-export type Provider = 'GitHub' | 'GitLab' | 'Gitea'
+export type RepositoryOrigin = 'GitHub' | 'Gitea' | 'Others'
 
-export const repositoryURLToProvider = (url: string): Provider => {
+export const repositoryURLToOrigin = (url: string): RepositoryOrigin => {
   const normalizedURL = url.toLowerCase()
   if (normalizedURL.includes('github')) return 'GitHub'
-  if (normalizedURL.includes('gitlab')) return 'GitLab'
   if (normalizedURL.includes('gitea')) return 'Gitea'
   if (normalizedURL.includes('git.trap.jp')) return 'Gitea'
-  return 'GitHub' // fallback?
+  return 'Others'
 }
 
-export const providerToIcon = (provider: Provider, size = 20): JSXElement => {
-  switch (provider) {
+export const originToIcon = (origin: RepositoryOrigin, size = 20): JSXElement => {
+  switch (origin) {
     case 'GitHub':
       return <AiFillGithub size={size} color={colorVars.semantic.text.black} />
-    case 'GitLab':
-      return <AiFillGitlab size={size} color="#FC6D26" />
     case 'Gitea':
       return <SiGitea size={size} color={colorVars.semantic.text.black} />
+    case 'Others':
+      return <RiDevelopmentGitRepositoryLine size={size} color={colorVars.semantic.text.black} />
   }
 }
 
