@@ -11,7 +11,7 @@ func ToPBSimpleCommit(c *domain.RepositoryCommit) *pb.SimpleCommit {
 	return &pb.SimpleCommit{
 		Hash:       c.Hash,
 		AuthorName: c.Author.Name,
-		AuthorDate: timestamppb.New(c.Author.Date),
+		CommitDate: timestamppb.New(c.Committer.Date),
 		Message:    c.Message,
 	}
 }

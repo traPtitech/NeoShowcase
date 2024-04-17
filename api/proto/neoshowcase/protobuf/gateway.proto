@@ -78,7 +78,7 @@ message Repository {
 message SimpleCommit {
   string hash = 1;
   string author_name = 2;
-  google.protobuf.Timestamp author_date = 3;
+  google.protobuf.Timestamp commit_date = 3;
   string message = 4;
 }
 

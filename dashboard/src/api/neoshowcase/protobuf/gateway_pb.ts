@@ -561,9 +561,9 @@ export class SimpleCommit extends Message<SimpleCommit> {
   authorName = "";
 
   /**
-   * @generated from field: google.protobuf.Timestamp author_date = 3;
+   * @generated from field: google.protobuf.Timestamp commit_date = 3;
    */
-  authorDate?: Timestamp;
+  commitDate?: Timestamp;
 
   /**
    * @generated from field: string message = 4;
@@ -580,7 +580,7 @@ export class SimpleCommit extends Message<SimpleCommit> {
   static readonly fields: FieldList = proto3.util.newFieldList(() => [
     { no: 1, name: "hash", kind: "scalar", T: 9 /* ScalarType.STRING */ },
     { no: 2, name: "author_name", kind: "scalar", T: 9 /* ScalarType.STRING */ },
-    { no: 3, name: "author_date", kind: "message", T: Timestamp },
+    { no: 3, name: "commit_date", kind: "message", T: Timestamp },
     { no: 4, name: "message", kind: "scalar", T: 9 /* ScalarType.STRING */ },
   ]);
 
