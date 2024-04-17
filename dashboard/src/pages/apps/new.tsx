@@ -62,6 +62,7 @@ const RepositoryStepContainer = styled('div', {
   base: {
     width: '100%',
     height: '100%',
+    minHeight: '800px',
     overflowY: 'hidden',
     padding: '24px',
     display: 'flex',
@@ -246,6 +247,12 @@ const RepositoryStep: Component<{
         rightIcon={<ReposFilter provider={provider()} setProvider={setProvider} />}
       />
       <List.Container>
+        <A href="/repos/new">
+          <RegisterRepositoryButton>
+            <MaterialSymbols>add</MaterialSymbols>
+            Register Repository
+          </RegisterRepositoryButton>
+        </A>
         <RepositoryListContainer>
           <For
             each={filteredRepos()}
@@ -278,12 +285,6 @@ const RepositoryStep: Component<{
             )}
           </For>
         </RepositoryListContainer>
-        <A href="/repos/new">
-          <RegisterRepositoryButton>
-            <MaterialSymbols>add</MaterialSymbols>
-            Register Repository
-          </RegisterRepositoryButton>
-        </A>
       </List.Container>
     </RepositoryStepContainer>
   )
