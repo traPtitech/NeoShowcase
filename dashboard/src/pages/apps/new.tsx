@@ -62,6 +62,7 @@ const RepositoryStepContainer = styled('div', {
   base: {
     width: '100%',
     height: '100%',
+    minHeight: '800px',
     overflowY: 'hidden',
     padding: '24px',
     display: 'flex',
