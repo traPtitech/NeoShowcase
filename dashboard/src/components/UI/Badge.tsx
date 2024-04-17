@@ -6,6 +6,7 @@ const Badge = styled('div', {
     height: '1.43em', // 20px
     padding: '0 8px',
     borderRadius: '9999px',
+    whiteSpace: 'nowrap',
 
     ...textVars.caption.regular,
   },

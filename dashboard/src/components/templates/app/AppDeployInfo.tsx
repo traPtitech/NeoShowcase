@@ -148,10 +148,16 @@ const DeployInfo = styled('div', {
 })
 
 const halfFit = style({
-  width: '50%',
   overflow: 'hidden',
   textOverflow: 'ellipsis',
   whiteSpace: 'nowrap',
+})
+
+const shrinkFirst = style({
+  flexShrink: 0,
+  flexGrow: 1,
+  flexBasis: 0,
+  minWidth: 0,
 })
 
 const DataRows = styled('div', {
@@ -253,7 +259,7 @@ const AppDeployInfo: Component<{
           <JumpButton href={`/apps/${props.app.id}/settings/build`} />
         </DeployInfo>
         <DeployInfo long>
-          <List.RowContent>
+          <List.RowContent class={shrinkFirst}>
             <List.RowTitle>Source Commit</List.RowTitle>
             <List.RowData>
               {deployedCommitDisplay()}
