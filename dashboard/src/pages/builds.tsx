@@ -30,7 +30,10 @@ const builds: Component = () => {
       .then((res) => res.builds),
   )
   const hashes = () => builds()?.map((b) => b.commit)
-  const [commits] = createResource(() => getRepositoryCommits(hashes() || []))
+  const [commits] = createResource(
+    () => hashes(),
+    (hashes) => getRepositoryCommits(hashes),
+    )
 
   const sortedBuilds = createMemo(
     () =>

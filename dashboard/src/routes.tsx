@@ -23,6 +23,7 @@ import {
   revalidateBuilds,
   revalidateRepository,
 } from './libs/api'
+import app from '/@/App'
 
 const loadApplicationData: RouteLoadFunc = ({ params }) => {
   getApplication(params.id).then((app) => {
@@ -37,14 +38,18 @@ export const useApplicationData = () => {
   const repo = createAsync(async () => app() && (await getRepository(app()?.repositoryId)))
   const builds = createAsync(() => getBuilds(params.id))
   const hashes = () => {
-    const h: string[] = []
     const a = app()
-    if (a) h.push(a.commit)
     const b = builds()
-    if (b) h.push(...b.map((b) => b.commit))
-    return h
+    if (a && b) return [a.commit, ...b.map((b) => b.commit)]
+    return undefined
   }
-  const commits = createAsync(async () => getRepositoryCommits(hashes()))
+  const commits = createAsync(
+    async () => {
+      const h = hashes()
+      if (!h) return undefined
+      return getRepositoryCommits(h)
+    },
+  )
   const refetch = async () => {
     await Promise.all([revalidateApplication(params.id), revalidateBuilds(params.id)])
   }
@@ -71,11 +76,17 @@ export const useRepositoryData = () => {
   const params = useParams()
   const repo = createAsync(() => getRepository(params.id))
   const apps = createAsync(() => getRepositoryApps(params.id))
+  const commits = createAsync(async () => {
+    const a = apps()
+    if (!a) return undefined
+    return getRepositoryCommits(a.map((a) => a.commit))
+  })
   const refetchRepo = () => revalidateRepository(params.id)
   const hasPermission = createMemo(() => hasRepositoryPermission(repo))
   return {
     repo,
     apps,
+    commits,
     refetchRepo,
     hasPermission,
   }

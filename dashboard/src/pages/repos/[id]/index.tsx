@@ -21,14 +21,8 @@ const MainView = styled('div', {
 })
 
 export default () => {
-  const { repo, apps, hasPermission } = useRepositoryData()
+  const { repo, apps, commits, hasPermission } = useRepositoryData()
   const loaded = () => !!(repo() && apps())
-
-  const hashes = () => apps()?.map((app) => app.commit)
-  const [commits] = createResource(
-    () => hashes(),
-    (hashes) => getRepositoryCommits(hashes),
-  )
 
   const navigator = useNavigate()
   const showPlaceHolder = createMemo(() => apps()?.length === 0)
