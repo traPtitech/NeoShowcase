@@ -30,7 +30,7 @@ const LogContainer = styled('div', {
 })
 
 export default () => {
-  const { app, build, commit, refetchBuild, hasPermission } = useBuildData()
+  const { app, build, commit, refetch, hasPermission } = useBuildData()
   const [repo] = createResource(
     () => app()?.repositoryId,
     (id) => client.getRepository({ repositoryId: id }),
@@ -51,7 +51,7 @@ export default () => {
               repo={repo()!}
               build={build()!}
               commit={commit()}
-              refetchBuild={refetchBuild}
+              refetch={refetch}
               hasPermission={hasPermission()}
             />
           </DataTable.Container>
@@ -67,7 +67,7 @@ export default () => {
             <DataTable.Container>
               <DataTable.Title>Build Log</DataTable.Title>
               <LogContainer>
-                <BuildLog buildID={build()!.id} finished={buildFinished()} refetchBuild={refetchBuild} />
+                <BuildLog buildID={build()!.id} finished={buildFinished()} refetch={refetch} />
               </LogContainer>
             </DataTable.Container>
           </Show>

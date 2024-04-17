@@ -63,7 +63,7 @@ const BuildStatusTable: Component<{
   repo: Repository
   build: Build
   commit?: SimpleCommit
-  refetchBuild: () => Promise<void>
+  refetch: () => Promise<void>
   hasPermission: boolean
 }> = (props) => {
   const navigate = useNavigate()
@@ -74,10 +74,12 @@ const BuildStatusTable: Component<{
         applicationId: props.app.id,
         commit: props.build.commit,
       })
-      await props.refetchBuild()
       toast.success('再ビルドを開始しました')
       // 非同期でビルドが開始されるので1秒程度待ってから遷移
-      setTimeout(() => navigate(`/apps/${props.app.id}`), 1000)
+      setTimeout(() => {
+        void props.refetch()
+        navigate(`/apps/${props.app.id}`)
+      }, 1000)
     } catch (e) {
       handleAPIError(e, '再ビルドに失敗しました')
     }
@@ -87,7 +89,7 @@ const BuildStatusTable: Component<{
       await client.cancelBuild({
         buildId: props.build?.id,
       })
-      await props.refetchBuild()
+      await props.refetch()
       toast.success('ビルドをキャンセルしました')
     } catch (e) {
       handleAPIError(e, 'ビルドのキャンセルに失敗しました')

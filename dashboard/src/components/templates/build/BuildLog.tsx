@@ -9,7 +9,7 @@ import { sleep } from '/@/libs/sleep'
 export interface BuildLogProps {
   buildID: string
   finished: boolean
-  refetchBuild: () => void
+  refetch: () => void
 }
 
 export const BuildLog: Component<BuildLogProps> = (props) => {
@@ -41,7 +41,7 @@ export const BuildLog: Component<BuildLogProps> = (props) => {
         }
       }
       await sleep(1000)
-      props.refetchBuild() // refetch build on stream end
+      props.refetch() // refetch build on stream end
     }
     void iterate()
   })

@@ -106,15 +106,15 @@ export const useBuildData = () => {
     if (!hash) return undefined
     return getRepositoryCommits([hash]).then((c) => c[hash])
   })
-  const refetchApp = () => revalidateApplication(params.id)
-  const refetchBuild = () => revalidateBuild(params.buildID)
+  const refetch = async () => {
+    await Promise.all([revalidateApplication(params.id), revalidateBuild(params.buildID), revalidateBuilds(params.id)])
+  }
   const hasPermission = () => hasApplicationPermission(app)
   return {
     app,
     build,
     commit,
-    refetchApp,
-    refetchBuild,
+    refetch,
     hasPermission,
   }
 }
