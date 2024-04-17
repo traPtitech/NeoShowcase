@@ -25,7 +25,13 @@ func (s *Service) SetEnvironmentVariable(ctx context.Context, applicationID stri
 		return err
 	}
 
+	// Validate
 	env := &domain.Environment{ApplicationID: applicationID, Key: key, Value: value, System: false}
+	err = env.Validate()
+	if err != nil {
+		return newError(ErrorTypeBadRequest, "invalid environment variable", err)
+	}
+
 	return s.envRepo.SetEnv(ctx, env)
 }
 
