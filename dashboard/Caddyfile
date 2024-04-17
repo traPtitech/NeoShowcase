@@ -7,6 +7,13 @@
 root * /usr/share/caddy
 
 handle {
+    @non-static not {
+        file
+        path *.ico *.css *.js *.gif *.webp *.avif *.jpg *.jpeg *.png *.svg *.woff *.woff2
+    }
+    # Always revalidate, except for static files
+    header @non-static Cache-Control "no-cache"
+
     file_server {
         precompressed br gzip
     }
