@@ -5,11 +5,12 @@ import toast from 'solid-toast'
 import { type Application, type Build, DeployType, type Repository } from '/@/api/neoshowcase/protobuf/gateway_pb'
 import Badge from '/@/components/UI/Badge'
 import { Button } from '/@/components/UI/Button'
+import Code from '/@/components/UI/Code'
 import JumpButton from '/@/components/UI/JumpButton'
 import { ToolTip } from '/@/components/UI/ToolTip'
 import { URLText } from '/@/components/UI/URLText'
-import { client, handleAPIError } from '/@/libs/api'
-import { deploymentState, getWebsiteURL } from '/@/libs/application'
+import { client, handleAPIError, systemInfo } from '/@/libs/api'
+import { ApplicationState, deploymentState, getWebsiteURL } from '/@/libs/application'
 import { titleCase } from '/@/libs/casing'
 import { colorOverlay } from '/@/libs/colorOverlay'
 import { diffHuman, shortSha } from '/@/libs/format'
@@ -215,6 +216,8 @@ const AppDeployInfo: Component<{
     )
   }
 
+  const sshAccessCommand = () => `ssh -p ${systemInfo()?.ssh?.port} ${props.app.id}@${systemInfo()?.ssh?.host}`
+
   return (
     <DeploymentContainer>
       <AppStateContainer variant={deploymentState(props.app)}>
@@ -235,29 +238,21 @@ const AppDeployInfo: Component<{
         </Show>
       </AppStateContainer>
       <InfoContainer>
-        <DeployInfo>
-          <List.RowContent>
-            <List.RowTitle>起動時刻</List.RowTitle>
-            <Show when={props.app.updatedAt}>
-              {(nonNullUpdatedAt) => {
-                const { diff, localeString } = diffHuman(nonNullUpdatedAt().toDate())
-
-                return (
-                  <ToolTip props={{ content: localeString }}>
-                    <List.RowData>{diff}</List.RowData>
-                  </ToolTip>
-                )
-              }}
-            </Show>
-          </List.RowContent>
-        </DeployInfo>
-        <DeployInfo>
+        <DeployInfo long={props.app.containerMessage === ''}>
           <List.RowContent>
             <List.RowTitle>Deploy Type</List.RowTitle>
             <List.RowData>{titleCase(DeployType[props.app.deployType])}</List.RowData>
           </List.RowContent>
           <JumpButton href={`/apps/${props.app.id}/settings/build`} tooltip="設定を変更" />
         </DeployInfo>
+        <Show when={props.app.containerMessage !== ''}>
+          <DeployInfo>
+            <List.RowContent>
+              <List.RowTitle>Container Status</List.RowTitle>
+              <List.RowData>{props.app.containerMessage}</List.RowData>
+            </List.RowContent>
+          </DeployInfo>
+        </Show>
         <DeployInfo long>
           <List.RowContent class={shrinkFirst}>
             <List.RowTitle>Source Commit</List.RowTitle>
@@ -290,14 +285,17 @@ const AppDeployInfo: Component<{
           </List.RowContent>
           <JumpButton href={`/apps/${props.app.id}/settings/urls`} tooltip="設定を変更" />
         </DeployInfo>
-        <Show when={props.app.containerMessage !== ''}>
-          <DeployInfo long>
+        <DeployInfo long>
+          <Show when={props.app.deployType === DeployType.RUNTIME}>
             <List.RowContent>
-              <List.RowTitle>Container Status</List.RowTitle>
-              <List.RowData>{props.app.containerMessage}</List.RowData>
+              <List.RowTitle>SSH Access</List.RowTitle>
+              <Code value={sshAccessCommand()} copyable />
+              <Show when={deploymentState(props.app) !== ApplicationState.Running}>
+                <List.RowData>現在アプリが起動していないためSSHアクセスはできません</List.RowData>
+              </Show>
             </List.RowContent>
-          </DeployInfo>
-        </Show>
+          </Show>
+        </DeployInfo>
       </InfoContainer>
     </DeploymentContainer>
   )

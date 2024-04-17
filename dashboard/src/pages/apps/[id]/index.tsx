@@ -7,7 +7,6 @@ import { DataTable } from '/@/components/layouts/DataTable'
 import SuspenseContainer from '/@/components/layouts/SuspenseContainer'
 import AppBranchResolution from '/@/components/templates/app/AppBranchResolution'
 import AppDeployInfo from '/@/components/templates/app/AppDeployInfo'
-import AppInfoLists from '/@/components/templates/app/AppInfoLists'
 import AppLatestBuilds from '/@/components/templates/app/AppLatestBuilds'
 import { AppMetrics } from '/@/components/templates/app/AppMetrics'
 import { ContainerLog } from '/@/components/templates/app/ContainerLog'
@@ -221,16 +220,6 @@ export default () => {
                     sortedBuilds={sortedBuilds()!}
                   />
                 </Show>
-              </DataTable.Container>
-              <DataTable.Container>
-                <DataTable.Title>Information</DataTable.Title>
-                <AppInfoLists
-                  app={app()!}
-                  commits={commits()}
-                  refreshCommit={refreshCommit}
-                  disableRefreshCommit={disableRefreshCommit()}
-                  hasPermission={hasPermission()}
-                />
               </DataTable.Container>
               <Show when={app()?.deployType === DeployType.RUNTIME && hasPermission()}>
                 <DataTable.Container>
