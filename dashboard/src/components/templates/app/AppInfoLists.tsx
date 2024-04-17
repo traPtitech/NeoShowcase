@@ -79,21 +79,6 @@ const AppInfoLists: Component<{
   return (
     <>
       <List.Container>
-        <Show when={props.app.createdAt}>
-          {(nonNullCreatedAt) => {
-            const { diff, localeString } = diffHuman(nonNullCreatedAt().toDate())
-            return (
-              <List.Row>
-                <List.RowContent>
-                  <List.RowTitle>作成日</List.RowTitle>
-                  <ToolTip props={{ content: localeString }}>
-                    <List.RowData>{diff}</List.RowData>
-                  </ToolTip>
-                </List.RowContent>
-              </List.Row>
-            )
-          }}
-        </Show>
         <List.Row>
           <List.RowContent>
             <List.RowTitle>Branch (Commit)</List.RowTitle>

@@ -7,14 +7,41 @@ import type { Application, Repository } from '/@/api/neoshowcase/protobuf/gatewa
 import { Button } from '/@/components/UI/Button'
 import { MaterialSymbols } from '/@/components/UI/MaterialSymbols'
 import ModalDeleteConfirm from '/@/components/UI/ModalDeleteConfirm'
+import { ToolTip } from '/@/components/UI/ToolTip'
 import { DataTable } from '/@/components/layouts/DataTable'
 import FormBox from '/@/components/layouts/FormBox'
 import { FormItem } from '/@/components/templates/FormItem'
+import { List } from '/@/components/templates/List'
 import { AppGeneralConfig, type AppGeneralForm } from '/@/components/templates/app/AppGeneralConfig'
 import { client, handleAPIError } from '/@/libs/api'
+import { diffHuman } from '/@/libs/format'
 import useModal from '/@/libs/useModal'
 import { useApplicationData } from '/@/routes'
 import { colorVars, textVars } from '/@/theme'
+
+const GeneralInfo: Component<{
+  app: Application
+}> = (props) => {
+  return (
+    <List.Container>
+      <Show when={props.app.createdAt}>
+        {(nonNullCreatedAt) => {
+          const { diff, localeString } = diffHuman(nonNullCreatedAt().toDate())
+          return (
+            <List.Row>
+              <List.RowContent>
+                <List.RowTitle>作成日</List.RowTitle>
+                <ToolTip props={{ content: localeString }}>
+                  <List.RowData>{diff}</List.RowData>
+                </ToolTip>
+              </List.RowContent>
+            </List.Row>
+          )
+        }}
+      </Show>
+    </List.Container>
+  )
+}
 
 const DeleteAppNotice = styled('div', {
   base: {
@@ -22,6 +49,7 @@ const DeleteAppNotice = styled('div', {
     ...textVars.caption.regular,
   },
 })
+
 const DeleteApp: Component<{
   app: Application
   repo: Repository
@@ -133,6 +161,7 @@ export default () => {
     <DataTable.Container>
       <DataTable.Title>General</DataTable.Title>
       <Show when={loaded()}>
+        <GeneralInfo app={app()!} />
         <General.Form onSubmit={handleSubmit}>
           <FormBox.Container>
             <FormBox.Forms>
