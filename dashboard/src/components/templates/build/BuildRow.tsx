@@ -112,8 +112,18 @@ export const BuildRow: Component<Props> = (props) => {
   const commitDetails = () => {
     const c = commit()
     if (!c || !c.commitDate) return '<no info>'
-    const { diff } = diffHuman(c.commitDate.toDate())
-    return `${c.authorName}, ${diff}, ${shortSha(c.hash)}`
+    const { diff, localeString } = diffHuman(c.commitDate.toDate())
+    return (
+      <>
+        {c.authorName}
+        <span>, </span>
+        <ToolTip props={{ content: localeString }}>
+          <span>{diff}</span>
+        </ToolTip>
+        <span>, </span>
+        {shortSha(c.hash)}
+      </>
+    )
   }
 
   return (

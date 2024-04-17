@@ -5,8 +5,8 @@ import { type Application, DeployType } from '/@/api/neoshowcase/protobuf/gatewa
 import { Button } from '/@/components/UI/Button'
 import { DataTable } from '/@/components/layouts/DataTable'
 import SuspenseContainer from '/@/components/layouts/SuspenseContainer'
+import AppBranchResolution from '/@/components/templates/app/AppBranchResolution'
 import AppDeployInfo from '/@/components/templates/app/AppDeployInfo'
-import AppInfoLists from '/@/components/templates/app/AppInfoLists'
 import AppLatestBuilds from '/@/components/templates/app/AppLatestBuilds'
 import { AppMetrics } from '/@/components/templates/app/AppMetrics'
 import { ContainerLog } from '/@/components/templates/app/ContainerLog'
@@ -199,6 +199,16 @@ export default () => {
           <MainViewContainer>
             <MainView>
               <DataTable.Container>
+                <DataTable.Title>Branch Resolution</DataTable.Title>
+                <AppBranchResolution
+                  app={app()!}
+                  commits={commits()}
+                  refreshCommit={refreshCommit}
+                  disableRefreshCommit={disableRefreshCommit()}
+                  hasPermission={hasPermission()}
+                />
+              </DataTable.Container>
+              <DataTable.Container>
                 <Show when={builds()}>
                   <DataTable.Title>Latest Builds</DataTable.Title>
                   <AppLatestBuilds
@@ -210,16 +220,6 @@ export default () => {
                     sortedBuilds={sortedBuilds()!}
                   />
                 </Show>
-              </DataTable.Container>
-              <DataTable.Container>
-                <DataTable.Title>Information</DataTable.Title>
-                <AppInfoLists
-                  app={app()!}
-                  commits={commits()}
-                  refreshCommit={refreshCommit}
-                  disableRefreshCommit={disableRefreshCommit()}
-                  hasPermission={hasPermission()}
-                />
               </DataTable.Container>
               <Show when={app()?.deployType === DeployType.RUNTIME && hasPermission()}>
                 <DataTable.Container>
