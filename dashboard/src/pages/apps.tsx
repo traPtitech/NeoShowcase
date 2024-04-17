@@ -13,7 +13,7 @@ import {
 import type { SelectOption } from '/@/components/templates/Select'
 import { client, getRepositoryCommits, user } from '/@/libs/api'
 import { ApplicationState, type Provider, applicationState, repositoryURLToProvider } from '/@/libs/application'
-import { createLocalSignal } from '/@/libs/localStore'
+import { createSessionSignal } from '/@/libs/localStore'
 import { Button } from '../components/UI/Button'
 import { MaterialSymbols } from '../components/UI/MaterialSymbols'
 import { TabRound } from '../components/UI/TabRound'
@@ -239,7 +239,7 @@ const AppsList: Component<{
 }
 
 export default () => {
-  const [scope, _setScope] = createLocalSignal('apps-scope', GetRepositoriesRequest_Scope.MINE)
+  const [scope, _setScope] = createSessionSignal('apps-scope', GetRepositoriesRequest_Scope.MINE)
   const [isPending, start] = useTransition()
 
   const setScope = (scope: GetRepositoriesRequest_Scope) => {
@@ -248,14 +248,14 @@ export default () => {
     })
   }
 
-  const [statuses, setStatuses] = createLocalSignal(
+  const [statuses, setStatuses] = createSessionSignal(
     'apps-statuses-v1',
     allStatuses.map((s) => s.value),
   )
-  const [provider, setProvider] = createLocalSignal<Provider[]>('apps-provider', ['GitHub', 'GitLab', 'Gitea'])
-  const [query, setQuery] = createLocalSignal('apps-query', '')
-  const [sort, setSort] = createLocalSignal<keyof typeof sortItems>('apps-sort', sortItems.desc.value)
-  const [includeNoApp, setIncludeNoApp] = createLocalSignal('apps-include-no-app', false)
+  const [provider, setProvider] = createSessionSignal<Provider[]>('apps-provider', ['GitHub', 'GitLab', 'Gitea'])
+  const [query, setQuery] = createSessionSignal('apps-query', '')
+  const [sort, setSort] = createSessionSignal<keyof typeof sortItems>('apps-sort', sortItems.desc.value)
+  const [includeNoApp, setIncludeNoApp] = createSessionSignal('apps-include-no-app', false)
 
   const [scrollParentRef, setScrollParentRef] = createSignal<HTMLDivElement>()
 
