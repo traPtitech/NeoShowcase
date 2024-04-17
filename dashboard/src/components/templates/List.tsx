@@ -1,11 +1,11 @@
 import { styled } from '@macaron-css/solid'
 import { type Component, For } from 'solid-js'
 import type { Application, Build, Repository } from '/@/api/neoshowcase/protobuf/gateway_pb'
+import type { CommitsMap } from '/@/libs/api'
 import { colorVars, textVars } from '/@/theme'
 import { AppRow } from './app/AppRow'
 import { BuildRow } from './build/BuildRow'
 import { RepositoryRow } from './repo/RepositoryRow'
-import { CommitsMap } from '/@/libs/api'
 
 const Container = styled('div', {
   base: {
@@ -118,13 +118,16 @@ export const AppsList: Component<{
 }
 
 export const BuildList: Component<{
-  builds: { build: Build; appName?: string }[]
+  builds: { build: Build; app?: Application }[]
   currentBuild?: Build['id']
+  commits?: CommitsMap
 }> = (props) => {
   return (
     <Container>
       <For each={props.builds}>
-        {(b) => <BuildRow build={b.build} appName={b.appName} isCurrent={b.build.id === props.currentBuild} />}
+        {(b) => (
+          <BuildRow build={b.build} commits={props.commits} app={b.app} isCurrent={b.build.id === props.currentBuild} />
+        )}
       </For>
     </Container>
   )

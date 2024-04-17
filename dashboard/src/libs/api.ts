@@ -1,6 +1,7 @@
 import { createPromiseClient } from '@connectrpc/connect'
 import { createConnectTransport } from '@connectrpc/connect-web'
 import { cache, revalidate } from '@solidjs/router'
+import AsyncLock from 'async-lock'
 import { createResource } from 'solid-js'
 import toast from 'solid-toast'
 import { APIService } from '/@/api/neoshowcase/protobuf/gateway_connect'
@@ -8,9 +9,9 @@ import {
   type Application,
   GetApplicationsRequest_Scope,
   type Repository,
-  SimpleCommit,
+  type SimpleCommit,
 } from '/@/api/neoshowcase/protobuf/gateway_pb'
-import AsyncLock from 'async-lock'
+import { unique } from '/@/libs/unique'
 
 const transport = createConnectTransport({
   baseUrl: '',
@@ -58,17 +59,21 @@ export const getRepositoryCommits = (() => {
   return async (hashes: string[]): Promise<CommitsMap> => {
     return lock.acquire('key', async () => {
       // Check if we have all the commits - if so, just return
-      const missingHashes = hashes.filter(hash => !commits.hasOwnProperty(hash))
+      let missingHashes = hashes.filter((hash) => !Object.hasOwn(commits, hash))
       if (missingHashes.length === 0) {
         return commits
       }
+      // dedupe and sort
+      missingHashes = unique(missingHashes).sort()
 
       // Fetch values
       const res = await client.getRepositoryCommits({ hashes: missingHashes })
-      res.commits.forEach((c) => commits[c.hash] = c)
-      missingHashes.forEach((hash) => {
-        if (!commits.hasOwnProperty(hash)) commits[hash] = undefined // Negative cache
-      })
+      for (const c of res.commits) {
+        commits[c.hash] = c
+      }
+      for (const hash of missingHashes) {
+        if (!Object.hasOwn(commits, hash)) commits[hash] = undefined // Negative cache
+      }
       return commits
     })
   }
@@ -76,6 +81,12 @@ export const getRepositoryCommits = (() => {
 
 export const getApplication = cache((id) => client.getApplication({ id }), 'application')
 export const revalidateApplication = (id: string) => revalidate(getApplication.keyFor(id))
+
+export const getBuilds = cache(
+  (appId) => client.getBuilds({ id: appId }).then((res) => res.builds),
+  'application-builds',
+)
+export const revalidateBuilds = (appId: string) => revalidate(getBuilds.keyFor(appId))
 
 export const hasApplicationPermission = (app: () => Application | undefined): boolean =>
   (user()?.admin || (user.latest !== undefined && app()?.ownerIds.includes(user().id))) ?? false

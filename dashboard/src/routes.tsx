@@ -12,12 +12,15 @@ import ErrorView from './components/layouts/ErrorView'
 import {
   getApplication,
   getBuild,
+  getBuilds,
   getRepository,
-  getRepositoryApps, getRepositoryCommits,
+  getRepositoryApps,
+  getRepositoryCommits,
   hasApplicationPermission,
   hasRepositoryPermission,
   revalidateApplication,
   revalidateBuild,
+  revalidateBuilds,
   revalidateRepository,
 } from './libs/api'
 
@@ -32,12 +35,26 @@ export const useApplicationData = () => {
   const params = useParams()
   const app = createAsync(() => getApplication(params.id))
   const repo = createAsync(async () => app() && (await getRepository(app()?.repositoryId)))
-  const refetchApp = () => revalidateApplication(params.id)
+  const builds = createAsync(() => getBuilds(params.id))
+  const hashes = () => {
+    const h: string[] = []
+    const a = app()
+    if (a) h.push(a.commit)
+    const b = builds()
+    if (b) h.push(...b.map((b) => b.commit))
+    return h
+  }
+  const commits = createAsync(async () => getRepositoryCommits(hashes()))
+  const refetch = async () => {
+    await Promise.all([revalidateApplication(params.id), revalidateBuilds(params.id)])
+  }
   const hasPermission = createMemo(() => hasApplicationPermission(app))
   return {
     app,
     repo,
-    refetchApp,
+    builds,
+    commits,
+    refetch,
     hasPermission,
   }
 }
@@ -75,12 +92,18 @@ export const useBuildData = () => {
   const params = useParams()
   const app = createAsync(() => getApplication(params.id))
   const build = createAsync(() => getBuild(params.buildID))
+  const commit = createAsync(async () => {
+    const hash = build()?.commit
+    if (!hash) return undefined
+    return getRepositoryCommits([hash]).then((c) => c[hash])
+  })
   const refetchApp = () => revalidateApplication(params.id)
   const refetchBuild = () => revalidateBuild(params.buildID)
   const hasPermission = () => hasApplicationPermission(app)
   return {
     app,
     build,
+    commit,
     refetchApp,
     refetchBuild,
     hasPermission,

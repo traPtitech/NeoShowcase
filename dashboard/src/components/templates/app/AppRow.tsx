@@ -1,18 +1,18 @@
+import { style } from '@macaron-css/core'
 import { styled } from '@macaron-css/solid'
 import { A } from '@solidjs/router'
-import { type Component, Show } from 'solid-js'
+import { AiOutlineBranches } from 'solid-icons/ai'
+import { type Component, For, Show } from 'solid-js'
 import type { Application } from '/@/api/neoshowcase/protobuf/gateway_pb'
 import Badge from '/@/components/UI/Badge'
 import Skeleton from '/@/components/UI/Skeleton'
 import { ToolTip } from '/@/components/UI/ToolTip'
+import type { CommitsMap } from '/@/libs/api'
 import { applicationState, getWebsiteURL } from '/@/libs/application'
 import { colorOverlay } from '/@/libs/colorOverlay'
 import { diffHuman, shortSha } from '/@/libs/format'
 import { colorVars, textVars } from '/@/theme'
 import { AppStatusIcon } from './AppStatusIcon'
-import { CommitsMap } from '/@/libs/api'
-import { AiOutlineBranches } from 'solid-icons/ai'
-import { style } from '@macaron-css/core'
 
 const Container = styled('div', {
   base: {
@@ -136,7 +136,7 @@ export const AppRow: Component<Props> = (props) => {
     const base = `${props.app!.refName}`
     const message = commitLine()
     if (message) {
-      return base + ' | ' + message
+      return `${base} | ${message}`
     }
     return base
   }
@@ -146,8 +146,10 @@ export const AppRow: Component<Props> = (props) => {
     const { diff } = diffHuman(c.commitDate.toDate())
     return (
       <>
-        <div>{c.message}</div>
-        <div>{c.authorName}, {diff}, {shortSha(c.hash)}</div>
+        <For each={c.message.split('\n')}>{(line) => <div>{line}</div>}</For>
+        <div>
+          {c.authorName}, {diff}, {shortSha(c.hash)}
+        </div>
       </>
     )
   }
@@ -172,7 +174,7 @@ export const AppRow: Component<Props> = (props) => {
           </TitleContainer>
           <MetaContainer>
             <AiOutlineBranches class={`${leftFit} ${center}`} />
-            <ToolTip props={{ content: commitTooltip() }} style='left'>
+            <ToolTip props={{ content: commitTooltip() }} style="left">
               <div class={leftFit}>{commitDisplay()}</div>
             </ToolTip>
             <Show when={props.app!.websites.length > 0}>

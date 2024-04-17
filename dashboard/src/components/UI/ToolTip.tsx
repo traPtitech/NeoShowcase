@@ -56,6 +56,7 @@ export const ToolTip: FlowComponent<TooltipProps> = (props) => {
         tippy(child, () => ({
           ...tippyProps,
           props: {
+            ...tippyProps.props,
             content: (
               <TooltipContainer align={addedProps.style}>{propsWithDefaults.props?.content}</TooltipContainer>
             ) as Element,

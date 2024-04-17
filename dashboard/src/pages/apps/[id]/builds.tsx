@@ -1,31 +1,25 @@
-import { createMemo, createResource, useTransition } from 'solid-js'
+import { createMemo, useTransition } from 'solid-js'
 import { Show } from 'solid-js'
 import { MaterialSymbols } from '/@/components/UI/MaterialSymbols'
 import { DataTable } from '/@/components/layouts/DataTable'
 import { MainViewContainer } from '/@/components/layouts/MainView'
 import SuspenseContainer from '/@/components/layouts/SuspenseContainer'
 import { BuildList, List } from '/@/components/templates/List'
-import { client } from '/@/libs/api'
 import { useApplicationData } from '/@/routes'
 
 export default () => {
-  const { app } = useApplicationData()
-  const [builds] = createResource(
-    () => app()?.id,
-    (id) => client.getBuilds({ id }),
-  )
+  const { app, builds, commits } = useApplicationData()
   const loaded = () => !!(app() && builds())
 
-  const sortedBuilds = createMemo(() =>
-    builds.latest !== undefined
-      ? [...builds().builds]
-          .sort((b1, b2) => {
-            return (b2.queuedAt?.toDate().getTime() ?? 0) - (b1.queuedAt?.toDate().getTime() ?? 0)
-          })
-          .map((b) => ({ build: b }))
-      : [],
+  const sortedBuilds = createMemo(
+    () =>
+      builds()
+        ?.sort((b1, b2) => {
+          return (b2.queuedAt?.toDate().getTime() ?? 0) - (b1.queuedAt?.toDate().getTime() ?? 0)
+        })
+        ?.map((b) => ({ build: b })) ?? [],
   )
-  const showPlaceHolder = () => builds()?.builds.length === 0
+  const showPlaceHolder = () => builds()?.length === 0
 
   const [isPending] = useTransition()
 
@@ -37,7 +31,7 @@ export default () => {
             <DataTable.Title>Builds</DataTable.Title>
             <Show
               when={showPlaceHolder()}
-              fallback={<BuildList builds={sortedBuilds()} currentBuild={app()?.currentBuild} />}
+              fallback={<BuildList builds={sortedBuilds()} commits={commits()} currentBuild={app()?.currentBuild} />}
             >
               <List.Container>
                 <List.PlaceHolder>

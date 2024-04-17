@@ -1,9 +1,12 @@
+import { style } from '@macaron-css/core'
 import { styled } from '@macaron-css/solid'
 import { A } from '@solidjs/router'
 import { type Component, Show } from 'solid-js'
-import type { Build } from '/@/api/neoshowcase/protobuf/gateway_pb'
+import type { Application, Build } from '/@/api/neoshowcase/protobuf/gateway_pb'
 import Badge from '/@/components/UI/Badge'
+import { MaterialSymbols } from '/@/components/UI/MaterialSymbols'
 import { ToolTip } from '/@/components/UI/ToolTip'
+import type { CommitsMap } from '/@/libs/api'
 import { colorOverlay } from '/@/libs/colorOverlay'
 import { diffHuman, shortSha } from '/@/libs/format'
 import { colorVars, textVars } from '/@/theme'
@@ -23,6 +26,7 @@ const Container = styled('div', {
     },
   },
 })
+
 const TitleContainer = styled('div', {
   base: {
     width: '100%',
@@ -31,6 +35,7 @@ const TitleContainer = styled('div', {
     gap: '8px',
   },
 })
+
 const BuildName = styled('div', {
   base: {
     width: 'auto',
@@ -41,11 +46,13 @@ const BuildName = styled('div', {
     ...textVars.h4.regular,
   },
 })
+
 const Spacer = styled('div', {
   base: {
     flexGrow: 1,
   },
 })
+
 const UpdatedAt = styled('div', {
   base: {
     flexShrink: 0,
@@ -53,6 +60,7 @@ const UpdatedAt = styled('div', {
     ...textVars.caption.regular,
   },
 })
+
 const MetaContainer = styled('div', {
   base: {
     width: '100%',
@@ -65,39 +73,61 @@ const MetaContainer = styled('div', {
     ...textVars.caption.regular,
   },
 })
-const AppName = styled('div', {
-  base: {
-    width: 'fit-content',
-    overflow: 'hidden',
-    textOverflow: 'ellipsis',
-    whiteSpace: 'nowrap',
-  },
+
+const leftFit = style({
+  width: 'fit-content',
+  overflow: 'hidden',
+  textOverflow: 'ellipsis',
+  whiteSpace: 'nowrap',
+})
+
+const rightFit = style({
+  width: 'fit-content',
+  marginLeft: 'auto',
+  textAlign: 'right',
+  overflow: 'hidden',
+  textOverflow: 'ellipsis',
+  whiteSpace: 'nowrap',
+})
+
+const center = style({
+  display: 'flex',
+  alignItems: 'center',
 })
 
 export interface Props {
   build: Build
-  appName?: string
+  app?: Application
+  commits?: CommitsMap
   isCurrent: boolean
 }
 
 export const BuildRow: Component<Props> = (props) => {
+  const commit = () => props.commits?.[props.build.commit]
+  const commitHeadline = () => {
+    const c = commit()
+    if (!c) return `Build at ${shortSha(props.build.commit)}`
+    return c.message.split('\n')[0]
+  }
+  const commitDetails = () => {
+    const c = commit()
+    if (!c || !c.commitDate) return '<no info>'
+    const { diff } = diffHuman(c.commitDate.toDate())
+    return `${c.authorName}, ${diff}, ${shortSha(c.hash)}`
+  }
+
   return (
     <A href={`/apps/${props.build.applicationId}/builds/${props.build.id}`}>
       <Container>
         <TitleContainer>
           <BuildStatusIcon state={props.build.status} />
-          <BuildName>Build at {shortSha(props.build.commit)}</BuildName>
+          <BuildName>{commitHeadline()}</BuildName>
           <Show when={props.isCurrent}>
             <ToolTip props={{ content: 'このビルドがデプロイされています' }}>
               <Badge variant="success">Current</Badge>
             </ToolTip>
           </Show>
           <Spacer />
-        </TitleContainer>
-        <MetaContainer>
-          <Show when={props.appName}>
-            <AppName>{props.appName}・</AppName>
-          </Show>
           <Show when={props.build.queuedAt}>
             {(nonNullQueuedAt) => {
               const { diff, localeString } = diffHuman(nonNullQueuedAt().toDate())
@@ -107,6 +137,16 @@ export const BuildRow: Component<Props> = (props) => {
                 </ToolTip>
               )
             }}
+          </Show>
+        </TitleContainer>
+        <MetaContainer>
+          <div class={leftFit}>{commitDetails()}</div>
+          <Spacer />
+          <Show when={props.app}>
+            <div class={`${rightFit} ${center}`}>
+              <MaterialSymbols displaySize={20}>deployed_code</MaterialSymbols>
+              {props.app!.name}
+            </div>
           </Show>
         </MetaContainer>
       </Container>

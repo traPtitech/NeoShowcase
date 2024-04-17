@@ -1,6 +1,6 @@
 import { styled } from '@macaron-css/solid'
 import { useNavigate } from '@solidjs/router'
-import { Show, createMemo, useTransition, createResource } from 'solid-js'
+import { Show, createMemo, createResource, useTransition } from 'solid-js'
 import { Button } from '/@/components/UI/Button'
 import { MaterialSymbols } from '/@/components/UI/MaterialSymbols'
 import { URLText } from '/@/components/UI/URLText'
@@ -8,8 +8,8 @@ import { DataTable } from '/@/components/layouts/DataTable'
 import { MainViewContainer } from '/@/components/layouts/MainView'
 import SuspenseContainer from '/@/components/layouts/SuspenseContainer'
 import { AppsList, List } from '/@/components/templates/List'
-import { useRepositoryData } from '/@/routes'
 import { getRepositoryCommits } from '/@/libs/api'
+import { useRepositoryData } from '/@/routes'
 
 const MainView = styled('div', {
   base: {
@@ -27,7 +27,7 @@ export default () => {
   const hashes = () => apps()?.map((app) => app.commit)
   const [commits] = createResource(
     () => hashes(),
-    (hashes) => getRepositoryCommits(hashes)
+    (hashes) => getRepositoryCommits(hashes),
   )
 
   const navigator = useNavigate()

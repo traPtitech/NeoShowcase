@@ -1,3 +1,4 @@
+import { style } from '@macaron-css/core'
 import { styled } from '@macaron-css/solid'
 import { type Component, For, Show } from 'solid-js'
 import toast from 'solid-toast'
@@ -12,6 +13,7 @@ import { deploymentState, getWebsiteURL } from '/@/libs/application'
 import { titleCase } from '/@/libs/casing'
 import { colorOverlay } from '/@/libs/colorOverlay'
 import { diffHuman, shortSha } from '/@/libs/format'
+import { useApplicationData } from '/@/routes'
 import { colorVars, media, textVars } from '/@/theme'
 import { List } from '../List'
 import { AppStatusIcon } from './AppStatusIcon'
@@ -36,6 +38,7 @@ const DeploymentContainer = styled('div', {
     },
   },
 })
+
 const AppStateContainer = styled('div', {
   base: {
     position: 'relative',
@@ -93,6 +96,7 @@ const AppStateContainer = styled('div', {
     },
   },
 })
+
 const AppState = styled('div', {
   base: {
     display: 'flex',
@@ -102,6 +106,7 @@ const AppState = styled('div', {
     gap: '8px',
   },
 })
+
 const InfoContainer = styled('div', {
   base: {
     width: '100%',
@@ -112,6 +117,7 @@ const InfoContainer = styled('div', {
     gap: '1px',
   },
 })
+
 const ActionButtons = styled('div', {
   base: {
     display: 'flex',
@@ -120,6 +126,7 @@ const ActionButtons = styled('div', {
     gap: '8px',
   },
 })
+
 const DeployInfo = styled('div', {
   base: {
     width: '100%',
@@ -139,6 +146,22 @@ const DeployInfo = styled('div', {
     },
   },
 })
+
+const halfFit = style({
+  width: '50%',
+  overflow: 'hidden',
+  textOverflow: 'ellipsis',
+  whiteSpace: 'nowrap',
+})
+
+const DataRows = styled('div', {
+  base: {
+    display: 'flex',
+    flexDirection: 'column',
+    alignContent: 'left',
+  },
+})
+
 const AppDeployInfo: Component<{
   app: Application
   refetch: () => Promise<void>
@@ -148,6 +171,8 @@ const AppDeployInfo: Component<{
   latestBuildId: string | undefined
   hasPermission: boolean
 }> = (props) => {
+  const { commits } = useApplicationData()
+
   const stopApp = async () => {
     try {
       await client.stopApplication({ id: props.app.id })
@@ -156,6 +181,32 @@ const AppDeployInfo: Component<{
     } catch (e) {
       handleAPIError(e, 'アプリケーションの停止に失敗しました')
     }
+  }
+
+  const deployedCommit = () => commits()?.[props.deployedBuild?.commit || '']
+  const deployedCommitDisplay = () => {
+    const c = deployedCommit()
+    if (!c || !c.commitDate) {
+      const hash = props.deployedBuild?.commit
+      if (!hash) return '<no build>'
+      return `Build at ${shortSha(hash)}`
+    }
+
+    const firstLine = c.message.split('\n')[0]
+    const { diff } = diffHuman(c.commitDate.toDate())
+    const tooltip = (
+      <DataRows>
+        <For each={c.message.split('\n')}>{(line) => <div>{line}</div>}</For>
+        <div>
+          {c.authorName}, {diff}, {shortSha(c.hash)}
+        </div>
+      </DataRows>
+    )
+    return (
+      <ToolTip props={{ content: tooltip }}>
+        <div class={halfFit}>{firstLine}</div>
+      </ToolTip>
+    )
   }
 
   return (
@@ -205,8 +256,8 @@ const AppDeployInfo: Component<{
           <List.RowContent>
             <List.RowTitle>Source Commit</List.RowTitle>
             <List.RowData>
-              {`${props.deployedBuild?.commit ? shortSha(props.deployedBuild?.commit) : '0000000'}`}
-              <Show when={props.deployedBuild && props.deployedBuild?.id === props.latestBuildId}>
+              {deployedCommitDisplay()}
+              <Show when={props.deployedBuild?.id === props.latestBuildId}>
                 <ToolTip props={{ content: '最新のビルドがデプロイされています' }}>
                   <Badge variant="success">Latest</Badge>
                 </ToolTip>

@@ -144,7 +144,7 @@ const AppsList: Component<{
   const hashes = () => apps()?.applications?.map((app) => app.commit)
   const [commits] = createResource(
     () => hashes(),
-    (hashes) => getRepositoryCommits(hashes)
+    (hashes) => getRepositoryCommits(hashes),
   )
 
   const filteredReposByProvider = createMemo(() => {
@@ -224,7 +224,11 @@ const AppsList: Component<{
           {(vRow) => (
             <div data-index={vRow.index} ref={(el) => queueMicrotask(() => virtualizer().measureElement(el))}>
               <div style={{ 'padding-bottom': '16px' }}>
-                <RepositoryList repository={filteredRepos()[vRow.index].repo} apps={filteredRepos()[vRow.index].apps} commits={commits()} />
+                <RepositoryList
+                  repository={filteredRepos()[vRow.index].repo}
+                  apps={filteredRepos()[vRow.index].apps}
+                  commits={commits()}
+                />
               </div>
             </div>
           )}
