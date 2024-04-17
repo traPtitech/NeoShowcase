@@ -256,7 +256,7 @@ const AppDeployInfo: Component<{
             <List.RowTitle>Deploy Type</List.RowTitle>
             <List.RowData>{titleCase(DeployType[props.app.deployType])}</List.RowData>
           </List.RowContent>
-          <JumpButton href={`/apps/${props.app.id}/settings/build`} />
+          <JumpButton href={`/apps/${props.app.id}/settings/build`} tooltip="設定を変更" />
         </DeployInfo>
         <DeployInfo long>
           <List.RowContent class={shrinkFirst}>
@@ -271,7 +271,7 @@ const AppDeployInfo: Component<{
             </List.RowData>
           </List.RowContent>
           <Show when={props.deployedBuild}>
-            <JumpButton href={`/apps/${props.app.id}/builds/${props.deployedBuild?.id}`} />
+            <JumpButton href={`/apps/${props.app.id}/builds/${props.deployedBuild?.id}`} tooltip="ビルドの詳細" />
           </Show>
         </DeployInfo>
         <DeployInfo long>
@@ -288,7 +288,7 @@ const AppDeployInfo: Component<{
               )}
             </For>
           </List.RowContent>
-          <JumpButton href={`/apps/${props.app.id}/settings/urls`} />
+          <JumpButton href={`/apps/${props.app.id}/settings/urls`} tooltip="設定を変更" />
         </DeployInfo>
         <Show when={props.app.containerMessage !== ''}>
           <DeployInfo long>

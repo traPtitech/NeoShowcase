@@ -1,6 +1,7 @@
 import { styled } from '@macaron-css/solid'
 import { A } from '@solidjs/router'
 import type { VoidComponent } from 'solid-js'
+import { ToolTip } from '/@/components/UI/ToolTip'
 import { colorVars } from '/@/theme'
 import { MaterialSymbols } from './MaterialSymbols'
 
@@ -35,12 +36,14 @@ const JumpButtonContainer = styled('div', {
     },
   },
 })
-const JumpButton: VoidComponent<{ href: string }> = (props) => (
-  <A href={props.href}>
-    <JumpButtonContainer>
-      <MaterialSymbols opticalSize={20}>arrow_outward</MaterialSymbols>
-    </JumpButtonContainer>
-  </A>
+const JumpButton: VoidComponent<{ href: string; tooltip?: string }> = (props) => (
+  <ToolTip props={{ content: props.tooltip }} disabled={!props.tooltip}>
+    <A href={props.href}>
+      <JumpButtonContainer>
+        <MaterialSymbols opticalSize={20}>arrow_outward</MaterialSymbols>
+      </JumpButtonContainer>
+    </A>
+  </ToolTip>
 )
 
 export default JumpButton
