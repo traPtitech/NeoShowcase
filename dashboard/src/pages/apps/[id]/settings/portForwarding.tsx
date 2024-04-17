@@ -18,7 +18,7 @@ const Li = styled('li', {
 })
 
 export default () => {
-  const { app, refetchApp, hasPermission } = useApplicationData()
+  const { app, refetch, hasPermission } = useApplicationData()
   const loaded = () => !!(app() && systemInfo())
   const form = createFormStore<PortSettingsStore>({
     initialValues: {
@@ -51,7 +51,7 @@ export default () => {
         },
       })
       toast.success('ポート公開設定を更新しました')
-      refetchApp()
+      void refetch()
     } catch (e) {
       handleAPIError(e, 'ポート公開設定の更新に失敗しました')
     }

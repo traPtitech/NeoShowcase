@@ -14,7 +14,7 @@ import { client, handleAPIError } from '/@/libs/api'
 import { useApplicationData } from '/@/routes'
 
 export default () => {
-  const { app, refetchApp, hasPermission } = useApplicationData()
+  const { app, refetch, hasPermission } = useApplicationData()
   const loaded = () => !!app()
 
   const [buildConfig, BuildConfig] = createForm<BuildConfigForm>({
@@ -45,7 +45,7 @@ export default () => {
         },
       })
       toast.success('ビルド設定を更新しました')
-      refetchApp()
+      void refetch()
     } catch (e) {
       handleAPIError(e, 'ビルド設定の更新に失敗しました')
     }
