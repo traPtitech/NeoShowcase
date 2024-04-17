@@ -54,7 +54,7 @@ import {
 import { type WebsiteFormStatus, WebsiteSetting, newWebsite } from '/@/components/templates/app/WebsiteSettings'
 import ReposFilter from '/@/components/templates/repo/ReposFilter'
 import { client, handleAPIError, systemInfo } from '/@/libs/api'
-import { type Provider, providerToIcon, repositoryURLToProvider } from '/@/libs/application'
+import { type RepositoryOrigin, originToIcon, repositoryURLToOrigin } from '/@/libs/application'
 import { colorOverlay } from '/@/libs/colorOverlay'
 import { colorVars, textVars } from '/@/theme'
 
@@ -196,11 +196,11 @@ const RepositoryStep: Component<{
   const [apps] = createResource(() => client.getApplications({ scope: GetApplicationsRequest_Scope.ALL }))
 
   const [query, setQuery] = createSignal('')
-  const [provider, setProvider] = createSignal<Provider[]>(['GitHub', 'GitLab', 'Gitea'])
+  const [origin, setOrigin] = createSignal<RepositoryOrigin[]>(['GitHub', 'Gitea', 'Others'])
 
-  const filteredReposByProvider = createMemo(() => {
-    const p = provider()
-    return repos()?.repositories.filter((r) => p.includes(repositoryURLToProvider(r.url)))
+  const filteredReposByOrigin = createMemo(() => {
+    const p = origin()
+    return repos()?.repositories.filter((r) => p.includes(repositoryURLToOrigin(r.url)))
   })
   const repoWithApps = createMemo(() => {
     const appsMap = apps()?.applications.reduce(
@@ -213,7 +213,7 @@ const RepositoryStep: Component<{
     )
 
     return (
-      filteredReposByProvider()?.map(
+      filteredReposByOrigin()?.map(
         (
           repo,
         ): {
@@ -244,7 +244,7 @@ const RepositoryStep: Component<{
         value={query()}
         onInput={(e) => setQuery(e.currentTarget.value)}
         leftIcon={<MaterialSymbols>search</MaterialSymbols>}
-        rightIcon={<ReposFilter provider={provider()} setProvider={setProvider} />}
+        rightIcon={<ReposFilter origin={origin()} setOrigin={setOrigin} />}
       />
       <List.Container>
         <A href="/repos/new">
@@ -272,7 +272,7 @@ const RepositoryStep: Component<{
                 type="button"
               >
                 <RepositoryRow>
-                  <RepositoryIcon>{providerToIcon(repositoryURLToProvider(repo.repo.url), 24)}</RepositoryIcon>
+                  <RepositoryIcon>{originToIcon(repositoryURLToOrigin(repo.repo.url), 24)}</RepositoryIcon>
                   <RepositoryName>{repo.repo.name}</RepositoryName>
                   <AppCount>{repo.appCount > 0 && `${repo.appCount} apps`}</AppCount>
                   <RepositoryUrl>{repo.repo.htmlUrl}</RepositoryUrl>
@@ -342,7 +342,7 @@ const GeneralStep: Component<{
         <FormContainer>
           <FormTitle>
             Create Application from
-            {providerToIcon(repositoryURLToProvider(props.repo.url), 24)}
+            {originToIcon(repositoryURLToOrigin(props.repo.url), 24)}
             {props.repo.name}
           </FormTitle>
           {/* 

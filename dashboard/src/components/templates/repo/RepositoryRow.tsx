@@ -5,7 +5,7 @@ import type { Repository } from '/@/api/neoshowcase/protobuf/gateway_pb'
 import { Button } from '/@/components/UI/Button'
 import Skeleton from '/@/components/UI/Skeleton'
 import { user } from '/@/libs/api'
-import { providerToIcon, repositoryURLToProvider } from '/@/libs/application'
+import { originToIcon, repositoryURLToOrigin } from '/@/libs/application'
 import { colorVars, textVars } from '/@/theme'
 
 const Container = styled('div', {
@@ -74,7 +74,7 @@ export const RepositoryRow: Component<Props> = (props) => {
     <Show when={props.repository} fallback={<RepositoryRowSkeleton />}>
       <Container>
         <TitleContainer>
-          {providerToIcon(repositoryURLToProvider(props.repository!.url), 24)}
+          {originToIcon(repositoryURLToOrigin(props.repository!.url), 24)}
           <A
             href={`/repos/${props.repository?.id}`}
             style={{

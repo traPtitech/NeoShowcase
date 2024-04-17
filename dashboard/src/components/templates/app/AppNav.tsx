@@ -3,7 +3,7 @@ import { A } from '@solidjs/router'
 import type { Component } from 'solid-js'
 import type { Application, Repository } from '/@/api/neoshowcase/protobuf/gateway_pb'
 import { MaterialSymbols } from '/@/components/UI/MaterialSymbols'
-import { providerToIcon, repositoryURLToProvider } from '/@/libs/application'
+import { originToIcon, repositoryURLToOrigin } from '/@/libs/application'
 import { colorVars, textVars } from '/@/theme'
 import { Nav } from '../Nav'
 
@@ -55,7 +55,7 @@ export const AppNav: Component<{
           }}
         >
           <RepositoryInfo>
-            {providerToIcon(repositoryURLToProvider(props.repository.url), 20)}
+            {originToIcon(repositoryURLToOrigin(props.repository.url), 20)}
             <RepositoryName>{props.repository.name}</RepositoryName>
           </RepositoryInfo>
         </A>
