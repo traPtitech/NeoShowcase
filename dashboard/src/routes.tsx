@@ -8,6 +8,7 @@ import {
   useParams,
 } from '@solidjs/router'
 import { type Component, createMemo, lazy } from 'solid-js'
+import app from '/@/App'
 import ErrorView from './components/layouts/ErrorView'
 import {
   getApplication,
@@ -23,7 +24,6 @@ import {
   revalidateBuilds,
   revalidateRepository,
 } from './libs/api'
-import app from '/@/App'
 
 const loadApplicationData: RouteLoadFunc = ({ params }) => {
   getApplication(params.id).then((app) => {
@@ -43,13 +43,11 @@ export const useApplicationData = () => {
     if (a && b) return [a.commit, ...b.map((b) => b.commit)]
     return undefined
   }
-  const commits = createAsync(
-    async () => {
-      const h = hashes()
-      if (!h) return undefined
-      return getRepositoryCommits(h)
-    },
-  )
+  const commits = createAsync(async () => {
+    const h = hashes()
+    if (!h) return undefined
+    return getRepositoryCommits(h)
+  })
   const refetch = async () => {
     await Promise.all([revalidateApplication(params.id), revalidateBuilds(params.id)])
   }

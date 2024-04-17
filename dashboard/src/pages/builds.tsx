@@ -33,7 +33,7 @@ const builds: Component = () => {
   const [commits] = createResource(
     () => hashes(),
     (hashes) => getRepositoryCommits(hashes),
-    )
+  )
 
   const sortedBuilds = createMemo(
     () =>
