@@ -285,8 +285,8 @@ const AppDeployInfo: Component<{
           </List.RowContent>
           <JumpButton href={`/apps/${props.app.id}/settings/urls`} tooltip="設定を変更" />
         </DeployInfo>
-        <DeployInfo long>
-          <Show when={props.app.deployType === DeployType.RUNTIME}>
+        <Show when={props.app.deployType === DeployType.RUNTIME}>
+          <DeployInfo long>
             <List.RowContent>
               <List.RowTitle>SSH Access</List.RowTitle>
               <Code value={sshAccessCommand()} copyable />
@@ -294,8 +294,8 @@ const AppDeployInfo: Component<{
                 <List.RowData>現在アプリが起動していないためSSHアクセスはできません</List.RowData>
               </Show>
             </List.RowContent>
-          </Show>
-        </DeployInfo>
+          </DeployInfo>
+        </Show>
       </InfoContainer>
     </DeploymentContainer>
   )

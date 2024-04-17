@@ -56,7 +56,6 @@ const Titles = styled('div', {
 })
 const Title = styled('h1', {
   base: {
-    width: '100%',
     overflow: 'hidden',
     textOverflow: 'ellipsis',
     whiteSpace: 'nowrap',
