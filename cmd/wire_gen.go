@@ -131,7 +131,7 @@ func NewControllerDocker(c Config) (component, error) {
 		return nil, err
 	}
 	repositoryCommitRepository := repository.NewRepositoryCommitRepository(db)
-	commitfetcherService, err := commitfetcher.NewService(gitRepositoryRepository, repositoryCommitRepository, publicKeys)
+	commitfetcherService, err := commitfetcher.NewService(applicationRepository, buildRepository, gitRepositoryRepository, repositoryCommitRepository, publicKeys)
 	if err != nil {
 		return nil, err
 	}
@@ -228,7 +228,7 @@ func NewControllerK8s(c Config) (component, error) {
 		return nil, err
 	}
 	repositoryCommitRepository := repository.NewRepositoryCommitRepository(db)
-	commitfetcherService, err := commitfetcher.NewService(gitRepositoryRepository, repositoryCommitRepository, publicKeys)
+	commitfetcherService, err := commitfetcher.NewService(applicationRepository, buildRepository, gitRepositoryRepository, repositoryCommitRepository, publicKeys)
 	if err != nil {
 		return nil, err
 	}

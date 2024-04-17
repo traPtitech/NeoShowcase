@@ -15,6 +15,7 @@ import (
 	"time"
 
 	"github.com/traPtitech/neoshowcase/pkg/domain"
+	"github.com/traPtitech/neoshowcase/pkg/util/optional"
 )
 
 type Service interface {
@@ -31,6 +32,8 @@ type queueItem struct {
 }
 
 type service struct {
+	appRepo     domain.ApplicationRepository
+	buildRepo   domain.BuildRepository
 	gitRepo     domain.GitRepositoryRepository
 	commitsRepo domain.RepositoryCommitRepository
 	fallbackKey *ssh.PublicKeys
@@ -44,11 +47,15 @@ type service struct {
 }
 
 func NewService(
+	appRepo domain.ApplicationRepository,
+	buildRepo domain.BuildRepository,
 	gitRepo domain.GitRepositoryRepository,
 	commitsRepo domain.RepositoryCommitRepository,
 	fallbackKey *ssh.PublicKeys,
 ) (Service, error) {
 	s := &service{
+		appRepo:     appRepo,
+		buildRepo:   buildRepo,
 		gitRepo:     gitRepo,
 		commitsRepo: commitsRepo,
 		fallbackKey: fallbackKey,
@@ -59,6 +66,7 @@ func NewService(
 
 	ctx, cancel := context.WithCancel(context.Background())
 	s.run = func() {
+		go s.resolveCommits(ctx)
 		go s.fetchLoop(ctx, q)
 	}
 	s.close = cancel
@@ -68,6 +76,32 @@ func NewService(
 
 func (s *service) Run() {
 	s.runOnce.Do(s.run)
+}
+
+// resolveCommits resolves all recorded commits in current database - i.e. applications and builds table
+func (s *service) resolveCommits(ctx context.Context) {
+	apps, err := s.appRepo.GetApplications(ctx, domain.GetApplicationCondition{})
+	if err != nil {
+		log.Errorf("failed to get applications: %+v", err)
+		return
+	}
+
+	for _, app := range apps {
+		builds, err := s.buildRepo.GetBuilds(ctx, domain.GetBuildCondition{ApplicationID: optional.From(app.ID)})
+		if err != nil {
+			log.Errorf("failed to get builds: %+v", err)
+			return
+		}
+
+		hashMap := lo.SliceToMap(builds, func(b *domain.Build) (string, struct{}) {
+			return b.Commit, struct{}{}
+		})
+		hashMap[app.Commit] = struct{}{}
+		hashes := lo.Keys(hashMap)
+
+		s.Fetch(app.RepositoryID, hashes)
+		time.Sleep(time.Second)
+	}
 }
 
 func (s *service) Fetch(repositoryID string, hashes []string) {
@@ -94,6 +128,8 @@ func (s *service) fetchLoop(ctx context.Context, fetcher <-chan queueItem) {
 
 func (s *service) fetchOne(ctx context.Context, repositoryID string, hashes []string) error {
 	start := time.Now()
+
+	hashes = lo.Uniq(hashes)
 
 	// Check if we have already tried
 	recordedCommits, err := s.commitsRepo.GetCommits(ctx, hashes)
