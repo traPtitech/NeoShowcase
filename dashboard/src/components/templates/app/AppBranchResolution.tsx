@@ -2,14 +2,14 @@ import { style } from '@macaron-css/core'
 import { styled } from '@macaron-css/solid'
 import { AiOutlineBranches } from 'solid-icons/ai'
 import { type Component, For, Show } from 'solid-js'
-import { type Application, DeployType } from '/@/api/neoshowcase/protobuf/gateway_pb'
+import type { Application } from '/@/api/neoshowcase/protobuf/gateway_pb'
 import { Button } from '/@/components/UI/Button'
-import Code from '/@/components/UI/Code'
 import JumpButton from '/@/components/UI/JumpButton'
 import { ToolTip } from '/@/components/UI/ToolTip'
 import { List } from '/@/components/templates/List'
-import { type CommitsMap, systemInfo } from '/@/libs/api'
-import { ApplicationState, deploymentState } from '/@/libs/application'
+import { AppStatusIcon } from '/@/components/templates/app/AppStatusIcon'
+import type { CommitsMap } from '/@/libs/api'
+import { ApplicationState, errorCommit } from '/@/libs/application'
 import { diffHuman, shortSha } from '/@/libs/format'
 import { colorVars, textVars } from '/@/theme'
 
@@ -61,10 +61,17 @@ const AppBranchResolution: Component<{
   const commit = () => props.commits?.[props.app.commit]
   const commitDisplay = () => {
     const c = commit()
+    const isErrorCommit = props.app.commit === errorCommit
     const base = (
       <DataRow>
-        <AiOutlineBranches />
-        <div>{`${props.app.refName} → ${shortSha(props.app.commit)}`}</div>
+        <AiOutlineBranches size={20} />
+        <DataRow>
+          {`${props.app.refName} → `}
+          <Show when={isErrorCommit} fallback={shortSha(props.app.commit)}>
+            <AppStatusIcon state={ApplicationState.Error} size={20} />
+            Error
+          </Show>
+        </DataRow>
       </DataRow>
     )
     if (!c || !c.commitDate) {
