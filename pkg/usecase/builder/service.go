@@ -18,12 +18,17 @@ import (
 	"github.com/traPtitech/neoshowcase/pkg/util/retry"
 )
 
+type Config struct {
+	StepTimeout time.Duration
+}
+
 type Service interface {
 	Start(ctx context.Context) error
 	Shutdown(ctx context.Context) error
 }
 
 type builderService struct {
+	config    *Config
 	client    domain.ControllerBuilderServiceClient
 	buildkit  *buildkit.Client
 	buildpack builder.BuildpackBackend
@@ -39,6 +44,7 @@ type builderService struct {
 }
 
 func NewService(
+	config *Config,
 	client domain.ControllerBuilderServiceClient,
 	buildkit *buildkit.Client,
 	buildpack builder.BuildpackBackend,
@@ -52,6 +58,7 @@ func NewService(
 		return nil, errors.Wrap(err, "failed to convert into public key")
 	}
 	return &builderService{
+		config:    config,
 		client:    client,
 		buildkit:  buildkit,
 		buildpack: buildpack,
