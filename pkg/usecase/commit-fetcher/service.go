@@ -129,7 +129,9 @@ func (s *service) fetchLoop(ctx context.Context, fetcher <-chan queueItem) {
 func (s *service) fetchOne(ctx context.Context, repositoryID string, hashes []string) error {
 	start := time.Now()
 
-	hashes = lo.Uniq(hashes)
+	// Filter out errored app hashes
+	hashes = lo.Filter(hashes, func(hash string, _ int) bool { return hash != domain.EmptyCommit })
+	hashes = lo.Uniq(hashes) // Make them unique just in case
 
 	// Check if we have already tried
 	recordedCommits, err := s.commitsRepo.GetCommits(ctx, hashes)
