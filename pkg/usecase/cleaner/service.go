@@ -3,6 +3,7 @@ package cleaner
 import (
 	"context"
 	"fmt"
+	"github.com/regclient/regclient/types/errs"
 	"sync"
 	"time"
 
@@ -111,6 +112,10 @@ func (c *cleanerService) pruneImages(ctx context.Context, r *regclient.RegClient
 func (c *cleanerService) pruneImage(ctx context.Context, r *regclient.RegClient, app *domain.Application) error {
 	imageName := c.image.ImageName(app.ID)
 	tags, err := regutil.TagList(ctx, r, imageName)
+	if errors.Is(err, errs.ErrNotFound) {
+		// Skip not found error - this is expected (example: before first image upload)
+		return nil
+	}
 	if err != nil {
 		return errors.Wrap(err, "getting tags")
 	}
