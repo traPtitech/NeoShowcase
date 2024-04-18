@@ -3,6 +3,7 @@ package apiserver
 import (
 	"context"
 	"fmt"
+	"github.com/samber/lo"
 
 	"github.com/friendsofgo/errors"
 
@@ -93,7 +94,12 @@ func (s *Service) GetRepositories(ctx context.Context, scope GetRepoScope) ([]*d
 }
 
 func (s *Service) GetRepositoryCommits(ctx context.Context, hashes []string) ([]*domain.RepositoryCommit, error) {
-	return handleRepoError(s.commitRepo.GetCommits(ctx, hashes))
+	commits, err := s.commitRepo.GetCommits(ctx, hashes)
+	if err != nil {
+		return nil, err
+	}
+	commits = lo.Filter(commits, func(c *domain.RepositoryCommit, _ int) bool { return !c.Error })
+	return commits, nil
 }
 
 func (s *Service) GetRepository(ctx context.Context, id string) (*domain.Repository, error) {
