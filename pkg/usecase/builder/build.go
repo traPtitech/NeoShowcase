@@ -8,7 +8,6 @@ import (
 	"github.com/friendsofgo/errors"
 	buildkit "github.com/moby/buildkit/client"
 	log "github.com/sirupsen/logrus"
-	gstatus "google.golang.org/grpc/status"
 
 	"github.com/traPtitech/neoshowcase/pkg/domain"
 	"github.com/traPtitech/neoshowcase/pkg/infrastructure/grpc/pb"
@@ -61,80 +60,80 @@ func (s *builderService) startBuild(req *domain.StartBuildRequest) error {
 
 type buildStep struct {
 	desc string
-	fn   func() error
+	fn   func(ctx context.Context) error
 }
 
-func (s *builderService) buildSteps(ctx context.Context, st *state) ([]buildStep, error) {
+func (s *builderService) buildSteps(st *state) ([]buildStep, error) {
 	var steps []buildStep
 
-	steps = append(steps, buildStep{"Repository Clone", func() error {
+	steps = append(steps, buildStep{"Repository Clone", func(ctx context.Context) error {
 		return s.cloneRepository(ctx, st)
 	}})
 
 	switch bc := st.app.Config.BuildConfig.(type) {
 	case *domain.BuildConfigRuntimeBuildpack:
-		steps = append(steps, buildStep{"Build (Runtime Buildpack)", func() error {
+		steps = append(steps, buildStep{"Build (Runtime Buildpack)", func(ctx context.Context) error {
 			return s.buildRuntimeBuildpack(ctx, st, bc)
 		}})
 	case *domain.BuildConfigRuntimeCmd:
-		steps = append(steps, buildStep{"Build (Runtime Command)", func() error {
+		steps = append(steps, buildStep{"Build (Runtime Command)", func(ctx context.Context) error {
 			return withBuildkitProgress(ctx, st.logWriter, func(ctx context.Context, ch chan *buildkit.SolveStatus) error {
 				return s.buildRuntimeCmd(ctx, st, ch, bc)
 			})
 		}})
 	case *domain.BuildConfigRuntimeDockerfile:
-		steps = append(steps, buildStep{"Build (Runtime Dockerfile)", func() error {
+		steps = append(steps, buildStep{"Build (Runtime Dockerfile)", func(ctx context.Context) error {
 			return withBuildkitProgress(ctx, st.logWriter, func(ctx context.Context, ch chan *buildkit.SolveStatus) error {
 				return s.buildRuntimeDockerfile(ctx, st, ch, bc)
 			})
 		}})
 	case *domain.BuildConfigStaticBuildpack:
-		steps = append(steps, buildStep{"Build (Static Buildpack)", func() error {
+		steps = append(steps, buildStep{"Build (Static Buildpack)", func(ctx context.Context) error {
 			return s.buildStaticBuildpackPack(ctx, st, bc)
 		}})
-		steps = append(steps, buildStep{"Extract from Temporary Image", func() error {
+		steps = append(steps, buildStep{"Extract from Temporary Image", func(ctx context.Context) error {
 			return withBuildkitProgress(ctx, st.logWriter, func(ctx context.Context, ch chan *buildkit.SolveStatus) error {
 				return s.buildStaticExtract(ctx, st, ch)
 			})
 		}})
-		steps = append(steps, buildStep{"Cleanup Temporary Image", func() error {
+		steps = append(steps, buildStep{"Cleanup Temporary Image", func(ctx context.Context) error {
 			return s.buildStaticCleanup(ctx, st)
 		}})
-		steps = append(steps, buildStep{"Save Artifact", func() error {
+		steps = append(steps, buildStep{"Save Artifact", func(ctx context.Context) error {
 			return s.saveArtifact(ctx, st)
 		}})
 	case *domain.BuildConfigStaticCmd:
-		steps = append(steps, buildStep{"Build (Static Command)", func() error {
+		steps = append(steps, buildStep{"Build (Static Command)", func(ctx context.Context) error {
 			return withBuildkitProgress(ctx, st.logWriter, func(ctx context.Context, ch chan *buildkit.SolveStatus) error {
 				return s.buildStaticCmd(ctx, st, ch, bc)
 			})
 		}})
-		steps = append(steps, buildStep{"Extract from Temporary Image", func() error {
+		steps = append(steps, buildStep{"Extract from Temporary Image", func(ctx context.Context) error {
 			return withBuildkitProgress(ctx, st.logWriter, func(ctx context.Context, ch chan *buildkit.SolveStatus) error {
 				return s.buildStaticExtract(ctx, st, ch)
 			})
 		}})
-		steps = append(steps, buildStep{"Cleanup Temporary Image", func() error {
+		steps = append(steps, buildStep{"Cleanup Temporary Image", func(ctx context.Context) error {
 			return s.buildStaticCleanup(ctx, st)
 		}})
-		steps = append(steps, buildStep{"Save Artifact", func() error {
+		steps = append(steps, buildStep{"Save Artifact", func(ctx context.Context) error {
 			return s.saveArtifact(ctx, st)
 		}})
 	case *domain.BuildConfigStaticDockerfile:
-		steps = append(steps, buildStep{"Build (Static Dockerfile)", func() error {
+		steps = append(steps, buildStep{"Build (Static Dockerfile)", func(ctx context.Context) error {
 			return withBuildkitProgress(ctx, st.logWriter, func(ctx context.Context, ch chan *buildkit.SolveStatus) error {
 				return s.buildStaticDockerfile(ctx, st, ch, bc)
 			})
 		}})
-		steps = append(steps, buildStep{"Extract from Temporary Image", func() error {
+		steps = append(steps, buildStep{"Extract from Temporary Image", func(ctx context.Context) error {
 			return withBuildkitProgress(ctx, st.logWriter, func(ctx context.Context, ch chan *buildkit.SolveStatus) error {
 				return s.buildStaticExtract(ctx, st, ch)
 			})
 		}})
-		steps = append(steps, buildStep{"Cleanup Temporary Image", func() error {
+		steps = append(steps, buildStep{"Cleanup Temporary Image", func(ctx context.Context) error {
 			return s.buildStaticCleanup(ctx, st)
 		}})
-		steps = append(steps, buildStep{"Save Artifact", func() error {
+		steps = append(steps, buildStep{"Save Artifact", func(ctx context.Context) error {
 			return s.saveArtifact(ctx, st)
 		}})
 	default:
@@ -152,7 +151,7 @@ func (s *builderService) process(ctx context.Context, st *state) domain.BuildSta
 	version, revision := cli.GetVersion()
 	st.WriteLog(fmt.Sprintf("[ns-builder] Version %v (%v)", version, revision))
 
-	steps, err := s.buildSteps(ctx, st)
+	steps, err := s.buildSteps(st)
 	if err != nil {
 		log.Errorf("calculating build steps: %+v", err)
 		st.WriteLog(fmt.Sprintf("[ns-builder] Error calculating build steps: %v", err))
@@ -162,22 +161,30 @@ func (s *builderService) process(ctx context.Context, st *state) domain.BuildSta
 	for i, step := range steps {
 		st.WriteLog(fmt.Sprintf("[ns-builder] ==> (%d/%d) %s", i+1, len(steps), step.desc))
 		start := time.Now()
-		err := step.fn()
+
+		// Execute step with timeout
+		childCtx, cancel := context.WithTimeout(ctx, s.config.StepTimeout)
+		err := step.fn(childCtx)
+		cancel()
+
+		// First, check if ctx was cancelled from parent
+		// - this (usually) means the user pressed 'Cancel' button to cancel the build
 		if cerr := ctx.Err(); cerr != nil {
 			st.WriteLog(fmt.Sprintf("[ns-builder] Build cancelled by user: %v", cerr))
 			return domain.BuildStatusCanceled
 		}
-		if errors.Is(err, context.Canceled) ||
-			errors.Is(err, context.DeadlineExceeded) ||
-			errors.Is(err, gstatus.FromContextError(context.Canceled).Err()) {
-			st.WriteLog(fmt.Sprintf("[ns-builder] Build cancelled: %v", err))
-			return domain.BuildStatusCanceled
+		// Check if the childCtx timed out from the configured "StepTimeout"
+		if errors.Is(err, context.DeadlineExceeded) {
+			st.WriteLog(fmt.Sprintf("[ns-builder] Build timed out: %v", err))
+			return domain.BuildStatusFailed
 		}
+		// Other reasons such as build script failure
 		if err != nil {
 			log.Errorf("Build failed for %v: %+v", st.build.ID, err)
 			st.WriteLog(fmt.Sprintf("[ns-builder] Build failed: %v", err))
 			return domain.BuildStatusFailed
 		}
+
 		st.WriteLog(fmt.Sprintf("[ns-builder] ==> (%d/%d) Done (%v).", i+1, len(steps), time.Since(start)))
 	}
 

@@ -35,6 +35,7 @@ components:
     controller:
       url: http://ns-controller:10000
     priority: 0
+    stepTimeout: "1h"
 
   controller:
     port: 10000

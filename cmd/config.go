@@ -51,9 +51,10 @@ type BuilderConfig struct {
 	Buildkit struct {
 		Address string `mapstructure:"address" yaml:"address"`
 	} `mapstructure:"buildkit" yaml:"buildkit"`
-	Buildpack  buildpack.Config                   `mapstructure:"buildpack" yaml:"buildpack"`
-	Controller grpc.ControllerServiceClientConfig `mapstructure:"controller" yaml:"controller"`
-	Priority   int                                `mapstructure:"priority" yaml:"priority"`
+	Buildpack   buildpack.Config                   `mapstructure:"buildpack" yaml:"buildpack"`
+	Controller  grpc.ControllerServiceClientConfig `mapstructure:"controller" yaml:"controller"`
+	Priority    int                                `mapstructure:"priority" yaml:"priority"`
+	StepTimeout string                             `mapstructure:"stepTimeout" yaml:"stepTimeout"`
 }
 
 type ControllerConfig struct {
@@ -151,6 +152,7 @@ func init() {
 	viper.SetDefault("components.builder.controller.url", "http://ns-controller:10000")
 
 	viper.SetDefault("components.builder.priority", 0)
+	viper.SetDefault("components.builder.stepTimeout", "1h")
 
 	viper.SetDefault("components.controller.port", 10000)
 	viper.SetDefault("components.controller.tokenHeader", "X-NS-Controller-Token")

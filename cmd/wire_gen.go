@@ -55,17 +55,21 @@ func NewBuilder(c Config) (component, error) {
 	if err != nil {
 		return nil, err
 	}
+	builderConfig, err := provideBuilderConfig(c)
+	if err != nil {
+		return nil, err
+	}
 	tokenAuthInterceptor, err := provideTokenAuthInterceptor(c)
 	if err != nil {
 		return nil, err
 	}
 	controllerBuilderServiceClient := provideControllerBuilderServiceClient(c, tokenAuthInterceptor)
 	componentsConfig := c.Components
-	builderConfig := componentsConfig.Builder
-	buildpackConfig := builderConfig.Buildpack
+	mainBuilderConfig := componentsConfig.Builder
+	buildpackConfig := mainBuilderConfig.Buildpack
 	buildpackHelperServiceClient := provideBuildpackHelperClient(c)
 	buildpackBackend := buildpack.NewBuildpackBackend(buildpackConfig, buildpackHelperServiceClient)
-	service, err := builder.NewService(controllerBuilderServiceClient, client, buildpackBackend)
+	service, err := builder.NewService(builderConfig, controllerBuilderServiceClient, client, buildpackBackend)
 	if err != nil {
 		return nil, err
 	}

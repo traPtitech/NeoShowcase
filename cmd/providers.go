@@ -101,6 +101,7 @@ var providers = wire.NewSet(
 	provideAuthDevServer,
 	provideBuildpackHelperServer,
 	buildpack.NewBuildpackBackend,
+	provideBuilderConfig,
 	provideBuildkitClient,
 	provideControllerServer,
 	provideContainerLogger,
@@ -170,6 +171,20 @@ func provideBuildpackHelperServer(
 		},
 	}
 	return &buildpackhelper.APIServer{H2CServer: web.NewH2CServer(wc)}
+}
+
+func provideBuilderConfig(c Config) (*ubuilder.Config, error) {
+	stepTimeoutStr := c.Components.Builder.StepTimeout
+	stepTimeout, err := time.ParseDuration(stepTimeoutStr)
+	if err != nil {
+		return nil, errors.Wrap(err, fmt.Sprintf("failed to parse components.builder.stepTimeout value: %s", stepTimeoutStr))
+	}
+	if stepTimeout <= 0 {
+		return nil, errors.Errorf("components.builder.stepTimeout must be positive: %s", stepTimeoutStr)
+	}
+	return &ubuilder.Config{
+		StepTimeout: stepTimeout,
+	}, nil
 }
 
 func provideBuildkitClient(c Config) (*buildkit.Client, error) {
