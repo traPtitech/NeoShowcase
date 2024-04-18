@@ -194,11 +194,12 @@ func (r *service) updateApps(ctx context.Context, repo *domain.Repository, apps 
 	var hashes []string
 	for _, app := range apps {
 		commit, ok := refToCommit[app.RefName]
-		if !ok {
+		if ok {
+			hashes = append(hashes, commit)
+		} else {
 			log.Errorf("failed to get resolve ref %v for app %v", app.RefName, app.ID)
 			commit = domain.EmptyCommit // Mark as empty commit to signal error
 		}
-		hashes = append(hashes, commit)
 
 		err = r.appRepo.UpdateApplication(ctx, app.ID, &domain.UpdateApplicationArgs{Commit: optional.From(commit)})
 		if err != nil {

@@ -56,7 +56,7 @@ export const deploymentState = (app: Application): ApplicationState => {
   return ApplicationState.Serving
 }
 
-const errorCommit = '0'.repeat(40)
+export const errorCommit = '0'.repeat(40)
 
 export const applicationState = (app: Application): ApplicationState => {
   if (!app.running) {

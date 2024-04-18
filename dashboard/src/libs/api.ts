@@ -2,7 +2,7 @@ import { createPromiseClient } from '@connectrpc/connect'
 import { createConnectTransport } from '@connectrpc/connect-web'
 import { cache, revalidate } from '@solidjs/router'
 import AsyncLock from 'async-lock'
-import { createResource, createSignal } from 'solid-js'
+import { createResource } from 'solid-js'
 import toast from 'solid-toast'
 import { APIService } from '/@/api/neoshowcase/protobuf/gateway_connect'
 import {
