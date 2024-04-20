@@ -12,13 +12,15 @@ import (
 var githubHook = lo.Must(github.New())
 
 func (r *Receiver) githubHandler(c echo.Context) error {
-	rawPayload, err := githubHook.Parse(c.Request(), github.PushEvent)
+	rawPayload, err := githubHook.Parse(c.Request(), github.PingEvent, github.PushEvent)
 	if err != nil {
 		return echo.NewHTTPError(http.StatusInternalServerError, err.Error())
 	}
 
 	// https://docs.github.com/en/rest/repos/repos
 	switch p := rawPayload.(type) {
+	case github.PingPayload:
+		// no-op
 	case github.PushPayload:
 		urls := []string{
 			p.Repository.HTMLURL,  // https://github.com/octocat/Hello-World
