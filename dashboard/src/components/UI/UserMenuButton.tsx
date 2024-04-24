@@ -4,6 +4,7 @@ import { styled } from '@macaron-css/solid'
 import { A } from '@solidjs/router'
 import type { Component } from 'solid-js'
 import type { User } from '/@/api/neoshowcase/protobuf/gateway_pb'
+import { systemInfo } from '/@/libs/api'
 import { colorVars, media, textVars } from '/@/theme'
 import { Button } from './Button'
 import { MaterialSymbols } from './MaterialSymbols'
@@ -32,6 +33,7 @@ const triggerStyle = style({
     },
   },
 })
+
 const UserName = styled('span', {
   base: {
     color: colorVars.semantic.text.black,
@@ -44,6 +46,7 @@ const UserName = styled('span', {
     },
   },
 })
+
 const iconStyle = style({
   width: '24px',
   height: '24px',
@@ -54,14 +57,17 @@ const iconStyle = style({
     },
   },
 })
+
 const contentShowKeyframes = keyframes({
   from: { opacity: 0, transform: 'translateY(-8px)' },
   to: { opacity: 1, transform: 'translateY(0)' },
 })
+
 const contentHideKeyframes = keyframes({
   from: { opacity: 1, transform: 'translateY(0)' },
   to: { opacity: 0, transform: 'translateY(-8px)' },
 })
+
 const contentStyle = style({
   padding: '6px',
   display: 'flex',
@@ -78,6 +84,17 @@ const contentStyle = style({
     '&[data-expanded]': {
       animation: `${contentShowKeyframes} 0.2s ease-in-out`,
     },
+  },
+})
+
+const VersionContainer = styled('div', {
+  base: {
+    display: 'flex',
+    flexDirection: 'column',
+    padding: '4px 16px',
+
+    color: colorVars.semantic.text.grey,
+    ...textVars.caption.regular,
   },
 })
 
@@ -109,31 +126,16 @@ export const UserMenuButton: Component<{
               </Button>
             </a>
           </DropdownMenu.Item>
+          <DropdownMenu.Item>
+            <VersionContainer>
+              <span>NeoShowcase</span>
+              <span>
+                {systemInfo()?.version} ({systemInfo()?.revision})
+              </span>
+            </VersionContainer>
+          </DropdownMenu.Item>
         </DropdownMenu.Content>
       </DropdownMenu.Portal>
     </DropdownMenu.Root>
   )
-  // <Trigger onClick={() => setShowOptions((s) => !s)}>
-  //   <UserAvatar user={props.user} size={32} />
-  //   <UserName>{props.user.name}</UserName>
-  //   <MaterialSymbols>arrow_drop_down</MaterialSymbols>
-  //   <Show when={showOptions()}>
-  //     <div
-  //       use:clickInside={() => setShowOptions(true)}
-  //       use:clickOutside={() => setShowOptions(false)}
-  //       class={optionsContainerClass}
-  //     >
-  //       <A href="/settings">
-  //         <Button variants="text" size="medium" leftIcon={<MaterialSymbols>settings</MaterialSymbols>} full>
-  //           Settings
-  //         </Button>
-  //       </A>
-  //       <a href="https://wiki.trap.jp/services/NeoShowcase" target="_blank" rel="noopener noreferrer">
-  //         <Button variants="text" size="medium" leftIcon={<MaterialSymbols>help</MaterialSymbols>} full>
-  //           Help
-  //         </Button>
-  //       </a>
-  //     </div>
-  //   </Show>
-  // </Trigger>
 }

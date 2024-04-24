@@ -15,6 +15,7 @@ import (
 	"github.com/traPtitech/neoshowcase/pkg/usecase/cdservice"
 	"github.com/traPtitech/neoshowcase/pkg/usecase/logstream"
 	"github.com/traPtitech/neoshowcase/pkg/usecase/repofetcher"
+	"github.com/traPtitech/neoshowcase/pkg/util/cli"
 	"github.com/traPtitech/neoshowcase/pkg/util/ds"
 )
 
@@ -65,6 +66,7 @@ func (s *ControllerService) GetSystemInfo(_ context.Context, _ *connect.Request[
 	}
 
 	ports := s.backend.AvailablePorts()
+	ver, rev := cli.GetVersion()
 
 	res := connect.NewResponse(&pb.SystemInfo{
 		PublicKey: domain.Base64EncodedPublicKey(s.pubKey.Signer.PublicKey()) + " neoshowcase",
@@ -75,6 +77,8 @@ func (s *ControllerService) GetSystemInfo(_ context.Context, _ *connect.Request[
 		Domains:    ds.Map(domains, pbconvert.ToPBAvailableDomain),
 		Ports:      ds.Map(ports, pbconvert.ToPBAvailablePort),
 		AdminerUrl: s.adminerURL,
+		Version:    ver,
+		Revision:   rev,
 	})
 	return res, nil
 }
