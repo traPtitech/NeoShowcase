@@ -23,6 +23,7 @@ const Container = styled('div', {
     borderBottom: `1px solid ${colorVars.semantic.ui.border}`,
   },
 })
+
 const NavigationContainer = styled('div', {
   base: {
     display: 'flex',
@@ -36,6 +37,7 @@ const NavigationContainer = styled('div', {
     },
   },
 })
+
 const MobileNavigationContainer = styled('div', {
   base: {
     display: 'none',
@@ -48,6 +50,7 @@ const MobileNavigationContainer = styled('div', {
     },
   },
 })
+
 const UserMenuButtonContainer = styled('div', {
   base: {
     marginLeft: 'auto',

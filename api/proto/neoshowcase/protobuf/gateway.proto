@@ -40,6 +40,10 @@ message SystemInfo {
   repeated AvailablePort ports = 4;
   // adminer_url ユーザー用DB管理画面URL
   string adminer_url = 5;
+  // version NeoShowcase version
+  string version = 6;
+  // revision NeoShowcase version
+  string revision = 7;
 }
 
 // -- User

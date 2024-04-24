@@ -19,6 +19,8 @@ func FromPBSystemInfo(i *pb.SystemInfo) *domain.SystemInfo {
 		AvailableDomains: ds.Map(i.Domains, FromPBAvailableDomain),
 		AvailablePorts:   ds.Map(i.Ports, FromPBAvailablePort),
 		AdminerURL:       i.AdminerUrl,
+		Version:          i.Version,
+		Revision:         i.Revision,
 	}
 }
 
@@ -32,5 +34,7 @@ func ToPBSystemInfo(i *domain.SystemInfo) *pb.SystemInfo {
 		Domains:    ds.Map(i.AvailableDomains, ToPBAvailableDomain),
 		Ports:      ds.Map(i.AvailablePorts, ToPBAvailablePort),
 		AdminerUrl: i.AdminerURL,
+		Version:    i.Version,
+		Revision:   i.Revision,
 	}
 }
