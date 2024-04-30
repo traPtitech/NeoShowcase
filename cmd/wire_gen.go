@@ -34,7 +34,7 @@ import (
 	"github.com/traPtitech/neoshowcase/pkg/usecase/repofetcher"
 	"github.com/traPtitech/neoshowcase/pkg/usecase/ssgen"
 	"github.com/traPtitech/neoshowcase/pkg/usecase/sshserver"
-	"github.com/traefik/traefik/v2/pkg/provider/kubernetes/crd/generated/clientset/versioned/typed/traefikio/v1alpha1"
+	"github.com/traefik/traefik/v3/pkg/provider/kubernetes/crd/generated/clientset/versioned/typed/traefikio/v1alpha1"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
 )

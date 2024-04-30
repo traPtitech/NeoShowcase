@@ -98,7 +98,7 @@ services:
 #      - default
 
   ns-auth:
-    image: ghcr.io/traptitech/traefik-forward-auth:2.8.0
+    image: ghcr.io/traptitech/traefik-forward-auth:3.0.0
     restart: always
     command:
       - --config=/config.ini
@@ -390,7 +390,7 @@ services:
       - /dev/disk/:/dev/disk:ro
 
   traefik:
-    image: traefik:2.10
+    image: traefik:3.0.0
     restart: always
     command:
       - --api.insecure=true

@@ -3,7 +3,6 @@ package k8simpl
 import (
 	"context"
 	"fmt"
-	"github.com/traPtitech/neoshowcase/pkg/util/fmtutil"
 	"time"
 
 	"github.com/friendsofgo/errors"
@@ -13,6 +12,7 @@ import (
 
 	"github.com/traPtitech/neoshowcase/pkg/domain"
 	"github.com/traPtitech/neoshowcase/pkg/util/ds"
+	"github.com/traPtitech/neoshowcase/pkg/util/fmtutil"
 )
 
 func (b *Backend) GetContainer(ctx context.Context, appID string) (*domain.Container, error) {

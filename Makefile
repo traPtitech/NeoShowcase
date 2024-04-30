@@ -96,7 +96,7 @@ test-down-docker:
 test-up-k8s:
 	@k3d cluster list ns-test > /dev/null \
 	|| k3d cluster create ns-test --no-lb --k3s-arg "--disable=traefik,servicelb,metrics-server" \
-	&& kubectl apply -f https://raw.githubusercontent.com/traefik/traefik/v2.10/docs/content/reference/dynamic-configuration/kubernetes-crd-definition-v1.yml
+	&& kubectl apply -f https://raw.githubusercontent.com/traefik/traefik/v3.0.0/docs/content/reference/dynamic-configuration/kubernetes-crd-definition-v1.yml
 
 .PHONY: test-down-k8s
 test-down-k8s:

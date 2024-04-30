@@ -25,7 +25,7 @@ spec:
 
       containers:
         - name: ns-auth
-          image: ghcr.io/traptitech/traefik-forward-auth:2.8.0
+          image: ghcr.io/traptitech/traefik-forward-auth:3.0.0
           args:
             - --config=/config.ini
           ports:

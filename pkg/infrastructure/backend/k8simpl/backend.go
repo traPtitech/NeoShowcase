@@ -3,14 +3,13 @@ package k8simpl
 import (
 	"context"
 	"fmt"
-	"github.com/traPtitech/neoshowcase/pkg/util/retry"
 	"strings"
 	"sync"
 
 	certmanagerv1 "github.com/cert-manager/cert-manager/pkg/client/clientset/versioned"
 	"github.com/friendsofgo/errors"
 	log "github.com/sirupsen/logrus"
-	traefikv1alpha1 "github.com/traefik/traefik/v2/pkg/provider/kubernetes/crd/generated/clientset/versioned/typed/traefikio/v1alpha1"
+	traefikv1alpha1 "github.com/traefik/traefik/v3/pkg/provider/kubernetes/crd/generated/clientset/versioned/typed/traefikio/v1alpha1"
 	apiv1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
@@ -19,6 +18,7 @@ import (
 	"github.com/traPtitech/neoshowcase/pkg/domain"
 	"github.com/traPtitech/neoshowcase/pkg/util/ds"
 	"github.com/traPtitech/neoshowcase/pkg/util/hash"
+	"github.com/traPtitech/neoshowcase/pkg/util/retry"
 )
 
 const (
