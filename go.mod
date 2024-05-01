@@ -1,14 +1,13 @@
 module github.com/traPtitech/neoshowcase
 
 go 1.22
-
-toolchain go1.22.0
+toolchain go1.22.2
 
 require (
-	code.gitea.io/sdk/gitea v0.17.1
-	connectrpc.com/connect v1.16.0
-	github.com/aws/aws-sdk-go v1.51.11
-	github.com/cert-manager/cert-manager v1.14.4
+	code.gitea.io/sdk/gitea v0.18.0
+	connectrpc.com/connect v1.16.1
+	github.com/aws/aws-sdk-go v1.51.32
+	github.com/cert-manager/cert-manager v1.14.5
 	github.com/docker/cli v25.0.3+incompatible
 	github.com/docker/docker v25.0.5+incompatible // should be in sync with requirements of github.com/moby/buildkit
 	github.com/docker/go-connections v0.5.0
@@ -20,14 +19,14 @@ require (
 	github.com/golang/mock v1.6.0
 	github.com/google/shlex v0.0.0-20191202100458-e7afc7fbc510
 	github.com/google/wire v0.6.0
-	github.com/labstack/echo/v4 v4.11.4
+	github.com/labstack/echo/v4 v4.12.0
 	github.com/lukesampson/figlet v0.0.0-20190211215653-8a3ef4a6ac42
 	github.com/moby/buildkit v0.13.2
-	github.com/motoki317/sc v1.8.0
+	github.com/motoki317/sc v1.8.1
 	github.com/ncw/swift v1.0.53
 	github.com/pkg/errors v0.9.1
 	github.com/prometheus/client_golang v1.19.0
-	github.com/prometheus/common v0.51.1
+	github.com/prometheus/common v0.53.0
 	github.com/regclient/regclient v0.6.0
 	github.com/samber/lo v1.39.0
 	github.com/shiguredo/websocket v1.6.1
@@ -42,17 +41,17 @@ require (
 	github.com/volatiletech/sqlboiler/v4 v4.16.2
 	github.com/volatiletech/strmangle v0.0.6
 	github.com/zeebo/xxh3 v1.0.2
-	go.mongodb.org/mongo-driver v1.14.0
+	go.mongodb.org/mongo-driver v1.15.0
 	golang.org/x/crypto v0.22.0
 	golang.org/x/exp v0.0.0-20231226003508-02704c960a9b
 	golang.org/x/net v0.24.0
 	golang.org/x/sync v0.7.0
 	google.golang.org/grpc v1.62.1 // indirect
-	google.golang.org/protobuf v1.33.0
+	google.golang.org/protobuf v1.34.0
 	gopkg.in/yaml.v2 v2.4.0
-	k8s.io/api v0.29.3
-	k8s.io/apimachinery v0.29.3
-	k8s.io/client-go v0.29.3
+	k8s.io/api v0.30.0
+	k8s.io/apimachinery v0.30.0
+	k8s.io/client-go v0.30.0
 )
 
 require (
@@ -209,8 +208,8 @@ require (
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 	gotest.tools/v3 v3.4.0 // indirect
 	k8s.io/apiextensions-apiserver v0.29.0 // indirect
-	k8s.io/klog/v2 v2.110.1 // indirect
-	k8s.io/kube-openapi v0.0.0-20240103051144-eec4567ac022 // indirect
+	k8s.io/klog/v2 v2.120.1 // indirect
+	k8s.io/kube-openapi v0.0.0-20240228011516-70dd3763d340 // indirect
 	k8s.io/utils v0.0.0-20240102154912-e7106e64919e // indirect
 	sigs.k8s.io/gateway-api v1.0.0 // indirect
 	sigs.k8s.io/json v0.0.0-20221116044647-bc3834ca7abd // indirect
