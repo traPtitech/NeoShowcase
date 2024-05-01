@@ -1,4 +1,4 @@
-FROM --platform=$BUILDPLATFORM node:20 AS base
+FROM --platform=$BUILDPLATFORM node:22 AS base
 
 WORKDIR /work
 
