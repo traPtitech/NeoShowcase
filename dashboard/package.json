@@ -20,7 +20,7 @@
   "devDependencies": {
     "@biomejs/biome": "1.7.2",
     "@macaron-css/core": "1.5.2",
-    "@macaron-css/solid": "1.5.3",
+    "@macaron-css/solid": "1.5.1",
     "@macaron-css/vite": "1.5.1",
     "@tanstack/virtual-core": "3.5.0",
     "@types/node": "20.12.7",
