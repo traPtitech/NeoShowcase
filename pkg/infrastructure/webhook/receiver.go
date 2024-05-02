@@ -18,6 +18,17 @@ type ReceiverConfig struct {
 	Port     int    `mapstructure:"port" yaml:"port"`
 }
 
+// Receiver is responsible for receiving webhook events and notifying repository refresh.
+//
+// We should NOT trust the payload of webhooks, as they could be crafted and there is no secret.
+// This behavior is inspired from ArgoCD Webhook behavior.
+//
+// Cited from https://argo-cd.readthedocs.io/en/stable/operator-manual/webhook/
+//
+//	Configuring a webhook shared secret is optional, since Argo CD will still refresh applications
+//	related to the Git repository, even with unauthenticated webhook events.
+//	This is safe to do since the contents of webhook payloads are considered untrusted,
+//	and will only result in a refresh of the application (a process which already occurs at three-minute intervals).
 type Receiver struct {
 	config           ReceiverConfig
 	gitRepo          domain.GitRepositoryRepository
@@ -58,6 +69,7 @@ func (r *Receiver) Shutdown(ctx context.Context) error {
 	return r.echo.Shutdown(ctx)
 }
 
+// updateURLs notifies repositories to refresh.
 func (r *Receiver) updateURLs(urls []string) {
 	ctx := context.Background()
 	repos, err := r.gitRepo.GetRepositories(ctx, domain.GetRepositoryCondition{URLs: optional.From(urls)})
