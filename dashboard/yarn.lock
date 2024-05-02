@@ -1225,9 +1225,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@kobalte/core@npm:0.13.0":
-  version: 0.13.0
-  resolution: "@kobalte/core@npm:0.13.0"
+"@kobalte/core@npm:0.12.6":
+  version: 0.12.6
+  resolution: "@kobalte/core@npm:0.12.6"
   dependencies:
     "@floating-ui/dom": "npm:^1.5.1"
     "@internationalized/date": "npm:^3.4.0"
@@ -1236,7 +1236,7 @@ __metadata:
     solid-prevent-scroll: "npm:^0.1.4"
   peerDependencies:
     solid-js: ^1.8.15
-  checksum: 10c0/5c51d0592478cbab1311cd4b0ae0581de504c67c4596f20485ab610838c82776f6527992c1917be2758a985b0456dafd6e6b84b5efa02d60512226f0ae7835a5
+  checksum: 10c0/367df446044c6754882ea78036af25672b96aeb0557b0618001395f9220d6b5628451e382ac10f345f826277eaabe37bf479b4597a0764dc67bf41b8cc4c46d9
   languageName: node
   linkType: hard
 
@@ -3531,7 +3531,7 @@ __metadata:
     "@bufbuild/protobuf": "npm:1.9.0"
     "@connectrpc/connect": "npm:1.4.0"
     "@connectrpc/connect-web": "npm:1.4.0"
-    "@kobalte/core": "npm:0.13.0"
+    "@kobalte/core": "npm:0.12.6"
     "@macaron-css/core": "npm:1.5.2"
     "@macaron-css/solid": "npm:1.5.3"
     "@macaron-css/vite": "npm:1.5.1"

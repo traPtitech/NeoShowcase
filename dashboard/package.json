@@ -36,7 +36,7 @@
     "@bufbuild/protobuf": "1.9.0",
     "@connectrpc/connect": "1.4.0",
     "@connectrpc/connect-web": "1.4.0",
-    "@kobalte/core": "0.13.0",
+    "@kobalte/core": "0.12.6",
     "@modular-forms/solid": "0.20.0",
     "@solid-primitives/refs": "1.0.8",
     "@solidjs/meta": "0.29.3",
