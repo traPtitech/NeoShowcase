@@ -1,6 +1,6 @@
 import { styled } from '@macaron-css/solid'
 import { type RouteSectionProps, useMatch, useNavigate } from '@solidjs/router'
-import { ErrorBoundary, onCleanup, Show, Suspense, useTransition } from 'solid-js'
+import { ErrorBoundary, Show, Suspense, onCleanup, useTransition } from 'solid-js'
 import { Button } from '/@/components/UI/Button'
 import { MaterialSymbols } from '/@/components/UI/MaterialSymbols'
 import ErrorView from '/@/components/layouts/ErrorView'

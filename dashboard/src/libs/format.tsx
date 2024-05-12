@@ -56,7 +56,7 @@ export const durationHuman = (millis: number): string => {
 const [now, setNow] = createSignal(new Date())
 setInterval(() => setNow(new Date()), 10000)
 
-export const diffHuman = (target: Date): () => string => {
+export const diffHuman = (target: Date): (() => string) => {
   return () => {
     const diff = now().getTime() - target.getTime()
     const suffix = diff > 0 ? 'ago' : 'from now'
