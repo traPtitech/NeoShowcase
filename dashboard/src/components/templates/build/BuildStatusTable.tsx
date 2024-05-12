@@ -111,7 +111,7 @@ const BuildStatusTable: Component<{
           {c.authorName}
           <span>, </span>
           <ToolTip props={{ content: localeString }}>
-            <span>{diff}</span>
+            <span>{diff()}</span>
           </ToolTip>
           <span>, </span>
           {shortSha(c.hash)}
@@ -163,7 +163,7 @@ const BuildStatusTable: Component<{
                 <List.RowContent>
                   <List.RowTitle>キュー登録時刻</List.RowTitle>
                   <ToolTip props={{ content: localeString }}>
-                    <List.RowData>{diff}</List.RowData>
+                    <List.RowData>{diff()}</List.RowData>
                   </ToolTip>
                 </List.RowContent>
               </List.Row>
@@ -180,7 +180,7 @@ const BuildStatusTable: Component<{
                 <List.RowContent>
                   <List.RowTitle>ビルド開始時刻</List.RowTitle>
                   <ToolTip props={{ content: localeString }}>
-                    <List.RowData>{diff}</List.RowData>
+                    <List.RowData>{diff()}</List.RowData>
                   </ToolTip>
                 </List.RowContent>
               </List.Row>
@@ -199,7 +199,7 @@ const BuildStatusTable: Component<{
                 const localeString = ts.toLocaleString()
                 return (
                   <ToolTip props={{ content: localeString }}>
-                    <List.RowData>{diff}</List.RowData>
+                    <List.RowData>{diff()}</List.RowData>
                   </ToolTip>
                 )
               }}

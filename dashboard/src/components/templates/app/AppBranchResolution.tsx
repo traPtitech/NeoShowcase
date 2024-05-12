@@ -89,7 +89,7 @@ const AppBranchResolution: Component<{
             {c.authorName}
             <span>, </span>
             <ToolTip props={{ content: localeString }}>
-              <span>{diff}</span>
+              <span>{diff()}</span>
             </ToolTip>
             <span>, </span>
             {shortSha(c.hash)}

@@ -79,7 +79,7 @@ export const AppNav: Component<{
           const localeString = nonNullUpdatedAt().toDate().toLocaleString()
           return (
             <ToolTip props={{ content: `App Last Edited: ${localeString}` }}>
-              <div>{diff}</div>
+              <div>{diff()}</div>
             </ToolTip>
           )
         }}

@@ -53,13 +53,14 @@ export const durationHuman = (millis: number): string => {
   return `${remainMillis} ms`
 }
 
-// const [now, setNow] = createSignal(new Date())
-// setInterval(() => setNow(new Date()), 1000)
-const now = () => new Date()
+const [now, setNow] = createSignal(new Date())
+setInterval(() => setNow(new Date()), 10000)
 
-export const diffHuman = (target: Date): string => {
-  const diff = now().getTime() - target.getTime()
-  const suffix = diff > 0 ? 'ago' : 'from now'
-  const human = durationHuman(Math.abs(diff))
-  return `${human} ${suffix}`
+export const diffHuman = (target: Date): () => string => {
+  return () => {
+    const diff = now().getTime() - target.getTime()
+    const suffix = diff > 0 ? 'ago' : 'from now'
+    const human = durationHuman(Math.abs(diff))
+    return `${human} ${suffix}`
+  }
 }

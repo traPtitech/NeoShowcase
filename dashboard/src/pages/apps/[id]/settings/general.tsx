@@ -33,7 +33,7 @@ const GeneralInfo: Component<{
               <List.RowContent>
                 <List.RowTitle>作成日</List.RowTitle>
                 <ToolTip props={{ content: localeString }}>
-                  <List.RowData>{diff}</List.RowData>
+                  <List.RowData>{diff()}</List.RowData>
                 </ToolTip>
               </List.RowContent>
             </List.Row>

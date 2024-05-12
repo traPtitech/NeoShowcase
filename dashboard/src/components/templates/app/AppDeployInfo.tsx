@@ -205,7 +205,7 @@ const AppDeployInfo: Component<{
       <DataRows>
         <For each={c.message.split('\n')}>{(line) => <div>{line}</div>}</For>
         <div>
-          {c.authorName}, {diff}, {shortSha(c.hash)}
+          {c.authorName}, {diff()}, {shortSha(c.hash)}
         </div>
       </DataRows>
     )

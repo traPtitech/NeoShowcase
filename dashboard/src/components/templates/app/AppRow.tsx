@@ -148,7 +148,7 @@ export const AppRow: Component<Props> = (props) => {
       <>
         <For each={c.message.split('\n')}>{(line) => <div>{line}</div>}</For>
         <div>
-          {c.authorName}, {diff}, {shortSha(c.hash)}
+          {c.authorName}, {diff()}, {shortSha(c.hash)}
         </div>
       </>
     )
@@ -167,7 +167,7 @@ export const AppRow: Component<Props> = (props) => {
                 const localeString = nonNullUpdatedAt().toDate().toLocaleString()
                 return (
                   <ToolTip props={{ content: localeString }}>
-                    <UpdatedAt>{diff}</UpdatedAt>
+                    <UpdatedAt>{diff()}</UpdatedAt>
                   </ToolTip>
                 )
               }}
