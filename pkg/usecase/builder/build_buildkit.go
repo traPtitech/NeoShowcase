@@ -139,6 +139,20 @@ func (s *builderService) buildRuntimeCmd(
 	ch chan *buildkit.SolveStatus,
 	bc *domain.BuildConfigRuntimeCmd,
 ) error {
+	// if .dockerignore exists, rename it
+	var dockerignoreExists bool
+	newDockerignoreFileName := fmt.Sprintf("ns-%s.dockerignore", st.build.ID)
+	info, err := os.Stat(filepath.Join(st.repositoryTempDir, ".dockerignore"))
+	if err == nil && !info.IsDir() {
+		err := os.Rename(filepath.Join(st.repositoryTempDir, ".dockerignore"), filepath.Join(st.repositoryTempDir, newDockerignoreFileName))
+		if err != nil {
+			return errors.Wrap(err, "renaming .dockerignore")
+		}
+		dockerignoreExists = true
+	} else {
+		dockerignoreExists = false
+	}
+
 	var dockerfile strings.Builder
 	if bc.BaseImage == "" {
 		dockerfile.WriteString("FROM scratch\n")
@@ -153,6 +167,9 @@ func (s *builderService) buildRuntimeCmd(
 
 	dockerfile.WriteString("WORKDIR /srv\n")
 	dockerfile.WriteString("COPY . .\n")
+	if dockerignoreExists {
+		dockerfile.WriteString(fmt.Sprintf("RUN mv %s .dockerignore\n", newDockerignoreFileName))
+	}
 
 	if bc.BuildCmd != "" {
 		err := createScriptFile(filepath.Join(st.repositoryTempDir, buildScriptName), bc.BuildCmd)
@@ -204,6 +221,20 @@ func (s *builderService) buildStaticCmd(
 	ch chan *buildkit.SolveStatus,
 	bc *domain.BuildConfigStaticCmd,
 ) error {
+	// if .dockerignore exists, rename it
+	var dockerignoreExists bool
+	newDockerignoreFileName := fmt.Sprintf("ns-%s.dockerignore", st.build.ID)
+	info, err := os.Stat(filepath.Join(st.repositoryTempDir, ".dockerignore"))
+	if err == nil && !info.IsDir() {
+		err := os.Rename(filepath.Join(st.repositoryTempDir, ".dockerignore"), filepath.Join(st.repositoryTempDir, newDockerignoreFileName))
+		if err != nil {
+			return errors.Wrap(err, "renaming .dockerignore")
+		}
+		dockerignoreExists = true
+	} else {
+		dockerignoreExists = false
+	}
+
 	var dockerfile strings.Builder
 
 	dockerfile.WriteString(fmt.Sprintf(
@@ -218,6 +249,9 @@ func (s *builderService) buildStaticCmd(
 
 	dockerfile.WriteString("WORKDIR /srv\n")
 	dockerfile.WriteString("COPY . .\n")
+	if dockerignoreExists {
+		dockerfile.WriteString(fmt.Sprintf("RUN mv %s .dockerignore\n", newDockerignoreFileName))
+	}
 
 	if bc.BuildCmd != "" {
 		err := createScriptFile(filepath.Join(st.repositoryTempDir, buildScriptName), bc.BuildCmd)
