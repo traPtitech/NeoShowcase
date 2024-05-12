@@ -46,6 +46,8 @@ export default () => {
       })
       toast.success('ビルド設定を更新しました')
       void refetch()
+      // 非同期でビルドが開始されるので1秒程度待ってから再度リロード
+      setTimeout(refetch, 1000)
     } catch (e) {
       handleAPIError(e, 'ビルド設定の更新に失敗しました')
     }

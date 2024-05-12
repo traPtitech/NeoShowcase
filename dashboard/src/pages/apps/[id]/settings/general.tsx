@@ -150,6 +150,8 @@ export default () => {
       })
       toast.success('アプリケーション設定を更新しました')
       void refetch()
+      // 非同期でビルドが開始されるので1秒程度待ってから再度リロード
+      setTimeout(refetch, 1000)
     } catch (e) {
       handleAPIError(e, 'アプリケーション設定の更新に失敗しました')
     }
