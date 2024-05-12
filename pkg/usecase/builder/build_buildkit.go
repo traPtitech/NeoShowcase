@@ -87,17 +87,9 @@ func createScriptFile(filename string, script string) error {
 	return createFile(filename, "#!/bin/sh\nset -eux\n"+script)
 }
 
-func renameDockerignoreIfExists(dir string) (bool, error) {
+func dockerignoreExists(dir string) bool {
 	info, err := os.Stat(filepath.Join(dir, ".dockerignore"))
-	if err == nil && !info.IsDir() {
-		err = os.Rename(filepath.Join(dir, ".dockerignore"), filepath.Join(dir, temporaryDockerignoreName))
-		if err != nil {
-			return false, err
-		}
-		return true, nil
-	} else {
-		return false, nil
-	}
+	return err == nil && !info.IsDir()
 }
 
 func (s *builderService) authSessions() []session.Attachable {
@@ -156,9 +148,12 @@ func (s *builderService) buildRuntimeCmd(
 	// If .dockerignore exists, rename to prevent it from being picked up by buildkitd,
 	// as this is not the behavior we want in 'Command' build which is supposed to execute commands against raw repository files.
 	// See https://github.com/traPtitech/NeoShowcase/issues/877 for more details.
-	dockerignoreExists, err := renameDockerignoreIfExists(st.repositoryTempDir)
-	if err != nil {
-		return errors.Wrap(err, "renaming .dockerignore")
+	dockerignoreExists := dockerignoreExists(st.repositoryTempDir)
+	if dockerignoreExists {
+		err := os.Rename(filepath.Join(st.repositoryTempDir, ".dockerignore"), filepath.Join(st.repositoryTempDir, temporaryDockerignoreName))
+		if err != nil {
+			return errors.Wrap(err, "renaming .dockerignore")
+		}
 	}
 
 	var dockerfile strings.Builder
@@ -232,9 +227,12 @@ func (s *builderService) buildStaticCmd(
 	// If .dockerignore exists, rename to prevent it from being picked up by buildkitd,
 	// as this is not the behavior we want in 'Command' build which is supposed to execute commands against raw repository files.
 	// See https://github.com/traPtitech/NeoShowcase/issues/877 for more details.
-	dockerignoreExists, err := renameDockerignoreIfExists(st.repositoryTempDir)
-	if err != nil {
-		return errors.Wrap(err, "renaming .dockerignore")
+	dockerignoreExists := dockerignoreExists(st.repositoryTempDir)
+	if dockerignoreExists {
+		err := os.Rename(filepath.Join(st.repositoryTempDir, ".dockerignore"), filepath.Join(st.repositoryTempDir, temporaryDockerignoreName))
+		if err != nil {
+			return errors.Wrap(err, "renaming .dockerignore")
+		}
 	}
 
 	var dockerfile strings.Builder
