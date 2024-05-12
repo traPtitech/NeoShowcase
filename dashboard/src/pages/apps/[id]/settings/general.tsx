@@ -26,7 +26,8 @@ const GeneralInfo: Component<{
     <List.Container>
       <Show when={props.app.createdAt}>
         {(nonNullCreatedAt) => {
-          const { diff, localeString } = diffHuman(nonNullCreatedAt().toDate())
+          const diff = diffHuman(nonNullCreatedAt().toDate())
+          const localeString = nonNullCreatedAt().toDate().toLocaleString()
           return (
             <List.Row>
               <List.RowContent>

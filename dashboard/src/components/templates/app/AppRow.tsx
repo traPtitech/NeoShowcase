@@ -143,7 +143,7 @@ export const AppRow: Component<Props> = (props) => {
   const commitTooltip = () => {
     const c = commit()
     if (!c || !c.commitDate) return `${shortSha(props.app!.commit)}`
-    const { diff } = diffHuman(c.commitDate.toDate())
+    const diff = diffHuman(c.commitDate.toDate())
     return (
       <>
         <For each={c.message.split('\n')}>{(line) => <div>{line}</div>}</For>
@@ -163,7 +163,8 @@ export const AppRow: Component<Props> = (props) => {
             <AppName>{props.app!.name}</AppName>
             <Show when={props.app!.updatedAt}>
               {(nonNullUpdatedAt) => {
-                const { diff, localeString } = diffHuman(nonNullUpdatedAt().toDate())
+                const diff = diffHuman(nonNullUpdatedAt().toDate())
+                const localeString = nonNullUpdatedAt().toDate().toLocaleString()
                 return (
                   <ToolTip props={{ content: localeString }}>
                     <UpdatedAt>{diff}</UpdatedAt>

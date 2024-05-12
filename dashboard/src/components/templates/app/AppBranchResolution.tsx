@@ -78,7 +78,8 @@ const AppBranchResolution: Component<{
       return base
     }
 
-    const { diff, localeString } = diffHuman(c.commitDate.toDate())
+    const diff = diffHuman(c.commitDate.toDate())
+    const localeString = c.commitDate.toDate().toLocaleString()
     return (
       <DataRows>
         {base}

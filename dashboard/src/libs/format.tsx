@@ -1,4 +1,5 @@
 import type { Timestamp } from '@bufbuild/protobuf'
+import { createSignal } from 'solid-js'
 
 export const shortSha = (sha1: string): string => sha1.substring(0, 7)
 
@@ -52,13 +53,13 @@ export const durationHuman = (millis: number): string => {
   return `${remainMillis} ms`
 }
 
-export const diffHuman = (target: Date) => {
-  const diff = new Date().getTime() - target.getTime()
+// const [now, setNow] = createSignal(new Date())
+// setInterval(() => setNow(new Date()), 1000)
+const now = () => new Date()
+
+export const diffHuman = (target: Date): string => {
+  const diff = now().getTime() - target.getTime()
   const suffix = diff > 0 ? 'ago' : 'from now'
   const human = durationHuman(Math.abs(diff))
-  const localeString = target.toLocaleString()
-  return {
-    diff: `${human} ${suffix}`,
-    localeString,
-  }
+  return `${human} ${suffix}`
 }
