@@ -102,7 +102,8 @@ const BuildStatusTable: Component<{
       return shortSha(props.build.commit)
     }
 
-    const { diff, localeString } = diffHuman(c.commitDate.toDate())
+    const diff = diffHuman(c.commitDate.toDate())
+    const localeString = c.commitDate.toDate().toLocaleString()
     return (
       <DataRows>
         <For each={c.message.split('\n')}>{(line) => <div>{line}</div>}</For>
@@ -110,7 +111,7 @@ const BuildStatusTable: Component<{
           {c.authorName}
           <span>, </span>
           <ToolTip props={{ content: localeString }}>
-            <span>{diff}</span>
+            <span>{diff()}</span>
           </ToolTip>
           <span>, </span>
           {shortSha(c.hash)}
@@ -155,13 +156,14 @@ const BuildStatusTable: Component<{
       <List.Columns>
         <Show when={props.build.queuedAt}>
           {(nonNullQueuedAt) => {
-            const { diff, localeString } = diffHuman(nonNullQueuedAt().toDate())
+            const diff = diffHuman(nonNullQueuedAt().toDate())
+            const localeString = nonNullQueuedAt().toDate().toLocaleString()
             return (
               <List.Row>
                 <List.RowContent>
                   <List.RowTitle>キュー登録時刻</List.RowTitle>
                   <ToolTip props={{ content: localeString }}>
-                    <List.RowData>{diff}</List.RowData>
+                    <List.RowData>{diff()}</List.RowData>
                   </ToolTip>
                 </List.RowContent>
               </List.Row>
@@ -170,13 +172,15 @@ const BuildStatusTable: Component<{
         </Show>
         <Show when={props.build.startedAt?.valid && props.build.startedAt} fallback={'-'}>
           {(nonNullStartedAt) => {
-            const { diff, localeString } = diffHuman((nonNullStartedAt().timestamp as Timestamp).toDate())
+            const ts = (nonNullStartedAt().timestamp as Timestamp).toDate()
+            const diff = diffHuman(ts)
+            const localeString = ts.toLocaleString()
             return (
               <List.Row>
                 <List.RowContent>
                   <List.RowTitle>ビルド開始時刻</List.RowTitle>
                   <ToolTip props={{ content: localeString }}>
-                    <List.RowData>{diff}</List.RowData>
+                    <List.RowData>{diff()}</List.RowData>
                   </ToolTip>
                 </List.RowContent>
               </List.Row>
@@ -190,10 +194,12 @@ const BuildStatusTable: Component<{
             <List.RowTitle>ビルド終了時刻</List.RowTitle>
             <Show when={props.build.finishedAt?.valid && props.build.finishedAt} fallback={'-'}>
               {(nonNullFinishedAt) => {
-                const { diff, localeString } = diffHuman((nonNullFinishedAt().timestamp as Timestamp).toDate())
+                const ts = (nonNullFinishedAt().timestamp as Timestamp).toDate()
+                const diff = diffHuman(ts)
+                const localeString = ts.toLocaleString()
                 return (
                   <ToolTip props={{ content: localeString }}>
-                    <List.RowData>{diff}</List.RowData>
+                    <List.RowData>{diff()}</List.RowData>
                   </ToolTip>
                 )
               }}

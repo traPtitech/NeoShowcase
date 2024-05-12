@@ -78,7 +78,8 @@ const AppBranchResolution: Component<{
       return base
     }
 
-    const { diff, localeString } = diffHuman(c.commitDate.toDate())
+    const diff = diffHuman(c.commitDate.toDate())
+    const localeString = c.commitDate.toDate().toLocaleString()
     return (
       <DataRows>
         {base}
@@ -88,7 +89,7 @@ const AppBranchResolution: Component<{
             {c.authorName}
             <span>, </span>
             <ToolTip props={{ content: localeString }}>
-              <span>{diff}</span>
+              <span>{diff()}</span>
             </ToolTip>
             <span>, </span>
             {shortSha(c.hash)}

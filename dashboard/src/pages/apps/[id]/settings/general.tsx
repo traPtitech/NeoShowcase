@@ -26,13 +26,14 @@ const GeneralInfo: Component<{
     <List.Container>
       <Show when={props.app.createdAt}>
         {(nonNullCreatedAt) => {
-          const { diff, localeString } = diffHuman(nonNullCreatedAt().toDate())
+          const diff = diffHuman(nonNullCreatedAt().toDate())
+          const localeString = nonNullCreatedAt().toDate().toLocaleString()
           return (
             <List.Row>
               <List.RowContent>
                 <List.RowTitle>作成日</List.RowTitle>
                 <ToolTip props={{ content: localeString }}>
-                  <List.RowData>{diff}</List.RowData>
+                  <List.RowData>{diff()}</List.RowData>
                 </ToolTip>
               </List.RowContent>
             </List.Row>
@@ -149,6 +150,8 @@ export default () => {
       })
       toast.success('アプリケーション設定を更新しました')
       void refetch()
+      // 非同期でビルドが開始されるので1秒程度待ってから再度リロード
+      setTimeout(refetch, 1000)
     } catch (e) {
       handleAPIError(e, 'アプリケーション設定の更新に失敗しました')
     }

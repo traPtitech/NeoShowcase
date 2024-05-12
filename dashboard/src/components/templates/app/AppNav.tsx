@@ -75,10 +75,11 @@ export const AppNav: Component<{
       <BiRegularPencil />
       <Show when={props.app.updatedAt}>
         {(nonNullUpdatedAt) => {
-          const { diff, localeString } = diffHuman(nonNullUpdatedAt().toDate())
+          const diff = diffHuman(nonNullUpdatedAt().toDate())
+          const localeString = nonNullUpdatedAt().toDate().toLocaleString()
           return (
             <ToolTip props={{ content: `App Last Edited: ${localeString}` }}>
-              <div>{diff}</div>
+              <div>{diff()}</div>
             </ToolTip>
           )
         }}
