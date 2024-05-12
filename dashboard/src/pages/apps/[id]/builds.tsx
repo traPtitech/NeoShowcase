@@ -1,4 +1,4 @@
-import { createMemo, useTransition } from 'solid-js'
+import { createMemo, onCleanup, useTransition } from 'solid-js'
 import { Show } from 'solid-js'
 import { MaterialSymbols } from '/@/components/UI/MaterialSymbols'
 import { DataTable } from '/@/components/layouts/DataTable'
@@ -8,8 +8,11 @@ import { BuildList, List } from '/@/components/templates/List'
 import { useApplicationData } from '/@/routes'
 
 export default () => {
-  const { app, builds, commits } = useApplicationData()
+  const { app, builds, commits, refetch } = useApplicationData()
   const loaded = () => !!(app() && builds())
+
+  const refetchTimer = setInterval(refetch, 10000)
+  onCleanup(() => clearInterval(refetchTimer))
 
   const sortedBuilds = createMemo(
     () =>
