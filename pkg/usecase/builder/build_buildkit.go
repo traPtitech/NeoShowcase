@@ -24,7 +24,8 @@ import (
 )
 
 const (
-	buildScriptName = "neoshowcase_internal_build.sh"
+	buildScriptName           = "neoshowcase_internal_build.sh"
+	temporaryDockerignoreName = "neoshowcase_temporary_dockerignore"
 )
 
 func withBuildkitProgress(ctx context.Context, logger io.Writer, buildFn func(ctx context.Context, ch chan *buildkit.SolveStatus) error) error {
@@ -86,6 +87,19 @@ func createScriptFile(filename string, script string) error {
 	return createFile(filename, "#!/bin/sh\nset -eux\n"+script)
 }
 
+func renameDockerignoreIfExists(dir string) (bool, error) {
+	info, err := os.Stat(filepath.Join(dir, ".dockerignore"))
+	if err == nil && !info.IsDir() {
+		err = os.Rename(filepath.Join(dir, ".dockerignore"), filepath.Join(dir, temporaryDockerignoreName))
+		if err != nil {
+			return false, err
+		}
+		return true, nil
+	} else {
+		return false, nil
+	}
+}
+
 func (s *builderService) authSessions() []session.Attachable {
 	if s.imageConfig.Registry.Username == "" && s.imageConfig.Registry.Password == "" {
 		return nil
@@ -139,18 +153,12 @@ func (s *builderService) buildRuntimeCmd(
 	ch chan *buildkit.SolveStatus,
 	bc *domain.BuildConfigRuntimeCmd,
 ) error {
-	// if .dockerignore exists, rename it
-	var dockerignoreExists bool
-	newDockerignoreFileName := fmt.Sprintf("ns-%s.dockerignore", st.build.ID)
-	info, err := os.Stat(filepath.Join(st.repositoryTempDir, ".dockerignore"))
-	if err == nil && !info.IsDir() {
-		err := os.Rename(filepath.Join(st.repositoryTempDir, ".dockerignore"), filepath.Join(st.repositoryTempDir, newDockerignoreFileName))
-		if err != nil {
-			return errors.Wrap(err, "renaming .dockerignore")
-		}
-		dockerignoreExists = true
-	} else {
-		dockerignoreExists = false
+	// If .dockerignore exists, rename to prevent it from being picked up by buildkitd,
+	// as this is not the behavior we want in 'Command' build which is supposed to execute commands against raw repository files.
+	// See https://github.com/traPtitech/NeoShowcase/issues/877 for more details.
+	dockerignoreExists, err := renameDockerignoreIfExists(st.repositoryTempDir)
+	if err != nil {
+		return errors.Wrap(err, "renaming .dockerignore")
 	}
 
 	var dockerfile strings.Builder
@@ -168,7 +176,7 @@ func (s *builderService) buildRuntimeCmd(
 	dockerfile.WriteString("WORKDIR /srv\n")
 	dockerfile.WriteString("COPY . .\n")
 	if dockerignoreExists {
-		dockerfile.WriteString(fmt.Sprintf("RUN mv %s .dockerignore\n", newDockerignoreFileName))
+		dockerfile.WriteString(fmt.Sprintf("RUN mv %s .dockerignore\n", temporaryDockerignoreName))
 	}
 
 	if bc.BuildCmd != "" {
@@ -221,18 +229,12 @@ func (s *builderService) buildStaticCmd(
 	ch chan *buildkit.SolveStatus,
 	bc *domain.BuildConfigStaticCmd,
 ) error {
-	// if .dockerignore exists, rename it
-	var dockerignoreExists bool
-	newDockerignoreFileName := fmt.Sprintf("ns-%s.dockerignore", st.build.ID)
-	info, err := os.Stat(filepath.Join(st.repositoryTempDir, ".dockerignore"))
-	if err == nil && !info.IsDir() {
-		err := os.Rename(filepath.Join(st.repositoryTempDir, ".dockerignore"), filepath.Join(st.repositoryTempDir, newDockerignoreFileName))
-		if err != nil {
-			return errors.Wrap(err, "renaming .dockerignore")
-		}
-		dockerignoreExists = true
-	} else {
-		dockerignoreExists = false
+	// If .dockerignore exists, rename to prevent it from being picked up by buildkitd,
+	// as this is not the behavior we want in 'Command' build which is supposed to execute commands against raw repository files.
+	// See https://github.com/traPtitech/NeoShowcase/issues/877 for more details.
+	dockerignoreExists, err := renameDockerignoreIfExists(st.repositoryTempDir)
+	if err != nil {
+		return errors.Wrap(err, "renaming .dockerignore")
 	}
 
 	var dockerfile strings.Builder
@@ -250,7 +252,7 @@ func (s *builderService) buildStaticCmd(
 	dockerfile.WriteString("WORKDIR /srv\n")
 	dockerfile.WriteString("COPY . .\n")
 	if dockerignoreExists {
-		dockerfile.WriteString(fmt.Sprintf("RUN mv %s .dockerignore\n", newDockerignoreFileName))
+		dockerfile.WriteString(fmt.Sprintf("RUN mv %s .dockerignore\n", temporaryDockerignoreName))
 	}
 
 	if bc.BuildCmd != "" {
