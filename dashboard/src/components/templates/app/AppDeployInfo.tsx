@@ -200,12 +200,12 @@ const AppDeployInfo: Component<{
     }
 
     const firstLine = c.message.split('\n')[0]
-    const { diff } = diffHuman(c.commitDate.toDate())
+    const diff = diffHuman(c.commitDate.toDate())
     const tooltip = (
       <DataRows>
         <For each={c.message.split('\n')}>{(line) => <div>{line}</div>}</For>
         <div>
-          {c.authorName}, {diff}, {shortSha(c.hash)}
+          {c.authorName}, {diff()}, {shortSha(c.hash)}
         </div>
       </DataRows>
     )

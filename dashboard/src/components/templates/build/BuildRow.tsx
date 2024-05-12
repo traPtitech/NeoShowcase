@@ -112,13 +112,14 @@ export const BuildRow: Component<Props> = (props) => {
   const commitDetails = () => {
     const c = commit()
     if (!c || !c.commitDate) return '<no info>'
-    const { diff, localeString } = diffHuman(c.commitDate.toDate())
+    const diff = diffHuman(c.commitDate.toDate())
+    const localeString = c.commitDate.toDate().toLocaleString()
     return (
       <>
         {c.authorName}
         <span>, </span>
         <ToolTip props={{ content: localeString }}>
-          <span>{diff}</span>
+          <span>{diff()}</span>
         </ToolTip>
         <span>, </span>
         {shortSha(c.hash)}
@@ -140,10 +141,11 @@ export const BuildRow: Component<Props> = (props) => {
           <Spacer />
           <Show when={props.build.queuedAt}>
             {(nonNullQueuedAt) => {
-              const { diff, localeString } = diffHuman(nonNullQueuedAt().toDate())
+              const diff = diffHuman(nonNullQueuedAt().toDate())
+              const localeString = nonNullQueuedAt().toDate().toString()
               return (
                 <ToolTip props={{ content: localeString }}>
-                  <UpdatedAt>{diff}</UpdatedAt>
+                  <UpdatedAt>{diff()}</UpdatedAt>
                 </ToolTip>
               )
             }}

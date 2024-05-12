@@ -37,7 +37,7 @@ const EnvVarsContainer = styled('div', {
 const EnvVarConfig: Component<{
   appId: string
   envVars: PlainMessage<ApplicationEnvVars>
-  refetchEnvVars: () => void
+  refetch: () => void
 }> = (props) => {
   const [envVarForm, EnvVar] = createForm<PlainMessage<ApplicationEnvVars>>({
     initialValues: {
@@ -124,7 +124,9 @@ const EnvVarConfig: Component<{
     try {
       await Promise.all([...addEnvVarRequests, ...deleteEnvVarRequests])
       toast.success('環境変数を更新しました')
-      props.refetchEnvVars()
+      props.refetch()
+      // 非同期でビルドが開始されるので1秒程度待ってから再度リロード
+      setTimeout(props.refetch, 1000)
     } catch (e) {
       handleAPIError(e, '環境変数の更新に失敗しました')
     }
@@ -214,11 +216,15 @@ const EnvVarConfig: Component<{
 }
 
 export default () => {
-  const { app, hasPermission } = useApplicationData()
+  const { app, hasPermission, refetch: refetchApp } = useApplicationData()
   const [envVars, { refetch: refetchEnvVars }] = createResource(
     () => app()?.id,
     (id) => client.getEnvVars({ id }),
   )
+  const refetch = () => {
+    void refetchApp()
+    void refetchEnvVars()
+  }
 
   const loaded = () => !!envVars()
 
@@ -232,7 +238,7 @@ export default () => {
         }
       >
         <Show when={loaded()}>
-          <EnvVarConfig appId={app()!.id} envVars={structuredClone(envVars()!)} refetchEnvVars={refetchEnvVars} />
+          <EnvVarConfig appId={app()!.id} envVars={structuredClone(envVars()!)} refetch={refetch} />
         </Show>
       </Show>
     </DataTable.Container>
