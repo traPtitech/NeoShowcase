@@ -2,10 +2,10 @@ package grpc
 
 import (
 	"context"
+	"github.com/traPtitech/neoshowcase/pkg/usecase/systeminfo"
 
 	"connectrpc.com/connect"
 	"github.com/friendsofgo/errors"
-	"github.com/go-git/go-git/v5/plumbing/transport/ssh"
 	"google.golang.org/protobuf/types/known/emptypb"
 
 	"github.com/traPtitech/neoshowcase/pkg/domain"
@@ -15,76 +15,39 @@ import (
 	"github.com/traPtitech/neoshowcase/pkg/usecase/cdservice"
 	"github.com/traPtitech/neoshowcase/pkg/usecase/logstream"
 	"github.com/traPtitech/neoshowcase/pkg/usecase/repofetcher"
-	"github.com/traPtitech/neoshowcase/pkg/util/cli"
-	"github.com/traPtitech/neoshowcase/pkg/util/ds"
 )
 
-type ControllerServiceConfig struct {
-	AdditionalLinks []*domain.AdditionalLink
-}
-
 type ControllerService struct {
-	c *ControllerServiceConfig
-
-	backend   domain.Backend
-	appRepo   domain.ApplicationRepository
+	infoSvc   systeminfo.Service
 	fetcher   repofetcher.Service
 	cd        cdservice.Service
 	builder   domain.ControllerBuilderService
 	logStream *logstream.Service
-	pubKey    *ssh.PublicKeys
-	sshConf   domain.SSHConfig
 }
 
 func NewControllerService(
-	c *ControllerServiceConfig,
-	backend domain.Backend,
-	appRepo domain.ApplicationRepository,
+	infoSvc systeminfo.Service,
 	fetcher repofetcher.Service,
 	cd cdservice.Service,
 	builder domain.ControllerBuilderService,
 	logStream *logstream.Service,
-	pubKey *ssh.PublicKeys,
-	sshConf domain.SSHConfig,
 ) pbconnect.ControllerServiceHandler {
 	return &ControllerService{
-		c:         c,
-		backend:   backend,
-		appRepo:   appRepo,
+		infoSvc:   infoSvc,
 		fetcher:   fetcher,
 		cd:        cd,
 		builder:   builder,
 		logStream: logStream,
-		pubKey:    pubKey,
-		sshConf:   sshConf,
 	}
 }
 
 func (s *ControllerService) GetSystemInfo(_ context.Context, _ *connect.Request[emptypb.Empty]) (*connect.Response[pb.SystemInfo], error) {
-	domains := s.backend.AvailableDomains()
-	existingApps, err := s.appRepo.GetApplications(context.Background(), domain.GetApplicationCondition{})
+	info, err := s.infoSvc.GetSystemInfo()
 	if err != nil {
 		return nil, err
 	}
-	for _, ad := range domains {
-		ad.AlreadyBound = ad.IsAlreadyBound(existingApps)
-	}
-
-	ports := s.backend.AvailablePorts()
-	ver, rev := cli.GetVersion()
-
-	res := connect.NewResponse(&pb.SystemInfo{
-		PublicKey: domain.Base64EncodedPublicKey(s.pubKey.Signer.PublicKey()) + " neoshowcase",
-		Ssh: &pb.SSHInfo{
-			Host: s.sshConf.Host,
-			Port: int32(s.sshConf.Port),
-		},
-		Domains:         ds.Map(domains, pbconvert.ToPBAvailableDomain),
-		Ports:           ds.Map(ports, pbconvert.ToPBAvailablePort),
-		AdditionalLinks: ds.Map(s.c.AdditionalLinks, pbconvert.ToPBAdditionalLink),
-		Version:         ver,
-		Revision:        rev,
-	})
+	pbInfo := pbconvert.ToPBSystemInfo(info)
+	res := connect.NewResponse(pbInfo)
 	return res, nil
 }
 

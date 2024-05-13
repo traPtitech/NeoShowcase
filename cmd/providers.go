@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"fmt"
+	"github.com/traPtitech/neoshowcase/pkg/usecase/systeminfo"
 	"net/http"
 	"os"
 	"strings"
@@ -93,6 +94,7 @@ var providers = wire.NewSet(
 	traefikv1alpha1.NewForConfig,
 	ssgen.NewGeneratorService,
 	sshserver.NewSSHServer,
+	systeminfo.NewService,
 	ubuilder.NewService,
 	webhook.NewReceiver,
 	provideRepositoryPrivateKey,
@@ -103,7 +105,7 @@ var providers = wire.NewSet(
 	buildpack.NewBuildpackBackend,
 	provideBuilderConfig,
 	provideBuildkitClient,
-	provideControllerServiceConfig,
+	provideSystemInfoConfig,
 	provideControllerServer,
 	provideContainerLogger,
 	provideMetricsService,
@@ -199,8 +201,8 @@ func provideBuildkitClient(c Config) (*buildkit.Client, error) {
 	return client, nil
 }
 
-func provideControllerServiceConfig(c Config) *grpc.ControllerServiceConfig {
-	return &grpc.ControllerServiceConfig{
+func provideSystemInfoConfig(c Config) *systeminfo.ServiceConfig {
+	return &systeminfo.ServiceConfig{
 		AdditionalLinks: c.AdditionalLinks,
 	}
 }
