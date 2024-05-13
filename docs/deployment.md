@@ -30,9 +30,9 @@ See [../compose.yaml](../compose.yaml) for required components.
   - Public registries "may" work, but is not tested.
 - buildpack, buildkitd
   - Used by "ns-builder", this is where applications are actually built.
-- mysql, adminer
+- mysql, adminer (or any other db admin UI)
   - Used by NeoShowcase itself
-- mysql, mongo, adminer
+- mysql, mongo, adminer (or any other db admin UI)
   - Used by applications
 - grafana, loki, promtail, victoria-metrics (or prometheus), cadvisor
   - Used for displaying application metrics and logs
