@@ -19,19 +19,25 @@ import (
 	"github.com/traPtitech/neoshowcase/pkg/util/ds"
 )
 
+type ControllerServiceConfig struct {
+	AdditionalLinks []*domain.AdditionalLink
+}
+
 type ControllerService struct {
-	backend    domain.Backend
-	appRepo    domain.ApplicationRepository
-	fetcher    repofetcher.Service
-	cd         cdservice.Service
-	builder    domain.ControllerBuilderService
-	logStream  *logstream.Service
-	pubKey     *ssh.PublicKeys
-	sshConf    domain.SSHConfig
-	adminerURL string
+	c *ControllerServiceConfig
+
+	backend   domain.Backend
+	appRepo   domain.ApplicationRepository
+	fetcher   repofetcher.Service
+	cd        cdservice.Service
+	builder   domain.ControllerBuilderService
+	logStream *logstream.Service
+	pubKey    *ssh.PublicKeys
+	sshConf   domain.SSHConfig
 }
 
 func NewControllerService(
+	c *ControllerServiceConfig,
 	backend domain.Backend,
 	appRepo domain.ApplicationRepository,
 	fetcher repofetcher.Service,
@@ -40,18 +46,17 @@ func NewControllerService(
 	logStream *logstream.Service,
 	pubKey *ssh.PublicKeys,
 	sshConf domain.SSHConfig,
-	adminerURL domain.AdminerURL,
 ) pbconnect.ControllerServiceHandler {
 	return &ControllerService{
-		backend:    backend,
-		appRepo:    appRepo,
-		fetcher:    fetcher,
-		cd:         cd,
-		builder:    builder,
-		logStream:  logStream,
-		pubKey:     pubKey,
-		sshConf:    sshConf,
-		adminerURL: string(adminerURL),
+		c:         c,
+		backend:   backend,
+		appRepo:   appRepo,
+		fetcher:   fetcher,
+		cd:        cd,
+		builder:   builder,
+		logStream: logStream,
+		pubKey:    pubKey,
+		sshConf:   sshConf,
 	}
 }
 
@@ -74,11 +79,11 @@ func (s *ControllerService) GetSystemInfo(_ context.Context, _ *connect.Request[
 			Host: s.sshConf.Host,
 			Port: int32(s.sshConf.Port),
 		},
-		Domains:    ds.Map(domains, pbconvert.ToPBAvailableDomain),
-		Ports:      ds.Map(ports, pbconvert.ToPBAvailablePort),
-		AdminerUrl: s.adminerURL,
-		Version:    ver,
-		Revision:   rev,
+		Domains:         ds.Map(domains, pbconvert.ToPBAvailableDomain),
+		Ports:           ds.Map(ports, pbconvert.ToPBAvailablePort),
+		AdditionalLinks: ds.Map(s.c.AdditionalLinks, pbconvert.ToPBAdditionalLink),
+		Version:         ver,
+		Revision:        rev,
 	})
 	return res, nil
 }

@@ -19,7 +19,7 @@ type SystemInfo struct {
 	}
 	AvailableDomains AvailableDomainSlice
 	AvailablePorts   AvailablePortSlice
-	AdminerURL       string
+	AdditionalLinks  []*AdditionalLink
 	Version          string
 	Revision         string
 }

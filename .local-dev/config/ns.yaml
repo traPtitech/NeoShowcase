@@ -1,5 +1,9 @@
 privateKeyFile: /keys/id_ed25519
-adminerURL: http://adminer.local.trapti.tech/
+additionalLinks:
+  - name: Wiki
+    url: https://wiki.trap.jp/services/NeoShowcase
+  - name: Adminer
+    url: http://adminer.local.trapti.tech/
 
 db:
   host: mysql

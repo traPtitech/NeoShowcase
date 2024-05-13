@@ -103,6 +103,7 @@ var providers = wire.NewSet(
 	buildpack.NewBuildpackBackend,
 	provideBuilderConfig,
 	provideBuildkitClient,
+	provideControllerServiceConfig,
 	provideControllerServer,
 	provideContainerLogger,
 	provideMetricsService,
@@ -111,7 +112,7 @@ var providers = wire.NewSet(
 	provideHealthCheckFunc,
 	provideStaticServer,
 	provideStaticServerDocumentRootPath,
-	wire.FieldsOf(new(Config), "AdminerURL", "DB", "Storage", "Image", "Components"),
+	wire.FieldsOf(new(Config), "DB", "Storage", "Image", "Components"),
 	wire.FieldsOf(new(ComponentsConfig), "Builder", "Controller", "Gateway", "GiteaIntegration", "SSGen"),
 )
 
@@ -196,6 +197,12 @@ func provideBuildkitClient(c Config) (*buildkit.Client, error) {
 		return nil, errors.Wrap(err, "failed to initialize Buildkit Client")
 	}
 	return client, nil
+}
+
+func provideControllerServiceConfig(c Config) *grpc.ControllerServiceConfig {
+	return &grpc.ControllerServiceConfig{
+		AdditionalLinks: c.AdditionalLinks,
+	}
 }
 
 func provideControllerServer(

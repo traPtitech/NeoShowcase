@@ -90,6 +90,7 @@ func NewBuildpackHelper(c Config) (component, error) {
 }
 
 func NewControllerDocker(c Config) (component, error) {
+	controllerServiceConfig := provideControllerServiceConfig(c)
 	client, err := dockerimpl.NewClientFromEnv()
 	if err != nil {
 		return nil, err
@@ -144,8 +145,7 @@ func NewControllerDocker(c Config) (component, error) {
 		return nil, err
 	}
 	sshConfig := controllerConfig.SSH
-	adminerURL := c.AdminerURL
-	controllerServiceHandler := grpc.NewControllerService(backend, applicationRepository, repofetcherService, cdserviceService, controllerBuilderService, service, publicKeys, sshConfig, adminerURL)
+	controllerServiceHandler := grpc.NewControllerService(controllerServiceConfig, backend, applicationRepository, repofetcherService, cdserviceService, controllerBuilderService, service, publicKeys, sshConfig)
 	controllerGiteaIntegrationService := grpc.NewControllerGiteaIntegrationService()
 	tokenAuthInterceptor, err := provideTokenAuthInterceptor(c)
 	if err != nil {
@@ -175,6 +175,7 @@ func NewControllerDocker(c Config) (component, error) {
 }
 
 func NewControllerK8s(c Config) (component, error) {
+	controllerServiceConfig := provideControllerServiceConfig(c)
 	restConfig, err := rest.InClusterConfig()
 	if err != nil {
 		return nil, err
@@ -241,8 +242,7 @@ func NewControllerK8s(c Config) (component, error) {
 		return nil, err
 	}
 	sshConfig := controllerConfig.SSH
-	adminerURL := c.AdminerURL
-	controllerServiceHandler := grpc.NewControllerService(backend, applicationRepository, repofetcherService, cdserviceService, controllerBuilderService, service, publicKeys, sshConfig, adminerURL)
+	controllerServiceHandler := grpc.NewControllerService(controllerServiceConfig, backend, applicationRepository, repofetcherService, cdserviceService, controllerBuilderService, service, publicKeys, sshConfig)
 	controllerGiteaIntegrationService := grpc.NewControllerGiteaIntegrationService()
 	tokenAuthInterceptor, err := provideTokenAuthInterceptor(c)
 	if err != nil {

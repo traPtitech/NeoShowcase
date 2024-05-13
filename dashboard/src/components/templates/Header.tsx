@@ -81,13 +81,6 @@ export const Header: Component = () => {
             Queue
           </Button>
         </A>
-        <Show when={systemInfo()?.adminerUrl}>
-          <a href={systemInfo()?.adminerUrl} target="_blank" rel="noopener noreferrer">
-            <Button size="medium" variants="text" rightIcon={<MaterialSymbols>open_in_new</MaterialSymbols>}>
-              Adminer
-            </Button>
-          </a>
-        </Show>
       </NavigationContainer>
       <Show when={user()}>
         {(user) => (
