@@ -22,8 +22,8 @@ import (
 )
 
 type Config struct {
-	PrivateKeyFile string            `mapstructure:"privateKeyFile" yaml:"privateKeyFile"`
-	AdminerURL     domain.AdminerURL `mapstructure:"adminerURL" yaml:"adminerURL"`
+	PrivateKeyFile  string                   `mapstructure:"privateKeyFile" yaml:"privateKeyFile"`
+	AdditionalLinks []*domain.AdditionalLink `mapstructure:"additionalLinks" yaml:"additionalLinks"`
 
 	DB      repository.Config    `mapstructure:"db" yaml:"db"`
 	Storage domain.StorageConfig `mapstructure:"storage" yaml:"storage"`
@@ -106,7 +106,7 @@ type SSGenConfig struct {
 
 func init() {
 	viper.SetDefault("privateKeyFile", "")
-	viper.SetDefault("adminerURL", "http://adminer.local.trapti.tech/")
+	viper.SetDefault("additionalLinks", nil)
 
 	viper.SetDefault("db.host", "127.0.0.1")
 	viper.SetDefault("db.port", 3306)

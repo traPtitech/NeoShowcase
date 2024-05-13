@@ -2,7 +2,7 @@ import { DropdownMenu } from '@kobalte/core'
 import { keyframes, style } from '@macaron-css/core'
 import { styled } from '@macaron-css/solid'
 import { A } from '@solidjs/router'
-import type { Component } from 'solid-js'
+import { type Component, For } from 'solid-js'
 import type { User } from '/@/api/neoshowcase/protobuf/gateway_pb'
 import { systemInfo } from '/@/libs/api'
 import { colorVars, media, textVars } from '/@/theme'
@@ -98,6 +98,24 @@ const VersionContainer = styled('div', {
   },
 })
 
+const linkNameToMaterialIcon = (name: string): string => {
+  // Manually assign icons to some known external link names
+  const lowerName = name.toLowerCase()
+  switch (lowerName) {
+    case 'wiki':
+    case 'help':
+      return 'help'
+    case 'phpmyadmin':
+    case 'adminer':
+    case 'db admin':
+      return 'database'
+  }
+  if (lowerName.includes('mysql') || lowerName.includes('mongo')) {
+    return 'database'
+  }
+  return 'open_in_new'
+}
+
 export const UserMenuButton: Component<{
   user: User
 }> = (props) => {
@@ -119,13 +137,22 @@ export const UserMenuButton: Component<{
               </Button>
             </A>
           </DropdownMenu.Item>
-          <DropdownMenu.Item>
-            <a href="https://wiki.trap.jp/services/NeoShowcase" target="_blank" rel="noopener noreferrer">
-              <Button variants="text" size="medium" leftIcon={<MaterialSymbols>help</MaterialSymbols>} full>
-                Help
-              </Button>
-            </a>
-          </DropdownMenu.Item>
+          <For each={systemInfo()?.additionalLinks}>
+            {(link) => (
+              <DropdownMenu.Item>
+                <a href={link.url} target="_blank" rel="noopener noreferrer">
+                  <Button
+                    variants="text"
+                    size="medium"
+                    leftIcon={<MaterialSymbols>{linkNameToMaterialIcon(link.name)}</MaterialSymbols>}
+                    full
+                  >
+                    {link.name}
+                  </Button>
+                </a>
+              </DropdownMenu.Item>
+            )}
+          </For>
           <DropdownMenu.Item>
             <VersionContainer>
               <span>NeoShowcase</span>

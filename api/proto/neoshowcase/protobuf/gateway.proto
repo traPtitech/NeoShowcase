@@ -29,6 +29,11 @@ message AvailablePort {
   PortPublicationProtocol protocol = 3;
 }
 
+message AdditionalLink {
+  string name = 1;
+  string url = 2;
+}
+
 message SystemInfo {
   // public_key システムのSSH公開鍵 リポジトリごとにSSH秘密鍵を設定しないデフォルトSSH認証で使用
   string public_key = 1;
@@ -38,8 +43,8 @@ message SystemInfo {
   repeated AvailableDomain domains = 3;
   // ports 使用可能なポート一覧
   repeated AvailablePort ports = 4;
-  // adminer_url ユーザー用DB管理画面URL
-  string adminer_url = 5;
+  // additional_links UIメニューに表示するリンク一覧
+  repeated AdditionalLink additional_links = 5;
   // version NeoShowcase version
   string version = 6;
   // revision NeoShowcase version

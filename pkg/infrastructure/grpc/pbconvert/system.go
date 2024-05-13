@@ -6,6 +6,20 @@ import (
 	"github.com/traPtitech/neoshowcase/pkg/util/ds"
 )
 
+func FromPBAdditionalLink(link *pb.AdditionalLink) *domain.AdditionalLink {
+	return &domain.AdditionalLink{
+		Name: link.Name,
+		URL:  link.Url,
+	}
+}
+
+func ToPBAdditionalLink(link *domain.AdditionalLink) *pb.AdditionalLink {
+	return &pb.AdditionalLink{
+		Name: link.Name,
+		Url:  link.URL,
+	}
+}
+
 func FromPBSystemInfo(i *pb.SystemInfo) *domain.SystemInfo {
 	return &domain.SystemInfo{
 		PublicKey: i.PublicKey,
@@ -18,7 +32,7 @@ func FromPBSystemInfo(i *pb.SystemInfo) *domain.SystemInfo {
 		},
 		AvailableDomains: ds.Map(i.Domains, FromPBAvailableDomain),
 		AvailablePorts:   ds.Map(i.Ports, FromPBAvailablePort),
-		AdminerURL:       i.AdminerUrl,
+		AdditionalLinks:  ds.Map(i.AdditionalLinks, FromPBAdditionalLink),
 		Version:          i.Version,
 		Revision:         i.Revision,
 	}
@@ -31,10 +45,10 @@ func ToPBSystemInfo(i *domain.SystemInfo) *pb.SystemInfo {
 			Host: i.SSHInfo.Host,
 			Port: int32(i.SSHInfo.Port),
 		},
-		Domains:    ds.Map(i.AvailableDomains, ToPBAvailableDomain),
-		Ports:      ds.Map(i.AvailablePorts, ToPBAvailablePort),
-		AdminerUrl: i.AdminerURL,
-		Version:    i.Version,
-		Revision:   i.Revision,
+		Domains:         ds.Map(i.AvailableDomains, ToPBAvailableDomain),
+		Ports:           ds.Map(i.AvailablePorts, ToPBAvailablePort),
+		AdditionalLinks: ds.Map(i.AdditionalLinks, ToPBAdditionalLink),
+		Version:         i.Version,
+		Revision:        i.Revision,
 	}
 }

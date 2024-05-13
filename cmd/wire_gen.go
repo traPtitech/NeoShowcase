@@ -34,6 +34,7 @@ import (
 	"github.com/traPtitech/neoshowcase/pkg/usecase/repofetcher"
 	"github.com/traPtitech/neoshowcase/pkg/usecase/ssgen"
 	"github.com/traPtitech/neoshowcase/pkg/usecase/sshserver"
+	"github.com/traPtitech/neoshowcase/pkg/usecase/systeminfo"
 	"github.com/traefik/traefik/v3/pkg/provider/kubernetes/crd/generated/clientset/versioned/typed/traefikio/v1alpha1"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
@@ -90,6 +91,7 @@ func NewBuildpackHelper(c Config) (component, error) {
 }
 
 func NewControllerDocker(c Config) (component, error) {
+	serviceConfig := provideSystemInfoConfig(c)
 	client, err := dockerimpl.NewClientFromEnv()
 	if err != nil {
 		return nil, err
@@ -108,7 +110,7 @@ func NewControllerDocker(c Config) (component, error) {
 		return nil, err
 	}
 	applicationRepository := repository.NewApplicationRepository(db)
-	gitRepositoryRepository := repository.NewGitRepositoryRepository(db)
+	sshConfig := controllerConfig.SSH
 	privateKey, err := provideRepositoryPrivateKey(c)
 	if err != nil {
 		return nil, err
@@ -117,16 +119,18 @@ func NewControllerDocker(c Config) (component, error) {
 	if err != nil {
 		return nil, err
 	}
+	service := systeminfo.NewService(serviceConfig, backend, applicationRepository, sshConfig, publicKeys)
+	gitRepositoryRepository := repository.NewGitRepositoryRepository(db)
 	buildRepository := repository.NewBuildRepository(db)
 	environmentRepository := repository.NewEnvironmentRepository(db)
-	service := logstream.NewService()
+	logstreamService := logstream.NewService()
 	storageConfig := c.Storage
 	storage, err := provideStorage(storageConfig)
 	if err != nil {
 		return nil, err
 	}
 	artifactRepository := repository.NewArtifactRepository(db)
-	controllerBuilderService := grpc.NewControllerBuilderService(service, privateKey, imageConfig, storage, applicationRepository, artifactRepository, buildRepository, environmentRepository, gitRepositoryRepository)
+	controllerBuilderService := grpc.NewControllerBuilderService(logstreamService, privateKey, imageConfig, storage, applicationRepository, artifactRepository, buildRepository, environmentRepository, gitRepositoryRepository)
 	controllerSSGenService := grpc.NewControllerSSGenService()
 	appDeployHelper := cdservice.NewAppDeployHelper(backend, applicationRepository, buildRepository, environmentRepository, controllerSSGenService, imageConfig)
 	containerStateMutator := cdservice.NewContainerStateMutator(applicationRepository, backend)
@@ -143,9 +147,7 @@ func NewControllerDocker(c Config) (component, error) {
 	if err != nil {
 		return nil, err
 	}
-	sshConfig := controllerConfig.SSH
-	adminerURL := c.AdminerURL
-	controllerServiceHandler := grpc.NewControllerService(backend, applicationRepository, repofetcherService, cdserviceService, controllerBuilderService, service, publicKeys, sshConfig, adminerURL)
+	controllerServiceHandler := grpc.NewControllerService(service, repofetcherService, cdserviceService, controllerBuilderService, logstreamService)
 	controllerGiteaIntegrationService := grpc.NewControllerGiteaIntegrationService()
 	tokenAuthInterceptor, err := provideTokenAuthInterceptor(c)
 	if err != nil {
@@ -175,6 +177,7 @@ func NewControllerDocker(c Config) (component, error) {
 }
 
 func NewControllerK8s(c Config) (component, error) {
+	serviceConfig := provideSystemInfoConfig(c)
 	restConfig, err := rest.InClusterConfig()
 	if err != nil {
 		return nil, err
@@ -204,7 +207,7 @@ func NewControllerK8s(c Config) (component, error) {
 		return nil, err
 	}
 	applicationRepository := repository.NewApplicationRepository(db)
-	gitRepositoryRepository := repository.NewGitRepositoryRepository(db)
+	sshConfig := controllerConfig.SSH
 	privateKey, err := provideRepositoryPrivateKey(c)
 	if err != nil {
 		return nil, err
@@ -213,9 +216,11 @@ func NewControllerK8s(c Config) (component, error) {
 	if err != nil {
 		return nil, err
 	}
+	service := systeminfo.NewService(serviceConfig, backend, applicationRepository, sshConfig, publicKeys)
+	gitRepositoryRepository := repository.NewGitRepositoryRepository(db)
 	buildRepository := repository.NewBuildRepository(db)
 	environmentRepository := repository.NewEnvironmentRepository(db)
-	service := logstream.NewService()
+	logstreamService := logstream.NewService()
 	imageConfig := c.Image
 	storageConfig := c.Storage
 	storage, err := provideStorage(storageConfig)
@@ -223,7 +228,7 @@ func NewControllerK8s(c Config) (component, error) {
 		return nil, err
 	}
 	artifactRepository := repository.NewArtifactRepository(db)
-	controllerBuilderService := grpc.NewControllerBuilderService(service, privateKey, imageConfig, storage, applicationRepository, artifactRepository, buildRepository, environmentRepository, gitRepositoryRepository)
+	controllerBuilderService := grpc.NewControllerBuilderService(logstreamService, privateKey, imageConfig, storage, applicationRepository, artifactRepository, buildRepository, environmentRepository, gitRepositoryRepository)
 	controllerSSGenService := grpc.NewControllerSSGenService()
 	appDeployHelper := cdservice.NewAppDeployHelper(backend, applicationRepository, buildRepository, environmentRepository, controllerSSGenService, imageConfig)
 	containerStateMutator := cdservice.NewContainerStateMutator(applicationRepository, backend)
@@ -240,9 +245,7 @@ func NewControllerK8s(c Config) (component, error) {
 	if err != nil {
 		return nil, err
 	}
-	sshConfig := controllerConfig.SSH
-	adminerURL := c.AdminerURL
-	controllerServiceHandler := grpc.NewControllerService(backend, applicationRepository, repofetcherService, cdserviceService, controllerBuilderService, service, publicKeys, sshConfig, adminerURL)
+	controllerServiceHandler := grpc.NewControllerService(service, repofetcherService, cdserviceService, controllerBuilderService, logstreamService)
 	controllerGiteaIntegrationService := grpc.NewControllerGiteaIntegrationService()
 	tokenAuthInterceptor, err := provideTokenAuthInterceptor(c)
 	if err != nil {

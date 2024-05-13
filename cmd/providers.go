@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"fmt"
+	"github.com/traPtitech/neoshowcase/pkg/usecase/systeminfo"
 	"net/http"
 	"os"
 	"strings"
@@ -93,6 +94,7 @@ var providers = wire.NewSet(
 	traefikv1alpha1.NewForConfig,
 	ssgen.NewGeneratorService,
 	sshserver.NewSSHServer,
+	systeminfo.NewService,
 	ubuilder.NewService,
 	webhook.NewReceiver,
 	provideRepositoryPrivateKey,
@@ -103,6 +105,7 @@ var providers = wire.NewSet(
 	buildpack.NewBuildpackBackend,
 	provideBuilderConfig,
 	provideBuildkitClient,
+	provideSystemInfoConfig,
 	provideControllerServer,
 	provideContainerLogger,
 	provideMetricsService,
@@ -111,7 +114,7 @@ var providers = wire.NewSet(
 	provideHealthCheckFunc,
 	provideStaticServer,
 	provideStaticServerDocumentRootPath,
-	wire.FieldsOf(new(Config), "AdminerURL", "DB", "Storage", "Image", "Components"),
+	wire.FieldsOf(new(Config), "DB", "Storage", "Image", "Components"),
 	wire.FieldsOf(new(ComponentsConfig), "Builder", "Controller", "Gateway", "GiteaIntegration", "SSGen"),
 )
 
@@ -196,6 +199,12 @@ func provideBuildkitClient(c Config) (*buildkit.Client, error) {
 		return nil, errors.Wrap(err, "failed to initialize Buildkit Client")
 	}
 	return client, nil
+}
+
+func provideSystemInfoConfig(c Config) *systeminfo.ServiceConfig {
+	return &systeminfo.ServiceConfig{
+		AdditionalLinks: c.AdditionalLinks,
+	}
 }
 
 func provideControllerServer(

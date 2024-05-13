@@ -5,4 +5,7 @@ type SSHConfig struct {
 	Port int    `mapstructure:"port" yaml:"port"`
 }
 
-type AdminerURL string
+type AdditionalLink struct {
+	Name string `mapstructure:"name" yaml:"name"`
+	URL  string `mapstructure:"url" yaml:"url"`
+}

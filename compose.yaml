@@ -310,7 +310,7 @@ services:
       - apps
 
   adminer:
-    image: dockette/adminer:full
+    image: adminer:4.8.1
     restart: always
     environment:
       ADMINER_DEFAULT_SERVER: mysql

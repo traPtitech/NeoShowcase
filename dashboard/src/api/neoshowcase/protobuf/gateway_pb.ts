@@ -267,6 +267,49 @@ export class AvailablePort extends Message<AvailablePort> {
 }
 
 /**
+ * @generated from message neoshowcase.protobuf.AdditionalLink
+ */
+export class AdditionalLink extends Message<AdditionalLink> {
+  /**
+   * @generated from field: string name = 1;
+   */
+  name = "";
+
+  /**
+   * @generated from field: string url = 2;
+   */
+  url = "";
+
+  constructor(data?: PartialMessage<AdditionalLink>) {
+    super();
+    proto3.util.initPartial(data, this);
+  }
+
+  static readonly runtime: typeof proto3 = proto3;
+  static readonly typeName = "neoshowcase.protobuf.AdditionalLink";
+  static readonly fields: FieldList = proto3.util.newFieldList(() => [
+    { no: 1, name: "name", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+    { no: 2, name: "url", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+  ]);
+
+  static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): AdditionalLink {
+    return new AdditionalLink().fromBinary(bytes, options);
+  }
+
+  static fromJson(jsonValue: JsonValue, options?: Partial<JsonReadOptions>): AdditionalLink {
+    return new AdditionalLink().fromJson(jsonValue, options);
+  }
+
+  static fromJsonString(jsonString: string, options?: Partial<JsonReadOptions>): AdditionalLink {
+    return new AdditionalLink().fromJsonString(jsonString, options);
+  }
+
+  static equals(a: AdditionalLink | PlainMessage<AdditionalLink> | undefined, b: AdditionalLink | PlainMessage<AdditionalLink> | undefined): boolean {
+    return proto3.util.equals(AdditionalLink, a, b);
+  }
+}
+
+/**
  * @generated from message neoshowcase.protobuf.SystemInfo
  */
 export class SystemInfo extends Message<SystemInfo> {
@@ -299,11 +342,11 @@ export class SystemInfo extends Message<SystemInfo> {
   ports: AvailablePort[] = [];
 
   /**
-   * adminer_url ユーザー用DB管理画面URL
+   * additional_links UIメニューに表示するリンク一覧
    *
-   * @generated from field: string adminer_url = 5;
+   * @generated from field: repeated neoshowcase.protobuf.AdditionalLink additional_links = 5;
    */
-  adminerUrl = "";
+  additionalLinks: AdditionalLink[] = [];
 
   /**
    * version NeoShowcase version
@@ -331,7 +374,7 @@ export class SystemInfo extends Message<SystemInfo> {
     { no: 2, name: "ssh", kind: "message", T: SSHInfo },
     { no: 3, name: "domains", kind: "message", T: AvailableDomain, repeated: true },
     { no: 4, name: "ports", kind: "message", T: AvailablePort, repeated: true },
-    { no: 5, name: "adminer_url", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+    { no: 5, name: "additional_links", kind: "message", T: AdditionalLink, repeated: true },
     { no: 6, name: "version", kind: "scalar", T: 9 /* ScalarType.STRING */ },
     { no: 7, name: "revision", kind: "scalar", T: 9 /* ScalarType.STRING */ },
   ]);
