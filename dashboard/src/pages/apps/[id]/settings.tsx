@@ -1,6 +1,6 @@
 import { styled } from '@macaron-css/solid'
 import { type RouteSectionProps, useMatch, useNavigate } from '@solidjs/router'
-import { ErrorBoundary, Show, Suspense, onCleanup, useTransition } from 'solid-js'
+import { ErrorBoundary, Show, Suspense, useTransition } from 'solid-js'
 import { Button } from '/@/components/UI/Button'
 import { MaterialSymbols } from '/@/components/UI/MaterialSymbols'
 import ErrorView from '/@/components/layouts/ErrorView'
@@ -21,11 +21,8 @@ const SideMenu = styled('div', {
 })
 
 export default (props: RouteSectionProps) => {
-  const { app, refetch } = useApplicationData()
+  const { app } = useApplicationData()
   const loaded = () => !!app()
-
-  const refetchTimer = setInterval(refetch, 10000)
-  onCleanup(() => clearInterval(refetchTimer))
 
   const matchGeneralPage = useMatch(() => `/apps/${app()?.id}/settings/`)
   const matchBuildPage = useMatch(() => `/apps/${app()?.id}/settings/build`)
