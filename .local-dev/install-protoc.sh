@@ -16,4 +16,4 @@ ARCH=$(uname -m)
 curl -sSLOf https://github.com/protocolbuffers/protobuf/releases/download/v"$PROTOC_VERSION"/protoc-"$PROTOC_VERSION"-"$OS"-"$ARCH".zip
 unzip protoc-"$PROTOC_VERSION"-"$OS"-"$ARCH".zip
 
-sudo mv bin/protoc /usr/local/bin/
+sudo install bin/protoc /usr/local/bin/

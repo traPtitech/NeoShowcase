@@ -26,6 +26,12 @@ help: ## Display this help screen
 init-k3d:
 	curl -s https://raw.githubusercontent.com/k3d-io/k3d/main/install.sh | bash
 
+.PHONY: init-kustomize
+init-kustomize:
+	curl -s "https://raw.githubusercontent.com/kubernetes-sigs/kustomize/master/hack/install_kustomize.sh" | bash
+	sudo install ./kustomize /usr/local/bin/
+	rm ./kustomize
+
 .PHONY: init-protoc
 init-protoc:
 	@PROTOC_VERSION=$(PROTOC_VERSION) ./.local-dev/install-protoc.sh
@@ -37,7 +43,7 @@ init-protoc-tools:
 	npm i -g @connectrpc/protoc-gen-connect-es @bufbuild/protoc-gen-es
 
 .PHONY: init
-init: init-k3d init-protoc init-protoc-tools ## Install / update required tools
+init: init-k3d init-kustomize init-protoc init-protoc-tools ## Install / update required tools
 	go mod download
 	go install github.com/sqldef/sqldef/cmd/mysqldef@latest
 	go install github.com/ktr0731/evans@latest
