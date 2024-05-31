@@ -1,6 +1,7 @@
 package dockerimpl
 
 import (
+	"fmt"
 	"math"
 
 	"github.com/friendsofgo/errors"
@@ -8,6 +9,10 @@ import (
 
 	"github.com/traPtitech/neoshowcase/pkg/domain"
 	"github.com/traPtitech/neoshowcase/pkg/util/mapper"
+)
+
+const (
+	routingTypeTraefik = "traefik"
 )
 
 type domainAuthConf = struct {
@@ -67,6 +72,18 @@ type Config struct {
 		URL string `mapstructure:"url" yaml:"url"`
 	} `mapstructure:"ss" yaml:"ss"`
 
+	// Routing section defines ingress settings.
+	Routing struct {
+		// Type defines which ingress controller to use.
+		// Possible values:
+		// 	"traefik: Uses traefik ingress controller.
+		Type    string `mapstructure:"type" yaml:"type"`
+		Traefik struct {
+			// PriorityOffset defines HTTP routes' priority offset for user apps.
+			// This is optionally used to optimize routing performance.
+			PriorityOffset int `mapstructure:"priorityOffset" yaml:"priorityOffset"`
+		} `mapstructure:"traefik" yaml:"traefik"`
+	} `mapstructure:"routing" yaml:"routing"`
 	// TLS section defines tls setting for user app ingress.
 	TLS struct {
 		CertResolver string `mapstructure:"certResolver" yaml:"certResolver"`
@@ -107,6 +124,12 @@ func (c *Config) Validate() error {
 		}
 	}
 
+	switch c.Routing.Type {
+	case routingTypeTraefik:
+		// Nothing to validate as of now
+	default:
+		return errors.New(fmt.Sprintf("docker.routing.type is invalid: %s", c.Routing.Type))
+	}
 	if err := c.TLS.Wildcard.Domains.Validate(); err != nil {
 		return errors.Wrap(err, "docker.tls.wildcard.domains is invalid")
 	}

@@ -59,6 +59,7 @@ func prepareManager(t *testing.T) (*Backend, *kubernetes.Clientset, *traefikv1al
 
 	var config Config
 	config.Namespace = appsNamespace
+	config.Routing.Type = routingTypeTraefik
 	config.TLS.Type = tlsTypeTraefik
 	b, err := NewK8SBackend(kubeconf, client, traefikClient, certManagerClient, config)
 	require.NoError(t, err)

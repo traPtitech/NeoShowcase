@@ -164,6 +164,8 @@ func init() {
 	viper.SetDefault("components.controller.docker.ports", nil)
 
 	viper.SetDefault("components.controller.docker.ss.url", "")
+	viper.SetDefault("components.controller.docker.routing.type", "traefik")
+	viper.SetDefault("components.controller.docker.routing.traefik.priorityOffset", 0)
 	viper.SetDefault("components.controller.docker.tls.certResolver", "nsresolver")
 	viper.SetDefault("components.controller.docker.tls.wildcard.domains", nil)
 
@@ -183,6 +185,8 @@ func init() {
 	viper.SetDefault("components.controller.k8s.ss.port", 80)
 	viper.SetDefault("components.controller.k8s.ss.scheme", "http")
 
+	viper.SetDefault("components.controller.k8s.routing.type", "traefik")
+	viper.SetDefault("components.controller.k8s.routing.traefik.priorityOffset", 0)
 	viper.SetDefault("components.controller.k8s.tls.type", "traefik")
 	viper.SetDefault("components.controller.k8s.tls.traefik.certResolver", "nsresolver")
 	viper.SetDefault("components.controller.k8s.tls.traefik.wildcard.domains", nil)
