@@ -58,10 +58,14 @@ func (b *Backend) routerBase(website *domain.Website, svcName string) (router m,
 		}
 	}
 
+	priorityOffset := b.config.Routing.Traefik.PriorityOffset
+	priority := len(rule) + priorityOffset
+
 	router = m{
 		"entrypoints": entrypoints,
 		"middlewares": middlewareNames,
 		"rule":        rule,
+		"priority":    priority,
 		"service":     svcName,
 	}
 

@@ -71,6 +71,10 @@ components:
       ss:
         url: http://static-server:80/
 
+      routing:
+        type: traefik
+        traefik:
+          priorityOffset: 0
       tls:
         certResolver: nsresolver
         wildcard:
@@ -118,6 +122,10 @@ components:
         port: 80
         scheme: http
 
+      routing:
+        type: traefik
+        traefik:
+          priorityOffset: 0
       tls:
         type: traefik
         traefik:

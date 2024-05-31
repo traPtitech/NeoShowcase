@@ -1,6 +1,7 @@
 package k8simpl
 
 import (
+	"fmt"
 	"strconv"
 
 	"github.com/friendsofgo/errors"
@@ -17,6 +18,8 @@ import (
 )
 
 const (
+	routingTypeTraefik = "traefik"
+
 	tlsTypeTraefik     = "traefik"
 	tlsTypeCertManager = "cert-manager"
 
@@ -166,6 +169,18 @@ type Config struct {
 		Scheme    string `mapstructure:"scheme" yaml:"scheme"`
 	} `mapstructure:"ss" yaml:"ss"`
 
+	// Routing section defines ingress controller settings.
+	Routing struct {
+		// Type defines which ingress controller to use.
+		// Possible values:
+		// 	"traefik: Uses traefik ingress controller.
+		Type    string `mapstructure:"type" yaml:"type"`
+		Traefik struct {
+			// PriorityOffset defines HTTP routes' priority offset for user apps.
+			// This is optionally used to optimize routing performance.
+			PriorityOffset int `mapstructure:"priorityOffset" yaml:"priorityOffset"`
+		} `mapstructure:"traefik" yaml:"traefik"`
+	} `mapstructure:"routing" yaml:"routing"`
 	// TLS section defines tls setting for user app ingress.
 	TLS struct {
 		// Type defines which provider is responsible for obtaining http certificates.
@@ -326,6 +341,12 @@ func (c *Config) Validate() error {
 		}
 	}
 
+	switch c.Routing.Type {
+	case routingTypeTraefik:
+		// Nothing to validate as of now
+	default:
+		return errors.New(fmt.Sprintf("k8s.routing.type is invalid: %s", c.Routing.Type))
+	}
 	switch c.TLS.Type {
 	case tlsTypeTraefik:
 		if err := c.TLS.Traefik.Wildcard.Domains.Validate(); err != nil {

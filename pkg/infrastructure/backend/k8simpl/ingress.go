@@ -107,6 +107,11 @@ func (b *Backend) ingressRoute(
 			middlewareRefs = append(middlewareRefs, traefikv1alpha1.MiddlewareRef{Name: middleware.Name})
 		}
 	}
+	var rulePriority int
+	{
+		priorityOffset := b.config.Routing.Traefik.PriorityOffset
+		rulePriority = len(rule) + priorityOffset
+	}
 
 	var tls *traefikv1alpha1.TLS
 	var certs []*certmanagerv1.Certificate
@@ -141,6 +146,7 @@ func (b *Backend) ingressRoute(
 			EntryPoints: entrypoints,
 			Routes: []traefikv1alpha1.Route{{
 				Match:       rule,
+				Priority:    rulePriority,
 				Kind:        "Rule",
 				Services:    serviceRefs,
 				Middlewares: middlewareRefs,
