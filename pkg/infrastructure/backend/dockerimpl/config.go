@@ -55,20 +55,32 @@ type labelConf = struct {
 }
 
 type Config struct {
-	ConfDir string        `mapstructure:"confDir" yaml:"confDir"`
+	// ConfDir is the directory to put all traefik configurations in.
+	ConfDir string `mapstructure:"confDir" yaml:"confDir"`
+	// Domains define available domains to be used by user apps.
 	Domains []*domainConf `mapstructure:"domains" yaml:"domains"`
-	Ports   []*portConf   `mapstructure:"ports" yaml:"ports"`
-	SS      struct {
+	// Ports define available port-forward ports to be used by user apps.
+	Ports []*portConf `mapstructure:"ports" yaml:"ports"`
+
+	// SS defines static-site server endpoint.
+	SS struct {
 		URL string `mapstructure:"url" yaml:"url"`
 	} `mapstructure:"ss" yaml:"ss"`
-	Network string       `mapstructure:"network" yaml:"network"`
-	Labels  []*labelConf `mapstructure:"labels" yaml:"labels"`
-	TLS     struct {
+
+	// TLS section defines tls setting for user app ingress.
+	TLS struct {
 		CertResolver string `mapstructure:"certResolver" yaml:"certResolver"`
 		Wildcard     struct {
+			// Domains define for which (wildcard) domains cert-manager supports configuring DNS records.
 			Domains domain.WildcardDomains `mapstructure:"domains" yaml:"domains"`
 		} `mapstructure:"wildcard" yaml:"wildcard"`
 	} `mapstructure:"tls" yaml:"tls"`
+
+	// Network defines which docker network to use with all user apps.
+	Network string `mapstructure:"network" yaml:"network"`
+	// Labels define common container labels to put to all user apps.
+	Labels []*labelConf `mapstructure:"labels" yaml:"labels"`
+	// Resources define user app container resource constraints.
 	Resources struct {
 		CPUs              float64 `mapstructure:"cpus" yaml:"cpus"`
 		Memory            int64   `mapstructure:"memory" yaml:"memory"`

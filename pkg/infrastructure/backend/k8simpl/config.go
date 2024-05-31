@@ -152,45 +152,67 @@ type spreadConstraint = struct {
 }
 
 type Config struct {
+	// Domains define available domains to be used by user apps.
 	Domains []*domainConf `mapstructure:"domains" yaml:"domains"`
-	Ports   []*portConf   `mapstructure:"ports" yaml:"ports"`
-	SS      struct {
+	// Ports define available port-forward ports to be used by user apps.
+	Ports []*portConf `mapstructure:"ports" yaml:"ports"`
+
+	// SS defines static-site server endpoint.
+	SS struct {
 		Namespace string `mapstructure:"namespace" yaml:"namespace"`
 		Kind      string `mapstructure:"kind" yaml:"kind"`
 		Name      string `mapstructure:"name" yaml:"name"`
 		Port      int    `mapstructure:"port" yaml:"port"`
 		Scheme    string `mapstructure:"scheme" yaml:"scheme"`
 	} `mapstructure:"ss" yaml:"ss"`
-	Namespace string       `mapstructure:"namespace" yaml:"namespace"`
-	Labels    []*labelConf `mapstructure:"labels" yaml:"labels"`
-	TLS       struct {
-		// cert-manager note: https://doc.traefik.io/traefik/providers/kubernetes-crd/#letsencrypt-support-with-the-custom-resource-definition-provider
-		// needs to enable ingress provider in traefik
-		Type    string `mapstructure:"type" yaml:"type"`
+
+	// TLS section defines tls setting for user app ingress.
+	TLS struct {
+		// Type defines which provider is responsible for obtaining http certificates.
+		// Possible values:
+		// 	"traefik: Uses traefik internal Lets Encrypt resolver.
+		// 	"cert-manager": Delegates to cert-resolver with its own CRD.
+		//
+		// NOTE: If using multiple instances of traefik, the traefik internal Lets Encrypt resolver is not supported.
+		// https://doc.traefik.io/traefik/providers/kubernetes-crd/#letsencrypt-support-with-the-custom-resource-definition-provider
+		Type string `mapstructure:"type" yaml:"type"`
+
+		// Traefik section defines options for type "traefik".
 		Traefik struct {
 			CertResolver string `mapstructure:"certResolver" yaml:"certResolver"`
 			Wildcard     struct {
 				Domains domain.WildcardDomains `mapstructure:"domains" yaml:"domains"`
 			} `mapstructure:"wildcard" yaml:"wildcard"`
 		} `mapstructure:"traefik" yaml:"traefik"`
+
+		// CertManager section defines options for type "cert-manager".
 		CertManager struct {
+			// Issuer defines cert-manager Issuer object reference to be used with CRD.
 			Issuer struct {
 				Name string `mapstructure:"name" yaml:"name"`
 				Kind string `mapstructure:"kind" yaml:"kind"`
 			} `mapstructure:"issuer" yaml:"issuer"`
 			Wildcard struct {
+				// Domains define for which (wildcard) domains cert-manager supports configuring DNS records.
 				Domains domain.WildcardDomains `mapstructure:"domains" yaml:"domains"`
 			} `mapstructure:"wildcard" yaml:"wildcard"`
 		} `mapstructure:"certManager" yaml:"certManager"`
 	} `mapstructure:"tls" yaml:"tls"`
-	// ImagePullSecret required if registry is private
+
+	// Namespace defines in which namespace to deploy user apps.
+	Namespace string `mapstructure:"namespace" yaml:"namespace"`
+	// ImagePullSecret defines secret name to pull user app images with. Required if registry is private.
 	ImagePullSecret string `mapstructure:"imagePullSecret" yaml:"imagePullSecret"`
-	Scheduling      struct {
+	// Labels define common labels put to all NeoShowcase-managed Kubernetes objects.
+	Labels []*labelConf `mapstructure:"labels" yaml:"labels"`
+	// Scheduling defines user app pod scheduling constraints.
+	Scheduling struct {
 		NodeSelector      []*nodeSelector     `mapstructure:"nodeSelector" yaml:"nodeSelector"`
 		Tolerations       []*toleration       `mapstructure:"tolerations" yaml:"tolerations"`
 		SpreadConstraints []*spreadConstraint `mapstructure:"spreadConstraints" yaml:"spreadConstraints"`
 		ForceHosts        []string            `mapstructure:"forceHosts" yaml:"forceHosts"`
 	} `mapstructure:"scheduling" yaml:"scheduling"`
+	// Resources define user app pod resource constraints.
 	Resources struct {
 		Requests struct {
 			CPU    string `mapstructure:"cpu" yaml:"cpu"`

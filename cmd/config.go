@@ -162,11 +162,13 @@ func init() {
 	viper.SetDefault("components.controller.docker.confDir", "/opt/traefik/conf")
 	viper.SetDefault("components.controller.docker.domains", nil)
 	viper.SetDefault("components.controller.docker.ports", nil)
+
 	viper.SetDefault("components.controller.docker.ss.url", "")
-	viper.SetDefault("components.controller.docker.network", "neoshowcase_apps")
-	viper.SetDefault("components.controller.docker.labels", nil)
 	viper.SetDefault("components.controller.docker.tls.certResolver", "nsresolver")
 	viper.SetDefault("components.controller.docker.tls.wildcard.domains", nil)
+
+	viper.SetDefault("components.controller.docker.network", "neoshowcase_apps")
+	viper.SetDefault("components.controller.docker.labels", nil)
 	viper.SetDefault("components.controller.docker.resources.cpus", 1.6)
 	viper.SetDefault("components.controller.docker.resources.memory", 1e9 /* 1GB */)
 	viper.SetDefault("components.controller.docker.resources.memorySwap", -1 /* unlimited swap */)
@@ -174,20 +176,23 @@ func init() {
 
 	viper.SetDefault("components.controller.k8s.domains", nil)
 	viper.SetDefault("components.controller.k8s.ports", nil)
+
 	viper.SetDefault("components.controller.k8s.ss.namespace", "default")
 	viper.SetDefault("components.controller.k8s.ss.kind", "Service")
 	viper.SetDefault("components.controller.k8s.ss.name", "")
 	viper.SetDefault("components.controller.k8s.ss.port", 80)
 	viper.SetDefault("components.controller.k8s.ss.scheme", "http")
-	viper.SetDefault("components.controller.k8s.namespace", "neoshowcase-apps")
-	viper.SetDefault("components.controller.k8s.labels", nil)
+
 	viper.SetDefault("components.controller.k8s.tls.type", "traefik")
 	viper.SetDefault("components.controller.k8s.tls.traefik.certResolver", "nsresolver")
 	viper.SetDefault("components.controller.k8s.tls.traefik.wildcard.domains", nil)
 	viper.SetDefault("components.controller.k8s.tls.certManager.issuer.name", "cert-issuer")
 	viper.SetDefault("components.controller.k8s.tls.certManager.issuer.kind", "ClusterIssuer")
 	viper.SetDefault("components.controller.k8s.tls.certManager.wildcard.domains", nil)
+
+	viper.SetDefault("components.controller.k8s.namespace", "neoshowcase-apps")
 	viper.SetDefault("components.controller.k8s.imagePullSecret", "")
+	viper.SetDefault("components.controller.k8s.labels", nil)
 	viper.SetDefault("components.controller.k8s.scheduling.nodeSelector", nil)
 	viper.SetDefault("components.controller.k8s.scheduling.tolerations", nil)
 	viper.SetDefault("components.controller.k8s.scheduling.forceHosts", nil)

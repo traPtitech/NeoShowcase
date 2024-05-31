@@ -67,22 +67,26 @@ components:
         - startPort: 30000
           endPort: 31000
           protocol: udp
+
       ss:
         url: http://static-server:80/
+
+      tls:
+        certResolver: nsresolver
+        wildcard:
+          domains: []
+
       network: neoshowcase_apps
       labels:
         # test additional labels
         - key: neoshowcase.trap.jp/test
           value: ns-apps
-      tls:
-        certResolver: nsresolver
-        wildcard:
-          domains: []
       resources:
         cpus: 1.6
         memory: 1000000000 # 1GB
         memorySwap: -1
         memoryReservation: 256000000 # 256MB
+
     k8s:
       domains:
         - domain: "*.local.trapti.tech"
@@ -106,25 +110,28 @@ components:
         - startPort: 39000
           endPort: 39999
           protocol: udp
+
       ss:
         namespace: ns-system
         kind: Service
         name: ns-ssgen
         port: 80
         scheme: http
-      namespace: ns-apps
-      # extra labels
-      labels:
-        - key: app.kubernetes.io/instance
-          value: ns-apps
+
       tls:
         type: traefik
         traefik:
           certResolver: resolver
           wildcard:
             domains: []
-      # required if registry is private
+
+      namespace: ns-apps
       imagePullSecret: ""
+      # extra labels
+      labels:
+        - key: app.kubernetes.io/instance
+          value: ns-apps
+      # required if registry is private
       resources:
         requests:
           cpu: 10m
@@ -132,6 +139,7 @@ components:
         limits:
           cpu: 1600m
           memory: 1G
+
     ssh:
       host: localhost
       port: 2201
