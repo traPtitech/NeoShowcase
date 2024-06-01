@@ -1225,9 +1225,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@kobalte/core@npm:0.13.2":
-  version: 0.13.2
-  resolution: "@kobalte/core@npm:0.13.2"
+"@kobalte/core@npm:0.12.6":
+  version: 0.12.6
+  resolution: "@kobalte/core@npm:0.12.6"
   dependencies:
     "@floating-ui/dom": "npm:^1.5.1"
     "@internationalized/date": "npm:^3.4.0"
@@ -1236,7 +1236,7 @@ __metadata:
     solid-prevent-scroll: "npm:^0.1.4"
   peerDependencies:
     solid-js: ^1.8.15
-  checksum: 10c0/ce2e7a838e9b96465826d8f9c835ee760c97067d1423c335619db275de50ba5a04d02be03b9d5ed062025343260ca337e3496d2ee04ac019b7a091243085c681
+  checksum: 10c0/367df446044c6754882ea78036af25672b96aeb0557b0618001395f9220d6b5628451e382ac10f345f826277eaabe37bf479b4597a0764dc67bf41b8cc4c46d9
   languageName: node
   linkType: hard
 
@@ -1302,15 +1302,13 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@macaron-css/solid@npm:1.5.3":
-  version: 1.5.3
-  resolution: "@macaron-css/solid@npm:1.5.3"
-  dependencies:
-    "@macaron-css/core": "npm:1.5.2"
+"@macaron-css/solid@npm:1.5.1":
+  version: 1.5.1
+  resolution: "@macaron-css/solid@npm:1.5.1"
   peerDependencies:
     "@vanilla-extract/recipes": ^0.2.5
     solid-js: ^1.4.3
-  checksum: 10c0/0e468dc0c28978e97c8f129c2e12369ce91ad776d99bf00fe2e7a37b353dcf47a33cb38b2c6b16ef618fa7d7ce749bce79a2bc32b58538d45481c563c87998ef
+  checksum: 10c0/6b30598f34142e89df3cfc6691681fcf3ff532f6de3d7e473dfbd75b50783479ab5cc37c585205e1a504f540709e632eab3dffbb890aeeebe450f32b9e6ff2f0
   languageName: node
   linkType: hard
 
@@ -3531,9 +3529,9 @@ __metadata:
     "@bufbuild/protobuf": "npm:1.10.0"
     "@connectrpc/connect": "npm:1.4.0"
     "@connectrpc/connect-web": "npm:1.4.0"
-    "@kobalte/core": "npm:0.13.2"
+    "@kobalte/core": "npm:0.12.6"
     "@macaron-css/core": "npm:1.5.2"
-    "@macaron-css/solid": "npm:1.5.3"
+    "@macaron-css/solid": "npm:1.5.1"
     "@macaron-css/vite": "npm:1.5.1"
     "@modular-forms/solid": "npm:0.20.0"
     "@solid-primitives/refs": "npm:1.0.8"
