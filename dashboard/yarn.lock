@@ -509,18 +509,18 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@biomejs/biome@npm:1.7.2":
-  version: 1.7.2
-  resolution: "@biomejs/biome@npm:1.7.2"
+"@biomejs/biome@npm:1.7.3":
+  version: 1.7.3
+  resolution: "@biomejs/biome@npm:1.7.3"
   dependencies:
-    "@biomejs/cli-darwin-arm64": "npm:1.7.2"
-    "@biomejs/cli-darwin-x64": "npm:1.7.2"
-    "@biomejs/cli-linux-arm64": "npm:1.7.2"
-    "@biomejs/cli-linux-arm64-musl": "npm:1.7.2"
-    "@biomejs/cli-linux-x64": "npm:1.7.2"
-    "@biomejs/cli-linux-x64-musl": "npm:1.7.2"
-    "@biomejs/cli-win32-arm64": "npm:1.7.2"
-    "@biomejs/cli-win32-x64": "npm:1.7.2"
+    "@biomejs/cli-darwin-arm64": "npm:1.7.3"
+    "@biomejs/cli-darwin-x64": "npm:1.7.3"
+    "@biomejs/cli-linux-arm64": "npm:1.7.3"
+    "@biomejs/cli-linux-arm64-musl": "npm:1.7.3"
+    "@biomejs/cli-linux-x64": "npm:1.7.3"
+    "@biomejs/cli-linux-x64-musl": "npm:1.7.3"
+    "@biomejs/cli-win32-arm64": "npm:1.7.3"
+    "@biomejs/cli-win32-x64": "npm:1.7.3"
   dependenciesMeta:
     "@biomejs/cli-darwin-arm64":
       optional: true
@@ -540,70 +540,70 @@ __metadata:
       optional: true
   bin:
     biome: bin/biome
-  checksum: 10c0/c0fb7b653db6df2e2338f84c1105847713e60ec5c3737f3bbc7df2dd4b1b02e981af81290808806fe0342e9a530b2a83b1550adf9b96f4cab0d13c188070aaef
+  checksum: 10c0/05c95bb4b1fbf1b252cf2124f012f69a00ff5599ecac002b7e3004bfcd927e3d7b5f4935739096b5184653ec96b44ddcc36809d059682e5378bde20c836fb111
   languageName: node
   linkType: hard
 
-"@biomejs/cli-darwin-arm64@npm:1.7.2":
-  version: 1.7.2
-  resolution: "@biomejs/cli-darwin-arm64@npm:1.7.2"
+"@biomejs/cli-darwin-arm64@npm:1.7.3":
+  version: 1.7.3
+  resolution: "@biomejs/cli-darwin-arm64@npm:1.7.3"
   conditions: os=darwin & cpu=arm64
   languageName: node
   linkType: hard
 
-"@biomejs/cli-darwin-x64@npm:1.7.2":
-  version: 1.7.2
-  resolution: "@biomejs/cli-darwin-x64@npm:1.7.2"
+"@biomejs/cli-darwin-x64@npm:1.7.3":
+  version: 1.7.3
+  resolution: "@biomejs/cli-darwin-x64@npm:1.7.3"
   conditions: os=darwin & cpu=x64
   languageName: node
   linkType: hard
 
-"@biomejs/cli-linux-arm64-musl@npm:1.7.2":
-  version: 1.7.2
-  resolution: "@biomejs/cli-linux-arm64-musl@npm:1.7.2"
+"@biomejs/cli-linux-arm64-musl@npm:1.7.3":
+  version: 1.7.3
+  resolution: "@biomejs/cli-linux-arm64-musl@npm:1.7.3"
   conditions: os=linux & cpu=arm64 & libc=musl
   languageName: node
   linkType: hard
 
-"@biomejs/cli-linux-arm64@npm:1.7.2":
-  version: 1.7.2
-  resolution: "@biomejs/cli-linux-arm64@npm:1.7.2"
+"@biomejs/cli-linux-arm64@npm:1.7.3":
+  version: 1.7.3
+  resolution: "@biomejs/cli-linux-arm64@npm:1.7.3"
   conditions: os=linux & cpu=arm64 & libc=glibc
   languageName: node
   linkType: hard
 
-"@biomejs/cli-linux-x64-musl@npm:1.7.2":
-  version: 1.7.2
-  resolution: "@biomejs/cli-linux-x64-musl@npm:1.7.2"
+"@biomejs/cli-linux-x64-musl@npm:1.7.3":
+  version: 1.7.3
+  resolution: "@biomejs/cli-linux-x64-musl@npm:1.7.3"
   conditions: os=linux & cpu=x64 & libc=musl
   languageName: node
   linkType: hard
 
-"@biomejs/cli-linux-x64@npm:1.7.2":
-  version: 1.7.2
-  resolution: "@biomejs/cli-linux-x64@npm:1.7.2"
+"@biomejs/cli-linux-x64@npm:1.7.3":
+  version: 1.7.3
+  resolution: "@biomejs/cli-linux-x64@npm:1.7.3"
   conditions: os=linux & cpu=x64 & libc=glibc
   languageName: node
   linkType: hard
 
-"@biomejs/cli-win32-arm64@npm:1.7.2":
-  version: 1.7.2
-  resolution: "@biomejs/cli-win32-arm64@npm:1.7.2"
+"@biomejs/cli-win32-arm64@npm:1.7.3":
+  version: 1.7.3
+  resolution: "@biomejs/cli-win32-arm64@npm:1.7.3"
   conditions: os=win32 & cpu=arm64
   languageName: node
   linkType: hard
 
-"@biomejs/cli-win32-x64@npm:1.7.2":
-  version: 1.7.2
-  resolution: "@biomejs/cli-win32-x64@npm:1.7.2"
+"@biomejs/cli-win32-x64@npm:1.7.3":
+  version: 1.7.3
+  resolution: "@biomejs/cli-win32-x64@npm:1.7.3"
   conditions: os=win32 & cpu=x64
   languageName: node
   linkType: hard
 
-"@bufbuild/protobuf@npm:1.9.0":
-  version: 1.9.0
-  resolution: "@bufbuild/protobuf@npm:1.9.0"
-  checksum: 10c0/45b0b6789819defcfaf2f7c3a431310f47e246bad23fdb0d184b015c7c1a047d787232cc349d52c204d8757c274b1148e278e01f82288e19f574b0996c5ef0f1
+"@bufbuild/protobuf@npm:1.10.0":
+  version: 1.10.0
+  resolution: "@bufbuild/protobuf@npm:1.10.0"
+  checksum: 10c0/5487b9c2e63846d0e3bde4d025cc77ae44a22166a5d6c184df0da5581e1ab6d66dd115af0ccad814576dcd011bb1b93989fb0ac1eb4ae452979bb8b186693ba0
   languageName: node
   linkType: hard
 
@@ -1225,9 +1225,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@kobalte/core@npm:0.12.6":
-  version: 0.12.6
-  resolution: "@kobalte/core@npm:0.12.6"
+"@kobalte/core@npm:0.13.2":
+  version: 0.13.2
+  resolution: "@kobalte/core@npm:0.13.2"
   dependencies:
     "@floating-ui/dom": "npm:^1.5.1"
     "@internationalized/date": "npm:^3.4.0"
@@ -1236,7 +1236,7 @@ __metadata:
     solid-prevent-scroll: "npm:^0.1.4"
   peerDependencies:
     solid-js: ^1.8.15
-  checksum: 10c0/367df446044c6754882ea78036af25672b96aeb0557b0618001395f9220d6b5628451e382ac10f345f826277eaabe37bf479b4597a0764dc67bf41b8cc4c46d9
+  checksum: 10c0/ce2e7a838e9b96465826d8f9c835ee760c97067d1423c335619db275de50ba5a04d02be03b9d5ed062025343260ca337e3496d2ee04ac019b7a091243085c681
   languageName: node
   linkType: hard
 
@@ -1302,13 +1302,15 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@macaron-css/solid@npm:1.5.1":
-  version: 1.5.1
-  resolution: "@macaron-css/solid@npm:1.5.1"
+"@macaron-css/solid@npm:1.5.3":
+  version: 1.5.3
+  resolution: "@macaron-css/solid@npm:1.5.3"
+  dependencies:
+    "@macaron-css/core": "npm:1.5.2"
   peerDependencies:
     "@vanilla-extract/recipes": ^0.2.5
     solid-js: ^1.4.3
-  checksum: 10c0/6b30598f34142e89df3cfc6691681fcf3ff532f6de3d7e473dfbd75b50783479ab5cc37c585205e1a504f540709e632eab3dffbb890aeeebe450f32b9e6ff2f0
+  checksum: 10c0/0e468dc0c28978e97c8f129c2e12369ce91ad776d99bf00fe2e7a37b353dcf47a33cb38b2c6b16ef618fa7d7ce749bce79a2bc32b58538d45481c563c87998ef
   languageName: node
   linkType: hard
 
@@ -1629,21 +1631,21 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@solidjs/meta@npm:0.29.3":
-  version: 0.29.3
-  resolution: "@solidjs/meta@npm:0.29.3"
+"@solidjs/meta@npm:0.29.4":
+  version: 0.29.4
+  resolution: "@solidjs/meta@npm:0.29.4"
   peerDependencies:
     solid-js: ">=1.8.4"
-  checksum: 10c0/f9a01d61e852ef5a3fcadf9c2893b8e44ed2e7df26e3d396a8a4a38a2f1bd110e89b90bdc32fd584ae40a867d38f4f1c5ceb99c7c84026de1bfafab9f8c66881
+  checksum: 10c0/53e21923337844d8ac9b47621ae5e868f7f89187f942e7d71bf957a8c276e6bd37d21f7fbb4662cec42c9d0e97aa05ab27556e9d817fbc9f7b7a7b5e27401cb9
   languageName: node
   linkType: hard
 
-"@solidjs/router@npm:0.13.2":
-  version: 0.13.2
-  resolution: "@solidjs/router@npm:0.13.2"
+"@solidjs/router@npm:0.13.5":
+  version: 0.13.5
+  resolution: "@solidjs/router@npm:0.13.5"
   peerDependencies:
     solid-js: ^1.8.6
-  checksum: 10c0/bcee05a0fb6366f639ace468a00db0037a83ac41baeaecf62bafe645f73f31e1630335acdd997bae628542a50fab67bcd348cf40b0682a769a459ecc5eb5493b
+  checksum: 10c0/688194703e5a6615862cebd71ca9ae9913c44bdaa9bdbbcb5ce4e562639f7f4fd0bf6f9b3736cd1075fa378028332badea977ce50cd892e12251d61fa8283b13
   languageName: node
   linkType: hard
 
@@ -1745,12 +1747,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/node@npm:20.12.7":
-  version: 20.12.7
-  resolution: "@types/node@npm:20.12.7"
+"@types/node@npm:20.13.0":
+  version: 20.13.0
+  resolution: "@types/node@npm:20.13.0"
   dependencies:
     undici-types: "npm:~5.26.4"
-  checksum: 10c0/dce80d63a3b91892b321af823d624995c61e39c6a223cc0ac481a44d337640cc46931d33efb3beeed75f5c85c3bda1d97cef4c5cd4ec333caf5dee59cff6eca0
+  checksum: 10c0/4fb1ab41d622bbf3434da138bd0f23052e5df3bc59852ea1228cdfe185fd9d66ea71171a68a3106452c883808be7eaa7bc4cd87f534708754d49849e817aa566
   languageName: node
   linkType: hard
 
@@ -2085,12 +2087,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"chart.js@npm:4.4.2":
-  version: 4.4.2
-  resolution: "chart.js@npm:4.4.2"
+"chart.js@npm:4.4.3":
+  version: 4.4.3
+  resolution: "chart.js@npm:4.4.3"
   dependencies:
     "@kurkle/color": "npm:^0.3.0"
-  checksum: 10c0/4233bdc3cce9e4d5aca575f8ef9313f56867491b9eac027f3514ca807aca9a2ba2087f85ca3c68f022974f948ce688a178b0ce21d95706116abca5acf19e072f
+  checksum: 10c0/910113b07983d1b2f52689afcd88d0c5fecbd30fbbe89f4e122d78397fd4521e1563fd6d80f7742a391abe7cfbfa8deaf12c58b83c9636431fa77e7285d85c2e
   languageName: node
   linkType: hard
 
@@ -3525,25 +3527,25 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "neoshowcase@workspace:."
   dependencies:
-    "@biomejs/biome": "npm:1.7.2"
-    "@bufbuild/protobuf": "npm:1.9.0"
+    "@biomejs/biome": "npm:1.7.3"
+    "@bufbuild/protobuf": "npm:1.10.0"
     "@connectrpc/connect": "npm:1.4.0"
     "@connectrpc/connect-web": "npm:1.4.0"
-    "@kobalte/core": "npm:0.12.6"
+    "@kobalte/core": "npm:0.13.2"
     "@macaron-css/core": "npm:1.5.2"
-    "@macaron-css/solid": "npm:1.5.1"
+    "@macaron-css/solid": "npm:1.5.3"
     "@macaron-css/vite": "npm:1.5.1"
     "@modular-forms/solid": "npm:0.20.0"
     "@solid-primitives/refs": "npm:1.0.8"
-    "@solidjs/meta": "npm:0.29.3"
-    "@solidjs/router": "npm:0.13.2"
+    "@solidjs/meta": "npm:0.29.4"
+    "@solidjs/router": "npm:0.13.5"
     "@tanstack/solid-virtual": "npm:3.5.0"
     "@tanstack/virtual-core": "npm:3.5.0"
     "@types/async-lock": "npm:1.4.2"
-    "@types/node": "npm:20.12.7"
+    "@types/node": "npm:20.13.0"
     ansi-to-html: "npm:0.7.2"
     async-lock: "npm:1.4.1"
-    chart.js: "npm:4.4.2"
+    chart.js: "npm:4.4.3"
     fuse.js: "npm:7.0.0"
     rollup-plugin-visualizer: "npm:5.12.0"
     solid-chartjs: "npm:1.3.9"
@@ -3554,7 +3556,7 @@ __metadata:
     tippy.js: "npm:6.3.7"
     typescript: "npm:5.4.5"
     unplugin-fonts: "npm:1.1.1"
-    vite: "npm:5.2.10"
+    vite: "npm:5.2.12"
     vite-plugin-compression: "npm:0.5.1"
     vite-plugin-solid: "npm:2.10.2"
     vite-plugin-solid-svg: "npm:0.8.1"
@@ -4434,9 +4436,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"vite@npm:5.2.10":
-  version: 5.2.10
-  resolution: "vite@npm:5.2.10"
+"vite@npm:5.2.12":
+  version: 5.2.12
+  resolution: "vite@npm:5.2.12"
   dependencies:
     esbuild: "npm:^0.20.1"
     fsevents: "npm:~2.3.3"
@@ -4470,7 +4472,7 @@ __metadata:
       optional: true
   bin:
     vite: bin/vite.js
-  checksum: 10c0/d50630ac8de807a6185cd9b5763b3969b2950a454cf6a4482f3780f183865e8d6f7e3aa57dd70ede1c493aaa861efb25b43562287efbcf8b471b7f3b88857a33
+  checksum: 10c0/f03fdfc320adea3397df3e327029fd875f8220779f679ab183a3a994e8788b4ce531fee28f830361fb274f3cf08ed9adb9429496ecefdc3faf535b38da7ea8b1
   languageName: node
   linkType: hard
 
