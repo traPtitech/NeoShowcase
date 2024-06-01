@@ -27,7 +27,7 @@ func (b *Backend) syncAppContainer(ctx context.Context, app *domain.RuntimeDesir
 	}
 
 	if oldContainer != nil {
-		err := b.c.ContainerRemove(ctx, oldContainer.ID, types.ContainerRemoveOptions{
+		err := b.c.ContainerRemove(ctx, oldContainer.ID, container.RemoveOptions{
 			RemoveVolumes: true,
 			Force:         true,
 		})
@@ -117,7 +117,7 @@ func (b *Backend) syncAppContainer(ctx context.Context, app *domain.RuntimeDesir
 		return errors.Wrap(err, "failed to create container")
 	}
 
-	err = b.c.ContainerStart(ctx, cont.ID, types.ContainerStartOptions{})
+	err = b.c.ContainerStart(ctx, cont.ID, container.StartOptions{})
 	if err != nil {
 		return errors.Wrap(err, "failed to start container")
 	}
@@ -126,7 +126,7 @@ func (b *Backend) syncAppContainer(ctx context.Context, app *domain.RuntimeDesir
 
 func (b *Backend) synchronizeRuntime(ctx context.Context, apps []*domain.RuntimeDesiredState) error {
 	// List old resources
-	oldContainers, err := b.c.ContainerList(ctx, types.ContainerListOptions{
+	oldContainers, err := b.c.ContainerList(ctx, container.ListOptions{
 		All: true,
 		Filters: filters.NewArgs(
 			filters.Arg("label", fmt.Sprintf("%s=true", appLabel)),
@@ -168,7 +168,7 @@ func (b *Backend) synchronizeRuntime(ctx context.Context, apps []*domain.Runtime
 			continue
 		}
 
-		err = b.c.ContainerRemove(ctx, oldContainer.ID, types.ContainerRemoveOptions{
+		err = b.c.ContainerRemove(ctx, oldContainer.ID, container.RemoveOptions{
 			RemoveVolumes: true,
 			Force:         true,
 		})

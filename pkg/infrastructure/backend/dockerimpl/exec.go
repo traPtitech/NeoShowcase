@@ -5,6 +5,7 @@ import (
 	"io"
 
 	"github.com/docker/docker/api/types"
+	"github.com/docker/docker/api/types/container"
 	"github.com/docker/docker/pkg/stdcopy"
 	"github.com/friendsofgo/errors"
 	"golang.org/x/sync/errgroup"
@@ -38,7 +39,7 @@ func streamHijackedResp(ctx context.Context, res types.HijackedResponse, stdin i
 }
 
 func (b *Backend) AttachContainer(ctx context.Context, appID string, stdin io.Reader, stdout, stderr io.Writer) error {
-	res, err := b.c.ContainerAttach(ctx, containerName(appID), types.ContainerAttachOptions{
+	res, err := b.c.ContainerAttach(ctx, containerName(appID), container.AttachOptions{
 		Stream:     true,
 		Stdin:      true,
 		Stdout:     true,
