@@ -19,9 +19,11 @@ const contentHideKeyframes = keyframes({
   to: { opacity: 0, transform: 'translateY(-8px)' },
 })
 const contentStyle = style({
+  maxWidth: 'var(--kb-popper-content-available-width)',
+  overflowX: 'auto',
   padding: '16px',
   display: 'grid',
-  gridTemplateColumns: 'repeat(3, 1fr)',
+  gridTemplateColumns: 'repeat(3, auto)',
   gridTemplateRows: '1fr auto',
   gridTemplateAreas: `
     "status provider sort"
