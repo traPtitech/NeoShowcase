@@ -6,6 +6,7 @@ import (
 	"strings"
 
 	"github.com/docker/docker/api/types"
+	"github.com/docker/docker/api/types/container"
 	"github.com/docker/docker/api/types/filters"
 	"github.com/friendsofgo/errors"
 
@@ -14,7 +15,7 @@ import (
 )
 
 func (b *Backend) GetContainer(ctx context.Context, appID string) (*domain.Container, error) {
-	containers, err := b.c.ContainerList(ctx, types.ContainerListOptions{
+	containers, err := b.c.ContainerList(ctx, container.ListOptions{
 		All: true,
 		Filters: filters.NewArgs(
 			filters.Arg("label", fmt.Sprintf("%s=true", appLabel)),
@@ -40,7 +41,7 @@ func (b *Backend) GetContainer(ctx context.Context, appID string) (*domain.Conta
 }
 
 func (b *Backend) ListContainers(ctx context.Context) ([]*domain.Container, error) {
-	containers, err := b.c.ContainerList(ctx, types.ContainerListOptions{
+	containers, err := b.c.ContainerList(ctx, container.ListOptions{
 		All: true,
 		Filters: filters.NewArgs(
 			filters.Arg("label", fmt.Sprintf("%s=true", appLabel)),
