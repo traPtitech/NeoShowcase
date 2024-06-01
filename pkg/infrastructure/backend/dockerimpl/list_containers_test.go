@@ -5,7 +5,7 @@ import (
 	"strconv"
 	"testing"
 
-	"github.com/docker/docker/api/types"
+	"github.com/docker/docker/api/types/container"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
@@ -42,7 +42,7 @@ func TestDockerBackend_ListContainers(t *testing.T) {
 				ImageTag:  "latest",
 			})
 			t.Cleanup(func() {
-				_ = c.ContainerRemove(context.Background(), containerName(app.ID), types.ContainerRemoveOptions{
+				_ = c.ContainerRemove(context.Background(), containerName(app.ID), container.RemoveOptions{
 					RemoveVolumes: true,
 					Force:         true,
 				})

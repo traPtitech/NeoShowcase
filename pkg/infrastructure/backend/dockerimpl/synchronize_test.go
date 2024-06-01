@@ -5,7 +5,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/docker/docker/api/types"
+	"github.com/docker/docker/api/types/container"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
@@ -64,7 +64,7 @@ func TestDockerBackend_CreateContainer(t *testing.T) {
 		assert.Equal(t, cont.Config.Labels[appLabel], "true")
 		assert.Equal(t, cont.Config.Labels[appIDLabel], appID)
 
-		require.NoError(t, c.ContainerRemove(context.Background(), cont.ID, types.ContainerRemoveOptions{
+		require.NoError(t, c.ContainerRemove(context.Background(), cont.ID, container.RemoveOptions{
 			RemoveVolumes: true,
 			Force:         true,
 		}))
@@ -103,7 +103,7 @@ func TestDockerBackend_CreateContainer(t *testing.T) {
 		assert.Equal(t, cont.Config.Labels[appLabel], "true")
 		assert.Equal(t, cont.Config.Labels[appIDLabel], appID)
 
-		require.NoError(t, c.ContainerRemove(context.Background(), cont.ID, types.ContainerRemoveOptions{
+		require.NoError(t, c.ContainerRemove(context.Background(), cont.ID, container.RemoveOptions{
 			RemoveVolumes: true,
 			Force:         true,
 		}))
