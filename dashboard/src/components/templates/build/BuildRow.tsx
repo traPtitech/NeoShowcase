@@ -142,7 +142,7 @@ export const BuildRow: Component<Props> = (props) => {
           <Show when={props.build.queuedAt}>
             {(nonNullQueuedAt) => {
               const diff = diffHuman(nonNullQueuedAt().toDate())
-              const localeString = nonNullQueuedAt().toDate().toString()
+              const localeString = nonNullQueuedAt().toDate().toLocaleString()
               return (
                 <ToolTip props={{ content: localeString }}>
                   <UpdatedAt>{diff()}</UpdatedAt>
