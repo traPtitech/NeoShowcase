@@ -50,11 +50,6 @@ func (s *Service) validateApp(ctx context.Context, app *domain.Application) erro
 }
 
 func (s *Service) CreateApplication(ctx context.Context, app *domain.Application) (*domain.Application, error) {
-	err := s.isRepositoryOwner(ctx, app.RepositoryID)
-	if err != nil {
-		return nil, err
-	}
-
 	// Fill owners field
 	repo, err := s.gitRepo.GetRepository(ctx, app.RepositoryID)
 	if err != nil {
@@ -65,7 +60,11 @@ func (s *Service) CreateApplication(ctx context.Context, app *domain.Application
 	for _, website := range app.Websites {
 		website.Normalize()
 	}
+
 	// Validate
+	if !repo.CanCreateApp(web.GetUser(ctx)) {
+		return nil, newError(ErrorTypeForbidden, "you cannot create application from this repository", nil)
+	}
 	err = s.validateApp(ctx, app)
 	if err != nil {
 		return nil, err
