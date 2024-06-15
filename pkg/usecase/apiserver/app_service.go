@@ -34,17 +34,11 @@ func (s *Service) validateApp(ctx context.Context, app *domain.Application) erro
 		return newError(ErrorTypeBadRequest, "invalid application", err)
 	}
 
-	// Validate repository owner
-	user := web.GetUser(ctx)
+	// Validate ref by making request
 	repo, err := s.gitRepo.GetRepository(ctx, app.RepositoryID)
 	if err != nil {
 		return err
 	}
-	if !repo.CanCreateApp(user) {
-		return newError(ErrorTypeBadRequest, "you cannot create application from this repository", nil)
-	}
-
-	// Validate ref by making request
 	refMap, err := repo.ResolveRefs(ctx, s.fallbackKey)
 	if err != nil {
 		return newError(ErrorTypeBadRequest, "cannot fetch repository, check auth setting", err)
@@ -56,6 +50,11 @@ func (s *Service) validateApp(ctx context.Context, app *domain.Application) erro
 }
 
 func (s *Service) CreateApplication(ctx context.Context, app *domain.Application) (*domain.Application, error) {
+	err := s.isRepositoryOwner(ctx, app.RepositoryID)
+	if err != nil {
+		return nil, err
+	}
+
 	// Fill owners field
 	repo, err := s.gitRepo.GetRepository(ctx, app.RepositoryID)
 	if err != nil {
