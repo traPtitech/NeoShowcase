@@ -2429,22 +2429,28 @@ export enum GetRepositoriesRequest_Scope {
   MINE = 0,
 
   /**
-   * @generated from enum value: PUBLIC = 1;
+   * @generated from enum value: CREATABLE = 1;
    */
-  PUBLIC = 1,
+  CREATABLE = 1,
+
+  /**
+   * @generated from enum value: PUBLIC = 2;
+   */
+  PUBLIC = 2,
 
   /**
    * admin only
    *
-   * @generated from enum value: ALL = 2;
+   * @generated from enum value: ALL = 3;
    */
-  ALL = 2,
+  ALL = 3,
 }
 // Retrieve enum metadata with: proto3.getEnumType(GetRepositoriesRequest_Scope)
 proto3.util.setEnumType(GetRepositoriesRequest_Scope, "neoshowcase.protobuf.GetRepositoriesRequest.Scope", [
   { no: 0, name: "MINE" },
-  { no: 1, name: "PUBLIC" },
-  { no: 2, name: "ALL" },
+  { no: 1, name: "CREATABLE" },
+  { no: 2, name: "PUBLIC" },
+  { no: 3, name: "ALL" },
 ]);
 
 /**

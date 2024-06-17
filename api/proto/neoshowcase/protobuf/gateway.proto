@@ -341,9 +341,10 @@ message CreateRepositoryRequest {
 message GetRepositoriesRequest {
   enum Scope {
     MINE = 0;
-    PUBLIC = 1;
+    CREATABLE = 1;
+    PUBLIC = 2;
     // admin only
-    ALL = 2;
+    ALL = 3;
   }
   Scope scope = 1;
 }

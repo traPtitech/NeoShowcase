@@ -190,7 +190,7 @@ const RepositoryStep: Component<{
 }> = (props) => {
   const [repos] = createResource(() =>
     client.getRepositories({
-      scope: GetRepositoriesRequest_Scope.MINE,
+      scope: GetRepositoriesRequest_Scope.CREATABLE,
     }),
   )
   const [apps] = createResource(() => client.getApplications({ scope: GetApplicationsRequest_Scope.ALL }))
