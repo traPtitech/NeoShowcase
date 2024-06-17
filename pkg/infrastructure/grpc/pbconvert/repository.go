@@ -9,9 +9,10 @@ import (
 )
 
 var RepoScopeMapper = mapper.MustNewValueMapper(map[apiserver.GetRepoScope]pb.GetRepositoriesRequest_Scope{
-	apiserver.GetRepoScopeMine:   pb.GetRepositoriesRequest_MINE,
-	apiserver.GetRepoScopePublic: pb.GetRepositoriesRequest_PUBLIC,
-	apiserver.GetRepoScopeAll:    pb.GetRepositoriesRequest_ALL,
+	apiserver.GetRepoScopeMine:      pb.GetRepositoriesRequest_MINE,
+	apiserver.GetRepoScopeCreatable: pb.GetRepositoriesRequest_CREATABLE,
+	apiserver.GetRepoScopePublic:    pb.GetRepositoriesRequest_PUBLIC,
+	apiserver.GetRepoScopeAll:       pb.GetRepositoriesRequest_ALL,
 })
 
 func FromPBRepositoryAuth(req *pb.CreateRepositoryAuth) optional.Of[apiserver.CreateRepositoryAuth] {

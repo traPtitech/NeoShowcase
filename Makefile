@@ -1,4 +1,4 @@
-PROTOC_VERSION := 27.0
+PROTOC_VERSION := 27.1
 TBLS_VERSION := 1.75.0
 
 GO_REPO_ROOT_PACKAGE := "github.com/traPtitech/neoshowcase"

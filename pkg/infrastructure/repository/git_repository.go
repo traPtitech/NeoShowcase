@@ -60,12 +60,19 @@ func (r *gitRepositoryRepository) GetRepositories(ctx context.Context, cond doma
 
 	repos := ds.Map(modelRepos, repoconvert.ToDomainRepository)
 
+	if cond.CreatableOrOwnedBy.Valid {
+		userID := cond.CreatableOrOwnedBy.V
+		repos = lo.Filter(repos, func(repo *domain.Repository, _ int) bool {
+			creatable := !repo.Auth.Valid
+			owned := lo.Contains(repo.OwnerIDs, userID)
+			return creatable || owned
+		})
+	}
 	if cond.PublicOrOwnedBy.Valid {
 		hasApp := lo.SliceToMap(modelRepos, func(mr *models.Repository) (string, bool) {
 			return mr.ID, len(mr.R.Applications) > 0
 		})
 		userID := cond.PublicOrOwnedBy.V
-
 		repos = lo.Filter(repos, func(repo *domain.Repository, _ int) bool {
 			public := !repo.Auth.Valid || hasApp[repo.ID]
 			owned := lo.Contains(repo.OwnerIDs, userID)

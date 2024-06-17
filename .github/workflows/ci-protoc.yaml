@@ -21,7 +21,7 @@ jobs:
           go-version-file: ./go.mod
       - uses: arduino/setup-protoc@v3
         with:
-          version: "25.3"
+          version: "27.1"
       - name: Install proto tools
         run: make init-protoc-tools
       - name: Generate code

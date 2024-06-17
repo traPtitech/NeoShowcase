@@ -74,6 +74,7 @@ type GetRepoScope int
 
 const (
 	GetRepoScopeMine GetRepoScope = iota
+	GetRepoScopeCreatable
 	GetRepoScopePublic
 	GetRepoScopeAll
 )
@@ -83,6 +84,8 @@ func (s *Service) GetRepositories(ctx context.Context, scope GetRepoScope) ([]*d
 	switch scope {
 	case GetRepoScopeMine:
 		cond.UserID = optional.From(web.GetUser(ctx).ID)
+	case GetRepoScopeCreatable:
+		cond.CreatableOrOwnedBy = optional.From(web.GetUser(ctx).ID)
 	case GetRepoScopePublic:
 		cond.PublicOrOwnedBy = optional.From(web.GetUser(ctx).ID)
 	case GetRepoScopeAll:
