@@ -13,6 +13,8 @@ import (
 	"github.com/traPtitech/neoshowcase/pkg/util/ds"
 )
 
+var urlRegexp = regexp.MustCompile(`^[a-z0-9-_]+(\.[a-z0-9-_]+)*$`)
+
 func ValidateDomain(domain string) error {
 	// ドメインが大文字を含むときはエラー
 	if domain != strings.ToLower(domain) {
@@ -20,8 +22,7 @@ func ValidateDomain(domain string) error {
 	}
 
 	// 半角数字と英小文字以外を含むときはエラー
-	re := regexp.MustCompile(`^[a-z0-9-_]+(\.[a-z0-9-_]+)*$`)
-	if re.MatchString(domain) {
+	if urlRegexp.MatchString(domain) {
 		return errors.Errorf("domain %v must be numbers or lower letters", domain)
 	}
 
