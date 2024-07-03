@@ -20,7 +20,7 @@ func TestValidateDomain(t *testing.T) {
 		{"invalid characters 1", "admin@example.com", true},
 		{"invalid characters 2", "space not allowed.example.com", true},
 		{"invalid characters 3", "UPPERCASE.example.com", true},
-		{"invalid characters 4", "日本語.jp", false},
+		{"invalid characters 4", "日本語.jp", true},
 		{"wildcard ng", "*.trap.show", true},
 		{"multi wildcard ng", "*.*.trap.show", true},
 		{"wildcard in middle", "trap.*.show", true},
