@@ -40,6 +40,11 @@ Everything should automatically start after running `make up`.
 - Dashboard: http://ns.local.trapti.tech/
 - For more, type `make` to display all commands help
 
+If you use Docker Desktop for Windows and WSL2...
+
+- (recommended) install and use Docker on WSL2 instead of Docker Desktop
+- (workaround) run `chmod o+rw /var/run/docker.sock`
+
 ### k8s-backend (k3d)
 
 You will need manifest files in `/.local-manifest` directory.
