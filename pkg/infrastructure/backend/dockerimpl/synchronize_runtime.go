@@ -9,6 +9,7 @@ import (
 	"github.com/docker/docker/api/types"
 	"github.com/docker/docker/api/types/container"
 	"github.com/docker/docker/api/types/filters"
+	"github.com/docker/docker/api/types/image"
 	"github.com/docker/docker/api/types/network"
 	"github.com/docker/go-connections/nat"
 	"github.com/friendsofgo/errors"
@@ -40,7 +41,7 @@ func (b *Backend) syncAppContainer(ctx context.Context, app *domain.RuntimeDesir
 	if err != nil {
 		return errors.Wrap(err, "getting auth config")
 	}
-	res, err := b.c.ImagePull(ctx, app.ImageName+":"+app.ImageTag, types.ImagePullOptions{
+	res, err := b.c.ImagePull(ctx, app.ImageName+":"+app.ImageTag, image.PullOptions{
 		RegistryAuth: registryAuth,
 	})
 	if err != nil {
