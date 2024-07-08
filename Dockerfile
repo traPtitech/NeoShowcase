@@ -29,7 +29,7 @@ FROM --platform=$BUILDPLATFORM builder AS builder-ns
 RUN --mount=type=cache,target=/go/pkg/mod --mount=type=cache,target=/root/.cache/go-build \
     go build -o /app/ns -ldflags "-s -w -X main.version=$APP_VERSION -X main.revision=$APP_REVISION" ./cmd
 
-FROM alpine:3 as base
+FROM alpine:3 AS base
 WORKDIR /app
 
 ARG APP_VERSION=dev
@@ -37,7 +37,7 @@ ARG APP_REVISION=local
 ENV APP_VERSION=$APP_VERSION
 ENV APP_REVISION=$APP_REVISION
 
-FROM base as ns-migrate
+FROM base AS ns-migrate
 
 COPY ./migrations/entrypoint.sh ./
 COPY ./migrations/schema.sql ./
@@ -50,20 +50,20 @@ FROM base AS ns
 COPY --from=builder-ns /app/ns ./
 ENTRYPOINT ["/app/ns"]
 
-FROM ns as ns-auth-dev
+FROM ns AS ns-auth-dev
 ENTRYPOINT ["/app/ns", "auth-dev"]
 
-FROM ns as ns-builder
+FROM ns AS ns-builder
 ENTRYPOINT ["/app/ns", "builder"]
 
-FROM ns as ns-controller
+FROM ns AS ns-controller
 ENTRYPOINT ["/app/ns", "controller"]
 
-FROM ns as ns-gateway
+FROM ns AS ns-gateway
 ENTRYPOINT ["/app/ns", "gateway"]
 
-FROM ns as ns-gitea-integration
+FROM ns AS ns-gitea-integration
 ENTRYPOINT ["/app/ns", "gitea-integration"]
 
-FROM ns as ns-ssgen
+FROM ns AS ns-ssgen
 ENTRYPOINT ["/app/ns", "ssgen"]
