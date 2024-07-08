@@ -438,11 +438,16 @@ const WebsiteStep: Component<{
   }
 
   const handleSubmit = async () => {
-    const isValid = (await Promise.all(props.websiteForms().map((form) => validate(form)))).every((v) => v)
-    if (!isValid) return
-    setIsSubmitting(true)
-    await props.submit()
-    setIsSubmitting(false)
+    try {
+      const isValid = (await Promise.all(props.websiteForms().map((form) => validate(form)))).every((v) => v)
+      if (!isValid) return
+      setIsSubmitting(true)
+      await props.submit()
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setIsSubmitting(false)
+    }
   }
 
   return (
@@ -504,8 +509,8 @@ const WebsiteStep: Component<{
             variants="primary"
             onClick={handleSubmit}
             disabled={isSubmitting()}
-            // TODO: hostが空の状態でsubmitして一度requiredエラーが出たあとhostを入力してもエラーが消えない
-            // disabled={props.websiteForms().some((form) => form.invalid)}
+          // TODO: hostが空の状態でsubmitして一度requiredエラーが出たあとhostを入力してもエラーが消えない
+          // disabled={props.websiteForms().some((form) => form.invalid)}
           >
             Create Application
           </Button>
