@@ -444,7 +444,7 @@ const WebsiteStep: Component<{
       setIsSubmitting(true)
       await props.submit()
     } catch (err) {
-      console.error(err);
+      console.error(err)
     } finally {
       setIsSubmitting(false)
     }
@@ -509,8 +509,8 @@ const WebsiteStep: Component<{
             variants="primary"
             onClick={handleSubmit}
             disabled={isSubmitting()}
-          // TODO: hostが空の状態でsubmitして一度requiredエラーが出たあとhostを入力してもエラーが消えない
-          // disabled={props.websiteForms().some((form) => form.invalid)}
+            // TODO: hostが空の状態でsubmitして一度requiredエラーが出たあとhostを入力してもエラーが消えない
+            // disabled={props.websiteForms().some((form) => form.invalid)}
           >
             Create Application
           </Button>
