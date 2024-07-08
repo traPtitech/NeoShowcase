@@ -3,6 +3,7 @@ package domain
 import (
 	"fmt"
 	"net/url"
+	"regexp"
 	"strings"
 
 	"github.com/friendsofgo/errors"
@@ -12,11 +13,19 @@ import (
 	"github.com/traPtitech/neoshowcase/pkg/util/ds"
 )
 
+var domainRegexp = regexp.MustCompile(`^[a-z0-9-_]+(\.[a-z0-9-_]+)*$`)
+
 func ValidateDomain(domain string) error {
 	// ドメインが大文字を含むときはエラー
 	if domain != strings.ToLower(domain) {
 		return errors.Errorf("domain %v must be lower case", domain)
 	}
+
+	// 半角数字と英小文字以外を含むときはエラー
+	if !domainRegexp.MatchString(domain) {
+		return errors.Errorf("domain %v must consist of lower alpha-numeric letters, hyphen (-), or underscore (_)", domain)
+	}
+
 	// 面倒なのでtrailing dotは無しで統一
 	if strings.HasSuffix(domain, ".") {
 		return errors.Errorf("trailing dot not allowed in domain %v", domain)
