@@ -16,11 +16,11 @@ func TestValidateDomain(t *testing.T) {
 	}{
 		{"ok 1", "google.com", false},
 		{"ok 2", "hyphens-are-allowed.example.com", false},
-		{"ok 3", "日本語.jp", false},
-		{"ok 4", "underscore_allowed.example.com", false},
+		{"ok 3", "underscore_allowed.example.com", false},
 		{"invalid characters 1", "admin@example.com", true},
 		{"invalid characters 2", "space not allowed.example.com", true},
 		{"invalid characters 3", "UPPERCASE.example.com", true},
+		{"invalid characters 4", "日本語.jp", true},
 		{"wildcard ng", "*.trap.show", true},
 		{"multi wildcard ng", "*.*.trap.show", true},
 		{"wildcard in middle", "trap.*.show", true},
