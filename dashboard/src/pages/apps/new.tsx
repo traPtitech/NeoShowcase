@@ -426,6 +426,7 @@ const WebsiteStep: Component<{
   backToGeneralStep: () => void
   submit: () => Promise<void>
 }> = (props) => {
+  const [isSubmitting, setIsSubmitting] = createSignal(false)
   const addWebsiteForm = () => {
     const form = createFormStore<WebsiteFormStatus>({
       initialValues: {
@@ -437,9 +438,16 @@ const WebsiteStep: Component<{
   }
 
   const handleSubmit = async () => {
-    const isValid = (await Promise.all(props.websiteForms().map((form) => validate(form)))).every((v) => v)
-    if (!isValid) return
-    await props.submit()
+    try {
+      const isValid = (await Promise.all(props.websiteForms().map((form) => validate(form)))).every((v) => v)
+      if (!isValid) return
+      setIsSubmitting(true)
+      await props.submit()
+    } catch (err) {
+      console.error(err)
+    } finally {
+      setIsSubmitting(false)
+    }
   }
 
   return (
@@ -500,6 +508,7 @@ const WebsiteStep: Component<{
             size="medium"
             variants="primary"
             onClick={handleSubmit}
+            disabled={isSubmitting()}
             // TODO: hostが空の状態でsubmitして一度requiredエラーが出たあとhostを入力してもエラーが消えない
             // disabled={props.websiteForms().some((form) => form.invalid)}
           >
@@ -589,7 +598,6 @@ export default () => {
     setCurrentStep(formStep.repository)
     // 選択していたリポジトリをリセットする
     setParam({ repositoryID: undefined })
-    mutateRepo(undefined)
   }
   const GoToGeneralStep = () => {
     setCurrentStep(formStep.general)
