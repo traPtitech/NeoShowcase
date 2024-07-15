@@ -9,8 +9,8 @@ require (
 	connectrpc.com/connect v1.16.2
 	github.com/aws/aws-sdk-go v1.54.11
 	github.com/cert-manager/cert-manager v1.15.1
-	github.com/docker/cli v26.1.4+incompatible
-	github.com/docker/docker v26.1.4+incompatible // should be in sync with requirements of github.com/moby/buildkit or build could break
+	github.com/docker/cli v27.0.3+incompatible
+	github.com/docker/docker v27.0.3+incompatible // should be in sync with requirements of github.com/moby/buildkit or build could break
 	github.com/docker/go-connections v0.5.0
 	github.com/friendsofgo/errors v0.9.2
 	github.com/gliderlabs/ssh v0.3.7
