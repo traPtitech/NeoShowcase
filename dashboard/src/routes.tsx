@@ -119,13 +119,6 @@ export const useBuildData = () => {
   }
 }
 
-declare module '@solidjs/router' {
-  type RouteProps<S extends string> = {
-    // Invalid component type? workaround
-    component?: Component<RouteSectionProps>
-  }
-}
-
 export const Routes: Component<{ root: Component<RouteSectionProps> }> = (props) => (
   <Router root={props.root}>
     <Route path="/" component={() => <Navigate href="/apps" />} />

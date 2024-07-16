@@ -1,7 +1,13 @@
-import { As, Dialog } from '@kobalte/core'
+import { Dialog, type PolymorphicCallbackProps } from '@kobalte/core'
+import type {
+  DialogContentOptions,
+  DialogContentRenderProps,
+  DialogDescriptionOptions,
+  DialogDescriptionRenderProps,
+} from '@kobalte/core/dialog'
 import { keyframes, style } from '@macaron-css/core'
 import { styled } from '@macaron-css/solid'
-import { type ParentComponent, Show, createSignal, mergeProps } from 'solid-js'
+import { type ComponentProps, type ParentComponent, Show, createSignal, mergeProps } from 'solid-js'
 import { colorVars, textVars } from '/@/theme'
 import { MaterialSymbols } from '../components/UI/MaterialSymbols'
 
@@ -207,12 +213,18 @@ const useModal = (options?: {
             <Dialog.Content
               onEscapeKeyDown={close}
               onPointerDownOutside={mergedProps.closeOnClickOutside ? close : undefined}
-              asChild
-            >
-              <As component={Content} fit={props.fit}>
-                {props.children}
-              </As>
-            </Dialog.Content>
+              as={(
+                asProps: PolymorphicCallbackProps<
+                  ComponentProps<typeof Content>,
+                  DialogContentOptions,
+                  DialogContentRenderProps
+                >,
+              ) => (
+                <Content fit={props.fit} {...asProps}>
+                  {props.children}
+                </Content>
+              )}
+            />
           </DialogPositioner>
         </Dialog.Portal>
       </Dialog.Root>
@@ -236,11 +248,19 @@ const useModal = (options?: {
     fit?: boolean
   }> = (props) => {
     return (
-      <Dialog.Description asChild>
-        <As component={Description} fit={props.fit}>
-          {props.children}
-        </As>
-      </Dialog.Description>
+      <Dialog.Description
+        as={(
+          asProps: PolymorphicCallbackProps<
+            ComponentProps<typeof Description>,
+            DialogDescriptionOptions,
+            DialogDescriptionRenderProps
+          >,
+        ) => (
+          <Description fit={props.fit} {...asProps}>
+            {props.children}
+          </Description>
+        )}
+      />
     )
   }
 

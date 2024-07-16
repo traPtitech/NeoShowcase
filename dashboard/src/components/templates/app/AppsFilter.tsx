@@ -1,7 +1,8 @@
-import { As, Checkbox, DropdownMenu, RadioGroup } from '@kobalte/core'
+import { Checkbox, DropdownMenu, type PolymorphicCallbackProps, RadioGroup } from '@kobalte/core'
+import type { RadioGroupRootOptions, RadioGroupRootRenderProps } from '@kobalte/core/radio-group'
 import { keyframes, style } from '@macaron-css/core'
 import { styled } from '@macaron-css/solid'
-import { type Component, For, type Setter, Show } from 'solid-js'
+import { type Component, type ComponentProps, For, type Setter, Show } from 'solid-js'
 import { CheckBoxIcon } from '/@/components/UI/CheckBoxIcon'
 import { MaterialSymbols } from '/@/components/UI/MaterialSymbols'
 import { RadioIcon } from '/@/components/UI/RadioIcon'
@@ -245,32 +246,41 @@ const AppsFilter: Component<{
               </For>
             </ItemsContainer>
           </FilterItemContainer>
-          <RadioGroup.Root onChange={props.setSort} asChild>
-            <As
-              component={FilterItemContainer}
-              style={{
-                'grid-area': 'sort',
-              }}
-            >
-              <RadioGroup.Label>Sort</RadioGroup.Label>
-              <ItemsContainer>
-                <For each={Object.values(sortItems)}>
-                  {(s) => (
-                    <RadioGroup.Item value={s.value}>
-                      <RadioGroup.ItemInput />
-                      <RadioGroup.ItemLabel class={RadioItemStyle}>
-                        <RadioGroup.ItemIndicator forceMount>
-                          <RadioIcon selected={props.sort === s.value} />
-                        </RadioGroup.ItemIndicator>
-                        {s.label}
-                      </RadioGroup.ItemLabel>
-                      <RadioGroup.ItemDescription />
-                    </RadioGroup.Item>
-                  )}
-                </For>
-              </ItemsContainer>
-            </As>
-          </RadioGroup.Root>
+          <RadioGroup.Root
+            onChange={props.setSort}
+            as={(
+              asProps: PolymorphicCallbackProps<
+                ComponentProps<typeof FilterItemContainer>,
+                RadioGroupRootOptions,
+                RadioGroupRootRenderProps
+              >,
+            ) => (
+              <FilterItemContainer
+                style={{
+                  'grid-area': 'sort',
+                }}
+                {...asProps}
+              >
+                <RadioGroup.Label>Sort</RadioGroup.Label>
+                <ItemsContainer>
+                  <For each={Object.values(sortItems)}>
+                    {(s) => (
+                      <RadioGroup.Item value={s.value}>
+                        <RadioGroup.ItemInput />
+                        <RadioGroup.ItemLabel class={RadioItemStyle}>
+                          <RadioGroup.ItemIndicator forceMount>
+                            <RadioIcon selected={props.sort === s.value} />
+                          </RadioGroup.ItemIndicator>
+                          {s.label}
+                        </RadioGroup.ItemLabel>
+                        <RadioGroup.ItemDescription />
+                      </RadioGroup.Item>
+                    )}
+                  </For>
+                </ItemsContainer>
+              </FilterItemContainer>
+            )}
+          />
           <FilterItemContainer
             style={{
               'grid-area': 'noapp',
