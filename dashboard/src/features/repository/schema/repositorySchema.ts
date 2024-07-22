@@ -113,7 +113,8 @@ export const convertCreateRepositoryInput = (
     throw new Error("The type of input passed to convertCreateRepositoryInput must be 'create'")
 
   return {
-    ...input,
+    name: input.name,
+    url: input.url,
     auth: repositoryAuthSchemaToMessage(input.auth),
   }
 }
@@ -207,7 +208,9 @@ export const convertUpdateRepositoryInput = (
     throw new Error("The type of input passed to convertCreateRepositoryInput must be 'create'")
 
   return {
-    ...input,
+    id: input.id,
+    name: input.name,
+    url: input.url,
     auth: input.auth ? repositoryAuthSchemaToMessage(input.auth) : undefined,
     ownerIds: input.ownerIds
       ? {
