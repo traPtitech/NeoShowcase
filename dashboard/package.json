@@ -14,7 +14,8 @@
     "fix": "yarn fmt:apply && yarn lint:apply",
     "typecheck": "tsc --noEmit",
     "ci": "biome ci src",
-    "analyze": "vite build --mode analyze"
+    "analyze": "vite build --mode analyze",
+    "test": "vitest"
   },
   "license": "MIT",
   "devDependencies": {
@@ -24,13 +25,15 @@
     "@macaron-css/vite": "1.5.1",
     "@tanstack/virtual-core": "3.8.1",
     "@types/node": "20.14.9",
+    "jsdom": "^24.1.1",
     "rollup-plugin-visualizer": "5.12.0",
     "typescript": "5.5.3",
     "unplugin-fonts": "1.1.1",
     "vite": "5.3.3",
     "vite-plugin-compression": "0.5.1",
     "vite-plugin-solid": "2.10.2",
-    "vite-plugin-solid-svg": "0.8.1"
+    "vite-plugin-solid-svg": "0.8.1",
+    "vitest": "^2.0.3"
   },
   "dependencies": {
     "@bufbuild/protobuf": "1.10.0",
@@ -52,7 +55,8 @@
     "solid-js": "1.8.18",
     "solid-tippy": "0.2.1",
     "solid-toast": "0.5.0",
-    "tippy.js": "6.3.7"
+    "tippy.js": "6.3.7",
+    "valibot": "^0.36.0"
   },
   "packageManager": "yarn@4.1.1+sha512.ec40d0639bb307441b945d9467139cbb88d14394baac760b52eca038b330d16542d66fef61574271534ace5a200518dabf3b53a85f1f9e4bfa37141b538a9590"
 }
