@@ -147,6 +147,37 @@ describe('Update Repository Schema', () => {
     expect(validator(base)).toEqual(expect.objectContaining({ success: true }))
   })
 
+  test('ok: update name', () => {
+    expect(
+      validator({
+        id: base.id,
+        type: base.type,
+        name: base.name,
+      }),
+    ).toEqual(expect.objectContaining({ success: true }))
+  })
+
+  test('ok: update auth config', () => {
+    expect(
+      validator({
+        id: base.id,
+        type: base.type,
+        url: base.url,
+        auth: base.auth,
+      }),
+    ).toEqual(expect.objectContaining({ success: true }))
+  })
+
+  test('ok: update ownerIds', () => {
+    expect(
+      validator({
+        id: base.id,
+        type: base.type,
+        ownerIds: base.ownerIds,
+      }),
+    ).toEqual(expect.objectContaining({ success: true }))
+  })
+
   test('ng: empty id', () => {
     expect(
       validator({
@@ -158,6 +189,33 @@ describe('Update Repository Schema', () => {
         path: [
           expect.objectContaining({
             key: 'id',
+          }),
+        ],
+      }),
+    ])
+  })
+
+  test("ng: auth method is basic, but the URL starts with 'http://'", () => {
+    expect(
+      validator({
+        ...base,
+        url: 'http://example.com/test/test.git',
+        auth: {
+          method: 'basic',
+          value: {
+            basic: {
+              username: 'test name',
+              password: 'test password',
+            },
+          },
+        },
+      }).issues,
+    ).toEqual([
+      expect.objectContaining({
+        message: 'Basic認証を使用する場合、URLはhttps://から始まる必要があります',
+        path: [
+          expect.objectContaining({
+            key: 'url',
           }),
         ],
       }),
