@@ -7,7 +7,7 @@ const Container = styled('div', {
     height: '100%',
     display: 'grid',
     gridTemplateColumns: '1fr',
-    gridTemplateRows: 'auto 1fr',
+    gridTemplateRows: 'max-content 1fr',
   },
 })
 const Navs = styled('div', {
@@ -22,8 +22,6 @@ const Body = styled('div', {
   base: {
     position: 'relative',
     width: '100%',
-    height: '100%',
-    overflowY: 'hidden',
   },
 })
 const TabContainer = styled('div', {

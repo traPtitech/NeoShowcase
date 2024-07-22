@@ -28,9 +28,10 @@ import { colorVars, media } from '../theme'
 const MainView = styled('div', {
   base: {
     position: 'relative',
+    display: 'flex',
+    flexDirection: 'column',
     width: '100%',
     height: '100%',
-    overflowY: 'auto',
     padding: '0 max(calc(50% - 500px), 32px)',
     background: colorVars.semantic.ui.background,
 
@@ -43,7 +44,6 @@ const MainView = styled('div', {
 })
 const FilterContainer = styled('div', {
   base: {
-    position: 'sticky',
     width: '100%',
     top: '0',
     left: '0',
