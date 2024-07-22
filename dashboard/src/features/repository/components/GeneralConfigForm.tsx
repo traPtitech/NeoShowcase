@@ -7,7 +7,7 @@ import { TextField } from '/@/components/UI/TextField'
 import FormBox from '/@/components/layouts/FormBox'
 import { useRepositoryForm } from '/@/features/repository/provider/repositoryFormProvider'
 import {
-  type CreateOrUpdateRepositorySchema,
+  type CreateOrUpdateRepositoryInput,
   convertUpdateRepositoryInput,
   updateRepositoryFormInitialValues,
 } from '/@/features/repository/schema/repositorySchema'
@@ -32,7 +32,7 @@ const GeneralConfigForm: Component<Props> = (props) => {
     )
   })
 
-  const handleSubmit: SubmitHandler<CreateOrUpdateRepositorySchema> = async (values) => {
+  const handleSubmit: SubmitHandler<CreateOrUpdateRepositoryInput> = async (values) => {
     try {
       await client.updateRepository(convertUpdateRepositoryInput(values))
       toast.success('リポジトリ名を更新しました')

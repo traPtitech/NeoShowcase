@@ -9,7 +9,7 @@ import { RadioGroup, type RadioOption } from '/@/components/templates/RadioGroup
 import { client, systemInfo } from '/@/libs/api'
 import { colorVars, textVars } from '/@/theme'
 import { TextField } from '../../../components/UI/TextField'
-import type { CreateOrUpdateRepositorySchema } from '../schema/repositorySchema'
+import type { CreateOrUpdateRepositoryInput } from '../schema/repositorySchema'
 
 const SshKeyContainer = styled('div', {
   base: {
@@ -58,11 +58,11 @@ const VisibilityButton = styled('button', {
 })
 
 type Props = {
-  formStore: FormStore<CreateOrUpdateRepositorySchema>
+  formStore: FormStore<CreateOrUpdateRepositoryInput>
   readonly?: boolean
 }
 
-const authMethods: RadioOption<NonNullable<CreateOrUpdateRepositorySchema['auth']>['method']>[] = [
+const authMethods: RadioOption<NonNullable<CreateOrUpdateRepositoryInput['auth']>['method']>[] = [
   { label: '認証を使用しない', value: 'none' },
   { label: 'BASIC認証', value: 'basic' },
   { label: 'SSH公開鍵認証', value: 'ssh' },

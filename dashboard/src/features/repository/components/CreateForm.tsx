@@ -8,7 +8,7 @@ import { MaterialSymbols } from '/@/components/UI/MaterialSymbols'
 import { TextField } from '/@/components/UI/TextField'
 import { useRepositoryForm } from '/@/features/repository/provider/repositoryFormProvider'
 import {
-  type CreateOrUpdateRepositorySchema,
+  type CreateOrUpdateRepositoryInput,
   convertCreateRepositoryInput,
   createRepositoryFormInitialValues,
 } from '/@/features/repository/schema/repositorySchema'
@@ -72,7 +72,7 @@ const CreateForm: Component = () => {
     }
   })
 
-  const handleSubmit: SubmitHandler<CreateOrUpdateRepositorySchema> = async (values) => {
+  const handleSubmit: SubmitHandler<CreateOrUpdateRepositoryInput> = async (values) => {
     try {
       const res = await client.createRepository(convertCreateRepositoryInput(values))
       toast.success('リポジトリを登録しました')

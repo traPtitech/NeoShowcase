@@ -58,9 +58,9 @@ const createRepositorySchema = v.pipe(
     ['url'],
   ),
 )
-type CreateRepositorySchema = v.InferInput<typeof createRepositorySchema>
+type CreateRepositoryInput = v.InferInput<typeof createRepositorySchema>
 
-export const createRepositoryFormInitialValues = (): CreateOrUpdateRepositorySchema =>
+export const createRepositoryFormInitialValues = (): CreateOrUpdateRepositoryInput =>
   ({
     type: 'create',
     name: '',
@@ -71,7 +71,7 @@ export const createRepositoryFormInitialValues = (): CreateOrUpdateRepositorySch
         none: {},
       },
     },
-  }) satisfies CreateRepositorySchema
+  }) satisfies CreateRepositoryInput
 
 /** valobot schema -> protobuf message */
 const repositoryAuthSchemaToMessage = (
@@ -107,7 +107,7 @@ const repositoryAuthSchemaToMessage = (
 
 /** valobot schema -> protobuf message */
 export const convertCreateRepositoryInput = (
-  input: CreateOrUpdateRepositorySchema,
+  input: CreateOrUpdateRepositoryInput,
 ): PartialMessage<CreateRepositoryRequest> => {
   if (input.type !== 'create')
     throw new Error("The type of input passed to convertCreateRepositoryInput must be 'create'")
@@ -148,7 +148,7 @@ export const updateRepositorySchema = v.pipe(
   ),
 )
 
-type UpdateRepositorySchema = v.InferInput<typeof updateRepositorySchema>
+type UpdateRepositoryInput = v.InferInput<typeof updateRepositorySchema>
 
 /** protobuf message -> valobot schema */
 const authMethodToAuthConfig = (method: Repository_AuthMethod): v.InferInput<typeof repositoryAuthSchema> => {
@@ -189,7 +189,7 @@ const authMethodToAuthConfig = (method: Repository_AuthMethod): v.InferInput<typ
   }
 }
 
-export const updateRepositoryFormInitialValues = (input: Repository): CreateOrUpdateRepositorySchema => {
+export const updateRepositoryFormInitialValues = (input: Repository): CreateOrUpdateRepositoryInput => {
   return {
     type: 'update',
     id: input.id,
@@ -197,12 +197,12 @@ export const updateRepositoryFormInitialValues = (input: Repository): CreateOrUp
     url: input.url,
     auth: authMethodToAuthConfig(input.authMethod),
     ownerIds: input.ownerIds,
-  } satisfies UpdateRepositorySchema
+  } satisfies UpdateRepositoryInput
 }
 
 /** valobot schema -> protobuf message */
 export const convertUpdateRepositoryInput = (
-  input: CreateOrUpdateRepositorySchema,
+  input: CreateOrUpdateRepositoryInput,
 ): PartialMessage<UpdateRepositoryRequest> => {
   if (input.type !== 'update')
     throw new Error("The type of input passed to convertCreateRepositoryInput must be 'create'")
@@ -222,4 +222,4 @@ export const convertUpdateRepositoryInput = (
 
 export const createOrUpdateRepositorySchema = v.variant('type', [createRepositorySchema, updateRepositorySchema])
 
-export type CreateOrUpdateRepositorySchema = v.InferInput<typeof createOrUpdateRepositorySchema>
+export type CreateOrUpdateRepositoryInput = v.InferInput<typeof createOrUpdateRepositorySchema>
