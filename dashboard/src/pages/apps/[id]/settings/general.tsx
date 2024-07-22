@@ -13,6 +13,8 @@ import FormBox from '/@/components/layouts/FormBox'
 import { FormItem } from '/@/components/templates/FormItem'
 import { List } from '/@/components/templates/List'
 import { AppGeneralConfig, type AppGeneralForm } from '/@/components/templates/app/AppGeneralConfig'
+import GeneralConfigForm from '/@/features/application/components/GeneralConfigForm'
+import { ApplicationFormProvider } from '/@/features/application/provider/applicationFormProvider'
 import { client, handleAPIError } from '/@/libs/api'
 import { diffHuman } from '/@/libs/format'
 import useModal from '/@/libs/useModal'
@@ -122,81 +124,15 @@ export default () => {
   const { app, refetch, repo, hasPermission } = useApplicationData()
   const loaded = () => !!(app() && repo())
 
-  const [generalForm, General] = createForm<AppGeneralForm>({
-    initialValues: {
-      name: app()?.name,
-      repositoryId: app()?.repositoryId,
-      refName: app()?.refName,
-    },
-  })
-
-  createEffect(
-    on(app, (app) => {
-      reset(generalForm, {
-        initialValues: {
-          name: app?.name,
-          repositoryId: app?.repositoryId,
-          refName: app?.refName,
-        },
-      })
-    }),
-  )
-
-  const handleSubmit: SubmitHandler<AppGeneralForm> = async (values) => {
-    try {
-      await client.updateApplication({
-        id: app()?.id,
-        ...values,
-      })
-      toast.success('アプリケーション設定を更新しました')
-      void refetch()
-      // 非同期でビルドが開始されるので1秒程度待ってから再度リロード
-      setTimeout(refetch, 1000)
-    } catch (e) {
-      handleAPIError(e, 'アプリケーション設定の更新に失敗しました')
-    }
-  }
-  const discardChanges = () => {
-    reset(generalForm)
-  }
-
   return (
     <DataTable.Container>
       <DataTable.Title>General</DataTable.Title>
-      <Show when={loaded()}>
-        <GeneralInfo app={app()!} />
-        <General.Form onSubmit={handleSubmit}>
-          <FormBox.Container>
-            <FormBox.Forms>
-              <AppGeneralConfig repo={repo()!} formStore={generalForm} editBranchId hasPermission={hasPermission()} />
-            </FormBox.Forms>
-            <FormBox.Actions>
-              <Show when={generalForm.dirty && !generalForm.submitting}>
-                <Button variants="borderError" size="small" onClick={discardChanges} type="button">
-                  Discard Changes
-                </Button>
-              </Show>
-              <Button
-                variants="primary"
-                size="small"
-                type="submit"
-                disabled={generalForm.invalid || !generalForm.dirty || generalForm.submitting || !hasPermission()}
-                loading={generalForm.submitting}
-                tooltip={{
-                  props: {
-                    content: !hasPermission()
-                      ? '設定を変更するにはアプリケーションのオーナーになる必要があります'
-                      : undefined,
-                  },
-                }}
-              >
-                Save
-              </Button>
-            </FormBox.Actions>
-          </FormBox.Container>
-        </General.Form>
-        <DeleteApp app={app()!} repo={repo()!} hasPermission={hasPermission()} />
-      </Show>
+      <ApplicationFormProvider>
+        <Show when={loaded()}>
+          <GeneralConfigForm app={app()!} repo={repo()!} hasPermission={hasPermission()} refetchApp={refetch} />
+          <DeleteApp app={app()!} repo={repo()!} hasPermission={hasPermission()} />
+        </Show>
+      </ApplicationFormProvider>
     </DataTable.Container>
   )
 }

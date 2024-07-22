@@ -13,7 +13,12 @@ export const useFormContext = <TInput extends FieldValues, TOutput, TIssue exten
 
   const FormProvider: ParentComponent = (props) => {
     const formStore = createFormStore<InferInput<typeof schema>>({
-      validate: valiForm(schema),
+      validate: async (input) => {
+        console.log(input)
+        console.log(await valiForm(schema)(input))
+        return valiForm(schema)(input)
+      },
+      // validate: valiForm(schema),
     })
 
     return (

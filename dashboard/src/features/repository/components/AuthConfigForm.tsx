@@ -16,7 +16,7 @@ import AuthMethodField from './AuthMethodField'
 
 type Props = {
   repo: Repository
-  refetchRepo: () => void
+  refetchRepo: () => Promise<void>
   hasPermission: boolean
 }
 
@@ -37,7 +37,7 @@ const AuthConfigForm: Component<Props> = (props) => {
     try {
       await client.updateRepository(convertUpdateRepositoryInput(values))
       toast.success('リポジトリの設定を更新しました')
-      props.refetchRepo()
+      await props.refetchRepo()
     } catch (e) {
       handleAPIError(e, 'リポジトリの設定の更新に失敗しました')
     }

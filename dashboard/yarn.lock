@@ -3979,6 +3979,7 @@ __metadata:
     solid-tippy: "npm:0.2.1"
     solid-toast: "npm:0.5.0"
     tippy.js: "npm:6.3.7"
+    ts-pattern: "npm:^5.2.0"
     typescript: "npm:5.5.3"
     unplugin-fonts: "npm:1.1.1"
     valibot: "npm:^0.36.0"
@@ -4888,6 +4889,13 @@ __metadata:
   dependencies:
     punycode: "npm:^2.3.1"
   checksum: 10c0/1521b6e7bbc8adc825c4561480f9fe48eb2276c81335eed9fa610aa4c44a48a3221f78b10e5f18b875769eb3413e30efbf209ed556a17a42aa8d690df44b7bee
+  languageName: node
+  linkType: hard
+
+"ts-pattern@npm:^5.2.0":
+  version: 5.2.0
+  resolution: "ts-pattern@npm:5.2.0"
+  checksum: 10c0/99d0bc0d2f3aa19d8ff50b028f4e1c3da35b21f4503f329f8818863b614df3850c0b3709c703e18f5902e68b9682d29719c82b709e07907e87e374e5c70a01f5
   languageName: node
   linkType: hard
 

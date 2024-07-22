@@ -1,44 +1,48 @@
 import { Field, Form, type SubmitHandler, reset } from '@modular-forms/solid'
 import { type Component, Show, createEffect, untrack } from 'solid-js'
 import toast from 'solid-toast'
-import type { Repository } from '/@/api/neoshowcase/protobuf/gateway_pb'
+import type { Application, Repository } from '/@/api/neoshowcase/protobuf/gateway_pb'
 import { Button } from '/@/components/UI/Button'
 import { TextField } from '/@/components/UI/TextField'
 import FormBox from '/@/components/layouts/FormBox'
-import { useRepositoryForm } from '/@/features/repository/provider/repositoryFormProvider'
-import {
-  type CreateOrUpdateRepositoryInput,
-  convertUpdateRepositoryInput,
-  updateRepositoryFormInitialValues,
-} from '/@/features/repository/schema/repositorySchema'
 import { client, handleAPIError } from '/@/libs/api'
+import { useApplicationForm } from '../provider/applicationFormProvider'
+import {
+  type CreateOrUpdateApplicationSchema,
+  convertUpdateApplicationInput,
+  updateApplicationFormInitialValues,
+} from '../schema/applicationSchema'
+import BranchField from './BranchField'
 
 type Props = {
+  app: Application
   repo: Repository
-  refetchRepo: () => Promise<void>
+  refetchApp: () => Promise<void>
   hasPermission: boolean
 }
 
 const GeneralConfigForm: Component<Props> = (props) => {
-  const { formStore } = useRepositoryForm()
+  const { formStore } = useApplicationForm()
 
-  // reset forms when props.repo changed
+  // reset forms when props.app changed
   createEffect(() => {
     reset(
       untrack(() => formStore),
       {
-        initialValues: updateRepositoryFormInitialValues(props.repo),
+        initialValues: updateApplicationFormInitialValues(props.app),
       },
     )
   })
 
-  const handleSubmit: SubmitHandler<CreateOrUpdateRepositoryInput> = async (values) => {
+  const handleSubmit: SubmitHandler<CreateOrUpdateApplicationSchema> = async (values) => {
     try {
-      await client.updateRepository(convertUpdateRepositoryInput(values))
-      toast.success('リポジトリ名を更新しました')
-      await props.refetchRepo()
+      await client.updateRepository(convertUpdateApplicationInput(values))
+      toast.success('アプリケーション設定を更新しました')
+      props.refetchApp()
+      // 非同期でビルドが開始されるので1秒程度待ってから再度リロード
+      setTimeout(props.refetchApp, 1000)
     } catch (e) {
-      handleAPIError(e, 'リポジトリ名の更新に失敗しました')
+      handleAPIError(e, 'アプリケーション設定の更新に失敗しました')
     }
   }
 
@@ -59,7 +63,7 @@ const GeneralConfigForm: Component<Props> = (props) => {
           <Field of={formStore} name="name">
             {(field, fieldProps) => (
               <TextField
-                label="Repository Name"
+                label="Application Name"
                 required
                 {...fieldProps}
                 value={field.value ?? ''}
@@ -68,6 +72,24 @@ const GeneralConfigForm: Component<Props> = (props) => {
               />
             )}
           </Field>
+          <Field of={formStore} name="repositoryId">
+            {(field, fieldProps) => (
+              <TextField
+                label="Repository ID"
+                required
+                info={{
+                  props: {
+                    content: 'リポジトリを移管する場合はIDを変更',
+                  },
+                }}
+                {...fieldProps}
+                value={field.value ?? ''}
+                error={field.error}
+                readOnly={!props.hasPermission}
+              />
+            )}
+          </Field>
+          <BranchField repo={props.repo} hasPermission={props.hasPermission} />
         </FormBox.Forms>
         <FormBox.Actions>
           <Show when={formStore.dirty && !formStore.submitting}>
@@ -84,7 +106,7 @@ const GeneralConfigForm: Component<Props> = (props) => {
             tooltip={{
               props: {
                 content: !props.hasPermission
-                  ? '設定を変更するにはリポジトリのオーナーになる必要があります'
+                  ? '設定を変更するにはアプリケーションのオーナーになる必要があります'
                   : undefined,
               },
             }}
