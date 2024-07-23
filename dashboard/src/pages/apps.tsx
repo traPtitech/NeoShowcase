@@ -45,14 +45,11 @@ const MainView = styled('div', {
 const FilterContainer = styled('div', {
   base: {
     width: '100%',
-    top: '0',
-    left: '0',
     padding: '40px 0 32px',
     zIndex: 1,
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
-    background: `linear-gradient(0deg, rgba(255,255,255,0), ${colorVars.semantic.ui.background} 20px)`,
   },
 })
 const Repositories = styled('div', {
@@ -187,7 +184,10 @@ const AppsList: Component<{
       count: filteredRepos().length,
       getScrollElement: () => props.parentRef,
       estimateSize: (i) => 76 + 16 + filteredRepos()[i].apps.length * 80,
+      // scrollParentRef内に高さ120pxのFilterContainerが存在するため、この分を設定
+      scrollMargin: 120,
       paddingEnd: 72,
+      gap: 16,
     }),
   )
 
@@ -199,41 +199,42 @@ const AppsList: Component<{
         width: '100%',
         height: `${virtualizer().getTotalSize()}px`,
         position: 'relative',
+        // scrollParentRef内に高さ120pxのFilterContainerが存在するため、この分を減算
+        transform: `translateY(${-virtualizer().options.scrollMargin}px)`,
       }}
     >
-      <div
-        style={{
-          position: 'absolute',
-          top: 0,
-          left: 0,
-          width: '100%',
-          transform: `translateY(${items()?.[0]?.start ?? 0}px)`,
-        }}
+      <For
+        each={items() ?? []}
+        fallback={
+          <List.Container>
+            <List.PlaceHolder>
+              <MaterialSymbols displaySize={80}>search</MaterialSymbols>
+              No Apps Found
+            </List.PlaceHolder>
+          </List.Container>
+        }
       >
-        <For
-          each={items() ?? []}
-          fallback={
-            <List.Container>
-              <List.PlaceHolder>
-                <MaterialSymbols displaySize={80}>search</MaterialSymbols>
-                No Apps Found
-              </List.PlaceHolder>
-            </List.Container>
-          }
-        >
-          {(vRow) => (
-            <div data-index={vRow.index} ref={(el) => queueMicrotask(() => virtualizer().measureElement(el))}>
-              <div style={{ 'padding-bottom': '16px' }}>
-                <RepositoryList
-                  repository={filteredRepos()[vRow.index].repo}
-                  apps={filteredRepos()[vRow.index].apps}
-                  commits={commits()}
-                />
-              </div>
-            </div>
-          )}
-        </For>
-      </div>
+        {(vRow) => (
+          <div
+            data-index={vRow.index}
+            ref={(el) => queueMicrotask(() => virtualizer().measureElement(el))}
+            style={{
+              position: 'absolute',
+              top: 0,
+              left: 0,
+              width: '100%',
+              height: `${items()[vRow.index]}px`,
+              transform: `translateY(${vRow.start}px)`,
+            }}
+          >
+            <RepositoryList
+              repository={filteredRepos()[vRow.index].repo}
+              apps={filteredRepos()[vRow.index].apps}
+              commits={commits()}
+            />
+          </div>
+        )}
+      </For>
     </div>
   )
 }
@@ -264,72 +265,74 @@ export default () => {
   const [scrollParentRef, setScrollParentRef] = createSignal<HTMLDivElement>()
 
   return (
-    <WithNav.Container>
-      <Title>Apps - NeoShowcase</Title>
-      <WithNav.Navs>
-        <AppsNav />
-        <WithNav.Tabs>
-          <For each={scopeItems(user()?.admin)}>
-            {(s) => (
-              <TabRound state={s.value === scope() ? 'active' : 'default'} onClick={() => setScope(s.value)}>
-                <MaterialSymbols>deployed_code</MaterialSymbols>
-                {s.label}
-              </TabRound>
-            )}
-          </For>
-          <A href="/apps/new" style={{ 'margin-left': 'auto' }}>
-            <Button variants="primary" size="medium" leftIcon={<MaterialSymbols>add</MaterialSymbols>}>
-              Add New App
-            </Button>
-          </A>
-        </WithNav.Tabs>
-      </WithNav.Navs>
-      <WithNav.Body>
-        <MainView ref={setScrollParentRef}>
-          <FilterContainer>
-            <TextField
-              placeholder="Search"
-              value={query()}
-              onInput={(e) => setQuery(e.currentTarget.value)}
-              leftIcon={<MaterialSymbols>search</MaterialSymbols>}
-              rightIcon={
-                <AppsFilter
-                  statuses={statuses()}
-                  setStatues={setStatuses}
-                  origin={origin()}
-                  setOrigin={setOrigin}
-                  sort={sort()}
-                  setSort={setSort}
-                  includeNoApp={includeNoApp()}
-                  setIncludeNoApp={setIncludeNoApp}
-                />
-              }
-            />
-          </FilterContainer>
-          <Suspense
-            fallback={
-              <Repositories>
-                <RepositoryList apps={[undefined]} />
-                <RepositoryList apps={[undefined]} />
-                <RepositoryList apps={[undefined]} />
-                <RepositoryList apps={[undefined]} />
-              </Repositories>
-            }
-          >
-            <SuspenseContainer isPending={isPending()}>
-              <AppsList
-                scope={scope()}
-                statuses={statuses()}
-                origins={origin()}
-                query={query()}
-                sort={sort()}
-                includeNoApp={includeNoApp()}
-                parentRef={scrollParentRef()!}
+    <div style={{ 'overflow-y': 'auto', height: '100%' }} ref={setScrollParentRef}>
+      <WithNav.Container>
+        <Title>Apps - NeoShowcase</Title>
+        <WithNav.Navs>
+          <AppsNav />
+          <WithNav.Tabs>
+            <For each={scopeItems(user()?.admin)}>
+              {(s) => (
+                <TabRound state={s.value === scope() ? 'active' : 'default'} onClick={() => setScope(s.value)}>
+                  <MaterialSymbols>deployed_code</MaterialSymbols>
+                  {s.label}
+                </TabRound>
+              )}
+            </For>
+            <A href="/apps/new" style={{ 'margin-left': 'auto' }}>
+              <Button variants="primary" size="medium" leftIcon={<MaterialSymbols>add</MaterialSymbols>}>
+                Add New App
+              </Button>
+            </A>
+          </WithNav.Tabs>
+        </WithNav.Navs>
+        <WithNav.Body>
+          <MainView>
+            <FilterContainer>
+              <TextField
+                placeholder="Search"
+                value={query()}
+                onInput={(e) => setQuery(e.currentTarget.value)}
+                leftIcon={<MaterialSymbols>search</MaterialSymbols>}
+                rightIcon={
+                  <AppsFilter
+                    statuses={statuses()}
+                    setStatues={setStatuses}
+                    origin={origin()}
+                    setOrigin={setOrigin}
+                    sort={sort()}
+                    setSort={setSort}
+                    includeNoApp={includeNoApp()}
+                    setIncludeNoApp={setIncludeNoApp}
+                  />
+                }
               />
-            </SuspenseContainer>
-          </Suspense>
-        </MainView>
-      </WithNav.Body>
-    </WithNav.Container>
+            </FilterContainer>
+            <Suspense
+              fallback={
+                <Repositories>
+                  <RepositoryList apps={[undefined]} />
+                  <RepositoryList apps={[undefined]} />
+                  <RepositoryList apps={[undefined]} />
+                  <RepositoryList apps={[undefined]} />
+                </Repositories>
+              }
+            >
+              <SuspenseContainer isPending={isPending()}>
+                <AppsList
+                  scope={scope()}
+                  statuses={statuses()}
+                  origins={origin()}
+                  query={query()}
+                  sort={sort()}
+                  includeNoApp={includeNoApp()}
+                  parentRef={scrollParentRef()!}
+                />
+              </SuspenseContainer>
+            </Suspense>
+          </MainView>
+        </WithNav.Body>
+      </WithNav.Container>
+    </div>
   )
 }
