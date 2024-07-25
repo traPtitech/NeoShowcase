@@ -202,163 +202,53 @@ describe('Create Application Schema', () => {
     ).toEqual(expect.objectContaining({ success: true }))
   })
 
-  // test("ng: empty name", () => {
-  // 	expect(
-  // 		validator({
-  // 			...base,
-  // 			name: "",
-  // 		}).issues,
-  // 	).toEqual([
-  // 		expect.objectContaining({
-  // 			message: "Enter Repository Name",
-  // 			path: [
-  // 				expect.objectContaining({
-  // 					key: "name",
-  // 				}),
-  // 			],
-  // 		}),
-  // 	]);
-  // });
+  test('ng: empty name', () => {
+    expect(
+      validator({
+        ...base,
+        name: '',
+      }).issues,
+    ).toEqual([
+      expect.objectContaining({
+        message: 'Enter Application Name',
+        path: [
+          expect.objectContaining({
+            key: 'name',
+          }),
+        ],
+      }),
+    ])
+  })
 
-  // test("ng: empty url", () => {
-  // 	expect(
-  // 		validator({
-  // 			...base,
-  // 			url: "",
-  // 		}).issues,
-  // 	).toEqual([
-  // 		expect.objectContaining({
-  // 			message: "Enter Repository URL",
-  // 			path: [
-  // 				expect.objectContaining({
-  // 					key: "url",
-  // 				}),
-  // 			],
-  // 		}),
-  // 	]);
-  // });
-
-  // test("ng: auth method is basic, but the URL starts with 'http://'", () => {
-  // 	expect(
-  // 		validator({
-  // 			...base,
-  // 			url: "http://example.com/test/test.git",
-  // 			auth: {
-  // 				method: "basic",
-  // 				value: {
-  // 					basic: {
-  // 						username: "test name",
-  // 						password: "test password",
-  // 					},
-  // 				},
-  // 			},
-  // 		}).issues,
-  // 	).toEqual([
-  // 		expect.objectContaining({
-  // 			message:
-  // 				"Basic認証を使用する場合、URLはhttps://から始まる必要があります",
-  // 			path: [
-  // 				expect.objectContaining({
-  // 					key: "url",
-  // 				}),
-  // 			],
-  // 		}),
-  // 	]);
-  // });
+  test('ng: empty refname', () => {
+    expect(
+      validator({
+        ...base,
+        refName: '',
+      }).issues,
+    ).toEqual([
+      expect.objectContaining({
+        message: 'Enter Branch Name',
+        path: [
+          expect.objectContaining({
+            key: 'refName',
+          }),
+        ],
+      }),
+    ])
+  })
 })
 
-// describe("Update Repository Schema", () => {
-// 	const base = {
-// 		id: "testRepositoryId",
-// 		type: "update",
-// 		name: "test repository",
-// 		url: "https://example.com/test/test.git",
-// 		auth: {
-// 			method: "none",
-// 			value: {
-// 				none: {},
-// 			},
-// 		},
-// 		ownerIds: ["owner1"],
-// 	};
-
-// 	test("ok: valid input", () => {
-// 		expect(validator(base)).toEqual(expect.objectContaining({ success: true }));
-// 	});
-
-// 	test("ok: update name", () => {
-// 		expect(
-// 			validator({
-// 				id: base.id,
-// 				type: base.type,
-// 				name: base.name,
-// 			}),
-// 		).toEqual(expect.objectContaining({ success: true }));
-// 	});
-
-// 	test("ok: update auth config", () => {
-// 		expect(
-// 			validator({
-// 				id: base.id,
-// 				type: base.type,
-// 				url: base.url,
-// 				auth: base.auth,
-// 			}),
-// 		).toEqual(expect.objectContaining({ success: true }));
-// 	});
-
-// 	test("ok: update ownerIds", () => {
-// 		expect(
-// 			validator({
-// 				id: base.id,
-// 				type: base.type,
-// 				ownerIds: base.ownerIds,
-// 			}),
-// 		).toEqual(expect.objectContaining({ success: true }));
-// 	});
-
-// 	test("ng: empty id", () => {
-// 		expect(
-// 			validator({
-// 				...base,
-// 				id: undefined,
-// 			}).issues,
-// 		).toEqual([
-// 			expect.objectContaining({
-// 				path: [
-// 					expect.objectContaining({
-// 						key: "id",
-// 					}),
-// 				],
-// 			}),
-// 		]);
-// 	});
-
-// 	test("ng: auth method is basic, but the URL starts with 'http://'", () => {
-// 		expect(
-// 			validator({
-// 				...base,
-// 				url: "http://example.com/test/test.git",
-// 				auth: {
-// 					method: "basic",
-// 					value: {
-// 						basic: {
-// 							username: "test name",
-// 							password: "test password",
-// 						},
-// 					},
-// 				},
-// 			}).issues,
-// 		).toEqual([
-// 			expect.objectContaining({
-// 				message:
-// 					"Basic認証を使用する場合、URLはhttps://から始まる必要があります",
-// 				path: [
-// 					expect.objectContaining({
-// 						key: "url",
-// 					}),
-// 				],
-// 			}),
-// 		]);
-// 	});
-// });
+describe('Update Application Schema', () => {
+  test('ok: valid input (update general config)', () => {
+    expect(
+      validator({
+        type: 'update',
+        id: 'testAppId',
+        name: 'test application',
+        repositoryId: 'testRepoId',
+        refName: 'main',
+      }),
+    ).toEqual(expect.objectContaining({ success: true }))
+  })
+})

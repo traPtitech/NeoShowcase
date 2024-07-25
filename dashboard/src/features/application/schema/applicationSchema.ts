@@ -1,9 +1,7 @@
 import type { PartialMessage } from '@bufbuild/protobuf'
-import { match } from 'ts-pattern'
 import * as v from 'valibot'
 import {
   type Application,
-  type ApplicationConfig,
   AuthenticationType,
   type AvailableDomain,
   type CreateApplicationRequest,
@@ -13,80 +11,7 @@ import {
   type Website,
 } from '/@/api/neoshowcase/protobuf/gateway_pb'
 import { systemInfo } from '/@/libs/api'
-
-const runtimeConfigSchema = v.object({
-  useMariadb: v.boolean(),
-  useMongodb: v.boolean(),
-  entrypoint: v.string(),
-  command: v.string(),
-})
-const staticConfigSchema = v.object({
-  artifactPath: v.pipe(v.string(), v.nonEmpty('Enter Artifact Path')),
-  spa: v.boolean(),
-})
-
-const buildpackConfigSchema = v.object({
-  context: v.string(),
-})
-const cmdConfigSchema = v.object({
-  baseImage: v.string(),
-  buildCmd: v.string(),
-})
-const dockerfileConfigSchema = v.object({
-  dockerfileName: v.pipe(v.string(), v.nonEmpty('Enter Dockerfile Name')),
-  context: v.string(),
-})
-
-const applicationConfigSchema = v.object({
-  deployConfig: v.pipe(
-    v.optional(
-      v.variant('type', [
-        v.object({
-          type: v.literal('runtime'),
-          value: v.object({
-            runtime: runtimeConfigSchema,
-          }),
-        }),
-        v.object({
-          type: v.literal('static'),
-          value: v.object({
-            static: staticConfigSchema,
-          }),
-        }),
-      ]),
-    ),
-    // アプリ作成時には最初undefinedになっているが、submit時にはundefinedで無い必要がある
-    v.check((input) => !!input, 'Select Deploy Type'),
-  ),
-  buildConfig: v.pipe(
-    v.optional(
-      v.variant('type', [
-        v.object({
-          type: v.literal('buildpack'),
-          value: v.object({
-            buildpack: buildpackConfigSchema,
-          }),
-        }),
-        v.object({
-          type: v.literal('cmd'),
-          value: v.object({
-            cmd: cmdConfigSchema,
-          }),
-        }),
-        v.object({
-          type: v.literal('dockerfile'),
-          value: v.object({
-            dockerfile: dockerfileConfigSchema,
-          }),
-        }),
-      ]),
-    ),
-    // アプリ作成時には最初undefinedになっているが、submit時にはundefinedで無い必要がある
-    v.check((input) => !!input, 'Select Build Type'),
-  ),
-})
-
-type ApplicationConfigInput = v.InferInput<typeof applicationConfigSchema>
+import { applicationConfigSchema, configMessageToSchema, configSchemaToMessage } from './applicationConfigSchema'
 
 const createWebsiteSchema = v.object({
   state: v.union([v.literal('noChange'), v.literal('readyToChange'), v.literal('readyToDelete'), v.literal('added')]),
@@ -133,143 +58,6 @@ export const createApplicationFormInitialValues = (): CreateOrUpdateApplicationS
     startOnCreate: false,
   }) satisfies CreateApplicationSchema
 
-/** valobot schema -> protobuf message */
-const configSchemaToMessage = (
-  input: v.InferInput<typeof applicationConfigSchema>,
-): PartialMessage<ApplicationConfig> => {
-  return match([input.deployConfig, input.buildConfig])
-    .returnType<PartialMessage<ApplicationConfig>>()
-    .with(
-      [
-        {
-          type: 'runtime',
-        },
-        {
-          type: 'buildpack',
-        },
-      ],
-      ([deployConfig, buildConfig]) => {
-        return {
-          buildConfig: {
-            case: 'runtimeBuildpack',
-            value: {
-              ...buildConfig.value.buildpack,
-              runtimeConfig: deployConfig.value.runtime,
-            },
-          },
-        }
-      },
-    )
-    .with(
-      [
-        {
-          type: 'runtime',
-        },
-        {
-          type: 'cmd',
-        },
-      ],
-      ([deployConfig, buildConfig]) => {
-        return {
-          buildConfig: {
-            case: 'runtimeCmd',
-            value: {
-              ...buildConfig.value.cmd,
-              runtimeConfig: deployConfig.value.runtime,
-            },
-          },
-        }
-      },
-    )
-    .with(
-      [
-        {
-          type: 'runtime',
-        },
-        {
-          type: 'dockerfile',
-        },
-      ],
-      ([deployConfig, buildConfig]) => {
-        return {
-          buildConfig: {
-            case: 'runtimeDockerfile',
-            value: {
-              ...buildConfig.value.dockerfile,
-              runtimeConfig: deployConfig.value.runtime,
-            },
-          },
-        }
-      },
-    )
-    .with(
-      [
-        {
-          type: 'static',
-        },
-        {
-          type: 'buildpack',
-        },
-      ],
-      ([deployConfig, buildConfig]) => {
-        return {
-          buildConfig: {
-            case: 'staticBuildpack',
-            value: {
-              ...buildConfig.value.buildpack,
-              staticConfig: deployConfig.value.static,
-            },
-          },
-        }
-      },
-    )
-    .with(
-      [
-        {
-          type: 'static',
-        },
-        {
-          type: 'cmd',
-        },
-      ],
-      ([deployConfig, buildConfig]) => {
-        return {
-          buildConfig: {
-            case: 'staticCmd',
-            value: {
-              ...buildConfig.value.cmd,
-              staticConfig: deployConfig.value.static,
-            },
-          },
-        }
-      },
-    )
-    .with(
-      [
-        {
-          type: 'static',
-        },
-        {
-          type: 'dockerfile',
-        },
-      ],
-      ([deployConfig, buildConfig]) => {
-        return {
-          buildConfig: {
-            case: 'staticDockerfile',
-            value: {
-              ...buildConfig.value.dockerfile,
-              staticConfig: deployConfig.value.static,
-            },
-          },
-        }
-      },
-    )
-    .otherwise(() => ({
-      buildConfig: { case: undefined },
-    }))
-}
-
 const createWebsiteSchemaToMessage = (
   input: v.InferInput<typeof createWebsiteSchema>,
 ): PartialMessage<CreateWebsiteRequest> => {
@@ -314,103 +102,12 @@ export const updateApplicationSchema = v.object({
   repositoryId: v.optional(v.pipe(v.string(), v.nonEmpty('Enter Repository ID'))),
   refName: v.optional(v.pipe(v.string(), v.nonEmpty('Enter Branch Name'))),
   config: v.optional(applicationConfigSchema),
-  websites: v.array(createWebsiteSchema),
-  portPublications: v.array(portPublicationSchema),
+  websites: v.optional(v.array(createWebsiteSchema)),
+  portPublications: v.optional(v.array(portPublicationSchema)),
   ownerIds: v.optional(ownersSchema),
 })
 
 type UpdateApplicationSchema = v.InferInput<typeof updateApplicationSchema>
-
-/** protobuf message -> valobot schema */
-const configMessageToSchema = (config: ApplicationConfig): ApplicationConfigInput => {
-  let deployConfig: ApplicationConfigInput['deployConfig']
-  const _case = config.buildConfig.case
-  switch (_case) {
-    case 'runtimeBuildpack':
-    case 'runtimeDockerfile':
-    case 'runtimeCmd': {
-      deployConfig = {
-        type: 'runtime',
-        value: {
-          runtime: config.buildConfig.value.runtimeConfig ?? {
-            command: '',
-            entrypoint: '',
-            useMariadb: false,
-            useMongodb: false,
-          },
-        },
-      }
-      break
-    }
-    case 'staticBuildpack':
-    case 'staticDockerfile':
-    case 'staticCmd': {
-      deployConfig = {
-        type: 'static',
-        value: {
-          static: config.buildConfig.value.staticConfig ?? {
-            spa: false,
-            artifactPath: '',
-          },
-        },
-      }
-      break
-    }
-    case undefined: {
-      break
-    }
-    default: {
-      const _unreachable: never = _case
-      throw new Error('unknown application build config case')
-    }
-  }
-
-  let buildConfig: ApplicationConfigInput['buildConfig']
-  switch (_case) {
-    case 'runtimeBuildpack':
-    case 'staticBuildpack': {
-      buildConfig = {
-        type: 'buildpack',
-        value: {
-          buildpack: config.buildConfig.value,
-        },
-      }
-      break
-    }
-    case 'runtimeCmd':
-    case 'staticCmd': {
-      buildConfig = {
-        type: 'cmd',
-        value: {
-          cmd: config.buildConfig.value,
-        },
-      }
-      break
-    }
-    case 'runtimeDockerfile':
-    case 'staticDockerfile': {
-      buildConfig = {
-        type: 'dockerfile',
-        value: {
-          dockerfile: config.buildConfig.value,
-        },
-      }
-      break
-    }
-    case undefined: {
-      break
-    }
-    default: {
-      const _unreachable: never = _case
-      throw new Error('unknown application build config case')
-    }
-  }
-
-  return {
-    deployConfig,
-    buildConfig,
-  }
-}
 
 const extractSubdomain = (
   fqdn: string,
@@ -490,13 +187,17 @@ export const convertUpdateApplicationInput = (
     repositoryId: input.repositoryId,
     refName: input.refName,
     config: input.config ? configSchemaToMessage(input.config) : undefined,
-    websites: {
-      websites: input.websites.map((w) => createWebsiteSchemaToMessage(w)),
-    },
-    portPublications: { portPublications: input.portPublications },
-    ownerIds: {
-      ownerIds: input.ownerIds,
-    },
+    websites: input.websites
+      ? {
+          websites: input.websites?.map((w) => createWebsiteSchemaToMessage(w)),
+        }
+      : undefined,
+    portPublications: input.portPublications ? { portPublications: input.portPublications } : undefined,
+    ownerIds: input.ownerIds
+      ? {
+          ownerIds: input.ownerIds,
+        }
+      : undefined,
   }
 }
 

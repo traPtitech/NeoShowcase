@@ -36,7 +36,7 @@ const GeneralConfigForm: Component<Props> = (props) => {
 
   const handleSubmit: SubmitHandler<CreateOrUpdateApplicationSchema> = async (values) => {
     try {
-      await client.updateRepository(convertUpdateApplicationInput(values))
+      await client.updateApplication(convertUpdateApplicationInput(values))
       toast.success('アプリケーション設定を更新しました')
       props.refetchApp()
       // 非同期でビルドが開始されるので1秒程度待ってから再度リロード
