@@ -251,4 +251,46 @@ describe('Update Application Schema', () => {
       }),
     ).toEqual(expect.objectContaining({ success: true }))
   })
+
+  test('ng: empty name', () => {
+    expect(
+      validator({
+        type: 'update',
+        id: 'testAppId',
+        name: '',
+        repositoryId: 'testRepoId',
+        refName: 'main',
+      }).issues,
+    ).toEqual([
+      expect.objectContaining({
+        message: 'Enter Application Name',
+        path: [
+          expect.objectContaining({
+            key: 'name',
+          }),
+        ],
+      }),
+    ])
+  })
+
+  test('ng: empty refname', () => {
+    expect(
+      validator({
+        type: 'update',
+        id: 'testAppId',
+        name: 'test application',
+        repositoryId: 'testRepoId',
+        refName: '',
+      }).issues,
+    ).toEqual([
+      expect.objectContaining({
+        message: 'Enter Branch Name',
+        path: [
+          expect.objectContaining({
+            key: 'refName',
+          }),
+        ],
+      }),
+    ])
+  })
 })

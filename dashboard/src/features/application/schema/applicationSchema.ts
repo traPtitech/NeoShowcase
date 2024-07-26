@@ -44,9 +44,9 @@ const createApplicationSchema = v.object({
   startOnCreate: v.boolean(),
 })
 
-type CreateApplicationSchema = v.InferInput<typeof createApplicationSchema>
+type CreateApplicationInput = v.InferInput<typeof createApplicationSchema>
 
-export const createApplicationFormInitialValues = (): CreateOrUpdateApplicationSchema =>
+export const createApplicationFormInitialValues = (): CreateOrUpdateApplicationInput =>
   ({
     type: 'create',
     name: '',
@@ -56,7 +56,7 @@ export const createApplicationFormInitialValues = (): CreateOrUpdateApplicationS
     websites: [],
     portPublications: [],
     startOnCreate: false,
-  }) satisfies CreateApplicationSchema
+  }) satisfies CreateApplicationInput
 
 const createWebsiteSchemaToMessage = (
   input: v.InferInput<typeof createWebsiteSchema>,
@@ -77,7 +77,7 @@ const createWebsiteSchemaToMessage = (
 
 /** valobot schema -> protobuf message */
 export const convertCreateApplicationInput = (
-  input: CreateOrUpdateApplicationSchema,
+  input: CreateOrUpdateApplicationInput,
 ): PartialMessage<CreateApplicationRequest> => {
   if (input.type !== 'create')
     throw new Error("The type of input passed to convertCreateApplicationInput must be 'create'")
@@ -107,7 +107,7 @@ export const updateApplicationSchema = v.object({
   ownerIds: v.optional(ownersSchema),
 })
 
-type UpdateApplicationSchema = v.InferInput<typeof updateApplicationSchema>
+type UpdateApplicationInput = v.InferInput<typeof updateApplicationSchema>
 
 const extractSubdomain = (
   fqdn: string,
@@ -160,7 +160,7 @@ const websiteMessageToSchema = (website: Website): v.InferInput<typeof createWeb
   }
 }
 
-export const updateApplicationFormInitialValues = (input: Application): CreateOrUpdateApplicationSchema => {
+export const updateApplicationFormInitialValues = (input: Application): CreateOrUpdateApplicationInput => {
   return {
     type: 'update',
     id: input.id,
@@ -171,12 +171,12 @@ export const updateApplicationFormInitialValues = (input: Application): CreateOr
     websites: input.websites.map((w) => websiteMessageToSchema(w)),
     portPublications: input.portPublications,
     ownerIds: input.ownerIds,
-  } satisfies UpdateApplicationSchema
+  } satisfies UpdateApplicationInput
 }
 
 /** valobot schema -> protobuf message */
 export const convertUpdateApplicationInput = (
-  input: CreateOrUpdateApplicationSchema,
+  input: CreateOrUpdateApplicationInput,
 ): PartialMessage<UpdateApplicationRequest> => {
   if (input.type !== 'update')
     throw new Error("The type of input passed to convertUpdateApplicationInput must be 'create'")
@@ -203,4 +203,4 @@ export const convertUpdateApplicationInput = (
 
 export const createOrUpdateApplicationSchema = v.variant('type', [createApplicationSchema, updateApplicationSchema])
 
-export type CreateOrUpdateApplicationSchema = v.InferInput<typeof createOrUpdateApplicationSchema>
+export type CreateOrUpdateApplicationInput = v.InferInput<typeof createOrUpdateApplicationSchema>

@@ -1,50 +1,20 @@
 import { styled } from '@macaron-css/solid'
-import { type SubmitHandler, createForm, reset } from '@modular-forms/solid'
 import { useNavigate } from '@solidjs/router'
-import { type Component, Show, createEffect, on } from 'solid-js'
+import { type Component, Show } from 'solid-js'
 import toast from 'solid-toast'
 import type { Application, Repository } from '/@/api/neoshowcase/protobuf/gateway_pb'
 import { Button } from '/@/components/UI/Button'
 import { MaterialSymbols } from '/@/components/UI/MaterialSymbols'
 import ModalDeleteConfirm from '/@/components/UI/ModalDeleteConfirm'
-import { ToolTip } from '/@/components/UI/ToolTip'
 import { DataTable } from '/@/components/layouts/DataTable'
 import FormBox from '/@/components/layouts/FormBox'
 import { FormItem } from '/@/components/templates/FormItem'
-import { List } from '/@/components/templates/List'
-import { AppGeneralConfig, type AppGeneralForm } from '/@/components/templates/app/AppGeneralConfig'
 import GeneralConfigForm from '/@/features/application/components/GeneralConfigForm'
 import { ApplicationFormProvider } from '/@/features/application/provider/applicationFormProvider'
 import { client, handleAPIError } from '/@/libs/api'
-import { diffHuman } from '/@/libs/format'
 import useModal from '/@/libs/useModal'
 import { useApplicationData } from '/@/routes'
 import { colorVars, textVars } from '/@/theme'
-
-const GeneralInfo: Component<{
-  app: Application
-}> = (props) => {
-  return (
-    <List.Container>
-      <Show when={props.app.createdAt}>
-        {(nonNullCreatedAt) => {
-          const diff = diffHuman(nonNullCreatedAt().toDate())
-          const localeString = nonNullCreatedAt().toDate().toLocaleString()
-          return (
-            <List.Row>
-              <List.RowContent>
-                <List.RowTitle>作成日</List.RowTitle>
-                <ToolTip props={{ content: localeString }}>
-                  <List.RowData>{diff()}</List.RowData>
-                </ToolTip>
-              </List.RowContent>
-            </List.Row>
-          )
-        }}
-      </Show>
-    </List.Container>
-  )
-}
 
 const DeleteAppNotice = styled('div', {
   base: {

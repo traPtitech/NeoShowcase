@@ -162,6 +162,11 @@ export const configMessageToSchema = (config: ApplicationConfig): ApplicationCon
     }
   }
 
+  console.log({
+    deployConfig,
+    buildConfig,
+  })
+
   return {
     deployConfig,
     buildConfig,

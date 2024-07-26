@@ -13,21 +13,29 @@ const OptionsContainer = styled('div', {
   base: {
     width: '100%',
     display: 'flex',
-    flexWrap: 'wrap',
     gap: '16px',
+  },
+  variant: {
+    wrap: {
+      true: {
+        flexWrap: 'wrap',
+      },
+    },
+  },
+  defaultVariants: {
+    wrap: 'true',
   },
 })
 const itemStyle = style({
-  width: 'fit-content',
+  width: '100%',
   minWidth: 'min(200px, 100%)',
 })
 const labelStyle = style({
   width: '100%',
+  height: '100%',
   padding: '16px',
-  display: 'grid',
-  gridTemplateColumns: '1fr 20px',
-  alignItems: 'center',
-  justifyItems: 'start',
+  display: 'flex',
+  flexDirection: 'column',
   gap: '8px',
 
   background: colorVars.semantic.ui.primary,
@@ -57,10 +65,28 @@ const labelStyle = style({
     },
   },
 })
+const ItemTitle = styled('div', {
+  base: {
+    display: 'grid',
+    gridTemplateColumns: '1fr 20px',
+    alignItems: 'center',
+    justifyItems: 'start',
+    gap: '8px',
+    color: colorVars.semantic.text.black,
+    ...textVars.text.regular,
+  },
+})
+const Description = styled('div', {
+  base: {
+    color: colorVars.semantic.text.black,
+    ...textVars.caption.regular,
+  },
+})
 
 export interface RadioOption<T extends string> {
   value: T
   label: string
+  description?: string
 }
 
 export interface Props<T extends string> {
@@ -85,7 +111,7 @@ export const RadioGroup = <T extends string>(props: Props<T>): JSX.Element => {
   const [rootProps, _addedProps, inputProps] = splitProps(
     props,
     ['name', 'value', 'options', 'required', 'disabled', 'readOnly'],
-    ['info', 'tooltip', 'setValue'],
+    ['info', 'tooltip', 'setValue', 'error', 'label'],
   )
 
   return (
@@ -114,12 +140,17 @@ export const RadioGroup = <T extends string>(props: Props<T>): JSX.Element => {
               <KRadioGroup.Item value={option.value} class={itemStyle}>
                 <KRadioGroup.ItemInput {...inputProps} />
                 <KRadioGroup.ItemLabel class={labelStyle}>
-                  {option.label}
-                  <KRadioGroup.ItemControl>
-                    <KRadioGroup.ItemIndicator forceMount>
-                      <RadioIcon selected={option.value === props.value} />
-                    </KRadioGroup.ItemIndicator>
-                  </KRadioGroup.ItemControl>
+                  <ItemTitle>
+                    {option.label}
+                    <KRadioGroup.ItemControl>
+                      <KRadioGroup.ItemIndicator forceMount>
+                        <RadioIcon selected={option.value === props.value} />
+                      </KRadioGroup.ItemIndicator>
+                    </KRadioGroup.ItemControl>
+                  </ItemTitle>
+                  <Show when={option.description}>
+                    <Description>{option.description}</Description>
+                  </Show>
                 </KRadioGroup.ItemLabel>
               </KRadioGroup.Item>
             )}

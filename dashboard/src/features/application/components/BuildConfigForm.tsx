@@ -1,9 +1,8 @@
-import { Field, Form, type SubmitHandler, reset } from '@modular-forms/solid'
+import { Field, Form, type SubmitHandler, getValues, reset } from '@modular-forms/solid'
 import { type Component, Show, createEffect, untrack } from 'solid-js'
 import toast from 'solid-toast'
 import type { Application, Repository } from '/@/api/neoshowcase/protobuf/gateway_pb'
 import { Button } from '/@/components/UI/Button'
-import { TextField } from '/@/components/UI/TextField'
 import FormBox from '/@/components/layouts/FormBox'
 import { client, handleAPIError } from '/@/libs/api'
 import { useApplicationForm } from '../provider/applicationFormProvider'
@@ -12,16 +11,15 @@ import {
   convertUpdateApplicationInput,
   updateApplicationFormInitialValues,
 } from '../schema/applicationSchema'
-import BranchField from './BranchField'
+import BuildTypeField from './BuildTypeField'
 
 type Props = {
   app: Application
-  repo: Repository
   refetchApp: () => Promise<void>
   hasPermission: boolean
 }
 
-const GeneralConfigForm: Component<Props> = (props) => {
+const BuildConfigForm: Component<Props> = (props) => {
   const { formStore } = useApplicationForm()
 
   // reset forms when props.app changed
@@ -52,6 +50,7 @@ const GeneralConfigForm: Component<Props> = (props) => {
 
   return (
     <Form of={formStore} onSubmit={handleSubmit}>
+      {JSON.stringify(getValues(formStore))}
       <Field of={formStore} name="type">
         {() => null}
       </Field>
@@ -60,36 +59,7 @@ const GeneralConfigForm: Component<Props> = (props) => {
       </Field>
       <FormBox.Container>
         <FormBox.Forms>
-          <Field of={formStore} name="name">
-            {(field, fieldProps) => (
-              <TextField
-                label="Application Name"
-                required
-                {...fieldProps}
-                value={field.value ?? ''}
-                error={field.error}
-                readOnly={!props.hasPermission}
-              />
-            )}
-          </Field>
-          <Field of={formStore} name="repositoryId">
-            {(field, fieldProps) => (
-              <TextField
-                label="Repository ID"
-                required
-                info={{
-                  props: {
-                    content: 'リポジトリを移管する場合はIDを変更',
-                  },
-                }}
-                {...fieldProps}
-                value={field.value ?? ''}
-                error={field.error}
-                readOnly={!props.hasPermission}
-              />
-            )}
-          </Field>
-          <BranchField repo={props.repo} hasPermission={props.hasPermission} />
+          <BuildTypeField formStore={formStore} readonly={!props.hasPermission} />
         </FormBox.Forms>
         <FormBox.Actions>
           <Show when={formStore.dirty && !formStore.submitting}>
@@ -119,4 +89,4 @@ const GeneralConfigForm: Component<Props> = (props) => {
   )
 }
 
-export default GeneralConfigForm
+export default BuildConfigForm
