@@ -6,49 +6,83 @@ import {
   type AvailableDomain,
   type CreateApplicationRequest,
   type CreateWebsiteRequest,
+  type PortPublication,
   PortPublicationProtocol,
   type UpdateApplicationRequest,
+  type UpdateApplicationRequest_UpdateOwners,
   type Website,
 } from '/@/api/neoshowcase/protobuf/gateway_pb'
 import { systemInfo } from '/@/libs/api'
-import { applicationConfigSchema, configMessageToSchema, configSchemaToMessage } from './applicationConfigSchema'
+import { applicationConfigSchema, configMessageToSchema } from './applicationConfigSchema'
 
-const createWebsiteSchema = v.object({
-  state: v.union([v.literal('noChange'), v.literal('readyToChange'), v.literal('readyToDelete'), v.literal('added')]),
-  subdomain: v.string(),
-  domain: v.string(),
-  pathPrefix: v.string(),
-  stripPrefix: v.boolean(),
-  https: v.boolean(),
-  h2c: v.boolean(),
-  httpPort: v.pipe(v.number(), v.integer()),
-  authentication: v.enum(AuthenticationType),
-})
+const createWebsiteSchema = v.pipe(
+  v.object({
+    state: v.union([v.literal('noChange'), v.literal('readyToChange'), v.literal('readyToDelete'), v.literal('added')]),
+    subdomain: v.string(),
+    domain: v.string(),
+    pathPrefix: v.string(),
+    stripPrefix: v.boolean(),
+    https: v.boolean(),
+    h2c: v.boolean(),
+    httpPort: v.pipe(v.number(), v.integer()),
+    authentication: v.enum(AuthenticationType),
+  }),
+  v.transform((input): PartialMessage<CreateWebsiteRequest> => {
+    // wildcard domainならsubdomainとdomainを結合
+    const fqdn = input.domain.startsWith('*')
+      ? `${input.subdomain}${input.domain.replace(/\*/g, '')}`
+      : // non-wildcard domainならdomainをそのまま使う
+        input.domain
 
-const portPublicationSchema = v.object({
-  internetPort: v.pipe(v.number(), v.integer()),
-  applicationPort: v.pipe(v.number(), v.integer()),
-  protocol: v.enum(PortPublicationProtocol),
-})
+    return {
+      fqdn,
+      authentication: input.authentication,
+      h2c: input.h2c,
+      httpPort: input.httpPort,
+      https: input.https,
+      pathPrefix: input.pathPrefix,
+      stripPrefix: input.stripPrefix,
+    }
+  }),
+)
+
+const portPublicationSchema = v.pipe(
+  v.object({
+    internetPort: v.pipe(v.number(), v.integer()),
+    applicationPort: v.pipe(v.number(), v.integer()),
+    protocol: v.enum(PortPublicationProtocol),
+  }),
+  v.transform((input): PartialMessage<PortPublication> => input),
+)
 
 // --- create application
 
-const createApplicationSchema = v.object({
-  type: v.literal('create'),
-  name: v.pipe(v.string(), v.nonEmpty('Enter Application Name')),
-  repositoryId: v.string(),
-  refName: v.pipe(v.string(), v.nonEmpty('Enter Branch Name')),
-  config: applicationConfigSchema,
-  websites: v.array(createWebsiteSchema),
-  portPublications: v.array(portPublicationSchema),
-  startOnCreate: v.boolean(),
-})
+const createApplicationSchema = v.pipe(
+  v.object({
+    name: v.pipe(v.string(), v.nonEmpty('Enter Application Name')),
+    repositoryId: v.string(),
+    refName: v.pipe(v.string(), v.nonEmpty('Enter Branch Name')),
+    config: applicationConfigSchema,
+    websites: v.array(createWebsiteSchema),
+    portPublications: v.array(portPublicationSchema),
+    startOnCreate: v.boolean(),
+  }),
+  v.transform(
+    (input): PartialMessage<CreateApplicationRequest> => ({
+      name: input.name,
+      repositoryId: input.repositoryId,
+      refName: input.refName,
+      config: input.config,
+      portPublications: input.portPublications,
+      websites: input.websites,
+      startOnCreate: input.startOnCreate,
+    }),
+  ),
+)
 
-type CreateApplicationInput = v.InferInput<typeof createApplicationSchema>
-
-export const createApplicationFormInitialValues = (): CreateOrUpdateApplicationInput =>
-  ({
-    type: 'create',
+export const createApplicationFormInitialValues = (): CreateOrUpdateApplicationInput => ({
+  type: 'create',
+  form: {
     name: '',
     repositoryId: '',
     refName: '',
@@ -56,58 +90,46 @@ export const createApplicationFormInitialValues = (): CreateOrUpdateApplicationI
     websites: [],
     portPublications: [],
     startOnCreate: false,
-  }) satisfies CreateApplicationInput
-
-const createWebsiteSchemaToMessage = (
-  input: v.InferInput<typeof createWebsiteSchema>,
-): PartialMessage<CreateWebsiteRequest> => {
-  const { domain, subdomain, ...rest } = input
-
-  // wildcard domainならsubdomainとdomainを結合
-  const fqdn = input.domain.startsWith('*')
-    ? `${input.subdomain}${input.domain.replace(/\*/g, '')}`
-    : // non-wildcard domainならdomainをそのまま使う
-      input.domain
-
-  return {
-    ...rest,
-    fqdn,
-  }
-}
-
-/** valobot schema -> protobuf message */
-export const convertCreateApplicationInput = (
-  input: CreateOrUpdateApplicationInput,
-): PartialMessage<CreateApplicationRequest> => {
-  if (input.type !== 'create')
-    throw new Error("The type of input passed to convertCreateApplicationInput must be 'create'")
-
-  const { type: _type, config, websites, ...rest } = input
-
-  return {
-    ...rest,
-    config: configSchemaToMessage(input.config),
-    websites: input.websites.map((w) => createWebsiteSchemaToMessage(w)),
-  }
-}
+  },
+})
 
 // --- update application
 
-const ownersSchema = v.array(v.string())
+const ownersSchema = v.pipe(
+  v.array(v.string()),
+  v.transform(
+    (input): PartialMessage<UpdateApplicationRequest_UpdateOwners> => ({
+      ownerIds: input,
+    }),
+  ),
+)
 
-export const updateApplicationSchema = v.object({
-  type: v.literal('update'),
-  id: v.string(),
-  name: v.optional(v.pipe(v.string(), v.nonEmpty('Enter Application Name'))),
-  repositoryId: v.optional(v.pipe(v.string(), v.nonEmpty('Enter Repository ID'))),
-  refName: v.optional(v.pipe(v.string(), v.nonEmpty('Enter Branch Name'))),
-  config: v.optional(applicationConfigSchema),
-  websites: v.optional(v.array(createWebsiteSchema)),
-  portPublications: v.optional(v.array(portPublicationSchema)),
-  ownerIds: v.optional(ownersSchema),
-})
-
-type UpdateApplicationInput = v.InferInput<typeof updateApplicationSchema>
+export const updateApplicationSchema = v.pipe(
+  v.object({
+    id: v.string(),
+    name: v.optional(v.pipe(v.string(), v.nonEmpty('Enter Application Name'))),
+    repositoryId: v.optional(v.pipe(v.string(), v.nonEmpty('Enter Repository ID'))),
+    refName: v.optional(v.pipe(v.string(), v.nonEmpty('Enter Branch Name'))),
+    config: v.optional(applicationConfigSchema),
+    websites: v.optional(v.array(createWebsiteSchema)),
+    portPublications: v.optional(v.array(portPublicationSchema)),
+    ownerIds: v.optional(ownersSchema),
+  }),
+  v.transform(
+    (input): PartialMessage<UpdateApplicationRequest> => ({
+      id: input.id,
+      name: input.name,
+      repositoryId: input.repositoryId,
+      refName: input.refName,
+      config: input.config,
+      websites: {
+        websites: input.websites,
+      },
+      portPublications: input.portPublications ? { portPublications: input.portPublications } : undefined,
+      ownerIds: input.ownerIds,
+    }),
+  ),
+)
 
 const extractSubdomain = (
   fqdn: string,
@@ -160,9 +182,9 @@ const websiteMessageToSchema = (website: Website): v.InferInput<typeof createWeb
   }
 }
 
-export const updateApplicationFormInitialValues = (input: Application): CreateOrUpdateApplicationInput => {
-  return {
-    type: 'update',
+export const updateApplicationFormInitialValues = (input: Application): CreateOrUpdateApplicationInput => ({
+  type: 'update',
+  form: {
     id: input.id,
     name: input.name,
     repositoryId: input.repositoryId,
@@ -171,36 +193,39 @@ export const updateApplicationFormInitialValues = (input: Application): CreateOr
     websites: input.websites.map((w) => websiteMessageToSchema(w)),
     portPublications: input.portPublications,
     ownerIds: input.ownerIds,
-  } satisfies UpdateApplicationInput
-}
+  },
+})
 
-/** valobot schema -> protobuf message */
-export const convertUpdateApplicationInput = (
-  input: CreateOrUpdateApplicationInput,
-): PartialMessage<UpdateApplicationRequest> => {
-  if (input.type !== 'update')
-    throw new Error("The type of input passed to convertUpdateApplicationInput must be 'create'")
-
-  return {
-    id: input.id,
-    name: input.name,
-    repositoryId: input.repositoryId,
-    refName: input.refName,
-    config: input.config ? configSchemaToMessage(input.config) : undefined,
-    websites: input.websites
-      ? {
-          websites: input.websites?.map((w) => createWebsiteSchemaToMessage(w)),
-        }
-      : undefined,
-    portPublications: input.portPublications ? { portPublications: input.portPublications } : undefined,
-    ownerIds: input.ownerIds
-      ? {
-          ownerIds: input.ownerIds,
-        }
-      : undefined,
-  }
-}
-
-export const createOrUpdateApplicationSchema = v.variant('type', [createApplicationSchema, updateApplicationSchema])
+export const createOrUpdateApplicationSchema = v.variant('type', [
+  v.object({
+    type: v.literal('create'),
+    form: createApplicationSchema,
+  }),
+  v.object({
+    type: v.literal('update'),
+    form: updateApplicationSchema,
+  }),
+])
 
 export type CreateOrUpdateApplicationInput = v.InferInput<typeof createOrUpdateApplicationSchema>
+export type CreateOrUpdateApplicationOutput = v.InferOutput<typeof createOrUpdateApplicationSchema>
+
+export const handleSubmitCreateApplicationForm = (
+  input: CreateOrUpdateApplicationInput,
+  handler: (output: CreateOrUpdateApplicationOutput['form']) => Promise<unknown>,
+) => {
+  const result = v.parse(createOrUpdateApplicationSchema, input)
+  if (result.type !== 'create')
+    throw new Error('The type of input passed to handleSubmitCreateApplicationForm must be "create"')
+  return handler(result.form)
+}
+
+export const handleSubmitUpdateApplicationForm = (
+  input: CreateOrUpdateApplicationInput,
+  handler: (output: CreateOrUpdateApplicationOutput['form']) => Promise<unknown>,
+) => {
+  const result = v.parse(createOrUpdateApplicationSchema, input)
+  if (result.type !== 'update')
+    throw new Error('The type of input passed to handleSubmitCreateApplicationForm must be "update"')
+  return handler(result.form)
+}

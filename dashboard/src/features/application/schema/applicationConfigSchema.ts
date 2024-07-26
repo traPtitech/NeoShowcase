@@ -14,6 +14,27 @@ const staticConfigSchema = v.object({
   spa: v.boolean(),
 })
 
+const deployConfigSchema = v.pipe(
+  v.optional(
+    v.variant('type', [
+      v.object({
+        type: v.literal('runtime'),
+        value: v.object({
+          runtime: runtimeConfigSchema,
+        }),
+      }),
+      v.object({
+        type: v.literal('static'),
+        value: v.object({
+          static: staticConfigSchema,
+        }),
+      }),
+    ]),
+  ),
+  // アプリ作成時には最初undefinedになっているが、submit時にはundefinedで無い必要がある
+  v.check((input) => !!input, 'Select Deploy Type'),
+)
+
 const buildpackConfigSchema = v.object({
   context: v.string(),
 })
@@ -26,58 +47,176 @@ const dockerfileConfigSchema = v.object({
   context: v.string(),
 })
 
-export const applicationConfigSchema = v.object({
-  deployConfig: v.pipe(
-    v.optional(
-      v.variant('type', [
-        v.object({
-          type: v.literal('runtime'),
-          value: v.object({
-            runtime: runtimeConfigSchema,
-          }),
+const buildConfigSchema = v.pipe(
+  v.optional(
+    v.variant('type', [
+      v.object({
+        type: v.literal('buildpack'),
+        value: v.object({
+          buildpack: buildpackConfigSchema,
         }),
-        v.object({
-          type: v.literal('static'),
-          value: v.object({
-            static: staticConfigSchema,
-          }),
+      }),
+      v.object({
+        type: v.literal('cmd'),
+        value: v.object({
+          cmd: cmdConfigSchema,
         }),
-      ]),
-    ),
-    // アプリ作成時には最初undefinedになっているが、submit時にはundefinedで無い必要がある
-    v.check((input) => !!input, 'Select Deploy Type'),
+      }),
+      v.object({
+        type: v.literal('dockerfile'),
+        value: v.object({
+          dockerfile: dockerfileConfigSchema,
+        }),
+      }),
+    ]),
   ),
-  buildConfig: v.pipe(
-    v.optional(
-      v.variant('type', [
-        v.object({
-          type: v.literal('buildpack'),
-          value: v.object({
-            buildpack: buildpackConfigSchema,
-          }),
-        }),
-        v.object({
-          type: v.literal('cmd'),
-          value: v.object({
-            cmd: cmdConfigSchema,
-          }),
-        }),
-        v.object({
-          type: v.literal('dockerfile'),
-          value: v.object({
-            dockerfile: dockerfileConfigSchema,
-          }),
-        }),
-      ]),
-    ),
-    // アプリ作成時には最初undefinedになっているが、submit時にはundefinedで無い必要がある
-    v.check((input) => !!input, 'Select Build Type'),
-  ),
-})
+  // アプリ作成時には最初undefinedになっているが、submit時にはundefinedで無い必要がある
+  v.check((input) => !!input, 'Select Build Type'),
+)
+
+export const applicationConfigSchema = v.pipe(
+  v.object({
+    deployConfig: deployConfigSchema,
+    buildConfig: buildConfigSchema,
+  }),
+  v.transform((input): PartialMessage<ApplicationConfig> => {
+    return match([input.deployConfig, input.buildConfig])
+      .returnType<PartialMessage<ApplicationConfig>>()
+      .with(
+        [
+          {
+            type: 'runtime',
+          },
+          {
+            type: 'buildpack',
+          },
+        ],
+        ([deployConfig, buildConfig]) => {
+          return {
+            buildConfig: {
+              case: 'runtimeBuildpack',
+              value: {
+                ...buildConfig.value.buildpack,
+                runtimeConfig: deployConfig.value.runtime,
+              },
+            },
+          }
+        },
+      )
+      .with(
+        [
+          {
+            type: 'runtime',
+          },
+          {
+            type: 'cmd',
+          },
+        ],
+        ([deployConfig, buildConfig]) => {
+          return {
+            buildConfig: {
+              case: 'runtimeCmd',
+              value: {
+                ...buildConfig.value.cmd,
+                runtimeConfig: deployConfig.value.runtime,
+              },
+            },
+          }
+        },
+      )
+      .with(
+        [
+          {
+            type: 'runtime',
+          },
+          {
+            type: 'dockerfile',
+          },
+        ],
+        ([deployConfig, buildConfig]) => {
+          return {
+            buildConfig: {
+              case: 'runtimeDockerfile',
+              value: {
+                ...buildConfig.value.dockerfile,
+                runtimeConfig: deployConfig.value.runtime,
+              },
+            },
+          }
+        },
+      )
+      .with(
+        [
+          {
+            type: 'static',
+          },
+          {
+            type: 'buildpack',
+          },
+        ],
+        ([deployConfig, buildConfig]) => {
+          return {
+            buildConfig: {
+              case: 'staticBuildpack',
+              value: {
+                ...buildConfig.value.buildpack,
+                staticConfig: deployConfig.value.static,
+              },
+            },
+          }
+        },
+      )
+      .with(
+        [
+          {
+            type: 'static',
+          },
+          {
+            type: 'cmd',
+          },
+        ],
+        ([deployConfig, buildConfig]) => {
+          return {
+            buildConfig: {
+              case: 'staticCmd',
+              value: {
+                ...buildConfig.value.cmd,
+                staticConfig: deployConfig.value.static,
+              },
+            },
+          }
+        },
+      )
+      .with(
+        [
+          {
+            type: 'static',
+          },
+          {
+            type: 'dockerfile',
+          },
+        ],
+        ([deployConfig, buildConfig]) => {
+          return {
+            buildConfig: {
+              case: 'staticDockerfile',
+              value: {
+                ...buildConfig.value.dockerfile,
+                staticConfig: deployConfig.value.static,
+              },
+            },
+          }
+        },
+      )
+      .otherwise(() => ({
+        buildConfig: { case: undefined },
+      }))
+  }),
+)
 
 export type ApplicationConfigInput = v.InferInput<typeof applicationConfigSchema>
 
-/** protobuf message -> valobot schema */
+/** protobuf message -> valobot schema input */
 export const configMessageToSchema = (config: ApplicationConfig): ApplicationConfigInput => {
   let deployConfig: ApplicationConfigInput['deployConfig']
   const _case = config.buildConfig.case
@@ -162,150 +301,8 @@ export const configMessageToSchema = (config: ApplicationConfig): ApplicationCon
     }
   }
 
-  console.log({
-    deployConfig,
-    buildConfig,
-  })
-
   return {
     deployConfig,
     buildConfig,
   }
-}
-
-/** valobot schema -> protobuf message */
-export const configSchemaToMessage = (
-  input: v.InferInput<typeof applicationConfigSchema>,
-): PartialMessage<ApplicationConfig> => {
-  return match([input.deployConfig, input.buildConfig])
-    .returnType<PartialMessage<ApplicationConfig>>()
-    .with(
-      [
-        {
-          type: 'runtime',
-        },
-        {
-          type: 'buildpack',
-        },
-      ],
-      ([deployConfig, buildConfig]) => {
-        return {
-          buildConfig: {
-            case: 'runtimeBuildpack',
-            value: {
-              ...buildConfig.value.buildpack,
-              runtimeConfig: deployConfig.value.runtime,
-            },
-          },
-        }
-      },
-    )
-    .with(
-      [
-        {
-          type: 'runtime',
-        },
-        {
-          type: 'cmd',
-        },
-      ],
-      ([deployConfig, buildConfig]) => {
-        return {
-          buildConfig: {
-            case: 'runtimeCmd',
-            value: {
-              ...buildConfig.value.cmd,
-              runtimeConfig: deployConfig.value.runtime,
-            },
-          },
-        }
-      },
-    )
-    .with(
-      [
-        {
-          type: 'runtime',
-        },
-        {
-          type: 'dockerfile',
-        },
-      ],
-      ([deployConfig, buildConfig]) => {
-        return {
-          buildConfig: {
-            case: 'runtimeDockerfile',
-            value: {
-              ...buildConfig.value.dockerfile,
-              runtimeConfig: deployConfig.value.runtime,
-            },
-          },
-        }
-      },
-    )
-    .with(
-      [
-        {
-          type: 'static',
-        },
-        {
-          type: 'buildpack',
-        },
-      ],
-      ([deployConfig, buildConfig]) => {
-        return {
-          buildConfig: {
-            case: 'staticBuildpack',
-            value: {
-              ...buildConfig.value.buildpack,
-              staticConfig: deployConfig.value.static,
-            },
-          },
-        }
-      },
-    )
-    .with(
-      [
-        {
-          type: 'static',
-        },
-        {
-          type: 'cmd',
-        },
-      ],
-      ([deployConfig, buildConfig]) => {
-        return {
-          buildConfig: {
-            case: 'staticCmd',
-            value: {
-              ...buildConfig.value.cmd,
-              staticConfig: deployConfig.value.static,
-            },
-          },
-        }
-      },
-    )
-    .with(
-      [
-        {
-          type: 'static',
-        },
-        {
-          type: 'dockerfile',
-        },
-      ],
-      ([deployConfig, buildConfig]) => {
-        return {
-          buildConfig: {
-            case: 'staticDockerfile',
-            value: {
-              ...buildConfig.value.dockerfile,
-              staticConfig: deployConfig.value.static,
-            },
-          },
-        }
-      },
-    )
-    .otherwise(() => ({
-      buildConfig: { case: undefined },
-    }))
 }

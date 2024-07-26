@@ -48,36 +48,41 @@ describe('Create Application Schema', () => {
 
   const base = {
     type: 'create',
-    name: 'test application',
-    repositoryId: 'testRepoId',
-    refName: 'main',
-    config: baseConfig,
-    websites: [baseWebsite],
-    portPublications: [basePortPublication],
-    startOnCreate: true,
+    form: {
+      name: 'test application',
+      repositoryId: 'testRepoId',
+      refName: 'main',
+      config: baseConfig,
+      websites: [baseWebsite],
+      portPublications: [basePortPublication],
+      startOnCreate: true,
+    },
   }
 
   test('ok: valid input (runtime config)', () => {
     expect(
       validator({
         ...base,
-        config: {
-          deployConfig: {
-            type: 'runtime',
-            value: {
-              runtime: {
-                useMariadb: false,
-                useMongodb: false,
-                entrypoint: '.',
-                command: "echo 'test'",
+        form: {
+          ...base.form,
+          config: {
+            deployConfig: {
+              type: 'runtime',
+              value: {
+                runtime: {
+                  useMariadb: false,
+                  useMongodb: false,
+                  entrypoint: '.',
+                  command: "echo 'test'",
+                },
               },
             },
-          },
-          buildConfig: {
-            type: 'buildpack',
-            value: {
-              buildpack: {
-                context: '',
+            buildConfig: {
+              type: 'buildpack',
+              value: {
+                buildpack: {
+                  context: '',
+                },
               },
             },
           },
@@ -90,21 +95,24 @@ describe('Create Application Schema', () => {
     expect(
       validator({
         ...base,
-        config: {
-          deployConfig: {
-            type: 'static',
-            value: {
-              static: {
-                artifactPath: '.',
-                spa: false,
+        form: {
+          ...base.form,
+          config: {
+            deployConfig: {
+              type: 'static',
+              value: {
+                static: {
+                  artifactPath: '.',
+                  spa: false,
+                },
               },
             },
-          },
-          buildConfig: {
-            type: 'buildpack',
-            value: {
-              buildpack: {
-                context: '',
+            buildConfig: {
+              type: 'buildpack',
+              value: {
+                buildpack: {
+                  context: '',
+                },
               },
             },
           },
@@ -117,23 +125,26 @@ describe('Create Application Schema', () => {
     expect(
       validator({
         ...base,
-        config: {
-          deployConfig: {
-            type: 'runtime',
-            value: {
-              runtime: {
-                useMariadb: false,
-                useMongodb: false,
-                entrypoint: '.',
-                command: "echo 'test'",
+        form: {
+          ...base.form,
+          config: {
+            deployConfig: {
+              type: 'runtime',
+              value: {
+                runtime: {
+                  useMariadb: false,
+                  useMongodb: false,
+                  entrypoint: '.',
+                  command: "echo 'test'",
+                },
               },
             },
-          },
-          buildConfig: {
-            type: 'buildpack',
-            value: {
-              buildpack: {
-                context: '',
+            buildConfig: {
+              type: 'buildpack',
+              value: {
+                buildpack: {
+                  context: '',
+                },
               },
             },
           },
@@ -146,24 +157,27 @@ describe('Create Application Schema', () => {
     expect(
       validator({
         ...base,
-        config: {
-          deployConfig: {
-            type: 'runtime',
-            value: {
-              runtime: {
-                useMariadb: false,
-                useMongodb: false,
-                entrypoint: '.',
-                command: "echo 'test'",
+        form: {
+          ...base.form,
+          config: {
+            deployConfig: {
+              type: 'runtime',
+              value: {
+                runtime: {
+                  useMariadb: false,
+                  useMongodb: false,
+                  entrypoint: '.',
+                  command: "echo 'test'",
+                },
               },
             },
-          },
-          buildConfig: {
-            type: 'dockerfile',
-            value: {
-              dockerfile: {
-                dockerfileName: 'Dockerfile',
-                context: '',
+            buildConfig: {
+              type: 'dockerfile',
+              value: {
+                dockerfile: {
+                  dockerfileName: 'Dockerfile',
+                  context: '',
+                },
               },
             },
           },
@@ -176,24 +190,27 @@ describe('Create Application Schema', () => {
     expect(
       validator({
         ...base,
-        config: {
-          deployConfig: {
-            type: 'runtime',
-            value: {
-              runtime: {
-                useMariadb: false,
-                useMongodb: false,
-                entrypoint: '.',
-                command: "echo 'test'",
+        form: {
+          ...base.form,
+          config: {
+            deployConfig: {
+              type: 'runtime',
+              value: {
+                runtime: {
+                  useMariadb: false,
+                  useMongodb: false,
+                  entrypoint: '.',
+                  command: "echo 'test'",
+                },
               },
             },
-          },
-          buildConfig: {
-            type: 'cmd',
-            value: {
-              cmd: {
-                baseImage: 'node:22-alpine',
-                buildCmd: 'npm run build',
+            buildConfig: {
+              type: 'cmd',
+              value: {
+                cmd: {
+                  baseImage: 'node:22-alpine',
+                  buildCmd: 'npm run build',
+                },
               },
             },
           },
@@ -206,12 +223,18 @@ describe('Create Application Schema', () => {
     expect(
       validator({
         ...base,
-        name: '',
+        form: {
+          ...base.form,
+          name: '',
+        },
       }).issues,
     ).toEqual([
       expect.objectContaining({
         message: 'Enter Application Name',
         path: [
+          expect.objectContaining({
+            key: 'form',
+          }),
           expect.objectContaining({
             key: 'name',
           }),
@@ -224,12 +247,18 @@ describe('Create Application Schema', () => {
     expect(
       validator({
         ...base,
-        refName: '',
+        form: {
+          ...base.form,
+          refName: '',
+        },
       }).issues,
     ).toEqual([
       expect.objectContaining({
         message: 'Enter Branch Name',
         path: [
+          expect.objectContaining({
+            key: 'form',
+          }),
           expect.objectContaining({
             key: 'refName',
           }),
@@ -237,6 +266,8 @@ describe('Create Application Schema', () => {
       }),
     ])
   })
+
+  // TODO: add ng config test
 })
 
 describe('Update Application Schema', () => {
@@ -244,10 +275,12 @@ describe('Update Application Schema', () => {
     expect(
       validator({
         type: 'update',
-        id: 'testAppId',
-        name: 'test application',
-        repositoryId: 'testRepoId',
-        refName: 'main',
+        form: {
+          id: 'testAppId',
+          name: 'test application',
+          repositoryId: 'testRepoId',
+          refName: 'main',
+        },
       }),
     ).toEqual(expect.objectContaining({ success: true }))
   })
@@ -256,15 +289,20 @@ describe('Update Application Schema', () => {
     expect(
       validator({
         type: 'update',
-        id: 'testAppId',
-        name: '',
-        repositoryId: 'testRepoId',
-        refName: 'main',
+        form: {
+          id: 'testAppId',
+          name: '',
+          repositoryId: 'testRepoId',
+          refName: 'main',
+        },
       }).issues,
     ).toEqual([
       expect.objectContaining({
         message: 'Enter Application Name',
         path: [
+          expect.objectContaining({
+            key: 'form',
+          }),
           expect.objectContaining({
             key: 'name',
           }),
@@ -277,15 +315,20 @@ describe('Update Application Schema', () => {
     expect(
       validator({
         type: 'update',
-        id: 'testAppId',
-        name: 'test application',
-        repositoryId: 'testRepoId',
-        refName: '',
+        form: {
+          id: 'testAppId',
+          name: 'test application',
+          repositoryId: 'testRepoId',
+          refName: '',
+        },
       }).issues,
     ).toEqual([
       expect.objectContaining({
         message: 'Enter Branch Name',
         path: [
+          expect.objectContaining({
+            key: 'form',
+          }),
           expect.objectContaining({
             key: 'refName',
           }),
