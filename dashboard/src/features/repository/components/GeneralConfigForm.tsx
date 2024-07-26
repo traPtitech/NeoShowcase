@@ -8,7 +8,7 @@ import FormBox from '/@/components/layouts/FormBox'
 import { useRepositoryForm } from '/@/features/repository/provider/repositoryFormProvider'
 import {
   type CreateOrUpdateRepositoryInput,
-  convertUpdateRepositoryInput,
+  handleSubmitRepositoryForm,
   updateRepositoryFormInitialValues,
 } from '/@/features/repository/schema/repositorySchema'
 import { client, handleAPIError } from '/@/libs/api'
@@ -32,15 +32,16 @@ const GeneralConfigForm: Component<Props> = (props) => {
     )
   })
 
-  const handleSubmit: SubmitHandler<CreateOrUpdateRepositoryInput> = async (values) => {
-    try {
-      await client.updateRepository(convertUpdateRepositoryInput(values))
-      toast.success('リポジトリ名を更新しました')
-      await props.refetchRepo()
-    } catch (e) {
-      handleAPIError(e, 'リポジトリ名の更新に失敗しました')
-    }
-  }
+  const handleSubmit: SubmitHandler<CreateOrUpdateRepositoryInput> = (values) =>
+    handleSubmitRepositoryForm(values, async (output) => {
+      try {
+        await client.updateRepository(output)
+        toast.success('リポジトリ名を更新しました')
+        await props.refetchRepo()
+      } catch (e) {
+        handleAPIError(e, 'リポジトリ名の更新に失敗しました')
+      }
+    })
 
   const discardChanges = () => {
     reset(formStore)
@@ -51,12 +52,12 @@ const GeneralConfigForm: Component<Props> = (props) => {
       <Field of={formStore} name="type">
         {() => null}
       </Field>
-      <Field of={formStore} name="id">
+      <Field of={formStore} name="form.id">
         {() => null}
       </Field>
       <FormBox.Container>
         <FormBox.Forms>
-          <Field of={formStore} name="name">
+          <Field of={formStore} name="form.name">
             {(field, fieldProps) => (
               <TextField
                 label="Repository Name"

@@ -9,8 +9,8 @@ import { TextField } from '/@/components/UI/TextField'
 import { useRepositoryForm } from '/@/features/repository/provider/repositoryFormProvider'
 import {
   type CreateOrUpdateRepositoryInput,
-  convertCreateRepositoryInput,
   createRepositoryFormInitialValues,
+  handleSubmitRepositoryForm,
 } from '/@/features/repository/schema/repositorySchema'
 import { client, handleAPIError } from '/@/libs/api'
 import { extractRepositoryNameFromURL } from '/@/libs/application'
@@ -53,35 +53,38 @@ const CreateForm: Component = () => {
 
   // URLからリポジトリ名, 認証方法を自動入力
   createEffect(() => {
-    const url = getValue(formStore, 'url')
+    const url = getValue(formStore, 'form.url')
     if (url === undefined || url === '') return
 
     // リポジトリ名を自動入力
     const repositoryName = extractRepositoryNameFromURL(url)
-    setValue(formStore, 'name', repositoryName)
+    setValue(formStore, 'form.name', repositoryName)
 
     // 認証方法を自動入力
     const isHTTPFormat = url.startsWith('http://') || url.startsWith('https://')
     if (!isHTTPFormat) {
       // Assume SSH or Git Protocol format
       setValues(formStore, {
-        auth: {
-          method: 'ssh',
+        form: {
+          auth: {
+            method: 'ssh',
+          },
         },
       })
     }
   })
 
-  const handleSubmit: SubmitHandler<CreateOrUpdateRepositoryInput> = async (values) => {
-    try {
-      const res = await client.createRepository(convertCreateRepositoryInput(values))
-      toast.success('リポジトリを登録しました')
-      // 新規アプリ作成ページに遷移
-      navigate(`/apps/new?repositoryID=${res.id}`)
-    } catch (e) {
-      return handleAPIError(e, 'リポジトリの登録に失敗しました')
-    }
-  }
+  const handleSubmit: SubmitHandler<CreateOrUpdateRepositoryInput> = (values) =>
+    handleSubmitRepositoryForm(values, async (output) => {
+      try {
+        const res = await client.createRepository(output)
+        toast.success('リポジトリを登録しました')
+        // 新規アプリ作成ページに遷移
+        navigate(`/apps/new?repositoryID=${res.id}`)
+      } catch (e) {
+        return handleAPIError(e, 'リポジトリの登録に失敗しました')
+      }
+    })
 
   return (
     <Form of={formStore} onSubmit={handleSubmit}>
@@ -90,7 +93,7 @@ const CreateForm: Component = () => {
       </Field>
       <Container>
         <InputsContainer>
-          <Field of={formStore} name="url">
+          <Field of={formStore} name="form.url">
             {(field, fieldProps) => (
               <TextField
                 label="Repository URL"
@@ -101,7 +104,7 @@ const CreateForm: Component = () => {
               />
             )}
           </Field>
-          <Field of={formStore} name="name">
+          <Field of={formStore} name="form.name">
             {(field, fieldProps) => (
               <TextField
                 label="Repository Name"
@@ -112,7 +115,7 @@ const CreateForm: Component = () => {
               />
             )}
           </Field>
-          <AuthMethodField formStore={formStore} />
+          <AuthMethodField />
         </InputsContainer>
         <Button
           variants="primary"

@@ -8,7 +8,7 @@ import FormBox from '/@/components/layouts/FormBox'
 import { useRepositoryForm } from '/@/features/repository/provider/repositoryFormProvider'
 import {
   type CreateOrUpdateRepositoryInput,
-  convertUpdateRepositoryInput,
+  handleSubmitRepositoryForm,
   updateRepositoryFormInitialValues,
 } from '/@/features/repository/schema/repositorySchema'
 import { client, handleAPIError } from '/@/libs/api'
@@ -33,15 +33,16 @@ const AuthConfigForm: Component<Props> = (props) => {
     )
   })
 
-  const handleSubmit: SubmitHandler<CreateOrUpdateRepositoryInput> = async (values) => {
-    try {
-      await client.updateRepository(convertUpdateRepositoryInput(values))
-      toast.success('リポジトリの設定を更新しました')
-      await props.refetchRepo()
-    } catch (e) {
-      handleAPIError(e, 'リポジトリの設定の更新に失敗しました')
-    }
-  }
+  const handleSubmit: SubmitHandler<CreateOrUpdateRepositoryInput> = (values) =>
+    handleSubmitRepositoryForm(values, async (output) => {
+      try {
+        await client.updateRepository(output)
+        toast.success('リポジトリの設定を更新しました')
+        await props.refetchRepo()
+      } catch (e) {
+        handleAPIError(e, 'リポジトリの設定の更新に失敗しました')
+      }
+    })
 
   const discardChanges = () => {
     reset(formStore)
@@ -52,12 +53,12 @@ const AuthConfigForm: Component<Props> = (props) => {
       <Field of={formStore} name="type">
         {() => null}
       </Field>
-      <Field of={formStore} name="id">
+      <Field of={formStore} name="form.id">
         {() => null}
       </Field>
       <FormBox.Container>
         <FormBox.Forms>
-          <Field of={formStore} name="url">
+          <Field of={formStore} name="form.url">
             {(field, fieldProps) => (
               <TextField
                 label="Repository URL"
@@ -68,7 +69,7 @@ const AuthConfigForm: Component<Props> = (props) => {
               />
             )}
           </Field>
-          <AuthMethodField formStore={formStore} />
+          <AuthMethodField />
         </FormBox.Forms>
         <FormBox.Actions>
           <Show when={formStore.dirty && !formStore.submitting}>

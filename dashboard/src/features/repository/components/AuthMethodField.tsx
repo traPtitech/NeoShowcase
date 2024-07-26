@@ -1,5 +1,5 @@
 import { styled } from '@macaron-css/solid'
-import { Field, type FormStore, getValue, setValues } from '@modular-forms/solid'
+import { Field, getValue, setValues } from '@modular-forms/solid'
 import { type Component, Match, Show, Suspense, Switch, createEffect, createResource, createSignal } from 'solid-js'
 import { Button } from '/@/components/UI/Button'
 import { MaterialSymbols } from '/@/components/UI/MaterialSymbols'
@@ -9,6 +9,7 @@ import { RadioGroup, type RadioOption } from '/@/components/templates/RadioGroup
 import { client, systemInfo } from '/@/libs/api'
 import { colorVars, textVars } from '/@/theme'
 import { TextField } from '../../../components/UI/TextField'
+import { useRepositoryForm } from '../provider/repositoryFormProvider'
 import type { CreateOrUpdateRepositoryInput } from '../schema/repositorySchema'
 
 const SshKeyContainer = styled('div', {
@@ -58,18 +59,18 @@ const VisibilityButton = styled('button', {
 })
 
 type Props = {
-  formStore: FormStore<CreateOrUpdateRepositoryInput>
   readonly?: boolean
 }
 
-const authMethods: RadioOption<NonNullable<CreateOrUpdateRepositoryInput['auth']>['method']>[] = [
+const authMethods: RadioOption<NonNullable<CreateOrUpdateRepositoryInput['form']['auth']>['method']>[] = [
   { label: '認証を使用しない', value: 'none' },
   { label: 'BASIC認証', value: 'basic' },
   { label: 'SSH公開鍵認証', value: 'ssh' },
 ]
 
 const AuthMethodField: Component<Props> = (props) => {
-  const authMethod = () => getValue(props.formStore, 'auth.method')
+  const { formStore } = useRepositoryForm()
+  const authMethod = () => getValue(formStore, 'form.auth.method')
 
   const [showPassword, setShowPassword] = createSignal(false)
   const [useTmpKey, setUseTmpKey] = createSignal(false)
@@ -79,11 +80,13 @@ const AuthMethodField: Component<Props> = (props) => {
   )
   createEffect(() => {
     if (tmpKey.latest !== undefined) {
-      setValues(props.formStore, {
-        auth: {
-          value: {
-            ssh: {
-              keyId: tmpKey().keyId,
+      setValues(formStore, {
+        form: {
+          auth: {
+            value: {
+              ssh: {
+                keyId: tmpKey().keyId,
+              },
             },
           },
         },
@@ -94,7 +97,7 @@ const AuthMethodField: Component<Props> = (props) => {
 
   return (
     <>
-      <Field of={props.formStore} name="auth.method">
+      <Field of={formStore} name="form.auth.method">
         {(field, fieldProps) => (
           <RadioGroup
             label="認証方法"
@@ -108,7 +111,7 @@ const AuthMethodField: Component<Props> = (props) => {
       </Field>
       <Switch>
         <Match when={authMethod() === 'basic'}>
-          <Field of={props.formStore} name="auth.value.basic.username">
+          <Field of={formStore} name="form.auth.value.basic.username">
             {(field, fieldProps) => (
               <TextField
                 label="UserName"
@@ -120,7 +123,7 @@ const AuthMethodField: Component<Props> = (props) => {
               />
             )}
           </Field>
-          <Field of={props.formStore} name="auth.value.basic.password">
+          <Field of={formStore} name="form.auth.value.basic.password">
             {(field, fieldProps) => (
               <TextField
                 label="Password"
@@ -142,7 +145,7 @@ const AuthMethodField: Component<Props> = (props) => {
           </Field>
         </Match>
         <Match when={authMethod() === 'ssh'}>
-          <Field of={props.formStore} name="auth.value.ssh.keyId">
+          <Field of={formStore} name="form.auth.value.ssh.keyId">
             {() => (
               <FormItem title="デプロイキーの登録">
                 <Suspense>

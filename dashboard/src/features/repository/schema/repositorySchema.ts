@@ -6,39 +6,66 @@ import {
   type Repository,
   Repository_AuthMethod,
   type UpdateRepositoryRequest,
+  type UpdateRepositoryRequest_UpdateOwners,
 } from '/@/api/neoshowcase/protobuf/gateway_pb'
 
 // --- create repository
 
-const repositoryAuthSchema = v.variant('method', [
-  v.object({
-    method: v.literal('none'),
-    value: v.object({
-      none: v.object({}),
+const repositoryAuthSchema = v.pipe(
+  v.variant('method', [
+    v.object({
+      method: v.literal('none'),
     }),
-  }),
-  v.object({
-    method: v.literal('basic'),
-    value: v.object({
-      basic: v.object({
-        username: v.pipe(v.string(), v.nonEmpty('Enter UserName')),
-        password: v.pipe(v.string(), v.nonEmpty('Enter Password')),
+    v.object({
+      method: v.literal('basic'),
+      value: v.object({
+        basic: v.object({
+          username: v.pipe(v.string(), v.nonEmpty('Enter UserName')),
+          password: v.pipe(v.string(), v.nonEmpty('Enter Password')),
+        }),
       }),
     }),
-  }),
-  v.object({
-    method: v.literal('ssh'),
-    value: v.object({
-      ssh: v.object({
-        keyId: v.optional(v.string()), // undefinedの場合はNeoShowcase全体共通の公開鍵が使用される
+    v.object({
+      method: v.literal('ssh'),
+      value: v.object({
+        ssh: v.object({
+          keyId: v.optional(v.string()), // undefinedの場合はNeoShowcase全体共通の公開鍵が使用される
+        }),
       }),
     }),
+  ]),
+  v.transform((input): PartialMessage<CreateRepositoryAuth> => {
+    switch (input.method) {
+      case 'none': {
+        return {
+          auth: {
+            case: input.method,
+            value: {},
+          },
+        }
+      }
+      case 'basic': {
+        return {
+          auth: {
+            case: input.method,
+            value: input.value.basic,
+          },
+        }
+      }
+      case 'ssh': {
+        return {
+          auth: {
+            case: input.method,
+            value: input.value.ssh,
+          },
+        }
+      }
+    }
   }),
-])
+)
 
 const createRepositorySchema = v.pipe(
   v.object({
-    type: v.literal('create'),
     name: v.pipe(v.string(), v.nonEmpty('Enter Repository Name')),
     url: v.pipe(v.string(), v.nonEmpty('Enter Repository URL')),
     auth: repositoryAuthSchema,
@@ -46,9 +73,9 @@ const createRepositorySchema = v.pipe(
   // Basic認証の場合、URLはhttpsでなければならない
   v.forward(
     v.partialCheck(
-      [['url'], ['auth', 'method']],
+      [['url'], ['auth']],
       (input) => {
-        if (input.auth.method === 'basic') return input.url.startsWith('https')
+        if (input.auth.auth?.case === 'basic') return input.url.startsWith('https')
 
         // 認証方法が basic 以外の場合は常にvalid
         return true
@@ -57,87 +84,51 @@ const createRepositorySchema = v.pipe(
     ),
     ['url'],
   ),
+  v.transform((input): PartialMessage<CreateRepositoryRequest> => {
+    return {
+      name: input.name,
+      url: input.url,
+      auth: input.auth,
+    }
+  }),
 )
-type CreateRepositoryInput = v.InferInput<typeof createRepositorySchema>
 
-export const createRepositoryFormInitialValues = (): CreateOrUpdateRepositoryInput =>
-  ({
-    type: 'create',
+export const createRepositoryFormInitialValues = (): CreateOrUpdateRepositoryInput => ({
+  type: 'create',
+  form: {
     name: '',
     url: '',
     auth: {
       method: 'none',
-      value: {
-        none: {},
-      },
     },
-  }) satisfies CreateRepositoryInput
-
-/** valobot schema -> protobuf message */
-const repositoryAuthSchemaToMessage = (
-  input: v.InferInput<typeof repositoryAuthSchema>,
-): PartialMessage<CreateRepositoryAuth> => {
-  switch (input.method) {
-    case 'none': {
-      return {
-        auth: {
-          case: input.method,
-          value: input.value.none,
-        },
-      }
-    }
-    case 'basic': {
-      return {
-        auth: {
-          case: input.method,
-          value: input.value.basic,
-        },
-      }
-    }
-    case 'ssh': {
-      return {
-        auth: {
-          case: input.method,
-          value: input.value.ssh,
-        },
-      }
-    }
-  }
-}
-
-/** valobot schema -> protobuf message */
-export const convertCreateRepositoryInput = (
-  input: CreateOrUpdateRepositoryInput,
-): PartialMessage<CreateRepositoryRequest> => {
-  if (input.type !== 'create')
-    throw new Error("The type of input passed to convertCreateRepositoryInput must be 'create'")
-
-  return {
-    name: input.name,
-    url: input.url,
-    auth: repositoryAuthSchemaToMessage(input.auth),
-  }
-}
+  },
+})
 
 // --- update repository
 
-const ownersSchema = v.array(v.string())
+const ownersSchema = v.pipe(
+  v.array(v.string()),
+  v.transform(
+    (input): PartialMessage<UpdateRepositoryRequest_UpdateOwners> => ({
+      ownerIds: input,
+    }),
+  ),
+)
 
 export const updateRepositorySchema = v.pipe(
   v.object({
-    type: v.literal('update'),
     id: v.string(),
     name: v.optional(v.pipe(v.string(), v.nonEmpty('Enter Repository Name'))),
     url: v.optional(v.pipe(v.string(), v.nonEmpty('Enter Repository URL'))),
     auth: v.optional(repositoryAuthSchema),
     ownerIds: v.optional(ownersSchema),
   }),
-  // Basic認証の場合、URLはhttpsでなければならない
+  // Basic認証の場合、URLはhttpsで始まる必要がある
   v.forward(
     v.partialCheck(
-      [['url'], ['auth', 'method']],
+      [['url'], ['auth']],
       (input) => {
-        if (input.auth?.method === 'basic') return input.url?.startsWith('https') ?? false
+        if (input.auth?.auth?.case === 'basic') return input.url?.startsWith('https') ?? false
 
         // 認証方法が basic 以外の場合は常にvalid
         return true
@@ -146,19 +137,23 @@ export const updateRepositorySchema = v.pipe(
     ),
     ['url'],
   ),
+  v.transform((input): PartialMessage<UpdateRepositoryRequest> => {
+    return {
+      id: input.id,
+      name: input.name,
+      url: input.url,
+      auth: input.auth,
+      ownerIds: input.ownerIds,
+    }
+  }),
 )
 
-type UpdateRepositoryInput = v.InferInput<typeof updateRepositorySchema>
-
-/** protobuf message -> valobot schema */
+/** protobuf message -> valobot schema input */
 const authMethodToAuthConfig = (method: Repository_AuthMethod): v.InferInput<typeof repositoryAuthSchema> => {
   switch (method) {
     case Repository_AuthMethod.NONE: {
       return {
         method: 'none',
-        value: {
-          none: {},
-        },
       }
     }
     case Repository_AuthMethod.BASIC: {
@@ -177,7 +172,7 @@ const authMethodToAuthConfig = (method: Repository_AuthMethod): v.InferInput<typ
         method: 'ssh',
         value: {
           ssh: {
-            keyId: '',
+            keyId: undefined,
           },
         },
       }
@@ -192,34 +187,34 @@ const authMethodToAuthConfig = (method: Repository_AuthMethod): v.InferInput<typ
 export const updateRepositoryFormInitialValues = (input: Repository): CreateOrUpdateRepositoryInput => {
   return {
     type: 'update',
-    id: input.id,
-    name: input.name,
-    url: input.url,
-    auth: authMethodToAuthConfig(input.authMethod),
-    ownerIds: input.ownerIds,
-  } satisfies UpdateRepositoryInput
-}
-
-/** valobot schema -> protobuf message */
-export const convertUpdateRepositoryInput = (
-  input: CreateOrUpdateRepositoryInput,
-): PartialMessage<UpdateRepositoryRequest> => {
-  if (input.type !== 'update')
-    throw new Error("The type of input passed to convertCreateRepositoryInput must be 'create'")
-
-  return {
-    id: input.id,
-    name: input.name,
-    url: input.url,
-    auth: input.auth ? repositoryAuthSchemaToMessage(input.auth) : undefined,
-    ownerIds: input.ownerIds
-      ? {
-          ownerIds: input.ownerIds,
-        }
-      : undefined,
+    form: {
+      id: input.id,
+      name: input.name,
+      url: input.url,
+      auth: authMethodToAuthConfig(input.authMethod),
+      ownerIds: input.ownerIds,
+    },
   }
 }
 
-export const createOrUpdateRepositorySchema = v.variant('type', [createRepositorySchema, updateRepositorySchema])
+export const createOrUpdateRepositorySchema = v.variant('type', [
+  v.object({
+    type: v.literal('create'),
+    form: createRepositorySchema,
+  }),
+  v.object({
+    type: v.literal('update'),
+    form: updateRepositorySchema,
+  }),
+])
 
 export type CreateOrUpdateRepositoryInput = v.InferInput<typeof createOrUpdateRepositorySchema>
+export type CreateOrUpdateRepositoryOutput = v.InferOutput<typeof createOrUpdateRepositorySchema>
+
+export const handleSubmitRepositoryForm = (
+  input: CreateOrUpdateRepositoryInput,
+  handler: (output: CreateOrUpdateRepositoryOutput['form']) => Promise<unknown>,
+) => {
+  const result = v.parse(createOrUpdateRepositorySchema, input)
+  return handler(result.form)
+}
