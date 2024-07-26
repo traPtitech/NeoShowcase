@@ -8,7 +8,7 @@ import FormBox from '/@/components/layouts/FormBox'
 import { useRepositoryForm } from '/@/features/repository/provider/repositoryFormProvider'
 import {
   type CreateOrUpdateRepositoryInput,
-  handleSubmitRepositoryForm,
+  handleSubmitUpdateRepositoryForm,
   updateRepositoryFormInitialValues,
 } from '/@/features/repository/schema/repositorySchema'
 import { client, handleAPIError } from '/@/libs/api'
@@ -34,7 +34,7 @@ const AuthConfigForm: Component<Props> = (props) => {
   })
 
   const handleSubmit: SubmitHandler<CreateOrUpdateRepositoryInput> = (values) =>
-    handleSubmitRepositoryForm(values, async (output) => {
+    handleSubmitUpdateRepositoryForm(values, async (output) => {
       try {
         await client.updateRepository(output)
         toast.success('リポジトリの設定を更新しました')

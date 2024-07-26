@@ -84,13 +84,13 @@ const createRepositorySchema = v.pipe(
     ),
     ['url'],
   ),
-  v.transform((input): PartialMessage<CreateRepositoryRequest> => {
-    return {
+  v.transform(
+    (input): PartialMessage<CreateRepositoryRequest> => ({
       name: input.name,
       url: input.url,
       auth: input.auth,
-    }
-  }),
+    }),
+  ),
 )
 
 export const createRepositoryFormInitialValues = (): CreateOrUpdateRepositoryInput => ({
@@ -137,15 +137,15 @@ export const updateRepositorySchema = v.pipe(
     ),
     ['url'],
   ),
-  v.transform((input): PartialMessage<UpdateRepositoryRequest> => {
-    return {
+  v.transform(
+    (input): PartialMessage<UpdateRepositoryRequest> => ({
       id: input.id,
       name: input.name,
       url: input.url,
       auth: input.auth,
       ownerIds: input.ownerIds,
-    }
-  }),
+    }),
+  ),
 )
 
 /** protobuf message -> valobot schema input */
@@ -211,10 +211,22 @@ export const createOrUpdateRepositorySchema = v.variant('type', [
 export type CreateOrUpdateRepositoryInput = v.InferInput<typeof createOrUpdateRepositorySchema>
 export type CreateOrUpdateRepositoryOutput = v.InferOutput<typeof createOrUpdateRepositorySchema>
 
-export const handleSubmitRepositoryForm = (
+export const handleSubmitCreateRepositoryForm = (
   input: CreateOrUpdateRepositoryInput,
   handler: (output: CreateOrUpdateRepositoryOutput['form']) => Promise<unknown>,
 ) => {
   const result = v.parse(createOrUpdateRepositorySchema, input)
+  if (result.type !== 'create')
+    throw new Error('The type of input passed to handleSubmitCreateRepositoryForm must be "create"')
+  return handler(result.form)
+}
+
+export const handleSubmitUpdateRepositoryForm = (
+  input: CreateOrUpdateRepositoryInput,
+  handler: (output: CreateOrUpdateRepositoryOutput['form']) => Promise<unknown>,
+) => {
+  const result = v.parse(createOrUpdateRepositorySchema, input)
+  if (result.type !== 'update')
+    throw new Error('The type of input passed to handleSubmitCreateRepositoryForm must be "update"')
   return handler(result.form)
 }

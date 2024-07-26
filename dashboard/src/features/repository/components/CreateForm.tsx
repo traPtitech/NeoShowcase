@@ -10,7 +10,7 @@ import { useRepositoryForm } from '/@/features/repository/provider/repositoryFor
 import {
   type CreateOrUpdateRepositoryInput,
   createRepositoryFormInitialValues,
-  handleSubmitRepositoryForm,
+  handleSubmitCreateRepositoryForm,
 } from '/@/features/repository/schema/repositorySchema'
 import { client, handleAPIError } from '/@/libs/api'
 import { extractRepositoryNameFromURL } from '/@/libs/application'
@@ -75,7 +75,7 @@ const CreateForm: Component = () => {
   })
 
   const handleSubmit: SubmitHandler<CreateOrUpdateRepositoryInput> = (values) =>
-    handleSubmitRepositoryForm(values, async (output) => {
+    handleSubmitCreateRepositoryForm(values, async (output) => {
       try {
         const res = await client.createRepository(output)
         toast.success('リポジトリを登録しました')
