@@ -93,6 +93,8 @@ const createRepositorySchema = v.pipe(
   ),
 )
 
+type CreateRepositoryOutput = v.InferOutput<typeof createRepositorySchema>
+
 export const createRepositoryFormInitialValues = (): CreateOrUpdateRepositoryInput => ({
   type: 'create',
   form: {
@@ -147,6 +149,8 @@ export const updateRepositorySchema = v.pipe(
     }),
   ),
 )
+
+type UpdateRepositoryOutput = v.InferOutput<typeof updateRepositorySchema>
 
 /** protobuf message -> valobot schema input */
 const authMethodToAuthConfig = (method: Repository_AuthMethod): v.InferInput<typeof repositoryAuthSchema> => {
@@ -213,7 +217,7 @@ export type CreateOrUpdateRepositoryOutput = v.InferOutput<typeof createOrUpdate
 
 export const handleSubmitCreateRepositoryForm = (
   input: CreateOrUpdateRepositoryInput,
-  handler: (output: CreateOrUpdateRepositoryOutput['form']) => Promise<unknown>,
+  handler: (output: CreateRepositoryOutput) => Promise<unknown>,
 ) => {
   const result = v.parse(createOrUpdateRepositorySchema, input)
   if (result.type !== 'create')
@@ -223,7 +227,7 @@ export const handleSubmitCreateRepositoryForm = (
 
 export const handleSubmitUpdateRepositoryForm = (
   input: CreateOrUpdateRepositoryInput,
-  handler: (output: CreateOrUpdateRepositoryOutput['form']) => Promise<unknown>,
+  handler: (output: UpdateRepositoryOutput) => Promise<unknown>,
 ) => {
   const result = v.parse(createOrUpdateRepositorySchema, input)
   if (result.type !== 'update')
