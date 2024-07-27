@@ -6,5 +6,4 @@ resources:
   - traefik-role-binding.yaml
   - traefik-stateful-set.yaml
   - traefik-service.yaml
-  - dashboard-service.yaml
   - dashboard-ingress-route.yaml

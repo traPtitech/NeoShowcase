@@ -126,6 +126,10 @@ components:
         type: traefik
         traefik:
           priorityOffset: 0
+      service:
+        ipFamilies:
+          - IPv4
+        ipFamilyPolicy: SingleStack
       tls:
         type: traefik
         traefik:
