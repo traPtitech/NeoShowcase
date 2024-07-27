@@ -140,7 +140,8 @@ func (b *Backend) runtimeSpec(app *domain.RuntimeDesiredState) (*appsv1.Stateful
 			},
 			Spec: v1.ServiceSpec{
 				Type:           "ClusterIP",
-				IPFamilyPolicy: lo.ToPtr(v1.IPFamilyPolicyPreferDualStack),
+				IPFamilies:     b.config.serviceIPFamilies(),
+				IPFamilyPolicy: b.config.serviceIPFamilyPolicy(),
 				Selector:       appSelector(app.App.ID),
 				Ports: ds.Map(cont.Ports, func(port v1.ContainerPort) v1.ServicePort {
 					return v1.ServicePort{
@@ -186,8 +187,10 @@ func (b *Backend) runtimePortService(app *domain.Application, port *domain.PortP
 			Labels:    b.appLabel(app.ID),
 		},
 		Spec: v1.ServiceSpec{
-			Type:     "LoadBalancer",
-			Selector: appSelector(app.ID),
+			Type:           "LoadBalancer",
+			IPFamilies:     b.config.serviceIPFamilies(),
+			IPFamilyPolicy: b.config.serviceIPFamilyPolicy(),
+			Selector:       appSelector(app.ID),
 			Ports: []v1.ServicePort{{
 				Protocol:   protocolMapper.IntoMust(port.Protocol),
 				Port:       int32(port.InternetPort),

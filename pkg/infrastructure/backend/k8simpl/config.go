@@ -181,6 +181,15 @@ type Config struct {
 			PriorityOffset int `mapstructure:"priorityOffset" yaml:"priorityOffset"`
 		} `mapstructure:"traefik" yaml:"traefik"`
 	} `mapstructure:"routing" yaml:"routing"`
+	// Service section defines Service (L4) routing settings.
+	Service struct {
+		// IPFamilies defines ipFamilies field for the service objects.
+		// Allowed values: IPv4, IPv6
+		IPFamilies []v1.IPFamily `mapstructure:"ipFamilies" yaml:"ipFamilies"`
+		// IPFamilyPolicy defines ipFamilyPolicy field for the service objects.
+		// Allowed values: "", "SingleStack", "PreferDualStack", "RequireDualStack"
+		IPFamilyPolicy v1.IPFamilyPolicy `mapstructure:"ipFamilyPolicy" yaml:"ipFamilyPolicy"`
+	}
 	// TLS section defines tls setting for user app ingress.
 	TLS struct {
 		// Type defines which provider is responsible for obtaining http certificates.
@@ -262,6 +271,17 @@ func (c *Config) selectNode(appID string) map[string]string {
 	hex, _ := strconv.ParseUint(hash.XXH3Hex([]byte(appID)), 16, 64)
 	host := c.Scheduling.ForceHosts[hex%uint64(len(c.Scheduling.ForceHosts))]
 	return map[string]string{hostnameNodeSelectorLabel: host}
+}
+
+func (c *Config) serviceIPFamilies() []v1.IPFamily {
+	return c.Service.IPFamilies
+}
+
+func (c *Config) serviceIPFamilyPolicy() *v1.IPFamilyPolicy {
+	if c.Service.IPFamilyPolicy == "" {
+		return nil
+	}
+	return lo.ToPtr(c.Service.IPFamilyPolicy)
 }
 
 var tolerationOperatorMapper = mapper.MustNewValueMapper(map[string]v1.TolerationOperator{
@@ -347,6 +367,22 @@ func (c *Config) Validate() error {
 	default:
 		return errors.New(fmt.Sprintf("k8s.routing.type is invalid: %s", c.Routing.Type))
 	}
+
+	for _, family := range c.Service.IPFamilies {
+		if !lo.Contains([]v1.IPFamily{v1.IPv4Protocol, v1.IPv6Protocol}, family) {
+			return errors.New(fmt.Sprintf("invalid IPFamily %s", family))
+		}
+	}
+	if !lo.Contains([]v1.IPFamilyPolicy{
+		// Allow empty value
+		"",
+		v1.IPFamilyPolicySingleStack,
+		v1.IPFamilyPolicyPreferDualStack,
+		v1.IPFamilyPolicyRequireDualStack,
+	}, c.Service.IPFamilyPolicy) {
+		return errors.New(fmt.Sprintf("invalid IPFamily policy: %s", c.Service.IPFamilyPolicy))
+	}
+
 	switch c.TLS.Type {
 	case tlsTypeTraefik:
 		if err := c.TLS.Traefik.Wildcard.Domains.Validate(); err != nil {
