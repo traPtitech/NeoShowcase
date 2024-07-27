@@ -189,7 +189,7 @@ type Config struct {
 		// IPFamilyPolicy defines ipFamilyPolicy field for the service objects.
 		// Allowed values: "", "SingleStack", "PreferDualStack", "RequireDualStack"
 		IPFamilyPolicy v1.IPFamilyPolicy `mapstructure:"ipFamilyPolicy" yaml:"ipFamilyPolicy"`
-	}
+	} `mapstructure:"service" yaml:"service"`
 	// TLS section defines tls setting for user app ingress.
 	TLS struct {
 		// Type defines which provider is responsible for obtaining http certificates.
