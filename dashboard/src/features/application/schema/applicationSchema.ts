@@ -80,6 +80,8 @@ const createApplicationSchema = v.pipe(
   ),
 )
 
+type CreateApplicationOutput = v.InferOutput<typeof createApplicationSchema>
+
 export const createApplicationFormInitialValues = (): CreateOrUpdateApplicationInput => ({
   type: 'create',
   form: {
@@ -122,14 +124,18 @@ export const updateApplicationSchema = v.pipe(
       repositoryId: input.repositoryId,
       refName: input.refName,
       config: input.config,
-      websites: {
-        websites: input.websites,
-      },
+      websites: input.websites
+        ? {
+            websites: input.websites,
+          }
+        : undefined,
       portPublications: input.portPublications ? { portPublications: input.portPublications } : undefined,
       ownerIds: input.ownerIds,
     }),
   ),
 )
+
+type UpdateApplicationOutput = v.InferOutput<typeof updateApplicationSchema>
 
 const extractSubdomain = (
   fqdn: string,
@@ -212,7 +218,7 @@ export type CreateOrUpdateApplicationOutput = v.InferOutput<typeof createOrUpdat
 
 export const handleSubmitCreateApplicationForm = (
   input: CreateOrUpdateApplicationInput,
-  handler: (output: CreateOrUpdateApplicationOutput['form']) => Promise<unknown>,
+  handler: (output: CreateApplicationOutput) => Promise<unknown>,
 ) => {
   const result = v.parse(createOrUpdateApplicationSchema, input)
   if (result.type !== 'create')
@@ -222,7 +228,7 @@ export const handleSubmitCreateApplicationForm = (
 
 export const handleSubmitUpdateApplicationForm = (
   input: CreateOrUpdateApplicationInput,
-  handler: (output: CreateOrUpdateApplicationOutput['form']) => Promise<unknown>,
+  handler: (output: UpdateApplicationOutput) => Promise<unknown>,
 ) => {
   const result = v.parse(createOrUpdateApplicationSchema, input)
   if (result.type !== 'update')

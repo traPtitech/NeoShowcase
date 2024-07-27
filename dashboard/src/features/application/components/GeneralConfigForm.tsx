@@ -1,5 +1,5 @@
-import { Field, Form, type SubmitHandler, reset } from '@modular-forms/solid'
-import { type Component, Show, createEffect, untrack } from 'solid-js'
+import { Field, Form, type SubmitHandler, getValues, reset, value } from '@modular-forms/solid'
+import { type Component, Show, createEffect, createRenderEffect, untrack } from 'solid-js'
 import toast from 'solid-toast'
 import type { Application, Repository } from '/@/api/neoshowcase/protobuf/gateway_pb'
 import { Button } from '/@/components/UI/Button'
@@ -9,7 +9,7 @@ import { client, handleAPIError } from '/@/libs/api'
 import { useApplicationForm } from '../provider/applicationFormProvider'
 import {
   type CreateOrUpdateApplicationInput,
-  convertUpdateApplicationInput,
+  handleSubmitUpdateApplicationForm,
   updateApplicationFormInitialValues,
 } from '../schema/applicationSchema'
 import BranchField from './BranchField'
@@ -34,17 +34,18 @@ const GeneralConfigForm: Component<Props> = (props) => {
     )
   })
 
-  const handleSubmit: SubmitHandler<CreateOrUpdateApplicationInput> = async (values) => {
-    try {
-      await client.updateApplication(convertUpdateApplicationInput(values))
-      toast.success('アプリケーション設定を更新しました')
-      props.refetchApp()
-      // 非同期でビルドが開始されるので1秒程度待ってから再度リロード
-      setTimeout(props.refetchApp, 1000)
-    } catch (e) {
-      handleAPIError(e, 'アプリケーション設定の更新に失敗しました')
-    }
-  }
+  const handleSubmit: SubmitHandler<CreateOrUpdateApplicationInput> = (values) =>
+    handleSubmitUpdateApplicationForm(values, async (output) => {
+      try {
+        await client.updateApplication(output)
+        toast.success('アプリケーション設定を更新しました')
+        props.refetchApp()
+        // 非同期でビルドが開始されるので1秒程度待ってから再度リロード
+        setTimeout(props.refetchApp, 1000)
+      } catch (e) {
+        handleAPIError(e, 'アプリケーション設定の更新に失敗しました')
+      }
+    })
 
   const discardChanges = () => {
     reset(formStore)
@@ -55,12 +56,12 @@ const GeneralConfigForm: Component<Props> = (props) => {
       <Field of={formStore} name="type">
         {() => null}
       </Field>
-      <Field of={formStore} name="id">
+      <Field of={formStore} name="form.id">
         {() => null}
       </Field>
       <FormBox.Container>
         <FormBox.Forms>
-          <Field of={formStore} name="name">
+          <Field of={formStore} name="form.name">
             {(field, fieldProps) => (
               <TextField
                 label="Application Name"
@@ -72,7 +73,7 @@ const GeneralConfigForm: Component<Props> = (props) => {
               />
             )}
           </Field>
-          <Field of={formStore} name="repositoryId">
+          <Field of={formStore} name="form.repositoryId">
             {(field, fieldProps) => (
               <TextField
                 label="Repository ID"
