@@ -55,7 +55,7 @@ const StaticConfigField: Component<Props> = (props) => {
               { value: 'true', label: 'Yes' },
               { value: 'false', label: 'No' },
             ]}
-            value={field.value}
+            value={field.value ?? 'false'}
             readOnly={props.readonly}
           />
         )}
