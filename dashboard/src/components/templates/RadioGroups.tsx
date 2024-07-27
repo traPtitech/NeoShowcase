@@ -3,7 +3,7 @@ import { style } from '@macaron-css/core'
 import { styled } from '@macaron-css/solid'
 import { For, type JSX, Show, splitProps } from 'solid-js'
 import { colorOverlay } from '/@/libs/colorOverlay'
-import { colorVars, textVars } from '/@/theme'
+import { colorVars, media, textVars } from '/@/theme'
 import { RadioIcon } from '../UI/RadioIcon'
 import { ToolTip, type TooltipProps } from '../UI/ToolTip'
 import { TooltipInfoIcon } from '../UI/TooltipInfoIcon'
@@ -15,10 +15,18 @@ const OptionsContainer = styled('div', {
     display: 'flex',
     gap: '16px',
   },
-  variant: {
+  variants: {
     wrap: {
       true: {
         flexWrap: 'wrap',
+      },
+      false: {
+        flexWrap: 'nowrap',
+        '@media': {
+          [media.mobile]: {
+            flexDirection: 'column',
+          },
+        },
       },
     },
   },
@@ -26,8 +34,12 @@ const OptionsContainer = styled('div', {
     wrap: 'true',
   },
 })
-const itemStyle = style({
+const fullItemStyle = style({
   width: '100%',
+  minWidth: 'min(200px, 100%)',
+})
+const fitItemStyle = style({
+  width: 'fit-content',
   minWidth: 'min(200px, 100%)',
 })
 const labelStyle = style({
@@ -96,6 +108,8 @@ export interface Props<T extends string> {
   options: RadioOption<T>[]
   value?: T
   setValue?: (value: T) => void
+  wrap?: boolean
+  full?: boolean
   required?: boolean
   disabled?: boolean
   readOnly?: boolean
@@ -111,7 +125,7 @@ export const RadioGroup = <T extends string>(props: Props<T>): JSX.Element => {
   const [rootProps, _addedProps, inputProps] = splitProps(
     props,
     ['name', 'value', 'options', 'required', 'disabled', 'readOnly'],
-    ['info', 'tooltip', 'setValue', 'error', 'label'],
+    ['wrap', 'full', 'info', 'tooltip', 'setValue', 'error', 'label'],
   )
 
   return (
@@ -134,10 +148,16 @@ export const RadioGroup = <T extends string>(props: Props<T>): JSX.Element => {
         </TitleContainer>
       </Show>
       <ToolTip {...props.tooltip}>
-        <OptionsContainer>
+        <OptionsContainer wrap={props.wrap}>
           <For each={props.options}>
             {(option) => (
-              <KRadioGroup.Item value={option.value} class={itemStyle}>
+              <KRadioGroup.Item
+                value={option.value}
+                classList={{
+                  [fullItemStyle]: props.full,
+                  [fitItemStyle]: !props.full,
+                }}
+              >
                 <KRadioGroup.ItemInput {...inputProps} />
                 <KRadioGroup.ItemLabel class={labelStyle}>
                   <ItemTitle>

@@ -1,18 +1,18 @@
-import { Field, Form, type SubmitHandler, getValues, reset, value } from '@modular-forms/solid'
-import { type Component, Show, createEffect, createRenderEffect, untrack } from 'solid-js'
+import { Field, Form, type SubmitHandler, reset, setValues } from '@modular-forms/solid'
+import { type Component, Show, createEffect, onMount, untrack } from 'solid-js'
 import toast from 'solid-toast'
 import type { Application, Repository } from '/@/api/neoshowcase/protobuf/gateway_pb'
 import { Button } from '/@/components/UI/Button'
 import { TextField } from '/@/components/UI/TextField'
 import FormBox from '/@/components/layouts/FormBox'
 import { client, handleAPIError } from '/@/libs/api'
-import { useApplicationForm } from '../provider/applicationFormProvider'
+import { useApplicationForm } from '../../provider/applicationFormProvider'
 import {
   type CreateOrUpdateApplicationInput,
   handleSubmitUpdateApplicationForm,
   updateApplicationFormInitialValues,
-} from '../schema/applicationSchema'
-import BranchField from './BranchField'
+} from '../../schema/applicationSchema'
+import BranchField from './general/BranchField'
 
 type Props = {
   app: Application
@@ -24,14 +24,24 @@ type Props = {
 const GeneralConfigForm: Component<Props> = (props) => {
   const { formStore } = useApplicationForm()
 
-  // reset forms when props.app changed
-  createEffect(() => {
+  const discardChanges = () => {
     reset(
       untrack(() => formStore),
       {
         initialValues: updateApplicationFormInitialValues(props.app),
       },
     )
+  }
+
+  // `reset` doesn't work on first render when the Field not rendered
+  // see: https://github.com/fabian-hiller/modular-forms/issues/157#issuecomment-1848567069
+  onMount(() => {
+    setValues(formStore, updateApplicationFormInitialValues(props.app))
+  })
+
+  // reset forms when props.app changed
+  createEffect(() => {
+    discardChanges()
   })
 
   const handleSubmit: SubmitHandler<CreateOrUpdateApplicationInput> = (values) =>
@@ -46,10 +56,6 @@ const GeneralConfigForm: Component<Props> = (props) => {
         handleAPIError(e, 'アプリケーション設定の更新に失敗しました')
       }
     })
-
-  const discardChanges = () => {
-    reset(formStore)
-  }
 
   return (
     <Form of={formStore} onSubmit={handleSubmit}>

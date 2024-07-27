@@ -1,65 +1,74 @@
-import { Field, Form, type SubmitHandler, getValues, reset } from '@modular-forms/solid'
-import { type Component, Show, createEffect, untrack } from 'solid-js'
+import { Field, Form, type SubmitHandler, getValues, reset, setValues } from '@modular-forms/solid'
+import { type Component, Show, createEffect, onMount, untrack } from 'solid-js'
 import toast from 'solid-toast'
-import type { Application, Repository } from '/@/api/neoshowcase/protobuf/gateway_pb'
+import type { Application } from '/@/api/neoshowcase/protobuf/gateway_pb'
 import { Button } from '/@/components/UI/Button'
 import FormBox from '/@/components/layouts/FormBox'
 import { client, handleAPIError } from '/@/libs/api'
-import { useApplicationForm } from '../provider/applicationFormProvider'
+import { useApplicationForm } from '../../provider/applicationFormProvider'
 import {
   type CreateOrUpdateApplicationInput,
-  convertUpdateApplicationInput,
+  handleSubmitUpdateApplicationForm,
   updateApplicationFormInitialValues,
-} from '../schema/applicationSchema'
-import BuildTypeField from './BuildTypeField'
+} from '../../schema/applicationSchema'
+import BuildTypeField from './config/BuildTypeField'
+import ConfigField from './config/ConfigField'
 
 type Props = {
   app: Application
   refetchApp: () => Promise<void>
   hasPermission: boolean
+  disableEditDB?: boolean
 }
 
 const BuildConfigForm: Component<Props> = (props) => {
   const { formStore } = useApplicationForm()
 
-  // reset forms when props.app changed
-  createEffect(() => {
+  const discardChanges = () => {
     reset(
       untrack(() => formStore),
       {
         initialValues: updateApplicationFormInitialValues(props.app),
       },
     )
+  }
+
+  // `reset` doesn't work on first render when the Field not rendered
+  // see: https://github.com/fabian-hiller/modular-forms/issues/157#issuecomment-1848567069
+  onMount(() => {
+    setValues(formStore, updateApplicationFormInitialValues(props.app))
   })
 
-  const handleSubmit: SubmitHandler<CreateOrUpdateApplicationInput> = async (values) => {
-    try {
-      await client.updateApplication(convertUpdateApplicationInput(values))
-      toast.success('アプリケーション設定を更新しました')
-      props.refetchApp()
-      // 非同期でビルドが開始されるので1秒程度待ってから再度リロード
-      setTimeout(props.refetchApp, 1000)
-    } catch (e) {
-      handleAPIError(e, 'アプリケーション設定の更新に失敗しました')
-    }
-  }
+  // reset forms when props.app changed
+  createEffect(() => {
+    discardChanges()
+  })
 
-  const discardChanges = () => {
-    reset(formStore)
-  }
+  const handleSubmit: SubmitHandler<CreateOrUpdateApplicationInput> = (values) =>
+    handleSubmitUpdateApplicationForm(values, async (output) => {
+      try {
+        await client.updateApplication(output)
+        toast.success('アプリケーション設定を更新しました')
+        props.refetchApp()
+        // 非同期でビルドが開始されるので1秒程度待ってから再度リロード
+        setTimeout(props.refetchApp, 1000)
+      } catch (e) {
+        handleAPIError(e, 'アプリケーション設定の更新に失敗しました')
+      }
+    })
 
   return (
     <Form of={formStore} onSubmit={handleSubmit}>
-      {JSON.stringify(getValues(formStore))}
       <Field of={formStore} name="type">
         {() => null}
       </Field>
-      <Field of={formStore} name="id">
+      <Field of={formStore} name="form.id">
         {() => null}
       </Field>
       <FormBox.Container>
         <FormBox.Forms>
-          <BuildTypeField formStore={formStore} readonly={!props.hasPermission} />
+          <BuildTypeField readonly={!props.hasPermission} />
+          <ConfigField readonly={!props.hasPermission} disableEditDB={props.disableEditDB} />
         </FormBox.Forms>
         <FormBox.Actions>
           <Show when={formStore.dirty && !formStore.submitting}>

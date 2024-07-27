@@ -1,5 +1,5 @@
-import { Field, Form, type SubmitHandler, reset } from '@modular-forms/solid'
-import { type Component, Show, createEffect, untrack } from 'solid-js'
+import { Field, Form, type SubmitHandler, reset, setValues } from '@modular-forms/solid'
+import { type Component, Show, createEffect, onMount, untrack } from 'solid-js'
 import toast from 'solid-toast'
 import type { Repository } from '/@/api/neoshowcase/protobuf/gateway_pb'
 import { Button } from '/@/components/UI/Button'
@@ -23,14 +23,24 @@ type Props = {
 const AuthConfigForm: Component<Props> = (props) => {
   const { formStore } = useRepositoryForm()
 
-  // reset forms when props.repo changed
-  createEffect(() => {
+  const discardChanges = () => {
     reset(
       untrack(() => formStore),
       {
         initialValues: updateRepositoryFormInitialValues(props.repo),
       },
     )
+  }
+
+  // `reset` doesn't work on first render when the Field not rendered
+  // see: https://github.com/fabian-hiller/modular-forms/issues/157#issuecomment-1848567069
+  onMount(() => {
+    setValues(formStore, updateRepositoryFormInitialValues(props.repo))
+  })
+
+  // reset forms when props.repo changed
+  createEffect(() => {
+    discardChanges()
   })
 
   const handleSubmit: SubmitHandler<CreateOrUpdateRepositoryInput> = (values) =>
@@ -43,10 +53,6 @@ const AuthConfigForm: Component<Props> = (props) => {
         handleAPIError(e, 'リポジトリの設定の更新に失敗しました')
       }
     })
-
-  const discardChanges = () => {
-    reset(formStore)
-  }
 
   return (
     <Form of={formStore} onSubmit={handleSubmit}>

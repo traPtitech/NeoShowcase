@@ -3,7 +3,7 @@ import { type Component, createEffect, untrack } from 'solid-js'
 import type { Repository } from '/@/api/neoshowcase/protobuf/gateway_pb'
 import { ComboBox } from '/@/components/templates/Select'
 import { useBranches } from '/@/libs/branchesSuggestion'
-import { useApplicationForm } from '../provider/applicationFormProvider'
+import { useApplicationForm } from '../../../provider/applicationFormProvider'
 
 type Props = {
   repo: Repository

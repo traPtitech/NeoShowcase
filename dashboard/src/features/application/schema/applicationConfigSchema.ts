@@ -3,15 +3,28 @@ import { match } from 'ts-pattern'
 import * as v from 'valibot'
 import type { ApplicationConfig } from '/@/api/neoshowcase/protobuf/gateway_pb'
 
+// KobalteのRadioGroupでは値としてbooleanが使えずstringしか使えないため、
+// RadioGroupでboolean入力を受け取りたい場合はこれを使用する
+const stringBooleanSchema = v.pipe(
+  v.union([v.literal('true'), v.literal('false')]),
+  v.transform((i) => i === 'true'),
+)
+
+const optionalBooleanSchema = (defaultValue = false) =>
+  v.pipe(
+    v.optional(v.boolean()),
+    v.transform((i) => i ?? defaultValue),
+  )
+
 const runtimeConfigSchema = v.object({
-  useMariadb: v.boolean(),
-  useMongodb: v.boolean(),
+  useMariadb: optionalBooleanSchema(),
+  useMongodb: optionalBooleanSchema(),
   entrypoint: v.string(),
   command: v.string(),
 })
 const staticConfigSchema = v.object({
   artifactPath: v.pipe(v.string(), v.nonEmpty('Enter Artifact Path')),
-  spa: v.boolean(),
+  spa: stringBooleanSchema,
 })
 
 const deployConfigSchema = v.pipe(
@@ -243,10 +256,15 @@ export const configMessageToSchema = (config: ApplicationConfig): ApplicationCon
       deployConfig = {
         type: 'static',
         value: {
-          static: config.buildConfig.value.staticConfig ?? {
-            spa: false,
-            artifactPath: '',
-          },
+          static: config.buildConfig.value.staticConfig
+            ? {
+                spa: config.buildConfig.value.staticConfig.spa ? 'true' : 'false',
+                artifactPath: config.buildConfig.value.staticConfig.artifactPath,
+              }
+            : {
+                spa: 'false',
+                artifactPath: '',
+              },
         },
       }
       break

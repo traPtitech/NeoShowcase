@@ -103,7 +103,7 @@ describe('Create Application Schema', () => {
               value: {
                 static: {
                   artifactPath: '.',
-                  spa: false,
+                  spa: 'false',
                 },
               },
             },

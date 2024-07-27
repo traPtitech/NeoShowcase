@@ -45,7 +45,10 @@ const CreateForm: Component = () => {
   const navigate = useNavigate()
   const { formStore } = useRepositoryForm()
 
+  // `reset` doesn't work on first render when the Field not rendered
+  // see: https://github.com/fabian-hiller/modular-forms/issues/157#issuecomment-1848567069
   onMount(() => {
+    setValues(formStore, createRepositoryFormInitialValues())
     reset(formStore, {
       initialValues: createRepositoryFormInitialValues(),
     })
