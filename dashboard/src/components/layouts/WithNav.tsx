@@ -6,7 +6,7 @@ const Container = styled('div', {
     width: '100%',
     height: '100%',
     display: 'grid',
-    gridTemplateColumns: '1fr',
+    gridTemplateColumns: 'minmax(0, 1fr)',
     gridTemplateRows: 'max-content 1fr',
   },
 })
