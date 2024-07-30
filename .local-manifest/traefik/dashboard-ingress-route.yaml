@@ -9,12 +9,12 @@ spec:
     - websecure
   routes:
     - kind: Rule
-      match: Host(`traefik-dashboard.local.trapti.tech`)
+      match: Host(`traefik.local.trapti.tech`)
       services:
-        - namespace: traefik
-          kind: Service
-          name: dashboard
-          port: dashboard
-          scheme: http
-          strategy: RoundRobin
-          weight: 1
+        - kind: TraefikService
+          name: dashboard@internal
+    - kind: Rule
+      match: Host(`traefik.local.trapti.tech`) && PathPrefix(`/api`)
+      services:
+        - kind: TraefikService
+          name: api@internal

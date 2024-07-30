@@ -8,8 +8,8 @@ rules:
       - ""
     resources:
       - services
-      - endpoints
       - secrets
+      - nodes
     verbs:
       - get
       - list
@@ -33,7 +33,6 @@ rules:
       - update
   - apiGroups:
       - traefik.io
-      - traefik.containo.us
     resources:
       - middlewares
       - middlewaretcps
@@ -47,5 +46,12 @@ rules:
       - serverstransporttcps
     verbs:
       - get
+      - list
+      - watch
+  - apiGroups:
+      - discovery.k8s.io
+    resources:
+      - endpointslices
+    verbs:
       - list
       - watch
