@@ -1,0 +1,35 @@
+secret: A0iQP-1A_RLBqaTOfLs6fhUzNWO29bIB
+insecure-cookie: true
+log-level: info
+
+auth-host: auth.local.trapti.tech
+cookie-domains:
+  - local.trapti.tech
+cookieName: "_forward_auth"
+info-fields:
+  - name
+
+provider: generic-oauth
+
+providers:
+  generic-oauth:
+    auth-url: https://q.toki317.dev/api/v3/oauth2/authorize
+    token-url: https://q.toki317.dev/api/v3/oauth2/token
+    user-url: https://q.toki317.dev/api/v3/users/me
+    client-id: RFOhjMbt3VsR75uaMwhWH21pUkhfE8DqVeXT
+    client-secret: N4rzl3JlQJprKNNi2EYl2biifjKprB9HS9PO
+    scopes:
+      - read
+
+rule:
+  soft:
+    action: soft-auth
+    route-rule: Header(`X-Forward-Auth-Type`, `soft`)
+  hard:
+    action: auth
+    route-rule: rule.hard.rule = Header(`X-Forward-Auth-Type`, `hard`)
+
+headers:
+  default:
+    name: X-Showcase-User
+    source: name

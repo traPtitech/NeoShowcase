@@ -25,13 +25,13 @@ spec:
 
       containers:
         - name: ns-auth
-          image: ghcr.io/traptitech/traefik-forward-auth:3.0.0
+          image: ghcr.io/traptitech/traefik-forward-auth:3.2.1
           args:
-            - --config=/config.ini
+            - --config=/config.yaml
           ports:
             - containerPort: 4181
               name: http
           volumeMounts:
             - name: project
-              subPath: .local-dev/config/ns-auth.ini
-              mountPath: /config.ini
+              subPath: .local-dev/config/ns-auth.yaml
+              mountPath: /config.yaml
