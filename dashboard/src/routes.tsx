@@ -123,13 +123,13 @@ export const Routes: Component<{ root: Component<RouteSectionProps> }> = (props)
   <Router root={props.root}>
     <Route path="/" component={() => <Navigate href="/apps" />} />
     <Route path="/apps" component={lazy(() => import('/@/pages/apps'))} />
-    <Route path="/apps/:id" component={lazy(() => import('/@/pages/apps/[id]'))} load={loadApplicationData}>
+    <Route path="/apps/:id" component={lazy(() => import('/@/pages/apps/[id]'))} preload={loadApplicationData}>
       <Route path="/" component={lazy(() => import('/@/pages/apps/[id]/index'))} />
       <Route path="/builds" component={lazy(() => import('/@/pages/apps/[id]/builds'))} />
       <Route
         path="/builds/:buildID"
         component={lazy(() => import('/@/pages/apps/[id]/builds/[id]'))}
-        load={loadBuildData}
+        preload={loadBuildData}
       />
       <Route path="/settings" component={lazy(() => import('/@/pages/apps/[id]/settings'))}>
         <Route path="/" component={lazy(() => import('/@/pages/apps/[id]/settings/general'))} />
@@ -143,7 +143,7 @@ export const Routes: Component<{ root: Component<RouteSectionProps> }> = (props)
       <Route path="/" component={lazy(() => import('/@/pages/apps/[id]/index'))} />
     </Route>
     <Route path="/apps/new" component={lazy(() => import('/@/pages/apps/new'))} />
-    <Route path="/repos/:id" component={lazy(() => import('/@/pages/repos/[id]'))} load={loadRepositoryData}>
+    <Route path="/repos/:id" component={lazy(() => import('/@/pages/repos/[id]'))} preload={loadRepositoryData}>
       <Route path="/" component={lazy(() => import('/@/pages/repos/[id]/index'))} />
       <Route path="/settings" component={lazy(() => import('/@/pages/repos/[id]/settings'))}>
         <Route path="/" component={lazy(() => import('/@/pages/repos/[id]/settings/general'))} />
