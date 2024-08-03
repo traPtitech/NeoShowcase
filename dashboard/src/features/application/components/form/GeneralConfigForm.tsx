@@ -44,6 +44,7 @@ const GeneralConfigForm: Component<Props> = (props) => {
     discardChanges()
   })
 
+  // TODO: propsでSubmitHandler<CreateOrUpdateApplicationInput>を受け取る
   const handleSubmit: SubmitHandler<CreateOrUpdateApplicationInput> = (values) =>
     handleSubmitUpdateApplicationForm(values, async (output) => {
       try {

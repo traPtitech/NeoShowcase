@@ -1,4 +1,4 @@
-import { Field, Form, type SubmitHandler, getValues, reset, setValues } from '@modular-forms/solid'
+import { Field, Form, type SubmitHandler, reset, setValues } from '@modular-forms/solid'
 import { type Component, Show, createEffect, onMount, untrack } from 'solid-js'
 import toast from 'solid-toast'
 import type { Application } from '/@/api/neoshowcase/protobuf/gateway_pb'
@@ -44,6 +44,7 @@ const BuildConfigForm: Component<Props> = (props) => {
     discardChanges()
   })
 
+  // TODO: propsでSubmitHandler<CreateOrUpdateApplicationInput>を受け取る
   const handleSubmit: SubmitHandler<CreateOrUpdateApplicationInput> = (values) =>
     handleSubmitUpdateApplicationForm(values, async (output) => {
       try {

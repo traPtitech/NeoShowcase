@@ -2,49 +2,14 @@ import type { PartialMessage } from '@bufbuild/protobuf'
 import * as v from 'valibot'
 import {
   type Application,
-  AuthenticationType,
-  type AvailableDomain,
   type CreateApplicationRequest,
-  type CreateWebsiteRequest,
   type PortPublication,
   PortPublicationProtocol,
   type UpdateApplicationRequest,
   type UpdateApplicationRequest_UpdateOwners,
-  type Website,
 } from '/@/api/neoshowcase/protobuf/gateway_pb'
-import { systemInfo } from '/@/libs/api'
 import { applicationConfigSchema, configMessageToSchema } from './applicationConfigSchema'
-
-const createWebsiteSchema = v.pipe(
-  v.object({
-    state: v.union([v.literal('noChange'), v.literal('readyToChange'), v.literal('readyToDelete'), v.literal('added')]),
-    subdomain: v.string(),
-    domain: v.string(),
-    pathPrefix: v.string(),
-    stripPrefix: v.boolean(),
-    https: v.boolean(),
-    h2c: v.boolean(),
-    httpPort: v.pipe(v.number(), v.integer()),
-    authentication: v.enum(AuthenticationType),
-  }),
-  v.transform((input): PartialMessage<CreateWebsiteRequest> => {
-    // wildcard domainならsubdomainとdomainを結合
-    const fqdn = input.domain.startsWith('*')
-      ? `${input.subdomain}${input.domain.replace(/\*/g, '')}`
-      : // non-wildcard domainならdomainをそのまま使う
-        input.domain
-
-    return {
-      fqdn,
-      authentication: input.authentication,
-      h2c: input.h2c,
-      httpPort: input.httpPort,
-      https: input.https,
-      pathPrefix: input.pathPrefix,
-      stripPrefix: input.stripPrefix,
-    }
-  }),
-)
+import { createWebsiteSchema, websiteMessageToSchema } from './websiteSchema'
 
 const portPublicationSchema = v.pipe(
   v.object({
@@ -136,57 +101,6 @@ export const updateApplicationSchema = v.pipe(
 )
 
 type UpdateApplicationOutput = v.InferOutput<typeof updateApplicationSchema>
-
-const extractSubdomain = (
-  fqdn: string,
-  availableDomains: AvailableDomain[],
-): {
-  subdomain: string
-  domain: string
-} => {
-  const nonWildcardDomains = availableDomains.filter((d) => !d.domain.startsWith('*'))
-  const wildcardDomains = availableDomains.filter((d) => d.domain.startsWith('*'))
-
-  const matchNonWildcardDomain = nonWildcardDomains.find((d) => fqdn === d.domain)
-  if (matchNonWildcardDomain !== undefined) {
-    return {
-      subdomain: '',
-      domain: matchNonWildcardDomain.domain,
-    }
-  }
-
-  const matchDomain = wildcardDomains.find((d) => fqdn.endsWith(d.domain.replace(/\*/g, '')))
-  if (matchDomain === undefined) {
-    const fallbackDomain = availableDomains.at(0)
-    if (fallbackDomain === undefined) throw new Error('No domain available')
-    return {
-      subdomain: '',
-      domain: fallbackDomain.domain,
-    }
-  }
-  return {
-    subdomain: fqdn.slice(0, -matchDomain.domain.length + 1),
-    domain: matchDomain.domain,
-  }
-}
-
-const websiteMessageToSchema = (website: Website): v.InferInput<typeof createWebsiteSchema> => {
-  const availableDomains = systemInfo()?.domains ?? []
-
-  const { domain, subdomain } = extractSubdomain(website.fqdn, availableDomains)
-
-  return {
-    state: 'noChange',
-    domain,
-    subdomain,
-    pathPrefix: website.pathPrefix,
-    stripPrefix: website.stripPrefix,
-    https: website.https,
-    h2c: website.h2c,
-    httpPort: website.httpPort,
-    authentication: website.authentication,
-  }
-}
 
 export const updateApplicationFormInitialValues = (input: Application): CreateOrUpdateApplicationInput => ({
   type: 'update',

@@ -2,13 +2,7 @@ import type { PartialMessage } from '@bufbuild/protobuf'
 import { match } from 'ts-pattern'
 import * as v from 'valibot'
 import type { ApplicationConfig } from '/@/api/neoshowcase/protobuf/gateway_pb'
-
-// KobalteのRadioGroupでは値としてbooleanが使えずstringしか使えないため、
-// RadioGroupでboolean入力を受け取りたい場合はこれを使用する
-const stringBooleanSchema = v.pipe(
-  v.union([v.literal('true'), v.literal('false')]),
-  v.transform((i) => i === 'true'),
-)
+import { stringBooleanSchema } from '/@/libs/schemaUtil'
 
 const optionalBooleanSchema = (defaultValue = false) =>
   v.pipe(

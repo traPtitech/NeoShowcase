@@ -4,8 +4,10 @@ import toast from 'solid-toast'
 import { DeployType } from '/@/api/neoshowcase/protobuf/gateway_pb'
 import { DataTable } from '/@/components/layouts/DataTable'
 import { type WebsiteFormStatus, WebsiteSettings, newWebsite } from '/@/components/templates/app/WebsiteSettings'
+import { ApplicationFormProvider } from '/@/features/application/provider/applicationFormProvider'
 import { client, handleAPIError } from '/@/libs/api'
 import { useApplicationData } from '/@/routes'
+import WebsiteConfigForm from '../../../../features/application/components/form/WebsitesConfigForm'
 
 export default () => {
   const { app, refetch, hasPermission } = useApplicationData()
@@ -108,6 +110,11 @@ export default () => {
             hasPermission={hasPermission()}
           />
         )}
+      </Show>
+      <Show when={app()}>
+        <ApplicationFormProvider>
+          <WebsiteConfigForm app={app()!} hasPermission={hasPermission()} refetchApp={refetch} />
+        </ApplicationFormProvider>
       </Show>
     </DataTable.Container>
   )
