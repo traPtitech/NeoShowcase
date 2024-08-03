@@ -23,7 +23,7 @@
     "@macaron-css/solid": "1.5.1",
     "@macaron-css/vite": "1.5.1",
     "@tanstack/virtual-core": "3.8.1",
-    "@types/node": "20.14.9",
+    "@types/node": "22.0.2",
     "rollup-plugin-visualizer": "5.12.0",
     "typescript": "5.5.3",
     "unplugin-fonts": "1.1.1",
