@@ -17,6 +17,7 @@ import (
 	"github.com/moby/buildkit/util/progress/progressui"
 	"github.com/samber/lo"
 	log "github.com/sirupsen/logrus"
+	"github.com/tonistiigi/fsutil"
 	"golang.org/x/sync/errgroup"
 
 	"github.com/traPtitech/neoshowcase/pkg/domain"
@@ -114,6 +115,14 @@ func (s *builderService) solveDockerfile(
 	env map[string]string,
 	ch chan *buildkit.SolveStatus,
 ) error {
+	ctxMount, err := fsutil.NewFS(contextDir)
+	if err != nil {
+		return errors.Wrap(err, "invalid context mount dir")
+	}
+	dockerfileMount, err := fsutil.NewFS(dockerfileDir)
+	if err != nil {
+		return errors.Wrap(err, "invalid dockerfile mount dir")
+	}
 	opts := buildkit.SolveOpt{
 		Exports: []buildkit.ExportEntry{{
 			Type: buildkit.ExporterImage,
@@ -122,9 +131,9 @@ func (s *builderService) solveDockerfile(
 				"push": "true",
 			},
 		}},
-		LocalDirs: map[string]string{
-			"context":    contextDir,
-			"dockerfile": dockerfileDir,
+		LocalMounts: map[string]fsutil.FS{
+			"context":    ctxMount,
+			"dockerfile": dockerfileMount,
 		},
 		Frontend: "dockerfile.v0",
 		FrontendAttrs: ds.MergeMap(
@@ -135,7 +144,7 @@ func (s *builderService) solveDockerfile(
 		),
 		Session: s.authSessions(),
 	}
-	_, err := s.buildkit.Solve(ctx, nil, opts, ch)
+	_, err = s.buildkit.Solve(ctx, nil, opts, ch)
 	return err
 }
 
