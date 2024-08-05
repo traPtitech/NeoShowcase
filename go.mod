@@ -37,6 +37,7 @@ require (
 	github.com/spf13/pflag v1.0.5
 	github.com/spf13/viper v1.19.0
 	github.com/stretchr/testify v1.9.0
+	github.com/tonistiigi/fsutil v0.0.0-20240424095704-91a3fc46842c
 	github.com/traefik/traefik/v3 v3.1.1
 	github.com/volatiletech/null/v8 v8.1.2
 	github.com/volatiletech/sqlboiler/v4 v4.16.2
@@ -54,8 +55,6 @@ require (
 	k8s.io/apimachinery v0.30.3
 	k8s.io/client-go v0.30.3
 )
-
-require github.com/tonistiigi/fsutil v0.0.0-20240424095704-91a3fc46842c
 
 require (
 	dario.cat/mergo v1.0.0 // indirect
