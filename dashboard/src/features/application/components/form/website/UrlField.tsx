@@ -18,6 +18,18 @@ type Props = {
 
 const UrlField: Component<Props> = (props) => {
   const selectedDomain = () => getValue(props.formStore, 'domain')
+  // 占有されているドメインはoptionに表示しない
+  // すでに設定されているドメインはoptionに表示する
+  const domainOptions = () =>
+    systemInfo()
+      ?.domains.filter((domain) => !domain.alreadyBound || selectedDomain() === domain.domain)
+      .map((domain) => {
+        const domainName = domain.domain.replace(/\*/g, '')
+        return {
+          value: domain.domain,
+          label: domainName,
+        }
+      }) ?? []
 
   return (
     <>
@@ -36,7 +48,7 @@ const UrlField: Component<Props> = (props) => {
             }}
             {...fieldProps}
             options={schemeOptions}
-            value={field.value ? 'true' : 'false'}
+            value={field.value}
             readOnly={props.readonly}
           />
         )}
@@ -68,19 +80,7 @@ const UrlField: Component<Props> = (props) => {
               },
             }}
             {...fieldProps}
-            options={
-              // 占有されているドメインはoptionに表示しない
-              // すでに設定されているドメインはoptionに表示する
-              systemInfo()
-                ?.domains.filter((domain) => !domain.alreadyBound || selectedDomain() === domain.domain)
-                .map((domain) => {
-                  const domainName = domain.domain.replace(/\*/g, '')
-                  return {
-                    value: domain.domain,
-                    label: domainName,
-                  }
-                }) ?? []
-            }
+            options={domainOptions()}
             value={field.value}
             readOnly={props.readonly}
           />
