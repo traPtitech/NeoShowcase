@@ -35,11 +35,7 @@ const WebsiteConfigForm: Component<Props> = (props) => {
       websites.map((w) =>
         createFormStore<CreateWebsiteInput, undefined>({
           initialValues: websiteMessageToSchema(w),
-          validate: async (input) => {
-            console.log(input)
-            console.log(await valiForm(createWebsiteSchema)(input))
-            return valiForm(createWebsiteSchema)(input)
-          },
+          validate: valiForm(createWebsiteSchema),
         }),
       ),
   )
@@ -51,12 +47,7 @@ const WebsiteConfigForm: Component<Props> = (props) => {
     if (defaultDomain) {
       const newForm = createFormStore<CreateWebsiteInput, undefined>({
         initialValues: createWebsiteInitialValues(defaultDomain),
-        // validateOn: 'blur',
-        validate: async (input) => {
-          console.log(input)
-          console.log(await valiForm(createWebsiteSchema)(input))
-          return valiForm(createWebsiteSchema)(input)
-        },
+        validate: valiForm(createWebsiteSchema),
       })
 
       mutate((websites) => websites?.concat([newForm]))
@@ -122,7 +113,6 @@ const WebsiteConfigForm: Component<Props> = (props) => {
 
   return (
     <>
-      <For each={formStores()}>{(formStore) => <pre>{JSON.stringify(getValues(formStore), null, 2)}</pre>}</For>
       <For each={formStores()}>
         {(formStore) => (
           <WebsiteFieldGroup
