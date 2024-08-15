@@ -75,7 +75,7 @@ export const createWebsiteSchema = v.pipe(
     const fqdn = input.domain.startsWith('*')
       ? `${input.subdomain}${input.domain.replace(/\*/g, '')}`
       : // non-wildcard domainならdomainをそのまま使う
-      input.domain
+        input.domain
 
     return {
       fqdn,
