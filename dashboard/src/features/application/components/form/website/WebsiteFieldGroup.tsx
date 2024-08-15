@@ -3,14 +3,13 @@ import {
   Form,
   type FormStore,
   type SubmitHandler,
-  getErrors,
   getValue,
   reset,
   setValue,
+  setValues,
   submit,
-  validate,
 } from '@modular-forms/solid'
-import { type Component, Show, createMemo } from 'solid-js'
+import { type Component, Show, createEffect, createMemo } from 'solid-js'
 import { AuthenticationType } from '/@/api/neoshowcase/protobuf/gateway_pb'
 import { Button } from '/@/components/UI/Button'
 import { MaterialSymbols } from '/@/components/UI/MaterialSymbols'
@@ -47,6 +46,12 @@ const WebsiteFieldGroup: Component<Props> = (props) => {
     return availableDomains.find((d) => d.domain === domainString)
   })
   const authAvailable = (): boolean => selectedDomain()?.authAvailable ?? false
+
+  createEffect(() => {
+    if (!authAvailable()) {
+      setValues(props.formStore, { authentication: `${AuthenticationType.OFF}` })
+    }
+  })
 
   const discardChanges = () => {
     reset(props.formStore)
@@ -127,7 +132,7 @@ const WebsiteFieldGroup: Component<Props> = (props) => {
                   disabled: authAvailable(),
                 }}
                 options={authenticationTypeOptions}
-                value={`${field.value ?? AuthenticationType.OFF}`}
+                value={field.value ?? `${AuthenticationType.OFF}`}
                 disabled={!authAvailable()}
                 readOnly={props.readonly}
               />
