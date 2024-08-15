@@ -35,19 +35,23 @@ const authenticationSchema = v.pipe(
   }),
 )
 
+const websiteValues = v.object({
+  subdomain: v.optional(v.string()),
+  domain: v.string(),
+  pathPrefix: v.string(),
+  stripPrefix: v.boolean(),
+  https: stringBooleanSchema,
+  h2c: v.boolean(),
+  httpPort: v.pipe(v.number(), v.integer()),
+  authentication: authenticationSchema,
+})
+
 export const createWebsiteSchema = v.pipe(
   v.variant('state', [
     v.pipe(
       v.object({
         state: v.union([v.literal('noChange'), v.literal('readyToChange'), v.literal('added')]),
-        subdomain: v.optional(v.string()),
-        domain: v.string(),
-        pathPrefix: v.string(),
-        stripPrefix: v.boolean(),
-        https: stringBooleanSchema,
-        h2c: v.boolean(),
-        httpPort: v.pipe(v.number(), v.integer()),
-        authentication: authenticationSchema,
+        ...websiteValues.entries,
       }),
       // wildcard domainが選択されている場合サブドメインは空であってはならない
       v.forward(
@@ -65,6 +69,7 @@ export const createWebsiteSchema = v.pipe(
     v.object({
       // 削除するwebsite設定の中身はチェックしない
       state: v.literal('readyToDelete'),
+      ...v.partial(websiteValues).entries,
     }),
   ]),
   v.transform((input): PartialMessage<CreateWebsiteRequest> => {
