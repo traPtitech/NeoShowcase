@@ -34,6 +34,7 @@ type Props = {
   formStore: FormStore<CreateWebsiteInput>
   isRuntimeApp: boolean
   applyChanges: () => Promise<void> | void
+  isSubmitting: boolean
   readonly?: boolean
 }
 
@@ -62,16 +63,13 @@ const WebsiteFieldGroup: Component<Props> = (props) => {
   }
 
   const handleSave = async () => {
-    // submit前のstateを保存しておく
+    // submitに失敗したときにstateを元に戻すため、submit前のstateを保存しておく
     const originalState = getValue(props.formStore, 'state')
-    if (!originalState) throw new Error("The field of state does not exist.")
+    if (!originalState) throw new Error('The field of state does not exist.')
 
     try {
       setValue(props.formStore, 'state', 'readyToChange')
       submit(props.formStore)
-      
-      const errors = getErrors(props.formStore)
-      console.log(errors);
     } catch (e) {
       console.log(e)
       setValue(props.formStore, 'state', originalState)
@@ -90,9 +88,10 @@ const WebsiteFieldGroup: Component<Props> = (props) => {
 
   const state = () => getValue(props.formStore, 'state')
 
-  const disableSaveButton = () =>
+  const isSaveDisabled = () =>
     props.formStore.invalid ||
     props.formStore.submitting ||
+    props.isSubmitting ||
     (state() !== 'added' && !props.formStore.dirty) ||
     props.readonly
 
@@ -186,7 +185,7 @@ const WebsiteFieldGroup: Component<Props> = (props) => {
             size="small"
             type="button"
             onClick={handleSave}
-            disabled={disableSaveButton()}
+            disabled={isSaveDisabled()}
             loading={props.formStore.submitting}
             tooltip={{
               props: {
