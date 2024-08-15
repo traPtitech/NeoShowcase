@@ -174,7 +174,21 @@ export const SingleSelect = <T extends string | number>(props: SingleSelectProps
     ['placeholder', 'ref', 'onInput', 'onChange', 'onBlur'],
   )
 
-  const selectedOption = () => props.options.find((o) => o.value === props.value)
+  // const selectedOption = () => props.options.find((o) => o.value === props.value)
+  const [selectedOption, setSelectedOption] = createSignal<SelectOption<T>>()
+
+  createEffect(() => {
+    console.log(props.options)
+
+    const found = props.options.find((o) => o.value === props.value)
+    // KobalteのSelect/Comboboxではundefinedを使用できないため、空文字列を指定している
+    setSelectedOption(
+      found ?? {
+        label: '',
+        value: '' as T,
+      },
+    )
+  })
 
   return (
     <KSelect.Root<SelectOption<T>>
@@ -183,7 +197,10 @@ export const SingleSelect = <T extends string | number>(props: SingleSelectProps
       multiple={false}
       disallowEmptySelection
       value={selectedOption()}
-      onChange={(v) => props.setValue?.(v.value)}
+      onChange={(v) => {
+        props.setValue?.(v.value)
+        setSelectedOption(v)
+      }}
       optionValue="value"
       optionTextValue="label"
       validationState={props.error ? 'invalid' : 'valid'}
