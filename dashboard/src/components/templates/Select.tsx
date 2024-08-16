@@ -178,8 +178,6 @@ export const SingleSelect = <T extends string | number>(props: SingleSelectProps
   const [selectedOption, setSelectedOption] = createSignal<SelectOption<T>>()
 
   createEffect(() => {
-    console.log(props.options)
-
     const found = props.options.find((o) => o.value === props.value)
     // KobalteのSelect/Comboboxではundefinedを使用できないため、空文字列を指定している
     setSelectedOption(
