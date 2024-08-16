@@ -1,24 +1,14 @@
 import type { PartialMessage } from '@bufbuild/protobuf'
 import * as v from 'valibot'
-import {
-  type Application,
-  type CreateApplicationRequest,
-  type PortPublication,
-  PortPublicationProtocol,
-  type UpdateApplicationRequest,
-  type UpdateApplicationRequest_UpdateOwners,
+import type {
+  Application,
+  CreateApplicationRequest,
+  UpdateApplicationRequest,
+  UpdateApplicationRequest_UpdateOwners,
 } from '/@/api/neoshowcase/protobuf/gateway_pb'
 import { applicationConfigSchema, configMessageToSchema } from './applicationConfigSchema'
+import { portPublicationMessageToSchema, portPublicationSchema } from './portPublicationSchema'
 import { createWebsiteSchema, websiteMessageToSchema } from './websiteSchema'
-
-const portPublicationSchema = v.pipe(
-  v.object({
-    internetPort: v.pipe(v.number(), v.integer()),
-    applicationPort: v.pipe(v.number(), v.integer()),
-    protocol: v.enum(PortPublicationProtocol),
-  }),
-  v.transform((input): PartialMessage<PortPublication> => input),
-)
 
 // --- create application
 
@@ -111,7 +101,7 @@ export const updateApplicationFormInitialValues = (input: Application): CreateOr
     refName: input.refName,
     config: input.config ? configMessageToSchema(input.config) : undefined,
     websites: input.websites.map((w) => websiteMessageToSchema(w)),
-    portPublications: input.portPublications,
+    portPublications: input.portPublications.map((p) => portPublicationMessageToSchema(p)),
     ownerIds: input.ownerIds,
   },
 })
