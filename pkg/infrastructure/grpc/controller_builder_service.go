@@ -2,17 +2,18 @@ package grpc
 
 import (
 	"bytes"
-	"connectrpc.com/connect"
 	"context"
 	"fmt"
+	"io"
+	"sync"
+	"time"
+
+	"connectrpc.com/connect"
 	"github.com/friendsofgo/errors"
 	"github.com/samber/lo"
 	log "github.com/sirupsen/logrus"
 	"golang.org/x/exp/slices"
 	"google.golang.org/protobuf/types/known/emptypb"
-	"io"
-	"sync"
-	"time"
 
 	"github.com/traPtitech/neoshowcase/pkg/domain"
 	"github.com/traPtitech/neoshowcase/pkg/domain/builder"
@@ -52,12 +53,13 @@ type ControllerBuilderService struct {
 	logStream  *logstream.Service
 	systemInfo *domain.BuilderSystemInfo
 
-	storage      domain.Storage
-	appRepo      domain.ApplicationRepository
-	artifactRepo domain.ArtifactRepository
-	buildRepo    domain.BuildRepository
-	envRepo      domain.EnvironmentRepository
-	gitRepo      domain.GitRepositoryRepository
+	storage          domain.Storage
+	appRepo          domain.ApplicationRepository
+	artifactRepo     domain.ArtifactRepository
+	runtimeImageRepo domain.RuntimeImageRepository
+	buildRepo        domain.BuildRepository
+	envRepo          domain.EnvironmentRepository
+	gitRepo          domain.GitRepositoryRepository
 
 	idle    domain.PubSub[struct{}]
 	settled domain.PubSub[struct{}]
@@ -73,6 +75,7 @@ func NewControllerBuilderService(
 	storage domain.Storage,
 	appRepo domain.ApplicationRepository,
 	artifactRepo domain.ArtifactRepository,
+	runtimeImageRepo domain.RuntimeImageRepository,
 	buildRepo domain.BuildRepository,
 	envRepo domain.EnvironmentRepository,
 	gitRepo domain.GitRepositoryRepository,
@@ -83,12 +86,13 @@ func NewControllerBuilderService(
 			SSHKey:      privateKey,
 			ImageConfig: imageConfig,
 		},
-		storage:      storage,
-		appRepo:      appRepo,
-		artifactRepo: artifactRepo,
-		buildRepo:    buildRepo,
-		envRepo:      envRepo,
-		gitRepo:      gitRepo,
+		storage:          storage,
+		appRepo:          appRepo,
+		artifactRepo:     artifactRepo,
+		runtimeImageRepo: runtimeImageRepo,
+		buildRepo:        buildRepo,
+		envRepo:          envRepo,
+		gitRepo:          gitRepo,
 	}
 }
 
@@ -142,6 +146,16 @@ func (s *ControllerBuilderService) SaveArtifact(ctx context.Context, req *connec
 
 func (s *ControllerBuilderService) SaveBuildLog(_ context.Context, req *connect.Request[pb.SaveBuildLogRequest]) (*connect.Response[emptypb.Empty], error) {
 	err := domain.SaveBuildLog(s.storage, req.Msg.BuildId, bytes.NewReader(req.Msg.Log))
+	if err != nil {
+		return nil, err
+	}
+	res := connect.NewResponse(&emptypb.Empty{})
+	return res, nil
+}
+
+func (s *ControllerBuilderService) SaveRuntimeImage(ctx context.Context, req *connect.Request[pb.SaveRuntimeImageRequest]) (*connect.Response[emptypb.Empty], error) {
+	image := domain.NewRuntimeImage(req.Msg.BuildId, req.Msg.Size)
+	err := s.runtimeImageRepo.CreateRuntimeImage(ctx, image)
 	if err != nil {
 		return nil, err
 	}

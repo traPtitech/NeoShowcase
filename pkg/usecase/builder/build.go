@@ -224,7 +224,10 @@ func (s *builderService) finalize(ctx context.Context, st *state, status domain.
 			log.Errorf("failed to get image size: %+v", err)
 			return
 		}
-		log.Infof("Runtime image size: %v", size)
+		err = s.client.SaveRuntimeImage(ctx, st.build.ID, size)
+		if err != nil {
+			log.Errorf("failed to save runtime image: %+v", err)
+		}
 	}
 }
 

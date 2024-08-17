@@ -76,6 +76,9 @@ const (
 	// ControllerBuilderServiceSaveBuildLogProcedure is the fully-qualified name of the
 	// ControllerBuilderService's SaveBuildLog RPC.
 	ControllerBuilderServiceSaveBuildLogProcedure = "/neoshowcase.protobuf.ControllerBuilderService/SaveBuildLog"
+	// ControllerBuilderServiceSaveRuntimeImageProcedure is the fully-qualified name of the
+	// ControllerBuilderService's SaveRuntimeImage RPC.
+	ControllerBuilderServiceSaveRuntimeImageProcedure = "/neoshowcase.protobuf.ControllerBuilderService/SaveRuntimeImage"
 	// ControllerBuilderServiceConnectBuilderProcedure is the fully-qualified name of the
 	// ControllerBuilderService's ConnectBuilder RPC.
 	ControllerBuilderServiceConnectBuilderProcedure = "/neoshowcase.protobuf.ControllerBuilderService/ConnectBuilder"
@@ -108,6 +111,7 @@ var (
 	controllerBuilderServiceStreamBuildLogMethodDescriptor       = controllerBuilderServiceServiceDescriptor.Methods().ByName("StreamBuildLog")
 	controllerBuilderServiceSaveArtifactMethodDescriptor         = controllerBuilderServiceServiceDescriptor.Methods().ByName("SaveArtifact")
 	controllerBuilderServiceSaveBuildLogMethodDescriptor         = controllerBuilderServiceServiceDescriptor.Methods().ByName("SaveBuildLog")
+	controllerBuilderServiceSaveRuntimeImageMethodDescriptor     = controllerBuilderServiceServiceDescriptor.Methods().ByName("SaveRuntimeImage")
 	controllerBuilderServiceConnectBuilderMethodDescriptor       = controllerBuilderServiceServiceDescriptor.Methods().ByName("ConnectBuilder")
 	buildpackHelperServiceServiceDescriptor                      = pb.File_neoshowcase_protobuf_controller_proto.Services().ByName("BuildpackHelperService")
 	buildpackHelperServiceCopyFileTreeMethodDescriptor           = buildpackHelperServiceServiceDescriptor.Methods().ByName("CopyFileTree")
@@ -325,6 +329,7 @@ type ControllerBuilderServiceClient interface {
 	StreamBuildLog(context.Context) *connect.ClientStreamForClient[pb.BuildLogPortion, emptypb.Empty]
 	SaveArtifact(context.Context, *connect.Request[pb.SaveArtifactRequest]) (*connect.Response[emptypb.Empty], error)
 	SaveBuildLog(context.Context, *connect.Request[pb.SaveBuildLogRequest]) (*connect.Response[emptypb.Empty], error)
+	SaveRuntimeImage(context.Context, *connect.Request[pb.SaveRuntimeImageRequest]) (*connect.Response[emptypb.Empty], error)
 	ConnectBuilder(context.Context) *connect.BidiStreamForClient[pb.BuilderResponse, pb.BuilderRequest]
 }
 
@@ -369,6 +374,12 @@ func NewControllerBuilderServiceClient(httpClient connect.HTTPClient, baseURL st
 			connect.WithSchema(controllerBuilderServiceSaveBuildLogMethodDescriptor),
 			connect.WithClientOptions(opts...),
 		),
+		saveRuntimeImage: connect.NewClient[pb.SaveRuntimeImageRequest, emptypb.Empty](
+			httpClient,
+			baseURL+ControllerBuilderServiceSaveRuntimeImageProcedure,
+			connect.WithSchema(controllerBuilderServiceSaveRuntimeImageMethodDescriptor),
+			connect.WithClientOptions(opts...),
+		),
 		connectBuilder: connect.NewClient[pb.BuilderResponse, pb.BuilderRequest](
 			httpClient,
 			baseURL+ControllerBuilderServiceConnectBuilderProcedure,
@@ -385,6 +396,7 @@ type controllerBuilderServiceClient struct {
 	streamBuildLog       *connect.Client[pb.BuildLogPortion, emptypb.Empty]
 	saveArtifact         *connect.Client[pb.SaveArtifactRequest, emptypb.Empty]
 	saveBuildLog         *connect.Client[pb.SaveBuildLogRequest, emptypb.Empty]
+	saveRuntimeImage     *connect.Client[pb.SaveRuntimeImageRequest, emptypb.Empty]
 	connectBuilder       *connect.Client[pb.BuilderResponse, pb.BuilderRequest]
 }
 
@@ -413,6 +425,11 @@ func (c *controllerBuilderServiceClient) SaveBuildLog(ctx context.Context, req *
 	return c.saveBuildLog.CallUnary(ctx, req)
 }
 
+// SaveRuntimeImage calls neoshowcase.protobuf.ControllerBuilderService.SaveRuntimeImage.
+func (c *controllerBuilderServiceClient) SaveRuntimeImage(ctx context.Context, req *connect.Request[pb.SaveRuntimeImageRequest]) (*connect.Response[emptypb.Empty], error) {
+	return c.saveRuntimeImage.CallUnary(ctx, req)
+}
+
 // ConnectBuilder calls neoshowcase.protobuf.ControllerBuilderService.ConnectBuilder.
 func (c *controllerBuilderServiceClient) ConnectBuilder(ctx context.Context) *connect.BidiStreamForClient[pb.BuilderResponse, pb.BuilderRequest] {
 	return c.connectBuilder.CallBidiStream(ctx)
@@ -426,6 +443,7 @@ type ControllerBuilderServiceHandler interface {
 	StreamBuildLog(context.Context, *connect.ClientStream[pb.BuildLogPortion]) (*connect.Response[emptypb.Empty], error)
 	SaveArtifact(context.Context, *connect.Request[pb.SaveArtifactRequest]) (*connect.Response[emptypb.Empty], error)
 	SaveBuildLog(context.Context, *connect.Request[pb.SaveBuildLogRequest]) (*connect.Response[emptypb.Empty], error)
+	SaveRuntimeImage(context.Context, *connect.Request[pb.SaveRuntimeImageRequest]) (*connect.Response[emptypb.Empty], error)
 	ConnectBuilder(context.Context, *connect.BidiStream[pb.BuilderResponse, pb.BuilderRequest]) error
 }
 
@@ -465,6 +483,12 @@ func NewControllerBuilderServiceHandler(svc ControllerBuilderServiceHandler, opt
 		connect.WithSchema(controllerBuilderServiceSaveBuildLogMethodDescriptor),
 		connect.WithHandlerOptions(opts...),
 	)
+	controllerBuilderServiceSaveRuntimeImageHandler := connect.NewUnaryHandler(
+		ControllerBuilderServiceSaveRuntimeImageProcedure,
+		svc.SaveRuntimeImage,
+		connect.WithSchema(controllerBuilderServiceSaveRuntimeImageMethodDescriptor),
+		connect.WithHandlerOptions(opts...),
+	)
 	controllerBuilderServiceConnectBuilderHandler := connect.NewBidiStreamHandler(
 		ControllerBuilderServiceConnectBuilderProcedure,
 		svc.ConnectBuilder,
@@ -483,6 +507,8 @@ func NewControllerBuilderServiceHandler(svc ControllerBuilderServiceHandler, opt
 			controllerBuilderServiceSaveArtifactHandler.ServeHTTP(w, r)
 		case ControllerBuilderServiceSaveBuildLogProcedure:
 			controllerBuilderServiceSaveBuildLogHandler.ServeHTTP(w, r)
+		case ControllerBuilderServiceSaveRuntimeImageProcedure:
+			controllerBuilderServiceSaveRuntimeImageHandler.ServeHTTP(w, r)
 		case ControllerBuilderServiceConnectBuilderProcedure:
 			controllerBuilderServiceConnectBuilderHandler.ServeHTTP(w, r)
 		default:
@@ -512,6 +538,10 @@ func (UnimplementedControllerBuilderServiceHandler) SaveArtifact(context.Context
 
 func (UnimplementedControllerBuilderServiceHandler) SaveBuildLog(context.Context, *connect.Request[pb.SaveBuildLogRequest]) (*connect.Response[emptypb.Empty], error) {
 	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("neoshowcase.protobuf.ControllerBuilderService.SaveBuildLog is not implemented"))
+}
+
+func (UnimplementedControllerBuilderServiceHandler) SaveRuntimeImage(context.Context, *connect.Request[pb.SaveRuntimeImageRequest]) (*connect.Response[emptypb.Empty], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("neoshowcase.protobuf.ControllerBuilderService.SaveRuntimeImage is not implemented"))
 }
 
 func (UnimplementedControllerBuilderServiceHandler) ConnectBuilder(context.Context, *connect.BidiStream[pb.BuilderResponse, pb.BuilderRequest]) error {

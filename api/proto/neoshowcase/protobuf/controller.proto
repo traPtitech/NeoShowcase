@@ -1,9 +1,10 @@
 syntax = "proto3";
 package neoshowcase.protobuf;
-option go_package = "github.com/traPtitech/neoshowcase/pkg/infrastructure/grpc/pb";
 
 import "google/protobuf/empty.proto";
 import "neoshowcase/protobuf/gateway.proto";
+
+option go_package = "github.com/traPtitech/neoshowcase/pkg/infrastructure/grpc/pb";
 
 message ImageConfig {
   message RegistryConfig {
@@ -35,6 +36,11 @@ message SaveArtifactRequest {
 message SaveBuildLogRequest {
   string build_id = 1;
   bytes log = 2;
+}
+
+message SaveRuntimeImageRequest {
+  string build_id = 1;
+  int64 size = 2;
 }
 
 message RepositoryPrivate {
@@ -143,6 +149,7 @@ service ControllerBuilderService {
   rpc StreamBuildLog(stream BuildLogPortion) returns (google.protobuf.Empty);
   rpc SaveArtifact(SaveArtifactRequest) returns (google.protobuf.Empty);
   rpc SaveBuildLog(SaveBuildLogRequest) returns (google.protobuf.Empty);
+  rpc SaveRuntimeImage(SaveRuntimeImageRequest) returns (google.protobuf.Empty);
   rpc ConnectBuilder(stream BuilderResponse) returns (stream BuilderRequest);
 }
 
