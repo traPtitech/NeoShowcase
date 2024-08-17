@@ -32,7 +32,7 @@ CREATE TABLE `builds` (
 
 | Name | Type | Default | Nullable | Children | Parents | Comment |
 | ---- | ---- | ------- | -------- | -------- | ------- | ------- |
-| id | char(22) |  | false | [artifacts](artifacts.md) |  | ビルドID |
+| id | char(22) |  | false | [artifacts](artifacts.md) [runtime_images](runtime_images.md) |  | ビルドID |
 | commit | char(40) |  | false |  |  | コミットハッシュ |
 | config_hash | char(16) |  | false |  |  | ビルド設定のハッシュ |
 | status | enum('building','succeeded','failed','canceled','queued','skipped') |  | false |  |  | ビルドの状態 |
@@ -64,6 +64,7 @@ CREATE TABLE `builds` (
 erDiagram
 
 "artifacts" }o--|| "builds" : "FOREIGN KEY (build_id) REFERENCES builds (id)"
+"runtime_images" }o--|| "builds" : "FOREIGN KEY (build_id) REFERENCES builds (id)"
 "builds" }o--|| "applications" : "FOREIGN KEY (application_id) REFERENCES applications (id)"
 
 "builds" {
@@ -85,6 +86,12 @@ erDiagram
   datetime_6_ created_at
   datetime_6_ deleted_at
   varchar_22_ build_id FK
+}
+"runtime_images" {
+  char_22_ id PK
+  bigint_20_ size
+  datetime_6_ created_at
+  char_22_ build_id FK
 }
 "applications" {
   char_22_ id PK

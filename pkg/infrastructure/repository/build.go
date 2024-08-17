@@ -69,7 +69,7 @@ func (r *buildRepository) buildMods(cond domain.GetBuildCondition) []qm.QueryMod
 }
 
 func (r *buildRepository) GetBuilds(ctx context.Context, cond domain.GetBuildCondition) ([]*domain.Build, error) {
-	mods := []qm.QueryMod{qm.Load(models.BuildRels.Artifacts)}
+	mods := []qm.QueryMod{qm.Load(models.BuildRels.Artifacts), qm.Load(models.BuildRels.RuntimeImages)}
 	mods = append(mods, r.buildMods(cond)...)
 	builds, err := models.Builds(mods...).All(ctx, r.db)
 	if err != nil {
@@ -104,6 +104,7 @@ func (r *buildRepository) GetBuild(ctx context.Context, buildID string) (*domain
 	build, err := models.Builds(
 		models.BuildWhere.ID.EQ(buildID),
 		qm.Load(models.BuildRels.Artifacts),
+		qm.Load(models.BuildRels.RuntimeImages),
 	).One(ctx, r.db)
 	if err != nil {
 		if isNoRowsErr(err) {
