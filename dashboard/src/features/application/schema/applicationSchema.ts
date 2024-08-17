@@ -71,6 +71,7 @@ export const updateApplicationSchema = v.pipe(
     websites: v.optional(v.array(createWebsiteSchema)),
     portPublications: v.optional(v.array(portPublicationSchema)),
     ownerIds: v.optional(ownersSchema),
+    startOnCreate: v.optional(v.boolean()),
   }),
   v.transform(
     (input): PartialMessage<UpdateApplicationRequest> => ({

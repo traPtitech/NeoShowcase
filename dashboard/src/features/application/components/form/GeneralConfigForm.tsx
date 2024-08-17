@@ -13,6 +13,8 @@ import {
   updateApplicationFormInitialValues,
 } from '../../schema/applicationSchema'
 import BranchField from './general/BranchField'
+import NameField from './general/NameField'
+import RepositoryIdField from './general/RepositoryIdField'
 
 type Props = {
   app: Application
@@ -68,35 +70,8 @@ const GeneralConfigForm: Component<Props> = (props) => {
       </Field>
       <FormBox.Container>
         <FormBox.Forms>
-          <Field of={formStore} name="form.name">
-            {(field, fieldProps) => (
-              <TextField
-                label="Application Name"
-                required
-                {...fieldProps}
-                value={field.value ?? ''}
-                error={field.error}
-                readOnly={!props.hasPermission}
-              />
-            )}
-          </Field>
-          <Field of={formStore} name="form.repositoryId">
-            {(field, fieldProps) => (
-              <TextField
-                label="Repository ID"
-                required
-                info={{
-                  props: {
-                    content: 'リポジトリを移管する場合はIDを変更',
-                  },
-                }}
-                {...fieldProps}
-                value={field.value ?? ''}
-                error={field.error}
-                readOnly={!props.hasPermission}
-              />
-            )}
-          </Field>
+          <NameField hasPermission={props.hasPermission} />
+          <RepositoryIdField hasPermission={props.hasPermission} />
           <BranchField repo={props.repo} hasPermission={props.hasPermission} />
         </FormBox.Forms>
         <FormBox.Actions>

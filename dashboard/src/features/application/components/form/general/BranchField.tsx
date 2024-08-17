@@ -7,7 +7,7 @@ import { useApplicationForm } from '../../../provider/applicationFormProvider'
 
 type Props = {
   repo: Repository
-  hasPermission: boolean
+  hasPermission?: boolean
 }
 
 const BranchField: Component<Props> = (props) => {
@@ -66,7 +66,7 @@ const BranchField: Component<Props> = (props) => {
             disabled={branches().length === 0}
             value={field.value}
             error={field.error}
-            readOnly={!props.hasPermission}
+            readOnly={!(props.hasPermission ?? true)}
           />
         </>
       )}
