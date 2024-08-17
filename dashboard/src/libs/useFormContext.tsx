@@ -34,7 +34,7 @@ export const useFormContext = <TInput extends FieldValues, TOutput, TIssue exten
 
   const useForm = () => {
     const c = useContext(FormContext)
-    if (!c) throw new Error('useRepositoryCreateForm must be used within a RepositoryCreateFormProvider')
+    if (!c) throw new Error('useForm must be used within a FormProvider')
     return c
   }
 
