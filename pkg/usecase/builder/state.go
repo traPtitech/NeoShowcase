@@ -4,10 +4,11 @@ import (
 	"bytes"
 	"context"
 	"fmt"
-	"github.com/samber/lo"
-	log "github.com/sirupsen/logrus"
 	"io"
 	"os"
+
+	"github.com/samber/lo"
+	log "github.com/sirupsen/logrus"
 
 	"github.com/friendsofgo/errors"
 
@@ -94,6 +95,10 @@ func newState(app *domain.Application, envs []*domain.Environment, build *domain
 
 func (s *state) appEnv() map[string]string {
 	return lo.SliceToMap(s.envs, (*domain.Environment).GetKV)
+}
+
+func (st *state) deployType() domain.DeployType {
+	return st.app.Config.BuildConfig.BuildType().DeployType()
 }
 
 func (s *state) Done() {

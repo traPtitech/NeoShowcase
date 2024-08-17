@@ -7,6 +7,10 @@ import (
 
 	"github.com/friendsofgo/errors"
 	buildkit "github.com/moby/buildkit/client"
+	"github.com/regclient/regclient/types/descriptor"
+	"github.com/regclient/regclient/types/manifest"
+	"github.com/regclient/regclient/types/ref"
+	"github.com/samber/lo"
 	log "github.com/sirupsen/logrus"
 
 	"github.com/traPtitech/neoshowcase/pkg/domain"
@@ -39,7 +43,7 @@ func (s *builderService) startBuild(req *domain.StartBuildRequest) error {
 
 	go func() {
 		status := s.process(ctx, st)
-		s.finalize(context.Background(), st) // don't want finalization tasks to be cancelled
+		s.finalize(context.Background(), st, status) // don't want finalization tasks to be cancelled
 		st.Done()
 
 		cancel()
@@ -207,9 +211,44 @@ func (s *builderService) buildPingLoop(ctx context.Context, buildID string) {
 	}
 }
 
-func (s *builderService) finalize(ctx context.Context, st *state) {
+func (s *builderService) finalize(ctx context.Context, st *state, status domain.BuildStatus) {
 	err := s.client.SaveBuildLog(ctx, st.build.ID, st.logWriter.buf.Bytes())
 	if err != nil {
 		log.Errorf("failed to save build log: %+v", err)
+		// don't return here - we want to continue with other finalization tasks
 	}
+
+	if status == domain.BuildStatusSucceeded && st.deployType() == domain.DeployTypeRuntime {
+		size, err := s.fetchImageSize(ctx, st)
+		if err != nil {
+			log.Errorf("failed to get image size: %+v", err)
+			return
+		}
+		log.Infof("Runtime image size: %v", size)
+	}
+}
+
+func (s *builderService) fetchImageSize(ctx context.Context, st *state) (int64, error) {
+	cli := s.imageConfig.NewRegistry()
+	ref, err := ref.New(s.destImage(st.app, st.build))
+	if err != nil {
+		return 0, errors.Wrap(err, "failed to create ref")
+	}
+
+	m, err := cli.ManifestGet(ctx, ref)
+	if err != nil {
+		return 0, errors.Wrap(err, "failed to get manifest")
+	}
+	imager, ok := m.(manifest.Imager)
+	if !ok {
+		return 0, errors.New("manifest is not an imager")
+	}
+	layers, err := imager.GetLayers()
+	if err != nil {
+		return 0, errors.Wrap(err, "failed to get layers")
+	}
+
+	size := lo.SumBy(layers, func(l descriptor.Descriptor) int64 { return l.Size })
+
+	return size, nil
 }
