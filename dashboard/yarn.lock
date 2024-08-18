@@ -2586,7 +2586,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@unocss/reset@npm:0.62.2":
+"@unocss/reset@npm:0.62.2, @unocss/reset@npm:^0.62.2":
   version: 0.62.2
   resolution: "@unocss/reset@npm:0.62.2"
   checksum: 10c0/297a7cae482862615f11656907fe4feaee572dd278d3b0f9c73474d418f17740dcc590562b9f03532d7a54fa67a81d26a67b15e86c51bae6f95a4b6911758f1c
@@ -4854,6 +4854,7 @@ __metadata:
     "@tanstack/virtual-core": "npm:3.8.4"
     "@types/async-lock": "npm:1.4.2"
     "@types/node": "npm:22.1.0"
+    "@unocss/reset": "npm:^0.62.2"
     ansi-to-html: "npm:0.7.2"
     async-lock: "npm:1.4.1"
     chart.js: "npm:4.4.3"
