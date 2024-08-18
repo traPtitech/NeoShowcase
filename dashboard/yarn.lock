@@ -1713,7 +1713,16 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@iconify/types@npm:^2.0.0":
+"@iconify-json/material-symbols@npm:^1.1.88":
+  version: 1.1.88
+  resolution: "@iconify-json/material-symbols@npm:1.1.88"
+  dependencies:
+    "@iconify/types": "npm:*"
+  checksum: 10c0/8c6a93938b1197e892d175b28b645717d2587c9c6e6373c17fd353077eb7c710e24fabef929cdb4e036614dfe1834494119ebba317f85270f3b6025b070022ad
+  languageName: node
+  linkType: hard
+
+"@iconify/types@npm:*, @iconify/types@npm:^2.0.0":
   version: 2.0.0
   resolution: "@iconify/types@npm:2.0.0"
   checksum: 10c0/65a3be43500c7ccacf360e136d00e1717f050b7b91da644e94370256ac66f582d59212bdb30d00788aab4fc078262e91c95b805d1808d654b72f6d2072a7e4b2
@@ -4832,6 +4841,7 @@ __metadata:
     "@bufbuild/protobuf": "npm:1.10.0"
     "@connectrpc/connect": "npm:1.4.0"
     "@connectrpc/connect-web": "npm:1.4.0"
+    "@iconify-json/material-symbols": "npm:^1.1.88"
     "@kobalte/core": "npm:0.13.4"
     "@macaron-css/core": "npm:1.5.2"
     "@macaron-css/solid": "npm:1.5.1"
