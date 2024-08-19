@@ -1632,6 +1632,61 @@ export class ArtifactContent extends Message<ArtifactContent> {
 }
 
 /**
+ * @generated from message neoshowcase.protobuf.RuntimeImage
+ */
+export class RuntimeImage extends Message<RuntimeImage> {
+  /**
+   * @generated from field: string id = 1;
+   */
+  id = "";
+
+  /**
+   * @generated from field: string build_id = 2;
+   */
+  buildId = "";
+
+  /**
+   * @generated from field: int64 size = 3;
+   */
+  size = protoInt64.zero;
+
+  /**
+   * @generated from field: google.protobuf.Timestamp created_at = 4;
+   */
+  createdAt?: Timestamp;
+
+  constructor(data?: PartialMessage<RuntimeImage>) {
+    super();
+    proto3.util.initPartial(data, this);
+  }
+
+  static readonly runtime: typeof proto3 = proto3;
+  static readonly typeName = "neoshowcase.protobuf.RuntimeImage";
+  static readonly fields: FieldList = proto3.util.newFieldList(() => [
+    { no: 1, name: "id", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+    { no: 2, name: "build_id", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+    { no: 3, name: "size", kind: "scalar", T: 3 /* ScalarType.INT64 */ },
+    { no: 4, name: "created_at", kind: "message", T: Timestamp },
+  ]);
+
+  static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): RuntimeImage {
+    return new RuntimeImage().fromBinary(bytes, options);
+  }
+
+  static fromJson(jsonValue: JsonValue, options?: Partial<JsonReadOptions>): RuntimeImage {
+    return new RuntimeImage().fromJson(jsonValue, options);
+  }
+
+  static fromJsonString(jsonString: string, options?: Partial<JsonReadOptions>): RuntimeImage {
+    return new RuntimeImage().fromJsonString(jsonString, options);
+  }
+
+  static equals(a: RuntimeImage | PlainMessage<RuntimeImage> | undefined, b: RuntimeImage | PlainMessage<RuntimeImage> | undefined): boolean {
+    return proto3.util.equals(RuntimeImage, a, b);
+  }
+}
+
+/**
  * @generated from message neoshowcase.protobuf.AvailableMetrics
  */
 export class AvailableMetrics extends Message<AvailableMetrics> {
@@ -1882,6 +1937,11 @@ export class Build extends Message<Build> {
    */
   artifacts: Artifact[] = [];
 
+  /**
+   * @generated from field: optional neoshowcase.protobuf.RuntimeImage runtime_image = 11;
+   */
+  runtimeImage?: RuntimeImage;
+
   constructor(data?: PartialMessage<Build>) {
     super();
     proto3.util.initPartial(data, this);
@@ -1900,6 +1960,7 @@ export class Build extends Message<Build> {
     { no: 8, name: "finished_at", kind: "message", T: NullTimestamp },
     { no: 9, name: "retriable", kind: "scalar", T: 8 /* ScalarType.BOOL */ },
     { no: 10, name: "artifacts", kind: "message", T: Artifact, repeated: true },
+    { no: 11, name: "runtime_image", kind: "message", T: RuntimeImage, opt: true },
   ]);
 
   static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): Build {

@@ -3,6 +3,7 @@ package pbconvert
 import (
 	"google.golang.org/protobuf/types/known/timestamppb"
 
+	"github.com/samber/lo"
 	"github.com/traPtitech/neoshowcase/pkg/domain"
 	"github.com/traPtitech/neoshowcase/pkg/infrastructure/grpc/pb"
 	"github.com/traPtitech/neoshowcase/pkg/util/ds"
@@ -30,6 +31,7 @@ func ToPBBuild(build *domain.Build) *pb.Build {
 		FinishedAt:    ToPBNullTimestamp(build.FinishedAt),
 		Retriable:     build.Retriable,
 		Artifacts:     ds.Map(build.Artifacts, ToPBArtifact),
+		RuntimeImage:  lo.Ternary(build.RuntimeImage.Valid, ToPBRuntimeImage(&build.RuntimeImage.V), nil),
 	}
 }
 
