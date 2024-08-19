@@ -3,7 +3,6 @@ package pbconvert
 import (
 	"google.golang.org/protobuf/types/known/timestamppb"
 
-	"github.com/samber/lo"
 	"github.com/traPtitech/neoshowcase/pkg/domain"
 	"github.com/traPtitech/neoshowcase/pkg/infrastructure/grpc/pb"
 	"github.com/traPtitech/neoshowcase/pkg/util/ds"
@@ -20,6 +19,10 @@ var BuildStatusMapper = mapper.MustNewValueMapper(map[domain.BuildStatus]pb.Buil
 })
 
 func ToPBBuild(build *domain.Build) *pb.Build {
+	var image *pb.RuntimeImage = nil
+	if build.RuntimeImage.Valid {
+		image = ToPBRuntimeImage(&build.RuntimeImage.V)
+	}
 	return &pb.Build{
 		Id:            build.ID,
 		ApplicationId: build.ApplicationID,
@@ -31,7 +34,7 @@ func ToPBBuild(build *domain.Build) *pb.Build {
 		FinishedAt:    ToPBNullTimestamp(build.FinishedAt),
 		Retriable:     build.Retriable,
 		Artifacts:     ds.Map(build.Artifacts, ToPBArtifact),
-		RuntimeImage:  lo.Ternary(build.RuntimeImage.Valid, ToPBRuntimeImage(&build.RuntimeImage.V), nil),
+		RuntimeImage:  image,
 	}
 }
 
