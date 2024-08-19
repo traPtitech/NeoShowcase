@@ -22,55 +22,47 @@ import (
 )
 
 // RuntimeImage is an object representing the database table.
-type RuntimeImage struct { // イメージID
-	ID string `boil:"id" json:"id" toml:"id" yaml:"id"`
+type RuntimeImage struct { // ビルドID
+	BuildID string `boil:"build_id" json:"build_id" toml:"build_id" yaml:"build_id"`
 	// イメージサイズ
 	Size int64 `boil:"size" json:"size" toml:"size" yaml:"size"`
 	// 作成日時
 	CreatedAt time.Time `boil:"created_at" json:"created_at" toml:"created_at" yaml:"created_at"`
-	// ビルドID
-	BuildID string `boil:"build_id" json:"build_id" toml:"build_id" yaml:"build_id"`
 
 	R *runtimeImageR `boil:"-" json:"-" toml:"-" yaml:"-"`
 	L runtimeImageL  `boil:"-" json:"-" toml:"-" yaml:"-"`
 }
 
 var RuntimeImageColumns = struct {
-	ID        string
+	BuildID   string
 	Size      string
 	CreatedAt string
-	BuildID   string
 }{
-	ID:        "id",
+	BuildID:   "build_id",
 	Size:      "size",
 	CreatedAt: "created_at",
-	BuildID:   "build_id",
 }
 
 var RuntimeImageTableColumns = struct {
-	ID        string
+	BuildID   string
 	Size      string
 	CreatedAt string
-	BuildID   string
 }{
-	ID:        "runtime_images.id",
+	BuildID:   "runtime_images.build_id",
 	Size:      "runtime_images.size",
 	CreatedAt: "runtime_images.created_at",
-	BuildID:   "runtime_images.build_id",
 }
 
 // Generated where
 
 var RuntimeImageWhere = struct {
-	ID        whereHelperstring
+	BuildID   whereHelperstring
 	Size      whereHelperint64
 	CreatedAt whereHelpertime_Time
-	BuildID   whereHelperstring
 }{
-	ID:        whereHelperstring{field: "`runtime_images`.`id`"},
+	BuildID:   whereHelperstring{field: "`runtime_images`.`build_id`"},
 	Size:      whereHelperint64{field: "`runtime_images`.`size`"},
 	CreatedAt: whereHelpertime_Time{field: "`runtime_images`.`created_at`"},
-	BuildID:   whereHelperstring{field: "`runtime_images`.`build_id`"},
 }
 
 // RuntimeImageRels is where relationship names are stored.
@@ -101,10 +93,10 @@ func (r *runtimeImageR) GetBuild() *Build {
 type runtimeImageL struct{}
 
 var (
-	runtimeImageAllColumns            = []string{"id", "size", "created_at", "build_id"}
-	runtimeImageColumnsWithoutDefault = []string{"id", "size", "created_at", "build_id"}
+	runtimeImageAllColumns            = []string{"build_id", "size", "created_at"}
+	runtimeImageColumnsWithoutDefault = []string{"build_id", "size", "created_at"}
 	runtimeImageColumnsWithDefault    = []string{}
-	runtimeImagePrimaryKeyColumns     = []string{"id"}
+	runtimeImagePrimaryKeyColumns     = []string{"build_id"}
 	runtimeImageGeneratedColumns      = []string{}
 )
 
@@ -524,7 +516,7 @@ func (runtimeImageL) LoadBuild(ctx context.Context, e boil.ContextExecutor, sing
 		if foreign.R == nil {
 			foreign.R = &buildR{}
 		}
-		foreign.R.RuntimeImages = append(foreign.R.RuntimeImages, object)
+		foreign.R.RuntimeImage = object
 		return nil
 	}
 
@@ -535,7 +527,7 @@ func (runtimeImageL) LoadBuild(ctx context.Context, e boil.ContextExecutor, sing
 				if foreign.R == nil {
 					foreign.R = &buildR{}
 				}
-				foreign.R.RuntimeImages = append(foreign.R.RuntimeImages, local)
+				foreign.R.RuntimeImage = local
 				break
 			}
 		}
@@ -546,7 +538,7 @@ func (runtimeImageL) LoadBuild(ctx context.Context, e boil.ContextExecutor, sing
 
 // SetBuild of the runtimeImage to the related item.
 // Sets o.R.Build to related.
-// Adds o to related.R.RuntimeImages.
+// Adds o to related.R.RuntimeImage.
 func (o *RuntimeImage) SetBuild(ctx context.Context, exec boil.ContextExecutor, insert bool, related *Build) error {
 	var err error
 	if insert {
@@ -560,7 +552,7 @@ func (o *RuntimeImage) SetBuild(ctx context.Context, exec boil.ContextExecutor, 
 		strmangle.SetParamNames("`", "`", 0, []string{"build_id"}),
 		strmangle.WhereClause("`", "`", 0, runtimeImagePrimaryKeyColumns),
 	)
-	values := []interface{}{related.ID, o.ID}
+	values := []interface{}{related.ID, o.BuildID}
 
 	if boil.IsDebug(ctx) {
 		writer := boil.DebugWriterFrom(ctx)
@@ -582,10 +574,10 @@ func (o *RuntimeImage) SetBuild(ctx context.Context, exec boil.ContextExecutor, 
 
 	if related.R == nil {
 		related.R = &buildR{
-			RuntimeImages: RuntimeImageSlice{o},
+			RuntimeImage: o,
 		}
 	} else {
-		related.R.RuntimeImages = append(related.R.RuntimeImages, o)
+		related.R.RuntimeImage = o
 	}
 
 	return nil
@@ -604,7 +596,7 @@ func RuntimeImages(mods ...qm.QueryMod) runtimeImageQuery {
 
 // FindRuntimeImage retrieves a single record by ID with an executor.
 // If selectCols is empty Find will return all columns.
-func FindRuntimeImage(ctx context.Context, exec boil.ContextExecutor, iD string, selectCols ...string) (*RuntimeImage, error) {
+func FindRuntimeImage(ctx context.Context, exec boil.ContextExecutor, buildID string, selectCols ...string) (*RuntimeImage, error) {
 	runtimeImageObj := &RuntimeImage{}
 
 	sel := "*"
@@ -612,10 +604,10 @@ func FindRuntimeImage(ctx context.Context, exec boil.ContextExecutor, iD string,
 		sel = strings.Join(strmangle.IdentQuoteSlice(dialect.LQ, dialect.RQ, selectCols), ",")
 	}
 	query := fmt.Sprintf(
-		"select %s from `runtime_images` where `id`=?", sel,
+		"select %s from `runtime_images` where `build_id`=?", sel,
 	)
 
-	q := queries.Raw(query, iD)
+	q := queries.Raw(query, buildID)
 
 	err := q.Bind(ctx, exec, runtimeImageObj)
 	if err != nil {
@@ -711,7 +703,7 @@ func (o *RuntimeImage) Insert(ctx context.Context, exec boil.ContextExecutor, co
 	}
 
 	identifierCols = []interface{}{
-		o.ID,
+		o.BuildID,
 	}
 
 	if boil.IsDebug(ctx) {
@@ -863,7 +855,7 @@ func (o RuntimeImageSlice) UpdateAll(ctx context.Context, exec boil.ContextExecu
 }
 
 var mySQLRuntimeImageUniqueColumns = []string{
-	"id",
+	"build_id",
 }
 
 // Upsert attempts an insert using an executor, and does an update or ignore on conflict.
@@ -1020,7 +1012,7 @@ func (o *RuntimeImage) Delete(ctx context.Context, exec boil.ContextExecutor) (i
 	}
 
 	args := queries.ValuesFromMapping(reflect.Indirect(reflect.ValueOf(o)), runtimeImagePrimaryKeyMapping)
-	sql := "DELETE FROM `runtime_images` WHERE `id`=?"
+	sql := "DELETE FROM `runtime_images` WHERE `build_id`=?"
 
 	if boil.IsDebug(ctx) {
 		writer := boil.DebugWriterFrom(ctx)
@@ -1117,7 +1109,7 @@ func (o RuntimeImageSlice) DeleteAll(ctx context.Context, exec boil.ContextExecu
 // Reload refetches the object from the database
 // using the primary keys with an executor.
 func (o *RuntimeImage) Reload(ctx context.Context, exec boil.ContextExecutor) error {
-	ret, err := FindRuntimeImage(ctx, exec, o.ID)
+	ret, err := FindRuntimeImage(ctx, exec, o.BuildID)
 	if err != nil {
 		return err
 	}
@@ -1156,16 +1148,16 @@ func (o *RuntimeImageSlice) ReloadAll(ctx context.Context, exec boil.ContextExec
 }
 
 // RuntimeImageExists checks if the RuntimeImage row exists.
-func RuntimeImageExists(ctx context.Context, exec boil.ContextExecutor, iD string) (bool, error) {
+func RuntimeImageExists(ctx context.Context, exec boil.ContextExecutor, buildID string) (bool, error) {
 	var exists bool
-	sql := "select exists(select 1 from `runtime_images` where `id`=? limit 1)"
+	sql := "select exists(select 1 from `runtime_images` where `build_id`=? limit 1)"
 
 	if boil.IsDebug(ctx) {
 		writer := boil.DebugWriterFrom(ctx)
 		fmt.Fprintln(writer, sql)
-		fmt.Fprintln(writer, iD)
+		fmt.Fprintln(writer, buildID)
 	}
-	row := exec.QueryRowContext(ctx, sql, iD)
+	row := exec.QueryRowContext(ctx, sql, buildID)
 
 	err := row.Scan(&exists)
 	if err != nil {
@@ -1177,5 +1169,5 @@ func RuntimeImageExists(ctx context.Context, exec boil.ContextExecutor, iD strin
 
 // Exists checks if the RuntimeImage row exists.
 func (o *RuntimeImage) Exists(ctx context.Context, exec boil.ContextExecutor) (bool, error) {
-	return RuntimeImageExists(ctx, exec, o.ID)
+	return RuntimeImageExists(ctx, exec, o.BuildID)
 }

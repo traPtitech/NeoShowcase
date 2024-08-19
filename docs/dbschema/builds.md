@@ -64,7 +64,7 @@ CREATE TABLE `builds` (
 erDiagram
 
 "artifacts" }o--|| "builds" : "FOREIGN KEY (build_id) REFERENCES builds (id)"
-"runtime_images" }o--|| "builds" : "FOREIGN KEY (build_id) REFERENCES builds (id)"
+"runtime_images" |o--|| "builds" : "FOREIGN KEY (build_id) REFERENCES builds (id)"
 "builds" }o--|| "applications" : "FOREIGN KEY (application_id) REFERENCES applications (id)"
 
 "builds" {
@@ -88,10 +88,9 @@ erDiagram
   varchar_22_ build_id FK
 }
 "runtime_images" {
-  char_22_ id PK
+  char_22_ build_id PK
   bigint_20_ size
   datetime_6_ created_at
-  char_22_ build_id FK
 }
 "applications" {
   char_22_ id PK

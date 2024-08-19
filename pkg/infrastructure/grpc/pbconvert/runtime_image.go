@@ -8,7 +8,6 @@ import (
 
 func ToPBRuntimeImage(image *domain.RuntimeImage) *pb.RuntimeImage {
 	return &pb.RuntimeImage{
-		Id:        image.ID,
 		BuildId:   image.BuildID,
 		Size:      image.Size,
 		CreatedAt: timestamppb.New(image.CreatedAt),

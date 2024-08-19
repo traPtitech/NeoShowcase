@@ -7,7 +7,6 @@ import (
 
 func FromDomainRuntimeImage(r *domain.RuntimeImage) *models.RuntimeImage {
 	return &models.RuntimeImage{
-		ID:      r.ID,
 		BuildID: r.BuildID,
 		Size:    r.Size,
 	}
@@ -15,7 +14,6 @@ func FromDomainRuntimeImage(r *domain.RuntimeImage) *models.RuntimeImage {
 
 func ToDomainRuntimeImage(r *models.RuntimeImage) domain.RuntimeImage {
 	return domain.RuntimeImage{
-		ID:        r.ID,
 		BuildID:   r.BuildID,
 		Size:      r.Size,
 		CreatedAt: r.CreatedAt,

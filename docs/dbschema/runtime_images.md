@@ -9,12 +9,10 @@
 
 ```sql
 CREATE TABLE `runtime_images` (
-  `id` char(22) NOT NULL COMMENT 'イメージID',
+  `build_id` char(22) NOT NULL COMMENT 'ビルドID',
   `size` bigint(20) NOT NULL COMMENT 'イメージサイズ',
   `created_at` datetime(6) NOT NULL COMMENT '作成日時',
-  `build_id` char(22) NOT NULL COMMENT 'ビルドID',
-  PRIMARY KEY (`id`),
-  KEY `fk_runtime_images_build_id` (`build_id`),
+  PRIMARY KEY (`build_id`),
   CONSTRAINT `fk_runtime_images_build_id` FOREIGN KEY (`build_id`) REFERENCES `builds` (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci COMMENT='ランタイムイメージテーブル'
 ```
@@ -25,37 +23,34 @@ CREATE TABLE `runtime_images` (
 
 | Name | Type | Default | Nullable | Children | Parents | Comment |
 | ---- | ---- | ------- | -------- | -------- | ------- | ------- |
-| id | char(22) |  | false |  |  | イメージID |
+| build_id | char(22) |  | false |  | [builds](builds.md) | ビルドID |
 | size | bigint(20) |  | false |  |  | イメージサイズ |
 | created_at | datetime(6) |  | false |  |  | 作成日時 |
-| build_id | char(22) |  | false |  | [builds](builds.md) | ビルドID |
 
 ## Constraints
 
 | Name | Type | Definition |
 | ---- | ---- | ---------- |
 | fk_runtime_images_build_id | FOREIGN KEY | FOREIGN KEY (build_id) REFERENCES builds (id) |
-| PRIMARY | PRIMARY KEY | PRIMARY KEY (id) |
+| PRIMARY | PRIMARY KEY | PRIMARY KEY (build_id) |
 
 ## Indexes
 
 | Name | Definition |
 | ---- | ---------- |
-| fk_runtime_images_build_id | KEY fk_runtime_images_build_id (build_id) USING BTREE |
-| PRIMARY | PRIMARY KEY (id) USING BTREE |
+| PRIMARY | PRIMARY KEY (build_id) USING BTREE |
 
 ## Relations
 
 ```mermaid
 erDiagram
 
-"runtime_images" }o--|| "builds" : "FOREIGN KEY (build_id) REFERENCES builds (id)"
+"runtime_images" |o--|| "builds" : "FOREIGN KEY (build_id) REFERENCES builds (id)"
 
 "runtime_images" {
-  char_22_ id PK
+  char_22_ build_id PK
   bigint_20_ size
   datetime_6_ created_at
-  char_22_ build_id FK
 }
 "builds" {
   char_22_ id PK

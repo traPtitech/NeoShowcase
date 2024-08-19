@@ -124,20 +124,20 @@ var BuildWhere = struct {
 
 // BuildRels is where relationship names are stored.
 var BuildRels = struct {
-	Application   string
-	Artifacts     string
-	RuntimeImages string
+	Application  string
+	RuntimeImage string
+	Artifacts    string
 }{
-	Application:   "Application",
-	Artifacts:     "Artifacts",
-	RuntimeImages: "RuntimeImages",
+	Application:  "Application",
+	RuntimeImage: "RuntimeImage",
+	Artifacts:    "Artifacts",
 }
 
 // buildR is where relationships are stored.
 type buildR struct {
-	Application   *Application      `boil:"Application" json:"Application" toml:"Application" yaml:"Application"`
-	Artifacts     ArtifactSlice     `boil:"Artifacts" json:"Artifacts" toml:"Artifacts" yaml:"Artifacts"`
-	RuntimeImages RuntimeImageSlice `boil:"RuntimeImages" json:"RuntimeImages" toml:"RuntimeImages" yaml:"RuntimeImages"`
+	Application  *Application  `boil:"Application" json:"Application" toml:"Application" yaml:"Application"`
+	RuntimeImage *RuntimeImage `boil:"RuntimeImage" json:"RuntimeImage" toml:"RuntimeImage" yaml:"RuntimeImage"`
+	Artifacts    ArtifactSlice `boil:"Artifacts" json:"Artifacts" toml:"Artifacts" yaml:"Artifacts"`
 }
 
 // NewStruct creates a new relationship struct
@@ -152,18 +152,18 @@ func (r *buildR) GetApplication() *Application {
 	return r.Application
 }
 
+func (r *buildR) GetRuntimeImage() *RuntimeImage {
+	if r == nil {
+		return nil
+	}
+	return r.RuntimeImage
+}
+
 func (r *buildR) GetArtifacts() ArtifactSlice {
 	if r == nil {
 		return nil
 	}
 	return r.Artifacts
-}
-
-func (r *buildR) GetRuntimeImages() RuntimeImageSlice {
-	if r == nil {
-		return nil
-	}
-	return r.RuntimeImages
 }
 
 // buildL is where Load methods for each relationship are stored.
@@ -493,6 +493,17 @@ func (o *Build) Application(mods ...qm.QueryMod) applicationQuery {
 	return Applications(queryMods...)
 }
 
+// RuntimeImage pointed to by the foreign key.
+func (o *Build) RuntimeImage(mods ...qm.QueryMod) runtimeImageQuery {
+	queryMods := []qm.QueryMod{
+		qm.Where("`build_id` = ?", o.ID),
+	}
+
+	queryMods = append(queryMods, mods...)
+
+	return RuntimeImages(queryMods...)
+}
+
 // Artifacts retrieves all the artifact's Artifacts with an executor.
 func (o *Build) Artifacts(mods ...qm.QueryMod) artifactQuery {
 	var queryMods []qm.QueryMod
@@ -505,20 +516,6 @@ func (o *Build) Artifacts(mods ...qm.QueryMod) artifactQuery {
 	)
 
 	return Artifacts(queryMods...)
-}
-
-// RuntimeImages retrieves all the runtime_image's RuntimeImages with an executor.
-func (o *Build) RuntimeImages(mods ...qm.QueryMod) runtimeImageQuery {
-	var queryMods []qm.QueryMod
-	if len(mods) != 0 {
-		queryMods = append(queryMods, mods...)
-	}
-
-	queryMods = append(queryMods,
-		qm.Where("`runtime_images`.`build_id`=?", o.ID),
-	)
-
-	return RuntimeImages(queryMods...)
 }
 
 // LoadApplication allows an eager lookup of values, cached into the
@@ -641,6 +638,123 @@ func (buildL) LoadApplication(ctx context.Context, e boil.ContextExecutor, singu
 	return nil
 }
 
+// LoadRuntimeImage allows an eager lookup of values, cached into the
+// loaded structs of the objects. This is for a 1-1 relationship.
+func (buildL) LoadRuntimeImage(ctx context.Context, e boil.ContextExecutor, singular bool, maybeBuild interface{}, mods queries.Applicator) error {
+	var slice []*Build
+	var object *Build
+
+	if singular {
+		var ok bool
+		object, ok = maybeBuild.(*Build)
+		if !ok {
+			object = new(Build)
+			ok = queries.SetFromEmbeddedStruct(&object, &maybeBuild)
+			if !ok {
+				return errors.New(fmt.Sprintf("failed to set %T from embedded struct %T", object, maybeBuild))
+			}
+		}
+	} else {
+		s, ok := maybeBuild.(*[]*Build)
+		if ok {
+			slice = *s
+		} else {
+			ok = queries.SetFromEmbeddedStruct(&slice, maybeBuild)
+			if !ok {
+				return errors.New(fmt.Sprintf("failed to set %T from embedded struct %T", slice, maybeBuild))
+			}
+		}
+	}
+
+	args := make(map[interface{}]struct{})
+	if singular {
+		if object.R == nil {
+			object.R = &buildR{}
+		}
+		args[object.ID] = struct{}{}
+	} else {
+		for _, obj := range slice {
+			if obj.R == nil {
+				obj.R = &buildR{}
+			}
+
+			args[obj.ID] = struct{}{}
+		}
+	}
+
+	if len(args) == 0 {
+		return nil
+	}
+
+	argsSlice := make([]interface{}, len(args))
+	i := 0
+	for arg := range args {
+		argsSlice[i] = arg
+		i++
+	}
+
+	query := NewQuery(
+		qm.From(`runtime_images`),
+		qm.WhereIn(`runtime_images.build_id in ?`, argsSlice...),
+	)
+	if mods != nil {
+		mods.Apply(query)
+	}
+
+	results, err := query.QueryContext(ctx, e)
+	if err != nil {
+		return errors.Wrap(err, "failed to eager load RuntimeImage")
+	}
+
+	var resultSlice []*RuntimeImage
+	if err = queries.Bind(results, &resultSlice); err != nil {
+		return errors.Wrap(err, "failed to bind eager loaded slice RuntimeImage")
+	}
+
+	if err = results.Close(); err != nil {
+		return errors.Wrap(err, "failed to close results of eager load for runtime_images")
+	}
+	if err = results.Err(); err != nil {
+		return errors.Wrap(err, "error occurred during iteration of eager loaded relations for runtime_images")
+	}
+
+	if len(runtimeImageAfterSelectHooks) != 0 {
+		for _, obj := range resultSlice {
+			if err := obj.doAfterSelectHooks(ctx, e); err != nil {
+				return err
+			}
+		}
+	}
+
+	if len(resultSlice) == 0 {
+		return nil
+	}
+
+	if singular {
+		foreign := resultSlice[0]
+		object.R.RuntimeImage = foreign
+		if foreign.R == nil {
+			foreign.R = &runtimeImageR{}
+		}
+		foreign.R.Build = object
+	}
+
+	for _, local := range slice {
+		for _, foreign := range resultSlice {
+			if local.ID == foreign.BuildID {
+				local.R.RuntimeImage = foreign
+				if foreign.R == nil {
+					foreign.R = &runtimeImageR{}
+				}
+				foreign.R.Build = local
+				break
+			}
+		}
+	}
+
+	return nil
+}
+
 // LoadArtifacts allows an eager lookup of values, cached into the
 // loaded structs of the objects. This is for a 1-M or N-M relationship.
 func (buildL) LoadArtifacts(ctx context.Context, e boil.ContextExecutor, singular bool, maybeBuild interface{}, mods queries.Applicator) error {
@@ -754,119 +868,6 @@ func (buildL) LoadArtifacts(ctx context.Context, e boil.ContextExecutor, singula
 	return nil
 }
 
-// LoadRuntimeImages allows an eager lookup of values, cached into the
-// loaded structs of the objects. This is for a 1-M or N-M relationship.
-func (buildL) LoadRuntimeImages(ctx context.Context, e boil.ContextExecutor, singular bool, maybeBuild interface{}, mods queries.Applicator) error {
-	var slice []*Build
-	var object *Build
-
-	if singular {
-		var ok bool
-		object, ok = maybeBuild.(*Build)
-		if !ok {
-			object = new(Build)
-			ok = queries.SetFromEmbeddedStruct(&object, &maybeBuild)
-			if !ok {
-				return errors.New(fmt.Sprintf("failed to set %T from embedded struct %T", object, maybeBuild))
-			}
-		}
-	} else {
-		s, ok := maybeBuild.(*[]*Build)
-		if ok {
-			slice = *s
-		} else {
-			ok = queries.SetFromEmbeddedStruct(&slice, maybeBuild)
-			if !ok {
-				return errors.New(fmt.Sprintf("failed to set %T from embedded struct %T", slice, maybeBuild))
-			}
-		}
-	}
-
-	args := make(map[interface{}]struct{})
-	if singular {
-		if object.R == nil {
-			object.R = &buildR{}
-		}
-		args[object.ID] = struct{}{}
-	} else {
-		for _, obj := range slice {
-			if obj.R == nil {
-				obj.R = &buildR{}
-			}
-			args[obj.ID] = struct{}{}
-		}
-	}
-
-	if len(args) == 0 {
-		return nil
-	}
-
-	argsSlice := make([]interface{}, len(args))
-	i := 0
-	for arg := range args {
-		argsSlice[i] = arg
-		i++
-	}
-
-	query := NewQuery(
-		qm.From(`runtime_images`),
-		qm.WhereIn(`runtime_images.build_id in ?`, argsSlice...),
-	)
-	if mods != nil {
-		mods.Apply(query)
-	}
-
-	results, err := query.QueryContext(ctx, e)
-	if err != nil {
-		return errors.Wrap(err, "failed to eager load runtime_images")
-	}
-
-	var resultSlice []*RuntimeImage
-	if err = queries.Bind(results, &resultSlice); err != nil {
-		return errors.Wrap(err, "failed to bind eager loaded slice runtime_images")
-	}
-
-	if err = results.Close(); err != nil {
-		return errors.Wrap(err, "failed to close results in eager load on runtime_images")
-	}
-	if err = results.Err(); err != nil {
-		return errors.Wrap(err, "error occurred during iteration of eager loaded relations for runtime_images")
-	}
-
-	if len(runtimeImageAfterSelectHooks) != 0 {
-		for _, obj := range resultSlice {
-			if err := obj.doAfterSelectHooks(ctx, e); err != nil {
-				return err
-			}
-		}
-	}
-	if singular {
-		object.R.RuntimeImages = resultSlice
-		for _, foreign := range resultSlice {
-			if foreign.R == nil {
-				foreign.R = &runtimeImageR{}
-			}
-			foreign.R.Build = object
-		}
-		return nil
-	}
-
-	for _, foreign := range resultSlice {
-		for _, local := range slice {
-			if local.ID == foreign.BuildID {
-				local.R.RuntimeImages = append(local.R.RuntimeImages, foreign)
-				if foreign.R == nil {
-					foreign.R = &runtimeImageR{}
-				}
-				foreign.R.Build = local
-				break
-			}
-		}
-	}
-
-	return nil
-}
-
 // SetApplication of the build to the related item.
 // Sets o.R.Application to related.
 // Adds o to related.R.Builds.
@@ -914,6 +915,56 @@ func (o *Build) SetApplication(ctx context.Context, exec boil.ContextExecutor, i
 	return nil
 }
 
+// SetRuntimeImage of the build to the related item.
+// Sets o.R.RuntimeImage to related.
+// Adds o to related.R.Build.
+func (o *Build) SetRuntimeImage(ctx context.Context, exec boil.ContextExecutor, insert bool, related *RuntimeImage) error {
+	var err error
+
+	if insert {
+		related.BuildID = o.ID
+
+		if err = related.Insert(ctx, exec, boil.Infer()); err != nil {
+			return errors.Wrap(err, "failed to insert into foreign table")
+		}
+	} else {
+		updateQuery := fmt.Sprintf(
+			"UPDATE `runtime_images` SET %s WHERE %s",
+			strmangle.SetParamNames("`", "`", 0, []string{"build_id"}),
+			strmangle.WhereClause("`", "`", 0, runtimeImagePrimaryKeyColumns),
+		)
+		values := []interface{}{o.ID, related.BuildID}
+
+		if boil.IsDebug(ctx) {
+			writer := boil.DebugWriterFrom(ctx)
+			fmt.Fprintln(writer, updateQuery)
+			fmt.Fprintln(writer, values)
+		}
+		if _, err = exec.ExecContext(ctx, updateQuery, values...); err != nil {
+			return errors.Wrap(err, "failed to update foreign table")
+		}
+
+		related.BuildID = o.ID
+	}
+
+	if o.R == nil {
+		o.R = &buildR{
+			RuntimeImage: related,
+		}
+	} else {
+		o.R.RuntimeImage = related
+	}
+
+	if related.R == nil {
+		related.R = &runtimeImageR{
+			Build: o,
+		}
+	} else {
+		related.R.Build = o
+	}
+	return nil
+}
+
 // AddArtifacts adds the given related objects to the existing relationships
 // of the build, optionally inserting them as new records.
 // Appends related to o.R.Artifacts.
@@ -958,59 +1009,6 @@ func (o *Build) AddArtifacts(ctx context.Context, exec boil.ContextExecutor, ins
 	for _, rel := range related {
 		if rel.R == nil {
 			rel.R = &artifactR{
-				Build: o,
-			}
-		} else {
-			rel.R.Build = o
-		}
-	}
-	return nil
-}
-
-// AddRuntimeImages adds the given related objects to the existing relationships
-// of the build, optionally inserting them as new records.
-// Appends related to o.R.RuntimeImages.
-// Sets related.R.Build appropriately.
-func (o *Build) AddRuntimeImages(ctx context.Context, exec boil.ContextExecutor, insert bool, related ...*RuntimeImage) error {
-	var err error
-	for _, rel := range related {
-		if insert {
-			rel.BuildID = o.ID
-			if err = rel.Insert(ctx, exec, boil.Infer()); err != nil {
-				return errors.Wrap(err, "failed to insert into foreign table")
-			}
-		} else {
-			updateQuery := fmt.Sprintf(
-				"UPDATE `runtime_images` SET %s WHERE %s",
-				strmangle.SetParamNames("`", "`", 0, []string{"build_id"}),
-				strmangle.WhereClause("`", "`", 0, runtimeImagePrimaryKeyColumns),
-			)
-			values := []interface{}{o.ID, rel.ID}
-
-			if boil.IsDebug(ctx) {
-				writer := boil.DebugWriterFrom(ctx)
-				fmt.Fprintln(writer, updateQuery)
-				fmt.Fprintln(writer, values)
-			}
-			if _, err = exec.ExecContext(ctx, updateQuery, values...); err != nil {
-				return errors.Wrap(err, "failed to update foreign table")
-			}
-
-			rel.BuildID = o.ID
-		}
-	}
-
-	if o.R == nil {
-		o.R = &buildR{
-			RuntimeImages: related,
-		}
-	} else {
-		o.R.RuntimeImages = append(o.R.RuntimeImages, related...)
-	}
-
-	for _, rel := range related {
-		if rel.R == nil {
-			rel.R = &runtimeImageR{
 				Build: o,
 			}
 		} else {

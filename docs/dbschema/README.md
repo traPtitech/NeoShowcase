@@ -15,7 +15,7 @@
 | [repository_auth](repository_auth.md) | 5 | Gitリポジトリ認証情報テーブル | BASE TABLE |
 | [repository_commits](repository_commits.md) | 9 | コミットメタ情報テーブル | BASE TABLE |
 | [repository_owners](repository_owners.md) | 2 | リポジトリ所有者テーブル | BASE TABLE |
-| [runtime_images](runtime_images.md) | 4 | ランタイムイメージテーブル | BASE TABLE |
+| [runtime_images](runtime_images.md) | 3 | ランタイムイメージテーブル | BASE TABLE |
 | [users](users.md) | 3 | ユーザーテーブル | BASE TABLE |
 | [user_keys](user_keys.md) | 5 | ユーザーSSHキーテーブル | BASE TABLE |
 | [websites](websites.md) | 9 | Webサイトテーブル | BASE TABLE |
@@ -36,7 +36,7 @@ erDiagram
 "repository_auth" |o--|| "repositories" : "FOREIGN KEY (repository_id) REFERENCES repositories (id)"
 "repository_owners" }o--|| "repositories" : "FOREIGN KEY (repository_id) REFERENCES repositories (id)"
 "repository_owners" }o--|| "users" : "FOREIGN KEY (user_id) REFERENCES users (id)"
-"runtime_images" }o--|| "builds" : "FOREIGN KEY (build_id) REFERENCES builds (id)"
+"runtime_images" |o--|| "builds" : "FOREIGN KEY (build_id) REFERENCES builds (id)"
 "user_keys" }o--|| "users" : "FOREIGN KEY (user_id) REFERENCES users (id)"
 "websites" }o--|| "applications" : "FOREIGN KEY (application_id) REFERENCES applications (id)"
 
@@ -132,10 +132,9 @@ erDiagram
   char_22_ repository_id PK
 }
 "runtime_images" {
-  char_22_ id PK
+  char_22_ build_id PK
   bigint_20_ size
   datetime_6_ created_at
-  char_22_ build_id FK
 }
 "users" {
   char_22_ id PK

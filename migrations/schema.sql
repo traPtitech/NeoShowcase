@@ -213,11 +213,10 @@ CREATE TABLE `artifacts`
 
 CREATE TABLE `runtime_images`
 (
-    `id`          CHAR(22)     NOT NULL COMMENT 'イメージID',
+    `build_id`    CHAR(22)     NOT NULL COMMENT 'ビルドID',
     `size`        BIGINT       NOT NULL COMMENT 'イメージサイズ',
     `created_at`  DATETIME(6)  NOT NULL COMMENT '作成日時',
-    `build_id`    CHAR(22)     NOT NULL COMMENT 'ビルドID',
-    PRIMARY KEY (`id`),
+    PRIMARY KEY (`build_id`),
     CONSTRAINT `fk_runtime_images_build_id` FOREIGN KEY (`build_id`) REFERENCES `builds` (`id`)
 ) ENGINE = InnoDB
   DEFAULT CHARSET = utf8mb4

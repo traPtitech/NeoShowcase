@@ -46,9 +46,11 @@ func ToDomainBuild(build *models.Build) *domain.Build {
 		Retriable:     build.Retriable,
 	}
 	if build.R != nil {
-		ret.Artifacts = ds.Map(build.R.Artifacts, ToDomainArtifact)
-		if len(build.R.RuntimeImages) > 0 {
-			ret.RuntimeImage = optional.From(ToDomainRuntimeImage(build.R.RuntimeImages[0]))
+		if build.R.Artifacts != nil {
+			ret.Artifacts = ds.Map(build.R.Artifacts, ToDomainArtifact)
+		}
+		if build.R.RuntimeImage != nil {
+			ret.RuntimeImage = optional.From(ToDomainRuntimeImage(build.R.RuntimeImage))
 		}
 	}
 	return ret
