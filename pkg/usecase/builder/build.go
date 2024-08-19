@@ -232,13 +232,13 @@ func (s *builderService) finalize(ctx context.Context, st *state, status domain.
 }
 
 func (s *builderService) fetchImageSize(ctx context.Context, st *state) (int64, error) {
-	cli := s.imageConfig.NewRegistry()
+	r := s.imageConfig.NewRegistry()
 	ref, err := ref.New(s.destImage(st.app, st.build))
 	if err != nil {
 		return 0, errors.Wrap(err, "failed to create ref")
 	}
 
-	m, err := cli.ManifestGet(ctx, ref)
+	m, err := r.ManifestGet(ctx, ref)
 	if err != nil {
 		return 0, errors.Wrap(err, "failed to get manifest")
 	}
