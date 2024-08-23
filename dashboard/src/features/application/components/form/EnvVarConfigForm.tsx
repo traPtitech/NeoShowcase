@@ -196,7 +196,7 @@ const EnvVarConfigForm: Component<Props> = (props) => {
         </FormBox.Forms>
         <FormBox.Actions>
           <Show when={formStore.dirty && !formStore.submitting}>
-            <Button variants="borderError" size="small" type="button" onClick={discardChanges}>
+            <Button variants="ghost" size="small" type="button" onClick={discardChanges}>
               Discard Changes
             </Button>
           </Show>

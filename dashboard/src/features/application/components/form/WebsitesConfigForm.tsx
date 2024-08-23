@@ -60,15 +60,6 @@ type Props = {
 const WebsiteConfigForm: Component<Props> = (props) => {
   const { formStore } = useApplicationForm()
 
-  const discardChanges = () => {
-    reset(
-      untrack(() => formStore),
-      {
-        initialValues: updateApplicationFormInitialValues(props.app),
-      },
-    )
-  }
-
   // `reset` doesn't work on first render when the Field not rendered
   // see: https://github.com/fabian-hiller/modular-forms/issues/157#issuecomment-1848567069
   onMount(() => {
@@ -77,7 +68,12 @@ const WebsiteConfigForm: Component<Props> = (props) => {
 
   // reset forms when props.app changed
   createEffect(() => {
-    discardChanges()
+    reset(
+      untrack(() => formStore),
+      {
+        initialValues: updateApplicationFormInitialValues(props.app),
+      },
+    )
   })
 
   const defaultDomain = () => systemInfo()?.domains.at(0)
@@ -176,11 +172,6 @@ const WebsiteConfigForm: Component<Props> = (props) => {
           </FieldRow>
         </Show>
         <FormBox.Actions>
-          <Show when={formStore.dirty && !formStore.submitting}>
-            <Button variants="ghost" size="small" onClick={discardChanges} type="button">
-              Discard Changes
-            </Button>
-          </Show>
           <Button
             variants="primary"
             size="small"

@@ -26,15 +26,6 @@ type Props = {
 const GeneralConfigForm: Component<Props> = (props) => {
   const { formStore } = useApplicationForm()
 
-  const discardChanges = () => {
-    reset(
-      untrack(() => formStore),
-      {
-        initialValues: updateApplicationFormInitialValues(props.app),
-      },
-    )
-  }
-
   // `reset` doesn't work on first render when the Field not rendered
   // see: https://github.com/fabian-hiller/modular-forms/issues/157#issuecomment-1848567069
   onMount(() => {
@@ -43,7 +34,12 @@ const GeneralConfigForm: Component<Props> = (props) => {
 
   // reset forms when props.app changed
   createEffect(() => {
-    discardChanges()
+    reset(
+      untrack(() => formStore),
+      {
+        initialValues: updateApplicationFormInitialValues(props.app),
+      },
+    )
   })
 
   // TODO: propsでSubmitHandler<CreateOrUpdateApplicationInput>を受け取る
@@ -75,11 +71,6 @@ const GeneralConfigForm: Component<Props> = (props) => {
           <BranchField repo={props.repo} hasPermission={props.hasPermission} />
         </FormBox.Forms>
         <FormBox.Actions>
-          <Show when={formStore.dirty && !formStore.submitting}>
-            <Button variants="borderError" size="small" onClick={discardChanges} type="button">
-              Discard Changes
-            </Button>
-          </Show>
           <Button
             variants="primary"
             size="small"
