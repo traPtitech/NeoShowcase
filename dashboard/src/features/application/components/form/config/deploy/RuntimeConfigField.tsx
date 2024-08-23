@@ -1,5 +1,5 @@
-import { Field, getValues } from '@modular-forms/solid'
-import { type Component, Show, createSignal } from 'solid-js'
+import { Field, getValues, setValues } from '@modular-forms/solid'
+import { type Component, Show, createEffect, createResource } from 'solid-js'
 import { TextField } from '/@/components/UI/TextField'
 import { ToolTip } from '/@/components/UI/ToolTip'
 import { CheckBox } from '/@/components/templates/CheckBox'
@@ -14,9 +14,40 @@ type Props = {
 
 const RuntimeConfigField: Component<Props> = (props) => {
   const { formStore } = useApplicationForm()
-  const [useDB, setUseDB] = createSignal(false)
+  const [useDB, { mutate: setUseDB }] = createResource(
+    () =>
+      getValues(formStore, {
+        shouldActive: false,
+      }).form?.config?.deployConfig,
+    (config) => {
+      if (!config?.type || config?.type === 'static') {
+        return false
+      }
+      // @ts-expect-error: getValuesの結果のpropertyはすべてMaybeになるためnarrowingが正しく行われない
+      return config?.value?.runtime?.useMariadb || config?.value?.runtime?.useMongodb
+    },
+  )
 
   const buildType = () => getValues(formStore).form?.config?.buildConfig?.type
+
+  createEffect(() => {
+    if (!useDB()) {
+      setValues(formStore, {
+        form: {
+          config: {
+            deployConfig: {
+              value: {
+                runtime: {
+                  useMariadb: false,
+                  useMongodb: false,
+                },
+              },
+            },
+          },
+        },
+      })
+    }
+  })
 
   const EntryPointField = () => (
     <Field of={formStore} name="form.config.deployConfig.value.runtime.entrypoint">
@@ -90,26 +121,47 @@ const RuntimeConfigField: Component<Props> = (props) => {
         </FormItem>
       </ToolTip>
       <Show when={useDB()}>
-        <Field of={formStore} name="form.config.deployConfig.value.runtime.useMariadb">
-          {(field, fieldProps) => (
-            <CheckBox.Option
-              {...fieldProps}
-              label="MariaDB"
-              checked={field.value ?? false}
-              disabled={props.disableEditDB}
-            />
-          )}
-        </Field>
-        <Field of={formStore} name="form.config.deployConfig.value.runtime.useMongodb">
-          {(field, fieldProps) => (
-            <CheckBox.Option
-              {...fieldProps}
-              label="MongoDB"
-              checked={field.value ?? false}
-              disabled={props.disableEditDB}
-            />
-          )}
-        </Field>
+        <FormItem title="Database">
+          <ToolTip
+            props={{
+              content: <>アプリ作成後は変更できません</>,
+            }}
+            disabled={!props.disableEditDB}
+          >
+            <CheckBox.Container>
+              <Field
+                of={formStore}
+                name="form.config.deployConfig.value.runtime.useMariadb"
+                // @ts-expect-error: useMariadb は deployConfig.type === "static" の時存在しないためtsの型の仕様上エラーが出る
+                type="boolean"
+              >
+                {(field, fieldProps) => (
+                  <CheckBox.Option
+                    {...fieldProps}
+                    label="MariaDB"
+                    checked={field.value ?? false}
+                    disabled={props.disableEditDB}
+                  />
+                )}
+              </Field>
+              <Field
+                of={formStore}
+                name="form.config.deployConfig.value.runtime.useMongodb"
+                // @ts-expect-error: useMongodb は deployConfig.type === "static" の時存在しないためtsの型の仕様上エラーが出る
+                type="boolean"
+              >
+                {(field, fieldProps) => (
+                  <CheckBox.Option
+                    {...fieldProps}
+                    label="MongoDB"
+                    checked={field.value ?? false}
+                    disabled={props.disableEditDB}
+                  />
+                )}
+              </Field>
+            </CheckBox.Container>
+          </ToolTip>
+        </FormItem>
       </Show>
       <Show when={buildType() === 'cmd'}>
         <EntryPointField />
