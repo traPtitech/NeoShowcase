@@ -97,7 +97,6 @@ const WebsiteConfigForm: Component<Props> = (props) => {
   const handleSubmit: SubmitHandler<CreateOrUpdateApplicationInput> = (values) =>
     handleSubmitUpdateApplicationForm(values, async (output) => {
       try {
-        console.log(output)
         // websiteがすべて削除されている場合、modularformsでは空配列ではなくundefinedになってしまう
         // undefinedを渡した場合、APIとしては 無更新 として扱われるため、空配列を渡す
         if (output.websites === undefined) {
