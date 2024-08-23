@@ -35,47 +35,30 @@ const authenticationSchema = v.pipe(
   }),
 )
 
-const websiteValues = v.object({
-  subdomain: v.optional(v.string()),
-  domain: v.string(),
-  pathPrefix: v.string(),
-  stripPrefix: v.boolean(),
-  https: stringBooleanSchema,
-  h2c: v.boolean(),
-  httpPort: v.pipe(v.number(), v.integer()),
-  authentication: authenticationSchema,
-})
-
 export const createWebsiteSchema = v.pipe(
-  v.variant('state', [
-    v.pipe(
-      v.object({
-        state: v.union([v.literal('noChange'), v.literal('readyToChange'), v.literal('added')]),
-        ...websiteValues.entries,
-      }),
-      // wildcard domainが選択されている場合サブドメインは空であってはならない
-      v.forward(
-        v.partialCheck(
-          [['subdomain'], ['domain']],
-          (input) => {
-            if (input.domain?.startsWith('*')) return input.subdomain !== ''
-            return true
-          },
-          'Please Enter Subdomain Name',
-        ),
-        ['subdomain'],
-      ),
+  v.object({
+    subdomain: v.optional(v.string()),
+    domain: v.string(),
+    pathPrefix: v.string(),
+    stripPrefix: v.boolean(),
+    https: stringBooleanSchema,
+    h2c: v.boolean(),
+    httpPort: v.pipe(v.number(), v.integer()),
+    authentication: authenticationSchema,
+  }),
+  // wildcard domainが選択されている場合サブドメインは空であってはならない
+  v.forward(
+    v.partialCheck(
+      [['subdomain'], ['domain']],
+      (input) => {
+        if (input.domain?.startsWith('*')) return input.subdomain !== ''
+        return true
+      },
+      'Please Enter Subdomain Name',
     ),
-    v.object({
-      // 削除するwebsite設定の中身はチェックしない
-      state: v.literal('readyToDelete'),
-      ...v.partial(websiteValues).entries,
-    }),
-  ]),
+    ['subdomain'],
+  ),
   v.transform((input): PartialMessage<CreateWebsiteRequest> => {
-    // 削除するwebsite設定の中身はチェックしない
-    if (input.state === 'readyToDelete') return {}
-
     // wildcard domainならsubdomainとdomainを結合
     const fqdn = input.domain.startsWith('*')
       ? `${input.subdomain}${input.domain.replace(/\*/g, '')}`
@@ -136,7 +119,6 @@ const extractSubdomain = (
 }
 
 export const createWebsiteInitialValues = (domain: AvailableDomain): CreateWebsiteInput => ({
-  state: 'added',
   domain: domain.domain,
   subdomain: '',
   pathPrefix: '',
@@ -153,7 +135,6 @@ export const websiteMessageToSchema = (website: Website): CreateWebsiteInput => 
   const { domain, subdomain } = extractSubdomain(website.fqdn, availableDomains)
 
   return {
-    state: 'noChange',
     domain,
     subdomain,
     // バックエンド側では `/${prefix}` で持っている, フォーム内部では'/'を除いて持つ

@@ -1,5 +1,5 @@
 import { styled } from '@macaron-css/solid'
-import { Field, type FormStore, getValue, getValues } from '@modular-forms/solid'
+import { Field, getValue } from '@modular-forms/solid'
 import { type Component, For, Show } from 'solid-js'
 import { TextField } from '/@/components/UI/TextField'
 import { FormItem } from '/@/components/templates/FormItem'
@@ -7,13 +7,13 @@ import { type SelectOption, SingleSelect } from '/@/components/templates/Select'
 import { systemInfo } from '/@/libs/api'
 import { websiteWarnings } from '/@/libs/application'
 import { colorVars } from '/@/theme'
-import type { CreateWebsiteInput } from '../../../schema/websiteSchema'
+import { useApplicationForm } from '../../../provider/applicationFormProvider'
 
 const URLContainer = styled('div', {
   base: {
     display: 'flex',
     flexDirection: 'row',
-    alignItems: 'flex-top',
+    alignItems: 'flex-start',
     gap: '8px',
   },
 })
@@ -21,6 +21,7 @@ const URLItem = styled('div', {
   base: {
     display: 'flex',
     alignItems: 'center',
+    height: '48px',
   },
   variants: {
     fixedWidth: {
@@ -50,13 +51,15 @@ const schemeOptions: SelectOption<`${boolean}`>[] = [
 ]
 
 type Props = {
-  formStore: FormStore<CreateWebsiteInput>
+  index: number
   showHttpPort: boolean
   readonly?: boolean
 }
 
 const UrlField: Component<Props> = (props) => {
-  const selectedDomain = () => getValue(props.formStore, 'domain')
+  const { formStore } = useApplicationForm()
+
+  const selectedDomain = () => getValue(formStore, `form.websites.${props.index}.domain`)
   // 占有されているドメインはoptionに表示しない
   // すでに設定されているドメインはoptionに表示する
   const domainOptions = () =>
@@ -71,14 +74,17 @@ const UrlField: Component<Props> = (props) => {
       }) ?? []
 
   const warnings = () =>
-    websiteWarnings(getValue(props.formStore, 'subdomain'), getValue(props.formStore, 'https') === 'true')
+    websiteWarnings(
+      getValue(formStore, `form.websites.${props.index}.subdomain`),
+      getValue(formStore, `form.websites.${props.index}.https`) === 'true',
+    )
 
   return (
     <>
       <FormItem title="URL" required>
         <URLContainer>
           <URLItem fixedWidth>
-            <Field of={props.formStore} name={'https'}>
+            <Field of={formStore} name={`form.websites.${props.index}.https`}>
               {(field, fieldProps) => (
                 <SingleSelect
                   tooltip={{
@@ -100,7 +106,7 @@ const UrlField: Component<Props> = (props) => {
             </Field>
           </URLItem>
           <URLItem>://</URLItem>
-          <Field of={props.formStore} name={'subdomain'}>
+          <Field of={formStore} name={`form.websites.${props.index}.subdomain`}>
             {(field, fieldProps) => (
               <Show when={selectedDomain()?.startsWith('*')}>
                 <TextField
@@ -118,7 +124,7 @@ const UrlField: Component<Props> = (props) => {
               </Show>
             )}
           </Field>
-          <Field of={props.formStore} name={'domain'}>
+          <Field of={formStore} name={`form.websites.${props.index}.domain`}>
             {(field, fieldProps) => (
               <SingleSelect
                 tooltip={{
@@ -136,7 +142,7 @@ const UrlField: Component<Props> = (props) => {
         </URLContainer>
         <URLContainer>
           <URLItem>/</URLItem>
-          <Field of={props.formStore} name={'pathPrefix'}>
+          <Field of={formStore} name={`form.websites.${props.index}.pathPrefix`}>
             {(field, fieldProps) => (
               <TextField
                 tooltip={{
@@ -154,7 +160,7 @@ const UrlField: Component<Props> = (props) => {
           <Show when={props.showHttpPort}>
             <URLItem> → </URLItem>
             <URLItem fixedWidth>
-              <Field of={props.formStore} name={'httpPort'} type="number">
+              <Field of={formStore} name={`form.websites.${props.index}.httpPort`} type="number">
                 {(field, fieldProps) => (
                   <TextField
                     placeholder="80"

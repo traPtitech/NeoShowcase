@@ -1,24 +1,63 @@
+import type { PartialMessage } from '@bufbuild/protobuf'
 import { styled } from '@macaron-css/solid'
-import { createFormStore, getValues, setValue, valiForm } from '@modular-forms/solid'
-import { type Component, For, createResource, createSignal } from 'solid-js'
+import {
+  Field,
+  FieldArray,
+  Form,
+  type SubmitHandler,
+  getValues,
+  insert,
+  reset,
+  setValues,
+} from '@modular-forms/solid'
+import { type Component, For, Show, createEffect, onMount, untrack } from 'solid-js'
 import toast from 'solid-toast'
-import { parse } from 'valibot'
-import type { Application } from '/@/api/neoshowcase/protobuf/gateway_pb'
+import type { Application, UpdateApplicationRequest_UpdateWebsites } from '/@/api/neoshowcase/protobuf/gateway_pb'
 import { Button } from '/@/components/UI/Button'
 import { MaterialSymbols } from '/@/components/UI/MaterialSymbols'
+import FormBox from '/@/components/layouts/FormBox'
+import { List } from '/@/components/templates/List'
 import { client, handleAPIError, systemInfo } from '/@/libs/api'
+import { colorVars } from '/@/theme'
+import { useApplicationForm } from '../../provider/applicationFormProvider'
 import {
-  type CreateWebsiteInput,
-  createWebsiteInitialValues,
-  createWebsiteSchema,
-  websiteMessageToSchema,
-} from '../../schema/websiteSchema'
+  type CreateOrUpdateApplicationInput,
+  handleSubmitUpdateApplicationForm,
+  updateApplicationFormInitialValues,
+} from '../../schema/applicationSchema'
+import { createWebsiteInitialValues } from '../../schema/websiteSchema'
 import WebsiteFieldGroup from './website/WebsiteFieldGroup'
+
+const Container = styled('div', {
+  base: {
+    width: '100%',
+    overflow: 'hidden',
+    border: `1px solid ${colorVars.semantic.ui.border}`,
+    borderRadius: '8px',
+    display: 'flex',
+    flexDirection: 'column',
+    gap: '1px',
+  },
+})
+const FieldRow = styled('div', {
+  base: {
+    width: '100%',
+    padding: '20px 24px',
+
+    selectors: {
+      '&:not(:first-child)': {
+        borderTop: `1px solid ${colorVars.semantic.ui.border}`,
+      },
+    },
+  },
+})
 
 const AddMoreButtonContainer = styled('div', {
   base: {
+    width: '100%',
     display: 'flex',
     justifyContent: 'center',
+    alignItems: 'center',
   },
 })
 
@@ -29,29 +68,38 @@ type Props = {
 }
 
 const WebsiteConfigForm: Component<Props> = (props) => {
-  const [formStores, { mutate }] = createResource(
-    () => props.app.websites,
-    (websites) =>
-      websites.map((w) =>
-        createFormStore<CreateWebsiteInput, undefined>({
-          initialValues: websiteMessageToSchema(w),
-          validate: valiForm(createWebsiteSchema),
-        }),
-      ),
-  )
+  const { formStore } = useApplicationForm()
 
-  const availableDomains = systemInfo()?.domains ?? []
+  const discardChanges = () => {
+    reset(
+      untrack(() => formStore),
+      {
+        initialValues: updateApplicationFormInitialValues(props.app),
+      },
+    )
+  }
+
+  // `reset` doesn't work on first render when the Field not rendered
+  // see: https://github.com/fabian-hiller/modular-forms/issues/157#issuecomment-1848567069
+  onMount(() => {
+    setValues(formStore, updateApplicationFormInitialValues(props.app))
+  })
+
+  // reset forms when props.app changed
+  createEffect(() => {
+    discardChanges()
+  })
+
+  const defaultDomain = () => systemInfo()?.domains.at(0)
 
   const addFormStore = () => {
-    const defaultDomain = availableDomains.at(0)
-    if (defaultDomain) {
-      const newForm = createFormStore<CreateWebsiteInput, undefined>({
-        initialValues: createWebsiteInitialValues(defaultDomain),
-        validate: valiForm(createWebsiteSchema),
-      })
-
-      mutate((websites) => websites?.concat([newForm]))
+    const _defaultDomain = defaultDomain()
+    if (!_defaultDomain) {
+      throw new Error('Default domain is not found')
     }
+    insert(formStore, 'form.websites', {
+      value: createWebsiteInitialValues(_defaultDomain),
+    })
   }
 
   const isRuntimeApp = () => {
@@ -59,85 +107,109 @@ const WebsiteConfigForm: Component<Props> = (props) => {
     return configCase === 'runtimeBuildpack' || configCase === 'runtimeDockerfile' || configCase === 'runtimeCmd'
   }
 
-  const [isSubmitting, setIsSubmitting] = createSignal(false)
-  const applyChanges = async () => {
-    setIsSubmitting(true)
-
-    try {
-      /**
-       * 送信するWebsite設定
-       * - 変更を保存しないものの、initial value
-       * - 変更して保存するもの ( = `readyToSave`)
-       * - 追加するもの ( = `added`)
-       * - 削除しないもの ( = not `readyToDelete`)
-       */
-      const websitesToSave =
-        formStores()
-          ?.map((form) => {
-            const values = getValues(form)
-            switch (values.state) {
-              case 'noChange':
-                return form.internal.initialValues
-              case 'readyToChange':
-              case 'added':
-                return values
-              case 'readyToDelete':
-                return undefined
-            }
-          })
-          .filter((w): w is Exclude<typeof w, undefined> => w !== undefined) ?? []
-
-      const parsedWebsites = websitesToSave.map((w) => parse(createWebsiteSchema, w))
-
-      await client.updateApplication({
-        id: props.app.id,
-        websites: {
-          websites: parsedWebsites,
-        },
-      })
-      toast.success('ウェブサイト設定を保存しました')
-      void props.refetchApp()
-    } catch (e) {
-      // `readyToChange` を `noChange` に戻す
-      for (const form of formStores() ?? []) {
-        const values = getValues(form)
-        if (values.state === 'readyToChange') {
-          setValue(form, 'state', 'noChange')
+  const handleSubmit: SubmitHandler<CreateOrUpdateApplicationInput> = (values) =>
+    handleSubmitUpdateApplicationForm(values, async (output) => {
+      try {
+        // websiteがすべて削除されている場合、modularformsでは空配列ではなくundefinedになってしまう
+        // undefinedを渡した場合、APIとしては 無更新 として扱われるため、空配列を渡す
+        if (output.websites === undefined) {
+          output.websites = [] as PartialMessage<UpdateApplicationRequest_UpdateWebsites>
         }
+
+        await client.updateApplication(output)
+        toast.success('ウェブサイト設定を更新しました')
+        props.refetchApp()
+        // 非同期でビルドが開始されるので1秒程度待ってから再度リロード
+        setTimeout(props.refetchApp, 1000)
+      } catch (e) {
+        handleAPIError(e, 'ウェブサイト設定の更新に失敗しました')
       }
-      handleAPIError(e, 'Failed to save website settings')
-    } finally {
-      setIsSubmitting(false)
-    }
+    })
+
+  const showAddMoreButton = () => {
+    const websites = getValues(formStore, 'form.websites')
+    return websites && websites.length > 0
   }
 
   return (
-    <>
-      <For each={formStores()}>
-        {(formStore) => (
-          <WebsiteFieldGroup
-            formStore={formStore}
-            isRuntimeApp={isRuntimeApp()}
-            applyChanges={applyChanges}
-            isSubmitting={isSubmitting()}
-            readonly={!props.hasPermission}
-          />
-        )}
-      </For>
-      <AddMoreButtonContainer>
-        <Button
-          onclick={() => {
-            addFormStore()
-          }}
-          variants="border"
-          size="small"
-          leftIcon={<MaterialSymbols opticalSize={20}>add</MaterialSymbols>}
-          type="button"
-        >
-          Add More
-        </Button>
-      </AddMoreButtonContainer>
-    </>
+    <Form of={formStore} onSubmit={handleSubmit}>
+      <Field of={formStore} name="type">
+        {() => null}
+      </Field>
+      <Field of={formStore} name="form.id">
+        {() => null}
+      </Field>
+      <Container>
+        <FieldArray of={formStore} name="form.websites">
+          {(fieldArray) => (
+            <For
+              each={fieldArray.items}
+              fallback={
+                <List.PlaceHolder>
+                  <MaterialSymbols displaySize={80}>link_off</MaterialSymbols>
+                  URLが設定されていません
+                  <Button
+                    variants="primary"
+                    size="medium"
+                    rightIcon={<MaterialSymbols>add</MaterialSymbols>}
+                    onClick={addFormStore}
+                    type="button"
+                  >
+                    Add URL
+                  </Button>
+                </List.PlaceHolder>
+              }
+            >
+              {(_, index) => (
+                <FieldRow>
+                  <WebsiteFieldGroup index={index()} isRuntimeApp={isRuntimeApp()} readonly={!props.hasPermission} />
+                </FieldRow>
+              )}
+            </For>
+          )}
+        </FieldArray>
+        <Show when={showAddMoreButton()}>
+          <FieldRow>
+            <AddMoreButtonContainer>
+              <Button
+                onclick={() => {
+                  addFormStore()
+                }}
+                variants="border"
+                size="small"
+                leftIcon={<MaterialSymbols opticalSize={20}>add</MaterialSymbols>}
+                type="button"
+              >
+                Add More
+              </Button>
+            </AddMoreButtonContainer>
+          </FieldRow>
+        </Show>
+        <FormBox.Actions>
+          <Show when={formStore.dirty && !formStore.submitting}>
+            <Button variants="ghost" size="small" onClick={discardChanges} type="button">
+              Discard Changes
+            </Button>
+          </Show>
+          <Button
+            variants="primary"
+            size="small"
+            type="submit"
+            disabled={formStore.invalid || !formStore.dirty || formStore.submitting || !props.hasPermission}
+            loading={formStore.submitting}
+            tooltip={{
+              props: {
+                content: !props.hasPermission
+                  ? '設定を変更するにはアプリケーションのオーナーになる必要があります'
+                  : undefined,
+              },
+            }}
+          >
+            Save
+          </Button>
+        </FormBox.Actions>
+      </Container>
+    </Form>
   )
 }
 
