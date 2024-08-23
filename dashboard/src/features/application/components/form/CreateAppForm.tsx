@@ -1,7 +1,9 @@
-import { Form, type SubmitHandler, getValue, setValue, setValues } from '@modular-forms/solid'
-import { useSearchParams } from '@solidjs/router'
+import { styled } from '@macaron-css/solid'
+import { Field, Form, type SubmitHandler, getValue, setValue, setValues, validate } from '@modular-forms/solid'
+import { useNavigate, useSearchParams } from '@solidjs/router'
 import {
   type Component,
+  For,
   Match,
   Show,
   Switch,
@@ -12,6 +14,7 @@ import {
   untrack,
 } from 'solid-js'
 import toast from 'solid-toast'
+import { Progress } from '/@/components/UI/StepProgress'
 import { client, handleAPIError } from '/@/libs/api'
 import { useApplicationForm } from '../../provider/applicationFormProvider'
 import {
@@ -21,6 +24,24 @@ import {
 } from '../../schema/applicationSchema'
 import GeneralStep from './GeneralStep'
 import RepositoryStep from './RepositoryStep'
+import WebsiteStep from './WebsiteStep'
+
+const StepsContainer = styled('div', {
+  base: {
+    width: '100%',
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'center',
+    gap: '40px',
+  },
+  variants: {
+    fit: {
+      true: {
+        maxHeight: '100%',
+      },
+    },
+  },
+})
 
 enum formStep {
   repository = 0,
@@ -40,7 +61,7 @@ const CreateAppForm: Component = () => {
   const [searchParams, setParam] = useSearchParams()
   const [currentStep, setCurrentStep] = createSignal(formStep.repository)
 
-  const backToRepoStep = () => {
+  const goToRepoStep = () => {
     setCurrentStep(formStep.repository)
     // 選択していたリポジトリをリセットする
     setParam({ repositoryID: undefined })
@@ -52,10 +73,20 @@ const CreateAppForm: Component = () => {
     setCurrentStep(formStep.website)
   }
 
-  const [repoBySearchParam, { mutate: mutateRepo }] = createResource(
-    () => searchParams.repositoryID,
-    (id) => client.getRepository({ repositoryId: id }),
+  const [repoBySearchParam] = createResource(
+    () => searchParams.repositoryID ?? '',
+    (id) => {
+      return id !== '' ? client.getRepository({ repositoryId: id }) : undefined
+    },
   )
+
+  // repositoryIDがない場合はリポジトリ選択ステップに遷移
+  createEffect(() => {
+    if (!searchParams.repositoryID) {
+      goToRepoStep()
+    }
+  })
+
   // repoBySearchParam更新時にformのrepositoryIdを更新する
   createEffect(() => {
     setValue(
@@ -65,44 +96,101 @@ const CreateAppForm: Component = () => {
     )
   })
 
+  // リポジトリ選択ステップで中に、リポジトリが選択された場合は次のステップに遷移
+  createEffect(() => {
+    if (currentStep() === formStep.repository && getValue(formStore, 'form.repositoryId')) {
+      goToGeneralStep()
+    }
+  })
+
+  const handleGeneralToWebsiteStep = async () => {
+    const isValid = await validate(formStore)
+    // modularformsではsubmitフラグが立っていないとrevalidateされないため、手動でsubmitフラグを立てる
+    // TODO: internalのAPIを使っているため、将来的には変更が必要
+    formStore.internal.submitted.set(true)
+    if (isValid) {
+      goToWebsiteStep()
+    }
+  }
+
+  const navigate = useNavigate()
   const handleSubmit: SubmitHandler<CreateOrUpdateApplicationInput> = (values) =>
     handleSubmitCreateApplicationForm(values, async (output) => {
       try {
-        await client.createApplication(output)
-        toast.success('アプリケーション設定を更新しました')
+        const createdApp = await client.createApplication(output)
+        toast.success('アプリケーションを登録しました')
+        navigate(`/apps/${createdApp.id}`)
       } catch (e) {
-        handleAPIError(e, 'アプリケーション設定の更新に失敗しました')
+        handleAPIError(e, 'アプリケーションの登録に失敗しました')
       }
     })
 
   return (
-    <Form of={formStore} onSubmit={handleSubmit}>
-      <Switch>
-        <Match when={currentStep() === formStep.repository}>
-          <RepositoryStep setRepo={(repo) => mutateRepo(repo)} />
-        </Match>
-        <Match when={currentStep() === formStep.general}>
-          <Show when={repoBySearchParam()}>
-            {(nonNullRepo) => (
-              <GeneralStep
-                repo={nonNullRepo()}
-                backToRepoStep={backToRepoStep}
-                proceedToWebsiteStep={goToWebsiteStep}
-              />
-            )}
-          </Show>
-        </Match>
-        <Match when={currentStep() === formStep.website}>
-          <WebsiteStep
-            isRuntimeApp={isRuntimeApp()}
-            backToGeneralStep={goToGeneralStep}
-            websiteForms={websiteForms}
-            setWebsiteForms={setWebsiteForms}
-            submit={submit}
-          />
-        </Match>
-      </Switch>
-    </Form>
+    <StepsContainer fit={currentStep() === formStep.repository}>
+      <Progress.Container>
+        <For
+          each={[
+            {
+              title: '1. Repository',
+              description: 'リポジトリの選択',
+              step: formStep.repository,
+            },
+            {
+              title: '2. Build Settings',
+              description: 'ビルド設定',
+              step: formStep.general,
+            },
+            {
+              title: '3. URLs',
+              description: 'アクセスURLの設定',
+              step: formStep.website,
+            },
+          ]}
+        >
+          {(step) => (
+            <Progress.Step
+              title={step.title}
+              description={step.description}
+              state={currentStep() === step.step ? 'current' : currentStep() > step.step ? 'complete' : 'incomplete'}
+            />
+          )}
+        </For>
+      </Progress.Container>
+      <Form of={formStore} onSubmit={handleSubmit} shouldActive={false} style={{ width: '100%' }}>
+        <Field of={formStore} name="type">
+          {() => null}
+        </Field>
+        <Field of={formStore} name="form.repositoryId">
+          {() => null}
+        </Field>
+        <Switch>
+          <Match when={currentStep() === formStep.repository}>
+            <RepositoryStep
+              onSelect={(repo) => {
+                setParam({
+                  repositoryID: repo.id,
+                })
+                goToGeneralStep()
+              }}
+            />
+          </Match>
+          <Match when={currentStep() === formStep.general}>
+            <Show when={repoBySearchParam()}>
+              {(nonNullRepo) => (
+                <GeneralStep
+                  repo={nonNullRepo()}
+                  backToRepoStep={goToRepoStep}
+                  proceedToWebsiteStep={handleGeneralToWebsiteStep}
+                />
+              )}
+            </Show>
+          </Match>
+          <Match when={currentStep() === formStep.website}>
+            <WebsiteStep backToGeneralStep={goToGeneralStep} />
+          </Match>
+        </Switch>
+      </Form>
+    </StepsContainer>
   )
 }
 

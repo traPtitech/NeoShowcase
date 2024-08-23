@@ -94,6 +94,11 @@ const Description = styled('div', {
     ...textVars.caption.regular,
   },
 })
+export const errorTextStyle = style({
+  width: '100%',
+  color: colorVars.semantic.accent.error,
+  ...textVars.text.regular,
+})
 
 export interface RadioOption<T extends string> {
   value: T
@@ -177,7 +182,7 @@ export const RadioGroup = <T extends string>(props: Props<T>): JSX.Element => {
           </For>
         </OptionsContainer>
       </ToolTip>
-      <KRadioGroup.ErrorMessage>{props.error}</KRadioGroup.ErrorMessage>
+      <KRadioGroup.ErrorMessage class={errorTextStyle}>{props.error}</KRadioGroup.ErrorMessage>
     </KRadioGroup.Root>
   )
 }

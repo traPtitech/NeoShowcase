@@ -1,11 +1,14 @@
 import { styled } from '@macaron-css/solid'
-import { type FormStore, createFormStore, validate } from '@modular-forms/solid'
-import { type Accessor, type Component, For, type Setter, Show, createSignal } from 'solid-js'
+import { FieldArray, getValue, getValues, insert } from '@modular-forms/solid'
+import { type Component, For, Show } from 'solid-js'
 import { Button } from '/@/components/UI/Button'
 import { MaterialSymbols } from '/@/components/UI/MaterialSymbols'
 import { List } from '/@/components/templates/List'
-import { type WebsiteFormStatus, WebsiteSetting, newWebsite } from '/@/components/templates/app/WebsiteSettings'
 import { systemInfo } from '/@/libs/api'
+import { colorVars } from '/@/theme'
+import { useApplicationForm } from '../../provider/applicationFormProvider'
+import { createWebsiteInitialValues } from '../../schema/websiteSchema'
+import WebsiteFieldGroup from './website/WebsiteFieldGroup'
 
 const FormsContainer = styled('div', {
   base: {
@@ -25,6 +28,32 @@ const DomainsContainer = styled('div', {
     gap: '24px',
   },
 })
+
+const Container = styled('div', {
+  base: {
+    width: '100%',
+    overflow: 'hidden',
+    background: colorVars.semantic.ui.primary,
+    border: `1px solid ${colorVars.semantic.ui.border}`,
+    borderRadius: '8px',
+    display: 'flex',
+    flexDirection: 'column',
+    gap: '1px',
+  },
+})
+const FieldRow = styled('div', {
+  base: {
+    width: '100%',
+    padding: '20px 24px',
+
+    selectors: {
+      '&:not(:first-child)': {
+        borderTop: `1px solid ${colorVars.semantic.ui.border}`,
+      },
+    },
+  },
+})
+
 const AddMoreButtonContainer = styled('div', {
   base: {
     display: 'flex',
@@ -39,80 +68,80 @@ const ButtonsContainer = styled('div', {
 })
 
 const WebsiteStep: Component<{
-  isRuntimeApp: boolean
-  websiteForms: Accessor<FormStore<WebsiteFormStatus, undefined>[]>
-  setWebsiteForms: Setter<FormStore<WebsiteFormStatus, undefined>[]>
   backToGeneralStep: () => void
-  submit: () => Promise<void>
 }> = (props) => {
-  const [isSubmitting, setIsSubmitting] = createSignal(false)
-  const addWebsiteForm = () => {
-    const form = createFormStore<WebsiteFormStatus>({
-      initialValues: {
-        state: 'added',
-        website: newWebsite(),
-      },
+  const { formStore } = useApplicationForm()
+
+  const defaultDomain = () => systemInfo()?.domains.at(0)
+
+  const addFormStore = () => {
+    const _defaultDomain = defaultDomain()
+    if (!_defaultDomain) {
+      throw new Error('Default domain is not found')
+    }
+    insert(formStore, 'form.websites', {
+      value: createWebsiteInitialValues(_defaultDomain),
     })
-    props.setWebsiteForms((prev) => prev.concat([form]))
   }
 
-  const handleSubmit = async () => {
-    try {
-      const isValid = (await Promise.all(props.websiteForms().map((form) => validate(form)))).every((v) => v)
-      if (!isValid) return
-      setIsSubmitting(true)
-      await props.submit()
-    } catch (err) {
-      console.error(err)
-    } finally {
-      setIsSubmitting(false)
-    }
+  const isRuntimeApp = () => getValue(formStore, 'form.config.deployConfig.type') === 'runtime'
+
+  const showAddMoreButton = () => {
+    const websites = getValues(formStore, 'form.websites')
+    return websites && websites.length > 0
   }
 
   return (
     <Show when={systemInfo()}>
       <FormsContainer>
         <DomainsContainer>
-          <For
-            each={props.websiteForms()}
-            fallback={
-              <List.PlaceHolder>
-                <MaterialSymbols displaySize={80}>link_off</MaterialSymbols>
-                URLが設定されていません
-                <Button
-                  variants="primary"
-                  size="medium"
-                  rightIcon={<MaterialSymbols>add</MaterialSymbols>}
-                  onClick={addWebsiteForm}
-                  type="button"
+          <Container>
+            <FieldArray of={formStore} name="form.websites">
+              {(fieldArray) => (
+                <For
+                  each={fieldArray.items}
+                  fallback={
+                    <List.PlaceHolder>
+                      <MaterialSymbols displaySize={80}>link_off</MaterialSymbols>
+                      URLが設定されていません
+                      <Button
+                        variants="primary"
+                        size="medium"
+                        rightIcon={<MaterialSymbols>add</MaterialSymbols>}
+                        onClick={addFormStore}
+                        type="button"
+                      >
+                        Add URL
+                      </Button>
+                    </List.PlaceHolder>
+                  }
                 >
-                  Add URL
-                </Button>
-              </List.PlaceHolder>
-            }
-          >
-            {(form, i) => (
-              <WebsiteSetting
-                isRuntimeApp={props.isRuntimeApp}
-                formStore={form}
-                deleteWebsite={() => props.setWebsiteForms((prev) => [...prev.slice(0, i()), ...prev.slice(i() + 1)])}
-                hasPermission
-              />
-            )}
-          </For>
-          <Show when={props.websiteForms().length > 0}>
-            <AddMoreButtonContainer>
-              <Button
-                onclick={addWebsiteForm}
-                variants="border"
-                size="small"
-                leftIcon={<MaterialSymbols opticalSize={20}>add</MaterialSymbols>}
-                type="button"
-              >
-                Add More
-              </Button>
-            </AddMoreButtonContainer>
-          </Show>
+                  {(_, index) => (
+                    <FieldRow>
+                      <WebsiteFieldGroup index={index()} isRuntimeApp={isRuntimeApp()} />
+                    </FieldRow>
+                  )}
+                </For>
+              )}
+            </FieldArray>
+            <Show when={showAddMoreButton()}>
+              <FieldRow>
+                <AddMoreButtonContainer>
+                  <Button
+                    onclick={() => {
+                      addFormStore()
+                    }}
+                    variants="border"
+                    size="small"
+                    leftIcon={<MaterialSymbols opticalSize={20}>add</MaterialSymbols>}
+                    type="button"
+                  >
+                    Add More
+                  </Button>
+                </AddMoreButtonContainer>
+              </FieldRow>
+            </Show>
+          </Container>
         </DomainsContainer>
         <ButtonsContainer>
           <Button
@@ -124,12 +153,11 @@ const WebsiteStep: Component<{
             Back
           </Button>
           <Button
+            type="submit"
             size="medium"
             variants="primary"
-            onClick={handleSubmit}
-            disabled={isSubmitting()}
-            // TODO: hostが空の状態でsubmitして一度requiredエラーが出たあとhostを入力してもエラーが消えない
-            // disabled={props.websiteForms().some((form) => form.invalid)}
+            disabled={formStore.invalid || formStore.submitting}
+            loading={formStore.submitting}
           >
             Create Application
           </Button>

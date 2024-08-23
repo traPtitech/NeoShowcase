@@ -144,7 +144,7 @@ const RegisterRepositoryButton = styled('div', {
 })
 
 const RepositoryStep: Component<{
-  setRepo: (repo: Repository) => void
+  onSelect: (repo: Repository) => void
 }> = (props) => {
   const [repos] = createResource(() =>
     client.getRepositories({
@@ -225,7 +225,7 @@ const RepositoryStep: Component<{
             {(repo) => (
               <RepositoryButton
                 onClick={() => {
-                  props.setRepo(repo.repo)
+                  props.onSelect(repo.repo)
                 }}
                 type="button"
               >

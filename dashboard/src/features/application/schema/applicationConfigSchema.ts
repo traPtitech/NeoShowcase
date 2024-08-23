@@ -18,25 +18,29 @@ const runtimeConfigSchema = v.object({
 })
 const staticConfigSchema = v.object({
   artifactPath: v.pipe(v.string(), v.nonEmpty('Enter Artifact Path')),
-  spa: stringBooleanSchema,
+  spa: v.optional(stringBooleanSchema, 'false'),
 })
 
 const deployConfigSchema = v.pipe(
   v.optional(
-    v.variant('type', [
-      v.object({
-        type: v.literal('runtime'),
-        value: v.object({
-          runtime: runtimeConfigSchema,
+    v.variant(
+      'type',
+      [
+        v.object({
+          type: v.literal('runtime'),
+          value: v.object({
+            runtime: runtimeConfigSchema,
+          }),
         }),
-      }),
-      v.object({
-        type: v.literal('static'),
-        value: v.object({
-          static: staticConfigSchema,
+        v.object({
+          type: v.literal('static'),
+          value: v.object({
+            static: staticConfigSchema,
+          }),
         }),
-      }),
-    ]),
+      ],
+      'Select Deploy Type',
+    ),
   ),
   // アプリ作成時には最初undefinedになっているが、submit時にはundefinedで無い必要がある
   v.check((input) => !!input, 'Select Deploy Type'),
@@ -56,26 +60,30 @@ const dockerfileConfigSchema = v.object({
 
 const buildConfigSchema = v.pipe(
   v.optional(
-    v.variant('type', [
-      v.object({
-        type: v.literal('buildpack'),
-        value: v.object({
-          buildpack: buildpackConfigSchema,
+    v.variant(
+      'type',
+      [
+        v.object({
+          type: v.literal('buildpack'),
+          value: v.object({
+            buildpack: buildpackConfigSchema,
+          }),
         }),
-      }),
-      v.object({
-        type: v.literal('cmd'),
-        value: v.object({
-          cmd: cmdConfigSchema,
+        v.object({
+          type: v.literal('cmd'),
+          value: v.object({
+            cmd: cmdConfigSchema,
+          }),
         }),
-      }),
-      v.object({
-        type: v.literal('dockerfile'),
-        value: v.object({
-          dockerfile: dockerfileConfigSchema,
+        v.object({
+          type: v.literal('dockerfile'),
+          value: v.object({
+            dockerfile: dockerfileConfigSchema,
+          }),
         }),
-      }),
-    ]),
+      ],
+      'Select Build Type',
+    ),
   ),
   // アプリ作成時には最初undefinedになっているが、submit時にはundefinedで無い必要がある
   v.check((input) => !!input, 'Select Build Type'),
