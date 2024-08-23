@@ -18,8 +18,8 @@ const createApplicationSchema = v.pipe(
     repositoryId: v.string(),
     refName: v.pipe(v.string(), v.nonEmpty('Enter Branch Name')),
     config: applicationConfigSchema,
-    websites: v.array(createWebsiteSchema),
-    portPublications: v.array(portPublicationSchema),
+    websites: v.optional(v.array(createWebsiteSchema)),
+    portPublications: v.optional(v.array(portPublicationSchema)),
     startOnCreate: v.boolean(),
   }),
   v.transform(
