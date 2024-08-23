@@ -8,6 +8,7 @@ import (
 	buildkit "github.com/moby/buildkit/client"
 	"github.com/moby/buildkit/client/llb"
 	"github.com/regclient/regclient/types/ref"
+	"github.com/tonistiigi/fsutil"
 )
 
 func (s *builderService) buildStaticExtract(
@@ -28,13 +29,17 @@ func (s *builderService) buildStaticExtract(
 	if err != nil {
 		return errors.Wrap(err, "failed to marshal llb")
 	}
+	mount, err := fsutil.NewFS(st.repositoryTempDir)
+	if err != nil {
+		return errors.Wrap(err, "invalid mount dir")
+	}
 	_, err = s.buildkit.Solve(ctx, def, buildkit.SolveOpt{
 		Exports: []buildkit.ExportEntry{{
 			Type:   buildkit.ExporterTar,
 			Output: func(_ map[string]string) (io.WriteCloser, error) { return st.artifactTempFile, nil },
 		}},
-		LocalDirs: map[string]string{
-			"local-src": st.repositoryTempDir,
+		LocalMounts: map[string]fsutil.FS{
+			"local-src": mount,
 		},
 		Session: s.authSessions(),
 	}, ch)

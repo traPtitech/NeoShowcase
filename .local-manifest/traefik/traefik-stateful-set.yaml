@@ -21,7 +21,7 @@ spec:
 
       containers:
         - name: traefik
-          image: traefik:2.10
+          image: traefik:3.1
           args:
             - --api.insecure
             - --providers.kubernetescrd

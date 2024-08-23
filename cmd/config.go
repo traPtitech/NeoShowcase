@@ -187,6 +187,10 @@ func init() {
 
 	viper.SetDefault("components.controller.k8s.routing.type", "traefik")
 	viper.SetDefault("components.controller.k8s.routing.traefik.priorityOffset", 0)
+
+	viper.SetDefault("components.controller.k8s.service.ipFamilies", nil)
+	viper.SetDefault("components.controller.k8s.service.ipFamilyPolicy", "PreferDualStack")
+
 	viper.SetDefault("components.controller.k8s.tls.type", "traefik")
 	viper.SetDefault("components.controller.k8s.tls.traefik.certResolver", "nsresolver")
 	viper.SetDefault("components.controller.k8s.tls.traefik.wildcard.domains", nil)
