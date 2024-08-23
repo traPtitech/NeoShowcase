@@ -40,7 +40,7 @@ init-protoc:
 init-protoc-tools:
 	go install google.golang.org/protobuf/cmd/protoc-gen-go@latest
 	go install connectrpc.com/connect/cmd/protoc-gen-connect-go@latest
-	npm i -g @connectrpc/protoc-gen-connect-es @bufbuild/protoc-gen-es
+	npm i -g @connectrpc/protoc-gen-connect-es @bufbuild/protoc-gen-es@1
 
 .PHONY: init
 init: init-k3d init-kustomize init-protoc init-protoc-tools ## Install / update required tools

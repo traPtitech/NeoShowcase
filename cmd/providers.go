@@ -3,11 +3,12 @@ package main
 import (
 	"context"
 	"fmt"
-	"github.com/traPtitech/neoshowcase/pkg/usecase/systeminfo"
 	"net/http"
 	"os"
 	"strings"
 	"time"
+
+	"github.com/traPtitech/neoshowcase/pkg/usecase/systeminfo"
 
 	"connectrpc.com/connect"
 	certmanagerv1 "github.com/cert-manager/cert-manager/pkg/client/clientset/versioned"
@@ -85,6 +86,7 @@ var providers = wire.NewSet(
 	repository.New,
 	repository.NewApplicationRepository,
 	repository.NewArtifactRepository,
+	repository.NewRuntimeImageRepository,
 	repository.NewBuildRepository,
 	repository.NewEnvironmentRepository,
 	repository.NewGitRepositoryRepository,

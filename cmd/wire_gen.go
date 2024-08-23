@@ -130,7 +130,8 @@ func NewControllerDocker(c Config) (component, error) {
 		return nil, err
 	}
 	artifactRepository := repository.NewArtifactRepository(db)
-	controllerBuilderService := grpc.NewControllerBuilderService(logstreamService, privateKey, imageConfig, storage, applicationRepository, artifactRepository, buildRepository, environmentRepository, gitRepositoryRepository)
+	runtimeImageRepository := repository.NewRuntimeImageRepository(db)
+	controllerBuilderService := grpc.NewControllerBuilderService(logstreamService, privateKey, imageConfig, storage, applicationRepository, artifactRepository, runtimeImageRepository, buildRepository, environmentRepository, gitRepositoryRepository)
 	controllerSSGenService := grpc.NewControllerSSGenService()
 	appDeployHelper := cdservice.NewAppDeployHelper(backend, applicationRepository, buildRepository, environmentRepository, controllerSSGenService, imageConfig)
 	containerStateMutator := cdservice.NewContainerStateMutator(applicationRepository, backend)
@@ -228,7 +229,8 @@ func NewControllerK8s(c Config) (component, error) {
 		return nil, err
 	}
 	artifactRepository := repository.NewArtifactRepository(db)
-	controllerBuilderService := grpc.NewControllerBuilderService(logstreamService, privateKey, imageConfig, storage, applicationRepository, artifactRepository, buildRepository, environmentRepository, gitRepositoryRepository)
+	runtimeImageRepository := repository.NewRuntimeImageRepository(db)
+	controllerBuilderService := grpc.NewControllerBuilderService(logstreamService, privateKey, imageConfig, storage, applicationRepository, artifactRepository, runtimeImageRepository, buildRepository, environmentRepository, gitRepositoryRepository)
 	controllerSSGenService := grpc.NewControllerSSGenService()
 	appDeployHelper := cdservice.NewAppDeployHelper(backend, applicationRepository, buildRepository, environmentRepository, controllerSSGenService, imageConfig)
 	containerStateMutator := cdservice.NewContainerStateMutator(applicationRepository, backend)

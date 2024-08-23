@@ -48,6 +48,7 @@ type ControllerBuilderServiceClient interface {
 	StreamBuildLog(ctx context.Context, buildID string, send <-chan []byte) error
 	SaveArtifact(ctx context.Context, artifact *Artifact, body []byte) error
 	SaveBuildLog(ctx context.Context, buildID string, body []byte) error
+	SaveRuntimeImage(ctx context.Context, buildId string, size int64) error
 	ConnectBuilder(ctx context.Context, onRequest func(req *pb.BuilderRequest), response <-chan *pb.BuilderResponse) error
 }
 

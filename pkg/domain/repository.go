@@ -100,6 +100,10 @@ type ArtifactRepository interface {
 	HardDeleteArtifacts(ctx context.Context, cond GetArtifactCondition) error
 }
 
+type RuntimeImageRepository interface {
+	CreateRuntimeImage(ctx context.Context, image *RuntimeImage) error
+}
+
 type GetBuildCondition struct {
 	ID            optional.Of[string]
 	IDIn          optional.Of[[]string]

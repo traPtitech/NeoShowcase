@@ -211,6 +211,17 @@ CREATE TABLE `artifacts`
   DEFAULT CHARSET = utf8mb4
   COLLATE = utf8mb4_general_ci COMMENT ='静的ファイル生成物テーブル';
 
+CREATE TABLE `runtime_images`
+(
+    `build_id`    CHAR(22)     NOT NULL COMMENT 'ビルドID',
+    `size`        BIGINT       NOT NULL COMMENT 'イメージサイズ',
+    `created_at`  DATETIME(6)  NOT NULL COMMENT '作成日時',
+    PRIMARY KEY (`build_id`),
+    CONSTRAINT `fk_runtime_images_build_id` FOREIGN KEY (`build_id`) REFERENCES `builds` (`id`)
+) ENGINE = InnoDB
+  DEFAULT CHARSET = utf8mb4
+  COLLATE = utf8mb4_general_ci COMMENT ='ランタイムイメージテーブル';
+
 CREATE TABLE `environments`
 (
     `application_id` CHAR(22)     NOT NULL COMMENT 'アプリケーションID',
