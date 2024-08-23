@@ -1,8 +1,9 @@
+import type { PartialMessage } from '@bufbuild/protobuf'
 import { styled } from '@macaron-css/solid'
 import { Field, FieldArray, Form, type SubmitHandler, getValues, insert, reset, setValues } from '@modular-forms/solid'
 import { type Component, For, Show, createEffect, onMount, untrack } from 'solid-js'
 import toast from 'solid-toast'
-import type { Application } from '/@/api/neoshowcase/protobuf/gateway_pb'
+import type { Application, UpdateApplicationRequest_UpdateWebsites } from '/@/api/neoshowcase/protobuf/gateway_pb'
 import { Button } from '/@/components/UI/Button'
 import { MaterialSymbols } from '/@/components/UI/MaterialSymbols'
 import FormBox from '/@/components/layouts/FormBox'
@@ -96,11 +97,14 @@ const WebsiteConfigForm: Component<Props> = (props) => {
   const handleSubmit: SubmitHandler<CreateOrUpdateApplicationInput> = (values) =>
     handleSubmitUpdateApplicationForm(values, async (output) => {
       try {
-        // // websiteがすべて削除されている場合、modularformsでは空配列ではなくundefinedになってしまう
-        // // undefinedを渡した場合、APIとしては 無更新 として扱われるため、空配列を渡す
-        // if (output.websites === undefined) {
-        //   output.websites = [] as PartialMessage<UpdateApplicationRequest_UpdateWebsites>
-        // }
+        console.log(output)
+        // websiteがすべて削除されている場合、modularformsでは空配列ではなくundefinedになってしまう
+        // undefinedを渡した場合、APIとしては 無更新 として扱われるため、空配列を渡す
+        if (output.websites === undefined) {
+          console.log('output.websites is undefined')
+          output.websites = [] as PartialMessage<UpdateApplicationRequest_UpdateWebsites>
+          console.log(output.websites)
+        }
 
         await client.updateApplication(output)
         toast.success('ウェブサイト設定を更新しました')
@@ -118,7 +122,7 @@ const WebsiteConfigForm: Component<Props> = (props) => {
   }
 
   return (
-    <Form of={formStore} onSubmit={handleSubmit} shouldActive={false}>
+    <Form of={formStore} onSubmit={handleSubmit}>
       <Field of={formStore} name="type">
         {() => null}
       </Field>
