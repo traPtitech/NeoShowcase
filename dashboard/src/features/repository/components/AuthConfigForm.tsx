@@ -8,8 +8,9 @@ import FormBox from '/@/components/layouts/FormBox'
 import { useRepositoryForm } from '/@/features/repository/provider/repositoryFormProvider'
 import {
   type CreateOrUpdateRepositoryInput,
+  getInitialValueOfCreateRepoForm,
+  getInitialValueOfUpdateRepoForm,
   handleSubmitUpdateRepositoryForm,
-  updateRepositoryFormInitialValues,
 } from '/@/features/repository/schema/repositorySchema'
 import { client, handleAPIError } from '/@/libs/api'
 import AuthMethodField from './AuthMethodField'
@@ -26,7 +27,7 @@ const AuthConfigForm: Component<Props> = (props) => {
   // `reset` doesn't work on first render when the Field not rendered
   // see: https://github.com/fabian-hiller/modular-forms/issues/157#issuecomment-1848567069
   onMount(() => {
-    setValues(formStore, updateRepositoryFormInitialValues(props.repo))
+    setValues(formStore, getInitialValueOfUpdateRepoForm(props.repo))
   })
 
   // reset forms when props.repo changed
@@ -34,7 +35,7 @@ const AuthConfigForm: Component<Props> = (props) => {
     reset(
       untrack(() => formStore),
       {
-        initialValues: updateRepositoryFormInitialValues(props.repo),
+        initialValues: getInitialValueOfUpdateRepoForm(props.repo),
       },
     )
   })

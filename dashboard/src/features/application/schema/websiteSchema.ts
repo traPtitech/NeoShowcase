@@ -118,7 +118,7 @@ const extractSubdomain = (
   }
 }
 
-export const createWebsiteInitialValues = (domain: AvailableDomain): CreateWebsiteInput => ({
+export const getInitialValueOfCreateWebsiteForm = (domain: AvailableDomain): CreateWebsiteInput => ({
   domain: domain.domain,
   subdomain: '',
   pathPrefix: '',

@@ -27,7 +27,7 @@ const createApplicationSchema = v.pipe(
 
 type CreateApplicationOutput = v.InferOutput<typeof createApplicationSchema>
 
-export const createApplicationFormInitialValues = (): CreateOrUpdateApplicationInput => ({
+export const getInitialValueOfCreateAppForm = (): CreateOrUpdateApplicationInput => ({
   type: 'create',
   form: {
     name: '',
@@ -83,7 +83,7 @@ export const updateApplicationSchema = v.pipe(
 
 type UpdateApplicationOutput = v.InferOutput<typeof updateApplicationSchema>
 
-export const updateApplicationFormInitialValues = (input: Application): CreateOrUpdateApplicationInput => ({
+export const getInitialValueOfUpdateAppForm = (input: Application): CreateOrUpdateApplicationInput => ({
   type: 'update',
   form: {
     id: input.id,

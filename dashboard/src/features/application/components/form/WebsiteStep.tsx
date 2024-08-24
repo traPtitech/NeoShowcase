@@ -7,7 +7,7 @@ import { List } from '/@/components/templates/List'
 import { systemInfo } from '/@/libs/api'
 import { colorVars } from '/@/theme'
 import { useApplicationForm } from '../../provider/applicationFormProvider'
-import { createWebsiteInitialValues } from '../../schema/websiteSchema'
+import { getInitialValueOfCreateWebsiteForm } from '../../schema/websiteSchema'
 import WebsiteFieldGroup from './website/WebsiteFieldGroup'
 
 const FormsContainer = styled('div', {
@@ -80,7 +80,7 @@ const WebsiteStep: Component<{
       throw new Error('Default domain is not found')
     }
     insert(formStore, 'form.websites', {
-      value: createWebsiteInitialValues(_defaultDomain),
+      value: getInitialValueOfCreateWebsiteForm(_defaultDomain),
     })
   }
 

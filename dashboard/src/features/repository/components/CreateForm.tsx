@@ -9,7 +9,7 @@ import { TextField } from '/@/components/UI/TextField'
 import { useRepositoryForm } from '/@/features/repository/provider/repositoryFormProvider'
 import {
   type CreateOrUpdateRepositoryInput,
-  createRepositoryFormInitialValues,
+  getInitialValueOfCreateRepoForm,
   handleSubmitCreateRepositoryForm,
 } from '/@/features/repository/schema/repositorySchema'
 import { client, handleAPIError } from '/@/libs/api'
@@ -48,9 +48,9 @@ const CreateForm: Component = () => {
   // `reset` doesn't work on first render when the Field not rendered
   // see: https://github.com/fabian-hiller/modular-forms/issues/157#issuecomment-1848567069
   onMount(() => {
-    setValues(formStore, createRepositoryFormInitialValues())
+    setValues(formStore, getInitialValueOfCreateRepoForm())
     reset(formStore, {
-      initialValues: createRepositoryFormInitialValues(),
+      initialValues: getInitialValueOfCreateRepoForm(),
     })
   })
 

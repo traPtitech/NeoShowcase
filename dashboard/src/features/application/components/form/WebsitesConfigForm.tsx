@@ -13,10 +13,10 @@ import { colorVars } from '/@/theme'
 import { useApplicationForm } from '../../provider/applicationFormProvider'
 import {
   type CreateOrUpdateApplicationInput,
+  getInitialValueOfUpdateAppForm,
   handleSubmitUpdateApplicationForm,
-  updateApplicationFormInitialValues,
 } from '../../schema/applicationSchema'
-import { createWebsiteInitialValues } from '../../schema/websiteSchema'
+import { getInitialValueOfCreateWebsiteForm } from '../../schema/websiteSchema'
 import WebsiteFieldGroup from './website/WebsiteFieldGroup'
 
 const Container = styled('div', {
@@ -64,7 +64,7 @@ const WebsiteConfigForm: Component<Props> = (props) => {
   // `reset` doesn't work on first render when the Field not rendered
   // see: https://github.com/fabian-hiller/modular-forms/issues/157#issuecomment-1848567069
   onMount(() => {
-    setValues(formStore, updateApplicationFormInitialValues(props.app))
+    setValues(formStore, getInitialValueOfUpdateAppForm(props.app))
   })
 
   // reset forms when props.app changed
@@ -72,7 +72,7 @@ const WebsiteConfigForm: Component<Props> = (props) => {
     reset(
       untrack(() => formStore),
       {
-        initialValues: updateApplicationFormInitialValues(props.app),
+        initialValues: getInitialValueOfUpdateAppForm(props.app),
       },
     )
   })
@@ -85,7 +85,7 @@ const WebsiteConfigForm: Component<Props> = (props) => {
       throw new Error('Default domain is not found')
     }
     insert(formStore, 'form.websites', {
-      value: createWebsiteInitialValues(_defaultDomain),
+      value: getInitialValueOfCreateWebsiteForm(_defaultDomain),
     })
   }
 

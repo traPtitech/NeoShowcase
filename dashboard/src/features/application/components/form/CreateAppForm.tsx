@@ -19,7 +19,7 @@ import { client, handleAPIError } from '/@/libs/api'
 import { useApplicationForm } from '../../provider/applicationFormProvider'
 import {
   type CreateOrUpdateApplicationInput,
-  createApplicationFormInitialValues,
+  getInitialValueOfCreateAppForm,
   handleSubmitCreateApplicationForm,
 } from '../../schema/applicationSchema'
 import GeneralStep from './GeneralStep'
@@ -55,7 +55,7 @@ const CreateAppForm: Component = () => {
   // `reset` doesn't work on first render when the Field not rendered
   // see: https://github.com/fabian-hiller/modular-forms/issues/157#issuecomment-1848567069
   onMount(() => {
-    setValues(formStore, createApplicationFormInitialValues())
+    setValues(formStore, getInitialValueOfCreateAppForm())
   })
 
   const [searchParams, setParam] = useSearchParams()

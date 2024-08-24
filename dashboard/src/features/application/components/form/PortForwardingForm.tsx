@@ -12,8 +12,8 @@ import { colorVars } from '/@/theme'
 import { useApplicationForm } from '../../provider/applicationFormProvider'
 import {
   type CreateOrUpdateApplicationInput,
+  getInitialValueOfUpdateAppForm,
   handleSubmitUpdateApplicationForm,
-  updateApplicationFormInitialValues,
 } from '../../schema/applicationSchema'
 import type { PortPublicationInput } from '../../schema/portPublicationSchema'
 import PortField from './portForwarding/PortField'
@@ -58,7 +58,7 @@ const PortForwardingForm: Component<Props> = (props) => {
   // `reset` doesn't work on first render when the Field not rendered
   // see: https://github.com/fabian-hiller/modular-forms/issues/157#issuecomment-1848567069
   onMount(() => {
-    setValues(formStore, updateApplicationFormInitialValues(props.app))
+    setValues(formStore, getInitialValueOfUpdateAppForm(props.app))
   })
 
   // reset forms when props.app changed
@@ -66,7 +66,7 @@ const PortForwardingForm: Component<Props> = (props) => {
     reset(
       untrack(() => formStore),
       {
-        initialValues: updateApplicationFormInitialValues(props.app),
+        initialValues: getInitialValueOfUpdateAppForm(props.app),
       },
     )
   })

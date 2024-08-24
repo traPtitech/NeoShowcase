@@ -95,7 +95,7 @@ const createRepositorySchema = v.pipe(
 
 type CreateRepositoryOutput = v.InferOutput<typeof createRepositorySchema>
 
-export const createRepositoryFormInitialValues = (): CreateOrUpdateRepositoryInput => ({
+export const getInitialValueOfCreateRepoForm = (): CreateOrUpdateRepositoryInput => ({
   type: 'create',
   form: {
     name: '',
@@ -188,7 +188,7 @@ const authMethodToAuthConfig = (method: Repository_AuthMethod): v.InferInput<typ
   }
 }
 
-export const updateRepositoryFormInitialValues = (input: Repository): CreateOrUpdateRepositoryInput => {
+export const getInitialValueOfUpdateRepoForm = (input: Repository): CreateOrUpdateRepositoryInput => {
   return {
     type: 'update',
     form: {
