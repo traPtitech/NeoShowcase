@@ -154,6 +154,8 @@ type UpdateRepositoryOutput = v.InferOutput<typeof updateRepositorySchema>
 
 /** protobuf message -> valobot schema input */
 const authMethodToAuthConfig = (method: Repository_AuthMethod): v.InferInput<typeof repositoryAuthSchema> => {
+  // ts-patternでnumber型のenumの網羅性チェックができないためswitchを使用
+  // https://zenn.dev/tacrew/articles/c58ab324aee960#number型のenumにおいて網羅性チェックが不十分
   switch (method) {
     case Repository_AuthMethod.NONE: {
       return {

@@ -1,4 +1,5 @@
 import type { PartialMessage } from '@bufbuild/protobuf'
+import { match } from 'ts-pattern'
 import * as v from 'valibot'
 import { type PortPublication, PortPublicationProtocol } from '/@/api/neoshowcase/protobuf/gateway_pb'
 import { systemInfo } from '/@/libs/api'
@@ -13,20 +14,14 @@ const isValidPort = (port?: number, protocol?: PortPublicationProtocol): boolean
 // KobalteのSelectではstringしか扱えないためform内では文字列として持つ
 const protocolSchema = v.pipe(
   v.union([v.literal(`${PortPublicationProtocol.TCP}`), v.literal(`${PortPublicationProtocol.UDP}`)]),
-  v.transform((input): PortPublicationProtocol => {
-    switch (input) {
-      case `${PortPublicationProtocol.TCP}`: {
-        return PortPublicationProtocol.TCP
-      }
-      case `${PortPublicationProtocol.UDP}`: {
-        return PortPublicationProtocol.UDP
-      }
-      default: {
-        const _unreachable: never = input
-        throw new Error('unknown PortPublicationProtocol')
-      }
-    }
-  }),
+  v.transform(
+    (input): PortPublicationProtocol =>
+      match(input)
+        .returnType<PortPublicationProtocol>()
+        .with(`${PortPublicationProtocol.TCP}`, () => PortPublicationProtocol.TCP)
+        .with(`${PortPublicationProtocol.UDP}`, () => PortPublicationProtocol.UDP)
+        .exhaustive(),
+  ),
 )
 
 export const portPublicationSchema = v.pipe(

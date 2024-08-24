@@ -1,4 +1,5 @@
 import type { PartialMessage } from '@bufbuild/protobuf'
+import { match } from 'ts-pattern'
 import * as v from 'valibot'
 import {
   AuthenticationType,
@@ -16,23 +17,15 @@ const authenticationSchema = v.pipe(
     v.literal(`${AuthenticationType.SOFT}`),
     v.literal(`${AuthenticationType.HARD}`),
   ]),
-  v.transform((input): AuthenticationType => {
-    switch (input) {
-      case `${AuthenticationType.OFF}`: {
-        return AuthenticationType.OFF
-      }
-      case `${AuthenticationType.SOFT}`: {
-        return AuthenticationType.SOFT
-      }
-      case `${AuthenticationType.HARD}`: {
-        return AuthenticationType.HARD
-      }
-      default: {
-        const _unreachable: never = input
-        throw new Error('unknown website AuthenticationType')
-      }
-    }
-  }),
+  v.transform(
+    (input): AuthenticationType =>
+      match(input)
+        .returnType<AuthenticationType>()
+        .with(`${AuthenticationType.OFF}`, () => AuthenticationType.OFF)
+        .with(`${AuthenticationType.SOFT}`, () => AuthenticationType.SOFT)
+        .with(`${AuthenticationType.HARD}`, () => AuthenticationType.HARD)
+        .exhaustive(),
+  ),
 )
 
 export const createWebsiteSchema = v.pipe(

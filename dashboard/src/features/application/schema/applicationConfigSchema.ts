@@ -1,5 +1,5 @@
 import type { PartialMessage } from '@bufbuild/protobuf'
-import { match } from 'ts-pattern'
+import { P, match } from 'ts-pattern'
 import * as v from 'valibot'
 import type { ApplicationConfig } from '/@/api/neoshowcase/protobuf/gateway_pb'
 import { stringBooleanSchema } from '/@/libs/schemaUtil'
@@ -163,9 +163,10 @@ export const applicationConfigSchema = v.pipe(
           },
         }
       })
-      .otherwise(() => ({
-        buildConfig: { case: undefined },
+      .with(P.union([undefined, P._], [P._, undefined]), () => ({
+        buildConfig: undefined,
       }))
+      .exhaustive()
   }),
 )
 
@@ -173,93 +174,83 @@ export type ApplicationConfigInput = v.InferInput<typeof applicationConfigSchema
 
 /** protobuf message -> valobot schema input */
 export const configMessageToSchema = (config: ApplicationConfig): ApplicationConfigInput => {
-  let deployConfig: ApplicationConfigInput['deployConfig']
-  const _case = config.buildConfig.case
-  switch (_case) {
-    case 'runtimeBuildpack':
-    case 'runtimeDockerfile':
-    case 'runtimeCmd': {
-      deployConfig = {
+  const deployConfig = match(config.buildConfig)
+    .returnType<ApplicationConfigInput['deployConfig']>()
+    .with(
+      {
+        case: P.union('runtimeBuildpack', 'runtimeDockerfile', 'runtimeCmd'),
+      },
+      (buildConfig) => ({
         type: 'runtime',
         value: {
-          runtime: config.buildConfig.value.runtimeConfig ?? {
+          runtime: buildConfig.value.runtimeConfig ?? {
             command: '',
             entrypoint: '',
             useMariadb: false,
             useMongodb: false,
           },
         },
-      }
-      break
-    }
-    case 'staticBuildpack':
-    case 'staticDockerfile':
-    case 'staticCmd': {
-      deployConfig = {
+      }),
+    )
+    .with(
+      {
+        case: P.union('staticBuildpack', 'staticDockerfile', 'staticCmd'),
+      },
+      (buildConfig) => ({
         type: 'static',
         value: {
-          static: config.buildConfig.value.staticConfig
+          static: buildConfig.value.staticConfig
             ? {
-                spa: config.buildConfig.value.staticConfig.spa ? 'true' : 'false',
-                artifactPath: config.buildConfig.value.staticConfig.artifactPath,
+                spa: buildConfig.value.staticConfig.spa ? 'true' : 'false',
+                artifactPath: buildConfig.value.staticConfig.artifactPath,
               }
             : {
                 spa: 'false',
                 artifactPath: '',
               },
         },
-      }
-      break
-    }
-    case undefined: {
-      break
-    }
-    default: {
-      const _unreachable: never = _case
-      throw new Error('unknown application build config case')
-    }
-  }
+      }),
+    )
+    .with({ case: undefined }, () => undefined)
+    .exhaustive()
 
-  let buildConfig: ApplicationConfigInput['buildConfig']
-  switch (_case) {
-    case 'runtimeBuildpack':
-    case 'staticBuildpack': {
-      buildConfig = {
+  const buildConfig = match(config.buildConfig)
+    .returnType<ApplicationConfigInput['buildConfig']>()
+    .with(
+      {
+        case: P.union('runtimeBuildpack', 'staticBuildpack'),
+      },
+      (buildConfig) => ({
         type: 'buildpack',
         value: {
-          buildpack: config.buildConfig.value,
+          buildpack: buildConfig.value,
         },
-      }
-      break
-    }
-    case 'runtimeCmd':
-    case 'staticCmd': {
-      buildConfig = {
+      }),
+    )
+    .with(
+      {
+        case: P.union('runtimeCmd', 'staticCmd'),
+      },
+      (buildConfig) => ({
         type: 'cmd',
         value: {
-          cmd: config.buildConfig.value,
+          cmd: buildConfig.value,
         },
-      }
-      break
-    }
-    case 'runtimeDockerfile':
-    case 'staticDockerfile': {
-      buildConfig = {
+      }),
+    )
+    .with(
+      {
+        case: P.union('runtimeDockerfile', 'staticDockerfile'),
+      },
+      (buildConfig) => ({
         type: 'dockerfile',
         value: {
-          dockerfile: config.buildConfig.value,
+          dockerfile: buildConfig.value,
         },
-      }
-      break
-    }
-    case undefined: {
-      break
-    }
-    default: {
-      const _unreachable: never = _case
-      throw new Error('unknown application build config case')
-    }
-  }
+      }),
+    )
+    .with({ case: undefined }, () => undefined)
+    .exhaustive()
 
   return {
     deployConfig,
