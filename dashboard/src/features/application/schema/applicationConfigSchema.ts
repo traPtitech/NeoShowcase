@@ -97,132 +97,72 @@ export const applicationConfigSchema = v.pipe(
   v.transform((input): PartialMessage<ApplicationConfig> => {
     return match([input.deployConfig, input.buildConfig])
       .returnType<PartialMessage<ApplicationConfig>>()
-      .with(
-        [
-          {
-            type: 'runtime',
-          },
-          {
-            type: 'buildpack',
-          },
-        ],
-        ([deployConfig, buildConfig]) => {
-          return {
-            buildConfig: {
-              case: 'runtimeBuildpack',
-              value: {
-                ...buildConfig.value.buildpack,
-                runtimeConfig: deployConfig.value.runtime,
-              },
+      .with([{ type: 'runtime' }, { type: 'buildpack' }], ([deployConfig, buildConfig]) => {
+        return {
+          buildConfig: {
+            case: 'runtimeBuildpack',
+            value: {
+              ...buildConfig.value.buildpack,
+              runtimeConfig: deployConfig.value.runtime,
             },
-          }
-        },
-      )
-      .with(
-        [
-          {
-            type: 'runtime',
           },
-          {
-            type: 'cmd',
-          },
-        ],
-        ([deployConfig, buildConfig]) => {
-          return {
-            buildConfig: {
-              case: 'runtimeCmd',
-              value: {
-                ...buildConfig.value.cmd,
-                runtimeConfig: deployConfig.value.runtime,
-              },
+        }
+      })
+      .with([{ type: 'runtime' }, { type: 'cmd' }], ([deployConfig, buildConfig]) => {
+        return {
+          buildConfig: {
+            case: 'runtimeCmd',
+            value: {
+              ...buildConfig.value.cmd,
+              runtimeConfig: deployConfig.value.runtime,
             },
-          }
-        },
-      )
-      .with(
-        [
-          {
-            type: 'runtime',
           },
-          {
-            type: 'dockerfile',
-          },
-        ],
-        ([deployConfig, buildConfig]) => {
-          return {
-            buildConfig: {
-              case: 'runtimeDockerfile',
-              value: {
-                ...buildConfig.value.dockerfile,
-                runtimeConfig: deployConfig.value.runtime,
-              },
+        }
+      })
+      .with([{ type: 'runtime' }, { type: 'dockerfile' }], ([deployConfig, buildConfig]) => {
+        return {
+          buildConfig: {
+            case: 'runtimeDockerfile',
+            value: {
+              ...buildConfig.value.dockerfile,
+              runtimeConfig: deployConfig.value.runtime,
             },
-          }
-        },
-      )
-      .with(
-        [
-          {
-            type: 'static',
           },
-          {
-            type: 'buildpack',
-          },
-        ],
-        ([deployConfig, buildConfig]) => {
-          return {
-            buildConfig: {
-              case: 'staticBuildpack',
-              value: {
-                ...buildConfig.value.buildpack,
-                staticConfig: deployConfig.value.static,
-              },
+        }
+      })
+      .with([{ type: 'static' }, { type: 'buildpack' }], ([deployConfig, buildConfig]) => {
+        return {
+          buildConfig: {
+            case: 'staticBuildpack',
+            value: {
+              ...buildConfig.value.buildpack,
+              staticConfig: deployConfig.value.static,
             },
-          }
-        },
-      )
-      .with(
-        [
-          {
-            type: 'static',
           },
-          {
-            type: 'cmd',
-          },
-        ],
-        ([deployConfig, buildConfig]) => {
-          return {
-            buildConfig: {
-              case: 'staticCmd',
-              value: {
-                ...buildConfig.value.cmd,
-                staticConfig: deployConfig.value.static,
-              },
+        }
+      })
+      .with([{ type: 'static' }, { type: 'cmd' }], ([deployConfig, buildConfig]) => {
+        return {
+          buildConfig: {
+            case: 'staticCmd',
+            value: {
+              ...buildConfig.value.cmd,
+              staticConfig: deployConfig.value.static,
             },
-          }
-        },
-      )
-      .with(
-        [
-          {
-            type: 'static',
           },
-          {
-            type: 'dockerfile',
-          },
-        ],
-        ([deployConfig, buildConfig]) => {
-          return {
-            buildConfig: {
-              case: 'staticDockerfile',
-              value: {
-                ...buildConfig.value.dockerfile,
-                staticConfig: deployConfig.value.static,
-              },
+        }
+      })
+      .with([{ type: 'static' }, { type: 'dockerfile' }], ([deployConfig, buildConfig]) => {
+        return {
+          buildConfig: {
+            case: 'staticDockerfile',
+            value: {
+              ...buildConfig.value.dockerfile,
+              staticConfig: deployConfig.value.static,
             },
-          }
-        },
-      )
+          },
+        }
+      })
       .otherwise(() => ({
         buildConfig: { case: undefined },
       }))
