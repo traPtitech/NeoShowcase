@@ -3,7 +3,7 @@ import { style } from '@macaron-css/core'
 import { styled } from '@macaron-css/solid'
 import { For, type JSX, Show, splitProps } from 'solid-js'
 import { colorOverlay } from '/@/libs/colorOverlay'
-import { colorVars, textVars } from '/@/theme'
+import { colorVars, media, textVars } from '/@/theme'
 import { RadioIcon } from '../UI/RadioIcon'
 import { ToolTip, type TooltipProps } from '../UI/ToolTip'
 import { TooltipInfoIcon } from '../UI/TooltipInfoIcon'
@@ -13,21 +13,41 @@ const OptionsContainer = styled('div', {
   base: {
     width: '100%',
     display: 'flex',
-    flexWrap: 'wrap',
     gap: '16px',
   },
+  variants: {
+    wrap: {
+      true: {
+        flexWrap: 'wrap',
+      },
+      false: {
+        flexWrap: 'nowrap',
+        '@media': {
+          [media.mobile]: {
+            flexDirection: 'column',
+          },
+        },
+      },
+    },
+  },
+  defaultVariants: {
+    wrap: 'true',
+  },
 })
-const itemStyle = style({
+const fullItemStyle = style({
+  width: '100%',
+  minWidth: 'min(200px, 100%)',
+})
+const fitItemStyle = style({
   width: 'fit-content',
   minWidth: 'min(200px, 100%)',
 })
 const labelStyle = style({
   width: '100%',
+  height: '100%',
   padding: '16px',
-  display: 'grid',
-  gridTemplateColumns: '1fr 20px',
-  alignItems: 'center',
-  justifyItems: 'start',
+  display: 'flex',
+  flexDirection: 'column',
   gap: '8px',
 
   background: colorVars.semantic.ui.primary,
@@ -57,10 +77,33 @@ const labelStyle = style({
     },
   },
 })
+const ItemTitle = styled('div', {
+  base: {
+    display: 'grid',
+    gridTemplateColumns: '1fr 20px',
+    alignItems: 'center',
+    justifyItems: 'start',
+    gap: '8px',
+    color: colorVars.semantic.text.black,
+    ...textVars.text.regular,
+  },
+})
+const Description = styled('div', {
+  base: {
+    color: colorVars.semantic.text.black,
+    ...textVars.caption.regular,
+  },
+})
+export const errorTextStyle = style({
+  width: '100%',
+  color: colorVars.semantic.accent.error,
+  ...textVars.text.regular,
+})
 
 export interface RadioOption<T extends string> {
   value: T
   label: string
+  description?: string
 }
 
 export interface Props<T extends string> {
@@ -70,6 +113,8 @@ export interface Props<T extends string> {
   options: RadioOption<T>[]
   value?: T
   setValue?: (value: T) => void
+  wrap?: boolean
+  full?: boolean
   required?: boolean
   disabled?: boolean
   readOnly?: boolean
@@ -85,7 +130,7 @@ export const RadioGroup = <T extends string>(props: Props<T>): JSX.Element => {
   const [rootProps, _addedProps, inputProps] = splitProps(
     props,
     ['name', 'value', 'options', 'required', 'disabled', 'readOnly'],
-    ['info', 'tooltip', 'setValue'],
+    ['wrap', 'full', 'info', 'tooltip', 'setValue', 'error', 'label'],
   )
 
   return (
@@ -108,25 +153,36 @@ export const RadioGroup = <T extends string>(props: Props<T>): JSX.Element => {
         </TitleContainer>
       </Show>
       <ToolTip {...props.tooltip}>
-        <OptionsContainer>
+        <OptionsContainer wrap={props.wrap}>
           <For each={props.options}>
             {(option) => (
-              <KRadioGroup.Item value={option.value} class={itemStyle}>
+              <KRadioGroup.Item
+                value={option.value}
+                classList={{
+                  [fullItemStyle]: props.full,
+                  [fitItemStyle]: !props.full,
+                }}
+              >
                 <KRadioGroup.ItemInput {...inputProps} />
                 <KRadioGroup.ItemLabel class={labelStyle}>
-                  {option.label}
-                  <KRadioGroup.ItemControl>
-                    <KRadioGroup.ItemIndicator forceMount>
-                      <RadioIcon selected={option.value === props.value} />
-                    </KRadioGroup.ItemIndicator>
-                  </KRadioGroup.ItemControl>
+                  <ItemTitle>
+                    {option.label}
+                    <KRadioGroup.ItemControl>
+                      <KRadioGroup.ItemIndicator forceMount>
+                        <RadioIcon selected={option.value === props.value} />
+                      </KRadioGroup.ItemIndicator>
+                    </KRadioGroup.ItemControl>
+                  </ItemTitle>
+                  <Show when={option.description}>
+                    <Description>{option.description}</Description>
+                  </Show>
                 </KRadioGroup.ItemLabel>
               </KRadioGroup.Item>
             )}
           </For>
         </OptionsContainer>
       </ToolTip>
-      <KRadioGroup.ErrorMessage>{props.error}</KRadioGroup.ErrorMessage>
+      <KRadioGroup.ErrorMessage class={errorTextStyle}>{props.error}</KRadioGroup.ErrorMessage>
     </KRadioGroup.Root>
   )
 }

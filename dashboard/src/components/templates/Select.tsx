@@ -1,6 +1,6 @@
 import { Combobox as KComboBox, Select as KSelect } from '@kobalte/core'
 import { keyframes, style } from '@macaron-css/core'
-import { type JSX, Show, createMemo, splitProps } from 'solid-js'
+import { type JSX, Show, createEffect, createMemo, createSignal, splitProps, untrack } from 'solid-js'
 import { colorVars, textVars } from '/@/theme'
 import { CheckBoxIcon } from '../UI/CheckBoxIcon'
 import { MaterialSymbols } from '../UI/MaterialSymbols'
@@ -174,7 +174,19 @@ export const SingleSelect = <T extends string | number>(props: SingleSelectProps
     ['placeholder', 'ref', 'onInput', 'onChange', 'onBlur'],
   )
 
-  const selectedOption = () => props.options.find((o) => o.value === props.value)
+  // const selectedOption = () => props.options.find((o) => o.value === props.value)
+  const [selectedOption, setSelectedOption] = createSignal<SelectOption<T>>()
+
+  createEffect(() => {
+    const found = props.options.find((o) => o.value === props.value)
+    // KobalteのSelect/Comboboxではundefinedを使用できないため、空文字列を指定している
+    setSelectedOption(
+      found ?? {
+        label: '',
+        value: '' as T,
+      },
+    )
+  })
 
   return (
     <KSelect.Root<SelectOption<T>>
@@ -183,7 +195,10 @@ export const SingleSelect = <T extends string | number>(props: SingleSelectProps
       multiple={false}
       disallowEmptySelection
       value={selectedOption()}
-      onChange={(v) => props.setValue?.(v.value)}
+      onChange={(v) => {
+        props.setValue?.(v.value)
+        setSelectedOption(v)
+      }}
       optionValue="value"
       optionTextValue="label"
       validationState={props.error ? 'invalid' : 'valid'}
@@ -346,38 +361,38 @@ const comboBoxInputStyle = style({
 
 export type ComboBoxProps<T extends string | number> = SelectProps<T> & {
   value: T | undefined
-  setValue?: (v: T) => void
+  setValue?: (v: T | undefined) => void
 }
 
-export const ComboBox = <T extends string | number>(props: SingleSelectProps<T>): JSX.Element => {
+export const ComboBox = <T extends string | number>(props: ComboBoxProps<T>): JSX.Element => {
   const [rootProps, selectProps] = splitProps(
     props,
     ['name', 'placeholder', 'options', 'required', 'disabled', 'readOnly'],
     ['placeholder', 'ref', 'onInput', 'onChange', 'onBlur'],
   )
 
-  const selectedOption = createMemo<SelectOption<T>>(
-    (prev) => {
-      const find = props.options.find((o) => o.value === props.value)
-      if (find) {
-        props.setValue?.(find.value)
-        return find
-      }
-      props.setValue?.(prev.value)
-      return prev
-    },
-    { label: props.value?.toString() ?? '', value: props.value ?? ('' as T) },
-  )
+  const [selectedOption, setSelectedOption] = createSignal<SelectOption<T>>()
+
+  createEffect(() => {
+    const found = props.options.find((o) => o.value === props.value)
+    // KobalteのSelect/Comboboxではundefinedを使用できないため、空文字列を指定している
+    setSelectedOption(
+      found ?? {
+        label: '',
+        value: '' as T,
+      },
+    )
+  })
 
   return (
     <KComboBox.Root<SelectOption<T>>
       class={containerStyle}
-      {...rootProps}
       multiple={false}
-      disallowEmptySelection
+      allowDuplicateSelectionEvents
       value={selectedOption()}
       onChange={(v) => {
         props.setValue?.(v.value)
+        setSelectedOption(v)
       }}
       optionValue="value"
       optionTextValue="label"
@@ -389,6 +404,7 @@ export const ComboBox = <T extends string | number>(props: SingleSelectProps<T>)
           <KComboBox.ItemLabel>{props.item.textValue}</KComboBox.ItemLabel>
         </KComboBox.Item>
       )}
+      {...rootProps}
     >
       <Show when={props.label}>
         <TitleContainer>
