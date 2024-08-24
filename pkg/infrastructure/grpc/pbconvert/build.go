@@ -19,6 +19,10 @@ var BuildStatusMapper = mapper.MustNewValueMapper(map[domain.BuildStatus]pb.Buil
 })
 
 func ToPBBuild(build *domain.Build) *pb.Build {
+	var image *pb.RuntimeImage = nil
+	if build.RuntimeImage.Valid {
+		image = ToPBRuntimeImage(&build.RuntimeImage.V)
+	}
 	return &pb.Build{
 		Id:            build.ID,
 		ApplicationId: build.ApplicationID,
@@ -30,6 +34,7 @@ func ToPBBuild(build *domain.Build) *pb.Build {
 		FinishedAt:    ToPBNullTimestamp(build.FinishedAt),
 		Retriable:     build.Retriable,
 		Artifacts:     ds.Map(build.Artifacts, ToPBArtifact),
+		RuntimeImage:  image,
 	}
 }
 

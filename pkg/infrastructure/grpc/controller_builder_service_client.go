@@ -1,10 +1,11 @@
 package grpc
 
 import (
-	"connectrpc.com/connect"
 	"context"
-	"google.golang.org/protobuf/types/known/emptypb"
 	"io"
+
+	"connectrpc.com/connect"
+	"google.golang.org/protobuf/types/known/emptypb"
 
 	"github.com/friendsofgo/errors"
 	log "github.com/sirupsen/logrus"
@@ -81,6 +82,15 @@ func (c *ControllerBuilderServiceClient) SaveBuildLog(ctx context.Context, build
 		Log:     body,
 	})
 	_, err := c.client.SaveBuildLog(ctx, req)
+	return err
+}
+
+func (c *ControllerBuilderServiceClient) SaveRuntimeImage(ctx context.Context, buildID string, size int64) error {
+	req := connect.NewRequest(&pb.SaveRuntimeImageRequest{
+		BuildId: buildID,
+		Size:    size,
+	})
+	_, err := c.client.SaveRuntimeImage(ctx, req)
 	return err
 }
 
