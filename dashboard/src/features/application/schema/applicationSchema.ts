@@ -22,17 +22,7 @@ const createApplicationSchema = v.pipe(
     portPublications: v.optional(v.array(portPublicationSchema)),
     startOnCreate: v.boolean(),
   }),
-  v.transform(
-    (input): PartialMessage<CreateApplicationRequest> => ({
-      name: input.name,
-      repositoryId: input.repositoryId,
-      refName: input.refName,
-      config: input.config,
-      portPublications: input.portPublications,
-      websites: input.websites,
-      startOnCreate: input.startOnCreate,
-    }),
-  ),
+  v.transform((input): PartialMessage<CreateApplicationRequest> => input),
 )
 
 type CreateApplicationOutput = v.InferOutput<typeof createApplicationSchema>
