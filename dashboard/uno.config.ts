@@ -1,3 +1,4 @@
+import { presetScrollbarGutter } from "unocss-scrollbar-gutter-preset";
 import {
   defineConfig,
   presetIcons,
@@ -9,6 +10,7 @@ export default defineConfig({
   presets: [
     presetUno(),
     presetIcons(),
+    presetScrollbarGutter,
   ],
   shortcuts: {
     "h1-regular": "text-7 leading-6",
