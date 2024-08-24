@@ -40,7 +40,6 @@ const BuildConfigForm: Component<Props> = (props) => {
     )
   })
 
-  // TODO: propsでSubmitHandler<CreateOrUpdateApplicationInput>を受け取る
   const handleSubmit: SubmitHandler<CreateOrUpdateApplicationInput> = (values) =>
     handleSubmitUpdateApplicationForm(values, async (output) => {
       try {
