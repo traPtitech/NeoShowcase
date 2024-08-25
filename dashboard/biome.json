@@ -18,7 +18,13 @@
     "rules": {
       "recommended": true,
       "nursery": {
-        "useSortedClasses": "warn"
+        "useSortedClasses": {
+          "fix": "safe",
+          "level": "warn",
+          "options": {
+            "functions": ["clsx", "styled"]
+          }
+        }
       },
       "style": {
         "noNonNullAssertion": "off"
