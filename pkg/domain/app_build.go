@@ -41,7 +41,8 @@ type Build struct {
 	UpdatedAt     optional.Of[time.Time]
 	FinishedAt    optional.Of[time.Time]
 	Retriable     bool
-	Artifacts     []*Artifact
+	Artifacts     []*Artifact               // for static app
+	RuntimeImage  optional.Of[RuntimeImage] // for runtime app if exists
 }
 
 func NewBuild(app *Application, env []*Environment) *Build {

@@ -318,7 +318,7 @@ services:
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.adminer.rule=Host(`adminer.local.trapti.tech`)"
-      - "traefik.http.services.adminer.loadbalancer.server.port=80"
+      - "traefik.http.services.adminer.loadbalancer.server.port=8080"
     networks:
       - default
 

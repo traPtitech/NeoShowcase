@@ -1,10 +1,11 @@
 syntax = "proto3";
 package neoshowcase.protobuf;
-option go_package = "github.com/traPtitech/neoshowcase/pkg/infrastructure/grpc/pb";
 
 import "google/protobuf/empty.proto";
 import "google/protobuf/timestamp.proto";
 import "neoshowcase/protobuf/null.proto";
+
+option go_package = "github.com/traPtitech/neoshowcase/pkg/infrastructure/grpc/pb";
 
 // ---- Basic structs ----
 
@@ -238,6 +239,13 @@ message ArtifactContent {
   bytes content = 2;
 }
 
+message RuntimeImage {
+  string id = 1;
+  string build_id = 2;
+  int64 size = 3;
+  google.protobuf.Timestamp created_at = 4;
+}
+
 message AvailableMetrics {
   repeated string metrics_names = 1;
 }
@@ -280,6 +288,7 @@ message Build {
   neoshowcase.protobuf.NullTimestamp finished_at = 8;
   bool retriable = 9;
   repeated Artifact artifacts = 10;
+  optional RuntimeImage runtime_image = 11;
 }
 
 message BuildLog {
@@ -500,7 +509,7 @@ service APIService {
   // GetSystemInfo システム固有情報を取得します
   rpc GetSystemInfo(google.protobuf.Empty) returns (SystemInfo) {
     option idempotency_level = NO_SIDE_EFFECTS;
-  };
+  }
   // GenerateKeyPair リポジトリ登録で使用する鍵ペアを一時的に生成します
   rpc GenerateKeyPair(google.protobuf.Empty) returns (GenerateKeyPairResponse);
 
@@ -509,17 +518,17 @@ service APIService {
   // GetMe 自身の情報を取得します プロキシ認証のため常に成功します
   rpc GetMe(google.protobuf.Empty) returns (User) {
     option idempotency_level = NO_SIDE_EFFECTS;
-  };
+  }
   // GetUsers 全てのユーザーの情報を取得します
   rpc GetUsers(google.protobuf.Empty) returns (GetUsersResponse) {
     option idempotency_level = NO_SIDE_EFFECTS;
-  };
+  }
   // CreateUserKey アプリコンテナSSH用の公開鍵を登録します
   rpc CreateUserKey(CreateUserKeyRequest) returns (UserKey);
   // GetUserKeys 登録した公開鍵一覧を取得します
   rpc GetUserKeys(google.protobuf.Empty) returns (GetUserKeysResponse) {
     option idempotency_level = NO_SIDE_EFFECTS;
-  };
+  }
   // DeleteUserKey 登録した公開鍵を削除します
   rpc DeleteUserKey(DeleteUserKeyRequest) returns (google.protobuf.Empty);
 
@@ -528,21 +537,21 @@ service APIService {
   // CreateRepository リポジトリを登録します
   rpc CreateRepository(CreateRepositoryRequest) returns (Repository);
   // GetRepositories リポジトリ一覧を取得します
-  rpc GetRepositories(GetRepositoriesRequest) returns (GetRepositoriesResponse)  {
+  rpc GetRepositories(GetRepositoriesRequest) returns (GetRepositoriesResponse) {
     option idempotency_level = NO_SIDE_EFFECTS;
-  };
+  }
   // GetRepositoryCommits コミットのメタ情報を取得します
   rpc GetRepositoryCommits(GetRepositoryCommitsRequest) returns (GetRepositoryCommitsResponse) {
     option idempotency_level = NO_SIDE_EFFECTS;
   }
   // GetRepository リポジトリを取得します
-  rpc GetRepository(RepositoryIdRequest) returns (Repository)  {
+  rpc GetRepository(RepositoryIdRequest) returns (Repository) {
     option idempotency_level = NO_SIDE_EFFECTS;
   }
   // GetRepositoryRefs リポジトリの現在の有効なref一覧を取得します
-  rpc GetRepositoryRefs(RepositoryIdRequest) returns (GetRepositoryRefsResponse)  {
+  rpc GetRepositoryRefs(RepositoryIdRequest) returns (GetRepositoryRefsResponse) {
     option idempotency_level = NO_SIDE_EFFECTS;
-  };
+  }
   // UpdateRepository リポジトリ情報を更新します
   rpc UpdateRepository(UpdateRepositoryRequest) returns (google.protobuf.Empty);
   // RefreshRepository 自動更新間隔を待たず、手動でリモートリポジトリの最新情報に追従させます
@@ -555,13 +564,13 @@ service APIService {
   // CreateApplication アプリを作成します
   rpc CreateApplication(CreateApplicationRequest) returns (Application);
   // GetApplications アプリ一覧を取得します
-  rpc GetApplications(GetApplicationsRequest) returns (GetApplicationsResponse)  {
+  rpc GetApplications(GetApplicationsRequest) returns (GetApplicationsResponse) {
     option idempotency_level = NO_SIDE_EFFECTS;
-  };
+  }
   // GetApplication アプリを取得します
-  rpc GetApplication(ApplicationIdRequest) returns (Application)  {
+  rpc GetApplication(ApplicationIdRequest) returns (Application) {
     option idempotency_level = NO_SIDE_EFFECTS;
-  };
+  }
   // UpdateApplication アプリ情報を更新します
   rpc UpdateApplication(UpdateApplicationRequest) returns (google.protobuf.Empty);
   // DeleteApplication アプリを削除します 先にアプリのシャットダウンが必要です
@@ -570,17 +579,17 @@ service APIService {
   // Application info
 
   // GetAvailableMetrics 取得可能メトリクス一覧を取得します
-  rpc GetAvailableMetrics(google.protobuf.Empty) returns (AvailableMetrics)  {
+  rpc GetAvailableMetrics(google.protobuf.Empty) returns (AvailableMetrics) {
     option idempotency_level = NO_SIDE_EFFECTS;
-  };
+  }
   // GetApplicationMetrics アプリのメトリクスを取得します
-  rpc GetApplicationMetrics(GetApplicationMetricsRequest) returns (ApplicationMetrics)  {
+  rpc GetApplicationMetrics(GetApplicationMetricsRequest) returns (ApplicationMetrics) {
     option idempotency_level = NO_SIDE_EFFECTS;
-  };
+  }
   // GetOutput アプリの出力を取得します
   rpc GetOutput(GetOutputRequest) returns (ApplicationOutputs) {
     option idempotency_level = NO_SIDE_EFFECTS;
-  };
+  }
   // GetOutputStream アプリの出力をストリーム形式で取得します
   rpc GetOutputStream(GetOutputStreamRequest) returns (stream ApplicationOutput);
 
@@ -589,7 +598,7 @@ service APIService {
   // GetEnvVars アプリの環境変数を取得します
   rpc GetEnvVars(ApplicationIdRequest) returns (ApplicationEnvVars) {
     option idempotency_level = NO_SIDE_EFFECTS;
-  };
+  }
   // SetEnvVar アプリの環境変数をセットします システムによって設定された環境変数は上書きできません
   rpc SetEnvVar(SetApplicationEnvVarRequest) returns (google.protobuf.Empty);
   // DeleteEnvVar アプリの環境変数を削除します システムによって設定された環境変数は削除できません
@@ -604,15 +613,15 @@ service APIService {
   // GetAllBuilds すべてのアプリケーションのビルドキューを取得します
   rpc GetAllBuilds(GetAllBuildsRequest) returns (GetBuildsResponse) {
     option idempotency_level = NO_SIDE_EFFECTS;
-  };
+  }
   // GetBuilds アプリのビルド一覧を取得します
   rpc GetBuilds(ApplicationIdRequest) returns (GetBuildsResponse) {
     option idempotency_level = NO_SIDE_EFFECTS;
-  };
+  }
   // GetBuild アプリのビルド情報を取得します
   rpc GetBuild(BuildIdRequest) returns (Build) {
     option idempotency_level = NO_SIDE_EFFECTS;
-  };
+  }
   // RetryCommitBuild アプリの該当コミットのビルドをやり直します
   rpc RetryCommitBuild(RetryCommitBuildRequest) returns (google.protobuf.Empty);
   // CancelBuild 該当ビルドが進行中の場合キャンセルします
@@ -620,11 +629,11 @@ service APIService {
   // GetBuildLog 終了したビルドのログを取得します
   rpc GetBuildLog(BuildIdRequest) returns (BuildLog) {
     option idempotency_level = NO_SIDE_EFFECTS;
-  };
+  }
   // GetBuildLogStream ビルド中のログをストリーム形式で取得します
   rpc GetBuildLogStream(BuildIdRequest) returns (stream BuildLog);
   // GetBuildArtifact 静的サイトアプリの場合ビルド成果物（静的ファイルのtar）を取得します
   rpc GetBuildArtifact(ArtifactIdRequest) returns (ArtifactContent) {
     option idempotency_level = NO_SIDE_EFFECTS;
-  };
+  }
 }
