@@ -1,4 +1,3 @@
-import { presetScrollbarGutter } from "unocss-scrollbar-gutter-preset";
 import {
   defineConfig,
   presetIcons,
@@ -10,7 +9,20 @@ export default defineConfig({
   presets: [
     presetUno(),
     presetIcons(),
-    presetScrollbarGutter,
+  ],
+  rules: [
+    [
+      /^scrollbar-gutter-both$/,
+      () => ({
+        "scrollbar-gutter": "stable both-edges",
+      }),
+    ],
+    [
+      /^scrollbar-gutter-(auto|stable|inherit|initial|revert|revert-layer|unset)$/,
+      ([, p]) => ({
+        "scrollbar-gutter": p,
+      }),
+    ],
   ],
   shortcuts: {
     "h1-regular": "text-7 leading-6",
@@ -35,6 +47,7 @@ export default defineConfig({
   theme: {
     breakpoints: {
       "md": "768px",
+      "lg": "1024px",
     },
     colors: {
       primary: {
