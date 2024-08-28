@@ -1,33 +1,13 @@
-import { styled } from '@macaron-css/solid'
+import { styled } from '/@/components/styled-components'
 
-const Container = styled('div', {
-  base: {
-    width: '100%',
-    display: 'grid',
-    gridTemplateColumns: '235px minmax(0, 1fr)',
-    gap: '48px',
+const Container = styled(
+  'div',
+  'grid w-full grid-cols-[235px_minmax(0,1fr)] gap-12 max-lg:grid-cols-1 max-lg:grid-rows-[auto_auto] max-lg:gap-6',
+)
 
-    '@media': {
-      'screen and (max-width: 1024px)': {
-        gridTemplateColumns: '1fr',
-        gridTemplateRows: 'auto auto',
-        gap: '24px',
-      },
-    },
-  },
-})
-const Side = styled('div', {
-  base: {
-    width: '100%',
-    height: '100%',
-  },
-})
-const Main = styled('div', {
-  base: {
-    width: '100%',
-    height: '100%',
-  },
-})
+const Side = styled('div', 'h-full w-full')
+
+const Main = styled('div', 'h-full w-full')
 
 export const SideView = {
   Container,

@@ -1,38 +1,12 @@
-import { styled } from '@macaron-css/solid'
-import { colorVars, textVars } from '/@/theme'
+import { styled } from '/@/components/styled-components'
 
-const Container = styled('div', {
-  base: {
-    width: '100%',
-    display: 'flex',
-    flexDirection: 'column',
-    gap: '16px',
-  },
-})
-const Title = styled('h2', {
-  base: {
-    width: '100%',
-    display: 'flex',
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    color: colorVars.semantic.text.black,
-    ...textVars.h2.medium,
-  },
-})
-const SubTitle = styled('div', {
-  base: {
-    color: colorVars.semantic.text.grey,
-    ...textVars.caption.medium,
-  },
-})
-const Titles = styled('div', {
-  base: {
-    display: 'flex',
-    flexDirection: 'column',
-    alignItems: 'flex-start',
-  },
-})
+const Container = styled('div', 'flex w-full flex-col gap-4')
+
+const Title = styled('h2', 'h2-medium flex w-full items-center justify-between text-text-black')
+
+const SubTitle = styled('div', 'caption-medium text-text-grey')
+
+const Titles = styled('div', 'flex flex-col items-start')
 
 export const DataTable = {
   Container,

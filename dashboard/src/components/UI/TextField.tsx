@@ -4,7 +4,7 @@ import { styled } from '@macaron-css/solid'
 import { type Component, type JSX, Show, splitProps } from 'solid-js'
 import { writeToClipboard } from '/@/libs/clipboard'
 import { colorVars, textVars } from '/@/theme'
-import { RequiredMark, TitleContainer, containerStyle, errorTextStyle, titleStyle } from '../templates/FormItem'
+import { RequiredMark, TitleContainer } from '../templates/FormItem'
 import { MaterialSymbols } from './MaterialSymbols'
 import { ToolTip, type TooltipProps } from './ToolTip'
 import { TooltipInfoIcon } from './TooltipInfoIcon'
@@ -168,10 +168,14 @@ export const TextField: Component<Props> = (props) => {
   }
 
   return (
-    <KTextField.Root class={containerStyle} {...rootProps} validationState={props.error ? 'invalid' : 'valid'}>
+    <KTextField.Root
+      class="flex w-full flex-col gap-2"
+      {...rootProps}
+      validationState={props.error ? 'invalid' : 'valid'}
+    >
       <Show when={props.label}>
         <TitleContainer>
-          <KTextField.Label class={titleStyle}>{props.label}</KTextField.Label>
+          <KTextField.Label class="whitespace-nowrap text-bold text-text-black">{props.label}</KTextField.Label>
           <Show when={props.required}>
             <RequiredMark>*</RequiredMark>
           </Show>
@@ -207,7 +211,7 @@ export const TextField: Component<Props> = (props) => {
       >
         <KTextField.TextArea class={textareaStyle} {...inputProps} autoResize />
       </Show>
-      <KTextField.ErrorMessage class={errorTextStyle}>{props.error}</KTextField.ErrorMessage>
+      <KTextField.ErrorMessage class="w-full text-accent-error text-regular">{props.error}</KTextField.ErrorMessage>
     </KTextField.Root>
   )
 }

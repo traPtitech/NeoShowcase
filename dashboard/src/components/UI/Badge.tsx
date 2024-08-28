@@ -1,31 +1,24 @@
-import { styled } from '@macaron-css/solid'
-import { colorVars, textVars } from '/@/theme'
+import { type ComponentProps, type ParentComponent, splitProps } from 'solid-js'
+import { clsx } from '/@/libs/clsx'
 
-const Badge = styled('div', {
-  base: {
-    height: '1.43em', // 20px
-    padding: '0 8px',
-    borderRadius: '9999px',
-    whiteSpace: 'nowrap',
+type VariantProps = {
+  variant: 'text' | 'success' | 'warn'
+}
 
-    ...textVars.caption.regular,
-  },
-  variants: {
-    variant: {
-      text: {
-        background: colorVars.primitive.blackAlpha[200],
-        color: colorVars.semantic.text.black,
-      },
-      success: {
-        background: colorVars.semantic.transparent.successHover,
-        color: colorVars.semantic.accent.success,
-      },
-      warn: {
-        background: colorVars.semantic.transparent.warnHover,
-        color: colorVars.semantic.accent.warn,
-      },
-    },
-  },
-})
+const Badge: ParentComponent<ComponentProps<'div'> & VariantProps> = (props) => {
+  const [_, rest] = splitProps(props, ['variant', 'class'])
+  return (
+    <div
+      class={clsx(
+        'caption-regular h-5 whitespace-nowrap rounded-full px-2',
+        props.variant === 'text' && 'bg-black-alpha-200 text-text-black',
+        props.variant === 'success' && 'bg-transparency-success-hover text-accent-success',
+        props.variant === 'warn' && 'bg-transparency-warn-hover text-accent-warn',
+        props.class,
+      )}
+      {...rest}
+    />
+  )
+}
 
 export default Badge

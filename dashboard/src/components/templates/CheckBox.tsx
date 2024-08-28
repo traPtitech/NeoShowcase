@@ -1,65 +1,11 @@
 import { Checkbox as KCheckbox } from '@kobalte/core'
-import { style } from '@macaron-css/core'
-import { styled } from '@macaron-css/solid'
 import { type Component, type JSX, splitProps } from 'solid-js'
-import { colorOverlay } from '/@/libs/colorOverlay'
-import { colorVars, textVars } from '/@/theme'
+import { styled } from '/@/components/styled-components'
+import { clsx } from '/@/libs/clsx'
 import { CheckBoxIcon } from '../UI/CheckBoxIcon'
 import { ToolTip, type TooltipProps } from '../UI/ToolTip'
 
-const Container = styled('div', {
-  base: {
-    width: 'auto',
-    maxWidth: '100%',
-    display: 'grid',
-    gridTemplateColumns: 'repeat(auto-fill, 200px)',
-    gap: '16px',
-  },
-})
-
-const labelStyle = style({
-  width: 'fit-content',
-  minWidth: 'min(200px, 100%)',
-  height: 'auto',
-  padding: '16px',
-  display: 'grid',
-  gridTemplateColumns: '1fr 24px',
-  alignItems: 'center',
-  justifyItems: 'start',
-  gap: '8px',
-
-  background: colorVars.semantic.ui.primary,
-  borderRadius: '8px',
-  border: `1px solid ${colorVars.semantic.ui.border}`,
-  color: colorVars.semantic.text.black,
-  ...textVars.text.regular,
-  cursor: 'pointer',
-
-  selectors: {
-    '&:hover:not([data-disabled]):not([data-readonly])': {
-      background: colorOverlay(colorVars.semantic.ui.primary, colorVars.semantic.transparent.primaryHover),
-    },
-    '&[data-readonly]': {
-      cursor: 'not-allowed',
-    },
-    '&[data-checked]': {
-      outline: `2px solid ${colorVars.semantic.primary.main}`,
-    },
-    '&[data-disabled]': {
-      cursor: 'not-allowed',
-      color: colorVars.semantic.text.disabled,
-      background: colorVars.semantic.ui.tertiary,
-    },
-    '&[data-invalid]': {
-      outline: `2px solid ${colorVars.semantic.accent.error}`,
-    },
-  },
-})
-const iconStyle = style({
-  width: '24px',
-  height: '24px',
-  flexShrink: 0,
-})
+const Container = styled('div', 'grid w-auto max-w-full grid-cols-[repeat(auto-fill,200px)] gap-4')
 
 export interface Props {
   checked?: boolean
@@ -89,10 +35,19 @@ const Option: Component<Props> = (props) => {
     <KCheckbox.Root {...rootProps} validationState={props.error ? 'invalid' : 'valid'}>
       <KCheckbox.Input {...inputProps} />
       <ToolTip {...props.tooltip}>
-        <KCheckbox.Label class={labelStyle}>
+        <KCheckbox.Label
+          class={clsx(
+            'grid h-auto w-fit min-w-[min(200px,100%)] cursor-pointer grid-cols-[1fr_24px] items-center justify-start gap-2 rounded-lg border border-ui-border bg-ui-primary p-4 text-regular text-text-black',
+            'hover:[&:not([data-disabled]):not([data-readonly])]:bg-color-overlay-ui-primary-to-transparency-primary-hover',
+            'data-[readonly]:cursor-not-allowed',
+            'data-[checked]:outline data-[checked]:outline-2 data-[checked]:outline-primary-main',
+            'data-[disabled]:cursor-not-allowed data-[disabled]:bg-ui-tertiary data-[disabled]:text-text-disabled',
+            'data-[invalid]:outline data-[invalid]:outline-2 data-[invalid]:outline-accent-error',
+          )}
+        >
           {props.label}
           <KCheckbox.Control>
-            <KCheckbox.Indicator forceMount class={iconStyle}>
+            <KCheckbox.Indicator forceMount class="size-6 shrink-0">
               <CheckBoxIcon checked={props.checked ?? false} />
             </KCheckbox.Indicator>
           </KCheckbox.Control>

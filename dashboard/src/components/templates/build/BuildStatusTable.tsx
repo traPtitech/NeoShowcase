@@ -1,6 +1,4 @@
 import type { Timestamp } from '@bufbuild/protobuf'
-import { style } from '@macaron-css/core'
-import { styled } from '@macaron-css/solid'
 import { useNavigate } from '@solidjs/router'
 import { type Component, For, Show } from 'solid-js'
 import toast from 'solid-toast'
@@ -16,47 +14,8 @@ import { ToolTip } from '/@/components/UI/ToolTip'
 import { client, handleAPIError } from '/@/libs/api'
 import { buildStatusStr } from '/@/libs/application'
 import { diffHuman, durationHuman, shortSha } from '/@/libs/format'
-import { colorVars, textVars } from '/@/theme'
 import { List } from '../List'
 import { BuildStatusIcon } from './BuildStatusIcon'
-
-const BuildStatusRow = styled('div', {
-  base: {
-    width: '100%',
-    padding: '16px 20px',
-    display: 'flex',
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: '8px',
-
-    background: colorVars.semantic.ui.secondary,
-  },
-})
-const BuildStatusLabel = styled('div', {
-  base: {
-    width: '100%',
-    display: 'flex',
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: '4px',
-
-    color: colorVars.semantic.text.black,
-    ...textVars.text.medium,
-  },
-})
-
-const DataRows = styled('div', {
-  base: {
-    display: 'flex',
-    flexDirection: 'column',
-    alignContent: 'left',
-  },
-})
-
-const greyText = style({
-  color: colorVars.semantic.text.grey,
-  ...textVars.caption.regular,
-})
 
 const BuildStatusTable: Component<{
   app: Application
@@ -105,9 +64,9 @@ const BuildStatusTable: Component<{
     const diff = diffHuman(c.commitDate.toDate())
     const localeString = c.commitDate.toDate().toLocaleString()
     return (
-      <DataRows>
+      <div class="flex flex-col">
         <For each={c.message.split('\n')}>{(line) => <div>{line}</div>}</For>
-        <div class={greyText}>
+        <div class="caption-regular text-text-grey">
           {c.authorName}
           <span>, </span>
           <ToolTip props={{ content: localeString }}>
@@ -116,17 +75,17 @@ const BuildStatusTable: Component<{
           <span>, </span>
           {shortSha(c.hash)}
         </div>
-      </DataRows>
+      </div>
     )
   }
 
   return (
     <List.Container>
-      <BuildStatusRow>
-        <BuildStatusLabel>
+      <div class="flex w-full items-center gap-2 bg-ui-secondary px-5 py-4">
+        <div class="text flex w-full items-center gap-1 text-black text-medium">
           <BuildStatusIcon state={props.build.status} size={24} />
           {buildStatusStr[props.build.status]}
-        </BuildStatusLabel>
+        </div>
         <Show when={!props.build.retriable && props.hasPermission}>
           <Button
             variants="borderError"
@@ -146,7 +105,7 @@ const BuildStatusTable: Component<{
             Cancel Build
           </Button>
         </Show>
-      </BuildStatusRow>
+      </div>
       <List.Row>
         <List.RowContent>
           <List.RowTitle>Source Commit</List.RowTitle>

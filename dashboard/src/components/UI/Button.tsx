@@ -1,176 +1,6 @@
-import { styled } from '@macaron-css/solid'
 import { type JSX, type ParentComponent, Show, splitProps } from 'solid-js'
-import { colorOverlay } from '/@/libs/colorOverlay'
-import { colorVars, textVars } from '/@/theme'
 import { ToolTip, type TooltipProps } from './ToolTip'
-
-const Container = styled('button', {
-  base: {
-    width: 'auto',
-    display: 'flex',
-    alignItems: 'center',
-    borderRadius: '8px',
-    gap: '4px',
-
-    background: 'none',
-    border: 'none',
-    cursor: 'pointer',
-    selectors: {
-      '&:disabled': {
-        cursor: 'not-allowed',
-        border: 'none !important',
-        color: `${colorVars.semantic.text.black} !important`,
-        background: `${colorVars.semantic.text.disabled} !important`,
-      },
-      '&[data-loading="true"]': {
-        cursor: 'wait',
-        border: 'none !important',
-        color: `${colorVars.semantic.text.black} !important`,
-        background: `${colorVars.semantic.text.disabled} !important`,
-      },
-    },
-  },
-  variants: {
-    size: {
-      medium: {
-        height: '44px',
-        padding: '0 16px',
-      },
-      small: {
-        height: '32px',
-        padding: '0 12px',
-      },
-    },
-    full: {
-      true: {
-        width: '100%',
-      },
-    },
-    variants: {
-      primary: {
-        background: colorVars.semantic.primary.main,
-        color: colorVars.semantic.text.white,
-        selectors: {
-          '&:hover': {
-            background: colorOverlay(colorVars.semantic.primary.main, colorVars.primitive.blackAlpha[200]),
-          },
-          '&:active, &[data-active="true"]': {
-            background: colorOverlay(colorVars.semantic.primary.main, colorVars.primitive.blackAlpha[300]),
-          },
-        },
-      },
-      ghost: {
-        background: colorVars.semantic.ui.secondary,
-        color: colorVars.semantic.text.black,
-        selectors: {
-          '&:hover': {
-            background: colorOverlay(colorVars.semantic.ui.secondary, colorVars.primitive.blackAlpha[50]),
-          },
-          '&:active, &[data-active="true"]': {
-            background: colorOverlay(colorVars.semantic.ui.secondary, colorVars.primitive.blackAlpha[200]),
-          },
-        },
-      },
-      border: {
-        border: `solid 1px ${colorVars.semantic.ui.border}`,
-        color: colorVars.semantic.text.black,
-        selectors: {
-          '&:hover': {
-            background: colorVars.semantic.transparent.primaryHover,
-          },
-          '&:active, &[data-active="true"]': {
-            background: colorVars.semantic.transparent.primarySelected,
-          },
-        },
-      },
-      text: {
-        color: colorVars.semantic.text.black,
-        selectors: {
-          '&:hover': {
-            background: colorVars.semantic.transparent.primaryHover,
-          },
-          '&:active, &[data-active="true"]': {
-            color: colorVars.semantic.primary.main,
-            background: colorVars.semantic.transparent.primarySelected,
-          },
-        },
-      },
-      primaryError: {
-        border: `solid 1px ${colorVars.semantic.accent.error}`,
-        background: colorVars.semantic.accent.error,
-        color: colorVars.semantic.text.white,
-        selectors: {
-          '&:hover': {
-            background: colorOverlay(colorVars.semantic.accent.error, colorVars.primitive.blackAlpha[200]),
-          },
-          '&:active, &[data-active="true"]': {
-            background: colorOverlay(colorVars.semantic.accent.error, colorVars.primitive.blackAlpha[300]),
-          },
-        },
-      },
-      borderError: {
-        border: `solid 1px ${colorVars.semantic.accent.error}`,
-        color: colorVars.semantic.accent.error,
-        selectors: {
-          '&:hover': {
-            background: colorVars.semantic.transparent.errorHover,
-          },
-          '&:active, &[data-active="true"]': {
-            background: colorVars.semantic.transparent.errorSelected,
-          },
-        },
-      },
-      textError: {
-        color: colorVars.semantic.accent.error,
-        selectors: {
-          '&:hover': {
-            background: colorVars.semantic.transparent.errorHover,
-          },
-          '&:active, &[data-active="true"]': {
-            background: colorVars.semantic.transparent.errorSelected,
-          },
-        },
-      },
-    },
-    hasCheckbox: {
-      true: {
-        gap: '8px',
-      },
-    },
-  },
-})
-const Text = styled('div', {
-  base: {
-    whiteSpace: 'nowrap',
-  },
-  variants: {
-    size: {
-      medium: {
-        ...textVars.text.bold,
-      },
-      small: {
-        ...textVars.caption.bold,
-      },
-    },
-  },
-})
-const IconContainer = styled('div', {
-  base: {
-    lineHeight: 1,
-  },
-  variants: {
-    size: {
-      medium: {
-        width: '24px',
-        height: '24px',
-      },
-      small: {
-        width: '20px',
-        height: '20px',
-      },
-    },
-  },
-})
+import { clsx } from '/@/libs/clsx'
 
 export interface Props extends JSX.ButtonHTMLAttributes<HTMLButtonElement> {
   variants: 'primary' | 'ghost' | 'border' | 'text' | 'primaryError' | 'borderError' | 'textError'
@@ -186,6 +16,7 @@ export interface Props extends JSX.ButtonHTMLAttributes<HTMLButtonElement> {
 
 export const Button: ParentComponent<Props> = (props) => {
   const [addedProps, originalButtonProps] = splitProps(props, [
+    'class',
     'variants',
     'size',
     'loading',
@@ -200,28 +31,56 @@ export const Button: ParentComponent<Props> = (props) => {
 
   return (
     <ToolTip {...addedProps.tooltip}>
-      <span // ボタンがdisabledの時もTippy.jsのtooltipが表示されるようにするためのラッパー
-        style={{
-          width: addedProps.full ? '100%' : 'fit-content',
-        }}
-      >
-        <Container
-          variants={addedProps.variants}
-          size={addedProps.size}
+      {/* ボタンがdisabledの時もTippy.jsのtooltipが表示されるようにするためのラッパー */}
+      <span class={addedProps.full ? 'w-full' : 'w-fit'}>
+        <button
+          class={clsx(
+            'flex w-auto cursor-pointer items-center gap-1 rounded-lg border-none bg-none',
+            '!disabled:border-none !disabled:bg-text-disabled !disabled:text-text-black disabled:cursor-not-allowed',
+            '!data-[loading]:border-none !data-[loading]:bg-text-disabled !data-[loading]:text-text-black data-[loading]:cursor-wait',
+            // size
+            { small: 'h-8 px-3', medium: 'h-11 px-4' }[addedProps.size],
+            // full
+            addedProps.full && 'w-full',
+            // hasCheckbox
+            addedProps.hasCheckbox && 'gap-2',
+            // variants
+            {
+              primary:
+                'bg-primary-main text-text-white hover:bg-color-overlay-primary-main-to-black-alpha-200 active:bg-color-overlay-primary-main-to-black-alpha-300 data-[active]:bg-color-overlay-primary-main-to-black-alpha-300',
+              ghost:
+                'bg-ui-secondary text-text-black hover:bg-color-overlay-ui-secondary-to-black-alpha-50 active:bg-color-overlay-ui-secondary-to-black-alpha-200 data-[active]:bg-color-overlay-ui-secondary-to-black-alpha-200',
+              border:
+                'border border-ui-border text-text-black hover:bg-transparency-primary-hover active:bg-transparency-primary-selected data-[active]:bg-transparency-primary-selected',
+              text: 'text-text-black hover:bg-transparency-primary-hover active:text-primary-main data-[active]:bg-transparency-primary-selected',
+
+              primaryError:
+                'border border-accent-error bg-accent-error text-text-white hover:bg-color-overlay-accent-error-to-black-alpha-200 active:bg-color-overlay-accent-error-to-black-alpha-300 data-[active]:bg-color-overlay-accent-error-to-black-alpha-300',
+              borderError:
+                'border border-accent-error text-accent-error hover:bg-transparency-error-hover active:bg-transparency-error-selected data-[active]:bg-transparency-error-selected',
+
+              textError:
+                'text-accent-error hover:bg-transparency-error active:bg-transparency-error-selected data-[active]:bg-transparency-error-selected',
+            }[addedProps.variants],
+          )}
           data-active={addedProps.active}
-          hasCheckbox={addedProps.hasCheckbox}
-          full={addedProps.full}
           data-loading={addedProps.loading}
           {...originalButtonProps}
         >
           <Show when={addedProps.leftIcon}>
-            <IconContainer size={addedProps.size}>{addedProps.leftIcon}</IconContainer>
+            <div class={clsx('leading-4', { small: 'size-5', medium: 'size-6' }[addedProps.size])}>
+              {addedProps.leftIcon}
+            </div>
           </Show>
-          <Text size={addedProps.size}>{addedProps.children}</Text>
+          <div class={clsx('whitespace-nowrap', { small: 'caption-bold', medium: 'text-bold' }[addedProps.size])}>
+            {addedProps.children}
+          </div>
           <Show when={addedProps.rightIcon}>
-            <IconContainer size={addedProps.size}>{addedProps.rightIcon}</IconContainer>
+            <div class={clsx('leading-4', { small: 'size-5', medium: 'size-6' }[addedProps.size])}>
+              {addedProps.rightIcon}
+            </div>
           </Show>
-        </Container>
+        </button>
       </span>
     </ToolTip>
   )

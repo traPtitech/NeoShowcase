@@ -1,41 +1,21 @@
-import { styled } from '@macaron-css/solid'
-import { colorVars, media } from '/@/theme'
+import { type ComponentProps, type ParentComponent, splitProps } from 'solid-js'
+import { clsx } from '/@/libs/clsx'
 
-export const MainViewContainer = styled('div', {
-  base: {
-    position: 'relative',
-    width: '100%',
-    height: '100%',
-    padding: '40px max(calc(50% - 500px), 32px) 72px',
+type VariantProps = {
+  background?: 'grey' | 'white'
+  scrollable?: boolean
+}
 
-    '@media': {
-      [media.mobile]: {
-        padding: '40px 16px 72px',
-      },
-    },
-  },
-  variants: {
-    background: {
-      grey: {
-        background: colorVars.semantic.ui.background,
-      },
-      white: {
-        background: colorVars.semantic.ui.primary,
-      },
-    },
-    scrollable: {
-      true: {
-        overflowY: 'auto',
-        scrollbarGutter: 'stable',
-      },
-      false: {
-        overflowY: 'hidden',
-        scrollbarGutter: 'none',
-      },
-    },
-  },
-  defaultVariants: {
-    background: 'white',
-    scrollable: true,
-  },
-})
+export const MainViewContainer: ParentComponent<ComponentProps<'div'> & VariantProps> = (props) => (
+  <div
+    {...props}
+    class={clsx(
+      'relative h-full w-full px-[max(calc(50%-500px))] pt-10 pb-18 max-md:px-4',
+      props.background === 'grey' ? 'bg-ui-background' : 'bg-ui-primary',
+      props.scrollable || props.scrollable === undefined
+        ? 'scrollbar-gutter-stable overflow-y-auto'
+        : 'scrollbar-gutter-auto overflow-y-hidden',
+      props.class,
+    )}
+  />
+)

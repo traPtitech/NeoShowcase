@@ -1,44 +1,7 @@
 import { Skeleton as KSkeleton } from '@kobalte/core'
-import { keyframes, style } from '@macaron-css/core'
 import { type Component, mergeProps } from 'solid-js'
-
-const skeletonAnimation = keyframes({
-  from: {
-    transform: 'translateX(-100%)',
-  },
-  to: {
-    transform: 'translateX(100%)',
-  },
-})
-const skeletonClass = style({
-  position: 'relative',
-  width: 'auto',
-  height: 'auto',
-  flexShrink: '0',
-  opacity: '0.2',
-
-  selectors: {
-    "&[data-visible='true']": {
-      overflow: 'hidden',
-    },
-    "&[data-visible='true']::after": {
-      position: 'absolute',
-      content: '""',
-      inset: '0',
-      backgroundColor: 'currentcolor',
-      backgroundImage: 'linear-gradient(90deg, transparent, #fff4, transparent)',
-    },
-    "&[data-visible='true']::before": {
-      position: 'absolute',
-      content: '""',
-      inset: '0',
-      backgroundColor: 'currentcolor',
-    },
-    "&[data-animate='true']::after": {
-      animation: `${skeletonAnimation} 1.5s linear infinite`,
-    },
-  },
-})
+import { clsx } from '/@/libs/clsx'
+import styles from './Skeleton.module.css'
 
 type SkeletonProps = Parameters<typeof KSkeleton.Root>[0]
 
@@ -51,7 +14,16 @@ const Skeleton: Component<SkeletonProps> = (props) => {
   const mergedProps = mergeProps(defaultProps, props)
 
   return (
-    <KSkeleton.Root {...mergedProps} class={skeletonClass}>
+    <KSkeleton.Root
+      {...mergedProps}
+      class={clsx(
+        'relative h-auto w-auto shrink-0 opacity-20',
+        'data-[visible]:overflow-hidden',
+        "data-[visible]:after:absolute data-[visible]:after:inset-0 data-[visible]:after:bg-[currentColor] data-[visible]:after:bg-[linear-gradient(90deg,transparent,#fff4,transparent)] data-[visible]:after:content-['']",
+        "data-[visible]:before:absolute data-[visible]:before:inset-0 data-[visible]:before:bg-[currentColor] data-[visible]:before:content-['']",
+        styles['skeleton-animation'],
+      )}
+    >
       {props.children}
     </KSkeleton.Root>
   )

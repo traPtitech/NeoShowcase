@@ -1,60 +1,6 @@
-import { styled } from '@macaron-css/solid'
 import { type JSX, splitProps } from 'solid-js'
 import type { ParentComponent } from 'solid-js'
-import { colorVars, textVars } from '/@/theme'
-
-const Container = styled('button', {
-  base: {
-    width: 'fit-content',
-    height: '44px',
-    padding: '0 16px',
-    display: 'flex',
-    alignItems: 'center',
-    gap: '4px',
-    border: 'none',
-    borderRadius: '9999px',
-    ...textVars.h4.medium,
-    whiteSpace: 'nowrap',
-    cursor: 'pointer',
-  },
-  variants: {
-    state: {
-      active: {
-        background: colorVars.semantic.transparent.primaryHover,
-        color: `${colorVars.semantic.primary.main} !important`,
-        boxShadow: `inset 0 0 0 2px ${colorVars.semantic.primary.main} !important`,
-      },
-      default: {
-        background: 'none',
-        color: colorVars.semantic.text.grey,
-        boxShadow: `inset 0 0 0 1px ${colorVars.semantic.ui.border}`,
-      },
-    },
-    variant: {
-      primary: {
-        selectors: {
-          '&:hover': {
-            background: colorVars.semantic.transparent.primaryHover,
-            color: colorVars.semantic.text.grey,
-            boxShadow: `inset 0 0 0 1px ${colorVars.semantic.ui.border}`,
-          },
-        },
-      },
-      ghost: {
-        background: colorVars.primitive.blackAlpha[50],
-        color: colorVars.semantic.text.black,
-        selectors: {
-          '&:hover': {
-            background: colorVars.primitive.blackAlpha[200],
-          },
-        },
-      },
-    },
-  },
-  defaultVariants: {
-    variant: 'primary',
-  },
-})
+import { clsx } from '/@/libs/clsx'
 
 export interface Props extends JSX.ButtonHTMLAttributes<HTMLButtonElement> {
   state?: 'active' | 'default'
@@ -65,8 +11,23 @@ export const TabRound: ParentComponent<Props> = (props) => {
   const [addedProps, originalButtonProps] = splitProps(props, ['state', 'variant', 'children'])
 
   return (
-    <Container state={addedProps.state} variant={addedProps.variant} {...originalButtonProps} type="button">
+    <button
+      class={clsx(
+        'h4-medium flex h-11 w-fit cursor-pointer items-center gap-1 whitespace-nowrap rounded-full border-none px-4',
+        {
+          active: '!text-primary-main !shadow-[inset_0_0_0_2px] bg-transparency-primary-hover shadow-primary-main',
+          default: 'bg-none text-text-grey shadow-[inset_0_0_0_1px] shadow-ui-border',
+        }[addedProps.state ?? 'default'],
+        {
+          primary:
+            'hover:bg-transparency-primary-hover hover:text-text-grey hover:shadow-[inset_0_0_0_1px] hover:shadow-ui-border',
+          ghost: 'bg-black-alpha-50 text-text-black hover:bg-black-alpha-200',
+        }[addedProps.variant ?? 'primary'],
+      )}
+      type="button"
+      {...originalButtonProps}
+    >
       {addedProps.children}
-    </Container>
+    </button>
   )
 }

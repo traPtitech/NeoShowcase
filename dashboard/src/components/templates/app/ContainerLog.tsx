@@ -1,6 +1,5 @@
 import { Timestamp } from '@bufbuild/protobuf'
 import { Code, ConnectError } from '@connectrpc/connect'
-import { styled } from '@macaron-css/solid'
 import { type Component, For, Show, createEffect, createSignal, onCleanup } from 'solid-js'
 import type { ApplicationOutput } from '/@/api/neoshowcase/protobuf/gateway_pb'
 import { Button } from '/@/components/UI/Button'
@@ -10,25 +9,6 @@ import { client, handleAPIError } from '/@/libs/api'
 import { toWithAnsi } from '/@/libs/buffers'
 import { isScrolledToBottom } from '/@/libs/scroll'
 import { addTimestamp, lessTimestamp, minTimestamp } from '/@/libs/timestamp'
-
-const OuterContainer = styled('div', {
-  base: {
-    display: 'flex',
-    flexDirection: 'column',
-    gap: '10px',
-  },
-})
-
-const LoadMoreContainer = styled('div', {
-  base: {
-    display: 'flex',
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: '8px',
-    marginBottom: '6px',
-    fontSize: '16px',
-  },
-})
 
 const logLinesLimit = 1000
 const loadLimitSeconds = 7 * 86400
@@ -128,20 +108,20 @@ export const ContainerLog: Component<ContainerLogProps> = (props) => {
   const onScroll = (e: { target: Element }) => setAtBottom(isScrolledToBottom(e.target))
 
   return (
-    <OuterContainer>
+    <div class="flex flex-col gap-2.5">
       <ContainerLogExport currentLogs={logs()} />
       <LogContainer ref={logRef!} overflowX="scroll" onScroll={onScroll}>
-        <LoadMoreContainer>
+        <div class="mb-1.5 flex items-center gap-2">
           Loaded until {loadedUntil().toDate().toLocaleString()}
           <Show when={!loadDisabled()} fallback={<span>(reached load limit)</span>}>
             <Button variants="ghost" size="small" onClick={load} disabled={loading()}>
               {loading() ? 'Loading...' : 'Load more'}
             </Button>
           </Show>
-        </LoadMoreContainer>
+        </div>
         <For each={logs()}>{(log) => <code innerHTML={formatLogLine(log, showTimestamps())} />}</For>
       </LogContainer>
-    </OuterContainer>
+    </div>
   )
 }
 

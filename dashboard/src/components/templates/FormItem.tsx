@@ -1,47 +1,11 @@
-import { style } from '@macaron-css/core'
-import { styled } from '@macaron-css/solid'
 import { type JSX, type ParentComponent, Show } from 'solid-js'
-import { colorVars, textVars } from '/@/theme'
+import { styled } from '/@/components/styled-components'
 import type { TooltipProps } from '../UI/ToolTip'
 import { TooltipInfoIcon } from '../UI/TooltipInfoIcon'
 
-export const containerStyle = style({
-  width: '100%',
-  display: 'flex',
-  flexDirection: 'column',
-  gap: '8px',
-})
-export const TitleContainer = styled('div', {
-  base: {
-    width: '100%',
-    display: 'flex',
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: '2px',
-  },
-})
-export const titleStyle = style({
-  whiteSpace: 'nowrap',
-  color: colorVars.semantic.text.black,
-  ...textVars.text.bold,
-})
-export const RequiredMark = styled('div', {
-  base: {
-    color: colorVars.semantic.accent.error,
-    ...textVars.text.bold,
-  },
-})
-export const errorTextStyle = style({
-  width: '100%',
-  color: colorVars.semantic.accent.error,
-  ...textVars.text.regular,
-})
-const HelpText = styled('div', {
-  base: {
-    color: colorVars.semantic.text.grey,
-    ...textVars.caption.regular,
-  },
-})
+export const TitleContainer = styled('div', 'flex w-full items-center gap-2')
+
+export const RequiredMark = styled('div', 'text-accent-error text-bold')
 
 interface Props {
   title: string | JSX.Element
@@ -52,9 +16,9 @@ interface Props {
 
 export const FormItem: ParentComponent<Props> = (props) => {
   return (
-    <div class={containerStyle}>
+    <div class="flex w-full flex-col gap-2">
       <TitleContainer>
-        <div class={titleStyle}>{props.title}</div>
+        <div class="whitespace-nowrap text-bold text-text-black">{props.title}</div>
         <Show when={props.required}>
           <RequiredMark>*</RequiredMark>
         </Show>
@@ -62,7 +26,7 @@ export const FormItem: ParentComponent<Props> = (props) => {
           <TooltipInfoIcon {...props.tooltip} />
         </Show>
         <Show when={props.helpText !== ''}>
-          <HelpText>{props.helpText}</HelpText>
+          <div class="caption-regular text-text-grey">{props.helpText}</div>
         </Show>
       </TitleContainer>
       {props.children}

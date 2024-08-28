@@ -1,78 +1,10 @@
 import { Dialog, createDisclosureState } from '@kobalte/core'
-import { keyframes, style } from '@macaron-css/core'
-import { styled } from '@macaron-css/solid'
 import { A, useIsRouting } from '@solidjs/router'
-import { type Component, Show } from 'solid-js'
+import type { Component } from 'solid-js'
 import { createComputed } from 'solid-js'
 import LogoImage from '/@/assets/logo.svg?url'
-import { systemInfo } from '/@/libs/api'
-import { colorVars } from '/@/theme'
 import { Button } from '../UI/Button'
 import { MaterialSymbols } from '../UI/MaterialSymbols'
-
-const buttonStyle = style({
-  width: '32px',
-  height: '32px',
-  display: 'grid',
-  placeItems: 'center',
-  appearance: 'none',
-  border: 'none',
-  background: 'transparent',
-  cursor: 'pointer',
-})
-const overlayShow = keyframes({
-  from: {
-    opacity: 0,
-  },
-  to: {
-    opacity: 1,
-  },
-})
-const overlayHide = keyframes({
-  from: {
-    opacity: 1,
-  },
-  to: {
-    opacity: 0,
-  },
-})
-const overlayStyle = style({
-  position: 'fixed',
-  inset: 0,
-  background: colorVars.primitive.blackAlpha[600],
-  animation: `${overlayHide} 0.2s`,
-  selectors: {
-    '&[data-expanded]': {
-      animation: `${overlayShow} 0.2s`,
-    },
-  },
-})
-const contentStyle = style({
-  position: 'fixed',
-  inset: 0,
-  padding: '16px',
-  maxWidth: 'fit-content',
-  display: 'flex',
-  flexDirection: 'column',
-  gap: '16px',
-
-  background: colorVars.semantic.primary.white,
-})
-const DialogHeaderContainer = styled('div', {
-  base: {
-    width: '100%',
-    display: 'flex',
-    gap: '16px',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-  },
-})
-const NavigationContainer = styled('div', {
-  base: {
-    display: 'flex',
-    flexDirection: 'column',
-  },
-})
 
 const MobileNavigation: Component = () => {
   const { isOpen, setIsOpen, close } = createDisclosureState()
@@ -82,23 +14,23 @@ const MobileNavigation: Component = () => {
 
   return (
     <Dialog.Root open={isOpen()} onOpenChange={setIsOpen}>
-      <Dialog.Trigger class={buttonStyle}>
+      <Dialog.Trigger class="grid size-6 cursor-pointer appearance-none place-items-center border-none bg-transparent">
         <MaterialSymbols>menu</MaterialSymbols>
       </Dialog.Trigger>
       <Dialog.Portal>
-        <Dialog.Overlay class={overlayStyle} />
-        <Dialog.Content class={contentStyle}>
-          <DialogHeaderContainer>
+        <Dialog.Overlay class="fixed inset-0 bg-black-alpha-600 opacity-0 transition-opacity duration-200 data-[expanded]:opacity-1" />
+        <Dialog.Content class="fixed inset-0 flex max-w-fit flex-col gap-4 bg-primary-white p-4">
+          <div class="flex w-full items-center justify-between gap-4">
             <A href="/">
               <picture>
                 <img src={LogoImage} alt="NeoShowcase logo" />
               </picture>
             </A>
-            <Dialog.CloseButton class={buttonStyle}>
+            <Dialog.CloseButton class="grid size-6 cursor-pointer appearance-none place-items-center border-none bg-transparent">
               <MaterialSymbols>close</MaterialSymbols>
             </Dialog.CloseButton>
-          </DialogHeaderContainer>
-          <NavigationContainer>
+          </div>
+          <div class="flex flex-col">
             <A href="/apps">
               <Button full size="medium" variants="text">
                 Apps
@@ -109,7 +41,7 @@ const MobileNavigation: Component = () => {
                 Queue
               </Button>
             </A>
-          </NavigationContainer>
+          </div>
         </Dialog.Content>
       </Dialog.Portal>
     </Dialog.Root>

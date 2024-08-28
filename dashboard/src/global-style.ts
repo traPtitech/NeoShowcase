@@ -1,6 +1,6 @@
 import { globalStyle } from '@macaron-css/core'
 import { colorVars } from '/@/theme'
-import './reset.css'
+import '@unocss/reset/tailwind-compat.css'
 
 globalStyle('*, ::before, ::after', {
   margin: 0,
