@@ -1,136 +1,18 @@
 import { Checkbox, DropdownMenu } from '@kobalte/core'
-import { keyframes, style } from '@macaron-css/core'
-import { styled } from '@macaron-css/solid'
 import { type Component, For, type Setter, Show } from 'solid-js'
 import { CheckBoxIcon } from '/@/components/UI/CheckBoxIcon'
 import { MaterialSymbols } from '/@/components/UI/MaterialSymbols'
 import { type RepositoryOrigin, originToIcon } from '/@/libs/application'
 import { allOrigins } from '/@/pages/apps'
-import { colorVars, textVars } from '/@/theme'
+import { clsx } from '/@/libs/clsx'
 
-const contentShowKeyframes = keyframes({
-  from: { opacity: 0, transform: 'translateY(-8px)' },
-  to: { opacity: 1, transform: 'translateY(0)' },
-})
-const contentHideKeyframes = keyframes({
-  from: { opacity: 1, transform: 'translateY(0)' },
-  to: { opacity: 0, transform: 'translateY(-8px)' },
-})
-const contentStyle = style({
-  padding: '16px',
-  display: 'flex',
-  gap: '8px',
+// TODO: AppsFilter と共通するスタイルが多いので共通化する
 
-  background: colorVars.semantic.ui.primary,
-  borderRadius: '6px',
-  boxShadow: '0px 0px 20px 0px rgba(0, 0, 0, 0.10)',
-  zIndex: 1,
-
-  transformOrigin: 'var(--kb-menu-content-transform-origin)',
-  animation: `${contentHideKeyframes} 0.2s ease-in-out`,
-  selectors: {
-    '&[data-expanded]': {
-      animation: `${contentShowKeyframes} 0.2s ease-in-out`,
-    },
-  },
-})
-const indicatorStyle = style({
-  width: '24px',
-  height: '24px',
-})
-const ItemsContainer = styled('div', {
-  base: {
-    width: '100%',
-    display: 'flex',
-    flexDirection: 'column',
-  },
-})
-const SelectItemStyle = style({
-  width: '100%',
-  height: '44px',
-  padding: '8px',
-  display: 'flex',
-  flexWrap: 'nowrap',
-  alignItems: 'center',
-  gap: '8px',
-
-  background: 'none',
-  border: 'none',
-  borderRadius: '8px',
-  cursor: 'pointer',
-  color: colorVars.semantic.text.black,
-  whiteSpace: 'nowrap',
-  ...textVars.text.bold,
-
-  selectors: {
-    '&:hover, &[data-highlighted]': {
-      background: colorVars.semantic.transparent.primaryHover,
-    },
-    '&[data-disabled]': {
-      cursor: 'not-allowed',
-      color: `${colorVars.semantic.text.black} !important`,
-      background: `${colorVars.semantic.text.disabled} !important`,
-    },
-  },
-})
-const FilterItemContainer = styled('div', {
-  base: {
-    display: 'flex',
-    flexDirection: 'column',
-    gap: '8px',
-
-    color: colorVars.semantic.text.black,
-    ...textVars.text.bold,
-  },
-})
-const FilterButton = style({
-  padding: '8px',
-  display: 'flex',
-  background: 'none',
-  border: 'none',
-  borderRadius: '4px',
-  cursor: 'pointer',
-
-  color: colorVars.semantic.text.black,
-  selectors: {
-    '&:hover': {
-      background: colorVars.semantic.transparent.primaryHover,
-    },
-    '&:active': {
-      color: colorVars.semantic.primary.main,
-      background: colorVars.semantic.transparent.primarySelected,
-    },
-  },
-})
-const IconContainer = styled('div', {
-  base: {
-    position: 'relative',
-    width: '24px',
-    height: '24px',
-  },
-})
-const iconStyle = style({
-  width: '24px',
-  height: '24px',
-  transition: 'transform 0.2s',
-  selectors: {
-    '&[data-expanded]': {
-      transform: 'rotate(180deg)',
-    },
-  },
-})
-const FilterIndicator = styled('div', {
-  base: {
-    position: 'absolute',
-    width: '8px',
-    height: '8px',
-    right: '-2px',
-    top: '-2px',
-    borderRadius: '4px',
-    background: colorVars.semantic.primary.main,
-    outline: `1px solid ${colorVars.semantic.ui.background}`,
-  },
-})
+const selectItemStyle = clsx(
+  'w-full h-11 p-2 flex flex-nowrap items-center gap-2 bg-none border-none rounded-lg cursor-pointer text-text-black whitespace-nowrap text-bold',
+  'hover:bg-transparency-primary-hover data-[highlighted]:bg-transparency-primary-hover',
+  'data-[disabled]:cursor-not-allowed !data-[disabled]:text-text-black !data-[disabled]:bg-text-disabled',
+)
 
 const ReposFilter: Component<{
   origin: RepositoryOrigin[]
@@ -140,22 +22,28 @@ const ReposFilter: Component<{
 
   return (
     <DropdownMenu.Root>
-      <DropdownMenu.Trigger class={FilterButton}>
-        <IconContainer>
+      <DropdownMenu.Trigger
+        class={clsx(
+          'flex cursor-pointer rounded bg-none p-2 text-text-black',
+          'hover:bg-transparency-primary-hover',
+          'active:bg-transparency-primary-selected active:text-primary-main',
+        )}
+      >
+        <div class="relative size-6">
           <MaterialSymbols>tune</MaterialSymbols>
           <Show when={filtered()}>
-            <FilterIndicator />
+            <div class="-right-0.5 -top-0.5 absolute size-2 rounded bg-primary-main outline outline-ui-background" />
           </Show>
-        </IconContainer>
-        <DropdownMenu.Icon class={iconStyle}>
+        </div>
+        <DropdownMenu.Icon class="size-6 transition-transform duration-200 data-[expanded]:rotate-180">
           <MaterialSymbols>expand_more</MaterialSymbols>
         </DropdownMenu.Icon>
       </DropdownMenu.Trigger>
       <DropdownMenu.Portal>
-        <DropdownMenu.Content class={contentStyle}>
-          <FilterItemContainer>
+        <DropdownMenu.Content class="-translate-y-2 z-1 flex origin-[--kb-menu-content-transform-origin] gap-2 rounded-md bg-ui-primary p-4 opacity-0 shadow-[0_0_20px_0_rgba(0,0,0,.1)] transition-transform duration-200 ease-in-out data-[expanded]:translate-y-0 data-[expanded]:opacity-1">
+          <div class="flex flex-col gap-2 text-bold text-text-black">
             Origin
-            <ItemsContainer>
+            <div class="flex w-full flex-col">
               <For each={allOrigins}>
                 {(s) => (
                   <Checkbox.Root
@@ -169,8 +57,8 @@ const ReposFilter: Component<{
                     }}
                   >
                     <Checkbox.Input />
-                    <Checkbox.Label class={SelectItemStyle}>
-                      <Checkbox.Indicator forceMount class={indicatorStyle}>
+                    <Checkbox.Label class={selectItemStyle}>
+                      <Checkbox.Indicator forceMount class="size-6">
                         <CheckBoxIcon checked={props.origin.includes(s.value)} />
                       </Checkbox.Indicator>
                       {originToIcon(s.value)}
@@ -179,8 +67,8 @@ const ReposFilter: Component<{
                   </Checkbox.Root>
                 )}
               </For>
-            </ItemsContainer>
-          </FilterItemContainer>
+            </div>
+          </div>
         </DropdownMenu.Content>
       </DropdownMenu.Portal>
     </DropdownMenu.Root>

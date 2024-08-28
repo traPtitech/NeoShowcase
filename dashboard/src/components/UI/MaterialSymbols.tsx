@@ -1,21 +1,4 @@
-import { style } from '@macaron-css/core'
 import { type JSX, type ParentComponent, mergeProps, splitProps } from 'solid-js'
-
-// see https://developers.google.com/fonts/docs/material_symbols?hl=ja#self-hosting_the_font
-const baseStyle = style({
-  fontFamily: 'Material Symbols Rounded',
-  fontWeight: 'normal',
-  fontStyle: 'normal',
-  display: 'inline-block',
-  lineHeight: 1,
-  textTransform: 'none',
-  letterSpacing: 'normal',
-  wordWrap: 'normal',
-  whiteSpace: 'nowrap',
-  direction: 'ltr',
-  flexShrink: 0,
-  overflow: 'hidden',
-})
 
 export interface Props extends JSX.HTMLAttributes<HTMLSpanElement> {
   fill?: boolean
@@ -63,7 +46,9 @@ export const MaterialSymbols: ParentComponent<Props> = (props) => {
         color: mergedProps.color,
       }}
       {...originalProps}
-      class={baseStyle}
+      // see https://developers.google.com/fonts/docs/material_symbols?hl=ja#self-hosting_the_font
+      // but no "word-wrap" and "direction" properties
+      class="inline-block shrink-0 overflow-hidden whitespace-nowrap font-[Material_Symbols_Rounded] font-normal normal-case not-italic leading-4 tracking-normal"
     >
       {mergedProps.children}
     </span>

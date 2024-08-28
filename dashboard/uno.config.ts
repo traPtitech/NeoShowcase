@@ -4,6 +4,7 @@ import {
   presetUno,
   transformerVariantGroup,
 } from "unocss";
+import { parseColor } from "@unocss/preset-mini/utils";
 
 export default defineConfig({
   presets: [
@@ -12,10 +13,35 @@ export default defineConfig({
   ],
   rules: [
     [
+      /^overflow-wrap-(normal|break-word|anywhere|inherit|initial|revert|unset)$/,
+      ([, p]) => ({ "overflow-wrap": p }),
+      {
+        autocomplete:
+          "overflow-wrap-(normal|break-word|anywhere|inherit|initial|revert|unset)",
+      },
+    ],
+    [
+      /^bg-color-overlay-(.*)-to-(.*)$/,
+      ([, base, overlay], { theme }) => {
+        const baseColor = parseColor(base, theme)?.color;
+        const overlayColor = parseColor(overlay, theme)?.color;
+        if (!baseColor || !overlayColor) return {};
+        return ({
+          background:
+            `linear-gradient(0deg, ${overlayColor} 0%, ${overlayColor} 100%), ${baseColor}`,
+        });
+      },
+      { autocomplete: "bg-color-overlay-$colors-to-$colors" },
+    ],
+    [
       /^scrollbar-gutter-both$/,
       () => ({
         "scrollbar-gutter": "stable both-edges",
       }),
+      {
+        autocomplete:
+          "scrollbar-gutter-(auto|stable|inherit|initial|revert|revert-layer|unset|both)",
+      },
     ],
     [
       /^scrollbar-gutter-(auto|stable|inherit|initial|revert|revert-layer|unset)$/,
@@ -59,7 +85,7 @@ export default defineConfig({
         warn: "#F1B61E",
         success: "#20BD77",
       },
-      transparent: {
+      transparency: {
         primaryHover: "rgba(0, 91, 172, 0.06)",
         primarySelected: "rgba(0, 91, 172, 0.10)",
         successHover: "rgba(32, 189, 119, 0.06)",

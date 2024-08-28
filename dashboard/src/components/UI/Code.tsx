@@ -1,62 +1,8 @@
-import { styled } from '@macaron-css/solid'
 import { type Component, Show } from 'solid-js'
 import { writeToClipboard } from '/@/libs/clipboard'
-import { colorVars } from '/@/theme'
 import { MaterialSymbols } from './MaterialSymbols'
 import { ToolTip } from './ToolTip'
-
-const Container = styled('div', {
-  base: {
-    position: 'relative',
-    width: '100%',
-    minHeight: 'calc(1lh + 8px)',
-    marginTop: '4px',
-    whiteSpace: 'pre-wrap',
-    overflowX: 'auto',
-    padding: '4px 8px',
-    fontSize: '16px',
-    lineHeight: '1.5',
-    fontFamily: 'Menlo, Monaco, Consolas, Courier New, monospace !important',
-    background: colorVars.semantic.ui.secondary,
-    borderRadius: '4px',
-    color: colorVars.semantic.text.black,
-  },
-  variants: {
-    copyable: {
-      true: {
-        paddingRight: '40px',
-      },
-    },
-  },
-})
-const CopyButton = styled('button', {
-  base: {
-    position: 'absolute',
-    width: '24px',
-    height: '24px',
-    top: '4px',
-    right: '8px',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    border: `solid 1px ${colorVars.semantic.ui.border}`,
-    borderRadius: '4px',
-
-    cursor: 'pointer',
-    color: colorVars.semantic.text.black,
-    background: 'none',
-    lineHeight: 1,
-
-    selectors: {
-      '&:hover': {
-        background: colorVars.primitive.blackAlpha[200],
-      },
-      '&:active': {
-        background: colorVars.primitive.blackAlpha[300],
-      },
-    },
-  },
-})
+import { clsx } from '/@/libs/clsx'
 
 const Code: Component<{
   value: string
@@ -67,7 +13,12 @@ const Code: Component<{
   }
 
   return (
-    <Container copyable={props.copyable}>
+    <div
+      class={clsx(
+        '!font-[Menlo,Monaco,Consolas,Courier_New,monospace] relative mt-1 w-full min-w-[calc(1lh+8px)] overflow-x-auto whitespace-pre-wrap rounded bg-ui-secondary px-2 py-1 text-regular text-text-black',
+        props.copyable && 'pr-10',
+      )}
+    >
       {props.value}
       <Show when={props.copyable}>
         <ToolTip
@@ -75,12 +26,16 @@ const Code: Component<{
             content: 'copy to clipboard',
           }}
         >
-          <CopyButton onClick={handleCopy} type="button">
+          <button
+            class="absolute top-1 right-2 grid size-6 cursor-pointer place-content-center rounded border border-ui-border bg-none text-text-black leading-4 hover:bg-black-alpha-200 active:bg-black-alpha-300"
+            onClick={handleCopy}
+            type="button"
+          >
             <MaterialSymbols opticalSize={20}>content_copy</MaterialSymbols>
-          </CopyButton>
+          </button>
         </ToolTip>
       </Show>
-    </Container>
+    </div>
   )
 }
 

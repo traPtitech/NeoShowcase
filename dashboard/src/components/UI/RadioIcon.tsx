@@ -1,58 +1,5 @@
-import { styled } from '@macaron-css/solid'
 import { type Component, Show } from 'solid-js'
-// import { colorOverlay } from '/@/libs/colorOverlay'
-import { colorVars } from '/@/theme'
-
-const Container = styled('div', {
-  base: {
-    width: '20px',
-    height: '20px',
-
-    borderRadius: '9999px',
-    color: colorVars.semantic.ui.primary,
-  },
-  variants: {
-    checked: {
-      false: {
-        background: colorVars.semantic.ui.background,
-        border: `2px solid ${colorVars.semantic.ui.tertiary}`,
-        // selectors: {
-        //   '&:hover': {
-        //     background: colorOverlay(colorVars.semantic.ui.tertiary, colorVars.primitive.blackAlpha[200]),
-        //   },
-        //   '&:active': {
-        //     background: colorOverlay(colorVars.semantic.ui.tertiary, colorVars.primitive.blackAlpha[300]),
-        //   },
-        // },
-      },
-      true: {
-        background: colorVars.semantic.primary.main,
-        selectors: {
-          '&::after': {
-            // white circle in the middle
-            content: '""',
-            width: '8px',
-            height: '8px',
-            borderRadius: '9999px',
-            background: colorVars.semantic.ui.primary,
-          },
-          // '&:hover': {
-          //   background: colorOverlay(colorVars.semantic.primary.main, colorVars.primitive.blackAlpha[200]),
-          // },
-          // '&:active': {
-          //   background: colorOverlay(colorVars.semantic.primary.main, colorVars.primitive.blackAlpha[300]),
-          // },
-        },
-      },
-    },
-    disabled: {
-      true: {
-        cursor: 'not-allowed',
-        background: `${colorVars.semantic.text.disabled} !important`,
-      },
-    },
-  },
-})
+import { clsx } from '/@/libs/clsx'
 
 export interface Props {
   selected: boolean
@@ -61,13 +8,21 @@ export interface Props {
 
 export const RadioIcon: Component<Props> = (props) => {
   return (
-    <Container checked={props.selected} disabled={props.disabled} role="img">
+    <div
+      class={clsx(
+        'size-5 rounded-full text-ui-primary',
+        props.selected && "bg-primary-main before:size-2 before:rounded-full before:bg-ui-primary before:content-['']",
+        !props.selected && 'border-2 border-ui-tertiary bg-ui-background',
+        props.disabled && '!bg-text-disabled cursor-not-allowed',
+      )}
+      role="img"
+    >
       <Show when={props.selected}>
         <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
           <title>Radio Icon</title>
           <circle cx="10" cy="10" r="4" fill="currentColor" />
         </svg>
       </Show>
-    </Container>
+    </div>
   )
 }

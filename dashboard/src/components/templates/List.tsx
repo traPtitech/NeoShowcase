@@ -1,87 +1,30 @@
-import { styled } from '@macaron-css/solid'
 import { type Component, For } from 'solid-js'
 import type { Application, Build, Repository } from '/@/api/neoshowcase/protobuf/gateway_pb'
+import { styled } from '/@/components/styled-components'
 import type { CommitsMap } from '/@/libs/api'
-import { colorVars, textVars } from '/@/theme'
 import { AppRow } from './app/AppRow'
 import { BuildRow } from './build/BuildRow'
 import { RepositoryRow } from './repo/RepositoryRow'
 
-const Container = styled('div', {
-  base: {
-    width: '100%',
-    overflow: 'hidden',
-    border: `1px solid ${colorVars.semantic.ui.border}`,
-    borderRadius: '8px',
-    display: 'flex',
-    flexDirection: 'column',
-    gap: '1px',
-    background: colorVars.semantic.ui.border,
-  },
-})
-const Row = styled('div', {
-  base: {
-    width: '100%',
-    padding: '16px 20px',
-    display: 'flex',
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: '8px',
-    background: colorVars.semantic.ui.primary,
-  },
-})
-const Columns = styled('div', {
-  base: {
-    width: '100%',
-    display: 'flex',
-    flexDirection: 'row',
-    gap: '1px',
-  },
-})
-const RowContent = styled('div', {
-  base: {
-    width: '100%',
-    display: 'flex',
-    flexDirection: 'column',
-    alignItems: 'flex-start',
-  },
-})
-const RowTitle = styled('h3', {
-  base: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: '4px',
-    color: colorVars.semantic.text.grey,
-    ...textVars.text.medium,
-  },
-})
-const RowData = styled('div', {
-  base: {
-    width: '100%',
-    display: 'flex',
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: '4px',
-    overflowWrap: 'anywhere',
-    color: colorVars.semantic.text.black,
-    ...textVars.text.regular,
-  },
-})
-const PlaceHolder = styled('div', {
-  base: {
-    width: '100%',
-    height: '400px',
-    display: 'flex',
-    flexDirection: 'column',
-    gap: '24px',
-    alignItems: 'center',
-    justifyContent: 'center',
+const Container = styled(
+  'div',
+  'flex w-full flex-col gap-0.25 overflow-hidden rounded-8 border border-gray-200 border-ui-border bg-ui-border',
+)
 
-    background: colorVars.semantic.ui.primary,
-    color: colorVars.semantic.text.black,
-    ...textVars.h4.medium,
-  },
-})
+const Row = styled('div', 'flex w-full items-center gap-2 bg-ui-primary px-5 py-4')
+
+const Columns = styled('div', 'flex w-full gap-0.25')
+
+const RowContent = styled('div', 'flex w-full flex-col items-start')
+
+const RowTitle = styled('h3', 'flex items-center gap-1 text-medium text-text-grey')
+
+const RowData = styled('div', 'overflow-wrap-anywhere flex w-full items-center gap-1 text-regular text-text-black')
+
+const PlaceHolder = styled(
+  'div',
+  'h4-medium flex h-100 w-full flex-col items-center justify-center gap-6 bg-ui-primary text-text-black',
+)
 
 export const List = {
   Container,

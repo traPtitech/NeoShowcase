@@ -1,40 +1,17 @@
-import { styled } from '@macaron-css/solid'
 import { A } from '@solidjs/router'
 import { type Component, Show } from 'solid-js'
-import { colorVars, textVars } from '/@/theme'
+import { styled } from '/@/components/styled-components'
+import { colorVars } from '/@/theme'
 import { Button } from '../UI/Button'
 import { MaterialSymbols } from '../UI/MaterialSymbols'
 
-const Container = styled('div', {
-  base: {
-    width: '100%',
-    height: '100%',
-    display: 'flex',
-    flexDirection: 'column',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: '1rem',
-  },
-})
-const Title = styled('h2', {
-  base: {
-    color: colorVars.semantic.accent.error,
-    ...textVars.h2.bold,
-  },
-})
-const Message = styled('p', {
-  base: {
-    color: colorVars.semantic.text.grey,
-    ...textVars.caption.medium,
-  },
-})
-const ButtonsContainer = styled('div', {
-  base: {
-    display: 'flex',
-    flexDirection: 'row',
-    gap: '8px',
-  },
-})
+const Container = styled('div', 'flex w-full flex-col items-center justify-center gap-4')
+
+const Title = styled('h2', 'h2-bold text-accent-error')
+
+const Message = styled('p', 'caption-medium text-text-grey')
+
+const ButtonsContainer = styled('div', 'flex flex-col gap-2')
 
 const ErrorView: Component<{
   error: unknown

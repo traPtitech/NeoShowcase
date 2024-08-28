@@ -57,9 +57,9 @@ const ExpandIconContainer = styled('div', {
   base: {
     width: '24px',
     height: '24px',
-    transition: 'transform 0.2s',
+    transition: '0.2s transform',
     selectors: {
-      '[data-expanded] &': {
+      '& [data-expanded]': {
         transform: 'rotate(180deg)',
       },
     },

@@ -234,7 +234,7 @@ const useModal = (options?: {
   const Header: ParentComponent = (props) => {
     return (
       <DialogHeader>
-        <Dialog.Title class={titleStyle}>{props.children}</Dialog.Title>
+        <Dialog.Title class="whitespace-nowrap text-bold text-text-black">{props.children}</Dialog.Title>
         <Show when={mergedProps.showCloseButton}>
           <Dialog.CloseButton class={closeButtonStyle} onClick={close}>
             <MaterialSymbols>close</MaterialSymbols>

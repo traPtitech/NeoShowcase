@@ -1,47 +1,22 @@
-import { styled } from '@macaron-css/solid'
 import { A } from '@solidjs/router'
 import type { VoidComponent } from 'solid-js'
 import { ToolTip } from '/@/components/UI/ToolTip'
-import { colorVars } from '/@/theme'
 import { MaterialSymbols } from './MaterialSymbols'
+import { clsx } from '/@/libs/clsx'
 
-const JumpButtonContainer = styled('div', {
-  base: {
-    width: '32px',
-    height: '32px',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-
-    flexShrink: 0,
-    background: 'none',
-    border: 'none',
-    borderRadius: '6px',
-    cursor: 'pointer',
-    color: colorVars.semantic.text.black,
-    selectors: {
-      '&:hover': {
-        background: colorVars.semantic.transparent.primaryHover,
-      },
-      '&:active, &[data-active="true"]': {
-        color: colorVars.semantic.primary.main,
-        background: colorVars.semantic.transparent.primarySelected,
-      },
-      '&:disabled': {
-        cursor: 'not-allowed',
-        border: 'none !important',
-        color: `${colorVars.semantic.text.black} !important`,
-        background: `${colorVars.semantic.text.disabled} !important`,
-      },
-    },
-  },
-})
 const JumpButton: VoidComponent<{ href: string; tooltip?: string }> = (props) => (
   <ToolTip props={{ content: props.tooltip }} disabled={!props.tooltip}>
     <A href={props.href}>
-      <JumpButtonContainer>
+      <div
+        class={clsx(
+          'flex size-6 shrink-0 cursor-pointer items-center justify-center rounded-md border-none bg-none text-text-black',
+          'hover:bg-transparency-primary-hover',
+          'active:bg-transparency-primary-selected active:text-primary-main data-[active]:bg-transparency-primary-selected data-[active]:text-primary-main',
+          '!disabled:border-none !disabled:bg-text-disabled !disabled:text-text-black disabled:cursor-not-allowed',
+        )}
+      >
         <MaterialSymbols opticalSize={20}>arrow_outward</MaterialSymbols>
-      </JumpButtonContainer>
+      </div>
     </A>
   </ToolTip>
 )
