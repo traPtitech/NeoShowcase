@@ -7,10 +7,10 @@ import { List } from '/@/components/templates/List'
 import { ArtifactRow } from '/@/components/templates/build/ArtifactRow'
 import { BuildLog } from '/@/components/templates/build/BuildLog'
 import BuildStatusTable from '/@/components/templates/build/BuildStatusTable'
+import { RuntimeImageRow } from '/@/components/templates/build/RuntimeImageRow'
 import { client } from '/@/libs/api'
 import { useBuildData } from '/@/routes'
 import { colorVars } from '/@/theme'
-import { RuntimeImageRow } from '/@/components/templates/build/RuntimeImageRow'
 
 const MainView = styled('div', {
   base: {
