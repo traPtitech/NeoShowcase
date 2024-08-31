@@ -66,7 +66,7 @@ export default () => {
           </Show>
           <Show when={build()!.runtimeImage != null}>
             <DataTable.Container>
-              <DataTable.Title>Runtime Image</DataTable.Title>
+              <DataTable.Title>Artifact</DataTable.Title>
               <List.Container>
                 <RuntimeImageRow image={build()!.runtimeImage!} />
               </List.Container>
