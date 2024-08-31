@@ -10,6 +10,7 @@ import BuildStatusTable from '/@/components/templates/build/BuildStatusTable'
 import { client } from '/@/libs/api'
 import { useBuildData } from '/@/routes'
 import { colorVars } from '/@/theme'
+import { RuntimeImageRow } from '/@/components/templates/build/RuntimeImageRow'
 
 const MainView = styled('div', {
   base: {
@@ -60,6 +61,14 @@ export default () => {
               <DataTable.Title>Artifacts</DataTable.Title>
               <List.Container>
                 <For each={build()!.artifacts}>{(artifact) => <ArtifactRow artifact={artifact} />}</For>
+              </List.Container>
+            </DataTable.Container>
+          </Show>
+          <Show when={build()!.runtimeImage != null}>
+            <DataTable.Container>
+              <DataTable.Title>Runtime Image</DataTable.Title>
+              <List.Container>
+                <RuntimeImageRow image={build()!.runtimeImage!} />
               </List.Container>
             </DataTable.Container>
           </Show>
