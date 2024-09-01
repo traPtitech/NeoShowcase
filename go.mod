@@ -10,7 +10,7 @@ require (
 	github.com/aws/aws-sdk-go v1.55.5
 	github.com/cert-manager/cert-manager v1.15.3
 	github.com/docker/cli v27.2.0+incompatible
-	github.com/docker/docker v27.1.1+incompatible // should be in sync with requirements of github.com/moby/buildkit or build could break
+	github.com/docker/docker v27.2.0+incompatible // should be in sync with requirements of github.com/moby/buildkit or build could break
 	github.com/docker/go-connections v0.5.0
 	github.com/friendsofgo/errors v0.9.2
 	github.com/gliderlabs/ssh v0.3.7
