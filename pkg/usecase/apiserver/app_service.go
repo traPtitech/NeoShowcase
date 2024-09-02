@@ -3,8 +3,9 @@ package apiserver
 import (
 	"context"
 	"fmt"
-	"github.com/regclient/regclient/types/ref"
 	"strconv"
+
+	"github.com/regclient/regclient/types/ref"
 
 	"github.com/traPtitech/neoshowcase/pkg/util/regutil"
 
@@ -380,6 +381,11 @@ func (s *Service) DeleteApplication(ctx context.Context, id string) error {
 		}
 	}
 	err = s.artifactRepo.HardDeleteArtifacts(ctx, domain.GetArtifactCondition{ApplicationID: optional.From(app.ID)})
+	if err != nil {
+		return err
+	}
+	// delete runtime images
+	err = s.runtimeImageRepo.HardDeleteRuntimeImages(ctx, app.ID)
 	if err != nil {
 		return err
 	}
