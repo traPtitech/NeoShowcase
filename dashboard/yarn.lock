@@ -1353,12 +1353,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@solidjs/router@npm:0.14.3":
-  version: 0.14.3
-  resolution: "@solidjs/router@npm:0.14.3"
+"@solidjs/router@npm:0.14.2":
+  version: 0.14.2
+  resolution: "@solidjs/router@npm:0.14.2"
   peerDependencies:
     solid-js: ^1.8.6
-  checksum: 10c0/ebdb05a1c0a8a92ff771eb1a0df5742e844d4c6a5e00817d4c653948b700e619c8a46199fececa52b5246871bd078453fb509be4eb597bf69008bf7a82e915a3
+  checksum: 10c0/5f60e8c243461c1cbb8d572335a5920de627b10f7fee08cbf3f2d98eb296c82d80123e9f3de653130847543635ffd12f6f7154f76113f4070a9a59a8607093ca
   languageName: node
   linkType: hard
 
@@ -3495,7 +3495,7 @@ __metadata:
     "@modular-forms/solid": "npm:0.22.1"
     "@solid-primitives/refs": "npm:1.0.8"
     "@solidjs/meta": "npm:0.29.4"
-    "@solidjs/router": "npm:0.14.3"
+    "@solidjs/router": "npm:0.14.2"
     "@tanstack/solid-virtual": "npm:3.10.6"
     "@tanstack/virtual-core": "npm:3.10.6"
     "@types/async-lock": "npm:1.4.2"

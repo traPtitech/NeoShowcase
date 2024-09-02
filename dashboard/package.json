@@ -43,7 +43,7 @@
     "@modular-forms/solid": "0.22.1",
     "@solid-primitives/refs": "1.0.8",
     "@solidjs/meta": "0.29.4",
-    "@solidjs/router": "0.14.3",
+    "@solidjs/router": "0.14.2",
     "@tanstack/solid-virtual": "3.10.6",
     "@types/async-lock": "1.4.2",
     "ansi-to-html": "0.7.2",
