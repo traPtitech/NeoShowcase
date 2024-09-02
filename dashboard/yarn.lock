@@ -1014,15 +1014,13 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@macaron-css/solid@npm:1.5.3":
-  version: 1.5.3
-  resolution: "@macaron-css/solid@npm:1.5.3"
-  dependencies:
-    "@macaron-css/core": "npm:1.5.2"
+"@macaron-css/solid@npm:1.5.1":
+  version: 1.5.1
+  resolution: "@macaron-css/solid@npm:1.5.1"
   peerDependencies:
     "@vanilla-extract/recipes": ^0.2.5
     solid-js: ^1.4.3
-  checksum: 10c0/0e468dc0c28978e97c8f129c2e12369ce91ad776d99bf00fe2e7a37b353dcf47a33cb38b2c6b16ef618fa7d7ce749bce79a2bc32b58538d45481c563c87998ef
+  checksum: 10c0/6b30598f34142e89df3cfc6691681fcf3ff532f6de3d7e473dfbd75b50783479ab5cc37c585205e1a504f540709e632eab3dffbb890aeeebe450f32b9e6ff2f0
   languageName: node
   linkType: hard
 
@@ -3492,7 +3490,7 @@ __metadata:
     "@connectrpc/connect-web": "npm:1.4.0"
     "@kobalte/core": "npm:0.13.6"
     "@macaron-css/core": "npm:1.5.2"
-    "@macaron-css/solid": "npm:1.5.3"
+    "@macaron-css/solid": "npm:1.5.1"
     "@macaron-css/vite": "npm:1.5.1"
     "@modular-forms/solid": "npm:0.22.1"
     "@solid-primitives/refs": "npm:1.0.8"
