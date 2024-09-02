@@ -3515,7 +3515,7 @@ __metadata:
     ts-pattern: "npm:5.3.1"
     typescript: "npm:5.5.4"
     unplugin-fonts: "npm:1.1.1"
-    valibot: "npm:0.40.0"
+    valibot: "npm:0.41.0"
     vite: "npm:5.4.2"
     vite-plugin-compression: "npm:0.5.1"
     vite-plugin-solid: "npm:2.10.2"
@@ -4509,15 +4509,15 @@ __metadata:
   languageName: node
   linkType: hard
 
-"valibot@npm:0.40.0":
-  version: 0.40.0
-  resolution: "valibot@npm:0.40.0"
+"valibot@npm:0.41.0":
+  version: 0.41.0
+  resolution: "valibot@npm:0.41.0"
   peerDependencies:
     typescript: ">=5"
   peerDependenciesMeta:
     typescript:
       optional: true
-  checksum: 10c0/6ff15efa1926f8d094a1578d92a515ed5ca6aaac532f9d1e0f98be6b64fb4ae22058e424be25133a109d1c2390a2a80a5b6d246c4bcab63945b18897de0ff4db
+  checksum: 10c0/60485ac1235a83b09590cfb011d0ea17f0810ebe413132380b98bf3dfac7236205e22f2ca2a4c4b356c2324e450c119a39a3753b79764e2c113bb91d46ec4598
   languageName: node
   linkType: hard
 
