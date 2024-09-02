@@ -32,7 +32,7 @@ func (r *runtimeImageRepository) CreateRuntimeImage(ctx context.Context, image *
 	return nil
 }
 
-func (r *runtimeImageRepository) HardDeleteRuntimeImages(ctx context.Context, appID string) error {
+func (r *runtimeImageRepository) DeleteRuntimeImagesByAppID(ctx context.Context, appID string) error {
 	images, err := models.RuntimeImages(
 		qm.InnerJoin(fmt.Sprintf(
 			"%s ON %s = %s",

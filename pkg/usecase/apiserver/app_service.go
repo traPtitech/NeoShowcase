@@ -385,7 +385,7 @@ func (s *Service) DeleteApplication(ctx context.Context, id string) error {
 		return err
 	}
 	// delete runtime images
-	err = s.runtimeImageRepo.HardDeleteRuntimeImages(ctx, app.ID)
+	err = s.runtimeImageRepo.DeleteRuntimeImagesByAppID(ctx, app.ID)
 	if err != nil {
 		return err
 	}

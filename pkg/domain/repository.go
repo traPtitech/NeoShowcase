@@ -102,7 +102,7 @@ type ArtifactRepository interface {
 
 type RuntimeImageRepository interface {
 	CreateRuntimeImage(ctx context.Context, image *RuntimeImage) error
-	HardDeleteRuntimeImages(ctx context.Context, appId string) error
+	DeleteRuntimeImagesByAppID(ctx context.Context, appId string) error
 }
 
 type GetBuildCondition struct {
