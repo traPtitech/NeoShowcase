@@ -2,8 +2,9 @@ package apiserver
 
 import (
 	"context"
-	"github.com/motoki317/sc"
 	"time"
+
+	"github.com/motoki317/sc"
 
 	"github.com/friendsofgo/errors"
 	"github.com/go-git/go-git/v5/plumbing/transport/ssh"
@@ -25,21 +26,22 @@ func handleRepoError[T any](entity T, err error) (T, error) {
 }
 
 type Service struct {
-	artifactRepo    domain.ArtifactRepository
-	appRepo         domain.ApplicationRepository
-	buildRepo       domain.BuildRepository
-	envRepo         domain.EnvironmentRepository
-	gitRepo         domain.GitRepositoryRepository
-	commitRepo      domain.RepositoryCommitRepository
-	userRepo        domain.UserRepository
-	storage         domain.Storage
-	mariaDBManager  domain.MariaDBManager
-	mongoDBManager  domain.MongoDBManager
-	metricsService  domain.MetricsService
-	containerLogger domain.ContainerLogger
-	controller      domain.ControllerServiceClient
-	fallbackKey     *ssh.PublicKeys
-	image           builder.ImageConfig
+	artifactRepo     domain.ArtifactRepository
+	runtimeImageRepo domain.RuntimeImageRepository
+	appRepo          domain.ApplicationRepository
+	buildRepo        domain.BuildRepository
+	envRepo          domain.EnvironmentRepository
+	gitRepo          domain.GitRepositoryRepository
+	commitRepo       domain.RepositoryCommitRepository
+	userRepo         domain.UserRepository
+	storage          domain.Storage
+	mariaDBManager   domain.MariaDBManager
+	mongoDBManager   domain.MongoDBManager
+	metricsService   domain.MetricsService
+	containerLogger  domain.ContainerLogger
+	controller       domain.ControllerServiceClient
+	fallbackKey      *ssh.PublicKeys
+	image            builder.ImageConfig
 
 	systemInfo *sc.Cache[struct{}, *domain.SystemInfo]
 	tmpKeys    *tmpKeyPairService
@@ -47,6 +49,7 @@ type Service struct {
 
 func NewService(
 	artifactRepo domain.ArtifactRepository,
+	runtimeImageRepo domain.RuntimeImageRepository,
 	appRepo domain.ApplicationRepository,
 	buildRepo domain.BuildRepository,
 	envRepo domain.EnvironmentRepository,
@@ -63,21 +66,22 @@ func NewService(
 	fallbackKey *ssh.PublicKeys,
 ) (*Service, error) {
 	return &Service{
-		artifactRepo:    artifactRepo,
-		appRepo:         appRepo,
-		buildRepo:       buildRepo,
-		envRepo:         envRepo,
-		gitRepo:         gitRepo,
-		commitRepo:      commitRepo,
-		userRepo:        userRepo,
-		storage:         storage,
-		mariaDBManager:  mariaDBManager,
-		mongoDBManager:  mongoDBManager,
-		metricsService:  metricsService,
-		containerLogger: containerLogger,
-		controller:      controller,
-		fallbackKey:     fallbackKey,
-		image:           image,
+		artifactRepo:     artifactRepo,
+		runtimeImageRepo: runtimeImageRepo,
+		appRepo:          appRepo,
+		buildRepo:        buildRepo,
+		envRepo:          envRepo,
+		gitRepo:          gitRepo,
+		commitRepo:       commitRepo,
+		userRepo:         userRepo,
+		storage:          storage,
+		mariaDBManager:   mariaDBManager,
+		mongoDBManager:   mongoDBManager,
+		metricsService:   metricsService,
+		containerLogger:  containerLogger,
+		controller:       controller,
+		fallbackKey:      fallbackKey,
+		image:            image,
 
 		systemInfo: sc.NewMust(scutil.WrapFunc(controller.GetSystemInfo), 5*time.Minute, 10*time.Minute),
 		tmpKeys:    newTmpKeyPairService(),

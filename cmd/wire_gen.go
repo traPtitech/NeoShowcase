@@ -283,6 +283,7 @@ func NewGateway(c Config) (component, error) {
 		return nil, err
 	}
 	artifactRepository := repository.NewArtifactRepository(db)
+	runtimeImageRepository := repository.NewRuntimeImageRepository(db)
 	applicationRepository := repository.NewApplicationRepository(db)
 	buildRepository := repository.NewBuildRepository(db)
 	environmentRepository := repository.NewEnvironmentRepository(db)
@@ -325,7 +326,7 @@ func NewGateway(c Config) (component, error) {
 	if err != nil {
 		return nil, err
 	}
-	service, err := apiserver.NewService(artifactRepository, applicationRepository, buildRepository, environmentRepository, gitRepositoryRepository, repositoryCommitRepository, userRepository, storage, mariaDBManager, mongoDBManager, metricsService, containerLogger, controllerServiceClient, imageConfig, publicKeys)
+	service, err := apiserver.NewService(artifactRepository, runtimeImageRepository, applicationRepository, buildRepository, environmentRepository, gitRepositoryRepository, repositoryCommitRepository, userRepository, storage, mariaDBManager, mongoDBManager, metricsService, containerLogger, controllerServiceClient, imageConfig, publicKeys)
 	if err != nil {
 		return nil, err
 	}
