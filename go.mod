@@ -1,16 +1,14 @@
 module github.com/traPtitech/neoshowcase
 
-go 1.22.4
-
-toolchain go1.22.5
+go 1.23.2
 
 require (
 	code.gitea.io/sdk/gitea v0.19.0
-	connectrpc.com/connect v1.16.2
+	connectrpc.com/connect v1.17.0
 	github.com/aws/aws-sdk-go v1.55.5
 	github.com/cert-manager/cert-manager v1.15.3
-	github.com/docker/cli v27.2.0+incompatible
-	github.com/docker/docker v27.2.0+incompatible // should be in sync with requirements of github.com/moby/buildkit or build could break
+	github.com/docker/cli v27.3.1+incompatible
+	github.com/docker/docker v27.3.1+incompatible // should be in sync with requirements of github.com/moby/buildkit or build could break
 	github.com/docker/go-connections v0.5.0
 	github.com/friendsofgo/errors v0.9.2
 	github.com/gliderlabs/ssh v0.3.7
@@ -22,12 +20,12 @@ require (
 	github.com/google/wire v0.6.0
 	github.com/labstack/echo/v4 v4.12.0
 	github.com/lukesampson/figlet v0.0.0-20190211215653-8a3ef4a6ac42
-	github.com/moby/buildkit v0.15.2
+	github.com/moby/buildkit v0.16.0
 	github.com/motoki317/sc v1.8.1
 	github.com/ncw/swift v1.0.53
 	github.com/pkg/errors v0.9.1
-	github.com/prometheus/client_golang v1.20.2
-	github.com/prometheus/common v0.57.0
+	github.com/prometheus/client_golang v1.20.4
+	github.com/prometheus/common v0.59.1
 	github.com/regclient/regclient v0.7.1
 	github.com/samber/lo v1.47.0
 	github.com/shiguredo/websocket v1.6.1
@@ -38,22 +36,22 @@ require (
 	github.com/spf13/viper v1.19.0
 	github.com/stretchr/testify v1.9.0
 	github.com/tonistiigi/fsutil v0.0.0-20240424095704-91a3fc46842c
-	github.com/traefik/traefik/v3 v3.1.2
+	github.com/traefik/traefik/v3 v3.1.4
 	github.com/volatiletech/null/v8 v8.1.2
 	github.com/volatiletech/sqlboiler/v4 v4.16.2
 	github.com/volatiletech/strmangle v0.0.6
 	github.com/zeebo/xxh3 v1.0.2
-	go.mongodb.org/mongo-driver v1.16.1
-	golang.org/x/crypto v0.26.0
-	golang.org/x/exp v0.0.0-20240506185415-9bf2ced13842
-	golang.org/x/net v0.28.0
+	go.mongodb.org/mongo-driver v1.17.0
+	golang.org/x/crypto v0.27.0
+	golang.org/x/exp v0.0.0-20240909161429-701f63a606c0
+	golang.org/x/net v0.29.0
 	golang.org/x/sync v0.8.0
 	google.golang.org/grpc v1.64.1 // indirect
 	google.golang.org/protobuf v1.34.2
 	gopkg.in/yaml.v2 v2.4.0
-	k8s.io/api v0.31.0
-	k8s.io/apimachinery v0.31.0
-	k8s.io/client-go v0.31.0
+	k8s.io/api v0.31.1
+	k8s.io/apimachinery v0.31.1
+	k8s.io/client-go v0.31.1
 )
 
 require (
@@ -70,14 +68,14 @@ require (
 	github.com/cenkalti/backoff/v4 v4.3.0 // indirect
 	github.com/cloudflare/circl v1.3.7 // indirect
 	github.com/containerd/console v1.0.4 // indirect
-	github.com/containerd/containerd v1.7.20 // indirect
+	github.com/containerd/containerd v1.7.21 // indirect
 	github.com/containerd/containerd/api v1.7.19 // indirect
 	github.com/containerd/continuity v0.4.3 // indirect
 	github.com/containerd/errdefs v0.1.0 // indirect
 	github.com/containerd/log v0.1.0 // indirect
 	github.com/containerd/platforms v0.2.1 // indirect
 	github.com/containerd/ttrpc v1.2.5 // indirect
-	github.com/containerd/typeurl/v2 v2.1.1 // indirect
+	github.com/containerd/typeurl/v2 v2.2.0 // indirect
 	github.com/cyphar/filepath-securejoin v0.2.4 // indirect
 	github.com/davecgh/go-spew v1.1.2-0.20180830191138-d8f796af33cc // indirect
 	github.com/davidmz/go-pageant v1.0.2 // indirect
@@ -90,7 +88,7 @@ require (
 	github.com/felixge/httpsnoop v1.0.4 // indirect
 	github.com/fsnotify/fsnotify v1.7.0 // indirect
 	github.com/fxamacker/cbor/v2 v2.7.0 // indirect
-	github.com/go-acme/lego/v4 v4.17.4 // indirect
+	github.com/go-acme/lego/v4 v4.18.0 // indirect
 	github.com/go-fed/httpsig v1.1.0 // indirect
 	github.com/go-git/gcfg v1.5.1-0.20230307220236-3a3c6141e376 // indirect
 	github.com/go-git/go-billy/v5 v5.5.0 // indirect
@@ -124,7 +122,7 @@ require (
 	github.com/hashicorp/go-version v1.6.0 // indirect
 	github.com/hashicorp/hcl v1.0.1-vault-5 // indirect
 	github.com/http-wasm/http-wasm-host-go v0.6.0 // indirect
-	github.com/huandu/xstrings v1.4.0 // indirect
+	github.com/huandu/xstrings v1.5.0 // indirect
 	github.com/imdario/mergo v0.3.16 // indirect
 	github.com/in-toto/in-toto-golang v0.9.0 // indirect
 	github.com/inconshreveable/mousetrap v1.1.0 // indirect
@@ -148,7 +146,7 @@ require (
 	github.com/moby/locker v1.0.1 // indirect
 	github.com/moby/patternmatcher v0.6.0 // indirect
 	github.com/moby/spdystream v0.4.0 // indirect
-	github.com/moby/sys/signal v0.7.0 // indirect
+	github.com/moby/sys/signal v0.7.1 // indirect
 	github.com/modern-go/concurrent v0.0.0-20180306012644-bacd9c7ef1dd // indirect
 	github.com/modern-go/reflect2 v1.0.2 // indirect
 	github.com/montanaflynn/stats v0.7.1 // indirect
@@ -168,15 +166,15 @@ require (
 	github.com/secure-systems-lab/go-securesystemslib v0.7.0 // indirect
 	github.com/sergi/go-diff v1.3.2-0.20230802210424-5b0b94c5c0d3 // indirect
 	github.com/shibumi/go-pathspec v1.3.0 // indirect
-	github.com/shopspring/decimal v1.3.1 // indirect
+	github.com/shopspring/decimal v1.4.0 // indirect
 	github.com/skeema/knownhosts v1.2.2 // indirect
 	github.com/spf13/afero v1.11.0 // indirect
-	github.com/spf13/cast v1.6.0 // indirect
+	github.com/spf13/cast v1.7.0 // indirect
 	github.com/subosito/gotenv v1.6.0 // indirect
 	github.com/tonistiigi/go-csvvalue v0.0.0-20240710180619-ddb21b71c0b4 // indirect
 	github.com/tonistiigi/units v0.0.0-20180711220420-6950e57a87ea // indirect
 	github.com/tonistiigi/vt100 v0.0.0-20240514184818-90bafcd6abab // indirect
-	github.com/traefik/paerser v0.2.0 // indirect
+	github.com/traefik/paerser v0.2.1 // indirect
 	github.com/ulikunitz/xz v0.5.12 // indirect
 	github.com/valyala/bytebufferpool v1.0.0 // indirect
 	github.com/valyala/fasttemplate v1.2.2 // indirect
@@ -187,7 +185,7 @@ require (
 	github.com/xdg-go/pbkdf2 v1.0.0 // indirect
 	github.com/xdg-go/scram v1.1.2 // indirect
 	github.com/xdg-go/stringprep v1.0.4 // indirect
-	github.com/youmark/pkcs8 v0.0.0-20240424034433-3c2c7870ae76 // indirect
+	github.com/youmark/pkcs8 v0.0.0-20240726163527-a2c0da244d78 // indirect
 	go.opentelemetry.io/contrib/instrumentation/google.golang.org/grpc/otelgrpc v0.51.0 // indirect
 	go.opentelemetry.io/contrib/instrumentation/net/http/httptrace/otelhttptrace v0.46.1 // indirect
 	go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp v0.51.0 // indirect
@@ -198,13 +196,13 @@ require (
 	go.opentelemetry.io/otel/trace v1.28.0 // indirect
 	go.opentelemetry.io/proto/otlp v1.3.1 // indirect
 	go.uber.org/multierr v1.11.0 // indirect
-	golang.org/x/mod v0.18.0 // indirect
-	golang.org/x/oauth2 v0.21.0 // indirect
-	golang.org/x/sys v0.23.0 // indirect
-	golang.org/x/term v0.23.0 // indirect
-	golang.org/x/text v0.17.0 // indirect
+	golang.org/x/mod v0.21.0 // indirect
+	golang.org/x/oauth2 v0.22.0 // indirect
+	golang.org/x/sys v0.25.0 // indirect
+	golang.org/x/term v0.24.0 // indirect
+	golang.org/x/text v0.18.0 // indirect
 	golang.org/x/time v0.5.0 // indirect
-	golang.org/x/tools v0.22.0 // indirect
+	golang.org/x/tools v0.25.0 // indirect
 	golang.org/x/xerrors v0.0.0-20220907171357-04be3eba64a2 // indirect
 	google.golang.org/genproto v0.0.0-20240401170217-c3f982113cda // indirect
 	google.golang.org/genproto/googleapis/api v0.0.0-20240701130421-f6361c86f094 // indirect
