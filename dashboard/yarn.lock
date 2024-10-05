@@ -454,10 +454,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@bufbuild/protobuf@npm:1.10.0":
-  version: 1.10.0
-  resolution: "@bufbuild/protobuf@npm:1.10.0"
-  checksum: 10c0/5487b9c2e63846d0e3bde4d025cc77ae44a22166a5d6c184df0da5581e1ab6d66dd115af0ccad814576dcd011bb1b93989fb0ac1eb4ae452979bb8b186693ba0
+"@bufbuild/protobuf@npm:2.1.0":
+  version: 2.1.0
+  resolution: "@bufbuild/protobuf@npm:2.1.0"
+  checksum: 10c0/d2e3b84ea1da284b6085ac2adb9bc7e51ef5d275587991fc67b431262a7b56876ea7a197d9b9b689f50b4c16ebb1225b870352c672224066f92e671258c417e1
   languageName: node
   linkType: hard
 
@@ -3471,7 +3471,7 @@ __metadata:
   resolution: "neoshowcase@workspace:."
   dependencies:
     "@biomejs/biome": "npm:1.9.2"
-    "@bufbuild/protobuf": "npm:1.10.0"
+    "@bufbuild/protobuf": "npm:2.1.0"
     "@connectrpc/connect": "npm:1.5.0"
     "@connectrpc/connect-web": "npm:1.5.0"
     "@kobalte/core": "npm:0.13.6"
