@@ -104,6 +104,7 @@ message RuntimeConfig {
   bool use_mongodb = 2;
   string entrypoint = 3;
   string command = 4;
+  bool auto_shutdown = 5;
 }
 
 message BuildConfigRuntimeBuildpack {
@@ -193,6 +194,7 @@ message Application {
     EXITED = 4;
     ERRORED = 5;
     UNKNOWN = 6;
+    IDLE = 7;
   }
   string id = 1;
   string name = 2;

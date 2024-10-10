@@ -684,6 +684,11 @@ export class RuntimeConfig extends Message<RuntimeConfig> {
    */
   command = "";
 
+  /**
+   * @generated from field: bool auto_shutdown = 5;
+   */
+  autoShutdown = false;
+
   constructor(data?: PartialMessage<RuntimeConfig>) {
     super();
     proto3.util.initPartial(data, this);
@@ -696,6 +701,7 @@ export class RuntimeConfig extends Message<RuntimeConfig> {
     { no: 2, name: "use_mongodb", kind: "scalar", T: 8 /* ScalarType.BOOL */ },
     { no: 3, name: "entrypoint", kind: "scalar", T: 9 /* ScalarType.STRING */ },
     { no: 4, name: "command", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+    { no: 5, name: "auto_shutdown", kind: "scalar", T: 8 /* ScalarType.BOOL */ },
   ]);
 
   static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): RuntimeConfig {
@@ -1417,6 +1423,11 @@ export enum Application_ContainerState {
    * @generated from enum value: UNKNOWN = 6;
    */
   UNKNOWN = 6,
+
+  /**
+   * @generated from enum value: IDLE = 7;
+   */
+  IDLE = 7,
 }
 // Retrieve enum metadata with: proto3.getEnumType(Application_ContainerState)
 proto3.util.setEnumType(Application_ContainerState, "neoshowcase.protobuf.Application.ContainerState", [
@@ -1427,6 +1438,7 @@ proto3.util.setEnumType(Application_ContainerState, "neoshowcase.protobuf.Applic
   { no: 4, name: "EXITED" },
   { no: 5, name: "ERRORED" },
   { no: 6, name: "UNKNOWN" },
+  { no: 7, name: "IDLE" },
 ]);
 
 /**

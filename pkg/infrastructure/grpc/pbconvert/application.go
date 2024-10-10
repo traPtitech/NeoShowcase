@@ -26,6 +26,7 @@ var ContainerStateMapper = mapper.MustNewValueMapper(map[domain.ContainerState]p
 	domain.ContainerStateStarting:   pb.Application_STARTING,
 	domain.ContainerStateRestarting: pb.Application_RESTARTING,
 	domain.ContainerStateRunning:    pb.Application_RUNNING,
+	domain.ContainerStateIdle:       pb.Application_IDLE,
 	domain.ContainerStateExited:     pb.Application_EXITED,
 	domain.ContainerStateErrored:    pb.Application_ERRORED,
 	domain.ContainerStateUnknown:    pb.Application_UNKNOWN,
