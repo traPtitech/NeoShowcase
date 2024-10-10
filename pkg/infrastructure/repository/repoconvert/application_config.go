@@ -33,16 +33,18 @@ var BuildTypeMapper = mapper.MustNewValueMapper(map[string]domain.BuildType{
 func assignRuntimeConfig(mc *models.ApplicationConfig, c *domain.RuntimeConfig) {
 	mc.UseMariadb = c.UseMariaDB
 	mc.UseMongodb = c.UseMongoDB
+	mc.AutoShutdown = c.AutoShutdown
 	mc.Entrypoint = c.Entrypoint
 	mc.Command = c.Command
 }
 
 func ToDomainRuntimeConfig(c *models.ApplicationConfig) domain.RuntimeConfig {
 	return domain.RuntimeConfig{
-		UseMariaDB: c.UseMariadb,
-		UseMongoDB: c.UseMongodb,
-		Entrypoint: c.Entrypoint,
-		Command:    c.Command,
+		UseMariaDB:   c.UseMariadb,
+		UseMongoDB:   c.UseMongodb,
+		AutoShutdown: c.AutoShutdown,
+		Entrypoint:   c.Entrypoint,
+		Command:      c.Command,
 	}
 }
 

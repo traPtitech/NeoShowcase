@@ -91,6 +91,7 @@ const (
 	ApplicationsContainerStarting   string = "starting"
 	ApplicationsContainerRestarting string = "restarting"
 	ApplicationsContainerRunning    string = "running"
+	ApplicationsContainerIdle       string = "idle"
 	ApplicationsContainerExited     string = "exited"
 	ApplicationsContainerErrored    string = "errored"
 	ApplicationsContainerUnknown    string = "unknown"
@@ -102,6 +103,7 @@ func AllApplicationsContainer() []string {
 		ApplicationsContainerStarting,
 		ApplicationsContainerRestarting,
 		ApplicationsContainerRunning,
+		ApplicationsContainerIdle,
 		ApplicationsContainerExited,
 		ApplicationsContainerErrored,
 		ApplicationsContainerUnknown,

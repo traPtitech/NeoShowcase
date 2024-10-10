@@ -65,7 +65,7 @@ erDiagram
   char_40_ commit
   enum__runtime___static__ deploy_type
   tinyint_1_ running
-  enum__missing___starting___restarting___running___exited___errored___unknown__ container
+  enum__missing___starting___restarting___running___idle___exited___errored___unknown__ container
   text container_message
   char_22_ current_build
   datetime_6_ created_at

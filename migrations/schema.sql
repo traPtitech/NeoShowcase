@@ -86,6 +86,7 @@ CREATE TABLE `applications`
         'starting',
         'restarting',
         'running',
+        'idle',
         'exited',
         'errored',
         'unknown'
@@ -106,6 +107,7 @@ CREATE TABLE `application_config`
     `application_id`  CHAR(22)      NOT NULL COMMENT 'アプリケーションID',
     `use_mariadb`     TINYINT(1)    NOT NULL COMMENT 'MariaDBを使用するか',
     `use_mongodb`     TINYINT(1)    NOT NULL COMMENT 'MongoDBを使用するか',
+    `auto_shutdown`   TINYINT(1)    NOT NULL DEFAULT 0 COMMENT 'アプリケーションの自動シャットダウン',
     `build_type`      ENUM (
         'runtime-buildpack',
         'runtime-cmd',
