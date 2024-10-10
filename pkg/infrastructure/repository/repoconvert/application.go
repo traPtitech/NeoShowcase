@@ -17,6 +17,7 @@ var ContainerStateMapper = mapper.MustNewValueMapper(map[string]domain.Container
 	models.ApplicationsContainerStarting:   domain.ContainerStateStarting,
 	models.ApplicationsContainerRestarting: domain.ContainerStateRestarting,
 	models.ApplicationsContainerRunning:    domain.ContainerStateRunning,
+	models.ApplicationsContainerIdle:       domain.ContainerStateIdle,
 	models.ApplicationsContainerExited:     domain.ContainerStateExited,
 	models.ApplicationsContainerErrored:    domain.ContainerStateErrored,
 	models.ApplicationsContainerUnknown:    domain.ContainerStateUnknown,

@@ -1,0 +1,27 @@
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: sablier
+rules:
+  - apiGroups:
+      - apps
+      - ""
+    resources:
+      - deployments
+      - statefulsets
+    verbs:
+      - get     # Retrieve info about specific dep
+      - list    # Events
+      - watch   # Events
+  - apiGroups:
+      - apps
+      - ""
+    resources:
+      - deployments/scale
+      - statefulsets/scale
+    verbs:
+      - patch   # Scale up and down
+      - update  # Scale up and down
+      - get     # Retrieve info about specific dep
+      - list    # Events
+      - watch   # Events

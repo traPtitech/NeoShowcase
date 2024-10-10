@@ -12,6 +12,7 @@ CREATE TABLE `application_config` (
   `application_id` char(22) NOT NULL COMMENT 'アプリケーションID',
   `use_mariadb` tinyint(1) NOT NULL COMMENT 'MariaDBを使用するか',
   `use_mongodb` tinyint(1) NOT NULL COMMENT 'MongoDBを使用するか',
+  `auto_shutdown` tinyint(1) NOT NULL DEFAULT 0 COMMENT 'アプリケーションの自動シャットダウン',
   `build_type` enum('runtime-buildpack','runtime-cmd','runtime-dockerfile','static-buildpack','static-cmd','static-dockerfile') NOT NULL COMMENT 'ビルドタイプ',
   `base_image` varchar(1000) NOT NULL COMMENT 'ベースイメージの名前',
   `build_cmd` text NOT NULL COMMENT 'ビルドコマンド',
@@ -35,6 +36,7 @@ CREATE TABLE `application_config` (
 | application_id | char(22) |  | false |  | [applications](applications.md) | アプリケーションID |
 | use_mariadb | tinyint(1) |  | false |  |  | MariaDBを使用するか |
 | use_mongodb | tinyint(1) |  | false |  |  | MongoDBを使用するか |
+| auto_shutdown | tinyint(1) | 0 | false |  |  | アプリケーションの自動シャットダウン |
 | build_type | enum('runtime-buildpack','runtime-cmd','runtime-dockerfile','static-buildpack','static-cmd','static-dockerfile') |  | false |  |  | ビルドタイプ |
 | base_image | varchar(1000) |  | false |  |  | ベースイメージの名前 |
 | build_cmd | text |  | false |  |  | ビルドコマンド |
@@ -69,6 +71,7 @@ erDiagram
   char_22_ application_id PK
   tinyint_1_ use_mariadb
   tinyint_1_ use_mongodb
+  tinyint_1_ auto_shutdown
   enum__runtime-buildpack___runtime-cmd___runtime-dockerfile___static-buildpack___static-cmd___static-dockerfile__ build_type
   varchar_1000_ base_image
   text build_cmd
@@ -87,7 +90,7 @@ erDiagram
   char_40_ commit
   enum__runtime___static__ deploy_type
   tinyint_1_ running
-  enum__missing___starting___restarting___running___exited___errored___unknown__ container
+  enum__missing___starting___restarting___running___idle___exited___errored___unknown__ container
   text container_message
   char_22_ current_build
   datetime_6_ created_at

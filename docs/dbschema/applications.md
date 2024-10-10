@@ -16,7 +16,7 @@ CREATE TABLE `applications` (
   `commit` char(40) NOT NULL COMMENT '解決されたコミット',
   `deploy_type` enum('runtime','static') NOT NULL COMMENT 'デプロイタイプ',
   `running` tinyint(1) NOT NULL COMMENT 'アプリを起動させるか(desired state)',
-  `container` enum('missing','starting','restarting','running','exited','errored','unknown') NOT NULL COMMENT 'コンテナの状態(runtime only)',
+  `container` enum('missing','starting','restarting','running','idle','exited','errored','unknown') NOT NULL COMMENT 'コンテナの状態(runtime only)',
   `container_message` text NOT NULL COMMENT 'コンテナの状態の詳細な情報(runtime only)',
   `current_build` char(22) NOT NULL COMMENT 'デプロイするビルド',
   `created_at` datetime(6) NOT NULL COMMENT '作成日時',
@@ -40,7 +40,7 @@ CREATE TABLE `applications` (
 | commit | char(40) |  | false |  |  | 解決されたコミット |
 | deploy_type | enum('runtime','static') |  | false |  |  | デプロイタイプ |
 | running | tinyint(1) |  | false |  |  | アプリを起動させるか(desired state) |
-| container | enum('missing','starting','restarting','running','exited','errored','unknown') |  | false |  |  | コンテナの状態(runtime only) |
+| container | enum('missing','starting','restarting','running','idle','exited','errored','unknown') |  | false |  |  | コンテナの状態(runtime only) |
 | container_message | text |  | false |  |  | コンテナの状態の詳細な情報(runtime only) |
 | current_build | char(22) |  | false |  |  | デプロイするビルド |
 | created_at | datetime(6) |  | false |  |  | 作成日時 |
@@ -81,7 +81,7 @@ erDiagram
   char_40_ commit
   enum__runtime___static__ deploy_type
   tinyint_1_ running
-  enum__missing___starting___restarting___running___exited___errored___unknown__ container
+  enum__missing___starting___restarting___running___idle___exited___errored___unknown__ container
   text container_message
   char_22_ current_build
   datetime_6_ created_at
@@ -91,6 +91,7 @@ erDiagram
   char_22_ application_id PK
   tinyint_1_ use_mariadb
   tinyint_1_ use_mongodb
+  tinyint_1_ auto_shutdown
   enum__runtime-buildpack___runtime-cmd___runtime-dockerfile___static-buildpack___static-cmd___static-dockerfile__ build_type
   varchar_1000_ base_image
   text build_cmd

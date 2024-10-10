@@ -166,6 +166,12 @@ func appSelector(appID string) map[string]string {
 	}
 }
 
+func sablierSelector() map[string]string {
+	return map[string]string{
+		"sablier.enable": "true",
+	}
+}
+
 func deploymentName(appID string) string {
 	return fmt.Sprintf("nsapp-%s", appID)
 }
@@ -194,6 +200,18 @@ func stripMiddlewareName(website *domain.Website) string {
 
 func ssHeaderMiddlewareName(ss *domain.StaticSite) string {
 	return fmt.Sprintf("nsapp-ss-header-%s", ss.Application.ID)
+}
+
+func sablierMiddlewareName(appID string) string {
+	return fmt.Sprintf("sablier-%s", appID)
+}
+
+func (b *Backend) useSablier(app *domain.Application) bool {
+	return app.DeployType == domain.DeployTypeRuntime && app.Config.BuildConfig.GetRuntimeConfig().AutoShutdown
+}
+
+func sablierGroupName(appID string) string {
+	return appID
 }
 
 func certificateName(fqdn string) string {

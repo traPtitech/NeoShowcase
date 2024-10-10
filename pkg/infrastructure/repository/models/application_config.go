@@ -28,6 +28,8 @@ type ApplicationConfig struct { // アプリケーションID
 	UseMariadb bool `boil:"use_mariadb" json:"use_mariadb" toml:"use_mariadb" yaml:"use_mariadb"`
 	// MongoDBを使用するか
 	UseMongodb bool `boil:"use_mongodb" json:"use_mongodb" toml:"use_mongodb" yaml:"use_mongodb"`
+	// アプリケーションの自動シャットダウン
+	AutoShutdown bool `boil:"auto_shutdown" json:"auto_shutdown" toml:"auto_shutdown" yaml:"auto_shutdown"`
 	// ビルドタイプ
 	BuildType string `boil:"build_type" json:"build_type" toml:"build_type" yaml:"build_type"`
 	// ベースイメージの名前
@@ -55,6 +57,7 @@ var ApplicationConfigColumns = struct {
 	ApplicationID  string
 	UseMariadb     string
 	UseMongodb     string
+	AutoShutdown   string
 	BuildType      string
 	BaseImage      string
 	BuildCMD       string
@@ -68,6 +71,7 @@ var ApplicationConfigColumns = struct {
 	ApplicationID:  "application_id",
 	UseMariadb:     "use_mariadb",
 	UseMongodb:     "use_mongodb",
+	AutoShutdown:   "auto_shutdown",
 	BuildType:      "build_type",
 	BaseImage:      "base_image",
 	BuildCMD:       "build_cmd",
@@ -83,6 +87,7 @@ var ApplicationConfigTableColumns = struct {
 	ApplicationID  string
 	UseMariadb     string
 	UseMongodb     string
+	AutoShutdown   string
 	BuildType      string
 	BaseImage      string
 	BuildCMD       string
@@ -96,6 +101,7 @@ var ApplicationConfigTableColumns = struct {
 	ApplicationID:  "application_config.application_id",
 	UseMariadb:     "application_config.use_mariadb",
 	UseMongodb:     "application_config.use_mongodb",
+	AutoShutdown:   "application_config.auto_shutdown",
 	BuildType:      "application_config.build_type",
 	BaseImage:      "application_config.base_image",
 	BuildCMD:       "application_config.build_cmd",
@@ -147,6 +153,7 @@ var ApplicationConfigWhere = struct {
 	ApplicationID  whereHelperstring
 	UseMariadb     whereHelperbool
 	UseMongodb     whereHelperbool
+	AutoShutdown   whereHelperbool
 	BuildType      whereHelperstring
 	BaseImage      whereHelperstring
 	BuildCMD       whereHelperstring
@@ -160,6 +167,7 @@ var ApplicationConfigWhere = struct {
 	ApplicationID:  whereHelperstring{field: "`application_config`.`application_id`"},
 	UseMariadb:     whereHelperbool{field: "`application_config`.`use_mariadb`"},
 	UseMongodb:     whereHelperbool{field: "`application_config`.`use_mongodb`"},
+	AutoShutdown:   whereHelperbool{field: "`application_config`.`auto_shutdown`"},
 	BuildType:      whereHelperstring{field: "`application_config`.`build_type`"},
 	BaseImage:      whereHelperstring{field: "`application_config`.`base_image`"},
 	BuildCMD:       whereHelperstring{field: "`application_config`.`build_cmd`"},
@@ -199,9 +207,9 @@ func (r *applicationConfigR) GetApplication() *Application {
 type applicationConfigL struct{}
 
 var (
-	applicationConfigAllColumns            = []string{"application_id", "use_mariadb", "use_mongodb", "build_type", "base_image", "build_cmd", "artifact_path", "spa", "dockerfile_name", "context", "entrypoint", "command"}
+	applicationConfigAllColumns            = []string{"application_id", "use_mariadb", "use_mongodb", "auto_shutdown", "build_type", "base_image", "build_cmd", "artifact_path", "spa", "dockerfile_name", "context", "entrypoint", "command"}
 	applicationConfigColumnsWithoutDefault = []string{"application_id", "use_mariadb", "use_mongodb", "build_type", "base_image", "build_cmd", "artifact_path", "spa", "dockerfile_name", "context", "entrypoint", "command"}
-	applicationConfigColumnsWithDefault    = []string{}
+	applicationConfigColumnsWithDefault    = []string{"auto_shutdown"}
 	applicationConfigPrimaryKeyColumns     = []string{"application_id"}
 	applicationConfigGeneratedColumns      = []string{}
 )

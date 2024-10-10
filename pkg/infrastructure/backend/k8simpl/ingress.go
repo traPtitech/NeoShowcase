@@ -1,6 +1,7 @@
 package k8simpl
 
 import (
+	"encoding/json"
 	"fmt"
 	"time"
 
@@ -10,6 +11,7 @@ import (
 	"github.com/traefik/traefik/v3/pkg/config/dynamic"
 	traefikv1alpha1 "github.com/traefik/traefik/v3/pkg/provider/kubernetes/crd/traefikio/v1alpha1"
 	"github.com/traefik/traefik/v3/pkg/types"
+	v1 "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
 	"github.com/traPtitech/neoshowcase/pkg/domain"
@@ -62,6 +64,46 @@ func (b *Backend) certificate(targetDomain string) *certmanagerv1.Certificate {
 	}
 }
 
+func (b *Backend) sablierMiddleware(app *domain.Application) *traefikv1alpha1.Middleware {
+	type DynamicConfig = struct {
+		DisplayName string `json:"displayName"`
+		ShowDetails string `json:"showDetails"`
+		Theme       string `json:"theme"`
+	}
+	config := struct {
+		SablierURL      string        `json:"sablierURL"`
+		Group           string        `json:"group"`
+		SessionDuration string        `json:"sessionDuration"`
+		Dynamic         DynamicConfig `json:"dynamic"`
+	}{
+		b.config.Middleware.Sablier.SablierURL,
+		sablierGroupName(app.ID),
+		b.config.Middleware.Sablier.SessionDuration,
+		DynamicConfig{
+			DisplayName: app.Name,
+			ShowDetails: "true",
+			Theme:       "ghost",
+		},
+	}
+	data, _ := json.Marshal(config)
+	return &traefikv1alpha1.Middleware{
+		TypeMeta: metav1.TypeMeta{
+			Kind:       "Middleware",
+			APIVersion: "traefik.io/v1alpha1",
+		},
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      sablierMiddlewareName(app.ID),
+			Namespace: b.config.Namespace,
+			Labels:    b.appLabel(app.ID),
+		},
+		Spec: traefikv1alpha1.MiddlewareSpec{
+			Plugin: map[string]v1.JSON{
+				"sablier": {Raw: data},
+			},
+		},
+	}
+}
+
 func (b *Backend) ingressRoute(
 	app *domain.Application,
 	website *domain.Website,
@@ -106,6 +148,11 @@ func (b *Backend) ingressRoute(
 			middlewares = append(middlewares, middleware)
 			middlewareRefs = append(middlewareRefs, traefikv1alpha1.MiddlewareRef{Name: middleware.Name})
 		}
+	}
+	if b.useSablier(app) {
+		middleware := b.sablierMiddleware(app)
+		middlewares = append(middlewares, middleware)
+		middlewareRefs = append(middlewareRefs, traefikv1alpha1.MiddlewareRef{Name: middleware.Name})
 	}
 	var rulePriority int
 	{
