@@ -7,15 +7,26 @@ import (
 
 	"github.com/friendsofgo/errors"
 	"github.com/samber/lo"
-	"k8s.io/api/core/v1"
+	appv1 "k8s.io/api/apps/v1"
+	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
 	"github.com/traPtitech/neoshowcase/pkg/domain"
-	"github.com/traPtitech/neoshowcase/pkg/util/ds"
 	"github.com/traPtitech/neoshowcase/pkg/util/fmtutil"
 )
 
 func (b *Backend) GetContainer(ctx context.Context, appID string) (*domain.Container, error) {
+	sts, err := b.client.AppsV1().StatefulSets(b.config.Namespace).Get(ctx, deploymentName(appID), metav1.GetOptions{})
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to fetch statefulset")
+	}
+	if isSablierEnabled(sts) && sts.Status.Replicas == 0 {
+		return &domain.Container{
+			ApplicationID: appID,
+			State:         domain.ContainerStateIdle,
+		}, nil
+	}
+
 	list, err := b.client.CoreV1().Pods(b.config.Namespace).List(ctx, metav1.ListOptions{
 		LabelSelector: toSelectorString(appSelector(appID)),
 	})
@@ -37,6 +48,10 @@ func (b *Backend) GetContainer(ctx context.Context, appID string) (*domain.Conta
 	}, nil
 }
 
+func isSablierEnabled(sts *appv1.StatefulSet) bool {
+	return sts.Labels["sabluer.enable"] == "true"
+}
+
 func (b *Backend) ListContainers(ctx context.Context) ([]*domain.Container, error) {
 	list, err := b.client.CoreV1().Pods(b.config.Namespace).List(ctx, metav1.ListOptions{
 		LabelSelector: toSelectorString(allSelector()),
@@ -44,20 +59,45 @@ func (b *Backend) ListContainers(ctx context.Context) ([]*domain.Container, erro
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to fetch pods")
 	}
+	// list statefulsets that enable sablier
+	stsList, err := b.client.AppsV1().StatefulSets(b.config.Namespace).List(ctx, metav1.ListOptions{
+		LabelSelector: toSelectorString(sablierSelector()),
+	})
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to fetch statefulsets")
+	}
+	idleApps := make(map[string]*appv1.StatefulSet, len(stsList.Items))
+	for _, sts := range stsList.Items {
+		// StatefulSet with 0 replicas means the app is idle and ready to be scaled by sablier
+		if sts.Status.Replicas == 0 {
+			idleApps[sts.Labels[appIDLabel]] = &sts
+		}
+	}
 
-	result := ds.Map(list.Items, func(pod v1.Pod) *domain.Container {
+	result := make([]*domain.Container, 0, len(list.Items)+len(idleApps))
+
+	for _, pod := range list.Items {
+		appID := pod.Labels[appIDLabel]
+		delete(idleApps, appID) // if pod exists, it's not idle
 		state, msg := getContainerState(pod.Status)
-		return &domain.Container{
-			ApplicationID: pod.Labels[appIDLabel],
+		result = append(result, &domain.Container{
+			ApplicationID: appID,
 			State:         state,
 			Message:       msg,
-		}
-	})
+		})
+	}
+	for _, sts := range idleApps {
+		result = append(result, &domain.Container{
+			ApplicationID: sts.Labels[appIDLabel],
+			State:         domain.ContainerStateIdle,
+		})
+	}
+
 	return result, nil
 }
 
-func getContainerState(status v1.PodStatus) (state domain.ContainerState, message string) {
-	cs, ok := lo.Find(status.ContainerStatuses, func(cs v1.ContainerStatus) bool { return cs.Name == podContainerName })
+func getContainerState(status corev1.PodStatus) (state domain.ContainerState, message string) {
+	cs, ok := lo.Find(status.ContainerStatuses, func(cs corev1.ContainerStatus) bool { return cs.Name == podContainerName })
 	if !ok {
 		return domain.ContainerStateMissing, ""
 	}
@@ -80,7 +120,7 @@ func getContainerState(status v1.PodStatus) (state domain.ContainerState, messag
 	return domain.ContainerStateUnknown, "internal error: state unknown"
 }
 
-func waitingMessage(state *v1.ContainerStateWaiting) string {
+func waitingMessage(state *corev1.ContainerStateWaiting) string {
 	msg := state.Reason
 	if state.Message != "" {
 		msg += ": "
@@ -89,12 +129,12 @@ func waitingMessage(state *v1.ContainerStateWaiting) string {
 	return msg
 }
 
-func runningMessage(state *v1.ContainerStateRunning) string {
+func runningMessage(state *corev1.ContainerStateRunning) string {
 	runningFor := time.Since(state.StartedAt.Time)
 	return "Running for " + fmtutil.DurationHuman(runningFor)
 }
 
-func terminatedMessage(state *v1.ContainerStateTerminated) string {
+func terminatedMessage(state *corev1.ContainerStateTerminated) string {
 	msg := fmt.Sprintf("Exited with status %d", state.ExitCode)
 	if state.Signal != 0 {
 		msg += fmt.Sprintf(" (signal %d)", state.Signal)

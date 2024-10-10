@@ -166,6 +166,12 @@ func appSelector(appID string) map[string]string {
 	}
 }
 
+func sablierSelector() map[string]string {
+	return map[string]string{
+		"sablier.enable": "true",
+	}
+}
+
 func deploymentName(appID string) string {
 	return fmt.Sprintf("nsapp-%s", appID)
 }
