@@ -32,10 +32,11 @@ func (b BuildType) DeployType() DeployType {
 }
 
 type RuntimeConfig struct {
-	UseMariaDB bool
-	UseMongoDB bool
-	Entrypoint string
-	Command    string
+	UseMariaDB   bool
+	UseMongoDB   bool
+	Entrypoint   string
+	Command      string
+	AutoShutdown bool
 }
 
 const shellSpecialCharacters = "`" + `~#$&*()\|[]{};'"<>?!=`
