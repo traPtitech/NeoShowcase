@@ -67,6 +67,9 @@ func syncResources[T apiResource](ctx context.Context, rcName string, existing [
 
 		// Set label, and apply
 		labels := rc.GetLabels()
+		if labels == nil {
+			labels = make(map[string]string)
+		}
 		labels[resourceHashAnnotation] = h
 		rc.SetLabels(labels)
 
