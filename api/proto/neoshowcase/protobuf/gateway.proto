@@ -194,7 +194,6 @@ message Application {
     EXITED = 4;
     ERRORED = 5;
     UNKNOWN = 6;
-    IDLE = 7;
   }
   string id = 1;
   string name = 2;

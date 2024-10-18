@@ -86,7 +86,6 @@ CREATE TABLE `applications`
         'starting',
         'restarting',
         'running',
-        'idle',
         'exited',
         'errored',
         'unknown'

@@ -1423,11 +1423,6 @@ export enum Application_ContainerState {
    * @generated from enum value: UNKNOWN = 6;
    */
   UNKNOWN = 6,
-
-  /**
-   * @generated from enum value: IDLE = 7;
-   */
-  IDLE = 7,
 }
 // Retrieve enum metadata with: proto3.getEnumType(Application_ContainerState)
 proto3.util.setEnumType(Application_ContainerState, "neoshowcase.protobuf.Application.ContainerState", [
@@ -1438,7 +1433,6 @@ proto3.util.setEnumType(Application_ContainerState, "neoshowcase.protobuf.Applic
   { no: 4, name: "EXITED" },
   { no: 5, name: "ERRORED" },
   { no: 6, name: "UNKNOWN" },
-  { no: 7, name: "IDLE" },
 ]);
 
 /**

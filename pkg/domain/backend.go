@@ -35,7 +35,6 @@ const (
 	ContainerStateStarting
 	ContainerStateRestarting
 	ContainerStateRunning
-	ContainerStateIdle
 	ContainerStateExited
 	ContainerStateErrored
 	ContainerStateUnknown

@@ -16,10 +16,11 @@ func FromPBRuntimeConfig(c *pb.RuntimeConfig) domain.RuntimeConfig {
 
 func ToPBRuntimeConfig(c *domain.RuntimeConfig) *pb.RuntimeConfig {
 	return &pb.RuntimeConfig{
-		UseMariadb: c.UseMariaDB,
-		UseMongodb: c.UseMongoDB,
-		Entrypoint: c.Entrypoint,
-		Command:    c.Command,
+		UseMariadb:   c.UseMariaDB,
+		UseMongodb:   c.UseMongoDB,
+		Entrypoint:   c.Entrypoint,
+		Command:      c.Command,
+		AutoShutdown: c.AutoShutdown,
 	}
 }
 

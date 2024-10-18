@@ -31,8 +31,19 @@ export enum ApplicationState {
   Error = 'Error',
 }
 
+const autoShutdownEnabled = (app: Application): boolean => {
+  switch (app.config?.buildConfig?.case) {
+    case 'runtimeBuildpack':
+    case 'runtimeCmd':
+    case 'runtimeDockerfile':
+      return app.config.buildConfig.value.runtimeConfig?.autoShutdown ?? false
+  }
+  return false
+}
+
 export const deploymentState = (app: Application): ApplicationState => {
-  if (!app.running) {
+  // if app is not running or autoShutdown is enabled and container is missing, it's idle
+  if (!app.running || (autoShutdownEnabled(app) && app.container === Application_ContainerState.MISSING)) {
     return ApplicationState.Idle
   }
   if (app.currentBuild === '') {
@@ -46,8 +57,6 @@ export const deploymentState = (app: Application): ApplicationState => {
         return ApplicationState.Deploying
       case Application_ContainerState.RUNNING:
         return ApplicationState.Running
-      case Application_ContainerState.IDLE:
-        return ApplicationState.Idle
       case Application_ContainerState.RESTARTING:
       case Application_ContainerState.EXITED:
       case Application_ContainerState.ERRORED:

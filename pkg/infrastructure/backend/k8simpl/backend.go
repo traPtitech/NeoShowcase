@@ -166,12 +166,6 @@ func appSelector(appID string) map[string]string {
 	}
 }
 
-func sablierSelector() map[string]string {
-	return map[string]string{
-		"sablier.enable": "true",
-	}
-}
-
 func deploymentName(appID string) string {
 	return fmt.Sprintf("nsapp-%s", appID)
 }
@@ -211,7 +205,7 @@ func (b *Backend) useSablier(app *domain.Application) bool {
 }
 
 func sablierGroupName(appID string) string {
-	return appID
+	return fmt.Sprintf("nsapp-%s", appID)
 }
 
 func certificateName(fqdn string) string {
