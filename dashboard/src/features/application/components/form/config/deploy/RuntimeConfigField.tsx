@@ -49,6 +49,31 @@ const RuntimeConfigField: Component<Props> = (props) => {
     }
   })
 
+  const AutoShutdownField = () => (
+    <Field
+      of={formStore}
+      name="form.config.deployConfig.value.runtime.autoShutdown"
+      // @ts-expect-error: autoShutdown は deployConfig.type === "static" の時存在しないためtsの型の仕様上エラーが出る
+      type="boolean"
+    >
+      {(field, fieldProps) => (
+        <FormItem
+          title="Auto Shutdown"
+          tooltip={{
+            props: { content: <div>アプリへのアクセスが一定期間ない場合、自動でアプリをシャットダウンします</div> },
+          }}
+        >
+          <CheckBox.Option
+            {...fieldProps}
+            label="自動シャットダウン"
+            checked={field.value ?? false}
+            error={field.error}
+          />
+        </FormItem>
+      )}
+    </Field>
+  )
+
   const EntryPointField = () => (
     <Field of={formStore} name="form.config.deployConfig.value.runtime.entrypoint">
       {(field, fieldProps) => (
@@ -163,6 +188,7 @@ const RuntimeConfigField: Component<Props> = (props) => {
           </ToolTip>
         </FormItem>
       </Show>
+      <AutoShutdownField />
       <Show when={buildType() === 'cmd'}>
         <EntryPointField />
       </Show>

@@ -15,6 +15,7 @@ const runtimeConfigSchema = v.object({
   useMongodb: optionalBooleanSchema(),
   entrypoint: v.string(),
   command: v.string(),
+  autoShutdown: v.boolean(),
 })
 const staticConfigSchema = v.object({
   artifactPath: v.pipe(v.string(), v.nonEmpty('Enter Artifact Path')),
@@ -188,6 +189,7 @@ export const configMessageToSchema = (config: ApplicationConfig): ApplicationCon
             entrypoint: '',
             useMariadb: false,
             useMongodb: false,
+            autoShutdown: false,
           },
         },
       }),
