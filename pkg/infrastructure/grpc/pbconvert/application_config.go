@@ -7,10 +7,11 @@ import (
 
 func FromPBRuntimeConfig(c *pb.RuntimeConfig) domain.RuntimeConfig {
 	return domain.RuntimeConfig{
-		UseMariaDB: c.UseMariadb,
-		UseMongoDB: c.UseMongodb,
-		Entrypoint: c.Entrypoint,
-		Command:    c.Command,
+		UseMariaDB:   c.UseMariadb,
+		UseMongoDB:   c.UseMongodb,
+		Entrypoint:   c.Entrypoint,
+		Command:      c.Command,
+		AutoShutdown: c.AutoShutdown,
 	}
 }
 
