@@ -1,78 +1,59 @@
-import { Collapsible } from '@kobalte/core/collapsible';
-import { Field, getValue, remove, setValue } from '@modular-forms/solid';
-import { type Component, Show, createEffect, createMemo } from 'solid-js';
-import { AuthenticationType } from '/@/api/neoshowcase/protobuf/gateway_pb';
-import { Button } from '/@/components/UI/Button';
-import { MaterialSymbols } from '/@/components/UI/MaterialSymbols';
-import { CheckBox } from '/@/components/templates/CheckBox';
-import { FormItem } from '/@/components/templates/FormItem';
-import {
-  RadioGroup,
-  type RadioOption,
-} from '/@/components/templates/RadioGroups';
-import { systemInfo } from '/@/libs/api';
-import { clsx } from '/@/libs/clsx';
-import { useApplicationForm } from '../../../provider/applicationFormProvider';
-import UrlField from './UrlField';
+import { Collapsible } from '@kobalte/core/collapsible'
+import { Field, getValue, remove, setValue } from '@modular-forms/solid'
+import { type Component, Show, createEffect, createMemo } from 'solid-js'
+import { AuthenticationType } from '/@/api/neoshowcase/protobuf/gateway_pb'
+import { Button } from '/@/components/UI/Button'
+import { MaterialSymbols } from '/@/components/UI/MaterialSymbols'
+import { CheckBox } from '/@/components/templates/CheckBox'
+import { FormItem } from '/@/components/templates/FormItem'
+import { RadioGroup, type RadioOption } from '/@/components/templates/RadioGroups'
+import { systemInfo } from '/@/libs/api'
+import { clsx } from '/@/libs/clsx'
+import { useApplicationForm } from '../../../provider/applicationFormProvider'
+import UrlField from './UrlField'
 
 const authenticationTypeOptions: RadioOption<`${AuthenticationType}`>[] = [
   { value: `${AuthenticationType.OFF}`, label: 'OFF' },
   { value: `${AuthenticationType.SOFT}`, label: 'SOFT' },
   { value: `${AuthenticationType.HARD}`, label: 'HARD' },
-];
+]
 
 type Props = {
-  index: number;
-  isRuntimeApp: boolean;
-  readonly?: boolean;
-};
+  index: number
+  isRuntimeApp: boolean
+  readonly?: boolean
+}
 
 const WebsiteFieldGroup: Component<Props> = (props) => {
-  const { formStore } = useApplicationForm();
+  const { formStore } = useApplicationForm()
 
-  const availableDomains = systemInfo()?.domains ?? [];
+  const availableDomains = systemInfo()?.domains ?? []
   const selectedDomain = createMemo(() => {
-    const domainString = getValue(
-      formStore,
-      `form.websites.${props.index}.domain`
-    );
-    return availableDomains.find((d) => d.domain === domainString);
-  });
-  const authAvailable = (): boolean => selectedDomain()?.authAvailable ?? false;
+    const domainString = getValue(formStore, `form.websites.${props.index}.domain`)
+    return availableDomains.find((d) => d.domain === domainString)
+  })
+  const authAvailable = (): boolean => selectedDomain()?.authAvailable ?? false
 
   createEffect(() => {
     if (!authAvailable()) {
-      setValue(
-        formStore,
-        `form.websites.${props.index}.authentication`,
-        `${AuthenticationType.OFF}`
-      );
+      setValue(formStore, `form.websites.${props.index}.authentication`, `${AuthenticationType.OFF}`)
     }
-  });
+  })
 
   const handleDelete = () => {
-    remove(formStore, 'form.websites', { at: props.index });
-    close();
-  };
+    remove(formStore, 'form.websites', { at: props.index })
+    close()
+  }
 
   return (
     <>
       <div class="relative flex w-full flex-col gap-6">
         <div class="-top-2 -right-2 absolute">
-          <Button
-            onClick={handleDelete}
-            variants="textError"
-            size="small"
-            type="button"
-          >
+          <Button onClick={handleDelete} variants="textError" size="small" type="button">
             Delete
           </Button>
         </div>
-        <UrlField
-          index={props.index}
-          readonly={props.readonly}
-          showHttpPort={props.isRuntimeApp}
-        />
+        <UrlField index={props.index} readonly={props.readonly} showHttpPort={props.isRuntimeApp} />
         {/* Field componentがmountされないとそのfieldがformに登録されないためforceMountする */}
         <Collapsible forceMount>
           <Collapsible.Trigger class="flex w-full cursor-pointer appearance-none items-center gap-2 border-none bg-none text-medium text-text-black">
@@ -84,14 +65,11 @@ const WebsiteFieldGroup: Component<Props> = (props) => {
           <Collapsible.Content
             class={clsx(
               'flex h-0 gap-2 overflow-hidden',
-              '[data-[expanded]_&]:h-[var(--kb-collapsible-content-height)] [data-[expanded]_&]:overflow-visible'
+              '[data-[expanded]_&]:h-[var(--kb-collapsible-content-height)] [data-[expanded]_&]:overflow-visible',
             )}
           >
             <div class="flex w-full flex-col gap-2 pt-2">
-              <Field
-                of={formStore}
-                name={`form.websites.${props.index}.authentication`}
-              >
+              <Field of={formStore} name={`form.websites.${props.index}.authentication`}>
                 {(field, fieldProps) => (
                   <RadioGroup<`${AuthenticationType}`>
                     label="部員認証"
@@ -110,9 +88,7 @@ const WebsiteFieldGroup: Component<Props> = (props) => {
                     {...fieldProps}
                     tooltip={{
                       props: {
-                        content: `${
-                          selectedDomain()?.domain
-                        }では部員認証が使用できません`,
+                        content: `${selectedDomain()?.domain}では部員認証が使用できません`,
                       },
                       disabled: authAvailable(),
                     }}
@@ -124,11 +100,7 @@ const WebsiteFieldGroup: Component<Props> = (props) => {
                 )}
               </Field>
               <FormItem title="高度な設定">
-                <Field
-                  of={formStore}
-                  name={`form.websites.${props.index}.stripPrefix`}
-                  type="boolean"
-                >
+                <Field of={formStore} name={`form.websites.${props.index}.stripPrefix`} type="boolean">
                   {(field, fieldProps) => (
                     <CheckBox.Option
                       {...fieldProps}
@@ -139,11 +111,7 @@ const WebsiteFieldGroup: Component<Props> = (props) => {
                   )}
                 </Field>
                 <Show when={props.isRuntimeApp}>
-                  <Field
-                    of={formStore}
-                    name={`form.websites.${props.index}.h2c`}
-                    type="boolean"
-                  >
+                  <Field of={formStore} name={`form.websites.${props.index}.h2c`} type="boolean">
                     {(field, fieldProps) => (
                       <CheckBox.Option
                         {...fieldProps}
@@ -160,7 +128,7 @@ const WebsiteFieldGroup: Component<Props> = (props) => {
         </Collapsible>
       </div>
     </>
-  );
-};
+  )
+}
 
-export default WebsiteFieldGroup;
+export default WebsiteFieldGroup

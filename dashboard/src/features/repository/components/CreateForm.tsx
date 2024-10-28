@@ -1,54 +1,45 @@
-import {
-  Field,
-  Form,
-  type SubmitHandler,
-  getValue,
-  reset,
-  setValue,
-  setValues,
-} from '@modular-forms/solid';
-import { useNavigate } from '@solidjs/router';
-import { type Component, createEffect, onMount } from 'solid-js';
-import toast from 'solid-toast';
-import { Button } from '/@/components/UI/Button';
-import { MaterialSymbols } from '/@/components/UI/MaterialSymbols';
-import { TextField } from '/@/components/UI/TextField';
-import { useRepositoryForm } from '/@/features/repository/provider/repositoryFormProvider';
+import { Field, Form, type SubmitHandler, getValue, reset, setValue, setValues } from '@modular-forms/solid'
+import { useNavigate } from '@solidjs/router'
+import { type Component, createEffect, onMount } from 'solid-js'
+import toast from 'solid-toast'
+import { Button } from '/@/components/UI/Button'
+import { MaterialSymbols } from '/@/components/UI/MaterialSymbols'
+import { TextField } from '/@/components/UI/TextField'
+import { useRepositoryForm } from '/@/features/repository/provider/repositoryFormProvider'
 import {
   type CreateOrUpdateRepositoryInput,
   getInitialValueOfCreateRepoForm,
   handleSubmitCreateRepositoryForm,
-} from '/@/features/repository/schema/repositorySchema';
-import { client, handleAPIError } from '/@/libs/api';
-import { extractRepositoryNameFromURL } from '/@/libs/application';
+} from '/@/features/repository/schema/repositorySchema'
+import { client, handleAPIError } from '/@/libs/api'
+import { extractRepositoryNameFromURL } from '/@/libs/application'
 
-import AuthMethodField from './AuthMethodField';
+import AuthMethodField from './AuthMethodField'
 
 const CreateForm: Component = () => {
-  const navigate = useNavigate();
-  const { formStore } = useRepositoryForm();
+  const navigate = useNavigate()
+  const { formStore } = useRepositoryForm()
 
   // `reset` doesn't work on first render when the Field not rendered
   // see: https://github.com/fabian-hiller/modular-forms/issues/157#issuecomment-1848567069
   onMount(() => {
-    setValues(formStore, getInitialValueOfCreateRepoForm());
+    setValues(formStore, getInitialValueOfCreateRepoForm())
     reset(formStore, {
       initialValues: getInitialValueOfCreateRepoForm(),
-    });
-  });
+    })
+  })
 
   // URLからリポジトリ名, 認証方法を自動入力
   createEffect(() => {
-    const url = getValue(formStore, 'form.url');
-    if (url === undefined || url === '') return;
+    const url = getValue(formStore, 'form.url')
+    if (url === undefined || url === '') return
 
     // リポジトリ名を自動入力
-    const repositoryName = extractRepositoryNameFromURL(url);
-    setValue(formStore, 'form.name', repositoryName);
+    const repositoryName = extractRepositoryNameFromURL(url)
+    setValue(formStore, 'form.name', repositoryName)
 
     // 認証方法を自動入力
-    const isHTTPFormat =
-      url.startsWith('http://') || url.startsWith('https://');
+    const isHTTPFormat = url.startsWith('http://') || url.startsWith('https://')
     if (!isHTTPFormat) {
       // Assume SSH or Git Protocol format
       setValues(formStore, {
@@ -57,21 +48,21 @@ const CreateForm: Component = () => {
             method: 'ssh',
           },
         },
-      });
+      })
     }
-  });
+  })
 
   const handleSubmit: SubmitHandler<CreateOrUpdateRepositoryInput> = (values) =>
     handleSubmitCreateRepositoryForm(values, async (output) => {
       try {
-        const res = await client.createRepository(output);
-        toast.success('リポジトリを登録しました');
+        const res = await client.createRepository(output)
+        toast.success('リポジトリを登録しました')
         // 新規アプリ作成ページに遷移
-        navigate(`/apps/new?repositoryID=${res.id}`);
+        navigate(`/apps/new?repositoryID=${res.id}`)
       } catch (e) {
-        return handleAPIError(e, 'リポジトリの登録に失敗しました');
+        return handleAPIError(e, 'リポジトリの登録に失敗しました')
       }
-    });
+    })
 
   return (
     <Form of={formStore} onSubmit={handleSubmit}>
@@ -116,7 +107,7 @@ const CreateForm: Component = () => {
         </Button>
       </div>
     </Form>
-  );
-};
+  )
+}
 
-export default CreateForm;
+export default CreateForm

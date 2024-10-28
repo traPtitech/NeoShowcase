@@ -1,20 +1,20 @@
-import { useNavigate } from '@solidjs/router';
-import { Show, createMemo, createResource, useTransition } from 'solid-js';
-import { Button } from '/@/components/UI/Button';
-import { MaterialSymbols } from '/@/components/UI/MaterialSymbols';
-import { URLText } from '/@/components/UI/URLText';
-import { DataTable } from '/@/components/layouts/DataTable';
-import { MainViewContainer } from '/@/components/layouts/MainView';
-import SuspenseContainer from '/@/components/layouts/SuspenseContainer';
-import { AppsList, List } from '/@/components/templates/List';
-import { useRepositoryData } from '/@/routes';
+import { useNavigate } from '@solidjs/router'
+import { Show, createMemo, createResource, useTransition } from 'solid-js'
+import { Button } from '/@/components/UI/Button'
+import { MaterialSymbols } from '/@/components/UI/MaterialSymbols'
+import { URLText } from '/@/components/UI/URLText'
+import { DataTable } from '/@/components/layouts/DataTable'
+import { MainViewContainer } from '/@/components/layouts/MainView'
+import SuspenseContainer from '/@/components/layouts/SuspenseContainer'
+import { AppsList, List } from '/@/components/templates/List'
+import { useRepositoryData } from '/@/routes'
 
 export default () => {
-  const { repo, apps, commits, hasPermission } = useRepositoryData();
-  const loaded = () => !!(repo() && apps());
+  const { repo, apps, commits, hasPermission } = useRepositoryData()
+  const loaded = () => !!(repo() && apps())
 
-  const navigator = useNavigate();
-  const showPlaceHolder = createMemo(() => apps()?.length === 0);
+  const navigator = useNavigate()
+  const showPlaceHolder = createMemo(() => apps()?.length === 0)
 
   const AddNewAppButton = () => (
     <Button
@@ -22,7 +22,7 @@ export default () => {
       size="medium"
       leftIcon={<MaterialSymbols>add</MaterialSymbols>}
       onClick={() => {
-        navigator(`/apps/new?repositoryID=${repo()?.id}`);
+        navigator(`/apps/new?repositoryID=${repo()?.id}`)
       }}
       tooltip={{
         props: {
@@ -41,9 +41,9 @@ export default () => {
     >
       Add New App
     </Button>
-  );
+  )
 
-  const [isPending] = useTransition();
+  const [isPending] = useTransition()
 
   return (
     <SuspenseContainer isPending={isPending()}>
@@ -57,15 +57,10 @@ export default () => {
                   <AddNewAppButton />
                 </Show>
               </DataTable.Title>
-              <Show
-                when={showPlaceHolder()}
-                fallback={<AppsList apps={apps()!} commits={commits()} />}
-              >
+              <Show when={showPlaceHolder()} fallback={<AppsList apps={apps()!} commits={commits()} />}>
                 <List.Container>
                   <List.PlaceHolder>
-                    <MaterialSymbols displaySize={80}>
-                      deployed_code
-                    </MaterialSymbols>
+                    <MaterialSymbols displaySize={80}>deployed_code</MaterialSymbols>
                     No Apps
                     <AddNewAppButton />
                   </List.PlaceHolder>
@@ -95,5 +90,5 @@ export default () => {
         </div>
       </MainViewContainer>
     </SuspenseContainer>
-  );
-};
+  )
+}
