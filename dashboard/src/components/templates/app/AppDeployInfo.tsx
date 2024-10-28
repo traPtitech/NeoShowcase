@@ -7,17 +7,17 @@ import Code from '/@/components/UI/Code'
 import JumpButton from '/@/components/UI/JumpButton'
 import { ToolTip } from '/@/components/UI/ToolTip'
 import { URLText } from '/@/components/UI/URLText'
+import { styled } from '/@/components/styled-components'
 import { client, handleAPIError, systemInfo } from '/@/libs/api'
 import { ApplicationState, deploymentState, getWebsiteURL } from '/@/libs/application'
 import { titleCase } from '/@/libs/casing'
+import { clsx } from '/@/libs/clsx'
 import { diffHuman, shortSha } from '/@/libs/format'
 import { useApplicationData } from '/@/routes'
 import { List } from '../List'
 import { AppStatusIcon } from './AppStatusIcon'
-import { clsx } from '/@/libs/clsx'
-import { styled } from '/@/components/styled-components'
 
-const DeployInfoContainer = styled('div', 'w-full py-4 px-5 flex items-center gap-2 bg-ui-primary')
+const DeployInfoContainer = styled('div', 'flex w-full items-center gap-2 bg-ui-primary px-5 py-4')
 const deployInfoContainerLongStyle = clsx('col-span-2')
 
 const AppDeployInfo: Component<{

@@ -1,8 +1,8 @@
 import { type Component, Show } from 'solid-js'
 import { writeToClipboard } from '/@/libs/clipboard'
+import { clsx } from '/@/libs/clsx'
 import { MaterialSymbols } from './MaterialSymbols'
 import { ToolTip } from './ToolTip'
-import { clsx } from '/@/libs/clsx'
 
 const Code: Component<{
   value: string

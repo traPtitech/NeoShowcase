@@ -1,6 +1,5 @@
-import { styled } from '@macaron-css/solid'
 import { Field, FieldArray, Form, type SubmitHandler, insert, reset, setValues } from '@modular-forms/solid'
-import { type Component, For, Show, createEffect, onMount, untrack } from 'solid-js'
+import { type Component, For, createEffect, onMount, untrack } from 'solid-js'
 import toast from 'solid-toast'
 import { type Application, PortPublicationProtocol } from '/@/api/neoshowcase/protobuf/gateway_pb'
 import { Button } from '/@/components/UI/Button'
@@ -8,7 +7,6 @@ import { MaterialSymbols } from '/@/components/UI/MaterialSymbols'
 import FormBox from '/@/components/layouts/FormBox'
 import { client, handleAPIError, systemInfo } from '/@/libs/api'
 import { pickRandom, randIntN } from '/@/libs/random'
-import { colorVars } from '/@/theme'
 import { useApplicationForm } from '../../provider/applicationFormProvider'
 import {
   type CreateOrUpdateApplicationInput,
@@ -17,19 +15,6 @@ import {
 } from '../../schema/applicationSchema'
 import type { PortPublicationInput } from '../../schema/portPublicationSchema'
 import PortField from './portForwarding/PortField'
-
-const PortsContainer = styled('div', {
-  base: {
-    width: '100%',
-    display: 'flex',
-    flexDirection: 'column',
-    alignItems: 'center',
-    gap: '16px',
-  },
-})
-const FallbackText = styled('div', {
-  color: colorVars.semantic.text.black,
-})
 
 const suggestPort = (protocol: PortPublicationProtocol): number => {
   const available = systemInfo()?.ports.filter((a) => a.protocol === protocol) || []
@@ -98,10 +83,13 @@ const PortForwardingForm: Component<Props> = (props) => {
       </Field>
       <FormBox.Container>
         <FormBox.Forms>
-          <PortsContainer>
+          <div class="flex w-full flex-col items-center gap-4">
             <FieldArray of={formStore} name="form.portPublications">
               {(fieldArray) => (
-                <For each={fieldArray.items} fallback={<FallbackText>ポート公開が設定されていません</FallbackText>}>
+                <For
+                  each={fieldArray.items}
+                  fallback={<div class="text-text-black">ポート公開が設定されていません</div>}
+                >
                   {(_, index) => <PortField index={index()} hasPermission={props.hasPermission} />}
                 </For>
               )}
@@ -115,7 +103,7 @@ const PortForwardingForm: Component<Props> = (props) => {
             >
               Add Port Forwarding
             </Button>
-          </PortsContainer>
+          </div>
         </FormBox.Forms>
         <FormBox.Actions>
           <Button

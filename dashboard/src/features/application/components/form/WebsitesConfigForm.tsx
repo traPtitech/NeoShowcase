@@ -1,5 +1,4 @@
 import type { PartialMessage } from '@bufbuild/protobuf'
-import { styled } from '@macaron-css/solid'
 import { Field, FieldArray, Form, type SubmitHandler, getValues, insert, reset, setValues } from '@modular-forms/solid'
 import { type Component, For, Show, createEffect, onMount, untrack } from 'solid-js'
 import toast from 'solid-toast'
@@ -7,6 +6,7 @@ import type { Application, UpdateApplicationRequest_UpdateWebsites } from '/@/ap
 import { Button } from '/@/components/UI/Button'
 import { MaterialSymbols } from '/@/components/UI/MaterialSymbols'
 import FormBox from '/@/components/layouts/FormBox'
+import { styled } from '/@/components/styled-components'
 import { List } from '/@/components/templates/List'
 import { client, handleAPIError, systemInfo } from '/@/libs/api'
 import { colorVars } from '/@/theme'
@@ -19,38 +19,10 @@ import {
 import { getInitialValueOfCreateWebsiteForm } from '../../schema/websiteSchema'
 import WebsiteFieldGroup from './website/WebsiteFieldGroup'
 
-const Container = styled('div', {
-  base: {
-    width: '100%',
-    overflow: 'hidden',
-    border: `1px solid ${colorVars.semantic.ui.border}`,
-    borderRadius: '8px',
-    display: 'flex',
-    flexDirection: 'column',
-    gap: '1px',
-  },
-})
-const FieldRow = styled('div', {
-  base: {
-    width: '100%',
-    padding: '20px 24px',
-
-    selectors: {
-      '&:not(:first-child)': {
-        borderTop: `1px solid ${colorVars.semantic.ui.border}`,
-      },
-    },
-  },
-})
-
-const AddMoreButtonContainer = styled('div', {
-  base: {
-    width: '100%',
-    display: 'flex',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-})
+const FieldRow = styled(
+  'div',
+  'w-full px-6 py-5 [&:not(:first-child)]:border-t [&:not(:first-child)]:border-t-ui-border',
+)
 
 type Props = {
   app: Application
@@ -128,7 +100,7 @@ const WebsiteConfigForm: Component<Props> = (props) => {
       <Field of={formStore} name="form.id">
         {() => null}
       </Field>
-      <Container>
+      <div class="flex w-full flex-col gap-0.25 overflow-hidden rounded-lg border border-ui-border">
         <FieldArray of={formStore} name="form.websites">
           {(fieldArray) => (
             <For
@@ -159,7 +131,7 @@ const WebsiteConfigForm: Component<Props> = (props) => {
         </FieldArray>
         <Show when={showAddMoreButton()}>
           <FieldRow>
-            <AddMoreButtonContainer>
+            <div class="flex w-full items-center justify-center">
               <Button
                 onclick={() => {
                   addFormStore()
@@ -171,7 +143,7 @@ const WebsiteConfigForm: Component<Props> = (props) => {
               >
                 Add More
               </Button>
-            </AddMoreButtonContainer>
+            </div>
           </FieldRow>
         </Show>
         <FormBox.Actions>
@@ -192,7 +164,7 @@ const WebsiteConfigForm: Component<Props> = (props) => {
             Save
           </Button>
         </FormBox.Actions>
-      </Container>
+      </div>
     </Form>
   )
 }

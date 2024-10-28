@@ -1,48 +1,48 @@
 import { Combobox as KComboBox, Select as KSelect } from '@kobalte/core'
 import { type JSX, Show, createEffect, createSignal, splitProps } from 'solid-js'
+import { clsx } from '/@/libs/clsx'
 import { colorVars } from '/@/theme'
 import { CheckBoxIcon } from '../UI/CheckBoxIcon'
 import { MaterialSymbols } from '../UI/MaterialSymbols'
 import { ToolTip, type TooltipProps } from '../UI/ToolTip'
 import { TooltipInfoIcon } from '../UI/TooltipInfoIcon'
 import { RequiredMark, TitleContainer } from './FormItem'
-import { clsx } from '/@/libs/clsx'
 
 const itemStyleBase = clsx(
-  'w-full h-11 flex items-center gap-2 bg-none border-none rounded-8 cursor-pointer text-text-black whitespace-nowrap text-bold',
+  'flex h-11 w-full cursor-pointer items-center gap-2 whitespace-nowrap rounded-8 border-none bg-none text-bold text-text-black',
   'hover:bg-transparency-primary-hover data-[highlighted]:bg-transparency-primary-hover',
-  'data-[disabled]:cursor-not-allowed !data-[disabled]:text-text-black !data-[disabled]:bg-text-disabled',
+  '!data-[disabled]:bg-text-disabled !data-[disabled]:text-text-black data-[disabled]:cursor-not-allowed',
 )
 
 const singleItemStyle = clsx(
   itemStyleBase,
-  'py-2 px-4',
-  'data-[selected]:text-primary-main data-[selected]:bg-transparency-primary-selected',
+  'px-4 py-2',
+  'data-[selected]:bg-transparency-primary-selected data-[selected]:text-primary-main',
 )
 
 const multiItemStyle = clsx(itemStyleBase, 'p-2')
 
 const triggerStyle = clsx(
-  'w-full max-w-72 h-12 py-2.5 px-4 grid grid-cols-[1fr_24px] content-center items-center gap-1 bg-primary-main rounded-lg border-none outline outline-ui-border text-text-black cursor-pointer',
+  'grid h-12 w-full max-w-72 cursor-pointer grid-cols-[1fr_24px] content-center items-center gap-1 rounded-lg border-none bg-primary-main px-4 py-2.5 text-text-black outline outline-ui-border',
   'focus-visible:outline-2 focus-visible:outline-primary-main',
   'data-[expanded]:outline-2 data-[expanded]:outline-primary-main',
-  'data-[disabled]:cursor-not-allowed !data-[disabled]:text-text-disabled !data-[disabled]:bg-ui-tertiary',
+  '!data-[disabled]:bg-ui-tertiary !data-[disabled]:text-text-disabled data-[disabled]:cursor-not-allowed',
 )
 
 const valueStyle = clsx(
-  'w-full text-regular truncate text-left text-text-black',
+  'w-full truncate text-left text-regular text-text-black',
   'data-[placeholder-shown]:text-text-disabled',
 )
 
 const iconStyle = clsx('size-6 flex-shrink-0')
 
 const contentStyleBase = clsx(
-  'bg-ui-primary rounded-md shadow-[0_0_20px_0_rgba(0,0,0,.1)] opacity-0 -translate-y-2 transition-all duration-200 ease-in-out data-[expanded]:opacity-1 data-[expanded]:translate-y-0',
+  '-translate-y-2 rounded-md bg-ui-primary opacity-0 shadow-[0_0_20px_0_rgba(0,0,0,.1)] transition-all duration-200 ease-in-out data-[expanded]:translate-y-0 data-[expanded]:opacity-1',
 )
 const selectContentStyle = clsx(contentStyleBase, 'origin-[--kb-select-content-transform-origin]')
 const comboBoxContentStyle = clsx(contentStyleBase, 'max-w-72 origin-[--kb-combobox-content-transform-origin]')
 
-const listBoxStyle = clsx('p-1.5 max-h-100 overflow-y-auto')
+const listBoxStyle = clsx('max-h-100 overflow-y-auto p-1.5')
 
 export type SelectOption<T extends string | number> = {
   label: string

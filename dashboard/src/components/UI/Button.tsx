@@ -1,6 +1,6 @@
 import { type JSX, type ParentComponent, Show, splitProps } from 'solid-js'
-import { ToolTip, type TooltipProps } from './ToolTip'
 import { clsx } from '/@/libs/clsx'
+import { ToolTip, type TooltipProps } from './ToolTip'
 
 export interface Props extends JSX.ButtonHTMLAttributes<HTMLButtonElement> {
   variants: 'primary' | 'ghost' | 'border' | 'text' | 'primaryError' | 'borderError' | 'textError'

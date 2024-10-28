@@ -1,4 +1,3 @@
-import { styled } from '@macaron-css/solid'
 import { Field, getValue } from '@modular-forms/solid'
 import { type Component, Show } from 'solid-js'
 import type { Repository } from '/@/api/neoshowcase/protobuf/gateway_pb'
@@ -14,44 +13,6 @@ import ConfigField from './config/ConfigField'
 import BranchField from './general/BranchField'
 import NameField from './general/NameField'
 
-const FormsContainer = styled('div', {
-  base: {
-    width: '100%',
-    display: 'flex',
-    flexDirection: 'column',
-    alignItems: 'center',
-    gap: '40px',
-  },
-})
-const FormContainer = styled('div', {
-  base: {
-    width: '100%',
-    padding: '24px',
-    display: 'flex',
-    flexDirection: 'column',
-    gap: '20px',
-
-    background: colorVars.semantic.ui.primary,
-    borderRadius: '8px',
-  },
-})
-const FormTitle = styled('h2', {
-  base: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: '4px',
-    overflowWrap: 'anywhere',
-    color: colorVars.semantic.text.black,
-    ...textVars.h2.medium,
-  },
-})
-const ButtonsContainer = styled('div', {
-  base: {
-    display: 'flex',
-    gap: '20px',
-  },
-})
-
 const GeneralStep: Component<{
   repo: Repository
   backToRepoStep: () => void
@@ -60,13 +21,13 @@ const GeneralStep: Component<{
   const { formStore } = useApplicationForm()
 
   return (
-    <FormsContainer>
-      <FormContainer>
-        <FormTitle>
+    <div class="flex w-full flex-col items-center gap-10">
+      <div class="flex w-full flex-col gap-5 rounded-lg bg-ui-primary p-6">
+        <h2 class="overflow-wrap-anywhere h2-medium flex items-center gap-1 text-text-black">
           Create Application from
           {originToIcon(repositoryURLToOrigin(props.repo.url), 24)}
           {props.repo.name}
-        </FormTitle>
+        </h2>
         <NameField />
         <BranchField repo={props.repo} />
         <BuildTypeField />
@@ -101,8 +62,8 @@ const GeneralStep: Component<{
             </FormItem>
           )}
         </Field>
-      </FormContainer>
-      <ButtonsContainer>
+      </div>
+      <div class="flex gap-5">
         <Button
           size="medium"
           variants="border"
@@ -122,8 +83,8 @@ const GeneralStep: Component<{
         >
           Next
         </Button>
-      </ButtonsContainer>
-    </FormsContainer>
+      </div>
+    </div>
   )
 }
 export default GeneralStep

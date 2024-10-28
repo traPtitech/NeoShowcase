@@ -1,102 +1,13 @@
 import { DropdownMenu } from '@kobalte/core'
-import { keyframes, style } from '@macaron-css/core'
-import { styled } from '@macaron-css/solid'
 import { A } from '@solidjs/router'
 import { type Component, For } from 'solid-js'
 import type { User } from '/@/api/neoshowcase/protobuf/gateway_pb'
 import { systemInfo } from '/@/libs/api'
+import { clsx } from '/@/libs/clsx'
 import { colorVars, media, textVars } from '/@/theme'
 import { Button } from './Button'
 import { MaterialSymbols } from './MaterialSymbols'
 import UserAvatar from './UserAvater'
-
-const triggerStyle = style({
-  position: 'relative',
-  width: 'fit-content',
-  height: '44px',
-  padding: '0 8px',
-  display: 'flex',
-  alignItems: 'center',
-  gap: '8px',
-  cursor: 'pointer',
-
-  border: 'none',
-  borderRadius: '8px',
-  background: 'none',
-
-  selectors: {
-    '&:hover': {
-      background: colorVars.semantic.transparent.primaryHover,
-    },
-    '&:active': {
-      background: colorVars.semantic.transparent.primarySelected,
-    },
-  },
-})
-
-const UserName = styled('span', {
-  base: {
-    color: colorVars.semantic.text.black,
-    ...textVars.text.bold,
-
-    '@media': {
-      [media.mobile]: {
-        display: 'none',
-      },
-    },
-  },
-})
-
-const iconStyle = style({
-  width: '24px',
-  height: '24px',
-  transition: 'transform 0.2s',
-  selectors: {
-    '&[data-expanded]': {
-      transform: 'rotate(180deg)',
-    },
-  },
-})
-
-const contentShowKeyframes = keyframes({
-  from: { opacity: 0, transform: 'translateY(-8px)' },
-  to: { opacity: 1, transform: 'translateY(0)' },
-})
-
-const contentHideKeyframes = keyframes({
-  from: { opacity: 1, transform: 'translateY(0)' },
-  to: { opacity: 0, transform: 'translateY(-8px)' },
-})
-
-const contentStyle = style({
-  padding: '6px',
-  display: 'flex',
-  flexDirection: 'column',
-
-  background: colorVars.semantic.ui.primary,
-  borderRadius: '6px',
-  boxShadow: '0px 0px 20px 0px rgba(0, 0, 0, 0.10)',
-  zIndex: 1,
-
-  transformOrigin: 'var(--kb-menu-content-transform-origin)',
-  animation: `${contentHideKeyframes} 0.2s ease-in-out`,
-  selectors: {
-    '&[data-expanded]': {
-      animation: `${contentShowKeyframes} 0.2s ease-in-out`,
-    },
-  },
-})
-
-const VersionContainer = styled('div', {
-  base: {
-    display: 'flex',
-    flexDirection: 'column',
-    padding: '4px 16px',
-
-    color: colorVars.semantic.text.grey,
-    ...textVars.caption.regular,
-  },
-})
 
 const linkNameToMaterialIcon = (name: string): string => {
   // Manually assign icons to some known external link names
@@ -121,15 +32,25 @@ export const UserMenuButton: Component<{
 }> = (props) => {
   return (
     <DropdownMenu.Root placement="top-end">
-      <DropdownMenu.Trigger class={triggerStyle}>
+      <DropdownMenu.Trigger
+        class={clsx(
+          'relative flex h-11 w-fit-content cursor-pointer items-center gap-2 rounded-lg border-none bg-none px-2',
+          'hover:bg-transparency-primary-hover active:bg-transparency-primary-selected',
+        )}
+      >
         <UserAvatar user={props.user} size={32} />
-        <UserName>{props.user.name}</UserName>
-        <DropdownMenu.Icon class={iconStyle}>
+        <span class="text-bold text-text-black max-md:hidden">{props.user.name}</span>
+        <DropdownMenu.Icon class="size-6 transition-transform duration-200 data-[expanded]:rotate-180deg">
           <MaterialSymbols>arrow_drop_down</MaterialSymbols>
         </DropdownMenu.Icon>
       </DropdownMenu.Trigger>
       <DropdownMenu.Portal>
-        <DropdownMenu.Content class={contentStyle}>
+        <DropdownMenu.Content
+          class={clsx(
+            'transform-origin-[var(--kb-menu-content-transform-origin)] z-1 flex flex-col rounded-md bg-ui-primary p-1.5 shadow-[0_0_20px_0_rgba(0,0,0,.1)]',
+            '-translate-y-2 opacity-0 transition-all duration-200 data-[expanded]:translate-y-0 data-[expanded]:opacity-100',
+          )}
+        >
           <DropdownMenu.Item>
             <A href="/settings">
               <Button variants="text" size="medium" leftIcon={<MaterialSymbols>settings</MaterialSymbols>} full>
@@ -154,12 +75,12 @@ export const UserMenuButton: Component<{
             )}
           </For>
           <DropdownMenu.Item>
-            <VersionContainer>
+            <div class="flex flex-col px-4 py-1 text-regular text-text-grey">
               <span>NeoShowcase</span>
               <span>
                 {systemInfo()?.version} ({systemInfo()?.revision})
               </span>
-            </VersionContainer>
+            </div>
           </DropdownMenu.Item>
         </DropdownMenu.Content>
       </DropdownMenu.Portal>

@@ -1,71 +1,15 @@
-import { styled } from '@macaron-css/solid'
 import { FieldArray, getValue, getValues, insert } from '@modular-forms/solid'
 import { type Component, For, Show } from 'solid-js'
 import { Button } from '/@/components/UI/Button'
 import { MaterialSymbols } from '/@/components/UI/MaterialSymbols'
+import { styled } from '/@/components/styled-components'
 import { List } from '/@/components/templates/List'
 import { systemInfo } from '/@/libs/api'
-import { colorVars } from '/@/theme'
 import { useApplicationForm } from '../../provider/applicationFormProvider'
 import { getInitialValueOfCreateWebsiteForm } from '../../schema/websiteSchema'
 import WebsiteFieldGroup from './website/WebsiteFieldGroup'
 
-const FormsContainer = styled('div', {
-  base: {
-    width: '100%',
-    display: 'flex',
-    flexDirection: 'column',
-    alignItems: 'center',
-    gap: '40px',
-  },
-})
-const DomainsContainer = styled('div', {
-  base: {
-    width: '100%',
-    display: 'flex',
-    flexDirection: 'column',
-    alignItems: 'center',
-    gap: '24px',
-  },
-})
-
-const Container = styled('div', {
-  base: {
-    width: '100%',
-    overflow: 'hidden',
-    background: colorVars.semantic.ui.primary,
-    border: `1px solid ${colorVars.semantic.ui.border}`,
-    borderRadius: '8px',
-    display: 'flex',
-    flexDirection: 'column',
-    gap: '1px',
-  },
-})
-const FieldRow = styled('div', {
-  base: {
-    width: '100%',
-    padding: '20px 24px',
-
-    selectors: {
-      '&:not(:first-child)': {
-        borderTop: `1px solid ${colorVars.semantic.ui.border}`,
-      },
-    },
-  },
-})
-
-const AddMoreButtonContainer = styled('div', {
-  base: {
-    display: 'flex',
-    justifyContent: 'center',
-  },
-})
-const ButtonsContainer = styled('div', {
-  base: {
-    display: 'flex',
-    gap: '20px',
-  },
-})
+const FieldRow = styled('div', 'w-full px-6 py-5 [&:not(:first-child)]:border-ui-border [&:not(:first-child)]:border-t')
 
 const WebsiteStep: Component<{
   backToGeneralStep: () => void
@@ -93,9 +37,9 @@ const WebsiteStep: Component<{
 
   return (
     <Show when={systemInfo()}>
-      <FormsContainer>
-        <DomainsContainer>
-          <Container>
+      <div class="flex w-full flex-col items-center gap-10">
+        <div class="flex w-full flex-col items-center gap-6">
+          <div class="flex w-full flex-col gap-0.25 overflow-hidden rounded-lg border border-ui-border bg-ui-primary">
             <FieldArray of={formStore} name="form.websites">
               {(fieldArray) => (
                 <For
@@ -126,7 +70,7 @@ const WebsiteStep: Component<{
             </FieldArray>
             <Show when={showAddMoreButton()}>
               <FieldRow>
-                <AddMoreButtonContainer>
+                <div class="flex justify-center">
                   <Button
                     onclick={() => {
                       addFormStore()
@@ -138,12 +82,12 @@ const WebsiteStep: Component<{
                   >
                     Add More
                   </Button>
-                </AddMoreButtonContainer>
+                </div>
               </FieldRow>
             </Show>
-          </Container>
-        </DomainsContainer>
-        <ButtonsContainer>
+          </div>
+        </div>
+        <div class="flex gap-5">
           <Button
             size="medium"
             variants="ghost"
@@ -161,8 +105,8 @@ const WebsiteStep: Component<{
           >
             Create Application
           </Button>
-        </ButtonsContainer>
-      </FormsContainer>
+        </div>
+      </div>
     </Show>
   )
 }

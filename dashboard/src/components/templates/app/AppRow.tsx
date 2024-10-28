@@ -5,26 +5,26 @@ import type { Application } from '/@/api/neoshowcase/protobuf/gateway_pb'
 import Badge from '/@/components/UI/Badge'
 import Skeleton from '/@/components/UI/Skeleton'
 import { ToolTip } from '/@/components/UI/ToolTip'
+import { styled } from '/@/components/styled-components'
 import type { CommitsMap } from '/@/libs/api'
 import { applicationState, getWebsiteURL } from '/@/libs/application'
+import { clsx } from '/@/libs/clsx'
 import { diffHuman, shortSha } from '/@/libs/format'
 import { AppStatusIcon } from './AppStatusIcon'
-import { clsx } from '/@/libs/clsx'
-import { styled } from '/@/components/styled-components'
 
 const Container = styled(
   'div',
-  'w-full p-4 pl-5 cursor-pointer bg-ui-primary hover:bg-color-overlay-ui-primary-to-black-alpha-50',
+  'w-full cursor-pointer bg-ui-primary p-4 pl-5 hover:bg-color-overlay-ui-primary-to-black-alpha-50',
 )
 const darkContainerStyle = clsx('bg-ui-secondary hover:bg-color-overlay-ui-secondary-to-black-alpha-50')
 
-const TitleContainer = styled('div', 'w-full flex items-center gap-2')
+const TitleContainer = styled('div', 'flex w-full items-center gap-2')
 
-const AppName = styled('div', 'w-full truncate text-text-black h4-regular')
+const AppName = styled('div', 'h4-regular w-full truncate text-text-black')
 
-const UpdatedAt = styled('div', 'shrink-0 text-text-grey caption-regular')
+const UpdatedAt = styled('div', 'caption-regular shrink-0 text-text-grey')
 
-const MetaContainer = styled('div', 'w-full flex items-center gap-1 p-0 pl-8 text-text-grey caption-regular')
+const MetaContainer = styled('div', 'caption-regular flex w-full items-center gap-1 p-0 pl-8 text-text-grey')
 
 const AppRowSkeleton: Component<{
   dark?: boolean

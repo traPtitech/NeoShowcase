@@ -1,142 +1,15 @@
 import { TextField as KTextField } from '@kobalte/core'
-import { style } from '@macaron-css/core'
-import { styled } from '@macaron-css/solid'
 import { type Component, type JSX, Show, splitProps } from 'solid-js'
+import { styled } from '/@/components/styled-components'
 import { writeToClipboard } from '/@/libs/clipboard'
+import { clsx } from '/@/libs/clsx'
 import { colorVars, textVars } from '/@/theme'
 import { RequiredMark, TitleContainer } from '../templates/FormItem'
 import { MaterialSymbols } from './MaterialSymbols'
 import { ToolTip, type TooltipProps } from './ToolTip'
 import { TooltipInfoIcon } from './TooltipInfoIcon'
 
-const Container = styled('div', {
-  base: {
-    width: '100%',
-    display: 'flex',
-    flexDirection: 'column',
-    gap: '4px',
-  },
-})
-export const ActionsContainer = styled('div', {
-  base: {
-    position: 'relative',
-    width: '100%',
-    display: 'flex',
-    gap: '1px',
-  },
-})
-const inputStyle = style({
-  width: '100%',
-  height: '100%',
-  padding: '0',
-  border: 'none',
-
-  selectors: {
-    '&::placeholder': {
-      color: colorVars.semantic.text.disabled,
-    },
-    '&:focus-visible': {
-      outline: 'none',
-    },
-  },
-})
-const InputContainer = styled('div', {
-  base: {
-    width: '100%',
-    height: '48px',
-    padding: '0 16px',
-    display: 'flex',
-    gap: '4px',
-
-    background: colorVars.semantic.ui.primary,
-    borderRadius: '8px',
-    border: 'none',
-    outline: `1px solid ${colorVars.semantic.ui.border}`,
-    color: colorVars.semantic.text.black,
-    ...textVars.text.regular,
-
-    selectors: {
-      '&:focus-within': {
-        outline: `2px solid ${colorVars.semantic.primary.main}`,
-      },
-      [`&:has(${inputStyle}[data-disabled])`]: {
-        cursor: 'not-allowed',
-        background: colorVars.semantic.ui.tertiary,
-      },
-      [`&:has(${inputStyle}[data-invalid])`]: {
-        outline: `2px solid ${colorVars.semantic.accent.error}`,
-      },
-    },
-  },
-  variants: {
-    copyable: {
-      true: {
-        borderRadius: '8px 0 0 8px',
-      },
-    },
-  },
-})
-const Icon = styled('div', {
-  base: {
-    color: colorVars.semantic.text.disabled,
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-})
-const CopyButton = styled('button', {
-  base: {
-    width: '48px',
-    flexShrink: 0,
-    borderRadius: '0 8px 8px 0',
-    border: 'none',
-    outline: `1px solid ${colorVars.semantic.ui.border}`,
-
-    cursor: 'pointer',
-    color: colorVars.semantic.text.black,
-    background: colorVars.primitive.blackAlpha[100],
-    lineHeight: 1,
-
-    selectors: {
-      '&:hover': {
-        background: colorVars.primitive.blackAlpha[200],
-      },
-      '&:active': {
-        background: colorVars.primitive.blackAlpha[300],
-      },
-    },
-  },
-})
-const textareaStyle = style({
-  width: '100%',
-  height: '100%',
-  padding: '10px 16px',
-
-  background: colorVars.semantic.ui.primary,
-  borderRadius: '8px',
-  border: 'none',
-  outline: `1px solid ${colorVars.semantic.ui.border}`,
-  wordBreak: 'break-all',
-  color: colorVars.semantic.text.black,
-  ...textVars.text.regular,
-  resize: 'none',
-
-  selectors: {
-    '&::placeholder': {
-      color: colorVars.semantic.text.disabled,
-    },
-    '&:focus-visible': {
-      outline: `2px solid ${colorVars.semantic.primary.main}`,
-    },
-    '&[data-disabled]': {
-      cursor: 'not-allowed',
-      background: colorVars.semantic.ui.tertiary,
-    },
-    '&[data-invalid]': {
-      outline: `2px solid ${colorVars.semantic.accent.error}`,
-    },
-  },
-})
+const Icon = styled('div', 'flex items-center justify-center text-text-disabled')
 
 export interface Props extends JSX.InputHTMLAttributes<HTMLInputElement | HTMLTextAreaElement> {
   value?: string
@@ -187,29 +60,54 @@ export const TextField: Component<Props> = (props) => {
       <Show
         when={props.multiline}
         fallback={
-          <Container>
+          <div class="flex w-full flex-col gap-1">
             <ToolTip {...props.tooltip}>
-              <ActionsContainer>
-                <InputContainer copyable={props.copyable}>
+              <div class="relative flex w-full gap-1">
+                <div
+                  class={clsx(
+                    'flex h-12 w-full gap-1 rounded-lg border-none bg-ui-primary px-4 text-regular text-text-black outline-1 outline-ui-border',
+                    'focus-within:outline-2 focus-within:outline-primary-main',
+                    'data-[disabled]:has-[.input]:cursor-not-allowed data-[disabled]:has-[.input]:bg-ui-tertiary',
+                    'data-[invalid]:has-[.input]:outline-2 data-[invalid]:has-[.input]:outline-accent-error',
+                    props.copyable && 'rounded-l-lg',
+                  )}
+                >
                   <Show when={props.leftIcon}>
                     <Icon>{props.leftIcon}</Icon>
                   </Show>
-                  <KTextField.Input class={inputStyle} {...inputProps} type={props.type} />
+                  <KTextField.Input
+                    class="input h-full w-full border-none p-0 placeholder-text-disabled focus-visible:outline-none"
+                    {...inputProps}
+                    type={props.type}
+                  />
                   <Show when={props.rightIcon}>
                     <Icon>{props.rightIcon}</Icon>
                   </Show>
-                </InputContainer>
+                </div>
                 <Show when={props.copyable}>
-                  <CopyButton onClick={handleCopy} type="button">
+                  <button
+                    class="w-12 shrink-0 cursor-pointer rounded-r-lg border-none bg-black-alpha-100 text-text-black leading-6 outline-1 outline-ui-border hover:bg-black-alpha-200 active:bg-black-alpha-300"
+                    onClick={handleCopy}
+                    type="button"
+                  >
                     <MaterialSymbols>content_copy</MaterialSymbols>
-                  </CopyButton>
+                  </button>
                 </Show>
-              </ActionsContainer>
+              </div>
             </ToolTip>
-          </Container>
+          </div>
         }
       >
-        <KTextField.TextArea class={textareaStyle} {...inputProps} autoResize />
+        <KTextField.TextArea
+          class={clsx(
+            'h-full w-full resize-none break-all rounded-lg border-none bg-ui-primary px-4 py-2.5 text-regular text-text-black outline-1 outline-ui-border',
+            'placeholder-text-disabled',
+            'data-[disabled]:cursor-not-allowed data-[disabled]:bg-ui-tertiary',
+            'data-[invalid]:outline-2 data-[invalid]:outline-accent-error',
+          )}
+          {...inputProps}
+          autoResize
+        />
       </Show>
       <KTextField.ErrorMessage class="w-full text-accent-error text-regular">{props.error}</KTextField.ErrorMessage>
     </KTextField.Root>

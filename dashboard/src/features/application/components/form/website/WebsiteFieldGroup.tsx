@@ -1,142 +1,97 @@
-import { Collapsible } from '@kobalte/core/collapsible'
-import { style } from '@macaron-css/core'
-import { styled } from '@macaron-css/solid'
-import { Field, getValue, remove, setValue } from '@modular-forms/solid'
-import { type Component, Show, createEffect, createMemo } from 'solid-js'
-import { AuthenticationType } from '/@/api/neoshowcase/protobuf/gateway_pb'
-import { Button } from '/@/components/UI/Button'
-import { MaterialSymbols } from '/@/components/UI/MaterialSymbols'
-import { CheckBox } from '/@/components/templates/CheckBox'
-import { FormItem } from '/@/components/templates/FormItem'
-import { RadioGroup, type RadioOption } from '/@/components/templates/RadioGroups'
-import { systemInfo } from '/@/libs/api'
-import { colorVars, textVars } from '/@/theme'
-import { useApplicationForm } from '../../../provider/applicationFormProvider'
-import UrlField from './UrlField'
-
-const Container = styled('div', {
-  base: {
-    position: 'relative',
-    width: '100%',
-    display: 'flex',
-    flexDirection: 'column',
-    gap: '24px',
-  },
-})
-
-const collapsibleClass = style({
-  display: 'flex',
-  flexDirection: 'row',
-  gap: '8px',
-  overflow: 'hidden',
-  height: '0',
-
-  selectors: {
-    '[data-expanded] &': {
-      height: 'var(--kb-collapsible-content-height)',
-      overflow: 'visible',
-    },
-  },
-})
-
-const collapsibleTriggerClass = style({
-  width: '100%',
-  appearance: 'none',
-  border: 'none',
-  background: 'none',
-  display: 'flex',
-  flexDirection: 'row',
-  alignItems: 'center',
-  gap: '8px',
-  cursor: 'pointer',
-  color: colorVars.semantic.text.black,
-  ...textVars.text.medium,
-})
-
-const ExpandIconContainer = styled('div', {
-  base: {
-    width: '24px',
-    height: '24px',
-    transition: '0.2s transform',
-    selectors: {
-      '& [data-expanded]': {
-        transform: 'rotate(180deg)',
-      },
-    },
-  },
-})
-
-const CollapsibleContentContainer = styled('div', {
-  base: {
-    paddingTop: '8px',
-    width: '100%',
-    display: 'flex',
-    flexDirection: 'column',
-    gap: '8px',
-  },
-})
-
-const DeleteButtonContainer = styled('div', {
-  base: {
-    position: 'absolute',
-    top: '-8px',
-    right: '-8px',
-  },
-})
+import { Collapsible } from '@kobalte/core/collapsible';
+import { Field, getValue, remove, setValue } from '@modular-forms/solid';
+import { type Component, Show, createEffect, createMemo } from 'solid-js';
+import { AuthenticationType } from '/@/api/neoshowcase/protobuf/gateway_pb';
+import { Button } from '/@/components/UI/Button';
+import { MaterialSymbols } from '/@/components/UI/MaterialSymbols';
+import { CheckBox } from '/@/components/templates/CheckBox';
+import { FormItem } from '/@/components/templates/FormItem';
+import {
+  RadioGroup,
+  type RadioOption,
+} from '/@/components/templates/RadioGroups';
+import { systemInfo } from '/@/libs/api';
+import { clsx } from '/@/libs/clsx';
+import { useApplicationForm } from '../../../provider/applicationFormProvider';
+import UrlField from './UrlField';
 
 const authenticationTypeOptions: RadioOption<`${AuthenticationType}`>[] = [
   { value: `${AuthenticationType.OFF}`, label: 'OFF' },
   { value: `${AuthenticationType.SOFT}`, label: 'SOFT' },
   { value: `${AuthenticationType.HARD}`, label: 'HARD' },
-]
+];
 
 type Props = {
-  index: number
-  isRuntimeApp: boolean
-  readonly?: boolean
-}
+  index: number;
+  isRuntimeApp: boolean;
+  readonly?: boolean;
+};
 
 const WebsiteFieldGroup: Component<Props> = (props) => {
-  const { formStore } = useApplicationForm()
+  const { formStore } = useApplicationForm();
 
-  const availableDomains = systemInfo()?.domains ?? []
+  const availableDomains = systemInfo()?.domains ?? [];
   const selectedDomain = createMemo(() => {
-    const domainString = getValue(formStore, `form.websites.${props.index}.domain`)
-    return availableDomains.find((d) => d.domain === domainString)
-  })
-  const authAvailable = (): boolean => selectedDomain()?.authAvailable ?? false
+    const domainString = getValue(
+      formStore,
+      `form.websites.${props.index}.domain`
+    );
+    return availableDomains.find((d) => d.domain === domainString);
+  });
+  const authAvailable = (): boolean => selectedDomain()?.authAvailable ?? false;
 
   createEffect(() => {
     if (!authAvailable()) {
-      setValue(formStore, `form.websites.${props.index}.authentication`, `${AuthenticationType.OFF}`)
+      setValue(
+        formStore,
+        `form.websites.${props.index}.authentication`,
+        `${AuthenticationType.OFF}`
+      );
     }
-  })
+  });
 
   const handleDelete = () => {
-    remove(formStore, 'form.websites', { at: props.index })
-    close()
-  }
+    remove(formStore, 'form.websites', { at: props.index });
+    close();
+  };
 
   return (
     <>
-      <Container>
-        <DeleteButtonContainer>
-          <Button onClick={handleDelete} variants="textError" size="small" type="button">
+      <div class="relative flex w-full flex-col gap-6">
+        <div class="-top-2 -right-2 absolute">
+          <Button
+            onClick={handleDelete}
+            variants="textError"
+            size="small"
+            type="button"
+          >
             Delete
           </Button>
-        </DeleteButtonContainer>
-        <UrlField index={props.index} readonly={props.readonly} showHttpPort={props.isRuntimeApp} />
+        </div>
+        <UrlField
+          index={props.index}
+          readonly={props.readonly}
+          showHttpPort={props.isRuntimeApp}
+        />
         {/* Field componentがmountされないとそのfieldがformに登録されないためforceMountする */}
         <Collapsible forceMount>
-          <Collapsible.Trigger class={collapsibleTriggerClass}>
+          <Collapsible.Trigger class="flex w-full cursor-pointer appearance-none items-center gap-2 border-none bg-none text-medium text-text-black">
             詳細
-            <ExpandIconContainer>
+            <div class="[[data-expanded]_&]:transform-rotate-180deg size-6 transition-transform duration-200">
               <MaterialSymbols>expand_more</MaterialSymbols>
-            </ExpandIconContainer>
+            </div>
           </Collapsible.Trigger>
-          <Collapsible.Content class={collapsibleClass}>
-            <CollapsibleContentContainer>
-              <Field of={formStore} name={`form.websites.${props.index}.authentication`}>
+          <Collapsible.Content
+            class={clsx(
+              'flex h-0 gap-2 overflow-hidden',
+              '[data-[expanded]_&]:h-[var(--kb-collapsible-content-height)] [data-[expanded]_&]:overflow-visible'
+            )}
+          >
+            <div class="flex w-full flex-col gap-2 pt-2">
+              <Field
+                of={formStore}
+                name={`form.websites.${props.index}.authentication`}
+              >
                 {(field, fieldProps) => (
                   <RadioGroup<`${AuthenticationType}`>
                     label="部員認証"
@@ -155,7 +110,9 @@ const WebsiteFieldGroup: Component<Props> = (props) => {
                     {...fieldProps}
                     tooltip={{
                       props: {
-                        content: `${selectedDomain()?.domain}では部員認証が使用できません`,
+                        content: `${
+                          selectedDomain()?.domain
+                        }では部員認証が使用できません`,
                       },
                       disabled: authAvailable(),
                     }}
@@ -167,7 +124,11 @@ const WebsiteFieldGroup: Component<Props> = (props) => {
                 )}
               </Field>
               <FormItem title="高度な設定">
-                <Field of={formStore} name={`form.websites.${props.index}.stripPrefix`} type="boolean">
+                <Field
+                  of={formStore}
+                  name={`form.websites.${props.index}.stripPrefix`}
+                  type="boolean"
+                >
                   {(field, fieldProps) => (
                     <CheckBox.Option
                       {...fieldProps}
@@ -178,7 +139,11 @@ const WebsiteFieldGroup: Component<Props> = (props) => {
                   )}
                 </Field>
                 <Show when={props.isRuntimeApp}>
-                  <Field of={formStore} name={`form.websites.${props.index}.h2c`} type="boolean">
+                  <Field
+                    of={formStore}
+                    name={`form.websites.${props.index}.h2c`}
+                    type="boolean"
+                  >
                     {(field, fieldProps) => (
                       <CheckBox.Option
                         {...fieldProps}
@@ -190,12 +155,12 @@ const WebsiteFieldGroup: Component<Props> = (props) => {
                   </Field>
                 </Show>
               </FormItem>
-            </CollapsibleContentContainer>
+            </div>
           </Collapsible.Content>
         </Collapsible>
-      </Container>
+      </div>
     </>
-  )
-}
+  );
+};
 
-export default WebsiteFieldGroup
+export default WebsiteFieldGroup;

@@ -1,49 +1,22 @@
-import { styled } from '@macaron-css/solid'
 import { Field, getValue } from '@modular-forms/solid'
-import { type Component, For, Show } from 'solid-js'
+import { type Component, type ComponentProps, For, type ParentComponent, Show, splitProps } from 'solid-js'
 import { TextField } from '/@/components/UI/TextField'
+import { styled } from '/@/components/styled-components'
 import { FormItem } from '/@/components/templates/FormItem'
 import { type SelectOption, SingleSelect } from '/@/components/templates/Select'
 import { systemInfo } from '/@/libs/api'
 import { websiteWarnings } from '/@/libs/application'
-import { colorVars } from '/@/theme'
+import { clsx } from '/@/libs/clsx'
 import { useApplicationForm } from '../../../provider/applicationFormProvider'
 
-const URLContainer = styled('div', {
-  base: {
-    display: 'flex',
-    flexDirection: 'row',
-    alignItems: 'flex-start',
-    gap: '8px',
-  },
-})
-const URLItem = styled('div', {
-  base: {
-    display: 'flex',
-    alignItems: 'center',
-    height: '48px',
-  },
-  variants: {
-    fixedWidth: {
-      true: {
-        flexShrink: 0,
-        width: 'calc(6ch + 60px)',
-      },
-    },
-  },
-})
-const WarningsContainer = styled('div', {
-  base: {
-    display: 'flex',
-    flexDirection: 'column',
-    gap: '4px',
-  },
-})
-const WarningItem = styled('div', {
-  base: {
-    color: colorVars.semantic.accent.error,
-  },
-})
+const URLContainer = styled('div', 'flex items-start gap-2')
+
+const URLItem: ParentComponent<ComponentProps<'div'> & { fixedWidth?: boolean }> = (props) => {
+  const [_, extraProps] = splitProps(props, ['fixedWidth'])
+  return (
+    <div class={clsx('flex h-12 items-center', props.fixedWidth && 'w-[calc(6ch+60px)] shrink-0')} {...extraProps} />
+  )
+}
 
 const schemeOptions: SelectOption<`${boolean}`>[] = [
   { value: 'false', label: 'http' },
@@ -183,9 +156,9 @@ const UrlField: Component<Props> = (props) => {
           </Show>
         </URLContainer>
         <Show when={warnings().length > 0}>
-          <WarningsContainer>
-            <For each={warnings()}>{(item) => <WarningItem>{item}</WarningItem>}</For>
-          </WarningsContainer>
+          <div class="flex flex-col gap-1">
+            <For each={warnings()}>{(item) => <div class="text-accent-error">{item}</div>}</For>
+          </div>
         </Show>
       </FormItem>
     </>

@@ -3,13 +3,13 @@ import { type Component, Show } from 'solid-js'
 import type { Repository } from '/@/api/neoshowcase/protobuf/gateway_pb'
 import { Button } from '/@/components/UI/Button'
 import Skeleton from '/@/components/UI/Skeleton'
+import { styled } from '/@/components/styled-components'
 import { user } from '/@/libs/api'
 import { originToIcon, repositoryURLToOrigin } from '/@/libs/application'
-import { styled } from '/@/components/styled-components'
 
-const Container = styled('div', 'w-full h-19 p-4 pl-5 flex items-center gap-8 bg-ui-primary')
+const Container = styled('div', 'flex h-19 w-full items-center gap-8 bg-ui-primary p-4 pl-5')
 
-const TitleContainer = styled('div', 'w-full flex items-center gap-2 overflow-hidden')
+const TitleContainer = styled('div', 'flex w-full items-center gap-2 overflow-hidden')
 
 const RepositoryRowSkeleton: Component = () => {
   return (

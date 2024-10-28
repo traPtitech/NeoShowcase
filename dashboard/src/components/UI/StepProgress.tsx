@@ -1,8 +1,8 @@
 import type { Component } from 'solid-js'
-import { clsx } from '/@/libs/clsx'
 import { styled } from '/@/components/styled-components'
+import { clsx } from '/@/libs/clsx'
 
-const Container = styled('div', 'w-full flex gap-4')
+const Container = styled('div', 'flex w-full gap-4')
 
 const StepProgress: Component<{
   title: string

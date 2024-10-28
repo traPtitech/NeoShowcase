@@ -3,15 +3,15 @@ import { type Component, For, type Setter, Show } from 'solid-js'
 import { CheckBoxIcon } from '/@/components/UI/CheckBoxIcon'
 import { MaterialSymbols } from '/@/components/UI/MaterialSymbols'
 import { type RepositoryOrigin, originToIcon } from '/@/libs/application'
-import { allOrigins } from '/@/pages/apps'
 import { clsx } from '/@/libs/clsx'
+import { allOrigins } from '/@/pages/apps'
 
 // TODO: AppsFilter と共通するスタイルが多いので共通化する
 
 const selectItemStyle = clsx(
-  'w-full h-11 p-2 flex flex-nowrap items-center gap-2 bg-none border-none rounded-lg cursor-pointer text-text-black whitespace-nowrap text-bold',
+  'flex h-11 w-full cursor-pointer flex-nowrap items-center gap-2 whitespace-nowrap rounded-lg border-none bg-none p-2 text-bold text-text-black',
   'hover:bg-transparency-primary-hover data-[highlighted]:bg-transparency-primary-hover',
-  'data-[disabled]:cursor-not-allowed !data-[disabled]:text-text-black !data-[disabled]:bg-text-disabled',
+  '!data-[disabled]:bg-text-disabled !data-[disabled]:text-text-black data-[disabled]:cursor-not-allowed',
 )
 
 const ReposFilter: Component<{

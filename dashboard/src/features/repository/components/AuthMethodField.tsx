@@ -1,83 +1,50 @@
-import { styled } from '@macaron-css/solid'
-import { Field, getValue, setValues } from '@modular-forms/solid'
-import { type Component, Match, Show, Suspense, Switch, createEffect, createResource, createSignal } from 'solid-js'
-import { Button } from '/@/components/UI/Button'
-import { MaterialSymbols } from '/@/components/UI/MaterialSymbols'
-import { TooltipInfoIcon } from '/@/components/UI/TooltipInfoIcon'
-import { FormItem } from '/@/components/templates/FormItem'
-import { RadioGroup, type RadioOption } from '/@/components/templates/RadioGroups'
-import { client, systemInfo } from '/@/libs/api'
-import { colorVars, textVars } from '/@/theme'
-import { TextField } from '../../../components/UI/TextField'
-import { useRepositoryForm } from '../provider/repositoryFormProvider'
-import type { CreateOrUpdateRepositoryInput } from '../schema/repositorySchema'
-
-const SshKeyContainer = styled('div', {
-  base: {
-    width: '100%',
-    display: 'flex',
-    flexDirection: 'column',
-    gap: '16px',
-
-    color: colorVars.semantic.text.grey,
-    ...textVars.caption.regular,
-  },
-})
-const RefreshButtonContainer = styled('div', {
-  base: {
-    width: '100%',
-    display: 'flex',
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: '8px',
-
-    color: colorVars.semantic.accent.error,
-    ...textVars.caption.regular,
-  },
-})
-const VisibilityButton = styled('button', {
-  base: {
-    width: '40px',
-    height: '40px',
-    padding: '8px',
-    background: 'none',
-    border: 'none',
-    borderRadius: '4px',
-    cursor: 'pointer',
-
-    color: colorVars.semantic.text.black,
-    selectors: {
-      '&:hover': {
-        background: colorVars.semantic.transparent.primaryHover,
-      },
-      '&:active': {
-        color: colorVars.semantic.primary.main,
-        background: colorVars.semantic.transparent.primarySelected,
-      },
-    },
-  },
-})
+import { Field, getValue, setValues } from '@modular-forms/solid';
+import {
+  type Component,
+  Match,
+  Show,
+  Suspense,
+  Switch,
+  createEffect,
+  createResource,
+  createSignal,
+} from 'solid-js';
+import { Button } from '/@/components/UI/Button';
+import { MaterialSymbols } from '/@/components/UI/MaterialSymbols';
+import { TooltipInfoIcon } from '/@/components/UI/TooltipInfoIcon';
+import { FormItem } from '/@/components/templates/FormItem';
+import {
+  RadioGroup,
+  type RadioOption,
+} from '/@/components/templates/RadioGroups';
+import { client, systemInfo } from '/@/libs/api';
+import { TextField } from '../../../components/UI/TextField';
+import { useRepositoryForm } from '../provider/repositoryFormProvider';
+import type { CreateOrUpdateRepositoryInput } from '../schema/repositorySchema';
+import { clsx } from '/@/libs/clsx';
 
 type Props = {
-  readonly?: boolean
-}
+  readonly?: boolean;
+};
 
-const authMethods: RadioOption<NonNullable<CreateOrUpdateRepositoryInput['form']['auth']>['method']>[] = [
+const authMethods: RadioOption<
+  NonNullable<CreateOrUpdateRepositoryInput['form']['auth']>['method']
+>[] = [
   { label: '認証を使用しない', value: 'none' },
   { label: 'BASIC認証', value: 'basic' },
   { label: 'SSH公開鍵認証', value: 'ssh' },
-]
+];
 
 const AuthMethodField: Component<Props> = (props) => {
-  const { formStore } = useRepositoryForm()
-  const authMethod = () => getValue(formStore, 'form.auth.method')
+  const { formStore } = useRepositoryForm();
+  const authMethod = () => getValue(formStore, 'form.auth.method');
 
-  const [showPassword, setShowPassword] = createSignal(false)
-  const [useTmpKey, setUseTmpKey] = createSignal(false)
+  const [showPassword, setShowPassword] = createSignal(false);
+  const [useTmpKey, setUseTmpKey] = createSignal(false);
   const [tmpKey] = createResource(
     () => (useTmpKey() ? true : undefined),
-    () => client.generateKeyPair({}),
-  )
+    () => client.generateKeyPair({})
+  );
   createEffect(() => {
     if (tmpKey.latest !== undefined) {
       setValues(formStore, {
@@ -90,10 +57,11 @@ const AuthMethodField: Component<Props> = (props) => {
             },
           },
         },
-      })
+      });
     }
-  })
-  const publicKey = () => (useTmpKey() ? tmpKey()?.publicKey : systemInfo()?.publicKey ?? '')
+  });
+  const publicKey = () =>
+    useTmpKey() ? tmpKey()?.publicKey : systemInfo()?.publicKey ?? '';
 
   return (
     <>
@@ -134,11 +102,23 @@ const AuthMethodField: Component<Props> = (props) => {
                 error={field.error}
                 readOnly={props.readonly}
                 rightIcon={
-                  <VisibilityButton onClick={() => setShowPassword((s) => !s)} type="button">
-                    <Show when={showPassword()} fallback={<MaterialSymbols>visibility_off</MaterialSymbols>}>
+                  <button
+                    class={clsx(
+                      'size-10 cursor-pointer rounded border-none bg-none p-2 text-text-black',
+                      'hover:bg-transparency-primary-hover active:bg-transparency-primary-selected active:text-primary-main'
+                    )}
+                    onClick={() => setShowPassword((s) => !s)}
+                    type="button"
+                  >
+                    <Show
+                      when={showPassword()}
+                      fallback={
+                        <MaterialSymbols>visibility_off</MaterialSymbols>
+                      }
+                    >
                       <MaterialSymbols>visibility</MaterialSymbols>
                     </Show>
-                  </VisibilityButton>
+                  </button>
                 }
               />
             )}
@@ -149,22 +129,28 @@ const AuthMethodField: Component<Props> = (props) => {
             {() => (
               <FormItem title="デプロイキーの登録">
                 <Suspense>
-                  <SshKeyContainer>
+                  <div class="caption-regular flex w-full flex-col gap-4 text-text-grey">
                     以下のSSH公開鍵
-                    {useTmpKey() ? '(このリポジトリ専用)' : '(NeoShowcase全体共通)'}
+                    {useTmpKey()
+                      ? '(このリポジトリ専用)'
+                      : '(NeoShowcase全体共通)'}
                     を、リポジトリのデプロイキーとして登録してください。
                     <br />
                     公開リポジトリの場合は、この操作は不要です。
                     <TextField value={publicKey()} copyable={true} readonly />
                     <Show when={!useTmpKey()}>
-                      <RefreshButtonContainer>
+                      <div class="caption-regular flex w-full items-center gap-2 text-accent-error">
                         <Button
                           variants="textError"
                           size="small"
                           onClick={() => {
-                            setUseTmpKey(true)
+                            setUseTmpKey(true);
                           }}
-                          leftIcon={<MaterialSymbols opticalSize={20}>replay</MaterialSymbols>}
+                          leftIcon={
+                            <MaterialSymbols opticalSize={20}>
+                              replay
+                            </MaterialSymbols>
+                          }
                         >
                           専用公開鍵を生成する
                         </Button>
@@ -172,19 +158,23 @@ const AuthMethodField: Component<Props> = (props) => {
                           props={{
                             content: (
                               <>
-                                <div>このリポジトリ専用のSSH用鍵ペアを生成します。</div>
+                                <div>
+                                  このリポジトリ専用のSSH用鍵ペアを生成します。
+                                </div>
                                 <div>
                                   NeoShowcase全体で共通の公開鍵が、リポジトリに登録できない場合に生成してください。
                                 </div>
-                                <div>GitHubプライベートリポジトリの場合は必ず生成が必要です。</div>
+                                <div>
+                                  GitHubプライベートリポジトリの場合は必ず生成が必要です。
+                                </div>
                               </>
                             ),
                           }}
                           style="left"
                         />
-                      </RefreshButtonContainer>
+                      </div>
                     </Show>
-                  </SshKeyContainer>
+                  </div>
                 </Suspense>
               </FormItem>
             )}
@@ -192,7 +182,7 @@ const AuthMethodField: Component<Props> = (props) => {
         </Match>
       </Switch>
     </>
-  )
-}
+  );
+};
 
-export default AuthMethodField
+export default AuthMethodField;

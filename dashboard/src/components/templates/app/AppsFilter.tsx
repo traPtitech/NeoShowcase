@@ -3,21 +3,21 @@ import { type Component, type ComponentProps, For, type Setter, Show } from 'sol
 import { CheckBoxIcon } from '/@/components/UI/CheckBoxIcon'
 import { MaterialSymbols } from '/@/components/UI/MaterialSymbols'
 import { RadioIcon } from '/@/components/UI/RadioIcon'
+import { styled } from '/@/components/styled-components'
 import { type ApplicationState, type RepositoryOrigin, originToIcon } from '/@/libs/application'
+import { clsx } from '/@/libs/clsx'
 import { allOrigins, allStatuses, sortItems } from '/@/pages/apps'
 import { AppStatusIcon } from './AppStatusIcon'
-import { clsx } from '/@/libs/clsx'
-import { styled } from '/@/components/styled-components'
 
-const ItemsContainer = styled('div', 'w-full flex flex-col')
+const ItemsContainer = styled('div', 'flex w-full flex-col')
 
 const selectItemStyle = clsx(
-  'w-full h-11 p-2 flex flex-nowrap items-center gap-2 bg-none border-none rounded-lg cursor-pointer text-text-black whitespace-nowrap text-bold',
+  'flex h-11 w-full cursor-pointer flex-nowrap items-center gap-2 whitespace-nowrap rounded-lg border-none bg-none p-2 text-bold text-text-black',
   'hover:bg-transparency-primary-hover data-[highlighted]:bg-transparency-primary-hover',
-  'data-[disabled]:cursor-not-allowed !data-[disabled]:text-text-black !data-[disabled]:bg-text-disabled',
+  '!data-[disabled]:bg-text-disabled !data-[disabled]:text-text-black data-[disabled]:cursor-not-allowed',
 )
 
-const FilterItemContainer = styled('div', 'flex flex-col gap-2 text-text-black text-bold')
+const FilterItemContainer = styled('div', 'flex flex-col gap-2 text-bold text-text-black')
 
 const AppsFilter: Component<{
   statuses: ApplicationState[]
