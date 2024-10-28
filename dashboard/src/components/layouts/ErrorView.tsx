@@ -1,17 +1,7 @@
 import { A } from '@solidjs/router'
 import { type Component, Show } from 'solid-js'
-import { styled } from '/@/components/styled-components'
-import { colorVars } from '/@/theme'
 import { Button } from '../UI/Button'
 import { MaterialSymbols } from '../UI/MaterialSymbols'
-
-const Container = styled('div', 'flex w-full flex-col items-center justify-center gap-4')
-
-const Title = styled('h2', 'h2-bold text-accent-error')
-
-const Message = styled('p', 'caption-medium text-text-grey')
-
-const ButtonsContainer = styled('div', 'flex flex-col gap-2')
 
 const ErrorView: Component<{
   error: unknown
@@ -21,15 +11,15 @@ const ErrorView: Component<{
   }
 
   return (
-    <Container>
-      <MaterialSymbols fill displaySize={64} color={colorVars.semantic.accent.error}>
+    <div class="flex w-full flex-col items-center justify-center gap-4">
+      <MaterialSymbols fill displaySize={64} class="text-accent-error">
         error
       </MaterialSymbols>
-      <Title>An error has occurred</Title>
+      <h2 class="h2-bold text-accent-error">An error has occurred</h2>
       <Show when={props.error instanceof Error}>
-        <Message>{(props.error as Error).message}</Message>
+        <p class="caption-medium text-text-grey">{(props.error as Error).message}</p>
       </Show>
-      <ButtonsContainer>
+      <div class="flex flex-col gap-2">
         <A href="/">
           <Button size="medium" variants="border" leftIcon={<MaterialSymbols>arrow_back</MaterialSymbols>}>
             Back to Home
@@ -43,8 +33,8 @@ const ErrorView: Component<{
         >
           Reload Page
         </Button>
-      </ButtonsContainer>
-    </Container>
+      </div>
+    </div>
   )
 }
 
