@@ -13,21 +13,20 @@ export const TabRound: ParentComponent<Props> = (props) => {
   return (
     <button
       class={clsx(
-        'h4-medium flex h-11 w-fit cursor-pointer items-center gap-1 whitespace-nowrap rounded-full border-none px-4',
+        'h4-medium h-11 w-fit cursor-pointer gap-1 whitespace-nowrap rounded-full border px-4',
         {
-          active: '!text-primary-main !shadow-[inset_0_0_0_2px] bg-transparency-primary-hover shadow-primary-main',
-          default: 'bg-inherit text-text-grey shadow-[inset_0_0_0_1px] shadow-ui-border',
+          active: '!border-2 !border-primary-main !text-primary-main bg-transparency-primary-hover',
+          default: 'border-1 border-ui-border bg-inherit text-text-grey',
         }[addedProps.state ?? 'default'],
         {
-          primary:
-            'hover:bg-transparency-primary-hover hover:text-text-grey hover:shadow-[inset_0_0_0_1px] hover:shadow-ui-border',
+          primary: 'hover:border-1 hover:border-ui-border hover:bg-transparency-primary-hover hover:text-text-grey',
           ghost: 'bg-black-alpha-50 text-text-black hover:bg-black-alpha-200',
         }[addedProps.variant ?? 'primary'],
       )}
       type="button"
       {...originalButtonProps}
     >
-      {addedProps.children}
+      <span class={clsx('flex items-center', addedProps.state === 'default' && 'p-0.25')}>{addedProps.children}</span>
     </button>
   )
 }
