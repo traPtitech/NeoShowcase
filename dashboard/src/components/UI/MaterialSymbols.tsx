@@ -1,4 +1,5 @@
 import { type JSX, type ParentComponent, mergeProps, splitProps } from 'solid-js'
+import { clsx } from '/@/libs/clsx'
 
 export interface Props extends JSX.HTMLAttributes<HTMLSpanElement> {
   fill?: boolean
@@ -6,7 +7,6 @@ export interface Props extends JSX.HTMLAttributes<HTMLSpanElement> {
   grade?: 0
   opticalSize?: 20 | 24
   displaySize?: number
-  color?: string
 }
 
 export const MaterialSymbols: ParentComponent<Props> = (props) => {
@@ -17,7 +17,6 @@ export const MaterialSymbols: ParentComponent<Props> = (props) => {
     'grade',
     'opticalSize',
     'displaySize',
-    'color',
   ])
   const mergedProps = mergeProps(
     {
@@ -26,7 +25,6 @@ export const MaterialSymbols: ParentComponent<Props> = (props) => {
       weight: 300,
       grade: 0,
       opticalSize: 24,
-      color: 'currentColor',
     },
     addedProps,
   )
@@ -43,12 +41,14 @@ export const MaterialSymbols: ParentComponent<Props> = (props) => {
         height: size(),
         'font-size': size(),
         'line-height': size(),
-        color: mergedProps.color,
       }}
       {...originalProps}
       // see https://developers.google.com/fonts/docs/material_symbols?hl=ja#self-hosting_the_font
       // but no "word-wrap" and "direction" properties
-      class="inline-block shrink-0 overflow-hidden whitespace-nowrap font-[Material_Symbols_Rounded] font-normal normal-case not-italic leading-4 tracking-normal"
+      class={clsx(
+        'inline-block shrink-0 overflow-hidden whitespace-nowrap font-[Material_Symbols_Rounded] font-normal normal-case not-italic leading-4 tracking-normal',
+        originalProps.class,
+      )}
     >
       {mergedProps.children}
     </span>
