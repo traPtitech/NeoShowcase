@@ -160,10 +160,9 @@ const AppsList: Component<{
 
   return (
     <div
+      class="relative w-full"
       style={{
-        width: '100%',
         height: `${virtualizer().getTotalSize()}px`,
-        position: 'relative',
         // scrollParentRef内に高さ120pxのFilterContainerが存在するため、この分を減算
         transform: `translateY(${-virtualizer().options.scrollMargin}px)`,
       }}
@@ -183,11 +182,8 @@ const AppsList: Component<{
           <div
             data-index={vRow.index}
             ref={(el) => queueMicrotask(() => virtualizer().measureElement(el))}
+            class="absolute top-0 left-0 w-full"
             style={{
-              position: 'absolute',
-              top: 0,
-              left: 0,
-              width: '100%',
               height: `${items()[vRow.index]}px`,
               transform: `translateY(${vRow.start}px)`,
             }}
@@ -230,7 +226,7 @@ export default () => {
   const [scrollParentRef, setScrollParentRef] = createSignal<HTMLDivElement>()
 
   return (
-    <div style={{ 'overflow-y': 'auto', height: '100%' }} ref={setScrollParentRef}>
+    <div class="h-full overflow-y-auto" ref={setScrollParentRef}>
       <WithNav.Container>
         <Title>Apps - NeoShowcase</Title>
         <WithNav.Navs>
@@ -244,7 +240,7 @@ export default () => {
                 </TabRound>
               )}
             </For>
-            <A href="/apps/new" style={{ 'margin-left': 'auto' }}>
+            <A href="/apps/new" class="ml-auto">
               <Button variants="primary" size="medium" leftIcon={<MaterialSymbols>add</MaterialSymbols>}>
                 Add New App
               </Button>

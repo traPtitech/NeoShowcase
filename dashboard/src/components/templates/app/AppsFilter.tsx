@@ -61,7 +61,7 @@ const AppsFilter: Component<{
             `,
           }}
         >
-          <FilterItemContainer style={{ 'grid-area': 'status' }}>
+          <FilterItemContainer class="grid-area-[status]">
             Status
             <ItemsContainer>
               <For each={allStatuses}>
@@ -89,7 +89,7 @@ const AppsFilter: Component<{
               </For>
             </ItemsContainer>
           </FilterItemContainer>
-          <FilterItemContainer style={{ 'grid-area': 'provider' }}>
+          <FilterItemContainer class="grid-area-[provider]">
             Origin
             <ItemsContainer>
               <For each={allOrigins}>
@@ -120,7 +120,7 @@ const AppsFilter: Component<{
           <RadioGroup.Root
             onChange={props.setSort}
             as={(asProps: ComponentProps<typeof FilterItemContainer>) => (
-              <FilterItemContainer style={{ 'grid-area': 'sort' }} {...asProps}>
+              <FilterItemContainer class="grid-area-[sort]" {...asProps}>
                 <RadioGroup.Label>Sort</RadioGroup.Label>
                 <ItemsContainer>
                   <For each={Object.values(sortItems)}>
@@ -146,7 +146,7 @@ const AppsFilter: Component<{
               </FilterItemContainer>
             )}
           />
-          <FilterItemContainer style={{ 'grid-area': 'noapp' }}>
+          <FilterItemContainer class="grid-area-[noapp]">
             <Checkbox.Root checked={props.includeNoApp} onChange={props.setIncludeNoApp}>
               <Checkbox.Input />
               <Checkbox.Label class={selectItemStyle}>

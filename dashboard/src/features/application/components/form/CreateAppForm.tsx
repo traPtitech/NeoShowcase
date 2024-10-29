@@ -141,7 +141,7 @@ const CreateAppForm: Component = () => {
           )}
         </For>
       </Progress.Container>
-      <Form of={formStore} onSubmit={handleSubmit} shouldActive={false} style={{ width: '100%' }}>
+      <Form of={formStore} onSubmit={handleSubmit} shouldActive={false} class="w-full">
         <Field of={formStore} name="type">
           {() => null}
         </Field>

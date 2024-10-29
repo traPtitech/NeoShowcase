@@ -13,7 +13,7 @@ const TitleContainer = styled('div', 'flex w-full items-center gap-2 overflow-hi
 
 const RepositoryRowSkeleton: Component = () => {
   return (
-    <Container style={{ 'pointer-events': 'none' }}>
+    <Container class="pointer-events-none">
       <TitleContainer>
         <Skeleton width={24} height={24} circle />
         <Skeleton>Repository Name Placeholder</Skeleton>
@@ -35,12 +35,7 @@ export const RepositoryRow: Component<Props> = (props) => {
       <Container>
         <TitleContainer>
           {originToIcon(repositoryURLToOrigin(props.repository!.url), 24)}
-          <A
-            href={`/repos/${props.repository?.id}`}
-            style={{
-              overflow: 'hidden',
-            }}
-          >
+          <A href={`/repos/${props.repository?.id}`} class="overflow-hidden">
             <div class="h4-bold truncate text-text-black">{props.repository!.name}</div>
           </A>
           <div class="caption-regular whitespace-nowrap text-text-grey">{`${props.appCount} apps`}</div>
