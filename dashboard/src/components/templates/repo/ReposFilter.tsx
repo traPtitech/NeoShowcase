@@ -32,7 +32,7 @@ const ReposFilter: Component<{
         <div class="relative size-6">
           <MaterialSymbols>tune</MaterialSymbols>
           <Show when={filtered()}>
-            <div class="-right-0.5 -top-0.5 absolute size-2 rounded bg-primary-main outline outline-ui-background" />
+            <div class="-right-0.5 -top-0.5 absolute size-2 rounded bg-primary-main outline outline-1 outline-ui-background" />
           </Show>
         </div>
         <DropdownMenu.Icon class="size-6 transition-transform duration-200 data-[expanded]:rotate-180">

@@ -22,7 +22,7 @@ const singleItemStyle = clsx(
 const multiItemStyle = clsx(itemStyleBase, 'p-2')
 
 const triggerStyle = clsx(
-  'grid h-12 w-full max-w-72 cursor-pointer grid-cols-[1fr_24px] content-center items-center gap-1 rounded-lg border-none bg-primary-main px-4 py-2.5 text-text-black outline outline-ui-border',
+  'grid h-12 w-full max-w-72 cursor-pointer grid-cols-[1fr_24px] content-center items-center gap-1 rounded-lg border-none bg-primary-main px-4 py-2.5 text-text-black outline outline-1 outline-ui-border',
   'focus-visible:outline-2 focus-visible:outline-primary-main',
   'data-[expanded]:outline-2 data-[expanded]:outline-primary-main',
   '!data-[disabled]:bg-ui-tertiary !data-[disabled]:text-text-disabled data-[disabled]:cursor-not-allowed',
@@ -272,7 +272,7 @@ export const ComboBox = <T extends string | number>(props: ComboBoxProps<T>): JS
         <KComboBox.Control class="relative flex w-full max-w-72 gap-0.25">
           <KComboBox.Input
             class={clsx(
-              'flex h-12 w-full gap-1 rounded-lg border-none bg-ui-primary px-4 pr-11 text-regular text-text-black outline outline-ui-border',
+              'flex h-12 w-full gap-1 rounded-lg border-none bg-ui-primary px-4 pr-11 text-regular text-text-black outline outline-1 outline-ui-border',
               'placeholder:text-text-disabled',
               'focus-visible:outline-2 focus-visible:outline-primary-main',
               'data-[disabled]:cursor-not-allowed data-[disabled]:bg-ui-tertiary',

@@ -64,7 +64,7 @@ export const TextField: Component<Props> = (props) => {
               <div class="relative flex w-full gap-1">
                 <div
                   class={clsx(
-                    'flex h-12 w-full gap-1 rounded-lg border-none bg-ui-primary px-4 text-regular text-text-black outline-1 outline-ui-border',
+                    'flex h-12 w-full gap-1 rounded-lg border-none bg-ui-primary px-4 text-regular text-text-black outline outline-1 outline-ui-border',
                     'focus-within:outline-2 focus-within:outline-primary-main',
                     'data-[disabled]:has-[.input]:cursor-not-allowed data-[disabled]:has-[.input]:bg-ui-tertiary',
                     'data-[invalid]:has-[.input]:outline-2 data-[invalid]:has-[.input]:outline-accent-error',
@@ -85,7 +85,7 @@ export const TextField: Component<Props> = (props) => {
                 </div>
                 <Show when={props.copyable}>
                   <button
-                    class="w-12 shrink-0 cursor-pointer rounded-r-lg border-none bg-black-alpha-100 text-text-black leading-6 outline-1 outline-ui-border hover:bg-black-alpha-200 active:bg-black-alpha-300"
+                    class="w-12 shrink-0 cursor-pointer rounded-r-lg border-none bg-black-alpha-100 text-text-black leading-6 outline outline-1 outline-ui-border hover:bg-black-alpha-200 active:bg-black-alpha-300"
                     onClick={handleCopy}
                     type="button"
                   >
@@ -99,7 +99,7 @@ export const TextField: Component<Props> = (props) => {
       >
         <KTextField.TextArea
           class={clsx(
-            'h-full w-full resize-none break-all rounded-lg border-none bg-ui-primary px-4 py-2.5 text-regular text-text-black outline-1 outline-ui-border',
+            'h-full w-full resize-none break-all rounded-lg border-none bg-ui-primary px-4 py-2.5 text-regular text-text-black outline outline-1 outline-ui-border',
             'placeholder-text-disabled',
             'data-[disabled]:cursor-not-allowed data-[disabled]:bg-ui-tertiary',
             'data-[invalid]:outline-2 data-[invalid]:outline-accent-error',
