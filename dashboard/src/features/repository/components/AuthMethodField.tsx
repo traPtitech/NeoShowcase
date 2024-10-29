@@ -6,10 +6,10 @@ import { TooltipInfoIcon } from '/@/components/UI/TooltipInfoIcon'
 import { FormItem } from '/@/components/templates/FormItem'
 import { RadioGroup, type RadioOption } from '/@/components/templates/RadioGroups'
 import { client, systemInfo } from '/@/libs/api'
+import { clsx } from '/@/libs/clsx'
 import { TextField } from '../../../components/UI/TextField'
 import { useRepositoryForm } from '../provider/repositoryFormProvider'
 import type { CreateOrUpdateRepositoryInput } from '../schema/repositorySchema'
-import { clsx } from '/@/libs/clsx'
 
 type Props = {
   readonly?: boolean

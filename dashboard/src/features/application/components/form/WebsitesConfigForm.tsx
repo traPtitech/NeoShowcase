@@ -9,7 +9,6 @@ import FormBox from '/@/components/layouts/FormBox'
 import { styled } from '/@/components/styled-components'
 import { List } from '/@/components/templates/List'
 import { client, handleAPIError, systemInfo } from '/@/libs/api'
-import { colorVars } from '/@/theme'
 import { useApplicationForm } from '../../provider/applicationFormProvider'
 import {
   type CreateOrUpdateApplicationInput,

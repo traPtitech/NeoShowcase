@@ -1,5 +1,5 @@
 import type { PlainMessage } from '@bufbuild/protobuf'
-import { AiFillGithub, AiFillGitlab } from 'solid-icons/ai'
+import { AiFillGithub } from 'solid-icons/ai'
 import { RiDevelopmentGitRepositoryLine } from 'solid-icons/ri'
 import { SiGitea } from 'solid-icons/si'
 import type { JSXElement } from 'solid-js'

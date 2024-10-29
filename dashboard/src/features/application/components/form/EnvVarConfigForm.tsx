@@ -19,7 +19,6 @@ import { Button } from '/@/components/UI/Button'
 import { TextField } from '/@/components/UI/TextField'
 import FormBox from '/@/components/layouts/FormBox'
 import { client, handleAPIError } from '/@/libs/api'
-import { colorVars, textVars } from '/@/theme'
 import {
   type EnvVarInput,
   envVarSchema,

@@ -1,11 +1,6 @@
 import { Title } from '@solidjs/meta'
 import { type Component, Show, createMemo, createResource } from 'solid-js'
-import {
-  type Application,
-  GetApplicationsRequest_Scope,
-  GetRepositoriesRequest_Scope,
-  Repository,
-} from '../api/neoshowcase/protobuf/gateway_pb'
+import { type Application, GetApplicationsRequest_Scope } from '../api/neoshowcase/protobuf/gateway_pb'
 import { MaterialSymbols } from '../components/UI/MaterialSymbols'
 import { MainViewContainer } from '../components/layouts/MainView'
 import { WithNav } from '../components/layouts/WithNav'

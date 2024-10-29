@@ -13,8 +13,6 @@ import ReposFilter from '/@/components/templates/repo/ReposFilter'
 import { client } from '/@/libs/api'
 import { type RepositoryOrigin, originToIcon, repositoryURLToOrigin } from '/@/libs/application'
 import { clsx } from '/@/libs/clsx'
-import { colorOverlay } from '/@/libs/colorOverlay'
-import { colorVars, textVars } from '/@/theme'
 
 const RepositoryStep: Component<{
   onSelect: (repo: Repository) => void

@@ -1,4 +1,4 @@
-import { type ComponentProps, type ParentComponent, splitProps } from 'solid-js'
+import type { ComponentProps, ParentComponent } from 'solid-js'
 import { clsx } from '/@/libs/clsx'
 
 type VariantProps = {

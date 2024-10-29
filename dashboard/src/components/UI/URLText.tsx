@@ -1,5 +1,4 @@
 import type { Component } from 'solid-js'
-import { colorVars, textVars } from '/@/theme'
 import { MaterialSymbols } from './MaterialSymbols'
 import { ToolTip } from './ToolTip'
 

@@ -1,5 +1,5 @@
 import { useNavigate } from '@solidjs/router'
-import { Show, createMemo, createResource, useTransition } from 'solid-js'
+import { Show, createMemo, useTransition } from 'solid-js'
 import { Button } from '/@/components/UI/Button'
 import { MaterialSymbols } from '/@/components/UI/MaterialSymbols'
 import { URLText } from '/@/components/UI/URLText'

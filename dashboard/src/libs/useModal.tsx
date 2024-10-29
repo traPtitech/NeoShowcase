@@ -1,8 +1,8 @@
 import { Dialog } from '@kobalte/core'
 import { type ParentComponent, Show, createSignal, mergeProps } from 'solid-js'
-import { MaterialSymbols } from '../components/UI/MaterialSymbols'
-import { clsx } from '/@/libs/clsx'
 import { styled } from '/@/components/styled-components'
+import { clsx } from '/@/libs/clsx'
+import { MaterialSymbols } from '../components/UI/MaterialSymbols'
 
 const useModal = (options?: {
   showCloseButton?: boolean

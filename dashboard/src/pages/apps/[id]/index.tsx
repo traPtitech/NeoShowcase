@@ -4,6 +4,7 @@ import { type Application, DeployType } from '/@/api/neoshowcase/protobuf/gatewa
 import { Button } from '/@/components/UI/Button'
 import { DataTable } from '/@/components/layouts/DataTable'
 import SuspenseContainer from '/@/components/layouts/SuspenseContainer'
+import { styled } from '/@/components/styled-components'
 import AppBranchResolution from '/@/components/templates/app/AppBranchResolution'
 import AppDeployInfo from '/@/components/templates/app/AppDeployInfo'
 import AppLatestBuilds from '/@/components/templates/app/AppLatestBuilds'
@@ -11,8 +12,6 @@ import { AppMetrics } from '/@/components/templates/app/AppMetrics'
 import { ContainerLog } from '/@/components/templates/app/ContainerLog'
 import { availableMetrics, client, handleAPIError } from '/@/libs/api'
 import { useApplicationData } from '/@/routes'
-import { colorVars, media } from '/@/theme'
-import { styled } from '/@/components/styled-components'
 
 const MainViewContainer = styled('div', 'w-full bg-ui-primary px-8 pt-10 pb-18 max-md:px-4')
 
