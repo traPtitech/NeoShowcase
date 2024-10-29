@@ -1,7 +1,6 @@
 import { Combobox as KComboBox, Select as KSelect } from '@kobalte/core'
 import { type JSX, Show, createEffect, createSignal, splitProps } from 'solid-js'
 import { clsx } from '/@/libs/clsx'
-import { colorVars } from '/@/theme'
 import { CheckBoxIcon } from '../UI/CheckBoxIcon'
 import { MaterialSymbols } from '../UI/MaterialSymbols'
 import { ToolTip, type TooltipProps } from '../UI/ToolTip'
@@ -128,7 +127,7 @@ export const SingleSelect = <T extends string | number>(props: SingleSelectProps
         <KSelect.Trigger class={triggerStyle}>
           <KSelect.Value<SelectOption<T>> class={valueStyle}>{(state) => state.selectedOption().label}</KSelect.Value>
           <KSelect.Icon class={iconStyle}>
-            <MaterialSymbols color={colorVars.semantic.text.black}>expand_more</MaterialSymbols>
+            <MaterialSymbols class="text-text-black">expand_more</MaterialSymbols>
           </KSelect.Icon>
         </KSelect.Trigger>
       </ToolTip>
@@ -197,7 +196,7 @@ export const MultiSelect = <T extends string | number>(props: MultiSelectProps<T
           }
         </KSelect.Value>
         <KSelect.Icon class={iconStyle}>
-          <MaterialSymbols color={colorVars.semantic.text.black}>expand_more</MaterialSymbols>
+          <MaterialSymbols class="text-text-black">expand_more</MaterialSymbols>
         </KSelect.Icon>
       </KSelect.Trigger>
       <KSelect.Portal>
@@ -283,7 +282,7 @@ export const ComboBox = <T extends string | number>(props: ComboBoxProps<T>): JS
           />
           <KComboBox.Trigger class="absolute right-0 flex h-full w-11 cursor-pointer items-center justify-start border-none bg-none pl-1 text-text-disabled">
             <KComboBox.Icon class={iconStyle}>
-              <MaterialSymbols color={colorVars.semantic.text.black}>expand_more</MaterialSymbols>
+              <MaterialSymbols class="text-text-black">expand_more</MaterialSymbols>
             </KComboBox.Icon>
           </KComboBox.Trigger>
         </KComboBox.Control>
