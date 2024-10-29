@@ -44,7 +44,7 @@ export default defineConfig({
         'line-height': Number(p) / 4,
       }),
       {
-        autocomplete: 'leading-$num',
+        autocomplete: 'leading-<num>',
       },
     ],
     [
@@ -54,6 +54,35 @@ export default defineConfig({
       }),
       {
         autocomplete: 'shadow-default',
+      },
+    ],
+    [
+      /^animate-wipe-(show|hide)-(up|right|down|left)$/,
+      ([, type, direction]) => {
+        return {
+          'animation-name': `keyframe-wipe-${type}-${direction}`,
+        }
+      },
+      {
+        autocomplete: 'animate-wipe-(show|hide)-(up|right|down|left)',
+      },
+    ],
+    [
+      /^animate-duration-(.+)$/,
+      ([, p]) => ({
+        'animation-duration': `${p}ms`,
+      }),
+      {
+        autocomplete: 'animate-duration-(75|100|150|200|300|500|700|1000)',
+      },
+    ],
+    [
+      /^animate-(ease|linear|ease-in|ease-out|ease-in-out)$/,
+      ([, p]) => ({
+        'animation-timing-function': p,
+      }),
+      {
+        autocomplete: 'animate-timing-(ease|linear|ease-in|ease-out|ease-in-out)',
       },
     ],
   ],

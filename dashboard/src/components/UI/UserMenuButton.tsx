@@ -47,7 +47,7 @@ export const UserMenuButton: Component<{
         <DropdownMenu.Content
           class={clsx(
             'transform-origin-[var(--kb-menu-content-transform-origin)] z-1 flex flex-col rounded-md bg-ui-primary p-1.5 shadow-default',
-            '-translate-y-2 opacity-0 transition-all duration-200 data-[expanded]:translate-y-0 data-[expanded]:opacity-100',
+            'animate-duration-200 animate-ease-in-out animate-wipe-hide-up data-[expanded]:animate-wipe-show-down',
           )}
         >
           <DropdownMenu.Item>
