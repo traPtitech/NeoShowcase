@@ -27,7 +27,7 @@ const Code: Component<{
           }}
         >
           <button
-            class="absolute top-1 right-2 grid size-6 cursor-pointer place-content-center rounded border border-ui-border bg-none text-text-black leading-4 hover:bg-black-alpha-200 active:bg-black-alpha-300"
+            class="absolute top-1 right-2 grid size-6 cursor-pointer place-content-center rounded border border-ui-border bg-inherit text-text-black leading-4 hover:bg-black-alpha-200 active:bg-black-alpha-300"
             onClick={handleCopy}
             type="button"
           >

@@ -16,7 +16,7 @@ export const TabRound: ParentComponent<Props> = (props) => {
         'h4-medium flex h-11 w-fit cursor-pointer items-center gap-1 whitespace-nowrap rounded-full border-none px-4',
         {
           active: '!text-primary-main !shadow-[inset_0_0_0_2px] bg-transparency-primary-hover shadow-primary-main',
-          default: 'bg-none text-text-grey shadow-[inset_0_0_0_1px] shadow-ui-border',
+          default: 'bg-inherit text-text-grey shadow-[inset_0_0_0_1px] shadow-ui-border',
         }[addedProps.state ?? 'default'],
         {
           primary:

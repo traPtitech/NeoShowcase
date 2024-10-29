@@ -9,7 +9,7 @@ import { allOrigins } from '/@/pages/apps'
 // TODO: AppsFilter と共通するスタイルが多いので共通化する
 
 const selectItemStyle = clsx(
-  'flex h-11 w-full cursor-pointer flex-nowrap items-center gap-2 whitespace-nowrap rounded-lg border-none bg-none p-2 text-bold text-text-black',
+  'flex h-11 w-full cursor-pointer flex-nowrap items-center gap-2 whitespace-nowrap rounded-lg border-none bg-inherit p-2 text-bold text-text-black',
   'hover:bg-transparency-primary-hover data-[highlighted]:bg-transparency-primary-hover',
   '!data-[disabled]:bg-text-disabled !data-[disabled]:text-text-black data-[disabled]:cursor-not-allowed',
 )
@@ -24,7 +24,7 @@ const ReposFilter: Component<{
     <DropdownMenu.Root>
       <DropdownMenu.Trigger
         class={clsx(
-          'flex cursor-pointer rounded bg-none p-2 text-text-black',
+          'flex cursor-pointer rounded bg-inherit p-2 text-text-black',
           'hover:bg-transparency-primary-hover',
           'active:bg-transparency-primary-selected active:text-primary-main',
         )}

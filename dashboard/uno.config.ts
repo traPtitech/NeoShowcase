@@ -38,6 +38,15 @@ export default defineConfig({
         'scrollbar-gutter': p,
       }),
     ],
+    [
+      /^leading-(.+)$/,
+      ([, p]) => ({
+        'line-height': Number(p) / 4,
+      }),
+      {
+        autocomplete: 'leading-$num',
+      },
+    ],
   ],
   shortcuts: {
     'h1-regular': 'text-7 leading-6',

@@ -8,7 +8,7 @@ import { TooltipInfoIcon } from '../UI/TooltipInfoIcon'
 import { RequiredMark, TitleContainer } from './FormItem'
 
 const itemStyleBase = clsx(
-  'flex h-11 w-full cursor-pointer items-center gap-2 whitespace-nowrap rounded-8 border-none bg-none text-bold text-text-black',
+  'lg8 flex h-11 w-full cursor-pointer items-center gap-2 whitespace-nowrap border-none bg-inherit text-bold text-text-black',
   'hover:bg-transparency-primary-hover data-[highlighted]:bg-transparency-primary-hover',
   '!data-[disabled]:bg-text-disabled !data-[disabled]:text-text-black data-[disabled]:cursor-not-allowed',
 )
@@ -280,7 +280,7 @@ export const ComboBox = <T extends string | number>(props: ComboBoxProps<T>): JS
             )}
             placeholder={props.placeholder}
           />
-          <KComboBox.Trigger class="absolute right-0 flex h-full w-11 cursor-pointer items-center justify-start border-none bg-none pl-1 text-text-disabled">
+          <KComboBox.Trigger class="absolute right-0 flex h-full w-11 cursor-pointer items-center justify-start border-none bg-inherit pl-1 text-text-disabled">
             <KComboBox.Icon class={iconStyle}>
               <MaterialSymbols class="text-text-black">expand_more</MaterialSymbols>
             </KComboBox.Icon>

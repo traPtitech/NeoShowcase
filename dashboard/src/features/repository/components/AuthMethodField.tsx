@@ -89,7 +89,7 @@ const AuthMethodField: Component<Props> = (props) => {
                 rightIcon={
                   <button
                     class={clsx(
-                      'size-10 cursor-pointer rounded border-none bg-none p-2 text-text-black',
+                      'size-10 cursor-pointer rounded border-none bg-inherit p-2 text-text-black',
                       'hover:bg-transparency-primary-hover active:bg-transparency-primary-selected active:text-primary-main',
                     )}
                     onClick={() => setShowPassword((s) => !s)}

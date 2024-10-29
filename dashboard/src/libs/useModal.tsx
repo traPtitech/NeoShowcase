@@ -56,7 +56,7 @@ const useModal = (options?: {
         <Show when={mergedProps.showCloseButton}>
           <Dialog.CloseButton
             class={clsx(
-              'absolute top-6 right-6 size-6 cursor-pointer rounded border-none bg-none p-0 text-text-black',
+              'absolute top-6 right-6 size-6 cursor-pointer rounded border-none bg-inherit p-0 text-text-black',
               'hover:bg-transparency-primary-hover active:bg-transparency-primary-selected active:text-primary-main',
             )}
             onClick={close}

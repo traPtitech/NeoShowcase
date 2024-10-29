@@ -33,7 +33,7 @@ export const UserMenuButton: Component<{
     <DropdownMenu.Root placement="top-end">
       <DropdownMenu.Trigger
         class={clsx(
-          'relative flex h-11 w-fit-content cursor-pointer items-center gap-2 rounded-lg border-none bg-none px-2',
+          'relative flex h-11 w-fit-content cursor-pointer items-center gap-2 rounded-lg border-none bg-inherit px-2',
           'hover:bg-transparency-primary-hover active:bg-transparency-primary-selected',
         )}
       >
