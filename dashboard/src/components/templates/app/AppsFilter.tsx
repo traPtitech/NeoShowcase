@@ -53,7 +53,7 @@ const AppsFilter: Component<{
       </DropdownMenu.Trigger>
       <DropdownMenu.Portal>
         <DropdownMenu.Content
-          class="-translate-y-2 z-1 grid max-w-[--kb-popper-content-available-width] origin-[--kb-menu-content-transform-origin] grid-cols-[repeat(3,auto)] grid-rows-[1fr_auto] gap-2 overflow-x-auto rounded-md bg-ui-primary p-4 opacity-0 shadow-[0_0_20px_0_rgba(0,0,0,.1)] data-[expanded]:translate-y-0 data-[expanded]:opacity-1"
+          class="-translate-y-2 z-1 grid max-w-[--kb-popper-content-available-width] origin-[--kb-menu-content-transform-origin] grid-cols-[repeat(3,auto)] grid-rows-[1fr_auto] gap-2 overflow-x-auto rounded-md bg-ui-primary p-4 opacity-0 shadow-default data-[expanded]:translate-y-0 data-[expanded]:opacity-1"
           style={{
             'grid-template-areas': `
               "status provider sort"

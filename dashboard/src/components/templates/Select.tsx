@@ -36,7 +36,7 @@ const valueStyle = clsx(
 const iconStyle = clsx('size-6 flex-shrink-0')
 
 const contentStyleBase = clsx(
-  '-translate-y-2 rounded-md bg-ui-primary opacity-0 shadow-[0_0_20px_0_rgba(0,0,0,.1)] transition-all duration-200 ease-in-out data-[expanded]:translate-y-0 data-[expanded]:opacity-1',
+  '-translate-y-2 rounded-md bg-ui-primary opacity-0 shadow-default transition-all duration-200 ease-in-out data-[expanded]:translate-y-0 data-[expanded]:opacity-1',
 )
 const selectContentStyle = clsx(contentStyleBase, 'origin-[--kb-select-content-transform-origin]')
 const comboBoxContentStyle = clsx(contentStyleBase, 'max-w-72 origin-[--kb-combobox-content-transform-origin]')

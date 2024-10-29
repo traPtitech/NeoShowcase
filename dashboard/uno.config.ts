@@ -47,6 +47,15 @@ export default defineConfig({
         autocomplete: 'leading-$num',
       },
     ],
+    [
+      /^shadow-default$/,
+      ([, p]) => ({
+        'box-shadow': '0 0 20px 0 rgba(0, 0, 0, .1)',
+      }),
+      {
+        autocomplete: 'shadow-default',
+      },
+    ],
   ],
   shortcuts: {
     'h1-regular': 'text-7 leading-6',
