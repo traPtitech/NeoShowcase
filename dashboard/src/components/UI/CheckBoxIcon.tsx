@@ -12,7 +12,7 @@ export const CheckBoxIcon: Component<Props> = (props) => {
     <div
       class={clsx(
         'flex aspect-square h-auto w-full items-center justify-center rounded text-ui-primary',
-        !props.checked && 'border-2 border-ui-tertiary bg-ui-background',
+        props.checked ? 'bg-primary-main' : 'border-2 border-ui-tertiary bg-ui-background',
         props.disabled && '!bg-text-disabled cursor-not-allowed',
       )}
     >
