@@ -1,7 +1,6 @@
 import { type RouteSectionProps, useMatch, useNavigate } from '@solidjs/router'
 import { ErrorBoundary, Show, Suspense, useTransition } from 'solid-js'
 import { Button } from '/@/components/UI/Button'
-import { MaterialSymbols } from '/@/components/UI/MaterialSymbols'
 import ErrorView from '/@/components/layouts/ErrorView'
 import { MainViewContainer } from '/@/components/layouts/MainView'
 import { SideView } from '/@/components/layouts/SideView'
@@ -39,7 +38,7 @@ export default (props: RouteSectionProps) => {
                   onclick={() => {
                     navigate(`/apps/${app()?.id}/settings/`)
                   }}
-                  leftIcon={<MaterialSymbols>browse_activity</MaterialSymbols>}
+                  leftIcon={<span class="i-material-symbols:browse-activity-outline text-2xl/6" />}
                 >
                   General
                 </Button>
@@ -51,7 +50,7 @@ export default (props: RouteSectionProps) => {
                   onclick={() => {
                     navigate(`/apps/${app()?.id}/settings/build`)
                   }}
-                  leftIcon={<MaterialSymbols>deployed_code</MaterialSymbols>}
+                  leftIcon={<span class="i-material-symbols:deployed-code-outline text-2xl/6" />}
                 >
                   Build
                 </Button>
@@ -63,7 +62,7 @@ export default (props: RouteSectionProps) => {
                   onclick={() => {
                     navigate(`/apps/${app()?.id}/settings/urls`)
                   }}
-                  leftIcon={<MaterialSymbols>language</MaterialSymbols>}
+                  leftIcon={<span class="i-material-symbols:language text-2xl/6" />}
                 >
                   URLs
                 </Button>
@@ -75,7 +74,7 @@ export default (props: RouteSectionProps) => {
                   onclick={() => {
                     navigate(`/apps/${app()?.id}/settings/portForwarding`)
                   }}
-                  leftIcon={<MaterialSymbols>lan</MaterialSymbols>}
+                  leftIcon={<span class="i-material-symbols:lan-outline text-2xl/6" />}
                 >
                   Port Forwarding
                 </Button>
@@ -87,7 +86,7 @@ export default (props: RouteSectionProps) => {
                   onclick={() => {
                     navigate(`/apps/${app()?.id}/settings/envVars`)
                   }}
-                  leftIcon={<MaterialSymbols>password</MaterialSymbols>}
+                  leftIcon={<span class="i-material-symbols:password text-2xl/6" />}
                 >
                   Environment Variables
                 </Button>
@@ -99,7 +98,7 @@ export default (props: RouteSectionProps) => {
                   onclick={() => {
                     navigate(`/apps/${app()?.id}/settings/owners`)
                   }}
-                  leftIcon={<MaterialSymbols>person</MaterialSymbols>}
+                  leftIcon={<span class="i-material-symbols:person-outline text-2xl/6" />}
                 >
                   Owners
                 </Button>

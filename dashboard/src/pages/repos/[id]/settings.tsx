@@ -1,7 +1,6 @@
 import { type RouteSectionProps, useMatch, useNavigate } from '@solidjs/router'
 import { ErrorBoundary, Show, Suspense, useTransition } from 'solid-js'
 import { Button } from '/@/components/UI/Button'
-import { MaterialSymbols } from '/@/components/UI/MaterialSymbols'
 import ErrorView from '/@/components/layouts/ErrorView'
 import { MainViewContainer } from '/@/components/layouts/MainView'
 import { SideView } from '/@/components/layouts/SideView'
@@ -34,7 +33,7 @@ export default (props: RouteSectionProps) => {
                 onclick={() => {
                   navigate(`/repos/${repo()?.id}/settings/`)
                 }}
-                leftIcon={<MaterialSymbols>browse_activity</MaterialSymbols>}
+                leftIcon={<span class="i-material-symbols:browse-activity-outline text-2xl/6" />}
               >
                 General
               </Button>
@@ -46,7 +45,7 @@ export default (props: RouteSectionProps) => {
                 onclick={() => {
                   navigate(`/repos/${repo()?.id}/settings/authorization`)
                 }}
-                leftIcon={<MaterialSymbols>conversion_path</MaterialSymbols>}
+                leftIcon={<span class="i-material-symbols:conversion-path text-2xl/6" />}
               >
                 Authorization
               </Button>
@@ -58,7 +57,7 @@ export default (props: RouteSectionProps) => {
                 onclick={() => {
                   navigate(`/repos/${repo()?.id}/settings/owners`)
                 }}
-                leftIcon={<MaterialSymbols>person</MaterialSymbols>}
+                leftIcon={<span class="i-material-symbols:person-outline text-2xl/6" />}
               >
                 Owners
               </Button>

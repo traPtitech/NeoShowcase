@@ -1,7 +1,6 @@
 import { Checkbox, DropdownMenu, RadioGroup } from '@kobalte/core'
 import { type Component, type ComponentProps, For, type Setter, Show } from 'solid-js'
 import { CheckBoxIcon } from '/@/components/UI/CheckBoxIcon'
-import { MaterialSymbols } from '/@/components/UI/MaterialSymbols'
 import { RadioIcon } from '/@/components/UI/RadioIcon'
 import { styled } from '/@/components/styled-components'
 import { type ApplicationState, type RepositoryOrigin, originToIcon } from '/@/libs/application'
@@ -42,13 +41,13 @@ const AppsFilter: Component<{
         )}
       >
         <div class="relative size-6">
-          <MaterialSymbols>tune</MaterialSymbols>
+          <span class="i-material-symbols:tune text-2xl/6" />
           <Show when={filtered()}>
             <div class="-right-0.5 -top-0.5 absolute size-2 rounded bg-primary-main outline outline-1 outline-ui-background" />
           </Show>
         </div>
         <DropdownMenu.Icon class="size-6 transition-transform duration-200 data-[expanded]:rotate-180">
-          <MaterialSymbols>expand_more</MaterialSymbols>
+          <span class="i-material-symbols:expand-more text-2xl/6" />
         </DropdownMenu.Icon>
       </DropdownMenu.Trigger>
       <DropdownMenu.Portal>

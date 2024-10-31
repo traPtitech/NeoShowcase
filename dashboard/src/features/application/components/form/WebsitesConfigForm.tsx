@@ -4,7 +4,6 @@ import { type Component, For, Show, createEffect, onMount, untrack } from 'solid
 import toast from 'solid-toast'
 import type { Application, UpdateApplicationRequest_UpdateWebsites } from '/@/api/neoshowcase/protobuf/gateway_pb'
 import { Button } from '/@/components/UI/Button'
-import { MaterialSymbols } from '/@/components/UI/MaterialSymbols'
 import FormBox from '/@/components/layouts/FormBox'
 import { styled } from '/@/components/styled-components'
 import { List } from '/@/components/templates/List'
@@ -106,12 +105,12 @@ const WebsiteConfigForm: Component<Props> = (props) => {
               each={fieldArray.items}
               fallback={
                 <List.PlaceHolder>
-                  <MaterialSymbols displaySize={80}>link_off</MaterialSymbols>
+                  <span class="i-material-symbols:link-off text-20/20" />
                   URLが設定されていません
                   <Button
                     variants="primary"
                     size="medium"
-                    rightIcon={<MaterialSymbols>add</MaterialSymbols>}
+                    rightIcon={<span class="i-material-symbols:add text-2xl/6" />}
                     onClick={addFormStore}
                     type="button"
                   >
@@ -137,7 +136,7 @@ const WebsiteConfigForm: Component<Props> = (props) => {
                 }}
                 variants="border"
                 size="small"
-                leftIcon={<MaterialSymbols opticalSize={20}>add</MaterialSymbols>}
+                leftIcon={<span class="i-material-symbols:add text-xl/5" />}
                 type="button"
               >
                 Add More

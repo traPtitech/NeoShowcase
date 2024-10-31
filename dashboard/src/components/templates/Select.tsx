@@ -2,7 +2,6 @@ import { Combobox as KComboBox, Select as KSelect } from '@kobalte/core'
 import { type JSX, Show, createEffect, createSignal, splitProps } from 'solid-js'
 import { clsx } from '/@/libs/clsx'
 import { CheckBoxIcon } from '../UI/CheckBoxIcon'
-import { MaterialSymbols } from '../UI/MaterialSymbols'
 import { ToolTip, type TooltipProps } from '../UI/ToolTip'
 import { TooltipInfoIcon } from '../UI/TooltipInfoIcon'
 import { RequiredMark, TitleContainer } from './FormItem'
@@ -120,7 +119,7 @@ export const SingleSelect = <T extends string | number>(props: SingleSelectProps
         <KSelect.Trigger class={triggerStyle}>
           <KSelect.Value<SelectOption<T>> class={valueStyle}>{(state) => state.selectedOption().label}</KSelect.Value>
           <KSelect.Icon class={iconStyle}>
-            <MaterialSymbols class="text-text-black">expand_more</MaterialSymbols>
+            <span class="i-material-symbols:expand-more text-2xl/6 text-text-black" />
           </KSelect.Icon>
         </KSelect.Trigger>
       </ToolTip>
@@ -189,7 +188,7 @@ export const MultiSelect = <T extends string | number>(props: MultiSelectProps<T
           }
         </KSelect.Value>
         <KSelect.Icon class={iconStyle}>
-          <MaterialSymbols class="text-text-black">expand_more</MaterialSymbols>
+          <span class="i-material-symbols:expand-more text-2xl/6 text-text-black" />
         </KSelect.Icon>
       </KSelect.Trigger>
       <KSelect.Portal>
@@ -271,7 +270,7 @@ export const ComboBox = <T extends string | number>(props: ComboBoxProps<T>): JS
           />
           <KComboBox.Trigger class="absolute right-0 flex h-full w-11 cursor-pointer items-center justify-start border-none bg-inherit pl-1 text-text-disabled">
             <KComboBox.Icon class={iconStyle}>
-              <MaterialSymbols class="text-text-black">expand_more</MaterialSymbols>
+              <span class="i-material-symbols:expand-more text-2xl/6 text-text-black" />
             </KComboBox.Icon>
           </KComboBox.Trigger>
         </KComboBox.Control>

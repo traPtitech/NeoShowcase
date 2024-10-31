@@ -6,7 +6,6 @@ import {
   GetRepositoriesRequest_Scope,
   type Repository,
 } from '/@/api/neoshowcase/protobuf/gateway_pb'
-import { MaterialSymbols } from '/@/components/UI/MaterialSymbols'
 import { TextField } from '/@/components/UI/TextField'
 import { List } from '/@/components/templates/List'
 import ReposFilter from '/@/components/templates/repo/ReposFilter'
@@ -72,7 +71,7 @@ const RepositoryStep: Component<{
         placeholder="Search"
         value={query()}
         onInput={(e) => setQuery(e.currentTarget.value)}
-        leftIcon={<MaterialSymbols>search</MaterialSymbols>}
+        leftIcon={<span class="i-material-symbols:search text-2xl/6" />}
         rightIcon={<ReposFilter origin={origin()} setOrigin={setOrigin} />}
       />
       <List.Container>
@@ -83,7 +82,7 @@ const RepositoryStep: Component<{
               'hover:bg-color-overlay-ui-primary-to-transparency-primary-hover',
             )}
           >
-            <MaterialSymbols>add</MaterialSymbols>
+            <span class="i-material-symbols:add text-2xl/6" />
             Register Repository
           </div>
         </A>
@@ -128,7 +127,7 @@ const RepositoryStep: Component<{
                   <div class="grid-area-[url] caption-regular truncate text-text-grey">{repo.repo.htmlUrl}</div>
                   <div class="grid-area-[button] flex items-center justify-end gap-1 text-bold text-text-black">
                     Create App
-                    <MaterialSymbols>arrow_forward</MaterialSymbols>
+                    <span class="i-material-symbols:arrow-forward text-2xl/6" />
                   </div>
                 </div>
               </button>

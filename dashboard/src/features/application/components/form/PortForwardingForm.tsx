@@ -3,7 +3,6 @@ import { type Component, For, createEffect, onMount, untrack } from 'solid-js'
 import toast from 'solid-toast'
 import { type Application, PortPublicationProtocol } from '/@/api/neoshowcase/protobuf/gateway_pb'
 import { Button } from '/@/components/UI/Button'
-import { MaterialSymbols } from '/@/components/UI/MaterialSymbols'
 import FormBox from '/@/components/layouts/FormBox'
 import { client, handleAPIError, systemInfo } from '/@/libs/api'
 import { pickRandom, randIntN } from '/@/libs/random'
@@ -99,7 +98,7 @@ const PortForwardingForm: Component<Props> = (props) => {
               variants="border"
               size="small"
               type="button"
-              leftIcon={<MaterialSymbols opticalSize={20}>add</MaterialSymbols>}
+              leftIcon={<span class="i-material-symbols:add text-xl/5" />}
             >
               Add Port Forwarding
             </Button>

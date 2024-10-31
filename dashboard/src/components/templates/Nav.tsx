@@ -1,7 +1,6 @@
 import { A } from '@solidjs/router'
 import { type JSX, type ParentComponent, Show } from 'solid-js'
 import { Button } from '/@/components/UI/Button'
-import { MaterialSymbols } from '../UI/MaterialSymbols'
 
 export interface Props {
   title: string
@@ -17,7 +16,7 @@ export const Nav: ParentComponent<Props> = (props) => {
       <Show when={props.backTo} fallback={<div />}>
         {(nonNullBackTo) => (
           <A href={nonNullBackTo()}>
-            <Button variants="text" size="medium" leftIcon={<MaterialSymbols>arrow_back</MaterialSymbols>}>
+            <Button variants="text" size="medium" leftIcon={<span class="i-material-symbols:arrow-back text-2xl/6" />}>
               <div class="max-md:hidden">{props.backToTitle}</div>
             </Button>
           </A>

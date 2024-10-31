@@ -3,7 +3,6 @@ import Fuse from 'fuse.js'
 import { type Component, For, Show, createMemo, createSignal } from 'solid-js'
 import type { User } from '/@/api/neoshowcase/protobuf/gateway_pb'
 import { Button } from '/@/components/UI/Button'
-import { MaterialSymbols } from '/@/components/UI/MaterialSymbols'
 import UserAvatar from '/@/components/UI/UserAvater'
 import { styled } from '/@/components/styled-components'
 import useModal from '/@/libs/useModal'
@@ -55,7 +54,7 @@ const AddOwners: Component<{
     <div class="flex h-full max-h-full w-full flex-col gap-4">
       <TextField
         placeholder="Search UserID"
-        leftIcon={<MaterialSymbols>search</MaterialSymbols>}
+        leftIcon={<span class="i-material-symbols:search text-2xl/6" />}
         value={searchUserQuery()}
         onInput={(e) => setSearchUserQuery(e.currentTarget.value)}
       />
@@ -63,7 +62,7 @@ const AddOwners: Component<{
         when={filteredUsers().length !== 0}
         fallback={
           <UserPlaceholder>
-            <MaterialSymbols displaySize={80}>search</MaterialSymbols>
+            <span class="i-material-symbols:search text-20/20" />
             No Users Found
           </UserPlaceholder>
         }
@@ -183,14 +182,14 @@ const OwnerList: Component<{
       <div class="flex items-center gap-4">
         <TextField
           placeholder="Search UserID"
-          leftIcon={<MaterialSymbols>search</MaterialSymbols>}
+          leftIcon={<span class="i-material-symbols:search text-2xl/6" />}
           value={searchUserQuery()}
           onInput={(e) => setSearchUserQuery(e.currentTarget.value)}
         />
         <Button
           variants="primary"
           size="medium"
-          leftIcon={<MaterialSymbols>add</MaterialSymbols>}
+          leftIcon={<span class="i-material-symbols:add text-2xl/6" />}
           onClick={openAddUserModal}
           disabled={!props.hasPermission}
           tooltip={{

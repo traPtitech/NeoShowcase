@@ -2,7 +2,6 @@ import { Dialog } from '@kobalte/core'
 import { type ParentComponent, Show, createSignal, mergeProps } from 'solid-js'
 import { styled } from '/@/components/styled-components'
 import { clsx } from '/@/libs/clsx'
-import { MaterialSymbols } from '../components/UI/MaterialSymbols'
 
 const useModal = (options?: {
   showCloseButton?: boolean
@@ -61,7 +60,7 @@ const useModal = (options?: {
             )}
             onClick={close}
           >
-            <MaterialSymbols>close</MaterialSymbols>
+            <span class="i-material-symbols:close text-2xl/6" />
           </Dialog.CloseButton>
         </Show>
       </div>

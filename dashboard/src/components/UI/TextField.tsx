@@ -4,7 +4,6 @@ import { styled } from '/@/components/styled-components'
 import { writeToClipboard } from '/@/libs/clipboard'
 import { clsx } from '/@/libs/clsx'
 import { RequiredMark, TitleContainer } from '../templates/FormItem'
-import { MaterialSymbols } from './MaterialSymbols'
 import { ToolTip, type TooltipProps } from './ToolTip'
 import { TooltipInfoIcon } from './TooltipInfoIcon'
 
@@ -89,7 +88,7 @@ export const TextField: Component<Props> = (props) => {
                     onClick={handleCopy}
                     type="button"
                   >
-                    <MaterialSymbols>content_copy</MaterialSymbols>
+                    <span class="text-2xl/6 i-material-symbols:content-copy-outline" />
                   </button>
                 </Show>
               </div>

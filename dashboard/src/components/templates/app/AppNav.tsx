@@ -2,7 +2,6 @@ import { A } from '@solidjs/router'
 import { BiRegularPencil } from 'solid-icons/bi'
 import { type Component, Show } from 'solid-js'
 import type { Application, Repository } from '/@/api/neoshowcase/protobuf/gateway_pb'
-import { MaterialSymbols } from '/@/components/UI/MaterialSymbols'
 import { ToolTip } from '/@/components/UI/ToolTip'
 import { originToIcon, repositoryURLToOrigin } from '/@/libs/application'
 import { diffHuman } from '/@/libs/format'
@@ -32,7 +31,7 @@ export const AppNav: Component<{
   return (
     <Nav
       title={props.app.name}
-      icon={<MaterialSymbols displaySize={40}>deployed_code</MaterialSymbols>}
+      icon={<span class="i-material-symbols:deployed-code-outline text-10/10" />}
       action={edited}
     >
       <div class="mt-1 flex w-full items-center gap-2 whitespace-nowrap text-regular text-text-black">

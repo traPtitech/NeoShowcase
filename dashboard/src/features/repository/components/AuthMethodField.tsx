@@ -1,7 +1,6 @@
 import { Field, getValue, setValues } from '@modular-forms/solid'
 import { type Component, Match, Show, Suspense, Switch, createEffect, createResource, createSignal } from 'solid-js'
 import { Button } from '/@/components/UI/Button'
-import { MaterialSymbols } from '/@/components/UI/MaterialSymbols'
 import { TooltipInfoIcon } from '/@/components/UI/TooltipInfoIcon'
 import { FormItem } from '/@/components/templates/FormItem'
 import { RadioGroup, type RadioOption } from '/@/components/templates/RadioGroups'
@@ -95,8 +94,11 @@ const AuthMethodField: Component<Props> = (props) => {
                     onClick={() => setShowPassword((s) => !s)}
                     type="button"
                   >
-                    <Show when={showPassword()} fallback={<MaterialSymbols>visibility_off</MaterialSymbols>}>
-                      <MaterialSymbols>visibility</MaterialSymbols>
+                    <Show
+                      when={showPassword()}
+                      fallback={<span class="i-material-symbols:visibility-off-outline text-2xl/6" />}
+                    >
+                      <span class="i-material-symbols:visibility-outline text-2xl/6" />
                     </Show>
                   </button>
                 }
@@ -124,7 +126,7 @@ const AuthMethodField: Component<Props> = (props) => {
                           onClick={() => {
                             setUseTmpKey(true)
                           }}
-                          leftIcon={<MaterialSymbols opticalSize={20}>replay</MaterialSymbols>}
+                          leftIcon={<span class="i-material-symbols:replay text-xl/5" />}
                         >
                           専用公開鍵を生成する
                         </Button>

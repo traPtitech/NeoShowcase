@@ -1,7 +1,6 @@
 import { type Component, Show } from 'solid-js'
 import { writeToClipboard } from '/@/libs/clipboard'
 import { clsx } from '/@/libs/clsx'
-import { MaterialSymbols } from './MaterialSymbols'
 import { ToolTip } from './ToolTip'
 
 const Code: Component<{
@@ -31,7 +30,7 @@ const Code: Component<{
             onClick={handleCopy}
             type="button"
           >
-            <MaterialSymbols opticalSize={20}>content_copy</MaterialSymbols>
+            <span class="text-xl/5 i-material-symbols:content-copy-outline" />
           </button>
         </ToolTip>
       </Show>

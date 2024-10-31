@@ -15,7 +15,6 @@ import { client, getRepositoryCommits, user } from '/@/libs/api'
 import { ApplicationState, type RepositoryOrigin, applicationState, repositoryURLToOrigin } from '/@/libs/application'
 import { createSessionSignal } from '/@/libs/localStore'
 import { Button } from '../components/UI/Button'
-import { MaterialSymbols } from '../components/UI/MaterialSymbols'
 import { TabRound } from '../components/UI/TabRound'
 import { TextField } from '../components/UI/TextField'
 import SuspenseContainer from '../components/layouts/SuspenseContainer'
@@ -172,7 +171,7 @@ const AppsList: Component<{
         fallback={
           <List.Container>
             <List.PlaceHolder>
-              <MaterialSymbols displaySize={80}>search</MaterialSymbols>
+              <span class="i-material-symbols:search text-20/20" />
               No Apps Found
             </List.PlaceHolder>
           </List.Container>
@@ -235,13 +234,13 @@ export default () => {
             <For each={scopeItems(user()?.admin)}>
               {(s) => (
                 <TabRound state={s.value === scope() ? 'active' : 'default'} onClick={() => setScope(s.value)}>
-                  <MaterialSymbols>deployed_code</MaterialSymbols>
+                  <span class="i-material-symbols:deployed-code-outline text-2xl/6" />
                   {s.label}
                 </TabRound>
               )}
             </For>
             <A href="/apps/new" class="ml-auto">
-              <Button variants="primary" size="medium" leftIcon={<MaterialSymbols>add</MaterialSymbols>}>
+              <Button variants="primary" size="medium" leftIcon={<span class="i-material-symbols:add text-2xl/6" />}>
                 Add New App
               </Button>
             </A>
@@ -254,7 +253,7 @@ export default () => {
                 placeholder="Search"
                 value={query()}
                 onInput={(e) => setQuery(e.currentTarget.value)}
-                leftIcon={<MaterialSymbols>search</MaterialSymbols>}
+                leftIcon={<span class="i-material-symbols:search text-2xl/6" />}
                 rightIcon={
                   <AppsFilter
                     statuses={statuses()}

@@ -1,7 +1,6 @@
 import { useNavigate } from '@solidjs/router'
 import { Show, createMemo, useTransition } from 'solid-js'
 import { Button } from '/@/components/UI/Button'
-import { MaterialSymbols } from '/@/components/UI/MaterialSymbols'
 import { URLText } from '/@/components/UI/URLText'
 import { DataTable } from '/@/components/layouts/DataTable'
 import { MainViewContainer } from '/@/components/layouts/MainView'
@@ -20,7 +19,7 @@ export default () => {
     <Button
       variants="primary"
       size="medium"
-      leftIcon={<MaterialSymbols>add</MaterialSymbols>}
+      leftIcon={<span class="i-material-symbols:add text-2xl/6" />}
       onClick={() => {
         navigator(`/apps/new?repositoryID=${repo()?.id}`)
       }}
@@ -60,7 +59,7 @@ export default () => {
               <Show when={showPlaceHolder()} fallback={<AppsList apps={apps()!} commits={commits()} />}>
                 <List.Container>
                   <List.PlaceHolder>
-                    <MaterialSymbols displaySize={80}>deployed_code</MaterialSymbols>
+                    <span class="i-material-symbols:deployed-code-outline text-20/20" />
                     No Apps
                     <AddNewAppButton />
                   </List.PlaceHolder>

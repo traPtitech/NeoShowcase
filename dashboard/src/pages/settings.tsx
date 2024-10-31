@@ -7,7 +7,6 @@ import { Button } from '/@/components/UI/Button'
 import { styled } from '/@/components/styled-components'
 import { client, handleAPIError } from '/@/libs/api'
 import type { CreateUserKeyRequest, DeleteUserKeyRequest, UserKey } from '../api/neoshowcase/protobuf/gateway_pb'
-import { MaterialSymbols } from '../components/UI/MaterialSymbols'
 import ModalDeleteConfirm from '../components/UI/ModalDeleteConfirm'
 import { TextField } from '../components/UI/TextField'
 import { DataTable } from '../components/layouts/DataTable'
@@ -112,7 +111,12 @@ export default () => {
   }
 
   const AddNewSSHKeyButton = () => (
-    <Button variants="primary" size="medium" leftIcon={<MaterialSymbols>add</MaterialSymbols>} onClick={newKeyOpen}>
+    <Button
+      variants="primary"
+      size="medium"
+      leftIcon={<span class="i-material-symbols:add text-2xl/6" />}
+      onClick={newKeyOpen}
+    >
       Add New SSH Key
     </Button>
   )
@@ -144,7 +148,7 @@ export default () => {
                   fallback={
                     <List.Container>
                       <List.PlaceHolder>
-                        <MaterialSymbols displaySize={80}>key_off</MaterialSymbols>
+                        <span class="i-material-symbols:key-off-outline text-20/20" />
                         No Keys Registered
                         <AddNewSSHKeyButton />
                       </List.PlaceHolder>

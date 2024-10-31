@@ -5,7 +5,6 @@ import type { User } from '/@/api/neoshowcase/protobuf/gateway_pb'
 import { systemInfo } from '/@/libs/api'
 import { clsx } from '/@/libs/clsx'
 import { Button } from './Button'
-import { MaterialSymbols } from './MaterialSymbols'
 import UserAvatar from './UserAvater'
 
 const linkNameToMaterialIcon = (name: string): string => {
@@ -40,7 +39,7 @@ export const UserMenuButton: Component<{
         <UserAvatar user={props.user} size={32} />
         <span class="text-bold text-text-black max-md:hidden">{props.user.name}</span>
         <DropdownMenu.Icon class="size-6 transition-transform duration-200 data-[expanded]:rotate-180deg">
-          <MaterialSymbols>arrow_drop_down</MaterialSymbols>
+          <span class="i-material-symbols:arrow-drop-down text-2xl/6" />
         </DropdownMenu.Icon>
       </DropdownMenu.Trigger>
       <DropdownMenu.Portal>
@@ -52,7 +51,12 @@ export const UserMenuButton: Component<{
         >
           <DropdownMenu.Item>
             <A href="/settings">
-              <Button variants="text" size="medium" leftIcon={<MaterialSymbols>settings</MaterialSymbols>} full>
+              <Button
+                variants="text"
+                size="medium"
+                leftIcon={<span class="i-material-symbols:settings-outline text-2xl/6" />}
+                full
+              >
                 Settings
               </Button>
             </A>
@@ -64,7 +68,7 @@ export const UserMenuButton: Component<{
                   <Button
                     variants="text"
                     size="medium"
-                    leftIcon={<MaterialSymbols>{linkNameToMaterialIcon(link.name)}</MaterialSymbols>}
+                    leftIcon={<span class="i-material-symbols:{linkNameToMaterialIcon(link.name)} text-2xl/6" />}
                     full
                   >
                     {link.name}

@@ -16,13 +16,7 @@ export default defineConfig(({ mode }) => ({
     solidSvg({ defaultAsComponent: true }),
     Unfonts({
       google: {
-        families: [
-          'Lato',
-          {
-            name: 'Material+Symbols+Rounded',
-            styles: 'opsz,wght,FILL,GRAD@20..24,300,0..1,0',
-          },
-        ],
+        families: ['Lato'],
       },
     }),
     viteCompression({ algorithm: 'gzip' }),

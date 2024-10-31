@@ -3,7 +3,6 @@ import { useNavigate } from '@solidjs/router'
 import { type Component, createEffect, onMount } from 'solid-js'
 import toast from 'solid-toast'
 import { Button } from '/@/components/UI/Button'
-import { MaterialSymbols } from '/@/components/UI/MaterialSymbols'
 import { TextField } from '/@/components/UI/TextField'
 import { useRepositoryForm } from '/@/features/repository/provider/repositoryFormProvider'
 import {
@@ -98,7 +97,7 @@ const CreateForm: Component = () => {
         <Button
           variants="primary"
           size="medium"
-          rightIcon={<MaterialSymbols>arrow_forward</MaterialSymbols>}
+          rightIcon={<span class="i-material-symbols:arrow-forward text-2xl/6" />}
           type="submit"
           disabled={formStore.invalid || formStore.submitting}
           loading={formStore.submitting}

@@ -3,7 +3,6 @@ import { type Component, Show } from 'solid-js'
 import toast from 'solid-toast'
 import type { Application, Repository } from '/@/api/neoshowcase/protobuf/gateway_pb'
 import { Button } from '/@/components/UI/Button'
-import { MaterialSymbols } from '/@/components/UI/MaterialSymbols'
 import ModalDeleteConfirm from '/@/components/UI/ModalDeleteConfirm'
 import { DataTable } from '/@/components/layouts/DataTable'
 import FormBox from '/@/components/layouts/FormBox'
@@ -64,7 +63,7 @@ const DeleteApp: Component<{
         <Modal.Header>Delete Application</Modal.Header>
         <Modal.Body>
           <ModalDeleteConfirm>
-            <MaterialSymbols>deployed_code</MaterialSymbols>
+            <span class="i-material-symbols:deployed-code-outline text-2xl/6" />
             {props.app.name}
           </ModalDeleteConfirm>
         </Modal.Body>

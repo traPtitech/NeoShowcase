@@ -2,7 +2,6 @@ import { A } from '@solidjs/router'
 import type { VoidComponent } from 'solid-js'
 import { ToolTip } from '/@/components/UI/ToolTip'
 import { clsx } from '/@/libs/clsx'
-import { MaterialSymbols } from './MaterialSymbols'
 
 const JumpButton: VoidComponent<{ href: string; tooltip?: string }> = (props) => (
   <ToolTip props={{ content: props.tooltip }} disabled={!props.tooltip}>
@@ -15,7 +14,7 @@ const JumpButton: VoidComponent<{ href: string; tooltip?: string }> = (props) =>
           '!disabled:border-none !disabled:bg-text-disabled !disabled:text-text-black disabled:cursor-not-allowed',
         )}
       >
-        <MaterialSymbols opticalSize={20}>arrow_outward</MaterialSymbols>
+        <span class="i-material-symbols:arrow-outward text-xl/5" />
       </div>
     </A>
   </ToolTip>

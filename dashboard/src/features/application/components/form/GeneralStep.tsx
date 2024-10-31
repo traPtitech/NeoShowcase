@@ -2,7 +2,6 @@ import { Field, getValue } from '@modular-forms/solid'
 import { type Component, Show } from 'solid-js'
 import type { Repository } from '/@/api/neoshowcase/protobuf/gateway_pb'
 import { Button } from '/@/components/UI/Button'
-import { MaterialSymbols } from '/@/components/UI/MaterialSymbols'
 import { CheckBox } from '/@/components/templates/CheckBox'
 import { FormItem } from '/@/components/templates/FormItem'
 import { originToIcon, repositoryURLToOrigin } from '/@/libs/application'
@@ -67,7 +66,7 @@ const GeneralStep: Component<{
           size="medium"
           variants="border"
           onClick={props.backToRepoStep}
-          leftIcon={<MaterialSymbols>arrow_back</MaterialSymbols>}
+          leftIcon={<span class="i-material-symbols:arrow-back text-2xl/6" />}
         >
           Back
         </Button>
@@ -76,7 +75,7 @@ const GeneralStep: Component<{
           variants="primary"
           type="button"
           onClick={props.proceedToWebsiteStep}
-          rightIcon={<MaterialSymbols>arrow_forward</MaterialSymbols>}
+          rightIcon={<span class="i-material-symbols:arrow-forward text-2xl/6" />}
           disabled={formStore.invalid || formStore.submitting}
           loading={formStore.submitting}
         >

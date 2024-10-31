@@ -3,7 +3,6 @@ import { Field, getValue, remove, setValue } from '@modular-forms/solid'
 import { type Component, Show, createEffect, createMemo } from 'solid-js'
 import { AuthenticationType } from '/@/api/neoshowcase/protobuf/gateway_pb'
 import { Button } from '/@/components/UI/Button'
-import { MaterialSymbols } from '/@/components/UI/MaterialSymbols'
 import { CheckBox } from '/@/components/templates/CheckBox'
 import { FormItem } from '/@/components/templates/FormItem'
 import { RadioGroup, type RadioOption } from '/@/components/templates/RadioGroups'
@@ -59,7 +58,7 @@ const WebsiteFieldGroup: Component<Props> = (props) => {
           <Collapsible.Trigger class="flex w-full cursor-pointer appearance-none items-center gap-2 border-none bg-inherit text-medium text-text-black">
             詳細
             <div class="[[data-expanded]_&]:transform-rotate-180deg size-6 transition-transform duration-200">
-              <MaterialSymbols>expand_more</MaterialSymbols>
+              <span class="i-material-symbols:expand-more text-2xl/6" />
             </div>
           </Collapsible.Trigger>
           <Collapsible.Content

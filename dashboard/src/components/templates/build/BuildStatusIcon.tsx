@@ -1,7 +1,6 @@
 import type { JSXElement } from 'solid-js'
 import { Dynamic } from 'solid-js/web'
 import { BuildStatus } from '/@/api/neoshowcase/protobuf/gateway_pb'
-import { MaterialSymbols } from '/@/components/UI/MaterialSymbols'
 import { ToolTip } from '/@/components/UI/ToolTip'
 import { buildStatusStr } from '/@/libs/application'
 
@@ -10,34 +9,22 @@ interface IconProps {
 }
 const components: Record<BuildStatus, (size: IconProps) => JSXElement> = {
   [BuildStatus.QUEUED]: (props) => (
-    <MaterialSymbols fill displaySize={props.size} class="text-text-disabled">
-      do_not_disturb_on
-    </MaterialSymbols>
+    <span class="i-material-symbols:do-not-disturb-on text-text-disabled" style={{ 'font-size': `${props.size}px` }} />
   ),
   [BuildStatus.BUILDING]: (props) => (
-    <MaterialSymbols fill displaySize={props.size} class="text-accent-warn">
-      offline_bolt
-    </MaterialSymbols>
+    <span class="i-material-symbols:offline-bolt text-accent-warn" style={{ 'font-size': `${props.size}px` }} />
   ),
   [BuildStatus.SUCCEEDED]: (props) => (
-    <MaterialSymbols fill displaySize={props.size} class="text-accent-success">
-      check_circle
-    </MaterialSymbols>
+    <span class="i-material-symbols:check-circle text-accent-success" style={{ 'font-size': `${props.size}px` }} />
   ),
   [BuildStatus.FAILED]: (props) => (
-    <MaterialSymbols fill displaySize={props.size} class="text-accent-error">
-      error
-    </MaterialSymbols>
+    <span class="i-material-symbols:error text-accent-error" style={{ 'font-size': `${props.size}px` }} />
   ),
   [BuildStatus.CANCELLED]: (props) => (
-    <MaterialSymbols fill displaySize={props.size} class="text-text-disabled">
-      do_not_disturb_on
-    </MaterialSymbols>
+    <span class="i-material-symbols:do-not-disturb-on text-text-disabled" style={{ 'font-size': `${props.size}px` }} />
   ),
   [BuildStatus.SKIPPED]: (props) => (
-    <MaterialSymbols fill displaySize={props.size} class="text-text-disabled">
-      do_not_disturb_on
-    </MaterialSymbols>
+    <span class="i-material-symbols:do-not-disturb-on text-text-disabled" style={{ 'font-size': `${props.size}px` }} />
   ),
 }
 

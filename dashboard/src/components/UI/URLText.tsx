@@ -1,5 +1,4 @@
 import type { Component } from 'solid-js'
-import { MaterialSymbols } from './MaterialSymbols'
 import { ToolTip } from './ToolTip'
 
 export interface URLTextProps {
@@ -18,7 +17,7 @@ export const URLText: Component<URLTextProps> = (props) => {
       <a class="text-regular text-text-link" href={props.href} target="_blank" rel="noreferrer">
         <div class="flex items-center gap-1">
           {props.text}
-          <MaterialSymbols opticalSize={20}>open_in_new</MaterialSymbols>
+          <span class="i-material-symbols:open-in-new text-xl/5" />
         </div>
       </a>
     </ToolTip>

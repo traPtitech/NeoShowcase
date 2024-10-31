@@ -1,7 +1,6 @@
 import { FieldArray, getValue, getValues, insert } from '@modular-forms/solid'
 import { type Component, For, Show } from 'solid-js'
 import { Button } from '/@/components/UI/Button'
-import { MaterialSymbols } from '/@/components/UI/MaterialSymbols'
 import { styled } from '/@/components/styled-components'
 import { List } from '/@/components/templates/List'
 import { systemInfo } from '/@/libs/api'
@@ -46,12 +45,12 @@ const WebsiteStep: Component<{
                   each={fieldArray.items}
                   fallback={
                     <List.PlaceHolder>
-                      <MaterialSymbols displaySize={80}>link_off</MaterialSymbols>
+                      <span class="i-material-symbols:link-off text-20/20" />
                       URLが設定されていません
                       <Button
                         variants="primary"
                         size="medium"
-                        rightIcon={<MaterialSymbols>add</MaterialSymbols>}
+                        rightIcon={<span class="i-material-symbols:add text-2xl/6" />}
                         onClick={addFormStore}
                         type="button"
                       >
@@ -77,7 +76,7 @@ const WebsiteStep: Component<{
                     }}
                     variants="border"
                     size="small"
-                    leftIcon={<MaterialSymbols opticalSize={20}>add</MaterialSymbols>}
+                    leftIcon={<span class="i-material-symbols:add text-xl/5" />}
                     type="button"
                   >
                     Add More
@@ -91,7 +90,7 @@ const WebsiteStep: Component<{
           <Button
             size="medium"
             variants="ghost"
-            leftIcon={<MaterialSymbols>arrow_back</MaterialSymbols>}
+            leftIcon={<span class="i-material-symbols:arrow-back text-2xl/6" />}
             onClick={props.backToGeneralStep}
           >
             Back

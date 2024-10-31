@@ -2,7 +2,6 @@ import { A } from '@solidjs/router'
 import { type Component, Show } from 'solid-js'
 import type { Application, Build } from '/@/api/neoshowcase/protobuf/gateway_pb'
 import Badge from '/@/components/UI/Badge'
-import { MaterialSymbols } from '/@/components/UI/MaterialSymbols'
 import { ToolTip } from '/@/components/UI/ToolTip'
 import type { CommitsMap } from '/@/libs/api'
 import { diffHuman, shortSha } from '/@/libs/format'
@@ -69,7 +68,7 @@ export const BuildRow: Component<Props> = (props) => {
           <div class="grow-1" />
           <Show when={props.app}>
             <div class="ml-auto flex w-fit items-center truncate text-right">
-              <MaterialSymbols displaySize={20}>deployed_code</MaterialSymbols>
+              <span class="i-material-symbols:deployed-code-outline text-xl/5" />
               {props.app!.name}
             </div>
           </Show>
