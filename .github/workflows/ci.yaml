@@ -8,11 +8,15 @@ on:
       - 'dashboard/**'
       - 'docs/**'
       - 'README.md'
+      - '.github/**'
+      - '!.github/workflows/ci.yaml'
   pull_request:
     paths-ignore:
       - 'dashboard/**'
       - 'docs/**'
       - 'README.md'
+      - '.github/**'
+      - '!.github/workflows/ci.yaml'
 
 jobs:
   mod:
