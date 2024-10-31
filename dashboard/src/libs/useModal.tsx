@@ -38,7 +38,7 @@ const useModal = (options?: {
               as="div"
               class={clsx(
                 'relative flex max-h-full w-full max-w-142 scale-95 flex-col overflow-hidden rounded-xl bg-ui-primary opacity-1 transition-all duration-300 data-[expanded]:scale-100 data-[expanded]:opacity-100',
-                props.fit ?? true ? 'h-auto' : 'h-full',
+                (props.fit ?? true) ? 'h-auto' : 'h-full',
               )}
             >
               {props.children}
@@ -77,7 +77,7 @@ const useModal = (options?: {
         class={clsx(
           'description flex h-auto max-h-full w-full overflow-y-hidden px-8 py-6',
           '[.dialog-header~&]:border-ui-border [.dialog-header~&]:border-t-2',
-          props.fit ?? true ? 'h-auto' : 'h-full',
+          (props.fit ?? true) ? 'h-auto' : 'h-full',
         )}
       >
         {props.children}
