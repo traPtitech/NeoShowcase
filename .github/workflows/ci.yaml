@@ -6,9 +6,13 @@ on:
       - 'main'
     paths-ignore:
       - 'dashboard/**'
+      - 'docs/**'
+      - 'README.md'
   pull_request:
     paths-ignore:
       - 'dashboard/**'
+      - 'docs/**'
+      - 'README.md'
 
 jobs:
   mod:
