@@ -3,7 +3,6 @@ import { defineConfig, type PluginOption } from 'vite'
 import solidPlugin from 'vite-plugin-solid'
 import solidSvg from 'vite-plugin-solid-svg'
 import Unfonts from 'unplugin-fonts/vite'
-import { macaronVitePlugin } from '@macaron-css/vite'
 import viteCompression from 'vite-plugin-compression'
 import { visualizer } from 'rollup-plugin-visualizer'
 import UnoCSS from 'unocss/vite'
@@ -11,7 +10,6 @@ import UnoCSS from 'unocss/vite'
 export default defineConfig(({ mode }) => ({
   plugins: [
     UnoCSS(),
-    macaronVitePlugin(), // comes first
     solidPlugin(),
     solidSvg({ defaultAsComponent: true }),
     Unfonts({
