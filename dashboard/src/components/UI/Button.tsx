@@ -35,9 +35,9 @@ export const Button: ParentComponent<Props> = (props) => {
       <span class={addedProps.full ? 'w-full' : 'w-fit'}>
         <button
           class={clsx(
-            'flex w-auto cursor-pointer items-center gap-1 rounded-lg bg-inherit',
+            'flex w-auto cursor-pointer items-center gap-1 rounded-lg',
             '!disabled:border-none !disabled:bg-text-disabled !disabled:text-text-black disabled:cursor-not-allowed',
-            '!data-[loading]:border-none !data-[loading]:bg-text-disabled !data-[loading]:text-text-black data-[loading]:cursor-wait',
+            '!data-[loading=true]:border-none !data-[loading=true]:bg-text-disabled !data-[loading=true]:text-text-black data-[loading=true]:cursor-wait',
             // size
             { small: 'h-8 px-3', medium: 'h-11 px-4' }[addedProps.size],
             // full
@@ -47,20 +47,20 @@ export const Button: ParentComponent<Props> = (props) => {
             // variants
             {
               primary:
-                'border-none bg-primary-main text-text-white hover:bg-color-overlay-primary-main-to-black-alpha-200 active:bg-color-overlay-primary-main-to-black-alpha-300 data-[active]:bg-color-overlay-primary-main-to-black-alpha-300',
+                'border-none bg-primary-main text-text-white hover:bg-color-overlay-primary-main-to-black-alpha-200 data-[active=true]:bg-color-overlay-primary-main-to-black-alpha-300 data-[active=true]:bg-color-overlay-primary-main-to-black-alpha-300',
               ghost:
-                'border-none bg-ui-secondary text-text-black hover:bg-color-overlay-ui-secondary-to-black-alpha-50 active:bg-color-overlay-ui-secondary-to-black-alpha-200 data-[active]:bg-color-overlay-ui-secondary-to-black-alpha-200',
+                'border-none bg-ui-secondary text-text-black hover:bg-color-overlay-ui-secondary-to-black-alpha-50 data-[active=true]:bg-color-overlay-ui-secondary-to-black-alpha-200 data-[active=true]:bg-color-overlay-ui-secondary-to-black-alpha-200',
               border:
-                'border border-ui-border text-text-black hover:bg-transparency-primary-hover active:bg-transparency-primary-selected data-[active]:bg-transparency-primary-selected',
-              text: 'text-text-black hover:bg-transparency-primary-hover active:text-primary-main data-[active]:bg-transparency-primary-selected',
+                'border border-ui-border bg-inherit text-text-black hover:bg-transparency-primary-hover data-[active=true]:bg-transparency-primary-selected data-[active=true]:bg-transparency-primary-selected',
+              text: 'bg-inherit text-text-black hover:bg-transparency-primary-hover data-[active=true]:bg-transparency-primary-selected data-[active=true]:text-primary-main',
 
               primaryError:
-                'border border-accent-error bg-accent-error text-text-white hover:bg-color-overlay-accent-error-to-black-alpha-200 active:bg-color-overlay-accent-error-to-black-alpha-300 data-[active]:bg-color-overlay-accent-error-to-black-alpha-300',
+                'border border-accent-error bg-accent-error text-text-white hover:bg-color-overlay-accent-error-to-black-alpha-200 data-[active=true]:bg-color-overlay-accent-error-to-black-alpha-300 data-[active=true]:bg-color-overlay-accent-error-to-black-alpha-300',
               borderError:
-                'border border-accent-error text-accent-error hover:bg-transparency-error-hover active:bg-transparency-error-selected data-[active]:bg-transparency-error-selected',
+                'border border-accent-error bg-inherit text-accent-error hover:bg-transparency-error-hover data-[active=true]:bg-transparency-error-selected data-[active=true]:bg-transparency-error-selected',
 
               textError:
-                'border-none text-accent-error hover:bg-transparency-error active:bg-transparency-error-selected data-[active]:bg-transparency-error-selected',
+                'border-none bg-inherit text-accent-error hover:bg-transparency-error data-[active=true]:bg-transparency-error-selected data-[active=true]:bg-transparency-error-selected',
             }[addedProps.variants],
           )}
           data-active={addedProps.active}

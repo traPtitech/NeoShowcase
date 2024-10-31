@@ -59,7 +59,7 @@ export const RadioGroup = <T extends string>(props: Props<T>): JSX.Element => {
         </TitleContainer>
       </Show>
       <ToolTip {...props.tooltip}>
-        <div class="flex w-full flex-wrap gap-4">
+        <div class={clsx('flex w-full gap-4', props.wrap ? 'flex-wrap' : 'flex-nowrap max-md:flex-col')}>
           <For each={props.options}>
             {(option) => (
               <KRadioGroup.Item
@@ -75,6 +75,8 @@ export const RadioGroup = <T extends string>(props: Props<T>): JSX.Element => {
                     'data-[checked]:outline data-[checked]:outline-2 data-[checked]:outline-primary-main',
                     'data-[disabled]:cursor-not-allowed data-[disabled]:bg-ui-tertiary data-[disabled]:text-text-disabled',
                     'data-[invalid]:outline data-[invalid]:outline-2 data-[invalid]:outline-accent-error',
+                    'min-w-[min(200px,100%)]',
+                    props.full ? 'w-full' : 'w-fit',
                   )}
                 >
                   <div class="grid grid-cols-[1fr_20px] items-center justify-start gap-2 text-regular text-text-black">

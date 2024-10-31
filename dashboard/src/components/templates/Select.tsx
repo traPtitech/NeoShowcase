@@ -8,7 +8,7 @@ import { TooltipInfoIcon } from '../UI/TooltipInfoIcon'
 import { RequiredMark, TitleContainer } from './FormItem'
 
 const itemStyleBase = clsx(
-  'lg8 flex h-11 w-full cursor-pointer items-center gap-2 whitespace-nowrap border-none bg-inherit text-bold text-text-black',
+  'cursor-pointer items-center gap-2 whitespace-nowrap rounded-lg border-none bg-inherit text-bold text-text-black',
   'hover:bg-transparency-primary-hover data-[highlighted]:bg-transparency-primary-hover',
   '!data-[disabled]:bg-text-disabled !data-[disabled]:text-text-black data-[disabled]:cursor-not-allowed',
 )
@@ -22,21 +22,18 @@ const singleItemStyle = clsx(
 const multiItemStyle = clsx(itemStyleBase, 'p-2')
 
 const triggerStyle = clsx(
-  'grid h-12 w-full max-w-72 cursor-pointer grid-cols-[1fr_24px] content-center items-center gap-1 rounded-lg border-none bg-primary-main px-4 py-2.5 text-text-black outline outline-1 outline-ui-border',
+  'grid h-12 w-full max-w-72 cursor-pointer grid-cols-[1fr_24px] content-center items-center gap-1 rounded-lg border-none bg-ui-primary px-4 py-2.5 text-text-black outline outline-1 outline-ui-border',
   'focus-visible:outline-2 focus-visible:outline-primary-main',
   'data-[expanded]:outline-2 data-[expanded]:outline-primary-main',
   '!data-[disabled]:bg-ui-tertiary !data-[disabled]:text-text-disabled data-[disabled]:cursor-not-allowed',
 )
 
-const valueStyle = clsx(
-  'w-full truncate text-left text-regular text-text-black',
-  'data-[placeholder-shown]:text-text-disabled',
-)
+const valueStyle = clsx('w-full truncate text-left text-regular', 'data-[placeholder-shown]:text-text-disabled')
 
-const iconStyle = clsx('size-6 flex-shrink-0')
+const iconStyle = clsx('size-6 shrink-0')
 
 const contentStyleBase = clsx(
-  '-translate-y-2 rounded-md bg-ui-primary opacity-0 shadow-default transition-all duration-200 ease-in-out data-[expanded]:translate-y-0 data-[expanded]:opacity-1',
+  'animate-duration-200 animate-ease-out animate-wipe-hide-up rounded-md bg-ui-primary shadow-default data-[expanded]:animate-wipe-show-down',
 )
 const selectContentStyle = clsx(contentStyleBase, 'origin-[--kb-select-content-transform-origin]')
 const comboBoxContentStyle = clsx(contentStyleBase, 'max-w-72 origin-[--kb-combobox-content-transform-origin]')

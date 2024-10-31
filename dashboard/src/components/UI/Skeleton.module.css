@@ -1,8 +1,8 @@
-.skeleton-animation {
+.skeleton-animation::after {
   animation: skeleton-loading 1.5s linear infinite;
 }
 
 @keyframes skeleton-loading {
-  from { transform: translateY(-100%) }
-  to { transform: translateY(100%) }
+  from { transform: translateX(-100%) }
+  to { transform: translateX(100%) }
 }

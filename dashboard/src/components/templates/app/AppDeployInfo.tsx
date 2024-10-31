@@ -73,7 +73,7 @@ const AppDeployInfo: Component<{
     <div class="grid w-full grid-cols-[1fr_2fr] gap-0.25 overflow-hidden rounded-lg border border-ui-border bg-ui-border max-md:grid-cols-1">
       <div
         class={clsx(
-          'h3-medium relative grid w-full cursor-pointer grid-cols-[1fr_2fr_1fr] justify-center text-text-black',
+          'h3-medium relative grid w-full cursor-pointer grid-rows-[1fr_2fr_1fr] justify-center text-text-black',
           deploymentState(props.app) === ApplicationState.Running &&
             'bg-color-overlay-ui-primary-to-transparency-success-selected hover:bg-color-overlay-ui-primary-to-transparency-success-hover',
           deploymentState(props.app) === ApplicationState.Serving &&
