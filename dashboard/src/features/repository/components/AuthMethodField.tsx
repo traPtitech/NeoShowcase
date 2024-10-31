@@ -46,7 +46,7 @@ const AuthMethodField: Component<Props> = (props) => {
       })
     }
   })
-  const publicKey = () => (useTmpKey() ? tmpKey()?.publicKey : systemInfo()?.publicKey ?? '')
+  const publicKey = () => (useTmpKey() ? tmpKey()?.publicKey : (systemInfo()?.publicKey ?? ''))
 
   return (
     <>

@@ -67,7 +67,7 @@ type SelectProps<T extends string | number> = {
 
 export type SingleSelectProps<T extends string | number> = SelectProps<T> & {
   value: T | undefined
-  setValue?: (v: T) => void
+  setValue?: (v: T | undefined) => void
 }
 
 export const SingleSelect = <T extends string | number>(props: SingleSelectProps<T>): JSX.Element => {
@@ -79,16 +79,12 @@ export const SingleSelect = <T extends string | number>(props: SingleSelectProps
 
   // const selectedOption = () => props.options.find((o) => o.value === props.value)
   const [selectedOption, setSelectedOption] = createSignal<SelectOption<T>>()
+  // KobalteのSelect/Comboboxではundefinedを使用できないため、空文字列を指定している
+  const defaultOption = { label: '', value: '' as T }
 
   createEffect(() => {
     const found = props.options.find((o) => o.value === props.value)
-    // KobalteのSelect/Comboboxではundefinedを使用できないため、空文字列を指定している
-    setSelectedOption(
-      found ?? {
-        label: '',
-        value: '' as T,
-      },
-    )
+    setSelectedOption(found ?? defaultOption)
   })
 
   return (
@@ -99,8 +95,8 @@ export const SingleSelect = <T extends string | number>(props: SingleSelectProps
       disallowEmptySelection
       value={selectedOption()}
       onChange={(v) => {
-        props.setValue?.(v.value)
-        setSelectedOption(v)
+        props.setValue?.(v?.value)
+        setSelectedOption(v ?? defaultOption)
       }}
       optionValue="value"
       optionTextValue="label"
@@ -222,16 +218,12 @@ export const ComboBox = <T extends string | number>(props: ComboBoxProps<T>): JS
   )
 
   const [selectedOption, setSelectedOption] = createSignal<SelectOption<T>>()
+  // KobalteのSelect/Comboboxではundefinedを使用できないため、空文字列を指定している
+  const defaultOption = { label: '', value: '' as T }
 
   createEffect(() => {
     const found = props.options.find((o) => o.value === props.value)
-    // KobalteのSelect/Comboboxではundefinedを使用できないため、空文字列を指定している
-    setSelectedOption(
-      found ?? {
-        label: '',
-        value: '' as T,
-      },
-    )
+    setSelectedOption(found ?? defaultOption)
   })
 
   return (
@@ -241,8 +233,8 @@ export const ComboBox = <T extends string | number>(props: ComboBoxProps<T>): JS
       allowDuplicateSelectionEvents
       value={selectedOption()}
       onChange={(v) => {
-        props.setValue?.(v.value)
-        setSelectedOption(v)
+        props.setValue?.(v?.value)
+        setSelectedOption(v ?? defaultOption)
       }}
       optionValue="value"
       optionTextValue="label"

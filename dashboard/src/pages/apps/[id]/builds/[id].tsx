@@ -6,6 +6,7 @@ import { List } from '/@/components/templates/List'
 import { ArtifactRow } from '/@/components/templates/build/ArtifactRow'
 import { BuildLog } from '/@/components/templates/build/BuildLog'
 import BuildStatusTable from '/@/components/templates/build/BuildStatusTable'
+import { RuntimeImageRow } from '/@/components/templates/build/RuntimeImageRow'
 import { client } from '/@/libs/api'
 import { useBuildData } from '/@/routes'
 
@@ -40,6 +41,14 @@ export default () => {
               <DataTable.Title>Artifacts</DataTable.Title>
               <List.Container>
                 <For each={build()!.artifacts}>{(artifact) => <ArtifactRow artifact={artifact} />}</For>
+              </List.Container>
+            </DataTable.Container>
+          </Show>
+          <Show when={build()!.runtimeImage != null}>
+            <DataTable.Container>
+              <DataTable.Title>Artifact</DataTable.Title>
+              <List.Container>
+                <RuntimeImageRow image={build()!.runtimeImage!} />
               </List.Container>
             </DataTable.Container>
           </Show>

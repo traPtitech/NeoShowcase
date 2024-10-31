@@ -33,6 +33,7 @@ export default defineConfig(({ mode }) => ({
     proxy: {
       '/neoshowcase.protobuf.APIService': {
         target: 'http://ns.local.trapti.tech',
+        changeOrigin: true,
       },
     },
   },
