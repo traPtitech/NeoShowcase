@@ -8,7 +8,7 @@ import { RepositoryRow } from './repo/RepositoryRow'
 
 const Container = styled(
   'div',
-  'flex w-full flex-col gap-0.25 overflow-hidden rounded-lg border border-gray-200 border-ui-border bg-ui-border',
+  'flex w-full flex-col gap-0.25 overflow-hidden rounded-lg border border-ui-border bg-ui-border',
 )
 
 const Row = styled('div', 'flex w-full items-center gap-2 bg-ui-primary px-5 py-4')
