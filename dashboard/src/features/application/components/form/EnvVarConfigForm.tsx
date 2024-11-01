@@ -124,7 +124,7 @@ const EnvVarConfigForm: Component<Props> = (props) => {
     <Form of={formStore} onSubmit={handleSubmit} shouldActive={false}>
       <FormBox.Container>
         <FormBox.Forms>
-          <div class="grid w-full grid-cols-2 gap-row-2 text-bold text-text-black">
+          <div class="grid w-full grid-cols-2 gap-col-6 gap-row-2 text-bold text-text-black">
             <div>Key</div>
             <div>Value</div>
             <FieldArray of={formStore} name="variables">
