@@ -60,7 +60,7 @@ export const Button: ParentComponent<Props> = (props) => {
                 'border border-accent-error bg-inherit text-accent-error hover:bg-transparency-error-hover data-[active=true]:bg-transparency-error-selected data-[active=true]:bg-transparency-error-selected',
 
               textError:
-                'border-none bg-inherit text-accent-error hover:bg-transparency-error data-[active=true]:bg-transparency-error-selected data-[active=true]:bg-transparency-error-selected',
+                'border-none bg-inherit text-accent-error hover:bg-transparency-error-hover data-[active=true]:bg-transparency-error-selected data-[active=true]:bg-transparency-error-selected',
             }[addedProps.variants],
           )}
           data-active={addedProps.active}
