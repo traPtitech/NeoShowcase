@@ -55,16 +55,16 @@ const WebsiteFieldGroup: Component<Props> = (props) => {
         <UrlField index={props.index} readonly={props.readonly} showHttpPort={props.isRuntimeApp} />
         {/* Field componentがmountされないとそのfieldがformに登録されないためforceMountする */}
         <Collapsible forceMount>
-          <Collapsible.Trigger class="flex w-full cursor-pointer appearance-none items-center gap-2 border-none bg-inherit text-medium text-text-black">
+          <Collapsible.Trigger class="group flex w-full cursor-pointer appearance-none items-center gap-2 border-none bg-inherit text-medium text-text-black">
             詳細
-            <div class="[[data-expanded]_&]:transform-rotate-180deg size-6 transition-transform duration-200">
+            <div class="group-data-[expanded]:transform-rotate-180deg size-6 transition-transform duration-200">
               <div class="i-material-symbols:expand-more shrink-0 text-2xl/6" />
             </div>
           </Collapsible.Trigger>
           <Collapsible.Content
             class={clsx(
               'flex h-0 gap-2 overflow-hidden',
-              '[data-[expanded]_&]:h-[var(--kb-collapsible-content-height)] [data-[expanded]_&]:overflow-visible',
+              'data-[expanded]:h-[var(--kb-collapsible-content-height)] data-[expanded]:overflow-visible',
             )}
           >
             <div class="flex w-full flex-col gap-2 pt-2">
