@@ -1,6 +1,6 @@
 import { styled } from '/@/components/styled-components'
 
-const Container = styled('div', 'grid h-full w-full grid-cols-[minmax(0_1fr)] grid-rows-[max-content_1fr]')
+const Container = styled('div', 'grid h-full w-full grid-cols-[minmax(0,1fr)] grid-rows-[max-content_1fr]')
 
 const Navs = styled('div', 'h-auto overflow-x-hidden border-ui-border border-b')
 
