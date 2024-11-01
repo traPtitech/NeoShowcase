@@ -69,7 +69,7 @@ const CreateForm: Component = () => {
         {() => null}
       </Field>
       <div class="flex w-full flex-col items-end gap-10">
-        <div class="mx-auto flex w-full flex-col gap-6 rounded-lg bg-ui-primary px-6 pt-5">
+        <div class="mx-auto flex w-full flex-col gap-6 rounded-lg bg-ui-primary px-6 py-5">
           <Field of={formStore} name="form.url">
             {(field, fieldProps) => (
               <TextField
