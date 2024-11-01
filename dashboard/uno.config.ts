@@ -68,6 +68,28 @@ export default defineConfig({
       },
     ],
     [
+      /^animate-pop-(show|hide)$/,
+      ([, type]) => {
+        return {
+          'animation-name': `keyframe-pop-${type}`,
+        }
+      },
+      {
+        autocomplete: 'animate-pop-(show|hide)',
+      },
+    ],
+    [
+      /^animate-fade-(show|hide)$/,
+      ([, type]) => {
+        return {
+          'animation-name': `keyframe-fade-${type}`,
+        }
+      },
+      {
+        autocomplete: 'animate-fade-(show|hide)',
+      },
+    ],
+    [
       /^animate-duration-(.+)$/,
       ([, p]) => ({
         'animation-duration': `${p}ms`,
