@@ -75,18 +75,17 @@ const RepositoryStep: Component<{
         rightIcon={<ReposFilter origin={origin()} setOrigin={setOrigin} />}
       />
       <List.Container>
-        <A href="/repos/new">
-          <div
-            class={clsx(
-              'flex h-auto w-full cursor-pointer items-center gap-2 bg-ui-primary p-5 text-bold text-text-black',
-              'hover:bg-color-overlay-ui-primary-to-transparency-primary-hover',
-            )}
-          >
-            <div class="i-material-symbols:add shrink-0 text-2xl/6" />
-            Register Repository
-          </div>
+        <A
+          href="/repos/new"
+          class={clsx(
+            'flex h-auto w-full cursor-pointer items-center gap-2 border-ui-border border-b bg-ui-primary p-5 text-bold text-text-black',
+            'hover:bg-color-overlay-ui-primary-to-transparency-primary-hover',
+          )}
+        >
+          <div class="i-material-symbols:add shrink-0 text-2xl/6" />
+          Register Repository
         </A>
-        <div class="flex h-full w-full flex-col overflow-y-auto">
+        <div class="flex h-full w-full flex-col divide-y divide-ui-border overflow-y-auto">
           <For
             each={filteredRepos()}
             fallback={
@@ -100,9 +99,9 @@ const RepositoryStep: Component<{
             {(repo) => (
               <button
                 class={clsx(
-                  'w-full cursor-pointer border-none bg-ui-primary',
+                  'w-full cursor-pointer bg-ui-primary',
                   'hover:bg-color-overlay-ui-primary-to-transparency-primary-hover',
-                  '[&:not(:last-child)]:border-ui-border [&:not(:last-child)]:border-b-1',
+                  // '[&:not(:last-child)]:border-ui-border [&:not(:last-child)]:border-b-1 [&:not(:last-child)]:border-b-solid',
                 )}
                 onClick={() => {
                   props.onSelect(repo.repo)
