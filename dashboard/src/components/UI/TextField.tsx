@@ -60,14 +60,14 @@ export const TextField: Component<Props> = (props) => {
         fallback={
           <div class="flex w-full flex-col gap-1">
             <ToolTip {...props.tooltip}>
-              <div class="relative flex w-full gap-1">
+              <div class="relative flex w-full gap-0.25">
                 <div
                   class={clsx(
-                    'flex h-12 w-full gap-1 rounded-lg border-none bg-ui-primary px-4 text-regular text-text-black outline outline-1 outline-ui-border',
+                    'flex h-12 w-full gap-1 border-none bg-ui-primary px-4 text-regular text-text-black outline outline-1 outline-ui-border',
                     'focus-within:outline-2 focus-within:outline-primary-main',
                     'data-[disabled]:has-[.input]:cursor-not-allowed data-[disabled]:has-[.input]:bg-ui-tertiary',
                     'data-[invalid]:has-[.input]:outline-2 data-[invalid]:has-[.input]:outline-accent-error',
-                    props.copyable && 'rounded-l-lg',
+                    props.copyable ? 'rounded-l-lg' : 'rounded-lg',
                   )}
                 >
                   <Show when={props.leftIcon}>
@@ -84,7 +84,7 @@ export const TextField: Component<Props> = (props) => {
                 </div>
                 <Show when={props.copyable}>
                   <button
-                    class="w-12 shrink-0 cursor-pointer rounded-r-lg border-none bg-black-alpha-100 text-text-black leading-6 outline outline-1 outline-ui-border hover:bg-black-alpha-200 active:bg-black-alpha-300"
+                    class="inline-grid w-12 shrink-0 cursor-pointer place-content-center rounded-r-lg border-none bg-black-alpha-100 text-text-black leading-4 outline outline-1 outline-ui-border hover:bg-black-alpha-200 active:bg-black-alpha-300"
                     onClick={handleCopy}
                     type="button"
                   >
