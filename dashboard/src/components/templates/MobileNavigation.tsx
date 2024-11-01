@@ -17,7 +17,7 @@ const MobileNavigation: Component = () => {
         <div class="i-material-symbols:menu text-2xl/6" />
       </Dialog.Trigger>
       <Dialog.Portal>
-        <Dialog.Overlay class="fixed inset-0 bg-black-alpha-600 opacity-0 transition-opacity duration-200 data-[expanded]:opacity-1" />
+        <Dialog.Overlay class="fixed inset-0 bg-black-alpha-600 opacity-0 transition-opacity duration-200 data-[expanded]:opacity-100" />
         <Dialog.Content class="fixed inset-0 flex max-w-fit flex-col gap-4 bg-primary-white p-4">
           <div class="flex w-full items-center justify-between gap-4">
             <A href="/">

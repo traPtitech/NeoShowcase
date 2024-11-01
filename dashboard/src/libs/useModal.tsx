@@ -27,7 +27,7 @@ const useModal = (options?: {
           <Dialog.Overlay
             class={clsx(
               'fixed inset-0 bg-black-alpha-600 opacity-0 transition-opacity duration-200',
-              'data-[expanded]:opacity-1',
+              'data-[expanded]:opacity-100',
             )}
           />
           <div class="fixed inset-0 grid place-items-center p-8">
@@ -36,7 +36,7 @@ const useModal = (options?: {
               onPointerDownOutside={mergedProps.closeOnClickOutside ? close : undefined}
               as="div"
               class={clsx(
-                'relative flex max-h-full w-full max-w-142 scale-95 flex-col overflow-hidden rounded-xl bg-ui-primary opacity-1 transition-all duration-300 data-[expanded]:scale-100 data-[expanded]:opacity-100',
+                'relative flex max-h-full w-full max-w-142 scale-95 flex-col overflow-hidden rounded-xl bg-ui-primary opacity-0 transition-all duration-300 data-[expanded]:scale-100 data-[expanded]:opacity-100',
                 (props.fit ?? true) ? 'h-auto' : 'h-full',
               )}
             >
