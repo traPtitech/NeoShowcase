@@ -30,7 +30,7 @@ const Code: Component<{
             onClick={handleCopy}
             type="button"
           >
-            <span class="text-xl/5 i-material-symbols:content-copy-outline" />
+            <div class="text-xl/5 i-material-symbols:content-copy-outline" />
           </button>
         </ToolTip>
       </Show>

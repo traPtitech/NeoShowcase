@@ -19,7 +19,7 @@ export default () => {
     <Button
       variants="primary"
       size="medium"
-      leftIcon={<span class="i-material-symbols:add text-2xl/6" />}
+      leftIcon={<div class="i-material-symbols:add text-2xl/6" />}
       onClick={() => {
         navigator(`/apps/new?repositoryID=${repo()?.id}`)
       }}
@@ -59,7 +59,7 @@ export default () => {
               <Show when={showPlaceHolder()} fallback={<AppsList apps={apps()!} commits={commits()} />}>
                 <List.Container>
                   <List.PlaceHolder>
-                    <span class="i-material-symbols:deployed-code-outline text-20/20" />
+                    <div class="i-material-symbols:deployed-code-outline text-20/20" />
                     No Apps
                     <AddNewAppButton />
                   </List.PlaceHolder>

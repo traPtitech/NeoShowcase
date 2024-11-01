@@ -58,7 +58,7 @@ const WebsiteFieldGroup: Component<Props> = (props) => {
           <Collapsible.Trigger class="flex w-full cursor-pointer appearance-none items-center gap-2 border-none bg-inherit text-medium text-text-black">
             詳細
             <div class="[[data-expanded]_&]:transform-rotate-180deg size-6 transition-transform duration-200">
-              <span class="i-material-symbols:expand-more text-2xl/6" />
+              <div class="i-material-symbols:expand-more text-2xl/6" />
             </div>
           </Collapsible.Trigger>
           <Collapsible.Content

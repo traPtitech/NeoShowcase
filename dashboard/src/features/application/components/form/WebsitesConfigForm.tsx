@@ -105,12 +105,12 @@ const WebsiteConfigForm: Component<Props> = (props) => {
               each={fieldArray.items}
               fallback={
                 <List.PlaceHolder>
-                  <span class="i-material-symbols:link-off text-20/20" />
+                  <div class="i-material-symbols:link-off text-20/20" />
                   URLが設定されていません
                   <Button
                     variants="primary"
                     size="medium"
-                    rightIcon={<span class="i-material-symbols:add text-2xl/6" />}
+                    rightIcon={<div class="i-material-symbols:add text-2xl/6" />}
                     onClick={addFormStore}
                     type="button"
                   >
@@ -136,7 +136,7 @@ const WebsiteConfigForm: Component<Props> = (props) => {
                 }}
                 variants="border"
                 size="small"
-                leftIcon={<span class="i-material-symbols:add text-xl/5" />}
+                leftIcon={<div class="i-material-symbols:add text-xl/5" />}
                 type="button"
               >
                 Add More

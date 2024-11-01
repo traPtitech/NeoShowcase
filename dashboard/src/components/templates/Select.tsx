@@ -119,7 +119,7 @@ export const SingleSelect = <T extends string | number>(props: SingleSelectProps
         <KSelect.Trigger class={triggerStyle}>
           <KSelect.Value<SelectOption<T>> class={valueStyle}>{(state) => state.selectedOption().label}</KSelect.Value>
           <KSelect.Icon class={iconStyle}>
-            <span class="i-material-symbols:expand-more text-2xl/6 text-text-black" />
+            <div class="i-material-symbols:expand-more text-2xl/6 text-text-black" />
           </KSelect.Icon>
         </KSelect.Trigger>
       </ToolTip>
@@ -188,7 +188,7 @@ export const MultiSelect = <T extends string | number>(props: MultiSelectProps<T
           }
         </KSelect.Value>
         <KSelect.Icon class={iconStyle}>
-          <span class="i-material-symbols:expand-more text-2xl/6 text-text-black" />
+          <div class="i-material-symbols:expand-more text-2xl/6 text-text-black" />
         </KSelect.Icon>
       </KSelect.Trigger>
       <KSelect.Portal>
@@ -270,7 +270,7 @@ export const ComboBox = <T extends string | number>(props: ComboBoxProps<T>): JS
           />
           <KComboBox.Trigger class="absolute right-0 flex h-full w-11 cursor-pointer items-center justify-start border-none bg-inherit pl-1 text-text-disabled">
             <KComboBox.Icon class={iconStyle}>
-              <span class="i-material-symbols:expand-more text-2xl/6 text-text-black" />
+              <div class="i-material-symbols:expand-more text-2xl/6 text-text-black" />
             </KComboBox.Icon>
           </KComboBox.Trigger>
         </KComboBox.Control>

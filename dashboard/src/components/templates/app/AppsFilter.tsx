@@ -41,13 +41,13 @@ const AppsFilter: Component<{
         )}
       >
         <div class="relative size-6">
-          <span class="i-material-symbols:tune text-2xl/6" />
+          <div class="i-material-symbols:tune text-2xl/6" />
           <Show when={filtered()}>
             <div class="-right-0.5 -top-0.5 absolute size-2 rounded bg-primary-main outline outline-1 outline-ui-background" />
           </Show>
         </div>
         <DropdownMenu.Icon class="size-6 transition-transform duration-200 data-[expanded]:rotate-180">
-          <span class="i-material-symbols:expand-more text-2xl/6" />
+          <div class="i-material-symbols:expand-more text-2xl/6" />
         </DropdownMenu.Icon>
       </DropdownMenu.Trigger>
       <DropdownMenu.Portal>

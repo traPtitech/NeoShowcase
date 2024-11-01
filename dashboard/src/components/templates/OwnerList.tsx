@@ -54,7 +54,7 @@ const AddOwners: Component<{
     <div class="flex h-full max-h-full w-full flex-col gap-4">
       <TextField
         placeholder="Search UserID"
-        leftIcon={<span class="i-material-symbols:search text-2xl/6" />}
+        leftIcon={<div class="i-material-symbols:search text-2xl/6" />}
         value={searchUserQuery()}
         onInput={(e) => setSearchUserQuery(e.currentTarget.value)}
       />
@@ -62,7 +62,7 @@ const AddOwners: Component<{
         when={filteredUsers().length !== 0}
         fallback={
           <UserPlaceholder>
-            <span class="i-material-symbols:search text-20/20" />
+            <div class="i-material-symbols:search text-20/20" />
             No Users Found
           </UserPlaceholder>
         }
@@ -182,14 +182,14 @@ const OwnerList: Component<{
       <div class="flex items-center gap-4">
         <TextField
           placeholder="Search UserID"
-          leftIcon={<span class="i-material-symbols:search text-2xl/6" />}
+          leftIcon={<div class="i-material-symbols:search text-2xl/6" />}
           value={searchUserQuery()}
           onInput={(e) => setSearchUserQuery(e.currentTarget.value)}
         />
         <Button
           variants="primary"
           size="medium"
-          leftIcon={<span class="i-material-symbols:add text-2xl/6" />}
+          leftIcon={<div class="i-material-symbols:add text-2xl/6" />}
           onClick={openAddUserModal}
           disabled={!props.hasPermission}
           tooltip={{

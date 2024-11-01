@@ -97,7 +97,7 @@ const CreateForm: Component = () => {
         <Button
           variants="primary"
           size="medium"
-          rightIcon={<span class="i-material-symbols:arrow-forward text-2xl/6" />}
+          rightIcon={<div class="i-material-symbols:arrow-forward text-2xl/6" />}
           type="submit"
           disabled={formStore.invalid || formStore.submitting}
           loading={formStore.submitting}

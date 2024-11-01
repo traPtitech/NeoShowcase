@@ -88,7 +88,7 @@ export const TextField: Component<Props> = (props) => {
                     onClick={handleCopy}
                     type="button"
                   >
-                    <span class="text-2xl/6 i-material-symbols:content-copy-outline" />
+                    <div class="text-2xl/6 i-material-symbols:content-copy-outline" />
                   </button>
                 </Show>
               </div>

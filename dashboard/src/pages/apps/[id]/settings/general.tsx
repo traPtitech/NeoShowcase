@@ -63,7 +63,7 @@ const DeleteApp: Component<{
         <Modal.Header>Delete Application</Modal.Header>
         <Modal.Body>
           <ModalDeleteConfirm>
-            <span class="i-material-symbols:deployed-code-outline text-2xl/6" />
+            <div class="i-material-symbols:deployed-code-outline text-2xl/6" />
             {props.app.name}
           </ModalDeleteConfirm>
         </Modal.Body>

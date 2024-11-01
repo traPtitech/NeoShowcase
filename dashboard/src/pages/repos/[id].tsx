@@ -24,14 +24,14 @@ export default (props: RouteSectionProps) => {
           <RepositoryNav repository={repo()!} />
           <WithNav.Tabs>
             <TabRound onClick={() => navigate(`/repos/${repo()!.id}`)} state={matchIndexPage() ? 'active' : 'default'}>
-              <span class="i-material-symbols:insert-chart-outline text-2xl/6" />
+              <div class="i-material-symbols:insert-chart-outline text-2xl/6" />
               Info
             </TabRound>
             <TabRound
               onClick={() => navigate(`/repos/${repo()!.id}/settings`)}
               state={matchSettingsPage() ? 'active' : 'default'}
             >
-              <span class="i-material-symbols:settings-outline text-2xl/6" />
+              <div class="i-material-symbols:settings-outline text-2xl/6" />
               Settings
             </TabRound>
           </WithNav.Tabs>

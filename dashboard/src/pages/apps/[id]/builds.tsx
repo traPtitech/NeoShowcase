@@ -37,7 +37,7 @@ export default () => {
             >
               <List.Container>
                 <List.PlaceHolder>
-                  <span class="i-material-symbols:deployed-code-outline text-20/20" />
+                  <div class="i-material-symbols:deployed-code-outline text-20/20" />
                   No Builds
                 </List.PlaceHolder>
               </List.Container>

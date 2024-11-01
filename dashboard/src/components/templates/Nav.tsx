@@ -16,7 +16,7 @@ export const Nav: ParentComponent<Props> = (props) => {
       <Show when={props.backTo} fallback={<div />}>
         {(nonNullBackTo) => (
           <A href={nonNullBackTo()}>
-            <Button variants="text" size="medium" leftIcon={<span class="i-material-symbols:arrow-back text-2xl/6" />}>
+            <Button variants="text" size="medium" leftIcon={<div class="i-material-symbols:arrow-back text-2xl/6" />}>
               <div class="max-md:hidden">{props.backToTitle}</div>
             </Button>
           </A>

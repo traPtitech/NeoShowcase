@@ -68,7 +68,7 @@ export const BuildRow: Component<Props> = (props) => {
           <div class="grow-1" />
           <Show when={props.app}>
             <div class="ml-auto flex w-fit items-center truncate text-right">
-              <span class="i-material-symbols:deployed-code-outline text-xl/5" />
+              <div class="i-material-symbols:deployed-code-outline text-xl/5" />
               {props.app!.name}
             </div>
           </Show>

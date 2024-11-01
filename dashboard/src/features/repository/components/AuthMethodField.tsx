@@ -96,9 +96,9 @@ const AuthMethodField: Component<Props> = (props) => {
                   >
                     <Show
                       when={showPassword()}
-                      fallback={<span class="i-material-symbols:visibility-off-outline text-2xl/6" />}
+                      fallback={<div class="i-material-symbols:visibility-off-outline text-2xl/6" />}
                     >
-                      <span class="i-material-symbols:visibility-outline text-2xl/6" />
+                      <div class="i-material-symbols:visibility-outline text-2xl/6" />
                     </Show>
                   </button>
                 }
@@ -126,7 +126,7 @@ const AuthMethodField: Component<Props> = (props) => {
                           onClick={() => {
                             setUseTmpKey(true)
                           }}
-                          leftIcon={<span class="i-material-symbols:replay text-xl/5" />}
+                          leftIcon={<div class="i-material-symbols:replay text-xl/5" />}
                         >
                           専用公開鍵を生成する
                         </Button>

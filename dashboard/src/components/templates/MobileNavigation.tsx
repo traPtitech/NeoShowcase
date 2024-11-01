@@ -14,7 +14,7 @@ const MobileNavigation: Component = () => {
   return (
     <Dialog.Root open={isOpen()} onOpenChange={setIsOpen}>
       <Dialog.Trigger class="grid size-6 cursor-pointer appearance-none place-items-center border-none bg-transparent">
-        <span class="i-material-symbols:menu text-2xl/6" />
+        <div class="i-material-symbols:menu text-2xl/6" />
       </Dialog.Trigger>
       <Dialog.Portal>
         <Dialog.Overlay class="fixed inset-0 bg-black-alpha-600 opacity-0 transition-opacity duration-200 data-[expanded]:opacity-1" />
@@ -26,7 +26,7 @@ const MobileNavigation: Component = () => {
               </picture>
             </A>
             <Dialog.CloseButton class="grid size-6 cursor-pointer appearance-none place-items-center border-none bg-transparent">
-              <span class="i-material-symbols:close text-2xl/6" />
+              <div class="i-material-symbols:close text-2xl/6" />
             </Dialog.CloseButton>
           </div>
           <div class="flex flex-col">
