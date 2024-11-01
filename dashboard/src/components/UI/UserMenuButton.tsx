@@ -13,16 +13,16 @@ const linkNameToMaterialIcon = (name: string): string => {
   switch (lowerName) {
     case 'wiki':
     case 'help':
-      return 'help'
+      return 'i-material-symbols:help-outline'
     case 'phpmyadmin':
     case 'adminer':
     case 'db admin':
-      return 'database'
+      return 'i-material-symbols:database-outline'
   }
   if (lowerName.includes('mysql') || lowerName.includes('mongo')) {
-    return 'database'
+    return 'i-material-symbols:database-outline'
   }
-  return 'open_in_new'
+  return 'i-material-symbols:open-in-new'
 }
 
 export const UserMenuButton: Component<{
@@ -68,7 +68,7 @@ export const UserMenuButton: Component<{
                   <Button
                     variants="text"
                     size="medium"
-                    leftIcon={<div class="i-material-symbols:{linkNameToMaterialIcon(link.name)} text-2xl/6" />}
+                    leftIcon={<div class={clsx(linkNameToMaterialIcon(link.name), 'text-2xl/6')} />}
                     full
                   >
                     {link.name}
