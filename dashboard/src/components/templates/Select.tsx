@@ -32,7 +32,7 @@ const valueStyle = clsx('w-full truncate text-left text-regular', 'data-[placeho
 const iconStyle = clsx('size-6 shrink-0')
 
 const contentStyleBase = clsx(
-  'animate-duration-200 animate-ease-out animate-wipe-hide-up rounded-md bg-ui-primary shadow-default data-[expanded]:animate-wipe-show-down',
+  'animate-duration-200 animate-ease-out animate-name-wipe-hide-up rounded-md bg-ui-primary shadow-default data-[expanded]:animate-name-wipe-show-down',
 )
 const selectContentStyle = clsx(contentStyleBase, 'origin-[--kb-select-content-transform-origin]')
 const comboBoxContentStyle = clsx(contentStyleBase, 'max-w-72 origin-[--kb-combobox-content-transform-origin]')

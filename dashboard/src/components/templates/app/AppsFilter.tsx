@@ -54,7 +54,7 @@ const AppsFilter: Component<{
         <DropdownMenu.Content
           class={clsx(
             'z-1 grid max-w-[--kb-popper-content-available-width] origin-[--kb-menu-content-transform-origin] grid-cols-[repeat(3,auto)] grid-rows-[1fr_auto] gap-2 overflow-x-auto rounded-md bg-ui-primary p-4 shadow-default',
-            'animate-duration-200 animate-ease-in-out animate-wipe-hide-up data-[expanded]:animate-wipe-show-down',
+            'animate-duration-200 animate-ease-in-out animate-name-wipe-hide-up data-[expanded]:animate-name-wipe-show-down',
           )}
           style={{
             'grid-template-areas': `

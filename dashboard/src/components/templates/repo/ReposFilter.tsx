@@ -39,7 +39,7 @@ const ReposFilter: Component<{
         </DropdownMenu.Icon>
       </DropdownMenu.Trigger>
       <DropdownMenu.Portal>
-        <DropdownMenu.Content class="z-1 flex origin-[--kb-menu-content-transform-origin] animate-duration-200 animate-wipe-hide-up gap-2 rounded-md bg-ui-primary p-4 shadow-default ease-in-out data-[expanded]:animate-wipe-show-down">
+        <DropdownMenu.Content class="z-1 flex origin-[--kb-menu-content-transform-origin] animate-duration-200 animate-name-wipe-hide-up gap-2 rounded-md bg-ui-primary p-4 shadow-default ease-in-out data-[expanded]:animate-name-wipe-show-down">
           <div class="flex flex-col gap-2 text-bold text-text-black">
             Origin
             <div class="flex w-full flex-col">

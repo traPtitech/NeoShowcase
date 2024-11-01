@@ -24,14 +24,14 @@ const useModal = (options?: {
     return (
       <Dialog.Root open={isOpen()}>
         <Dialog.Portal>
-          <Dialog.Overlay class="fixed inset-0 animate-duration-200 animate-fade-hide bg-black-alpha-600 data-[expanded]:animate-fade-show" />
+          <Dialog.Overlay class="fixed inset-0 animate-duration-200 animate-name-fade-hide bg-black-alpha-600 data-[expanded]:animate-name-fade-show" />
           <div class="fixed inset-0 grid place-items-center p-8">
             <Dialog.Content
               onEscapeKeyDown={close}
               onPointerDownOutside={mergedProps.closeOnClickOutside ? close : undefined}
               as="div"
               class={clsx(
-                'relative flex max-h-full w-full max-w-142 animate-duration-300 animate-pop-hide flex-col overflow-hidden rounded-xl bg-ui-primary data-[expanded]:animate-pop-show',
+                'relative flex max-h-full w-full max-w-142 animate-duration-300 animate-name-pop-hide flex-col overflow-hidden rounded-xl bg-ui-primary data-[expanded]:animate-name-pop-show',
                 (props.fit ?? true) ? 'h-auto' : 'h-full',
               )}
             >
