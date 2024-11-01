@@ -55,7 +55,7 @@ const useModal = (options?: {
             )}
             onClick={close}
           >
-            <div class="i-material-symbols:close text-2xl/6" />
+            <div class="i-material-symbols:close shrink-0 text-2xl/6" />
           </Dialog.CloseButton>
         </Show>
       </div>

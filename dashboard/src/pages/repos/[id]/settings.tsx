@@ -33,7 +33,7 @@ export default (props: RouteSectionProps) => {
                 onclick={() => {
                   navigate(`/repos/${repo()?.id}/settings/`)
                 }}
-                leftIcon={<div class="i-material-symbols:browse-activity-outline text-2xl/6" />}
+                leftIcon={<div class="i-material-symbols:browse-activity-outline shrink-0 text-2xl/6" />}
               >
                 General
               </Button>
@@ -45,7 +45,7 @@ export default (props: RouteSectionProps) => {
                 onclick={() => {
                   navigate(`/repos/${repo()?.id}/settings/authorization`)
                 }}
-                leftIcon={<div class="i-material-symbols:conversion-path text-2xl/6" />}
+                leftIcon={<div class="i-material-symbols:conversion-path shrink-0 text-2xl/6" />}
               >
                 Authorization
               </Button>
@@ -57,7 +57,7 @@ export default (props: RouteSectionProps) => {
                 onclick={() => {
                   navigate(`/repos/${repo()?.id}/settings/owners`)
                 }}
-                leftIcon={<div class="i-material-symbols:person-outline text-2xl/6" />}
+                leftIcon={<div class="i-material-symbols:person-outline shrink-0 text-2xl/6" />}
               >
                 Owners
               </Button>

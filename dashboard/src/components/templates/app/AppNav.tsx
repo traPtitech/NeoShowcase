@@ -31,7 +31,7 @@ export const AppNav: Component<{
   return (
     <Nav
       title={props.app.name}
-      icon={<div class="i-material-symbols:deployed-code-outline text-10/10" />}
+      icon={<div class="i-material-symbols:deployed-code-outline shrink-0 text-10/10" />}
       action={edited}
     >
       <div class="mt-1 flex w-full items-center gap-2 whitespace-nowrap text-regular text-text-black">

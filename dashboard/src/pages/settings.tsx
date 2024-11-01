@@ -114,7 +114,7 @@ export default () => {
     <Button
       variants="primary"
       size="medium"
-      leftIcon={<div class="i-material-symbols:add text-2xl/6" />}
+      leftIcon={<div class="i-material-symbols:add shrink-0 text-2xl/6" />}
       onClick={newKeyOpen}
     >
       Add New SSH Key
@@ -148,7 +148,7 @@ export default () => {
                   fallback={
                     <List.Container>
                       <List.PlaceHolder>
-                        <div class="i-material-symbols:key-off-outline text-20/20" />
+                        <div class="i-material-symbols:key-off-outline shrink-0 text-20/20" />
                         No Keys Registered
                         <AddNewSSHKeyButton />
                       </List.PlaceHolder>

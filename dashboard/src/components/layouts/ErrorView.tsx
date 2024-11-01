@@ -11,14 +11,18 @@ const ErrorView: Component<{
 
   return (
     <div class="flex w-full flex-col items-center justify-center gap-4">
-      <div class="i-material-symbols:error text-16/16 text-accent-error" />
+      <div class="i-material-symbols:error shrink-0 text-16/16 text-accent-error" />
       <h2 class="h2-bold text-accent-error">An error has occurred</h2>
       <Show when={props.error instanceof Error}>
         <p class="caption-medium text-text-grey">{(props.error as Error).message}</p>
       </Show>
       <div class="flex flex-col gap-2">
         <A href="/">
-          <Button size="medium" variants="border" leftIcon={<div class="i-material-symbols:arrow-back text-2xl/6" />}>
+          <Button
+            size="medium"
+            variants="border"
+            leftIcon={<div class="i-material-symbols:arrow-back shrink-0 text-2xl/6" />}
+          >
             Back to Home
           </Button>
         </A>
@@ -26,7 +30,7 @@ const ErrorView: Component<{
           onClick={handleReload}
           size="medium"
           variants="border"
-          leftIcon={<div class="i-material-symbols:refresh text-2xl/6" />}
+          leftIcon={<div class="i-material-symbols:refresh shrink-0 text-2xl/6" />}
         >
           Reload Page
         </Button>

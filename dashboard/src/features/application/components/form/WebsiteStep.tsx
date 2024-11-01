@@ -45,12 +45,12 @@ const WebsiteStep: Component<{
                   each={fieldArray.items}
                   fallback={
                     <List.PlaceHolder>
-                      <div class="i-material-symbols:link-off text-20/20" />
+                      <div class="i-material-symbols:link-off shrink-0 text-20/20" />
                       URLが設定されていません
                       <Button
                         variants="primary"
                         size="medium"
-                        rightIcon={<div class="i-material-symbols:add text-2xl/6" />}
+                        rightIcon={<div class="i-material-symbols:add shrink-0 text-2xl/6" />}
                         onClick={addFormStore}
                         type="button"
                       >
@@ -76,7 +76,7 @@ const WebsiteStep: Component<{
                     }}
                     variants="border"
                     size="small"
-                    leftIcon={<div class="i-material-symbols:add text-xl/5" />}
+                    leftIcon={<div class="i-material-symbols:add shrink-0 text-xl/5" />}
                     type="button"
                   >
                     Add More
@@ -90,7 +90,7 @@ const WebsiteStep: Component<{
           <Button
             size="medium"
             variants="ghost"
-            leftIcon={<div class="i-material-symbols:arrow-back text-2xl/6" />}
+            leftIcon={<div class="i-material-symbols:arrow-back shrink-0 text-2xl/6" />}
             onClick={props.backToGeneralStep}
           >
             Back

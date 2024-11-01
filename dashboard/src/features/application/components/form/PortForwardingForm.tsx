@@ -98,7 +98,7 @@ const PortForwardingForm: Component<Props> = (props) => {
               variants="border"
               size="small"
               type="button"
-              leftIcon={<div class="i-material-symbols:add text-xl/5" />}
+              leftIcon={<div class="i-material-symbols:add shrink-0 text-xl/5" />}
             >
               Add Port Forwarding
             </Button>

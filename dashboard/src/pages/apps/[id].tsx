@@ -26,21 +26,21 @@ export default (props: RouteSectionProps) => {
           <AppNav app={app()!} repository={repo()!} />
           <WithNav.Tabs>
             <TabRound onClick={() => navigate(`/apps/${app()?.id}`)} state={matchIndexPage() ? 'active' : 'default'}>
-              <div class="i-material-symbols:insert-chart-outline text-2xl/6" />
+              <div class="i-material-symbols:insert-chart-outline shrink-0 text-2xl/6" />
               Info
             </TabRound>
             <TabRound
               onClick={() => navigate(`/apps/${app()?.id}/builds`)}
               state={matchBuildsPage() ? 'active' : 'default'}
             >
-              <div class="i-material-symbols:history text-2xl/6" />
+              <div class="i-material-symbols:history shrink-0 text-2xl/6" />
               Build History
             </TabRound>
             <TabRound
               onClick={() => navigate(`/apps/${app()?.id}/settings`)}
               state={matchSettingsPage() ? 'active' : 'default'}
             >
-              <div class="i-material-symbols:settings-outline text-2xl/6" />
+              <div class="i-material-symbols:settings-outline shrink-0 text-2xl/6" />
               Settings
             </TabRound>
           </WithNav.Tabs>

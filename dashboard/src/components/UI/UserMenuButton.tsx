@@ -13,16 +13,16 @@ const linkNameToMaterialIcon = (name: string): string => {
   switch (lowerName) {
     case 'wiki':
     case 'help':
-      return 'i-material-symbols:help-outline'
+      return 'shrink-0 i-material-symbols:help-outline'
     case 'phpmyadmin':
     case 'adminer':
     case 'db admin':
-      return 'i-material-symbols:database-outline'
+      return 'shrink-0 i-material-symbols:database-outline'
   }
   if (lowerName.includes('mysql') || lowerName.includes('mongo')) {
-    return 'i-material-symbols:database-outline'
+    return 'shrink-0 i-material-symbols:database-outline'
   }
-  return 'i-material-symbols:open-in-new'
+  return 'shrink-0 i-material-symbols:open-in-new'
 }
 
 export const UserMenuButton: Component<{
@@ -39,7 +39,7 @@ export const UserMenuButton: Component<{
         <UserAvatar user={props.user} size={32} />
         <span class="text-bold text-text-black max-md:hidden">{props.user.name}</span>
         <DropdownMenu.Icon class="size-6 transition-transform duration-200 data-[expanded]:rotate-180deg">
-          <div class="i-material-symbols:arrow-drop-down text-2xl/6" />
+          <div class="i-material-symbols:arrow-drop-down shrink-0 text-2xl/6" />
         </DropdownMenu.Icon>
       </DropdownMenu.Trigger>
       <DropdownMenu.Portal>
@@ -54,7 +54,7 @@ export const UserMenuButton: Component<{
               <Button
                 variants="text"
                 size="medium"
-                leftIcon={<div class="i-material-symbols:settings-outline text-2xl/6" />}
+                leftIcon={<div class="i-material-symbols:settings-outline shrink-0 text-2xl/6" />}
                 full
               >
                 Settings

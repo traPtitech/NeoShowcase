@@ -17,7 +17,7 @@ export const URLText: Component<URLTextProps> = (props) => {
       <a class="text-regular text-text-link" href={props.href} target="_blank" rel="noreferrer">
         <div class="flex items-center gap-1">
           {props.text}
-          <div class="i-material-symbols:open-in-new text-xl/5" />
+          <div class="i-material-symbols:open-in-new shrink-0 text-xl/5" />
         </div>
       </a>
     </ToolTip>

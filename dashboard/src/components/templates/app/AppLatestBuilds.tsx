@@ -34,13 +34,13 @@ const AppLatestBuilds: Component<{
         each={latestBuilds()}
         fallback={
           <List.PlaceHolder>
-            <div class="i-material-symbols:deployed-code-outline text-20/20" />
+            <div class="i-material-symbols:deployed-code-outline shrink-0 text-20/20" />
             No Builds
             <Button
               variants="primary"
               size="medium"
               onClick={startApp}
-              leftIcon={<div class="i-material-symbols:add text-2xl/6" />}
+              leftIcon={<div class="i-material-symbols:add shrink-0 text-2xl/6" />}
               loading={disabled()}
             >
               Start App to Trigger Builds

@@ -14,7 +14,7 @@ const JumpButton: VoidComponent<{ href: string; tooltip?: string }> = (props) =>
           '!disabled:border-none !disabled:bg-text-disabled !disabled:text-text-black disabled:cursor-not-allowed',
         )}
       >
-        <div class="i-material-symbols:arrow-outward text-xl/5" />
+        <div class="i-material-symbols:arrow-outward shrink-0 text-xl/5" />
       </div>
     </A>
   </ToolTip>

@@ -38,7 +38,7 @@ export default (props: RouteSectionProps) => {
                   onclick={() => {
                     navigate(`/apps/${app()?.id}/settings/`)
                   }}
-                  leftIcon={<div class="i-material-symbols:browse-activity-outline text-2xl/6" />}
+                  leftIcon={<div class="i-material-symbols:browse-activity-outline shrink-0 text-2xl/6" />}
                 >
                   General
                 </Button>
@@ -50,7 +50,7 @@ export default (props: RouteSectionProps) => {
                   onclick={() => {
                     navigate(`/apps/${app()?.id}/settings/build`)
                   }}
-                  leftIcon={<div class="i-material-symbols:deployed-code-outline text-2xl/6" />}
+                  leftIcon={<div class="i-material-symbols:deployed-code-outline shrink-0 text-2xl/6" />}
                 >
                   Build
                 </Button>
@@ -62,7 +62,7 @@ export default (props: RouteSectionProps) => {
                   onclick={() => {
                     navigate(`/apps/${app()?.id}/settings/urls`)
                   }}
-                  leftIcon={<div class="i-material-symbols:language text-2xl/6" />}
+                  leftIcon={<div class="i-material-symbols:language shrink-0 text-2xl/6" />}
                 >
                   URLs
                 </Button>
@@ -74,7 +74,7 @@ export default (props: RouteSectionProps) => {
                   onclick={() => {
                     navigate(`/apps/${app()?.id}/settings/portForwarding`)
                   }}
-                  leftIcon={<div class="i-material-symbols:lan-outline text-2xl/6" />}
+                  leftIcon={<div class="i-material-symbols:lan-outline shrink-0 text-2xl/6" />}
                 >
                   Port Forwarding
                 </Button>
@@ -86,7 +86,7 @@ export default (props: RouteSectionProps) => {
                   onclick={() => {
                     navigate(`/apps/${app()?.id}/settings/envVars`)
                   }}
-                  leftIcon={<div class="i-material-symbols:password text-2xl/6" />}
+                  leftIcon={<div class="i-material-symbols:password shrink-0 text-2xl/6" />}
                 >
                   Environment Variables
                 </Button>
@@ -98,7 +98,7 @@ export default (props: RouteSectionProps) => {
                   onclick={() => {
                     navigate(`/apps/${app()?.id}/settings/owners`)
                   }}
-                  leftIcon={<div class="i-material-symbols:person-outline text-2xl/6" />}
+                  leftIcon={<div class="i-material-symbols:person-outline shrink-0 text-2xl/6" />}
                 >
                   Owners
                 </Button>

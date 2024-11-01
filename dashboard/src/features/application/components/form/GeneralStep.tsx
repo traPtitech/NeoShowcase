@@ -66,7 +66,7 @@ const GeneralStep: Component<{
           size="medium"
           variants="border"
           onClick={props.backToRepoStep}
-          leftIcon={<div class="i-material-symbols:arrow-back text-2xl/6" />}
+          leftIcon={<div class="i-material-symbols:arrow-back shrink-0 text-2xl/6" />}
         >
           Back
         </Button>
@@ -75,7 +75,7 @@ const GeneralStep: Component<{
           variants="primary"
           type="button"
           onClick={props.proceedToWebsiteStep}
-          rightIcon={<div class="i-material-symbols:arrow-forward text-2xl/6" />}
+          rightIcon={<div class="i-material-symbols:arrow-forward shrink-0 text-2xl/6" />}
           disabled={formStore.invalid || formStore.submitting}
           loading={formStore.submitting}
         >

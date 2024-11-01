@@ -8,19 +8,25 @@ interface IconProps {
 }
 const components: Record<ApplicationState, (size: IconProps) => JSXElement> = {
   [ApplicationState.Deploying]: (props) => (
-    <div class="i-material-symbols:offline-bolt text-accent-warn" style={{ 'font-size': `${props.size}px` }} />
+    <div class="i-material-symbols:offline-bolt shrink-0 text-accent-warn" style={{ 'font-size': `${props.size}px` }} />
   ),
   [ApplicationState.Error]: (props) => (
-    <div class="i-material-symbols:error text-accent-error" style={{ 'font-size': `${props.size}px` }} />
+    <div class="i-material-symbols:error shrink-0 text-accent-error" style={{ 'font-size': `${props.size}px` }} />
   ),
   [ApplicationState.Idle]: (props) => (
-    <div class="i-material-symbols:do-not-disturb-on text-text-disabled" style={{ 'font-size': `${props.size}px` }} />
+    <div
+      class="i-material-symbols:do-not-disturb-on shrink-0 text-text-disabled"
+      style={{ 'font-size': `${props.size}px` }}
+    />
   ),
   [ApplicationState.Running]: (props) => (
-    <div class="i-material-symbols:check-circle text-accent-success" style={{ 'font-size': `${props.size}px` }} />
+    <div
+      class="i-material-symbols:check-circle shrink-0 text-accent-success"
+      style={{ 'font-size': `${props.size}px` }}
+    />
   ),
   [ApplicationState.Serving]: (props) => (
-    <div class="i-material-symbols:check-circle text-blue-500" style={{ 'font-size': `${props.size}px` }} />
+    <div class="i-material-symbols:check-circle shrink-0 text-blue-500" style={{ 'font-size': `${props.size}px` }} />
   ),
 }
 

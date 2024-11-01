@@ -171,7 +171,7 @@ const AppsList: Component<{
         fallback={
           <List.Container>
             <List.PlaceHolder>
-              <div class="i-material-symbols:search text-20/20" />
+              <div class="i-material-symbols:search shrink-0 text-20/20" />
               No Apps Found
             </List.PlaceHolder>
           </List.Container>
@@ -234,13 +234,17 @@ export default () => {
             <For each={scopeItems(user()?.admin)}>
               {(s) => (
                 <TabRound state={s.value === scope() ? 'active' : 'default'} onClick={() => setScope(s.value)}>
-                  <div class="i-material-symbols:deployed-code-outline text-2xl/6" />
+                  <div class="i-material-symbols:deployed-code-outline shrink-0 text-2xl/6" />
                   {s.label}
                 </TabRound>
               )}
             </For>
             <A href="/apps/new" class="ml-auto">
-              <Button variants="primary" size="medium" leftIcon={<div class="i-material-symbols:add text-2xl/6" />}>
+              <Button
+                variants="primary"
+                size="medium"
+                leftIcon={<div class="i-material-symbols:add shrink-0 text-2xl/6" />}
+              >
                 Add New App
               </Button>
             </A>
@@ -253,7 +257,7 @@ export default () => {
                 placeholder="Search"
                 value={query()}
                 onInput={(e) => setQuery(e.currentTarget.value)}
-                leftIcon={<div class="i-material-symbols:search text-2xl/6" />}
+                leftIcon={<div class="i-material-symbols:search shrink-0 text-2xl/6" />}
                 rightIcon={
                   <AppsFilter
                     statuses={statuses()}
