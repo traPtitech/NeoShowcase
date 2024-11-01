@@ -247,7 +247,7 @@ export default () => {
           </WithNav.Tabs>
         </WithNav.Navs>
         <WithNav.Body>
-          <div class="relative flex h-full w-full flex-col bg-ui-background px-[max(calc(50%-500px),32px)] max-md:px-16">
+          <div class="relative flex h-full w-full flex-col bg-ui-background px-[max(calc(50%-500px),32px)] max-md:px-4">
             <FilterContainer>
               <TextField
                 placeholder="Search"
