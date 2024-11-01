@@ -52,7 +52,7 @@ const Metrics: Component<{ app: Application }> = (props) => {
 
 const Logs: Component<{ app: Application }> = (props) => {
   return (
-    <div class="broder w-full rounded-lg border-ui-border px-5 py-4">
+    <div class="w-full rounded-lg border border-ui-border px-5 py-4">
       <ContainerLog appID={props.app.id} />
     </div>
   )
