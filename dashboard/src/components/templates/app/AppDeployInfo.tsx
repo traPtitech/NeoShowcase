@@ -18,7 +18,6 @@ import { List } from '../List'
 import { AppStatusIcon } from './AppStatusIcon'
 
 const DeployInfoContainer = styled('div', 'flex w-full items-center gap-2 bg-ui-primary px-5 py-4')
-const deployInfoContainerLongStyle = clsx('col-span-2')
 
 const AppDeployInfo: Component<{
   app: Application
@@ -103,7 +102,7 @@ const AppDeployInfo: Component<{
         </Show>
       </div>
       <div class="grid h-full w-full grid-cols-2 gap-0.25">
-        <DeployInfoContainer classList={{ [deployInfoContainerLongStyle]: props.app.containerMessage === '' }}>
+        <DeployInfoContainer class={clsx(props.app.containerMessage === '' && 'col-span-2')}>
           <List.RowContent>
             <List.RowTitle>Deploy Type</List.RowTitle>
             <List.RowData>{titleCase(DeployType[props.app.deployType])}</List.RowData>
@@ -118,7 +117,7 @@ const AppDeployInfo: Component<{
             </List.RowContent>
           </DeployInfoContainer>
         </Show>
-        <DeployInfoContainer class={deployInfoContainerLongStyle}>
+        <DeployInfoContainer class={'col-span-2'}>
           <List.RowContent class="min-w-0 shrink-0 grow-1 basis-0">
             <List.RowTitle>Source Commit</List.RowTitle>
             <List.RowData>
@@ -134,7 +133,7 @@ const AppDeployInfo: Component<{
             <JumpButton href={`/apps/${props.app.id}/builds/${props.deployedBuild?.id}`} tooltip="ビルドの詳細" />
           </Show>
         </DeployInfoContainer>
-        <DeployInfoContainer class={deployInfoContainerLongStyle}>
+        <DeployInfoContainer class={'col-span-2'}>
           <List.RowContent>
             <List.RowTitle>
               URLs
@@ -151,7 +150,7 @@ const AppDeployInfo: Component<{
           <JumpButton href={`/apps/${props.app.id}/settings/urls`} tooltip="設定を変更" />
         </DeployInfoContainer>
         <Show when={props.app.deployType === DeployType.RUNTIME}>
-          <DeployInfoContainer class={deployInfoContainerLongStyle}>
+          <DeployInfoContainer class={'col-span-2'}>
             <List.RowContent>
               <List.RowTitle>SSH Access</List.RowTitle>
               <Code value={sshAccessCommand()} copyable />
