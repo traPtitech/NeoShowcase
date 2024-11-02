@@ -51,6 +51,21 @@ func makeCacheKey(cols boil.Columns, nzDefaults []string) string {
 	return str
 }
 
+// Enum values for ApplicationConfigStartupBehavior
+const (
+	ApplicationConfigStartupBehaviorUndefined   string = "undefined"
+	ApplicationConfigStartupBehaviorLoadingPage string = "loading-page"
+	ApplicationConfigStartupBehaviorBlocking    string = "blocking"
+)
+
+func AllApplicationConfigStartupBehavior() []string {
+	return []string{
+		ApplicationConfigStartupBehaviorUndefined,
+		ApplicationConfigStartupBehaviorLoadingPage,
+		ApplicationConfigStartupBehaviorBlocking,
+	}
+}
+
 // Enum values for ApplicationConfigBuildType
 const (
 	ApplicationConfigBuildTypeRuntimeBuildpack  string = "runtime-buildpack"

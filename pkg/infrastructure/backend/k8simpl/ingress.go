@@ -64,28 +64,48 @@ func (b *Backend) certificate(targetDomain string) *certmanagerv1.Certificate {
 	}
 }
 
-func (b *Backend) sablierMiddleware(app *domain.Application) *traefikv1alpha1.Middleware {
+func (b *Backend) jsonSablierConfig(app *domain.Application) []byte {
 	type DynamicConfig = struct {
 		DisplayName string `json:"displayName"`
 		ShowDetails string `json:"showDetails"`
 		Theme       string `json:"theme"`
 	}
-	config := struct {
-		SablierURL      string        `json:"sablierURL"`
-		Group           string        `json:"group"`
-		SessionDuration string        `json:"sessionDuration"`
-		Dynamic         DynamicConfig `json:"dynamic"`
-	}{
-		b.config.Middleware.Sablier.SablierURL,
-		sablierGroupName(app.ID),
-		b.config.Middleware.Sablier.SessionDuration,
-		DynamicConfig{
+	type BlockingConfig = struct {
+		Timeout string `json:"timeout"`
+	}
+	type SablierConfig = struct {
+		SablierURL      string          `json:"sablierURL"`
+		Group           string          `json:"group"`
+		SessionDuration string          `json:"sessionDuration"`
+		Dynamic         *DynamicConfig  `json:"dynamic,omitempty"`
+		Blocking        *BlockingConfig `json:"blocking,omitempty"`
+	}
+
+	config := SablierConfig{
+		SablierURL:      b.config.Middleware.Sablier.SablierURL,
+		Group:           sablierGroupName(app.ID),
+		SessionDuration: b.config.Middleware.Sablier.SessionDuration,
+	}
+
+	switch app.Config.BuildConfig.GetRuntimeConfig().AutoShutdown.Startup {
+	case domain.StartupBehaviorLoadingPage:
+		config.Dynamic = &DynamicConfig{
 			DisplayName: app.Name,
 			ShowDetails: "true",
 			Theme:       "ghost",
-		},
+		}
+	case domain.StartupBehaviorBlocking:
+		config.Blocking = &BlockingConfig{
+			Timeout: b.config.Middleware.Sablier.Blocking.Timeout,
+		}
 	}
+
 	data, _ := json.Marshal(config)
+	return data
+}
+
+func (b *Backend) sablierMiddleware(app *domain.Application) *traefikv1alpha1.Middleware {
+	configData := b.jsonSablierConfig(app)
 	return &traefikv1alpha1.Middleware{
 		TypeMeta: metav1.TypeMeta{
 			Kind:       "Middleware",
@@ -98,7 +118,7 @@ func (b *Backend) sablierMiddleware(app *domain.Application) *traefikv1alpha1.Mi
 		},
 		Spec: traefikv1alpha1.MiddlewareSpec{
 			Plugin: map[string]v1.JSON{
-				"sablier": {Raw: data},
+				"sablier": {Raw: configData},
 			},
 		},
 	}

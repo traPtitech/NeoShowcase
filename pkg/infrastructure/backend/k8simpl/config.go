@@ -201,6 +201,10 @@ type Config struct {
 			//
 			// Example: "10m"
 			SessionDuration string `mapstructure:"sessionDuration" yaml:"sessionDuration"`
+			Blocking        struct {
+				// Timeout defines how long the blocking should last.
+				Timeout string `mapstructure:"timeout" yaml:"blockingTimeout"`
+			} `mapstructure:"blocking" yaml:"blocking"`
 		} `mapstructure:"sablier" yaml:"sablier"`
 	}
 	// TLS section defines tls setting for user app ingress.

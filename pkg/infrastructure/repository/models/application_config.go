@@ -30,6 +30,8 @@ type ApplicationConfig struct { // アプリケーションID
 	UseMongodb bool `boil:"use_mongodb" json:"use_mongodb" toml:"use_mongodb" yaml:"use_mongodb"`
 	// アプリケーションの自動シャットダウン
 	AutoShutdown bool `boil:"auto_shutdown" json:"auto_shutdown" toml:"auto_shutdown" yaml:"auto_shutdown"`
+	// アプリ起動時の振る舞い
+	StartupBehavior string `boil:"startup_behavior" json:"startup_behavior" toml:"startup_behavior" yaml:"startup_behavior"`
 	// ビルドタイプ
 	BuildType string `boil:"build_type" json:"build_type" toml:"build_type" yaml:"build_type"`
 	// ベースイメージの名前
@@ -54,63 +56,67 @@ type ApplicationConfig struct { // アプリケーションID
 }
 
 var ApplicationConfigColumns = struct {
-	ApplicationID  string
-	UseMariadb     string
-	UseMongodb     string
-	AutoShutdown   string
-	BuildType      string
-	BaseImage      string
-	BuildCMD       string
-	ArtifactPath   string
-	Spa            string
-	DockerfileName string
-	Context        string
-	Entrypoint     string
-	Command        string
+	ApplicationID   string
+	UseMariadb      string
+	UseMongodb      string
+	AutoShutdown    string
+	StartupBehavior string
+	BuildType       string
+	BaseImage       string
+	BuildCMD        string
+	ArtifactPath    string
+	Spa             string
+	DockerfileName  string
+	Context         string
+	Entrypoint      string
+	Command         string
 }{
-	ApplicationID:  "application_id",
-	UseMariadb:     "use_mariadb",
-	UseMongodb:     "use_mongodb",
-	AutoShutdown:   "auto_shutdown",
-	BuildType:      "build_type",
-	BaseImage:      "base_image",
-	BuildCMD:       "build_cmd",
-	ArtifactPath:   "artifact_path",
-	Spa:            "spa",
-	DockerfileName: "dockerfile_name",
-	Context:        "context",
-	Entrypoint:     "entrypoint",
-	Command:        "command",
+	ApplicationID:   "application_id",
+	UseMariadb:      "use_mariadb",
+	UseMongodb:      "use_mongodb",
+	AutoShutdown:    "auto_shutdown",
+	StartupBehavior: "startup_behavior",
+	BuildType:       "build_type",
+	BaseImage:       "base_image",
+	BuildCMD:        "build_cmd",
+	ArtifactPath:    "artifact_path",
+	Spa:             "spa",
+	DockerfileName:  "dockerfile_name",
+	Context:         "context",
+	Entrypoint:      "entrypoint",
+	Command:         "command",
 }
 
 var ApplicationConfigTableColumns = struct {
-	ApplicationID  string
-	UseMariadb     string
-	UseMongodb     string
-	AutoShutdown   string
-	BuildType      string
-	BaseImage      string
-	BuildCMD       string
-	ArtifactPath   string
-	Spa            string
-	DockerfileName string
-	Context        string
-	Entrypoint     string
-	Command        string
+	ApplicationID   string
+	UseMariadb      string
+	UseMongodb      string
+	AutoShutdown    string
+	StartupBehavior string
+	BuildType       string
+	BaseImage       string
+	BuildCMD        string
+	ArtifactPath    string
+	Spa             string
+	DockerfileName  string
+	Context         string
+	Entrypoint      string
+	Command         string
 }{
-	ApplicationID:  "application_config.application_id",
-	UseMariadb:     "application_config.use_mariadb",
-	UseMongodb:     "application_config.use_mongodb",
-	AutoShutdown:   "application_config.auto_shutdown",
-	BuildType:      "application_config.build_type",
-	BaseImage:      "application_config.base_image",
-	BuildCMD:       "application_config.build_cmd",
-	ArtifactPath:   "application_config.artifact_path",
-	Spa:            "application_config.spa",
-	DockerfileName: "application_config.dockerfile_name",
-	Context:        "application_config.context",
-	Entrypoint:     "application_config.entrypoint",
-	Command:        "application_config.command",
+	ApplicationID:   "application_config.application_id",
+	UseMariadb:      "application_config.use_mariadb",
+	UseMongodb:      "application_config.use_mongodb",
+	AutoShutdown:    "application_config.auto_shutdown",
+	StartupBehavior: "application_config.startup_behavior",
+	BuildType:       "application_config.build_type",
+	BaseImage:       "application_config.base_image",
+	BuildCMD:        "application_config.build_cmd",
+	ArtifactPath:    "application_config.artifact_path",
+	Spa:             "application_config.spa",
+	DockerfileName:  "application_config.dockerfile_name",
+	Context:         "application_config.context",
+	Entrypoint:      "application_config.entrypoint",
+	Command:         "application_config.command",
 }
 
 // Generated where
@@ -150,33 +156,35 @@ func (w whereHelperbool) GT(x bool) qm.QueryMod  { return qmhelper.Where(w.field
 func (w whereHelperbool) GTE(x bool) qm.QueryMod { return qmhelper.Where(w.field, qmhelper.GTE, x) }
 
 var ApplicationConfigWhere = struct {
-	ApplicationID  whereHelperstring
-	UseMariadb     whereHelperbool
-	UseMongodb     whereHelperbool
-	AutoShutdown   whereHelperbool
-	BuildType      whereHelperstring
-	BaseImage      whereHelperstring
-	BuildCMD       whereHelperstring
-	ArtifactPath   whereHelperstring
-	Spa            whereHelperbool
-	DockerfileName whereHelperstring
-	Context        whereHelperstring
-	Entrypoint     whereHelperstring
-	Command        whereHelperstring
+	ApplicationID   whereHelperstring
+	UseMariadb      whereHelperbool
+	UseMongodb      whereHelperbool
+	AutoShutdown    whereHelperbool
+	StartupBehavior whereHelperstring
+	BuildType       whereHelperstring
+	BaseImage       whereHelperstring
+	BuildCMD        whereHelperstring
+	ArtifactPath    whereHelperstring
+	Spa             whereHelperbool
+	DockerfileName  whereHelperstring
+	Context         whereHelperstring
+	Entrypoint      whereHelperstring
+	Command         whereHelperstring
 }{
-	ApplicationID:  whereHelperstring{field: "`application_config`.`application_id`"},
-	UseMariadb:     whereHelperbool{field: "`application_config`.`use_mariadb`"},
-	UseMongodb:     whereHelperbool{field: "`application_config`.`use_mongodb`"},
-	AutoShutdown:   whereHelperbool{field: "`application_config`.`auto_shutdown`"},
-	BuildType:      whereHelperstring{field: "`application_config`.`build_type`"},
-	BaseImage:      whereHelperstring{field: "`application_config`.`base_image`"},
-	BuildCMD:       whereHelperstring{field: "`application_config`.`build_cmd`"},
-	ArtifactPath:   whereHelperstring{field: "`application_config`.`artifact_path`"},
-	Spa:            whereHelperbool{field: "`application_config`.`spa`"},
-	DockerfileName: whereHelperstring{field: "`application_config`.`dockerfile_name`"},
-	Context:        whereHelperstring{field: "`application_config`.`context`"},
-	Entrypoint:     whereHelperstring{field: "`application_config`.`entrypoint`"},
-	Command:        whereHelperstring{field: "`application_config`.`command`"},
+	ApplicationID:   whereHelperstring{field: "`application_config`.`application_id`"},
+	UseMariadb:      whereHelperbool{field: "`application_config`.`use_mariadb`"},
+	UseMongodb:      whereHelperbool{field: "`application_config`.`use_mongodb`"},
+	AutoShutdown:    whereHelperbool{field: "`application_config`.`auto_shutdown`"},
+	StartupBehavior: whereHelperstring{field: "`application_config`.`startup_behavior`"},
+	BuildType:       whereHelperstring{field: "`application_config`.`build_type`"},
+	BaseImage:       whereHelperstring{field: "`application_config`.`base_image`"},
+	BuildCMD:        whereHelperstring{field: "`application_config`.`build_cmd`"},
+	ArtifactPath:    whereHelperstring{field: "`application_config`.`artifact_path`"},
+	Spa:             whereHelperbool{field: "`application_config`.`spa`"},
+	DockerfileName:  whereHelperstring{field: "`application_config`.`dockerfile_name`"},
+	Context:         whereHelperstring{field: "`application_config`.`context`"},
+	Entrypoint:      whereHelperstring{field: "`application_config`.`entrypoint`"},
+	Command:         whereHelperstring{field: "`application_config`.`command`"},
 }
 
 // ApplicationConfigRels is where relationship names are stored.
@@ -207,8 +215,8 @@ func (r *applicationConfigR) GetApplication() *Application {
 type applicationConfigL struct{}
 
 var (
-	applicationConfigAllColumns            = []string{"application_id", "use_mariadb", "use_mongodb", "auto_shutdown", "build_type", "base_image", "build_cmd", "artifact_path", "spa", "dockerfile_name", "context", "entrypoint", "command"}
-	applicationConfigColumnsWithoutDefault = []string{"application_id", "use_mariadb", "use_mongodb", "build_type", "base_image", "build_cmd", "artifact_path", "spa", "dockerfile_name", "context", "entrypoint", "command"}
+	applicationConfigAllColumns            = []string{"application_id", "use_mariadb", "use_mongodb", "auto_shutdown", "startup_behavior", "build_type", "base_image", "build_cmd", "artifact_path", "spa", "dockerfile_name", "context", "entrypoint", "command"}
+	applicationConfigColumnsWithoutDefault = []string{"application_id", "use_mariadb", "use_mongodb", "startup_behavior", "build_type", "base_image", "build_cmd", "artifact_path", "spa", "dockerfile_name", "context", "entrypoint", "command"}
 	applicationConfigColumnsWithDefault    = []string{"auto_shutdown"}
 	applicationConfigPrimaryKeyColumns     = []string{"application_id"}
 	applicationConfigGeneratedColumns      = []string{}

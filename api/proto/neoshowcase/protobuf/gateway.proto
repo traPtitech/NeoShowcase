@@ -99,12 +99,22 @@ enum DeployType {
   STATIC = 1;
 }
 
+message AutoShutdownConfig {
+  enum StartupBehavior {
+    UNDEFINED = 0;
+    LOADING_PAGE = 1;
+    BLOCKING = 2;
+  }
+  bool enabled = 1;
+  StartupBehavior startup = 2;
+}
+
 message RuntimeConfig {
   bool use_mariadb = 1;
   bool use_mongodb = 2;
   string entrypoint = 3;
   string command = 4;
-  bool auto_shutdown = 5;
+  AutoShutdownConfig auto_shutdown = 5;
 }
 
 message BuildConfigRuntimeBuildpack {

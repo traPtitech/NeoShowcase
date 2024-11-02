@@ -135,6 +135,8 @@ components:
           enable: true
           url: http://sablier.sablier.svc.cluster.local
           sessionDuration: 5m
+          blocking:
+            timeout: 1m
       tls:
         type: traefik
         traefik:

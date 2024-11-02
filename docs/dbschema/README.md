@@ -5,7 +5,7 @@
 | Name | Columns | Comment | Type |
 | ---- | ------- | ------- | ---- |
 | [applications](applications.md) | 12 | アプリケーションテーブル | BASE TABLE |
-| [application_config](application_config.md) | 13 | アプリケーション詳細設定テーブル | BASE TABLE |
+| [application_config](application_config.md) | 14 | アプリケーション詳細設定テーブル | BASE TABLE |
 | [application_owners](application_owners.md) | 2 | アプリケーション所有者テーブル | BASE TABLE |
 | [artifacts](artifacts.md) | 6 | 静的ファイル生成物テーブル | BASE TABLE |
 | [builds](builds.md) | 10 | ビルドテーブル | BASE TABLE |
@@ -59,6 +59,7 @@ erDiagram
   tinyint_1_ use_mariadb
   tinyint_1_ use_mongodb
   tinyint_1_ auto_shutdown
+  enum__undefined___loading-page___blocking__ startup_behavior
   enum__runtime-buildpack___runtime-cmd___runtime-dockerfile___static-buildpack___static-cmd___static-dockerfile__ build_type
   varchar_1000_ base_image
   text build_cmd
