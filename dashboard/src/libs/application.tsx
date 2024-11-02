@@ -36,7 +36,7 @@ const autoShutdownEnabled = (app: Application): boolean => {
     case 'runtimeBuildpack':
     case 'runtimeCmd':
     case 'runtimeDockerfile':
-      return app.config.buildConfig.value.runtimeConfig?.autoShutdown ?? false
+      return app.config.buildConfig.value.runtimeConfig?.autoShutdown?.enabled ?? false
   }
   return false
 }

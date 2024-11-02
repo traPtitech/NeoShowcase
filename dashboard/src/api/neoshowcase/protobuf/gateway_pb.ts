@@ -661,6 +661,75 @@ export class SimpleCommit extends Message<SimpleCommit> {
 }
 
 /**
+ * @generated from message neoshowcase.protobuf.AutoShutdownConfig
+ */
+export class AutoShutdownConfig extends Message<AutoShutdownConfig> {
+  /**
+   * @generated from field: bool enabled = 1;
+   */
+  enabled = false;
+
+  /**
+   * @generated from field: neoshowcase.protobuf.AutoShutdownConfig.StartupBehavior startup = 2;
+   */
+  startup = AutoShutdownConfig_StartupBehavior.UNDEFINED;
+
+  constructor(data?: PartialMessage<AutoShutdownConfig>) {
+    super();
+    proto3.util.initPartial(data, this);
+  }
+
+  static readonly runtime: typeof proto3 = proto3;
+  static readonly typeName = "neoshowcase.protobuf.AutoShutdownConfig";
+  static readonly fields: FieldList = proto3.util.newFieldList(() => [
+    { no: 1, name: "enabled", kind: "scalar", T: 8 /* ScalarType.BOOL */ },
+    { no: 2, name: "startup", kind: "enum", T: proto3.getEnumType(AutoShutdownConfig_StartupBehavior) },
+  ]);
+
+  static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): AutoShutdownConfig {
+    return new AutoShutdownConfig().fromBinary(bytes, options);
+  }
+
+  static fromJson(jsonValue: JsonValue, options?: Partial<JsonReadOptions>): AutoShutdownConfig {
+    return new AutoShutdownConfig().fromJson(jsonValue, options);
+  }
+
+  static fromJsonString(jsonString: string, options?: Partial<JsonReadOptions>): AutoShutdownConfig {
+    return new AutoShutdownConfig().fromJsonString(jsonString, options);
+  }
+
+  static equals(a: AutoShutdownConfig | PlainMessage<AutoShutdownConfig> | undefined, b: AutoShutdownConfig | PlainMessage<AutoShutdownConfig> | undefined): boolean {
+    return proto3.util.equals(AutoShutdownConfig, a, b);
+  }
+}
+
+/**
+ * @generated from enum neoshowcase.protobuf.AutoShutdownConfig.StartupBehavior
+ */
+export enum AutoShutdownConfig_StartupBehavior {
+  /**
+   * @generated from enum value: UNDEFINED = 0;
+   */
+  UNDEFINED = 0,
+
+  /**
+   * @generated from enum value: LOADING_PAGE = 1;
+   */
+  LOADING_PAGE = 1,
+
+  /**
+   * @generated from enum value: BLOCKING = 2;
+   */
+  BLOCKING = 2,
+}
+// Retrieve enum metadata with: proto3.getEnumType(AutoShutdownConfig_StartupBehavior)
+proto3.util.setEnumType(AutoShutdownConfig_StartupBehavior, "neoshowcase.protobuf.AutoShutdownConfig.StartupBehavior", [
+  { no: 0, name: "UNDEFINED" },
+  { no: 1, name: "LOADING_PAGE" },
+  { no: 2, name: "BLOCKING" },
+]);
+
+/**
  * @generated from message neoshowcase.protobuf.RuntimeConfig
  */
 export class RuntimeConfig extends Message<RuntimeConfig> {
@@ -685,9 +754,9 @@ export class RuntimeConfig extends Message<RuntimeConfig> {
   command = "";
 
   /**
-   * @generated from field: bool auto_shutdown = 5;
+   * @generated from field: neoshowcase.protobuf.AutoShutdownConfig auto_shutdown = 5;
    */
-  autoShutdown = false;
+  autoShutdown?: AutoShutdownConfig;
 
   constructor(data?: PartialMessage<RuntimeConfig>) {
     super();
@@ -701,7 +770,7 @@ export class RuntimeConfig extends Message<RuntimeConfig> {
     { no: 2, name: "use_mongodb", kind: "scalar", T: 8 /* ScalarType.BOOL */ },
     { no: 3, name: "entrypoint", kind: "scalar", T: 9 /* ScalarType.STRING */ },
     { no: 4, name: "command", kind: "scalar", T: 9 /* ScalarType.STRING */ },
-    { no: 5, name: "auto_shutdown", kind: "scalar", T: 8 /* ScalarType.BOOL */ },
+    { no: 5, name: "auto_shutdown", kind: "message", T: AutoShutdownConfig },
   ]);
 
   static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): RuntimeConfig {

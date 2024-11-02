@@ -27,6 +27,7 @@ const labelStyle = style({
   alignItems: 'center',
   justifyItems: 'start',
   gap: '8px',
+  whiteSpace: 'nowrap',
 
   background: colorVars.semantic.ui.primary,
   borderRadius: '8px',
