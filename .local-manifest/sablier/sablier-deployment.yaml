@@ -21,7 +21,7 @@ spec:
             path: /work
       containers:
         - name: sablier
-          image: acouvreur/sablier:1.7.0
+          image: sablierapp/sablier:1.8
           ports:
             - name: http
               containerPort: 10000
