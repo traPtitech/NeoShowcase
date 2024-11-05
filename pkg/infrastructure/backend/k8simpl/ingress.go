@@ -92,7 +92,7 @@ func (b *Backend) jsonSablierConfig(app *domain.Application) []byte {
 		config.Dynamic = &DynamicConfig{
 			DisplayName: app.Name,
 			ShowDetails: "true",
-			Theme:       "ghost",
+			Theme:       b.config.Middleware.Sablier.Dynamic.Theme,
 		}
 	case domain.StartupBehaviorBlocking:
 		config.Blocking = &BlockingConfig{

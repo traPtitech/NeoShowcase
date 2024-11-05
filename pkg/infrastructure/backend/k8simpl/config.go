@@ -201,9 +201,12 @@ type Config struct {
 			//
 			// Example: "10m"
 			SessionDuration string `mapstructure:"sessionDuration" yaml:"sessionDuration"`
-			Blocking        struct {
+			Dynamic         struct {
+				Theme string `mapstructure:"theme" yaml:"theme"`
+			} `mapstructure:"dynamic" yaml:"dynamic"`
+			Blocking struct {
 				// Timeout defines how long the blocking should last.
-				Timeout string `mapstructure:"timeout" yaml:"blockingTimeout"`
+				Timeout string `mapstructure:"timeout" yaml:"timeout"`
 			} `mapstructure:"blocking" yaml:"blocking"`
 		} `mapstructure:"sablier" yaml:"sablier"`
 	}
