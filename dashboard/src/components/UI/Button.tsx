@@ -46,21 +46,48 @@ export const Button: ParentComponent<Props> = (props) => {
             addedProps.hasCheckbox && 'gap-2',
             // variants
             {
-              primary:
-                'border-none bg-primary-main text-text-white hover:bg-color-overlay-primary-main-to-black-alpha-200 data-[active=true]:bg-color-overlay-primary-main-to-black-alpha-300 data-[active=true]:bg-color-overlay-primary-main-to-black-alpha-300',
-              ghost:
-                'border-none bg-ui-secondary text-text-black hover:bg-color-overlay-ui-secondary-to-black-alpha-50 data-[active=true]:bg-color-overlay-ui-secondary-to-black-alpha-200 data-[active=true]:bg-color-overlay-ui-secondary-to-black-alpha-200',
-              border:
-                'border border-ui-border bg-inherit text-text-black hover:bg-transparency-primary-hover data-[active=true]:bg-transparency-primary-selected data-[active=true]:bg-transparency-primary-selected',
-              text: 'bg-inherit text-text-black hover:bg-transparency-primary-hover data-[active=true]:bg-transparency-primary-selected data-[active=true]:text-primary-main',
-
-              primaryError:
-                'border border-accent-error bg-accent-error text-text-white hover:bg-color-overlay-accent-error-to-black-alpha-200 data-[active=true]:bg-color-overlay-accent-error-to-black-alpha-300 data-[active=true]:bg-color-overlay-accent-error-to-black-alpha-300',
-              borderError:
-                'border border-accent-error bg-inherit text-accent-error hover:bg-transparency-error-hover data-[active=true]:bg-transparency-error-selected data-[active=true]:bg-transparency-error-selected',
-
-              textError:
-                'border-none bg-inherit text-accent-error hover:bg-transparency-error-hover data-[active=true]:bg-transparency-error-selected data-[active=true]:bg-transparency-error-selected',
+              primary: clsx(
+                'border-none bg-primary-main text-text-white',
+                'hover:bg-color-overlay-primary-main-to-black-alpha-200',
+                'active:bg-color-overlay-primary-main-to-black-alpha-300 active:bg-color-overlay-primary-main-to-black-alpha-300',
+                'data-[active=true]:bg-color-overlay-primary-main-to-black-alpha-300 data-[active=true]:bg-color-overlay-primary-main-to-black-alpha-300',
+              ),
+              ghost: clsx(
+                'border-none bg-ui-secondary text-text-black',
+                'hover:bg-color-overlay-ui-secondary-to-black-alpha-50',
+                'active:bg-color-overlay-ui-secondary-to-black-alpha-200 active:bg-color-overlay-ui-secondary-to-black-alpha-200',
+                'data-[active=true]:bg-color-overlay-ui-secondary-to-black-alpha-200 data-[active=true]:bg-color-overlay-ui-secondary-to-black-alpha-200',
+              ),
+              border: clsx(
+                'border border-ui-border bg-inherit text-text-black',
+                'hover:bg-transparency-primary-hover',
+                'active:bg-transparency-primary-selected active:bg-transparency-primary-selected',
+                'data-[active=true]:bg-transparency-primary-selected data-[active=true]:bg-transparency-primary-selected',
+              ),
+              text: clsx(
+                'bg-inherit text-text-black',
+                'hover:bg-transparency-primary-hover',
+                'active:bg-transparency-primary-selected active:text-primary-main',
+                'data-[active=true]:bg-transparency-primary-selected data-[active=true]:text-primary-main',
+              ),
+              primaryError: clsx(
+                'border border-accent-error bg-accent-error text-text-white',
+                'hover:bg-color-overlay-accent-error-to-black-alpha-200',
+                'active:bg-color-overlay-accent-error-to-black-alpha-300 active:bg-color-overlay-accent-error-to-black-alpha-300',
+                'data-[active=true]:bg-color-overlay-accent-error-to-black-alpha-300 data-[active=true]:bg-color-overlay-accent-error-to-black-alpha-300',
+              ),
+              borderError: clsx(
+                'border border-accent-error bg-inherit text-accent-error',
+                'hover:bg-transparency-error-hover',
+                'active:bg-transparency-error-selected active:bg-transparency-error-selected',
+                'data-[active=true]:bg-transparency-error-selected data-[active=true]:bg-transparency-error-selected',
+              ),
+              textError: clsx(
+                'border-none bg-inherit text-accent-error',
+                'hover:bg-transparency-error-hover',
+                'active:bg-transparency-error-selected active:bg-transparency-error-selected',
+                'data-[active=true]:bg-transparency-error-selected data-[active=true]:bg-transparency-error-selected',
+              ),
             }[addedProps.variants],
           )}
           data-active={addedProps.active}
