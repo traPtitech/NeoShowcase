@@ -1,6 +1,10 @@
 import { safeParse } from 'valibot'
 import { describe, expect, test } from 'vitest'
-import { AuthenticationType, PortPublicationProtocol } from '/@/api/neoshowcase/protobuf/gateway_pb'
+import {
+  AuthenticationType,
+  AutoShutdownConfig_StartupBehavior,
+  PortPublicationProtocol,
+} from '/@/api/neoshowcase/protobuf/gateway_pb'
 import { createOrUpdateApplicationSchema } from './applicationSchema'
 
 const validator = (input: unknown) => safeParse(createOrUpdateApplicationSchema, input)
@@ -15,6 +19,9 @@ describe('Create Application Schema', () => {
           useMongodb: false,
           entrypoint: '.',
           command: "echo 'test'",
+          autoShutdown: {
+            enabled: false,
+          },
         },
       },
     },
@@ -108,6 +115,9 @@ describe('Create Application Schema', () => {
                   useMongodb: false,
                   entrypoint: '.',
                   command: "echo 'test'",
+                  autoShutdown: {
+                    enabled: false,
+                  },
                 },
               },
             },
@@ -140,6 +150,9 @@ describe('Create Application Schema', () => {
                   useMongodb: false,
                   entrypoint: '.',
                   command: "echo 'test'",
+                  autoShutdown: {
+                    enabled: false,
+                  },
                 },
               },
             },
@@ -173,6 +186,9 @@ describe('Create Application Schema', () => {
                   useMongodb: false,
                   entrypoint: '.',
                   command: "echo 'test'",
+                  autoShutdown: {
+                    enabled: false,
+                  },
                 },
               },
             },

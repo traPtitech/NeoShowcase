@@ -335,7 +335,7 @@ func TestHashWithEnv(t *testing.T) {
 	}
 	hash := config.Hash(testEnv)
 
-	t.Run("hash should be equal when env is different", func(t *testing.T) {
+	t.Run("hash should not be equal when env is different", func(t *testing.T) {
 		testEnv2 := []*Environment{
 			{Key: "key1", Value: "value1"},
 			{Key: "key2", Value: "value2"},

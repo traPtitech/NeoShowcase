@@ -1,0 +1,7 @@
+provider:
+  name: kubernetes
+sessions:
+  default-duration: 5m
+  expiration-interval: 20s
+logging:
+  level: trace

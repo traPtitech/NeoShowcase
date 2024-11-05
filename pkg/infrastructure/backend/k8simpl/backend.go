@@ -196,6 +196,18 @@ func ssHeaderMiddlewareName(ss *domain.StaticSite) string {
 	return fmt.Sprintf("nsapp-ss-header-%s", ss.Application.ID)
 }
 
+func sablierMiddlewareName(appID string) string {
+	return fmt.Sprintf("sablier-%s", appID)
+}
+
+func (b *Backend) useSablier(app *domain.Application) bool {
+	return app.DeployType == domain.DeployTypeRuntime && app.Config.BuildConfig.GetRuntimeConfig().AutoShutdown.Enabled
+}
+
+func sablierGroupName(appID string) string {
+	return fmt.Sprintf("nsapp-%s", appID)
+}
+
 func certificateName(fqdn string) string {
 	wildcard := strings.HasPrefix(fqdn, "*.")
 	if wildcard {

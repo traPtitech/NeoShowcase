@@ -130,6 +130,15 @@ components:
         ipFamilies:
           - IPv4
         ipFamilyPolicy: SingleStack
+      middleware:
+        sablier:
+          enable: true
+          url: http://sablier.sablier.svc.cluster.local
+          sessionDuration: 5m
+          dynamic:
+            theme: ghost
+          blocking:
+            timeout: 1m
       tls:
         type: traefik
         traefik:

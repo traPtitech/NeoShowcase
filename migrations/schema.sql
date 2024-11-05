@@ -106,6 +106,11 @@ CREATE TABLE `application_config`
     `application_id`  CHAR(22)      NOT NULL COMMENT 'アプリケーションID',
     `use_mariadb`     TINYINT(1)    NOT NULL COMMENT 'MariaDBを使用するか',
     `use_mongodb`     TINYINT(1)    NOT NULL COMMENT 'MongoDBを使用するか',
+    `auto_shutdown`   TINYINT(1)    NOT NULL DEFAULT 0 COMMENT 'アプリケーションの自動シャットダウン',
+    `startup_behavior`   ENUM (
+        'loading-page',
+        'blocking'
+    )                               NOT NULL DEFAULT 'loading-page' COMMENT 'アプリ起動時の振る舞い',
     `build_type`      ENUM (
         'runtime-buildpack',
         'runtime-cmd',

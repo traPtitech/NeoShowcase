@@ -1,5 +1,6 @@
 import { Field, getValues, setValues } from '@modular-forms/solid'
 import { type Component, Show, createEffect, createResource } from 'solid-js'
+import { AutoShutdownConfig_StartupBehavior } from '/@/api/neoshowcase/protobuf/gateway_pb'
 import { TextField } from '/@/components/UI/TextField'
 import { ToolTip } from '/@/components/UI/ToolTip'
 import { CheckBox } from '/@/components/templates/CheckBox'
@@ -48,6 +49,28 @@ const RuntimeConfigField: Component<Props> = (props) => {
       })
     }
   })
+
+  // @ts-expect-error: autoShutdown は deployConfig.type === "static" の時存在しないためtsの型の仕様上エラーが出る
+  const autoShutdown = () => getValues(formStore).form?.config?.deployConfig?.value?.runtime?.autoShutdown?.enabled
+
+  const setStartupBehavior = (value: string | undefined) => {
+    setValues(formStore, {
+      form: {
+        config: {
+          deployConfig: {
+            value: {
+              // @ts-expect-error: deployConfig は form.type === "static" の時存在しないためtsの型の仕様上エラーが出る
+              runtime: {
+                autoShutdown: {
+                  startup: value,
+                },
+              },
+            },
+          },
+        },
+      },
+    })
+  }
 
   const EntryPointField = () => (
     <Field of={formStore} name="form.config.deployConfig.value.runtime.entrypoint">
@@ -172,6 +195,73 @@ const RuntimeConfigField: Component<Props> = (props) => {
         </Show>
         <CommandOverrideField />
       </FormItem>
+      <FormItem
+        title="Auto Shutdown"
+        tooltip={{
+          props: {
+            content: '一定期間アクセスがない場合にアプリを自動でシャットダウンします',
+          },
+        }}
+      >
+        <CheckBox.Container>
+          <Field
+            of={formStore}
+            name="form.config.deployConfig.value.runtime.autoShutdown.enabled"
+            // @ts-expect-error: autoShutdown は deployConfig.type === "static" の時存在しないためtsの型の仕様上エラーが出る
+            type="boolean"
+          >
+            {(field, fieldProps) => (
+              <CheckBox.Option
+                {...fieldProps}
+                label="自動シャットダウン"
+                checked={field.value ?? false}
+                error={field.error}
+              />
+            )}
+          </Field>
+        </CheckBox.Container>
+      </FormItem>
+      <Show when={autoShutdown()}>
+        <FormItem
+          title="Startup Behavior"
+          tooltip={{
+            props: {
+              content: '起動時の挙動',
+            },
+          }}
+        >
+          <Field
+            of={formStore}
+            name="form.config.deployConfig.value.runtime.autoShutdown.startup"
+            // @ts-expect-error: autoShutdown は deployConfig.type === "static" の時存在しないためtsの型の仕様上エラーが出る
+            type="string"
+          >
+            {(field, fieldProps) => (
+              <RadioGroup
+                wrap={false}
+                full
+                options={[
+                  {
+                    value: `${AutoShutdownConfig_StartupBehavior.LOADING_PAGE}`,
+                    label: 'Loading Page',
+                    description: 'アプリ起動時にローディングページを表示します。Webアプリ向け',
+                  },
+                  {
+                    value: `${AutoShutdownConfig_StartupBehavior.BLOCKING}`,
+                    label: 'Blocking',
+                    description: 'アクセスに対し、アプリが起動するまでリクエストを待機させます。APIサーバー向け',
+                  },
+                ]}
+                value={field.value}
+                setValue={setStartupBehavior}
+                required={true}
+                {...fieldProps}
+                error={field.error}
+              />
+            )}
+          </Field>
+        </FormItem>
+      </Show>
     </>
   )
 }
