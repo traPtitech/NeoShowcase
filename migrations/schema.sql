@@ -108,10 +108,9 @@ CREATE TABLE `application_config`
     `use_mongodb`     TINYINT(1)    NOT NULL COMMENT 'MongoDBを使用するか',
     `auto_shutdown`   TINYINT(1)    NOT NULL DEFAULT 0 COMMENT 'アプリケーションの自動シャットダウン',
     `startup_behavior`   ENUM (
-        'undefined',
         'loading-page',
         'blocking'
-    )                               NOT NULL COMMENT 'アプリ起動時の振る舞い',
+    )                               NOT NULL DEFAULT 'loading-page' COMMENT 'アプリ起動時の振る舞い',
     `build_type`      ENUM (
         'runtime-buildpack',
         'runtime-cmd',

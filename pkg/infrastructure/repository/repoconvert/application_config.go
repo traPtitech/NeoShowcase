@@ -31,7 +31,6 @@ var BuildTypeMapper = mapper.MustNewValueMapper(map[string]domain.BuildType{
 })
 
 var StartupBehaviorMapper = mapper.MustNewValueMapper(map[string]domain.StartupBehavior{
-	models.ApplicationConfigStartupBehaviorUndefined:   domain.StartupBehaviorUndefined,
 	models.ApplicationConfigStartupBehaviorLoadingPage: domain.StartupBehaviorLoadingPage,
 	models.ApplicationConfigStartupBehaviorBlocking:    domain.StartupBehaviorBlocking,
 })
@@ -40,21 +39,28 @@ func assignRuntimeConfig(mc *models.ApplicationConfig, c *domain.RuntimeConfig) 
 	mc.UseMariadb = c.UseMariaDB
 	mc.UseMongodb = c.UseMongoDB
 	mc.AutoShutdown = c.AutoShutdown.Enabled
-	mc.StartupBehavior = StartupBehaviorMapper.FromMust(c.AutoShutdown.Startup)
+	if c.AutoShutdown.Enabled {
+		mc.StartupBehavior = StartupBehaviorMapper.FromMust(c.AutoShutdown.Startup)
+	}
 	mc.Entrypoint = c.Entrypoint
 	mc.Command = c.Command
 }
 
 func ToDomainRuntimeConfig(c *models.ApplicationConfig) domain.RuntimeConfig {
+	autoShutdownConf := domain.AutoShutdownConfig{
+		Enabled: c.AutoShutdown,
+	}
+	if autoShutdownConf.Enabled {
+		autoShutdownConf.Startup = StartupBehaviorMapper.IntoMust(c.StartupBehavior)
+	} else {
+		autoShutdownConf.Startup = domain.StartupBehaviorUndefined
+	}
 	return domain.RuntimeConfig{
-		UseMariaDB: c.UseMariadb,
-		UseMongoDB: c.UseMongodb,
-		AutoShutdown: domain.AutoShutdownConfig{
-			Enabled: c.AutoShutdown,
-			Startup: StartupBehaviorMapper.IntoMust(c.StartupBehavior),
-		},
-		Entrypoint: c.Entrypoint,
-		Command:    c.Command,
+		UseMariaDB:   c.UseMariadb,
+		UseMongoDB:   c.UseMongodb,
+		AutoShutdown: autoShutdownConf,
+		Entrypoint:   c.Entrypoint,
+		Command:      c.Command,
 	}
 }
 

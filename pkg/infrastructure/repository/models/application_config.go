@@ -216,8 +216,8 @@ type applicationConfigL struct{}
 
 var (
 	applicationConfigAllColumns            = []string{"application_id", "use_mariadb", "use_mongodb", "auto_shutdown", "startup_behavior", "build_type", "base_image", "build_cmd", "artifact_path", "spa", "dockerfile_name", "context", "entrypoint", "command"}
-	applicationConfigColumnsWithoutDefault = []string{"application_id", "use_mariadb", "use_mongodb", "startup_behavior", "build_type", "base_image", "build_cmd", "artifact_path", "spa", "dockerfile_name", "context", "entrypoint", "command"}
-	applicationConfigColumnsWithDefault    = []string{"auto_shutdown"}
+	applicationConfigColumnsWithoutDefault = []string{"application_id", "use_mariadb", "use_mongodb", "build_type", "base_image", "build_cmd", "artifact_path", "spa", "dockerfile_name", "context", "entrypoint", "command"}
+	applicationConfigColumnsWithDefault    = []string{"auto_shutdown", "startup_behavior"}
 	applicationConfigPrimaryKeyColumns     = []string{"application_id"}
 	applicationConfigGeneratedColumns      = []string{}
 )

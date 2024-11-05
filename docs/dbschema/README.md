@@ -59,7 +59,7 @@ erDiagram
   tinyint_1_ use_mariadb
   tinyint_1_ use_mongodb
   tinyint_1_ auto_shutdown
-  enum__undefined___loading-page___blocking__ startup_behavior
+  enum__loading-page___blocking__ startup_behavior
   enum__runtime-buildpack___runtime-cmd___runtime-dockerfile___static-buildpack___static-cmd___static-dockerfile__ build_type
   varchar_1000_ base_image
   text build_cmd

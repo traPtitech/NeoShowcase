@@ -53,14 +53,12 @@ func makeCacheKey(cols boil.Columns, nzDefaults []string) string {
 
 // Enum values for ApplicationConfigStartupBehavior
 const (
-	ApplicationConfigStartupBehaviorUndefined   string = "undefined"
 	ApplicationConfigStartupBehaviorLoadingPage string = "loading-page"
 	ApplicationConfigStartupBehaviorBlocking    string = "blocking"
 )
 
 func AllApplicationConfigStartupBehavior() []string {
 	return []string{
-		ApplicationConfigStartupBehaviorUndefined,
 		ApplicationConfigStartupBehaviorLoadingPage,
 		ApplicationConfigStartupBehaviorBlocking,
 	}
