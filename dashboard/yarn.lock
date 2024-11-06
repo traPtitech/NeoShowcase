@@ -446,10 +446,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@bufbuild/protobuf@npm:1.10.0":
-  version: 1.10.0
-  resolution: "@bufbuild/protobuf@npm:1.10.0"
-  checksum: 10c0/5487b9c2e63846d0e3bde4d025cc77ae44a22166a5d6c184df0da5581e1ab6d66dd115af0ccad814576dcd011bb1b93989fb0ac1eb4ae452979bb8b186693ba0
+"@bufbuild/protobuf@npm:2.2.2":
+  version: 2.2.2
+  resolution: "@bufbuild/protobuf@npm:2.2.2"
+  checksum: 10c0/17687c36c85b2e489c7ffd676479c54e12437270eb5a724775cb880b09948cad205b79e5822a4d10cefde0eef433b781350d73bb649d8de9e84d7745871ee719
   languageName: node
   linkType: hard
 
@@ -3728,7 +3728,7 @@ __metadata:
   resolution: "neoshowcase@workspace:."
   dependencies:
     "@biomejs/biome": "npm:1.9.2"
-    "@bufbuild/protobuf": "npm:1.10.0"
+    "@bufbuild/protobuf": "npm:2.2.2"
     "@connectrpc/connect": "npm:1.5.0"
     "@connectrpc/connect-web": "npm:1.5.0"
     "@iconify-json/material-symbols": "npm:1.2.5"
