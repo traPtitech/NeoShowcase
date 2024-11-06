@@ -1,99 +1,11 @@
-import { style } from '@macaron-css/core'
-import { styled } from '@macaron-css/solid'
 import { A } from '@solidjs/router'
 import { type Component, Show } from 'solid-js'
 import type { Application, Build } from '/@/api/neoshowcase/protobuf/gateway_pb'
 import Badge from '/@/components/UI/Badge'
-import { MaterialSymbols } from '/@/components/UI/MaterialSymbols'
 import { ToolTip } from '/@/components/UI/ToolTip'
 import type { CommitsMap } from '/@/libs/api'
-import { colorOverlay } from '/@/libs/colorOverlay'
 import { diffHuman, shortSha } from '/@/libs/format'
-import { colorVars, textVars } from '/@/theme'
 import { BuildStatusIcon } from './BuildStatusIcon'
-
-const Container = styled('div', {
-  base: {
-    width: '100%',
-    padding: '16px 16px 16px 20px',
-    cursor: 'pointer',
-    background: colorVars.semantic.ui.primary,
-
-    selectors: {
-      '&:hover': {
-        background: colorOverlay(colorVars.semantic.ui.primary, colorVars.primitive.blackAlpha[50]),
-      },
-    },
-  },
-})
-
-const TitleContainer = styled('div', {
-  base: {
-    width: '100%',
-    display: 'flex',
-    alignItems: 'center',
-    gap: '8px',
-  },
-})
-
-const BuildName = styled('div', {
-  base: {
-    width: 'auto',
-    overflow: 'hidden',
-    textOverflow: 'ellipsis',
-    whiteSpace: 'nowrap',
-    color: colorVars.semantic.text.black,
-    ...textVars.h4.regular,
-  },
-})
-
-const Spacer = styled('div', {
-  base: {
-    flexGrow: 1,
-  },
-})
-
-const UpdatedAt = styled('div', {
-  base: {
-    flexShrink: 0,
-    color: colorVars.semantic.text.grey,
-    ...textVars.caption.regular,
-  },
-})
-
-const MetaContainer = styled('div', {
-  base: {
-    width: '100%',
-    display: 'flex',
-    alignItems: 'center',
-    gap: '4px',
-    padding: '0 0 0 32px',
-
-    color: colorVars.semantic.text.grey,
-    ...textVars.caption.regular,
-  },
-})
-
-const leftFit = style({
-  width: 'fit-content',
-  overflow: 'hidden',
-  textOverflow: 'ellipsis',
-  whiteSpace: 'nowrap',
-})
-
-const rightFit = style({
-  width: 'fit-content',
-  marginLeft: 'auto',
-  textAlign: 'right',
-  overflow: 'hidden',
-  textOverflow: 'ellipsis',
-  whiteSpace: 'nowrap',
-})
-
-const center = style({
-  display: 'flex',
-  alignItems: 'center',
-})
 
 export interface Props {
   build: Build
@@ -129,39 +41,39 @@ export const BuildRow: Component<Props> = (props) => {
 
   return (
     <A href={`/apps/${props.build.applicationId}/builds/${props.build.id}`}>
-      <Container>
-        <TitleContainer>
+      <div class="w-full cursor-pointer bg-ui-primary p-4 pl-5 hover:bg-color-overlay-ui-primary-to-black-alpha-50">
+        <div class="flex w-full items-center gap-2">
           <BuildStatusIcon state={props.build.status} />
-          <BuildName>{commitHeadline()}</BuildName>
+          <div class="h4-regular w-auto truncate text-text-black">{commitHeadline()}</div>
           <Show when={props.isCurrent}>
             <ToolTip props={{ content: 'このビルドがデプロイされています' }}>
               <Badge variant="success">Current</Badge>
             </ToolTip>
           </Show>
-          <Spacer />
+          <div class="grow-1" />
           <Show when={props.build.queuedAt}>
             {(nonNullQueuedAt) => {
               const diff = diffHuman(nonNullQueuedAt().toDate())
               const localeString = nonNullQueuedAt().toDate().toLocaleString()
               return (
                 <ToolTip props={{ content: localeString }}>
-                  <UpdatedAt>{diff()}</UpdatedAt>
+                  <div class="caption-regular shrink-0 text-text-grey">{diff()}</div>
                 </ToolTip>
               )
             }}
           </Show>
-        </TitleContainer>
-        <MetaContainer>
-          <div class={leftFit}>{commitDetails()}</div>
-          <Spacer />
+        </div>
+        <div class="caption-regular flex w-full items-center gap-1 pl-8 text-text-grey">
+          <div class="w-fit truncate">{commitDetails()}</div>
+          <div class="grow-1" />
           <Show when={props.app}>
-            <div class={`${rightFit} ${center}`}>
-              <MaterialSymbols displaySize={20}>deployed_code</MaterialSymbols>
+            <div class="ml-auto flex w-fit items-center truncate text-right">
+              <div class="i-material-symbols:deployed-code-outline shrink-0 text-xl/5" />
               {props.app!.name}
             </div>
           </Show>
-        </MetaContainer>
-      </Container>
+        </div>
+      </div>
     </A>
   )
 }

@@ -1,7 +1,6 @@
 import { Title } from '@solidjs/meta'
 import { type RouteSectionProps, useMatch, useNavigate } from '@solidjs/router'
 import { ErrorBoundary, Show, startTransition } from 'solid-js'
-import { MaterialSymbols } from '/@/components/UI/MaterialSymbols'
 import { TabRound } from '/@/components/UI/TabRound'
 import ErrorView from '/@/components/layouts/ErrorView'
 import { WithNav } from '/@/components/layouts/WithNav'
@@ -27,21 +26,21 @@ export default (props: RouteSectionProps) => {
           <AppNav app={app()!} repository={repo()!} />
           <WithNav.Tabs>
             <TabRound onClick={() => navigate(`/apps/${app()?.id}`)} state={matchIndexPage() ? 'active' : 'default'}>
-              <MaterialSymbols>insert_chart</MaterialSymbols>
+              <div class="i-material-symbols:insert-chart-outline shrink-0 text-2xl/6" />
               Info
             </TabRound>
             <TabRound
               onClick={() => navigate(`/apps/${app()?.id}/builds`)}
               state={matchBuildsPage() ? 'active' : 'default'}
             >
-              <MaterialSymbols>history</MaterialSymbols>
+              <div class="i-material-symbols:history shrink-0 text-2xl/6" />
               Build History
             </TabRound>
             <TabRound
               onClick={() => navigate(`/apps/${app()?.id}/settings`)}
               state={matchSettingsPage() ? 'active' : 'default'}
             >
-              <MaterialSymbols>settings</MaterialSymbols>
+              <div class="i-material-symbols:settings-outline shrink-0 text-2xl/6" />
               Settings
             </TabRound>
           </WithNav.Tabs>

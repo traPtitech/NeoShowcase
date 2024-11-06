@@ -3,24 +3,18 @@ import { defineConfig, type PluginOption } from 'vite'
 import solidPlugin from 'vite-plugin-solid'
 import solidSvg from 'vite-plugin-solid-svg'
 import Unfonts from 'unplugin-fonts/vite'
-import { macaronVitePlugin } from '@macaron-css/vite'
 import viteCompression from 'vite-plugin-compression'
 import { visualizer } from 'rollup-plugin-visualizer'
+import UnoCSS from 'unocss/vite'
 
 export default defineConfig(({ mode }) => ({
   plugins: [
-    macaronVitePlugin(), // comes first
+    UnoCSS(),
     solidPlugin(),
     solidSvg({ defaultAsComponent: true }),
     Unfonts({
       google: {
-        families: [
-          'Lato',
-          {
-            name: 'Material+Symbols+Rounded',
-            styles: 'opsz,wght,FILL,GRAD@20..24,300,0..1,0',
-          },
-        ],
+        families: ['Lato'],
       },
     }),
     viteCompression({ algorithm: 'gzip' }),

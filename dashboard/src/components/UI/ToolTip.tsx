@@ -1,26 +1,9 @@
-import { styled } from '@macaron-css/solid'
 import { type FlowComponent, type JSX, children, mergeProps, onMount, splitProps } from 'solid-js'
 import { type TippyOptions, tippy } from 'solid-tippy'
 import type { Props } from 'tippy.js'
 import 'tippy.js/animations/shift-away-subtle.css'
 import 'tippy.js/dist/tippy.css'
-
-const TooltipContainer = styled('div', {
-  base: {
-    display: 'flex',
-    flexDirection: 'column',
-  },
-  variants: {
-    align: {
-      left: {
-        alignItems: 'flex-start',
-      },
-      center: {
-        alignItems: 'center',
-      },
-    },
-  },
-})
+import { clsx } from '/@/libs/clsx'
 
 export type TooltipProps = Omit<TippyOptions, 'props'> & {
   props?: Partial<
@@ -58,7 +41,15 @@ export const ToolTip: FlowComponent<TooltipProps> = (props) => {
           props: {
             ...tippyProps.props,
             content: (
-              <TooltipContainer align={addedProps.style}>{propsWithDefaults.props?.content}</TooltipContainer>
+              <div
+                class={clsx(
+                  'flex flex-col',
+                  addedProps.style === 'center' && 'items-center',
+                  addedProps.style === 'left' && 'items-start',
+                )}
+              >
+                {propsWithDefaults.props?.content}
+              </div>
             ) as Element,
           },
         }))

@@ -1,14 +1,12 @@
 import type { PlainMessage } from '@bufbuild/protobuf'
-import { styled } from '@macaron-css/solid'
 import { Field, Form, type SubmitHandler, createFormStore, required, reset } from '@modular-forms/solid'
 import { Title } from '@solidjs/meta'
 import { type Component, For, Show, createResource } from 'solid-js'
 import toast from 'solid-toast'
 import { Button } from '/@/components/UI/Button'
+import { styled } from '/@/components/styled-components'
 import { client, handleAPIError } from '/@/libs/api'
-import { colorVars, textVars } from '/@/theme'
 import type { CreateUserKeyRequest, DeleteUserKeyRequest, UserKey } from '../api/neoshowcase/protobuf/gateway_pb'
-import { MaterialSymbols } from '../components/UI/MaterialSymbols'
 import ModalDeleteConfirm from '../components/UI/ModalDeleteConfirm'
 import { TextField } from '../components/UI/TextField'
 import { DataTable } from '../components/layouts/DataTable'
@@ -19,83 +17,9 @@ import { Nav } from '../components/templates/Nav'
 import { dateHuman } from '../libs/format'
 import useModal from '../libs/useModal'
 
-const TitleContainer = styled('div', {
-  base: {
-    width: '100%',
-    display: 'flex',
-    flexDirection: 'row',
-    alignItems: 'flex-end',
-    justifyContent: 'space-between',
-  },
-})
-const SshKeyRowContainer = styled('div', {
-  base: {
-    width: '100%',
-    padding: '16px 20px',
-    display: 'flex',
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: '8px',
-    overflowX: 'hidden',
-    background: colorVars.semantic.ui.primary,
-
-    selectors: {
-      '&:last-child': {
-        borderBottom: 'none',
-      },
-    },
-  },
-})
-const SshKeyRowContent = styled('div', {
-  base: {
-    width: '100%',
-    display: 'flex',
-    flexDirection: 'column',
-    overflowX: 'hidden',
-  },
-})
-const SshKeyName = styled('div', {
-  base: {
-    whiteSpace: 'nowrap',
-    overflow: 'hidden',
-    textOverflow: 'ellipsis',
-    color: colorVars.semantic.text.black,
-    ...textVars.h4.bold,
-  },
-})
-const SshKeyRowValue = styled('div', {
-  base: {
-    whiteSpace: 'nowrap',
-    overflow: 'hidden',
-    textOverflow: 'ellipsis',
-    color: colorVars.semantic.text.black,
-    ...textVars.text.medium,
-  },
-})
-const SshKeyAddedAt = styled('div', {
-  base: {
-    whiteSpace: 'nowrap',
-    overflow: 'hidden',
-    textOverflow: 'ellipsis',
-    color: colorVars.semantic.text.grey,
-    ...textVars.text.regular,
-  },
-})
-const FormContainer = styled('div', {
-  base: {
-    width: '100%',
-    display: 'flex',
-    flexDirection: 'column',
-    gap: '8px',
-  },
-})
-const SshDeleteConfirm = styled('div', {
-  base: {
-    width: '100%',
-    display: 'flex',
-    flexDirection: 'column',
-  },
-})
+const SshKeyName = styled('div', 'h4-bold truncate text-text-black')
+const SshKeyRowValue = styled('div', 'truncate text-text-black text-text-medium')
+const SshKeyAddedAt = styled('div', 'truncate text-text-grey text-text-regular')
 
 const SshKeyRow: Component<{ key: UserKey; refetchKeys: () => void }> = (props) => {
   const { Modal, open, close } = useModal()
@@ -111,8 +35,8 @@ const SshKeyRow: Component<{ key: UserKey; refetchKeys: () => void }> = (props) 
 
   return (
     <>
-      <SshKeyRowContainer>
-        <SshKeyRowContent>
+      <div class="flex w-full items-center gap-2 overflow-x-hidden bg-ui-primary px-5 py-4 last:border-b-none">
+        <div class="flex w-full flex-col overflow-x-hidden">
           <SshKeyName>{props.key.name === '' ? '(Name not set)' : props.key.name}</SshKeyName>
           <SshKeyRowValue>{props.key.publicKey}</SshKeyRowValue>
           <Show
@@ -121,16 +45,16 @@ const SshKeyRow: Component<{ key: UserKey; refetchKeys: () => void }> = (props) 
           >
             <SshKeyAddedAt>Added on {dateHuman(props.key.createdAt!)}</SshKeyAddedAt>
           </Show>
-        </SshKeyRowContent>
+        </div>
         <Button variants="textError" size="medium" onClick={open}>
           Delete
         </Button>
-      </SshKeyRowContainer>
+      </div>
       <Modal.Container>
         <Modal.Header>Delete SSH Key</Modal.Header>
         <Modal.Body>
           <ModalDeleteConfirm>
-            <SshDeleteConfirm>
+            <div class="flex w-full flex-col">
               <SshKeyName>{props.key.name === '' ? '(Name not set)' : props.key.name}</SshKeyName>
               {props.key.publicKey}
               <Show
@@ -139,7 +63,7 @@ const SshKeyRow: Component<{ key: UserKey; refetchKeys: () => void }> = (props) 
               >
                 <SshKeyAddedAt>Added on {dateHuman(props.key.createdAt!)}</SshKeyAddedAt>
               </Show>
-            </SshDeleteConfirm>
+            </div>
           </ModalDeleteConfirm>
         </Modal.Body>
         <Modal.Footer>
@@ -187,7 +111,12 @@ export default () => {
   }
 
   const AddNewSSHKeyButton = () => (
-    <Button variants="primary" size="medium" leftIcon={<MaterialSymbols>add</MaterialSymbols>} onClick={newKeyOpen}>
+    <Button
+      variants="primary"
+      size="medium"
+      leftIcon={<div class="i-material-symbols:add shrink-0 text-2xl/6" />}
+      onClick={newKeyOpen}
+    >
       Add New SSH Key
     </Button>
   )
@@ -203,7 +132,7 @@ export default () => {
           <Show when={userKeys.state === 'ready'}>
             <MainViewContainer>
               <DataTable.Container>
-                <TitleContainer>
+                <div class="flex w-full items-end justify-between">
                   <DataTable.Titles>
                     <DataTable.Title>SSH Public Keys</DataTable.Title>
                     <DataTable.SubTitle>
@@ -213,13 +142,13 @@ export default () => {
                   <Show when={userKeys()?.keys.length !== 0}>
                     <AddNewSSHKeyButton />
                   </Show>
-                </TitleContainer>
+                </div>
                 <Show
                   when={userKeys()!.keys.length > 0}
                   fallback={
                     <List.Container>
                       <List.PlaceHolder>
-                        <MaterialSymbols displaySize={80}>key_off</MaterialSymbols>
+                        <div class="i-material-symbols:key-off-outline shrink-0 text-20/20" />
                         No Keys Registered
                         <AddNewSSHKeyButton />
                       </List.PlaceHolder>
@@ -237,7 +166,7 @@ export default () => {
         <Form of={formStore} onSubmit={handleSubmit}>
           <AddNewKeyModal.Header>Add New SSH Key</AddNewKeyModal.Header>
           <AddNewKeyModal.Body>
-            <FormContainer>
+            <div class="flex w-full flex-col gap-2">
               <Field of={formStore} name="name" validate={[required('Enter Name')]}>
                 {(field, fieldProps) => (
                   <TextField label="Name" required {...fieldProps} value={field.value} error={field.error} />
@@ -256,7 +185,7 @@ export default () => {
                   />
                 )}
               </Field>
-            </FormContainer>
+            </div>
           </AddNewKeyModal.Body>
           <AddNewKeyModal.Footer>
             <Button variants="text" size="medium" type="button" onClick={newKeyClose}>

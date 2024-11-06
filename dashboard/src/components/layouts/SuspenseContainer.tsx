@@ -1,21 +1,21 @@
-import { styled } from '@macaron-css/solid'
+import type { ComponentProps, ParentComponent } from 'solid-js'
+import { clsx } from '/@/libs/clsx'
 
-const SuspenseContainer = styled('div', {
-  base: {
-    width: '100%',
-    height: '100%',
+type VariantProps = {
+  isPending?: boolean
+}
 
-    opacity: 1,
-    transition: 'opacity 0.2s ease-in-out',
-  },
-  variants: {
-    isPending: {
-      true: {
-        opacity: 0.5,
-        pointerEvents: 'none',
-      },
-    },
-  },
-})
+const SuspenseContainer: ParentComponent<ComponentProps<'div'> & VariantProps> = (props) => (
+  <div
+    {...props}
+    class={clsx(
+      'h-full w-full opacity-100 transition-opacity duration-200 ease-in-out',
+      props.isPending && 'pointer-events-none opacity-50',
+      props.class,
+    )}
+  >
+    {props.children}
+  </div>
+)
 
 export default SuspenseContainer

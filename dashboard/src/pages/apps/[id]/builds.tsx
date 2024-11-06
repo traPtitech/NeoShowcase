@@ -1,6 +1,5 @@
 import { createMemo, onCleanup, useTransition } from 'solid-js'
 import { Show } from 'solid-js'
-import { MaterialSymbols } from '/@/components/UI/MaterialSymbols'
 import { DataTable } from '/@/components/layouts/DataTable'
 import { MainViewContainer } from '/@/components/layouts/MainView'
 import SuspenseContainer from '/@/components/layouts/SuspenseContainer'
@@ -38,7 +37,7 @@ export default () => {
             >
               <List.Container>
                 <List.PlaceHolder>
-                  <MaterialSymbols displaySize={80}>deployed_code</MaterialSymbols>
+                  <div class="i-material-symbols:deployed-code-outline shrink-0 text-20/20" />
                   No Builds
                 </List.PlaceHolder>
               </List.Container>

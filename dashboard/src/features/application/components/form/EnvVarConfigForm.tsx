@@ -1,4 +1,3 @@
-import { styled } from '@macaron-css/solid'
 import {
   Field,
   FieldArray,
@@ -20,26 +19,12 @@ import { Button } from '/@/components/UI/Button'
 import { TextField } from '/@/components/UI/TextField'
 import FormBox from '/@/components/layouts/FormBox'
 import { client, handleAPIError } from '/@/libs/api'
-import { colorVars, textVars } from '/@/theme'
 import {
   type EnvVarInput,
   envVarSchema,
   envVarsMessageToSchema,
   handleSubmitEnvVarForm,
 } from '../../schema/envVarSchema'
-
-const EnvVarsContainer = styled('div', {
-  base: {
-    width: '100%',
-    display: 'grid',
-    gridTemplateColumns: '1fr 1fr',
-    rowGap: '8px',
-    columnGap: '24px',
-
-    color: colorVars.semantic.text.black,
-    ...textVars.text.bold,
-  },
-})
 
 type Props = {
   appId: string
@@ -139,7 +124,7 @@ const EnvVarConfigForm: Component<Props> = (props) => {
     <Form of={formStore} onSubmit={handleSubmit} shouldActive={false}>
       <FormBox.Container>
         <FormBox.Forms>
-          <EnvVarsContainer>
+          <div class="grid w-full grid-cols-2 gap-col-6 gap-row-2 text-bold text-text-black">
             <div>Key</div>
             <div>Value</div>
             <FieldArray of={formStore} name="variables">
@@ -192,7 +177,7 @@ const EnvVarConfigForm: Component<Props> = (props) => {
                 </For>
               )}
             </FieldArray>
-          </EnvVarsContainer>
+          </div>
         </FormBox.Forms>
         <FormBox.Actions>
           <Show when={formStore.dirty && !formStore.submitting}>

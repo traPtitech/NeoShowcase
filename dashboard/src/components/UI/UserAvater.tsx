@@ -1,14 +1,5 @@
-import { styled } from '@macaron-css/solid'
 import { type Component, type JSX, splitProps } from 'solid-js'
 import type { User } from '/@/api/neoshowcase/protobuf/gateway_pb'
-
-const UserAvatarImg = styled('img', {
-  base: {
-    height: 'auto',
-    aspectRatio: '1',
-    borderRadius: '50%',
-  },
-})
 
 export interface UserAvatarProps extends JSX.HTMLAttributes<HTMLImageElement> {
   user: User
@@ -18,7 +9,8 @@ export interface UserAvatarProps extends JSX.HTMLAttributes<HTMLImageElement> {
 const UserAvatar: Component<UserAvatarProps> = (props) => {
   const [addedProps, originalImgProps] = splitProps(props, ['user', 'size'])
   return (
-    <UserAvatarImg
+    <img
+      class="aspect-square h-auto rounded-full"
       src={addedProps.user.avatarUrl}
       style={{
         width: addedProps.size ? `${addedProps.size}px` : '100%',
@@ -26,8 +18,8 @@ const UserAvatar: Component<UserAvatarProps> = (props) => {
       width={addedProps.size}
       height={addedProps.size}
       loading="lazy"
-      alt={addedProps.user.name}
       {...originalImgProps}
+      alt={addedProps.user.name}
     />
   )
 }

@@ -1,158 +1,22 @@
-import { Checkbox, DropdownMenu, type PolymorphicCallbackProps, RadioGroup } from '@kobalte/core'
-import type { RadioGroupRootOptions, RadioGroupRootRenderProps } from '@kobalte/core/radio-group'
-import { keyframes, style } from '@macaron-css/core'
-import { styled } from '@macaron-css/solid'
+import { Checkbox, DropdownMenu, RadioGroup } from '@kobalte/core'
 import { type Component, type ComponentProps, For, type Setter, Show } from 'solid-js'
 import { CheckBoxIcon } from '/@/components/UI/CheckBoxIcon'
-import { MaterialSymbols } from '/@/components/UI/MaterialSymbols'
 import { RadioIcon } from '/@/components/UI/RadioIcon'
+import { styled } from '/@/components/styled-components'
 import { type ApplicationState, type RepositoryOrigin, originToIcon } from '/@/libs/application'
+import { clsx } from '/@/libs/clsx'
 import { allOrigins, allStatuses, sortItems } from '/@/pages/apps'
-import { colorVars, textVars } from '/@/theme'
 import { AppStatusIcon } from './AppStatusIcon'
 
-const contentShowKeyframes = keyframes({
-  from: { opacity: 0, transform: 'translateY(-8px)' },
-  to: { opacity: 1, transform: 'translateY(0)' },
-})
-const contentHideKeyframes = keyframes({
-  from: { opacity: 1, transform: 'translateY(0)' },
-  to: { opacity: 0, transform: 'translateY(-8px)' },
-})
-const contentStyle = style({
-  maxWidth: 'var(--kb-popper-content-available-width)',
-  overflowX: 'auto',
-  padding: '16px',
-  display: 'grid',
-  gridTemplateColumns: 'repeat(3, auto)',
-  gridTemplateRows: '1fr auto',
-  gridTemplateAreas: `
-    "status provider sort"
-    "status noapp noapp"
-  `,
-  gap: '8px',
+const ItemsContainer = styled('div', 'flex w-full flex-col')
 
-  background: colorVars.semantic.ui.primary,
-  borderRadius: '6px',
-  boxShadow: '0px 0px 20px 0px rgba(0, 0, 0, 0.10)',
-  zIndex: 1,
+const selectItemStyle = clsx(
+  'flex h-11 w-full cursor-pointer flex-nowrap items-center gap-2 whitespace-nowrap rounded-lg border-none bg-inherit p-2 text-bold text-text-black',
+  'hover:bg-transparency-primary-hover data-[highlighted]:bg-transparency-primary-hover',
+  '!data-[disabled]:bg-text-disabled !data-[disabled]:text-text-black data-[disabled]:cursor-not-allowed',
+)
 
-  transformOrigin: 'var(--kb-menu-content-transform-origin)',
-  animation: `${contentHideKeyframes} 0.2s ease-in-out`,
-  selectors: {
-    '&[data-expanded]': {
-      animation: `${contentShowKeyframes} 0.2s ease-in-out`,
-    },
-  },
-})
-const indicatorStyle = style({
-  width: '24px',
-  height: '24px',
-})
-const ItemsContainer = styled('div', {
-  base: {
-    width: '100%',
-    display: 'flex',
-    flexDirection: 'column',
-  },
-})
-const SelectItemStyle = style({
-  width: '100%',
-  height: '44px',
-  padding: '8px',
-  display: 'flex',
-  flexWrap: 'nowrap',
-  alignItems: 'center',
-  gap: '8px',
-
-  background: 'none',
-  border: 'none',
-  borderRadius: '8px',
-  cursor: 'pointer',
-  color: colorVars.semantic.text.black,
-  whiteSpace: 'nowrap',
-  ...textVars.text.bold,
-
-  selectors: {
-    '&:hover, &[data-highlighted]': {
-      background: colorVars.semantic.transparent.primaryHover,
-    },
-    '&[data-disabled]': {
-      cursor: 'not-allowed',
-      color: `${colorVars.semantic.text.black} !important`,
-      background: `${colorVars.semantic.text.disabled} !important`,
-    },
-  },
-})
-const RadioItemStyle = style([
-  SelectItemStyle,
-  {
-    selectors: {
-      '&[data-selected]': {
-        color: colorVars.semantic.primary.main,
-        background: colorVars.semantic.transparent.primarySelected,
-      },
-    },
-  },
-])
-const FilterItemContainer = styled('div', {
-  base: {
-    display: 'flex',
-    flexDirection: 'column',
-    gap: '8px',
-
-    color: colorVars.semantic.text.black,
-    ...textVars.text.bold,
-  },
-})
-const FilterButton = style({
-  padding: '8px',
-  display: 'flex',
-  background: 'none',
-  border: 'none',
-  borderRadius: '4px',
-  cursor: 'pointer',
-
-  color: colorVars.semantic.text.black,
-  selectors: {
-    '&:hover': {
-      background: colorVars.semantic.transparent.primaryHover,
-    },
-    '&:active': {
-      color: colorVars.semantic.primary.main,
-      background: colorVars.semantic.transparent.primarySelected,
-    },
-  },
-})
-const IconContainer = styled('div', {
-  base: {
-    position: 'relative',
-    width: '24px',
-    height: '24px',
-  },
-})
-const iconStyle = style({
-  width: '24px',
-  height: '24px',
-  transition: 'transform 0.2s',
-  selectors: {
-    '&[data-expanded]': {
-      transform: 'rotate(180deg)',
-    },
-  },
-})
-const FilterIndicator = styled('div', {
-  base: {
-    position: 'absolute',
-    width: '8px',
-    height: '8px',
-    right: '-2px',
-    top: '-2px',
-    borderRadius: '4px',
-    background: colorVars.semantic.primary.main,
-    outline: `1px solid ${colorVars.semantic.ui.background}`,
-  },
-})
+const FilterItemContainer = styled('div', 'flex flex-col gap-2 text-bold text-text-black')
 
 const AppsFilter: Component<{
   statuses: ApplicationState[]
@@ -169,24 +33,37 @@ const AppsFilter: Component<{
 
   return (
     <DropdownMenu.Root>
-      <DropdownMenu.Trigger class={FilterButton}>
-        <IconContainer>
-          <MaterialSymbols>tune</MaterialSymbols>
+      <DropdownMenu.Trigger
+        class={clsx(
+          'flex cursor-pointer rounded bg-inherit p-2 text-text-black',
+          'hover:bg-transparency-primary-hover',
+          'active:bg-transparency-primary-selected active:text-primary-main',
+        )}
+      >
+        <div class="relative size-6">
+          <div class="i-material-symbols:tune shrink-0 text-2xl/6" />
           <Show when={filtered()}>
-            <FilterIndicator />
+            <div class="-right-0.5 -top-0.5 absolute size-2 rounded bg-primary-main outline outline-1 outline-ui-background" />
           </Show>
-        </IconContainer>
-        <DropdownMenu.Icon class={iconStyle}>
-          <MaterialSymbols>expand_more</MaterialSymbols>
+        </div>
+        <DropdownMenu.Icon class="size-6 transition-transform duration-200 data-[expanded]:rotate-180">
+          <div class="i-material-symbols:expand-more shrink-0 text-2xl/6" />
         </DropdownMenu.Icon>
       </DropdownMenu.Trigger>
       <DropdownMenu.Portal>
-        <DropdownMenu.Content class={contentStyle}>
-          <FilterItemContainer
-            style={{
-              'grid-area': 'status',
-            }}
-          >
+        <DropdownMenu.Content
+          class={clsx(
+            'z-1 grid max-w-[--kb-popper-content-available-width] origin-[--kb-menu-content-transform-origin] grid-cols-[repeat(3,auto)] grid-rows-[1fr_auto] gap-2 overflow-x-auto rounded-md bg-ui-primary p-4 shadow-default',
+            'animate-duration-200 animate-ease-in-out animate-name-wipe-hide-up data-[expanded]:animate-name-wipe-show-down',
+          )}
+          style={{
+            'grid-template-areas': `
+              "status provider sort"
+              "status noapp noapp"
+            `,
+          }}
+        >
+          <FilterItemContainer class="grid-area-[status]">
             Status
             <ItemsContainer>
               <For each={allStatuses}>
@@ -202,8 +79,8 @@ const AppsFilter: Component<{
                     }}
                   >
                     <Checkbox.Input />
-                    <Checkbox.Label class={SelectItemStyle}>
-                      <Checkbox.Indicator forceMount class={indicatorStyle}>
+                    <Checkbox.Label class={selectItemStyle}>
+                      <Checkbox.Indicator forceMount class="size-6">
                         <CheckBoxIcon checked={props.statuses.includes(s.value)} />
                       </Checkbox.Indicator>
                       <AppStatusIcon state={s.value} hideTooltip />
@@ -214,11 +91,7 @@ const AppsFilter: Component<{
               </For>
             </ItemsContainer>
           </FilterItemContainer>
-          <FilterItemContainer
-            style={{
-              'grid-area': 'provider',
-            }}
-          >
+          <FilterItemContainer class="grid-area-[provider]">
             Origin
             <ItemsContainer>
               <For each={allOrigins}>
@@ -234,8 +107,8 @@ const AppsFilter: Component<{
                     }}
                   >
                     <Checkbox.Input />
-                    <Checkbox.Label class={SelectItemStyle}>
-                      <Checkbox.Indicator forceMount class={indicatorStyle}>
+                    <Checkbox.Label class={selectItemStyle}>
+                      <Checkbox.Indicator forceMount class="size-6">
                         <CheckBoxIcon checked={props.origin.includes(s.value)} />
                       </Checkbox.Indicator>
                       {originToIcon(s.value)}
@@ -248,26 +121,20 @@ const AppsFilter: Component<{
           </FilterItemContainer>
           <RadioGroup.Root
             onChange={props.setSort}
-            as={(
-              asProps: PolymorphicCallbackProps<
-                ComponentProps<typeof FilterItemContainer>,
-                RadioGroupRootOptions,
-                RadioGroupRootRenderProps
-              >,
-            ) => (
-              <FilterItemContainer
-                style={{
-                  'grid-area': 'sort',
-                }}
-                {...asProps}
-              >
+            as={(asProps: ComponentProps<typeof FilterItemContainer>) => (
+              <FilterItemContainer class="grid-area-[sort]" {...asProps}>
                 <RadioGroup.Label>Sort</RadioGroup.Label>
                 <ItemsContainer>
                   <For each={Object.values(sortItems)}>
                     {(s) => (
                       <RadioGroup.Item value={s.value}>
                         <RadioGroup.ItemInput />
-                        <RadioGroup.ItemLabel class={RadioItemStyle}>
+                        <RadioGroup.ItemLabel
+                          class={clsx(
+                            selectItemStyle,
+                            'data-[selected]:bg-transparency-primary-selected data-[selected]:text-primary-main',
+                          )}
+                        >
                           <RadioGroup.ItemIndicator forceMount>
                             <RadioIcon selected={props.sort === s.value} />
                           </RadioGroup.ItemIndicator>
@@ -281,15 +148,11 @@ const AppsFilter: Component<{
               </FilterItemContainer>
             )}
           />
-          <FilterItemContainer
-            style={{
-              'grid-area': 'noapp',
-            }}
-          >
+          <FilterItemContainer class="grid-area-[noapp]">
             <Checkbox.Root checked={props.includeNoApp} onChange={props.setIncludeNoApp}>
               <Checkbox.Input />
-              <Checkbox.Label class={SelectItemStyle}>
-                <Checkbox.Indicator forceMount class={indicatorStyle}>
+              <Checkbox.Label class={selectItemStyle}>
+                <Checkbox.Indicator forceMount class="size-6">
                   <CheckBoxIcon checked={props.includeNoApp} />
                 </Checkbox.Indicator>
                 アプリを持たないリポジトリを表示

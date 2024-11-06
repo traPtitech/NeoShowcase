@@ -1,40 +1,6 @@
-import { styled } from '@macaron-css/solid'
 import { A } from '@solidjs/router'
 import { type Component, Show } from 'solid-js'
-import { colorVars, textVars } from '/@/theme'
 import { Button } from '../UI/Button'
-import { MaterialSymbols } from '../UI/MaterialSymbols'
-
-const Container = styled('div', {
-  base: {
-    width: '100%',
-    height: '100%',
-    display: 'flex',
-    flexDirection: 'column',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: '1rem',
-  },
-})
-const Title = styled('h2', {
-  base: {
-    color: colorVars.semantic.accent.error,
-    ...textVars.h2.bold,
-  },
-})
-const Message = styled('p', {
-  base: {
-    color: colorVars.semantic.text.grey,
-    ...textVars.caption.medium,
-  },
-})
-const ButtonsContainer = styled('div', {
-  base: {
-    display: 'flex',
-    flexDirection: 'row',
-    gap: '8px',
-  },
-})
 
 const ErrorView: Component<{
   error: unknown
@@ -44,17 +10,19 @@ const ErrorView: Component<{
   }
 
   return (
-    <Container>
-      <MaterialSymbols fill displaySize={64} color={colorVars.semantic.accent.error}>
-        error
-      </MaterialSymbols>
-      <Title>An error has occurred</Title>
+    <div class="flex w-full flex-col items-center justify-center gap-4">
+      <div class="i-material-symbols:error shrink-0 text-16/16 text-accent-error" />
+      <h2 class="h2-bold text-accent-error">An error has occurred</h2>
       <Show when={props.error instanceof Error}>
-        <Message>{(props.error as Error).message}</Message>
+        <p class="caption-medium text-text-grey">{(props.error as Error).message}</p>
       </Show>
-      <ButtonsContainer>
+      <div class="flex flex-col gap-2">
         <A href="/">
-          <Button size="medium" variants="border" leftIcon={<MaterialSymbols>arrow_back</MaterialSymbols>}>
+          <Button
+            size="medium"
+            variants="border"
+            leftIcon={<div class="i-material-symbols:arrow-back shrink-0 text-2xl/6" />}
+          >
             Back to Home
           </Button>
         </A>
@@ -62,12 +30,12 @@ const ErrorView: Component<{
           onClick={handleReload}
           size="medium"
           variants="border"
-          leftIcon={<MaterialSymbols>refresh</MaterialSymbols>}
+          leftIcon={<div class="i-material-symbols:refresh shrink-0 text-2xl/6" />}
         >
           Reload Page
         </Button>
-      </ButtonsContainer>
-    </Container>
+      </div>
+    </div>
   )
 }
 

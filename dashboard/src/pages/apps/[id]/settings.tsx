@@ -1,24 +1,12 @@
-import { styled } from '@macaron-css/solid'
 import { type RouteSectionProps, useMatch, useNavigate } from '@solidjs/router'
 import { ErrorBoundary, Show, Suspense, useTransition } from 'solid-js'
 import { Button } from '/@/components/UI/Button'
-import { MaterialSymbols } from '/@/components/UI/MaterialSymbols'
 import ErrorView from '/@/components/layouts/ErrorView'
 import { MainViewContainer } from '/@/components/layouts/MainView'
 import { SideView } from '/@/components/layouts/SideView'
 import SuspenseContainer from '/@/components/layouts/SuspenseContainer'
 import SettingSkeleton from '/@/components/templates/SettingSkeleton'
 import { useApplicationData } from '/@/routes'
-
-const SideMenu = styled('div', {
-  base: {
-    position: 'sticky',
-    width: '100%',
-    top: '0',
-    display: 'flex',
-    flexDirection: 'column',
-  },
-})
 
 export default (props: RouteSectionProps) => {
   const { app } = useApplicationData()
@@ -41,7 +29,7 @@ export default (props: RouteSectionProps) => {
         <Show when={loaded()}>
           <SideView.Container>
             <SideView.Side>
-              <SideMenu>
+              <div class="sticky top-0 flex w-full flex-col">
                 <Button
                   variants="text"
                   size="medium"
@@ -50,7 +38,7 @@ export default (props: RouteSectionProps) => {
                   onclick={() => {
                     navigate(`/apps/${app()?.id}/settings/`)
                   }}
-                  leftIcon={<MaterialSymbols>browse_activity</MaterialSymbols>}
+                  leftIcon={<div class="i-material-symbols:browse-activity-outline shrink-0 text-2xl/6" />}
                 >
                   General
                 </Button>
@@ -62,7 +50,7 @@ export default (props: RouteSectionProps) => {
                   onclick={() => {
                     navigate(`/apps/${app()?.id}/settings/build`)
                   }}
-                  leftIcon={<MaterialSymbols>deployed_code</MaterialSymbols>}
+                  leftIcon={<div class="i-material-symbols:deployed-code-outline shrink-0 text-2xl/6" />}
                 >
                   Build
                 </Button>
@@ -74,7 +62,7 @@ export default (props: RouteSectionProps) => {
                   onclick={() => {
                     navigate(`/apps/${app()?.id}/settings/urls`)
                   }}
-                  leftIcon={<MaterialSymbols>language</MaterialSymbols>}
+                  leftIcon={<div class="i-material-symbols:language shrink-0 text-2xl/6" />}
                 >
                   URLs
                 </Button>
@@ -86,7 +74,7 @@ export default (props: RouteSectionProps) => {
                   onclick={() => {
                     navigate(`/apps/${app()?.id}/settings/portForwarding`)
                   }}
-                  leftIcon={<MaterialSymbols>lan</MaterialSymbols>}
+                  leftIcon={<div class="i-material-symbols:lan-outline shrink-0 text-2xl/6" />}
                 >
                   Port Forwarding
                 </Button>
@@ -98,7 +86,7 @@ export default (props: RouteSectionProps) => {
                   onclick={() => {
                     navigate(`/apps/${app()?.id}/settings/envVars`)
                   }}
-                  leftIcon={<MaterialSymbols>password</MaterialSymbols>}
+                  leftIcon={<div class="i-material-symbols:password shrink-0 text-2xl/6" />}
                 >
                   Environment Variables
                 </Button>
@@ -110,11 +98,11 @@ export default (props: RouteSectionProps) => {
                   onclick={() => {
                     navigate(`/apps/${app()?.id}/settings/owners`)
                   }}
-                  leftIcon={<MaterialSymbols>person</MaterialSymbols>}
+                  leftIcon={<div class="i-material-symbols:person-outline shrink-0 text-2xl/6" />}
                 >
                   Owners
                 </Button>
-              </SideMenu>
+              </div>
             </SideView.Side>
             <SideView.Main>
               <ErrorBoundary fallback={(props) => <ErrorView {...props} />}>

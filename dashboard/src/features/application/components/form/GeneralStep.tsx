@@ -1,56 +1,15 @@
-import { styled } from '@macaron-css/solid'
 import { Field, getValue } from '@modular-forms/solid'
 import { type Component, Show } from 'solid-js'
 import type { Repository } from '/@/api/neoshowcase/protobuf/gateway_pb'
 import { Button } from '/@/components/UI/Button'
-import { MaterialSymbols } from '/@/components/UI/MaterialSymbols'
 import { CheckBox } from '/@/components/templates/CheckBox'
 import { FormItem } from '/@/components/templates/FormItem'
 import { originToIcon, repositoryURLToOrigin } from '/@/libs/application'
-import { colorVars, textVars } from '/@/theme'
 import { useApplicationForm } from '../../provider/applicationFormProvider'
 import BuildTypeField from './config/BuildTypeField'
 import ConfigField from './config/ConfigField'
 import BranchField from './general/BranchField'
 import NameField from './general/NameField'
-
-const FormsContainer = styled('div', {
-  base: {
-    width: '100%',
-    display: 'flex',
-    flexDirection: 'column',
-    alignItems: 'center',
-    gap: '40px',
-  },
-})
-const FormContainer = styled('div', {
-  base: {
-    width: '100%',
-    padding: '24px',
-    display: 'flex',
-    flexDirection: 'column',
-    gap: '20px',
-
-    background: colorVars.semantic.ui.primary,
-    borderRadius: '8px',
-  },
-})
-const FormTitle = styled('h2', {
-  base: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: '4px',
-    overflowWrap: 'anywhere',
-    color: colorVars.semantic.text.black,
-    ...textVars.h2.medium,
-  },
-})
-const ButtonsContainer = styled('div', {
-  base: {
-    display: 'flex',
-    gap: '20px',
-  },
-})
 
 const GeneralStep: Component<{
   repo: Repository
@@ -60,13 +19,13 @@ const GeneralStep: Component<{
   const { formStore } = useApplicationForm()
 
   return (
-    <FormsContainer>
-      <FormContainer>
-        <FormTitle>
+    <div class="flex w-full flex-col items-center gap-10">
+      <div class="flex w-full flex-col gap-5 rounded-lg bg-ui-primary p-6">
+        <h2 class="overflow-wrap-anywhere h2-medium flex items-center gap-1 text-text-black">
           Create Application from
           {originToIcon(repositoryURLToOrigin(props.repo.url), 24)}
           {props.repo.name}
-        </FormTitle>
+        </h2>
         <NameField />
         <BranchField repo={props.repo} />
         <BuildTypeField />
@@ -101,13 +60,13 @@ const GeneralStep: Component<{
             </FormItem>
           )}
         </Field>
-      </FormContainer>
-      <ButtonsContainer>
+      </div>
+      <div class="flex gap-5">
         <Button
           size="medium"
           variants="border"
           onClick={props.backToRepoStep}
-          leftIcon={<MaterialSymbols>arrow_back</MaterialSymbols>}
+          leftIcon={<div class="i-material-symbols:arrow-back shrink-0 text-2xl/6" />}
         >
           Back
         </Button>
@@ -116,14 +75,14 @@ const GeneralStep: Component<{
           variants="primary"
           type="button"
           onClick={props.proceedToWebsiteStep}
-          rightIcon={<MaterialSymbols>arrow_forward</MaterialSymbols>}
+          rightIcon={<div class="i-material-symbols:arrow-forward shrink-0 text-2xl/6" />}
           disabled={formStore.invalid || formStore.submitting}
           loading={formStore.submitting}
         >
           Next
         </Button>
-      </ButtonsContainer>
-    </FormsContainer>
+      </div>
+    </div>
   )
 }
 export default GeneralStep

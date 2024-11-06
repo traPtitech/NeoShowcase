@@ -8,7 +8,6 @@ import {
   useParams,
 } from '@solidjs/router'
 import { type Component, createMemo, lazy } from 'solid-js'
-import app from '/@/App'
 import ErrorView from './components/layouts/ErrorView'
 import {
   getApplication,

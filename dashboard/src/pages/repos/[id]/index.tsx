@@ -1,24 +1,12 @@
-import { styled } from '@macaron-css/solid'
 import { useNavigate } from '@solidjs/router'
-import { Show, createMemo, createResource, useTransition } from 'solid-js'
+import { Show, createMemo, useTransition } from 'solid-js'
 import { Button } from '/@/components/UI/Button'
-import { MaterialSymbols } from '/@/components/UI/MaterialSymbols'
 import { URLText } from '/@/components/UI/URLText'
 import { DataTable } from '/@/components/layouts/DataTable'
 import { MainViewContainer } from '/@/components/layouts/MainView'
 import SuspenseContainer from '/@/components/layouts/SuspenseContainer'
 import { AppsList, List } from '/@/components/templates/List'
-import { getRepositoryCommits } from '/@/libs/api'
 import { useRepositoryData } from '/@/routes'
-
-const MainView = styled('div', {
-  base: {
-    width: '100%',
-    display: 'flex',
-    flexDirection: 'column',
-    gap: '32px',
-  },
-})
 
 export default () => {
   const { repo, apps, commits, hasPermission } = useRepositoryData()
@@ -31,7 +19,7 @@ export default () => {
     <Button
       variants="primary"
       size="medium"
-      leftIcon={<MaterialSymbols>add</MaterialSymbols>}
+      leftIcon={<div class="i-material-symbols:add shrink-0 text-2xl/6" />}
       onClick={() => {
         navigator(`/apps/new?repositoryID=${repo()?.id}`)
       }}
@@ -59,7 +47,7 @@ export default () => {
   return (
     <SuspenseContainer isPending={isPending()}>
       <MainViewContainer>
-        <MainView>
+        <div class="flex w-full flex-col gap-8">
           <Show when={loaded()}>
             <DataTable.Container>
               <DataTable.Title>
@@ -71,7 +59,7 @@ export default () => {
               <Show when={showPlaceHolder()} fallback={<AppsList apps={apps()!} commits={commits()} />}>
                 <List.Container>
                   <List.PlaceHolder>
-                    <MaterialSymbols displaySize={80}>deployed_code</MaterialSymbols>
+                    <div class="i-material-symbols:deployed-code-outline shrink-0 text-20/20" />
                     No Apps
                     <AddNewAppButton />
                   </List.PlaceHolder>
@@ -98,7 +86,7 @@ export default () => {
               </List.Container>
             </DataTable.Container>
           </Show>
-        </MainView>
+        </div>
       </MainViewContainer>
     </SuspenseContainer>
   )

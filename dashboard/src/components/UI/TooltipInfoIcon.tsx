@@ -1,14 +1,10 @@
 import type { Component } from 'solid-js'
-import { colorVars } from '/@/theme'
-import { MaterialSymbols } from './MaterialSymbols'
 import { ToolTip, type TooltipProps } from './ToolTip'
 
 export const TooltipInfoIcon: Component<TooltipProps> = (props) => {
   return (
     <ToolTip {...props}>
-      <MaterialSymbols opticalSize={20} color={colorVars.semantic.text.link}>
-        help
-      </MaterialSymbols>
+      <div class="i-material-symbols:help-outline shrink-0 text-text-black text-xl/5" />
     </ToolTip>
   )
 }
