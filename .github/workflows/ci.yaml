@@ -4,7 +4,19 @@ on:
   push:
     branches:
       - 'main'
+    paths-ignore:
+      - 'dashboard/**'
+      - 'docs/**'
+      - 'README.md'
+      - '.github/**'
+      - '!.github/workflows/ci.yaml'
   pull_request:
+    paths-ignore:
+      - 'dashboard/**'
+      - 'docs/**'
+      - 'README.md'
+      - '.github/**'
+      - '!.github/workflows/ci.yaml'
 
 jobs:
   mod:
@@ -53,12 +65,12 @@ jobs:
     strategy:
       matrix:
         race:
-          - ""
+          - ''
           - -race
     env:
-      ENABLE_DB_TESTS: "true"
-      ENABLE_DOCKER_TESTS: "true"
-      DOCKER_API_VERSION: "1.43"
+      ENABLE_DB_TESTS: 'true'
+      ENABLE_DOCKER_TESTS: 'true'
+      DOCKER_API_VERSION: '1.43'
     services:
       mysql:
         image: mysql:8
@@ -97,10 +109,10 @@ jobs:
     strategy:
       matrix:
         race:
-          - ""
+          - ''
           - -race
     env:
-      ENABLE_K8S_TESTS: "true"
+      ENABLE_K8S_TESTS: 'true'
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-go@v5
@@ -110,7 +122,7 @@ jobs:
         uses: AbsaOSS/k3d-action@v2
         id: single-cluster
         with:
-          cluster-name: "test-cluster"
+          cluster-name: 'test-cluster'
           args: >-
             --agents 1
             --no-lb
@@ -160,4 +172,4 @@ jobs:
           version: v1.65.3
       - run: tbls lint
         env:
-          TBLS_DSN: "mariadb://root:password@127.0.0.1:5004/neoshowcase"
+          TBLS_DSN: 'mariadb://root:password@127.0.0.1:5004/neoshowcase'
