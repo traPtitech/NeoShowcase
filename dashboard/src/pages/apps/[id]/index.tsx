@@ -1,10 +1,10 @@
-import { styled } from '@macaron-css/solid'
 import { type Component, For, Show, createSignal, onCleanup, useTransition } from 'solid-js'
 import toast from 'solid-toast'
 import { type Application, DeployType } from '/@/api/neoshowcase/protobuf/gateway_pb'
 import { Button } from '/@/components/UI/Button'
 import { DataTable } from '/@/components/layouts/DataTable'
 import SuspenseContainer from '/@/components/layouts/SuspenseContainer'
+import { styled } from '/@/components/styled-components'
 import AppBranchResolution from '/@/components/templates/app/AppBranchResolution'
 import AppDeployInfo from '/@/components/templates/app/AppDeployInfo'
 import AppLatestBuilds from '/@/components/templates/app/AppLatestBuilds'
@@ -12,84 +12,18 @@ import { AppMetrics } from '/@/components/templates/app/AppMetrics'
 import { ContainerLog } from '/@/components/templates/app/ContainerLog'
 import { availableMetrics, client, handleAPIError } from '/@/libs/api'
 import { useApplicationData } from '/@/routes'
-import { colorVars, media } from '/@/theme'
 
-const Container = styled('div', {
-  base: {
-    width: '100%',
-    height: '100%',
-    overflowY: 'auto',
-  },
-})
-const MainViewContainer = styled('div', {
-  base: {
-    width: '100%',
-    padding: '40px 32px 72px',
+const MainViewContainer = styled('div', 'w-full bg-ui-primary px-8 pt-10 pb-18 max-md:px-4')
 
-    '@media': {
-      [media.mobile]: {
-        padding: '40px 16px 72px',
-      },
-    },
-  },
-  variants: {
-    gray: {
-      true: {
-        background: colorVars.semantic.ui.background,
-      },
-      false: {
-        background: colorVars.semantic.ui.primary,
-      },
-    },
-  },
-})
-const MainView = styled('div', {
-  base: {
-    width: '100%',
-    maxWidth: '1000px',
-    margin: '0 auto',
-    display: 'flex',
-    flexDirection: 'column',
-    gap: '32px',
-  },
-})
-
-const MetricsContainer = styled('div', {
-  base: {
-    width: '100%',
-    padding: '16px 20px',
-    display: 'flex',
-    flexDirection: 'column',
-    gap: '16px',
-
-    border: `1px solid ${colorVars.semantic.ui.border}`,
-    borderRadius: '8px',
-  },
-})
-const MetricsTypeButtons = styled('div', {
-  base: {
-    display: 'flex',
-    flexDirection: 'row',
-  },
-})
-const ChartContainer = styled('div', {
-  base: {
-    width: '100%',
-    borderRadius: '8px',
-    height: 'auto',
-    aspectRatio: '960 / 464',
-
-    background: colorVars.semantic.ui.secondary,
-  },
-})
+const MainView = styled('div', 'mx-auto flex w-full max-w-250 flex-col gap-8')
 
 const Metrics: Component<{ app: Application }> = (props) => {
   const metricsNames = () => availableMetrics()?.metricsNames ?? []
   const [currentView, setCurrentView] = createSignal(metricsNames()[0])
 
   return (
-    <MetricsContainer>
-      <MetricsTypeButtons>
+    <div class="flex w-full flex-col gap-4 rounded-lg border border-ui-border px-5 py-4">
+      <div class="flex">
         <For each={metricsNames()}>
           {(metrics) => (
             <Button
@@ -102,8 +36,8 @@ const Metrics: Component<{ app: Application }> = (props) => {
             </Button>
           )}
         </For>
-      </MetricsTypeButtons>
-      <ChartContainer>
+      </div>
+      <div class="aspect-ratio-[960/464] h-auto w-full rounded-lg bg-ui-secondary">
         <For each={metricsNames()}>
           {(metrics) => (
             <Show when={currentView() === metrics}>
@@ -111,26 +45,16 @@ const Metrics: Component<{ app: Application }> = (props) => {
             </Show>
           )}
         </For>
-      </ChartContainer>
-    </MetricsContainer>
+      </div>
+    </div>
   )
 }
 
-const LogContainer = styled('div', {
-  base: {
-    width: '100%',
-    padding: '16px 20px',
-
-    border: `1px solid ${colorVars.semantic.ui.border}`,
-    borderRadius: '8px',
-  },
-})
-
 const Logs: Component<{ app: Application }> = (props) => {
   return (
-    <LogContainer>
+    <div class="w-full rounded-lg border border-ui-border px-5 py-4">
       <ContainerLog appID={props.app.id} />
-    </LogContainer>
+    </div>
   )
 }
 
@@ -177,9 +101,9 @@ export default () => {
 
   return (
     <SuspenseContainer isPending={isPending()}>
-      <Container>
+      <div class="h-full w-full overflow-y-auto">
         <Show when={loaded()}>
-          <MainViewContainer gray>
+          <MainViewContainer class="bg-ui-background">
             <MainView>
               <DataTable.Container>
                 <DataTable.Title>Deployment</DataTable.Title>
@@ -235,7 +159,7 @@ export default () => {
             </MainView>
           </MainViewContainer>
         </Show>
-      </Container>
+      </div>
     </SuspenseContainer>
   )
 }

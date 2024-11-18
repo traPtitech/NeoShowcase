@@ -1,29 +1,11 @@
-import { styled } from '@macaron-css/solid'
 import type { ParentComponent } from 'solid-js'
 import { Header } from '../templates/Header'
 
-const Container = styled('div', {
-  base: {
-    width: '100%',
-    height: '100%',
-    display: 'grid',
-    gridTemplateColumns: '1fr',
-    gridTemplateRows: 'auto 1fr',
-  },
-})
-const Body = styled('div', {
-  base: {
-    width: '100%',
-    height: '100%',
-    overflowY: 'auto',
-  },
-})
-
 export const WithHeader: ParentComponent = (props) => {
   return (
-    <Container>
+    <div class="grid h-full w-full grid-cols-1 grid-rows-[auto_1fr]">
       <Header />
-      <Body>{props.children}</Body>
-    </Container>
+      <div class="h-full w-full overflow-y-auto">{props.children}</div>
+    </div>
   )
 }

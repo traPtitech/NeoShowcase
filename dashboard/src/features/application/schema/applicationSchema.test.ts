@@ -1,10 +1,6 @@
 import { safeParse } from 'valibot'
 import { describe, expect, test } from 'vitest'
-import {
-  AuthenticationType,
-  AutoShutdownConfig_StartupBehavior,
-  PortPublicationProtocol,
-} from '/@/api/neoshowcase/protobuf/gateway_pb'
+import { AuthenticationType, PortPublicationProtocol } from '/@/api/neoshowcase/protobuf/gateway_pb'
 import { createOrUpdateApplicationSchema } from './applicationSchema'
 
 const validator = (input: unknown) => safeParse(createOrUpdateApplicationSchema, input)

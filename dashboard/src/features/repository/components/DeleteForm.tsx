@@ -1,4 +1,3 @@
-import { styled } from '@macaron-css/solid'
 import { useNavigate } from '@solidjs/router'
 import type { Component } from 'solid-js'
 import toast from 'solid-toast'
@@ -10,14 +9,6 @@ import { FormItem } from '/@/components/templates/FormItem'
 import { client, handleAPIError } from '/@/libs/api'
 import { originToIcon, repositoryURLToOrigin } from '/@/libs/application'
 import useModal from '/@/libs/useModal'
-import { colorVars, textVars } from '/@/theme'
-
-const DeleteRepositoryNotice = styled('div', {
-  base: {
-    color: colorVars.semantic.text.grey,
-    ...textVars.caption.regular,
-  },
-})
 
 type Props = {
   repo: Repository
@@ -47,9 +38,9 @@ const DeleteForm: Component<Props> = (props) => {
       <FormBox.Container>
         <FormBox.Forms>
           <FormItem title="Delete Repository">
-            <DeleteRepositoryNotice>
+            <div class="caption-regular text-text-grey">
               リポジトリを削除するには、このリポジトリ内のすべてのアプリケーションを削除する必要があります。
-            </DeleteRepositoryNotice>
+            </div>
           </FormItem>
         </FormBox.Forms>
         <FormBox.Actions>

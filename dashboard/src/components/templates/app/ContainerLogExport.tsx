@@ -1,5 +1,4 @@
 import { Timestamp } from '@bufbuild/protobuf'
-import { styled } from '@macaron-css/solid'
 import { type Component, Show, createSignal } from 'solid-js'
 import toast from 'solid-toast'
 import type { Application, ApplicationOutput } from '/@/api/neoshowcase/protobuf/gateway_pb'
@@ -11,52 +10,6 @@ import { sleep } from '/@/libs/sleep'
 import { addTimestamp } from '/@/libs/timestamp'
 import useModal from '/@/libs/useModal'
 import { useApplicationData } from '/@/routes'
-
-const Options = styled('div', {
-  base: {
-    display: 'flex',
-    flexDirection: 'column',
-    gap: '32px',
-  },
-})
-
-const Option = styled('div', {
-  base: {
-    display: 'flex',
-    flexDirection: 'column',
-    gap: '12px',
-  },
-})
-
-const DownloadSpecContainer = styled('div', {
-  base: {
-    display: 'flex',
-    flexDirection: 'row',
-    gap: '4px',
-    flexWrap: 'wrap',
-    alignItems: 'center',
-  },
-})
-
-const BeforeSpec = styled('div', {
-  base: {
-    width: '250px',
-  },
-})
-
-const CountSpec = styled('div', {
-  base: {
-    width: '120px',
-  },
-})
-
-const DownloadButtonsContainer = styled('div', {
-  base: {
-    display: 'flex',
-    flexDirection: 'row',
-    gap: '8px',
-  },
-})
 
 const secondsPerDay = 86400
 const loadDuration = 86400n
@@ -222,10 +175,10 @@ export const ContainerLogExport: Component<Props> = (props) => {
       <Modal.Container>
         <Modal.Header>Export Logs</Modal.Header>
         <Modal.Body>
-          <Options>
-            <Option>
+          <div class="flex flex-col gap-8">
+            <div class="flex flex-col gap-3">
               <h3>現在表示されているログをエクスポート</h3>
-              <DownloadButtonsContainer>
+              <div class="flex gap-2">
                 <Button
                   variants="primary"
                   size="small"
@@ -242,24 +195,24 @@ export const ContainerLogExport: Component<Props> = (props) => {
                 >
                   Export as .json
                 </Button>
-              </DownloadButtonsContainer>
-            </Option>
-            <Option>
+              </div>
+            </div>
+            <div class="flex flex-col gap-8">
               <h3>時間を指定してエクスポート</h3>
-              <DownloadSpecContainer>
-                <BeforeSpec>
+              <div class="flex flex-wrap items-center gap-1">
+                <div class="w-62.5">
                   <TextField
                     disabled={exporting()}
                     placeholder={beforePlaceholder()}
                     value={before()}
                     onInput={(e) => setBefore(e.currentTarget.value || '')}
                   />
-                </BeforeSpec>
+                </div>
                 <span>より前の</span>
-              </DownloadSpecContainer>
-              <DownloadSpecContainer>
+              </div>
+              <div class="flex flex-wrap items-center gap-1">
                 <span>最大</span>
-                <CountSpec>
+                <div class="w-30">
                   <TextField
                     disabled={exporting()}
                     placeholder="7"
@@ -267,13 +220,13 @@ export const ContainerLogExport: Component<Props> = (props) => {
                     value={`${days()}`}
                     onInput={(e) => setDays(+e.currentTarget.value)}
                   />
-                </CountSpec>
+                </div>
                 <span>日間</span>
                 <span>(最大 {maxExportDays} 日)</span>
-              </DownloadSpecContainer>
-              <DownloadSpecContainer>
+              </div>
+              <div class="flex flex-wrap items-center gap-1">
                 <span>最大</span>
-                <CountSpec>
+                <div class="w-30">
                   <TextField
                     disabled={exporting()}
                     placeholder="5000"
@@ -281,10 +234,10 @@ export const ContainerLogExport: Component<Props> = (props) => {
                     value={`${count()}`}
                     onInput={(e) => setCount(+e.currentTarget.value)}
                   />
-                </CountSpec>
+                </div>
                 <span>行 (最大 {maxExportLines.toLocaleString()} 行) をエクスポート</span>
-              </DownloadSpecContainer>
-              <DownloadButtonsContainer>
+              </div>
+              <div class="flex gap-2">
                 <Button
                   variants="primary"
                   size="small"
@@ -305,10 +258,10 @@ export const ContainerLogExport: Component<Props> = (props) => {
                 >
                   Export as .json
                 </Button>
-              </DownloadButtonsContainer>
-            </Option>
+              </div>
+            </div>
             <Show when={progressMessage() !== ''}>{progressMessage()}</Show>
-          </Options>
+          </div>
         </Modal.Body>
       </Modal.Container>
     </div>

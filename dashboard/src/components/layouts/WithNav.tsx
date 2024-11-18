@@ -1,46 +1,15 @@
-import { styled } from '@macaron-css/solid'
-import { colorVars, media } from '/@/theme'
+import { styled } from '/@/components/styled-components'
 
-const Container = styled('div', {
-  base: {
-    width: '100%',
-    height: '100%',
-    display: 'grid',
-    gridTemplateColumns: 'minmax(0, 1fr)',
-    gridTemplateRows: 'max-content 1fr',
-  },
-})
-const Navs = styled('div', {
-  base: {
-    width: '100%',
-    height: 'auto',
-    overflowX: 'hidden',
-    borderBottom: `1px solid ${colorVars.semantic.ui.border}`,
-  },
-})
-const Body = styled('div', {
-  base: {
-    position: 'relative',
-    width: '100%',
-  },
-})
-const TabContainer = styled('div', {
-  base: {
-    width: '100%',
-    maxWidth: 'min(1000px, calc(100% - 64px))',
-    margin: '0 auto',
-    display: 'flex',
-    gap: '8px',
-    padding: '0 0 16px 0',
-    overflowX: 'auto',
+const Container = styled('div', 'grid h-full w-full grid-cols-[minmax(0,1fr)] grid-rows-[max-content_1fr]')
 
-    '@media': {
-      [media.mobile]: {
-        maxWidth: 'min(1000px, calc(100% - 32px))',
-      },
-    },
-  },
-})
+const Navs = styled('div', 'h-auto overflow-x-hidden border-ui-border border-b')
+
+const Body = styled('div', 'relative w-full')
+
+const TabContainer = styled(
+  'div',
+  'mx-auto flex w-full max-w-[min(1000px,calc(100%-64px))] gap-2 overflow-x-auto pb-4 max-md:max-w-[min(1000px,calc(100%-32px))]',
+)
 
 export const WithNav = {
   Container,

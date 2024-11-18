@@ -1,5 +1,5 @@
 import type { PlainMessage } from '@bufbuild/protobuf'
-import { AiFillGithub, AiFillGitlab } from 'solid-icons/ai'
+import { AiFillGithub } from 'solid-icons/ai'
 import { RiDevelopmentGitRepositoryLine } from 'solid-icons/ri'
 import { SiGitea } from 'solid-icons/si'
 import type { JSXElement } from 'solid-js'
@@ -12,7 +12,6 @@ import {
   PortPublicationProtocol,
   type Website,
 } from '/@/api/neoshowcase/protobuf/gateway_pb'
-import { colorVars } from '/@/theme'
 
 export const buildStatusStr: Record<BuildStatus, string> = {
   [BuildStatus.QUEUED]: 'Queued',
@@ -107,11 +106,11 @@ export const repositoryURLToOrigin = (url: string): RepositoryOrigin => {
 export const originToIcon = (origin: RepositoryOrigin, size = 20): JSXElement => {
   switch (origin) {
     case 'GitHub':
-      return <AiFillGithub size={size} color={colorVars.semantic.text.black} />
+      return <AiFillGithub size={size} class="text-text-black" />
     case 'Gitea':
-      return <SiGitea size={size} color={colorVars.semantic.text.black} />
+      return <SiGitea size={size} class="text-text-black" />
     case 'Others':
-      return <RiDevelopmentGitRepositoryLine size={size} color={colorVars.semantic.text.black} />
+      return <RiDevelopmentGitRepositoryLine size={size} class="text-text-black" />
   }
 }
 

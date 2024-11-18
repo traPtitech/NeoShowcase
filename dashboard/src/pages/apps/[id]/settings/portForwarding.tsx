@@ -1,17 +1,10 @@
-import { styled } from '@macaron-css/solid'
-import { For, Show, createEffect } from 'solid-js'
+import { For, Show } from 'solid-js'
 import { DataTable } from '/@/components/layouts/DataTable'
 import PortForwardingForm from '/@/features/application/components/form/PortForwardingForm'
 import { ApplicationFormProvider } from '/@/features/application/provider/applicationFormProvider'
 import { systemInfo } from '/@/libs/api'
 import { portPublicationProtocolMap } from '/@/libs/application'
 import { useApplicationData } from '/@/routes'
-
-const Li = styled('li', {
-  base: {
-    margin: '0 0 0 16px',
-  },
-})
 
 export default () => {
   const { app, refetch, hasPermission } = useApplicationData()
@@ -25,10 +18,10 @@ export default () => {
           使用可能なポート：
           <For each={systemInfo()?.ports || []}>
             {(port) => (
-              <Li>
+              <li class="ml-4">
                 {port.startPort}/{portPublicationProtocolMap[port.protocol]} ~{port.endPort}/
                 {portPublicationProtocolMap[port.protocol]}
-              </Li>
+              </li>
             )}
           </For>
         </DataTable.SubTitle>

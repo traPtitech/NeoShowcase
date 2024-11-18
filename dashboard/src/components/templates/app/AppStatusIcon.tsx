@@ -1,38 +1,32 @@
 import type { JSXElement } from 'solid-js'
 import { Dynamic } from 'solid-js/web'
-import { MaterialSymbols } from '/@/components/UI/MaterialSymbols'
 import { ToolTip } from '/@/components/UI/ToolTip'
 import { ApplicationState } from '/@/libs/application'
-import { colorVars } from '/@/theme'
 
 interface IconProps {
   size: number
 }
 const components: Record<ApplicationState, (size: IconProps) => JSXElement> = {
   [ApplicationState.Deploying]: (props) => (
-    <MaterialSymbols fill displaySize={props.size} color={colorVars.semantic.accent.warn}>
-      offline_bolt
-    </MaterialSymbols>
+    <div class="i-material-symbols:offline-bolt shrink-0 text-accent-warn" style={{ 'font-size': `${props.size}px` }} />
   ),
   [ApplicationState.Error]: (props) => (
-    <MaterialSymbols fill displaySize={props.size} color={colorVars.semantic.accent.error}>
-      error
-    </MaterialSymbols>
+    <div class="i-material-symbols:error shrink-0 text-accent-error" style={{ 'font-size': `${props.size}px` }} />
   ),
   [ApplicationState.Idle]: (props) => (
-    <MaterialSymbols fill displaySize={props.size} color={colorVars.semantic.text.disabled}>
-      do_not_disturb_on
-    </MaterialSymbols>
+    <div
+      class="i-material-symbols:do-not-disturb-on shrink-0 text-text-disabled"
+      style={{ 'font-size': `${props.size}px` }}
+    />
   ),
   [ApplicationState.Running]: (props) => (
-    <MaterialSymbols fill displaySize={props.size} color={colorVars.semantic.accent.success}>
-      check_circle
-    </MaterialSymbols>
+    <div
+      class="i-material-symbols:check-circle shrink-0 text-accent-success"
+      style={{ 'font-size': `${props.size}px` }}
+    />
   ),
   [ApplicationState.Serving]: (props) => (
-    <MaterialSymbols fill displaySize={props.size} color={colorVars.primitive.blue[500]}>
-      check_circle
-    </MaterialSymbols>
+    <div class="i-material-symbols:check-circle shrink-0 text-blue-500" style={{ 'font-size': `${props.size}px` }} />
   ),
 }
 

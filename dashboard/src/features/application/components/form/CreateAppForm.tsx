@@ -1,4 +1,3 @@
-import { styled } from '@macaron-css/solid'
 import { Field, Form, type SubmitHandler, getValue, setValue, setValues, validate } from '@modular-forms/solid'
 import { useNavigate, useSearchParams } from '@solidjs/router'
 import {
@@ -16,6 +15,7 @@ import {
 import toast from 'solid-toast'
 import { Progress } from '/@/components/UI/StepProgress'
 import { client, handleAPIError } from '/@/libs/api'
+import { clsx } from '/@/libs/clsx'
 import { useApplicationForm } from '../../provider/applicationFormProvider'
 import {
   type CreateOrUpdateApplicationInput,
@@ -25,23 +25,6 @@ import {
 import GeneralStep from './GeneralStep'
 import RepositoryStep from './RepositoryStep'
 import WebsiteStep from './WebsiteStep'
-
-const StepsContainer = styled('div', {
-  base: {
-    width: '100%',
-    display: 'flex',
-    flexDirection: 'column',
-    alignItems: 'center',
-    gap: '40px',
-  },
-  variants: {
-    fit: {
-      true: {
-        maxHeight: '100%',
-      },
-    },
-  },
-})
 
 enum formStep {
   repository = 0,
@@ -126,7 +109,9 @@ const CreateAppForm: Component = () => {
     })
 
   return (
-    <StepsContainer fit={currentStep() === formStep.repository}>
+    <div
+      class={clsx('flex w-full flex-col items-center gap-10', currentStep() === formStep.repository && 'max-h-full')}
+    >
       <Progress.Container>
         <For
           each={[
@@ -156,7 +141,7 @@ const CreateAppForm: Component = () => {
           )}
         </For>
       </Progress.Container>
-      <Form of={formStore} onSubmit={handleSubmit} shouldActive={false} style={{ width: '100%' }}>
+      <Form of={formStore} onSubmit={handleSubmit} shouldActive={false} class="w-full">
         <Field of={formStore} name="type">
           {() => null}
         </Field>
@@ -190,7 +175,7 @@ const CreateAppForm: Component = () => {
           </Match>
         </Switch>
       </Form>
-    </StepsContainer>
+    </div>
   )
 }
 

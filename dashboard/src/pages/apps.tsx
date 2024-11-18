@@ -1,4 +1,3 @@
-import { styled } from '@macaron-css/solid'
 import { Title } from '@solidjs/meta'
 import { A } from '@solidjs/router'
 import { createVirtualizer } from '@tanstack/solid-virtual'
@@ -10,12 +9,12 @@ import {
   GetRepositoriesRequest_Scope,
   type Repository,
 } from '/@/api/neoshowcase/protobuf/gateway_pb'
+import { styled } from '/@/components/styled-components'
 import type { SelectOption } from '/@/components/templates/Select'
 import { client, getRepositoryCommits, user } from '/@/libs/api'
 import { ApplicationState, type RepositoryOrigin, applicationState, repositoryURLToOrigin } from '/@/libs/application'
 import { createSessionSignal } from '/@/libs/localStore'
 import { Button } from '../components/UI/Button'
-import { MaterialSymbols } from '../components/UI/MaterialSymbols'
 import { TabRound } from '../components/UI/TabRound'
 import { TextField } from '../components/UI/TextField'
 import SuspenseContainer from '../components/layouts/SuspenseContainer'
@@ -23,43 +22,8 @@ import { WithNav } from '../components/layouts/WithNav'
 import { AppsNav } from '../components/templates/AppsNav'
 import { List, RepositoryList } from '../components/templates/List'
 import AppsFilter from '../components/templates/app/AppsFilter'
-import { colorVars, media } from '../theme'
 
-const MainView = styled('div', {
-  base: {
-    position: 'relative',
-    display: 'flex',
-    flexDirection: 'column',
-    width: '100%',
-    height: '100%',
-    padding: '0 max(calc(50% - 500px), 32px)',
-    background: colorVars.semantic.ui.background,
-
-    '@media': {
-      [media.mobile]: {
-        padding: '0 16px',
-      },
-    },
-  },
-})
-const FilterContainer = styled('div', {
-  base: {
-    width: '100%',
-    padding: '40px 0 32px',
-    zIndex: 1,
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-})
-const Repositories = styled('div', {
-  base: {
-    width: '100%',
-    display: 'flex',
-    flexDirection: 'column',
-    gap: '16px',
-  },
-})
+const FilterContainer = styled('div', 'z-1 flex w-full items-center justify-center pt-10 pb-8')
 
 export const sortItems: { [k in 'desc' | 'asc']: SelectOption<k> } = {
   desc: { value: 'desc', label: 'Newest' },
@@ -196,10 +160,9 @@ const AppsList: Component<{
 
   return (
     <div
+      class="relative w-full"
       style={{
-        width: '100%',
         height: `${virtualizer().getTotalSize()}px`,
-        position: 'relative',
         // scrollParentRef内に高さ120pxのFilterContainerが存在するため、この分を減算
         transform: `translateY(${-virtualizer().options.scrollMargin}px)`,
       }}
@@ -209,7 +172,7 @@ const AppsList: Component<{
         fallback={
           <List.Container>
             <List.PlaceHolder>
-              <MaterialSymbols displaySize={80}>search</MaterialSymbols>
+              <div class="i-material-symbols:search shrink-0 text-20/20" />
               No Apps Found
             </List.PlaceHolder>
           </List.Container>
@@ -219,11 +182,8 @@ const AppsList: Component<{
           <div
             data-index={vRow.index}
             ref={(el) => queueMicrotask(() => virtualizer().measureElement(el))}
+            class="absolute top-0 left-0 w-full"
             style={{
-              position: 'absolute',
-              top: 0,
-              left: 0,
-              width: '100%',
               height: `${items()[vRow.index]}px`,
               transform: `translateY(${vRow.start}px)`,
             }}
@@ -266,7 +226,7 @@ export default () => {
   const [scrollParentRef, setScrollParentRef] = createSignal<HTMLDivElement>()
 
   return (
-    <div style={{ 'overflow-y': 'auto', height: '100%' }} ref={setScrollParentRef}>
+    <div class="h-full overflow-y-auto" ref={setScrollParentRef}>
       <WithNav.Container>
         <Title>Apps - NeoShowcase</Title>
         <WithNav.Navs>
@@ -275,26 +235,30 @@ export default () => {
             <For each={scopeItems(user()?.admin)}>
               {(s) => (
                 <TabRound state={s.value === scope() ? 'active' : 'default'} onClick={() => setScope(s.value)}>
-                  <MaterialSymbols>deployed_code</MaterialSymbols>
+                  <div class="i-material-symbols:deployed-code-outline shrink-0 text-2xl/6" />
                   {s.label}
                 </TabRound>
               )}
             </For>
-            <A href="/apps/new" style={{ 'margin-left': 'auto' }}>
-              <Button variants="primary" size="medium" leftIcon={<MaterialSymbols>add</MaterialSymbols>}>
+            <A href="/apps/new" class="ml-auto">
+              <Button
+                variants="primary"
+                size="medium"
+                leftIcon={<div class="i-material-symbols:add shrink-0 text-2xl/6" />}
+              >
                 Add New App
               </Button>
             </A>
           </WithNav.Tabs>
         </WithNav.Navs>
         <WithNav.Body>
-          <MainView>
+          <div class="relative flex h-full w-full flex-col bg-ui-background px-[max(calc(50%-500px),32px)] max-md:px-4">
             <FilterContainer>
               <TextField
                 placeholder="Search"
                 value={query()}
                 onInput={(e) => setQuery(e.currentTarget.value)}
-                leftIcon={<MaterialSymbols>search</MaterialSymbols>}
+                leftIcon={<div class="i-material-symbols:search shrink-0 text-2xl/6" />}
                 rightIcon={
                   <AppsFilter
                     statuses={statuses()}
@@ -311,12 +275,12 @@ export default () => {
             </FilterContainer>
             <Suspense
               fallback={
-                <Repositories>
+                <div class="flex w-full flex-col gap-4">
                   <RepositoryList apps={[undefined]} />
                   <RepositoryList apps={[undefined]} />
                   <RepositoryList apps={[undefined]} />
                   <RepositoryList apps={[undefined]} />
-                </Repositories>
+                </div>
               }
             >
               <SuspenseContainer isPending={isPending()}>
@@ -331,7 +295,7 @@ export default () => {
                 />
               </SuspenseContainer>
             </Suspense>
-          </MainView>
+          </div>
         </WithNav.Body>
       </WithNav.Container>
     </div>

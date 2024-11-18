@@ -1,144 +1,43 @@
 import { Combobox as KComboBox, Select as KSelect } from '@kobalte/core'
-import { keyframes, style } from '@macaron-css/core'
-import { type JSX, Show, createEffect, createMemo, createSignal, splitProps, untrack } from 'solid-js'
-import { colorVars, textVars } from '/@/theme'
+import { type JSX, Show, createEffect, createSignal, splitProps } from 'solid-js'
+import { clsx } from '/@/libs/clsx'
 import { CheckBoxIcon } from '../UI/CheckBoxIcon'
-import { MaterialSymbols } from '../UI/MaterialSymbols'
 import { ToolTip, type TooltipProps } from '../UI/ToolTip'
 import { TooltipInfoIcon } from '../UI/TooltipInfoIcon'
-import { RequiredMark, TitleContainer, containerStyle, errorTextStyle, titleStyle } from './FormItem'
+import { RequiredMark, TitleContainer } from './FormItem'
 
-const itemStyleBase = style({
-  width: '100%',
-  height: '44px',
-  display: 'flex',
-  alignItems: 'center',
-  gap: '8px',
+const itemStyleBase = clsx(
+  'cursor-pointer items-center gap-2 whitespace-nowrap rounded-lg border-none bg-inherit text-bold text-text-black',
+  'hover:bg-transparency-primary-hover data-[highlighted]:bg-transparency-primary-hover',
+  '!data-[disabled]:bg-text-disabled !data-[disabled]:text-text-black data-[disabled]:cursor-not-allowed',
+)
 
-  background: 'none',
-  border: 'none',
-  borderRadius: '8px',
-  cursor: 'pointer',
-  color: colorVars.semantic.text.black,
-  whiteSpace: 'nowrap',
-  ...textVars.text.bold,
-
-  selectors: {
-    '&:hover, &[data-highlighted]': {
-      background: colorVars.semantic.transparent.primaryHover,
-    },
-    '&[data-disabled]': {
-      cursor: 'not-allowed',
-      color: `${colorVars.semantic.text.black} !important`,
-      background: `${colorVars.semantic.text.disabled} !important`,
-    },
-  },
-})
-const singleItemStyle = style([
+const singleItemStyle = clsx(
   itemStyleBase,
-  {
-    padding: '8px 16px',
-    selectors: {
-      '&[data-selected]': {
-        color: colorVars.semantic.primary.main,
-        background: colorVars.semantic.transparent.primarySelected,
-      },
-    },
-  },
-])
-const multiItemStyle = style([
-  itemStyleBase,
-  {
-    padding: '8px',
-  },
-])
-const triggerStyle = style({
-  width: '100%',
-  maxWidth: '288px',
-  height: '48px',
-  padding: '10px 16px',
-  display: 'grid',
-  gridTemplateColumns: '1fr 24px',
-  alignContent: 'center',
-  alignItems: 'center',
-  gap: '4px',
+  'px-4 py-2',
+  'data-[selected]:bg-transparency-primary-selected data-[selected]:text-primary-main',
+)
 
-  background: colorVars.semantic.ui.primary,
-  borderRadius: '8px',
-  border: 'none',
-  outline: `1px solid ${colorVars.semantic.ui.border}`,
-  color: colorVars.semantic.text.black,
-  cursor: 'pointer',
+const multiItemStyle = clsx(itemStyleBase, 'p-2')
 
-  selectors: {
-    '&:focus-visible': {
-      outline: `2px solid ${colorVars.semantic.primary.main}`,
-    },
-    '&[data-expanded]': {
-      outline: `2px solid ${colorVars.semantic.primary.main}`,
-    },
-    '&[data-disabled]': {
-      cursor: 'not-allowed',
-      color: colorVars.semantic.text.disabled,
-      background: colorVars.semantic.ui.tertiary,
-    },
-  },
-})
-const valueStyle = style({
-  width: '100%',
-  ...textVars.text.regular,
-  whiteSpace: 'nowrap',
-  overflow: 'hidden',
-  textOverflow: 'ellipsis',
-  textAlign: 'left',
-  selectors: {
-    '&[data-placeholder-shown]': {
-      color: colorVars.semantic.text.disabled,
-    },
-  },
-})
-const iconStyle = style({
-  width: '24px',
-  height: '24px',
-  flexShrink: 0,
-})
-const contentShowKeyframes = keyframes({
-  from: { opacity: 0, transform: 'translateY(-8px)' },
-  to: { opacity: 1, transform: 'translateY(0)' },
-})
-const contentHideKeyframes = keyframes({
-  from: { opacity: 1, transform: 'translateY(0)' },
-  to: { opacity: 0, transform: 'translateY(-8px)' },
-})
-const contentStyleBase = style({
-  background: colorVars.semantic.ui.primary,
-  borderRadius: '6px',
-  boxShadow: '0px 0px 20px 0px rgba(0, 0, 0, 0.10)',
-  animation: `${contentHideKeyframes} 0.2s ease-out`,
-  selectors: {
-    '&[data-expanded]': {
-      animation: `${contentShowKeyframes} 0.2s ease-out`,
-    },
-  },
-})
-const selectContentStyle = style([
-  contentStyleBase,
-  {
-    transformOrigin: 'var(--kb-select-content-transform-origin)',
-  },
-])
-const comboBoxContentStyle = style([
-  contentStyleBase,
-  {
-    maxWidth: '288px',
-    transformOrigin: 'var(--kb-combobox-content-transform-origin)',
-  },
-])
-const listBoxStyle = style({
-  padding: '6px',
-  maxHeight: '400px',
-  overflowY: 'auto',
-})
+const triggerStyle = clsx(
+  'grid h-12 w-full max-w-72 cursor-pointer grid-cols-[1fr_24px] content-center items-center gap-1 rounded-lg border-none bg-ui-primary px-4 py-2.5 text-text-black outline outline-1 outline-ui-border',
+  'focus-visible:outline-2 focus-visible:outline-primary-main',
+  'data-[expanded]:outline-2 data-[expanded]:outline-primary-main',
+  '!data-[disabled]:bg-ui-tertiary !data-[disabled]:text-text-disabled data-[disabled]:cursor-not-allowed',
+)
+
+const valueStyle = clsx('w-full truncate text-left text-regular', 'data-[placeholder-shown]:text-text-disabled')
+
+const iconStyle = clsx('size-6 shrink-0')
+
+const contentStyleBase = clsx(
+  'animate-duration-200 animate-ease-out animate-name-wipe-hide-up rounded-md bg-ui-primary shadow-default data-[expanded]:animate-name-wipe-show-down',
+)
+const selectContentStyle = clsx(contentStyleBase, 'origin-[--kb-select-content-transform-origin]')
+const comboBoxContentStyle = clsx(contentStyleBase, 'max-w-72 origin-[--kb-combobox-content-transform-origin]')
+
+const listBoxStyle = clsx('max-h-100 overflow-y-auto p-1.5')
 
 export type SelectOption<T extends string | number> = {
   label: string
@@ -186,7 +85,7 @@ export const SingleSelect = <T extends string | number>(props: SingleSelectProps
 
   return (
     <KSelect.Root<SelectOption<T>>
-      class={containerStyle}
+      class="flex w-full flex-col gap-2"
       {...rootProps}
       multiple={false}
       disallowEmptySelection
@@ -206,7 +105,7 @@ export const SingleSelect = <T extends string | number>(props: SingleSelectProps
     >
       <Show when={props.label}>
         <TitleContainer>
-          <KSelect.Label class={titleStyle}>{props.label}</KSelect.Label>
+          <KSelect.Label class="whitespace-nowrap text-bold text-text-black">{props.label}</KSelect.Label>
           <Show when={props.required}>
             <RequiredMark>*</RequiredMark>
           </Show>
@@ -220,7 +119,7 @@ export const SingleSelect = <T extends string | number>(props: SingleSelectProps
         <KSelect.Trigger class={triggerStyle}>
           <KSelect.Value<SelectOption<T>> class={valueStyle}>{(state) => state.selectedOption().label}</KSelect.Value>
           <KSelect.Icon class={iconStyle}>
-            <MaterialSymbols color={colorVars.semantic.text.black}>expand_more</MaterialSymbols>
+            <div class="i-material-symbols:expand-more shrink-0 text-2xl/6 text-text-black" />
           </KSelect.Icon>
         </KSelect.Trigger>
       </ToolTip>
@@ -229,7 +128,7 @@ export const SingleSelect = <T extends string | number>(props: SingleSelectProps
           <KSelect.Listbox class={listBoxStyle} />
         </KSelect.Content>
       </KSelect.Portal>
-      <KSelect.ErrorMessage class={errorTextStyle}>{props.error}</KSelect.ErrorMessage>
+      <KSelect.ErrorMessage class="w-full text-accent-error text-regular">{props.error}</KSelect.ErrorMessage>
     </KSelect.Root>
   )
 }
@@ -250,7 +149,7 @@ export const MultiSelect = <T extends string | number>(props: MultiSelectProps<T
 
   return (
     <KSelect.Root<SelectOption<T>>
-      class={containerStyle}
+      class="flex w-full flex-col gap-2"
       {...rootProps}
       multiple={true}
       value={selectedOptions()}
@@ -269,7 +168,7 @@ export const MultiSelect = <T extends string | number>(props: MultiSelectProps<T
     >
       <Show when={props.label}>
         <TitleContainer>
-          <KSelect.Label class={titleStyle}>{props.label}</KSelect.Label>
+          <KSelect.Label class="whitespace-nowrap text-bold text-text-black">{props.label}</KSelect.Label>
           <Show when={props.required}>
             <RequiredMark>*</RequiredMark>
           </Show>
@@ -289,7 +188,7 @@ export const MultiSelect = <T extends string | number>(props: MultiSelectProps<T
           }
         </KSelect.Value>
         <KSelect.Icon class={iconStyle}>
-          <MaterialSymbols color={colorVars.semantic.text.black}>expand_more</MaterialSymbols>
+          <div class="i-material-symbols:expand-more shrink-0 text-2xl/6 text-text-black" />
         </KSelect.Icon>
       </KSelect.Trigger>
       <KSelect.Portal>
@@ -297,63 +196,10 @@ export const MultiSelect = <T extends string | number>(props: MultiSelectProps<T
           <KSelect.Listbox class={listBoxStyle} />
         </KSelect.Content>
       </KSelect.Portal>
-      <KSelect.ErrorMessage class={errorTextStyle}>{props.error}</KSelect.ErrorMessage>
+      <KSelect.ErrorMessage class="w-full text-accent-error text-regular">{props.error}</KSelect.ErrorMessage>
     </KSelect.Root>
   )
 }
-
-const controlStyle = style({
-  position: 'relative',
-  width: '100%',
-  maxWidth: '288px',
-  display: 'flex',
-  gap: '1px',
-})
-const comboBoxTriggerStyle = style({
-  color: colorVars.semantic.text.disabled,
-  position: 'absolute',
-  width: '44px',
-  height: '100%',
-  right: '0',
-  display: 'flex',
-  alignItems: 'center',
-  justifyContent: 'flex-start',
-  paddingLeft: '4px',
-  border: 'none',
-  background: 'none',
-  cursor: 'pointer',
-})
-const comboBoxInputStyle = style({
-  width: '100%',
-  height: '48px',
-  padding: '0 16px',
-  display: 'flex',
-  gap: '4px',
-  paddingRight: '44px',
-
-  background: colorVars.semantic.ui.primary,
-  borderRadius: '8px',
-  border: 'none',
-  outline: `1px solid ${colorVars.semantic.ui.border}`,
-  color: colorVars.semantic.text.black,
-  ...textVars.text.regular,
-
-  selectors: {
-    '&::placeholder': {
-      color: colorVars.semantic.text.disabled,
-    },
-    '&:focus-visible': {
-      outline: `2px solid ${colorVars.semantic.primary.main}`,
-    },
-    '&[data-disabled]': {
-      cursor: 'not-allowed',
-      background: colorVars.semantic.ui.tertiary,
-    },
-    '&[data-invalid]': {
-      outline: `2px solid ${colorVars.semantic.accent.error}`,
-    },
-  },
-})
 
 export type ComboBoxProps<T extends string | number> = SelectProps<T> & {
   value: T | undefined
@@ -378,7 +224,7 @@ export const ComboBox = <T extends string | number>(props: ComboBoxProps<T>): JS
 
   return (
     <KComboBox.Root<SelectOption<T>>
-      class={containerStyle}
+      class="flex w-full flex-col gap-2"
       multiple={false}
       allowDuplicateSelectionEvents
       value={selectedOption()}
@@ -400,7 +246,7 @@ export const ComboBox = <T extends string | number>(props: ComboBoxProps<T>): JS
     >
       <Show when={props.label}>
         <TitleContainer>
-          <KComboBox.Label class={titleStyle}>{props.label}</KComboBox.Label>
+          <KComboBox.Label class="whitespace-nowrap text-bold text-text-black">{props.label}</KComboBox.Label>
           <Show when={props.required}>
             <RequiredMark>*</RequiredMark>
           </Show>
@@ -411,11 +257,20 @@ export const ComboBox = <T extends string | number>(props: ComboBoxProps<T>): JS
       </Show>
       <KComboBox.HiddenSelect {...selectProps} />
       <ToolTip {...props.tooltip}>
-        <KComboBox.Control class={controlStyle}>
-          <KComboBox.Input class={comboBoxInputStyle} placeholder={props.placeholder} />
-          <KComboBox.Trigger class={comboBoxTriggerStyle}>
+        <KComboBox.Control class="relative flex w-full max-w-72 gap-0.25">
+          <KComboBox.Input
+            class={clsx(
+              'flex h-12 w-full gap-1 rounded-lg border-none bg-ui-primary px-4 pr-11 text-regular text-text-black outline outline-1 outline-ui-border',
+              'placeholder:text-text-disabled',
+              'focus-visible:outline-2 focus-visible:outline-primary-main',
+              'data-[disabled]:cursor-not-allowed data-[disabled]:bg-ui-tertiary',
+              'data-[invalid]:outline-2 data-[invalid]:outline-accent-error',
+            )}
+            placeholder={props.placeholder}
+          />
+          <KComboBox.Trigger class="absolute right-0 flex h-full w-11 cursor-pointer items-center justify-start border-none bg-inherit pl-1 text-text-disabled">
             <KComboBox.Icon class={iconStyle}>
-              <MaterialSymbols color={colorVars.semantic.text.black}>expand_more</MaterialSymbols>
+              <div class="i-material-symbols:expand-more shrink-0 text-2xl/6 text-text-black" />
             </KComboBox.Icon>
           </KComboBox.Trigger>
         </KComboBox.Control>
@@ -425,7 +280,7 @@ export const ComboBox = <T extends string | number>(props: ComboBoxProps<T>): JS
           <KComboBox.Listbox class={listBoxStyle} />
         </KComboBox.Content>
       </KComboBox.Portal>
-      <KComboBox.ErrorMessage class={errorTextStyle}>{props.error}</KComboBox.ErrorMessage>
+      <KComboBox.ErrorMessage class="w-full text-accent-error text-regular">{props.error}</KComboBox.ErrorMessage>
     </KComboBox.Root>
   )
 }

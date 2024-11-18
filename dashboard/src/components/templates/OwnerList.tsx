@@ -1,88 +1,24 @@
-import { style } from '@macaron-css/core'
-import { styled } from '@macaron-css/solid'
 import { createVirtualizer } from '@tanstack/solid-virtual'
 import Fuse from 'fuse.js'
 import { type Component, For, Show, createMemo, createSignal } from 'solid-js'
 import type { User } from '/@/api/neoshowcase/protobuf/gateway_pb'
 import { Button } from '/@/components/UI/Button'
-import { MaterialSymbols } from '/@/components/UI/MaterialSymbols'
 import UserAvatar from '/@/components/UI/UserAvater'
+import { styled } from '/@/components/styled-components'
 import useModal from '/@/libs/useModal'
-import { colorVars, textVars } from '/@/theme'
 import ModalDeleteConfirm from '../UI/ModalDeleteConfirm'
 import { TextField } from '../UI/TextField'
 
-const SearchUserRow = styled('div', {
-  base: {
-    display: 'flex',
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: '16px',
-  },
-})
-const AddOwnersContainer = styled('div', {
-  base: {
-    width: '100%',
-    height: '100%',
-    maxHeight: '100%',
-    display: 'flex',
-    flexDirection: 'column',
-    gap: '16px',
-  },
-})
-const UsersContainer = styled('div', {
-  base: {
-    width: '100%',
-    height: 'auto',
-    maxHeight: '100%',
-    overflowY: 'auto',
+const UserPlaceholder = styled(
+  'div',
+  'h4-medium flex h-full w-full flex-col items-center justify-center gap-6 rounded-lg border border-ui-border bg-ui-primary px-5 py-4 text-text-black',
+)
 
-    border: `1px solid ${colorVars.semantic.ui.border}`,
-    borderRadius: '8px',
-  },
-})
-const bordered = style({
-  selectors: {
-    '&:not(:last-child)': {
-      borderBottom: `1px solid ${colorVars.semantic.ui.border}`,
-    },
-  },
-})
-const UserRowContainer = styled('div', {
-  base: {
-    width: '100%',
-    padding: '16px 20px',
-    display: 'flex',
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: '8px',
-  },
-})
-const UserName = styled('div', {
-  base: {
-    width: '100%',
-    color: colorVars.semantic.text.black,
-    ...textVars.text.medium,
-  },
-})
-const UserPlaceholder = styled('div', {
-  base: {
-    width: '100%',
-    height: '100%',
-    padding: '16px 20px',
-    display: 'flex',
-    flexDirection: 'column',
-    gap: '24px',
-    alignItems: 'center',
-    justifyContent: 'center',
+const UsersContainer = styled('div', 'h-auto max-h-full w-full overflow-y-auto rounded-lg border border-ui-border')
 
-    border: `1px solid ${colorVars.semantic.ui.border}`,
-    borderRadius: '8px',
-    background: colorVars.semantic.ui.primary,
-    color: colorVars.semantic.text.black,
-    ...textVars.h4.medium,
-  },
-})
+const UserRowContainer = styled('div', 'flex w-full items-center gap-2 px-5 py-4')
+
+const UserName = styled('div', 'w-full text-medium text-text-black')
 
 const AddOwners: Component<{
   nonOwners: User[]
@@ -115,10 +51,10 @@ const AddOwners: Component<{
   const items = () => virtualizer().getVirtualItems()
 
   return (
-    <AddOwnersContainer>
+    <div class="flex h-full max-h-full w-full flex-col gap-4">
       <TextField
         placeholder="Search UserID"
-        leftIcon={<MaterialSymbols>search</MaterialSymbols>}
+        leftIcon={<div class="i-material-symbols:search shrink-0 text-2xl/6" />}
         value={searchUserQuery()}
         onInput={(e) => setSearchUserQuery(e.currentTarget.value)}
       />
@@ -126,17 +62,16 @@ const AddOwners: Component<{
         when={filteredUsers().length !== 0}
         fallback={
           <UserPlaceholder>
-            <MaterialSymbols displaySize={80}>search</MaterialSymbols>
+            <div class="i-material-symbols:search shrink-0 text-20/20" />
             No Users Found
           </UserPlaceholder>
         }
       >
         <UsersContainer ref={setContainerRef}>
           <div
+            class="relative w-full"
             style={{
-              width: '100%',
               height: `${virtualizer().getTotalSize()}px`,
-              position: 'relative',
             }}
           >
             <For each={items() ?? []}>
@@ -144,14 +79,10 @@ const AddOwners: Component<{
                 <div
                   data-index={vRow.index}
                   style={{
-                    position: 'absolute',
-                    top: 0,
-                    left: 0,
-                    width: '100%',
                     height: `${vRow.size}px`,
                     transform: `translateY(${vRow.start}px)`,
                   }}
-                  class={bordered}
+                  class="absolute top-0 left-0 w-full border-ui-border [&:not(:last-child)]:border-b"
                 >
                   <UserRowContainer>
                     <UserAvatar user={filteredUsers()[vRow.index]} size={32} />
@@ -166,7 +97,7 @@ const AddOwners: Component<{
           </div>
         </UsersContainer>
       </Show>
-    </AddOwnersContainer>
+    </div>
   )
 }
 
@@ -178,7 +109,7 @@ const OwnerRow: Component<{
 
   return (
     <>
-      <div class={bordered}>
+      <div class="border-ui-border [&:not(:last-child)]:border-b">
         <UserRowContainer>
           <UserAvatar user={props.user} size={32} />
           <UserName>{props.user.name}</UserName>
@@ -248,17 +179,17 @@ const OwnerList: Component<{
 
   return (
     <>
-      <SearchUserRow>
+      <div class="flex items-center gap-4">
         <TextField
           placeholder="Search UserID"
-          leftIcon={<MaterialSymbols>search</MaterialSymbols>}
+          leftIcon={<div class="i-material-symbols:search shrink-0 text-2xl/6" />}
           value={searchUserQuery()}
           onInput={(e) => setSearchUserQuery(e.currentTarget.value)}
         />
         <Button
           variants="primary"
           size="medium"
-          leftIcon={<MaterialSymbols>add</MaterialSymbols>}
+          leftIcon={<div class="i-material-symbols:add shrink-0 text-2xl/6" />}
           onClick={openAddUserModal}
           disabled={!props.hasPermission}
           tooltip={{
@@ -275,7 +206,7 @@ const OwnerList: Component<{
             <AddOwners addOwner={props.handleAddOwner} nonOwners={nonOwners()} />
           </AddUserModal.Body>
         </AddUserModal.Container>
-      </SearchUserRow>
+      </div>
       <UsersContainer>
         <For each={filteredOwners()}>
           {(owner) => <OwnerRow user={owner} deleteOwner={props.hasPermission ? props.handleDeleteOwner : undefined} />}

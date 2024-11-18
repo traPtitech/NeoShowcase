@@ -1,4 +1,3 @@
-import { styled } from '@macaron-css/solid'
 import { Title } from '@solidjs/meta'
 import { For, Show, createResource } from 'solid-js'
 import { DataTable } from '/@/components/layouts/DataTable'
@@ -10,25 +9,6 @@ import BuildStatusTable from '/@/components/templates/build/BuildStatusTable'
 import { RuntimeImageRow } from '/@/components/templates/build/RuntimeImageRow'
 import { client } from '/@/libs/api'
 import { useBuildData } from '/@/routes'
-import { colorVars } from '/@/theme'
-
-const MainView = styled('div', {
-  base: {
-    width: '100%',
-    display: 'flex',
-    flexDirection: 'column',
-    gap: '32px',
-  },
-})
-const LogContainer = styled('div', {
-  base: {
-    width: '100%',
-    padding: '16px 20px',
-
-    border: `1px solid ${colorVars.semantic.ui.border}`,
-    borderRadius: '8px',
-  },
-})
 
 export default () => {
   const { app, build, commit, refetch, hasPermission } = useBuildData()
@@ -44,7 +24,7 @@ export default () => {
     <MainViewContainer>
       <Show when={loaded()}>
         <Title>{`${app()!.name} - Build - NeoShowcase`}</Title>
-        <MainView>
+        <div class="flex w-full flex-col gap-8">
           <DataTable.Container>
             <DataTable.Title>Build Status</DataTable.Title>
             <BuildStatusTable
@@ -75,12 +55,12 @@ export default () => {
           <Show when={hasPermission()}>
             <DataTable.Container>
               <DataTable.Title>Build Log</DataTable.Title>
-              <LogContainer>
+              <div class="w-full rounded-lg border border-ui-border px-5 py-4">
                 <BuildLog buildID={build()!.id} finished={buildFinished()} refetch={refetch} />
-              </LogContainer>
+              </div>
             </DataTable.Container>
           </Show>
-        </MainView>
+        </div>
       </Show>
     </MainViewContainer>
   )
