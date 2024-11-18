@@ -7,19 +7,21 @@ import (
 
 func FromPBRuntimeConfig(c *pb.RuntimeConfig) domain.RuntimeConfig {
 	return domain.RuntimeConfig{
-		UseMariaDB: c.UseMariadb,
-		UseMongoDB: c.UseMongodb,
-		Entrypoint: c.Entrypoint,
-		Command:    c.Command,
+		UseMariaDB:   c.UseMariadb,
+		UseMongoDB:   c.UseMongodb,
+		Entrypoint:   c.Entrypoint,
+		Command:      c.Command,
+		AutoShutdown: FromPBAutoShutdown(c.AutoShutdown),
 	}
 }
 
 func ToPBRuntimeConfig(c *domain.RuntimeConfig) *pb.RuntimeConfig {
 	return &pb.RuntimeConfig{
-		UseMariadb: c.UseMariaDB,
-		UseMongodb: c.UseMongoDB,
-		Entrypoint: c.Entrypoint,
-		Command:    c.Command,
+		UseMariadb:   c.UseMariaDB,
+		UseMongodb:   c.UseMongoDB,
+		Entrypoint:   c.Entrypoint,
+		Command:      c.Command,
+		AutoShutdown: ToPBAutoShutdown(c.AutoShutdown),
 	}
 }
 
@@ -134,5 +136,45 @@ func ToPBApplicationConfig(c domain.ApplicationConfig) *pb.ApplicationConfig {
 		}
 	default:
 		panic("unknown domain build config type")
+	}
+}
+
+func FromPBAutoShutdown(as *pb.AutoShutdownConfig) domain.AutoShutdownConfig {
+	return domain.AutoShutdownConfig{
+		Enabled: as.Enabled,
+		Startup: fromPBStartupBehavior(as.Startup),
+	}
+}
+
+func fromPBStartupBehavior(sb pb.AutoShutdownConfig_StartupBehavior) domain.StartupBehavior {
+	switch sb {
+	case pb.AutoShutdownConfig_UNDEFINED:
+		return domain.StartupBehaviorUndefined
+	case pb.AutoShutdownConfig_LOADING_PAGE:
+		return domain.StartupBehaviorLoadingPage
+	case pb.AutoShutdownConfig_BLOCKING:
+		return domain.StartupBehaviorBlocking
+	default:
+		panic("unknown pb startup behavior")
+	}
+}
+
+func ToPBAutoShutdown(as domain.AutoShutdownConfig) *pb.AutoShutdownConfig {
+	return &pb.AutoShutdownConfig{
+		Enabled: as.Enabled,
+		Startup: toPBStartupBehavior(as.Startup),
+	}
+}
+
+func toPBStartupBehavior(sb domain.StartupBehavior) pb.AutoShutdownConfig_StartupBehavior {
+	switch sb {
+	case domain.StartupBehaviorUndefined:
+		return pb.AutoShutdownConfig_UNDEFINED
+	case domain.StartupBehaviorLoadingPage:
+		return pb.AutoShutdownConfig_LOADING_PAGE
+	case domain.StartupBehaviorBlocking:
+		return pb.AutoShutdownConfig_BLOCKING
+	default:
+		panic("unknown domain startup behavior")
 	}
 }

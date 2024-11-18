@@ -191,6 +191,12 @@ func init() {
 	viper.SetDefault("components.controller.k8s.service.ipFamilies", nil)
 	viper.SetDefault("components.controller.k8s.service.ipFamilyPolicy", "PreferDualStack")
 
+	viper.SetDefault("components.controller.k8s.middleware.sablier.enable", true)
+	viper.SetDefault("components.controller.k8s.middleware.sablier.url", "http://sablier:10000")
+	viper.SetDefault("components.controller.k8s.middleware.sablier.sessionDuration", "1h")
+	viper.SetDefault("components.controller.k8s.middleware.sablier.dynamic.theme", "ghost")
+	viper.SetDefault("components.controller.k8s.middleware.sablier.blocking.timeout", "1m")
+
 	viper.SetDefault("components.controller.k8s.tls.type", "traefik")
 	viper.SetDefault("components.controller.k8s.tls.traefik.certResolver", "nsresolver")
 	viper.SetDefault("components.controller.k8s.tls.traefik.wildcard.domains", nil)

@@ -15,6 +15,9 @@ describe('Create Application Schema', () => {
           useMongodb: false,
           entrypoint: '.',
           command: "echo 'test'",
+          autoShutdown: {
+            enabled: false,
+          },
         },
       },
     },
@@ -108,6 +111,9 @@ describe('Create Application Schema', () => {
                   useMongodb: false,
                   entrypoint: '.',
                   command: "echo 'test'",
+                  autoShutdown: {
+                    enabled: false,
+                  },
                 },
               },
             },
@@ -140,6 +146,9 @@ describe('Create Application Schema', () => {
                   useMongodb: false,
                   entrypoint: '.',
                   command: "echo 'test'",
+                  autoShutdown: {
+                    enabled: false,
+                  },
                 },
               },
             },
@@ -173,6 +182,9 @@ describe('Create Application Schema', () => {
                   useMongodb: false,
                   entrypoint: '.',
                   command: "echo 'test'",
+                  autoShutdown: {
+                    enabled: false,
+                  },
                 },
               },
             },

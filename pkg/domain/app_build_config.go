@@ -32,11 +32,32 @@ func (b BuildType) DeployType() DeployType {
 }
 
 type RuntimeConfig struct {
-	UseMariaDB bool
-	UseMongoDB bool
-	Entrypoint string
-	Command    string
+	UseMariaDB   bool
+	UseMongoDB   bool
+	Entrypoint   string
+	Command      string
+	AutoShutdown AutoShutdownConfig
 }
+
+type AutoShutdownConfig struct {
+	Enabled bool
+	// Startup must be set if Enabled is true.
+	Startup StartupBehavior
+}
+
+// StartupBehavior represents the behavior of the application when it starts up.
+// This is used to determine how to handle the request until the application is ready.
+type StartupBehavior int
+
+const (
+	StartupBehaviorUndefined StartupBehavior = iota
+	// StartupBehaviorLoadingPage is a strategy that shows a loading page until the application is ready.
+	// This is suitable for web applications that are accessed from frontend.
+	StartupBehaviorLoadingPage
+	// StartupBehaviorBlocking is a strategy that blocks the request until the application is ready.
+	// This is suitable for API servers.
+	StartupBehaviorBlocking
+)
 
 const shellSpecialCharacters = "`" + `~#$&*()\|[]{};'"<>?!=`
 
@@ -63,6 +84,9 @@ func (rc *RuntimeConfig) Validate() error {
 	}
 	if _, err := ParseArgs(rc.Command); err != nil {
 		return errors.Wrap(err, "command")
+	}
+	if rc.AutoShutdown.Enabled && rc.AutoShutdown.Startup == StartupBehaviorUndefined {
+		return errors.New("startup is required if auto shutdown is enabled")
 	}
 	return nil
 }

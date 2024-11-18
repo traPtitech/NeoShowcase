@@ -1,7 +1,7 @@
 import type { PartialMessage } from '@bufbuild/protobuf'
 import { P, match } from 'ts-pattern'
 import * as v from 'valibot'
-import type { ApplicationConfig } from '/@/api/neoshowcase/protobuf/gateway_pb'
+import { type ApplicationConfig, AutoShutdownConfig_StartupBehavior } from '/@/api/neoshowcase/protobuf/gateway_pb'
 import { stringBooleanSchema } from '/@/libs/schemaUtil'
 
 const optionalBooleanSchema = (defaultValue = false) =>
@@ -10,11 +10,37 @@ const optionalBooleanSchema = (defaultValue = false) =>
     v.transform((i) => i ?? defaultValue),
   )
 
+const autoShutdownSchema = v.optional(
+  v.object({
+    enabled: v.boolean(),
+    startup: v.pipe(
+      v.optional(
+        v.union([
+          v.literal(`${AutoShutdownConfig_StartupBehavior.LOADING_PAGE}`),
+          v.literal(`${AutoShutdownConfig_StartupBehavior.BLOCKING}`),
+        ]),
+      ),
+      v.transform((input) => {
+        return match(input)
+          .returnType<AutoShutdownConfig_StartupBehavior>()
+          .with(undefined, () => AutoShutdownConfig_StartupBehavior.UNDEFINED)
+          .with(
+            `${AutoShutdownConfig_StartupBehavior.LOADING_PAGE}`,
+            () => AutoShutdownConfig_StartupBehavior.LOADING_PAGE,
+          )
+          .with(`${AutoShutdownConfig_StartupBehavior.BLOCKING}`, () => AutoShutdownConfig_StartupBehavior.BLOCKING)
+          .exhaustive()
+      }),
+    ),
+  }),
+)
+
 const runtimeConfigSchema = v.object({
   useMariadb: optionalBooleanSchema(),
   useMongodb: optionalBooleanSchema(),
   entrypoint: v.string(),
   command: v.string(),
+  autoShutdown: autoShutdownSchema,
 })
 const staticConfigSchema = v.object({
   artifactPath: v.pipe(v.string(), v.nonEmpty('Enter Artifact Path')),
@@ -183,11 +209,16 @@ export const configMessageToSchema = (config: ApplicationConfig): ApplicationCon
       (buildConfig) => ({
         type: 'runtime',
         value: {
-          runtime: buildConfig.value.runtimeConfig ?? {
-            command: '',
-            entrypoint: '',
-            useMariadb: false,
-            useMongodb: false,
+          runtime: {
+            ...buildConfig.value.runtimeConfig,
+            entrypoint: buildConfig.value.runtimeConfig?.entrypoint ?? '',
+            command: buildConfig.value.runtimeConfig?.command ?? '',
+            autoShutdown: {
+              enabled: buildConfig.value.runtimeConfig?.autoShutdown?.enabled ?? false,
+              startup: buildConfig.value.runtimeConfig?.autoShutdown?.startup
+                ? `${buildConfig.value.runtimeConfig.autoShutdown.startup}`
+                : undefined,
+            },
           },
         },
       }),

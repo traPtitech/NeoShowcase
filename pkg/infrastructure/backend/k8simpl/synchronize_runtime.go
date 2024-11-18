@@ -84,6 +84,15 @@ func (b *Backend) runtimeSpec(app *domain.RuntimeDesiredState) (*appsv1.Stateful
 	cont.Ports = lo.UniqBy(cont.Ports, comparePort)
 	slices.SortFunc(cont.Ports, ds.LessFunc(comparePort))
 
+	var replicas = int32(1)
+	var ssLabels = b.appLabel(app.App.ID)
+
+	if b.useSablier(app.App) {
+		ssLabels["sablier.enable"] = "true"
+		ssLabels["sablier.group"] = sablierGroupName(app.App.ID)
+		replicas = int32(0) // scaled by sablier
+	}
+
 	ss := &appsv1.StatefulSet{
 		TypeMeta: metav1.TypeMeta{
 			Kind:       "StatefulSet",
@@ -92,10 +101,10 @@ func (b *Backend) runtimeSpec(app *domain.RuntimeDesiredState) (*appsv1.Stateful
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      deploymentName(app.App.ID),
 			Namespace: b.config.Namespace,
-			Labels:    b.appLabel(app.App.ID),
+			Labels:    ssLabels,
 		},
 		Spec: appsv1.StatefulSetSpec{
-			Replicas: lo.ToPtr(int32(1)),
+			Replicas: &replicas,
 			Selector: &metav1.LabelSelector{
 				MatchLabels: appSelector(app.App.ID),
 			},
