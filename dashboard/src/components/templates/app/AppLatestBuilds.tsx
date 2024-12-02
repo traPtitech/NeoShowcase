@@ -2,7 +2,6 @@ import { type Component, For, createSignal } from 'solid-js'
 
 import type { Application, Build, Repository } from '/@/api/neoshowcase/protobuf/gateway_pb'
 import { Button } from '/@/components/UI/Button'
-import { MaterialSymbols } from '/@/components/UI/MaterialSymbols'
 
 import { useApplicationData } from '/@/routes'
 import { List } from '../List'
@@ -35,13 +34,13 @@ const AppLatestBuilds: Component<{
         each={latestBuilds()}
         fallback={
           <List.PlaceHolder>
-            <MaterialSymbols displaySize={80}>deployed_code</MaterialSymbols>
+            <div class="i-material-symbols:deployed-code-outline shrink-0 text-20/20" />
             No Builds
             <Button
               variants="primary"
               size="medium"
               onClick={startApp}
-              leftIcon={<MaterialSymbols>add</MaterialSymbols>}
+              leftIcon={<div class="i-material-symbols:add shrink-0 text-2xl/6" />}
               loading={disabled()}
             >
               Start App to Trigger Builds

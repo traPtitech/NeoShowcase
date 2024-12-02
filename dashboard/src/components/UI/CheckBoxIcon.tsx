@@ -1,55 +1,6 @@
-import { styled } from '@macaron-css/solid'
 import { type Component, Show } from 'solid-js'
 import CheckMark from '/@/assets/icons/check.svg'
-// import { colorOverlay } from '/@/libs/colorOverlay'
-import { colorVars } from '/@/theme'
-
-const Container = styled('div', {
-  base: {
-    width: '100%',
-    height: 'auto',
-    aspectRatio: '1',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-
-    borderRadius: '4px',
-    color: colorVars.semantic.ui.primary,
-  },
-  variants: {
-    checked: {
-      false: {
-        background: colorVars.semantic.ui.background,
-        border: `2px solid ${colorVars.semantic.ui.tertiary}`,
-        // selectors: {
-        //   '&:hover': {
-        //     background: colorOverlay(colorVars.semantic.ui.tertiary, colorVars.primitive.blackAlpha[200]),
-        //   },
-        //   '&:active': {
-        //     background: colorOverlay(colorVars.semantic.ui.tertiary, colorVars.primitive.blackAlpha[300]),
-        //   },
-        // },
-      },
-      true: {
-        background: colorVars.semantic.primary.main,
-        // selectors: {
-        //   '&:hover': {
-        //     background: colorOverlay(colorVars.semantic.primary.main, colorVars.primitive.blackAlpha[200]),
-        //   },
-        //   '&:active': {
-        //     background: colorOverlay(colorVars.semantic.primary.main, colorVars.primitive.blackAlpha[300]),
-        //   },
-        // },
-      },
-    },
-    disabled: {
-      true: {
-        cursor: 'not-allowed',
-        background: `${colorVars.semantic.text.disabled} !important`,
-      },
-    },
-  },
-})
+import { clsx } from '/@/libs/clsx'
 
 export interface Props {
   checked: boolean
@@ -58,10 +9,16 @@ export interface Props {
 
 export const CheckBoxIcon: Component<Props> = (props) => {
   return (
-    <Container checked={props.checked} disabled={props.disabled}>
+    <div
+      class={clsx(
+        'flex aspect-square h-auto w-full items-center justify-center rounded text-ui-primary',
+        props.checked ? 'bg-primary-main' : 'border-2 border-ui-tertiary bg-ui-background',
+        props.disabled && '!bg-text-disabled cursor-not-allowed',
+      )}
+    >
       <Show when={props.checked}>
         <CheckMark />
       </Show>
-    </Container>
+    </div>
   )
 }

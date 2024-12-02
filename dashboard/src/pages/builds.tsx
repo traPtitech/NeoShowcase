@@ -1,12 +1,6 @@
 import { Title } from '@solidjs/meta'
 import { type Component, Show, createMemo, createResource } from 'solid-js'
-import {
-  type Application,
-  GetApplicationsRequest_Scope,
-  GetRepositoriesRequest_Scope,
-  Repository,
-} from '../api/neoshowcase/protobuf/gateway_pb'
-import { MaterialSymbols } from '../components/UI/MaterialSymbols'
+import { type Application, GetApplicationsRequest_Scope } from '../api/neoshowcase/protobuf/gateway_pb'
 import { MainViewContainer } from '../components/layouts/MainView'
 import { WithNav } from '../components/layouts/WithNav'
 import { BuildList, List } from '../components/templates/List'
@@ -56,7 +50,7 @@ const builds: Component = () => {
           <Show when={showPlaceHolder()} fallback={<BuildList builds={sortedBuilds()} commits={commits()} />}>
             <List.Container>
               <List.PlaceHolder>
-                <MaterialSymbols displaySize={80}>deployed_code</MaterialSymbols>
+                <div class="i-material-symbols:deployed-code-outline shrink-0 text-20/20" />
                 No Builds
               </List.PlaceHolder>
             </List.Container>

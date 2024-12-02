@@ -1,104 +1,10 @@
 import { RadioGroup as KRadioGroup } from '@kobalte/core'
-import { style } from '@macaron-css/core'
-import { styled } from '@macaron-css/solid'
 import { For, type JSX, Show, splitProps } from 'solid-js'
-import { colorOverlay } from '/@/libs/colorOverlay'
-import { colorVars, media, textVars } from '/@/theme'
+import { clsx } from '/@/libs/clsx'
 import { RadioIcon } from '../UI/RadioIcon'
 import { ToolTip, type TooltipProps } from '../UI/ToolTip'
 import { TooltipInfoIcon } from '../UI/TooltipInfoIcon'
-import { RequiredMark, TitleContainer, containerStyle, titleStyle } from './FormItem'
-
-const OptionsContainer = styled('div', {
-  base: {
-    width: '100%',
-    display: 'flex',
-    gap: '16px',
-  },
-  variants: {
-    wrap: {
-      true: {
-        flexWrap: 'wrap',
-      },
-      false: {
-        flexWrap: 'nowrap',
-        '@media': {
-          [media.mobile]: {
-            flexDirection: 'column',
-          },
-        },
-      },
-    },
-  },
-  defaultVariants: {
-    wrap: 'true',
-  },
-})
-const fullItemStyle = style({
-  width: '100%',
-  minWidth: 'min(200px, 100%)',
-})
-const fitItemStyle = style({
-  width: 'fit-content',
-  minWidth: 'min(200px, 100%)',
-})
-const labelStyle = style({
-  width: '100%',
-  height: '100%',
-  padding: '16px',
-  display: 'flex',
-  flexDirection: 'column',
-  gap: '8px',
-
-  background: colorVars.semantic.ui.primary,
-  borderRadius: '8px',
-  border: `1px solid ${colorVars.semantic.ui.border}`,
-  color: colorVars.semantic.text.black,
-  ...textVars.text.regular,
-  cursor: 'pointer',
-
-  selectors: {
-    '&:hover:not([data-disabled]):not([data-readonly])': {
-      background: colorOverlay(colorVars.semantic.ui.primary, colorVars.semantic.transparent.primaryHover),
-    },
-    '&[data-readonly]': {
-      cursor: 'not-allowed',
-    },
-    '&[data-checked]': {
-      outline: `2px solid ${colorVars.semantic.primary.main}`,
-    },
-    '&[data-disabled]': {
-      cursor: 'not-allowed',
-      color: colorVars.semantic.text.disabled,
-      background: colorVars.semantic.ui.tertiary,
-    },
-    '&[data-invalid]': {
-      outline: `2px solid ${colorVars.semantic.accent.error}`,
-    },
-  },
-})
-const ItemTitle = styled('div', {
-  base: {
-    display: 'grid',
-    gridTemplateColumns: '1fr 20px',
-    alignItems: 'center',
-    justifyItems: 'start',
-    gap: '8px',
-    color: colorVars.semantic.text.black,
-    ...textVars.text.regular,
-  },
-})
-const Description = styled('div', {
-  base: {
-    color: colorVars.semantic.text.black,
-    ...textVars.caption.regular,
-  },
-})
-export const errorTextStyle = style({
-  width: '100%',
-  color: colorVars.semantic.accent.error,
-  ...textVars.text.regular,
-})
+import { RequiredMark, TitleContainer } from './FormItem'
 
 export interface RadioOption<T extends string> {
   value: T
@@ -135,7 +41,7 @@ export const RadioGroup = <T extends string>(props: Props<T>): JSX.Element => {
 
   return (
     <KRadioGroup.Root
-      class={containerStyle}
+      class="flex w-full flex-col gap-2"
       {...rootProps}
       validationState={props.error ? 'invalid' : 'valid'}
       onChange={(v) => props.setValue?.(v as T)}
@@ -143,7 +49,7 @@ export const RadioGroup = <T extends string>(props: Props<T>): JSX.Element => {
     >
       <Show when={props.label}>
         <TitleContainer>
-          <KRadioGroup.Label class={titleStyle}>{props.label}</KRadioGroup.Label>
+          <KRadioGroup.Label class="whitespace-nowrap text-bold text-text-black">{props.label}</KRadioGroup.Label>
           <Show when={props.required}>
             <RequiredMark>*</RequiredMark>
           </Show>
@@ -153,36 +59,44 @@ export const RadioGroup = <T extends string>(props: Props<T>): JSX.Element => {
         </TitleContainer>
       </Show>
       <ToolTip {...props.tooltip}>
-        <OptionsContainer wrap={props.wrap}>
+        <div class={clsx('flex w-full gap-4', props.wrap ? 'flex-wrap' : 'flex-nowrap max-md:flex-col')}>
           <For each={props.options}>
             {(option) => (
               <KRadioGroup.Item
                 value={option.value}
-                classList={{
-                  [fullItemStyle]: props.full,
-                  [fitItemStyle]: !props.full,
-                }}
+                class={clsx('min-w-[min(200px,100%)]', props.full ? 'w-full' : 'w-fit')}
               >
                 <KRadioGroup.ItemInput {...inputProps} />
-                <KRadioGroup.ItemLabel class={labelStyle}>
-                  <ItemTitle>
+                <KRadioGroup.ItemLabel
+                  class={clsx(
+                    'flex h-full w-full cursor-pointer flex-col gap-2 rounded-lg border border-ui-border bg-ui-primary p-4 text-regular text-text-black',
+                    'hover:[&:not([data-disabled]):not([data-readonly])]:bg-color-overlay-ui-primary-to-transparency-primary-hover',
+                    'data-[readonly]:cursor-not-allowed',
+                    'data-[checked]:outline data-[checked]:outline-2 data-[checked]:outline-primary-main',
+                    'data-[disabled]:cursor-not-allowed data-[disabled]:bg-ui-tertiary data-[disabled]:text-text-disabled',
+                    'data-[invalid]:outline data-[invalid]:outline-2 data-[invalid]:outline-accent-error',
+                    'min-w-[min(200px,100%)]',
+                    props.full ? 'w-full' : 'w-fit',
+                  )}
+                >
+                  <div class="grid grid-cols-[1fr_20px] items-center justify-start gap-2 text-regular text-text-black">
                     {option.label}
                     <KRadioGroup.ItemControl>
                       <KRadioGroup.ItemIndicator forceMount>
                         <RadioIcon selected={option.value === props.value} />
                       </KRadioGroup.ItemIndicator>
                     </KRadioGroup.ItemControl>
-                  </ItemTitle>
+                  </div>
                   <Show when={option.description}>
-                    <Description>{option.description}</Description>
+                    <div class="caption-regular text-text-black">{option.description}</div>
                   </Show>
                 </KRadioGroup.ItemLabel>
               </KRadioGroup.Item>
             )}
           </For>
-        </OptionsContainer>
+        </div>
       </ToolTip>
-      <KRadioGroup.ErrorMessage class={errorTextStyle}>{props.error}</KRadioGroup.ErrorMessage>
+      <KRadioGroup.ErrorMessage class="w-full text-accent-error text-regular">{props.error}</KRadioGroup.ErrorMessage>
     </KRadioGroup.Root>
   )
 }

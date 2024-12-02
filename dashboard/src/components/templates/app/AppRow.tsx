@@ -1,5 +1,3 @@
-import { style } from '@macaron-css/core'
-import { styled } from '@macaron-css/solid'
 import { A } from '@solidjs/router'
 import { AiOutlineBranches } from 'solid-icons/ai'
 import { type Component, For, Show } from 'solid-js'
@@ -7,103 +5,32 @@ import type { Application } from '/@/api/neoshowcase/protobuf/gateway_pb'
 import Badge from '/@/components/UI/Badge'
 import Skeleton from '/@/components/UI/Skeleton'
 import { ToolTip } from '/@/components/UI/ToolTip'
+import { styled } from '/@/components/styled-components'
 import type { CommitsMap } from '/@/libs/api'
 import { applicationState, getWebsiteURL } from '/@/libs/application'
-import { colorOverlay } from '/@/libs/colorOverlay'
+import { clsx } from '/@/libs/clsx'
 import { diffHuman, shortSha } from '/@/libs/format'
-import { colorVars, textVars } from '/@/theme'
 import { AppStatusIcon } from './AppStatusIcon'
 
-const Container = styled('div', {
-  base: {
-    width: '100%',
-    padding: '16px 16px 16px 20px',
-    cursor: 'pointer',
-    background: colorVars.semantic.ui.primary,
+const Container = styled(
+  'div',
+  'w-full cursor-pointer bg-ui-primary p-4 pl-5 hover:bg-color-overlay-ui-primary-to-black-alpha-50',
+)
+const darkContainerStyle = clsx('bg-ui-secondary hover:bg-color-overlay-ui-secondary-to-black-alpha-50')
 
-    selectors: {
-      '&:hover': {
-        background: colorOverlay(colorVars.semantic.ui.primary, colorVars.primitive.blackAlpha[50]),
-      },
-    },
-  },
-  variants: {
-    dark: {
-      true: {
-        background: colorVars.semantic.ui.secondary,
-        selectors: {
-          '&:hover': {
-            background: colorOverlay(colorVars.semantic.ui.secondary, colorVars.primitive.blackAlpha[50]),
-          },
-        },
-      },
-    },
-  },
-})
-const TitleContainer = styled('div', {
-  base: {
-    width: '100%',
-    display: 'flex',
-    alignItems: 'center',
-    gap: '8px',
-  },
-})
-const AppName = styled('div', {
-  base: {
-    width: '100%',
-    overflow: 'hidden',
-    textOverflow: 'ellipsis',
-    whiteSpace: 'nowrap',
-    color: colorVars.semantic.text.black,
-    ...textVars.h4.regular,
-  },
-})
-const UpdatedAt = styled('div', {
-  base: {
-    flexShrink: 0,
-    color: colorVars.semantic.text.grey,
-    ...textVars.caption.regular,
-  },
-})
-const MetaContainer = styled('div', {
-  base: {
-    width: '100%',
-    display: 'flex',
-    alignItems: 'center',
-    gap: '4px',
-    padding: '0 0 0 32px',
+const TitleContainer = styled('div', 'flex w-full items-center gap-2')
 
-    color: colorVars.semantic.text.grey,
-    ...textVars.caption.regular,
-  },
-})
+const AppName = styled('div', 'h4-regular w-full truncate text-text-black')
 
-const leftFit = style({
-  width: 'fit-content',
-  overflow: 'hidden',
-  textOverflow: 'ellipsis',
-  whiteSpace: 'nowrap',
-})
+const UpdatedAt = styled('div', 'caption-regular shrink-0 text-text-grey')
 
-const rightFit = style({
-  width: 'fit-content',
-  marginLeft: 'auto',
-  textAlign: 'right',
-  overflow: 'hidden',
-  textOverflow: 'ellipsis',
-  whiteSpace: 'nowrap',
-})
-
-const center = style({
-  display: 'flex',
-  alignItems: 'center',
-})
+const MetaContainer = styled('div', 'caption-regular flex w-full items-center gap-1 p-0 pl-8 text-text-grey')
 
 const AppRowSkeleton: Component<{
   dark?: boolean
 }> = (props) => {
   return (
-    <Container dark={props.dark} style={{ 'pointer-events': 'none' }}>
+    <Container class={clsx(props.dark && darkContainerStyle, 'pointer-events-none')}>
       <TitleContainer>
         <Skeleton height={24} circle />
         <AppName>
@@ -115,7 +42,7 @@ const AppRowSkeleton: Component<{
       </TitleContainer>
       <MetaContainer>
         <Skeleton>0000000</Skeleton>
-        <div class={rightFit}>
+        <div class="ml-auto w-fit truncate text-right">
           <Skeleton>https://example.com</Skeleton>
         </div>
       </MetaContainer>
@@ -157,7 +84,7 @@ export const AppRow: Component<Props> = (props) => {
   return (
     <Show when={props.app} fallback={<AppRowSkeleton dark={props.dark} />}>
       <A href={`/apps/${props.app!.id}`}>
-        <Container dark={props.dark}>
+        <Container class={clsx(props.dark && darkContainerStyle)}>
           <TitleContainer>
             <AppStatusIcon state={applicationState(props.app!)} />
             <AppName>{props.app!.name}</AppName>
@@ -174,12 +101,12 @@ export const AppRow: Component<Props> = (props) => {
             </Show>
           </TitleContainer>
           <MetaContainer>
-            <AiOutlineBranches class={`${leftFit} ${center}`} />
+            <AiOutlineBranches class="flex w-fit items-center truncate" />
             <ToolTip props={{ content: commitTooltip() }} style="left">
-              <div class={leftFit}>{commitDisplay()}</div>
+              <div class="w-fit truncate">{commitDisplay()}</div>
             </ToolTip>
             <Show when={props.app!.websites.length > 0}>
-              <div class={rightFit}>{getWebsiteURL(props.app!.websites[0])}</div>
+              <div class="ml-auto w-fit truncate text-right">{getWebsiteURL(props.app!.websites[0])}</div>
               <Show when={props.app!.websites.length > 1}>
                 <Badge variant="text">{`+${props.app!.websites.length - 1}`}</Badge>
               </Show>

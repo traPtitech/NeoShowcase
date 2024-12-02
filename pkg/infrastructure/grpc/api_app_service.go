@@ -7,6 +7,7 @@ import (
 	"connectrpc.com/connect"
 	"google.golang.org/protobuf/types/known/emptypb"
 
+	"github.com/samber/lo"
 	"github.com/traPtitech/neoshowcase/pkg/domain"
 	"github.com/traPtitech/neoshowcase/pkg/domain/web"
 	"github.com/traPtitech/neoshowcase/pkg/infrastructure/grpc/pb"
@@ -21,6 +22,13 @@ func (s *APIService) CreateApplication(ctx context.Context, req *connect.Request
 	user := web.GetUser(ctx)
 	now := time.Now()
 	config := pbconvert.FromPBApplicationConfig(msg.Config)
+
+	repo, err := s.svc.GetRepository(ctx, msg.RepositoryId)
+	if err != nil {
+		return nil, handleUseCaseError(err)
+	}
+	ownerIDs := lo.Uniq(append(repo.OwnerIDs, user.ID))
+
 	app := &domain.Application{
 		ID:               domain.NewID(),
 		Name:             msg.Name,
@@ -36,9 +44,9 @@ func (s *APIService) CreateApplication(ctx context.Context, req *connect.Request
 		Config:           config,
 		Websites:         ds.Map(msg.Websites, pbconvert.FromPBCreateWebsiteRequest),
 		PortPublications: ds.Map(msg.PortPublications, pbconvert.FromPBPortPublication),
-		OwnerIDs:         []string{user.ID},
+		OwnerIDs:         ownerIDs,
 	}
-	app, err := s.svc.CreateApplication(ctx, app)
+	app, err = s.svc.CreateApplication(ctx, app)
 	if err != nil {
 		return nil, handleUseCaseError(err)
 	}

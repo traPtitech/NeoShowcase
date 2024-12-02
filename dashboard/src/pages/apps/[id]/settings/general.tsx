@@ -1,10 +1,8 @@
-import { styled } from '@macaron-css/solid'
 import { useNavigate } from '@solidjs/router'
 import { type Component, Show } from 'solid-js'
 import toast from 'solid-toast'
 import type { Application, Repository } from '/@/api/neoshowcase/protobuf/gateway_pb'
 import { Button } from '/@/components/UI/Button'
-import { MaterialSymbols } from '/@/components/UI/MaterialSymbols'
 import ModalDeleteConfirm from '/@/components/UI/ModalDeleteConfirm'
 import { DataTable } from '/@/components/layouts/DataTable'
 import FormBox from '/@/components/layouts/FormBox'
@@ -14,14 +12,6 @@ import { ApplicationFormProvider } from '/@/features/application/provider/applic
 import { client, handleAPIError } from '/@/libs/api'
 import useModal from '/@/libs/useModal'
 import { useApplicationData } from '/@/routes'
-import { colorVars, textVars } from '/@/theme'
-
-const DeleteAppNotice = styled('div', {
-  base: {
-    color: colorVars.semantic.text.grey,
-    ...textVars.caption.regular,
-  },
-})
 
 const DeleteApp: Component<{
   app: Application
@@ -47,7 +37,7 @@ const DeleteApp: Component<{
       <FormBox.Container>
         <FormBox.Forms>
           <FormItem title="Delete Application">
-            <DeleteAppNotice>このアプリケーションを削除します。</DeleteAppNotice>
+            <div class="caption-regular text-text-grey">このアプリケーションを削除します。</div>
           </FormItem>
         </FormBox.Forms>
         <FormBox.Actions>
@@ -73,7 +63,7 @@ const DeleteApp: Component<{
         <Modal.Header>Delete Application</Modal.Header>
         <Modal.Body>
           <ModalDeleteConfirm>
-            <MaterialSymbols>deployed_code</MaterialSymbols>
+            <div class="i-material-symbols:deployed-code-outline shrink-0 text-2xl/6" />
             {props.app.name}
           </ModalDeleteConfirm>
         </Modal.Body>

@@ -1,5 +1,5 @@
 import type { PlainMessage } from '@bufbuild/protobuf'
-import { AiFillGithub, AiFillGitlab } from 'solid-icons/ai'
+import { AiFillGithub } from 'solid-icons/ai'
 import { RiDevelopmentGitRepositoryLine } from 'solid-icons/ri'
 import { SiGitea } from 'solid-icons/si'
 import type { JSXElement } from 'solid-js'
@@ -12,7 +12,6 @@ import {
   PortPublicationProtocol,
   type Website,
 } from '/@/api/neoshowcase/protobuf/gateway_pb'
-import { colorVars } from '/@/theme'
 
 export const buildStatusStr: Record<BuildStatus, string> = {
   [BuildStatus.QUEUED]: 'Queued',
@@ -31,8 +30,19 @@ export enum ApplicationState {
   Error = 'Error',
 }
 
+const autoShutdownEnabled = (app: Application): boolean => {
+  switch (app.config?.buildConfig?.case) {
+    case 'runtimeBuildpack':
+    case 'runtimeCmd':
+    case 'runtimeDockerfile':
+      return app.config.buildConfig.value.runtimeConfig?.autoShutdown?.enabled ?? false
+  }
+  return false
+}
+
 export const deploymentState = (app: Application): ApplicationState => {
-  if (!app.running) {
+  // if app is not running or autoShutdown is enabled and container is missing, it's idle
+  if (!app.running || (autoShutdownEnabled(app) && app.container === Application_ContainerState.MISSING)) {
     return ApplicationState.Idle
   }
   if (app.currentBuild === '') {
@@ -96,11 +106,11 @@ export const repositoryURLToOrigin = (url: string): RepositoryOrigin => {
 export const originToIcon = (origin: RepositoryOrigin, size = 20): JSXElement => {
   switch (origin) {
     case 'GitHub':
-      return <AiFillGithub size={size} color={colorVars.semantic.text.black} />
+      return <AiFillGithub size={size} class="text-text-black" />
     case 'Gitea':
-      return <SiGitea size={size} color={colorVars.semantic.text.black} />
+      return <SiGitea size={size} class="text-text-black" />
     case 'Others':
-      return <RiDevelopmentGitRepositoryLine size={size} color={colorVars.semantic.text.black} />
+      return <RiDevelopmentGitRepositoryLine size={size} class="text-text-black" />
   }
 }
 

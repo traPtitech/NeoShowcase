@@ -6,4 +6,5 @@ resources:
   - ns-apps
   - ns-system
   - registry
+  - sablier
   - traefik

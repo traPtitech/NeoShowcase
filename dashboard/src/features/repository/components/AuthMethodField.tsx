@@ -1,62 +1,14 @@
-import { styled } from '@macaron-css/solid'
 import { Field, getValue, setValues } from '@modular-forms/solid'
 import { type Component, Match, Show, Suspense, Switch, createEffect, createResource, createSignal } from 'solid-js'
 import { Button } from '/@/components/UI/Button'
-import { MaterialSymbols } from '/@/components/UI/MaterialSymbols'
 import { TooltipInfoIcon } from '/@/components/UI/TooltipInfoIcon'
 import { FormItem } from '/@/components/templates/FormItem'
 import { RadioGroup, type RadioOption } from '/@/components/templates/RadioGroups'
 import { client, systemInfo } from '/@/libs/api'
-import { colorVars, textVars } from '/@/theme'
+import { clsx } from '/@/libs/clsx'
 import { TextField } from '../../../components/UI/TextField'
 import { useRepositoryForm } from '../provider/repositoryFormProvider'
 import type { CreateOrUpdateRepositoryInput } from '../schema/repositorySchema'
-
-const SshKeyContainer = styled('div', {
-  base: {
-    width: '100%',
-    display: 'flex',
-    flexDirection: 'column',
-    gap: '16px',
-
-    color: colorVars.semantic.text.grey,
-    ...textVars.caption.regular,
-  },
-})
-const RefreshButtonContainer = styled('div', {
-  base: {
-    width: '100%',
-    display: 'flex',
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: '8px',
-
-    color: colorVars.semantic.accent.error,
-    ...textVars.caption.regular,
-  },
-})
-const VisibilityButton = styled('button', {
-  base: {
-    width: '40px',
-    height: '40px',
-    padding: '8px',
-    background: 'none',
-    border: 'none',
-    borderRadius: '4px',
-    cursor: 'pointer',
-
-    color: colorVars.semantic.text.black,
-    selectors: {
-      '&:hover': {
-        background: colorVars.semantic.transparent.primaryHover,
-      },
-      '&:active': {
-        color: colorVars.semantic.primary.main,
-        background: colorVars.semantic.transparent.primarySelected,
-      },
-    },
-  },
-})
 
 type Props = {
   readonly?: boolean
@@ -134,11 +86,21 @@ const AuthMethodField: Component<Props> = (props) => {
                 error={field.error}
                 readOnly={props.readonly}
                 rightIcon={
-                  <VisibilityButton onClick={() => setShowPassword((s) => !s)} type="button">
-                    <Show when={showPassword()} fallback={<MaterialSymbols>visibility_off</MaterialSymbols>}>
-                      <MaterialSymbols>visibility</MaterialSymbols>
+                  <button
+                    class={clsx(
+                      'size-10 cursor-pointer rounded border-none bg-inherit p-2 text-text-black',
+                      'hover:bg-transparency-primary-hover active:bg-transparency-primary-selected active:text-primary-main',
+                    )}
+                    onClick={() => setShowPassword((s) => !s)}
+                    type="button"
+                  >
+                    <Show
+                      when={showPassword()}
+                      fallback={<div class="i-material-symbols:visibility-off-outline shrink-0 text-2xl/6" />}
+                    >
+                      <div class="i-material-symbols:visibility-outline shrink-0 text-2xl/6" />
                     </Show>
-                  </VisibilityButton>
+                  </button>
                 }
               />
             )}
@@ -149,7 +111,7 @@ const AuthMethodField: Component<Props> = (props) => {
             {() => (
               <FormItem title="デプロイキーの登録">
                 <Suspense>
-                  <SshKeyContainer>
+                  <div class="caption-regular flex w-full flex-col gap-4 text-text-grey">
                     以下のSSH公開鍵
                     {useTmpKey() ? '(このリポジトリ専用)' : '(NeoShowcase全体共通)'}
                     を、リポジトリのデプロイキーとして登録してください。
@@ -157,14 +119,14 @@ const AuthMethodField: Component<Props> = (props) => {
                     公開リポジトリの場合は、この操作は不要です。
                     <TextField value={publicKey()} copyable={true} readonly />
                     <Show when={!useTmpKey()}>
-                      <RefreshButtonContainer>
+                      <div class="caption-regular flex w-full items-center gap-2 text-accent-error">
                         <Button
                           variants="textError"
                           size="small"
                           onClick={() => {
                             setUseTmpKey(true)
                           }}
-                          leftIcon={<MaterialSymbols opticalSize={20}>replay</MaterialSymbols>}
+                          leftIcon={<div class="i-material-symbols:replay shrink-0 text-xl/5" />}
                         >
                           専用公開鍵を生成する
                         </Button>
@@ -182,9 +144,9 @@ const AuthMethodField: Component<Props> = (props) => {
                           }}
                           style="left"
                         />
-                      </RefreshButtonContainer>
+                      </div>
                     </Show>
-                  </SshKeyContainer>
+                  </div>
                 </Suspense>
               </FormItem>
             )}

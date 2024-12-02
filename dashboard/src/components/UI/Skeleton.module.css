@@ -1,0 +1,12 @@
+.skeleton-animation::after {
+  animation: skeleton-loading 1.5s linear infinite;
+}
+
+@keyframes skeleton-loading {
+  from {
+    transform: translateX(-100%);
+  }
+  to {
+    transform: translateX(100%);
+  }
+}

@@ -1,23 +1,5 @@
-import { styled } from '@macaron-css/solid'
 import type { Component } from 'solid-js'
-import { colorVars, textVars } from '/@/theme'
-import { MaterialSymbols } from './MaterialSymbols'
 import { ToolTip } from './ToolTip'
-
-const StyledAnchor = styled('a', {
-  base: {
-    color: colorVars.semantic.text.link,
-    ...textVars.text.regular,
-  },
-})
-const ContentContainer = styled('div', {
-  base: {
-    display: 'flex',
-    flexDirection: 'row',
-    gap: '4px',
-    alignItems: 'center',
-  },
-})
 
 export interface URLTextProps {
   href: string
@@ -32,12 +14,12 @@ export const URLText: Component<URLTextProps> = (props) => {
       }}
       disabled={props.text === props.href}
     >
-      <StyledAnchor href={props.href} target="_blank" rel="noreferrer">
-        <ContentContainer>
+      <a class="text-regular text-text-link" href={props.href} target="_blank" rel="noreferrer">
+        <div class="flex items-center gap-1">
           {props.text}
-          <MaterialSymbols opticalSize={20}>open_in_new</MaterialSymbols>
-        </ContentContainer>
-      </StyledAnchor>
+          <div class="i-material-symbols:open-in-new shrink-0 text-xl/5" />
+        </div>
+      </a>
     </ToolTip>
   )
 }
