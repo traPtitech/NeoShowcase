@@ -2,10 +2,11 @@ package builder
 
 import (
 	"context"
-	"github.com/friendsofgo/errors"
-	"github.com/go-git/go-git/v5/plumbing/transport/ssh"
 	"sync"
 	"time"
+
+	"github.com/friendsofgo/errors"
+	"github.com/go-git/go-git/v5/plumbing/transport/ssh"
 
 	buildkit "github.com/moby/buildkit/client"
 	log "github.com/sirupsen/logrus"
@@ -27,7 +28,7 @@ type Service interface {
 	Shutdown(ctx context.Context) error
 }
 
-type builderService struct {
+type ServiceImpl struct {
 	config    *Config
 	client    domain.ControllerBuilderServiceClient
 	buildkit  *buildkit.Client
@@ -48,7 +49,7 @@ func NewService(
 	client domain.ControllerBuilderServiceClient,
 	buildkit *buildkit.Client,
 	buildpack builder.BuildpackBackend,
-) (Service, error) {
+) (*ServiceImpl, error) {
 	systemInfo, err := client.GetBuilderSystemInfo(context.Background())
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to get builder system info")
@@ -57,7 +58,7 @@ func NewService(
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to convert into public key")
 	}
-	return &builderService{
+	return &ServiceImpl{
 		config:    config,
 		client:    client,
 		buildkit:  buildkit,
@@ -68,15 +69,15 @@ func NewService(
 	}, nil
 }
 
-func (s *builderService) destImage(app *domain.Application, build *domain.Build) string {
+func (s *ServiceImpl) destImage(app *domain.Application, build *domain.Build) string {
 	return s.imageConfig.ImageName(app.ID) + ":" + build.ID
 }
 
-func (s *builderService) tmpDestImage(app *domain.Application, build *domain.Build) string {
+func (s *ServiceImpl) tmpDestImage(app *domain.Application, build *domain.Build) string {
 	return s.imageConfig.TmpImageName(app.ID) + ":" + build.ID
 }
 
-func (s *builderService) Start(_ context.Context) error {
+func (s *ServiceImpl) Start(_ context.Context) error {
 	ctx, cancel := context.WithCancel(context.Background())
 	s.cancel = cancel
 
@@ -91,7 +92,7 @@ func (s *builderService) Start(_ context.Context) error {
 	return nil
 }
 
-func (s *builderService) Shutdown(_ context.Context) error {
+func (s *ServiceImpl) Shutdown(_ context.Context) error {
 	s.cancel()
 	s.statusLock.Lock()
 	defer s.statusLock.Unlock()
@@ -101,14 +102,14 @@ func (s *builderService) Shutdown(_ context.Context) error {
 	return nil
 }
 
-func (s *builderService) prune(ctx context.Context) {
+func (s *ServiceImpl) prune(ctx context.Context) {
 	err := s.buildkit.Prune(ctx, nil, buildkit.PruneAll)
 	if err != nil {
 		log.Errorf("failed to prune buildkit: %+v", err)
 	}
 }
 
-func (s *builderService) cancelBuild(buildID string) {
+func (s *ServiceImpl) cancelBuild(buildID string) {
 	s.statusLock.Lock()
 	defer s.statusLock.Unlock()
 
@@ -119,7 +120,7 @@ func (s *builderService) cancelBuild(buildID string) {
 	}
 }
 
-func (s *builderService) onRequest(req *pb.BuilderRequest) {
+func (s *ServiceImpl) onRequest(req *pb.BuilderRequest) {
 	switch req.Type {
 	case pb.BuilderRequest_START_BUILD:
 		b := req.Body.(*pb.BuilderRequest_StartBuild).StartBuild

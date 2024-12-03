@@ -17,6 +17,8 @@ import (
 	"github.com/traPtitech/neoshowcase/pkg/domain"
 	"github.com/traPtitech/neoshowcase/pkg/infrastructure/backend/dockerimpl"
 	"github.com/traPtitech/neoshowcase/pkg/infrastructure/backend/k8simpl"
+	ubuilder "github.com/traPtitech/neoshowcase/pkg/usecase/builder"
+	buildermock "github.com/traPtitech/neoshowcase/pkg/usecase/builder/mock"
 )
 
 func NewAuthDev(c Config) (component, error) {
@@ -28,9 +30,29 @@ func NewAuthDev(c Config) (component, error) {
 }
 
 func NewBuilder(c Config) (component, error) {
+	if c.Components.Builder.Mock {
+		return newMockBuilder(c)
+	} else {
+		return newBuilder(c)
+	}
+}
+
+func newBuilder(c Config) (component, error) {
 	wire.Build(
 		providers,
 		wire.FieldsOf(new(BuilderConfig), "Buildpack"),
+		wire.Bind(new(ubuilder.Service), new(*ubuilder.ServiceImpl)),
+		wire.Bind(new(component), new(*builder.Server)),
+		wire.Struct(new(builder.Server), "*"),
+	)
+	return nil, nil
+}
+
+func newMockBuilder(c Config) (component, error) {
+	wire.Build(
+		providers,
+		buildermock.NewBuilderServiceMock,
+		wire.Bind(new(ubuilder.Service), new(*buildermock.BuilderServiceMock)),
 		wire.Bind(new(component), new(*builder.Server)),
 		wire.Struct(new(builder.Server), "*"),
 	)

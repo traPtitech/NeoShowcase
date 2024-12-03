@@ -11,7 +11,7 @@ import (
 	"github.com/tonistiigi/fsutil"
 )
 
-func (s *builderService) buildStaticExtract(
+func (s *ServiceImpl) buildStaticExtract(
 	ctx context.Context,
 	st *state,
 	ch chan *buildkit.SolveStatus,
@@ -46,7 +46,7 @@ func (s *builderService) buildStaticExtract(
 	return err
 }
 
-func (s *builderService) buildStaticCleanup(
+func (s *ServiceImpl) buildStaticCleanup(
 	ctx context.Context,
 	st *state,
 ) error {

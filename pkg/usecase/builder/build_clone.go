@@ -14,7 +14,7 @@ import (
 	"github.com/traPtitech/neoshowcase/pkg/domain"
 )
 
-func (s *builderService) cloneRepository(ctx context.Context, st *state) error {
+func (s *ServiceImpl) cloneRepository(ctx context.Context, st *state) error {
 	repo, err := git.PlainInit(st.repositoryTempDir, false)
 	if err != nil {
 		return errors.Wrap(err, "failed to init repository")

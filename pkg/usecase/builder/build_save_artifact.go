@@ -12,7 +12,7 @@ import (
 	"github.com/traPtitech/neoshowcase/pkg/domain"
 )
 
-func (s *builderService) saveArtifact(ctx context.Context, st *state) error {
+func (s *ServiceImpl) saveArtifact(ctx context.Context, st *state) error {
 	// Open artifact
 	filename := st.artifactTempFile.Name()
 	stat, err := os.Stat(filename)

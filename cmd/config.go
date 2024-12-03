@@ -55,6 +55,7 @@ type BuilderConfig struct {
 	Controller  grpc.ControllerServiceClientConfig `mapstructure:"controller" yaml:"controller"`
 	Priority    int                                `mapstructure:"priority" yaml:"priority"`
 	StepTimeout string                             `mapstructure:"stepTimeout" yaml:"stepTimeout"`
+	Mock        bool                               `mapstructure:"mock" yaml:"mock"`
 }
 
 type ControllerConfig struct {

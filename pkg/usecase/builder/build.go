@@ -19,7 +19,7 @@ import (
 	"github.com/traPtitech/neoshowcase/pkg/util/cli"
 )
 
-func (s *builderService) startBuild(req *domain.StartBuildRequest) error {
+func (s *ServiceImpl) startBuild(req *domain.StartBuildRequest) error {
 	s.statusLock.Lock()
 	defer s.statusLock.Unlock()
 
@@ -67,7 +67,7 @@ type buildStep struct {
 	fn   func(ctx context.Context) error
 }
 
-func (s *builderService) buildSteps(st *state) ([]buildStep, error) {
+func (s *ServiceImpl) buildSteps(st *state) ([]buildStep, error) {
 	var steps []buildStep
 
 	steps = append(steps, buildStep{"Repository Clone", func(ctx context.Context) error {
@@ -147,7 +147,7 @@ func (s *builderService) buildSteps(st *state) ([]buildStep, error) {
 	return steps, nil
 }
 
-func (s *builderService) process(ctx context.Context, st *state) domain.BuildStatus {
+func (s *ServiceImpl) process(ctx context.Context, st *state) domain.BuildStatus {
 	ctx, cancel := context.WithCancel(ctx)
 	defer cancel()
 	go s.buildPingLoop(ctx, st.build.ID)
@@ -195,7 +195,7 @@ func (s *builderService) process(ctx context.Context, st *state) domain.BuildSta
 	return domain.BuildStatusSucceeded
 }
 
-func (s *builderService) buildPingLoop(ctx context.Context, buildID string) {
+func (s *ServiceImpl) buildPingLoop(ctx context.Context, buildID string) {
 	ticker := time.NewTicker(3 * time.Second)
 	defer ticker.Stop()
 	for {
@@ -211,7 +211,7 @@ func (s *builderService) buildPingLoop(ctx context.Context, buildID string) {
 	}
 }
 
-func (s *builderService) finalize(ctx context.Context, st *state, status domain.BuildStatus) {
+func (s *ServiceImpl) finalize(ctx context.Context, st *state, status domain.BuildStatus) {
 	err := s.client.SaveBuildLog(ctx, st.build.ID, st.logWriter.buf.Bytes())
 	if err != nil {
 		log.Errorf("failed to save build log: %+v", err)
@@ -231,7 +231,7 @@ func (s *builderService) finalize(ctx context.Context, st *state, status domain.
 	}
 }
 
-func (s *builderService) fetchImageSize(ctx context.Context, st *state) (int64, error) {
+func (s *ServiceImpl) fetchImageSize(ctx context.Context, st *state) (int64, error) {
 	r := s.imageConfig.NewRegistry()
 	ref, err := ref.New(s.destImage(st.app, st.build))
 	if err != nil {
