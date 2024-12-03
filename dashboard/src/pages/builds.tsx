@@ -1,3 +1,4 @@
+import { timestampDate } from '@bufbuild/protobuf/wkt'
 import { Title } from '@solidjs/meta'
 import { type Component, Show, createMemo, createResource } from 'solid-js'
 import { type Application, GetApplicationsRequest_Scope } from '../api/neoshowcase/protobuf/gateway_pb'
@@ -33,7 +34,10 @@ const builds: Component = () => {
     () =>
       builds()
         ?.sort((b1, b2) => {
-          return (b2.queuedAt?.toDate().getTime() ?? 0) - (b1.queuedAt?.toDate().getTime() ?? 0)
+          return (
+            (b2.queuedAt ? timestampDate(b2.queuedAt).getTime() : 0) -
+            (b1.queuedAt ? timestampDate(b1.queuedAt).getTime() : 0)
+          )
         })
         ?.map((b) => ({ build: b, app: appMap()[b.applicationId] })) ?? [],
   )
