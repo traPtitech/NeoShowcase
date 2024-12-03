@@ -1,4 +1,3 @@
-import type { PartialMessage } from '@bufbuild/protobuf'
 import { Field, FieldArray, Form, type SubmitHandler, getValues, insert, reset, setValues } from '@modular-forms/solid'
 import { type Component, For, Show, createEffect, onMount, untrack } from 'solid-js'
 import toast from 'solid-toast'
@@ -71,7 +70,10 @@ const WebsiteConfigForm: Component<Props> = (props) => {
         // undefinedを渡した場合、APIとしては 無更新 として扱われるため、空配列を渡す
         if (output.websites === undefined) {
           console.log('output.websites is undefined')
-          output.websites = [] as PartialMessage<UpdateApplicationRequest_UpdateWebsites>
+          output.websites = {
+            $typeName: 'neoshowcase.protobuf.UpdateApplicationRequest.UpdateWebsites',
+            websites: [],
+          } as UpdateApplicationRequest_UpdateWebsites
           console.log(output.websites)
         }
 
