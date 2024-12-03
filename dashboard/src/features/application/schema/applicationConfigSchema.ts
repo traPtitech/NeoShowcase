@@ -98,72 +98,105 @@ export const applicationConfigSchema = v.pipe(
       .returnType<ApplicationConfig>()
       .with([{ type: 'runtime' }, { type: 'buildpack' }], ([deployConfig, buildConfig]) => {
         return {
+          $typeName: 'neoshowcase.protobuf.ApplicationConfig',
           buildConfig: {
             case: 'runtimeBuildpack',
             value: {
+              $typeName: 'neoshowcase.protobuf.BuildConfigRuntimeBuildpack',
               ...buildConfig.value.buildpack,
-              runtimeConfig: deployConfig.value.runtime,
+              runtimeConfig: {
+                $typeName: 'neoshowcase.protobuf.RuntimeConfig',
+                ...deployConfig.value.runtime,
+              },
             },
           },
         }
       })
       .with([{ type: 'runtime' }, { type: 'cmd' }], ([deployConfig, buildConfig]) => {
         return {
+          $typeName: 'neoshowcase.protobuf.ApplicationConfig',
           buildConfig: {
             case: 'runtimeCmd',
             value: {
+              $typeName: 'neoshowcase.protobuf.BuildConfigRuntimeCmd',
               ...buildConfig.value.cmd,
-              runtimeConfig: deployConfig.value.runtime,
+              runtimeConfig: {
+                $typeName: 'neoshowcase.protobuf.RuntimeConfig',
+                ...deployConfig.value.runtime,
+              },
             },
           },
         }
       })
       .with([{ type: 'runtime' }, { type: 'dockerfile' }], ([deployConfig, buildConfig]) => {
         return {
+          $typeName: 'neoshowcase.protobuf.ApplicationConfig',
           buildConfig: {
             case: 'runtimeDockerfile',
             value: {
+              $typeName: 'neoshowcase.protobuf.BuildConfigRuntimeDockerfile',
               ...buildConfig.value.dockerfile,
-              runtimeConfig: deployConfig.value.runtime,
+              runtimeConfig: {
+                $typeName: 'neoshowcase.protobuf.RuntimeConfig',
+                ...deployConfig.value.runtime,
+              },
             },
           },
         }
       })
       .with([{ type: 'static' }, { type: 'buildpack' }], ([deployConfig, buildConfig]) => {
         return {
+          $typeName: 'neoshowcase.protobuf.ApplicationConfig',
           buildConfig: {
             case: 'staticBuildpack',
             value: {
+              $typeName: 'neoshowcase.protobuf.BuildConfigStaticBuildpack',
               ...buildConfig.value.buildpack,
-              staticConfig: deployConfig.value.static,
+              staticConfig: {
+                $typeName: 'neoshowcase.protobuf.StaticConfig',
+                ...deployConfig.value.static,
+              },
             },
           },
         }
       })
       .with([{ type: 'static' }, { type: 'cmd' }], ([deployConfig, buildConfig]) => {
         return {
+          $typeName: 'neoshowcase.protobuf.ApplicationConfig',
           buildConfig: {
             case: 'staticCmd',
             value: {
+              $typeName: 'neoshowcase.protobuf.BuildConfigStaticCmd',
               ...buildConfig.value.cmd,
-              staticConfig: deployConfig.value.static,
+              staticConfig: {
+                $typeName: 'neoshowcase.protobuf.StaticConfig',
+                ...deployConfig.value.static,
+              },
             },
           },
         }
       })
       .with([{ type: 'static' }, { type: 'dockerfile' }], ([deployConfig, buildConfig]) => {
         return {
+          $typeName: 'neoshowcase.protobuf.ApplicationConfig',
           buildConfig: {
             case: 'staticDockerfile',
             value: {
+              $typeName: 'neoshowcase.protobuf.BuildConfigStaticDockerfile',
               ...buildConfig.value.dockerfile,
-              staticConfig: deployConfig.value.static,
+              staticConfig: {
+                $typeName: 'neoshowcase.protobuf.StaticConfig',
+                ...deployConfig.value.static,
+              },
             },
           },
         }
       })
       .with(P.union([undefined, P._], [P._, undefined]), () => ({
-        buildConfig: undefined,
+        $typeName: 'neoshowcase.protobuf.ApplicationConfig',
+        buildConfig: {
+          case: undefined,
+        },
       }))
       .exhaustive()
   }),

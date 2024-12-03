@@ -49,7 +49,10 @@ const repositoryAuthSchema = v.pipe(
           $typeName: 'neoshowcase.protobuf.CreateRepositoryAuth',
           auth: {
             case: input.method,
-            value: { $typeName: 'neoshowcase.protobuf.CreateRepositoryAuthBasic', ...input.value.basic },
+            value: {
+              $typeName: 'neoshowcase.protobuf.CreateRepositoryAuthBasic',
+              ...input.value.basic,
+            },
           },
         }
       }
@@ -58,7 +61,10 @@ const repositoryAuthSchema = v.pipe(
           $typeName: 'neoshowcase.protobuf.CreateRepositoryAuth',
           auth: {
             case: input.method,
-            value: input.value.ssh,
+            value: {
+              $typeName: 'neoshowcase.protobuf.CreateRepositoryAuthSSH',
+              keyId: input.value.ssh.keyId ?? '',
+            },
           },
         }
       }
