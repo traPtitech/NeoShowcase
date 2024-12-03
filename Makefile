@@ -3,7 +3,7 @@ TBLS_VERSION := 1.75.0
 
 GO_REPO_ROOT_PACKAGE := "github.com/traPtitech/neoshowcase"
 PROTOC_OPTS := -I ./api/proto --go_out=. --go_opt=module=$(GO_REPO_ROOT_PACKAGE) --connect-go_out=. --connect-go_opt=module=$(GO_REPO_ROOT_PACKAGE)
-PROTOC_OPTS_CLIENT := -I ./api/proto --es_out=./dashboard/src/api --es_opt=target=ts --connect-es_out=./dashboard/src/api --connect-es_opt=target=ts
+PROTOC_OPTS_CLIENT := -I ./api/proto --es_out=./dashboard/src/api --es_opt=target=ts
 PROTOC_SOURCES ?= $(shell find ./api/proto/neoshowcase -type f -name "*.proto" -print)
 PROTOC_SOURCES_CLIENT := ./api/proto/neoshowcase/protobuf/gateway.proto ./api/proto/neoshowcase/protobuf/null.proto
 
@@ -40,7 +40,7 @@ init-protoc:
 init-protoc-tools:
 	go install google.golang.org/protobuf/cmd/protoc-gen-go@latest
 	go install connectrpc.com/connect/cmd/protoc-gen-connect-go@latest
-	npm i -g @connectrpc/protoc-gen-connect-es @bufbuild/protoc-gen-es@2
+	npm i -g @bufbuild/protoc-gen-es@2
 
 .PHONY: init
 init: init-k3d init-kustomize init-protoc init-protoc-tools ## Install / update required tools
