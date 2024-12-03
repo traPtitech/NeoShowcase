@@ -1,4 +1,4 @@
-PROTOC_VERSION := 27.1
+PROTOC_VERSION := 29.0
 TBLS_VERSION := 1.75.0
 
 GO_REPO_ROOT_PACKAGE := "github.com/traPtitech/neoshowcase"
@@ -40,7 +40,7 @@ init-protoc:
 init-protoc-tools:
 	go install google.golang.org/protobuf/cmd/protoc-gen-go@latest
 	go install connectrpc.com/connect/cmd/protoc-gen-connect-go@latest
-	npm i -g @connectrpc/protoc-gen-connect-es @bufbuild/protoc-gen-es@1
+	npm i -g @connectrpc/protoc-gen-connect-es @bufbuild/protoc-gen-es@2
 
 .PHONY: init
 init: init-k3d init-kustomize init-protoc init-protoc-tools ## Install / update required tools
