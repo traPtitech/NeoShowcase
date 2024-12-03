@@ -36,8 +36,8 @@
   },
   "dependencies": {
     "@bufbuild/protobuf": "2.2.2",
-    "@connectrpc/connect": "1.5.0",
-    "@connectrpc/connect-web": "1.5.0",
+    "@connectrpc/connect": "2.0.0",
+    "@connectrpc/connect-web": "2.0.0",
     "@kobalte/core": "0.13.6",
     "@modular-forms/solid": "0.23.0",
     "@solid-primitives/refs": "1.0.8",
