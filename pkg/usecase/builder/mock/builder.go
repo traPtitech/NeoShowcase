@@ -52,7 +52,7 @@ func (bs *BuilderServiceMock) onRequest(req *pb.BuilderRequest) {
 				},
 			},
 		}
-		bs.client.SaveBuildLog(context.Background(), b.Build.Id, []byte("skip build"))
+		bs.client.SaveBuildLog(context.Background(), b.Build.Id, []byte("Build skipped by admin"))
 	case pb.BuilderRequest_CANCEL_BUILD:
 		// no-op
 	default:
