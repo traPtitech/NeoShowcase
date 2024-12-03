@@ -105,10 +105,7 @@ export default () => {
     },
   })
 
-  const handleSubmit: SubmitHandler<{
-    publicKey: string
-    name: string
-  }> = async (values) => {
+  const handleSubmit: SubmitHandler<UserKeyRequestInput> = async (values) => {
     try {
       await client.createUserKey(values)
       toast.success('公開鍵を追加しました')
