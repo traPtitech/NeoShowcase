@@ -9,7 +9,7 @@ import (
 	"github.com/traPtitech/neoshowcase/pkg/domain"
 )
 
-func (s *builderService) buildRuntimeBuildpack(
+func (s *ServiceImpl) buildRuntimeBuildpack(
 	ctx context.Context,
 	st *state,
 	bc *domain.BuildConfigRuntimeBuildpack,
@@ -20,7 +20,7 @@ func (s *builderService) buildRuntimeBuildpack(
 	return err
 }
 
-func (s *builderService) buildStaticBuildpackPack(
+func (s *ServiceImpl) buildStaticBuildpackPack(
 	ctx context.Context,
 	st *state,
 	bc *domain.BuildConfigStaticBuildpack,
