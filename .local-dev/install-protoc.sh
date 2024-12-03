@@ -11,7 +11,12 @@ case $(uname -s) in
   "Darwin") OS="osx";;
   *) echo "unknown os" && exit 1;;
 esac
+
 ARCH=$(uname -m)
+
+if [ $ARCH = "arm64" ]; then
+  ARCH="aarch_64"
+fi
 
 curl -sSLOf https://github.com/protocolbuffers/protobuf/releases/download/v"$PROTOC_VERSION"/protoc-"$PROTOC_VERSION"-"$OS"-"$ARCH".zip
 unzip protoc-"$PROTOC_VERSION"-"$OS"-"$ARCH".zip
