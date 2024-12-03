@@ -1,4 +1,3 @@
-import type { PartialMessage } from '@bufbuild/protobuf'
 import { P, match } from 'ts-pattern'
 import * as v from 'valibot'
 import type { ApplicationConfig } from '/@/api/neoshowcase/protobuf/gateway_pb'
@@ -94,9 +93,9 @@ export const applicationConfigSchema = v.pipe(
     deployConfig: deployConfigSchema,
     buildConfig: buildConfigSchema,
   }),
-  v.transform((input): PartialMessage<ApplicationConfig> => {
+  v.transform((input): ApplicationConfig => {
     return match([input.deployConfig, input.buildConfig])
-      .returnType<PartialMessage<ApplicationConfig>>()
+      .returnType<ApplicationConfig>()
       .with([{ type: 'runtime' }, { type: 'buildpack' }], ([deployConfig, buildConfig]) => {
         return {
           buildConfig: {

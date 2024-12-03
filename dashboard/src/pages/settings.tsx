@@ -1,12 +1,16 @@
-import type { PlainMessage } from '@bufbuild/protobuf'
-import { Field, Form, type SubmitHandler, createFormStore, required, reset } from '@modular-forms/solid'
+import { create } from '@bufbuild/protobuf'
+import { Field, Form, type SubmitHandler, required, reset } from '@modular-forms/solid'
 import { Title } from '@solidjs/meta'
 import { type Component, For, Show, createResource } from 'solid-js'
 import toast from 'solid-toast'
 import { Button } from '/@/components/UI/Button'
 import { styled } from '/@/components/styled-components'
 import { client, handleAPIError } from '/@/libs/api'
-import type { CreateUserKeyRequest, DeleteUserKeyRequest, UserKey } from '../api/neoshowcase/protobuf/gateway_pb'
+import {
+  CreateUserKeyRequestSchema,
+  type DeleteUserKeyRequest,
+  type UserKey,
+} from '../api/neoshowcase/protobuf/gateway_pb'
 import ModalDeleteConfirm from '../components/UI/ModalDeleteConfirm'
 import { TextField } from '../components/UI/TextField'
 import { DataTable } from '../components/layouts/DataTable'
@@ -91,14 +95,15 @@ export default () => {
   const [userKeys, { refetch: refetchKeys }] = createResource(() => client.getUserKeys({}))
   const { Modal: AddNewKeyModal, open: newKeyOpen, close: newKeyClose } = useModal()
 
-  const formStore = createFormStore<PlainMessage<CreateUserKeyRequest>>({
-    initialValues: {
-      name: '',
-      publicKey: '',
-    },
+  const formStore = create(CreateUserKeyRequestSchema, {
+    name: '',
+    publicKey: '',
   })
 
-  const handleSubmit: SubmitHandler<PlainMessage<CreateUserKeyRequest>> = async (values) => {
+  const handleSubmit: SubmitHandler<{
+    publicKey: string
+    name: string
+  }> = async (values) => {
     try {
       await client.createUserKey(values)
       toast.success('公開鍵を追加しました')
