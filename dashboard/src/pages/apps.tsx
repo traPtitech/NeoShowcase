@@ -1,3 +1,4 @@
+import { timestampDate } from '@bufbuild/protobuf/wkt'
 import { Title } from '@solidjs/meta'
 import { A } from '@solidjs/router'
 import { createVirtualizer } from '@tanstack/solid-virtual'
@@ -49,7 +50,7 @@ interface RepoWithApp {
 }
 
 const newestAppDate = (apps: Application[]): number =>
-  Math.max(0, ...apps.map((a) => a.updatedAt?.toDate().getTime() ?? 0))
+  Math.max(0, ...apps.map((a) => (a.updatedAt ? timestampDate(a.updatedAt).getTime() : 0)))
 const compareRepoWithApp =
   (sort: 'asc' | 'desc') =>
   (a: RepoWithApp, b: RepoWithApp): number => {
