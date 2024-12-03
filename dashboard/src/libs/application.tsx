@@ -1,4 +1,3 @@
-import type { PlainMessage } from '@bufbuild/protobuf'
 import { AiFillGithub } from 'solid-icons/ai'
 import { RiDevelopmentGitRepositoryLine } from 'solid-icons/ri'
 import { SiGitea } from 'solid-icons/si'
@@ -103,7 +102,7 @@ export const originToIcon = (origin: RepositoryOrigin, size = 20): JSXElement =>
   }
 }
 
-export const getWebsiteURL = (website: PlainMessage<Website | CreateWebsiteRequest>): string => {
+export const getWebsiteURL = (website: Website | CreateWebsiteRequest): string => {
   const scheme = website.https ? 'https' : 'http'
   return `${scheme}://${website.fqdn}${website.pathPrefix}`
 }
