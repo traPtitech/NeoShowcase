@@ -1,16 +1,12 @@
-import { create } from '@bufbuild/protobuf'
-import { Field, Form, type SubmitHandler, required, reset } from '@modular-forms/solid'
+import { Field, Form, type SubmitHandler, createFormStore, required, reset, valiForm } from '@modular-forms/solid'
 import { Title } from '@solidjs/meta'
 import { type Component, For, Show, createResource } from 'solid-js'
 import toast from 'solid-toast'
+import * as v from 'valibot'
 import { Button } from '/@/components/UI/Button'
 import { styled } from '/@/components/styled-components'
 import { client, handleAPIError } from '/@/libs/api'
-import {
-  CreateUserKeyRequestSchema,
-  type DeleteUserKeyRequest,
-  type UserKey,
-} from '../api/neoshowcase/protobuf/gateway_pb'
+import type { DeleteUserKeyRequest, UserKey } from '../api/neoshowcase/protobuf/gateway_pb'
 import ModalDeleteConfirm from '../components/UI/ModalDeleteConfirm'
 import { TextField } from '../components/UI/TextField'
 import { DataTable } from '../components/layouts/DataTable'
@@ -91,13 +87,22 @@ const SshKeys: Component<{ keys: UserKey[]; refetchKeys: () => void }> = (props)
   )
 }
 
+const userKeyRequestSchema = v.object({
+  name: v.pipe(v.string(), v.nonEmpty('Enter Name')),
+  publicKey: v.pipe(v.string(), v.nonEmpty('Enter SSH Public Key')),
+})
+type UserKeyRequestInput = v.InferInput<typeof userKeyRequestSchema>
+
 export default () => {
   const [userKeys, { refetch: refetchKeys }] = createResource(() => client.getUserKeys({}))
   const { Modal: AddNewKeyModal, open: newKeyOpen, close: newKeyClose } = useModal()
 
-  const formStore = create(CreateUserKeyRequestSchema, {
-    name: '',
-    publicKey: '',
+  const formStore = createFormStore<UserKeyRequestInput>({
+    validate: valiForm(userKeyRequestSchema),
+    initialValues: {
+      name: '',
+      publicKey: '',
+    },
   })
 
   const handleSubmit: SubmitHandler<{
@@ -172,12 +177,12 @@ export default () => {
           <AddNewKeyModal.Header>Add New SSH Key</AddNewKeyModal.Header>
           <AddNewKeyModal.Body>
             <div class="flex w-full flex-col gap-2">
-              <Field of={formStore} name="name" validate={[required('Enter Name')]}>
+              <Field of={formStore} name="name">
                 {(field, fieldProps) => (
                   <TextField label="Name" required {...fieldProps} value={field.value} error={field.error} />
                 )}
               </Field>
-              <Field of={formStore} name="publicKey" validate={[required('Enter SSH Public Key')]}>
+              <Field of={formStore} name="publicKey">
                 {(field, fieldProps) => (
                   <TextField
                     label="Key"
