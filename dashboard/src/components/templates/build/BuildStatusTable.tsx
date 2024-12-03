@@ -1,4 +1,4 @@
-import type { Timestamp } from '@bufbuild/protobuf'
+import { type Timestamp, timestampDate } from '@bufbuild/protobuf/wkt'
 import { useNavigate } from '@solidjs/router'
 import { type Component, For, Show } from 'solid-js'
 import toast from 'solid-toast'
@@ -61,8 +61,8 @@ const BuildStatusTable: Component<{
       return shortSha(props.build.commit)
     }
 
-    const diff = diffHuman(c.commitDate.toDate())
-    const localeString = c.commitDate.toDate().toLocaleString()
+    const diff = diffHuman(timestampDate(c.commitDate))
+    const localeString = timestampDate(c.commitDate).toLocaleString()
     return (
       <div class="flex flex-col">
         <For each={c.message.split('\n')}>{(line) => <div>{line}</div>}</For>
@@ -115,8 +115,8 @@ const BuildStatusTable: Component<{
       <List.Columns>
         <Show when={props.build.queuedAt}>
           {(nonNullQueuedAt) => {
-            const diff = diffHuman(nonNullQueuedAt().toDate())
-            const localeString = nonNullQueuedAt().toDate().toLocaleString()
+            const diff = diffHuman(timestampDate(nonNullQueuedAt()))
+            const localeString = timestampDate(nonNullQueuedAt()).toLocaleString()
             return (
               <List.Row>
                 <List.RowContent>
@@ -131,7 +131,7 @@ const BuildStatusTable: Component<{
         </Show>
         <Show when={props.build.startedAt?.valid && props.build.startedAt} fallback={'-'}>
           {(nonNullStartedAt) => {
-            const ts = (nonNullStartedAt().timestamp as Timestamp).toDate()
+            const ts = timestampDate(nonNullStartedAt().timestamp as Timestamp)
             const diff = diffHuman(ts)
             const localeString = ts.toLocaleString()
             return (
@@ -153,7 +153,7 @@ const BuildStatusTable: Component<{
             <List.RowTitle>ビルド終了時刻</List.RowTitle>
             <Show when={props.build.finishedAt?.valid && props.build.finishedAt} fallback={'-'}>
               {(nonNullFinishedAt) => {
-                const ts = (nonNullFinishedAt().timestamp as Timestamp).toDate()
+                const ts = timestampDate(nonNullFinishedAt().timestamp as Timestamp)
                 const diff = diffHuman(ts)
                 const localeString = ts.toLocaleString()
                 return (
@@ -171,8 +171,8 @@ const BuildStatusTable: Component<{
             <Show when={props.build.finishedAt?.valid && props.build.startedAt?.valid} fallback={'-'}>
               <List.RowData>
                 {durationHuman(
-                  props.build.finishedAt!.timestamp!.toDate().getTime() -
-                    props.build.startedAt!.timestamp!.toDate().getTime(),
+                  timestampDate(props.build.finishedAt!.timestamp!).getTime() -
+                    timestampDate(props.build.startedAt!.timestamp!).getTime(),
                 )}
               </List.RowData>
             </Show>

@@ -1,4 +1,5 @@
-import { Timestamp } from '@bufbuild/protobuf'
+import { fromJsonString, toJsonString } from '@bufbuild/protobuf'
+import { type Timestamp, TimestampSchema } from '@bufbuild/protobuf/wkt'
 import { type Component, Show, createSignal } from 'solid-js'
 import toast from 'solid-toast'
 import type { Application, ApplicationOutput } from '/@/api/neoshowcase/protobuf/gateway_pb'
@@ -25,11 +26,11 @@ const getLogsBefore = async (
   setProgressMessage: (message: string) => void,
 ): Promise<ApplicationOutput[]> => {
   let remainingLines = lines
-  const firstBefore = Timestamp.fromJson(before)
+  const firstBefore: Timestamp = fromJsonString(TimestampSchema, before)
   let nextBefore = firstBefore
   let logLines: ApplicationOutput[] = []
   while (remainingLines > 0 && firstBefore.seconds - nextBefore.seconds < days * secondsPerDay) {
-    const msg = `${nextBefore.toJson()} より前のログを取得中、残り ${remainingLines} 行 ...`
+    const msg = `${toJsonString(TimestampSchema, nextBefore)} より前のログを取得中、残り ${remainingLines} 行 ...`
     setProgressMessage(msg)
     console.log(msg)
 
@@ -57,11 +58,13 @@ type exportType = 'txt' | 'json'
 const formatLogLines = (logLines: ApplicationOutput[], type: exportType): string => {
   switch (type) {
     case 'txt':
-      return logLines.map((line) => `${line.time?.toJson()} ${line.log}`).join('\n')
+      return logLines
+        .map((line) => `${line.time ? toJsonString(TimestampSchema, line.time) : undefined} ${line.log}`)
+        .join('\n')
     case 'json':
       return JSON.stringify(
         logLines.map((line) => ({
-          time: line.time?.toJson(),
+          time: line.time ? toJsonString(TimestampSchema, line.time) : undefined,
           log: line.log,
         })),
       )
@@ -117,7 +120,7 @@ const exportBefore = async (
     return
   }
   try {
-    Timestamp.fromJson(beforeStr)
+    fromJsonString(TimestampSchema, beforeStr)
   } catch (e) {
     toast.error('日付フォーマットが正しくありません')
     return
@@ -136,7 +139,10 @@ interface Props {
 }
 
 export const ContainerLogExport: Component<Props> = (props) => {
-  const { Modal, open: openModal } = useModal({ showCloseButton: true, closeOnClickOutside: true })
+  const { Modal, open: openModal } = useModal({
+    showCloseButton: true,
+    closeOnClickOutside: true,
+  })
 
   const { app } = useApplicationData()
   const [exporting, setExporting] = createSignal(false)
