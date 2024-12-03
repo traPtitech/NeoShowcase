@@ -1,4 +1,4 @@
-import type { Timestamp } from '@bufbuild/protobuf'
+import type { Timestamp } from '@bufbuild/protobuf/wkt'
 import { createSignal } from 'solid-js'
 
 export const shortSha = (sha1: string): string => sha1.substring(0, 7)
