@@ -7,8 +7,8 @@ require (
 	connectrpc.com/connect v1.17.0
 	github.com/aws/aws-sdk-go v1.55.5
 	github.com/cert-manager/cert-manager v1.16.2
-	github.com/docker/cli v27.4.0-rc.2+incompatible
-	github.com/docker/docker v27.4.0-rc.2+incompatible // should be in sync with requirements of github.com/moby/buildkit or build could break
+	github.com/docker/cli v27.3.1+incompatible
+	github.com/docker/docker v27.3.1+incompatible // should be in sync with requirements of github.com/moby/buildkit or build could break
 	github.com/docker/go-connections v0.5.0
 	github.com/friendsofgo/errors v0.9.2
 	github.com/gliderlabs/ssh v0.3.7
@@ -20,7 +20,7 @@ require (
 	github.com/google/wire v0.6.0
 	github.com/labstack/echo/v4 v4.12.0
 	github.com/lukesampson/figlet v0.0.0-20190211215653-8a3ef4a6ac42
-	github.com/moby/buildkit v0.18.0
+	github.com/moby/buildkit v0.17.3
 	github.com/motoki317/sc v1.8.1
 	github.com/ncw/swift v1.0.53
 	github.com/pkg/errors v0.9.1
