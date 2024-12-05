@@ -1,4 +1,4 @@
-import { Field, Form, type SubmitHandler, createFormStore, required, reset, valiForm } from '@modular-forms/solid'
+import { Field, Form, type SubmitHandler, createFormStore, reset, valiForm } from '@modular-forms/solid'
 import { Title } from '@solidjs/meta'
 import { type Component, For, Show, createResource } from 'solid-js'
 import toast from 'solid-toast'
