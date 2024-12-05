@@ -1,4 +1,4 @@
-import { Timestamp } from '@bufbuild/protobuf'
+import { type Timestamp, timestampDate, timestampNow } from '@bufbuild/protobuf/wkt'
 import { Code, ConnectError } from '@connectrpc/connect'
 import { type Component, For, Show, createEffect, createSignal, onCleanup } from 'solid-js'
 import type { ApplicationOutput } from '/@/api/neoshowcase/protobuf/gateway_pb'
@@ -22,12 +22,16 @@ const stripLogLines = (logs: ApplicationOutput[]): ApplicationOutput[] => {
 }
 
 const loadLogChunk = async (appID: string, before: Timestamp, limit: number): Promise<ApplicationOutput[]> => {
-  const res = await client.getOutput({ applicationId: appID, before: before, limit: limit })
+  const res = await client.getOutput({
+    applicationId: appID,
+    before: before,
+    limit: limit,
+  })
   return res.outputs
 }
 
 const oldestTimestamp = (ts: ApplicationOutput[]): Timestamp =>
-  ts.reduce((acc, t) => (t.time ? minTimestamp(acc, t.time) : acc), Timestamp.now())
+  ts.reduce((acc, t) => (t.time ? minTimestamp(acc, t.time) : acc), timestampNow())
 const sortByTimestamp = (ts: ApplicationOutput[]) =>
   ts.sort((a, b) => (a.time && b.time ? (lessTimestamp(a.time, b.time) ? -1 : 1) : 0))
 
@@ -39,12 +43,12 @@ export const ContainerLog: Component<ContainerLogProps> = (props) => {
   // TODO: show timestamps toggle button?
   const [showTimestamps] = createSignal(true)
 
-  const componentLoadTime = Timestamp.now()
+  const componentLoadTime = timestampNow()
   const [loadedUntil, setLoadedUntil] = createSignal(componentLoadTime)
   const [logs, setLogs] = createSignal<ApplicationOutput[]>([])
 
   const loadDisabled = () =>
-    Timestamp.now().seconds - loadedUntil().seconds >= loadLimitSeconds || logs().length >= logLinesLimit
+    timestampNow().seconds - loadedUntil().seconds >= loadLimitSeconds || logs().length >= logLinesLimit
   const [loading, setLoading] = createSignal(false)
   const load = async () => {
     setLoading(true)
@@ -112,7 +116,7 @@ export const ContainerLog: Component<ContainerLogProps> = (props) => {
       <ContainerLogExport currentLogs={logs()} />
       <LogContainer ref={logRef!} overflowX="scroll" onScroll={onScroll}>
         <div class="mb-1.5 flex items-center gap-2">
-          Loaded until {loadedUntil().toDate().toLocaleString()}
+          Loaded until {timestampDate(loadedUntil()).toLocaleString()}
           <Show when={!loadDisabled()} fallback={<span>(reached load limit)</span>}>
             <Button variants="ghost" size="small" onClick={load} disabled={loading()}>
               {loading() ? 'Loading...' : 'Load more'}
@@ -126,5 +130,7 @@ export const ContainerLog: Component<ContainerLogProps> = (props) => {
 }
 
 const formatLogLine = (log: ApplicationOutput, withTimestamp: boolean): string => {
-  return (withTimestamp ? `${log.time?.toDate().toLocaleString()} ` : '') + toWithAnsi(log.log)
+  return (
+    (withTimestamp ? `${log.time ? timestampDate(log.time).toLocaleString() : undefined} ` : '') + toWithAnsi(log.log)
+  )
 }

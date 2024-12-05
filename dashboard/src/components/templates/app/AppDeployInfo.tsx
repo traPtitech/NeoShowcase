@@ -1,3 +1,4 @@
+import { timestampDate } from '@bufbuild/protobuf/wkt'
 import { type Component, For, Show } from 'solid-js'
 import toast from 'solid-toast'
 import { type Application, type Build, DeployType, type Repository } from '/@/api/neoshowcase/protobuf/gateway_pb'
@@ -50,7 +51,7 @@ const AppDeployInfo: Component<{
     }
 
     const firstLine = c.message.split('\n')[0]
-    const diff = diffHuman(c.commitDate.toDate())
+    const diff = diffHuman(timestampDate(c.commitDate))
     const tooltip = (
       <div class="flex flex-col">
         <For each={c.message.split('\n')}>{(line) => <div>{line}</div>}</For>

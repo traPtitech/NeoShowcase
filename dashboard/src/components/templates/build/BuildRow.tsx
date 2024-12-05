@@ -1,3 +1,4 @@
+import { timestampDate } from '@bufbuild/protobuf/wkt'
 import { A } from '@solidjs/router'
 import { type Component, Show } from 'solid-js'
 import type { Application, Build } from '/@/api/neoshowcase/protobuf/gateway_pb'
@@ -24,8 +25,8 @@ export const BuildRow: Component<Props> = (props) => {
   const commitDetails = () => {
     const c = commit()
     if (!c || !c.commitDate) return '<no info>'
-    const diff = diffHuman(c.commitDate.toDate())
-    const localeString = c.commitDate.toDate().toLocaleString()
+    const diff = diffHuman(timestampDate(c.commitDate))
+    const localeString = timestampDate(c.commitDate).toLocaleString()
     return (
       <>
         {c.authorName}
@@ -53,8 +54,8 @@ export const BuildRow: Component<Props> = (props) => {
           <div class="grow-1" />
           <Show when={props.build.queuedAt}>
             {(nonNullQueuedAt) => {
-              const diff = diffHuman(nonNullQueuedAt().toDate())
-              const localeString = nonNullQueuedAt().toDate().toLocaleString()
+              const diff = diffHuman(timestampDate(nonNullQueuedAt()))
+              const localeString = timestampDate(nonNullQueuedAt()).toLocaleString()
               return (
                 <ToolTip props={{ content: localeString }}>
                   <div class="caption-regular shrink-0 text-text-grey">{diff()}</div>

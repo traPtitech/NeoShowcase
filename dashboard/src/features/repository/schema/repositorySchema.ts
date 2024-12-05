@@ -1,4 +1,3 @@
-import type { PartialMessage } from '@bufbuild/protobuf'
 import * as v from 'valibot'
 import {
   type CreateRepositoryAuth,
@@ -34,29 +33,38 @@ const repositoryAuthSchema = v.pipe(
       }),
     }),
   ]),
-  v.transform((input): PartialMessage<CreateRepositoryAuth> => {
+  v.transform((input): CreateRepositoryAuth => {
     switch (input.method) {
       case 'none': {
         return {
+          $typeName: 'neoshowcase.protobuf.CreateRepositoryAuth',
           auth: {
             case: input.method,
-            value: {},
+            value: { $typeName: 'google.protobuf.Empty' },
           },
         }
       }
       case 'basic': {
         return {
+          $typeName: 'neoshowcase.protobuf.CreateRepositoryAuth',
           auth: {
             case: input.method,
-            value: input.value.basic,
+            value: {
+              $typeName: 'neoshowcase.protobuf.CreateRepositoryAuthBasic',
+              ...input.value.basic,
+            },
           },
         }
       }
       case 'ssh': {
         return {
+          $typeName: 'neoshowcase.protobuf.CreateRepositoryAuth',
           auth: {
             case: input.method,
-            value: input.value.ssh,
+            value: {
+              $typeName: 'neoshowcase.protobuf.CreateRepositoryAuthSSH',
+              keyId: input.value.ssh.keyId ?? '',
+            },
           },
         }
       }
@@ -85,7 +93,8 @@ const createRepositorySchema = v.pipe(
     ['url'],
   ),
   v.transform(
-    (input): PartialMessage<CreateRepositoryRequest> => ({
+    (input): CreateRepositoryRequest => ({
+      $typeName: 'neoshowcase.protobuf.CreateRepositoryRequest',
       name: input.name,
       url: input.url,
       auth: input.auth,
@@ -111,7 +120,8 @@ export const getInitialValueOfCreateRepoForm = (): CreateOrUpdateRepositoryInput
 const ownersSchema = v.pipe(
   v.array(v.string()),
   v.transform(
-    (input): PartialMessage<UpdateRepositoryRequest_UpdateOwners> => ({
+    (input): UpdateRepositoryRequest_UpdateOwners => ({
+      $typeName: 'neoshowcase.protobuf.UpdateRepositoryRequest.UpdateOwners',
       ownerIds: input,
     }),
   ),
@@ -140,7 +150,8 @@ export const updateRepositorySchema = v.pipe(
     ['url'],
   ),
   v.transform(
-    (input): PartialMessage<UpdateRepositoryRequest> => ({
+    (input): UpdateRepositoryRequest => ({
+      $typeName: 'neoshowcase.protobuf.UpdateRepositoryRequest',
       id: input.id,
       name: input.name,
       url: input.url,

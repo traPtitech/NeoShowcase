@@ -1,4 +1,3 @@
-import type { PartialMessage } from '@bufbuild/protobuf'
 import { match } from 'ts-pattern'
 import * as v from 'valibot'
 import {
@@ -51,7 +50,7 @@ export const createWebsiteSchema = v.pipe(
     ),
     ['subdomain'],
   ),
-  v.transform((input): PartialMessage<CreateWebsiteRequest> => {
+  v.transform((input): CreateWebsiteRequest => {
     // wildcard domainならsubdomainとdomainを結合
     const fqdn = input.domain.startsWith('*')
       ? `${input.subdomain}${input.domain.replace(/\*/g, '')}`
@@ -59,6 +58,7 @@ export const createWebsiteSchema = v.pipe(
         input.domain
 
     return {
+      $typeName: 'neoshowcase.protobuf.CreateWebsiteRequest',
       fqdn,
       authentication: input.authentication,
       h2c: input.h2c,

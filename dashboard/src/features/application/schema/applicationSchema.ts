@@ -1,4 +1,3 @@
-import type { PartialMessage } from '@bufbuild/protobuf'
 import * as v from 'valibot'
 import type {
   Application,
@@ -22,7 +21,18 @@ const createApplicationSchema = v.pipe(
     portPublications: v.optional(v.array(portPublicationSchema)),
     startOnCreate: v.boolean(),
   }),
-  v.transform((input): PartialMessage<CreateApplicationRequest> => input),
+  v.transform((input): CreateApplicationRequest => {
+    return {
+      $typeName: 'neoshowcase.protobuf.CreateApplicationRequest',
+      name: input.name,
+      repositoryId: input.repositoryId,
+      refName: input.refName,
+      config: input.config,
+      websites: input.websites ?? [],
+      portPublications: input.portPublications ?? [],
+      startOnCreate: input.startOnCreate,
+    }
+  }),
 )
 
 type CreateApplicationOutput = v.InferOutput<typeof createApplicationSchema>
@@ -45,7 +55,8 @@ export const getInitialValueOfCreateAppForm = (): CreateOrUpdateApplicationInput
 const ownersSchema = v.pipe(
   v.array(v.string()),
   v.transform(
-    (input): PartialMessage<UpdateApplicationRequest_UpdateOwners> => ({
+    (input): UpdateApplicationRequest_UpdateOwners => ({
+      $typeName: 'neoshowcase.protobuf.UpdateApplicationRequest.UpdateOwners',
       ownerIds: input,
     }),
   ),
@@ -64,7 +75,8 @@ export const updateApplicationSchema = v.pipe(
     startOnCreate: v.optional(v.boolean()),
   }),
   v.transform(
-    (input): PartialMessage<UpdateApplicationRequest> => ({
+    (input): UpdateApplicationRequest => ({
+      $typeName: 'neoshowcase.protobuf.UpdateApplicationRequest',
       id: input.id,
       name: input.name,
       repositoryId: input.repositoryId,
@@ -72,10 +84,16 @@ export const updateApplicationSchema = v.pipe(
       config: input.config,
       websites: input.websites
         ? {
+            $typeName: 'neoshowcase.protobuf.UpdateApplicationRequest.UpdateWebsites',
             websites: input.websites,
           }
         : undefined,
-      portPublications: input.portPublications ? { portPublications: input.portPublications } : undefined,
+      portPublications: input.portPublications
+        ? {
+            $typeName: 'neoshowcase.protobuf.UpdateApplicationRequest.UpdatePorts',
+            portPublications: input.portPublications,
+          }
+        : undefined,
       ownerIds: input.ownerIds,
     }),
   ),

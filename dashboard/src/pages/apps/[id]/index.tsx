@@ -1,3 +1,4 @@
+import { timestampDate } from '@bufbuild/protobuf/wkt'
 import { type Component, For, Show, createSignal, onCleanup, useTransition } from 'solid-js'
 import toast from 'solid-toast'
 import { type Application, DeployType } from '/@/api/neoshowcase/protobuf/gateway_pb'
@@ -63,7 +64,10 @@ export default () => {
 
   const sortedBuilds = () =>
     builds()?.sort((b1, b2) => {
-      return (b2.queuedAt?.toDate().getTime() ?? 0) - (b1.queuedAt?.toDate().getTime() ?? 0)
+      return (
+        (b2.queuedAt ? timestampDate(b2.queuedAt).getTime() : 0) -
+        (b1.queuedAt ? timestampDate(b1.queuedAt).getTime() : 0)
+      )
     })
   const deployedBuild = () => sortedBuilds()?.find((b) => b.id === app()?.currentBuild)
   const latestBuild = () => sortedBuilds()?.[0]

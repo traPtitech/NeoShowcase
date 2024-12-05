@@ -1,3 +1,4 @@
+import { timestampDate } from '@bufbuild/protobuf/wkt'
 import { A } from '@solidjs/router'
 import { BiRegularPencil } from 'solid-icons/bi'
 import { type Component, Show } from 'solid-js'
@@ -16,8 +17,8 @@ export const AppNav: Component<{
       <BiRegularPencil />
       <Show when={props.app.updatedAt}>
         {(nonNullUpdatedAt) => {
-          const diff = diffHuman(nonNullUpdatedAt().toDate())
-          const localeString = nonNullUpdatedAt().toDate().toLocaleString()
+          const diff = diffHuman(timestampDate(nonNullUpdatedAt()))
+          const localeString = timestampDate(nonNullUpdatedAt()).toLocaleString()
           return (
             <ToolTip props={{ content: `App Last Edited: ${localeString}` }}>
               <div>{diff()}</div>

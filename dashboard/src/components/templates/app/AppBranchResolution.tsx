@@ -1,3 +1,4 @@
+import { timestampDate } from '@bufbuild/protobuf/wkt'
 import { AiOutlineBranches } from 'solid-icons/ai'
 import { type Component, For, Show } from 'solid-js'
 import type { Application } from '/@/api/neoshowcase/protobuf/gateway_pb'
@@ -37,8 +38,8 @@ const AppBranchResolution: Component<{
       return base
     }
 
-    const diff = diffHuman(c.commitDate.toDate())
-    const localeString = c.commitDate.toDate().toLocaleString()
+    const diff = diffHuman(timestampDate(c.commitDate))
+    const localeString = timestampDate(c.commitDate).toLocaleString()
     return (
       <div class="flex w-full flex-col gap-1">
         {base}

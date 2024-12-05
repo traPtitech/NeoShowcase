@@ -1,4 +1,3 @@
-import type { PartialMessage } from '@bufbuild/protobuf'
 import { match } from 'ts-pattern'
 import * as v from 'valibot'
 import { type PortPublication, PortPublicationProtocol } from '/@/api/neoshowcase/protobuf/gateway_pb'
@@ -30,7 +29,9 @@ export const portPublicationSchema = v.pipe(
     applicationPort: v.pipe(v.number(), v.integer()),
     protocol: protocolSchema,
   }),
-  v.transform((input): PartialMessage<PortPublication> => input),
+  v.transform((input): PortPublication => {
+    return { $typeName: 'neoshowcase.protobuf.PortPublication', ...input }
+  }),
   v.forward(
     v.partialCheck(
       [['internetPort'], ['protocol']],
