@@ -93,7 +93,7 @@ func dockerignoreExists(dir string) bool {
 	return err == nil && !info.IsDir()
 }
 
-func (s *builderService) authSessions() []session.Attachable {
+func (s *ServiceImpl) authSessions() []session.Attachable {
 	if s.imageConfig.Registry.Username == "" && s.imageConfig.Registry.Password == "" {
 		return nil
 	}
@@ -107,7 +107,7 @@ func (s *builderService) authSessions() []session.Attachable {
 	}, nil)}
 }
 
-func (s *builderService) solveDockerfile(
+func (s *ServiceImpl) solveDockerfile(
 	ctx context.Context,
 	dest string,
 	contextDir string,
@@ -161,7 +161,7 @@ func (s *builderService) solveDockerfile(
 	return err
 }
 
-func (s *builderService) buildRuntimeCmd(
+func (s *ServiceImpl) buildRuntimeCmd(
 	ctx context.Context,
 	st *state,
 	ch chan *buildkit.SolveStatus,
@@ -222,7 +222,7 @@ func (s *builderService) buildRuntimeCmd(
 	)
 }
 
-func (s *builderService) buildRuntimeDockerfile(
+func (s *ServiceImpl) buildRuntimeDockerfile(
 	ctx context.Context,
 	st *state,
 	ch chan *buildkit.SolveStatus,
@@ -240,7 +240,7 @@ func (s *builderService) buildRuntimeDockerfile(
 	)
 }
 
-func (s *builderService) buildStaticCmd(
+func (s *ServiceImpl) buildStaticCmd(
 	ctx context.Context,
 	st *state,
 	ch chan *buildkit.SolveStatus,
@@ -302,7 +302,7 @@ func (s *builderService) buildStaticCmd(
 	)
 }
 
-func (s *builderService) buildStaticDockerfile(
+func (s *ServiceImpl) buildStaticDockerfile(
 	ctx context.Context,
 	st *state,
 	ch chan *buildkit.SolveStatus,

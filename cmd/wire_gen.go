@@ -25,6 +25,7 @@ import (
 	"github.com/traPtitech/neoshowcase/pkg/infrastructure/webhook"
 	"github.com/traPtitech/neoshowcase/pkg/usecase/apiserver"
 	"github.com/traPtitech/neoshowcase/pkg/usecase/builder"
+	"github.com/traPtitech/neoshowcase/pkg/usecase/builder/mock"
 	"github.com/traPtitech/neoshowcase/pkg/usecase/cdservice"
 	"github.com/traPtitech/neoshowcase/pkg/usecase/cleaner"
 	"github.com/traPtitech/neoshowcase/pkg/usecase/commit-fetcher"
@@ -51,7 +52,7 @@ func NewAuthDev(c Config) (component, error) {
 	return server, nil
 }
 
-func NewBuilder(c Config) (component, error) {
+func newBuilder(c Config) (component, error) {
 	client, err := provideBuildkitClient(c)
 	if err != nil {
 		return nil, err
@@ -70,13 +71,31 @@ func NewBuilder(c Config) (component, error) {
 	buildpackConfig := mainBuilderConfig.Buildpack
 	buildpackHelperServiceClient := provideBuildpackHelperClient(c)
 	buildpackBackend := buildpack.NewBuildpackBackend(buildpackConfig, buildpackHelperServiceClient)
-	service, err := builder.NewService(builderConfig, controllerBuilderServiceClient, client, buildpackBackend)
+	serviceImpl, err := builder.NewService(builderConfig, controllerBuilderServiceClient, client, buildpackBackend)
 	if err != nil {
 		return nil, err
 	}
 	server := &builder2.Server{
 		Buildkit: client,
-		Builder:  service,
+		Builder:  serviceImpl,
+	}
+	return server, nil
+}
+
+func newMockBuilder(c Config) (component, error) {
+	client, err := provideBuildkitClient(c)
+	if err != nil {
+		return nil, err
+	}
+	tokenAuthInterceptor, err := provideTokenAuthInterceptor(c)
+	if err != nil {
+		return nil, err
+	}
+	controllerBuilderServiceClient := provideControllerBuilderServiceClient(c, tokenAuthInterceptor)
+	builderServiceMock := mock.NewBuilderServiceMock(controllerBuilderServiceClient)
+	server := &builder2.Server{
+		Buildkit: client,
+		Builder:  builderServiceMock,
 	}
 	return server, nil
 }
@@ -404,6 +423,14 @@ func NewSSGen(c Config) (component, error) {
 }
 
 // wire.go:
+
+func NewBuilder(c Config) (component, error) {
+	if c.Components.Builder.Mock {
+		return newMockBuilder(c)
+	} else {
+		return newBuilder(c)
+	}
+}
 
 func NewController(c Config) (component, error) {
 	switch c.Components.Controller.Mode {

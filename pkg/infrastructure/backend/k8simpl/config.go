@@ -173,7 +173,7 @@ type Config struct {
 	Routing struct {
 		// Type defines which ingress controller to use.
 		// Possible values:
-		// 	"traefik: Uses traefik ingress controller.
+		// 	"traefik": Uses traefik ingress controller.
 		Type    string `mapstructure:"type" yaml:"type"`
 		Traefik struct {
 			// PriorityOffset defines HTTP routes' priority offset for user apps.
@@ -190,6 +190,26 @@ type Config struct {
 		// Allowed values: "", "SingleStack", "PreferDualStack", "RequireDualStack"
 		IPFamilyPolicy v1.IPFamilyPolicy `mapstructure:"ipFamilyPolicy" yaml:"ipFamilyPolicy"`
 	} `mapstructure:"service" yaml:"service"`
+
+	// Middleware section defines middleware settings.
+	Middleware struct {
+		// Sablier (https://github.com/acouvreur/sablier) starts user apps on demand and shuts them down after a certain time.
+		Sablier struct {
+			Enable     bool   `mapstructure:"enable" yaml:"enable"`
+			SablierURL string `mapstructure:"url" yaml:"url"`
+			// SessionDuration defines how long the session should last.
+			//
+			// Example: "10m"
+			SessionDuration string `mapstructure:"sessionDuration" yaml:"sessionDuration"`
+			Dynamic         struct {
+				Theme string `mapstructure:"theme" yaml:"theme"`
+			} `mapstructure:"dynamic" yaml:"dynamic"`
+			Blocking struct {
+				// Timeout defines how long the blocking should last.
+				Timeout string `mapstructure:"timeout" yaml:"timeout"`
+			} `mapstructure:"blocking" yaml:"blocking"`
+		} `mapstructure:"sablier" yaml:"sablier"`
+	}
 	// TLS section defines tls setting for user app ingress.
 	TLS struct {
 		// Type defines which provider is responsible for obtaining http certificates.
