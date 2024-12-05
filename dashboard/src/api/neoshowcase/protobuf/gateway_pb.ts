@@ -13,112 +13,8 @@ import type { Message } from "@bufbuild/protobuf";
 /**
  * Describes the file neoshowcase/protobuf/gateway.proto.
  */
-export enum DeployType {
-  /**
-   * @generated from enum value: RUNTIME = 0;
-   */
-  RUNTIME = 0,
-
-  /**
-   * @generated from enum value: STATIC = 1;
-   */
-  STATIC = 1,
-}
-// Retrieve enum metadata with: proto3.getEnumType(DeployType)
-proto3.util.setEnumType(DeployType, "neoshowcase.protobuf.DeployType", [
-  { no: 0, name: "RUNTIME" },
-  { no: 1, name: "STATIC" },
-]);
-
-/**
- * @generated from enum neoshowcase.protobuf.AuthenticationType
- */
-export enum AuthenticationType {
-  /**
-   * @generated from enum value: OFF = 0;
-   */
-  OFF = 0,
-
-  /**
-   * @generated from enum value: SOFT = 1;
-   */
-  SOFT = 1,
-
-  /**
-   * @generated from enum value: HARD = 2;
-   */
-  HARD = 2,
-}
-// Retrieve enum metadata with: proto3.getEnumType(AuthenticationType)
-proto3.util.setEnumType(AuthenticationType, "neoshowcase.protobuf.AuthenticationType", [
-  { no: 0, name: "OFF" },
-  { no: 1, name: "SOFT" },
-  { no: 2, name: "HARD" },
-]);
-
-/**
- * @generated from enum neoshowcase.protobuf.PortPublicationProtocol
- */
-export enum PortPublicationProtocol {
-  /**
-   * @generated from enum value: TCP = 0;
-   */
-  TCP = 0,
-
-  /**
-   * @generated from enum value: UDP = 1;
-   */
-  UDP = 1,
-}
-// Retrieve enum metadata with: proto3.getEnumType(PortPublicationProtocol)
-proto3.util.setEnumType(PortPublicationProtocol, "neoshowcase.protobuf.PortPublicationProtocol", [
-  { no: 0, name: "TCP" },
-  { no: 1, name: "UDP" },
-]);
-
-/**
- * @generated from enum neoshowcase.protobuf.BuildStatus
- */
-export enum BuildStatus {
-  /**
-   * @generated from enum value: QUEUED = 0;
-   */
-  QUEUED = 0,
-
-  /**
-   * @generated from enum value: BUILDING = 1;
-   */
-  BUILDING = 1,
-
-  /**
-   * @generated from enum value: SUCCEEDED = 2;
-   */
-  SUCCEEDED = 2,
-
-  /**
-   * @generated from enum value: FAILED = 3;
-   */
-  FAILED = 3,
-
-  /**
-   * @generated from enum value: CANCELLED = 4;
-   */
-  CANCELLED = 4,
-
-  /**
-   * @generated from enum value: SKIPPED = 5;
-   */
-  SKIPPED = 5,
-}
-// Retrieve enum metadata with: proto3.getEnumType(BuildStatus)
-proto3.util.setEnumType(BuildStatus, "neoshowcase.protobuf.BuildStatus", [
-  { no: 0, name: "QUEUED" },
-  { no: 1, name: "BUILDING" },
-  { no: 2, name: "SUCCEEDED" },
-  { no: 3, name: "FAILED" },
-  { no: 4, name: "CANCELLED" },
-  { no: 5, name: "SKIPPED" },
-]);
+export const file_neoshowcase_protobuf_gateway: GenFile = /*@__PURE__*/
+  fileDesc("CiJuZW9zaG93Y2FzZS9wcm90b2J1Zi9nYXRld2F5LnByb3RvEhRuZW9zaG93Y2FzZS5wcm90b2J1ZiIlCgdTU0hJbmZvEgwKBGhvc3QYASABKAkSDAoEcG9ydBgCIAEoBSJpCg9BdmFpbGFibGVEb21haW4SDgoGZG9tYWluGAEgASgJEhcKD2V4Y2x1ZGVfZG9tYWlucxgCIAMoCRIWCg5hdXRoX2F2YWlsYWJsZRgDIAEoCBIVCg1hbHJlYWR5X2JvdW5kGAQgASgIInYKDUF2YWlsYWJsZVBvcnQSEgoKc3RhcnRfcG9ydBgBIAEoBRIQCghlbmRfcG9ydBgCIAEoBRI/Cghwcm90b2NvbBgDIAEoDjItLm5lb3Nob3djYXNlLnByb3RvYnVmLlBvcnRQdWJsaWNhdGlvblByb3RvY29sIisKDkFkZGl0aW9uYWxMaW5rEgwKBG5hbWUYASABKAkSCwoDdXJsGAIgASgJIpsCCgpTeXN0ZW1JbmZvEhIKCnB1YmxpY19rZXkYASABKAkSKgoDc3NoGAIgASgLMh0ubmVvc2hvd2Nhc2UucHJvdG9idWYuU1NISW5mbxI2Cgdkb21haW5zGAMgAygLMiUubmVvc2hvd2Nhc2UucHJvdG9idWYuQXZhaWxhYmxlRG9tYWluEjIKBXBvcnRzGAQgAygLMiMubmVvc2hvd2Nhc2UucHJvdG9idWYuQXZhaWxhYmxlUG9ydBI+ChBhZGRpdGlvbmFsX2xpbmtzGAUgAygLMiQubmVvc2hvd2Nhc2UucHJvdG9idWYuQWRkaXRpb25hbExpbmsSDwoHdmVyc2lvbhgGIAEoCRIQCghyZXZpc2lvbhgHIAEoCSJDCgRVc2VyEgoKAmlkGAEgASgJEgwKBG5hbWUYAiABKAkSDQoFYWRtaW4YAyABKAgSEgoKYXZhdGFyX3VybBgEIAEoCSJ4CgdVc2VyS2V5EgoKAmlkGAEgASgJEg8KB3VzZXJfaWQYAiABKAkSEgoKcHVibGljX2tleRgDIAEoCRIMCgRuYW1lGAQgASgJEi4KCmNyZWF0ZWRfYXQYBSABKAsyGi5nb29nbGUucHJvdG9idWYuVGltZXN0YW1wIsYBCgpSZXBvc2l0b3J5EgoKAmlkGAEgASgJEgwKBG5hbWUYAiABKAkSCwoDdXJsGAMgASgJEhAKCGh0bWxfdXJsGAQgASgJEkAKC2F1dGhfbWV0aG9kGAUgASgOMisubmVvc2hvd2Nhc2UucHJvdG9idWYuUmVwb3NpdG9yeS5BdXRoTWV0aG9kEhEKCW93bmVyX2lkcxgGIAMoCSIqCgpBdXRoTWV0aG9kEggKBE5PTkUQABIJCgVCQVNJQxABEgcKA1NTSBACInMKDFNpbXBsZUNvbW1pdBIMCgRoYXNoGAEgASgJEhMKC2F1dGhvcl9uYW1lGAIgASgJEi8KC2NvbW1pdF9kYXRlGAMgASgLMhouZ29vZ2xlLnByb3RvYnVmLlRpbWVzdGFtcBIPCgdtZXNzYWdlGAQgASgJIrIBChJBdXRvU2h1dGRvd25Db25maWcSDwoHZW5hYmxlZBgBIAEoCBJJCgdzdGFydHVwGAIgASgOMjgubmVvc2hvd2Nhc2UucHJvdG9idWYuQXV0b1NodXRkb3duQ29uZmlnLlN0YXJ0dXBCZWhhdmlvciJACg9TdGFydHVwQmVoYXZpb3ISDQoJVU5ERUZJTkVEEAASEAoMTE9BRElOR19QQUdFEAESDAoIQkxPQ0tJTkcQAiKfAQoNUnVudGltZUNvbmZpZxITCgt1c2VfbWFyaWFkYhgBIAEoCBITCgt1c2VfbW9uZ29kYhgCIAEoCBISCgplbnRyeXBvaW50GAMgASgJEg8KB2NvbW1hbmQYBCABKAkSPwoNYXV0b19zaHV0ZG93bhgFIAEoCzIoLm5lb3Nob3djYXNlLnByb3RvYnVmLkF1dG9TaHV0ZG93bkNvbmZpZyJrChtCdWlsZENvbmZpZ1J1bnRpbWVCdWlsZHBhY2sSOwoOcnVudGltZV9jb25maWcYASABKAsyIy5uZW9zaG93Y2FzZS5wcm90b2J1Zi5SdW50aW1lQ29uZmlnEg8KB2NvbnRleHQYAiABKAkiewoVQnVpbGRDb25maWdSdW50aW1lQ21kEjsKDnJ1bnRpbWVfY29uZmlnGAEgASgLMiMubmVvc2hvd2Nhc2UucHJvdG9idWYuUnVudGltZUNvbmZpZxISCgpiYXNlX2ltYWdlGAIgASgJEhEKCWJ1aWxkX2NtZBgDIAEoCSKFAQocQnVpbGRDb25maWdSdW50aW1lRG9ja2VyZmlsZRI7Cg5ydW50aW1lX2NvbmZpZxgBIAEoCzIjLm5lb3Nob3djYXNlLnByb3RvYnVmLlJ1bnRpbWVDb25maWcSFwoPZG9ja2VyZmlsZV9uYW1lGAIgASgJEg8KB2NvbnRleHQYAyABKAkiMgoMU3RhdGljQ29uZmlnEhUKDWFydGlmYWN0X3BhdGgYASABKAkSCwoDc3BhGAIgASgIImgKGkJ1aWxkQ29uZmlnU3RhdGljQnVpbGRwYWNrEjkKDXN0YXRpY19jb25maWcYASABKAsyIi5uZW9zaG93Y2FzZS5wcm90b2J1Zi5TdGF0aWNDb25maWcSDwoHY29udGV4dBgCIAEoCSJ4ChRCdWlsZENvbmZpZ1N0YXRpY0NtZBI5Cg1zdGF0aWNfY29uZmlnGAEgASgLMiIubmVvc2hvd2Nhc2UucHJvdG9idWYuU3RhdGljQ29uZmlnEhIKCmJhc2VfaW1hZ2UYAiABKAkSEQoJYnVpbGRfY21kGAMgASgJIoIBChtCdWlsZENvbmZpZ1N0YXRpY0RvY2tlcmZpbGUSOQoNc3RhdGljX2NvbmZpZxgBIAEoCzIiLm5lb3Nob3djYXNlLnByb3RvYnVmLlN0YXRpY0NvbmZpZxIXCg9kb2NrZXJmaWxlX25hbWUYAiABKAkSDwoHY29udGV4dBgDIAEoCSLpAwoRQXBwbGljYXRpb25Db25maWcSTgoRcnVudGltZV9idWlsZHBhY2sYASABKAsyMS5uZW9zaG93Y2FzZS5wcm90b2J1Zi5CdWlsZENvbmZpZ1J1bnRpbWVCdWlsZHBhY2tIABJCCgtydW50aW1lX2NtZBgCIAEoCzIrLm5lb3Nob3djYXNlLnByb3RvYnVmLkJ1aWxkQ29uZmlnUnVudGltZUNtZEgAElAKEnJ1bnRpbWVfZG9ja2VyZmlsZRgDIAEoCzIyLm5lb3Nob3djYXNlLnByb3RvYnVmLkJ1aWxkQ29uZmlnUnVudGltZURvY2tlcmZpbGVIABJMChBzdGF0aWNfYnVpbGRwYWNrGAQgASgLMjAubmVvc2hvd2Nhc2UucHJvdG9idWYuQnVpbGRDb25maWdTdGF0aWNCdWlsZHBhY2tIABJACgpzdGF0aWNfY21kGAUgASgLMioubmVvc2hvd2Nhc2UucHJvdG9idWYuQnVpbGRDb25maWdTdGF0aWNDbWRIABJOChFzdGF0aWNfZG9ja2VyZmlsZRgGIAEoCzIxLm5lb3Nob3djYXNlLnByb3RvYnVmLkJ1aWxkQ29uZmlnU3RhdGljRG9ja2VyZmlsZUgAQg4KDGJ1aWxkX2NvbmZpZyK/AQoHV2Vic2l0ZRIKCgJpZBgBIAEoCRIMCgRmcWRuGAIgASgJEhMKC3BhdGhfcHJlZml4GAMgASgJEhQKDHN0cmlwX3ByZWZpeBgEIAEoCBINCgVodHRwcxgFIAEoCBILCgNoMmMYBiABKAgSEQoJaHR0cF9wb3J0GAcgASgFEkAKDmF1dGhlbnRpY2F0aW9uGAggASgOMigubmVvc2hvd2Nhc2UucHJvdG9idWYuQXV0aGVudGljYXRpb25UeXBlIoMBCg9Qb3J0UHVibGljYXRpb24SFQoNaW50ZXJuZXRfcG9ydBgBIAEoBRIYChBhcHBsaWNhdGlvbl9wb3J0GAIgASgFEj8KCHByb3RvY29sGAMgASgOMi0ubmVvc2hvd2Nhc2UucHJvdG9idWYuUG9ydFB1YmxpY2F0aW9uUHJvdG9jb2wiiwYKC0FwcGxpY2F0aW9uEgoKAmlkGAEgASgJEgwKBG5hbWUYAiABKAkSFQoNcmVwb3NpdG9yeV9pZBgDIAEoCRIQCghyZWZfbmFtZRgEIAEoCRIOCgZjb21taXQYBSABKAkSNQoLZGVwbG95X3R5cGUYBiABKA4yIC5uZW9zaG93Y2FzZS5wcm90b2J1Zi5EZXBsb3lUeXBlEg8KB3J1bm5pbmcYByABKAgSQwoJY29udGFpbmVyGAggASgOMjAubmVvc2hvd2Nhc2UucHJvdG9idWYuQXBwbGljYXRpb24uQ29udGFpbmVyU3RhdGUSGQoRY29udGFpbmVyX21lc3NhZ2UYCSABKAkSFQoNY3VycmVudF9idWlsZBgKIAEoCRIuCgpjcmVhdGVkX2F0GAsgASgLMhouZ29vZ2xlLnByb3RvYnVmLlRpbWVzdGFtcBIuCgp1cGRhdGVkX2F0GAwgASgLMhouZ29vZ2xlLnByb3RvYnVmLlRpbWVzdGFtcBI3CgZjb25maWcYDSABKAsyJy5uZW9zaG93Y2FzZS5wcm90b2J1Zi5BcHBsaWNhdGlvbkNvbmZpZxIvCgh3ZWJzaXRlcxgOIAMoCzIdLm5lb3Nob3djYXNlLnByb3RvYnVmLldlYnNpdGUSQAoRcG9ydF9wdWJsaWNhdGlvbnMYDyADKAsyJS5uZW9zaG93Y2FzZS5wcm90b2J1Zi5Qb3J0UHVibGljYXRpb24SEQoJb3duZXJfaWRzGBAgAygJEkMKE2xhdGVzdF9idWlsZF9zdGF0dXMYESABKA4yIS5uZW9zaG93Y2FzZS5wcm90b2J1Zi5CdWlsZFN0YXR1c0gAiAEBIm4KDkNvbnRhaW5lclN0YXRlEgsKB01JU1NJTkcQABIMCghTVEFSVElORxABEg4KClJFU1RBUlRJTkcQAhILCgdSVU5OSU5HEAMSCgoGRVhJVEVEEAQSCwoHRVJST1JFRBAFEgsKB1VOS05PV04QBkIWChRfbGF0ZXN0X2J1aWxkX3N0YXR1cyJXChFBcHBsaWNhdGlvbkVudlZhchIWCg5hcHBsaWNhdGlvbl9pZBgBIAEoCRILCgNrZXkYAiABKAkSDQoFdmFsdWUYAyABKAkSDgoGc3lzdGVtGAQgASgIIlAKEkFwcGxpY2F0aW9uRW52VmFycxI6Cgl2YXJpYWJsZXMYASADKAsyJy5uZW9zaG93Y2FzZS5wcm90b2J1Zi5BcHBsaWNhdGlvbkVudlZhciKtAQoIQXJ0aWZhY3QSCgoCaWQYASABKAkSDAoEbmFtZRgCIAEoCRIQCghidWlsZF9pZBgDIAEoCRIMCgRzaXplGAQgASgDEi4KCmNyZWF0ZWRfYXQYBSABKAsyGi5nb29nbGUucHJvdG9idWYuVGltZXN0YW1wEjcKCmRlbGV0ZWRfYXQYBiABKAsyIy5uZW9zaG93Y2FzZS5wcm90b2J1Zi5OdWxsVGltZXN0YW1wIjQKD0FydGlmYWN0Q29udGVudBIQCghmaWxlbmFtZRgBIAEoCRIPCgdjb250ZW50GAIgASgMImoKDFJ1bnRpbWVJbWFnZRIKCgJpZBgBIAEoCRIQCghidWlsZF9pZBgCIAEoCRIMCgRzaXplGAMgASgDEi4KCmNyZWF0ZWRfYXQYBCABKAsyGi5nb29nbGUucHJvdG9idWYuVGltZXN0YW1wIikKEEF2YWlsYWJsZU1ldHJpY3MSFQoNbWV0cmljc19uYW1lcxgBIAMoCSJMChFBcHBsaWNhdGlvbk1ldHJpYxIoCgR0aW1lGAEgASgLMhouZ29vZ2xlLnByb3RvYnVmLlRpbWVzdGFtcBINCgV2YWx1ZRgCIAEoASJOChJBcHBsaWNhdGlvbk1ldHJpY3MSOAoHbWV0cmljcxgBIAMoCzInLm5lb3Nob3djYXNlLnByb3RvYnVmLkFwcGxpY2F0aW9uTWV0cmljIkoKEUFwcGxpY2F0aW9uT3V0cHV0EigKBHRpbWUYASABKAsyGi5nb29nbGUucHJvdG9idWYuVGltZXN0YW1wEgsKA2xvZxgCIAEoCSJOChJBcHBsaWNhdGlvbk91dHB1dHMSOAoHb3V0cHV0cxgBIAMoCzInLm5lb3Nob3djYXNlLnByb3RvYnVmLkFwcGxpY2F0aW9uT3V0cHV0IuEDCgVCdWlsZBIKCgJpZBgBIAEoCRIWCg5hcHBsaWNhdGlvbl9pZBgCIAEoCRIOCgZjb21taXQYAyABKAkSMQoGc3RhdHVzGAQgASgOMiEubmVvc2hvd2Nhc2UucHJvdG9idWYuQnVpbGRTdGF0dXMSLQoJcXVldWVkX2F0GAUgASgLMhouZ29vZ2xlLnByb3RvYnVmLlRpbWVzdGFtcBI3CgpzdGFydGVkX2F0GAYgASgLMiMubmVvc2hvd2Nhc2UucHJvdG9idWYuTnVsbFRpbWVzdGFtcBI3Cgp1cGRhdGVkX2F0GAcgASgLMiMubmVvc2hvd2Nhc2UucHJvdG9idWYuTnVsbFRpbWVzdGFtcBI4CgtmaW5pc2hlZF9hdBgIIAEoCzIjLm5lb3Nob3djYXNlLnByb3RvYnVmLk51bGxUaW1lc3RhbXASEQoJcmV0cmlhYmxlGAkgASgIEjEKCWFydGlmYWN0cxgKIAMoCzIeLm5lb3Nob3djYXNlLnByb3RvYnVmLkFydGlmYWN0Ej4KDXJ1bnRpbWVfaW1hZ2UYCyABKAsyIi5uZW9zaG93Y2FzZS5wcm90b2J1Zi5SdW50aW1lSW1hZ2VIAIgBAUIQCg5fcnVudGltZV9pbWFnZSIXCghCdWlsZExvZxILCgNsb2cYASABKAwiKgoGR2l0UmVmEhAKCHJlZl9uYW1lGAEgASgJEg4KBmNvbW1pdBgCIAEoCSI9ChdHZW5lcmF0ZUtleVBhaXJSZXNwb25zZRIOCgZrZXlfaWQYASABKAkSEgoKcHVibGljX2tleRgCIAEoCSI9ChBHZXRVc2Vyc1Jlc3BvbnNlEikKBXVzZXJzGAEgAygLMhoubmVvc2hvd2Nhc2UucHJvdG9idWYuVXNlciJCChNHZXRVc2VyS2V5c1Jlc3BvbnNlEisKBGtleXMYASADKAsyHS5uZW9zaG93Y2FzZS5wcm90b2J1Zi5Vc2VyS2V5IjgKFENyZWF0ZVVzZXJLZXlSZXF1ZXN0EhIKCnB1YmxpY19rZXkYASABKAkSDAoEbmFtZRgCIAEoCSImChREZWxldGVVc2VyS2V5UmVxdWVzdBIOCgZrZXlfaWQYASABKAkiPwoZQ3JlYXRlUmVwb3NpdG9yeUF1dGhCYXNpYxIQCgh1c2VybmFtZRgBIAEoCRIQCghwYXNzd29yZBgCIAEoCSIpChdDcmVhdGVSZXBvc2l0b3J5QXV0aFNTSBIOCgZrZXlfaWQYASABKAkixgEKFENyZWF0ZVJlcG9zaXRvcnlBdXRoEiYKBG5vbmUYASABKAsyFi5nb29nbGUucHJvdG9idWYuRW1wdHlIABJACgViYXNpYxgCIAEoCzIvLm5lb3Nob3djYXNlLnByb3RvYnVmLkNyZWF0ZVJlcG9zaXRvcnlBdXRoQmFzaWNIABI8CgNzc2gYAyABKAsyLS5uZW9zaG93Y2FzZS5wcm90b2J1Zi5DcmVhdGVSZXBvc2l0b3J5QXV0aFNTSEgAQgYKBGF1dGgibgoXQ3JlYXRlUmVwb3NpdG9yeVJlcXVlc3QSDAoEbmFtZRgBIAEoCRILCgN1cmwYAiABKAkSOAoEYXV0aBgDIAEoCzIqLm5lb3Nob3djYXNlLnByb3RvYnVmLkNyZWF0ZVJlcG9zaXRvcnlBdXRoIpIBChZHZXRSZXBvc2l0b3JpZXNSZXF1ZXN0EkEKBXNjb3BlGAEgASgOMjIubmVvc2hvd2Nhc2UucHJvdG9idWYuR2V0UmVwb3NpdG9yaWVzUmVxdWVzdC5TY29wZSI1CgVTY29wZRIICgRNSU5FEAASDQoJQ1JFQVRBQkxFEAESCgoGUFVCTElDEAISBwoDQUxMEAMiqAIKF1VwZGF0ZVJlcG9zaXRvcnlSZXF1ZXN0EgoKAmlkGAEgASgJEhEKBG5hbWUYAiABKAlIAIgBARIQCgN1cmwYAyABKAlIAYgBARI9CgRhdXRoGAQgASgLMioubmVvc2hvd2Nhc2UucHJvdG9idWYuQ3JlYXRlUmVwb3NpdG9yeUF1dGhIAogBARJSCglvd25lcl9pZHMYBSABKAsyOi5uZW9zaG93Y2FzZS5wcm90b2J1Zi5VcGRhdGVSZXBvc2l0b3J5UmVxdWVzdC5VcGRhdGVPd25lcnNIA4gBARohCgxVcGRhdGVPd25lcnMSEQoJb3duZXJfaWRzGAEgAygJQgcKBV9uYW1lQgYKBF91cmxCBwoFX2F1dGhCDAoKX293bmVyX2lkcyIsChNSZXBvc2l0b3J5SWRSZXF1ZXN0EhUKDXJlcG9zaXRvcnlfaWQYASABKAkiLQobR2V0UmVwb3NpdG9yeUNvbW1pdHNSZXF1ZXN0Eg4KBmhhc2hlcxgBIAMoCSJTChxHZXRSZXBvc2l0b3J5Q29tbWl0c1Jlc3BvbnNlEjMKB2NvbW1pdHMYASADKAsyIi5uZW9zaG93Y2FzZS5wcm90b2J1Zi5TaW1wbGVDb21taXQiwAEKFENyZWF0ZVdlYnNpdGVSZXF1ZXN0EgwKBGZxZG4YASABKAkSEwoLcGF0aF9wcmVmaXgYAiABKAkSFAoMc3RyaXBfcHJlZml4GAMgASgIEg0KBWh0dHBzGAQgASgIEgsKA2gyYxgFIAEoCBIRCglodHRwX3BvcnQYBiABKAUSQAoOYXV0aGVudGljYXRpb24YByABKA4yKC5uZW9zaG93Y2FzZS5wcm90b2J1Zi5BdXRoZW50aWNhdGlvblR5cGUiIgoURGVsZXRlV2Vic2l0ZVJlcXVlc3QSCgoCaWQYASABKAkiowIKGENyZWF0ZUFwcGxpY2F0aW9uUmVxdWVzdBIMCgRuYW1lGAEgASgJEhUKDXJlcG9zaXRvcnlfaWQYAiABKAkSEAoIcmVmX25hbWUYAyABKAkSNwoGY29uZmlnGAQgASgLMicubmVvc2hvd2Nhc2UucHJvdG9idWYuQXBwbGljYXRpb25Db25maWcSPAoId2Vic2l0ZXMYBSADKAsyKi5uZW9zaG93Y2FzZS5wcm90b2J1Zi5DcmVhdGVXZWJzaXRlUmVxdWVzdBJAChFwb3J0X3B1YmxpY2F0aW9ucxgGIAMoCzIlLm5lb3Nob3djYXNlLnByb3RvYnVmLlBvcnRQdWJsaWNhdGlvbhIXCg9zdGFydF9vbl9jcmVhdGUYByABKAgitQEKFkdldEFwcGxpY2F0aW9uc1JlcXVlc3QSQQoFc2NvcGUYASABKA4yMi5uZW9zaG93Y2FzZS5wcm90b2J1Zi5HZXRBcHBsaWNhdGlvbnNSZXF1ZXN0LlNjb3BlEhoKDXJlcG9zaXRvcnlfaWQYAiABKAlIAIgBASIqCgVTY29wZRIICgRNSU5FEAASBwoDQUxMEAESDgoKUkVQT1NJVE9SWRACQhAKDl9yZXBvc2l0b3J5X2lkItkFChhVcGRhdGVBcHBsaWNhdGlvblJlcXVlc3QSCgoCaWQYASABKAkSEQoEbmFtZRgCIAEoCUgAiAEBEhoKDXJlcG9zaXRvcnlfaWQYAyABKAlIAYgBARIVCghyZWZfbmFtZRgEIAEoCUgCiAEBEjwKBmNvbmZpZxgFIAEoCzInLm5lb3Nob3djYXNlLnByb3RvYnVmLkFwcGxpY2F0aW9uQ29uZmlnSAOIAQESVAoId2Vic2l0ZXMYBiABKAsyPS5uZW9zaG93Y2FzZS5wcm90b2J1Zi5VcGRhdGVBcHBsaWNhdGlvblJlcXVlc3QuVXBkYXRlV2Vic2l0ZXNIBIgBARJaChFwb3J0X3B1YmxpY2F0aW9ucxgHIAEoCzI6Lm5lb3Nob3djYXNlLnByb3RvYnVmLlVwZGF0ZUFwcGxpY2F0aW9uUmVxdWVzdC5VcGRhdGVQb3J0c0gFiAEBElMKCW93bmVyX2lkcxgIIAEoCzI7Lm5lb3Nob3djYXNlLnByb3RvYnVmLlVwZGF0ZUFwcGxpY2F0aW9uUmVxdWVzdC5VcGRhdGVPd25lcnNIBogBARpOCg5VcGRhdGVXZWJzaXRlcxI8Cgh3ZWJzaXRlcxgBIAMoCzIqLm5lb3Nob3djYXNlLnByb3RvYnVmLkNyZWF0ZVdlYnNpdGVSZXF1ZXN0Gk8KC1VwZGF0ZVBvcnRzEkAKEXBvcnRfcHVibGljYXRpb25zGAEgAygLMiUubmVvc2hvd2Nhc2UucHJvdG9idWYuUG9ydFB1YmxpY2F0aW9uGiEKDFVwZGF0ZU93bmVycxIRCglvd25lcl9pZHMYASADKAlCBwoFX25hbWVCEAoOX3JlcG9zaXRvcnlfaWRCCwoJX3JlZl9uYW1lQgkKB19jb25maWdCCwoJX3dlYnNpdGVzQhQKEl9wb3J0X3B1YmxpY2F0aW9uc0IMCgpfb3duZXJfaWRzIlEKF0dldFJlcG9zaXRvcmllc1Jlc3BvbnNlEjYKDHJlcG9zaXRvcmllcxgBIAMoCzIgLm5lb3Nob3djYXNlLnByb3RvYnVmLlJlcG9zaXRvcnkiUgoXR2V0QXBwbGljYXRpb25zUmVzcG9uc2USNwoMYXBwbGljYXRpb25zGAEgAygLMiEubmVvc2hvd2Nhc2UucHJvdG9idWYuQXBwbGljYXRpb24iIgoUQXBwbGljYXRpb25JZFJlcXVlc3QSCgoCaWQYASABKAkiMgoTR2V0QWxsQnVpbGRzUmVxdWVzdBIMCgRwYWdlGAEgASgFEg0KBWxpbWl0GAIgASgFIiIKDkJ1aWxkSWRSZXF1ZXN0EhAKCGJ1aWxkX2lkGAEgASgJIigKEUFydGlmYWN0SWRSZXF1ZXN0EhMKC2FydGlmYWN0X2lkGAEgASgJIkAKEUdldEJ1aWxkc1Jlc3BvbnNlEisKBmJ1aWxkcxgBIAMoCzIbLm5lb3Nob3djYXNlLnByb3RvYnVmLkJ1aWxkIlEKG1NldEFwcGxpY2F0aW9uRW52VmFyUmVxdWVzdBIWCg5hcHBsaWNhdGlvbl9pZBgBIAEoCRILCgNrZXkYAiABKAkSDQoFdmFsdWUYAyABKAkiRQoeRGVsZXRlQXBwbGljYXRpb25FbnZWYXJSZXF1ZXN0EhYKDmFwcGxpY2F0aW9uX2lkGAEgASgJEgsKA2tleRgCIAEoCSKPAQocR2V0QXBwbGljYXRpb25NZXRyaWNzUmVxdWVzdBIWCg5hcHBsaWNhdGlvbl9pZBgBIAEoCRIUCgxtZXRyaWNzX25hbWUYAiABKAkSKgoGYmVmb3JlGAMgASgLMhouZ29vZ2xlLnByb3RvYnVmLlRpbWVzdGFtcBIVCg1saW1pdF9zZWNvbmRzGAQgASgDImUKEEdldE91dHB1dFJlcXVlc3QSFgoOYXBwbGljYXRpb25faWQYASABKAkSKgoGYmVmb3JlGAIgASgLMhouZ29vZ2xlLnByb3RvYnVmLlRpbWVzdGFtcBINCgVsaW1pdBgDIAEoBSJbChZHZXRPdXRwdXRTdHJlYW1SZXF1ZXN0EhYKDmFwcGxpY2F0aW9uX2lkGAEgASgJEikKBWJlZ2luGAIgASgLMhouZ29vZ2xlLnByb3RvYnVmLlRpbWVzdGFtcCJBChdSZXRyeUNvbW1pdEJ1aWxkUmVxdWVzdBIWCg5hcHBsaWNhdGlvbl9pZBgBIAEoCRIOCgZjb21taXQYAiABKAkiRwoZR2V0UmVwb3NpdG9yeVJlZnNSZXNwb25zZRIqCgRyZWZzGAEgAygLMhwubmVvc2hvd2Nhc2UucHJvdG9idWYuR2l0UmVmKiUKCkRlcGxveVR5cGUSCwoHUlVOVElNRRAAEgoKBlNUQVRJQxABKjEKEkF1dGhlbnRpY2F0aW9uVHlwZRIHCgNPRkYQABIICgRTT0ZUEAESCAoESEFSRBACKisKF1BvcnRQdWJsaWNhdGlvblByb3RvY29sEgcKA1RDUBAAEgcKA1VEUBABKl4KC0J1aWxkU3RhdHVzEgoKBlFVRVVFRBAAEgwKCEJVSUxESU5HEAESDQoJU1VDQ0VFREVEEAISCgoGRkFJTEVEEAMSDQoJQ0FOQ0VMTEVEEAQSCwoHU0tJUFBFRBAFMu4bCgpBUElTZXJ2aWNlEk4KDUdldFN5c3RlbUluZm8SFi5nb29nbGUucHJvdG9idWYuRW1wdHkaIC5uZW9zaG93Y2FzZS5wcm90b2J1Zi5TeXN0ZW1JbmZvIgOQAgESWAoPR2VuZXJhdGVLZXlQYWlyEhYuZ29vZ2xlLnByb3RvYnVmLkVtcHR5Gi0ubmVvc2hvd2Nhc2UucHJvdG9idWYuR2VuZXJhdGVLZXlQYWlyUmVzcG9uc2USQAoFR2V0TWUSFi5nb29nbGUucHJvdG9idWYuRW1wdHkaGi5uZW9zaG93Y2FzZS5wcm90b2J1Zi5Vc2VyIgOQAgESTwoIR2V0VXNlcnMSFi5nb29nbGUucHJvdG9idWYuRW1wdHkaJi5uZW9zaG93Y2FzZS5wcm90b2J1Zi5HZXRVc2Vyc1Jlc3BvbnNlIgOQAgESWgoNQ3JlYXRlVXNlcktleRIqLm5lb3Nob3djYXNlLnByb3RvYnVmLkNyZWF0ZVVzZXJLZXlSZXF1ZXN0Gh0ubmVvc2hvd2Nhc2UucHJvdG9idWYuVXNlcktleRJVCgtHZXRVc2VyS2V5cxIWLmdvb2dsZS5wcm90b2J1Zi5FbXB0eRopLm5lb3Nob3djYXNlLnByb3RvYnVmLkdldFVzZXJLZXlzUmVzcG9uc2UiA5ACARJTCg1EZWxldGVVc2VyS2V5EioubmVvc2hvd2Nhc2UucHJvdG9idWYuRGVsZXRlVXNlcktleVJlcXVlc3QaFi5nb29nbGUucHJvdG9idWYuRW1wdHkSYwoQQ3JlYXRlUmVwb3NpdG9yeRItLm5lb3Nob3djYXNlLnByb3RvYnVmLkNyZWF0ZVJlcG9zaXRvcnlSZXF1ZXN0GiAubmVvc2hvd2Nhc2UucHJvdG9idWYuUmVwb3NpdG9yeRJzCg9HZXRSZXBvc2l0b3JpZXMSLC5uZW9zaG93Y2FzZS5wcm90b2J1Zi5HZXRSZXBvc2l0b3JpZXNSZXF1ZXN0Gi0ubmVvc2hvd2Nhc2UucHJvdG9idWYuR2V0UmVwb3NpdG9yaWVzUmVzcG9uc2UiA5ACARKCAQoUR2V0UmVwb3NpdG9yeUNvbW1pdHMSMS5uZW9zaG93Y2FzZS5wcm90b2J1Zi5HZXRSZXBvc2l0b3J5Q29tbWl0c1JlcXVlc3QaMi5uZW9zaG93Y2FzZS5wcm90b2J1Zi5HZXRSZXBvc2l0b3J5Q29tbWl0c1Jlc3BvbnNlIgOQAgESYQoNR2V0UmVwb3NpdG9yeRIpLm5lb3Nob3djYXNlLnByb3RvYnVmLlJlcG9zaXRvcnlJZFJlcXVlc3QaIC5uZW9zaG93Y2FzZS5wcm90b2J1Zi5SZXBvc2l0b3J5IgOQAgESdAoRR2V0UmVwb3NpdG9yeVJlZnMSKS5uZW9zaG93Y2FzZS5wcm90b2J1Zi5SZXBvc2l0b3J5SWRSZXF1ZXN0Gi8ubmVvc2hvd2Nhc2UucHJvdG9idWYuR2V0UmVwb3NpdG9yeVJlZnNSZXNwb25zZSIDkAIBElkKEFVwZGF0ZVJlcG9zaXRvcnkSLS5uZW9zaG93Y2FzZS5wcm90b2J1Zi5VcGRhdGVSZXBvc2l0b3J5UmVxdWVzdBoWLmdvb2dsZS5wcm90b2J1Zi5FbXB0eRJWChFSZWZyZXNoUmVwb3NpdG9yeRIpLm5lb3Nob3djYXNlLnByb3RvYnVmLlJlcG9zaXRvcnlJZFJlcXVlc3QaFi5nb29nbGUucHJvdG9idWYuRW1wdHkSVQoQRGVsZXRlUmVwb3NpdG9yeRIpLm5lb3Nob3djYXNlLnByb3RvYnVmLlJlcG9zaXRvcnlJZFJlcXVlc3QaFi5nb29nbGUucHJvdG9idWYuRW1wdHkSZgoRQ3JlYXRlQXBwbGljYXRpb24SLi5uZW9zaG93Y2FzZS5wcm90b2J1Zi5DcmVhdGVBcHBsaWNhdGlvblJlcXVlc3QaIS5uZW9zaG93Y2FzZS5wcm90b2J1Zi5BcHBsaWNhdGlvbhJzCg9HZXRBcHBsaWNhdGlvbnMSLC5uZW9zaG93Y2FzZS5wcm90b2J1Zi5HZXRBcHBsaWNhdGlvbnNSZXF1ZXN0Gi0ubmVvc2hvd2Nhc2UucHJvdG9idWYuR2V0QXBwbGljYXRpb25zUmVzcG9uc2UiA5ACARJkCg5HZXRBcHBsaWNhdGlvbhIqLm5lb3Nob3djYXNlLnByb3RvYnVmLkFwcGxpY2F0aW9uSWRSZXF1ZXN0GiEubmVvc2hvd2Nhc2UucHJvdG9idWYuQXBwbGljYXRpb24iA5ACARJbChFVcGRhdGVBcHBsaWNhdGlvbhIuLm5lb3Nob3djYXNlLnByb3RvYnVmLlVwZGF0ZUFwcGxpY2F0aW9uUmVxdWVzdBoWLmdvb2dsZS5wcm90b2J1Zi5FbXB0eRJXChFEZWxldGVBcHBsaWNhdGlvbhIqLm5lb3Nob3djYXNlLnByb3RvYnVmLkFwcGxpY2F0aW9uSWRSZXF1ZXN0GhYuZ29vZ2xlLnByb3RvYnVmLkVtcHR5EloKE0dldEF2YWlsYWJsZU1ldHJpY3MSFi5nb29nbGUucHJvdG9idWYuRW1wdHkaJi5uZW9zaG93Y2FzZS5wcm90b2J1Zi5BdmFpbGFibGVNZXRyaWNzIgOQAgESegoVR2V0QXBwbGljYXRpb25NZXRyaWNzEjIubmVvc2hvd2Nhc2UucHJvdG9idWYuR2V0QXBwbGljYXRpb25NZXRyaWNzUmVxdWVzdBooLm5lb3Nob3djYXNlLnByb3RvYnVmLkFwcGxpY2F0aW9uTWV0cmljcyIDkAIBEmIKCUdldE91dHB1dBImLm5lb3Nob3djYXNlLnByb3RvYnVmLkdldE91dHB1dFJlcXVlc3QaKC5uZW9zaG93Y2FzZS5wcm90b2J1Zi5BcHBsaWNhdGlvbk91dHB1dHMiA5ACARJqCg9HZXRPdXRwdXRTdHJlYW0SLC5uZW9zaG93Y2FzZS5wcm90b2J1Zi5HZXRPdXRwdXRTdHJlYW1SZXF1ZXN0GicubmVvc2hvd2Nhc2UucHJvdG9idWYuQXBwbGljYXRpb25PdXRwdXQwARJnCgpHZXRFbnZWYXJzEioubmVvc2hvd2Nhc2UucHJvdG9idWYuQXBwbGljYXRpb25JZFJlcXVlc3QaKC5uZW9zaG93Y2FzZS5wcm90b2J1Zi5BcHBsaWNhdGlvbkVudlZhcnMiA5ACARJWCglTZXRFbnZWYXISMS5uZW9zaG93Y2FzZS5wcm90b2J1Zi5TZXRBcHBsaWNhdGlvbkVudlZhclJlcXVlc3QaFi5nb29nbGUucHJvdG9idWYuRW1wdHkSXAoMRGVsZXRlRW52VmFyEjQubmVvc2hvd2Nhc2UucHJvdG9idWYuRGVsZXRlQXBwbGljYXRpb25FbnZWYXJSZXF1ZXN0GhYuZ29vZ2xlLnByb3RvYnVmLkVtcHR5ElYKEFN0YXJ0QXBwbGljYXRpb24SKi5uZW9zaG93Y2FzZS5wcm90b2J1Zi5BcHBsaWNhdGlvbklkUmVxdWVzdBoWLmdvb2dsZS5wcm90b2J1Zi5FbXB0eRJVCg9TdG9wQXBwbGljYXRpb24SKi5uZW9zaG93Y2FzZS5wcm90b2J1Zi5BcHBsaWNhdGlvbklkUmVxdWVzdBoWLmdvb2dsZS5wcm90b2J1Zi5FbXB0eRJnCgxHZXRBbGxCdWlsZHMSKS5uZW9zaG93Y2FzZS5wcm90b2J1Zi5HZXRBbGxCdWlsZHNSZXF1ZXN0GicubmVvc2hvd2Nhc2UucHJvdG9idWYuR2V0QnVpbGRzUmVzcG9uc2UiA5ACARJlCglHZXRCdWlsZHMSKi5uZW9zaG93Y2FzZS5wcm90b2J1Zi5BcHBsaWNhdGlvbklkUmVxdWVzdBonLm5lb3Nob3djYXNlLnByb3RvYnVmLkdldEJ1aWxkc1Jlc3BvbnNlIgOQAgESUgoIR2V0QnVpbGQSJC5uZW9zaG93Y2FzZS5wcm90b2J1Zi5CdWlsZElkUmVxdWVzdBobLm5lb3Nob3djYXNlLnByb3RvYnVmLkJ1aWxkIgOQAgESWQoQUmV0cnlDb21taXRCdWlsZBItLm5lb3Nob3djYXNlLnByb3RvYnVmLlJldHJ5Q29tbWl0QnVpbGRSZXF1ZXN0GhYuZ29vZ2xlLnByb3RvYnVmLkVtcHR5EksKC0NhbmNlbEJ1aWxkEiQubmVvc2hvd2Nhc2UucHJvdG9idWYuQnVpbGRJZFJlcXVlc3QaFi5nb29nbGUucHJvdG9idWYuRW1wdHkSWAoLR2V0QnVpbGRMb2cSJC5uZW9zaG93Y2FzZS5wcm90b2J1Zi5CdWlsZElkUmVxdWVzdBoeLm5lb3Nob3djYXNlLnByb3RvYnVmLkJ1aWxkTG9nIgOQAgESWwoRR2V0QnVpbGRMb2dTdHJlYW0SJC5uZW9zaG93Y2FzZS5wcm90b2J1Zi5CdWlsZElkUmVxdWVzdBoeLm5lb3Nob3djYXNlLnByb3RvYnVmLkJ1aWxkTG9nMAESZwoQR2V0QnVpbGRBcnRpZmFjdBInLm5lb3Nob3djYXNlLnByb3RvYnVmLkFydGlmYWN0SWRSZXF1ZXN0GiUubmVvc2hvd2Nhc2UucHJvdG9idWYuQXJ0aWZhY3RDb250ZW50IgOQAgFCPlo8Z2l0aHViLmNvbS90cmFQdGl0ZWNoL25lb3Nob3djYXNlL3BrZy9pbmZyYXN0cnVjdHVyZS9ncnBjL3BiYgZwcm90bzM", [file_google_protobuf_empty, file_google_protobuf_timestamp, file_neoshowcase_protobuf_null]);
 
 /**
  * @generated from message neoshowcase.protobuf.SSHInfo
@@ -445,38 +341,63 @@ export type SimpleCommit = Message<"neoshowcase.protobuf.SimpleCommit"> & {
   /**
    * @generated from field: string message = 4;
    */
-  message = "";
+  message: string;
+};
 
-  constructor(data?: PartialMessage<SimpleCommit>) {
-    super();
-    proto3.util.initPartial(data, this);
-  }
+/**
+ * Describes the message neoshowcase.protobuf.SimpleCommit.
+ * Use `create(SimpleCommitSchema)` to create a new message.
+ */
+export const SimpleCommitSchema: GenMessage<SimpleCommit> = /*@__PURE__*/
+  messageDesc(file_neoshowcase_protobuf_gateway, 8);
 
-  static readonly runtime: typeof proto3 = proto3;
-  static readonly typeName = "neoshowcase.protobuf.SimpleCommit";
-  static readonly fields: FieldList = proto3.util.newFieldList(() => [
-    { no: 1, name: "hash", kind: "scalar", T: 9 /* ScalarType.STRING */ },
-    { no: 2, name: "author_name", kind: "scalar", T: 9 /* ScalarType.STRING */ },
-    { no: 3, name: "commit_date", kind: "message", T: Timestamp },
-    { no: 4, name: "message", kind: "scalar", T: 9 /* ScalarType.STRING */ },
-  ]);
+/**
+ * @generated from message neoshowcase.protobuf.AutoShutdownConfig
+ */
+export type AutoShutdownConfig = Message<"neoshowcase.protobuf.AutoShutdownConfig"> & {
+  /**
+   * @generated from field: bool enabled = 1;
+   */
+  enabled: boolean;
 
-  static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): SimpleCommit {
-    return new SimpleCommit().fromBinary(bytes, options);
-  }
+  /**
+   * @generated from field: neoshowcase.protobuf.AutoShutdownConfig.StartupBehavior startup = 2;
+   */
+  startup: AutoShutdownConfig_StartupBehavior;
+};
 
-  static fromJson(jsonValue: JsonValue, options?: Partial<JsonReadOptions>): SimpleCommit {
-    return new SimpleCommit().fromJson(jsonValue, options);
-  }
+/**
+ * Describes the message neoshowcase.protobuf.AutoShutdownConfig.
+ * Use `create(AutoShutdownConfigSchema)` to create a new message.
+ */
+export const AutoShutdownConfigSchema: GenMessage<AutoShutdownConfig> = /*@__PURE__*/
+  messageDesc(file_neoshowcase_protobuf_gateway, 9);
 
-  static fromJsonString(jsonString: string, options?: Partial<JsonReadOptions>): SimpleCommit {
-    return new SimpleCommit().fromJsonString(jsonString, options);
-  }
+/**
+ * @generated from enum neoshowcase.protobuf.AutoShutdownConfig.StartupBehavior
+ */
+export enum AutoShutdownConfig_StartupBehavior {
+  /**
+   * @generated from enum value: UNDEFINED = 0;
+   */
+  UNDEFINED = 0,
 
-  static equals(a: SimpleCommit | PlainMessage<SimpleCommit> | undefined, b: SimpleCommit | PlainMessage<SimpleCommit> | undefined): boolean {
-    return proto3.util.equals(SimpleCommit, a, b);
-  }
+  /**
+   * @generated from enum value: LOADING_PAGE = 1;
+   */
+  LOADING_PAGE = 1,
+
+  /**
+   * @generated from enum value: BLOCKING = 2;
+   */
+  BLOCKING = 2,
 }
+
+/**
+ * Describes the enum neoshowcase.protobuf.AutoShutdownConfig.StartupBehavior.
+ */
+export const AutoShutdownConfig_StartupBehaviorSchema: GenEnum<AutoShutdownConfig_StartupBehavior> = /*@__PURE__*/
+  enumDesc(file_neoshowcase_protobuf_gateway, 9, 0);
 
 /**
  * @generated from message neoshowcase.protobuf.RuntimeConfig
@@ -500,38 +421,20 @@ export type RuntimeConfig = Message<"neoshowcase.protobuf.RuntimeConfig"> & {
   /**
    * @generated from field: string command = 4;
    */
-  command = "";
+  command: string;
 
-  constructor(data?: PartialMessage<RuntimeConfig>) {
-    super();
-    proto3.util.initPartial(data, this);
-  }
+  /**
+   * @generated from field: neoshowcase.protobuf.AutoShutdownConfig auto_shutdown = 5;
+   */
+  autoShutdown?: AutoShutdownConfig;
+};
 
-  static readonly runtime: typeof proto3 = proto3;
-  static readonly typeName = "neoshowcase.protobuf.RuntimeConfig";
-  static readonly fields: FieldList = proto3.util.newFieldList(() => [
-    { no: 1, name: "use_mariadb", kind: "scalar", T: 8 /* ScalarType.BOOL */ },
-    { no: 2, name: "use_mongodb", kind: "scalar", T: 8 /* ScalarType.BOOL */ },
-    { no: 3, name: "entrypoint", kind: "scalar", T: 9 /* ScalarType.STRING */ },
-    { no: 4, name: "command", kind: "scalar", T: 9 /* ScalarType.STRING */ },
-  ]);
-
-  static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): RuntimeConfig {
-    return new RuntimeConfig().fromBinary(bytes, options);
-  }
-
-  static fromJson(jsonValue: JsonValue, options?: Partial<JsonReadOptions>): RuntimeConfig {
-    return new RuntimeConfig().fromJson(jsonValue, options);
-  }
-
-  static fromJsonString(jsonString: string, options?: Partial<JsonReadOptions>): RuntimeConfig {
-    return new RuntimeConfig().fromJsonString(jsonString, options);
-  }
-
-  static equals(a: RuntimeConfig | PlainMessage<RuntimeConfig> | undefined, b: RuntimeConfig | PlainMessage<RuntimeConfig> | undefined): boolean {
-    return proto3.util.equals(RuntimeConfig, a, b);
-  }
-}
+/**
+ * Describes the message neoshowcase.protobuf.RuntimeConfig.
+ * Use `create(RuntimeConfigSchema)` to create a new message.
+ */
+export const RuntimeConfigSchema: GenMessage<RuntimeConfig> = /*@__PURE__*/
+  messageDesc(file_neoshowcase_protobuf_gateway, 10);
 
 /**
  * @generated from message neoshowcase.protobuf.BuildConfigRuntimeBuildpack
