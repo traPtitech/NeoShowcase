@@ -133,6 +133,13 @@ export const applicationConfigSchema = v.pipe(
               runtimeConfig: {
                 $typeName: 'neoshowcase.protobuf.RuntimeConfig',
                 ...deployConfig.value.runtime,
+                autoShutdown: deployConfig.value.runtime.autoShutdown
+                  ? {
+                      $typeName: 'neoshowcase.protobuf.AutoShutdownConfig',
+                      enabled: deployConfig.value.runtime.autoShutdown.enabled,
+                      startup: deployConfig.value.runtime.autoShutdown.startup,
+                    }
+                  : undefined,
               },
             },
           },
@@ -149,6 +156,13 @@ export const applicationConfigSchema = v.pipe(
               runtimeConfig: {
                 $typeName: 'neoshowcase.protobuf.RuntimeConfig',
                 ...deployConfig.value.runtime,
+                autoShutdown: deployConfig.value.runtime.autoShutdown
+                  ? {
+                      $typeName: 'neoshowcase.protobuf.AutoShutdownConfig',
+                      enabled: deployConfig.value.runtime.autoShutdown.enabled,
+                      startup: deployConfig.value.runtime.autoShutdown.startup,
+                    }
+                  : undefined,
               },
             },
           },
@@ -165,6 +179,13 @@ export const applicationConfigSchema = v.pipe(
               runtimeConfig: {
                 $typeName: 'neoshowcase.protobuf.RuntimeConfig',
                 ...deployConfig.value.runtime,
+                autoShutdown: deployConfig.value.runtime.autoShutdown
+                  ? {
+                      $typeName: 'neoshowcase.protobuf.AutoShutdownConfig',
+                      enabled: deployConfig.value.runtime.autoShutdown.enabled,
+                      startup: deployConfig.value.runtime.autoShutdown.startup,
+                    }
+                  : undefined,
               },
             },
           },
