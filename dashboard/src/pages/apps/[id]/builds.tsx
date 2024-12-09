@@ -1,3 +1,4 @@
+import { timestampDate } from '@bufbuild/protobuf/wkt'
 import { createMemo, onCleanup, useTransition } from 'solid-js'
 import { Show } from 'solid-js'
 import { DataTable } from '/@/components/layouts/DataTable'
@@ -17,7 +18,10 @@ export default () => {
     () =>
       builds()
         ?.sort((b1, b2) => {
-          return (b2.queuedAt?.toDate().getTime() ?? 0) - (b1.queuedAt?.toDate().getTime() ?? 0)
+          return (
+            (b2.queuedAt ? timestampDate(b2.queuedAt).getTime() : 0) -
+            (b1.queuedAt ? timestampDate(b1.queuedAt).getTime() : 0)
+          )
         })
         ?.map((b) => ({ build: b })) ?? [],
   )

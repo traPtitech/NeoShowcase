@@ -1,10 +1,10 @@
-import { createPromiseClient } from '@connectrpc/connect'
+import { createClient } from '@connectrpc/connect'
 import { createConnectTransport } from '@connectrpc/connect-web'
 import { cache, revalidate } from '@solidjs/router'
 import AsyncLock from 'async-lock'
 import { createResource } from 'solid-js'
 import toast from 'solid-toast'
-import { APIService } from '/@/api/neoshowcase/protobuf/gateway_connect'
+import { APIService } from '/@/api/neoshowcase/protobuf/gateway_pb'
 import {
   type Application,
   GetApplicationsRequest_Scope,
@@ -17,7 +17,7 @@ const transport = createConnectTransport({
   baseUrl: '',
   useHttpGet: true,
 })
-export const client = createPromiseClient(APIService, transport)
+export const client = createClient(APIService, transport)
 
 export const [user] = createResource(() => client.getMe({}))
 export const [systemInfo] = createResource(() => client.getSystemInfo({}))

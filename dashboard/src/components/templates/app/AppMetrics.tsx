@@ -1,4 +1,4 @@
-import { Timestamp } from '@bufbuild/protobuf'
+import { timestampDate, timestampNow } from '@bufbuild/protobuf/wkt'
 import {
   type CartesianTickOptions,
   Chart,
@@ -52,7 +52,7 @@ export const AppMetrics: Component<AppMetricsProps> = (props) => {
       client.getApplicationMetrics({
         applicationId: appID,
         metricsName: name,
-        before: Timestamp.now(),
+        before: timestampNow(),
         limitSeconds: 3600n,
       }),
   )
@@ -63,7 +63,9 @@ export const AppMetrics: Component<AppMetricsProps> = (props) => {
   const maxDataVal = createMemo(() => (data.latest !== undefined ? Math.max(...data().metrics.map((m) => m.value)) : 0))
   const chartData = (): ChartData => {
     if (data.latest !== undefined) {
-      const labels = data().metrics.map((m) => m.time?.toDate().toLocaleTimeString())
+      const labels = data().metrics.map((m) => {
+        if (m.time) return timestampDate(m.time).toLocaleTimeString()
+      })
       const values = data().metrics.map((m) => m.value)
       return {
         labels,

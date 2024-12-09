@@ -446,29 +446,29 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@bufbuild/protobuf@npm:1.10.0":
-  version: 1.10.0
-  resolution: "@bufbuild/protobuf@npm:1.10.0"
-  checksum: 10c0/5487b9c2e63846d0e3bde4d025cc77ae44a22166a5d6c184df0da5581e1ab6d66dd115af0ccad814576dcd011bb1b93989fb0ac1eb4ae452979bb8b186693ba0
+"@bufbuild/protobuf@npm:2.2.2":
+  version: 2.2.2
+  resolution: "@bufbuild/protobuf@npm:2.2.2"
+  checksum: 10c0/17687c36c85b2e489c7ffd676479c54e12437270eb5a724775cb880b09948cad205b79e5822a4d10cefde0eef433b781350d73bb649d8de9e84d7745871ee719
   languageName: node
   linkType: hard
 
-"@connectrpc/connect-web@npm:1.5.0":
-  version: 1.5.0
-  resolution: "@connectrpc/connect-web@npm:1.5.0"
+"@connectrpc/connect-web@npm:2.0.0":
+  version: 2.0.0
+  resolution: "@connectrpc/connect-web@npm:2.0.0"
   peerDependencies:
-    "@bufbuild/protobuf": ^1.10.0
-    "@connectrpc/connect": 1.5.0
-  checksum: 10c0/5cfdaf318af8208385895b5ef0c176264a913df5500b3ecd59532e073d671744e1de30a97dde95d33d59bc3d7abdc42a290948167fbd5324fcaf7c3dbea95662
+    "@bufbuild/protobuf": ^2.2.0
+    "@connectrpc/connect": 2.0.0
+  checksum: 10c0/fedbcd72c33391bb5aa6844e9047ba2ed8f1c2c9e5a347e05c94cc7aa1cf7000087688111303435998fe99b006335cfb4b0d56e160271b4fc60c9cf15025b41e
   languageName: node
   linkType: hard
 
-"@connectrpc/connect@npm:1.5.0":
-  version: 1.5.0
-  resolution: "@connectrpc/connect@npm:1.5.0"
+"@connectrpc/connect@npm:2.0.0":
+  version: 2.0.0
+  resolution: "@connectrpc/connect@npm:2.0.0"
   peerDependencies:
-    "@bufbuild/protobuf": ^1.10.0
-  checksum: 10c0/8a9a37366b7c5373d689e43cf30c059960daf601a7aade4262b2a6eec35763ea972c5350a609126e69c138e9559796cea7795cd1a276bee7fb342588339864f0
+    "@bufbuild/protobuf": ^2.2.0
+  checksum: 10c0/d7b55a6367899029ac98200c62211aebd04b5c5f7ed980b6afd4d59c5f3f8e64e5e98ca642d9eb74423d75040749ed3ff1bcdc501bafe201f98bc57068630f1a
   languageName: node
   linkType: hard
 
@@ -3728,9 +3728,9 @@ __metadata:
   resolution: "neoshowcase@workspace:."
   dependencies:
     "@biomejs/biome": "npm:1.9.2"
-    "@bufbuild/protobuf": "npm:1.10.0"
-    "@connectrpc/connect": "npm:1.5.0"
-    "@connectrpc/connect-web": "npm:1.5.0"
+    "@bufbuild/protobuf": "npm:2.2.2"
+    "@connectrpc/connect": "npm:2.0.0"
+    "@connectrpc/connect-web": "npm:2.0.0"
     "@iconify-json/material-symbols": "npm:1.2.5"
     "@kobalte/core": "npm:0.13.6"
     "@modular-forms/solid": "npm:0.23.0"

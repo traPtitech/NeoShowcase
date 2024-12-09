@@ -1,3 +1,4 @@
+import { timestampDate } from '@bufbuild/protobuf/wkt'
 import { A } from '@solidjs/router'
 import { AiOutlineBranches } from 'solid-icons/ai'
 import { type Component, For, Show } from 'solid-js'
@@ -70,7 +71,7 @@ export const AppRow: Component<Props> = (props) => {
   const commitTooltip = () => {
     const c = commit()
     if (!c || !c.commitDate) return `${shortSha(props.app!.commit)}`
-    const diff = diffHuman(c.commitDate.toDate())
+    const diff = diffHuman(timestampDate(c.commitDate))
     return (
       <>
         <For each={c.message.split('\n')}>{(line) => <div>{line}</div>}</For>
@@ -90,8 +91,8 @@ export const AppRow: Component<Props> = (props) => {
             <AppName>{props.app!.name}</AppName>
             <Show when={props.app!.updatedAt}>
               {(nonNullUpdatedAt) => {
-                const diff = diffHuman(nonNullUpdatedAt().toDate())
-                const localeString = nonNullUpdatedAt().toDate().toLocaleString()
+                const diff = diffHuman(timestampDate(nonNullUpdatedAt()))
+                const localeString = timestampDate(nonNullUpdatedAt()).toLocaleString()
                 return (
                   <ToolTip props={{ content: localeString }}>
                     <UpdatedAt>{diff()}</UpdatedAt>
