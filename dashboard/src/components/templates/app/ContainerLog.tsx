@@ -98,7 +98,7 @@ export const ContainerLog: Component<ContainerLogProps> = (props) => {
     logStreamAbort.abort()
   })
 
-  let logRef: HTMLDivElement
+  let logRef!: HTMLDivElement
   createEffect(() => {
     logs() // on change to (streamed) logs
     const ref = logRef

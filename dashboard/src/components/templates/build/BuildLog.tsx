@@ -22,7 +22,7 @@ export const BuildLog: Component<BuildLogProps> = (props) => {
     () => !props.finished && props.buildID,
     (id) => client.getBuildLogStream({ buildId: id }, { signal: logStreamAbort.signal }),
   )
-  const [streamedLog, setStreamedLog] = createSignal(new Uint8Array())
+  const [streamedLog, setStreamedLog] = createSignal<Uint8Array<ArrayBufferLike>>(new Uint8Array())
   createEffect(() => {
     const stream = buildLogStream()
     if (!stream) return
@@ -49,11 +49,11 @@ export const BuildLog: Component<BuildLogProps> = (props) => {
     logStreamAbort.abort()
   })
 
-  let logRef: HTMLDivElement
-  let streamLogRef: HTMLDivElement
+  let logRef!: HTMLDivElement
+  let streamLogRef!: HTMLDivElement
   createEffect(() => {
     if (!buildLog()) return
-    const ref = logRef as HTMLDivElement
+    const ref = logRef
     if (!ref) return
     setTimeout(() => {
       ref.scrollTop = ref.scrollHeight
@@ -61,7 +61,7 @@ export const BuildLog: Component<BuildLogProps> = (props) => {
   })
   createEffect(() => {
     if (!streamedLog()) return
-    const ref = streamLogRef as HTMLDivElement
+    const ref = streamLogRef
     if (!ref) return
     if (atBottom()) {
       ref.scrollTop = ref.scrollHeight
