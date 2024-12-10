@@ -23,4 +23,4 @@ const escapeHTML = (s: string): string =>
   })
 
 export const toWithAnsi = (str: string): string => ansiDecoder.toHtml(escapeHTML(str))
-export const toUTF8WithAnsi = (arr: Uint8Array): string => toWithAnsi(utf8Decoder.decode(arr.buffer))
+export const toUTF8WithAnsi = (arr: Uint8Array): string => toWithAnsi(utf8Decoder.decode(arr))

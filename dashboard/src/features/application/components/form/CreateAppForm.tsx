@@ -59,7 +59,7 @@ const CreateAppForm: Component = () => {
   const [repoBySearchParam] = createResource(
     () => searchParams.repositoryID ?? '',
     (id) => {
-      return id !== '' ? client.getRepository({ repositoryId: id }) : undefined
+      return typeof id === 'string' && id !== '' ? client.getRepository({ repositoryId: id }) : undefined
     },
   )
 
