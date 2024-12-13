@@ -34,8 +34,18 @@ export const createWebsiteSchema = v.pipe(
     pathPrefix: v.string(),
     stripPrefix: v.boolean(),
     https: stringBooleanSchema,
-    h2c: v.boolean(),
-    httpPort: v.pipe(v.number(), v.integer()),
+    // Static App ではフォームに表示されないので undefined になってしまう
+    // そのままだと invalid になって設定を変更できないのでデフォルト値を設定する
+    h2c: v.pipe(
+      v.optional(v.boolean()),
+      v.transform((input) => input ?? false),
+    ),
+    // httpPort: v.pipe(v.number(), v.integer()),
+    httpPort: v.pipe(
+      v.optional(v.number()),
+      v.transform((input) => input ?? 80),
+      v.integer(),
+    ),
     authentication: authenticationSchema,
   }),
   // wildcard domainが選択されている場合サブドメインは空であってはならない
