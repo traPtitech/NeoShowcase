@@ -1,5 +1,5 @@
 import { toJsonString } from '@bufbuild/protobuf'
-import { type Timestamp, timestampFromDate, TimestampSchema } from '@bufbuild/protobuf/wkt'
+import { type Timestamp, TimestampSchema, timestampFromDate } from '@bufbuild/protobuf/wkt'
 import { type Component, Show, createSignal } from 'solid-js'
 import type { Application, ApplicationOutput } from '/@/api/neoshowcase/protobuf/gateway_pb'
 import { Button } from '/@/components/UI/Button'
