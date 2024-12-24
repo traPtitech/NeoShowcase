@@ -31,7 +31,6 @@ const getLogsBefore = async (
   while (remainingLines > 0 && firstBefore.seconds - nextBefore.seconds < days * secondsPerDay) {
     const msg = `${toJsonString(TimestampSchema, nextBefore)} より前のログを取得中、残り ${remainingLines} 行 ...`
     setProgressMessage(msg)
-    console.log(msg)
 
     const res = await client.getOutput({
       applicationId: appID,
