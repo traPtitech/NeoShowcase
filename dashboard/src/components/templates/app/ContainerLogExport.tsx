@@ -1,5 +1,5 @@
-import { fromJsonString, toJsonString } from '@bufbuild/protobuf'
-import { type Timestamp, TimestampSchema } from '@bufbuild/protobuf/wkt'
+import { toJsonString } from '@bufbuild/protobuf'
+import { type Timestamp, timestampFromDate, TimestampSchema } from '@bufbuild/protobuf/wkt'
 import { type Component, Show, createSignal } from 'solid-js'
 import type { Application, ApplicationOutput } from '/@/api/neoshowcase/protobuf/gateway_pb'
 import { Button } from '/@/components/UI/Button'
@@ -25,7 +25,7 @@ const getLogsBefore = async (
   setProgressMessage: (message: string) => void,
 ): Promise<ApplicationOutput[]> => {
   let remainingLines = lines
-  const firstBefore: Timestamp = fromJsonString(TimestampSchema, before)
+  const firstBefore: Timestamp = timestampFromDate(new Date(before))
   let nextBefore = firstBefore
   let logLines: ApplicationOutput[] = []
   while (remainingLines > 0 && firstBefore.seconds - nextBefore.seconds < days * secondsPerDay) {
@@ -111,10 +111,8 @@ const exportBefore = async (
   if (lines > maxExportLines) {
     throw new Error(`${maxExportLines} 行以下を指定してください`)
   }
-  try {
-    fromJsonString(TimestampSchema, beforeStr)
-  } catch (e) {
-    console.error(e)
+  const date = new Date(beforeStr)
+  if (Number.isNaN(date)) {
     throw new Error('日付フォーマットが正しくありません')
   }
 
