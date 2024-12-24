@@ -1,7 +1,6 @@
 import { fromJsonString, toJsonString } from '@bufbuild/protobuf'
 import { type Timestamp, TimestampSchema } from '@bufbuild/protobuf/wkt'
 import { type Component, Show, createSignal } from 'solid-js'
-import toast from 'solid-toast'
 import type { Application, ApplicationOutput } from '/@/api/neoshowcase/protobuf/gateway_pb'
 import { Button } from '/@/components/UI/Button'
 import { TextField } from '/@/components/UI/TextField'
@@ -96,34 +95,28 @@ const exportBefore = async (
   setProgressMessage: (message: string) => void,
 ) => {
   if (Number.isNaN(days)) {
-    toast.error('日数に整数を指定してください')
-    return
+    throw new Error('日数に整数を指定してください')
   }
   if (days <= 0) {
-    toast.error('1日以上を指定してください')
-    return
+    throw new Error('1日以上を指定してください')
   }
   if (days > maxExportDays) {
-    toast.error(`${maxExportDays} 日以下を指定してください`)
-    return
+    throw new Error(`${maxExportDays} 日以下を指定してください`)
   }
   if (Number.isNaN(lines)) {
-    toast.error('行に整数を指定してください')
-    return
+    throw new Error('行に整数を指定してください')
   }
   if (lines <= 0) {
-    toast.error('1行以上を指定してください')
-    return
+    throw new Error('1行以上を指定してください')
   }
   if (lines > maxExportLines) {
-    toast.error(`${maxExportLines} 行以下を指定してください`)
-    return
+    throw new Error(`${maxExportLines} 行以下を指定してください`)
   }
   try {
     fromJsonString(TimestampSchema, beforeStr)
   } catch (e) {
-    toast.error('日付フォーマットが正しくありません')
-    return
+    console.error(e)
+    throw new Error('日付フォーマットが正しくありません')
   }
 
   const logLines = await getLogsBefore(app.id, beforeStr, days, lines, setProgressMessage)
@@ -157,10 +150,12 @@ export const ContainerLogExport: Component<Props> = (props) => {
     setExporting(true)
     try {
       await run()
+      setProgressMessage('エクスポート完了！')
     } catch (e) {
       handleAPIError(e, 'ログのエクスポートに失敗しました')
+    } finally {
+      setExporting(false)
     }
-    setProgressMessage('エクスポート完了！')
     setExporting(false)
   }
 
