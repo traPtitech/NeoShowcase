@@ -31,12 +31,19 @@ type Container struct {
 type ContainerState int
 
 const (
+	// ContainerStateMissing indicates that the container is not running.
 	ContainerStateMissing ContainerState = iota
+	// ContainerStateStarting indicates that the container is starting.
 	ContainerStateStarting
+	// ContainerStateRestarting indicates that the container is restarting.
 	ContainerStateRestarting
+	// ContainerStateRunning indicates that the container is running.
 	ContainerStateRunning
+	// ContainerStateExited indicates that the container has exited with code 0.
 	ContainerStateExited
+	// ContainerStateErrored indicates that the container has exited with a non-zero code.
 	ContainerStateErrored
+	// ContainerStateUnknown indicates that the container state is unknown.
 	ContainerStateUnknown
 )
 
