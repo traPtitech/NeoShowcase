@@ -57,6 +57,7 @@ export const deploymentState = (app: Application): ApplicationState => {
         return ApplicationState.Running
       case Application_ContainerState.RESTARTING:
       case Application_ContainerState.EXITED:
+        return ApplicationState.Idle
       case Application_ContainerState.ERRORED:
       case Application_ContainerState.UNKNOWN:
         return ApplicationState.Error
