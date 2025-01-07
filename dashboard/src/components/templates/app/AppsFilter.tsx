@@ -48,7 +48,10 @@ const AppsFilter: Component<{
   const repoCountByOrigin = (origin: RepositoryOrigin): number => {
     return props.allRepoWithApps
       .filter((repo) => repositoryURLToOrigin(repo.repo.url) === origin)
-      .filter((repo) => props.includeNoApp || repo.apps.length > 0).length
+      .filter(
+        (repo) =>
+          props.includeNoApp || repo.apps.filter((app) => props.statuses.includes(applicationState(app))).length > 0,
+      ).length
   }
 
   return (
