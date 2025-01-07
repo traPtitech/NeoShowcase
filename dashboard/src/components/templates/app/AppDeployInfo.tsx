@@ -160,6 +160,9 @@ const AppDeployInfo: Component<{
               <Show when={deploymentState(props.app) !== ApplicationState.Running}>
                 <List.RowData>現在アプリが起動していないためSSHアクセスはできません</List.RowData>
               </Show>
+              <Show when={deploymentState(props.app) === ApplicationState.Sleeping}>
+                <List.RowData>アプリのURLにアクセスがあった場合、自動的に起動します</List.RowData>
+              </Show>
             </List.RowContent>
           </DeployInfoContainer>
         </Show>
