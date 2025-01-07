@@ -389,6 +389,14 @@ services:
       - /var/lib/docker/:/var/lib/docker:ro
       - /dev/disk/:/dev/disk:ro
 
+  sablier:
+    image: sablierapp/sablier:1.8.1
+    command:
+      - start
+      - --provider.name=docker
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+
   traefik:
     image: traefik:3.1
     restart: always
@@ -409,6 +417,8 @@ services:
       - --ping=true
       - --metrics.prometheus=true
       - --metrics.prometheus.entrypoint=metrics
+      - --experimental.plugins.sablier.modulename=github.com/sablierapp/sablier
+      - --experimental.plugins.sablier.version=v1.8.1
     ports:
       - "80:80"
       - "443:443"
