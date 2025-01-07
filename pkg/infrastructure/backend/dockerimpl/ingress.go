@@ -19,7 +19,7 @@ type (
 	a []any
 )
 
-func (b *Backend) routerBase(website *domain.Website, svcName string) (router m, middlewares m) {
+func (b *Backend) routerBase(app *domain.Application, website *domain.Website, svcName string) (router m, middlewares m) {
 	middlewares = make(m)
 
 	var entrypoints []string
@@ -40,6 +40,12 @@ func (b *Backend) routerBase(website *domain.Website, svcName string) (router m,
 		}
 	} else if website.Authentication != domain.AuthenticationTypeOff {
 		log.Warnf("auth config not available for %s", website.FQDN)
+	}
+
+	if b.useSablierMiddleware(app) {
+		middlewareName := sablierMiddlewareName(app)
+		middlewareNames = append(middlewareNames, middlewareName)
+		middlewares[middlewareName] = b.sablierMiddleware(app)
 	}
 
 	var rule string
@@ -99,7 +105,7 @@ func newRuntimeConfigBuilder() *runtimeConfigBuilder {
 func (b *runtimeConfigBuilder) addWebsite(backend *Backend, app *domain.Application, website *domain.Website) {
 	svcName := traefikName(website)
 
-	router, middlewares := backend.routerBase(website, svcName)
+	router, middlewares := backend.routerBase(app, website, svcName)
 
 	netName := networkName(app.ID)
 	svc := m{
@@ -152,4 +158,32 @@ func (b *Backend) writeConfig(filename string, config any) error {
 	enc := yaml.NewEncoder(file)
 	defer enc.Close()
 	return enc.Encode(config)
+}
+
+func (b *Backend) sablierMiddleware(app *domain.Application) m {
+	// ref: https://sablierapp.dev/#/plugins/traefik?id=configure-the-plugin-using-the-dynamic-configuration
+	var config = m{
+		"sablierUrl":      b.config.Middleware.Sablier.SablierURL,
+		"group":           sablierGroupName(app.ID),
+		"sessionDuration": b.config.Middleware.Sablier.SessionDuration,
+	}
+
+	switch app.Config.BuildConfig.GetRuntimeConfig().AutoShutdown.Startup {
+	case domain.StartupBehaviorLoadingPage:
+		config["dynamic"] = m{
+			"displayName": app.Name,
+			"showDetails": "true",
+			"theme":       b.config.Middleware.Sablier.Dynamic.Theme,
+		}
+	case domain.StartupBehaviorBlocking:
+		config["blocking"] = m{
+			"timeout": b.config.Middleware.Sablier.Blocking.Timeout,
+		}
+	}
+
+	return m{
+		"plugin": m{
+			"sablier": config,
+		},
+	}
 }

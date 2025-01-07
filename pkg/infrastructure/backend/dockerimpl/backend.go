@@ -8,6 +8,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/samber/lo"
 	"github.com/traPtitech/neoshowcase/pkg/util/retry"
 
 	clitypes "github.com/docker/cli/cli/config/types"
@@ -180,7 +181,15 @@ func (b *Backend) containerLabels(app *domain.Application) map[string]string {
 		appLabel:            "true",
 		appIDLabel:          app.ID,
 		appRestartedAtLabel: app.UpdatedAt.Format(time.RFC3339Nano),
+		"sablier.enable":    lo.Ternary(b.useSablierMiddleware(app), "true", "false"),
+		"sablier.group":     sablierGroupName(app.ID),
 	})
+}
+
+func (b *Backend) useSablierMiddleware(app *domain.Application) bool {
+	return b.config.Middleware.Sablier.Enable &&
+		app.DeployType == domain.DeployTypeRuntime &&
+		app.Config.BuildConfig.GetRuntimeConfig().AutoShutdown.Enabled
 }
 
 func containerName(appID string) string {
@@ -201,4 +210,12 @@ func stripMiddlewareName(website *domain.Website) string {
 
 func ssHeaderMiddlewareName(ss *domain.StaticSite) string {
 	return fmt.Sprintf("nsapp-ss-header-%s", ss.Application.ID)
+}
+
+func sablierMiddlewareName(app *domain.Application) string {
+	return app.ID + "-sablier"
+}
+
+func sablierGroupName(appID string) string {
+	return fmt.Sprintf("nsapp-%s", appID)
 }

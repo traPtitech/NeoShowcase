@@ -84,6 +84,26 @@ type Config struct {
 			PriorityOffset int `mapstructure:"priorityOffset" yaml:"priorityOffset"`
 		} `mapstructure:"traefik" yaml:"traefik"`
 	} `mapstructure:"routing" yaml:"routing"`
+	// Middleware section defines middleware settings.
+	Middleware struct {
+		// Sablier (https://github.com/acouvreur/sablier) starts user apps on demand and shuts them down after a certain time.
+		// Apps which enable auto shutdown should be able to handle SIGTERM signal.
+		Sablier struct {
+			Enable     bool   `mapstructure:"enable" yaml:"enable"`
+			SablierURL string `mapstructure:"url" yaml:"url"`
+			// SessionDuration defines how long the session should last.
+			//
+			// Example: "10m"
+			SessionDuration string `mapstructure:"sessionDuration" yaml:"sessionDuration"`
+			Dynamic         struct {
+				Theme string `mapstructure:"theme" yaml:"theme"`
+			} `mapstructure:"dynamic" yaml:"dynamic"`
+			Blocking struct {
+				// Timeout defines how long the blocking should last.
+				Timeout string `mapstructure:"timeout" yaml:"timeout"`
+			} `mapstructure:"blocking" yaml:"blocking"`
+		} `mapstructure:"sablier" yaml:"sablier"`
+	}
 	// TLS section defines tls setting for user app ingress.
 	TLS struct {
 		CertResolver string `mapstructure:"certResolver" yaml:"certResolver"`
