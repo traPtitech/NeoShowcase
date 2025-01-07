@@ -1,16 +1,21 @@
 import { AiFillGithub } from 'solid-icons/ai'
 import { RiDevelopmentGitRepositoryLine } from 'solid-icons/ri'
 import { SiGitea } from 'solid-icons/si'
-import type { JSXElement } from 'solid-js'
+import { createMemo, createResource, JSXElement } from 'solid-js'
 import {
   type Application,
   Application_ContainerState,
   BuildStatus,
   type CreateWebsiteRequest,
   DeployType,
+  GetApplicationsRequest_Scope,
+  GetRepositoriesRequest_Scope,
   PortPublicationProtocol,
+  type Repository,
   type Website,
 } from '/@/api/neoshowcase/protobuf/gateway_pb'
+import { client, getRepositoryCommits } from '/@/libs/api'
+import { timestampDate } from '@bufbuild/protobuf/wkt'
 
 export const buildStatusStr: Record<BuildStatus, string> = {
   [BuildStatus.QUEUED]: 'Queued',
@@ -146,4 +151,58 @@ export const extractRepositoryNameFromURL = (url: string): string => {
 export const portPublicationProtocolMap: Record<PortPublicationProtocol, string> = {
   [PortPublicationProtocol.TCP]: 'TCP',
   [PortPublicationProtocol.UDP]: 'UDP',
+}
+
+const newestAppDate = (apps: Application[]): number =>
+  Math.max(0, ...apps.map((a) => (a.updatedAt ? timestampDate(a.updatedAt).getTime() : 0)))
+const compareRepoWithApp =
+  (sort: 'asc' | 'desc') =>
+  (a: RepoWithApp, b: RepoWithApp): number => {
+    // Sort by apps updated at
+    if (a.apps.length > 0 && b.apps.length > 0) {
+      if (sort === 'asc') {
+        return newestAppDate(a.apps) - newestAppDate(b.apps)
+      }
+      return newestAppDate(b.apps) - newestAppDate(a.apps)
+    }
+    // Bring up repositories with 1 or more apps at top
+    if ((a.apps.length > 0 && b.apps.length === 0) || (a.apps.length === 0 && b.apps.length > 0)) {
+      return b.apps.length - a.apps.length
+    }
+    // Fallback to sort by repository id
+    return a.repo.id.localeCompare(b.repo.id)
+  }
+
+export interface RepoWithApp {
+  repo: Repository
+  apps: Application[]
+}
+
+export const useApplicationsFilter = (
+  repos: Repository[],
+  apps: Application[],
+  statuses: ApplicationState[],
+  origins: RepositoryOrigin[],
+  includeNoApp: boolean,
+  sort: 'asc' | 'desc',
+): RepoWithApp[] => {
+  const filteredReposByOrigin = () => {
+    return repos.filter((r) => origins.includes(repositoryURLToOrigin(r.url))) ?? []
+  }
+  const filteredApps = () => {
+    return apps.filter((a) => statuses.includes(applicationState(a))) ?? []
+  }
+
+  const appsMap = {} as Record<string, Application[]>
+  for (const app of filteredApps()) {
+    if (!appsMap[app.repositoryId]) appsMap[app.repositoryId] = []
+    appsMap[app.repositoryId].push(app)
+  }
+  const res = filteredReposByOrigin().reduce<RepoWithApp[]>((acc, repo) => {
+    if (!includeNoApp && !appsMap[repo.id]) return acc
+    acc.push({ repo, apps: appsMap[repo.id] || [] })
+    return acc
+  }, [])
+  res.sort(compareRepoWithApp(sort))
+  return res
 }
