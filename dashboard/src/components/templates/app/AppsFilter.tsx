@@ -3,7 +3,14 @@ import { type Component, type ComponentProps, For, type Setter, Show } from 'sol
 import { CheckBoxIcon } from '/@/components/UI/CheckBoxIcon'
 import { RadioIcon } from '/@/components/UI/RadioIcon'
 import { styled } from '/@/components/styled-components'
-import { type ApplicationState, type RepositoryOrigin, originToIcon } from '/@/libs/application'
+import {
+  type ApplicationState,
+  type RepoWithApp,
+  type RepositoryOrigin,
+  applicationState,
+  originToIcon,
+  repositoryURLToOrigin,
+} from '/@/libs/application'
 import { clsx } from '/@/libs/clsx'
 import { allOrigins, allStatuses, sortItems } from '/@/pages/apps'
 import { AppStatusIcon } from './AppStatusIcon'
@@ -19,6 +26,7 @@ const selectItemStyle = clsx(
 const FilterItemContainer = styled('div', 'flex flex-col gap-2 text-bold text-text-black')
 
 const AppsFilter: Component<{
+  allRepoWithApps: RepoWithApp[]
   statuses: ApplicationState[]
   setStatues: Setter<ApplicationState[]>
   origin: RepositoryOrigin[]
@@ -30,6 +38,18 @@ const AppsFilter: Component<{
 }> = (props) => {
   const filtered = () =>
     props.statuses.length !== allStatuses.length || props.origin.length !== allOrigins.length || props.includeNoApp
+
+  const appCountByStatus = (status: ApplicationState): number => {
+    return props.allRepoWithApps
+      .filter((repo) => props.origin.includes(repositoryURLToOrigin(repo.repo.url)))
+      .flatMap((repo) => repo.apps.filter((app) => applicationState(app) === status)).length
+  }
+
+  const repoCountByOrigin = (origin: RepositoryOrigin): number => {
+    return props.allRepoWithApps
+      .filter((repo) => repositoryURLToOrigin(repo.repo.url) === origin)
+      .filter((repo) => props.includeNoApp || repo.apps.length > 0).length
+  }
 
   return (
     <DropdownMenu.Root>
@@ -64,7 +84,7 @@ const AppsFilter: Component<{
           }}
         >
           <FilterItemContainer class="grid-area-[status]">
-            Status
+            App Status
             <ItemsContainer>
               <For each={allStatuses}>
                 {(s) => (
@@ -84,7 +104,9 @@ const AppsFilter: Component<{
                         <CheckBoxIcon checked={props.statuses.includes(s.value)} />
                       </Checkbox.Indicator>
                       <AppStatusIcon state={s.value} hideTooltip />
-                      {s.label}
+                      <span>
+                        {s.label} ({appCountByStatus(s.value)})
+                      </span>
                     </Checkbox.Label>
                   </Checkbox.Root>
                 )}
@@ -92,7 +114,7 @@ const AppsFilter: Component<{
             </ItemsContainer>
           </FilterItemContainer>
           <FilterItemContainer class="grid-area-[provider]">
-            Origin
+            Repo Origin
             <ItemsContainer>
               <For each={allOrigins}>
                 {(s) => (
@@ -112,7 +134,9 @@ const AppsFilter: Component<{
                         <CheckBoxIcon checked={props.origin.includes(s.value)} />
                       </Checkbox.Indicator>
                       {originToIcon(s.value)}
-                      {s.label}
+                      <span>
+                        {s.label} ({repoCountByOrigin(s.value)})
+                      </span>
                     </Checkbox.Label>
                   </Checkbox.Root>
                 )}

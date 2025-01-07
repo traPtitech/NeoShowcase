@@ -7,7 +7,7 @@ import { GetApplicationsRequest_Scope, GetRepositoriesRequest_Scope } from '/@/a
 import { styled } from '/@/components/styled-components'
 import type { SelectOption } from '/@/components/templates/Select'
 import { client, getRepositoryCommits, user } from '/@/libs/api'
-import { ApplicationState, type RepositoryOrigin, useApplicationsFilter, RepoWithApp } from '/@/libs/application'
+import { ApplicationState, type RepoWithApp, type RepositoryOrigin, useApplicationsFilter } from '/@/libs/application'
 import { createSessionSignal } from '/@/libs/localStore'
 import { Button } from '../components/UI/Button'
 import { TabRound } from '../components/UI/TabRound'
@@ -146,11 +146,10 @@ export default () => {
     'apps-statuses-v1',
     allStatuses.map((s) => s.value),
   )
-  const [origin, setOrigin] = createSessionSignal<RepositoryOrigin[]>('apps-repository-origin', [
-    'GitHub',
-    'Gitea',
-    'Others',
-  ])
+  const [origin, setOrigin] = createSessionSignal<RepositoryOrigin[]>(
+    'apps-repository-origin',
+    allOrigins.map((o) => o.value),
+  )
   const [query, setQuery] = createSessionSignal('apps-query', '')
   const [sort, setSort] = createSessionSignal<keyof typeof sortItems>('apps-sort', sortItems.desc.value)
   const [includeNoApp, setIncludeNoApp] = createSessionSignal('apps-include-no-app', false)
@@ -169,6 +168,15 @@ export default () => {
     () => appScope(),
     (scope) => client.getApplications({ scope }),
   )
+  const allRepoWithApps = () =>
+    useApplicationsFilter(
+      repos()?.repositories ?? [],
+      apps()?.applications ?? [],
+      allStatuses.map((s) => s.value),
+      allOrigins.map((o) => o.value),
+      true,
+      'desc',
+    )
   const repoWithApps = () =>
     useApplicationsFilter(
       repos()?.repositories ?? [],
@@ -215,6 +223,7 @@ export default () => {
                 leftIcon={<div class="i-material-symbols:search shrink-0 text-2xl/6" />}
                 rightIcon={
                   <AppsFilter
+                    allRepoWithApps={allRepoWithApps()}
                     statuses={statuses()}
                     setStatues={setStatuses}
                     origin={origin()}

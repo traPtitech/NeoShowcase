@@ -1,21 +1,18 @@
+import { timestampDate } from '@bufbuild/protobuf/wkt'
 import { AiFillGithub } from 'solid-icons/ai'
 import { RiDevelopmentGitRepositoryLine } from 'solid-icons/ri'
 import { SiGitea } from 'solid-icons/si'
-import { createMemo, createResource, JSXElement } from 'solid-js'
+import type { JSXElement } from 'solid-js'
 import {
   type Application,
   Application_ContainerState,
   BuildStatus,
   type CreateWebsiteRequest,
   DeployType,
-  GetApplicationsRequest_Scope,
-  GetRepositoriesRequest_Scope,
   PortPublicationProtocol,
   type Repository,
   type Website,
 } from '/@/api/neoshowcase/protobuf/gateway_pb'
-import { client, getRepositoryCommits } from '/@/libs/api'
-import { timestampDate } from '@bufbuild/protobuf/wkt'
 
 export const buildStatusStr: Record<BuildStatus, string> = {
   [BuildStatus.QUEUED]: 'Queued',
