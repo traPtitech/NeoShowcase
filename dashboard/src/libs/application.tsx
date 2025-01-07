@@ -1,3 +1,4 @@
+import { timestampDate } from '@bufbuild/protobuf/wkt'
 import { AiFillGithub } from 'solid-icons/ai'
 import { RiDevelopmentGitRepositoryLine } from 'solid-icons/ri'
 import { SiGitea } from 'solid-icons/si'
@@ -9,6 +10,7 @@ import {
   type CreateWebsiteRequest,
   DeployType,
   PortPublicationProtocol,
+  type Repository,
   type Website,
 } from '/@/api/neoshowcase/protobuf/gateway_pb'
 
@@ -25,6 +27,7 @@ export enum ApplicationState {
   Idle = 'Idle',
   Deploying = 'Deploying',
   Running = 'Running',
+  Sleeping = 'Sleeping',
   Serving = 'Serving',
   Error = 'Error',
 }
@@ -40,8 +43,8 @@ const autoShutdownEnabled = (app: Application): boolean => {
 }
 
 export const deploymentState = (app: Application): ApplicationState => {
-  // if app is not running or autoShutdown is enabled and container is missing, it's idle
-  if (!app.running || (autoShutdownEnabled(app) && app.container === Application_ContainerState.MISSING)) {
+  // App is not running
+  if (!app.running) {
     return ApplicationState.Idle
   }
   if (app.currentBuild === '') {
@@ -51,6 +54,11 @@ export const deploymentState = (app: Application): ApplicationState => {
   if (app.deployType === DeployType.RUNTIME) {
     switch (app.container) {
       case Application_ContainerState.MISSING:
+        // Has auto shutdown enabled, and the container is missing - app is sleeping, and will start on HTTP access
+        if (autoShutdownEnabled(app)) {
+          return ApplicationState.Sleeping
+        }
+        return ApplicationState.Deploying
       case Application_ContainerState.STARTING:
         return ApplicationState.Deploying
       case Application_ContainerState.RUNNING:
@@ -140,4 +148,54 @@ export const extractRepositoryNameFromURL = (url: string): string => {
 export const portPublicationProtocolMap: Record<PortPublicationProtocol, string> = {
   [PortPublicationProtocol.TCP]: 'TCP',
   [PortPublicationProtocol.UDP]: 'UDP',
+}
+
+const newestAppDate = (apps: Application[]): number =>
+  Math.max(0, ...apps.map((a) => (a.updatedAt ? timestampDate(a.updatedAt).getTime() : 0)))
+const compareRepoWithApp =
+  (sort: 'asc' | 'desc') =>
+  (a: RepoWithApp, b: RepoWithApp): number => {
+    // Sort by apps updated at
+    if (a.apps.length > 0 && b.apps.length > 0) {
+      if (sort === 'asc') {
+        return newestAppDate(a.apps) - newestAppDate(b.apps)
+      }
+      return newestAppDate(b.apps) - newestAppDate(a.apps)
+    }
+    // Bring up repositories with 1 or more apps at top
+    if ((a.apps.length > 0 && b.apps.length === 0) || (a.apps.length === 0 && b.apps.length > 0)) {
+      return b.apps.length - a.apps.length
+    }
+    // Fallback to sort by repository id
+    return a.repo.id.localeCompare(b.repo.id)
+  }
+
+export interface RepoWithApp {
+  repo: Repository
+  apps: Application[]
+}
+
+export const useApplicationsFilter = (
+  repos: Repository[],
+  apps: Application[],
+  statuses: ApplicationState[],
+  origins: RepositoryOrigin[],
+  includeNoApp: boolean,
+  sort: 'asc' | 'desc',
+): RepoWithApp[] => {
+  const filteredReposByOrigin = repos.filter((r) => origins.includes(repositoryURLToOrigin(r.url)))
+  const filteredApps = apps.filter((a) => statuses.includes(applicationState(a)))
+
+  const appsMap = {} as Record<string, Application[]>
+  for (const app of filteredApps) {
+    if (!appsMap[app.repositoryId]) appsMap[app.repositoryId] = []
+    appsMap[app.repositoryId].push(app)
+  }
+  const res = filteredReposByOrigin.reduce<RepoWithApp[]>((acc, repo) => {
+    if (!includeNoApp && !appsMap[repo.id]) return acc
+    acc.push({ repo, apps: appsMap[repo.id] || [] })
+    return acc
+  }, [])
+  res.sort(compareRepoWithApp(sort))
+  return res
 }
