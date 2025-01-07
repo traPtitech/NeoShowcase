@@ -167,6 +167,13 @@ func init() {
 	viper.SetDefault("components.controller.docker.ss.url", "")
 	viper.SetDefault("components.controller.docker.routing.type", "traefik")
 	viper.SetDefault("components.controller.docker.routing.traefik.priorityOffset", 0)
+
+	viper.SetDefault("components.controller.docker.middleware.sablier.enable", true)
+	viper.SetDefault("components.controller.docker.middleware.sablier.url", "http://sablier:10000")
+	viper.SetDefault("components.controller.docker.middleware.sablier.sessionDuration", "1h")
+	viper.SetDefault("components.controller.docker.middleware.sablier.dynamic.theme", "ghost")
+	viper.SetDefault("components.controller.docker.middleware.sablier.blocking.timeout", "1m")
+
 	viper.SetDefault("components.controller.docker.tls.certResolver", "nsresolver")
 	viper.SetDefault("components.controller.docker.tls.wildcard.domains", nil)
 
