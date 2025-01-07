@@ -25,6 +25,7 @@ export enum ApplicationState {
   Idle = 'Idle',
   Deploying = 'Deploying',
   Running = 'Running',
+  Sleeping = 'Sleeping',
   Serving = 'Serving',
   Error = 'Error',
 }
@@ -40,8 +41,8 @@ const autoShutdownEnabled = (app: Application): boolean => {
 }
 
 export const deploymentState = (app: Application): ApplicationState => {
-  // if app is not running or autoShutdown is enabled and container is missing, it's idle
-  if (!app.running || (autoShutdownEnabled(app) && app.container === Application_ContainerState.MISSING)) {
+  // App is not running
+  if (!app.running) {
     return ApplicationState.Idle
   }
   if (app.currentBuild === '') {
@@ -51,6 +52,11 @@ export const deploymentState = (app: Application): ApplicationState => {
   if (app.deployType === DeployType.RUNTIME) {
     switch (app.container) {
       case Application_ContainerState.MISSING:
+        // Has auto shutdown enabled, and the container is missing - app is sleeping, and will start on HTTP access
+        if (autoShutdownEnabled(app)) {
+          return ApplicationState.Sleeping
+        }
+        return ApplicationState.Deploying
       case Application_ContainerState.STARTING:
         return ApplicationState.Deploying
       case Application_ContainerState.RUNNING:

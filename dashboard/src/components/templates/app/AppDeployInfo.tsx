@@ -80,6 +80,8 @@ const AppDeployInfo: Component<{
             'bg-color-overlay-ui-primary-to-transparency-primary-selected hover:bg-color-overlay-ui-primary-to-transparency-primary-hover',
           deploymentState(props.app) === ApplicationState.Idle &&
             'bg-color-overlay-ui-primary-to-black-alpha-200 hover:bg-color-overlay-ui-primary-to-black-alpha-100',
+          deploymentState(props.app) === ApplicationState.Sleeping &&
+            'bg-color-overlay-ui-primary-to-violet-200 hover:bg-color-overlay-ui-primary-to-violet-100',
           deploymentState(props.app) === ApplicationState.Deploying &&
             'bg-color-overlay-ui-primary-to-transparency-warn-selected hover:bg-color-overlay-ui-primary-to-transparency-warn-hover',
           deploymentState(props.app) === ApplicationState.Error &&
