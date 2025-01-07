@@ -183,19 +183,15 @@ export const useApplicationsFilter = (
   includeNoApp: boolean,
   sort: 'asc' | 'desc',
 ): RepoWithApp[] => {
-  const filteredReposByOrigin = () => {
-    return repos.filter((r) => origins.includes(repositoryURLToOrigin(r.url))) ?? []
-  }
-  const filteredApps = () => {
-    return apps.filter((a) => statuses.includes(applicationState(a))) ?? []
-  }
+  const filteredReposByOrigin = repos.filter((r) => origins.includes(repositoryURLToOrigin(r.url)))
+  const filteredApps = apps.filter((a) => statuses.includes(applicationState(a)))
 
   const appsMap = {} as Record<string, Application[]>
-  for (const app of filteredApps()) {
+  for (const app of filteredApps) {
     if (!appsMap[app.repositoryId]) appsMap[app.repositoryId] = []
     appsMap[app.repositoryId].push(app)
   }
-  const res = filteredReposByOrigin().reduce<RepoWithApp[]>((acc, repo) => {
+  const res = filteredReposByOrigin.reduce<RepoWithApp[]>((acc, repo) => {
     if (!includeNoApp && !appsMap[repo.id]) return acc
     acc.push({ repo, apps: appsMap[repo.id] || [] })
     return acc
