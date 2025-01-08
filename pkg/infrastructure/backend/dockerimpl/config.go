@@ -87,7 +87,6 @@ type Config struct {
 	// Middleware section defines middleware settings.
 	Middleware struct {
 		// Sablier (https://github.com/acouvreur/sablier) starts user apps on demand and shuts them down after a certain time.
-		// Apps which enable auto shutdown should be able to handle SIGTERM signal.
 		Sablier struct {
 			Enable     bool   `mapstructure:"enable" yaml:"enable"`
 			SablierURL string `mapstructure:"url" yaml:"url"`

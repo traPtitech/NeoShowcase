@@ -85,8 +85,9 @@ func (b *Backend) syncAppContainer(ctx context.Context, app *domain.RuntimeDesir
 	hostConfig := &container.HostConfig{
 		PortBindings: make(map[nat.Port][]nat.PortBinding),
 		RestartPolicy: container.RestartPolicy{
-			Name:              "on-failure",
-			MaximumRetryCount: 5,
+			Name: "on-failure",
+			// sablier stops the container, so we don't need to restart it
+			MaximumRetryCount: lo.Ternary(b.useSablierMiddleware(app.App), 0, 5),
 		},
 	}
 	for _, p := range app.App.PortPublications {
