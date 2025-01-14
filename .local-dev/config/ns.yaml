@@ -75,6 +75,15 @@ components:
         type: traefik
         traefik:
           priorityOffset: 0
+      middleware:
+        sablier:
+          enable: true
+          url: http://sablier:10000
+          sessionDuration: 5m
+          dynamic:
+            theme: ghost
+          blocking:
+            timeout: 1m
       tls:
         certResolver: nsresolver
         wildcard:
