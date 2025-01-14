@@ -42,7 +42,7 @@ func (b *Backend) routerBase(app *domain.Application, website *domain.Website, s
 		log.Warnf("auth config not available for %s", website.FQDN)
 	}
 
-	if b.useSablierMiddleware(app) {
+	if b.useSablier(app) {
 		middlewareName := sablierMiddlewareName(app)
 		middlewareNames = append(middlewareNames, middlewareName)
 		middlewares[middlewareName] = b.sablierMiddleware(app)

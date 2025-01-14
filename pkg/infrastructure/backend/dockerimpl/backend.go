@@ -181,12 +181,12 @@ func (b *Backend) containerLabels(app *domain.Application) map[string]string {
 		appLabel:            "true",
 		appIDLabel:          app.ID,
 		appRestartedAtLabel: app.UpdatedAt.Format(time.RFC3339Nano),
-		"sablier.enable":    lo.Ternary(b.useSablierMiddleware(app), "true", "false"),
+		"sablier.enable":    lo.Ternary(b.useSablier(app), "true", "false"),
 		"sablier.group":     sablierGroupName(app.ID),
 	})
 }
 
-func (b *Backend) useSablierMiddleware(app *domain.Application) bool {
+func (b *Backend) useSablier(app *domain.Application) bool {
 	return b.config.Middleware.Sablier.Enable &&
 		app.DeployType == domain.DeployTypeRuntime &&
 		app.Config.BuildConfig.GetRuntimeConfig().AutoShutdown.Enabled
