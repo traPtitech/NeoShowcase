@@ -80,6 +80,8 @@ const AppDeployInfo: Component<{
             'bg-color-overlay-ui-primary-to-transparency-primary-selected hover:bg-color-overlay-ui-primary-to-transparency-primary-hover',
           deploymentState(props.app) === ApplicationState.Idle &&
             'bg-color-overlay-ui-primary-to-black-alpha-200 hover:bg-color-overlay-ui-primary-to-black-alpha-100',
+          deploymentState(props.app) === ApplicationState.Sleeping &&
+            'bg-color-overlay-ui-primary-to-violet-200 hover:bg-color-overlay-ui-primary-to-violet-100',
           deploymentState(props.app) === ApplicationState.Deploying &&
             'bg-color-overlay-ui-primary-to-transparency-warn-selected hover:bg-color-overlay-ui-primary-to-transparency-warn-hover',
           deploymentState(props.app) === ApplicationState.Error &&
@@ -157,6 +159,9 @@ const AppDeployInfo: Component<{
               <Code value={sshAccessCommand()} copyable />
               <Show when={deploymentState(props.app) !== ApplicationState.Running}>
                 <List.RowData>現在アプリが起動していないためSSHアクセスはできません</List.RowData>
+              </Show>
+              <Show when={deploymentState(props.app) === ApplicationState.Sleeping}>
+                <List.RowData>アプリのURLにアクセスがあった場合、自動的に起動します</List.RowData>
               </Show>
             </List.RowContent>
           </DeployInfoContainer>

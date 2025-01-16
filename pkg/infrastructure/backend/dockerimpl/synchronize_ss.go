@@ -20,7 +20,7 @@ func newSSConfigBuilder() *ssConfigBuilder {
 }
 
 func (b *ssConfigBuilder) addStaticSite(backend *Backend, site *domain.StaticSite) {
-	router, newMiddlewares := backend.routerBase(site.Website, traefikSSServiceName)
+	router, newMiddlewares := backend.routerBase(site.Application, site.Website, traefikSSServiceName)
 	for name, mw := range newMiddlewares {
 		b.middlewares[name] = mw
 	}
