@@ -1,19 +1,13 @@
-import { timestampDate } from '@bufbuild/protobuf/wkt'
 import { Title } from '@solidjs/meta'
 import { A } from '@solidjs/router'
 import { createVirtualizer } from '@tanstack/solid-virtual'
 import Fuse from 'fuse.js'
 import { type Component, For, Suspense, createMemo, createResource, createSignal, useTransition } from 'solid-js'
-import {
-  type Application,
-  GetApplicationsRequest_Scope,
-  GetRepositoriesRequest_Scope,
-  type Repository,
-} from '/@/api/neoshowcase/protobuf/gateway_pb'
+import { GetApplicationsRequest_Scope, GetRepositoriesRequest_Scope } from '/@/api/neoshowcase/protobuf/gateway_pb'
 import { styled } from '/@/components/styled-components'
 import type { SelectOption } from '/@/components/templates/Select'
 import { client, getRepositoryCommits, user } from '/@/libs/api'
-import { ApplicationState, type RepositoryOrigin, applicationState, repositoryURLToOrigin } from '/@/libs/application'
+import { ApplicationState, type RepoWithApp, type RepositoryOrigin, useApplicationsFilter } from '/@/libs/application'
 import { createSessionSignal } from '/@/libs/localStore'
 import { Button } from '../components/UI/Button'
 import { TabRound } from '../components/UI/TabRound'
@@ -44,36 +38,12 @@ const scopeItems = (admin: boolean | undefined) => {
   }
   return items
 }
-interface RepoWithApp {
-  repo: Repository
-  apps: Application[]
-}
-
-const newestAppDate = (apps: Application[]): number =>
-  Math.max(0, ...apps.map((a) => (a.updatedAt ? timestampDate(a.updatedAt).getTime() : 0)))
-const compareRepoWithApp =
-  (sort: 'asc' | 'desc') =>
-  (a: RepoWithApp, b: RepoWithApp): number => {
-    // Sort by apps updated at
-    if (a.apps.length > 0 && b.apps.length > 0) {
-      if (sort === 'asc') {
-        return newestAppDate(a.apps) - newestAppDate(b.apps)
-      }
-      return newestAppDate(b.apps) - newestAppDate(a.apps)
-    }
-    // Bring up repositories with 1 or more apps at top
-    if ((a.apps.length > 0 && b.apps.length === 0) || (a.apps.length === 0 && b.apps.length > 0)) {
-      return b.apps.length - a.apps.length
-    }
-    // Fallback to sort by repository id
-    return a.repo.id.localeCompare(b.repo.id)
-  }
 
 export const allStatuses: SelectOption<ApplicationState>[] = [
   { label: 'Idle', value: ApplicationState.Idle },
   { label: 'Deploying', value: ApplicationState.Deploying },
   { label: 'Running', value: ApplicationState.Running },
-  { label: 'Sleeping', value: ApplicationState.Idle },
+  { label: 'Sleeping', value: ApplicationState.Sleeping },
   { label: 'Serving', value: ApplicationState.Serving },
   { label: 'Error', value: ApplicationState.Error },
 ]
@@ -84,62 +54,23 @@ export const allOrigins: SelectOption<RepositoryOrigin>[] = [
 ]
 
 const AppsList: Component<{
-  scope: GetRepositoriesRequest_Scope
-  statuses: ApplicationState[]
-  origins: RepositoryOrigin[]
+  repoWithApps: RepoWithApp[]
   query: string
-  sort: keyof typeof sortItems
-  includeNoApp: boolean
   parentRef: HTMLDivElement
 }> = (props) => {
-  const appScope = () => {
-    const mine = props.scope === GetRepositoriesRequest_Scope.MINE
-    return mine ? GetApplicationsRequest_Scope.MINE : GetApplicationsRequest_Scope.ALL
-  }
-  const [repos] = createResource(
-    () => props.scope,
-    (scope) => client.getRepositories({ scope }),
-  )
-  const [apps] = createResource(
-    () => appScope(),
-    (scope) => client.getApplications({ scope }),
-  )
-  const hashes = () => apps()?.applications?.map((app) => app.commit)
+  const hashes = () => props.repoWithApps.flatMap((r) => r.apps.map((a) => a.commit))
   const [commits] = createResource(
     () => hashes(),
     (hashes) => getRepositoryCommits(hashes),
   )
 
-  const filteredReposByOrigin = createMemo(() => {
-    const p = props.origins
-    return repos()?.repositories.filter((r) => p.includes(repositoryURLToOrigin(r.url))) ?? []
-  })
-  const filteredApps = createMemo(() => {
-    const s = props.statuses
-    return apps()?.applications.filter((a) => s.includes(applicationState(a))) ?? []
-  })
-  const repoWithApps = createMemo(() => {
-    const appsMap = {} as Record<string, Application[]>
-    for (const app of filteredApps()) {
-      if (!appsMap[app.repositoryId]) appsMap[app.repositoryId] = []
-      appsMap[app.repositoryId].push(app)
-    }
-    const res = filteredReposByOrigin().reduce<RepoWithApp[]>((acc, repo) => {
-      if (!props.includeNoApp && !appsMap[repo.id]) return acc
-      acc.push({ repo, apps: appsMap[repo.id] || [] })
-      return acc
-    }, [])
-    res.sort(compareRepoWithApp(props.sort))
-    return res
-  })
-
   const fuse = createMemo(() => {
-    return new Fuse(repoWithApps(), {
+    return new Fuse(props.repoWithApps, {
       keys: ['repo.name', 'apps.name'],
     })
   })
   const filteredRepos = createMemo(() => {
-    if (props.query === '') return repoWithApps()
+    if (props.query === '') return props.repoWithApps
     return fuse()
       .search(props.query)
       .map((r) => r.item)
@@ -215,16 +146,46 @@ export default () => {
     'apps-statuses-v1',
     allStatuses.map((s) => s.value),
   )
-  const [origin, setOrigin] = createSessionSignal<RepositoryOrigin[]>('apps-repository-origin', [
-    'GitHub',
-    'Gitea',
-    'Others',
-  ])
+  const [origin, setOrigin] = createSessionSignal<RepositoryOrigin[]>(
+    'apps-repository-origin',
+    allOrigins.map((o) => o.value),
+  )
   const [query, setQuery] = createSessionSignal('apps-query', '')
   const [sort, setSort] = createSessionSignal<keyof typeof sortItems>('apps-sort', sortItems.desc.value)
   const [includeNoApp, setIncludeNoApp] = createSessionSignal('apps-include-no-app', false)
 
   const [scrollParentRef, setScrollParentRef] = createSignal<HTMLDivElement>()
+
+  const appScope = () => {
+    const mine = scope() === GetRepositoriesRequest_Scope.MINE
+    return mine ? GetApplicationsRequest_Scope.MINE : GetApplicationsRequest_Scope.ALL
+  }
+  const [repos] = createResource(
+    () => scope(),
+    (scope) => client.getRepositories({ scope }),
+  )
+  const [apps] = createResource(
+    () => appScope(),
+    (scope) => client.getApplications({ scope }),
+  )
+  const allRepoWithApps = () =>
+    useApplicationsFilter(
+      repos()?.repositories ?? [],
+      apps()?.applications ?? [],
+      allStatuses.map((s) => s.value),
+      allOrigins.map((o) => o.value),
+      true,
+      'desc',
+    )
+  const repoWithApps = () =>
+    useApplicationsFilter(
+      repos()?.repositories ?? [],
+      apps()?.applications ?? [],
+      statuses(),
+      origin(),
+      includeNoApp(),
+      sort(),
+    )
 
   return (
     <div class="h-full overflow-y-auto" ref={setScrollParentRef}>
@@ -262,6 +223,7 @@ export default () => {
                 leftIcon={<div class="i-material-symbols:search shrink-0 text-2xl/6" />}
                 rightIcon={
                   <AppsFilter
+                    allRepoWithApps={allRepoWithApps()}
                     statuses={statuses()}
                     setStatues={setStatuses}
                     origin={origin()}
@@ -285,15 +247,7 @@ export default () => {
               }
             >
               <SuspenseContainer isPending={isPending()}>
-                <AppsList
-                  scope={scope()}
-                  statuses={statuses()}
-                  origins={origin()}
-                  query={query()}
-                  sort={sort()}
-                  includeNoApp={includeNoApp()}
-                  parentRef={scrollParentRef()!}
-                />
+                <AppsList repoWithApps={repoWithApps()} query={query()} parentRef={scrollParentRef()!} />
               </SuspenseContainer>
             </Suspense>
           </div>

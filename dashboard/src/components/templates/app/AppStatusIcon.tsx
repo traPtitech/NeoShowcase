@@ -19,6 +19,9 @@ const components: Record<ApplicationState, (size: IconProps) => JSXElement> = {
       style={{ 'font-size': `${props.size}px` }}
     />
   ),
+  [ApplicationState.Sleeping]: (props) => (
+    <div class="i-material-symbols:mode-standby shrink-0 text-violet-400" style={{ 'font-size': `${props.size}px` }} />
+  ),
   [ApplicationState.Running]: (props) => (
     <div
       class="i-material-symbols:check-circle shrink-0 text-accent-success"
