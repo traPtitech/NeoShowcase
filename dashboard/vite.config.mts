@@ -33,6 +33,7 @@ export default defineConfig(({ mode }) => ({
     alias: {
       '/@': path.resolve(__dirname, '/src'),
     },
+    conditions: ['module', 'browser', 'default'],
   },
   build: {
     target: 'esnext',
