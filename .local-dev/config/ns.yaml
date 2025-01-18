@@ -21,8 +21,8 @@ image:
   registry:
     scheme: http
     addr: registry.local
-    username: ""
-    password: ""
+    username: ''
+    password: ''
   namePrefix: ns-apps/
   tmpNamePrefix: ns-apps-tmp/
 
@@ -35,20 +35,20 @@ components:
         address: http://buildpack:1235
         listenPort: 1235
       remoteDir: /workspace
-      platformAPI: "0.11"
+      platformAPI: '0.11'
     controller:
       url: http://ns-controller:10000
     priority: 0
-    stepTimeout: "1h"
+    stepTimeout: '1h'
 
   controller:
     port: 10000
-    token: "my-super-secret-token"
+    token: 'my-super-secret-token'
     mode: docker
     docker:
       confDir: /opt/traefik/conf
       domains:
-        - domain: "*.local.trapti.tech"
+        - domain: '*.local.trapti.tech'
           excludes: []
           auth:
             available: true
@@ -81,7 +81,7 @@ components:
           url: http://sablier:10000
           sessionDuration: 5m
           dynamic:
-            theme: ghost
+            theme: neoshowcase
           blocking:
             timeout: 1m
       tls:
@@ -102,7 +102,7 @@ components:
 
     k8s:
       domains:
-        - domain: "*.local.trapti.tech"
+        - domain: '*.local.trapti.tech'
           excludes: []
           auth:
             available: true
@@ -156,7 +156,7 @@ components:
             domains: []
 
       namespace: ns-apps
-      imagePullSecret: ""
+      imagePullSecret: ''
       # extra labels
       labels:
         - key: app.kubernetes.io/instance
@@ -197,7 +197,7 @@ components:
       type: loki
       loki:
         endpoint: http://loki:3100
-        queryTemplate: "{ns_trap_jp_app_id=\"{{ .App.ID }}\"}"
+        queryTemplate: '{ns_trap_jp_app_id="{{ .App.ID }}"}'
     metrics:
       type: prometheus
       prometheus:
@@ -214,7 +214,7 @@ components:
 
   giteaIntegration:
     url: https://git.trap.jp
-    token: ""
+    token: ''
     controller:
       url: http://ns-controller:10000
 
