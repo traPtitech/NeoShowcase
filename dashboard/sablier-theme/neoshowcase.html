@@ -48,7 +48,7 @@
         width: 416px;
       }
 
-      .title {
+      #title {
         color: #f1f1f1cc;
       }
 
@@ -225,7 +225,7 @@
         </svg>
       </header>
       <main>
-        <div class="title">{{ .DisplayName }} を起動しています</div>
+        <div id="title">{{ .DisplayName }} を起動しています</div>
         <div class="loading-container">
           <div class="bg-blur"></div>
           <svg
@@ -256,5 +256,11 @@
 
     const tip = tips[Math.floor(Math.random() * tips.length)];
     document.getElementById('tips').innerText = tip;
+
+    const title = document.getElementById('title');
+    setInterval(() => {
+      title.innerText = title.innerText + '.';
+      title.innerText = title.innerText.replace('.....', '');
+    }, 500);
   </script>
 </html>
