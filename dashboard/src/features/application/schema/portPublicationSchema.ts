@@ -40,14 +40,6 @@ export const portPublicationSchema = v.pipe(
     ),
     ['internetPort'],
   ),
-  v.forward(
-    v.partialCheck(
-      [['applicationPort'], ['protocol']],
-      (input) => isValidPort(input.applicationPort, input.protocol),
-      'Please enter the available port',
-    ),
-    ['applicationPort'],
-  ),
 )
 
 export type PortPublicationInput = v.InferInput<typeof portPublicationSchema>
