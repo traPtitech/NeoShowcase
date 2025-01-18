@@ -5,3 +5,8 @@ sessions:
   expiration-interval: 20s
 logging:
   level: trace
+strategy:
+  dynamic:
+    custom-themes-path: /etc/sablier/themes
+    default-theme: neoshowcase
+    default-refresh-frequency: 5s
