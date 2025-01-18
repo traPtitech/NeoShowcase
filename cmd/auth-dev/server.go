@@ -16,12 +16,7 @@ type Server struct {
 func NewServer(header string, port int, user string) *Server {
 	e := echo.New()
 	e.Any("/*", func(c echo.Context) error {
-		username := c.Request().Header.Get("X-Auth-User")
-		if username != "" {
-			c.Response().Header().Set(header, username)
-		} else {
-			c.Response().Header().Set(header, user)
-		}
+		c.Response().Header().Set(header, user)
 		return c.NoContent(http.StatusOK)
 	})
 	return &Server{e: e, port: port}
