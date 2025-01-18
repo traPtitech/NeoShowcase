@@ -30,5 +30,5 @@ spec:
               subPath: .local-dev/config/sablier.yaml
               mountPath: /etc/sablier/sablier.yaml
             - name: project
-              subPath: dashboard/sablier-theme
+              subPath: sablier/themes
               mountPath: /etc/sablier/themes

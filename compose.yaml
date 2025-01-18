@@ -397,7 +397,7 @@ services:
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
       - ./.local-dev/config/sablier.yaml:/etc/sablier/sablier.yaml
-      - ./dashboard/sablier-theme:/etc/sablier/themes
+      - ./sablier/themes:/etc/sablier/themes
 
   traefik:
     image: traefik:3.1
