@@ -128,12 +128,49 @@ jobs:
             ghcr.io/traptitech/ns-dashboard:${{ env.APP_VERSION }}
           cache-from: type=registry,ref=ghcr.io/traptitech/ns-dashboard:buildcache
 
+  build-sablier-image:
+    name: Build Sablier Image
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set APP_VERSION env
+        run: echo "APP_VERSION=$(echo ${GITHUB_REF:11})" >> $GITHUB_ENV
+
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v3
+      - name: Set up Docker Buildx
+        id: buildx
+        uses: docker/setup-buildx-action@v3
+      - name: Builder instance name
+        run: echo ${{ steps.buildx.outputs.name }}
+      - name: Available platforms
+        run: echo ${{ steps.buildx.outputs.platforms }}
+
+      - name: Login to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: traptitech
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build
+        uses: docker/build-push-action@v6
+        with:
+          context: sablier
+          platforms: linux/amd64,linux/arm64
+          push: true
+          tags: |
+            ghcr.io/traptitech/ns-sablier:latest
+            ghcr.io/traptitech/ns-sablier:${{ env.APP_VERSION }}
+          cache-from: type=registry,ref=ghcr.io/traptitech/ns-sablier:buildcache
+
   dispatch-renovate:
     name: Dispatch Renovate
     runs-on: ubuntu-latest
     needs:
       - build-component-images
       - build-dashboard-image
+      - build-sablier-image
     steps:
       - uses: actions/github-script@v7
         with:
