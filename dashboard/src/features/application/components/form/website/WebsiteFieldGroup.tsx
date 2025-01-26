@@ -41,7 +41,6 @@ const WebsiteFieldGroup: Component<Props> = (props) => {
 
   const handleDelete = () => {
     remove(formStore, 'form.websites', { at: props.index })
-    close()
   }
 
   return (
