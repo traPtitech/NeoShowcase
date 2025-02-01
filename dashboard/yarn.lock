@@ -1011,12 +1011,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@iconify-json/material-symbols@npm:1.2.12":
-  version: 1.2.12
-  resolution: "@iconify-json/material-symbols@npm:1.2.12"
+"@iconify-json/material-symbols@npm:1.2.14":
+  version: 1.2.14
+  resolution: "@iconify-json/material-symbols@npm:1.2.14"
   dependencies:
     "@iconify/types": "npm:*"
-  checksum: 10c0/9b4b41eec12977c1bd2dbee1e5cf015953995fa7d27a9b4575993739dc0433b89948811496ddedf769a4e8090c52f3fe03d483533be242ea8f9a179f48089b78
+  checksum: 10c0/8504e48d0c55bfc43fc4f0863b1c1bbc27c199b900e6a50d331e8215167fab0d7cc73db3066b48a29ad458f28068bd9630394470c9e0311289bc35ad350d711e
   languageName: node
   linkType: hard
 
@@ -1595,14 +1595,14 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@solid-primitives/refs@npm:1.0.8":
-  version: 1.0.8
-  resolution: "@solid-primitives/refs@npm:1.0.8"
+"@solid-primitives/refs@npm:1.1.0":
+  version: 1.1.0
+  resolution: "@solid-primitives/refs@npm:1.1.0"
   dependencies:
-    "@solid-primitives/utils": "npm:^6.2.3"
+    "@solid-primitives/utils": "npm:^6.3.0"
   peerDependencies:
     solid-js: ^1.6.12
-  checksum: 10c0/bc4313a3915eb406bd725dcfeaa1801fe9d7d97b47584bcaf8c5d0625acc893022536175ccf02cb750130d5629acee436f886daa434db393ba7800d6c3a92d6a
+  checksum: 10c0/0077c468f0bbf7d90d9f420ea59437e5564d77330453ad5824fdf8aee32a04e903c5addb2875344e41a51341912c7af48f208e15c6c9ccc15fddd5154cfc142a
   languageName: node
   linkType: hard
 
@@ -1695,6 +1695,15 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@solid-primitives/utils@npm:^6.3.0":
+  version: 6.3.0
+  resolution: "@solid-primitives/utils@npm:6.3.0"
+  peerDependencies:
+    solid-js: ^1.6.12
+  checksum: 10c0/3909c40572176f1f91f2a19939a743ccb8693e29d211c0fa39f08f54fa9e77d21937413a120556f4a55ee2c455289ed635d16bb430b4a97a1d7ab73e3506e754
+  languageName: node
+  linkType: hard
+
 "@solidjs/meta@npm:0.29.4":
   version: 0.29.4
   resolution: "@solidjs/meta@npm:0.29.4"
@@ -1722,21 +1731,21 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@tanstack/solid-virtual@npm:3.11.2":
-  version: 3.11.2
-  resolution: "@tanstack/solid-virtual@npm:3.11.2"
+"@tanstack/solid-virtual@npm:3.11.3":
+  version: 3.11.3
+  resolution: "@tanstack/solid-virtual@npm:3.11.3"
   dependencies:
-    "@tanstack/virtual-core": "npm:3.11.2"
+    "@tanstack/virtual-core": "npm:3.11.3"
   peerDependencies:
     solid-js: ^1.3.0
-  checksum: 10c0/307bf5df8557ba3ce3b555889b4dd67e6ef56daf986aa8848f99420f50cc34be02004e87589ba5f3b1c2cfa6d4ab78ff190531387abf83d229ca8c249cd7ef98
+  checksum: 10c0/8eda7e03081832de2942019f82edb5821b0690128744b15c8c003db7ca912adf5de8ed57ada7b2ef50c6daa85220b6f2617afe498a239ba9a671c128a5c15fb6
   languageName: node
   linkType: hard
 
-"@tanstack/virtual-core@npm:3.11.2":
-  version: 3.11.2
-  resolution: "@tanstack/virtual-core@npm:3.11.2"
-  checksum: 10c0/38f1047127c6b1d07fe95becb7a12e66fb7c59d37ec0359e4ab339f837c6b906e1adff026ebd12849ba851d3f118d491014205c6b3c6ed8568cc232a798aeaaf
+"@tanstack/virtual-core@npm:3.11.3":
+  version: 3.11.3
+  resolution: "@tanstack/virtual-core@npm:3.11.3"
+  checksum: 10c0/94701b8d2da9167c8b4ba36bdaff22019b8ebb19224c357c1af16cbc375b39076ecc021a8c9581001607afc921d0a843019cb27168999065dda511c445a1a335
   languageName: node
   linkType: hard
 
@@ -1809,12 +1818,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/node@npm:22.10.7":
-  version: 22.10.7
-  resolution: "@types/node@npm:22.10.7"
+"@types/node@npm:22.13.0":
+  version: 22.13.0
+  resolution: "@types/node@npm:22.13.0"
   dependencies:
     undici-types: "npm:~6.20.0"
-  checksum: 10c0/c941b4689dfc4044b64a5f601306cbcb0c7210be853ba378a5dd44137898c45accedd796ee002ad9407024cac7ecaf5049304951cb1d80ce3d7cebbbae56f20e
+  checksum: 10c0/9cf6358b2863ae7bf9588ca1cc3d87f6a6289c3880e95a046a188760666870e2c12502df8b0a473bec8aa8ffee85e025d60382a6104b10f197120793235b2c22
   languageName: node
   linkType: hard
 
@@ -4019,16 +4028,16 @@ __metadata:
     "@bufbuild/protobuf": "npm:2.2.3"
     "@connectrpc/connect": "npm:2.0.1"
     "@connectrpc/connect-web": "npm:2.0.1"
-    "@iconify-json/material-symbols": "npm:1.2.12"
+    "@iconify-json/material-symbols": "npm:1.2.14"
     "@kobalte/core": "npm:0.13.7"
     "@modular-forms/solid": "npm:0.25.0"
-    "@solid-primitives/refs": "npm:1.0.8"
+    "@solid-primitives/refs": "npm:1.1.0"
     "@solidjs/meta": "npm:0.29.4"
     "@solidjs/router": "npm:0.15.3"
-    "@tanstack/solid-virtual": "npm:3.11.2"
-    "@tanstack/virtual-core": "npm:3.11.2"
+    "@tanstack/solid-virtual": "npm:3.11.3"
+    "@tanstack/virtual-core": "npm:3.11.3"
     "@types/async-lock": "npm:1.4.2"
-    "@types/node": "npm:22.10.7"
+    "@types/node": "npm:22.13.0"
     "@unocss/reset": "npm:0.65.1"
     ansi-to-html: "npm:0.7.2"
     async-lock: "npm:1.4.1"
@@ -4042,12 +4051,12 @@ __metadata:
     solid-tippy: "npm:0.2.1"
     solid-toast: "npm:0.5.0"
     tippy.js: "npm:6.3.7"
-    ts-pattern: "npm:5.6.0"
+    ts-pattern: "npm:5.6.2"
     typescript: "npm:5.7.3"
     unocss: "npm:0.65.1"
     unplugin-fonts: "npm:1.3.1"
     valibot: "npm:1.0.0-beta.9"
-    vite: "npm:6.0.7"
+    vite: "npm:6.0.11"
     vite-plugin-compression: "npm:0.5.1"
     vite-plugin-solid: "npm:2.11.0"
     vite-plugin-solid-svg: "npm:0.8.1"
@@ -5007,10 +5016,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"ts-pattern@npm:5.6.0":
-  version: 5.6.0
-  resolution: "ts-pattern@npm:5.6.0"
-  checksum: 10c0/0da058218634ba5880d21816493c6634b56c111044aaec8e882a7b58a7564b6cc201b03012b7fd54b775af4ebe723d3ff91243769e9dc8aedb1f10dacc5f8f83
+"ts-pattern@npm:5.6.2":
+  version: 5.6.2
+  resolution: "ts-pattern@npm:5.6.2"
+  checksum: 10c0/f7b2442d9694fb94070acd7e564589744a581a252ab8a33bdda7b018f280cfa5ee247aa1a8a1eb8e2c843542cc07e36f491cbeb838abfc626eaeff1cc801ac2d
   languageName: node
   linkType: hard
 
@@ -5267,9 +5276,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"vite@npm:6.0.7":
-  version: 6.0.7
-  resolution: "vite@npm:6.0.7"
+"vite@npm:6.0.11":
+  version: 6.0.11
+  resolution: "vite@npm:6.0.11"
   dependencies:
     esbuild: "npm:^0.24.2"
     fsevents: "npm:~2.3.3"
@@ -5315,7 +5324,7 @@ __metadata:
       optional: true
   bin:
     vite: bin/vite.js
-  checksum: 10c0/ae81047b4290a7206b9394a39a782d509e9610462e7946422ba22d5bc615b5a322c07e33d7bf9dd0b3312ec3f5c63353b725913d1519324bfdf539b4f1e03f52
+  checksum: 10c0/a0537f9bf8d6ded740646a4aa44b8dbf442d3005e75f7b27e981ef6011f22d4759f5eb643a393c0ffb8d21e2f50fb5f774d3a53108fb96a10b0f83697e8efe84
   languageName: node
   linkType: hard
 
