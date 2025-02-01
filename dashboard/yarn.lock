@@ -2002,6 +2002,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@unocss/reset@npm:65.4.3":
+  version: 65.4.3
+  resolution: "@unocss/reset@npm:65.4.3"
+  checksum: 10c0/81c4deea45421d3b5d5a7977031b869f8eb4db2e5fa3bdae90d44025d0f53e4dd3657bb9a9b8689acf8e95645441fe2a5bab08bc60d906a88a4840a7c4a7b070
+  languageName: node
+  linkType: hard
+
 "@unocss/rule-utils@npm:0.65.1":
   version: 0.65.1
   resolution: "@unocss/rule-utils@npm:0.65.1"
@@ -4029,7 +4036,7 @@ __metadata:
     "@tanstack/virtual-core": "npm:3.11.2"
     "@types/async-lock": "npm:1.4.2"
     "@types/node": "npm:22.10.7"
-    "@unocss/reset": "npm:0.65.1"
+    "@unocss/reset": "npm:65.4.3"
     ansi-to-html: "npm:0.7.2"
     async-lock: "npm:1.4.1"
     chart.js: "npm:4.4.7"

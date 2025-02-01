@@ -45,7 +45,7 @@
     "@solidjs/router": "0.15.3",
     "@tanstack/solid-virtual": "3.11.2",
     "@types/async-lock": "1.4.2",
-    "@unocss/reset": "0.65.1",
+    "@unocss/reset": "65.4.3",
     "ansi-to-html": "0.7.2",
     "async-lock": "1.4.1",
     "chart.js": "4.4.7",
