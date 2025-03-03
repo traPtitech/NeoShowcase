@@ -32,7 +32,7 @@
     "vite-plugin-compression": "0.5.1",
     "vite-plugin-solid": "2.11.6",
     "vite-plugin-solid-svg": "0.8.1",
-    "vitest": "2.1.8"
+    "vitest": "3.0.7"
   },
   "dependencies": {
     "@bufbuild/protobuf": "2.2.3",
