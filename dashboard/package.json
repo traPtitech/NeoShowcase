@@ -23,7 +23,7 @@
     "@iconify-json/material-symbols": "1.2.12",
     "@tanstack/virtual-core": "3.11.2",
     "@types/node": "22.10.7",
-    "jsdom": "25.0.1",
+    "jsdom": "26.0.0",
     "rollup-plugin-visualizer": "5.14.0",
     "typescript": "5.7.3",
     "unocss": "65.4.3",
