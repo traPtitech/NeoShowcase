@@ -97,14 +97,16 @@ func (s *ServiceImpl) authSessions() []session.Attachable {
 	if s.imageConfig.Registry.Username == "" && s.imageConfig.Registry.Password == "" {
 		return nil
 	}
-	return []session.Attachable{authprovider.NewDockerAuthProvider(&configfile.ConfigFile{
-		AuthConfigs: map[string]types.AuthConfig{
-			s.imageConfig.Registry.Addr: {
-				Username: s.imageConfig.Registry.Username,
-				Password: s.imageConfig.Registry.Password,
+	return []session.Attachable{authprovider.NewDockerAuthProvider(authprovider.DockerAuthProviderConfig{
+		ConfigFile: &configfile.ConfigFile{
+			AuthConfigs: map[string]types.AuthConfig{
+				s.imageConfig.Registry.Addr: {
+					Username: s.imageConfig.Registry.Username,
+					Password: s.imageConfig.Registry.Password,
+				},
 			},
 		},
-	}, nil)}
+	})}
 }
 
 func (s *ServiceImpl) solveDockerfile(
