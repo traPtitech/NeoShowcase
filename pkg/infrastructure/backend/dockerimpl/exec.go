@@ -54,7 +54,7 @@ func (b *Backend) AttachContainer(ctx context.Context, appID string, stdin io.Re
 }
 
 func (b *Backend) ExecContainer(ctx context.Context, appID string, cmd []string, stdin io.Reader, stdout, stderr io.Writer) error {
-	execConf := types.ExecConfig{
+	execConf := container.ExecOptions{
 		Tty:          true,
 		AttachStdin:  true,
 		AttachStderr: true,
@@ -67,7 +67,7 @@ func (b *Backend) ExecContainer(ctx context.Context, appID string, cmd []string,
 		return errors.Wrap(err, "creating exec")
 	}
 
-	res, err := b.c.ContainerExecAttach(ctx, execID.ID, types.ExecStartCheck{})
+	res, err := b.c.ContainerExecAttach(ctx, execID.ID, container.ExecStartOptions{})
 	if err != nil {
 		return errors.Wrap(err, "attaching exec process")
 	}

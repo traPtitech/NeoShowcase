@@ -13,7 +13,9 @@ import (
 
 	clitypes "github.com/docker/cli/cli/config/types"
 	"github.com/docker/docker/api/types"
+	"github.com/docker/docker/api/types/events"
 	"github.com/docker/docker/api/types/filters"
+	"github.com/docker/docker/api/types/network"
 	"github.com/docker/docker/client"
 	"github.com/friendsofgo/errors"
 
@@ -85,7 +87,7 @@ func (b *Backend) Start(ctx context.Context) error {
 
 func (b *Backend) eventListener(ctx context.Context) error {
 	// https://docs.docker.com/engine/reference/commandline/events/
-	ch, errCh := b.c.Events(ctx, types.EventsOptions{Filters: filters.NewArgs(filters.Arg("type", "container"))})
+	ch, errCh := b.c.Events(ctx, events.ListOptions{Filters: filters.NewArgs(filters.Arg("type", "container"))})
 	for {
 		select {
 		case ev, ok := <-ch:
@@ -136,7 +138,7 @@ func (b *Backend) ListenContainerEvents() (sub <-chan *domain.ContainerEvent, un
 }
 
 func (b *Backend) initNetworks(ctx context.Context) error {
-	networks, err := b.c.NetworkList(ctx, types.NetworkListOptions{})
+	networks, err := b.c.NetworkList(ctx, network.ListOptions{})
 	if err != nil {
 		return errors.Wrap(err, "failed to list networks")
 	}
@@ -146,7 +148,7 @@ func (b *Backend) initNetworks(ctx context.Context) error {
 		}
 	}
 
-	_, err = b.c.NetworkCreate(ctx, b.config.Network, types.NetworkCreate{})
+	_, err = b.c.NetworkCreate(ctx, b.config.Network, network.CreateOptions{})
 	return err
 }
 
