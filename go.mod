@@ -14,7 +14,7 @@ require (
 	github.com/gliderlabs/ssh v0.3.8
 	github.com/go-git/go-git/v5 v5.14.0
 	github.com/go-playground/webhooks/v6 v6.4.0
-	github.com/go-sql-driver/mysql v1.9.0
+	github.com/go-sql-driver/mysql v1.8.1
 	github.com/golang/mock v1.6.0
 	github.com/google/shlex v0.0.0-20191202100458-e7afc7fbc510
 	github.com/google/wire v0.6.0
