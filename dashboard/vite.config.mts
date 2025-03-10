@@ -28,6 +28,7 @@ export default defineConfig(({ mode }) => ({
         changeOrigin: true,
       },
     },
+    allowedHosts: ['ns.local.trapti.tech'],
   },
   resolve: {
     alias: {
