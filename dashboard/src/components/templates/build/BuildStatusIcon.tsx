@@ -24,7 +24,7 @@ const components: Record<BuildStatus, (size: IconProps) => JSXElement> = {
     <div class="i-material-symbols:error shrink-0 text-accent-error" style={{ 'font-size': `${props.size}px` }} />
   ),
   [BuildStatus.CANCELLED]: (props) => (
-    <div class="i-material-symbols:cancel shrink-0 text-accent-error" style={{ 'font-size': `${props.size}px` }} />
+    <div class="i-material-symbols:cancel shrink-0 text-text-disabled" style={{ 'font-size': `${props.size}px` }} />
   ),
   [BuildStatus.SKIPPED]: (props) => (
     <div class="i-material-symbols:skip-next shrink-0 text-text-disabled" style={{ 'font-size': `${props.size}px` }} />
