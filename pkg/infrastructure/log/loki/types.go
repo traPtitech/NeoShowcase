@@ -1,12 +1,12 @@
 package loki
 
 import (
+	"slices"
 	"strconv"
 	"strings"
 	"time"
 
 	"github.com/friendsofgo/errors"
-	"golang.org/x/exp/slices"
 
 	"github.com/traPtitech/neoshowcase/pkg/domain"
 	"github.com/traPtitech/neoshowcase/pkg/util/ds"

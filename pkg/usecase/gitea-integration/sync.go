@@ -3,14 +3,14 @@ package giteaintegration
 import (
 	"context"
 	"fmt"
-	"golang.org/x/sync/errgroup"
+	"slices"
 	"time"
 
 	"code.gitea.io/sdk/gitea"
 	"github.com/friendsofgo/errors"
 	"github.com/samber/lo"
 	log "github.com/sirupsen/logrus"
-	"golang.org/x/exp/slices"
+	"golang.org/x/sync/errgroup"
 
 	"github.com/traPtitech/neoshowcase/pkg/domain"
 	"github.com/traPtitech/neoshowcase/pkg/util/ds"

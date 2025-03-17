@@ -2,10 +2,10 @@ package grpc
 
 import (
 	"context"
+	"slices"
 
 	"connectrpc.com/connect"
 	"github.com/samber/lo"
-	"golang.org/x/exp/slices"
 	"google.golang.org/protobuf/types/known/emptypb"
 
 	"github.com/traPtitech/neoshowcase/pkg/infrastructure/grpc/pb"
