@@ -40,12 +40,12 @@ func (m *Mutex[K]) TryLock(key K) (ok bool) {
 	m.mu.Lock()
 	defer m.mu.Unlock()
 
-	c, ok := m.calls[key]
+	_, ok = m.calls[key]
 	if ok {
 		return false
 	}
 
-	c = &call{
+	c := &call{
 		sem: make(chan struct{}, 1),
 	}
 	m.calls[key] = c
