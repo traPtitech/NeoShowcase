@@ -1,8 +1,9 @@
 package ds
 
 import (
+	"cmp"
+
 	"github.com/samber/lo"
-	"golang.org/x/exp/constraints"
 )
 
 func Map[T, U any](s []T, mapper func(item T) U) []U {
@@ -13,7 +14,7 @@ func Map[T, U any](s []T, mapper func(item T) U) []U {
 	return ret
 }
 
-func LessFunc[E any, K constraints.Ordered](key func(e E) K) func(e1, e2 E) int {
+func LessFunc[E any, K cmp.Ordered](key func(e E) K) func(e1, e2 E) int {
 	return func(e1, e2 E) int {
 		k1, k2 := key(e1), key(e2)
 		if k1 < k2 {
@@ -26,7 +27,7 @@ func LessFunc[E any, K constraints.Ordered](key func(e E) K) func(e1, e2 E) int 
 	}
 }
 
-func MoreFunc[E any, K constraints.Ordered](key func(e E) K) func(e1, e2 E) int {
+func MoreFunc[E any, K cmp.Ordered](key func(e E) K) func(e1, e2 E) int {
 	return func(e1, e2 E) int {
 		k1, k2 := key(e1), key(e2)
 		if k1 < k2 {
