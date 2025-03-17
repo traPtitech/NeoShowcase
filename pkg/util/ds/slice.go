@@ -2,6 +2,7 @@ package ds
 
 import (
 	"cmp"
+	"slices"
 
 	"github.com/samber/lo"
 )
@@ -75,13 +76,5 @@ func FirstN[T any](s []T, n int) []T {
 }
 
 func UniqMergeSlice[T comparable](s1, s2 []T) []T {
-	s := make([]T, 0, len(s1)+len(s2))
-	for _, elt := range s1 {
-		s = append(s, elt)
-	}
-	for _, elt := range s2 {
-		s = append(s, elt)
-	}
-	lo.Uniq(s)
-	return s
+	return lo.Uniq(slices.Concat(s1, s2))
 }
