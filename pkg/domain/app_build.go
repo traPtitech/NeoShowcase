@@ -1,10 +1,10 @@
 package domain
 
 import (
+	"slices"
 	"time"
 
 	"github.com/samber/lo"
-	"golang.org/x/exp/slices"
 
 	"github.com/traPtitech/neoshowcase/pkg/util/ds"
 	"github.com/traPtitech/neoshowcase/pkg/util/optional"

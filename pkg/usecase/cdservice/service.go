@@ -2,13 +2,13 @@ package cdservice
 
 import (
 	"context"
+	"slices"
 	"sync"
 	"time"
 
 	"github.com/friendsofgo/errors"
 	"github.com/samber/lo"
 	log "github.com/sirupsen/logrus"
-	"golang.org/x/exp/slices"
 
 	"github.com/traPtitech/neoshowcase/pkg/domain"
 	"github.com/traPtitech/neoshowcase/pkg/util/ds"
