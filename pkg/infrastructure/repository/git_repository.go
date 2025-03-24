@@ -144,6 +144,9 @@ func (r *gitRepositoryRepository) UpdateRepository(ctx context.Context, id strin
 	defer tx.Rollback()
 
 	repo, err := r.getRepository(ctx, tx, id)
+	if err != nil {
+		return errors.Wrap(err, "failed to get repository")
+	}
 	var cols []string
 
 	if args.Name.Valid {

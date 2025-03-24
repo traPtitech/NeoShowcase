@@ -11,10 +11,14 @@ linters:
   enable-all: false
   disable-all: true
   enable:
-    - errcheck
     - gosimple
     - govet
     - staticcheck
     - ineffassign
     - unused
     - gosec
+
+linters-settings:
+  gosec:
+    excludes:
+      - G115

@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/docker/docker/api/types"
 	"github.com/docker/docker/api/types/container"
 	"github.com/docker/docker/api/types/filters"
 	"github.com/friendsofgo/errors"
@@ -51,7 +50,7 @@ func (b *Backend) ListContainers(ctx context.Context) ([]*domain.Container, erro
 		return nil, errors.Wrap(err, "failed to fetch containers")
 	}
 
-	result := ds.Map(containers, func(c types.Container) *domain.Container {
+	result := ds.Map(containers, func(c container.Summary) *domain.Container {
 		state, msg := getContainerState(&c)
 		return &domain.Container{
 			ApplicationID: c.Labels[appIDLabel],
@@ -62,7 +61,7 @@ func (b *Backend) ListContainers(ctx context.Context) ([]*domain.Container, erro
 	return result, nil
 }
 
-func getContainerState(c *types.Container) (state domain.ContainerState, message string) {
+func getContainerState(c *container.Summary) (state domain.ContainerState, message string) {
 	// https://docs.docker.com/engine/api/v1.42/#tag/Container/operation/ContainerList
 	switch strings.ToLower(c.State) {
 	case "created":

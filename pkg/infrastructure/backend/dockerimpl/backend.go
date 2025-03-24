@@ -12,7 +12,7 @@ import (
 	"github.com/traPtitech/neoshowcase/pkg/util/retry"
 
 	clitypes "github.com/docker/cli/cli/config/types"
-	"github.com/docker/docker/api/types"
+	"github.com/docker/docker/api/types/container"
 	"github.com/docker/docker/api/types/events"
 	"github.com/docker/docker/api/types/filters"
 	"github.com/docker/docker/api/types/network"
@@ -167,7 +167,7 @@ func (b *Backend) authConfig() (string, error) {
 	return base64.URLEncoding.EncodeToString(bytes), nil
 }
 
-func getRestartedAt(c *types.Container) time.Time {
+func getRestartedAt(c *container.Summary) time.Time {
 	if c == nil {
 		return time.Time{}
 	}

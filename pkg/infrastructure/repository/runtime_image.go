@@ -27,7 +27,7 @@ func (r *runtimeImageRepository) CreateRuntimeImage(ctx context.Context, image *
 	ri := repoconvert.FromDomainRuntimeImage(image)
 	err := ri.Insert(ctx, r.db, boil.Infer())
 	if err != nil {
-		errors.Wrap(err, "failed to insert runtime image")
+		return errors.Wrap(err, "failed to insert runtime image")
 	}
 	return nil
 }

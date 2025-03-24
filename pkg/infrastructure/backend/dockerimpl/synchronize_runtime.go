@@ -19,7 +19,7 @@ import (
 	"github.com/traPtitech/neoshowcase/pkg/domain"
 )
 
-func (b *Backend) syncAppContainer(ctx context.Context, app *domain.RuntimeDesiredState, oldContainer *types.Container) error {
+func (b *Backend) syncAppContainer(ctx context.Context, app *domain.RuntimeDesiredState, oldContainer *container.Summary) error {
 	newImageName := app.ImageName + ":" + app.ImageTag
 	oldRestartedAt := getRestartedAt(oldContainer)
 	doDeploy := oldContainer == nil || oldContainer.Image != newImageName || !oldRestartedAt.Equal(app.App.UpdatedAt)

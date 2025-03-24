@@ -177,7 +177,7 @@ func (s *sshServer) handle(sess ssh.Session) error {
 			_, _ = sess.Write([]byte("Attaching to main process...\n"))
 			return s.backend.AttachContainer(sess.Context(), appID, sess, sess, sess.Stderr())
 		}
-		_, _ = sess.Write([]byte(fmt.Sprintf("Option not recognized, try again.\n")))
+		_, _ = sess.Write([]byte("Option not recognized, try again.\n"))
 
 		// check control sequence
 		if resp[0] < 32 {

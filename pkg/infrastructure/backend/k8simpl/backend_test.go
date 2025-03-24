@@ -79,7 +79,7 @@ func waitCondition(t *testing.T, cond func() (ok bool, err error)) {
 	for i := 0; i < 120; i++ {
 		ok, err := cond()
 		if err != nil {
-			t.Fatalf(err.Error())
+			t.Fatal(err.Error())
 		}
 		if ok {
 			return
