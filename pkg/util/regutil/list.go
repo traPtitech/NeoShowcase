@@ -39,7 +39,7 @@ func TagList(ctx context.Context, r *regclient.RegClient, imageName string) ([]s
 		if err != nil {
 			return nil, err
 		}
-		tagList, err := r.TagList(ctx, repoRef)
+		tagList, err := r.TagList(ctx, repoRef, opts...)
 		if err != nil {
 			return nil, err
 		}
