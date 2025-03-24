@@ -1,3 +1,12 @@
+run:
+  timeout: 10m
+
+issues:
+  exclude-files:
+    - ".*\\.pb\\.go$"
+  exclude-dirs:
+    - pkg/infrastructure/repository/models
+
 linters:
   enable-all: false
   disable-all: true
