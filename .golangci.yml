@@ -1,5 +1,20 @@
 run:
-  skip-files:
+  timeout: 10m
+
+issues:
+  exclude-files:
     - ".*\\.pb\\.go$"
-  skip-dirs:
+  exclude-dirs:
     - pkg/infrastructure/repository/models
+
+linters:
+  enable-all: false
+  disable-all: true
+  enable:
+    - errcheck
+    - gosimple
+    - govet
+    - staticcheck
+    - ineffassign
+    - unused
+    - gosec
