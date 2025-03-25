@@ -317,6 +317,9 @@ func (r *applicationRepository) setPortPublications(ctx context.Context, ex boil
 func (r *applicationRepository) setOwners(ctx context.Context, ex boil.ContextExecutor, app *models.Application, ownerIDs []string) error {
 	ownerIDs = lo.Uniq(ownerIDs)
 	users, err := models.Users(models.UserWhere.ID.IN(ownerIDs)).All(ctx, ex)
+	if err != nil {
+		return errors.Wrap(err, "failed to get owners")
+	}
 	if len(users) < len(ownerIDs) {
 		return ErrNotFound
 	}

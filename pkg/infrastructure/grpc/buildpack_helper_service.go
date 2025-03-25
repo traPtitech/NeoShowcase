@@ -3,26 +3,21 @@ package grpc
 import (
 	"bytes"
 	"context"
-	"github.com/friendsofgo/errors"
-	"golang.org/x/sync/errgroup"
 	"io"
 	"os"
 	"os/exec"
-	"sync"
 
 	"connectrpc.com/connect"
-	"google.golang.org/protobuf/types/known/emptypb"
-
+	"github.com/friendsofgo/errors"
 	"github.com/traPtitech/neoshowcase/pkg/infrastructure/grpc/pb"
 	"github.com/traPtitech/neoshowcase/pkg/infrastructure/grpc/pb/pbconnect"
 	"github.com/traPtitech/neoshowcase/pkg/util/ds"
 	"github.com/traPtitech/neoshowcase/pkg/util/tarfs"
+	"golang.org/x/sync/errgroup"
+	"google.golang.org/protobuf/types/known/emptypb"
 )
 
-type BuildpackHelperService struct {
-	ssGenConnections []*ssGenConnection
-	lock             sync.Mutex
-}
+type BuildpackHelperService struct{}
 
 func NewBuildpackHelperService() pbconnect.BuildpackHelperServiceHandler {
 	return &BuildpackHelperService{}

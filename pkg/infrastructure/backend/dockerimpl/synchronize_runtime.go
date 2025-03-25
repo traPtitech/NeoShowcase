@@ -6,7 +6,6 @@ import (
 	"io"
 	"strconv"
 
-	"github.com/docker/docker/api/types"
 	"github.com/docker/docker/api/types/container"
 	"github.com/docker/docker/api/types/filters"
 	"github.com/docker/docker/api/types/image"
@@ -19,7 +18,7 @@ import (
 	"github.com/traPtitech/neoshowcase/pkg/domain"
 )
 
-func (b *Backend) syncAppContainer(ctx context.Context, app *domain.RuntimeDesiredState, oldContainer *types.Container) error {
+func (b *Backend) syncAppContainer(ctx context.Context, app *domain.RuntimeDesiredState, oldContainer *container.Summary) error {
 	newImageName := app.ImageName + ":" + app.ImageTag
 	oldRestartedAt := getRestartedAt(oldContainer)
 	doDeploy := oldContainer == nil || oldContainer.Image != newImageName || !oldRestartedAt.Equal(app.App.UpdatedAt)
@@ -137,7 +136,7 @@ func (b *Backend) synchronizeRuntime(ctx context.Context, apps []*domain.Runtime
 	if err != nil {
 		return errors.Wrap(err, "failed to list containers")
 	}
-	oldContainersMap := lo.SliceToMap(oldContainers, func(c types.Container) (string, *types.Container) {
+	oldContainersMap := lo.SliceToMap(oldContainers, func(c container.Summary) (string, *container.Summary) {
 		return c.Labels[appIDLabel], &c
 	})
 

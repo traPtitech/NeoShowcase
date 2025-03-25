@@ -17,6 +17,10 @@ func Compress(srcPath string) io.Reader {
 		defer pw.Close()
 
 		err := filepath.Walk(srcPath, func(file string, fi os.FileInfo, err error) error {
+			if err != nil {
+				return err
+			}
+
 			header, err := tar.FileInfoHeader(fi, file)
 			if err != nil {
 				return err

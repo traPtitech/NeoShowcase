@@ -27,16 +27,13 @@ type MongoDBConfig struct {
 
 func NewMongoDBManager(config MongoDBConfig) (domain.MongoDBManager, error) {
 	// DB接続
-	client, err := mongo.NewClient(
+	ctx := context.Background()
+	client, err := mongo.Connect(
+		ctx,
 		options.Client().ApplyURI(fmt.Sprintf("mongodb://%s:%s@%s:%d", config.AdminUser, config.AdminPassword, config.Host, config.Port)),
 	)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to create new client")
-	}
-	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
-	defer cancel()
-	if err := client.Connect(ctx); err != nil {
-		return nil, errors.Wrap(err, "failed to connect")
 	}
 
 	return &mongoDBManagerImpl{client: client, c: config}, nil
@@ -83,7 +80,7 @@ func (m *mongoDBManagerImpl) IsExist(ctx context.Context, name string) (bool, er
 	ctx, cancel := context.WithTimeout(ctx, 20*time.Second)
 	defer cancel()
 
-	cur, err := m.client.Database("admin").Collection("system.users").Find(ctx, bson.D{{"db", name}})
+	cur, err := m.client.Database("admin").Collection("system.users").Find(ctx, bson.D{{Key: "db", Value: name}})
 	if err != nil {
 		return false, err
 	}

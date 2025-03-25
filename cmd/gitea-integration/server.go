@@ -19,8 +19,8 @@ func (s *Server) Start(_ context.Context) error {
 	return s.Integration.Start()
 }
 
-func (s *Server) Shutdown(ctx context.Context) error {
-	eg, ctx := errgroup.WithContext(ctx)
+func (s *Server) Shutdown(_ context.Context) error {
+	var eg errgroup.Group
 
 	eg.Go(func() error {
 		return s.Integration.Shutdown()
