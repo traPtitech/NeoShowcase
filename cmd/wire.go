@@ -4,8 +4,12 @@
 package main
 
 import (
+	certmanagerv1 "github.com/cert-manager/cert-manager/pkg/client/clientset/versioned"
 	"github.com/friendsofgo/errors"
 	"github.com/google/wire"
+	traefikv1alpha1 "github.com/traefik/traefik/v3/pkg/provider/kubernetes/crd/generated/clientset/versioned/typed/traefikio/v1alpha1"
+	"k8s.io/client-go/kubernetes"
+	"k8s.io/client-go/rest"
 
 	authdev "github.com/traPtitech/neoshowcase/cmd/auth-dev"
 	"github.com/traPtitech/neoshowcase/cmd/builder"
@@ -17,8 +21,93 @@ import (
 	"github.com/traPtitech/neoshowcase/pkg/domain"
 	"github.com/traPtitech/neoshowcase/pkg/infrastructure/backend/dockerimpl"
 	"github.com/traPtitech/neoshowcase/pkg/infrastructure/backend/k8simpl"
+	"github.com/traPtitech/neoshowcase/pkg/infrastructure/buildpack"
+	"github.com/traPtitech/neoshowcase/pkg/infrastructure/dbmanager"
+	"github.com/traPtitech/neoshowcase/pkg/infrastructure/grpc"
+	"github.com/traPtitech/neoshowcase/pkg/infrastructure/repository"
+	"github.com/traPtitech/neoshowcase/pkg/infrastructure/webhook"
+	"github.com/traPtitech/neoshowcase/pkg/usecase/apiserver"
 	ubuilder "github.com/traPtitech/neoshowcase/pkg/usecase/builder"
 	buildermock "github.com/traPtitech/neoshowcase/pkg/usecase/builder/mock"
+	"github.com/traPtitech/neoshowcase/pkg/usecase/cdservice"
+	"github.com/traPtitech/neoshowcase/pkg/usecase/cleaner"
+	commitfetcher "github.com/traPtitech/neoshowcase/pkg/usecase/commit-fetcher"
+	ugiteaintegration "github.com/traPtitech/neoshowcase/pkg/usecase/gitea-integration"
+	"github.com/traPtitech/neoshowcase/pkg/usecase/healthcheck"
+	"github.com/traPtitech/neoshowcase/pkg/usecase/logstream"
+	"github.com/traPtitech/neoshowcase/pkg/usecase/repofetcher"
+	ussgen "github.com/traPtitech/neoshowcase/pkg/usecase/ssgen"
+	"github.com/traPtitech/neoshowcase/pkg/usecase/sshserver"
+	"github.com/traPtitech/neoshowcase/pkg/usecase/systeminfo"
+)
+
+var providers = wire.NewSet(
+	apiserver.NewService,
+	cdservice.NewAppDeployHelper,
+	cdservice.NewContainerStateMutator,
+	cdservice.NewService,
+	certmanagerv1.NewForConfig,
+	cleaner.NewService,
+	commitfetcher.NewService,
+	dbmanager.NewMariaDBManager,
+	dbmanager.NewMongoDBManager,
+	dockerimpl.NewClientFromEnv,
+	dockerimpl.NewDockerBackend,
+	ugiteaintegration.NewIntegration,
+	grpc.NewAPIServiceServer,
+	grpc.NewAuthInterceptor,
+	grpc.NewBuildpackHelperService,
+	provideBuildpackHelperClient,
+	grpc.NewCacheInterceptor,
+	grpc.NewControllerService,
+	grpc.NewControllerServiceClient,
+	grpc.NewControllerBuilderService,
+	grpc.NewControllerGiteaIntegrationService,
+	grpc.NewControllerGiteaIntegrationServiceClient,
+	provideTokenAuthInterceptor,
+	provideControllerBuilderServiceClient,
+	grpc.NewControllerSSGenService,
+	grpc.NewControllerSSGenServiceClient,
+	healthcheck.NewServer,
+	k8simpl.NewK8SBackend,
+	kubernetes.NewForConfig,
+	logstream.NewService,
+	repofetcher.NewService,
+	repository.New,
+	repository.NewApplicationRepository,
+	repository.NewArtifactRepository,
+	repository.NewRuntimeImageRepository,
+	repository.NewBuildRepository,
+	repository.NewEnvironmentRepository,
+	repository.NewGitRepositoryRepository,
+	repository.NewRepositoryCommitRepository,
+	repository.NewUserRepository,
+	rest.InClusterConfig,
+	traefikv1alpha1.NewForConfig,
+	ussgen.NewGeneratorService,
+	sshserver.NewSSHServer,
+	systeminfo.NewService,
+	ubuilder.NewService,
+	webhook.NewReceiver,
+	provideRepositoryPrivateKey,
+	domain.IntoPublicKey,
+	provideStorage,
+	provideAuthDevServer,
+	provideBuildpackHelperServer,
+	buildpack.NewBuildpackBackend,
+	provideBuilderConfig,
+	provideBuildkitClient,
+	provideSystemInfoConfig,
+	provideControllerServer,
+	provideContainerLogger,
+	provideMetricsService,
+	provideGatewayServer,
+	provideGiteaIntegrationConfig,
+	provideHealthCheckFunc,
+	provideStaticServer,
+	provideStaticServerDocumentRootPath,
+	wire.FieldsOf(new(Config), "DB", "Storage", "Image", "Components"),
+	wire.FieldsOf(new(ComponentsConfig), "Builder", "Controller", "Gateway", "GiteaIntegration", "SSGen"),
 )
 
 func NewAuthDev(c Config) (component, error) {
