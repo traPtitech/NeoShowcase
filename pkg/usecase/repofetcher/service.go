@@ -6,7 +6,6 @@ import (
 	"time"
 
 	"github.com/friendsofgo/errors"
-	"github.com/go-git/go-git/v5/plumbing/transport/ssh"
 	"github.com/samber/lo"
 	log "github.com/sirupsen/logrus"
 	"github.com/sourcegraph/conc/pool"
@@ -45,7 +44,7 @@ type Service interface {
 type service struct {
 	appRepo       domain.ApplicationRepository
 	gitRepo       domain.GitRepositoryRepository
-	pubKey        *ssh.PublicKeys
+	gitsvc        domain.GitService
 	cd            cdservice.Service
 	commitFetcher commitfetcher.Service
 
@@ -59,16 +58,16 @@ type service struct {
 func NewService(
 	appRepo domain.ApplicationRepository,
 	gitRepo domain.GitRepositoryRepository,
-	pubKey *ssh.PublicKeys,
 	cd cdservice.Service,
 	commitFetcher commitfetcher.Service,
+	gitsvc domain.GitService,
 ) (Service, error) {
 	r := &service{
 		appRepo:       appRepo,
 		gitRepo:       gitRepo,
-		pubKey:        pubKey,
 		cd:            cd,
 		commitFetcher: commitFetcher,
+		gitsvc:        gitsvc,
 	}
 
 	fetcher := make(chan string, 100)
@@ -186,7 +185,7 @@ func (r *service) fetchOne(ctx context.Context, repositoryID string) error {
 }
 
 func (r *service) updateApps(ctx context.Context, repo *domain.Repository, apps []*domain.Application) error {
-	refToCommit, err := repo.ResolveRefs(ctx, r.pubKey)
+	refToCommit, err := r.gitsvc.ResolveRefs(ctx, repo)
 	if err != nil {
 		return err
 	}

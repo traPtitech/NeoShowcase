@@ -1,12 +1,7 @@
 package domain
 
 import (
-	"context"
-	"fmt"
 	"github.com/friendsofgo/errors"
-	"github.com/go-git/go-git/v5"
-	"github.com/go-git/go-git/v5/config"
-	"github.com/go-git/go-git/v5/plumbing"
 	"github.com/go-git/go-git/v5/plumbing/transport"
 	"github.com/go-git/go-git/v5/plumbing/transport/ssh"
 	"github.com/samber/lo"
@@ -94,40 +89,6 @@ func (r *Repository) HTMLURL() string {
 	default:
 		return r.URL
 	}
-}
-
-func (r *Repository) ResolveRefs(ctx context.Context, fallbackKey *ssh.PublicKeys) (refToCommit map[string]string, err error) {
-	auth, err := GitAuthMethod(r, fallbackKey)
-	if err != nil {
-		return nil, err
-	}
-	remote := git.NewRemote(nil, &config.RemoteConfig{
-		Name: "origin",
-		URLs: []string{r.URL},
-	})
-	refs, err := remote.ListContext(ctx, &git.ListOptions{
-		Auth: auth,
-	})
-	if err != nil {
-		return nil, errors.Wrap(err, fmt.Sprintf("failed to list remote refs at %v", r.URL))
-	}
-
-	refToCommit = make(map[string]string, 2*len(refs))
-	for _, ref := range refs {
-		if ref.Type() == plumbing.HashReference {
-			refToCommit[ref.Name().String()] = ref.Hash().String()
-			refToCommit[ref.Name().Short()] = ref.Hash().String()
-		}
-	}
-	for _, ref := range refs {
-		if ref.Type() == plumbing.SymbolicReference {
-			commit, ok := refToCommit[ref.Target().String()]
-			if ok {
-				refToCommit[ref.Name().String()] = commit
-			}
-		}
-	}
-	return refToCommit, nil
 }
 
 type RepositoryAuthMethod int

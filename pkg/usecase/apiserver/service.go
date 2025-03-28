@@ -7,7 +7,6 @@ import (
 	"github.com/motoki317/sc"
 
 	"github.com/friendsofgo/errors"
-	"github.com/go-git/go-git/v5/plumbing/transport/ssh"
 
 	"github.com/traPtitech/neoshowcase/pkg/domain"
 	"github.com/traPtitech/neoshowcase/pkg/domain/builder"
@@ -40,7 +39,7 @@ type Service struct {
 	metricsService   domain.MetricsService
 	containerLogger  domain.ContainerLogger
 	controller       domain.ControllerServiceClient
-	fallbackKey      *ssh.PublicKeys
+	gitsvc           domain.GitService
 	image            builder.ImageConfig
 
 	systemInfo *sc.Cache[struct{}, *domain.SystemInfo]
@@ -63,7 +62,7 @@ func NewService(
 	containerLogger domain.ContainerLogger,
 	controller domain.ControllerServiceClient,
 	image builder.ImageConfig,
-	fallbackKey *ssh.PublicKeys,
+	gitsvc domain.GitService,
 ) (*Service, error) {
 	return &Service{
 		artifactRepo:     artifactRepo,
@@ -80,7 +79,7 @@ func NewService(
 		metricsService:   metricsService,
 		containerLogger:  containerLogger,
 		controller:       controller,
-		fallbackKey:      fallbackKey,
+		gitsvc:           gitsvc,
 		image:            image,
 
 		systemInfo: sc.NewMust(scutil.WrapFunc(controller.GetSystemInfo), 5*time.Minute, 10*time.Minute),
