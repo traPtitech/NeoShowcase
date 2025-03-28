@@ -3,9 +3,9 @@ package apiserver
 import (
 	"context"
 	"fmt"
-	"github.com/samber/lo"
 
 	"github.com/friendsofgo/errors"
+	"github.com/samber/lo"
 
 	"github.com/traPtitech/neoshowcase/pkg/domain"
 	"github.com/traPtitech/neoshowcase/pkg/domain/web"
@@ -63,7 +63,7 @@ func (s *Service) CreateRepository(ctx context.Context, name, url string, auth o
 	if err = repo.Validate(); err != nil {
 		return nil, newError(ErrorTypeBadRequest, "invalid repository", err)
 	}
-	if _, err = repo.ResolveRefs(ctx, s.fallbackKey); err != nil {
+	if _, err = s.gitsvc.ResolveRefs(ctx, repo); err != nil {
 		return nil, newError(ErrorTypeBadRequest, "cannot fetch repository, check auth setting", err)
 	}
 
@@ -114,7 +114,7 @@ func (s *Service) GetRepositoryRefs(ctx context.Context, id string) (map[string]
 	if err != nil {
 		return nil, err
 	}
-	return repo.ResolveRefs(ctx, s.fallbackKey)
+	return s.gitsvc.ResolveRefs(ctx, repo)
 }
 
 type UpdateRepositoryArgs struct {
@@ -158,7 +158,7 @@ func (s *Service) UpdateRepository(ctx context.Context, id string, args *UpdateR
 	if err = repo.Validate(); err != nil {
 		return newError(ErrorTypeBadRequest, "invalid repository", err)
 	}
-	if _, err = repo.ResolveRefs(ctx, s.fallbackKey); err != nil {
+	if _, err = s.gitsvc.ResolveRefs(ctx, repo); err != nil {
 		return newError(ErrorTypeBadRequest, "cannot fetch repository, check auth setting", err)
 	}
 
