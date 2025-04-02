@@ -1,6 +1,7 @@
 module github.com/traPtitech/neoshowcase
 
-go 1.23.2
+go 1.24
+
 require (
 	code.gitea.io/sdk/gitea v0.20.0
 	connectrpc.com/connect v1.18.1
