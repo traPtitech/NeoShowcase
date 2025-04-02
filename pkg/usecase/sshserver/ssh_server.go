@@ -145,7 +145,7 @@ func (s *sshServer) handle(sess ssh.Session) error {
 	_, _ = sess.Write([]byte{'\n'})
 	_, _ = sess.Write([]byte("Welcome to NeoShowcase!\n"))
 	_, _ = sess.Write([]byte{'\n'})
-	_, _ = sess.Write([]byte(fmt.Sprintf("You are now connecting to application %s (id: %s) ...\n", app.Name, appID)))
+	_, _ = fmt.Fprintf(sess, "You are now connecting to application %s (id: %s) ...\n", app.Name, appID)
 	_, _ = sess.Write([]byte{'\n'})
 
 	cmd := sess.Command()

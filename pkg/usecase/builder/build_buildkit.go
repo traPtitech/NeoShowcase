@@ -118,7 +118,7 @@ func (s *ServiceImpl) solveDockerfile(
 	ch chan *buildkit.SolveStatus,
 ) error {
 	// ch must be closed when this function returns because it is listened by progress ui display
-	var channelClosed bool = false
+	var channelClosed = false
 	defer func() {
 		if !channelClosed {
 			close(ch)

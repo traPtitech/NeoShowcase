@@ -120,7 +120,7 @@ func (s *server) postConfig(b []byte) error {
 		return err
 	}
 	defer res.Body.Close()
-	if !(200 <= res.StatusCode && res.StatusCode < 300) {
+	if res.StatusCode < 200 || 300 <= res.StatusCode {
 		resBody, _ := io.ReadAll(res.Body)
 		return errors.Errorf("expected 2xx, invalid status code %v: %v", res.StatusCode, string(resBody))
 	}
