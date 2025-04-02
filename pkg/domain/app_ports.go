@@ -23,7 +23,7 @@ type AvailablePort struct {
 type AvailablePortSlice []*AvailablePort
 
 func isValidPort(port int) error {
-	if !(0 <= port && port < 65536) {
+	if port < 0 || 65535 < port {
 		return errors.New("invalid port (needs to be within 0 to 65535)")
 	}
 	return nil
