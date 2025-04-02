@@ -1,18 +1,18 @@
-run:
-  timeout: 10m
-
-issues:
-  exclude-files:
-    - ".*\\.pb\\.go$"
-  exclude-dirs:
-    - pkg/infrastructure/repository/models
-
+version: '2'
 linters:
-  enable-all: false
-  disable-all: true
+  default: none
   enable:
-    - gosimple
     - govet
-    - staticcheck
     - ineffassign
+    - staticcheck
     - unused
+  exclusions:
+    generated: lax
+    presets:
+      - comments
+      - common-false-positives
+      - legacy
+      - std-error-handling
+formatters:
+  exclusions:
+    generated: lax
