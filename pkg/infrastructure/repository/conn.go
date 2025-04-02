@@ -15,11 +15,8 @@ func New(c Config) (*sql.DB, error) {
 	conf.DBName = c.Database
 	conf.User = c.Username
 	conf.Passwd = c.Password
-	conf.Params = map[string]string{
-		"charset": "utf8mb4",
-	}
-	conf.Collation = "utf8mb4_general_ci"
 	conf.ParseTime = true
+	conf.Apply(mysql.Charset("utf8mb4", "utf8mb4_general_ci"))
 
 	connector, err := mysql.NewConnector(conf)
 	if err != nil {
