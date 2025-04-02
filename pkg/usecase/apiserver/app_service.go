@@ -40,7 +40,7 @@ func (s *Service) validateApp(ctx context.Context, app *domain.Application) erro
 	if err != nil {
 		return err
 	}
-	refMap, err := repo.ResolveRefs(ctx, s.fallbackKey)
+	refMap, err := s.gitsvc.ResolveRefs(ctx, repo)
 	if err != nil {
 		return newError(ErrorTypeBadRequest, "cannot fetch repository, check auth setting", err)
 	}

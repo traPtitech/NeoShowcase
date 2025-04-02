@@ -23,6 +23,7 @@ import (
 	"github.com/traPtitech/neoshowcase/pkg/infrastructure/backend/k8simpl"
 	"github.com/traPtitech/neoshowcase/pkg/infrastructure/buildpack"
 	"github.com/traPtitech/neoshowcase/pkg/infrastructure/dbmanager"
+	"github.com/traPtitech/neoshowcase/pkg/infrastructure/git"
 	"github.com/traPtitech/neoshowcase/pkg/infrastructure/grpc"
 	"github.com/traPtitech/neoshowcase/pkg/infrastructure/repository"
 	"github.com/traPtitech/neoshowcase/pkg/infrastructure/webhook"
@@ -91,6 +92,7 @@ var providers = wire.NewSet(
 	webhook.NewReceiver,
 	provideRepositoryPrivateKey,
 	domain.IntoPublicKey,
+	git.NewService,
 	provideStorage,
 	provideAuthDevServer,
 	provideBuildpackHelperServer,
