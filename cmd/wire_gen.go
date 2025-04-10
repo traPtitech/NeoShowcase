@@ -73,16 +73,7 @@ func newBuilder(c Config) (component, error) {
 	buildpackConfig := mainBuilderConfig.Buildpack
 	buildpackHelperServiceClient := provideBuildpackHelperClient(c)
 	buildpackBackend := buildpack.NewBuildpackBackend(buildpackConfig, buildpackHelperServiceClient)
-	privateKey, err := provideRepositoryPrivateKey(c)
-	if err != nil {
-		return nil, err
-	}
-	publicKeys, err := domain.IntoPublicKey(privateKey)
-	if err != nil {
-		return nil, err
-	}
-	gitService := git.NewService(publicKeys)
-	serviceImpl, err := builder.NewService(builderConfig, controllerBuilderServiceClient, client, buildpackBackend, gitService)
+	serviceImpl, err := builder.NewService(builderConfig, controllerBuilderServiceClient, client, buildpackBackend)
 	if err != nil {
 		return nil, err
 	}
