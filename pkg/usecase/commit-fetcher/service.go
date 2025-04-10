@@ -2,17 +2,13 @@ package commitfetcher
 
 import (
 	"context"
-	"fmt"
-	"github.com/go-git/go-git/v5"
-	"github.com/go-git/go-git/v5/config"
-	"github.com/go-git/go-git/v5/plumbing"
-	"github.com/go-git/go-git/v5/plumbing/transport/ssh"
-	"github.com/pkg/errors"
-	"github.com/samber/lo"
-	log "github.com/sirupsen/logrus"
 	"os"
 	"sync"
 	"time"
+
+	"github.com/pkg/errors"
+	"github.com/samber/lo"
+	log "github.com/sirupsen/logrus"
 
 	"github.com/traPtitech/neoshowcase/pkg/domain"
 	"github.com/traPtitech/neoshowcase/pkg/util/optional"
@@ -36,7 +32,7 @@ type service struct {
 	buildRepo   domain.BuildRepository
 	gitRepo     domain.GitRepositoryRepository
 	commitsRepo domain.RepositoryCommitRepository
-	fallbackKey *ssh.PublicKeys
+	gitsvc      domain.GitService
 
 	queue chan<- queueItem
 
@@ -51,14 +47,14 @@ func NewService(
 	buildRepo domain.BuildRepository,
 	gitRepo domain.GitRepositoryRepository,
 	commitsRepo domain.RepositoryCommitRepository,
-	fallbackKey *ssh.PublicKeys,
+	gitsvc domain.GitService,
 ) (Service, error) {
 	s := &service{
 		appRepo:     appRepo,
 		buildRepo:   buildRepo,
 		gitRepo:     gitRepo,
 		commitsRepo: commitsRepo,
-		fallbackKey: fallbackKey,
+		gitsvc:      gitsvc,
 	}
 
 	q := make(chan queueItem, queueMax)
@@ -148,14 +144,9 @@ func (s *service) fetchOne(ctx context.Context, repositoryID string, hashes []st
 		return nil
 	}
 
-	// Get repository auth
 	repo, err := s.gitRepo.GetRepository(ctx, repositoryID)
 	if err != nil {
 		return errors.Wrap(err, "failed to get repository")
-	}
-	auth, err := domain.GitAuthMethod(repo, s.fallbackKey)
-	if err != nil {
-		return errors.Wrap(err, "failed to calculate git auth")
 	}
 
 	// Init local git directory
@@ -165,30 +156,12 @@ func (s *service) fetchOne(ctx context.Context, repositoryID string, hashes []st
 	}
 	defer os.RemoveAll(tmpDir)
 
-	// Set up remote...
-	localRepo, err := git.PlainInit(tmpDir, true)
+	localRepo, err := s.gitsvc.CreateBareRepository(tmpDir, repo)
 	if err != nil {
-		return errors.Wrap(err, "failed to init repo")
-	}
-	remote, err := localRepo.CreateRemote(&config.RemoteConfig{
-		Name: "origin",
-		URLs: []string{repo.URL},
-	})
-	if err != nil {
-		return errors.Wrap(err, "failed to create remote")
+		return errors.Wrap(err, "failed to initialize git repo")
 	}
 
-	// Shallow clone at the commits, in order to get the commit object
-	refSpecs := lo.Map(hashes, func(hash string, idx int) config.RefSpec {
-		targetRef := plumbing.NewRemoteReferenceName("origin", fmt.Sprintf("target-%d", idx))
-		return config.RefSpec(fmt.Sprintf("+%s:%s", hash, targetRef))
-	})
-	err = remote.FetchContext(ctx, &git.FetchOptions{
-		RemoteName: "origin",
-		RefSpecs:   refSpecs,
-		Depth:      1,
-		Auth:       auth,
-	})
+	err = localRepo.Fetch(ctx, hashes)
 	if err != nil {
 		return errors.Wrap(err, "failed to fetch")
 	}
@@ -196,18 +169,12 @@ func (s *service) fetchOne(ctx context.Context, repositoryID string, hashes []st
 	// Get commit objects and record, in a *fail-safe* manner -
 	// this prevents spam-cloning of remote repository
 	for _, hash := range hashes {
-		commitObj, err := localRepo.CommitObject(plumbing.NewHash(hash))
-
-		// Convert commit object
-		var commit *domain.RepositoryCommit
-		if err == nil {
-			commit = domain.ToRepositoryCommit(commitObj)
-		} else {
+		commit, err := localRepo.GetCommit(hash)
+		if err != nil {
 			log.Errorf("failed to fetch commit %v for repository %v: %+v", hash, repositoryID, err)
 			commit = domain.ToErroredRepositoryCommit(hash)
 		}
 
-		// Record commit object
 		err = s.commitsRepo.RecordCommit(ctx, commit)
 		if err != nil {
 			return errors.Wrap(err, "failed to record commit")

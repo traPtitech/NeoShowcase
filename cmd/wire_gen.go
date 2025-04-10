@@ -9,6 +9,7 @@ package main
 import (
 	"github.com/cert-manager/cert-manager/pkg/client/clientset/versioned"
 	"github.com/friendsofgo/errors"
+	"github.com/google/wire"
 	builder2 "github.com/traPtitech/neoshowcase/cmd/builder"
 	"github.com/traPtitech/neoshowcase/cmd/buildpack-helper"
 	"github.com/traPtitech/neoshowcase/cmd/controller"
@@ -20,6 +21,7 @@ import (
 	"github.com/traPtitech/neoshowcase/pkg/infrastructure/backend/k8simpl"
 	"github.com/traPtitech/neoshowcase/pkg/infrastructure/buildpack"
 	"github.com/traPtitech/neoshowcase/pkg/infrastructure/dbmanager"
+	"github.com/traPtitech/neoshowcase/pkg/infrastructure/git"
 	"github.com/traPtitech/neoshowcase/pkg/infrastructure/grpc"
 	"github.com/traPtitech/neoshowcase/pkg/infrastructure/repository"
 	"github.com/traPtitech/neoshowcase/pkg/infrastructure/webhook"
@@ -71,7 +73,16 @@ func newBuilder(c Config) (component, error) {
 	buildpackConfig := mainBuilderConfig.Buildpack
 	buildpackHelperServiceClient := provideBuildpackHelperClient(c)
 	buildpackBackend := buildpack.NewBuildpackBackend(buildpackConfig, buildpackHelperServiceClient)
-	serviceImpl, err := builder.NewService(builderConfig, controllerBuilderServiceClient, client, buildpackBackend)
+	privateKey, err := provideRepositoryPrivateKey(c)
+	if err != nil {
+		return nil, err
+	}
+	publicKeys, err := domain.IntoPublicKey(privateKey)
+	if err != nil {
+		return nil, err
+	}
+	gitService := git.NewService(publicKeys)
+	serviceImpl, err := builder.NewService(builderConfig, controllerBuilderServiceClient, client, buildpackBackend, gitService)
 	if err != nil {
 		return nil, err
 	}
@@ -159,11 +170,12 @@ func NewControllerDocker(c Config) (component, error) {
 		return nil, err
 	}
 	repositoryCommitRepository := repository.NewRepositoryCommitRepository(db)
-	commitfetcherService, err := commitfetcher.NewService(applicationRepository, buildRepository, gitRepositoryRepository, repositoryCommitRepository, publicKeys)
+	gitService := git.NewService(publicKeys)
+	commitfetcherService, err := commitfetcher.NewService(applicationRepository, buildRepository, gitRepositoryRepository, repositoryCommitRepository, gitService)
 	if err != nil {
 		return nil, err
 	}
-	repofetcherService, err := repofetcher.NewService(applicationRepository, gitRepositoryRepository, publicKeys, cdserviceService, commitfetcherService)
+	repofetcherService, err := repofetcher.NewService(applicationRepository, gitRepositoryRepository, cdserviceService, commitfetcherService, gitService)
 	if err != nil {
 		return nil, err
 	}
@@ -258,11 +270,12 @@ func NewControllerK8s(c Config) (component, error) {
 		return nil, err
 	}
 	repositoryCommitRepository := repository.NewRepositoryCommitRepository(db)
-	commitfetcherService, err := commitfetcher.NewService(applicationRepository, buildRepository, gitRepositoryRepository, repositoryCommitRepository, publicKeys)
+	gitService := git.NewService(publicKeys)
+	commitfetcherService, err := commitfetcher.NewService(applicationRepository, buildRepository, gitRepositoryRepository, repositoryCommitRepository, gitService)
 	if err != nil {
 		return nil, err
 	}
-	repofetcherService, err := repofetcher.NewService(applicationRepository, gitRepositoryRepository, publicKeys, cdserviceService, commitfetcherService)
+	repofetcherService, err := repofetcher.NewService(applicationRepository, gitRepositoryRepository, cdserviceService, commitfetcherService, gitService)
 	if err != nil {
 		return nil, err
 	}
@@ -345,7 +358,8 @@ func NewGateway(c Config) (component, error) {
 	if err != nil {
 		return nil, err
 	}
-	service, err := apiserver.NewService(artifactRepository, runtimeImageRepository, applicationRepository, buildRepository, environmentRepository, gitRepositoryRepository, repositoryCommitRepository, userRepository, storage, mariaDBManager, mongoDBManager, metricsService, containerLogger, controllerServiceClient, imageConfig, publicKeys)
+	gitService := git.NewService(publicKeys)
+	service, err := apiserver.NewService(artifactRepository, runtimeImageRepository, applicationRepository, buildRepository, environmentRepository, gitRepositoryRepository, repositoryCommitRepository, userRepository, storage, mariaDBManager, mongoDBManager, metricsService, containerLogger, controllerServiceClient, imageConfig, gitService)
 	if err != nil {
 		return nil, err
 	}
@@ -423,6 +437,22 @@ func NewSSGen(c Config) (component, error) {
 }
 
 // wire.go:
+
+var providers = wire.NewSet(apiserver.NewService, cdservice.NewAppDeployHelper, cdservice.NewContainerStateMutator, cdservice.NewService, versioned.NewForConfig, cleaner.NewService, commitfetcher.NewService, dbmanager.NewMariaDBManager, dbmanager.NewMongoDBManager, dockerimpl.NewClientFromEnv, dockerimpl.NewDockerBackend, giteaintegration.NewIntegration, grpc.NewAPIServiceServer, grpc.NewAuthInterceptor, grpc.NewBuildpackHelperService, provideBuildpackHelperClient, grpc.NewCacheInterceptor, grpc.NewControllerService, grpc.NewControllerServiceClient, grpc.NewControllerBuilderService, grpc.NewControllerGiteaIntegrationService, grpc.NewControllerGiteaIntegrationServiceClient, provideTokenAuthInterceptor,
+	provideControllerBuilderServiceClient, grpc.NewControllerSSGenService, grpc.NewControllerSSGenServiceClient, healthcheck.NewServer, k8simpl.NewK8SBackend, kubernetes.NewForConfig, logstream.NewService, repofetcher.NewService, repository.New, repository.NewApplicationRepository, repository.NewArtifactRepository, repository.NewRuntimeImageRepository, repository.NewBuildRepository, repository.NewEnvironmentRepository, repository.NewGitRepositoryRepository, repository.NewRepositoryCommitRepository, repository.NewUserRepository, rest.InClusterConfig, v1alpha1.NewForConfig, ssgen.NewGeneratorService, sshserver.NewSSHServer, systeminfo.NewService, builder.NewService, webhook.NewReceiver, provideRepositoryPrivateKey, domain.IntoPublicKey, git.NewService, provideStorage,
+	provideAuthDevServer,
+	provideBuildpackHelperServer, buildpack.NewBuildpackBackend, provideBuilderConfig,
+	provideBuildkitClient,
+	provideSystemInfoConfig,
+	provideControllerServer,
+	provideContainerLogger,
+	provideMetricsService,
+	provideGatewayServer,
+	provideGiteaIntegrationConfig,
+	provideHealthCheckFunc,
+	provideStaticServer,
+	provideStaticServerDocumentRootPath, wire.FieldsOf(new(Config), "DB", "Storage", "Image", "Components"), wire.FieldsOf(new(ComponentsConfig), "Builder", "Controller", "Gateway", "GiteaIntegration", "SSGen"),
+)
 
 func NewBuilder(c Config) (component, error) {
 	if c.Components.Builder.Mock {

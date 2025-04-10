@@ -6,7 +6,6 @@ import (
 	"time"
 
 	"github.com/friendsofgo/errors"
-	"github.com/go-git/go-git/v5/plumbing/transport/ssh"
 
 	buildkit "github.com/moby/buildkit/client"
 	log "github.com/sirupsen/logrus"
@@ -33,8 +32,8 @@ type ServiceImpl struct {
 	client    domain.ControllerBuilderServiceClient
 	buildkit  *buildkit.Client
 	buildpack builder.BuildpackBackend
+	gitsvc    domain.GitService
 
-	pubKey      *ssh.PublicKeys
 	imageConfig builder.ImageConfig
 
 	state       *state
@@ -49,22 +48,19 @@ func NewService(
 	client domain.ControllerBuilderServiceClient,
 	buildkit *buildkit.Client,
 	buildpack builder.BuildpackBackend,
+	gitsvc domain.GitService,
 ) (*ServiceImpl, error) {
 	systemInfo, err := client.GetBuilderSystemInfo(context.Background())
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to get builder system info")
-	}
-	pubKey, err := domain.IntoPublicKey(systemInfo.SSHKey)
-	if err != nil {
-		return nil, errors.Wrap(err, "failed to convert into public key")
 	}
 	return &ServiceImpl{
 		config:    config,
 		client:    client,
 		buildkit:  buildkit,
 		buildpack: buildpack,
+		gitsvc:    gitsvc,
 
-		pubKey:      pubKey,
 		imageConfig: systemInfo.ImageConfig,
 	}, nil
 }
