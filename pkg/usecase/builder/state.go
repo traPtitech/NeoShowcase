@@ -116,6 +116,6 @@ func (s *state) Logger() io.Writer {
 	return s.logWriter
 }
 
-func (s *state) WriteLog(a ...interface{}) {
+func (s *state) WriteLog(a ...any) {
 	_, _ = fmt.Fprintln(s.logWriter, a...)
 }

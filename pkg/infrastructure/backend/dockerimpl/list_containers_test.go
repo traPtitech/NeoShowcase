@@ -31,7 +31,7 @@ func TestDockerBackend_ListContainers(t *testing.T) {
 		config := domain.ApplicationConfig{
 			BuildConfig: &domain.BuildConfigRuntimeCmd{},
 		}
-		for i := 0; i < n; i++ {
+		for i := range n {
 			app := domain.Application{
 				ID:     baseAppID + strconv.Itoa(i),
 				Config: config,

@@ -12,6 +12,7 @@ import (
 
 	"github.com/traPtitech/neoshowcase/pkg/domain"
 	"github.com/traPtitech/neoshowcase/pkg/domain/web"
+	"maps"
 )
 
 type (
@@ -122,9 +123,7 @@ func (b *runtimeConfigBuilder) addWebsite(backend *Backend, app *domain.Applicat
 	}
 
 	b.routers[svcName] = router
-	for name, mw := range middlewares {
-		b.middlewares[name] = mw
-	}
+	maps.Copy(b.middlewares, middlewares)
 	b.services[svcName] = svc
 }
 

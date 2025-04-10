@@ -9,7 +9,7 @@ import (
 )
 
 // PrintConfCommand 設定確認・ベース設定プリントコマンド
-func PrintConfCommand(config interface{}) *cobra.Command {
+func PrintConfCommand(config any) *cobra.Command {
 	return &cobra.Command{
 		Use:   "print-conf",
 		Short: "Print loaded config variables",

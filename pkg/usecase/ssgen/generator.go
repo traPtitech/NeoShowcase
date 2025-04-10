@@ -71,7 +71,7 @@ func (s *generatorService) Start(_ context.Context) error {
 		return s.client.ConnectSSGen(ctx, s.onRequest)
 	}, "connect to controller")
 	go func() {
-		for i := 0; i < 300; i++ {
+		for range 300 {
 			s.reload()
 			if s.reloaded.Load() {
 				break

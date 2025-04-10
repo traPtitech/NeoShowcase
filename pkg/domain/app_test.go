@@ -220,7 +220,7 @@ func TestApplicationConfig_Validate(t *testing.T) {
 			xxh3 := tt.config.Hash(nil)
 			t.Logf("hash: %v", xxh3)
 			assert.Len(t, xxh3, 16)
-			for i := 0; i < 5; i++ {
+			for range 5 {
 				assert.Equal(t, xxh3, tt.config.Hash(nil))
 			}
 		})
