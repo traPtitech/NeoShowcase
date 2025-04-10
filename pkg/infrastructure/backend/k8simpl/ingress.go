@@ -183,14 +183,15 @@ func (b *Backend) ingressRoute(
 	var tls *traefikv1alpha1.TLS
 	var certs []*certmanagerv1.Certificate
 	if website.HTTPS {
-		if b.config.TLS.Type == tlsTypeTraefik {
+		switch b.config.TLS.Type {
+		case tlsTypeTraefik:
 			targetDomain := b.config.TLS.Traefik.Wildcard.Domains.TLSTargetDomain(website)
 			tls = &traefikv1alpha1.TLS{
 				SecretName:   tlsSecretName(targetDomain),
 				CertResolver: b.config.TLS.Traefik.CertResolver,
 				Domains:      []types.Domain{{Main: targetDomain}},
 			}
-		} else if b.config.TLS.Type == tlsTypeCertManager {
+		case tlsTypeCertManager:
 			targetDomain := b.config.TLS.CertManager.Wildcard.Domains.TLSTargetDomain(website)
 			tls = &traefikv1alpha1.TLS{
 				SecretName: tlsSecretName(targetDomain),

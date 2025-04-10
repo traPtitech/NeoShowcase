@@ -25,7 +25,7 @@ func newError(typ ErrorType, message string, err error) error {
 	return customError{error: errors.Wrap(err, message), typ: typ}
 }
 
-func DecomposeError(err error) (underlying error, typ ErrorType, ok bool) {
+func DecomposeError(err error) (underlying error, typ ErrorType, ok bool) { //nolint:staticcheck
 	var cErr customError
 	if errors.As(err, &cErr) {
 		return cErr.error, cErr.typ, true

@@ -31,15 +31,9 @@ func NewMariaDBManager(c MariaDBConfig) (domain.MariaDBManager, error) {
 	conf.Addr = fmt.Sprintf("%s:%d", c.Host, c.Port)
 	conf.User = c.AdminUser
 	conf.Passwd = c.AdminPassword
-	// TODO: As of go-sql-driver/mysql v1.9.0, the "charset" parameter is not functional.
-	// Support for this parameter is expected in a future version:
-	// https://github.com/go-sql-driver/mysql/pull/1679
-	conf.Params = map[string]string{
-		"charset": "utf8mb4",
-	}
-	conf.Collation = "utf8mb4_general_ci"
 	conf.ParseTime = true
 	conf.InterpolateParams = true
+	conf.Apply(mysql.Charset("utf8mb4", "utf8mb4_general_ci"))
 
 	// DB接続
 	connector, err := mysql.NewConnector(conf)
