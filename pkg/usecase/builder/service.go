@@ -12,6 +12,7 @@ import (
 
 	"github.com/traPtitech/neoshowcase/pkg/domain"
 	"github.com/traPtitech/neoshowcase/pkg/domain/builder"
+	"github.com/traPtitech/neoshowcase/pkg/infrastructure/git"
 	"github.com/traPtitech/neoshowcase/pkg/infrastructure/grpc/pb"
 	"github.com/traPtitech/neoshowcase/pkg/infrastructure/grpc/pbconvert"
 	"github.com/traPtitech/neoshowcase/pkg/util/loop"
@@ -48,12 +49,19 @@ func NewService(
 	client domain.ControllerBuilderServiceClient,
 	buildkit *buildkit.Client,
 	buildpack builder.BuildpackBackend,
-	gitsvc domain.GitService,
 ) (*ServiceImpl, error) {
 	systemInfo, err := client.GetBuilderSystemInfo(context.Background())
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to get builder system info")
 	}
+	// FIXME: git service should be injected via DI,
+	// but it's currently created here because it requires a public key
+	// derived from a runtime value (SSHKey from systemInfo).
+	pubKey, err := domain.IntoPublicKey(systemInfo.SSHKey)
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to convert into public key")
+	}
+	gitsvc := git.NewService(pubKey)
 	return &ServiceImpl{
 		config:    config,
 		client:    client,
