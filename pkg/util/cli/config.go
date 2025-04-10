@@ -17,7 +17,7 @@ func BindPFlag(flags *pflag.FlagSet, key string, flag ...string) {
 	}
 }
 
-func CobraOnInitializeFunc(configFilePath *string, config interface{}) func() {
+func CobraOnInitializeFunc(configFilePath *string, config any) func() {
 	return func() {
 		if len(*configFilePath) > 0 {
 			viper.SetConfigFile(*configFilePath)

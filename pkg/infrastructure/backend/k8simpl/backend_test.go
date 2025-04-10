@@ -76,7 +76,7 @@ func prepareManager(t *testing.T) (*Backend, *kubernetes.Clientset, *traefikv1al
 func waitCondition(t *testing.T, cond func() (ok bool, err error)) {
 	t.Helper()
 
-	for i := 0; i < 120; i++ {
+	for range 120 {
 		ok, err := cond()
 		if err != nil {
 			t.Fatal(err.Error())

@@ -16,7 +16,7 @@ func TestMutex_Lock(t *testing.T) {
 
 	var wg sync.WaitGroup
 	wg.Add(n)
-	for i := 0; i < n; i++ {
+	for range n {
 		go func() {
 			defer wg.Done()
 
@@ -27,7 +27,7 @@ func TestMutex_Lock(t *testing.T) {
 	}
 
 	wg.Add(n)
-	for i := 0; i < n; i++ {
+	for range n {
 		go func() {
 			defer wg.Done()
 
@@ -66,8 +66,7 @@ func TestMutex_TryLock(t *testing.T) {
 func BenchmarkMutex(b *testing.B) {
 	m := NewMutex[string]()
 
-	b.StartTimer()
-	for i := 0; i < b.N; i++ {
+	for b.Loop() {
 		m.Lock("k1")
 		m.Unlock("k1")
 	}

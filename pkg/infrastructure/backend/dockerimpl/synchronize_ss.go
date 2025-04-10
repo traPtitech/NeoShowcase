@@ -2,6 +2,7 @@ package dockerimpl
 
 import (
 	"context"
+	"maps"
 
 	"github.com/traPtitech/neoshowcase/pkg/domain"
 	"github.com/traPtitech/neoshowcase/pkg/domain/web"
@@ -21,9 +22,7 @@ func newSSConfigBuilder() *ssConfigBuilder {
 
 func (b *ssConfigBuilder) addStaticSite(backend *Backend, site *domain.StaticSite) {
 	router, newMiddlewares := backend.routerBase(site.Application, site.Website, traefikSSServiceName)
-	for name, mw := range newMiddlewares {
-		b.middlewares[name] = mw
-	}
+	maps.Copy(b.middlewares, newMiddlewares)
 
 	middlewareName := ssHeaderMiddlewareName(site)
 	router["middlewares"] = append(router["middlewares"].([]string), middlewareName)

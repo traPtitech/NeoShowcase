@@ -11,7 +11,7 @@ func SecureGenerate(charset []rune, length int) string {
 	max := big.NewInt(int64(len(charset)))
 	var b strings.Builder
 	b.Grow(length)
-	for i := 0; i < length; i++ {
+	for range length {
 		charIdx, err := rand.Int(rand.Reader, max)
 		if err != nil {
 			panic(err)

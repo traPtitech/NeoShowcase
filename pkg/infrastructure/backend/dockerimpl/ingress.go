@@ -2,6 +2,7 @@ package dockerimpl
 
 import (
 	"fmt"
+	"maps"
 	"os"
 	"path/filepath"
 
@@ -122,9 +123,7 @@ func (b *runtimeConfigBuilder) addWebsite(backend *Backend, app *domain.Applicat
 	}
 
 	b.routers[svcName] = router
-	for name, mw := range middlewares {
-		b.middlewares[name] = mw
-	}
+	maps.Copy(b.middlewares, middlewares)
 	b.services[svcName] = svc
 }
 
