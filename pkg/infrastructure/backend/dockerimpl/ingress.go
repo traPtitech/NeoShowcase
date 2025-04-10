@@ -2,6 +2,7 @@ package dockerimpl
 
 import (
 	"fmt"
+	"maps"
 	"os"
 	"path/filepath"
 
@@ -12,7 +13,6 @@ import (
 
 	"github.com/traPtitech/neoshowcase/pkg/domain"
 	"github.com/traPtitech/neoshowcase/pkg/domain/web"
-	"maps"
 )
 
 type (

@@ -2,10 +2,10 @@ package dockerimpl
 
 import (
 	"context"
+	"maps"
 
 	"github.com/traPtitech/neoshowcase/pkg/domain"
 	"github.com/traPtitech/neoshowcase/pkg/domain/web"
-	"maps"
 )
 
 type ssConfigBuilder struct {
