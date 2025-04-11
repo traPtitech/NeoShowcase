@@ -296,7 +296,7 @@ services:
       - apps
 
   mongo:
-    image: mongo:6
+    image: mongo:7
     restart: always
     environment:
       MONGO_INITDB_ROOT_USERNAME: root
