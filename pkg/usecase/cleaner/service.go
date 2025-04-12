@@ -3,13 +3,11 @@ package cleaner
 import (
 	"context"
 	"fmt"
-	"github.com/regclient/regclient/types/errs"
 	"sync"
 	"time"
 
 	"github.com/friendsofgo/errors"
-	"github.com/regclient/regclient"
-	"github.com/regclient/regclient/types/ref"
+	"github.com/regclient/regclient/types/errs"
 	"github.com/samber/lo"
 	log "github.com/sirupsen/logrus"
 
@@ -18,7 +16,6 @@ import (
 	"github.com/traPtitech/neoshowcase/pkg/util/ds"
 	"github.com/traPtitech/neoshowcase/pkg/util/loop"
 	"github.com/traPtitech/neoshowcase/pkg/util/optional"
-	"github.com/traPtitech/neoshowcase/pkg/util/regutil"
 )
 
 type Service interface {
@@ -30,6 +27,7 @@ type cleanerService struct {
 	artifactRepo domain.ArtifactRepository
 	appRepo      domain.ApplicationRepository
 	buildRepo    domain.BuildRepository
+	regclient    builder.RegistryClient
 	image        builder.ImageConfig
 	storage      domain.Storage
 
@@ -43,6 +41,7 @@ func NewService(
 	artifactRepo domain.ArtifactRepository,
 	appRepo domain.ApplicationRepository,
 	buildRepo domain.BuildRepository,
+	regclient builder.RegistryClient,
 	image builder.ImageConfig,
 	storage domain.Storage,
 ) (Service, error) {
@@ -50,17 +49,16 @@ func NewService(
 		artifactRepo: artifactRepo,
 		appRepo:      appRepo,
 		buildRepo:    buildRepo,
+		regclient:    regclient,
 		image:        image,
 		storage:      storage,
 	}
-
-	r := c.image.NewRegistry()
 
 	ctx, cancel := context.WithCancel(context.Background())
 	c.start = func() {
 		go loop.Loop(ctx, func(ctx context.Context) {
 			start := time.Now()
-			err := c.pruneImages(ctx, r)
+			err := c.pruneImages(ctx, c.regclient)
 			if err != nil {
 				log.Errorf("failed to prune images: %+v", err)
 				return
@@ -92,7 +90,7 @@ func (c *cleanerService) Shutdown(_ context.Context) error {
 	return nil
 }
 
-func (c *cleanerService) pruneImages(ctx context.Context, r *regclient.RegClient) error {
+func (c *cleanerService) pruneImages(ctx context.Context, r builder.RegistryClient) error {
 	applications, err := c.appRepo.GetApplications(ctx, domain.GetApplicationCondition{DeployType: optional.From(domain.DeployTypeRuntime)})
 	if err != nil {
 		return err
@@ -109,9 +107,9 @@ func (c *cleanerService) pruneImages(ctx context.Context, r *regclient.RegClient
 	return nil
 }
 
-func (c *cleanerService) pruneImage(ctx context.Context, r *regclient.RegClient, app *domain.Application) error {
+func (c *cleanerService) pruneImage(ctx context.Context, r builder.RegistryClient, app *domain.Application) error {
 	imageName := c.image.ImageName(app.ID)
-	tags, err := regutil.TagList(ctx, r, imageName)
+	tags, err := r.GetTags(ctx, imageName)
 	if errors.Is(err, errs.ErrNotFound) {
 		// Skip not found error - this is expected (example: before first image upload)
 		return nil
@@ -132,11 +130,7 @@ func (c *cleanerService) pruneImage(ctx context.Context, r *regclient.RegClient,
 		// NOTE: needs manual execution of "registry garbage-collect <config> --delete-untagged" in docker registry side
 		// to actually delete the layers
 		// https://docs.docker.com/registry/garbage-collection/
-		tagRef, err := ref.New(imageName + ":" + tag)
-		if err != nil {
-			return err
-		}
-		err = r.TagDelete(ctx, tagRef)
+		err = r.DeleteImage(ctx, imageName, tag)
 		if err != nil {
 			log.Errorf("deleting tag %s:%s: %+v", imageName, tag, err)
 			// fail-safe and continue
