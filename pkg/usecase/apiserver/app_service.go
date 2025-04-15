@@ -5,10 +5,6 @@ import (
 	"fmt"
 	"strconv"
 
-	"github.com/regclient/regclient/types/ref"
-
-	"github.com/traPtitech/neoshowcase/pkg/util/regutil"
-
 	"github.com/friendsofgo/errors"
 	"github.com/samber/lo"
 	log "github.com/sirupsen/logrus"
@@ -313,18 +309,13 @@ func (s *Service) deleteApplicationImages(ctx context.Context, app *domain.Appli
 		return nil
 	}
 
-	r := s.image.NewRegistry()
 	imageName := s.image.ImageName(app.ID)
-	tags, err := regutil.TagList(ctx, r, imageName)
+	tags, err := s.regclient.GetTags(ctx, imageName)
 	if err != nil {
 		return err
 	}
 	for _, tag := range tags {
-		tagRef, err := ref.New(imageName + ":" + tag)
-		if err != nil {
-			return err
-		}
-		err = r.TagDelete(ctx, tagRef)
+		err := s.regclient.DeleteImage(ctx, imageName, tag)
 		if err != nil {
 			return err
 		}

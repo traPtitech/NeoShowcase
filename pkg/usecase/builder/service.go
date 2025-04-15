@@ -15,6 +15,7 @@ import (
 	"github.com/traPtitech/neoshowcase/pkg/infrastructure/git"
 	"github.com/traPtitech/neoshowcase/pkg/infrastructure/grpc/pb"
 	"github.com/traPtitech/neoshowcase/pkg/infrastructure/grpc/pbconvert"
+	"github.com/traPtitech/neoshowcase/pkg/infrastructure/registry"
 	"github.com/traPtitech/neoshowcase/pkg/util/loop"
 	"github.com/traPtitech/neoshowcase/pkg/util/retry"
 )
@@ -33,6 +34,7 @@ type ServiceImpl struct {
 	client    domain.ControllerBuilderServiceClient
 	buildkit  *buildkit.Client
 	buildpack builder.BuildpackBackend
+	regclient builder.RegistryClient
 	gitsvc    domain.GitService
 
 	imageConfig builder.ImageConfig
@@ -67,6 +69,7 @@ func NewService(
 		client:    client,
 		buildkit:  buildkit,
 		buildpack: buildpack,
+		regclient: registry.NewClient(systemInfo.ImageConfig),
 		gitsvc:    gitsvc,
 
 		imageConfig: systemInfo.ImageConfig,
@@ -79,6 +82,10 @@ func (s *ServiceImpl) destImage(app *domain.Application, build *domain.Build) st
 
 func (s *ServiceImpl) tmpDestImage(app *domain.Application, build *domain.Build) string {
 	return s.imageConfig.TmpImageName(app.ID) + ":" + build.ID
+}
+
+func (s *ServiceImpl) imageTag(build *domain.Build) string {
+	return build.ID
 }
 
 func (s *ServiceImpl) Start(_ context.Context) error {

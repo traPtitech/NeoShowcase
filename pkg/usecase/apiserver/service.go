@@ -40,6 +40,7 @@ type Service struct {
 	containerLogger  domain.ContainerLogger
 	controller       domain.ControllerServiceClient
 	gitsvc           domain.GitService
+	regclient        builder.RegistryClient
 	image            builder.ImageConfig
 
 	systemInfo *sc.Cache[struct{}, *domain.SystemInfo]
@@ -61,6 +62,7 @@ func NewService(
 	metricsService domain.MetricsService,
 	containerLogger domain.ContainerLogger,
 	controller domain.ControllerServiceClient,
+	regclient builder.RegistryClient,
 	image builder.ImageConfig,
 	gitsvc domain.GitService,
 ) (*Service, error) {
@@ -80,6 +82,7 @@ func NewService(
 		containerLogger:  containerLogger,
 		controller:       controller,
 		gitsvc:           gitsvc,
+		regclient:        regclient,
 		image:            image,
 
 		systemInfo: sc.NewMust(scutil.WrapFunc(controller.GetSystemInfo), 5*time.Minute, 10*time.Minute),

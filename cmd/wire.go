@@ -25,6 +25,7 @@ import (
 	"github.com/traPtitech/neoshowcase/pkg/infrastructure/dbmanager"
 	"github.com/traPtitech/neoshowcase/pkg/infrastructure/git"
 	"github.com/traPtitech/neoshowcase/pkg/infrastructure/grpc"
+	"github.com/traPtitech/neoshowcase/pkg/infrastructure/registry"
 	"github.com/traPtitech/neoshowcase/pkg/infrastructure/repository"
 	"github.com/traPtitech/neoshowcase/pkg/infrastructure/webhook"
 	"github.com/traPtitech/neoshowcase/pkg/usecase/apiserver"
@@ -93,6 +94,7 @@ var providers = wire.NewSet(
 	provideRepositoryPrivateKey,
 	domain.IntoPublicKey,
 	git.NewService,
+	registry.NewClient,
 	provideStorage,
 	provideAuthDevServer,
 	provideBuildpackHelperServer,

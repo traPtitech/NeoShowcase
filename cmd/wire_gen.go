@@ -23,6 +23,7 @@ import (
 	"github.com/traPtitech/neoshowcase/pkg/infrastructure/dbmanager"
 	"github.com/traPtitech/neoshowcase/pkg/infrastructure/git"
 	"github.com/traPtitech/neoshowcase/pkg/infrastructure/grpc"
+	"github.com/traPtitech/neoshowcase/pkg/infrastructure/registry"
 	"github.com/traPtitech/neoshowcase/pkg/infrastructure/repository"
 	"github.com/traPtitech/neoshowcase/pkg/infrastructure/webhook"
 	"github.com/traPtitech/neoshowcase/pkg/usecase/apiserver"
@@ -181,7 +182,8 @@ func NewControllerDocker(c Config) (component, error) {
 	sshServer := sshserver.NewSSHServer(sshConfig, publicKeys, backend, applicationRepository, userRepository)
 	receiverConfig := controllerConfig.Webhook
 	receiver := webhook.NewReceiver(receiverConfig, gitRepositoryRepository, repofetcherService, controllerGiteaIntegrationService)
-	cleanerService, err := cleaner.NewService(artifactRepository, applicationRepository, buildRepository, imageConfig, storage)
+	registryClient := registry.NewClient(imageConfig)
+	cleanerService, err := cleaner.NewService(artifactRepository, applicationRepository, buildRepository, registryClient, imageConfig, storage)
 	if err != nil {
 		return nil, err
 	}
@@ -281,7 +283,8 @@ func NewControllerK8s(c Config) (component, error) {
 	sshServer := sshserver.NewSSHServer(sshConfig, publicKeys, backend, applicationRepository, userRepository)
 	receiverConfig := controllerConfig.Webhook
 	receiver := webhook.NewReceiver(receiverConfig, gitRepositoryRepository, repofetcherService, controllerGiteaIntegrationService)
-	cleanerService, err := cleaner.NewService(artifactRepository, applicationRepository, buildRepository, imageConfig, storage)
+	registryClient := registry.NewClient(imageConfig)
+	cleanerService, err := cleaner.NewService(artifactRepository, applicationRepository, buildRepository, registryClient, imageConfig, storage)
 	if err != nil {
 		return nil, err
 	}
@@ -341,6 +344,7 @@ func NewGateway(c Config) (component, error) {
 	controllerServiceClientConfig := gatewayConfig.Controller
 	controllerServiceClient := grpc.NewControllerServiceClient(controllerServiceClientConfig)
 	imageConfig := c.Image
+	registryClient := registry.NewClient(imageConfig)
 	privateKey, err := provideRepositoryPrivateKey(c)
 	if err != nil {
 		return nil, err
@@ -350,7 +354,7 @@ func NewGateway(c Config) (component, error) {
 		return nil, err
 	}
 	gitService := git.NewService(publicKeys)
-	service, err := apiserver.NewService(artifactRepository, runtimeImageRepository, applicationRepository, buildRepository, environmentRepository, gitRepositoryRepository, repositoryCommitRepository, userRepository, storage, mariaDBManager, mongoDBManager, metricsService, containerLogger, controllerServiceClient, imageConfig, gitService)
+	service, err := apiserver.NewService(artifactRepository, runtimeImageRepository, applicationRepository, buildRepository, environmentRepository, gitRepositoryRepository, repositoryCommitRepository, userRepository, storage, mariaDBManager, mongoDBManager, metricsService, containerLogger, controllerServiceClient, registryClient, imageConfig, gitService)
 	if err != nil {
 		return nil, err
 	}
@@ -430,7 +434,7 @@ func NewSSGen(c Config) (component, error) {
 // wire.go:
 
 var providers = wire.NewSet(apiserver.NewService, cdservice.NewAppDeployHelper, cdservice.NewContainerStateMutator, cdservice.NewService, versioned.NewForConfig, cleaner.NewService, commitfetcher.NewService, dbmanager.NewMariaDBManager, dbmanager.NewMongoDBManager, dockerimpl.NewClientFromEnv, dockerimpl.NewDockerBackend, giteaintegration.NewIntegration, grpc.NewAPIServiceServer, grpc.NewAuthInterceptor, grpc.NewBuildpackHelperService, provideBuildpackHelperClient, grpc.NewCacheInterceptor, grpc.NewControllerService, grpc.NewControllerServiceClient, grpc.NewControllerBuilderService, grpc.NewControllerGiteaIntegrationService, grpc.NewControllerGiteaIntegrationServiceClient, provideTokenAuthInterceptor,
-	provideControllerBuilderServiceClient, grpc.NewControllerSSGenService, grpc.NewControllerSSGenServiceClient, healthcheck.NewServer, k8simpl.NewK8SBackend, kubernetes.NewForConfig, logstream.NewService, repofetcher.NewService, repository.New, repository.NewApplicationRepository, repository.NewArtifactRepository, repository.NewRuntimeImageRepository, repository.NewBuildRepository, repository.NewEnvironmentRepository, repository.NewGitRepositoryRepository, repository.NewRepositoryCommitRepository, repository.NewUserRepository, rest.InClusterConfig, v1alpha1.NewForConfig, ssgen.NewGeneratorService, sshserver.NewSSHServer, systeminfo.NewService, builder.NewService, webhook.NewReceiver, provideRepositoryPrivateKey, domain.IntoPublicKey, git.NewService, provideStorage,
+	provideControllerBuilderServiceClient, grpc.NewControllerSSGenService, grpc.NewControllerSSGenServiceClient, healthcheck.NewServer, k8simpl.NewK8SBackend, kubernetes.NewForConfig, logstream.NewService, repofetcher.NewService, repository.New, repository.NewApplicationRepository, repository.NewArtifactRepository, repository.NewRuntimeImageRepository, repository.NewBuildRepository, repository.NewEnvironmentRepository, repository.NewGitRepositoryRepository, repository.NewRepositoryCommitRepository, repository.NewUserRepository, rest.InClusterConfig, v1alpha1.NewForConfig, ssgen.NewGeneratorService, sshserver.NewSSHServer, systeminfo.NewService, builder.NewService, webhook.NewReceiver, provideRepositoryPrivateKey, domain.IntoPublicKey, git.NewService, registry.NewClient, provideStorage,
 	provideAuthDevServer,
 	provideBuildpackHelperServer, buildpack.NewBuildpackBackend, provideBuilderConfig,
 	provideBuildkitClient,

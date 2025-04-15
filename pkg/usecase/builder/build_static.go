@@ -7,7 +7,6 @@ import (
 	"github.com/friendsofgo/errors"
 	buildkit "github.com/moby/buildkit/client"
 	"github.com/moby/buildkit/client/llb"
-	"github.com/regclient/regclient/types/ref"
 	"github.com/tonistiigi/fsutil"
 )
 
@@ -50,10 +49,5 @@ func (s *ServiceImpl) buildStaticCleanup(
 	ctx context.Context,
 	st *state,
 ) error {
-	tagRef, err := ref.New(s.tmpDestImage(st.app, st.build))
-	if err != nil {
-		return err
-	}
-	r := s.imageConfig.NewRegistry()
-	return r.TagDelete(ctx, tagRef)
+	return s.regclient.DeleteImage(ctx, s.imageConfig.TmpImageName(st.app.ID), s.imageTag(st.build))
 }

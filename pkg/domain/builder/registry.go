@@ -1,8 +1,7 @@
 package builder
 
 import (
-	"github.com/regclient/regclient"
-	"github.com/regclient/regclient/config"
+	"context"
 )
 
 type RegistryConfig struct {
@@ -18,24 +17,10 @@ type ImageConfig struct {
 	TmpNamePrefix string         `mapstructure:"tmpNamePrefix" yaml:"tmpNamePrefix"`
 }
 
-// NewRegistry generates a new regclient instance.
-func (c *ImageConfig) NewRegistry() *regclient.RegClient {
-	var opts []regclient.Opt
-
-	host := config.HostNewName(c.Registry.Scheme + "://" + c.Registry.Addr)
-	// RepoAuth should be set to true, because by default regclient internally merges scopes for all repositories
-	// it accesses, resulting in a bloating "Authorization" header when accessing large number of repositories at once.
-	// also see: https://distribution.github.io/distribution/spec/auth/jwt/
-	host.RepoAuth = true
-	if c.Registry.Username != "" {
-		host.User = c.Registry.Username
-	}
-	if c.Registry.Password != "" {
-		host.Pass = c.Registry.Password
-	}
-	opts = append(opts, regclient.WithConfigHost(*host))
-
-	return regclient.New(opts...)
+type RegistryClient interface {
+	DeleteImage(ctx context.Context, image, tag string) error
+	GetTags(ctx context.Context, image string) ([]string, error)
+	GetImageSize(ctx context.Context, image, tag string) (int64, error)
 }
 
 func (c *ImageConfig) ImageName(appID string) string {

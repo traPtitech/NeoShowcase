@@ -7,10 +7,6 @@ import (
 
 	"github.com/friendsofgo/errors"
 	buildkit "github.com/moby/buildkit/client"
-	"github.com/regclient/regclient/types/descriptor"
-	"github.com/regclient/regclient/types/manifest"
-	"github.com/regclient/regclient/types/ref"
-	"github.com/samber/lo"
 	log "github.com/sirupsen/logrus"
 
 	"github.com/traPtitech/neoshowcase/pkg/domain"
@@ -232,26 +228,10 @@ func (s *ServiceImpl) finalize(ctx context.Context, st *state, status domain.Bui
 }
 
 func (s *ServiceImpl) fetchImageSize(ctx context.Context, st *state) (int64, error) {
-	r := s.imageConfig.NewRegistry()
-	ref, err := ref.New(s.destImage(st.app, st.build))
+	size, err := s.regclient.GetImageSize(ctx, s.imageConfig.ImageName(st.app.ID), s.imageTag(st.build))
 	if err != nil {
-		return 0, errors.Wrap(err, "failed to create ref")
+		return 0, errors.Wrap(err, "failed to get image size")
 	}
-
-	m, err := r.ManifestGet(ctx, ref)
-	if err != nil {
-		return 0, errors.Wrap(err, "failed to get manifest")
-	}
-	imager, ok := m.(manifest.Imager)
-	if !ok {
-		return 0, errors.New("manifest is not an imager")
-	}
-	layers, err := imager.GetLayers()
-	if err != nil {
-		return 0, errors.Wrap(err, "failed to get layers")
-	}
-
-	size := lo.SumBy(layers, func(l descriptor.Descriptor) int64 { return l.Size })
 
 	return size, nil
 }
