@@ -39,7 +39,7 @@
     "@connectrpc/connect": "2.0.2",
     "@connectrpc/connect-web": "2.0.2",
     "@kobalte/core": "0.13.9",
-    "@modular-forms/solid": "0.25.1",
+    "@modular-forms/solid": "0.25.0",
     "@solid-primitives/refs": "1.1.0",
     "@solidjs/meta": "0.29.4",
     "@solidjs/router": "0.15.3",
