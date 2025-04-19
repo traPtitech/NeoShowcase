@@ -1,4 +1,4 @@
-import { FieldArray, getValue, getValues, insert } from '@modular-forms/solid'
+import { FieldArray, getValues, insert } from '@modular-forms/solid'
 import { type Component, For, Show } from 'solid-js'
 import { Button } from '/@/components/UI/Button'
 import { styled } from '/@/components/styled-components'
