@@ -83,13 +83,15 @@ export const TextField: Component<Props> = (props) => {
                   </Show>
                 </div>
                 <Show when={props.copyable}>
-                  <button
-                    class="inline-grid w-12 shrink-0 cursor-pointer place-content-center rounded-r-lg border-none bg-black-alpha-100 text-text-black leading-4 outline outline-1 outline-ui-border hover:bg-black-alpha-200 active:bg-black-alpha-300"
-                    onClick={handleCopy}
-                    type="button"
-                  >
-                    <div class="shrink-0 text-2xl/6 i-material-symbols:content-copy-outline" />
-                  </button>
+                  <div class="w-12 shrink-0 rounded-r-lg focus-within:outline focus-within:outline-2 focus-within:outline-primary-main">
+                    <button
+                      class="inline-grid h-full w-full cursor-pointer place-content-center rounded-r-lg border-none bg-black-alpha-100 text-text-black leading-4 outline outline-1 outline-ui-border hover:bg-black-alpha-200 active:bg-black-alpha-300"
+                      onClick={handleCopy}
+                      type="button"
+                    >
+                      <div class="shrink-0 text-2xl/6 i-material-symbols:content-copy-outline" />
+                    </button>
+                  </div>
                 </Show>
               </div>
             </ToolTip>
