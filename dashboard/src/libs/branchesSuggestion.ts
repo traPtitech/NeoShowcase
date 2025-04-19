@@ -1,4 +1,3 @@
-import Fuse from 'fuse.js'
 import { createMemo, createResource } from 'solid-js'
 import toast from 'solid-toast'
 import { client } from '/@/libs/api'
@@ -20,21 +19,15 @@ export const useBranchesSuggestion = (repoID: () => string, current: () => strin
     }
     return [[], []]
   })
-  const branchesFuse = createMemo(() => {
-    const [normal, long] = branches()
-    return [new Fuse(normal), new Fuse(long)]
-  })
 
   return createMemo(() => {
     const query = current()
-    if (!query) return branches()[0].concat(branches()[1])
+    const normal = branches()[0]
+    const long = branches()[1]
+    if (!query) return normal.concat(long)
 
-    const p0 = branchesFuse()[0]
-      .search(query)
-      .map((r) => r.item)
-    const p1 = branchesFuse()[1]
-      .search(query)
-      .map((r) => r.item)
+    const p0 = normal.filter((r) => r.toLowerCase().includes(query.toLowerCase()))
+    const p1 = long.filter((r) => r.toLowerCase().includes(query.toLowerCase()))
     return p0.concat(p1)
   })
 }

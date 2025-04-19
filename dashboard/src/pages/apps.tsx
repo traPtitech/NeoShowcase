@@ -1,7 +1,6 @@
 import { Title } from '@solidjs/meta'
 import { A } from '@solidjs/router'
 import { createVirtualizer } from '@tanstack/solid-virtual'
-import Fuse from 'fuse.js'
 import { type Component, For, Suspense, createMemo, createResource, createSignal, useTransition } from 'solid-js'
 import { GetApplicationsRequest_Scope, GetRepositoriesRequest_Scope } from '/@/api/neoshowcase/protobuf/gateway_pb'
 import { styled } from '/@/components/styled-components'
@@ -64,16 +63,13 @@ const AppsList: Component<{
     (hashes) => getRepositoryCommits(hashes),
   )
 
-  const fuse = createMemo(() => {
-    return new Fuse(props.repoWithApps, {
-      keys: ['repo.name', 'apps.name'],
-    })
-  })
   const filteredRepos = createMemo(() => {
     if (props.query === '') return props.repoWithApps
-    return fuse()
-      .search(props.query)
-      .map((r) => r.item)
+    return props.repoWithApps.filter((r) => {
+      const repoMatch = r.repo.name.toLowerCase().includes(props.query.toLowerCase())
+      const appMatch = r.apps.some((a) => a.name.toLowerCase().includes(props.query.toLowerCase()))
+      return repoMatch || appMatch
+    })
   })
 
   const virtualizer = createMemo(() =>

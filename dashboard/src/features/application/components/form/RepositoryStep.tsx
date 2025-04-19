@@ -1,5 +1,4 @@
 import { A } from '@solidjs/router'
-import Fuse from 'fuse.js'
 import { type Component, For, createMemo, createResource, createSignal } from 'solid-js'
 import {
   GetApplicationsRequest_Scope,
@@ -52,17 +51,12 @@ const RepositoryStep: Component<{
     )
   })
 
-  const fuse = createMemo(
-    () =>
-      new Fuse(repoWithApps(), {
-        keys: ['repo.name', 'repo.htmlUrl'],
-      }),
-  )
   const filteredRepos = createMemo(() => {
     if (query() === '') return repoWithApps()
-    return fuse()
-      .search(query())
-      .map((r) => r.item)
+    return repoWithApps().filter(
+      ({ repo: { name, htmlUrl } }) =>
+        name.toLowerCase().includes(query().toLowerCase()) || htmlUrl.toLowerCase().includes(query().toLowerCase()),
+    )
   })
 
   return (
