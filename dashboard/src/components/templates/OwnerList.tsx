@@ -1,5 +1,4 @@
 import { createVirtualizer } from '@tanstack/solid-virtual'
-import Fuse from 'fuse.js'
 import { type Component, For, Show, createMemo, createSignal } from 'solid-js'
 import type { User } from '/@/api/neoshowcase/protobuf/gateway_pb'
 import { Button } from '/@/components/UI/Button'
@@ -25,19 +24,11 @@ const AddOwners: Component<{
   addOwner: (user: User) => void
 }> = (props) => {
   const [searchUserQuery, setSearchUserQuery] = createSignal('')
-  const fuse = createMemo(
-    () =>
-      new Fuse(props.nonOwners, {
-        keys: ['name'],
-      }),
-  )
   const filteredUsers = createMemo(() => {
     if (searchUserQuery() === '') {
       return props.nonOwners
     }
-    return fuse()
-      .search(searchUserQuery())
-      .map((result) => result.item)
+    return props.nonOwners.filter(({ name }) => name.toLowerCase().includes(searchUserQuery().toLowerCase()))
   })
 
   const [containerRef, setContainerRef] = createSignal<HTMLDivElement | null>(null)
@@ -157,19 +148,11 @@ const OwnerList: Component<{
   hasPermission: boolean
 }> = (props) => {
   const [searchUserQuery, setSearchUserQuery] = createSignal('')
-  const fuse = createMemo(
-    () =>
-      new Fuse(props.owners, {
-        keys: ['name'],
-      }),
-  )
   const filteredOwners = createMemo(() => {
     if (searchUserQuery() === '') {
       return props.owners
     }
-    return fuse()
-      .search(searchUserQuery())
-      .map((result) => result.item)
+    return props.owners.filter(({ name }) => name.toLowerCase().includes(searchUserQuery().toLowerCase()))
   })
 
   const nonOwners = createMemo(() => props.users.filter((u) => !props.owners.some((o) => o.id === u.id)))
