@@ -1,5 +1,5 @@
-import { Field, getValues, setValues } from '@modular-forms/solid'
-import { type Component, Show, createEffect, createResource } from 'solid-js'
+import { Field, getValues, setValue, setValues } from '@modular-forms/solid'
+import { type Component, Show, createResource } from 'solid-js'
 import { AutoShutdownConfig_StartupBehavior } from '/@/api/neoshowcase/protobuf/gateway_pb'
 import { TextField } from '/@/components/UI/TextField'
 import { ToolTip } from '/@/components/UI/ToolTip'
@@ -29,26 +29,17 @@ const RuntimeConfigField: Component<Props> = (props) => {
     },
   )
 
-  const buildType = () => getValues(formStore).form?.config?.buildConfig?.type
-
-  createEffect(() => {
-    if (!useDB()) {
-      setValues(formStore, {
-        form: {
-          config: {
-            deployConfig: {
-              value: {
-                runtime: {
-                  useMariadb: false,
-                  useMongodb: false,
-                },
-              },
-            },
-          },
-        },
-      })
+  const updateUseDB = (value: boolean) => {
+    setUseDB(value)
+    if (!value) {
+      // @ts-expect-error: runtime でない場合は存在しないため型エラーが出る
+      setValue(formStore, 'form.config.deployConfig.value.runtime.useMariadb', false)
+      // @ts-expect-error
+      setValue(formStore, 'form.config.deployConfig.value.runtime.useMongodb', false)
     }
-  })
+  }
+
+  const buildType = () => getValues(formStore).form?.config?.buildConfig?.type
 
   // @ts-expect-error: autoShutdown は deployConfig.type === "static" の時存在しないためtsの型の仕様上エラーが出る
   const autoShutdown = () => getValues(formStore).form?.config?.deployConfig?.value?.runtime?.autoShutdown?.enabled
@@ -138,7 +129,7 @@ const RuntimeConfigField: Component<Props> = (props) => {
               { value: 'false', label: 'No' },
             ]}
             value={useDB() ? 'true' : 'false'}
-            setValue={(v) => setUseDB(v === 'true')}
+            setValue={(v) => updateUseDB(v === 'true')}
             disabled={props.disableEditDB}
           />
         </FormItem>
