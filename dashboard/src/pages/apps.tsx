@@ -15,7 +15,7 @@ import { TextField } from '../components/UI/TextField'
 import SuspenseContainer from '../components/layouts/SuspenseContainer'
 import { WithNav } from '../components/layouts/WithNav'
 import { AppsNav } from '../components/templates/AppsNav'
-import { List, RepositoryList } from '../components/templates/List'
+import { RepositoryList } from '../components/templates/List'
 import AppsFilter from '../components/templates/app/AppsFilter'
 
 const FilterContainer = styled('div', 'z-1 flex w-full items-center justify-center pt-10 pb-8')
@@ -102,12 +102,10 @@ const AppsList: Component<{
       <For
         each={items() ?? []}
         fallback={
-          <List.Container>
-            <List.PlaceHolder>
-              <div class="i-material-symbols:search shrink-0 text-20/20" />
-              No Apps Found
-            </List.PlaceHolder>
-          </List.Container>
+          <div class="mt-32 flex flex-col items-center justify-center gap-4 text-text-black">
+            <div class="i-material-symbols:search shrink-0 text-20/20" />
+            <span class="font-bold">No Apps Found</span>
+          </div>
         }
       >
         {(vRow) => (
