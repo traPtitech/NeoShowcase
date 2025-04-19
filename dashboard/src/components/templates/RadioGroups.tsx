@@ -64,7 +64,11 @@ export const RadioGroup = <T extends string>(props: Props<T>): JSX.Element => {
             {(option) => (
               <KRadioGroup.Item
                 value={option.value}
-                class={clsx('min-w-[min(200px,100%)]', props.full ? 'w-full' : 'w-fit')}
+                class={clsx(
+                  'min-w-[min(200px,100%)]',
+                  'rounded-lg focus-within:outline focus-within:outline-3 focus-within:outline-primary-main',
+                  props.full ? 'w-full' : 'w-fit',
+                )}
               >
                 <KRadioGroup.ItemInput {...inputProps} />
                 <KRadioGroup.ItemLabel
