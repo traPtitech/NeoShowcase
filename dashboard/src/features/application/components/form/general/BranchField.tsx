@@ -24,8 +24,8 @@ const BranchField: Component<Props> = (props) => {
     if (refName !== undefined && !branches().includes(refName)) {
       // まだ読み込まれていない場合は何もしない
       // (ブランチが真に存在しない場合も含まれるが、普通に使っているときは起こり得ないので無視する)
-      if (branches().length === 0) return;
-      
+      if (branches().length === 0) return
+
       // 下の refName に対する setValue により、もともと設定されていたブランチ名が空文字列に上書きされるため
       // refName が空でない(=refName がもともと設定されていたブランチ名になっている)とき、それを使ってエラーを表示する
       if (refName !== '') {
