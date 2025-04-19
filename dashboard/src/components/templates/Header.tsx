@@ -22,12 +22,12 @@ export const Header: Component = () => {
       </A>
       <div class="flex items-center gap-2 max-md:hidden">
         <A href="/apps">
-          <Button size="medium" variants="text">
+          <Button size="medium" variants="text" tabIndex={-1}>
             Apps
           </Button>
         </A>
         <A href="/builds">
-          <Button size="medium" variants="text">
+          <Button size="medium" variants="text" tabIndex={-1}>
             Queue
           </Button>
         </A>
