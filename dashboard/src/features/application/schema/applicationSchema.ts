@@ -37,19 +37,6 @@ const createApplicationSchema = v.pipe(
 
 type CreateApplicationOutput = v.InferOutput<typeof createApplicationSchema>
 
-export const getInitialValueOfCreateAppForm = (): CreateOrUpdateApplicationInput => ({
-  type: 'create',
-  form: {
-    name: '',
-    repositoryId: '',
-    refName: '',
-    config: {},
-    websites: [],
-    portPublications: [],
-    startOnCreate: false,
-  },
-})
-
 // --- update application
 
 const ownersSchema = v.pipe(

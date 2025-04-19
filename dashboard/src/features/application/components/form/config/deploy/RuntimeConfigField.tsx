@@ -1,4 +1,4 @@
-import { Field, getValues, setValue, setValues } from '@modular-forms/solid'
+import { Field, getValues, setValue } from '@modular-forms/solid'
 import { type Component, Show, createResource } from 'solid-js'
 import { AutoShutdownConfig_StartupBehavior } from '/@/api/neoshowcase/protobuf/gateway_pb'
 import { TextField } from '/@/components/UI/TextField'
@@ -45,22 +45,8 @@ const RuntimeConfigField: Component<Props> = (props) => {
   const autoShutdown = () => getValues(formStore).form?.config?.deployConfig?.value?.runtime?.autoShutdown?.enabled
 
   const setStartupBehavior = (value: string | undefined) => {
-    setValues(formStore, {
-      form: {
-        config: {
-          deployConfig: {
-            value: {
-              // @ts-expect-error: deployConfig は form.type === "static" の時存在しないためtsの型の仕様上エラーが出る
-              runtime: {
-                autoShutdown: {
-                  startup: value,
-                },
-              },
-            },
-          },
-        },
-      },
-    })
+    // @ts-expect-error: deployConfig は form.type === "static" の時存在しないためtsの型の仕様上エラーが出る
+    setValue(formStore, 'form.config.deployConfig.value.runtime.autoShutdown.startup', value)
   }
 
   const EntryPointField = () => (
