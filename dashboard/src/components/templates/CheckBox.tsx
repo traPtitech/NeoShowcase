@@ -32,7 +32,7 @@ const Option: Component<Props> = (props) => {
   )
 
   return (
-    <KCheckbox.Root {...rootProps} validationState={props.error ? 'invalid' : 'valid'}>
+    <KCheckbox.Root {...rootProps} class='rounded-lg focus-within:outline focus-within:outline-3 focus-within:outline-primary-main w-fit' validationState={props.error ? 'invalid' : 'valid'}>
       <KCheckbox.Input {...inputProps} />
       <ToolTip {...props.tooltip}>
         <KCheckbox.Label
