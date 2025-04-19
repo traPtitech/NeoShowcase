@@ -27,7 +27,7 @@ const WebsiteStep: Component<{
     })
   }
 
-  const isRuntimeApp = () => getValue(formStore, 'form.config.deployConfig.type') === 'runtime'
+  const isRuntimeApp = () => getValues(formStore).form?.config?.deployConfig?.type === 'runtime'
 
   const showAddMoreButton = () => {
     const websites = getValues(formStore, 'form.websites')
