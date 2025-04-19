@@ -1,4 +1,4 @@
-import { Field, Form, type SubmitHandler, getValue, setValue, setValues, validate } from '@modular-forms/solid'
+import { Field, Form, type SubmitHandler, getValue, setValue, validate } from '@modular-forms/solid'
 import { useNavigate, useSearchParams } from '@solidjs/router'
 import {
   type Component,
@@ -17,11 +17,7 @@ import { Progress } from '/@/components/UI/StepProgress'
 import { client, handleAPIError } from '/@/libs/api'
 import { clsx } from '/@/libs/clsx'
 import { useApplicationForm } from '../../provider/applicationFormProvider'
-import {
-  type CreateOrUpdateApplicationInput,
-  getInitialValueOfCreateAppForm,
-  handleSubmitCreateApplicationForm,
-} from '../../schema/applicationSchema'
+import { type CreateOrUpdateApplicationInput, handleSubmitCreateApplicationForm } from '../../schema/applicationSchema'
 import GeneralStep from './GeneralStep'
 import RepositoryStep from './RepositoryStep'
 import WebsiteStep from './WebsiteStep'
@@ -38,7 +34,7 @@ const CreateAppForm: Component = () => {
   // `reset` doesn't work on first render when the Field not rendered
   // see: https://github.com/fabian-hiller/modular-forms/issues/157#issuecomment-1848567069
   onMount(() => {
-    setValues(formStore, getInitialValueOfCreateAppForm())
+    setValue(formStore, 'type', 'create')
   })
 
   const [searchParams, setParam] = useSearchParams()
