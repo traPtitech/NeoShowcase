@@ -159,21 +159,21 @@ const CreateAppForm: Component = () => {
               }}
             />
           </Match>
-          <Match when={currentStep() === formStep.general}>
-            <Show when={repoBySearchParam()}>
-              {(nonNullRepo) => (
-                <GeneralStep
-                  repo={nonNullRepo()}
-                  backToRepoStep={goToRepoStep}
-                  proceedToWebsiteStep={handleGeneralToWebsiteStep}
-                />
-              )}
-            </Show>
-          </Match>
           <Match when={currentStep() === formStep.website}>
             <WebsiteStep backToGeneralStep={goToGeneralStep} />
           </Match>
         </Switch>
+        <div class={clsx(currentStep() !== formStep.general && 'hidden')}>
+          <Show when={repoBySearchParam()}>
+            {(nonNullRepo) => (
+              <GeneralStep
+                repo={nonNullRepo()}
+                backToRepoStep={goToRepoStep}
+                proceedToWebsiteStep={handleGeneralToWebsiteStep}
+              />
+            )}
+          </Show>
+        </div>
       </Form>
     </div>
   )
