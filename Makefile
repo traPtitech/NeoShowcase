@@ -25,10 +25,14 @@ init-kustomize:
 	sudo install ./kustomize /usr/local/bin/
 	rm ./kustomize
 
+.PHONY: init-buf
+init-buf:
+	sudo curl -sSL "https://github.com/bufbuild/buf/releases/latest/download/buf-$(shell uname -s)-$(shell uname -m)" -o /usr/local/bin/buf
+	sudo chmod +x /usr/local/bin/buf
+
 .PHONY: init
-init: init-k3d init-kustomize ## Install / update required tools
+init: init-k3d init-kustomize init-buf ## Install / update required tools
 	go mod download
-	go install github.com/bufbuild/buf/cmd/buf@latest
 	go install github.com/sqldef/sqldef/cmd/mysqldef@latest
 	go install github.com/ktr0731/evans@latest
 
