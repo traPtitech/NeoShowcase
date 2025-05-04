@@ -1,11 +1,4 @@
-PROTOC_VERSION := 29.0
 TBLS_VERSION := 1.75.0
-
-GO_REPO_ROOT_PACKAGE := "github.com/traPtitech/neoshowcase"
-PROTOC_OPTS := -I ./api/proto --go_out=. --go_opt=module=$(GO_REPO_ROOT_PACKAGE) --connect-go_out=. --connect-go_opt=module=$(GO_REPO_ROOT_PACKAGE)
-PROTOC_OPTS_CLIENT := -I ./api/proto --es_out=./dashboard/src/api --es_opt=target=ts
-PROTOC_SOURCES ?= $(shell find ./api/proto/neoshowcase -type f -name "*.proto" -print)
-PROTOC_SOURCES_CLIENT := ./api/proto/neoshowcase/protobuf/gateway.proto ./api/proto/neoshowcase/protobuf/null.proto
 
 TBLS_CMD := docker run --rm --net=host -v $$(pwd):/work --workdir /work -u $$(id -u):$$(id -g) ghcr.io/k1low/tbls:v$(TBLS_VERSION)
 SQLDEF_CMD := APP_VERSION=local APP_REVISION=makefile mysqldef --port=5004 --user=root --password=password neoshowcase
@@ -32,19 +25,10 @@ init-kustomize:
 	sudo install ./kustomize /usr/local/bin/
 	rm ./kustomize
 
-.PHONY: init-protoc
-init-protoc:
-	@PROTOC_VERSION=$(PROTOC_VERSION) ./.local-dev/install-protoc.sh
-
-.PHONY: init-protoc-tools
-init-protoc-tools:
-	go install google.golang.org/protobuf/cmd/protoc-gen-go@latest
-	go install connectrpc.com/connect/cmd/protoc-gen-connect-go@latest
-	npm i -g @bufbuild/protoc-gen-es@2
-
 .PHONY: init
-init: init-k3d init-kustomize init-protoc init-protoc-tools ## Install / update required tools
+init: init-k3d init-kustomize ## Install / update required tools
 	go mod download
+	go install github.com/bufbuild/buf/cmd/buf@latest
 	go install github.com/sqldef/sqldef/cmd/mysqldef@latest
 	go install github.com/ktr0731/evans@latest
 
@@ -77,8 +61,8 @@ gen-go: ensure-db
 
 .PHONY: gen-proto
 gen-proto:
-	protoc $(PROTOC_OPTS) $(PROTOC_SOURCES)
-	protoc $(PROTOC_OPTS_CLIENT) $(PROTOC_SOURCES_CLIENT)
+	buf generate --template buf.gen.ns.yaml
+	buf generate --template buf.gen.dashboard.yaml
 
 .PHONY: gen-db-docs
 gen-db-docs: ensure-db
