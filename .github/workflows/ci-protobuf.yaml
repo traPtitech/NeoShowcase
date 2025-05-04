@@ -1,0 +1,48 @@
+name: Protobuf CI
+
+on:
+  push:
+    branches:
+      - "main"
+    paths:
+      - "api/**"
+  pull_request:
+    paths:
+      - "api/**"
+
+jobs:
+  gen-diff:
+    name: Check diff
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install buf
+        run: make init-buf
+      - name: Generate code
+        run: make gen-proto
+      - name: Check diff
+        run: git diff --exit-code
+
+  format:
+    name: Format
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install buf
+        run: make init-buf
+      - name: Format proto files
+        run: |
+          if ! buf format --diff --exit-code; then
+            echo "::error::Run 'buf format -w' to fix"
+            exit 1
+          fi
+
+  lint:
+    name: Lint
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install buf
+        run: make init-buf
+      - name: Lint proto files
+        run: buf lint

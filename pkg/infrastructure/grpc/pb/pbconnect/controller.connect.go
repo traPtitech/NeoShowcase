@@ -96,32 +96,6 @@ const (
 	ControllerGiteaIntegrationServiceConnectProcedure = "/neoshowcase.protobuf.ControllerGiteaIntegrationService/Connect"
 )
 
-// These variables are the protoreflect.Descriptor objects for the RPCs defined in this package.
-var (
-	controllerServiceServiceDescriptor                           = pb.File_neoshowcase_protobuf_controller_proto.Services().ByName("ControllerService")
-	controllerServiceGetSystemInfoMethodDescriptor               = controllerServiceServiceDescriptor.Methods().ByName("GetSystemInfo")
-	controllerServiceFetchRepositoryMethodDescriptor             = controllerServiceServiceDescriptor.Methods().ByName("FetchRepository")
-	controllerServiceRegisterBuildMethodDescriptor               = controllerServiceServiceDescriptor.Methods().ByName("RegisterBuild")
-	controllerServiceSyncDeploymentsMethodDescriptor             = controllerServiceServiceDescriptor.Methods().ByName("SyncDeployments")
-	controllerServiceStreamBuildLogMethodDescriptor              = controllerServiceServiceDescriptor.Methods().ByName("StreamBuildLog")
-	controllerServiceCancelBuildMethodDescriptor                 = controllerServiceServiceDescriptor.Methods().ByName("CancelBuild")
-	controllerBuilderServiceServiceDescriptor                    = pb.File_neoshowcase_protobuf_controller_proto.Services().ByName("ControllerBuilderService")
-	controllerBuilderServiceGetBuilderSystemInfoMethodDescriptor = controllerBuilderServiceServiceDescriptor.Methods().ByName("GetBuilderSystemInfo")
-	controllerBuilderServicePingBuildMethodDescriptor            = controllerBuilderServiceServiceDescriptor.Methods().ByName("PingBuild")
-	controllerBuilderServiceStreamBuildLogMethodDescriptor       = controllerBuilderServiceServiceDescriptor.Methods().ByName("StreamBuildLog")
-	controllerBuilderServiceSaveArtifactMethodDescriptor         = controllerBuilderServiceServiceDescriptor.Methods().ByName("SaveArtifact")
-	controllerBuilderServiceSaveBuildLogMethodDescriptor         = controllerBuilderServiceServiceDescriptor.Methods().ByName("SaveBuildLog")
-	controllerBuilderServiceSaveRuntimeImageMethodDescriptor     = controllerBuilderServiceServiceDescriptor.Methods().ByName("SaveRuntimeImage")
-	controllerBuilderServiceConnectBuilderMethodDescriptor       = controllerBuilderServiceServiceDescriptor.Methods().ByName("ConnectBuilder")
-	buildpackHelperServiceServiceDescriptor                      = pb.File_neoshowcase_protobuf_controller_proto.Services().ByName("BuildpackHelperService")
-	buildpackHelperServiceCopyFileTreeMethodDescriptor           = buildpackHelperServiceServiceDescriptor.Methods().ByName("CopyFileTree")
-	buildpackHelperServiceExecMethodDescriptor                   = buildpackHelperServiceServiceDescriptor.Methods().ByName("Exec")
-	controllerSSGenServiceServiceDescriptor                      = pb.File_neoshowcase_protobuf_controller_proto.Services().ByName("ControllerSSGenService")
-	controllerSSGenServiceConnectSSGenMethodDescriptor           = controllerSSGenServiceServiceDescriptor.Methods().ByName("ConnectSSGen")
-	controllerGiteaIntegrationServiceServiceDescriptor           = pb.File_neoshowcase_protobuf_controller_proto.Services().ByName("ControllerGiteaIntegrationService")
-	controllerGiteaIntegrationServiceConnectMethodDescriptor     = controllerGiteaIntegrationServiceServiceDescriptor.Methods().ByName("Connect")
-)
-
 // ControllerServiceClient is a client for the neoshowcase.protobuf.ControllerService service.
 type ControllerServiceClient interface {
 	GetSystemInfo(context.Context, *connect.Request[emptypb.Empty]) (*connect.Response[pb.SystemInfo], error)
@@ -141,41 +115,42 @@ type ControllerServiceClient interface {
 // http://api.acme.com or https://acme.com/grpc).
 func NewControllerServiceClient(httpClient connect.HTTPClient, baseURL string, opts ...connect.ClientOption) ControllerServiceClient {
 	baseURL = strings.TrimRight(baseURL, "/")
+	controllerServiceMethods := pb.File_neoshowcase_protobuf_controller_proto.Services().ByName("ControllerService").Methods()
 	return &controllerServiceClient{
 		getSystemInfo: connect.NewClient[emptypb.Empty, pb.SystemInfo](
 			httpClient,
 			baseURL+ControllerServiceGetSystemInfoProcedure,
-			connect.WithSchema(controllerServiceGetSystemInfoMethodDescriptor),
+			connect.WithSchema(controllerServiceMethods.ByName("GetSystemInfo")),
 			connect.WithClientOptions(opts...),
 		),
 		fetchRepository: connect.NewClient[pb.RepositoryIdRequest, emptypb.Empty](
 			httpClient,
 			baseURL+ControllerServiceFetchRepositoryProcedure,
-			connect.WithSchema(controllerServiceFetchRepositoryMethodDescriptor),
+			connect.WithSchema(controllerServiceMethods.ByName("FetchRepository")),
 			connect.WithClientOptions(opts...),
 		),
 		registerBuild: connect.NewClient[pb.ApplicationIdRequest, emptypb.Empty](
 			httpClient,
 			baseURL+ControllerServiceRegisterBuildProcedure,
-			connect.WithSchema(controllerServiceRegisterBuildMethodDescriptor),
+			connect.WithSchema(controllerServiceMethods.ByName("RegisterBuild")),
 			connect.WithClientOptions(opts...),
 		),
 		syncDeployments: connect.NewClient[emptypb.Empty, emptypb.Empty](
 			httpClient,
 			baseURL+ControllerServiceSyncDeploymentsProcedure,
-			connect.WithSchema(controllerServiceSyncDeploymentsMethodDescriptor),
+			connect.WithSchema(controllerServiceMethods.ByName("SyncDeployments")),
 			connect.WithClientOptions(opts...),
 		),
 		streamBuildLog: connect.NewClient[pb.BuildIdRequest, pb.BuildLog](
 			httpClient,
 			baseURL+ControllerServiceStreamBuildLogProcedure,
-			connect.WithSchema(controllerServiceStreamBuildLogMethodDescriptor),
+			connect.WithSchema(controllerServiceMethods.ByName("StreamBuildLog")),
 			connect.WithClientOptions(opts...),
 		),
 		cancelBuild: connect.NewClient[pb.BuildIdRequest, emptypb.Empty](
 			httpClient,
 			baseURL+ControllerServiceCancelBuildProcedure,
-			connect.WithSchema(controllerServiceCancelBuildMethodDescriptor),
+			connect.WithSchema(controllerServiceMethods.ByName("CancelBuild")),
 			connect.WithClientOptions(opts...),
 		),
 	}
@@ -238,40 +213,41 @@ type ControllerServiceHandler interface {
 // By default, handlers support the Connect, gRPC, and gRPC-Web protocols with the binary Protobuf
 // and JSON codecs. They also support gzip compression.
 func NewControllerServiceHandler(svc ControllerServiceHandler, opts ...connect.HandlerOption) (string, http.Handler) {
+	controllerServiceMethods := pb.File_neoshowcase_protobuf_controller_proto.Services().ByName("ControllerService").Methods()
 	controllerServiceGetSystemInfoHandler := connect.NewUnaryHandler(
 		ControllerServiceGetSystemInfoProcedure,
 		svc.GetSystemInfo,
-		connect.WithSchema(controllerServiceGetSystemInfoMethodDescriptor),
+		connect.WithSchema(controllerServiceMethods.ByName("GetSystemInfo")),
 		connect.WithHandlerOptions(opts...),
 	)
 	controllerServiceFetchRepositoryHandler := connect.NewUnaryHandler(
 		ControllerServiceFetchRepositoryProcedure,
 		svc.FetchRepository,
-		connect.WithSchema(controllerServiceFetchRepositoryMethodDescriptor),
+		connect.WithSchema(controllerServiceMethods.ByName("FetchRepository")),
 		connect.WithHandlerOptions(opts...),
 	)
 	controllerServiceRegisterBuildHandler := connect.NewUnaryHandler(
 		ControllerServiceRegisterBuildProcedure,
 		svc.RegisterBuild,
-		connect.WithSchema(controllerServiceRegisterBuildMethodDescriptor),
+		connect.WithSchema(controllerServiceMethods.ByName("RegisterBuild")),
 		connect.WithHandlerOptions(opts...),
 	)
 	controllerServiceSyncDeploymentsHandler := connect.NewUnaryHandler(
 		ControllerServiceSyncDeploymentsProcedure,
 		svc.SyncDeployments,
-		connect.WithSchema(controllerServiceSyncDeploymentsMethodDescriptor),
+		connect.WithSchema(controllerServiceMethods.ByName("SyncDeployments")),
 		connect.WithHandlerOptions(opts...),
 	)
 	controllerServiceStreamBuildLogHandler := connect.NewServerStreamHandler(
 		ControllerServiceStreamBuildLogProcedure,
 		svc.StreamBuildLog,
-		connect.WithSchema(controllerServiceStreamBuildLogMethodDescriptor),
+		connect.WithSchema(controllerServiceMethods.ByName("StreamBuildLog")),
 		connect.WithHandlerOptions(opts...),
 	)
 	controllerServiceCancelBuildHandler := connect.NewUnaryHandler(
 		ControllerServiceCancelBuildProcedure,
 		svc.CancelBuild,
-		connect.WithSchema(controllerServiceCancelBuildMethodDescriptor),
+		connect.WithSchema(controllerServiceMethods.ByName("CancelBuild")),
 		connect.WithHandlerOptions(opts...),
 	)
 	return "/neoshowcase.protobuf.ControllerService/", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -343,47 +319,48 @@ type ControllerBuilderServiceClient interface {
 // http://api.acme.com or https://acme.com/grpc).
 func NewControllerBuilderServiceClient(httpClient connect.HTTPClient, baseURL string, opts ...connect.ClientOption) ControllerBuilderServiceClient {
 	baseURL = strings.TrimRight(baseURL, "/")
+	controllerBuilderServiceMethods := pb.File_neoshowcase_protobuf_controller_proto.Services().ByName("ControllerBuilderService").Methods()
 	return &controllerBuilderServiceClient{
 		getBuilderSystemInfo: connect.NewClient[emptypb.Empty, pb.BuilderSystemInfo](
 			httpClient,
 			baseURL+ControllerBuilderServiceGetBuilderSystemInfoProcedure,
-			connect.WithSchema(controllerBuilderServiceGetBuilderSystemInfoMethodDescriptor),
+			connect.WithSchema(controllerBuilderServiceMethods.ByName("GetBuilderSystemInfo")),
 			connect.WithClientOptions(opts...),
 		),
 		pingBuild: connect.NewClient[pb.BuildIdRequest, emptypb.Empty](
 			httpClient,
 			baseURL+ControllerBuilderServicePingBuildProcedure,
-			connect.WithSchema(controllerBuilderServicePingBuildMethodDescriptor),
+			connect.WithSchema(controllerBuilderServiceMethods.ByName("PingBuild")),
 			connect.WithClientOptions(opts...),
 		),
 		streamBuildLog: connect.NewClient[pb.BuildLogPortion, emptypb.Empty](
 			httpClient,
 			baseURL+ControllerBuilderServiceStreamBuildLogProcedure,
-			connect.WithSchema(controllerBuilderServiceStreamBuildLogMethodDescriptor),
+			connect.WithSchema(controllerBuilderServiceMethods.ByName("StreamBuildLog")),
 			connect.WithClientOptions(opts...),
 		),
 		saveArtifact: connect.NewClient[pb.SaveArtifactRequest, emptypb.Empty](
 			httpClient,
 			baseURL+ControllerBuilderServiceSaveArtifactProcedure,
-			connect.WithSchema(controllerBuilderServiceSaveArtifactMethodDescriptor),
+			connect.WithSchema(controllerBuilderServiceMethods.ByName("SaveArtifact")),
 			connect.WithClientOptions(opts...),
 		),
 		saveBuildLog: connect.NewClient[pb.SaveBuildLogRequest, emptypb.Empty](
 			httpClient,
 			baseURL+ControllerBuilderServiceSaveBuildLogProcedure,
-			connect.WithSchema(controllerBuilderServiceSaveBuildLogMethodDescriptor),
+			connect.WithSchema(controllerBuilderServiceMethods.ByName("SaveBuildLog")),
 			connect.WithClientOptions(opts...),
 		),
 		saveRuntimeImage: connect.NewClient[pb.SaveRuntimeImageRequest, emptypb.Empty](
 			httpClient,
 			baseURL+ControllerBuilderServiceSaveRuntimeImageProcedure,
-			connect.WithSchema(controllerBuilderServiceSaveRuntimeImageMethodDescriptor),
+			connect.WithSchema(controllerBuilderServiceMethods.ByName("SaveRuntimeImage")),
 			connect.WithClientOptions(opts...),
 		),
 		connectBuilder: connect.NewClient[pb.BuilderResponse, pb.BuilderRequest](
 			httpClient,
 			baseURL+ControllerBuilderServiceConnectBuilderProcedure,
-			connect.WithSchema(controllerBuilderServiceConnectBuilderMethodDescriptor),
+			connect.WithSchema(controllerBuilderServiceMethods.ByName("ConnectBuilder")),
 			connect.WithClientOptions(opts...),
 		),
 	}
@@ -453,46 +430,47 @@ type ControllerBuilderServiceHandler interface {
 // By default, handlers support the Connect, gRPC, and gRPC-Web protocols with the binary Protobuf
 // and JSON codecs. They also support gzip compression.
 func NewControllerBuilderServiceHandler(svc ControllerBuilderServiceHandler, opts ...connect.HandlerOption) (string, http.Handler) {
+	controllerBuilderServiceMethods := pb.File_neoshowcase_protobuf_controller_proto.Services().ByName("ControllerBuilderService").Methods()
 	controllerBuilderServiceGetBuilderSystemInfoHandler := connect.NewUnaryHandler(
 		ControllerBuilderServiceGetBuilderSystemInfoProcedure,
 		svc.GetBuilderSystemInfo,
-		connect.WithSchema(controllerBuilderServiceGetBuilderSystemInfoMethodDescriptor),
+		connect.WithSchema(controllerBuilderServiceMethods.ByName("GetBuilderSystemInfo")),
 		connect.WithHandlerOptions(opts...),
 	)
 	controllerBuilderServicePingBuildHandler := connect.NewUnaryHandler(
 		ControllerBuilderServicePingBuildProcedure,
 		svc.PingBuild,
-		connect.WithSchema(controllerBuilderServicePingBuildMethodDescriptor),
+		connect.WithSchema(controllerBuilderServiceMethods.ByName("PingBuild")),
 		connect.WithHandlerOptions(opts...),
 	)
 	controllerBuilderServiceStreamBuildLogHandler := connect.NewClientStreamHandler(
 		ControllerBuilderServiceStreamBuildLogProcedure,
 		svc.StreamBuildLog,
-		connect.WithSchema(controllerBuilderServiceStreamBuildLogMethodDescriptor),
+		connect.WithSchema(controllerBuilderServiceMethods.ByName("StreamBuildLog")),
 		connect.WithHandlerOptions(opts...),
 	)
 	controllerBuilderServiceSaveArtifactHandler := connect.NewUnaryHandler(
 		ControllerBuilderServiceSaveArtifactProcedure,
 		svc.SaveArtifact,
-		connect.WithSchema(controllerBuilderServiceSaveArtifactMethodDescriptor),
+		connect.WithSchema(controllerBuilderServiceMethods.ByName("SaveArtifact")),
 		connect.WithHandlerOptions(opts...),
 	)
 	controllerBuilderServiceSaveBuildLogHandler := connect.NewUnaryHandler(
 		ControllerBuilderServiceSaveBuildLogProcedure,
 		svc.SaveBuildLog,
-		connect.WithSchema(controllerBuilderServiceSaveBuildLogMethodDescriptor),
+		connect.WithSchema(controllerBuilderServiceMethods.ByName("SaveBuildLog")),
 		connect.WithHandlerOptions(opts...),
 	)
 	controllerBuilderServiceSaveRuntimeImageHandler := connect.NewUnaryHandler(
 		ControllerBuilderServiceSaveRuntimeImageProcedure,
 		svc.SaveRuntimeImage,
-		connect.WithSchema(controllerBuilderServiceSaveRuntimeImageMethodDescriptor),
+		connect.WithSchema(controllerBuilderServiceMethods.ByName("SaveRuntimeImage")),
 		connect.WithHandlerOptions(opts...),
 	)
 	controllerBuilderServiceConnectBuilderHandler := connect.NewBidiStreamHandler(
 		ControllerBuilderServiceConnectBuilderProcedure,
 		svc.ConnectBuilder,
-		connect.WithSchema(controllerBuilderServiceConnectBuilderMethodDescriptor),
+		connect.WithSchema(controllerBuilderServiceMethods.ByName("ConnectBuilder")),
 		connect.WithHandlerOptions(opts...),
 	)
 	return "/neoshowcase.protobuf.ControllerBuilderService/", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -565,17 +543,18 @@ type BuildpackHelperServiceClient interface {
 // http://api.acme.com or https://acme.com/grpc).
 func NewBuildpackHelperServiceClient(httpClient connect.HTTPClient, baseURL string, opts ...connect.ClientOption) BuildpackHelperServiceClient {
 	baseURL = strings.TrimRight(baseURL, "/")
+	buildpackHelperServiceMethods := pb.File_neoshowcase_protobuf_controller_proto.Services().ByName("BuildpackHelperService").Methods()
 	return &buildpackHelperServiceClient{
 		copyFileTree: connect.NewClient[pb.CopyFileTreeRequest, emptypb.Empty](
 			httpClient,
 			baseURL+BuildpackHelperServiceCopyFileTreeProcedure,
-			connect.WithSchema(buildpackHelperServiceCopyFileTreeMethodDescriptor),
+			connect.WithSchema(buildpackHelperServiceMethods.ByName("CopyFileTree")),
 			connect.WithClientOptions(opts...),
 		),
 		exec: connect.NewClient[pb.HelperExecRequest, pb.HelperExecResponse](
 			httpClient,
 			baseURL+BuildpackHelperServiceExecProcedure,
-			connect.WithSchema(buildpackHelperServiceExecMethodDescriptor),
+			connect.WithSchema(buildpackHelperServiceMethods.ByName("Exec")),
 			connect.WithClientOptions(opts...),
 		),
 	}
@@ -610,16 +589,17 @@ type BuildpackHelperServiceHandler interface {
 // By default, handlers support the Connect, gRPC, and gRPC-Web protocols with the binary Protobuf
 // and JSON codecs. They also support gzip compression.
 func NewBuildpackHelperServiceHandler(svc BuildpackHelperServiceHandler, opts ...connect.HandlerOption) (string, http.Handler) {
+	buildpackHelperServiceMethods := pb.File_neoshowcase_protobuf_controller_proto.Services().ByName("BuildpackHelperService").Methods()
 	buildpackHelperServiceCopyFileTreeHandler := connect.NewUnaryHandler(
 		BuildpackHelperServiceCopyFileTreeProcedure,
 		svc.CopyFileTree,
-		connect.WithSchema(buildpackHelperServiceCopyFileTreeMethodDescriptor),
+		connect.WithSchema(buildpackHelperServiceMethods.ByName("CopyFileTree")),
 		connect.WithHandlerOptions(opts...),
 	)
 	buildpackHelperServiceExecHandler := connect.NewServerStreamHandler(
 		BuildpackHelperServiceExecProcedure,
 		svc.Exec,
-		connect.WithSchema(buildpackHelperServiceExecMethodDescriptor),
+		connect.WithSchema(buildpackHelperServiceMethods.ByName("Exec")),
 		connect.WithHandlerOptions(opts...),
 	)
 	return "/neoshowcase.protobuf.BuildpackHelperService/", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -661,11 +641,12 @@ type ControllerSSGenServiceClient interface {
 // http://api.acme.com or https://acme.com/grpc).
 func NewControllerSSGenServiceClient(httpClient connect.HTTPClient, baseURL string, opts ...connect.ClientOption) ControllerSSGenServiceClient {
 	baseURL = strings.TrimRight(baseURL, "/")
+	controllerSSGenServiceMethods := pb.File_neoshowcase_protobuf_controller_proto.Services().ByName("ControllerSSGenService").Methods()
 	return &controllerSSGenServiceClient{
 		connectSSGen: connect.NewClient[emptypb.Empty, pb.SSGenRequest](
 			httpClient,
 			baseURL+ControllerSSGenServiceConnectSSGenProcedure,
-			connect.WithSchema(controllerSSGenServiceConnectSSGenMethodDescriptor),
+			connect.WithSchema(controllerSSGenServiceMethods.ByName("ConnectSSGen")),
 			connect.WithClientOptions(opts...),
 		),
 	}
@@ -693,10 +674,11 @@ type ControllerSSGenServiceHandler interface {
 // By default, handlers support the Connect, gRPC, and gRPC-Web protocols with the binary Protobuf
 // and JSON codecs. They also support gzip compression.
 func NewControllerSSGenServiceHandler(svc ControllerSSGenServiceHandler, opts ...connect.HandlerOption) (string, http.Handler) {
+	controllerSSGenServiceMethods := pb.File_neoshowcase_protobuf_controller_proto.Services().ByName("ControllerSSGenService").Methods()
 	controllerSSGenServiceConnectSSGenHandler := connect.NewServerStreamHandler(
 		ControllerSSGenServiceConnectSSGenProcedure,
 		svc.ConnectSSGen,
-		connect.WithSchema(controllerSSGenServiceConnectSSGenMethodDescriptor),
+		connect.WithSchema(controllerSSGenServiceMethods.ByName("ConnectSSGen")),
 		connect.WithHandlerOptions(opts...),
 	)
 	return "/neoshowcase.protobuf.ControllerSSGenService/", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -732,11 +714,12 @@ type ControllerGiteaIntegrationServiceClient interface {
 // http://api.acme.com or https://acme.com/grpc).
 func NewControllerGiteaIntegrationServiceClient(httpClient connect.HTTPClient, baseURL string, opts ...connect.ClientOption) ControllerGiteaIntegrationServiceClient {
 	baseURL = strings.TrimRight(baseURL, "/")
+	controllerGiteaIntegrationServiceMethods := pb.File_neoshowcase_protobuf_controller_proto.Services().ByName("ControllerGiteaIntegrationService").Methods()
 	return &controllerGiteaIntegrationServiceClient{
 		connect: connect.NewClient[emptypb.Empty, pb.GiteaIntegrationRequest](
 			httpClient,
 			baseURL+ControllerGiteaIntegrationServiceConnectProcedure,
-			connect.WithSchema(controllerGiteaIntegrationServiceConnectMethodDescriptor),
+			connect.WithSchema(controllerGiteaIntegrationServiceMethods.ByName("Connect")),
 			connect.WithClientOptions(opts...),
 		),
 	}
@@ -764,10 +747,11 @@ type ControllerGiteaIntegrationServiceHandler interface {
 // By default, handlers support the Connect, gRPC, and gRPC-Web protocols with the binary Protobuf
 // and JSON codecs. They also support gzip compression.
 func NewControllerGiteaIntegrationServiceHandler(svc ControllerGiteaIntegrationServiceHandler, opts ...connect.HandlerOption) (string, http.Handler) {
+	controllerGiteaIntegrationServiceMethods := pb.File_neoshowcase_protobuf_controller_proto.Services().ByName("ControllerGiteaIntegrationService").Methods()
 	controllerGiteaIntegrationServiceConnectHandler := connect.NewServerStreamHandler(
 		ControllerGiteaIntegrationServiceConnectProcedure,
 		svc.Connect,
-		connect.WithSchema(controllerGiteaIntegrationServiceConnectMethodDescriptor),
+		connect.WithSchema(controllerGiteaIntegrationServiceMethods.ByName("Connect")),
 		connect.WithHandlerOptions(opts...),
 	)
 	return "/neoshowcase.protobuf.ControllerGiteaIntegrationService/", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {

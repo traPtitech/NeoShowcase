@@ -4,8 +4,6 @@ package neoshowcase.protobuf;
 import "google/protobuf/empty.proto";
 import "neoshowcase/protobuf/gateway.proto";
 
-option go_package = "github.com/traPtitech/neoshowcase/pkg/infrastructure/grpc/pb";
-
 message ImageConfig {
   message RegistryConfig {
     string scheme = 1;

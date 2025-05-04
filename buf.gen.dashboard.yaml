@@ -1,0 +1,12 @@
+# yaml-language-server: $schema=https://json.schemastore.org/buf.gen.json
+
+version: v2
+plugins:
+  - remote: buf.build/bufbuild/es:v2.2.5
+    out: dashboard/src/api
+    opt:
+      - target=ts
+inputs:
+  - directory: .
+    exclude_paths:
+      - api/proto/neoshowcase/protobuf/controller.proto

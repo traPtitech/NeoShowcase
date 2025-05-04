@@ -1,0 +1,17 @@
+# yaml-language-server: $schema=https://json.schemastore.org/buf.gen.json
+
+version: v2
+managed:
+  enabled: true
+  override:
+    - file_option: go_package
+      value: github.com/traPtitech/neoshowcase/pkg/infrastructure/grpc/pb
+plugins:
+  - remote: buf.build/protocolbuffers/go:v1.36.6
+    out: .
+    opt:
+      - module=github.com/traPtitech/neoshowcase
+  - remote: buf.build/connectrpc/go:v1.18.1
+    out: .
+    opt:
+      - module=github.com/traPtitech/neoshowcase
