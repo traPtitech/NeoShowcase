@@ -2,7 +2,7 @@
 
 version: v2
 plugins:
-  - remote: buf.build/bufbuild/es:v2.2.5
+  - local: ["sh", "-c", "cd dashboard && yarn protoc-gen-es"]
     out: dashboard/src/api
     opt:
       - target=ts

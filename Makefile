@@ -65,8 +65,8 @@ gen-go: ensure-db
 
 .PHONY: gen-proto
 gen-proto:
-	buf generate --template buf.gen.ns.yaml
-	buf generate --template buf.gen.dashboard.yaml
+	buf generate --template buf.gen.go.yaml
+	buf generate --template buf.gen.ts.yaml
 
 .PHONY: gen-db-docs
 gen-db-docs: ensure-db
