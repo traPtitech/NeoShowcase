@@ -1,7 +1,6 @@
 module github.com/traPtitech/neoshowcase
 
-go 1.24
-toolchain go1.24.1
+go 1.24.3
 
 require (
 	code.gitea.io/sdk/gitea v0.21.0
