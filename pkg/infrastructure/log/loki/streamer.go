@@ -20,6 +20,7 @@ import (
 type Config struct {
 	Endpoint      string `mapstructure:"endpoint" yaml:"endpoint"`
 	QueryTemplate string `mapstructure:"queryTemplate" yaml:"queryTemplate"`
+	LogLimit      int    `mapstructure:"logLimit" yaml:"logLimit"`
 }
 
 func DefaultQueryTemplate() string {
@@ -77,7 +78,7 @@ func (l *lokiStreamer) logQL(app *domain.Application) (string, error) {
 }
 
 func (l *lokiStreamer) LogLimit() int {
-	return 5000
+	return l.config.LogLimit
 }
 
 func (l *lokiStreamer) Get(ctx context.Context, app *domain.Application, before time.Time, limit int) ([]*domain.ContainerLog, error) {

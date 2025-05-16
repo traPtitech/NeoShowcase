@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"fmt"
+	"github.com/traPtitech/neoshowcase/pkg/infrastructure/log/victorialogs"
 	"net/http"
 	"os"
 	"strings"
@@ -147,8 +148,10 @@ func provideContainerLogger(c Config) (domain.ContainerLogger, error) {
 	switch cc.Log.Type {
 	case "loki":
 		return loki.NewLokiStreamer(cc.Log.Loki)
+	case "victorialogs":
+		return victorialogs.NewVictoriaLogsStreamer(cc.Log.VictoriaLogs)
 	default:
-		return nil, errors.Errorf("invalid log type: %v (supported values: loki)", cc.Log.Type)
+		return nil, errors.Errorf("invalid log type: %v (supported values: loki, victorialogs)", cc.Log.Type)
 	}
 }
 

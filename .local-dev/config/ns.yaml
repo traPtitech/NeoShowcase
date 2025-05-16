@@ -198,6 +198,11 @@ components:
       loki:
         endpoint: http://loki:3100
         queryTemplate: '{ns_trap_jp_app_id="{{ .App.ID }}"}'
+        logLimit: 5000
+      victorialogs:
+        endpoint: http://victorialogs:9428
+        queryTemplate: '{ns_trap_jp_app_id="{{ .App.ID }}"}'
+        logLimit: 5000
     metrics:
       type: prometheus
       prometheus:
