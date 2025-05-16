@@ -27,6 +27,9 @@ configMapGenerator:
       - NS_COMPONENTS_CONTROLLER_MODE=k8s
       - NS_COMPONENTS_GATEWAY_MARIADB_HOST=mariadb.db.svc.cluster.local
       - NS_COMPONENTS_GATEWAY_MONGODB_HOST=mongo.db.svc.cluster.local
+      - NS_COMPONENTS_GATEWAY_LOG_TYPE=victorialogs
       - NS_COMPONENTS_GATEWAY_LOG_LOKI_ENDPOINT=http://loki.monitor.svc.cluster.local:3100
+      - NS_COMPONENTS_GATEWAY_LOG_VICTORIALOGS_ENDPOINT=http://vl-victoria-logs-single-server.monitor.svc.cluster.local:9428
+      - NS_COMPONENTS_GATEWAY_LOG_VICTORIALOGS_QUERYTEMPLATE={namespace="ns-apps", pod="nsapp-{{ .App.ID }}-0", container="app"}
       - NS_COMPONENTS_GATEWAY_METRICS_PROMETHEUS_ENDPOINT=http://victoria-metrics.monitor.svc.cluster.local:8428
       - NS_COMPONENTS_SSGEN_SERVER_CADDY_ADMINAPI=http://localhost:2019

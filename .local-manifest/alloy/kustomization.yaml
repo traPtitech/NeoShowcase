@@ -1,0 +1,10 @@
+namespace: alloy
+
+helmCharts:
+  - repo: https://grafana.github.io/helm-charts
+    name: alloy
+    version: "1.0.3"
+    includeCRDs: true
+    namespace: alloy
+    releaseName: alloy-ds
+    valuesFile: values-ds.yaml

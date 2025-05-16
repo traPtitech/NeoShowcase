@@ -2,6 +2,6 @@ namespace: monitor
 
 resources:
   - grafana
-  - loki
-  - promtail
+  # - loki
+  - victoria-logs
   - victoria-metrics
