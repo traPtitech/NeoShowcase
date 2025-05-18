@@ -42,7 +42,7 @@ apply: ensure-context ## Apply manifests to k3d cluster
 	# Apply namespaces and CRDs first
 	ls -d */ | tr -d '/' | grep -v 'coredns-patch|crd' | xargs -I{} sh -c 'kubectl create namespace {} --dry-run=client -o yaml | kubectl apply -f -'
 	kustomize build ./crd | kubectl apply -f -
-	kustomize build . | kubectl apply -f -
+	kustomize build --enable-helm . | kubectl apply -f -
 	kubectl rollout restart deployment/coredns -n kube-system # For CoreDNS ConfigMap patch
 
 # ---- Management commands ----

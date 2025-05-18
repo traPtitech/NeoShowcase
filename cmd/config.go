@@ -10,6 +10,7 @@ import (
 	"github.com/traPtitech/neoshowcase/pkg/infrastructure/dbmanager"
 	"github.com/traPtitech/neoshowcase/pkg/infrastructure/grpc"
 	"github.com/traPtitech/neoshowcase/pkg/infrastructure/log/loki"
+	"github.com/traPtitech/neoshowcase/pkg/infrastructure/log/victorialogs"
 	"github.com/traPtitech/neoshowcase/pkg/infrastructure/metrics/prometheus"
 	"github.com/traPtitech/neoshowcase/pkg/infrastructure/staticserver/builtin"
 	"github.com/traPtitech/neoshowcase/pkg/infrastructure/staticserver/caddy"
@@ -77,8 +78,9 @@ type GatewayConfig struct {
 	MariaDB       dbmanager.MariaDBConfig            `mapstructure:"mariadb" yaml:"mariadb"`
 	MongoDB       dbmanager.MongoDBConfig            `mapstructure:"mongodb" yaml:"mongodb"`
 	Log           struct {
-		Type string      `mapstructure:"type" yaml:"type"`
-		Loki loki.Config `mapstructure:"loki" yaml:"loki"`
+		Type         string              `mapstructure:"type" yaml:"type"`
+		Loki         loki.Config         `mapstructure:"loki" yaml:"loki"`
+		VictoriaLogs victorialogs.Config `mapstructure:"victorialogs" yaml:"victorialogs"`
 	} `mapstructure:"log" yaml:"log"`
 	Metrics struct {
 		Type       string            `mapstructure:"type" yaml:"type"`
@@ -249,6 +251,10 @@ func init() {
 	viper.SetDefault("components.gateway.log.type", "loki")
 	viper.SetDefault("components.gateway.log.loki.endpoint", "http://loki:3100")
 	viper.SetDefault("components.gateway.log.loki.queryTemplate", loki.DefaultQueryTemplate())
+	viper.SetDefault("components.gateway.log.loki.logLimit", 5000)
+	viper.SetDefault("components.gateway.log.victorialogs.endpoint", "http://victorialogs:9428")
+	viper.SetDefault("components.gateway.log.victorialogs.queryTemplate", victorialogs.DefaultQueryTemplate())
+	viper.SetDefault("components.gateway.log.victorialogs.logLimit", 5000)
 
 	viper.SetDefault("components.gateway.metrics.type", "prometheus")
 	viper.SetDefault("components.gateway.metrics.endpoint", "http://prometheus:9090")
