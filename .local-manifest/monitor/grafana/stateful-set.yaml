@@ -38,3 +38,6 @@ spec:
               subPath: .local-dev/config/grafana.ini
               mountPath: /etc/grafana/grafana.ini
               readOnly: true
+          env:
+            - name: GF_INSTALL_PLUGINS
+              value: victoriametrics-logs-datasource
