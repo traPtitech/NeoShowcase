@@ -109,7 +109,9 @@ alloy:
       
       loki.write "vl" {
         endpoint {
-          url = "http://vl-victoria-logs-single-server.monitor.svc.cluster.local:9428/insert/loki/api/v1/push"
+          // Prevent auto-parse of JSON messages from ns-apps applications for displaying in NeoShowcase dashboard
+          // https://docs.victoriametrics.com/victorialogs/data-ingestion/promtail/index.html
+          url = "http://vl-victoria-logs-single-server.monitor.svc.cluster.local:9428/insert/loki/api/v1/push?disable_message_parsing=1&_stream_fields=job,cluster,node,namespace,pod,container"
         }
       }
 
