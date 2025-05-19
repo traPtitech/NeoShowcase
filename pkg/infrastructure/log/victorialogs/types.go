@@ -2,10 +2,11 @@ package victorialogs
 
 import (
 	"encoding/json"
-	"github.com/traPtitech/neoshowcase/pkg/domain"
 	"io"
 	"iter"
 	"time"
+
+	"github.com/traPtitech/neoshowcase/pkg/domain"
 )
 
 const (

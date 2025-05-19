@@ -1,11 +1,12 @@
 package grpc
 
 import (
-	"connectrpc.com/connect"
 	"context"
+	"io"
+
+	"connectrpc.com/connect"
 	"github.com/friendsofgo/errors"
 	"github.com/samber/lo"
-	"io"
 
 	"github.com/traPtitech/neoshowcase/pkg/domain"
 	"github.com/traPtitech/neoshowcase/pkg/domain/web"

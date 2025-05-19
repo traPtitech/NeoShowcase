@@ -2,7 +2,6 @@ package grpc
 
 import (
 	"context"
-	"github.com/traPtitech/neoshowcase/pkg/usecase/systeminfo"
 
 	"connectrpc.com/connect"
 	"github.com/friendsofgo/errors"
@@ -15,6 +14,7 @@ import (
 	"github.com/traPtitech/neoshowcase/pkg/usecase/cdservice"
 	"github.com/traPtitech/neoshowcase/pkg/usecase/logstream"
 	"github.com/traPtitech/neoshowcase/pkg/usecase/repofetcher"
+	"github.com/traPtitech/neoshowcase/pkg/usecase/systeminfo"
 )
 
 type ControllerService struct {
