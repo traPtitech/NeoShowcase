@@ -2,12 +2,13 @@ package tarfs
 
 import (
 	"archive/tar"
-	"github.com/friendsofgo/errors"
-	log "github.com/sirupsen/logrus"
 	"io"
 	"os"
 	"path/filepath"
 	"strings"
+
+	"github.com/friendsofgo/errors"
+	log "github.com/sirupsen/logrus"
 )
 
 func isValidRelPath(relPath string) bool {

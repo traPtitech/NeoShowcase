@@ -3,13 +3,10 @@ package main
 import (
 	"context"
 	"fmt"
-	"github.com/traPtitech/neoshowcase/pkg/infrastructure/log/victorialogs"
 	"net/http"
 	"os"
 	"strings"
 	"time"
-
-	"github.com/traPtitech/neoshowcase/pkg/usecase/systeminfo"
 
 	"connectrpc.com/connect"
 	"github.com/friendsofgo/errors"
@@ -24,6 +21,7 @@ import (
 	"github.com/traPtitech/neoshowcase/pkg/infrastructure/grpc"
 	"github.com/traPtitech/neoshowcase/pkg/infrastructure/grpc/pb/pbconnect"
 	"github.com/traPtitech/neoshowcase/pkg/infrastructure/log/loki"
+	"github.com/traPtitech/neoshowcase/pkg/infrastructure/log/victorialogs"
 	"github.com/traPtitech/neoshowcase/pkg/infrastructure/metrics/prometheus"
 	"github.com/traPtitech/neoshowcase/pkg/infrastructure/staticserver/builtin"
 	"github.com/traPtitech/neoshowcase/pkg/infrastructure/staticserver/caddy"
@@ -32,6 +30,7 @@ import (
 	giteaintegration "github.com/traPtitech/neoshowcase/pkg/usecase/gitea-integration"
 	"github.com/traPtitech/neoshowcase/pkg/usecase/healthcheck"
 	"github.com/traPtitech/neoshowcase/pkg/usecase/ssgen"
+	"github.com/traPtitech/neoshowcase/pkg/usecase/systeminfo"
 )
 
 func provideRepositoryPrivateKey(c Config) (domain.PrivateKey, error) {

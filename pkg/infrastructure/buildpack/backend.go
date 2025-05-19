@@ -4,7 +4,6 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	log "github.com/sirupsen/logrus"
 	"io"
 	"os"
 	"path/filepath"
@@ -13,6 +12,7 @@ import (
 	"github.com/docker/cli/cli/config/configfile"
 	types2 "github.com/docker/cli/cli/config/types"
 	"github.com/friendsofgo/errors"
+	log "github.com/sirupsen/logrus"
 
 	"github.com/traPtitech/neoshowcase/pkg/domain"
 	"github.com/traPtitech/neoshowcase/pkg/domain/builder"

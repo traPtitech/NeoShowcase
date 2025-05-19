@@ -1,13 +1,13 @@
 package webhook
 
 import (
-	log "github.com/sirupsen/logrus"
 	"net/http"
 
 	"github.com/friendsofgo/errors"
 	"github.com/go-playground/webhooks/v6/gitea"
 	"github.com/labstack/echo/v4"
 	"github.com/samber/lo"
+	log "github.com/sirupsen/logrus"
 
 	"github.com/traPtitech/neoshowcase/pkg/infrastructure/grpc/pb"
 )

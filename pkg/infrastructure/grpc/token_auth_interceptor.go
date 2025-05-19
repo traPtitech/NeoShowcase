@@ -1,10 +1,11 @@
 package grpc
 
 import (
-	"connectrpc.com/connect"
 	"context"
-	"github.com/friendsofgo/errors"
 	"net/http"
+
+	"connectrpc.com/connect"
+	"github.com/friendsofgo/errors"
 )
 
 type TokenAuthInterceptor struct {

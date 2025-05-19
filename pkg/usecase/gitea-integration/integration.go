@@ -3,10 +3,10 @@ package giteaintegration
 import (
 	"context"
 	"fmt"
-	log "github.com/sirupsen/logrus"
 	"time"
 
 	"code.gitea.io/sdk/gitea"
+	log "github.com/sirupsen/logrus"
 
 	"github.com/traPtitech/neoshowcase/pkg/domain"
 	"github.com/traPtitech/neoshowcase/pkg/infrastructure/grpc/pb"

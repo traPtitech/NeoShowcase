@@ -4,14 +4,16 @@ import (
 	"bytes"
 	"context"
 	"fmt"
-	"github.com/friendsofgo/errors"
-	"github.com/samber/lo/mutable"
-	log "github.com/sirupsen/logrus"
-	"github.com/traPtitech/neoshowcase/pkg/domain"
 	"io"
 	"net/http"
 	"text/template"
 	"time"
+
+	"github.com/friendsofgo/errors"
+	"github.com/samber/lo/mutable"
+	log "github.com/sirupsen/logrus"
+
+	"github.com/traPtitech/neoshowcase/pkg/domain"
 )
 
 type Config struct {
