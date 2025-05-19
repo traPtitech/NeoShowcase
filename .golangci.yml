@@ -14,5 +14,8 @@ linters:
       - legacy
       - std-error-handling
 formatters:
+  enable:
+    - gofmt
+    - goimports
   exclusions:
     generated: lax
