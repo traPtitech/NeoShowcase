@@ -34,7 +34,7 @@ const WebsiteFieldGroup: Component<Props> = (props) => {
   const authAvailable = (): boolean => selectedDomain()?.authAvailable ?? false
 
   createEffect(() => {
-    if (!authAvailable()) {
+    if (!authAvailable() && selectedDomain() !== undefined) {
       setValue(formStore, `form.websites.${props.index}.authentication`, `${AuthenticationType.OFF}`)
     }
   })
