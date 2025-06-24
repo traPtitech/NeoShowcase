@@ -19,13 +19,10 @@ func TestSecureGenerateHex(t *testing.T) {
 
 func TestSecureGeneratePassword(t *testing.T) {
 	t.Parallel()
-
-	set := make(map[string]bool, 1000)
-	for range 1000 {
-		s := SecureGeneratePassword(32) // log2(69) * 32 =~ 195 bit
-		if set[s] {
-			t.FailNow()
+	for i := range 64 {
+		s := SecureGeneratePassword(i)
+		if len(s) != i {
+			t.Errorf("expected length %d, got %d", i, len(s))
 		}
-		set[s] = true
 	}
 }

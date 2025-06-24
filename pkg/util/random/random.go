@@ -2,35 +2,8 @@ package random
 
 import (
 	"crypto/rand"
+	"encoding/base64"
 	"encoding/hex"
-	"math/big"
-	"strings"
-)
-
-func SecureGenerate(charset []rune, length int) string {
-	max := big.NewInt(int64(len(charset)))
-	var b strings.Builder
-	b.Grow(length)
-	for range length {
-		charIdx, err := rand.Int(rand.Reader, max)
-		if err != nil {
-			panic(err)
-		}
-		b.WriteRune(charset[charIdx.Int64()])
-	}
-	return b.String()
-}
-
-const (
-	lowerCharSet    = "abcdefghijklmnopqrstuvwxyz"
-	upperCharSet    = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
-	symbolCharSet   = "!@#$%&*"
-	numberSet       = "0123456789"
-	passwordCharSet = lowerCharSet + upperCharSet + symbolCharSet + numberSet
-)
-
-var (
-	passwordRunes = []rune(passwordCharSet)
 )
 
 func SecureGenerateHex(length int) string {
@@ -43,6 +16,10 @@ func SecureGenerateHex(length int) string {
 	return hex.EncodeToString(b[:])
 }
 
+// SecureGeneratePassword generates a secure random password of the specified length.
+// The password is base64 encoded to ensure it is URL-safe and can include a wide range
 func SecureGeneratePassword(length int) string {
-	return SecureGenerate(passwordRunes, length)
+	b := make([]byte, length*3/4+1) // to ensure enough bytes for base64 encoding
+	rand.Read(b)
+	return base64.RawURLEncoding.EncodeToString(b)[:length]
 }
