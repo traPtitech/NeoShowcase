@@ -23,7 +23,7 @@
     "@bufbuild/protoc-gen-es": "2.5.1",
     "@iconify-json/material-symbols": "1.2.24",
     "@tanstack/virtual-core": "3.13.9",
-    "@types/node": "22.15.29",
+    "@types/node": "24.0.8",
     "jsdom": "26.1.0",
     "rollup-plugin-visualizer": "5.14.0",
     "typescript": "5.8.3",
