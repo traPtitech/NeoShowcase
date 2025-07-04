@@ -3,11 +3,11 @@ import * as v from 'valibot'
 import { type ApplicationConfig, AutoShutdownConfig_StartupBehavior } from '/@/api/neoshowcase/protobuf/gateway_pb'
 import { stringBooleanSchema } from '/@/libs/schemaUtil'
 
-const optionalBooleanSchema = (defaultValue = false) =>
-  v.pipe(
-    v.optional(v.boolean()),
-    v.transform((i) => i ?? defaultValue),
-  )
+const unwrapStartupBehaviorMap: Record<`${AutoShutdownConfig_StartupBehavior}`, AutoShutdownConfig_StartupBehavior> = {
+  [AutoShutdownConfig_StartupBehavior.UNDEFINED]: AutoShutdownConfig_StartupBehavior.UNDEFINED,
+  [AutoShutdownConfig_StartupBehavior.LOADING_PAGE]: AutoShutdownConfig_StartupBehavior.LOADING_PAGE,
+  [AutoShutdownConfig_StartupBehavior.BLOCKING]: AutoShutdownConfig_StartupBehavior.BLOCKING,
+} as const
 
 const autoShutdownSchema = v.optional(
   v.object({
@@ -17,30 +17,25 @@ const autoShutdownSchema = v.optional(
         v.union([
           v.literal(`${AutoShutdownConfig_StartupBehavior.LOADING_PAGE}`),
           v.literal(`${AutoShutdownConfig_StartupBehavior.BLOCKING}`),
+          v.literal(`${AutoShutdownConfig_StartupBehavior.UNDEFINED}`),
         ]),
+        `${AutoShutdownConfig_StartupBehavior.UNDEFINED}`,
       ),
-      v.transform((input) => {
-        return match(input)
-          .returnType<AutoShutdownConfig_StartupBehavior>()
-          .with(undefined, () => AutoShutdownConfig_StartupBehavior.UNDEFINED)
-          .with(
-            `${AutoShutdownConfig_StartupBehavior.LOADING_PAGE}`,
-            () => AutoShutdownConfig_StartupBehavior.LOADING_PAGE,
-          )
-          .with(`${AutoShutdownConfig_StartupBehavior.BLOCKING}`, () => AutoShutdownConfig_StartupBehavior.BLOCKING)
-          .exhaustive()
-      }),
+      v.transform((input) => unwrapStartupBehaviorMap[input]),
     ),
   }),
 )
 
+type a = v.InferOutput<typeof autoShutdownSchema>
+
 const runtimeConfigSchema = v.object({
-  useMariadb: optionalBooleanSchema(),
-  useMongodb: optionalBooleanSchema(),
+  useMariadb: v.optional(v.boolean(), false),
+  useMongodb: v.optional(v.boolean(), false),
   entrypoint: v.string(),
   command: v.string(),
   autoShutdown: autoShutdownSchema,
 })
+
 const staticConfigSchema = v.object({
   artifactPath: v.pipe(v.string(), v.nonEmpty('Enter Artifact Path')),
   spa: v.optional(stringBooleanSchema, 'false'),
