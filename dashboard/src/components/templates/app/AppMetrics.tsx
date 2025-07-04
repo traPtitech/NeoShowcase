@@ -11,8 +11,7 @@ import {
   Tooltip,
 } from 'chart.js'
 import { Line } from 'solid-chartjs'
-import { type Component, Show, createMemo, mergeProps, onCleanup, splitProps } from 'solid-js'
-import { createResource } from 'solid-js'
+import { type Component, createMemo, createResource, mergeProps, onCleanup, Show, splitProps } from 'solid-js'
 import { client } from '/@/libs/api'
 import { formatBytes, formatPercent } from '/@/libs/format'
 

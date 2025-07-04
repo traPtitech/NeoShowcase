@@ -42,7 +42,7 @@ describe('Create Application Schema', () => {
     authentication: `${AuthenticationType.OFF}`,
   }
 
-  const basePortPublication = {
+  const _basePortPublication = {
     internetPort: 80,
     applicationPort: 3000,
     protocol: `${PortPublicationProtocol.TCP}`,

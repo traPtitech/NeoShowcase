@@ -1,4 +1,4 @@
-import { Field, Form, type SubmitHandler, getValue, reset, setValue, setValues } from '@modular-forms/solid'
+import { Field, Form, getValue, reset, type SubmitHandler, setValue, setValues } from '@modular-forms/solid'
 import { useNavigate } from '@solidjs/router'
 import { type Component, createEffect, onMount } from 'solid-js'
 import toast from 'solid-toast'

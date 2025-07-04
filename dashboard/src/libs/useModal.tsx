@@ -1,12 +1,9 @@
 import { Dialog } from '@kobalte/core'
-import { type ParentComponent, Show, createSignal, mergeProps } from 'solid-js'
+import { createSignal, mergeProps, type ParentComponent, Show } from 'solid-js'
 import { styled } from '/@/components/styled-components'
 import { clsx } from '/@/libs/clsx'
 
-const useModal = (options?: {
-  showCloseButton?: boolean
-  closeOnClickOutside?: boolean
-}) => {
+const useModal = (options?: { showCloseButton?: boolean; closeOnClickOutside?: boolean }) => {
   const defaultOptions = {
     showCloseButton: false,
     closeOnClickOutside: true,
