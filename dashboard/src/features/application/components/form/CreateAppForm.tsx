@@ -1,15 +1,15 @@
-import { Field, Form, type SubmitHandler, getValue, setValue, validate } from '@modular-forms/solid'
+import { Field, Form, getValue, type SubmitHandler, setValue, validate } from '@modular-forms/solid'
 import { useNavigate, useSearchParams } from '@solidjs/router'
 import {
   type Component,
-  For,
-  Match,
-  Show,
-  Switch,
   createEffect,
   createResource,
   createSignal,
+  For,
+  Match,
   onMount,
+  Show,
+  Switch,
   untrack,
 } from 'solid-js'
 import toast from 'solid-toast'

@@ -1,7 +1,7 @@
 import { Checkbox, DropdownMenu } from '@kobalte/core'
 import { type Component, For, type Setter, Show } from 'solid-js'
 import { CheckBoxIcon } from '/@/components/UI/CheckBoxIcon'
-import { type RepositoryOrigin, originToIcon } from '/@/libs/application'
+import { originToIcon, type RepositoryOrigin } from '/@/libs/application'
 import { clsx } from '/@/libs/clsx'
 import { allOrigins } from '/@/pages/apps'
 

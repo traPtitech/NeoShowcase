@@ -1,11 +1,11 @@
 import { useNavigate } from '@solidjs/router'
-import { Show, createMemo, useTransition } from 'solid-js'
-import { Button } from '/@/components/UI/Button'
-import { URLText } from '/@/components/UI/URLText'
+import { createMemo, Show, useTransition } from 'solid-js'
 import { DataTable } from '/@/components/layouts/DataTable'
 import { MainViewContainer } from '/@/components/layouts/MainView'
 import SuspenseContainer from '/@/components/layouts/SuspenseContainer'
 import { AppsList, List } from '/@/components/templates/List'
+import { Button } from '/@/components/UI/Button'
+import { URLText } from '/@/components/UI/URLText'
 import { useRepositoryData } from '/@/routes'
 
 export default () => {

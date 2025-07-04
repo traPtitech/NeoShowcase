@@ -1,10 +1,10 @@
 import {
+  createAsync,
   Navigate,
   Route,
   type RouteLoadFunc,
-  type RouteSectionProps,
   Router,
-  createAsync,
+  type RouteSectionProps,
   useParams,
 } from '@solidjs/router'
 import { type Component, createMemo, lazy } from 'solid-js'

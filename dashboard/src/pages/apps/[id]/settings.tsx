@@ -1,11 +1,11 @@
 import { type RouteSectionProps, useMatch, useNavigate } from '@solidjs/router'
 import { ErrorBoundary, Show, Suspense, useTransition } from 'solid-js'
-import { Button } from '/@/components/UI/Button'
 import ErrorView from '/@/components/layouts/ErrorView'
 import { MainViewContainer } from '/@/components/layouts/MainView'
 import { SideView } from '/@/components/layouts/SideView'
 import SuspenseContainer from '/@/components/layouts/SuspenseContainer'
 import SettingSkeleton from '/@/components/templates/SettingSkeleton'
+import { Button } from '/@/components/UI/Button'
 import { useApplicationData } from '/@/routes'
 
 export default (props: RouteSectionProps) => {

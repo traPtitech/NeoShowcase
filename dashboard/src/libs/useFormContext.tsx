@@ -1,5 +1,5 @@
-import { type FieldValues, type FormStore, type ValidationMode, createFormStore, valiForm } from '@modular-forms/solid'
-import { type ParentComponent, createContext, useContext } from 'solid-js'
+import { createFormStore, type FieldValues, type FormStore, type ValidationMode, valiForm } from '@modular-forms/solid'
+import { createContext, type ParentComponent, useContext } from 'solid-js'
 import type { BaseIssue, BaseSchema, InferInput } from 'valibot'
 
 type FormContextValue<Schema extends FieldValues> = {

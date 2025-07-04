@@ -1,5 +1,5 @@
 import { Combobox as KComboBox, Select as KSelect } from '@kobalte/core'
-import { type JSX, Show, createEffect, createSignal, splitProps } from 'solid-js'
+import { createEffect, createSignal, type JSX, Show, splitProps } from 'solid-js'
 import { clsx } from '/@/libs/clsx'
 import { CheckBoxIcon } from '../UI/CheckBoxIcon'
 import { ToolTip, type TooltipProps } from '../UI/ToolTip'
