@@ -3783,7 +3783,7 @@ __metadata:
     unocss: "npm:66.1.3"
     unplugin-fonts: "npm:1.3.1"
     valibot: "npm:1.0.0-beta.9"
-    vite: "npm:rolldown-vite@latest"
+    vite: "npm:rolldown-vite@7.0.4"
     vite-plugin-compression: "npm:0.5.1"
     vite-plugin-solid: "npm:2.11.6"
     vite-plugin-solid-svg: "npm:0.8.1"
@@ -5063,7 +5063,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"vite@npm:rolldown-vite@latest":
+"vite@npm:rolldown-vite@7.0.4":
   version: 7.0.4
   resolution: "rolldown-vite@npm:7.0.4"
   dependencies:
