@@ -1,10 +1,10 @@
 import { Title } from '@solidjs/meta'
 import { type RouteSectionProps, useMatch, useNavigate } from '@solidjs/router'
 import { ErrorBoundary, Show, Suspense, startTransition } from 'solid-js'
-import { TabRound } from '/@/components/UI/TabRound'
 import ErrorView from '/@/components/layouts/ErrorView'
 import { WithNav } from '/@/components/layouts/WithNav'
 import { RepositoryNav } from '/@/components/templates/repo/RepositoryNav'
+import { TabRound } from '/@/components/UI/TabRound'
 import { useRepositoryData } from '/@/routes'
 
 export default (props: RouteSectionProps) => {

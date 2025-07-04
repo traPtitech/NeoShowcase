@@ -1,7 +1,7 @@
 import { Field, getValues } from '@modular-forms/solid'
 import type { Component } from 'solid-js'
-import { TextField } from '/@/components/UI/TextField'
 import { RadioGroup } from '/@/components/templates/RadioGroups'
+import { TextField } from '/@/components/UI/TextField'
 import { useApplicationForm } from '/@/features/application/provider/applicationFormProvider'
 
 type Props = {

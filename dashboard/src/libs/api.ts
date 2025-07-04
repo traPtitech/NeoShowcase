@@ -4,8 +4,8 @@ import { cache, revalidate } from '@solidjs/router'
 import AsyncLock from 'async-lock'
 import { createResource } from 'solid-js'
 import toast from 'solid-toast'
-import { APIService } from '/@/api/neoshowcase/protobuf/gateway_pb'
 import {
+  APIService,
   type Application,
   GetApplicationsRequest_Scope,
   type Repository,

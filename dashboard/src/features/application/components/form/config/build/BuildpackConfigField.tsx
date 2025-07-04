@@ -11,29 +11,27 @@ const BuildpackConfigField: Component<Props> = (props) => {
   const { formStore } = useApplicationForm()
 
   return (
-    <>
-      <Field of={formStore} name="form.config.buildConfig.value.buildpack.context">
-        {(field, fieldProps) => (
-          <TextField
-            label="Context"
-            info={{
-              props: {
-                content: (
-                  <>
-                    <div>ビルド対象ディレクトリ</div>
-                    <div>(リポジトリルートからの相対パス)</div>
-                  </>
-                ),
-              },
-            }}
-            {...fieldProps}
-            value={field.value ?? ''}
-            error={field.error}
-            readOnly={props.readonly}
-          />
-        )}
-      </Field>
-    </>
+    <Field of={formStore} name="form.config.buildConfig.value.buildpack.context">
+      {(field, fieldProps) => (
+        <TextField
+          label="Context"
+          info={{
+            props: {
+              content: (
+                <>
+                  <div>ビルド対象ディレクトリ</div>
+                  <div>(リポジトリルートからの相対パス)</div>
+                </>
+              ),
+            },
+          }}
+          {...fieldProps}
+          value={field.value ?? ''}
+          error={field.error}
+          readOnly={props.readonly}
+        />
+      )}
+    </Field>
   )
 }
 

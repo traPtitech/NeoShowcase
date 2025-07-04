@@ -1,14 +1,14 @@
 import { Checkbox, DropdownMenu, RadioGroup } from '@kobalte/core'
 import { type Component, type ComponentProps, For, type Setter, Show } from 'solid-js'
+import { styled } from '/@/components/styled-components'
 import { CheckBoxIcon } from '/@/components/UI/CheckBoxIcon'
 import { RadioIcon } from '/@/components/UI/RadioIcon'
-import { styled } from '/@/components/styled-components'
 import {
   type ApplicationState,
-  type RepoWithApp,
-  type RepositoryOrigin,
   applicationState,
   originToIcon,
+  type RepositoryOrigin,
+  type RepoWithApp,
   repositoryURLToOrigin,
 } from '/@/libs/application'
 import { clsx } from '/@/libs/clsx'

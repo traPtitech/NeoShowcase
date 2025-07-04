@@ -1,11 +1,11 @@
 import { Field, getValues, setValue } from '@modular-forms/solid'
-import { type Component, Show, createResource } from 'solid-js'
+import { type Component, createResource, Show } from 'solid-js'
 import { AutoShutdownConfig_StartupBehavior } from '/@/api/neoshowcase/protobuf/gateway_pb'
-import { TextField } from '/@/components/UI/TextField'
-import { ToolTip } from '/@/components/UI/ToolTip'
 import { CheckBox } from '/@/components/templates/CheckBox'
 import { FormItem } from '/@/components/templates/FormItem'
 import { RadioGroup } from '/@/components/templates/RadioGroups'
+import { TextField } from '/@/components/UI/TextField'
+import { ToolTip } from '/@/components/UI/ToolTip'
 import { useApplicationForm } from '/@/features/application/provider/applicationFormProvider'
 
 type Props = {

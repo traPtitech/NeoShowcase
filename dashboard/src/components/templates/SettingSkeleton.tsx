@@ -1,8 +1,8 @@
 import type { Component } from 'solid-js'
-import { Button } from '../UI/Button'
-import Skeleton from '../UI/Skeleton'
 import { DataTable } from '../layouts/DataTable'
 import FormBox from '../layouts/FormBox'
+import { Button } from '../UI/Button'
+import Skeleton from '../UI/Skeleton'
 import { FormItem } from './FormItem'
 
 const SettingSkeleton: Component = () => {

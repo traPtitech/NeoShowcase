@@ -1,4 +1,4 @@
-import { type FlowComponent, type JSX, children, mergeProps, onMount, splitProps } from 'solid-js'
+import { children, type FlowComponent, type JSX, mergeProps, onMount, splitProps } from 'solid-js'
 import { type TippyOptions, tippy } from 'solid-tippy'
 import type { Props } from 'tippy.js'
 import 'tippy.js/animations/shift-away-subtle.css'

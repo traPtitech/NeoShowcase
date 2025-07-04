@@ -1,5 +1,5 @@
-import { type JSX, splitProps } from 'solid-js'
 import type { ParentComponent } from 'solid-js'
+import { type JSX, splitProps } from 'solid-js'
 import { clsx } from '/@/libs/clsx'
 
 export interface Props extends JSX.ButtonHTMLAttributes<HTMLButtonElement> {

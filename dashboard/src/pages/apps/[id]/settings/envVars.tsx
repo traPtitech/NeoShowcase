@@ -1,4 +1,4 @@
-import { Show, createResource } from 'solid-js'
+import { createResource, Show } from 'solid-js'
 import { DataTable } from '/@/components/layouts/DataTable'
 import EnvVarConfigForm from '/@/features/application/components/form/EnvVarConfigForm'
 import { client } from '/@/libs/api'

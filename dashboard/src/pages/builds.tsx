@@ -1,6 +1,6 @@
 import { timestampDate } from '@bufbuild/protobuf/wkt'
 import { Title } from '@solidjs/meta'
-import { type Component, Show, createMemo, createResource } from 'solid-js'
+import { type Component, createMemo, createResource, Show } from 'solid-js'
 import { type Application, GetApplicationsRequest_Scope } from '../api/neoshowcase/protobuf/gateway_pb'
 import { MainViewContainer } from '../components/layouts/MainView'
 import { WithNav } from '../components/layouts/WithNav'
