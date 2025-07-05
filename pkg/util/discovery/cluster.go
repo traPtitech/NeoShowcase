@@ -5,6 +5,7 @@ import (
 	"sync"
 
 	"github.com/samber/lo"
+	log "github.com/sirupsen/logrus"
 
 	"github.com/traPtitech/neoshowcase/pkg/util/hash"
 )
@@ -15,11 +16,22 @@ type Cluster struct {
 	targets []Target
 	meIdx   int
 
-	lock sync.RWMutex
+	setInitialized func()
+	initialized    chan struct{}
+	lock           sync.RWMutex
 }
 
 func NewCluster(d Discoverer) *Cluster {
-	return &Cluster{d: d, meIdx: -1}
+	initialized := make(chan struct{})
+	return &Cluster{
+		d:     d,
+		meIdx: -1,
+
+		setInitialized: sync.OnceFunc(func() {
+			close(initialized)
+		}),
+		initialized: initialized,
+	}
 }
 
 func (c *Cluster) Start(ctx context.Context) error {
@@ -32,6 +44,8 @@ func (c *Cluster) Start(ctx context.Context) error {
 		c.targets = targets
 		_, c.meIdx, _ = lo.FindIndexOf(targets, func(e Target) bool { return e.Me })
 		c.lock.Unlock()
+		c.setInitialized()
+		log.Infof("[cluster] %d targets received", len(targets))
 	}
 	return nil
 }
@@ -39,12 +53,16 @@ func (c *Cluster) Start(ctx context.Context) error {
 func (c *Cluster) IsLeader() bool {
 	c.lock.RLock()
 	defer c.lock.RUnlock()
+	<-c.initialized
+
 	return c.meIdx == 0
 }
 
 func (c *Cluster) Assigned(key string) bool {
 	c.lock.RLock()
 	defer c.lock.RUnlock()
+	<-c.initialized
+
 	if len(c.targets) == 0 {
 		return false
 	}
@@ -54,6 +72,8 @@ func (c *Cluster) Assigned(key string) bool {
 func (c *Cluster) AllNeighbors() []string {
 	c.lock.RLock()
 	defer c.lock.RUnlock()
+	<-c.initialized
+
 	ips := make([]string, 0, len(c.targets)-1)
 	for _, t := range c.targets {
 		if t.Me {

@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"os"
 	"slices"
+	"time"
 
 	"github.com/friendsofgo/errors"
 	log "github.com/sirupsen/logrus"
@@ -17,6 +18,10 @@ import (
 	"github.com/traPtitech/neoshowcase/pkg/util/ds"
 	"github.com/traPtitech/neoshowcase/pkg/util/retry"
 )
+
+// k8sStabilize is time to wait for endpoints to stabilize - in case of rollout or pod disruptions.
+// Only after this time passes, Watch() fires new targets.
+const k8sStabilize = 15 * time.Second
 
 type k8sDiscoverer struct {
 	client    *kubernetes.Clientset
@@ -122,20 +127,20 @@ func (k *k8sDiscoverer) watch(ctx context.Context, updates chan<- []Target) erro
 		defer watcher.Stop()
 
 		// Send initial state
-		res, err := k.discover()
+		targets, err := k.discover()
 		if err != nil {
 			log.Errorf("failed to discover targets: %v", err)
 			return
 		}
-		updates <- res
+		updates <- targets
 
 		for range watcher.ResultChan() {
-			res, err = k.discover()
+			targets, err = k.discover()
 			if err != nil {
 				log.Errorf("failed to discover targets: %v", err)
 				return
 			}
-			updates <- res
+			updates <- targets
 		}
 	}()
 
@@ -150,5 +155,5 @@ func (k *k8sDiscoverer) Watch(ctx context.Context) (<-chan []Target, error) {
 			return k.watch(ctx, updates)
 		}, "k8s discoverer")
 	}()
-	return updates, nil
+	return ds.ThrottleChan(updates, k8sStabilize), nil
 }

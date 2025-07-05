@@ -1,18 +1,30 @@
 package ds
 
-func ReadAll[T any](ch <-chan T) []T {
-	var items []T
-read:
-	for {
-		select {
-		case item, ok := <-ch:
-			if !ok {
-				break read
-			}
-			items = append(items, item)
-		default:
-			break read
+import (
+	"sync"
+	"time"
+
+	"github.com/boz/go-throttle"
+)
+
+func ThrottleChan[T any](ch <-chan T, period time.Duration) <-chan T {
+	throttledCh := make(chan T)
+
+	var next T
+	var lock sync.Mutex
+	throttledSend := throttle.ThrottleFunc(period, true, func() {
+		lock.Lock()
+		throttledCh <- next
+		lock.Unlock()
+	})
+
+	go func() {
+		for data := range ch {
+			lock.Lock()
+			next = data
+			lock.Unlock()
+			throttledSend.Trigger()
 		}
-	}
-	return items
+	}()
+	return throttledCh
 }
