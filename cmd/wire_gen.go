@@ -39,6 +39,7 @@ import (
 	"github.com/traPtitech/neoshowcase/pkg/usecase/ssgen"
 	"github.com/traPtitech/neoshowcase/pkg/usecase/sshserver"
 	"github.com/traPtitech/neoshowcase/pkg/usecase/systeminfo"
+	"github.com/traPtitech/neoshowcase/pkg/util/discovery"
 	"github.com/traefik/traefik/v3/pkg/provider/kubernetes/crd/generated/clientset/versioned/typed/traefikio/v1alpha1"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
@@ -178,6 +179,11 @@ func NewControllerDocker(c Config) (component, error) {
 		return nil, err
 	}
 	apiServer := provideControllerServer(c, controllerServiceHandler, controllerBuilderService, controllerSSGenService, controllerGiteaIntegrationService, tokenAuthInterceptor)
+	discoverer, err := provideDiscoverer(c)
+	if err != nil {
+		return nil, err
+	}
+	cluster := discovery.NewCluster(discoverer)
 	userRepository := repository.NewUserRepository(db)
 	sshServer := sshserver.NewSSHServer(sshConfig, publicKeys, backend, applicationRepository, userRepository)
 	receiverConfig := controllerConfig.Webhook
@@ -190,6 +196,7 @@ func NewControllerDocker(c Config) (component, error) {
 	server := &controller.Server{
 		APIServer:      apiServer,
 		DB:             db,
+		Cluster:        cluster,
 		Backend:        backend,
 		SSHServer:      sshServer,
 		Webhook:        receiver,
@@ -279,6 +286,11 @@ func NewControllerK8s(c Config) (component, error) {
 		return nil, err
 	}
 	apiServer := provideControllerServer(c, controllerServiceHandler, controllerBuilderService, controllerSSGenService, controllerGiteaIntegrationService, tokenAuthInterceptor)
+	discoverer, err := provideDiscoverer(c)
+	if err != nil {
+		return nil, err
+	}
+	cluster := discovery.NewCluster(discoverer)
 	userRepository := repository.NewUserRepository(db)
 	sshServer := sshserver.NewSSHServer(sshConfig, publicKeys, backend, applicationRepository, userRepository)
 	receiverConfig := controllerConfig.Webhook
@@ -291,6 +303,7 @@ func NewControllerK8s(c Config) (component, error) {
 	server := &controller.Server{
 		APIServer:      apiServer,
 		DB:             db,
+		Cluster:        cluster,
 		Backend:        backend,
 		SSHServer:      sshServer,
 		Webhook:        receiver,
@@ -436,7 +449,7 @@ func NewSSGen(c Config) (component, error) {
 var providers = wire.NewSet(apiserver.NewService, cdservice.NewAppDeployHelper, cdservice.NewContainerStateMutator, cdservice.NewService, versioned.NewForConfig, cleaner.NewService, commitfetcher.NewService, dbmanager.NewMariaDBManager, dbmanager.NewMongoDBManager, dockerimpl.NewClientFromEnv, dockerimpl.NewDockerBackend, giteaintegration.NewIntegration, grpc.NewAPIServiceServer, grpc.NewAuthInterceptor, grpc.NewBuildpackHelperService, provideBuildpackHelperClient, grpc.NewCacheInterceptor, grpc.NewControllerService, grpc.NewControllerServiceClient, grpc.NewControllerBuilderService, grpc.NewControllerGiteaIntegrationService, grpc.NewControllerGiteaIntegrationServiceClient, provideTokenAuthInterceptor,
 	provideControllerBuilderServiceClient, grpc.NewControllerSSGenService, grpc.NewControllerSSGenServiceClient, healthcheck.NewServer, k8simpl.NewK8SBackend, kubernetes.NewForConfig, logstream.NewService, repofetcher.NewService, repository.New, repository.NewApplicationRepository, repository.NewArtifactRepository, repository.NewRuntimeImageRepository, repository.NewBuildRepository, repository.NewEnvironmentRepository, repository.NewGitRepositoryRepository, repository.NewRepositoryCommitRepository, repository.NewUserRepository, rest.InClusterConfig, v1alpha1.NewForConfig, ssgen.NewGeneratorService, sshserver.NewSSHServer, systeminfo.NewService, builder.NewService, webhook.NewReceiver, provideRepositoryPrivateKey, domain.IntoPublicKey, git.NewService, registry.NewClient, provideStorage,
 	provideAuthDevServer,
-	provideBuildpackHelperServer, buildpack.NewBuildpackBackend, provideBuilderConfig,
+	provideBuildpackHelperServer, buildpack.NewBuildpackBackend, provideDiscoverer, discovery.NewCluster, provideBuilderConfig,
 	provideBuildkitClient,
 	provideSystemInfoConfig,
 	provideControllerServer,

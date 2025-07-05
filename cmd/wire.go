@@ -41,6 +41,7 @@ import (
 	ussgen "github.com/traPtitech/neoshowcase/pkg/usecase/ssgen"
 	"github.com/traPtitech/neoshowcase/pkg/usecase/sshserver"
 	"github.com/traPtitech/neoshowcase/pkg/usecase/systeminfo"
+	"github.com/traPtitech/neoshowcase/pkg/util/discovery"
 )
 
 var providers = wire.NewSet(
@@ -99,6 +100,8 @@ var providers = wire.NewSet(
 	provideAuthDevServer,
 	provideBuildpackHelperServer,
 	buildpack.NewBuildpackBackend,
+	provideDiscoverer,
+	discovery.NewCluster,
 	provideBuilderConfig,
 	provideBuildkitClient,
 	provideSystemInfoConfig,

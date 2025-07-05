@@ -155,6 +155,10 @@ type spreadConstraint = struct {
 }
 
 type Config struct {
+	// ServiceName is the name of the service this controller belongs to.
+	// Used for controller cluster discovery.
+	ServiceName string `mapstructure:"serviceName" yaml:"serviceName"`
+
 	// Domains define available domains to be used by user apps.
 	Domains []*domainConf `mapstructure:"domains" yaml:"domains"`
 	// Ports define available port-forward ports to be used by user apps.

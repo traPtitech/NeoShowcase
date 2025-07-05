@@ -15,6 +15,7 @@ import (
 	commitfetcher "github.com/traPtitech/neoshowcase/pkg/usecase/commit-fetcher"
 	"github.com/traPtitech/neoshowcase/pkg/usecase/repofetcher"
 	"github.com/traPtitech/neoshowcase/pkg/usecase/sshserver"
+	"github.com/traPtitech/neoshowcase/pkg/util/discovery"
 )
 
 type APIServer struct {
@@ -25,6 +26,7 @@ type Server struct {
 	APIServer *APIServer
 
 	DB             *sql.DB
+	Cluster        *discovery.Cluster
 	Backend        domain.Backend
 	SSHServer      sshserver.SSHServer
 	Webhook        *webhook.Receiver
@@ -37,6 +39,9 @@ type Server struct {
 func (s *Server) Start(ctx context.Context) error {
 	eg, ctx := errgroup.WithContext(ctx)
 
+	eg.Go(func() error {
+		return s.Cluster.Start(ctx)
+	})
 	eg.Go(func() error {
 		return s.Backend.Start(ctx)
 	})

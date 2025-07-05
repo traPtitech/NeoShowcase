@@ -31,6 +31,7 @@ import (
 	"github.com/traPtitech/neoshowcase/pkg/usecase/healthcheck"
 	"github.com/traPtitech/neoshowcase/pkg/usecase/ssgen"
 	"github.com/traPtitech/neoshowcase/pkg/usecase/systeminfo"
+	"github.com/traPtitech/neoshowcase/pkg/util/discovery"
 )
 
 func provideRepositoryPrivateKey(c Config) (domain.PrivateKey, error) {
@@ -89,6 +90,16 @@ func provideBuildpackHelperServer(
 		},
 	}
 	return &buildpackhelper.APIServer{H2CServer: web.NewH2CServer(wc)}
+}
+
+func provideDiscoverer(c Config) (discovery.Discoverer, error) {
+	switch c.Components.Controller.Mode {
+	case "docker":
+		return discovery.NewSingleDiscoverer("127.0.0.1"), nil
+	case "k8s", "kubernetes":
+		return discovery.NewK8sDiscoverer(c.Components.Controller.K8s.ServiceName)
+	}
+	return nil, errors.New("unknown mode: " + c.Components.Controller.Mode)
 }
 
 func provideBuilderConfig(c Config) (*ubuilder.Config, error) {

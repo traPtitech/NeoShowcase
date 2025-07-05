@@ -186,6 +186,7 @@ func init() {
 	viper.SetDefault("components.controller.docker.resources.memorySwap", -1 /* unlimited swap */)
 	viper.SetDefault("components.controller.docker.resources.memoryReservation", 256*1e6 /* 256MB */)
 
+	viper.SetDefault("components.controller.k8s.serviceName", "ns-controller")
 	viper.SetDefault("components.controller.k8s.domains", nil)
 	viper.SetDefault("components.controller.k8s.ports", nil)
 
