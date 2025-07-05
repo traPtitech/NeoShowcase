@@ -11,6 +11,7 @@ import (
 	log "github.com/sirupsen/logrus"
 
 	"github.com/traPtitech/neoshowcase/pkg/domain"
+	"github.com/traPtitech/neoshowcase/pkg/util/discovery"
 	"github.com/traPtitech/neoshowcase/pkg/util/optional"
 )
 
@@ -28,6 +29,7 @@ type queueItem struct {
 }
 
 type service struct {
+	cluster     *discovery.Cluster
 	appRepo     domain.ApplicationRepository
 	buildRepo   domain.BuildRepository
 	gitRepo     domain.GitRepositoryRepository
@@ -43,6 +45,7 @@ type service struct {
 }
 
 func NewService(
+	cluster *discovery.Cluster,
 	appRepo domain.ApplicationRepository,
 	buildRepo domain.BuildRepository,
 	gitRepo domain.GitRepositoryRepository,
@@ -50,6 +53,7 @@ func NewService(
 	gitsvc domain.GitService,
 ) (Service, error) {
 	s := &service{
+		cluster:     cluster,
 		appRepo:     appRepo,
 		buildRepo:   buildRepo,
 		gitRepo:     gitRepo,
@@ -83,6 +87,11 @@ func (s *service) resolveCommits(ctx context.Context) {
 	}
 
 	for _, app := range apps {
+		// Shard by repository ID
+		if !s.cluster.Assigned(app.RepositoryID) {
+			continue
+		}
+
 		builds, err := s.buildRepo.GetBuilds(ctx, domain.GetBuildCondition{ApplicationID: optional.From(app.ID)})
 		if err != nil {
 			log.Errorf("failed to get builds: %+v", err)

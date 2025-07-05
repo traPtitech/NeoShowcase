@@ -13,6 +13,7 @@ import (
 	"github.com/traPtitech/neoshowcase/pkg/domain"
 	"github.com/traPtitech/neoshowcase/pkg/usecase/cdservice"
 	commitfetcher "github.com/traPtitech/neoshowcase/pkg/usecase/commit-fetcher"
+	"github.com/traPtitech/neoshowcase/pkg/util/discovery"
 	"github.com/traPtitech/neoshowcase/pkg/util/ds"
 	"github.com/traPtitech/neoshowcase/pkg/util/optional"
 )
@@ -42,6 +43,7 @@ type Service interface {
 }
 
 type service struct {
+	cluster       *discovery.Cluster
 	appRepo       domain.ApplicationRepository
 	gitRepo       domain.GitRepositoryRepository
 	gitsvc        domain.GitService
@@ -56,6 +58,7 @@ type service struct {
 }
 
 func NewService(
+	cluster *discovery.Cluster,
 	appRepo domain.ApplicationRepository,
 	gitRepo domain.GitRepositoryRepository,
 	cd cdservice.Service,
@@ -63,6 +66,7 @@ func NewService(
 	gitsvc domain.GitService,
 ) (Service, error) {
 	r := &service{
+		cluster:       cluster,
 		appRepo:       appRepo,
 		gitRepo:       gitRepo,
 		cd:            cd,
@@ -149,6 +153,11 @@ func (r *service) doFetchEpoch(ctx context.Context, epoch int) (int, error) {
 	count := 0
 	p := pool.New().WithMaxGoroutines(fetcherConcurrency)
 	for repoID, lastUpdated := range repoLastUpdated {
+		// Shard by repo ID
+		if !r.cluster.Assigned(repoID) {
+			continue
+		}
+
 		interval := fetchInterval(now, lastUpdated)
 		if epoch%interval == 0 {
 			repo := repoMap[repoID]

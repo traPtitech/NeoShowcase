@@ -13,6 +13,7 @@ import (
 
 	"github.com/traPtitech/neoshowcase/pkg/domain"
 	"github.com/traPtitech/neoshowcase/pkg/domain/builder"
+	"github.com/traPtitech/neoshowcase/pkg/util/discovery"
 	"github.com/traPtitech/neoshowcase/pkg/util/ds"
 	"github.com/traPtitech/neoshowcase/pkg/util/loop"
 	"github.com/traPtitech/neoshowcase/pkg/util/optional"
@@ -24,6 +25,7 @@ type Service interface {
 }
 
 type cleanerService struct {
+	cluster      *discovery.Cluster
 	artifactRepo domain.ArtifactRepository
 	appRepo      domain.ApplicationRepository
 	buildRepo    domain.BuildRepository
@@ -38,6 +40,7 @@ type cleanerService struct {
 }
 
 func NewService(
+	cluster *discovery.Cluster,
 	artifactRepo domain.ArtifactRepository,
 	appRepo domain.ApplicationRepository,
 	buildRepo domain.BuildRepository,
@@ -46,6 +49,7 @@ func NewService(
 	storage domain.Storage,
 ) (Service, error) {
 	c := &cleanerService{
+		cluster:      cluster,
 		artifactRepo: artifactRepo,
 		appRepo:      appRepo,
 		buildRepo:    buildRepo,
@@ -97,6 +101,11 @@ func (c *cleanerService) pruneImages(ctx context.Context, r builder.RegistryClie
 	}
 
 	for _, app := range applications {
+		// Shard by app ID
+		if !c.cluster.Assigned(app.RepositoryID) {
+			continue
+		}
+
 		err = c.pruneImage(ctx, r, app)
 		if err != nil {
 			log.Errorf("pruning image %v: %+v", c.image.NamePrefix+app.ID, err)
@@ -183,6 +192,11 @@ func (c *cleanerService) getArtifactsNoLongerInUse(ctx context.Context) ([]*doma
 
 	artifacts := make([]*domain.Artifact, 0, len(applications))
 	for _, app := range applications {
+		// Shard by app ID
+		if !c.cluster.Assigned(app.RepositoryID) {
+			continue
+		}
+
 		olderBuilds, err := c.getOlderBuilds(ctx, app.ID, app.CurrentBuild)
 		if err != nil {
 			return nil, err

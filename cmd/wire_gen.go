@@ -143,6 +143,11 @@ func NewControllerDocker(c Config) (component, error) {
 		return nil, err
 	}
 	service := systeminfo.NewService(serviceConfig, backend, applicationRepository, sshConfig, publicKeys)
+	discoverer, err := provideDiscoverer(c)
+	if err != nil {
+		return nil, err
+	}
+	cluster := discovery.NewCluster(discoverer)
 	gitRepositoryRepository := repository.NewGitRepositoryRepository(db)
 	buildRepository := repository.NewBuildRepository(db)
 	environmentRepository := repository.NewEnvironmentRepository(db)
@@ -164,11 +169,11 @@ func NewControllerDocker(c Config) (component, error) {
 	}
 	repositoryCommitRepository := repository.NewRepositoryCommitRepository(db)
 	gitService := git.NewService(publicKeys)
-	commitfetcherService, err := commitfetcher.NewService(applicationRepository, buildRepository, gitRepositoryRepository, repositoryCommitRepository, gitService)
+	commitfetcherService, err := commitfetcher.NewService(cluster, applicationRepository, buildRepository, gitRepositoryRepository, repositoryCommitRepository, gitService)
 	if err != nil {
 		return nil, err
 	}
-	repofetcherService, err := repofetcher.NewService(applicationRepository, gitRepositoryRepository, cdserviceService, commitfetcherService, gitService)
+	repofetcherService, err := repofetcher.NewService(cluster, applicationRepository, gitRepositoryRepository, cdserviceService, commitfetcherService, gitService)
 	if err != nil {
 		return nil, err
 	}
@@ -179,17 +184,12 @@ func NewControllerDocker(c Config) (component, error) {
 		return nil, err
 	}
 	apiServer := provideControllerServer(c, controllerServiceHandler, controllerBuilderService, controllerSSGenService, controllerGiteaIntegrationService, tokenAuthInterceptor)
-	discoverer, err := provideDiscoverer(c)
-	if err != nil {
-		return nil, err
-	}
-	cluster := discovery.NewCluster(discoverer)
 	userRepository := repository.NewUserRepository(db)
 	sshServer := sshserver.NewSSHServer(sshConfig, publicKeys, backend, applicationRepository, userRepository)
 	receiverConfig := controllerConfig.Webhook
 	receiver := webhook.NewReceiver(receiverConfig, gitRepositoryRepository, repofetcherService, controllerGiteaIntegrationService)
 	registryClient := registry.NewClient(imageConfig)
-	cleanerService, err := cleaner.NewService(artifactRepository, applicationRepository, buildRepository, registryClient, imageConfig, storage)
+	cleanerService, err := cleaner.NewService(cluster, artifactRepository, applicationRepository, buildRepository, registryClient, imageConfig, storage)
 	if err != nil {
 		return nil, err
 	}
@@ -276,11 +276,11 @@ func NewControllerK8s(c Config) (component, error) {
 	}
 	repositoryCommitRepository := repository.NewRepositoryCommitRepository(db)
 	gitService := git.NewService(publicKeys)
-	commitfetcherService, err := commitfetcher.NewService(applicationRepository, buildRepository, gitRepositoryRepository, repositoryCommitRepository, gitService)
+	commitfetcherService, err := commitfetcher.NewService(cluster, applicationRepository, buildRepository, gitRepositoryRepository, repositoryCommitRepository, gitService)
 	if err != nil {
 		return nil, err
 	}
-	repofetcherService, err := repofetcher.NewService(applicationRepository, gitRepositoryRepository, cdserviceService, commitfetcherService, gitService)
+	repofetcherService, err := repofetcher.NewService(cluster, applicationRepository, gitRepositoryRepository, cdserviceService, commitfetcherService, gitService)
 	if err != nil {
 		return nil, err
 	}
@@ -296,7 +296,7 @@ func NewControllerK8s(c Config) (component, error) {
 	receiverConfig := controllerConfig.Webhook
 	receiver := webhook.NewReceiver(receiverConfig, gitRepositoryRepository, repofetcherService, controllerGiteaIntegrationService)
 	registryClient := registry.NewClient(imageConfig)
-	cleanerService, err := cleaner.NewService(artifactRepository, applicationRepository, buildRepository, registryClient, imageConfig, storage)
+	cleanerService, err := cleaner.NewService(cluster, artifactRepository, applicationRepository, buildRepository, registryClient, imageConfig, storage)
 	if err != nil {
 		return nil, err
 	}
