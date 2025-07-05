@@ -21,12 +21,15 @@ type resources struct {
 	services      []*v1.Service
 	middlewares   []*traefikv1alpha1.Middleware
 	ingressRoutes []*traefikv1alpha1.IngressRoute
-	certificates  []*certmanagerv1.Certificate
+}
+
+type sharedResources struct {
+	certificates []*certmanagerv1.Certificate
 }
 
 func (b *Backend) listCurrentResources(ctx context.Context) (*resources, error) {
 	var rsc resources
-	listOpt := metav1.ListOptions{LabelSelector: toSelectorString(allSelector())}
+	listOpt := metav1.ListOptions{LabelSelector: toSelectorString(b.shardedAllSelector())}
 
 	ss, err := b.client.AppsV1().StatefulSets(b.config.Namespace).List(ctx, listOpt)
 	if err != nil {
@@ -58,6 +61,13 @@ func (b *Backend) listCurrentResources(ctx context.Context) (*resources, error) 
 	}
 	rsc.ingressRoutes = ds.SliceOfPtr(ir.Items)
 
+	return &rsc, nil
+}
+
+func (b *Backend) listCurrentSharedResources(ctx context.Context) (*sharedResources, error) {
+	var rsc sharedResources
+	listOpt := metav1.ListOptions{LabelSelector: toSelectorString(allSelector())}
+
 	if b.config.TLS.Type == tlsTypeCertManager {
 		certs, err := b.certManagerClient.CertmanagerV1().Certificates(b.config.Namespace).List(ctx, listOpt)
 		if err != nil {
@@ -77,7 +87,6 @@ func (b *Backend) Synchronize(ctx context.Context, s *domain.DesiredState) error
 	var next resources
 	b.runtimeResources(&next, s.Runtime)
 	b.ssResources(&next, s.StaticSites)
-	next.certificates = lo.UniqBy(next.certificates, func(cert *certmanagerv1.Certificate) string { return cert.Name })
 
 	// List old resources
 	old, err := b.listCurrentResources(ctx)
@@ -106,6 +115,36 @@ func (b *Backend) Synchronize(ctx context.Context, s *domain.DesiredState) error
 	if err != nil {
 		return errors.Wrap(err, "failed to sync ingressroutes")
 	}
+
+	if b.cluster.IsLeader() {
+		err = b.synchronizeShared(ctx, s)
+		if err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+func (b *Backend) synchronizeShared(ctx context.Context, s *domain.DesiredState) error {
+	// Calculate next resources to apply
+	var next sharedResources
+	for _, state := range s.Runtime {
+		for _, website := range state.App.Websites {
+			next.certificates = append(next.certificates, b.websiteCertificates(website)...)
+		}
+	}
+	for _, site := range s.StaticSites {
+		next.certificates = append(next.certificates, b.websiteCertificates(site.Website)...)
+	}
+	next.certificates = lo.UniqBy(next.certificates, func(cert *certmanagerv1.Certificate) string { return cert.Name })
+
+	// List old resources
+	old, err := b.listCurrentSharedResources(ctx)
+	if err != nil {
+		return err
+	}
+
+	// Synchronize resources
 	err = syncResources[*certmanagerv1.Certificate](ctx, "certificates", old.certificates, next.certificates, b.certManagerClient.CertmanagerV1().Certificates(b.config.Namespace))
 	if err != nil {
 		return errors.Wrap(err, "failed to sync certificates")

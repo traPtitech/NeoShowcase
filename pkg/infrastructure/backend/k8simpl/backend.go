@@ -3,6 +3,7 @@ package k8simpl
 import (
 	"context"
 	"fmt"
+	"strconv"
 	"strings"
 	"sync"
 
@@ -16,6 +17,7 @@ import (
 	"k8s.io/client-go/rest"
 
 	"github.com/traPtitech/neoshowcase/pkg/domain"
+	"github.com/traPtitech/neoshowcase/pkg/util/discovery"
 	"github.com/traPtitech/neoshowcase/pkg/util/ds"
 	"github.com/traPtitech/neoshowcase/pkg/util/hash"
 	"github.com/traPtitech/neoshowcase/pkg/util/retry"
@@ -24,6 +26,8 @@ import (
 const (
 	// managedLabel (always "true") indicates the resource is managed by NeoShowcase.
 	managedLabel = "ns.trap.jp/managed"
+	// shardLabel records which controller shard the resource is managed by.
+	shardLabel = "ns.trap.jp/shard"
 	// appIDLabel indicates the related application ID.
 	appIDLabel = "ns.trap.jp/app-id"
 	// appRestartAnnotation instructs StatefulSets to restart pods when necessary.
@@ -41,6 +45,7 @@ type Backend struct {
 	client            *kubernetes.Clientset
 	traefikClient     *traefikv1alpha1.TraefikV1alpha1Client
 	certManagerClient *certmanagerv1.Clientset
+	cluster           *discovery.Cluster
 	config            Config
 
 	eventSubs   domain.PubSub[*domain.ContainerEvent]
@@ -54,6 +59,7 @@ func NewK8SBackend(
 	k8sCSet *kubernetes.Clientset,
 	traefikClient *traefikv1alpha1.TraefikV1alpha1Client,
 	certManagerClient *certmanagerv1.Clientset,
+	cluster *discovery.Cluster,
 	config Config,
 ) (*Backend, error) {
 	err := config.Validate()
@@ -65,6 +71,7 @@ func NewK8SBackend(
 		client:            k8sCSet,
 		traefikClient:     traefikClient,
 		certManagerClient: certManagerClient,
+		cluster:           cluster,
 		config:            config,
 	}
 	return b, nil
@@ -96,7 +103,7 @@ func (b *Backend) eventListener(ctx context.Context) error {
 		}
 
 		appID, ok := p.Labels[appIDLabel]
-		if !ok {
+		if !ok || !b.cluster.Assigned(appID) {
 			continue
 		}
 		b.eventSubs.Publish(&domain.ContainerEvent{ApplicationID: appID})
@@ -144,6 +151,7 @@ func (b *Backend) generalLabel() map[string]string {
 func (b *Backend) appLabel(appID string) map[string]string {
 	return ds.MergeMap(b.config.labels(), map[string]string{
 		managedLabel: "true",
+		shardLabel:   strconv.Itoa(b.cluster.Key(appID)),
 		appIDLabel:   appID,
 	})
 }
@@ -160,9 +168,17 @@ func allSelector() map[string]string {
 	}
 }
 
+func (b *Backend) shardedAllSelector() map[string]string {
+	return map[string]string{
+		managedLabel: "true",
+		shardLabel:   strconv.Itoa(b.cluster.Me()),
+	}
+}
+
 func appSelector(appID string) map[string]string {
 	return map[string]string{
-		appIDLabel: appID,
+		managedLabel: "true",
+		appIDLabel:   appID,
 	}
 }
 

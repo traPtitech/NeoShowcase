@@ -226,10 +226,15 @@ func NewControllerK8s(c Config) (component, error) {
 	if err != nil {
 		return nil, err
 	}
+	discoverer, err := provideDiscoverer(c)
+	if err != nil {
+		return nil, err
+	}
+	cluster := discovery.NewCluster(discoverer)
 	componentsConfig := c.Components
 	controllerConfig := componentsConfig.Controller
 	k8simplConfig := controllerConfig.K8s
-	backend, err := k8simpl.NewK8SBackend(restConfig, clientset, traefikV1alpha1Client, versionedClientset, k8simplConfig)
+	backend, err := k8simpl.NewK8SBackend(restConfig, clientset, traefikV1alpha1Client, versionedClientset, cluster, k8simplConfig)
 	if err != nil {
 		return nil, err
 	}
@@ -286,11 +291,6 @@ func NewControllerK8s(c Config) (component, error) {
 		return nil, err
 	}
 	apiServer := provideControllerServer(c, controllerServiceHandler, controllerBuilderService, controllerSSGenService, controllerGiteaIntegrationService, tokenAuthInterceptor)
-	discoverer, err := provideDiscoverer(c)
-	if err != nil {
-		return nil, err
-	}
-	cluster := discovery.NewCluster(discoverer)
 	userRepository := repository.NewUserRepository(db)
 	sshServer := sshserver.NewSSHServer(sshConfig, publicKeys, backend, applicationRepository, userRepository)
 	receiverConfig := controllerConfig.Webhook

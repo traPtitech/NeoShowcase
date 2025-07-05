@@ -1,11 +1,16 @@
 package ds
 
-import "maps"
+import (
+	"maps"
 
-func MergeMap[K comparable, V any](m1, m2 map[K]V) map[K]V {
-	ret := make(map[K]V, len(m1)+len(m2))
-	maps.Copy(ret, m1)
-	maps.Copy(ret, m2)
+	"github.com/samber/lo"
+)
+
+func MergeMap[K comparable, V any](mm ...map[K]V) map[K]V {
+	ret := make(map[K]V, lo.SumBy(mm, len))
+	for _, m := range mm {
+		maps.Copy(ret, m)
+	}
 	return ret
 }
 

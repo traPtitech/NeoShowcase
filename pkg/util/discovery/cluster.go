@@ -58,6 +58,22 @@ func (c *Cluster) IsLeader() bool {
 	return c.meIdx == 0
 }
 
+func (c *Cluster) Me() int {
+	c.lock.RLock()
+	defer c.lock.RUnlock()
+	<-c.initialized
+
+	return c.meIdx
+}
+
+func (c *Cluster) Key(key string) int {
+	c.lock.RLock()
+	defer c.lock.RUnlock()
+	<-c.initialized
+
+	return hash.JumpHashStr(key, len(c.targets))
+}
+
 func (c *Cluster) Assigned(key string) bool {
 	c.lock.RLock()
 	defer c.lock.RUnlock()
@@ -66,7 +82,7 @@ func (c *Cluster) Assigned(key string) bool {
 	if len(c.targets) == 0 {
 		return false
 	}
-	return hash.JumpHashStr(key, len(c.targets)) == c.meIdx
+	return c.Key(key) == c.meIdx
 }
 
 func (c *Cluster) AllNeighbors() []string {
