@@ -4,6 +4,10 @@ package neoshowcase.protobuf;
 import "google/protobuf/empty.proto";
 import "neoshowcase/protobuf/gateway.proto";
 
+message AddressInfo {
+  optional string address = 1;
+}
+
 message ImageConfig {
   message RegistryConfig {
     string scheme = 1;
@@ -137,8 +141,15 @@ service ControllerService {
   rpc FetchRepository(RepositoryIdRequest) returns (google.protobuf.Empty);
   rpc RegisterBuild(ApplicationIdRequest) returns (google.protobuf.Empty);
   rpc SyncDeployments(google.protobuf.Empty) returns (google.protobuf.Empty);
+  rpc DiscoverBuildLogInstance(BuildIdRequest) returns (AddressInfo);
   rpc StreamBuildLog(BuildIdRequest) returns (stream BuildLog);
+  rpc StartBuild(google.protobuf.Empty) returns (google.protobuf.Empty);
   rpc CancelBuild(BuildIdRequest) returns (google.protobuf.Empty);
+
+  rpc DiscoverBuildLogLocal(BuildIdRequest) returns (AddressInfo);
+  rpc StartBuildLocal(google.protobuf.Empty) returns (google.protobuf.Empty);
+  rpc SyncDeploymentsLocal(google.protobuf.Empty) returns (google.protobuf.Empty);
+  rpc CancelBuildLocal(BuildIdRequest) returns (google.protobuf.Empty);
 }
 
 service ControllerBuilderService {

@@ -248,7 +248,7 @@ func (GiteaIntegrationRequest_Type) EnumDescriptor() ([]byte, []int) {
 
 type AddressInfo struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	Address       string                 `protobuf:"bytes,1,opt,name=address,proto3" json:"address,omitempty"`
+	Address       *string                `protobuf:"bytes,1,opt,name=address,proto3,oneof" json:"address,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -284,8 +284,8 @@ func (*AddressInfo) Descriptor() ([]byte, []int) {
 }
 
 func (x *AddressInfo) GetAddress() string {
-	if x != nil {
-		return x.Address
+	if x != nil && x.Address != nil {
+		return *x.Address
 	}
 	return ""
 }
@@ -1437,9 +1437,11 @@ var File_neoshowcase_protobuf_controller_proto protoreflect.FileDescriptor
 
 const file_neoshowcase_protobuf_controller_proto_rawDesc = "" +
 	"\n" +
-	"%neoshowcase/protobuf/controller.proto\x12\x14neoshowcase.protobuf\x1a\x1bgoogle/protobuf/empty.proto\x1a\"neoshowcase/protobuf/gateway.proto\"'\n" +
-	"\vAddressInfo\x12\x18\n" +
-	"\aaddress\x18\x01 \x01(\tR\aaddress\"\x9a\x02\n" +
+	"%neoshowcase/protobuf/controller.proto\x12\x14neoshowcase.protobuf\x1a\x1bgoogle/protobuf/empty.proto\x1a\"neoshowcase/protobuf/gateway.proto\"8\n" +
+	"\vAddressInfo\x12\x1d\n" +
+	"\aaddress\x18\x01 \x01(\tH\x00R\aaddress\x88\x01\x01B\n" +
+	"\n" +
+	"\b_address\"\x9a\x02\n" +
 	"\vImageConfig\x12L\n" +
 	"\bregistry\x18\x01 \x01(\v20.neoshowcase.protobuf.ImageConfig.RegistryConfigR\bregistry\x12\x1f\n" +
 	"\vname_prefix\x18\x02 \x01(\tR\n" +
@@ -1526,14 +1528,21 @@ const file_neoshowcase_protobuf_controller_proto_rawDesc = "" +
 	"\x04type\x18\x01 \x01(\x0e22.neoshowcase.protobuf.GiteaIntegrationRequest.TypeR\x04type\"\x12\n" +
 	"\x04Type\x12\n" +
 	"\n" +
-	"\x06RESYNC\x10\x002\xf3\x03\n" +
+	"\x06RESYNC\x10\x002\xd5\a\n" +
 	"\x11ControllerService\x12I\n" +
 	"\rGetSystemInfo\x12\x16.google.protobuf.Empty\x1a .neoshowcase.protobuf.SystemInfo\x12T\n" +
 	"\x0fFetchRepository\x12).neoshowcase.protobuf.RepositoryIdRequest\x1a\x16.google.protobuf.Empty\x12S\n" +
 	"\rRegisterBuild\x12*.neoshowcase.protobuf.ApplicationIdRequest\x1a\x16.google.protobuf.Empty\x12A\n" +
-	"\x0fSyncDeployments\x12\x16.google.protobuf.Empty\x1a\x16.google.protobuf.Empty\x12X\n" +
-	"\x0eStreamBuildLog\x12$.neoshowcase.protobuf.BuildIdRequest\x1a\x1e.neoshowcase.protobuf.BuildLog0\x01\x12K\n" +
-	"\vCancelBuild\x12$.neoshowcase.protobuf.BuildIdRequest\x1a\x16.google.protobuf.Empty2\xf5\x04\n" +
+	"\x0fSyncDeployments\x12\x16.google.protobuf.Empty\x1a\x16.google.protobuf.Empty\x12c\n" +
+	"\x18DiscoverBuildLogInstance\x12$.neoshowcase.protobuf.BuildIdRequest\x1a!.neoshowcase.protobuf.AddressInfo\x12X\n" +
+	"\x0eStreamBuildLog\x12$.neoshowcase.protobuf.BuildIdRequest\x1a\x1e.neoshowcase.protobuf.BuildLog0\x01\x12<\n" +
+	"\n" +
+	"StartBuild\x12\x16.google.protobuf.Empty\x1a\x16.google.protobuf.Empty\x12K\n" +
+	"\vCancelBuild\x12$.neoshowcase.protobuf.BuildIdRequest\x1a\x16.google.protobuf.Empty\x12`\n" +
+	"\x15DiscoverBuildLogLocal\x12$.neoshowcase.protobuf.BuildIdRequest\x1a!.neoshowcase.protobuf.AddressInfo\x12A\n" +
+	"\x0fStartBuildLocal\x12\x16.google.protobuf.Empty\x1a\x16.google.protobuf.Empty\x12F\n" +
+	"\x14SyncDeploymentsLocal\x12\x16.google.protobuf.Empty\x1a\x16.google.protobuf.Empty\x12P\n" +
+	"\x10CancelBuildLocal\x12$.neoshowcase.protobuf.BuildIdRequest\x1a\x16.google.protobuf.Empty2\xf5\x04\n" +
 	"\x18ControllerBuilderService\x12W\n" +
 	"\x14GetBuilderSystemInfo\x12\x16.google.protobuf.Empty\x1a'.neoshowcase.protobuf.BuilderSystemInfo\x12I\n" +
 	"\tPingBuild\x12$.neoshowcase.protobuf.BuildIdRequest\x1a\x16.google.protobuf.Empty\x12Q\n" +
@@ -1628,38 +1637,50 @@ var file_neoshowcase_protobuf_controller_proto_depIdxs = []int32{
 	33, // 20: neoshowcase.protobuf.ControllerService.FetchRepository:input_type -> neoshowcase.protobuf.RepositoryIdRequest
 	34, // 21: neoshowcase.protobuf.ControllerService.RegisterBuild:input_type -> neoshowcase.protobuf.ApplicationIdRequest
 	32, // 22: neoshowcase.protobuf.ControllerService.SyncDeployments:input_type -> google.protobuf.Empty
-	30, // 23: neoshowcase.protobuf.ControllerService.StreamBuildLog:input_type -> neoshowcase.protobuf.BuildIdRequest
-	30, // 24: neoshowcase.protobuf.ControllerService.CancelBuild:input_type -> neoshowcase.protobuf.BuildIdRequest
-	32, // 25: neoshowcase.protobuf.ControllerBuilderService.GetBuilderSystemInfo:input_type -> google.protobuf.Empty
-	30, // 26: neoshowcase.protobuf.ControllerBuilderService.PingBuild:input_type -> neoshowcase.protobuf.BuildIdRequest
-	8,  // 27: neoshowcase.protobuf.ControllerBuilderService.StreamBuildLog:input_type -> neoshowcase.protobuf.BuildLogPortion
-	9,  // 28: neoshowcase.protobuf.ControllerBuilderService.SaveArtifact:input_type -> neoshowcase.protobuf.SaveArtifactRequest
-	10, // 29: neoshowcase.protobuf.ControllerBuilderService.SaveBuildLog:input_type -> neoshowcase.protobuf.SaveBuildLogRequest
-	11, // 30: neoshowcase.protobuf.ControllerBuilderService.SaveRuntimeImage:input_type -> neoshowcase.protobuf.SaveRuntimeImageRequest
-	17, // 31: neoshowcase.protobuf.ControllerBuilderService.ConnectBuilder:input_type -> neoshowcase.protobuf.BuilderResponse
-	18, // 32: neoshowcase.protobuf.BuildpackHelperService.CopyFileTree:input_type -> neoshowcase.protobuf.CopyFileTreeRequest
-	20, // 33: neoshowcase.protobuf.BuildpackHelperService.Exec:input_type -> neoshowcase.protobuf.HelperExecRequest
-	32, // 34: neoshowcase.protobuf.ControllerSSGenService.ConnectSSGen:input_type -> google.protobuf.Empty
-	32, // 35: neoshowcase.protobuf.ControllerGiteaIntegrationService.Connect:input_type -> google.protobuf.Empty
-	35, // 36: neoshowcase.protobuf.ControllerService.GetSystemInfo:output_type -> neoshowcase.protobuf.SystemInfo
-	32, // 37: neoshowcase.protobuf.ControllerService.FetchRepository:output_type -> google.protobuf.Empty
-	32, // 38: neoshowcase.protobuf.ControllerService.RegisterBuild:output_type -> google.protobuf.Empty
-	32, // 39: neoshowcase.protobuf.ControllerService.SyncDeployments:output_type -> google.protobuf.Empty
-	36, // 40: neoshowcase.protobuf.ControllerService.StreamBuildLog:output_type -> neoshowcase.protobuf.BuildLog
-	32, // 41: neoshowcase.protobuf.ControllerService.CancelBuild:output_type -> google.protobuf.Empty
-	7,  // 42: neoshowcase.protobuf.ControllerBuilderService.GetBuilderSystemInfo:output_type -> neoshowcase.protobuf.BuilderSystemInfo
-	32, // 43: neoshowcase.protobuf.ControllerBuilderService.PingBuild:output_type -> google.protobuf.Empty
-	32, // 44: neoshowcase.protobuf.ControllerBuilderService.StreamBuildLog:output_type -> google.protobuf.Empty
-	32, // 45: neoshowcase.protobuf.ControllerBuilderService.SaveArtifact:output_type -> google.protobuf.Empty
-	32, // 46: neoshowcase.protobuf.ControllerBuilderService.SaveBuildLog:output_type -> google.protobuf.Empty
-	32, // 47: neoshowcase.protobuf.ControllerBuilderService.SaveRuntimeImage:output_type -> google.protobuf.Empty
-	14, // 48: neoshowcase.protobuf.ControllerBuilderService.ConnectBuilder:output_type -> neoshowcase.protobuf.BuilderRequest
-	32, // 49: neoshowcase.protobuf.BuildpackHelperService.CopyFileTree:output_type -> google.protobuf.Empty
-	21, // 50: neoshowcase.protobuf.BuildpackHelperService.Exec:output_type -> neoshowcase.protobuf.HelperExecResponse
-	22, // 51: neoshowcase.protobuf.ControllerSSGenService.ConnectSSGen:output_type -> neoshowcase.protobuf.SSGenRequest
-	23, // 52: neoshowcase.protobuf.ControllerGiteaIntegrationService.Connect:output_type -> neoshowcase.protobuf.GiteaIntegrationRequest
-	36, // [36:53] is the sub-list for method output_type
-	19, // [19:36] is the sub-list for method input_type
+	30, // 23: neoshowcase.protobuf.ControllerService.DiscoverBuildLogInstance:input_type -> neoshowcase.protobuf.BuildIdRequest
+	30, // 24: neoshowcase.protobuf.ControllerService.StreamBuildLog:input_type -> neoshowcase.protobuf.BuildIdRequest
+	32, // 25: neoshowcase.protobuf.ControllerService.StartBuild:input_type -> google.protobuf.Empty
+	30, // 26: neoshowcase.protobuf.ControllerService.CancelBuild:input_type -> neoshowcase.protobuf.BuildIdRequest
+	30, // 27: neoshowcase.protobuf.ControllerService.DiscoverBuildLogLocal:input_type -> neoshowcase.protobuf.BuildIdRequest
+	32, // 28: neoshowcase.protobuf.ControllerService.StartBuildLocal:input_type -> google.protobuf.Empty
+	32, // 29: neoshowcase.protobuf.ControllerService.SyncDeploymentsLocal:input_type -> google.protobuf.Empty
+	30, // 30: neoshowcase.protobuf.ControllerService.CancelBuildLocal:input_type -> neoshowcase.protobuf.BuildIdRequest
+	32, // 31: neoshowcase.protobuf.ControllerBuilderService.GetBuilderSystemInfo:input_type -> google.protobuf.Empty
+	30, // 32: neoshowcase.protobuf.ControllerBuilderService.PingBuild:input_type -> neoshowcase.protobuf.BuildIdRequest
+	8,  // 33: neoshowcase.protobuf.ControllerBuilderService.StreamBuildLog:input_type -> neoshowcase.protobuf.BuildLogPortion
+	9,  // 34: neoshowcase.protobuf.ControllerBuilderService.SaveArtifact:input_type -> neoshowcase.protobuf.SaveArtifactRequest
+	10, // 35: neoshowcase.protobuf.ControllerBuilderService.SaveBuildLog:input_type -> neoshowcase.protobuf.SaveBuildLogRequest
+	11, // 36: neoshowcase.protobuf.ControllerBuilderService.SaveRuntimeImage:input_type -> neoshowcase.protobuf.SaveRuntimeImageRequest
+	17, // 37: neoshowcase.protobuf.ControllerBuilderService.ConnectBuilder:input_type -> neoshowcase.protobuf.BuilderResponse
+	18, // 38: neoshowcase.protobuf.BuildpackHelperService.CopyFileTree:input_type -> neoshowcase.protobuf.CopyFileTreeRequest
+	20, // 39: neoshowcase.protobuf.BuildpackHelperService.Exec:input_type -> neoshowcase.protobuf.HelperExecRequest
+	32, // 40: neoshowcase.protobuf.ControllerSSGenService.ConnectSSGen:input_type -> google.protobuf.Empty
+	32, // 41: neoshowcase.protobuf.ControllerGiteaIntegrationService.Connect:input_type -> google.protobuf.Empty
+	35, // 42: neoshowcase.protobuf.ControllerService.GetSystemInfo:output_type -> neoshowcase.protobuf.SystemInfo
+	32, // 43: neoshowcase.protobuf.ControllerService.FetchRepository:output_type -> google.protobuf.Empty
+	32, // 44: neoshowcase.protobuf.ControllerService.RegisterBuild:output_type -> google.protobuf.Empty
+	32, // 45: neoshowcase.protobuf.ControllerService.SyncDeployments:output_type -> google.protobuf.Empty
+	5,  // 46: neoshowcase.protobuf.ControllerService.DiscoverBuildLogInstance:output_type -> neoshowcase.protobuf.AddressInfo
+	36, // 47: neoshowcase.protobuf.ControllerService.StreamBuildLog:output_type -> neoshowcase.protobuf.BuildLog
+	32, // 48: neoshowcase.protobuf.ControllerService.StartBuild:output_type -> google.protobuf.Empty
+	32, // 49: neoshowcase.protobuf.ControllerService.CancelBuild:output_type -> google.protobuf.Empty
+	5,  // 50: neoshowcase.protobuf.ControllerService.DiscoverBuildLogLocal:output_type -> neoshowcase.protobuf.AddressInfo
+	32, // 51: neoshowcase.protobuf.ControllerService.StartBuildLocal:output_type -> google.protobuf.Empty
+	32, // 52: neoshowcase.protobuf.ControllerService.SyncDeploymentsLocal:output_type -> google.protobuf.Empty
+	32, // 53: neoshowcase.protobuf.ControllerService.CancelBuildLocal:output_type -> google.protobuf.Empty
+	7,  // 54: neoshowcase.protobuf.ControllerBuilderService.GetBuilderSystemInfo:output_type -> neoshowcase.protobuf.BuilderSystemInfo
+	32, // 55: neoshowcase.protobuf.ControllerBuilderService.PingBuild:output_type -> google.protobuf.Empty
+	32, // 56: neoshowcase.protobuf.ControllerBuilderService.StreamBuildLog:output_type -> google.protobuf.Empty
+	32, // 57: neoshowcase.protobuf.ControllerBuilderService.SaveArtifact:output_type -> google.protobuf.Empty
+	32, // 58: neoshowcase.protobuf.ControllerBuilderService.SaveBuildLog:output_type -> google.protobuf.Empty
+	32, // 59: neoshowcase.protobuf.ControllerBuilderService.SaveRuntimeImage:output_type -> google.protobuf.Empty
+	14, // 60: neoshowcase.protobuf.ControllerBuilderService.ConnectBuilder:output_type -> neoshowcase.protobuf.BuilderRequest
+	32, // 61: neoshowcase.protobuf.BuildpackHelperService.CopyFileTree:output_type -> google.protobuf.Empty
+	21, // 62: neoshowcase.protobuf.BuildpackHelperService.Exec:output_type -> neoshowcase.protobuf.HelperExecResponse
+	22, // 63: neoshowcase.protobuf.ControllerSSGenService.ConnectSSGen:output_type -> neoshowcase.protobuf.SSGenRequest
+	23, // 64: neoshowcase.protobuf.ControllerGiteaIntegrationService.Connect:output_type -> neoshowcase.protobuf.GiteaIntegrationRequest
+	42, // [42:65] is the sub-list for method output_type
+	19, // [19:42] is the sub-list for method input_type
 	19, // [19:19] is the sub-list for extension type_name
 	19, // [19:19] is the sub-list for extension extendee
 	0,  // [0:19] is the sub-list for field type_name
@@ -1671,6 +1692,7 @@ func file_neoshowcase_protobuf_controller_proto_init() {
 		return
 	}
 	file_neoshowcase_protobuf_gateway_proto_init()
+	file_neoshowcase_protobuf_controller_proto_msgTypes[0].OneofWrappers = []any{}
 	file_neoshowcase_protobuf_controller_proto_msgTypes[9].OneofWrappers = []any{
 		(*BuilderRequest_StartBuild)(nil),
 		(*BuilderRequest_CancelBuild)(nil),

@@ -2,6 +2,7 @@ package discovery
 
 import (
 	"context"
+	"strconv"
 	"sync"
 
 	"github.com/samber/lo"
@@ -32,6 +33,10 @@ func NewCluster(d Discoverer) *Cluster {
 		}),
 		initialized: initialized,
 	}
+}
+
+func (c *Cluster) toAddr(ip string, port int) string {
+	return "http://" + ip + ":" + strconv.Itoa(port)
 }
 
 func (c *Cluster) Start(ctx context.Context) error {
@@ -74,6 +79,17 @@ func (c *Cluster) Me() int {
 	return c.meIdx
 }
 
+func (c *Cluster) MyAddress(port int) (addr string, ok bool) {
+	c.lock.RLock()
+	defer c.lock.RUnlock()
+	<-c.initialized
+
+	if c.meIdx < 0 {
+		return "", false
+	}
+	return c.toAddr(c.targets[c.meIdx].IP, port), true
+}
+
 func (c *Cluster) Key(key string) int {
 	c.lock.RLock()
 	defer c.lock.RUnlock()
@@ -93,7 +109,7 @@ func (c *Cluster) Assigned(key string) bool {
 	return c.Key(key) == c.meIdx
 }
 
-func (c *Cluster) AllNeighbors() []string {
+func (c *Cluster) AllNeighborAddresses(port int) []string {
 	c.lock.RLock()
 	defer c.lock.RUnlock()
 	<-c.initialized
@@ -103,7 +119,7 @@ func (c *Cluster) AllNeighbors() []string {
 		if t.Me {
 			continue
 		}
-		ips = append(ips, t.IP)
+		ips = append(ips, c.toAddr(t.IP, port))
 	}
 	return ips
 }

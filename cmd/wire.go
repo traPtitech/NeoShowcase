@@ -178,7 +178,7 @@ func NewController(c Config) (component, error) {
 func NewControllerDocker(c Config) (component, error) {
 	wire.Build(
 		providers,
-		wire.FieldsOf(new(ControllerConfig), "Docker", "SSH", "Webhook"),
+		wire.FieldsOf(new(ControllerConfig), "Port", "Docker", "SSH", "Webhook"),
 		wire.Bind(new(domain.Backend), new(*dockerimpl.Backend)),
 		wire.Bind(new(component), new(*controller.Server)),
 		wire.Struct(new(controller.Server), "*"),
@@ -189,7 +189,7 @@ func NewControllerDocker(c Config) (component, error) {
 func NewControllerK8s(c Config) (component, error) {
 	wire.Build(
 		providers,
-		wire.FieldsOf(new(ControllerConfig), "K8s", "SSH", "Webhook"),
+		wire.FieldsOf(new(ControllerConfig), "Port", "K8s", "SSH", "Webhook"),
 		wire.Bind(new(domain.Backend), new(*k8simpl.Backend)),
 		wire.Bind(new(component), new(*controller.Server)),
 		wire.Struct(new(controller.Server), "*"),

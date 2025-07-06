@@ -3,6 +3,7 @@ package cdservice
 import (
 	"context"
 	"slices"
+	"strconv"
 	"sync"
 	"time"
 
@@ -11,19 +12,13 @@ import (
 	log "github.com/sirupsen/logrus"
 
 	"github.com/traPtitech/neoshowcase/pkg/domain"
+	"github.com/traPtitech/neoshowcase/pkg/infrastructure/grpc"
 	"github.com/traPtitech/neoshowcase/pkg/util/discovery"
 	"github.com/traPtitech/neoshowcase/pkg/util/ds"
 	"github.com/traPtitech/neoshowcase/pkg/util/loop"
 	"github.com/traPtitech/neoshowcase/pkg/util/optional"
 	"github.com/traPtitech/neoshowcase/pkg/util/scutil"
 )
-
-type Service interface {
-	Run()
-	RegisterBuild(appID string)
-	SyncDeployments()
-	Stop(ctx context.Context) error
-}
 
 type service struct {
 	cluster   *discovery.Cluster
@@ -35,7 +30,11 @@ type service struct {
 	deployer  *AppDeployHelper
 	mutator   *ContainerStateMutator
 
+	localClient domain.ControllerServiceClient
+
+	doLocalStartBuild   func()
 	doClusterStartBuild func()
+	doLocalSyncDeploy   func()
 	doClusterSyncDeploy func()
 	run                 func()
 	runOnce             sync.Once
@@ -45,6 +44,7 @@ type service struct {
 
 func NewService(
 	cluster *discovery.Cluster,
+	port grpc.ControllerPort,
 	appRepo domain.ApplicationRepository,
 	buildRepo domain.BuildRepository,
 	envRepo domain.EnvironmentRepository,
@@ -52,7 +52,7 @@ func NewService(
 	builder domain.ControllerBuilderService,
 	deployer *AppDeployHelper,
 	mutator *ContainerStateMutator,
-) (Service, error) {
+) (domain.CDService, error) {
 	cd := &service{
 		cluster:   cluster,
 		appRepo:   appRepo,
@@ -62,13 +62,17 @@ func NewService(
 		builder:   builder,
 		deployer:  deployer,
 		mutator:   mutator,
+
+		localClient: grpc.NewControllerServiceClient(grpc.ControllerServiceClientConfig{
+			URL: "http://127.0.0.1:" + strconv.Itoa(int(port)),
+		}),
 	}
 
 	ctx, cancel := context.WithCancel(context.Background())
 
 	doLocalStartBuild := scutil.NewCoalescer(func(ctx context.Context) error {
 		start := time.Now()
-		if err := cd.startBuilds(ctx); err != nil {
+		if err := cd.startBuildsLocal(ctx); err != nil {
 			log.Errorf("failed to start builds: %+v", err)
 			return nil
 		}
@@ -76,9 +80,14 @@ func NewService(
 		time.Sleep(1 * time.Second) // 1 second throttle between build checks to account for quick succession of repo checks
 		return nil
 	})
-	cd.doClusterStartBuild = func() {
-		// TODO: broadcast to cluster here?
+	cd.doLocalStartBuild = func() {
 		_ = doLocalStartBuild.Do(context.Background())
+	}
+	cd.doClusterStartBuild = func() {
+		err := cd.localClient.StartBuild(context.Background())
+		if err != nil {
+			log.Errorf("failed to broadcast StartBuild: %+v", err)
+		}
 	}
 
 	doLocalSyncDeploy := scutil.NewCoalescer(func(ctx context.Context) error {
@@ -90,9 +99,14 @@ func NewService(
 		log.Infof("Synced deployments in %v", time.Since(start))
 		return nil
 	})
-	cd.doClusterSyncDeploy = func() {
-		// TODO: broadcast to cluster here?
+	cd.doLocalSyncDeploy = func() {
 		_ = doLocalSyncDeploy.Do(context.Background())
+	}
+	cd.doClusterSyncDeploy = func() {
+		err := cd.localClient.SyncDeployments(context.Background())
+		if err != nil {
+			log.Errorf("failed to broadcast SyncDeployments: %+v", err)
+		}
 	}
 
 	doDetectBuildCrash := func(ctx context.Context) {
@@ -107,9 +121,7 @@ func NewService(
 		go func() {
 			sub, _ := builder.ListenBuilderIdle()
 			for range sub {
-				go func() {
-					_ = doLocalStartBuild.Do(context.Background())
-				}()
+				go cd.doLocalStartBuild()
 			}
 		}()
 		go func() {
@@ -142,8 +154,12 @@ func (cd *service) RegisterBuild(appID string) {
 	}()
 }
 
-func (cd *service) SyncDeployments() {
-	go cd.doClusterSyncDeploy()
+func (cd *service) StartBuildLocal() {
+	go cd.doLocalStartBuild()
+}
+
+func (cd *service) SyncDeploymentsLocal() {
+	go cd.doLocalSyncDeploy()
 }
 
 func (cd *service) Stop(_ context.Context) error {
@@ -202,7 +218,7 @@ func (cd *service) registerBuild(ctx context.Context, appID string) error {
 	return cd.buildRepo.CreateBuild(ctx, domain.NewBuild(app, env))
 }
 
-func (cd *service) startBuilds(ctx context.Context) error {
+func (cd *service) startBuildsLocal(ctx context.Context) error {
 	builds, err := cd.buildRepo.GetBuilds(ctx, domain.GetBuildCondition{Status: optional.From(domain.BuildStatusQueued)})
 	if err != nil {
 		return err

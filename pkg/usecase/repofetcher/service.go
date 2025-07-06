@@ -11,7 +11,6 @@ import (
 	"github.com/sourcegraph/conc/pool"
 
 	"github.com/traPtitech/neoshowcase/pkg/domain"
-	"github.com/traPtitech/neoshowcase/pkg/usecase/cdservice"
 	commitfetcher "github.com/traPtitech/neoshowcase/pkg/usecase/commit-fetcher"
 	"github.com/traPtitech/neoshowcase/pkg/util/discovery"
 	"github.com/traPtitech/neoshowcase/pkg/util/ds"
@@ -47,7 +46,7 @@ type service struct {
 	appRepo       domain.ApplicationRepository
 	gitRepo       domain.GitRepositoryRepository
 	gitsvc        domain.GitService
-	cd            cdservice.Service
+	cd            domain.CDService
 	commitFetcher commitfetcher.Service
 
 	fetcher   chan<- string
@@ -61,7 +60,7 @@ func NewService(
 	cluster *discovery.Cluster,
 	appRepo domain.ApplicationRepository,
 	gitRepo domain.GitRepositoryRepository,
-	cd cdservice.Service,
+	cd domain.CDService,
 	commitFetcher commitfetcher.Service,
 	gitsvc domain.GitService,
 ) (Service, error) {

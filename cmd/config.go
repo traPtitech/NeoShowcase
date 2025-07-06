@@ -60,9 +60,9 @@ type BuilderConfig struct {
 }
 
 type ControllerConfig struct {
-	Port        int                    `mapstructure:"port" yaml:"port"`
-	TokenHeader string                 `mapstructure:"token" yaml:"port"`
-	Token       string                 `mapstructure:"token" yaml:"port"`
+	Port        grpc.ControllerPort    `mapstructure:"port" yaml:"port"`
+	TokenHeader string                 `mapstructure:"tokenHeader" yaml:"tokenHeader"`
+	Token       string                 `mapstructure:"token" yaml:"token"`
 	Mode        string                 `mapstructure:"mode" yaml:"mode"`
 	Docker      dockerimpl.Config      `mapstructure:"docker" yaml:"docker"`
 	K8s         k8simpl.Config         `mapstructure:"k8s" yaml:"k8s"`
@@ -191,7 +191,7 @@ func init() {
 	viper.SetDefault("components.controller.k8s.ports", nil)
 
 	viper.SetDefault("components.controller.k8s.ss.namespace", "default")
-	viper.SetDefault("components.controller.k8s.ss.kind", "Service")
+	viper.SetDefault("components.controller.k8s.ss.kind", "CDService")
 	viper.SetDefault("components.controller.k8s.ss.name", "")
 	viper.SetDefault("components.controller.k8s.ss.port", 80)
 	viper.SetDefault("components.controller.k8s.ss.scheme", "http")

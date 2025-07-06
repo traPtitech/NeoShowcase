@@ -55,12 +55,30 @@ const (
 	// ControllerServiceSyncDeploymentsProcedure is the fully-qualified name of the ControllerService's
 	// SyncDeployments RPC.
 	ControllerServiceSyncDeploymentsProcedure = "/neoshowcase.protobuf.ControllerService/SyncDeployments"
+	// ControllerServiceDiscoverBuildLogInstanceProcedure is the fully-qualified name of the
+	// ControllerService's DiscoverBuildLogInstance RPC.
+	ControllerServiceDiscoverBuildLogInstanceProcedure = "/neoshowcase.protobuf.ControllerService/DiscoverBuildLogInstance"
 	// ControllerServiceStreamBuildLogProcedure is the fully-qualified name of the ControllerService's
 	// StreamBuildLog RPC.
 	ControllerServiceStreamBuildLogProcedure = "/neoshowcase.protobuf.ControllerService/StreamBuildLog"
+	// ControllerServiceStartBuildProcedure is the fully-qualified name of the ControllerService's
+	// StartBuild RPC.
+	ControllerServiceStartBuildProcedure = "/neoshowcase.protobuf.ControllerService/StartBuild"
 	// ControllerServiceCancelBuildProcedure is the fully-qualified name of the ControllerService's
 	// CancelBuild RPC.
 	ControllerServiceCancelBuildProcedure = "/neoshowcase.protobuf.ControllerService/CancelBuild"
+	// ControllerServiceDiscoverBuildLogLocalProcedure is the fully-qualified name of the
+	// ControllerService's DiscoverBuildLogLocal RPC.
+	ControllerServiceDiscoverBuildLogLocalProcedure = "/neoshowcase.protobuf.ControllerService/DiscoverBuildLogLocal"
+	// ControllerServiceStartBuildLocalProcedure is the fully-qualified name of the ControllerService's
+	// StartBuildLocal RPC.
+	ControllerServiceStartBuildLocalProcedure = "/neoshowcase.protobuf.ControllerService/StartBuildLocal"
+	// ControllerServiceSyncDeploymentsLocalProcedure is the fully-qualified name of the
+	// ControllerService's SyncDeploymentsLocal RPC.
+	ControllerServiceSyncDeploymentsLocalProcedure = "/neoshowcase.protobuf.ControllerService/SyncDeploymentsLocal"
+	// ControllerServiceCancelBuildLocalProcedure is the fully-qualified name of the ControllerService's
+	// CancelBuildLocal RPC.
+	ControllerServiceCancelBuildLocalProcedure = "/neoshowcase.protobuf.ControllerService/CancelBuildLocal"
 	// ControllerBuilderServiceGetBuilderSystemInfoProcedure is the fully-qualified name of the
 	// ControllerBuilderService's GetBuilderSystemInfo RPC.
 	ControllerBuilderServiceGetBuilderSystemInfoProcedure = "/neoshowcase.protobuf.ControllerBuilderService/GetBuilderSystemInfo"
@@ -102,9 +120,14 @@ type ControllerServiceClient interface {
 	FetchRepository(context.Context, *connect.Request[pb.RepositoryIdRequest]) (*connect.Response[emptypb.Empty], error)
 	RegisterBuild(context.Context, *connect.Request[pb.ApplicationIdRequest]) (*connect.Response[emptypb.Empty], error)
 	SyncDeployments(context.Context, *connect.Request[emptypb.Empty]) (*connect.Response[emptypb.Empty], error)
-	// rpc DiscoverBuildLogInstance(BuildIdRequest) returns (AddressInfo);
+	DiscoverBuildLogInstance(context.Context, *connect.Request[pb.BuildIdRequest]) (*connect.Response[pb.AddressInfo], error)
 	StreamBuildLog(context.Context, *connect.Request[pb.BuildIdRequest]) (*connect.ServerStreamForClient[pb.BuildLog], error)
+	StartBuild(context.Context, *connect.Request[emptypb.Empty]) (*connect.Response[emptypb.Empty], error)
 	CancelBuild(context.Context, *connect.Request[pb.BuildIdRequest]) (*connect.Response[emptypb.Empty], error)
+	DiscoverBuildLogLocal(context.Context, *connect.Request[pb.BuildIdRequest]) (*connect.Response[pb.AddressInfo], error)
+	StartBuildLocal(context.Context, *connect.Request[emptypb.Empty]) (*connect.Response[emptypb.Empty], error)
+	SyncDeploymentsLocal(context.Context, *connect.Request[emptypb.Empty]) (*connect.Response[emptypb.Empty], error)
+	CancelBuildLocal(context.Context, *connect.Request[pb.BuildIdRequest]) (*connect.Response[emptypb.Empty], error)
 }
 
 // NewControllerServiceClient constructs a client for the neoshowcase.protobuf.ControllerService
@@ -142,10 +165,22 @@ func NewControllerServiceClient(httpClient connect.HTTPClient, baseURL string, o
 			connect.WithSchema(controllerServiceMethods.ByName("SyncDeployments")),
 			connect.WithClientOptions(opts...),
 		),
+		discoverBuildLogInstance: connect.NewClient[pb.BuildIdRequest, pb.AddressInfo](
+			httpClient,
+			baseURL+ControllerServiceDiscoverBuildLogInstanceProcedure,
+			connect.WithSchema(controllerServiceMethods.ByName("DiscoverBuildLogInstance")),
+			connect.WithClientOptions(opts...),
+		),
 		streamBuildLog: connect.NewClient[pb.BuildIdRequest, pb.BuildLog](
 			httpClient,
 			baseURL+ControllerServiceStreamBuildLogProcedure,
 			connect.WithSchema(controllerServiceMethods.ByName("StreamBuildLog")),
+			connect.WithClientOptions(opts...),
+		),
+		startBuild: connect.NewClient[emptypb.Empty, emptypb.Empty](
+			httpClient,
+			baseURL+ControllerServiceStartBuildProcedure,
+			connect.WithSchema(controllerServiceMethods.ByName("StartBuild")),
 			connect.WithClientOptions(opts...),
 		),
 		cancelBuild: connect.NewClient[pb.BuildIdRequest, emptypb.Empty](
@@ -154,17 +189,47 @@ func NewControllerServiceClient(httpClient connect.HTTPClient, baseURL string, o
 			connect.WithSchema(controllerServiceMethods.ByName("CancelBuild")),
 			connect.WithClientOptions(opts...),
 		),
+		discoverBuildLogLocal: connect.NewClient[pb.BuildIdRequest, pb.AddressInfo](
+			httpClient,
+			baseURL+ControllerServiceDiscoverBuildLogLocalProcedure,
+			connect.WithSchema(controllerServiceMethods.ByName("DiscoverBuildLogLocal")),
+			connect.WithClientOptions(opts...),
+		),
+		startBuildLocal: connect.NewClient[emptypb.Empty, emptypb.Empty](
+			httpClient,
+			baseURL+ControllerServiceStartBuildLocalProcedure,
+			connect.WithSchema(controllerServiceMethods.ByName("StartBuildLocal")),
+			connect.WithClientOptions(opts...),
+		),
+		syncDeploymentsLocal: connect.NewClient[emptypb.Empty, emptypb.Empty](
+			httpClient,
+			baseURL+ControllerServiceSyncDeploymentsLocalProcedure,
+			connect.WithSchema(controllerServiceMethods.ByName("SyncDeploymentsLocal")),
+			connect.WithClientOptions(opts...),
+		),
+		cancelBuildLocal: connect.NewClient[pb.BuildIdRequest, emptypb.Empty](
+			httpClient,
+			baseURL+ControllerServiceCancelBuildLocalProcedure,
+			connect.WithSchema(controllerServiceMethods.ByName("CancelBuildLocal")),
+			connect.WithClientOptions(opts...),
+		),
 	}
 }
 
 // controllerServiceClient implements ControllerServiceClient.
 type controllerServiceClient struct {
-	getSystemInfo   *connect.Client[emptypb.Empty, pb.SystemInfo]
-	fetchRepository *connect.Client[pb.RepositoryIdRequest, emptypb.Empty]
-	registerBuild   *connect.Client[pb.ApplicationIdRequest, emptypb.Empty]
-	syncDeployments *connect.Client[emptypb.Empty, emptypb.Empty]
-	streamBuildLog  *connect.Client[pb.BuildIdRequest, pb.BuildLog]
-	cancelBuild     *connect.Client[pb.BuildIdRequest, emptypb.Empty]
+	getSystemInfo            *connect.Client[emptypb.Empty, pb.SystemInfo]
+	fetchRepository          *connect.Client[pb.RepositoryIdRequest, emptypb.Empty]
+	registerBuild            *connect.Client[pb.ApplicationIdRequest, emptypb.Empty]
+	syncDeployments          *connect.Client[emptypb.Empty, emptypb.Empty]
+	discoverBuildLogInstance *connect.Client[pb.BuildIdRequest, pb.AddressInfo]
+	streamBuildLog           *connect.Client[pb.BuildIdRequest, pb.BuildLog]
+	startBuild               *connect.Client[emptypb.Empty, emptypb.Empty]
+	cancelBuild              *connect.Client[pb.BuildIdRequest, emptypb.Empty]
+	discoverBuildLogLocal    *connect.Client[pb.BuildIdRequest, pb.AddressInfo]
+	startBuildLocal          *connect.Client[emptypb.Empty, emptypb.Empty]
+	syncDeploymentsLocal     *connect.Client[emptypb.Empty, emptypb.Empty]
+	cancelBuildLocal         *connect.Client[pb.BuildIdRequest, emptypb.Empty]
 }
 
 // GetSystemInfo calls neoshowcase.protobuf.ControllerService.GetSystemInfo.
@@ -187,14 +252,44 @@ func (c *controllerServiceClient) SyncDeployments(ctx context.Context, req *conn
 	return c.syncDeployments.CallUnary(ctx, req)
 }
 
+// DiscoverBuildLogInstance calls neoshowcase.protobuf.ControllerService.DiscoverBuildLogInstance.
+func (c *controllerServiceClient) DiscoverBuildLogInstance(ctx context.Context, req *connect.Request[pb.BuildIdRequest]) (*connect.Response[pb.AddressInfo], error) {
+	return c.discoverBuildLogInstance.CallUnary(ctx, req)
+}
+
 // StreamBuildLog calls neoshowcase.protobuf.ControllerService.StreamBuildLog.
 func (c *controllerServiceClient) StreamBuildLog(ctx context.Context, req *connect.Request[pb.BuildIdRequest]) (*connect.ServerStreamForClient[pb.BuildLog], error) {
 	return c.streamBuildLog.CallServerStream(ctx, req)
 }
 
+// StartBuild calls neoshowcase.protobuf.ControllerService.StartBuild.
+func (c *controllerServiceClient) StartBuild(ctx context.Context, req *connect.Request[emptypb.Empty]) (*connect.Response[emptypb.Empty], error) {
+	return c.startBuild.CallUnary(ctx, req)
+}
+
 // CancelBuild calls neoshowcase.protobuf.ControllerService.CancelBuild.
 func (c *controllerServiceClient) CancelBuild(ctx context.Context, req *connect.Request[pb.BuildIdRequest]) (*connect.Response[emptypb.Empty], error) {
 	return c.cancelBuild.CallUnary(ctx, req)
+}
+
+// DiscoverBuildLogLocal calls neoshowcase.protobuf.ControllerService.DiscoverBuildLogLocal.
+func (c *controllerServiceClient) DiscoverBuildLogLocal(ctx context.Context, req *connect.Request[pb.BuildIdRequest]) (*connect.Response[pb.AddressInfo], error) {
+	return c.discoverBuildLogLocal.CallUnary(ctx, req)
+}
+
+// StartBuildLocal calls neoshowcase.protobuf.ControllerService.StartBuildLocal.
+func (c *controllerServiceClient) StartBuildLocal(ctx context.Context, req *connect.Request[emptypb.Empty]) (*connect.Response[emptypb.Empty], error) {
+	return c.startBuildLocal.CallUnary(ctx, req)
+}
+
+// SyncDeploymentsLocal calls neoshowcase.protobuf.ControllerService.SyncDeploymentsLocal.
+func (c *controllerServiceClient) SyncDeploymentsLocal(ctx context.Context, req *connect.Request[emptypb.Empty]) (*connect.Response[emptypb.Empty], error) {
+	return c.syncDeploymentsLocal.CallUnary(ctx, req)
+}
+
+// CancelBuildLocal calls neoshowcase.protobuf.ControllerService.CancelBuildLocal.
+func (c *controllerServiceClient) CancelBuildLocal(ctx context.Context, req *connect.Request[pb.BuildIdRequest]) (*connect.Response[emptypb.Empty], error) {
+	return c.cancelBuildLocal.CallUnary(ctx, req)
 }
 
 // ControllerServiceHandler is an implementation of the neoshowcase.protobuf.ControllerService
@@ -204,9 +299,14 @@ type ControllerServiceHandler interface {
 	FetchRepository(context.Context, *connect.Request[pb.RepositoryIdRequest]) (*connect.Response[emptypb.Empty], error)
 	RegisterBuild(context.Context, *connect.Request[pb.ApplicationIdRequest]) (*connect.Response[emptypb.Empty], error)
 	SyncDeployments(context.Context, *connect.Request[emptypb.Empty]) (*connect.Response[emptypb.Empty], error)
-	// rpc DiscoverBuildLogInstance(BuildIdRequest) returns (AddressInfo);
+	DiscoverBuildLogInstance(context.Context, *connect.Request[pb.BuildIdRequest]) (*connect.Response[pb.AddressInfo], error)
 	StreamBuildLog(context.Context, *connect.Request[pb.BuildIdRequest], *connect.ServerStream[pb.BuildLog]) error
+	StartBuild(context.Context, *connect.Request[emptypb.Empty]) (*connect.Response[emptypb.Empty], error)
 	CancelBuild(context.Context, *connect.Request[pb.BuildIdRequest]) (*connect.Response[emptypb.Empty], error)
+	DiscoverBuildLogLocal(context.Context, *connect.Request[pb.BuildIdRequest]) (*connect.Response[pb.AddressInfo], error)
+	StartBuildLocal(context.Context, *connect.Request[emptypb.Empty]) (*connect.Response[emptypb.Empty], error)
+	SyncDeploymentsLocal(context.Context, *connect.Request[emptypb.Empty]) (*connect.Response[emptypb.Empty], error)
+	CancelBuildLocal(context.Context, *connect.Request[pb.BuildIdRequest]) (*connect.Response[emptypb.Empty], error)
 }
 
 // NewControllerServiceHandler builds an HTTP handler from the service implementation. It returns
@@ -240,16 +340,52 @@ func NewControllerServiceHandler(svc ControllerServiceHandler, opts ...connect.H
 		connect.WithSchema(controllerServiceMethods.ByName("SyncDeployments")),
 		connect.WithHandlerOptions(opts...),
 	)
+	controllerServiceDiscoverBuildLogInstanceHandler := connect.NewUnaryHandler(
+		ControllerServiceDiscoverBuildLogInstanceProcedure,
+		svc.DiscoverBuildLogInstance,
+		connect.WithSchema(controllerServiceMethods.ByName("DiscoverBuildLogInstance")),
+		connect.WithHandlerOptions(opts...),
+	)
 	controllerServiceStreamBuildLogHandler := connect.NewServerStreamHandler(
 		ControllerServiceStreamBuildLogProcedure,
 		svc.StreamBuildLog,
 		connect.WithSchema(controllerServiceMethods.ByName("StreamBuildLog")),
 		connect.WithHandlerOptions(opts...),
 	)
+	controllerServiceStartBuildHandler := connect.NewUnaryHandler(
+		ControllerServiceStartBuildProcedure,
+		svc.StartBuild,
+		connect.WithSchema(controllerServiceMethods.ByName("StartBuild")),
+		connect.WithHandlerOptions(opts...),
+	)
 	controllerServiceCancelBuildHandler := connect.NewUnaryHandler(
 		ControllerServiceCancelBuildProcedure,
 		svc.CancelBuild,
 		connect.WithSchema(controllerServiceMethods.ByName("CancelBuild")),
+		connect.WithHandlerOptions(opts...),
+	)
+	controllerServiceDiscoverBuildLogLocalHandler := connect.NewUnaryHandler(
+		ControllerServiceDiscoverBuildLogLocalProcedure,
+		svc.DiscoverBuildLogLocal,
+		connect.WithSchema(controllerServiceMethods.ByName("DiscoverBuildLogLocal")),
+		connect.WithHandlerOptions(opts...),
+	)
+	controllerServiceStartBuildLocalHandler := connect.NewUnaryHandler(
+		ControllerServiceStartBuildLocalProcedure,
+		svc.StartBuildLocal,
+		connect.WithSchema(controllerServiceMethods.ByName("StartBuildLocal")),
+		connect.WithHandlerOptions(opts...),
+	)
+	controllerServiceSyncDeploymentsLocalHandler := connect.NewUnaryHandler(
+		ControllerServiceSyncDeploymentsLocalProcedure,
+		svc.SyncDeploymentsLocal,
+		connect.WithSchema(controllerServiceMethods.ByName("SyncDeploymentsLocal")),
+		connect.WithHandlerOptions(opts...),
+	)
+	controllerServiceCancelBuildLocalHandler := connect.NewUnaryHandler(
+		ControllerServiceCancelBuildLocalProcedure,
+		svc.CancelBuildLocal,
+		connect.WithSchema(controllerServiceMethods.ByName("CancelBuildLocal")),
 		connect.WithHandlerOptions(opts...),
 	)
 	return "/neoshowcase.protobuf.ControllerService/", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -262,10 +398,22 @@ func NewControllerServiceHandler(svc ControllerServiceHandler, opts ...connect.H
 			controllerServiceRegisterBuildHandler.ServeHTTP(w, r)
 		case ControllerServiceSyncDeploymentsProcedure:
 			controllerServiceSyncDeploymentsHandler.ServeHTTP(w, r)
+		case ControllerServiceDiscoverBuildLogInstanceProcedure:
+			controllerServiceDiscoverBuildLogInstanceHandler.ServeHTTP(w, r)
 		case ControllerServiceStreamBuildLogProcedure:
 			controllerServiceStreamBuildLogHandler.ServeHTTP(w, r)
+		case ControllerServiceStartBuildProcedure:
+			controllerServiceStartBuildHandler.ServeHTTP(w, r)
 		case ControllerServiceCancelBuildProcedure:
 			controllerServiceCancelBuildHandler.ServeHTTP(w, r)
+		case ControllerServiceDiscoverBuildLogLocalProcedure:
+			controllerServiceDiscoverBuildLogLocalHandler.ServeHTTP(w, r)
+		case ControllerServiceStartBuildLocalProcedure:
+			controllerServiceStartBuildLocalHandler.ServeHTTP(w, r)
+		case ControllerServiceSyncDeploymentsLocalProcedure:
+			controllerServiceSyncDeploymentsLocalHandler.ServeHTTP(w, r)
+		case ControllerServiceCancelBuildLocalProcedure:
+			controllerServiceCancelBuildLocalHandler.ServeHTTP(w, r)
 		default:
 			http.NotFound(w, r)
 		}
@@ -291,12 +439,36 @@ func (UnimplementedControllerServiceHandler) SyncDeployments(context.Context, *c
 	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("neoshowcase.protobuf.ControllerService.SyncDeployments is not implemented"))
 }
 
+func (UnimplementedControllerServiceHandler) DiscoverBuildLogInstance(context.Context, *connect.Request[pb.BuildIdRequest]) (*connect.Response[pb.AddressInfo], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("neoshowcase.protobuf.ControllerService.DiscoverBuildLogInstance is not implemented"))
+}
+
 func (UnimplementedControllerServiceHandler) StreamBuildLog(context.Context, *connect.Request[pb.BuildIdRequest], *connect.ServerStream[pb.BuildLog]) error {
 	return connect.NewError(connect.CodeUnimplemented, errors.New("neoshowcase.protobuf.ControllerService.StreamBuildLog is not implemented"))
 }
 
+func (UnimplementedControllerServiceHandler) StartBuild(context.Context, *connect.Request[emptypb.Empty]) (*connect.Response[emptypb.Empty], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("neoshowcase.protobuf.ControllerService.StartBuild is not implemented"))
+}
+
 func (UnimplementedControllerServiceHandler) CancelBuild(context.Context, *connect.Request[pb.BuildIdRequest]) (*connect.Response[emptypb.Empty], error) {
 	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("neoshowcase.protobuf.ControllerService.CancelBuild is not implemented"))
+}
+
+func (UnimplementedControllerServiceHandler) DiscoverBuildLogLocal(context.Context, *connect.Request[pb.BuildIdRequest]) (*connect.Response[pb.AddressInfo], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("neoshowcase.protobuf.ControllerService.DiscoverBuildLogLocal is not implemented"))
+}
+
+func (UnimplementedControllerServiceHandler) StartBuildLocal(context.Context, *connect.Request[emptypb.Empty]) (*connect.Response[emptypb.Empty], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("neoshowcase.protobuf.ControllerService.StartBuildLocal is not implemented"))
+}
+
+func (UnimplementedControllerServiceHandler) SyncDeploymentsLocal(context.Context, *connect.Request[emptypb.Empty]) (*connect.Response[emptypb.Empty], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("neoshowcase.protobuf.ControllerService.SyncDeploymentsLocal is not implemented"))
+}
+
+func (UnimplementedControllerServiceHandler) CancelBuildLocal(context.Context, *connect.Request[pb.BuildIdRequest]) (*connect.Response[emptypb.Empty], error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("neoshowcase.protobuf.ControllerService.CancelBuildLocal is not implemented"))
 }
 
 // ControllerBuilderServiceClient is a client for the neoshowcase.protobuf.ControllerBuilderService

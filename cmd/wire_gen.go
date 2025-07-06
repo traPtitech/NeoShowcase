@@ -114,13 +114,19 @@ func NewBuildpackHelper(c Config) (component, error) {
 }
 
 func NewControllerDocker(c Config) (component, error) {
+	componentsConfig := c.Components
+	controllerConfig := componentsConfig.Controller
+	controllerPort := controllerConfig.Port
+	discoverer, err := provideDiscoverer(c)
+	if err != nil {
+		return nil, err
+	}
+	cluster := discovery.NewCluster(discoverer)
 	serviceConfig := provideSystemInfoConfig(c)
 	client, err := dockerimpl.NewClientFromEnv()
 	if err != nil {
 		return nil, err
 	}
-	componentsConfig := c.Components
-	controllerConfig := componentsConfig.Controller
 	dockerimplConfig := controllerConfig.Docker
 	imageConfig := c.Image
 	backend, err := dockerimpl.NewDockerBackend(client, dockerimplConfig, imageConfig)
@@ -143,11 +149,6 @@ func NewControllerDocker(c Config) (component, error) {
 		return nil, err
 	}
 	service := systeminfo.NewService(serviceConfig, backend, applicationRepository, sshConfig, publicKeys)
-	discoverer, err := provideDiscoverer(c)
-	if err != nil {
-		return nil, err
-	}
-	cluster := discovery.NewCluster(discoverer)
 	gitRepositoryRepository := repository.NewGitRepositoryRepository(db)
 	buildRepository := repository.NewBuildRepository(db)
 	environmentRepository := repository.NewEnvironmentRepository(db)
@@ -164,7 +165,7 @@ func NewControllerDocker(c Config) (component, error) {
 	controllerSSGenService := grpc.NewControllerSSGenService()
 	appDeployHelper := cdservice.NewAppDeployHelper(cluster, backend, applicationRepository, buildRepository, environmentRepository, websiteRepository, controllerSSGenService, imageConfig)
 	containerStateMutator := cdservice.NewContainerStateMutator(cluster, applicationRepository, backend)
-	cdserviceService, err := cdservice.NewService(cluster, applicationRepository, buildRepository, environmentRepository, backend, controllerBuilderService, appDeployHelper, containerStateMutator)
+	cdService, err := cdservice.NewService(cluster, controllerPort, applicationRepository, buildRepository, environmentRepository, backend, controllerBuilderService, appDeployHelper, containerStateMutator)
 	if err != nil {
 		return nil, err
 	}
@@ -174,11 +175,11 @@ func NewControllerDocker(c Config) (component, error) {
 	if err != nil {
 		return nil, err
 	}
-	repofetcherService, err := repofetcher.NewService(cluster, applicationRepository, gitRepositoryRepository, cdserviceService, commitfetcherService, gitService)
+	repofetcherService, err := repofetcher.NewService(cluster, applicationRepository, gitRepositoryRepository, cdService, commitfetcherService, gitService)
 	if err != nil {
 		return nil, err
 	}
-	controllerServiceHandler := grpc.NewControllerService(service, repofetcherService, cdserviceService, controllerBuilderService, logstreamService)
+	controllerServiceHandler := grpc.NewControllerService(controllerPort, cluster, service, repofetcherService, cdService, controllerBuilderService, logstreamService)
 	controllerGiteaIntegrationService := grpc.NewControllerGiteaIntegrationService()
 	tokenAuthInterceptor, err := provideTokenAuthInterceptor(c)
 	if err != nil {
@@ -201,7 +202,7 @@ func NewControllerDocker(c Config) (component, error) {
 		Backend:        backend,
 		SSHServer:      sshServer,
 		Webhook:        receiver,
-		CDService:      cdserviceService,
+		CDService:      cdService,
 		CommitFetcher:  commitfetcherService,
 		FetcherService: repofetcherService,
 		CleanerService: cleanerService,
@@ -210,6 +211,14 @@ func NewControllerDocker(c Config) (component, error) {
 }
 
 func NewControllerK8s(c Config) (component, error) {
+	componentsConfig := c.Components
+	controllerConfig := componentsConfig.Controller
+	controllerPort := controllerConfig.Port
+	discoverer, err := provideDiscoverer(c)
+	if err != nil {
+		return nil, err
+	}
+	cluster := discovery.NewCluster(discoverer)
 	serviceConfig := provideSystemInfoConfig(c)
 	restConfig, err := rest.InClusterConfig()
 	if err != nil {
@@ -227,13 +236,6 @@ func NewControllerK8s(c Config) (component, error) {
 	if err != nil {
 		return nil, err
 	}
-	discoverer, err := provideDiscoverer(c)
-	if err != nil {
-		return nil, err
-	}
-	cluster := discovery.NewCluster(discoverer)
-	componentsConfig := c.Components
-	controllerConfig := componentsConfig.Controller
 	k8simplConfig := controllerConfig.K8s
 	backend, err := k8simpl.NewK8SBackend(restConfig, clientset, traefikV1alpha1Client, versionedClientset, cluster, k8simplConfig)
 	if err != nil {
@@ -272,7 +274,7 @@ func NewControllerK8s(c Config) (component, error) {
 	controllerSSGenService := grpc.NewControllerSSGenService()
 	appDeployHelper := cdservice.NewAppDeployHelper(cluster, backend, applicationRepository, buildRepository, environmentRepository, websiteRepository, controllerSSGenService, imageConfig)
 	containerStateMutator := cdservice.NewContainerStateMutator(cluster, applicationRepository, backend)
-	cdserviceService, err := cdservice.NewService(cluster, applicationRepository, buildRepository, environmentRepository, backend, controllerBuilderService, appDeployHelper, containerStateMutator)
+	cdService, err := cdservice.NewService(cluster, controllerPort, applicationRepository, buildRepository, environmentRepository, backend, controllerBuilderService, appDeployHelper, containerStateMutator)
 	if err != nil {
 		return nil, err
 	}
@@ -282,11 +284,11 @@ func NewControllerK8s(c Config) (component, error) {
 	if err != nil {
 		return nil, err
 	}
-	repofetcherService, err := repofetcher.NewService(cluster, applicationRepository, gitRepositoryRepository, cdserviceService, commitfetcherService, gitService)
+	repofetcherService, err := repofetcher.NewService(cluster, applicationRepository, gitRepositoryRepository, cdService, commitfetcherService, gitService)
 	if err != nil {
 		return nil, err
 	}
-	controllerServiceHandler := grpc.NewControllerService(service, repofetcherService, cdserviceService, controllerBuilderService, logstreamService)
+	controllerServiceHandler := grpc.NewControllerService(controllerPort, cluster, service, repofetcherService, cdService, controllerBuilderService, logstreamService)
 	controllerGiteaIntegrationService := grpc.NewControllerGiteaIntegrationService()
 	tokenAuthInterceptor, err := provideTokenAuthInterceptor(c)
 	if err != nil {
@@ -309,7 +311,7 @@ func NewControllerK8s(c Config) (component, error) {
 		Backend:        backend,
 		SSHServer:      sshServer,
 		Webhook:        receiver,
-		CDService:      cdserviceService,
+		CDService:      cdService,
 		CommitFetcher:  commitfetcherService,
 		FetcherService: repofetcherService,
 		CleanerService: cleanerService,

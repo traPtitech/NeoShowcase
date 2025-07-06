@@ -142,7 +142,7 @@ func provideControllerServer(
 	tokenAuth *grpc.TokenAuthInterceptor,
 ) *controller.APIServer {
 	wc := web.H2CConfig{
-		Port: c.Components.Controller.Port,
+		Port: int(c.Components.Controller.Port),
 		SetupRoute: func(mux *http.ServeMux) {
 			mux.Handle(pbconnect.NewControllerServiceHandler(controllerHandler))
 			mux.Handle(pbconnect.NewControllerBuilderServiceHandler(builderHandler, connect.WithInterceptors(tokenAuth)))

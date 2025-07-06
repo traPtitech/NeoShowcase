@@ -10,7 +10,6 @@ import (
 	"github.com/traPtitech/neoshowcase/pkg/domain"
 	"github.com/traPtitech/neoshowcase/pkg/domain/web"
 	"github.com/traPtitech/neoshowcase/pkg/infrastructure/webhook"
-	"github.com/traPtitech/neoshowcase/pkg/usecase/cdservice"
 	"github.com/traPtitech/neoshowcase/pkg/usecase/cleaner"
 	commitfetcher "github.com/traPtitech/neoshowcase/pkg/usecase/commit-fetcher"
 	"github.com/traPtitech/neoshowcase/pkg/usecase/repofetcher"
@@ -30,7 +29,7 @@ type Server struct {
 	Backend        domain.Backend
 	SSHServer      sshserver.SSHServer
 	Webhook        *webhook.Receiver
-	CDService      cdservice.Service
+	CDService      domain.CDService
 	CommitFetcher  commitfetcher.Service
 	FetcherService repofetcher.Service
 	CleanerService cleaner.Service
