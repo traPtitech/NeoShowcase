@@ -48,7 +48,7 @@ type syncer[T apiResource] interface {
 	Delete(ctx context.Context, name string, opts metav1.DeleteOptions) error
 }
 
-func syncResources[T apiResource](ctx context.Context, cluster *discovery.Cluster, rcName string, existing []T, next []T, s syncer[T]) error {
+func syncResources[T apiResource](ctx context.Context, cluster *discovery.Cluster, rcName string, existing []T, next []T, s syncer[T], replace bool) error {
 	var patched, pruned int
 	oldHashes := lo.SliceToMap(existing, func(rc T) (string, string) {
 		return rc.GetName(), rc.GetLabels()[resourceHashAnnotation]
@@ -77,6 +77,14 @@ func syncResources[T apiResource](ctx context.Context, cluster *discovery.Cluste
 		b, err := marshalResource(rc)
 		if err != nil {
 			return err
+		}
+		// For StatefulSets, delete the resource before applying again - StatefulSet has many immutable fields
+		// cf. updates to statefulset spec for fields other than 'replicas', 'ordinals', 'template', 'updateStrategy', 'revisionHistoryLimit', 'persistentVolumeClaimRetentionPolicy' and 'minReadySeconds' are forbidden
+		if replace {
+			err = s.Delete(ctx, rc.GetName(), metav1.DeleteOptions{PropagationPolicy: lo.ToPtr(metav1.DeletePropagationForeground)})
+			if err != nil {
+				return err
+			}
 		}
 		_, err = s.Patch(ctx, rc.GetName(), types.ApplyPatchType, b, metav1.PatchOptions{Force: lo.ToPtr(true), FieldManager: fieldManager})
 		if err != nil {
