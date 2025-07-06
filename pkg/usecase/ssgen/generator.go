@@ -70,6 +70,12 @@ func (s *generatorService) Start(_ context.Context) error {
 	ctx, cancel := context.WithCancel(context.Background())
 	s.cancel = cancel
 
+	go func() {
+		err := s.cluster.Start(ctx)
+		if err != nil {
+			log.Errorf("failed to start cluster: %+v", err)
+		}
+	}()
 	go retry.Do(ctx, func(ctx context.Context) error {
 		return s.client.ConnectSSGen(ctx, s.onRequest)
 	}, "connect to controller")
