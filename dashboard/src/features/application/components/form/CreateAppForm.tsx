@@ -1,4 +1,4 @@
-import { Field, Form, getValue, type SubmitHandler, setValue, validate } from '@modular-forms/solid'
+import { Field, Form, getValue, getValues, type SubmitHandler, setValue, validate } from '@modular-forms/solid'
 import { useNavigate, useSearchParams } from '@solidjs/router'
 import {
   type Component,
@@ -17,7 +17,9 @@ import { Progress } from '/@/components/UI/StepProgress'
 import { client, handleAPIError } from '/@/libs/api'
 import { clsx } from '/@/libs/clsx'
 import { useApplicationForm } from '../../provider/applicationFormProvider'
+import { useEnvVarConfigForm } from '../../provider/envVarConfigFormProvider'
 import { type CreateOrUpdateApplicationInput, handleSubmitCreateApplicationForm } from '../../schema/applicationSchema'
+import { type EnvVarInput, handleSubmitEnvVarForm } from '../../schema/envVarSchema'
 import GeneralStep from './GeneralStep'
 import RepositoryStep from './RepositoryStep'
 import WebsiteStep from './WebsiteStep'
@@ -30,6 +32,7 @@ enum formStep {
 
 const CreateAppForm: Component = () => {
   const { formStore } = useApplicationForm()
+  const { formStore: envVarsFormStore } = useEnvVarConfigForm()
 
   // `reset` doesn't work on first render when the Field not rendered
   // see: https://github.com/fabian-hiller/modular-forms/issues/157#issuecomment-1848567069
@@ -97,6 +100,24 @@ const CreateAppForm: Component = () => {
     handleSubmitCreateApplicationForm(values, async (output) => {
       try {
         const createdApp = await client.createApplication(output)
+
+        await handleSubmitEnvVarForm(getValues(envVarsFormStore) as EnvVarInput, async ({ variables }) => {
+          try {
+            await Promise.all(
+              variables
+                .filter((envVar) => !envVar.system && envVar.key !== '')
+                .map((envVar) =>
+                  client.setEnvVar({
+                    applicationId: createdApp.id,
+                    ...envVar,
+                  }),
+                ),
+            )
+          } catch (e) {
+            handleAPIError(e, '環境変数の設定に失敗しました')
+          }
+        })
+
         toast.success('アプリケーションを登録しました')
         navigate(`/apps/${createdApp.id}`)
       } catch (e) {

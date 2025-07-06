@@ -4,6 +4,7 @@ import { WithNav } from '/@/components/layouts/WithNav'
 import { Nav } from '/@/components/templates/Nav'
 import CreateAppForm from '/@/features/application/components/form/CreateAppForm'
 import { ApplicationFormProvider } from '/@/features/application/provider/applicationFormProvider'
+import { EnvVarConfigFormProvider } from '/@/features/application/provider/envVarConfigFormProvider'
 
 export default () => {
   return (
@@ -15,7 +16,9 @@ export default () => {
       <WithNav.Body>
         <MainViewContainer background="grey">
           <ApplicationFormProvider>
-            <CreateAppForm />
+            <EnvVarConfigFormProvider>
+              <CreateAppForm />
+            </EnvVarConfigFormProvider>
           </ApplicationFormProvider>
         </MainViewContainer>
       </WithNav.Body>
