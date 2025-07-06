@@ -7,7 +7,7 @@ import (
 )
 
 func MergeMap[K comparable, V any](mm ...map[K]V) map[K]V {
-	ret := make(map[K]V, lo.SumBy(mm, len))
+	ret := make(map[K]V, lo.SumBy(mm, func(m map[K]V) int { return len(m) }))
 	for _, m := range mm {
 		maps.Copy(ret, m)
 	}
