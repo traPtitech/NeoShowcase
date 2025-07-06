@@ -94,23 +94,23 @@ func (b *Backend) Synchronize(ctx context.Context, s *domain.DesiredState) error
 	}
 
 	// Synchronize resources
-	err = syncResources[*appsv1.StatefulSet](ctx, "statefulsets", old.statefulSets, next.statefulSets, b.client.AppsV1().StatefulSets(b.config.Namespace))
+	err = syncResources[*appsv1.StatefulSet](ctx, b.cluster, "statefulsets", old.statefulSets, next.statefulSets, b.client.AppsV1().StatefulSets(b.config.Namespace))
 	if err != nil {
 		return errors.Wrap(err, "failed to sync stateful sets")
 	}
-	err = syncResources[*v1.Secret](ctx, "secrets", old.secrets, next.secrets, b.client.CoreV1().Secrets(b.config.Namespace))
+	err = syncResources[*v1.Secret](ctx, b.cluster, "secrets", old.secrets, next.secrets, b.client.CoreV1().Secrets(b.config.Namespace))
 	if err != nil {
 		return errors.Wrap(err, "failed to sync secrets")
 	}
-	err = syncResources[*v1.Service](ctx, "services", old.services, next.services, b.client.CoreV1().Services(b.config.Namespace))
+	err = syncResources[*v1.Service](ctx, b.cluster, "services", old.services, next.services, b.client.CoreV1().Services(b.config.Namespace))
 	if err != nil {
 		return errors.Wrap(err, "failed to sync services")
 	}
-	err = syncResources[*traefikv1alpha1.Middleware](ctx, "middlewares", old.middlewares, next.middlewares, b.traefikClient.Middlewares(b.config.Namespace))
+	err = syncResources[*traefikv1alpha1.Middleware](ctx, b.cluster, "middlewares", old.middlewares, next.middlewares, b.traefikClient.Middlewares(b.config.Namespace))
 	if err != nil {
 		return errors.Wrap(err, "failed to sync middlewares")
 	}
-	err = syncResources[*traefikv1alpha1.IngressRoute](ctx, "ingressroutes", old.ingressRoutes, next.ingressRoutes, b.traefikClient.IngressRoutes(b.config.Namespace))
+	err = syncResources[*traefikv1alpha1.IngressRoute](ctx, b.cluster, "ingressroutes", old.ingressRoutes, next.ingressRoutes, b.traefikClient.IngressRoutes(b.config.Namespace))
 	if err != nil {
 		return errors.Wrap(err, "failed to sync ingressroutes")
 	}
@@ -130,7 +130,7 @@ func (b *Backend) SynchronizeShared(ctx context.Context, s *domain.DesiredStateL
 	}
 
 	// Synchronize resources
-	err = syncResources[*certmanagerv1.Certificate](ctx, "certificates", old.certificates, next.certificates, b.certManagerClient.CertmanagerV1().Certificates(b.config.Namespace))
+	err = syncResources[*certmanagerv1.Certificate](ctx, b.cluster, "certificates", old.certificates, next.certificates, b.certManagerClient.CertmanagerV1().Certificates(b.config.Namespace))
 	if err != nil {
 		return errors.Wrap(err, "failed to sync certificates")
 	}

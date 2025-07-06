@@ -46,7 +46,7 @@ func (b *Backend) ssHeaderMiddleware(ss *domain.StaticSite) *traefikv1alpha1.Mid
 func (b *Backend) ssResources(next *resources, sites []*domain.StaticSite) {
 	for _, site := range sites {
 		// Filter to sharded apps
-		if !b.cluster.Assigned(site.Application.ID) {
+		if !b.cluster.IsAssigned(site.Application.ID) {
 			continue
 		}
 

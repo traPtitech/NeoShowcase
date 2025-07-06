@@ -9,6 +9,7 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
 
+	"github.com/traPtitech/neoshowcase/pkg/util/discovery"
 	"github.com/traPtitech/neoshowcase/pkg/util/hash"
 )
 
@@ -47,7 +48,7 @@ type syncer[T apiResource] interface {
 	Delete(ctx context.Context, name string, opts metav1.DeleteOptions) error
 }
 
-func syncResources[T apiResource](ctx context.Context, rcName string, existing []T, next []T, s syncer[T]) error {
+func syncResources[T apiResource](ctx context.Context, cluster *discovery.Cluster, rcName string, existing []T, next []T, s syncer[T]) error {
 	var patched, pruned int
 	oldHashes := lo.SliceToMap(existing, func(rc T) (string, string) {
 		return rc.GetName(), rc.GetLabels()[resourceHashAnnotation]
@@ -87,6 +88,12 @@ func syncResources[T apiResource](ctx context.Context, rcName string, existing [
 
 	// Prune old resources
 	for _, rc := range diff(existing, next) {
+		// On the controller cluster scale-up, ensure this shard does not delete resources controlled by a new shard
+		appID, ok := rc.GetLabels()[appIDLabel]
+		if ok && cluster.AssignedShard(appID) != cluster.MyShardIndex() {
+			continue
+		}
+
 		err := s.Delete(ctx, rc.GetName(), metav1.DeleteOptions{PropagationPolicy: lo.ToPtr(metav1.DeletePropagationForeground)})
 		if err != nil {
 			return err

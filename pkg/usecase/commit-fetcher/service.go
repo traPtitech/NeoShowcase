@@ -88,7 +88,7 @@ func (s *service) resolveCommits(ctx context.Context) {
 
 	for _, app := range apps {
 		// Shard by repository ID
-		if !s.cluster.Assigned(app.RepositoryID) {
+		if !s.cluster.IsAssigned(app.RepositoryID) {
 			continue
 		}
 

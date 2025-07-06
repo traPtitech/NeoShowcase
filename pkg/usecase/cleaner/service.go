@@ -102,7 +102,7 @@ func (c *cleanerService) pruneImages(ctx context.Context, r builder.RegistryClie
 
 	for _, app := range applications {
 		// Shard by app ID
-		if !c.cluster.Assigned(app.RepositoryID) {
+		if !c.cluster.IsAssigned(app.RepositoryID) {
 			continue
 		}
 
@@ -193,7 +193,7 @@ func (c *cleanerService) getArtifactsNoLongerInUse(ctx context.Context) ([]*doma
 	artifacts := make([]*domain.Artifact, 0, len(applications))
 	for _, app := range applications {
 		// Shard by app ID
-		if !c.cluster.Assigned(app.RepositoryID) {
+		if !c.cluster.IsAssigned(app.RepositoryID) {
 			continue
 		}
 

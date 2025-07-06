@@ -103,7 +103,7 @@ func (b *Backend) eventListener(ctx context.Context) error {
 		}
 
 		appID, ok := p.Labels[appIDLabel]
-		if !ok || !b.cluster.Assigned(appID) {
+		if !ok || !b.cluster.IsAssigned(appID) {
 			continue
 		}
 		b.eventSubs.Publish(&domain.ContainerEvent{ApplicationID: appID})
@@ -151,7 +151,7 @@ func (b *Backend) generalLabel() map[string]string {
 func (b *Backend) appLabel(appID string) map[string]string {
 	return ds.MergeMap(b.config.labels(), map[string]string{
 		managedLabel: "true",
-		shardLabel:   strconv.Itoa(b.cluster.Key(appID)),
+		shardLabel:   strconv.Itoa(b.cluster.AssignedShard(appID)),
 		appIDLabel:   appID,
 	})
 }
@@ -171,7 +171,7 @@ func allSelector() map[string]string {
 func (b *Backend) shardedAllSelector() map[string]string {
 	return map[string]string{
 		managedLabel: "true",
-		shardLabel:   strconv.Itoa(b.cluster.Me()),
+		shardLabel:   strconv.Itoa(b.cluster.MyShardIndex()),
 	}
 }
 

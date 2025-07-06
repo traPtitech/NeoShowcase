@@ -76,7 +76,7 @@ func (c *Cluster) Size() int {
 	return len(c.targets)
 }
 
-func (c *Cluster) Me() int {
+func (c *Cluster) MyShardIndex() int {
 	<-c.initialized
 	c.lock.RLock()
 	defer c.lock.RUnlock()
@@ -95,7 +95,7 @@ func (c *Cluster) MyAddress(port int) (addr string, ok bool) {
 	return c.toAddr(c.targets[c.meIdx].IP, port), true
 }
 
-func (c *Cluster) Key(key string) int {
+func (c *Cluster) AssignedShard(key string) int {
 	<-c.initialized
 	c.lock.RLock()
 	defer c.lock.RUnlock()
@@ -103,7 +103,7 @@ func (c *Cluster) Key(key string) int {
 	return hash.JumpHashStr(key, len(c.targets))
 }
 
-func (c *Cluster) Assigned(key string) bool {
+func (c *Cluster) IsAssigned(key string) bool {
 	<-c.initialized
 	c.lock.RLock()
 	defer c.lock.RUnlock()
@@ -111,7 +111,7 @@ func (c *Cluster) Assigned(key string) bool {
 	if len(c.targets) == 0 {
 		return false
 	}
-	return c.Key(key) == c.meIdx
+	return hash.JumpHashStr(key, len(c.targets)) == c.meIdx
 }
 
 func (c *Cluster) AllNeighborAddresses(port int) []string {

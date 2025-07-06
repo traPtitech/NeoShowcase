@@ -74,7 +74,7 @@ func (s *AppDeployHelper) _runtimeDesiredStates(ctx context.Context) ([]*domain.
 	}
 	// Shard by app ID
 	apps = lo.Filter(apps, func(app *domain.Application, _ int) bool {
-		return s.cluster.Assigned(app.ID)
+		return s.cluster.IsAssigned(app.ID)
 	})
 
 	syncableApps := lo.Filter(apps, func(app *domain.Application, _ int) bool { return app.CurrentBuild != "" })
@@ -122,7 +122,7 @@ func (s *AppDeployHelper) synchronize(ctx context.Context) error {
 	if err != nil {
 		return err
 	}
-	log.Infof("[shard %d/%d] %v runtime, %v static sites active", s.cluster.Me(), s.cluster.Size(), len(st.Runtime), len(st.StaticSites))
+	log.Infof("[shard %d/%d] %v runtime, %v static sites active", s.cluster.MyShardIndex(), s.cluster.Size(), len(st.Runtime), len(st.StaticSites))
 
 	s.ssgen.BroadcastSSGen(&pb.SSGenRequest{Type: pb.SSGenRequest_RELOAD})
 	err = s.backend.Synchronize(ctx, &st)

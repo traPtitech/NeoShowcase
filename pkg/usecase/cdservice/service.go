@@ -265,7 +265,7 @@ func (cd *service) _syncAppFields(ctx context.Context) error {
 	}
 	// Shard by app ID
 	apps = lo.Filter(apps, func(app *domain.Application, _ int) bool {
-		return cd.cluster.Assigned(app.ID)
+		return cd.cluster.IsAssigned(app.ID)
 	})
 
 	commits := lo.Map(apps, func(app *domain.Application, _ int) string { return app.Commit })

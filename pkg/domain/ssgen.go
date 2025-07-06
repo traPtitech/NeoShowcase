@@ -39,7 +39,7 @@ func GetActiveStaticSites(
 	}
 	// Shard by app ID
 	applications = lo.Filter(applications, func(app *Application, _ int) bool {
-		return cluster.Assigned(app.ID)
+		return cluster.IsAssigned(app.ID)
 	})
 
 	buildIDs := lo.FilterMap(applications, func(app *Application, _ int) (string, bool) {

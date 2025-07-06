@@ -153,7 +153,7 @@ func (r *service) doFetchEpoch(ctx context.Context, epoch int) (int, error) {
 	p := pool.New().WithMaxGoroutines(fetcherConcurrency)
 	for repoID, lastUpdated := range repoLastUpdated {
 		// Shard by repo ID
-		if !r.cluster.Assigned(repoID) {
+		if !r.cluster.IsAssigned(repoID) {
 			continue
 		}
 

@@ -80,7 +80,7 @@ func (m *ContainerStateMutator) updateAll(ctx context.Context) error {
 	}
 	// Shard by app ID
 	allRuntimeApps = lo.Filter(allRuntimeApps, func(app *domain.Application, _ int) bool {
-		return m.cluster.Assigned(app.ID)
+		return m.cluster.IsAssigned(app.ID)
 	})
 
 	// Fetch actual states

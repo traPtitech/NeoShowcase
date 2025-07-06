@@ -212,7 +212,7 @@ func (b *Backend) runtimePortService(app *domain.Application, port *domain.PortP
 func (b *Backend) runtimeResources(next *resources, apps []*domain.RuntimeDesiredState) {
 	for _, app := range apps {
 		// Filter to sharded apps
-		if !b.cluster.Assigned(app.App.ID) {
+		if !b.cluster.IsAssigned(app.App.ID) {
 			continue
 		}
 
