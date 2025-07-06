@@ -46,43 +46,48 @@ func (c *Cluster) Start(ctx context.Context) error {
 	}
 	for targets := range updates {
 		c.lock.Lock()
+		if len(targets) == 0 {
+			log.Info("[cluster] no targets received, skipping until first discovery...")
+			c.lock.Unlock()
+			continue
+		}
 		c.targets = targets
 		_, c.meIdx, _ = lo.FindIndexOf(targets, func(e Target) bool { return e.Me })
 		c.lock.Unlock()
 		c.setInitialized()
-		log.Infof("[cluster] %d targets received", len(targets))
+		log.Infof("[cluster] %d target(s) received", len(targets))
 	}
 	return nil
 }
 
 func (c *Cluster) IsLeader() bool {
+	<-c.initialized
 	c.lock.RLock()
 	defer c.lock.RUnlock()
-	<-c.initialized
 
 	return c.meIdx == 0
 }
 
 func (c *Cluster) Size() int {
+	<-c.initialized
 	c.lock.RLock()
 	defer c.lock.RUnlock()
-	<-c.initialized
 
 	return len(c.targets)
 }
 
 func (c *Cluster) Me() int {
+	<-c.initialized
 	c.lock.RLock()
 	defer c.lock.RUnlock()
-	<-c.initialized
 
 	return c.meIdx
 }
 
 func (c *Cluster) MyAddress(port int) (addr string, ok bool) {
+	<-c.initialized
 	c.lock.RLock()
 	defer c.lock.RUnlock()
-	<-c.initialized
 
 	if c.meIdx < 0 {
 		return "", false
@@ -91,17 +96,17 @@ func (c *Cluster) MyAddress(port int) (addr string, ok bool) {
 }
 
 func (c *Cluster) Key(key string) int {
+	<-c.initialized
 	c.lock.RLock()
 	defer c.lock.RUnlock()
-	<-c.initialized
 
 	return hash.JumpHashStr(key, len(c.targets))
 }
 
 func (c *Cluster) Assigned(key string) bool {
+	<-c.initialized
 	c.lock.RLock()
 	defer c.lock.RUnlock()
-	<-c.initialized
 
 	if len(c.targets) == 0 {
 		return false
@@ -110,9 +115,9 @@ func (c *Cluster) Assigned(key string) bool {
 }
 
 func (c *Cluster) AllNeighborAddresses(port int) []string {
+	<-c.initialized
 	c.lock.RLock()
 	defer c.lock.RUnlock()
-	<-c.initialized
 
 	ips := make([]string, 0, len(c.targets)-1)
 	for _, t := range c.targets {

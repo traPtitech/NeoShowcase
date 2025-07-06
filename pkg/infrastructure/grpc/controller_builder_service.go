@@ -339,13 +339,13 @@ func (s *ControllerBuilderService) StartBuilds(ctx context.Context, buildIDs []s
 	// Send builds to available builders
 	builderIdx := 0
 	for _, buildID := range buildIDs {
+		if builderIdx >= len(availableBuilders) {
+			break
+		}
 		conn := availableBuilders[builderIdx]
 		err := s.startBuild(ctx, conn, buildID)
 		if err == nil {
 			builderIdx++
-			if builderIdx >= len(availableBuilders) {
-				break
-			}
 		} else {
 			// It is possible that some other controller has acquired build lock first
 			// - in that case, skip and try the next build ID

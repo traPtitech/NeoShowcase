@@ -191,7 +191,7 @@ func init() {
 	viper.SetDefault("components.controller.k8s.ports", nil)
 
 	viper.SetDefault("components.controller.k8s.ss.namespace", "default")
-	viper.SetDefault("components.controller.k8s.ss.kind", "CDService")
+	viper.SetDefault("components.controller.k8s.ss.kind", "Service")
 	viper.SetDefault("components.controller.k8s.ss.name", "")
 	viper.SetDefault("components.controller.k8s.ss.port", 80)
 	viper.SetDefault("components.controller.k8s.ss.scheme", "http")

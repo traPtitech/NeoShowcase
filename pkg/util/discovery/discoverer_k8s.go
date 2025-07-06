@@ -49,10 +49,16 @@ func NewK8sDiscoverer(svcName string) (Discoverer, error) {
 		namespace: namespace,
 		svcName:   svcName,
 	}
+	// sanity check
 	_, err = d.findService()
 	if err != nil {
 		return nil, errors.Wrapf(err, "failed to find service %s, is configuration done right?", svcName)
 	}
+	_, err = d.discover()
+	if err != nil {
+		return nil, errors.Wrapf(err, "failed to discover targets, is configuration done right?")
+	}
+
 	return d, nil
 }
 
@@ -64,7 +70,7 @@ func (k *k8sDiscoverer) findService() (*corev1.Service, error) {
 func (k *k8sDiscoverer) isMe(ep *discoveryv1.Endpoint) bool {
 	return ep.TargetRef.Kind == "Pod" &&
 		ep.TargetRef.Namespace == k.namespace &&
-		ep.TargetRef.Name == os.Getenv("POD_NAME")
+		ep.TargetRef.Name == os.Getenv("HOSTNAME")
 }
 
 func (k *k8sDiscoverer) discover() ([]Target, error) {
@@ -107,7 +113,7 @@ func (k *k8sDiscoverer) discover() ([]Target, error) {
 		return nil, err
 	}
 	slices.SortFunc(targets, ds.LessFunc(func(e Target) string { return e.IP }))
-	log.Infof("[k8s discoverer] Discovered %d targets", len(targets))
+	log.Infof("[k8s discoverer] Discovered %d target(s)", len(targets))
 	return targets, nil
 }
 
@@ -123,27 +129,26 @@ func (k *k8sDiscoverer) watch(ctx context.Context, updates chan<- []Target) erro
 		return err
 	}
 
-	go func() {
-		defer watcher.Stop()
+	defer watcher.Stop()
 
-		// Send initial state
-		targets, err := k.discover()
-		if err != nil {
-			log.Errorf("failed to discover targets: %v", err)
-			return
-		}
+	// Send initial state
+	targets, err := k.discover()
+	if err != nil {
+		return fmt.Errorf("failed to discover targets: %w", err)
+	}
+	if len(targets) > 0 {
 		updates <- targets
+	}
 
-		for range watcher.ResultChan() {
-			targets, err = k.discover()
-			if err != nil {
-				log.Errorf("failed to discover targets: %v", err)
-				return
-			}
+	for range watcher.ResultChan() {
+		targets, err = k.discover()
+		if err != nil {
+			return fmt.Errorf("failed to discover targets: %w", err)
+		}
+		if len(targets) > 0 {
 			updates <- targets
 		}
-	}()
-
+	}
 	return nil
 }
 

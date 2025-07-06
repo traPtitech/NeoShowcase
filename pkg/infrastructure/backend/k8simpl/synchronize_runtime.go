@@ -139,7 +139,7 @@ func (b *Backend) runtimeSpec(app *domain.RuntimeDesiredState) (*appsv1.Stateful
 	if len(cont.Ports) > 0 {
 		svc = &v1.Service{
 			TypeMeta: metav1.TypeMeta{
-				Kind:       "CDService",
+				Kind:       "Service",
 				APIVersion: "v1",
 			},
 			ObjectMeta: metav1.ObjectMeta{
@@ -171,7 +171,7 @@ func (b *Backend) runtimeServiceRef(app *domain.Application, website *domain.Web
 	return []traefikv1alpha1.Service{{
 		LoadBalancerSpec: traefikv1alpha1.LoadBalancerSpec{
 			Name:      deploymentName(app.ID),
-			Kind:      "CDService",
+			Kind:      "Service",
 			Namespace: b.config.Namespace,
 			Port:      intstr.FromInt(website.HTTPPort),
 			Scheme:    lo.Ternary(website.H2C, "h2c", "http"),
@@ -187,7 +187,7 @@ var protocolMapper = mapper.MustNewValueMapper(map[domain.PortPublicationProtoco
 func (b *Backend) runtimePortService(app *domain.Application, port *domain.PortPublication) *v1.Service {
 	return &v1.Service{
 		TypeMeta: metav1.TypeMeta{
-			Kind:       "CDService",
+			Kind:       "Service",
 			APIVersion: "v1",
 		},
 		ObjectMeta: metav1.ObjectMeta{
