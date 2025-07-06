@@ -69,6 +69,7 @@ gen-go: ensure-db
 gen-proto:
 	corepack enable
 	buf generate --template buf.gen.go.yaml
+	cd dashboard && yarn
 	buf generate --template buf.gen.ts.yaml
 
 .PHONY: gen-db-docs
