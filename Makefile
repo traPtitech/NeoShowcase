@@ -67,6 +67,7 @@ gen-go: ensure-db
 
 .PHONY: gen-proto
 gen-proto:
+	corepack enable
 	buf generate --template buf.gen.go.yaml
 	buf generate --template buf.gen.ts.yaml
 
