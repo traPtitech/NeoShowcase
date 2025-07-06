@@ -1,11 +1,11 @@
 package cli
 
 import (
+	"github.com/aarondl/sqlboiler/v4/boil"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
 	"github.com/spf13/viper"
-	"github.com/volatiletech/sqlboiler/v4/boil"
 )
 
 var Debug = false

@@ -35,6 +35,8 @@ init: init-k3d init-kustomize init-buf ## Install / update required tools
 	go mod download
 	go install github.com/sqldef/sqldef/cmd/mysqldef@latest
 	go install github.com/ktr0731/evans@latest
+	go install github.com/aarondl/sqlboiler/v4@latest
+	go install github.com/aarondl/sqlboiler/v4/drivers/sqlboiler-mysql@latest
 
 # ---- Ensure helpers ----
 

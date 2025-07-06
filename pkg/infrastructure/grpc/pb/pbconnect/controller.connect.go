@@ -102,6 +102,7 @@ type ControllerServiceClient interface {
 	FetchRepository(context.Context, *connect.Request[pb.RepositoryIdRequest]) (*connect.Response[emptypb.Empty], error)
 	RegisterBuild(context.Context, *connect.Request[pb.ApplicationIdRequest]) (*connect.Response[emptypb.Empty], error)
 	SyncDeployments(context.Context, *connect.Request[emptypb.Empty]) (*connect.Response[emptypb.Empty], error)
+	// rpc DiscoverBuildLogInstance(BuildIdRequest) returns (AddressInfo);
 	StreamBuildLog(context.Context, *connect.Request[pb.BuildIdRequest]) (*connect.ServerStreamForClient[pb.BuildLog], error)
 	CancelBuild(context.Context, *connect.Request[pb.BuildIdRequest]) (*connect.Response[emptypb.Empty], error)
 }
@@ -203,6 +204,7 @@ type ControllerServiceHandler interface {
 	FetchRepository(context.Context, *connect.Request[pb.RepositoryIdRequest]) (*connect.Response[emptypb.Empty], error)
 	RegisterBuild(context.Context, *connect.Request[pb.ApplicationIdRequest]) (*connect.Response[emptypb.Empty], error)
 	SyncDeployments(context.Context, *connect.Request[emptypb.Empty]) (*connect.Response[emptypb.Empty], error)
+	// rpc DiscoverBuildLogInstance(BuildIdRequest) returns (AddressInfo);
 	StreamBuildLog(context.Context, *connect.Request[pb.BuildIdRequest], *connect.ServerStream[pb.BuildLog]) error
 	CancelBuild(context.Context, *connect.Request[pb.BuildIdRequest]) (*connect.Response[emptypb.Empty], error)
 }

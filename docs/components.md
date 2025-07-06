@@ -121,7 +121,7 @@ NeoShowcaseでは、昔、Webダッシュボード(管理画面)とサーバー�
 
 ## Go Libraries
 
-### [sqlboiler](https://github.com/volatiletech/sqlboiler)
+### [sqlboiler](https://github.com/aarondl/sqlboiler)
 
 Go用のSQLDBのORマッパー**ジェネレーター**
 
