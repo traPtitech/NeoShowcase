@@ -223,11 +223,9 @@ func (b *Backend) ingressRoute(
 	return ingressRoute, middlewares
 }
 
-func (b *Backend) websiteCertificates(website *domain.Website) []*certmanagerv1.Certificate {
-	var certs []*certmanagerv1.Certificate
+func (b *Backend) TLSTargetDomain(website *domain.Website) (host string, ok bool) {
 	if website.HTTPS && b.config.TLS.Type == tlsTypeCertManager {
-		targetDomain := b.config.TLS.CertManager.Wildcard.Domains.TLSTargetDomain(website)
-		certs = append(certs, b.certificate(targetDomain))
+		return b.config.TLS.CertManager.Wildcard.Domains.TLSTargetDomain(website), true
 	}
-	return certs
+	return "", false
 }

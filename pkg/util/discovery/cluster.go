@@ -58,6 +58,14 @@ func (c *Cluster) IsLeader() bool {
 	return c.meIdx == 0
 }
 
+func (c *Cluster) Size() int {
+	c.lock.RLock()
+	defer c.lock.RUnlock()
+	<-c.initialized
+
+	return len(c.targets)
+}
+
 func (c *Cluster) Me() int {
 	c.lock.RLock()
 	defer c.lock.RUnlock()

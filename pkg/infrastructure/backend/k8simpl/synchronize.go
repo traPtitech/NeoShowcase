@@ -5,7 +5,6 @@ import (
 
 	certmanagerv1 "github.com/cert-manager/cert-manager/pkg/apis/certmanager/v1"
 	"github.com/friendsofgo/errors"
-	"github.com/samber/lo"
 	traefikv1alpha1 "github.com/traefik/traefik/v3/pkg/provider/kubernetes/crd/traefikio/v1alpha1"
 	appsv1 "k8s.io/api/apps/v1"
 	v1 "k8s.io/api/core/v1"
@@ -116,27 +115,13 @@ func (b *Backend) Synchronize(ctx context.Context, s *domain.DesiredState) error
 		return errors.Wrap(err, "failed to sync ingressroutes")
 	}
 
-	if b.cluster.IsLeader() {
-		err = b.synchronizeShared(ctx, s)
-		if err != nil {
-			return err
-		}
-	}
 	return nil
 }
 
-func (b *Backend) synchronizeShared(ctx context.Context, s *domain.DesiredState) error {
+func (b *Backend) SynchronizeShared(ctx context.Context, s *domain.DesiredStateLeader) error {
 	// Calculate next resources to apply
 	var next sharedResources
-	for _, state := range s.Runtime {
-		for _, website := range state.App.Websites {
-			next.certificates = append(next.certificates, b.websiteCertificates(website)...)
-		}
-	}
-	for _, site := range s.StaticSites {
-		next.certificates = append(next.certificates, b.websiteCertificates(site.Website)...)
-	}
-	next.certificates = lo.UniqBy(next.certificates, func(cert *certmanagerv1.Certificate) string { return cert.Name })
+	next.certificates = ds.Map(s.TLSTargetDomains, b.certificate)
 
 	// List old resources
 	old, err := b.listCurrentSharedResources(ctx)

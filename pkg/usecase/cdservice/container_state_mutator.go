@@ -10,10 +10,12 @@ import (
 	log "github.com/sirupsen/logrus"
 
 	"github.com/traPtitech/neoshowcase/pkg/domain"
+	"github.com/traPtitech/neoshowcase/pkg/util/discovery"
 	"github.com/traPtitech/neoshowcase/pkg/util/optional"
 )
 
 type ContainerStateMutator struct {
+	cluster *discovery.Cluster
 	appRepo domain.ApplicationRepository
 	backend domain.Backend
 
@@ -21,10 +23,12 @@ type ContainerStateMutator struct {
 }
 
 func NewContainerStateMutator(
+	cluster *discovery.Cluster,
 	appRepo domain.ApplicationRepository,
 	backend domain.Backend,
 ) *ContainerStateMutator {
 	m := &ContainerStateMutator{
+		cluster: cluster,
 		appRepo: appRepo,
 		backend: backend,
 	}
@@ -74,6 +78,10 @@ func (m *ContainerStateMutator) updateAll(ctx context.Context) error {
 	if err != nil {
 		return errors.Wrap(err, "failed to get all runtime applications")
 	}
+	// Shard by app ID
+	allRuntimeApps = lo.Filter(allRuntimeApps, func(app *domain.Application, _ int) bool {
+		return m.cluster.Assigned(app.ID)
+	})
 
 	// Fetch actual states
 	containers, err := m.backend.ListContainers(ctx)

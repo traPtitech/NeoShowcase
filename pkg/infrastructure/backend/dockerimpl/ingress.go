@@ -186,3 +186,10 @@ func (b *Backend) sablierMiddleware(app *domain.Application) m {
 		},
 	}
 }
+
+func (b *Backend) TLSTargetDomain(website *domain.Website) (host string, ok bool) {
+	if website.HTTPS {
+		return b.config.TLS.Wildcard.Domains.TLSTargetDomain(website), true
+	}
+	return "", false
+}

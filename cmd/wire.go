@@ -85,6 +85,7 @@ var providers = wire.NewSet(
 	repository.NewGitRepositoryRepository,
 	repository.NewRepositoryCommitRepository,
 	repository.NewUserRepository,
+	repository.NewWebsiteRepository,
 	rest.InClusterConfig,
 	traefikv1alpha1.NewForConfig,
 	ussgen.NewGeneratorService,

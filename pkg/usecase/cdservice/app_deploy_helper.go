@@ -9,34 +9,41 @@ import (
 	"github.com/traPtitech/neoshowcase/pkg/domain"
 	"github.com/traPtitech/neoshowcase/pkg/domain/builder"
 	"github.com/traPtitech/neoshowcase/pkg/infrastructure/grpc/pb"
+	"github.com/traPtitech/neoshowcase/pkg/util/discovery"
 	"github.com/traPtitech/neoshowcase/pkg/util/ds"
 	"github.com/traPtitech/neoshowcase/pkg/util/optional"
 )
 
 type AppDeployHelper struct {
-	backend   domain.Backend
-	appRepo   domain.ApplicationRepository
-	buildRepo domain.BuildRepository
-	envRepo   domain.EnvironmentRepository
-	ssgen     domain.ControllerSSGenService
-	image     builder.ImageConfig
+	cluster     *discovery.Cluster
+	backend     domain.Backend
+	appRepo     domain.ApplicationRepository
+	buildRepo   domain.BuildRepository
+	envRepo     domain.EnvironmentRepository
+	websiteRepo domain.WebsiteRepository
+	ssgen       domain.ControllerSSGenService
+	image       builder.ImageConfig
 }
 
 func NewAppDeployHelper(
+	cluster *discovery.Cluster,
 	backend domain.Backend,
 	appRepo domain.ApplicationRepository,
 	buildRepo domain.BuildRepository,
 	envRepo domain.EnvironmentRepository,
+	websiteRepo domain.WebsiteRepository,
 	ssgen domain.ControllerSSGenService,
 	imageConfig builder.ImageConfig,
 ) *AppDeployHelper {
 	return &AppDeployHelper{
-		backend:   backend,
-		appRepo:   appRepo,
-		buildRepo: buildRepo,
-		envRepo:   envRepo,
-		ssgen:     ssgen,
-		image:     imageConfig,
+		cluster:     cluster,
+		backend:     backend,
+		appRepo:     appRepo,
+		buildRepo:   buildRepo,
+		envRepo:     envRepo,
+		websiteRepo: websiteRepo,
+		ssgen:       ssgen,
+		image:       imageConfig,
 	}
 }
 
@@ -65,6 +72,10 @@ func (s *AppDeployHelper) _runtimeDesiredStates(ctx context.Context) ([]*domain.
 	if err != nil {
 		return nil, err
 	}
+	// Shard by app ID
+	apps = lo.Filter(apps, func(app *domain.Application, _ int) bool {
+		return s.cluster.Assigned(app.ID)
+	})
 
 	syncableApps := lo.Filter(apps, func(app *domain.Application, _ int) bool { return app.CurrentBuild != "" })
 	envs, err := s._getEnv(ctx, syncableApps)
@@ -82,20 +93,55 @@ func (s *AppDeployHelper) _runtimeDesiredStates(ctx context.Context) ([]*domain.
 	return desiredStates, nil
 }
 
+func (s *AppDeployHelper) _collectSharedResources(ctx context.Context) (*domain.DesiredStateLeader, error) {
+	var st domain.DesiredStateLeader
+	websites, err := s.websiteRepo.GetWebsites(ctx)
+	if err != nil {
+		return nil, err
+	}
+	tlsTargetDomains := make(map[string]struct{})
+	for _, website := range websites {
+		host, ok := s.backend.TLSTargetDomain(website)
+		if ok {
+			tlsTargetDomains[host] = struct{}{}
+		}
+	}
+	st.TLSTargetDomains = lo.Keys(tlsTargetDomains)
+	return &st, nil
+}
+
 func (s *AppDeployHelper) synchronize(ctx context.Context) error {
+	// Synchronize sharded resource
 	var st domain.DesiredState
 	var err error
 	st.Runtime, err = s._runtimeDesiredStates(ctx)
 	if err != nil {
 		return err
 	}
-	st.StaticSites, err = domain.GetActiveStaticSites(ctx, s.appRepo, s.buildRepo)
+	st.StaticSites, err = domain.GetActiveStaticSites(ctx, s.cluster, s.appRepo, s.buildRepo)
 	if err != nil {
 		return err
 	}
-	log.Debugf("%v runtime, %v static sites active", len(st.Runtime), len(st.StaticSites))
+	log.Infof("[shard %d/%d] %v runtime, %v static sites active", s.cluster.Me(), s.cluster.Size(), len(st.Runtime), len(st.StaticSites))
 
-	// Synchronize
 	s.ssgen.BroadcastSSGen(&pb.SSGenRequest{Type: pb.SSGenRequest_RELOAD})
-	return s.backend.Synchronize(ctx, &st)
+	err = s.backend.Synchronize(ctx, &st)
+	if err != nil {
+		return err
+	}
+
+	// Only let leader synchronize shared resources (certificates)
+	if s.cluster.IsLeader() {
+		st, err := s._collectSharedResources(ctx)
+		if err != nil {
+			return err
+		}
+		log.Infof("[shard leader] %v tls targets active", len(st.TLSTargetDomains))
+		err = s.backend.SynchronizeShared(ctx, st)
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
 }

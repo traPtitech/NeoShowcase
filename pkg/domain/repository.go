@@ -83,6 +83,10 @@ type ApplicationRepository interface {
 	DeleteApplication(ctx context.Context, id string) error
 }
 
+type WebsiteRepository interface {
+	GetWebsites(ctx context.Context) ([]*Website, error)
+}
+
 type GetArtifactCondition struct {
 	ApplicationID optional.Of[string]
 	IsDeleted     optional.Of[bool]
