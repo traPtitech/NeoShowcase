@@ -32,7 +32,7 @@ enum formStep {
 
 const CreateAppForm: Component = () => {
   const { formStore } = useApplicationForm()
-  const { formStore: envVarsFormStore } = useEnvVarConfigForm()
+  const { formStore: envVarConfigFormStore } = useEnvVarConfigForm()
 
   // `reset` doesn't work on first render when the Field not rendered
   // see: https://github.com/fabian-hiller/modular-forms/issues/157#issuecomment-1848567069
@@ -101,7 +101,7 @@ const CreateAppForm: Component = () => {
       try {
         const createdApp = await client.createApplication(output)
 
-        await handleSubmitEnvVarForm(getValues(envVarsFormStore) as EnvVarInput, async ({ variables }) => {
+        await handleSubmitEnvVarForm(getValues(envVarConfigFormStore) as EnvVarInput, async ({ variables }) => {
           try {
             await Promise.all(
               variables
