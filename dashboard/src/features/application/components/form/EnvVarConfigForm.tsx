@@ -1,30 +1,13 @@
-import {
-  createFormStore,
-  Field,
-  FieldArray,
-  Form,
-  getValue,
-  getValues,
-  insert,
-  remove,
-  reset,
-  type SubmitHandler,
-  setValues,
-  valiForm,
-} from '@modular-forms/solid'
-import { type Component, createEffect, createReaction, For, onMount, Show, untrack } from 'solid-js'
+import { Form, reset, type SubmitHandler, setValues } from '@modular-forms/solid'
+import { type Component, createEffect, onMount, Show, untrack } from 'solid-js'
 import toast from 'solid-toast'
 import type { ApplicationEnvVars } from '/@/api/neoshowcase/protobuf/gateway_pb'
 import FormBox from '/@/components/layouts/FormBox'
 import { Button } from '/@/components/UI/Button'
-import { TextField } from '/@/components/UI/TextField'
 import { client, handleAPIError } from '/@/libs/api'
-import {
-  type EnvVarInput,
-  envVarSchema,
-  envVarsMessageToSchema,
-  handleSubmitEnvVarForm,
-} from '../../schema/envVarSchema'
+import { useEnvVarConfigForm } from '../../provider/envVarConfigFormProvider'
+import { type EnvVarInput, envVarsMessageToSchema, handleSubmitEnvVarForm } from '../../schema/envVarSchema'
+import EnvVarConfigField from './config/EnvVarConfigField'
 
 type Props = {
   appId: string
@@ -33,9 +16,7 @@ type Props = {
 }
 
 const EnvVarConfigForm: Component<Props> = (props) => {
-  const formStore = createFormStore<EnvVarInput>({
-    validate: valiForm(envVarSchema),
-  })
+  const { formStore } = useEnvVarConfigForm()
 
   const discardChanges = () => {
     reset(
@@ -50,34 +31,11 @@ const EnvVarConfigForm: Component<Props> = (props) => {
   // see: https://github.com/fabian-hiller/modular-forms/issues/157#issuecomment-1848567069
   onMount(() => {
     setValues(formStore, envVarsMessageToSchema(props.envVars))
-    stripEnvVars()
   })
 
   // reset forms when props.envVars changed
   createEffect(() => {
     discardChanges()
-  })
-
-  // keyとvalueが空となるenv varを削除し、最後に空のenv varを追加する
-  const stripEnvVars = () => {
-    const envVars = getValues(formStore).variables ?? []
-
-    for (let i = envVars.length - 1; i >= 0; i--) {
-      if (envVars[i]?.key === '' && envVars[i]?.value === '') {
-        remove(formStore, 'variables', { at: i })
-      }
-    }
-
-    // add empty env var
-    insert(formStore, 'variables', {
-      value: { key: '', value: '', system: false },
-    })
-
-    // 次にvariablesが変更された時に1度だけ再度stripする
-    track(() => getValues(formStore, 'variables'))
-  }
-  const track = createReaction(() => {
-    stripEnvVars()
   })
 
   const handleSubmit: SubmitHandler<EnvVarInput> = (values) =>
@@ -124,60 +82,7 @@ const EnvVarConfigForm: Component<Props> = (props) => {
     <Form of={formStore} onSubmit={handleSubmit} shouldActive={false}>
       <FormBox.Container>
         <FormBox.Forms>
-          <div class="grid w-full grid-cols-2 gap-col-6 gap-row-2 text-bold text-text-black">
-            <div>Key</div>
-            <div>Value</div>
-            <FieldArray of={formStore} name="variables">
-              {(fieldArray) => (
-                <For each={fieldArray.items}>
-                  {(_, index) => {
-                    const isSystem = () =>
-                      getValue(formStore, `variables.${index()}.system`, {
-                        shouldActive: false,
-                      })
-
-                    return (
-                      <>
-                        <Field of={formStore} name={`variables.${index()}.key`}>
-                          {(field, fieldProps) => (
-                            <TextField
-                              tooltip={{
-                                props: {
-                                  content: 'システム環境変数は変更できません',
-                                },
-                                disabled: !isSystem(),
-                              }}
-                              {...fieldProps}
-                              value={field.value ?? ''}
-                              error={field.error}
-                              disabled={isSystem()}
-                            />
-                          )}
-                        </Field>
-                        <Field of={formStore} name={`variables.${index()}.value`}>
-                          {(field, fieldProps) => (
-                            <TextField
-                              tooltip={{
-                                props: {
-                                  content: 'システム環境変数は変更できません',
-                                },
-                                disabled: !isSystem(),
-                              }}
-                              {...fieldProps}
-                              value={field.value ?? ''}
-                              error={field.error}
-                              disabled={isSystem()}
-                              copyable
-                            />
-                          )}
-                        </Field>
-                      </>
-                    )
-                  }}
-                </For>
-              )}
-            </FieldArray>
-          </div>
+          <EnvVarConfigField />
         </FormBox.Forms>
         <FormBox.Actions>
           <Show when={formStore.dirty && !formStore.submitting}>

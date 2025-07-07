@@ -1,13 +1,15 @@
-import { Field, getValue } from '@modular-forms/solid'
-import { type Component, Show } from 'solid-js'
+import { Field, getValue, setValues } from '@modular-forms/solid'
+import { type Component, onMount, Show } from 'solid-js'
 import type { Repository } from '/@/api/neoshowcase/protobuf/gateway_pb'
 import { CheckBox } from '/@/components/templates/CheckBox'
 import { FormItem } from '/@/components/templates/FormItem'
 import { Button } from '/@/components/UI/Button'
 import { originToIcon, repositoryURLToOrigin } from '/@/libs/application'
 import { useApplicationForm } from '../../provider/applicationFormProvider'
+import { useEnvVarConfigForm } from '../../provider/envVarConfigFormProvider'
 import BuildTypeField from './config/BuildTypeField'
 import ConfigField from './config/ConfigField'
+import EnvVarConfigField from './config/EnvVarConfigField'
 import BranchField from './general/BranchField'
 import NameField from './general/NameField'
 
@@ -17,6 +19,11 @@ const GeneralStep: Component<{
   proceedToWebsiteStep: () => void
 }> = (props) => {
   const { formStore } = useApplicationForm()
+  const { formStore: envVarConfigFormStore } = useEnvVarConfigForm()
+
+  onMount(() => {
+    setValues(envVarConfigFormStore, 'variables', [])
+  })
 
   return (
     <div class="flex w-full flex-col items-center gap-10">
@@ -45,7 +52,6 @@ const GeneralStep: Component<{
                   content: (
                     <>
                       <div>この設定で今すぐ起動するかどうか</div>
-                      <div>(環境変数はアプリ作成後設定可能になります)</div>
                     </>
                   ),
                 },
@@ -54,12 +60,16 @@ const GeneralStep: Component<{
               <CheckBox.Option
                 {...fieldProps}
                 label="今すぐ起動する"
-                checked={field.value ?? false}
+                checked={field.value ?? true}
                 error={field.error}
               />
             </FormItem>
           )}
         </Field>
+
+        <FormItem title="環境変数">
+          <EnvVarConfigField />
+        </FormItem>
       </div>
       <div class="flex gap-5">
         <Button

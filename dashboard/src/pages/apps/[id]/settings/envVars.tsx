@@ -1,6 +1,7 @@
 import { createResource, Show } from 'solid-js'
 import { DataTable } from '/@/components/layouts/DataTable'
 import EnvVarConfigForm from '/@/features/application/components/form/EnvVarConfigForm'
+import { EnvVarConfigFormProvider } from '/@/features/application/provider/envVarConfigFormProvider'
 import { client } from '/@/libs/api'
 import { useApplicationData } from '/@/routes'
 
@@ -27,7 +28,9 @@ export default () => {
         }
       >
         <Show when={loaded()}>
-          <EnvVarConfigForm appId={app()!.id} envVars={envVars()!} refetch={refetch} />
+          <EnvVarConfigFormProvider>
+            <EnvVarConfigForm appId={app()!.id} envVars={envVars()!} refetch={refetch} />
+          </EnvVarConfigFormProvider>
         </Show>
       </Show>
     </DataTable.Container>
