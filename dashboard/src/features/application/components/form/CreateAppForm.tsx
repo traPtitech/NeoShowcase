@@ -114,7 +114,13 @@ const CreateAppForm: Component = () => {
                 ),
             )
           } catch (e) {
-            handleAPIError(e, '環境変数の設定に失敗しました')
+            toast.error(
+              <p>
+                環境変数の設定に失敗しました (<a href={`/apps/${createdApp.id}/settings/envVars`}>再設定</a>)
+                <br />
+                {e instanceof Error ? e.message : '不明なエラー'}
+              </p>,
+            )
           }
         })
 
