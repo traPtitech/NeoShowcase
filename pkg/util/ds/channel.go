@@ -1,31 +1,31 @@
 package ds
 
 import (
-	"context"
 	"sync"
 	"time"
 
-	"github.com/motoki317/go-stabilize"
+	"github.com/bep/debounce"
 )
 
-func StabilizeChan[T any](ch <-chan T, period time.Duration) <-chan T {
-	stabilizedCh := make(chan T)
+func DebouncedChan[T any](ch <-chan T, period time.Duration) <-chan T {
+	debouncedCh := make(chan T)
 
 	var next T
 	var lock sync.Mutex
-	stabilizer := stabilize.NewStabilizer(context.Background(), period, func() {
+	debounced := debounce.New(period)
+	send := func() {
 		lock.Lock()
-		stabilizedCh <- next
+		debouncedCh <- next
 		lock.Unlock()
-	})
+	}
 
 	go func() {
 		for data := range ch {
 			lock.Lock()
 			next = data
 			lock.Unlock()
-			stabilizer.Trigger()
+			debounced(send)
 		}
 	}()
-	return stabilizedCh
+	return debouncedCh
 }
