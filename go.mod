@@ -1,6 +1,6 @@
 module github.com/traPtitech/neoshowcase
 
-go 1.24.3
+go 1.24.4
 
 require (
 	code.gitea.io/sdk/gitea v0.21.0
@@ -9,7 +9,6 @@ require (
 	github.com/aarondl/sqlboiler/v4 v4.19.5
 	github.com/aarondl/strmangle v0.0.9
 	github.com/aws/aws-sdk-go v1.55.7
-	github.com/boz/go-throttle v0.0.0-20160922054636-fdc4eab740c1
 	github.com/cert-manager/cert-manager v1.18.1
 	github.com/docker/cli v28.3.1+incompatible
 	github.com/docker/docker v28.3.1+incompatible // should be in sync with requirements of github.com/moby/buildkit or build could break
@@ -25,6 +24,7 @@ require (
 	github.com/labstack/echo/v4 v4.13.4
 	github.com/lukesampson/figlet v0.0.0-20190211215653-8a3ef4a6ac42
 	github.com/moby/buildkit v0.23.1
+	github.com/motoki317/go-stabilize v0.0.2
 	github.com/motoki317/sc v1.8.2
 	github.com/ncw/swift v1.0.53
 	github.com/pkg/errors v0.9.1

@@ -160,5 +160,5 @@ func (k *k8sDiscoverer) Watch(ctx context.Context) (<-chan []Target, error) {
 			return k.watch(ctx, updates)
 		}, "k8s discoverer")
 	}()
-	return ds.ThrottleChan(updates, k8sStabilize), nil
+	return ds.StabilizeChan(updates, k8sStabilize), nil
 }

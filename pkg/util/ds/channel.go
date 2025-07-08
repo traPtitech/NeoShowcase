@@ -1,20 +1,21 @@
 package ds
 
 import (
+	"context"
 	"sync"
 	"time"
 
-	"github.com/boz/go-throttle"
+	"github.com/motoki317/go-stabilize"
 )
 
-func ThrottleChan[T any](ch <-chan T, period time.Duration) <-chan T {
-	throttledCh := make(chan T)
+func StabilizeChan[T any](ch <-chan T, period time.Duration) <-chan T {
+	stabilizedCh := make(chan T)
 
 	var next T
 	var lock sync.Mutex
-	throttledSend := throttle.ThrottleFunc(period, true, func() {
+	stabilizer := stabilize.NewStabilizer(context.Background(), period, func() {
 		lock.Lock()
-		throttledCh <- next
+		stabilizedCh <- next
 		lock.Unlock()
 	})
 
@@ -23,8 +24,8 @@ func ThrottleChan[T any](ch <-chan T, period time.Duration) <-chan T {
 			lock.Lock()
 			next = data
 			lock.Unlock()
-			throttledSend.Trigger()
+			stabilizer.Trigger()
 		}
 	}()
-	return throttledCh
+	return stabilizedCh
 }
