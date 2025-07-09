@@ -115,7 +115,7 @@ func (s *ControllerService) DiscoverBuildLogInstance(ctx context.Context, c *con
 	for _, address := range s.cluster.AllNeighborAddresses(s.Port) {
 		p.Go(func() (*pb.AddressInfo, error) {
 			client, _ := s.clientCache.Get(ctx, address)
-			return client.DiscoverBuildLogInstance(ctx, c.Msg.BuildId)
+			return client.DiscoverBuildLogLocal(ctx, c.Msg.BuildId)
 		})
 	}
 	neighborResults, err := p.Wait()
@@ -176,9 +176,23 @@ func (s *ControllerService) StartBuild(ctx context.Context, _ *connect.Request[e
 	return res, nil
 }
 
-func (s *ControllerService) CancelBuild(_ context.Context, c *connect.Request[pb.BuildIdRequest]) (*connect.Response[emptypb.Empty], error) {
+func (s *ControllerService) CancelBuild(ctx context.Context, c *connect.Request[pb.BuildIdRequest]) (*connect.Response[emptypb.Empty], error) {
 	buildID := c.Msg.BuildId
 	s.builder.CancelBuild(buildID)
+
+	// Broadcast to cluster
+	p := pool.New().WithErrors()
+	for _, address := range s.cluster.AllNeighborAddresses(s.Port) {
+		p.Go(func() error {
+			client, _ := s.clientCache.Get(ctx, address)
+			return client.CancelBuildLocal(ctx, buildID)
+		})
+	}
+	err := p.Wait()
+	if err != nil {
+		return nil, err
+	}
+
 	res := connect.NewResponse(&emptypb.Empty{})
 	return res, nil
 }
