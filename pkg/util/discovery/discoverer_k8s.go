@@ -108,11 +108,11 @@ func (k *k8sDiscoverer) discover() ([]Target, error) {
 		}
 	}
 
+	slices.SortFunc(targets, ds.LessFunc(func(e Target) string { return e.IP }))
 	err = validateTargets(targets)
 	if err != nil {
 		return nil, err
 	}
-	slices.SortFunc(targets, ds.LessFunc(func(e Target) string { return e.IP }))
 	log.Infof("[k8s discoverer] Discovered %d target(s)", len(targets))
 	return targets, nil
 }

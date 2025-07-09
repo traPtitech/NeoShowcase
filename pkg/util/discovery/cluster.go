@@ -95,7 +95,7 @@ func (c *Cluster) MyAddress(port int) (addr string, ok bool) {
 	return c.toAddr(c.targets[c.meIdx].IP, port), true
 }
 
-func (c *Cluster) AssignedShard(key string) int {
+func (c *Cluster) AssignedShardIndex(key string) int {
 	<-c.initialized
 	c.lock.RLock()
 	defer c.lock.RUnlock()

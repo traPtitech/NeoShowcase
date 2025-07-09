@@ -151,7 +151,7 @@ func (b *Backend) generalLabel() map[string]string {
 func (b *Backend) appLabel(appID string) map[string]string {
 	return ds.MergeMap(b.config.labels(), map[string]string{
 		managedLabel: "true",
-		shardLabel:   strconv.Itoa(b.cluster.AssignedShard(appID)),
+		shardLabel:   strconv.Itoa(b.cluster.AssignedShardIndex(appID)),
 		appIDLabel:   appID,
 	})
 }

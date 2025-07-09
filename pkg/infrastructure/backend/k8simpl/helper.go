@@ -97,7 +97,7 @@ func syncResources[T apiResource](ctx context.Context, cluster *discovery.Cluste
 	for _, rc := range diff(existing, next) {
 		// On the controller cluster scale-up, ensure this shard does not delete resources controlled by a new shard
 		appID, ok := rc.GetLabels()[appIDLabel]
-		if ok && cluster.AssignedShard(appID) != cluster.MyShardIndex() {
+		if ok && cluster.AssignedShardIndex(appID) != cluster.MyShardIndex() {
 			continue
 		}
 
