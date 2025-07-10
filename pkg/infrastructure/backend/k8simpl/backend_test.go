@@ -19,6 +19,7 @@ import (
 	clientcmdapi "k8s.io/client-go/tools/clientcmd/api"
 
 	"github.com/traPtitech/neoshowcase/pkg/domain"
+	"github.com/traPtitech/neoshowcase/pkg/util/discovery"
 )
 
 func prepareManager(t *testing.T) (*Backend, *kubernetes.Clientset, *traefikv1alpha1.TraefikV1alpha1Client) {
@@ -61,7 +62,9 @@ func prepareManager(t *testing.T) (*Backend, *kubernetes.Clientset, *traefikv1al
 	config.Namespace = appsNamespace
 	config.Routing.Type = routingTypeTraefik
 	config.TLS.Type = tlsTypeTraefik
-	b, err := NewK8SBackend(kubeconf, client, traefikClient, certManagerClient, config)
+	c := discovery.NewCluster(discovery.NewSingleDiscoverer("127.0.0.1"))
+	go c.Start(context.Background())
+	b, err := NewK8SBackend(kubeconf, client, traefikClient, certManagerClient, c, config)
 	require.NoError(t, err)
 
 	err = b.Start(context.Background())

@@ -48,6 +48,14 @@ func (l *Service) CloseBuildLog(id string) {
 	delete(l.buildLogs, id)
 }
 
+func (l *Service) HasBuildLog(id string) bool {
+	l.lock.Lock()
+	defer l.lock.Unlock()
+
+	_, ok := l.buildLogs[id]
+	return ok
+}
+
 func (l *Service) SubscribeBuildLog(id string, sub chan<- []byte) (ok bool, unsubscribe func()) {
 	l.lock.Lock()
 	st, ok := l.buildLogs[id]

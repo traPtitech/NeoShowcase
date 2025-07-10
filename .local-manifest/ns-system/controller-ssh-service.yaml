@@ -4,7 +4,7 @@ metadata:
   name: ns-controller-ssh
 
 spec:
-  type: ClusterIP
+  type: LoadBalancer
   selector:
     app: ns-controller
   ports:

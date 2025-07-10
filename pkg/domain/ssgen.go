@@ -5,6 +5,7 @@ import (
 
 	"github.com/samber/lo"
 
+	"github.com/traPtitech/neoshowcase/pkg/util/discovery"
 	"github.com/traPtitech/neoshowcase/pkg/util/optional"
 )
 
@@ -23,7 +24,12 @@ type StaticSite struct {
 	SPA         bool
 }
 
-func GetActiveStaticSites(ctx context.Context, appRepo ApplicationRepository, buildRepo BuildRepository) ([]*StaticSite, error) {
+func GetActiveStaticSites(
+	ctx context.Context,
+	cluster *discovery.Cluster,
+	appRepo ApplicationRepository,
+	buildRepo BuildRepository,
+) ([]*StaticSite, error) {
 	applications, err := appRepo.GetApplications(ctx, GetApplicationCondition{
 		DeployType: optional.From(DeployTypeStatic),
 		Running:    optional.From(true),
@@ -31,6 +37,10 @@ func GetActiveStaticSites(ctx context.Context, appRepo ApplicationRepository, bu
 	if err != nil {
 		return nil, err
 	}
+	// Shard by app ID
+	applications = lo.Filter(applications, func(app *Application, _ int) bool {
+		return cluster.IsAssigned(app.ID)
+	})
 
 	buildIDs := lo.FilterMap(applications, func(app *Application, _ int) (string, bool) {
 		return app.CurrentBuild, app.CurrentBuild != ""

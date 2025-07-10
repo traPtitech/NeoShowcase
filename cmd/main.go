@@ -53,8 +53,10 @@ func componentCommand(name string, gen componentGenF, longDesc string) *cobra.Co
 				return err
 			}
 
+			ctx := cmd.Context()
+			ctx, cancel := context.WithCancel(ctx)
 			go func() {
-				err := service.Start(context.Background())
+				err := service.Start(ctx)
 				if err != nil && !errors.Is(err, http.ErrServerClosed) {
 					log.Fatalf("failed to start service: %+v", err)
 				}
@@ -62,9 +64,11 @@ func componentCommand(name string, gen componentGenF, longDesc string) *cobra.Co
 			log.Infof("NeoShowcase %s started", name)
 
 			cli.WaitSIGINT()
-			ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+			cancel()
+
+			shutdownCtx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 			defer cancel()
-			return service.Shutdown(ctx)
+			return service.Shutdown(shutdownCtx)
 		},
 	}
 }

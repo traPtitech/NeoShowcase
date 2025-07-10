@@ -39,7 +39,7 @@ func (b *Backend) GetContainer(ctx context.Context, appID string) (*domain.Conta
 
 func (b *Backend) ListContainers(ctx context.Context) ([]*domain.Container, error) {
 	list, err := b.client.CoreV1().Pods(b.config.Namespace).List(ctx, metav1.ListOptions{
-		LabelSelector: toSelectorString(allSelector()),
+		LabelSelector: toSelectorString(b.shardedAllSelector()),
 	})
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to fetch pods")

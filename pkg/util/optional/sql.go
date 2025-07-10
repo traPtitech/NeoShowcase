@@ -3,7 +3,7 @@ package optional
 import (
 	"time"
 
-	"github.com/volatiletech/null/v8"
+	"github.com/aarondl/null/v8"
 )
 
 func IntoTime(o Of[time.Time]) null.Time {

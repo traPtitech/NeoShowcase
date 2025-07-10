@@ -39,6 +39,7 @@ import (
 	"github.com/traPtitech/neoshowcase/pkg/usecase/ssgen"
 	"github.com/traPtitech/neoshowcase/pkg/usecase/sshserver"
 	"github.com/traPtitech/neoshowcase/pkg/usecase/systeminfo"
+	"github.com/traPtitech/neoshowcase/pkg/util/discovery"
 	"github.com/traefik/traefik/v3/pkg/provider/kubernetes/crd/generated/clientset/versioned/typed/traefikio/v1alpha1"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
@@ -113,13 +114,19 @@ func NewBuildpackHelper(c Config) (component, error) {
 }
 
 func NewControllerDocker(c Config) (component, error) {
+	componentsConfig := c.Components
+	controllerConfig := componentsConfig.Controller
+	controllerPort := controllerConfig.Port
+	discoverer, err := provideDiscoverer(c)
+	if err != nil {
+		return nil, err
+	}
+	cluster := discovery.NewCluster(discoverer)
 	serviceConfig := provideSystemInfoConfig(c)
 	client, err := dockerimpl.NewClientFromEnv()
 	if err != nil {
 		return nil, err
 	}
-	componentsConfig := c.Components
-	controllerConfig := componentsConfig.Controller
 	dockerimplConfig := controllerConfig.Docker
 	imageConfig := c.Image
 	backend, err := dockerimpl.NewDockerBackend(client, dockerimplConfig, imageConfig)
@@ -154,24 +161,25 @@ func NewControllerDocker(c Config) (component, error) {
 	artifactRepository := repository.NewArtifactRepository(db)
 	runtimeImageRepository := repository.NewRuntimeImageRepository(db)
 	controllerBuilderService := grpc.NewControllerBuilderService(logstreamService, privateKey, imageConfig, storage, applicationRepository, artifactRepository, runtimeImageRepository, buildRepository, environmentRepository, gitRepositoryRepository)
+	websiteRepository := repository.NewWebsiteRepository(db)
 	controllerSSGenService := grpc.NewControllerSSGenService()
-	appDeployHelper := cdservice.NewAppDeployHelper(backend, applicationRepository, buildRepository, environmentRepository, controllerSSGenService, imageConfig)
-	containerStateMutator := cdservice.NewContainerStateMutator(applicationRepository, backend)
-	cdserviceService, err := cdservice.NewService(applicationRepository, buildRepository, environmentRepository, backend, controllerBuilderService, appDeployHelper, containerStateMutator)
+	appDeployHelper := cdservice.NewAppDeployHelper(cluster, backend, applicationRepository, buildRepository, environmentRepository, websiteRepository, controllerSSGenService, imageConfig)
+	containerStateMutator := cdservice.NewContainerStateMutator(cluster, applicationRepository, backend)
+	cdService, err := cdservice.NewService(cluster, controllerPort, applicationRepository, buildRepository, environmentRepository, backend, controllerBuilderService, appDeployHelper, containerStateMutator)
 	if err != nil {
 		return nil, err
 	}
 	repositoryCommitRepository := repository.NewRepositoryCommitRepository(db)
 	gitService := git.NewService(publicKeys)
-	commitfetcherService, err := commitfetcher.NewService(applicationRepository, buildRepository, gitRepositoryRepository, repositoryCommitRepository, gitService)
+	commitfetcherService, err := commitfetcher.NewService(cluster, applicationRepository, buildRepository, gitRepositoryRepository, repositoryCommitRepository, gitService)
 	if err != nil {
 		return nil, err
 	}
-	repofetcherService, err := repofetcher.NewService(applicationRepository, gitRepositoryRepository, cdserviceService, commitfetcherService, gitService)
+	repofetcherService, err := repofetcher.NewService(cluster, applicationRepository, gitRepositoryRepository, cdService, commitfetcherService, gitService)
 	if err != nil {
 		return nil, err
 	}
-	controllerServiceHandler := grpc.NewControllerService(service, repofetcherService, cdserviceService, controllerBuilderService, logstreamService)
+	controllerServiceHandler := grpc.NewControllerService(controllerPort, cluster, service, repofetcherService, cdService, controllerBuilderService, logstreamService)
 	controllerGiteaIntegrationService := grpc.NewControllerGiteaIntegrationService()
 	tokenAuthInterceptor, err := provideTokenAuthInterceptor(c)
 	if err != nil {
@@ -183,17 +191,18 @@ func NewControllerDocker(c Config) (component, error) {
 	receiverConfig := controllerConfig.Webhook
 	receiver := webhook.NewReceiver(receiverConfig, gitRepositoryRepository, repofetcherService, controllerGiteaIntegrationService)
 	registryClient := registry.NewClient(imageConfig)
-	cleanerService, err := cleaner.NewService(artifactRepository, applicationRepository, buildRepository, registryClient, imageConfig, storage)
+	cleanerService, err := cleaner.NewService(cluster, artifactRepository, applicationRepository, buildRepository, registryClient, imageConfig, storage)
 	if err != nil {
 		return nil, err
 	}
 	server := &controller.Server{
 		APIServer:      apiServer,
 		DB:             db,
+		Cluster:        cluster,
 		Backend:        backend,
 		SSHServer:      sshServer,
 		Webhook:        receiver,
-		CDService:      cdserviceService,
+		CDService:      cdService,
 		CommitFetcher:  commitfetcherService,
 		FetcherService: repofetcherService,
 		CleanerService: cleanerService,
@@ -202,6 +211,14 @@ func NewControllerDocker(c Config) (component, error) {
 }
 
 func NewControllerK8s(c Config) (component, error) {
+	componentsConfig := c.Components
+	controllerConfig := componentsConfig.Controller
+	controllerPort := controllerConfig.Port
+	discoverer, err := provideDiscoverer(c)
+	if err != nil {
+		return nil, err
+	}
+	cluster := discovery.NewCluster(discoverer)
 	serviceConfig := provideSystemInfoConfig(c)
 	restConfig, err := rest.InClusterConfig()
 	if err != nil {
@@ -219,10 +236,8 @@ func NewControllerK8s(c Config) (component, error) {
 	if err != nil {
 		return nil, err
 	}
-	componentsConfig := c.Components
-	controllerConfig := componentsConfig.Controller
 	k8simplConfig := controllerConfig.K8s
-	backend, err := k8simpl.NewK8SBackend(restConfig, clientset, traefikV1alpha1Client, versionedClientset, k8simplConfig)
+	backend, err := k8simpl.NewK8SBackend(restConfig, clientset, traefikV1alpha1Client, versionedClientset, cluster, k8simplConfig)
 	if err != nil {
 		return nil, err
 	}
@@ -255,24 +270,25 @@ func NewControllerK8s(c Config) (component, error) {
 	artifactRepository := repository.NewArtifactRepository(db)
 	runtimeImageRepository := repository.NewRuntimeImageRepository(db)
 	controllerBuilderService := grpc.NewControllerBuilderService(logstreamService, privateKey, imageConfig, storage, applicationRepository, artifactRepository, runtimeImageRepository, buildRepository, environmentRepository, gitRepositoryRepository)
+	websiteRepository := repository.NewWebsiteRepository(db)
 	controllerSSGenService := grpc.NewControllerSSGenService()
-	appDeployHelper := cdservice.NewAppDeployHelper(backend, applicationRepository, buildRepository, environmentRepository, controllerSSGenService, imageConfig)
-	containerStateMutator := cdservice.NewContainerStateMutator(applicationRepository, backend)
-	cdserviceService, err := cdservice.NewService(applicationRepository, buildRepository, environmentRepository, backend, controllerBuilderService, appDeployHelper, containerStateMutator)
+	appDeployHelper := cdservice.NewAppDeployHelper(cluster, backend, applicationRepository, buildRepository, environmentRepository, websiteRepository, controllerSSGenService, imageConfig)
+	containerStateMutator := cdservice.NewContainerStateMutator(cluster, applicationRepository, backend)
+	cdService, err := cdservice.NewService(cluster, controllerPort, applicationRepository, buildRepository, environmentRepository, backend, controllerBuilderService, appDeployHelper, containerStateMutator)
 	if err != nil {
 		return nil, err
 	}
 	repositoryCommitRepository := repository.NewRepositoryCommitRepository(db)
 	gitService := git.NewService(publicKeys)
-	commitfetcherService, err := commitfetcher.NewService(applicationRepository, buildRepository, gitRepositoryRepository, repositoryCommitRepository, gitService)
+	commitfetcherService, err := commitfetcher.NewService(cluster, applicationRepository, buildRepository, gitRepositoryRepository, repositoryCommitRepository, gitService)
 	if err != nil {
 		return nil, err
 	}
-	repofetcherService, err := repofetcher.NewService(applicationRepository, gitRepositoryRepository, cdserviceService, commitfetcherService, gitService)
+	repofetcherService, err := repofetcher.NewService(cluster, applicationRepository, gitRepositoryRepository, cdService, commitfetcherService, gitService)
 	if err != nil {
 		return nil, err
 	}
-	controllerServiceHandler := grpc.NewControllerService(service, repofetcherService, cdserviceService, controllerBuilderService, logstreamService)
+	controllerServiceHandler := grpc.NewControllerService(controllerPort, cluster, service, repofetcherService, cdService, controllerBuilderService, logstreamService)
 	controllerGiteaIntegrationService := grpc.NewControllerGiteaIntegrationService()
 	tokenAuthInterceptor, err := provideTokenAuthInterceptor(c)
 	if err != nil {
@@ -284,17 +300,18 @@ func NewControllerK8s(c Config) (component, error) {
 	receiverConfig := controllerConfig.Webhook
 	receiver := webhook.NewReceiver(receiverConfig, gitRepositoryRepository, repofetcherService, controllerGiteaIntegrationService)
 	registryClient := registry.NewClient(imageConfig)
-	cleanerService, err := cleaner.NewService(artifactRepository, applicationRepository, buildRepository, registryClient, imageConfig, storage)
+	cleanerService, err := cleaner.NewService(cluster, artifactRepository, applicationRepository, buildRepository, registryClient, imageConfig, storage)
 	if err != nil {
 		return nil, err
 	}
 	server := &controller.Server{
 		APIServer:      apiServer,
 		DB:             db,
+		Cluster:        cluster,
 		Backend:        backend,
 		SSHServer:      sshServer,
 		Webhook:        receiver,
-		CDService:      cdserviceService,
+		CDService:      cdService,
 		CommitFetcher:  commitfetcherService,
 		FetcherService: repofetcherService,
 		CleanerService: cleanerService,
@@ -434,9 +451,9 @@ func NewSSGen(c Config) (component, error) {
 // wire.go:
 
 var providers = wire.NewSet(apiserver.NewService, cdservice.NewAppDeployHelper, cdservice.NewContainerStateMutator, cdservice.NewService, versioned.NewForConfig, cleaner.NewService, commitfetcher.NewService, dbmanager.NewMariaDBManager, dbmanager.NewMongoDBManager, dockerimpl.NewClientFromEnv, dockerimpl.NewDockerBackend, giteaintegration.NewIntegration, grpc.NewAPIServiceServer, grpc.NewAuthInterceptor, grpc.NewBuildpackHelperService, provideBuildpackHelperClient, grpc.NewCacheInterceptor, grpc.NewControllerService, grpc.NewControllerServiceClient, grpc.NewControllerBuilderService, grpc.NewControllerGiteaIntegrationService, grpc.NewControllerGiteaIntegrationServiceClient, provideTokenAuthInterceptor,
-	provideControllerBuilderServiceClient, grpc.NewControllerSSGenService, grpc.NewControllerSSGenServiceClient, healthcheck.NewServer, k8simpl.NewK8SBackend, kubernetes.NewForConfig, logstream.NewService, repofetcher.NewService, repository.New, repository.NewApplicationRepository, repository.NewArtifactRepository, repository.NewRuntimeImageRepository, repository.NewBuildRepository, repository.NewEnvironmentRepository, repository.NewGitRepositoryRepository, repository.NewRepositoryCommitRepository, repository.NewUserRepository, rest.InClusterConfig, v1alpha1.NewForConfig, ssgen.NewGeneratorService, sshserver.NewSSHServer, systeminfo.NewService, builder.NewService, webhook.NewReceiver, provideRepositoryPrivateKey, domain.IntoPublicKey, git.NewService, registry.NewClient, provideStorage,
+	provideControllerBuilderServiceClient, grpc.NewControllerSSGenService, grpc.NewControllerSSGenServiceClient, healthcheck.NewServer, k8simpl.NewK8SBackend, kubernetes.NewForConfig, logstream.NewService, repofetcher.NewService, repository.New, repository.NewApplicationRepository, repository.NewArtifactRepository, repository.NewRuntimeImageRepository, repository.NewBuildRepository, repository.NewEnvironmentRepository, repository.NewGitRepositoryRepository, repository.NewRepositoryCommitRepository, repository.NewUserRepository, repository.NewWebsiteRepository, rest.InClusterConfig, v1alpha1.NewForConfig, ssgen.NewGeneratorService, sshserver.NewSSHServer, systeminfo.NewService, builder.NewService, webhook.NewReceiver, provideRepositoryPrivateKey, domain.IntoPublicKey, git.NewService, registry.NewClient, provideStorage,
 	provideAuthDevServer,
-	provideBuildpackHelperServer, buildpack.NewBuildpackBackend, provideBuilderConfig,
+	provideBuildpackHelperServer, buildpack.NewBuildpackBackend, provideDiscoverer, discovery.NewCluster, provideBuilderConfig,
 	provideBuildkitClient,
 	provideSystemInfoConfig,
 	provideControllerServer,

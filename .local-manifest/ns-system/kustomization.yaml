@@ -2,12 +2,12 @@ namespace: ns-system
 
 resources:
   - builder-deployment.yaml
+  - controller-deployment.yaml
   - controller-role.yaml
   - controller-role-binding.yaml
   - controller-service.yaml
   - controller-service-account.yaml
   - controller-ssh-service.yaml
-  - controller-stateful-set.yaml
   - dashboard-deployment.yaml
   - dashboard-service.yaml
   - gateway-deployment.yaml

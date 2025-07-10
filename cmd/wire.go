@@ -41,6 +41,7 @@ import (
 	ussgen "github.com/traPtitech/neoshowcase/pkg/usecase/ssgen"
 	"github.com/traPtitech/neoshowcase/pkg/usecase/sshserver"
 	"github.com/traPtitech/neoshowcase/pkg/usecase/systeminfo"
+	"github.com/traPtitech/neoshowcase/pkg/util/discovery"
 )
 
 var providers = wire.NewSet(
@@ -84,6 +85,7 @@ var providers = wire.NewSet(
 	repository.NewGitRepositoryRepository,
 	repository.NewRepositoryCommitRepository,
 	repository.NewUserRepository,
+	repository.NewWebsiteRepository,
 	rest.InClusterConfig,
 	traefikv1alpha1.NewForConfig,
 	ussgen.NewGeneratorService,
@@ -99,6 +101,8 @@ var providers = wire.NewSet(
 	provideAuthDevServer,
 	provideBuildpackHelperServer,
 	buildpack.NewBuildpackBackend,
+	provideDiscoverer,
+	discovery.NewCluster,
 	provideBuilderConfig,
 	provideBuildkitClient,
 	provideSystemInfoConfig,
@@ -174,7 +178,7 @@ func NewController(c Config) (component, error) {
 func NewControllerDocker(c Config) (component, error) {
 	wire.Build(
 		providers,
-		wire.FieldsOf(new(ControllerConfig), "Docker", "SSH", "Webhook"),
+		wire.FieldsOf(new(ControllerConfig), "Port", "Docker", "SSH", "Webhook"),
 		wire.Bind(new(domain.Backend), new(*dockerimpl.Backend)),
 		wire.Bind(new(component), new(*controller.Server)),
 		wire.Struct(new(controller.Server), "*"),
@@ -185,7 +189,7 @@ func NewControllerDocker(c Config) (component, error) {
 func NewControllerK8s(c Config) (component, error) {
 	wire.Build(
 		providers,
-		wire.FieldsOf(new(ControllerConfig), "K8s", "SSH", "Webhook"),
+		wire.FieldsOf(new(ControllerConfig), "Port", "K8s", "SSH", "Webhook"),
 		wire.Bind(new(domain.Backend), new(*k8simpl.Backend)),
 		wire.Bind(new(component), new(*controller.Server)),
 		wire.Struct(new(controller.Server), "*"),

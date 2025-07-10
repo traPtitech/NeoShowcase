@@ -1,18 +1,31 @@
 package ds
 
-func ReadAll[T any](ch <-chan T) []T {
-	var items []T
-read:
-	for {
-		select {
-		case item, ok := <-ch:
-			if !ok {
-				break read
-			}
-			items = append(items, item)
-		default:
-			break read
-		}
+import (
+	"sync"
+	"time"
+
+	"github.com/bep/debounce"
+)
+
+func DebouncedChan[T any](ch <-chan T, period time.Duration) <-chan T {
+	debouncedCh := make(chan T)
+
+	var next T
+	var lock sync.Mutex
+	debounced := debounce.New(period)
+	send := func() {
+		lock.Lock()
+		debouncedCh <- next
+		lock.Unlock()
 	}
-	return items
+
+	go func() {
+		for data := range ch {
+			lock.Lock()
+			next = data
+			lock.Unlock()
+			debounced(send)
+		}
+	}()
+	return debouncedCh
 }

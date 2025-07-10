@@ -16,3 +16,8 @@ func (b *Backend) Synchronize(ctx context.Context, s *domain.DesiredState) error
 	}
 	return b.synchronizeSSIngress(ctx, s.StaticSites)
 }
+
+func (b *Backend) SynchronizeShared(_ context.Context, _ *domain.DesiredStateLeader) error {
+	// No shared resources (certificates) are required in docker traefik backend for now
+	return nil
+}

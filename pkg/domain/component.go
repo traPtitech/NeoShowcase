@@ -30,8 +30,15 @@ type ControllerServiceClient interface {
 	FetchRepository(ctx context.Context, repositoryID string) error
 	RegisterBuild(ctx context.Context, appID string) error
 	SyncDeployments(ctx context.Context) error
-	StreamBuildLog(ctx context.Context, buildID string) (<-chan *pb.BuildLog, error)
+	DiscoverBuildLogInstance(ctx context.Context, buildID string) (*pb.AddressInfo, error)
+	StreamBuildLog(ctx context.Context, address string, buildID string) (<-chan *pb.BuildLog, error)
+	StartBuild(ctx context.Context) error
 	CancelBuild(ctx context.Context, buildID string) error
+
+	DiscoverBuildLogLocal(ctx context.Context, buildID string) (*pb.AddressInfo, error)
+	StartBuildLocal(ctx context.Context) error
+	SyncDeploymentsLocal(ctx context.Context) error
+	CancelBuildLocal(ctx context.Context, buildID string) error
 }
 
 type ControllerBuilderService interface {

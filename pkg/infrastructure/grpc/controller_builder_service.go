@@ -284,7 +284,7 @@ func (s *ControllerBuilderService) startBuild(ctx context.Context, conn *builder
 		return err
 	}
 	if n == 0 {
-		return fmt.Errorf("failed to save started build status for %v - builder scheduling may be malfunctioning", buildID)
+		return fmt.Errorf("failed to acquire build lock for %v, skipping", buildID)
 	}
 
 	// Construct payload to send to builder
@@ -332,15 +332,23 @@ func (s *ControllerBuilderService) StartBuilds(ctx context.Context, buildIDs []s
 	defer s.lock.Unlock()
 
 	// Select available builders (and copy the slice)
-	conns := lo.Filter(s.builderConnections, func(c *builderConnection, _ int) bool { return !c.Busy() })
+	availableBuilders := lo.Filter(s.builderConnections, func(c *builderConnection, _ int) bool { return !c.Busy() })
 	// Select from higher priority builders
-	slices.SortFunc(conns, ds.MoreFunc(func(c *builderConnection) int64 { return c.priority }))
+	slices.SortFunc(availableBuilders, ds.MoreFunc(func(c *builderConnection) int64 { return c.priority }))
 
 	// Send builds to available builders
-	for i, conn := range ds.FirstN(conns, len(buildIDs)) {
-		buildID := buildIDs[i]
+	builderIdx := 0
+	for _, buildID := range buildIDs {
+		if builderIdx >= len(availableBuilders) {
+			break
+		}
+		conn := availableBuilders[builderIdx]
 		err := s.startBuild(ctx, conn, buildID)
-		if err != nil {
+		if err == nil {
+			builderIdx++
+		} else {
+			// It is possible that some other controller has acquired build lock first
+			// - in that case, skip and try the next build ID
 			log.Errorf("error starting build: %+v", err)
 		}
 	}

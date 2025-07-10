@@ -1,11 +1,15 @@
 module github.com/traPtitech/neoshowcase
 
-go 1.24.3
+go 1.24.4
 
 require (
 	code.gitea.io/sdk/gitea v0.21.0
 	connectrpc.com/connect v1.18.1
+	github.com/aarondl/null/v8 v8.1.3
+	github.com/aarondl/sqlboiler/v4 v4.19.5
+	github.com/aarondl/strmangle v0.0.9
 	github.com/aws/aws-sdk-go v1.55.7
+	github.com/bep/debounce v1.2.1
 	github.com/cert-manager/cert-manager v1.18.1
 	github.com/docker/cli v28.3.1+incompatible
 	github.com/docker/docker v28.3.1+incompatible // should be in sync with requirements of github.com/moby/buildkit or build could break
@@ -37,9 +41,6 @@ require (
 	github.com/stretchr/testify v1.10.0
 	github.com/tonistiigi/fsutil v0.0.0-20250605211040-586307ad452f
 	github.com/traefik/traefik/v3 v3.4.3
-	github.com/volatiletech/null/v8 v8.1.2
-	github.com/volatiletech/sqlboiler/v4 v4.19.1
-	github.com/volatiletech/strmangle v0.0.8
 	github.com/zeebo/xxh3 v1.0.2
 	go.mongodb.org/mongo-driver v1.17.4
 	golang.org/x/crypto v0.39.0
@@ -63,6 +64,8 @@ require (
 	github.com/Masterminds/sprig/v3 v3.2.3 // indirect
 	github.com/Microsoft/go-winio v0.6.2 // indirect
 	github.com/ProtonMail/go-crypto v1.1.6 // indirect
+	github.com/aarondl/inflect v0.0.2 // indirect
+	github.com/aarondl/randomize v0.0.2 // indirect
 	github.com/anmitsu/go-shlex v0.0.0-20200514113438-38f4b401e2be // indirect
 	github.com/aws/smithy-go v1.22.2 // indirect
 	github.com/cenkalti/backoff/v4 v4.3.0 // indirect
@@ -177,8 +180,6 @@ require (
 	github.com/unrolled/render v1.0.2 // indirect
 	github.com/valyala/bytebufferpool v1.0.0 // indirect
 	github.com/valyala/fasttemplate v1.2.2 // indirect
-	github.com/volatiletech/inflect v0.0.1 // indirect
-	github.com/volatiletech/randomize v0.0.1 // indirect
 	github.com/x448/float16 v0.8.4 // indirect
 	github.com/xanzy/ssh-agent v0.3.3 // indirect
 	github.com/xdg-go/pbkdf2 v1.0.0 // indirect
