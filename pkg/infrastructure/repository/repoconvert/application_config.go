@@ -22,12 +22,15 @@ func ToDomainApplicationConfig(c *models.ApplicationConfig) domain.ApplicationCo
 }
 
 var BuildTypeMapper = mapper.MustNewValueMapper(map[string]domain.BuildType{
-	models.ApplicationConfigBuildTypeRuntimeBuildpack:  domain.BuildTypeRuntimeBuildpack,
-	models.ApplicationConfigBuildTypeRuntimeCMD:        domain.BuildTypeRuntimeCmd,
-	models.ApplicationConfigBuildTypeRuntimeDockerfile: domain.BuildTypeRuntimeDockerfile,
-	models.ApplicationConfigBuildTypeStaticBuildpack:   domain.BuildTypeStaticBuildpack,
-	models.ApplicationConfigBuildTypeStaticCMD:         domain.BuildTypeStaticCmd,
-	models.ApplicationConfigBuildTypeStaticDockerfile:  domain.BuildTypeStaticDockerfile,
+	models.ApplicationConfigBuildTypeRuntimeBuildpack:   domain.BuildTypeRuntimeBuildpack,
+	models.ApplicationConfigBuildTypeRuntimeCMD:         domain.BuildTypeRuntimeCmd,
+	models.ApplicationConfigBuildTypeRuntimeDockerfile:  domain.BuildTypeRuntimeDockerfile,
+	models.ApplicationConfigBuildTypeStaticBuildpack:    domain.BuildTypeStaticBuildpack,
+	models.ApplicationConfigBuildTypeStaticCMD:          domain.BuildTypeStaticCmd,
+	models.ApplicationConfigBuildTypeStaticDockerfile:   domain.BuildTypeStaticDockerfile,
+	models.ApplicationConfigBuildTypeFunctionBuildpack:  domain.BuildTypeFunctionBuildpack,
+	models.ApplicationConfigBuildTypeFunctionCMD:        domain.BuildTypeFunctionCmd,
+	models.ApplicationConfigBuildTypeFunctionDockerfile: domain.BuildTypeFunctionDockerfile,
 })
 
 var StartupBehaviorMapper = mapper.MustNewValueMapper(map[string]domain.StartupBehavior{
@@ -76,6 +79,16 @@ func ToDomainStaticConfig(c *models.ApplicationConfig) domain.StaticConfig {
 	}
 }
 
+func assignFunctionConfig(mc *models.ApplicationConfig, c *domain.FunctionConfig) {
+	mc.ArtifactPath = c.ArtifactPath
+}
+
+func ToDomainFunctionConfig(c *models.ApplicationConfig) domain.FunctionConfig {
+	return domain.FunctionConfig{
+		ArtifactPath: c.ArtifactPath,
+	}
+}
+
 func assignBuildConfig(mc *models.ApplicationConfig, c domain.BuildConfig) {
 	switch bc := c.(type) {
 	case *domain.BuildConfigRuntimeBuildpack:
@@ -98,6 +111,17 @@ func assignBuildConfig(mc *models.ApplicationConfig, c domain.BuildConfig) {
 		mc.BuildCMD = bc.BuildCmd
 	case *domain.BuildConfigStaticDockerfile:
 		assignStaticConfig(mc, &bc.StaticConfig)
+		mc.DockerfileName = bc.DockerfileName
+		mc.Context = bc.Context
+	case *domain.BuildConfigFunctionBuildpack:
+		assignFunctionConfig(mc, &bc.FunctionConfig)
+		mc.Context = bc.Context
+	case *domain.BuildConfigFunctionCmd:
+		assignFunctionConfig(mc, &bc.FunctionConfig)
+		mc.BaseImage = bc.BaseImage
+		mc.BuildCMD = bc.BuildCmd
+	case *domain.BuildConfigFunctionDockerfile:
+		assignFunctionConfig(mc, &bc.FunctionConfig)
 		mc.DockerfileName = bc.DockerfileName
 		mc.Context = bc.Context
 	default:
@@ -138,6 +162,23 @@ func ToDomainBuildConfig(c *models.ApplicationConfig) domain.BuildConfig {
 	case domain.BuildTypeStaticDockerfile:
 		return &domain.BuildConfigStaticDockerfile{
 			StaticConfig:   ToDomainStaticConfig(c),
+			DockerfileName: c.DockerfileName,
+			Context:        c.Context,
+		}
+	case domain.BuildTypeFunctionBuildpack:
+		return &domain.BuildConfigFunctionBuildpack{
+			FunctionConfig: ToDomainFunctionConfig(c),
+			Context:        c.Context,
+		}
+	case domain.BuildTypeFunctionCmd:
+		return &domain.BuildConfigFunctionCmd{
+			FunctionConfig: ToDomainFunctionConfig(c),
+			BaseImage:      c.BaseImage,
+			BuildCmd:       c.BuildCMD,
+		}
+	case domain.BuildTypeFunctionDockerfile:
+		return &domain.BuildConfigFunctionDockerfile{
+			FunctionConfig: ToDomainFunctionConfig(c),
 			DockerfileName: c.DockerfileName,
 			Context:        c.Context,
 		}

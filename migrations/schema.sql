@@ -79,7 +79,7 @@ CREATE TABLE `applications`
     `repository_id`     VARCHAR(22)                NOT NULL COMMENT 'リポジトリID',
     `ref_name`          VARCHAR(100)               NOT NULL COMMENT 'Gitブランチ・タグ名',
     `commit`            CHAR(40)                   NOT NULL COMMENT '解決されたコミット',
-    `deploy_type`       ENUM ('runtime', 'static') NOT NULL COMMENT 'デプロイタイプ',
+    `deploy_type`       ENUM ('runtime', 'static', 'function') NOT NULL COMMENT 'デプロイタイプ',
     `running`           TINYINT(1)                 NOT NULL COMMENT 'アプリを起動させるか(desired state)',
     `container`         ENUM (
         'missing',
@@ -117,7 +117,10 @@ CREATE TABLE `application_config`
         'runtime-dockerfile',
         'static-buildpack',
         'static-cmd',
-        'static-dockerfile'
+        'static-dockerfile',
+        'function-buildpack',
+        'function-cmd',
+        'function-dockerfile'
         )                           NOT NULL COMMENT 'ビルドタイプ',
     `base_image`      VARCHAR(1000) NOT NULL COMMENT 'ベースイメージの名前',
     `build_cmd`       TEXT          NOT NULL COMMENT 'ビルドコマンド',

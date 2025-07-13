@@ -8,8 +8,9 @@ import (
 )
 
 var DeployTypeMapper = mapper.MustNewValueMapper(map[string]domain.DeployType{
-	models.ApplicationsDeployTypeRuntime: domain.DeployTypeRuntime,
-	models.ApplicationsDeployTypeStatic:  domain.DeployTypeStatic,
+	models.ApplicationsDeployTypeRuntime:  domain.DeployTypeRuntime,
+	models.ApplicationsDeployTypeStatic:   domain.DeployTypeStatic,
+	models.ApplicationsDeployTypeFunction: domain.DeployTypeFunction,
 })
 
 var ContainerStateMapper = mapper.MustNewValueMapper(map[string]domain.ContainerState{
