@@ -27,7 +27,7 @@ func NewContainer(opts ...ContainerOption) *Container {
 
 func Resolve[T any](c *Container) T {
 	var v T
-	if err := c.Container.Invoke(func(res T) {
+	if err := c.Invoke(func(res T) {
 		v = res
 	}); err != nil {
 		panic(err)
