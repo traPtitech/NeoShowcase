@@ -142,11 +142,18 @@ func ensureHealthy(host string, port string) {
 	if err != nil {
 		panic(err)
 	}
+
+	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+	defer cancel()
+	ticker := time.NewTicker(500 * time.Millisecond)
 	for {
-		if err := db.Ping(); err != nil {
-			time.Sleep(500 * time.Millisecond)
-		} else {
-			return
+		select {
+		case <-ctx.Done():
+			panic("MySQL container did not become healthy in time")
+		case <-ticker.C:
+			if err := db.PingContext(ctx); err == nil {
+				return
+			}
 		}
 	}
 }
